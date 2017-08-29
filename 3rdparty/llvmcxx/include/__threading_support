@@ -249,29 +249,17 @@ int __libcpp_recursive_mutex_init(__libcpp_recursive_mutex_t *__m)
 
 int __libcpp_recursive_mutex_lock(__libcpp_recursive_mutex_t *__m)
 {
-#ifdef __ELIBC
-  return pthread_mutex_lock_u(__m);
-#else
   return pthread_mutex_lock(__m);
-#endif
 }
 
 bool __libcpp_recursive_mutex_trylock(__libcpp_recursive_mutex_t *__m)
 {
-#ifdef __ELIBC
-  return pthread_mutex_trylock_u(__m) == 0;
-#else
   return pthread_mutex_trylock(__m) == 0;
-#endif
 }
 
 int __libcpp_recursive_mutex_unlock(__libcpp_mutex_t *__m)
 {
-#ifdef __ELIBC
-  return pthread_mutex_unlock_u(__m);
-#else
   return pthread_mutex_unlock(__m);
-#endif
 }
 
 int __libcpp_recursive_mutex_destroy(__libcpp_recursive_mutex_t *__m)
@@ -281,29 +269,17 @@ int __libcpp_recursive_mutex_destroy(__libcpp_recursive_mutex_t *__m)
 
 int __libcpp_mutex_lock(__libcpp_mutex_t *__m)
 {
-#ifdef __ELIBC
-  return pthread_mutex_lock_u(__m);
-#else
   return pthread_mutex_lock(__m);
-#endif
 }
 
 bool __libcpp_mutex_trylock(__libcpp_mutex_t *__m)
 {
-#ifdef __ELIBC
-  return pthread_mutex_trylock_u(__m) == 0;
-#else
   return pthread_mutex_trylock(__m) == 0;
-#endif
 }
 
 int __libcpp_mutex_unlock(__libcpp_mutex_t *__m)
 {
-#ifdef __ELIBC
-  return pthread_mutex_unlock_u(__m);
-#else
   return pthread_mutex_unlock(__m);
-#endif
 }
 
 int __libcpp_mutex_destroy(__libcpp_mutex_t *__m)
@@ -314,29 +290,17 @@ int __libcpp_mutex_destroy(__libcpp_mutex_t *__m)
 // Condition Variable
 int __libcpp_condvar_signal(__libcpp_condvar_t *__cv)
 {
-#ifdef __ELIBC
-  return pthread_cond_signal_u(__cv);
-#else
   return pthread_cond_signal(__cv);
-#endif
 }
 
 int __libcpp_condvar_broadcast(__libcpp_condvar_t *__cv)
 {
-#ifdef __ELIBC
-  return pthread_cond_broadcast_u(__cv);
-#else
   return pthread_cond_broadcast(__cv);
-#endif
 }
 
 int __libcpp_condvar_wait(__libcpp_condvar_t *__cv, __libcpp_mutex_t *__m)
 {
-#ifdef __ELIBC
-  return pthread_cond_wait_u(__cv, __m);
-#else
   return pthread_cond_wait(__cv, __m);
-#endif
 }
 
 int __libcpp_condvar_timedwait(__libcpp_condvar_t *__cv, __libcpp_mutex_t *__m,

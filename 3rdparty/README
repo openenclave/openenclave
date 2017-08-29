@@ -15,7 +15,8 @@ includes:
     libcxxrt (downloaded on the fly):
         https://github.com/pathscale/libcxxrt
 
-    LLVM STL (resides in source tree):
+    libcxx.llvm (resides in source tree):
+        http://llvm.org/svn/llvm-project/libcxx/trunk
         https://github.com/dutor/stl/tree/master/llvm/include
         (see http://libcxx.llvm.org)
 

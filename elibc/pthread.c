@@ -38,7 +38,7 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
     int ret = -1;
     OE_ThreadWakeWaitArgs* args = NULL;
 
-    if (!(args = malloc_u(sizeof(OE_ThreadWakeWaitArgs))))
+    if (!(args = malloc(sizeof(OE_ThreadWakeWaitArgs))))
         goto done;
 
     args->waiter_tcs = TD_ToTCS((TD*)waiter);
@@ -52,7 +52,7 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
 done:
 
     if (args)
-        free_u(args);
+        free(args);
 
     return ret;
 }
@@ -233,7 +233,7 @@ int pthread_mutex_init(pthread_mutex_t* m, pthread_mutexattr_t* attr)
     return 0;
 }
 
-int pthread_mutex_lock_u(pthread_mutex_t* m)
+int pthread_mutex_lock(pthread_mutex_t* m)
 {
     OE_ThreadData* self = OE_GetThreadData();
 
@@ -268,7 +268,7 @@ int pthread_mutex_lock_u(pthread_mutex_t* m)
     /* Unreachable! */
 }
 
-int pthread_mutex_trylock_u(pthread_mutex_t* m)
+int pthread_mutex_trylock(pthread_mutex_t* m)
 {
     OE_ThreadData* self = OE_GetThreadData();
 
@@ -328,7 +328,7 @@ done:
     return ret;
 }
 
-int pthread_mutex_unlock_u(pthread_mutex_t* m)
+int pthread_mutex_unlock(pthread_mutex_t* m)
 {
     OE_ThreadData* waiter = NULL;
 
@@ -386,34 +386,34 @@ int pthread_rwlock_init(pthread_rwlock_t* rwlock, pthread_rwlockattr_t* attr)
     return -1;
 }
 
-int pthread_rwlock_rdlock_u(pthread_rwlock_t* rwlock)
+int pthread_rwlock_rdlock(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
-        return pthread_mutex_lock_u(&rwlock->__impl);
+        return pthread_mutex_lock(&rwlock->__impl);
 
     return -1;
 }
 
-int pthread_rwlock_wrlock_u(pthread_rwlock_t* rwlock)
+int pthread_rwlock_wrlock(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
-        return pthread_mutex_lock_u(&rwlock->__impl);
+        return pthread_mutex_lock(&rwlock->__impl);
 
     return -1;
 }
 
-int pthread_rwlock_unlock_u(pthread_rwlock_t* rwlock)
+int pthread_rwlock_unlock(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
-        return pthread_mutex_unlock_u(&rwlock->__impl);
+        return pthread_mutex_unlock(&rwlock->__impl);
 
     return -1;
 }
 
-int pthread_rwlock_trylock_u(pthread_rwlock_t* rwlock)
+int pthread_rwlock_trylock(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
-        pthread_mutex_trylock_u(&rwlock->__impl);
+        pthread_mutex_trylock(&rwlock->__impl);
 
     return -1;
 }
@@ -445,7 +445,7 @@ int pthread_cond_init(pthread_cond_t* cond, pthread_condattr_t* attr)
     return 0;
 }
 
-int pthread_cond_wait_u(pthread_cond_t *cond, pthread_mutex_t* mutex)
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t* mutex)
 {
     OE_ThreadData* self = OE_GetThreadData();
 
@@ -485,7 +485,7 @@ int pthread_cond_wait_u(pthread_cond_t *cond, pthread_mutex_t* mutex)
         }
     }
     pthread_spin_unlock(&cond->lock);
-    pthread_mutex_unlock_u(mutex);
+    pthread_mutex_unlock(mutex);
 
     return 0;
 }
@@ -499,7 +499,7 @@ int pthread_cond_timedwait(
     return -1;
 }
 
-int pthread_cond_signal_u(pthread_cond_t *cond)
+int pthread_cond_signal(pthread_cond_t *cond)
 {
     OE_ThreadData* waiter;
 
@@ -514,7 +514,7 @@ int pthread_cond_signal_u(pthread_cond_t *cond)
     return 0;
 }
 
-int pthread_cond_broadcast_u(pthread_cond_t* cond)
+int pthread_cond_broadcast(pthread_cond_t* cond)
 {
     queue_t waiters = { NULL, NULL };
 

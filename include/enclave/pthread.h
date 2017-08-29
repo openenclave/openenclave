@@ -199,13 +199,13 @@ __STATIC_ASSERT((sizeof(pthread_mutex_t) == 40));
 
 int pthread_mutex_init(pthread_mutex_t* mutex, pthread_mutexattr_t* attr);
 
-int pthread_mutex_lock_u(pthread_mutex_t* mutex);
+int pthread_mutex_lock(pthread_mutex_t* mutex);
 
-int pthread_mutex_unlock_u(pthread_mutex_t* mutex);
+int pthread_mutex_unlock(pthread_mutex_t* mutex);
 
 int pthread_mutex_destroy(pthread_mutex_t* mutex);
 
-int pthread_mutex_trylock_u(pthread_mutex_t* mutex);
+int pthread_mutex_trylock(pthread_mutex_t* mutex);
 
 #ifdef __ELIBC_UNSUPPORTED
 int pthread_mutex_lock(pthread_mutex_t* mutex);
@@ -239,15 +239,15 @@ pthread_rwlock_t;
 
 int pthread_rwlock_init(pthread_rwlock_t* rwlock, pthread_rwlockattr_t* attr);
 
-int pthread_rwlock_rdlock_u(pthread_rwlock_t* rwlock);
+int pthread_rwlock_rdlock(pthread_rwlock_t* rwlock);
 
-int pthread_rwlock_wrlock_u(pthread_rwlock_t* rwlock);
+int pthread_rwlock_wrlock(pthread_rwlock_t* rwlock);
 
-int pthread_rwlock_unlock_u(pthread_rwlock_t* rwlock);
+int pthread_rwlock_unlock(pthread_rwlock_t* rwlock);
 
 int pthread_rwlock_destroy(pthread_rwlock_t* rwlock);
 
-int pthread_rwlock_trylock_u(pthread_rwlock_t* rwlock);
+int pthread_rwlock_trylock(pthread_rwlock_t* rwlock);
 
 #ifdef __ELIBC_UNSUPPORTED
 int pthread_rwlock_rdlock(pthread_rwlock_t* rwlock);
@@ -298,11 +298,11 @@ int pthread_cond_init(pthread_cond_t* cond, pthread_condattr_t* attr);
 
 int pthread_cond_destroy(pthread_cond_t *cond);
 
-int pthread_cond_wait_u(pthread_cond_t *cond, pthread_mutex_t* mutex);
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t* mutex);
 
-int pthread_cond_signal_u(pthread_cond_t *cond);
+int pthread_cond_signal(pthread_cond_t *cond);
 
-int pthread_cond_broadcast_u(pthread_cond_t *cond);
+int pthread_cond_broadcast(pthread_cond_t *cond);
 
 /* ATTN: implement! */
 int pthread_cond_timedwait(

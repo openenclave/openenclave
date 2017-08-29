@@ -112,29 +112,17 @@ int OE_MutexInit(
 
 int OE_MutexLock(OE_Mutex* mutex)
 {
-#ifdef __ELIBC
-    return pthread_mutex_lock_u((pthread_mutex_t*)mutex);
-#else
     return pthread_mutex_lock((pthread_mutex_t*)mutex);
-#endif
 }
 
 int OE_MutexTryLock(OE_Mutex* mutex)
 {
-#ifdef __ELIBC
-    return pthread_mutex_trylock_u((pthread_mutex_t*)mutex);
-#else
     return pthread_mutex_trylock((pthread_mutex_t*)mutex);
-#endif
 }
 
 int OE_MutexUnlock(OE_Mutex* mutex)
 {
-#ifdef __ELIBC
-    return pthread_mutex_unlock_u((pthread_mutex_t*)mutex);
-#else
     return pthread_mutex_unlock((pthread_mutex_t*)mutex);
-#endif
 }
 
 int OE_MutexDestroy(
@@ -168,11 +156,7 @@ int OE_CondWait(
     OE_Cond* cond, 
     OE_Mutex* mutex)
 {
-#ifdef __ELIBC
-    return pthread_cond_wait_u((pthread_cond_t*)cond, (pthread_mutex_t*)mutex);
-#else
     return pthread_cond_wait((pthread_cond_t*)cond, (pthread_mutex_t*)mutex);
-#endif
 }
 
 int OE_CondTimedWait(
@@ -187,21 +171,13 @@ int OE_CondTimedWait(
 int OE_CondSignal(
     OE_Cond* cond)
 {
-#ifdef __ELIBC
-    return pthread_cond_signal_u((pthread_cond_t*)cond);
-#else
     return pthread_cond_signal((pthread_cond_t*)cond);
-#endif
 }
 
 int OE_CondBroadcast(
     OE_Cond* cond)
 {
-#ifdef __ELIBC
-    return pthread_cond_broadcast_u((pthread_cond_t*)cond);
-#else
     return pthread_cond_broadcast((pthread_cond_t*)cond);
-#endif
 }
 
 /*
