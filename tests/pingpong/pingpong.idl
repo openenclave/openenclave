@@ -1,0 +1,12 @@
+
+function [ecall] void Ping(
+    [in, string] const char* in, 
+    [in, out, string] char out[128]);
+
+function [ocall] void Pong(
+    [in, string] const char* in, 
+    [in, out, string] char out[128]);
+
+function [ocall] void Log(
+    [string, in] const char* str,
+    [in] uint64 x);

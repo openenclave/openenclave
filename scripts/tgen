@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$#" != "1" ]; then
+    echo "Usage: $0 infile"
+    exit 1
+fi
+
+filename=$1
+
+if [ ! -f "${filename}" ]; then
+    echo "$0: ${filename} not found"
+    exit 1
+fi
+
+types="NONE CHAR UCHAR SHORT USHORT INT UINT LONG ULONG LLONG ULLONG INTN UINTN WCHAR BOOL BYTE SINT8 UINT8 SINT16 UINT16 SINT32 UINT32 SINT64 UINT64 FLOAT DOUBLE REAL32 REAL64 SIZE SSIZE STRUCT VOID"
+
+
+n=`echo ${types} | wc -w | cut -d" " -f1`
+i=1
+
+while ((n--))
+do
+    elem=`echo ${types} | cut -d" " -f${i}`
+    cat "${filename}" | sed "s/TTT/${elem}/g"
+    i=$((i+1))
+done

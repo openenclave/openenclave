@@ -1,0 +1,18 @@
+verbatim "../types.h"
+
+function [ecall] int TestReadFile(
+    [in, string] const char *path,
+    [in, out, count=1] uint32 *checksum);
+
+function [ocall, unchecked] FILE *Fopen(
+    [in, string] const char *filename,
+    [in, string] const char *modes);
+
+function [ocall] size_t Fread(
+    [inout, count=size] void *ptr,
+    [in] size_t size,
+    [unchecked, in] FILE *stream);
+
+function [ocall] int Fclose(
+    [unchecked, in] FILE *stream);
+

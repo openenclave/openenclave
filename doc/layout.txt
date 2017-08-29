@@ -1,0 +1,39 @@
+The builder creates the pages of an enclave image with the following layout:
+
+        +----------------------------------------+
+        | Text pages:                            |
+        |     OE_Main() - enclave entry point    |
+        |     OE_Dispatch()                      |
+        +----------------------------------------+
+        | Data pages:                            |
+        |     __oe_numPages                      |
+        |     __oe_BaseHeapPage                  |
+        |     __oe_numHeapPages                  |
+        |     __oe_virtualBaseAddr               |
+        +----------------------------------------+ <--+
+        | Guard page                             |    |
+        +----------------------------------------+    |
+        | Stack pages                            |    |
+        +----------------------------------------+    |
+        | Guard page                             |    |
+        +----------------------------------------+    |
+        | Thread Control Structure (TCS) Page    |    |
+        |     state: 0 = available               |    |
+        |     oentry - vaddress of OE_Main()     |    |- Thread context
+        |     fsbase - vaddress of FS segment    |    |  (one per TCS)
+        |     gsbase - vaddress of GS segment    |    |
+        +----------------------------------------+    |
+        | Set Asside Area (SSA Slot 1) Page      |    |
+        +----------------------------------------+    |
+        | Set Asside Area (SSA Slot 2) Page      |    |
+        +----------------------------------------+    |
+        | Guard page                             |    |
+        +----------------------------------------+    |
+        | GS (or FS) Segment (holds thread data) |    |
+        |     GS:0 - thread data address         |    |
+        +----------------------------------------+    |
+        | Thread specific data (TSD) Page        |    |
+        +----------------------------------------+ <--+
+        | Padding Pages (must be a power of two) |
+        +----------------------------------------+
+

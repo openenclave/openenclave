@@ -1,0 +1,1 @@
+#include "../common/typeinfo.c"

@@ -1,0 +1,18 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <__openenclave/aesm.h>
+
+int main(int argc, const char* argv[])
+{
+    AESM* aesm;
+
+    if ((aesm = AESMConnect()) < 0)
+    {
+        fprintf(stderr, "%s: failed to connect\n", argv[0]);
+        exit(1);
+    }
+
+    printf("=== passed all tests (%s)\n", argv[0]);
+
+    return 0;
+}

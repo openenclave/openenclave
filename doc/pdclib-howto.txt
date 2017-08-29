@@ -1,0 +1,7 @@
+pdclib can be obtained with this command:
+
+    # hg clone https://bitbucket.org/pdclib/pdclib
+
+You might first have to install mercurial:
+
+    # apt install mercurial

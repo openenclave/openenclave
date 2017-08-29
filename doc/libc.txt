@@ -1,0 +1,26 @@
+
+    Module              Comment
+    ========================================================================
+    setjmp.h            done
+    endian.h            easy
+    assert.h            easy
+    ctype.h             easy
+    errno.h             easy
+    float.h             easy
+    inttypes.h          easy
+    iso646.h            easy
+    limits.h            easy
+    stdarg.h            easy
+    stdbool.h           easy
+    stddef.h            easy
+    stdint.h            easy
+    unistd.h            easy (sbrk)
+    wctype.h            easy
+    stdio.h             moderate
+    complex.h           hard
+    wchar.h             hard
+    string.h            hard
+    time.h              hard
+    stdlib.h            hard
+    math.h              hard
+

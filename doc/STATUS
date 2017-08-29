@@ -1,0 +1,57 @@
+
+Completed:
+
+    (*) Retrofitted native SGX implementation into SDK
+
+    (*) Implemented ENC_CreateReport function (based on ECREATE)
+
+    (*) Implemented ENC_GetQuote function (calls AESM service)
+
+    (*) Integrated dlmalloc (Doug Lea Malloc)
+
+        (http://g.oswego.edu/dl/html/malloc.html)
+
+    (*) Implemented mutex and conditions
+
+    (*) Implemented thread specific data (TSD)
+
+    (*) Implemented once funcion
+
+    (*) Implemented spin locks
+
+    (*) Implemented printf() as OCALL
+
+    (*) Implemented relocations (injected relocations region)
+
+    (*) HostMalloc/HostFree functions
+
+    (*) Integrated MUSL C
+
+        (*) paired down unwanted functions
+
+    (*) Integrated LSVM C++
+
+        (*) These work:
+            (*) new/delete
+            (*) string
+            (*) vector
+            (*) map
+            (*) virtual functions
+
+        (*) These don't work:
+            (*) strstream (aborts)
+            (*) exceptions (disabled)
+            (*) RTTI (requires additional runtime artifacts)
+
+    (*) Still need to get GDB working
+
+    (*) More tests
+
+    (*) Docs
+
+More:
+
+    (*) Enable GDB debugging on enclaves
+
+    (*) Implement asynchronous exceptions and interrupt handling
+

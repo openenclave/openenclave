@@ -1,0 +1,7 @@
+Merge these archives into one: 
+    libcxxrt.a
+    libunwind.a
+    libllvmcxx.a
+
+Creates this archive:
+    libelibcxx.a

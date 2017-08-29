@@ -1,0 +1,17 @@
+include ../../../mak/defs.mak
+
+CXXSHLIB = stdcenc
+
+CFLAGS += -fno-builtin-strcpy
+CFLAGS += -fno-builtin-strcat
+CFLAGS += -fno-builtin-memcpy
+CFLAGS += -fno-builtin-memset
+
+SOURCES = enc.cpp
+
+SIGNCONF = sign.conf
+
+KEYFILE = private.pem
+
+WHOLE_ARCHIVE=1
+include $(MAKDIR)/enclave.mak

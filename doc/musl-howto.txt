@@ -1,0 +1,12 @@
+
+To use simulation mode (make SIM=1), it is necessary to have a standalone
+non-GPL library. For this we picked musl, which may be obtained from here:
+
+    https://github.com/wermut/musl
+
+Build with these exact commands:
+
+    # ./configure CLFAGS=-fPIC
+    # make CFLAGS=-fPIC
+    # make install
+

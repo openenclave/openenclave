@@ -1,0 +1,62 @@
+
+    AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+    BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+
+    (A) Split include/enc into include/enclave and include/host
+
+    (B) Get cpow.c, cpowf.c, and cpowl.c working (they depend on soft complex
+        multiplication routines)
+
+    CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+    (C) Handle exceptions and interrupts
+
+    (C) Implement pthread_create()
+
+    (C) Consider enclave thread creation
+
+    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+    (X) Thread-specific data (TSD)
+
+    (X) Once function
+
+    (X) Outside stack allocation
+
+    (X) Inside/outside memory checks
+
+    (X) Fix EENTER/EEXIT stack leak
+
+    (X) Dynamic memory allocator (dlmalloc)
+
+    (X) Retrofit SDK to use new native intrinsics
+
+    (X) Implement OE_TerminateEnclave
+
+    (X) Integrate dlmalloc
+
+    (X) Integrate MUSL
+
+    (X) Define thread selection scheme (on EENTER)
+
+    (X) Implement once
+
+    (X) Implement TSD
+
+    (X) Trim down musl
+
+    (X) Handle EREPORT and EQUOTE
+
+    (X) Implement threading primitives (mutex, condition)
+
+    (X) Implement puts() for enclave
+
+    (X) Reintegrate IDL generator
+
+    (X) Implement CreateReportForRemoteAttestation()
+
+    (X) Get simulation mode working again
+
+    (X) Support GDB debugging of enclaves
+

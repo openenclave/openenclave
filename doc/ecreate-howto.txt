@@ -1,0 +1,57 @@
+[Work in progress...]
+
+How to call the ECREATE feature of the SGX driver:
+
+Call via ioctl() with this argument:
+
+See sgx_t from "/root/sgx/linux-sgx/common/inc/internal/arch.h":
+
+    #define SECS_RESERVED1_LENGTH 24
+    #define SECS_RESERVED2_LENGTH 32
+    #define SECS_RESERVED3_LENGTH 96
+    #define SECS_RESERVED4_LENGTH 3836
+
+    /* Called sgx_sec by linux-sgx-driver */
+    typedef struct _secs_t
+    {
+        /* (0) Size of the enclave in bytes */
+        uint64_t size;           
+
+        /* (8) Base address of enclave */
+        PADDED_POINTER(void, base);          
+
+        /* (16) size of 1 SSA frame in pages */
+        uint32_t ssa_frame_size; 
+
+        /* (20) Which fields defined in SSA.MISC */
+        sgx_misc_select_t misc_select;    
+
+        /* (24) reserved */
+        uint8_t reserved1[SECS_RESERVED1_LENGTH];  
+
+        /* (48) ATTRIBUTES Flags Field */
+        sgx_attributes_t attributes;     
+
+        /* (64) Integrity Reg 0 - Enclave measurement */
+        sgx_measurement_t mr_enclave;     
+
+        /* (96) reserved */
+        uint8_t reserved2[SECS_RESERVED2_LENGTH];  
+
+        /* (128) Integrity Reg 1 - Enclave signing key */
+        sgx_measurement_t mr_signer;
+
+        /* (160) reserved */
+        uint8_t reserved3[SECS_RESERVED3_LENGTH];  
+
+        /* (256) product ID of enclave */
+        sgx_prod_id_t isv_prod_id;    
+
+        /* (258) Security Version of the Enclave */
+        sgx_isv_svn_t isv_svn;        
+
+        /* (260) reserved */
+        uint8_t reserved4[SECS_RESERVED4_LENGTH];
+    } 
+    secs_t;
+
