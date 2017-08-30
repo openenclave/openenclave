@@ -1,69 +1,69 @@
-# *.o
-# *.so
-# *.lo
-# *.deps
-# *.la
-# .libs
-# 3rdparty/dlmalloc/malloc.c
-# 3rdparty/dlmalloc/malloc.h
-# 3rdparty/libcxx/trunk/
-# 3rdparty/libcxxrt/libcxxrt/
-# 3rdparty/libunwind/.configure
-# 3rdparty/libunwind/libunwind.bak/
-# 3rdparty/libunwind/libunwind/INSTALL
-# 3rdparty/libunwind/libunwind/Makefile
-# 3rdparty/libunwind/libunwind/Makefile.in
-# 3rdparty/libunwind/libunwind/aclocal.m4
-# 3rdparty/libunwind/libunwind/autom4te.cache/
-# 3rdparty/libunwind/libunwind/config.log
-# 3rdparty/libunwind/libunwind/config.status
-# 3rdparty/libunwind/libunwind/config/
-# 3rdparty/libunwind/libunwind/configure
-# 3rdparty/libunwind/libunwind/doc/Makefile.in
-# 3rdparty/libunwind/libunwind/include/config.h
-# 3rdparty/libunwind/libunwind/include/config.h.in
-# 3rdparty/libunwind/libunwind/include/libunwind-common.h
-# 3rdparty/libunwind/libunwind/include/stamp-h1
-# 3rdparty/libunwind/libunwind/libtool
-# 3rdparty/libunwind/libunwind/src/Makefile
-# 3rdparty/libunwind/libunwind/src/Makefile.in
-# 3rdparty/libunwind/libunwind/src/coredump/.dirstamp
-# 3rdparty/libunwind/libunwind/src/dwarf/.dirstamp
-# 3rdparty/libunwind/libunwind/src/libunwind-generic.pc
-# 3rdparty/libunwind/libunwind/src/mi/.dirstamp
-# 3rdparty/libunwind/libunwind/src/ptrace/.dirstamp
-# 3rdparty/libunwind/libunwind/src/setjmp/.dirstamp
-# 3rdparty/libunwind/libunwind/src/unwind/.dirstamp
-# 3rdparty/libunwind/libunwind/src/x86_64/.dirstamp
-# 3rdparty/libunwind/libunwind/tests/Makefile
-# 3rdparty/libunwind/libunwind/tests/Makefile.in
-# 3rdparty/libunwind/libunwind/tests/check-namespace.sh
-# 3rdparty/musl/musl/
-# 3rdparty/openssl/openssl/
-# bin/
-# include/enclave/cxx/
-# lib/
-# tests/SampleApp/SampleAppHost/SampleAppHost
-# tests/SampleAppAttestation/SampleAppAttestationHost/SampleAppAttestationHost
-# tests/SampleAppAttestation/SampleAppEnclaveQuote.bin
-# tests/SampleAppCRT/SampleAppCRTHost/SampleAppCRTHost
-# tests/aesm/aesm
-# tests/crypto/host/cryptohost
-# tests/ecall/host/ecallhost
-# tests/echo/host/echohost
-# tests/file/host/filehost
-# tests/load/load
-# tests/malloc/testmalloc
-# tests/mem/mem
-# tests/ocall/host/ocallhost
-# tests/pingpong/host/pingponghost
-# tests/pthread/host/threadhost
-# tests/report/host/reporthost
-# tests/stdc/host/stdchost
-# tests/stdcxx/host/stdcxxhost
-# tests/str/str
-# tests/tester/host/testerhost
-# tests/thread/host/threadhost
-# tests/typeinfo/typeinfo
-# tests/typeinfo/typeinfo_u.c
-# tests/typeinfo/typeinfo_u.h
+*.o
+*.so
+*.lo
+*.deps
+*.la
+.libs
+3rdparty/dlmalloc/malloc.c
+3rdparty/dlmalloc/malloc.h
+3rdparty/libcxx/trunk/
+3rdparty/libcxxrt/libcxxrt/
+3rdparty/libunwind/.configure
+3rdparty/libunwind/libunwind.bak/
+3rdparty/libunwind/libunwind/INSTALL
+3rdparty/libunwind/libunwind/Makefile
+3rdparty/libunwind/libunwind/Makefile.in
+3rdparty/libunwind/libunwind/aclocal.m4
+3rdparty/libunwind/libunwind/autom4te.cache/
+3rdparty/libunwind/libunwind/config.log
+3rdparty/libunwind/libunwind/config.status
+3rdparty/libunwind/libunwind/config/
+3rdparty/libunwind/libunwind/configure
+3rdparty/libunwind/libunwind/doc/Makefile.in
+3rdparty/libunwind/libunwind/include/config.h
+3rdparty/libunwind/libunwind/include/config.h.in
+3rdparty/libunwind/libunwind/include/libunwind-common.h
+3rdparty/libunwind/libunwind/include/stamp-h1
+3rdparty/libunwind/libunwind/libtool
+3rdparty/libunwind/libunwind/src/Makefile
+3rdparty/libunwind/libunwind/src/Makefile.in
+3rdparty/libunwind/libunwind/src/coredump/.dirstamp
+3rdparty/libunwind/libunwind/src/dwarf/.dirstamp
+3rdparty/libunwind/libunwind/src/libunwind-generic.pc
+3rdparty/libunwind/libunwind/src/mi/.dirstamp
+3rdparty/libunwind/libunwind/src/ptrace/.dirstamp
+3rdparty/libunwind/libunwind/src/setjmp/.dirstamp
+3rdparty/libunwind/libunwind/src/unwind/.dirstamp
+3rdparty/libunwind/libunwind/src/x86_64/.dirstamp
+3rdparty/libunwind/libunwind/tests/Makefile
+3rdparty/libunwind/libunwind/tests/Makefile.in
+3rdparty/libunwind/libunwind/tests/check-namespace.sh
+3rdparty/musl/musl/
+3rdparty/openssl/openssl/
+bin/
+include/enclave/cxx/
+lib/
+tests/SampleApp/SampleAppHost/SampleAppHost
+tests/SampleAppAttestation/SampleAppAttestationHost/SampleAppAttestationHost
+tests/SampleAppAttestation/SampleAppEnclaveQuote.bin
+tests/SampleAppCRT/SampleAppCRTHost/SampleAppCRTHost
+tests/aesm/aesm
+tests/crypto/host/cryptohost
+tests/ecall/host/ecallhost
+tests/echo/host/echohost
+tests/file/host/filehost
+tests/load/load
+tests/malloc/testmalloc
+tests/mem/mem
+tests/ocall/host/ocallhost
+tests/pingpong/host/pingponghost
+tests/pthread/host/threadhost
+tests/report/host/reporthost
+tests/stdc/host/stdchost
+tests/stdcxx/host/stdcxxhost
+tests/str/str
+tests/tester/host/testerhost
+tests/thread/host/threadhost
+tests/typeinfo/typeinfo
+tests/typeinfo/typeinfo_u.c
+tests/typeinfo/typeinfo_u.h
