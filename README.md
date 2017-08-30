@@ -1,9 +1,32 @@
+Microsoft(R) OpenEnclave SDK
+============================
 
-# OpenEnclave SDK
+# OpenEnclave
 
-# Introduction
+Introduction
+------------
 
-# Contributing
+OpenEnclave is an SDK for builiding enclave applications in C and C++. An
+enclave application partitions itself into a trusted component (called the
+host) and an untrusted compoment (called the enclave). An enclave is a secure
+container whose memory is protected from outsiders. These protections allow 
+enclaves to perform secure computations with assurances that secrets will not 
+be leaked to unauthorized entities.
+
+OpenEnclave aims to support building of enclave applications without concern 
+for the underlying memory protection architecture. OpenEnclave currently 
+supports Intel(r) Software Guard Extensions (SGX) but will later provide 
+support Microsoft(r) Virtual Secure Mode (VSM) as well and possibly others.
+
+Building OpenEnclave
+--------------------
+
+
+Getting Started
+---------------
+
+Contributing
+------------
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
