@@ -25,7 +25,7 @@ Building OpenEnclave
 
 - Install Ubuntu Desktop (ubuntu-16.04.2-desktop-amd64.iso)
 
-- Install the Intel(R) SGX driver (see ``http:\\google.com``)
+- Install the Intel(R) SGX driver ([click here](http:\\google.com))
 
 Getting Started
 ---------------
