@@ -1,9 +1,11 @@
 
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
-    BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+    (A) Implement installer
 
-    (A) Split include/enc into include/enclave and include/host
+    (A) Implement AESM and ISGX driver installer script
+
+    BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 
     (B) Get cpow.c, cpowf.c, and cpowl.c working (they depend on soft complex
         multiplication routines)
@@ -11,8 +13,6 @@
     CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
     (C) Handle exceptions and interrupts
-
-    (C) Implement pthread_create()
 
     (C) Consider enclave thread creation
 
@@ -59,4 +59,6 @@
     (X) Get simulation mode working again
 
     (X) Support GDB debugging of enclaves
+
+    (X) Split include/enc into include/enclave and include/host
 

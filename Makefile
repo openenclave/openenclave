@@ -43,8 +43,8 @@ world:
 dist:
 	@ make -s clean
 	@ make -s distclean
-	@ ( cd ..; tar zcf openenclave.tar.gz openenclave )
-	@ echo "Created openenclave.tar.gz"
+	@ ( cd ..; tar zcf OpenEnclave.tar.gz OpenEnclave )
+	@ echo "Created OpenEnclave.tar.gz"
 
 big:
 	find . -size +1000
