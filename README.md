@@ -15,12 +15,17 @@ be leaked to unauthorized entities.
 
 OpenEnclave aims to support building of enclave applications without concern 
 for the underlying memory protection architecture. OpenEnclave currently 
-supports Intel(r) Software Guard Extensions (SGX) but will later provide 
-support Microsoft(r) Virtual Secure Mode (VSM) as well and possibly others.
+supports Intel(R) Software Guard Extensions (SGX) but will later provide 
+support Microsoft(R) Virtual Secure Mode (VSM) as well and possibly others.
 
 Building OpenEnclave
 --------------------
 
+### Prerequisites:
+
+- Install Ubuntu Desktop (ubuntu-16.04.2-desktop-amd64.iso)
+
+- Install the Intel(R) SGX driver (see ``http:\\google.com``)
 
 Getting Started
 ---------------
