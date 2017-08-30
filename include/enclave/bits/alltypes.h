@@ -150,4 +150,10 @@ struct timespec
     long tv_nsec; 
 };
 
+typedef struct __pthread* pthread_t;
+
+typedef struct _pthread_attr_t pthread_attr_t;
+
+struct lconv;
+
 #endif /* __ELIBC_ALLTYPES_H */

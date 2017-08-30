@@ -1,6 +1,0 @@
-#ifndef __ENCFEATURES_H
-#define __ENCFEATURES_H
-
-#include <features.h>
-
-#endif /* __ENCFEATURES_H */

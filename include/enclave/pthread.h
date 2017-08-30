@@ -67,8 +67,6 @@ int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
 
 #define PTHREAD_CANCEL_DEFERRED 0
 
-typedef struct __pthread* pthread_t;
-
 pthread_t pthread_self(void);
 
 int pthread_equal(pthread_t thread1, pthread_t thread2);

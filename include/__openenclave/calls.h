@@ -132,7 +132,7 @@ OE_InitQuoteArgs;
 **
 ** OE_StrftimeArgs
 **
-**     size_t strftime_u(
+**     size_t strftime(
 **         char *str, 
 **         size_t max, 
 **         const char *format,
@@ -155,7 +155,7 @@ OE_StrftimeArgs;
 **
 ** OE_GettimeofdayArgs
 **
-**     int gettimeofday_u(struct timeval *tv, struct timezone *tz)
+**     int gettimeofday(struct timeval *tv, struct timezone *tz)
 **
 **==============================================================================
 */
@@ -175,7 +175,7 @@ OE_GettimeofdayArgs;
 **
 ** OE_ClockgettimeArgs
 **
-**     int clock_gettime_u(clockid_t clk_id, struct timespec *tp);
+**     int clock_gettime(clockid_t clk_id, struct timespec *tp);
 **
 **==============================================================================
 */
@@ -194,7 +194,7 @@ OE_ClockgettimeArgs;
 **
 ** OE_NanosleepArgs
 **
-**     int nanosleep_u(const struct timespec *req, struct timespec *rem);
+**     int nanosleep(const struct timespec *req, struct timespec *rem);
 **
 **==============================================================================
 */

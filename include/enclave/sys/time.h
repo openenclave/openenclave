@@ -18,11 +18,7 @@ struct timezone
    int tz_dsttime;
 };
 
-int gettimeofday_u(struct timeval* tv, struct timezone* tz);
-
-#ifdef __ELIBC_UNSUPPORTED
 int gettimeofday(struct timeval* tv, struct timezone* tz);
-#endif
 
 __ELIBC_END
 

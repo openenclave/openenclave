@@ -4,7 +4,7 @@ DIRS += dlmalloc
 DIRS += musl
 DIRS += libcxxrt
 DIRS += libunwind
-DIRS += llvmcxx
+DIRS += libcxx
 DIRS += mergecxx
 DIRS += openssl
 

@@ -172,15 +172,15 @@ OE_ECALL void Test(void* args_)
     Test_atox();
 
     struct timeval tv = { 0, 0 };
-    assert(gettimeofday_u(&tv, NULL) == 0);
+    assert(gettimeofday(&tv, NULL) == 0);
 
     struct timespec ts;
-    clock_gettime_u(0, &ts);
+    clock_gettime(0, &ts);
 
     /* Sleep for a second */
     timespec req = { 1, 0 };
     timespec rem;
-    nanosleep_u(&req, &rem);
+    nanosleep(&req, &rem);
 
 #if 0
     printf_u("tv_sec=%lu tv_usec=%lu", tv.tv_sec, tv.tv_usec);

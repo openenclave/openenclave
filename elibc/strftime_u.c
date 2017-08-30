@@ -2,7 +2,7 @@
 #include <openenclave.h>
 #include <__openenclave/calls.h>
 
-size_t strftime_u(
+size_t strftime(
     char *str, 
     size_t max, 
     const char *format, 

@@ -26,6 +26,8 @@ wchar_t *wcpcpy(wchar_t *dest, const wchar_t *src);;
 
 wchar_t *wcscpy(wchar_t *dest, const wchar_t *src);
 
+size_t wcsxfrm(wchar_t *dest, const wchar_t *src, size_t n);
+
 wchar_t *wcstok(wchar_t *wcs, const wchar_t *delim, wchar_t **ptr);
 
 size_t wcsspn(const wchar_t *wcs, const wchar_t *accept);
@@ -53,6 +55,8 @@ int wcscasecmp_l(const wchar_t *l, const wchar_t *r, locale_t locale);
 wchar_t *wcscat(wchar_t *dest, const wchar_t *src);
 
 int wcscmp(const wchar_t *s1, const wchar_t *s2);
+
+int wcscoll(const wchar_t *s1, const wchar_t *s2);
 
 int wcsncasecmp_l(const wchar_t *s1, const wchar_t *s2, size_t n, 
     locale_t locale);

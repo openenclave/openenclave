@@ -2,7 +2,7 @@
 #include <openenclave.h>
 #include <__openenclave/calls.h>
 
-int nanosleep_u(const struct timespec *req, struct timespec *rem)
+int nanosleep(const struct timespec *req, struct timespec *rem)
 {
     size_t ret = -1;
     OE_NanosleepArgs* args = NULL;
