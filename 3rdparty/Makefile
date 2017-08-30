@@ -1,6 +1,5 @@
 include ../mak/defs.mak
 
-DIRS += dlmalloc
 DIRS += musl
 DIRS += libcxxrt
 DIRS += libunwind

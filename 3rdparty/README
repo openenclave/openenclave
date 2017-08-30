@@ -2,10 +2,6 @@
 This directory contains third-party software used by OpenEnclave. This
 includes:
 
-    dlmalloc  (downloaded on the fly):
-        ftp://gee.cs.oswego.edu/pub/misc/malloc.h
-        ftp://gee.cs.oswego.edu/pub/misc/malloc.c
-
     MUSL (downloaded on the fly):
         http://www.musl-libc.org/releases/musl-1.1.10.tar.gz
 
