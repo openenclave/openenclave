@@ -39,10 +39,31 @@ clean-silent:
 clone:
 	git clone https://github.com/pathscale/libunwind
 
+DISTCLEAN += libunwind/Makefile
+DISTCLEAN += libunwind/autom4te.cache/output.0
+DISTCLEAN += libunwind/autom4te.cache/output.1
+DISTCLEAN += libunwind/INSTALL
+DISTCLEAN += libunwind/Makefile.bak
+DISTCLEAN += libunwind/Makefile.in
+DISTCLEAN += libunwind/aclocal.m4
+DISTCLEAN += libunwind/autom4te.cache
+DISTCLEAN += libunwind/config.log
+DISTCLEAN += libunwind/config.status
+DISTCLEAN += libunwind/config/
+DISTCLEAN += libunwind/configure
+DISTCLEAN += libunwind/doc/Makefile.in
+DISTCLEAN += libunwind/include/config.h
+DISTCLEAN += libunwind/include/config.h.in
+DISTCLEAN += libunwind/include/config.h.in~
+DISTCLEAN += libunwind/include/libunwind-common.h
+DISTCLEAN += libunwind/include/stamp-h1
+DISTCLEAN += libunwind/libtool
+DISTCLEAN += libunwind/src/Makefile.in
+DISTCLEAN += libunwind/tests/Makefile.in
+
 distclean: clean
 	@ $(MAKE) -s distclean-silent
-	rm -f libunwind/autom4te.cache/output.0
-	rm -f libunwind/autom4te.cache/output.1
+	rm -rf $(DISTCLEAN)
 	rm -f .configure
 
 distclean-silent:

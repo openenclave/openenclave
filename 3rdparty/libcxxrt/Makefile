@@ -34,6 +34,7 @@ clean-silent:
 
 libcxxrt:
 	git clone https://github.com/pathscale/libcxxrt
+	rm -rf libcxxrt/.git
 
 distclean:
 	rm -rf libcxxrt
