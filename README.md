@@ -18,17 +18,20 @@ for the underlying memory protection architecture. OpenEnclave currently
 supports Intel(R) Software Guard Extensions (SGX) but will later provide 
 support Microsoft(R) Virtual Secure Mode (VSM) as well and possibly others.
 
-Building OpenEnclave
---------------------
+Building
+--------
 
 ### Prerequisites:
 
 - Install Ubuntu Desktop (ubuntu-16.04.2-desktop-amd64.iso)
 
-- Install the Intel(R) SGX driver ([click here](http://google.com))
+- Install the Intel(R) SGX driver ([instructions](https://github.com/01org/linux-sgx-driver))
 
-Getting Started
----------------
+- Install the Intel(R) AESM service ([instructions](https://github.com/01org/linux-sgx))
+
+- Install GNU make
+
+- Install the GCC C++ compiler
 
 Contributing
 ------------
