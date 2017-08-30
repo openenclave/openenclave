@@ -1,8 +1,6 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2002-2003 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2003 Hewlett-Packard Development Company, L.P.
         Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
-
-   Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
 
 This file is part of libunwind.
 
@@ -25,24 +23,34 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include "init.h"
 #include "unwind_i.h"
 
 PROTECTED int
-unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
+unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
 {
+#ifdef UNW_LOCAL_ONLY
+  return -UNW_EINVAL;
+#else /* !UNW_LOCAL_ONLY */
   struct cursor *c = (struct cursor *) cursor;
 
-  if (dwarf_make_proc_info (&c->dwarf) < 0)
+  if (!tdep_init_done)
+    tdep_init ();
+
+  Debug (1, "(cursor=%p)\n", c);
+
+  c->dwarf.as = as;
+  c->dwarf.as_arg = as_arg;
+  if (as == unw_local_addr_space)
     {
-      /* On x86-64, some key routines such as _start() and _dl_start()
-         are missing DWARF unwind info.  We don't want to fail in that
-         case, because those frames are uninteresting and just mark
-         the end of the frame-chain anyhow.  */
-      memset (pi, 0, sizeof (*pi));
-      pi->start_ip = c->dwarf.ip;
-      pi->end_ip = c->dwarf.ip + 1;
-      return 0;
+      c->dwarf.as_arg = c;
+      c->uc = as_arg;
     }
-  *pi = c->dwarf.pi;
-  return 0;
+  else
+    {
+      c->dwarf.as_arg = as_arg;
+      c->uc = 0;
+    }
+  return common_init (c, 0);
+#endif /* !UNW_LOCAL_ONLY */
 }

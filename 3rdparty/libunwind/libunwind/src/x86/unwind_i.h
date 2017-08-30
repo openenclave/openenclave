@@ -1,8 +1,6 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2002-2003 Hewlett-Packard Development Company, L.P.
+   Copyright (C) 2002 Hewlett-Packard Co
         Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
-
-   Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
 
 This file is part of libunwind.
 
@@ -25,24 +23,41 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "unwind_i.h"
+#ifndef unwind_i_h
+#define unwind_i_h
 
-PROTECTED int
-unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
-{
-  struct cursor *c = (struct cursor *) cursor;
+#include <stdint.h>
 
-  if (dwarf_make_proc_info (&c->dwarf) < 0)
-    {
-      /* On x86-64, some key routines such as _start() and _dl_start()
-         are missing DWARF unwind info.  We don't want to fail in that
-         case, because those frames are uninteresting and just mark
-         the end of the frame-chain anyhow.  */
-      memset (pi, 0, sizeof (*pi));
-      pi->start_ip = c->dwarf.ip;
-      pi->end_ip = c->dwarf.ip + 1;
-      return 0;
-    }
-  *pi = c->dwarf.pi;
-  return 0;
-}
+#include <libunwind-x86.h>
+
+#include "libunwind_i.h"
+
+/* DWARF column numbers: */
+#define EAX     0
+#define ECX     1
+#define EDX     2
+#define EBX     3
+#define ESP     4
+#define EBP     5
+#define ESI     6
+#define EDI     7
+#define EIP     8
+#define EFLAGS  9
+#define TRAPNO  10
+#define ST0     11
+
+#define x86_lock                        UNW_OBJ(lock)
+#define x86_local_resume                UNW_OBJ(local_resume)
+#define x86_local_addr_space_init       UNW_OBJ(local_addr_space_init)
+#define x86_scratch_loc                 UNW_OBJ(scratch_loc)
+#define x86_get_scratch_loc             UNW_OBJ(get_scratch_loc)
+#define x86_r_uc_addr                   UNW_OBJ(r_uc_addr)
+
+extern void x86_local_addr_space_init (void);
+extern int x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
+                             void *arg);
+extern dwarf_loc_t x86_scratch_loc (struct cursor *c, unw_regnum_t reg);
+extern dwarf_loc_t x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg);
+extern void *x86_r_uc_addr (ucontext_t *uc, int reg);
+
+#endif /* unwind_i_h */

@@ -1,8 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2002-2003 Hewlett-Packard Development Company, L.P.
-        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
-
-   Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
+   Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
 
 This file is part of libunwind.
 
@@ -25,24 +22,19 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "unwind_i.h"
+#ifndef unwind_i_h
+#define unwind_i_h
 
-PROTECTED int
-unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
-{
-  struct cursor *c = (struct cursor *) cursor;
+#include <libunwind-sh.h>
 
-  if (dwarf_make_proc_info (&c->dwarf) < 0)
-    {
-      /* On x86-64, some key routines such as _start() and _dl_start()
-         are missing DWARF unwind info.  We don't want to fail in that
-         case, because those frames are uninteresting and just mark
-         the end of the frame-chain anyhow.  */
-      memset (pi, 0, sizeof (*pi));
-      pi->start_ip = c->dwarf.ip;
-      pi->end_ip = c->dwarf.ip + 1;
-      return 0;
-    }
-  *pi = c->dwarf.pi;
-  return 0;
-}
+#include "libunwind_i.h"
+
+#define sh_lock                         UNW_OBJ(lock)
+#define sh_local_resume                 UNW_OBJ(local_resume)
+#define sh_local_addr_space_init        UNW_OBJ(local_addr_space_init)
+
+extern void sh_local_addr_space_init (void);
+extern int sh_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
+                            void *arg);
+
+#endif /* unwind_i_h */

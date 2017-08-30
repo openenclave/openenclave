@@ -1,8 +1,6 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2002-2003 Hewlett-Packard Development Company, L.P.
+   Copyright (C) 2004-2005 Hewlett-Packard Co
         Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
-
-   Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
 
 This file is part of libunwind.
 
@@ -25,24 +23,25 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "unwind_i.h"
+#ifndef unwind_i_h
+#define unwind_i_h
 
-PROTECTED int
-unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
-{
-  struct cursor *c = (struct cursor *) cursor;
+#include <stdint.h>
 
-  if (dwarf_make_proc_info (&c->dwarf) < 0)
-    {
-      /* On x86-64, some key routines such as _start() and _dl_start()
-         are missing DWARF unwind info.  We don't want to fail in that
-         case, because those frames are uninteresting and just mark
-         the end of the frame-chain anyhow.  */
-      memset (pi, 0, sizeof (*pi));
-      pi->start_ip = c->dwarf.ip;
-      pi->end_ip = c->dwarf.ip + 1;
-      return 0;
-    }
-  *pi = c->dwarf.pi;
-  return 0;
-}
+#include <libunwind-hppa.h>
+
+#include "libunwind_i.h"
+
+#define hppa_lock                       UNW_OBJ(lock)
+#define hppa_local_resume               UNW_OBJ(local_resume)
+#define hppa_local_addr_space_init      UNW_OBJ(local_addr_space_init)
+#define hppa_scratch_loc                UNW_OBJ(scratch_loc)
+#define setcontext                      UNW_ARCH_OBJ (setcontext)
+
+extern void hppa_local_addr_space_init (void);
+extern int hppa_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
+                              void *arg);
+extern dwarf_loc_t hppa_scratch_loc (struct cursor *c, unw_regnum_t reg);
+extern int setcontext (const ucontext_t *ucp);
+
+#endif /* unwind_i_h */

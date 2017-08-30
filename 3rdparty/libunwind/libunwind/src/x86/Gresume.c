@@ -2,8 +2,6 @@
    Copyright (c) 2002-2004 Hewlett-Packard Development Company, L.P.
         Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
-   Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
-
 This file is part of libunwind.
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -27,38 +25,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stdlib.h>
 
-#include "offsets.h"
 #include "unwind_i.h"
-
-#ifndef UNW_REMOTE_ONLY
-
-HIDDEN inline int
-x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
-{
-  struct cursor *c = (struct cursor *) cursor;
-  ucontext_t *uc = c->uc;
-
-  /* Ensure c->pi is up-to-date.  On x86-64, it's relatively common to
-     be missing DWARF unwind info.  We don't want to fail in that
-     case, because the frame-chain still would let us do a backtrace
-     at least.  */
-  dwarf_make_proc_info (&c->dwarf);
-
-  if (unlikely (c->sigcontext_format != X86_64_SCF_NONE))
-    {
-      x86_64_sigreturn(cursor);
-      abort();
-    }
-  else
-    {
-      Debug (8, "resuming at ip=%llx via setcontext()\n",
-             (unsigned long long) c->dwarf.ip);
-      setcontext (uc);
-    }
-  return -UNW_EINVAL;
-}
-
-#endif /* !UNW_REMOTE_ONLY */
+#include "offsets.h"
 
 /* This routine is responsible for copying the register values in
    cursor C and establishing them as the current machine state. */
