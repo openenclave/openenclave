@@ -322,3 +322,4 @@ tests/thread/host/threadhost
 tests/typeinfo/typeinfo
 tests/typeinfo/typeinfo_u.c
 tests/typeinfo/typeinfo_u.h
+3rdparty/libcxx/trunk
