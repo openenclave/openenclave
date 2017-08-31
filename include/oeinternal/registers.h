@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "../openenclave/defs.h"
-#include "../openenclave/types.h"
+#include "../oecommon/defs.h"
+#include "../oecommon/types.h"
 
 #define __oe_nop asm volatile("nop\n\t")
 #define __oe_ud2 asm volatile("ud2\n\t")

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <openenclave.h>
-#include <__openenclave/calls.h>
+#include <oeinternal/calls.h>
 #include "../enclave/td.h"
 
 typedef unsigned long long WORD;

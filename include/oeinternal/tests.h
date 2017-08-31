@@ -2,7 +2,7 @@
 #define _OE_TESTS_H
 
 #include <stdio.h>
-#include "../openenclave/defs.h"
+#include "../oecommon/defs.h"
 
 #define OE_TEST(COND) \
     do \

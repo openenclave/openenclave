@@ -1,6 +1,6 @@
 #define OE_TRACE_LEVEL 0
 #include <openenclave.h>
-#include <__openenclave/galloc.h>
+#include <oeinternal/galloc.h>
 
 #ifdef OE_BUILD_ENCLAVE
 # include <openenclave.h>

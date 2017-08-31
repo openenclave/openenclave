@@ -1,6 +1,6 @@
 #include <time.h>
 #include <openenclave.h>
-#include <__openenclave/calls.h>
+#include <oeinternal/calls.h>
 
 size_t strftime(
     char *str, 

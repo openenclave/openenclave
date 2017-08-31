@@ -1,6 +1,6 @@
 #include <setjmp.h>
 #include <openenclave.h>
-#include <__openenclave/globals.h>
+#include <oeinternal/globals.h>
 #include "../args.h"
 
 int TestSetjmp()

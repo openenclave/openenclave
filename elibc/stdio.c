@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <openenclave.h>
-#include <__openenclave/calls.h>
+#include <oeinternal/calls.h>
 #include "../3rdparty/musl/musl/src/internal/stdio_impl.h"
 
 FILE* stdin = ((FILE*)0x10000000);

@@ -2,9 +2,9 @@
 #define _OE_FILES_H
 
 #include <stdio.h>
-#include "../openenclave/defs.h"
-#include "../openenclave/result.h"
-#include "../openenclave/types.h"
+#include "../oecommon/defs.h"
+#include "../oecommon/result.h"
+#include "../oecommon/types.h"
 
 OE_EXTERNC_BEGIN
 

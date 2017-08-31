@@ -3,9 +3,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <openenclave.h>
-#include <__openenclave/mem.h>
-#include <__openenclave/aesm.h>
-#include <__openenclave/utils.h>
+#include <oeinternal/mem.h>
+#include <oeinternal/aesm.h>
+#include <oeinternal/utils.h>
 
 #if 0
 #define TRACE 1

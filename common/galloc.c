@@ -1,5 +1,5 @@
 #include <openenclave.h>
-#include <__openenclave/galloc.h>
+#include <oeinternal/galloc.h>
 
 /* ATTN: get rid of OE_BUILD_ENCLAVE */
 

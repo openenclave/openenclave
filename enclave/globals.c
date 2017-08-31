@@ -1,5 +1,5 @@
 #include <openenclave.h>
-#include <__openenclave/globals.h>
+#include <oeinternal/globals.h>
 
 /* Note: The variables below are initialized during enclave loading */
 

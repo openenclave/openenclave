@@ -18,15 +18,15 @@ $(shell mkdir -p $(LIBDIR)/host)
 $(shell mkdir -p $(INCDIR)/host)
 $(shell mkdir -p $(INCDIR)/enclave)
 
-$(shell rm -f $(ENCLAVEINCDIR)/openenclave)
-$(shell ln -s $(INCDIR)/openenclave $(ENCLAVEINCDIR)/openenclave)
-$(shell rm -f $(HOSTINCDIR)/openenclave)
-$(shell ln -s $(INCDIR)/openenclave $(HOSTINCDIR)/openenclave)
+$(shell rm -f $(ENCLAVEINCDIR)/oecommon)
+$(shell ln -s $(INCDIR)/oecommon $(ENCLAVEINCDIR)/oecommon)
+$(shell rm -f $(HOSTINCDIR)/oecommon)
+$(shell ln -s $(INCDIR)/oecommon $(HOSTINCDIR)/oecommon)
 
-$(shell rm -f $(ENCLAVEINCDIR)/__openenclave)
-$(shell ln -s $(INCDIR)/__openenclave $(ENCLAVEINCDIR)/__openenclave)
-$(shell rm -f $(HOSTINCDIR)/__openenclave)
-$(shell ln -s $(INCDIR)/__openenclave $(HOSTINCDIR)/__openenclave)
+$(shell rm -f $(ENCLAVEINCDIR)/oeinternal)
+$(shell ln -s $(INCDIR)/oeinternal $(ENCLAVEINCDIR)/oeinternal)
+$(shell rm -f $(HOSTINCDIR)/oeinternal)
+$(shell ln -s $(INCDIR)/oeinternal $(HOSTINCDIR)/oeinternal)
 
 MEMCHECK=valgrind --tool=memcheck --leak-check=full
 

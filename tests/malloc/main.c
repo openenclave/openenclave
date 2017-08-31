@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <__openenclave/malloc.h>
+#include <oeinternal/malloc.h>
 #include <assert.h>
 
 #define MEM_REALLOC OE_Realloc
 #define MEM_FREE OE_Free
-#include <__openenclave/mem.h>
+#include <oeinternal/mem.h>
 
 static uint64_t _heap[16*1024*1024];
 

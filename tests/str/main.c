@@ -1,7 +1,7 @@
 #define MEM_MIN_CAP 1
 #include <assert.h>
 #include <stdio.h>
-#include <__openenclave/str.h>
+#include <oeinternal/str.h>
 
 void TestStr(str_t* s)
 {

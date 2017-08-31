@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <__openenclave/sgxtypes.h>
-#include <__openenclave/utils.h>
+#include <oeinternal/sgxtypes.h>
+#include <oeinternal/utils.h>
 
 void __SGX_DumpEinitToken(
     const SGX_EInitToken* p)

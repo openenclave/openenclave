@@ -4,8 +4,8 @@
 #include <cstdio>
 #include <assert.h>
 #include <openenclave.h>
-#include <__openenclave/aesm.h>
-#include <__openenclave/utils.h>
+#include <oeinternal/aesm.h>
+#include <oeinternal/utils.h>
 #include "../args.h"
 
 int main(int argc, const char* argv[])

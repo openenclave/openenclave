@@ -3,8 +3,8 @@
 
 #include <sys/time.h>
 #include <time.h>
-#include "../openenclave/defs.h"
-#include "../openenclave/types.h"
+#include "../oecommon/defs.h"
+#include "../oecommon/types.h"
 #include "sgxtypes.h"
 
 #define __OE_ECALL_BASE ((int)0x00FFFFFF)

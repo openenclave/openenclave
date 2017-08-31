@@ -7,13 +7,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include "openenclave/defs.h"
-#include "openenclave/types.h"
-#include "openenclave/result.h"
-#include "openenclave/thread.h"
-#include "openenclave/sha.h"
-#include "openenclave/typeinfo.h"
-#include "openenclave/atomic.h"
+#include "oecommon/defs.h"
+#include "oecommon/types.h"
+#include "oecommon/result.h"
+#include "oecommon/thread.h"
+#include "oecommon/sha.h"
+#include "oecommon/typeinfo.h"
+#include "oecommon/atomic.h"
 
 OE_EXTERNC_BEGIN
 

@@ -1,8 +1,8 @@
 #include <pthread.h>
 #include <assert.h>
 #include <openenclave.h>
-#include <__openenclave/mem.h>
-#include <__openenclave/calls.h>
+#include <oeinternal/mem.h>
+#include <oeinternal/calls.h>
 #include "../enclave/td.h"
 
 /*

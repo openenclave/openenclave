@@ -2,9 +2,8 @@
 #define _OE_ENCLAVE_H
 
 #include <openenclave.h>
-#include <openenclave/thread.h>
-#include <__openenclave/build.h>
-#include <__openenclave/sgxtypes.h>
+#include <oeinternal/build.h>
+#include <oeinternal/sgxtypes.h>
 
 #define ENCLAVE_MAGIC 0x20dc98463a5ad8b8
 

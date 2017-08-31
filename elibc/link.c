@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-#include <__openenclave/globals.h>
+#include <oeinternal/globals.h>
 
 int dl_iterate_phdr(
     int (*callback) (struct dl_phdr_info *info, size_t size, void *data),

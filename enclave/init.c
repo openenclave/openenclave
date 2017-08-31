@@ -1,11 +1,11 @@
 #include "init.h"
 #include <setjmp.h>
 #include <openenclave.h>
-#include <__openenclave/sgxtypes.h>
-#include <__openenclave/fault.h>
-#include <__openenclave/calls.h>
-#include <__openenclave/reloc.h>
-#include <__openenclave/globals.h>
+#include <oeinternal/sgxtypes.h>
+#include <oeinternal/fault.h>
+#include <oeinternal/calls.h>
+#include <oeinternal/reloc.h>
+#include <oeinternal/globals.h>
 #include "asmdefs.h"
 #include "td.h"
 

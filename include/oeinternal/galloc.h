@@ -1,8 +1,8 @@
 #ifndef _OE_GALLOC_H
 #define _OE_GALLOC_H
 
-#include "../openenclave/defs.h"
-#include "../openenclave/types.h"
+#include "../oecommon/defs.h"
+#include "../oecommon/types.h"
 
 OE_EXTERNC_BEGIN
 

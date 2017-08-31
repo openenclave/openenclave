@@ -1,7 +1,7 @@
 #ifndef _TD_H
 #define _TD_H
 
-#include <__openenclave/sgxtypes.h>
+#include <oeinternal/sgxtypes.h>
 #include <setjmp.h>
 #include "asmdefs.h"
 

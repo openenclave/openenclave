@@ -12,14 +12,14 @@
 #include <string.h>
 #include <assert.h>
 #include <openenclave.h>
-#include <__openenclave/utils.h>
-#include <__openenclave/load.h>
-#include <__openenclave/elf.h>
-#include <__openenclave/files.h>
-#include <__openenclave/sgxtypes.h>
-#include <__openenclave/build.h>
-#include <__openenclave/aesm.h>
-#include <__openenclave/mem.h>
+#include <oeinternal/utils.h>
+#include <oeinternal/load.h>
+#include <oeinternal/elf.h>
+#include <oeinternal/files.h>
+#include <oeinternal/sgxtypes.h>
+#include <oeinternal/build.h>
+#include <oeinternal/aesm.h>
+#include <oeinternal/mem.h>
 #include "enclave.h"
 
 /*

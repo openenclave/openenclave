@@ -1,8 +1,8 @@
 #include <openenclave.h>
-#include <__openenclave/sgxtypes.h>
-#include <__openenclave/globals.h>
-#include <__openenclave/fault.h>
-#include <__openenclave/globals.h>
+#include <oeinternal/sgxtypes.h>
+#include <oeinternal/globals.h>
+#include <oeinternal/fault.h>
+#include <oeinternal/globals.h>
 #include "../args.h"
 
 OE_ECALL void Test2(void* args_)

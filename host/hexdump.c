@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <openenclave.h>
-#include <__openenclave/utils.h>
+#include <oeinternal/utils.h>
 
 void __OE_HexDump(
     const void* data_,

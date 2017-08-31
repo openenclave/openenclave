@@ -3,10 +3,10 @@
 #include <string.h>
 #include <assert.h>
 #include <openenclave.h>
-#include <__openenclave/malloc.h>
+#include <oeinternal/malloc.h>
 
 #ifdef OE_BUILD_ENCLAVE
-# include <__openenclave/globals.h>
+# include <oeinternal/globals.h>
 #endif
 
 #if 0

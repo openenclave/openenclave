@@ -2,7 +2,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include <openenclave.h>
-#include <__openenclave/sgxtypes.h>
+#include <oeinternal/sgxtypes.h>
 
 int *__errno_location()
 {

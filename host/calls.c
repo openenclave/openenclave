@@ -10,11 +10,11 @@
 #include "asmdefs.h"
 #include "enclave.h"
 #include <openenclave.h>
-#include <__openenclave/utils.h>
-#include <__openenclave/build.h>
-#include <__openenclave/sgxtypes.h>
-#include <__openenclave/calls.h>
-#include <__openenclave/registers.h>
+#include <oeinternal/utils.h>
+#include <oeinternal/build.h>
+#include <oeinternal/sgxtypes.h>
+#include <oeinternal/calls.h>
+#include <oeinternal/registers.h>
 #include "ocalls.h"
 
 #if 0

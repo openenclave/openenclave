@@ -2,7 +2,7 @@
 #include <time.h>
 #include <assert.h>
 #include <openenclave.h>
-#include <__openenclave/calls.h>
+#include <oeinternal/calls.h>
 
 time_t time(time_t *tloc)
 {

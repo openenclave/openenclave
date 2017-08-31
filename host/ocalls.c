@@ -8,7 +8,7 @@
 #include <sys/syscall.h>
 
 #include <openenclave.h>
-#include <__openenclave/calls.h>
+#include <oeinternal/calls.h>
 #include "enclave.h"
 #include "ocalls.h"
 

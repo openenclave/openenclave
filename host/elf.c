@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <__openenclave/utils.h>
-#include <__openenclave/load.h>
-#include <__openenclave/elf.h>
-#include <__openenclave/mem.h>
+#include <oeinternal/utils.h>
+#include <oeinternal/load.h>
+#include <oeinternal/elf.h>
+#include <oeinternal/mem.h>
 
 #define GOTO(LABEL) \
     do \

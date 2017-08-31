@@ -1,7 +1,7 @@
 #ifndef _OE_FAULT_H
 #define _OE_FAULT_H
 
-#include "../openenclave/defs.h"
+#include "../oecommon/defs.h"
 
 OE_EXTERNC_BEGIN
 

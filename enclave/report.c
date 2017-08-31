@@ -1,6 +1,6 @@
 #include <openenclave.h>
-#include <__openenclave/sgxtypes.h>
-#include <__openenclave/calls.h>
+#include <oeinternal/sgxtypes.h>
+#include <oeinternal/calls.h>
 
 OE_Result SGX_CreateReport(
     const SGX_TargetInfo* targetInfo,

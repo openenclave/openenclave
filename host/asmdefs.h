@@ -2,7 +2,7 @@
 #define _ASMDEFS_H
 
 #ifndef __ASSEMBLER__
-#include <openenclave/types.h>
+#include <oecommon/types.h>
 #endif
 
 #ifdef __ASSEMBLER__

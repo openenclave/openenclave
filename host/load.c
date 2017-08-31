@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <openenclave.h>
-#include <__openenclave/utils.h>
-#include <__openenclave/load.h>
-#include <__openenclave/elf.h>
+#include <oeinternal/utils.h>
+#include <oeinternal/load.h>
+#include <oeinternal/elf.h>
 
 extern void *memalign(size_t alignment, size_t size);
 

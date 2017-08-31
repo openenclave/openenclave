@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include <openenclave.h>
-#include <__openenclave/globals.h>
+#include <oeinternal/globals.h>
 
 #define PAGE_SIZE 4096
 

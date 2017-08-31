@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <__openenclave/elf.h>
+#include <oeinternal/elf.h>
 #include <assert.h>
 
 /* 
