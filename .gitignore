@@ -76,3 +76,7 @@ prereq/aesm/dynamic-application-loader-host-interface/
 prereq/aesm/linux-sgx/
 prereq/isgx/linux-sgx-driver/
 prereq/packages/.packages
+include/enclave/oecommon
+include/enclave/oeinternal
+include/host/oecommon
+include/host/oeinternal

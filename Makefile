@@ -26,6 +26,10 @@ distclean: clean
 	rm -rf include/stlport
 	$(MAKE) -C 3rdparty distclean
 	rm -rf lib
+	rm -f include/enclave/oecommon
+	rm -f include/enclave/oeinternal
+	rm -f include/host/oecommon
+	rm -f include/host/oeinternal
 
 tests:
 	$(MAKE) -s -C tests tests
