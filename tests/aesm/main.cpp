@@ -6,7 +6,7 @@ int main(int argc, const char* argv[])
 {
     AESM* aesm;
 
-    if ((aesm = AESMConnect()) < 0)
+    if (!(aesm = AESMConnect()))
     {
         fprintf(stderr, "%s: failed to connect\n", argv[0]);
         exit(1);
