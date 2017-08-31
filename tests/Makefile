@@ -21,7 +21,6 @@ DIRS += tester
 DIRS += stdc
 DIRS += stdcxx
 DIRS += SampleAppAttestation 
-DIRS += malloc
 DIRS += crypto
 
 define NL

@@ -42,8 +42,6 @@ entersim.o: entersim.S
 clean:
 	rm -f $(ARCHIVE) $(OBJECTS) api_u.c api_u.h .depends
 
-malloc.o: ../common/malloc.c
-
 SEARCHPATH=--search-path .. --search-path /opt/intel/sgxsdk/include
 
 include $(MAKDIR)/depend.mak

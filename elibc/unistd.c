@@ -5,7 +5,8 @@
 
 #define PAGE_SIZE 4096
 
-#if 0
+void* sbrk(long increment);
+
 void* sbrk(long increment)
 {
     static unsigned char* _heapNext;
@@ -31,7 +32,6 @@ void* sbrk(long increment)
 
     return ptr;
 }
-#endif
 
 int getpagesize(void)
 {

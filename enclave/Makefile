@@ -49,8 +49,6 @@ enter.o: main.S
 exit.o: exit.S
 	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o exit.o exit.S
 
-malloc.o: ../common/malloc.c
-
 clean:
 	rm -f $(ARCHIVE) $(OBJECTS) .depends
 

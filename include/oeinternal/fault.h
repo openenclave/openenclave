@@ -7,7 +7,7 @@ OE_EXTERNC_BEGIN
 
 OE_INLINE void OE_IllegalInstruction(void)
 {
-    asm volatile("ud2\n\t");
+    __asm__ volatile("ud2\n\t");
 }
 
 OE_INLINE void OE_SegmentationViolation(void)
@@ -17,12 +17,12 @@ OE_INLINE void OE_SegmentationViolation(void)
 
 OE_INLINE void OE_Pause(void)
 {
-    asm volatile("pause\n\t");
+    __asm__ volatile("pause\n\t");
 }
 
 OE_INLINE void OE_DivideByZero(void)
 {
-    asm volatile(
+    __asm__ volatile(
         "mov $0, %eax\n\t"
         "div %eax, %eax\n\t");
 }
