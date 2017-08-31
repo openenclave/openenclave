@@ -25,9 +25,9 @@ Building
 
 - Install Ubuntu Desktop (ubuntu-16.04.2-desktop-amd64.iso)
 
-- Install the Intel(R) SGX driver ([instructions](https://github.com/01org/linux-sgx-driver))
+- Install the Intel(R) SGX driver ([here](https://github.com/01org/linux-sgx-driver))
 
-- Install the Intel(R) AESM service ([instructions](https://github.com/01org/linux-sgx))
+- Install the Intel(R) AESM service ([here](https://github.com/01org/linux-sgx))
 
 - Install GNU make
 
