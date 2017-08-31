@@ -118,8 +118,8 @@ extern "C" {
 
 #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
 #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
-#define ENGINESDIR "/root/OpenEnclave/3rdparty/openssl/install/lib/engines"
-#define OPENSSLDIR "/root/OpenEnclave/3rdparty/openssl/install"
+#define ENGINESDIR "/root/openenclave/3rdparty/openssl/install/lib/engines"
+#define OPENSSLDIR "/root/openenclave/3rdparty/openssl/install"
 #endif
 #endif
 

@@ -1,47 +1,38 @@
 include mak/defs.mak
+-include config.mak
+
 .PHONY: tests
 .PHONY: prereqs
 
+##==============================================================================
+##
+## Check whether ./configure was run (which reates config.mak)
+##
+##==============================================================================
+
+ifndef CONFIGURED
+$(error Please run ./configure first)
+endif
+
+##==============================================================================
+##
+## build:
+##
+##==============================================================================
+
 DIRS = 3rdparty gen host elibc enclave ecrypto elf sign tests
 
-define NL
-
-
-endef
-
 build:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NL) )
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )
+
+##==============================================================================
+##
+## depend:
+##
+##==============================================================================
 
 depend:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NL) )
-
-tests:
-	$(MAKE) -s -C tests tests
-
-SOURCES = $(shell find . -name '*.[ch]') $(shell find . -name '*.cpp')
-
-sub:
-	sub $(SOURCES)
-
-world:
-	$(MAKE) -s clean
-	$(MAKE)
-	$(MAKE) -s -C tests tests
-
-##==============================================================================
-##
-## dist:
-##
-##==============================================================================
-
-DISTNAME=openenclave-$(shell cat VERSION)
-
-dist:
-	@ rm -rf /tmp/$(DISTNAME)
-	@ ( cd ..; cp -r OpenEnclave /tmp/$(DISTNAME) )
-	@ $(MAKE) -C /tmp/$(DISTNAME) -s distclean
-	@ ( cd /tmp; tar zcf $(TOP)/$(DISTNAME).tar.gz $(DISTNAME) )
-	@ echo "Created $(TOP)/$(DISTNAME).tar.gz"
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NEWLINE) )
 
 ##==============================================================================
 ##
@@ -50,7 +41,7 @@ dist:
 ##==============================================================================
 
 clean:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NL) )
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NEWLINE) )
 	rm -rf bin
 	rm -rf lib
 	rm -rf obj
@@ -60,6 +51,8 @@ clean:
 ## distclean:
 ##
 ##==============================================================================
+
+DISTNAME=openenclave-$(VERSION)
 
 distclean: clean
 	rm -rf include/musl
@@ -73,6 +66,51 @@ distclean: clean
 	rm -f include/host/oeinternal
 	rm -f $(DISTNAME).tar.gz
 	rm -f $(DISTNAME)
+	rm -f config.mak
+
+##==============================================================================
+##
+## tests:
+##
+##==============================================================================
+
+tests:
+	$(MAKE) -s -C tests tests
+
+##==============================================================================
+##
+## world:
+##
+##==============================================================================
+
+world:
+	$(MAKE) -s clean
+	$(MAKE)
+	$(MAKE) -s -C tests tests
+
+##==============================================================================
+##
+## sub:
+##
+##==============================================================================
+
+SUB = $(shell find . -name '*.[ch]') $(shell find . -name '*.cpp')
+
+sub:
+	./scripts/sub $(SUB)
+
+##==============================================================================
+##
+## dist:
+##
+##==============================================================================
+
+dist:
+	@ rm -rf /tmp/$(DISTNAME)
+	@ ( cd ..; cp -r openenclave /tmp/$(DISTNAME) )
+	@ $(MAKE) -C /tmp/$(DISTNAME) -s distclean
+	@ ( cd /tmp; tar zcf $(TOP)/$(DISTNAME).tar.gz $(DISTNAME) )
+	@ echo "Created $(TOP)/$(DISTNAME).tar.gz"
 
 ##==============================================================================
 ##

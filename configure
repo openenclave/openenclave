@@ -1,0 +1,247 @@
+#!/bin/bash 
+
+##==============================================================================
+##
+## Resolve version:
+##
+##==============================================================================
+
+major=`cut -d "." -f1 ./VERSION`
+minor=`cut -d "." -f2 ./VERSION`
+revision=`cut -d "." -f3 ./VERSION`
+version=${major}.${minor}.${revision}
+
+##==============================================================================
+##
+## default_prefix:
+##
+##==============================================================================
+
+default_prefix=/opt/openenclave-${version}
+
+##==============================================================================
+##
+## Process command-line options:
+##
+##==============================================================================
+
+for opt
+do
+
+  arg=`expr "x$opt" : 'x[^=]*=\(.*\)'`
+
+  case $opt in
+
+    -h | --help)
+      help=1
+      ;;
+
+    --prefix=*)
+      prefix=$arg 
+      ;;
+
+    --bindir=*)
+      bindir=$arg 
+      ;;
+
+    --enable-werror)
+      enable_werror=1
+      ;;
+
+    *)
+      echo "$0: unknown option:  $opt"
+      exit 1
+      ;;
+
+  esac
+
+done
+
+##==============================================================================
+##
+## help:
+##
+##==============================================================================
+
+if [ "$help" = "1" ]; then
+    cat<<EOF
+
+OVERVIEW:
+
+Type the following commands to build OpenEnclave:
+
+    $ ./configure
+    $ make
+
+OPTIONS:
+    -h, --help              Print this help message.
+    --prefix=PATH           The installation prefix [${default_prefix}].
+    --bindir=PATH           Install programs here [${default_prefix}/bin].
+    --enable-werror         Treat compiler warnings as errors.
+
+EOF
+    exit 0
+fi
+
+
+##==============================================================================
+##
+## Resolve target:
+##
+##==============================================================================
+
+__m=`uname -m 2>/dev/null` || __m=unknown
+__s=`uname -s 2>/dev/null`  || __s=unknown
+__r=`uname -r 2>/dev/null` || __r=unknown
+__v=`grep "^ID=" /etc/os-release | cut -d "=" -f2 | sed "s/\"//g"`
+
+if [ ! -f "/etc/os-release" ]; then
+    echo "$0: file not found: /etc/os-release"
+    exit 1
+fi
+
+case "$__m:$__s:$__r:$__v" in
+    x86_64:Linux:*:ubuntu)
+        arch=${__m}
+        distro=ubuntu
+        os=linux
+        compiler=gnu
+        ;;
+    x86_64:Linux:*:centos)
+        arch=${__m}
+        distro=centos
+        os=linux
+        compiler=gnu
+        ;;
+    x86_64:Linux:*:rhel)
+        arch=${__m}
+        distro=redhat
+        os=linux
+        compiler=gnu
+        ;;
+    x86_64:Linux:*:sles)
+        arch=${__m}
+        distro=sles
+        os=linux
+        compiler=gnu
+        ;;
+    *)
+        echo "$0: error: unsupported platform: $__m:$__s:$__r:$__v"
+        exit 1
+        ;;
+esac
+
+target="${arch}-${distro}-${os}-${compiler}"
+
+##==============================================================================
+##
+## Resolve locations:
+##
+##==============================================================================
+
+if [ -z "$prefix" ]; then
+    prefix=/opt/openenclave-$version
+fi
+
+if [ -z "$bindir" ]; then
+    bindir=$prefix/bin
+fi
+
+##==============================================================================
+##
+## Print failed message and exit
+##
+##==============================================================================
+
+configure_failed()
+{
+    echo "$0: failed"
+    echo ""
+    exit 1
+}
+
+##==============================================================================
+##
+## Check for presence and operability of gcc:
+##
+##==============================================================================
+
+check_gcc()
+{
+    echo -n "checking for gcc..."
+
+    gcc=`which gcc 2> /dev/null`
+
+    if [ ! -x "${gcc}" ]; then
+        echo "no"
+        configure_failed
+    fi
+
+    local tempname=`/bin/mktemp`
+
+    echo "int main() { return 0; }" >> ${tempname}.c
+    ${gcc} -o ${tempname} ${tempname}.c 2> /dev/null > /dev/null
+
+    if [ "$?" != "0" ]; then
+        rm -f ${tempname}.c ${tempname}
+        echo "no"
+        configure_failed
+    fi
+
+    rm -f ${tempname}.c ${tempname}
+    echo "yes"
+}
+
+check_gcc
+
+##==============================================================================
+##
+## Check for presence of make:
+##
+##==============================================================================
+
+check_make()
+{
+    echo -n "checking for make..."
+
+    make=`which make 2> /dev/null`
+
+    if [ ! -x "${make}" ]; then
+        echo "no"
+        configure_failed
+    fi
+
+    echo "yes"
+}
+
+check_make
+
+##==============================================================================
+##
+## Generate config.mak:
+##
+##==============================================================================
+
+rm -rf config.mak
+echo "CONFIGURED=1" >> config.mak
+echo "DISTRONAME=${distro}" >> config.mak
+echo "MAJOR=${major}" >> config.mak
+echo "MINOR=${minor}" >> config.mak
+echo "REVISION=${revision}" >> config.mak
+echo "VERSION=${version}" >> config.mak
+
+if [ "${enable_werror}" == "1" ]; then 
+    echo "ENABLE_WERROR=1" >> config.mak
+else
+    echo "#ENABLE_WERROR=1" >> config.mak
+fi
+
+##==============================================================================
+##
+## Print configured message:
+##
+##==============================================================================
+
+echo
+echo "Configured for ${target}"
+echo
