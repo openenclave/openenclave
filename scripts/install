@@ -11,6 +11,8 @@ if [ "$#" != "0" ]; then
     exit 1
 fi
 
+echo
+
 ##==============================================================================
 ##
 ## Fail if not in the OpenEnclave root directory:
@@ -214,6 +216,24 @@ if [ ! -f "${HOSTMAK}" ]; then
 fi
 
 echo "Created ${HOSTMAK}"
+
+##==============================================================================
+##
+## Install samples
+##
+##==============================================================================
+
+SAMPLESDIR=${DATADIR}/samples
+rm -f ${SAMPLEDIR}
+
+cp -r samples ${SAMPLESDIR}
+
+if [ ! -d "${SAMPLESDIR}" ]; then
+    echo "$0: failed to create ${SAMPLESDIR}" 
+    exit 1
+fi
+
+echo "Created ${SAMPLESDIR}"
 
 ##==============================================================================
 ##
