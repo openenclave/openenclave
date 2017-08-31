@@ -80,3 +80,12 @@ include/enclave/oecommon
 include/enclave/oeinternal
 include/host/oecommon
 include/host/oeinternal
+prereqs/aesm/.build
+prereqs/aesm/.prebuilt
+prereqs/aesm/.psw_installer
+prereqs/aesm/.sdk
+prereqs/aesm/.sdk_installer
+prereqs/aesm/dynamic-application-loader-host-interface/
+prereqs/aesm/linux-sgx/
+prereqs/isgx/linux-sgx-driver/
+prereqs/packages/.packages

@@ -1,6 +1,6 @@
 include mak/defs.mak
 .PHONY: tests
-.PHONY: packages
+.PHONY: prereqs
 
 DIRS = 3rdparty gen host elibc enclave ecrypto elf sign tests
 
@@ -52,3 +52,7 @@ dist:
 
 big:
 	find . -size +1000
+
+prereqs:
+	$(MAKE) -C prereqs
+	$(MAKE) -C prereqs install
