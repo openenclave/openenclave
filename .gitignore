@@ -90,3 +90,5 @@ prereqs/aesm/linux-sgx/
 prereqs/isgx/linux-sgx-driver/
 prereqs/packages/.packages
 .config
+samples/hello/host/hellohost
+samples/sort/host/sorthost
