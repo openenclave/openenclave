@@ -1,9 +1,11 @@
 
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
+    (A) Getting started document
+
     (A) Implement installer
 
-    (A) Implement AESM and ISGX driver installer script
+    (A) Support platforms with no SGX support
 
     BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 
@@ -61,4 +63,10 @@
     (X) Support GDB debugging of enclaves
 
     (X) Split include/enc into include/enclave and include/host
+
+    ===
+
+    (X) Implement configure script
+
+    (X) Implement AESM and ISGX driver installer script
 

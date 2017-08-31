@@ -1,0 +1,18 @@
+OE_CFLAGS = -Wall -Werror -m64 -nostdinc -fPIC
+
+OE_CXXFLAGS = $(OE_CLAGS) -std=c++11 -nostdinc++
+
+__OE_LDFLAGS_PREFIX = -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie,-eOE_Main -Wl,--start-group -Wl,--whole-archive ${OE_LIBDIR}/openenclave/enclave/libenclave.a -Wl,--no-whole-archive
+
+__OE_LDFLAGS_SUFFIX = -Wl,--end-group
+
+# Flags used to link C enclaves:
+OE_LDFLAGS += $(__OE_LDFLAGS_PREFIX)
+OE_LDFLAGS += ${OE_LIBDIR}/openenclave/enclave/libelibc.a
+OE_LDFLAGS += $(__OE_LDFLAGS_SUFFIX)
+
+# Flags used to link C++ enclaves:
+OE_CXXLDFLAGS += $(__OE_LDFLAGS_PREFIX)
+OE_CXXLDFLAGS += ${OE_LIBDIR}/openenclave/enclave/libelibcxx.a
+OE_CXXLDFLAGS += ${OE_LIBDIR}/openenclave/enclave/libelibc.a
+OE_CXXLDFLAGS += $(__OE_LDFLAGS_SUFFIX)

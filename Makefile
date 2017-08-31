@@ -1,16 +1,16 @@
 include mak/defs.mak
--include config.mak
+-include .config
 
 .PHONY: tests
 .PHONY: prereqs
 
 ##==============================================================================
 ##
-## Check whether ./configure was run (which reates config.mak)
+## Check whether ./configure was run (creates ./config)
 ##
 ##==============================================================================
 
-ifndef CONFIGURED
+ifndef OE_CONFIGURED
 $(error Please run ./configure first)
 endif
 
@@ -52,7 +52,7 @@ clean:
 ##
 ##==============================================================================
 
-DISTNAME=openenclave-$(VERSION)
+DISTNAME=openenclave-$(OE_VERSION)
 
 distclean: clean
 	rm -rf include/musl
@@ -66,13 +66,15 @@ distclean: clean
 	rm -f include/host/oeinternal
 	rm -f $(DISTNAME).tar.gz
 	rm -f $(DISTNAME)
-	rm -f config.mak
+	rm -f .config
 
 ##==============================================================================
 ##
 ## tests:
 ##
 ##==============================================================================
+
+check: tests
 
 tests:
 	$(MAKE) -s -C tests tests
@@ -130,3 +132,12 @@ big:
 prereqs:
 	$(MAKE) -C prereqs
 	$(MAKE) -C prereqs install
+
+##==============================================================================
+##
+## install:
+##
+##==============================================================================
+
+install:
+	@ ./scripts/install

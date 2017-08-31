@@ -27,4 +27,4 @@ endif
 gen: $(GENSRC)
 
 $(GENSRC): $(GENIDL)
-	$(BINDIR)/encgen $(__GENFLAGS) $(GENIDL)
+	$(BINDIR)/oegen $(__GENFLAGS) $(GENIDL)

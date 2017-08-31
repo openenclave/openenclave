@@ -11,5 +11,5 @@ KEYFILE = private.pem
 include $(MAKDIR)/enclave.mak
 
 gen:
-	$(BINDIR)/encgen -t ../file.idl
+	$(BINDIR)/oegen -t ../file.idl
 

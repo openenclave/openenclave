@@ -19,14 +19,14 @@ $(shell mkdir -p $(INCDIR)/host)
 $(shell mkdir -p $(INCDIR)/enclave)
 
 $(shell rm -f $(ENCLAVEINCDIR)/oecommon)
-$(shell ln -s $(INCDIR)/oecommon $(ENCLAVEINCDIR)/oecommon)
+$(shell ln -s ../oecommon $(ENCLAVEINCDIR)/oecommon)
 $(shell rm -f $(HOSTINCDIR)/oecommon)
-$(shell ln -s $(INCDIR)/oecommon $(HOSTINCDIR)/oecommon)
+$(shell ln -s ../oecommon $(HOSTINCDIR)/oecommon)
 
 $(shell rm -f $(ENCLAVEINCDIR)/oeinternal)
-$(shell ln -s $(INCDIR)/oeinternal $(ENCLAVEINCDIR)/oeinternal)
+$(shell ln -s ../oeinternal $(ENCLAVEINCDIR)/oeinternal)
 $(shell rm -f $(HOSTINCDIR)/oeinternal)
-$(shell ln -s $(INCDIR)/oeinternal $(HOSTINCDIR)/oeinternal)
+$(shell ln -s ../oeinternal $(HOSTINCDIR)/oeinternal)
 
 MEMCHECK=valgrind --tool=memcheck --leak-check=full
 

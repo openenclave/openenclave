@@ -1,0 +1,4 @@
+
+This directory contains OpenEnclave samples. After installing OpenEnclave and
+setting the OPENENCLAVE_DATADIR environment variable, just type "make" to build
+and "make tests" to run the samples.

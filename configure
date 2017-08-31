@@ -40,8 +40,20 @@ do
       prefix=$arg 
       ;;
 
+    --libdirdir=*)
+      libdirdir=$arg 
+      ;;
+
     --bindir=*)
       bindir=$arg 
+      ;;
+
+    --includedir=*)
+      includedir=$arg 
+      ;;
+
+    --datadir=*)
+      datadir=$arg 
       ;;
 
     --enable-werror)
@@ -56,6 +68,32 @@ do
   esac
 
 done
+
+##==============================================================================
+##
+## Resolve install locations:
+##
+##==============================================================================
+
+if [ -z "${prefix}" ]; then
+    prefix=${default_prefix}
+fi
+
+if [ -z "${libdir}" ]; then
+    libdir=${prefix}/lib
+fi
+
+if [ -z "${bindir}" ]; then
+    bindir=${prefix}/bin
+fi
+
+if [ -z "${includedir}" ]; then
+    includedir=${prefix}/include
+fi
+
+if [ -z "${datadir}" ]; then
+    datadir=${prefix}/share
+fi
 
 ##==============================================================================
 ##
@@ -76,13 +114,14 @@ Type the following commands to build OpenEnclave:
 OPTIONS:
     -h, --help              Print this help message.
     --prefix=PATH           The installation prefix [${default_prefix}].
+    --libdir=PATH           Install libraries here [${default_prefix}/lib].
     --bindir=PATH           Install programs here [${default_prefix}/bin].
-    --enable-werror         Treat compiler warnings as errors.
+    --includedir=PATH       Install includes here [${default_prefix}/include].
+    --datadir=PATH          Install data files [${default_prefix}/share].
 
 EOF
     exit 0
 fi
-
 
 ##==============================================================================
 ##
@@ -143,8 +182,16 @@ if [ -z "$prefix" ]; then
     prefix=/opt/openenclave-$version
 fi
 
+if [ -z "$libdir" ]; then
+    libdir=$prefix/lib
+fi
+
 if [ -z "$bindir" ]; then
     bindir=$prefix/bin
+fi
+
+if [ -z "$includedir" ]; then
+    includedir=$prefix/include
 fi
 
 ##==============================================================================
@@ -218,23 +265,22 @@ check_make
 
 ##==============================================================================
 ##
-## Generate config.mak:
+## Generate .config:
 ##
 ##==============================================================================
 
-rm -rf config.mak
-echo "CONFIGURED=1" >> config.mak
-echo "DISTRONAME=${distro}" >> config.mak
-echo "MAJOR=${major}" >> config.mak
-echo "MINOR=${minor}" >> config.mak
-echo "REVISION=${revision}" >> config.mak
-echo "VERSION=${version}" >> config.mak
-
-if [ "${enable_werror}" == "1" ]; then 
-    echo "ENABLE_WERROR=1" >> config.mak
-else
-    echo "#ENABLE_WERROR=1" >> config.mak
-fi
+rm -rf .config
+echo "OE_CONFIGURED=1" >> .config
+echo "OE_DISTRONAME=${distro}" >> .config
+echo "OE_MAJOR=${major}" >> .config
+echo "OE_MINOR=${minor}" >> .config
+echo "OE_REVISION=${revision}" >> .config
+echo "OE_VERSION=${version}" >> .config
+echo "OE_PREFIX=${prefix}" >> .config
+echo "OE_LIBDIR=${libdir}" >> .config
+echo "OE_BINDIR=${bindir}" >> .config
+echo "OE_DATADIR=${datadir}" >> .config
+echo "OE_INCLUDEDIR=${includedir}" >> .config
 
 ##==============================================================================
 ##

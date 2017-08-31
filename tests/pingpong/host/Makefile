@@ -7,4 +7,4 @@ SOURCES = host.cpp pingpong_u.c
 include $(TOP)/mak/host.mak
 
 gen:
-	$(BINDIR)/encgen -u ../pingpong.idl
+	$(BINDIR)/oegen -u ../pingpong.idl

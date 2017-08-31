@@ -1,0 +1,29 @@
+
+
+    (*) Can the C runtime be separated from the enclave intrinsics?
+
+    (*) Does GCC provide stack protection schemes?
+
+    (*) Can we use the MUSL allocator or some other allocator so we don't
+        have to maintain one.
+
+    (*) Can the host set aside some memory when making an ECALL that
+        enclave can use when making subsequence OCALLS. Kind of scratch
+        area? We should know the size of the parameters.
+
+    (*) Look into mprotect() on enclave memory in simulator mode. We know
+        that this has problems with multi-threading, but could this work
+        when no thread is in the enclave?
+
+    (*) Should we be able to create threads from an enclave? No use case
+        for this yet.
+
+    (*) Do we need to support signals in an enclave?
+
+    (*) Is there a safe way for an enclave to perform host stack allocation?
+
+    (*) Should ORET be assigned the same TCS as the original ECALL used?
+
+    (*) Should HostMalloc() guard against subsequent ECALLs. So can we
+        implement a non-reentrant flag?
+

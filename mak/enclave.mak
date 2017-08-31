@@ -85,7 +85,7 @@ OBJECTS = $(__OBJECTS:.cpp=.o)
 build : $(CXXSHLIB).signed.so
 
 $(CXXSHLIB).signed.so: $(CXXSHLIB).so
-	$(BINDIR)/encsign $(CXXSHLIB).so $(SIGNCONF) $(KEYFILE)
+	$(BINDIR)/oesign $(CXXSHLIB).so $(SIGNCONF) $(KEYFILE)
 	chmod +x $(CXXSHLIB).signed.so
 
 $(CXXSHLIB).so: $(OBJECTS)

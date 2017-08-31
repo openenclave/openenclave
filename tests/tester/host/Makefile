@@ -7,4 +7,4 @@ SOURCES = host.cpp tester_u.c
 include $(TOP)/mak/host.mak
 
 gen:
-	$(BINDIR)/encgen -u ../tester.idl
+	$(BINDIR)/oegen -u ../tester.idl

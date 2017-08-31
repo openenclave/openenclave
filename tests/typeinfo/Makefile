@@ -62,4 +62,4 @@ mc:
 ##==============================================================================
 
 gen:
-	$(BINDIR)/encgen -u typeinfo.idl
+	$(BINDIR)/oegen -u typeinfo.idl

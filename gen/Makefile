@@ -2,7 +2,7 @@ include ../mak/defs.mak
 
 CXXFLAGS = -Wall -Werror
 
-PROGRAM=$(BINDIR)/encgen
+PROGRAM=$(BINDIR)/oegen
 
 INCLUDES = -I$(HOSTINCDIR)
 

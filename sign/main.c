@@ -770,9 +770,8 @@ int main(int argc, const char* argv[])
         OE_PutErr("_SignAndWriteSharedLib(): result=%u", result);
     }
 
-    printf("MRENCLAVE=%s\n", OE_SHA256StrOf(&mrenclave).buf);
-
 #if 0
+    printf("MRENCLAVE=%s\n", OE_SHA256StrOf(&mrenclave).buf);
     DumpSigstruct(&sigstruct);
 #endif
 

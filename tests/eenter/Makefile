@@ -45,5 +45,5 @@ gdb:
 
 sign:
 	cp ../empty/enc/emptyenc.so .
-	encsign $(ENCLAVE) sign.conf private.pem
+	$(BINDIR)/oesign $(ENCLAVE) sign.conf private.pem
 
