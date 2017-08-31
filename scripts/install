@@ -225,7 +225,7 @@ ENVIRONMENT=${DATADIR}/environment
 
 rm -rf ${ENVIRONMENT}
 echo "export OPENENCLAVE_DATADIR=${DATADIR}" >> ${ENVIRONMENT}
-echo "export PATH=${PATH}:${BINDIR}" >> ${ENVIRONMENT}
+echo "export PATH=\${PATH}:${BINDIR}" >> ${ENVIRONMENT}
 
 if [ ! -f "${ENVIRONMENT}" ]; then
     echo "$0: failed to create ${ENVIRONMENT}"
