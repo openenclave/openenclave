@@ -12,25 +12,8 @@ endef
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NL) )
 
-clean:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NL) )
-	rm -rf bin
-	rm -rf lib
-	rm -rf obj
-
 depend:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NL) )
-
-distclean: clean
-	rm -rf include/musl
-	rm -rf include/stlport
-	$(MAKE) -C prereqs distclean
-	$(MAKE) -C 3rdparty distclean
-	rm -rf lib
-	rm -f include/enclave/oecommon
-	rm -f include/enclave/oeinternal
-	rm -f include/host/oecommon
-	rm -f include/host/oeinternal
 
 tests:
 	$(MAKE) -s -C tests tests
@@ -45,14 +28,66 @@ world:
 	$(MAKE)
 	$(MAKE) -s -C tests tests
 
+##==============================================================================
+##
+## dist:
+##
+##==============================================================================
+
+DISTNAME=openenclave-$(shell cat VERSION)
+
 dist:
-	@ make -s clean
-	@ make -s distclean
-	@ ( cd ..; tar zcf OpenEnclave.tar.gz OpenEnclave )
-	@ echo "Created OpenEnclave.tar.gz"
+	@ rm -rf /tmp/$(DISTNAME)
+	@ ( cd ..; cp -r OpenEnclave /tmp/$(DISTNAME) )
+	@ $(MAKE) -C /tmp/$(DISTNAME) -s distclean
+	@ ( cd /tmp; tar zcf $(TOP)/$(DISTNAME).tar.gz $(DISTNAME) )
+	@ echo "Created $(TOP)/$(DISTNAME).tar.gz"
+
+##==============================================================================
+##
+## clean:
+##
+##==============================================================================
+
+clean:
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NL) )
+	rm -rf bin
+	rm -rf lib
+	rm -rf obj
+
+##==============================================================================
+##
+## distclean:
+##
+##==============================================================================
+
+distclean: clean
+	rm -rf include/musl
+	rm -rf include/stlport
+	$(MAKE) -s -C prereqs distclean 2> /dev/null
+	$(MAKE) -C 3rdparty distclean
+	rm -rf lib
+	rm -f include/enclave/oecommon
+	rm -f include/enclave/oeinternal
+	rm -f include/host/oecommon
+	rm -f include/host/oeinternal
+	rm -f $(DISTNAME).tar.gz
+	rm -f $(DISTNAME)
+
+##==============================================================================
+##
+## big:
+##
+##==============================================================================
 
 big:
 	find . -size +1000
+
+##==============================================================================
+##
+## prereqs:
+##
+##==============================================================================
 
 prereqs:
 	$(MAKE) -C prereqs
