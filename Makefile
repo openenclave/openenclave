@@ -24,6 +24,7 @@ depend:
 distclean: clean
 	rm -rf include/musl
 	rm -rf include/stlport
+	$(MAKE) -C prereqs distclean
 	$(MAKE) -C 3rdparty distclean
 	rm -rf lib
 	rm -f include/enclave/oecommon
