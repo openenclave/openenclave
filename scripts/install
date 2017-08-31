@@ -234,3 +234,6 @@ fi
 
 echo "Created ${ENVIRONMENT}"
 
+echo
+echo "Source ${ENVIRONMENT} to initialize the OpenEnclave environment"
+echo
