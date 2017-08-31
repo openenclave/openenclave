@@ -17,7 +17,8 @@ version=${major}.${minor}.${revision}
 ##
 ##==============================================================================
 
-default_prefix=/opt/openenclave-${version}
+#default_prefix=/opt/openenclave-${version}
+default_prefix=/opt/microsoft/openenclave
 
 ##==============================================================================
 ##
