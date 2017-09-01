@@ -2,7 +2,7 @@ OE_CFLAGS = -Wall -Werror -m64 -nostdinc -fPIC
 
 OE_CXXFLAGS = $(OE_CLAGS) -std=c++11 -nostdinc++
 
-__OE_LDFLAGS_PREFIX = -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie,-eOE_Main -Wl,--start-group -Wl,--whole-archive ${OE_LIBDIR}/openenclave/enclave/liboecore.a -Wl,--no-whole-archive
+__OE_LDFLAGS_PREFIX = -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie,-eOE_Main -Wl,--start-group -Wl,--whole-archive ${OE_LIBDIR}/openenclave/enclave/libeoenclave.a -Wl,--no-whole-archive
 
 __OE_LDFLAGS_SUFFIX = -Wl,--end-group
 

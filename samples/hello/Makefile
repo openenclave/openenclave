@@ -6,5 +6,5 @@ clean:
 	$(MAKE) -C enc clean
 	$(MAKE) -C host clean
 
-tests:
+run:
 	host/hellohost ./enc/helloenc.signed.so

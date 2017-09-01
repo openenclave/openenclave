@@ -10,6 +10,6 @@ build:
 clean:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean ; )
 
-tests:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) tests ; )
+run:
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) run; )
 

@@ -13,7 +13,7 @@ build:
 	gcc -o helloenc.so enc.o $(LDFLAGS)
 
 sign:
-	$(OE_BINDIR)/openenclave/oesign helloenc.so sign.conf private.pem 
+	$(OE_BINDIR)/oesign helloenc.so sign.conf private.pem 
 
 clean:
 	rm -f enc.o helloenc.so helloenc.signed.so

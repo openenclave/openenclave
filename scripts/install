@@ -101,11 +101,13 @@ if [ ! -d "${OE_LIBDIR}" ]; then
     exit 1
 fi
 
-rm -rf ${OE_LIBDIR}/openenclave
-cp -r lib ${OE_LIBDIR}/openenclave
-rm -rf ${OE_LIBDIR}/openenclave/tmp
+LIBDIR=${OE_LIBDIR}/openenclave
 
-echo "Created ${OE_LIBDIR}/openenclave"
+rm -rf ${LIBDIR}
+cp -r lib ${LIBDIR}
+rm -rf ${LIBDIR}/tmp
+
+echo "Created ${LIBDIR}"
 
 ##==============================================================================
 ##
@@ -113,9 +115,10 @@ echo "Created ${OE_LIBDIR}/openenclave"
 ##
 ##==============================================================================
 
-BINDIR=${OE_BINDIR}/openenclave
+#BINDIR=${OE_BINDIR}/openenclave
+#rm -rf ${BINDIR}
 
-rm -rf ${BINDIR}
+BINDIR=${OE_BINDIR}
 mkdir -p ${BINDIR}
 
 if [ ! -d "${BINDIR}" ]; then
@@ -234,6 +237,27 @@ if [ ! -d "${SAMPLESDIR}" ]; then
 fi
 
 echo "Created ${SAMPLESDIR}"
+
+##==============================================================================
+##
+## Write the uninstall script
+##
+##==============================================================================
+
+UNINSTALL=${BINDIR}/oeuninstall
+
+rm -f ${UNINSTALL}
+
+echo "rm -rf ${DATADIR}" >> ${UNINSTALL}
+echo "rm -rf ${INCLUDEDIR}" >> ${UNINSTALL}
+echo "rm -rf ${LIBDIR}" >> ${UNINSTALL}
+echo "rm -rf ${BINDIR}/oesign" >> ${UNINSTALL}
+echo "rm -rf ${BINDIR}/oegen" >> ${UNINSTALL}
+echo "rm -rf ${BINDIR}/oeelf" >> ${UNINSTALL}
+echo "rm -rf ${BINDIR}/oeuninstall" >> ${UNINSTALL}
+chmod +x ${UNINSTALL}
+
+echo "Created ${UNINSTALL}"
 
 ##==============================================================================
 ##

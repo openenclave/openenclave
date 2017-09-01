@@ -13,7 +13,7 @@ build:
 	g++ -o sortenc.so enc.o $(LDFLAGS)
 
 sign:
-	$(OE_BINDIR)/openenclave/oesign sortenc.so sign.conf private.pem 
+	$(OE_BINDIR)/oesign sortenc.so sign.conf private.pem 
 
 clean:
 	rm -f enc.o sortenc.so sortenc.signed.so

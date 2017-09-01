@@ -101,7 +101,6 @@ install:
 	$(MAKE) install-build-dynamic-application-loader-host-interface
 	$(MAKE) install-psw
 	$(MAKE) start
-	/usr/sbin/service aesmd status
 
 install-sdk: 
 ifdef INSTALL_SDK

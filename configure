@@ -17,8 +17,7 @@ version=${major}.${minor}.${revision}
 ##
 ##==============================================================================
 
-#default_prefix=/opt/openenclave-${version}
-default_prefix=/opt/microsoft/openenclave
+default_prefix=/opt/openenclave
 
 ##==============================================================================
 ##
@@ -113,12 +112,12 @@ Type the following commands to build OpenEnclave:
     $ make
 
 OPTIONS:
-    -h, --help              Print this help message.
-    --prefix=PATH           The installation prefix [${default_prefix}].
-    --libdir=PATH           Install libraries here [${default_prefix}/lib].
-    --bindir=PATH           Install programs here [${default_prefix}/bin].
-    --includedir=PATH       Install includes here [${default_prefix}/include].
-    --datadir=PATH          Install data files [${default_prefix}/share].
+    -h, --help              Print this help message
+    --prefix=PATH           The installation prefix [${default_prefix}]
+    --libdir=PATH           Install libraries here [${default_prefix}/lib]
+    --bindir=PATH           Install programs here [${default_prefix}/bin]
+    --includedir=PATH       Install includes here [${default_prefix}/include]
+    --datadir=PATH          Install data files [${default_prefix}/share]
 
 EOF
     exit 0
@@ -180,7 +179,7 @@ target="${arch}-${distro}-${os}-${compiler}"
 ##==============================================================================
 
 if [ -z "$prefix" ]; then
-    prefix=/opt/openenclave-$version
+    prefix=${default_prefix}
 fi
 
 if [ -z "$libdir" ]; then

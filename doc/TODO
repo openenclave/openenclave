@@ -1,6 +1,10 @@
 
     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
+    (A) Add option for building on non-SGX machines
+
+    (A) Add detection for SGX1 and SGX2 features
+
     (A) Getting started document
 
     (A) Implement installer

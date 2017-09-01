@@ -42,7 +42,7 @@ LDFLAGS += -Wl,-pie,-eOE_Main
 WA=-Wl,--whole-archive
 NOWA=-Wl,--no-whole-archive
 
-__LIBENCLAVE += $(WA) $(LIBDIR)/enclave/liboecore.a $(NOWA)
+__LIBENCLAVE += $(WA) $(LIBDIR)/enclave/libeoenclave.a $(NOWA)
 
 ifdef WHOLE_ARCHIVE
     __LIBELIBCXX=$(WA) $(LIBDIR)/enclave/liboelibcxx.a $(NOWA)
