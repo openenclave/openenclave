@@ -9,29 +9,21 @@ Introduction
 OpenEnclave is an SDK for builiding enclave applications in C and C++. An
 enclave application partitions itself into a trusted component (called the
 host) and an untrusted compoment (called the enclave). An enclave is a secure
-container whose memory is protected from outsiders. These protections allow 
-enclaves to perform secure computations with assurances that secrets will not 
-be leaked to unauthorized entities.
+container whose memory is protected from entities outside the enclave. These 
+protections allow enclaves to perform secure computations with assurances that 
+secrets will not be compromised.
 
-OpenEnclave aims to support building of enclave applications without concern 
-for the underlying memory protection architecture. OpenEnclave currently 
-supports Intel(R) Software Guard Extensions (SGX) but will later provide 
-support Microsoft(R) Virtual Secure Mode (VSM) as well and possibly others.
+The current implementation of OpenEnclave is built on the Intel Software Guard 
+Extensions (SGX), although OpenEnclave may support other memory protection
+architectures in the future, such as Microsoft Virtual Secure Mode.
 
-Building
---------
+The OpenEnclave project provides the following documents.
 
-### Prerequisites:
+- ([Getting Started with OpenEnclave](doc/GettingStarted.txt))
 
-- Install Ubuntu Desktop (ubuntu-16.04.2-desktop-amd64.iso)
+- ([OpenEnclave Reference Manual](doc/ReferenceManual.txt))
 
-- Install the Intel(R) SGX driver ([here](https://github.com/01org/linux-sgx-driver))
-
-- Install the Intel(R) AESM service ([here](https://github.com/01org/linux-sgx))
-
-- Install GNU make
-
-- Install the GCC C++ compiler
+- ([OpenEnclave Design Overview](doc/DesignOverview.txt))
 
 Contributing
 ------------
