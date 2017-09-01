@@ -1,6 +1,6 @@
 include ../mak/defs.mak
 
-ARCHIVE = $(LIBDIR)/enclave/libelibc.a
+ARCHIVE = $(LIBDIR)/enclave/liboelibc.a
 
 CC = gcc
 

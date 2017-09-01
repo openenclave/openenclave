@@ -3,7 +3,7 @@
 
 include ../mak/defs.mak
 
-ARCHIVE = $(LIBDIR)/enclave/libenclave.a
+ARCHIVE = $(LIBDIR)/enclave/liboecore.a
 
 CC = gcc
 CXX = g++

@@ -12,7 +12,7 @@ INCLUDES += -I$(HOSTINCDIR)
 
 SOURCES = typeinfo_u.c main.cpp
 
-LIBRARIES += $(LIBDIR)/host/libhost.a -ldl -lpthread
+LIBRARIES += $(LIBDIR)/host/liboehost.a -ldl -lpthread
 
 LDFLAGS += $(SGXAPP_LDFLAGS)
 

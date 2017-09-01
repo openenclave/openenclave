@@ -6,7 +6,7 @@ INCLUDES += -I$(TOP)/include/host
 
 SOURCES = main.c
 
-LIBRARIES += $(LIBDIR)/host/libhost.a
+LIBRARIES += $(LIBDIR)/host/liboehost.a
 
 LDFLAGS += -L$(LIBDIR) -lcrypto
 

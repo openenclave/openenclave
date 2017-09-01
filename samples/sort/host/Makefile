@@ -6,7 +6,7 @@ CXXFLAGS=-Wall -O2
 
 INCLUDES=-I$(OE_INCLUDEDIR)/openenclave/host
 
-LDFLAGS=-rdynamic -L$(OE_LIBDIR)/openenclave/host -lhost -lcrypto -lpthread -ldl
+LDFLAGS=-rdynamic -L$(OE_LIBDIR)/openenclave/host -loehost -lcrypto -lpthread -ldl
 
 build:
 	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp

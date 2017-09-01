@@ -244,6 +244,40 @@ check_gcc
 
 ##==============================================================================
 ##
+## Check for presence and operability of g++:
+##
+##==============================================================================
+
+check_gxx()
+{
+    echo -n "checking for g++..."
+
+    gxx=`which g++ 2> /dev/null`
+
+    if [ ! -x "${gxx}" ]; then
+        echo "no"
+        configure_failed
+    fi
+
+    local tempname=`/bin/mktemp`
+
+    echo "int main() { return 0; }" >> ${tempname}.c
+    ${gxx} -o ${tempname} ${tempname}.c 2> /dev/null > /dev/null
+
+    if [ "$?" != "0" ]; then
+        rm -f ${tempname}.c ${tempname}
+        echo "no"
+        configure_failed
+    fi
+
+    rm -f ${tempname}.c ${tempname}
+    echo "yes"
+}
+
+check_gxx
+
+##==============================================================================
+##
 ## Check for presence of make:
 ##
 ##==============================================================================

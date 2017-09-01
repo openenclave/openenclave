@@ -24,7 +24,7 @@ else
   __COMPILER=$(CC)
 endif
 
-LDFLAGS += -g -rdynamic -L$(LIBDIR)/host -lhost -lcrypto -ldl -lpthread
+LDFLAGS += -g -rdynamic -L$(LIBDIR)/host -loehost -lcrypto -ldl -lpthread
 
 host:
 	$(MAKE) $(PROGRAM)

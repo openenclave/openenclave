@@ -20,7 +20,7 @@ endif
 ##
 ##==============================================================================
 
-DIRS = 3rdparty gen host elibc enclave ecrypto elf sign tests
+DIRS = 3rdparty gen host libc enclave ecrypto elf sign tests
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )
@@ -59,7 +59,7 @@ distclean: clean
 	rm -rf include/stlport
 	$(MAKE) -s -C prereqs distclean 2> /dev/null
 	$(MAKE) -C 3rdparty distclean
-	rm -rf lib
+	rm -rf lib bin
 	rm -f include/enclave/oecommon
 	rm -f include/enclave/oeinternal
 	rm -f include/host/oecommon

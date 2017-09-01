@@ -6,7 +6,7 @@ PROGRAM=$(BINDIR)/oeelf
 
 INCLUDES = -I$(TOP)/include/host
 
-LDFLAGS = -L$(LIBDIR)/host -lhost
+LDFLAGS = -L$(LIBDIR)/host -loehost
 
 SOURCES += main.c
 

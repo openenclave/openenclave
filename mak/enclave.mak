@@ -42,14 +42,14 @@ LDFLAGS += -Wl,-pie,-eOE_Main
 WA=-Wl,--whole-archive
 NOWA=-Wl,--no-whole-archive
 
-__LIBENCLAVE += $(WA) $(LIBDIR)/enclave/libenclave.a $(NOWA)
+__LIBENCLAVE += $(WA) $(LIBDIR)/enclave/liboecore.a $(NOWA)
 
 ifdef WHOLE_ARCHIVE
-    __LIBELIBCXX=$(WA) $(LIBDIR)/enclave/libelibcxx.a $(NOWA)
-    __LIBELIBC=$(WA) $(LIBDIR)/enclave/libelibc.a $(NOWA)
+    __LIBELIBCXX=$(WA) $(LIBDIR)/enclave/liboelibcxx.a $(NOWA)
+    __LIBELIBC=$(WA) $(LIBDIR)/enclave/liboelibc.a $(NOWA)
 else
-    __LIBELIBCXX=$(LIBDIR)/enclave/libelibcxx.a
-    __LIBELIBC=$(LIBDIR)/enclave/libelibc.a
+    __LIBELIBCXX=$(LIBDIR)/enclave/liboelibcxx.a
+    __LIBELIBC=$(LIBDIR)/enclave/liboelibc.a
 endif
 
 __LIBECRYPTO=$(LIBDIR)/enclave/libecrypto.a

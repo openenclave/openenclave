@@ -4,4 +4,4 @@ Merge these archives into one:
     libllvmcxx.a
 
 Creates this archive:
-    libelibcxx.a
+    liboelibcxx.a

@@ -12,7 +12,7 @@ INCLUDES += -I$(HOSTINCDIR)
 
 SOURCES = main.cpp
 
-LIBRARIES += $(LIBDIR)/host/libhost.a
+LIBRARIES += $(LIBDIR)/host/liboehost.a
 
 LDFLAGS +=
 

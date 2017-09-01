@@ -2,7 +2,7 @@ include ../../mak/defs.mak
 
 .PHONY: lib
 
-TARGET = $(LIBDIR)/enclave/libelibcxx.a
+TARGET = $(LIBDIR)/enclave/liboelibcxx.a
 
 TMPDIR = $(LIBDIR)/tmp
 

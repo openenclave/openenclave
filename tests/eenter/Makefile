@@ -16,7 +16,7 @@ INCLUDES += -I$(TOP)/include
 
 SOURCES = main.cpp
 
-LIBRARIES += $(LIBDIR)/libhost.a
+LIBRARIES += $(LIBDIR)/liboehost.a
 
 LDFLAGS += -L$(LIBDIR) -lcrypto
 

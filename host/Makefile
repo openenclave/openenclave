@@ -3,7 +3,7 @@
 include ../mak/defs.mak
 #include $(MAKDIR)/sgx.mak
 
-ARCHIVE = $(LIBDIR)/host/libhost.a
+ARCHIVE = $(LIBDIR)/host/liboehost.a
 
 CC = gcc
 
