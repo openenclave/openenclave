@@ -2,6 +2,16 @@
 OpenEnclave has dependencies on the following open source packages. Licensing
 information for these is shown below.
 
+    (*) dlmalloc
+
+        website: http://g.oswego.edu/dl/html/malloc.html
+
+        download: 
+            wget ftp://gee.cs.oswego.edu/pub/misc/malloc.h
+            wget ftp://gee.cs.oswego.edu/pub/misc/malloc.c
+
+        license: public domain
+
     (*) musl libc 
 
         website: https://www.musl-libc.org
