@@ -92,3 +92,4 @@ prereqs/packages/.packages
 .config
 samples/hello/host/hellohost
 samples/sort/host/sorthost
+samples/echo/host/echohost
