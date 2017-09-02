@@ -2,7 +2,7 @@ ifndef OPENENCLAVE_DATADIR
 $(error Please define the OPENENCLAVE_DATADIR environment variable manually or by sourcing the installed OpenEnclave 'environment' file)
 endif
 
-DIRS = hello sort
+DIRS = hello sort echo
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) ; )
