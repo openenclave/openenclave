@@ -138,6 +138,12 @@ if [ ! -x "${BINDIR}/oegen" ]; then
     exit 1
 fi
 
+cp bin/oeelf ${BINDIR}
+if [ ! -x "${BINDIR}/oeelf" ]; then
+    echo "$0: failed to install ${OE_BINDIR}/oeelf"
+    exit 1
+fi
+
 echo "Created ${BINDIR}"
 
 ##==============================================================================
