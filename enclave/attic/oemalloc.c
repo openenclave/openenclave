@@ -20,6 +20,30 @@
 /*
 **==============================================================================
 **
+** Provide function names:
+**
+**==============================================================================
+*/
+
+#define OE_MALLOC __oemalloc
+#define OE_MEMALIGN __oememalign
+#define OE_CALLOC __oecalloc
+#define OE_REALLOC __oerealloc
+#define OE_FREE __oefree
+
+void *__oemalloc(size_t size);
+
+void __oefree(void *ptr);
+
+void *__oecalloc(size_t nmemb, size_t size);
+
+void *__oerealloc(void *ptr, size_t size);
+
+void *__oememalign(size_t alignment, size_t size);
+
+/*
+**==============================================================================
+**
 ** Check for function name defintions
 **
 **==============================================================================

@@ -18,7 +18,7 @@ typedef unsigned long OE_Thread;
 
 typedef struct _OE_ThreadAttr 
 {
-    unsigned long long reserved[8];
+    long __impl[7];
 }
 OE_ThreadAttr;
 
@@ -89,26 +89,37 @@ int OE_SpinDestroy(OE_Spinlock* spinlock);
 **==============================================================================
 */
 
-#define OE_MUTEX_INITIALIZER { 0, 0, 0, 0, 0, 0, 0, 0 }
-
 #define OE_MUTEX_RECURSIVE 1
 
 typedef struct _OE_MutexAttr 
 {
-    unsigned long long reserved[1];
+    int type;
 }
 OE_MutexAttr;
 
+#define OE_MUTEX_INITIALIZER {OE_SPINLOCK_INITIALIZER, 0, {NULL,NULL}, {0}}
+
 typedef struct _OE_Mutex
 {
-    unsigned long long reserved[8];
+    OE_Spinlock lock;
+    unsigned int refs;
+    unsigned char __padding[16]; /* align with system pthread_t */
+    struct 
+    {
+        void* front;
+        void* back;
+    }
+    queue;
 }
 OE_Mutex;
+
+/* This must be the same size as pthread_mutex_t in GLIBC */
+OE_STATIC_ASSERT((sizeof(OE_Mutex) == 40));
 
 int OE_MutexAttrInit(
     OE_MutexAttr* attr);
 
-int OE_MutexAttrSet(
+int OE_MutexAttrSetType(
     OE_MutexAttr* attr, int type);
 
 int OE_MutexAttrDestroy(
@@ -139,13 +150,23 @@ int OE_MutexDestroy(
 **==============================================================================
 */
 
-#define OE_COND_INITIALIZER { 0, 0, 0, 0, 0, 0, 0, 0 }
+#define OE_COND_INITIALIZER {OE_SPINLOCK_INITIALIZER, {NULL, NULL}, {0,0,0}}
 
 typedef struct _OE_Cond
 {
-    unsigned long long reserved[8];
+    OE_Spinlock lock;
+    struct 
+    {
+        void* front;
+        void* back;
+    }
+    queue;
+    unsigned long padding[3];
 }
 OE_Cond;
+
+/* This must the same size as pthread_cond_t in GLIBC */
+OE_STATIC_ASSERT((sizeof(OE_Cond) == 48));
 
 typedef struct _OE_CondAttr OE_CondAttr;
 
@@ -159,13 +180,6 @@ int OE_CondDestroy(
 int OE_CondWait(
     OE_Cond* cond, 
     OE_Mutex* mutex);
-
-typedef struct timespec __oe_timespec;
-
-int OE_CondTimedWait(
-    OE_Cond* cond, 
-    OE_Mutex* mutex,
-    struct timespec* ts);
 
 int OE_CondSignal(
     OE_Cond* cond);
