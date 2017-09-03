@@ -4,7 +4,8 @@ all: build sign
 
 CFLAGS = -g -O2 -Wall $(OE_CFLAGS)
 
-INCLUDES = -I$(OE_INCLUDEDIR)/openenclave/enclave
+INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/enclave
+INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/enclave/libc
 
 LDFLAGS = $(OE_LDFLAGS)
 

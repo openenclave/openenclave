@@ -1,5 +1,4 @@
 #include <openenclave.h>
-#include <stdio.h>
 
 OE_ECALL void EnclaveEcho(void* args)
 {

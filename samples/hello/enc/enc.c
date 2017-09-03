@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <openenclave.h>
 #include "../args.h"
 
@@ -24,7 +25,7 @@ OE_ECALL void Hello(void* args_)
         return;
     }
 
-    printf_u("enclave: hello!\n");
+    OE_HostPuts("enclave: hello!\n");
 
     args->ret = 0;
 }
