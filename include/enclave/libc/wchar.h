@@ -12,8 +12,6 @@ int wcsncasecmp(const wchar_t *s1, const wchar_t *s2, size_t n);
 
 wchar_t *wcsdup(const wchar_t *s);
 
-wchar_t *wcsdup_u(const wchar_t *s);
-
 size_t wcslen(const wchar_t *s);
 
 wchar_t *wmemcpy(wchar_t *s1, const wchar_t *s2, size_t n);

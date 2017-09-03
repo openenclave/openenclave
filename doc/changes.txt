@@ -1,0 +1,17 @@
+
+
+    (*) Developed SGX driver installer script
+
+    (*) Developed SGX AESM service installer script
+
+    (*) Developed OpenEnclave installer script
+
+    (*) Integrated dlmalloc (removed home-grown allocator)
+
+    (*) Wrote Getting Started Guide (prepared samples)
+
+    (*) Refectored enclave library to remove libc dependency
+
+    (*) Ported MBEDTLS to enclave (added test for SHA256 hashing)
+
+

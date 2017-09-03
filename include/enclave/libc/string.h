@@ -94,8 +94,6 @@ int strverscmp(const char *s1, const char *s2);
 
 char *strdup(const char *s);
 
-char *strdup_u(const char *s);
-
 __ELIBC_END
 
 #endif /*__ELIBC_STRING_H */

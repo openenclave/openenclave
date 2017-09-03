@@ -95,19 +95,11 @@ long long llabs(long long x);
 
 void* malloc(size_t size);
 
-void* malloc_u(size_t size);
-
 void free(void* ptr);
-
-void free_u(void* ptr);
 
 void* calloc(size_t nmemb, size_t size);
 
-void* calloc_u(size_t nmemb, size_t size);
-
 void* realloc(void* ptr, size_t size);
-
-void* realloc_u(void* ptr, size_t size);
 
 void* memalign(size_t alignment, size_t size);
 

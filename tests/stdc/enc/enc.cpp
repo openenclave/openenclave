@@ -181,8 +181,4 @@ OE_ECALL void Test(void* args_)
     timespec req = { 1, 0 };
     timespec rem;
     nanosleep(&req, &rem);
-
-#if 0
-    printf_u("tv_sec=%lu tv_usec=%lu", tv.tv_sec, tv.tv_usec);
-#endif
 }
