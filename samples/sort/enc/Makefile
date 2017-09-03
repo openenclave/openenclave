@@ -4,7 +4,7 @@ all: build sign
 
 CXXFLAGS = -g -O2 $(OE_CFLAGS)
 
-INCLUDES = -I$(OE_INCLUDEDIR)/openenclave/enclave/cxx -I$(OE_INCLUDEDIR)/openenclave/enclave 
+INCLUDES = -I$(OE_INCLUDEDIR)/openenclave/enclave/libcxx -I$(OE_INCLUDEDIR)/openenclave/enclave 
 
 LDFLAGS = $(OE_CXXLDFLAGS)
 
