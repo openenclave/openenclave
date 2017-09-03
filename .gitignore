@@ -93,3 +93,8 @@ samples/hello/host/hellohost
 samples/sort/host/sorthost
 samples/echo/host/echohost
 include/enclave/libcxx/
+3rdparty/mbedtls/.configure
+3rdparty/mbedtls/mbedtls/
+include/enclave/mbedtls/
+tests/attic/crypto/
+tests/mbed/host/mbedhost
