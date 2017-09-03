@@ -8,6 +8,4 @@ SIGNCONF = sign.conf
 
 KEYFILE = private.pem
 
-NO_LIBC=1
-
 include $(MAKDIR)/enclave.mak
