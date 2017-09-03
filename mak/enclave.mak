@@ -1,5 +1,9 @@
 CC = gcc
 
+define whole-archive
+-Wl,--whole-archive $(1) -Wl,--no-whole-archive
+endef
+
 CXX = g++
 
 CFLAGS += -Wall
@@ -95,26 +99,20 @@ __OBJECTS = $(SOURCES:.c=.o)
 OBJECTS = $(__OBJECTS:.cpp=.o)
 
 ifdef CSHLIB
-build : $(CSHLIB).signed.so
+__SHLIB=$(CSHLIB)
 else
-build : $(CXXSHLIB).signed.so
+__SHLIB=$(CXXSHLIB)
 endif
 
-ifdef CXXSHLIB
-$(CXXSHLIB).signed.so: $(CXXSHLIB).so
-	$(BINDIR)/oesign $(CXXSHLIB).so $(SIGNCONF) $(KEYFILE)
-	chmod +x $(CXXSHLIB).signed.so
-endif
+build : $(__SHLIB).signed.so
+
+$(__SHLIB).signed.so: $(__SHLIB).so
+	$(BINDIR)/oesign $(__SHLIB).so $(SIGNCONF) $(KEYFILE)
+	chmod +x $(__SHLIB).signed.so
 
 ifdef CXXSHLIB
 $(CXXSHLIB).so: $(OBJECTS)
 	g++ -o $(CXXSHLIB).so $(OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS)
-endif
-
-ifdef CSHLIB
-$(CSHLIB).signed.so: $(CSHLIB).so
-	$(BINDIR)/oesign $(CSHLIB).so $(SIGNCONF) $(KEYFILE)
-	chmod +x $(CSHLIB).signed.so
 endif
 
 ifdef CSHLIB
@@ -129,6 +127,6 @@ endif
 	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $<
 
 clean:
-	rm -f $(OBJECTS) $(CXXSHLIB).so $(CXXSHLIB).signed.so .depends
+	rm -f $(OBJECTS) $(__SHLIB).so $(__SHLIB).signed.so .depends
 
 include $(TOP)/mak/depend.mak

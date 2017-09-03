@@ -56,10 +56,11 @@ typedef enum _OE_Func
     OE_FUNC_MALLOC             = 0x07000000,
     OE_FUNC_FREE               = 0x08000000,
     OE_FUNC_PUTS               = 0x09000000,
-    OE_FUNC_STRFTIME           = 0x0A000000,
-    OE_FUNC_GETTIMEOFDAY       = 0x0B000000,
-    OE_FUNC_CLOCK_GETTIME      = 0x0C000000,
-    OE_FUNC_NANOSLEEP          = 0x0D000000,
+    OE_FUNC_PUTCHAR            = 0x0A000000,
+    OE_FUNC_STRFTIME           = 0x0B000000,
+    OE_FUNC_GETTIMEOFDAY       = 0x0C000000,
+    OE_FUNC_CLOCK_GETTIME      = 0x0D000000,
+    OE_FUNC_NANOSLEEP          = 0x0E000000,
 }
 OE_Func;
 

@@ -15,6 +15,8 @@ int OE_HostPuts(const char* str)
     if (__OE_OCall(OE_FUNC_PUTS, (oe_uint64_t)hstr, OE_NULL) != OE_OK)
         goto done;
 
+    ret = 0;
+
 done:
 
     if (hstr)

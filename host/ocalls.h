@@ -2,6 +2,7 @@
 #define _OE_HOST_OCALLS_H
 
 void HandlePuts(uint64_t argIn);
+void HandlePutchar(uint64_t argIn);
 void HandlePutws(uint64_t argIn);
 
 void HandleMalloc(uint64_t argIn, uint64_t* argOut);

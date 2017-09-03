@@ -7,6 +7,7 @@ DIRS += libunwind
 DIRS += libcxx
 DIRS += mergecxx
 DIRS += openssl
+DIRS += mbedtls
 
 define NL
 

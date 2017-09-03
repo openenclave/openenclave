@@ -16,19 +16,17 @@ clean:
 depend:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NL) )
 
-ENCLAVE = ./enc/cryptoenc.signed.so
-
 tests:
-	host/cryptohost $(ENCLAVE)
-
-mc:
-	$(MEMCHECK) host/cryptohost $(ENCLAVE)
-
-elf:
-	$(MAKE) -C enc elf
-
-gdb:
-	gdb host/cryptohost -x gdb.commands
+	host/mbedhost ./enc/mbedenc.signed.so
 
 size:
-	size $(ENCLAVE)
+	size ./enc/mbedenc.signed.so
+
+gdb:
+	gdb ./host/mbedhost
+
+rebuild:
+	( cd $(TOP)/host; $(MAKE) clean; $(MAKE) )
+	( cd $(TOP)/enclave ; $(MAKE) clean; $(MAKE) )
+	$(MAKE) clean
+	$(MAKE)

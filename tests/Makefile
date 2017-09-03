@@ -20,6 +20,7 @@ DIRS += tester
 DIRS += stdc
 DIRS += SampleAppAttestation 
 DIRS += stdcxx
+DIRS += mbed
 
 define NL
 

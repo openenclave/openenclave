@@ -20,7 +20,7 @@ endif
 ##
 ##==============================================================================
 
-DIRS = 3rdparty gen host libc enclave elf sign tests
+DIRS = 3rdparty gen host crypto libc enclave elf sign tests
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )
@@ -73,8 +73,6 @@ distclean: clean
 ## tests:
 ##
 ##==============================================================================
-
-check: tests
 
 tests:
 	$(MAKE) -s -C tests tests
@@ -141,3 +139,27 @@ prereqs:
 
 install:
 	@ ./scripts/install
+
+##==============================================================================
+##
+## check:
+##
+##==============================================================================
+
+CHECKDIR=$(CURDIR)/.check
+
+check:
+	rm -rf $(CHECKDIR)
+	@ $(MAKE) distclean
+	@ ./configure --prefix=$(CHECKDIR)
+	@ $(MAKE)
+	@ $(MAKE) tests
+	@ $(MAKE) install
+	( source $(CHECKDIR)/share/openenclave/environment; \
+          cd $(CHECKDIR)/share/openenclave/samples; \
+          $(MAKE); \
+          $(MAKE) run )
+	rm -rf $(CHECKDIR)
+	@ echo
+	@ echo "Check okay!"
+

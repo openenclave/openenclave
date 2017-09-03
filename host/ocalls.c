@@ -32,6 +32,12 @@ void HandlePuts(uint64_t argIn)
         puts(str);
 }
 
+void HandlePutchar(uint64_t argIn)
+{
+    int c = (int)argIn;
+    putchar(c);
+}
+
 void HandleThreadWait(uint64_t argIn)
 {
     const uint64_t tcs = argIn;

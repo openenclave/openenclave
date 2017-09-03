@@ -1,7 +1,7 @@
 include ../../../mak/defs.mak
 
-PROGRAM = cryptohost
+PROGRAM = mbedhost
 
-SOURCES = host.cpp
+SOURCES = host.c
 
 include $(TOP)/mak/host.mak

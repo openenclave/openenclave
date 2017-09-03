@@ -21,6 +21,8 @@ extern FILE* stderr;
 
 int puts(const char *s);
 
+int putchar(int c);
+
 int printf(const char *format, ...);
 
 __attribute__((format(printf, 2, 3)))

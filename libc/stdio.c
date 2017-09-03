@@ -11,24 +11,12 @@ FILE* stderr = ((FILE*)0x30000000);
 
 int puts(const char* str)
 {
-    int ret = EOF;
-    char* hstr = NULL;
+    return OE_HostPuts(str);
+}
 
-    if (!str)
-        goto done;
-
-    if (!(hstr = OE_HostStrdup(str)))
-        goto done;
-
-    if (__OE_OCall(OE_FUNC_PUTS, (uint64_t)hstr, NULL) != OE_OK)
-        goto done;
-
-done:
-
-    if (hstr)
-        OE_HostFree(hstr);
-
-    return ret;
+int putchar(int c)
+{
+    return OE_HostPutchar(c);
 }
 
 int asprintf(char **strp, const char *fmt, ...)
@@ -64,7 +52,6 @@ int printf(const char* fmt, ...)
     return n;
 }
 
-/* ATTN: this function is not reached when called */
 int fprintf(FILE* stream, const char* fmt, ...)
 {
     char buf[1024];
