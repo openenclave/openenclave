@@ -41,7 +41,6 @@
 3rdparty/musl/musl/
 3rdparty/openssl/openssl/
 bin/
-include/enclave/cxx/
 lib/
 tests/SampleApp/SampleAppHost/SampleAppHost
 tests/SampleAppAttestation/SampleAppAttestationHost/SampleAppAttestationHost
@@ -93,3 +92,4 @@ prereqs/packages/.packages
 samples/hello/host/hellohost
 samples/sort/host/sorthost
 samples/echo/host/echohost
+include/enclave/libcxx/

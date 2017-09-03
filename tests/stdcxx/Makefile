@@ -32,6 +32,3 @@ gdb:
 
 size:
 	size $(ENCLAVE)
-
-vaddr:
-	readelf -S $(ENCLAVE) | grep "\.text"
