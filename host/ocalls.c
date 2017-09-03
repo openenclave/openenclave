@@ -8,6 +8,7 @@
 #include <sys/syscall.h>
 
 #include <openenclave.h>
+#define __OE_NEED_TIME_CALLS
 #include <oeinternal/calls.h>
 #include "enclave.h"
 #include "ocalls.h"

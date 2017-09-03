@@ -1,13 +1,13 @@
 #include <openenclave.h>
 #include "pingpong_u.h"
-
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    size_t n)
+    oe_size_t n)
 {
     return memcpy((void*)dest, src, n);
 }
+
 
 /*
 ********************************************************************************
@@ -34,8 +34,8 @@ static const OE_FieldTI _PingArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "in", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct PingArgs, in),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -44,8 +44,8 @@ static const OE_FieldTI _PingArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "out", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct PingArgs, out),
         sizeof(char) * 128, /* size */
         128, /* subscript */
@@ -78,8 +78,8 @@ static const OE_FieldTI _PongArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "in", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct PongArgs, in),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -88,8 +88,8 @@ static const OE_FieldTI _PongArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "out", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct PongArgs, out),
         sizeof(char) * 128, /* size */
         128, /* subscript */
@@ -110,7 +110,7 @@ struct LogArgs
     unsigned char __pad0[4];
     const char *str;
     unsigned char __pad1[4];
-    uint64_t x;
+    oe_uint64_t x;
     unsigned char __pad2[4];
 };
 
@@ -122,8 +122,8 @@ static const OE_FieldTI _LogArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "str", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct LogArgs, str),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -132,10 +132,10 @@ static const OE_FieldTI _LogArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "x", /* name */
         OE_UINT64_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct LogArgs, x),
-        sizeof(uint64_t), /* size */
+        sizeof(oe_uint64_t), /* size */
         0, /* subscript */
     },
 };
@@ -173,7 +173,7 @@ OE_OCALL void __Pong(void* args)
 
 OE_EXTERNC void Log(
     const char *str,
-    uint64_t x);
+    oe_uint64_t x);
 
 /* ICALL: generator.cpp(657) */
 OE_OCALL void __Log(void* args)

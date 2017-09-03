@@ -23,9 +23,18 @@ CXXFLAGS += -nostdinc++
 #CXXFLAGS += -fno-enforce-eh-specs
 #CXXFLAGS += -fno-threadsafe-statics
 
+ENCLAVEINCDIR = $(INCDIR)/enclave
+
 INCLUDES += -I$(ENCLAVEINCDIR)
 
-CXX_INCLUDES += -I$(ENCLAVEINCDIR)/cxx $(INCLUDES)
+ifdef NEED_LIBCXX
+NEED_LIBC=1
+INCLUDES += -I$(ENCLAVEINCDIR)/libcxx
+endif
+
+ifdef NEED_LIBC
+INCLUDES += -I$(ENCLAVEINCDIR)/libc
+endif
 
 DEFINES += -DOE_BUILD_ENCLAVE
 
@@ -56,15 +65,18 @@ __LIBECRYPTO=$(LIBDIR)/enclave/libecrypto.a
 
 LDFLAGS +=-Wl,--start-group
 LDFLAGS += $(__LIBENCLAVE)
+ifdef NEED_LIBCXX
 LDFLAGS += $(__LIBELIBCXX)
+endif
+ifdef NEED_LIBC
 LDFLAGS += $(__LIBELIBC)
-ifdef NEED_ECRYPTO
-LDFLAGS += $(__LIBECRYPTO)
 endif
 LDFLAGS +=-Wl,--end-group
 
-ifndef CXXSHLIB
-$(error "please define CXXSHLIB")
+ifndef CSHLIB
+  ifndef CXXSHLIB
+    $(error "please define CSHLIB or CXXSHLIB")
+  endif
 endif
 
 ifndef SOURCES
@@ -82,17 +94,36 @@ endif
 __OBJECTS = $(SOURCES:.c=.o)
 OBJECTS = $(__OBJECTS:.cpp=.o)
 
+ifdef CSHLIB
+build : $(CSHLIB).signed.so
+else
 build : $(CXXSHLIB).signed.so
+endif
 
+ifdef CXXSHLIB
 $(CXXSHLIB).signed.so: $(CXXSHLIB).so
 	$(BINDIR)/oesign $(CXXSHLIB).so $(SIGNCONF) $(KEYFILE)
 	chmod +x $(CXXSHLIB).signed.so
+endif
 
+ifdef CXXSHLIB
 $(CXXSHLIB).so: $(OBJECTS)
 	g++ -o $(CXXSHLIB).so $(OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS)
+endif
+
+ifdef CSHLIB
+$(CSHLIB).signed.so: $(CSHLIB).so
+	$(BINDIR)/oesign $(CSHLIB).so $(SIGNCONF) $(KEYFILE)
+	chmod +x $(CSHLIB).signed.so
+endif
+
+ifdef CSHLIB
+$(CSHLIB).so: $(OBJECTS)
+	gcc -o $(CSHLIB).so $(OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS)
+endif
 
 %.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) $(DEFINES) $(CXX_INCLUDES) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(DEFINES) $(INCLUDES) -o $@ $<
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $<

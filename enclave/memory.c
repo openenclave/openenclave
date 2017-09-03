@@ -1,32 +1,32 @@
 #include <openenclave.h>
 #include <oeinternal/globals.h>
 
-bool OE_IsWithinEnclave(
+oe_bool OE_IsWithinEnclave(
     const void* p,
-    size_t n)
+    oe_size_t n)
 {
-    const uint8_t* start = (const uint8_t*)p;
-    const uint8_t* end = (const uint8_t*)p + n;
-    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
-    uint64_t size = __OE_GetEnclaveSize();
+    const oe_uint8_t* start = (const oe_uint8_t*)p;
+    const oe_uint8_t* end = (const oe_uint8_t*)p + n;
+    const oe_uint8_t* base = (const oe_uint8_t*)__OE_GetEnclaveBase();
+    oe_uint64_t size = __OE_GetEnclaveSize();
 
     if (!(start >= base && start < (base + size)))
-        return false;
+        return oe_false;
 
     if (n)
     {
         end--;
 
         if (!(end >= base && end < (base + size)))
-            return false;
+            return oe_false;
     }
 
-    return true;
+    return oe_true;
 }
 
-bool OE_IsOutsideEnclave(
+oe_bool OE_IsOutsideEnclave(
     const void* p,
-    size_t n)
+    oe_size_t n)
 {
     return !OE_IsWithinEnclave(p, n);
 }

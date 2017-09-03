@@ -9,11 +9,13 @@ CXXFLAGS += -fPIC
 INCLUDES += -Itrunk/include
 INCLUDES += -Itrunk/src
 INCLUDES += -I$(TOP)/3rdparty/libcxxrt/libcxxrt/src
+INCLUDES += -I$(INCDIR)/enclave/libc
 INCLUDES += -I$(ENCLAVEINCDIR)
 
 DEFINES += -DLIBCXXRT
 DEFINES += -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
 
+SOURCES += $(wildcard *.cpp)
 SOURCES += trunk/src/algorithm.cpp
 SOURCES += trunk/src/any.cpp
 SOURCES += trunk/src/bind.cpp
@@ -50,7 +52,7 @@ TARGET = $(LIBDIR)/tmp/libcxx.a
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
-HEADER_INSTALL_DIRECTORY=$(INCDIR)/enclave/cxx
+HEADER_INSTALL_DIRECTORY=$(INCDIR)/enclave/libcxx
 
 all: trunk patch $(OBJECTS)
 	@ rm -f $(TARGET)
@@ -82,6 +84,3 @@ patch:
 install:
 	rm -rf $(HEADER_INSTALL_DIRECTORY)
 	cp -r trunk/include $(HEADER_INSTALL_DIRECTORY)
-
-merge:
-	$(MAKE) -C ../mergecxx

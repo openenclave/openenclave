@@ -7,9 +7,9 @@
 OE_EXTERNC_BEGIN
 
 /* Round up to the next power of two (or n if already a power of 2) */
-OE_INLINE uint32_t OE_RoundU32Power2(uint32_t n)
+OE_INLINE oe_uint32_t OE_RoundU32Power2(oe_uint32_t n)
 {
-    uint32_t x = n - 1;
+    oe_uint32_t x = n - 1;
     x |= (x >> 1);
     x |= (x >> 2);
     x |= (x >> 4);
@@ -19,9 +19,9 @@ OE_INLINE uint32_t OE_RoundU32Power2(uint32_t n)
 }
 
 /* Round up to the next power of two (or n if already a power of 2) */
-OE_INLINE uint64_t OE_RoundU64ToPow2(uint64_t n)
+OE_INLINE oe_uint64_t OE_RoundU64ToPow2(oe_uint64_t n)
 {
-    uint64_t x = n - 1;
+    oe_uint64_t x = n - 1;
     x |= (x >> 1);
     x |= (x >> 2);
     x |= (x >> 4);
@@ -33,7 +33,7 @@ OE_INLINE uint64_t OE_RoundU64ToPow2(uint64_t n)
 
 OE_INLINE unsigned int OE_Checksum(
     const void* data,
-    size_t size)
+    oe_size_t size)
 {
     const unsigned char* p = (const unsigned char*)data;
     unsigned int x = 0;
@@ -53,7 +53,7 @@ OE_INLINE unsigned long long OE_RoundUpToMultiple(
 
 void __OE_HexDump(
     const void* data_,
-    size_t size);
+    oe_size_t size);
 
 OE_EXTERNC_END
 

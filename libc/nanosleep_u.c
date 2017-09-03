@@ -1,4 +1,6 @@
+#define __OE_NEED_TIME_CALLS
 #include <time.h>
+#include <string.h>
 #include <openenclave.h>
 #include <oeinternal/calls.h>
 
@@ -7,7 +9,7 @@ int nanosleep(const struct timespec *req, struct timespec *rem)
     size_t ret = -1;
     OE_NanosleepArgs* args = NULL;
 
-    if (!(args = calloc_u(1, sizeof(OE_NanosleepArgs))))
+    if (!(args = OE_HostCalloc(1, sizeof(OE_NanosleepArgs))))
         goto done;
 
     args->ret = -1;
@@ -35,7 +37,7 @@ int nanosleep(const struct timespec *req, struct timespec *rem)
 done:
 
     if (args)
-        free_u(args);
+        OE_HostFree(args);
 
     return ret;
 }

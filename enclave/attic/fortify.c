@@ -12,9 +12,9 @@ int __vfprintf_chk(FILE *stream, const char *format, va_list ap)
     return vfprintf(stream, format, ap);
 }
 
-void *__memset_chk(void *s, int c, size_t n);
+void *__memset_chk(void *s, int c, oe_size_t n);
 
-void *__memset_chk(void *s, int c, size_t n)
+void *__memset_chk(void *s, int c, oe_size_t n)
 {
     return memset(s, c, n);
 }

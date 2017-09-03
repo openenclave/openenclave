@@ -1,4 +1,6 @@
+#define __OE_NEED_TIME_CALLS
 #include <time.h>
+#include <string.h>
 #include <openenclave.h>
 #include <oeinternal/calls.h>
 
@@ -14,7 +16,7 @@ size_t strftime(
     if (!str || !format || !tm)
         goto done;
 
-    if (!(a = calloc_u(1, sizeof(OE_StrftimeArgs))))
+    if (!(a = OE_HostCalloc(1, sizeof(OE_StrftimeArgs))))
         goto done;
 
     if (strlcpy(a->format, format, sizeof(a->format)) >= sizeof(a->format))
@@ -36,7 +38,7 @@ size_t strftime(
 done:
 
     if (a)
-        free_u(a);
+        OE_HostFree(a);
 
     return ret;
 }

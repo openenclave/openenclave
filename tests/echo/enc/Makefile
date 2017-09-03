@@ -1,15 +1,13 @@
 include ../../../mak/defs.mak
 
-CXXSHLIB = echoenc
+CSHLIB = echoenc
 
-SOURCES = enc.cpp
+SOURCES = enc.c
 
 SIGNCONF = sign.conf
 
 KEYFILE = private.pem
 
-include $(MAKDIR)/enclave.mak
+NO_LIBC=1
 
-xxx:
-	echo $(HOSTINCDIR)
-	echo $(ENCLAVEINCDIR)
+include $(MAKDIR)/enclave.mak

@@ -34,6 +34,7 @@ SOURCES += $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
 OBJECTS += main.o
 OBJECTS += exit.o
+OBJECTS += abort.o
 
 archive: $(ARCHIVE)
 
@@ -48,6 +49,9 @@ enter.o: main.S
 
 exit.o: exit.S
 	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o exit.o exit.S
+
+abort.o: abort.S
+	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o abort.o abort.S
 
 clean:
 	rm -f $(ARCHIVE) $(OBJECTS) .depends

@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <openenclave.h>
+#include <stdbool.h>
 #include <oeinternal/utils.h>
 #include <oeinternal/build.h>
 #include <oeinternal/sgxtypes.h>

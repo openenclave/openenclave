@@ -7,7 +7,7 @@
 OE_EXTERNC_BEGIN
 
 void* __OE_GMalloc(
-    size_t size);
+    oe_size_t size);
 
 void __OE_GFree(
     void* ptr);
@@ -15,9 +15,9 @@ void __OE_GFree(
 int __OE_GCheck(
     void* ptr);
 
-size_t __OE_GCount(void);
+oe_size_t __OE_GCount(void);
 
-bool __OE_GOwns(const void* ptr);
+oe_bool __OE_GOwns(const void* ptr);
 
 void __OE_GFix(void* ptr);
 

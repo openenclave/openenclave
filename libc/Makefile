@@ -34,6 +34,7 @@ CFLAGS += -D_XOPEN_SOURCE=700
 MUSLSRC = $(TOP)/3rdparty/musl/musl/src
 
 INCLUDES += -I$(TOP)/include/enclave
+INCLUDES += -I$(TOP)/include/enclave/libc
 INCLUDES += -I$(CURDIR)/internal
 INCLUDES += -I$(MUSLSRC)/internal
 

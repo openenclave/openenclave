@@ -32,8 +32,8 @@ int HostUnsecureStrPatching(
 {
     SecureStrPatchingARGS* args;
     
-    args = (SecureStrPatchingARGS*)malloc_u(sizeof(SecureStrPatchingARGS));
-    if (args == NULL)
+    args = (SecureStrPatchingARGS*)OE_HostMalloc(sizeof(SecureStrPatchingARGS));
+    if (args == OE_NULL)
     {
         __OE_DebugBreak();
     }
@@ -44,6 +44,6 @@ int HostUnsecureStrPatching(
     {
         __OE_DebugBreak();
     }
-    free_u(args);
+    OE_HostFree(args);
     return 0;
 }

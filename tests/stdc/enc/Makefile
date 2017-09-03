@@ -14,4 +14,5 @@ SIGNCONF = sign.conf
 KEYFILE = private.pem
 
 WHOLE_ARCHIVE=1
+NEED_LIBC=1
 include $(MAKDIR)/enclave.mak

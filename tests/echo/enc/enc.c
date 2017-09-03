@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <openenclave.h>
 #include "../args.h"
 
@@ -12,7 +11,7 @@ OE_ECALL void Echo(void* args_)
         return;
     }
 
-    if (strcmp(args->in, "Hello World") != 0)
+    if (OE_Strcmp(args->in, "Hello World") != 0)
     {
         args->ret = -1;
         return;
@@ -24,7 +23,7 @@ OE_ECALL void Echo(void* args_)
         return;
     }
 
-    printf_u("Hello from Echo enclave!");
+    OE_HostPuts("Hello from Echo enclave!");
 
     args->ret = 0;
 }

@@ -2,6 +2,7 @@
 #define _OE_ENCLAVE_H
 
 #include <openenclave.h>
+#include <stdbool.h>
 #include <oeinternal/build.h>
 #include <oeinternal/sgxtypes.h>
 

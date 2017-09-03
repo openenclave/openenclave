@@ -23,7 +23,7 @@
 
 OE_EXTERNC int TestReadFile(
     const char *path,
-    uint32_t *checksum);
+    oe_uint32_t *checksum);
 
 /*
 ********************************************************************************
@@ -39,9 +39,9 @@ OE_EXTERNC OE_Result Fopen(
     const char *modes);
 
 OE_EXTERNC OE_Result Fread(
-    size_t *ret,
+    oe_size_t *ret,
     void *ptr,
-    size_t size,
+    oe_size_t size,
     FILE *stream);
 
 OE_EXTERNC OE_Result Fclose(

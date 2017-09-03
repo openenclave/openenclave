@@ -3,9 +3,9 @@
 
 #define dladdr __libcxxrt_dladdr
 
-#define printf printf_u
+#define printf __libcxxrt_printf
 
-#define fprintf fprintf_u
+#define fprintf __libcxxrt_fprintf
 
 #define sched_yield __libcxxrt_sched_yield 
 

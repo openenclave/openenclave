@@ -20,5 +20,5 @@ OE_ECALL void GetReport(void* args_)
     }
 
     /* Copy the report to the caller's buffer */
-    memcpy(&args->report, &copy.report, sizeof(SGX_Report));
+    OE_Memcpy(&args->report, &copy.report, sizeof(SGX_Report));
 }

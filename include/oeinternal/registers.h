@@ -13,13 +13,13 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_Registers
 {
-    uint64_t rsp;
-    uint64_t rbp;
-    uint64_t rbx;
-    uint64_t r12;
-    uint64_t r13;
-    uint64_t r14;
-    uint64_t r15;
+    oe_uint64_t rsp;
+    oe_uint64_t rbp;
+    oe_uint64_t rbx;
+    oe_uint64_t r12;
+    oe_uint64_t r13;
+    oe_uint64_t r14;
+    oe_uint64_t r15;
 }
 OE_Registers;
 

@@ -8,9 +8,9 @@ OE_Result SGX_CreateReport(
     SGX_Report* report)
 {
     OE_Result result = OE_UNEXPECTED;
-    SGX_TargetInfo* ti = NULL;
-    SGX_ReportData* rd = NULL;
-    SGX_Report* r = NULL;
+    SGX_TargetInfo* ti = OE_NULL;
+    SGX_ReportData* rd = OE_NULL;
+    SGX_Report* r = OE_NULL;
 
     /* Reject invalid parameters (reportData may be null) */
     if (!targetInfo || !report)
@@ -30,27 +30,27 @@ OE_Result SGX_CreateReport(
 
     /* Align TARGET INFO on 512 byte boundary */
     {
-        if (!(ti = (SGX_TargetInfo*)memalign(512, sizeof(SGX_TargetInfo))))
+        if (!(ti = (SGX_TargetInfo*)OE_Memalign(512, sizeof(SGX_TargetInfo))))
             OE_THROW(OE_OUT_OF_MEMORY);
 
-        memcpy(ti, targetInfo, sizeof(SGX_TargetInfo));
+        OE_Memcpy(ti, targetInfo, sizeof(SGX_TargetInfo));
     }
 
     /* Align REPORT DATA on 128 byte boundary (if not null) */
     if (reportData)
     {
-        if (!(rd = (SGX_ReportData*)memalign(128, sizeof(SGX_ReportData))))
+        if (!(rd = (SGX_ReportData*)OE_Memalign(128, sizeof(SGX_ReportData))))
             OE_THROW(OE_OUT_OF_MEMORY);
 
-        memcpy(rd, reportData, sizeof(SGX_ReportData));
+        OE_Memcpy(rd, reportData, sizeof(SGX_ReportData));
     }
 
     /* Align REPORT on 512 byte boundary */
     {
-        if (!(r = (SGX_Report*)memalign(512, sizeof(SGX_Report))))
+        if (!(r = (SGX_Report*)OE_Memalign(512, sizeof(SGX_Report))))
             OE_THROW(OE_OUT_OF_MEMORY);
 
-        memset(r, 0, sizeof(SGX_Report));
+        OE_Memset(r, 0, sizeof(SGX_Report));
     }
 
     asm volatile("/* @before */\n\t");
@@ -72,7 +72,7 @@ OE_Result SGX_CreateReport(
     asm volatile("/* @after */\n\t");
 
     /* Copy REPORT to caller's buffer */
-    memcpy(report, r, sizeof(SGX_Report));
+    OE_Memcpy(report, r, sizeof(SGX_Report));
 
     result = OE_OK;
 
@@ -80,20 +80,20 @@ catch:
 
     if (ti)
     {
-        memset(ti, 0, sizeof(SGX_TargetInfo));
-        free(ti);
+        OE_Memset(ti, 0, sizeof(SGX_TargetInfo));
+        OE_Free(ti);
     }
 
     if (rd)
     {
-        memset(rd, 0, sizeof(SGX_ReportData));
-        free(rd);
+        OE_Memset(rd, 0, sizeof(SGX_ReportData));
+        OE_Free(rd);
     }
 
     if (r)
     {
-        memset(r, 0, sizeof(SGX_Report));
-        free(r);
+        OE_Memset(r, 0, sizeof(SGX_Report));
+        OE_Free(r);
     }
 
     return result;
@@ -104,10 +104,10 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveReportData), sizeof(SGX_ReportData));
 OE_Result OE_GetReportForRemoteAttestation(
     const OE_EnclaveReportData *reportData,
     void *report,
-    size_t* reportSize)
+    oe_size_t* reportSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_InitQuoteArgs* args = NULL;
+    OE_InitQuoteArgs* args = OE_NULL;
     SGX_TargetInfo targetInfo;
 
     /* Check report size */
@@ -128,13 +128,14 @@ OE_Result OE_GetReportForRemoteAttestation(
 
     /* Have host initialize the quote (SGX_InitQuote) */
     {
-        if (!(args = (OE_InitQuoteArgs*)calloc_u(1,sizeof(OE_InitQuoteArgs))))
+        if (!(args = (OE_InitQuoteArgs*)OE_HostCalloc(
+            1, sizeof(OE_InitQuoteArgs))))
         {
             OE_THROW(OE_OUT_OF_MEMORY);
         }
 
-        OE_TRY(__OE_OCall(OE_FUNC_INIT_QUOTE, (uint64_t)args, NULL));
-        memcpy(&targetInfo, &args->targetInfo, sizeof(SGX_TargetInfo));
+        OE_TRY(__OE_OCall(OE_FUNC_INIT_QUOTE, (oe_uint64_t)args, OE_NULL));
+        OE_Memcpy(&targetInfo, &args->targetInfo, sizeof(SGX_TargetInfo));
     }
 
     /* Create the report */
@@ -149,7 +150,7 @@ catch:
 
 #if 0
     if (args)
-        free_u(args);
+        OE_HostFree(args);
 #endif
 
     return result;

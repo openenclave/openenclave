@@ -2,7 +2,7 @@
 #define _TD_H
 
 #include <oeinternal/sgxtypes.h>
-#include <setjmp.h>
+#include <oeinternal/jump.h>
 #include "asmdefs.h"
 
 /*
@@ -41,7 +41,7 @@ typedef struct _Callsite Callsite;
 struct _Callsite
 {
     /* Enclave callsite stored here when exiting to make an OCALL */
-    jmp_buf jmpbuf;
+    OE_Jmpbuf jmpbuf;
 
     /* Pointer to next ECALL context */
     Callsite* next;
@@ -69,6 +69,6 @@ void TD_Init(TD* td);
 
 void TD_Clear(TD* td);
 
-bool TD_Initialized(TD* td);
+oe_bool TD_Initialized(TD* td);
 
 #endif /* _TD_H */

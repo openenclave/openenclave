@@ -7,6 +7,8 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <oeinternal/utils.h>
 #include <oeinternal/build.h>
 #include <oeinternal/sgxtypes.h>

@@ -14,14 +14,12 @@ DIRS += ecall
 DIRS += ocall
 DIRS += report
 DIRS += thread
-DIRS += pthread
 DIRS += pingpong 
 DIRS += file
 DIRS += tester
 DIRS += stdc
-DIRS += stdcxx
 DIRS += SampleAppAttestation 
-DIRS += crypto
+DIRS += stdcxx
 
 define NL
 

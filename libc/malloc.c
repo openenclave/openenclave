@@ -1,18 +1,28 @@
+#include <stddef.h>
+#include <stdlib.h>
 #include <openenclave.h>
-#include <oeinternal/globals.h>
-#include <oeinternal/fault.h>
 
-#define HAVE_MMAP 0
-#define LACKS_UNISTD_H
-#define LACKS_SYS_PARAM_H
-#define LACKS_SYS_TYPES_H
-#define LACKS_TIME_H
-#define NO_MALLOC_STATS 1
-#define MALLOC_FAILURE_ACTION
-#define MORECORE sbrk
-#define ABORT abort()
+void *malloc(size_t size)
+{
+    return OE_Malloc(size);
+}
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-prototypes"
-#pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#include "../3rdparty/dlmalloc/malloc.c"
+void free(void *ptr)
+{
+    OE_Free(ptr);
+}
+
+void *calloc(size_t nmemb, size_t size)
+{
+    return OE_Calloc(nmemb, size);
+}
+
+void *realloc(void *ptr, size_t size)
+{
+    return OE_Realloc(ptr, size);
+}
+
+void *memalign(size_t alignment, size_t size)
+{
+    return OE_Memalign(alignment, size);
+}

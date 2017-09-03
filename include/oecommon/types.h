@@ -2,10 +2,6 @@
 #define _OE_TYPES_H
 
 #include "defs.h"
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <wchar.h>
 
 /*
 **==============================================================================
@@ -46,6 +42,50 @@
 
 #define OE_INT64_F "%ld"
 #define OE_UINT64_F "%lu"
+
+/*
+**==============================================================================
+**
+** Basic types:
+**
+**==============================================================================
+*/
+
+typedef int oe_wchar_t;
+
+typedef long oe_ssize_t;
+
+typedef unsigned long oe_size_t;
+
+typedef signed char oe_int8_t;
+
+typedef unsigned char oe_uint8_t;
+
+typedef short oe_int16_t;
+
+typedef unsigned short oe_uint16_t;
+
+typedef int oe_int32_t;
+
+typedef unsigned int oe_uint32_t;
+
+typedef long oe_int64_t;
+
+typedef unsigned long oe_uint64_t;
+
+typedef unsigned long oe_uintptr_t;
+
+typedef long oe_ptrdiff_t;
+
+#ifdef __cplusplus
+# define oe_true true
+# define oe_false false
+# define oe_bool bool
+#else
+# define oe_true 1
+# define oe_false 0
+# define oe_bool _Bool
+#endif
 
 /*
 **==============================================================================
@@ -95,11 +135,11 @@ OE_Type;
 **==============================================================================
 */
 
-#define OE_HI_WORD(X) ((uint64_t)(X >> 32))
+#define OE_HI_WORD(X) ((oe_uint64_t)(X >> 32))
 
-#define OE_LO_WORD(X) ((uint64_t)X & 0x00000000FFFFFFFF)
+#define OE_LO_WORD(X) ((oe_uint64_t)X & 0x00000000FFFFFFFF)
 
-#define OE_MAKE_WORD(HI, LO) (((uint64_t)HI << 32) | (uint64_t)LO)
+#define OE_MAKE_WORD(HI, LO) (((oe_uint64_t)HI << 32) | (oe_uint64_t)LO)
 
 /*
 **==============================================================================
@@ -109,7 +149,7 @@ OE_Type;
 **==============================================================================
 */
 
-typedef void* (*OE_AllocProc)(size_t size);
+typedef void* (*OE_AllocProc)(oe_size_t size);
 
 typedef void (*OE_DeallocProc)(void* ptr);
 

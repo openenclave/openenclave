@@ -19,12 +19,9 @@ extern FILE* stdin;
 extern FILE* stdout;
 extern FILE* stderr;
 
-int puts_u(const char *s);
+int puts(const char *s);
 
-int printf_u(const char *format, ...);
-
-__attribute__((format(printf, 2, 3)))
-int fprintf_u(FILE *stream, const char *format, ...);
+int printf(const char *format, ...);
 
 __attribute__((format(printf, 2, 3)))
 int fprintf(FILE *stream, const char *format, ...);

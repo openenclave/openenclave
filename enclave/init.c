@@ -1,7 +1,7 @@
 #include "init.h"
-#include <setjmp.h>
 #include <openenclave.h>
 #include <oeinternal/sgxtypes.h>
+#include <oeinternal/jump.h>
 #include <oeinternal/fault.h>
 #include <oeinternal/calls.h>
 #include <oeinternal/reloc.h>
@@ -24,10 +24,10 @@
 static void _ApplyRelocations(void)
 {
     const OE_Reloc* relocs = (const OE_Reloc*)__OE_GetRelocBase();
-    size_t nrelocs = __OE_GetRelocSize() / sizeof(OE_Reloc);
-    const uint8_t* baseaddr = (const uint8_t*)__OE_GetEnclaveBase();
+    oe_size_t nrelocs = __OE_GetRelocSize() / sizeof(OE_Reloc);
+    const oe_uint8_t* baseaddr = (const oe_uint8_t*)__OE_GetEnclaveBase();
 
-    for (size_t i = 0; i < nrelocs; i++)
+    for (oe_size_t i = 0; i < nrelocs; i++)
     {
         const OE_Reloc* p = &relocs[i];
 
@@ -36,12 +36,12 @@ static void _ApplyRelocations(void)
             break;
 
         /* Compute address of reference to be relocated */
-        uint64_t* dest = (uint64_t*)(baseaddr + p->offset);
+        oe_uint64_t* dest = (oe_uint64_t*)(baseaddr + p->offset);
 
         (void)dest;
 
         /* Relocate the reference */
-        *dest = (uint64_t)(baseaddr + p->addend);
+        *dest = (oe_uint64_t)(baseaddr + p->addend);
     }
 }
 
@@ -59,13 +59,13 @@ static void _CheckMemoryBoundaries(void)
 {
     /* This is a tautology! */
     if (!OE_IsWithinEnclave(__OE_GetEnclaveBase(), __OE_GetEnclaveSize()))
-        abort();
+        OE_Abort();
 
     if (!OE_IsWithinEnclave(__OE_GetRelocBase(), __OE_GetRelocSize()))
-        abort();
+        OE_Abort();
 
     if (!OE_IsWithinEnclave(__OE_GetHeapBase(), __OE_GetHeapSize()))
-        abort();
+        OE_Abort();
 }
 
 /*

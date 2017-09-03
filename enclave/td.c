@@ -4,25 +4,25 @@
 #include "td.h"
 #include "asmdefs.h"
 
-OE_STATIC_ASSERT(offsetof(TD, magic) == TD_magic);
-OE_STATIC_ASSERT(offsetof(TD, depth) == TD_depth);
-OE_STATIC_ASSERT(offsetof(TD, initialized) == TD_initialized);
-OE_STATIC_ASSERT(offsetof(TD, host_rcx) == TD_host_rcx);
-OE_STATIC_ASSERT(offsetof(TD, host_rdx) == TD_host_rdx);
-OE_STATIC_ASSERT(offsetof(TD, host_r8) == TD_host_r8);
-OE_STATIC_ASSERT(offsetof(TD, host_r9) == TD_host_r9);
-OE_STATIC_ASSERT(offsetof(TD, host_r10) == TD_host_r10);
-OE_STATIC_ASSERT(offsetof(TD, host_r11) == TD_host_r11);
-OE_STATIC_ASSERT(offsetof(TD, host_r12) == TD_host_r12);
-OE_STATIC_ASSERT(offsetof(TD, host_r13) == TD_host_r13);
-OE_STATIC_ASSERT(offsetof(TD, host_r14) == TD_host_r14);
-OE_STATIC_ASSERT(offsetof(TD, host_r15) == TD_host_r15);
-OE_STATIC_ASSERT(offsetof(TD, host_rsp) == TD_host_rsp);
-OE_STATIC_ASSERT(offsetof(TD, host_rbp) == TD_host_rbp);
-OE_STATIC_ASSERT(offsetof(TD, oret_func) == TD_oret_func);
-OE_STATIC_ASSERT(offsetof(TD, oret_arg) == TD_oret_arg);
-OE_STATIC_ASSERT(offsetof(TD, callsites) == TD_callsites);
-OE_STATIC_ASSERT(offsetof(TD, simulate) == TD_simulate);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, magic) == TD_magic);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, depth) == TD_depth);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, initialized) == TD_initialized);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rcx) == TD_host_rcx);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rdx) == TD_host_rdx);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r8) == TD_host_r8);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r9) == TD_host_r9);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r10) == TD_host_r10);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r11) == TD_host_r11);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r12) == TD_host_r12);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r13) == TD_host_r13);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r14) == TD_host_r14);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r15) == TD_host_r15);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rsp) == TD_host_rsp);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rbp) == TD_host_rbp);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, oret_func) == TD_oret_func);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, oret_arg) == TD_oret_arg);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, callsites) == TD_callsites);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, simulate) == TD_simulate);
 
 /*
 **==============================================================================
@@ -40,7 +40,7 @@ OE_STATIC_ASSERT(offsetof(TD, simulate) == TD_simulate);
 
 OE_ThreadData* OE_GetThreadData()
 {
-    OE_ThreadData* td = NULL;
+    OE_ThreadData* td = OE_NULL;
 
     asm volatile(
         "mov %%gs:0, %%rax\n\t"
@@ -83,7 +83,7 @@ void TD_PushCallsite(TD* td, Callsite* callsite)
 void TD_PopCallsite(TD* td)
 {
     if (!td->callsites)
-        abort();
+        OE_Abort();
 
     td->callsites = td->callsites->next;
 
@@ -126,7 +126,7 @@ void TD_PopCallsite(TD* td)
 
 TD* TD_FromTCS(void* tcs)
 {
-    return (TD*)((uint8_t*)tcs + (4 * OE_PAGE_SIZE));
+    return (TD*)((oe_uint8_t*)tcs + (4 * OE_PAGE_SIZE));
 }
 
 /*
@@ -141,7 +141,7 @@ TD* TD_FromTCS(void* tcs)
 
 void* TD_ToTCS(const TD* td)
 {
-    return (uint8_t*)td - (4 * OE_PAGE_SIZE);
+    return (oe_uint8_t*)td - (4 * OE_PAGE_SIZE);
 }
 
 /*
@@ -175,12 +175,12 @@ TD* TD_Get()
 **==============================================================================
 */
 
-bool TD_Initialized(TD* td)
+oe_bool TD_Initialized(TD* td)
 {
-    if (td && td->magic == TD_MAGIC && td->base.self_addr == (uint64_t)td)
-        return true;
+    if (td && td->magic == TD_MAGIC && td->base.self_addr == (oe_uint64_t)td)
+        return oe_true;
 
-    return false;
+    return oe_false;
 }
 
 /*
@@ -223,10 +223,10 @@ void TD_Init(TD* td)
         /* TD.hostsp, TD.hostbp, and TD.retaddr already set by OE_Main() */
 
         /* Clear base structure */
-        memset(&td->base, 0, sizeof(td->base));
+        OE_Memset(&td->base, 0, sizeof(td->base));
 
         /* Set pointer to self */
-        td->base.self_addr = (uint64_t)td;
+        td->base.self_addr = (oe_uint64_t)td;
 
         /* Set the magic number */
         td->magic = TD_MAGIC;
@@ -235,7 +235,7 @@ void TD_Init(TD* td)
         td->depth = 0;
 
         /* List of callsites is initially empty */
-        td->callsites = NULL;
+        td->callsites = OE_NULL;
     }
 }
 
@@ -254,10 +254,10 @@ void TD_Clear(TD* td)
 {
     /* Should not be called unless callsite list is empty */
     if (td->depth != 0 || td->callsites)
-        abort();
+        OE_Abort();
 
     /* Clear base structure */
-    memset(&td->base, 0, sizeof(td->base));
+    OE_Memset(&td->base, 0, sizeof(td->base));
 
     /* Clear the self pointer */
     td->base.self_addr = 0;

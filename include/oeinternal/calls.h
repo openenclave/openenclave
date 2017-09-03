@@ -1,8 +1,11 @@
 #ifndef _OE_CALLS_H
 #define _OE_CALLS_H
 
-#include <sys/time.h>
-#include <time.h>
+#ifdef __OE_NEED_TIME_CALLS
+# include <sys/time.h>
+# include <time.h>
+#endif
+
 #include "../oecommon/defs.h"
 #include "../oecommon/types.h"
 #include "sgxtypes.h"
@@ -132,23 +135,25 @@ OE_InitQuoteArgs;
 **
 ** OE_StrftimeArgs
 **
-**     size_t strftime(
+**     oe_size_t strftime(
 **         char *str, 
-**         size_t max, 
+**         oe_size_t max, 
 **         const char *format,
 **         const struct tm *tm);
 **
 **==============================================================================
 */
 
+#ifdef __OE_NEED_TIME_CALLS
 typedef struct _OE_StrftimeArgs
 {
-    size_t ret;
+    oe_size_t ret;
     char str[256];
     char format[256];
     struct tm tm;
 }
 OE_StrftimeArgs;
+#endif
 
 /*
 **==============================================================================
@@ -160,6 +165,7 @@ OE_StrftimeArgs;
 **==============================================================================
 */
 
+#ifdef __OE_NEED_TIME_CALLS
 typedef struct _OE_GettimeofdayArgs
 {
     int ret;
@@ -169,6 +175,7 @@ typedef struct _OE_GettimeofdayArgs
     struct timezone tzbuf;
 }
 OE_GettimeofdayArgs;
+#endif
 
 /*
 **==============================================================================
@@ -180,6 +187,7 @@ OE_GettimeofdayArgs;
 **==============================================================================
 */
 
+#ifdef __OE_NEED_TIME_CALLS
 typedef struct _OE_ClockgettimeArgs
 {
     int ret;
@@ -188,6 +196,7 @@ typedef struct _OE_ClockgettimeArgs
     struct timespec tpbuf;
 }
 OE_ClockgettimeArgs;
+#endif
 
 /*
 **==============================================================================
@@ -199,6 +208,7 @@ OE_ClockgettimeArgs;
 **==============================================================================
 */
 
+#ifdef __OE_NEED_TIME_CALLS
 typedef struct _OE_NanosleepArgs
 {
     int ret;
@@ -208,6 +218,7 @@ typedef struct _OE_NanosleepArgs
     struct timespec rembuf;
 }
 OE_NanosleepArgs;
+#endif
 
 OE_EXTERNC_END
 

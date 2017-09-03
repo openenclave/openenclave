@@ -1,21 +1,17 @@
-#include <unistd.h>
-#include <assert.h>
 #include <openenclave.h>
 #include <oeinternal/globals.h>
 
-#define PAGE_SIZE 4096
+void* OE_Sbrk(oe_ptrdiff_t increment);
 
-void* sbrk(long increment);
-
-void* sbrk(long increment)
+void* OE_Sbrk(oe_ptrdiff_t increment)
 {
     static unsigned char* _heapNext;
     static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
-    void* ptr = NULL;
+    void* ptr = OE_NULL;
 
     OE_SpinLock(&_lock);
     {
-        size_t remaining;
+        oe_size_t remaining;
 
         if (!_heapNext)
             _heapNext = (unsigned char*)__OE_GetHeapBase();
@@ -31,9 +27,4 @@ void* sbrk(long increment)
     OE_SpinUnlock(&_lock);
 
     return ptr;
-}
-
-int getpagesize(void)
-{
-    return PAGE_SIZE;
 }

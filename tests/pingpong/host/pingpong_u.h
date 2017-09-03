@@ -25,7 +25,7 @@ OE_EXTERNC void Pong(
 
 OE_EXTERNC void Log(
     const char *str,
-    uint64_t x);
+    oe_uint64_t x);
 
 /*
 ********************************************************************************

@@ -1,8 +1,8 @@
 #ifndef _OE_THREAD_H
 #define _OE_THREAD_H
 
-#include <stddef.h>
 #include "defs.h"
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 
@@ -97,7 +97,7 @@ typedef struct _OE_MutexAttr
 }
 OE_MutexAttr;
 
-#define OE_MUTEX_INITIALIZER {OE_SPINLOCK_INITIALIZER, 0, {NULL,NULL}, {0}}
+#define OE_MUTEX_INITIALIZER {OE_SPINLOCK_INITIALIZER,0,{OE_NULL,OE_NULL},{0}}
 
 typedef struct _OE_Mutex
 {
@@ -150,7 +150,7 @@ int OE_MutexDestroy(
 **==============================================================================
 */
 
-#define OE_COND_INITIALIZER {OE_SPINLOCK_INITIALIZER, {NULL, NULL}, {0,0,0}}
+#define OE_COND_INITIALIZER {OE_SPINLOCK_INITIALIZER,{OE_NULL, OE_NULL},{0,0,0}}
 
 typedef struct _OE_Cond
 {

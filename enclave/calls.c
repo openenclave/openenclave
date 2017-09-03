@@ -1,5 +1,5 @@
-#include <setjmp.h>
 #include <openenclave.h>
+#include <oeinternal/jump.h>
 #include <oeinternal/sgxtypes.h>
 #include <oeinternal/fault.h>
 #include <oeinternal/calls.h>
@@ -111,7 +111,7 @@ typedef unsigned long long WORD;
 **==============================================================================
 */
 
-static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
+static void _HandleCallEnclave(oe_uint64_t argIn, oe_uint64_t* argOut)
 {
     OE_CallEnclaveArgs* args = (OE_CallEnclaveArgs*)argIn;
 
@@ -151,7 +151,7 @@ static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
 static void _HandleExit(
     OE_Code code,
     long func, 
-    uint64_t arg)
+    oe_uint64_t arg)
 {
     OE_Exit(OE_MAKE_WORD(code, func), arg);
 }
@@ -169,13 +169,13 @@ static void _HandleExit(
 static void _HandleECALL(
     TD* td,
     int func,
-    uint64_t argIn)
+    oe_uint64_t argIn)
 {
     /* Insert ECALL context onto front of TD.ecalls list */
     Callsite callsite;
-    uint64_t argOut = 0;
+    oe_uint64_t argOut = 0;
 
-    memset(&callsite, 0, sizeof(callsite));
+    OE_Memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
 
     /* Dispatch the ECALL */
@@ -189,7 +189,7 @@ static void _HandleECALL(
         default:
         {
             /* ATTN: what action should be taken here? */
-            abort();
+            OE_Abort();
             break;
         }
     }
@@ -224,7 +224,7 @@ static __inline__ void _HandleORET(
     td->oret_func = func;
     td->oret_arg = arg;
 
-    longjmp(callsite->jmpbuf, 1);
+    OE_Longjmp(&callsite->jmpbuf, 1);
 }
 
 /*
@@ -239,8 +239,8 @@ static __inline__ void _HandleORET(
 
 OE_Result __OE_OCall(
     int func,
-    uint64_t argIn,
-    uint64_t* argOut)
+    oe_uint64_t argIn,
+    oe_uint64_t* argOut)
 {
     OE_Result result = OE_UNEXPECTED;
     TD* td = TD_Get();
@@ -255,13 +255,13 @@ OE_Result __OE_OCall(
         OE_TRY(OE_FAILURE);
 
     /* Save call site where execution will resume after OCALL */
-    if (setjmp(callsite->jmpbuf) == 0)
+    if (OE_Setjmp(&callsite->jmpbuf) == 0)
     {
         /* Exit, giving control back to the host so it can handle OCALL */
         _HandleExit(OE_CODE_OCALL, func, argIn);
 
         /* Unreachable! Host will transfer control back to OE_Main() */
-        abort();
+        OE_Abort();
     }
     else
     {
@@ -290,7 +290,7 @@ OE_Result OE_CallHost(
     void *argsIn)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_CallHostArgs* args = NULL;
+    OE_CallHostArgs* args = OE_NULL;
 
     /* Reject invalid parameters */
     if (!func || !argsIn)
@@ -298,10 +298,10 @@ OE_Result OE_CallHost(
 
     /* Initialize the arguments */
     {
-        if (!(args = malloc_u(sizeof(OE_CallHostArgs))))
+        if (!(args = OE_HostMalloc(sizeof(OE_CallHostArgs))))
             OE_THROW(OE_OUT_OF_MEMORY);
 
-        if (!(args->func = strdup_u(func)))
+        if (!(args->func = OE_HostStrdup(func)))
             OE_THROW(OE_OUT_OF_MEMORY);
     
         args->args = argsIn;
@@ -309,7 +309,7 @@ OE_Result OE_CallHost(
     }
 
     /* Call into the host */
-    OE_TRY(__OE_OCall(OE_FUNC_CALL_HOST, (long)args, NULL));
+    OE_TRY(__OE_OCall(OE_FUNC_CALL_HOST, (long)args, OE_NULL));
 
     /* Check the result */
     OE_TRY(args->result);
@@ -319,7 +319,7 @@ OE_Result OE_CallHost(
 catch:
 
     if (args)
-        free_u(args);
+        OE_HostFree(args);
 
     return result;
 }
@@ -414,14 +414,14 @@ catch:
 */
 
 void __OE_HandleMain(
-    uint64_t arg1,
-    uint64_t arg2,
-    uint64_t cssa,
+    oe_uint64_t arg1,
+    oe_uint64_t arg2,
+    oe_uint64_t cssa,
     void* tcs)
 {
     OE_Code code = OE_HI_WORD(arg1);
     int func = OE_LO_WORD(arg1);
-    uint64_t argIn = arg2;
+    oe_uint64_t argIn = arg2;
 
     /* Get pointer to the thread data structure */
     TD* td = TD_FromTCS(tcs);
@@ -450,12 +450,12 @@ void __OE_HandleMain(
         else
         {
             /* Unexpected case */
-            abort();
+            OE_Abort();
         }
     }
     else /* cssa > 0 */
     {
         /* ATTN: handle asynchronous exception (AEX) */
-        abort();
+        OE_Abort();
     }
 }

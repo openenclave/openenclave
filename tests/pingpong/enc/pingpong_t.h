@@ -37,6 +37,6 @@ OE_EXTERNC OE_Result Pong(
 
 OE_EXTERNC OE_Result Log(
     const char *str,
-    uint64_t x);
+    oe_uint64_t x);
 
 #endif /* _ENCIDL_PINGPONG_T_H */

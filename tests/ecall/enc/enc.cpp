@@ -1,18 +1,18 @@
-#include <setjmp.h>
 #include <openenclave.h>
 #include <oeinternal/globals.h>
+#include <oeinternal/jump.h>
 #include "../args.h"
 
 int TestSetjmp()
 {
-    jmp_buf buf;
+    OE_Jmpbuf buf;
 
-    int rc = setjmp(buf);
+    int rc = OE_Setjmp(&buf);
 
     if (rc == 999)
         return rc;
 
-    longjmp(buf, 999);
+    OE_Longjmp(&buf, 999);
     return 0;
 }
 
@@ -24,7 +24,7 @@ OE_ECALL void Test(void* args_)
         return;
 
     /* Set output arguments */
-    memset(args, 0xDD, sizeof(TestArgs));
+    OE_Memset(args, 0xDD, sizeof(TestArgs));
     args->magic = NEW_MAGIC;
     args->self = args;
     args->mm = 12;

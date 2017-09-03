@@ -2,14 +2,14 @@
 #include "file_u.h"
 #include "../types.h"
 
-
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    size_t n)
+    oe_size_t n)
 {
     return memcpy((void*)dest, src, n);
 }
+
 
 /*
 ********************************************************************************
@@ -25,7 +25,7 @@ struct TestReadFileArgs
     unsigned char __pad1[4];
     const char *path;
     unsigned char __pad2[4];
-    uint32_t *checksum;
+    oe_uint32_t *checksum;
     unsigned char __pad3[4];
 };
 
@@ -37,8 +37,8 @@ static const OE_FieldTI _TestReadFileArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_INT_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestReadFileArgs, ret),
         sizeof(int), /* size */
         0, /* subscript */
@@ -47,8 +47,8 @@ static const OE_FieldTI _TestReadFileArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "path", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestReadFileArgs, path),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -57,7 +57,7 @@ static const OE_FieldTI _TestReadFileArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "checksum", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "1", /* countParam */
         OE_OFFSETOF(struct TestReadFileArgs, checksum),
         sizeof(void*), /* size */
@@ -92,8 +92,8 @@ static const OE_FieldTI _FopenArgs_fields_ti[] =
         OE_FLAG_OCALL|OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "ret", /* name */
         OE_STRUCT_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct FopenArgs, ret),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -102,8 +102,8 @@ static const OE_FieldTI _FopenArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "filename", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct FopenArgs, filename),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -112,8 +112,8 @@ static const OE_FieldTI _FopenArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "modes", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct FopenArgs, modes),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -131,11 +131,11 @@ const OE_StructTI FopenArgs_ti =
 
 struct FreadArgs
 {
-    size_t ret;
+    oe_size_t ret;
     unsigned char __pad1[4];
     void *ptr;
     unsigned char __pad2[4];
-    size_t size;
+    oe_size_t size;
     unsigned char __pad3[4];
     FILE *stream;
     unsigned char __pad4[4];
@@ -149,17 +149,17 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_FLAG_OCALL, /* flags */
         "ret", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, ret),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
     {
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "ptr", /* name */
         OE_VOID_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "size", /* countParam */
         OE_OFFSETOF(struct FreadArgs, ptr),
         sizeof(void*), /* size */
@@ -169,18 +169,18 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "size", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, size),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
     {
         OE_FLAG_IN|OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "stream", /* name */
         OE_STRUCT_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, stream),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -212,8 +212,8 @@ static const OE_FieldTI _FcloseArgs_fields_ti[] =
         OE_FLAG_OCALL, /* flags */
         "ret", /* name */
         OE_INT_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct FcloseArgs, ret),
         sizeof(int), /* size */
         0, /* subscript */
@@ -222,8 +222,8 @@ static const OE_FieldTI _FcloseArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "stream", /* name */
         OE_STRUCT_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct FcloseArgs, stream),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -261,9 +261,9 @@ OE_OCALL void __Fopen(void* args)
         __a->modes);
 }
 
-OE_EXTERNC size_t Fread(
+OE_EXTERNC oe_size_t Fread(
     void *ptr,
-    size_t size,
+    oe_size_t size,
     FILE *stream);
 
 /* ICALL: generator.cpp(657) */
@@ -302,7 +302,7 @@ OE_EXTERNC OE_Result TestReadFile(
     OE_Enclave* enclave,
     int *ret,
     const char *path,
-    uint32_t *checksum)
+    oe_uint32_t *checksum)
 {
     OE_Result __r = OE_UNEXPECTED;
     struct TestReadFileArgs __args;

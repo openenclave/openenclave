@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <openenclave.h>
 #include <oeinternal/calls.h>
 #include "../3rdparty/musl/musl/src/internal/stdio_impl.h"
@@ -8,7 +9,7 @@ FILE* stdin = ((FILE*)0x10000000);
 FILE* stdout = ((FILE*)0x20000000);
 FILE* stderr = ((FILE*)0x30000000);
 
-int puts_u(const char* str)
+int puts(const char* str)
 {
     int ret = EOF;
     char* hstr = NULL;
@@ -16,7 +17,7 @@ int puts_u(const char* str)
     if (!str)
         goto done;
 
-    if (!(hstr = strdup_u(str)))
+    if (!(hstr = OE_HostStrdup(str)))
         goto done;
 
     if (__OE_OCall(OE_FUNC_PUTS, (uint64_t)hstr, NULL) != OE_OK)
@@ -25,7 +26,7 @@ int puts_u(const char* str)
 done:
 
     if (hstr)
-        free_u(hstr);
+        OE_HostFree(hstr);
 
     return ret;
 }
@@ -45,7 +46,7 @@ int asprintf(char **strp, const char *fmt, ...)
     return n;
 }
 
-int printf_u(const char* fmt, ...)
+int printf(const char* fmt, ...)
 {
     char buf[1024];
     int n;
@@ -58,13 +59,13 @@ int printf_u(const char* fmt, ...)
     n = vsnprintf(buf, sizeof(buf), fmt, ap);
     va_end(ap);
 
-    puts_u(buf);
+    puts(buf);
 
     return n;
 }
 
 /* ATTN: this function is not reached when called */
-int fprintf_u(FILE* stream, const char* fmt, ...)
+int fprintf(FILE* stream, const char* fmt, ...)
 {
     char buf[1024];
     int n;
@@ -80,12 +81,10 @@ int fprintf_u(FILE* stream, const char* fmt, ...)
     n = vsnprintf(buf, sizeof(buf), fmt, ap);
     va_end(ap);
 
-    puts_u(buf);
+    puts(buf);
 
     return n;
 }
-
-__WEAK_ALIAS(fprintf_u, fprintf);
 
 size_t __fwritex(const unsigned char *restrict s, size_t l, FILE *restrict f)
 {
@@ -94,14 +93,14 @@ size_t __fwritex(const unsigned char *restrict s, size_t l, FILE *restrict f)
 
 int __lockfile(FILE *f)
 {
-    puts_u("__lockfile() not implemented\n");
+    puts("__lockfile() not implemented\n");
     abort();
     return 0;
 }
 
 void __unlockfile(FILE *f)
 {
-    puts_u("__unlockfile() not implemented\n");
+    puts("__unlockfile() not implemented\n");
     abort();
 }
 

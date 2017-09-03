@@ -1,13 +1,13 @@
 #include <openenclave.h>
 #include "pingpong_t.h"
-
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    size_t n)
+    oe_size_t n)
 {
-    return memcpy((void*)dest, src, n);
+    return OE_Memcpy((void*)dest, src, n);
 }
+
 
 /*
 ********************************************************************************
@@ -34,8 +34,8 @@ static const OE_FieldTI _PingArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "in", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct PingArgs, in),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -44,8 +44,8 @@ static const OE_FieldTI _PingArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "out", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct PingArgs, out),
         sizeof(char) * 128, /* size */
         128, /* subscript */
@@ -78,8 +78,8 @@ static const OE_FieldTI _PongArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "in", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct PongArgs, in),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -88,8 +88,8 @@ static const OE_FieldTI _PongArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "out", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct PongArgs, out),
         sizeof(char) * 128, /* size */
         128, /* subscript */
@@ -110,7 +110,7 @@ struct LogArgs
     unsigned char __pad0[4];
     const char *str;
     unsigned char __pad1[4];
-    uint64_t x;
+    oe_uint64_t x;
     unsigned char __pad2[4];
 };
 
@@ -122,8 +122,8 @@ static const OE_FieldTI _LogArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "str", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct LogArgs, str),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -132,10 +132,10 @@ static const OE_FieldTI _LogArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "x", /* name */
         OE_UINT64_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct LogArgs, x),
-        sizeof(uint64_t), /* size */
+        sizeof(oe_uint64_t), /* size */
         0, /* subscript */
     },
 };
@@ -172,17 +172,17 @@ OE_ECALL void __Ping(void* args)
     __Args __buf;
     __Args* __a = &__buf;
 
-    memset(__a, 0, sizeof(__Args));
+    OE_Memset(__a, 0, sizeof(__Args));
 
     __r = OE_CheckPreConstraints(__ti, args);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 0, true, (void*)&__a->in, malloc);
+    __r = OE_SetArg(__ti, __args, 0, oe_true, (void*)&__a->in, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, false, (void*)__a->out, malloc);
+    __r = OE_SetArg(__ti, __args, 1, oe_false, (void*)__a->out, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -199,11 +199,11 @@ OE_ECALL void __Ping(void* args)
         goto done;
 
 
-    __r = OE_ClearArg(__ti, __a, 1, 0, __args->out, free_u);
+    __r = OE_ClearArg(__ti, __a, 1, 0, __args->out, OE_HostFree);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 1, 0, __args->out, malloc_u);
+    __r = OE_SetArg(__ti, __a, 1, 0, __args->out, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -212,7 +212,7 @@ OE_ECALL void __Ping(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, free);
+    OE_DestroyStruct(__ti, __a, OE_Free);
 
     (void)__r;
 }
@@ -234,27 +234,27 @@ OE_EXTERNC OE_Result Pong(
     const OE_StructTI* __ti = &PongArgs_ti;
     typedef struct PongArgs __Args;
     __Args __args;
-    __Args* __a = NULL;
+    __Args* __a = OE_NULL;
 
     /**************************/
     /*** create args struct ***/
     /**************************/
 
-    memset(&__args, 0, sizeof(__Args));
+    OE_Memset(&__args, 0, sizeof(__Args));
     __args.in = in;
     _ConstMemcpy(__args.out, out, sizeof(__args.out));
 
-    if (!(__a = (__Args*)calloc_u(1, sizeof(__Args))))
+    if (!(__a = (__Args*)OE_HostCalloc(1, sizeof(__Args))))
     {
         __r = OE_OUT_OF_MEMORY;
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 0, true, (void*)&__a->in, malloc_u);
+    __r = OE_SetArg(__ti, &__args, 0, oe_true, (void*)&__a->in, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 1, false, (void*)__a->out, malloc_u);
+    __r = OE_SetArg(__ti, &__args, 1, oe_false, (void*)__a->out, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -274,18 +274,18 @@ OE_EXTERNC OE_Result Pong(
     /*** output parameters ***/
     /*************************/
 
-    __r = OE_ClearArg(__ti, __a, 1, 0, out, free_u);
+    __r = OE_ClearArg(__ti, __a, 1, 0, out, OE_HostFree);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 1, 0, out, malloc_u);
+    __r = OE_SetArg(__ti, __a, 1, 0, out, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
 done:
 
     if (__a)
-        OE_FreeStruct(__ti, __a, free_u);
+        OE_FreeStruct(__ti, __a, OE_HostFree);
 
     return __r;
 }
@@ -293,33 +293,33 @@ done:
 /* OCALL: generator.cpp(772) */
 OE_EXTERNC OE_Result Log(
     const char *str,
-    uint64_t x)
+    oe_uint64_t x)
 {
     OE_Result __r = OE_UNEXPECTED;
     const OE_StructTI* __ti = &LogArgs_ti;
     typedef struct LogArgs __Args;
     __Args __args;
-    __Args* __a = NULL;
+    __Args* __a = OE_NULL;
 
     /**************************/
     /*** create args struct ***/
     /**************************/
 
-    memset(&__args, 0, sizeof(__Args));
+    OE_Memset(&__args, 0, sizeof(__Args));
     __args.str = str;
     __args.x = x;
 
-    if (!(__a = (__Args*)calloc_u(1, sizeof(__Args))))
+    if (!(__a = (__Args*)OE_HostCalloc(1, sizeof(__Args))))
     {
         __r = OE_OUT_OF_MEMORY;
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 0, true, (void*)&__a->str, malloc_u);
+    __r = OE_SetArg(__ti, &__args, 0, oe_true, (void*)&__a->str, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 1, false, (void*)&__a->x, malloc_u);
+    __r = OE_SetArg(__ti, &__args, 1, oe_false, (void*)&__a->x, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -342,7 +342,7 @@ OE_EXTERNC OE_Result Log(
 done:
 
     if (__a)
-        OE_FreeStruct(__ti, __a, free_u);
+        OE_FreeStruct(__ti, __a, OE_HostFree);
 
     return __r;
 }

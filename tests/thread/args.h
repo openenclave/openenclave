@@ -1,11 +1,11 @@
 #ifndef _stdc_args_h
 #define _stdc_args_h
 
-#include <stddef.h>
+#include <openenclave.h>
 
 typedef struct _TestMutexArgs
 {
-    size_t count;
+    oe_size_t count;
 }
 TestMutexArgs;
 

@@ -1,13 +1,13 @@
 #include <openenclave.h>
 #include "tester_u.h"
-
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    size_t n)
+    oe_size_t n)
 {
     return memcpy((void*)dest, src, n);
 }
+
 
 /*
 ********************************************************************************
@@ -25,30 +25,30 @@ static const OE_FieldTI _Date_fields_ti[] =
         0, /* flags */
         "mm", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countField */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countField */
         OE_OFFSETOF(struct Date, mm),
-        sizeof(uint32_t), /* size */
+        sizeof(oe_uint32_t), /* size */
         0, /* subscript */
     },
     {
         0, /* flags */
         "dd", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countField */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countField */
         OE_OFFSETOF(struct Date, dd),
-        sizeof(uint32_t), /* size */
+        sizeof(oe_uint32_t), /* size */
         0, /* subscript */
     },
     {
         0, /* flags */
         "yyyy", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countField */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countField */
         OE_OFFSETOF(struct Date, yyyy),
-        sizeof(uint32_t), /* size */
+        sizeof(oe_uint32_t), /* size */
         0, /* subscript */
     },
 };
@@ -70,18 +70,18 @@ static const OE_FieldTI _Object_fields_ti[] =
         0, /* flags */
         "id", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countField */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countField */
         OE_OFFSETOF(struct Object, id),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
     {
         OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "name", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countField */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countField */
         OE_OFFSETOF(struct Object, name),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -105,10 +105,10 @@ static const OE_FieldTI _Node_fields_ti[] =
         0, /* flags */
         "value", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countField */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countField */
         OE_OFFSETOF(struct Node, value),
-        sizeof(uint32_t), /* size */
+        sizeof(oe_uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -155,7 +155,7 @@ const OE_StructTI ReturnVoidArgs_ti =
 
 struct ReturnUint32Args
 {
-    uint32_t ret;
+    oe_uint32_t ret;
     unsigned char __pad1[4];
 };
 
@@ -167,10 +167,10 @@ static const OE_FieldTI _ReturnUint32Args_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnUint32Args, ret),
-        sizeof(uint32_t), /* size */
+        sizeof(oe_uint32_t), /* size */
         0, /* subscript */
     },
 };
@@ -198,8 +198,8 @@ static const OE_FieldTI _ReturnStrArgs_fields_ti[] =
         OE_FLAG_ECALL|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "ret", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnStrArgs, ret),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -230,7 +230,7 @@ static const OE_FieldTI _ReturnDateArgs_fields_ti[] =
         "ret", /* name */
         OE_STRUCT_T, /* type */
         &Date_ti, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnDateArgs, ret),
         sizeof(struct Date), /* size */
         0, /* subscript */
@@ -261,7 +261,7 @@ static const OE_FieldTI _ReturnObjectArgs_fields_ti[] =
         "ret", /* name */
         OE_STRUCT_T, /* type */
         &Object_ti, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnObjectArgs, ret),
         sizeof(struct Object), /* size */
         0, /* subscript */
@@ -281,7 +281,7 @@ struct ReturnObjectsArgs
 {
     struct Object *ret;
     unsigned char __pad1[4];
-    size_t count;
+    oe_size_t count;
     unsigned char __pad2[4];
 };
 
@@ -303,10 +303,10 @@ static const OE_FieldTI _ReturnObjectsArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "count", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnObjectsArgs, count),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
 };
@@ -367,8 +367,8 @@ static const OE_FieldTI _TestStrdupArgs_fields_ti[] =
         OE_FLAG_ECALL|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "ret", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestStrdupArgs, ret),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -377,8 +377,8 @@ static const OE_FieldTI _TestStrdupArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "s", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestStrdupArgs, s),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -396,7 +396,7 @@ const OE_StructTI TestStrdupArgs_ti =
 
 struct CopyObjectArgs
 {
-    int32_t ret;
+    oe_int32_t ret;
     unsigned char __pad1[4];
     struct Object *dest;
     unsigned char __pad2[4];
@@ -412,10 +412,10 @@ static const OE_FieldTI _CopyObjectArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_INT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct CopyObjectArgs, ret),
-        sizeof(int32_t), /* size */
+        sizeof(oe_int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -451,7 +451,7 @@ const OE_StructTI CopyObjectArgs_ti =
 
 struct CopyObjectsArgs
 {
-    int32_t ret;
+    oe_int32_t ret;
     unsigned char __pad1[4];
     struct Object dest[2];
     unsigned char __pad2[4];
@@ -467,10 +467,10 @@ static const OE_FieldTI _CopyObjectsArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_INT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct CopyObjectsArgs, ret),
-        sizeof(int32_t), /* size */
+        sizeof(oe_int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -478,7 +478,7 @@ static const OE_FieldTI _CopyObjectsArgs_fields_ti[] =
         "dest", /* name */
         OE_STRUCT_T, /* type */
         &Object_ti, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct CopyObjectsArgs, dest),
         sizeof(struct Object) * 2, /* size */
         2, /* subscript */
@@ -488,7 +488,7 @@ static const OE_FieldTI _CopyObjectsArgs_fields_ti[] =
         "src", /* name */
         OE_STRUCT_T, /* type */
         &Object_ti, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct CopyObjectsArgs, src),
         sizeof(struct Object) * 2, /* size */
         2, /* subscript */
@@ -506,17 +506,17 @@ const OE_StructTI CopyObjectsArgs_ti =
 
 struct ECALL_MultipleParamsArgs
 {
-    int32_t ret;
+    oe_int32_t ret;
     unsigned char __pad1[4];
     const char *strIn;
     unsigned char __pad2[4];
-    uint32_t numIn;
+    oe_uint32_t numIn;
     unsigned char __pad3[4];
     const struct Object *objectIn;
     unsigned char __pad4[4];
     char *strOut;
     unsigned char __pad5[4];
-    uint32_t *numOut;
+    oe_uint32_t *numOut;
     unsigned char __pad6[4];
     struct Object *objectOut;
     unsigned char __pad7[4];
@@ -532,18 +532,18 @@ static const OE_FieldTI _ECALL_MultipleParamsArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_INT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ECALL_MultipleParamsArgs, ret),
-        sizeof(int32_t), /* size */
+        sizeof(oe_int32_t), /* size */
         0, /* subscript */
     },
     {
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "strIn", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ECALL_MultipleParamsArgs, strIn),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -552,10 +552,10 @@ static const OE_FieldTI _ECALL_MultipleParamsArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "numIn", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ECALL_MultipleParamsArgs, numIn),
-        sizeof(uint32_t), /* size */
+        sizeof(oe_uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -572,7 +572,7 @@ static const OE_FieldTI _ECALL_MultipleParamsArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT|OE_FLAG_STRING, /* flags */
         "strOut", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "128", /* countParam */
         OE_OFFSETOF(struct ECALL_MultipleParamsArgs, strOut),
         sizeof(void*), /* size */
@@ -582,7 +582,7 @@ static const OE_FieldTI _ECALL_MultipleParamsArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "numOut", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "1", /* countParam */
         OE_OFFSETOF(struct ECALL_MultipleParamsArgs, numOut),
         sizeof(void*), /* size */
@@ -621,17 +621,17 @@ const OE_StructTI ECALL_MultipleParamsArgs_ti =
 
 struct OCALL_MultipleParamsArgs
 {
-    int32_t ret;
+    oe_int32_t ret;
     unsigned char __pad1[4];
     const char *strIn;
     unsigned char __pad2[4];
-    uint32_t numIn;
+    oe_uint32_t numIn;
     unsigned char __pad3[4];
     const struct Object *objectIn;
     unsigned char __pad4[4];
     char *strOut;
     unsigned char __pad5[4];
-    uint32_t *numOut;
+    oe_uint32_t *numOut;
     unsigned char __pad6[4];
     struct Object *objectOut;
     unsigned char __pad7[4];
@@ -647,18 +647,18 @@ static const OE_FieldTI _OCALL_MultipleParamsArgs_fields_ti[] =
         OE_FLAG_OCALL, /* flags */
         "ret", /* name */
         OE_INT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct OCALL_MultipleParamsArgs, ret),
-        sizeof(int32_t), /* size */
+        sizeof(oe_int32_t), /* size */
         0, /* subscript */
     },
     {
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "strIn", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct OCALL_MultipleParamsArgs, strIn),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -667,10 +667,10 @@ static const OE_FieldTI _OCALL_MultipleParamsArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "numIn", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct OCALL_MultipleParamsArgs, numIn),
-        sizeof(uint32_t), /* size */
+        sizeof(oe_uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -687,7 +687,7 @@ static const OE_FieldTI _OCALL_MultipleParamsArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT|OE_FLAG_STRING, /* flags */
         "strOut", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "128", /* countParam */
         OE_OFFSETOF(struct OCALL_MultipleParamsArgs, strOut),
         sizeof(void*), /* size */
@@ -697,7 +697,7 @@ static const OE_FieldTI _OCALL_MultipleParamsArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "numOut", /* name */
         OE_UINT32_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "1", /* countParam */
         OE_OFFSETOF(struct OCALL_MultipleParamsArgs, numOut),
         sizeof(void*), /* size */
@@ -736,7 +736,7 @@ const OE_StructTI OCALL_MultipleParamsArgs_ti =
 
 struct GetObjectRefArgs
 {
-    int32_t ret;
+    oe_int32_t ret;
     unsigned char __pad1[4];
     struct Object *object;
     unsigned char __pad2[4];
@@ -750,10 +750,10 @@ static const OE_FieldTI _GetObjectRefArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_INT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct GetObjectRefArgs, ret),
-        sizeof(int32_t), /* size */
+        sizeof(oe_int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -779,7 +779,7 @@ const OE_StructTI GetObjectRefArgs_ti =
 
 struct ModifyObjectArgs
 {
-    int32_t ret;
+    oe_int32_t ret;
     unsigned char __pad1[4];
     struct Object *object;
     unsigned char __pad2[4];
@@ -793,10 +793,10 @@ static const OE_FieldTI _ModifyObjectArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_INT32_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ModifyObjectArgs, ret),
-        sizeof(int32_t), /* size */
+        sizeof(oe_int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -822,13 +822,13 @@ const OE_StructTI ModifyObjectArgs_ti =
 
 struct TestStrlcpyArgs
 {
-    size_t ret;
+    oe_size_t ret;
     unsigned char __pad1[4];
     char *dest;
     unsigned char __pad2[4];
     const char *src;
     unsigned char __pad3[4];
-    size_t dsize;
+    oe_size_t dsize;
     unsigned char __pad4[4];
 };
 
@@ -840,17 +840,17 @@ static const OE_FieldTI _TestStrlcpyArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestStrlcpyArgs, ret),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
     {
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT|OE_FLAG_STRING, /* flags */
         "dest", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "dsize", /* countParam */
         OE_OFFSETOF(struct TestStrlcpyArgs, dest),
         sizeof(void*), /* size */
@@ -860,8 +860,8 @@ static const OE_FieldTI _TestStrlcpyArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "src", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestStrlcpyArgs, src),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -870,10 +870,10 @@ static const OE_FieldTI _TestStrlcpyArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "dsize", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestStrlcpyArgs, dsize),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
 };
@@ -889,13 +889,13 @@ const OE_StructTI TestStrlcpyArgs_ti =
 
 struct TestOptQualifierArgs
 {
-    size_t ret;
+    oe_size_t ret;
     unsigned char __pad1[4];
     char *p1;
     unsigned char __pad2[4];
     const char *p2;
     unsigned char __pad3[4];
-    size_t p1size;
+    oe_size_t p1size;
     unsigned char __pad4[4];
 };
 
@@ -907,17 +907,17 @@ static const OE_FieldTI _TestOptQualifierArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestOptQualifierArgs, ret),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
     {
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT|OE_FLAG_STRING|OE_FLAG_OPT, /* flags */
         "p1", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "p1size", /* countParam */
         OE_OFFSETOF(struct TestOptQualifierArgs, p1),
         sizeof(void*), /* size */
@@ -927,8 +927,8 @@ static const OE_FieldTI _TestOptQualifierArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING|OE_FLAG_OPT, /* flags */
         "p2", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestOptQualifierArgs, p2),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -937,10 +937,10 @@ static const OE_FieldTI _TestOptQualifierArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "p1size", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestOptQualifierArgs, p1size),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
 };
@@ -960,7 +960,7 @@ struct ReturnIntPtrArgs
     unsigned char __pad1[4];
     int *p;
     unsigned char __pad2[4];
-    size_t n;
+    oe_size_t n;
     unsigned char __pad3[4];
 };
 
@@ -972,7 +972,7 @@ static const OE_FieldTI _ReturnIntPtrArgs_fields_ti[] =
         OE_FLAG_ECALL|OE_FLAG_PTR|OE_FLAG_COUNT|OE_FLAG_OPT, /* flags */
         "ret", /* name */
         OE_INT_T, /* type */
-        NULL, /* structTI */
+        OE_NULL, /* structTI */
         "n", /* countParam */
         OE_OFFSETOF(struct ReturnIntPtrArgs, ret),
         sizeof(void*), /* size */
@@ -982,7 +982,7 @@ static const OE_FieldTI _ReturnIntPtrArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT|OE_FLAG_OPT, /* flags */
         "p", /* name */
         OE_INT_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "n", /* countParam */
         OE_OFFSETOF(struct ReturnIntPtrArgs, p),
         sizeof(void*), /* size */
@@ -992,10 +992,10 @@ static const OE_FieldTI _ReturnIntPtrArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "n", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnIntPtrArgs, n),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
 };
@@ -1024,8 +1024,8 @@ static const OE_FieldTI _TestCallbackArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "func", /* name */
         OE_VOID_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestCallbackArgs, func),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -1043,11 +1043,11 @@ const OE_StructTI TestCallbackArgs_ti =
 
 struct TestIntPtrRefArgs
 {
-    bool ret;
+    oe_bool ret;
     unsigned char __pad1[4];
     int *intPtrOut;
     unsigned char __pad2[4];
-    size_t n;
+    oe_size_t n;
     unsigned char __pad3[4];
 };
 
@@ -1059,17 +1059,17 @@ static const OE_FieldTI _TestIntPtrRefArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_BOOL_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestIntPtrRefArgs, ret),
-        sizeof(bool), /* size */
+        sizeof(oe_bool), /* size */
         0, /* subscript */
     },
     {
         OE_FLAG_OUT|OE_FLAG_REF|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "intPtrOut", /* name */
         OE_INT_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "n", /* countParam */
         OE_OFFSETOF(struct TestIntPtrRefArgs, intPtrOut),
         sizeof(void*), /* size */
@@ -1079,10 +1079,10 @@ static const OE_FieldTI _TestIntPtrRefArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "n", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestIntPtrRefArgs, n),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
 };
@@ -1111,8 +1111,8 @@ static const OE_FieldTI _TestBufferOverunArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_ARRAY, /* flags */
         "src", /* name */
         OE_CHAR_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestBufferOverunArgs, src),
         sizeof(char) * 8, /* size */
         8, /* subscript */
@@ -1142,8 +1142,8 @@ static const OE_FieldTI _ReturnEnclaveMemoryArgs_fields_ti[] =
         OE_FLAG_ECALL|OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "ret", /* name */
         OE_VOID_T, /* type */
-        NULL, /* structTI */
-        NULL, /* countParam */
+        OE_NULL, /* structTI */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnEnclaveMemoryArgs, ret),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -1166,9 +1166,9 @@ struct TestBufferCopyArgs
     unsigned char __pad1[4];
     const void *src;
     unsigned char __pad2[4];
-    size_t n;
+    oe_size_t n;
     unsigned char __pad3[4];
-    bool forceOverwrite;
+    oe_bool forceOverwrite;
     unsigned char __pad4[4];
 };
 
@@ -1180,7 +1180,7 @@ static const OE_FieldTI _TestBufferCopyArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "dest", /* name */
         OE_VOID_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "n", /* countParam */
         OE_OFFSETOF(struct TestBufferCopyArgs, dest),
         sizeof(void*), /* size */
@@ -1190,7 +1190,7 @@ static const OE_FieldTI _TestBufferCopyArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "src", /* name */
         OE_VOID_T, /* type */
-        NULL, /* structName */
+        OE_NULL, /* structName */
         "n", /* countParam */
         OE_OFFSETOF(struct TestBufferCopyArgs, src),
         sizeof(void*), /* size */
@@ -1200,20 +1200,20 @@ static const OE_FieldTI _TestBufferCopyArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "n", /* name */
         OE_SIZE_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestBufferCopyArgs, n),
-        sizeof(size_t), /* size */
+        sizeof(oe_size_t), /* size */
         0, /* subscript */
     },
     {
         OE_FLAG_IN, /* flags */
         "forceOverwrite", /* name */
         OE_BOOL_T, /* type */
-        NULL, /* structName */
-        NULL, /* countParam */
+        OE_NULL, /* structName */
+        OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestBufferCopyArgs, forceOverwrite),
-        sizeof(bool), /* size */
+        sizeof(oe_bool), /* size */
         0, /* subscript */
     },
 };
@@ -1235,12 +1235,12 @@ const OE_StructTI TestBufferCopyArgs_ti =
 ********************************************************************************
 */
 
-OE_EXTERNC int32_t OCALL_MultipleParams(
+OE_EXTERNC oe_int32_t OCALL_MultipleParams(
     const char *strIn,
-    uint32_t numIn,
+    oe_uint32_t numIn,
     const struct Object *objectIn,
     char *strOut,
-    uint32_t *numOut,
+    oe_uint32_t *numOut,
     struct Object *objectOut,
     struct Object **objectRefOut);
 
@@ -1302,7 +1302,7 @@ done:
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result ReturnUint32(
     OE_Enclave* enclave,
-    uint32_t *ret)
+    oe_uint32_t *ret)
 {
     OE_Result __r = OE_UNEXPECTED;
     struct ReturnUint32Args __args;
@@ -1451,7 +1451,7 @@ done:
 OE_EXTERNC OE_Result ReturnObjects(
     OE_Enclave* enclave,
     struct Object **ret,
-    size_t count)
+    oe_size_t count)
 {
     OE_Result __r = OE_UNEXPECTED;
     struct ReturnObjectsArgs __args;
@@ -1565,7 +1565,7 @@ done:
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result CopyObject(
     OE_Enclave* enclave,
-    int32_t *ret,
+    oe_int32_t *ret,
     struct Object *dest,
     const struct Object *src)
 {
@@ -1606,7 +1606,7 @@ done:
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result CopyObjects(
     OE_Enclave* enclave,
-    int32_t *ret,
+    oe_int32_t *ret,
     struct Object dest[2],
     const struct Object src[2])
 {
@@ -1649,12 +1649,12 @@ done:
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result ECALL_MultipleParams(
     OE_Enclave* enclave,
-    int32_t *ret,
+    oe_int32_t *ret,
     const char *strIn,
-    uint32_t numIn,
+    oe_uint32_t numIn,
     const struct Object *objectIn,
     char *strOut,
-    uint32_t *numOut,
+    oe_uint32_t *numOut,
     struct Object *objectOut,
     struct Object **objectRefOut)
 {
@@ -1704,7 +1704,7 @@ done:
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result GetObjectRef(
     OE_Enclave* enclave,
-    int32_t *ret,
+    oe_int32_t *ret,
     struct Object **object)
 {
     OE_Result __r = OE_UNEXPECTED;
@@ -1747,7 +1747,7 @@ done:
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result ModifyObject(
     OE_Enclave* enclave,
-    int32_t *ret,
+    oe_int32_t *ret,
     struct Object *object)
 {
     OE_Result __r = OE_UNEXPECTED;
@@ -1786,10 +1786,10 @@ done:
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result TestStrlcpy(
     OE_Enclave* enclave,
-    size_t *ret,
+    oe_size_t *ret,
     char *dest,
     const char *src,
-    size_t dsize)
+    oe_size_t dsize)
 {
     OE_Result __r = OE_UNEXPECTED;
     struct TestStrlcpyArgs __args;
@@ -1829,10 +1829,10 @@ done:
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result TestOptQualifier(
     OE_Enclave* enclave,
-    size_t *ret,
+    oe_size_t *ret,
     char *p1,
     const char *p2,
-    size_t p1size)
+    oe_size_t p1size)
 {
     OE_Result __r = OE_UNEXPECTED;
     struct TestOptQualifierArgs __args;
@@ -1874,7 +1874,7 @@ OE_EXTERNC OE_Result ReturnIntPtr(
     OE_Enclave* enclave,
     int **ret,
     int *p,
-    size_t n)
+    oe_size_t n)
 {
     OE_Result __r = OE_UNEXPECTED;
     struct ReturnIntPtrArgs __args;
@@ -1948,9 +1948,9 @@ done:
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result TestIntPtrRef(
     OE_Enclave* enclave,
-    bool *ret,
+    oe_bool *ret,
     int **intPtrOut,
-    size_t n)
+    oe_size_t n)
 {
     OE_Result __r = OE_UNEXPECTED;
     struct TestIntPtrRefArgs __args;
@@ -2069,8 +2069,8 @@ OE_EXTERNC OE_Result TestBufferCopy(
     OE_Enclave* enclave,
     void *dest,
     const void *src,
-    size_t n,
-    bool forceOverwrite)
+    oe_size_t n,
+    oe_bool forceOverwrite)
 {
     OE_Result __r = OE_UNEXPECTED;
     struct TestBufferCopyArgs __args;

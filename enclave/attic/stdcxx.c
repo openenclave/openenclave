@@ -28,8 +28,8 @@ int __cxa_atexit(void (*func)(void *), void *arg, void *d)
 }
 
 #if 1
-size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
-size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
+oe_size_t fwrite(const void *ptr, oe_size_t size, oe_size_t nmemb, FILE *stream);
+oe_size_t fwrite(const void *ptr, oe_size_t size, oe_size_t nmemb, FILE *stream)
 {
     return 0;
 }

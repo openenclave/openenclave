@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <stdio.h>
 
 __NORETURN void __assert_fail(
@@ -8,7 +9,10 @@ __NORETURN void __assert_fail(
     unsigned int line,
     const char *function)
 {
-    fprintf_u(stderr, 
-        "Assertion failed: %s (%s: %s: %d)\n", expr, file, function, line);
+    char buf[1024];
+
+    snprintf(buf, sizeof(buf), "Assertion failed: %s (%s: %s: %d)\n", 
+        expr, file, function, line);
+    puts(buf);
     abort();
 }

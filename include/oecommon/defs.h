@@ -63,6 +63,15 @@
 #define OE_TRACE printf("OE_TRACE: %s(%u): %s()\n", \
     __FILE__, __LINE__, __FUNCTION__)
 
+#ifdef __cplusplus
+# define OE_NULL 0L
+#else
+# define OE_NULL ((void*)0)
+#endif
+
+#define OE_WEAK_ALIAS(OLD, NEW) \
+    extern __typeof(OLD) NEW __attribute__((weak, alias(#OLD)))
+
 OE_STATIC_ASSERT(sizeof(long) == sizeof(long long));
 
 OE_STATIC_ASSERT(sizeof(long) == sizeof(void*));

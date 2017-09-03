@@ -9,27 +9,27 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_MallocStats
 {
-    size_t heapSize;
-    size_t heapUsed;
-    size_t heapAvailable;
+    oe_size_t heapSize;
+    oe_size_t heapUsed;
+    oe_size_t heapAvailable;
     double heapUsage;
-    size_t freeListSize;
-    size_t numMallocs;
-    size_t numFrees;
+    oe_size_t freeListSize;
+    oe_size_t numMallocs;
+    oe_size_t numFrees;
 }
 OE_MallocStats;
 
 void OE_GetMallocStats(OE_MallocStats* stats);
 
-int OE_InitMalloc(void* base, size_t size);
+int OE_InitMalloc(void* base, oe_size_t size);
 
-void* OE_Malloc(size_t size);
+void* OE_Malloc(oe_size_t size);
 
-void* OE_Memalign(size_t size, size_t alignment);
+void* OE_Memalign(oe_size_t size, oe_size_t alignment);
 
-void* OE_Realloc(void* ptr, size_t size);
+void* OE_Realloc(void* ptr, oe_size_t size);
 
-void* OE_Calloc(size_t nmemb, size_t size);
+void* OE_Calloc(oe_size_t nmemb, oe_size_t size);
 
 void OE_Free(void* ptr);
 

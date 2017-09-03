@@ -14,14 +14,6 @@ OE_ECALL void Test2(void* args_)
     args->out = args->in;
 }
 
-#if 1
-# define MALLOC malloc
-# define FREE free
-#else
-# define MALLOC malloc_u
-# define FREE free_u
-#endif
-
 OE_ECALL void TestAllocator(void* args_)
 {
     TestAllocatorArgs* args = (TestAllocatorArgs*)args_;
@@ -48,7 +40,7 @@ OE_ECALL void TestAllocator(void* args_)
     {
         Node* node;
 
-        if (!(node = (Node*)MALLOC(sizeof(Node))))
+        if (!(node = (Node*)OE_Malloc(sizeof(Node))))
         {
             args->ret = -1;
             return;
@@ -76,7 +68,7 @@ OE_ECALL void TestAllocator(void* args_)
     for (p = head; p; )
     {
         Node* next = p->next;
-        FREE(p);
+        OE_Free(p);
         p = next;
     }
 
@@ -87,10 +79,10 @@ OE_ECALL void Test3(void* args_)
 {
     Func1Args* func1Args;
 
-    if (!(func1Args = (Func1Args*)malloc_u(sizeof(Func1Args))))
+    if (!(func1Args = (Func1Args*)OE_Malloc(sizeof(Func1Args))))
         return;
 
-    strcpy(func1Args->buf, "Func1");
+    OE_Strcpy(func1Args->buf, "Func1");
 
     if (OE_CallHost("Func1", func1Args) != OE_OK)
         return;
@@ -101,11 +93,11 @@ OE_ECALL void Test4(void* args)
     unsigned char buf[32];
 
     /* Call into host with enclave memory */
-    memset(buf, 0xAA, sizeof(buf));
+    OE_Memset(buf, 0xAA, sizeof(buf));
 
     if (OE_CallHost("Func2", buf) != OE_OK)
     {
-        abort();
+        OE_Abort();
         return;
     }
 }
@@ -115,8 +107,8 @@ static OE_ThreadKey _key = OE_THREADKEY_INITIALIZER;
 
 static void _init()
 {
-    if (OE_ThreadKeyCreate(&_key, NULL) != 0)
-        abort();
+    if (OE_ThreadKeyCreate(&_key, OE_NULL) != 0)
+        OE_Abort();
 }
 
 OE_ECALL void SetTSD(void* args_)
@@ -124,7 +116,7 @@ OE_ECALL void SetTSD(void* args_)
     SetTSDArgs* args = (SetTSDArgs*)args_;
 
     if (!args)
-        abort();
+        OE_Abort();
 
     /* Initialize this the first time */
     if (OE_Once(&_once, _init) != 0)
@@ -148,7 +140,7 @@ OE_ECALL void GetTSD(void* args_)
     GetTSDArgs* args = (GetTSDArgs*)args_;
 
     if (!args)
-        abort();
+        OE_Abort();
 
     args->value = OE_ThreadGetSpecific(_key);
     args->ret = 0;

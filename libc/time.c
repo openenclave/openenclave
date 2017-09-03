@@ -1,7 +1,9 @@
 #include <sys/time.h>
 #include <time.h>
 #include <assert.h>
+#include <string.h>
 #include <openenclave.h>
+#define __OE_NEED_TIME_CALLS
 #include <oeinternal/calls.h>
 
 time_t time(time_t *tloc)
@@ -22,7 +24,7 @@ int gettimeofday(struct timeval* tv, struct timezone* tz)
     size_t ret = -1;
     OE_GettimeofdayArgs* args = NULL;
 
-    if (!(args = calloc_u(1, sizeof(OE_GettimeofdayArgs))))
+    if (!(args = OE_HostCalloc(1, sizeof(OE_GettimeofdayArgs))))
         goto done;
 
     args->ret = -1;
@@ -50,7 +52,7 @@ int gettimeofday(struct timeval* tv, struct timezone* tz)
 done:
 
     if (args)
-        free_u(args);
+        OE_HostFree(args);
 
     return ret;
 }
@@ -60,7 +62,7 @@ int clock_gettime(clockid_t clk_id, struct timespec *tp)
     size_t ret = -1;
     OE_ClockgettimeArgs* args = NULL;
 
-    if (!(args = malloc_u(sizeof(OE_ClockgettimeArgs))))
+    if (!(args = OE_HostMalloc(sizeof(OE_ClockgettimeArgs))))
         goto done;
 
     args->ret = -1;
@@ -80,7 +82,7 @@ int clock_gettime(clockid_t clk_id, struct timespec *tp)
 done:
 
     if (args)
-        free_u(args);
+        OE_HostFree(args);
 
     return ret;
 }

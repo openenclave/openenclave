@@ -3,6 +3,7 @@
 
 #ifndef __ASSEMBLER__
 #include <oecommon/types.h>
+#include <stdint.h>
 #endif
 
 #ifdef __ASSEMBLER__
