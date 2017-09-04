@@ -2,8 +2,6 @@ include $(OPENENCLAVE_DATADIR)/config.mak
 
 CFLAGS = -Wall -Werror -O2 -m64 -nostdinc -fPIC
 
-CXXFLAGS = $(CFLAGS) -std=c++11 -nostdinc++
-
 INCLUDES = -I$(OE_INCLUDEDIR)/openenclave/enclave
 
 LDFLAGS += -Wl,--no-undefined 
