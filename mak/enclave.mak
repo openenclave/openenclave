@@ -53,7 +53,7 @@ endif
 CFLAGS += -Wall
 CFLAGS += -Werror
 CFLAGS += -g
-CFLAGS += -O0
+CFLAGS += -O2
 CFLAGS += -m64
 CFLAGS += -nostdinc
 CFLAGS += -fPIC
@@ -143,7 +143,7 @@ endif
 
 ##==============================================================================
 ##
-## Compile rules:
+## Compile rules for C and C++
 ##
 ##==============================================================================
 
