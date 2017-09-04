@@ -1,13 +1,13 @@
 include ../mak/defs.mak
 
+DIRS += mbedtls
 DIRS += dlmalloc
 DIRS += musl
 DIRS += libcxxrt
 DIRS += libunwind
 DIRS += libcxx
 DIRS += mergecxx
-DIRS += openssl
-DIRS += mbedtls
+#DIRS += openssl
 
 define NL
 

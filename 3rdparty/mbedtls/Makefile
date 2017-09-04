@@ -30,11 +30,11 @@ clean:
 clean-silent:
 	-@ $(MAKE) -C mbedtls clean 2> /dev/null
 
-DISTNAME=mbedtls-2.6.0
-TARNAME=$(DISTNAME)-apache.tgz
+MBBEDDIST=mbedtls-2.6.0
+TARNAME=$(MBBEDDIST)-apache.tgz
 
 distclean: clean
-	rm -rf $(DISTNAME)
+	rm -rf $(MBBEDDIST)
 	rm -rf $(TARNAME)
 	rm -rf mbedtls
 	rm -f .configure
@@ -43,7 +43,7 @@ distclean: clean
 mbedtls:
 	$(MAKE) wget
 	tar zxvf $(TARNAME)
-	mv $(DISTNAME) mbedtls
+	mv $(MBBEDDIST) mbedtls
 	rm -rf $(TARNAME)
 
 wget:
