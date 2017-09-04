@@ -30,17 +30,25 @@ clean:
 clean-silent:
 	-@ $(MAKE) -C mbedtls clean 2> /dev/null
 
+DISTNAME=mbedtls-2.6.0
+TARNAME=$(DISTNAME)-apache.tgz
+
 distclean: clean
+	rm -rf $(DISTNAME)
+	rm -rf $(TARNAME)
 	rm -rf mbedtls
+	rm -f .configure
 	rm -f .configure
 
 mbedtls:
 	$(MAKE) wget
-	tar zxvf mbedtls-2.6.0-apache.tgz
-	mv mbedtls-2.6.0 mbedtls
+	tar zxvf $(TARNAME)
+	mv $(DISTNAME) mbedtls
+	rm -rf $(TARNAME)
 
 wget:
-	wget https://tls.mbed.org/download/mbedtls-2.6.0-apache.tgz
+	rm -rf $(TARNAME)
+	wget https://tls.mbed.org/download/$(TARNAME)
 
 clone:
 	git clone https://github.com/ARMmbed/mbedtls
