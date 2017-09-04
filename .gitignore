@@ -88,7 +88,7 @@ prereqs/aesm/dynamic-application-loader-host-interface/
 prereqs/aesm/linux-sgx/
 prereqs/isgx/linux-sgx-driver/
 prereqs/packages/.packages
-.config
+config.mak
 samples/hello/host/hellohost
 samples/sort/host/sorthost
 samples/echo/host/echohost

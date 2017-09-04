@@ -26,20 +26,20 @@ fi
 
 ##==============================================================================
 ##
-## Source in .config file:
+## Source in config.mak file:
 ##
 ##==============================================================================
 
-if [ ! -f ".config" ]; then
-    echo "$0: missing .config file"
+if [ ! -f "config.mak" ]; then
+    echo "$0: missing config.mak file"
     exit 1
 fi
 
-source .config
+source config.mak
 
 ##==============================================================================
 ##
-## Check for presence of variables defined in .config
+## Check for presence of variables defined in config.mak
 ##
 ##==============================================================================
 
@@ -185,46 +185,20 @@ echo "Created ${DATADIR}"
 
 ##==============================================================================
 ##
-## Install enclave.mak
+## Install config.mak
 ##
 ##==============================================================================
 
-ENCLAVEMAK=${DATADIR}/enclave.mak
-TEMPLATE=./scripts/enclave.mak.template
+CONFIGMAK=${DATADIR}/config.mak
 
-if [ ! -f "${TEMPLATE}" ]; then
-    echo "$0: missing file: ${TEMPLATE}"
+cp config.mak ${CONFIGMAK}
+
+if [ ! -f "${CONFIGMAK}" ]; then
+    echo "$0: failed to create ${CONFIGMAK}" 
     exit 1
 fi
 
-rm -f ${ENCLAVEMAK}
-cat .config >> ${ENCLAVEMAK}
-cat ${TEMPLATE} >> ${ENCLAVEMAK}
-
-if [ ! -f "${ENCLAVEMAK}" ]; then
-    echo "$0: failed to create ${ENCLAVEMAK}" 
-    exit 1
-fi
-
-echo "Created ${ENCLAVEMAK}"
-
-##==============================================================================
-##
-## Install host.mak
-##
-##==============================================================================
-
-HOSTMAK=${DATADIR}/host.mak
-
-rm -f ${HOSTMAK}
-cat .config >> ${HOSTMAK}
-
-if [ ! -f "${HOSTMAK}" ]; then
-    echo "$0: failed to create ${HOSTMAK}" 
-    exit 1
-fi
-
-echo "Created ${HOSTMAK}"
+echo "Created ${CONFIGMAK}"
 
 ##==============================================================================
 ##

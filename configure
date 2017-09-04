@@ -299,22 +299,22 @@ check_make
 
 ##==============================================================================
 ##
-## Generate .config:
+## Generate config.mak:
 ##
 ##==============================================================================
 
-rm -rf .config
-echo "OE_CONFIGURED=1" >> .config
-echo "OE_DISTRONAME=${distro}" >> .config
-echo "OE_MAJOR=${major}" >> .config
-echo "OE_MINOR=${minor}" >> .config
-echo "OE_REVISION=${revision}" >> .config
-echo "OE_VERSION=${version}" >> .config
-echo "OE_PREFIX=${prefix}" >> .config
-echo "OE_LIBDIR=${libdir}" >> .config
-echo "OE_BINDIR=${bindir}" >> .config
-echo "OE_DATADIR=${datadir}" >> .config
-echo "OE_INCLUDEDIR=${includedir}" >> .config
+rm -rf config.mak
+echo "OE_CONFIGURED=1" >> config.mak
+echo "OE_DISTRONAME=${distro}" >> config.mak
+echo "OE_MAJOR=${major}" >> config.mak
+echo "OE_MINOR=${minor}" >> config.mak
+echo "OE_REVISION=${revision}" >> config.mak
+echo "OE_VERSION=${version}" >> config.mak
+echo "OE_PREFIX=${prefix}" >> config.mak
+echo "OE_LIBDIR=${libdir}" >> config.mak
+echo "OE_BINDIR=${bindir}" >> config.mak
+echo "OE_DATADIR=${datadir}" >> config.mak
+echo "OE_INCLUDEDIR=${includedir}" >> config.mak
 
 ##==============================================================================
 ##

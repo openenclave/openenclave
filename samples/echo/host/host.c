@@ -15,6 +15,8 @@ int main(int argc, const char* argv[])
     OE_Result result;
     OE_Enclave* enclave = NULL;
 
+    printf("=== %s\n", argv[0]);
+
     if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE_PATH\n", argv[0]);

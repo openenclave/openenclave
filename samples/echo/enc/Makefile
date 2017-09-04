@@ -1,16 +1,27 @@
-include $(OPENENCLAVE_DATADIR)/enclave.mak
+include $(OPENENCLAVE_DATADIR)/config.mak
 
-all: build sign
+CFLAGS = -Wall -Werror -O2 -m64 -nostdinc -fPIC
 
-CFLAGS = -O2 -Wall $(OE_CFLAGS)
+CXXFLAGS = $(CFLAGS) -std=c++11 -nostdinc++
 
 INCLUDES = -I$(OE_INCLUDEDIR)/openenclave/enclave
 
-LDFLAGS = $(OE_LDFLAGS)
+LDFLAGS += -Wl,--no-undefined 
+LDFLAGS += -nostdlib 
+LDFLAGS += -nodefaultlibs 
+LDFLAGS += -nostartfiles 
+LDFLAGS += -Wl,-Bstatic 
+LDFLAGS += -Wl,-Bsymbolic 
+LDFLAGS += -Wl,--export-dynamic 
+LDFLAGS += -Wl,-pie,-eOE_Main 
+
+LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loeenclave
+
+all: build sign
 
 build:
 	gcc -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o
-	gcc -o echoenc.so enc.o $(LDFLAGS)
+	gcc -o echoenc.so enc.o $(LDFLAGS) $(LIBRARIES)
 
 sign:
 	$(OE_BINDIR)/oesign echoenc.so echo.conf private.pem

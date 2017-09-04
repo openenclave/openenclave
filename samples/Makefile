@@ -10,7 +10,10 @@ build:
 clean:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean ; )
 
+run-silent:
+	@ $(foreach i, $(DIRS), $(MAKE) -C $(i) run; )
+
 run:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) run; )
+	$(MAKE) -s run-silent
 
 world: clean build run

@@ -1,4 +1,4 @@
-include $(OPENENCLAVE_DATADIR)/host.mak
+include $(OPENENCLAVE_DATADIR)/config.mak
 
 all: build
 
@@ -6,11 +6,17 @@ CFLAGS=-Wall -O2
 
 INCLUDES=-I$(OE_INCLUDEDIR)/openenclave/host
 
-LDFLAGS=-rdynamic -L$(OE_LIBDIR)/openenclave/host -loehost -lcrypto -lpthread -ldl
+LDFLAGS += -rdynamic 
+LDFLAGS += -loehost
+
+LIBRARIES += -L$(OE_LIBDIR)/openenclave/host 
+LIBRARIES += -lcrypto 
+LIBRARIES += -lpthread 
+LIBRARIES += -ldl
 
 build:
 	gcc -c $(CFLAGS) $(INCLUDES) host.c
-	gcc -o hellohost host.o $(LDFLAGS)
+	gcc -o hellohost host.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
 	rm -f hellohost host.o 

@@ -1,5 +1,5 @@
 include mak/defs.mak
--include .config
+-include config.mak
 
 .PHONY: tests
 .PHONY: prereqs
@@ -66,7 +66,7 @@ distclean: clean
 	rm -f include/host/oeinternal
 	rm -f $(DISTNAME).tar.gz
 	rm -f $(DISTNAME)
-	rm -f .config
+	rm -f config.mak
 
 ##==============================================================================
 ##
