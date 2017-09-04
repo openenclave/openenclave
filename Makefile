@@ -147,13 +147,3 @@ CHECKDIR=$(TMPDIR)/$(DISTNAME)
 check:
 	$(MAKE) -s -f mak/check.mak DISTNAME=$(DISTNAME)
 
-##==============================================================================
-##
-## doxygen:
-##
-##==============================================================================
-
-dox:
-	rm -rf /root/doxygen.zip
-	$(MAKE) -C doc/doxygen/enclave
-	( cd doc/doxygen; zip -r /root/enclave.zip enclave )

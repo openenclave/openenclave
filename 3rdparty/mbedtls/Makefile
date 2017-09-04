@@ -35,8 +35,15 @@ distclean: clean
 	rm -f .configure
 
 mbedtls:
-	git clone https://github.com/ARMmbed/mbedtls
+	$(MAKE) wget
+	tar zxvf mbedtls-2.6.0-apache.tgz
+	mv mbedtls-2.6.0 mbedtls
 
+wget:
+	wget https://tls.mbed.org/download/mbedtls-2.6.0-apache.tgz
+
+clone:
+	git clone https://github.com/ARMmbed/mbedtls
 
 diff-config:
 	diff config.h ./mbedtls/include/mbedtls/config.h
