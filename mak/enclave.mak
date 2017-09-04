@@ -99,9 +99,7 @@ LDFLAGS += -Wl,-pie,-eOE_Main
 ##
 ##==============================================================================
 
-LIBRARIES += -Wl,--whole-archive
-LIBRARIES += $(LIBDIR)/enclave/libeoenclave.a
-LIBRARIES += -Wl,--no-whole-archive
+LIBRARIES += $(call whole-archive,$(LIBDIR)/enclave/libeoenclave.a)
 
 ##==============================================================================
 ##
