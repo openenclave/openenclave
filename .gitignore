@@ -98,3 +98,4 @@ include/enclave/libcxx/
 include/enclave/mbedtls/
 tests/attic/crypto/
 tests/mbed/host/mbedhost
+openenclave-0.1.0.tar.gz
