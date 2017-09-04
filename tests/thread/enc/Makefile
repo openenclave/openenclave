@@ -15,6 +15,6 @@ KEYFILE = private.pem
 
 INCLUDES += -I$(INCDIR)/enclave/libc
 
-LIBRARIES += -L$(LIBDIR)/enclave -loelibc
+LIBRARIES += -loelibc
 
 include $(MAKDIR)/enclave.mak

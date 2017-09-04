@@ -9,6 +9,9 @@ CC = gcc
 ##         -Wl,--whole-archive
 ##         -Wl,--no-whole-archive
 ##
+##     This option is helpful in determining if a library has unresolved
+##     references that might not otherwise be referenced.
+##
 ##==============================================================================
 
 define whole-archive
@@ -92,6 +95,7 @@ LDFLAGS += -Wl,-Bstatic
 LDFLAGS += -Wl,-Bsymbolic
 LDFLAGS += -Wl,--export-dynamic
 LDFLAGS += -Wl,-pie,-eOE_Main
+LDFLAGS += -L$(LIBDIR)/enclave
 
 ##==============================================================================
 ##
@@ -99,7 +103,7 @@ LDFLAGS += -Wl,-pie,-eOE_Main
 ##
 ##==============================================================================
 
-LIBRARIES += $(call whole-archive,$(LIBDIR)/enclave/libeoenclave.a)
+LIBRARIES += -leoenclave
 
 ##==============================================================================
 ##
