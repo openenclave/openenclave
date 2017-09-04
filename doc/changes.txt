@@ -1,19 +1,19 @@
 
-Sun Sep  3 18:53:37 CDT 2017
+2017-08-31: Developed SGX driver installer script
 
-    (*) Developed SGX driver installer script
+2017-08-31: Developed SGX AESM service installer script
 
-    (*) Developed SGX AESM service installer script
+2017-08-31: Implemened ./configure script
 
-    (*) Implemened ./configure script
+2017-08-31: Developed OpenEnclave installer script
 
-    (*) Developed OpenEnclave installer script
+2017-09-01: Integrated dlmalloc (removed home-grown allocator)
 
-    (*) Integrated dlmalloc (removed home-grown allocator)
+2017-09-01: Wrote Getting Started Guide (prepared samples)
 
-    (*) Wrote Getting Started Guide (prepared samples)
+2017-09-03: Refectored enclave library to remove libc dependency
 
-    (*) Refectored enclave library to remove libc dependency
+2017-09-03: Ported MBEDTLS to enclave (added test for SHA256 hashing)
 
-    (*) Ported MBEDTLS to enclave (added test for SHA256 hashing)
+2017-09-04: Implemented "make check" target
 
