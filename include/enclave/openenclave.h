@@ -31,16 +31,10 @@ oe_bool OE_IsOutsideEnclave(
     const void* ptr,
     oe_size_t size);
 
-/** 
- * Call a host function.
- */
 OE_Result OE_CallHost(
     const char *func,
     void *args);
 
-/*!
- * Call the function with the given number
- */
 OE_Result __OE_OCall(
     int func,
     oe_uint64_t argIn,
