@@ -1,0 +1,23 @@
+To-do list:
+===========
+
+    (A) Write getting started document
+
+    (A) Document APIs with Doxygen
+
+    (A) Write design overview document
+
+    (A) Verify that OCALL and corresponding ORET run on same TCS
+
+    ---
+
+    (B) Add utility for detecting SGX1 and SGX2 features
+
+    (B) Add option for building on non-SGX machines
+
+    ---
+
+    (C) Get complex cpow*.c working (depends on multiplication routines)
+
+    (C) Handle exceptions and interrupts (need use case)
+

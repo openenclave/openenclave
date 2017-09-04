@@ -15,12 +15,11 @@
         that this has problems with multi-threading, but could this work
         when no thread is in the enclave?
 
-    (*) Should we be able to create threads from an enclave? No use case
-        for this yet.
+    (*) Should enclaves be able to create threads?
 
-    (*) Do we need to support signals in an enclave?
+    (*) Should enclaves be able to handle signals?
 
-    (*) Is there a safe way for an enclave to perform host stack allocation?
+    (*) Is there a safe way to an enclave to perform host stack allocation?
 
     (*) Should ORET be assigned the same TCS as the original ECALL used?
 

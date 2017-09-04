@@ -1,8 +1,11 @@
 
+Sun Sep  3 18:53:37 CDT 2017
 
     (*) Developed SGX driver installer script
 
     (*) Developed SGX AESM service installer script
+
+    (*) Implemened ./configure script
 
     (*) Developed OpenEnclave installer script
 
@@ -13,5 +16,4 @@
     (*) Refectored enclave library to remove libc dependency
 
     (*) Ported MBEDTLS to enclave (added test for SHA256 hashing)
-
 
