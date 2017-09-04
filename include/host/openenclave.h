@@ -17,6 +17,8 @@
 
 OE_EXTERNC_BEGIN
 
+#define OE_BUILD_HOST
+
 #ifdef __cplusplus
 # define OE_OCALL OE_EXTERNC OE_EXPORT
 #else

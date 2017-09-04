@@ -8,9 +8,10 @@ SIGNCONF = sign.conf
 
 KEYFILE = private.pem
 
-EXTRA_LDFLAGS += $(call whole-archive, $(LIBDIR)/enclave/libmbedcrypto.a)
+INCLUDES += -I$(INCDIR)/enclave/libc
 
-EXTRA_LDFLAGS += $(LIBDIR)/enclave/liboelibc.a
+LIBRARIES += $(call whole-archive, $(LIBDIR)/enclave/libmbedcrypto.a)
 
-NEED_LIBC=1
+LIBRARIES += $(call whole-archive, $(LIBDIR)/enclave/liboelibc.a)
+
 include $(MAKDIR)/enclave.mak

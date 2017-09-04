@@ -13,3 +13,4 @@ clean:
 run:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) run; )
 
+world: clean build run

@@ -2,7 +2,7 @@ include ../../mak/defs.mak
 
 PROGRAM = ./testmalloc
 
-INCLUDES += -I$(HOSTINCDIR)
+INCLUDES += -I$(INCDIR)/host
 
 SOURCES = main.c
 

@@ -38,7 +38,7 @@ INCLUDES += -I$(TOP)/include/enclave/libc
 INCLUDES += -I$(CURDIR)/internal
 INCLUDES += -I$(MUSLSRC)/internal
 
-DEFINES += -DOE_BUILD_ENCLAVE -D__ELIBC_STUBS
+DEFINES += -D__ELIBC_STUBS
 
 SOURCES += $(wildcard *.c)
 SOURCES += $(MUSLSRC)/string/bcmp.c

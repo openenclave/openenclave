@@ -8,7 +8,10 @@ SIGNCONF = sign.conf
 
 KEYFILE = private.pem
 
-NEED_LIBC=1
+INCLUDES += -I$(INCDIR)/enclave/libc
+
+LIBRARIES += -L$(LIBDIR)/enclave -loelibc
+
 include $(MAKDIR)/enclave.mak
 
 gen:

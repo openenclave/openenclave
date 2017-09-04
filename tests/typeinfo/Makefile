@@ -8,7 +8,7 @@ include ../../mak/defs.mak
 
 PROGRAM = typeinfo
 
-INCLUDES += -I$(HOSTINCDIR)
+INCLUDES += -I$(INCDIR)/host
 
 SOURCES = typeinfo_u.c main.cpp
 

@@ -26,8 +26,6 @@ CFLAGS += -fno-builtin-memset
 INCLUDES += -I$(TOP)/include 
 INCLUDES += -I$(TOP)/include/musl
 
-DEFINES += -DOE_BUILD_ENCLAVE
-
 SOURCES +=
 
 OBJECTS = $(SOURCES:.cpp=.o)

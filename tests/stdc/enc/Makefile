@@ -7,12 +7,14 @@ CFLAGS += -fno-builtin-strcat
 CFLAGS += -fno-builtin-memcpy
 CFLAGS += -fno-builtin-memset
 
-SOURCES = enc.cpp
+SOURCES=enc.cpp
 
-SIGNCONF = sign.conf
+SIGNCONF=sign.conf
 
-KEYFILE = private.pem
+KEYFILE=private.pem
 
-WHOLE_ARCHIVE=1
-NEED_LIBC=1
+INCLUDES+=-I$(INCDIR)/enclave/libc
+
+LIBRARIES+=$(call whole-archive,$(LIBDIR)/enclave/liboelibc.a)
+
 include $(MAKDIR)/enclave.mak

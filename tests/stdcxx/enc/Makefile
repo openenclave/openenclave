@@ -17,6 +17,10 @@ SIGNCONF = sign.conf
 
 KEYFILE = private.pem
 
-WHOLE_ARCHIVE=1
-NEED_LIBCXX=1
+INCLUDES += -I$(INCDIR)/enclave/libcxx
+INCLUDES += -I$(INCDIR)/enclave/libc
+
+LIBRARIES += $(call whole-archive,$(LIBDIR)/enclave/liboelibcxx.a)
+LIBRARIES += $(call whole-archive,$(LIBDIR)/enclave/liboelibc.a)
+
 include $(MAKDIR)/enclave.mak

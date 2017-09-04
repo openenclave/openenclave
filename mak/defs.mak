@@ -5,28 +5,30 @@ TOP=$(shell dirname $(abspath $(dir $(word 2, $(MAKEFILE_LIST)))))
 CC=gcc
 CXX=g++
 MAKDIR=$(TOP)/mak
+INCDIR=$(TOP)/include
 LIBDIR=$(TOP)/lib
 BINDIR=$(TOP)/bin
-INCDIR=$(TOP)/include
-HOSTINCDIR=$(TOP)/include/host
-ENCLAVEINCDIR=$(TOP)/include/enclave
 
-$(shell mkdir -p $(BINDIR))
-$(shell mkdir -p $(LIBDIR)/tmp)
-$(shell mkdir -p $(LIBDIR)/enclave)
-$(shell mkdir -p $(LIBDIR)/host)
+$(shell mkdir -p $(INCDIR))
 $(shell mkdir -p $(INCDIR)/host)
 $(shell mkdir -p $(INCDIR)/enclave)
 
-$(shell rm -f $(ENCLAVEINCDIR)/oecommon)
-$(shell ln -s ../oecommon $(ENCLAVEINCDIR)/oecommon)
-$(shell rm -f $(HOSTINCDIR)/oecommon)
-$(shell ln -s ../oecommon $(HOSTINCDIR)/oecommon)
+$(shell mkdir -p $(LIBDIR))
+$(shell mkdir -p $(LIBDIR)/tmp)
+$(shell mkdir -p $(LIBDIR)/enclave)
+$(shell mkdir -p $(LIBDIR)/host)
 
-$(shell rm -f $(ENCLAVEINCDIR)/oeinternal)
-$(shell ln -s ../oeinternal $(ENCLAVEINCDIR)/oeinternal)
-$(shell rm -f $(HOSTINCDIR)/oeinternal)
-$(shell ln -s ../oeinternal $(HOSTINCDIR)/oeinternal)
+$(shell mkdir -p $(BINDIR))
+
+$(shell rm -f $(INCDIR)/enclave/oecommon)
+$(shell ln -s ../oecommon $(INCDIR)/enclave/oecommon)
+$(shell rm -f $(INCDIR)/host/oecommon)
+$(shell ln -s ../oecommon $(INCDIR)/host/oecommon)
+
+$(shell rm -f $(INCDIR)/enclave/oeinternal)
+$(shell ln -s ../oeinternal $(INCDIR)/enclave/oeinternal)
+$(shell rm -f $(INCDIR)/host/oeinternal)
+$(shell ln -s ../oeinternal $(INCDIR)/host/oeinternal)
 
 MEMCHECK=valgrind --tool=memcheck --leak-check=full
 

@@ -20,7 +20,7 @@ endif
 ##
 ##==============================================================================
 
-DIRS = 3rdparty gen host crypto libc enclave elf sign tests
+DIRS = 3rdparty gen host libc enclave crypto elf sign tests
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )
@@ -106,11 +106,7 @@ sub:
 ##==============================================================================
 
 dist:
-	@ rm -rf /tmp/$(DISTNAME)
-	@ ( cd ..; cp -r openenclave /tmp/$(DISTNAME) )
-	@ $(MAKE) -C /tmp/$(DISTNAME) -s distclean
-	@ ( cd /tmp; tar zcf $(TOP)/$(DISTNAME).tar.gz $(DISTNAME) )
-	@ echo "Created $(TOP)/$(DISTNAME).tar.gz"
+	@ $(MAKE) -s -f mak/dist.mak DISTNAME=$(DISTNAME) TOP=$(TOP)
 
 ##==============================================================================
 ##
@@ -146,22 +142,10 @@ install:
 ##
 ##==============================================================================
 
-CHECKDIR=$(CURDIR)/.check
+CHECKDIR=$(TMPDIR)/$(DISTNAME)
 
 check:
-	rm -rf $(CHECKDIR)
-	@ $(MAKE) distclean
-	@ ./configure --prefix=$(CHECKDIR)
-	@ $(MAKE)
-	@ $(MAKE) tests
-	@ $(MAKE) install
-	( source $(CHECKDIR)/share/openenclave/environment; \
-          cd $(CHECKDIR)/share/openenclave/samples; \
-          $(MAKE); \
-          $(MAKE) run )
-	rm -rf $(CHECKDIR)
-	@ echo
-	@ echo "Check okay!"
+	$(MAKE) -s -f mak/check.mak DISTNAME=$(DISTNAME)
 
 ##==============================================================================
 ##
@@ -169,5 +153,7 @@ check:
 ##
 ##==============================================================================
 
-doxygen:
-	( cd doc/doxygen/enclave; doxygen $(INCDIR)/enclave/openenclave.h )
+dox:
+	rm -rf /root/doxygen.zip
+	$(MAKE) -C doc/doxygen/enclave
+	( cd doc/doxygen; zip -r /root/enclave.zip enclave )
