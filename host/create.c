@@ -717,7 +717,7 @@ OE_INLINE void _DumpRelocations(
 OE_Result __OE_BuildEnclave(
     OE_SGXDevice* dev,
     const char* path,
-    const SGX_EnclaveSettings* settings,
+    const OE_EnclaveSettings* settings,
     bool debug,
     bool simulate,
     OE_Enclave* enclave)
@@ -732,13 +732,13 @@ OE_Result __OE_BuildEnclave(
     uint64_t enclaveAddr = 0;
     size_t i;
     AESM* aesm = NULL;
-    SGX_SignatureSection sigsec;
+    OE_SignatureSection sigsec;
     SGX_LaunchToken launchToken;
     Elf64 elf;
     void* relocData = NULL;
     size_t relocSize;
 
-    memset(&sigsec, 0, sizeof(SGX_SignatureSection));
+    memset(&sigsec, 0, sizeof(OE_SignatureSection));
     memset(&launchToken, 0, sizeof(SGX_LaunchToken));
     memset(&elf, 0, sizeof(Elf64));
 
@@ -775,7 +775,7 @@ OE_Result __OE_BuildEnclave(
     if (settings)
         sigsec.settings = *settings;
 
-    /* Get the SGX_SignatureSection from the ELF shared library */
+    /* Get the OE_SignatureSection from the ELF shared library */
     if (!settings)
     {
         const void* data;
@@ -784,7 +784,7 @@ OE_Result __OE_BuildEnclave(
         if (Elf64_FindSection(&elf, ".oesig", &data, &size) != 0)
             OE_THROW(OE_FAILURE);
 
-        if (size != sizeof(SGX_SignatureSection))
+        if (size != sizeof(OE_SignatureSection))
             OE_THROW(OE_FAILURE);
 
         memcpy(&sigsec, data, size);

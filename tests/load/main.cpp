@@ -19,14 +19,14 @@ static OE_SGXDevice* OpenDevice()
 #endif
 }
 
-static const SGX_EnclaveSettings* GetEnclaveSettings()
+static const OE_EnclaveSettings* GetEnclaveSettings()
 {
 #ifdef USE_DRIVER
     return NULL;
 #else
-    static SGX_EnclaveSettings settings;
+    static OE_EnclaveSettings settings;
 
-    memset(&settings, 0, sizeof(SGX_EnclaveSettings));
+    memset(&settings, 0, sizeof(OE_EnclaveSettings));
     settings.debug = 1;
     settings.numHeapPages = 2;
     settings.numStackPages = 1;

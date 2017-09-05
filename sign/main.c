@@ -460,7 +460,7 @@ static int _SignAndWriteSharedLib(
     size_t numHeapPages,
     size_t numStackPages,
     size_t numTCS,
-    const SGX_EnclaveSettings* settings,
+    const OE_EnclaveSettings* settings,
     const SGX_SigStruct* sigstruct)
 {
     int rc = -1;
@@ -524,7 +524,7 @@ static int _SignAndWriteSharedLib(
 
     /* Add the new section */
     {
-        SGX_SignatureSection sec;
+        OE_SignatureSection sec;
         sec.magic = OE_META_MAGIC;
         sec.settings = *settings;
         sec.sigstruct = *sigstruct;
@@ -585,7 +585,7 @@ done:
 
 int LoadConfigFile(
     const char* path,
-    SGX_EnclaveSettings* settings)
+    OE_EnclaveSettings* settings)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -595,7 +595,7 @@ int LoadConfigFile(
     str_t rhs = STR_NULL_INIT;
     size_t line = 1;
 
-    memset(settings, 0, sizeof(SGX_EnclaveSettings));
+    memset(settings, 0, sizeof(OE_EnclaveSettings));
 
     if (!(is = fopen(path, "rb")))
         goto done;
@@ -700,7 +700,7 @@ int main(int argc, const char* argv[])
     size_t numStackPages = 1;
     size_t numTCS = 2;
     OE_SHA256 mrenclave = OE_SHA256_INIT;
-    SGX_EnclaveSettings settings;
+    OE_EnclaveSettings settings;
     SGX_SigStruct sigstruct;
     FILE* is = NULL;
     RSA* rsa = NULL;

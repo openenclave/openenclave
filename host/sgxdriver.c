@@ -131,6 +131,7 @@ static SGX_Secs* _NewSecs(uint64_t base, uint64_t size)
     memset(secs, 0, sizeof(SGX_Secs));
     secs->size = size;
     secs->base = base;
+    /* ATTN: debug is hardcoded here; pass this in as parameter */
     secs->flags = SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT;
     secs->xfrm = 0x07; /* what the driver sees with SGX SDK */
     /* COMMENT1: ssaframesize hardcoded to one for now */

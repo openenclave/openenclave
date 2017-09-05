@@ -21,7 +21,7 @@ OE_SGXDevice* __OE_OpenSGXMeasurer(void);
 OE_Result __OE_BuildEnclave(
     OE_SGXDevice* dev,
     const char* path,
-    const SGX_EnclaveSettings* settings,
+    const OE_EnclaveSettings* settings,
     oe_bool debug,
     oe_bool simulate,
     OE_Enclave* enclave);
