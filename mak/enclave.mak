@@ -94,7 +94,8 @@ LDFLAGS += -nostartfiles
 LDFLAGS += -Wl,-Bstatic
 LDFLAGS += -Wl,-Bsymbolic
 LDFLAGS += -Wl,--export-dynamic
-LDFLAGS += -Wl,-pie,-eOE_Main
+LDFLAGS += -Wl,-pie
+LDFLAGS += -Wl,-eOE_Main
 LDFLAGS += -L$(LIBDIR)/enclave
 
 ##==============================================================================

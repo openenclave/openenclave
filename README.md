@@ -19,11 +19,11 @@ architectures in the future, such as Microsoft Virtual Secure Mode.
 
 The OpenEnclave project provides the following documents.
 
+- [OpenEnclave Design Overview](doc/DesignOverview.pdf)
+
 - [Getting Started with OpenEnclave](doc/GettingStarted.pdf)
 
 - [OpenEnclave Reference Manual](doc/ReferenceManual.txt)
-
-- [OpenEnclave Design Overview](doc/DesignOverview.txt)
 
 Contributing
 ------------
