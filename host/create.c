@@ -781,7 +781,7 @@ OE_Result __OE_BuildEnclave(
         const void* data;
         size_t size;
 
-        if (Elf64_FindSection(&elf, ".encsig", &data, &size) != 0)
+        if (Elf64_FindSection(&elf, ".oesig", &data, &size) != 0)
             OE_THROW(OE_FAILURE);
 
         if (size != sizeof(SGX_SignatureSection))

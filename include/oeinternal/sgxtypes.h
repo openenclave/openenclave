@@ -493,7 +493,7 @@ typedef struct _SGX_EnclaveSettings
 }
 SGX_EnclaveSettings;
 
-/* Enclave signature section (.encsig) written to ELF-64 libraries */
+/* Enclave signature section (.oesig) written to ELF-64 libraries */
 typedef struct _SGX_SignatureSection
 {
     oe_uint64_t magic;

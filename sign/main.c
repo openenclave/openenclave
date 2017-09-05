@@ -465,7 +465,7 @@ static int _SignAndWriteSharedLib(
 {
     int rc = -1;
     Elf64 elf;
-    const char secname[] = ".encsig";
+    const char secname[] = ".oesig";
     FILE* os = NULL;
 
     /* Open ELF file */
