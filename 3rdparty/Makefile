@@ -26,3 +26,13 @@ distclean:
 depend:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NL) )
 
+CLOC += $(shell find . -name '*.cpp')
+CLOC += $(shell find . -name '*.h')
+CLOC += $(shell find . -name '*.cc')
+CLOC += $(shell find . -name '*.c')
+CLOC += $(shell find . -name '*.h')
+CLOC += $(shell find . -name '*.hpp')
+CLOC += $(wildcard libcxx/trunk/include/*)
+
+cloc:
+	cloc $(CLOC)

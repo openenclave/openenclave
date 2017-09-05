@@ -147,3 +147,28 @@ CHECKDIR=$(TMPDIR)/$(DISTNAME)
 check:
 	$(MAKE) -s -f mak/check.mak DISTNAME=$(DISTNAME)
 
+##==============================================================================
+##
+## cloc:
+##
+##     Count lines of orignal code:
+##
+##==============================================================================
+
+CLOC += $(wildcard enclave/*.c)
+CLOC += $(wildcard host/*.c)
+CLOC += $(wildcard include/enclave/openenclave.h)
+CLOC += $(wildcard include/host/openenclave.h)
+CLOC += $(wildcard include/oecommon/*.h)
+CLOC += $(wildcard include/oeinternal/*.h)
+
+cloc:
+	cloc $(CLOC)
+
+CLOCPLUS += $(CLOC)
+CLOCPLUS += $(wildcard common/*.c)
+CLOCPLUS += $(wildcard libc/*.c)
+CLOCPLUS += $(wildcard include/enclave/libc/*.h)
+
+clocplus:
+	cloc $(CLOCPLUS)

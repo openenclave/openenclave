@@ -3,7 +3,6 @@
 int setjmp(jmp_buf env)
 {
     __asm__ volatile(
-	"/* @comment Setjmp inline asm */\n\t"
         /* Save RBX */
 	"mov %%rbx, %0\n\t"
         /* Save RBP */
