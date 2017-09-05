@@ -76,13 +76,13 @@ struct Container
 
 struct AllTypes
 {
-    sint8 s8;
+    int8 s8;
     uint8 u8;
-    sint16 s16;
+    int16 s16;
     uint16 u16;
-    sint32 s32;
+    int32 s32;
     uint32 u32;
-    sint64 s64;
+    int64 s64;
     uint64 u64;
     float r32;
     double r64;
@@ -111,11 +111,11 @@ struct NewTypes
     uint16 u16;
     int s32;
     unsigned int u32;
-    sint64 s64;
+    int64 s64;
     uint64 u64;
     float r32;
     double r64;
-    sint64 ss;
+    int64 ss;
     uint64 s;
     signed long sl;
     unsigned int ui;
@@ -137,14 +137,14 @@ struct MyFunctionArgs
     [in, out, count=1] struct Object* objr;
 };
 
-function [ocall] sint32 UCopy(
+function [ocall] int32 UCopy(
     [out, count=m] char* p, 
     [in] size_t m,
     [in, count=n] const char* q, 
     [in] size_t n,
     [out, ref, count=1] struct Object* object);
 
-function [ecall] sint32 TCopy(
+function [ecall] int32 TCopy(
     [out, count=m] char* p, 
     [in] size_t m,
     [in, count=n] const char* q, 

@@ -36,15 +36,15 @@ function [ecall, one] struct Node* ReturnLinkedList();
 function [ecall, string] char* TestStrdup(
     [string, in] const char* s);
 
-function [ecall] sint32 CopyObject(
+function [ecall] int32 CopyObject(
     [inout, one] struct Object* dest, 
     [in, one] const struct Object* src);
 
-function [ecall] sint32 CopyObjects(
+function [ecall] int32 CopyObjects(
     [out] struct Object dest[2], 
     [in] const struct Object src[2]);
 
-function [ecall] sint32 ECALL_MultipleParams(
+function [ecall] int32 ECALL_MultipleParams(
     [in, string] const char* strIn,
     [in] uint32 numIn,
     [in, one] const struct Object* objectIn,
@@ -53,7 +53,7 @@ function [ecall] sint32 ECALL_MultipleParams(
     [out, one] struct Object* objectOut,
     [out, one, ref] struct Object* objectRefOut);
 
-function [ocall] sint32 OCALL_MultipleParams(
+function [ocall] int32 OCALL_MultipleParams(
     [in, string] const char* strIn,
     [in] uint32 numIn,
     [in, one] const struct Object* objectIn,
@@ -62,10 +62,10 @@ function [ocall] sint32 OCALL_MultipleParams(
     [out, one] struct Object* objectOut,
     [out, one, ref] struct Object* objectRefOut);
 
-function [ecall] sint32 GetObjectRef(
+function [ecall] int32 GetObjectRef(
     [out, ref, one] struct Object* object);
  
-function [ecall] sint32 ModifyObject(
+function [ecall] int32 ModifyObject(
     [inout, one] struct Object* object);
 
 function [ecall] size_t TestStrlcpy(
