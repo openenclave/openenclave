@@ -39,5 +39,7 @@ int main(int argc, const char* argv[])
 
     OE_TerminateEnclave(enclave);
 
+    printf("\n");
+
     return 0;
 }

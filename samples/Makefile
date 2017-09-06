@@ -1,5 +1,5 @@
-ifndef OPENENCLAVE_DATADIR
-$(error Please define the OPENENCLAVE_DATADIR environment variable manually or by sourcing the installed OpenEnclave 'environment' file)
+ifndef OPENENCLAVE_CONFIG
+$(error Please define the OPENENCLAVE_CONFIG environment variable manually or by sourcing the installed OpenEnclave 'environment' file)
 endif
 
 .PHONY: run

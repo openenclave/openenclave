@@ -1,4 +1,4 @@
-include $(OPENENCLAVE_DATADIR)/config.mak
+include $(OPENENCLAVE_CONFIG)
 
 CFLAGS = -Wall -Werror -O2 -m64 -nostdinc -fPIC
 

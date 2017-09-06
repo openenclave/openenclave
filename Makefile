@@ -61,7 +61,7 @@ distclean: clean
 	rm -rf include/stlport
 	$(MAKE) -s -C prereqs distclean 2> /dev/null
 	$(MAKE) -C 3rdparty distclean
-	rm -rf lib bin
+	rm -rf lib bin tmp
 	rm -f include/enclave/oecommon
 	rm -f include/enclave/oeinternal
 	rm -f include/host/oecommon
@@ -165,13 +165,16 @@ export OPENENCLAVE_CONFIG=$(TMPDIR)/samples-config.mak
 
 samples-config:
 	@ rm -f $(OPENENCLAVE_CONFIG)
+	@ rm -rf $(TMPDIR)/lib
+	@ mkdir -p $(TMPDIR)/lib
+	@ cp -r $(LIBDIR) $(TMPDIR)/lib/openenclave
 	@ echo "OE_CONFIGURED=$(OE_CONFIGURED)" >> $(OPENENCLAVE_CONFIG)
 	@ echo "OE_DISTRONAME=$(OE_DISTRONAME)" >> $(OPENENCLAVE_CONFIG)
 	@ echo "OE_MAJOR=$(OE_MAJOR)" >> $(OPENENCLAVE_CONFIG)
 	@ echo "OE_MINOR=$(OE_MINOR)" >> $(OPENENCLAVE_CONFIG)
 	@ echo "OE_REVISION=$(OE_REVISION)" >> $(OPENENCLAVE_CONFIG)
 	@ echo "OE_PREFIX=$(TOP)" >> $(OPENENCLAVE_CONFIG)
-	@ echo "OE_LIBDIR=$(LIBDIR)" >> $(OPENENCLAVE_CONFIG)
+	@ echo "OE_LIBDIR=$(TMPDIR)/lib" >> $(OPENENCLAVE_CONFIG)
 	@ echo "OE_BINDIR=$(BINDIR)" >> $(OPENENCLAVE_CONFIG)
 	@ echo "OE_INCLUDEDIR=$(INCDIR)" >> $(OPENENCLAVE_CONFIG)
 

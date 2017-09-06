@@ -1,4 +1,4 @@
-include $(OPENENCLAVE_DATADIR)/config.mak
+include $(OPENENCLAVE_CONFIG)
 
 all: build
 

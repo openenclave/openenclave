@@ -43,8 +43,10 @@ int main(int argc, const char* argv[])
 
         for (size_t i = 0; i < size; i++)
         {
-            printf("%zu\n", data[i]);
+            printf("%zu ", data[i]);
         }
+
+        printf("\n\n");
     }
 
     /* Terminate the enclave */
