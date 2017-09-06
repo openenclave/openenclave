@@ -30,10 +30,12 @@ musl:
 	tar zxvf $(PKG)
 	mv $(BASE) musl
 	rm -rf $(PKG)
-
 clean:
-	$(MAKE) -C musl clean
-	rm -rf $(TARGET)
+	$(MAKE) -s silent-clean
+
+silent-clean:
+	-@ $(MAKE) -C musl clean 2> /dev/null
+	@ rm -rf $(TARGET)
 
 distclean:
 	rm -rf musl $(TARGET)
