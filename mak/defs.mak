@@ -8,6 +8,7 @@ MAKDIR=$(TOP)/mak
 INCDIR=$(TOP)/include
 LIBDIR=$(TOP)/lib
 BINDIR=$(TOP)/bin
+TMPDIR=$(TOP)/tmp
 
 $(shell mkdir -p $(INCDIR))
 
@@ -15,6 +16,7 @@ $(shell mkdir -p $(LIBDIR))
 $(shell mkdir -p $(LIBDIR)/tmp)
 $(shell mkdir -p $(LIBDIR)/enclave)
 $(shell mkdir -p $(LIBDIR)/host)
+$(shell mkdir -p $(TMPDIR))
 
 $(shell mkdir -p $(BINDIR))
 

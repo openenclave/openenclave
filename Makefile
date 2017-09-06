@@ -89,7 +89,6 @@ world:
 	$(MAKE) -s clean
 	$(MAKE)
 	$(MAKE) -s -C tests tests
-	$(MAKE) samples
 
 ##==============================================================================
 ##
@@ -160,9 +159,17 @@ check:
 ##
 ##==============================================================================
 
-export OPENENCLAVE_DATADIR=$(CURDIR)
+export OPENENCLAVE_CONFIG=$(TMPDIR)/samples-config.mak
 
-samples:
+samples-config:
+	@ rm -f $(OPENENCLAVE_CONFIG)
+	@ echo "OE_CONFIGURED=$(OE_CONFIGURED)" >> $(OPENENCLAVE_CONFIG)
+	@ echo "OE_DISTRONAME=$(OE_DISTRONAME)" >> $(OPENENCLAVE_CONFIG)
+	@ echo "OE_MAJOR=$(OE_MAJOR)" >> $(OPENENCLAVE_CONFIG)
+	@ echo "OE_MINOR=$(OE_MINOR)" >> $(OPENENCLAVE_CONFIG)
+	@ echo "OE_REVISION=$(OE_REVISION)" >> $(OPENENCLAVE_CONFIG)
+
+samples: samples-config
 	$(MAKE) -s -C samples world
 
 ##==============================================================================
