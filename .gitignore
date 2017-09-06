@@ -101,3 +101,7 @@ include/enclave/libc/
 tools/oesgx/oesgx
 .depends
 tmp
+3rdparty/mbedtls/.build
+include/openenclave/libc/
+include/openenclave/libcxx/
+include/openenclave/oe-mbedtls/
