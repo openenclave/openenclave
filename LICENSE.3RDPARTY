@@ -52,3 +52,9 @@ information for these is shown below.
 
         license: "BSD-Like" and MIT (see 3rdparty/libcxx/trunk/LICENSE.TXT)
 
+    (*) mbedtls:
+
+        download: https://tls.mbed.org/download/mbedtls-2.6.0-apache.tgz
+
+        license: Apache 2.0 (see 3rdparty/mbedtls/mbedtls/LICENSE)
+
