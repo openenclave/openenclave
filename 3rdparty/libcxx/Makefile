@@ -74,11 +74,11 @@ trunk:
 
 patch:
 	@ cp __config trunk/include/__config
-	@ sub trunk/include/cstdlib
-	@ sub trunk/include/cstdio
-	@ sub trunk/include/cwchar
-	@ sub trunk/include/ctime
-	@ sub trunk/include/clocale
+	@ ./sub trunk/include/cstdlib
+	@ ./sub trunk/include/cstdio
+	@ ./sub trunk/include/cwchar
+	@ ./sub trunk/include/ctime
+	@ ./sub trunk/include/clocale
 
 install:
 	rm -rf $(HEADER_INSTALL_DIRECTORY)

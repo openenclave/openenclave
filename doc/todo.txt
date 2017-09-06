@@ -1,7 +1,11 @@
 To-do list:
 ===========
 
-    (A) Write getting started document
+    (A) OE_InitializeEnclave() needs to be sychonized.
+
+    (A) Getting Started: explain how enclave entry points are located.
+
+    (A) Getting started: explain that only data is relocated.
 
     (A) Document APIs with Doxygen
 

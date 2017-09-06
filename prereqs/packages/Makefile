@@ -23,6 +23,8 @@ all: .packages
 	$(INSTALL) libxml2-dev
 	$(INSTALL) cmake
 	$(INSTALL) pkg-config
+	$(INSTALL) subversion
+	$(INSTALL) cloc
 	touch .packages
 
 clean:

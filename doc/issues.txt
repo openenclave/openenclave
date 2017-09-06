@@ -1,6 +1,6 @@
 
-
-    (*) Can the C runtime be separated from the enclave intrinsics?
+    (*) Should we add a list of valid entry points so that the host does
+        not try to jump to an arbitrary address?
 
     (*) Does GCC provide stack protection schemes?
 
