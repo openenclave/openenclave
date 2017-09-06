@@ -1,7 +1,7 @@
 include ../mak/defs.mak
 .PHONY: tests
 
-ifdef HAVE_SGX
+ifneq ($(OE_SIMULATION),1)
 DIRS += aesm
 endif
 
@@ -23,7 +23,7 @@ DIRS += stdc
 DIRS += stdcxx
 DIRS += mbed
 
-ifdef HAVE_SGX
+ifneq ($(OE_SIMULATION),1)
   DIRS += report
   DIRS += SampleAppAttestation 
 endif

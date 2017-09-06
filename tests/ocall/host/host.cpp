@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <assert.h>
 #include <openenclave/host.h>
+#include <openenclave/bits/tests.h>
 #include "../args.h"
 
 static bool _func1Called = false;
@@ -32,7 +33,9 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    if ((result = OE_CreateEnclave(argv[1], CREATE_FLAGS, &enclave)) != OE_OK)
+    const oe_uint32_t flags = OE_GetCreateFlags();
+
+    if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
 
     /* Call Test2() */

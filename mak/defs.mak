@@ -57,3 +57,39 @@ ifeq ($(__OESGX),2)
 HAVE_SGX=2
 endif
 
+##==============================================================================
+##
+## SGX=1 -- disable simulation mode
+## SIM=1 -- enable simulation mode
+##
+##==============================================================================
+
+export OE_SIMULATION=
+
+ifdef SGX
+  ifneq ($(SGX),1)
+    $(error SGX must be set to 1)
+  endif
+  ifdef SIM
+    $(error incompatible switches: SGX and SIM)
+  endif
+  export OE_SIMULATION=0
+endif
+
+ifdef SIM
+  ifneq ($(SIM),1)
+    $(error SIM must be set to 1)
+  endif
+  ifdef SGX
+    $(error incompatible switches: SIM and SGX)
+  endif
+  export OE_SIMULATION=1
+endif
+
+ifndef OE_SIMULATION
+  ifdef HAVE_SGX
+    export OE_SIMULATION=0
+  else
+    export OE_SIMULATION=1
+  endif
+endif

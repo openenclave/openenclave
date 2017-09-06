@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 #include <openenclave/defs.h>
+#include <openenclave/types.h>
+
+OE_EXTERNC_BEGIN
 
 #define OE_TEST(COND) \
     do \
@@ -15,5 +18,13 @@
         } \
     } \
     while (0)
+
+/* 
+ * Return flags to pass to OE_CreateEnclave() based on the OE_SIMULATION
+ * environment variable.
+ */
+oe_uint32_t OE_GetCreateFlags(void);
+
+OE_EXTERNC_END
 
 #endif /* _OE_TESTS_H */

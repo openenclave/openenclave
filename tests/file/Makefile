@@ -15,11 +15,7 @@ clean:
 depend:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NEWLINE) )
 
-ifdef SIM
-ENCLAVE=enc/fileenc.so
-else
 ENCLAVE=enc/fileenc.signed.so
-endif
 
 tests:
 	host/filehost $(ENCLAVE)
