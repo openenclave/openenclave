@@ -138,6 +138,10 @@ prereqs:
 
 install:
 	@ ./scripts/install
+	@ $(MAKE) test-install
+
+test-install:
+	( cd $(OE_DATADIR)/openenclave/samples; ./run )
 
 ##==============================================================================
 ##

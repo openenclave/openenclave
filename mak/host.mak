@@ -26,7 +26,7 @@ endif
 
 LDFLAGS += -g -rdynamic -L$(LIBDIR)/host -loehost -lcrypto -ldl -lpthread
 
-host:
+build: depend
 	$(MAKE) $(PROGRAM)
 
 $(PROGRAM): $(OBJECTS) $(LIBRARIES)

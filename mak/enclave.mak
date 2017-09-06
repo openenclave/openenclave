@@ -128,7 +128,8 @@ else
 __SHLIB=$(CXXSHLIB)
 endif
 
-build : $(__SHLIB).signed.so
+build : depend 
+	$(MAKE) $(__SHLIB).signed.so
 
 $(__SHLIB).signed.so: $(__SHLIB).so
 	$(BINDIR)/oesign $(__SHLIB).so $(SIGNCONF) $(KEYFILE)
