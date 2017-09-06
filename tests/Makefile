@@ -1,7 +1,10 @@
 include ../mak/defs.mak
 .PHONY: tests
 
+ifdef HAVE_SGX
 DIRS += aesm
+endif
+
 DIRS += SampleAppCRT
 DIRS += SampleApp
 DIRS += echo 
