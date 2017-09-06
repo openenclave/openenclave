@@ -21,6 +21,67 @@ default_prefix=/opt/openenclave
 
 ##==============================================================================
 ##
+## function abspath()
+##
+##     Convert a possibly relative path into an absolute canonical path.
+##
+##==============================================================================
+
+abspath()
+{
+    local path=$1
+
+    ### Create temporary directory:
+
+    local tmpdir=`/bin/mktemp -d`
+
+    if [ ! -d "${tmpdir}" ]; then
+        echo "$0: failed to create temporary directory"
+        exit 1
+    fi
+
+    ### Form temporary path:
+
+    local firstchar=${path:0:1}
+
+    if [ "${firstchar}" == "/" ]; then
+       tmppath=${tmpdir}/${path}
+    else
+       tmppath=${tmpdir}/`pwd`/${path}
+    fi
+
+    ### Create directory:
+
+    mkdir -p "${tmppath}"
+
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to create ${tmppath}"
+        exit 1
+    fi
+
+    ### Change to directory and save its full path:
+
+    cd ${tmppath}
+
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to change directory to ${tmppath}"
+        exit 1
+    fi
+
+    local fullpath=`pwd`
+
+    ### Print path without tmpdir prefix:
+
+    local len=${#tmpdir}
+    echo ${fullpath:${len}}
+
+    ### Remove the temporary directory:
+
+    rm -rf ${fullpath}
+}
+
+##==============================================================================
+##
 ## Process command-line options:
 ##
 ##==============================================================================
@@ -37,23 +98,23 @@ do
       ;;
 
     --prefix=*)
-      prefix=$arg 
+      prefix=`abspath $arg`
       ;;
 
     --libdirdir=*)
-      libdirdir=$arg 
+      libdirdir=`abspath $arg`
       ;;
 
     --bindir=*)
-      bindir=$arg 
+      bindir=`abspath $arg`
       ;;
 
     --includedir=*)
-      includedir=$arg 
+      includedir=`abspath $arg`
       ;;
 
     --datadir=*)
-      datadir=$arg 
+      datadir=`abspath $arg`
       ;;
 
     --enable-werror)
