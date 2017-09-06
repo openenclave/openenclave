@@ -488,6 +488,13 @@ SOURCES += $(MUSLSRC)/internal/intscan.c
 SOURCES += $(MUSLSRC)/internal/libc.c
 SOURCES += $(MUSLSRC)/internal/shgetc.c
 SOURCES += $(MUSLSRC)/stdlib/strtod.c
+SOURCES += $(MUSLSRC)/stdio/vfprintf.c
+SOURCES += $(MUSLSRC)/stdio/vfscanf.c
+SOURCES += $(MUSLSRC)/stdio/vfwprintf.c
+SOURCES += $(MUSLSRC)/stdio/vsnprintf.c
+SOURCES += $(MUSLSRC)/stdio/vsscanf.c
+SOURCES += $(MUSLSRC)/stdio/vswprintf.c
+SOURCES += $(MUSLSRC)/stdio/__toread.c
 
 OBJECTS = $(SOURCES:.c=.o)
 OBJECTS += abort.o

@@ -1,6 +1,9 @@
 #include <sched.h>
+#include <stdio.h>
+#include <assert.h>
 
 int sched_yield(void)
 {
-    return 0;
+    assert("sched_yield(): panic" == NULL);
+    return -1;
 }

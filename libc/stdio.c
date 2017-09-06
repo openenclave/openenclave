@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdarg.h>
+#include <assert.h>
 #include <string.h>
 #include <openenclave.h>
 #include <oeinternal/calls.h>
@@ -53,6 +54,8 @@ int printf(const char* fmt, ...)
     return n;
 }
 
+OE_WEAK_ALIAS(printf, __libcxxrt_printf);
+
 int fprintf(FILE* stream, const char* fmt, ...)
 {
     char buf[1024];
@@ -73,6 +76,8 @@ int fprintf(FILE* stream, const char* fmt, ...)
 
     return n;
 }
+
+OE_WEAK_ALIAS(fprintf, __libcxxrt_fprintf);
 
 size_t __fwritex(const unsigned char *restrict s, size_t l, FILE *restrict f)
 {
@@ -120,3 +125,10 @@ int fflush(FILE *stream)
 {
     return 0;
 }
+
+void __stdio_exit(void)
+{
+    assert("__stdio_exit_needed() called" == NULL);
+}
+
+OE_WEAK_ALIAS(__stdio_exit, __stdio_exit_needed);
