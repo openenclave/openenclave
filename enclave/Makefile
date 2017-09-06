@@ -25,7 +25,7 @@ CFLAGS += -fno-builtin-memset
 CFLAGS += -fno-builtin-__vfprintf_chk
 CFLAGS += -fno-builtin-__memset_chk
 
-INCLUDES += -I$(INCDIR)/enclave
+INCLUDES += -I$(INCDIR) -I$(INCDIR)/enclave
 
 SOURCES += $(wildcard *.c)
 

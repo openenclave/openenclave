@@ -2,7 +2,7 @@ include ../../mak/defs.mak
 
 PROGRAM = str
 
-INCLUDES += -I$(TOP)/include/host
+INCLUDES += -I$(INCDIR) -I$(INCDIR)/host
 
 SOURCES = main.c
 

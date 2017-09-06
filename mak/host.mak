@@ -8,7 +8,7 @@ ifndef SOURCES
   $(error "Please define SOURCES")
 endif
 
-INCLUDES = -I$(INCDIR)/host
+INCLUDES = -I$(INCDIR) -I$(INCDIR)/host
 
 CFLAGS += -Wall -Werror -g -O2 -fPIC
 

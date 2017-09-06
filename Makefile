@@ -21,7 +21,7 @@ endif
 ##
 ##==============================================================================
 
-DIRS = 3rdparty gen host libc enclave crypto elf sign tests
+DIRS = 3rdparty gen host libc enclave elf sign tests
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )

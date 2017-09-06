@@ -8,7 +8,7 @@ include ../../mak/defs.mak
 
 PROGRAM = load
 
-INCLUDES += -I$(INCDIR)/host
+INCLUDES += -I$(INCDIR) -I$(INCDIR)/host
 
 SOURCES = main.cpp
 

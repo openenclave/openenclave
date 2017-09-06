@@ -4,7 +4,8 @@ CFLAGS =
 
 PROGRAM=$(BINDIR)/oeelf
 
-INCLUDES = -I$(TOP)/include/host
+INCLUDES += -I$(INCDIR)
+INCLUDES += -I$(INCDIR)/host
 
 LDFLAGS = -L$(LIBDIR)/host -loehost
 

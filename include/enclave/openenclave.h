@@ -1,13 +1,13 @@
 #ifndef _ENCLAVE_OPENENCLAVE_H
 #define _ENCLAVE_OPENENCLAVE_H
 
-#include "oecommon/defs.h"
-#include "oecommon/types.h"
-#include "oecommon/result.h"
-#include "oecommon/thread.h"
-#include "oecommon/typeinfo.h"
-#include "oecommon/atomic.h"
-#include "oecommon/sha.h"
+#include "../oecommon/defs.h"
+#include "../oecommon/types.h"
+#include "../oecommon/result.h"
+#include "../oecommon/thread.h"
+#include "../oecommon/typeinfo.h"
+#include "../oecommon/atomic.h"
+#include "../oecommon/sha.h"
 
 OE_EXTERNC_BEGIN
 

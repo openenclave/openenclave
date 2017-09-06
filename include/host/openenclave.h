@@ -7,13 +7,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include "oecommon/defs.h"
-#include "oecommon/types.h"
-#include "oecommon/result.h"
-#include "oecommon/thread.h"
-#include "oecommon/sha.h"
-#include "oecommon/typeinfo.h"
-#include "oecommon/atomic.h"
+#include "../oecommon/defs.h"
+#include "../oecommon/types.h"
+#include "../oecommon/result.h"
+#include "../oecommon/thread.h"
+#include "../oecommon/sha.h"
+#include "../oecommon/typeinfo.h"
+#include "../oecommon/atomic.h"
 
 OE_EXTERNC_BEGIN
 

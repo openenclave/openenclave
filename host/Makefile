@@ -15,7 +15,7 @@ CXXFLAGS = $(CFLAGS) -std=c++11
 
 DEFINES += -DOE_BUILD_UNTRUSTED
 
-INCLUDES += -I$(INCDIR)/host
+INCLUDES += -I$(INCDIR) -I$(INCDIR)/host
 
 SOURCES += $(wildcard *.c)
 
