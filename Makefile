@@ -137,6 +137,8 @@ prereqs:
 
 install:
 	@ ./scripts/install
+
+remove-test-install:
 	@ $(MAKE) test-install
 
 test-install:
