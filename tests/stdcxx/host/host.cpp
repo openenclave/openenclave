@@ -36,13 +36,7 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-#if 1
-    const uint64_t flags = OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
-#else
-    const uint64_t flags = OE_FLAG_DEBUG;
-#endif
-
-    if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
+    if ((result = OE_CreateEnclave(argv[1], CREATE_FLAGS, &enclave)) != OE_OK)
     {
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
     }

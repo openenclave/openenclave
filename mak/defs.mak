@@ -34,3 +34,26 @@ define NEWLINE
 endef
 
 TRUE=1
+
+##==============================================================================
+##
+## HAVE_SGX
+##
+##     Use the oesgx utility (if already compiled) to determine whether the
+##     CPU supports SGX. If so, set the HAVE_SGX variable as follows:
+##
+##         HAVE_SGX=1 -- SGX-1 is supported
+##         HAVE_SGX=2 -- SGX-2 is supported
+##
+##==============================================================================
+
+__OESGX=$(shell $(BINDIR)/oesgx 2> /dev/null)
+
+ifeq ($(__OESGX),1)
+HAVE_SGX=1
+endif
+
+ifeq ($(__OESGX),2)
+HAVE_SGX=2
+endif
+

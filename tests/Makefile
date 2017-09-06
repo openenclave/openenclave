@@ -12,15 +12,18 @@ DIRS += str
 DIRS += mem
 DIRS += ecall
 DIRS += ocall
-DIRS += report
 DIRS += thread
 DIRS += pingpong 
 DIRS += file
 DIRS += tester
 DIRS += stdc
-DIRS += SampleAppAttestation 
 DIRS += stdcxx
 DIRS += mbed
+
+ifdef HAVE_SGX
+  DIRS += report
+  DIRS += SampleAppAttestation 
+endif
 
 define NL
 

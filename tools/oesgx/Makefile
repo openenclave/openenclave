@@ -1,7 +1,13 @@
+include ../../mak/defs.mak
+
+TARGET=$(BINDIR)/oesgx
 
 all:
-	gcc -Wall -O2 -o oesgx oesgx.c
+	gcc -Wall -O2 -o $(TARGET) oesgx.c
 
 clean:
-	rm -rf oesgx
+	rm -rf $(TARGET)
 
+distclean:
+
+depend:

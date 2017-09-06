@@ -65,7 +65,7 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    if ((result = OE_CreateEnclave(argv[1], 0, &enclave)) != OE_OK)
+    if ((result = OE_CreateEnclave(argv[1], CREATE_FLAGS, &enclave)) != OE_OK)
     {
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
     }

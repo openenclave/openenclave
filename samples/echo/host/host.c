@@ -23,7 +23,9 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave);
+    const uint64_t flags = OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
+
+    result = OE_CreateEnclave(argv[1], flags, &enclave);
     if (result != OE_OK)
     {
         fprintf(stderr, "%s: OE_CreateEnclave(): %u\n", argv[0], result);
