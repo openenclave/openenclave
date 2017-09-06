@@ -479,6 +479,15 @@ SOURCES += $(MUSLSRC)/complex/ctanh.c
 SOURCES += $(MUSLSRC)/complex/ctanhf.c
 SOURCES += $(MUSLSRC)/complex/ctanhl.c
 SOURCES += $(MUSLSRC)/complex/ctanl.c
+SOURCES += $(MUSLSRC)/ctype/__ctype_b_loc.c
+SOURCES += $(MUSLSRC)/ctype/__ctype_get_mb_cur_max.c
+SOURCES += $(MUSLSRC)/ctype/__ctype_tolower_loc.c
+SOURCES += $(MUSLSRC)/ctype/__ctype_toupper_loc.c
+SOURCES += $(MUSLSRC)/stdio/fputwc.c
+SOURCES += $(MUSLSRC)/internal/intscan.c
+SOURCES += $(MUSLSRC)/internal/libc.c
+SOURCES += $(MUSLSRC)/internal/shgetc.c
+SOURCES += $(MUSLSRC)/stdlib/strtod.c
 
 OBJECTS = $(SOURCES:.c=.o)
 OBJECTS += abort.o
