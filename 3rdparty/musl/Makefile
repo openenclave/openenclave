@@ -19,6 +19,8 @@ $(TARGET):
 	$(MAKE) configure
 	$(MAKE) -C musl
 	$(MAKE) -C musl install
+	( rm -f `find . -name '*.o'` )
+	( rm -f `find . -name '*.lo'` )
 	./wrap $(TARGET)/endian.h endian.h.prefix endian.h.suffix
 
 configure:
@@ -35,9 +37,9 @@ clean:
 
 silent-clean:
 	-@ $(MAKE) -C musl clean 2> /dev/null
-	@ rm -rf $(TARGET)
+	@ rm -rf $(TARGET) install
 
 distclean:
-	rm -rf musl $(TARGET)
+	rm -rf musl $(TARGET) install $(PKG)
 
 depend:
