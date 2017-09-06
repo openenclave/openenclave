@@ -20,8 +20,6 @@ all:
 	$(MAKE) gen
 	$(MAKE) program
 
-CLEAN = typeinfo_u.c typeinfo_u.h
-
 include $(TOP)/mak/program.mak
 
 ##==============================================================================

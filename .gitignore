@@ -64,8 +64,6 @@ tests/str/str
 tests/tester/host/testerhost
 tests/thread/host/threadhost
 tests/typeinfo/typeinfo
-tests/typeinfo/typeinfo_u.c
-tests/typeinfo/typeinfo_u.h
 prereq/aesm/.build
 prereq/aesm/.prebuilt
 prereq/aesm/.psw_installer
@@ -101,3 +99,4 @@ tests/mbed/host/mbedhost
 openenclave-0.1.0.tar.gz
 include/enclave/libc/
 tools/oesgx/oesgx
+.depends
