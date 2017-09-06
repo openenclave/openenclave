@@ -1,88 +1,90 @@
-#ifndef __ELIBC_ENDIAN_H
-#define __ELIBC_ENDIAN_H
+#ifndef __MUSL_ENDIAN_H_WRAPPER
+#define __MUSL_ENDIAN_H_WRAPPER
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
+#ifndef _ENDIAN_H
+#define _ENDIAN_H
 
 #include <features.h>
-#include <bits/alltypes.h>
 
-#ifndef __BYTE_ORDER__
-# error "__BYTE_ORDER__ undefined"
+#define __LITTLE_ENDIAN 1234
+#define __BIG_ENDIAN 4321
+#define __PDP_ENDIAN 3412
+
+#if defined(__GNUC__) && defined(__BYTE_ORDER__)
+#define __BYTE_ORDER __BYTE_ORDER__
+#else
+#include <bits/endian.h>
 #endif
 
-#define BYTE_ORDER __BYTE_ORDER__
-#define LITTLE_ENDIAN 1234
-#define BIG_ENDIAN 4321
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
-__ELIBC_BEGIN
+#define BIG_ENDIAN __BIG_ENDIAN
+#define LITTLE_ENDIAN __LITTLE_ENDIAN
+#define PDP_ENDIAN __PDP_ENDIAN
+#define BYTE_ORDER __BYTE_ORDER
 
-__ELIBC_INLINE uint16_t __bswap16(uint16_t x)
+#include <stdint.h>
+
+static __inline uint16_t __bswap16(uint16_t __x)
 {
-    return
-        ((uint16_t)((x & 0x00FF) << 8)) |
-        ((uint16_t)((x & 0xFF00) >> 8));
+	return __x<<8 | __x>>8;
 }
 
-__ELIBC_INLINE uint32_t __bswap32(uint32_t x)
+static __inline uint32_t __bswap32(uint32_t __x)
 {
-    return
-        ((uint32_t)((x & 0x000000FF) << 24)) |
-        ((uint32_t)((x & 0x0000FF00) << 8)) |
-        ((uint32_t)((x & 0x00FF0000) >> 8)) |
-        ((uint32_t)((x & 0xFF000000) >> 24));
+	return __x>>24 | __x>>8&0xff00 | __x<<8&0xff0000 | __x<<24;
 }
 
-__ELIBC_INLINE uint64_t __bswap64(uint64_t x)
+static __inline uint64_t __bswap64(uint64_t __x)
 {
-    return 
-        ((uint64_t)((x & 0xFF) << 56)) |
-        ((uint64_t)((x & 0xFF00) << 40)) |
-        ((uint64_t)((x & 0xFF0000) << 24)) |
-        ((uint64_t)((x & 0xFF000000) << 8)) |
-        ((uint64_t)((x & 0xFF00000000) >> 8)) |
-        ((uint64_t)((x & 0xFF0000000000) >> 24)) |
-        ((uint64_t)((x & 0xFF000000000000) >> 40)) |
-        ((uint64_t)((x & 0xFF00000000000000) >> 56));
+	return __bswap32(__x)+0ULL<<32 | __bswap32(__x>>32);
 }
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-# define htobe16(x) __bswap16(x)
-# define be16toh(x) __bswap16(x)
-# define betoh16(x) __bswap16(x)
-# define htobe32(x) __bswap32(x)
-# define be32toh(x) __bswap32(x)
-# define betoh32(x) __bswap32(x)
-# define htobe64(x) __bswap64(x)
-# define be64toh(x) __bswap64(x)
-# define betoh64(x) __bswap64(x)
-# define htole16(x) (uint16_t)(x)
-# define le16toh(x) (uint16_t)(x)
-# define letoh16(x) (uint16_t)(x)
-# define htole32(x) (uint32_t)(x)
-# define le32toh(x) (uint32_t)(x)
-# define letoh32(x) (uint32_t)(x)
-# define htole64(x) (uint64_t)(x)
-# define le64toh(x) (uint64_t)(x)
-# define letoh64(x) (uint64_t)(x)
+#define htobe16(x) __bswap16(x)
+#define be16toh(x) __bswap16(x)
+#define betoh16(x) __bswap16(x)
+#define htobe32(x) __bswap32(x)
+#define be32toh(x) __bswap32(x)
+#define betoh32(x) __bswap32(x)
+#define htobe64(x) __bswap64(x)
+#define be64toh(x) __bswap64(x)
+#define betoh64(x) __bswap64(x)
+#define htole16(x) (uint16_t)(x)
+#define le16toh(x) (uint16_t)(x)
+#define letoh16(x) (uint16_t)(x)
+#define htole32(x) (uint32_t)(x)
+#define le32toh(x) (uint32_t)(x)
+#define letoh32(x) (uint32_t)(x)
+#define htole64(x) (uint64_t)(x)
+#define le64toh(x) (uint64_t)(x)
+#define letoh64(x) (uint64_t)(x)
 #else
-# define htobe16(x) (uint16_t)(x)
-# define be16toh(x) (uint16_t)(x)
-# define betoh16(x) (uint16_t)(x)
-# define htobe32(x) (uint32_t)(x)
-# define be32toh(x) (uint32_t)(x)
-# define betoh32(x) (uint32_t)(x)
-# define htobe64(x) (uint64_t)(x)
-# define be64toh(x) (uint64_t)(x)
-# define betoh64(x) (uint64_t)(x)
-# define htole16(x) __bswap16(x)
-# define le16toh(x) __bswap16(x)
-# define letoh16(x) __bswap16(x)
-# define htole32(x) __bswap32(x)
-# define le32toh(x) __bswap32(x)
-# define letoh32(x) __bswap32(x)
-# define htole64(x) __bswap64(x)
-# define le64toh(x) __bswap64(x)
-# define letoh64(x) __bswap64(x)
+#define htobe16(x) (uint16_t)(x)
+#define be16toh(x) (uint16_t)(x)
+#define betoh16(x) (uint16_t)(x)
+#define htobe32(x) (uint32_t)(x)
+#define be32toh(x) (uint32_t)(x)
+#define betoh32(x) (uint32_t)(x)
+#define htobe64(x) (uint64_t)(x)
+#define be64toh(x) (uint64_t)(x)
+#define betoh64(x) (uint64_t)(x)
+#define htole16(x) __bswap16(x)
+#define le16toh(x) __bswap16(x)
+#define letoh16(x) __bswap16(x)
+#define htole32(x) __bswap32(x)
+#define le32toh(x) __bswap32(x)
+#define letoh32(x) __bswap32(x)
+#define htole64(x) __bswap64(x)
+#define le64toh(x) __bswap64(x)
+#define letoh64(x) __bswap64(x)
 #endif
 
-__ELIBC_END
+#endif
 
-#endif /* __ELIBC_ENDIAN_H */
+#endif
+#pragma GCC diagnostic pop
+
+#endif /* __MUSL_ENDIAN_H_WRAPPER */

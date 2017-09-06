@@ -19,7 +19,11 @@ time_t time(time_t *tloc)
     return tv.tv_sec;
 }
 
+#if 0
 int gettimeofday(struct timeval* tv, struct timezone* tz)
+#else
+int gettimeofday(struct timeval* tv, void* tz)
+#endif
 {
     size_t ret = -1;
     OE_GettimeofdayArgs* args = NULL;
@@ -33,9 +37,9 @@ int gettimeofday(struct timeval* tv, struct timezone* tz)
         args->tv = &args->tvbuf;
 
     if (tz)
-        args->tz = &args->tzbuf;
+        args->tz = NULL;
 
-    if (__OE_OCall(OE_FUNC_GETTIMEOFDAY, (uint64_t)args, NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_GETTIMEOFDAY, (oe_uint64_t)args, NULL) != OE_OK)
         goto done;
 
     if (args->ret == 0)
@@ -68,7 +72,7 @@ int clock_gettime(clockid_t clk_id, struct timespec *tp)
     args->ret = -1;
     args->tp = tp ? &args->tpbuf : NULL;
 
-    if (__OE_OCall(OE_FUNC_CLOCK_GETTIME, (uint64_t)args, NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_CLOCK_GETTIME, (oe_uint64_t)args, NULL) != OE_OK)
         goto done;
 
     if (args->ret == 0)

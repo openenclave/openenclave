@@ -1,7 +1,15 @@
 #ifndef _LANGINFO_H
 #define _LANGINFO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <features.h>
+#include <nl_types.h>
+
+#define __NEED_locale_t
+
 #include <bits/alltypes.h>
 
 #define ABDAY_1 0x20000
@@ -72,6 +80,13 @@
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define YESSTR 0x50002
 #define NOSTR 0x50003
+#endif
+
+char *nl_langinfo(nl_item);
+char *nl_langinfo_l(nl_item, locale_t);
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

@@ -2,6 +2,10 @@
 #include <assert.h>
 #include <openenclave.h>
 
+#ifdef pthread_equal
+# undef pthread_equal
+#endif
+
 /*
 **==============================================================================
 **
@@ -18,6 +22,18 @@ pthread_t pthread_self()
 int pthread_equal(pthread_t thread1, pthread_t thread2)
 {
     return OE_ThreadEqual((OE_Thread)thread1, (OE_Thread)thread2);
+}
+
+int pthread_join(pthread_t thread, void **retval)
+{
+    assert("pthread_join() not implemented" == NULL);
+    return -1;
+}
+
+int pthread_detach(pthread_t thread)
+{
+    assert("pthread_detach() not implemented" == NULL);
+    return -1;
 }
 
 /*
@@ -84,7 +100,7 @@ int pthread_mutexattr_destroy(pthread_mutexattr_t* attr)
     return OE_MutexAttrDestroy((OE_MutexAttr*)attr);
 }
 
-int pthread_mutex_init(pthread_mutex_t* m, pthread_mutexattr_t* attr)
+int pthread_mutex_init(pthread_mutex_t* m, const pthread_mutexattr_t* attr)
 {
     return OE_MutexInit((OE_Mutex*)m, (OE_MutexAttr*)attr);
 }
@@ -117,10 +133,12 @@ int pthread_mutex_destroy(pthread_mutex_t* m)
 **==============================================================================
 */
 
-int pthread_rwlock_init(pthread_rwlock_t* rwlock, pthread_rwlockattr_t* attr)
+int pthread_rwlock_init(
+    pthread_rwlock_t* rwlock, 
+    const pthread_rwlockattr_t* attr)
 {
     if (rwlock)
-        return pthread_mutex_init(&rwlock->__impl, NULL);
+        return pthread_mutex_init((pthread_mutex_t*)rwlock, NULL);
 
     return -1;
 }
@@ -128,7 +146,7 @@ int pthread_rwlock_init(pthread_rwlock_t* rwlock, pthread_rwlockattr_t* attr)
 int pthread_rwlock_rdlock(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
-        return pthread_mutex_lock(&rwlock->__impl);
+        return pthread_mutex_lock((pthread_mutex_t*)rwlock);
 
     return -1;
 }
@@ -136,7 +154,7 @@ int pthread_rwlock_rdlock(pthread_rwlock_t* rwlock)
 int pthread_rwlock_wrlock(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
-        return pthread_mutex_lock(&rwlock->__impl);
+        return pthread_mutex_lock((pthread_mutex_t*)rwlock);
 
     return -1;
 }
@@ -144,23 +162,25 @@ int pthread_rwlock_wrlock(pthread_rwlock_t* rwlock)
 int pthread_rwlock_unlock(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
-        return pthread_mutex_unlock(&rwlock->__impl);
+        return pthread_mutex_unlock((pthread_mutex_t*)rwlock);
 
     return -1;
 }
 
+#if 0
 int pthread_rwlock_trylock(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
-        pthread_mutex_trylock(&rwlock->__impl);
+        pthread_mutex_trylock((pthread_mutex_t*)rwlock);
 
     return -1;
 }
+#endif
 
 int pthread_rwlock_destroy(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
-        return pthread_mutex_destroy(&rwlock->__impl);
+        return pthread_mutex_destroy((pthread_mutex_t*)rwlock);
 
     return -1;
 }
@@ -173,7 +193,7 @@ int pthread_rwlock_destroy(pthread_rwlock_t* rwlock)
 **==============================================================================
 */
 
-int pthread_cond_init(pthread_cond_t* cond, pthread_condattr_t* attr)
+int pthread_cond_init(pthread_cond_t* cond, const pthread_condattr_t* attr)
 {
     return OE_CondInit((OE_Cond*)cond, (OE_CondAttr*)attr);
 }
@@ -186,7 +206,7 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t* mutex)
 int pthread_cond_timedwait(
     pthread_cond_t *cond, 
     pthread_mutex_t* mutex,
-    struct timespec* ts)
+    const struct timespec* ts)
 {
     assert("pthread_cond_timedwait(): not implemented" == NULL);
     return -1;

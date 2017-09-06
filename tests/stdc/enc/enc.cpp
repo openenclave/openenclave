@@ -19,6 +19,7 @@
 #include <assert.h>
 #include <inttypes.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include <sys/time.h>
 #include <time.h>
 #include "../args.h"
@@ -117,12 +118,14 @@ void Test_llabs()
     assert(llabs(0) == 0);
 }
 
+#if 0
 void Test_div()
 {
     div_t r = div(5, 3);
     assert(r.quot == 1);
     assert(r.rem == 2);
 }
+#endif
 
 void Test_atox()
 {
@@ -168,7 +171,9 @@ OE_ECALL void Test(void* args_)
     Test_abs();
     Test_labs();
     Test_llabs();
+#if 0
     Test_div();
+#endif
     Test_atox();
 
     struct timeval tv = { 0, 0 };

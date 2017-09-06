@@ -1,10 +1,9 @@
-#ifndef __ELIBC_COMPLEX_H
-#define __ELIBC_COMPLEX_H
+#ifndef _COMPLEX_H
+#define _COMPLEX_H
 
-#include <features.h>
-#include <bits/alltypes.h>
-
-__ELIBC_BEGIN
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define complex _Complex
 #ifdef __GNUC__
@@ -117,7 +116,7 @@ long double creall(long double complex);
 
 #if __STDC_VERSION__ >= 201112L
 #if defined(_Imaginary_I)
-#define __CMPLX(x, y, t) ((t)(x) + _Imaginary_I*(t)(y))
+#define __CMPLX(x, y, t) ((t)(x) + _Imaginary_I*(t)(y)))
 #elif defined(__clang__)
 #define __CMPLX(x, y, t) (+(_Complex t){ (t)(x), (t)(y) })
 #else
@@ -128,6 +127,7 @@ long double creall(long double complex);
 #define CMPLXL(x, y) __CMPLX(x, y, long double)
 #endif
 
-__ELIBC_END
-
-#endif /* __ELIBC_COMPLEX_H */
+#ifdef __cplusplus
+}
+#endif
+#endif

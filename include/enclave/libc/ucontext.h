@@ -1,11 +1,25 @@
-#ifndef __ELIBC_UCONTEXT_H
-#define __ELIBC_UCONTEXT_H
+#ifndef _UCONTEXT_H
+#define _UCONTEXT_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <features.h>
-#include <bits/alltypes.h>
 
-__ELIBC_BEGIN
+#include <signal.h>
 
-__ELIBC_END
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define NGREG (sizeof(gregset_t)/sizeof(greg_t))
+#endif
 
-#endif /* __ELIBC_UCONTEXT_H */
+struct __ucontext;
+
+int  getcontext(struct __ucontext *);
+void makecontext(struct __ucontext *, void (*)(void), int, ...);
+int  setcontext(const struct __ucontext *);
+int  swapcontext(struct __ucontext *, const struct __ucontext *);
+
+#ifdef __cplusplus
+}
+#endif
+#endif

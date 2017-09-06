@@ -173,7 +173,7 @@ typedef struct _OE_GettimeofdayArgs
     struct timeval *tv;
     struct timeval tvbuf;
     struct timezone *tz;
-    struct timezone tzbuf;
+    oe_uint64_t tzbuf[2];
 }
 OE_GettimeofdayArgs;
 #endif

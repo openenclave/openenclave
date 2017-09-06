@@ -1,27 +1,23 @@
-#ifndef __ELIBC_ASSERT_H
-#define __ELIBC_ASSERT_H
-
 #include <features.h>
-#include <bits/alltypes.h>
 
-__ELIBC_BEGIN
+#undef assert
 
-#define assert(COND) \
-    do \
-    { \
-        if (!(COND)) \
-        { \
-            __assert_fail(#COND, __FILE__, __LINE__, __FUNCTION__); \
-        } \
-    } \
-    while (0)
+#ifdef NDEBUG
+#define	assert(x) (void)0
+#else
+#define assert(x) ((void)((x) || (__assert_fail(#x, __FILE__, __LINE__, __func__),0)))
+#endif
 
-__NORETURN extern void __assert_fail(
-    const char *__expr, 
-    const char *__file,
-    unsigned int __line, 
-    const char *__function);
+#ifndef __cplusplus
+#define static_assert _Static_assert
+#endif
 
-__ELIBC_END
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* __ELIBC_ASSERT_H */
+void __assert_fail (const char *, const char *, int, const char *);
+
+#ifdef __cplusplus
+}
+#endif

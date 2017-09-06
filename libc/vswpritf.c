@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <wchar.h>
 
 int vfwprintf(FILE *stream, const wchar_t *format, va_list args);
 

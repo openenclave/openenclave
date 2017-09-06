@@ -1,28 +1,54 @@
-#ifndef __ELIBC_LINK_H
-#define __ELIBC_LINK_H
+#ifndef _LINK_H
+#define _LINK_H
 
-#include <features.h>
-#include <bits/alltypes.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <elf.h>
+#define __NEED_size_t
+#define __NEED_uint32_t
+#include <bits/alltypes.h>
 
-__ELIBC_BEGIN
+#if UINTPTR_MAX > 0xffffffff
+#define ElfW(type) Elf64_ ## type
+#else
+#define ElfW(type) Elf32_ ## type
+#endif
 
-struct dl_phdr_info
-{
-    Elf64_Addr dlpi_addr;
-    const char *dlpi_name;
-    const Elf64_Phdr *dlpi_phdr;
-    Elf64_Half dlpi_phnum;
-    unsigned long long int dlpi_adds;
-    unsigned long long int dlpi_subs;
-    size_t dlpi_tls_modid;
-    void *dlpi_tls_data;
+/* this is the same everywhere except alpha and s390 */
+typedef uint32_t Elf_Symndx;
+
+struct dl_phdr_info {
+	ElfW(Addr) dlpi_addr;
+	const char *dlpi_name;
+	const ElfW(Phdr) *dlpi_phdr;
+	ElfW(Half) dlpi_phnum;
+	unsigned long long int dlpi_adds;
+	unsigned long long int dlpi_subs;
+	size_t dlpi_tls_modid;
+	void *dlpi_tls_data;
 };
 
-int dl_iterate_phdr(
-    int (*callback) (struct dl_phdr_info *info, size_t size, void *data),
-    void *data);
+struct link_map {
+	ElfW(Addr) l_addr;
+	char *l_name;
+	ElfW(Dyn) *l_ld;
+	struct link_map *l_next, *l_prev;
+};
 
-__ELIBC_END
+struct r_debug {
+	int r_version;
+	struct link_map *r_map;
+	ElfW(Addr) r_brk;
+	enum { RT_CONSISTENT, RT_ADD, RT_DELETE } r_state;
+	ElfW(Addr) r_ldbase;
+};
 
-#endif /* __ELIBC_LINK_H */
+int dl_iterate_phdr(int (*)(struct dl_phdr_info *, size_t, void *), void *);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

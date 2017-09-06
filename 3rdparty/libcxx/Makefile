@@ -46,7 +46,6 @@ SOURCES += trunk/src/utility.cpp
 SOURCES += trunk/src/valarray.cpp
 SOURCES += trunk/src/variant.cpp
 SOURCES += trunk/src/vector.cpp
-SOURCES += libcxx_stubs.cpp
 
 TARGET = $(LIBDIR)/tmp/libcxx.a
 
@@ -84,3 +83,6 @@ patch:
 install:
 	rm -rf $(HEADER_INSTALL_DIRECTORY)
 	cp -r trunk/include $(HEADER_INSTALL_DIRECTORY)
+
+merge:
+	(cd ../mergecxx; make )

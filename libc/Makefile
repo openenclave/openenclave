@@ -14,8 +14,8 @@ CFLAGS += -Wno-attributes
 CFLAGS += -fPIC
 CFLAGS += -fno-stack-protector
 CFLAGS += -fvisibility=hidden
-CFLAGS += -Wmissing-prototypes
-CFLAGS += -Wstrict-prototypes
+#CFLAGS += -Wmissing-prototypes
+#CFLAGS += -Wstrict-prototypes
 CFLAGS += -fno-builtin-memcpy
 CFLAGS += -fno-builtin-memset
 CFLAGS += -Wno-parentheses

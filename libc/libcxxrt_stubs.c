@@ -1,8 +1,10 @@
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <dlfcn.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"

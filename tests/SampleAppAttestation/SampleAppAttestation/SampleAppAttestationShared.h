@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 typedef struct _CREATE_APP_ENCLAVE_REPORT_ARGS
 {
     OE_Result Result;

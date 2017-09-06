@@ -1,6 +1,7 @@
 #define __OE_NEED_TIME_CALLS
 #include <time.h>
 #include <string.h>
+#include <stdint.h>
 #include <openenclave.h>
 #include <oeinternal/calls.h>
 

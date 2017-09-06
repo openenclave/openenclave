@@ -7,6 +7,7 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
+#include <dlfcn.h>
 
 /* Stubs for OpenSSL crypto library */
 

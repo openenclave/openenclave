@@ -1,19 +1,25 @@
-#ifndef __ELIBC_STDARG_H
-#define __ELIBC_STDARG_H
+#ifndef _STDARG_H
+#define _STDARG_H
 
-#include <features.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define __NEED_va_list
+
 #include <bits/alltypes.h>
 
-__ELIBC_BEGIN
+#if __GNUC__ >= 3
+#define va_start(v,l)   __builtin_va_start(v,l)
+#define va_end(v)       __builtin_va_end(v)
+#define va_arg(v,l)     __builtin_va_arg(v,l)
+#define va_copy(d,s)    __builtin_va_copy(d,s)
+#else
+#include <bits/stdarg.h>
+#endif
 
-#define va_start(ap, last) __builtin_va_start((ap), last)
+#ifdef __cplusplus
+}
+#endif
 
-#define va_end __builtin_va_end
-
-#define va_arg __builtin_va_arg
-
-#define va_copy(dst, src) __builtin_va_copy((dst), (src))
-
-__ELIBC_END
-
-#endif /* __ELIBC_STDARG_H */
+#endif

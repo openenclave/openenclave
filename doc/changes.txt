@@ -3,7 +3,7 @@
 
 2017-08-31: Developed SGX AESM service installer script
 
-2017-08-31: Implemened ./configure script
+2017-08-31: Implemented ./configure script
 
 2017-08-31: Developed OpenEnclave installer script
 
@@ -15,5 +15,9 @@
 
 2017-09-03: Ported MBEDTLS to enclave (added test for SHA256 hashing)
 
+2017-09-03: Briefly evaluated Doxygen 
+
 2017-09-04: Implemented "make check" target
+
+2017-09-05: Finished first draft of "Design Overview" document.
 

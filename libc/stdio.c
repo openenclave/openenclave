@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -5,9 +6,9 @@
 #include <oeinternal/calls.h>
 #include "../3rdparty/musl/musl/src/internal/stdio_impl.h"
 
-FILE* stdin = ((FILE*)0x10000000);
-FILE* stdout = ((FILE*)0x20000000);
-FILE* stderr = ((FILE*)0x30000000);
+FILE* const stdin = ((FILE*)0x10000000);
+FILE* const stdout = ((FILE*)0x20000000);
+FILE* const stderr = ((FILE*)0x30000000);
 
 int puts(const char* str)
 {
@@ -94,4 +95,28 @@ void __unlockfile(FILE *f)
 int __overflow(FILE *stream, int c)
 {
     return c;
+}
+
+int getc(FILE *stream)
+{
+    puts("getc() not implemented\n");
+    abort();
+}
+
+int ungetc(int c, FILE *stream)
+{
+    puts("ungetc() not implemented\n");
+    abort();
+}
+
+size_t fwrite(
+    const void *ptr, size_t size, size_t nmemb, FILE *stream)
+{
+    puts("fwrite() not implemented\n");
+    abort();
+}
+
+int fflush(FILE *stream)
+{
+    return 0;
 }

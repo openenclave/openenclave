@@ -1,10 +1,11 @@
-#ifndef __ELIBC_ELF_H
-#define __ELIBC_ELF_H
+#ifndef _ELF_H
+#define _ELF_H
 
-#include <features.h>
-#include <bits/alltypes.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-__ELIBC_BEGIN
+#include <stdint.h>
 
 typedef uint16_t Elf32_Half;
 typedef uint16_t Elf64_Half;
@@ -2081,7 +2082,7 @@ typedef Elf32_Addr Elf32_Conflict;
 #define PF_ARM_ABS		0x40000000
 
 
-//#define PT_ARM_EXIDX		(PT_LOPROC + 1)
+#define PT_ARM_EXIDX		(PT_LOPROC + 1)
 
 
 #define SHT_ARM_EXIDX		(SHT_LOPROC + 1)
@@ -2810,6 +2811,9 @@ typedef Elf32_Addr Elf32_Conflict;
 #define R_OR1K_TLS_DTPOFF	33
 #define R_OR1K_TLS_DTPMOD	34
 
-__ELIBC_END
+#ifdef __cplusplus
+}
+#endif
 
-#endif /* __ELIBC_ELF_H */
+
+#endif

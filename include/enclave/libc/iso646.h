@@ -1,25 +1,20 @@
-#ifndef __ELIBC_ISO646_H
-#define __ELIBC_ISO646_H
-
-#include <features.h>
-#include <bits/alltypes.h>
-
-__ELIBC_BEGIN
+#ifndef _ISO646_H
+#define _ISO646_H
 
 #ifndef __cplusplus
-# define and    &&
-# define and_eq &=
-# define bitand &
-# define or     ||
-# define or_eq  |=
-# define bitor  |
-# define not    !
-# define not_eq !=
-# define xor    ^
-# define xor_eq ^=
-# define compl  ~
+
+#define and    &&
+#define and_eq &=
+#define bitand &
+#define bitor  |
+#define compl  ~
+#define not    !
+#define not_eq !=
+#define or     ||
+#define or_eq  |=
+#define xor    ^
+#define xor_eq ^=
+
 #endif
 
-__ELIBC_END
-
-#endif /* __ELIBC_ISO646_H */
+#endif

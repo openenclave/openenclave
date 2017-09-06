@@ -1,6 +1,8 @@
 #define __OE_NEED_TIME_CALLS
+#define _GNU_SOURCE
 #include <time.h>
 #include <string.h>
+#include <stdint.h>
 #include <openenclave.h>
 #include <oeinternal/calls.h>
 
@@ -41,4 +43,14 @@ done:
         OE_HostFree(a);
 
     return ret;
+}
+
+size_t strftime_l(
+    char *s,
+    size_t max,
+    const char *format,
+    const struct tm *tm,
+    locale_t loc)
+{
+    return strftime(s, max, format, tm);
 }

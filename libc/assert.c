@@ -3,10 +3,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-__NORETURN void __assert_fail(
+void __assert_fail(
     const char *expr,
     const char *file,
-    unsigned int line,
+    int line,
     const char *function)
 {
     char buf[1024];

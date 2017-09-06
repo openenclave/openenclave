@@ -1,13 +1,34 @@
-#ifndef __ELIBC_INTTYPES_H
-#define __ELIBC_INTTYPES_H
+#ifndef _INTTYPES_H
+#define _INTTYPES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <features.h>
+#include <stdint.h>
+
+#define __NEED_wchar_t
 #include <bits/alltypes.h>
 
-__ELIBC_BEGIN
+typedef struct { intmax_t quot, rem; } imaxdiv_t;
 
+intmax_t imaxabs(intmax_t);
+imaxdiv_t imaxdiv(intmax_t, intmax_t);
+
+intmax_t strtoimax(const char *__restrict, char **__restrict, int);
+uintmax_t strtoumax(const char *__restrict, char **__restrict, int);
+
+intmax_t wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
+uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
+
+#if UINTPTR_MAX == UINT64_MAX
 #define __PRI64  "l"
 #define __PRIPTR "l"
+#else
+#define __PRI64  "ll"
+#define __PRIPTR ""
+#endif
 
 #define PRId8  "d"
 #define PRId16 "d"
@@ -200,25 +221,9 @@ __ELIBC_BEGIN
 #define SCNuPTR __PRIPTR "u"
 #define SCNxPTR __PRIPTR "x"
 
-typedef struct 
-{ 
-    intmax_t quot;
-    intmax_t rem; 
-} 
-imaxdiv_t;
+#ifdef __cplusplus
+}
+#endif
 
-intmax_t imaxabs(intmax_t);
+#endif
 
-imaxdiv_t imaxdiv(intmax_t, intmax_t);
-
-intmax_t strtoimax(const char *__restrict, char **__restrict, int);
-
-uintmax_t strtoumax(const char *__restrict, char **__restrict, int);
-
-intmax_t wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
-
-uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
-
-__ELIBC_END
-
-#endif /* __ELIBC_INTTYPES_H */

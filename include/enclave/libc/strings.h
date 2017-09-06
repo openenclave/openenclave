@@ -1,29 +1,39 @@
-#ifndef __ELIBC_STRINGS_H
-#define __ELIBC_STRINGS_H
+#ifndef	_STRINGS_H
+#define	_STRINGS_H
 
-#include <features.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+#define __NEED_size_t
+#define __NEED_locale_t
 #include <bits/alltypes.h>
 
-__ELIBC_BEGIN
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) || defined(_POSIX_SOURCE) \
+ || (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE+0 < 200809L) \
+ || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE+0 < 700)
+int bcmp (const void *, const void *, size_t);
+void bcopy (const void *, void *, size_t);
+void bzero (void *, size_t);
+char *index (const char *, int);
+char *rindex (const char *, int);
+#endif
 
-char *index(const char *s, int c);
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)  || defined(_BSD_SOURCE)
+int ffs (int);
+int ffsl (long);
+int ffsll (long long);
+#endif
 
-char *rindex(const char *s, int c);
+int strcasecmp (const char *, const char *);
+int strncasecmp (const char *, const char *, size_t);
 
-void bcopy(const void *s1, void *s2, size_t n);
+int strcasecmp_l (const char *, const char *, locale_t);
+int strncasecmp_l (const char *, const char *, size_t, locale_t);
 
-int bcmp(const void *s1, const void *s2, size_t n);
+#ifdef __cplusplus
+}
+#endif
 
-void bzero(void *s, size_t n);
-
-int strcasecmp(const char *s1, const char *s2);
-
-int strncasecmp(const char *s1, const char *s2, size_t n);
-
-int __strcasecmp_l(const char *l, const char *r, locale_t loc);
-
-int __strncasecmp_l(const char *l, const char *r, size_t n, locale_t loc);
-
-__ELIBC_END
-
-#endif /*__ELIBC_STRINGS_H */
+#endif
