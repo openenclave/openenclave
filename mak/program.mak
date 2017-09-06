@@ -20,7 +20,7 @@ else
   __COMPILER=$(CC)
 endif
 
-program:
+program: depend
 	$(MAKE) $(PROGRAM)
 
 $(PROGRAM): $(OBJECTS) $(LIBRARIES)

@@ -10,7 +10,7 @@ LIBRARIES += $(LIBDIR)/host/liboehost.a
 
 LDFLAGS += -L$(LIBDIR) -lcrypto -lpthread
 
-all:
+all: depend
 	$(MAKE) program
 
 CLEAN += log.txt pages.bin out err echoenc.signed.so private.pem

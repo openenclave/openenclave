@@ -23,7 +23,7 @@ OBJECTS = $(SOURCES:.c=.o)
 
 OBJECTS += enter.o entersim.o
 
-archive:
+build: depend
 	$(MAKE) $(ARCHIVE)
 
 $(ARCHIVE): $(OBJECTS)
@@ -45,7 +45,6 @@ clean:
 SEARCHPATH=--search-path .. --search-path /opt/intel/sgxsdk/include
 
 include $(MAKDIR)/depend.mak
--include .depends
 
 asm:
 	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -S calls.c

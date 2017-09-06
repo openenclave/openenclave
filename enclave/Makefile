@@ -36,7 +36,8 @@ OBJECTS += main.o
 OBJECTS += exit.o
 OBJECTS += abort.o
 
-archive: $(ARCHIVE)
+archive: depend
+	$(MAKE) $(ARCHIVE)
 
 $(ARCHIVE): $(OBJECTS)
 	ar r $(ARCHIVE) $(OBJECTS)
@@ -57,7 +58,6 @@ clean:
 	rm -f $(ARCHIVE) $(OBJECTS) .depends
 
 include $(MAKDIR)/depend.mak
--include .depends
 
 asm:
 	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -S report.c
