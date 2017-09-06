@@ -168,6 +168,10 @@ samples-config:
 	@ echo "OE_MAJOR=$(OE_MAJOR)" >> $(OPENENCLAVE_CONFIG)
 	@ echo "OE_MINOR=$(OE_MINOR)" >> $(OPENENCLAVE_CONFIG)
 	@ echo "OE_REVISION=$(OE_REVISION)" >> $(OPENENCLAVE_CONFIG)
+	@ echo "OE_PREFIX=$(TOP)" >> $(OPENENCLAVE_CONFIG)
+	@ echo "OE_LIBDIR=$(LIBDIR)" >> $(OPENENCLAVE_CONFIG)
+	@ echo "OE_BINDIR=$(BINDIR)" >> $(OPENENCLAVE_CONFIG)
+	@ echo "OE_INCLUDEDIR=$(INCDIR)" >> $(OPENENCLAVE_CONFIG)
 
 samples: samples-config
 	$(MAKE) -s -C samples world
