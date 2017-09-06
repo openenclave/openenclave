@@ -1,5 +1,7 @@
 #include <locale.h>
 
+/* ATTN: should these assert? */
+
 locale_t uselocale(locale_t newloc)
 {
     return 0;

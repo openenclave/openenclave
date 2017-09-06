@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <oeinternal/globals.h>
 
+/* Used by libunwind to iterate program ELF phdrs */
+
 int dl_iterate_phdr(
     int (*callback) (struct dl_phdr_info *info, size_t size, void *data),
     void *data)
@@ -25,7 +27,6 @@ int dl_iterate_phdr(
     info.dlpi_name = "";
     info.dlpi_phdr = (Elf64_Phdr*)((uint8_t*)ehdr + ehdr->e_phoff);
     info.dlpi_phnum = ehdr->e_phnum;
-
 
     return callback(&info, sizeof(info), data);
 }

@@ -498,6 +498,8 @@ SOURCES += $(MUSLSRC)/stdio/__toread.c
 SOURCES += $(MUSLSRC)/stdlib/abs.c
 SOURCES += $(MUSLSRC)/stdlib/labs.c
 SOURCES += $(MUSLSRC)/stdlib/llabs.c
+SOURCES += $(MUSLSRC)/legacy/getpagesize.c
+SOURCES += $(MUSLSRC)/prng/rand.c
 
 OBJECTS = $(SOURCES:.c=.o)
 OBJECTS += abort.o

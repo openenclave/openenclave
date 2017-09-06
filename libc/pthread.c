@@ -167,16 +167,6 @@ int pthread_rwlock_unlock(pthread_rwlock_t* rwlock)
     return -1;
 }
 
-#if 0
-int pthread_rwlock_trylock(pthread_rwlock_t* rwlock)
-{
-    if (rwlock)
-        pthread_mutex_trylock((pthread_mutex_t*)rwlock);
-
-    return -1;
-}
-#endif
-
 int pthread_rwlock_destroy(pthread_rwlock_t* rwlock)
 {
     if (rwlock)
