@@ -495,6 +495,9 @@ SOURCES += $(MUSLSRC)/stdio/vsnprintf.c
 SOURCES += $(MUSLSRC)/stdio/vsscanf.c
 SOURCES += $(MUSLSRC)/stdio/vswprintf.c
 SOURCES += $(MUSLSRC)/stdio/__toread.c
+SOURCES += $(MUSLSRC)/stdlib/abs.c
+SOURCES += $(MUSLSRC)/stdlib/labs.c
+SOURCES += $(MUSLSRC)/stdlib/llabs.c
 
 OBJECTS = $(SOURCES:.c=.o)
 OBJECTS += abort.o
