@@ -248,7 +248,7 @@ echo "Created ${UNINSTALL}"
 ENVIRONMENT=${DATADIR}/environment
 
 rm -rf ${ENVIRONMENT}
-echo "export OPENENCLAVE_DATADIR=${DATADIR}" >> ${ENVIRONMENT}
+echo "export OPENENCLAVE_CONFIG=${DATADIR}/config.mak" >> ${ENVIRONMENT}
 echo "export PATH=\${PATH}:${BINDIR}" >> ${ENVIRONMENT}
 
 if [ ! -f "${ENVIRONMENT}" ]; then
