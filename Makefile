@@ -162,14 +162,8 @@ CLOC += $(wildcard include/enclave/openenclave.h)
 CLOC += $(wildcard include/host/openenclave.h)
 CLOC += $(wildcard include/oecommon/*.h)
 CLOC += $(wildcard include/oeinternal/*.h)
+CLOC += $(wildcard libc/*.c)
+CLOC += $(wildcard common/*.c)
 
 cloc:
 	cloc $(CLOC)
-
-CLOCPLUS += $(CLOC)
-CLOCPLUS += $(wildcard common/*.c)
-CLOCPLUS += $(wildcard libc/*.c)
-CLOCPLUS += $(wildcard include/enclave/libc/*.h)
-
-clocplus:
-	cloc $(CLOCPLUS)

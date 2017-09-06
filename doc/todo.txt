@@ -9,8 +9,6 @@ To-do list:
 
     (A) Document APIs with Doxygen
 
-    (A) Write design overview document
-
     (A) Verify that OCALL and corresponding ORET run on same TCS
 
     ---
