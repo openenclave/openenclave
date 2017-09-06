@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include <stddef.h>
 #include <stdlib.h>
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 
 void *malloc(size_t size)
 {

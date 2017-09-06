@@ -5,8 +5,8 @@
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
-#include <openenclave.h>
-#include <oeinternal/calls.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/calls.h>
 
 time_t time(time_t *tloc)
 {

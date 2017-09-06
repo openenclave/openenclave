@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <openenclave.h>
-#include <oeinternal/build.h>
-#include <oeinternal/sgxdev.h>
-#include <oeinternal/sgxtypes.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/build.h>
+#include <openenclave/bits/sgxdev.h>
+#include <openenclave/bits/sgxtypes.h>
 #include "../../host/enclave.h"
 
 #if 1

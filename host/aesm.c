@@ -2,10 +2,10 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <openenclave.h>
-#include <oeinternal/mem.h>
-#include <oeinternal/aesm.h>
-#include <oeinternal/utils.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/mem.h>
+#include <openenclave/bits/aesm.h>
+#include <openenclave/bits/utils.h>
 
 #if 0
 #define TRACE 1

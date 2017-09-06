@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/host.h>
 
 struct SecureStrPatchingARGS
 {

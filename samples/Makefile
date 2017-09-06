@@ -4,16 +4,21 @@ endif
 
 .PHONY: run
 
+define NEWLINE
+
+
+endef
+
 DIRS = hello sort echo
 
 build:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) ; )
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )
 
 clean:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean ; )
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NEWLINE) )
 
 run-silent:
-	@ $(foreach i, $(DIRS), $(MAKE) -C $(i) run; )
+	@ $(foreach i, $(DIRS), $(MAKE) -C $(i) run $(NEWLINE) )
 
 run:
 	$(MAKE) -s run-silent

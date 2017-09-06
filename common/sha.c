@@ -1,7 +1,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <openssl/sha.h>
-#include <openenclave.h>
+
+#ifdef OE_BUILD_ENCLAVE
+# include <openenclave/enclave.h>
+#else
+# include <openenclave/host.h>
+#endif
 
 typedef struct _OE_SHA256ContextImpl
 {

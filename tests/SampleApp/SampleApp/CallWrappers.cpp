@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 
 #define __OE_DebugBreak()
 

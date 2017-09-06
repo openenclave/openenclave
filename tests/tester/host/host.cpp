@@ -1,5 +1,5 @@
-#include <openenclave.h>
-#include <oeinternal/tests.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/tests.h>
 #include <climits>
 #include <cwchar>
 #include <cstdarg>

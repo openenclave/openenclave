@@ -1,4 +1,8 @@
-#include <openenclave.h>
+#ifdef OE_BUILD_ENCLAVE
+# include <openenclave/enclave.h>
+#else
+# include <openenclave/host.h>
+#endif
 
 /* Set the spinlock value to 1 and return the old value */
 static unsigned int _spin_set_locked(OE_Spinlock* spinlock)

@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 
 oe_size_t OE_Strlen(const char* s)
 {

@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 #include <string.h>
 #include <stdio.h>
 #include <mbedtls/sha256.h>

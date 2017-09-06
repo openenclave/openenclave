@@ -1,5 +1,5 @@
 #include "types.h"
-#include <openenclave.h>
+#include <openenclave/host.h>
 
 PredefinedType types[] =
 {

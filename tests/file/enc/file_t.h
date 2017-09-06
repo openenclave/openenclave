@@ -1,7 +1,7 @@
 #ifndef _ENCIDL_FILE_T_H
 #define _ENCIDL_FILE_T_H
 
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 
 #include "../types.h"
 

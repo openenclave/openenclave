@@ -1,5 +1,5 @@
 #include <limits.h>
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 #include "pingpong_u.h"
 
 static bool gotPong = false;

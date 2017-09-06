@@ -3,14 +3,14 @@
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/bn.h>
-#include <openenclave.h>
-#include <oeinternal/mem.h>
-#include <oeinternal/elf.h>
-#include <oeinternal/build.h>
-#include <oeinternal/sgxtypes.h>
-#include <oeinternal/build.h>
-#include <oeinternal/aesm.h>
-#include <oeinternal/str.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/mem.h>
+#include <openenclave/bits/elf.h>
+#include <openenclave/bits/build.h>
+#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/build.h>
+#include <openenclave/bits/aesm.h>
+#include <openenclave/bits/str.h>
 #include "../host/log.h"
 #include "../host/enclave.h"
 

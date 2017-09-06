@@ -1,20 +1,26 @@
 include ../../mak/defs.mak
 
+TARGET=$(INCDIR)/openenclave/oe-mbedtls
+
 all:
 
-CFLAGS += -I$(INCDIR)/enclave/libc 
+CFLAGS += -I$(INCDIR)/openenclave/libc 
 CFLAGS += -nostdinc
 CFLAGS += -fPIC
 CFLAGS += -fno-builtin-udivti3
 
 export CFLAGS
 
-all: mbedtls configure
+all: mbedtls configure .build
+
+.build:
 	cp config.h ./mbedtls/include/mbedtls/config.h
 	$(MAKE) -C mbedtls
 	cp ./mbedtls/library/libmbedcrypto.a $(LIBDIR)/enclave/
-	rm -rf $(INCDIR)/enclave/mbedtls
-	cp -r ./mbedtls/include/mbedtls $(INCDIR)/enclave/mbedtls
+	rm -rf $(TARGET)
+	mkdir -p $(TARGET)
+	cp -L -r ./mbedtls/include/mbedtls $(TARGET)
+	touch .build
 
 configure: .configure
 
@@ -25,10 +31,12 @@ CMAKEFLAGS=-DENABLE_TESTING=Off -DENABLE_PROGRAMS=Off
 	touch .configure
 
 clean:
-	$(MAKE) -s clean-silent
+	@ $(MAKE) -s clean-silent
+	@ rm -f .build
 
 clean-silent:
 	-@ $(MAKE) -C mbedtls clean 2> /dev/null
+	@ rm -rf $(TARGET)
 
 MBBEDDIST=mbedtls-2.6.0
 TARNAME=$(MBBEDDIST)-apache.tgz

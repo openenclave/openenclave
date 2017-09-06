@@ -1,8 +1,8 @@
 #ifndef _ocall_args_h
 #define _ocall_args_h
 
-#include <oeinternal/sgxtypes.h>
-#include <oeinternal/calls.h>
+#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/calls.h>
 
 #define TEST1_MAGIC 0xec9a613e
 

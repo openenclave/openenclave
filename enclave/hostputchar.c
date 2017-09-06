@@ -1,5 +1,5 @@
-#include <openenclave.h>
-#include <oeinternal/calls.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/calls.h>
 
 int OE_HostPutchar(int c)
 {

@@ -1,10 +1,10 @@
 #ifndef _OE_SGXDEV_H
 #define _OE_SGXDEV_H
 
-#include "../oecommon/defs.h"
-#include "../oecommon/result.h"
-#include "../oecommon/types.h"
-#include "../oecommon/sha.h"
+#include <openenclave/defs.h>
+#include <openenclave/result.h>
+#include <openenclave/types.h>
+#include <openenclave/sha.h>
 
 OE_EXTERNC_BEGIN
 

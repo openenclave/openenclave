@@ -3,9 +3,9 @@
 #include <cstring>
 #include <cstdio>
 #include <assert.h>
-#include <openenclave.h>
-#include <oeinternal/aesm.h>
-#include <oeinternal/utils.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/aesm.h>
+#include <openenclave/bits/utils.h>
 #include "../args.h"
 
 int main(int argc, const char* argv[])

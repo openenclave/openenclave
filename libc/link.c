@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-#include <oeinternal/globals.h>
+#include <openenclave/bits/globals.h>
 
 /* Used by libunwind to iterate program ELF phdrs */
 

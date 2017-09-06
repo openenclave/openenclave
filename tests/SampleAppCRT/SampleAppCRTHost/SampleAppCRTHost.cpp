@@ -1,5 +1,5 @@
 #include <limits.h>
-#include <openenclave.h>
+#include <openenclave/host.h>
 
 int main(int argc, const char* argv[])
 {

@@ -1,6 +1,6 @@
 #include <limits.h>
 #include <wchar.h>
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include "file_u.h"
 
 #if 1

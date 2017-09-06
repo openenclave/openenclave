@@ -1,5 +1,5 @@
-#ifndef _HOST_OPENENCLAVE_H
-#define _HOST_OPENENCLAVE_H
+#ifndef _OE_HOST_H
+#define _OE_HOST_H
 
 #include <stddef.h>
 #include <string.h>
@@ -7,13 +7,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include "../oecommon/defs.h"
-#include "../oecommon/types.h"
-#include "../oecommon/result.h"
-#include "../oecommon/thread.h"
-#include "../oecommon/sha.h"
-#include "../oecommon/typeinfo.h"
-#include "../oecommon/atomic.h"
+#include "defs.h"
+#include "types.h"
+#include "result.h"
+#include "thread.h"
+#include "sha.h"
+#include "typeinfo.h"
+#include "atomic.h"
 
 OE_EXTERNC_BEGIN
 
@@ -69,4 +69,4 @@ void OE_SetProgramName(
 
 OE_EXTERNC_END
 
-#endif /* _HOST_OPENENCLAVE_H */
+#endif /* _OE_HOST_H */

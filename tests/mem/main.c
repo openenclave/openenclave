@@ -1,7 +1,7 @@
 #define MEM_MIN_CAP 1
 #include <stdio.h>
 #include <assert.h>
-#include <oeinternal/mem.h>
+#include <openenclave/bits/mem.h>
 
 void TestMem(mem_t* m)
 {

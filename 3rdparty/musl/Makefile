@@ -7,11 +7,11 @@ BASE=musl-$(VERSION)
 PKG=$(BASE).tar.gz
 
 CONFIGURE_OPTS += --prefix=$(CURDIR)/install
-CONFIGURE_OPTS += --includedir=$(INCDIR)/enclave/libc
+CONFIGURE_OPTS += --includedir=$(INCDIR)/openenclave/libc
 
 CFLAGS = -fPIC
 
-TARGET = $(INCDIR)/enclave/libc
+TARGET = $(INCDIR)/openenclave/libc
 
 all: musl $(TARGET)
 

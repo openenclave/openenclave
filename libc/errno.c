@@ -1,8 +1,8 @@
 #include <errno.h>
 #include <pthread.h>
 #include <assert.h>
-#include <openenclave.h>
-#include <oeinternal/sgxtypes.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/sgxtypes.h>
 
 int *__errno_location()
 {

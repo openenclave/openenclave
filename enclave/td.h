@@ -1,8 +1,8 @@
 #ifndef _TD_H
 #define _TD_H
 
-#include <oeinternal/sgxtypes.h>
-#include <oeinternal/jump.h>
+#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/jump.h>
 #include "asmdefs.h"
 
 /*

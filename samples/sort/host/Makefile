@@ -4,7 +4,7 @@ all: build
 
 CXXFLAGS=-Wall -O2
 
-INCLUDES = -I$(OE_INCLUDEDIR)/openenclave/host
+INCLUDES = -I$(OE_INCLUDEDIR)
 
 LDFLAGS += -rdynamic 
 

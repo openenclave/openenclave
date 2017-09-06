@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 #include <assert.h>
 #include <ctype.h>
 #include <endian.h>

@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <assert.h>
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include "../args.h"
 
 static bool _func1Called = false;

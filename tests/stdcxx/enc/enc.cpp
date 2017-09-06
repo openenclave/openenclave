@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
 #define BROKEN

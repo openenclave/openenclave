@@ -1,7 +1,7 @@
 #ifndef _new_args_h
 #define _new_args_h
 
-#include <oeinternal/sgxtypes.h>
+#include <openenclave/bits/sgxtypes.h>
 
 typedef struct _Args
 {

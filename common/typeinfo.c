@@ -1,20 +1,18 @@
 #define OE_TRACE_LEVEL 0
-#include <openenclave.h>
-#include <oeinternal/galloc.h>
 
 #ifdef OE_BUILD_ENCLAVE
-# include <openenclave.h>
-#endif
-
-#ifndef OE_BUILD_ENCLAVE
+# include <openenclave/enclave.h>
+#else
+# include <openenclave/host.h>
 # include <string.h>
 # include <stdlib.h>
 # include <stdio.h>
 # include <wchar.h>
 # include <ctype.h>
 # include <stdarg.h>
-# include <openenclave.h>
 #endif
+
+#include <openenclave/bits/galloc.h>
 
 #define TRACE OE_Printf("TRACE: %s(%u): %s\n", __FILE__, __LINE__, __FUNCTION__)
 

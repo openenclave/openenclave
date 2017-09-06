@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <assert.h>
 #include <pthread.h>
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include "../args.h"
 
 static TestMutexArgs _args;

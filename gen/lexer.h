@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include <openenclave.h>
+#include <openenclave/host.h>
 
 #define LEXER_MAX_TEXT_SIZE 1024
 #define LEXER_MAX_ERROR_SIZE 1024

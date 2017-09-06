@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include "pingpong_u.h"
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 

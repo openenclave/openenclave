@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
 OE_ECALL void Hello(void* args_)

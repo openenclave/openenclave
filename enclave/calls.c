@@ -1,10 +1,10 @@
-#include <openenclave.h>
-#include <oeinternal/jump.h>
-#include <oeinternal/sgxtypes.h>
-#include <oeinternal/fault.h>
-#include <oeinternal/calls.h>
-#include <oeinternal/reloc.h>
-#include <oeinternal/globals.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/jump.h>
+#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/fault.h>
+#include <openenclave/bits/calls.h>
+#include <openenclave/bits/reloc.h>
+#include <openenclave/bits/globals.h>
 #include "asmdefs.h"
 #include "td.h"
 #include "init.h"

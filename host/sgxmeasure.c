@@ -4,11 +4,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <openenclave.h>
 #include <stdbool.h>
-#include <oeinternal/utils.h>
-#include <oeinternal/build.h>
-#include <oeinternal/sgxtypes.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/utils.h>
+#include <openenclave/bits/build.h>
+#include <openenclave/bits/sgxtypes.h>
 #include "log.h"
 
 typedef struct _OE_SGXMeasurer

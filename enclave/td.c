@@ -1,6 +1,6 @@
-#include <openenclave.h>
-#include <oeinternal/sgxtypes.h>
-#include <oeinternal/fault.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/fault.h>
 #include "td.h"
 #include "asmdefs.h"
 

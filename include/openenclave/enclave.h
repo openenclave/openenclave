@@ -1,17 +1,19 @@
-#ifndef _ENCLAVE_OPENENCLAVE_H
-#define _ENCLAVE_OPENENCLAVE_H
+#ifndef _OE_ENCLAVE_H
+#define _OE_ENCLAVE_H
 
-#include "../oecommon/defs.h"
-#include "../oecommon/types.h"
-#include "../oecommon/result.h"
-#include "../oecommon/thread.h"
-#include "../oecommon/typeinfo.h"
-#include "../oecommon/atomic.h"
-#include "../oecommon/sha.h"
+#include "defs.h"
+#include "types.h"
+#include "result.h"
+#include "thread.h"
+#include "typeinfo.h"
+#include "atomic.h"
+#include "sha.h"
 
 OE_EXTERNC_BEGIN
 
-#define OE_BUILD_ENCLAVE
+#ifndef OE_BUILD_ENCLAVE
+# define OE_BUILD_ENCLAVE
+#endif
 
 #define OE_ECALL_SECTION __attribute__((section (".ecall")))
 
@@ -162,4 +164,4 @@ typedef __builtin_va_list oe_va_list;
 
 OE_EXTERNC_END
 
-#endif /* _ENCLAVE_OPENENCLAVE_H */
+#endif /* _OE_ENCLAVE_H */

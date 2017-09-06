@@ -1,5 +1,5 @@
-#include <openenclave.h>
-#include <oeinternal/globals.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/globals.h>
 
 oe_bool OE_IsWithinEnclave(
     const void* p,

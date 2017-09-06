@@ -1,6 +1,6 @@
 #include <string.h>
 #include <locale.h>
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 
 int strcoll(const char *s1, const char *s2)
 {

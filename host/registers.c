@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <asm/prctl.h>
-#include <oeinternal/registers.h>
+#include <openenclave/bits/registers.h>
 
 int OE_SetGSRegisterBase(const void *ptr)
 {

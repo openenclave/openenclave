@@ -27,6 +27,8 @@ CFLAGS += -fno-builtin-__memset_chk
 
 INCLUDES += -I$(INCDIR) -I$(INCDIR)/enclave
 
+DEFINES = -DOE_BUILD_ENCLAVE
+
 SOURCES += $(wildcard *.c)
 
 OBJECTS = $(SOURCES:.c=.o)

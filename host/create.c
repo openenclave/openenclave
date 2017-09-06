@@ -11,15 +11,15 @@
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
-#include <openenclave.h>
-#include <oeinternal/utils.h>
-#include <oeinternal/load.h>
-#include <oeinternal/elf.h>
-#include <oeinternal/files.h>
-#include <oeinternal/sgxtypes.h>
-#include <oeinternal/build.h>
-#include <oeinternal/aesm.h>
-#include <oeinternal/mem.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/utils.h>
+#include <openenclave/bits/load.h>
+#include <openenclave/bits/elf.h>
+#include <openenclave/bits/files.h>
+#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/build.h>
+#include <openenclave/bits/aesm.h>
+#include <openenclave/bits/mem.h>
 #include "enclave.h"
 
 /*

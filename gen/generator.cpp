@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include "types.h"
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include "generator.h"
 
 #define NEWCODE
@@ -1456,7 +1456,10 @@ int Generator::GenerateSourceFile(
         flag1 = FLAG_OCALL;
     }
 
-    os << "#include <openenclave.h>" << endl;
+    if (trusted)
+        os << "#include <openenclave/enclave.h>" << endl;
+    else
+        os << "#include <openenclave/host.h>" << endl;
 
     // Include header for this source file:
     {
@@ -1590,7 +1593,11 @@ int Generator::GenerateHeaderFile(
             fn);
     }
 
-    os << "#include <openenclave.h>" << endl;
+    if (trusted)
+        os << "#include <openenclave/enclave.h>" << endl;
+    else
+        os << "#include <openenclave/host.h>" << endl;
+
     os << endl;
 
     // Generate includes:

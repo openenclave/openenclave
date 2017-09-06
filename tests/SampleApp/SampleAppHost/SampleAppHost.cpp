@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <openenclave.h>
+#include <openenclave/host.h>
 
 int EnclaveSecureStrPatching(
     OE_Enclave* Enclave,

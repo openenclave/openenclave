@@ -1,8 +1,8 @@
 #ifndef _OE_AESM_H
 #define _OE_AESM_H
 
-#include "../oecommon/defs.h"
-#include "../oecommon/result.h"
+#include <openenclave/defs.h>
+#include <openenclave/result.h>
 #include "sgxtypes.h"
 
 OE_EXTERNC_BEGIN

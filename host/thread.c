@@ -1,6 +1,6 @@
 #include <pthread.h>
 #include <assert.h>
-#include <openenclave.h>
+#include <openenclave/host.h>
 
 OE_STATIC_ASSERT(sizeof(OE_Mutex) == sizeof(pthread_mutex_t));
 OE_STATIC_ASSERT(sizeof(OE_MutexAttr) == sizeof(pthread_mutexattr_t));

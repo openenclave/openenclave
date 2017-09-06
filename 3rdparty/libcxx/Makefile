@@ -9,8 +9,8 @@ CXXFLAGS += -fPIC
 INCLUDES += -Itrunk/include
 INCLUDES += -Itrunk/src
 INCLUDES += -I$(TOP)/3rdparty/libcxxrt/libcxxrt/src
-INCLUDES += -I$(INCDIR)/enclave
-INCLUDES += -I$(INCDIR)/enclave/libc
+INCLUDES += -I$(INCDIR)
+INCLUDES += -I$(INCDIR)/openenclave/libc
 
 DEFINES += -DLIBCXXRT
 DEFINES += -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
@@ -51,7 +51,7 @@ TARGET = $(LIBDIR)/tmp/libcxx.a
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
-HEADER_INSTALL_DIRECTORY=$(INCDIR)/enclave/libcxx
+HEADER_INSTALL_DIRECTORY=$(INCDIR)/openenclave/libcxx
 
 all: trunk patch $(OBJECTS)
 	@ rm -f $(TARGET)

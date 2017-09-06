@@ -1,10 +1,10 @@
-#ifndef _OE_ENCLAVE_H
-#define _OE_ENCLAVE_H
+#ifndef _OE_HOST_ENCLAVE_H
+#define _OE_HOST_ENCLAVE_H
 
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include <stdbool.h>
-#include <oeinternal/build.h>
-#include <oeinternal/sgxtypes.h>
+#include <openenclave/bits/build.h>
+#include <openenclave/bits/sgxtypes.h>
 
 #define ENCLAVE_MAGIC 0x20dc98463a5ad8b8
 
@@ -89,4 +89,4 @@ void SetEnclave(OE_Enclave* enclave);
 /* Get the event for the given TCS */
 uint32_t* GetEnclaveEvent(uint64_t tcs);
 
-#endif /* _OE_ENCLAVE_H */
+#endif /* _OE_HOST_ENCLAVE_H */

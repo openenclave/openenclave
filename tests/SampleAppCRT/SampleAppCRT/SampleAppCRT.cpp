@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 
 static uint32_t func()
 {

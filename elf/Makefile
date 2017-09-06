@@ -5,7 +5,6 @@ CFLAGS =
 PROGRAM=$(BINDIR)/oeelf
 
 INCLUDES += -I$(INCDIR)
-INCLUDES += -I$(INCDIR)/host
 
 LDFLAGS = -L$(LIBDIR)/host -loehost
 

@@ -2,7 +2,7 @@
 #define _ASMDEFS_H
 
 #ifndef __ASSEMBLER__
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 #endif
 
 #define ENCLU_EENTER 2

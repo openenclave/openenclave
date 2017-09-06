@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include "../SampleAppAttestation/SampleAppAttestationShared.h"
 
 #define TRACE printf("TRACE: %s(%u): %s()\n", __FILE__, __LINE__, __FUNCTION__)

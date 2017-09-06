@@ -1,20 +1,21 @@
-#include <openenclave.h>
-#include <oeinternal/galloc.h>
-
-/* ATTN: get rid of OE_BUILD_ENCLAVE */
-
 #ifdef OE_BUILD_ENCLAVE
-# include <openenclave.h>
+# include <openenclave/enclave.h>
+#else
+# include <openenclave/host.h>
 #endif
 
-#ifndef OE_BUILD_ENCLAVE
+#include <openenclave/bits/galloc.h>
+
+#ifdef OE_BUILD_ENCLAVE
+# include <openenclave/enclave.h>
+#else
+# include <openenclave/host.h>
 # include <string.h>
 # include <stdlib.h>
 # include <stdio.h>
 # include <wchar.h>
 # include <ctype.h>
 # include <stdarg.h>
-# include <openenclave.h>
 #endif
 
 #ifdef OE_BUILD_ENCLAVE

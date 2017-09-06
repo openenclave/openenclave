@@ -10,8 +10,6 @@ LIBDIR=$(TOP)/lib
 BINDIR=$(TOP)/bin
 
 $(shell mkdir -p $(INCDIR))
-$(shell mkdir -p $(INCDIR)/host)
-$(shell mkdir -p $(INCDIR)/enclave)
 
 $(shell mkdir -p $(LIBDIR))
 $(shell mkdir -p $(LIBDIR)/tmp)

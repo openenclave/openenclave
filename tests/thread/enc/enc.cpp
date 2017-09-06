@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 #include <stdio.h>
 #include "../args.h"
 

@@ -2,9 +2,9 @@ include $(OPENENCLAVE_DATADIR)/config.mak
 
 CXXFLAGS = -Wall -Werror -O2 -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
 
-INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/enclave
-INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/enclave/libcxx
-INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/enclave/libc
+INCLUDES += -I$(OE_INCLUDEDIR)
+INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/libcxx
+INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/libc
 
 LDFLAGS += -Wl,--no-undefined 
 LDFLAGS += -nostdlib 

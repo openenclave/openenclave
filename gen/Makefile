@@ -4,7 +4,7 @@ CXXFLAGS = -Wall -Werror
 
 PROGRAM=$(BINDIR)/oegen
 
-INCLUDES += -I$(INCDIR)/host
+INCLUDES += -I$(INCDIR)
 
 SOURCES +=files.cpp
 SOURCES +=generator.cpp

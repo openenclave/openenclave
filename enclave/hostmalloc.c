@@ -1,5 +1,5 @@
-#include <openenclave.h>
-#include <oeinternal/calls.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/calls.h>
 #include "td.h"
 
 typedef unsigned long long WORD;

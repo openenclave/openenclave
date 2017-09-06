@@ -1,6 +1,6 @@
-#include <openenclave.h>
-#include <oeinternal/globals.h>
-#include <oeinternal/fault.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/globals.h>
+#include <openenclave/bits/fault.h>
 
 #define HAVE_MMAP 0
 #define LACKS_UNISTD_H

@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
 OE_ECALL void GetReport(void* args_)

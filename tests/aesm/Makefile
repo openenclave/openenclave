@@ -8,7 +8,7 @@ include ../../mak/defs.mak
 
 PROGRAM = aesm
 
-INCLUDES += -I$(INCDIR) -I$(INCDIR)/host
+INCLUDES += -I$(INCDIR)
 
 SOURCES = main.cpp
 

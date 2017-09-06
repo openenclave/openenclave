@@ -1,4 +1,4 @@
-#include <oeinternal/jump.h>
+#include <openenclave/bits/jump.h>
 
 int OE_Setjmp(OE_Jmpbuf* env)
 {

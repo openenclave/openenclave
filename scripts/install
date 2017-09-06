@@ -162,7 +162,7 @@ fi
 INCLUDEDIR=${OE_INCLUDEDIR}/openenclave
 
 rm -rf ${INCLUDEDIR}
-cp -r include ${INCLUDEDIR}
+cp -r include/openenclave ${INCLUDEDIR}
 
 echo "Created ${INCLUDEDIR}"
 

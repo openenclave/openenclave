@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 
 const char *ProtectedMessage = "Hello world from Enclave\n\0";
 

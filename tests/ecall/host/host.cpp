@@ -3,7 +3,7 @@
 #include <cstring>
 #include <cstdio>
 #include <assert.h>
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include "../args.h"
 
 #if 0

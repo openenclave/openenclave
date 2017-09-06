@@ -5,10 +5,10 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
-#include <openenclave.h>
-#include <oeinternal/utils.h>
-#include <oeinternal/load.h>
-#include <oeinternal/elf.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/utils.h>
+#include <openenclave/bits/load.h>
+#include <openenclave/bits/elf.h>
 
 extern void *memalign(size_t alignment, size_t size);
 

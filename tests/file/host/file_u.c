@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include "file_u.h"
 #include "../types.h"
 

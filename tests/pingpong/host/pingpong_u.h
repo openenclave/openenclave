@@ -1,7 +1,7 @@
 #ifndef _ENCIDL_PINGPONG_U_H
 #define _ENCIDL_PINGPONG_U_H
 
-#include <openenclave.h>
+#include <openenclave/host.h>
 
 /*
 ********************************************************************************

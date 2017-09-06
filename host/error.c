@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <openenclave.h>
+#include <openenclave/host.h>
 
 static const char* _programName = "";
 

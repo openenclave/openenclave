@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <openenclave.h>
-#include <oeinternal/files.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/files.h>
 
 bool __OE_FileExists(
     const char* path)

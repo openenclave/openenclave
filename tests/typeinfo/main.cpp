@@ -1,6 +1,6 @@
 #include <cwchar>
-#include <openenclave.h>
-#include <oeinternal/tests.h>
+#include <openenclave/host.h>
+#include <openenclave/bits/tests.h>
 #include "typeinfo_u.h"
 #include "CXXObject.h"
 

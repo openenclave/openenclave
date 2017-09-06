@@ -1,9 +1,9 @@
 #ifndef _OE_LOAD_H
 #define _OE_LOAD_H
 
-#include "../oecommon/defs.h"
-#include "../oecommon/result.h"
-#include "../oecommon/types.h"
+#include <openenclave/defs.h>
+#include <openenclave/result.h>
+#include <openenclave/types.h>
 
 OE_EXTERNC_BEGIN
 

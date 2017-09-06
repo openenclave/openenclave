@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 #include "SampleAppAttestationShared.h"
 
 unsigned char SampleReportData[] = 

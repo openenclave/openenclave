@@ -1,4 +1,8 @@
-#include <openenclave.h>
+#ifdef OE_BUILD_ENCLAVE
+# include <openenclave/enclave.h>
+#else
+# include <openenclave/host.h>
+#endif
 
 const char* OE_ResultStr(
     OE_Result result)

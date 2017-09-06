@@ -1,11 +1,11 @@
 #ifndef _OE_SGXTYPES_H
 #define _OE_SGXTYPES_H
 
-#include "../oeinternal/jump.h"
-#include "../oecommon/defs.h"
-#include "../oecommon/result.h"
-#include "../oecommon/types.h"
-#include "../oecommon/sha.h"
+#include <openenclave/defs.h>
+#include <openenclave/result.h>
+#include <openenclave/types.h>
+#include <openenclave/sha.h>
+#include "jump.h"
 #include "load.h"
 
 OE_EXTERNC_BEGIN

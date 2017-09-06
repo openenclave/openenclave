@@ -3,8 +3,8 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <string.h>
-#include <openenclave.h>
-#include <oeinternal/calls.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/calls.h>
 #include "../3rdparty/musl/musl/src/internal/stdio_impl.h"
 
 FILE* const stdin = ((FILE*)0x10000000);

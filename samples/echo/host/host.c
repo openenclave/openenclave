@@ -1,4 +1,4 @@
-#include <openenclave.h>
+#include <openenclave/host.h>
 #include <stdio.h>
 
 OE_OCALL void HostEcho(void* args)

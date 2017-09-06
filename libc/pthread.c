@@ -1,6 +1,6 @@
 #include <pthread.h>
 #include <assert.h>
-#include <openenclave.h>
+#include <openenclave/enclave.h>
 
 #ifdef pthread_equal
 # undef pthread_equal
