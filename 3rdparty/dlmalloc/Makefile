@@ -11,3 +11,5 @@ clean:
 
 distclean:
 	rm -f malloc.h malloc.c
+
+depend:

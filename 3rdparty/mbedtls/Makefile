@@ -63,3 +63,5 @@ clone:
 
 diff-config:
 	diff config.h ./mbedtls/include/mbedtls/config.h
+
+depend:

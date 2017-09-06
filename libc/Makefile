@@ -516,5 +516,7 @@ abort.o: abort.S
 clean:
 	rm -f $(ARCHIVE) $(OBJECTS) .depends
 
-include $(MAKDIR)/depend.mak
--include .depends
+#include $(MAKDIR)/depend.mak
+#-include .depends
+
+depend:

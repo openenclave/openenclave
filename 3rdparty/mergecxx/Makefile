@@ -18,3 +18,5 @@ clean:
 tests:
 
 distclean:
+
+depend:

@@ -12,6 +12,9 @@ build:
 clean:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NL) )
 
+depend:
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NEWLINE) )
+
 ifdef SIM
 ENCLAVE=enc/fileenc.so
 else

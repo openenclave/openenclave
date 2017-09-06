@@ -72,3 +72,4 @@ distclean-silent:
 diff:
 	( cd libunwind; git diff > ../libunwind.diff )
 
+depend:

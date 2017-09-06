@@ -8,6 +8,9 @@ clean:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NEWLINE) )
 	rm -f SampleAppEnclaveQuote.bin
 
+depend:
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NEWLINE) )
+
 tests:
 	SampleAppAttestationHost/SampleAppAttestationHost SampleAppAttestation/SampleAppAttestation.signed.so
 

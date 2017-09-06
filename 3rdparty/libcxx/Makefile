@@ -86,3 +86,5 @@ install:
 
 merge:
 	(cd ../mergecxx; make )
+
+depend:
