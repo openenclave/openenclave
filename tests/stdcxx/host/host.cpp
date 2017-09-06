@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-#if 0
+#if 1
     const uint64_t flags = OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
 #else
     const uint64_t flags = OE_FLAG_DEBUG;

@@ -855,7 +855,7 @@ OE_Result __OE_BuildEnclave(
         enclave));
 
     /* Get a launch token from the AESM service */
-    if (dev->getmagic(dev) == SGX_DRIVER_MAGIC)
+    if (!simulate && dev->getmagic(dev) == SGX_DRIVER_MAGIC)
     {
         SGX_Attributes attributes;
 
