@@ -2,6 +2,8 @@ ifndef OPENENCLAVE_DATADIR
 $(error Please define the OPENENCLAVE_DATADIR environment variable manually or by sourcing the installed OpenEnclave 'environment' file)
 endif
 
+.PHONY: run
+
 DIRS = hello sort echo
 
 build:

@@ -7,8 +7,6 @@ check:
 	@ ( cd $(TMPDIR)/$(DISTNAME); ./configure --prefix=$(TMPDIR)/install )
 	@ ( cd $(TMPDIR)/$(DISTNAME); $(MAKE) world )
 	@ ( cd $(TMPDIR)/$(DISTNAME); $(MAKE) install )
-	@ ( source $(TMPDIR)/install/share/openenclave/environment; \
-          cd $(TMPDIR)/install/share/openenclave/samples; \
-          $(MAKE) world )
+	@ ( cd $(TMPDIR)/install/share/openenclave/samples; ./run )
 	@ rm -rf $(TMPDIR)
 	@ echo "=== Check okay!"

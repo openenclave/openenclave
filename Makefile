@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 include mak/defs.mak
 -include config.mak
 
