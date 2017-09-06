@@ -100,3 +100,4 @@ openenclave-0.1.0.tar.gz
 include/enclave/libc/
 tools/oesgx/oesgx
 .depends
+tmp
