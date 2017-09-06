@@ -289,6 +289,15 @@ int Elf64_FindSymbolByName(
     const char* name,
     Elf64_Sym* sym);
 
+const char* Elf64_GetStringFromDynstr(
+    const Elf64* elf,
+    Elf64_Word offset);
+
+int Elf64_FindDynamicSymbolByName(
+    const Elf64* elf,
+    const char* name,
+    Elf64_Sym* sym);
+
 int Elf64_FindSymbolByAddress(
     const Elf64* elf,
     Elf64_Addr addr,

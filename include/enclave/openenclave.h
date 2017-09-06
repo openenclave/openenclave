@@ -16,9 +16,9 @@ OE_EXTERNC_BEGIN
 #define OE_ECALL_SECTION __attribute__((section (".ecall")))
 
 #ifdef __cplusplus
-# define OE_ECALL OE_EXTERNC OE_ECALL_SECTION
+# define OE_ECALL OE_EXTERNC OE_EXPORT OE_ECALL_SECTION
 #else
-# define OE_ECALL OE_ECALL_SECTION
+# define OE_ECALL OE_EXPORT OE_ECALL_SECTION
 #endif
 
 /* Returns TRUE if memory is inside the enclave */

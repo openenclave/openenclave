@@ -412,6 +412,100 @@ done:
     return rc;
 }
 
+const char* Elf64_GetStringFromDynstr(
+    const Elf64* elf,
+    Elf64_Word offset)
+{
+    const char* result = NULL;
+    const Elf64_Shdr* sh;
+    size_t index;
+
+    if (!elf)
+        goto done;
+
+    if ((index = _FindShdr(elf, ".dynstr")) == (size_t)-1)
+        goto done;
+
+    if (index > elf->ehdr->e_shnum)
+        goto done;
+
+    sh = &elf->shdrs[index];
+
+    if (offset >= sh->sh_size)
+        goto done;
+
+    result = (const char*)elf->sections[index] + offset;
+
+done:
+    return result;
+}
+
+int Elf64_FindDynamicSymbolByName(
+    const Elf64* elf,
+    const char* name,
+    Elf64_Sym* sym)
+{
+    int rc = -1;
+    size_t index;
+    const Elf64_Shdr* sh;
+    const Elf64_Sym* symtab;
+    size_t n;
+    size_t i;
+    const char* SECTIONNAME = ".dynsym";
+    const Elf64_Word SH_TYPE = SHT_DYNSYM;
+
+    if (!elf || !name || !sym)
+        goto done;
+
+    /* Find the symbol table section header */
+    if ((index = _FindShdr(elf, SECTIONNAME)) == (size_t)-1)
+        goto done;
+
+    /* Set pointer to section header */
+    if (!(sh = &elf->shdrs[index]))
+        goto done;
+
+    /* If this is not a symbol table */
+    if (sh->sh_type != SH_TYPE)
+        goto done;
+
+    /* Sanity check */
+    if (sh->sh_entsize != sizeof(Elf64_Sym))
+        goto done;
+
+    /* Set pointer to symbol table section */
+    if (!(symtab = (const Elf64_Sym*)elf->sections[index]))
+        goto done;
+
+    /* Calculate number of symbol table entries */
+    n = sh->sh_size / sh->sh_entsize;
+
+    for (i = 1; i < n; i++)
+    {
+        const Elf64_Sym* p = &symtab[i];
+        const char* s;
+
+        /* Skip empty names */
+        if (p->st_name == 0)
+            continue;
+
+        /* If illegal name */
+        if (!(s = Elf64_GetStringFromDynstr(elf, p->st_name)))
+            goto done;
+
+        /* If found */
+        if (strcmp(name, s) == 0)
+        {
+            *sym = *p;
+            rc = 0;
+            goto done;
+        }
+    }
+
+done:
+    return rc;
+}
+
 int Elf64_FindSymbolByAddress(
     const Elf64* elf,
     Elf64_Addr addr,
@@ -921,8 +1015,13 @@ int Elf64_VisitSymbols(
     const Elf64_Sym* symtab;
     size_t n;
     size_t i;
+#if 0
     const char* SECTIONNAME = ".symtab";
     const Elf64_Word SH_TYPE = SHT_SYMTAB;
+#else
+    const char* SECTIONNAME = ".dynsym";
+    const Elf64_Word SH_TYPE = SHT_DYNSYM;
+#endif
 
     if (!elf)
         goto done;

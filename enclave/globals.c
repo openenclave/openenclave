@@ -11,8 +11,8 @@
 **==============================================================================
 */
 
-unsigned long long __oe_numPages;
-unsigned long long __oe_virtualBaseAddr;
+OE_EXPORT unsigned long long __oe_numPages;
+OE_EXPORT unsigned long long __oe_virtualBaseAddr;
 
 const void* __OE_GetEnclaveBase()
 {
@@ -32,8 +32,8 @@ oe_size_t __OE_GetEnclaveSize()
 **==============================================================================
 */
 
-unsigned long long __oe_baseRelocPage;
-unsigned long long __oe_numRelocPages;
+OE_EXPORT unsigned long long __oe_baseRelocPage;
+OE_EXPORT unsigned long long __oe_numRelocPages;
 
 const void* __OE_GetRelocBase()
 {
@@ -60,8 +60,8 @@ const oe_size_t __OE_GetRelocSize()
 **==============================================================================
 */
 
-unsigned long long __oe_baseHeapPage;
-unsigned long long __oe_numHeapPages;
+OE_EXPORT unsigned long long __oe_baseHeapPage;
+OE_EXPORT unsigned long long __oe_numHeapPages;
 
 const void* __OE_GetHeapBase()
 {

@@ -447,7 +447,7 @@ static OE_Result _AddPages(
     {
         Elf64_Sym sym;
 
-        if (Elf64_FindSymbolByName(elf, "__oe_baseRelocPage", &sym) != 0)
+        if (Elf64_FindDynamicSymbolByName(elf, "__oe_baseRelocPage", &sym) != 0)
             OE_THROW(OE_FAILURE);
 
         *(uint64_t*)((uint8_t*)segpages + sym.st_value) = baseRelocPage;
@@ -457,7 +457,7 @@ static OE_Result _AddPages(
     {
         Elf64_Sym sym;
 
-        if (Elf64_FindSymbolByName(elf, "__oe_numRelocPages", &sym) != 0)
+        if (Elf64_FindDynamicSymbolByName(elf, "__oe_numRelocPages", &sym) != 0)
             OE_THROW(OE_FAILURE);
 
         *(uint64_t*)((uint8_t*)segpages + sym.st_value) = nheappages;
@@ -466,7 +466,7 @@ static OE_Result _AddPages(
     {
         Elf64_Sym sym;
 
-        if (Elf64_FindSymbolByName(elf, "__oe_baseHeapPage", &sym) != 0)
+        if (Elf64_FindDynamicSymbolByName(elf, "__oe_baseHeapPage", &sym) != 0)
             OE_THROW(OE_FAILURE);
 
         *(uint64_t*)((uint8_t*)segpages + sym.st_value) = baseHeapPage;
@@ -476,7 +476,7 @@ static OE_Result _AddPages(
     {
         Elf64_Sym sym;
 
-        if (Elf64_FindSymbolByName(elf, "__oe_numHeapPages", &sym) != 0)
+        if (Elf64_FindDynamicSymbolByName(elf, "__oe_numHeapPages", &sym) != 0)
             OE_THROW(OE_FAILURE);
 
         *(uint64_t*)((uint8_t*)segpages + sym.st_value) = nheappages;
@@ -487,7 +487,7 @@ static OE_Result _AddPages(
         Elf64_Sym sym;
         uint64_t npages = enclaveEnd / OE_PAGE_SIZE;
 
-        if (Elf64_FindSymbolByName(elf, "__oe_numPages", &sym) != 0)
+        if (Elf64_FindDynamicSymbolByName(elf, "__oe_numPages", &sym) != 0)
             OE_THROW(OE_FAILURE);
 
         *(uint64_t*)((uint8_t*)segpages + sym.st_value) = npages;
@@ -497,8 +497,11 @@ static OE_Result _AddPages(
     {
         Elf64_Sym sym;
 
-        if (Elf64_FindSymbolByName(elf, "__oe_virtualBaseAddr", &sym) != 0)
+        if (Elf64_FindDynamicSymbolByName(elf, "__oe_virtualBaseAddr", &sym) 
+            != 0)
+        {
             OE_THROW(OE_FAILURE);
+        }
 
         *(uint64_t*)((uint8_t*)segpages + sym.st_value) = sym.st_value;
     }
@@ -603,7 +606,7 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     }
 
     /* Skip null names */
-    if (!(name = Elf64_GetStringFromStrtab(data->elf, sym->st_name)))
+    if (!(name = Elf64_GetStringFromDynstr(data->elf, sym->st_name)))
     {
         rc = 0;
         goto done;
