@@ -105,3 +105,5 @@ tmp
 include/openenclave/libc/
 include/openenclave/libcxx/
 include/openenclave/oe-mbedtls/
+doc/refman/html/
+doc/refman/latex/
