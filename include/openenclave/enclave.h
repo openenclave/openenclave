@@ -200,24 +200,6 @@ void OE_HostFree(void* ptr);
 
 char* OE_HostStrdup(const char* str);
 
-/*
-**==============================================================================
-**
-** Var-args list:
-**
-**==============================================================================
-*/
-
-typedef __builtin_va_list va_list;
-
-#define oe_va_start(ap, last) __builtin_va_start((ap), last)
-
-#define oe_va_end __builtin_va_end
-
-#define oe_va_arg __builtin_va_arg
-
-#define oe_va_copy(dst, src) __builtin_va_copy((dst), (src))
-
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */
