@@ -36,7 +36,7 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
     int ret = -1;
     OE_ThreadWakeWaitArgs* args = OE_NULL;
 
-    if (!(args = OE_Malloc(sizeof(OE_ThreadWakeWaitArgs))))
+    if (!(args = OE_HostMalloc(sizeof(OE_ThreadWakeWaitArgs))))
         goto done;
 
     args->waiter_tcs = TD_ToTCS((TD*)waiter);
@@ -50,7 +50,7 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
 done:
 
     if (args)
-        OE_Free(args);
+        OE_HostFree(args);
 
     return ret;
 }
