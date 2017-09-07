@@ -26,3 +26,4 @@
     (*) Should HostMalloc() guard against subsequent ECALLs. So can we
         implement a non-reentrant flag?
 
+    (*) Do we need to dynamically expand TSD slots (TLS).

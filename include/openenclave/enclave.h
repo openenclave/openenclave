@@ -1,3 +1,4 @@
+/** \file enclave.h */
 #ifndef _OE_ENCLAVE_H
 #define _OE_ENCLAVE_H
 
@@ -23,16 +24,77 @@ OE_EXTERNC_BEGIN
 # define OE_ECALL OE_EXPORT OE_ECALL_SECTION
 #endif
 
-/* Returns TRUE if memory is inside the enclave */
+typedef struct _OE_EnclaveReportData
+{
+    unsigned char field[64];
+}
+OE_EnclaveReportData;
+
+/**
+ * Check whether the given buffer is strictly within the enclave.
+ *
+ * Check whether the buffer given by the \b ptr and \b size parameters is 
+ * strictly within the enclave's memory. If so, return true. If any
+ * portion of the buffer lies outside the enclave's memory, return false.
+ *
+ * \param ptr pointer to buffer
+ * \param size size of buffer
+ *
+ * \retval true if buffer is strictly within the enclave
+ * \retval false if any portion of the buffer falls outside the enclave
+ *
+ */
 oe_bool OE_IsWithinEnclave(
     const void* ptr,
     oe_size_t size);
 
-/* Returns TRUE if memory is outside the enclave */
+/**
+ * Check whether the given buffer is strictly outside the enclave.
+ *
+ * Check whether the buffer given by the \b ptr and \b size parameters is 
+ * strictly outside the enclave's memory. If so, return true. If any
+ * portion of the buffer lies within the enclave's memory, return false.
+ *
+ * \param ptr pointer to buffer
+ * \param size size of buffer
+ *
+ * \retval true if buffer is strictly outside the enclave
+ * \retval false if any portion of the buffer falls within the enclave
+ *
+ */
 oe_bool OE_IsOutsideEnclave(
     const void* ptr,
     oe_size_t size);
 
+/**
+ * Perform an outside function call (or OCALL) into the host
+ *
+ * Call the host function named \b func, passing it the \b args parameter. The
+ * host must provide a host function with the following signature.
+ *
+ *     OE_OCALL void MyHostFunction(void* args);
+ *
+ * The meaning of the \b args parameter is defined by the OCALL implementation
+ * and might be null for some implementations.
+ *
+ * At the software layer, this function sends an \b OCALL message to the host 
+ * and waits for an \b ORET message. Note that the OCALL implementation may 
+ * call back into the enclave (an ECALL) before returning.
+ *
+ * At the hardware layer, this function executes the \b ENCLU.EEXIT instruction 
+ * to leave the enclave and enter the host. When the host returns from the 
+ * ECALL, it executes the \b ENCLU.EENTER instruction to reenter the enclave.
+ *
+ * Note that the return value only indicates whether the OCALL was called and
+ * not whether it was successful. The OCALL implementation must define its own
+ * error reporting scheme based on the \b args parameter.
+ *
+ * \param func name of the host function that will be called
+ * \param args arguments to be passed to the host function
+ *
+ * \retval OE_OK on success
+ *
+ */
 OE_Result OE_CallHost(
     const char *func,
     void *args);
@@ -41,12 +103,6 @@ OE_Result __OE_OCall(
     int func,
     oe_uint64_t argIn,
     oe_uint64_t* argOut);
-
-typedef struct _OE_EnclaveReportData
-{
-    unsigned char field[64];
-} 
-OE_EnclaveReportData;
 
 OE_Result OE_GetReportForRemoteAttestation(
     const OE_EnclaveReportData *reportData,

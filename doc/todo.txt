@@ -17,6 +17,8 @@ To-do list:
 
     (B) Add option for building on non-SGX machines
 
+    (B) Need oedump utility to dump information about enclaves.
+
     ---
 
     (C) Get complex cpow*.c working (depends on multiplication routines)
