@@ -309,8 +309,11 @@ static OE_Result _AddControlPages(
     /* Skip over guard page */
     (*vaddr) += OE_PAGE_SIZE;
 
-    /* Add two blank page (for either FS segment or GS segment) */
-    OE_TRY(_AddFilledPages(dev, enclaveAddr, vaddr, 2, 0, true));
+    /* Add one blank pages (for either FS segment or GS segment) */
+    OE_TRY(_AddFilledPages(dev, enclaveAddr, vaddr, 1, 0, true));
+
+    /* Add one page for thread-specific data (TSD) slots */
+    OE_TRY(_AddFilledPages(dev, enclaveAddr, vaddr, 1, 0, true));
 
     result = OE_OK;
 
@@ -613,17 +616,7 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     }
 
     /* Determine the address */
-#if 0
-    if (enclave->handle)
-    {
-        if (!(addr = (uint64_t)dlsym(enclave->handle, name)))
-            goto done;
-    }
-    else
-#endif
-    {
-        addr = enclave->addr + sym->st_value;
-    }
+    addr = enclave->addr + sym->st_value;
 
     /* Add to array of ECALLS */
     {
@@ -764,15 +757,6 @@ OE_Result __OE_BuildEnclave(
     /* Load the elf object */
     if (Elf64_Load(path, &elf) != 0)
         OE_THROW(OE_FAILURE);
-
-    /* Open dynamic library if debug and simulate both true */
-#if 0
-    if (debug && simulate)
-    {
-        if (!(enclave->handle = dlopen(path, RTLD_LAZY | RTLD_GLOBAL)))
-            OE_THROW(OE_NOT_FOUND);
-    }
-#endif
 
     /* If settings parameter non-null, then use those settings */
     if (settings)
@@ -1000,12 +984,6 @@ OE_Result OE_TerminateEnclave(
     }
 
     free(enclave->path);
-
-#if 0
-    /* Release the dynamic library handle */
-    if (enclave->handle)
-        dlclose(enclave->handle);
-#endif
 
     /* Clear the contents of the enclave structure */
     memset(enclave, 0x00, sizeof(OE_Enclave));

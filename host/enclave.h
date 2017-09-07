@@ -75,9 +75,6 @@ struct _OE_Enclave
 
     /* Simulation mode */
     bool simulate;
-
-    /* Dynamic load handle used both 'debug' and 'simulate' are true */
-    void* __handle;
 };
 
 /* Get enclave from thread-specific data (TSD) */
