@@ -74,6 +74,8 @@ trunk:
 
 patch:
 	@ cp __config trunk/include/__config
+
+patch-old:
 	@ ./sub trunk/include/cstdlib
 	@ ./sub trunk/include/cstdio
 	@ ./sub trunk/include/cwchar
