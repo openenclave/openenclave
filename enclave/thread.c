@@ -15,7 +15,7 @@ static int _ThreadWait(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (__OE_OCall(OE_FUNC_THREAD_WAIT, (oe_uint64_t)tcs, OE_NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_THREAD_WAIT, (uint64_t)tcs, OE_NULL) != OE_OK)
         return -1;
 
     return 0;
@@ -25,7 +25,7 @@ static int _ThreadWake(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (__OE_OCall(OE_FUNC_THREAD_WAKE, (oe_uint64_t)tcs, OE_NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_THREAD_WAKE, (uint64_t)tcs, OE_NULL) != OE_OK)
         return -1;
 
     return 0;
@@ -42,7 +42,7 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
     args->waiter_tcs = TD_ToTCS((TD*)waiter);
     args->self_tcs = TD_ToTCS((TD*)self);
 
-    if (__OE_OCall(OE_FUNC_THREAD_WAKE_WAIT, (oe_uint64_t)args, OE_NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_THREAD_WAKE_WAIT, (uint64_t)args, OE_NULL) != OE_OK)
         goto done;
 
     ret = 0;
@@ -97,22 +97,22 @@ static OE_ThreadData* _QueuePopFront(Queue* queue)
     return thread;
 }
 
-static oe_bool _QueueContains(Queue* queue, OE_ThreadData* thread)
+static bool _QueueContains(Queue* queue, OE_ThreadData* thread)
 {
     OE_ThreadData* p;
 
     for (p = queue->front; p; p = p->next)
     {
         if (p == thread)
-            return oe_true;
+            return true;
     }
 
-    return oe_false;
+    return false;
 }
 
-static __inline__ oe_bool _QueueEmpty(Queue* queue)
+static __inline__ bool _QueueEmpty(Queue* queue)
 {
-    return queue->front ? oe_false : oe_true;
+    return queue->front ? false : true;
 }
 
 /*
@@ -483,7 +483,7 @@ int OE_CondBroadcast(
 
 typedef struct _KeySlot
 {
-    oe_bool used;
+    bool used;
     void (*destructor)(void* value);
 }
 KeySlot;
@@ -520,7 +520,7 @@ int OE_ThreadKeyCreate(
             if (!_slots[i].used)
             {
                 /* Initialize this slot */
-                _slots[i].used = oe_true;
+                _slots[i].used = true;
                 _slots[i].destructor = destructor;
 
                 /* Initialize new key */
@@ -553,7 +553,7 @@ int OE_ThreadKeyDelete(
             _slots[key].destructor(OE_ThreadGetSpecific(key));
 
         /* Clear this slot */
-        _slots[key].used = oe_false;
+        _slots[key].used = false;
         _slots[key].destructor = OE_NULL;
 
         OE_SpinUnlock(&_lock);

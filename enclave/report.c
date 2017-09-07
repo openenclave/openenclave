@@ -105,7 +105,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveReportData), sizeof(SGX_ReportData));
 OE_Result OE_GetReportForRemoteAttestation(
     const OE_EnclaveReportData *reportData,
     void *report,
-    oe_size_t* reportSize)
+    size_t* reportSize)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_InitQuoteArgs* args = OE_NULL;
@@ -135,7 +135,7 @@ OE_Result OE_GetReportForRemoteAttestation(
             OE_THROW(OE_OUT_OF_MEMORY);
         }
 
-        OE_TRY(__OE_OCall(OE_FUNC_INIT_QUOTE, (oe_uint64_t)args, OE_NULL));
+        OE_TRY(__OE_OCall(OE_FUNC_INIT_QUOTE, (uint64_t)args, OE_NULL));
         OE_Memcpy(&targetInfo, &args->targetInfo, sizeof(SGX_TargetInfo));
     }
 

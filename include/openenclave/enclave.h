@@ -44,9 +44,9 @@ OE_EnclaveReportData;
  * \retval false if any portion of the buffer falls outside the enclave
  *
  */
-oe_bool OE_IsWithinEnclave(
+bool OE_IsWithinEnclave(
     const void* ptr,
-    oe_size_t size);
+    size_t size);
 
 /**
  * Check whether the given buffer is strictly outside the enclave.
@@ -62,9 +62,9 @@ oe_bool OE_IsWithinEnclave(
  * \retval false if any portion of the buffer falls within the enclave
  *
  */
-oe_bool OE_IsOutsideEnclave(
+bool OE_IsOutsideEnclave(
     const void* ptr,
-    oe_size_t size);
+    size_t size);
 
 /**
  * Perform an outside function call (or OCALL) into the host
@@ -101,22 +101,22 @@ OE_Result OE_CallHost(
 
 OE_Result __OE_OCall(
     int func,
-    oe_uint64_t argIn,
-    oe_uint64_t* argOut);
+    uint64_t argIn,
+    uint64_t* argOut);
 
 OE_Result OE_GetReportForRemoteAttestation(
     const OE_EnclaveReportData *reportData,
     void *report,
-    oe_size_t* reportSize);
+    size_t* reportSize);
 
 void __OE_HandleMain(
-    oe_uint64_t arg1,
-    oe_uint64_t arg2,
-    oe_uint64_t cssa,
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t cssa,
     void* tcs);
 
 int OE_PutsUint64(
-    oe_uint64_t x);
+    uint64_t x);
 
 /*
 **==============================================================================
@@ -126,21 +126,21 @@ int OE_PutsUint64(
 **==============================================================================
 */
 
-oe_size_t OE_Strlen(const char* s);
+size_t OE_Strlen(const char* s);
 
-oe_size_t OE_Wcslen(const oe_wchar_t* s);
+size_t OE_Wcslen(const wchar_t* s);
 
 int OE_Strcmp(const char* s1, const char* s2);
 
-int OE_Wcscmp(const oe_wchar_t* s1, const oe_wchar_t* s2);
+int OE_Wcscmp(const wchar_t* s1, const wchar_t* s2);
 
 char *OE_Strcpy(char* dest, const char* src);
 
-void *OE_Memcpy(void *dest, const void *src, oe_size_t n);
+void *OE_Memcpy(void *dest, const void *src, size_t n);
 
-void *OE_Memset(void *s, int c, oe_size_t n);
+void *OE_Memset(void *s, int c, size_t n);
 
-int OE_Memcmp(const void *s1, const void *s2, oe_size_t n);
+int OE_Memcmp(const void *s1, const void *s2, size_t n);
 
 /*
 **==============================================================================
@@ -172,17 +172,17 @@ int OE_HostPutchar(int c);
 **==============================================================================
 */
 
-void *OE_Malloc(oe_size_t size);
+void *OE_Malloc(size_t size);
 
 void OE_Free(void *ptr);
 
-void *OE_Calloc(oe_size_t nmemb, oe_size_t size);
+void *OE_Calloc(size_t nmemb, size_t size);
 
-void *OE_Realloc(void *ptr, oe_size_t size);
+void *OE_Realloc(void *ptr, size_t size);
 
 char* OE_Strdup(const char* s);
 
-void *OE_Memalign(oe_size_t alignment, oe_size_t size);
+void *OE_Memalign(size_t alignment, size_t size);
 
 /*
 **==============================================================================
@@ -192,9 +192,9 @@ void *OE_Memalign(oe_size_t alignment, oe_size_t size);
 **==============================================================================
 */
 
-void* OE_HostMalloc(oe_size_t size);
+void* OE_HostMalloc(size_t size);
 
-void* OE_HostCalloc(oe_size_t nmemb, oe_size_t size);
+void* OE_HostCalloc(size_t nmemb, size_t size);
 
 void OE_HostFree(void* ptr);
 
@@ -208,7 +208,7 @@ char* OE_HostStrdup(const char* str);
 **==============================================================================
 */
 
-typedef __builtin_va_list oe_va_list;
+typedef __builtin_va_list va_list;
 
 #define oe_va_start(ap, last) __builtin_va_start((ap), last)
 

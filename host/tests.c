@@ -2,7 +2,7 @@
 #include <openenclave/bits/tests.h>
 #include <stdlib.h>
 
-oe_uint32_t OE_GetCreateFlags(void)
+uint32_t OE_GetCreateFlags(void)
 {
     char* env = getenv("OE_SIMULATION");
 

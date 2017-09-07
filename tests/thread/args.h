@@ -5,7 +5,7 @@
 
 typedef struct _TestMutexArgs
 {
-    oe_size_t count;
+    size_t count;
 }
 TestMutexArgs;
 

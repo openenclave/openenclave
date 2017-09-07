@@ -16,10 +16,10 @@ typedef unsigned long long WORD;
 **==============================================================================
 */
 
-void* OE_HostMalloc(oe_size_t size)
+void* OE_HostMalloc(size_t size)
 {
-    oe_uint64_t argIn = size;
-    oe_uint64_t argOut = 0;
+    uint64_t argIn = size;
+    uint64_t argOut = 0;
 
     if (__OE_OCall(OE_FUNC_MALLOC, argIn, &argOut) != OE_OK)
     {
@@ -39,7 +39,7 @@ void* OE_HostMalloc(oe_size_t size)
 **==============================================================================
 */
 
-void* OE_HostCalloc(oe_size_t nmemb, oe_size_t size)
+void* OE_HostCalloc(size_t nmemb, size_t size)
 {
     void* ptr = OE_HostMalloc(nmemb * size);
 
@@ -61,7 +61,7 @@ void* OE_HostCalloc(oe_size_t nmemb, oe_size_t size)
 
 void OE_HostFree(void* ptr)
 {
-    __OE_OCall(OE_FUNC_FREE, (oe_uint64_t)ptr, OE_NULL);
+    __OE_OCall(OE_FUNC_FREE, (uint64_t)ptr, OE_NULL);
 }
 
 /*
@@ -75,7 +75,7 @@ void OE_HostFree(void* ptr)
 char* OE_HostStrdup(const char* str)
 {
     char* p;
-    oe_size_t len;
+    size_t len;
 
     if (!str)
         return OE_NULL;

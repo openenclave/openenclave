@@ -15,22 +15,22 @@ typedef struct _OE_SGXDevice OE_SGXDevice;
 
 typedef OE_Result (*OE_ECreateProc)(
     OE_SGXDevice* dev,
-    oe_uint64_t enclaveSize,
-    oe_uint64_t* enclaveAddr);
+    uint64_t enclaveSize,
+    uint64_t* enclaveAddr);
 
 typedef OE_Result (*OE_EAddProc)(
     OE_SGXDevice* dev,
-    oe_uint64_t base,
-    oe_uint64_t addr,
-    oe_uint64_t src,
-    oe_uint64_t flags,
-    oe_bool extend);
+    uint64_t base,
+    uint64_t addr,
+    uint64_t src,
+    uint64_t flags,
+    bool extend);
 
 typedef OE_Result (*OE_EInitProc)(
     OE_SGXDevice* dev,
-    oe_uint64_t addr,
-    oe_uint64_t sigstruct,
-    oe_uint64_t einittoken);
+    uint64_t addr,
+    uint64_t sigstruct,
+    uint64_t einittoken);
 
 typedef OE_Result (*OE_GetHash)(
     OE_SGXDevice* dev,
@@ -39,7 +39,7 @@ typedef OE_Result (*OE_GetHash)(
 typedef OE_Result (*OE_CloseProc)(
     OE_SGXDevice* dev);
 
-typedef oe_uint32_t (*OE_GetMagic)(
+typedef uint32_t (*OE_GetMagic)(
     const OE_SGXDevice* dev);
 
 struct _OE_SGXDevice

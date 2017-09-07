@@ -5,7 +5,7 @@
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    oe_size_t n)
+    size_t n)
 {
     return memcpy((void*)dest, src, n);
 }
@@ -45,7 +45,7 @@ static const OE_FieldTI _MyStruct_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct MyStruct, x),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -65,7 +65,7 @@ static const OE_FieldTI _MyStruct_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct MyStruct, size),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -135,7 +135,7 @@ static const OE_FieldTI _MyObject_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct MyObject, id),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -270,7 +270,7 @@ static const OE_FieldTI _Object_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Object, id),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -305,7 +305,7 @@ static const OE_FieldTI _Embedded_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Embedded, xxx),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -315,7 +315,7 @@ static const OE_FieldTI _Embedded_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Embedded, yyy),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -365,7 +365,7 @@ static const OE_FieldTI _Embedded_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Embedded, nobjects),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
 };
@@ -400,7 +400,7 @@ static const OE_FieldTI _Container_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Container, size),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -410,7 +410,7 @@ static const OE_FieldTI _Container_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Container, b),
-        sizeof(oe_bool), /* size */
+        sizeof(bool), /* size */
         0, /* subscript */
     },
     {
@@ -450,7 +450,7 @@ static const OE_FieldTI _Container_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Container, arrSize),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -490,7 +490,7 @@ static const OE_FieldTI _Container_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Container, sizevarr),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
 };
@@ -515,7 +515,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s8),
-        sizeof(oe_int8_t), /* size */
+        sizeof(int8_t), /* size */
         0, /* subscript */
     },
     {
@@ -525,7 +525,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, u8),
-        sizeof(oe_uint8_t), /* size */
+        sizeof(uint8_t), /* size */
         0, /* subscript */
     },
     {
@@ -535,7 +535,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s16),
-        sizeof(oe_int16_t), /* size */
+        sizeof(int16_t), /* size */
         0, /* subscript */
     },
     {
@@ -545,7 +545,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, u16),
-        sizeof(oe_uint16_t), /* size */
+        sizeof(uint16_t), /* size */
         0, /* subscript */
     },
     {
@@ -555,7 +555,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s32),
-        sizeof(oe_int32_t), /* size */
+        sizeof(int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -565,7 +565,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, u32),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -575,7 +575,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s64),
-        sizeof(oe_int64_t), /* size */
+        sizeof(int64_t), /* size */
         0, /* subscript */
     },
     {
@@ -585,7 +585,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, u64),
-        sizeof(oe_uint64_t), /* size */
+        sizeof(uint64_t), /* size */
         0, /* subscript */
     },
     {
@@ -615,7 +615,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, by),
-        sizeof(oe_uint8_t), /* size */
+        sizeof(uint8_t), /* size */
         0, /* subscript */
     },
     {
@@ -625,7 +625,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, b),
-        sizeof(oe_bool), /* size */
+        sizeof(bool), /* size */
         0, /* subscript */
     },
     {
@@ -655,7 +655,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -665,7 +665,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, ss),
-        sizeof(oe_ssize_t), /* size */
+        sizeof(ssize_t), /* size */
         0, /* subscript */
     },
     {
@@ -685,7 +685,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, strn),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -755,7 +755,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, size),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
 };
@@ -790,7 +790,7 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, u8),
-        sizeof(oe_uint8_t), /* size */
+        sizeof(uint8_t), /* size */
         0, /* subscript */
     },
     {
@@ -810,7 +810,7 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, u16),
-        sizeof(oe_uint16_t), /* size */
+        sizeof(uint16_t), /* size */
         0, /* subscript */
     },
     {
@@ -840,7 +840,7 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, s64),
-        sizeof(oe_int64_t), /* size */
+        sizeof(int64_t), /* size */
         0, /* subscript */
     },
     {
@@ -850,7 +850,7 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, u64),
-        sizeof(oe_uint64_t), /* size */
+        sizeof(uint64_t), /* size */
         0, /* subscript */
     },
     {
@@ -880,7 +880,7 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, ss),
-        sizeof(oe_int64_t), /* size */
+        sizeof(int64_t), /* size */
         0, /* subscript */
     },
     {
@@ -890,7 +890,7 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, s),
-        sizeof(oe_uint64_t), /* size */
+        sizeof(uint64_t), /* size */
         0, /* subscript */
     },
     {
@@ -985,7 +985,7 @@ static const OE_FieldTI _MyFunctionArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct MyFunctionArgs, nstr),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -1005,7 +1005,7 @@ static const OE_FieldTI _MyFunctionArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct MyFunctionArgs, u32a),
-        sizeof(oe_uint32_t) * 4, /* size */
+        sizeof(uint32_t) * 4, /* size */
         4, /* subscript */
     },
     {
@@ -1061,15 +1061,15 @@ const OE_StructTI MyFunctionArgs_ti =
 
 struct UCopyArgs
 {
-    oe_int32_t ret;
+    int32_t ret;
     unsigned char __pad1[4];
     char *p;
     unsigned char __pad2[4];
-    oe_size_t m;
+    size_t m;
     unsigned char __pad3[4];
     const char *q;
     unsigned char __pad4[4];
-    oe_size_t n;
+    size_t n;
     unsigned char __pad5[4];
     struct Object *object;
     unsigned char __pad6[4];
@@ -1086,7 +1086,7 @@ static const OE_FieldTI _UCopyArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct UCopyArgs, ret),
-        sizeof(oe_int32_t), /* size */
+        sizeof(int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -1106,7 +1106,7 @@ static const OE_FieldTI _UCopyArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct UCopyArgs, m),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -1126,7 +1126,7 @@ static const OE_FieldTI _UCopyArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct UCopyArgs, n),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -1152,15 +1152,15 @@ const OE_StructTI UCopyArgs_ti =
 
 struct TCopyArgs
 {
-    oe_int32_t ret;
+    int32_t ret;
     unsigned char __pad1[4];
     char *p;
     unsigned char __pad2[4];
-    oe_size_t m;
+    size_t m;
     unsigned char __pad3[4];
     const char *q;
     unsigned char __pad4[4];
-    oe_size_t n;
+    size_t n;
     unsigned char __pad5[4];
     struct Object *object;
     unsigned char __pad6[4];
@@ -1177,7 +1177,7 @@ static const OE_FieldTI _TCopyArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TCopyArgs, ret),
-        sizeof(oe_int32_t), /* size */
+        sizeof(int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -1197,7 +1197,7 @@ static const OE_FieldTI _TCopyArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TCopyArgs, m),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -1217,7 +1217,7 @@ static const OE_FieldTI _TCopyArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TCopyArgs, n),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -1249,11 +1249,11 @@ const OE_StructTI TCopyArgs_ti =
 ********************************************************************************
 */
 
-OE_EXTERNC oe_int32_t UCopy(
+OE_EXTERNC int32_t UCopy(
     char *p,
-    oe_size_t m,
+    size_t m,
     const char *q,
-    oe_size_t n,
+    size_t n,
     struct Object **object);
 
 /* ICALL: generator.cpp(657) */
@@ -1280,11 +1280,11 @@ OE_OCALL void __UCopy(void* args)
 /* ECALL: generator.cpp(952) */
 OE_EXTERNC OE_Result TCopy(
     OE_Enclave* enclave,
-    oe_int32_t *ret,
+    int32_t *ret,
     char *p,
-    oe_size_t m,
+    size_t m,
     const char *q,
-    oe_size_t n,
+    size_t n,
     struct Object **object)
 {
     OE_Result __r = OE_UNEXPECTED;

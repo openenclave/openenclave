@@ -111,7 +111,7 @@ typedef unsigned long long WORD;
 **==============================================================================
 */
 
-static void _HandleCallEnclave(oe_uint64_t argIn, oe_uint64_t* argOut)
+static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
 {
     OE_CallEnclaveArgs* args = (OE_CallEnclaveArgs*)argIn;
 
@@ -151,7 +151,7 @@ static void _HandleCallEnclave(oe_uint64_t argIn, oe_uint64_t* argOut)
 static void _HandleExit(
     OE_Code code,
     long func, 
-    oe_uint64_t arg)
+    uint64_t arg)
 {
     OE_Exit(OE_MAKE_WORD(code, func), arg);
 }
@@ -169,11 +169,11 @@ static void _HandleExit(
 static void _HandleECALL(
     TD* td,
     int func,
-    oe_uint64_t argIn)
+    uint64_t argIn)
 {
     /* Insert ECALL context onto front of TD.ecalls list */
     Callsite callsite;
-    oe_uint64_t argOut = 0;
+    uint64_t argOut = 0;
 
     OE_Memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
@@ -239,8 +239,8 @@ static __inline__ void _HandleORET(
 
 OE_Result __OE_OCall(
     int func,
-    oe_uint64_t argIn,
-    oe_uint64_t* argOut)
+    uint64_t argIn,
+    uint64_t* argOut)
 {
     OE_Result result = OE_UNEXPECTED;
     TD* td = TD_Get();
@@ -414,14 +414,14 @@ catch:
 */
 
 void __OE_HandleMain(
-    oe_uint64_t arg1,
-    oe_uint64_t arg2,
-    oe_uint64_t cssa,
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t cssa,
     void* tcs)
 {
     OE_Code code = OE_HI_WORD(arg1);
     int func = OE_LO_WORD(arg1);
-    oe_uint64_t argIn = arg2;
+    uint64_t argIn = arg2;
 
     /* Get pointer to the thread data structure */
     TD* td = TD_FromTCS(tcs);

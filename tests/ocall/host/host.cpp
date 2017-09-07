@@ -33,7 +33,7 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const oe_uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = OE_GetCreateFlags();
 
     if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);

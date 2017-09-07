@@ -15,15 +15,15 @@
 #define LACKS_STDLIB_H
 #define LACKS_STRING_H
 #define LACKS_ERRNO_H
-#define size_t oe_size_t
-#define ptrdiff_t oe_ptrdiff_t
+#define size_t size_t
+#define ptrdiff_t ptrdiff_t
 #define memset OE_Memset
 #define memcpy OE_Memcpy
 #define sbrk OE_Sbrk
 #define EINVAL 28
 #define ENOMEM 49
 
-void* OE_Sbrk(oe_ptrdiff_t increment);
+void* OE_Sbrk(ptrdiff_t increment);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
@@ -37,7 +37,7 @@ OE_WEAK_ALIAS(dlfree, OE_Free);
 OE_WEAK_ALIAS(dlmemalign, OE_Memalign);
 
 #if 0
-void *OE_Malloc(oe_size_t size)
+void *OE_Malloc(size_t size)
 {
     return dlmalloc(size);
 }
@@ -47,17 +47,17 @@ void OE_Free(void *ptr)
     return dlfree(ptr);
 }
 
-void *OE_Calloc(oe_size_t nmemb, oe_size_t size)
+void *OE_Calloc(size_t nmemb, size_t size)
 {
     return dlcalloc(nmemb, size);
 }
 
-void *OE_Realloc(void *ptr, oe_size_t size)
+void *OE_Realloc(void *ptr, size_t size)
 {
     return dlrealloc(ptr, size);
 }
 
-void *OE_Memalign(oe_size_t alignment, oe_size_t size)
+void *OE_Memalign(size_t alignment, size_t size)
 {
     return dlmemalign(alignment, size);
 }

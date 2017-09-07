@@ -3,7 +3,7 @@
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    oe_size_t n)
+    size_t n)
 {
     return memcpy((void*)dest, src, n);
 }
@@ -110,7 +110,7 @@ struct LogArgs
     unsigned char __pad0[4];
     const char *str;
     unsigned char __pad1[4];
-    oe_uint64_t x;
+    uint64_t x;
     unsigned char __pad2[4];
 };
 
@@ -135,7 +135,7 @@ static const OE_FieldTI _LogArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct LogArgs, x),
-        sizeof(oe_uint64_t), /* size */
+        sizeof(uint64_t), /* size */
         0, /* subscript */
     },
 };
@@ -173,7 +173,7 @@ OE_OCALL void __Pong(void* args)
 
 OE_EXTERNC void Log(
     const char *str,
-    oe_uint64_t x);
+    uint64_t x);
 
 /* ICALL: generator.cpp(657) */
 OE_OCALL void __Log(void* args)

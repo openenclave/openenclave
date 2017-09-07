@@ -24,10 +24,10 @@
 static void _ApplyRelocations(void)
 {
     const OE_Reloc* relocs = (const OE_Reloc*)__OE_GetRelocBase();
-    oe_size_t nrelocs = __OE_GetRelocSize() / sizeof(OE_Reloc);
-    const oe_uint8_t* baseaddr = (const oe_uint8_t*)__OE_GetEnclaveBase();
+    size_t nrelocs = __OE_GetRelocSize() / sizeof(OE_Reloc);
+    const uint8_t* baseaddr = (const uint8_t*)__OE_GetEnclaveBase();
 
-    for (oe_size_t i = 0; i < nrelocs; i++)
+    for (size_t i = 0; i < nrelocs; i++)
     {
         const OE_Reloc* p = &relocs[i];
 
@@ -36,12 +36,12 @@ static void _ApplyRelocations(void)
             break;
 
         /* Compute address of reference to be relocated */
-        oe_uint64_t* dest = (oe_uint64_t*)(baseaddr + p->offset);
+        uint64_t* dest = (uint64_t*)(baseaddr + p->offset);
 
         (void)dest;
 
         /* Relocate the reference */
-        *dest = (oe_uint64_t)(baseaddr + p->addend);
+        *dest = (uint64_t)(baseaddr + p->addend);
     }
 }
 

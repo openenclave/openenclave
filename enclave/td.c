@@ -126,7 +126,7 @@ void TD_PopCallsite(TD* td)
 
 TD* TD_FromTCS(void* tcs)
 {
-    return (TD*)((oe_uint8_t*)tcs + (4 * OE_PAGE_SIZE));
+    return (TD*)((uint8_t*)tcs + (4 * OE_PAGE_SIZE));
 }
 
 /*
@@ -141,7 +141,7 @@ TD* TD_FromTCS(void* tcs)
 
 void* TD_ToTCS(const TD* td)
 {
-    return (oe_uint8_t*)td - (4 * OE_PAGE_SIZE);
+    return (uint8_t*)td - (4 * OE_PAGE_SIZE);
 }
 
 /*
@@ -175,12 +175,12 @@ TD* TD_Get()
 **==============================================================================
 */
 
-oe_bool TD_Initialized(TD* td)
+bool TD_Initialized(TD* td)
 {
-    if (td && td->magic == TD_MAGIC && td->base.self_addr == (oe_uint64_t)td)
-        return oe_true;
+    if (td && td->magic == TD_MAGIC && td->base.self_addr == (uint64_t)td)
+        return true;
 
-    return oe_false;
+    return false;
 }
 
 /*
@@ -226,7 +226,7 @@ void TD_Init(TD* td)
         OE_Memset(&td->base, 0, sizeof(td->base));
 
         /* Set pointer to self */
-        td->base.self_addr = (oe_uint64_t)td;
+        td->base.self_addr = (uint64_t)td;
 
         /* Set the magic number */
         td->magic = TD_MAGIC;

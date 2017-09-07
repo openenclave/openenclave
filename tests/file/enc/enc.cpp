@@ -9,7 +9,7 @@ OE_EXTERNC int TestReadFile(
 {
     int rc = -1;
     FILE* is = OE_NULL;
-    const oe_size_t bufSize = 32;
+    const size_t bufSize = 32;
     unsigned char buf[bufSize];
     OE_Result r;
 
@@ -19,10 +19,10 @@ OE_EXTERNC int TestReadFile(
     if ((r = Fopen(&is, path, "rb")) != OE_OK)
         goto done;
 
-    oe_size_t n;
+    size_t n;
     while ((r = Fread(&n, buf, bufSize, is)) == OE_OK && n > 0)
     {
-        for (oe_size_t i = 0; i < n; i++)
+        for (size_t i = 0; i < n; i++)
             (*checksum) += buf[i];
     }
 

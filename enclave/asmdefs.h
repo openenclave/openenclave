@@ -37,7 +37,7 @@
 #define TD_simulate     296
 
 #ifndef __ASSEMBLER__
-void OE_Exit(oe_uint64_t arg1, oe_uint64_t arg2);
+void OE_Exit(uint64_t arg1, uint64_t arg2);
 #endif
 
 #endif /* _ASMDEFS_H */

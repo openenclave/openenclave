@@ -41,7 +41,7 @@ int gettimeofday(struct timeval* tv, void* tz)
     if (tz)
         args->tz = NULL;
 
-    if (__OE_OCall(OE_FUNC_GETTIMEOFDAY, (oe_uint64_t)args, NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_GETTIMEOFDAY, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     if (args->ret == 0)
@@ -74,7 +74,7 @@ int clock_gettime(clockid_t clk_id, struct timespec *tp)
     args->ret = -1;
     args->tp = tp ? &args->tpbuf : NULL;
 
-    if (__OE_OCall(OE_FUNC_CLOCK_GETTIME, (oe_uint64_t)args, NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_CLOCK_GETTIME, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     if (args->ret == 0)

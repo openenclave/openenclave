@@ -3,7 +3,7 @@
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    oe_size_t n)
+    size_t n)
 {
     return OE_Memcpy((void*)dest, src, n);
 }
@@ -28,7 +28,7 @@ static const OE_FieldTI _Date_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Date, mm),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -38,7 +38,7 @@ static const OE_FieldTI _Date_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Date, dd),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -48,7 +48,7 @@ static const OE_FieldTI _Date_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Date, yyyy),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
 };
@@ -73,7 +73,7 @@ static const OE_FieldTI _Object_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Object, id),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -108,7 +108,7 @@ static const OE_FieldTI _Node_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countField */
         OE_OFFSETOF(struct Node, value),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -155,7 +155,7 @@ const OE_StructTI ReturnVoidArgs_ti =
 
 struct ReturnUint32Args
 {
-    oe_uint32_t ret;
+    uint32_t ret;
     unsigned char __pad1[4];
 };
 
@@ -170,7 +170,7 @@ static const OE_FieldTI _ReturnUint32Args_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnUint32Args, ret),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
 };
@@ -281,7 +281,7 @@ struct ReturnObjectsArgs
 {
     struct Object *ret;
     unsigned char __pad1[4];
-    oe_size_t count;
+    size_t count;
     unsigned char __pad2[4];
 };
 
@@ -306,7 +306,7 @@ static const OE_FieldTI _ReturnObjectsArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnObjectsArgs, count),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
 };
@@ -396,7 +396,7 @@ const OE_StructTI TestStrdupArgs_ti =
 
 struct CopyObjectArgs
 {
-    oe_int32_t ret;
+    int32_t ret;
     unsigned char __pad1[4];
     struct Object *dest;
     unsigned char __pad2[4];
@@ -415,7 +415,7 @@ static const OE_FieldTI _CopyObjectArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct CopyObjectArgs, ret),
-        sizeof(oe_int32_t), /* size */
+        sizeof(int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -451,7 +451,7 @@ const OE_StructTI CopyObjectArgs_ti =
 
 struct CopyObjectsArgs
 {
-    oe_int32_t ret;
+    int32_t ret;
     unsigned char __pad1[4];
     struct Object dest[2];
     unsigned char __pad2[4];
@@ -470,7 +470,7 @@ static const OE_FieldTI _CopyObjectsArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct CopyObjectsArgs, ret),
-        sizeof(oe_int32_t), /* size */
+        sizeof(int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -506,17 +506,17 @@ const OE_StructTI CopyObjectsArgs_ti =
 
 struct ECALL_MultipleParamsArgs
 {
-    oe_int32_t ret;
+    int32_t ret;
     unsigned char __pad1[4];
     const char *strIn;
     unsigned char __pad2[4];
-    oe_uint32_t numIn;
+    uint32_t numIn;
     unsigned char __pad3[4];
     const struct Object *objectIn;
     unsigned char __pad4[4];
     char *strOut;
     unsigned char __pad5[4];
-    oe_uint32_t *numOut;
+    uint32_t *numOut;
     unsigned char __pad6[4];
     struct Object *objectOut;
     unsigned char __pad7[4];
@@ -535,7 +535,7 @@ static const OE_FieldTI _ECALL_MultipleParamsArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct ECALL_MultipleParamsArgs, ret),
-        sizeof(oe_int32_t), /* size */
+        sizeof(int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -555,7 +555,7 @@ static const OE_FieldTI _ECALL_MultipleParamsArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct ECALL_MultipleParamsArgs, numIn),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -621,17 +621,17 @@ const OE_StructTI ECALL_MultipleParamsArgs_ti =
 
 struct OCALL_MultipleParamsArgs
 {
-    oe_int32_t ret;
+    int32_t ret;
     unsigned char __pad1[4];
     const char *strIn;
     unsigned char __pad2[4];
-    oe_uint32_t numIn;
+    uint32_t numIn;
     unsigned char __pad3[4];
     const struct Object *objectIn;
     unsigned char __pad4[4];
     char *strOut;
     unsigned char __pad5[4];
-    oe_uint32_t *numOut;
+    uint32_t *numOut;
     unsigned char __pad6[4];
     struct Object *objectOut;
     unsigned char __pad7[4];
@@ -650,7 +650,7 @@ static const OE_FieldTI _OCALL_MultipleParamsArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct OCALL_MultipleParamsArgs, ret),
-        sizeof(oe_int32_t), /* size */
+        sizeof(int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -670,7 +670,7 @@ static const OE_FieldTI _OCALL_MultipleParamsArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct OCALL_MultipleParamsArgs, numIn),
-        sizeof(oe_uint32_t), /* size */
+        sizeof(uint32_t), /* size */
         0, /* subscript */
     },
     {
@@ -736,7 +736,7 @@ const OE_StructTI OCALL_MultipleParamsArgs_ti =
 
 struct GetObjectRefArgs
 {
-    oe_int32_t ret;
+    int32_t ret;
     unsigned char __pad1[4];
     struct Object *object;
     unsigned char __pad2[4];
@@ -753,7 +753,7 @@ static const OE_FieldTI _GetObjectRefArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct GetObjectRefArgs, ret),
-        sizeof(oe_int32_t), /* size */
+        sizeof(int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -779,7 +779,7 @@ const OE_StructTI GetObjectRefArgs_ti =
 
 struct ModifyObjectArgs
 {
-    oe_int32_t ret;
+    int32_t ret;
     unsigned char __pad1[4];
     struct Object *object;
     unsigned char __pad2[4];
@@ -796,7 +796,7 @@ static const OE_FieldTI _ModifyObjectArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct ModifyObjectArgs, ret),
-        sizeof(oe_int32_t), /* size */
+        sizeof(int32_t), /* size */
         0, /* subscript */
     },
     {
@@ -822,13 +822,13 @@ const OE_StructTI ModifyObjectArgs_ti =
 
 struct TestStrlcpyArgs
 {
-    oe_size_t ret;
+    size_t ret;
     unsigned char __pad1[4];
     char *dest;
     unsigned char __pad2[4];
     const char *src;
     unsigned char __pad3[4];
-    oe_size_t dsize;
+    size_t dsize;
     unsigned char __pad4[4];
 };
 
@@ -843,7 +843,7 @@ static const OE_FieldTI _TestStrlcpyArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestStrlcpyArgs, ret),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -873,7 +873,7 @@ static const OE_FieldTI _TestStrlcpyArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestStrlcpyArgs, dsize),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
 };
@@ -889,13 +889,13 @@ const OE_StructTI TestStrlcpyArgs_ti =
 
 struct TestOptQualifierArgs
 {
-    oe_size_t ret;
+    size_t ret;
     unsigned char __pad1[4];
     char *p1;
     unsigned char __pad2[4];
     const char *p2;
     unsigned char __pad3[4];
-    oe_size_t p1size;
+    size_t p1size;
     unsigned char __pad4[4];
 };
 
@@ -910,7 +910,7 @@ static const OE_FieldTI _TestOptQualifierArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestOptQualifierArgs, ret),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -940,7 +940,7 @@ static const OE_FieldTI _TestOptQualifierArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestOptQualifierArgs, p1size),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
 };
@@ -960,7 +960,7 @@ struct ReturnIntPtrArgs
     unsigned char __pad1[4];
     int *p;
     unsigned char __pad2[4];
-    oe_size_t n;
+    size_t n;
     unsigned char __pad3[4];
 };
 
@@ -995,7 +995,7 @@ static const OE_FieldTI _ReturnIntPtrArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct ReturnIntPtrArgs, n),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
 };
@@ -1043,11 +1043,11 @@ const OE_StructTI TestCallbackArgs_ti =
 
 struct TestIntPtrRefArgs
 {
-    oe_bool ret;
+    bool ret;
     unsigned char __pad1[4];
     int *intPtrOut;
     unsigned char __pad2[4];
-    oe_size_t n;
+    size_t n;
     unsigned char __pad3[4];
 };
 
@@ -1062,7 +1062,7 @@ static const OE_FieldTI _TestIntPtrRefArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestIntPtrRefArgs, ret),
-        sizeof(oe_bool), /* size */
+        sizeof(bool), /* size */
         0, /* subscript */
     },
     {
@@ -1082,7 +1082,7 @@ static const OE_FieldTI _TestIntPtrRefArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestIntPtrRefArgs, n),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
 };
@@ -1166,9 +1166,9 @@ struct TestBufferCopyArgs
     unsigned char __pad1[4];
     const void *src;
     unsigned char __pad2[4];
-    oe_size_t n;
+    size_t n;
     unsigned char __pad3[4];
-    oe_bool forceOverwrite;
+    bool forceOverwrite;
     unsigned char __pad4[4];
 };
 
@@ -1203,7 +1203,7 @@ static const OE_FieldTI _TestBufferCopyArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestBufferCopyArgs, n),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -1213,7 +1213,7 @@ static const OE_FieldTI _TestBufferCopyArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct TestBufferCopyArgs, forceOverwrite),
-        sizeof(oe_bool), /* size */
+        sizeof(bool), /* size */
         0, /* subscript */
     },
 };
@@ -1248,7 +1248,7 @@ OE_ECALL void __ReturnVoid(void* args)
     (void)__r;
 }
 
-OE_EXTERNC oe_uint32_t ReturnUint32();
+OE_EXTERNC uint32_t ReturnUint32();
 
 /* ICALL: generator.cpp(431) */
 OE_ECALL void __ReturnUint32(void* args)
@@ -1322,7 +1322,7 @@ OE_ECALL void __ReturnStr(void* args)
         goto done;
 
 
-    __r = OE_SetArg(__ti, __a, 0, oe_true, &__args->ret, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 0, true, &__args->ret, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1425,7 +1425,7 @@ done:
 }
 
 OE_EXTERNC struct Object *ReturnObjects(
-    oe_size_t count);
+    size_t count);
 
 /* ICALL: generator.cpp(431) */
 OE_ECALL void __ReturnObjects(void* args)
@@ -1444,7 +1444,7 @@ OE_ECALL void __ReturnObjects(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, oe_false, (void*)&__a->count, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, false, (void*)&__a->count, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1460,7 +1460,7 @@ OE_ECALL void __ReturnObjects(void* args)
         goto done;
 
 
-    __r = OE_SetArg(__ti, __a, 0, oe_true, &__args->ret, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 0, true, &__args->ret, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1504,7 +1504,7 @@ OE_ECALL void __ReturnLinkedList(void* args)
         goto done;
 
 
-    __r = OE_SetArg(__ti, __a, 0, oe_true, &__args->ret, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 0, true, &__args->ret, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1538,7 +1538,7 @@ OE_ECALL void __TestStrdup(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, oe_true, (void*)&__a->s, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->s, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1554,7 +1554,7 @@ OE_ECALL void __TestStrdup(void* args)
         goto done;
 
 
-    __r = OE_SetArg(__ti, __a, 0, oe_true, &__args->ret, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 0, true, &__args->ret, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1568,7 +1568,7 @@ done:
     (void)__r;
 }
 
-OE_EXTERNC oe_int32_t CopyObject(
+OE_EXTERNC int32_t CopyObject(
     struct Object *dest,
     const struct Object *src);
 
@@ -1589,11 +1589,11 @@ OE_ECALL void __CopyObject(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, oe_true, (void*)&__a->dest, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->dest, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, oe_true, (void*)&__a->src, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->src, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1632,7 +1632,7 @@ done:
     (void)__r;
 }
 
-OE_EXTERNC oe_int32_t CopyObjects(
+OE_EXTERNC int32_t CopyObjects(
     struct Object dest[2],
     const struct Object src[2]);
 
@@ -1653,7 +1653,7 @@ OE_ECALL void __CopyObjects(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, oe_false, (void*)__a->src, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)__a->src, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1688,12 +1688,12 @@ done:
     (void)__r;
 }
 
-OE_EXTERNC oe_int32_t ECALL_MultipleParams(
+OE_EXTERNC int32_t ECALL_MultipleParams(
     const char *strIn,
-    oe_uint32_t numIn,
+    uint32_t numIn,
     const struct Object *objectIn,
     char *strOut,
-    oe_uint32_t *numOut,
+    uint32_t *numOut,
     struct Object *objectOut,
     struct Object **objectRefOut);
 
@@ -1714,27 +1714,27 @@ OE_ECALL void __ECALL_MultipleParams(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, oe_true, (void*)&__a->strIn, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->strIn, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, oe_false, (void*)&__a->numIn, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->numIn, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 3, oe_true, (void*)&__a->objectIn, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 3, true, (void*)&__a->objectIn, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 4, oe_true, (void*)&__a->strOut, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 4, true, (void*)&__a->strOut, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 5, oe_true, (void*)&__a->numOut, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 5, true, (void*)&__a->numOut, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 6, oe_true, (void*)&__a->objectOut, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 6, true, (void*)&__a->objectOut, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1772,7 +1772,7 @@ OE_ECALL void __ECALL_MultipleParams(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 7, oe_true, &__args->objectRefOut, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 7, true, &__args->objectRefOut, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1786,7 +1786,7 @@ done:
     (void)__r;
 }
 
-OE_EXTERNC oe_int32_t GetObjectRef(
+OE_EXTERNC int32_t GetObjectRef(
     struct Object **object);
 
 /* ICALL: generator.cpp(431) */
@@ -1822,7 +1822,7 @@ OE_ECALL void __GetObjectRef(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 1, oe_true, &__args->object, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 1, true, &__args->object, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1836,7 +1836,7 @@ done:
     (void)__r;
 }
 
-OE_EXTERNC oe_int32_t ModifyObject(
+OE_EXTERNC int32_t ModifyObject(
     struct Object *object);
 
 /* ICALL: generator.cpp(431) */
@@ -1856,7 +1856,7 @@ OE_ECALL void __ModifyObject(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, oe_true, (void*)&__a->object, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->object, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1894,10 +1894,10 @@ done:
     (void)__r;
 }
 
-OE_EXTERNC oe_size_t TestStrlcpy(
+OE_EXTERNC size_t TestStrlcpy(
     char *dest,
     const char *src,
-    oe_size_t dsize);
+    size_t dsize);
 
 /* ICALL: generator.cpp(431) */
 OE_ECALL void __TestStrlcpy(void* args)
@@ -1916,15 +1916,15 @@ OE_ECALL void __TestStrlcpy(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 1, oe_true, (void*)&__a->dest, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 1, true, (void*)&__a->dest, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, oe_true, (void*)&__a->src, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->src, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 3, oe_false, (void*)&__a->dsize, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 3, false, (void*)&__a->dsize, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1960,10 +1960,10 @@ done:
     (void)__r;
 }
 
-OE_EXTERNC oe_size_t TestOptQualifier(
+OE_EXTERNC size_t TestOptQualifier(
     char *p1,
     const char *p2,
-    oe_size_t p1size);
+    size_t p1size);
 
 /* ICALL: generator.cpp(431) */
 OE_ECALL void __TestOptQualifier(void* args)
@@ -1982,15 +1982,15 @@ OE_ECALL void __TestOptQualifier(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 1, oe_true, (void*)&__a->p1, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 1, true, (void*)&__a->p1, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, oe_true, (void*)&__a->p2, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->p2, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 3, oe_false, (void*)&__a->p1size, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 3, false, (void*)&__a->p1size, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2028,7 +2028,7 @@ done:
 
 OE_EXTERNC int *ReturnIntPtr(
     int *p,
-    oe_size_t n);
+    size_t n);
 
 /* ICALL: generator.cpp(431) */
 OE_ECALL void __ReturnIntPtr(void* args)
@@ -2047,11 +2047,11 @@ OE_ECALL void __ReturnIntPtr(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, oe_true, (void*)&__a->p, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->p, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, oe_false, (void*)&__a->n, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->n, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2068,7 +2068,7 @@ OE_ECALL void __ReturnIntPtr(void* args)
         goto done;
 
 
-    __r = OE_SetArg(__ti, __a, 0, oe_true, &__args->ret, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 0, true, &__args->ret, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2110,7 +2110,7 @@ OE_ECALL void __TestCallback(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 0, oe_true, (void*)&__a->func, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 0, true, (void*)&__a->func, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2136,9 +2136,9 @@ done:
     (void)__r;
 }
 
-OE_EXTERNC oe_bool TestIntPtrRef(
+OE_EXTERNC bool TestIntPtrRef(
     int **intPtrOut,
-    oe_size_t n);
+    size_t n);
 
 /* ICALL: generator.cpp(431) */
 OE_ECALL void __TestIntPtrRef(void* args)
@@ -2157,7 +2157,7 @@ OE_ECALL void __TestIntPtrRef(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, oe_false, (void*)&__a->n, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->n, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2178,7 +2178,7 @@ OE_ECALL void __TestIntPtrRef(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 1, oe_true, &__args->intPtrOut, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 1, true, &__args->intPtrOut, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2268,7 +2268,7 @@ OE_ECALL void __ReturnEnclaveMemory(void* args)
         goto done;
 
 
-    __r = OE_SetArg(__ti, __a, 0, oe_true, &__args->ret, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 0, true, &__args->ret, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2285,8 +2285,8 @@ done:
 OE_EXTERNC void TestBufferCopy(
     void *dest,
     const void *src,
-    oe_size_t n,
-    oe_bool forceOverwrite);
+    size_t n,
+    bool forceOverwrite);
 
 /* ICALL: generator.cpp(431) */
 OE_ECALL void __TestBufferCopy(void* args)
@@ -2305,19 +2305,19 @@ OE_ECALL void __TestBufferCopy(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 0, oe_true, (void*)&__a->dest, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 0, true, (void*)&__a->dest, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, oe_true, (void*)&__a->src, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->src, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, oe_false, (void*)&__a->n, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->n, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 3, oe_false, (void*)&__a->forceOverwrite, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 3, false, (void*)&__a->forceOverwrite, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2360,12 +2360,12 @@ done:
 
 /* OCALL: generator.cpp(772) */
 OE_EXTERNC OE_Result OCALL_MultipleParams(
-    oe_int32_t *ret,
+    int32_t *ret,
     const char *strIn,
-    oe_uint32_t numIn,
+    uint32_t numIn,
     const struct Object *objectIn,
     char *strOut,
-    oe_uint32_t *numOut,
+    uint32_t *numOut,
     struct Object *objectOut,
     struct Object **objectRefOut)
 {
@@ -2395,31 +2395,31 @@ OE_EXTERNC OE_Result OCALL_MultipleParams(
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 1, oe_true, (void*)&__a->strIn, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->strIn, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 2, oe_false, (void*)&__a->numIn, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 2, false, (void*)&__a->numIn, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 3, oe_true, (void*)&__a->objectIn, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 3, true, (void*)&__a->objectIn, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, &__args, 4, oe_true, (void*)&__a->strOut, OE_HostMalloc);
+    __r = OE_InitArg(__ti, &__args, 4, true, (void*)&__a->strOut, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, &__args, 5, oe_true, (void*)&__a->numOut, OE_HostMalloc);
+    __r = OE_InitArg(__ti, &__args, 5, true, (void*)&__a->numOut, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, &__args, 6, oe_true, (void*)&__a->objectOut, OE_HostMalloc);
+    __r = OE_InitArg(__ti, &__args, 6, true, (void*)&__a->objectOut, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, &__args, 7, oe_true, (void*)&__a->objectRefOut, OE_HostMalloc);
+    __r = OE_InitArg(__ti, &__args, 7, true, (void*)&__a->objectRefOut, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2455,7 +2455,7 @@ OE_EXTERNC OE_Result OCALL_MultipleParams(
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 7, oe_true, &objectRefOut, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 7, true, &objectRefOut, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 

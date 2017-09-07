@@ -92,7 +92,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const oe_uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = OE_GetCreateFlags();
 
 printf("FLAGS=%08X\n", flags);
 

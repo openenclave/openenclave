@@ -385,7 +385,7 @@ static void _GenSetArg(
 
     string ref;
     if (flags & FLAG_REF)
-        ref = "oe_true";
+        ref = "true";
     else
         ref = "0";
 
@@ -407,7 +407,7 @@ static void _GenClearArg(
 
     string ref;
     if (flags & FLAG_REF)
-        ref = "oe_true";
+        ref = "true";
     else
         ref = "0";
 
@@ -471,12 +471,12 @@ static void _GenTrustedICALL(
         const Param& p = f.params[i];
 
         string amp;
-        string ref = "oe_false";
+        string ref = "false";
 
         if ((p.flags & FLAG_REF) || (p.flags & FLAG_PTR))
         {
             amp = "&";
-            ref = "oe_true";
+            ref = "true";
         }
         else if (!(p.flags & FLAG_PTR) && !(p.flags & FLAG_ARRAY))
             amp = "&";
@@ -831,12 +831,12 @@ static void _GenOCALL(
         const Param& p = f->params[i];
 
         string amp;
-        string ref = "oe_false";
+        string ref = "false";
 
         if ((p.flags & FLAG_REF) || (p.flags & FLAG_PTR))
         {
             amp = "&";
-            ref = "oe_true";
+            ref = "true";
         }
         else if (!(p.flags & FLAG_PTR) && !(p.flags & FLAG_ARRAY))
             amp = "&";
@@ -1490,7 +1490,7 @@ int Generator::GenerateSourceFile(
         "OE_INLINE void* _ConstMemcpy(\n"
         "    const void* dest, \n"
         "    const void* src,\n"
-        "    oe_size_t n)\n"
+        "    size_t n)\n"
         "{\n"
         "    return $0((void*)dest, src, n);\n"
         "}\n\n";

@@ -16,10 +16,10 @@ OE_EXPORT unsigned long long __oe_virtualBaseAddr;
 
 const void* __OE_GetEnclaveBase()
 {
-    return (oe_uint8_t*)&__oe_virtualBaseAddr - __oe_virtualBaseAddr;
+    return (uint8_t*)&__oe_virtualBaseAddr - __oe_virtualBaseAddr;
 }
 
-oe_size_t __OE_GetEnclaveSize()
+size_t __OE_GetEnclaveSize()
 {
     return __oe_numPages * OE_PAGE_SIZE;
 }
@@ -44,10 +44,10 @@ const void* __OE_GetRelocBase()
 
 const void* __OE_GetRelocEnd()
 {
-    return (const oe_uint8_t*)__OE_GetRelocBase() + __OE_GetRelocSize();
+    return (const uint8_t*)__OE_GetRelocBase() + __OE_GetRelocSize();
 }
 
-const oe_size_t __OE_GetRelocSize()
+const size_t __OE_GetRelocSize()
 {
     return __oe_numRelocPages * OE_PAGE_SIZE;
 }
@@ -70,12 +70,12 @@ const void* __OE_GetHeapBase()
     return base + (__oe_baseHeapPage * OE_PAGE_SIZE);
 }
 
-const oe_size_t __OE_GetHeapSize()
+const size_t __OE_GetHeapSize()
 {
     return __oe_numHeapPages * OE_PAGE_SIZE;
 }
 
 const void* __OE_GetHeapEnd()
 {
-    return (const oe_uint8_t*)__OE_GetHeapBase() + __OE_GetHeapSize();
+    return (const uint8_t*)__OE_GetHeapBase() + __OE_GetHeapSize();
 }

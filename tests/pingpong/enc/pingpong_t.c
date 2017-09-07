@@ -3,7 +3,7 @@
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    oe_size_t n)
+    size_t n)
 {
     return OE_Memcpy((void*)dest, src, n);
 }
@@ -110,7 +110,7 @@ struct LogArgs
     unsigned char __pad0[4];
     const char *str;
     unsigned char __pad1[4];
-    oe_uint64_t x;
+    uint64_t x;
     unsigned char __pad2[4];
 };
 
@@ -135,7 +135,7 @@ static const OE_FieldTI _LogArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct LogArgs, x),
-        sizeof(oe_uint64_t), /* size */
+        sizeof(uint64_t), /* size */
         0, /* subscript */
     },
 };
@@ -178,11 +178,11 @@ OE_ECALL void __Ping(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 0, oe_true, (void*)&__a->in, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 0, true, (void*)&__a->in, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, oe_false, (void*)__a->out, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, false, (void*)__a->out, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -250,11 +250,11 @@ OE_EXTERNC OE_Result Pong(
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 0, oe_true, (void*)&__a->in, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 0, true, (void*)&__a->in, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 1, oe_false, (void*)__a->out, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, false, (void*)__a->out, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -293,7 +293,7 @@ done:
 /* OCALL: generator.cpp(772) */
 OE_EXTERNC OE_Result Log(
     const char *str,
-    oe_uint64_t x)
+    uint64_t x)
 {
     OE_Result __r = OE_UNEXPECTED;
     const OE_StructTI* __ti = &LogArgs_ti;
@@ -315,11 +315,11 @@ OE_EXTERNC OE_Result Log(
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 0, oe_true, (void*)&__a->str, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 0, true, (void*)&__a->str, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 1, oe_false, (void*)&__a->x, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, false, (void*)&__a->x, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 

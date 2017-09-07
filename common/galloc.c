@@ -60,7 +60,7 @@ typedef struct _Block Block;
 struct _Block
 {
     Block* next;
-    oe_size_t size;
+    size_t size;
     unsigned int magic;
     unsigned int guard;
 };
@@ -71,15 +71,15 @@ static unsigned int _ComputeGuard(const void* ptr)
 
     if (sizeof(void*) == 4)
     {
-        oe_uint32_t addr = (oe_uint32_t)(oe_uint64_t)ptr;
+        uint32_t addr = (uint32_t)(uint64_t)ptr;
         return addr ^ XORAND;
     }
 
     if (sizeof(void*) == 8)
     {
-        oe_uint64_t addr = (oe_uint64_t)ptr;
-        oe_uint32_t hi = (oe_uint32_t)(addr >> 32);
-        oe_uint32_t lo = (oe_uint32_t)(addr & 0x00000000FFFFFFFF);
+        uint64_t addr = (uint64_t)ptr;
+        uint32_t hi = (uint32_t)(addr >> 32);
+        uint32_t lo = (uint32_t)(addr & 0x00000000FFFFFFFF);
         return hi ^ lo ^ XORAND;
     }
 
@@ -105,17 +105,17 @@ OE_INLINE Block* _PtrToBlock(void* ptr)
 
 /* A hash table of unfreed allocations */
 static Block* _chains[1023];
-static oe_size_t _nchains = OE_COUNTOF(_chains);
+static size_t _nchains = OE_COUNTOF(_chains);
 
-static oe_size_t _Hash(const void* ptr)
+static size_t _Hash(const void* ptr)
 {
     /* Discard lower three bits (always zero) */
-    return (((oe_uint64_t)ptr) >> 3) % _nchains;
+    return (((uint64_t)ptr) >> 3) % _nchains;
 }
 
 static void _HashInsert(Block* block)
 {
-    oe_uint64_t index = _Hash(_BlockToPtr(block));
+    uint64_t index = _Hash(_BlockToPtr(block));
 
     /* Insert as first element of the chain */
     block->next = _chains[index];
@@ -124,7 +124,7 @@ static void _HashInsert(Block* block)
 
 static int _HashRemove(void* ptr)
 {
-    oe_uint64_t index = _Hash(ptr);
+    uint64_t index = _Hash(ptr);
     Block* p;
     Block* prev = OE_NULL;
 
@@ -153,10 +153,10 @@ static int _HashRemove(void* ptr)
     return -1;
 }
 
-static oe_size_t _HashSize(void)
+static size_t _HashSize(void)
 {
-    oe_size_t size = 0;
-    oe_size_t i;
+    size_t size = 0;
+    size_t i;
 
     for (i = 0; i < _nchains; i++)
     {
@@ -169,26 +169,26 @@ static oe_size_t _HashSize(void)
     return size;
 }
 
-static oe_bool _HashContains(const void* ptr)
+static bool _HashContains(const void* ptr)
 {
-    oe_uint64_t index = _Hash(ptr);
+    uint64_t index = _Hash(ptr);
     Block* p;
 
     for (p = _chains[index]; p; p = p->next)
     {
         if (_BlockToPtr(p) == ptr)
-            return oe_true;
+            return true;
     }
 
     /* Not found! */
-    return oe_false;
+    return false;
 }
 
 void* __OE_GMalloc(
-    oe_size_t size)
+    size_t size)
 {
     Block* block;
-    oe_size_t n;
+    size_t n;
     unsigned int guard;
 
     /* Calculate size of block: [MAGIC] [GUARD] [DATA] [GUARD] */
@@ -206,7 +206,7 @@ void* __OE_GMalloc(
     block->guard = guard;
 
     /* The second guard is not necessarily aligned on a 4-byte boundary */
-    MEMCPY((oe_uint8_t*)_BlockToPtr(block) + size, &guard, sizeof(oe_uint32_t));
+    MEMCPY((uint8_t*)_BlockToPtr(block) + size, &guard, sizeof(uint32_t));
 
     /* Insert into hash table */
     _HashInsert(block);
@@ -232,7 +232,7 @@ static int _GCheck(
         return -1;
 
     /* The second guard is not necessarily aligned on a 4-byte boundary */
-    MEMCPY(&guard, (oe_uint8_t*)ptr + block->size, sizeof(oe_uint32_t));
+    MEMCPY(&guard, (uint8_t*)ptr + block->size, sizeof(uint32_t));
     if (guard != _ComputeGuard(ptr))
         return -1;
 
@@ -272,12 +272,12 @@ void __OE_GFree(
     FREE(_PtrToBlock(ptr));
 }
 
-oe_size_t __OE_GCount()
+size_t __OE_GCount()
 {
     return _HashSize();
 }
 
-oe_bool __OE_GOwns(const void* ptr)
+bool __OE_GOwns(const void* ptr)
 {
     return _HashContains(ptr);
 }
@@ -295,5 +295,5 @@ void __OE_GFix(
 
     block = _PtrToBlock(ptr);
     block->guard = _ComputeGuard(ptr);
-    MEMCPY((oe_uint8_t*)ptr + block->size, &block->guard, sizeof(oe_uint32_t));
+    MEMCPY((uint8_t*)ptr + block->size, &block->guard, sizeof(uint32_t));
 }

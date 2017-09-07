@@ -21,9 +21,9 @@ extern const OE_StructTI EmptyStruct_ti;
 
 struct MyStruct
 {
-    oe_uint32_t x;
+    uint32_t x;
     const void *data;
-    oe_size_t size;
+    size_t size;
     const char *str;
 };
 
@@ -39,7 +39,7 @@ extern const OE_StructTI DeepStruct_ti;
 
 struct MyObject
 {
-    oe_uint32_t id;
+    uint32_t id;
     const char *name;
 };
 
@@ -66,7 +66,7 @@ extern const OE_StructTI ListElem_ti;
 
 struct Object
 {
-    oe_size_t id;
+    size_t id;
     char *name;
 };
 
@@ -74,13 +74,13 @@ extern const OE_StructTI Object_ti;
 
 struct Embedded
 {
-    oe_uint32_t xxx;
-    oe_uint32_t yyy;
+    uint32_t xxx;
+    uint32_t yyy;
     char str[16];
     char cstr[16];
     wchar_t wstr[16];
     struct Object *objects;
-    oe_size_t nobjects;
+    size_t nobjects;
 };
 
 extern const OE_StructTI Embedded_ti;
@@ -88,47 +88,47 @@ extern const OE_StructTI Embedded_ti;
 struct Container
 {
     struct Object *object;
-    oe_size_t size;
-    oe_bool b;
+    size_t size;
+    bool b;
     struct Embedded e;
     struct Embedded ae[2];
-    oe_uint32_t *arrData;
-    oe_size_t arrSize;
+    uint32_t *arrData;
+    size_t arrSize;
     struct DefinedStruct definedStruct;
     struct UndefinedStruct *undefinedStruct;
     const void *varr;
-    oe_size_t sizevarr;
+    size_t sizevarr;
 };
 
 extern const OE_StructTI Container_ti;
 
 struct AllTypes
 {
-    oe_int8_t s8;
-    oe_uint8_t u8;
-    oe_int16_t s16;
-    oe_uint16_t u16;
-    oe_int32_t s32;
-    oe_uint32_t u32;
-    oe_int64_t s64;
-    oe_uint64_t u64;
+    int8_t s8;
+    uint8_t u8;
+    int16_t s16;
+    uint16_t u16;
+    int32_t s32;
+    uint32_t u32;
+    int64_t s64;
+    uint64_t u64;
     float r32;
     double r64;
-    oe_uint8_t by;
-    oe_bool b;
+    uint8_t by;
+    bool b;
     char c;
     wchar_t w;
-    oe_size_t s;
-    oe_ssize_t ss;
+    size_t s;
+    ssize_t ss;
     char *str;
-    oe_size_t strn;
+    size_t strn;
     wchar_t *wcs;
     char stra[32];
     wchar_t wcsa[32];
     struct Object obj1;
     struct Object *obj2;
-    oe_uint32_t *data;
-    oe_size_t size;
+    uint32_t *data;
+    size_t size;
 };
 
 extern const OE_StructTI AllTypes_ti;
@@ -136,17 +136,17 @@ extern const OE_StructTI AllTypes_ti;
 struct NewTypes
 {
     char s8;
-    oe_uint8_t u8;
+    uint8_t u8;
     short s16;
-    oe_uint16_t u16;
+    uint16_t u16;
     int s32;
     unsigned int u32;
-    oe_int64_t s64;
-    oe_uint64_t u64;
+    int64_t s64;
+    uint64_t u64;
     float r32;
     double r64;
-    oe_int64_t ss;
-    oe_uint64_t s;
+    int64_t ss;
+    uint64_t s;
     signed long sl;
     unsigned int ui;
     unsigned long ul;
@@ -160,9 +160,9 @@ struct MyFunctionArgs
 {
     const char *cstr;
     char *str;
-    oe_size_t nstr;
-    oe_uint32_t *u32;
-    oe_uint32_t u32a[4];
+    size_t nstr;
+    uint32_t *u32;
+    uint32_t u32a[4];
     char stra[32];
     struct Object obj;
     struct Object *objp;
@@ -179,11 +179,11 @@ extern const OE_StructTI MyFunctionArgs_ti;
 ********************************************************************************
 */
 
-OE_EXTERNC oe_int32_t UCopy(
+OE_EXTERNC int32_t UCopy(
     char *p,
-    oe_size_t m,
+    size_t m,
     const char *q,
-    oe_size_t n,
+    size_t n,
     struct Object **object);
 
 /*
@@ -196,11 +196,11 @@ OE_EXTERNC oe_int32_t UCopy(
 
 OE_EXTERNC OE_Result TCopy(
     OE_Enclave* enclave,
-    oe_int32_t *ret,
+    int32_t *ret,
     char *p,
-    oe_size_t m,
+    size_t m,
     const char *q,
-    oe_size_t n,
+    size_t n,
     struct Object **object);
 
 #endif /* _ENCIDL_TYPEINFO_U_H */

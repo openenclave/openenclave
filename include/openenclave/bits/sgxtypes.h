@@ -64,8 +64,8 @@ SGX_ENCLULeaf;
 
 typedef struct _SGX_Attributes
 {
-    oe_uint64_t flags;
-    oe_uint64_t xfrm;
+    uint64_t flags;
+    uint64_t xfrm;
 }
 OE_PACKED
 SGX_Attributes;
@@ -86,47 +86,47 @@ typedef struct _SGX_SigStruct
     /* ======== HEADER-SECTION ======== */
 
     /* (0) must be (06000000E100000000000100H) */
-    oe_uint8_t header[12];
+    uint8_t header[12];
 
     /* (12) bit 31: 0 = prod, 1 = debug; Bit 30-0: Must be zero */
-    oe_uint32_t type;
+    uint32_t type;
 
     /* (16) Intel=0x8086, ISV=0x0000 */
-    oe_uint32_t vendor;
+    uint32_t vendor;
 
     /* (20) build date as yyyymmdd */
-    oe_uint32_t date;
+    uint32_t date;
 
     /* (24) must be (01010000600000006000000001000000H) */
-    oe_uint8_t header2[16];
+    uint8_t header2[16];
 
     /* (40) For Launch Enclaves: HWVERSION != 0. Others, HWVERSION = 0 */
-    oe_uint32_t swdefined;
+    uint32_t swdefined;
 
     /* (44) Must be 0 */
-    oe_uint8_t reserved[84];
+    uint8_t reserved[84];
 
     /* ======== KEY-SECTION ======== */
 
     /* (128) Module Public Key (keylength=3072 bits) */
-    oe_uint8_t modulus[OE_KEY_SIZE];
+    uint8_t modulus[OE_KEY_SIZE];
 
     /* (512) RSA Exponent = 3 */
-    oe_uint8_t exponent[OE_EXPONENT_SIZE];
+    uint8_t exponent[OE_EXPONENT_SIZE];
 
     /* (516) Signature over Header and Body (HEADER-SECTION | BODY-SECTION) */
-    oe_uint8_t signature[OE_KEY_SIZE];
+    uint8_t signature[OE_KEY_SIZE];
 
     /* ======== BODY-SECTION ======== */
 
     /* (900) The MISCSELECT that must be set */
-    oe_uint32_t miscselect;
+    uint32_t miscselect;
 
     /* (904) Mask of MISCSELECT to enforce */
-    oe_uint32_t miscmask;
+    uint32_t miscmask;
 
     /* (908) Reserved. Must be 0. */
-    oe_uint8_t reserved2[20];
+    uint8_t reserved2[20];
 
     /* (928) Enclave Attributes that must be set */
     SGX_Attributes attributes;
@@ -135,27 +135,27 @@ typedef struct _SGX_SigStruct
     SGX_Attributes attributemask;
 
     /* (960) MRENCLAVE - (32 bytes) */
-    oe_uint8_t enclavehash[OE_SHA256_SIZE];
+    uint8_t enclavehash[OE_SHA256_SIZE];
 
     /* (992) Must be 0 */
-    oe_uint8_t reserved3[32];
+    uint8_t reserved3[32];
 
     /* (1024) ISV assigned Product ID */
-    oe_uint16_t isvprodid;
+    uint16_t isvprodid;
 
     /* (1026) ISV assigned SVN */
-    oe_uint16_t isvsvn;
+    uint16_t isvsvn;
 
     /* ======== BUFFER-SECTION ======== */
 
     /* (1028) Must be 0 */
-    oe_uint8_t reserved4[12];
+    uint8_t reserved4[12];
 
     /* (1040) Q1 value for RSA Signature Verification */
-    oe_uint8_t q1[OE_KEY_SIZE];
+    uint8_t q1[OE_KEY_SIZE];
 
     /* (1424) Q2 value for RSA Signature Verification */
-    oe_uint8_t q2[OE_KEY_SIZE];
+    uint8_t q2[OE_KEY_SIZE];
 }
 OE_PACKED
 SGX_SigStruct;
@@ -167,7 +167,7 @@ OE_INLINE const void* SGX_SigStructHeader(const SGX_SigStruct* ss)
     return ss;
 }
 
-OE_INLINE oe_size_t SGX_SigStructHeaderSize(void)
+OE_INLINE size_t SGX_SigStructHeaderSize(void)
 {
     return OE_OFFSETOF(SGX_SigStruct,modulus);
 }
@@ -177,7 +177,7 @@ OE_INLINE const void* SGX_SigStructBody(const SGX_SigStruct* ss)
     return &ss->miscselect;
 }
 
-OE_INLINE oe_size_t SGX_SigStructBodySize(void)
+OE_INLINE size_t SGX_SigStructBodySize(void)
 {
     return 
         OE_OFFSETOF(SGX_SigStruct,reserved4) - OE_OFFSETOF(SGX_SigStruct,miscselect);
@@ -196,20 +196,20 @@ void __SGX_DumpSigStruct(
 
 typedef struct _SGX_Secs
 {
-    oe_uint64_t size;            /* 0 */
-    oe_uint64_t base;            /* 8 */
-    oe_uint32_t ssaframesize;    /* 16 */
-    oe_uint32_t misc_select;     /* 20 */
-    oe_uint8_t reserved1[24];    /* 24 */
-    oe_uint64_t flags;           /* 48 */
-    oe_uint64_t xfrm;            /* 56 */
-    oe_uint32_t mrenclave[8];    /* 64 */
-    oe_uint8_t reserved2[32];    /* 96 */
-    oe_uint32_t mrsigner[8];     /* 128 */
-    oe_uint8_t reserved3[96];    /* 160 */
-    oe_uint16_t isvvprodid;      /* 256 */
-    oe_uint16_t isvsvn;          /* 258 */
-    oe_uint8_t reserved[3836];   /* 260 */
+    uint64_t size;            /* 0 */
+    uint64_t base;            /* 8 */
+    uint32_t ssaframesize;    /* 16 */
+    uint32_t misc_select;     /* 20 */
+    uint8_t reserved1[24];    /* 24 */
+    uint64_t flags;           /* 48 */
+    uint64_t xfrm;            /* 56 */
+    uint32_t mrenclave[8];    /* 64 */
+    uint8_t reserved2[32];    /* 96 */
+    uint32_t mrsigner[8];     /* 128 */
+    uint8_t reserved3[96];    /* 160 */
+    uint16_t isvvprodid;      /* 256 */
+    uint16_t isvsvn;          /* 258 */
+    uint8_t reserved[3836];   /* 260 */
 }
 SGX_Secs;
 
@@ -244,49 +244,49 @@ SGX_LaunchToken;
 typedef struct _SGX_EInitToken
 {
     /* (0) 0=invalid, 1=valid */
-    oe_uint32_t valid;
+    uint32_t valid;
 
     /* (4) must be zero */
-    oe_uint8_t reserved1[44];
+    uint8_t reserved1[44];
 
     /* (48) attributes of the enclave */
     SGX_Attributes attributes;
 
     /* (64) MRENCLAVE (hash of enclave) */
-    oe_uint8_t mrenclave[OE_SHA256_SIZE];
+    uint8_t mrenclave[OE_SHA256_SIZE];
 
     /* (96) */
-    oe_uint8_t reserved2[32];
+    uint8_t reserved2[32];
 
     /* (128) MRSIGNER of the enclave */
-    oe_uint8_t mrsigner[OE_SHA256_SIZE];
+    uint8_t mrsigner[OE_SHA256_SIZE];
 
     /* (160) */
-    oe_uint8_t reserved3[32];
+    uint8_t reserved3[32];
 
     /* (192) launch Enclave's CPUSVN */
-    oe_uint8_t cpusvnle[SGX_CPUSVN_SIZE];
+    uint8_t cpusvnle[SGX_CPUSVN_SIZE];
 
     /* (208) launch enclave's ISVPRODID */
-    oe_uint16_t isvprodidle;
+    uint16_t isvprodidle;
 
     /* (210) launch Enclave's ISVSVN */
-    oe_uint16_t isvsvnle;
+    uint16_t isvsvnle;
 
     /* (212) Must be 0 */
-    oe_uint8_t reserved4[24];
+    uint8_t reserved4[24];
 
     /* (236) */
-    oe_uint32_t maskedmiscselectle;
+    uint32_t maskedmiscselectle;
 
     /* (240) attributes of launch enclave */
     SGX_Attributes maskedattributesle;
 
     /* (256) value for key wear-out protection */
-    oe_uint8_t keyid[SGX_KEYID_SIZE];
+    uint8_t keyid[SGX_KEYID_SIZE];
 
     /* (288) CMAC using Launch Token Key */
-    oe_uint8_t mac[SGX_MAC_SIZE];
+    uint8_t mac[SGX_MAC_SIZE];
 }
 OE_PACKED
 SGX_EInitToken;
@@ -307,42 +307,42 @@ void __SGX_DumpEinitToken(
 typedef struct _SGX_TCS
 {
     /* (0) enclave execution state (0=available, 1=unavailable) */
-    oe_uint64_t state; 
+    uint64_t state; 
 
     /* (8) thread's execution flags */
-    oe_uint64_t flags;
+    uint64_t flags;
 
     /* (16) offset to the base of the State Save Area (SSA) stack */
-    oe_uint64_t ossa; 
+    uint64_t ossa; 
 
     /* (24) Current slot of an SSA frame */
-    oe_uint32_t cssa; 
+    uint32_t cssa; 
 
     /* (28) Number of available slots for SSA frames */
-    oe_uint32_t nssa; 
+    uint32_t nssa; 
 
     /* (32) entry point where control is transferred upon EENTER */
-    oe_uint64_t oentry; 
+    uint64_t oentry; 
 
     /* (40) Value of asynchronous exit pointer saved at EENTER time */
-    oe_uint64_t aep; 
+    uint64_t aep; 
 
     /* (48) Added to enclave base address to get the FS segment address */
-    oe_uint64_t fsbase; 
+    uint64_t fsbase; 
 
     /* (56) Added to enclave base address to get the GS segment address */
-    oe_uint64_t gsbase; 
+    uint64_t gsbase; 
 
     /* (64) Size to become the new FS limit in 32-bit mode */
-    oe_uint32_t fslimit; 
+    uint32_t fslimit; 
 
     /* (68) Size to become the new GS limit in 32-bit mode */
-    oe_uint32_t gslimit; 
+    uint32_t gslimit; 
 
     /* (72) reserved */
     union
     {
-        oe_uint8_t reserved[4024];  
+        uint8_t reserved[4024];  
 
         /* (72) Enclave's OE_Main() function */
         void (*main)(void);
@@ -387,26 +387,26 @@ typedef struct _OE_ThreadData OE_ThreadData;
 struct _OE_ThreadData
 {
     /* Points to start of this structure */
-    oe_uint64_t self_addr;
+    uint64_t self_addr;
 
     /* The last stack pointer (set by enclave when making an OCALL) */
-    oe_uint64_t last_sp; 
+    uint64_t last_sp; 
 
-    oe_uint64_t __stack_base_addr;
-    oe_uint64_t __stack_limit_addr;
-    oe_uint64_t __first_ssa_gpr;
-    oe_uint64_t __stack_guard; /* 0x28 for x64 */
-    oe_uint64_t __reserved;
-    oe_uint64_t __ssa_frame_size;
-    oe_uint64_t __last_error;
+    uint64_t __stack_base_addr;
+    uint64_t __stack_limit_addr;
+    uint64_t __first_ssa_gpr;
+    uint64_t __stack_guard; /* 0x28 for x64 */
+    uint64_t __reserved;
+    uint64_t __ssa_frame_size;
+    uint64_t __last_error;
 
     /* The threads implementations uses this to put threads on queues */
     OE_ThreadData* next;
 
-    oe_uint64_t __tls_addr;
-    oe_uint64_t __tls_array;
-    oe_uint64_t __exception_flag; /* number of exceptions being handled */
-    oe_uint64_t __cxx_thread_info[6];
+    uint64_t __tls_addr;
+    uint64_t __tls_array;
+    uint64_t __exception_flag; /* number of exceptions being handled */
+    uint64_t __cxx_thread_info[6];
 };
 
 OE_CHECK_SIZE(sizeof(OE_ThreadData),152);
@@ -432,27 +432,27 @@ typedef struct _TD
     OE_ThreadData base;
 
     /* A "magic number" for sanity checking (TD_MAGIC) */
-    oe_uint64_t magic;
+    uint64_t magic;
 
     /* Depth of ECALL stack (zero indicates that it is unwound) */
-    oe_uint64_t depth;
+    uint64_t depth;
 
     /* Non-zero once the enclave has been initialized */
-    oe_uint64_t initialized;
+    uint64_t initialized;
 
     /* Host registers saved here on entry and restored on exit */
-    oe_uint64_t host_rcx; /* EENTER return address */
-    oe_uint64_t host_rdx;
-    oe_uint64_t host_r8;
-    oe_uint64_t host_r9;
-    oe_uint64_t host_r10;
-    oe_uint64_t host_r11;
-    oe_uint64_t host_r12;
-    oe_uint64_t host_r13;
-    oe_uint64_t host_r14;
-    oe_uint64_t host_r15;
-    oe_uint64_t host_rsp;
-    oe_uint64_t host_rbp;
+    uint64_t host_rcx; /* EENTER return address */
+    uint64_t host_rdx;
+    uint64_t host_r8;
+    uint64_t host_r9;
+    uint64_t host_r10;
+    uint64_t host_r11;
+    uint64_t host_r12;
+    uint64_t host_r13;
+    uint64_t host_r14;
+    uint64_t host_r15;
+    uint64_t host_rsp;
+    uint64_t host_rbp;
 
     /* Return arguments from OCALL */
     long oret_func;
@@ -462,13 +462,13 @@ typedef struct _TD
     Callsite* callsites;
 
     /* Simulation mode is active if non-zero */
-    oe_uint64_t simulate;
+    uint64_t simulate;
 
     /* Linux error number: from <errno.h> */
     int linux_errno;
 
     /* Reserved */
-    oe_uint8_t reserved[3784];
+    uint8_t reserved[3784];
 }
 TD;
 
@@ -486,17 +486,17 @@ OE_CHECK_SIZE(sizeof(TD), 4096);
 
 typedef struct _OE_EnclaveSettings
 {
-    oe_uint64_t debug;
-    oe_uint64_t numHeapPages;
-    oe_uint64_t numStackPages;
-    oe_uint64_t numTCS;
+    uint64_t debug;
+    uint64_t numHeapPages;
+    uint64_t numStackPages;
+    uint64_t numTCS;
 }
 OE_EnclaveSettings;
 
 /* Enclave signature section (.oesig) written to ELF-64 libraries */
 typedef struct _OE_SignatureSection
 {
-    oe_uint64_t magic;
+    uint64_t magic;
     OE_EnclaveSettings settings;
     SGX_SigStruct sigstruct;
 }
@@ -514,19 +514,19 @@ OE_SignatureSection;
 typedef struct _SGX_TargetInfo
 {
     /* (0) MRENCLAVE (hash of target enclave) */
-    oe_uint8_t mrenclave[OE_SHA256_SIZE];
+    uint8_t mrenclave[OE_SHA256_SIZE];
 
     /* (32) ATTRIBUTES of target enclave */
     SGX_Attributes attributes;
 
     /* (48) Reserved */
-    oe_uint8_t reserved1[4];
+    uint8_t reserved1[4];
 
     /* (52) MISCSELECT field of target enclave */
-    oe_uint32_t misc_select;
+    uint32_t misc_select;
 
     /* (56) Reserved */
-    oe_uint8_t reserved2[456];
+    uint8_t reserved2[456];
 }
 SGX_TargetInfo;
 
@@ -542,7 +542,7 @@ OE_CHECK_SIZE(sizeof(SGX_TargetInfo),512);
 
 typedef struct _SGX_EPIDGroupID
 {
-    oe_uint8_t id[4];
+    uint8_t id[4];
 }
 SGX_EPIDGroupID;
 
@@ -575,37 +575,37 @@ OE_CHECK_SIZE(sizeof(SGX_ReportData),64);
 typedef struct _SGX_ReportBody
 {
     /* (0) CPU security version */
-    oe_uint8_t cpusvn[SGX_CPUSVN_SIZE];
+    uint8_t cpusvn[SGX_CPUSVN_SIZE];
 
     /* (16) Selector for which fields are defined in SSA.MISC */
-    oe_uint32_t miscselect;
+    uint32_t miscselect;
 
     /* (20) Reserved */
-    oe_uint8_t reserved1[28];  
+    uint8_t reserved1[28];  
 
     /* (48) Enclave attributes */
     SGX_Attributes attributes;
 
     /* (64) Enclave measurement */
-    oe_uint8_t mrenclave[OE_SHA256_SIZE];
+    uint8_t mrenclave[OE_SHA256_SIZE];
 
     /* (96) */
-    oe_uint8_t reserved2[32];  
+    uint8_t reserved2[32];  
 
     /* (128) The value of the enclave's SIGNER measurement */
-    oe_uint8_t mrsigner[OE_SHA256_SIZE];
+    uint8_t mrsigner[OE_SHA256_SIZE];
 
     /* (160) */
-    oe_uint8_t reserved3[96];
+    uint8_t reserved3[96];
 
     /* (256) Enclave product ID */
-    oe_uint16_t isvprodid;
+    uint16_t isvprodid;
 
     /* (258) Enclave security version */
-    oe_uint16_t isvsvn;
+    uint16_t isvsvn;
 
     /* (260) Reserved */
-    oe_uint8_t reserved4[60];  
+    uint8_t reserved4[60];  
 
     /* (320) User report data */
     SGX_ReportData reportData;
@@ -618,10 +618,10 @@ typedef struct _SGX_Report
     SGX_ReportBody body;
 
     /* (384) Id of key (?) */
-    oe_uint8_t keyid[SGX_KEYID_SIZE];
+    uint8_t keyid[SGX_KEYID_SIZE];
 
     /* (416) Message autentication code over fields of this structure */
-    oe_uint8_t mac[SGX_MAC_SIZE];
+    uint8_t mac[SGX_MAC_SIZE];
 }
 SGX_Report;
 
@@ -638,34 +638,34 @@ OE_CHECK_SIZE(sizeof(SGX_Report),432);
 typedef struct _SGX_Quote
 {
     /* (0) */
-    oe_uint16_t version;        
+    uint16_t version;        
 
     /* (2) */
-    oe_uint16_t sign_type;
+    uint16_t sign_type;
 
     /* (4) */
     SGX_EPIDGroupID epid_group_id;
 
     /* (8) */
-    oe_uint16_t qe_svn;
+    uint16_t qe_svn;
 
     /* (10) */
-    oe_uint16_t pce_svn;        
+    uint16_t pce_svn;        
 
     /* (12) */
-    oe_uint32_t xeid;
+    uint32_t xeid;
 
     /* (16) */
-    oe_uint8_t basename[32];
+    uint8_t basename[32];
 
     /* (48) */
     SGX_ReportBody report_body;
 
     /* (432) */
-    oe_uint32_t signature_len;
+    uint32_t signature_len;
 
     /* (436) */
-    oe_uint8_t signature[82];
+    uint8_t signature[82];
 }
 OE_PACKED
 SGX_Quote;
@@ -697,7 +697,7 @@ SGX_QuoteType;
 
 typedef struct _SGX_SPID
 {
-    oe_uint8_t id[16];
+    uint8_t id[16];
 }
 SGX_SPID;
 
@@ -711,7 +711,7 @@ SGX_SPID;
 
 typedef struct _SGX_Nonce
 {
-    oe_uint8_t rand[16];
+    uint8_t rand[16];
 }
 SGX_Nonce;
 
@@ -728,11 +728,11 @@ OE_Result SGX_GetQuote(
     SGX_QuoteType quoteType,
     const SGX_SPID* spid,
     const SGX_Nonce* nonce,
-    const oe_uint8_t* signatureRevocationList,
-    oe_uint32_t signatureRevocationListSize,
+    const uint8_t* signatureRevocationList,
+    uint32_t signatureRevocationListSize,
     SGX_Report* reportOut,
     SGX_Quote* quote,
-    oe_uint32_t quoteSize);
+    uint32_t quoteSize);
 
 /*
 **==============================================================================

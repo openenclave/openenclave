@@ -23,7 +23,7 @@ OE_EXTERNC_BEGIN
  * Return flags to pass to OE_CreateEnclave() based on the OE_SIMULATION
  * environment variable.
  */
-oe_uint32_t OE_GetCreateFlags(void);
+uint32_t OE_GetCreateFlags(void);
 
 OE_EXTERNC_END
 

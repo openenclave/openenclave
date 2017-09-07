@@ -69,6 +69,6 @@ void TD_Init(TD* td);
 
 void TD_Clear(TD* td);
 
-oe_bool TD_Initialized(TD* td);
+bool TD_Initialized(TD* td);
 
 #endif /* _TD_H */

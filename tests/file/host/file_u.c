@@ -5,7 +5,7 @@
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    oe_size_t n)
+    size_t n)
 {
     return memcpy((void*)dest, src, n);
 }
@@ -25,7 +25,7 @@ struct TestReadFileArgs
     unsigned char __pad1[4];
     const char *path;
     unsigned char __pad2[4];
-    oe_uint32_t *checksum;
+    uint32_t *checksum;
     unsigned char __pad3[4];
 };
 
@@ -131,11 +131,11 @@ const OE_StructTI FopenArgs_ti =
 
 struct FreadArgs
 {
-    oe_size_t ret;
+    size_t ret;
     unsigned char __pad1[4];
     void *ptr;
     unsigned char __pad2[4];
-    oe_size_t size;
+    size_t size;
     unsigned char __pad3[4];
     FILE *stream;
     unsigned char __pad4[4];
@@ -152,7 +152,7 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, ret),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -172,7 +172,7 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, size),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -261,9 +261,9 @@ OE_OCALL void __Fopen(void* args)
         __a->modes);
 }
 
-OE_EXTERNC oe_size_t Fread(
+OE_EXTERNC size_t Fread(
     void *ptr,
-    oe_size_t size,
+    size_t size,
     FILE *stream);
 
 /* ICALL: generator.cpp(657) */
@@ -302,7 +302,7 @@ OE_EXTERNC OE_Result TestReadFile(
     OE_Enclave* enclave,
     int *ret,
     const char *path,
-    oe_uint32_t *checksum)
+    uint32_t *checksum)
 {
     OE_Result __r = OE_UNEXPECTED;
     struct TestReadFileArgs __args;

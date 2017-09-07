@@ -14,7 +14,7 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_Enclave OE_Enclave;
 
-OE_SGXDevice* __OE_OpenSGXDriver(oe_bool simulate);
+OE_SGXDevice* __OE_OpenSGXDriver(bool simulate);
 
 OE_SGXDevice* __OE_OpenSGXMeasurer(void);
 
@@ -22,8 +22,8 @@ OE_Result __OE_BuildEnclave(
     OE_SGXDevice* dev,
     const char* path,
     const OE_EnclaveSettings* settings,
-    oe_bool debug,
-    oe_bool simulate,
+    bool debug,
+    bool simulate,
     OE_Enclave* enclave);
 
 OE_EXTERNC_END

@@ -16,7 +16,7 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_SHA256Context
 {
-    oe_uint64_t impl[16];
+    uint64_t impl[16];
 }
 OE_SHA256Context;
 
@@ -38,11 +38,11 @@ void OE_SHA256Init(
 void OE_SHA256Update(
     OE_SHA256Context* context,
     const void* data,
-    oe_size_t size);
+    size_t size);
 
 void OE_SHA256UpdateZeros(
     OE_SHA256Context* context,
-    oe_size_t size);
+    size_t size);
 
 void OE_SHA256Final(
     OE_SHA256Context* context,

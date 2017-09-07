@@ -5,7 +5,7 @@
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
     const void* src,
-    oe_size_t n)
+    size_t n)
 {
     return OE_Memcpy((void*)dest, src, n);
 }
@@ -25,7 +25,7 @@ struct TestReadFileArgs
     unsigned char __pad1[4];
     const char *path;
     unsigned char __pad2[4];
-    oe_uint32_t *checksum;
+    uint32_t *checksum;
     unsigned char __pad3[4];
 };
 
@@ -131,11 +131,11 @@ const OE_StructTI FopenArgs_ti =
 
 struct FreadArgs
 {
-    oe_size_t ret;
+    size_t ret;
     unsigned char __pad1[4];
     void *ptr;
     unsigned char __pad2[4];
-    oe_size_t size;
+    size_t size;
     unsigned char __pad3[4];
     FILE *stream;
     unsigned char __pad4[4];
@@ -152,7 +152,7 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_NULL, /* structTI */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, ret),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -172,7 +172,7 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_NULL, /* structName */
         OE_NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, size),
-        sizeof(oe_size_t), /* size */
+        sizeof(size_t), /* size */
         0, /* subscript */
     },
     {
@@ -249,7 +249,7 @@ const OE_StructTI FcloseArgs_ti =
 
 OE_EXTERNC int TestReadFile(
     const char *path,
-    oe_uint32_t *checksum);
+    uint32_t *checksum);
 
 /* ICALL: generator.cpp(431) */
 OE_ECALL void __TestReadFile(void* args)
@@ -268,11 +268,11 @@ OE_ECALL void __TestReadFile(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, oe_true, (void*)&__a->path, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->path, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, oe_true, (void*)&__a->checksum, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->checksum, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -345,11 +345,11 @@ OE_EXTERNC OE_Result Fopen(
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 1, oe_true, (void*)&__a->filename, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->filename, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 2, oe_true, (void*)&__a->modes, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 2, true, (void*)&__a->modes, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -365,7 +365,7 @@ OE_EXTERNC OE_Result Fopen(
     /*** return value ***/
     /********************/
 
-    __r = OE_SetArg(__ti, __a, 0, oe_true, ret, OE_Malloc);
+    __r = OE_SetArg(__ti, __a, 0, true, ret, OE_Malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -383,9 +383,9 @@ done:
 
 /* OCALL: generator.cpp(772) */
 OE_EXTERNC OE_Result Fread(
-    oe_size_t *ret,
+    size_t *ret,
     void *ptr,
-    oe_size_t size,
+    size_t size,
     FILE *stream)
 {
     OE_Result __r = OE_UNEXPECTED;
@@ -409,15 +409,15 @@ OE_EXTERNC OE_Result Fread(
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 1, oe_true, (void*)&__a->ptr, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->ptr, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 2, oe_false, (void*)&__a->size, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 2, false, (void*)&__a->size, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 3, oe_true, (void*)&__a->stream, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 3, true, (void*)&__a->stream, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -481,7 +481,7 @@ OE_EXTERNC OE_Result Fclose(
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 1, oe_true, (void*)&__a->stream, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->stream, OE_HostMalloc);
     if (__r != OE_OK)
         goto done;
 

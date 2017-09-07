@@ -31,7 +31,7 @@ typedef struct _OE_FunctionTI OE_FunctionTI;
 struct _OE_FieldTI
 {
     /* flags (OE_FLAG_*) */
-    oe_uint32_t flags; 
+    uint32_t flags; 
 
     /* Name of this field */
     const char* name; 
@@ -46,50 +46,50 @@ struct _OE_FieldTI
     const char* countField;
 
     /* Offset of this field within struct */
-    oe_size_t offset; 
+    size_t offset; 
 
     /* Size of this type */
-    oe_size_t size;
+    size_t size;
 
     /* Array subscript (when type==OE_FLAG_ARRAY) */
-    oe_int32_t subscript;
+    int32_t subscript;
 };
 
 struct _OE_StructTI
 {
     /* flags (OE_FLAG_*) */
-    oe_uint32_t flags; 
+    uint32_t flags; 
 
     /* Name of this structure */
     const char* name; 
 
     /* Size of this structure in bytes */
-    oe_size_t size; 
+    size_t size; 
 
     /* Pointer to array of fields */
     const OE_FieldTI* fields; 
 
     /* Number of fields in the array */
-    oe_uint32_t nfields; 
+    uint32_t nfields; 
 };
 
 OE_Result OE_StructEq(
     const OE_StructTI* sti,
     const void* s1,
     const void* s2,
-    oe_bool* flag);
+    bool* flag);
 
 OE_Result OE_CopyStruct(
     const OE_StructTI* strucTI,
     const void* structIn,
     void* structOut,
-    void* (alloc)(oe_size_t size));
+    void* (alloc)(size_t size));
 
 OE_Result OE_CloneStruct(
     const OE_StructTI* structTI,
     const void* structIn,
     void** structOut,
-    void* (alloc)(oe_size_t size));
+    void* (alloc)(size_t size));
 
 void OE_PrintStruct(
     const OE_StructTI* structTI,
@@ -108,16 +108,16 @@ OE_Result OE_FreeStruct(
 OE_Result OE_InitArg(
     const OE_StructTI* sti,
     void* strct,
-    oe_size_t index,
-    oe_bool isPtrPtr,
+    size_t index,
+    bool isPtrPtr,
     void* arg,
-    void* (alloc)(oe_size_t size));
+    void* (alloc)(size_t size));
 
 OE_Result OE_ClearArg(
     const OE_StructTI* sti,
     void* strct,
-    oe_size_t index,
-    oe_bool isPtrPtr,
+    size_t index,
+    bool isPtrPtr,
     void* arg,
     OE_DeallocProc dealloc);
 
@@ -125,27 +125,27 @@ OE_Result OE_ClearArgByName(
     const OE_StructTI* sti,
     void* strct,
     const char* name,
-    oe_bool isPtrPtr,
+    bool isPtrPtr,
     void* arg,
     OE_DeallocProc dealloc);
 
 OE_Result OE_SetArg(
     const OE_StructTI* sti,
     void* strct,
-    oe_size_t index,
-    oe_bool isPtrPtr, /* if 'arg' is a pointer to a pointer to an object */
+    size_t index,
+    bool isPtrPtr, /* if 'arg' is a pointer to a pointer to an object */
     void* arg,
-    void* (alloc)(oe_size_t size));
+    void* (alloc)(size_t size));
 
 OE_Result OE_SetArgByName(
     const OE_StructTI* sti,
     void* strct,
     const char* name,
-    oe_bool isPtrPtr, /* if 'arg' is a pointer to a pointer to an object */
+    bool isPtrPtr, /* if 'arg' is a pointer to a pointer to an object */
     void* arg,
-    void* (alloc)(oe_size_t size));
+    void* (alloc)(size_t size));
 
-oe_size_t OE_StructFindField(
+size_t OE_StructFindField(
     const OE_StructTI* structTI, 
     const char* name);
 

@@ -12,7 +12,7 @@ int OE_HostPuts(const char* str)
     if (!(hstr = OE_HostStrdup(str)))
         goto done;
 
-    if (__OE_OCall(OE_FUNC_PUTS, (oe_uint64_t)hstr, OE_NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_PUTS, (uint64_t)hstr, OE_NULL) != OE_OK)
         goto done;
 
     ret = 0;

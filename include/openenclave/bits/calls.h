@@ -136,9 +136,9 @@ OE_InitQuoteArgs;
 **
 ** OE_StrftimeArgs
 **
-**     oe_size_t strftime(
+**     size_t strftime(
 **         char *str, 
-**         oe_size_t max, 
+**         size_t max, 
 **         const char *format,
 **         const struct tm *tm);
 **
@@ -148,7 +148,7 @@ OE_InitQuoteArgs;
 #ifdef __OE_NEED_TIME_CALLS
 typedef struct _OE_StrftimeArgs
 {
-    oe_size_t ret;
+    size_t ret;
     char str[256];
     char format[256];
     struct tm tm;
@@ -173,7 +173,7 @@ typedef struct _OE_GettimeofdayArgs
     struct timeval *tv;
     struct timeval tvbuf;
     struct timezone *tz;
-    oe_uint64_t tzbuf[2];
+    uint64_t tzbuf[2];
 }
 OE_GettimeofdayArgs;
 #endif

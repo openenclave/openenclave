@@ -17,8 +17,8 @@ void AESMDisconnect(AESM* aesm);
 
 OE_Result AESMGetLaunchToken(
     AESM* aesm,
-    oe_uint8_t mrenclave[OE_SHA256_SIZE],
-    oe_uint8_t modulus[OE_KEY_SIZE],
+    uint8_t mrenclave[OE_SHA256_SIZE],
+    uint8_t modulus[OE_KEY_SIZE],
     const SGX_Attributes* attributes,
     SGX_LaunchToken* launchToken);
 
@@ -33,11 +33,11 @@ OE_Result AESMGetQuote(
     SGX_QuoteType quoteType,
     const SGX_SPID* spid,
     const SGX_Nonce* nonce,
-    const oe_uint8_t* signatureRevocationList,
-    oe_uint32_t signatureRevocationListSize,
+    const uint8_t* signatureRevocationList,
+    uint32_t signatureRevocationListSize,
     SGX_Report* reportOut,
     SGX_Quote* quote,
-    oe_uint32_t quoteSize);
+    uint32_t quoteSize);
 
 OE_EXTERNC_END
 
