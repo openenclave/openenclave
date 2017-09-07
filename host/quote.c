@@ -1,6 +1,7 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/utils.h>
 
 OE_Result SGX_InitQuote(
     SGX_TargetInfo* targetInfo,

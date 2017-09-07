@@ -1,6 +1,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/types.h>
 
 OE_Result SGX_CreateReport(
     const SGX_TargetInfo* targetInfo,
@@ -148,10 +149,9 @@ OE_Result OE_GetReportForRemoteAttestation(
 
 catch:
 
-#if 0
+    /* ATTN: this causes heap corruption! */
     if (args)
         OE_HostFree(args);
-#endif
 
     return result;
 }

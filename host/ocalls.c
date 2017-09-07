@@ -10,6 +10,7 @@
 #include <openenclave/host.h>
 #define __OE_NEED_TIME_CALLS
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/utils.h>
 #include "enclave.h"
 #include "ocalls.h"
 

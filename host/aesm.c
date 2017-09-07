@@ -235,7 +235,7 @@ static OE_Result _UnpackLengthDelimited(
     if (size > dataSize)
         OE_THROW(OE_FAILURE);
 
-    memcpy(data, mem_ptr_at(buf, *pos), mem_size(buf) - *pos);
+    memcpy(data, mem_ptr_at(buf, *pos), size);
 
     *pos += size;
 
