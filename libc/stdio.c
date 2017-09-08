@@ -21,20 +21,45 @@ int putchar(int c)
     return OE_HostPutchar(c);
 }
 
-int printf(const char* fmt, ...)
+int vprintf(const char* fmt, va_list ap_)
 {
-    char buf[1024];
+    char buf[256];
+    char *p = buf;
     int n;
 
-    memset(buf, 0, sizeof(buf));
+    /* Try first with a fixed-length scratch buffer */
+    {
+        va_list ap;
+        va_copy(ap, ap_);
+        n = vsnprintf(buf, sizeof(buf), fmt, ap);
+        va_end(ap);
+    }
 
-    /* ATTN: use heap memory here! */
+    /* If string was truncated, retry with correctly sized buffer */
+    if (n >= sizeof(buf))
+    {
+        if (!(p = alloca(n + 1)))
+            return -1;
+        
+        va_list ap;
+        va_copy(ap, ap_);
+        n = vsnprintf(p, n + 1, fmt, ap);
+        va_end(ap);
+    }
+
+    OE_HostPrint(p);
+
+    return n;
+}
+
+int printf(const char* fmt, ...)
+{
+    int n;
+
     va_list ap;
     va_start(ap, fmt);
-    n = vsnprintf(buf, sizeof(buf), fmt, ap);
+    n = vprintf(fmt, ap);
     va_end(ap);
-
-    OE_HostPrint(buf);
 
     return n;
 }

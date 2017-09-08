@@ -148,6 +148,10 @@ SOURCES += $(MUSLSRC)/ctype/towctrans.c
 SOURCES += $(MUSLSRC)/ctype/wcswidth.c
 SOURCES += $(MUSLSRC)/ctype/wctrans.c
 SOURCES += $(MUSLSRC)/ctype/wcwidth.c
+SOURCES += $(MUSLSRC)/ctype/__ctype_b_loc.c
+SOURCES += $(MUSLSRC)/ctype/__ctype_get_mb_cur_max.c
+SOURCES += $(MUSLSRC)/ctype/__ctype_tolower_loc.c
+SOURCES += $(MUSLSRC)/ctype/__ctype_toupper_loc.c
 
 SOURCES += $(MUSLSRC)/multibyte/btowc.c
 SOURCES += $(MUSLSRC)/multibyte/c16rtomb.c
@@ -177,6 +181,14 @@ SOURCES += $(MUSLSRC)/stdio/vasprintf.c
 SOURCES += $(MUSLSRC)/stdio/sscanf.c
 SOURCES += $(MUSLSRC)/stdio/swprintf.c
 SOURCES += $(MUSLSRC)/stdio/asprintf.c
+SOURCES += $(MUSLSRC)/stdio/vfprintf.c
+SOURCES += $(MUSLSRC)/stdio/vfscanf.c
+SOURCES += $(MUSLSRC)/stdio/vfwprintf.c
+SOURCES += $(MUSLSRC)/stdio/vsnprintf.c
+SOURCES += $(MUSLSRC)/stdio/vsscanf.c
+SOURCES += $(MUSLSRC)/stdio/vswprintf.c
+SOURCES += $(MUSLSRC)/stdio/__toread.c
+SOURCES += $(MUSLSRC)/stdio/fputwc.c
 
 SOURCES += $(MUSLSRC)/stdlib/qsort.c
 SOURCES += $(MUSLSRC)/stdlib/bsearch.c
@@ -188,6 +200,10 @@ SOURCES += $(MUSLSRC)/stdlib/atoi.c
 SOURCES += $(MUSLSRC)/stdlib/atol.c
 SOURCES += $(MUSLSRC)/stdlib/atoll.c
 SOURCES += $(MUSLSRC)/stdlib/atof.c
+SOURCES += $(MUSLSRC)/stdlib/strtod.c
+SOURCES += $(MUSLSRC)/stdlib/abs.c
+SOURCES += $(MUSLSRC)/stdlib/labs.c
+SOURCES += $(MUSLSRC)/stdlib/llabs.c
 
 SOURCES += $(MUSLSRC)/math/acos.c
 SOURCES += $(MUSLSRC)/math/acosf.c
@@ -411,6 +427,9 @@ SOURCES += $(MUSLSRC)/fenv/feupdateenv.c
 SOURCES += $(MUSLSRC)/fenv/__flt_rounds.c
 
 SOURCES += $(MUSLSRC)/internal/floatscan.c
+SOURCES += $(MUSLSRC)/internal/intscan.c
+SOURCES += $(MUSLSRC)/internal/libc.c
+SOURCES += $(MUSLSRC)/internal/shgetc.c
 
 SOURCES += $(MUSLSRC)/complex/cabs.c
 SOURCES += $(MUSLSRC)/complex/cabsf.c
@@ -480,26 +499,9 @@ SOURCES += $(MUSLSRC)/complex/ctanh.c
 SOURCES += $(MUSLSRC)/complex/ctanhf.c
 SOURCES += $(MUSLSRC)/complex/ctanhl.c
 SOURCES += $(MUSLSRC)/complex/ctanl.c
-SOURCES += $(MUSLSRC)/ctype/__ctype_b_loc.c
-SOURCES += $(MUSLSRC)/ctype/__ctype_get_mb_cur_max.c
-SOURCES += $(MUSLSRC)/ctype/__ctype_tolower_loc.c
-SOURCES += $(MUSLSRC)/ctype/__ctype_toupper_loc.c
-SOURCES += $(MUSLSRC)/stdio/fputwc.c
-SOURCES += $(MUSLSRC)/internal/intscan.c
-SOURCES += $(MUSLSRC)/internal/libc.c
-SOURCES += $(MUSLSRC)/internal/shgetc.c
-SOURCES += $(MUSLSRC)/stdlib/strtod.c
-SOURCES += $(MUSLSRC)/stdio/vfprintf.c
-SOURCES += $(MUSLSRC)/stdio/vfscanf.c
-SOURCES += $(MUSLSRC)/stdio/vfwprintf.c
-SOURCES += $(MUSLSRC)/stdio/vsnprintf.c
-SOURCES += $(MUSLSRC)/stdio/vsscanf.c
-SOURCES += $(MUSLSRC)/stdio/vswprintf.c
-SOURCES += $(MUSLSRC)/stdio/__toread.c
-SOURCES += $(MUSLSRC)/stdlib/abs.c
-SOURCES += $(MUSLSRC)/stdlib/labs.c
-SOURCES += $(MUSLSRC)/stdlib/llabs.c
+
 SOURCES += $(MUSLSRC)/legacy/getpagesize.c
+
 SOURCES += $(MUSLSRC)/prng/rand.c
 
 OBJECTS = $(SOURCES:.c=.o)

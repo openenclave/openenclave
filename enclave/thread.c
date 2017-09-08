@@ -464,7 +464,6 @@ int OE_CondBroadcast(
     }
     OE_SpinUnlock(&cond->lock);
 
-    /* ATTN: write OCALL that does all this in one call */
     for (OE_ThreadData* p = waiters.front; p; p = p->next)
         _ThreadWake(p);
 

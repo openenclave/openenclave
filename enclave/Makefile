@@ -20,10 +20,6 @@ CFLAGS += -fno-stack-protector
 CFLAGS += -fvisibility=hidden
 CFLAGS += -Wmissing-prototypes
 CFLAGS += -Wstrict-prototypes
-CFLAGS += -fno-builtin-memcpy
-CFLAGS += -fno-builtin-memset
-CFLAGS += -fno-builtin-__vfprintf_chk
-CFLAGS += -fno-builtin-__memset_chk
 
 INCLUDES += -I$(INCDIR)
 

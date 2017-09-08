@@ -48,4 +48,92 @@ OE_ECALL void Test(void* args_)
 
     /* Test the OE_Setjmp/OE_Longjmp functions */
     args->setjmpResult = TestSetjmp();
+
+    /* Test snprintf() */
+    {
+        {
+            char buf[128];
+            int n = OE_Snprintf(buf, sizeof(buf), "%d", 2147483647);
+            OE_Assert(OE_Strcmp(buf, "2147483647") == 0);
+            OE_Assert(n == 10);
+        }
+
+        {
+            char buf[6];
+            int n = OE_Snprintf(buf, sizeof(buf), "%d", 2147483647);
+            OE_Assert(OE_Strcmp(buf, "21474") == 0);
+            OE_Assert(n == 10);
+        }
+
+        {
+            char buf[2];
+            int n = OE_Snprintf(buf, sizeof(buf), "%d", 2147483647);
+            OE_Assert(OE_Strcmp(buf, "2") == 0);
+            OE_Assert(n == 10);
+        }
+
+        {
+            char buf[1];
+            int n = OE_Snprintf(buf, sizeof(buf), "%d", 2147483647);
+            OE_Assert(OE_Strcmp(buf, "") == 0);
+            OE_Assert(n == 10);
+        }
+
+        {
+            int n = OE_Snprintf(NULL, 0, "%d", 2147483647);
+            OE_Assert(n == 10);
+        }
+
+        {
+            char buf[128];
+            int n = OE_Snprintf(buf, sizeof(buf), "UINT_MAX=%u", 4294967295U);
+            OE_Assert(OE_Strcmp(buf, "UINT_MAX=4294967295") == 0);
+            OE_Assert(n == 19);
+        }
+
+        {
+            char buf[128];
+            int n = OE_Snprintf(buf, sizeof(buf), "INT_MAX=%u", 2147483647);
+            OE_Assert(OE_Strcmp(buf, "INT_MAX=2147483647") == 0);
+            OE_Assert(n == 18);
+        }
+
+        {
+            char buf[128];
+            int n = OE_Snprintf(buf, sizeof(buf), "INT_MIN=%d", -2147483647-1);
+            OE_Assert(OE_Strcmp(buf, "INT_MIN=-2147483648") == 0);
+            OE_Assert(n == 19);
+        }
+
+        {
+            char buf[128];
+            int n = OE_Snprintf(buf, sizeof(buf), "ULONG_MAX=%lu", 
+                18446744073709551615UL);
+            OE_Assert(OE_Strcmp(buf, "ULONG_MAX=18446744073709551615") == 0);
+            OE_Assert(n == 30);
+        }
+
+        {
+            char buf[128];
+            int n = OE_Snprintf(buf, sizeof(buf), "LONG_MAX=%ld", 
+                9223372036854775807);
+            OE_Assert(OE_Strcmp(buf, "LONG_MAX=9223372036854775807") == 0);
+            OE_Assert(n == 28);
+        }
+
+        {
+            char buf[128];
+            int n = OE_Snprintf(buf, sizeof(buf), "LONG_MIN=%ld", 
+                -9223372036854775807-1);
+            OE_Assert(OE_Strcmp(buf, "LONG_MIN=-9223372036854775808") == 0);
+            OE_Assert(n == 29);
+        }
+        {
+            char buf[12];
+            int n = OE_Snprintf(buf, sizeof(buf), "LONG_MIN=%ld", 
+                -9223372036854775807-1);
+            OE_Assert(OE_Strcmp(buf, "LONG_MIN=-9") == 0);
+            OE_Assert(n == 29);
+        }
+    }
 }

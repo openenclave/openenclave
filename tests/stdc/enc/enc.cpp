@@ -186,4 +186,10 @@ OE_ECALL void Test(void* args_)
     timespec req = { 1, 0 };
     timespec rem;
     nanosleep(&req, &rem);
+
+#if 0
+    printf("UINT_MIN=%u UINT_MAX=%u\n", 0, UINT_MAX);
+    printf("INT_MIN=%d INT_MAX=%d\n", INT_MIN, INT_MAX);
+    printf("LONG_MIN=%ld LONG_MAX=%ld\n", LONG_MIN, LONG_MAX);
+#endif
 }

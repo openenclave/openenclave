@@ -137,7 +137,6 @@ OE_Result OE_GetReportForRemoteAttestation(
 
 catch:
 
-    /* ATTN: this causes heap corruption! */
     if (args)
         OE_HostFree(args);
 

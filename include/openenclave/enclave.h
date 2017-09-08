@@ -125,13 +125,7 @@ void __OE_HandleMain(
 
 size_t OE_Strlen(const char* s);
 
-size_t OE_Wcslen(const wchar_t* s);
-
 int OE_Strcmp(const char* s1, const char* s2);
-
-int OE_Wcscmp(const wchar_t* s1, const wchar_t* s2);
-
-char *OE_Strcpy(char* dest, const char* src);
 
 size_t OE_Strlcpy(char* dest, const char* src, size_t size);
 
@@ -153,15 +147,6 @@ int OE_Memcmp(const void *s1, const void *s2, size_t n);
 
 void OE_Abort(void);
 
-/*
-**==============================================================================
-**
-** OE_Snprintf()
-** OE_Vsnprintf()
-**
-**==============================================================================
-*/
-
 /**
  * Produce output according to a given format string.
  *
@@ -182,11 +167,28 @@ void OE_Abort(void);
  * \param size size of \b str parameter
  * \param fmt limited printf style format 
  *
- * \returns The number of characters written
+ * \returns The number of characters that would be written excluding the 
+ * zero-terminator. If this value is greater or equal to \u size, then the 
+ * string was truncated.
  *
  */
 int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap);
 
+/**
+ * Produce output according to a given format string.
+ *
+ * This function is similar to snprintf() but has limited support for format
+ * types. See OE_Vsnprintf() for details on these limits.
+ *
+ * \param str write output to this string
+ * \param size size of \b str parameter
+ * \param fmt limited printf style format 
+ *
+ * \returns The number of characters that would be written excluding the 
+ * zero-terminator. If this value is greater or equal to \u size, then the 
+ * string was truncated.
+ *
+ */
 OE_PRINTF_FORMAT(3, 4)
 int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
 
@@ -201,6 +203,8 @@ int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
 int OE_HostPuts(const char* str);
 
 int OE_HostPrint(const char* str);
+
+int OE_HostVprintf(const char* fmt, OE_va_list ap_);
 
 /**
  * Print formatted characters to the host's console.

@@ -110,17 +110,45 @@ done:
     return ret;
 }
 
-int OE_HostPrintf(const char* fmt, ...)
+int OE_HostVprintf(const char* fmt, OE_va_list ap_)
 {
-    char buf[1024];
+    char buf[256];
+    char *p = buf;
+    int n;
 
-    OE_va_list ap;
-    OE_va_start(ap, fmt);
-    int n = OE_Vsnprintf(buf, sizeof(buf), fmt, ap);
-    OE_va_end(ap);
+    /* Try first with a fixed-length scratch buffer */
+    {
+        OE_va_list ap;
+        OE_va_copy(ap, ap_);
+        n = OE_Vsnprintf(buf, sizeof(buf), fmt, ap);
+        OE_va_end(ap);
+    }
 
-    OE_HostPrint(buf);
+    /* If string was truncated, retry with correctly sized buffer */
+    if (n >= sizeof(buf))
+    {
+        if (!(p = OE_StackAlloc(n + 1, 0)))
+            return -1;
+        
+        OE_va_list ap;
+        OE_va_copy(ap, ap_);
+        n = OE_Vsnprintf(p, n + 1, fmt, ap);
+        OE_va_end(ap);
+    }
+
+    OE_HostPrint(p);
 
     return n;
 }
 
+int OE_HostPrintf(const char* fmt, ...)
+{
+    int n;
+
+    OE_va_list ap;
+    OE_va_start(ap, fmt);
+    n = OE_HostVprintf(fmt, ap);
+    OE_va_end(ap);
+
+    return n;
+}
