@@ -1,3 +1,6 @@
+oesgx
+=====
+
 This directory contains the oesgx tool, which determines the level of 
 SGX support for the given CPU. It printfs one of these:
 
@@ -9,3 +12,4 @@ For example:
 
     $ ./oesgx
     1
+

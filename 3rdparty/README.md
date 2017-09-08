@@ -1,3 +1,5 @@
+3rdparty
+========
 
 This directory contains third-party software used in OpenEnclave. It contains
 the following directories:
