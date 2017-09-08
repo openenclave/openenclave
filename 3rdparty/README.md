@@ -6,11 +6,11 @@ includes:
 
 - [musl](musl) - Standard C library implementation (used in oelibc)
 
-- [libcxx](libcxx) - C++ library with STL
+- [libcxx](libcxx) - Standard C++ library
 
-- [libcxxrt](libcxxrt) - C++ runtime library with RTTI support
+- [libcxxrt](libcxxrt) - C++ runtime support library
 
-- [libunwind](libunwind) - C++ exception unwinding
+- [libunwind](libunwind) - C++ exception unwinding library
 
 - [mbedtls](mbedtls) - Crypto library
 
