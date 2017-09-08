@@ -1,0 +1,12 @@
+prereqs
+=======
+
+This directory contains a makefile to build and install OpenEnclave 
+prerequisites, including:
+
+- Package dependencies
+
+- Intel(R) SGX driver
+
+- Intel(R) SGX AESM service
+

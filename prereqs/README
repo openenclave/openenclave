@@ -1,8 +1,0 @@
-This directory builds and installs OpenEnclave prerequisites, including:
-
-    (1) Package dependencies
-
-    (2) Intel(R) SGX driver
-
-    (3) Intel(R) SGX AESM service
-
