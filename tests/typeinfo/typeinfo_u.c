@@ -1,4 +1,5 @@
 #include <openenclave/host.h>
+#include <stdlib.h>
 #include "typeinfo_u.h"
 #include "types.h"
 

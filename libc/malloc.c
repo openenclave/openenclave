@@ -1,35 +1,38 @@
-#define _GNU_SOURCE
-#include <stddef.h>
-#include <stdlib.h>
 #include <openenclave/enclave.h>
+#include <openenclave/bits/globals.h>
+#include <openenclave/bits/fault.h>
 
-void *malloc(size_t size)
-{
-    return OE_Malloc(size);
-}
+#define HAVE_MMAP 0
+#define LACKS_UNISTD_H
+#define LACKS_SYS_PARAM_H
+#define LACKS_SYS_TYPES_H
+#define LACKS_TIME_H
+#define NO_MALLOC_STATS 1
+#define MALLOC_FAILURE_ACTION
+#define MORECORE sbrk
+#define ABORT OE_Abort()
+#define USE_DL_PREFIX
+#define LACKS_STDLIB_H
+#define LACKS_STRING_H
+#define LACKS_ERRNO_H
+#define size_t size_t
+#define ptrdiff_t ptrdiff_t
+#define memset OE_Memset
+#define memcpy OE_Memcpy
+#define sbrk OE_Sbrk
+#define EINVAL 28
+#define ENOMEM 49
 
-void free(void *ptr)
-{
-    OE_Free(ptr);
-}
+void* OE_Sbrk(ptrdiff_t increment);
 
-void *calloc(size_t nmemb, size_t size)
-{
-    return OE_Calloc(nmemb, size);
-}
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-prototypes"
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#include "../3rdparty/dlmalloc/malloc.c"
 
-void *realloc(void *ptr, size_t size)
-{
-    return OE_Realloc(ptr, size);
-}
-
-void *memalign(size_t alignment, size_t size)
-{
-    return OE_Memalign(alignment, size);
-}
-
-int posix_memalign(void **memptr, size_t alignment, size_t size)
-{
-    extern int dlposix_memalign(void **memptr, size_t alignment, size_t size);
-    return dlposix_memalign(memptr, alignment, size);
-}
+OE_WEAK_ALIAS(dlmalloc, malloc);
+OE_WEAK_ALIAS(dlcalloc, calloc);
+OE_WEAK_ALIAS(dlrealloc, realloc);
+OE_WEAK_ALIAS(dlfree, free);
+OE_WEAK_ALIAS(dlmemalign, memalign);
+OE_WEAK_ALIAS(dlposix_memalign, posix_memalign);

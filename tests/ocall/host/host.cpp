@@ -48,22 +48,6 @@ int main(int argc, const char* argv[])
         assert(args.out == args.in);
     }
 
-    /* Call TestAllocator() */
-    {
-        TestAllocatorArgs args;
-        args.ret = -1;
-        OE_Result result = OE_CallEnclave(enclave, "TestAllocator", &args);
-        assert(result == OE_OK);
-        assert(args.ret == 0);
-    }
-
-    /* Call Test3() */
-    {
-        OE_Result result = OE_CallEnclave(enclave, "Test3", NULL);
-        assert(result == OE_OK);
-        assert(_func1Called);
-    }
-
     /* Call Test4() */
     {
         OE_Result result = OE_CallEnclave(enclave, "Test4", NULL);

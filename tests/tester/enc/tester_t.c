@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <stdlib.h>
 #include "tester_t.h"
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
@@ -1287,7 +1288,7 @@ OE_ECALL void __ReturnUint32(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1331,7 +1332,7 @@ OE_ECALL void __ReturnStr(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1375,7 +1376,7 @@ OE_ECALL void __ReturnDate(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1419,7 +1420,7 @@ OE_ECALL void __ReturnObject(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1444,7 +1445,7 @@ OE_ECALL void __ReturnObjects(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, false, (void*)&__a->count, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, false, (void*)&__a->count, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1469,7 +1470,7 @@ OE_ECALL void __ReturnObjects(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1513,7 +1514,7 @@ OE_ECALL void __ReturnLinkedList(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1538,7 +1539,7 @@ OE_ECALL void __TestStrdup(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->s, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->s, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1563,7 +1564,7 @@ OE_ECALL void __TestStrdup(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1589,11 +1590,11 @@ OE_ECALL void __CopyObject(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->dest, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->dest, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->src, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->src, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1627,7 +1628,7 @@ OE_ECALL void __CopyObject(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1653,7 +1654,7 @@ OE_ECALL void __CopyObjects(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, false, (void*)__a->src, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)__a->src, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1683,7 +1684,7 @@ OE_ECALL void __CopyObjects(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1714,27 +1715,27 @@ OE_ECALL void __ECALL_MultipleParams(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->strIn, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->strIn, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->numIn, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->numIn, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 3, true, (void*)&__a->objectIn, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 3, true, (void*)&__a->objectIn, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 4, true, (void*)&__a->strOut, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 4, true, (void*)&__a->strOut, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 5, true, (void*)&__a->numOut, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 5, true, (void*)&__a->numOut, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 6, true, (void*)&__a->objectOut, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 6, true, (void*)&__a->objectOut, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1781,7 +1782,7 @@ OE_ECALL void __ECALL_MultipleParams(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1831,7 +1832,7 @@ OE_ECALL void __GetObjectRef(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1856,7 +1857,7 @@ OE_ECALL void __ModifyObject(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->object, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->object, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1889,7 +1890,7 @@ OE_ECALL void __ModifyObject(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1916,15 +1917,15 @@ OE_ECALL void __TestStrlcpy(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 1, true, (void*)&__a->dest, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 1, true, (void*)&__a->dest, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->src, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->src, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 3, false, (void*)&__a->dsize, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 3, false, (void*)&__a->dsize, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -1955,7 +1956,7 @@ OE_ECALL void __TestStrlcpy(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -1982,15 +1983,15 @@ OE_ECALL void __TestOptQualifier(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 1, true, (void*)&__a->p1, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 1, true, (void*)&__a->p1, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->p2, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->p2, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 3, false, (void*)&__a->p1size, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 3, false, (void*)&__a->p1size, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2021,7 +2022,7 @@ OE_ECALL void __TestOptQualifier(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -2047,11 +2048,11 @@ OE_ECALL void __ReturnIntPtr(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->p, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->p, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->n, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->n, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2085,7 +2086,7 @@ OE_ECALL void __ReturnIntPtr(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -2110,7 +2111,7 @@ OE_ECALL void __TestCallback(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 0, true, (void*)&__a->func, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 0, true, (void*)&__a->func, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2131,7 +2132,7 @@ OE_ECALL void __TestCallback(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -2157,7 +2158,7 @@ OE_ECALL void __TestIntPtrRef(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->n, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->n, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2187,7 +2188,7 @@ OE_ECALL void __TestIntPtrRef(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -2233,7 +2234,7 @@ OE_ECALL void __TestBufferOverun(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -2277,7 +2278,7 @@ OE_ECALL void __ReturnEnclaveMemory(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -2305,19 +2306,19 @@ OE_ECALL void __TestBufferCopy(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, __args, 0, true, (void*)&__a->dest, OE_Malloc);
+    __r = OE_InitArg(__ti, __args, 0, true, (void*)&__a->dest, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->src, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->src, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->n, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, false, (void*)&__a->n, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 3, false, (void*)&__a->forceOverwrite, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 3, false, (void*)&__a->forceOverwrite, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2345,7 +2346,7 @@ OE_ECALL void __TestBufferCopy(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -2435,7 +2436,7 @@ OE_EXTERNC OE_Result OCALL_MultipleParams(
     /*** return value ***/
     /********************/
 
-    __r = OE_SetArg(__ti, __a, 0, 0, ret, OE_Malloc);
+    __r = OE_SetArg(__ti, __a, 0, 0, ret, malloc);
     if (__r != OE_OK)
         goto done;
 

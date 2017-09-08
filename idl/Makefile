@@ -3,7 +3,7 @@
 
 include ../mak/defs.mak
 
-ARCHIVE = $(LIBDIR)/enclave/liboeenclave.a
+ARCHIVE = $(LIBDIR)/enclave/liboeidl.a
 
 CC = gcc
 CXX = g++
@@ -25,16 +25,13 @@ CFLAGS += -fno-builtin-memset
 CFLAGS += -fno-builtin-__vfprintf_chk
 CFLAGS += -fno-builtin-__memset_chk
 
-INCLUDES += -I$(INCDIR)
+INCLUDES += -I$(INCDIR) -I$(INCDIR)/openenclave/libc
 
 DEFINES = -DOE_BUILD_ENCLAVE
 
 SOURCES += $(wildcard *.c)
 
 OBJECTS = $(SOURCES:.c=.o)
-OBJECTS += main.o
-OBJECTS += exit.o
-OBJECTS += abort.o
 
 archive: depend
 	$(MAKE) $(ARCHIVE)
@@ -45,20 +42,7 @@ $(ARCHIVE): $(OBJECTS)
 %.o: %.c
 	$(CC) -c $(DEFINES) $(CFLAGS) $(DEFINES) $(INCLUDES) -o $@ $<
 
-enter.o: main.S
-	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o enter.o main.S
-
-exit.o: exit.S
-	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o exit.o exit.S
-
-abort.o: abort.S
-	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o abort.o abort.S
-
 clean:
 	rm -f $(ARCHIVE) $(OBJECTS) .depends
 
 include $(MAKDIR)/depend.mak
-
-asm:
-	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -S report.c
-

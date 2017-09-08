@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <stdlib.h>
 #include "pingpong_t.h"
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 
@@ -178,11 +179,11 @@ OE_ECALL void __Ping(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 0, true, (void*)&__a->in, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 0, true, (void*)&__a->in, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, false, (void*)__a->out, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, false, (void*)__a->out, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -212,7 +213,7 @@ OE_ECALL void __Ping(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }

@@ -1,4 +1,5 @@
 #include <openenclave/host.h>
+#include <stdlib.h>
 #include "tester_u.h"
 OE_INLINE void* _ConstMemcpy(
     const void* dest, 

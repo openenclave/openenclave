@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <stdlib.h>
 #include "file_t.h"
 #include "../types.h"
 
@@ -268,11 +269,11 @@ OE_ECALL void __TestReadFile(void* args)
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->path, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 1, true, (void*)&__a->path, malloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->checksum, OE_Malloc);
+    __r = OE_SetArg(__ti, __args, 2, true, (void*)&__a->checksum, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -306,7 +307,7 @@ OE_ECALL void __TestReadFile(void* args)
         goto done;
 
 done:
-    OE_DestroyStruct(__ti, __a, OE_Free);
+    OE_DestroyStruct(__ti, __a, free);
 
     (void)__r;
 }
@@ -365,7 +366,7 @@ OE_EXTERNC OE_Result Fopen(
     /*** return value ***/
     /********************/
 
-    __r = OE_SetArg(__ti, __a, 0, true, ret, OE_Malloc);
+    __r = OE_SetArg(__ti, __a, 0, true, ret, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -433,7 +434,7 @@ OE_EXTERNC OE_Result Fread(
     /*** return value ***/
     /********************/
 
-    __r = OE_SetArg(__ti, __a, 0, 0, ret, OE_Malloc);
+    __r = OE_SetArg(__ti, __a, 0, 0, ret, malloc);
     if (__r != OE_OK)
         goto done;
 
@@ -497,7 +498,7 @@ OE_EXTERNC OE_Result Fclose(
     /*** return value ***/
     /********************/
 
-    __r = OE_SetArg(__ti, __a, 0, 0, ret, OE_Malloc);
+    __r = OE_SetArg(__ti, __a, 0, 0, ret, malloc);
     if (__r != OE_OK)
         goto done;
 

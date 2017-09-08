@@ -2,6 +2,10 @@ include ../../../mak/defs.mak
 
 CXXSHLIB = pingpongenc
 
+INCLUDES += -I$(INCDIR)/openenclave/libc
+
+LIBRARIES += -loeidl -loelibc
+
 SOURCES = enc.cpp pingpong_t.c
 
 SIGNCONF = sign.conf

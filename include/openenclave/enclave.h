@@ -228,6 +228,8 @@ int OE_HostPutchar(int c);
 **==============================================================================
 */
 
+#if 0
+
 void *OE_Malloc(size_t size);
 
 void OE_Free(void *ptr);
@@ -239,6 +241,8 @@ void *OE_Realloc(void *ptr, size_t size);
 char* OE_Strdup(const char* s);
 
 void *OE_Memalign(size_t alignment, size_t size);
+
+#endif
 
 /**
  * Allocates space on the stack frame of the caller.
@@ -254,7 +258,9 @@ void *OE_Memalign(size_t alignment, size_t size);
  * \returns Returns address of allocated space
  *
  */
-OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(size_t size, size_t alignment)
+OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(
+    size_t size, 
+    size_t alignment)
 {
     void* ptr = __builtin_alloca(size + alignment);
 

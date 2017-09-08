@@ -2,6 +2,10 @@ include ../../../mak/defs.mak
 
 CXXSHLIB = fileenc
 
+INCLUDES += -I$(INCDIR)/openenclave/libc
+
+LIBRARIES += -loeidl -loelibc
+
 SOURCES = enc.cpp file_t.c
 
 SIGNCONF = sign.conf

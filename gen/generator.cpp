@@ -485,7 +485,7 @@ static void _GenTrustedICALL(
         {
             const char text[] =
                 "    __r = OE_SetArg("
-                "__ti, __args, $0, $1, (void*)$2__a->$3, OE_Malloc);\n"
+                "__ti, __args, $0, $1, (void*)$2__a->$3, malloc);\n"
                 "    if (__r != OE_OK)\n"
                 "        goto done;\n\n";
 
@@ -497,7 +497,7 @@ static void _GenTrustedICALL(
             /* Clear output parameter before call dispatch */
             const char text[] =
                 "    __r = OE_InitArg("
-                "__ti, __args, $0, $1, (void*)$2__a->$3, OE_Malloc);\n"
+                "__ti, __args, $0, $1, (void*)$2__a->$3, malloc);\n"
                 "    if (__r != OE_OK)\n"
                 "        goto done;\n\n";
 
@@ -626,7 +626,7 @@ static void _GenTrustedICALL(
         /* ATTN: figure out how to preserve the return value */
         const char text[] =
             "done:\n"
-            "    OE_DestroyStruct(__ti, __a, OE_Free);\n"
+            "    OE_DestroyStruct(__ti, __a, free);\n"
             "\n"
             "    (void)__r;\n";
         os << text;
@@ -894,7 +894,7 @@ static void _GenOCALL(
         if (f & FLAG_PTR)
             f |= FLAG_REF;
 
-        _GenSetArg(os, index, f, "", r.name, "OE_Malloc");
+        _GenSetArg(os, index, f, "", r.name, "malloc");
         index++;
     }
 
@@ -1460,6 +1460,8 @@ int Generator::GenerateSourceFile(
         os << "#include <openenclave/enclave.h>" << endl;
     else
         os << "#include <openenclave/host.h>" << endl;
+
+    os << "#include <stdlib.h>" << endl;
 
     // Include header for this source file:
     {

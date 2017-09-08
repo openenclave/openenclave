@@ -10,23 +10,18 @@
 # include <openenclave/enclave.h>
 #else
 # include <openenclave/host.h>
-# include <string.h>
-# include <stdlib.h>
-# include <stdio.h>
-# include <wchar.h>
-# include <ctype.h>
-# include <stdarg.h>
 #endif
 
-#ifdef OE_BUILD_ENCLAVE
-# define MEMCPY OE_Memcpy
-# define MALLOC OE_Malloc
-# define FREE OE_Free
-#else
-# define MEMCPY memcpy
-# define MALLOC malloc
-# define FREE free
-#endif
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <ctype.h>
+#include <stdarg.h>
+
+#define MEMCPY memcpy
+#define MALLOC malloc
+#define FREE free
 
 /*
 **==============================================================================
