@@ -4,8 +4,8 @@ libc
 This directory contains the scripts for the LIBC library, which is formed
 from the following pieces:
 
-- Sources included from MUSL libc ([located here](../3rdparty/musl)
-- The dlmalloc heap allocator ([located here](../3rdparty/dlmalloc)
+- Sources included from MUSL libc ([located here](../3rdparty/musl))
+- The dlmalloc heap allocator ([located here](../3rdparty/dlmalloc))
 - Additional source files to implement enclave-specific features.
 - Stubs to work around missing definitions needed by libunwind and libcxxrt
 
