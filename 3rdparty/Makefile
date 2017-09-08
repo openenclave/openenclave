@@ -1,30 +1,8 @@
 include ../mak/defs.mak
 
-DIRS += musl
-DIRS += mbedtls
-DIRS += dlmalloc
-DIRS += libcxxrt
-DIRS += libunwind
-DIRS += libcxx
-DIRS += mergecxx
-#DIRS += openssl
+DIRS = dlmalloc musl libcxxrt libunwind libcxx mbedtls
 
-define NL
-
-
-endef
-
-build:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NL) )
-
-clean:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NL) )
-
-distclean:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) distclean $(NL) )
-
-depend:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NL) )
+include $(MAKDIR)/dirs.mak
 
 CLOC += $(shell find . -name '*.cpp')
 CLOC += $(shell find . -name '*.h')

@@ -22,7 +22,7 @@ endif
 ##
 ##==============================================================================
 
-DIRS = tools/oesgx 3rdparty enclave libc host idl tools tests
+DIRS = tools/oesgx 3rdparty enclave libc libcxx host idl tools tests
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )

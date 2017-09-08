@@ -1,4 +1,4 @@
-include ../../mak/defs.mak
+include ../mak/defs.mak
 
 .PHONY: lib
 
