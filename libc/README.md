@@ -11,9 +11,9 @@ from the following pieces:
 
 Enclave-specific features are defined in these files:
 
-- assert.c -- standard assert() for enclaves.
-- errno.c -- standard posix errno (located in the thread object)
-- pthread.c -- pthreads implementation based on enclave threads.
-- time.c -- time functions based on OCALLs.
-- link.c -- dl_iterate_phdr() (needed by libunwind)
+- assert.c - standard assert() for enclaves
+- errno.c - standard posix errno (located in the thread object)
+- pthread.c - pthreads implementation based on enclave threads
+- time.c - time functions based on OCALLs
+- link.c - dl_iterate_phdr() (needed by libunwind)
 
