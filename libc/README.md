@@ -1,8 +1,7 @@
 libc
 ====
 
-This directory contains the scripts for the LIBC library, which is formed
-from the following pieces:
+This directory contains the oelibc library, formed from the following parts:
 
 - Sources included from MUSL libc ([located here](../3rdparty/musl))
 - The dlmalloc heap allocator ([located here](../3rdparty/dlmalloc))
