@@ -220,30 +220,6 @@ int OE_HostPrintf(const char* fmt, ...);
 
 int OE_HostPutchar(int c);
 
-/*
-**==============================================================================
-**
-** Heap memory allocation:
-**
-**==============================================================================
-*/
-
-#if 0
-
-void *OE_Malloc(size_t size);
-
-void OE_Free(void *ptr);
-
-void *OE_Calloc(size_t nmemb, size_t size);
-
-void *OE_Realloc(void *ptr, size_t size);
-
-char* OE_Strdup(const char* s);
-
-void *OE_Memalign(size_t alignment, size_t size);
-
-#endif
-
 /**
  * Allocates space on the stack frame of the caller.
  *

@@ -121,14 +121,6 @@ static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
         return;
     }
 
-#if 0
-    if (!OE_IsWithinEnclave(args->func, 1))
-    {
-        args->result = OE_FAILURE;
-        return;
-    }
-#endif
-
     /* Get ECALL pages */
     const OE_ECallPages* pages = (const OE_ECallPages*)__OE_GetECallBase();
 
