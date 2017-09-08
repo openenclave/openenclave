@@ -1,4 +1,4 @@
-include ../mak/defs.mak
+include ../../mak/defs.mak
 
 PROGRAM = $(BINDIR)/oesign
 
@@ -18,3 +18,5 @@ CLEAN += log.txt pages.bin out err echoenc.signed.so private.pem
 include $(TOP)/mak/program.mak
 
 tests:
+
+distclean:

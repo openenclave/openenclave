@@ -1,4 +1,4 @@
-include ../mak/defs.mak
+include ../../mak/defs.mak
 
 CFLAGS =
 
@@ -20,3 +20,5 @@ nm:
 
 mc:
 	valgrind --tool=memcheck $(BINDIR)/oeelf echoenc.so
+
+distclean:

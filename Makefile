@@ -22,7 +22,7 @@ endif
 ##
 ##==============================================================================
 
-DIRS = tools/oesgx 3rdparty gen host libc enclave idl elf sign tests
+DIRS = tools/oesgx 3rdparty enclave libc host idl tools tests
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )

@@ -1,4 +1,4 @@
-include ../mak/defs.mak
+include ../../mak/defs.mak
 
 CXXFLAGS = -Wall -Werror
 
@@ -17,3 +17,5 @@ SOURCES +=types.cpp
 LDFLAGS = -lcrypto
 
 include $(MAKDIR)/program.mak
+
+distclean:

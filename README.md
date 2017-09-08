@@ -25,6 +25,29 @@ The OpenEnclave project provides the following documents.
 
 - [OpenEnclave Reference Manual](doc/ReferenceManual.txt)
 
+Source tree layout
+------------------
+
+The files and directories in the top-level directory are described as follows.
+
+- [README.md](README.md) - This README file
+- [LICENSE](LICENSE) - The OpenEnclave license
+- [configure](configure) - Script for configuring the build
+- [3rdparty](3rdparty) - Contains third-party software packages
+- [enclave](enclave) - Contains the source for the oeenclave library
+- [libc](libc) - Contains sources for the oelibc enclave library
+- [idl](idl) - Contains source for the oeidl library
+- [host](host) - Contains source for the oehost library
+- [common](common) - Contains sources that work in the enclave and the host
+- [tools](tools) - Contains command-line tools (oesgx, oesign, oegen, oeelf)
+- [doc](doc) - Contains documentation
+- [include](include) - Contains C header files
+- [prereqs](prereqs) - Contains scripts for installing prerequisite software
+- [mak](mak) - Contains shared make scripts (the build system)
+- [tests](tests) - Constains all test programs, which may also serve as samples
+- [samples](samples) - Constains enclave-development sample sources
+- [scripts](scripts) - Contains Shell scripts
+
 Contributing
 ------------
 
