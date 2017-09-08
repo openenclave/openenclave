@@ -12,6 +12,6 @@ void __OE_AssertFail(
 
     OE_Snprintf(buf, sizeof(buf), "Assertion failed: %s (%s: %s: %d)\n",
         expr, file, function, line);
-    OE_HostPuts(buf);
+    OE_HostPrint(buf);
     OE_Abort();
 }

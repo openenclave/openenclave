@@ -21,21 +21,6 @@ int putchar(int c)
     return OE_HostPutchar(c);
 }
 
-int asprintf(char **strp, const char *fmt, ...)
-{
-    if (!strp)
-        return 0;
-
-    if (!(*strp = malloc(4096)))
-        return 0;
-
-    va_list ap;
-    va_start(ap, fmt);
-    int n = vasprintf(strp, fmt, ap);
-    va_end(ap);
-    return n;
-}
-
 int printf(const char* fmt, ...)
 {
     char buf[1024];
@@ -49,7 +34,7 @@ int printf(const char* fmt, ...)
     n = vsnprintf(buf, sizeof(buf), fmt, ap);
     va_end(ap);
 
-    puts(buf);
+    OE_HostPrint(buf);
 
     return n;
 }
@@ -72,7 +57,7 @@ int fprintf(FILE* stream, const char* fmt, ...)
     n = vsnprintf(buf, sizeof(buf), fmt, ap);
     va_end(ap);
 
-    puts(buf);
+    OE_HostPrint(buf);
 
     return n;
 }
@@ -86,15 +71,13 @@ size_t __fwritex(const unsigned char *restrict s, size_t l, FILE *restrict f)
 
 int __lockfile(FILE *f)
 {
-    puts("__lockfile() not implemented\n");
-    abort();
+    assert("__lockfile() panic" == NULL);
     return 0;
 }
 
 void __unlockfile(FILE *f)
 {
-    puts("__unlockfile() not implemented\n");
-    abort();
+    assert("__unlockfile() panic" == NULL);
 }
 
 int __overflow(FILE *stream, int c)
@@ -104,21 +87,21 @@ int __overflow(FILE *stream, int c)
 
 int getc(FILE *stream)
 {
-    puts("getc() not implemented\n");
-    abort();
+    assert("getc() panic" == NULL);
+    return 0;
 }
 
 int ungetc(int c, FILE *stream)
 {
-    puts("ungetc() not implemented\n");
-    abort();
+    assert("ungetc() panic" == NULL);
+    return -1;
 }
 
 size_t fwrite(
     const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-    puts("fwrite() not implemented\n");
-    abort();
+    assert("fwrite() panic" == NULL);
+    return 0;
 }
 
 int fflush(FILE *stream)
@@ -128,7 +111,7 @@ int fflush(FILE *stream)
 
 void __stdio_exit(void)
 {
-    assert("__stdio_exit_needed() called" == NULL);
+    assert("__stdio_exit() panic" == NULL);
 }
 
 OE_WEAK_ALIAS(__stdio_exit, __stdio_exit_needed);

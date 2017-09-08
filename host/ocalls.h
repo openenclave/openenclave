@@ -2,6 +2,7 @@
 #define _OE_HOST_OCALLS_H
 
 void HandlePuts(uint64_t argIn);
+void HandlePrint(uint64_t argIn);
 void HandlePutchar(uint64_t argIn);
 void HandlePutws(uint64_t argIn);
 

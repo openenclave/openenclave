@@ -176,6 +176,7 @@ SOURCES += $(MUSLSRC)/stdio/snprintf.c
 SOURCES += $(MUSLSRC)/stdio/vasprintf.c
 SOURCES += $(MUSLSRC)/stdio/sscanf.c
 SOURCES += $(MUSLSRC)/stdio/swprintf.c
+SOURCES += $(MUSLSRC)/stdio/asprintf.c
 
 SOURCES += $(MUSLSRC)/stdlib/qsort.c
 SOURCES += $(MUSLSRC)/stdlib/bsearch.c

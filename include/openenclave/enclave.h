@@ -200,6 +200,8 @@ int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
 
 int OE_HostPuts(const char* str);
 
+int OE_HostPrint(const char* str);
+
 /**
  * Print formatted characters to the host's console.
  *

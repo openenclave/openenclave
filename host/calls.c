@@ -357,6 +357,10 @@ static OE_Result _HandleOCALL(
             HandlePuts(argIn);
             break;
 
+        case OE_FUNC_PRINT:
+            HandlePrint(argIn);
+            break;
+
         case OE_FUNC_PUTCHAR:
             HandlePutchar(argIn);
             break;
@@ -393,8 +397,9 @@ static OE_Result _HandleOCALL(
             HandleNanosleep(argIn);
             break;
 
-        default:
-            abort();
+        case OE_FUNC_CALL_ENCLAVE:
+            assert("Invalid OCALL" == NULL);
+            break;
     }
 
     result = OE_OK;

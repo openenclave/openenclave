@@ -33,6 +33,17 @@ void HandlePuts(uint64_t argIn)
         puts(str);
 }
 
+void HandlePrint(uint64_t argIn)
+{
+    const char* str = (const char*)argIn;
+
+    if (str)
+    {
+        printf("%s", str);
+        fflush(stdout);
+    }
+}
+
 void HandlePutchar(uint64_t argIn)
 {
     int c = (int)argIn;
