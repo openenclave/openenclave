@@ -8,7 +8,7 @@ OE_EXTERNC int TestReadFile(
     unsigned int *checksum)
 {
     int rc = -1;
-    FILE* is = OE_NULL;
+    FILE* is = NULL;
     const size_t bufSize = 32;
     unsigned char buf[bufSize];
     OE_Result r;

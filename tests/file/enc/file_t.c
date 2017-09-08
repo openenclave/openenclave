@@ -37,8 +37,8 @@ static const OE_FieldTI _TestReadFileArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_INT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countParam */
+        NULL, /* structTI */
+        NULL, /* countParam */
         OE_OFFSETOF(struct TestReadFileArgs, ret),
         sizeof(int), /* size */
         0, /* subscript */
@@ -47,8 +47,8 @@ static const OE_FieldTI _TestReadFileArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "path", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct TestReadFileArgs, path),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -57,7 +57,7 @@ static const OE_FieldTI _TestReadFileArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "checksum", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structName */
+        NULL, /* structName */
         "1", /* countParam */
         OE_OFFSETOF(struct TestReadFileArgs, checksum),
         sizeof(void*), /* size */
@@ -92,8 +92,8 @@ static const OE_FieldTI _FopenArgs_fields_ti[] =
         OE_FLAG_OCALL|OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "ret", /* name */
         OE_STRUCT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countParam */
+        NULL, /* structTI */
+        NULL, /* countParam */
         OE_OFFSETOF(struct FopenArgs, ret),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -102,8 +102,8 @@ static const OE_FieldTI _FopenArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "filename", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct FopenArgs, filename),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -112,8 +112,8 @@ static const OE_FieldTI _FopenArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "modes", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct FopenArgs, modes),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -149,8 +149,8 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_FLAG_OCALL, /* flags */
         "ret", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countParam */
+        NULL, /* structTI */
+        NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, ret),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -159,7 +159,7 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "ptr", /* name */
         OE_VOID_T, /* type */
-        OE_NULL, /* structName */
+        NULL, /* structName */
         "size", /* countParam */
         OE_OFFSETOF(struct FreadArgs, ptr),
         sizeof(void*), /* size */
@@ -169,8 +169,8 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "size", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, size),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -179,8 +179,8 @@ static const OE_FieldTI _FreadArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "stream", /* name */
         OE_STRUCT_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct FreadArgs, stream),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -212,8 +212,8 @@ static const OE_FieldTI _FcloseArgs_fields_ti[] =
         OE_FLAG_OCALL, /* flags */
         "ret", /* name */
         OE_INT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countParam */
+        NULL, /* structTI */
+        NULL, /* countParam */
         OE_OFFSETOF(struct FcloseArgs, ret),
         sizeof(int), /* size */
         0, /* subscript */
@@ -222,8 +222,8 @@ static const OE_FieldTI _FcloseArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "stream", /* name */
         OE_STRUCT_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct FcloseArgs, stream),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -329,7 +329,7 @@ OE_EXTERNC OE_Result Fopen(
     const OE_StructTI* __ti = &FopenArgs_ti;
     typedef struct FopenArgs __Args;
     __Args __args;
-    __Args* __a = OE_NULL;
+    __Args* __a = NULL;
 
     /**************************/
     /*** create args struct ***/
@@ -392,7 +392,7 @@ OE_EXTERNC OE_Result Fread(
     const OE_StructTI* __ti = &FreadArgs_ti;
     typedef struct FreadArgs __Args;
     __Args __args;
-    __Args* __a = OE_NULL;
+    __Args* __a = NULL;
 
     /**************************/
     /*** create args struct ***/
@@ -466,7 +466,7 @@ OE_EXTERNC OE_Result Fclose(
     const OE_StructTI* __ti = &FcloseArgs_ti;
     typedef struct FcloseArgs __Args;
     __Args __args;
-    __Args* __a = OE_NULL;
+    __Args* __a = NULL;
 
     /**************************/
     /*** create args struct ***/

@@ -107,7 +107,7 @@ static OE_ThreadKey _key = OE_THREADKEY_INITIALIZER;
 
 static void _init()
 {
-    if (OE_ThreadKeyCreate(&_key, OE_NULL) != 0)
+    if (OE_ThreadKeyCreate(&_key, NULL) != 0)
         OE_Abort();
 }
 

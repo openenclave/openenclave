@@ -15,7 +15,7 @@ static int _ThreadWait(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (__OE_OCall(OE_FUNC_THREAD_WAIT, (uint64_t)tcs, OE_NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_THREAD_WAIT, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
 
     return 0;
@@ -25,7 +25,7 @@ static int _ThreadWake(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (__OE_OCall(OE_FUNC_THREAD_WAKE, (uint64_t)tcs, OE_NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_THREAD_WAKE, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
 
     return 0;
@@ -34,7 +34,7 @@ static int _ThreadWake(OE_ThreadData* self)
 static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
 {
     int ret = -1;
-    OE_ThreadWakeWaitArgs* args = OE_NULL;
+    OE_ThreadWakeWaitArgs* args = NULL;
 
     if (!(args = OE_HostMalloc(sizeof(OE_ThreadWakeWaitArgs))))
         goto done;
@@ -42,7 +42,7 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
     args->waiter_tcs = TD_ToTCS((TD*)waiter);
     args->self_tcs = TD_ToTCS((TD*)self);
 
-    if (__OE_OCall(OE_FUNC_THREAD_WAKE_WAIT, (uint64_t)args, OE_NULL) != OE_OK)
+    if (__OE_OCall(OE_FUNC_THREAD_WAKE_WAIT, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     ret = 0;
@@ -72,7 +72,7 @@ Queue;
 
 static void _QueuePushBack(Queue* queue, OE_ThreadData* thread)
 {
-    thread->next = OE_NULL;
+    thread->next = NULL;
 
     if (queue->back)
         queue->back->next = thread;
@@ -91,7 +91,7 @@ static OE_ThreadData* _QueuePopFront(Queue* queue)
         queue->front = queue->front->next;
 
         if (!queue->front)
-            queue->back = OE_NULL;
+            queue->back = NULL;
     }
 
     return thread;
@@ -307,7 +307,7 @@ done:
 
 int OE_MutexUnlock(OE_Mutex* m)
 {
-    OE_ThreadData* waiter = OE_NULL;
+    OE_ThreadData* waiter = NULL;
 
     if (!m)
         return -1;
@@ -395,7 +395,7 @@ int OE_CondWait(
 
     OE_SpinLock(&cond->lock);
     {
-        OE_ThreadData* waiter = OE_NULL;
+        OE_ThreadData* waiter = NULL;
 
         /* Add the self thread to the end of the wait queue */
         _QueuePushBack((Queue*)&cond->queue, self);
@@ -414,7 +414,7 @@ int OE_CondWait(
                 if (waiter)
                 {
                     _ThreadWakeWait(waiter, self);
-                    waiter = OE_NULL;
+                    waiter = NULL;
                 }
                 else 
                 {
@@ -453,7 +453,7 @@ int OE_CondSignal(
 int OE_CondBroadcast(
     OE_Cond* cond)
 {
-    Queue waiters = { OE_NULL, OE_NULL };
+    Queue waiters = { NULL, NULL };
 
     OE_SpinLock(&cond->lock);
     {
@@ -496,7 +496,7 @@ static void** _GetTSDPage(void)
     OE_ThreadData* td = OE_GetThreadData();
 
     if (!td)
-        return OE_NULL;
+        return NULL;
 
     return (void**)((unsigned char*)td + OE_PAGE_SIZE);
 }
@@ -554,7 +554,7 @@ int OE_ThreadKeyDelete(
 
         /* Clear this slot */
         _slots[key].used = false;
-        _slots[key].destructor = OE_NULL;
+        _slots[key].destructor = NULL;
 
         OE_SpinUnlock(&_lock);
     }
@@ -585,10 +585,10 @@ void* OE_ThreadGetSpecific(
     void** tsd_page;
 
     if (key == 0 || key >= MAX_KEYS)
-        return OE_NULL;
+        return NULL;
 
     if (!(tsd_page = _GetTSDPage()))
-        return OE_NULL;
+        return NULL;
 
     return tsd_page[key];
 }

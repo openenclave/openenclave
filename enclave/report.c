@@ -9,9 +9,9 @@ OE_Result SGX_CreateReport(
     SGX_Report* report)
 {
     OE_Result result = OE_UNEXPECTED;
-    SGX_TargetInfo* ti = OE_NULL;
-    SGX_ReportData* rd = OE_NULL;
-    SGX_Report* r = OE_NULL;
+    SGX_TargetInfo* ti = NULL;
+    SGX_ReportData* rd = NULL;
+    SGX_Report* r = NULL;
 
     /* Reject invalid parameters (reportData may be null) */
     if (!targetInfo || !report)
@@ -108,7 +108,7 @@ OE_Result OE_GetReportForRemoteAttestation(
     size_t* reportSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_InitQuoteArgs* args = OE_NULL;
+    OE_InitQuoteArgs* args = NULL;
     SGX_TargetInfo targetInfo;
 
     /* Check report size */
@@ -135,7 +135,7 @@ OE_Result OE_GetReportForRemoteAttestation(
             OE_THROW(OE_OUT_OF_MEMORY);
         }
 
-        OE_TRY(__OE_OCall(OE_FUNC_INIT_QUOTE, (uint64_t)args, OE_NULL));
+        OE_TRY(__OE_OCall(OE_FUNC_INIT_QUOTE, (uint64_t)args, NULL));
         OE_Memcpy(&targetInfo, &args->targetInfo, sizeof(SGX_TargetInfo));
     }
 

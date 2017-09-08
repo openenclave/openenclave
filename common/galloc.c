@@ -90,7 +90,7 @@ static unsigned int _ComputeGuard(const void* ptr)
 OE_INLINE void* _BlockToPtr(Block* block)
 {
     if (!block)
-        return OE_NULL;
+        return NULL;
 
     return block + 1;
 }
@@ -98,7 +98,7 @@ OE_INLINE void* _BlockToPtr(Block* block)
 OE_INLINE Block* _PtrToBlock(void* ptr)
 {
     if (!ptr)
-        return OE_NULL;
+        return NULL;
 
     return (Block*)ptr - 1;
 }
@@ -126,7 +126,7 @@ static int _HashRemove(void* ptr)
 {
     uint64_t index = _Hash(ptr);
     Block* p;
-    Block* prev = OE_NULL;
+    Block* prev = NULL;
 
     for (p = _chains[index]; p; p = p->next)
     {
@@ -195,7 +195,7 @@ void* __OE_GMalloc(
     n = sizeof(Block) + size + sizeof(unsigned int);
 
     if (!(block = (Block*)MALLOC(n)))
-        return OE_NULL;
+        return NULL;
 
     /* Compute guard */
     guard = _ComputeGuard(_BlockToPtr(block));

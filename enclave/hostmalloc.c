@@ -23,7 +23,7 @@ void* OE_HostMalloc(size_t size)
 
     if (__OE_OCall(OE_FUNC_MALLOC, argIn, &argOut) != OE_OK)
     {
-        return OE_NULL;
+        return NULL;
     }
 
     return (void*)argOut;
@@ -61,7 +61,7 @@ void* OE_HostCalloc(size_t nmemb, size_t size)
 
 void OE_HostFree(void* ptr)
 {
-    __OE_OCall(OE_FUNC_FREE, (uint64_t)ptr, OE_NULL);
+    __OE_OCall(OE_FUNC_FREE, (uint64_t)ptr, NULL);
 }
 
 /*
@@ -78,12 +78,12 @@ char* OE_HostStrdup(const char* str)
     size_t len;
 
     if (!str)
-        return OE_NULL;
+        return NULL;
 
     len = OE_Strlen(str);
 
     if (!(p = OE_HostMalloc(len + 1)))
-        return OE_NULL;
+        return NULL;
 
     OE_Memcpy(p, str, len + 1);
 

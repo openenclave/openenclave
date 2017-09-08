@@ -163,14 +163,14 @@ int OE_Memcmp(const void *s1, const void *s2, size_t n)
 char* OE_Strdup(const char* s)
 {
     if (!s)
-        return OE_NULL;
+        return NULL;
 
     size_t len = OE_Strlen(s);
 
     char* p = (char*)OE_Malloc(len + 1);
 
     if (!p)
-        return OE_NULL;
+        return NULL;
 
     OE_Memcpy(p, s, len + 1);
 

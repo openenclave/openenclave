@@ -310,7 +310,7 @@ OE_Result OE_CallHost(
     void *argsIn)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_CallHostArgs* args = OE_NULL;
+    OE_CallHostArgs* args = NULL;
 
     /* Reject invalid parameters */
     if (!func || !argsIn)
@@ -329,7 +329,7 @@ OE_Result OE_CallHost(
     }
 
     /* Call into the host */
-    OE_TRY(__OE_OCall(OE_FUNC_CALL_HOST, (long)args, OE_NULL));
+    OE_TRY(__OE_OCall(OE_FUNC_CALL_HOST, (long)args, NULL));
 
     /* Check the result */
     OE_TRY(args->result);

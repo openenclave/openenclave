@@ -51,7 +51,7 @@ static void* _Calloc(
     void* p;
 
     if (!(p = alloc(n)))
-        return OE_NULL;
+        return NULL;
 
     return MEMSET(p, 0, n);
 }
@@ -64,13 +64,13 @@ static char* _Strdup(
     char* p;
 
     if (!s || !alloc)
-        return OE_NULL;
+        return NULL;
 
     if (n == 0)
         n = STRLEN(s) + 1;
 
     if (!(p = (char*)alloc(n * sizeof(char))))
-        return OE_NULL;
+        return NULL;
 
     MEMSET(p, 0, n * sizeof(char));
     return MEMCPY(p, s, n * sizeof(char));
@@ -84,13 +84,13 @@ static char* _Wcsdup(
     wchar_t* p;
 
     if (!s || !alloc)
-        return OE_NULL;
+        return NULL;
 
     if (n == 0)
         n = WCSLEN(s) + 1;
 
     if (!(p = (wchar_t*)alloc(n * sizeof(wchar_t))))
-        return OE_NULL;
+        return NULL;
 
     MEMSET(p, 0, n * sizeof(char));
     return MEMCPY(p, s, n * sizeof(wchar_t));
@@ -161,7 +161,7 @@ static const OE_FieldTI* _FindFieldTI(
             return fti;
     }
 
-    return OE_NULL;
+    return NULL;
 }
 
 static OE_Result _GetCount(
@@ -903,9 +903,9 @@ static void _PrintStruct(
             size_t elemSize = _GetTypeSize(fti);
             size_t arrSize = 0xFFFFFFFF;
 
-            if (ptr == OE_NULL)
+            if (ptr == NULL)
             {
-                PRINTF("OE_NULL\n");
+                PRINTF("NULL\n");
                 continue;
             }
             else if (fti->flags & OE_FLAG_STRING)
@@ -998,7 +998,7 @@ static OE_Result _ClonePtrField(
     size_t count = 0;
 
     if (ptrOut)
-        *ptrOut = OE_NULL;
+        *ptrOut = NULL;
 
     if (!sti || !sin || !fti || !ptrIn || !ptrOut || !alloc)
         OE_THROW(OE_INVALID_PARAMETER);
@@ -1056,7 +1056,7 @@ catch:
     {
         if (ptrOut && *ptrOut)
         {
-            *ptrOut = OE_NULL;
+            *ptrOut = NULL;
         }
     }
 
@@ -1088,7 +1088,7 @@ static OE_Result _CopyField(
     else if (fti->flags & OE_FLAG_PTR)
     {
         const void* finp = *(const void**)fin;
-        void* foutp = OE_NULL;
+        void* foutp = NULL;
 
         if (!finp)
             OE_THROW(OE_OK);
@@ -1183,7 +1183,7 @@ OE_Result OE_CloneStruct(
     void* (alloc)(size_t size))
 {
     if (sout)
-        *sout = OE_NULL;
+        *sout = NULL;
 
     /* Check for null parameters */
     if (!sti || !sin || !alloc)
@@ -1464,12 +1464,12 @@ OE_Result OE_ClearArg(
                 if (fti->type == OE_CHAR_T)
                 {
                     dealloc(ptr);
-                    *(void**)arg = OE_NULL;
+                    *(void**)arg = NULL;
                 }
                 else if (fti->type == OE_WCHAR_T)
                 {
                     dealloc(ptr);
-                    *(void**)arg = OE_NULL;
+                    *(void**)arg = NULL;
                 }
                 else
                     OE_THROW(OE_UNEXPECTED);
@@ -1502,7 +1502,7 @@ OE_Result OE_ClearArg(
                     OE_TRY(_DestroyStructs(fti->sti, ptr, count, dealloc));
 
                     dealloc(ptr);
-                    *(void**)arg = OE_NULL;
+                    *(void**)arg = NULL;
                 }
                 else
                     OE_TRY(_DestroyStructs(fti->sti, arg, count, dealloc));
@@ -1517,7 +1517,7 @@ OE_Result OE_ClearArg(
                         OE_THROW(OE_OK);
 
                     dealloc(ptr);
-                    *(void**)arg = OE_NULL;
+                    *(void**)arg = NULL;
                 }
                 else
                 {
@@ -1626,7 +1626,7 @@ OE_Result OE_SetArg(
     void* (alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_FieldTI* fti = OE_NULL;
+    const OE_FieldTI* fti = NULL;
     const void* field;
     size_t count = 0;
 
@@ -1778,7 +1778,7 @@ OE_Result OE_InitArg(
     void* (alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_FieldTI* fti = OE_NULL;
+    const OE_FieldTI* fti = NULL;
     size_t count = 0;
 
     /* Check null parameters */

@@ -4,7 +4,7 @@
 void *OE_StackAlloc(size_t size, size_t alignment)
 {
     if (!size)
-        return OE_NULL;
+        return NULL;
 
     void* ptr = __builtin_alloca(size + alignment);
 

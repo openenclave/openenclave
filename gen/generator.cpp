@@ -546,7 +546,7 @@ static void _GenTrustedICALL(
                      * void* pointer to the object.
                      */
                     const char text[] =
-                        "__args->$0 ? &__a->$0 : OE_NULL";
+                        "__args->$0 ? &__a->$0 : NULL";
                     os << sub(text, p.name);
                 }
                 else
@@ -781,7 +781,7 @@ static void _GenOCALL(
     os << ind << sub("const OE_StructTI* __ti = &$0Args_ti;\n", fn);
     os << ind << sub("typedef struct $0Args __Args;\n", fn);
     os << ind << "__Args __args;\n";
-    os << ind << "__Args* __a = OE_NULL;\n" << endl;
+    os << ind << "__Args* __a = NULL;\n" << endl;
 
     os << "    /**************************/\n";
     os << "    /*** create args struct ***/\n";
@@ -1151,13 +1151,13 @@ static int _GenFieldTypeInfo(
         if (f.flags & FLAG_STRUCT && !(f.flags & FLAG_UNCHECKED))
             os << ind << sub("&$0_ti, /* structTI */\n",  f.type);
         else
-            os << ind << "OE_NULL, /* structTI */\n";
+            os << ind << "NULL, /* structTI */\n";
 
         // OE_FieldTI.countField:
         if (f.flags & FLAG_COUNT)
             os << ind << '"' << f.qvals.count << "\", /* countField */\n";
         else
-            os << ind << "OE_NULL, /* countField */\n";
+            os << ind << "NULL, /* countField */\n";
 
         // OE_FieldTI.offset:
         os << ind << 
@@ -1278,13 +1278,13 @@ static int _GenReturnTypeTypeInfo(
         if (r.flags & FLAG_STRUCT && !(r.flags & FLAG_UNCHECKED))
             os << ind << sub("&$0_ti, /* structTI */\n",  r.type);
         else
-            os << ind << "OE_NULL, /* structTI */\n";
+            os << ind << "NULL, /* structTI */\n";
 
         // OE_FieldTI.countParam:
         if (r.flags & FLAG_COUNT)
             os << ind << '"' << r.qvals.count << "\", /* countParam */\n";
         else
-            os << ind << "OE_NULL, /* countParam */\n";
+            os << ind << "NULL, /* countParam */\n";
 
         // OE_FieldTI.offset:
         os << ind << "OE_OFFSETOF(struct " << f.name << "Args, " 
@@ -1335,13 +1335,13 @@ static int _GenParamTypeInfo(
         if (p.flags & FLAG_STRUCT && !(p.flags & FLAG_UNCHECKED))
             os << ind << sub("&$0_ti, /* structTI */\n",  p.type);
         else
-            os << ind << "OE_NULL, /* structName */\n";
+            os << ind << "NULL, /* structName */\n";
 
         // OE_FieldTI.countParam:
         if (p.flags & FLAG_COUNT)
             os << ind << '"' << p.qvals.count << "\", /* countParam */\n";
         else
-            os << ind << "OE_NULL, /* countParam */\n";
+            os << ind << "NULL, /* countParam */\n";
 
         // OE_FieldTI.offset:
         os << ind << "OE_OFFSETOF(struct " << f.name << "Args, " 

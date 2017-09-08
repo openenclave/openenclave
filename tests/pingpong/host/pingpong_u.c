@@ -34,8 +34,8 @@ static const OE_FieldTI _PingArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "in", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct PingArgs, in),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -44,8 +44,8 @@ static const OE_FieldTI _PingArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "out", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct PingArgs, out),
         sizeof(char) * 128, /* size */
         128, /* subscript */
@@ -78,8 +78,8 @@ static const OE_FieldTI _PongArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "in", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct PongArgs, in),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -88,8 +88,8 @@ static const OE_FieldTI _PongArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_OUT|OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "out", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct PongArgs, out),
         sizeof(char) * 128, /* size */
         128, /* subscript */
@@ -122,8 +122,8 @@ static const OE_FieldTI _LogArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "str", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct LogArgs, str),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -132,8 +132,8 @@ static const OE_FieldTI _LogArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "x", /* name */
         OE_UINT64_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct LogArgs, x),
         sizeof(uint64_t), /* size */
         0, /* subscript */

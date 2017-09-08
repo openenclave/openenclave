@@ -63,10 +63,12 @@
 #define OE_TRACE printf("OE_TRACE: %s(%u): %s()\n", \
     __FILE__, __LINE__, __FUNCTION__)
 
-#ifdef __cplusplus
-# define OE_NULL 0L
-#else
-# define OE_NULL ((void*)0)
+#ifndef NULL
+# ifdef __cplusplus
+#  define NULL 0L
+# else
+#  define NULL ((void*)0)
+# endif
 #endif
 
 #define OE_WEAK_ALIAS(OLD, NEW) \

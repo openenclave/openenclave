@@ -42,8 +42,8 @@ static const OE_FieldTI _MyStruct_fields_ti[] =
         0, /* flags */
         "x", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyStruct, x),
         sizeof(uint32_t), /* size */
         0, /* subscript */
@@ -52,7 +52,7 @@ static const OE_FieldTI _MyStruct_fields_ti[] =
         OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "data", /* name */
         OE_VOID_T, /* type */
-        OE_NULL, /* structTI */
+        NULL, /* structTI */
         "size", /* countField */
         OE_OFFSETOF(struct MyStruct, data),
         sizeof(void*), /* size */
@@ -62,8 +62,8 @@ static const OE_FieldTI _MyStruct_fields_ti[] =
         0, /* flags */
         "size", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyStruct, size),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -72,8 +72,8 @@ static const OE_FieldTI _MyStruct_fields_ti[] =
         OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "str", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyStruct, str),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -108,7 +108,7 @@ static const OE_FieldTI _DeepStruct_fields_ti[] =
         "mine", /* name */
         OE_STRUCT_T, /* type */
         &MyStruct_ti, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* countField */
         OE_OFFSETOF(struct DeepStruct, mine),
         sizeof(struct MyStruct) * 3, /* size */
         3, /* subscript */
@@ -132,8 +132,8 @@ static const OE_FieldTI _MyObject_fields_ti[] =
         0, /* flags */
         "id", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyObject, id),
         sizeof(uint32_t), /* size */
         0, /* subscript */
@@ -142,8 +142,8 @@ static const OE_FieldTI _MyObject_fields_ti[] =
         OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "name", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyObject, name),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -168,7 +168,7 @@ static const OE_FieldTI _EmbeddedMyObject_fields_ti[] =
         "object1", /* name */
         OE_STRUCT_T, /* type */
         &MyObject_ti, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* countField */
         OE_OFFSETOF(struct EmbeddedMyObject, object1),
         sizeof(struct MyObject) * 1, /* size */
         1, /* subscript */
@@ -178,7 +178,7 @@ static const OE_FieldTI _EmbeddedMyObject_fields_ti[] =
         "object4", /* name */
         OE_STRUCT_T, /* type */
         &MyObject_ti, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* countField */
         OE_OFFSETOF(struct EmbeddedMyObject, object4),
         sizeof(struct MyObject) * 4, /* size */
         4, /* subscript */
@@ -198,7 +198,7 @@ static const OE_FieldTI _EmbeddedMyObject_fields_ti[] =
         "object0", /* name */
         OE_STRUCT_T, /* type */
         &MyObject_ti, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* countField */
         OE_OFFSETOF(struct EmbeddedMyObject, object0),
         sizeof(struct MyObject) * 0, /* size */
         0, /* subscript */
@@ -242,8 +242,8 @@ static const OE_FieldTI _ListElem_fields_ti[] =
         OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "name", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct ListElem, name),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -267,8 +267,8 @@ static const OE_FieldTI _Object_fields_ti[] =
         0, /* flags */
         "id", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Object, id),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -277,8 +277,8 @@ static const OE_FieldTI _Object_fields_ti[] =
         OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "name", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Object, name),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -302,8 +302,8 @@ static const OE_FieldTI _Embedded_fields_ti[] =
         0, /* flags */
         "xxx", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Embedded, xxx),
         sizeof(uint32_t), /* size */
         0, /* subscript */
@@ -312,8 +312,8 @@ static const OE_FieldTI _Embedded_fields_ti[] =
         0, /* flags */
         "yyy", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Embedded, yyy),
         sizeof(uint32_t), /* size */
         0, /* subscript */
@@ -322,8 +322,8 @@ static const OE_FieldTI _Embedded_fields_ti[] =
         OE_FLAG_ARRAY, /* flags */
         "str", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Embedded, str),
         sizeof(char) * 16, /* size */
         16, /* subscript */
@@ -332,8 +332,8 @@ static const OE_FieldTI _Embedded_fields_ti[] =
         OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "cstr", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Embedded, cstr),
         sizeof(char) * 16, /* size */
         16, /* subscript */
@@ -342,8 +342,8 @@ static const OE_FieldTI _Embedded_fields_ti[] =
         OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "wstr", /* name */
         OE_WCHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Embedded, wstr),
         sizeof(wchar_t) * 16, /* size */
         16, /* subscript */
@@ -362,8 +362,8 @@ static const OE_FieldTI _Embedded_fields_ti[] =
         0, /* flags */
         "nobjects", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Embedded, nobjects),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -397,8 +397,8 @@ static const OE_FieldTI _Container_fields_ti[] =
         0, /* flags */
         "size", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Container, size),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -407,8 +407,8 @@ static const OE_FieldTI _Container_fields_ti[] =
         0, /* flags */
         "b", /* name */
         OE_BOOL_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Container, b),
         sizeof(bool), /* size */
         0, /* subscript */
@@ -418,7 +418,7 @@ static const OE_FieldTI _Container_fields_ti[] =
         "e", /* name */
         OE_STRUCT_T, /* type */
         &Embedded_ti, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* countField */
         OE_OFFSETOF(struct Container, e),
         sizeof(struct Embedded), /* size */
         0, /* subscript */
@@ -428,7 +428,7 @@ static const OE_FieldTI _Container_fields_ti[] =
         "ae", /* name */
         OE_STRUCT_T, /* type */
         &Embedded_ti, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* countField */
         OE_OFFSETOF(struct Container, ae),
         sizeof(struct Embedded) * 2, /* size */
         2, /* subscript */
@@ -437,7 +437,7 @@ static const OE_FieldTI _Container_fields_ti[] =
         OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "arrData", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structTI */
+        NULL, /* structTI */
         "arrSize", /* countField */
         OE_OFFSETOF(struct Container, arrData),
         sizeof(void*), /* size */
@@ -447,8 +447,8 @@ static const OE_FieldTI _Container_fields_ti[] =
         0, /* flags */
         "arrSize", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Container, arrSize),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -457,8 +457,8 @@ static const OE_FieldTI _Container_fields_ti[] =
         OE_FLAG_UNCHECKED, /* flags */
         "definedStruct", /* name */
         OE_STRUCT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Container, definedStruct),
         sizeof(struct DefinedStruct), /* size */
         0, /* subscript */
@@ -467,8 +467,8 @@ static const OE_FieldTI _Container_fields_ti[] =
         OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "undefinedStruct", /* name */
         OE_STRUCT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Container, undefinedStruct),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -477,7 +477,7 @@ static const OE_FieldTI _Container_fields_ti[] =
         OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "varr", /* name */
         OE_VOID_T, /* type */
-        OE_NULL, /* structTI */
+        NULL, /* structTI */
         "sizevarr", /* countField */
         OE_OFFSETOF(struct Container, varr),
         sizeof(void*), /* size */
@@ -487,8 +487,8 @@ static const OE_FieldTI _Container_fields_ti[] =
         0, /* flags */
         "sizevarr", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct Container, sizevarr),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -512,8 +512,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "s8", /* name */
         OE_INT8_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s8),
         sizeof(int8_t), /* size */
         0, /* subscript */
@@ -522,8 +522,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "u8", /* name */
         OE_UINT8_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, u8),
         sizeof(uint8_t), /* size */
         0, /* subscript */
@@ -532,8 +532,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "s16", /* name */
         OE_INT16_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s16),
         sizeof(int16_t), /* size */
         0, /* subscript */
@@ -542,8 +542,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "u16", /* name */
         OE_UINT16_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, u16),
         sizeof(uint16_t), /* size */
         0, /* subscript */
@@ -552,8 +552,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "s32", /* name */
         OE_INT32_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s32),
         sizeof(int32_t), /* size */
         0, /* subscript */
@@ -562,8 +562,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "u32", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, u32),
         sizeof(uint32_t), /* size */
         0, /* subscript */
@@ -572,8 +572,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "s64", /* name */
         OE_INT64_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s64),
         sizeof(int64_t), /* size */
         0, /* subscript */
@@ -582,8 +582,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "u64", /* name */
         OE_UINT64_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, u64),
         sizeof(uint64_t), /* size */
         0, /* subscript */
@@ -592,8 +592,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "r32", /* name */
         OE_FLOAT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, r32),
         sizeof(float), /* size */
         0, /* subscript */
@@ -602,8 +602,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "r64", /* name */
         OE_DOUBLE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, r64),
         sizeof(double), /* size */
         0, /* subscript */
@@ -612,8 +612,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "by", /* name */
         OE_UINT8_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, by),
         sizeof(uint8_t), /* size */
         0, /* subscript */
@@ -622,8 +622,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "b", /* name */
         OE_BOOL_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, b),
         sizeof(bool), /* size */
         0, /* subscript */
@@ -632,8 +632,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "c", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, c),
         sizeof(char), /* size */
         0, /* subscript */
@@ -642,8 +642,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "w", /* name */
         OE_WCHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, w),
         sizeof(wchar_t), /* size */
         0, /* subscript */
@@ -652,8 +652,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "s", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, s),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -662,8 +662,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "ss", /* name */
         OE_SSIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, ss),
         sizeof(ssize_t), /* size */
         0, /* subscript */
@@ -672,7 +672,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_FLAG_PTR|OE_FLAG_COUNT|OE_FLAG_STRING, /* flags */
         "str", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
+        NULL, /* structTI */
         "strn", /* countField */
         OE_OFFSETOF(struct AllTypes, str),
         sizeof(void*), /* size */
@@ -682,8 +682,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "strn", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, strn),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -692,8 +692,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "wcs", /* name */
         OE_WCHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, wcs),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -702,8 +702,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "stra", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, stra),
         sizeof(char) * 32, /* size */
         32, /* subscript */
@@ -712,8 +712,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "wcsa", /* name */
         OE_WCHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, wcsa),
         sizeof(wchar_t) * 32, /* size */
         32, /* subscript */
@@ -723,7 +723,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         "obj1", /* name */
         OE_STRUCT_T, /* type */
         &Object_ti, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, obj1),
         sizeof(struct Object), /* size */
         0, /* subscript */
@@ -742,7 +742,7 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "data", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structTI */
+        NULL, /* structTI */
         "size", /* countField */
         OE_OFFSETOF(struct AllTypes, data),
         sizeof(void*), /* size */
@@ -752,8 +752,8 @@ static const OE_FieldTI _AllTypes_fields_ti[] =
         0, /* flags */
         "size", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct AllTypes, size),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -777,8 +777,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "s8", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, s8),
         sizeof(char), /* size */
         0, /* subscript */
@@ -787,8 +787,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "u8", /* name */
         OE_UINT8_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, u8),
         sizeof(uint8_t), /* size */
         0, /* subscript */
@@ -797,8 +797,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "s16", /* name */
         OE_SHORT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, s16),
         sizeof(short), /* size */
         0, /* subscript */
@@ -807,8 +807,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "u16", /* name */
         OE_UINT16_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, u16),
         sizeof(uint16_t), /* size */
         0, /* subscript */
@@ -817,8 +817,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "s32", /* name */
         OE_INT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, s32),
         sizeof(int), /* size */
         0, /* subscript */
@@ -827,8 +827,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "u32", /* name */
         OE_UINT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, u32),
         sizeof(unsigned int), /* size */
         0, /* subscript */
@@ -837,8 +837,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "s64", /* name */
         OE_INT64_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, s64),
         sizeof(int64_t), /* size */
         0, /* subscript */
@@ -847,8 +847,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "u64", /* name */
         OE_UINT64_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, u64),
         sizeof(uint64_t), /* size */
         0, /* subscript */
@@ -857,8 +857,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "r32", /* name */
         OE_FLOAT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, r32),
         sizeof(float), /* size */
         0, /* subscript */
@@ -867,8 +867,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "r64", /* name */
         OE_DOUBLE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, r64),
         sizeof(double), /* size */
         0, /* subscript */
@@ -877,8 +877,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "ss", /* name */
         OE_INT64_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, ss),
         sizeof(int64_t), /* size */
         0, /* subscript */
@@ -887,8 +887,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "s", /* name */
         OE_UINT64_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, s),
         sizeof(uint64_t), /* size */
         0, /* subscript */
@@ -897,8 +897,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "sl", /* name */
         OE_ULONG_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, sl),
         sizeof(signed long), /* size */
         0, /* subscript */
@@ -907,8 +907,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "ui", /* name */
         OE_UINT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, ui),
         sizeof(unsigned int), /* size */
         0, /* subscript */
@@ -917,8 +917,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "ul", /* name */
         OE_ULONG_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, ul),
         sizeof(unsigned long), /* size */
         0, /* subscript */
@@ -927,8 +927,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         OE_FLAG_PTR|OE_FLAG_UNCHECKED, /* flags */
         "usp", /* name */
         OE_USHORT_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, usp),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -937,8 +937,8 @@ static const OE_FieldTI _NewTypes_fields_ti[] =
         0, /* flags */
         "uc", /* name */
         OE_UCHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct NewTypes, uc),
         sizeof(unsigned char), /* size */
         0, /* subscript */
@@ -962,8 +962,8 @@ static const OE_FieldTI _MyFunctionArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_STRING, /* flags */
         "cstr", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyFunctionArgs, cstr),
         sizeof(void*), /* size */
         0, /* subscript */
@@ -972,7 +972,7 @@ static const OE_FieldTI _MyFunctionArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT|OE_FLAG_STRING, /* flags */
         "str", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
+        NULL, /* structTI */
         "nstr", /* countField */
         OE_OFFSETOF(struct MyFunctionArgs, str),
         sizeof(void*), /* size */
@@ -982,8 +982,8 @@ static const OE_FieldTI _MyFunctionArgs_fields_ti[] =
         0, /* flags */
         "nstr", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyFunctionArgs, nstr),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -992,7 +992,7 @@ static const OE_FieldTI _MyFunctionArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "u32", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structTI */
+        NULL, /* structTI */
         "1", /* countField */
         OE_OFFSETOF(struct MyFunctionArgs, u32),
         sizeof(void*), /* size */
@@ -1002,8 +1002,8 @@ static const OE_FieldTI _MyFunctionArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_ARRAY, /* flags */
         "u32a", /* name */
         OE_UINT32_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyFunctionArgs, u32a),
         sizeof(uint32_t) * 4, /* size */
         4, /* subscript */
@@ -1012,8 +1012,8 @@ static const OE_FieldTI _MyFunctionArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_ARRAY|OE_FLAG_STRING, /* flags */
         "stra", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* structTI */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyFunctionArgs, stra),
         sizeof(char) * 32, /* size */
         32, /* subscript */
@@ -1023,7 +1023,7 @@ static const OE_FieldTI _MyFunctionArgs_fields_ti[] =
         "obj", /* name */
         OE_STRUCT_T, /* type */
         &Object_ti, /* structTI */
-        OE_NULL, /* countField */
+        NULL, /* countField */
         OE_OFFSETOF(struct MyFunctionArgs, obj),
         sizeof(struct Object), /* size */
         0, /* subscript */
@@ -1083,8 +1083,8 @@ static const OE_FieldTI _UCopyArgs_fields_ti[] =
         OE_FLAG_OCALL, /* flags */
         "ret", /* name */
         OE_INT32_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countParam */
+        NULL, /* structTI */
+        NULL, /* countParam */
         OE_OFFSETOF(struct UCopyArgs, ret),
         sizeof(int32_t), /* size */
         0, /* subscript */
@@ -1093,7 +1093,7 @@ static const OE_FieldTI _UCopyArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "p", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
+        NULL, /* structName */
         "m", /* countParam */
         OE_OFFSETOF(struct UCopyArgs, p),
         sizeof(void*), /* size */
@@ -1103,8 +1103,8 @@ static const OE_FieldTI _UCopyArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "m", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct UCopyArgs, m),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -1113,7 +1113,7 @@ static const OE_FieldTI _UCopyArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "q", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
+        NULL, /* structName */
         "n", /* countParam */
         OE_OFFSETOF(struct UCopyArgs, q),
         sizeof(void*), /* size */
@@ -1123,8 +1123,8 @@ static const OE_FieldTI _UCopyArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "n", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct UCopyArgs, n),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -1174,8 +1174,8 @@ static const OE_FieldTI _TCopyArgs_fields_ti[] =
         OE_FLAG_ECALL, /* flags */
         "ret", /* name */
         OE_INT32_T, /* type */
-        OE_NULL, /* structTI */
-        OE_NULL, /* countParam */
+        NULL, /* structTI */
+        NULL, /* countParam */
         OE_OFFSETOF(struct TCopyArgs, ret),
         sizeof(int32_t), /* size */
         0, /* subscript */
@@ -1184,7 +1184,7 @@ static const OE_FieldTI _TCopyArgs_fields_ti[] =
         OE_FLAG_OUT|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "p", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
+        NULL, /* structName */
         "m", /* countParam */
         OE_OFFSETOF(struct TCopyArgs, p),
         sizeof(void*), /* size */
@@ -1194,8 +1194,8 @@ static const OE_FieldTI _TCopyArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "m", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct TCopyArgs, m),
         sizeof(size_t), /* size */
         0, /* subscript */
@@ -1204,7 +1204,7 @@ static const OE_FieldTI _TCopyArgs_fields_ti[] =
         OE_FLAG_IN|OE_FLAG_CONST|OE_FLAG_PTR|OE_FLAG_COUNT, /* flags */
         "q", /* name */
         OE_CHAR_T, /* type */
-        OE_NULL, /* structName */
+        NULL, /* structName */
         "n", /* countParam */
         OE_OFFSETOF(struct TCopyArgs, q),
         sizeof(void*), /* size */
@@ -1214,8 +1214,8 @@ static const OE_FieldTI _TCopyArgs_fields_ti[] =
         OE_FLAG_IN, /* flags */
         "n", /* name */
         OE_SIZE_T, /* type */
-        OE_NULL, /* structName */
-        OE_NULL, /* countParam */
+        NULL, /* structName */
+        NULL, /* countParam */
         OE_OFFSETOF(struct TCopyArgs, n),
         sizeof(size_t), /* size */
         0, /* subscript */

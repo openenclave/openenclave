@@ -40,7 +40,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(TD, simulate) == TD_simulate);
 
 OE_ThreadData* OE_GetThreadData()
 {
-    OE_ThreadData* td = OE_NULL;
+    OE_ThreadData* td = NULL;
 
     asm volatile(
         "mov %%gs:0, %%rax\n\t"
@@ -235,7 +235,7 @@ void TD_Init(TD* td)
         td->depth = 0;
 
         /* List of callsites is initially empty */
-        td->callsites = OE_NULL;
+        td->callsites = NULL;
     }
 }
 
