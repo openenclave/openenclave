@@ -2,17 +2,17 @@
 This directory contains third-party software used in OpenEnclave. This
 includes:
 
-- dlmalloc - Provides dynamic memory allocaiton (used in oelibc)
+- [dlmalloc](dlmalloc) - Dynamic memory allocator (used in oelibc)
 
-- musl - Provides the standard C library implementation (used in oelibc)
+- [musl](musl) - Standard C library implementation (used in oelibc)
 
-- openssl - OpenSSL compiled for use in enclaves
+- [libcxx](libcxx) - C++ library with STL
 
-- libcxx - C++ library with STL (used in C++ enclaves)
+- [libcxxrt](libcxxrt) - C++ runtime library with RTTI support
 
-- libcxxrt - A C++ runtime library (used in C++ enclaves)
+- [libunwind](libunwind) - C++ exception unwinding
 
-- libunwind - Provides C++ exception unwinding (used in C++ enclaves)
+- [mbedtls](mbedtls) - Crypto library
 
-- mbedtls - Provides crypto feature (used in enclaves)
+- [openssl](openssl) - Crypto library
 
