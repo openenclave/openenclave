@@ -170,4 +170,17 @@ typedef struct _OE_Page
 OE_Page
 OE_ALIGNED(OE_PAGE_SIZE);
 
+/*
+**==============================================================================
+**
+** OE_va_list:
+**
+**==============================================================================
+*/
+
+#define OE_va_list __builtin_va_list
+#define OE_va_start __builtin_va_start
+#define OE_va_arg __builtin_va_arg
+#define OE_va_end __builtin_va_end
+
 #endif /* _OE_TYPES_H */

@@ -1,29 +1,34 @@
 enclave
 =======
 
-This directory contains the sources for the oeenclave library that provides
-the enclave intrinsics. This includes:
+This directory contains the sources for the oeenclave library, which implements
+the enclave intrinsics. The main parts include:
 
-- The enclave entry and exit functions: 
-  see [main.S](main.S) and [exit.S](exit.S)
+- Enclave entry ([main.S](main.S))and exit ([exit.S](exit.S)) functions
 
-- The enclave threads implementation (see [thread.c](thread.c))
+- Enclave initialization ([init.c](init.c))
 
-assert.c
-calls.c
-globals.c
-hostmalloc.c
-hostprintf.c
-hostputchar.c
-hostputs.c
-init.c
-jump.c
-memory.c
-report.c
-sbrk.c
-snprintf.c
-spinlock.c
-string.c
-td.c
-thread.c
-vsnprintf.c
+- ECALL and OCALL dispatching logic ([calls.c](calls.c))
+
+- The thread data (TD) structure ([td.c](td.c))
+
+- Spinlock implementation ([spinlock.c](spinlock.c))
+
+- Enclave threads implementation ([thread.c](thread.c))
+
+- Functions for testing enclave memory boundaries ([memory.c](memory.c))
+
+- Globals set during enclave signing and loading ([globals.c](globals.c))
+
+- Host calls ([hostcalls.c](hostcalls.c))
+
+- Standard-like string functions ([string.c](string.c))
+
+- Assertion implementation ([assert.c](assert.c))
+
+- Enclave setjmp and longjmp functions ([jump.c](jump.c))
+
+- Functions for report creation (ENCLU.EREPORT) ([report.c](report.c))
+
+- Enclave sbrk() implementation ([sbrk.c](sbrk.c))
+

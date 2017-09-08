@@ -81,24 +81,24 @@ static void _CheckMemoryBoundaries(void)
 
 void OE_InitializeEnclave(TD* td)
 {
-    /* Prevent two threads from executing below */
+    if (td->initialized == 0)
     {
-        static OE_Spinlock spin = OE_SPINLOCK_INITIALIZER;
-        OE_SpinLock(&spin);
+        static OE_Spinlock _spin = OE_SPINLOCK_INITIALIZER;
 
-        if (td->initialized)
+        /* Prevent more than one thread from entering here */
+        OE_SpinLock(&_spin);
         {
-            OE_SpinUnlock(&spin);
-            return;
+            if (td->initialized == 0)
+            {
+                /* Relocate symbols */
+                _ApplyRelocations();
+
+                /* Check that memory boundaries are within enclave */
+                _CheckMemoryBoundaries();
+
+                td->initialized = 1;
+            }
         }
-
-        td->initialized = 1;
-        OE_SpinUnlock(&spin);
+        OE_SpinUnlock(&_spin);
     }
-
-    /* Check that global variables (set by host) are really within enclave */
-    _CheckMemoryBoundaries();
-
-    /* Relocate symbols */
-    _ApplyRelocations();
 }

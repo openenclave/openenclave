@@ -162,19 +162,11 @@ void OE_Abort(void);
 **==============================================================================
 */
 
-#define OE_va_list __builtin_va_list
-#define OE_va_start __builtin_va_start
-#define OE_va_arg __builtin_va_arg
-#define OE_va_end __builtin_va_end
-
-OE_PRINTF_FORMAT(3, 4)
-int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
-
 /**
  * Produce output according to a given format string.
  *
  * This function is similar to vsnprintf() but has limited support for format
- * types. It only supports the following:
+ * types. It only supports the following without width specifiers.
  *     - "%s"
  *     - "%u"
  *     - "%d"
@@ -184,6 +176,7 @@ int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
  *     - "%lx"
  *     - "%zu"
  *     - "%zd"
+ *     - "%p"
  *
  * \param str write output to this string
  * \param size size of \b str parameter
@@ -193,6 +186,9 @@ int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
  *
  */
 int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap);
+
+OE_PRINTF_FORMAT(3, 4)
+int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
 
 /*
 **==============================================================================

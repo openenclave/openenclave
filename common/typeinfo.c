@@ -1,15 +1,16 @@
 #define OE_TRACE_LEVEL 0
 
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <ctype.h>
+#include <stdarg.h>
+
 #ifdef OE_BUILD_ENCLAVE
 # include <openenclave/enclave.h>
 #else
 # include <openenclave/host.h>
-# include <string.h>
-# include <stdlib.h>
-# include <stdio.h>
-# include <wchar.h>
-# include <ctype.h>
-# include <stdarg.h>
 #endif
 
 #include <openenclave/bits/galloc.h>
@@ -26,23 +27,13 @@
 **==============================================================================
 */
 
-#ifdef OE_BUILD_ENCLAVE
-# define WCSLEN OE_Wcslen
-# define STRLEN OE_Strlen
-# define STRCMP OE_Strcmp
-# define MEMCMP OE_Memcmp
-# define WCSCMP OE_Wcscmp
-# define MEMSET OE_Memset
-# define MEMCPY OE_Memcpy
-#else
-# define WCSLEN wcslen
-# define STRLEN strlen
-# define STRCMP strcmp
-# define MEMCMP memcmp
-# define WCSCMP wcscmp
-# define MEMSET memset
-# define MEMCPY memcpy
-#endif
+#define WCSLEN wcslen
+#define STRLEN strlen
+#define STRCMP strcmp
+#define MEMCMP memcmp
+#define WCSCMP wcscmp
+#define MEMSET memset
+#define MEMCPY memcpy
 
 static void* _Calloc(
     size_t n,
