@@ -212,7 +212,7 @@ int OE_HostPuts(const char* str);
  *
  * \param fmt limited printf style format 
  *
- * \returns the number of characters written
+ * \returns The number of characters written
  *
  */
 OE_PRINTF_FORMAT(1, 2)
@@ -239,6 +239,22 @@ void *OE_Realloc(void *ptr, size_t size);
 char* OE_Strdup(const char* s);
 
 void *OE_Memalign(size_t alignment, size_t size);
+
+/**
+ * Allocates space on the stack frame of the caller.
+ *
+ * This function allocates \u size bytes of space on the stack frame of the 
+ * caller. The returned address will be a multiple of \u alignment (if
+ * non-zero). The allocated space is automatically freed when the calling 
+ * function returns. If the stack overflows, the behavior is undefined.
+ *
+ * \param size the number of bytes to allocate
+ * \param alignment alignment requirement (see above)
+ *
+ * \returns Returns address of allocated space
+ *
+ */
+void *OE_StackAlloc(size_t size, size_t alignment);
 
 /*
 **==============================================================================
