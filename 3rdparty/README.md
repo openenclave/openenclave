@@ -1,21 +1,18 @@
 
-This directory contains third-party software used by OpenEnclave. This
+This directory contains third-party software used in OpenEnclave. This
 includes:
 
-    MUSL (downloaded on the fly):
-        http://www.musl-libc.org/releases/musl-1.1.10.tar.gz
+- dlmalloc - Provides dynamic memory allocaiton (used in oelibc)
 
-    openssl (downloaded on the fly):
-        https://www.openssl.org/source/openssl-1.0.21.tar.gz
+- musl - Provides the standard C library implementation (used in oelibc)
 
-    libcxxrt (downloaded on the fly):
-        https://github.com/pathscale/libcxxrt
+- openssl - OpenSSL compiled for use in enclaves
 
-    libcxx.llvm (resides in source tree):
-        http://llvm.org/svn/llvm-project/libcxx/trunk
-        https://github.com/dutor/stl/tree/master/llvm/include
-        (see http://libcxx.llvm.org)
+- libcxx - C++ library with STL (used in C++ enclaves)
 
-    libunwind (resides in source tree):
-        https://github.com/pathscale/libunwind
+- libcxxrt - A C++ runtime library (used in C++ enclaves)
+
+- libunwind - Provides C++ exception unwinding (used in C++ enclaves)
+
+- mbedtls - Provides crypto feature (used in enclaves)
 
