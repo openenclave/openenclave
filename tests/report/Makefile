@@ -18,8 +18,10 @@ depend:
 
 ENCLAVE = ./enc/reportenc.signed.so
 
+ifneq ($(OE_SIMULATION),1)
 tests:
 	host/reporthost $(ENCLAVE)
+endif
 
 mc:
 	$(MEMCHECK) host/reporthost $(ENCLAVE)

@@ -19,6 +19,13 @@ const void* __OE_GetRelocBase(void);
 const void* __OE_GetRelocEnd(void);
 const size_t __OE_GetRelocSize(void);
 
+/* ECall */
+extern unsigned long long __oe_baseECallPage;
+extern unsigned long long __oe_numECallPages;
+const void* __OE_GetECallBase(void);
+const void* __OE_GetECallEnd(void);
+const size_t __OE_GetECallSize(void);
+
 /* Heap */
 extern unsigned long long __oe_baseHeapPage;
 extern unsigned long long __oe_numHeapPages;

@@ -13,8 +13,8 @@ typedef struct _ECallNameAddr
     /* Name of ECALL function */
     char* name;
 
-    /* Real address of ECALL function */
-    uint64_t addr;
+    /* Virtual address of ECALL function */
+    uint64_t vaddr;
 }
 ECallNameAddr;
 

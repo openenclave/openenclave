@@ -115,7 +115,7 @@ static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
 {
     OE_CallEnclaveArgs* args = (OE_CallEnclaveArgs*)argIn;
 
-    if (!args->func)
+    if (!args->vaddr)
     {
         args->result = OE_INVALID_PARAMETER;
         return;
@@ -129,9 +129,29 @@ static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
     }
 #endif
 
-    /* ATTN: check that address is within text segment */
+    /* Get ECALL pages */
+    const OE_ECallPages* pages = (const OE_ECallPages*)__OE_GetECallBase();
 
-    args->func(args->args);
+    /* Check that ECALL pages are valid */
+    if (pages->magic != OE_ECALL_PAGES_MAGIC)
+        OE_Abort();
+
+    /* Check whether function is out of bounds */
+    if (args->func >= pages->num_vaddrs)
+        OE_Abort();
+
+    /* Convert function number to virtual address */
+    uint64_t vaddr = pages->vaddrs[args->func];
+
+    /* Check virtual address against expected value */
+    if (vaddr != args->vaddr)
+        OE_Abort();
+
+    /* Translate function address from virtual to real address */
+    OE_EnclaveFunc func = (OE_EnclaveFunc)(
+        (uint64_t)__OE_GetEnclaveBase() + vaddr);
+
+    func(args->args);
     args->result = OE_OK;
     
     if (argOut)

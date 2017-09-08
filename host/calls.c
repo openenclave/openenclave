@@ -611,16 +611,26 @@ catch:
 **==============================================================================
 */
 
-static OE_EnclaveFunc _FindEnclaveFunc(
+static uint64_t _FindEnclaveFunc(
     OE_Enclave* enclave,
-    const char* func)
+    const char* func,
+    uint64_t* index)
 {
     size_t i;
+
+    if (index)
+        *index = 0;
+
+    if (!enclave || !func || !index)
+        return NULL;
 
     for (i = 0; i < enclave->num_ecalls; i++)
     {
         if (strcmp(enclave->ecalls[i].name, func) == 0)
-            return (OE_EnclaveFunc)enclave->ecalls[i].addr;
+        {
+            *index = i;
+            return enclave->ecalls[i].vaddr;
+        }
     }
 
     /* Not found! */
@@ -651,8 +661,11 @@ OE_Result OE_CallEnclave(
 
     /* Initialize the callEnclaveArgs structure */
     {
-        if (!(callEnclaveArgs.func = _FindEnclaveFunc(enclave, func)))
+        if (!(callEnclaveArgs.vaddr = _FindEnclaveFunc(
+            enclave, func, &callEnclaveArgs.func)))
+        {
             OE_THROW(OE_NOT_FOUND);
+        }
 
         callEnclaveArgs.args = args;
         callEnclaveArgs.result = OE_UNEXPECTED;

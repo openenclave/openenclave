@@ -76,7 +76,8 @@ typedef void (*OE_EnclaveFunc)(void* args);
 
 typedef struct OE_CallEnclaveArgs
 {
-    OE_EnclaveFunc func;
+    uint64_t func;
+    uint64_t vaddr;
     void* args;
     OE_Result result;
 }

@@ -55,6 +55,34 @@ const size_t __OE_GetRelocSize()
 /*
 **==============================================================================
 **
+** ECall boundaries:
+**
+**==============================================================================
+*/
+
+OE_EXPORT unsigned long long __oe_baseECallPage;
+OE_EXPORT unsigned long long __oe_numECallPages;
+
+const void* __OE_GetECallBase()
+{
+    const unsigned char* base = __OE_GetEnclaveBase();
+
+    return base + (__oe_baseECallPage * OE_PAGE_SIZE);
+}
+
+const void* __OE_GetECallEnd()
+{
+    return (const uint8_t*)__OE_GetECallBase() + __OE_GetECallSize();
+}
+
+const size_t __OE_GetECallSize()
+{
+    return __oe_numECallPages * OE_PAGE_SIZE;
+}
+
+/*
+**==============================================================================
+**
 ** Heap boundaries:
 **
 **==============================================================================

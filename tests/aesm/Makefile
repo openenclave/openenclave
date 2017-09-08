@@ -21,5 +21,7 @@ all:
 
 include $(TOP)/mak/program.mak
 
+ifneq ($(OE_SIMULATION),1)
 tests:
 	@ ./aesm
+endif

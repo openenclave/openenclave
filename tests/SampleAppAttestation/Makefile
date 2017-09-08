@@ -11,8 +11,10 @@ clean:
 depend:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NEWLINE) )
 
+ifneq ($(OE_SIMULATION),1)
 tests:
 	SampleAppAttestationHost/SampleAppAttestationHost SampleAppAttestation/SampleAppAttestation.signed.so
+endif
 
 mc:
 	$(MEMCHECK) SampleAppAttestationHost/SampleAppAttestationHost SampleAppAttestation/SampleAppAttestation.signed.so

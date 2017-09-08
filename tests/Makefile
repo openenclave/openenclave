@@ -1,10 +1,7 @@
 include ../mak/defs.mak
 .PHONY: tests
 
-ifneq ($(OE_SIMULATION),1)
 DIRS += aesm
-endif
-
 DIRS += SampleAppCRT
 DIRS += SampleApp
 DIRS += echo 
@@ -22,11 +19,8 @@ DIRS += tester
 DIRS += stdc
 DIRS += stdcxx
 DIRS += mbed
-
-ifneq ($(OE_SIMULATION),1)
-  DIRS += report
-  DIRS += SampleAppAttestation 
-endif
+DIRS += report
+DIRS += SampleAppAttestation 
 
 define NL
 
