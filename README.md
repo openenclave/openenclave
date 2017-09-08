@@ -36,6 +36,7 @@ The files and directories in the top-level directory are described as follows.
 - [3rdparty](3rdparty) - Contains third-party software packages
 - [enclave](enclave) - Contains the source for the oeenclave library
 - [libc](libc) - Contains sources for the oelibc enclave library
+- [libcxx](libcxx) - Contains makefile for building the oelibcxx library
 - [idl](idl) - Contains source for the oeidl library
 - [host](host) - Contains source for the oehost library
 - [common](common) - Contains sources that work in the enclave and the host
