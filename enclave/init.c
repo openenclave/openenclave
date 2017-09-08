@@ -64,6 +64,9 @@ static void _CheckMemoryBoundaries(void)
     if (!OE_IsWithinEnclave(__OE_GetRelocBase(), __OE_GetRelocSize()))
         OE_Abort();
 
+    if (!OE_IsWithinEnclave(__OE_GetECallBase(), __OE_GetECallSize()))
+        OE_Abort();
+
     if (!OE_IsWithinEnclave(__OE_GetHeapBase(), __OE_GetHeapSize()))
         OE_Abort();
 }

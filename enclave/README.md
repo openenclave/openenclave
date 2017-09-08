@@ -4,7 +4,7 @@ enclave
 This directory contains the sources for the oeenclave library, which implements
 the enclave intrinsics. The main parts include:
 
-- Enclave entry ([main.S](main.S))and exit ([exit.S](exit.S)) functions
+- Enclave entry ([main.S](main.S)) and exit ([exit.S](exit.S)) functions
 
 - Enclave initialization ([init.c](init.c))
 
