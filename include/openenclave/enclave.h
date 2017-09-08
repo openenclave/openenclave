@@ -170,6 +170,28 @@ void OE_Abort(void);
 OE_PRINTF_FORMAT(3, 4)
 int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
 
+/**
+ * Produce output according to a given format string.
+ *
+ * This function is similar to vsnprintf() but has limited support for format
+ * types. It only supports the following:
+ *     - "%s"
+ *     - "%u"
+ *     - "%d"
+ *     - "%x"
+ *     - "%lu"
+ *     - "%ld"
+ *     - "%lx"
+ *     - "%zu"
+ *     - "%zd"
+ *
+ * \param str write output to this string
+ * \param size size of \b str parameter
+ * \param fmt limited printf style format 
+ *
+ * \returns The number of characters written
+ *
+ */
 int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap);
 
 /*
@@ -182,6 +204,17 @@ int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap);
 
 int OE_HostPuts(const char* str);
 
+/**
+ * Print formatted characters to the host's console.
+ *
+ * This function writes formatted characters to the host console. Is is based
+ * on OE_Vsnprintf(), which has limited support for format types.
+ *
+ * \param fmt limited printf style format 
+ *
+ * \returns the number of characters written
+ *
+ */
 OE_PRINTF_FORMAT(1, 2)
 int OE_HostPrintf(const char* fmt, ...);
 
