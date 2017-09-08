@@ -1,6 +1,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/utils.h>
 #include <openenclave/types.h>
 
 OE_Result SGX_CreateReport(
@@ -31,7 +32,7 @@ OE_Result SGX_CreateReport(
 
     /* Align TARGET INFO on 512 byte boundary */
     {
-        if (!(ti = (SGX_TargetInfo*)OE_Memalign(512, sizeof(SGX_TargetInfo))))
+        if (!(ti = (SGX_TargetInfo*)OE_StackAlloc(sizeof(SGX_TargetInfo), 512)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
         OE_Memcpy(ti, targetInfo, sizeof(SGX_TargetInfo));
@@ -40,7 +41,7 @@ OE_Result SGX_CreateReport(
     /* Align REPORT DATA on 128 byte boundary (if not null) */
     if (reportData)
     {
-        if (!(rd = (SGX_ReportData*)OE_Memalign(128, sizeof(SGX_ReportData))))
+        if (!(rd = (SGX_ReportData*)OE_StackAlloc(sizeof(SGX_ReportData), 128)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
         OE_Memcpy(rd, reportData, sizeof(SGX_ReportData));
@@ -48,13 +49,11 @@ OE_Result SGX_CreateReport(
 
     /* Align REPORT on 512 byte boundary */
     {
-        if (!(r = (SGX_Report*)OE_Memalign(512, sizeof(SGX_Report))))
+        if (!(r = (SGX_Report*)OE_StackAlloc(sizeof(SGX_Report), 512)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
         OE_Memset(r, 0, sizeof(SGX_Report));
     }
-
-    asm volatile("/* @before */\n\t");
 
     /* Invoke EREPORT instruction */
     asm volatile(
@@ -70,8 +69,6 @@ OE_Result SGX_CreateReport(
         "m"(r),
         "i"(ENCLU_EREPORT));
 
-    asm volatile("/* @after */\n\t");
-
     /* Copy REPORT to caller's buffer */
     OE_Memcpy(report, r, sizeof(SGX_Report));
 
@@ -80,22 +77,13 @@ OE_Result SGX_CreateReport(
 catch:
 
     if (ti)
-    {
         OE_Memset(ti, 0, sizeof(SGX_TargetInfo));
-        OE_Free(ti);
-    }
 
     if (rd)
-    {
         OE_Memset(rd, 0, sizeof(SGX_ReportData));
-        OE_Free(rd);
-    }
 
     if (r)
-    {
         OE_Memset(r, 0, sizeof(SGX_Report));
-        OE_Free(r);
-    }
 
     return result;
 }

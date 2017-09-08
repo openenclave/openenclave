@@ -51,6 +51,11 @@ OE_INLINE unsigned long long OE_RoundUpToMultiple(
     return (x + m - 1) / m * m;
 }
 
+OE_INLINE void* OE_AlignPointer(void* ptr, size_t aligment)
+{
+    return (void*)OE_RoundUpToMultiple((uint64_t)ptr, aligment);
+}
+
 void __OE_HexDump(
     const void* data_,
     size_t size);

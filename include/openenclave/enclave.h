@@ -254,7 +254,15 @@ void *OE_Memalign(size_t alignment, size_t size);
  * \returns Returns address of allocated space
  *
  */
-void *OE_StackAlloc(size_t size, size_t alignment);
+OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(size_t size, size_t alignment)
+{
+    void* ptr = __builtin_alloca(size + alignment);
+
+    if (alignment)
+        ptr = (void*)(((uint64_t)ptr + alignment - 1) / alignment * alignment);
+
+    return ptr;
+}
 
 /*
 **==============================================================================
@@ -271,6 +279,28 @@ void* OE_HostCalloc(size_t nmemb, size_t size);
 void OE_HostFree(void* ptr);
 
 char* OE_HostStrdup(const char* str);
+
+/*
+**==============================================================================
+**
+** Assertion:
+**
+**==============================================================================
+*/
+
+void __OE_AssertFail(
+    const char *expr,
+    const char *file,
+    int line,
+    const char *func);
+
+#define OE_Assert(EXPR) \
+    do \
+    { \
+        if (!(EXPR)) \
+            __OE_AssertFail(#EXPR, __FILE__, __LINE__, __FUNCTION__); \
+    } \
+    while (0)
 
 OE_EXTERNC_END
 

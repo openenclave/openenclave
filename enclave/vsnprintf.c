@@ -221,6 +221,11 @@ int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap)
                 s = _S64ToStr(scratch, OE_va_arg(ap, ssize_t));
                 p += 2;
             }
+            else if (p[0] == 'p')
+            {
+                s = _U64ToStr(scratch, (uint64_t)OE_va_arg(ap, void*));
+                p += 1;
+            }
             else
             {
                 return -1;
