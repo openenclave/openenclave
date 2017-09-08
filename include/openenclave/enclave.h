@@ -133,6 +133,10 @@ int OE_Wcscmp(const wchar_t* s1, const wchar_t* s2);
 
 char *OE_Strcpy(char* dest, const char* src);
 
+size_t OE_Strlcpy(char* dest, const char* src, size_t size);
+
+size_t OE_Strlcat(char* dest, const char* src, size_t size);
+
 void *OE_Memcpy(void *dest, const void *src, size_t n);
 
 void *OE_Memset(void *s, int c, size_t n);
@@ -152,12 +156,34 @@ void OE_Abort(void);
 /*
 **==============================================================================
 **
+** OE_Snprintf()
+** OE_Vsnprintf()
+**
+**==============================================================================
+*/
+
+#define OE_va_list __builtin_va_list
+#define OE_va_start __builtin_va_start
+#define OE_va_arg __builtin_va_arg
+#define OE_va_end __builtin_va_end
+
+OE_PRINTF_FORMAT(3, 4)
+int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
+
+int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap);
+
+/*
+**==============================================================================
+**
 ** Functions for writing to the host's console.
 **
 **==============================================================================
 */
 
 int OE_HostPuts(const char* str);
+
+OE_PRINTF_FORMAT(1, 2)
+int OE_HostPrintf(const char* fmt, ...);
 
 int OE_HostPutchar(int c);
 
