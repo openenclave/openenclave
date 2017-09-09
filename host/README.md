@@ -1,15 +1,34 @@
-The builder creates the pages of an enclave image with the following layout:
+host
+====
+
+This directory contains the sources for the oehost library. This library
+supports creating, invoking, and terminating enclaves.
+
+# Enclave Layout
+
+The host creates an enclave image with the following layout (for details, see
+see [create.c](create.c)).
 
         +----------------------------------------+
         | Text pages:                            |
         |     OE_Main() - enclave entry point    |
-        |     OE_Dispatch()                      |
+        |     OE_Exit() - enclave entry routine  |
+        +----------------------------------------+
+        | Relocation pages:                      |
+        |     (contains data relocations)        |
+        +----------------------------------------+
+        | ECALL address pages:                   |
+        {     (ECALL virtual adddresses)         |
         +----------------------------------------+
         | Data pages:                            |
         |     __oe_numPages                      |
+        |     __oe_virtualBaseAddr               |
+        |     __oe_BaseRelocPage                 |
+        |     __oe_numRelocPages                 |
+        |     __oe_BaseECallPage                 |
+        |     __oe_numECallPages                 |
         |     __oe_BaseHeapPage                  |
         |     __oe_numHeapPages                  |
-        |     __oe_virtualBaseAddr               |
         +----------------------------------------+ <--+
         | Guard page                             |    |
         +----------------------------------------+    |
@@ -29,8 +48,8 @@ The builder creates the pages of an enclave image with the following layout:
         +----------------------------------------+    |
         | Guard page                             |    |
         +----------------------------------------+    |
-        | GS (or FS) Segment (holds thread data) |    |
-        |     GS:0 - thread data address         |    |
+        | Segment Page: (FS or GS)               |    |
+        |     (contains thread data structure)   |    |
         +----------------------------------------+    |
         | Thread specific data (TSD) Page        |    |
         +----------------------------------------+ <--+

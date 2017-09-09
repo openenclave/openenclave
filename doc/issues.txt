@@ -1,25 +1,13 @@
 
-    (*) Should we add a list of valid entry points so that the host does
-        not try to jump to an arbitrary address?
-
     (*) Does GCC provide stack protection schemes?
-
-    (*) Can we use the MUSL allocator or some other allocator so we don't
-        have to maintain one.
 
     (*) Can the host set aside some memory when making an ECALL that
         enclave can use when making subsequence OCALLS. Kind of scratch
         area? We should know the size of the parameters.
 
-    (*) Look into mprotect() on enclave memory in simulator mode. We know
-        that this has problems with multi-threading, but could this work
-        when no thread is in the enclave?
-
     (*) Should enclaves be able to create threads?
 
-    (*) Should enclaves be able to handle signals?
-
-    (*) Is there a safe way to an enclave to perform host stack allocation?
+    (*) Can enclaves safely allocate space on the host stack during an OCALL?
 
     (*) Should ORET be assigned the same TCS as the original ECALL used?
 
@@ -27,3 +15,4 @@
         implement a non-reentrant flag?
 
     (*) Do we need to dynamically expand TSD slots (TLS).
+
