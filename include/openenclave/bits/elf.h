@@ -298,6 +298,12 @@ int Elf64_FindDynamicSymbolByName(
     const char* name,
     Elf64_Sym* sym);
 
+int Elf64_FindDynamicSymbolByAddress(
+    const Elf64* elf,
+    Elf64_Addr addr,
+    unsigned int type, /* STT_? */
+    Elf64_Sym* sym);
+
 int Elf64_FindSymbolByAddress(
     const Elf64* elf,
     Elf64_Addr addr,

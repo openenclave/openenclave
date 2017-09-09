@@ -42,6 +42,7 @@
 //==============================================================================
 
 .globl OE_Exit
+.hidden OE_Exit
 .type OE_Exit, @function
 OE_Exit:
 .cfi_startproc

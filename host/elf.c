@@ -572,6 +572,72 @@ done:
     return rc;
 }
 
+int Elf64_FindDynamicSymbolByAddress(
+    const Elf64* elf,
+    Elf64_Addr addr,
+    unsigned int type,
+    Elf64_Sym* sym)
+{
+    int rc = -1;
+    size_t index;
+    const Elf64_Shdr* sh;
+    const Elf64_Sym* symtab;
+    size_t n;
+    size_t i;
+#if 0
+    const char* SECTIONNAME = ".symtab";
+    const Elf64_Word SH_TYPE = SHT_SYMTAB;
+#else
+    const char* SECTIONNAME = ".dynsym";
+    const Elf64_Word SH_TYPE = SHT_DYNSYM;
+#endif
+
+    if (!elf || !sym)
+        goto done;
+
+    /* Find the symbol table section header */
+    if ((index = _FindShdr(elf, SECTIONNAME)) == (size_t)-1)
+        goto done;
+
+    /* Set pointer to section header */
+    if (!(sh = &elf->shdrs[index]))
+        goto done;
+
+    /* If this is not a symbol table */
+    if (sh->sh_type != SH_TYPE)
+        goto done;
+
+    /* Sanity check */
+    if (sh->sh_entsize != sizeof(Elf64_Sym))
+        goto done;
+
+    /* Set pointer to symbol table section */
+    if (!(symtab = (const Elf64_Sym*)elf->sections[index]))
+        goto done;
+
+    /* Calculate number of symbol table entries */
+    n = sh->sh_size / sh->sh_entsize;
+
+    for (i = 1; i < n; i++)
+    {
+        const Elf64_Sym* p = &symtab[i];
+        unsigned int stt = (p->st_info & 0x0F);
+
+        if (stt != type)
+            continue;
+
+        if (p->st_value == addr)
+        {
+            *sym = *p;
+            rc = 0;
+            goto done;
+        }
+    }
+
+done:
+    return rc;
+}
+
 void Elf64_DumpHeader(
     const Elf64_Ehdr* h)
 {

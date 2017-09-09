@@ -16,10 +16,12 @@ void __OE_HexDump(
     {
         printf("%02x", data[i]);
 
+#if 0
         if ((i + 1) % 16 == 0)
             printf("\n");
         else
             printf(" ");
+#endif
     }
 
     printf("\n");
