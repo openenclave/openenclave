@@ -1,8 +1,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/globals.h>
 
-void* OE_Sbrk(ptrdiff_t increment);
-
 void* OE_Sbrk(ptrdiff_t increment)
 {
     static unsigned char* _heapNext;

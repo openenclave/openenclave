@@ -1,12 +1,6 @@
 To-do list:
 ===========
 
-    (A) OE_InitializeEnclave() needs to be sychonized.
-
-    (A) Getting Started: explain how enclave entry points are located.
-
-    (A) Getting started: explain that only data is relocated.
-
     (A) Document APIs with Doxygen
 
     (A) Verify that OCALL and corresponding ORET run on same TCS
