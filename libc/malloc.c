@@ -23,8 +23,6 @@
 #define EINVAL 28
 #define ENOMEM 49
 
-void* OE_Sbrk(ptrdiff_t increment);
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
