@@ -21,3 +21,41 @@
 
 2017-09-05: Finished first draft of "Design Overview" document.
 
+---
+
+2017-09-06: Cleaned up libc to remove uneeded definitions
+
+2017-09-06: Reorganized include directory to get rid of softlinks
+
+2017-09-06: Migrated some symbols to dynamic section to survie stripping
+
+2017-09-07: Started reference manual (refman) document
+
+2017-09-07: Separated IDL into separate oeidl library
+
+2017-09-08: Added many more README files
+
+2017-09-08: For enclave library: remove dependency on libc
+
+2017-09-08: Employed stack allocation in enclave library
+
+2017-09-08: Removed allocator from enclave library
+
+2017-09-08: Implemented simplified OE_Vsnprintf() for enclaves
+
+2017-09-08: Fixed memory overwrite in AESM client
+
+2017-09-08: Fixed configure to convert relative to absolute paths
+
+2017-09-08: Added support for non-SGX test runs
+
+2017-09-08: Wrote oesgx tool to detect SGX-level of support
+
+2017-09-08: Added "make cloc" rule to count lines of original code
+
+2017-09-08: Added ECALL pages to enclave (ECALLs now use function numbers)
+
+2017-09-08: Updated Getting Started guide to explain ECALL pages.
+
+
+
