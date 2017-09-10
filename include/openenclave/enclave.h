@@ -55,8 +55,8 @@ bool OE_IsWithinEnclave(
  * strictly outside the enclave's memory. If so, return true. If any
  * portion of the buffer lies within the enclave's memory, return false.
  *
- * \param The ptr pointer to buffer.
- * \param The size size of buffer.
+ * \param ptr The pointer to buffer.
+ * \param size The size of buffer.
  *
  * \retval true The buffer is strictly outside the enclave.
  * \retval false At least some part of the buffer is within the enclave.

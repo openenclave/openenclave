@@ -107,3 +107,4 @@ include/openenclave/libcxx/
 include/openenclave/oe-mbedtls/
 doc/refman/html/
 doc/refman/latex/
+doc/refman/xml/
