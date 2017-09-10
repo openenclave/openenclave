@@ -272,7 +272,7 @@ bool GenerateFunctionFile(const Element& elem)
 
     // Write the navigation back to index:
     os << "---" << endl;
-    os << "[[index]](index.md)" << endl << endl;
+    os << "[Index](index.md)" << endl << endl;
 
     return true;
 }

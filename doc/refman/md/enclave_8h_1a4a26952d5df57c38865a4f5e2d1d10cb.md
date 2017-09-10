@@ -9,5 +9,5 @@
 ## Description 
 
 ---
-[[index]](index.md)
+[Index](index.md)
 
