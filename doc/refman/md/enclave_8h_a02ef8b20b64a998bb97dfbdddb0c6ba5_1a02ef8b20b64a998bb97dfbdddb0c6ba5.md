@@ -11,23 +11,25 @@ Check whether the given buffer is strictly within the enclave.
 
 Check whether the buffer given by the **ptr** and **size** parameters is strictly within the enclave's memory. If so, return true. If any portion of the buffer lies outside the enclave's memory, return false.
 
+
+
 ## Parameters
 
-### ptr
+### The
 
-pointer to buffer
+ptr pointer to buffer.
 
-### size
+### The
 
-size of buffer
+size size of buffer
 
 ## Return value
 
 ### true
 
-if buffer is strictly within the enclave
+The buffer is strictly within the enclave.
 
 ### false
 
-if any portion of the buffer falls outside the enclave
+At least some part of the buffer is outside the enclave.
 
