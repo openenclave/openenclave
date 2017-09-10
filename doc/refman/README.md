@@ -10,5 +10,10 @@ This directory builds all Doxygen output formats including:
 
 The dox2md tool creates the Markdown files (.md) from the XML files above.
 
-To generate all format, just type "make".
+To makefile provides the following rules:
+
+- make -- builds all the documentation formats
+- make clean -- cleans up all temporarily generated files
+- make browse -- launch firefox to browse the HTML documentation
+- make push -- update the Git repository with the generated .md files 
 

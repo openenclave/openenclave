@@ -32,7 +32,7 @@ OBJECTS += main.o
 OBJECTS += exit.o
 OBJECTS += abort.o
 
-archive: depend
+archive:
 	$(MAKE) $(ARCHIVE)
 
 $(ARCHIVE): $(OBJECTS)

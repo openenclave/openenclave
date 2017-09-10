@@ -23,7 +23,7 @@ OBJECTS = $(SOURCES:.c=.o)
 
 OBJECTS += enter.o entersim.o
 
-build: depend
+build:
 	$(MAKE) $(ARCHIVE)
 
 $(ARCHIVE): $(OBJECTS)

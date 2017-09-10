@@ -33,7 +33,7 @@ SOURCES += $(wildcard *.c)
 
 OBJECTS = $(SOURCES:.c=.o)
 
-archive: depend
+archive:
 	$(MAKE) $(ARCHIVE)
 
 $(ARCHIVE): $(OBJECTS)

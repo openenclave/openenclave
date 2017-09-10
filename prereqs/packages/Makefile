@@ -25,6 +25,8 @@ all: .packages
 	$(INSTALL) pkg-config
 	$(INSTALL) subversion
 	$(INSTALL) cloc
+	$(INSTALL) libexpat1
+	$(INSTALL) libexpat1-dev
 	touch .packages
 
 clean:
