@@ -25,10 +25,10 @@ OE_EXTERNC_BEGIN
 #endif
 
 /**
- * Perform an outside function call (or OCALL) into the host
+ * Perform an outside function call (or OCALL) into the host.
  *
  * Call the host function named \b func, passing it the \b args parameter. The
- * host must provide a host function with the following signature.
+ * host must provide a function with the following signature.
  *
  *     OE_OCALL void (*)(void* args);
  *
@@ -41,7 +41,7 @@ OE_EXTERNC_BEGIN
  *
  * At the hardware layer, this function executes the \b ENCLU.EEXIT instruction 
  * to leave the enclave and enter the host. When the host returns from the 
- * ECALL, it executes the \b ENCLU.EENTER instruction to reenter the enclave.
+ * OCALL, it executes the \b ENCLU.EENTER instruction to reenter the enclave.
  *
  * Note that the return value only indicates whether the OCALL was called and
  * not whether it was successful. The OCALL implementation must define its own

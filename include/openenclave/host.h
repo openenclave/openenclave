@@ -56,7 +56,7 @@ typedef struct _OE_Enclave OE_Enclave;
  *
  * \param enclave This points to the enclave instance upon succeess.
  *
- * \returns If successful, this function returns OE_OK.
+ * \returns Returns OE_OK on success.
  *
  */
 OE_Result OE_CreateEnclave(
@@ -67,18 +67,49 @@ OE_Result OE_CreateEnclave(
 /**
  * Terminates an enclave and reclaims its resources.
  *
- * This function terminates an enclave to reclaims all of its resources. This
+ * This function terminates an enclave and reclaims its resources. This
  * involves unmapping the memory that was mapped by \b OE_CreateEnclave().
  * Once this is peformed, the enclave can no longer be accessed.
  *
  * \param enclave The instance of the enclave to be terminated.
  *
- * \returns If successful, this function return OE_OK
+ * \returns Returns OE_OK on success.
  *
  */
 OE_Result OE_TerminateEnclave(
     OE_Enclave* enclave);
 
+/**
+ * Perform an enclave function call (or ECALL) into the enclave.
+ *
+ * Call the enclave function named \b func, passing it the \b args parameter. 
+ * The enclave must provide a function with the following signature.
+ *
+ *     OE_ECALL void (*)(void* args);
+ *
+ * The meaning of the \b args parameter is defined by the ECALL implementation
+ * and might be null for some implementations.
+ *
+ * At the software layer, this function sends an \b ECALL message to the enclave
+ * and waits for an \b ERET message. Note that the ECALL implementation may 
+ * call back into the host (an OCALL) before returning.
+ *
+ * At the hardware layer, this function executes the \b ENCLU.EENTER 
+ * instruction to enter the enclave. When the enclave returns from the ECALL, 
+ * it executes the \b ENCLU.EEXIT instruction exit the enclave and to resume
+ * host execution.
+ *
+ * Note that the return value only indicates whether the ECALL was called and
+ * not whether it was successful. The ECALL implementation must define its own
+ * error reporting scheme based on the \b args parameter.
+ *
+ * \param func The name of the enclave function that will be called.
+ * \param args The arguments to be passed to the enclave function.
+ *
+ * \retval OE_OK The function was successful.
+ * \retval OE_FAILED The function failed.
+ *
+ */
 OE_Result OE_CallEnclave(
     OE_Enclave* enclave,
     const char* func,
