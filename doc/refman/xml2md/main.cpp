@@ -333,9 +333,6 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
 
         if (kind == "function")
         {
-            if (!GenerateFunction(e, path, os))
-                return false;
-
             Element f;
 
             if (!root.search(
@@ -346,6 +343,14 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
                 err("failed to find function: %s", name.c_str());
                 return false;
             }
+
+            string desc = f["briefdescription"]["para"].chars();
+
+            if (desc.size() == 0)
+                continue;
+
+            if (!GenerateFunction(e, path, os))
+                return false;
 
             if (!GenerateFunctionFile(f))
             {
