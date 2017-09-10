@@ -17,3 +17,7 @@ Check whether the buffer given by the **ptr** and **size** parameters is strictl
 
 pointer to buffer
 
+### size
+
+size of buffer
+
