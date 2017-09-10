@@ -251,7 +251,12 @@ bool GenerateFunctionFile(const Element& elem)
             string type = params[i]["type"].chars();
             string declname = params[i]["declname"].chars();
 
-            os << "        " << type << ' ' << declname;
+            os << "        " << type;
+
+            if (type.size() && type[type.size()-1] != '*')
+                os << ' ';
+            
+            os << declname;
 
             if (i + 1 == params.size())
                 os << ");" << endl;
