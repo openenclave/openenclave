@@ -30,6 +30,9 @@ typedef struct _OE_Enclave OE_Enclave;
 #define OE_FLAG_DEBUG 1
 #define OE_FLAG_SIMULATE 2
 
+/**
+ * Creates an enclave.
+ */
 OE_Result OE_CreateEnclave(
     const char* path,
     uint32_t flags,

@@ -23,7 +23,7 @@ The OpenEnclave project provides the following documents.
 
 - [Getting Started with OpenEnclave](doc/GettingStarted.pdf)
 
-- [OpenEnclave Reference Manual](doc/ReferenceManual.txt)
+- [API Documentation](doc/refman/md/index.md)
 
 Source tree layout
 ------------------
