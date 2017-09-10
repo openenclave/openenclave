@@ -33,13 +33,15 @@ enum Trait
 {
     BOLD,
     EMPHASIS,
-    VERBATIM
+    VERBATIM,
+    REF,
 };
 
 void SubstituteTrait(
     string& chars, 
     Trait trait,
-    const string& text)
+    const string& text,
+    const string& arg = string())
 {
     if (trait == VERBATIM)
     {
@@ -57,6 +59,8 @@ void SubstituteTrait(
         s = "**" + text + "**";
     else if (trait == EMPHASIS)
         s = "*" + text + "*";
+    else if (trait == REF)
+        s = "[" + text + "](" + arg + ")";
 
     size_t pos = min(min(pos1, pos2), pos3);
 
@@ -90,6 +94,11 @@ bool PrintPara(const Element& elem, ostream& os)
         else if (e.name() == "verbatim")
         {
             SubstituteTrait(chars, VERBATIM, e.chars());
+        }
+        if (e.name() == "ref")
+        {
+            string refid = e.attrs()["refid"];
+            SubstituteTrait(chars, REF, e.chars(), refid);
         }
         else if (e.name() == "itemizedlist")
         {
