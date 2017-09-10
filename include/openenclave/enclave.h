@@ -37,11 +37,11 @@ OE_EnclaveReportData;
  * strictly within the enclave's memory. If so, return true. If any
  * portion of the buffer lies outside the enclave's memory, return false.
  *
- * \param ptr pointer to buffer
- * \param size size of buffer
+ * \param ptr The pointer pointer to buffer.
+ * \param size The size of buffer
  *
- * \retval true if buffer is strictly within the enclave
- * \retval false if any portion of the buffer falls outside the enclave
+ * \retval true The buffer is strictly within the enclave.
+ * \retval false At least some part of the buffer is outside the enclave.
  *
  */
 bool OE_IsWithinEnclave(
@@ -55,11 +55,11 @@ bool OE_IsWithinEnclave(
  * strictly outside the enclave's memory. If so, return true. If any
  * portion of the buffer lies within the enclave's memory, return false.
  *
- * \param ptr pointer to buffer
- * \param size size of buffer
+ * \param The ptr pointer to buffer.
+ * \param The size size of buffer.
  *
- * \retval true if buffer is strictly outside the enclave
- * \retval false if any portion of the buffer falls within the enclave
+ * \retval true The buffer is strictly outside the enclave.
+ * \retval false At least some part of the buffer is within the enclave.
  *
  */
 bool OE_IsOutsideEnclave(
@@ -89,10 +89,11 @@ bool OE_IsOutsideEnclave(
  * not whether it was successful. The OCALL implementation must define its own
  * error reporting scheme based on the \b args parameter.
  *
- * \param func name of the host function that will be called
- * \param args arguments to be passed to the host function
+ * \param func The name of the host function that will be called.
+ * \param args The arguments to be passed to the host function.
  *
- * \retval OE_OK on success
+ * \retval OE_OK The function was successful.
+ * \retval OE_FAILED The function failed.
  *
  */
 OE_Result OE_CallHost(
@@ -163,12 +164,12 @@ void OE_Abort(void);
  *     - "%zd"
  *     - "%p"
  *
- * \param str write output to this string
- * \param size size of \b str parameter
- * \param fmt limited printf style format 
+ * \param str Write output to this string
+ * \param size The size of \b str parameter.
+ * \param fmt The limited printf style format.
  *
  * \returns The number of characters that would be written excluding the 
- * zero-terminator. If this value is greater or equal to \u size, then the 
+ * zero-terminator. If this value is greater or equal to \b size, then the 
  * string was truncated.
  *
  */
@@ -180,12 +181,12 @@ int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap);
  * This function is similar to snprintf() but has limited support for format
  * types. See OE_Vsnprintf() for details on these limits.
  *
- * \param str write output to this string
- * \param size size of \b str parameter
- * \param fmt limited printf style format 
+ * \param str Write output to this string.
+ * \param size The size of \b str parameter.
+ * \param fmt The limited printf style format.
  *
  * \returns The number of characters that would be written excluding the 
- * zero-terminator. If this value is greater or equal to \u size, then the 
+ * zero-terminator. If this value is greater or equal to \b size, then the 
  * string was truncated.
  *
  */
@@ -212,9 +213,9 @@ int OE_HostVprintf(const char* fmt, OE_va_list ap_);
  * This function writes formatted characters to the host console. Is is based
  * on OE_Vsnprintf(), which has limited support for format types.
  *
- * \param fmt limited printf style format 
+ * \param fmt The limited printf style format.
  *
- * \returns The number of characters written
+ * \returns The number of characters that were written.
  *
  */
 OE_PRINTF_FORMAT(1, 2)
@@ -225,15 +226,15 @@ int OE_HostPutchar(int c);
 /**
  * Allocates space on the stack frame of the caller.
  *
- * This function allocates \u size bytes of space on the stack frame of the 
- * caller. The returned address will be a multiple of \u alignment (if
+ * This function allocates \b size bytes of space on the stack frame of the 
+ * caller. The returned address will be a multiple of \b alignment (if
  * non-zero). The allocated space is automatically freed when the calling 
  * function returns. If the stack overflows, the behavior is undefined.
  *
- * \param size the number of bytes to allocate
- * \param alignment alignment requirement (see above)
+ * \param size The number of bytes to allocate.
+ * \param alignment The alignment requirement (see above).
  *
- * \returns Returns address of allocated space
+ * \returns Returns the address of the allocated space.
  *
  */
 OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(
