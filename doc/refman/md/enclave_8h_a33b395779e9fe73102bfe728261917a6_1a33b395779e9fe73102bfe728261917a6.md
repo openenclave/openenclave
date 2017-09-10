@@ -15,3 +15,5 @@ Check whether the buffer given by the **ptr** and **size** parameters is strictl
 
 ### ptr
 
+pointer to buffer
+
