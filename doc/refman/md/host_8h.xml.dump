@@ -1019,11 +1019,7 @@ doxygen
                     }
                     para
                     {
-                        bold
-                        {
-                            chars="OE_CallEnclave()"
-                        }
-                        chars="OpenEnclave uses the low-level ECALL interface to implement internal calls, used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application developers are encouraged to use  instead."
+                        chars="OpenEnclave uses the low-level ECALL interface to implement internal calls, used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application developers are encouraged to use OE_CallEnclave() instead."
                     }
                     para
                     {

@@ -253,7 +253,7 @@ bool GenerateFunctionFile(const Element& elem)
 
             os << "        " << type;
 
-            if (type.size() && type[type.size()-1] != '*')
+            if (type.size() && type[type.size()-1] != '*' && declname.size())
                 os << ' ';
             
             os << declname;

@@ -64,9 +64,8 @@ OE_EXPORT void OE_Destructor(void);
  * The meaning of the **argIn** arg **argOut** parameters is defined by the
  * implementer of the function and either may be null.
  *
- * OpenEnclave uses the low-level ECALL interface to implement internal calls.
- * Enclave application developers are encouraged to use **OE_CallHost()** 
- * instead.
+ * OpenEnclave uses this interface to implement internal calls. Enclave 
+ * application developers are encouraged to use OE_CallHost() instead.
  *
  * At the software layer, this function sends an **OCALL** message to the 
  * enclave and waits for an **ORET** message. Note that the OCALL implementation

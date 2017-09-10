@@ -98,7 +98,7 @@ OE_Result OE_TerminateEnclave(
  *
  * OpenEnclave uses the low-level ECALL interface to implement internal calls, 
  * used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application 
- * developers are encouraged to use **OE_CallEnclave()** instead.
+ * developers are encouraged to use OE_CallEnclave() instead.
  *
  * At the software layer, this function sends an **ECALL** message to the 
  * enclave and waits for an **ERET** message. Note that the ECALL implementation
