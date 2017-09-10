@@ -10,5 +10,5 @@ Check whether the given buffer is strictly within the enclave.
 ## Description 
 
 Check whether the buffer given by the **ptr** and **size** parameters is strictly within the enclave's memory. If so, return true. If any portion of the buffer lies outside the enclave's memory, return false.
-bold **bold** italics
+bold **bold** italics *italics*
 
