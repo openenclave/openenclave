@@ -24,3 +24,5 @@
 
 * [OE_CreateEnclave()](host_8h_a598cc1d7a051a13f5ff4ba6160ccbd82_1a598cc1d7a051a13f5ff4ba6160ccbd82.md)
 
+* [OE_TerminateEnclave()](host_8h_a20654d7b450c042ac7b256893b287cbe_1a20654d7b450c042ac7b256893b287cbe.md)
+
