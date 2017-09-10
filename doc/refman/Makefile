@@ -7,3 +7,4 @@ clean:
 
 browse:
 	firefox html/index.html
+
