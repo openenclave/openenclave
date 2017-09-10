@@ -79,6 +79,8 @@ bool PrintPara(const Element& elem, ostream& os)
 {
     string chars = elem.chars();
 
+    vector<string> list;
+
     // Perform substitutions on trait elements:
     for (size_t i = 0; i < elem.size(); i++)
     {
@@ -96,9 +98,29 @@ bool PrintPara(const Element& elem, ostream& os)
         {
             SubstituteTrait(chars, VERBATIM, e.chars());
         }
+        else if (e.name() == "itemizedlist")
+        {
+            vector<Element> listitems;
+            e.find("listitem", listitems);
+
+            for (size_t i = 0; i < listitems.size(); i++)
+            {
+                const Element& listitem = listitems[i];
+
+                const string& chars = listitem["para"].chars();
+
+                if (chars.size())
+                    list.push_back(chars);
+            }
+        }
     }
 
     os << chars << endl << endl;
+
+    for (size_t i = 0; i < list.size(); i++)
+        os << "- " << list[i] << endl;
+
+    os << endl;
 
     return true;
 }
@@ -152,23 +174,25 @@ bool PrintSimpleSect(const Element& elem, ostream& os)
     return true;
 }
 
-bool PrintDetailedDescription(const Element& elem, ostream& os)
+bool PrintDetailedDescription(
+    const Element& detaileddescription, 
+    ostream& os)
 {
     vector<Element> paras;
-    elem.find("para", paras);
+    detaileddescription.find("para", paras);
 
     for (size_t i = 0; i < paras.size(); i++)
     {
-        const Element& e = paras[i];
+        const Element& para = paras[i];
 
         // Print the detailed description paragraphs:
-        if (!PrintPara(e, os))
+        if (!PrintPara(para, os))
             return false;
 
         // Handle 'parameterlist' and 'simplesect' children:
-        for (size_t j = 0; j < e.size(); j++)
+        for (size_t j = 0; j < para.size(); j++)
         {
-            const Element& child = e[j];
+            const Element& child = para[j];
 
             if (child.name() == "parameterlist")
             {
@@ -274,6 +298,10 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
             return false;
         }
     }
+
+#if 0
+    root.dump();
+#endif
 
     // Generate file info:
     {

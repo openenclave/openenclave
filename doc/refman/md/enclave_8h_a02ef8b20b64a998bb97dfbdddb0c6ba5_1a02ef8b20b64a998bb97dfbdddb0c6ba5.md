@@ -13,15 +13,19 @@ Check whether the buffer given by the **ptr** and **size** parameters is strictl
 
 
 
+
+
 ## Parameters
 
 ### ptr
 
 The pointer pointer to buffer.
 
+
 ### size
 
 The size of buffer
+
 
 ## Return value
 
@@ -29,7 +33,9 @@ The size of buffer
 
 The buffer is strictly within the enclave.
 
+
 ### false
 
 At least some part of the buffer is outside the enclave.
+
 
