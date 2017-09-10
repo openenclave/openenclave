@@ -40,7 +40,7 @@ current directory).
 doxygen.conf
 ```
 
-Append new sources to the `INPUT` variable.
+Append new sources to the **INPUT**  variable.
 
 ## Source-code documentation conventions
 
@@ -51,8 +51,7 @@ more about Doyxgen Markdown, see:
 
 The sections below explain the basics.
 
-**Caution:** the xml2md tool only supports the Mardown features described in this
-document.
+**Caution:** the xml2md tool only supports the Mardown features described below.
 
 ### Comment blocks
 
@@ -102,8 +101,8 @@ Parameters should be introduced as follows.
 ```
 #### Return values
 
-Return value may be specified as a list of paragraphs (`@retval`) or
-as a single paragrah (`@returns`).
+Return value may be specified as a list of paragraphs (**@retval**) or
+as a single paragrah (**@returns**).
 
 Here's an example of a list of paragraphs:
 
@@ -186,3 +185,4 @@ For example.
  *
  */
 ```
+
