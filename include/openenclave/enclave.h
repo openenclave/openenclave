@@ -27,7 +27,7 @@ OE_EXTERNC_BEGIN
 /**
  * Perform an outside function call (or OCALL) into the host.
  *
- * Call the host function named \b func, passing it the \b args parameter. The
+ * Call the host function named **func**, passing it the \b args parameter. The
  * host must provide a function with the following signature.
  *
  *     OE_OCALL void (*)(void* args);
