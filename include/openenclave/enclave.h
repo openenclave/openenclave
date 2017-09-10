@@ -24,6 +24,8 @@ OE_EXTERNC_BEGIN
 # define OE_ECALL OE_EXPORT OE_ECALL_SECTION
 #endif
 
+#define OE_REPORT_DATA_SIZE 64
+
 /**
  * Perform an outside function call (or OCALL) into the host.
  *
@@ -99,14 +101,8 @@ bool OE_IsOutsideEnclave(
     const void* ptr,
     size_t size);
 
-typedef struct _OE_EnclaveReportData
-{
-    unsigned char field[64];
-}
-OE_EnclaveReportData;
-
 OE_Result OE_GetReportForRemoteAttestation(
-    const OE_EnclaveReportData *reportData,
+    const uint8_t reportData[OE_REPORT_DATA_SIZE],
     void *report,
     size_t* reportSize);
 

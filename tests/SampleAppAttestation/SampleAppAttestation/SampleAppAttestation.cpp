@@ -72,8 +72,9 @@ OE_ECALL void GetAppEnclaveReport(void *Args)
     // 
     //
 
-    OE_EnclaveReportData ReportData{ 0 };
-    memcpy(&ReportData, SampleReportData, sizeof(SampleReportData));
+    uint8_t ReportData[OE_REPORT_DATA_SIZE];
+    memset(ReportData, 0, sizeof(ReportData));
+    memcpy(ReportData, SampleReportData, sizeof(SampleReportData));
 
     //
     // Allocate memory for SGX_REPORT which must be inside enclave.
@@ -90,7 +91,8 @@ OE_ECALL void GetAppEnclaveReport(void *Args)
     // Generate report and copy it to output buffer if success.
     //
 
-    CreateReportArgs->Result = OE_GetReportForRemoteAttestation(&ReportData, Report, &ReportSize);
+    CreateReportArgs->Result = OE_GetReportForRemoteAttestation(
+        ReportData, Report, &ReportSize);
     if (CreateReportArgs->Result == OE_OK)
     {
         memcpy(CreateReportArgs->Report, Report, ReportSize);

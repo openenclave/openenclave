@@ -88,10 +88,10 @@ catch:
     return result;
 }
 
-OE_CHECK_SIZE(sizeof(OE_EnclaveReportData), sizeof(SGX_ReportData));
+OE_CHECK_SIZE(sizeof(SGX_ReportData), OE_REPORT_DATA_SIZE);
 
 OE_Result OE_GetReportForRemoteAttestation(
-    const OE_EnclaveReportData *reportData,
+    const uint8_t reportData[OE_REPORT_DATA_SIZE],
     void *report,
     size_t* reportSize)
 {
