@@ -102,7 +102,7 @@ bool PrintPara(const Element& elem, ostream& os)
             {
                 const Element& tmp_para = listitems[i]["para"];
 
-                os << "-";
+                os << "- ";
 
                 if (!PrintPara(tmp_para, os))
                     return false;
