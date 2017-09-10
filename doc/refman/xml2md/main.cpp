@@ -48,8 +48,8 @@ void SubstituteTrait(
     }
 
     size_t pos1 = chars.find(" ,");
+    size_t pos3 = chars.find(" .");
     size_t pos2 = chars.find("  ");
-    size_t pos = string::npos;
 
     string s;
 
@@ -58,12 +58,7 @@ void SubstituteTrait(
     else if (trait == EMPHASIS)
         s = "*" + text + "*";
 
-    if (pos1 != string::npos && pos2 != string::npos)
-        pos = pos1 < pos2 ? pos1 : pos2;
-    else if (pos1 != string::npos)
-        pos = pos1;
-    else if (pos2 != string::npos)
-        pos = pos2;
+    size_t pos = min(min(pos1, pos2), pos3);
 
     if (pos == string::npos)
     {
