@@ -82,20 +82,14 @@ bool PrintPara(const Element& elem, ostream& os)
         if (e.name() == "bold")
         {
             SubstituteTrait(chars, BOLD, e.chars());
-            os << chars << endl << endl;
-            return true;
         }
         else if (e.name() == "emphasis")
         {
             SubstituteTrait(chars, EMPHASIS, e.chars());
-            os << chars << endl << endl;
-            return true;
         }
         else if (e.name() == "verbatim")
         {
             SubstituteTrait(chars, VERBATIM, e.chars());
-            os << chars << endl << endl;
-            return true;
         }
         else if (e.name() == "itemizedlist")
         {
@@ -117,6 +111,8 @@ bool PrintPara(const Element& elem, ostream& os)
             return true;
         }
     }
+
+    os << chars << endl << endl;
 
     return true;
 }
