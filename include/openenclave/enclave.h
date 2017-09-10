@@ -29,31 +29,31 @@ OE_EXTERNC_BEGIN
 /**
  * Perform an outside function call (or OCALL) into the host.
  *
- * Call the host function named **func**, passing it the \b args parameter. The
+ * Call the host function named **func**, passing it the **args** parameter. The
  * host must provide a function with the following signature.
  *
  *     OE_OCALL void (*)(void* args);
  *
- * The meaning of the \b args parameter is defined by the OCALL implementation
+ * The meaning of the **args** parameter is defined by the OCALL implementation
  * and might be null for some implementations.
  *
- * At the software layer, this function sends an \b OCALL message to the host 
- * and waits for an \b ORET message. Note that the OCALL implementation may 
+ * At the software layer, this function sends an **OCALL** message to the host 
+ * and waits for an **ORET** message. Note that the OCALL implementation may 
  * call back into the enclave (an ECALL) before returning.
  *
- * At the hardware layer, this function executes the \b ENCLU.EEXIT instruction 
+ * At the hardware layer, this function executes the **ENCLU.EEXIT** instruction
  * to leave the enclave and enter the host. When the host returns from the 
- * OCALL, it executes the \b ENCLU.EENTER instruction to reenter the enclave.
+ * OCALL, it executes the **ENCLU.EENTER** instruction to reenter the enclave.
  *
  * Note that the return value only indicates whether the OCALL was called and
  * not whether it was successful. The OCALL implementation must define its own
- * error reporting scheme based on the \b args parameter.
+ * error reporting scheme based on the **args** parameter.
  *
- * \param func The name of the host function that will be called.
- * \param args The arguments to be passed to the host function.
+ * @param func The name of the host function that will be called.
+ * @param args The arguments to be passed to the host function.
  *
- * \retval OE_OK The function was successful.
- * \retval OE_FAILED The function failed.
+ * @retval OE_OK The function was successful.
+ * @retval OE_FAILED The function failed.
  *
  */
 OE_Result OE_CallHost(
@@ -68,15 +68,15 @@ OE_Result __OE_OCall(
 /**
  * Check whether the given buffer is strictly within the enclave.
  *
- * Check whether the buffer given by the \b ptr and \b size parameters is 
+ * Check whether the buffer given by the **ptr** and **size** parameters is 
  * strictly within the enclave's memory. If so, return true. If any
  * portion of the buffer lies outside the enclave's memory, return false.
  *
- * \param ptr The pointer pointer to buffer.
- * \param size The size of buffer
+ * @param ptr The pointer pointer to buffer.
+ * @param size The size of buffer
  *
- * \retval true The buffer is strictly within the enclave.
- * \retval false At least some part of the buffer is outside the enclave.
+ * @retval true The buffer is strictly within the enclave.
+ * @retval false At least some part of the buffer is outside the enclave.
  *
  */
 bool OE_IsWithinEnclave(
@@ -86,15 +86,15 @@ bool OE_IsWithinEnclave(
 /**
  * Check whether the given buffer is strictly outside the enclave.
  *
- * Check whether the buffer given by the \b ptr and \b size parameters is 
+ * Check whether the buffer given by the **ptr** and **size** parameters is 
  * strictly outside the enclave's memory. If so, return true. If any
  * portion of the buffer lies within the enclave's memory, return false.
  *
- * \param ptr The pointer to buffer.
- * \param size The size of buffer.
+ * @param ptr The pointer to buffer.
+ * @param size The size of buffer.
  *
- * \retval true The buffer is strictly outside the enclave.
- * \retval false At least some part of the buffer is within the enclave.
+ * @retval true The buffer is strictly outside the enclave.
+ * @retval false At least some part of the buffer is within the enclave.
  *
  */
 bool OE_IsOutsideEnclave(
@@ -160,12 +160,12 @@ void OE_Abort(void);
  *     - "%zd"
  *     - "%p"
  *
- * \param str Write output to this string
- * \param size The size of \b str parameter.
- * \param fmt The limited printf style format.
+ * @param str Write output to this string
+ * @param size The size of **str** parameter.
+ * @param fmt The limited printf style format.
  *
- * \returns The number of characters that would be written excluding the 
- * zero-terminator. If this value is greater or equal to \b size, then the 
+ * @returns The number of characters that would be written excluding the 
+ * zero-terminator. If this value is greater or equal to **size**, then the 
  * string was truncated.
  *
  */
@@ -177,12 +177,12 @@ int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap);
  * This function is similar to snprintf() but has limited support for format
  * types. See OE_Vsnprintf() for details on these limits.
  *
- * \param str Write output to this string.
- * \param size The size of \b str parameter.
- * \param fmt The limited printf style format.
+ * @param str Write output to this string.
+ * @param size The size of **str** parameter.
+ * @param fmt The limited printf style format.
  *
- * \returns The number of characters that would be written excluding the 
- * zero-terminator. If this value is greater or equal to \b size, then the 
+ * @returns The number of characters that would be written excluding the 
+ * zero-terminator. If this value is greater or equal to **size**, then the 
  * string was truncated.
  *
  */
@@ -209,9 +209,9 @@ int OE_HostVprintf(const char* fmt, OE_va_list ap_);
  * This function writes formatted characters to the host console. Is is based
  * on OE_Vsnprintf(), which has limited support for format types.
  *
- * \param fmt The limited printf style format.
+ * @param fmt The limited printf style format.
  *
- * \returns The number of characters that were written.
+ * @returns The number of characters that were written.
  *
  */
 OE_PRINTF_FORMAT(1, 2)
@@ -222,15 +222,15 @@ int OE_HostPutchar(int c);
 /**
  * Allocates space on the stack frame of the caller.
  *
- * This function allocates \b size bytes of space on the stack frame of the 
- * caller. The returned address will be a multiple of \b alignment (if
+ * This function allocates **size** bytes of space on the stack frame of the 
+ * caller. The returned address will be a multiple of **alignment** (if
  * non-zero). The allocated space is automatically freed when the calling 
  * function returns. If the stack overflows, the behavior is undefined.
  *
- * \param size The number of bytes to allocate.
- * \param alignment The alignment requirement (see above).
+ * @param size The number of bytes to allocate.
+ * @param alignment The alignment requirement (see above).
  *
- * \returns Returns the address of the allocated space.
+ * @returns Returns the address of the allocated space.
  *
  */
 OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(

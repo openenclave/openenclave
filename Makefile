@@ -184,6 +184,17 @@ samples: samples-config
 
 ##==============================================================================
 ##
+## refman:
+##
+##     Generate all Doxygen documentation format from OpenEnclave sources.
+##
+##==============================================================================
+
+refman:
+	$(MAKE) -C doc/refman
+
+##==============================================================================
+##
 ## cloc:
 ##
 ##     Count lines of orignal code:
