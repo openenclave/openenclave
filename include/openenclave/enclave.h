@@ -24,48 +24,6 @@ OE_EXTERNC_BEGIN
 # define OE_ECALL OE_EXPORT OE_ECALL_SECTION
 #endif
 
-typedef struct _OE_EnclaveReportData
-{
-    unsigned char field[64];
-}
-OE_EnclaveReportData;
-
-/**
- * Check whether the given buffer is strictly within the enclave.
- *
- * Check whether the buffer given by the \b ptr and \b size parameters is 
- * strictly within the enclave's memory. If so, return true. If any
- * portion of the buffer lies outside the enclave's memory, return false.
- *
- * \param ptr The pointer pointer to buffer.
- * \param size The size of buffer
- *
- * \retval true The buffer is strictly within the enclave.
- * \retval false At least some part of the buffer is outside the enclave.
- *
- */
-bool OE_IsWithinEnclave(
-    const void* ptr,
-    size_t size);
-
-/**
- * Check whether the given buffer is strictly outside the enclave.
- *
- * Check whether the buffer given by the \b ptr and \b size parameters is 
- * strictly outside the enclave's memory. If so, return true. If any
- * portion of the buffer lies within the enclave's memory, return false.
- *
- * \param ptr The pointer to buffer.
- * \param size The size of buffer.
- *
- * \retval true The buffer is strictly outside the enclave.
- * \retval false At least some part of the buffer is within the enclave.
- *
- */
-bool OE_IsOutsideEnclave(
-    const void* ptr,
-    size_t size);
-
 /**
  * Perform an outside function call (or OCALL) into the host
  *
@@ -104,6 +62,48 @@ OE_Result __OE_OCall(
     int func,
     uint64_t argIn,
     uint64_t* argOut);
+
+/**
+ * Check whether the given buffer is strictly within the enclave.
+ *
+ * Check whether the buffer given by the \b ptr and \b size parameters is 
+ * strictly within the enclave's memory. If so, return true. If any
+ * portion of the buffer lies outside the enclave's memory, return false.
+ *
+ * \param ptr The pointer pointer to buffer.
+ * \param size The size of buffer
+ *
+ * \retval true The buffer is strictly within the enclave.
+ * \retval false At least some part of the buffer is outside the enclave.
+ *
+ */
+bool OE_IsWithinEnclave(
+    const void* ptr,
+    size_t size);
+
+/**
+ * Check whether the given buffer is strictly outside the enclave.
+ *
+ * Check whether the buffer given by the \b ptr and \b size parameters is 
+ * strictly outside the enclave's memory. If so, return true. If any
+ * portion of the buffer lies within the enclave's memory, return false.
+ *
+ * \param ptr The pointer to buffer.
+ * \param size The size of buffer.
+ *
+ * \retval true The buffer is strictly outside the enclave.
+ * \retval false At least some part of the buffer is within the enclave.
+ *
+ */
+bool OE_IsOutsideEnclave(
+    const void* ptr,
+    size_t size);
+
+typedef struct _OE_EnclaveReportData
+{
+    unsigned char field[64];
+}
+OE_EnclaveReportData;
 
 OE_Result OE_GetReportForRemoteAttestation(
     const OE_EnclaveReportData *reportData,
