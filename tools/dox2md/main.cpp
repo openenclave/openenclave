@@ -60,18 +60,14 @@ void SubstituteTrait(
     else if (trait == EMPHASIS)
         s = "*" + text + "*";
     else if (trait == REF)
-        s = "[" + text + "](" + arg + ")";
+        s = "[" + text + "](" + arg + ".md)";
 
     size_t pos = min(min(pos1, pos2), pos3);
 
     if (pos == string::npos)
-    {
         chars += ' ' + s;
-    }
     else
-    {
         chars = chars.substr(0, pos) + ' ' + s + chars.substr(pos + 1);
-    }
 }
 
 bool PrintPara(const Element& elem, ostream& os)

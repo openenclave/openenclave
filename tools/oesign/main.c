@@ -11,6 +11,7 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/str.h>
+#include <openenclave/bits/error.h>
 #include "../host/log.h"
 #include "../host/enclave.h"
 

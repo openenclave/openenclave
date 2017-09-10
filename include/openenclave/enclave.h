@@ -82,7 +82,7 @@ OE_EXPORT void OE_Destructor(void);
  *
  * @param func The number of the function to be called.
  * @param argsIn The input argument passed to the function.
- * @param argsIn The out argument passed back from the function.
+ * @param argsIn The output argument passed back from the function.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.

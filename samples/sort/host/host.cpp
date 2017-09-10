@@ -1,10 +1,13 @@
 #include <openenclave/host.h>
-#include <limits.h>
-#include <string.h>
-#include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
+#include <iostream>
+#include <climits>
+#include <cstring>
+#include <cstdio>
+#include <cassert>
+#include <cstdlib>
 #include "../args.h"
+
+using namespace std;
 
 int main(int argc, const char* argv[])
 {
@@ -25,7 +28,10 @@ int main(int argc, const char* argv[])
         const uint64_t flags = OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
 
         if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
-            OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        {
+            cerr << "OE_CreateEnclave(): result=" << result << endl;
+            exit(1);
+        }
     }
 
     /* Call into Hello() function in the enclave */
@@ -39,7 +45,10 @@ int main(int argc, const char* argv[])
         args.size = size;
 
         if ((result = OE_CallEnclave(enclave, "Sort", &args)) != OE_OK)
-            OE_PutErr("OE_CallEnclave() failed: result=%u", result);
+        {
+            cerr << "OE_CallEnclave(): result=" << result << endl;
+            exit(1);
+        }
 
         for (size_t i = 0; i < size; i++)
         {

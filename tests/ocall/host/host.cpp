@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/bits/error.h>
 #include "../args.h"
 
 static bool _func1Called = false;

@@ -115,7 +115,7 @@ OE_Result OE_TerminateEnclave(
  *
  * @param func The number of the function to be called.
  * @param argsIn The input argument passed to the function.
- * @param argsIn The out argument passed back from the function.
+ * @param argsIn The output argument passed back from the function.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -189,18 +189,6 @@ OE_Result OE_GetQuote(
     size_t reportSize,
     void* quote,
     size_t* quoteSize);
-
-OE_PRINTF_FORMAT(3, 4)
-void __OE_PutErr(
-    const char* file,
-    unsigned int line,
-    const char* format, 
-    ...);
-
-void OE_SetProgramName(
-    const char* name);
-
-#define OE_PutErr(...) __OE_PutErr(__FILE__, __LINE__, __VA_ARGS__)
 
 OE_EXTERNC_END
 

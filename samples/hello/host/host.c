@@ -40,7 +40,10 @@ int main(int argc, const char* argv[])
         const uint64_t flags = OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
 
         if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
-            OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        {
+            fprintf(stderr, "OE_CreateEnclave(): result=%u", result);
+            exit(1);
+        }
     }
 
     /* Call into Hello() function in the enclave */
@@ -50,16 +53,28 @@ int main(int argc, const char* argv[])
         args.ret = -1;
 
         if (!(args.in = strdup("Hello World")))
-            OE_PutErr("strdup() failed");
+        {
+            fprintf(stderr, "strdup() failed");
+            exit(1);
+        }
 
         if ((result = OE_CallEnclave(enclave, "Hello", &args)) != OE_OK)
-            OE_PutErr("OE_CallEnclave() failed: result=%u", result);
+        {
+            fprintf(stderr, "OE_CallEnclave() failed: result=%u", result);
+            exit(1);
+        }
 
         if (args.ret != 0)
-            OE_PutErr("ECALL failed args.result=%d", args.ret);
+        {
+            fprintf(stderr, "ECALL failed args.result=%d", args.ret);
+            exit(1);
+        }
 
         if (strcmp(args.in, args.out) != 0)
-            OE_PutErr("ecall failed: %s != %s\n", args.in, args.out);
+        {
+            fprintf(stderr, "ecall failed: %s != %s\n", args.in, args.out);
+            exit(1);
+        }
 
         free((char*)args.in);
         free((char*)args.out);

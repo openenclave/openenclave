@@ -6,6 +6,8 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/utils.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/bits/error.h>
 #include "../args.h"
 
 int main(int argc, const char* argv[])

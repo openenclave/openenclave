@@ -4,6 +4,8 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxdev.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/bits/error.h>
 #include "../../host/enclave.h"
 
 #if 1

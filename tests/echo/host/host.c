@@ -1,5 +1,6 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/bits/error.h>
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
