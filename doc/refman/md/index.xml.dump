@@ -5,24 +5,6 @@ doxygenindex
     version=1.8.11
     compound
     {
-        refid=struct__OE__EnclaveReportData
-        kind=struct
-        name
-        {
-            chars="_OE_EnclaveReportData"
-        }
-        member
-        {
-            refid=struct__OE__EnclaveReportData_1afc0a6ce6ea15e03aff1328ef7e8c3541
-            kind=variable
-            name
-            {
-                chars="field"
-            }
-        }
-    }
-    compound
-    {
         refid=enclave_8h
         kind=file
         name
@@ -58,20 +40,20 @@ doxygenindex
         }
         member
         {
+            refid=enclave_8h_1a55c5504c4406dc840191fe066bcf063e
+            kind=define
+            name
+            {
+                chars="OE_REPORT_DATA_SIZE"
+            }
+        }
+        member
+        {
             refid=enclave_8h_a1df224cdefe0cfb6726a3c55dbf51ef9_1a1df224cdefe0cfb6726a3c55dbf51ef9
             kind=define
             name
             {
                 chars="OE_Assert"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_1adb8c56adcb8cd4d1490108f2b0c588f1
-            kind=typedef
-            name
-            {
-                chars="OE_EnclaveReportData"
             }
         }
         member
@@ -112,7 +94,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a9c7debe616d0e0e006951a35e86af70f
+            refid=enclave_8h_1ab4b70d7070180862df4e92b590fc941d
             kind=function
             name
             {

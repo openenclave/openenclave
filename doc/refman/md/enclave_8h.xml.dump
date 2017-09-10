@@ -207,12 +207,6 @@ doxygen
                 }
             }
         }
-        innerclass
-        {
-            refid=struct__OE__EnclaveReportData
-            prot=public
-            chars="_OE_EnclaveReportData"
-        }
         sectiondef
         {
             kind=define
@@ -314,6 +308,39 @@ doxygen
             memberdef
             {
                 kind=define
+                id=enclave_8h_1a55c5504c4406dc840191fe066bcf063e
+                prot=public
+                static=no
+                name
+                {
+                    chars="OE_REPORT_DATA_SIZE"
+                }
+                initializer
+                {
+                    chars="64"
+                }
+                briefdescription
+                {
+                }
+                detaileddescription
+                {
+                }
+                inbodydescription
+                {
+                }
+                location
+                {
+                    file=/root/openenclave/include/openenclave/enclave.h
+                    line=27
+                    column=9
+                    bodyfile=/root/openenclave/include/openenclave/enclave.h
+                    bodystart=27
+                    bodyend=-1
+                }
+            }
+            memberdef
+            {
+                kind=define
                 id=enclave_8h_a1df224cdefe0cfb6726a3c55dbf51ef9_1a1df224cdefe0cfb6726a3c55dbf51ef9
                 prot=public
                 static=no
@@ -344,58 +371,11 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=292
+                    line=288
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/enclave.h
-                    bodystart=292
+                    bodystart=288
                     bodyend=-1
-                }
-            }
-        }
-        sectiondef
-        {
-            kind=typedef
-            memberdef
-            {
-                kind=typedef
-                id=enclave_8h_1adb8c56adcb8cd4d1490108f2b0c588f1
-                prot=public
-                static=no
-                type
-                {
-                    ref
-                    {
-                        refid=struct__OE__EnclaveReportData
-                        kindref=compound
-                        chars="_OE_EnclaveReportData"
-                    }
-                    chars="struct"
-                }
-                definition
-                {
-                    chars="typedef struct _OE_EnclaveReportData\n OE_EnclaveReportData"
-                }
-                argsstring
-                {
-                }
-                name
-                {
-                    chars="OE_EnclaveReportData"
-                }
-                briefdescription
-                {
-                }
-                detaileddescription
-                {
-                }
-                inbodydescription
-                {
-                }
-                location
-                {
-                    file=/root/openenclave/include/openenclave/enclave.h
-                    line=106
-                    column=1
                 }
             }
         }
@@ -601,7 +581,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=57
+                    line=59
                     column=1
                 }
             }
@@ -676,7 +656,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=61
+                    line=63
                     column=1
                 }
             }
@@ -835,7 +815,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=80
+                    line=82
                     column=1
                 }
             }
@@ -994,14 +974,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=98
+                    line=100
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1a9c7debe616d0e0e006951a35e86af70f
+                id=enclave_8h_1ab4b70d7070180862df4e92b590fc941d
                 prot=public
                 static=no
                 const=no
@@ -1018,7 +998,7 @@ doxygen
                 }
                 argsstring
                 {
-                    chars="(const OE_EnclaveReportData *reportData, void *report, size_t *reportSize)"
+                    chars="(const uint8_t reportData[OE_REPORT_DATA_SIZE], void *report, size_t *reportSize)"
                 }
                 name
                 {
@@ -1028,17 +1008,15 @@ doxygen
                 {
                     type
                     {
-                        ref
-                        {
-                            refid=struct__OE__EnclaveReportData
-                            kindref=compound
-                            chars="OE_EnclaveReportData"
-                        }
-                        chars="const  *"
+                        chars="const uint8_t"
                     }
                     declname
                     {
                         chars="reportData"
+                    }
+                    array
+                    {
+                        chars="[OE_REPORT_DATA_SIZE]"
                     }
                 }
                 param
@@ -1075,7 +1053,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=108
+                    line=104
                     column=1
                 }
             }
@@ -1161,7 +1139,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=113
+                    line=109
                     column=1
                 }
             }
@@ -1214,7 +1192,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=127
+                    line=123
                     column=1
                 }
             }
@@ -1278,7 +1256,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=129
+                    line=125
                     column=1
                 }
             }
@@ -1353,7 +1331,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=131
+                    line=127
                     column=1
                 }
             }
@@ -1428,7 +1406,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=133
+                    line=129
                     column=1
                 }
             }
@@ -1503,7 +1481,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=135
+                    line=131
                     column=1
                 }
             }
@@ -1578,7 +1556,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=137
+                    line=133
                     column=1
                 }
             }
@@ -1653,7 +1631,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=139
+                    line=135
                     column=1
                 }
             }
@@ -1702,7 +1680,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=149
+                    line=145
                     column=1
                 }
             }
@@ -1943,7 +1921,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=176
+                    line=172
                     column=1
                 }
             }
@@ -2113,7 +2091,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=194
+                    line=190
                     column=1
                 }
             }
@@ -2166,7 +2144,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=204
+                    line=200
                     column=1
                 }
             }
@@ -2219,7 +2197,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=206
+                    line=202
                     column=1
                 }
             }
@@ -2283,7 +2261,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=208
+                    line=204
                     column=1
                 }
             }
@@ -2389,7 +2367,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=222
+                    line=218
                     column=1
                 }
             }
@@ -2442,7 +2420,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=224
+                    line=220
                     column=1
                 }
             }
@@ -2571,11 +2549,11 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=240
+                    line=236
                     column=1
                     bodyfile=/root/openenclave/include/openenclave/enclave.h
-                    bodystart=240
-                    bodyend=250
+                    bodystart=236
+                    bodyend=246
                 }
             }
             memberdef
@@ -2627,7 +2605,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=260
+                    line=256
                     column=1
                 }
             }
@@ -2691,7 +2669,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=262
+                    line=258
                     column=1
                 }
             }
@@ -2744,7 +2722,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=264
+                    line=260
                     column=1
                 }
             }
@@ -2797,7 +2775,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=266
+                    line=262
                     column=1
                 }
             }
@@ -2850,7 +2828,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=276
+                    line=272
                     column=1
                 }
             }
@@ -2936,7 +2914,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=286
+                    line=282
                     column=1
                 }
             }
@@ -3389,7 +3367,38 @@ doxygen
             }
             codeline
             {
-                lineno=57
+                lineno=27
+                highlight
+                {
+                    class=normal
+                }
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="#defineOE_REPORT_DATA_SIZE64"
+                }
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=28
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=59
                 highlight
                 {
                     class=normal
@@ -3407,7 +3416,7 @@ doxygen
             }
             codeline
             {
-                lineno=58
+                lineno=60
                 highlight
                 {
                     class=normal
@@ -3452,7 +3461,7 @@ doxygen
             }
             codeline
             {
-                lineno=59
+                lineno=61
                 highlight
                 {
                     class=normal
@@ -3485,7 +3494,7 @@ doxygen
             }
             codeline
             {
-                lineno=60
+                lineno=62
                 highlight
                 {
                     class=normal
@@ -3493,7 +3502,7 @@ doxygen
             }
             codeline
             {
-                lineno=61
+                lineno=63
                 highlight
                 {
                     class=normal
@@ -3505,7 +3514,7 @@ doxygen
             }
             codeline
             {
-                lineno=62
+                lineno=64
                 highlight
                 {
                     class=normal
@@ -3538,7 +3547,7 @@ doxygen
             }
             codeline
             {
-                lineno=63
+                lineno=65
                 highlight
                 {
                     class=normal
@@ -3562,7 +3571,7 @@ doxygen
             }
             codeline
             {
-                lineno=64
+                lineno=66
                 highlight
                 {
                     class=normal
@@ -3586,7 +3595,7 @@ doxygen
             }
             codeline
             {
-                lineno=65
+                lineno=67
                 highlight
                 {
                     class=normal
@@ -3594,7 +3603,7 @@ doxygen
             }
             codeline
             {
-                lineno=80
+                lineno=82
                 highlight
                 {
                     class=keywordtype
@@ -3617,7 +3626,7 @@ doxygen
             }
             codeline
             {
-                lineno=81
+                lineno=83
                 highlight
                 {
                     class=normal
@@ -3662,7 +3671,7 @@ doxygen
             }
             codeline
             {
-                lineno=82
+                lineno=84
                 highlight
                 {
                     class=normal
@@ -3695,7 +3704,7 @@ doxygen
             }
             codeline
             {
-                lineno=83
+                lineno=85
                 highlight
                 {
                     class=normal
@@ -3703,7 +3712,7 @@ doxygen
             }
             codeline
             {
-                lineno=98
+                lineno=100
                 highlight
                 {
                     class=keywordtype
@@ -3726,7 +3735,7 @@ doxygen
             }
             codeline
             {
-                lineno=99
+                lineno=101
                 highlight
                 {
                     class=normal
@@ -3771,7 +3780,7 @@ doxygen
             }
             codeline
             {
-                lineno=100
+                lineno=102
                 highlight
                 {
                     class=normal
@@ -3804,59 +3813,10 @@ doxygen
             }
             codeline
             {
-                lineno=101
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=102
-                refid=struct__OE__EnclaveReportData
-                refkind=compound
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=keyword
-                    chars="typedef"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keyword
-                    sp
-                    {
-                    }
-                    chars="struct"
-                }
-                highlight
-                {
-                    class=normal
-                    ref
-                    {
-                        refid=struct__OE__EnclaveReportData
-                        kindref=compound
-                        chars="_OE_EnclaveReportData"
-                    }
-                }
-            }
-            codeline
-            {
                 lineno=103
                 highlight
                 {
                     class=normal
-                    chars="{"
                 }
             }
             codeline
@@ -3868,89 +3828,12 @@ doxygen
                     sp
                     {
                     }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="unsigned"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="char"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="field[64];"
-                }
-            }
-            codeline
-            {
-                lineno=105
-                highlight
-                {
-                    class=normal
-                    chars="}"
-                }
-            }
-            codeline
-            {
-                lineno=106
-                highlight
-                {
-                    class=normal
-                    ref
-                    {
-                        refid=struct__OE__EnclaveReportData
-                        kindref=compound
-                        chars="OE_EnclaveReportData"
-                    }
-                    chars=";"
-                }
-            }
-            codeline
-            {
-                lineno=107
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=108
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
                     chars="OE_ResultOE_GetReportForRemoteAttestation("
                 }
             }
             codeline
             {
-                lineno=109
+                lineno=105
                 highlight
                 {
                     class=normal
@@ -3978,21 +3861,15 @@ doxygen
                     sp
                     {
                     }
-                    ref
-                    {
-                        refid=struct__OE__EnclaveReportData
-                        kindref=compound
-                        chars="OE_EnclaveReportData"
-                    }
                     sp
                     {
                     }
-                    chars="*reportData,"
+                    chars="uint8_treportData[OE_REPORT_DATA_SIZE],"
                 }
             }
             codeline
             {
-                lineno=110
+                lineno=106
                 highlight
                 {
                     class=normal
@@ -4025,7 +3902,7 @@ doxygen
             }
             codeline
             {
-                lineno=111
+                lineno=107
                 highlight
                 {
                     class=normal
@@ -4058,7 +3935,7 @@ doxygen
             }
             codeline
             {
-                lineno=112
+                lineno=108
                 highlight
                 {
                     class=normal
@@ -4066,7 +3943,7 @@ doxygen
             }
             codeline
             {
-                lineno=113
+                lineno=109
                 highlight
                 {
                     class=normal
@@ -4087,7 +3964,7 @@ doxygen
             }
             codeline
             {
-                lineno=114
+                lineno=110
                 highlight
                 {
                     class=normal
@@ -4111,7 +3988,7 @@ doxygen
             }
             codeline
             {
-                lineno=115
+                lineno=111
                 highlight
                 {
                     class=normal
@@ -4135,7 +4012,7 @@ doxygen
             }
             codeline
             {
-                lineno=116
+                lineno=112
                 highlight
                 {
                     class=normal
@@ -4159,7 +4036,7 @@ doxygen
             }
             codeline
             {
-                lineno=117
+                lineno=113
                 highlight
                 {
                     class=normal
@@ -4192,7 +4069,7 @@ doxygen
             }
             codeline
             {
-                lineno=118
+                lineno=114
                 highlight
                 {
                     class=normal
@@ -4200,7 +4077,7 @@ doxygen
             }
             codeline
             {
-                lineno=119
+                lineno=115
                 highlight
                 {
                     class=normal
@@ -4209,6 +4086,48 @@ doxygen
                 {
                     class=comment
                     chars="/*"
+                }
+            }
+            codeline
+            {
+                lineno=116
+                highlight
+                {
+                    class=comment
+                    chars="**=============================================================================="
+                }
+            }
+            codeline
+            {
+                lineno=117
+                highlight
+                {
+                    class=comment
+                    chars="**"
+                }
+            }
+            codeline
+            {
+                lineno=118
+                highlight
+                {
+                    class=comment
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="**Stringfunctions:"
+                }
+            }
+            codeline
+            {
+                lineno=119
+                highlight
+                {
+                    class=comment
+                    chars="**"
                 }
             }
             codeline
@@ -4226,48 +4145,6 @@ doxygen
                 highlight
                 {
                     class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=122
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="**Stringfunctions:"
-                }
-            }
-            codeline
-            {
-                lineno=123
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=124
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=125
-                highlight
-                {
-                    class=comment
                     chars="*/"
                 }
                 highlight
@@ -4277,7 +4154,7 @@ doxygen
             }
             codeline
             {
-                lineno=126
+                lineno=122
                 highlight
                 {
                     class=normal
@@ -4285,7 +4162,7 @@ doxygen
             }
             codeline
             {
-                lineno=127
+                lineno=123
                 highlight
                 {
                     class=normal
@@ -4331,7 +4208,7 @@ doxygen
             }
             codeline
             {
-                lineno=128
+                lineno=124
                 highlight
                 {
                     class=normal
@@ -4339,7 +4216,7 @@ doxygen
             }
             codeline
             {
-                lineno=129
+                lineno=125
                 highlight
                 {
                     class=normal
@@ -4413,7 +4290,7 @@ doxygen
             }
             codeline
             {
-                lineno=130
+                lineno=126
                 highlight
                 {
                     class=normal
@@ -4421,7 +4298,7 @@ doxygen
             }
             codeline
             {
-                lineno=131
+                lineno=127
                 highlight
                 {
                     class=normal
@@ -4499,7 +4376,7 @@ doxygen
             }
             codeline
             {
-                lineno=132
+                lineno=128
                 highlight
                 {
                     class=normal
@@ -4507,7 +4384,7 @@ doxygen
             }
             codeline
             {
-                lineno=133
+                lineno=129
                 highlight
                 {
                     class=normal
@@ -4585,7 +4462,7 @@ doxygen
             }
             codeline
             {
-                lineno=134
+                lineno=130
                 highlight
                 {
                     class=normal
@@ -4593,7 +4470,7 @@ doxygen
             }
             codeline
             {
-                lineno=135
+                lineno=131
                 highlight
                 {
                     class=normal
@@ -4671,7 +4548,7 @@ doxygen
             }
             codeline
             {
-                lineno=136
+                lineno=132
                 highlight
                 {
                     class=normal
@@ -4679,7 +4556,7 @@ doxygen
             }
             codeline
             {
-                lineno=137
+                lineno=133
                 highlight
                 {
                     class=normal
@@ -4745,7 +4622,7 @@ doxygen
             }
             codeline
             {
-                lineno=138
+                lineno=134
                 highlight
                 {
                     class=normal
@@ -4753,7 +4630,7 @@ doxygen
             }
             codeline
             {
-                lineno=139
+                lineno=135
                 highlight
                 {
                     class=normal
@@ -4843,7 +4720,7 @@ doxygen
             }
             codeline
             {
-                lineno=140
+                lineno=136
                 highlight
                 {
                     class=normal
@@ -4851,7 +4728,7 @@ doxygen
             }
             codeline
             {
-                lineno=141
+                lineno=137
                 highlight
                 {
                     class=normal
@@ -4860,6 +4737,45 @@ doxygen
                 {
                     class=comment
                     chars="/*"
+                }
+            }
+            codeline
+            {
+                lineno=138
+                highlight
+                {
+                    class=comment
+                    chars="**=============================================================================="
+                }
+            }
+            codeline
+            {
+                lineno=139
+                highlight
+                {
+                    class=comment
+                    chars="**"
+                }
+            }
+            codeline
+            {
+                lineno=140
+                highlight
+                {
+                    class=comment
+                    sp
+                    {
+                    }
+                    chars="**Abort"
+                }
+            }
+            codeline
+            {
+                lineno=141
+                highlight
+                {
+                    class=comment
+                    chars="**"
                 }
             }
             codeline
@@ -4877,45 +4793,6 @@ doxygen
                 highlight
                 {
                     class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=144
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    chars="**Abort"
-                }
-            }
-            codeline
-            {
-                lineno=145
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=146
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=147
-                highlight
-                {
-                    class=comment
                     chars="*/"
                 }
                 highlight
@@ -4925,7 +4802,7 @@ doxygen
             }
             codeline
             {
-                lineno=148
+                lineno=144
                 highlight
                 {
                     class=normal
@@ -4933,7 +4810,7 @@ doxygen
             }
             codeline
             {
-                lineno=149
+                lineno=145
                 highlight
                 {
                     class=normal
@@ -4964,7 +4841,7 @@ doxygen
             }
             codeline
             {
-                lineno=150
+                lineno=146
                 highlight
                 {
                     class=normal
@@ -4972,7 +4849,7 @@ doxygen
             }
             codeline
             {
-                lineno=176
+                lineno=172
                 highlight
                 {
                     class=keywordtype
@@ -5058,7 +4935,7 @@ doxygen
             }
             codeline
             {
-                lineno=177
+                lineno=173
                 highlight
                 {
                     class=normal
@@ -5066,7 +4943,7 @@ doxygen
             }
             codeline
             {
-                lineno=193
+                lineno=189
                 highlight
                 {
                     class=normal
@@ -5078,16 +4955,7 @@ doxygen
             }
             codeline
             {
-                lineno=194
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
+                lineno=190
                 highlight
                 {
                     class=normal
@@ -5100,7 +4968,7 @@ doxygen
                         kindref=member
                         chars="OE_Snprintf"
                     }
-                    chars="("
+                    chars="int("
                 }
                 highlight
                 {
@@ -5132,19 +5000,10 @@ doxygen
                     sp
                     {
                     }
-                    chars="size,"
-                }
-                highlight
-                {
-                    class=keyword
-                    chars="const"
-                }
-                highlight
-                {
-                    class=normal
                     sp
                     {
                     }
+                    chars="size,const"
                 }
                 highlight
                 {
@@ -5165,7 +5024,7 @@ doxygen
             }
             codeline
             {
-                lineno=195
+                lineno=191
                 highlight
                 {
                     class=normal
@@ -5173,7 +5032,7 @@ doxygen
             }
             codeline
             {
-                lineno=196
+                lineno=192
                 highlight
                 {
                     class=normal
@@ -5186,7 +5045,7 @@ doxygen
             }
             codeline
             {
-                lineno=197
+                lineno=193
                 highlight
                 {
                     class=comment
@@ -5195,7 +5054,7 @@ doxygen
             }
             codeline
             {
-                lineno=198
+                lineno=194
                 highlight
                 {
                     class=comment
@@ -5204,7 +5063,7 @@ doxygen
             }
             codeline
             {
-                lineno=199
+                lineno=195
                 highlight
                 {
                     class=comment
@@ -5234,7 +5093,7 @@ doxygen
             }
             codeline
             {
-                lineno=200
+                lineno=196
                 highlight
                 {
                     class=comment
@@ -5243,7 +5102,7 @@ doxygen
             }
             codeline
             {
-                lineno=201
+                lineno=197
                 highlight
                 {
                     class=comment
@@ -5252,7 +5111,7 @@ doxygen
             }
             codeline
             {
-                lineno=202
+                lineno=198
                 highlight
                 {
                     class=comment
@@ -5261,6 +5120,96 @@ doxygen
                 highlight
                 {
                     class=normal
+                }
+            }
+            codeline
+            {
+                lineno=199
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=200
+                highlight
+                {
+                    class=normal
+                }
+                highlight
+                {
+                    class=keywordtype
+                    chars="int"
+                }
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="OE_HostPuts(const"
+                }
+                highlight
+                {
+                    class=keywordtype
+                    chars="char"
+                }
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    chars="*str);"
+                }
+            }
+            codeline
+            {
+                lineno=201
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=202
+                highlight
+                {
+                    class=normal
+                }
+                highlight
+                {
+                    class=keywordtype
+                    chars="int"
+                }
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="OE_HostPrint(const"
+                }
+                highlight
+                {
+                    class=keywordtype
+                    chars="char"
+                }
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    chars="*str);"
                 }
             }
             codeline
@@ -5289,127 +5238,10 @@ doxygen
                     sp
                     {
                     }
-                    chars="OE_HostPuts("
-                }
-                highlight
-                {
-                    class=keyword
-                    chars="const"
-                }
-                highlight
-                {
-                    class=normal
                     sp
                     {
                     }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="char"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="*str);"
-                }
-            }
-            codeline
-            {
-                lineno=205
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=206
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="OE_HostPrint("
-                }
-                highlight
-                {
-                    class=keyword
-                    chars="const"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="char"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="*str);"
-                }
-            }
-            codeline
-            {
-                lineno=207
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=208
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="OE_HostVprintf("
-                }
-                highlight
-                {
-                    class=keyword
-                    chars="const"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
+                    chars="OE_HostVprintf(const"
                 }
                 highlight
                 {
@@ -5433,7 +5265,7 @@ doxygen
             }
             codeline
             {
-                lineno=209
+                lineno=205
                 highlight
                 {
                     class=normal
@@ -5441,7 +5273,7 @@ doxygen
             }
             codeline
             {
-                lineno=221
+                lineno=217
                 highlight
                 {
                     class=normal
@@ -5453,7 +5285,7 @@ doxygen
             }
             codeline
             {
-                lineno=222
+                lineno=218
                 highlight
                 {
                     class=normal
@@ -5475,19 +5307,10 @@ doxygen
                         kindref=member
                         chars="OE_HostPrintf"
                     }
-                    chars="("
-                }
-                highlight
-                {
-                    class=keyword
-                    chars="const"
-                }
-                highlight
-                {
-                    class=normal
                     sp
                     {
                     }
+                    chars="(const"
                 }
                 highlight
                 {
@@ -5508,7 +5331,7 @@ doxygen
             }
             codeline
             {
-                lineno=223
+                lineno=219
                 highlight
                 {
                     class=normal
@@ -5516,7 +5339,7 @@ doxygen
             }
             codeline
             {
-                lineno=224
+                lineno=220
                 highlight
                 {
                     class=normal
@@ -5550,7 +5373,7 @@ doxygen
             }
             codeline
             {
-                lineno=225
+                lineno=221
                 highlight
                 {
                     class=normal
@@ -5558,7 +5381,7 @@ doxygen
             }
             codeline
             {
-                lineno=240
+                lineno=236
                 refid=enclave_8h_a1c0f1e4f4f25df87c37777a5ef9fa8c7_1a1c0f1e4f4f25df87c37777a5ef9fa8c7
                 refkind=member
                 highlight
@@ -5594,7 +5417,7 @@ doxygen
             }
             codeline
             {
-                lineno=241
+                lineno=237
                 highlight
                 {
                     class=normal
@@ -5630,7 +5453,7 @@ doxygen
             }
             codeline
             {
-                lineno=242
+                lineno=238
                 highlight
                 {
                     class=normal
@@ -5663,7 +5486,7 @@ doxygen
             }
             codeline
             {
-                lineno=243
+                lineno=239
                 highlight
                 {
                     class=normal
@@ -5672,7 +5495,7 @@ doxygen
             }
             codeline
             {
-                lineno=244
+                lineno=240
                 highlight
                 {
                     class=normal
@@ -5717,7 +5540,7 @@ doxygen
             }
             codeline
             {
-                lineno=245
+                lineno=241
                 highlight
                 {
                     class=normal
@@ -5725,7 +5548,7 @@ doxygen
             }
             codeline
             {
-                lineno=246
+                lineno=242
                 highlight
                 {
                     class=normal
@@ -5758,7 +5581,7 @@ doxygen
             }
             codeline
             {
-                lineno=247
+                lineno=243
                 highlight
                 {
                     class=normal
@@ -5831,7 +5654,7 @@ doxygen
             }
             codeline
             {
-                lineno=248
+                lineno=244
                 highlight
                 {
                     class=normal
@@ -5839,7 +5662,7 @@ doxygen
             }
             codeline
             {
-                lineno=249
+                lineno=245
                 highlight
                 {
                     class=normal
@@ -5872,7 +5695,7 @@ doxygen
             }
             codeline
             {
-                lineno=250
+                lineno=246
                 highlight
                 {
                     class=normal
@@ -5881,7 +5704,7 @@ doxygen
             }
             codeline
             {
-                lineno=251
+                lineno=247
                 highlight
                 {
                     class=normal
@@ -5889,7 +5712,7 @@ doxygen
             }
             codeline
             {
-                lineno=252
+                lineno=248
                 highlight
                 {
                     class=normal
@@ -5902,7 +5725,7 @@ doxygen
             }
             codeline
             {
-                lineno=253
+                lineno=249
                 highlight
                 {
                     class=comment
@@ -5911,7 +5734,7 @@ doxygen
             }
             codeline
             {
-                lineno=254
+                lineno=250
                 highlight
                 {
                     class=comment
@@ -5920,7 +5743,7 @@ doxygen
             }
             codeline
             {
-                lineno=255
+                lineno=251
                 highlight
                 {
                     class=comment
@@ -5941,7 +5764,7 @@ doxygen
             }
             codeline
             {
-                lineno=256
+                lineno=252
                 highlight
                 {
                     class=comment
@@ -5950,7 +5773,7 @@ doxygen
             }
             codeline
             {
-                lineno=257
+                lineno=253
                 highlight
                 {
                     class=comment
@@ -5959,7 +5782,7 @@ doxygen
             }
             codeline
             {
-                lineno=258
+                lineno=254
                 highlight
                 {
                     class=comment
@@ -5972,7 +5795,7 @@ doxygen
             }
             codeline
             {
-                lineno=259
+                lineno=255
                 highlight
                 {
                     class=normal
@@ -5980,7 +5803,7 @@ doxygen
             }
             codeline
             {
-                lineno=260
+                lineno=256
                 highlight
                 {
                     class=normal
@@ -6014,7 +5837,7 @@ doxygen
             }
             codeline
             {
-                lineno=261
+                lineno=257
                 highlight
                 {
                     class=normal
@@ -6022,7 +5845,7 @@ doxygen
             }
             codeline
             {
-                lineno=262
+                lineno=258
                 highlight
                 {
                     class=normal
@@ -6072,7 +5895,7 @@ doxygen
             }
             codeline
             {
-                lineno=263
+                lineno=259
                 highlight
                 {
                     class=normal
@@ -6080,7 +5903,7 @@ doxygen
             }
             codeline
             {
-                lineno=264
+                lineno=260
                 highlight
                 {
                     class=normal
@@ -6114,7 +5937,7 @@ doxygen
             }
             codeline
             {
-                lineno=265
+                lineno=261
                 highlight
                 {
                     class=normal
@@ -6122,7 +5945,7 @@ doxygen
             }
             codeline
             {
-                lineno=266
+                lineno=262
                 highlight
                 {
                     class=normal
@@ -6168,7 +5991,7 @@ doxygen
             }
             codeline
             {
-                lineno=267
+                lineno=263
                 highlight
                 {
                     class=normal
@@ -6176,7 +5999,7 @@ doxygen
             }
             codeline
             {
-                lineno=268
+                lineno=264
                 highlight
                 {
                     class=normal
@@ -6185,6 +6008,45 @@ doxygen
                 {
                     class=comment
                     chars="/*"
+                }
+            }
+            codeline
+            {
+                lineno=265
+                highlight
+                {
+                    class=comment
+                    chars="**=============================================================================="
+                }
+            }
+            codeline
+            {
+                lineno=266
+                highlight
+                {
+                    class=comment
+                    chars="**"
+                }
+            }
+            codeline
+            {
+                lineno=267
+                highlight
+                {
+                    class=comment
+                    sp
+                    {
+                    }
+                    chars="**OE_Sbrk()"
+                }
+            }
+            codeline
+            {
+                lineno=268
+                highlight
+                {
+                    class=comment
+                    chars="**"
                 }
             }
             codeline
@@ -6202,45 +6064,6 @@ doxygen
                 highlight
                 {
                     class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=271
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    chars="**OE_Sbrk()"
-                }
-            }
-            codeline
-            {
-                lineno=272
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=273
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=274
-                highlight
-                {
-                    class=comment
                     chars="*/"
                 }
                 highlight
@@ -6250,7 +6073,7 @@ doxygen
             }
             codeline
             {
-                lineno=275
+                lineno=271
                 highlight
                 {
                     class=normal
@@ -6258,7 +6081,7 @@ doxygen
             }
             codeline
             {
-                lineno=276
+                lineno=272
                 highlight
                 {
                     class=normal
@@ -6282,7 +6105,7 @@ doxygen
             }
             codeline
             {
-                lineno=277
+                lineno=273
                 highlight
                 {
                     class=normal
@@ -6290,7 +6113,7 @@ doxygen
             }
             codeline
             {
-                lineno=278
+                lineno=274
                 highlight
                 {
                     class=normal
@@ -6299,6 +6122,45 @@ doxygen
                 {
                     class=comment
                     chars="/*"
+                }
+            }
+            codeline
+            {
+                lineno=275
+                highlight
+                {
+                    class=comment
+                    chars="**=============================================================================="
+                }
+            }
+            codeline
+            {
+                lineno=276
+                highlight
+                {
+                    class=comment
+                    chars="**"
+                }
+            }
+            codeline
+            {
+                lineno=277
+                highlight
+                {
+                    class=comment
+                    sp
+                    {
+                    }
+                    chars="**Assertion:"
+                }
+            }
+            codeline
+            {
+                lineno=278
+                highlight
+                {
+                    class=comment
+                    chars="**"
                 }
             }
             codeline
@@ -6316,45 +6178,6 @@ doxygen
                 highlight
                 {
                     class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=281
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    chars="**Assertion:"
-                }
-            }
-            codeline
-            {
-                lineno=282
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=283
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=284
-                highlight
-                {
-                    class=comment
                     chars="*/"
                 }
                 highlight
@@ -6364,7 +6187,7 @@ doxygen
             }
             codeline
             {
-                lineno=285
+                lineno=281
                 highlight
                 {
                     class=normal
@@ -6372,7 +6195,7 @@ doxygen
             }
             codeline
             {
-                lineno=286
+                lineno=282
                 highlight
                 {
                     class=normal
@@ -6393,7 +6216,7 @@ doxygen
             }
             codeline
             {
-                lineno=287
+                lineno=283
                 highlight
                 {
                     class=normal
@@ -6438,7 +6261,7 @@ doxygen
             }
             codeline
             {
-                lineno=288
+                lineno=284
                 highlight
                 {
                     class=normal
@@ -6483,7 +6306,7 @@ doxygen
             }
             codeline
             {
-                lineno=289
+                lineno=285
                 highlight
                 {
                     class=normal
@@ -6516,7 +6339,7 @@ doxygen
             }
             codeline
             {
-                lineno=290
+                lineno=286
                 highlight
                 {
                     class=normal
@@ -6561,7 +6384,7 @@ doxygen
             }
             codeline
             {
-                lineno=291
+                lineno=287
                 highlight
                 {
                     class=normal
@@ -6569,7 +6392,7 @@ doxygen
             }
             codeline
             {
-                lineno=292
+                lineno=288
                 highlight
                 {
                     class=normal
@@ -6588,7 +6411,7 @@ doxygen
             }
             codeline
             {
-                lineno=293
+                lineno=289
                 highlight
                 {
                     class=preprocessor
@@ -6612,7 +6435,7 @@ doxygen
             }
             codeline
             {
-                lineno=294
+                lineno=290
                 highlight
                 {
                     class=preprocessor
@@ -6636,7 +6459,7 @@ doxygen
             }
             codeline
             {
-                lineno=295
+                lineno=291
                 highlight
                 {
                     class=preprocessor
@@ -6675,7 +6498,7 @@ doxygen
             }
             codeline
             {
-                lineno=296
+                lineno=292
                 highlight
                 {
                     class=preprocessor
@@ -6732,7 +6555,7 @@ doxygen
             }
             codeline
             {
-                lineno=297
+                lineno=293
                 highlight
                 {
                     class=preprocessor
@@ -6756,7 +6579,7 @@ doxygen
             }
             codeline
             {
-                lineno=298
+                lineno=294
                 highlight
                 {
                     class=preprocessor
@@ -6784,7 +6607,7 @@ doxygen
             }
             codeline
             {
-                lineno=299
+                lineno=295
                 highlight
                 {
                     class=normal
@@ -6792,7 +6615,7 @@ doxygen
             }
             codeline
             {
-                lineno=300
+                lineno=296
                 highlight
                 {
                     class=normal
@@ -6801,7 +6624,7 @@ doxygen
             }
             codeline
             {
-                lineno=301
+                lineno=297
                 highlight
                 {
                     class=normal
@@ -6809,7 +6632,7 @@ doxygen
             }
             codeline
             {
-                lineno=302
+                lineno=298
                 highlight
                 {
                     class=normal
