@@ -190,12 +190,23 @@ static void _HandleECALL(
     OE_Memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
 
+    /* Call the OE_Constructor() on the first ECALL */
+    {
+        static OE_OnceType _once = OE_ONCE_INITIALIZER;
+        OE_Once(&_once, OE_Constructor);
+    }
+
     /* Dispatch the ECALL */
     switch (func)
     {
         case OE_FUNC_CALL_ENCLAVE:
         {
             _HandleCallEnclave(argIn, &argOut);
+            break;
+        }
+        case OE_FUNC_DESTRUCTOR:
+        {
+            OE_Destructor();
             break;
         }
         default:
@@ -250,7 +261,7 @@ static __inline__ void _HandleORET(
 */
 
 OE_Result __OE_OCall(
-    int func,
+    uint32_t func,
     uint64_t argIn,
     uint64_t* argOut)
 {

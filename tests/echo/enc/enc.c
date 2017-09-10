@@ -1,6 +1,16 @@
 #include <openenclave/enclave.h>
 #include "../args.h"
 
+OE_EXPORT void OE_Constructor(void)
+{
+    OE_HostPrintf("Hello from Echo constructor!\n");
+}
+
+OE_EXPORT void OE_Destructor(void)
+{
+    OE_HostPrintf("Hello from Echo destructor!\n");
+}
+
 OE_ECALL void Echo(void* args_)
 {
     EchoArgs* args = (EchoArgs*)args_;
@@ -23,7 +33,7 @@ OE_ECALL void Echo(void* args_)
         return;
     }
 
-    OE_HostPuts("Hello from Echo enclave!");
+    OE_HostPrintf("Hello from Echo function!\n");
 
     args->ret = 0;
 }

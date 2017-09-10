@@ -14,7 +14,7 @@ SOURCES = main.cpp
 
 LIBRARIES += $(LIBDIR)/host/liboehost.a
 
-LDFLAGS += -L$(LIBDIR) -lcrypto -lpthread
+LDFLAGS += -L$(LIBDIR) -lcrypto -lpthread -ldl
 
 all:
 	$(MAKE) program

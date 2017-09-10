@@ -26,6 +26,26 @@ OE_EXTERNC_BEGIN
 
 #define OE_REPORT_DATA_SIZE 64
 
+
+/**
+ * The enclave constructor function.
+ *
+ * The enclave constructor function is called after enclave creation when
+ * the enclave is entered for the first time. Enclaves may optionally include
+ * a definition to this function.
+ *
+ */
+OE_EXPORT void OE_Constructor(void);
+
+/**
+ * The enclave destructor function.
+ *
+ * The enclave destructor function is called when an enclave is terminated by
+ * the host. Enclaves may optionally include a definition to this function.
+ *
+ */
+OE_EXPORT void OE_Destructor(void);
+
 /**
  * Perform an outside function call (or OCALL) into the host.
  *

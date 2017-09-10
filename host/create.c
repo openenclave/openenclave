@@ -20,6 +20,7 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/mem.h>
+#include <openenclave/bits/calls.h>
 #include "enclave.h"
 
 /*
@@ -1097,6 +1098,9 @@ OE_Result OE_TerminateEnclave(
     /* Check parameters */
     if (!enclave || enclave->magic != ENCLAVE_MAGIC)
         OE_THROW(OE_INVALID_PARAMETER);
+
+    /* Call the enclave destructor */
+    OE_TRY(__OE_ECall(enclave, OE_FUNC_DESTRUCTOR, 0, NULL));
 
     /* Clear the magic number */
     enclave->magic = 0;

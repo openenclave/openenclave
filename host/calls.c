@@ -397,6 +397,7 @@ static OE_Result _HandleOCALL(
             HandleNanosleep(argIn);
             break;
 
+        case OE_FUNC_DESTRUCTOR:
         case OE_FUNC_CALL_ENCLAVE:
             assert("Invalid OCALL" == NULL);
             break;
@@ -537,6 +538,9 @@ OE_Result __OE_ECall(
     if (!enclave)
         OE_THROW(OE_INVALID_PARAMETER);
 
+    /* Set into thread local storage so it can be retrieved during an OCALL */
+    SetEnclave(enclave);
+
     /* Assign a TD for this operation */
     if (!(tcs = _AssignTCS(enclave)))
         OE_THROW(OE_OUT_OF_THREADS);
@@ -602,6 +606,8 @@ catch:
 
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
+
+    SetEnclave(NULL);
 
     return result;
 }
@@ -678,8 +684,6 @@ OE_Result OE_CallEnclave(
 
     /* Peform the ECALL */
     {
-        SetEnclave(enclave);
-
         uint64_t argOut = 0;
 
         OE_TRY(__OE_ECall(
@@ -687,8 +691,6 @@ OE_Result OE_CallEnclave(
             OE_FUNC_CALL_ENCLAVE, 
             (uint64_t)&callEnclaveArgs, 
             &argOut));
-
-        SetEnclave(NULL);
     }
 
     /* Check the result */

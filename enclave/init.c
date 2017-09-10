@@ -84,6 +84,8 @@ static void _CheckMemoryBoundaries(void)
 
 void OE_InitializeEnclave(TD* td)
 {
+OE_HostPrintf("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\n");
+
     if (td->initialized == 0)
     {
         static OE_Spinlock _spin = OE_SPINLOCK_INITIALIZER;
@@ -105,3 +107,43 @@ void OE_InitializeEnclave(TD* td)
         OE_SpinUnlock(&_spin);
     }
 }
+
+/*
+**==============================================================================
+**
+** __OE_Constructor()
+**
+**     This is the defaut OE_Constructor(). Since it is defined as a weak
+**     reference, the enclave developer may override it with another
+**     definition.
+**
+**==============================================================================
+*/
+
+void __OE_Constructor(void);
+
+void __OE_Constructor(void)
+{
+}
+
+OE_WEAK_ALIAS(__OE_Constructor, OE_Constructor);
+
+/*
+**==============================================================================
+**
+** __OE_Destructor()
+**
+**     This is the defaut OE_Destructor(). Since it is defined as a weak
+**     reference, the enclave developer may override it with another
+**     definition.
+**
+**==============================================================================
+*/
+
+void __OE_Destructor(void);
+
+void __OE_Destructor(void)
+{
+}
+
+OE_WEAK_ALIAS(__OE_Destructor, OE_Destructor);
