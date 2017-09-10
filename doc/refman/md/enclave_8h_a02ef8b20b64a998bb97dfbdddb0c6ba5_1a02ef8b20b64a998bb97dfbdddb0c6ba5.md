@@ -39,6 +39,7 @@ The buffer is strictly within the enclave.
 At least some part of the buffer is outside the enclave.
 
 
-=================
+---
+***
 [index](index.md)
 

@@ -8,6 +8,7 @@
         const char * str);
 ## Description 
 
-=================
+---
+***
 [index](index.md)
 

@@ -10,6 +10,7 @@
         size_t * reportSize);
 ## Description 
 
-=================
+---
+***
 [index](index.md)
 

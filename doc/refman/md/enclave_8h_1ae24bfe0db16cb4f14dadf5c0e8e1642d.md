@@ -10,6 +10,7 @@
         size_t n);
 ## Description 
 
-=================
+---
+***
 [index](index.md)
 
