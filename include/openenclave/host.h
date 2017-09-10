@@ -36,8 +36,9 @@ typedef struct _OE_Enclave OE_Enclave;
  * This function creates an enclave from an enclave image file. While creating
  * the enclave, this function interacts with the Intel(R) SGX drviver and the 
  * Intel(R) AESM service. Enclave creation peforms the following steps.
- *     - Loads an enclave image file into memory
- *     - Injects metadata into the enclave memory image
+ *     - Loads an enclave image file
+ *     - Maps the enclave memory image onto the driver device (/dev/isgx)
+ *     - Lays out the enclave memory image and injects metadata
  *     - Asks the driver to create the enclave (ECREATE)
  *     - Asks the driver to add the pages to the EPC (EADD/EEXTEND)
  *     - Asks the Intel(R) launch enclave (LE) for a launch token (EINITKEY)
@@ -63,6 +64,18 @@ OE_Result OE_CreateEnclave(
     uint32_t flags,
     OE_Enclave** enclave);
 
+/**
+ * Terminates an enclave and reclaims its resources.
+ *
+ * This function terminates an enclave to reclaims all of its resources. This
+ * involves unmapping the memory that was mapped by \b OE_CreateEnclave().
+ * Once this is peformed, the enclave can no longer be accessed.
+ *
+ * \param enclave The instance of the enclave to be terminated.
+ *
+ * \returns If successful, this function return OE_OK
+ *
+ */
 OE_Result OE_TerminateEnclave(
     OE_Enclave* enclave);
 
