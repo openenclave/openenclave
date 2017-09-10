@@ -1,5 +1,3 @@
-[index](index.md)
-
 # OE_Memcpy()
 
 
@@ -11,4 +9,7 @@
         const void * src,
         size_t n);
 ## Description 
+
+=================
+[index](index.md)
 

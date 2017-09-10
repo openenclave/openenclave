@@ -1,5 +1,3 @@
-[index](index.md)
-
 # OE_HostStrdup()
 
 
@@ -9,4 +7,7 @@
     OE_HostStrdup(
         const char * str);
 ## Description 
+
+=================
+[index](index.md)
 

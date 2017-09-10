@@ -1,5 +1,3 @@
-[index](index.md)
-
 # OE_Memset()
 
 
@@ -11,4 +9,7 @@
         int c,
         size_t n);
 ## Description 
+
+=================
+[index](index.md)
 

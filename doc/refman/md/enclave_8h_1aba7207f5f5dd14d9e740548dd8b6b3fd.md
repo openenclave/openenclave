@@ -1,5 +1,3 @@
-[index](index.md)
-
 # OE_HostMalloc()
 
 
@@ -9,4 +7,7 @@
     OE_HostMalloc(
         size_t size);
 ## Description 
+
+=================
+[index](index.md)
 

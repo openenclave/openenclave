@@ -227,9 +227,6 @@ bool GenerateFunctionFile(const Element& elem)
 
     cout << "Created " << filename << endl;
 
-    // Write the navigation back to index:
-    os << "[index](index.md)" << endl << endl;
-
     // Write the function name:
     os << "# " << name << "()" << endl << endl;
 
@@ -272,6 +269,10 @@ bool GenerateFunctionFile(const Element& elem)
         if (!PrintDetailedDescription(e, os))
             return false;
     }
+
+    // Write the navigation back to index:
+    os << "=================" << endl;
+    os << "[index](index.md)" << endl << endl;
 
     return true;
 }

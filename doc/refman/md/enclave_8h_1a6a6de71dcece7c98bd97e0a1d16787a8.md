@@ -1,5 +1,3 @@
-[index](index.md)
-
 # OE_Strlcpy()
 
 
@@ -11,4 +9,7 @@
         const char * src,
         size_t size);
 ## Description 
+
+=================
+[index](index.md)
 

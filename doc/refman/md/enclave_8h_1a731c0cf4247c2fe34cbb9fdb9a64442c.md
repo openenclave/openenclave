@@ -1,5 +1,3 @@
-[index](index.md)
-
 # OE_HostPrint()
 
 
@@ -9,4 +7,7 @@
     OE_HostPrint(
         const char * str);
 ## Description 
+
+=================
+[index](index.md)
 

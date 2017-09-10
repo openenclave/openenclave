@@ -1,5 +1,3 @@
-[index](index.md)
-
 # OE_GetReportForRemoteAttestation()
 
 
@@ -11,4 +9,7 @@
         void * report,
         size_t * reportSize);
 ## Description 
+
+=================
+[index](index.md)
 
