@@ -61,7 +61,7 @@ OE_Result OE_CallHost(
     void *args);
 
 OE_Result __OE_OCall(
-    int func,
+    uint32_t func,
     uint64_t argIn,
     uint64_t* argOut);
 
@@ -105,12 +105,6 @@ OE_Result OE_GetReportForRemoteAttestation(
     const uint8_t reportData[OE_REPORT_DATA_SIZE],
     void *report,
     size_t* reportSize);
-
-void __OE_HandleMain(
-    uint64_t arg1,
-    uint64_t arg2,
-    uint64_t cssa,
-    void* tcs);
 
 /*
 **==============================================================================

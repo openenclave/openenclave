@@ -67,7 +67,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1ac769736113e86c390c4968460d1c3e90
+            refid=enclave_8h_1a15ba7584cd470194bcda2f98ab133920
             kind=function
             name
             {
@@ -99,15 +99,6 @@ doxygenindex
             name
             {
                 chars="OE_GetReportForRemoteAttestation"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_1ae7e965bfd292e51ab5fd220f78a19135
-            kind=function
-            name
-            {
-                chars="__OE_HandleMain"
             }
         }
         member

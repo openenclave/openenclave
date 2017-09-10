@@ -40,4 +40,12 @@
 void OE_Exit(uint64_t arg1, uint64_t arg2);
 #endif
 
+#ifndef __ASSEMBLER__
+void __OE_HandleMain(
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t cssa,
+    void* tcs);
+#endif
+
 #endif /* _ASMDEFS_H */
