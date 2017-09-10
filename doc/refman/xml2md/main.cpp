@@ -107,6 +107,7 @@ bool PrintPara(const Element& elem, ostream& os)
             {
                 const Element& listitem = listitems[i];
 
+                // ATTN: this should recursively called PrintPara()
                 const string& chars = listitem["para"].chars();
 
                 if (chars.size())
