@@ -20,3 +20,7 @@
 
 * [OE_StackAlloc()](enclave_8h_a1c0f1e4f4f25df87c37777a5ef9fa8c7_1a1c0f1e4f4f25df87c37777a5ef9fa8c7.md)
 
+### host.h
+
+* [OE_CreateEnclave()](host_8h_1a598cc1d7a051a13f5ff4ba6160ccbd82.md)
+
