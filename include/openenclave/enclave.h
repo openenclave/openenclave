@@ -72,7 +72,7 @@ bool OE_IsOutsideEnclave(
  * Call the host function named \b func, passing it the \b args parameter. The
  * host must provide a host function with the following signature.
  *
- *     OE_OCALL void MyHostFunction(void* args);
+ *     OE_OCALL void (*)(void* args);
  *
  * The meaning of the \b args parameter is defined by the OCALL implementation
  * and might be null for some implementations.

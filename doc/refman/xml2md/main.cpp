@@ -73,7 +73,6 @@ void SubstituteTrait(
     {
         chars = chars.substr(0, pos) + ' ' + s + chars.substr(pos + 1);
     }
-cout << "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz=" << chars << endl;
 }
 
 bool PrintPara(const Element& elem, ostream& os)
