@@ -47,11 +47,11 @@ Append new sources to the `INPUT` variable.
 OpenEnclave uses the Doxygen Markdown style througout the sources. To learn
 more about Doyxgen Markdown, see:
 
-[link][https://www.stack.nl/~dimitri/doxygen/manual/markdown.html]
+[Doxygen Markdown Support](https://www.stack.nl/~dimitri/doxygen/manual/markdown.html)
 
 The sections below explain the basics.
 
-*Note:* the xml2md tool only supports the Mardown features described in this
+**Caution:** the xml2md tool only supports the Mardown features described in this
 document.
 
 ### Comment blocks
