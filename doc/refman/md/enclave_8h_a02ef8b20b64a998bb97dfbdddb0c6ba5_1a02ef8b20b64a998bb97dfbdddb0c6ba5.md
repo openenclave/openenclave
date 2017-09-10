@@ -21,3 +21,13 @@ pointer to buffer
 
 size of buffer
 
+## Return value
+
+### true
+
+if buffer is strictly within the enclave
+
+### false
+
+if any portion of the buffer falls outside the enclave
+
