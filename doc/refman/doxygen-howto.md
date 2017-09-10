@@ -31,7 +31,7 @@ or from the top-level directory by typing;
 $ make refman
 ```
 
-## Adding headers files to the Doxygen input list
+## Adding headers files to Doxygen
 
 To add new header files to be processed by Doxygen, edit this file (in the
 current directory).
