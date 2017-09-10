@@ -6,7 +6,15 @@
 
 ### enclave.h
 
+* [OE_Constructor()](enclave_8h_aece7da9aeffed24f8be4f4b599c193ff_1aece7da9aeffed24f8be4f4b599c193ff.md)
+
+* [OE_Destructor()](enclave_8h_a2c5467663b98a8413cf2dff6e4be9d38_1a2c5467663b98a8413cf2dff6e4be9d38.md)
+
+* [OE_OCall()](enclave_8h_a9613c7919aaabdd63711d0b12d286a13_1a9613c7919aaabdd63711d0b12d286a13.md)
+
 * [OE_CallHost()](enclave_8h_a3f4d990cf1e916d65a82481a55aafbf4_1a3f4d990cf1e916d65a82481a55aafbf4.md)
+
+* [OE_RegisterECall()](enclave_8h_a1a810b4ba3bc63e3ad982fe49a7ed91d_1a1a810b4ba3bc63e3ad982fe49a7ed91d.md)
 
 * [OE_IsWithinEnclave()](enclave_8h_a02ef8b20b64a998bb97dfbdddb0c6ba5_1a02ef8b20b64a998bb97dfbdddb0c6ba5.md)
 
@@ -26,5 +34,9 @@
 
 * [OE_TerminateEnclave()](host_8h_a20654d7b450c042ac7b256893b287cbe_1a20654d7b450c042ac7b256893b287cbe.md)
 
+* [OE_ECall()](host_8h_af10a19642d3955cab59d4fe273323f3d_1af10a19642d3955cab59d4fe273323f3d.md)
+
 * [OE_CallEnclave()](host_8h_a5a1d79498b0488d2aea62b0596bcdd4d_1a5a1d79498b0488d2aea62b0596bcdd4d.md)
+
+* [OE_RegisterOCall()](host_8h_acafe99d14d239622e2b7a5fda4b7eb1d_1acafe99d14d239622e2b7a5fda4b7eb1d.md)
 

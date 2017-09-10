@@ -395,6 +395,72 @@ doxygen
             memberdef
             {
                 kind=define
+                id=host_8h_1a38cb9b14ddef3a1143fdc84a6d199bcb
+                prot=public
+                static=no
+                name
+                {
+                    chars="OE_MAX_ECALLS"
+                }
+                initializer
+                {
+                    chars="1024"
+                }
+                briefdescription
+                {
+                }
+                detaileddescription
+                {
+                }
+                inbodydescription
+                {
+                }
+                location
+                {
+                    file=/root/openenclave/include/openenclave/host.h
+                    line=33
+                    column=9
+                    bodyfile=/root/openenclave/include/openenclave/host.h
+                    bodystart=33
+                    bodyend=-1
+                }
+            }
+            memberdef
+            {
+                kind=define
+                id=host_8h_1a16a9d9cfbebae7af4254140b01b588c8
+                prot=public
+                static=no
+                name
+                {
+                    chars="OE_MAX_OCALLS"
+                }
+                initializer
+                {
+                    chars="1024"
+                }
+                briefdescription
+                {
+                }
+                detaileddescription
+                {
+                }
+                inbodydescription
+                {
+                }
+                location
+                {
+                    file=/root/openenclave/include/openenclave/host.h
+                    line=34
+                    column=9
+                    bodyfile=/root/openenclave/include/openenclave/host.h
+                    bodystart=34
+                    bodyend=-1
+                }
+            }
+            memberdef
+            {
+                kind=define
                 id=host_8h_1a5b59e2d498ac044c8c18520347ff9214
                 prot=public
                 static=no
@@ -425,10 +491,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/host.h
-                    line=140
+                    line=203
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/host.h
-                    bodystart=140
+                    bodystart=203
                     bodyend=-1
                 }
             }
@@ -473,6 +539,47 @@ doxygen
                     column=1
                     bodyfile=/root/openenclave/include/openenclave/host.h
                     bodystart=28
+                    bodyend=-1
+                }
+            }
+            memberdef
+            {
+                kind=typedef
+                id=host_8h_1ab168d97a37e192db5d4976fbebb4e1a5
+                prot=public
+                static=no
+                type
+                {
+                    chars="void(*"
+                }
+                definition
+                {
+                    chars="typedef void(* OE_OCallFunction) (uint64_t argIn, uint64_t *argOut)"
+                }
+                argsstring
+                {
+                    chars=")(uint64_t argIn, uint64_t *argOut)"
+                }
+                name
+                {
+                    chars="OE_OCallFunction"
+                }
+                briefdescription
+                {
+                }
+                detaileddescription
+                {
+                }
+                inbodydescription
+                {
+                }
+                location
+                {
+                    file=/root/openenclave/include/openenclave/host.h
+                    line=36
+                    column=1
+                    bodyfile=/root/openenclave/include/openenclave/host.h
+                    bodystart=36
                     bodyend=-1
                 }
             }
@@ -706,7 +813,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/host.h
-                    line=62
+                    line=67
                     column=1
                 }
             }
@@ -803,7 +910,304 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/host.h
-                    line=79
+                    line=84
+                    column=1
+                }
+            }
+            memberdef
+            {
+                kind=function
+                id=host_8h_af10a19642d3955cab59d4fe273323f3d_1af10a19642d3955cab59d4fe273323f3d
+                prot=public
+                static=no
+                const=no
+                explicit=no
+                inline=no
+                virt=non-virtual
+                type
+                {
+                    chars="OE_Result"
+                }
+                definition
+                {
+                    chars="OE_Result OE_ECall"
+                }
+                argsstring
+                {
+                    chars="(OE_Enclave *enclave, uint32_t func, uint64_t argIn, uint64_t *argOut)"
+                }
+                name
+                {
+                    chars="OE_ECall"
+                }
+                param
+                {
+                    type
+                    {
+                        chars="OE_Enclave *"
+                    }
+                    declname
+                    {
+                        chars="enclave"
+                    }
+                }
+                param
+                {
+                    type
+                    {
+                        chars="uint32_t"
+                    }
+                    declname
+                    {
+                        chars="func"
+                    }
+                }
+                param
+                {
+                    type
+                    {
+                        chars="uint64_t"
+                    }
+                    declname
+                    {
+                        chars="argIn"
+                    }
+                }
+                param
+                {
+                    type
+                    {
+                        chars="uint64_t *"
+                    }
+                    declname
+                    {
+                        chars="argOut"
+                    }
+                }
+                briefdescription
+                {
+                    para
+                    {
+                        chars="Perform a low-level enclave function call (ECALL)."
+                    }
+                }
+                detaileddescription
+                {
+                    para
+                    {
+                        bold
+                        {
+                            chars="func"
+                        }
+                        verbatim
+                        {
+                            chars="void (*)(uint64_t argIn, uint64_t* argOut);"
+                        }
+                        chars="This function performs a low-level enclave function call by invoking the function indicated by the  parameter. The enclave defines and registers a corresponding function with the following signature."
+                    }
+                    para
+                    {
+                        bold
+                        {
+                            chars="argIn"
+                        }
+                        bold
+                        {
+                            chars="argOut"
+                        }
+                        chars="The meaning of the  arg  parameters is defined by the implementer of the function and either may be null."
+                    }
+                    para
+                    {
+                        bold
+                        {
+                            chars="OE_CallEnclave()"
+                        }
+                        chars="OpenEnclave uses the low-level ECALL interface to implement internal calls, used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application developers are encouraged to use  instead."
+                    }
+                    para
+                    {
+                        bold
+                        {
+                            chars="ECALL"
+                        }
+                        bold
+                        {
+                            chars="ERET"
+                        }
+                        chars="At the software layer, this function sends an  message to the enclave and waits for an  message. Note that the ECALL implementation may call back into the host (an OCALL) before returning."
+                    }
+                    para
+                    {
+                        bold
+                        {
+                            chars="ENCLU.EENTER"
+                        }
+                        bold
+                        {
+                            chars="ENCLU.EEXIT"
+                        }
+                        chars="At the hardware layer, this function executes the  instruction to enter the enclave. When the enclave returns from the ECALL, it executes the  instruction exit the enclave and to resume host execution."
+                    }
+                    para
+                    {
+                        chars="Note that the return value only indicates whether the ECALL was called and not whether it was successful. The ECALL implementation must define its own error reporting scheme based on its parameters."
+                    }
+                    para
+                    {
+                        parameterlist
+                        {
+                            kind=param
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="func"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The number of the function to be called."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="argsIn"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The input argument passed to the function."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="argsIn"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The out argument passed back from the function."
+                                    }
+                                }
+                            }
+                        }
+                        parameterlist
+                        {
+                            kind=retval
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_OK"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The function was successful."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_FAILED"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The function failed."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_INVALID_PARAMETER"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="One or more parameters is invalid."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_OUT_OF_THREADS"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="No enclave threads are available to make the call."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_UNEXPECTED"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="An unexpected error occurred."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                inbodydescription
+                {
+                }
+                location
+                {
+                    file=/root/openenclave/include/openenclave/host.h
+                    line=127
                     column=1
                 }
             }
@@ -870,7 +1274,7 @@ doxygen
                 {
                     para
                     {
-                        chars="Perform an enclave function call (or ECALL) into the enclave."
+                        chars="Perform a high-level enclave function call (ECALL)."
                     }
                 }
                 detaileddescription
@@ -881,15 +1285,11 @@ doxygen
                         {
                             chars="func"
                         }
-                        bold
-                        {
-                            chars="args"
-                        }
                         verbatim
                         {
                             chars="OE_ECALL void (*)(void* args);"
                         }
-                        chars="Call the enclave function named , passing it the  parameter. The enclave must provide a function with the following signature."
+                        chars="Call the enclave function whose name is given by the  parameter. The enclave must define a corresponding function with the following prototype."
                     }
                     para
                     {
@@ -897,31 +1297,24 @@ doxygen
                         {
                             chars="args"
                         }
-                        chars="The meaning of the  parameter is defined by the ECALL implementation and might be null for some implementations."
+                        chars="The meaning of the  parameter is defined by the implementer of the function and may be null."
                     }
                     para
                     {
                         bold
                         {
-                            chars="ECALL"
+                            ref
+                            {
+                                refid=enclave_8h_a9613c7919aaabdd63711d0b12d286a13_1a9613c7919aaabdd63711d0b12d286a13
+                                kindref=member
+                                chars="OE_OCall()"
+                            }
                         }
                         bold
                         {
-                            chars="ERET"
+                            chars="OE_FUNC_CALL_ENCLAVE"
                         }
-                        chars="At the software layer, this function sends an  message to the enclave and waits for an  message. Note that the ECALL implementation may call back into the host (an OCALL) before returning."
-                    }
-                    para
-                    {
-                        bold
-                        {
-                            chars="ENCLU.EENTER"
-                        }
-                        bold
-                        {
-                            chars="ENCLU.EEXIT"
-                        }
-                        chars="At the hardware layer, this function executes the  instruction to enter the enclave. When the enclave returns from the ECALL, it executes the  instruction exit the enclave and to resume host execution."
+                        chars="This function is implemented using the low-level  interface where the function number is given by the  constant."
                     }
                     para
                     {
@@ -929,7 +1322,7 @@ doxygen
                         {
                             chars="args"
                         }
-                        chars="Note that the return value only indicates whether the ECALL was called and not whether it was successful. The ECALL implementation must define its own error reporting scheme based on the  parameter."
+                        chars="Note that the return value of this function only indicates the success of the call and not of the underlying function. The ECALL implementation must define its own error reporting scheme based on ."
                     }
                     para
                     {
@@ -971,6 +1364,148 @@ doxygen
                                 }
                             }
                         }
+                        simplesect
+                        {
+                            kind=return
+                            para
+                            {
+                                bold
+                                {
+                                    chars="OE_OK"
+                                }
+                                chars="This function return  on success."
+                            }
+                        }
+                    }
+                }
+                inbodydescription
+                {
+                }
+                location
+                {
+                    file=/root/openenclave/include/openenclave/host.h
+                    line=158
+                    column=1
+                }
+            }
+            memberdef
+            {
+                kind=function
+                id=host_8h_acafe99d14d239622e2b7a5fda4b7eb1d_1acafe99d14d239622e2b7a5fda4b7eb1d
+                prot=public
+                static=no
+                const=no
+                explicit=no
+                inline=no
+                virt=non-virtual
+                type
+                {
+                    chars="OE_Result"
+                }
+                definition
+                {
+                    chars="OE_Result OE_RegisterOCall"
+                }
+                argsstring
+                {
+                    chars="(uint32_t func, OE_OCallFunction ocall)"
+                }
+                name
+                {
+                    chars="OE_RegisterOCall"
+                }
+                param
+                {
+                    type
+                    {
+                        chars="uint32_t"
+                    }
+                    declname
+                    {
+                        chars="func"
+                    }
+                }
+                param
+                {
+                    type
+                    {
+                        chars="OE_OCallFunction"
+                    }
+                    declname
+                    {
+                        chars="ocall"
+                    }
+                }
+                briefdescription
+                {
+                    para
+                    {
+                        chars="Registers a low-level OCALL function."
+                    }
+                }
+                detaileddescription
+                {
+                    para
+                    {
+                        bold
+                        {
+                            ref
+                            {
+                                refid=enclave_8h_a9613c7919aaabdd63711d0b12d286a13_1a9613c7919aaabdd63711d0b12d286a13
+                                kindref=member
+                                chars="OE_OCall()"
+                            }
+                        }
+                        verbatim
+                        {
+                            chars="void (*)(uint64_t argIn, uint64_t* argOut);"
+                        }
+                        chars="This function registers a low-level OCALL function that may be called from the encalve by the  function. The registered function has the following prototype."
+                    }
+                    para
+                    {
+                        chars="This interface is intended mainly for internal use and developers are encouraged to use the high-level interface instead."
+                    }
+                    para
+                    {
+                        parameterlist
+                        {
+                            kind=param
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="func"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The number of the function to be called."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="ocall"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The address of the function to be called."
+                                    }
+                                }
+                            }
+                        }
                         parameterlist
                         {
                             kind=retval
@@ -997,14 +1532,31 @@ doxygen
                                 {
                                     parametername
                                     {
-                                        chars="OE_FAILED"
+                                        chars="OE_OUT_OF_RANGE"
                                     }
                                 }
                                 parameterdescription
                                 {
                                     para
                                     {
-                                        chars="The function failed."
+                                        chars="The function number was greater than OE_MAX_OCALLS."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_ALREADY_IN_USE"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The function number is already in use."
                                     }
                                 }
                             }
@@ -1017,7 +1569,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/host.h
-                    line=113
+                    line=183
                     column=1
                 }
             }
@@ -1103,93 +1655,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/host.h
-                    line=118
-                    column=1
-                }
-            }
-            memberdef
-            {
-                kind=function
-                id=host_8h_1af38b45760b690dc036ccdc124962a3db
-                prot=public
-                static=no
-                const=no
-                explicit=no
-                inline=no
-                virt=non-virtual
-                type
-                {
-                    chars="OE_Result"
-                }
-                definition
-                {
-                    chars="OE_Result __OE_ECall"
-                }
-                argsstring
-                {
-                    chars="(OE_Enclave *enclave, int func, uint64_t argIn, uint64_t *argOut)"
-                }
-                name
-                {
-                    chars="__OE_ECall"
-                }
-                param
-                {
-                    type
-                    {
-                        chars="OE_Enclave *"
-                    }
-                    declname
-                    {
-                        chars="enclave"
-                    }
-                }
-                param
-                {
-                    type
-                    {
-                        chars="int"
-                    }
-                    declname
-                    {
-                        chars="func"
-                    }
-                }
-                param
-                {
-                    type
-                    {
-                        chars="uint64_t"
-                    }
-                    declname
-                    {
-                        chars="argIn"
-                    }
-                }
-                param
-                {
-                    type
-                    {
-                        chars="uint64_t *"
-                    }
-                    declname
-                    {
-                        chars="argOut"
-                    }
-                }
-                briefdescription
-                {
-                }
-                detaileddescription
-                {
-                }
-                inbodydescription
-                {
-                }
-                location
-                {
-                    file=/root/openenclave/include/openenclave/host.h
-                    line=124
+                    line=187
                     column=1
                 }
             }
@@ -1271,7 +1737,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/host.h
-                    line=131
+                    line=194
                     column=1
                 }
             }
@@ -1324,7 +1790,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/host.h
-                    line=137
+                    line=200
                     column=1
                 }
             }
@@ -1911,7 +2377,102 @@ doxygen
             }
             codeline
             {
-                lineno=62
+                lineno=33
+                highlight
+                {
+                    class=normal
+                }
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="#defineOE_MAX_ECALLS1024"
+                }
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=34
+                highlight
+                {
+                    class=normal
+                }
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="#defineOE_MAX_OCALLS1024"
+                }
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=35
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=36
+                highlight
+                {
+                    class=normal
+                }
+                highlight
+                {
+                    class=keyword
+                    chars="typedef"
+                }
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="void(*OE_OCallFunction)(uint64_targIn,uint64_t*argOut);"
+                }
+            }
+            codeline
+            {
+                lineno=37
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=67
                 highlight
                 {
                     class=normal
@@ -1923,7 +2484,7 @@ doxygen
             }
             codeline
             {
-                lineno=63
+                lineno=68
                 highlight
                 {
                     class=normal
@@ -1968,7 +2529,7 @@ doxygen
             }
             codeline
             {
-                lineno=64
+                lineno=69
                 highlight
                 {
                     class=normal
@@ -1992,7 +2553,7 @@ doxygen
             }
             codeline
             {
-                lineno=65
+                lineno=70
                 highlight
                 {
                     class=normal
@@ -2016,7 +2577,7 @@ doxygen
             }
             codeline
             {
-                lineno=66
+                lineno=71
                 highlight
                 {
                     class=normal
@@ -2024,7 +2585,7 @@ doxygen
             }
             codeline
             {
-                lineno=79
+                lineno=84
                 highlight
                 {
                     class=normal
@@ -2036,7 +2597,7 @@ doxygen
             }
             codeline
             {
-                lineno=80
+                lineno=85
                 highlight
                 {
                     class=normal
@@ -2060,7 +2621,7 @@ doxygen
             }
             codeline
             {
-                lineno=81
+                lineno=86
                 highlight
                 {
                     class=normal
@@ -2068,19 +2629,19 @@ doxygen
             }
             codeline
             {
-                lineno=113
+                lineno=127
                 highlight
                 {
                     class=normal
                     sp
                     {
                     }
-                    chars="OE_ResultOE_CallEnclave("
+                    chars="OE_ResultOE_ECall("
                 }
             }
             codeline
             {
-                lineno=114
+                lineno=128
                 highlight
                 {
                     class=normal
@@ -2104,7 +2665,123 @@ doxygen
             }
             codeline
             {
-                lineno=115
+                lineno=129
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="uint32_tfunc,"
+                }
+            }
+            codeline
+            {
+                lineno=130
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="uint64_targIn,"
+                }
+            }
+            codeline
+            {
+                lineno=131
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="uint64_t*argOut);"
+                }
+            }
+            codeline
+            {
+                lineno=132
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=158
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    chars="OE_ResultOE_CallEnclave("
+                }
+            }
+            codeline
+            {
+                lineno=159
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="OE_Enclave*enclave,"
+                }
+            }
+            codeline
+            {
+                lineno=160
                 highlight
                 {
                     class=normal
@@ -2149,7 +2826,7 @@ doxygen
             }
             codeline
             {
-                lineno=116
+                lineno=161
                 highlight
                 {
                     class=normal
@@ -2182,7 +2859,7 @@ doxygen
             }
             codeline
             {
-                lineno=117
+                lineno=162
                 highlight
                 {
                     class=normal
@@ -2190,7 +2867,75 @@ doxygen
             }
             codeline
             {
-                lineno=118
+                lineno=183
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    chars="OE_ResultOE_RegisterOCall("
+                }
+            }
+            codeline
+            {
+                lineno=184
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="uint32_tfunc,"
+                }
+            }
+            codeline
+            {
+                lineno=185
+                highlight
+                {
+                    class=normal
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="OE_OCallFunctionocall);"
+                }
+            }
+            codeline
+            {
+                lineno=186
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=187
                 highlight
                 {
                     class=normal
@@ -2202,7 +2947,7 @@ doxygen
             }
             codeline
             {
-                lineno=119
+                lineno=188
                 highlight
                 {
                     class=normal
@@ -2247,7 +2992,7 @@ doxygen
             }
             codeline
             {
-                lineno=120
+                lineno=189
                 highlight
                 {
                     class=normal
@@ -2280,7 +3025,7 @@ doxygen
             }
             codeline
             {
-                lineno=121
+                lineno=190
                 highlight
                 {
                     class=normal
@@ -2313,7 +3058,7 @@ doxygen
             }
             codeline
             {
-                lineno=122
+                lineno=191
                 highlight
                 {
                     class=normal
@@ -2346,7 +3091,7 @@ doxygen
             }
             codeline
             {
-                lineno=123
+                lineno=192
                 highlight
                 {
                     class=normal
@@ -2354,132 +3099,7 @@ doxygen
             }
             codeline
             {
-                lineno=124
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="OE_Result__OE_ECall("
-                }
-            }
-            codeline
-            {
-                lineno=125
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_Enclave*enclave,"
-                }
-            }
-            codeline
-            {
-                lineno=126
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="func,"
-                }
-            }
-            codeline
-            {
-                lineno=127
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="uint64_targIn,"
-                }
-            }
-            codeline
-            {
-                lineno=128
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="uint64_t*argOut);"
-                }
-            }
-            codeline
-            {
-                lineno=129
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=130
+                lineno=193
                 highlight
                 {
                     class=normal
@@ -2491,7 +3111,7 @@ doxygen
             }
             codeline
             {
-                lineno=131
+                lineno=194
                 highlight
                 {
                     class=normal
@@ -2503,7 +3123,7 @@ doxygen
             }
             codeline
             {
-                lineno=132
+                lineno=195
                 highlight
                 {
                     class=normal
@@ -2540,7 +3160,7 @@ doxygen
             }
             codeline
             {
-                lineno=133
+                lineno=196
                 highlight
                 {
                     class=normal
@@ -2585,7 +3205,7 @@ doxygen
             }
             codeline
             {
-                lineno=134
+                lineno=197
                 highlight
                 {
                     class=normal
@@ -2625,7 +3245,7 @@ doxygen
             }
             codeline
             {
-                lineno=135
+                lineno=198
                 highlight
                 {
                     class=normal
@@ -2646,7 +3266,7 @@ doxygen
             }
             codeline
             {
-                lineno=136
+                lineno=199
                 highlight
                 {
                     class=normal
@@ -2654,7 +3274,7 @@ doxygen
             }
             codeline
             {
-                lineno=137
+                lineno=200
                 highlight
                 {
                     class=normal
@@ -2675,7 +3295,7 @@ doxygen
             }
             codeline
             {
-                lineno=138
+                lineno=201
                 highlight
                 {
                     class=normal
@@ -2712,7 +3332,7 @@ doxygen
             }
             codeline
             {
-                lineno=139
+                lineno=202
                 highlight
                 {
                     class=normal
@@ -2720,7 +3340,7 @@ doxygen
             }
             codeline
             {
-                lineno=140
+                lineno=203
                 highlight
                 {
                     class=normal
@@ -2749,7 +3369,7 @@ doxygen
             }
             codeline
             {
-                lineno=141
+                lineno=204
                 highlight
                 {
                     class=normal
@@ -2757,7 +3377,7 @@ doxygen
             }
             codeline
             {
-                lineno=142
+                lineno=205
                 highlight
                 {
                     class=normal
@@ -2766,7 +3386,7 @@ doxygen
             }
             codeline
             {
-                lineno=143
+                lineno=206
                 highlight
                 {
                     class=normal
@@ -2774,7 +3394,7 @@ doxygen
             }
             codeline
             {
-                lineno=144
+                lineno=207
                 highlight
                 {
                     class=normal
