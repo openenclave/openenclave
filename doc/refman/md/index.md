@@ -4,7 +4,7 @@
 
 ## Files
 
-### [enclave.h](enclave_8h.md)
+### enclave.h
 
 * [OE_IsWithinEnclave()](enclave_8h_a02ef8b20b64a998bb97dfbdddb0c6ba5_1a02ef8b20b64a998bb97dfbdddb0c6ba5.md)
 

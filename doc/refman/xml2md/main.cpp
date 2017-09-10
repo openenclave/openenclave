@@ -314,9 +314,13 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
         const string& name = elem["name"].chars();
         const string link = refid + ".md";
 
+#if 0
         os << "### [" << name << "]";
         os << "(" << link << ")";
         os << endl << endl;
+#else
+        os << "### " << name << endl << endl;
+#endif
     }
 
     // Genereate functions:
