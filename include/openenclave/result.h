@@ -34,6 +34,8 @@ typedef enum _OE_Result
     OE_UNSUPPORTED,
     OE_UNKNOWN_OPTION,
     OE_READ_FAILED,
+    OE_OUT_OF_RANGE,
+    OE_ALREADY_IN_USE,
 }
 OE_Result;
 

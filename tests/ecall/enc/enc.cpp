@@ -3,6 +3,18 @@
 #include <openenclave/bits/jump.h>
 #include "../args.h"
 
+void MyECall(uint64_t argIn, uint64_t *argOut)
+{
+    if (argOut)
+        *argOut = argIn * 3;
+}
+
+extern "C" void OE_Constructor(void)
+{
+    OE_Result result = OE_RegisterECall(0, MyECall);
+    OE_Assert(result == OE_OK);
+}
+
 int TestSetjmp()
 {
     OE_Jmpbuf buf;

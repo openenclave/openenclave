@@ -171,16 +171,54 @@ static void _HandleExit(
 /*
 **==============================================================================
 **
-** _HandleECALL()
+** OE_RegisterECall()
+**
+**     Register the given ECALL function, associate it with the given function
+**     number.
+**
+**==============================================================================
+*/
+
+#define OE_MAX_ECALLS 1024
+
+static OE_ECallFunction _ecalls[OE_MAX_ECALLS];
+static OE_Spinlock _ecalls_spinlock = OE_SPINLOCK_INITIALIZER;
+
+OE_Result OE_RegisterECall(
+    uint32_t func,
+    OE_ECallFunction ecall)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_SpinLock(&_ecalls_spinlock);
+
+    if (func >= OE_MAX_ECALLS)
+        OE_THROW(OE_OUT_OF_RANGE);
+
+    if (_ecalls[func])
+        OE_THROW(OE_ALREADY_IN_USE);
+
+    _ecalls[func] = ecall;
+
+    result = OE_OK;
+
+catch:
+    OE_SpinUnlock(&_ecalls_spinlock);
+    return result;
+}
+
+/*
+**==============================================================================
+**
+** _HandleECall()
 **
 **     Handle an ECALL.
 **
 **==============================================================================
 */
 
-static void _HandleECALL(
+static void _HandleECall(
     TD* td,
-    int func,
+    uint32_t func,
     uint64_t argIn)
 {
     /* Insert ECALL context onto front of TD.ecalls list */
@@ -211,8 +249,16 @@ static void _HandleECALL(
         }
         default:
         {
-            /* ATTN: what action should be taken here? */
-            OE_Abort();
+            /* Dispatch user-registered ECALLs */
+            if (func < OE_MAX_ECALLS)
+            {
+                OE_SpinLock(&_ecalls_spinlock);
+                OE_ECallFunction ecall = _ecalls[func];
+                OE_SpinUnlock(&_ecalls_spinlock);
+
+                if (ecall)
+                    ecall(argIn, &argOut);
+            }
             break;
         }
     }
@@ -253,14 +299,14 @@ static __inline__ void _HandleORET(
 /*
 **==============================================================================
 **
-** __OE_OCall()
+** OE_OCall()
 **
 **     Initiate a call into the host (exiting the enclave).
 **
 **==============================================================================
 */
 
-OE_Result __OE_OCall(
+OE_Result OE_OCall(
     uint32_t func,
     uint64_t argIn,
     uint64_t* argOut)
@@ -316,23 +362,24 @@ OE_Result OE_CallHost(
     OE_CallHostArgs* args = NULL;
 
     /* Reject invalid parameters */
-    if (!func || !argsIn)
+    if (!func)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Initialize the arguments */
     {
-        if (!(args = OE_HostMalloc(sizeof(OE_CallHostArgs))))
+        size_t len = OE_Strlen(func);
+
+        if (!(args = OE_HostMalloc(sizeof(OE_CallHostArgs) + len + 1)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
-        if (!(args->func = OE_HostStrdup(func)))
-            OE_THROW(OE_OUT_OF_MEMORY);
-    
+        OE_Memcpy(args->func, func, len + 1);
+
         args->args = argsIn;
         args->result = OE_UNEXPECTED;
     }
 
     /* Call into the host */
-    OE_TRY(__OE_OCall(OE_FUNC_CALL_HOST, (long)args, NULL));
+    OE_TRY(OE_OCall(OE_FUNC_CALL_HOST, (long)args, NULL));
 
     /* Check the result */
     OE_TRY(args->result);
@@ -443,7 +490,7 @@ void __OE_HandleMain(
     void* tcs)
 {
     OE_Code code = OE_HI_WORD(arg1);
-    int func = OE_LO_WORD(arg1);
+    uint32_t func = OE_LO_WORD(arg1);
     uint64_t argIn = arg2;
 
     /* Get pointer to the thread data structure */
@@ -462,7 +509,7 @@ void __OE_HandleMain(
     {
         if (code == OE_CODE_ECALL)
         {
-            _HandleECALL(td, func, argIn);
+            _HandleECall(td, func, argIn);
             return;
         }
         else if (code == OE_CODE_ORET)

@@ -14,6 +14,12 @@ OE_OCALL void Func1(void* args)
     _func1Called = true;
 }
 
+void MyOCall(uint64_t argIn, uint64_t *argOut)
+{
+    if (argOut)
+        *argOut = argIn * 7;
+}
+
 static bool _func2Ok;
 
 OE_OCALL void Func2(void* args)
@@ -70,6 +76,18 @@ int main(int argc, const char* argv[])
         OE_Result result = OE_CallEnclave(enclave, "GetTSD", &args);
         assert(result == OE_OK);
         assert(args.value == (void*)0xAAAAAAAABBBBBBBB);
+    }
+
+    /* Call TestMyOcall() */
+    {
+        OE_Result result = OE_RegisterOCall(0, MyOCall);
+        assert(result == OE_OK);
+
+        TestMyOCallArgs args;
+        args.result = 0;
+        result = OE_CallEnclave(enclave, "TestMyOCall", &args);
+        assert(result == OE_OK);
+        assert(args.result == 7000);
     }
 
     OE_TerminateEnclave(enclave);

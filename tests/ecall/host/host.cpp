@@ -13,7 +13,7 @@
 
 uint64_t prev;
 
-void TestECALL(OE_Enclave* enclave)
+void TestECall(OE_Enclave* enclave)
 {
     OE_Result result;
     TestArgs args;
@@ -55,6 +55,14 @@ void TestECALL(OE_Enclave* enclave)
     prev = args.threadData.last_sp;
 }
 
+void TestUserDefinedECall(OE_Enclave* enclave)
+{
+    uint64_t argOut = 0;
+
+    OE_ECall(enclave, 0, 1000, &argOut);
+    assert(argOut == 3000);
+}
+
 int main(int argc, const char* argv[])
 {
     OE_Result result;
@@ -75,11 +83,14 @@ int main(int argc, const char* argv[])
 
     const size_t N = 10000;
 
-    printf("=== TestECALL()\n");
+    printf("=== TestECall()\n");
     for (size_t i = 0; i < N; i++)
     {
-        TestECALL(enclave);
+        TestECall(enclave);
     }
+
+    printf("=== TestUserDefinedECall()\n");
+    TestUserDefinedECall(enclave);
 
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
     {

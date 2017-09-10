@@ -41,7 +41,7 @@ int gettimeofday(struct timeval* tv, void* tz)
     if (tz)
         args->tz = NULL;
 
-    if (__OE_OCall(OE_FUNC_GETTIMEOFDAY, (uint64_t)args, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_GETTIMEOFDAY, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     if (args->ret == 0)
@@ -74,7 +74,7 @@ int clock_gettime(clockid_t clk_id, struct timespec *tp)
     args->ret = -1;
     args->tp = tp ? &args->tpbuf : NULL;
 
-    if (__OE_OCall(OE_FUNC_CLOCK_GETTIME, (uint64_t)args, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_CLOCK_GETTIME, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     if (args->ret == 0)
@@ -113,7 +113,7 @@ size_t strftime(
 
     memcpy(&a->tm, tm, sizeof(struct tm));
 
-    if (__OE_OCall(OE_FUNC_STRFTIME, (uint64_t)a, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_STRFTIME, (uint64_t)a, NULL) != OE_OK)
         goto done;
 
     if (strlcpy(str, a->str, max) >= max)
@@ -161,7 +161,7 @@ int nanosleep(const struct timespec *req, struct timespec *rem)
     if (rem)
         args->rem = &args->rembuf;
 
-    if (__OE_OCall(OE_FUNC_NANOSLEEP, (uint64_t)args, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_NANOSLEEP, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     if (args->ret == 0)

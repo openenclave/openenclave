@@ -7,7 +7,7 @@ void* OE_HostMalloc(size_t size)
     uint64_t argIn = size;
     uint64_t argOut = 0;
 
-    if (__OE_OCall(OE_FUNC_MALLOC, argIn, &argOut) != OE_OK)
+    if (OE_OCall(OE_FUNC_MALLOC, argIn, &argOut) != OE_OK)
     {
         return NULL;
     }
@@ -27,7 +27,7 @@ void* OE_HostCalloc(size_t nmemb, size_t size)
 
 void OE_HostFree(void* ptr)
 {
-    __OE_OCall(OE_FUNC_FREE, (uint64_t)ptr, NULL);
+    OE_OCall(OE_FUNC_FREE, (uint64_t)ptr, NULL);
 }
 
 char* OE_HostStrdup(const char* str)
@@ -52,7 +52,7 @@ int OE_HostPutchar(int c)
 {
     int ret = -1;
 
-    if (__OE_OCall(OE_FUNC_PUTCHAR, (uint64_t)c, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_PUTCHAR, (uint64_t)c, NULL) != OE_OK)
         goto done;
 
     ret = 0;
@@ -73,7 +73,7 @@ int OE_HostPuts(const char* str)
     if (!(hstr = OE_HostStrdup(str)))
         goto done;
 
-    if (__OE_OCall(OE_FUNC_PUTS, (uint64_t)hstr, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_PUTS, (uint64_t)hstr, NULL) != OE_OK)
         goto done;
 
     ret = 0;
@@ -97,7 +97,7 @@ int OE_HostPrint(const char* str)
     if (!(hstr = OE_HostStrdup(str)))
         goto done;
 
-    if (__OE_OCall(OE_FUNC_PRINT, (uint64_t)hstr, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_PRINT, (uint64_t)hstr, NULL) != OE_OK)
         goto done;
 
     ret = 0;

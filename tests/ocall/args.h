@@ -69,4 +69,10 @@ typedef struct _GetTSDArgs
 }
 GetTSDArgs;
 
+typedef struct _TestMyOCallArgs
+{
+    uint64_t result;
+}
+TestMyOCallArgs;
+
 #endif /* _ocall_args_h */

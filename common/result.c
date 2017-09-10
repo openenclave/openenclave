@@ -63,6 +63,10 @@ const char* OE_ResultStr(
             return "OE_UNKNOWN_OPTION";
         case OE_READ_FAILED:
             return "OE_READ_FAILED";
+        case OE_OUT_OF_RANGE:
+            return "OE_OUT_OF_RANGE";
+        case OE_ALREADY_IN_USE:
+            return "OE_ALREADY_IN_USE";
     }
 
     return "UNKNOWN";

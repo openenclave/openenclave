@@ -71,3 +71,14 @@ OE_ECALL void GetTSD(void* args_)
     args->value = OE_ThreadGetSpecific(_key);
     args->ret = 0;
 }
+
+OE_ECALL void TestMyOCall(void* args_)
+{
+    TestMyOCallArgs* args = (TestMyOCallArgs*)args_;
+
+    if (args)
+    {
+        OE_Result result = OE_OCall(0, 1000, &args->result);
+        OE_Assert(result == OE_OK);
+    }
+}

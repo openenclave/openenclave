@@ -1100,7 +1100,7 @@ OE_Result OE_TerminateEnclave(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Call the enclave destructor */
-    OE_TRY(__OE_ECall(enclave, OE_FUNC_DESTRUCTOR, 0, NULL));
+    OE_TRY(OE_ECall(enclave, OE_FUNC_DESTRUCTOR, 0, NULL));
 
     /* Clear the magic number */
     enclave->magic = 0;

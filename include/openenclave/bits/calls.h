@@ -20,7 +20,7 @@ OE_EXTERNC_BEGIN
 **
 ** ECN_Code
 **
-**     The code parameter for __OE_ECall() and __OE_OCall()
+**     The code parameter for OE_ECall() and OE_OCall()
 **
 **==============================================================================
 */
@@ -40,7 +40,7 @@ OE_Code;
 **
 ** ECN_Func
 **
-**     The func parameter for __OE_ECall() and __OE_OCall()
+**     The func parameter for OE_ECall() and OE_OCall()
 **
 **==============================================================================
 */
@@ -97,9 +97,9 @@ typedef void (*OE_HostFunc)(void* args);
 
 typedef struct OE_CallHostArgs
 {
-    const char* func;
     void* args;
     OE_Result result;
+    char func[];
 }
 OE_CallHostArgs;
 

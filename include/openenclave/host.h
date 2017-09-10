@@ -121,7 +121,15 @@ OE_Result OE_GetQuote(
     void* quote,
     size_t* quoteSize);
 
-OE_Result __OE_ECall(
+typedef void (*OE_OCallFunction)(
+    uint64_t argIn,
+    uint64_t* argOut);
+
+OE_Result OE_RegisterOCall(
+    uint32_t func,
+    OE_OCallFunction ocall);
+
+OE_Result OE_ECall(
     OE_Enclave* enclave,
     int func,
     uint64_t argIn,

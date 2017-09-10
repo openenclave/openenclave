@@ -317,6 +317,44 @@ static void _HandleCallHost(uint64_t arg)
 /*
 **==============================================================================
 **
+** OE_RegisterOCall()
+**
+**     Register the given OCALL function, associate it with the given function
+**     number.
+**
+**==============================================================================
+*/
+
+#define OE_MAX_OCALLS 1024
+
+static OE_OCallFunction _ocalls[OE_MAX_OCALLS];
+static OE_Spinlock _ocalls_spinlock = OE_SPINLOCK_INITIALIZER;
+
+OE_Result OE_RegisterOCall(
+    uint32_t func,
+    OE_OCallFunction ocall)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_SpinLock(&_ocalls_spinlock);
+
+    if (func >= OE_MAX_OCALLS)
+        OE_THROW(OE_OUT_OF_RANGE);
+
+    if (_ocalls[func])
+        OE_THROW(OE_ALREADY_IN_USE);
+
+    _ocalls[func] = ocall;
+
+    result = OE_OK;
+
+catch:
+    OE_SpinUnlock(&_ocalls_spinlock);
+    return result;
+}
+
+/*
+**==============================================================================
+**
 ** _HandleOCALL()
 **
 **     Handle calls from the enclave (OCALL)
@@ -327,13 +365,13 @@ static void _HandleCallHost(uint64_t arg)
 static OE_Result _HandleOCALL(
     OE_Enclave* enclave,
     void* tcs,
-    int func,
+    uint32_t func,
     uint64_t argIn,
     uint64_t* argOut)
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!enclave || !tcs || !func)
+    if (!enclave || !tcs)
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (argOut)
@@ -401,6 +439,22 @@ static OE_Result _HandleOCALL(
         case OE_FUNC_CALL_ENCLAVE:
             assert("Invalid OCALL" == NULL);
             break;
+
+        default:
+        {
+            /* Dispatch user-registered OCALLs */
+            if (func < OE_MAX_OCALLS)
+            {
+                OE_SpinLock(&_ocalls_spinlock);
+                OE_OCallFunction ocall = _ocalls[func];
+                OE_SpinUnlock(&_ocalls_spinlock);
+
+                if (ocall)
+                    ocall(argIn, argOut);
+            }
+
+            break;
+        }
     }
 
     result = OE_OK;
@@ -514,7 +568,7 @@ static void _ReleaseTCS(
 /*
 **==============================================================================
 **
-** __OE_ECall()
+** OE_ECall()
 **
 **     This function initiates and ECALL.
 **
@@ -522,7 +576,7 @@ static void _ReleaseTCS(
 */
 
 __attribute__((cdecl))
-OE_Result __OE_ECall(
+OE_Result OE_ECall(
     OE_Enclave* enclave,
     int func,
     uint64_t arg,
@@ -686,7 +740,7 @@ OE_Result OE_CallEnclave(
     {
         uint64_t argOut = 0;
 
-        OE_TRY(__OE_ECall(
+        OE_TRY(OE_ECall(
             enclave, 
             OE_FUNC_CALL_ENCLAVE, 
             (uint64_t)&callEnclaveArgs, 

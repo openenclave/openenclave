@@ -80,7 +80,15 @@ OE_Result OE_CallHost(
     const char *func,
     void *args);
 
-OE_Result __OE_OCall(
+typedef void (*OE_ECallFunction)(
+    uint64_t argIn,
+    uint64_t* argOut);
+
+OE_Result OE_RegisterECall(
+    uint32_t func,
+    OE_ECallFunction ecall);
+
+OE_Result OE_OCall(
     uint32_t func,
     uint64_t argIn,
     uint64_t* argOut);
