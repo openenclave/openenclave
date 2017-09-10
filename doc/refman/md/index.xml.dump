@@ -418,15 +418,6 @@ doxygenindex
         }
         member
         {
-            refid=host_8h_1a5b59e2d498ac044c8c18520347ff9214
-            kind=define
-            name
-            {
-                chars="OE_PutErr"
-            }
-        }
-        member
-        {
             refid=host_8h_1a80a03dd519e9bc099de34c6ae2fdd033
             kind=typedef
             name
@@ -495,24 +486,6 @@ doxygenindex
             name
             {
                 chars="OE_GetQuote"
-            }
-        }
-        member
-        {
-            refid=host_8h_1a0a5aa659e72026dc2a546ebe523697db
-            kind=function
-            name
-            {
-                chars="__OE_PutErr"
-            }
-        }
-        member
-        {
-            refid=host_8h_1a1ad5daa2e59eaa21e3f26c36ec9b9c5b
-            kind=function
-            name
-            {
-                chars="OE_SetProgramName"
             }
         }
     }

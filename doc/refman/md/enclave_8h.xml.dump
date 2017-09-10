@@ -789,7 +789,7 @@ doxygen
                                 {
                                     para
                                     {
-                                        chars="The out argument passed back from the function."
+                                        chars="The output argument passed back from the function."
                                     }
                                 }
                             }
