@@ -47,7 +47,7 @@ Append new sources to the **INPUT**  variable.
 OpenEnclave uses the Doxygen Markdown style througout the sources. To learn
 more about Doyxgen Markdown, see:
 
-[Doxygen Markdown Support](https://www.stack.nl/~dimitri/doxygen/manual/markdown.html)
+  [Doxygen Markdown Support](https://www.stack.nl/~dimitri/doxygen/manual/markdown.html)
 
 The sections below explain the basics.
 
@@ -101,7 +101,7 @@ Parameters should be introduced as follows.
 ```
 #### Return values
 
-Return value may be specified as a list of paragraphs (**@retval**) or
+Return values may be specified as a list of paragraphs (**@retval**) or
 as a single paragrah (**@returns**).
 
 Here's an example of a list of paragraphs:
@@ -110,8 +110,8 @@ Here's an example of a list of paragraphs:
 /**
  * ...
  *
- * @retval 0 The function was successful.
- * @retval -1 The function failed.
+ * @retval SUCCESS The function was successful.
+ * @retval FAILED The function failed.
  */
 ```
 
@@ -138,7 +138,7 @@ To emphasize text (italics), use single asterisks as follows.
 
 ### Boldface
 
-To bold text, use double asterisks as follow.
+To bold text, use double asterisks as follows.
 
 ```
 /**
@@ -156,7 +156,6 @@ Lists are introduced by the hyphen character as follows.
  * ...
  *
  * This is my list:
- *
  * - Sunday
  * - Monday
  * - Tuesday
