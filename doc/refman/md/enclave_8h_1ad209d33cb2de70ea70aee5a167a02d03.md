@@ -6,3 +6,5 @@
 
     OE_HostStrdup(
         const char * str);
+## Description 
+
