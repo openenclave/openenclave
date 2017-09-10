@@ -30,6 +30,11 @@ typedef struct _OE_Enclave OE_Enclave;
 #define OE_FLAG_DEBUG 1
 #define OE_FLAG_SIMULATE 2
 
+#define OE_MAX_ECALLS 1024
+#define OE_MAX_OCALLS 1024
+
+typedef void (*OE_OCallFunction)(uint64_t argIn, uint64_t* argOut);
+
 /**
  * Creates an enclave from an enclave image file.
  *
@@ -80,15 +85,20 @@ OE_Result OE_TerminateEnclave(
     OE_Enclave* enclave);
 
 /**
- * Perform an enclave function call (or ECALL) into the enclave.
+ * Perform a low-level enclave function call (ECALL).
  *
- * Call the enclave function named **func**, passing it the **args** parameter. 
- * The enclave must provide a function with the following signature.
+ * This function performs a low-level enclave function call by invoking the 
+ * function indicated by the **func** parameter. The enclave defines and 
+ * registers a corresponding function with the following signature.
  *
- *     OE_ECALL void (*)(void* args);
+ *     void (*)(uint64_t argIn, uint64_t* argOut); 
  *
- * The meaning of the **args** parameter is defined by the ECALL implementation
- * and might be null for some implementations.
+ * The meaning of the **argIn** arg **argOut** parameters is defined by the
+ * implementer of the function and either may be null.
+ *
+ * OpenEnclave uses the low-level ECALL interface to implement internal calls, 
+ * used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application 
+ * developers are encouraged to use **OE_CallEnclave()** instead.
  *
  * At the software layer, this function sends an **ECALL** message to the 
  * enclave and waits for an **ERET** message. Note that the ECALL implementation
@@ -101,13 +111,48 @@ OE_Result OE_TerminateEnclave(
  *
  * Note that the return value only indicates whether the ECALL was called and
  * not whether it was successful. The ECALL implementation must define its own
- * error reporting scheme based on the **args** parameter.
+ * error reporting scheme based on its parameters.
+ *
+ * @param func The number of the function to be called.
+ * @param argsIn The input argument passed to the function.
+ * @param argsIn The out argument passed back from the function.
+ *
+ * @retval OE_OK The function was successful.
+ * @retval OE_FAILED The function failed.
+ * @retval OE_INVALID_PARAMETER One or more parameters is invalid.
+ * @retval OE_OUT_OF_THREADS No enclave threads are available to make the call.
+ * @retval OE_UNEXPECTED An unexpected error occurred.
+ *
+ */
+OE_Result OE_ECall(
+    OE_Enclave* enclave,
+    uint32_t func,
+    uint64_t argIn,
+    uint64_t* argOut);
+
+/**
+ * Perform a high-level enclave function call (ECALL).
+ *
+ * Call the enclave function whose name is given by the **func** parameter.
+ * The enclave must define a corresponding function with the following
+ * prototype.
+ *
+ *     OE_ECALL void (*)(void* args);
+ *
+ * The meaning of the **args** parameter is defined by the implementer of the
+ * function and may be null.
+ *
+ * This function is implemented using the low-level **OE_OCall()** interface
+ * where the function number is given by the **OE_FUNC_CALL_ENCLAVE** constant.
+ *
+ * Note that the return value of this function only indicates the success of
+ * the call and not of the underlying function. The ECALL implementation must 
+ * define its own error reporting scheme based on **args**.
  *
  * @param func The name of the enclave function that will be called.
  * @param args The arguments to be passed to the enclave function.
  *
- * @retval OE_OK The function was successful.
- * @retval OE_FAILED The function failed.
+ * @returns This function return **OE_OK** on success.
  *
  */
 OE_Result OE_CallEnclave(
@@ -115,25 +160,35 @@ OE_Result OE_CallEnclave(
     const char* func,
     void* args);
 
+/**
+ * Registers a low-level OCALL function.
+ *
+ * This function registers a low-level OCALL function that may be called
+ * from the encalve by the **OE_OCall()** function. The registered function
+ * has the following prototype.
+ *
+ *     void (*)(uint64_t argIn, uint64_t* argOut);
+ *
+ * This interface is intended mainly for internal use and developers are
+ * encouraged to use the high-level interface instead.
+ *
+ * @param func The number of the function to be called.
+ * @param ocall The address of the function to be called.
+ *
+ * @retval OE_OK The function was successful.
+ * @retval OE_OUT_OF_RANGE The function number was greater than OE_MAX_OCALLS.
+ * @retval OE_ALREADY_IN_USE The function number is already in use.
+ *
+ */
+OE_Result OE_RegisterOCall(
+    uint32_t func,
+    OE_OCallFunction ocall);
+
 OE_Result OE_GetQuote(
     const void* report,
     size_t reportSize,
     void* quote,
     size_t* quoteSize);
-
-typedef void (*OE_OCallFunction)(
-    uint64_t argIn,
-    uint64_t* argOut);
-
-OE_Result OE_RegisterOCall(
-    uint32_t func,
-    OE_OCallFunction ocall);
-
-OE_Result OE_ECall(
-    OE_Enclave* enclave,
-    int func,
-    uint64_t argIn,
-    uint64_t* argOut);
 
 OE_PRINTF_FORMAT(3, 4)
 void __OE_PutErr(

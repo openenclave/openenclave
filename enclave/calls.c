@@ -179,8 +179,6 @@ static void _HandleExit(
 **==============================================================================
 */
 
-#define OE_MAX_ECALLS 1024
-
 static OE_ECallFunction _ecalls[OE_MAX_ECALLS];
 static OE_Spinlock _ecalls_spinlock = OE_SPINLOCK_INITIALIZER;
 

@@ -160,10 +160,10 @@ static OE_Result _DoEENTER(
     void* tcs,
     void (*aep)(void), 
     OE_Code codeIn,
-    int funcIn,
+    uint32_t funcIn,
     uint64_t argIn,
     OE_Code* codeOut,
-    int* funcOut,
+    uint32_t* funcOut,
     uint64_t* argOut)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -202,7 +202,7 @@ static OE_Result _DoEENTER(
         }
 
         *codeOut = (OE_Code)OE_HI_WORD(arg3);
-        *funcOut = (int)OE_LO_WORD(arg3);
+        *funcOut = OE_LO_WORD(arg3);
         *argOut = arg4;
     }
 
@@ -324,8 +324,6 @@ static void _HandleCallHost(uint64_t arg)
 **
 **==============================================================================
 */
-
-#define OE_MAX_OCALLS 1024
 
 static OE_OCallFunction _ocalls[OE_MAX_OCALLS];
 static OE_Spinlock _ocalls_spinlock = OE_SPINLOCK_INITIALIZER;
@@ -578,7 +576,7 @@ static void _ReleaseTCS(
 __attribute__((cdecl))
 OE_Result OE_ECall(
     OE_Enclave* enclave,
-    int func,
+    uint32_t func,
     uint64_t arg,
     uint64_t* argOut_)
 {
@@ -586,7 +584,7 @@ OE_Result OE_ECall(
     void* tcs = NULL;
     OE_Code code = OE_CODE_ECALL;
     OE_Code codeOut = 0;
-    int funcOut = 0;
+    uint32_t funcOut = 0;
     uint64_t argOut = 0;
 
     if (!enclave)
