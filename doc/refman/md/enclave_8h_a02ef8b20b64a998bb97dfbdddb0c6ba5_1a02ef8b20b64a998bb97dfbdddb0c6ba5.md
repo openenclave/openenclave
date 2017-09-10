@@ -15,13 +15,13 @@ Check whether the buffer given by the **ptr** and **size** parameters is strictl
 
 ## Parameters
 
-### The
+### ptr
 
-ptr pointer to buffer.
+The pointer pointer to buffer.
 
-### The
+### size
 
-size size of buffer
+The size of buffer
 
 ## Return value
 
