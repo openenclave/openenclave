@@ -40,9 +40,9 @@ static string _TrimString(const string& s)
 //
 //==============================================================================
 
-static void _PrintString(const char* s)
+static void _PrintString(ostream& os, const char* s)
 {
-    cout << '"';
+    os << '"';
 
     while (*s)
     {
@@ -50,42 +50,42 @@ static void _PrintString(const char* s)
 
         if (isprint(c))
         {
-            cout << c;
+            os << c;
         }
         else
         {
             switch (c)
             {
                 case '\r':
-                    cout << "\\r";
+                    os << "\\r";
                     break;
                 case '\n':
-                    cout << "\\n";
+                    os << "\\n";
                     break;
                 case '\t':
-                    cout << "\\t";
+                    os << "\\t";
                     break;
                 case '\f':
-                    cout << "\\f";
+                    os << "\\f";
                     break;
                 case '\b':
-                    cout << "\\b";
+                    os << "\\b";
                     break;
                 case '\a':
-                    cout << "\\a";
+                    os << "\\a";
                     break;
                 default:
                 {
                     char buf[4];
                     snprintf(buf, sizeof(buf), "\\%03o", c);
-                    cout << c;
+                    os << c;
                     break;
                 }
             }
         }
     }
 
-    cout << '"';
+    os << '"';
 }
 
 //==============================================================================
@@ -153,10 +153,10 @@ const std::string& Attribute::value() const
     return _value; 
 }
 
-void Attribute::dump(size_t depth) const
+void Attribute::dump(std::ostream& os, size_t depth) const
 {
     Indent indent(depth);
-    cout << indent << _name << '=' << _value << endl;
+    os << indent << _name << '=' << _value << endl;
 }
 
 //==============================================================================
@@ -231,23 +231,12 @@ std::string Attributes::operator[](const std::string& name) const
     return value;
 }
 
-void Attributes::dump(size_t depth) const
+void Attributes::dump(std::ostream& os, size_t depth) const
 {
     Indent indent(depth);
 
-#if 0
-    cout << indent << "Attributes" << endl;
-    cout << indent << "{" << endl;
-    indent++;
-#endif
-
     for (size_t i = 0; i < _attrs.size(); i++)
-        _attrs[i].dump(indent.depth());
-
-#if 0
-    indent--;
-    cout << indent << "}" << endl;
-#endif
+        _attrs[i].dump(os, indent.depth());
 }
 
 //==============================================================================
@@ -325,28 +314,28 @@ const Element& Element::operator[](const std::string& name) const
     return _not_found;
 }
 
-void Element::dump(size_t depth) const
+void Element::dump(std::ostream& os, size_t depth) const
 {
     Indent indent(depth);
 
-    cout << indent << _name << endl;
-    cout << indent << "{" << endl;
+    os << indent << _name << endl;
+    os << indent << "{" << endl;
     indent++;
 
-    _attrs.dump(indent.depth());
+    _attrs.dump(os, indent.depth());
 
     for (size_t i = 0; i < _children.size(); i++)
-        _children[i].dump(indent.depth());
+        _children[i].dump(os, indent.depth());
 
     if (_chars.size())
     {
-        cout << indent << "chars=";
-        _PrintString(_chars.c_str());
-        cout << endl;
+        os << indent << "chars=";
+        _PrintString(os, _chars.c_str());
+        os << endl;
     }
 
     indent--;
-    cout << indent << "}" << endl;
+    os << indent << "}" << endl;
 }
 
 bool Element::search(

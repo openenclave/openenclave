@@ -47,7 +47,7 @@ public:
 
     const std::string& value() const;
 
-    void dump(size_t depth = 0) const;
+    void dump(std::ostream& os = std::cout, size_t depth = 0) const;
 
 private:
     std::string _name;
@@ -74,7 +74,7 @@ public:
 
     std::string operator[](const std::string& name) const;
 
-    void dump(size_t depth = 0) const;
+    void dump(std::ostream& os = std::cout, size_t depth = 0) const;
 
 private:
     std::vector<Attribute> _attrs;
@@ -108,7 +108,7 @@ public:
 
     const Element& operator[](const std::string& name) const;
 
-    void dump(size_t depth = 0) const;
+    void dump(std::ostream& os = std::cout, size_t depth = 0) const;
 
     bool search(
         const std::string& xmlpath, 

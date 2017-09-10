@@ -74,8 +74,6 @@ bool PrintPara(const Element& elem, ostream& os)
 {
     string chars = elem.chars();
 
-    vector<string> list;
-
     // Perform substitutions on trait elements:
     for (size_t i = 0; i < elem.size(); i++)
     {
@@ -84,39 +82,41 @@ bool PrintPara(const Element& elem, ostream& os)
         if (e.name() == "bold")
         {
             SubstituteTrait(chars, BOLD, e.chars());
+            os << chars << endl << endl;
+            return true;
         }
         else if (e.name() == "emphasis")
         {
             SubstituteTrait(chars, EMPHASIS, e.chars());
+            os << chars << endl << endl;
+            return true;
         }
         else if (e.name() == "verbatim")
         {
             SubstituteTrait(chars, VERBATIM, e.chars());
+            os << chars << endl << endl;
+            return true;
         }
         else if (e.name() == "itemizedlist")
         {
+            os << chars << endl << endl;
+
             vector<Element> listitems;
             e.find("listitem", listitems);
 
             for (size_t i = 0; i < listitems.size(); i++)
             {
-                const Element& listitem = listitems[i];
+                const Element& tmp_para = listitems[i]["para"];
 
-                // ATTN: this should recursively called PrintPara()
-                const string& chars = listitem["para"].chars();
+                os << "-";
 
-                if (chars.size())
-                    list.push_back(chars);
+                if (!PrintPara(tmp_para, os))
+                    return false;
             }
+
+            return true;
         }
     }
-
-    os << chars << endl << endl;
-
-    for (size_t i = 0; i < list.size(); i++)
-        os << "- " << list[i] << endl;
-
-    os << endl;
 
     return true;
 }
@@ -311,11 +311,19 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
                 error.message().c_str());
             return false;
         }
-    }
 
-#if 0
-    root.dump();
-#endif
+        // Dump the XML file easier to read form for debugging:
+        {
+            string dumpfile = prefix + '/' + refid + ".xml.dump";
+            ofstream tmpos(dumpfile.c_str());
+
+            if (tmpos)
+            {
+                root.dump(tmpos);
+                cout << "Created " << dumpfile << endl;
+            }
+        }
+    }
 
     // Generate file info:
     {
@@ -446,14 +454,22 @@ int main(int argc, const char* argv[])
             exit(1);
         }
 
-#if 0
-        root.dump();
-#else
+        /* Dump the index file to easier to read tree format for debugging */
+        {
+            string dumpfile = prefix + '/' + basename(argv[1]) + ".dump";
+            ofstream tmpos(dumpfile.c_str());
+
+            if (tmpos)
+            {
+                root.dump(tmpos);
+                cout << "Created " << dumpfile << endl;
+            }
+        }
+
         if (!GenerateIndex(root, argv[1]))
         {
             err("GenerateIndex() failed");
         }
-#endif
     }
 
     return 0;
