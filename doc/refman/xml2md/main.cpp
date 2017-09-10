@@ -240,7 +240,12 @@ bool GenerateFunctionFile(const Element& elem)
     {
         os << "## Syntax" << endl << endl;
 
-        os << "    " << name << "(" << endl;
+        // Print the return type:
+        string returnType = elem["type"].chars();
+
+        os << "    " << returnType << " ";
+
+        os << name << "(" << endl;
 
         // Find all "param" elements:
         vector<Element> params;
