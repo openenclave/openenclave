@@ -51,12 +51,12 @@ void SubstituteTrait(
     size_t pos2 = chars.find("  ");
     size_t pos = string::npos;
 
-    string emp;
+    string s;
 
     if (trait == BOLD)
-        emp = "**" + text + "**";
+        s = "**" + text + "**";
     else if (trait == EMPHASIS)
-        emp = "*" + text + "*";
+        s = "*" + text + "*";
 
     if (pos1 != string::npos && pos2 != string::npos)
         pos = pos1 < pos2 ? pos1 : pos2;
@@ -67,12 +67,13 @@ void SubstituteTrait(
 
     if (pos == string::npos)
     {
-        chars += ' ' + emp;
+        chars += ' ' + s;
     }
     else
     {
-        chars = chars.substr(0, pos) + ' ' + emp + ' ' + chars.substr(pos + 2);
+        chars = chars.substr(0, pos) + ' ' + s + chars.substr(pos + 1);
     }
+cout << "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz=" << chars << endl;
 }
 
 bool PrintPara(const Element& elem, ostream& os)
