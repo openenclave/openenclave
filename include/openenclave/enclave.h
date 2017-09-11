@@ -1,4 +1,9 @@
-/** \file enclave.h */
+/** 
+ * \file enclave.h 
+ *
+ * This file defines the programming interface for developing enclaves.
+ *
+ */
 #ifndef _OE_ENCLAVE_H
 #define _OE_ENCLAVE_H
 
@@ -16,12 +21,10 @@ OE_EXTERNC_BEGIN
 # define OE_BUILD_ENCLAVE
 #endif
 
-#define OE_ECALL_SECTION __attribute__((section (".ecall")))
-
 #ifdef __cplusplus
-# define OE_ECALL OE_EXTERNC OE_EXPORT OE_ECALL_SECTION
+# define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section (".ecall")))
 #else
-# define OE_ECALL OE_EXPORT OE_ECALL_SECTION
+# define OE_ECALL OE_EXPORT __attribute__((section (".ecall")))
 #endif
 
 #define OE_REPORT_DATA_SIZE 64

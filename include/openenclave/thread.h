@@ -132,7 +132,6 @@ int OE_MutexInit(
 int OE_MutexLock(
     OE_Mutex* mutex);
 
-/* ATTN: implement! */
 int OE_MutexTryLock(
     OE_Mutex* mutex);
 

@@ -1,23 +1,11 @@
 #define OE_TRACE_LEVEL 0
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <ctype.h>
 #include <stdarg.h>
-
-#ifdef OE_BUILD_ENCLAVE
-# include <openenclave/enclave.h>
-#else
-# include <openenclave/host.h>
-#endif
-
 #include <openenclave/bits/galloc.h>
-
-#define TRACE OE_Printf("TRACE: %s(%u): %s\n", __FILE__, __LINE__, __FUNCTION__)
-
-#define PRINTF printf
 
 /*
 **==============================================================================
@@ -26,14 +14,6 @@
 **
 **==============================================================================
 */
-
-#define WCSLEN wcslen
-#define STRLEN strlen
-#define STRCMP strcmp
-#define MEMCMP memcmp
-#define WCSCMP wcscmp
-#define MEMSET memset
-#define MEMCPY memcpy
 
 static void* _Calloc(
     size_t n,
@@ -44,7 +24,7 @@ static void* _Calloc(
     if (!(p = alloc(n)))
         return NULL;
 
-    return MEMSET(p, 0, n);
+    return memset(p, 0, n);
 }
 
 static char* _Strdup(
@@ -58,13 +38,13 @@ static char* _Strdup(
         return NULL;
 
     if (n == 0)
-        n = STRLEN(s) + 1;
+        n = strlen(s) + 1;
 
     if (!(p = (char*)alloc(n * sizeof(char))))
         return NULL;
 
-    MEMSET(p, 0, n * sizeof(char));
-    return MEMCPY(p, s, n * sizeof(char));
+    memset(p, 0, n * sizeof(char));
+    return memcpy(p, s, n * sizeof(char));
 }
 
 static char* _Wcsdup(
@@ -78,13 +58,13 @@ static char* _Wcsdup(
         return NULL;
 
     if (n == 0)
-        n = WCSLEN(s) + 1;
+        n = wcslen(s) + 1;
 
     if (!(p = (wchar_t*)alloc(n * sizeof(wchar_t))))
         return NULL;
 
-    MEMSET(p, 0, n * sizeof(char));
-    return MEMCPY(p, s, n * sizeof(wchar_t));
+    memset(p, 0, n * sizeof(char));
+    return memcpy(p, s, n * sizeof(wchar_t));
 }
 
 static size_t _SizeofStr(const char* s)
@@ -92,7 +72,7 @@ static size_t _SizeofStr(const char* s)
     if (!s)
         return 0;
 
-    return (STRLEN(s) + 1) * sizeof(char);
+    return (strlen(s) + 1) * sizeof(char);
 }
 
 static size_t _SizeofWcs(const wchar_t* s)
@@ -100,7 +80,7 @@ static size_t _SizeofWcs(const wchar_t* s)
     if (!s)
         return 0;
 
-    return (WCSLEN(s) + 1) * sizeof(wchar_t);
+    return (wcslen(s) + 1) * sizeof(wchar_t);
 }
 
 static OE_Result _StrToSize(const char* str, size_t* size)
@@ -148,7 +128,7 @@ static const OE_FieldTI* _FindFieldTI(
     {
         const OE_FieldTI* fti = &ti->fields[i];
 
-        if (STRCMP(fti->name, name) == 0)
+        if (strcmp(fti->name, name) == 0)
             return fti;
     }
 
@@ -222,18 +202,6 @@ static size_t _GetTypeSizeFromType(
             return sizeof(unsigned int);
         case OE_ULONG_T: 
             return sizeof(unsigned long);
-#if 0 /* REMOVE */
-        case OE_UCHAR_T: 
-            return sizeof(uchar);
-        case OE_LLONG_T: 
-            return sizeof(llong);
-        case OE_ULLONG_T: 
-            return sizeof(ullong);
-        case OE_INTN_T: 
-            return sizeof(intn);
-        case OE_UINTN_T: 
-            return sizeof(uintn);
-#endif
         case OE_WCHAR_T: 
             return sizeof(wchar_t);
         case OE_BOOL_T: 
@@ -313,18 +281,6 @@ static bool _ScalarEq(
             return *((unsigned int*)p1) == *((unsigned int*)p2);
         case OE_ULONG_T:
             return *((unsigned long*)p1) == *((unsigned long*)p2);
-#if 0 /* REMOVE */
-        case OE_UCHAR_T:
-            return *((uchar*)p1) == *((uchar*)p2);
-        case OE_LLONG_T:
-            return *((llong*)p1) == *((llong*)p2);
-        case OE_ULLONG_T:
-            return *((ullong*)p1) == *((ullong*)p2);
-        case OE_INTN_T:
-            return *((intn*)p1) == *((intn*)p2);
-        case OE_UINTN_T:
-            return *((uintn*)p1) == *((uintn*)p2);
-#endif
         case OE_WCHAR_T:
             return *((wchar_t*)p1) == *((wchar_t*)p2);
         case OE_BOOL_T:
@@ -394,7 +350,7 @@ static bool _Real64Eq(
 
 static bool _BytesEq(const void* p1, const void* p2, size_t n)
 {
-    return MEMCMP(p1, p2, n) == 0 ? true : false;
+    return memcmp(p1, p2, n) == 0 ? true : false;
 }
 
 static bool _ArrayEq(
@@ -511,7 +467,7 @@ static OE_Result _FieldEq(
     fti = &sti->fields[index];
 
 #if (OE_TRACE_LEVEL >= 2)
-    PRINTF("_FieldEq(): %s.%s\n", sti->name, fti->name);
+    printf("_FieldEq(): %s.%s\n", sti->name, fti->name);
 #endif
 
     if (fti->flags & OE_FLAG_COUNT)
@@ -546,12 +502,12 @@ static OE_Result _FieldEq(
         {
             if (fti->type == OE_CHAR_T)
             {
-                if (STRCMP((const char*)p1, (const char*)p2) != 0)
+                if (strcmp((const char*)p1, (const char*)p2) != 0)
                     OE_THROW(OE_OK);
             }
             else if (fti->type == OE_WCHAR_T)
             {
-                if (WCSCMP((const wchar_t*)p1, (const wchar_t*)p2) != 0)
+                if (wcscmp((const wchar_t*)p1, (const wchar_t*)p2) != 0)
                     OE_THROW(OE_OK);
             }
             else
@@ -584,12 +540,12 @@ static OE_Result _FieldEq(
         {
             if (fti->type == OE_CHAR_T)
             {
-                if (STRCMP((const char*)f1, (const char*)f2) != 0)
+                if (strcmp((const char*)f1, (const char*)f2) != 0)
                     OE_THROW(OE_OK);
             }
             else if (fti->type == OE_WCHAR_T)
             {
-                if (WCSCMP((const wchar_t*)f1, (const wchar_t*)f2) != 0)
+                if (wcscmp((const wchar_t*)f1, (const wchar_t*)f2) != 0)
                     OE_THROW(OE_OK);
             }
             else
@@ -669,15 +625,15 @@ catch:
 **==============================================================================
 */
 
-#ifndef OE_BUILD_ENCLAVE
+#ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _Indent(size_t n)
 {
     for (size_t i = 0; i < n; i++)
-        PRINTF("    ");
+        printf("    ");
 }
 #endif
 
-#ifndef OE_BUILD_ENCLAVE
+#ifndef SUPPRESS_OUTPUT_FUNCTIONS
 OE_PRINTF_FORMAT(2, 3)
 static void Iprintf(size_t n, const char* format, ...)
 {
@@ -689,7 +645,7 @@ static void Iprintf(size_t n, const char* format, ...)
 }
 #endif
 
-#ifndef OE_BUILD_ENCLAVE
+#ifndef SUPPRESS_OUTPUT_FUNCTIONS
 #define FUNCTION _PrintStr
 #define TYPE char
 #define FORMAT "%c"
@@ -701,7 +657,7 @@ static void Iprintf(size_t n, const char* format, ...)
 #undef PREFIX
 #endif
 
-#ifndef OE_BUILD_ENCLAVE
+#ifndef SUPPRESS_OUTPUT_FUNCTIONS
 #define FUNCTION _PrintWcs
 #define TYPE wchar_t
 #define FORMAT "%C"
@@ -713,14 +669,14 @@ static void Iprintf(size_t n, const char* format, ...)
 #undef PREFIX
 #endif
 
-#ifndef OE_BUILD_ENCLAVE
+#ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _PrintStruct(
     const OE_StructTI* ti,
     const void* structIn,
     size_t depth);
 #endif
 
-#ifndef OE_BUILD_ENCLAVE
+#ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _PrintScalar(
     const OE_FieldTI* fti,
     const void* p,
@@ -731,68 +687,68 @@ static void _PrintScalar(
         case OE_NONE_T:
             break;
         case OE_CHAR_T:
-            PRINTF("%02X", *(const char*)p);
+            printf("%02X", *(const char*)p);
             break;
         case OE_WCHAR_T:
-            PRINTF("%02X", *(const wchar_t*)p);
+            printf("%02X", *(const wchar_t*)p);
             break;
         case OE_BOOL_T:
-            PRINTF("%s", (*(const bool*)p) ? "true" : "false");
+            printf("%s", (*(const bool*)p) ? "true" : "false");
             break;
         case OE_INT8_T:
-            PRINTF("%d", *(const int8_t*)p);
+            printf("%d", *(const int8_t*)p);
             break;
         case OE_UCHAR_T:
         case OE_UINT8_T:
-            PRINTF("%u", *(const uint8_t*)p);
+            printf("%u", *(const uint8_t*)p);
             break;
         case OE_SHORT_T:
         case OE_INT16_T:
-            PRINTF("%d", *(const int16_t*)p);
+            printf("%d", *(const int16_t*)p);
             break;
         case OE_USHORT_T:
         case OE_UINT16_T:
-            PRINTF("%u", *(const uint16_t*)p);
+            printf("%u", *(const uint16_t*)p);
             break;
         case OE_INT_T:
         case OE_INT32_T:
-            PRINTF("%d", *(const int32_t*)p);
+            printf("%d", *(const int32_t*)p);
             break;
         case OE_UINT_T:
         case OE_UINT32_T:
-            PRINTF("%u", *(const uint32_t*)p);
+            printf("%u", *(const uint32_t*)p);
             break;
         case OE_LONG_T:
         case OE_INT64_T:
-            PRINTF(OE_INT64_F, *(const int64_t*)p);
+            printf(OE_INT64_F, *(const int64_t*)p);
             break;
         case OE_ULONG_T:
         case OE_UINT64_T:
-            PRINTF(OE_INT64_F, *(const uint64_t*)p);
+            printf(OE_INT64_F, *(const uint64_t*)p);
             break;
         case OE_FLOAT_T:
-            PRINTF("%f", *(const float*)p);
+            printf("%f", *(const float*)p);
             break;
         case OE_DOUBLE_T:
-            PRINTF("%lf", *(const double*)p);
+            printf("%lf", *(const double*)p);
             break;
         case OE_SIZE_T:
-            PRINTF("%zu", *(const size_t*)p);
+            printf("%zu", *(const size_t*)p);
             break;
         case OE_SSIZE_T:
-            PRINTF("%zd", *(const ssize_t*)p);
+            printf("%zd", *(const ssize_t*)p);
             break;
         case OE_STRUCT_T:
             _PrintStruct(fti->sti, p, depth);
             break;
         case OE_VOID_T:
-            PRINTF("%02X", *(const uint8_t*)p);
+            printf("%02X", *(const uint8_t*)p);
             break;
     }
 }
 #endif
 
-#ifndef OE_BUILD_ENCLAVE
+#ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _PrintArray(
     const OE_FieldTI* fti,
     const void* arr,
@@ -817,13 +773,13 @@ static void _PrintArray(
 
     if (lineSeparated)
     {
-        PRINTF("\n");
+        printf("\n");
         Iprintf(depth, "{\n");
         depth++;
         _Indent(depth);
     }
     else
-        PRINTF("{ ");
+        printf("{ ");
     
     for (size_t i = 0; i < arrSize; i++)
     {
@@ -831,15 +787,15 @@ static void _PrintArray(
 
         if (i + 1 != arrSize)
         {
-            PRINTF(", ");
+            printf(", ");
             if (lineSeparated)
             {
-                PRINTF("\n");
+                printf("\n");
                 _Indent(depth);
             }
         }
         else
-            PRINTF(" ");
+            printf(" ");
 
         p += elemSize;
     }
@@ -847,15 +803,15 @@ static void _PrintArray(
     if (lineSeparated)
     {
         depth--;
-        PRINTF("\n");
+        printf("\n");
         Iprintf(depth, "}");
     }
     else
-        PRINTF("}");
+        printf("}");
 }
 #endif
 
-#ifndef OE_BUILD_ENCLAVE
+#ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _PrintStruct(
     const OE_StructTI* ti,
     const void* structIn,
@@ -867,7 +823,7 @@ static void _PrintStruct(
     if (!ti)
         return;
 
-    PRINTF("struct %s\n", ti->name);
+    printf("struct %s\n", ti->name);
     Iprintf(depth, "{\n");
     depth++;
 
@@ -886,7 +842,7 @@ static void _PrintStruct(
 
         if (fti->flags & OE_FLAG_UNCHECKED)
         {
-            PRINTF("<unchecked type>\n");
+            printf("<unchecked type>\n");
         }
         else if (fti->flags & OE_FLAG_PTR)
         {
@@ -896,36 +852,36 @@ static void _PrintStruct(
 
             if (ptr == NULL)
             {
-                PRINTF("NULL\n");
+                printf("NULL\n");
                 continue;
             }
             else if (fti->flags & OE_FLAG_STRING)
             {
                 _PrintArray(fti, ptr, elemSize, 0xFFFFFFFF, depth);
-                PRINTF("\n");
+                printf("\n");
             }
             else if (fti->flags & OE_FLAG_COUNT)
             {
                 if (_GetCount(ti, structIn, fti, &arrSize) != OE_OK)
                 {
-                    PRINTF("\n");
+                    printf("\n");
                     continue;
                 }
 
                 _PrintArray(fti, ptr, elemSize, arrSize, depth);
-                PRINTF("\n");
+                printf("\n");
             }
         }
         else if (fti->flags & OE_FLAG_ARRAY)
         {
             _PrintArray(fti, p, fti->size / fti->subscript, fti->subscript, 
                 depth);
-            PRINTF("\n");
+            printf("\n");
         }
         else
         {
             _PrintScalar(fti, p, depth);
-            PRINTF("\n");
+            printf("\n");
         }
     }
 
@@ -934,13 +890,13 @@ static void _PrintStruct(
 }
 #endif
 
-#ifndef OE_BUILD_ENCLAVE
+#ifndef SUPPRESS_OUTPUT_FUNCTIONS
 void OE_PrintStruct(
     const OE_StructTI* ti,
     const void* structIn)
 {
     _PrintStruct(ti, structIn, 0);
-    PRINTF("\n");
+    printf("\n");
 }
 #endif
 
@@ -1021,7 +977,7 @@ static OE_Result _ClonePtrField(
             OE_THROW(OE_OUT_OF_MEMORY);
 
         /* Clear output memory */
-        MEMSET(*ptrOut, 0, size * count);
+        memset(*ptrOut, 0, size * count);
 
         /* Handle struct-pointers with [count] qualifier */
         if (fti->type == OE_STRUCT_T)
@@ -1030,7 +986,7 @@ static OE_Result _ClonePtrField(
         }
         else
         {
-            MEMCPY(*ptrOut, ptrIn, size * count);
+            memcpy(*ptrOut, ptrIn, size * count);
         }
     }
     else
@@ -1069,12 +1025,12 @@ static OE_Result _CopyField(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Zero-initialize this field */
-    MEMSET(fout, 0, fti->size);
+    memset(fout, 0, fti->size);
 
     if (fti->flags & OE_FLAG_UNCHECKED)
     {
         /* Copy over [unchecked] field as-is */
-        MEMCPY(fout, fin, fti->size);
+        memcpy(fout, fin, fti->size);
     }
     else if (fti->flags & OE_FLAG_PTR)
     {
@@ -1093,14 +1049,14 @@ static OE_Result _CopyField(
         if (fti->type == OE_STRUCT_T)
             OE_TRY(_CopyStructs(fti->sti, fin, fti->subscript, fout, alloc));
         else
-            MEMCPY(fout, fin, fti->size);
+            memcpy(fout, fin, fti->size);
     }
     else /* scalar */
     {
         if (fti->type == OE_STRUCT_T)
             OE_TRY(OE_CopyStruct(fti->sti, fin, fout, alloc));
         else
-            MEMCPY(fout, fin, fti->size);
+            memcpy(fout, fin, fti->size);
     }
 
     result = OE_OK;
@@ -1149,7 +1105,7 @@ OE_Result OE_CopyStruct(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Zero-initialize destination structure */
-    MEMSET(sout, 0, sti->size);
+    memset(sout, 0, sti->size);
 
     /* For each field */
     for (i = 0; i < sti->nfields; i++)
@@ -1224,7 +1180,7 @@ static OE_Result _CloneBlob(
     if (!(*dataOut = alloc(size)))
         return OE_OUT_OF_MEMORY;
 
-    MEMCPY(*dataOut, dataIn, size); 
+    memcpy(*dataOut, dataIn, size); 
 
     result = OE_OK;
 
@@ -1381,7 +1337,7 @@ OE_Result OE_DestroyStruct(
 
     OE_TRY(_ApplyStructPtrProc(ti, strct, _FreeProc, dealloc));
 
-    MEMSET(strct, 0, ti->size);
+    memset(strct, 0, ti->size);
 
     result = OE_OK;
 
@@ -1439,7 +1395,7 @@ OE_Result OE_ClearArg(
 
     if (fti->flags & OE_FLAG_UNCHECKED)
     {
-        MEMSET(arg, 0, fti->size);
+        memset(arg, 0, fti->size);
     }
     else if (fti->flags & OE_FLAG_PTR)
     {
@@ -1471,9 +1427,9 @@ OE_Result OE_ClearArg(
                     OE_THROW(OE_UNEXPECTED);
 
                 if (fti->type == OE_CHAR_T)
-                    MEMSET(arg, 0, count * sizeof(char));
+                    memset(arg, 0, count * sizeof(char));
                 else if (fti->type == OE_WCHAR_T)
-                    MEMSET(arg, 0, count * sizeof(wchar_t));
+                    memset(arg, 0, count * sizeof(wchar_t));
             }
         }
         else if (fti->flags & OE_FLAG_COUNT)
@@ -1515,7 +1471,7 @@ OE_Result OE_ClearArg(
                     if (!count)
                         OE_THROW(OE_UNEXPECTED);
 
-                    MEMSET(arg, 0, _GetTypeSize(fti) * count);
+                    memset(arg, 0, _GetTypeSize(fti) * count);
                 }
             }
         }
@@ -1530,11 +1486,11 @@ OE_Result OE_ClearArg(
         {
             if (fti->type == OE_CHAR_T)
             {
-                MEMSET(arg, 0, fti->subscript * sizeof(char));
+                memset(arg, 0, fti->subscript * sizeof(char));
             }
             else if (fti->type == OE_WCHAR_T)
             {
-                MEMSET(arg, 0, fti->subscript * sizeof(wchar_t));
+                memset(arg, 0, fti->subscript * sizeof(wchar_t));
             }
             else
             {
@@ -1547,7 +1503,7 @@ OE_Result OE_ClearArg(
         }
         else
         {
-            MEMSET(arg, 0, _GetTypeSize(fti) * fti->subscript);
+            memset(arg, 0, _GetTypeSize(fti) * fti->subscript);
         }
     }
     else /* scalar */
@@ -1555,7 +1511,7 @@ OE_Result OE_ClearArg(
         if (fti->type == OE_STRUCT_T)
             OE_TRY(_DestroyStructs(fti->sti, arg, 1, dealloc));
         else
-            MEMSET(arg, 0, fti->size);
+            memset(arg, 0, fti->size);
     }
 
     result = OE_OK;
@@ -1574,7 +1530,7 @@ size_t OE_StructFindField(
 
     for (size_t i = 0; i < sti->nfields; i++)
     {
-        if (STRCMP(sti->fields[i].name, name) == 0)
+        if (strcmp(sti->fields[i].name, name) == 0)
             return i;
     }
 
@@ -1646,7 +1602,7 @@ OE_Result OE_SetArg(
 
     if (fti->flags & OE_FLAG_UNCHECKED)
     {
-        MEMCPY(arg, field, fti->size);
+        memcpy(arg, field, fti->size);
     }
     else if (fti->flags & OE_FLAG_PTR)
     {
@@ -1683,9 +1639,9 @@ OE_Result OE_SetArg(
                     OE_THROW(OE_UNEXPECTED);
 
                 if (fti->type == OE_CHAR_T)
-                    MEMCPY(arg, fp, count * sizeof(char));
+                    memcpy(arg, fp, count * sizeof(char));
                 else if (fti->type == OE_WCHAR_T)
-                    MEMCPY(arg, fp, count * sizeof(wchar_t));
+                    memcpy(arg, fp, count * sizeof(wchar_t));
                 else
                     OE_THROW(OE_UNEXPECTED);
             }
@@ -1712,7 +1668,7 @@ OE_Result OE_SetArg(
                 else
                 {
                     size_t size = _GetTypeSize(fti);
-                    MEMCPY(arg, fp, size * count);
+                    memcpy(arg, fp, size * count);
                 }
             }
         }
@@ -1731,16 +1687,16 @@ OE_Result OE_SetArg(
         if (fti->flags & OE_FLAG_STRING)
         {
             if (fti->type == OE_CHAR_T)
-                MEMCPY(arg, field, count * sizeof(char));
+                memcpy(arg, field, count * sizeof(char));
             else if (fti->type == OE_WCHAR_T)
-                MEMCPY(arg, field, count * sizeof(wchar_t));
+                memcpy(arg, field, count * sizeof(wchar_t));
             else
                 OE_THROW(OE_UNEXPECTED);
         }
         else if (fti->type == OE_STRUCT_T)
             OE_TRY(_CopyStructs(fti->sti, field, count, arg, alloc));
         else
-            MEMCPY(arg, field, fti->size);
+            memcpy(arg, field, fti->size);
     }
     else /* scalar */
     {
@@ -1750,7 +1706,7 @@ OE_Result OE_SetArg(
         if (fti->type == OE_STRUCT_T)
             OE_TRY(_CopyStructs(fti->sti, field, 1, arg, alloc));
         else
-            MEMCPY(arg, field, fti->size);
+            memcpy(arg, field, fti->size);
     }
 
     result = OE_OK;
@@ -1790,7 +1746,7 @@ OE_Result OE_InitArg(
 
     if (fti->flags & OE_FLAG_UNCHECKED)
     {
-        // MEMSET(arg, 0, fti->size);
+        // memset(arg, 0, fti->size);
     }
     else if (fti->flags & OE_FLAG_PTR)
     {
@@ -1819,9 +1775,9 @@ OE_Result OE_InitArg(
             else
             {
                 if (fti->type == OE_CHAR_T)
-                    ; // MEMSET(arg, 0, count * sizeof(char));
+                    ; // memset(arg, 0, count * sizeof(char));
                 else if (fti->type == OE_WCHAR_T)
-                    ; // MEMSET(arg, 0, count * sizeof(wchar_t));
+                    ; // memset(arg, 0, count * sizeof(wchar_t));
             }
         }
         else if (fti->flags & OE_FLAG_COUNT)
@@ -1836,7 +1792,7 @@ OE_Result OE_InitArg(
             }
             else
             {
-                ; // MEMSET(arg, 0, _GetTypeSize(fti) * count);
+                ; // memset(arg, 0, _GetTypeSize(fti) * count);
             }
         }
         else
@@ -1846,11 +1802,11 @@ OE_Result OE_InitArg(
     }
     else if (fti->flags & OE_FLAG_ARRAY)
     {
-        ; // MEMSET(arg, 0, fti->size);
+        ; // memset(arg, 0, fti->size);
     }
     else /* scalar */
     {
-        ; // MEMSET(arg, 0, _GetTypeSize(fti));
+        ; // memset(arg, 0, _GetTypeSize(fti));
     }
 
     result = OE_OK;

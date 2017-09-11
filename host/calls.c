@@ -181,7 +181,7 @@ static OE_Result _DoEENTER(
         OE_THROW(OE_INVALID_PARAMETER);
 
 #if (TRACE == 2)
-    printf("_DoEENTER(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%p)\n",
+    printf("_DoEENTER(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%lx)\n",
         tcs, aep, codeIn, funcIn, argIn);
 #endif
 

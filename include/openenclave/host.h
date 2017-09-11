@@ -1,3 +1,9 @@
+/**
+ * \file host.h 
+ *
+ * This file defines the programming interface for developing host applications.
+ *
+ */
 #ifndef _OE_HOST_H
 #define _OE_HOST_H
 
@@ -16,8 +22,6 @@
 #include "atomic.h"
 
 OE_EXTERNC_BEGIN
-
-#define OE_BUILD_HOST
 
 #ifdef __cplusplus
 # define OE_OCALL OE_EXTERNC OE_EXPORT

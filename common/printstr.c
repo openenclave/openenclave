@@ -4,8 +4,8 @@ static void FUNCTION(
 {
     size_t i;
 
-    PRINTF("%s", PREFIX);
-    PRINTF("\"");
+    printf("%s", PREFIX);
+    printf("\"");
 
     for (i = 0; *str && i < len; str++)
     {
@@ -13,36 +13,36 @@ static void FUNCTION(
 
         if (isprint(c))
         {
-            PRINTF(FORMAT, c);
+            printf(FORMAT, c);
         }
         else
         {
             switch (c)
             {
                 case '\r':
-                    PRINTF("\\r");
+                    printf("\\r");
                     break;
                 case '\n':
-                    PRINTF("\\n");
+                    printf("\\n");
                     break;
                 case '\t':
-                    PRINTF("\\t");
+                    printf("\\t");
                     break;
                 case '\f':
-                    PRINTF("\\f");
+                    printf("\\f");
                     break;
                 case '\b':
-                    PRINTF("\\b");
+                    printf("\\b");
                     break;
                 case '\a':
-                    PRINTF("\\a");
+                    printf("\\a");
                     break;
                 default:
-                    PRINTF("\\%03o", (unsigned int)c);
+                    printf("\\%03o", (unsigned int)c);
                     break;
             }
         }
     }
 
-    PRINTF("\"");
+    printf("\"");
 }
