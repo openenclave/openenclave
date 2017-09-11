@@ -22,15 +22,6 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1ac2b4b92e05eda49d7e9efd402a280119
-            kind=define
-            name
-            {
-                chars="OE_ECALL_SECTION"
-            }
-        }
-        member
-        {
             refid=enclave_8h_1a17442f9c583fe8a12b684c9e4146b9e5
             kind=define
             name
@@ -325,15 +316,6 @@ doxygenindex
         name
         {
             chars="host.h"
-        }
-        member
-        {
-            refid=host_8h_1ab26900cb97aa38275824e6b669116bec
-            kind=define
-            name
-            {
-                chars="OE_BUILD_HOST"
-            }
         }
         member
         {

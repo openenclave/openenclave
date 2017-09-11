@@ -12,7 +12,7 @@ Registers a low-level ECALL function.
         OE_ECallFunction ecall);
 ## Description 
 
-This function registers a low-level ECALL function that may be called from the host by the **OE_ECall()** function. The registered function has the following prototype.
+This function registers a low-level ECALL function that may be called from the host by the **** function. The registered function has the following prototype.
 
 ```
 void (*)(uint64_t argIn, uint64_t* argOut);
