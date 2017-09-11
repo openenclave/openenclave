@@ -345,7 +345,7 @@ OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(
 void* OE_HostMalloc(size_t size);
 
 /**
- * Allocate size zero-filled bytes from the host's heap.
+ * Allocate zero-filled bytes from the host's heap.
  *
  * This function allocates **size** bytes from the host's heap and fills it
  * with zero character. It returns the address of the allocated memory. The 

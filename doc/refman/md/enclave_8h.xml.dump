@@ -2993,7 +2993,7 @@ doxygen
                 {
                     para
                     {
-                        chars="Allocate size zero-filled bytes from the host's heap."
+                        chars="Allocate zero-filled bytes from the host's heap."
                     }
                 }
                 detaileddescription
