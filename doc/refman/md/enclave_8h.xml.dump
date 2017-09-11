@@ -1645,7 +1645,7 @@ doxygen
                                     {
                                         chars="report"
                                     }
-                                    chars="Executes the ENCLU.EREPORT instruction to generate the report, passing it the  and , setting the  output parameter."
+                                    chars="Executes the ENCLU.EREPORT instruction to generate the report, passing it the  and . This instruction fills in the  output parameter."
                                 }
                             }
                         }

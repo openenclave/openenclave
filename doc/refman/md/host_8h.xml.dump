@@ -1615,12 +1615,7 @@ doxygen
                     }
                     para
                     {
-                        ref
-                        {
-                            refid=host_8h_a0d2e9102af51fc63e9895612310392f5_1a0d2e9102af51fc63e9895612310392f5
-                            kindref=member
-                            chars="OE_GetQuote()"
-                        }
+                        chars="This function obtains a quote from the AESM service, which executes the Intel(R) quote enclave (QE)."
                     }
                     para
                     {
