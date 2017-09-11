@@ -56,7 +56,7 @@ OE_Result SGX_GetQuote(
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (!(aesm = AESMConnect()))
-        OE_THROW(OE_FAILURE);
+        OE_THROW(OE_SERVICE_UNAVAILABLE);
 
     OE_TRY(AESMGetQuote(
         aesm,

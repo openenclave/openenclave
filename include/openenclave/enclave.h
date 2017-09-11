@@ -191,7 +191,36 @@ bool OE_IsOutsideEnclave(
 /**
  * Get a report for use in remote attestation.
  *
- * This function is experimental and is likely to change.
+ * This function creates a report to be used in remote attestation. The
+ * report shall contain the data given by the **reportData** parameter.
+ * The following steps are performed:
+ *
+ * - Calls into the host to request that the AESM service initialize the
+ *   quote. This step obtains **target information** for the enclave that
+ *   will eventually sign the quote (the Intel(R) quote enclave).
+ *
+ * - Executes the ENCLU.EREPORT instruction to generate the report, passing
+ *   it the **target information** and **report data**, setting the **report** 
+ *   output parameter.
+ *
+ * The next step is to pass the newly created report to the host so it can
+ * get a quote for this report from the Intel(R) quote enclave. See the
+ * OE_GetQuote() host function for further details.
+ *
+ * If the *reportSize* parameter is too small, this function resets it to
+ * the required size and returns OE_BUFFER_TOO_SMALL.
+ *
+ * **Caution:** This function is experimental and subject to change.
+ *
+ * @param reportData The report data that will be included in the report.
+ * @param report The buffer where the report will be copied.
+ * @param reportSize The size of the **report** buffer.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_BUFFER_TOO_SMALL The **report** buffer is too small.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate host heap memory.
+ *
  */
 OE_Result OE_GetReportForRemoteAttestation(
     const uint8_t reportData[OE_REPORT_DATA_SIZE],
@@ -409,6 +438,27 @@ void OE_Abort(void);
  */
 void* OE_Sbrk(ptrdiff_t increment);
 
+/**
+ * Called whenever an assertion fails.
+ *
+ * This internal function is called when the expression of the OE_Assert() 
+ * macro evaluates to zero. For example:
+ *
+ *     OE_Assert(x > y);
+ *
+ * If the expression evaluates to zero, this function is called with the
+ * string expression ("x > y") as wells as the file, line, and function where 
+ * the macro was expanded.
+ *
+ * The __OE_AssertFail() function performs a host call to print a message
+ * and then calls OE_Abort().
+ *
+ * @param expr The argument of the OE_Assert() macro.
+ * @param file The name of the file where OE_Assert() was invoked.
+ * @param file The line number where OE_Assert() was invoked.
+ * @param line The name of the function that invoked OE_Assert().
+ *
+ */
 void __OE_AssertFail(
     const char *expr,
     const char *file,

@@ -390,7 +390,13 @@ doxygen
                 }
                 initializer
                 {
-                    chars="do \\n    { \\n        if (!(EXPR)) \\n            __OE_AssertFail(#EXPR, __FILE__, __LINE__, __FUNCTION__); \\n    } \\n    while (0)"
+                    ref
+                    {
+                        refid=enclave_8h_afb7d4049a4bc01b8e5ba49741e447a16_1afb7d4049a4bc01b8e5ba49741e447a16
+                        kindref=member
+                        chars="__OE_AssertFail"
+                    }
+                    chars="do \\n    { \\n        if (!(EXPR)) \\n            (#EXPR, __FILE__, __LINE__, __FUNCTION__); \\n    } \\n    while (0)"
                 }
                 briefdescription
                 {
@@ -404,10 +410,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=418
+                    line=468
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/enclave.h
-                    bodystart=418
+                    bodystart=468
                     bodyend=-1
                 }
             }
@@ -1602,7 +1608,210 @@ doxygen
                 {
                     para
                     {
-                        chars="This function is experimental and is likely to change."
+                        bold
+                        {
+                            chars="reportData"
+                        }
+                        chars="This function creates a report to be used in remote attestation. The report shall contain the data given by the  parameter. The following steps are performed:"
+                    }
+                    para
+                    {
+                        itemizedlist
+                        {
+                            listitem
+                            {
+                                para
+                                {
+                                    bold
+                                    {
+                                        chars="target information"
+                                    }
+                                    chars="Calls into the host to request that the AESM service initialize the quote. This step obtains  for the enclave that will eventually sign the quote (the Intel(R) quote enclave)."
+                                }
+                            }
+                            listitem
+                            {
+                                para
+                                {
+                                    bold
+                                    {
+                                        chars="target information"
+                                    }
+                                    bold
+                                    {
+                                        chars="report data"
+                                    }
+                                    bold
+                                    {
+                                        chars="report"
+                                    }
+                                    chars="Executes the ENCLU.EREPORT instruction to generate the report, passing it the  and , setting the  output parameter."
+                                }
+                            }
+                        }
+                    }
+                    para
+                    {
+                        ref
+                        {
+                            refid=host_8h_a0d2e9102af51fc63e9895612310392f5_1a0d2e9102af51fc63e9895612310392f5
+                            kindref=member
+                            chars="OE_GetQuote()"
+                        }
+                        chars="The next step is to pass the newly created report to the host so it can get a quote for this report from the Intel(R) quote enclave. See the  host function for further details."
+                    }
+                    para
+                    {
+                        emphasis
+                        {
+                            chars="reportSize"
+                        }
+                        chars="If the  parameter is too small, this function resets it to the required size and returns OE_BUFFER_TOO_SMALL."
+                    }
+                    para
+                    {
+                        bold
+                        {
+                            chars="Caution:"
+                        }
+                    }
+                    para
+                    {
+                        parameterlist
+                        {
+                            kind=param
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="reportData"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The report data that will be included in the report."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="report"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The buffer where the report will be copied."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="reportSize"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        bold
+                                        {
+                                            chars="report"
+                                        }
+                                        chars="The size of the  buffer."
+                                    }
+                                }
+                            }
+                        }
+                        parameterlist
+                        {
+                            kind=retval
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_OK"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The report was successfully created."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_INVALID_PARAMETER"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="At least one parameter is invalid."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_BUFFER_TOO_SMALL"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        bold
+                                        {
+                                            chars="report"
+                                        }
+                                        chars="The  buffer is too small."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="OE_OUT_OF_MEMORY"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="Failed to allocate host heap memory."
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 inbodydescription
@@ -1611,7 +1820,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=196
+                    line=225
                     column=1
                 }
             }
@@ -1672,7 +1881,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=206
+                    line=235
                     column=1
                 }
             }
@@ -1744,7 +1953,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=213
+                    line=242
                     column=1
                 }
             }
@@ -1827,7 +2036,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=220
+                    line=249
                     column=1
                 }
             }
@@ -1910,7 +2119,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=227
+                    line=256
                     column=1
                 }
             }
@@ -1993,7 +2202,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=234
+                    line=263
                     column=1
                 }
             }
@@ -2076,7 +2285,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=241
+                    line=270
                     column=1
                 }
             }
@@ -2159,7 +2368,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=248
+                    line=277
                     column=1
                 }
             }
@@ -2400,7 +2609,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=275
+                    line=304
                     column=1
                 }
             }
@@ -2570,7 +2779,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=293
+                    line=322
                     column=1
                 }
             }
@@ -2676,7 +2885,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=307
+                    line=336
                     column=1
                 }
             }
@@ -2805,11 +3014,11 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=323
+                    line=352
                     column=1
                     bodyfile=/root/openenclave/include/openenclave/enclave.h
-                    bodystart=323
-                    bodyend=333
+                    bodystart=352
+                    bodyend=362
                 }
             }
             memberdef
@@ -2911,7 +3120,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=348
+                    line=377
                     column=1
                 }
             }
@@ -3025,7 +3234,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=363
+                    line=392
                     column=1
                 }
             }
@@ -3122,7 +3331,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=374
+                    line=403
                     column=1
                 }
             }
@@ -3219,7 +3428,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=388
+                    line=417
                     column=1
                 }
             }
@@ -3276,7 +3485,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=395
+                    line=424
                     column=1
                 }
             }
@@ -3383,14 +3592,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=410
+                    line=439
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1afb7d4049a4bc01b8e5ba49741e447a16
+                id=enclave_8h_afb7d4049a4bc01b8e5ba49741e447a16_1afb7d4049a4bc01b8e5ba49741e447a16
                 prot=public
                 static=no
                 const=no
@@ -3459,9 +3668,116 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Called whenever an assertion fails."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        verbatim
+                        {
+                            chars="OE_Assert(x > y);"
+                        }
+                        chars="This internal function is called when the expression of the OE_Assert() macro evaluates to zero. For example:"
+                    }
+                    para
+                    {
+                        chars="If the expression evaluates to zero, this function is called with the string expression ("x > y") as wells as the file, line, and function where the macro was expanded."
+                    }
+                    para
+                    {
+                        ref
+                        {
+                            refid=enclave_8h_afb7d4049a4bc01b8e5ba49741e447a16_1afb7d4049a4bc01b8e5ba49741e447a16
+                            kindref=member
+                            chars="__OE_AssertFail()"
+                        }
+                        ref
+                        {
+                            refid=enclave_8h_a8e55d0688551186025aae154d22249b5_1a8e55d0688551186025aae154d22249b5
+                            kindref=member
+                            chars="OE_Abort()"
+                        }
+                        chars="The  function performs a host call to print a message and then calls ."
+                    }
+                    para
+                    {
+                        parameterlist
+                        {
+                            kind=param
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="expr"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The argument of the OE_Assert() macro."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="file"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The name of the file where OE_Assert() was invoked."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="file"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The line number where OE_Assert() was invoked."
+                                    }
+                                }
+                            }
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="line"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The name of the function that invoked OE_Assert()."
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 inbodydescription
                 {
@@ -3469,7 +3785,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=412
+                    line=462
                     column=1
                 }
             }
@@ -4655,7 +4971,7 @@ doxygen
             }
             codeline
             {
-                lineno=196
+                lineno=225
                 highlight
                 {
                     class=normal
@@ -4673,7 +4989,7 @@ doxygen
             }
             codeline
             {
-                lineno=197
+                lineno=226
                 highlight
                 {
                     class=normal
@@ -4709,7 +5025,7 @@ doxygen
             }
             codeline
             {
-                lineno=198
+                lineno=227
                 highlight
                 {
                     class=normal
@@ -4742,7 +5058,7 @@ doxygen
             }
             codeline
             {
-                lineno=199
+                lineno=228
                 highlight
                 {
                     class=normal
@@ -4775,7 +5091,7 @@ doxygen
             }
             codeline
             {
-                lineno=200
+                lineno=229
                 highlight
                 {
                     class=normal
@@ -4783,7 +5099,7 @@ doxygen
             }
             codeline
             {
-                lineno=206
+                lineno=235
                 highlight
                 {
                     class=keywordtype
@@ -4831,7 +5147,7 @@ doxygen
             }
             codeline
             {
-                lineno=207
+                lineno=236
                 highlight
                 {
                     class=normal
@@ -4839,7 +5155,7 @@ doxygen
             }
             codeline
             {
-                lineno=213
+                lineno=242
                 highlight
                 {
                     class=keywordtype
@@ -4915,7 +5231,7 @@ doxygen
             }
             codeline
             {
-                lineno=214
+                lineno=243
                 highlight
                 {
                     class=normal
@@ -4923,7 +5239,7 @@ doxygen
             }
             codeline
             {
-                lineno=220
+                lineno=249
                 highlight
                 {
                     class=keywordtype
@@ -5003,7 +5319,7 @@ doxygen
             }
             codeline
             {
-                lineno=221
+                lineno=250
                 highlight
                 {
                     class=normal
@@ -5011,7 +5327,7 @@ doxygen
             }
             codeline
             {
-                lineno=227
+                lineno=256
                 highlight
                 {
                     class=keywordtype
@@ -5091,7 +5407,7 @@ doxygen
             }
             codeline
             {
-                lineno=228
+                lineno=257
                 highlight
                 {
                     class=normal
@@ -5099,7 +5415,7 @@ doxygen
             }
             codeline
             {
-                lineno=234
+                lineno=263
                 highlight
                 {
                     class=keywordtype
@@ -5179,7 +5495,7 @@ doxygen
             }
             codeline
             {
-                lineno=235
+                lineno=264
                 highlight
                 {
                     class=normal
@@ -5187,7 +5503,7 @@ doxygen
             }
             codeline
             {
-                lineno=241
+                lineno=270
                 highlight
                 {
                     class=keywordtype
@@ -5255,7 +5571,7 @@ doxygen
             }
             codeline
             {
-                lineno=242
+                lineno=271
                 highlight
                 {
                     class=normal
@@ -5263,7 +5579,7 @@ doxygen
             }
             codeline
             {
-                lineno=248
+                lineno=277
                 highlight
                 {
                     class=keywordtype
@@ -5355,7 +5671,7 @@ doxygen
             }
             codeline
             {
-                lineno=249
+                lineno=278
                 highlight
                 {
                     class=normal
@@ -5363,7 +5679,7 @@ doxygen
             }
             codeline
             {
-                lineno=275
+                lineno=304
                 highlight
                 {
                     class=keywordtype
@@ -5449,7 +5765,7 @@ doxygen
             }
             codeline
             {
-                lineno=276
+                lineno=305
                 highlight
                 {
                     class=normal
@@ -5457,7 +5773,7 @@ doxygen
             }
             codeline
             {
-                lineno=292
+                lineno=321
                 highlight
                 {
                     class=normal
@@ -5469,7 +5785,7 @@ doxygen
             }
             codeline
             {
-                lineno=293
+                lineno=322
                 highlight
                 {
                     class=normal
@@ -5538,7 +5854,7 @@ doxygen
             }
             codeline
             {
-                lineno=294
+                lineno=323
                 highlight
                 {
                     class=normal
@@ -5546,7 +5862,7 @@ doxygen
             }
             codeline
             {
-                lineno=306
+                lineno=335
                 highlight
                 {
                     class=normal
@@ -5558,7 +5874,7 @@ doxygen
             }
             codeline
             {
-                lineno=307
+                lineno=336
                 highlight
                 {
                     class=normal
@@ -5604,7 +5920,7 @@ doxygen
             }
             codeline
             {
-                lineno=308
+                lineno=337
                 highlight
                 {
                     class=normal
@@ -5612,7 +5928,7 @@ doxygen
             }
             codeline
             {
-                lineno=323
+                lineno=352
                 refid=enclave_8h_a1c0f1e4f4f25df87c37777a5ef9fa8c7_1a1c0f1e4f4f25df87c37777a5ef9fa8c7
                 refkind=member
                 highlight
@@ -5648,7 +5964,7 @@ doxygen
             }
             codeline
             {
-                lineno=324
+                lineno=353
                 highlight
                 {
                     class=normal
@@ -5684,7 +6000,7 @@ doxygen
             }
             codeline
             {
-                lineno=325
+                lineno=354
                 highlight
                 {
                     class=normal
@@ -5717,7 +6033,7 @@ doxygen
             }
             codeline
             {
-                lineno=326
+                lineno=355
                 highlight
                 {
                     class=normal
@@ -5726,7 +6042,7 @@ doxygen
             }
             codeline
             {
-                lineno=327
+                lineno=356
                 highlight
                 {
                     class=normal
@@ -5771,7 +6087,7 @@ doxygen
             }
             codeline
             {
-                lineno=328
+                lineno=357
                 highlight
                 {
                     class=normal
@@ -5779,7 +6095,7 @@ doxygen
             }
             codeline
             {
-                lineno=329
+                lineno=358
                 highlight
                 {
                     class=normal
@@ -5812,7 +6128,7 @@ doxygen
             }
             codeline
             {
-                lineno=330
+                lineno=359
                 highlight
                 {
                     class=normal
@@ -5885,7 +6201,7 @@ doxygen
             }
             codeline
             {
-                lineno=331
+                lineno=360
                 highlight
                 {
                     class=normal
@@ -5893,7 +6209,7 @@ doxygen
             }
             codeline
             {
-                lineno=332
+                lineno=361
                 highlight
                 {
                     class=normal
@@ -5926,7 +6242,7 @@ doxygen
             }
             codeline
             {
-                lineno=333
+                lineno=362
                 highlight
                 {
                     class=normal
@@ -5935,7 +6251,7 @@ doxygen
             }
             codeline
             {
-                lineno=334
+                lineno=363
                 highlight
                 {
                     class=normal
@@ -5943,7 +6259,7 @@ doxygen
             }
             codeline
             {
-                lineno=348
+                lineno=377
                 highlight
                 {
                     class=keywordtype
@@ -5979,7 +6295,7 @@ doxygen
             }
             codeline
             {
-                lineno=349
+                lineno=378
                 highlight
                 {
                     class=normal
@@ -5987,7 +6303,7 @@ doxygen
             }
             codeline
             {
-                lineno=363
+                lineno=392
                 highlight
                 {
                     class=keywordtype
@@ -6039,7 +6355,7 @@ doxygen
             }
             codeline
             {
-                lineno=364
+                lineno=393
                 highlight
                 {
                     class=normal
@@ -6047,7 +6363,7 @@ doxygen
             }
             codeline
             {
-                lineno=374
+                lineno=403
                 highlight
                 {
                     class=keywordtype
@@ -6083,7 +6399,7 @@ doxygen
             }
             codeline
             {
-                lineno=375
+                lineno=404
                 highlight
                 {
                     class=normal
@@ -6091,7 +6407,7 @@ doxygen
             }
             codeline
             {
-                lineno=388
+                lineno=417
                 highlight
                 {
                     class=keywordtype
@@ -6139,7 +6455,7 @@ doxygen
             }
             codeline
             {
-                lineno=389
+                lineno=418
                 highlight
                 {
                     class=normal
@@ -6147,7 +6463,7 @@ doxygen
             }
             codeline
             {
-                lineno=395
+                lineno=424
                 highlight
                 {
                     class=keywordtype
@@ -6180,7 +6496,7 @@ doxygen
             }
             codeline
             {
-                lineno=396
+                lineno=425
                 highlight
                 {
                     class=normal
@@ -6188,7 +6504,7 @@ doxygen
             }
             codeline
             {
-                lineno=410
+                lineno=439
                 highlight
                 {
                     class=keywordtype
@@ -6214,7 +6530,7 @@ doxygen
             }
             codeline
             {
-                lineno=411
+                lineno=440
                 highlight
                 {
                     class=normal
@@ -6222,11 +6538,7 @@ doxygen
             }
             codeline
             {
-                lineno=412
-                highlight
-                {
-                    class=normal
-                }
+                lineno=462
                 highlight
                 {
                     class=keywordtype
@@ -6238,12 +6550,18 @@ doxygen
                     sp
                     {
                     }
-                    chars="__OE_AssertFail("
+                    ref
+                    {
+                        refid=enclave_8h_afb7d4049a4bc01b8e5ba49741e447a16_1afb7d4049a4bc01b8e5ba49741e447a16
+                        kindref=member
+                        chars="__OE_AssertFail"
+                    }
+                    chars="("
                 }
             }
             codeline
             {
-                lineno=413
+                lineno=463
                 highlight
                 {
                     class=normal
@@ -6288,7 +6606,7 @@ doxygen
             }
             codeline
             {
-                lineno=414
+                lineno=464
                 highlight
                 {
                     class=normal
@@ -6333,7 +6651,7 @@ doxygen
             }
             codeline
             {
-                lineno=415
+                lineno=465
                 highlight
                 {
                     class=normal
@@ -6366,7 +6684,7 @@ doxygen
             }
             codeline
             {
-                lineno=416
+                lineno=466
                 highlight
                 {
                     class=normal
@@ -6411,7 +6729,7 @@ doxygen
             }
             codeline
             {
-                lineno=417
+                lineno=467
                 highlight
                 {
                     class=normal
@@ -6419,7 +6737,7 @@ doxygen
             }
             codeline
             {
-                lineno=418
+                lineno=468
                 highlight
                 {
                     class=normal
@@ -6438,7 +6756,7 @@ doxygen
             }
             codeline
             {
-                lineno=419
+                lineno=469
                 highlight
                 {
                     class=preprocessor
@@ -6462,7 +6780,7 @@ doxygen
             }
             codeline
             {
-                lineno=420
+                lineno=470
                 highlight
                 {
                     class=preprocessor
@@ -6486,7 +6804,7 @@ doxygen
             }
             codeline
             {
-                lineno=421
+                lineno=471
                 highlight
                 {
                     class=preprocessor
@@ -6525,7 +6843,7 @@ doxygen
             }
             codeline
             {
-                lineno=422
+                lineno=472
                 highlight
                 {
                     class=preprocessor
@@ -6582,7 +6900,7 @@ doxygen
             }
             codeline
             {
-                lineno=423
+                lineno=473
                 highlight
                 {
                     class=preprocessor
@@ -6606,7 +6924,7 @@ doxygen
             }
             codeline
             {
-                lineno=424
+                lineno=474
                 highlight
                 {
                     class=preprocessor
@@ -6634,7 +6952,7 @@ doxygen
             }
             codeline
             {
-                lineno=425
+                lineno=475
                 highlight
                 {
                     class=normal
@@ -6642,7 +6960,7 @@ doxygen
             }
             codeline
             {
-                lineno=426
+                lineno=476
                 highlight
                 {
                     class=normal
@@ -6651,7 +6969,7 @@ doxygen
             }
             codeline
             {
-                lineno=427
+                lineno=477
                 highlight
                 {
                     class=normal
@@ -6659,7 +6977,7 @@ doxygen
             }
             codeline
             {
-                lineno=428
+                lineno=478
                 highlight
                 {
                     class=normal

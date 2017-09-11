@@ -188,6 +188,30 @@ OE_Result OE_RegisterOCall(
     uint32_t func,
     OE_OCallFunction ocall);
 
+/**
+ * Gets a quote from the Intel(R) quote enclave.
+ *
+ * This function obtains a quote for the **report** parameter. Enclaves create
+ * reports by executing the ENCLU.EREPORT instruction. One way an enclave may
+ * create a report is by calling OE_GetReportForRemoteAttestation().
+ *
+ * OE_GetQuote() obtains a quote from the AESM service, which executes the
+ * Intel(R) quote enclave (QE).
+ *
+ * If the *quoteSize* parameter is too small, this function resets it to
+ * the required size and returns OE_BUFFER_TOO_SMALL.
+ *
+ * @param report The report for which the quote is desired.
+ * @param reportSize The size of the **report** buffer.
+ * @param quote The quote is written to this buffer.
+ * @param quoteSize The size of the **quote** buffer.
+ *
+ * @retval OE_OK The quote was successfully obtained.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_BUFFER_TOO_SMALL The **quote** buffer is too small.
+ * @retval OE_SERVICE_UNAVAILABLE The AESM service is unavailable.
+ *
+ */
 OE_Result OE_GetQuote(
     const void* report,
     size_t reportSize,

@@ -36,6 +36,7 @@ typedef enum _OE_Result
     OE_READ_FAILED,
     OE_OUT_OF_RANGE,
     OE_ALREADY_IN_USE,
+    OE_SERVICE_UNAVAILABLE,
 }
 OE_Result;
 

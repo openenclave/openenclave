@@ -56,6 +56,8 @@
 
 * [OE_Sbrk()](enclave_8h_ae655f9a81dc40863b43a681793b277f9_1ae655f9a81dc40863b43a681793b277f9.md)
 
+* [__OE_AssertFail()](enclave_8h_afb7d4049a4bc01b8e5ba49741e447a16_1afb7d4049a4bc01b8e5ba49741e447a16.md)
+
 ### host.h
 
 * [OE_CreateEnclave()](host_8h_a598cc1d7a051a13f5ff4ba6160ccbd82_1a598cc1d7a051a13f5ff4ba6160ccbd82.md)
@@ -67,4 +69,6 @@
 * [OE_CallEnclave()](host_8h_a5a1d79498b0488d2aea62b0596bcdd4d_1a5a1d79498b0488d2aea62b0596bcdd4d.md)
 
 * [OE_RegisterOCall()](host_8h_acafe99d14d239622e2b7a5fda4b7eb1d_1acafe99d14d239622e2b7a5fda4b7eb1d.md)
+
+* [OE_GetQuote()](host_8h_a0d2e9102af51fc63e9895612310392f5_1a0d2e9102af51fc63e9895612310392f5.md)
 

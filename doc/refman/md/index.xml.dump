@@ -301,7 +301,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1afb7d4049a4bc01b8e5ba49741e447a16
+            refid=enclave_8h_afb7d4049a4bc01b8e5ba49741e447a16_1afb7d4049a4bc01b8e5ba49741e447a16
             kind=function
             name
             {
@@ -427,7 +427,7 @@ doxygenindex
         }
         member
         {
-            refid=host_8h_1a0d2e9102af51fc63e9895612310392f5
+            refid=host_8h_a0d2e9102af51fc63e9895612310392f5_1a0d2e9102af51fc63e9895612310392f5
             kind=function
             name
             {
