@@ -2890,7 +2890,13 @@ doxygen
                         {
                             chars="size"
                         }
-                        chars="This function allocates  bytes from the host's heap and returns the address of the allocated memory. The implementation performs an OCALL to the host, which calls malloc(). To free the memory, it must be passed to OE_Free()."
+                        ref
+                        {
+                            refid=enclave_8h_af7ed072613e44809e1991f4f64c63b23_1af7ed072613e44809e1991f4f64c63b23
+                            kindref=member
+                            chars="OE_HostFree()"
+                        }
+                        chars="This function allocates  bytes from the host's heap and returns the address of the allocated memory. The implementation performs an OCALL to the host, which calls malloc(). To free the memory, it must be passed to ."
                     }
                     para
                     {
@@ -2998,7 +3004,13 @@ doxygen
                         {
                             chars="size"
                         }
-                        chars="This function allocates  bytes from the host's heap and fills it with zero character. It returns the address of the allocated memory. The implementation performs an OCALL to the host, which calls calloc(). To free the memory, it must be passed to OE_Free()."
+                        ref
+                        {
+                            refid=enclave_8h_af7ed072613e44809e1991f4f64c63b23_1af7ed072613e44809e1991f4f64c63b23
+                            kindref=member
+                            chars="OE_HostFree()"
+                        }
+                        chars="This function allocates  bytes from the host's heap and fills it with zero character. It returns the address of the allocated memory. The implementation performs an OCALL to the host, which calls calloc(). To free the memory, it must be passed to ."
                     }
                     para
                     {
