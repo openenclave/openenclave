@@ -363,8 +363,7 @@ void* OE_HostCalloc(size_t nmemb, size_t size);
  * Releases allocated memory.
  *
  * This function releases memory allocated with OE_HostMalloc() or
- * OE_HostCalloc(). This function performs and OCALL where the host
- * calls free().
+ * OE_HostCalloc() by performing an OCALL where the host calls free().
  *
  * @param ptr Pointer to memory to be released or null.
  *
