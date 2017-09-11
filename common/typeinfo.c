@@ -5,7 +5,6 @@
 #include <wchar.h>
 #include <ctype.h>
 #include <stdarg.h>
-#include <openenclave/bits/galloc.h>
 
 /*
 **==============================================================================
@@ -2056,35 +2055,16 @@ OE_Result OE_PadStruct(
     return _TestOrFillPadding(sti, sin, false, 0xAA);
 }
 
-static void _CheckProc(void* ptr, size_t size, void* procData)
-{
-    bool* flag = (bool*)procData;
-
-    if (__OE_GCheck(ptr) != 0)
-    {
-        __OE_GFix(ptr);
-
-        if (flag)
-            *flag = false;
-    }
-}
-
 OE_Result OE_CheckStruct(
     const OE_StructTI* ti,
     void* strct)
 {
-    bool flag = true;
     OE_Result result = OE_UNEXPECTED;
 
-    if (!ti || !strct || !flag)
+    if (!ti || !strct)
         OE_THROW(OE_INVALID_PARAMETER);
 
     OE_TRY(OE_TestStructPadding(ti, strct));
-
-    OE_TRY(_ApplyStructPtrProc(ti, strct, _CheckProc, &flag));
-
-    if (!flag)
-        OE_THROW(OE_BUFFER_OVERRUN);
 
     result = OE_OK;
 
