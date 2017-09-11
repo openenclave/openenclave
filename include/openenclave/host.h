@@ -146,7 +146,7 @@ OE_Result OE_ECall(
  * The meaning of the **args** parameter is defined by the implementer of the
  * function and may be null.
  *
- * This function is implemented using the low-level **OE_OCall()** interface
+ * This function is implemented using the low-level OE_OCall() interface
  * where the function number is given by the **OE_FUNC_CALL_ENCLAVE** constant.
  *
  * Note that the return value of this function only indicates the success of

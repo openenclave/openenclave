@@ -111,7 +111,7 @@ OE_Result OE_OCall(
  * The meaning of the **args** parameter is defined by the implementer of the
  * function and may be null.
  *
- * This function is implemented using the low-level **OE_ECall()** interface
+ * This function is implemented using the low-level OE_ECall() interface
  * where the function number is given by the **OE_FUNC_CALL_HOST** constant.
  *
  * Note that the return value of this function only indicates the success of
