@@ -400,8 +400,8 @@ void OE_Abort(void);
  *
  * @param increment Number of bytes to increment the heap end by.
  *
- * @returns The old end of the heap (before the increment) or zero if there
- * are less than **increment** bytes remaining on the heap.
+ * @returns The old end of the heap (before the increment) or NULL if there
+ * are less than **increment** bytes left on the heap.
  *
  */
 void* OE_Sbrk(ptrdiff_t increment);
