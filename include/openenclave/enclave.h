@@ -335,7 +335,7 @@ OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(
  * This function allocates **size** bytes from the host's heap and returns the 
  * address of the allocated memory. The implementation performs an OCALL to
  * the host, which calls malloc(). To free the memory, it must be passed to
- * OE_Free().
+ * OE_HostFree().
  *
  * @param size The number of bytes to be allocated.
  *
@@ -350,7 +350,7 @@ void* OE_HostMalloc(size_t size);
  * This function allocates **size** bytes from the host's heap and fills it
  * with zero character. It returns the address of the allocated memory. The 
  * implementation performs an OCALL to the host, which calls calloc().
- * To free the memory, it must be passed to OE_Free().
+ * To free the memory, it must be passed to OE_HostFree().
  *
  * @param size The number of bytes to be allocated and zero-filled.
  *
