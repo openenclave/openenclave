@@ -5,6 +5,7 @@
 #include <string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/print.h>
 #include "../3rdparty/musl/musl/src/internal/stdio_impl.h"
 
 FILE* const stdin = ((FILE*)0x10000000);
@@ -13,12 +14,12 @@ FILE* const stderr = ((FILE*)0x30000000);
 
 int puts(const char* str)
 {
-    return OE_HostPuts(str);
+    return __OE_HostPuts(str);
 }
 
 int putchar(int c)
 {
-    return OE_HostPutchar(c);
+    return __OE_HostPutchar(c);
 }
 
 int vprintf(const char* fmt, va_list ap_)
@@ -47,7 +48,7 @@ int vprintf(const char* fmt, va_list ap_)
         va_end(ap);
     }
 
-    OE_HostPrint(p);
+    __OE_HostPrint(p);
 
     return n;
 }
@@ -82,7 +83,7 @@ int fprintf(FILE* stream, const char* fmt, ...)
     n = vsnprintf(buf, sizeof(buf), fmt, ap);
     va_end(ap);
 
-    OE_HostPrint(buf);
+    __OE_HostPrint(buf);
 
     return n;
 }

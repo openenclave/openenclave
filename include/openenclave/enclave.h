@@ -185,42 +185,64 @@ bool OE_IsOutsideEnclave(
     const void* ptr,
     size_t size);
 
+/**
+ * Get a report for use in remote attestation.
+ *
+ * This function is experimental and is likely to change.
+ */
 OE_Result OE_GetReportForRemoteAttestation(
     const uint8_t reportData[OE_REPORT_DATA_SIZE],
     void *report,
     size_t* reportSize);
 
-/*
-**==============================================================================
-**
-** String functions:
-**
-**==============================================================================
-*/
-
+/**
+ * Enclave implementation of standard strlen() function.
+ *
+ * Refer to documentation for strlen() function.
+ */
 size_t OE_Strlen(const char* s);
 
+/**
+ * Enclave implementation of standard strcmp() function.
+ *
+ * Refer to documentation for strcmp() function.
+ */
 int OE_Strcmp(const char* s1, const char* s2);
 
+/**
+ * Enclave implementation of standard strlcpy() function.
+ *
+ * Refer to documentation for strlcpy() function.
+ */
 size_t OE_Strlcpy(char* dest, const char* src, size_t size);
 
+/**
+ * Enclave implementation of standard strlcat() function.
+ *
+ * Refer to documentation for strlcat() function.
+ */
 size_t OE_Strlcat(char* dest, const char* src, size_t size);
 
+/**
+ * Enclave implementation of standard memcpy() function.
+ *
+ * Refer to documentation for memcpy() function.
+ */
 void *OE_Memcpy(void *dest, const void *src, size_t n);
 
+/**
+ * Enclave implementation of standard memset() function.
+ *
+ * Refer to documentation for memset() function.
+ */
 void *OE_Memset(void *s, int c, size_t n);
 
+/**
+ * Enclave implementation of standard memcmp() function.
+ *
+ * Refer to documentation for memcmp() function.
+ */
 int OE_Memcmp(const void *s1, const void *s2, size_t n);
-
-/*
-**==============================================================================
-**
-** Abort
-**
-**==============================================================================
-*/
-
-void OE_Abort(void);
 
 /**
  * Produce output according to a given format string.
@@ -267,20 +289,6 @@ int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap);
 OE_PRINTF_FORMAT(3, 4)
 int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
 
-/*
-**==============================================================================
-**
-** Functions for writing to the host's console.
-**
-**==============================================================================
-*/
-
-int OE_HostPuts(const char* str);
-
-int OE_HostPrint(const char* str);
-
-int OE_HostVprintf(const char* fmt, OE_va_list ap_);
-
 /**
  * Print formatted characters to the host's console.
  *
@@ -294,8 +302,6 @@ int OE_HostVprintf(const char* fmt, OE_va_list ap_);
  */
 OE_PRINTF_FORMAT(1, 2)
 int OE_HostPrintf(const char* fmt, ...);
-
-int OE_HostPutchar(int c);
 
 /**
  * Allocates space on the stack frame of the caller.
@@ -323,14 +329,6 @@ OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(
     return ptr;
 }
 
-/*
-**==============================================================================
-**
-** Host heap memory allocation:
-**
-**==============================================================================
-*/
-
 void* OE_HostMalloc(size_t size);
 
 void* OE_HostCalloc(size_t nmemb, size_t size);
@@ -339,23 +337,27 @@ void OE_HostFree(void* ptr);
 
 char* OE_HostStrdup(const char* str);
 
-/*
-**==============================================================================
-**
-** OE_Sbrk()
-**
-**==============================================================================
-*/
+/**
+ * Abort execution by causing and illegal instruction exception.
+ *
+ * This function aborts execution by executing the UD2 instruction.
+ */
+void OE_Abort(void);
 
+/**
+ * Enclave implementation of the standard Unix sbrk() system call.
+ *
+ * This function provides an enclave equivalent to the sbrk() system call.
+ * It increments the current end of the heap by **increment** bytes. Calling
+ * OE_Sbrk() with an increment of 0, returns the current end of the heap.
+ *
+ * @param increment Number of bytes to increment the heap end by.
+ *
+ * @returns The old end of the heap (before the increment) or zero if there
+ * are less than **increment** bytes remaining on the heap.
+ *
+ */
 void* OE_Sbrk(ptrdiff_t increment);
-
-/*
-**==============================================================================
-**
-** Assertion:
-**
-**==============================================================================
-*/
 
 void __OE_AssertFail(
     const char *expr,

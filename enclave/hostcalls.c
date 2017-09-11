@@ -1,5 +1,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/print.h>
 #include "td.h"
 
 void* OE_HostMalloc(size_t size)
@@ -48,7 +49,7 @@ char* OE_HostStrdup(const char* str)
     return p;
 }
 
-int OE_HostPutchar(int c)
+int __OE_HostPutchar(int c)
 {
     int ret = -1;
 
@@ -62,7 +63,7 @@ done:
     return ret;
 }
 
-int OE_HostPuts(const char* str)
+int __OE_HostPuts(const char* str)
 {
     int ret = -1;
     char* hstr = NULL;
@@ -86,7 +87,7 @@ done:
     return ret;
 }
 
-int OE_HostPrint(const char* str)
+int __OE_HostPrint(const char* str)
 {
     int ret = -1;
     char* hstr = NULL;
@@ -110,7 +111,7 @@ done:
     return ret;
 }
 
-int OE_HostVprintf(const char* fmt, OE_va_list ap_)
+int __OE_HostVprintf(const char* fmt, OE_va_list ap_)
 {
     char buf[256];
     char *p = buf;
@@ -136,7 +137,7 @@ int OE_HostVprintf(const char* fmt, OE_va_list ap_)
         OE_va_end(ap);
     }
 
-    OE_HostPrint(p);
+    __OE_HostPrint(p);
 
     return n;
 }
@@ -147,7 +148,7 @@ int OE_HostPrintf(const char* fmt, ...)
 
     OE_va_list ap;
     OE_va_start(ap, fmt);
-    n = OE_HostVprintf(fmt, ap);
+    n = __OE_HostVprintf(fmt, ap);
     OE_va_end(ap);
 
     return n;

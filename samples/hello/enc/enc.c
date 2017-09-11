@@ -25,7 +25,7 @@ OE_ECALL void Hello(void* args_)
         return;
     }
 
-    OE_HostPuts("enclave: hello!\n");
+    OE_HostPrintf("enclave: hello!\n");
 
     args->ret = 0;
 }
