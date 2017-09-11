@@ -941,14 +941,11 @@ doxygen
                     }
                     para
                     {
-                        bold
+                        ref
                         {
-                            ref
-                            {
-                                refid=host_8h_af10a19642d3955cab59d4fe273323f3d_1af10a19642d3955cab59d4fe273323f3d
-                                kindref=member
-                                chars="OE_ECall()"
-                            }
+                            refid=host_8h_af10a19642d3955cab59d4fe273323f3d_1af10a19642d3955cab59d4fe273323f3d
+                            kindref=member
+                            chars="OE_ECall()"
                         }
                         bold
                         {

@@ -1251,14 +1251,11 @@ doxygen
                     }
                     para
                     {
-                        bold
+                        ref
                         {
-                            ref
-                            {
-                                refid=enclave_8h_a9613c7919aaabdd63711d0b12d286a13_1a9613c7919aaabdd63711d0b12d286a13
-                                kindref=member
-                                chars="OE_OCall()"
-                            }
+                            refid=enclave_8h_a9613c7919aaabdd63711d0b12d286a13_1a9613c7919aaabdd63711d0b12d286a13
+                            kindref=member
+                            chars="OE_OCall()"
                         }
                         bold
                         {
