@@ -329,12 +329,60 @@ OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(
     return ptr;
 }
 
+/**
+ * Allocate bytes from the host's heap.
+ *
+ * This function allocates **size** bytes from the host's heap and returns the 
+ * address of the allocated memory. The implementation performs an OCALL to
+ * the host, which calls malloc(). To free the memory, it must be passed to
+ * OE_Free().
+ *
+ * @param size The number of bytes to be allocated.
+ *
+ * @returns The allocated memory or NULL if unable to allocate the memory.
+ *
+ */
 void* OE_HostMalloc(size_t size);
 
+/**
+ * Allocate size zero-filled bytes from the host's heap.
+ *
+ * This function allocates **size** bytes from the host's heap and fills it
+ * with zero character. It returns the address of the allocated memory. The 
+ * implementation performs an OCALL to the host, which calls calloc().
+ * To free the memory, it must be passed to OE_Free().
+ *
+ * @param size The number of bytes to be allocated and zero-filled.
+ *
+ * @returns The allocated memory or NULL if unable to allocate the memory.
+ *
+ */
 void* OE_HostCalloc(size_t nmemb, size_t size);
 
+/**
+ * Releases allocated memory.
+ *
+ * This function releases memory allocated with OE_HostMalloc() or
+ * OE_HostCalloc(). This function performs and OCALL where the host
+ * calls free().
+ *
+ * @param ptr Pointer to memory to be released or null.
+ *
+ */
 void OE_HostFree(void* ptr);
 
+/**
+ * Make a heap copy of a string.
+ *
+ * This function allocates memory on the host's heap, copies the **str**
+ * parameter to that memory, and returns a pointer to the newly allocated
+ * memory.
+ *
+ * @param str The string to be copied.
+ *
+ * @returns A pointer to the newly allocated string or NULL if unable to
+ * allocate the storage.
+ */
 char* OE_HostStrdup(const char* str);
 
 /**

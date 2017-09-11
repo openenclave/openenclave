@@ -437,10 +437,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=366
+                    line=416
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/enclave.h
-                    bodystart=366
+                    bodystart=416
                     bodyend=-1
                 }
             }
@@ -1557,7 +1557,7 @@ doxygen
             memberdef
             {
                 kind=function
-                id=enclave_8h_1ab4b70d7070180862df4e92b590fc941d
+                id=enclave_8h_ab4b70d7070180862df4e92b590fc941d_1ab4b70d7070180862df4e92b590fc941d
                 prot=public
                 static=no
                 const=no
@@ -1619,9 +1619,17 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Get a report for use in remote attestation."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        chars="This function is experimental and is likely to change."
+                    }
                 }
                 inbodydescription
                 {
@@ -1629,14 +1637,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=188
+                    line=193
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1a501a4416e8e702f358c2c9a2f2db0085
+                id=enclave_8h_a501a4416e8e702f358c2c9a2f2db0085_1a501a4416e8e702f358c2c9a2f2db0085
                 prot=public
                 static=no
                 const=no
@@ -1672,9 +1680,17 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Enclave implementation of standard strlen() function."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        chars="Refer to documentation for strlen() function."
+                    }
                 }
                 inbodydescription
                 {
@@ -1682,14 +1698,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=201
+                    line=203
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1aadd1c980d0964072b06c924a6571589a
+                id=enclave_8h_aadd1c980d0964072b06c924a6571589a_1aadd1c980d0964072b06c924a6571589a
                 prot=public
                 static=no
                 const=no
@@ -1736,9 +1752,17 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Enclave implementation of standard strcmp() function."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        chars="Refer to documentation for strcmp() function."
+                    }
                 }
                 inbodydescription
                 {
@@ -1746,14 +1770,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=203
+                    line=210
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1a6a6de71dcece7c98bd97e0a1d16787a8
+                id=enclave_8h_a6a6de71dcece7c98bd97e0a1d16787a8_1a6a6de71dcece7c98bd97e0a1d16787a8
                 prot=public
                 static=no
                 const=no
@@ -1811,9 +1835,17 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Enclave implementation of standard strlcpy() function."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        chars="Refer to documentation for strlcpy() function."
+                    }
                 }
                 inbodydescription
                 {
@@ -1821,14 +1853,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=205
+                    line=217
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1a110fd4262b8ef3f490167ea4fc90835b
+                id=enclave_8h_a110fd4262b8ef3f490167ea4fc90835b_1a110fd4262b8ef3f490167ea4fc90835b
                 prot=public
                 static=no
                 const=no
@@ -1886,9 +1918,17 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Enclave implementation of standard strlcat() function."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        chars="Refer to documentation for strlcat() function."
+                    }
                 }
                 inbodydescription
                 {
@@ -1896,14 +1936,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=207
+                    line=224
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1a9a5f74272bec8ad2a6ed9f72262d79c7
+                id=enclave_8h_a9a5f74272bec8ad2a6ed9f72262d79c7_1a9a5f74272bec8ad2a6ed9f72262d79c7
                 prot=public
                 static=no
                 const=no
@@ -1961,9 +2001,17 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Enclave implementation of standard memcpy() function."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        chars="Refer to documentation for memcpy() function."
+                    }
                 }
                 inbodydescription
                 {
@@ -1971,14 +2019,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=209
+                    line=231
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1ae24bfe0db16cb4f14dadf5c0e8e1642d
+                id=enclave_8h_ae24bfe0db16cb4f14dadf5c0e8e1642d_1ae24bfe0db16cb4f14dadf5c0e8e1642d
                 prot=public
                 static=no
                 const=no
@@ -2036,9 +2084,17 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Enclave implementation of standard memset() function."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        chars="Refer to documentation for memset() function."
+                    }
                 }
                 inbodydescription
                 {
@@ -2046,14 +2102,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=211
+                    line=238
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1a28c68a9d56437166de29345a2ad2346c
+                id=enclave_8h_a28c68a9d56437166de29345a2ad2346c_1a28c68a9d56437166de29345a2ad2346c
                 prot=public
                 static=no
                 const=no
@@ -2111,58 +2167,17 @@ doxygen
                 }
                 briefdescription
                 {
-                }
-                detaileddescription
-                {
-                }
-                inbodydescription
-                {
-                }
-                location
-                {
-                    file=/root/openenclave/include/openenclave/enclave.h
-                    line=213
-                    column=1
-                }
-            }
-            memberdef
-            {
-                kind=function
-                id=enclave_8h_1a8e55d0688551186025aae154d22249b5
-                prot=public
-                static=no
-                const=no
-                explicit=no
-                inline=no
-                virt=non-virtual
-                type
-                {
-                    chars="void"
-                }
-                definition
-                {
-                    chars="void OE_Abort"
-                }
-                argsstring
-                {
-                    chars="(void)"
-                }
-                name
-                {
-                    chars="OE_Abort"
-                }
-                param
-                {
-                    type
+                    para
                     {
-                        chars="void"
+                        chars="Enclave implementation of standard memcmp() function."
                     }
                 }
-                briefdescription
-                {
-                }
                 detaileddescription
                 {
+                    para
+                    {
+                        chars="Refer to documentation for memcmp() function."
+                    }
                 }
                 inbodydescription
                 {
@@ -2170,7 +2185,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=223
+                    line=245
                     column=1
                 }
             }
@@ -2411,7 +2426,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=250
+                    line=272
                     column=1
                 }
             }
@@ -2581,177 +2596,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=268
-                    column=1
-                }
-            }
-            memberdef
-            {
-                kind=function
-                id=enclave_8h_1a72650c7a544230039eab0f37b5394281
-                prot=public
-                static=no
-                const=no
-                explicit=no
-                inline=no
-                virt=non-virtual
-                type
-                {
-                    chars="int"
-                }
-                definition
-                {
-                    chars="int OE_HostPuts"
-                }
-                argsstring
-                {
-                    chars="(const char *str)"
-                }
-                name
-                {
-                    chars="OE_HostPuts"
-                }
-                param
-                {
-                    type
-                    {
-                        chars="const char *"
-                    }
-                    declname
-                    {
-                        chars="str"
-                    }
-                }
-                briefdescription
-                {
-                }
-                detaileddescription
-                {
-                }
-                inbodydescription
-                {
-                }
-                location
-                {
-                    file=/root/openenclave/include/openenclave/enclave.h
-                    line=278
-                    column=1
-                }
-            }
-            memberdef
-            {
-                kind=function
-                id=enclave_8h_1a731c0cf4247c2fe34cbb9fdb9a64442c
-                prot=public
-                static=no
-                const=no
-                explicit=no
-                inline=no
-                virt=non-virtual
-                type
-                {
-                    chars="int"
-                }
-                definition
-                {
-                    chars="int OE_HostPrint"
-                }
-                argsstring
-                {
-                    chars="(const char *str)"
-                }
-                name
-                {
-                    chars="OE_HostPrint"
-                }
-                param
-                {
-                    type
-                    {
-                        chars="const char *"
-                    }
-                    declname
-                    {
-                        chars="str"
-                    }
-                }
-                briefdescription
-                {
-                }
-                detaileddescription
-                {
-                }
-                inbodydescription
-                {
-                }
-                location
-                {
-                    file=/root/openenclave/include/openenclave/enclave.h
-                    line=280
-                    column=1
-                }
-            }
-            memberdef
-            {
-                kind=function
-                id=enclave_8h_1ae387edea2f792a34040a89f093cf7360
-                prot=public
-                static=no
-                const=no
-                explicit=no
-                inline=no
-                virt=non-virtual
-                type
-                {
-                    chars="int"
-                }
-                definition
-                {
-                    chars="int OE_HostVprintf"
-                }
-                argsstring
-                {
-                    chars="(const char *fmt, OE_va_list ap_)"
-                }
-                name
-                {
-                    chars="OE_HostVprintf"
-                }
-                param
-                {
-                    type
-                    {
-                        chars="const char *"
-                    }
-                    declname
-                    {
-                        chars="fmt"
-                    }
-                }
-                param
-                {
-                    type
-                    {
-                        chars="OE_va_list"
-                    }
-                    declname
-                    {
-                        chars="ap_"
-                    }
-                }
-                briefdescription
-                {
-                }
-                detaileddescription
-                {
-                }
-                inbodydescription
-                {
-                }
-                location
-                {
-                    file=/root/openenclave/include/openenclave/enclave.h
-                    line=282
+                    line=290
                     column=1
                 }
             }
@@ -2857,60 +2702,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=296
-                    column=1
-                }
-            }
-            memberdef
-            {
-                kind=function
-                id=enclave_8h_1a4a26952d5df57c38865a4f5e2d1d10cb
-                prot=public
-                static=no
-                const=no
-                explicit=no
-                inline=no
-                virt=non-virtual
-                type
-                {
-                    chars="int"
-                }
-                definition
-                {
-                    chars="int OE_HostPutchar"
-                }
-                argsstring
-                {
-                    chars="(int c)"
-                }
-                name
-                {
-                    chars="OE_HostPutchar"
-                }
-                param
-                {
-                    type
-                    {
-                        chars="int"
-                    }
-                    declname
-                    {
-                        chars="c"
-                    }
-                }
-                briefdescription
-                {
-                }
-                detaileddescription
-                {
-                }
-                inbodydescription
-                {
-                }
-                location
-                {
-                    file=/root/openenclave/include/openenclave/enclave.h
-                    line=298
+                    line=304
                     column=1
                 }
             }
@@ -3039,17 +2831,17 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=314
+                    line=320
                     column=1
                     bodyfile=/root/openenclave/include/openenclave/enclave.h
-                    bodystart=314
-                    bodyend=324
+                    bodystart=320
+                    bodyend=330
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1aba7207f5f5dd14d9e740548dd8b6b3fd
+                id=enclave_8h_aba7207f5f5dd14d9e740548dd8b6b3fd_1aba7207f5f5dd14d9e740548dd8b6b3fd
                 prot=public
                 static=no
                 const=no
@@ -3085,9 +2877,53 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Allocate bytes from the host's heap."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        bold
+                        {
+                            chars="size"
+                        }
+                        chars="This function allocates  bytes from the host's heap and returns the address of the allocated memory. The implementation performs an OCALL to the host, which calls malloc(). To free the memory, it must be passed to OE_Free()."
+                    }
+                    para
+                    {
+                        parameterlist
+                        {
+                            kind=param
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="size"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The number of bytes to be allocated."
+                                    }
+                                }
+                            }
+                        }
+                        simplesect
+                        {
+                            kind=return
+                            para
+                            {
+                                chars="The allocated memory or NULL if unable to allocate the memory."
+                            }
+                        }
+                    }
                 }
                 inbodydescription
                 {
@@ -3095,14 +2931,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=334
+                    line=345
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1a135af92bdf694591e1de1f8a61054511
+                id=enclave_8h_a135af92bdf694591e1de1f8a61054511_1a135af92bdf694591e1de1f8a61054511
                 prot=public
                 static=no
                 const=no
@@ -3149,9 +2985,53 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Allocate size zero-filled bytes from the host's heap."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        bold
+                        {
+                            chars="size"
+                        }
+                        chars="This function allocates  bytes from the host's heap and fills it with zero character. It returns the address of the allocated memory. The implementation performs an OCALL to the host, which calls calloc(). To free the memory, it must be passed to OE_Free()."
+                    }
+                    para
+                    {
+                        parameterlist
+                        {
+                            kind=param
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="size"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The number of bytes to be allocated and zero-filled."
+                                    }
+                                }
+                            }
+                        }
+                        simplesect
+                        {
+                            kind=return
+                            para
+                            {
+                                chars="The allocated memory or NULL if unable to allocate the memory."
+                            }
+                        }
+                    }
                 }
                 inbodydescription
                 {
@@ -3159,14 +3039,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=336
+                    line=360
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1af7ed072613e44809e1991f4f64c63b23
+                id=enclave_8h_af7ed072613e44809e1991f4f64c63b23_1af7ed072613e44809e1991f4f64c63b23
                 prot=public
                 static=no
                 const=no
@@ -3202,9 +3082,53 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Releases allocated memory."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        ref
+                        {
+                            refid=enclave_8h_aba7207f5f5dd14d9e740548dd8b6b3fd_1aba7207f5f5dd14d9e740548dd8b6b3fd
+                            kindref=member
+                            chars="OE_HostMalloc()"
+                        }
+                        ref
+                        {
+                            refid=enclave_8h_a135af92bdf694591e1de1f8a61054511_1a135af92bdf694591e1de1f8a61054511
+                            kindref=member
+                            chars="OE_HostCalloc()"
+                        }
+                        chars="This function releases memory allocated with  or . This function performs and OCALL where the host calls free()."
+                    }
+                    para
+                    {
+                        parameterlist
+                        {
+                            kind=param
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="ptr"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="Pointer to memory to be released or null."
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 inbodydescription
                 {
@@ -3212,14 +3136,14 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=338
+                    line=372
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1ad209d33cb2de70ea70aee5a167a02d03
+                id=enclave_8h_ad209d33cb2de70ea70aee5a167a02d03_1ad209d33cb2de70ea70aee5a167a02d03
                 prot=public
                 static=no
                 const=no
@@ -3255,9 +3179,53 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Make a heap copy of a string."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        bold
+                        {
+                            chars="str"
+                        }
+                        chars="This function allocates memory on the host's heap, copies the  parameter to that memory, and returns a pointer to the newly allocated memory."
+                    }
+                    para
+                    {
+                        parameterlist
+                        {
+                            kind=param
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="str"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="The string to be copied."
+                                    }
+                                }
+                            }
+                        }
+                        simplesect
+                        {
+                            kind=return
+                            para
+                            {
+                                chars="A pointer to the newly allocated string or NULL if unable to allocate the storage."
+                            }
+                        }
+                    }
                 }
                 inbodydescription
                 {
@@ -3265,14 +3233,71 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=340
+                    line=386
                     column=1
                 }
             }
             memberdef
             {
                 kind=function
-                id=enclave_8h_1ae655f9a81dc40863b43a681793b277f9
+                id=enclave_8h_a8e55d0688551186025aae154d22249b5_1a8e55d0688551186025aae154d22249b5
+                prot=public
+                static=no
+                const=no
+                explicit=no
+                inline=no
+                virt=non-virtual
+                type
+                {
+                    chars="void"
+                }
+                definition
+                {
+                    chars="void OE_Abort"
+                }
+                argsstring
+                {
+                    chars="(void)"
+                }
+                name
+                {
+                    chars="OE_Abort"
+                }
+                param
+                {
+                    type
+                    {
+                        chars="void"
+                    }
+                }
+                briefdescription
+                {
+                    para
+                    {
+                        chars="Abort execution by causing and illegal instruction exception."
+                    }
+                }
+                detaileddescription
+                {
+                    para
+                    {
+                        chars="This function aborts execution by executing the UD2 instruction."
+                    }
+                }
+                inbodydescription
+                {
+                }
+                location
+                {
+                    file=/root/openenclave/include/openenclave/enclave.h
+                    line=393
+                    column=1
+                }
+            }
+            memberdef
+            {
+                kind=function
+                id=enclave_8h_ae655f9a81dc40863b43a681793b277f9_1ae655f9a81dc40863b43a681793b277f9
                 prot=public
                 static=no
                 const=no
@@ -3308,9 +3333,63 @@ doxygen
                 }
                 briefdescription
                 {
+                    para
+                    {
+                        chars="Enclave implementation of the standard Unix sbrk() system call."
+                    }
                 }
                 detaileddescription
                 {
+                    para
+                    {
+                        bold
+                        {
+                            chars="increment"
+                        }
+                        ref
+                        {
+                            refid=enclave_8h_ae655f9a81dc40863b43a681793b277f9_1ae655f9a81dc40863b43a681793b277f9
+                            kindref=member
+                            chars="OE_Sbrk()"
+                        }
+                        chars="This function provides an enclave equivalent to the sbrk() system call. It increments the current end of the heap by  bytes. Calling  with an increment of 0, returns the current end of the heap."
+                    }
+                    para
+                    {
+                        parameterlist
+                        {
+                            kind=param
+                            parameteritem
+                            {
+                                parameternamelist
+                                {
+                                    parametername
+                                    {
+                                        chars="increment"
+                                    }
+                                }
+                                parameterdescription
+                                {
+                                    para
+                                    {
+                                        chars="Number of bytes to increment the heap end by."
+                                    }
+                                }
+                            }
+                        }
+                        simplesect
+                        {
+                            kind=return
+                            para
+                            {
+                                bold
+                                {
+                                    chars="increment"
+                                }
+                                chars="The old end of the heap (before the increment) or zero if there are less than  bytes remaining on the heap."
+                            }
+                        }
+                    }
                 }
                 inbodydescription
                 {
@@ -3318,7 +3397,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=350
+                    line=408
                     column=1
                 }
             }
@@ -3404,7 +3483,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/enclave.h
-                    line=360
+                    line=410
                     column=1
                 }
             }
@@ -4614,19 +4693,25 @@ doxygen
             }
             codeline
             {
-                lineno=188
+                lineno=193
                 highlight
                 {
                     class=normal
                     sp
                     {
                     }
-                    chars="OE_ResultOE_GetReportForRemoteAttestation("
+                    ref
+                    {
+                        refid=enclave_8h_ab4b70d7070180862df4e92b590fc941d_1ab4b70d7070180862df4e92b590fc941d
+                        kindref=member
+                        chars="OE_GetReportForRemoteAttestation"
+                    }
+                    chars="OE_Result("
                 }
             }
             codeline
             {
-                lineno=189
+                lineno=194
                 highlight
                 {
                     class=normal
@@ -4662,7 +4747,7 @@ doxygen
             }
             codeline
             {
-                lineno=190
+                lineno=195
                 highlight
                 {
                     class=normal
@@ -4695,7 +4780,7 @@ doxygen
             }
             codeline
             {
-                lineno=191
+                lineno=196
                 highlight
                 {
                     class=normal
@@ -4728,104 +4813,15 @@ doxygen
             }
             codeline
             {
-                lineno=192
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=193
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=comment
-                    chars="/*"
-                }
-            }
-            codeline
-            {
-                lineno=194
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=195
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=196
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="**Stringfunctions:"
-                }
-            }
-            codeline
-            {
                 lineno=197
                 highlight
                 {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=198
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=199
-                highlight
-                {
-                    class=comment
-                    chars="*/"
-                }
-                highlight
-                {
                     class=normal
                 }
             }
             codeline
             {
-                lineno=200
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=201
-                highlight
-                {
-                    class=normal
-                }
+                lineno=203
                 highlight
                 {
                     class=keywordtype
@@ -4837,7 +4833,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="OE_Strlen("
+                    ref
+                    {
+                        refid=enclave_8h_a501a4416e8e702f358c2c9a2f2db0085_1a501a4416e8e702f358c2c9a2f2db0085
+                        kindref=member
+                        chars="OE_Strlen"
+                    }
+                    chars="("
                 }
                 highlight
                 {
@@ -4867,7 +4869,7 @@ doxygen
             }
             codeline
             {
-                lineno=202
+                lineno=204
                 highlight
                 {
                     class=normal
@@ -4875,11 +4877,7 @@ doxygen
             }
             codeline
             {
-                lineno=203
-                highlight
-                {
-                    class=normal
-                }
+                lineno=210
                 highlight
                 {
                     class=keywordtype
@@ -4891,7 +4889,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="OE_Strcmp("
+                    ref
+                    {
+                        refid=enclave_8h_aadd1c980d0964072b06c924a6571589a_1aadd1c980d0964072b06c924a6571589a
+                        kindref=member
+                        chars="OE_Strcmp"
+                    }
+                    chars="("
                 }
                 highlight
                 {
@@ -4949,7 +4953,7 @@ doxygen
             }
             codeline
             {
-                lineno=204
+                lineno=211
                 highlight
                 {
                     class=normal
@@ -4957,11 +4961,7 @@ doxygen
             }
             codeline
             {
-                lineno=205
-                highlight
-                {
-                    class=normal
-                }
+                lineno=217
                 highlight
                 {
                     class=keywordtype
@@ -4973,7 +4973,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="OE_Strlcpy("
+                    ref
+                    {
+                        refid=enclave_8h_a6a6de71dcece7c98bd97e0a1d16787a8_1a6a6de71dcece7c98bd97e0a1d16787a8
+                        kindref=member
+                        chars="OE_Strlcpy"
+                    }
+                    chars="("
                 }
                 highlight
                 {
@@ -5035,7 +5041,7 @@ doxygen
             }
             codeline
             {
-                lineno=206
+                lineno=218
                 highlight
                 {
                     class=normal
@@ -5043,11 +5049,7 @@ doxygen
             }
             codeline
             {
-                lineno=207
-                highlight
-                {
-                    class=normal
-                }
+                lineno=224
                 highlight
                 {
                     class=keywordtype
@@ -5059,7 +5061,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="OE_Strlcat("
+                    ref
+                    {
+                        refid=enclave_8h_a110fd4262b8ef3f490167ea4fc90835b_1a110fd4262b8ef3f490167ea4fc90835b
+                        kindref=member
+                        chars="OE_Strlcat"
+                    }
+                    chars="("
                 }
                 highlight
                 {
@@ -5121,7 +5129,7 @@ doxygen
             }
             codeline
             {
-                lineno=208
+                lineno=225
                 highlight
                 {
                     class=normal
@@ -5129,11 +5137,7 @@ doxygen
             }
             codeline
             {
-                lineno=209
-                highlight
-                {
-                    class=normal
-                }
+                lineno=231
                 highlight
                 {
                     class=keywordtype
@@ -5145,7 +5149,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="*OE_Memcpy("
+                    ref
+                    {
+                        refid=enclave_8h_a9a5f74272bec8ad2a6ed9f72262d79c7_1a9a5f74272bec8ad2a6ed9f72262d79c7
+                        kindref=member
+                        chars="OE_Memcpy"
+                    }
+                    chars="*("
                 }
                 highlight
                 {
@@ -5207,7 +5217,7 @@ doxygen
             }
             codeline
             {
-                lineno=210
+                lineno=232
                 highlight
                 {
                     class=normal
@@ -5215,11 +5225,7 @@ doxygen
             }
             codeline
             {
-                lineno=211
-                highlight
-                {
-                    class=normal
-                }
+                lineno=238
                 highlight
                 {
                     class=keywordtype
@@ -5231,7 +5237,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="*OE_Memset("
+                    ref
+                    {
+                        refid=enclave_8h_ae24bfe0db16cb4f14dadf5c0e8e1642d_1ae24bfe0db16cb4f14dadf5c0e8e1642d
+                        kindref=member
+                        chars="OE_Memset"
+                    }
+                    chars="*("
                 }
                 highlight
                 {
@@ -5281,7 +5293,7 @@ doxygen
             }
             codeline
             {
-                lineno=212
+                lineno=239
                 highlight
                 {
                     class=normal
@@ -5289,11 +5301,7 @@ doxygen
             }
             codeline
             {
-                lineno=213
-                highlight
-                {
-                    class=normal
-                }
+                lineno=245
                 highlight
                 {
                     class=keywordtype
@@ -5305,7 +5313,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="OE_Memcmp("
+                    ref
+                    {
+                        refid=enclave_8h_a28c68a9d56437166de29345a2ad2346c_1a28c68a9d56437166de29345a2ad2346c
+                        kindref=member
+                        chars="OE_Memcmp"
+                    }
+                    chars="("
                 }
                 highlight
                 {
@@ -5379,7 +5393,7 @@ doxygen
             }
             codeline
             {
-                lineno=214
+                lineno=246
                 highlight
                 {
                     class=normal
@@ -5387,128 +5401,7 @@ doxygen
             }
             codeline
             {
-                lineno=215
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=comment
-                    chars="/*"
-                }
-            }
-            codeline
-            {
-                lineno=216
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=217
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=218
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    chars="**Abort"
-                }
-            }
-            codeline
-            {
-                lineno=219
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=220
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=221
-                highlight
-                {
-                    class=comment
-                    chars="*/"
-                }
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=222
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=223
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="void"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="OE_Abort("
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="void"
-                }
-                highlight
-                {
-                    class=normal
-                    chars=");"
-                }
-            }
-            codeline
-            {
-                lineno=224
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=250
+                lineno=272
                 highlight
                 {
                     class=keywordtype
@@ -5594,7 +5487,7 @@ doxygen
             }
             codeline
             {
-                lineno=251
+                lineno=273
                 highlight
                 {
                     class=normal
@@ -5602,7 +5495,7 @@ doxygen
             }
             codeline
             {
-                lineno=267
+                lineno=289
                 highlight
                 {
                     class=normal
@@ -5614,7 +5507,7 @@ doxygen
             }
             codeline
             {
-                lineno=268
+                lineno=290
                 highlight
                 {
                     class=normal
@@ -5683,7 +5576,7 @@ doxygen
             }
             codeline
             {
-                lineno=269
+                lineno=291
                 highlight
                 {
                     class=normal
@@ -5691,248 +5584,7 @@ doxygen
             }
             codeline
             {
-                lineno=270
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=comment
-                    chars="/*"
-                }
-            }
-            codeline
-            {
-                lineno=271
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=272
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=273
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="**Functionsforwritingtothehost'sconsole."
-                }
-            }
-            codeline
-            {
-                lineno=274
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=275
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=276
-                highlight
-                {
-                    class=comment
-                    chars="*/"
-                }
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=277
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=278
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_HostPuts(const"
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="char"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="*str);"
-                }
-            }
-            codeline
-            {
-                lineno=279
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=280
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_HostPrint(const"
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="char"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="*str);"
-                }
-            }
-            codeline
-            {
-                lineno=281
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=282
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_HostVprintf(const"
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="char"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="*fmt,OE_va_listap_);"
-                }
-            }
-            codeline
-            {
-                lineno=283
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=295
+                lineno=303
                 highlight
                 {
                     class=normal
@@ -5944,7 +5596,7 @@ doxygen
             }
             codeline
             {
-                lineno=296
+                lineno=304
                 highlight
                 {
                     class=normal
@@ -5990,7 +5642,7 @@ doxygen
             }
             codeline
             {
-                lineno=297
+                lineno=305
                 highlight
                 {
                     class=normal
@@ -5998,49 +5650,7 @@ doxygen
             }
             codeline
             {
-                lineno=298
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="OE_HostPutchar("
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="c);"
-                }
-            }
-            codeline
-            {
-                lineno=299
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=314
+                lineno=320
                 refid=enclave_8h_a1c0f1e4f4f25df87c37777a5ef9fa8c7_1a1c0f1e4f4f25df87c37777a5ef9fa8c7
                 refkind=member
                 highlight
@@ -6076,7 +5686,7 @@ doxygen
             }
             codeline
             {
-                lineno=315
+                lineno=321
                 highlight
                 {
                     class=normal
@@ -6112,7 +5722,7 @@ doxygen
             }
             codeline
             {
-                lineno=316
+                lineno=322
                 highlight
                 {
                     class=normal
@@ -6145,7 +5755,7 @@ doxygen
             }
             codeline
             {
-                lineno=317
+                lineno=323
                 highlight
                 {
                     class=normal
@@ -6154,7 +5764,7 @@ doxygen
             }
             codeline
             {
-                lineno=318
+                lineno=324
                 highlight
                 {
                     class=normal
@@ -6199,7 +5809,7 @@ doxygen
             }
             codeline
             {
-                lineno=319
+                lineno=325
                 highlight
                 {
                     class=normal
@@ -6207,7 +5817,7 @@ doxygen
             }
             codeline
             {
-                lineno=320
+                lineno=326
                 highlight
                 {
                     class=normal
@@ -6240,7 +5850,7 @@ doxygen
             }
             codeline
             {
-                lineno=321
+                lineno=327
                 highlight
                 {
                     class=normal
@@ -6313,7 +5923,7 @@ doxygen
             }
             codeline
             {
-                lineno=322
+                lineno=328
                 highlight
                 {
                     class=normal
@@ -6321,7 +5931,7 @@ doxygen
             }
             codeline
             {
-                lineno=323
+                lineno=329
                 highlight
                 {
                     class=normal
@@ -6354,7 +5964,7 @@ doxygen
             }
             codeline
             {
-                lineno=324
+                lineno=330
                 highlight
                 {
                     class=normal
@@ -6363,110 +5973,15 @@ doxygen
             }
             codeline
             {
-                lineno=325
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=326
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=comment
-                    chars="/*"
-                }
-            }
-            codeline
-            {
-                lineno=327
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=328
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=329
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="**Hostheapmemoryallocation:"
-                }
-            }
-            codeline
-            {
-                lineno=330
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
                 lineno=331
                 highlight
                 {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=332
-                highlight
-                {
-                    class=comment
-                    chars="*/"
-                }
-                highlight
-                {
                     class=normal
                 }
             }
             codeline
             {
-                lineno=333
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=334
-                highlight
-                {
-                    class=normal
-                }
+                lineno=345
                 highlight
                 {
                     class=keywordtype
@@ -6478,7 +5993,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="*OE_HostMalloc("
+                    ref
+                    {
+                        refid=enclave_8h_aba7207f5f5dd14d9e740548dd8b6b3fd_1aba7207f5f5dd14d9e740548dd8b6b3fd
+                        kindref=member
+                        chars="OE_HostMalloc"
+                    }
+                    chars="*("
                 }
                 highlight
                 {
@@ -6496,7 +6017,7 @@ doxygen
             }
             codeline
             {
-                lineno=335
+                lineno=346
                 highlight
                 {
                     class=normal
@@ -6504,11 +6025,7 @@ doxygen
             }
             codeline
             {
-                lineno=336
-                highlight
-                {
-                    class=normal
-                }
+                lineno=360
                 highlight
                 {
                     class=keywordtype
@@ -6520,7 +6037,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="*OE_HostCalloc("
+                    ref
+                    {
+                        refid=enclave_8h_a135af92bdf694591e1de1f8a61054511_1a135af92bdf694591e1de1f8a61054511
+                        kindref=member
+                        chars="OE_HostCalloc"
+                    }
+                    chars="*("
                 }
                 highlight
                 {
@@ -6554,7 +6077,7 @@ doxygen
             }
             codeline
             {
-                lineno=337
+                lineno=361
                 highlight
                 {
                     class=normal
@@ -6562,11 +6085,7 @@ doxygen
             }
             codeline
             {
-                lineno=338
-                highlight
-                {
-                    class=normal
-                }
+                lineno=372
                 highlight
                 {
                     class=keywordtype
@@ -6578,7 +6097,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="OE_HostFree("
+                    ref
+                    {
+                        refid=enclave_8h_af7ed072613e44809e1991f4f64c63b23_1af7ed072613e44809e1991f4f64c63b23
+                        kindref=member
+                        chars="OE_HostFree"
+                    }
+                    chars="("
                 }
                 highlight
                 {
@@ -6596,7 +6121,7 @@ doxygen
             }
             codeline
             {
-                lineno=339
+                lineno=373
                 highlight
                 {
                     class=normal
@@ -6604,11 +6129,7 @@ doxygen
             }
             codeline
             {
-                lineno=340
-                highlight
-                {
-                    class=normal
-                }
+                lineno=386
                 highlight
                 {
                     class=keywordtype
@@ -6620,7 +6141,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="*OE_HostStrdup("
+                    ref
+                    {
+                        refid=enclave_8h_ad209d33cb2de70ea70aee5a167a02d03_1ad209d33cb2de70ea70aee5a167a02d03
+                        kindref=member
+                        chars="OE_HostStrdup"
+                    }
+                    chars="*("
                 }
                 highlight
                 {
@@ -6650,7 +6177,7 @@ doxygen
             }
             codeline
             {
-                lineno=341
+                lineno=387
                 highlight
                 {
                     class=normal
@@ -6658,93 +6185,7 @@ doxygen
             }
             codeline
             {
-                lineno=342
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=comment
-                    chars="/*"
-                }
-            }
-            codeline
-            {
-                lineno=343
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=344
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=345
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    chars="**OE_Sbrk()"
-                }
-            }
-            codeline
-            {
-                lineno=346
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=347
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=348
-                highlight
-                {
-                    class=comment
-                    chars="*/"
-                }
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=349
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=350
-                highlight
-                {
-                    class=normal
-                }
+                lineno=393
                 highlight
                 {
                     class=keywordtype
@@ -6756,89 +6197,62 @@ doxygen
                     sp
                     {
                     }
+                    ref
+                    {
+                        refid=enclave_8h_a8e55d0688551186025aae154d22249b5_1a8e55d0688551186025aae154d22249b5
+                        kindref=member
+                        chars="OE_Abort"
+                    }
+                    chars="("
+                }
+                highlight
+                {
+                    class=keywordtype
+                    chars="void"
+                }
+                highlight
+                {
+                    class=normal
+                    chars=");"
+                }
+            }
+            codeline
+            {
+                lineno=394
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=408
+                highlight
+                {
+                    class=keywordtype
+                    chars="void"
+                }
+                highlight
+                {
+                    class=normal
                     sp
                     {
                     }
-                    chars="*OE_Sbrk(ptrdiff_tincrement);"
-                }
-            }
-            codeline
-            {
-                lineno=351
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=352
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=comment
-                    chars="/*"
-                }
-            }
-            codeline
-            {
-                lineno=353
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=354
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=355
-                highlight
-                {
-                    class=comment
+                    ref
+                    {
+                        refid=enclave_8h_ae655f9a81dc40863b43a681793b277f9_1ae655f9a81dc40863b43a681793b277f9
+                        kindref=member
+                        chars="OE_Sbrk"
+                    }
                     sp
                     {
                     }
-                    chars="**Assertion:"
+                    chars="*(ptrdiff_tincrement);"
                 }
             }
             codeline
             {
-                lineno=356
-                highlight
-                {
-                    class=comment
-                    chars="**"
-                }
-            }
-            codeline
-            {
-                lineno=357
-                highlight
-                {
-                    class=comment
-                    chars="**=============================================================================="
-                }
-            }
-            codeline
-            {
-                lineno=358
-                highlight
-                {
-                    class=comment
-                    chars="*/"
-                }
+                lineno=409
                 highlight
                 {
                     class=normal
@@ -6846,15 +6260,7 @@ doxygen
             }
             codeline
             {
-                lineno=359
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=360
+                lineno=410
                 highlight
                 {
                     class=normal
@@ -6875,7 +6281,7 @@ doxygen
             }
             codeline
             {
-                lineno=361
+                lineno=411
                 highlight
                 {
                     class=normal
@@ -6920,7 +6326,7 @@ doxygen
             }
             codeline
             {
-                lineno=362
+                lineno=412
                 highlight
                 {
                     class=normal
@@ -6965,7 +6371,7 @@ doxygen
             }
             codeline
             {
-                lineno=363
+                lineno=413
                 highlight
                 {
                     class=normal
@@ -6998,7 +6404,7 @@ doxygen
             }
             codeline
             {
-                lineno=364
+                lineno=414
                 highlight
                 {
                     class=normal
@@ -7043,7 +6449,7 @@ doxygen
             }
             codeline
             {
-                lineno=365
+                lineno=415
                 highlight
                 {
                     class=normal
@@ -7051,7 +6457,7 @@ doxygen
             }
             codeline
             {
-                lineno=366
+                lineno=416
                 highlight
                 {
                     class=normal
@@ -7070,7 +6476,7 @@ doxygen
             }
             codeline
             {
-                lineno=367
+                lineno=417
                 highlight
                 {
                     class=preprocessor
@@ -7094,7 +6500,7 @@ doxygen
             }
             codeline
             {
-                lineno=368
+                lineno=418
                 highlight
                 {
                     class=preprocessor
@@ -7118,7 +6524,7 @@ doxygen
             }
             codeline
             {
-                lineno=369
+                lineno=419
                 highlight
                 {
                     class=preprocessor
@@ -7157,7 +6563,7 @@ doxygen
             }
             codeline
             {
-                lineno=370
+                lineno=420
                 highlight
                 {
                     class=preprocessor
@@ -7214,7 +6620,7 @@ doxygen
             }
             codeline
             {
-                lineno=371
+                lineno=421
                 highlight
                 {
                     class=preprocessor
@@ -7238,7 +6644,7 @@ doxygen
             }
             codeline
             {
-                lineno=372
+                lineno=422
                 highlight
                 {
                     class=preprocessor
@@ -7266,7 +6672,7 @@ doxygen
             }
             codeline
             {
-                lineno=373
+                lineno=423
                 highlight
                 {
                     class=normal
@@ -7274,7 +6680,7 @@ doxygen
             }
             codeline
             {
-                lineno=374
+                lineno=424
                 highlight
                 {
                     class=normal
@@ -7283,7 +6689,7 @@ doxygen
             }
             codeline
             {
-                lineno=375
+                lineno=425
                 highlight
                 {
                     class=normal
@@ -7291,7 +6697,7 @@ doxygen
             }
             codeline
             {
-                lineno=376
+                lineno=426
                 highlight
                 {
                     class=normal

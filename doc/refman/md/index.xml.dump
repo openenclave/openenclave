@@ -148,7 +148,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1ab4b70d7070180862df4e92b590fc941d
+            refid=enclave_8h_ab4b70d7070180862df4e92b590fc941d_1ab4b70d7070180862df4e92b590fc941d
             kind=function
             name
             {
@@ -157,7 +157,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a501a4416e8e702f358c2c9a2f2db0085
+            refid=enclave_8h_a501a4416e8e702f358c2c9a2f2db0085_1a501a4416e8e702f358c2c9a2f2db0085
             kind=function
             name
             {
@@ -166,7 +166,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1aadd1c980d0964072b06c924a6571589a
+            refid=enclave_8h_aadd1c980d0964072b06c924a6571589a_1aadd1c980d0964072b06c924a6571589a
             kind=function
             name
             {
@@ -175,7 +175,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a6a6de71dcece7c98bd97e0a1d16787a8
+            refid=enclave_8h_a6a6de71dcece7c98bd97e0a1d16787a8_1a6a6de71dcece7c98bd97e0a1d16787a8
             kind=function
             name
             {
@@ -184,7 +184,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a110fd4262b8ef3f490167ea4fc90835b
+            refid=enclave_8h_a110fd4262b8ef3f490167ea4fc90835b_1a110fd4262b8ef3f490167ea4fc90835b
             kind=function
             name
             {
@@ -193,7 +193,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a9a5f74272bec8ad2a6ed9f72262d79c7
+            refid=enclave_8h_a9a5f74272bec8ad2a6ed9f72262d79c7_1a9a5f74272bec8ad2a6ed9f72262d79c7
             kind=function
             name
             {
@@ -202,7 +202,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1ae24bfe0db16cb4f14dadf5c0e8e1642d
+            refid=enclave_8h_ae24bfe0db16cb4f14dadf5c0e8e1642d_1ae24bfe0db16cb4f14dadf5c0e8e1642d
             kind=function
             name
             {
@@ -211,20 +211,11 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a28c68a9d56437166de29345a2ad2346c
+            refid=enclave_8h_a28c68a9d56437166de29345a2ad2346c_1a28c68a9d56437166de29345a2ad2346c
             kind=function
             name
             {
                 chars="OE_Memcmp"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_1a8e55d0688551186025aae154d22249b5
-            kind=function
-            name
-            {
-                chars="OE_Abort"
             }
         }
         member
@@ -247,47 +238,11 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a72650c7a544230039eab0f37b5394281
-            kind=function
-            name
-            {
-                chars="OE_HostPuts"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_1a731c0cf4247c2fe34cbb9fdb9a64442c
-            kind=function
-            name
-            {
-                chars="OE_HostPrint"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_1ae387edea2f792a34040a89f093cf7360
-            kind=function
-            name
-            {
-                chars="OE_HostVprintf"
-            }
-        }
-        member
-        {
             refid=enclave_8h_a3593f7245e4dfc759435d3815eeccf51_1a3593f7245e4dfc759435d3815eeccf51
             kind=function
             name
             {
                 chars="OE_HostPrintf"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_1a4a26952d5df57c38865a4f5e2d1d10cb
-            kind=function
-            name
-            {
-                chars="OE_HostPutchar"
             }
         }
         member
@@ -301,7 +256,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1aba7207f5f5dd14d9e740548dd8b6b3fd
+            refid=enclave_8h_aba7207f5f5dd14d9e740548dd8b6b3fd_1aba7207f5f5dd14d9e740548dd8b6b3fd
             kind=function
             name
             {
@@ -310,7 +265,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a135af92bdf694591e1de1f8a61054511
+            refid=enclave_8h_a135af92bdf694591e1de1f8a61054511_1a135af92bdf694591e1de1f8a61054511
             kind=function
             name
             {
@@ -319,7 +274,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1af7ed072613e44809e1991f4f64c63b23
+            refid=enclave_8h_af7ed072613e44809e1991f4f64c63b23_1af7ed072613e44809e1991f4f64c63b23
             kind=function
             name
             {
@@ -328,7 +283,7 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1ad209d33cb2de70ea70aee5a167a02d03
+            refid=enclave_8h_ad209d33cb2de70ea70aee5a167a02d03_1ad209d33cb2de70ea70aee5a167a02d03
             kind=function
             name
             {
@@ -337,7 +292,16 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1ae655f9a81dc40863b43a681793b277f9
+            refid=enclave_8h_a8e55d0688551186025aae154d22249b5_1a8e55d0688551186025aae154d22249b5
+            kind=function
+            name
+            {
+                chars="OE_Abort"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_ae655f9a81dc40863b43a681793b277f9_1ae655f9a81dc40863b43a681793b277f9
             kind=function
             name
             {

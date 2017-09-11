@@ -20,6 +20,22 @@
 
 * [OE_IsOutsideEnclave()](enclave_8h_a33b395779e9fe73102bfe728261917a6_1a33b395779e9fe73102bfe728261917a6.md)
 
+* [OE_GetReportForRemoteAttestation()](enclave_8h_ab4b70d7070180862df4e92b590fc941d_1ab4b70d7070180862df4e92b590fc941d.md)
+
+* [OE_Strlen()](enclave_8h_a501a4416e8e702f358c2c9a2f2db0085_1a501a4416e8e702f358c2c9a2f2db0085.md)
+
+* [OE_Strcmp()](enclave_8h_aadd1c980d0964072b06c924a6571589a_1aadd1c980d0964072b06c924a6571589a.md)
+
+* [OE_Strlcpy()](enclave_8h_a6a6de71dcece7c98bd97e0a1d16787a8_1a6a6de71dcece7c98bd97e0a1d16787a8.md)
+
+* [OE_Strlcat()](enclave_8h_a110fd4262b8ef3f490167ea4fc90835b_1a110fd4262b8ef3f490167ea4fc90835b.md)
+
+* [OE_Memcpy()](enclave_8h_a9a5f74272bec8ad2a6ed9f72262d79c7_1a9a5f74272bec8ad2a6ed9f72262d79c7.md)
+
+* [OE_Memset()](enclave_8h_ae24bfe0db16cb4f14dadf5c0e8e1642d_1ae24bfe0db16cb4f14dadf5c0e8e1642d.md)
+
+* [OE_Memcmp()](enclave_8h_a28c68a9d56437166de29345a2ad2346c_1a28c68a9d56437166de29345a2ad2346c.md)
+
 * [OE_Vsnprintf()](enclave_8h_a6b091c1631b6fcd1826c4e7eaac12f0a_1a6b091c1631b6fcd1826c4e7eaac12f0a.md)
 
 * [OE_Snprintf()](enclave_8h_a278cf78b75ffd7901c00248ae2a655c7_1a278cf78b75ffd7901c00248ae2a655c7.md)
@@ -27,6 +43,18 @@
 * [OE_HostPrintf()](enclave_8h_a3593f7245e4dfc759435d3815eeccf51_1a3593f7245e4dfc759435d3815eeccf51.md)
 
 * [OE_StackAlloc()](enclave_8h_a1c0f1e4f4f25df87c37777a5ef9fa8c7_1a1c0f1e4f4f25df87c37777a5ef9fa8c7.md)
+
+* [OE_HostMalloc()](enclave_8h_aba7207f5f5dd14d9e740548dd8b6b3fd_1aba7207f5f5dd14d9e740548dd8b6b3fd.md)
+
+* [OE_HostCalloc()](enclave_8h_a135af92bdf694591e1de1f8a61054511_1a135af92bdf694591e1de1f8a61054511.md)
+
+* [OE_HostFree()](enclave_8h_af7ed072613e44809e1991f4f64c63b23_1af7ed072613e44809e1991f4f64c63b23.md)
+
+* [OE_HostStrdup()](enclave_8h_ad209d33cb2de70ea70aee5a167a02d03_1ad209d33cb2de70ea70aee5a167a02d03.md)
+
+* [OE_Abort()](enclave_8h_a8e55d0688551186025aae154d22249b5_1a8e55d0688551186025aae154d22249b5.md)
+
+* [OE_Sbrk()](enclave_8h_ae655f9a81dc40863b43a681793b277f9_1ae655f9a81dc40863b43a681793b277f9.md)
 
 ### host.h
 
