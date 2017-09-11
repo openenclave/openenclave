@@ -505,7 +505,7 @@ SOURCES += $(MUSLSRC)/legacy/getpagesize.c
 SOURCES += $(MUSLSRC)/prng/rand.c
 
 OBJECTS = $(SOURCES:.c=.o)
-OBJECTS += abort.o
+OBJECTS += abort.o setjmp.o longjmp.o
 
 $(ARCHIVE): $(OBJECTS)
 	ar r $(ARCHIVE) $(OBJECTS)
@@ -518,6 +518,12 @@ abort.o: abort.S
 
 clean:
 	rm -f $(ARCHIVE) $(OBJECTS) .depends
+
+setjmp.o:
+	gcc -c -o setjmp.o $(MUSLSRC)/setjmp/x86_64/setjmp.s
+
+longjmp.o:
+	gcc -c -o longjmp.o $(MUSLSRC)/setjmp/x86_64/longjmp.s
 
 #include $(MAKDIR)/depend.mak
 #-include .depends

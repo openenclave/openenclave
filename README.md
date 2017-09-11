@@ -17,6 +17,9 @@ The current implementation of OpenEnclave is built on the Intel Software Guard
 Extensions (SGX), although OpenEnclave may support other memory protection
 architectures in the future, such as Microsoft Virtual Secure Mode.
 
+Documentation
+-------------
+
 The OpenEnclave project provides the following documents.
 
 - [OpenEnclave Design Overview](doc/DesignOverview.pdf)
