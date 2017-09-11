@@ -16,6 +16,9 @@ size_t OE_Strlen(const char* s)
 {
     const char* p = s;
 
+    while (p[0] && p[1] && p[2] && p[3] && p[4] && p[5])
+        p += 6;
+
     while (*p)
         p++;
 
