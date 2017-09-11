@@ -1615,7 +1615,7 @@ doxygen
                     }
                     para
                     {
-                        chars="This function obtains a quote from the AESM service, which executes the Intel(R) quote enclave (QE)."
+                        chars="This function obtains a quote from the AESM service, which forwards the request to the Intel(R) quote enclave."
                     }
                     para
                     {

@@ -3685,7 +3685,7 @@ doxygen
                     }
                     para
                     {
-                        chars="If the expression evaluates to zero, this function is called with the string expression ("x > y") as wells as the file, line, and function where the macro was expanded."
+                        chars="If the expression evaluates to zero, this function is called with the string representation of the expression as well as the file, the line, and the function name where the macro was expanded."
                     }
                     para
                     {

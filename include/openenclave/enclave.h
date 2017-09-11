@@ -200,8 +200,8 @@ bool OE_IsOutsideEnclave(
  *   will eventually sign the quote (the Intel(R) quote enclave).
  *
  * - Executes the ENCLU.EREPORT instruction to generate the report, passing
- *   it the **target information** and **report data**, setting the **report** 
- *   output parameter.
+ *   it the **target information** and **report data**. This instruction fills
+ *   in the **report** output parameter.
  *
  * The next step is to pass the newly created report to the host so it can
  * get a quote for this report from the Intel(R) quote enclave. See the
@@ -447,8 +447,8 @@ void* OE_Sbrk(ptrdiff_t increment);
  *     OE_Assert(x > y);
  *
  * If the expression evaluates to zero, this function is called with the
- * string expression ("x > y") as wells as the file, line, and function where 
- * the macro was expanded.
+ * string representation of the expression as well as the file, the line, and 
+ * the function name where the macro was expanded.
  *
  * The __OE_AssertFail() function performs a host call to print a message
  * and then calls OE_Abort().

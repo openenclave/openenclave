@@ -195,8 +195,8 @@ OE_Result OE_RegisterOCall(
  * reports by executing the ENCLU.EREPORT instruction. One way an enclave may
  * create a report is by calling OE_GetReportForRemoteAttestation().
  *
- * OE_GetQuote() obtains a quote from the AESM service, which executes the
- * Intel(R) quote enclave (QE).
+ * This function obtains a quote from the AESM service, which forwards the
+ * request to the Intel(R) quote enclave.
  *
  * If the *quoteSize* parameter is too small, this function resets it to
  * the required size and returns OE_BUFFER_TOO_SMALL.
