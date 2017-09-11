@@ -108,6 +108,38 @@ void *OE_Memcpy(void *dest, const void *src, size_t n)
     unsigned char* p = (unsigned char*)dest;
     const unsigned char* q = (const unsigned char*)src;
 
+    while (n >= 1024)
+    {
+        __builtin_memcpy(p, q, 1024);
+        n -= 1024;
+        p += 1024;
+        q += 1024;
+    }
+
+    while (n >= 256)
+    {
+        __builtin_memcpy(p, q, 256);
+        n -= 256;
+        p += 256;
+        q += 256;
+    }
+
+    while (n >= 64)
+    {
+        __builtin_memcpy(p, q, 64);
+        n -= 64;
+        p += 64;
+        q += 64;
+    }
+
+    while (n >= 16)
+    {
+        __builtin_memcpy(p, q, 16);
+        n -= 16;
+        p += 16;
+        q += 16;
+    }
+
     while (n--)
         *p++ = *q++;
 
@@ -117,6 +149,34 @@ void *OE_Memcpy(void *dest, const void *src, size_t n)
 void *OE_Memset(void *s, int c, size_t n)
 {
     unsigned char* p = (unsigned char*)s;
+
+    while (n >= 1024)
+    {
+        __builtin_memset(p, c, 1024);
+        n -= 1024;
+        p += 1024;
+    }
+
+    while (n >= 256)
+    {
+        __builtin_memset(p, c, 256);
+        n -= 256;
+        p += 256;
+    }
+
+    while (n >= 64)
+    {
+        __builtin_memset(p, c, 64);
+        n -= 64;
+        p += 64;
+    }
+
+    while (n >= 16)
+    {
+        __builtin_memset(p, c, 16);
+        n -= 16;
+        p += 16;
+    }
 
     while (n--)
         *p++ = c;
