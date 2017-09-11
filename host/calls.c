@@ -685,7 +685,7 @@ static uint64_t _FindEnclaveFunc(
         *index = 0;
 
     if (!enclave || !func || !index)
-        return NULL;
+        return 0;
 
     for (i = 0; i < enclave->num_ecalls; i++)
     {
@@ -697,7 +697,7 @@ static uint64_t _FindEnclaveFunc(
     }
 
     /* Not found! */
-    return NULL;
+    return 0;
 }
 
 /*

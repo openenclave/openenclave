@@ -27,21 +27,13 @@ size_t OE_Strlen(const char* s)
 
 int OE_Strcmp(const char* s1, const char* s2)
 {
-    while (*s1 && *s2)
+    while ((*s1 && *s2) && (*s1 == *s2))
     {
-        int r = *s1++ - *s2++;
-
-        if (r)
-            return r;
+        s1++;
+        s2++;
     }
 
-    if (*s1)
-        return 1;
-
-    if (*s2)
-        return -1;
-
-    return 0;
+    return *s1 - *s2;
 }
 
 size_t OE_Strlcpy(char* dest, const char* src, size_t size)

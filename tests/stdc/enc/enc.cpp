@@ -127,6 +127,19 @@ void Test_div()
 }
 #endif
 
+int TestSetjmp()
+{
+    jmp_buf buf;
+
+    int rc = setjmp(buf);
+
+    if (rc == 999)
+        return rc;
+
+    longjmp(buf, 999);
+    return 0;
+}
+
 void Test_atox()
 {
     assert(atoi("100") == 100);
@@ -186,6 +199,8 @@ OE_ECALL void Test(void* args_)
     timespec req = { 1, 0 };
     timespec rem;
     nanosleep(&req, &rem);
+
+    assert(TestSetjmp() == 999);
 
 #if 0
     printf("UINT_MIN=%u UINT_MAX=%u\n", 0, UINT_MAX);
