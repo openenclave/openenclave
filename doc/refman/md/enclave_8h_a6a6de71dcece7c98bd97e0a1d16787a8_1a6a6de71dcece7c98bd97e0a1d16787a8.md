@@ -3,7 +3,7 @@
 ---
 # OE_Strlcpy()
 
-Enclave implementation of standard strlcpy() function.
+Enclave implementation of the standard strlcpy() function.
 
 ## Syntax
 

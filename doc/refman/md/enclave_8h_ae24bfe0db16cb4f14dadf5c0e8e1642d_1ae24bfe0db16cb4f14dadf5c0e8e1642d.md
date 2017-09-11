@@ -3,7 +3,7 @@
 ---
 # OE_Memset()
 
-Enclave implementation of standard memset() function.
+Enclave implementation of the standard memset() function.
 
 ## Syntax
 

@@ -1682,7 +1682,7 @@ doxygen
                 {
                     para
                     {
-                        chars="Enclave implementation of standard strlen() function."
+                        chars="Enclave implementation of the standard strlen() function."
                     }
                 }
                 detaileddescription
@@ -1754,7 +1754,7 @@ doxygen
                 {
                     para
                     {
-                        chars="Enclave implementation of standard strcmp() function."
+                        chars="Enclave implementation of the standard strcmp() function."
                     }
                 }
                 detaileddescription
@@ -1837,7 +1837,7 @@ doxygen
                 {
                     para
                     {
-                        chars="Enclave implementation of standard strlcpy() function."
+                        chars="Enclave implementation of the standard strlcpy() function."
                     }
                 }
                 detaileddescription
@@ -1920,7 +1920,7 @@ doxygen
                 {
                     para
                     {
-                        chars="Enclave implementation of standard strlcat() function."
+                        chars="Enclave implementation of the standard strlcat() function."
                     }
                 }
                 detaileddescription
@@ -2003,7 +2003,7 @@ doxygen
                 {
                     para
                     {
-                        chars="Enclave implementation of standard memcpy() function."
+                        chars="Enclave implementation of the standard memcpy() function."
                     }
                 }
                 detaileddescription
@@ -2086,7 +2086,7 @@ doxygen
                 {
                     para
                     {
-                        chars="Enclave implementation of standard memset() function."
+                        chars="Enclave implementation of the standard memset() function."
                     }
                 }
                 detaileddescription
@@ -2169,7 +2169,7 @@ doxygen
                 {
                     para
                     {
-                        chars="Enclave implementation of standard memcmp() function."
+                        chars="Enclave implementation of the standard memcmp() function."
                     }
                 }
                 detaileddescription

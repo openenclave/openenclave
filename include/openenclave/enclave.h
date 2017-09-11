@@ -196,49 +196,49 @@ OE_Result OE_GetReportForRemoteAttestation(
     size_t* reportSize);
 
 /**
- * Enclave implementation of standard strlen() function.
+ * Enclave implementation of the standard strlen() function.
  *
  * Refer to documentation for strlen() function.
  */
 size_t OE_Strlen(const char* s);
 
 /**
- * Enclave implementation of standard strcmp() function.
+ * Enclave implementation of the standard strcmp() function.
  *
  * Refer to documentation for strcmp() function.
  */
 int OE_Strcmp(const char* s1, const char* s2);
 
 /**
- * Enclave implementation of standard strlcpy() function.
+ * Enclave implementation of the standard strlcpy() function.
  *
  * Refer to documentation for strlcpy() function.
  */
 size_t OE_Strlcpy(char* dest, const char* src, size_t size);
 
 /**
- * Enclave implementation of standard strlcat() function.
+ * Enclave implementation of the standard strlcat() function.
  *
  * Refer to documentation for strlcat() function.
  */
 size_t OE_Strlcat(char* dest, const char* src, size_t size);
 
 /**
- * Enclave implementation of standard memcpy() function.
+ * Enclave implementation of the standard memcpy() function.
  *
  * Refer to documentation for memcpy() function.
  */
 void *OE_Memcpy(void *dest, const void *src, size_t n);
 
 /**
- * Enclave implementation of standard memset() function.
+ * Enclave implementation of the standard memset() function.
  *
  * Refer to documentation for memset() function.
  */
 void *OE_Memset(void *s, int c, size_t n);
 
 /**
- * Enclave implementation of standard memcmp() function.
+ * Enclave implementation of the standard memcmp() function.
  *
  * Refer to documentation for memcmp() function.
  */
