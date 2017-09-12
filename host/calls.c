@@ -94,15 +94,7 @@ static OE_Result _EnterSim(
     if (!enclave || !enclave->addr || !tcs || !tcs->oentry || !tcs->gsbase)
         OE_THROW(OE_INVALID_PARAMETER);
 
-#if 0
-    /* Get address of enclave's OE_Main() function */
-    if (enclave->handle)
-    {
-        tcs->u.main = (void (*)(void))dlsym(enclave->handle, "OE_Main");
-    }
-    else
-#endif
-        tcs->u.main = (void (*)(void))(enclave->addr + tcs->oentry);
+    tcs->u.main = (void (*)(void))(enclave->addr + tcs->oentry);
 
     if (!tcs->u.main)
         OE_THROW(OE_NOT_FOUND);
@@ -146,10 +138,6 @@ catch:
 ** _DoEENTER()
 **
 **     Execute the EENTER instruction with the given parameters.
-**
-**     Caution: this function must always be inline because the calling
-**     function makes assumptions about the layout of the stack related
-**     to outside stack allocation performed by the enclave.
 **
 **==============================================================================
 */
@@ -459,6 +447,61 @@ static OE_Result _HandleOCALL(
 
 catch:
     return result;
+}
+
+/*
+**==============================================================================
+**
+** __OE_DispatchOCall()
+**
+**     This function is called by OE_Enter() (see enter.S). It checks to
+**     to see if EENTER returned in order to perform an OCALL. If so it 
+**     dispatches the OCALL.
+**
+** Parameters:
+**     arg1 - first argument from EENTER return (code + func)
+**     arg2 - second argument from EENTER return (OCALL argument)
+**     arg1Out - first argument to pass to EENTER (code + func)
+**     arg2Out - second argument to pass to EENTER (ORET argument)
+**
+** Returns:
+**     0 - An OCALL was dispatched
+**     1 - No OCALL was dispatched
+**
+**==============================================================================
+*/
+
+int __OE_DispatchOCall(
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t* arg1Out,
+    uint64_t* arg2Out,
+    void* tcs)
+{
+    const OE_Code code = (OE_Code)OE_HI_WORD(arg1);
+    const uint32_t func = (OE_Code)OE_LO_WORD(arg1);
+    const uint64_t arg = arg2;
+
+    if (code == OE_CODE_OCALL)
+    {
+        OE_Enclave* enclave = GetEnclave();
+        assert(enclave != NULL);
+
+        uint64_t argOut = 0;
+
+        OE_Result result = _HandleOCALL(enclave, tcs, func, arg, &argOut);
+
+        /* ATTN: ignored! */
+        (void)result;
+
+        *arg1Out = OE_MAKE_WORD(OE_CODE_ORET, func);
+        *arg2Out = argOut;
+
+        return 0;
+    }
+
+    /* Not an OCALL */
+    return 1;
 }
 
 /*

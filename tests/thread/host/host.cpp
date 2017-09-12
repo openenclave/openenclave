@@ -12,6 +12,8 @@
 
 static TestMutexArgs _args;
 
+const size_t NUM_THREADS = 8;
+
 void* Thread(void* args)
 {
     OE_Enclave* enclave = (OE_Enclave*)args;
@@ -24,16 +26,15 @@ void* Thread(void* args)
 
 void TestMutex(OE_Enclave* enclave)
 {
-    size_t N = 8;
-    pthread_t threads[N];
+    pthread_t threads[NUM_THREADS];
 
-    for (size_t i = 0; i < N; i++)
+    for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, Thread, enclave);
 
-    for (size_t i = 0; i < N; i++)
+    for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    assert(_args.count == 8);
+    assert(_args.count == NUM_THREADS);
 }
 
 void* WaiterThread(void* args)
@@ -48,18 +49,17 @@ void* WaiterThread(void* args)
 
 void TestCond(OE_Enclave* enclave)
 {
-    size_t N = 8;
-    pthread_t threads[N];
+    pthread_t threads[NUM_THREADS];
 
-    for (size_t i = 0; i < N; i++)
+    for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, WaiterThread, enclave);
 
     sleep(1);
 
-    for (size_t i = 0; i < N; i++)
+    for (size_t i = 0; i < NUM_THREADS; i++)
         assert(OE_CallEnclave(enclave, "Signal", NULL) == OE_OK);
 
-    for (size_t i = 0; i < N; i++)
+    for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 }
 

@@ -30,4 +30,13 @@ void OE_EnterSim(
     uint64_t* arg4);
 #endif
 
+#ifndef __ASSEMBLER__
+int __OE_DispatchOCall(
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t* arg1Out,
+    uint64_t* arg2Out,
+    void* tcs);
+#endif
+
 #endif /* _ASMDEFS_H */

@@ -11,8 +11,8 @@ clean:
 depend:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NEWLINE) )
 
-ifneq ($(OE_SIMULATION),1)
 tests:
+ifneq ($(OE_SIMULATION),1)
 	SampleAppAttestationHost/SampleAppAttestationHost SampleAppAttestation/SampleAppAttestation.signed.so
 endif
 

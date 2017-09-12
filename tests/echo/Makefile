@@ -23,7 +23,7 @@ size:
 	size ./enc/echoenc.signed.so
 
 gdb:
-	gdb ./host/echohost
+	gdb ./host/echohost -x gdb.commands
 
 rebuild:
 	( cd $(TOP)/host; $(MAKE) clean; $(MAKE) )

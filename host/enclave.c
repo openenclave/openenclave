@@ -12,18 +12,18 @@
 **==============================================================================
 */
 
-static OE_OnceType _once;
-static OE_ThreadKey _key;
+static OE_OnceType _enclave_once;
+static OE_ThreadKey _enclave_key;
 
-static void _SetTDInit(void)
+static void _CreateEnclaveKey(void)
 {
-    OE_ThreadKeyCreate(&_key, NULL);
+    OE_ThreadKeyCreate(&_enclave_key, NULL);
 }
 
 void SetEnclave(OE_Enclave* enclave)
 {
-    OE_Once(&_once, _SetTDInit);
-    OE_ThreadSetSpecific(_key, enclave);
+    OE_Once(&_enclave_once, _CreateEnclaveKey);
+    OE_ThreadSetSpecific(_enclave_key, enclave);
 }
 
 /*
@@ -38,8 +38,8 @@ void SetEnclave(OE_Enclave* enclave)
 
 OE_Enclave* GetEnclave()
 {
-    OE_Once(&_once, _SetTDInit);
-    return (OE_Enclave*)OE_ThreadGetSpecific(_key);
+    OE_Once(&_enclave_once, _CreateEnclaveKey);
+    return (OE_Enclave*)OE_ThreadGetSpecific(_enclave_key);
 }
 
 /*

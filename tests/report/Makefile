@@ -18,8 +18,8 @@ depend:
 
 ENCLAVE = ./enc/reportenc.signed.so
 
-ifneq ($(OE_SIMULATION),1)
 tests:
+ifneq ($(OE_SIMULATION),1)
 	host/reporthost $(ENCLAVE)
 endif
 
