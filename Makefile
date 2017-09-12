@@ -69,6 +69,7 @@ distclean: clean
 	rm -f $(DISTNAME).tar.gz
 	rm -f $(DISTNAME)
 	rm -f config.mak
+	rm -rf scripts/ccache
 
 ##==============================================================================
 ##
