@@ -277,6 +277,61 @@ check_gxx
 
 ##==============================================================================
 ##
+## Generate the ccache/gcc and ccache/g++ scripts:
+##
+##==============================================================================
+
+generate_ccache_scripts()
+{
+    ccache=`which ccache 2> /dev/null`
+
+    if [ ! -x "${ccache}" ]; then
+        return;
+    fi
+
+    echo "gcc=${gcc}"
+    echo "ccache=${ccache}"
+
+    gcc=`which gcc 2> /dev/null`
+
+    if [ ! -x "${gcc}" ]; then
+        return;
+    fi
+
+    mkdir -p ./scripts/ccache
+
+cat<<EOF > ./scripts/ccache/gcc
+#!/bin/bash
+if [ -x ${ccache} ]; then
+    ${ccache} ${gcc} \$*
+else
+     ${gcc} \$*
+fi
+EOF
+    chmod +x ./scripts/ccache/gcc
+
+    gxx=`which g++ 2> /dev/null`
+
+    if [ ! -x "${gxx}" ]; then
+        return;
+    fi
+
+cat<<EOF > ./scripts/ccache/g++
+#!/bin/bash
+if [ -x ${ccache} ]; then
+    ${ccache} ${gxx} \$*
+else
+     ${gxx} \$*
+fi
+EOF
+
+    chmod +x ./scripts/ccache/g++
+}
+
+generate_ccache_scripts
+
+##==============================================================================
+##
 ## Check for presence of make:
 ##
 ##==============================================================================

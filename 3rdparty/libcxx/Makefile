@@ -6,8 +6,8 @@ CXXFLAGS += -nostdinc++
 CXXFLAGS += -std=c++14
 CXXFLAGS += -fPIC
 
-INCLUDES += -Itrunk/include
-INCLUDES += -Itrunk/src
+INCLUDES += -Ilibcxx/include
+INCLUDES += -Ilibcxx/src
 INCLUDES += -I$(TOP)/3rdparty/libcxxrt/libcxxrt/src
 INCLUDES += -I$(INCDIR)
 INCLUDES += -I$(INCDIR)/openenclave/libc
@@ -16,44 +16,46 @@ DEFINES += -DLIBCXXRT
 DEFINES += -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
 
 SOURCES += $(wildcard *.cpp)
-SOURCES += trunk/src/algorithm.cpp
-SOURCES += trunk/src/any.cpp
-SOURCES += trunk/src/bind.cpp
-SOURCES += trunk/src/chrono.cpp
-SOURCES += trunk/src/condition_variable.cpp
-#SOURCES += trunk/src/debug.cpp
-SOURCES += trunk/src/exception.cpp
-SOURCES += trunk/src/functional.cpp
-SOURCES += trunk/src/future.cpp
-SOURCES += trunk/src/hash.cpp
-SOURCES += trunk/src/ios.cpp
-SOURCES += trunk/src/iostream.cpp
-SOURCES += trunk/src/locale.cpp
-SOURCES += trunk/src/memory.cpp
-SOURCES += trunk/src/mutex.cpp
-SOURCES += trunk/src/new.cpp
-SOURCES += trunk/src/optional.cpp
-SOURCES += trunk/src/random.cpp
-SOURCES += trunk/src/regex.cpp
-SOURCES += trunk/src/shared_mutex.cpp
-SOURCES += trunk/src/stdexcept.cpp
-SOURCES += trunk/src/string.cpp
-SOURCES += trunk/src/strstream.cpp
-SOURCES += trunk/src/system_error.cpp
-SOURCES += trunk/src/thread.cpp
-SOURCES += trunk/src/typeinfo.cpp
-SOURCES += trunk/src/utility.cpp
-SOURCES += trunk/src/valarray.cpp
-SOURCES += trunk/src/variant.cpp
-SOURCES += trunk/src/vector.cpp
+SOURCES += libcxx/src/algorithm.cpp
+SOURCES += libcxx/src/any.cpp
+SOURCES += libcxx/src/bind.cpp
+SOURCES += libcxx/src/chrono.cpp
+SOURCES += libcxx/src/condition_variable.cpp
+#SOURCES += libcxx/src/debug.cpp
+SOURCES += libcxx/src/exception.cpp
+SOURCES += libcxx/src/functional.cpp
+SOURCES += libcxx/src/future.cpp
+SOURCES += libcxx/src/hash.cpp
+SOURCES += libcxx/src/ios.cpp
+SOURCES += libcxx/src/iostream.cpp
+SOURCES += libcxx/src/locale.cpp
+SOURCES += libcxx/src/memory.cpp
+SOURCES += libcxx/src/mutex.cpp
+SOURCES += libcxx/src/new.cpp
+SOURCES += libcxx/src/optional.cpp
+SOURCES += libcxx/src/random.cpp
+SOURCES += libcxx/src/regex.cpp
+SOURCES += libcxx/src/shared_mutex.cpp
+SOURCES += libcxx/src/stdexcept.cpp
+SOURCES += libcxx/src/string.cpp
+SOURCES += libcxx/src/strstream.cpp
+SOURCES += libcxx/src/system_error.cpp
+SOURCES += libcxx/src/thread.cpp
+SOURCES += libcxx/src/typeinfo.cpp
+SOURCES += libcxx/src/utility.cpp
+SOURCES += libcxx/src/valarray.cpp
+SOURCES += libcxx/src/variant.cpp
+SOURCES += libcxx/src/vector.cpp
 
 TARGET = $(LIBDIR)/tmp/libcxx.a
+
+CACHEFILE = $(CACHEDIR)/libcxx.tar.gz
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
 HEADER_INSTALL_DIRECTORY=$(INCDIR)/openenclave/libcxx
 
-all: trunk patch $(OBJECTS)
+all: libcxx patch $(OBJECTS)
 	@ rm -f $(TARGET)
 	@ ar r $(TARGET) $(OBJECTS)
 	@ $(MAKE) install
@@ -65,26 +67,32 @@ clean:
 	rm -f $(OBJECTS)
 
 distclean: clean
-	rm -rf trunk
+	rm -rf libcxx
 	rm -rf $(HEADER_INSTALL_DIRECTORY)
 	
-trunk:
+libcxx:
+	$(MAKE) $(CACHEFILE)
+	tar zxf $(CACHEFILE)
+	cp libcxx/include/__config libcxx/include/__config_original
+
+$(CACHEFILE):
 	svn co http://llvm.org/svn/llvm-project/libcxx/trunk
-	cp trunk/include/__config trunk/include/__config_original
+	mv trunk libcxx
+	tar zcf $(CACHEFILE) libcxx
 
 patch:
-	@ cp __config trunk/include/__config
+	@ cp __config libcxx/include/__config
 
 patch-old:
-	@ ./sub trunk/include/cstdlib
-	@ ./sub trunk/include/cstdio
-	@ ./sub trunk/include/cwchar
-	@ ./sub trunk/include/ctime
-	@ ./sub trunk/include/clocale
+	@ ./sub libcxx/include/cstdlib
+	@ ./sub libcxx/include/cstdio
+	@ ./sub libcxx/include/cwchar
+	@ ./sub libcxx/include/ctime
+	@ ./sub libcxx/include/clocale
 
 install:
 	rm -rf $(HEADER_INSTALL_DIRECTORY)
-	cp -r trunk/include $(HEADER_INSTALL_DIRECTORY)
+	cp -r libcxx/include $(HEADER_INSTALL_DIRECTORY)
 
 merge:
 	(cd ../mergecxx; make )

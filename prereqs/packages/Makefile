@@ -27,6 +27,7 @@ all: .packages
 	$(INSTALL) cloc
 	$(INSTALL) libexpat1
 	$(INSTALL) libexpat1-dev
+	$(INSTALL) ccache
 	touch .packages
 
 clean:

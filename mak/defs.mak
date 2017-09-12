@@ -9,6 +9,7 @@ INCDIR=$(TOP)/include
 LIBDIR=$(TOP)/lib
 BINDIR=$(TOP)/bin
 TMPDIR=$(TOP)/tmp
+CACHEDIR=$(TOP)/.cache
 
 $(shell mkdir -p $(INCDIR))
 
@@ -17,6 +18,7 @@ $(shell mkdir -p $(LIBDIR)/tmp)
 $(shell mkdir -p $(LIBDIR)/enclave)
 $(shell mkdir -p $(LIBDIR)/host)
 $(shell mkdir -p $(TMPDIR))
+$(shell mkdir -p $(CACHEDIR))
 
 $(shell mkdir -p $(BINDIR))
 
@@ -32,6 +34,15 @@ define NEWLINE
 
 
 endef
+
+##==============================================================================
+##
+## Add ./scripts/ccache directory to path so it will find the gcc and g++
+## scripts that prefix the ccache
+##
+##==============================================================================
+
+export PATH := $(TOP)/scripts/ccache:$(PATH)
 
 TRUE=1
 

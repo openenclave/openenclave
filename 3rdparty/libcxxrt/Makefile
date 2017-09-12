@@ -2,6 +2,8 @@ include ../../mak/defs.mak
 
 TARGET = $(LIBDIR)/tmp/libcxxrt.a
 
+CACHEFILE = $(CACHEDIR)/libcxxrt.tar.gz
+
 all: libcxxrt configure
 	$(MAKE) -C libcxxrt
 	cp ./libcxxrt/lib/libcxxrt.a $(TARGET)
@@ -33,8 +35,14 @@ clean-silent:
 	-@ $(MAKE) -C libcxxrt clean 2> /dev/null
 
 libcxxrt:
+	$(MAKE) $(CACHEFILE)
+	tar zxf $(CACHEFILE)
+
+$(CACHEFILE):
 	git clone https://github.com/pathscale/libcxxrt
 	rm -rf libcxxrt/.git
+	tar zcf $(CACHEFILE) libcxxrt
+	rm -rf libcxxrt
 
 distclean:
 	rm -rf libcxxrt

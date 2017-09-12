@@ -2,6 +2,8 @@ include ../../mak/defs.mak
 
 TARGET=$(INCDIR)/openenclave/oe-mbedtls
 
+CACHEFILE = $(CACHEDIR)/mbedtls.tar.gz
+
 all:
 
 CFLAGS += -I$(INCDIR)/openenclave/libc 
@@ -49,10 +51,16 @@ distclean: clean
 	rm -f .configure
 
 mbedtls:
+	$(MAKE) $(CACHEFILE)
+	tar zxf $(CACHEFILE)
+
+$(CACHEFILE):
 	$(MAKE) wget
 	tar zxvf $(TARNAME)
 	mv $(MBBEDDIST) mbedtls
 	rm -rf $(TARNAME)
+	tar zcf $(CACHEFILE) mbedtls
+	rm -rf mbedtls
 
 wget:
 	rm -rf $(TARNAME)

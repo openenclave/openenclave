@@ -1,7 +1,5 @@
 include ../../mak/defs.mak
 
-all: musl
-
 VERSION=1.1.10
 BASE=musl-$(VERSION)
 PKG=$(BASE).tar.gz
@@ -13,12 +11,13 @@ CFLAGS = -fPIC
 
 TARGET = $(INCDIR)/openenclave/libc
 
+CACHEFILE = $(CACHEDIR)/musl.tar.gz
+
 all: musl $(TARGET)
 
 $(TARGET):
 	$(MAKE) configure
-	$(MAKE) -C musl
-	$(MAKE) -C musl install
+	$(MAKE) -C musl install-headers
 	( rm -f `find . -name '*.o'` )
 	( rm -f `find . -name '*.lo'` )
 	./wrap $(TARGET)/endian.h endian.h.prefix endian.h.suffix
@@ -27,11 +26,18 @@ configure:
 	( cd musl; ./configure $(CONFIGURE_OPTS) CFLAGS=$(CFLAGS) )
 
 musl:
+	$(MAKE) $(CACHEFILE)
+	tar zxf $(CACHEFILE)
+
+$(CACHEFILE):
 	rm -rf musl
 	wget http://www.musl-libc.org/releases/$(PKG)
-	tar zxvf $(PKG)
+	tar zxf $(PKG)
 	mv $(BASE) musl
 	rm -rf $(PKG)
+	tar zcf $(CACHEFILE) musl
+	rm -rf musl
+
 clean:
 	$(MAKE) -s silent-clean
 

@@ -1,15 +1,23 @@
+include ../../mak/defs.mak
 
-all: malloc.h malloc.c
+CACHEFILE = $(CACHEDIR)/dlmalloc.tar.gz
 
-malloc.h:
-	wget ftp://gee.cs.oswego.edu/pub/misc/malloc.h
+all: dlmalloc
 
-malloc.c:
-	wget ftp://gee.cs.oswego.edu/pub/misc/malloc.c
+dlmalloc:
+	$(MAKE) $(CACHEFILE)
+	tar zxf $(CACHEFILE)
+
+$(CACHEFILE):
+	rm -rf dlmalloc
+	mkdir -p dlmalloc
+	( cd dlmalloc; wget ftp://gee.cs.oswego.edu/pub/misc/malloc.h )
+	( cd dlmalloc; wget ftp://gee.cs.oswego.edu/pub/misc/malloc.c )
+	tar zcf $(CACHEFILE) dlmalloc
 
 clean:
 
 distclean:
-	rm -f malloc.h malloc.c
+	rm -rf dlmalloc
 
 depend:

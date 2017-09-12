@@ -26,7 +26,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#include "../3rdparty/dlmalloc/malloc.c"
+#include "../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
 OE_WEAK_ALIAS(dlmalloc, malloc);
 OE_WEAK_ALIAS(dlcalloc, calloc);
