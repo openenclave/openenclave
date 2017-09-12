@@ -67,7 +67,7 @@ distclean: clean
 	rm -f include/host/oecommon
 	rm -f include/host/oeinternal
 	rm -f $(DISTNAME).tar.gz
-	rm -f $(DISTNAME)
+	rm -rf $(DISTNAME)
 	rm -f config.mak
 	rm -rf scripts/ccache
 

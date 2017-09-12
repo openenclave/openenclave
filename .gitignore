@@ -109,3 +109,6 @@ doc/refman/html/
 doc/refman/latex/
 doc/refman/xml/
 .cache
+3rdparty/dlmalloc/dlmalloc/
+3rdparty/libcxx/libcxx/
+scripts/ccache/
