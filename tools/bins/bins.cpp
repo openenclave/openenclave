@@ -3,13 +3,17 @@
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
+#include <cstring>
 #include <fstream>
 #include <vector>
 #include <string>
+#include <set>
 
 using namespace std;
 
 const char* arg0;
+
+set<string> ignores;
 
 bool IsBinFile(const string& path)
 {
@@ -40,10 +44,14 @@ void FindBins(const string& root)
     DIR* dir;
     vector<string> dirs;
 
+    // Ignore this directory?
+    if (ignores.find(root) != ignores.end())
+        return;
+
     if (!(dir = opendir(root.c_str())))
     {
-        cerr << arg0 << ": failed to open " << root << endl;
-        exit(1);
+        cerr << arg0 << ": warning: failed to open " << root << endl;
+        return;
     }
 
     struct dirent* ent;
@@ -56,6 +64,10 @@ void FindBins(const string& root)
             continue;
 
         string path = root + "/" + name;
+
+        // Ignore this file?
+        if (ignores.find(path) != ignores.end())
+            continue;
 
         if (IsBinFile(path))
             cout << path << endl;
@@ -70,6 +82,41 @@ void FindBins(const string& root)
         FindBins(dirs[i]);
 }
 
+void ReadIgnores()
+{
+    FILE* is;
+    char line[4096];
+
+    if (!(is = fopen(".binsignore", "rb")))
+        return;
+
+    while ((fgets(line, sizeof(line), is) != NULL))
+    {
+        char* p = line;
+        char* end;
+
+        // Skip leading whitespace:
+        while (isspace(*p))
+            p++;
+
+        // Ignore comments:
+        if (*p == '#')
+            continue;
+
+        // Seek end of string:
+        for (end = p; *end; end++)
+            ;
+
+        // Remove trailing whitespace:
+        while (end != p && isspace(end[-1]))
+            *--end = '\0';
+
+        ignores.insert(line);
+    }
+
+    fclose(is);
+}
+
 int main(int argc, const char* argv[])
 {
     arg0 = argv[0];
@@ -80,6 +127,10 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
+    // Read .binsignore file:
+    ReadIgnores();
+
+    // Find all binaries relative to this directory:
     FindBins(".");
 
     return 0;

@@ -1,3 +1,13 @@
+include ../../mak/defs.mak
+
+TARGET = $(BINDIR)/bins
 
 all:
-	g++ -o bins bins.cpp
+	g++ -o $(TARGET) bins.cpp
+
+clean:
+	rm -rf $(TARGET)
+
+distclean:
+
+depend:
