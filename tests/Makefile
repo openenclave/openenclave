@@ -36,6 +36,14 @@ clean:
 tests:
 	@ $(foreach i, $(DIRS), $(MAKE) -C $(i) tests $(NL) )
 
+sgx-tests:
+	@ $(foreach i, $(DIRS), $(MAKE) -C $(i) tests SGX=1 $(NL) )
+
+sim-tests:
+	@ $(foreach i, $(DIRS), $(MAKE) -C $(i) tests SIM=1 $(NL) )
+
+all-tests: sgx-tests sim-tests
+
 depend:
 	@ $(foreach i, $(DIRS), $(MAKE) -C $(i) depend $(NL) )
 

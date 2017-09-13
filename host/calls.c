@@ -17,15 +17,7 @@
 #include <openenclave/bits/registers.h>
 #include "ocalls.h"
 
-#if 0
-#define TRACE 1
-#endif
-
-#ifdef TRACE
-# define D(EXPR) EXPR
-#else
-# define D(EXPR)
-#endif
+#define TRACE 0
 
 /*
 **==============================================================================
