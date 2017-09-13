@@ -63,11 +63,9 @@ OE_EnterSim:
     mov ARG2, %rsi
     lea .retaddr, %rcx
     jmp *%rdx
-
+.retaddr:
     mov %rdi, ARG1OUT
     mov %rsi, ARG2OUT
-
-.retaddr:
 
 .dispatch_ocall_sim:
 
@@ -111,15 +109,19 @@ OE_EnterSim:
     jne .return_from_ecall_sim
 
     // (RDI=TCS, RDX=ARG1, RCX=ARG2)
-    mov %rdx, ARG1
-    mov %rcx, ARG2
+    mov ARG1OUT, %rax
+    mov %rax, ARG1
+    mov ARG2OUT, %rax
+    mov %rax, ARG2
     jmp .call_oe_main
 
 .return_from_ecall_sim:
 
     // Set output parameters:
-    mov %rdi, (%r8) /* arg3 */
-    mov %rsi, (%r9) /* arg4 */
+    mov ARG1OUT, %rax
+    mov %rax, (%r8) /* arg3 */
+    mov ARG2OUT, %rax
+    mov %rax, (%r9) /* arg4 */
 
     // Restore registers:
     pop %rbx

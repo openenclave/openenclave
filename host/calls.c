@@ -640,19 +640,6 @@ OE_Result OE_ECall(
     if (!(tcs = _AssignTCS(enclave)))
         OE_THROW(OE_OUT_OF_THREADS);
 
-    D( printf("=== OE_ECall(tcs=%p)\n", tcs); )
-
-eenter:
-
-    if (code == OE_CODE_ECALL)
-    {
-        D( printf("--> ECALL(func=%x)\n", func); )
-    }
-    else if (code == OE_CODE_ORET)
-    {
-        D( printf("--> ORET(func=%x)\n", func); )
-    }
-
     /* Perform ECALL or ORET */
     OE_TRY(_DoEENTER(
         enclave,
@@ -666,34 +653,11 @@ eenter:
         &argOut));
 
     /* Process OCALLS */
-    if (codeOut == OE_CODE_OCALL)
-    {
-        D( printf("<-- OCALL(func=%x)\n", funcOut); )
-
-        /* Handle the OCALL */
-        func = funcOut;
-        arg = argOut;
-        argOut = 0;
-        OE_TRY(_HandleOCALL(enclave, tcs, func, arg, &argOut));
-
-        /* Perform the ORET */
-        code = OE_CODE_ORET;
-        arg = argOut;
-        argOut = 0;
-        goto eenter;
-    }
-    else if (codeOut == OE_CODE_ERET)
-    {
-        D( printf("<-- ERET()\n") );
-
-        if (argOut)
-            *argOut_ = argOut;
-    }
-    else
-    {
-        D( printf("Bad code: %u\n", codeOut) );
+    if (codeOut != OE_CODE_ERET)
         OE_THROW(OE_UNEXPECTED);
-    }
+
+    if (argOut)
+        *argOut_ = argOut;
 
     result = OE_OK;
 
