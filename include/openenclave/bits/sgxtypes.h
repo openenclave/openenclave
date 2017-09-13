@@ -453,6 +453,7 @@ typedef struct _TD
     uint64_t host_r15;
     uint64_t host_rsp;
     uint64_t host_rbp;
+    uint64_t host_stack_base;
 
     /* Return arguments from OCALL */
     long oret_func;
@@ -468,7 +469,7 @@ typedef struct _TD
     int linux_errno;
 
     /* Reserved */
-    uint8_t reserved[3784];
+    uint8_t reserved[3776];
 }
 TD;
 

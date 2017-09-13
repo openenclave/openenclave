@@ -30,6 +30,7 @@
 #define ARG1OUT -56(%rbp)
 #define ARG2OUT -64(%rbp)
 #define CSSA    -72(%rbp)
+#define RSP     -84(%rbp)
 
 .globl OE_EnterSim
 .type OE_EnterSim, @function
@@ -52,6 +53,9 @@ OE_EnterSim:
 
     // Save registers:
     push %rbx
+
+    // Save the stack pointer so enclave can use the stack.
+    mov %rsp, RSP
 
 .call_oe_main:
 
@@ -122,6 +126,9 @@ OE_EnterSim:
     mov %rax, (%r8) /* arg3 */
     mov ARG2OUT, %rax
     mov %rax, (%r9) /* arg4 */
+
+    // Restore the stack pointer:
+    mov RSP, %rsp
 
     // Restore registers:
     pop %rbx

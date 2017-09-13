@@ -362,6 +362,40 @@ OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(
 }
 
 /**
+ * Allocates space on the host's stack frame.
+ *
+ * This function allocates **size** bytes of space on the stack frame of the 
+ * host. The returned address will be a multiple of **alignment** (if
+ * non-zero). The allocated space is freed automatically when the ECALL 
+ * returns. If the stack overflows, the behavior is undefined.
+ *
+ * Caution: This function should only be used when performing an OCALL.
+ *
+ * @param size The number of bytes to allocate.
+ * @param alignment The alignment requirement (see above).
+ *
+ * @returns Returns the address of the allocated space.
+ *
+ */
+void *OE_HostStackAlloc(
+    size_t size, 
+    size_t alignment);
+
+/**
+ * Make a copy of a string on the host's stack frame.
+ *
+ * This function allocates memory on the host's stack frame, copies the **str**
+ * parameter to that memory, and returns a pointer to the newly allocated
+ * memory.
+ *
+ * @param str The string to be copied.
+ *
+ * @returns A pointer to the newly allocated string or NULL if unable to
+ * allocate the storage.
+ */
+char* OE_HostStackStrdup(const char* str);
+
+/**
  * Allocate bytes from the host's heap.
  *
  * This function allocates **size** bytes from the host's heap and returns the 

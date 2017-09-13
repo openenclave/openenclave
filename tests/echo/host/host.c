@@ -12,6 +12,10 @@ OE_OCALL void Echo(void* args_)
 {
     EchoArgs* args = (EchoArgs*)args_;
 
+    assert(strcmp(args->str1, "OE_HostStackStrdup1") == 0);
+    assert(strcmp(args->str2, "OE_HostStackStrdup2") == 0);
+    assert(strcmp(args->str3, "OE_HostStackStrdup3") == 0);
+
     if (!(args->out = strdup(args->in)))
     {
         args->ret = -1;

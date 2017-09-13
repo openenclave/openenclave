@@ -14,13 +14,14 @@ DIRS += ecall
 DIRS += ocall
 DIRS += thread
 DIRS += pingpong 
-DIRS += file
+#DIRS += file
 DIRS += tester
 DIRS += stdc
 DIRS += stdcxx
 DIRS += mbed
 DIRS += report
 DIRS += SampleAppAttestation 
+DIRS += ricochet
 
 define NL
 

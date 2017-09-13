@@ -29,6 +29,7 @@
 #define ARG4    -48(%rbp)
 #define ARG1OUT -56(%rbp)
 #define ARG2OUT -64(%rbp)
+#define RSP     -72(%rbp)
 
 .globl OE_Enter
 .type OE_Enter, @function
@@ -52,6 +53,9 @@ OE_Enter:
     push %rbx
 
 .execute_eenter:
+
+    // Save the stack pointer so enclave can use the stack.
+    mov %rsp, RSP
 
     // EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2)
     mov TCS, %rbx
@@ -100,6 +104,9 @@ OE_Enter:
     pop %rdx
     pop %rsi
     pop %rdi
+
+    // Restore the stack pointer:
+    mov RSP, %rsp
 
     // If this was not an OCALL, then return from ECALL.
     cmp $0, %rax

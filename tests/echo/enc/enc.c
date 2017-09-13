@@ -27,6 +27,10 @@ OE_ECALL void Echo(void* args_)
         return;
     }
 
+    args->str1 = OE_HostStackStrdup("OE_HostStackStrdup1");
+    args->str2 = OE_HostStackStrdup("OE_HostStackStrdup2");
+    args->str3 = OE_HostStackStrdup("OE_HostStackStrdup3");
+
     if (OE_CallHost("Echo", args) != OE_OK)
     {
         args->ret = -1;

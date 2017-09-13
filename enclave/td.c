@@ -19,6 +19,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r14) == TD_host_r14);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r15) == TD_host_r15);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rsp) == TD_host_rsp);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rbp) == TD_host_rbp);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_stack_base) == TD_host_stack_base);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, oret_func) == TD_oret_func);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, oret_arg) == TD_oret_arg);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, callsites) == TD_callsites);
@@ -234,6 +235,9 @@ void TD_Init(TD* td)
         /* Set the ECALL depth to zero */
         td->depth = 0;
 
+        /* Set the base of the stack to zero for now */
+        td->host_stack_base = 0;
+
         /* List of callsites is initially empty */
         td->callsites = NULL;
     }
@@ -259,11 +263,61 @@ void TD_Clear(TD* td)
     /* Clear base structure */
     OE_Memset(&td->base, 0, sizeof(td->base));
 
-    /* Clear the self pointer */
-    td->base.self_addr = 0;
-
     /* Clear the magic number */
-    td->magic = TD_MAGIC;
+    td->magic = 0;
+
+    /* Clear the stack base since we are no longer in an OCALL */
+    td->host_stack_base = 0;
 
     /* Never clear TD.initialized nor host registers */
+}
+
+/*
+**==============================================================================
+**
+** OE_HostStackAlloc()
+**
+**==============================================================================
+*/
+
+void *OE_HostStackAlloc(
+    size_t size, 
+    size_t alignment)
+{
+    TD* td = TD_Get();
+
+    if (size == 0 || !td)
+        return NULL;
+
+    // Make room on the host's stack (host will restore after OCALL finishes)
+    td->host_rsp -= size + alignment;
+
+    // Set pointer to new stack top
+    void* ptr = (void*)td->host_rsp;
+
+    // Align if *alignment* is non-zero
+    if (alignment)
+        ptr = (void*)(((uint64_t)ptr + alignment - 1) / alignment * alignment);
+
+    return ptr;
+}
+
+/*
+**==============================================================================
+**
+** OE_HostStackStrdup()
+**
+**==============================================================================
+*/
+
+char* OE_HostStackStrdup(const char* s)
+{
+    size_t n = OE_Strlen(s);
+
+    char* r = (char*)OE_HostStackAlloc(n + 1, 0);
+
+    if (r)
+        OE_Memcpy(r, s, n + 1);
+
+    return r;
 }

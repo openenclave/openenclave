@@ -477,6 +477,8 @@ int __OE_DispatchOCall(
     if (code == OE_CODE_OCALL)
     {
         OE_Enclave* enclave = GetEnclave();
+        // ATTN: this asserts with call nesting!
+        // Pass enclave as argument to _DoEnter()
         assert(enclave != NULL);
 
         uint64_t argOut = 0;
@@ -658,7 +660,9 @@ catch:
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
 
-    SetEnclave(NULL);
+    // ATTN: this causes an assertion with call nesting.
+    // ATTN: make enclave argument a cookie.
+    // SetEnclave(NULL);
 
     return result;
 }
