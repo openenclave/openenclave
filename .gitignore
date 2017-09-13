@@ -112,3 +112,4 @@ doc/refman/xml/
 3rdparty/dlmalloc/dlmalloc/
 3rdparty/libcxx/libcxx/
 scripts/ccache/
+tests/ricochet/host/ricochethost
