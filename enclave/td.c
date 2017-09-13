@@ -290,7 +290,7 @@ void *OE_HostStackAlloc(
         return NULL;
 
     // Make room on the host's stack (host will restore after OCALL finishes)
-    td->host_rsp -= size + alignment;
+    td->host_rsp -= size + alignment + sizeof(uint64_t);
 
     // Set pointer to new stack top
     void* ptr = (void*)td->host_rsp;

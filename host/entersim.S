@@ -54,10 +54,10 @@ OE_EnterSim:
     // Save registers:
     push %rbx
 
+.call_oe_main:
+
     // Save the stack pointer so enclave can use the stack.
     mov %rsp, RSP
-
-.call_oe_main:
 
     // Call OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
     mov CSSA, %rax
@@ -108,6 +108,9 @@ OE_EnterSim:
     pop %rsi
     pop %rdi
 
+    // Restore the stack pointer:
+    mov RSP, %rsp
+
     // If this was not an OCALL, then return from ECALL.
     cmp $0, %rax
     jne .return_from_ecall_sim
@@ -126,9 +129,6 @@ OE_EnterSim:
     mov %rax, (%r8) /* arg3 */
     mov ARG2OUT, %rax
     mov %rax, (%r9) /* arg4 */
-
-    // Restore the stack pointer:
-    mov RSP, %rsp
 
     // Restore registers:
     pop %rbx
