@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
+#include "asmdefs.h"
 
 #define ENCLAVE_MAGIC 0x20dc98463a5ad8b8
 
@@ -18,7 +19,7 @@ typedef struct _ECallNameAddr
 }
 ECallNameAddr;
 
-/* Enclave thread data */
+/* Enclave thread data (stored in the GS segment register) */
 typedef struct _ThreadData
 {
     /* Address of the enclave's thread control structure */
@@ -37,6 +38,8 @@ typedef struct _ThreadData
     uint32_t event;
 }
 ThreadData;
+
+OE_STATIC_ASSERT(OE_OFFSETOF(ThreadData, tcs) == ThreadData_tcs);
 
 /* Get thread data from thread-specific data (TSD) */
 ThreadData* GetThreadData(void);

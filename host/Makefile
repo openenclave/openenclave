@@ -21,7 +21,7 @@ SOURCES += $(wildcard *.c)
 
 OBJECTS = $(SOURCES:.c=.o)
 
-OBJECTS += enter.o entersim.o
+OBJECTS += enter.o entersim.o aep.o
 
 build:
 	$(MAKE) $(ARCHIVE)
@@ -38,6 +38,9 @@ enter.o: enter.S
 
 entersim.o: entersim.S
 	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o entersim.o entersim.S
+
+aep.o: aep.S
+	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o aep.o aep.S
 
 clean:
 	rm -f $(ARCHIVE) $(OBJECTS) api_u.c api_u.h .depends

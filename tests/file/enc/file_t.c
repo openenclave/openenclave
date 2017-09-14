@@ -340,17 +340,17 @@ OE_EXTERNC OE_Result Fopen(
     __args.filename = filename;
     __args.modes = modes;
 
-    if (!(__a = (__Args*)OE_HostCalloc(1, sizeof(__Args))))
+    if (!(__a = (__Args*)OE_HostStackCalloc(1, sizeof(__Args))))
     {
         __r = OE_OUT_OF_MEMORY;
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->filename, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->filename, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 2, true, (void*)&__a->modes, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 2, true, (void*)&__a->modes, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -377,7 +377,7 @@ OE_EXTERNC OE_Result Fopen(
 done:
 
     if (__a)
-        OE_FreeStruct(__ti, __a, OE_HostFree);
+        OE_FreeStruct(__ti, __a, OE_HostStackFree);
 
     return __r;
 }
@@ -404,21 +404,21 @@ OE_EXTERNC OE_Result Fread(
     __args.size = size;
     __args.stream = stream;
 
-    if (!(__a = (__Args*)OE_HostCalloc(1, sizeof(__Args))))
+    if (!(__a = (__Args*)OE_HostStackCalloc(1, sizeof(__Args))))
     {
         __r = OE_OUT_OF_MEMORY;
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->ptr, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->ptr, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 2, false, (void*)&__a->size, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 2, false, (void*)&__a->size, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 3, true, (void*)&__a->stream, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 3, true, (void*)&__a->stream, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -442,18 +442,18 @@ OE_EXTERNC OE_Result Fread(
     /*** output parameters ***/
     /*************************/
 
-    __r = OE_ClearArg(__ti, __a, 1, 0, ptr, OE_HostFree);
+    __r = OE_ClearArg(__ti, __a, 1, 0, ptr, OE_HostStackFree);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 1, 0, ptr, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 1, 0, ptr, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
 done:
 
     if (__a)
-        OE_FreeStruct(__ti, __a, OE_HostFree);
+        OE_FreeStruct(__ti, __a, OE_HostStackFree);
 
     return __r;
 }
@@ -476,13 +476,13 @@ OE_EXTERNC OE_Result Fclose(
     OE_Memset(&__args, 0, sizeof(__Args));
     __args.stream = stream;
 
-    if (!(__a = (__Args*)OE_HostCalloc(1, sizeof(__Args))))
+    if (!(__a = (__Args*)OE_HostStackCalloc(1, sizeof(__Args))))
     {
         __r = OE_OUT_OF_MEMORY;
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->stream, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->stream, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -509,7 +509,7 @@ OE_EXTERNC OE_Result Fclose(
 done:
 
     if (__a)
-        OE_FreeStruct(__ti, __a, OE_HostFree);
+        OE_FreeStruct(__ti, __a, OE_HostStackFree);
 
     return __r;
 }

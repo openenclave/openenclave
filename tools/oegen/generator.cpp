@@ -765,9 +765,9 @@ static void _GenOCALL(
 {
     const ReturnType& r = f->returnType;
     const string& fn = f->name;
-    string callocStr = "OE_HostCalloc";
-    string mallocStr = "OE_HostMalloc";
-    string freeStr = "OE_HostFree";
+    string callocStr = "OE_HostStackCalloc";
+    string mallocStr = "OE_HostStackMalloc";
+    string freeStr = "OE_HostStackFree";
 
     os << pf("/* OCALL: %s(%u) */\n", __FILE__, __LINE__);
     _GenCallOutFunctionPrototype(os, true, f, false);
@@ -931,7 +931,7 @@ static void _GenOCALL(
             "done:\n"
             "\n"
             "    if (__a)\n"
-            "        OE_FreeStruct(__ti, __a, OE_HostFree);\n"
+            "        OE_FreeStruct(__ti, __a, OE_HostStackFree);\n"
             "\n"
             "    return __r;\n"
             "}\n";

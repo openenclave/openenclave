@@ -616,29 +616,6 @@ catch:
     return result;
 }
 
-#if 0
-static void _OE_DumpEnclave(
-    const OE_Enclave* enclave)
-{
-    size_t i;
-
-    if (!enclave)
-        return;
-
-    printf("=== OE_Enclave:\n");
-    printf("hash=%s\n", OE_SHA256StrOf(&enclave->hash).buf);
-    printf("addr=%016lx\n", enclave->addr);
-
-    for (i = 0; i < enclave->num_tds; i++)
-    {
-        printf("tds[%zu].tcs=%016lx\n", i, enclave->tds[i].tcs);
-        printf("tds[%zu].busy=%u\n", i, enclave->tds[i].busy);
-    }
-
-    printf("\n");
-}
-#endif
-
 typedef struct _VisitSymData
 {
     const Elf64* elf;

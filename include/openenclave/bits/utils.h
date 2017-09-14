@@ -51,14 +51,20 @@ OE_INLINE unsigned long long OE_RoundUpToMultiple(
     return (x + m - 1) / m * m;
 }
 
-OE_INLINE void* OE_AlignPointer(void* ptr, size_t aligment)
+OE_INLINE const void* OE_AlignPointer(const void* ptr, size_t aligment)
 {
-    return (void*)OE_RoundUpToMultiple((uint64_t)ptr, aligment);
+    return (const void*)OE_RoundUpToMultiple((uint64_t)ptr, aligment);
 }
 
 void __OE_HexDump(
     const void* data_,
     size_t size);
+
+#define OE_STACK_ALLOC_BOUNDARY 0xbbbbbbbbbbbbbbbb
+
+#define OE_STACK_ALLOC_HEADER 0xaaaaaaaaaaaaaaaa
+
+#define OE_STACK_ALLOC_TRAILER 0xffffffffffffffff
 
 OE_EXTERNC_END
 

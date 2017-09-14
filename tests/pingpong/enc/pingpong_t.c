@@ -245,17 +245,17 @@ OE_EXTERNC OE_Result Pong(
     __args.in = in;
     _ConstMemcpy(__args.out, out, sizeof(__args.out));
 
-    if (!(__a = (__Args*)OE_HostCalloc(1, sizeof(__Args))))
+    if (!(__a = (__Args*)OE_HostStackCalloc(1, sizeof(__Args))))
     {
         __r = OE_OUT_OF_MEMORY;
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 0, true, (void*)&__a->in, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 0, true, (void*)&__a->in, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 1, false, (void*)__a->out, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, false, (void*)__a->out, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -275,18 +275,18 @@ OE_EXTERNC OE_Result Pong(
     /*** output parameters ***/
     /*************************/
 
-    __r = OE_ClearArg(__ti, __a, 1, 0, out, OE_HostFree);
+    __r = OE_ClearArg(__ti, __a, 1, 0, out, OE_HostStackFree);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 1, 0, out, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 1, 0, out, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
 done:
 
     if (__a)
-        OE_FreeStruct(__ti, __a, OE_HostFree);
+        OE_FreeStruct(__ti, __a, OE_HostStackFree);
 
     return __r;
 }
@@ -310,17 +310,17 @@ OE_EXTERNC OE_Result Log(
     __args.str = str;
     __args.x = x;
 
-    if (!(__a = (__Args*)OE_HostCalloc(1, sizeof(__Args))))
+    if (!(__a = (__Args*)OE_HostStackCalloc(1, sizeof(__Args))))
     {
         __r = OE_OUT_OF_MEMORY;
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 0, true, (void*)&__a->str, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 0, true, (void*)&__a->str, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 1, false, (void*)&__a->x, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, false, (void*)&__a->x, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -343,7 +343,7 @@ OE_EXTERNC OE_Result Log(
 done:
 
     if (__a)
-        OE_FreeStruct(__ti, __a, OE_HostFree);
+        OE_FreeStruct(__ti, __a, OE_HostStackFree);
 
     return __r;
 }

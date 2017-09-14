@@ -2390,37 +2390,37 @@ OE_EXTERNC OE_Result OCALL_MultipleParams(
     if (objectRefOut)
         __args.objectRefOut = *objectRefOut;
 
-    if (!(__a = (__Args*)OE_HostCalloc(1, sizeof(__Args))))
+    if (!(__a = (__Args*)OE_HostStackCalloc(1, sizeof(__Args))))
     {
         __r = OE_OUT_OF_MEMORY;
         goto done;
     }
 
-    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->strIn, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 1, true, (void*)&__a->strIn, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 2, false, (void*)&__a->numIn, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 2, false, (void*)&__a->numIn, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, &__args, 3, true, (void*)&__a->objectIn, OE_HostMalloc);
+    __r = OE_SetArg(__ti, &__args, 3, true, (void*)&__a->objectIn, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, &__args, 4, true, (void*)&__a->strOut, OE_HostMalloc);
+    __r = OE_InitArg(__ti, &__args, 4, true, (void*)&__a->strOut, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, &__args, 5, true, (void*)&__a->numOut, OE_HostMalloc);
+    __r = OE_InitArg(__ti, &__args, 5, true, (void*)&__a->numOut, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, &__args, 6, true, (void*)&__a->objectOut, OE_HostMalloc);
+    __r = OE_InitArg(__ti, &__args, 6, true, (void*)&__a->objectOut, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_InitArg(__ti, &__args, 7, true, (void*)&__a->objectRefOut, OE_HostMalloc);
+    __r = OE_InitArg(__ti, &__args, 7, true, (void*)&__a->objectRefOut, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
@@ -2444,26 +2444,26 @@ OE_EXTERNC OE_Result OCALL_MultipleParams(
     /*** output parameters ***/
     /*************************/
 
-    __r = OE_SetArg(__ti, __a, 4, 0, strOut, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 4, 0, strOut, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 5, 0, numOut, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 5, 0, numOut, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 6, 0, objectOut, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 6, 0, objectOut, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
-    __r = OE_SetArg(__ti, __a, 7, true, &objectRefOut, OE_HostMalloc);
+    __r = OE_SetArg(__ti, __a, 7, true, &objectRefOut, OE_HostStackMalloc);
     if (__r != OE_OK)
         goto done;
 
 done:
 
     if (__a)
-        OE_FreeStruct(__ti, __a, OE_HostFree);
+        OE_FreeStruct(__ti, __a, OE_HostStackFree);
 
     return __r;
 }

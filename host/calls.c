@@ -15,32 +15,40 @@
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/registers.h>
+#include <openenclave/bits/registers.h>
 #include "ocalls.h"
 
 #define TRACE 0
+
+#if 0
+# define D(X) X
+#else
+# define D(X)
+#endif
+
+void OE_AEP(void);
 
 /*
 **==============================================================================
 **
 ** _SetThreadData()
 **
-**     Set the thread data for the current thread using thread-specific data.
+**     Store the thread data in the GS segement register. Note that the GS
+**     register is unused on X86-64, unlike the FS register that is used by
+**     the pthread implementation.
+**
+**     The OE_AEP() function (aep.S) uses the GS segment register to retrieve
+**     the ThreadData.tcs field.
 **
 **==============================================================================
 */
 
-static OE_OnceType _once;
-static OE_ThreadKey _key;
-
-static void _SetTDInit()
-{
-    OE_ThreadKeyCreate(&_key, NULL);
-}
-
 static void _SetThreadData(ThreadData* td)
 {
-    OE_Once(&_once, _SetTDInit);
-    OE_ThreadSetSpecific(_key, td);
+    if (OE_SetGSRegisterBase(td) != 0)
+    {
+        assert(0);
+    }
 }
 
 /*
@@ -48,15 +56,21 @@ static void _SetThreadData(ThreadData* td)
 **
 ** GetThreadData()
 **
-**     Get the ThreadData for the current thread from thread-specific data.
+**     Retrieve the a pointer to the ThreadData from the GS segment register.
 **
 **==============================================================================
 */
 
 ThreadData* GetThreadData()
 {
-    OE_Once(&_once, _SetTDInit);
-    return (ThreadData*)OE_ThreadGetSpecific(_key);
+    const void* ptr;
+
+    if (OE_GetGSRegisterBase(&ptr) != 0)
+    {
+        assert(0);
+    }
+
+    return (ThreadData*)ptr;
 }
 
 /*
@@ -190,44 +204,6 @@ static OE_Result _DoEENTER(
 
 catch:
     return result;
-}
-
-/*
-**==============================================================================
-**
-** _HandleAsyncException()
-**
-**     Handle an Asynchronous EXception resulting from an enclave fault.
-**
-**==============================================================================
-*/
-
-static void _HandleAsyncException(void)
-{
-    unsigned long rdx = 0x00;
-    ThreadData* td;
-
-#if (TRACE == 2)
-    printf("=== _HandleAsyncException()\n");
-#endif
-
-    /* Get the ThreadData from thread-specific data */
-    td = GetThreadData();
-    assert(td);
-
-    asm("movl %0, %%eax\n\t"
-        "movq %1, %%rbx\n\t"
-        "movq %2, %%rcx\n\t"
-        "movq %3, %%rdx\n\t"
-        ".byte 0x0F\n\t"
-        ".byte 0x01\n\t"
-        ".byte 0xd7\n\t"
-        :
-        :
-        "a"((uint32_t)ENCLU_ERESUME),
-        "b"(td->tcs),
-        "c"(_HandleAsyncException),
-        "d"(rdx));
 }
 
 /*
@@ -468,7 +444,8 @@ int __OE_DispatchOCall(
     uint64_t arg2,
     uint64_t* arg1Out,
     uint64_t* arg2Out,
-    void* tcs)
+    void* tcs,
+    void* rsp)
 {
     const OE_Code code = (OE_Code)OE_HI_WORD(arg1);
     const uint32_t func = (OE_Code)OE_LO_WORD(arg1);
@@ -503,8 +480,8 @@ int __OE_DispatchOCall(
 **
 ** _AssignTCS()
 **
-**     Return a pointer to the first available ThreadData (or first ThreadData already
-**     assigned to this thread).
+**     Return a pointer to the first available ThreadData (or first ThreadData 
+**     already assigned to this thread).
 **
 **==============================================================================
 */
@@ -554,6 +531,14 @@ static void* _AssignTCS(
         }
     }
     OE_SpinUnlock(&enclave->lock);
+
+    /* Inject TCS into pthread data (beyond portion used by system) */
+    asm volatile(
+        "mov %0, %%rax\n\t"
+        "mov %%rax, %%fs:2048\n\t"
+        :
+        :
+        "m"(tcs));
 
     return tcs;
 }
@@ -638,7 +623,7 @@ OE_Result OE_ECall(
     OE_TRY(_DoEENTER(
         enclave,
         tcs, 
-        _HandleAsyncException, 
+        OE_AEP, 
         code,
         func, 
         arg, 

@@ -87,11 +87,13 @@ OE_Enter:
     //     RDX=arg1Out
     //     RCX=arg2Out
     //     R8=TCS
+    //     R9=RSP
     mov ARG1OUT, %rdi
     mov ARG2OUT, %rsi
     leaq ARG1OUT, %rdx
     leaq ARG2OUT, %rcx
     mov TCS, %r8
+    mov RSP, %r9
     call __OE_DispatchOCall
 
     // Restore registers (except RDI and RSI)

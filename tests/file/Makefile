@@ -25,3 +25,66 @@ gdb:
 
 gen:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) gen $(NL) )
+
+n:
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
+	host/filehost enc/fileenc.signed.so
