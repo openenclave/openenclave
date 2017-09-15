@@ -132,6 +132,12 @@ if [ ! -x "${BINDIR}/oesign" ]; then
     exit 1
 fi
 
+cp bin/oedump ${BINDIR}
+if [ ! -x "${BINDIR}/oedump" ]; then
+    echo "$0: failed to install ${BINDIR}/oedump"
+    exit 1
+fi
+
 cp bin/oegen ${BINDIR}
 if [ ! -x "${BINDIR}/oegen" ]; then
     echo "$0: failed to install ${OE_BINDIR}/oegen"
@@ -238,6 +244,7 @@ echo "rm -rf ${DATADIR}" >> ${UNINSTALL}
 echo "rm -rf ${INCLUDEDIR}" >> ${UNINSTALL}
 echo "rm -rf ${LIBDIR}" >> ${UNINSTALL}
 echo "rm -rf ${BINDIR}/oesign" >> ${UNINSTALL}
+echo "rm -rf ${BINDIR}/oedump" >> ${UNINSTALL}
 echo "rm -rf ${BINDIR}/oegen" >> ${UNINSTALL}
 echo "rm -rf ${BINDIR}/oeelf" >> ${UNINSTALL}
 echo "rm -rf ${BINDIR}/oeuninstall" >> ${UNINSTALL}
