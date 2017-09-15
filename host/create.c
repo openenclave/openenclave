@@ -659,7 +659,11 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     /* Add to array of ECALLS */
     {
         ECallNameAddr tmp;
-        tmp.name = strdup(name);
+
+        if (!(tmp.name = strdup(name)))
+            goto done;
+
+        tmp.code = StrCode(name, strlen(name));
         tmp.vaddr = sym->st_value;
 
         if (mem_cat(data->mem, &tmp, sizeof(tmp)) != 0)

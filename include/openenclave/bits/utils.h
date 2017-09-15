@@ -60,11 +60,38 @@ void __OE_HexDump(
     const void* data_,
     size_t size);
 
-#define OE_STACK_ALLOC_BOUNDARY 0xbbbbbbbbbbbbbbbb
-
-#define OE_STACK_ALLOC_HEADER 0xaaaaaaaaaaaaaaaa
-
-#define OE_STACK_ALLOC_TRAILER 0xffffffffffffffff
+/**
+ *==============================================================================
+ *
+ * Calculates a numeric code for a string.
+ *
+ * This function calculates a code for the **s** string parameter. If the codes
+ * for two strings are identical, then the following are true:
+ *     - The strings have the same length
+ *     - The strings have the same first character
+ *     - The strings have the same last character
+ *
+ * If strings 's1' and 's2' have the same code, then the strings are identical 
+ * if the following expression is true.
+ *
+ *     memcmp(&s1[1], &s2[1], len-2) == 0
+ *
+ * where 'len' is the length of either of the strings.
+ *
+ * If the string is null, this function will crash. If the string is empty,
+ * the results are undefined. The caller is responsible for passing a non-null,
+ * non-empty string to this function.
+ *
+ * @param s Pointer to a non-null, non-empty string
+ *
+ * @returns The string code for the **s** parameter
+ *
+ *==============================================================================
+ */
+OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
+{
+    return (uint64_t)s[0] | ((uint64_t)s[n-1] << 8) | ((uint64_t)n << 16);
+}
 
 OE_EXTERNC_END
 

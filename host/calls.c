@@ -672,12 +672,17 @@ static uint64_t _FindEnclaveFunc(
     if (index)
         *index = 0;
 
-    if (!enclave || !func || !index)
+    if (!enclave || !func || !*func || !index)
         return 0;
+
+    size_t len = strlen(func);
+    uint64_t code = StrCode(func, len);
 
     for (i = 0; i < enclave->num_ecalls; i++)
     {
-        if (strcmp(enclave->ecalls[i].name, func) == 0)
+        const ECallNameAddr* p = &enclave->ecalls[i];
+
+        if (p->code == code && memcmp(&p->name[1], &func[1], len-2) == 0)
         {
             *index = i;
             return enclave->ecalls[i].vaddr;
