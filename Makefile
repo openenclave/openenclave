@@ -182,6 +182,7 @@ samples-config:
 
 samples: samples-config
 	$(MAKE) -s -C samples world
+	$(MAKE) -s -C samples clean
 
 ##==============================================================================
 ##

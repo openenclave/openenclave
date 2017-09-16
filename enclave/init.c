@@ -84,8 +84,6 @@ static void _CheckMemoryBoundaries(void)
 
 void OE_InitializeEnclave(TD* td)
 {
-OE_HostPrintf("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\n");
-
     if (td->initialized == 0)
     {
         static OE_Spinlock _spin = OE_SPINLOCK_INITIALIZER;
