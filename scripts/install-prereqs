@@ -2,9 +2,11 @@
 
 apt-get -y install gcc
 apt-get -y install g++
+apt-get -y install make
+apt-get -y install cmake
 apt-get -y install automake
 apt-get -y install autoconf
-apt-get -y install libtoolize
+apt-get -y install libtool
 apt-get -y install subversion
 apt-get -y install openssl
 apt-get -y install libssl-dev
