@@ -29,6 +29,10 @@
 
 2017-09-06: Migrated some symbols to dynamic section to survie stripping
 
+2017-09-06: Ported MBEDUTILS to OpenEnclave
+
+2017-09-06: Added SIM=1 and SGX=1 flags to tests
+
 2017-09-07: Started reference manual (refman) document
 
 2017-09-07: Separated IDL into separate oeidl library
@@ -57,7 +61,28 @@
 
 2017-09-08: Updated Getting Started guide to explain ECALL pages.
 
-2017-09-08: Implemented OEDUMP tool
+2017-09-08: Implemented OEDUMP tool to dump out enclave information
+
+2017-09-08: Added README.md files to several directories
+
+2017-09-08: Separated heap allocator from enclave intrinsics (now in oelibc)
+
+2017-09-10: Implemented XML2MD tool to generate markdown from Doxygen output
+
+2017-09-10: Documented enclave and host headers
+
+2017-09-10: Implemented registration of user low-level ECALLs and OCALLs
+
+2017-09-10: Implemented enclave constructors and destructors
+
+2017-09-11: Reworked build system to support caching of third-party packages
+
+2017-09-11: Added ccache support to the build system
+
+2017-09-11: Implemented BINS utility to find binaries in the source tree
 
 2017-09-14: Added host stack allocation support
+
+2017-09-15: Optimized ECALL function name lookup in host
+
 
