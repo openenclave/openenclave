@@ -19,10 +19,21 @@ size_t OE_Strlen(const char* s)
     while (p[0] && p[1] && p[2] && p[3] && p[4] && p[5])
         p += 6;
 
-    while (*p)
-        p++;
+    if (!p[0])
+        return p - s;
+    if (!p[1])
+        return p - s + 1;
+    if (!p[2])
+        return p - s + 2;
+    if (!p[3])
+        return p - s + 3;
+    if (!p[4])
+        return p - s + 4;
+    if (!p[5])
+        return p - s + 5;
 
-    return p - s;
+    /* Unreachable */
+    return 0;
 }
 
 int OE_Strcmp(const char* s1, const char* s2)
