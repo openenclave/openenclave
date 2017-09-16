@@ -354,6 +354,226 @@ check_make
 
 ##==============================================================================
 ##
+## Check for presence of cmake:
+##
+##==============================================================================
+
+check_cmake()
+{
+    echo -n "checking for cmake..."
+
+    cmake=`which cmake 2> /dev/null`
+
+    if [ ! -x "${cmake}" ]; then
+        echo "no"
+        configure_failed
+    fi
+
+    echo "yes"
+}
+
+check_cmake
+
+##==============================================================================
+##
+## Check for presence of autoconf:
+##
+##==============================================================================
+
+check_autoconf()
+{
+    echo -n "checking for autoconf..."
+
+    autoconf=`which autoconf 2> /dev/null`
+
+    if [ ! -x "${autoconf}" ]; then
+        echo "no"
+        configure_failed
+    fi
+
+    echo "yes"
+}
+
+check_autoconf
+
+##==============================================================================
+##
+## Check for presence of automake:
+##
+##==============================================================================
+
+check_automake()
+{
+    echo -n "checking for automake..."
+
+    automake=`which automake 2> /dev/null`
+
+    if [ ! -x "${automake}" ]; then
+        echo "no"
+        configure_failed
+    fi
+
+    echo "yes"
+}
+
+check_automake
+
+##==============================================================================
+##
+## Check for presence of libtoolize:
+##
+##==============================================================================
+
+check_libtoolize()
+{
+    echo -n "checking for libtoolize..."
+
+    libtoolize=`which libtoolize 2> /dev/null`
+
+    if [ ! -x "${libtoolize}" ]; then
+        echo "no"
+        configure_failed
+    fi
+
+    echo "yes"
+}
+
+check_libtoolize
+
+##==============================================================================
+##
+## Check for presence of svn:
+##
+##==============================================================================
+
+check_svn()
+{
+    echo -n "checking for svn..."
+
+    svn=`which svn 2> /dev/null`
+
+    if [ ! -x "${svn}" ]; then
+        echo "no"
+        configure_failed
+    fi
+
+    echo "yes"
+}
+
+check_svn
+
+##==============================================================================
+##
+## Check for presence of openssl:
+##
+##==============================================================================
+
+check_openssl()
+{
+    echo -n "checking for openssl..."
+
+    openssl=`which openssl 2> /dev/null`
+
+    if [ ! -x "${openssl}" ]; then
+        echo "no"
+        configure_failed
+    fi
+
+    echo "yes"
+}
+
+check_openssl
+
+##==============================================================================
+##
+## Check for presence libopenssl-dev
+##
+##==============================================================================
+
+check_libopenssl_dev()
+{
+    echo -n "checking for libopenssl-dev..."
+
+    local tmpdir=`/bin/mktemp -d`
+
+    if [ ! -d "${tmpdir}" ]; then
+        echo "$0: failed to create temporary directory"
+        configure_failed
+    fi
+
+    src=${tmpdir}/test.c
+    bin=${tmpdir}/test.bin
+
+cat<<EOF > ${src}
+#include <openssl/ssl.h>
+int main()
+{
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+    return 0;
+}
+EOF
+
+    gcc -o ${bin} ${src} -lcrypto 2> /dev/null > /dev/null
+
+    if [ "$?" != "0" ]; then
+        configure_failed
+    fi
+
+    if [ ! -x "${bin}" ]; then
+        configure_failed
+    fi
+
+    echo "yes"
+}
+
+check_libopenssl_dev
+
+##==============================================================================
+##
+## Check for presence liblibexpat1-dev
+##
+##==============================================================================
+
+check_liblibexpat1_dev()
+{
+    echo -n "checking for liblibexpat1-dev..."
+
+    local tmpdir=`/bin/mktemp -d`
+
+    if [ ! -d "${tmpdir}" ]; then
+        echo "$0: failed to create temporary directory"
+        configure_failed
+    fi
+
+    src=${tmpdir}/test.c
+    bin=${tmpdir}/test.bin
+
+cat<<EOF > ${src}
+#include <expat.h>
+int main()
+{
+    XML_ParserCreate(NULL);
+    return 0;
+}
+EOF
+
+    gcc -o ${bin} ${src} -lexpat 2> /dev/null > /dev/null
+
+    if [ "$?" != "0" ]; then
+        configure_failed
+    fi
+
+    if [ ! -x "${bin}" ]; then
+        configure_failed
+    fi
+
+    echo "yes"
+}
+
+check_liblibexpat1_dev
+##==============================================================================
+##
 ## Generate config.mak:
 ##
 ##==============================================================================
