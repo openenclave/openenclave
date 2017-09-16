@@ -1,0 +1,28 @@
+
+
+    (*) When enclaves make OCALLs, where should they allocate the arguments?
+        On the host's heap? On the host's stack?
+
+    (*) Which thread primitives should be provided for enclaves? Mutexes?
+        Condition variables? Spin locks? Thread-local stroage? Anything else?
+
+    (*) Have you found a use case for handling exceptions and interrupts that
+        occur inside the enclave? Or is it okay, just to exit?
+
+    (*) OpenEnclave's implementation of OE_GetReportForRemoteAttestation()
+        calls back into the host to initialize the quote to obtain the target
+        id. The host invokes the AESM service to do this. Is this what the MSR
+        implementation does too? Should the target id be sent over in an
+        earlier call from the host?
+
+    (*) Rather than providing an function to perform sealing, is it okay just
+        to provide a function that produces the key? (EGETKEY)
+
+    (*) How does an enclave know that it is really running as an enclave and
+        not in debug mode or simulation mode? We thought of calling EREPORT
+        or EGETKEY but these succeed even in debug mode.
+
+    (*) The MSR SDK provides functions for calling an enclave function or
+        host function with a given name. It also seems to provide functions
+        for calling by function address. Are the latter internal calls or 
+        are they part of the public API?

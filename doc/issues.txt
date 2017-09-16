@@ -1,15 +1,7 @@
 
     (*) Does GCC provide stack protection schemes?
 
-    (*) Can the host set aside some memory when making an ECALL that
-        enclave can use when making subsequence OCALLS. Kind of scratch
-        area? We should know the size of the parameters.
-
     (*) Should enclaves be able to create threads?
-
-    (*) Can enclaves safely allocate space on the host stack during an OCALL?
-
-    (*) Should ORET be assigned the same TCS as the original ECALL used?
 
     (*) Should HostMalloc() guard against subsequent ECALLs. So can we
         implement a non-reentrant flag?

@@ -1,12 +1,6 @@
 To-do list:
 ===========
 
-(A) Verify that OCALL and corresponding ORET run on same TCS
-
----
-
----
-
 (C) Get complex cpow*.c working (depends on multiplication routines)
 
 (C) Handle exceptions and interrupts (need use case)
