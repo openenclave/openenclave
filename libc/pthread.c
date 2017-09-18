@@ -185,7 +185,7 @@ int pthread_rwlock_destroy(pthread_rwlock_t* rwlock)
 
 int pthread_cond_init(pthread_cond_t* cond, const pthread_condattr_t* attr)
 {
-    return OE_CondInit((OE_Cond*)cond, (OE_CondAttr*)attr);
+    return OE_CondInit((OE_Cond*)cond);
 }
 
 int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t* mutex)
