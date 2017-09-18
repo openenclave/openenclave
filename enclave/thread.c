@@ -141,31 +141,7 @@ int OE_ThreadEqual(OE_Thread thread1, OE_Thread thread2)
 **==============================================================================
 */
 
-int OE_MutexAttrInit(
-    OE_MutexAttr* attr)
-{
-    return 0;
-}
-
-int OE_MutexAttrSetType(
-    OE_MutexAttr* attr, int type)
-{
-    if (attr)
-        attr->type = type;
-    return 0;
-}
-
-int OE_MutexAttrDestroy(
-    OE_MutexAttr* attr)
-{
-    if (attr)
-        attr->type = 0;
-    return 0;
-}
-
-int OE_MutexInit(
-    OE_Mutex* m, 
-    OE_MutexAttr* attr)
+int OE_MutexInit(OE_Mutex* m)
 {
     if (m)
     {
@@ -240,7 +216,7 @@ int OE_MutexTryLock(OE_Mutex* m)
     }
     OE_SpinUnlock(&m->lock);
 
-    return 0;
+    return -1;
 }
 
 static int _MutexUnlock(OE_Mutex* m, OE_ThreadData** waiter)

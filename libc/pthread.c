@@ -87,22 +87,22 @@ int pthread_spin_destroy(pthread_spinlock_t* spinlock)
 
 int pthread_mutexattr_init(pthread_mutexattr_t* attr)
 {
-    return OE_MutexAttrInit((OE_MutexAttr*)attr);
+    return 0;
 }
 
 int pthread_mutexattr_settype(pthread_mutexattr_t* attr, int type)
 {
-    return OE_MutexAttrSetType((OE_MutexAttr*)attr, type);
+    return 0;
 }
 
 int pthread_mutexattr_destroy(pthread_mutexattr_t* attr)
 {
-    return OE_MutexAttrDestroy((OE_MutexAttr*)attr);
+    return 0;
 }
 
 int pthread_mutex_init(pthread_mutex_t* m, const pthread_mutexattr_t* attr)
 {
-    return OE_MutexInit((OE_Mutex*)m, (OE_MutexAttr*)attr);
+    return OE_MutexInit((OE_Mutex*)m);
 }
 
 int pthread_mutex_lock(pthread_mutex_t* m)

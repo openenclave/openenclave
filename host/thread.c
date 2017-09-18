@@ -3,7 +3,6 @@
 #include <openenclave/host.h>
 
 OE_STATIC_ASSERT(sizeof(OE_Mutex) == sizeof(pthread_mutex_t));
-OE_STATIC_ASSERT(sizeof(OE_MutexAttr) == sizeof(pthread_mutexattr_t));
 OE_STATIC_ASSERT(sizeof(OE_Cond) == sizeof(pthread_cond_t));
 OE_STATIC_ASSERT(sizeof(OE_ThreadAttr) == sizeof(pthread_attr_t));
 OE_STATIC_ASSERT(sizeof(OE_Thread) == sizeof(pthread_t));
@@ -83,31 +82,18 @@ int OE_Once(
 **==============================================================================
 */
 
-int OE_MutexAttrInit(
-    OE_MutexAttr* attr)
-{
-    return pthread_mutexattr_init((pthread_mutexattr_t*)attr);
-}
-
-int OE_MutexAttrSetType(
-    OE_MutexAttr* attr, int type)
-{
-    return pthread_mutexattr_settype((pthread_mutexattr_t*)attr, type);
-}
-
-int OE_MutexAttrDestroy(
-    OE_MutexAttr* attr)
-{
-    return pthread_mutexattr_destroy((pthread_mutexattr_t*)attr);
-}
-
 int OE_MutexInit(
-    OE_Mutex* mutex, 
-    OE_MutexAttr* attr)
+    OE_Mutex* mutex)
 {
-    return pthread_mutex_init(
-        (pthread_mutex_t*)mutex, 
-        (pthread_mutexattr_t*)attr);
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+
+    int rc = pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
+
+    pthread_mutexattr_destroy(&attr);
+
+    return rc;
 }
 
 int OE_MutexLock(OE_Mutex* mutex)
