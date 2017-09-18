@@ -44,6 +44,16 @@
 
 * [OE_StackAlloc()](enclave_8h_a1c0f1e4f4f25df87c37777a5ef9fa8c7_1a1c0f1e4f4f25df87c37777a5ef9fa8c7.md)
 
+* [OE_HostStackMemalign()](enclave_8h_a0d995eec3dbaf4ab6970914853a2c9e5_1a0d995eec3dbaf4ab6970914853a2c9e5.md)
+
+* [OE_HostStackMalloc()](enclave_8h_a0c54554ccb045ea0e7be51882310b0a3_1a0c54554ccb045ea0e7be51882310b0a3.md)
+
+* [OE_HostStackCalloc()](enclave_8h_a8ec0b07ff51894c36a83667d6c5912d4_1a8ec0b07ff51894c36a83667d6c5912d4.md)
+
+* [OE_HostStackFree()](enclave_8h_a0af8c7aae8ad80e1892c6057e2b0f767_1a0af8c7aae8ad80e1892c6057e2b0f767.md)
+
+* [OE_HostStackStrdup()](enclave_8h_aa0c7f46378eaa84d0e894ee9ffc2c191_1aa0c7f46378eaa84d0e894ee9ffc2c191.md)
+
 * [OE_HostMalloc()](enclave_8h_aba7207f5f5dd14d9e740548dd8b6b3fd_1aba7207f5f5dd14d9e740548dd8b6b3fd.md)
 
 * [OE_HostCalloc()](enclave_8h_a135af92bdf694591e1de1f8a61054511_1a135af92bdf694591e1de1f8a61054511.md)

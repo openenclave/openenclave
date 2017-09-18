@@ -247,6 +247,51 @@ doxygenindex
         }
         member
         {
+            refid=enclave_8h_a0d995eec3dbaf4ab6970914853a2c9e5_1a0d995eec3dbaf4ab6970914853a2c9e5
+            kind=function
+            name
+            {
+                chars="OE_HostStackMemalign"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_a0c54554ccb045ea0e7be51882310b0a3_1a0c54554ccb045ea0e7be51882310b0a3
+            kind=function
+            name
+            {
+                chars="OE_HostStackMalloc"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_a8ec0b07ff51894c36a83667d6c5912d4_1a8ec0b07ff51894c36a83667d6c5912d4
+            kind=function
+            name
+            {
+                chars="OE_HostStackCalloc"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_a0af8c7aae8ad80e1892c6057e2b0f767_1a0af8c7aae8ad80e1892c6057e2b0f767
+            kind=function
+            name
+            {
+                chars="OE_HostStackFree"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_aa0c7f46378eaa84d0e894ee9ffc2c191_1aa0c7f46378eaa84d0e894ee9ffc2c191
+            kind=function
+            name
+            {
+                chars="OE_HostStackStrdup"
+            }
+        }
+        member
+        {
             refid=enclave_8h_aba7207f5f5dd14d9e740548dd8b6b3fd_1aba7207f5f5dd14d9e740548dd8b6b3fd
             kind=function
             name
