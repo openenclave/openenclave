@@ -59,6 +59,7 @@ doxygen
         }
         includes
         {
+            refid=thread_8h
             local=yes
             chars="thread.h"
         }
@@ -238,18 +239,32 @@ doxygen
             }
             node
             {
-                id=22
-                label
-                {
-                    chars="types.h"
-                }
-            }
-            node
-            {
                 id=24
                 label
                 {
                     chars="thread.h"
+                }
+                link
+                {
+                    refid=thread_8h_source
+                }
+                childnode
+                {
+                    refid=21
+                    relation=include
+                }
+                childnode
+                {
+                    refid=22
+                    relation=include
+                }
+            }
+            node
+            {
+                id=22
+                label
+                {
+                    chars="types.h"
                 }
             }
             node

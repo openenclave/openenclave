@@ -34,18 +34,19 @@ doxygen
         }
         includes
         {
+            refid=thread_8h
             local=yes
             chars="thread.h"
         }
         includes
         {
             local=yes
-            chars="/root/openenclave/include/openenclave/types.h"
+            chars="typeinfo.h"
         }
         includes
         {
             local=yes
-            chars="typeinfo.h"
+            chars="/root/openenclave/include/openenclave/types.h"
         }
         includes
         {
@@ -74,7 +75,7 @@ doxygen
             }
             node
             {
-                id=8
+                id=9
                 label
                 {
                     chars="/root/openenclave/include/openenclave/types.h"
@@ -82,7 +83,7 @@ doxygen
             }
             node
             {
-                id=9
+                id=8
                 label
                 {
                     chars="typeinfo.h"
@@ -118,6 +119,28 @@ doxygen
                 label
                 {
                     chars="atomic.h"
+                }
+            }
+            node
+            {
+                id=7
+                label
+                {
+                    chars="thread.h"
+                }
+                link
+                {
+                    refid=thread_8h_source
+                }
+                childnode
+                {
+                    refid=3
+                    relation=include
+                }
+                childnode
+                {
+                    refid=4
+                    relation=include
                 }
             }
             node
@@ -196,14 +219,6 @@ doxygen
                 {
                     refid=12
                     relation=include
-                }
-            }
-            node
-            {
-                id=7
-                label
-                {
-                    chars="thread.h"
                 }
             }
         }
