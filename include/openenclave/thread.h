@@ -34,7 +34,7 @@ OE_Thread OE_ThreadSelf(void);
  * @param thread1 A thread identifer obtained with OE_ThreadSelf().
  * @param thread2 A thread identifer obtained with OE_ThreadSelf().
  *
- * @returns non-zero if the thread identifiers are equal.
+ * @returns Returns non-zero if the thread identifiers are equal.
  *
  */
 int OE_ThreadEqual(OE_Thread thread1, OE_Thread thread2);
@@ -44,7 +44,8 @@ typedef unsigned int OE_OnceType;
 #define OE_ONCE_INITIALIZER 0
 
 /**
- * This function calls **func** exactly once for a given **once** parameter.
+ * Calls the given function exactly once.
+ *
  * OE_Once() may be called safely from different threads. OE_Once() is 
  * typically used to perform one-time initialization, as in the example below.
  *
@@ -61,6 +62,10 @@ typedef unsigned int OE_OnceType;
  *
  * The **_Initialize** function is called by the first thread to call OE_Once().
  *
+ * @param once The variable used to synchronize one-time call to **func**.
+ *
+ * @return Returns zero on success.
+ *
  */
 int OE_Once(
     OE_OnceType* once, 
@@ -73,8 +78,8 @@ typedef volatile unsigned int OE_Spinlock;
 /** 
  * Initializes a spin lock.
  *
- * This function initializes a spin lock. Spin locks can also be
- * initialized statically as follows.
+ * This function initializes a spin lock. Spin locks can also be initialized 
+ * statically as follows.
  *
  *     static OE_Spinlock _spinlock = OE_SPINLOCK_INITIALIZER;
  *

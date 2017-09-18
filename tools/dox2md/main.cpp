@@ -232,8 +232,16 @@ bool GenerateFunctionFile(const Element& elem)
 
     // Write the brief description:
     {
+#if 0
         string desc = elem["briefdescription"]["para"].chars();
         os << desc << endl << endl;
+#else
+        Element para = elem["briefdescription"]["para"];
+
+        // Print the detailed description paragraphs:
+        if (!PrintPara(para, os))
+            return false;
+#endif
     }
 
     // Write syntax section:
