@@ -125,11 +125,9 @@ int OE_MutexDestroy(
 **==============================================================================
 */
 
-int OE_CondInit(
-    OE_Cond* cond, 
-    OE_CondAttr* attr)
+int OE_CondInit(OE_Cond* cond)
 {
-    return pthread_cond_init((pthread_cond_t*)cond, (pthread_condattr_t*)attr);
+    return pthread_cond_init((pthread_cond_t*)cond, NULL);
 }
 
 int OE_CondDestroy(

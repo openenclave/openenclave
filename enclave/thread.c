@@ -296,9 +296,7 @@ done:
 **==============================================================================
 */
 
-int OE_CondInit(
-    OE_Cond* cond, 
-    OE_CondAttr* attr)
+int OE_CondInit(OE_Cond* cond)
 {
     if (cond)
     {
