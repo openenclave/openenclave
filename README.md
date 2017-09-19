@@ -24,9 +24,9 @@ The OpenEnclave project provides the following documents.
 
 - [OpenEnclave Design Overview](doc/DesignOverview.pdf)
 
-- [Getting Started with OpenEnclave](doc/GettingStarted.pdf)
+- [Getting Started with OpenEnclave](doc/GettingStarted.md)
 
-- [API Documentation](doc/refman/md/index.md)
+- [Open Enclave Function Reference](doc/refman/md/index.md)
 
 Source tree layout
 ------------------
