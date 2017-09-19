@@ -39,7 +39,7 @@ This section explains briefly how to install the OpenEnclave SDK from source.  F
 
 OpenEnclave runs on the following platforms:
 
-    - Ubuntu 16.04-LTS 64-bits
+- Ubuntu 16.04-LTS 64-bits
 
 It supports two modes: **SGX mode** and **simulation mode**. 
 
@@ -52,10 +52,10 @@ the root of the source distribution as follows.
 
 **SGX mode** has the following prerequisites.
 
-    - SGX-1 hardware support
-    - Intel(R) SGX driver
-    - Intel(R) AESM service
-    - Various package dependencies
+- SGX-1 hardware support
+- Intel(R) SGX driver
+- Intel(R) AESM service
+- Various package dependencies
 
 To install these prerequisites type the following commands from the root of
 the source distribution.
