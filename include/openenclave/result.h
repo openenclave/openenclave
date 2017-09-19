@@ -1,3 +1,9 @@
+/** 
+ * \file result.h 
+ *
+ * This file defines OpenEnclave return codes (results).
+ *
+ */
 #ifndef _OE_RESULT_H
 #define _OE_RESULT_H
 
@@ -5,6 +11,9 @@
 
 OE_EXTERNC_BEGIN
 
+/**
+ * Result codes.
+ */
 typedef enum _OE_Result
 {
     OE_OK,
@@ -40,6 +49,17 @@ typedef enum _OE_Result
 }
 OE_Result;
 
+/**
+ * Retrieves a string for a result code.
+ *
+ * This function retrieves a string description for the given **result**
+ * parameter.
+ *
+ * @param result Retrieve string description for this result code.
+ *
+ * @returns Returns a pointer to a static string description.
+ *
+ */
 const char* OE_ResultStr(
     OE_Result result);
 
