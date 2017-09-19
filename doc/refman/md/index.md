@@ -82,6 +82,10 @@
 
 * [OE_GetQuote()](host_8h_a0d2e9102af51fc63e9895612310392f5_1a0d2e9102af51fc63e9895612310392f5.md)
 
+### result.h
+
+* [OE_ResultStr()](result_8h_ad6af4f3a22dd8979ba8d33e5f87121be_1ad6af4f3a22dd8979ba8d33e5f87121be.md)
+
 ### thread.h
 
 * [OE_ThreadSelf()](thread_8h_a6bff3d1b325e3770da54e4ec6444ea71_1a6bff3d1b325e3770da54e4ec6444ea71.md)

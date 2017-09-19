@@ -7,7 +7,7 @@ Registers a low-level ECALL function.
 
 ## Syntax
 
-    OE_Result OE_RegisterECall(
+     OE_RegisterECall(
         uint32_t func,
         OE_ECallFunction ecall);
 ## Description 

@@ -38,7 +38,7 @@ doxygen
         {
             node
             {
-                id=33
+                id=38
                 label
                 {
                     chars="defs.h"
@@ -46,7 +46,7 @@ doxygen
             }
             node
             {
-                id=32
+                id=37
                 label
                 {
                     chars="/root/openenclave/include/openenclave/thread.h"
@@ -57,18 +57,18 @@ doxygen
                 }
                 childnode
                 {
-                    refid=33
+                    refid=38
                     relation=include
                 }
                 childnode
                 {
-                    refid=34
+                    refid=39
                     relation=include
                 }
             }
             node
             {
-                id=34
+                id=39
                 label
                 {
                     chars="types.h"
@@ -79,7 +79,7 @@ doxygen
         {
             node
             {
-                id=37
+                id=42
                 label
                 {
                     chars="/root/openenclave/include/openenclave/host.h"
@@ -91,7 +91,7 @@ doxygen
             }
             node
             {
-                id=35
+                id=40
                 label
                 {
                     chars="/root/openenclave/include/openenclave/thread.h"
@@ -102,18 +102,18 @@ doxygen
                 }
                 childnode
                 {
-                    refid=36
+                    refid=41
                     relation=include
                 }
                 childnode
                 {
-                    refid=37
+                    refid=42
                     relation=include
                 }
             }
             node
             {
-                id=36
+                id=41
                 label
                 {
                     chars="/root/openenclave/include/openenclave/enclave.h"
