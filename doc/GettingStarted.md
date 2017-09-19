@@ -45,11 +45,16 @@ Chapters 5 through 7 discuss prerequisites, building, and installing in some det
 
 ### Prerequisites
 
-Execute the following command from the root of the source tree to install the prerequisites (required packages, the SGX driver, and the SGX AESM service).
+Execute the following commands from the root of the source tree to install the prerequisites (required packages, the SGX driver, and the SGX AESM service).
 
 ```
+# ./scripts/install-prereqs
 # make prereqs
 ```
+
+The second command is only necessary if you wish to install the Intel(R)
+SGX driver and the Intel(R) AESM service. OpenEnclave can be used in
+simulation mode without these components.
 
 ### Building
 

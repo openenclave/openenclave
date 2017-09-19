@@ -22,11 +22,92 @@ Documentation
 
 The OpenEnclave project provides the following documents.
 
-- [OpenEnclave Design Overview](doc/DesignOverview.pdf)
-
 - [Getting Started with OpenEnclave](doc/GettingStarted.md)
 
 - [Open Enclave Function Reference](doc/refman/md/index.md)
+
+- [OpenEnclave Design Overview](doc/DesignOverview.pdf)
+
+The first document explains how to build and use OpenEnclave.
+
+Installing
+----------
+
+This section explains briefly how to install the OpenEnclave SDK from source.  For a detailed explanation, see [Getting Started with OpenEnclave](doc/GettingStarted.md).
+
+### Prerequisites
+
+OpenEnclave runs on the following platforms:
+
+    - Ubuntu 16.04-LTS 64-bits
+
+It supports two modes: **SGX mode** and **simulation mode**. 
+
+**Simulation mode** has package depedencies that may be installed from
+the root of the source distribution as follows.
+
+```
+# ./scripts/install-prereqs
+```
+
+**SGX mode** has the following prerequisites.
+
+    - SGX-1 hardware support
+    - Intel(R) SGX driver
+    - Intel(R) AESM service
+    - Various package dependencies
+
+To install these prerequisites type the following commands from the root of
+the source distribution.
+
+```
+# ./scripts/install-prereqs
+# make prereqs
+```
+
+### Configuring
+
+To configure OpenEnclave for installation in the default location, simply type:
+
+```
+# ./configure
+```
+
+### Compiling
+
+To compile, just type:
+
+```
+# make
+```
+
+### Running the tests
+
+Verify the build by running the tests. For SGX mode type:
+
+```
+# make SGX=1 tests
+```
+
+For simulation mode, type:
+
+```
+# make SIM=1 tests
+```
+
+### Installing
+
+To install OpenEnclave, type:
+
+```
+# make install
+```
+
+The default configurtion install this under this directory.
+
+```
+/opt/openenclave
+```
 
 Source tree layout
 ------------------
