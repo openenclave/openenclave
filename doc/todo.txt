@@ -1,7 +1,11 @@
 To-do list:
 ===========
 
-(C) Get complex cpow*.c working (depends on multiplication routines)
+(A) Consider implementing deprecation wrappers for standard headers.
 
-(C) Handle exceptions and interrupts (need use case)
+(A) Make system OCALLs non-reentrant.
+
+(C) Get complex cpow*.c working (depends on multiplication routines).
+
+(C) Handle exceptions and interrupts (need use case).
 
