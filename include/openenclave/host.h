@@ -17,7 +17,7 @@
 #include "types.h"
 #include "result.h"
 #include "thread.h"
-#include "sha.h"
+#include "bits/sha.h"
 #include "typeinfo.h"
 
 OE_EXTERNC_BEGIN

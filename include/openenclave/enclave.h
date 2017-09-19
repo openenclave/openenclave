@@ -12,7 +12,7 @@
 #include "result.h"
 #include "thread.h"
 #include "typeinfo.h"
-#include "sha.h"
+#include "bits/sha.h"
 
 OE_EXTERNC_BEGIN
 

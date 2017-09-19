@@ -4,7 +4,7 @@
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
-#include <openenclave/sha.h>
+#include <openenclave/bits/sha.h>
 
 OE_EXTERNC_BEGIN
 
