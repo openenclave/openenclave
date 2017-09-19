@@ -250,11 +250,11 @@ bool GenerateFunctionFile(const Element& elem)
 
         // Print the return type:
         string returnType = elem["type"].chars();
+        string args = elem["argsstring"].chars();
 
-        os << "    " << returnType << " ";
+        os << "    xxx" << returnType << "xxx ";
 
 #if 1
-        string args = elem["argsstring"].chars();
         os << name << args << endl;
 #else
         os << name << "(" << endl;

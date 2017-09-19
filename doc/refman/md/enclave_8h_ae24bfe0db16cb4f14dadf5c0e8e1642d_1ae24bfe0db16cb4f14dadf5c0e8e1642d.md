@@ -7,7 +7,7 @@ Enclave implementation of the standard memset() function.
 
 ## Syntax
 
-    void * OE_Memset(void *s, int c, size_t n)
+    xxxvoid *xxx OE_Memset(void *s, int c, size_t n)
 ## Description 
 
 Refer to documentation for memset() function.

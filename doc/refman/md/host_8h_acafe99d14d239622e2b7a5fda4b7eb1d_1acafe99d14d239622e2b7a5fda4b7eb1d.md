@@ -7,7 +7,7 @@ Registers a low-level OCALL function.
 
 ## Syntax
 
-     OE_RegisterOCall(uint32_t func, OE_OCallFunction ocall)
+    xxxxxx OE_RegisterOCall(uint32_t func, OE_OCallFunction ocall)
 ## Description 
 
 This function registers a low-level OCALL function that may be called from the encalve by the **** function. The registered function has the following prototype.
