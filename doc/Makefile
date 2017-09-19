@@ -1,7 +1,7 @@
 
 all:
 
-gen:
+gen: prereqs
 	grip GettingStarted.md --export GettingStarted.html
 	wkhtmltopdf GettingStarted.html GettingStarted.pdf
 
