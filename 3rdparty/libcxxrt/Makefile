@@ -4,7 +4,9 @@ TARGET = $(LIBDIR)/tmp/libcxxrt.a
 
 CACHEFILE = $(CACHEDIR)/libcxxrt.tar.gz
 
-all: libcxxrt configure
+all: 
+	$(MAKE) libcxxrt 
+	$(MAKE) configure
 	$(MAKE) -C libcxxrt
 	cp ./libcxxrt/lib/libcxxrt.a $(TARGET)
 

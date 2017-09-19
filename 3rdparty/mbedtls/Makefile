@@ -13,7 +13,10 @@ CFLAGS += -fno-builtin-udivti3
 
 export CFLAGS
 
-all: mbedtls configure .build
+all: 
+	$(MAKE) mbedtls 
+	$(MAKE) configure 
+	$(MAKE) .build
 
 .build:
 	cp config.h ./mbedtls/include/mbedtls/config.h

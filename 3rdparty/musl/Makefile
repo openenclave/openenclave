@@ -13,7 +13,9 @@ TARGET = $(INCDIR)/openenclave/libc
 
 CACHEFILE = $(CACHEDIR)/musl.tar.gz
 
-all: musl $(TARGET)
+all: 
+	$(MAKE) musl 
+	$(MAKE) $(TARGET)
 
 $(TARGET):
 	$(MAKE) configure

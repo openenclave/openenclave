@@ -55,7 +55,10 @@ OBJECTS = $(SOURCES:.cpp=.o)
 
 HEADER_INSTALL_DIRECTORY=$(INCDIR)/openenclave/libcxx
 
-all: libcxx patch $(OBJECTS)
+all: 
+	$(MAKE) libcxx 
+	$(MAKE) patch 
+	$(MAKE) $(OBJECTS)
 	@ rm -f $(TARGET)
 	@ ar r $(TARGET) $(OBJECTS)
 	@ $(MAKE) install
