@@ -253,6 +253,10 @@ bool GenerateFunctionFile(const Element& elem)
 
         os << "    " << returnType << " ";
 
+#if 1
+        string args = elem["argsstring"].chars();
+        os << name << args << endl;
+#else
         os << name << "(" << endl;
 
         // Find all "param" elements:
@@ -276,6 +280,7 @@ bool GenerateFunctionFile(const Element& elem)
             else
                 os << "," << endl;
         }
+#endif
     }
 
     // Write the descriptions:
