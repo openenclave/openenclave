@@ -1,10 +1,7 @@
 
-    (*) Does GCC provide stack protection schemes?
+    (*) Prevent re-entrancy of all "system" OCALLs.
 
-    (*) Should enclaves be able to create threads?
+    (*) Add a flag to OE_OCall() to prevent re-entrancy.
 
-    (*) Should HostMalloc() guard against subsequent ECALLs. So can we
-        implement a non-reentrant flag?
-
-    (*) Do we need to dynamically expand TSD slots (TLS).
+    (*) Consider stack protection schemes. (what does GCC offer?)
 

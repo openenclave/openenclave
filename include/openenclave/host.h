@@ -19,7 +19,6 @@
 #include "thread.h"
 #include "sha.h"
 #include "typeinfo.h"
-#include "atomic.h"
 
 OE_EXTERNC_BEGIN
 
