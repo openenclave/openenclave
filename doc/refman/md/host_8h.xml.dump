@@ -82,7 +82,7 @@ doxygen
         {
             node
             {
-                id=20
+                id=23
                 label
                 {
                     chars="stdarg.h"
@@ -90,7 +90,7 @@ doxygen
             }
             node
             {
-                id=25
+                id=28
                 label
                 {
                     chars="sha.h"
@@ -98,7 +98,7 @@ doxygen
             }
             node
             {
-                id=19
+                id=22
                 label
                 {
                     chars="stdint.h"
@@ -106,7 +106,7 @@ doxygen
             }
             node
             {
-                id=17
+                id=20
                 label
                 {
                     chars="stdlib.h"
@@ -114,7 +114,7 @@ doxygen
             }
             node
             {
-                id=26
+                id=29
                 label
                 {
                     chars="typeinfo.h"
@@ -122,7 +122,7 @@ doxygen
             }
             node
             {
-                id=23
+                id=26
                 label
                 {
                     chars="result.h"
@@ -130,7 +130,7 @@ doxygen
             }
             node
             {
-                id=15
+                id=18
                 label
                 {
                     chars="stddef.h"
@@ -138,7 +138,7 @@ doxygen
             }
             node
             {
-                id=14
+                id=17
                 label
                 {
                     chars="/root/openenclave/include/openenclave/host.h"
@@ -146,21 +146,6 @@ doxygen
                 link
                 {
                     refid=host.h
-                }
-                childnode
-                {
-                    refid=15
-                    relation=include
-                }
-                childnode
-                {
-                    refid=16
-                    relation=include
-                }
-                childnode
-                {
-                    refid=17
-                    relation=include
                 }
                 childnode
                 {
@@ -212,29 +197,20 @@ doxygen
                     refid=27
                     relation=include
                 }
-            }
-            node
-            {
-                id=21
-                label
+                childnode
                 {
-                    chars="defs.h"
+                    refid=28
+                    relation=include
                 }
-            }
-            node
-            {
-                id=16
-                label
+                childnode
                 {
-                    chars="string.h"
+                    refid=29
+                    relation=include
                 }
-            }
-            node
-            {
-                id=27
-                label
+                childnode
                 {
-                    chars="atomic.h"
+                    refid=30
+                    relation=include
                 }
             }
             node
@@ -242,26 +218,50 @@ doxygen
                 id=24
                 label
                 {
+                    chars="defs.h"
+                }
+            }
+            node
+            {
+                id=19
+                label
+                {
+                    chars="string.h"
+                }
+            }
+            node
+            {
+                id=30
+                label
+                {
+                    chars="atomic.h"
+                }
+            }
+            node
+            {
+                id=27
+                label
+                {
                     chars="thread.h"
                 }
                 link
                 {
-                    refid=thread_8h_source
+                    refid=thread_8h
                 }
                 childnode
                 {
-                    refid=21
+                    refid=24
                     relation=include
                 }
                 childnode
                 {
-                    refid=22
+                    refid=25
                     relation=include
                 }
             }
             node
             {
-                id=22
+                id=25
                 label
                 {
                     chars="types.h"
@@ -269,7 +269,7 @@ doxygen
             }
             node
             {
-                id=18
+                id=21
                 label
                 {
                     chars="stdio.h"
@@ -2064,7 +2064,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="#include"thread.h""
+                    ref
+                    {
+                        refid=thread_8h
+                        kindref=compound
+                        chars="thread.h"
+                    }
+                    chars="#include"""
                 }
                 highlight
                 {

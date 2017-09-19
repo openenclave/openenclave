@@ -1,3 +1,9 @@
+/** 
+ * \file thread.h 
+ *
+ * This file defines threading primitives used by hosts and enclaves.
+ *
+ */
 #ifndef _OE_THREAD_H
 #define _OE_THREAD_H
 
@@ -85,7 +91,7 @@ typedef volatile unsigned int OE_Spinlock;
  *
  * Once initialized, threads may use a spin lock to synchronize access to
  * data. See OE_SpinLock() and OE_SpinUnlock().
- * 
+ *
  * @param spinlock Initialize the given spin lock.
  *
  * @returns Return zero if successful
@@ -118,7 +124,8 @@ int OE_SpinLock(OE_Spinlock* spinlock);
  * @return Return zero if successful
  *
  */
-int OE_SpinUnlock(OE_Spinlock* spinlock);
+int OE_SpinUnlock(
+    OE_Spinlock* spinlock);
 
 /**
  * Destroy a spin lock.

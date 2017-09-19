@@ -67,7 +67,7 @@ doxygen
         {
             node
             {
-                id=12
+                id=15
                 label
                 {
                     chars="sha.h"
@@ -75,7 +75,7 @@ doxygen
             }
             node
             {
-                id=9
+                id=12
                 label
                 {
                     chars="/root/openenclave/include/openenclave/types.h"
@@ -83,7 +83,7 @@ doxygen
             }
             node
             {
-                id=8
+                id=11
                 label
                 {
                     chars="typeinfo.h"
@@ -91,7 +91,7 @@ doxygen
             }
             node
             {
-                id=6
+                id=9
                 label
                 {
                     chars="result.h"
@@ -99,7 +99,7 @@ doxygen
             }
             node
             {
-                id=5
+                id=8
                 label
                 {
                     chars="/root/openenclave/include/openenclave/defs.h"
@@ -107,7 +107,7 @@ doxygen
             }
             node
             {
-                id=3
+                id=6
                 label
                 {
                     chars="defs.h"
@@ -115,7 +115,7 @@ doxygen
             }
             node
             {
-                id=11
+                id=14
                 label
                 {
                     chars="atomic.h"
@@ -123,29 +123,29 @@ doxygen
             }
             node
             {
-                id=7
+                id=10
                 label
                 {
                     chars="thread.h"
                 }
                 link
                 {
-                    refid=thread_8h_source
+                    refid=thread_8h
                 }
                 childnode
                 {
-                    refid=3
+                    refid=6
                     relation=include
                 }
                 childnode
                 {
-                    refid=4
+                    refid=7
                     relation=include
                 }
             }
             node
             {
-                id=10
+                id=13
                 label
                 {
                     chars="/root/openenclave/include/openenclave/result.h"
@@ -153,7 +153,7 @@ doxygen
             }
             node
             {
-                id=4
+                id=7
                 label
                 {
                     chars="types.h"
@@ -161,7 +161,7 @@ doxygen
             }
             node
             {
-                id=2
+                id=5
                 label
                 {
                     chars="/root/openenclave/include/openenclave/enclave.h"
@@ -169,21 +169,6 @@ doxygen
                 link
                 {
                     refid=enclave.h
-                }
-                childnode
-                {
-                    refid=3
-                    relation=include
-                }
-                childnode
-                {
-                    refid=4
-                    relation=include
-                }
-                childnode
-                {
-                    refid=5
-                    relation=include
                 }
                 childnode
                 {
@@ -218,6 +203,21 @@ doxygen
                 childnode
                 {
                     refid=12
+                    relation=include
+                }
+                childnode
+                {
+                    refid=13
+                    relation=include
+                }
+                childnode
+                {
+                    refid=14
+                    relation=include
+                }
+                childnode
+                {
+                    refid=15
                     relation=include
                 }
             }
@@ -4466,7 +4466,13 @@ doxygen
                     sp
                     {
                     }
-                    chars="#include"thread.h""
+                    ref
+                    {
+                        refid=thread_8h
+                        kindref=compound
+                        chars="thread.h"
+                    }
+                    chars="#include"""
                 }
                 highlight
                 {
