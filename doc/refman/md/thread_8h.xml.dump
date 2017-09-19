@@ -204,10 +204,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=80
+                    line=84
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=80
+                    bodystart=84
                     bodyend=-1
                 }
             }
@@ -237,10 +237,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=142
+                    line=146
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=142
+                    bodystart=146
                     bodyend=-1
                 }
             }
@@ -270,10 +270,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=233
+                    line=237
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=233
+                    bodystart=237
                     bodyend=-1
                 }
             }
@@ -303,10 +303,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=346
+                    line=350
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=346
+                    bodystart=350
                     bodyend=-1
                 }
             }
@@ -475,10 +475,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=82
+                    line=86
                     column=1
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=82
+                    bodystart=86
                     bodyend=-1
                 }
             }
@@ -521,7 +521,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=157
+                    line=161
                     column=1
                 }
             }
@@ -564,7 +564,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=247
+                    line=251
                     column=1
                 }
             }
@@ -601,10 +601,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=348
+                    line=352
                     column=1
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=348
+                    bodystart=352
                     bodyend=-1
                 }
             }
@@ -884,6 +884,14 @@ doxygen
                 {
                     para
                     {
+                        bold
+                        {
+                            chars="func"
+                        }
+                        bold
+                        {
+                            chars="once"
+                        }
                         ref
                         {
                             refid=thread_8h_a4a5122ddbe1258fb449d9a1bdb4ad782_1a4a5122ddbe1258fb449d9a1bdb4ad782
@@ -900,6 +908,7 @@ doxygen
                         {
                             chars="static OE_OnceType _once = OE_ONCE_INITIALIZER;\n\nstatic void _Initialize(void)\n{\n    // Perform one time initialization here!\n}\n\n...\n\nOE_Once(&_once, _Initialize);"
                         }
+                        chars="This function calls the function given by the  parameter exactly one time for the given  parameter, no matter how many times  is called.  may be called safely from different threads and is typically used as a thread-safe mechanism for performing one-time initialization, as in the example below."
                     }
                     para
                     {
@@ -909,7 +918,7 @@ doxygen
                             kindref=member
                             chars="OE_Once()"
                         }
-                        chars="The **_Initialize** function is called by the first thread to call ."
+                        chars="The **_Initialize** function is called by the first thread to call  for the *_once* variable."
                     }
                     para
                     {
@@ -954,7 +963,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=76
+                    line=80
                     column=1
                 }
             }
@@ -1067,7 +1076,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=100
+                    line=104
                     column=1
                 }
             }
@@ -1160,7 +1169,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=115
+                    line=119
                     column=1
                 }
             }
@@ -1253,7 +1262,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=127
+                    line=131
                     column=1
                 }
             }
@@ -1346,7 +1355,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=140
+                    line=144
                     column=1
                 }
             }
@@ -1400,7 +1409,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=160
+                    line=164
                     column=1
                 }
             }
@@ -1510,7 +1519,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=174
+                    line=178
                     column=1
                 }
             }
@@ -1618,7 +1627,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=189
+                    line=193
                     column=1
                 }
             }
@@ -1722,7 +1731,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=203
+                    line=207
                     column=1
                 }
             }
@@ -1836,7 +1845,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=219
+                    line=223
                     column=1
                 }
             }
@@ -1940,7 +1949,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=231
+                    line=235
                     column=1
                 }
             }
@@ -1994,7 +2003,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=250
+                    line=254
                     column=1
                 }
             }
@@ -2100,7 +2109,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=268
+                    line=272
                     column=1
                 }
             }
@@ -2257,7 +2266,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=291
+                    line=295
                     column=1
                 }
             }
@@ -2377,7 +2386,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=312
+                    line=316
                     column=1
                 }
             }
@@ -2493,7 +2502,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=330
+                    line=334
                     column=1
                 }
             }
@@ -2591,7 +2600,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=343
+                    line=347
                     column=1
                 }
             }
@@ -2728,7 +2737,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=363
+                    line=367
                     column=1
                 }
             }
@@ -2831,7 +2840,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=379
+                    line=383
                     column=1
                 }
             }
@@ -2952,7 +2961,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=394
+                    line=398
                     column=1
                 }
             }
@@ -3045,7 +3054,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=409
+                    line=413
                     column=1
                 }
             }
@@ -3507,7 +3516,7 @@ doxygen
             }
             codeline
             {
-                lineno=76
+                lineno=80
                 highlight
                 {
                     class=keywordtype
@@ -3530,7 +3539,7 @@ doxygen
             }
             codeline
             {
-                lineno=77
+                lineno=81
                 highlight
                 {
                     class=normal
@@ -3557,7 +3566,7 @@ doxygen
             }
             codeline
             {
-                lineno=78
+                lineno=82
                 highlight
                 {
                     class=normal
@@ -3600,7 +3609,7 @@ doxygen
             }
             codeline
             {
-                lineno=79
+                lineno=83
                 highlight
                 {
                     class=normal
@@ -3608,7 +3617,7 @@ doxygen
             }
             codeline
             {
-                lineno=80
+                lineno=84
                 highlight
                 {
                     class=normal
@@ -3631,7 +3640,7 @@ doxygen
             }
             codeline
             {
-                lineno=81
+                lineno=85
                 highlight
                 {
                     class=normal
@@ -3639,7 +3648,7 @@ doxygen
             }
             codeline
             {
-                lineno=82
+                lineno=86
                 highlight
                 {
                     class=normal
@@ -3696,7 +3705,7 @@ doxygen
             }
             codeline
             {
-                lineno=83
+                lineno=87
                 highlight
                 {
                     class=normal
@@ -3704,7 +3713,7 @@ doxygen
             }
             codeline
             {
-                lineno=100
+                lineno=104
                 highlight
                 {
                     class=keywordtype
@@ -3730,7 +3739,7 @@ doxygen
             }
             codeline
             {
-                lineno=101
+                lineno=105
                 highlight
                 {
                     class=normal
@@ -3738,7 +3747,7 @@ doxygen
             }
             codeline
             {
-                lineno=115
+                lineno=119
                 highlight
                 {
                     class=keywordtype
@@ -3764,7 +3773,7 @@ doxygen
             }
             codeline
             {
-                lineno=116
+                lineno=120
                 highlight
                 {
                     class=normal
@@ -3772,7 +3781,7 @@ doxygen
             }
             codeline
             {
-                lineno=127
+                lineno=131
                 highlight
                 {
                     class=keywordtype
@@ -3795,7 +3804,7 @@ doxygen
             }
             codeline
             {
-                lineno=128
+                lineno=132
                 highlight
                 {
                     class=normal
@@ -3819,7 +3828,7 @@ doxygen
             }
             codeline
             {
-                lineno=129
+                lineno=133
                 highlight
                 {
                     class=normal
@@ -3827,7 +3836,7 @@ doxygen
             }
             codeline
             {
-                lineno=140
+                lineno=144
                 highlight
                 {
                     class=keywordtype
@@ -3853,7 +3862,7 @@ doxygen
             }
             codeline
             {
-                lineno=141
+                lineno=145
                 highlight
                 {
                     class=normal
@@ -3861,7 +3870,7 @@ doxygen
             }
             codeline
             {
-                lineno=142
+                lineno=146
                 highlight
                 {
                     class=normal
@@ -3884,7 +3893,7 @@ doxygen
             }
             codeline
             {
-                lineno=143
+                lineno=147
                 highlight
                 {
                     class=normal
@@ -3892,7 +3901,7 @@ doxygen
             }
             codeline
             {
-                lineno=144
+                lineno=148
                 highlight
                 {
                     class=normal
@@ -3924,7 +3933,7 @@ doxygen
             }
             codeline
             {
-                lineno=145
+                lineno=149
                 refid=struct__OE__Mutex
                 refkind=compound
                 highlight
@@ -3964,7 +3973,7 @@ doxygen
             }
             codeline
             {
-                lineno=146
+                lineno=150
                 highlight
                 {
                     class=normal
@@ -3973,7 +3982,7 @@ doxygen
             }
             codeline
             {
-                lineno=147
+                lineno=151
                 highlight
                 {
                     class=normal
@@ -3997,7 +4006,7 @@ doxygen
             }
             codeline
             {
-                lineno=148
+                lineno=152
                 highlight
                 {
                     class=normal
@@ -4042,7 +4051,7 @@ doxygen
             }
             codeline
             {
-                lineno=149
+                lineno=153
                 highlight
                 {
                     class=normal
@@ -4114,7 +4123,7 @@ doxygen
             }
             codeline
             {
-                lineno=150
+                lineno=154
                 highlight
                 {
                     class=normal
@@ -4146,7 +4155,7 @@ doxygen
             }
             codeline
             {
-                lineno=151
+                lineno=155
                 highlight
                 {
                     class=normal
@@ -4167,7 +4176,7 @@ doxygen
             }
             codeline
             {
-                lineno=152
+                lineno=156
                 highlight
                 {
                     class=normal
@@ -4212,7 +4221,7 @@ doxygen
             }
             codeline
             {
-                lineno=153
+                lineno=157
                 highlight
                 {
                     class=normal
@@ -4257,7 +4266,7 @@ doxygen
             }
             codeline
             {
-                lineno=154
+                lineno=158
                 highlight
                 {
                     class=normal
@@ -4278,7 +4287,7 @@ doxygen
             }
             codeline
             {
-                lineno=155
+                lineno=159
                 highlight
                 {
                     class=normal
@@ -4299,7 +4308,7 @@ doxygen
             }
             codeline
             {
-                lineno=156
+                lineno=160
                 highlight
                 {
                     class=normal
@@ -4308,7 +4317,7 @@ doxygen
             }
             codeline
             {
-                lineno=157
+                lineno=161
                 highlight
                 {
                     class=normal
@@ -4323,7 +4332,7 @@ doxygen
             }
             codeline
             {
-                lineno=158
+                lineno=162
                 highlight
                 {
                     class=normal
@@ -4331,7 +4340,7 @@ doxygen
             }
             codeline
             {
-                lineno=159
+                lineno=163
                 highlight
                 {
                     class=normal
@@ -4381,7 +4390,7 @@ doxygen
             }
             codeline
             {
-                lineno=160
+                lineno=164
                 highlight
                 {
                     class=normal
@@ -4412,7 +4421,7 @@ doxygen
             }
             codeline
             {
-                lineno=161
+                lineno=165
                 highlight
                 {
                     class=normal
@@ -4420,7 +4429,7 @@ doxygen
             }
             codeline
             {
-                lineno=174
+                lineno=178
                 highlight
                 {
                     class=keywordtype
@@ -4452,7 +4461,7 @@ doxygen
             }
             codeline
             {
-                lineno=175
+                lineno=179
                 highlight
                 {
                     class=normal
@@ -4460,7 +4469,7 @@ doxygen
             }
             codeline
             {
-                lineno=189
+                lineno=193
                 highlight
                 {
                     class=keywordtype
@@ -4492,7 +4501,7 @@ doxygen
             }
             codeline
             {
-                lineno=190
+                lineno=194
                 highlight
                 {
                     class=normal
@@ -4500,7 +4509,7 @@ doxygen
             }
             codeline
             {
-                lineno=203
+                lineno=207
                 highlight
                 {
                     class=keywordtype
@@ -4532,7 +4541,7 @@ doxygen
             }
             codeline
             {
-                lineno=204
+                lineno=208
                 highlight
                 {
                     class=normal
@@ -4540,7 +4549,7 @@ doxygen
             }
             codeline
             {
-                lineno=219
+                lineno=223
                 highlight
                 {
                     class=keywordtype
@@ -4572,7 +4581,7 @@ doxygen
             }
             codeline
             {
-                lineno=220
+                lineno=224
                 highlight
                 {
                     class=normal
@@ -4580,7 +4589,7 @@ doxygen
             }
             codeline
             {
-                lineno=231
+                lineno=235
                 highlight
                 {
                     class=keywordtype
@@ -4612,7 +4621,7 @@ doxygen
             }
             codeline
             {
-                lineno=232
+                lineno=236
                 highlight
                 {
                     class=normal
@@ -4620,7 +4629,7 @@ doxygen
             }
             codeline
             {
-                lineno=233
+                lineno=237
                 highlight
                 {
                     class=normal
@@ -4646,7 +4655,7 @@ doxygen
             }
             codeline
             {
-                lineno=234
+                lineno=238
                 highlight
                 {
                     class=normal
@@ -4654,7 +4663,7 @@ doxygen
             }
             codeline
             {
-                lineno=235
+                lineno=239
                 highlight
                 {
                     class=normal
@@ -4683,7 +4692,7 @@ doxygen
             }
             codeline
             {
-                lineno=236
+                lineno=240
                 refid=struct__OE__Cond
                 refkind=compound
                 highlight
@@ -4723,7 +4732,7 @@ doxygen
             }
             codeline
             {
-                lineno=237
+                lineno=241
                 highlight
                 {
                     class=normal
@@ -4732,7 +4741,7 @@ doxygen
             }
             codeline
             {
-                lineno=238
+                lineno=242
                 highlight
                 {
                     class=normal
@@ -4756,7 +4765,7 @@ doxygen
             }
             codeline
             {
-                lineno=239
+                lineno=243
                 highlight
                 {
                     class=normal
@@ -4788,7 +4797,7 @@ doxygen
             }
             codeline
             {
-                lineno=240
+                lineno=244
                 highlight
                 {
                     class=normal
@@ -4809,7 +4818,7 @@ doxygen
             }
             codeline
             {
-                lineno=241
+                lineno=245
                 highlight
                 {
                     class=normal
@@ -4854,7 +4863,7 @@ doxygen
             }
             codeline
             {
-                lineno=242
+                lineno=246
                 highlight
                 {
                     class=normal
@@ -4899,7 +4908,7 @@ doxygen
             }
             codeline
             {
-                lineno=243
+                lineno=247
                 highlight
                 {
                     class=normal
@@ -4920,7 +4929,7 @@ doxygen
             }
             codeline
             {
-                lineno=244
+                lineno=248
                 highlight
                 {
                     class=normal
@@ -4941,7 +4950,7 @@ doxygen
             }
             codeline
             {
-                lineno=245
+                lineno=249
                 highlight
                 {
                     class=normal
@@ -4986,7 +4995,7 @@ doxygen
             }
             codeline
             {
-                lineno=246
+                lineno=250
                 highlight
                 {
                     class=normal
@@ -4995,7 +5004,7 @@ doxygen
             }
             codeline
             {
-                lineno=247
+                lineno=251
                 highlight
                 {
                     class=normal
@@ -5010,7 +5019,7 @@ doxygen
             }
             codeline
             {
-                lineno=248
+                lineno=252
                 highlight
                 {
                     class=normal
@@ -5018,7 +5027,7 @@ doxygen
             }
             codeline
             {
-                lineno=249
+                lineno=253
                 highlight
                 {
                     class=normal
@@ -5065,7 +5074,7 @@ doxygen
             }
             codeline
             {
-                lineno=250
+                lineno=254
                 highlight
                 {
                     class=normal
@@ -5096,7 +5105,7 @@ doxygen
             }
             codeline
             {
-                lineno=251
+                lineno=255
                 highlight
                 {
                     class=normal
@@ -5104,7 +5113,7 @@ doxygen
             }
             codeline
             {
-                lineno=268
+                lineno=272
                 highlight
                 {
                     class=keywordtype
@@ -5136,7 +5145,7 @@ doxygen
             }
             codeline
             {
-                lineno=269
+                lineno=273
                 highlight
                 {
                     class=normal
@@ -5144,7 +5153,7 @@ doxygen
             }
             codeline
             {
-                lineno=291
+                lineno=295
                 highlight
                 {
                     class=keywordtype
@@ -5167,7 +5176,7 @@ doxygen
             }
             codeline
             {
-                lineno=292
+                lineno=296
                 highlight
                 {
                     class=normal
@@ -5200,7 +5209,7 @@ doxygen
             }
             codeline
             {
-                lineno=293
+                lineno=297
                 highlight
                 {
                     class=normal
@@ -5230,7 +5239,7 @@ doxygen
             }
             codeline
             {
-                lineno=294
+                lineno=298
                 highlight
                 {
                     class=normal
@@ -5238,7 +5247,7 @@ doxygen
             }
             codeline
             {
-                lineno=312
+                lineno=316
                 highlight
                 {
                     class=keywordtype
@@ -5261,7 +5270,7 @@ doxygen
             }
             codeline
             {
-                lineno=313
+                lineno=317
                 highlight
                 {
                     class=normal
@@ -5291,7 +5300,7 @@ doxygen
             }
             codeline
             {
-                lineno=314
+                lineno=318
                 highlight
                 {
                     class=normal
@@ -5299,7 +5308,7 @@ doxygen
             }
             codeline
             {
-                lineno=330
+                lineno=334
                 highlight
                 {
                     class=keywordtype
@@ -5322,7 +5331,7 @@ doxygen
             }
             codeline
             {
-                lineno=331
+                lineno=335
                 highlight
                 {
                     class=normal
@@ -5352,7 +5361,7 @@ doxygen
             }
             codeline
             {
-                lineno=332
+                lineno=336
                 highlight
                 {
                     class=normal
@@ -5360,7 +5369,7 @@ doxygen
             }
             codeline
             {
-                lineno=343
+                lineno=347
                 highlight
                 {
                     class=keywordtype
@@ -5383,7 +5392,7 @@ doxygen
             }
             codeline
             {
-                lineno=344
+                lineno=348
                 highlight
                 {
                     class=normal
@@ -5413,7 +5422,7 @@ doxygen
             }
             codeline
             {
-                lineno=345
+                lineno=349
                 highlight
                 {
                     class=normal
@@ -5421,7 +5430,7 @@ doxygen
             }
             codeline
             {
-                lineno=346
+                lineno=350
                 highlight
                 {
                     class=normal
@@ -5444,7 +5453,7 @@ doxygen
             }
             codeline
             {
-                lineno=347
+                lineno=351
                 highlight
                 {
                     class=normal
@@ -5452,7 +5461,7 @@ doxygen
             }
             codeline
             {
-                lineno=348
+                lineno=352
                 highlight
                 {
                     class=normal
@@ -5497,7 +5506,7 @@ doxygen
             }
             codeline
             {
-                lineno=349
+                lineno=353
                 highlight
                 {
                     class=normal
@@ -5505,7 +5514,7 @@ doxygen
             }
             codeline
             {
-                lineno=363
+                lineno=367
                 highlight
                 {
                     class=keywordtype
@@ -5528,7 +5537,7 @@ doxygen
             }
             codeline
             {
-                lineno=364
+                lineno=368
                 highlight
                 {
                     class=normal
@@ -5555,7 +5564,7 @@ doxygen
             }
             codeline
             {
-                lineno=365
+                lineno=369
                 highlight
                 {
                     class=normal
@@ -5601,7 +5610,7 @@ doxygen
             }
             codeline
             {
-                lineno=366
+                lineno=370
                 highlight
                 {
                     class=normal
@@ -5609,7 +5618,7 @@ doxygen
             }
             codeline
             {
-                lineno=379
+                lineno=383
                 highlight
                 {
                     class=keywordtype
@@ -5632,7 +5641,7 @@ doxygen
             }
             codeline
             {
-                lineno=380
+                lineno=384
                 highlight
                 {
                     class=normal
@@ -5656,7 +5665,7 @@ doxygen
             }
             codeline
             {
-                lineno=381
+                lineno=385
                 highlight
                 {
                     class=normal
@@ -5664,7 +5673,7 @@ doxygen
             }
             codeline
             {
-                lineno=394
+                lineno=398
                 highlight
                 {
                     class=keywordtype
@@ -5687,7 +5696,7 @@ doxygen
             }
             codeline
             {
-                lineno=395
+                lineno=399
                 highlight
                 {
                     class=normal
@@ -5714,7 +5723,7 @@ doxygen
             }
             codeline
             {
-                lineno=396
+                lineno=400
                 highlight
                 {
                     class=normal
@@ -5759,7 +5768,7 @@ doxygen
             }
             codeline
             {
-                lineno=397
+                lineno=401
                 highlight
                 {
                     class=normal
@@ -5767,7 +5776,7 @@ doxygen
             }
             codeline
             {
-                lineno=409
+                lineno=413
                 highlight
                 {
                     class=keywordtype
@@ -5790,7 +5799,7 @@ doxygen
             }
             codeline
             {
-                lineno=410
+                lineno=414
                 highlight
                 {
                     class=normal
@@ -5814,7 +5823,7 @@ doxygen
             }
             codeline
             {
-                lineno=411
+                lineno=415
                 highlight
                 {
                     class=normal
@@ -5822,7 +5831,7 @@ doxygen
             }
             codeline
             {
-                lineno=412
+                lineno=416
                 highlight
                 {
                     class=normal
@@ -5831,7 +5840,7 @@ doxygen
             }
             codeline
             {
-                lineno=413
+                lineno=417
                 highlight
                 {
                     class=normal
@@ -5839,7 +5848,7 @@ doxygen
             }
             codeline
             {
-                lineno=414
+                lineno=418
                 highlight
                 {
                     class=normal

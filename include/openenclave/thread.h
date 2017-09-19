@@ -52,8 +52,11 @@ typedef unsigned int OE_OnceType;
 /**
  * Calls the given function exactly once.
  *
- * OE_Once() may be called safely from different threads. OE_Once() is 
- * typically used to perform one-time initialization, as in the example below.
+ * This function calls the function given by the **func** parameter exactly
+ * one time for the given **once** parameter, no matter how many times 
+ * OE_Once() is called. OE_Once() may be called safely from different threads 
+ * and is typically used as a thread-safe mechanism for performing one-time 
+ * initialization, as in the example below.
  *
  *     static OE_OnceType _once = OE_ONCE_INITIALIZER;
  *
@@ -66,7 +69,8 @@ typedef unsigned int OE_OnceType;
  *
  *     OE_Once(&_once, _Initialize);
  *
- * The **_Initialize** function is called by the first thread to call OE_Once().
+ * The **_Initialize** function is called by the first thread to call OE_Once()
+ * for the *_once* variable.
  *
  * @param once The variable used to synchronize one-time call to **func**.
  *
