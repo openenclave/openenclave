@@ -249,10 +249,14 @@ bool GenerateFunctionFile(const Element& elem)
         os << "## Syntax" << endl << endl;
 
         // Print the return type:
-        string returnType = elem["type"].chars();
+        string type = elem["type"].chars();
         string args = elem["argsstring"].chars();
 
-        os << "    xxx" << returnType << "xxx ";
+        // Possibly a ref?
+        if (type.empty())
+            type = elem["type"]["ref"].chars();
+
+        os << "    " << type << " ";
 
 #if 1
         os << name << args << endl;

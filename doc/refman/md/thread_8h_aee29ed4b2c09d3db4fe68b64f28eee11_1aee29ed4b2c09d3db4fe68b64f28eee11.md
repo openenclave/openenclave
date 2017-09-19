@@ -7,7 +7,7 @@ Release the lock on a spin lock.
 
 ## Syntax
 
-    xxxintxxx OE_SpinUnlock(OE_Spinlock *spinlock)
+    int OE_SpinUnlock(OE_Spinlock *spinlock)
 ## Description 
 
 A thread calls this function to release a lock on a spin lock.

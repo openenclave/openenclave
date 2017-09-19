@@ -7,7 +7,7 @@ Acquire a lock on a spin lock.
 
 ## Syntax
 
-    xxxintxxx OE_SpinLock(OE_Spinlock *spinlock)
+    int OE_SpinLock(OE_Spinlock *spinlock)
 ## Description 
 
 A thread calls this function to acquire a lock on a spin lock. If another thread has already acquired a lock, the calling thread spins until the lock is available. If more than one thread is waiting on the spin lock, the selection of the next thread to obtain the lock is arbitrary.
