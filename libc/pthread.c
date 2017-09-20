@@ -24,15 +24,25 @@ int pthread_equal(pthread_t thread1, pthread_t thread2)
     return OE_ThreadEqual((OE_Thread)thread1, (OE_Thread)thread2);
 }
 
+int pthread_create(
+    pthread_t *thread,
+    const pthread_attr_t *attr,
+    void *(*start_routine) (void *),
+    void *arg)
+{
+    OE_Assert("pthread_create(): panic" == NULL);
+    return -1;
+}
+
 int pthread_join(pthread_t thread, void **retval)
 {
-    assert("pthread_join() not implemented" == NULL);
+    assert("pthread_join(): panic" == NULL);
     return -1;
 }
 
 int pthread_detach(pthread_t thread)
 {
-    assert("pthread_detach() not implemented" == NULL);
+    assert("pthread_detach(): panic" == NULL);
     return -1;
 }
 
@@ -198,7 +208,7 @@ int pthread_cond_timedwait(
     pthread_mutex_t* mutex,
     const struct timespec* ts)
 {
-    assert("pthread_cond_timedwait(): not implemented" == NULL);
+    assert("pthread_cond_timedwait(): panic" == NULL);
     return -1;
 }
 

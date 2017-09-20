@@ -18,7 +18,9 @@ LDFLAGS += -Wl,-eOE_Main
 
 LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loelibcxx -loelibc -loeenclave
 
-all: build sign
+all:
+	$(MAKE) build
+	$(MAKE) sign
 
 build:
 	g++ -c $(CXXFLAGS) $(INCLUDES) enc.cpp -o enc.o
