@@ -1,8 +1,0 @@
-#!/bin/bash
-for i
-do
-    tmpfile=$i.subbak
-    cp $i ${tmpfile}
-    sed -f sub.sed ${tmpfile} > $i
-    rm -f ${tmpfile}
-done
