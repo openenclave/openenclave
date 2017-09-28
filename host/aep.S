@@ -22,7 +22,7 @@ OE_AEP:
 .aep:
 
     mov $ENCLU_ERESUME, %rax
-    mov %gs:ThreadData_tcs, %rbx // TCS
+    mov %gs:ThreadBinding_tcs, %rbx // TCS
     lea .aep, %rcx // AEP
     mov $0, %rdx
     ENCLU

@@ -246,10 +246,10 @@ static OE_Result _AddControlPages(
 
     /* Save the address of new TCS page into enclave object */
     {
-        if (enclave->num_tds == OE_SGX_MAX_TCS)
+        if (enclave->num_bindings == OE_SGX_MAX_TCS)
             OE_THROW(OE_FAILURE);
 
-        enclave->tds[enclave->num_tds++].tcs = enclaveAddr + *vaddr;
+        enclave->bindings[enclave->num_bindings++].tcs = enclaveAddr + *vaddr;
     }
 
     /* Add the TCS page */
@@ -329,7 +329,7 @@ static OE_Result _CalculateEnclaveSize(
     size_t ecallSize,
     size_t nheappages,
     size_t nstackpages,
-    size_t num_tds,
+    size_t num_bindings,
     size_t* enclaveEnd, /* end may be less than size due to rounding */
     size_t* enclaveSize)
 {
@@ -342,7 +342,7 @@ static OE_Result _CalculateEnclaveSize(
     if (enclaveSize)
         *enclaveSize = 0;
 
-    if (!segments || !nsegments || !nheappages || !nstackpages || !num_tds || 
+    if (!segments || !nsegments || !nheappages || !nstackpages || !num_bindings || 
         !enclaveSize) 
     {
         OE_THROW(OE_INVALID_PARAMETER);
@@ -362,7 +362,7 @@ static OE_Result _CalculateEnclaveSize(
 
     /* Compute end of the enclave */
     *enclaveEnd = segmentsSize + relocSize + ecallSize + heapSize + 
-        (num_tds * (stackSize + controlSize));
+        (num_bindings * (stackSize + controlSize));
 
     /* Calculate the total size of the enclave */
     *enclaveSize = OE_RoundU64ToPow2(*enclaveEnd);
@@ -457,7 +457,7 @@ static OE_Result _AddPages(
     uint64_t entry, /* entry point address */
     size_t nheappages,
     size_t nstackpages,
-    size_t num_tds,
+    size_t num_bindings,
     OE_Enclave* enclave)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -471,7 +471,7 @@ static OE_Result _AddPages(
 
     /* Reject invalid parameters */
     if (!dev || !enclaveAddr || !enclaveSize || !segments || !nsegments || 
-        !num_tds || !nstackpages || !nheappages || !enclave)
+        !num_bindings || !nstackpages || !nheappages || !enclave)
     {
         OE_THROW(OE_INVALID_PARAMETER);
     }
@@ -587,7 +587,7 @@ static OE_Result _AddPages(
     /* Create the heap */
     OE_TRY(_AddHeapPages(dev, enclaveAddr, &vaddr, nheappages));
 
-    for (i = 0; i < num_tds; i++)
+    for (i = 0; i < num_bindings; i++)
     {
         /* Add guard page */
         vaddr += OE_PAGE_SIZE;
