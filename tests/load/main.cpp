@@ -68,8 +68,8 @@ int main(int argc, const char* argv[])
 
     printf("BASEADDR=%016lx\n", enclave.addr);
 
-    for (size_t i = 0; i < enclave.num_tds; i++)
-        printf("TCS[%zu]=%016lx\n", i, enclave.tds[i].tcs);
+    for (size_t i = 0; i < enclave.num_bindings; i++)
+        printf("TCS[%zu]=%016lx\n", i, enclave.bindings[i].tcs);
 
     return 0;
 }

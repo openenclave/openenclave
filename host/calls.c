@@ -31,21 +31,21 @@ void OE_AEP(void);
 /*
 **==============================================================================
 **
-** _SetThreadData()
+** _SetThreadBinding()
 **
 **     Store the thread data in the GS segement register. Note that the GS
 **     register is unused on X86-64, unlike the FS register that is used by
 **     the pthread implementation.
 **
 **     The OE_AEP() function (aep.S) uses the GS segment register to retrieve
-**     the ThreadData.tcs field.
+**     the ThreadBinding.tcs field.
 **
 **==============================================================================
 */
 
-static void _SetThreadData(ThreadData* td)
+static void _SetThreadBinding(ThreadBinding* binding)
 {
-    if (OE_SetGSRegisterBase(td) != 0)
+    if (OE_SetGSRegisterBase(binding) != 0)
     {
         assert(0);
     }
@@ -54,14 +54,14 @@ static void _SetThreadData(ThreadData* td)
 /*
 **==============================================================================
 **
-** GetThreadData()
+** GetThreadBinding()
 **
-**     Retrieve the a pointer to the ThreadData from the GS segment register.
+**     Retrieve the a pointer to the ThreadBinding from the GS segment register.
 **
 **==============================================================================
 */
 
-ThreadData* GetThreadData()
+ThreadBinding* GetThreadBinding()
 {
     const void* ptr;
 
@@ -70,7 +70,7 @@ ThreadData* GetThreadData()
         assert(0);
     }
 
-    return (ThreadData*)ptr;
+    return (ThreadBinding*)ptr;
 }
 
 /*
@@ -480,8 +480,16 @@ int __OE_DispatchOCall(
 **
 ** _AssignTCS()
 **
-**     Return a pointer to the first available ThreadData (or first ThreadData 
-**     already assigned to this thread).
+**     This function establishes a binding between:
+**         - the calling host thread
+**         - an enclave thread context
+**
+**     If such a binding already exists, the binding's count in incremented.
+**     Else, the calling host thread is bound to the first available enclave
+**     thread context.
+**
+**     Returns the address of the thread control structure (TCS) corresponding
+**     to the enclave thread context.
 **
 **==============================================================================
 */
@@ -496,49 +504,41 @@ static void* _AssignTCS(
     OE_SpinLock(&enclave->lock);
     {
         /* First attempt to find a busy TD owned by this thread */
-        for (i = 0; i < enclave->num_tds; i++)
+        for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadData* td = &enclave->tds[i];
+            ThreadBinding* binding = &enclave->bindings[i];
 
-            if (td->busy && td->thread == thread)
+            if (binding->busy && binding->thread == thread)
             {
-                td->count++;
-                tcs = (void*)td->tcs;
+                binding->count++;
+                tcs = (void*)binding->tcs;
                 break;
             }
         }
 
-        /* If ThreadData not found yet, look for an available ThreadData */
+        /* If binding not found above, look for an available ThreadBinding */
         if (!tcs)
         {
-            for (i = 0; i < enclave->num_tds; i++)
+            for (i = 0; i < enclave->num_bindings; i++)
             {
-                ThreadData* td = &enclave->tds[i];
+                ThreadBinding* binding = &enclave->bindings[i];
 
-                if (!td->busy)
+                if (!binding->busy)
                 {
-                    td->busy = true;
-                    td->thread = thread;
-                    td->count = 1;
-                    tcs = (void*)td->tcs;
+                    binding->busy = true;
+                    binding->thread = thread;
+                    binding->count = 1;
+                    tcs = (void*)binding->tcs;
 
                     /* Set into TSD so _HandleAsyncException can get it */
-                    _SetThreadData(td);
-                    assert(GetThreadData() == td);
+                    _SetThreadBinding(binding);
+                    assert(GetThreadBinding() == binding);
                     break;
                 }
             }
         }
     }
     OE_SpinUnlock(&enclave->lock);
-
-    /* Inject TCS into pthread data (beyond portion used by system) */
-    asm volatile(
-        "mov %0, %%rax\n\t"
-        "mov %%rax, %%fs:2048\n\t"
-        :
-        :
-        "m"(tcs));
 
     return tcs;
 }
@@ -548,8 +548,8 @@ static void* _AssignTCS(
 **
 ** _ReleaseTCS()
 **
-**     Release a ThreadData or just decrement if it has been assigned
-**     to the same element more than once.
+**     Decrement the ThreadBinding.count field of the binding assocated with 
+**     the given TCS. If the field becomes zero, the binding is dissolved.
 **
 **==============================================================================
 */
@@ -562,21 +562,21 @@ static void _ReleaseTCS(
 
     OE_SpinLock(&enclave->lock);
     {
-        for (i = 0; i < enclave->num_tds; i++)
+        for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadData* td = &enclave->tds[i];
+            ThreadBinding* binding = &enclave->bindings[i];
 
-            if (td->busy && (void*)td->tcs == tcs)
+            if (binding->busy && (void*)binding->tcs == tcs)
             {
-                td->count--;
+                binding->count--;
 
-                if (td->count == 0)
+                if (binding->count == 0)
                 {
-                    td->busy = false;
-                    td->thread = 0;
-                    td->event = 0;
-                    _SetThreadData(NULL);
-                    assert(GetThreadData() == NULL);
+                    binding->busy = false;
+                    binding->thread = 0;
+                    binding->event = 0;
+                    _SetThreadBinding(NULL);
+                    assert(GetThreadBinding() == NULL);
                 }
                 break;
             }

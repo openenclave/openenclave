@@ -125,9 +125,13 @@ the source distribution.</p>
 <p>Chapters 5 through 7 discuss prerequisites, building, and installing in some detail. This chapter explains how to perform these steps quickly when one wishes to install OpenEnclave into the default location (/opt/openenclave).  If this suffices, then perform the steps below, skip those chapters and proceed to chapter 8.</p>
 <h3>
 <a id="user-content-prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h3>
-<p>Execute the following command from the root of the source tree to install the prerequisites (required packages, the SGX driver, and the SGX AESM service).</p>
-<pre><code># make prereqs
+<p>Execute the following commands from the root of the source tree to install the prerequisites (required packages, the SGX driver, and the SGX AESM service).</p>
+<pre><code># ./scripts/install-prereqs
+# make prereqs
 </code></pre>
+<p>The second command is only necessary if you wish to install the Intel(R)
+SGX driver and the Intel(R) AESM service. OpenEnclave can be used in
+simulation mode without these components.</p>
 <h3>
 <a id="user-content-building" class="anchor" href="#building" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building</h3>
 <p>To configure for installation into the default location and to build, type the following command.</p>

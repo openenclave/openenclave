@@ -11,7 +11,7 @@
 # define ENCLU_ERESUME 3
 #endif
 
-#define ThreadData_tcs 0
+#define ThreadBinding_tcs 0
 
 #ifndef __ASSEMBLER__
 void OE_Enter(

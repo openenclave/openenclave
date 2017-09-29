@@ -86,13 +86,6 @@ $(CACHEFILE):
 patch:
 	@ cp __config libcxx/include/__config
 
-patch-old:
-	@ ./sub libcxx/include/cstdlib
-	@ ./sub libcxx/include/cstdio
-	@ ./sub libcxx/include/cwchar
-	@ ./sub libcxx/include/ctime
-	@ ./sub libcxx/include/clocale
-
 install:
 	rm -rf $(HEADER_INSTALL_DIRECTORY)
 	cp -r libcxx/include $(HEADER_INSTALL_DIRECTORY)
