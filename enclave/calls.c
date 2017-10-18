@@ -251,11 +251,11 @@ static void _HandleECall(
         {
             {
                 static OE_OnceType _once = OE_ONCE_INITIALIZER;
-                OE_Once(&_once, OE_CallAtExitFunctions);
+                OE_Once(&_once, OE_Destructor);
             }
             {
                 static OE_OnceType _once = OE_ONCE_INITIALIZER;
-                OE_Once(&_once, OE_Destructor);
+                OE_Once(&_once, OE_CallAtExitFunctions);
             }
             break;
         }
