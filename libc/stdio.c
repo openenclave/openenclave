@@ -123,10 +123,11 @@ int ungetc(int c, FILE *stream)
     return -1;
 }
 
-size_t fwrite(
-    const void *ptr, size_t size, size_t nmemb, FILE *stream)
+size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-    assert("fwrite() panic" == NULL);
+    if (size && nmemb)
+        assert("fwrite() panic" == NULL);
+
     return 0;
 }
 

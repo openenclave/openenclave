@@ -39,7 +39,9 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    uint32_t flags = OE_GetCreateFlags();
+
+    flags = OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
 
     if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
     {
