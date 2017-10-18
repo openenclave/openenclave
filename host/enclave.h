@@ -22,30 +22,50 @@ typedef struct _ECallNameAddr
 }
 ECallNameAddr;
 
-/* Enclave thread data (stored in the GS segment register) */
-typedef struct _ThreadData
+/* 
+**==============================================================================
+**
+** ThreadBinding:
+**
+**     Defines a binding between a host thread (ThreadBinding.thread) and an 
+**     enclave thread context (ThreadBinding.tcs). When the host performs an 
+**     ECALL, the calling thread "binds" to a thread context within the 
+**     enclave. This binding remains in effect until the ECALL returns.
+**
+**     An active binding is indicated by the following condition:
+**
+**         ThreadBinding.busy == true
+**
+**     Due to nesting, the same thread may bind to the same enclave thread 
+**     context more than once. The ThreadBinding.count field indicates how
+**     many bindings are in effect.
+**
+**==============================================================================
+*/
+
+typedef struct _ThreadBinding
 {
     /* Address of the enclave's thread control structure */
     uint64_t tcs;
 
-    /* Whether this slot is busy */
-    bool busy;
-
     /* The thread this slot is assigned to */
     OE_Thread thread;
 
-    /* The number of times caller thread has been assigned this ThreadData */
+    /* Whether this binding is busy */
+    bool busy;
+
+    /* The number of bindings in effect */
     uint64_t count;
 
-    /* Event object for enclave threading implementation */
+    /* Event signaling object for enclave threading implementation */
     uint32_t event;
 }
-ThreadData;
+ThreadBinding;
 
-OE_STATIC_ASSERT(OE_OFFSETOF(ThreadData, tcs) == ThreadData_tcs);
+OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 
 /* Get thread data from thread-specific data (TSD) */
-ThreadData* GetThreadData(void);
+ThreadBinding* GetThreadBinding(void);
 
 struct _OE_Enclave
 {
@@ -64,9 +84,9 @@ struct _OE_Enclave
     /* Size of enclave in bytes */
     uint64_t size;
 
-    /* Array of ThreadData slots */
-    ThreadData tds[OE_SGX_MAX_TCS];
-    size_t num_tds;
+    /* Array of thread bindings */
+    ThreadBinding bindings[OE_SGX_MAX_TCS];
+    size_t num_bindings;
     OE_Spinlock lock;
 
     /* Hash of enclave (MRENCLAVE) */

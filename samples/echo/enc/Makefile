@@ -16,7 +16,9 @@ LDFLAGS += -Wl,-eOE_Main
 
 LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loeenclave
 
-all: build sign
+all: 
+	$(MAKE) build 
+	$(MAKE) sign
 
 build:
 	gcc -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o

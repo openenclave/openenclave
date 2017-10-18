@@ -69,7 +69,7 @@ void enc(void)
         printf("Path: %s\n", enclave->path);
         printf("Addr: 0x%lx\n", enclave->addr);
         printf("Size: %lu\n", enclave->size);
-        printf("TCSs: %lu\n", enclave->num_tds);
+        printf("TCSs: %lu\n", enclave->num_bindings);
         printf("Syms: add-symbol-file %s 0x%lx\n", enclave->path, 
             enclave->text);
         printf("\n");
@@ -102,13 +102,13 @@ uint32_t* GetEnclaveEvent(uint64_t tcs)
     {
         size_t i;
 
-        for (i = 0; i < enclave->num_tds; i++)
+        for (i = 0; i < enclave->num_bindings; i++)
         {
-            ThreadData* td = &enclave->tds[i];
+            ThreadBinding* binding = &enclave->bindings[i];
 
-            if (td->tcs == tcs)
+            if (binding->tcs == tcs)
             {
-                event = &td->event;
+                event = &binding->event;
                 break;
             }
         }

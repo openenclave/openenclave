@@ -34,17 +34,16 @@ long Test2(const char* s)
     if (initialized == 0)
         Setup();
 
-    if (*s)
+    uint64_t n = strlen(s);
+    uint64_t code = StrCode(s, n);
+
+    for (long i = 0; i < nstrings; i++)
     {
-        uint64_t n = strlen(s);
-        uint64_t code = StrCode(s, n);
+        const Pair* p = &strings[i];
 
-        for (long i = 0; i < nstrings; i++)
+        if (p->code == code && memcmp(&p->str[1], &s[1], n-2) == 0)
         {
-            const Pair* p = &strings[i];
-
-            if (p->code == code && memcmp(&p->str[1], &s[1], n-2) == 0)
-                return i;
+            return i;
         }
     }
 
@@ -57,7 +56,7 @@ int main()
 
     for (size_t i = 0; i < 3000000; i++)
     {
-        sum += Test2("xxxtypeinfo.o");
+        sum += Test2("ThreadSetSpecific");
     }
 
     printf("sum{%ld}\n", sum);
