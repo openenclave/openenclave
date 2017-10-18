@@ -74,9 +74,56 @@ static void _CheckMemoryBoundaries(void)
 /*
 **==============================================================================
 **
+** CallInitFunctions()
+**
+**     Call all initializers. We find their addresses convenitently
+**     in the oe_init_array. It apears no relevant _init function is
+**     generated to be called.
+**
+**==============================================================================
+*/
+static void CallInitFunctions(void)
+{
+    void(**fn)(void);
+    extern void (*__oe_init_array_start)(void);
+    extern void (*__oe_init_array_end)(void);
+    for (fn = &__oe_init_array_start; fn < &__oe_init_array_end; fn++)
+    {
+        (*fn)();
+    }
+}
+
+/*
+**==============================================================================
+**
+** CallFiniFunctions()
+**
+**     Call all de-initializers. We find their addresses convenitently
+**     in the oe_fini_array. It apears no relevant _fini function is
+**     generated to be called.
+**
+**     Note: As of today, no tear-down process has been defined, so this
+**     function is mainly for illustrative purpose.
+**
+**==============================================================================
+*/
+__attribute__((unused)) static void CallFiniFunctions(void)
+{
+    void(**fn)(void);
+    extern void (*__oe_fini_array_start)(void);
+    extern void (*__oe_fini_array_end)(void);
+    for (fn = &__oe_fini_array_end - 1; fn >= &__oe_fini_array_start; fn--)
+    {
+        (*fn)();
+    }
+}
+
+/*
+**==============================================================================
+**
 ** OE_InitializeEnclave()
 **
-**     This function is called the first time the enclave is entered. It 
+**     This function is called the first time the enclave is entered. It
 **     performs any necessary initialization, such as applying relocations.
 **
 **==============================================================================
@@ -98,6 +145,9 @@ void OE_InitializeEnclave(TD* td)
 
                 /* Check that memory boundaries are within enclave */
                 _CheckMemoryBoundaries();
+
+                /* call user-/copmiler-generated initializer functions */
+                CallInitFunctions();
 
                 td->initialized = 1;
             }

@@ -4,6 +4,7 @@
 include ../mak/defs.mak
 
 ARCHIVE = $(LIBDIR)/enclave/liboeenclave.a
+OE_LD   = $(LIBDIR)/enclave/enclave.ld
 
 CC = gcc
 CXX = g++
@@ -31,6 +32,11 @@ OBJECTS = $(SOURCES:.c=.o)
 OBJECTS += main.o
 OBJECTS += exit.o
 OBJECTS += abort.o
+
+all: archive $(OE_LD)
+
+$(OE_LD): enclave.ld
+	cp $^ $@
 
 archive:
 	$(MAKE) $(ARCHIVE)
