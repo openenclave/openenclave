@@ -574,6 +574,26 @@ static OE_Result _AddPages(
         *(uint64_t*)((uint8_t*)segpages + sym.st_value) = sym.st_value;
     }
 
+    /* Patch the "__oe_initArrayData" and "__oe_initArraySize" */
+    {
+        Elf64_Addr data;
+        size_t size;
+        Elf64_Sym sym;
+
+        if (Elf64_FindInitArray(elf, &data, &size) != 0)
+            OE_THROW(OE_FAILURE);
+
+        if (Elf64_FindDynamicSymbolByName(elf, "__oe_initArrayData", &sym) != 0)
+            OE_THROW(OE_FAILURE);
+
+        *(uint64_t*)((uint8_t*)segpages + sym.st_value) = data;
+
+        if (Elf64_FindDynamicSymbolByName(elf, "__oe_initArraySize", &sym) != 0)
+            OE_THROW(OE_FAILURE);
+
+        *(uint64_t*)((uint8_t*)segpages + sym.st_value) = size;
+    }
+
     /* Add the program segments first */
     OE_TRY(_AddSegmentPages(dev, enclaveAddr, enclaveSize, segments, 
         nsegments, segpages, nsegpages, &vaddr));

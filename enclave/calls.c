@@ -8,6 +8,7 @@
 #include "asmdefs.h"
 #include "td.h"
 #include "init.h"
+#include "atexit.h"
 
 typedef unsigned long long WORD;
 
@@ -226,6 +227,12 @@ static void _HandleECall(
     OE_Memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
 
+    /* Call all static and global constructors */
+    {
+        static OE_OnceType _once = OE_ONCE_INITIALIZER;
+        OE_Once(&_once, OE_CallConstructors);
+    }
+
     /* Call the OE_Constructor() on the first ECALL */
     {
         static OE_OnceType _once = OE_ONCE_INITIALIZER;
@@ -242,7 +249,14 @@ static void _HandleECall(
         }
         case OE_FUNC_DESTRUCTOR:
         {
-            OE_Destructor();
+            {
+                static OE_OnceType _once = OE_ONCE_INITIALIZER;
+                OE_Once(&_once, OE_Destructor);
+            }
+            {
+                static OE_OnceType _once = OE_ONCE_INITIALIZER;
+                OE_Once(&_once, OE_CallAtExitFunctions);
+            }
             break;
         }
         default:

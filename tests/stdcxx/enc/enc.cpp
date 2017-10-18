@@ -4,13 +4,98 @@
 #include <sstream>
 #include <map>
 #include <openenclave/enclave.h>
+#include <openenclave/bits/globals.h>
 #include "../args.h"
 
 #define BROKEN
 
+#if 0
+# define T(EXPR)
+#else
+# define T(EXPR) EXPR
+#endif
+
 using namespace std;
 
 static string _str;
+
+static size_t _numConstructions;
+static size_t _numDestructions;
+
+class E
+{
+public:
+    E()
+    {
+        T( OE_HostPrintf("E::E()\n"); )
+        _numConstructions++;
+    }
+    ~E()
+    {
+        T( OE_HostPrintf("E::~E()\n"); )
+        _numDestructions++;
+    }
+};
+
+class G
+{
+public:
+
+    G()
+    {
+        T( OE_HostPrintf("G::G()\n"); )
+        _numConstructions++;
+    }
+    ~G()
+    {
+        T( OE_HostPrintf("G::~G()\n"); )
+        _numDestructions++;
+    }
+
+    E e;
+};
+
+static G _g0;
+static G _g1;
+static G _g2;
+static G _g3;
+static G _g4;
+static G _g5;
+static G _g6;
+static G _g7;
+static G _g8;
+static G _g9;
+
+class Object0
+{
+public:
+
+    Object0()
+    {
+        T( OE_HostPrintf("Object0::Object0()\n"); )
+    }
+    ~Object0()
+    {
+        T( OE_HostPrintf("Object0::~Object0()\n"); )
+    }
+};
+
+class Object1
+{
+public:
+
+    Object1()
+    {
+        T( OE_HostPrintf("Object1::Object1()\n"); )
+    }
+    ~Object1()
+    {
+        T( OE_HostPrintf("Object1::~Object1()\n"); )
+    }
+};
+
+Object0 o0;
+Object1 o1;
 
 class X
 {
@@ -156,6 +241,9 @@ OE_ECALL void Test(void* args_)
         if (y)
             args->dynamicCastWorks = true;
     }
+
+    /* Check G() constructor call count */
+    args->numConstructions = _numConstructions;
 
     args->ret = 0;
 }

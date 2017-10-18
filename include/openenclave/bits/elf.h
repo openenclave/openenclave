@@ -220,6 +220,22 @@ typedef struct
 } 
 Elf64_Rela;
 
+#define DT_INIT_ARRAY 25
+#define DT_INIT_ARRAYSZ 27
+
+typedef struct 
+{
+    Elf64_Sxword d_tag;
+
+    union 
+    {
+        Elf64_Xword d_val;
+        Elf64_Addr d_ptr;
+    } 
+    d_un;
+}
+Elf64_Dyn;
+
 #define ELF_MAGIC 0x7d7ad33b
 #define ELF64_INIT { ELF_MAGIC, NULL, 0, NULL, NULL, NULL, NULL }
 
@@ -352,6 +368,14 @@ int Elf64_LoadRelocations(
     const Elf64* elf,
     void** data,
     size_t* size);
+
+int Elf64_FindInitArray(
+    const Elf64* elf,
+    Elf64_Addr* data,
+    size_t* size);
+
+void Elf64_DumpInitArray(
+    const Elf64* elf);
 
 ELF_EXTERNC_END
 

@@ -148,6 +148,19 @@ void Test_atox()
     assert(atof("1.0") == 1.0);
 }
 
+void* AllocGiantChunk()
+{
+    const size_t n = 150 * 1024 * 1024;
+    uint8_t* p = (uint8_t*)malloc(n);
+    assert(p != NULL);
+    memset(p, 0xAA, n);
+
+    for (size_t i = 0; i < n; i++)
+        assert(p[i] == 0xAA);
+
+    return p;
+}
+
 OE_ECALL void Test(void* args_)
 {
     TestArgs* args = (TestArgs*)args_;
@@ -201,6 +214,16 @@ OE_ECALL void Test(void* args_)
     nanosleep(&req, &rem);
 
     assert(TestSetjmp() == 999);
+
+    {
+        void *p = AllocGiantChunk();
+        assert(p);
+        free(p);
+
+        p = AllocGiantChunk();
+        assert(p);
+        free(p);
+    }
 
 #if 0
     printf("UINT_MIN=%u UINT_MAX=%u\n", 0, UINT_MAX);

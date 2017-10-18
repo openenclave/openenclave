@@ -24,6 +24,11 @@ size_t __OE_GetEnclaveSize()
     return __oe_numPages * OE_PAGE_SIZE;
 }
 
+const void* __OE_GetEnclaveEnd()
+{
+    return __OE_GetEnclaveBase() + __OE_GetEnclaveSize();
+}
+
 /*
 **==============================================================================
 **
@@ -106,4 +111,44 @@ const size_t __OE_GetHeapSize()
 const void* __OE_GetHeapEnd()
 {
     return (const uint8_t*)__OE_GetHeapBase() + __OE_GetHeapSize();
+}
+
+/*
+**==============================================================================
+**
+** Initializers for static and global data.
+**
+**     This array defines the virtual addresses of functions that are called 
+**     to initialize any global objects (C++ constructors and destructors).
+**
+**     The enclave loader initializes these fields from data read from the ELF
+**     image file, from the PT_DYNAMIC segment that contains Elf64_Dyn 
+**     structures. The values correspond to the Elf64_Dyn structures whose
+**     Elf64_Dyn.d_tag fields are DT_INIT_ARRAY and DT_INIT_ARRAYSZ 
+**     respectively.
+**
+**==============================================================================
+*/
+
+OE_EXPORT unsigned long long __oe_initArrayData;
+
+OE_EXPORT unsigned long long __oe_initArraySize;
+
+OE_InitFunction __OE_GetInitFunction(size_t index)
+{
+    if (index >= __oe_initArraySize)
+        return NULL;
+
+    const uint64_t* array = 
+        (const uint64_t*)(__OE_GetEnclaveBase() + __oe_initArrayData);
+
+    if (!OE_IsWithinEnclave(array, sizeof(uint64_t)))
+        return NULL;
+
+    OE_InitFunction func = (OE_InitFunction)array[index];
+
+    if (!OE_IsWithinEnclave(func, sizeof(uint64_t)))
+        return NULL;
+
+    return func;
 }

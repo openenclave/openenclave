@@ -24,3 +24,7 @@ LIBRARIES += $(call whole-archive,$(LIBDIR)/enclave/liboelibcxx.a)
 LIBRARIES += $(call whole-archive,$(LIBDIR)/enclave/liboelibc.a)
 
 include $(MAKDIR)/enclave.mak
+
+elf:
+	( cd $(TOP)/tools/oeelf; $(MAKE) clean; $(MAKE) )
+	$(BINDIR)/oeelf stdcxxenc.signed.so
