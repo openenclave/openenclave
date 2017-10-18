@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/elf.h>
@@ -1592,6 +1593,7 @@ int Elf64_LoadRelocations(
         if (ELF64_R_TYPE(p->r_info) != R_X86_64_RELATIVE)
         {
             /* Should these really be skipped? */
+            assert("unexpected relocation type" == NULL);
             continue;
         }
     }
@@ -1614,4 +1616,110 @@ int Elf64_LoadRelocations(
 
 done:
     return rc;
+}
+
+/*
+**==============================================================================
+**
+** Elf64_FindInitArray()
+**
+** This function finds the initialization array. These are the functions that
+** must be called when the shared object is initialialized. In the case of C++,
+** these are the global constructors.
+**
+** Parameters:
+**     elf - pointer to ELF image object
+**     data - virtual address of the initialization functions
+**     size - number of initialization functions
+**
+** Returns:
+**     Zero on success
+**
+**==============================================================================
+*/
+
+int Elf64_FindInitArray(
+    const Elf64* elf,
+    Elf64_Addr* data,
+    size_t* size)
+{
+    int rc = -1;
+    size_t i;
+
+    if (data)
+        *data = 0;
+
+    if (size)
+        *size = 0;
+
+    if (!elf || !data || !size)
+        goto done;
+
+    /* Set pointers to segments */
+    for (i = 0; i < elf->ehdr->e_phnum; i++)
+    {
+        const Elf64_Phdr* ph = &elf->phdrs[i];
+
+        if (ph->p_type == PT_DYNAMIC)
+        {
+            const Elf64_Dyn* p = 
+                (const Elf64_Dyn*)((const uint8_t*)elf->ehdr + ph->p_offset);
+            size_t n = ph->p_filesz / sizeof(Elf64_Dyn);
+            size_t i;
+
+            for (i = 0; i < n; i++)
+            {
+                const Elf64_Dyn* dyn = &p[i];
+
+                switch (dyn->d_tag)
+                {
+                    case DT_INIT_ARRAY:
+                    {
+                        *data = dyn->d_un.d_ptr;
+                        break;
+                    }
+                    case DT_INIT_ARRAYSZ:
+                    {
+                        *size = dyn->d_un.d_val / sizeof(uint64_t);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    rc = 0;
+
+done:
+
+    return rc;
+}
+
+/*
+**==============================================================================
+**
+** Elf64_DumpInitArray()
+**
+** This function dumps the initialization array. See Elf64_FindInitArray()
+** for more information.
+**
+** Parameters:
+**     elf - dump the initialization array of this image.
+**
+**==============================================================================
+*/
+
+void Elf64_DumpInitArray(
+    const Elf64* elf)
+{
+    Elf64_Addr data;
+    size_t size;
+
+    printf("=== Elf64_DumpInitArray()\n");
+
+    if (elf && Elf64_FindInitArray(elf, &data, &size) == 0)
+    {
+        printf("data=%llx\n", data);
+        printf("size=%zu\n", size);
+    }
 }

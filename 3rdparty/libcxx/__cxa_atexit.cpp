@@ -4,6 +4,5 @@
 
 extern "C" int __cxa_atexit(void (*func)(void *), void *arg, void *d)
 {
-    assert("__cxa_atexit()" == NULL);
-    abort();
+    /* ATTN: handle global constructors here! */
 }

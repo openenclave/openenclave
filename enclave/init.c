@@ -74,6 +74,32 @@ static void _CheckMemoryBoundaries(void)
 /*
 **==============================================================================
 **
+** OE_CallConstructors()
+**
+**     Call static and global C++ constructors (or any other kind of global
+**     initialization function).
+**
+**==============================================================================
+*/
+
+void OE_CallConstructors(void)
+{
+    /* Get the number of initialiation functions */
+    size_t n = __oe_initArraySize;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        /* Lookup the initialization function */
+        OE_InitFunction func = __OE_GetInitFunction(i);
+
+        /* Call the initialization function */
+        func();
+    }
+}
+
+/*
+**==============================================================================
+**
 ** OE_InitializeEnclave()
 **
 **     This function is called the first time the enclave is entered. It 

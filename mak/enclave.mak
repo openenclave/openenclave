@@ -134,7 +134,8 @@ build : depend
 $(__SHLIB).signed.so: $(__SHLIB).so
 	$(BINDIR)/oesign $(__SHLIB).so $(SIGNCONF) $(KEYFILE)
 	chmod +x $(__SHLIB).signed.so
-	strip $(__SHLIB).signed.so
+
+#strip $(__SHLIB).signed.so
 
 ifdef CSHLIB
 $(CSHLIB).so: $(OBJECTS)

@@ -52,7 +52,9 @@ exit(0);
     Elf64_DumpSections(&elf);
     Elf64_DumpSectionNames(&elf);
     Elf64_DumpStrings(&elf);
+    Elf64_DumpInitArray(&elf);
 
+#if 0
     /* Find the entry point symbol */
     const char* entry;
     {
@@ -73,7 +75,9 @@ exit(0);
 
         printf("=== entry point: {%s}\n\n", entry);
     }
+#endif
 
+#if 0
     /* Find a symbol by name */
     {
         Elf64_Sym sym;
@@ -87,6 +91,7 @@ exit(0);
 
         Elf64_DumpSymbol(&elf, &sym);
     }
+#endif
 
 #if 0
     {
@@ -129,6 +134,7 @@ exit(0);
         fprintf(stderr, "%s: failed to unload\n", argv[0]);
         goto done;
     }
+
 
     status = 0;
 

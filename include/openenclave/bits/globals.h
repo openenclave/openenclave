@@ -10,6 +10,7 @@ OE_EXTERNC_BEGIN
 extern unsigned long long __oe_numPages;
 extern unsigned long long __oe_virtualBaseAddr;
 const void* __OE_GetEnclaveBase(void);
+const void* __OE_GetEnclaveEnd(void);
 size_t __OE_GetEnclaveSize(void);
 
 /* Reloc */
@@ -32,6 +33,12 @@ extern unsigned long long __oe_numHeapPages;
 const void* __OE_GetHeapBase(void);
 const void* __OE_GetHeapEnd(void);
 const size_t __OE_GetHeapSize(void);
+
+/* Support for global construction (array of initialization functions) */
+typedef void (*OE_InitFunction)(void);
+extern unsigned long long __oe_initArrayData;
+extern unsigned long long __oe_initArraySize;
+OE_InitFunction __OE_GetInitFunction(size_t index);
 
 OE_EXTERNC_END
 

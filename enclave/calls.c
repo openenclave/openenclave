@@ -232,6 +232,12 @@ static void _HandleECall(
         OE_Once(&_once, OE_Constructor);
     }
 
+    /* Call all static and global constructors */
+    {
+        static OE_OnceType _once = OE_ONCE_INITIALIZER;
+        OE_Once(&_once, OE_CallConstructors);
+    }
+
     /* Dispatch the ECALL */
     switch (func)
     {
