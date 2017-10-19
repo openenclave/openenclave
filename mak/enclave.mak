@@ -97,7 +97,6 @@ LDFLAGS += -Wl,--export-dynamic
 LDFLAGS += -Wl,-pie
 LDFLAGS += -Wl,-eOE_Main
 LDFLAGS += -L$(LIBDIR)/enclave
-LDFLAGS += -T enclave.ld
 
 ##==============================================================================
 ##
