@@ -173,6 +173,9 @@ void OE_CallInitFunctions(void)
 **     OE_CallFiniFunctions() invokes all functions in this array from finish 
 **     to start (reverse order).
 **
+**     For more information on C++ destruction invocation, see the  
+**     "Itanium C++ ABI".
+**
 **==============================================================================
 */
 
