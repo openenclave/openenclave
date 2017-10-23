@@ -249,7 +249,7 @@ static void _HandleECall(
         }
         case OE_FUNC_DESTRUCTOR:
         {
-            /* Call the OE_Destructor() function */
+            /* Call any user-defined OE_Destructor() function */
             OE_Destructor();
 
             /* Call functions installed by __cxa_atexit() and OE_AtExit() */
