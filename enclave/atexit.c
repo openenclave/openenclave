@@ -1,8 +1,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/atexit.h>
 
-#pragma GCC diagnostic ignored "-Wmissing-prototypes"
-
 /*
 **==============================================================================
 **
