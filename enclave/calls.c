@@ -227,13 +227,13 @@ static void _HandleECall(
     OE_Memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
 
-    /* Call all global initializer functions of the first ECALL */
+    /* Call all global initializer functions on the first call */
     {
         static OE_OnceType _once = OE_ONCE_INITIALIZER;
         OE_Once(&_once, OE_CallInitFunctions);
     }
 
-    /* Call the OE_Constructor() on the first ECALL */
+    /* Call the OE_Constructor() on the first call */
     {
         static OE_OnceType _once = OE_ONCE_INITIALIZER;
         OE_Once(&_once, OE_Constructor);
