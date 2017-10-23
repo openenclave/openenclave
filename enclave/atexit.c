@@ -52,11 +52,10 @@ static OE_AtExitEntry* _NewAtExitEntry(void (*func)(void*), void* arg)
 **
 ** __cxa_atexit()
 **
-**     This function is called to install a function to be invoked upon exit
-**     (enclave termination).
+**     Installs a function to be invoked upon exit (enclave termination).
 **
 **     The implementation injects an OE_AtExitEntry structure onto a list
-**     in reverse order.
+**     in reverse order (at the front of the list).
 **
 **==============================================================================
 */
