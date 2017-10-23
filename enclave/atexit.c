@@ -54,10 +54,10 @@ static OE_AtExitEntry* _NewAtExitEntry(void (*func)(void*), void* arg)
 **
 ** __cxa_atexit()
 **
-**     This function is called to install a handler to be invoked upon exit.
-**     It is invoked for each global C++ destructor as well.
+**     This function is called to install a function to be invoked upon exit
+**     (enclave termination).
 **
-**     The implementation injects OE_AtExitEntry structures onto a list
+**     The implementation injects an OE_AtExitEntry structure onto a list
 **     in reverse order.
 **
 **==============================================================================
