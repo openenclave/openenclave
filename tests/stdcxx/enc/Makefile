@@ -11,7 +11,7 @@ CFLAGS += -fno-builtin-memset
 CFLAGS += -fno-builtin-fprintf
 CFLAGS += -fno-builtin-printf
 
-SOURCES = enc.cpp
+SOURCES = enc.cpp f.cpp
 
 SIGNCONF = sign.conf
 

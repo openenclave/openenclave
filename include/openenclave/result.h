@@ -1,5 +1,5 @@
-/** 
- * \file result.h 
+/**
+ * \file result.h
  *
  * This file defines OpenEnclave return codes (results).
  *

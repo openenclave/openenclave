@@ -25,6 +25,7 @@ void TestStdcxx(OE_Enclave* enclave)
     assert(args.ret == 0);
     assert(args.caught);
     assert(args.dynamicCastWorks);
+    assert(args.numConstructions == 6);
 }
 
 int main(int argc, const char* argv[])
