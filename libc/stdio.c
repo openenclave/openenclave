@@ -126,7 +126,12 @@ int ungetc(int c, FILE *stream)
 size_t fwrite(
     const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-    assert("fwrite() panic" == NULL);
+    /* Only panic if size and nmemb are both non-zero. Otherwise, fwrite() is
+     * being called to perform a flush (or in error).
+     */
+    if (size && nmemb)
+        assert("fwrite() panic" == NULL);
+
     return 0;
 }
 

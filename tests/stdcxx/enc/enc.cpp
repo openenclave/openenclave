@@ -4,11 +4,15 @@
 #include <sstream>
 #include <map>
 #include <openenclave/enclave.h>
+#include <openenclave/bits/atexit.h>
 #include "../args.h"
 
 #define BROKEN
 
 using namespace std;
+
+size_t numConstructions;
+size_t numDestructions;
 
 static string _str;
 
@@ -48,12 +52,43 @@ public:
     }
 };
 
+class G
+{
+public:
+
+    G()
+    {
+        numConstructions++;
+        printf("G::G()\n");
+    }
+    
+    ~G()
+    {
+        numDestructions++;
+        printf("G::~G()\n");
+    }
+};
+
+G _g0;
+G _g1;
+G _g2;
+
+void MyAtExit()
+{
+    assert(numConstructions == 6);
+    assert(numDestructions == 0);
+    OE_HostPrintf("MyAtExit()\n");
+}
+
 OE_ECALL void Test(void* args_)
 {
     TestArgs* args = (TestArgs*)args_;
 
     if (!args)
         return;
+
+    /* Register at-exit handler */
+    OE_AtExit(MyAtExit);
 
     /* Try strings */
     {
@@ -157,5 +192,22 @@ OE_ECALL void Test(void* args_)
             args->dynamicCastWorks = true;
     }
 
+    args->numConstructions = numConstructions;
+
     args->ret = 0;
+}
+
+__attribute__((constructor))
+void Constructor(void)
+{
+    OE_HostPrintf("Constructor()\n");
+    assert(numConstructions == 0);
+}
+
+__attribute__((destructor))
+void Destructor(void)
+{
+    OE_HostPrintf("Destructor()\n");
+    assert(numConstructions == 6);
+    assert(numDestructions == 6);
 }

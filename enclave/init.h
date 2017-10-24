@@ -6,4 +6,8 @@
 
 void OE_InitializeEnclave(TD* td);
 
+void OE_CallInitFunctions(void);
+
+void OE_CallFiniFunctions(void);
+
 #endif /* OE_INIT_H */

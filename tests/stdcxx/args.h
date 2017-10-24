@@ -8,6 +8,7 @@ typedef struct _TestArgs
     int ret;
     bool caught;
     bool dynamicCastWorks;
+    size_t numConstructions;
 }
 TestArgs;
 
