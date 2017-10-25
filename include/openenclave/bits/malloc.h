@@ -33,6 +33,15 @@ void* OE_Calloc(size_t nmemb, size_t size);
 
 void OE_Free(void* ptr);
 
+typedef void (*OE_AllocationFailureCallback)(
+    const char* file, 
+    size_t line, 
+    const char* func, 
+    size_t size);
+
+void OE_SetAllocationFailureCallback(
+    OE_AllocationFailureCallback function);
+
 OE_EXTERNC_END
 
 #endif /* _OE_MALLOC_H */
