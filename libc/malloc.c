@@ -17,6 +17,7 @@
 #define LACKS_STDLIB_H
 #define LACKS_STRING_H
 #define LACKS_ERRNO_H
+#define USE_LOCKS 1
 #define size_t size_t
 #define ptrdiff_t ptrdiff_t
 #define memset OE_Memset
@@ -30,26 +31,28 @@
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
-#if defined(OE_ENABLE_MALLOC_WRAPPERS)
+/*
+**==============================================================================
+**
+** defined(OE_ENABLE_MALLOC_WRAPPERS)
+**
+** Use malloc wrappers to support OE_SetAllocationFailureCallback()
+**
+**==============================================================================
+*/
 
-static OE_Spinlock _spin = OE_SPINLOCK_INITIALIZER;
+#if defined(OE_ENABLE_MALLOC_WRAPPERS)
 
 static OE_AllocationFailureCallback _failureCallback;
 
 void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function)
 {
-    OE_SpinLock(&_spin);
     _failureCallback = function;
-    OE_SpinUnlock(&_spin);
 }
 
 void *malloc(size_t size)
 {
-    void* p;
-
-    OE_SpinLock(&_spin);
-    p = dlmalloc(size);
-    OE_SpinUnlock(&_spin);
+    void* p = dlmalloc(size);
 
     if (!p && _failureCallback)
         _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -59,18 +62,12 @@ void *malloc(size_t size)
 
 void free(void *ptr)
 {
-    OE_SpinLock(&_spin);
     dlfree(ptr);
-    OE_SpinUnlock(&_spin);
 }
 
 void *calloc(size_t nmemb, size_t size)
 {
-    void* p;
-
-    OE_SpinLock(&_spin);
-    p = dlcalloc(nmemb, size);
-    OE_SpinUnlock(&_spin);
+    void* p = dlcalloc(nmemb, size);
 
     if (!p && _failureCallback)
         _failureCallback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
@@ -80,11 +77,7 @@ void *calloc(size_t nmemb, size_t size)
 
 void *realloc(void *ptr, size_t size)
 {
-    void* p;
-
-    OE_SpinLock(&_spin);
-    p = dlrealloc(ptr, size);
-    OE_SpinUnlock(&_spin);
+    void* p = dlrealloc(ptr, size);
 
     if (!p && _failureCallback)
         _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -94,11 +87,7 @@ void *realloc(void *ptr, size_t size)
 
 int posix_memalign(void **memptr, size_t alignment, size_t size)
 {
-    int rc;
-
-    OE_SpinLock(&_spin);
-    rc = dlposix_memalign(memptr, alignment, size);
-    OE_SpinUnlock(&_spin);
+    int rc = dlposix_memalign(memptr, alignment, size);
 
     if (rc != 0 && _failureCallback)
         _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -108,11 +97,7 @@ int posix_memalign(void **memptr, size_t alignment, size_t size)
 
 void *memalign(size_t alignment, size_t size)
 {
-    void* p;
-
-    OE_SpinLock(&_spin);
-    p = dlmemalign(alignment, size);
-    OE_SpinUnlock(&_spin);
+    void* p = dlmemalign(alignment, size);
 
     if (!p && _failureCallback)
         _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -120,12 +105,19 @@ void *memalign(size_t alignment, size_t size)
     return p;
 }
 
-#else /* OE_ENABLE_MALLOC_WRAPPERS */
+#endif /* defined(OE_ENABLE_MALLOC_WRAPPERS) */
 
-void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function)
-{
-    /* Empty! */
-}
+/*
+**==============================================================================
+**
+** !defined(OE_ENABLE_MALLOC_WRAPPERS)
+**
+** Alias dlmalloc functions to standard function names.
+**
+**==============================================================================
+*/
+
+#if !defined(OE_ENABLE_MALLOC_WRAPPERS)
 
 OE_WEAK_ALIAS(dlmalloc, malloc);
 OE_WEAK_ALIAS(dlcalloc, calloc);
@@ -134,4 +126,4 @@ OE_WEAK_ALIAS(dlfree, free);
 OE_WEAK_ALIAS(dlmemalign, memalign);
 OE_WEAK_ALIAS(dlposix_memalign, posix_memalign);
 
-#endif /* OE_ENABLE_MALLOC_WRAPPERS */
+#endif /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */

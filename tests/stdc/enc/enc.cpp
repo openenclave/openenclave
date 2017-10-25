@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/malloc.h>
 #include <assert.h>
 #include <ctype.h>
 #include <endian.h>
@@ -148,9 +149,25 @@ void Test_atox()
     assert(atof("1.0") == 1.0);
 }
 
+static bool _calledAllocationFailureCallback;
+
+static void _AllocationFailureCallback(
+    const char* file, 
+    size_t line, 
+    const char* func, 
+    size_t size)
+{
+    printf("OE_AllocationFailureCallback(): %s(%zu): %s: %zu\n",
+        file, line, func, size);
+
+    _calledAllocationFailureCallback = true;
+}
+
 OE_ECALL void Test(void* args_)
 {
     TestArgs* args = (TestArgs*)args_;
+
+    OE_SetAllocationFailureCallback(_AllocationFailureCallback);
 
     strcpy(args->buf1, "AAA");
     strcat(args->buf1, "BBB");
@@ -201,6 +218,11 @@ OE_ECALL void Test(void* args_)
     nanosleep(&req, &rem);
 
     assert(TestSetjmp() == 999);
+
+    /* Cause malloc() to fail */
+    void* p = malloc(1024 * 1024 * 1024);
+    assert(p == NULL);
+    assert(_calledAllocationFailureCallback);
 
 #if 0
     printf("UINT_MIN=%u UINT_MAX=%u\n", 0, UINT_MAX);
