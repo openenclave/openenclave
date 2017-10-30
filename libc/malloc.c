@@ -34,9 +34,8 @@
 /*
 **==============================================================================
 **
-** defined(OE_ENABLE_MALLOC_WRAPPERS)
-**
-** Use malloc wrappers to support OE_SetAllocationFailureCallback()
+** Use malloc wrappers to support OE_SetAllocationFailureCallback() if
+** OE_ENABLE_MALLOC_WRAPPERS is defined.
 **
 **==============================================================================
 */
@@ -105,19 +104,16 @@ void *memalign(size_t alignment, size_t size)
     return p;
 }
 
-#endif /* defined(OE_ENABLE_MALLOC_WRAPPERS) */
-
 /*
 **==============================================================================
 **
-** !defined(OE_ENABLE_MALLOC_WRAPPERS)
-**
-** Alias dlmalloc functions to standard function names.
+** Alias dlmalloc functions to standard function names if 
+** OE_ENABLE_MALLOC_WRAPPERS is not defined.
 **
 **==============================================================================
 */
 
-#if !defined(OE_ENABLE_MALLOC_WRAPPERS)
+#else /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */
 
 OE_WEAK_ALIAS(dlmalloc, malloc);
 OE_WEAK_ALIAS(dlcalloc, calloc);

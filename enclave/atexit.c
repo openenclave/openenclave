@@ -38,7 +38,7 @@ static OE_AtExitEntry* _NewAtExitEntry(void (*func)(void*), void* arg)
 {
     OE_AtExitEntry* entry;
 
-    if (!(entry = (OE_AtExitEntry*)OE_Sbrk(sizeof(OE_AtExitEntry))))
+    if ((entry = (OE_AtExitEntry*)OE_Sbrk(sizeof(OE_AtExitEntry))) == (void*)-1)
         return NULL;
 
     entry->func = func;
