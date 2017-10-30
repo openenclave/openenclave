@@ -26,6 +26,19 @@
 #define EINVAL 28
 #define ENOMEM 49
 
+/* Replacement for sched_yield() in dlmalloc sources below */
+static int __sched_yield(void)
+{
+    __asm__ __volatile__("pause");
+    return 0;
+}
+
+/* Since Dlmalloc provides no way to override the SPIN_LOCK_YIELD macro,
+ * redefine sched_yield() directly. Dlmalloc spins for a given number of
+ * times and then calls sched_yield(), attempting to yield to other threads.
+ */
+#define sched_yield __sched_yield
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
