@@ -41,7 +41,7 @@ int vprintf(const char* fmt, va_list ap_)
     {
         if (!(p = alloca(n + 1)))
             return -1;
-        
+
         va_list ap;
         va_copy(ap, ap_);
         n = vsnprintf(p, n + 1, fmt, ap);
@@ -129,8 +129,15 @@ size_t fwrite(
     /* Only panic if size and nmemb are both non-zero. Otherwise, fwrite() is
      * being called to perform a flush (or in error).
      */
-    if (size && nmemb)
+    if ((stream == stdout) || (stream == stderr))
+    {
+        printf("%.*s", size * nmemb, ptr);
+        return nmemb;
+    }
+    else if (size && nmemb)
+    {
         assert("fwrite() panic" == NULL);
+    }
 
     return 0;
 }
