@@ -22,6 +22,7 @@ DIRS += mbed
 DIRS += report
 DIRS += SampleAppAttestation 
 DIRS += ricochet
+DIRS += print
 
 define NL
 

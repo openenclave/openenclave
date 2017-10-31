@@ -48,7 +48,7 @@ int vprintf(const char* fmt, va_list ap_)
         va_end(ap);
     }
 
-    __OE_HostPrint(p);
+    __OE_HostPrint(0, p, (size_t)-1);
 
     return n;
 }
@@ -70,20 +70,40 @@ OE_WEAK_ALIAS(printf, __libcxxrt_printf);
 int fprintf(FILE* stream, const char* fmt, ...)
 {
     char buf[1024];
+    char* p = buf;
     int n;
+    int device;
 
-    if (stream != stdout && stream != stderr)
+    if (stream == stdout)
+        device = 0;
+    else if (stream == stderr)
+        device = 1;
+    else
         return 0;
 
     memset(buf, 0, sizeof(buf));
 
-    /* ATTN: use heap memory here! */
-    va_list ap;
-    va_start(ap, fmt);
-    n = vsnprintf(buf, sizeof(buf), fmt, ap);
-    va_end(ap);
+    /* First try writing to 'buf' with possible truncation */
+    {
+        va_list ap;
+        va_start(ap, fmt);
+        n = vsnprintf(buf, sizeof(buf), fmt, ap);
+        va_end(ap);
+    }
 
-    __OE_HostPrint(buf);
+    /* If string was truncated, retry with stack allocated buffer */
+    if (n >= sizeof(buf))
+    {
+        if (!(p = OE_StackAlloc(n + 1, 0)))
+            return 0;
+        
+        va_list ap;
+        va_start(ap, fmt);
+        n = vsnprintf(p, n + 1, fmt, ap);
+        va_end(ap);
+    }
+
+    __OE_HostPrint(device, p, n);
 
     return n;
 }
@@ -126,16 +146,21 @@ int ungetc(int c, FILE *stream)
 size_t fwrite(
     const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-    /* Only panic if size and nmemb are both non-zero. Otherwise, fwrite() is
-     * being called to perform a flush (or in error).
-     */
-    if ((stream == stdout) || (stream == stderr))
+    if (stream == stdout)
     {
-        printf("%.*s", size * nmemb, ptr);
+        /* Write to standard output device */
+        __OE_HostPrint(0, ptr, size * nmemb);
+        return nmemb;
+    }
+    else if (stream == stderr)
+    {
+        /* Write to standard error device */
+        __OE_HostPrint(1, ptr, size * nmemb);
         return nmemb;
     }
     else if (size && nmemb)
     {
+        /* Only panic if size and nmemb are both non-zero */
         assert("fwrite() panic" == NULL);
     }
 
