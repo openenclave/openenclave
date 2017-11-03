@@ -224,6 +224,23 @@ typedef struct _OE_NanosleepArgs
 OE_NanosleepArgs;
 #endif
 
+/*
+**==============================================================================
+**
+** OE_PrintArgs
+**
+**     Print 'str' to stdout (device == 0) or stderr (device == 1).
+**
+**==============================================================================
+*/
+
+typedef struct _OE_PrintArgs
+{
+    int device;
+    char* str;
+}
+OE_PrintArgs;
+
 OE_EXTERNC_END
 
 #endif /* _OE_ALLOC_H */

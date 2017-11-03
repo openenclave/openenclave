@@ -2,6 +2,8 @@
 
 /* ATTN: should these assert? */
 
+static struct lconv default_lconv;
+
 locale_t uselocale(locale_t newloc)
 {
     return 0;
@@ -9,7 +11,7 @@ locale_t uselocale(locale_t newloc)
 
 struct lconv *localeconv(void)
 {
-    return 0;
+    return &default_lconv;
 }
 
 void freelocale(locale_t loc)

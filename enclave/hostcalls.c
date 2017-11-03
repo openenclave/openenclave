@@ -87,26 +87,41 @@ done:
     return ret;
 }
 
-int __OE_HostPrint(const char* str)
+int __OE_HostPrint(int device, const char* str, size_t len)
 {
     int ret = -1;
-    char* hstr = NULL;
+    OE_PrintArgs* args = NULL;
 
-    if (!str)
+    /* Reject invalid arguments */
+    if ((device != 0 && device != 1) || !str)
         goto done;
 
-    if (!(hstr = OE_HostStrdup(str)))
-        goto done;
+    /* Determine the length of the string */
+    if (len == (size_t)-1)
+        len = OE_Strlen(str);
 
-    if (OE_OCall(OE_FUNC_PRINT, (uint64_t)hstr, NULL) != OE_OK)
+    /* Allocate space for the arguments followed by null-terminated string */
+    if (!(args = (OE_PrintArgs*)OE_HostStackMalloc(
+        sizeof(OE_PrintArgs) + len + 1)))
+    {
+        goto done;
+    }
+
+    /* Initialize the arguments */
+    args->device = device;
+    args->str = (char*)(args + 1);
+    OE_Memcpy(args->str, str, len);
+    args->str[len] = '\0';
+
+    /* Perform OCALL */
+    if (OE_OCall(OE_FUNC_PRINT, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     ret = 0;
 
 done:
 
-    if (hstr)
-        OE_HostFree(hstr);
+    /* Memory obtained by OE_HostStackMalloc() is released automatically */
 
     return ret;
 }
@@ -137,7 +152,7 @@ int __OE_HostVprintf(const char* fmt, OE_va_list ap_)
         OE_va_end(ap);
     }
 
-    __OE_HostPrint(p);
+    __OE_HostPrint(0, p, (size_t)-1);
 
     return n;
 }

@@ -35,12 +35,20 @@ void HandlePuts(uint64_t argIn)
 
 void HandlePrint(uint64_t argIn)
 {
-    const char* str = (const char*)argIn;
+    OE_PrintArgs* args = (OE_PrintArgs*)argIn;
 
-    if (str)
+    if (args)
     {
-        printf("%s", str);
-        fflush(stdout);
+        if (args->device == 0)
+        {
+            fprintf(stdout, "%s", args->str);
+            fflush(stdout);
+        }
+        else if (args->device == 1)
+        {
+            fprintf(stderr, "%s", args->str);
+            fflush(stderr);
+        }
     }
 }
 
