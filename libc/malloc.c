@@ -2,6 +2,8 @@
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/fault.h>
 #include <openenclave/bits/malloc.h>
+#include <errno.h>
+#include <stdio.h>
 
 #define OE_ENABLE_MALLOC_WRAPPERS
 #define HAVE_MMAP 0
@@ -10,7 +12,6 @@
 #define LACKS_SYS_TYPES_H
 #define LACKS_TIME_H
 #define NO_MALLOC_STATS 1
-#define MALLOC_FAILURE_ACTION
 #define MORECORE sbrk
 #define ABORT OE_Abort()
 #define USE_DL_PREFIX
@@ -23,8 +24,6 @@
 #define memset OE_Memset
 #define memcpy OE_Memcpy
 #define sbrk OE_Sbrk
-#define EINVAL 28
-#define ENOMEM 49
 
 /* Replacement for sched_yield() in dlmalloc sources below */
 static int __sched_yield(void)
@@ -66,8 +65,13 @@ void *malloc(size_t size)
 {
     void* p = dlmalloc(size);
 
-    if (!p && _failureCallback)
-        _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    if (!p && size)
+    {
+        errno = ENOMEM;
+
+        if (_failureCallback)
+            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    }
 
     return p;
 }
@@ -81,8 +85,13 @@ void *calloc(size_t nmemb, size_t size)
 {
     void* p = dlcalloc(nmemb, size);
 
-    if (!p && _failureCallback)
-        _failureCallback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
+    if (!p && nmemb && size)
+    {
+        errno = ENOMEM;
+
+        if (_failureCallback)
+            _failureCallback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
+    }
 
     return p;
 }
@@ -91,8 +100,13 @@ void *realloc(void *ptr, size_t size)
 {
     void* p = dlrealloc(ptr, size);
 
-    if (!p && _failureCallback)
-        _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    if (!p && size)
+    {
+        errno = ENOMEM;
+
+        if (_failureCallback)
+            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    }
 
     return p;
 }
@@ -101,8 +115,13 @@ int posix_memalign(void **memptr, size_t alignment, size_t size)
 {
     int rc = dlposix_memalign(memptr, alignment, size);
 
-    if (rc != 0 && _failureCallback)
-        _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    if (rc != 0 && size)
+    {
+        errno = ENOMEM;
+
+        if (_failureCallback)
+            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    }
 
     return rc;
 }
@@ -111,8 +130,13 @@ void *memalign(size_t alignment, size_t size)
 {
     void* p = dlmemalign(alignment, size);
 
-    if (!p && _failureCallback)
-        _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    if (!p && size)
+    {
+        errno = ENOMEM;
+
+        if (_failureCallback)
+            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    }
 
     return p;
 }

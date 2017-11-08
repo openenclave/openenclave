@@ -14,6 +14,7 @@ INCLUDES += -I$(INCDIR)/openenclave/libc
 
 DEFINES += -DLIBCXXRT
 DEFINES += -D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
+DEFINES += -D_LIBCPP_BUILDING_LIBRARY
 
 SOURCES += $(wildcard *.cpp)
 SOURCES += libcxx/src/algorithm.cpp
@@ -21,7 +22,7 @@ SOURCES += libcxx/src/any.cpp
 SOURCES += libcxx/src/bind.cpp
 SOURCES += libcxx/src/chrono.cpp
 SOURCES += libcxx/src/condition_variable.cpp
-#SOURCES += libcxx/src/debug.cpp
+SOURCES += libcxx/src/debug.cpp
 SOURCES += libcxx/src/exception.cpp
 SOURCES += libcxx/src/functional.cpp
 SOURCES += libcxx/src/future.cpp
@@ -78,8 +79,11 @@ libcxx:
 	tar zxf $(CACHEFILE)
 	cp libcxx/include/__config libcxx/include/__config_original
 
+# Fix the revision so that libcxx changes will not break OpenEnclave.
+SVN_REVISON = -r {2017-11-07}
+
 $(CACHEFILE):
-	svn co http://llvm.org/svn/llvm-project/libcxx/trunk
+	svn co $(SVN_REVISON) http://llvm.org/svn/llvm-project/libcxx/trunk
 	mv trunk libcxx
 	tar zcf $(CACHEFILE) libcxx
 

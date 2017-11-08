@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <locale.h>
+#include <stdio.h>
 
 long long int strtoll_l(
     const char *nptr, 

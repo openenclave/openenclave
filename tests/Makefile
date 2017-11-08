@@ -23,6 +23,7 @@ DIRS += report
 DIRS += SampleAppAttestation 
 DIRS += ricochet
 DIRS += print
+DIRS += runtest
 
 define NL
 

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+rm -rf *.wraptest
+
+for i in `cat tests.supported | grep -v '#'`
+do
+    ../wraptest/wraptest template ${i}
+
+    if [ "$?" != "0" ]; then
+        echo "$0: wraptest failed"
+        exit 1
+    fi
+done

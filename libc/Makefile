@@ -24,6 +24,7 @@ CFLAGS += -Wno-unused-but-set-variable
 CFLAGS += -Wno-unknown-pragmas
 CFLAGS += -Wno-maybe-uninitialized
 CFLAGS += -Wno-format
+CFLAGS += -Wno-missing-braces
 
 CFLAGS += -std=c99
 CFLAGS += -ffreestanding
@@ -189,11 +190,12 @@ SOURCES += $(MUSLSRC)/stdio/vsscanf.c
 SOURCES += $(MUSLSRC)/stdio/vswprintf.c
 SOURCES += $(MUSLSRC)/stdio/__toread.c
 SOURCES += $(MUSLSRC)/stdio/fputwc.c
+SOURCES += $(MUSLSRC)/stdio/sprintf.c
+SOURCES += $(MUSLSRC)/stdio/vsprintf.c
 
 SOURCES += $(MUSLSRC)/stdlib/qsort.c
 SOURCES += $(MUSLSRC)/stdlib/bsearch.c
 SOURCES += $(MUSLSRC)/stdlib/strtol.c
-#SOURCES += $(MUSLSRC)/stdlib/strtod.c
 SOURCES += $(MUSLSRC)/stdlib/wcstol.c
 SOURCES += $(MUSLSRC)/stdlib/wcstod.c
 SOURCES += $(MUSLSRC)/stdlib/atoi.c
@@ -499,10 +501,46 @@ SOURCES += $(MUSLSRC)/complex/ctanh.c
 SOURCES += $(MUSLSRC)/complex/ctanhf.c
 SOURCES += $(MUSLSRC)/complex/ctanhl.c
 SOURCES += $(MUSLSRC)/complex/ctanl.c
+SOURCES += $(MUSLSRC)/misc/basename.c
+SOURCES += $(MUSLSRC)/misc/dirname.c
+
+SOURCES += $(MUSLSRC)/search/lsearch.c
+SOURCES += $(MUSLSRC)/search/hsearch.c
 
 SOURCES += $(MUSLSRC)/legacy/getpagesize.c
 
 SOURCES += $(MUSLSRC)/prng/rand.c
+SOURCES += $(MUSLSRC)/prng/lrand48.c
+SOURCES += $(MUSLSRC)/prng/__seed48.c
+SOURCES += $(MUSLSRC)/prng/__rand48_step.c
+
+SOURCES += $(MUSLSRC)/regex/fnmatch.c
+
+SOURCES += $(MUSLSRC)/search/tsearch_avl.c
+SOURCES += $(MUSLSRC)/search/insque.c
+
+SOURCES += $(MUSLSRC)/env/getenv.c
+SOURCES += $(MUSLSRC)/env/setenv.c
+SOURCES += $(MUSLSRC)/env/putenv.c
+SOURCES += $(MUSLSRC)/env/clearenv.c
+SOURCES += $(MUSLSRC)/env/unsetenv.c
+SOURCES += $(MUSLSRC)/env/__environ.c
+
+#SOURCES += $(MUSLSRC)/time/mktime.c
+#SOURCES += $(MUSLSRC)/time/gmtime.c
+#SOURCES += $(MUSLSRC)/time/__tm_to_secs.c
+#SOURCES += $(MUSLSRC)/time/__year_to_secs.c
+#SOURCES += $(MUSLSRC)/time/__month_to_secs.c
+#SOURCES += $(MUSLSRC)/time/__tz.c
+
+SOURCES += $(MUSLSRC)/crypt/crypt.c
+SOURCES += $(MUSLSRC)/crypt/crypt_r.c
+SOURCES += $(MUSLSRC)/crypt/crypt_sha256.c
+SOURCES += $(MUSLSRC)/crypt/crypt_sha512.c
+SOURCES += $(MUSLSRC)/crypt/crypt_des.c
+SOURCES += $(MUSLSRC)/crypt/crypt_md5.c
+SOURCES += $(MUSLSRC)/crypt/crypt_blowfish.c
+SOURCES += $(MUSLSRC)/crypt/encrypt.c
 
 OBJECTS = $(SOURCES:.c=.o)
 OBJECTS += abort.o setjmp.o longjmp.o

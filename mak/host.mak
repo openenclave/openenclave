@@ -94,6 +94,6 @@ $(PROGRAM): $(OBJECTS) $(LIBRARIES)
 ##==============================================================================
 
 clean:
-	rm -f $(PROGRAM) $(OBJECTS) $(CLEAN) .depends
+	rm -rf $(PROGRAM) $(OBJECTS) $(CLEAN) .depends
 
 include $(MAKDIR)/depend.mak

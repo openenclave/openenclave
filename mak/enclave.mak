@@ -54,7 +54,11 @@ endif
 ##==============================================================================
 
 CFLAGS += -Wall
+
+ifndef SUPPRESS_WERROR
 CFLAGS += -Werror
+endif
+
 CFLAGS += -g
 CFLAGS += -O2
 CFLAGS += -m64
@@ -69,7 +73,7 @@ CFLAGS += -fno-stack-protector
 ##==============================================================================
 
 CXXFLAGS += $(CFLAGS)
-CXXFLAGS += -std=c++11
+CXXFLAGS += -std=c++14
 CXXFLAGS += -nostdinc++
 
 ##==============================================================================
@@ -165,6 +169,6 @@ endif
 ##==============================================================================
 
 clean:
-	rm -f $(OBJECTS) $(__SHLIB).so $(__SHLIB).signed.so .depends
+	rm -f $(OBJECTS) $(__SHLIB).so $(__SHLIB).signed.so .depends $(CLEAN)
 
 include $(TOP)/mak/depend.mak
