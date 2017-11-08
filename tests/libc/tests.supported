@@ -23,7 +23,6 @@
 /root/openenclave/3rdparty/musl/libc-test/src/functional/tgmath.c
 /root/openenclave/3rdparty/musl/libc-test/src/functional/dirname.c
 /root/openenclave/3rdparty/musl/libc-test/src/functional/search_insque.c
-/root/openenclave/3rdparty/musl/libc-test/src/functional/mbc.c
 /root/openenclave/3rdparty/musl/libc-test/src/functional/string_memcpy.c
 /root/openenclave/3rdparty/musl/libc-test/src/functional/strtof.c
 /root/openenclave/3rdparty/musl/libc-test/src/functional/string.c

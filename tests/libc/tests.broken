@@ -1,3 +1,4 @@
+/root/openenclave/3rdparty/musl/libc-test/src/functional/mbc.c
 /root/openenclave/3rdparty/musl/libc-test/src/functional/swprintf.c
 /root/openenclave/3rdparty/musl/libc-test/src/regression/strverscmp.c
 /root/openenclave/3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c
