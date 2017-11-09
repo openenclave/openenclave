@@ -11,9 +11,9 @@ CFLAGS = -fPIC
 
 TARGET = $(INCDIR)/openenclave/libc
 
-CACHEFILE = $(CACHEDIR)/musl.tar.gz
+MUSL_CACHEFILE = $(CACHEDIR)/musl.tar.gz
 
-CACHEFILE2 = $(CACHEDIR)/libc-test.tar.gz
+LIBCTEST_CACHEFILE = $(CACHEDIR)/libc-test.tar.gz
 
 all: 
 	$(MAKE) musl 
@@ -31,26 +31,26 @@ configure:
 	( cd musl; ./configure $(CONFIGURE_OPTS) CFLAGS=$(CFLAGS) )
 
 musl:
-	$(MAKE) $(CACHEFILE)
-	tar zxf $(CACHEFILE)
+	$(MAKE) $(MUSL_CACHEFILE)
+	tar zxf $(MUSL_CACHEFILE)
 
 libc-test:
-	$(MAKE) $(CACHEFILE2)
-	tar zxf $(CACHEFILE2)
+	$(MAKE) $(LIBCTEST_CACHEFILE)
+	tar zxf $(LIBCTEST_CACHEFILE)
 
-$(CACHEFILE):
+$(MUSL_CACHEFILE):
 	rm -rf musl
 	wget http://www.musl-libc.org/releases/$(PKG)
 	tar zxf $(PKG)
 	mv $(BASE) musl
 	rm -rf $(PKG)
-	tar zcf $(CACHEFILE) musl
+	tar zcf $(MUSL_CACHEFILE) musl
 	rm -rf musl
 
-$(CACHEFILE2):
+$(LIBCTEST_CACHEFILE):
 	rm -rf libc-test
 	git clone git://nsz.repo.hu:45100/repo/libc-test
-	tar zcf $(CACHEFILE2) libc-test
+	tar zcf $(LIBCTEST_CACHEFILE) libc-test
 	rm -rf libc-test
 
 clean:
@@ -62,6 +62,5 @@ silent-clean:
 
 distclean:
 	rm -rf musl libc-test $(TARGET) install $(PKG)
-
 
 depend:
