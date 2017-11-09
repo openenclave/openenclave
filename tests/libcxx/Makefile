@@ -11,10 +11,9 @@ tests: build
 	$(foreach i, $(TESTS), @ $(MAKE) -s TEST=$(i) test $(NEWLINE) )
 
 test:
-	@ $(MAKE) -s -C enc clean
+	@ rm -f enc/main.o enc/*.so
 	@ $(MAKE) -s -C enc TEST=$(TEST)
 	@ $(MAKE) -s -C enc tests
-	@ $(MAKE) -s -C enc clean
 
 clean:
 	$(MAKE) -C host clean
