@@ -4,15 +4,17 @@ SUPPRESS_WERROR=1
 
 CSHLIB = libcenc
 
-SOURCES += $(wildcard *.c)
-
-SOURCES += $(TOP)/3rdparty/musl/libc-test/src/functional/tls_align_dso.c
-SOURCES += $(TOP)/3rdparty/musl/libc-test/src/common/rand.c
-SOURCES += $(TOP)/3rdparty/musl/libc-test/src/common/mtest.c
+SOURCES += enc.c mtest.c rand.c test.c tls_align_dso.c
 
 SIGNCONF = sign.conf
 
 KEYFILE = private.pem
+
+ifdef TEST
+DEFINES += -D__TEST__=\"$(TEST)\"
+else
+DEFINES += -D__TEST__=\"test.c\"
+endif
 
 INCLUDES += -I$(INCDIR)/openenclave/libc
 INCLUDES += -I$(TOP)/3rdparty/musl/libc-test/src/common
@@ -21,8 +23,6 @@ LIBRARIES += $(call whole-archive,$(LIBDIR)/enclave/liboelibc.a)
 
 include $(MAKDIR)/enclave.mak
 
-RUNTEST=$(TOP)/tests/runtest/runtest
-
 tests:
-	$(RUNTEST) $(CSHLIB).signed.so
+	../host/libchost $(CSHLIB).signed.so
 

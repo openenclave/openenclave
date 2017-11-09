@@ -6,8 +6,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <openenclave/enclave.h>
-#include "../../runtest/ocalls.h"
-#include "../../runtest/args.h"
+#include "../host/ocalls.h"
+#include "../host/args.h"
 
 int main(int argc, const char* argv[]);
 
@@ -58,11 +58,13 @@ OE_ECALL void Test(Args* args)
 {
     if (args)
     {
+        printf("RUNNING: %s\n", __TEST__);
+
         if (!(__environ = (char**)calloc(1, sizeof(char**))))
             args->ret = 1;
 
         static const char* argv[] = { "test", NULL, };
         args->ret = main(1, argv);
-        args->test = OE_HostStrdup(__test__);
+        args->test = OE_HostStrdup(__TEST__);
     }
 }

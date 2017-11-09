@@ -4,7 +4,4 @@
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #pragma GCC diagnostic ignored "-Wattributes"
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
-
-const char* __test__ = "__TEST__";
-
-#include "__TEST__"
+#pragma GCC diagnostic ignored "-Wunused-function"

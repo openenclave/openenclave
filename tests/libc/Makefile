@@ -1,65 +1,23 @@
+.PHONY: wraptests
+
 include ../../mak/defs.mak
 
-DIRS += $(wildcard *.wraptest)
-
 build:
-	$(MAKE) wraptests
-	$(MAKE) build-enclaves
+	$(MAKE) -C host
 
-build-enclaves:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )
+TESTS=$(shell cat tests.supported)
 
-RUNTEST=$(TOP)/tests/runtest/runtest
+tests: build
+	$(foreach i, $(TESTS), @ $(MAKE) -s TEST=$(i) test $(NEWLINE) )
 
-tests:
-	@ $(foreach i, $(DIRS), $(RUNTEST) $(i)/libcenc.signed.so $(NEWLINE) )
+test:
+	@ $(MAKE) -s -C enc clean
+	@ $(MAKE) -s -C enc TEST=$(TEST)
+	@ $(MAKE) -s -C enc tests
+	@ $(MAKE) -s -C enc clean
 
 clean:
-	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NEWLINE) )
-
-distclean:
-	rm -rf *.wraptest .wraptests
+	$(MAKE) -C host clean
+	$(MAKE) -C enc clean
 
 depend:
-
-##==============================================================================
-##
-## tests.all:
-##
-##     Generate tests.all by scanning the libc-test directory for tests that
-##     have a main() function.
-##
-##==============================================================================
-
-tests.all:
-	@ ( find $(TOP)/3rdparty/musl/libc-test -name '*.c' > tmp1 )
-	@ grep -l "int.*\<main\>" `cat tmp1` > tests.all
-	@ rm -f tmp[1-9]
-
-##==============================================================================
-##
-## wraptests:
-##
-##     Wrap all test in an enclave, generating a directory for each.
-##
-##==============================================================================
-
-wraptests: .wraptests
-
-.wraptests:
-	./wraptests
-	touch .wraptests
-
-##==============================================================================
-##
-## world:
-##
-##     Regenerate, build, and run all tests.
-##
-##==============================================================================
-
-world:
-	$(MAKE) -C template clean
-	$(MAKE) distclean
-	$(MAKE) build
-	$(MAKE) tests

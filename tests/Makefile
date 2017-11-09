@@ -23,7 +23,6 @@ DIRS += report
 DIRS += SampleAppAttestation 
 DIRS += ricochet
 DIRS += print
-DIRS += runtest
 
 define NL
 
@@ -54,3 +53,4 @@ GENDIRS = tester typeinfo pingpong file
 
 gen:
 	@ $(foreach i, $(GENDIRS), $(MAKE) -s -C $(i) gen $(NL) )
+
