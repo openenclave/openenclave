@@ -72,6 +72,7 @@ int clock_gettime(clockid_t clk_id, struct timespec *tp)
         goto done;
 
     args->ret = -1;
+    args->clk_id = clk_id;
     args->tp = tp ? &args->tpbuf : NULL;
 
     if (OE_OCall(OE_FUNC_CLOCK_GETTIME, (uint64_t)args, NULL) != OE_OK)

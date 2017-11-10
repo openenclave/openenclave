@@ -53,3 +53,4 @@ GENDIRS = tester typeinfo pingpong file
 
 gen:
 	@ $(foreach i, $(GENDIRS), $(MAKE) -s -C $(i) gen $(NL) )
+

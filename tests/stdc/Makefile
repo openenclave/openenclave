@@ -32,3 +32,4 @@ gdb:
 
 size:
 	size $(ENCLAVE)
+
