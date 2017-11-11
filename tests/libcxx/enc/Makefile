@@ -13,7 +13,7 @@ KEYFILE = private.pem
 ifdef TEST
 DEFINES += -D__TEST__=\"$(TEST)\"
 else
-DEFINES += -D__TEST__=\"test.c\"
+DEFINES += -D__TEST__=\"test.cpp\"
 endif
 DEFINES += -DWITH_MAIN
 
@@ -32,6 +32,10 @@ LIBRARIES += -L$(LIBDIR)/enclave -loelibcxx -loelibc
 
 include $(MAKDIR)/enclave.mak
 
+ifeq ($(OE_SIMULATION), 1)
+OPTS = --simulate
+endif
+
 tests:
-	../host/libcxxhost $(CXXSHLIB).signed.so
+	../host/libcxxhost $(OPTS) $(CXXSHLIB).signed.so
 

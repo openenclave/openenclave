@@ -1,3 +1,6 @@
+../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/c.files/version_ccstdio.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/version.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/depr/depr.c.headers/complex.h.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/string.view/string.view.access/back.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.general/nothing_to_do.pass.cpp
