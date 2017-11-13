@@ -1,4 +1,3 @@
-../../3rdparty/libcxx/libcxx/test/std/diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.ctype.byname/is_many.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.monetary/locale.moneypunct.byname/decimal_point.pass.cpp

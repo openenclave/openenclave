@@ -21,3 +21,6 @@ clean:
 	$(MAKE) -C enc clean
 
 depend:
+
+gdb:
+	gdb ./host/libchost -x gdb.commands
