@@ -50,6 +50,9 @@ exit.o: exit.S
 abort.o: abort.S
 	$(CC) -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o abort.o abort.S
 
+search.o: search.c
+	$(CC) -c $(CFLAGS) $(DEFINES) -Iinclude $(INCLUDES) -o search.o search.c
+
 clean:
 	rm -f $(ARCHIVE) $(OBJECTS) .depends
 
