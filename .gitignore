@@ -119,3 +119,4 @@ tests/print/host/printhost
 tests/runtest/runtest
 tests/libcxx/host/libcxxhost
 tests/libc/host/libchost
+tests/tsearch/tsearch
