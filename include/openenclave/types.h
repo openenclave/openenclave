@@ -79,6 +79,8 @@ typedef unsigned long uintptr_t;
 
 typedef long ptrdiff_t;
 
+typedef int64_t off_t;
+
 #ifdef __cplusplus
 # define true true
 #else

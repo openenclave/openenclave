@@ -26,6 +26,8 @@
 #ifndef _OE_SEARCH_H
 #define _OE_SEARCH_H
 
+#include <openenclave/defs.h>
+
 typedef unsigned long size_t;
 
 typedef enum 
@@ -43,7 +45,10 @@ struct OE_tnode
     struct OE_tnode *left;      /* pointer to left child */
     struct OE_tnode *right;     /* pointer to right child */
     int height;                 /* height of this subtree */
+    int padding;                /* Pad struct out to exactly 32 bytes */
 };
+
+OE_STATIC_ASSERT(sizeof(struct OE_tnode) == 32);
 
 void *OE_tsearch(
     const void *key, 
