@@ -53,6 +53,8 @@ abort.o: abort.S
 search.o: search.c
 	$(CC) -c $(CFLAGS) $(DEFINES) -Iinclude $(INCLUDES) -o search.o search.c
 
+heap.o: ../common/heap.c
+
 clean:
 	rm -f $(ARCHIVE) $(OBJECTS) .depends
 

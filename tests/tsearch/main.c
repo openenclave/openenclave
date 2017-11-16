@@ -9,20 +9,18 @@ typedef struct _Node Node;
 
 struct _Node
 {
-    struct OE_tnode base;
+    struct OE_Tnode base;
     Node* next;
     int value;
 };
 
-static void* _OE_malloc_result;
-
 static size_t _mallocs;
 static size_t _frees;
 
-static void* _malloc(size_t size)
+static void* _alloc(size_t size, void* data)
 {
     _mallocs++;
-    return _OE_malloc_result;
+    return data;
 }
 
 static void _free(void* ptr)
@@ -114,9 +112,7 @@ int main(int argc, const char* argv[])
         Node* node = MakeNode(value);
         assert(node != NULL);
 
-        _OE_malloc_result = node;
-        Node* ret = OE_tsearch(&node->base, &root, compare, _malloc);
-        _OE_malloc_result = NULL;
+        Node* ret = OE_Tsearch(&node->base, &root, compare, _alloc, node);
 
         if (ret != node)
         {
@@ -128,7 +124,7 @@ int main(int argc, const char* argv[])
     DumpTree((Node*)root);
     assert(sum == _sum);
 
-    OE_tdestroy(root, _free_node, _free);
+    OE_Tdestroy(root, _free_node, _free);
     assert(_mallocs == _frees);
 
     printf("=== passed all tests (%s)\n", argv[0]);

@@ -39,39 +39,40 @@ typedef enum
 } 
 OE_VISIT;
 
-struct OE_tnode 
+struct OE_Tnode 
 {
     void *key;                  /* pointer to this struture */
-    struct OE_tnode *left;      /* pointer to left child */
-    struct OE_tnode *right;     /* pointer to right child */
+    struct OE_Tnode *left;      /* pointer to left child */
+    struct OE_Tnode *right;     /* pointer to right child */
     int height;                 /* height of this subtree */
     int padding;                /* Pad struct out to exactly 32 bytes */
 };
 
-OE_STATIC_ASSERT(sizeof(struct OE_tnode) == 32);
+OE_STATIC_ASSERT(sizeof(struct OE_Tnode) == 32);
 
-void *OE_tsearch(
+void *OE_Tsearch(
     const void *key, 
     void **rootp,
     int (*compar)(const void *, const void *),
-    void* (*malloc)(size_t));
+    void* (*alloc)(size_t, void* data),
+    void* data);
 
-void *OE_tfind(
+void *OE_Tfind(
     const void *key, 
     void *const *rootp,
     int(*compar)(const void *, const void *));
 
-void *OE_tdelete(
+void *OE_Tdelete(
     const void *restrict key, 
     void **restrict rootp,
     int(*compar)(const void *, const void *),
     void (*free)(void*));
 
-void OE_twalk(
+void OE_Twalk(
     const void *root, 
     void (*action)(const void *, OE_VISIT, int));
 
-void OE_tdestroy(
+void OE_Tdestroy(
     void *root, 
     void (*freekey)(void *nodep),
     void (*free)(void*));
