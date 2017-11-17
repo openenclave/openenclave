@@ -26,7 +26,7 @@ OE_INLINE void _Init(void)
 }
 
 /* Implementation of standard sbrk() function */
-void* __OE_Sbrk(
+void* OE_Sbrk(
     ptrdiff_t increment)
 {
     void* ptr = (void*)-1;
@@ -53,7 +53,7 @@ void* __OE_Sbrk(
 }
 
 /* Implementation of standard brk() function */
-int __OE_Brk(
+int OE_Brk(
     uintptr_t addr)
 {
     _Init();

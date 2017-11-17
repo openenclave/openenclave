@@ -46,6 +46,7 @@ clean:
 	rm -f $(ARCHIVE) $(OBJECTS) api_u.c api_u.h .depends
 
 heap.o: ../common/heap.c
+heapdump.o: ../common/heapdump.c
 
 SEARCHPATH=--search-path .. --search-path /opt/intel/sgxsdk/include
 
