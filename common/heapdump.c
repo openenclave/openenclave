@@ -72,29 +72,23 @@ void OE_HeapDump(const OE_Heap* h, bool full)
     if (full)
     {
         printf("free_vads:\n");
-        printf("{\n");
 
         for (p = h->free_vads; p; p = p->next)
             _DumpVAD(p);
-
-        printf("}\n");
     }
 
     /* Dump the VAD tree */
     if (full)
     {
-        printf("vad_tree=\n");
-        printf("{\n");
+        printf("vad_tree:\n");
         _DumpTree(h->vad_tree);
-        printf("}\n");
     }
 
     /* Dump the VAD list */
     {
         const OE_VAD* prev = NULL;
 
-        printf("vad_list=\n");
-        printf("{\n");
+        printf("vad_list:\n");
 
         for (p = h->vad_list; p; p = p->next)
         {
@@ -119,7 +113,5 @@ void OE_HeapDump(const OE_Heap* h, bool full)
         {
             _PrintGap(prev->addr + prev->size, h->end);
         }
-
-        printf("}\n");
     }
 }

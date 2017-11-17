@@ -24,6 +24,7 @@ DIRS += SampleAppAttestation
 DIRS += ricochet
 DIRS += print
 DIRS += tsearch
+DIRS += heap
 
 define NL
 
@@ -37,7 +38,7 @@ clean:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NL) )
 
 tests:
-	@ $(foreach i, $(DIRS), $(MAKE) -C $(i) tests $(NL) )
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) tests $(NL) )
 
 sgx-tests:
 	@ $(foreach i, $(DIRS), $(MAKE) -C $(i) tests SGX=1 $(NL) )

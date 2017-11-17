@@ -16,8 +16,6 @@
 #define OE_MAP_FIXED       16
 #define OE_MAP_ANONYMOUS   32
 
-#define OE_MAP_FAILED      ((void*)-1)
-
 /* Virtual Address Descriptor */
 typedef struct _OE_VAD
 {
@@ -46,19 +44,23 @@ OE_VAD;
 
 OE_STATIC_ASSERT(sizeof(OE_VAD) == 64);
 
+#define OE_HEAP_MAGIC 0xcc8e1732ebd80b0b
+
+#define OE_HEAP_INITIALIZER { 0, false, OE_SPINLOCK_INITIALIZER }
+
 /* OE_Heap data structures and fields */
 typedef struct _OE_Heap
 {
+    /* Magic number (OE_HEAP_MAGIC) */
+    uint64_t magic;
+
     /* True if OE_HeapInit() has been called */
     bool initialized;
 
-    /* Spin lock to synchronize access to this object */
-    OE_Spinlock lock;
-
-    /* Base of heap */
+    /* Base of heap (aligned on page boundary) */
     uintptr_t base;
 
-    /* Size of heap */
+    /* Size of heap (a multiple of OE_PAGE_SIZE) */
     size_t size;
 
     /* Start of heap (immediately aft4er VADs array) */
@@ -97,8 +99,8 @@ int OE_HeapInit(
 
 void* OE_HeapMap(
     OE_Heap* heap,
-    void* address,
-    size_t size,
+    void* addr,
+    size_t length,
     int prot,
     int flags);
 
@@ -110,5 +112,13 @@ int OE_HeapUnmap(
 void OE_HeapDump(
     const OE_Heap* h, 
     bool full);
+
+void* OE_HeapSbrk(
+    OE_Heap* heap,
+    ptrdiff_t increment);
+
+int OE_HeapBrk(
+    OE_Heap* heap,
+    uintptr_t addr);
 
 #endif /* _OE_HEAP_H */
