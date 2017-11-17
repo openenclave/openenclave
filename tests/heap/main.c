@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <malloc.h>
 
+static size_t PGSZ = OE_PAGE_SIZE;
+
 static int _InitHeap(OE_Heap* heap, size_t size)
 {
     void* base;
@@ -87,7 +89,9 @@ void Test1()
     assert(_CountVADs(h.vad_list) == 0);
     assert(_IsSorted(h.vad_list));
 
-    OE_HeapDump(&h);
+#if 0
+    OE_HeapDump(&h, true);
+#endif
 
     void* ptrs[16];
     size_t n = sizeof(ptrs) / sizeof(ptrs[0]);
@@ -103,7 +107,9 @@ void Test1()
         m += r;
     }
 
-    OE_HeapDump(&h);
+#if 0
+    OE_HeapDump(&h, true);
+#endif
 
     assert(h.break_top == h.start);
     assert(h.mapped_top == h.end - m);
@@ -113,7 +119,7 @@ void Test1()
 
     for (size_t i = 0; i < n; i++)
     {
-        if (OE_HeapUnmap(&h, ptrs[i], (i + 1) * 4096) != 0)
+        if (OE_HeapUnmap(&h, ptrs[i], (i + 1) * PGSZ) != 0)
             assert(0);
     }
 
@@ -148,7 +154,9 @@ void Test1()
     assert(_CountVADs(h.vad_list) == n/2);
     assert(_IsSorted(h.vad_list));
 
-    OE_HeapDump(&h);
+#if 0
+    OE_HeapDump(&h, true);
+#endif
 
     /* Reallocate every other region (filling in gaps) */
     for (size_t i = 0; i < n; i += 2)
@@ -185,7 +193,11 @@ void Test1()
     assert(_CountVADs(h.vad_list) == n);
     assert(_IsSorted(h.vad_list));
 
-    OE_HeapDump(&h);
+#if 0
+    OE_HeapDump(&h, true);
+#endif
+
+    printf("=== Passed %s()\n", __FUNCTION__);
 }
 
 void Test2()
@@ -215,7 +227,9 @@ void Test2()
     assert(_CountVADs(h.vad_list) == 3);
     assert(_IsSorted(h.vad_list));
 
-    OE_HeapDump(&h);
+#if 0
+    OE_HeapDump(&h, true);
+#endif
 
     void* p0a;
     void* p0b;
@@ -269,13 +283,152 @@ void Test2()
         assert(_IsFlush(&h, h.vad_list));
     }
 
-    OE_HeapDump(&h);
+#if 0
+    OE_HeapDump(&h, true);
+#endif
+
+    printf("=== Passed %s()\n", __FUNCTION__);
+}
+
+void Test3()
+{
+    OE_Heap h;
+
+    const size_t npages = 1024;
+    const size_t size = npages * OE_PAGE_SIZE;
+    assert(_InitHeap(&h, size) == 0);
+
+    void* ptrs[8];
+    size_t n = sizeof(ptrs) / sizeof(ptrs[0]);
+    size_t m = 0;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        size_t r = (i + 1) * OE_PAGE_SIZE;
+
+        if (!(ptrs[i] = OE_HeapMap(&h, NULL, r, 0, 0)))
+            assert(0);
+
+        m += r;
+    }
+
+    /* ptrs[0] -- 1 page */
+    /* ptrs[1] -- 2 page */
+    /* ptrs[2] -- 3 page */
+    /* ptrs[3] -- 4 page */
+    /* ptrs[4] -- 5 page */
+    /* ptrs[5] -- 6 page */
+    /* ptrs[6] -- 7 page */
+    /* ptrs[7] -- 8 page */
+
+    assert(h.break_top == h.start);
+    assert(h.mapped_top == h.end - m);
+    assert(_CountVADs(h.free_vads) == 0);
+    assert(_CountVADs(h.vad_list) == n);
+    assert(_IsSorted(h.vad_list));
+
+    /* This should be illegal since it overruns the end */
+    assert(OE_HeapUnmap(&h, ptrs[0], 2*PGSZ) != 0);
+    assert(_IsSorted(h.vad_list));
+    assert(_IsFlush(&h, h.vad_list));
+
+    /* Unmap ptrs[1] and ptrs[0] */
+    if (OE_HeapUnmap(&h, ptrs[1], 3*PGSZ) != 0)
+        assert(0);
+
+    assert(_CountVADs(h.free_vads) == 2);
+    assert(_CountVADs(h.vad_list) == n-2);
+    assert(_IsSorted(h.vad_list));
+    assert(!_IsFlush(&h, h.vad_list));
+
+    /* ptrs[0] -- 1 page (free) */
+    /* ptrs[1] -- 2 page (free) */
+    /* ptrs[2] -- 3 page */
+    /* ptrs[3] -- 4 page */
+    /* ptrs[4] -- 5 page */
+    /* ptrs[5] -- 6 page */
+    /* ptrs[6] -- 7 page */
+    /* ptrs[7] -- 8 page */
+
+#if 0
+    OE_HeapDump(&h, false);
+#endif
+
+    /* Free innner 6 pages of ptrs[7] -- [mUUUUUUm] */
+    if (OE_HeapUnmap(&h, ptrs[7] + PGSZ, 6*PGSZ) != 0)
+        assert(0);
+
+    assert(_CountVADs(h.free_vads) == 1);
+    assert(_CountVADs(h.vad_list) == 7);
+    assert(_IsSorted(h.vad_list));
+
+#if 0
+    OE_HeapDump(&h, false);
+#endif
+
+    /* Map 6 pages to fill the gap created by last unmap */
+    if (!OE_HeapMap(&h, NULL, 6*PGSZ, 0, 0))
+        assert(0);
+
+#if 0
+    OE_HeapDump(&h, false);
+#endif
+
+    printf("=== Passed %s()\n", __FUNCTION__);
+}
+
+void Test4()
+{
+    OE_Heap h;
+
+    const size_t npages = 1024;
+    const size_t size = npages * OE_PAGE_SIZE;
+    assert(_InitHeap(&h, size) == 0);
+
+    void* ptrs[8];
+    size_t n = sizeof(ptrs) / sizeof(ptrs[0]);
+    size_t m = 0;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        size_t r = (i + 1) * OE_PAGE_SIZE;
+
+        if (!(ptrs[i] = OE_HeapMap(&h, NULL, r, 0, 0)))
+            assert(0);
+
+        m += r;
+    }
+
+    assert(h.break_top == h.start);
+    assert(h.mapped_top == h.end - m);
+    assert(_CountVADs(h.free_vads) == 0);
+    assert(_CountVADs(h.vad_list) == n);
+    assert(_IsSorted(h.vad_list));
+#if 0
+    OE_HeapDump(&h, false);
+#endif
+
+    /* This should fail */
+    assert(OE_HeapUnmap(&h, ptrs[7], 1024 * PGSZ) != 0);
+
+    /* Unmap everything */
+    assert(OE_HeapUnmap(&h, ptrs[7], m) == 0);
+    assert(_CountVADs(h.free_vads) == n);
+    assert(_CountVADs(h.vad_list) == 0);
+
+#if 1
+    OE_HeapDump(&h, true);
+#endif
+
+    printf("=== Passed %s()\n", __FUNCTION__);
 }
 
 int main(int argc, const char* argv[])
 {
-    //Test1();
+    Test1();
     Test2();
+    Test3();
+    Test4();
     printf("=== passed all tests (%s)\n", argv[0]);
     return 0;
 }

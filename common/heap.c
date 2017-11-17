@@ -4,9 +4,13 @@
 
 #ifdef OE_BUILD_UNTRUSTED
 # include <stdio.h>
+# include <assert.h>
 # define U(X) X
+# define ASSERT assert
 #else
+# include <openenclave/enclave.h>
 # define U(X)
+# define ASSERT OE_Assert
 #endif
 
 /* Initialize the heap structure. Caller acquires the lock */
@@ -213,6 +217,17 @@ OE_INLINE bool _IsSorted(OE_VAD* list)
     return true;
 }
 
+static size_t _ListLength(const OE_VAD* list)
+{
+    const OE_VAD* p;
+    size_t count = 0;
+
+    for (p = list; p; p = p->next)
+        count++;
+
+    return count;
+}
+
 /* TODO: optimize by using tree to find the insertion point in O(log n) */
 static void _ListInsert(
     OE_Heap* heap,
@@ -260,7 +275,7 @@ static void _ListInsert(
     }
 }
 
-static int _Insert(
+static int _InsertVAD(
     OE_Heap* heap,
     OE_VAD* vad)
 {
@@ -270,6 +285,27 @@ static int _Insert(
     _ListInsert(heap, vad);
 
     return 0;
+}
+
+static void _NewAndInsert(
+    OE_Heap* heap,
+    uintptr_t addr,
+    size_t size,
+    int prot,
+    int flags)
+{
+    OE_VAD* vad;
+
+    /* Allocate a OE_VAD for this new region */
+    if (!(vad = _NewVAD(heap, addr, size, prot, flags)))
+    {
+        ASSERT("panic" == NULL);
+    }
+
+    if (_InsertVAD(heap, vad) != 0)
+    {
+        ASSERT("panic" == NULL);
+    }
 }
 
 /* TODO: optimize by adding a 'gap' field in the tree to find gaps O(log n) */
@@ -307,7 +343,6 @@ static uintptr_t _FindRegion(
             if (end - start >= size)
             {
                 addr = start;
-U( printf("CASE1\n"); )
                 goto done;
             }
 
@@ -324,7 +359,6 @@ U( printf("CASE1\n"); )
             if (end - start >= size)
             {
                 addr = start;
-U( printf("CASE2\n"); )
                 goto done;
             }
         }
@@ -338,7 +372,6 @@ U( printf("CASE2\n"); )
         if (start < heap->break_top)
             goto done;
 
-U( printf("CASE3\n"); )
         heap->mapped_top = start;
         addr = start;
     }
@@ -423,17 +456,8 @@ void* OE_HeapMap(
             goto done;
     }
 
-    /* Create OE_VAD for this region and inject it into the tree and list */
-    {
-        OE_VAD* vad;
-
-        /* Allocate a OE_VAD for this new region */
-        if (!(vad = _NewVAD(heap, start, size, prot, flags)))
-            goto done;
-
-        if (_Insert(heap, vad) != 0)
-            goto done;
-    }
+    /* Create a new VAD and insert it into the tree and list. */
+    _NewAndInsert(heap, start, size, prot, flags);
 
     result = (void*)start;
 
@@ -443,38 +467,131 @@ done:
 
 int OE_HeapUnmap(
     OE_Heap* heap,
-    void* address,
+    void* addr,
     size_t size)
 {
     int rc = -1;
-    OE_VAD* vad;
+    OE_VAD* head = NULL;
+    OE_VAD* tail = NULL;
+    size_t count = 0;
 
-    if (!heap || !address || !size)
+    if (!heap || !addr || !size)
         goto done;
 
     /* ADDRESS must be aligned on a page boundary */
-    if ((uintptr_t)address % OE_PAGE_SIZE)
+    if ((uintptr_t)addr % OE_PAGE_SIZE)
         goto done;
 
     /* SIZE must be a multiple of the page size */
     if (size % OE_PAGE_SIZE)
         goto done;
 
-    /* Find the VAD that contains this address */
-    if (!(vad = _FindVAD(heap, (uintptr_t)address)))
-        goto done;
+    /* Form a singly-linked list of all VADs that overlap this range */
+    {
+        uintptr_t start = (uintptr_t)addr;
+        uintptr_t end = (uintptr_t)addr + size;
 
-    /* Remove the VAD from the tree and list */
-    if (_RemoveVAD(heap, vad) != 0)
-        goto done;
+        while (start < end)
+        {
+            OE_VAD* vad;
 
-    /* ATTN: handle overlapping VADs */
+            if (!(vad = _FindVAD(heap, start)))
+                goto done;
 
-    /* Return the VAD to the free list */
-    _PutVAD(heap, vad);
+            if (_RemoveVAD(heap, vad) != 0)
+            {
+                ASSERT("panic" == NULL);
+            }
+
+            if (!head)
+            {
+                /* Insert first element */
+                tail = vad;
+                head = vad;
+                vad->next = NULL;
+            }
+            else
+            {
+                /* Insert at end of list */
+                vad->next = NULL;
+                tail->next = vad;
+                tail = vad;
+            }
+
+            count++;
+            start = vad->addr + vad->size;
+        }
+    }
+
+#if 0
+    U( printf("count=%zu\n", count); )
+    U( printf("length=%zu\n", _ListLength(head)); )
+#endif
+    ASSERT(count == _ListLength(head));
+
+    /* If the unapping does not cover the entire area given by the VAD list, 
+     * then create VADs for the each of the excess portions. There are 3 cases 
+     * below (where U's represent unmapped portions and m's the mapped parts).
+     *
+     *     Case1: excess to the right:  [UUUUmmmmmmmmmmmm]
+     *     Case2: excess to the middle: [mmmmUUUUmmmmmmmm]
+     *     Case3: excess to the left:   [mmmmmmmmmmmmUUUU]
+     */
+    {
+        uintptr_t start = (uintptr_t)addr;
+        uintptr_t end = (uintptr_t)addr + size;
+
+        /* Return any unused portion to the left */
+        if (head->addr < start)
+        {
+            _NewAndInsert(
+                heap, 
+                head->addr, 
+                start - head->addr,
+                head->prot, 
+                head->flags);
+        }
+
+        /* Return any unused portion to the right */
+        if (end < tail->addr + tail->size)
+        {
+            _NewAndInsert(
+                heap, 
+                end,
+                tail->addr + tail->size - end,
+                head->prot, 
+                head->flags);
+        }
+    }
+
+    /* Put all VADs on the free list */
+    {
+        OE_VAD* p = head;
+
+        while (p)
+        {
+            OE_VAD* next = p->next;
+            _PutVAD(heap, p);
+            p = next;
+        }
+    }
 
     rc = 0;
 
 done:
+
+    /* Restore VADs since the operation failed */
+    if (rc != 0)
+    {
+        OE_VAD* p = head;
+
+        while (p)
+        {
+            OE_VAD* next = p->next;
+            _InsertVAD(heap, p);
+            p = next;
+        }
+    }
+
     return rc;
 }

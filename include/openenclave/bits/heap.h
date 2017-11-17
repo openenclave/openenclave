@@ -108,6 +108,7 @@ int OE_HeapUnmap(
     size_t size);
 
 void OE_HeapDump(
-    const OE_Heap* heap);
+    const OE_Heap* h, 
+    bool full);
 
 #endif /* _OE_HEAP_H */
