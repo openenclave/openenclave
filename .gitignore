@@ -120,3 +120,4 @@ tests/runtest/runtest
 tests/libcxx/host/libcxxhost
 tests/libc/host/libchost
 tests/tsearch/tsearch
+tests/heap/heap
