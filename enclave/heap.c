@@ -8,22 +8,19 @@ static OE_Heap __oe_heap = OE_HEAP_INITIALIZER;
 static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
 
 /* Initialize the __oe_heap object on he first call */
-OE_INLINE void _Init(void)
+static void _Init(void)
 {
+    OE_SpinLock(&_lock);
+
     if (__oe_heap.initialized == false)
     {
-        OE_SpinLock(&_lock);
-        {
-            if (__oe_heap.initialized == false)
-            {
-                OE_HeapInit(
-                    &__oe_heap, 
-                    (uintptr_t)__OE_GetHeapBase(),
-                    __OE_GetHeapSize());
-            }
-        }
-        OE_SpinUnlock(&_lock);
+        OE_HeapInit(
+            &__oe_heap, 
+            (uintptr_t)__OE_GetHeapBase(),
+            __OE_GetHeapSize());
     }
+
+    OE_SpinUnlock(&_lock);
 }
 
 /* Implementation of standard brk() function */
@@ -31,7 +28,8 @@ int OE_Brk(uintptr_t addr)
 {
     int rc;
 
-    _Init();
+    if (__oe_heap.initialized == false)
+        _Init();
 
     OE_SpinLock(&_lock);
     rc = OE_HeapBrk(&__oe_heap, addr);
@@ -45,7 +43,8 @@ void* OE_Sbrk(ptrdiff_t increment)
 {
     void* ptr;
 
-    _Init();
+    if (__oe_heap.initialized == false)
+        _Init();
 
     OE_SpinLock(&_lock);
     ptr = OE_HeapSbrk(&__oe_heap, increment);
