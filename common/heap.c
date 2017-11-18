@@ -6,15 +6,17 @@
 
 #ifdef OE_BUILD_UNTRUSTED
 # include <stdio.h>
+# include <string.h>
 # include <assert.h>
 # define U(X) X
 # define ASSERT assert
-# define PRINTF printf
+# define MEMCPY memcpy
 #else
 # include <openenclave/enclave.h>
 # define U(X)
 # define ASSERT OE_Assert
-# define PRINTF OE_HostPrintf
+# define printf OE_HostPrintf
+# define MEMCPY OE_Memcpy
 #endif
 
 /*
@@ -293,10 +295,6 @@ static int _HeapRemoveVAD(OE_Heap* heap, OE_VAD* vad)
     /* Remove from doubly-linked list */
     _ListRemove(heap, vad);
 
-    /* If the linked list is empty, reset the mapped top */
-    if (heap->vad_list == NULL)
-        heap->mapped_top = heap->end;
-
     rc = 0;
 
 done:
@@ -344,10 +342,23 @@ static uintptr_t _HeapFindRegion(
             prev = p;
         }
 
+        /* If there was at least one element in the list */
         if (prev)
         {
             /* Looking for gap between last element and end of heap */
             uintptr_t start = prev->addr + prev->size;
+            uintptr_t end = heap->end;
+
+            /* If the gap is big enough */
+            if (end - start >= size)
+            {
+                addr = start;
+                goto done;
+            }
+        }
+        else
+        {
+            uintptr_t start = heap->mapped_top;
             uintptr_t end = heap->end;
 
             /* If the gap is big enough */
@@ -528,6 +539,90 @@ done:
     return result;
 }
 
+void* OE_HeapRemap(
+    OE_Heap* heap,
+    void* addr,
+    size_t old_size,
+    size_t new_size,
+    int flags)
+{
+    void* result = NULL;
+    OE_VAD* vad = NULL;
+
+    /* Check for valid heap parameter */
+    if (!heap || heap->magic != OE_HEAP_MAGIC || !addr)
+        goto done;
+
+    /* ADDR must be page aligned */
+    if ((uintptr_t)addr % OE_PAGE_SIZE)
+        goto done;
+
+    /* OLD_SIZE must be non-zero */
+    if (old_size == 0)
+        goto done;
+
+    /* NEW_SIZE must be non-zero */
+    if (new_size == 0)
+        goto done;
+
+    /* FLAGS must be exactly OE_MREMAP_MAYMOVE) */
+    if (flags != OE_MREMAP_MAYMOVE)
+        goto done;
+
+    /* Round OLD_SIZE to multiple of page size */
+    old_size = OE_RoundUpToMultiple(old_size, OE_PAGE_SIZE);
+
+    /* Round NEW_SIZE to multiple of page size */
+    new_size = OE_RoundUpToMultiple(new_size, OE_PAGE_SIZE);
+
+    /* Find the VAD for this address to verify that it is a valid mapping */
+    if (!(vad = _TreeFind(heap, (uintptr_t)addr)))
+        goto done;
+
+    /* If the region is shrinking, just unmap the excess pages */
+    if (new_size < old_size)
+    {
+        if (OE_HeapUnmap(heap, addr + new_size, old_size - new_size) != 0)
+            goto done;
+
+        result = addr;
+    }
+    else if (new_size > old_size)
+    {
+        /* ATTN: support remapping without moving (if space available) */
+        uintptr_t start;
+
+        /* Find a region big enough for the new region */
+        if (!(start = _HeapFindRegion(heap, new_size)))
+            goto done;
+
+        /* Copy over the new region */
+        MEMCPY((void*)start, addr, old_size);
+
+        /* Create a new VAD and insert it into the tree and list. */
+        _HeapInsertVAD2(heap, start, new_size, vad->prot, flags);
+
+        /* Remove the old VAD and add it to the free list */
+        {
+            if (_HeapRemoveVAD(heap, vad) != 0)
+                ASSERT("panic" == NULL);
+
+            _FreeListPut(heap, vad);
+        }
+
+        result = (void*)start;
+    }
+    else
+    {
+        /* Nothing to do (size did not change) */
+        result = addr;
+    }
+
+done:
+
+    return result;
+}
+
 int OE_HeapUnmap(
     OE_Heap* heap,
     void* addr,
@@ -691,5 +786,6 @@ int OE_HeapBrk(
     /* Set the break value */
     heap->break_top = addr;
 
-    return addr;
+    return 0;
 }
+

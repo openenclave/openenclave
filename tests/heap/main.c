@@ -134,7 +134,6 @@ void Test1()
             assert(0);
     }
 
-    assert(h.mapped_top == h.end);
     assert(_CountVADs(h.free_vads) == n);
     assert(_CountVADs(h.vad_list) == 0);
     assert(_IsSorted(h.vad_list));
@@ -507,6 +506,65 @@ void Test6()
     printf("=== Passed %s()\n", __FUNCTION__);
 }
 
+void TestRemap1()
+{
+    OE_Heap h;
+    const size_t npages = 1024;
+    const size_t size = npages * OE_PAGE_SIZE;
+    size_t old_size;
+    size_t new_size;
+
+    assert(_InitHeap(&h, size) == 0);
+
+    void* ptr;
+
+    /* Map N pages */
+    old_size = 8*PGSZ;
+    if (!(ptr = _HeapMap(&h, NULL, old_size)))
+        assert(0);
+
+#if 0
+    OE_HeapDump(&h, true);
+#endif
+
+    assert(_CountVADs(h.free_vads) == 0);
+    assert(_CountVADs(h.vad_list) == 1);
+    assert(_IsSorted(h.vad_list));
+    assert(_IsFlush(&h, h.vad_list));
+
+#if 0
+    OE_HeapDump(&h, true);
+#endif
+
+    /* Remap region, making it twice as big */
+    new_size = 16*PGSZ;
+    if (!(ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
+        assert(0);
+
+    assert(_CountVADs(h.free_vads) == 1);
+    assert(_CountVADs(h.vad_list) == 1);
+    assert(_IsSorted(h.vad_list));
+    assert(!_IsFlush(&h, h.vad_list));
+
+#if 0
+    OE_HeapDump(&h, true);
+#endif
+
+    /* Remap region, making it four times smaller */
+    old_size = new_size;
+    new_size = 4*PGSZ;
+    if (!(ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
+        assert(0);
+
+    assert(_CountVADs(h.free_vads) == 1);
+    assert(_CountVADs(h.vad_list) == 1);
+    assert(_IsSorted(h.vad_list));
+    assert(!_IsFlush(&h, h.vad_list));
+    OE_HeapDump(&h, true);
+
+    printf("=== Passed %s()\n", __FUNCTION__);
+}
+
 int main(int argc, const char* argv[])
 {
     Test1();
@@ -515,6 +573,7 @@ int main(int argc, const char* argv[])
     Test4();
     Test5();
     Test6();
+    TestRemap1();
     printf("=== passed all tests (%s)\n", argv[0]);
     return 0;
 }

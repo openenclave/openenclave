@@ -16,6 +16,8 @@
 #define OE_MAP_FIXED       16
 #define OE_MAP_ANONYMOUS   32
 
+#define OE_MREMAP_MAYMOVE  1
+
 /* Virtual Address Descriptor */
 typedef struct _OE_VAD
 {
@@ -102,6 +104,13 @@ void* OE_HeapMap(
     void* addr,
     size_t length,
     int prot,
+    int flags);
+
+void* OE_HeapRemap(
+    OE_Heap* heap,
+    void* addr,
+    size_t old_size,
+    size_t new_size,
     int flags);
 
 int OE_HeapUnmap(

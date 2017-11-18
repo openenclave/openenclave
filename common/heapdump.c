@@ -27,7 +27,7 @@ static void _PrintGap(
 {
     size_t size = end - start;
     size_t pages = size / OE_PAGE_SIZE;
-    printf("    ======{addr=%lx, end=%lx size=%zu pages=%zu}\n", 
+    printf("    ......{addr=%lx, end=%lx size=%zu pages=%zu}\n", 
         start, end, size, pages);
 }
 
@@ -96,6 +96,8 @@ void OE_HeapDump(const OE_Heap* h, bool full)
             {
                 if (h->mapped_top != p->addr)
                 {
+printf("TOP=%lx\n", h->mapped_top);
+printf("ADR=%lx\n", p->addr);
                     _PrintGap(h->mapped_top, p->addr);
                 }
             }
