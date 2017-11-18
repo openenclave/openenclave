@@ -386,6 +386,28 @@ done:
     return addr;
 }
 
+/* Starting with VAD, find the length of the contiguous mappings */
+static size_t _HeapGetContiguousLength(
+    const OE_VAD* vad)
+{
+    const OE_VAD* p;
+    const OE_VAD* prev = NULL;
+    size_t len = 0;
+
+    for (p = vad; p; prev = p, p = p->next)
+    {
+        if (prev)
+        {
+            if (prev->addr + prev->size != p->addr)
+                return len;
+        }
+
+        len += p->size;
+    }
+
+    return len;
+}
+
 /*
 **==============================================================================
 **
@@ -579,6 +601,13 @@ void* OE_HeapRemap(
     if (!(vad = _TreeFind(heap, (uintptr_t)addr)))
         goto done;
 
+    /* ATTN: verify that mappings are contiguous and at least old_size long */
+
+#if 0
+    size_t len = _HeapGetContiguousLength(vad);
+    printf("LEN=%zu\n", len / OE_PAGE_SIZE);
+#endif
+
     /* If the region is shrinking, just unmap the excess pages */
     if (new_size < old_size)
     {
@@ -589,6 +618,7 @@ void* OE_HeapRemap(
     }
     else if (new_size > old_size)
     {
+        /* ATTN: should this overwrite existing mappings? */
         /* ATTN: support remapping without moving (if space available) */
         uintptr_t start;
 
@@ -786,6 +816,7 @@ int OE_HeapBrk(
     /* Set the break value */
     heap->break_top = addr;
 
+    (void)_HeapGetContiguousLength;
     return 0;
 }
 
