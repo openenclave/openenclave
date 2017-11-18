@@ -1,9 +1,6 @@
-../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/version.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/c.files/version_ccstdio.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/c.files/version_cinttypes.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/filesystem/convert_file_time.sh.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/filesystem/version.pass.cpp
-../../3rdparty/libcxx/libcxx/test/libcxx/experimental/filesystem/class.path/path.req/is_pathable.pass.cpp
+
+
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/filesystem/class.path/path.member/path.append.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/filesystem/class.path/path.itr/iterator_db.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/input.output/file.streams/fstreams/fstream.members/open_pointer.pass.cpp
