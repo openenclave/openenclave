@@ -601,11 +601,15 @@ void* OE_HeapRemap(
     if (!(vad = _TreeFind(heap, (uintptr_t)addr)))
         goto done;
 
-    /* ATTN: verify that mappings are contiguous and at least old_size long */
-
+    /* ATTN: Verify that mappings are contiguous and at least old_size long */
+    /* ATTN: Beware that addr may not start at vad->addr */
 #if 0
-    size_t len = _HeapGetContiguousLength(vad);
-    printf("LEN=%zu\n", len / OE_PAGE_SIZE);
+    {
+        size_t len = _HeapGetContiguousLength(vad);
+
+        if (len < old_size)
+            goto done;
+    }
 #endif
 
     /* If the region is shrinking, just unmap the excess pages */

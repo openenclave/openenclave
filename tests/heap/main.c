@@ -591,16 +591,62 @@ void TestRemap2()
     if (!(ptr2 = _HeapMap(&h, NULL, old_size)))
         assert(0);
 
-#if 1
+#if 0
     OE_HeapDump(&h, true);
 #endif
 
     /* Remap region, making it twice as big */
     new_size = 16*PGSZ;
-    if (!(ptr1 = OE_HeapRemap(&h, ptr1, old_size, new_size, OE_MREMAP_MAYMOVE)))
+    if (!(ptr2 = OE_HeapRemap(&h, ptr2, old_size, new_size, OE_MREMAP_MAYMOVE)))
         assert(0);
 
-#if 1
+#if 0
+    OE_HeapDump(&h, true);
+#endif
+
+    printf("=== Passed %s()\n", __FUNCTION__);
+}
+
+void TestRemap3()
+{
+    OE_Heap h;
+    const size_t npages = 1024;
+    const size_t size = npages * OE_PAGE_SIZE;
+
+    assert(_InitHeap(&h, size) == 0);
+
+    /* Map 16 pages */
+    const size_t n = 16;
+    void* ptr;
+    if (!(ptr = _HeapMap(&h, NULL, n * PGSZ)))
+        assert(0);
+
+#if 0
+    OE_HeapDump(&h, true);
+#endif
+
+    /* Unmap 12 pages */
+    assert(OE_HeapUnmap(&h, ptr + 4 * PGSZ, 12 * PGSZ) == 0);
+
+#if 0
+    OE_HeapDump(&h, true);
+#endif
+
+#if 0
+    /* Expand the region but lie about the old_size (should fail) */
+    size_t old_size = 8 * PGSZ;
+    size_t new_size = 16 * PGSZ;
+    if ((ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
+        assert(0);
+#endif
+
+    /* Remap the region with correct old_size (should succeed) */
+    size_t old_size = 4 * PGSZ;
+    size_t new_size = 16 * PGSZ;
+    if (!(ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
+        assert(0);
+
+#if 0
     OE_HeapDump(&h, true);
 #endif
 
@@ -617,6 +663,7 @@ int main(int argc, const char* argv[])
     Test6();
     TestRemap1();
     TestRemap2();
+    TestRemap3();
     printf("=== passed all tests (%s)\n", argv[0]);
     return 0;
 }
