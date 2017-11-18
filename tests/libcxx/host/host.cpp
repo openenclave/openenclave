@@ -72,6 +72,7 @@ int main(int argc, const char* argv[])
     // Check for the --sim option:
     if (_GetOpt(argc, argv, "--simulate") == 1)
         flags |= OE_FLAG_SIMULATE;
+    else flags = OE_GetCreateFlags();
 
     // Check argument count:
     if (argc != 2)

@@ -25,15 +25,20 @@ add_library(oehost STATIC
 	entersim.S
 	)
 
+# we and dependents need the OE includes to compile
 target_link_libraries(oehost oe_includes)
+
+# linking also requires a number of libs on the host
+target_link_libraries(oehost -lcrypto -ldl -lpthread)
 
 target_compile_options(oehost PRIVATE 
 	-Wall -Werror -Wno-attributes -Wmissing-prototypes
-	-m64 -g -O2
+	-m64
 	)
-# -fPIC
-
 target_compile_definitions(oehost PRIVATE -DOE_BUILD_UNTRUSTED)
 
-set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/host)
-install (TARGETS oehost ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/host)
+# assemble lib-archive into proper dir
+set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
+
+# install lib-archive upon install-time
+install (TARGETS oehost ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)

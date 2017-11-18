@@ -1,0 +1,7 @@
+add_executable(SampleAppAttestationHost SampleAppAttestationHost.cpp)
+
+target_link_libraries(SampleAppAttestationHost oehost)
+
+target_compile_features(SampleAppAttestationHost PRIVATE cxx_generalized_initializers)
+target_compile_options(SampleAppAttestationHost PRIVATE -Wall -Werror)
+target_link_libraries(SampleAppAttestationHost -rdynamic)

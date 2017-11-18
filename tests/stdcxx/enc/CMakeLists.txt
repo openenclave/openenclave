@@ -1,0 +1,16 @@
+include(add_enclave_executable)
+add_enclave_executable(stdcxxenc sign.conf private.pem
+	enc.cpp
+	f.cpp
+	)
+
+target_compile_options(stdcxxenc PRIVATE -Wall -Werror
+	-fno-builtin-strcpy
+	-fno-builtin-strcat
+	-fno-builtin-memcpy
+	-fno-builtin-memset
+	-fno-builtin-fprintf
+	-fno-builtin-printf
+	)
+
+target_link_libraries(stdcxxenc -Wl,--whole-archive oelibcxx oelibc -Wl,--no-whole-archive)

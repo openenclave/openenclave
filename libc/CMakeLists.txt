@@ -1,3 +1,5 @@
+# Build the C library, using local sources and sources from MUSL
+
 set (MUSLSRC ${CMAKE_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_library(oelibc STATIC
@@ -526,12 +528,6 @@ add_library(oelibc STATIC
 	${MUSLSRC}/setjmp/x86_64/longjmp.s
 	)
 
-#INCLUDES += -I$(TOP)/include/openenclave/libc
-#INCLUDES += -I$(CURDIR)/internal
-#INCLUDES += -I$(MUSLSRC)/internal
-
-target_link_libraries(oelibc oe_includes)
-
 target_compile_options(oelibc PRIVATE
 	-nostdinc
 
@@ -548,8 +544,6 @@ target_compile_options(oelibc PRIVATE
 
 	-std=c99
 	-m64
-	-g
-	-O2
 	-fPIC
 	-fno-stack-protector
 	-fvisibility=hidden
@@ -562,6 +556,21 @@ target_compile_options(oelibc PRIVATE
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
 
-set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/enclave)
-install (TARGETS oelibc ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/enclave)
+# this project (and is dependents) require the enclave headers+lib
+target_link_libraries(oelibc oeenclave)
 
+# as a pre-build step, place the musl LIBC headers
+add_dependencies(oelibc oelibc_includes)
+
+# this project and its dependents require include/libc in the include path
+target_include_directories(oelibc PUBLIC ${OE_INCDIR}/openenclave/libc)
+
+# when building this project, we also need a number of internal includes
+target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
+target_include_directories(oelibc PRIVATE ${CMAKE_BINARY_DIR}/3rdparty/musl/musl/src/internal)
+
+# assemble lib-archive into proper dir
+set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
+
+# install lib-archive upon install-time
+install (TARGETS oelibc ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
