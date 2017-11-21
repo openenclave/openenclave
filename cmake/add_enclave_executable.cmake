@@ -35,14 +35,10 @@ function(add_enclave_executable BIN SIGNCONF KEYFILE)
 	# enclaves depend on the oeenclave lib
 	target_link_libraries(${BIN} oeenclave)
 
-	# custom rule to symlink the the binary to a name oesign understands
-	add_custom_command(OUTPUT ${BIN}.so
-		COMMAND ln -sf ${BIN} $<TARGET_FILE:${BIN}>.so
-		)
 	# custom rule to sign the binary
 	add_custom_command(OUTPUT ${BIN}.signed.so
-		COMMAND oesign $<TARGET_FILE:${BIN}>.so ${SIGNCONF} ${KEYFILE}
-		DEPENDS oesign $<TARGET_FILE:${BIN}>.so ${BIN} ${SIGNCONF} ${KEYFILE}
+		COMMAND oesign $<TARGET_FILE:${BIN}> ${SIGNCONF} ${KEYFILE}
+		DEPENDS oesign ${BIN} ${SIGNCONF} ${KEYFILE}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)
 	# signed binary is a default target
