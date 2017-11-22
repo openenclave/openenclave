@@ -8,7 +8,6 @@ add_executable(oegen
 	types.cpp
 	)
 
-target_compile_options(oegen PRIVATE  -Wall -Werror)
 target_link_libraries(oegen oehost)
 
 # assemble into proper collector dir

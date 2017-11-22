@@ -37,6 +37,10 @@ target_compile_options(oehost PRIVATE
 	)
 target_compile_definitions(oehost PRIVATE -DOE_BUILD_UNTRUSTED)
 
+# convenience library for creating a host-app (that needs the -rdynamic link flag)
+add_library(oehostapp INTERFACE)
+target_link_libraries(oehostapp INTERFACE oehost -rdynamic)
+
 # assemble lib-archive into proper dir
 set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
 

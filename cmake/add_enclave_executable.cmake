@@ -19,19 +19,6 @@
 function(add_enclave_executable BIN SIGNCONF KEYFILE)
 	add_executable(${BIN} ${ARGN})
 
-	# enclave-specific compile options
-	# these should perhaps go to oeenclave usage properties
-	target_compile_options(${BIN} PRIVATE
-		-m64 -nostdinc -fPIC -fno-stack-protector
-		$<$<COMPILE_LANGUAGE:CXX>:-std=c++14 -nostdinc++>
-		)
-	# enclave-specific link options
-	# these should perhaps go to oeenclave usage properties
-	target_link_libraries(${BIN}
-		-Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles 
-		-Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -Wl,-eOE_Main
-		)
-
 	# enclaves depend on the oeenclave lib
 	target_link_libraries(${BIN} oeenclave)
 

@@ -4,7 +4,6 @@ add_executable(dox2md
 	main.cpp
 	)
 
-target_compile_options(dox2md PRIVATE -Wall)
 target_link_libraries(dox2md expat)
 
 # assemble into proper collector dir

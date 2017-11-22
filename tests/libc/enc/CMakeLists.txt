@@ -9,10 +9,6 @@ add_library(libctest-support
 	rand.c
 	tls_align_dso.c
 	)
-target_compile_options(libctest-support PRIVATE
-	-m64 -nostdinc -fPIC -fno-stack-protector
-	$<$<COMPILE_LANGUAGE:CXX>:-std=c++14 -nostdinc++>
-	)
 target_link_libraries(libctest-support PUBLIC oelibc)
 
 function(add_libc_test_enc NAME CFILE)
@@ -26,7 +22,6 @@ function(add_libc_test_enc NAME CFILE)
 		${CMAKE_SOURCE_DIR}/3rdparty/musl/libc-test/src/common
 		)
 	target_compile_options(libctest-${NAME} PRIVATE
-		-Wall -Werror
 		-Wno-error=missing-braces
 		-Wno-error=overflow
 		-Wno-error=unused-value

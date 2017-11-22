@@ -8,5 +8,4 @@ add_enclave_executable(pingpongenc sign.conf private.pem
 	)
 
 target_include_directories(pingpongenc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_compile_options(pingpongenc PRIVATE -Wall -Werror)
 target_link_libraries(pingpongenc oeidl oelibc)

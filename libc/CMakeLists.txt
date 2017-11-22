@@ -529,10 +529,6 @@ add_library(oelibc STATIC
 	)
 
 target_compile_options(oelibc PRIVATE
-	-nostdinc
-
-	-Wall
-	-Werror
 	-Wno-attributes
 	-Wno-parentheses
 	-Wno-pointer-sign
@@ -543,10 +539,6 @@ target_compile_options(oelibc PRIVATE
 	-Wno-missing-braces
 
 	-std=c99
-	-m64
-	-fPIC
-	-fno-stack-protector
-	-fvisibility=hidden
 	-fno-builtin-memcpy
 	-fno-builtin-memset
 	-ffreestanding

@@ -8,7 +8,7 @@ target_compile_options(threadenc PRIVATE
 	-fno-builtin-strcat
 	-fno-builtin-memcpy
 	-fno-builtin-memset
-	-Wall -Werror)
+	)
 
 target_link_libraries(threadenc oelibc)
 

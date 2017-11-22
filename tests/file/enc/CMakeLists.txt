@@ -8,5 +8,4 @@ add_enclave_executable(fileenc sign.conf private.pem
 	)
 
 target_include_directories(fileenc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-target_compile_options(fileenc PRIVATE -Wall -Werror)
 target_link_libraries(fileenc oeidl oelibc)

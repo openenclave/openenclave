@@ -10,9 +10,7 @@ add_library(libcxxtest-support
 	memory_resource.cpp
 	)
 target_compile_options(libcxxtest-support PRIVATE
-	-Wall -Werror
-	-m64 -nostdinc -fPIC -fno-stack-protector
-	$<$<COMPILE_LANGUAGE:CXX>:-std=c++14 -nostdinc++>
+	$<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
 	)
 target_link_libraries(libcxxtest-support PUBLIC oelibcxx)
 target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
@@ -31,10 +29,8 @@ function(add_libcxx_test_enc NAME CXXFILE)
 		${CMAKE_SOURCE_DIR}/3rdparty/libcxx/libcxx/fuzzing
 		)
 
-	target_compile_options(libcxxtest-${NAME} PRIVATE -Wall)
-	set_source_files_properties(enc.cpp PROPERTIES COMPILE_FLAGS -Werror)
-	set_source_files_properties(main.cpp PROPERTIES COMPILE_DEFINITIONS WITH_MAIN)
-	target_compile_definitions(libcxxtest-${NAME} PRIVATE -D__TEST__="${CXXFILE}")
+	target_compile_options(libcxxtest-${NAME} PRIVATE -Wno-error --std=c++14)
+	target_compile_definitions(libcxxtest-${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
 	target_link_libraries(libcxxtest-${NAME} libcxxtest-support)
 endfunction(add_libcxx_test_enc)
 

@@ -5,14 +5,6 @@ add_library(oeidl STATIC
 	)
 
 target_compile_options(oeidl PRIVATE
-	-Wall
-	-Werror
-	-m64
-	-nostdinc
-	-Wno-attributes
-	-fPIC
-	-fno-stack-protector
-	-fvisibility=hidden
 	-Wmissing-prototypes
 	-Wstrict-prototypes
 	-fno-builtin-memcpy

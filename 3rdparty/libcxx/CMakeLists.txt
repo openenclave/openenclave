@@ -51,16 +51,7 @@ add_library(oelibcxx_cxx STATIC
 	libcxx/src/vector.cpp
 	)
 
-target_compile_options(oelibcxx_cxx PRIVATE
-	-nostdinc
-	-nostdinc++
-
-	-w
-
-	-std=c++14
-	-fPIC
-	)
-
+target_compile_options(oelibcxx_cxx PRIVATE -std=c++14)
 target_compile_definitions(oelibcxx_cxx PRIVATE
 	-DLIBCXXRT
 	-D_LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE

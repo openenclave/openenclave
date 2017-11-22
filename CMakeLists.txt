@@ -10,16 +10,7 @@ project("openenclave" VERSION ${OE_VERSION} LANGUAGES ASM C CXX)
 # allow simpler include() of our scripts
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-# set default build type and sanitize 
-if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
-endif()
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebInfo")
-
-string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
-if(NOT DEFINED CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE})
-	message(FATAL_ERROR "Unknown CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
-endif()
+include(compilersettings)
 
 # yes, we want tests
 enable_testing()
