@@ -19,7 +19,7 @@ function(add_libc_test_enc NAME CFILE)
 
 	target_include_directories(libctest-${NAME} PRIVATE 
 		..
-		${CMAKE_SOURCE_DIR}/3rdparty/musl/libc-test/src/common
+		${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common
 		)
 	target_compile_options(libctest-${NAME} PRIVATE
 		-Wno-error=missing-braces

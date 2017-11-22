@@ -8,7 +8,7 @@ file(STRINGS "VERSION" OE_VERSION)
 project("openenclave" VERSION ${OE_VERSION} LANGUAGES ASM C CXX)
 
 # allow simpler include() of our scripts
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 include(compilersettings)
 
@@ -19,7 +19,7 @@ include(CTest)
 
 # set default paths
 include(GNUInstallDirs)
-set(OE_OUTPUT_DIR ${CMAKE_BINARY_DIR}/output CACHE PATH "Path to the intermittent collector tree")
+set(OE_OUTPUT_DIR ${PROJECT_BINARY_DIR}/output CACHE PATH "Path to the intermittent collector tree")
 set(OE_BINDIR ${OE_OUTPUT_DIR}/bin CACHE PATH "Binary collector")
 set(OE_DATADIR ${OE_OUTPUT_DIR}/share CACHE PATH "Data collector root")
 set(OE_DOCDIR ${OE_OUTPUT_DIR}/share/doc CACHE PATH "Doc collector root")

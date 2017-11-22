@@ -24,9 +24,9 @@ function(add_libcxx_test_enc NAME CXXFILE)
 
 	target_include_directories(libcxxtest-${NAME} PRIVATE
 		..
-		${CMAKE_SOURCE_DIR}/3rdparty/libcxx/libcxx/test
-		${CMAKE_SOURCE_DIR}/3rdparty/libcxx/libcxx/test/support
-		${CMAKE_SOURCE_DIR}/3rdparty/libcxx/libcxx/fuzzing
+		${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test
+		${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test/support
+		${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/fuzzing
 		)
 
 	target_compile_options(libcxxtest-${NAME} PRIVATE -Wno-error --std=c++14)

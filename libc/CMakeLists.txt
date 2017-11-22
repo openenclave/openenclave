@@ -1,6 +1,6 @@
 # Build the C library, using local sources and sources from MUSL
 
-set (MUSLSRC ${CMAKE_SOURCE_DIR}/3rdparty/musl/musl/src)
+set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_library(oelibc STATIC
 	arc4random.c
@@ -559,7 +559,7 @@ target_include_directories(oelibc PUBLIC ${OE_INCDIR}/openenclave/libc)
 
 # when building this project, we also need a number of internal includes
 target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
-target_include_directories(oelibc PRIVATE ${CMAKE_BINARY_DIR}/3rdparty/musl/musl/src/internal)
+target_include_directories(oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
 
 # assemble lib-archive into proper dir
 set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)

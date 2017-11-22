@@ -14,7 +14,7 @@ ExternalProject_Add(oelibcxx_tmp
         CONFIGURE_COMMAND ""
         BUILD_COMMAND sh -c "rm -f *.o ${OE_LIBDIR}/enclave/liboelibcxx.a"
 	    COMMAND ar x $<TARGET_FILE:cxxrt-static>
-            COMMAND ar x ${CMAKE_BINARY_DIR}/3rdparty/libunwind/libunwind/src/.libs/libunwind.a
+            COMMAND ar x ${PROJECT_BINARY_DIR}/3rdparty/libunwind/libunwind/src/.libs/libunwind.a
 	    COMMAND ar x $<TARGET_FILE:oelibcxx_cxx>
 	    COMMAND sh -c "ar qs ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a *.o"
         INSTALL_COMMAND ""
