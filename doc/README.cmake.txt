@@ -47,8 +47,7 @@ Different configurations (Debug, Release, RelWithDebInfo) are supported by
 CMake pretty much out-of-the-box. Select when calling cmake, like so:
 * cmake .. -DMAKE_BUILD_TYPE=relwithdebinfo
 
-The default (none) results in no optimization, no non-debug flags, and no
-debug symbols.
+Default is Debug.
 
 Documentation
 -------------
