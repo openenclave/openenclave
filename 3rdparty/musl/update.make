@@ -14,7 +14,11 @@ update-musl:
 	tar zxf $(PKG)
 	mv $(BASE) musl
 	rm -rf $(PKG)
+	rm musl/.gitignore
 
 update-libc-test:
 	rm -rf libc-test
 	git clone git://nsz.repo.hu:45100/repo/libc-test
+	rm -rf libc-test/.git
+	rm libc-test/.gitignore
+

@@ -14,3 +14,10 @@ update-mbedtls:
 	tar zxf $(PKG)
 	mv $(BASE) mbedtls
 	rm -rf $(PKG)
+	rm mbedtls/.gitignore
+	rm mbedtls/yotta/.gitignore
+	rm mbedtls/programs/.gitignore
+	rm mbedtls/include/.gitignore
+	rm mbedtls/library/.gitignore
+	rm mbedtls/tests/.gitignore
+	rm mbedtls/tests/data_files/.gitignore
