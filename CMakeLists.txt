@@ -19,12 +19,12 @@ include(CTest)
 
 # set default paths
 include(GNUInstallDirs)
-set(OE_OUTPUT_DIR ${PROJECT_BINARY_DIR}/output CACHE PATH "Path to the intermittent collector tree")
-set(OE_BINDIR ${OE_OUTPUT_DIR}/bin CACHE PATH "Binary collector")
-set(OE_DATADIR ${OE_OUTPUT_DIR}/share CACHE PATH "Data collector root")
-set(OE_DOCDIR ${OE_OUTPUT_DIR}/share/doc CACHE PATH "Doc collector root")
-set(OE_INCDIR ${OE_OUTPUT_DIR}/include CACHE PATH "Include collector")
-set(OE_LIBDIR ${OE_OUTPUT_DIR}/lib CACHE PATH "Library collector")
+set(OE_OUTPUT_DIR ${PROJECT_BINARY_DIR}/output CACHE INTERNAL "Path to the intermittent collector tree")
+set(OE_BINDIR ${OE_OUTPUT_DIR}/bin CACHE INTERNAL "Binary collector")
+set(OE_DATADIR ${OE_OUTPUT_DIR}/share CACHE INTERNAL "Data collector root")
+set(OE_DOCDIR ${OE_OUTPUT_DIR}/share/doc CACHE INTERNAL "Doc collector root")
+set(OE_INCDIR ${OE_OUTPUT_DIR}/include CACHE INTERNAL "Include collector")
+set(OE_LIBDIR ${OE_OUTPUT_DIR}/lib CACHE INTERNAL "Library collector")
 
 # generate config-file for using projects
 include(gen_config_file)

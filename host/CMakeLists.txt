@@ -28,8 +28,12 @@ add_library(oehost STATIC
 # we and dependents need the OE includes to compile
 target_link_libraries(oehost oe_includes)
 
+find_library(CRYPTO_LIB NAMES crypto)
+find_library(DL_LIB NAMES dl)
+find_package(Threads REQUIRED)
+
 # linking also requires a number of libs on the host
-target_link_libraries(oehost -lcrypto -ldl -lpthread)
+target_link_libraries(oehost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 
 target_compile_options(oehost PRIVATE 
 	-Wall -Werror -Wno-attributes -Wmissing-prototypes
