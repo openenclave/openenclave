@@ -34,14 +34,16 @@ gen_config_file(${OE_DATADIR}/openenclave/config.mak "${CMAKE_INSTALL_PREFIX}")
 install (FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
 
 # finally, add all dirs that matter
+add_subdirectory(host)		# convertable to Windows
+add_subdirectory(include)	# convertable to Windows
+if (UNIX)
 add_subdirectory(3rdparty)
 add_subdirectory(doc/refman)
 add_subdirectory(enclave)
-add_subdirectory(host)		# convertable to Windows
 add_subdirectory(idl)
-add_subdirectory(include)	# convertable to Windows
 add_subdirectory(libc)
 add_subdirectory(libcxx)
 add_subdirectory(samples)
 add_subdirectory(tests)
 add_subdirectory(tools)
+endif(UNIX)

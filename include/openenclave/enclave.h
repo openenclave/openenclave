@@ -20,7 +20,7 @@ OE_EXTERNC_BEGIN
 # define OE_BUILD_ENCLAVE
 #endif
 
-# define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section (".ecall")))
+#define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section (".ecall")))
 
 #define OE_REPORT_DATA_SIZE 64
 

@@ -1,5 +1,5 @@
-/** 
- * \file thread.h 
+/**
+ * \file thread.h
  *
  * This file defines threading primitives used by hosts and enclaves.
  *
@@ -14,7 +14,7 @@ OE_EXTERNC_BEGIN
 
 typedef unsigned long OE_Thread;
 
-typedef struct _OE_ThreadAttr 
+typedef struct _OE_ThreadAttr
 {
     long __impl[7];
 }
@@ -53,9 +53,9 @@ typedef unsigned int OE_OnceType;
  * Calls the given function exactly once.
  *
  * This function calls the function given by the **func** parameter exactly
- * one time for the given **once** parameter, no matter how many times 
- * OE_Once() is called. OE_Once() may be called safely from different threads 
- * and is typically used as a thread-safe mechanism for performing one-time 
+ * one time for the given **once** parameter, no matter how many times
+ * OE_Once() is called. OE_Once() may be called safely from different threads
+ * and is typically used as a thread-safe mechanism for performing one-time
  * initialization, as in the example below.
  *
  *     static OE_OnceType _once = OE_ONCE_INITIALIZER;
@@ -78,17 +78,17 @@ typedef unsigned int OE_OnceType;
  *
  */
 int OE_Once(
-    OE_OnceType* once, 
+    OE_OnceType* once,
     void (*func)(void));
 
 #define OE_SPINLOCK_INITIALIZER 0
 
 typedef volatile unsigned int OE_Spinlock;
 
-/** 
+/**
  * Initializes a spin lock.
  *
- * This function initializes a spin lock. Spin locks can also be initialized 
+ * This function initializes a spin lock. Spin locks can also be initialized
  * statically as follows.
  *
  *     static OE_Spinlock _spinlock = OE_SPINLOCK_INITIALIZER;
@@ -106,9 +106,9 @@ int OE_SpinInit(OE_Spinlock* spinlock);
 /**
  * Acquire a lock on a spin lock.
  *
- * A thread calls this function to acquire a lock on a spin lock. If 
- * another thread has already acquired a lock, the calling thread spins 
- * until the lock is available. If more than one thread is waiting on the 
+ * A thread calls this function to acquire a lock on a spin lock. If
+ * another thread has already acquired a lock, the calling thread spins
+ * until the lock is available. If more than one thread is waiting on the
  * spin lock, the selection of the next thread to obtain the lock is arbitrary.
  *
  * @param spinlock Lock this spin lock.
@@ -151,7 +151,7 @@ typedef struct _OE_Mutex
     OE_Spinlock lock;
     unsigned int refs;
     unsigned char __padding[16]; /* align with system pthread_t */
-    struct 
+    struct
     {
         void* front;
         void* back;
@@ -169,20 +169,20 @@ OE_STATIC_ASSERT((sizeof(OE_Mutex) == 40));
  * This function initializes a mutex. All mutexes are recursive. Once
  * initialized, multiple threads can use this mutex to synchronoze access
  * to data. See OE_MutexLock() and OE_MutexUnlock().
- * 
+ *
  * @param mutex Initialize this mutex.
  *
  * @return Return zero on success.
- * 
+ *
  */
 int OE_MutexInit(OE_Mutex* mutex);
 
 /**
  * Acquires a lock on a mutex.
  *
- * This function acquires a lock on a mutex. 
- * 
- * For enclaves, OE_MutexLock() performs an OCALL to wait for the mutex to 
+ * This function acquires a lock on a mutex.
+ *
+ * For enclaves, OE_MutexLock() performs an OCALL to wait for the mutex to
  * be signaled.
  *
  * @param mutex Acquire a lock on this mutex.
@@ -195,8 +195,8 @@ int OE_MutexLock(OE_Mutex* mutex);
 /**
  * Tries to acquire a lock on a mutex.
  *
- * This function attempts to acquire a lock on the given mutex if it is 
- * available. If the mutex is unavailable, the function returns immediately. 
+ * This function attempts to acquire a lock on the given mutex if it is
+ * available. If the mutex is unavailable, the function returns immediately.
  * Unlike OE_MutexLock(), this function never performs an OCALL.
  *
  * @param mutex Acquire a lock on this mutex.
@@ -209,7 +209,7 @@ int OE_MutexTryLock(OE_Mutex* mutex);
 /**
  * Releases a mutex.
  *
- * This function releases the lock on a mutex obtained with either 
+ * This function releases the lock on a mutex obtained with either
  * OE_MutexLock() or OE_MutexTryLock().
  *
  * In enclaves, this function performs an OCALL, where it wakes the next
@@ -234,19 +234,19 @@ int OE_MutexUnlock(OE_Mutex* mutex);
  */
 int OE_MutexDestroy(OE_Mutex* mutex);
 
-#define OE_COND_INITIALIZER {OE_SPINLOCK_INITIALIZER,{NULL, NULL},{0,0,0}}
+#define OE_COND_INITIALIZER {OE_SPINLOCK_INITIALIZER}
 
 /* Condition variable representation */
 typedef struct _OE_Cond
 {
     OE_Spinlock lock;
-    struct 
+    struct
     {
         void* front;
         void* back;
     }
     queue;
-    unsigned long padding[3];
+    unsigned char padding[24];
 }
 OE_Cond;
 
@@ -261,7 +261,7 @@ OE_STATIC_ASSERT((sizeof(OE_Cond) == 48));
  *
  *     OE_Cond cond = OE_COND_INITIALIZER;
  *
- * Condition variables allow threads to wait on an event using a first-come 
+ * Condition variables allow threads to wait on an event using a first-come
  * first-served (FCFS) policy.
  *
  * @param cond Initialize this condition variable.
@@ -275,15 +275,15 @@ int OE_CondInit(OE_Cond* cond);
  * Waits on a condition variable.
  *
  * A thread calls this function to wait on a condition variable. If the
- * condition variable is available, OE_CondWait() returns immediately. 
- * Otherwise, the thread is placed on a first-come first-served (FCFS) queue 
- * where it waits to be signaled. The **mutex** parameter is used to 
+ * condition variable is available, OE_CondWait() returns immediately.
+ * Otherwise, the thread is placed on a first-come first-served (FCFS) queue
+ * where it waits to be signaled. The **mutex** parameter is used to
  * synchronize access to the condition variable. The caller locks this mutex
  * before calling OE_CondWait(), which places the thread on the waiting queue
  * and unlocks the mutex. When the thread is signaled by OE_CondSignal(), the
  * waiting thread acquires the mutex and returns.
- * 
- * In enclaves, this function performs an OCALL, where the thread waits to be 
+ *
+ * In enclaves, this function performs an OCALL, where the thread waits to be
  * signaled.
  *
  * @param cond Wait on this condition variable.
@@ -293,19 +293,19 @@ int OE_CondInit(OE_Cond* cond);
  *
  */
 int OE_CondWait(
-    OE_Cond* cond, 
+    OE_Cond* cond,
     OE_Mutex* mutex);
 
 /**
  * Signal a thread waiting on a condition variable.
  *
- * A thread calls this function to signal the next thread waiting on the 
+ * A thread calls this function to signal the next thread waiting on the
  * given condition variable. Waiting threads call OE_CondWait() which places
  * them on on a first-come first-served (FCFS) queue, where they wait to
  * be signaled. OE_CondSignal() wakes up the thread at the front of queue,
- * causing it to return from OE_CondWait(). 
+ * causing it to return from OE_CondWait().
  *
- * In enclaves, this function performs an OCALL, where it wakes the next 
+ * In enclaves, this function performs an OCALL, where it wakes the next
  * waiting thread.
  *
  * @param cond Signal this condition variable.
@@ -319,7 +319,7 @@ int OE_CondSignal(
 /**
  * Signals all threads waiting on a condition variable.
  *
- * A thread calls this function to signal all threads waiting on the 
+ * A thread calls this function to signal all threads waiting on the
  * given condition variable. Waiting threads call OE_CondWait(), which places
  * them on a first-come first-served (FCFS) queue, where they wait to be
  * signaled. OE_CondBroadcast() wakes up all threads on the queue, causing
@@ -354,7 +354,7 @@ typedef unsigned int OE_ThreadKey;
 /**
  * Create a key for accessing thread-specific data.
  *
- * This function allocates a thread-specific data (TSD) entry and initializes 
+ * This function allocates a thread-specific data (TSD) entry and initializes
  * a key for accessing it. The function given by the **destructor** parameter
  * is called when the key is deleted by OE_ThreadKeyDelete().
  *
@@ -365,14 +365,14 @@ typedef unsigned int OE_ThreadKey;
  *
  */
 int OE_ThreadKeyCreate(
-    OE_ThreadKey* key, 
+    OE_ThreadKey* key,
     void (*destructor)(void* value));
 
 /**
  * Delete a key for accessing thread-specific data.
  *
  * This function deletes the thread-specific data (TSD) entry associated with
- * the given key, calling the function given by the **destructor** parameter 
+ * the given key, calling the function given by the **destructor** parameter
  * initially passed to OE_ThreadKeyCreate().
  *
  * @param key Delete the TSD entry associated with this key.
@@ -396,13 +396,13 @@ int OE_ThreadKeyDelete(
  *
  */
 int OE_ThreadSetSpecific(
-    OE_ThreadKey key, 
+    OE_ThreadKey key,
     const void* value);
 
 /**
  * Gets the value of a thread-specific data entry.
  *
- * This function retrieves the value of a thread-specific data (TSD) entry 
+ * This function retrieves the value of a thread-specific data (TSD) entry
  * associated with the given key.
  *
  * @param key Get the TSD entry value associated with this key.

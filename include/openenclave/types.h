@@ -22,19 +22,6 @@
 /*
 **==============================================================================
 **
-** OE_COUNTOF()
-** OE_OFFSETOF()
-**
-**==============================================================================
-*/
-
-#define OE_COUNTOF(ARR) (sizeof(ARR) / sizeof(ARR[0]))
-
-#define OE_OFFSETOF(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
-
-/*
-**==============================================================================
-**
 ** Printf format specifiers
 **
 **==============================================================================
@@ -51,37 +38,55 @@
 **==============================================================================
 */
 
-#ifndef __cplusplus
-typedef int wchar_t;
-#endif
+#ifdef __GNUC__
 
 typedef long ssize_t;
-
 typedef unsigned long size_t;
-
 typedef signed char int8_t;
-
 typedef unsigned char uint8_t;
-
 typedef short int16_t;
-
 typedef unsigned short uint16_t;
-
 typedef int int32_t;
-
 typedef unsigned int uint32_t;
-
 typedef long int64_t;
-
 typedef unsigned long uint64_t;
-
 typedef unsigned long uintptr_t;
-
 typedef long ptrdiff_t;
 
-#ifdef __cplusplus
-# define true true
+#elif _MSC_VER
+
+typedef long long ssize_t;
+typedef unsigned long long size_t;
+typedef signed char int8_t;
+typedef unsigned char uint8_t;
+typedef short int16_t;
+typedef unsigned short uint16_t;
+typedef int int32_t;
+typedef unsigned int uint32_t;
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
+typedef unsigned long long uintptr_t;
+typedef long long ptrdiff_t;
+
 #else
+# error unknown compiler - please adapt basic types
+#endif
+
+
+/* Some basic verifications */
+OE_STATIC_ASSERT(sizeof(void*) == 8);
+OE_STATIC_ASSERT(sizeof(ssize_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(size_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(int16_t) == 2);
+OE_STATIC_ASSERT(sizeof(uint16_t) == 2);
+OE_STATIC_ASSERT(sizeof(int32_t) == 4);
+OE_STATIC_ASSERT(sizeof(int32_t) == 4);
+OE_STATIC_ASSERT(sizeof(int64_t) == 8);
+OE_STATIC_ASSERT(sizeof(uint64_t) == 8);
+OE_STATIC_ASSERT(sizeof(uintptr_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
+
+#ifndef __cplusplus
 # define true 1
 # define false 0
 # define bool _Bool
@@ -163,12 +168,13 @@ typedef void (*OE_DeallocProc)(void* ptr);
 
 #define OE_PAGE_SIZE 4096
 
-typedef struct _OE_Page
+typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
 {
     unsigned char data[OE_PAGE_SIZE];
 }
-OE_Page
-OE_ALIGNED(OE_PAGE_SIZE);
+OE_Page;
+
+OE_STATIC_ASSERT(__alignof(OE_Page) == OE_PAGE_SIZE);
 
 /*
 **==============================================================================
