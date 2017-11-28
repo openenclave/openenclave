@@ -3,9 +3,10 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <openenclave/defs.h>
 
-__attribute__((format(printf, 1, 2)))
-static __inline__ void Log(const char* fmt, ...)
+OE_PRINTF_FORMAT(1,2)
+OE_INLINE void Log(const char* fmt, ...)
 {
     FILE* os = fopen("/tmp/log.txt", "ab");
 
@@ -19,7 +20,7 @@ static __inline__ void Log(const char* fmt, ...)
     }
 }
 
-static __inline__ void LogData(
+OE_INLINE void LogData(
     const void* data,
     size_t size)
 {
@@ -35,7 +36,7 @@ static __inline__ void LogData(
     }
 }
 
-static __inline__ void LogHex(
+OE_INLINE void LogHex(
     const void* data_,
     size_t size)
 {
@@ -58,7 +59,7 @@ static __inline__ void LogHex(
 }
 
 /* Reverse form of LogHex() */
-static __inline__ void LogHexReverse(
+OE_INLINE void LogHexReverse(
     const unsigned char* data,
     size_t size)
 {
@@ -77,7 +78,7 @@ static __inline__ void LogHexReverse(
     }
 }
 
-static __inline__ unsigned int Checksum(
+OE_INLINE unsigned int Checksum(
     const void* data,
     size_t size)
 {
@@ -90,15 +91,17 @@ static __inline__ unsigned int Checksum(
     return x;
 }
 
+OE_PACK(
 typedef struct _SigstructAttributes
 {
     unsigned long long flags;
     unsigned long long xfrm;
 }
-__attribute__((packed))
 SigstructAttributes;
+)
 
 /* 1808 bytes */
+OE_PACK(
 typedef struct _Sigstruct
 {
     /* (0) must be (06000000E100000000000100H) */
@@ -167,10 +170,11 @@ typedef struct _Sigstruct
     /* (1424) Q2 value for RSA Signature Verification */
     unsigned char q2[384];
 }
-__attribute__((packed))
 Sigstruct;
+)
 
-static __inline__ void LogSigstruct(const Sigstruct* p)
+
+OE_INLINE void LogSigstruct(const Sigstruct* p)
 {
     Log("=== Sigstruct\n");
     Log("header="); LogHex(p->header, sizeof(p->header));

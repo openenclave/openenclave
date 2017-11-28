@@ -1,0 +1,6 @@
+include(add_enclave_executable)
+add_enclave_executable(SampleAppAttestation sign.conf private.pem
+	SampleAppAttestation.cpp
+	)
+target_compile_features(SampleAppAttestation PRIVATE cxx_nullptr)
+target_link_libraries(SampleAppAttestation oelibc)

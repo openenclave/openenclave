@@ -44,12 +44,13 @@ extern "C" int close(int fd)
 
 OE_ECALL void Test(Args* args)
 {
+    extern const char* __TEST__NAME;
     if (args)
     {
-        printf("RUNNING: %s\n", __TEST__);
+        printf("RUNNING: %s\n", __TEST__NAME);
         static const char* argv[] = { "test", NULL, };
         static int argc = sizeof(argv) / sizeof(argv[0]);
         args->ret = main(argc, argv);
-        args->test = OE_HostStrdup(__TEST__);
+        args->test = OE_HostStrdup(__TEST__NAME);
     }
 }

@@ -1,0 +1,4 @@
+add_subdirectory(enc)
+add_subdirectory(host)
+
+add_test(tests/pingpong host/pingponghost ./enc/pingpongenc.signed.so)
