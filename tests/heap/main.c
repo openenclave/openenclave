@@ -29,6 +29,10 @@ static void _CheckCoverage()
             fprintf(stderr, "*** uncovered: OE_HEAP_COVERAGE_%zu\n", i);
             assert(0);
         }
+        else
+        {
+            printf("=== passed OE_HEAP_COVERAGE_%zu\n", i);
+        }
     }
 }
 
@@ -56,6 +60,8 @@ static int _InitHeap(OE_Heap* heap, size_t size)
         fprintf(stderr, "ERROR: OE_HeapInit(): %s\n", heap->err);
         return -1;
     }
+
+    heap->scrub = true;
 
     OE_HeapSetSanity(heap, true);
 

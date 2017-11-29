@@ -126,6 +126,9 @@ typedef struct _OE_Heap
     /* Whether sanity checks are enabled: see OE_HeapEnableSanityChecks() */
     bool sanity;
 
+    /* Whether to scrub memory when it is unmapped (fill with 0xDD) */
+    bool scrub;
+
     /* Error string */
     char err[OE_HEAP_ERROR_SIZE];
 

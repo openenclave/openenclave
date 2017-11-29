@@ -913,6 +913,10 @@ OE_Result OE_HeapUnmap(
         heap->coverage[OE_HEAP_COVERAGE_6] = true;
     }
 
+    /* If scrubbing is enabled, then scrub the unmapped memory */
+    if (heap->scrub)
+        MEMSET(addr, 0xDD, length);
+
     if (!_HeapSane(heap))
         OE_THROW(OE_UNEXPECTED);
 
@@ -1019,6 +1023,10 @@ void* OE_HeapRemap(
             heap->coverage[OE_HEAP_COVERAGE_7] = true;
         }
 
+        /* If scrubbing is enabled, scrub the unmapped portion */
+        if (heap->scrub)
+            MEMSET((void*)new_end, 0xDD, old_size - new_size);
+
         vad->size = new_end - vad->addr;
         new_addr = addr;
         heap->coverage[OE_HEAP_COVERAGE_8] = true;
@@ -1041,7 +1049,13 @@ void* OE_HeapRemap(
             {
                 OE_VAD* next = vad->next;
                 vad->size += next->size;
-                _HeapRemoveVAD(heap, next);
+
+                if (_HeapRemoveVAD(heap, next) != 0)
+                {
+                    _SetErr(heap, "failed to remove VAD");
+                    goto done;
+                }
+
                 _FreeListPut(heap, next);
                 heap->coverage[OE_HEAP_COVERAGE_10] = true;
             }
