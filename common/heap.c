@@ -773,10 +773,11 @@ void* OE_HeapMap(
         }
     }
 
+    /* Zero-fill mapped memory */
+    MEMSET((void*)start, 0, length);
+
     if (!_HeapSane(heap))
         goto done;
-
-    MEMSET((void*)start, 0, length);
 
     result = (void*)start;
 
