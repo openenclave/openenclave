@@ -96,8 +96,6 @@ void OE_HeapDump(const OE_Heap* h, bool full)
             {
                 if (h->mapped_top != p->addr)
                 {
-printf("TOP=%lx\n", h->mapped_top);
-printf("ADR=%lx\n", p->addr);
                     _PrintGap(h->mapped_top, p->addr);
                 }
             }

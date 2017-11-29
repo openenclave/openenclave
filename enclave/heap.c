@@ -26,16 +26,14 @@ static void _Init(void)
 /* Implementation of standard brk() function */
 int OE_Brk(uintptr_t addr)
 {
-    int rc;
-
     if (__oe_heap.initialized == false)
         _Init();
 
     OE_SpinLock(&_lock);
-    rc = OE_HeapBrk(&__oe_heap, addr);
+    OE_Result result = OE_HeapBrk(&__oe_heap, addr);
     OE_SpinUnlock(&_lock);
 
-    return rc;
+    return result == OE_OK ? 0 : -1;
 }
 
 /* Implementation of standard sbrk() function */
@@ -49,6 +47,10 @@ void* OE_Sbrk(ptrdiff_t increment)
     OE_SpinLock(&_lock);
     ptr = OE_HeapSbrk(&__oe_heap, increment);
     OE_SpinUnlock(&_lock);
+
+    /* Map null to expected sbrk() error return type */
+    if (!ptr)
+        return (void*)-1;
 
     return ptr;
 }

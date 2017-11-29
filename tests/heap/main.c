@@ -9,6 +9,29 @@
 
 static size_t PGSZ = OE_PAGE_SIZE;
 
+static bool _coverage[OE_HEAP_COVERAGE_N];
+
+static void _MergeCoverage(const OE_Heap* heap)
+{
+    for (size_t i = 0; i < OE_HEAP_COVERAGE_N; i++)
+    {
+        if (heap->coverage[i])
+            _coverage[i] = true;
+    }
+}
+
+static void _CheckCoverage()
+{
+    for (size_t i = 0; i < OE_HEAP_COVERAGE_N; i++)
+    {
+        if (!_coverage[i])
+        {
+            fprintf(stderr, "*** uncovered: OE_HEAP_COVERAGE_%zu\n", i);
+            assert(0);
+        }
+    }
+}
+
 static size_t _CountVADs(const OE_VAD* list)
 {
     const OE_VAD* p;
@@ -28,7 +51,20 @@ static int _InitHeap(OE_Heap* heap, size_t size)
     if (!(base = memalign(OE_PAGE_SIZE, size)))
         return -1;
 
-    return OE_HeapInit(heap, (uintptr_t)base, size);
+    if (OE_HeapInit(heap, (uintptr_t)base, size) != OE_OK)
+    {
+        fprintf(stderr, "ERROR: OE_HeapInit(): %s\n", heap->err);
+        return -1;
+    }
+
+    OE_HeapSetSanity(heap, true);
+
+    return 0;
+}
+
+static void _FreeHeap(OE_Heap* heap)
+{
+    free((void*)heap->base);
 }
 
 static bool _IsSorted(const OE_VAD* list)
@@ -80,7 +116,25 @@ static void* _HeapMap(
     int prot = OE_PROT_READ | OE_PROT_WRITE;
     int flags = OE_MAP_ANONYMOUS | OE_MAP_PRIVATE;
 
-    return OE_HeapMap(heap, addr, length, prot, flags);
+    void* result = OE_HeapMap(heap, addr, length, prot, flags);
+
+    if (!result)
+        fprintf(stderr, "ERROR: OE_HeapMap(): %s\n", heap->err);
+
+    return result;
+}
+
+static void* _HeapMapNoErr(
+    OE_Heap* heap,
+    void* addr,
+    size_t length)
+{
+    int prot = OE_PROT_READ | OE_PROT_WRITE;
+    int flags = OE_MAP_ANONYMOUS | OE_MAP_PRIVATE;
+
+    void* result = OE_HeapMap(heap, addr, length, prot, flags);
+
+    return result;
 }
 
 static void* _HeapRemap(
@@ -91,10 +145,28 @@ static void* _HeapRemap(
 {
     int flags = OE_MREMAP_MAYMOVE;
 
-    return OE_HeapRemap(heap, addr, old_size, new_size, flags);
+    void* result = OE_HeapRemap(heap, addr, old_size, new_size, flags);
+
+    if (!result)
+        fprintf(stderr, "ERROR: OE_HeapRemap(): %s\n", heap->err);
+
+    return result;
 }
 
-void Test1()
+static int _HeapUnmap(
+    OE_Heap* heap,
+    void* address,
+    size_t size)
+{
+    int rc = OE_HeapUnmap(heap, address, size);
+
+    if (rc != 0)
+        fprintf(stderr, "ERROR: OE_HeapUnmap(): %s\n", heap->err);
+
+    return rc;
+}
+
+void TestHeap1()
 {
     OE_Heap h;
 
@@ -140,7 +212,7 @@ void Test1()
 
     for (size_t i = 0; i < n; i++)
     {
-        if (OE_HeapUnmap(&h, ptrs[i], (i + 1) * PGSZ) != 0)
+        if (_HeapUnmap(&h, ptrs[i], (i + 1) * PGSZ) != 0)
             assert(0);
     }
 
@@ -162,7 +234,7 @@ void Test1()
     {
         size_t r = (i + 1) * OE_PAGE_SIZE;
 
-        if (OE_HeapUnmap(&h, ptrs[i], r) != 0)
+        if (_HeapUnmap(&h, ptrs[i], r) != 0)
             assert(0);
     }
 
@@ -190,7 +262,7 @@ void Test1()
     {
         size_t r = (i + 1) * OE_PAGE_SIZE;
 
-        if (OE_HeapUnmap(&h, ptrs[i], r) != 0)
+        if (_HeapUnmap(&h, ptrs[i], r) != 0)
             assert(0);
     }
 
@@ -209,10 +281,12 @@ void Test1()
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void Test2()
+void TestHeap2()
 {
     OE_Heap h;
 
@@ -244,7 +318,7 @@ void Test2()
     void* p0a;
     void* p0b;
     {
-        if (OE_HeapUnmap(&h, p0, 2*OE_PAGE_SIZE) != 0)
+        if (_HeapUnmap(&h, p0, 2*OE_PAGE_SIZE) != 0)
             assert(0);
 
         assert(_IsSorted(h.vad_list));
@@ -267,7 +341,7 @@ void Test2()
     void* p2a;
     void* p2b;
     {
-        if (OE_HeapUnmap(&h, p2, 4*OE_PAGE_SIZE) != 0)
+        if (_HeapUnmap(&h, p2, 4*OE_PAGE_SIZE) != 0)
             assert(0);
 
         assert(_IsSorted(h.vad_list));
@@ -289,10 +363,12 @@ void Test2()
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void Test3()
+void TestHeap3()
 {
     OE_Heap h;
 
@@ -333,7 +409,7 @@ void Test3()
     assert(_IsFlush(&h, h.vad_list));
 
     /* Unmap ptrs[1] and ptrs[0] */
-    if (OE_HeapUnmap(&h, ptrs[1], 3*PGSZ) != 0)
+    if (_HeapUnmap(&h, ptrs[1], 3*PGSZ) != 0)
         assert(0);
 
     assert(_IsSorted(h.vad_list));
@@ -353,7 +429,7 @@ void Test3()
 #endif
 
     /* Free innner 6 pages of ptrs[7] -- [mUUUUUUm] */
-    if (OE_HeapUnmap(&h, ptrs[7] + PGSZ, 6*PGSZ) != 0)
+    if (_HeapUnmap(&h, ptrs[7] + PGSZ, 6*PGSZ) != 0)
         assert(0);
 
     assert(_IsSorted(h.vad_list));
@@ -370,10 +446,12 @@ void Test3()
     OE_HeapDump(&h, false);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void Test4()
+void TestHeap4()
 {
     OE_Heap h;
 
@@ -406,16 +484,18 @@ void Test4()
     assert(OE_HeapUnmap(&h, ptrs[7], 1024 * PGSZ) != 0);
 
     /* Unmap everything */
-    assert(OE_HeapUnmap(&h, ptrs[7], m) == 0);
+    assert(_HeapUnmap(&h, ptrs[7], m) == 0);
 
 #if 0
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void Test5()
+void TestHeap5()
 {
     OE_Heap h;
 
@@ -442,7 +522,7 @@ void Test5()
 #endif
 
     /* Unmap a region in the middle */
-    assert(OE_HeapUnmap(&h, ptrs[4], 5 * PGSZ) == 0);
+    assert(_HeapUnmap(&h, ptrs[4], 5 * PGSZ) == 0);
 
     /* Unmap everything */
     assert(OE_HeapUnmap(&h, ptrs[7], m) != 0);
@@ -451,10 +531,12 @@ void Test5()
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void Test6()
+void TestHeap6()
 {
     OE_Heap h;
     size_t i;
@@ -474,7 +556,7 @@ void Test6()
     for (i = 0; i < n; i++)
     {
         void* p = ptr + (i * PGSZ);
-        assert(OE_HeapUnmap(&h, p, PGSZ) == 0);
+        assert(_HeapUnmap(&h, p, PGSZ) == 0);
     }
 
 
@@ -482,7 +564,9 @@ void Test6()
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 void TestRemap1()
@@ -515,7 +599,7 @@ void TestRemap1()
 
     /* Remap region, making it twice as big */
     new_size = 16*PGSZ;
-    if (!(ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
+    if (!(ptr = _HeapRemap(&h, ptr, old_size, new_size)))
         assert(0);
 
     assert(_IsSorted(h.vad_list));
@@ -528,7 +612,7 @@ void TestRemap1()
     /* Remap region, making it four times smaller */
     old_size = new_size;
     new_size = 4*PGSZ;
-    if (!(ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
+    if (!(ptr = _HeapRemap(&h, ptr, old_size, new_size)))
         assert(0);
 
     assert(_IsSorted(h.vad_list));
@@ -538,7 +622,9 @@ void TestRemap1()
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 void TestRemap2()
@@ -570,14 +656,16 @@ void TestRemap2()
 
     /* Remap region, making it twice as big */
     new_size = 16*PGSZ;
-    if (!(ptr2 = OE_HeapRemap(&h, ptr2, old_size, new_size, OE_MREMAP_MAYMOVE)))
+    if (!(ptr2 = _HeapRemap(&h, ptr2, old_size, new_size)))
         assert(0);
 
 #if 0
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 void TestRemap3()
@@ -609,14 +697,16 @@ void TestRemap3()
 #endif
 
     /* Shrink region: [3|4] */
-    if (!(ptr3 = (OE_Page*)OE_HeapRemap(&h, ptr3, 2, 1, OE_MREMAP_MAYMOVE)))
+    if (!(ptr3 = (OE_Page*)_HeapRemap(&h, ptr3, 2*PGSZ, 1*PGSZ)))
         assert(0);
 
 #if 0
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 void TestRemap4()
@@ -641,7 +731,7 @@ void TestRemap4()
     assert(ptr2 + 4 == ptr1);
 
     /* Unmap [4|5|6|7] */
-    assert(OE_HeapUnmap(&h, ptr1, 4 * PGSZ) == 0);
+    assert(_HeapUnmap(&h, ptr1, 4 * PGSZ) == 0);
 
 #if 0
     OE_HeapDump(&h, false);
@@ -650,20 +740,16 @@ void TestRemap4()
     OE_Page* ptr3 = ptr2 + 2;
 
     /* Expand region: [2|3] */
-    if (!(ptr3 = (OE_Page*)OE_HeapRemap(
-        &h, ptr3, 
-        2 * PGSZ, 
-        4 * PGSZ, 
-        OE_MREMAP_MAYMOVE)))
-    {
+    if (!(ptr3 = (OE_Page*)_HeapRemap(&h, ptr3, 2 * PGSZ, 4 * PGSZ)))
         assert(0);
-    }
 
 #if 0
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 typedef struct _Elem
@@ -698,7 +784,7 @@ static bool _CheckMem(Elem* elem)
     return true;
 }
 
-void TestRandMappings()
+void TestHeapRandomly()
 {
     OE_Heap h;
     const size_t heap_size = 64 * 1024 * 1024;
@@ -707,7 +793,7 @@ void TestRandMappings()
 
     static Elem elem[1024];
     const size_t N = sizeof(elem) / sizeof(elem[0]);
-    const size_t M = 10000;
+    const size_t M = 20000;
 
     for (size_t i = 0; i < M; i++)
     {
@@ -722,7 +808,7 @@ void TestRandMappings()
                 D(printf("unmap: addr=%p size=%zu\n", 
                     elem[r].addr, elem[r].size);)
 
-                assert(OE_HeapUnmap(&h, elem[r].addr, elem[r].size) == 0);
+                assert(_HeapUnmap(&h, elem[r].addr, elem[r].size) == 0);
                 elem[r].addr = NULL;
                 elem[r].size = 0;
             }
@@ -771,32 +857,57 @@ void TestRandMappings()
         {
             D(printf("addr=%p size=%zu\n", elem[i].addr, elem[i].size);)
             assert(_CheckMem(&elem[i]));
-            assert(OE_HeapUnmap(&h, elem[i].addr, elem[i].size) == 0);
+            assert(_HeapUnmap(&h, elem[i].addr, elem[i].size) == 0);
         }
     }
 
+    /* Everything should be unmapped */
     assert(h.vad_list == NULL);
+
+    assert(OE_HeapSane(&h));
 
 #if 0
     OE_HeapDump(&h, true);
 #endif
 
-    printf("=== Passed %s()\n", __FUNCTION__);
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
+void TestOutOfMemory()
+{
+    OE_Heap h;
+    const size_t heap_size = 64 * 1024 * 1024;
+
+    assert(_InitHeap(&h, heap_size) == 0);
+
+    /* Use up all the memory */
+    while (_HeapMapNoErr(&h, NULL, 64*PGSZ))
+        ;
+
+    assert(OE_HeapSane(&h));
+
+    _MergeCoverage(&h);
+    _FreeHeap(&h);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 int main(int argc, const char* argv[])
 {
-    Test1();
-    Test2();
-    Test3();
-    Test4();
-    Test5();
-    Test6();
+    TestHeap1();
+    TestHeap2();
+    TestHeap3();
+    TestHeap4();
+    TestHeap5();
+    TestHeap6();
     TestRemap1();
     TestRemap2();
     TestRemap3();
     TestRemap4();
-    TestRandMappings();
+    TestHeapRandomly();
+    TestOutOfMemory();
+    _CheckCoverage();
     printf("=== passed all tests (%s)\n", argv[0]);
     return 0;
 }
