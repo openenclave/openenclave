@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <string.h>
+
+#define D(X)
 
 static size_t PGSZ = OE_PAGE_SIZE;
 
@@ -78,6 +81,17 @@ static void* _HeapMap(
     int flags = OE_MAP_ANONYMOUS | OE_MAP_PRIVATE;
 
     return OE_HeapMap(heap, addr, length, prot, flags);
+}
+
+static void* _HeapRemap(
+    OE_Heap* heap,
+    void* addr,
+    size_t old_size,
+    size_t new_size)
+{
+    int flags = OE_MREMAP_MAYMOVE;
+
+    return OE_HeapRemap(heap, addr, old_size, new_size, flags);
 }
 
 void Test1()
@@ -652,6 +666,117 @@ void TestRemap4()
     printf("=== Passed %s()\n", __FUNCTION__);
 }
 
+typedef struct _Elem
+{
+    void* addr;
+    size_t size;
+}
+Elem;
+
+static void _SetMem(Elem* elem)
+{
+    memset(elem->addr, (unsigned char)elem->size, elem->size);
+}
+
+static bool _CheckMem(Elem* elem)
+{
+    const uint8_t* p = (const uint8_t*)elem->addr;
+    const size_t n = elem->size;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        if (p[i] != (uint8_t)n)
+            return false;
+    }
+
+    return true;
+}
+
+void TestRandMappings()
+{
+    OE_Heap h;
+    const size_t heap_size = 64 * 1024 * 1024;
+
+    assert(_InitHeap(&h, heap_size) == 0);
+
+    static Elem elem[1024];
+    const size_t N = sizeof(elem) / sizeof(elem[0]);
+    const size_t M = 10000;
+
+    for (size_t i = 0; i < M; i++)
+    {
+        size_t r = rand() % N;
+
+        if (elem[r].addr)
+        {
+            assert(_CheckMem(&elem[r]));
+
+            if (rand() % 2)
+            {
+                D(printf("unmap: addr=%p size=%zu\n", 
+                    elem[r].addr, elem[r].size);)
+
+                assert(OE_HeapUnmap(&h, elem[r].addr, elem[r].size) == 0);
+                elem[r].addr = NULL;
+                elem[r].size = 0;
+            }
+            else
+            {
+                void* addr = elem[r].addr;
+                assert(addr);
+
+                size_t old_size = elem[r].size;
+                assert(old_size > 0);
+
+                size_t new_size = (rand() % 16 + 1) * PGSZ;
+                assert(new_size > 0);
+
+                D(printf("remap: addr=%p old_size=%zu new_size=%zu\n", 
+                    addr, old_size, new_size);)
+
+                addr = _HeapRemap(&h, addr, old_size, new_size);
+                assert(addr);
+
+                elem[r].addr = addr;
+                elem[r].size = new_size;
+            }
+        }
+        else
+        {
+            size_t size = (rand() % 16 + 1) * PGSZ;
+            assert(size > 0);
+
+            void* addr = _HeapMap(&h, NULL, size);
+            assert(addr);
+
+            D(printf("map: addr=%p size=%zu\n", addr, size);)
+
+            elem[r].addr = addr;
+            elem[r].size = size;
+            _SetMem(&elem[r]);
+        }
+    }
+
+    /* Unmap all remaining memory */
+    for (size_t i = 0; i < N; i++)
+    {
+        if (elem[i].addr)
+        {
+            D(printf("addr=%p size=%zu\n", elem[i].addr, elem[i].size);)
+            assert(_CheckMem(&elem[i]));
+            assert(OE_HeapUnmap(&h, elem[i].addr, elem[i].size) == 0);
+        }
+    }
+
+    assert(h.vad_list == NULL);
+
+#if 0
+    OE_HeapDump(&h, true);
+#endif
+
+    printf("=== Passed %s()\n", __FUNCTION__);
+}
+
 int main(int argc, const char* argv[])
 {
     Test1();
@@ -664,6 +789,7 @@ int main(int argc, const char* argv[])
     TestRemap2();
     TestRemap3();
     TestRemap4();
+    TestRandMappings();
     printf("=== passed all tests (%s)\n", argv[0]);
     return 0;
 }

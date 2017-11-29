@@ -275,33 +275,56 @@ static void _ListRemove(
 **==============================================================================
 */
 
-static bool _HeapSane(
+static int _HeapSane(
     const OE_Heap* heap)
 {
+    int rc = 100;
+
     if (heap->magic != OE_HEAP_MAGIC)
-        return false;
+    {
+        rc = 1;
+        goto done;
+    }
 
     if (!heap->initialized)
-        return false;
+    {
+        rc = 2;
+        goto done;
+    }
 
     if (!(heap->start < heap->end))
-        return false;
+    {
+        rc = 3;
+        goto done;
+    }
 
     if (!(heap->start <= heap->break_top))
-        return false;
+    {
+        rc = 4;
+        goto done;
+    }
 
     if (!(heap->mapped_top <= heap->end))
-        return false;
+    {
+        rc = 5;
+        goto done;
+    }
 
     if (heap->vad_list)
     {
         if (heap->mapped_top != heap->vad_list->addr)
-            return false;
+        {
+            rc = 6;
+            goto done;
+        }
     }
     else
     {
         if (heap->mapped_top != heap->end)
-            return false;
+        {
+            rc = 7;
+            goto done;
+        }
     }
 
     /* Verify that the list is sorted */
@@ -315,19 +338,38 @@ static bool _HeapSane(
             if (next)
             {
                 if (!(p->addr < next->addr))
-                    return false;
+                {
+                    rc = 8;
+                    goto done;
+                }
 
+#if 1
                 /* No two elements should be contiguous due to coalescense */
                 if (_End(p) == next->addr)
-                    return false;
+                {
+printf("p=%lx next=%lx\n", p->addr, next->addr);
+                    rc = 9;
+                    goto done;
+                }
+#endif
 
-                if (!(_End(p) < next->addr))
-                    return false;
+                if (!(_End(p) <= next->addr))
+                {
+                    rc = 10;
+                    goto done;
+                }
             }
         }
     }
 
-    return true;
+    rc = 0;
+
+done:
+
+    if (rc != 0)
+        printf("rc=%d\n", rc);
+
+    return rc;
 }
 
 static int _HeapInsertVAD(
@@ -431,7 +473,7 @@ static uintptr_t _HeapFindGap(
     *left = NULL;
     *right = NULL;
 
-    ASSERT(_HeapSane(heap));
+    ASSERT(_HeapSane(heap) == 0);
 
     /* Look for a gap in the VAD list */
     {
@@ -550,7 +592,7 @@ int OE_HeapInit(
     rc = 0;
 
 done:
-    ASSERT(_HeapSane(heap));
+    ASSERT(_HeapSane(heap) == 0);
     return rc;
 }
 
@@ -572,7 +614,7 @@ void* OE_HeapSbrk(
         heap->break_top += increment;
     }
 
-    ASSERT(_HeapSane(heap));
+    ASSERT(_HeapSane(heap) == 0);
     return ptr;
 }
 
@@ -588,7 +630,7 @@ int OE_HeapBrk(
     /* Set the break value */
     heap->break_top = addr;
 
-    ASSERT(_HeapSane(heap));
+    ASSERT(_HeapSane(heap) == 0);
     return 0;
 }
 
@@ -646,7 +688,7 @@ void* OE_HeapMap(
 
     if (addr)
     {
-        /* ATTN: implement to support mapping non-zero addresses */
+        /* TODO: implement to support mapping non-zero addresses */
         goto done;
     }
     else
@@ -692,7 +734,7 @@ void* OE_HeapMap(
 
 done:
 
-    ASSERT(_HeapSane(heap));
+    ASSERT(_HeapSane(heap) == 0);
     return result;
 }
 
@@ -788,7 +830,7 @@ int OE_HeapUnmap(
 
 done:
 
-    ASSERT(_HeapSane(heap));
+    ASSERT(_HeapSane(heap) == 0);
     return rc;
 }
 
@@ -801,6 +843,8 @@ void* OE_HeapRemap(
 {
     void* result = NULL;
     OE_VAD* vad = NULL;
+
+    ASSERT(_HeapSane(heap) == 0);
 
     /* Check for valid heap parameter */
     if (!heap || heap->magic != OE_HEAP_MAGIC || !addr)
@@ -860,6 +904,7 @@ void* OE_HeapRemap(
         }
 
         vad->size = new_end - vad->addr;
+
         result = addr;
         goto done;
     }
@@ -874,11 +919,20 @@ void* OE_HeapRemap(
             vad->size += delta;
             MEMSET((void*)(start + old_size), 0, delta);
             result = addr;
+
+            /* If VAD is now contiguous with next one, coalesce them */
+            if (vad->next && _End(vad) == vad->next->addr)
+            {
+                OE_VAD* next = vad->next;
+                vad->size += next->size;
+                _HeapRemoveVAD(heap, next);
+                _FreeListPut(heap, next);
+            }
             goto done;
         }
 
         /* Map the new area */
-        if (!(addr = OE_HeapMap(heap, NULL, new_size,vad->prot,vad->flags)))
+        if (!(addr = OE_HeapMap(heap, NULL, new_size, vad->prot, vad->flags)))
             goto done;
 
         /* Copy over data from old area */
@@ -898,6 +952,7 @@ void* OE_HeapRemap(
 
 done:
 
-    ASSERT(_HeapSane(heap));
+    ASSERT(_HeapSane(heap) == 0);
+
     return result;
 }
