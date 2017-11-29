@@ -6,17 +6,6 @@
 
 static size_t PGSZ = OE_PAGE_SIZE;
 
-static int _InitHeap(OE_Heap* heap, size_t size)
-{
-    void* base;
-
-    /* Allocate aligned pages */
-    if (!(base = memalign(OE_PAGE_SIZE, size)))
-        return -1;
-
-    return OE_HeapInit(heap, (uintptr_t)base, size);
-}
-
 static size_t _CountVADs(const OE_VAD* list)
 {
     const OE_VAD* p;
@@ -26,6 +15,17 @@ static size_t _CountVADs(const OE_VAD* list)
         count++;
 
     return count;
+}
+
+static int _InitHeap(OE_Heap* heap, size_t size)
+{
+    void* base;
+
+    /* Allocate aligned pages */
+    if (!(base = memalign(OE_PAGE_SIZE, size)))
+        return -1;
+
+    return OE_HeapInit(heap, (uintptr_t)base, size);
 }
 
 static bool _IsSorted(const OE_VAD* list)
@@ -96,8 +96,6 @@ void Test1()
     assert(h.start == (uintptr_t)h.end_vad);
     assert(h.break_top == h.start);
     assert(h.mapped_top == h.end);
-    assert(_CountVADs(h.free_vads) == 0);
-    assert(_CountVADs(h.vad_list) == 0);
     assert(_IsSorted(h.vad_list));
 
 #if 0
@@ -124,8 +122,6 @@ void Test1()
 
     assert(h.break_top == h.start);
     assert(h.mapped_top == h.end - m);
-    assert(_CountVADs(h.free_vads) == 0);
-    assert(_CountVADs(h.vad_list) == n);
     assert(_IsSorted(h.vad_list));
 
     for (size_t i = 0; i < n; i++)
@@ -134,8 +130,6 @@ void Test1()
             assert(0);
     }
 
-    assert(_CountVADs(h.free_vads) == n);
-    assert(_CountVADs(h.vad_list) == 0);
     assert(_IsSorted(h.vad_list));
 
     /* Allocate N regions */
@@ -147,8 +141,6 @@ void Test1()
             assert(0);
     }
 
-    assert(_CountVADs(h.free_vads) == 0);
-    assert(_CountVADs(h.vad_list) == n);
     assert(_IsSorted(h.vad_list));
 
     /* Free every other region (leaving N/2 gaps) */
@@ -159,15 +151,15 @@ void Test1()
         if (OE_HeapUnmap(&h, ptrs[i], r) != 0)
             assert(0);
     }
-
-    assert(_CountVADs(h.free_vads) == n/2);
-    assert(_CountVADs(h.vad_list) == n/2);
-    assert(_IsSorted(h.vad_list));
 
 #if 0
     OE_HeapDump(&h, true);
 #endif
 
+    assert(_IsSorted(h.vad_list));
+    assert(_CountVADs(h.vad_list) == n/2);
+    assert(_CountVADs(h.free_vads) == 0);
+
     /* Reallocate every other region (filling in gaps) */
     for (size_t i = 0; i < n; i += 2)
     {
@@ -177,8 +169,6 @@ void Test1()
             assert(0);
     }
 
-    assert(_CountVADs(h.free_vads) == 0);
-    assert(_CountVADs(h.vad_list) == n);
     assert(_IsSorted(h.vad_list));
 
     /* Free every other region (leaving N/2 gaps) */
@@ -199,8 +189,6 @@ void Test1()
             assert(0);
     }
 
-    assert(_CountVADs(h.free_vads) == 0);
-    assert(_CountVADs(h.vad_list) == n);
     assert(_IsSorted(h.vad_list));
 
 #if 0
@@ -233,8 +221,6 @@ void Test2()
             assert(0);
     }
 
-    assert(_CountVADs(h.free_vads) == 0);
-    assert(_CountVADs(h.vad_list) == 3);
     assert(_IsSorted(h.vad_list));
 
 #if 0
@@ -247,8 +233,6 @@ void Test2()
         if (OE_HeapUnmap(&h, p0, 2*OE_PAGE_SIZE) != 0)
             assert(0);
 
-        assert(_CountVADs(h.free_vads) == 1);
-        assert(_CountVADs(h.vad_list) == 2);
         assert(_IsSorted(h.vad_list));
         assert(!_IsFlush(&h, h.vad_list));
 
@@ -256,16 +240,12 @@ void Test2()
             assert(0);
         assert(p0a == p0);
 
-        assert(_CountVADs(h.free_vads) == 0);
-        assert(_CountVADs(h.vad_list) == 3);
         assert(_IsSorted(h.vad_list));
 
         if (!(p0b = _HeapMap(&h, NULL, OE_PAGE_SIZE)))
             assert(0);
         assert(p0b == (uint8_t*)p0 + OE_PAGE_SIZE);
 
-        assert(_CountVADs(h.free_vads) == 0);
-        assert(_CountVADs(h.vad_list) == 4);
         assert(_IsSorted(h.vad_list));
         assert(_IsFlush(&h, h.vad_list));
     }
@@ -276,18 +256,16 @@ void Test2()
         if (OE_HeapUnmap(&h, p2, 4*OE_PAGE_SIZE) != 0)
             assert(0);
 
-        assert(_CountVADs(h.free_vads) == 1);
-        assert(_CountVADs(h.vad_list) == 3);
         assert(_IsSorted(h.vad_list));
-        assert(!_IsFlush(&h, h.vad_list));
+        assert(_IsFlush(&h, h.vad_list));
 
         if (!(p2a = _HeapMap(&h, NULL, OE_PAGE_SIZE)))
             assert(0);
-        assert(p2a == p2);
+        assert(p2a == (uint8_t*)p2 + 3*OE_PAGE_SIZE);
 
         if (!(p2b = _HeapMap(&h, NULL, 3*OE_PAGE_SIZE)))
             assert(0);
-        assert(p2b == (uint8_t*)p2 + OE_PAGE_SIZE);
+        assert(p2b == p2);
 
         assert(_IsSorted(h.vad_list));
         assert(_IsFlush(&h, h.vad_list));
@@ -333,8 +311,6 @@ void Test3()
 
     assert(h.break_top == h.start);
     assert(h.mapped_top == h.end - m);
-    assert(_CountVADs(h.free_vads) == 0);
-    assert(_CountVADs(h.vad_list) == n);
     assert(_IsSorted(h.vad_list));
 
     /* This should be illegal since it overruns the end */
@@ -346,8 +322,6 @@ void Test3()
     if (OE_HeapUnmap(&h, ptrs[1], 3*PGSZ) != 0)
         assert(0);
 
-    assert(_CountVADs(h.free_vads) == 2);
-    assert(_CountVADs(h.vad_list) == n-2);
     assert(_IsSorted(h.vad_list));
     assert(!_IsFlush(&h, h.vad_list));
 
@@ -368,8 +342,6 @@ void Test3()
     if (OE_HeapUnmap(&h, ptrs[7] + PGSZ, 6*PGSZ) != 0)
         assert(0);
 
-    assert(_CountVADs(h.free_vads) == 1);
-    assert(_CountVADs(h.vad_list) == 7);
     assert(_IsSorted(h.vad_list));
 
 #if 0
@@ -411,8 +383,6 @@ void Test4()
 
     assert(h.break_top == h.start);
     assert(h.mapped_top == h.end - m);
-    assert(_CountVADs(h.free_vads) == 0);
-    assert(_CountVADs(h.vad_list) == n);
     assert(_IsSorted(h.vad_list));
 #if 0
     OE_HeapDump(&h, false);
@@ -423,8 +393,6 @@ void Test4()
 
     /* Unmap everything */
     assert(OE_HeapUnmap(&h, ptrs[7], m) == 0);
-    assert(_CountVADs(h.free_vads) == n);
-    assert(_CountVADs(h.vad_list) == 0);
 
 #if 0
     OE_HeapDump(&h, true);
@@ -464,8 +432,6 @@ void Test5()
 
     /* Unmap everything */
     assert(OE_HeapUnmap(&h, ptrs[7], m) != 0);
-    assert(_CountVADs(h.free_vads) == 1);
-    assert(_CountVADs(h.vad_list) == n - 1);
 
 #if 0
     OE_HeapDump(&h, true);
@@ -497,7 +463,6 @@ void Test6()
         assert(OE_HeapUnmap(&h, p, PGSZ) == 0);
     }
 
-    assert(_CountVADs(h.vad_list) == 0);
 
 #if 0
     OE_HeapDump(&h, true);
@@ -527,8 +492,6 @@ void TestRemap1()
     OE_HeapDump(&h, true);
 #endif
 
-    assert(_CountVADs(h.free_vads) == 0);
-    assert(_CountVADs(h.vad_list) == 1);
     assert(_IsSorted(h.vad_list));
     assert(_IsFlush(&h, h.vad_list));
 
@@ -541,8 +504,6 @@ void TestRemap1()
     if (!(ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
         assert(0);
 
-    assert(_CountVADs(h.free_vads) == 1);
-    assert(_CountVADs(h.vad_list) == 1);
     assert(_IsSorted(h.vad_list));
     assert(!_IsFlush(&h, h.vad_list));
 
@@ -556,8 +517,6 @@ void TestRemap1()
     if (!(ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
         assert(0);
 
-    assert(_CountVADs(h.free_vads) == 1);
-    assert(_CountVADs(h.vad_list) == 1);
     assert(_IsSorted(h.vad_list));
     assert(!_IsFlush(&h, h.vad_list));
 
@@ -615,36 +574,76 @@ void TestRemap3()
 
     assert(_InitHeap(&h, size) == 0);
 
-    /* Map 16 pages */
-    const size_t n = 16;
-    void* ptr;
-    if (!(ptr = _HeapMap(&h, NULL, n * PGSZ)))
+    /* Map 4 pages: [4|5|6|7] */
+    OE_Page* ptr1;
+    if (!(ptr1 = (OE_Page*)_HeapMap(&h, NULL, 4 * PGSZ)))
+        assert(0);
+
+    /* Map 4 pages: [0|1|2|3] */
+    OE_Page* ptr2;
+    if (!(ptr2 = (OE_Page*)_HeapMap(&h, NULL, 4 * PGSZ)))
+        assert(0);
+
+    /* Result: [0|1|2|3|4|5|6|7] */
+    assert(ptr2 + 4 == ptr1);
+
+    /* Set pointer to overlapped region: [3|4] */
+    OE_Page* ptr3 = ptr2 + 3;
+
+#if 0
+    OE_HeapDump(&h, false);
+#endif
+
+    /* Shrink region: [3|4] */
+    if (!(ptr3 = (OE_Page*)OE_HeapRemap(&h, ptr3, 2, 1, OE_MREMAP_MAYMOVE)))
         assert(0);
 
 #if 0
     OE_HeapDump(&h, true);
 #endif
 
-    /* Unmap 12 pages */
-    assert(OE_HeapUnmap(&h, ptr + 4 * PGSZ, 12 * PGSZ) == 0);
+    printf("=== Passed %s()\n", __FUNCTION__);
+}
+
+void TestRemap4()
+{
+    OE_Heap h;
+    const size_t npages = 1024;
+    const size_t size = npages * OE_PAGE_SIZE;
+
+    assert(_InitHeap(&h, size) == 0);
+
+    /* Map 4 pages: [4|5|6|7] */
+    OE_Page* ptr1;
+    if (!(ptr1 = (OE_Page*)_HeapMap(&h, NULL, 4 * PGSZ)))
+        assert(0);
+
+    /* Map 4 pages: [0|1|2|3] */
+    OE_Page* ptr2;
+    if (!(ptr2 = (OE_Page*)_HeapMap(&h, NULL, 4 * PGSZ)))
+        assert(0);
+
+    /* Result: [0|1|2|3|4|5|6|7] */
+    assert(ptr2 + 4 == ptr1);
+
+    /* Unmap [4|5|6|7] */
+    assert(OE_HeapUnmap(&h, ptr1, 4 * PGSZ) == 0);
 
 #if 0
-    OE_HeapDump(&h, true);
+    OE_HeapDump(&h, false);
 #endif
 
-#if 0
-    /* Expand the region but lie about the old_size (should fail) */
-    size_t old_size = 8 * PGSZ;
-    size_t new_size = 16 * PGSZ;
-    if ((ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
-        assert(0);
-#endif
+    OE_Page* ptr3 = ptr2 + 2;
 
-    /* Remap the region with correct old_size (should succeed) */
-    size_t old_size = 4 * PGSZ;
-    size_t new_size = 16 * PGSZ;
-    if (!(ptr = OE_HeapRemap(&h, ptr, old_size, new_size, OE_MREMAP_MAYMOVE)))
+    /* Expand region: [2|3] */
+    if (!(ptr3 = (OE_Page*)OE_HeapRemap(
+        &h, ptr3, 
+        2 * PGSZ, 
+        4 * PGSZ, 
+        OE_MREMAP_MAYMOVE)))
+    {
         assert(0);
+    }
 
 #if 0
     OE_HeapDump(&h, true);
@@ -664,6 +663,7 @@ int main(int argc, const char* argv[])
     TestRemap1();
     TestRemap2();
     TestRemap3();
+    TestRemap4();
     printf("=== passed all tests (%s)\n", argv[0]);
     return 0;
 }

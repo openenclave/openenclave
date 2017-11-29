@@ -11,13 +11,43 @@
 # define U(X) X
 # define ASSERT assert
 # define MEMCPY memcpy
+# define MEMSET memset
 #else
 # include <openenclave/enclave.h>
 # define U(X)
 # define ASSERT OE_Assert
 # define printf OE_HostPrintf
 # define MEMCPY OE_Memcpy
+# define MEMSET OE_Memset
 #endif
+
+/*
+**==============================================================================
+**
+** Utility functions:
+**
+**==============================================================================
+*/
+
+OE_INLINE uintptr_t _End(OE_VAD* vad)
+{
+    return vad->addr + vad->size;
+}
+
+/* Get the size of the gap to the right of this VAD */
+OE_INLINE size_t _GetRightGap(OE_Heap* heap, OE_VAD* vad)
+{
+    if (vad->next)
+    {
+        /* Get size of gap between this VAD and next one */
+        return vad->next->addr - _End(vad);
+    }
+    else
+    {
+        /* Get size of gap between this VAD and the end of the heap */
+        return heap->end - _End(vad);
+    }
+}
 
 /*
 **==============================================================================
@@ -98,7 +128,7 @@ static int _TreeRangeCompare(const void *keyp, const void *vadp)
     OE_VAD* vad = (OE_VAD*)vadp;
 
     uint64_t lo = vad->addr;
-    uint64_t hi = vad->addr + vad->size;
+    uint64_t hi = _End(vad);
 
     if (key >= lo && key < hi)
         return 0;
@@ -245,6 +275,61 @@ static void _ListRemove(
 **==============================================================================
 */
 
+static bool _HeapSane(
+    const OE_Heap* heap)
+{
+    if (heap->magic != OE_HEAP_MAGIC)
+        return false;
+
+    if (!heap->initialized)
+        return false;
+
+    if (!(heap->start < heap->end))
+        return false;
+
+    if (!(heap->start <= heap->break_top))
+        return false;
+
+    if (!(heap->mapped_top <= heap->end))
+        return false;
+
+    if (heap->vad_list)
+    {
+        if (heap->mapped_top != heap->vad_list->addr)
+            return false;
+    }
+    else
+    {
+        if (heap->mapped_top != heap->end)
+            return false;
+    }
+
+    /* Verify that the list is sorted */
+    {
+        OE_VAD* p;
+
+        for (p = heap->vad_list; p; p = p->next)
+        {
+            OE_VAD* next = p->next;
+
+            if (next)
+            {
+                if (!(p->addr < next->addr))
+                    return false;
+
+                /* No two elements should be contiguous due to coalescense */
+                if (_End(p) == next->addr)
+                    return false;
+
+                if (!(_End(p) < next->addr))
+                    return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 static int _HeapInsertVAD(
     OE_Heap* heap,
     OE_VAD* vad)
@@ -253,6 +338,9 @@ static int _HeapInsertVAD(
         return -1;
 
     _ListInsert(heap, vad);
+
+    /* Update TOP */
+    heap->mapped_top = heap->vad_list->addr;
 
     return 0;
 }
@@ -295,76 +383,73 @@ static int _HeapRemoveVAD(OE_Heap* heap, OE_VAD* vad)
     /* Remove from doubly-linked list */
     _ListRemove(heap, vad);
 
+    /* Update TOP */
+    if (heap->vad_list)
+        heap->mapped_top = heap->vad_list->addr;
+    else
+        heap->mapped_top = heap->end;
+
     rc = 0;
 
 done:
     return rc;
 }
 
-/* TODO: optimize by adding a 'gap' field in the tree to find gaps O(log n) */
-static uintptr_t _HeapFindRegion(
+/* 
+** Search for a gap (greater than or equal to SIZE) in the VAD list. Set
+** LEFT to the leftward neighboring VAD (if any). Set RIGHT to the rightward
+** neighboring VAD (if any). Return a pointer to the start of that gap.
+**
+**                     +----+  +--------+
+**                     |    |  |        |
+**                     |    v  |        v
+**     [........MMMMMMMM....MMMM........MMMMMMMMMMMM........]
+**              ^                       ^                   ^
+**             HEAD                    TAIL                END
+**              ^
+**             TOP
+**
+** Search for gaps in the following order:
+**     (1) Between HEAD and TAIL
+**     (2) Between TAIL and END
+**
+** Note: one of the following conditions always holds:
+**     (1) TOP == HEAD
+**     (2) TOP == END
+**
+** Optimize to use tree to find gaps (add maxgap field to tree).
+**
+*/
+static uintptr_t _HeapFindGap(
     OE_Heap* heap,
-    size_t size)
+    size_t size,
+    OE_VAD** left,
+    OE_VAD** right)
 {
     uintptr_t addr = 0;
 
-    /* Search for a gap in the linked list */
+    *left = NULL;
+    *right = NULL;
+
+    ASSERT(_HeapSane(heap));
+
+    /* Look for a gap in the VAD list */
     {
         OE_VAD* p;
-        OE_VAD* prev = NULL;
-            
-        /* Visit every element in the linked list */
+
+        /* Search for gaps between HEAD and TAIL */
         for (p = heap->vad_list; p; p = p->next)
         {
-            uintptr_t start;
-            uintptr_t end;
+            size_t gap = _GetRightGap(heap, p);
 
-            if (prev)
+            if (gap >= size)
             {
-                /* Looking for gap between current and previous element */
-                start = prev->addr + prev->size;
-                end = p->addr;
-            }
-            else
-            {
-                /* Looking for gap between head element and mapped top */
-                start = heap->mapped_top;
-                end = p->addr;
-            }
+                *left = p;
 
-            /* If the gap is big enough */
-            if (end - start >= size)
-            {
-                addr = start;
-                goto done;
-            }
+                if (gap == size)
+                    *right = p->next;
 
-            prev = p;
-        }
-
-        /* If there was at least one element in the list */
-        if (prev)
-        {
-            /* Looking for gap between last element and end of heap */
-            uintptr_t start = prev->addr + prev->size;
-            uintptr_t end = heap->end;
-
-            /* If the gap is big enough */
-            if (end - start >= size)
-            {
-                addr = start;
-                goto done;
-            }
-        }
-        else
-        {
-            uintptr_t start = heap->mapped_top;
-            uintptr_t end = heap->end;
-
-            /* If the gap is big enough */
-            if (end - start >= size)
-            {
-                addr = start;
+                addr = _End(p);
                 goto done;
             }
         }
@@ -375,37 +460,18 @@ static uintptr_t _HeapFindRegion(
         uintptr_t start = heap->mapped_top - size;
 
         /* If memory was exceeded (overrun of break top) */
-        if (start < heap->break_top)
+        if (!(heap->break_top <= start))
             goto done;
 
-        heap->mapped_top = start;
+        if (heap->vad_list)
+            *right = heap->vad_list;
+
         addr = start;
+        goto done;
     }
 
 done:
     return addr;
-}
-
-/* Starting with VAD, find the length of the contiguous mappings */
-static size_t _HeapGetContiguousLength(
-    const OE_VAD* vad)
-{
-    const OE_VAD* p;
-    const OE_VAD* prev = NULL;
-    size_t len = 0;
-
-    for (p = vad; p; prev = p, p = p->next)
-    {
-        if (prev)
-        {
-            if (prev->addr + prev->size != p->addr)
-                return len;
-        }
-
-        len += p->size;
-    }
-
-    return len;
 }
 
 /*
@@ -484,7 +550,46 @@ int OE_HeapInit(
     rc = 0;
 
 done:
+    ASSERT(_HeapSane(heap));
     return rc;
+}
+
+void* OE_HeapSbrk(
+    OE_Heap* heap,
+    ptrdiff_t increment)
+{
+    void* ptr = (void*)-1;
+
+    if (increment == 0)
+    {
+        /* Return the current break value without changing it */
+        ptr = (void*)heap->break_top;
+    }
+    else if (increment <= heap->mapped_top - heap->break_top)
+    {
+        /* Increment the break value and return the old break value */
+        ptr = (void*)heap->break_top;
+        heap->break_top += increment;
+    }
+
+    ASSERT(_HeapSane(heap));
+    return ptr;
+}
+
+/* Implementation of standard brk() function */
+int OE_HeapBrk(
+    OE_Heap* heap,
+    uintptr_t addr)
+{
+    /* Fail if requested address is not within the break memory area */
+    if (addr < heap->start || addr >= heap->mapped_top)
+        return -1;
+
+    /* Set the break value */
+    heap->break_top = addr;
+
+    ASSERT(_HeapSane(heap));
+    return 0;
 }
 
 void* OE_HeapMap(
@@ -541,24 +646,150 @@ void* OE_HeapMap(
 
     if (addr)
     {
-        /* ATTN: implement */
+        /* ATTN: implement to support mapping non-zero addresses */
         goto done;
     }
     else
     {
-        /* Find a region that is big enough */
-        if (!(start = _HeapFindRegion(heap, length)))
+        OE_VAD* left;
+        OE_VAD* right;
+
+        /* Find a gap that is big enough */
+        if (!(start = _HeapFindGap(heap, length, &left, &right)))
             goto done;
+
+        if (left)
+        {
+            /* Coalesce with LEFT neighbor */
+            left->size += length;
+
+            /* Coalesce with RIGHT neighbor */
+            if (right)
+            {
+                ASSERT(_HeapRemoveVAD(heap, right) == 0);
+                left->size += right->size;
+                _FreeListPut(heap, right);
+            }
+        }
+        else if (right)
+        {
+            /* Coalesce with RIGHT neighbor */
+            ASSERT(_HeapRemoveVAD(heap, right) == 0);
+            right->addr = start;
+            right->size += length;
+            ASSERT(_HeapInsertVAD(heap, right) == 0);
+        }
+        else
+        {
+            /* Create a new VAD and insert it into the tree and list. */
+            ASSERT(_HeapInsertVAD2(heap, start, length, prot, flags) == 0);
+        }
     }
 
-    /* Create a new VAD and insert it into the tree and list. */
-    _HeapInsertVAD2(heap, start, length, prot, flags);
+    MEMSET((void*)start, 0, length);
 
     result = (void*)start;
 
 done:
 
+    ASSERT(_HeapSane(heap));
     return result;
+}
+
+int OE_HeapUnmap(
+    OE_Heap* heap,
+    void* addr,
+    size_t length)
+{
+    int rc = -1;
+    OE_VAD* vad = NULL;
+
+    /* Reject invaid parameters */
+    if (!heap || heap->magic != OE_HEAP_MAGIC || !addr || !length)
+        goto done;
+
+    /* ADDRESS must be aligned on a page boundary */
+    if ((uintptr_t)addr % OE_PAGE_SIZE)
+        goto done;
+
+    /* LENGTH must be a multiple of the page size */
+    if (length % OE_PAGE_SIZE)
+        goto done;
+
+    /* Set start and end pointers for this area */
+    uintptr_t start = (uintptr_t)addr;
+    uintptr_t end = (uintptr_t)addr + length;
+
+    /* Find the VAD that contains this address */
+    if (!(vad = _TreeFind(heap, start)))
+        goto done;
+
+    /* Fail if this VAD does not contain the end address */
+    if (end > _End(vad))
+        goto done;
+
+    /* If the unapping does not cover the entire area given by the VAD, handle
+     * the excess portions. There are 4 cases below, where u's represent 
+     * the portion being unmapped.
+     *
+     *     Case1: [uuuuuuuuuuuuuuuu]
+     *     Case2: [uuuu............]
+     *     Case3: [............uuuu]
+     *     Case4: [....uuuu........]
+     */
+    {
+        /* Case1: [uuuuuuuuuuuuuuuu] */
+        if (vad->addr == start && _End(vad) == end)
+        {
+            ASSERT(_HeapRemoveVAD(heap, vad) == 0);
+            _FreeListPut(heap, vad);
+            rc = 0;
+            goto done;
+        }
+
+        /* Case2: [uuuu............] */
+        if (vad->addr == start)
+        {
+            ASSERT(_HeapRemoveVAD(heap, vad) == 0);
+            vad->addr += length;
+            vad->size -= length;
+            ASSERT(_HeapInsertVAD(heap, vad) == 0);
+            rc = 0;
+            goto done;
+        }
+
+        /* Case3: [............uuuu] */
+        if (_End(vad) == end)
+        {
+            vad->size -= length;
+            rc = 0;
+            goto done;
+        }
+
+        /* Case4: [....uuuu........] */
+        {
+            size_t vad_end = _End(vad);
+
+            /* Adjust the left portion */
+            vad->size = start - vad->addr;
+
+            /* Create VAD for the right portion */
+            ASSERT(_HeapInsertVAD2(heap, end, vad_end - end, 
+                vad->prot, vad->flags) == 0);
+
+            rc = 0;
+            goto done;
+        }
+
+        ASSERT(0);
+    }
+
+    rc = 0;
+
+done:
+
+    ASSERT(_HeapSane(heap));
+    return rc;
 }
 
 void* OE_HeapRemap(
@@ -597,230 +828,76 @@ void* OE_HeapRemap(
     /* Round NEW_SIZE to multiple of page size */
     new_size = OE_RoundUpToMultiple(new_size, OE_PAGE_SIZE);
 
-    /* Find the VAD for this address to verify that it is a valid mapping */
-    if (!(vad = _TreeFind(heap, (uintptr_t)addr)))
+    /* Set start and end pointers for this area */
+    uintptr_t start = (uintptr_t)addr;
+    uintptr_t old_end = (uintptr_t)addr + old_size;
+    uintptr_t new_end = (uintptr_t)addr + new_size;
+
+    /* Find the VAD for the starting address */
+    if (!(vad = _TreeFind(heap, start)))
         goto done;
 
-    /* ATTN: Verify that mappings are contiguous and at least old_size long */
-    /* ATTN: Beware that addr may not start at vad->addr */
-#if 0
-    {
-        size_t len = _HeapGetContiguousLength(vad);
+    /* Verify that the end address is within this VAD */
+    if (old_end > _End(vad))
+        goto done;
 
-        if (len < old_size)
-            goto done;
-    }
-#endif
-
-    /* If the region is shrinking, just unmap the excess pages */
+    /* If the area is shrinking */
     if (new_size < old_size)
     {
-        if (OE_HeapUnmap(heap, addr + new_size, old_size - new_size) != 0)
-            goto done;
+        /* If there are excess bytes on the right of this VAD area */
+        if (_End(vad) != old_end)
+        {
+            /* Create VAD for rightward excess */
+            if (_HeapInsertVAD2(
+                heap, 
+                old_end,
+                _End(vad) - old_end,
+                vad->prot, 
+                vad->flags) != 0)
+            {
+                goto done;
+            }
+        }
 
+        vad->size = new_end - vad->addr;
         result = addr;
+        goto done;
     }
     else if (new_size > old_size)
     {
-        /* ATTN: should this overwrite existing mappings? */
-        /* ATTN: support remapping without moving (if space available) */
-        uintptr_t start;
+        /* Calculate difference between new and old size */
+        size_t delta = new_size - old_size;
 
-        /* Find a region big enough for the new region */
-        if (!(start = _HeapFindRegion(heap, new_size)))
-            goto done;
-
-        /* Copy over the new region */
-        MEMCPY((void*)start, addr, old_size);
-
-        /* Create a new VAD and insert it into the tree and list. */
-        _HeapInsertVAD2(heap, start, new_size, vad->prot, flags);
-
-        /* Remove the old VAD and add it to the free list */
+        /* If there is room for this area to grow without moving it */
+        if (_End(vad) == old_end && _GetRightGap(heap, vad) >= delta)
         {
-            if (_HeapRemoveVAD(heap, vad) != 0)
-                ASSERT("panic" == NULL);
-
-            _FreeListPut(heap, vad);
+            vad->size += delta;
+            MEMSET((void*)(start + old_size), 0, delta);
+            result = addr;
+            goto done;
         }
 
-        result = (void*)start;
+        /* Map the new area */
+        if (!(addr = OE_HeapMap(heap, NULL, new_size,vad->prot,vad->flags)))
+            goto done;
+
+        /* Copy over data from old area */
+        MEMCPY(addr, (void*)start, old_size);
+
+        /* Ummap the old area */
+        if (OE_HeapUnmap(heap, (void*)start, old_size) != 0)
+            goto done;
+
+        result = (void*)addr;
     }
     else
     {
-        /* Nothing to do (size did not change) */
+        /* Nothing to do since size did not change */
         result = addr;
     }
 
 done:
 
+    ASSERT(_HeapSane(heap));
     return result;
 }
-
-int OE_HeapUnmap(
-    OE_Heap* heap,
-    void* addr,
-    size_t length)
-{
-    int rc = -1;
-    OE_VAD* head = NULL;
-    OE_VAD* tail = NULL;
-    size_t count = 0;
-
-    /* Reject invaid parameters */
-    if (!heap || heap->magic != OE_HEAP_MAGIC || !addr || !length)
-        goto done;
-
-    /* ADDRESS must be aligned on a page boundary */
-    if ((uintptr_t)addr % OE_PAGE_SIZE)
-        goto done;
-
-    /* LENGTH must be a multiple of the page size */
-    if (length % OE_PAGE_SIZE)
-        goto done;
-
-    /* Form a singly-linked list of all VADs that overlap this range */
-    {
-        uintptr_t start = (uintptr_t)addr;
-        uintptr_t end = (uintptr_t)addr + length;
-
-        while (start < end)
-        {
-            OE_VAD* vad;
-
-            if (!(vad = _TreeFind(heap, start)))
-                goto done;
-
-            if (_HeapRemoveVAD(heap, vad) != 0)
-            {
-                ASSERT("panic" == NULL);
-            }
-
-            /* If this vad is not contiguous with the last one */
-            if (tail && tail->addr + tail->size != vad->addr)
-                goto done;
-
-            if (!head)
-            {
-                /* Insert first element */
-                tail = vad;
-                head = vad;
-                vad->next = NULL;
-            }
-            else
-            {
-                /* Insert at end of list */
-                vad->next = NULL;
-                tail->next = vad;
-                tail = vad;
-            }
-
-            count++;
-            start = vad->addr + vad->size;
-        }
-    }
-
-    /* If the unapping does not cover the entire area given by the VAD list, 
-     * then create VADs for the each of the excess portions. There are 3 cases 
-     * below (where U's represent unmapped portions and m's the mapped parts).
-     *
-     *     Case1: excess to the right:  [UUUUmmmmmmmmmmmm]
-     *     Case2: excess to the middle: [mmmmUUUUmmmmmmmm]
-     *     Case3: excess to the left:   [mmmmmmmmmmmmUUUU]
-     */
-    {
-        uintptr_t start = (uintptr_t)addr;
-        uintptr_t end = (uintptr_t)addr + length;
-
-        /* Return any unused portion to the left */
-        if (head->addr < start)
-        {
-            _HeapInsertVAD2(
-                heap, 
-                head->addr, 
-                start - head->addr,
-                head->prot, 
-                head->flags);
-        }
-
-        /* Return any unused portion to the right */
-        if (end < tail->addr + tail->size)
-        {
-            _HeapInsertVAD2(
-                heap, 
-                end,
-                tail->addr + tail->size - end,
-                head->prot, 
-                head->flags);
-        }
-    }
-
-    /* Put all VADs on the free list */
-    {
-        OE_VAD* p = head;
-
-        while (p)
-        {
-            OE_VAD* next = p->next;
-            _FreeListPut(heap, p);
-            p = next;
-        }
-    }
-
-    rc = 0;
-
-done:
-
-    /* Restore VADs on failure */
-    if (rc != 0)
-    {
-        OE_VAD* p = head;
-
-        while (p)
-        {
-            OE_VAD* next = p->next;
-            _HeapInsertVAD(heap, p);
-            p = next;
-        }
-    }
-
-    return rc;
-}
-
-void* OE_HeapSbrk(
-    OE_Heap* heap,
-    ptrdiff_t increment)
-{
-    void* ptr = (void*)-1;
-
-    if (increment == 0)
-    {
-        /* Return the current break value without changing it */
-        ptr = (void*)heap->break_top;
-    }
-    else if (increment <= heap->mapped_top - heap->break_top)
-    {
-        /* Increment the break value and return the old break value */
-        ptr = (void*)heap->break_top;
-        heap->break_top += increment;
-    }
-
-    return ptr;
-}
-
-/* Implementation of standard brk() function */
-int OE_HeapBrk(
-    OE_Heap* heap,
-    uintptr_t addr)
-{
-    /* Fail if requested address is not within the break memory region */
-    if (addr < heap->start || addr >= heap->mapped_top)
-        return -1;
-
-    /* Set the break value */
-    heap->break_top = addr;
-
-    (void)_HeapGetContiguousLength;
-    return 0;
-}
-
