@@ -675,7 +675,13 @@ Elem;
 
 static void _SetMem(Elem* elem)
 {
-    memset(elem->addr, (unsigned char)elem->size, elem->size);
+    uint8_t* p = (uint8_t*)elem->addr;
+    const size_t n = elem->size;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        p[i] = n % 251;
+    }
 }
 
 static bool _CheckMem(Elem* elem)
@@ -685,7 +691,7 @@ static bool _CheckMem(Elem* elem)
 
     for (size_t i = 0; i < n; i++)
     {
-        if (p[i] != (uint8_t)n)
+        if (p[i] != (uint8_t)(n % 251))
             return false;
     }
 
@@ -739,6 +745,7 @@ void TestRandMappings()
 
                 elem[r].addr = addr;
                 elem[r].size = new_size;
+                _SetMem(&elem[r]);
             }
         }
         else
