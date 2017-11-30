@@ -1,5 +1,6 @@
 #include "../common/heap.c"
 #include <openenclave/bits/globals.h>
+#include <openenclave/bits/heap.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
@@ -53,4 +54,38 @@ void* OE_Sbrk(ptrdiff_t increment)
         return (void*)-1;
 
     return ptr;
+}
+
+void* OE_Map(
+    void* addr,
+    size_t length,
+    int prot,
+    int flags)
+{
+    if (__oe_heap.initialized == false)
+        _Init();
+
+    return OE_HeapMap(&__oe_heap, addr, length, prot, flags);
+}
+
+void* OE_Remap(
+    void* addr,
+    size_t old_size,
+    size_t new_size,
+    int flags)
+{
+    if (__oe_heap.initialized == false)
+        _Init();
+
+    return OE_HeapRemap(&__oe_heap, addr, old_size, new_size, flags);
+}
+
+OE_Result OE_Unmap(
+    void* address,
+    size_t size)
+{
+    if (__oe_heap.initialized == false)
+        _Init();
+
+    return OE_HeapUnmap(&__oe_heap, address, size);
 }

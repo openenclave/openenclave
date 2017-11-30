@@ -180,4 +180,20 @@ void OE_HeapSetSanity(
 bool OE_HeapSane(
     OE_Heap* heap);
 
+void* OE_Map(
+    void* addr,
+    size_t length,
+    int prot,
+    int flags);
+
+void* OE_Remap(
+    void* addr,
+    size_t old_size,
+    size_t new_size,
+    int flags);
+
+OE_Result OE_Unmap(
+    void* address,
+    size_t size);
+
 #endif /* _OE_HEAP_H */

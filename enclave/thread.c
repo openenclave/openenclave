@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <openenclave/thread.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
 #include "td.h"
@@ -11,7 +12,7 @@
 **==============================================================================
 */
 
-static int _ThreadWait(OE_ThreadData* self)
+int OE_ThreadWait(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
@@ -21,7 +22,7 @@ static int _ThreadWait(OE_ThreadData* self)
     return 0;
 }
 
-static int _ThreadWake(OE_ThreadData* self)
+int OE_ThreadWake(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
@@ -181,7 +182,7 @@ int OE_MutexLock(OE_Mutex* m)
         OE_SpinUnlock(&m->lock);
 
         /* Ask host to wait for an event on this thread */
-        _ThreadWait(self);
+        OE_ThreadWait(self);
     }
 
     /* Unreachable! */
@@ -260,7 +261,7 @@ int OE_MutexUnlock(OE_Mutex* m)
     if (waiter)
     {
         /* Ask host to wake up this thread */
-        _ThreadWake(waiter);
+        OE_ThreadWake(waiter);
     }
 
     return 0;
@@ -358,7 +359,7 @@ int OE_CondWait(
                 }
                 else 
                 {
-                    _ThreadWait(self);
+                    OE_ThreadWait(self);
                 }
             }
             OE_SpinLock(&cond->lock);
@@ -386,7 +387,7 @@ int OE_CondSignal(
     if (!waiter)
         return 0;
 
-    _ThreadWake(waiter);
+    OE_ThreadWake(waiter);
     return 0;
 }
 
@@ -405,7 +406,7 @@ int OE_CondBroadcast(
     OE_SpinUnlock(&cond->lock);
 
     for (OE_ThreadData* p = waiters.front; p; p = p->next)
-        _ThreadWake(p);
+        OE_ThreadWake(p);
 
     return 0;
 }
