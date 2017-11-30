@@ -1,9 +1,9 @@
 #include <openenclave/bits/jump.h>
 
 /*
- * Inline asm here requires to know the precise layout of the stack, so to
- * obtain rsp and RIP correctly. Thus this file must be compiled w/
- * optimization enabled.
+ * This file must be compiled with optimization enabled because the code
+ * relies on the precise layout of the stack (and thereby preamble) to obtain
+ * the correct rsp and rip.
  */
 
 int OE_Setjmp(OE_Jmpbuf* env)
@@ -40,8 +40,6 @@ int OE_Setjmp(OE_Jmpbuf* env)
 
 void OE_Longjmp(OE_Jmpbuf* env, int val)
 {
-    //size_t dummy;
-
     if (val == 0)
         val = 1;
 

@@ -538,7 +538,7 @@ static int _SignAndWriteSharedLib(
             &sec,
             sizeof(sec)) != 0)
         {
-            fprintf(stderr, "%s: failed to add seciton\n", arg0);
+            fprintf(stderr, "%s: failed to add section\n", arg0);
             goto done;
         }
     }
