@@ -8,6 +8,7 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/utils.h>
 #include "../args.h"
 
 static TestMutexArgs _args;
@@ -63,6 +64,15 @@ void TestCond(OE_Enclave* enclave)
         pthread_join(threads[i], NULL);
 }
 
+/* Check consistency of OE/pthread mutex static-initializer layout */
+void TestMutexLayoutConsistency()
+{
+    assert(sizeof(OE_Mutex) == sizeof(pthread_mutex_t));
+    static pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
+    static OE_Mutex m2 = OE_MUTEX_INITIALIZER;
+    assert(memcmp(&m1, &m2, sizeof(pthread_mutex_t)) == 0);
+}
+
 int main(int argc, const char* argv[])
 {
     OE_Result result;
@@ -73,6 +83,8 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
         exit(1);
     }
+
+    TestMutexLayoutConsistency();
 
     const uint32_t flags = OE_GetCreateFlags();
 
