@@ -47,7 +47,7 @@ It supports two modes: **SGX mode** and **simulation mode**.
 the root of the source distribution as follows.
 
 ```
-# ./scripts/install-prereqs
+$ sudo ./scripts/install-prereqs
 ```
 
 **SGX mode** has the following prerequisites.
@@ -61,38 +61,38 @@ To install these prerequisites type the following commands from the root of
 the source distribution.
 
 ```
-# ./scripts/install-prereqs
-# make prereqs
+$ sudo ./scripts/install-prereqs
+$ sudo make -C prereqs
+$ sudo make -C prereqs install
 ```
 
-### Configuring
+### Building
 
-To configure OpenEnclave for installation in the default location, simply type:
-
-```
-# ./configure
-```
-
-### Compiling
-
-To compile, just type:
+Build is generally out-of-tree (in-tree is possible, though not recommended).
+To build, pick a directory to build under ("build/" below). Then use cmake to configure
+the build and generate the out-of-tree make files and build.
 
 ```
-# make
+$ mkdir build/
+$ cd build/
+build$ cmake ..
+build$ make
 ```
 
 ### Running the tests
 
-Verify the build by running the tests. For SGX mode type:
+After building, tests can be executed via ctest, see "man ctest" for details.
+
+For SGX mode, type:
 
 ```
-# make SGX=1 tests
+build$ ctest
 ```
 
 For simulation mode, type:
 
 ```
-# make SIM=1 tests
+build$ OE_SIMULATION=1 ctest
 ```
 
 ### Installing
@@ -100,13 +100,13 @@ For simulation mode, type:
 To install OpenEnclave, type:
 
 ```
-# make install
+build$ make install
 ```
 
-The default configurtion install this under this directory.
+The default configuration installs under this directory.
 
 ```
-/opt/openenclave
+/usr/local
 ```
 
 Source tree layout
@@ -116,7 +116,6 @@ The files and directories in the top-level directory are described as follows.
 
 - [README.md](README.md) - This README file
 - [LICENSE](LICENSE) - The OpenEnclave license
-- [configure](configure) - Script for configuring the build
 - [3rdparty](3rdparty) - Contains third-party software packages
 - [enclave](enclave) - Contains the source for the oeenclave library
 - [libc](libc) - Contains sources for the oelibc enclave library
@@ -128,7 +127,6 @@ The files and directories in the top-level directory are described as follows.
 - [doc](doc) - Contains documentation
 - [include](include) - Contains C header files
 - [prereqs](prereqs) - Contains scripts for installing prerequisite software
-- [mak](mak) - Contains shared make scripts (the build system)
 - [tests](tests) - Constains all test programs, which may also serve as samples
 - [samples](samples) - Constains enclave-development sample sources
 - [scripts](scripts) - Contains Shell scripts
