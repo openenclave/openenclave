@@ -386,8 +386,7 @@ done:
 **     (1) TOP == HEAD
 **     (2) TOP == END
 **
-** Optimize to use tree to find gaps (add maxgap field to tree).
-**
+** TODO: Optimize to use tree to find gaps (add maxgap field to tree).
 */
 static uintptr_t _HeapFindGap(
     OE_Heap* heap,
