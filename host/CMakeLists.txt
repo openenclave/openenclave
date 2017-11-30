@@ -1,29 +1,29 @@
 add_library(oehost STATIC
-	aesm.c
-	calls.c
-	create.c
-	elf.c
-	enclave.c
-	error.c
-	files.c
-	hexdump.c
-	load.c
-	ocalls.c
-	quote.c
-	registers.c
-	result.c
-	sgxdriver.c
-	sgxmeasure.c
-	sgxtypes.c
-	sha.c
-	spinlock.c
-	tests.c
-	thread.c
-	typeinfo.c
-	aep.S
-	enter.S
-	entersim.S
-	)
+    aesm.c
+    calls.c
+    create.c
+    elf.c
+    enclave.c
+    error.c
+    files.c
+    hexdump.c
+    load.c
+    ocalls.c
+    quote.c
+    registers.c
+    result.c
+    sgxdriver.c
+    sgxmeasure.c
+    sgxtypes.c
+    sha.c
+    spinlock.c
+    tests.c
+    thread.c
+    typeinfo.c
+    aep.S
+    enter.S
+    entersim.S
+    )
 
 # we and dependents need the OE includes to compile
 target_link_libraries(oehost oe_includes)
@@ -36,9 +36,9 @@ find_package(Threads REQUIRED)
 target_link_libraries(oehost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 
 target_compile_options(oehost PRIVATE 
-	-Wall -Werror -Wno-attributes -Wmissing-prototypes
-	-m64
-	)
+    -Wall -Werror -Wno-attributes -Wmissing-prototypes
+    -m64
+    )
 target_compile_definitions(oehost PRIVATE -DOE_BUILD_UNTRUSTED)
 
 # convenience library for creating a host-app (that needs the -rdynamic link flag)

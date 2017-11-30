@@ -1,12 +1,12 @@
 add_executable(oegen
-	files.cpp
-	generator.cpp
-	lexer.cpp
-	main.cpp
-	objects.cpp
-	parser.cpp
-	types.cpp
-	)
+    files.cpp
+    generator.cpp
+    lexer.cpp
+    main.cpp
+    objects.cpp
+    parser.cpp
+    types.cpp
+    )
 
 target_link_libraries(oegen oehost)
 
