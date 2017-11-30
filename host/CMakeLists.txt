@@ -1,5 +1,8 @@
 if (UNIX)
-set(PLATFORM_SRC aesm.c)
+set(PLATFORM_SRC
+	aesm.c
+	registers.c
+	)
 endif(UNIX)
 
 add_library(oehost STATIC
@@ -13,7 +16,6 @@ add_library(oehost STATIC
 	load.c
 	ocalls.c
 	quote.c
-	registers.c
 	result.c
 	sgxdriver.c
 	sgxmeasure.c
