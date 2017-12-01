@@ -53,7 +53,7 @@ $ sudo make -C prereqs
 $ sudo make -C prereqs install
 ```
 
-The second and third command are only necessary if you wish to install the Intel(R)
+The second and third commands are only necessary if you wish to install the Intel(R)
 SGX driver and the Intel(R) AESM service. OpenEnclave can be used in
 simulation mode without these components.
 
@@ -146,12 +146,12 @@ This builds the entire OpenEnclave SDK, creating the following files.
 
 | Filename                          | Description                                           |
 |-----------------------------------|-------------------------------------------------------|
-| output/lib/host/liboehost.a       | Library for building host applications                |
+| output/bin/oegen                  | Utility for generating ECALL and OCALL stubs from IDL |
+| output/bin/oesign                 | Utility for signing enclaves                          |
 | output/lib/enclave/liboeenclave.a | Core library for building enclave applications        |
 | output/lib/enclave/liboelibc.a    | C runtime library for enclave                         |
 | output/lib/enclave/liboelibcxx.a  | C++ runtime library for enclave                       |
-| output/bin/oesign                 | Utility for signing enclaves                          |
-| output/bin/oegen                  | Utility for generating ECALL and OCALL stubs from IDL |
+| output/lib/host/liboehost.a       | Library for building host applications                |
 | output/share/doc/openenclave/     | Reference manual for OpenEnclave                      |
 
 If things break, set the **VERBOSE** make variable to print all invoked commands.
@@ -214,10 +214,23 @@ build$ ctest -D ExperimentalMemCheck -R oeelf
 Installing
 ----------
 
-Specify the install-prefix (default /usr/local on Linux) to the cmake call:
+Specify the install-prefix to the cmake call. As of now, there is no real need
+to install the SDK system-wide, so you might use a tree in your home directory:
+
 ```
 build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
 build$ make install
+```
+
+If you want the SDK tools to be available to all users and headers/libs
+available from a system default location, you may opt to install system-wide.
+This naturally requires root priviledges. Note that there is no uninstall
+script (we target an rpm/deb-based SDK install in the future), hence we
+recommend overwriting the default (/usr/local/) with a singular tree.
+
+```
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$/opt/openenclave ..
+build$ sudo make install
 ```
 
 On Linux, there is also the **DESTDIR** mechanism, prepending the install prefix
@@ -226,19 +239,19 @@ with the given path:
 build$ make install DESTDIR=foo
 ```
 
-The installation includes a makefile-include **<install_prefix>/share/openenclave/config.mak**
-defining variables for version info and paths.
-
 The following table shows where key components are installed.
 
 | Path                                     | Description              |
 |------------------------------------------|--------------------------|
+| <install_prefix>/bin                     | Programs                 |
+| <install_prefix>/include/openenclave     | Includes                 |
 | <install_prefix>/lib/openenclave/enclave | Enclave libraries        |
 | <install_prefix>/lib/openenclave/host    | Host libraries           |
-| <install_prefix>/include/openenclave     | Includes                 |
-| <install_prefix>/bin                     | Programs                 |
 | <install_prefix>/share/doc/openenclave   | Documentation            |
 | <install_prefix>/share/openenclave       | Samples and make-include |
+
+You may use the make-inclulde in **<install_prefix>/share/openenclave/config.mak**
+in your own project for sourcing variables containing version info and SDK install paths.
 
 
 Samples

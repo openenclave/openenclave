@@ -130,7 +130,7 @@ the source distribution.</p>
 $ sudo make -C prereqs
 $ sudo make -C prereqs install
 </code></pre>
-<p>The second and third command are only necessary if you wish to install the Intel(R)
+<p>The second and third commands are only necessary if you wish to install the Intel(R)
 SGX driver and the Intel(R) AESM service. OpenEnclave can be used in
 simulation mode without these components.</p>
 <h3>
@@ -199,8 +199,12 @@ are selected upon configuration time by specifying the <strong>CMAKE_BUILD_TYPE<
 </thead>
 <tbody>
 <tr>
-<td>output/lib/host/liboehost.a</td>
-<td>Library for building host applications</td>
+<td>output/bin/oegen</td>
+<td>Utility for generating ECALL and OCALL stubs from IDL</td>
+</tr>
+<tr>
+<td>output/bin/oesign</td>
+<td>Utility for signing enclaves</td>
 </tr>
 <tr>
 <td>output/lib/enclave/liboeenclave.a</td>
@@ -215,12 +219,8 @@ are selected upon configuration time by specifying the <strong>CMAKE_BUILD_TYPE<
 <td>C++ runtime library for enclave</td>
 </tr>
 <tr>
-<td>output/bin/oesign</td>
-<td>Utility for signing enclaves</td>
-</tr>
-<tr>
-<td>output/bin/oegen</td>
-<td>Utility for generating ECALL and OCALL stubs from IDL</td>
+<td>output/lib/host/liboehost.a</td>
+<td>Library for building host applications</td>
 </tr>
 <tr>
 <td>output/share/doc/openenclave/</td>
@@ -262,16 +262,23 @@ Enclave tests all seem to fail today, though this suceeds:</p>
 </code></pre>
 <h2>
 <a id="user-content-installing-1" class="anchor" href="#installing-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installing</h2>
-<p>Specify the install-prefix (default /usr/local on Linux) to the cmake call:</p>
+<p>Specify the install-prefix to the cmake call. As of now, there is no real need
+to install the SDK system-wide, so you might use a tree in your home directory:</p>
 <pre><code>build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
 build$ make install
+</code></pre>
+<p>If you want the SDK tools to be available to all users and headers/libs
+available from a system default location, you may opt to install system-wide.
+This naturally requires root priviledges. Note that there is no uninstall
+script (we target an rpm/deb-based SDK install in the future), hence we
+recommend overwriting the default (/usr/local/) with a singular tree.</p>
+<pre><code>build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$/opt/openenclave ..
+build$ sudo make install
 </code></pre>
 <p>On Linux, there is also the <strong>DESTDIR</strong> mechanism, prepending the install prefix
 with the given path:</p>
 <pre><code>build$ make install DESTDIR=foo
 </code></pre>
-<p>The installation includes a makefile-include <strong>&lt;install_prefix&gt;/share/openenclave/config.mak</strong>
-defining variables for version info and paths.</p>
 <p>The following table shows where key components are installed.</p>
 <table>
 <thead>
@@ -282,20 +289,20 @@ defining variables for version info and paths.</p>
 </thead>
 <tbody>
 <tr>
-<td>&lt;install_prefix&gt;/lib/openenclave/enclave</td>
-<td>Enclave libraries</td>
-</tr>
-<tr>
-<td>&lt;install_prefix&gt;/lib/openenclave/host</td>
-<td>Host libraries</td>
+<td>&lt;install_prefix&gt;/bin</td>
+<td>Programs</td>
 </tr>
 <tr>
 <td>&lt;install_prefix&gt;/include/openenclave</td>
 <td>Includes</td>
 </tr>
 <tr>
-<td>&lt;install_prefix&gt;/bin</td>
-<td>Programs</td>
+<td>&lt;install_prefix&gt;/lib/openenclave/enclave</td>
+<td>Enclave libraries</td>
+</tr>
+<tr>
+<td>&lt;install_prefix&gt;/lib/openenclave/host</td>
+<td>Host libraries</td>
 </tr>
 <tr>
 <td>&lt;install_prefix&gt;/share/doc/openenclave</td>
@@ -307,6 +314,8 @@ defining variables for version info and paths.</p>
 </tr>
 </tbody>
 </table>
+<p>You may use the make-inclulde in <strong>&lt;install_prefix&gt;/share/openenclave/config.mak</strong>
+in your own project for sourcing variables containing version info and SDK install paths.</p>
 <h2>
 <a id="user-content-samples" class="anchor" href="#samples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Samples</h2>
 <p>Find the samples under <strong>share/openenclave/samples/</strong> of the installation.</p>

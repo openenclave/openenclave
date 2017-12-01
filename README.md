@@ -97,39 +97,38 @@ build$ OE_SIMULATION=1 ctest
 
 ### Installing
 
-To install OpenEnclave, type:
+Specify the install-prefix to the cmake call. As of now, there is no real need to install the SDK
+system-wide, so you might use a tree in your home directory:
 
 ```
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
 build$ make install
 ```
 
-The default configuration installs under this directory.
+For more details on installation, see the *Getting Started with OpenEnclave* doc.
 
-```
-/usr/local
-```
 
 Source tree layout
 ------------------
 
 The files and directories in the top-level directory are described as follows.
 
-- [README.md](README.md) - This README file
 - [LICENSE](LICENSE) - The OpenEnclave license
+- [README.md](README.md) - This README file
 - [3rdparty](3rdparty) - Contains third-party software packages
-- [enclave](enclave) - Contains the source for the oeenclave library
-- [libc](libc) - Contains sources for the oelibc enclave library
-- [libcxx](libcxx) - Contains makefile for building the oelibcxx library
-- [idl](idl) - Contains source for the oeidl library
-- [host](host) - Contains source for the oehost library
 - [common](common) - Contains sources that work in the enclave and the host
-- [tools](tools) - Contains command-line tools (oesgx, oesign, oegen, oeelf)
 - [doc](doc) - Contains documentation
+- [enclave](enclave) - Contains the source for the oeenclave library
+- [host](host) - Contains source for the oehost library
+- [idl](idl) - Contains source for the oeidl library
 - [include](include) - Contains C header files
+- [libc](libc) - Contains sources for the oelibc enclave library
+- [libcxx](libcxx) - Contains logic for building the oelibcxx library
 - [prereqs](prereqs) - Contains scripts for installing prerequisite software
-- [tests](tests) - Constains all test programs, which may also serve as samples
 - [samples](samples) - Constains enclave-development sample sources
 - [scripts](scripts) - Contains Shell scripts
+- [tests](tests) - Constains all test programs, which may also serve as samples
+- [tools](tools) - Contains command-line tools (oesgx, oesign, oegen, oeelf)
 
 License
 -------
