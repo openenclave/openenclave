@@ -1,0 +1,2 @@
+add_executable(SampleAppCRTHost SampleAppCRTHost.cpp)
+target_link_libraries(SampleAppCRTHost oehostapp)

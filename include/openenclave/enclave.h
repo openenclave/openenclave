@@ -1,5 +1,5 @@
-/** 
- * \file enclave.h 
+/**
+ * \file enclave.h
  *
  * This file defines the programming interface for developing enclaves.
  *
@@ -20,11 +20,7 @@ OE_EXTERNC_BEGIN
 # define OE_BUILD_ENCLAVE
 #endif
 
-#ifdef __cplusplus
-# define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section (".ecall")))
-#else
-# define OE_ECALL OE_EXPORT __attribute__((section (".ecall")))
-#endif
+#define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section (".ecall")))
 
 #define OE_REPORT_DATA_SIZE 64
 
@@ -57,28 +53,28 @@ OE_EXPORT void OE_Destructor(void);
 /**
  * Perform a low-level host function call (OCALL).
  *
- * This function performs a low-level host function call by invoking the 
- * function indicated by the **func** parameter. The host defines and 
+ * This function performs a low-level host function call by invoking the
+ * function indicated by the **func** parameter. The host defines and
  * registers a corresponding function with the following signature.
  *
- *     void (*)(uint64_t argIn, uint64_t* argOut); 
+ *     void (*)(uint64_t argIn, uint64_t* argOut);
  *
  * The meaning of the **argIn** arg **argOut** parameters is defined by the
  * implementer of the function and either may be null.
  *
- * OpenEnclave uses this interface to implement internal calls. Enclave 
+ * OpenEnclave uses this interface to implement internal calls. Enclave
  * application developers are encouraged to use OE_CallHost() instead.
  *
- * At the software layer, this function sends an **OCALL** message to the 
+ * At the software layer, this function sends an **OCALL** message to the
  * enclave and waits for an **ORET** message. Note that the OCALL implementation
  * may call back into the enclave (an ECALL) before returning.
  *
  * At the hardware layer, this function executes the **ENCLU.EEXIT**
- * instruction to exit the enclave. When the host returns from the OCALL, 
+ * instruction to exit the enclave. When the host returns from the OCALL,
  * it executes the **ENCLU.EENTER** instruction to reenter the enclave and
  * resume execution.
  *
- * Note that the return value only indicates whether the OCALL was called 
+ * Note that the return value only indicates whether the OCALL was called
  * not whether it was successful. The ECALL implementation must define its own
  * error reporting scheme based on its parameters.
  *
@@ -114,7 +110,7 @@ OE_Result OE_OCall(
  * where the function number is given by the **OE_FUNC_CALL_HOST** constant.
  *
  * Note that the return value of this function only indicates the success of
- * the call and not of the underlying function. The OCALL implementation must 
+ * the call and not of the underlying function. The OCALL implementation must
  * define its own error reporting scheme based on **args**.
  *
  * @param func The name of the enclave function that will be called.
@@ -154,7 +150,7 @@ OE_Result OE_RegisterECall(
 /**
  * Check whether the given buffer is strictly within the enclave.
  *
- * Check whether the buffer given by the **ptr** and **size** parameters is 
+ * Check whether the buffer given by the **ptr** and **size** parameters is
  * strictly within the enclave's memory. If so, return true. If any
  * portion of the buffer lies outside the enclave's memory, return false.
  *
@@ -172,7 +168,7 @@ bool OE_IsWithinEnclave(
 /**
  * Check whether the given buffer is strictly outside the enclave.
  *
- * Check whether the buffer given by the **ptr** and **size** parameters is 
+ * Check whether the buffer given by the **ptr** and **size** parameters is
  * strictly outside the enclave's memory. If so, return true. If any
  * portion of the buffer lies within the enclave's memory, return false.
  *
@@ -295,8 +291,8 @@ int OE_Memcmp(const void *s1, const void *s2, size_t n);
  * @param size The size of **str** parameter.
  * @param fmt The limited printf style format.
  *
- * @returns The number of characters that would be written excluding the 
- * zero-terminator. If this value is greater or equal to **size**, then the 
+ * @returns The number of characters that would be written excluding the
+ * zero-terminator. If this value is greater or equal to **size**, then the
  * string was truncated.
  *
  */
@@ -312,8 +308,8 @@ int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap);
  * @param size The size of **str** parameter.
  * @param fmt The limited printf style format.
  *
- * @returns The number of characters that would be written excluding the 
- * zero-terminator. If this value is greater or equal to **size**, then the 
+ * @returns The number of characters that would be written excluding the
+ * zero-terminator. If this value is greater or equal to **size**, then the
  * string was truncated.
  *
  */
@@ -337,9 +333,9 @@ int OE_HostPrintf(const char* fmt, ...);
 /**
  * Allocates space on the stack frame of the caller.
  *
- * This function allocates **size** bytes of space on the stack frame of the 
+ * This function allocates **size** bytes of space on the stack frame of the
  * caller. The returned address will be a multiple of **alignment** (if
- * non-zero). The allocated space is automatically freed when the calling 
+ * non-zero). The allocated space is automatically freed when the calling
  * function returns. If the stack overflows, the behavior is undefined.
  *
  * @param size The number of bytes to allocate.
@@ -361,9 +357,9 @@ OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(size_t size, size_t alignment)
 /**
  * Allocates space on the host's stack frame.
  *
- * This function allocates **size** bytes of space on the stack frame of the 
+ * This function allocates **size** bytes of space on the stack frame of the
  * host. The returned address will be a multiple of **alignment** (if
- * non-zero). The allocated space is freed automatically when the OCALL 
+ * non-zero). The allocated space is freed automatically when the OCALL
  * returns. If the stack overflows, the behavior is undefined.
  *
  * Caution: This function should only be used when performing an OCALL.
@@ -379,8 +375,8 @@ void *OE_HostStackMemalign(size_t size, size_t alignment);
 /**
  * Allocates space on the host's stack frame.
  *
- * This function allocates **size** bytes of space on the stack frame of the 
- * host. The allocated space is freed automatically when the OCALL 
+ * This function allocates **size** bytes of space on the stack frame of the
+ * host. The allocated space is freed automatically when the OCALL
  * returns. If the stack overflows, the behavior is undefined.
  *
  * Caution: This function should only be used when performing an OCALL.
@@ -396,8 +392,8 @@ void *OE_HostStackMalloc(size_t size);
  * Allocates and zero-fills space on the host's stack frame.
  *
  * This function allocates **nmemb** times **size** bytes of space on the stack
- * frame of the host and fills this space with zero bytes. The allocated space 
- * is freed automatically when the OCALL returns. If the stack overflows, the 
+ * frame of the host and fills this space with zero bytes. The allocated space
+ * is freed automatically when the OCALL returns. If the stack overflows, the
  * behavior is undefined.
  *
  * Caution: This function should only be used when performing an OCALL.
@@ -415,7 +411,7 @@ void *OE_HostStackCalloc(size_t nmem, size_t size);
  *
  * This function implements a free() compatible signature for the host stack
  * allocation scheme. Calling this function has no effect and not necessary
- * since host stack allocations are reclaimed automatically when the OCALL 
+ * since host stack allocations are reclaimed automatically when the OCALL
  * returns. It was provided for functions that require free/malloc callbacks.
  */
 
@@ -441,7 +437,7 @@ char* OE_HostStackStrdup(const char* str);
 /**
  * Allocate bytes from the host's heap.
  *
- * This function allocates **size** bytes from the host's heap and returns the 
+ * This function allocates **size** bytes from the host's heap and returns the
  * address of the allocated memory. The implementation performs an OCALL to
  * the host, which calls malloc(). To free the memory, it must be passed to
  * OE_HostFree().
@@ -457,7 +453,7 @@ void* OE_HostMalloc(size_t size);
  * Allocate zero-filled bytes from the host's heap.
  *
  * This function allocates **size** bytes from the host's heap and fills it
- * with zero character. It returns the address of the allocated memory. The 
+ * with zero character. It returns the address of the allocated memory. The
  * implementation performs an OCALL to the host, which calls calloc().
  * To free the memory, it must be passed to OE_HostFree().
  *
@@ -518,13 +514,13 @@ void* OE_Sbrk(ptrdiff_t increment);
 /**
  * Called whenever an assertion fails.
  *
- * This internal function is called when the expression of the OE_Assert() 
+ * This internal function is called when the expression of the OE_Assert()
  * macro evaluates to zero. For example:
  *
  *     OE_Assert(x > y);
  *
  * If the expression evaluates to zero, this function is called with the
- * string representation of the expression as well as the file, the line, and 
+ * string representation of the expression as well as the file, the line, and
  * the function name where the macro was expanded.
  *
  * The __OE_AssertFail() function performs a host call to print a message
