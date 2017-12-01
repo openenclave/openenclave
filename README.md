@@ -6,9 +6,9 @@ Microsoft(R) OpenEnclave SDK
 Introduction
 ------------
 
-OpenEnclave is an SDK for builiding enclave applications in C and C++. An
+OpenEnclave is an SDK for building enclave applications in C and C++. An
 enclave application partitions itself into a trusted component (called the
-host) and an untrusted compoment (called the enclave). An enclave is a secure
+host) and an untrusted component (called the enclave). An enclave is a secure
 container whose memory is protected from entities outside the enclave. These 
 protections allow enclaves to perform secure computations with assurances that 
 secrets will not be compromised.
@@ -43,7 +43,7 @@ OpenEnclave runs on the following platforms:
 
 It supports two modes: **SGX mode** and **simulation mode**. 
 
-**Simulation mode** has package depedencies that may be installed from
+**Simulation mode** has package dependencies that may be installed from
 the root of the source distribution as follows.
 
 ```
@@ -116,6 +116,7 @@ The files and directories in the top-level directory are described as follows.
 - [LICENSE](LICENSE) - The OpenEnclave license
 - [README.md](README.md) - This README file
 - [3rdparty](3rdparty) - Contains third-party software packages
+- [cmake](cmake) - Contains CMake scripts for building OpenEnclave.
 - [common](common) - Contains sources that work in the enclave and the host
 - [doc](doc) - Contains documentation
 - [enclave](enclave) - Contains the source for the oeenclave library
@@ -125,9 +126,9 @@ The files and directories in the top-level directory are described as follows.
 - [libc](libc) - Contains sources for the oelibc enclave library
 - [libcxx](libcxx) - Contains logic for building the oelibcxx library
 - [prereqs](prereqs) - Contains scripts for installing prerequisite software
-- [samples](samples) - Constains enclave-development sample sources
+- [samples](samples) - Contains enclave-development sample sources
 - [scripts](scripts) - Contains Shell scripts
-- [tests](tests) - Constains all test programs, which may also serve as samples
+- [tests](tests) - Contains all test programs, which may also serve as samples
 - [tools](tools) - Contains command-line tools (oesgx, oesign, oegen, oeelf)
 
 License

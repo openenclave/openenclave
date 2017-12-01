@@ -28,7 +28,7 @@ OpenEnclave builds on various third-party packages. It modifies and redistribute
 Obtaining the source distribution
 ---------------------------------
 
-OpenEnclave is available from Github. Use the following command to download 
+OpenEnclave is available from GitHub. Use the following command to download
 the source distribution.
 
 ```
@@ -89,7 +89,7 @@ The following are prerequisites for building and running OpenEnclave.
 - Intel® SGX Driver (/dev/isgx)
 - Intel® SGX AESM Service (from the Intel® SGX SDK)
 
-Once Linux and the various packages are installed, it is necessary to install the SGX driver and the SGX AESM service. These can be obtained from the following Github repositories.
+Once Linux and the various packages are installed, it is necessary to install the SGX driver and the SGX AESM service. These can be obtained from the following GitHub repositories.
 
 - <https://github.com/01org/linux-sgx-driver>
 - <https://github.com/01org/linux-sgx>
@@ -174,7 +174,7 @@ build$ make refman-source
 Testing
 -------
 
-Adter everything has been built, execute the tests via **ctest** (see "**man ctest**" for details).
+After everything has been built, execute the tests via **ctest** (see "**man ctest**" for details).
 
 ```
 build$ ctest
@@ -204,8 +204,8 @@ build$ cmake -DENABLE_LIBC_TESTS=OFF ..
 [...]
 ```
 
-To run valgrind-tets, add "**-D ExperimentalMemCheck**" to the ctest call.
-Enclave tests all seem to fail today, though this suceeds:
+To run valgrind-tests, add "**-D ExperimentalMemCheck**" to the ctest call.
+Enclave tests all seem to fail today, though this succeeds:
 
 ```
 build$ ctest -D ExperimentalMemCheck -R oeelf
@@ -224,7 +224,7 @@ build$ make install
 
 If you want the SDK tools to be available to all users and headers/libs
 available from a system default location, you may opt to install system-wide.
-This naturally requires root priviledges. Note that there is no uninstall
+This naturally requires root privileges. Note that there is no uninstall
 script (we target an rpm/deb-based SDK install in the future), hence we
 recommend overwriting the default (/usr/local/) with a singular tree.
 
@@ -250,7 +250,7 @@ The following table shows where key components are installed.
 | <install_prefix>/share/doc/openenclave   | Documentation            |
 | <install_prefix>/share/openenclave       | Samples and make-include |
 
-You may use the make-inclulde in **<install_prefix>/share/openenclave/config.mak**
+You may use the make-include in **<install_prefix>/share/openenclave/config.mak**
 in your own project for sourcing variables containing version info and SDK install paths.
 
 

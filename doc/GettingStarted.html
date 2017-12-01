@@ -115,7 +115,7 @@
 </table>
 <h2>
 <a id="user-content-obtaining-the-source-distribution" class="anchor" href="#obtaining-the-source-distribution" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Obtaining the source distribution</h2>
-<p>OpenEnclave is available from Github. Use the following command to download
+<p>OpenEnclave is available from GitHub. Use the following command to download
 the source distribution.</p>
 <pre><code># git clone https://github.com/Microsoft/openenclave
 </code></pre>
@@ -158,7 +158,7 @@ build$ make
 <li>Intel® SGX Driver (/dev/isgx)</li>
 <li>Intel® SGX AESM Service (from the Intel® SGX SDK)</li>
 </ul>
-<p>Once Linux and the various packages are installed, it is necessary to install the SGX driver and the SGX AESM service. These can be obtained from the following Github repositories.</p>
+<p>Once Linux and the various packages are installed, it is necessary to install the SGX driver and the SGX AESM service. These can be obtained from the following GitHub repositories.</p>
 <ul>
 <li><a href="https://github.com/01org/linux-sgx-driver">https://github.com/01org/linux-sgx-driver</a></li>
 <li><a href="https://github.com/01org/linux-sgx">https://github.com/01org/linux-sgx</a></li>
@@ -239,7 +239,7 @@ in the source-tree, use</p>
 </code></pre>
 <h2>
 <a id="user-content-testing" class="anchor" href="#testing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Testing</h2>
-<p>Adter everything has been built, execute the tests via <strong>ctest</strong> (see "<strong>man ctest</strong>" for details).</p>
+<p>After everything has been built, execute the tests via <strong>ctest</strong> (see "<strong>man ctest</strong>" for details).</p>
 <pre><code>build$ ctest
 </code></pre>
 <p>To run the tests in simulation mode, use</p>
@@ -256,8 +256,8 @@ tests with the <strong>ENABLE_LIBC_TESTS</strong> cmake variable like so:</p>
 <pre><code>build$ cmake -DENABLE_LIBC_TESTS=OFF ..
 [...]
 </code></pre>
-<p>To run valgrind-tets, add "<strong>-D ExperimentalMemCheck</strong>" to the ctest call.
-Enclave tests all seem to fail today, though this suceeds:</p>
+<p>To run valgrind-tests, add "<strong>-D ExperimentalMemCheck</strong>" to the ctest call.
+Enclave tests all seem to fail today, though this succeeds:</p>
 <pre><code>build$ ctest -D ExperimentalMemCheck -R oeelf
 </code></pre>
 <h2>
@@ -269,7 +269,7 @@ build$ make install
 </code></pre>
 <p>If you want the SDK tools to be available to all users and headers/libs
 available from a system default location, you may opt to install system-wide.
-This naturally requires root priviledges. Note that there is no uninstall
+This naturally requires root privileges. Note that there is no uninstall
 script (we target an rpm/deb-based SDK install in the future), hence we
 recommend overwriting the default (/usr/local/) with a singular tree.</p>
 <pre><code>build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$/opt/openenclave ..
@@ -314,7 +314,7 @@ with the given path:</p>
 </tr>
 </tbody>
 </table>
-<p>You may use the make-inclulde in <strong>&lt;install_prefix&gt;/share/openenclave/config.mak</strong>
+<p>You may use the make-include in <strong>&lt;install_prefix&gt;/share/openenclave/config.mak</strong>
 in your own project for sourcing variables containing version info and SDK install paths.</p>
 <h2>
 <a id="user-content-samples" class="anchor" href="#samples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Samples</h2>
