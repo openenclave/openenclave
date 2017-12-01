@@ -4,12 +4,12 @@
 
 build/
 
-prereq/aesm/.build
-prereq/aesm/.prebuilt
-prereq/aesm/.psw_installer
-prereq/aesm/.sdk
-prereq/aesm/.sdk_installer
-prereq/aesm/dynamic-application-loader-host-interface/
-prereq/aesm/linux-sgx/
-prereq/isgx/linux-sgx-driver/
-prereq/packages/.packages
+prereqs/aesm/.build
+prereqs/aesm/.prebuilt
+prereqs/aesm/.psw_installer
+prereqs/aesm/.sdk
+prereqs/aesm/.sdk_installer
+prereqs/aesm/dynamic-application-loader-host-interface/
+prereqs/aesm/linux-sgx/
+prereqs/isgx/linux-sgx-driver/
+prereqs/packages/.packages
