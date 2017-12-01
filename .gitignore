@@ -1,1 +1,15 @@
+*.a
+*.o
+*.so
+
 build/
+
+prereq/aesm/.build
+prereq/aesm/.prebuilt
+prereq/aesm/.psw_installer
+prereq/aesm/.sdk
+prereq/aesm/.sdk_installer
+prereq/aesm/dynamic-application-loader-host-interface/
+prereq/aesm/linux-sgx/
+prereq/isgx/linux-sgx-driver/
+prereq/packages/.packages
