@@ -143,7 +143,8 @@ int OE_SpinUnlock(
  */
 int OE_SpinDestroy(OE_Spinlock* spinlock);
 
-#define OE_MUTEX_INITIALIZER {OE_SPINLOCK_INITIALIZER,0,{NULL,NULL},{0}}
+#define OE_MUTEX_INITIALIZER \
+    {OE_SPINLOCK_INITIALIZER,0,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{NULL,NULL}} 
 
 /* Definition of a mutex */
 typedef struct _OE_Mutex

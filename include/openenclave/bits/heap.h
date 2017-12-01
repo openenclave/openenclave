@@ -192,8 +192,12 @@ void* OE_Remap(
     size_t new_size,
     int flags);
 
-OE_Result OE_Unmap(
+int OE_Unmap(
     void* address,
     size_t size);
+
+void* OE_Sbrk(ptrdiff_t increment);
+
+uintptr_t OE_Brk(ptrdiff_t addr);
 
 #endif /* _OE_HEAP_H */
