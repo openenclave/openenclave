@@ -4,26 +4,26 @@ set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-bu
 
 include (ExternalProject)
 ExternalProject_Add(mbedtls-wrap
-	DEPENDS oelibc_includes
+    DEPENDS oelibc_includes
 
-	DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
-	PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		${CMAKE_CURRENT_SOURCE_DIR}/config.h <SOURCE_DIR>/include/mbedtls/config.h
+    DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/config.h <SOURCE_DIR>/include/mbedtls/config.h
 
-	# Addl args for compiler
-	CMAKE_ARGS 
-		-DCMAKE_C_FLAGS=${MBEDTLS_WRAP_CFLAGS}
-		-DENABLE_PROGRAMS=OFF
-		-DENABLE_TESTING=OFF
-		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    # Addl args for compiler
+    CMAKE_ARGS
+        -DCMAKE_C_FLAGS=${MBEDTLS_WRAP_CFLAGS}
+        -DENABLE_PROGRAMS=OFF
+        -DENABLE_TESTING=OFF
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
-	# copy headers/libs
-	INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory
-		<SOURCE_DIR>/include/mbedtls ${OE_INCDIR}/openenclave/oe-mbedtls/mbedtls
-	    COMMAND ${CMAKE_COMMAND} -E copy
-		<BINARY_DIR>/library/libmbedcrypto.a ${OE_LIBDIR}/openenclave/enclave/
-	)
+    # copy headers/libs
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory
+        <SOURCE_DIR>/include/mbedtls ${OE_INCDIR}/openenclave/oe-mbedtls/mbedtls
+        COMMAND ${CMAKE_COMMAND} -E copy
+        <BINARY_DIR>/library/libmbedcrypto.a ${OE_LIBDIR}/openenclave/enclave/
+    )
 install (DIRECTORY ${OE_INCDIR}/openenclave/oe-mbedtls DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
 install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 

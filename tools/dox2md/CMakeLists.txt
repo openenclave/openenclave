@@ -1,8 +1,8 @@
 add_executable(dox2md
-	element.cpp
-	err.cpp
-	main.cpp
-	)
+    element.cpp
+    err.cpp
+    main.cpp
+    )
 
 target_link_libraries(dox2md expat)
 

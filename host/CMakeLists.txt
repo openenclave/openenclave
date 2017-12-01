@@ -1,35 +1,35 @@
 if (UNIX)
 set(PLATFORM_SRC
-	aesm.c
-	registers.c
-	)
+    aesm.c
+    registers.c
+    )
 endif(UNIX)
 
 add_library(oehost STATIC
-	calls.c
-	create.c
-	elf.c
-	enclave.c
-	error.c
-	files.c
-	hexdump.c
-	load.c
-	ocalls.c
-	quote.c
-	result.c
-	sgxdriver.c
-	sgxmeasure.c
-	sgxtypes.c
-	sha.c
-	spinlock.c
-	tests.c
-	thread.c
-	typeinfo.c
-	aep.S
-	enter.S
-	entersim.S
-	${PLATFORM_SRC}
-	)
+    calls.c
+    create.c
+    elf.c
+    enclave.c
+    error.c
+    files.c
+    hexdump.c
+    load.c
+    ocalls.c
+    quote.c
+    result.c
+    sgxdriver.c
+    sgxmeasure.c
+    sgxtypes.c
+    sha.c
+    spinlock.c
+    tests.c
+    thread.c
+    typeinfo.c
+    aep.S
+    enter.S
+    entersim.S
+    ${PLATFORM_SRC}
+    )
 
 # we and dependents need the OE includes to compile
 target_link_libraries(oehost oe_includes)

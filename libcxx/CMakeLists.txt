@@ -2,21 +2,21 @@
 # external libcxx, libcxxrt, libunwind and wrap in easy-to-use CMake target
 #
 # Note: This approach might not work on Windows.
-# Solutions are either to convert to OBJECT libraries (see below), or 
+# Solutions are either to convert to OBJECT libraries (see below), or
 # place/install all three libs (cxx, rt, unwind) and link against all
 # three.
 
 # Use intermediate project and add properties later using an interface library
 include (ExternalProject)
 ExternalProject_Add(oelibcxx_tmp
-	DEPENDS cxxrt-static oelibcxx_unwind oelibcxx_cxx
-	DOWNLOAD_COMMAND ""
+    DEPENDS cxxrt-static oelibcxx_unwind oelibcxx_cxx
+    DOWNLOAD_COMMAND ""
         CONFIGURE_COMMAND ""
         BUILD_COMMAND sh -c "rm -f *.o ${OE_LIBDIR}/enclave/liboelibcxx.a"
-	    COMMAND ar x $<TARGET_FILE:cxxrt-static>
+            COMMAND ar x $<TARGET_FILE:cxxrt-static>
             COMMAND ar x ${PROJECT_BINARY_DIR}/3rdparty/libunwind/libunwind/src/.libs/libunwind.a
-	    COMMAND ar x $<TARGET_FILE:oelibcxx_cxx>
-	    COMMAND sh -c "ar qs ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a *.o"
+            COMMAND ar x $<TARGET_FILE:oelibcxx_cxx>
+            COMMAND sh -c "ar qs ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a *.o"
         INSTALL_COMMAND ""
         )
 
@@ -31,10 +31,10 @@ install (FILES ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a DESTINATION ${CMAK
 # At some point, we should convert the 3rdparty-libs into true CMake OBJECT libs,
 # so we could source the objects directly like this:
 #add_library(oelibcxx STATIC
-#	$<TARGET_OBJECTS:cxxrt-static>
-#	$<TARGET_OBJECTS:oelibcxx_unwind>
-#	$<TARGET_OBJECTS:oelibcxx_cxx>
-#	)
+#   $<TARGET_OBJECTS:cxxrt-static>
+#   $<TARGET_OBJECTS:oelibcxx_unwind>
+#   $<TARGET_OBJECTS:oelibcxx_cxx>
+#   )
 #target_link_libraries(oelibcxx cxxrt-static)
 #target_link_libraries(oelibcxx oelibcxx_unwind)
 #target_link_libraries(oelibcxx oelibcxx_cxx)

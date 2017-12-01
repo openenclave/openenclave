@@ -10,12 +10,12 @@
 #  unreliable.
 include (ExternalProject)
 ExternalProject_Add(oe_includes_place
-	DOWNLOAD_COMMAND ""
-	CONFIGURE_COMMAND ""
-	BUILD_COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${CMAKE_CURRENT_LIST_DIR}/openenclave ${OE_INCDIR}/openenclave
-	INSTALL_COMMAND ""
-	)
+    DOWNLOAD_COMMAND ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_LIST_DIR}/openenclave ${OE_INCDIR}/openenclave
+    INSTALL_COMMAND ""
+    )
 
 add_library(oe_includes INTERFACE)
 add_dependencies(oe_includes oe_includes_place)
