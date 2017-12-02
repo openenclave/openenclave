@@ -28,6 +28,8 @@
 
 #include <openenclave/defs.h>
 
+OE_EXTERNC_BEGIN
+
 typedef unsigned long size_t;
 
 typedef enum 
@@ -63,8 +65,8 @@ void *OE_Tfind(
     int(*compar)(const void *, const void *));
 
 void *OE_Tdelete(
-    const void *restrict key, 
-    void **restrict rootp,
+    const void *key, 
+    void **rootp,
     int(*compar)(const void *, const void *),
     void (*free)(void*));
 
@@ -76,5 +78,7 @@ void OE_Tdestroy(
     void *root, 
     void (*freekey)(void *nodep),
     void (*free)(void*));
+
+OE_EXTERNC_END
 
 #endif /* _OE_SEARCH_H */

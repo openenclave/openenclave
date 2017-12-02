@@ -5,7 +5,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 
-static OE_Heap __oe_heap = OE_HEAP_INITIALIZER;
+OE_EXTERNC_BEGIN
+
+OE_Heap __oe_heap = OE_HEAP_INITIALIZER;
 static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
 
 /* Initialize the __oe_heap object on the first call */
@@ -106,3 +108,5 @@ int OE_Unmap(
 
     return result == OE_OK ? 0 : -1;
 }
+
+OE_EXTERNC_END

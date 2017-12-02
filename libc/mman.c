@@ -1,7 +1,7 @@
-#include <openenclave/enclave.h>
 #include <stdio.h>
-#include <openenclave/bits/heap.h>
 #include <assert.h>
+#include <openenclave/enclave.h>
+#include <openenclave/bits/heap.h>
 
 void* __mmap(void* start, size_t len, int prot, int flags, int fd, off_t off)
 {
@@ -42,3 +42,4 @@ uintptr_t __brk(uintptr_t newbrk)
 
     return newbrk;
 }
+

@@ -1091,8 +1091,8 @@ void* OE_HeapRemap(
     else
     {
         /* Nothing to do since size did not change */
-        new_addr = addr;
         heap->coverage[OE_HEAP_COVERAGE_12] = true;
+        new_addr = addr;
     }
 
     if (!_HeapSane(heap))

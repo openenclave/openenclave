@@ -2,6 +2,8 @@
 #include <openenclave/thread.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/malloc.h>
+#include <stdio.h>
+#include <assert.h>
 
 static void __wait(
     volatile int *addr, 
@@ -77,12 +79,26 @@ static void __wake(
 /*
 **==============================================================================
 **
-** malloc wrappers (with failure callbacks)
+** malloc wrappers around MUSL calls (with failure callbacks)
 **
 **==============================================================================
 */
 
+/* Enable MUSL locking on first entry */
+OE_INLINE void _EnableMUSLLocking()
+{
+    if (libc.threads_minus_1 == 0)
+    {
+        static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
+        OE_SpinLock(&_lock);
+        libc.threads_minus_1 = 1;
+        OE_SpinUnlock(&_lock);
+    }
+}
+
 static OE_AllocationFailureCallback _failureCallback;
+
+static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
 
 void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function)
 {
@@ -91,6 +107,7 @@ void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function)
 
 void *malloc(size_t size)
 {
+    _EnableMUSLLocking();
     void* p = musl_malloc(size);
 
     if (!p && size)
@@ -106,13 +123,15 @@ void *malloc(size_t size)
 
 void free(void *ptr)
 {
+    _EnableMUSLLocking();
     musl_free(ptr);
 }
 
 void *calloc(size_t nmemb, size_t size)
 {
-    extern void *musl_calloc(size_t nmemb, size_t size);
+    void *musl_calloc(size_t nmemb, size_t size);
 
+    _EnableMUSLLocking();
     void* p = musl_calloc(nmemb, size);
 
     if (!p && nmemb && size)
@@ -128,6 +147,7 @@ void *calloc(size_t nmemb, size_t size)
 
 void *realloc(void *ptr, size_t size)
 {
+    _EnableMUSLLocking();
     void* p = musl_realloc(ptr, size);
 
     if (!p && size)
@@ -141,9 +161,11 @@ void *realloc(void *ptr, size_t size)
     return p;
 }
 
-#if 0
 int posix_memalign(void **memptr, size_t alignment, size_t size)
 {
+    int musl_posix_memalign(void **memptr, size_t alignment, size_t size);
+
+    _EnableMUSLLocking();
     int rc = musl_posix_memalign(memptr, alignment, size);
 
     if (rc != 0 && size)
@@ -156,12 +178,12 @@ int posix_memalign(void **memptr, size_t alignment, size_t size)
 
     return rc;
 }
-#endif
 
 void *memalign(size_t alignment, size_t size)
 {
     void *musl_memalign(size_t alignment, size_t size);
 
+    _EnableMUSLLocking();
     void* p = musl_memalign(alignment, size);
 
     if (!p && size)

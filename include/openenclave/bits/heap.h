@@ -198,6 +198,6 @@ int OE_Unmap(
 
 void* OE_Sbrk(ptrdiff_t increment);
 
-uintptr_t OE_Brk(ptrdiff_t addr);
+int OE_Brk(uintptr_t addr);
 
 #endif /* _OE_HEAP_H */
