@@ -54,6 +54,49 @@ void* sbrk(ptrdiff_t increment)
     return OE_Sbrk(increment);
 }
 
+/*
+** Flush changes made to in-core memory to the mapped file. Since enclaves
+** don't support file mapping, this function is a no-op.
+*/
+int msync(void* addr, size_t length, int flags)
+{
+    /* Nothing to do */
+    return 0;
+}
+
+/*
+** Check to see if the memory given by ADDR and LENGTH is in-core. For
+** enclaves, all memory is in-core, so this function justs sets every
+** element of VEC to 1 to indicate this fact.
+*/
+int mincore(void *addr, size_t length, unsigned char *vec)
+{
+    if (!addr || !vec)
+        return -1;
+
+    size_t n = (length + OE_PAGE_SIZE - 1) / OE_PAGE_SIZE;
+    memset(vec, 1, n);
+
+    return 0;
+}
+
+/*
+**==============================================================================
+**
+** Alias functions to alternative names
+**
+**==============================================================================
+*/
+
+#if defined(__linux__)
+
+OE_WEAK_ALIAS(__mmap, mmap);
+OE_WEAK_ALIAS(__madvise, madvise);
+OE_WEAK_ALIAS(__mremap, mremap);
+OE_WEAK_ALIAS(__munmap, munmap);
+
+#else /* !defined(__linux__) */
+
 void* mmap(void* start, size_t len, int prot, int flags, int fd, off_t off)
 {
     return __mmap(start, len, prot, flags, fd, off);
@@ -74,20 +117,4 @@ int munmap(void *start, size_t len)
     return __munmap(start, len);
 }
 
-int msync(void* addr, size_t length, int flags)
-{
-    /* Nothing to do */
-    return 0;
-}
-
-int mincore(void *addr, size_t length, unsigned char *vec)
-{
-    if (!addr || !vec)
-        return -1;
-
-    size_t n = (length + OE_PAGE_SIZE - 1) / OE_PAGE_SIZE;
-    memset(vec, 1, n);
-
-    return 0;
-}
-
+#endif /* !defined(__linux__) */
