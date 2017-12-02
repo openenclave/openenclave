@@ -20,10 +20,16 @@ static void __wake(
 #define malloc musl_malloc
 #define free musl_free
 #define realloc musl_realloc
+#define memalign musl_memalign
+#define posix_memalign musl_posix_memalign
 #include "../3rdparty/musl/musl/src/malloc/malloc.c"
+#include "../3rdparty/musl/musl/src/malloc/memalign.c"
+#include "../3rdparty/musl/musl/src/malloc/posix_memalign.c"
 #undef malloc
 #undef free
 #undef realloc
+#undef memalign
+#undef posix_memalign
 
 static OE_Mutex _mutex = OE_MUTEX_INITIALIZER;
 
@@ -98,8 +104,6 @@ OE_INLINE void _EnableMUSLLocking()
 
 static OE_AllocationFailureCallback _failureCallback;
 
-static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
-
 void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function)
 {
     _failureCallback = function;
@@ -161,27 +165,9 @@ void *realloc(void *ptr, size_t size)
     return p;
 }
 
-int posix_memalign(void **memptr, size_t alignment, size_t size)
-{
-    int musl_posix_memalign(void **memptr, size_t alignment, size_t size);
-
-    _EnableMUSLLocking();
-    int rc = musl_posix_memalign(memptr, alignment, size);
-
-    if (rc != 0 && size)
-    {
-        errno = ENOMEM;
-
-        if (_failureCallback)
-            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
-    }
-
-    return rc;
-}
-
 void *memalign(size_t alignment, size_t size)
 {
-    void *musl_memalign(size_t alignment, size_t size);
+    extern void *musl_memalign(size_t alignment, size_t size);
 
     _EnableMUSLLocking();
     void* p = musl_memalign(alignment, size);
@@ -195,4 +181,22 @@ void *memalign(size_t alignment, size_t size)
     }
 
     return p;
+}
+
+int posix_memalign(void **memptr, size_t alignment, size_t size)
+{
+    extern int musl_posix_memalign(void **ptr, size_t alignment, size_t size);
+
+    _EnableMUSLLocking();
+    int rc = musl_posix_memalign(memptr, alignment, size);
+
+    if (rc != 0 && size)
+    {
+        errno = ENOMEM;
+
+        if (_failureCallback)
+            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    }
+
+    return rc;
 }
