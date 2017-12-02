@@ -18,14 +18,17 @@ static void __wake(
 
 #define _PTHREAD_IMPL_H
 #define malloc musl_malloc
+#define calloc musl_calloc
 #define free musl_free
 #define realloc musl_realloc
 #define memalign musl_memalign
 #define posix_memalign musl_posix_memalign
 #include "../3rdparty/musl/musl/src/malloc/malloc.c"
+#include "../3rdparty/musl/musl/src/malloc/calloc.c"
 #include "../3rdparty/musl/musl/src/malloc/memalign.c"
 #include "../3rdparty/musl/musl/src/malloc/posix_memalign.c"
 #undef malloc
+#undef calloc
 #undef free
 #undef realloc
 #undef memalign
@@ -167,8 +170,6 @@ void *realloc(void *ptr, size_t size)
 
 void *memalign(size_t alignment, size_t size)
 {
-    extern void *musl_memalign(size_t alignment, size_t size);
-
     _EnableMUSLLocking();
     void* p = musl_memalign(alignment, size);
 
@@ -185,8 +186,6 @@ void *memalign(size_t alignment, size_t size)
 
 int posix_memalign(void **memptr, size_t alignment, size_t size)
 {
-    extern int musl_posix_memalign(void **ptr, size_t alignment, size_t size);
-
     _EnableMUSLLocking();
     int rc = musl_posix_memalign(memptr, alignment, size);
 
