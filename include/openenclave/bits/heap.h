@@ -7,6 +7,8 @@
 #include <openenclave/thread.h>
 #include <openenclave/result.h>
 
+OE_EXTERNC_BEGIN
+
 #define OE_PROT_NONE       0
 #define OE_PROT_READ       1
 #define OE_PROT_WRITE      2
@@ -199,5 +201,7 @@ int OE_Unmap(
 void* OE_Sbrk(ptrdiff_t increment);
 
 int OE_Brk(uintptr_t addr);
+
+OE_EXTERNC_END
 
 #endif /* _OE_HEAP_H */

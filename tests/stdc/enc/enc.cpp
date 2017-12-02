@@ -26,14 +26,6 @@
 #include <time.h>
 #include "../args.h"
 
-/* ATTN: implement these! */
-#if 0
-# include <complex.h>
-# include <float.h>
-# include <math.h>
-# include <time.h>
-#endif
-
 extern OE_Heap __oe_heap;
 
 bool CheckMem(void* ptr, size_t n, uint8_t c)
@@ -336,12 +328,17 @@ OE_ECALL void Test(void* args_)
 
     /* Test random allocations and frees */
     {
+        /* Enable sanity checking */
+        OE_HeapSetSanity(&__oe_heap, true);
+
+        /* Perform tests */
         const size_t iterations = 10000;
         TestAllocFree(4096, iterations, 16);
         TestAllocFree(4096, iterations, 256);
         TestAllocFree(4096, iterations, 4096);
         TestAllocFree(256, iterations, 64*4096);
 
+        /* Check coverage */
         for (size_t i = 0; i < OE_HEAP_COVERAGE_N; i++)
         {
             /* Ignore OE_HEAP_COVERAGE_12 (it occurs only when remapping a 
@@ -352,6 +349,16 @@ OE_ECALL void Test(void* args_)
                 fprintf(stderr, "*** not covered: OE_HEAP_COVERAGE_%zu\n", i);
                 assert(0);
             }
+        }
+
+        /* Recheck sanity */
+        assert(OE_HeapSane(&__oe_heap));
+
+        /* Fail if VAD list is not empty */
+        if (__oe_heap.vad_list)
+        {
+            fprintf(stderr, "*** VAD list not empty\n");
+            assert(0);
         }
     }
 
