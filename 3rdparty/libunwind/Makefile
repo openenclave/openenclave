@@ -18,7 +18,6 @@ CFLAGS += -DWSIZE=8
 CFLAGS += -fno-builtin
 CFLAGS += -fPIC 
 CFLAGS += -DOPEN_ENCLAVE
-CFLAGS += -include $(TOP)/3rdparty/libunwind/stubs.h
 
 #CFLAGS += -std=c99
 

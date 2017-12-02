@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 #include <openenclave/enclave.h>
 #include <openenclave/bits/heap.h>
 
@@ -41,5 +42,52 @@ uintptr_t __brk(uintptr_t newbrk)
         return (uintptr_t)((void*)-1);
 
     return newbrk;
+}
+
+int brk(void* addr)
+{
+    return OE_Brk((uintptr_t)addr);
+}
+
+void* sbrk(ptrdiff_t increment)
+{
+    return OE_Sbrk(increment);
+}
+
+void* mmap(void* start, size_t len, int prot, int flags, int fd, off_t off)
+{
+    return __mmap(start, len, prot, flags, fd, off);
+}
+
+int madvise(void* addr, size_t len, int advice)
+{
+    return __madvise(addr, len, advice);
+}
+
+void* mremap(void* old_addr, size_t old_len, size_t new_len, int flags, ...)
+{
+    return __mremap(old_addr, old_len, new_len, flags);
+}
+
+int munmap(void *start, size_t len)
+{
+    return __munmap(start, len);
+}
+
+int msync(void* addr, size_t length, int flags)
+{
+    /* Nothing to do */
+    return 0;
+}
+
+int mincore(void *addr, size_t length, unsigned char *vec)
+{
+    if (!addr || !vec)
+        return -1;
+
+    size_t n = (length + OE_PAGE_SIZE - 1) / OE_PAGE_SIZE;
+    memset(vec, 1, n);
+
+    return 0;
 }
 
