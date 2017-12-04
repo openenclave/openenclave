@@ -72,9 +72,11 @@ build$ make
 
 ### Installing
 
-To install OpenEnclave in the default location (/usr/local), type:
+As of now, there is no real need to install the SDK system-wide, so you might
+use a tree in your home directory:
 
 ```
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
 build$ make install
 ```
 
@@ -127,16 +129,26 @@ Configure with
 build$ cmake ..
 ```
 
-For the Linux make generator of cmake, different configurations (*Debug*, *Release*, *RelWithDebInfo*) 
-are selected upon configuration time by specifying the **CMAKE_BUILD_TYPE** variable:
+In addition to the standard CMake variables, the following CMake variables
+control the behavior of the Linux make generator for OpenEnclave:
+
+| Variable            | Description                                          |
+|---------------------|------------------------------------------------------|
+| CMAKE_BUILD_TYPE    | Build configuration (*Debug*, *Release*, *RelWithDebInfo*). Default is *Debug*. |
+| ENABLE_LIBC_TESTS   | Enable Libc tests. Default is enabled, disable with setting to "Off", "No", "0", ... |
+| ENABLE_LIBCXX_TESTS | Enable Libc++ tests. Default is disabled, enable with setting to "On", "1", ... |
+| ENABLE_REFMAN       | Enable building of reference manual. Requires Doxygen to be installed. Default is enabled, disable with setting to "Off", "No", "0", ... |
+
+
+E.g., to generate an optimized release-build with debug info, use
 
 ```
  build$ cmake .. -DCMAKE_BUILD_TYPE=relwithdebinfo
 ````
 
-The default configuration is *Debug*.
+Multiple variables can be defined at the call with multiple "-D*Var*=*Value*" arguments.
 
-Build with
+Once configured, build with
 
 ```
 build$ make
@@ -229,7 +241,7 @@ script (we target an rpm/deb-based SDK install in the future), hence we
 recommend overwriting the default (/usr/local/) with a singular tree.
 
 ```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$/opt/openenclave ..
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
 build$ sudo make install
 ```
 
@@ -263,7 +275,8 @@ Change to the new samples directory and build and run the samples.
 
 ```
 $ cd $home/share/openenclave/samples
-$ make OPENENCLAVE_CONFIG=$home/share/openenclave/config.mak
+$ export OPENENCLAVE_CONFIG=$home/share/openenclave/config.mak
+$ make
 $ make run
 [...]
 ```
