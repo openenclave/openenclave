@@ -145,8 +145,10 @@ build$ make
 </code></pre>
 <h3>
 <a id="user-content-installing" class="anchor" href="#installing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installing</h3>
-<p>To install OpenEnclave in the default location (/usr/local), type:</p>
-<pre><code>build$ make install
+<p>As of now, there is no real need to install the SDK system-wide, so you might
+use a tree in your home directory:</p>
+<pre><code>build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
+build$ make install
 </code></pre>
 <h2>
 <a id="user-content-prerequisites-1" class="anchor" href="#prerequisites-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h2>
@@ -181,12 +183,39 @@ $ cd build/
 <p>Configure with</p>
 <pre><code>build$ cmake ..
 </code></pre>
-<p>For the Linux make generator of cmake, different configurations (<em>Debug</em>, <em>Release</em>, <em>RelWithDebInfo</em>)
-are selected upon configuration time by specifying the <strong>CMAKE_BUILD_TYPE</strong> variable:</p>
+<p>In addition to the standard CMake variables, the following CMake variables
+control the behavior of the Linux make generator for OpenEnclave:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CMAKE_BUILD_TYPE</td>
+<td>Build configuration (<em>Debug</em>, <em>Release</em>, <em>RelWithDebInfo</em>). Default is <em>Debug</em>.</td>
+</tr>
+<tr>
+<td>ENABLE_LIBC_TESTS</td>
+<td>Enable Libc tests. Default is enabled, disable with setting to "Off", "No", "0", ...</td>
+</tr>
+<tr>
+<td>ENABLE_LIBCXX_TESTS</td>
+<td>Enable Libc++ tests. Default is disabled, enable with setting to "On", "1", ...</td>
+</tr>
+<tr>
+<td>ENABLE_REFMAN</td>
+<td>Enable building of reference manual. Requires Doxygen to be installed. Default is enabled, disable with setting to "Off", "No", "0", ...</td>
+</tr>
+</tbody>
+</table>
+<p>E.g., to generate an optimized release-build with debug info, use</p>
 <pre><code> build$ cmake .. -DCMAKE_BUILD_TYPE=relwithdebinfo
 </code></pre>
-<p>The default configuration is <em>Debug</em>.</p>
-<p>Build with</p>
+<p>Multiple variables can be defined at the call with multiple "-D<em>Var</em>=<em>Value</em>" arguments.</p>
+<p>Once configured, build with</p>
 <pre><code>build$ make
 </code></pre>
 <p>This builds the entire OpenEnclave SDK, creating the following files.</p>
@@ -272,7 +301,7 @@ available from a system default location, you may opt to install system-wide.
 This naturally requires root privileges. Note that there is no uninstall
 script (we target an rpm/deb-based SDK install in the future), hence we
 recommend overwriting the default (/usr/local/) with a singular tree.</p>
-<pre><code>build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$/opt/openenclave ..
+<pre><code>build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
 build$ sudo make install
 </code></pre>
 <p>On Linux, there is also the <strong>DESTDIR</strong> mechanism, prepending the install prefix
@@ -321,7 +350,8 @@ in your own project for sourcing variables containing version info and SDK insta
 <p>Find the samples under <strong>share/openenclave/samples/</strong> of the installation.</p>
 <p>Change to the new samples directory and build and run the samples.</p>
 <pre><code>$ cd $home/share/openenclave/samples
-$ make OPENENCLAVE_CONFIG=$home/share/openenclave/config.mak
+$ export OPENENCLAVE_CONFIG=$home/share/openenclave/config.mak
+$ make
 $ make run
 [...]
 </code></pre>
