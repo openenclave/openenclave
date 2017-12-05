@@ -233,12 +233,6 @@ static void _HandleECall(
         OE_Once(&_once, OE_CallInitFunctions);
     }
 
-    /* Call the OE_Constructor() on the first call */
-    {
-        static OE_OnceType _once = OE_ONCE_INITIALIZER;
-        OE_Once(&_once, OE_Constructor);
-    }
-
     /* Dispatch the ECALL */
     switch (func)
     {
@@ -249,9 +243,6 @@ static void _HandleECall(
         }
         case OE_FUNC_DESTRUCTOR:
         {
-            /* Call any user-defined OE_Destructor() function */
-            OE_Destructor();
-
             /* Call functions installed by __cxa_atexit() and OE_AtExit() */
             OE_CallAtExitFunctions();
 

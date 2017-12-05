@@ -9,11 +9,8 @@ void MyECall(uint64_t argIn, uint64_t *argOut)
         *argOut = argIn * 3;
 }
 
-extern "C" void OE_Constructor(void)
-{
-    OE_Result result = OE_RegisterECall(0, MyECall);
-    OE_Assert(result == OE_OK);
-}
+/* Register custom ECall on load */
+static OE_Result s_registerResult = OE_RegisterECall(0, MyECall);
 
 int TestSetjmp()
 {
@@ -34,6 +31,9 @@ OE_ECALL void Test(void* args_)
 
     if (!args_)
         return;
+
+    /* Verify that registration of ECall at initialization succeeded */
+    OE_Assert(s_registerResult == OE_OK);
 
     /* Set output arguments */
     OE_Memset(args, 0xDD, sizeof(TestArgs));
