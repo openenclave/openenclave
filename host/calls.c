@@ -746,3 +746,26 @@ OE_Result OE_CallEnclave(
 catch:
     return result;
 }
+
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+void _OE_NotifyOCallStart(
+    _OE_HostOCallFrame* frame_point,
+    void* tcs)
+{
+    UNREFERENCED_PARAMETER(frame_point);
+    UNREFERENCED_PARAMETER(tcs);
+
+    return;
+}
+
+void _OE_NotifyOCallEnd(
+    _OE_HostOCallFrame* frame_point,
+    void* tcs)
+{
+    UNREFERENCED_PARAMETER(frame_point);
+    UNREFERENCED_PARAMETER(tcs);
+
+    return;
+}
+#pragma GCC pop_options

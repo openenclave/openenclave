@@ -184,4 +184,19 @@ OE_ALIGNED(OE_PAGE_SIZE);
 #define OE_va_end __builtin_va_end
 #define OE_va_copy __builtin_va_copy
 
+/*
+**==============================================================================
+**
+** OE_OCallContext:
+**
+**==============================================================================
+*/
+
+typedef struct _OE_OCallContext
+{
+    uintptr_t rbp;
+    uintptr_t ret;
+}
+OE_OCallContext;
+
 #endif /* _OE_TYPES_H */
