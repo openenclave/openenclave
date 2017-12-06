@@ -1,4 +1,5 @@
 #include <openenclave/host.h>
+#include <openenclave/bits/tests.h>
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
@@ -37,7 +38,7 @@ int main(int argc, const char* argv[])
 
     /* Create an enclave from the file given by argv[1] */
     {
-        const uint64_t flags = OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
+        const uint64_t flags = OE_GetCreateFlags();
 
         if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
         {
