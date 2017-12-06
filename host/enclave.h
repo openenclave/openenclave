@@ -22,21 +22,21 @@ typedef struct _ECallNameAddr
 }
 ECallNameAddr;
 
-/* 
+/*
 **==============================================================================
 **
 ** ThreadBinding:
 **
-**     Defines a binding between a host thread (ThreadBinding.thread) and an 
-**     enclave thread context (ThreadBinding.tcs). When the host performs an 
-**     ECALL, the calling thread "binds" to a thread context within the 
+**     Defines a binding between a host thread (ThreadBinding.thread) and an
+**     enclave thread context (ThreadBinding.tcs). When the host performs an
+**     ECALL, the calling thread "binds" to a thread context within the
 **     enclave. This binding remains in effect until the ECALL returns.
 **
 **     An active binding is indicated by the following condition:
 **
 **         ThreadBinding.busy == true
 **
-**     Due to nesting, the same thread may bind to the same enclave thread 
+**     Due to nesting, the same thread may bind to the same enclave thread
 **     context more than once. The ThreadBinding.count field indicates how
 **     many bindings are in effect.
 **
@@ -49,7 +49,7 @@ typedef struct _ThreadBinding
     uint64_t tcs;
 
     /* The thread this slot is assigned to */
-    OE_Thread thread;
+    OE_H_Thread thread;
 
     /* Whether this binding is busy */
     bool busy;
@@ -87,7 +87,7 @@ struct _OE_Enclave
     /* Array of thread bindings */
     ThreadBinding bindings[OE_SGX_MAX_TCS];
     size_t num_bindings;
-    OE_Spinlock lock;
+    OE_H_Mutex lock;
 
     /* Hash of enclave (MRENCLAVE) */
     OE_SHA256 hash;

@@ -33,7 +33,7 @@ static char* _Strdup(
 {
     char* p;
 
-    if (!s || !alloc)
+    if (!s || (alloc == NULL))
         return NULL;
 
     if (n == 0)
@@ -53,7 +53,7 @@ static char* _Wcsdup(
 {
     wchar_t* p;
 
-    if (!s || !alloc)
+    if (!s || (alloc == NULL))
         return NULL;
 
     if (n == 0)
@@ -185,54 +185,54 @@ static size_t _GetTypeSizeFromType(
 {
     switch (type)
     {
-        case OE_NONE_T: 
+        case OE_NONE_T:
             return 0;
-        case OE_CHAR_T: 
+        case OE_CHAR_T:
             return sizeof(char);
-        case OE_SHORT_T: 
+        case OE_SHORT_T:
             return sizeof(short);
-        case OE_INT_T: 
+        case OE_INT_T:
             return sizeof(int);
-        case OE_LONG_T: 
+        case OE_LONG_T:
             return sizeof(long);
-        case OE_USHORT_T: 
+        case OE_USHORT_T:
             return sizeof(unsigned short);
-        case OE_UINT_T: 
+        case OE_UINT_T:
             return sizeof(unsigned int);
-        case OE_ULONG_T: 
+        case OE_ULONG_T:
             return sizeof(unsigned long);
-        case OE_WCHAR_T: 
+        case OE_WCHAR_T:
             return sizeof(wchar_t);
-        case OE_BOOL_T: 
+        case OE_BOOL_T:
             return sizeof(bool);
-        case OE_INT8_T: 
+        case OE_INT8_T:
             return sizeof(int8_t);
-        case OE_UCHAR_T: 
-        case OE_UINT8_T: 
+        case OE_UCHAR_T:
+        case OE_UINT8_T:
             return sizeof(uint8_t);
-        case OE_INT16_T: 
+        case OE_INT16_T:
             return sizeof(int16_t);
-        case OE_UINT16_T: 
+        case OE_UINT16_T:
             return sizeof(uint16_t);
-        case OE_INT32_T: 
+        case OE_INT32_T:
             return sizeof(int32_t);
-        case OE_UINT32_T: 
+        case OE_UINT32_T:
             return sizeof(uint32_t);
-        case OE_INT64_T: 
+        case OE_INT64_T:
             return sizeof(int64_t);
-        case OE_UINT64_T: 
+        case OE_UINT64_T:
             return sizeof(uint64_t);
-        case OE_FLOAT_T: 
+        case OE_FLOAT_T:
             return sizeof(float);
-        case OE_DOUBLE_T: 
+        case OE_DOUBLE_T:
             return sizeof(double);
-        case OE_SIZE_T: 
+        case OE_SIZE_T:
             return sizeof(size_t);
-        case OE_SSIZE_T: 
+        case OE_SSIZE_T:
             return sizeof(ssize_t);
-        case OE_STRUCT_T: 
+        case OE_STRUCT_T:
             return 0;
-        case OE_VOID_T: 
+        case OE_VOID_T:
             return 1;
     }
 
@@ -779,7 +779,7 @@ static void _PrintArray(
     }
     else
         printf("{ ");
-    
+
     for (size_t i = 0; i < arrSize; i++)
     {
         _PrintScalar(fti, p, depth);
@@ -873,7 +873,7 @@ static void _PrintStruct(
         }
         else if (fti->flags & OE_FLAG_ARRAY)
         {
-            _PrintArray(fti, p, fti->size / fti->subscript, fti->subscript, 
+            _PrintArray(fti, p, fti->size / fti->subscript, fti->subscript,
                 depth);
             printf("\n");
         }
@@ -946,7 +946,7 @@ static OE_Result _ClonePtrField(
     if (ptrOut)
         *ptrOut = NULL;
 
-    if (!sti || !sin || !fti || !ptrIn || !ptrOut || !alloc)
+    if (!sti || !sin || !fti || !ptrIn || !ptrOut || (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
 
     OE_TRY(_GetCount(sti, sin, fti, &count));
@@ -1020,7 +1020,7 @@ static OE_Result _CopyField(
     OE_Result result = OE_UNEXPECTED;
 
     /* Check for null parameters */
-    if (!fti || !fin || !fout|| !alloc)
+    if (!fti || !fin || !fout|| (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Zero-initialize this field */
@@ -1061,7 +1061,7 @@ static OE_Result _CopyField(
     result = OE_OK;
 
 catch:
-    
+
     return result;
 }
 
@@ -1100,7 +1100,7 @@ OE_Result OE_CopyStruct(
     size_t i;
 
     /* Check for null parameters */
-    if (!sti || !sin || !sout || !alloc)
+    if (!sti || !sin || !sout || (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Zero-initialize destination structure */
@@ -1118,7 +1118,7 @@ OE_Result OE_CopyStruct(
     result = OE_OK;
 
 catch:
-    
+
     return result;
 }
 
@@ -1132,7 +1132,7 @@ OE_Result OE_CloneStruct(
         *sout = NULL;
 
     /* Check for null parameters */
-    if (!sti || !sin || !alloc)
+    if (!sti || !sin || (alloc == NULL))
         return OE_INVALID_PARAMETER;
 
     /* Allocate new structure (allocate at least 1 byte) */
@@ -1151,7 +1151,7 @@ static OE_Result _CloneStructs(
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!sti || !sin || !count || !sout || !alloc)
+    if (!sti || !sin || !count || !sout || (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (!(*sout = alloc(sti->size * count)))
@@ -1173,13 +1173,13 @@ static OE_Result _CloneBlob(
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!dataIn || !size || !dataOut || !alloc)
+    if (!dataIn || !size || !dataOut || (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (!(*dataOut = alloc(size)))
         return OE_OUT_OF_MEMORY;
 
-    memcpy(*dataOut, dataIn, size); 
+    memcpy(*dataOut, dataIn, size);
 
     result = OE_OK;
 
@@ -1521,7 +1521,7 @@ catch:
 }
 
 size_t OE_StructFindField(
-    const OE_StructTI* sti, 
+    const OE_StructTI* sti,
     const char* name)
 {
     if (!sti || !name)

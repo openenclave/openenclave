@@ -152,7 +152,7 @@ __attribute__((always_inline))
 static OE_Result _DoEENTER(
     OE_Enclave* enclave,
     void* tcs,
-    void (*aep)(void), 
+    void (*aep)(void),
     OE_Code codeIn,
     uint32_t funcIn,
     uint64_t argIn,
@@ -278,18 +278,20 @@ static void _HandleCallHost(uint64_t arg)
 **     Register the given OCALL function, associate it with the given function
 **     number.
 **
+**  TODO: Redesign this, this needs to be per-enclave.
+**
 **==============================================================================
 */
 
 static OE_OCallFunction _ocalls[OE_MAX_OCALLS];
-static OE_Spinlock _ocalls_spinlock = OE_SPINLOCK_INITIALIZER;
+static OE_H_Mutex _ocalls_lock = OE_H_MUTEX_INITIALIZER;
 
 OE_Result OE_RegisterOCall(
     uint32_t func,
     OE_OCallFunction ocall)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_SpinLock(&_ocalls_spinlock);
+    OE_H_MutexLock(&_ocalls_lock);
 
     if (func >= OE_MAX_OCALLS)
         OE_THROW(OE_OUT_OF_RANGE);
@@ -302,7 +304,7 @@ OE_Result OE_RegisterOCall(
     result = OE_OK;
 
 catch:
-    OE_SpinUnlock(&_ocalls_spinlock);
+    OE_H_MutexUnlock(&_ocalls_lock);
     return result;
 }
 
@@ -399,9 +401,9 @@ static OE_Result _HandleOCALL(
             /* Dispatch user-registered OCALLs */
             if (func < OE_MAX_OCALLS)
             {
-                OE_SpinLock(&_ocalls_spinlock);
+                OE_H_MutexLock(&_ocalls_lock);
                 OE_OCallFunction ocall = _ocalls[func];
-                OE_SpinUnlock(&_ocalls_spinlock);
+                OE_H_MutexUnlock(&_ocalls_lock);
 
                 if (ocall)
                     ocall(argIn, argOut);
@@ -423,7 +425,7 @@ catch:
 ** __OE_DispatchOCall()
 **
 **     This function is called by OE_Enter() (see enter.S). It checks to
-**     to see if EENTER returned in order to perform an OCALL. If so it 
+**     to see if EENTER returned in order to perform an OCALL. If so it
 **     dispatches the OCALL.
 **
 ** Parameters:
@@ -499,9 +501,9 @@ static void* _AssignTCS(
 {
     void* tcs = NULL;
     size_t i;
-    OE_Thread thread = OE_ThreadSelf();
+    OE_H_Thread thread = OE_H_ThreadSelf();
 
-    OE_SpinLock(&enclave->lock);
+    OE_H_MutexLock(&enclave->lock);
     {
         /* First attempt to find a busy TD owned by this thread */
         for (i = 0; i < enclave->num_bindings; i++)
@@ -538,7 +540,7 @@ static void* _AssignTCS(
             }
         }
     }
-    OE_SpinUnlock(&enclave->lock);
+    OE_H_MutexUnlock(&enclave->lock);
 
     return tcs;
 }
@@ -548,7 +550,7 @@ static void* _AssignTCS(
 **
 ** _ReleaseTCS()
 **
-**     Decrement the ThreadBinding.count field of the binding assocated with 
+**     Decrement the ThreadBinding.count field of the binding assocated with
 **     the given TCS. If the field becomes zero, the binding is dissolved.
 **
 **==============================================================================
@@ -560,7 +562,7 @@ static void _ReleaseTCS(
 {
     size_t i;
 
-    OE_SpinLock(&enclave->lock);
+    OE_H_MutexLock(&enclave->lock);
     {
         for (i = 0; i < enclave->num_bindings; i++)
         {
@@ -582,7 +584,7 @@ static void _ReleaseTCS(
             }
         }
     }
-    OE_SpinUnlock(&enclave->lock);
+    OE_H_MutexUnlock(&enclave->lock);
 }
 
 /*
@@ -622,13 +624,13 @@ OE_Result OE_ECall(
     /* Perform ECALL or ORET */
     OE_TRY(_DoEENTER(
         enclave,
-        tcs, 
-        OE_AEP, 
+        tcs,
+        OE_AEP,
         code,
-        func, 
-        arg, 
+        func,
+        arg,
         &codeOut,
-        &funcOut, 
+        &funcOut,
         &argOut));
 
     /* Process OCALLS */
@@ -732,9 +734,9 @@ OE_Result OE_CallEnclave(
         uint64_t argOut = 0;
 
         OE_TRY(OE_ECall(
-            enclave, 
-            OE_FUNC_CALL_ENCLAVE, 
-            (uint64_t)&callEnclaveArgs, 
+            enclave,
+            OE_FUNC_CALL_ENCLAVE,
+            (uint64_t)&callEnclaveArgs,
             &argOut));
     }
 

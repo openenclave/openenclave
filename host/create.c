@@ -848,8 +848,9 @@ OE_Result __OE_BuildEnclave(
         enclave->simulate = simulate;
     }
 
-    /* Initialize the spin lock */
-    OE_SpinInit(&enclave->lock);
+    /* Initialize the lock */
+    if (OE_H_MutexInit(&enclave->lock))
+        OE_THROW(OE_FAILURE);
 
     /* Reject invalid parameters */
     if (!dev || !path || !enclave)

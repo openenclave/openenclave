@@ -16,7 +16,7 @@
 #include "defs.h"
 #include "types.h"
 #include "result.h"
-#include "thread.h"
+#include "h_thread.h"
 #include "bits/sha.h"
 #include "typeinfo.h"
 
@@ -161,6 +161,8 @@ OE_Result OE_CallEnclave(
 
 /**
  * Registers a low-level OCALL function.
+ *
+ * TODO: Redesign this, this needs to be enclave-specific.
  *
  * This function registers a low-level OCALL function that may be called
  * from the encalve by the **OE_OCall()** function. The registered function

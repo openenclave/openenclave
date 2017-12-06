@@ -1,7 +1,7 @@
 /**
  * \file thread.h
  *
- * This file defines threading primitives used by hosts and enclaves.
+ * This file defines threading primitives used by enclaves.
  *
  */
 #ifndef _OE_THREAD_H

@@ -2,8 +2,13 @@ if (UNIX)
 set(PLATFORM_SRC
     aesm.c
     registers.c
+    thread-linux.c
     )
-endif(UNIX)
+elseif (WIN32)
+set(PLATFORM_SRC
+    thread-win.c
+    )
+endif()
 
 add_library(oehost STATIC
     calls.c
@@ -21,9 +26,7 @@ add_library(oehost STATIC
     sgxmeasure.c
     sgxtypes.c
     sha.c
-    spinlock.c
     tests.c
-    thread.c
     typeinfo.c
     aep.S
     enter.S
@@ -45,8 +48,9 @@ target_link_libraries(oehost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 
 if(UNIX)
 target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -m64)
+target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
 endif(UNIX)
-target_compile_definitions(oehost PRIVATE -DOE_BUILD_UNTRUSTED)
+target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)

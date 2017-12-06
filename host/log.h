@@ -1,5 +1,4 @@
-#ifndef _log_h
-#define _log_h
+#pragma once
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -205,4 +204,3 @@ OE_INLINE void LogSigstruct(const Sigstruct* p)
     Log("q2="); LogHex(p->q2, sizeof(p->q2));
 }
 
-#endif /* _log_h */
