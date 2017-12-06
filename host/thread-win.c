@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <openenclave/host.h>
+#include "h_thread.h"
 
 /*
 **==============================================================================

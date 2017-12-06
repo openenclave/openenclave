@@ -6,6 +6,7 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
 #include "asmdefs.h"
+#include "h_thread.h"
 
 #define ENCLAVE_MAGIC 0x20dc98463a5ad8b8
 

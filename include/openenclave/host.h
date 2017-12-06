@@ -16,7 +16,6 @@
 #include "defs.h"
 #include "types.h"
 #include "result.h"
-#include "h_thread.h"
 #include "bits/sha.h"
 #include "typeinfo.h"
 

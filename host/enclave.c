@@ -17,7 +17,7 @@ static OE_H_ThreadKey _enclave_key;
 
 static void _CreateEnclaveKey(void)
 {
-    OE_H_ThreadKeyCreate(&_enclave_key, NULL);
+    OE_H_ThreadKeyCreate(&_enclave_key);
 }
 
 void SetEnclave(OE_Enclave* enclave)

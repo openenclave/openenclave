@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include <openenclave/host.h>
+#include "h_thread.h"
 
 /*
 **==============================================================================
@@ -80,10 +81,9 @@ int OE_H_MutexDestroy(OE_H_Mutex* Lock)
 */
 
 int OE_H_ThreadKeyCreate(
-    OE_H_ThreadKey* key,
-    void (*destructor)(void* value))
+    OE_H_ThreadKey* key)
 {
-    return pthread_key_create(key, destructor);
+    return pthread_key_create(key, NULL);
 }
 
 int OE_H_ThreadKeyDelete(

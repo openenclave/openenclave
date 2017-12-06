@@ -6,8 +6,8 @@
  */
  #pragma once
 
-#include "defs.h"
-#include "types.h"
+#include <openenclave/defs.h>
+#include <openenclave/types.h>
 
 #if __GNUC__
 #include <pthread.h>
@@ -167,24 +167,20 @@ int OE_H_MutexDestroy(OE_H_Mutex* mutex);
  * Create a key for accessing thread-specific data.
  *
  * This function allocates a thread-specific data (TSD) entry and initializes
- * a key for accessing it. The function given by the **destructor** parameter
- * is called when the key is deleted by OE_H_ThreadKeyDelete().
+ * a key for accessing it.
  *
  * @param key Set this key to refer to the newly allocated TSD entry.
- * @param destructor If non-null, call this function from OE_H_ThreadKeyDelete().
  *
  * @return Returns zero on success.
  */
 int OE_H_ThreadKeyCreate(
-    OE_H_ThreadKey* key,
-    void (*destructor)(void* value));
+    OE_H_ThreadKey* key);
 
 /**
  * Delete a key for accessing thread-specific data.
  *
  * This function deletes the thread-specific data (TSD) entry associated with
- * the given key, calling the function given by the **destructor** parameter
- * initially passed to OE_H_ThreadKeyCreate().
+ * the given key.
  *
  * @param key Delete the TSD entry associated with this key.
  *
