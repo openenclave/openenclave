@@ -1,4 +1,5 @@
 #include <openenclave/host.h>
+#include <openenclave/bits/tests.h>
 #include <stdio.h>
 
 OE_OCALL void HostEcho(void* args)
@@ -23,7 +24,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const uint64_t flags = OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
+    const uint64_t flags = OE_GetCreateFlags();
 
     result = OE_CreateEnclave(argv[1], flags, &enclave);
     if (result != OE_OK)
