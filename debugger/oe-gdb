@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+shopt -s expand_aliases
+
+#GDB_SGX_PLUGIN_PATH=/opt/openenclave/lib/openenclave/debugger/gdb-sgx-plugin
+#SGX_LIBRARY_PATH=/opt/openenclave/lib/openenclave/debugger
+
+GDB_SGX_PLUGIN_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger/gdb-sgx-plugin
+SGX_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/debugger
+
+if [ -f /usr/local/bin/gdb ]
+then
+    GDB=/usr/local/bin/gdb
+elif [ -f /usr/bin/gdb ]
+then
+    GDB=/usr/bin/gdb
+else
+    GDB=gdb
+fi
+
+export PYTHONPATH=$GDB_SGX_PLUGIN_PATH
+LD_PRELOAD=$SGX_LIBRARY_PATH/libsgx_ptrace.so $GDB -iex "directory $GDB_SGX_PLUGIN_PATH" -iex "source $GDB_SGX_PLUGIN_PATH/gdb_sgx_plugin.py" -iex "set environment LD_PRELOAD" -iex "add-auto-load-safe-path /usr/lib" "$@"
