@@ -101,10 +101,10 @@ typedef struct _OE_Heap
     uintptr_t end;
 
     /* Top of break memory partition (grows positively) */
-    uintptr_t break_top;
+    uintptr_t brk_top;
 
     /* Top of mapped memory partition (grows negatively) */
-    uintptr_t mapped_top;
+    uintptr_t map_top;
 
     /* The next available OE_VAD in the VADs array */
     OE_VAD* next_vad;
@@ -114,9 +114,6 @@ typedef struct _OE_Heap
 
     /* The OE_VAD free list (singly linked) */
     OE_VAD* free_vads;
-
-    /* Root of OE_VAD AVL tree */
-    OE_VAD* vad_tree;
 
     /* Linked list of VADs (sorted by address and doubly linked) */
     OE_VAD* vad_list;

@@ -48,11 +48,11 @@ void OE_HeapDump(const OE_Heap* h, bool full)
 
         printf("start:              %lx (%lu)\n", h->start, h->start - base);
 
-        printf("break_top:          %lx (%lu)\n", 
-            h->break_top, h->break_top - base);
+        printf("brk_top:          %lx (%lu)\n", 
+            h->brk_top, h->brk_top - base);
 
-        printf("mapped_top:         %lx (%lu)\n", 
-            h->mapped_top, h->mapped_top - base);
+        printf("map_top:         %lx (%lu)\n", 
+            h->map_top, h->map_top - base);
 
         printf("end:                %lx (%lu)\n", h->end, h->end - base);
     }
@@ -76,9 +76,9 @@ void OE_HeapDump(const OE_Heap* h, bool full)
         {
             if (!prev)
             {
-                if (h->mapped_top != p->addr)
+                if (h->map_top != p->addr)
                 {
-                    _PrintGap(h->mapped_top, p->addr);
+                    _PrintGap(h->map_top, p->addr);
                 }
             }
             else if (prev && prev->addr + prev->size != p->addr)
