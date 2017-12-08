@@ -121,55 +121,39 @@ static void _FreeListPut(
 **==============================================================================
 */
 
-static void _ListInsert(
+/* Insert VAD after PREV in the linked list */
+static void _ListInsertAfter(
     OE_Heap* heap,
+    OE_VAD* prev,
     OE_VAD* vad)
 {
-    /* If the list is empty */
-    if (!heap->vad_list)
+    if (prev)
     {
-        heap->vad_list = vad;
-        vad->prev = NULL;
-        vad->next = NULL;
-        heap->coverage[OE_HEAP_COVERAGE_18] = true;
-        return;
+        vad->prev = prev;
+        vad->next = prev->next;
+
+        if (prev->next)
+            prev->next->prev = vad;
+
+        prev->next = vad;
+
+        heap->coverage[OE_HEAP_COVERAGE_16] = true;
     }
-
-    /* Insert into list sorted by address */
+    else
     {
-        OE_VAD* p;
-        OE_VAD* prev = NULL;
+        vad->prev = NULL;
+        vad->next = heap->vad_list;
 
-        /* Find element prev, such that prev->addr < vad->addr */
-        for (p = heap->vad_list; p && p->addr < vad->addr; p = p->next)
-            prev = p;
+        if (heap->vad_list)
+            heap->vad_list->prev = vad;
 
-        /* Insert after 'prev' if non-null, else insert at head */
-        if (prev)
-        {
-            vad->next = prev->next;
+        heap->vad_list = vad;
 
-            if (prev->next)
-                prev->next->prev = vad;
-
-            prev->next = vad;
-            vad->prev = prev;
-            heap->coverage[OE_HEAP_COVERAGE_16] = true;
-        }
-        else
-        {
-            vad->next = heap->vad_list;
-            vad->prev = NULL;
-
-            if (heap->vad_list)
-                heap->vad_list->prev = vad;
-
-            heap->vad_list = vad;
-            heap->coverage[OE_HEAP_COVERAGE_17] = true;
-        }
+        heap->coverage[OE_HEAP_COVERAGE_17] = true;
     }
 }
 
+/* Remove VAD from the doubly-linked list */
 static void _ListRemove(
     OE_Heap* heap,
     OE_VAD* vad)
@@ -237,27 +221,14 @@ OE_INLINE bool _HeapSane(OE_Heap* heap)
     return true;
 }
 
-static int _HeapInsertVAD(
-    OE_Heap* heap,
-    OE_VAD* vad)
-{
-    _ListInsert(heap, vad);
-
-    /* Update TOP */
-    heap->map = heap->vad_list->addr;
-
-    return 0;
-}
-
-static int _HeapInsertVAD2(
+static OE_VAD* _HeapNewVAD(
     OE_Heap* heap,
     uintptr_t addr,
     size_t size,
     int prot,
     int flags)
 {
-    int rc = -1;
-    OE_VAD* vad;
+    OE_VAD* vad = NULL;
 
     if (!(vad = _FreeListGet(heap)))
         goto done;
@@ -267,31 +238,17 @@ static int _HeapInsertVAD2(
     vad->prot = (uint16_t)prot;
     vad->flags = (uint16_t)flags;
 
-    if (_HeapInsertVAD(heap, vad) != 0)
-        goto done;
-
-    rc = 0;
-
 done:
-    return rc;
+    return vad;
 }
 
-static int _HeapRemoveVAD(OE_Heap* heap, OE_VAD* vad)
+/* Synchronize the MAP value to the address of the first list element */
+OE_INLINE void _HeapSyncTop(OE_Heap* heap)
 {
-    int rc = -1;
-
-    /* Remove from doubly-linked list */
-    _ListRemove(heap, vad);
-
-    /* Update TOP */
     if (heap->vad_list)
         heap->map = heap->vad_list->addr;
     else
         heap->map = heap->end;
-
-    rc = 0;
-
-    return rc;
 }
 
 /* 
@@ -306,15 +263,15 @@ static int _HeapRemoveVAD(OE_Heap* heap, OE_VAD* vad)
 **              ^                       ^                   ^
 **             HEAD                    TAIL                END
 **              ^
-**             TOP
+**             MAP
 **
 ** Search for gaps in the following order:
 **     (1) Between HEAD and TAIL
 **     (2) Between TAIL and END
 **
 ** Note: one of the following conditions always holds:
-**     (1) TOP == HEAD
-**     (2) TOP == END
+**     (1) MAP == HEAD
+**     (2) MAP == END
 **
 */
 static uintptr_t _HeapFindGap(
@@ -343,9 +300,7 @@ static uintptr_t _HeapFindGap(
             if (gap >= size)
             {
                 *left = p;
-
-                if (gap == size)
-                    *right = p->next;
+                *right = p->next;
 
                 addr = _End(p);
                 heap->coverage[OE_HEAP_COVERAGE_13] = true;
@@ -472,6 +427,8 @@ OE_Result OE_HeapInit(
         OE_THROW(OE_UNEXPECTED);
 
     result = OE_OK;
+
+    heap->coverage[OE_HEAP_COVERAGE_18] = true;
 
 catch:
     return result;
@@ -659,54 +616,46 @@ void* OE_HeapMap(
             goto done;
         }
 
-        if (left)
+        if (left && _End(left) == start)
         {
             /* Coalesce with LEFT neighbor */
+
             left->size += length;
 
-            /* Coalesce with RIGHT neighbor */
-            if (right)
+            /* Coalesce with RIGHT neighbor (and release right neighbor) */
+            if (right && (start + length == right->addr))
             {
-                if (_HeapRemoveVAD(heap, right) != 0)
-                {
-                    _SetErr(heap, "unexpected: tree remove failed (1)");
-                    goto done;
-                }
-
+                _ListRemove(heap, right);
                 left->size += right->size;
                 _FreeListPut(heap, right);
             }
 
             heap->coverage[OE_HEAP_COVERAGE_0] = true;
         }
-        else if (right)
+        else if (right && (start + length == right->addr))
         {
             /* Coalesce with RIGHT neighbor */
-            if (_HeapRemoveVAD(heap, right) != 0)
-            {
-                _SetErr(heap, "unexpected: tree remove failed (2)");
-                goto done;
-            }
 
             right->addr = start;
             right->size += length;
-
-            if (_HeapInsertVAD(heap, right) != 0)
-            {
-                _SetErr(heap, "unexpected: tree insertion failed (1)");
-                goto done;
-            }
+            _HeapSyncTop(heap);
 
             heap->coverage[OE_HEAP_COVERAGE_1] = true;
         }
         else
         {
+            OE_VAD* vad;
+
             /* Create a new VAD and insert it into the tree and list. */
-            if (_HeapInsertVAD2(heap, start, length, prot, flags) != 0)
+
+            if (!(vad = _HeapNewVAD(heap, start, length, prot, flags)))
             {
                 _SetErr(heap, "unexpected: tree insertion failed (2)");
                 goto done;
             }
+
+            _ListInsertAfter(heap, left, vad);
+            _HeapSyncTop(heap);
 
             heap->coverage[OE_HEAP_COVERAGE_2] = true;
         }
@@ -793,35 +742,18 @@ OE_Result OE_HeapUnmap(
     {
         /* Case1: [uuuuuuuuuuuuuuuu] */
 
-        if (_HeapRemoveVAD(heap, vad) != 0)
-        {
-            _SetErr(heap, "failed to remove VAD (1)");
-            OE_THROW(OE_FAILURE);
-        }
-
+        _ListRemove(heap, vad);
+        _HeapSyncTop(heap);
         _FreeListPut(heap, vad);
-
         heap->coverage[OE_HEAP_COVERAGE_3] = true;
     }
     else if (vad->addr == start)
     {
         /* Case2: [uuuu............] */
 
-        if (_HeapRemoveVAD(heap, vad) != 0)
-        {
-            _SetErr(heap, "failed to remove VAD (2)");
-            OE_THROW(OE_FAILURE);
-        }
-
         vad->addr += length;
         vad->size -= length;
-
-        if (_HeapInsertVAD(heap, vad) != 0)
-        {
-            _SetErr(heap, "failed to insert VAD (1)");
-            OE_THROW(OE_FAILURE);
-        }
-
+        _HeapSyncTop(heap);
         heap->coverage[OE_HEAP_COVERAGE_4] = true;
     }
     else if (_End(vad) == end)
@@ -829,7 +761,6 @@ OE_Result OE_HeapUnmap(
         /* Case3: [............uuuu] */
 
         vad->size -= length;
-
         heap->coverage[OE_HEAP_COVERAGE_5] = true;
     }
     else
@@ -841,18 +772,22 @@ OE_Result OE_HeapUnmap(
         /* Adjust the left portion */
         vad->size = start - vad->addr;
 
-        /* Create VAD for the right portion */
-        if (_HeapInsertVAD2(
+        OE_VAD* right;
+
+        /* Create VAD for the excess right portion */
+        if (!(right = _HeapNewVAD(
             heap, 
             end, 
             vad_end - end, 
             vad->prot, 
-            vad->flags) != 0)
+            vad->flags)))
         {
-            _SetErr(heap, "failed to insert VAD (2)");
+            _SetErr(heap, "out of VADs");
             OE_THROW(OE_FAILURE);
         }
 
+        _ListInsertAfter(heap, vad, right);
+        _HeapSyncTop(heap);
         heap->coverage[OE_HEAP_COVERAGE_6] = true;
     }
 
@@ -935,7 +870,7 @@ void* OE_HeapRemap(
     uintptr_t old_end = (uintptr_t)addr + old_size;
     uintptr_t new_end = (uintptr_t)addr + new_size;
 
-    /* Find the VAD for the starting address */
+    /* Find the VAD containing START */
     if (!(vad = _ListFind(heap, start)))
     {
         _SetErr(heap, "invalid addr parameter: mapping not found");
@@ -955,28 +890,33 @@ void* OE_HeapRemap(
         /* If there are excess bytes on the right of this VAD area */
         if (_End(vad) != old_end)
         {
+            OE_VAD* right;
+
             /* Create VAD for rightward excess */
-            if (_HeapInsertVAD2(
+            if (!(right = _HeapNewVAD(
                 heap, 
                 old_end,
                 _End(vad) - old_end,
                 vad->prot, 
-                vad->flags) != 0)
+                vad->flags)))
             {
-                _SetErr(heap, "unexpected: tree insert failed (1)");
+                _SetErr(heap, "out of VADs");
                 goto done;
             }
+
+            _ListInsertAfter(heap, vad, right);
+            _HeapSyncTop(heap);
 
             heap->coverage[OE_HEAP_COVERAGE_7] = true;
         }
 
-        /* If scrubbing is enabled, scrub the unmapped portion */
-        if (heap->scrub)
-            MEMSET((void*)new_end, 0xDD, old_size - new_size);
-
         vad->size = new_end - vad->addr;
         new_addr = addr;
         heap->coverage[OE_HEAP_COVERAGE_8] = true;
+
+        /* If scrubbing is enabled, scrub the unmapped portion */
+        if (heap->scrub)
+            MEMSET((void*)new_end, 0xDD, old_size - new_size);
     }
     else if (new_size > old_size)
     {
@@ -996,13 +936,8 @@ void* OE_HeapRemap(
             {
                 OE_VAD* next = vad->next;
                 vad->size += next->size;
-
-                if (_HeapRemoveVAD(heap, next) != 0)
-                {
-                    _SetErr(heap, "failed to remove VAD");
-                    goto done;
-                }
-
+                _ListRemove(heap, next);
+                _HeapSyncTop(heap);
                 _FreeListPut(heap, next);
                 heap->coverage[OE_HEAP_COVERAGE_10] = true;
             }

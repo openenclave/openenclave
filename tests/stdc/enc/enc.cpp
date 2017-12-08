@@ -362,6 +362,32 @@ OE_ECALL void Test(void* args_)
         }
     }
 
+    /* Test allocation of all sizes */
+    {
+        /* Enable sanity checking */
+        OE_HeapSetSanity(&__oe_heap, true);
+
+        for (size_t i = 1; i < 1024*1024; i += 4096)
+        {
+            void* ptr = malloc(i);
+
+            if (!ptr)
+                break;
+
+            free(ptr);
+        }
+
+        /* Recheck sanity */
+        assert(OE_HeapSane(&__oe_heap));
+
+        /* Fail if VAD list is not empty */
+        if (__oe_heap.vad_list)
+        {
+            fprintf(stderr, "*** VAD list not empty\n");
+            assert(0);
+        }
+    }
+
 #if 0
     printf("UINT_MIN=%u UINT_MAX=%u\n", 0, UINT_MAX);
     printf("INT_MIN=%d INT_MAX=%d\n", INT_MIN, INT_MAX);
