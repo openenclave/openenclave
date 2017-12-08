@@ -29,21 +29,6 @@
 **==============================================================================
 */
 
-OE_INLINE void _Lock(OE_Heap* heap, bool* locked)
-{
-    OE_MutexLock(&heap->lock);
-    *locked = true;
-}
-
-OE_INLINE void _Unlock(OE_Heap* heap, bool* locked)
-{
-    if (*locked)
-    {
-        OE_MutexUnlock(&heap->lock);
-        *locked = false;
-    }
-}
-
 OE_INLINE uintptr_t _End(OE_VAD* vad)
 {
     return vad->addr + vad->size;
@@ -201,13 +186,28 @@ static OE_VAD* _ListFind(
 **==============================================================================
 */
 
-static void _ClearErr(OE_Heap* heap)
+OE_INLINE void _HeapLock(OE_Heap* heap, bool* locked)
+{
+    OE_MutexLock(&heap->lock);
+    *locked = true;
+}
+
+OE_INLINE void _HeapUnlock(OE_Heap* heap, bool* locked)
+{
+    if (*locked)
+    {
+        OE_MutexUnlock(&heap->lock);
+        *locked = false;
+    }
+}
+
+static void _HeapClearErr(OE_Heap* heap)
 {
     if (heap)
         heap->err[0] = '\0';
 }
 
-static void _SetErr(OE_Heap* heap, const char* str)
+static void _HeapSetErr(OE_Heap* heap, const char* str)
 {
     if (heap && str)
         SNPRINTF(heap->err, sizeof(heap->err), "%s", str);
@@ -348,26 +348,26 @@ OE_Result OE_HeapInit(
 {
     OE_Result result = OE_FAILURE;
 
-    _ClearErr(heap);
+    _HeapClearErr(heap);
 
     /* Check for invalid parameters */
     if (!heap || !base || !size)
     {
-        _SetErr(heap, "invalid parameter");
+        _HeapSetErr(heap, "invalid parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* BASE must be aligned on a page boundary */
     if (base % OE_PAGE_SIZE)
     {
-        _SetErr(heap, "invalid base parameter");
+        _HeapSetErr(heap, "invalid base parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* SIZE must be a mulitple of the page size */
     if (size % OE_PAGE_SIZE)
     {
-        _SetErr(heap, "invalid size parameter");
+        _HeapSetErr(heap, "invalid size parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
@@ -442,9 +442,9 @@ void* OE_HeapSbrk(
     void* ptr = NULL;
     bool locked = false;
 
-    _Lock(heap, &locked);
+    _HeapLock(heap, &locked);
 
-    _ClearErr(heap);
+    _HeapClearErr(heap);
 
     if (!_HeapSane(heap))
         goto done;
@@ -462,7 +462,7 @@ void* OE_HeapSbrk(
     }
     else
     {
-        _SetErr(heap, "out of memory");
+        _HeapSetErr(heap, "out of memory");
         goto done;
     }
 
@@ -472,7 +472,7 @@ void* OE_HeapSbrk(
     result = ptr;
 
 done:
-    _Unlock(heap, &locked);
+    _HeapUnlock(heap, &locked);
     return result;
 }
 
@@ -484,14 +484,14 @@ OE_Result OE_HeapBrk(
     OE_Result result = OE_FAILURE;
     bool locked = false;
 
-    _Lock(heap, &locked);
+    _HeapLock(heap, &locked);
 
-    _ClearErr(heap);
+    _HeapClearErr(heap);
 
     /* Fail if requested address is not within the break memory area */
     if (addr < heap->start || addr >= heap->map)
     {
-        _SetErr(heap, "address is out of range");
+        _HeapSetErr(heap, "address is out of range");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
@@ -504,7 +504,7 @@ OE_Result OE_HeapBrk(
     result = OE_OK;
 
 catch:
-    _Unlock(heap, &locked);
+    _HeapUnlock(heap, &locked);
     return result;
 }
 
@@ -519,14 +519,14 @@ void* OE_HeapMap(
     uintptr_t start = 0;
     bool locked = false;
 
-    _Lock(heap, &locked);
+    _HeapLock(heap, &locked);
 
-    _ClearErr(heap);
+    _HeapClearErr(heap);
 
     /* Check for valid heap parameter */
     if (!heap || heap->magic != OE_HEAP_MAGIC)
     {
-        _SetErr(heap, "invalid parameter");
+        _HeapSetErr(heap, "invalid parameter");
         goto done;
     }
 
@@ -536,14 +536,14 @@ void* OE_HeapMap(
     /* ADDR must be page aligned */
     if (addr && (uintptr_t)addr % OE_PAGE_SIZE)
     {
-        _SetErr(heap, "invalid addr parameter");
+        _HeapSetErr(heap, "invalid addr parameter");
         goto done;
     }
 
     /* LENGTH must be non-zero */
     if (length == 0)
     {
-        _SetErr(heap, "invalid length parameter");
+        _HeapSetErr(heap, "invalid length parameter");
         goto done;
     }
 
@@ -551,19 +551,19 @@ void* OE_HeapMap(
     {
         if (!(prot & OE_PROT_READ))
         {
-            _SetErr(heap, "invalid prot parameter: need OE_PROT_READ");
+            _HeapSetErr(heap, "invalid prot parameter: need OE_PROT_READ");
             goto done;
         }
 
         if (!(prot & OE_PROT_WRITE))
         {
-            _SetErr(heap, "invalid prot parameter: need OE_PROT_WRITE");
+            _HeapSetErr(heap, "invalid prot parameter: need OE_PROT_WRITE");
             goto done;
         }
 
         if (prot & OE_PROT_EXEC)
         {
-            _SetErr(heap, "invalid prot parameter: remove OE_PROT_EXEC");
+            _HeapSetErr(heap, "invalid prot parameter: remove OE_PROT_EXEC");
             goto done;
         }
     }
@@ -572,25 +572,25 @@ void* OE_HeapMap(
     {
         if (!(flags & OE_MAP_ANONYMOUS))
         {
-            _SetErr(heap, "invalid flags parameter: need OE_MAP_ANONYMOUS");
+            _HeapSetErr(heap, "invalid flags parameter: need OE_MAP_ANONYMOUS");
             goto done;
         }
 
         if (!(flags & OE_MAP_PRIVATE))
         {
-            _SetErr(heap, "invalid flags parameter: need OE_MAP_PRIVATE");
+            _HeapSetErr(heap, "invalid flags parameter: need OE_MAP_PRIVATE");
             goto done;
         }
 
         if (flags & OE_MAP_SHARED)
         {
-            _SetErr(heap, "invalid flags parameter: remove OE_MAP_SHARED");
+            _HeapSetErr(heap, "invalid flags parameter: remove OE_MAP_SHARED");
             goto done;
         }
 
         if (flags & OE_MAP_FIXED)
         {
-            _SetErr(heap, "invalid flags parameter: remove OE_MAP_FIXED");
+            _HeapSetErr(heap, "invalid flags parameter: remove OE_MAP_FIXED");
             goto done;
         }
     }
@@ -601,7 +601,7 @@ void* OE_HeapMap(
     if (addr)
     {
         /* TODO: implement to support mapping non-zero addresses */
-        _SetErr(heap, "invalid addr parameter: must be null");
+        _HeapSetErr(heap, "invalid addr parameter: must be null");
         goto done;
     }
     else
@@ -612,7 +612,7 @@ void* OE_HeapMap(
         /* Find a gap that is big enough */
         if (!(start = _HeapFindGap(heap, length, &left, &right)))
         {
-            _SetErr(heap, "out of memory");
+            _HeapSetErr(heap, "out of memory");
             goto done;
         }
 
@@ -650,7 +650,7 @@ void* OE_HeapMap(
 
             if (!(vad = _HeapNewVAD(heap, start, length, prot, flags)))
             {
-                _SetErr(heap, "unexpected: tree insertion failed (2)");
+                _HeapSetErr(heap, "unexpected: tree insertion failed (2)");
                 goto done;
             }
 
@@ -670,7 +670,7 @@ void* OE_HeapMap(
     result = (void*)start;
 
 done:
-    _Unlock(heap, &locked);
+    _HeapUnlock(heap, &locked);
     return result;
 }
 
@@ -683,14 +683,14 @@ OE_Result OE_HeapUnmap(
     OE_VAD* vad = NULL;
     bool locked = false;
 
-    _Lock(heap, &locked);
+    _HeapLock(heap, &locked);
 
-    _ClearErr(heap);
+    _HeapClearErr(heap);
 
     /* Reject invaid parameters */
     if (!heap || heap->magic != OE_HEAP_MAGIC || !addr || !length)
     {
-        _SetErr(heap, "invalid parameter");
+        _HeapSetErr(heap, "invalid parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
@@ -700,14 +700,14 @@ OE_Result OE_HeapUnmap(
     /* ADDRESS must be aligned on a page boundary */
     if ((uintptr_t)addr % OE_PAGE_SIZE)
     {
-        _SetErr(heap, "invalid addr parameter");
+        _HeapSetErr(heap, "invalid addr parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* LENGTH must be a multiple of the page size */
     if (length % OE_PAGE_SIZE)
     {
-        _SetErr(heap, "invalid length parameter");
+        _HeapSetErr(heap, "invalid length parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
@@ -718,14 +718,14 @@ OE_Result OE_HeapUnmap(
     /* Find the VAD that contains this address */
     if (!(vad = _ListFind(heap, start)))
     {
-        _SetErr(heap, "address not found");
+        _HeapSetErr(heap, "address not found");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* Fail if this VAD does not contain the end address */
     if (end > _End(vad))
     {
-        _SetErr(heap, "invalid range");
+        _HeapSetErr(heap, "invalid range");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
@@ -782,7 +782,7 @@ OE_Result OE_HeapUnmap(
             vad->prot, 
             vad->flags)))
         {
-            _SetErr(heap, "out of VADs");
+            _HeapSetErr(heap, "out of VADs");
             OE_THROW(OE_FAILURE);
         }
 
@@ -801,7 +801,7 @@ OE_Result OE_HeapUnmap(
     result = OE_OK;
 
 catch:
-    _Unlock(heap, &locked);
+    _HeapUnlock(heap, &locked);
     return result;
 }
 
@@ -817,14 +817,14 @@ void* OE_HeapRemap(
     OE_VAD* vad = NULL;
     bool locked = false;
 
-    _Lock(heap, &locked);
+    _HeapLock(heap, &locked);
 
-    _ClearErr(heap);
+    _HeapClearErr(heap);
 
     /* Check for valid heap parameter */
     if (!heap || heap->magic != OE_HEAP_MAGIC || !addr)
     {
-        _SetErr(heap, "invalid parameter");
+        _HeapSetErr(heap, "invalid parameter");
         goto done;
     }
 
@@ -834,28 +834,28 @@ void* OE_HeapRemap(
     /* ADDR must be page aligned */
     if ((uintptr_t)addr % OE_PAGE_SIZE)
     {
-        _SetErr(heap, "invalid addr parameter: must be multiple of page size");
+        _HeapSetErr(heap, "invalid addr parameter: must be multiple of page size");
         goto done;
     }
 
     /* OLD_SIZE must be non-zero */
     if (old_size == 0)
     {
-        _SetErr(heap, "invalid old_size parameter: must be non-zero");
+        _HeapSetErr(heap, "invalid old_size parameter: must be non-zero");
         goto done;
     }
 
     /* NEW_SIZE must be non-zero */
     if (new_size == 0)
     {
-        _SetErr(heap, "invalid old_size parameter: must be non-zero");
+        _HeapSetErr(heap, "invalid old_size parameter: must be non-zero");
         goto done;
     }
 
     /* FLAGS must be exactly OE_MREMAP_MAYMOVE) */
     if (flags != OE_MREMAP_MAYMOVE)
     {
-        _SetErr(heap, "invalid flags parameter: must be OE_MREMAP_MAYMOVE");
+        _HeapSetErr(heap, "invalid flags parameter: must be OE_MREMAP_MAYMOVE");
         goto done;
     }
 
@@ -873,14 +873,14 @@ void* OE_HeapRemap(
     /* Find the VAD containing START */
     if (!(vad = _ListFind(heap, start)))
     {
-        _SetErr(heap, "invalid addr parameter: mapping not found");
+        _HeapSetErr(heap, "invalid addr parameter: mapping not found");
         goto done;
     }
 
     /* Verify that the end address is within this VAD */
     if (old_end > _End(vad))
     {
-        _SetErr(heap, "invalid range");
+        _HeapSetErr(heap, "invalid range");
         goto done;
     }
 
@@ -900,7 +900,7 @@ void* OE_HeapRemap(
                 vad->prot, 
                 vad->flags)))
             {
-                _SetErr(heap, "out of VADs");
+                _HeapSetErr(heap, "out of VADs");
                 goto done;
             }
 
@@ -952,7 +952,7 @@ void* OE_HeapRemap(
                 vad->prot, 
                 vad->flags)))
             {
-                _SetErr(heap, "mapping failed");
+                _HeapSetErr(heap, "mapping failed");
                 goto done;
             }
 
@@ -962,7 +962,7 @@ void* OE_HeapRemap(
             /* Ummap the old area */
             if (OE_HeapUnmap(heap, (void*)start, old_size) != 0)
             {
-                _SetErr(heap, "unmapping failed");
+                _HeapSetErr(heap, "unmapping failed");
                 goto done;
             }
 
@@ -983,7 +983,7 @@ void* OE_HeapRemap(
     result = new_addr;
 
 done:
-    _Unlock(heap, &locked);
+    _HeapUnlock(heap, &locked);
     return result;
 }
 
@@ -991,52 +991,52 @@ bool OE_HeapSane(OE_Heap* heap)
 {
     bool result = false;
 
-    _ClearErr(heap);
+    _HeapClearErr(heap);
 
     if (!heap)
     {
-        _SetErr(heap, "invalid parameter");
+        _HeapSetErr(heap, "invalid parameter");
         goto done;
     }
 
-    _ClearErr(heap);
+    _HeapClearErr(heap);
 
     /* Check the magic number */
     if (heap->magic != OE_HEAP_MAGIC)
     {
-        _SetErr(heap, "bad magic");
+        _HeapSetErr(heap, "bad magic");
         goto done;
     }
 
     /* Check that the heap is initialized */
     if (!heap->initialized)
     {
-        _SetErr(heap, "uninitialized");
+        _HeapSetErr(heap, "uninitialized");
         goto done;
     }
 
     /* Check that the start of the heap is strictly less than the end */
     if (!(heap->start < heap->end))
     {
-        _SetErr(heap, "start not less than end");
+        _HeapSetErr(heap, "start not less than end");
         goto done;
     }
 
     if (heap->size != (heap->end - heap->base))
     {
-        _SetErr(heap, "invalid size");
+        _HeapSetErr(heap, "invalid size");
         goto done;
     }
 
     if (!(heap->start <= heap->brk))
     {
-        _SetErr(heap, "!(heap->start <= heap->brk)");
+        _HeapSetErr(heap, "!(heap->start <= heap->brk)");
         goto done;
     }
 
     if (!(heap->map <= heap->end))
     {
-        _SetErr(heap, "!(heap->map <= heap->end)");
+        _HeapSetErr(heap, "!(heap->map <= heap->end)");
         goto done;
     }
 
@@ -1044,7 +1044,7 @@ bool OE_HeapSane(OE_Heap* heap)
     {
         if (heap->map != heap->vad_list->addr)
         {
-            _SetErr(heap, "heap->map != heap->vad_list->addr");
+            _HeapSetErr(heap, "heap->map != heap->vad_list->addr");
             goto done;
         }
     }
@@ -1052,7 +1052,7 @@ bool OE_HeapSane(OE_Heap* heap)
     {
         if (heap->map != heap->end)
         {
-            _SetErr(heap, "heap->map != heap->end");
+            _HeapSetErr(heap, "heap->map != heap->end");
             goto done;
         }
     }
@@ -1069,20 +1069,20 @@ bool OE_HeapSane(OE_Heap* heap)
             {
                 if (!(p->addr < next->addr))
                 {
-                    _SetErr(heap, "unordered VAD list (1)");
+                    _HeapSetErr(heap, "unordered VAD list (1)");
                     goto done;
                 }
 
                 /* No two elements should be contiguous due to coalescense */
                 if (_End(p) == next->addr)
                 {
-                    _SetErr(heap, "contiguous VAD list elements");
+                    _HeapSetErr(heap, "contiguous VAD list elements");
                     goto done;
                 }
 
                 if (!(_End(p) <= next->addr))
                 {
-                    _SetErr(heap, "unordered VAD list (2)");
+                    _HeapSetErr(heap, "unordered VAD list (2)");
                     goto done;
                 }
             }
