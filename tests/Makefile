@@ -23,7 +23,6 @@ DIRS += report
 DIRS += SampleAppAttestation 
 DIRS += ricochet
 DIRS += print
-DIRS += tsearch
 DIRS += heap
 
 define NL

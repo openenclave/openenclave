@@ -1,7 +1,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/heap.h>
 #include <openenclave/thread.h>
-#include <openenclave/bits/search.h>
 #include <openenclave/bits/utils.h>
 
 #ifdef OE_BUILD_UNTRUSTED
@@ -102,104 +101,11 @@ static void _FreeListPut(
 /*
 **==============================================================================
 **
-** _Tree functions
-**
-**==============================================================================
-*/
-
-/* Comparison function to compare to VADs for equality */
-static int _TreeCompare(const void *lhsp, const void *rhsp)
-{
-    OE_VAD* lhs = (OE_VAD*)lhsp;
-    OE_VAD* rhs = (OE_VAD*)rhsp;
-
-    if (lhs->addr < rhs->addr)
-        return -1;
-
-    if (lhs->addr > rhs->addr)
-        return 1;
-
-    return 0;
-}
-
-/* Comparison function for finding VAD that contains an address */
-static int _TreeRangeCompare(const void *keyp, const void *vadp)
-{
-    uintptr_t key = *(uintptr_t*)keyp;
-    OE_VAD* vad = (OE_VAD*)vadp;
-
-    uint64_t lo = vad->addr;
-    uint64_t hi = _End(vad);
-
-    if (key >= lo && key < hi)
-        return 0;
-
-    return key < lo ? -1 : 1;
-}
-
-static void* _TreeAllocNode(size_t size, void* data)
-{
-    /* data is a OE_VAD pointer */
-    return data;
-}
-
-/* Insert OE_VAD into tree */
-static int _TreeInsert(
-    OE_Heap* heap,
-    OE_VAD* vad)
-{
-    int rc = -1;
-    void* ret;
-
-    vad->tnode.key = vad;
-
-    if (!(ret = OE_Tsearch(
-        vad, 
-        (void**)&heap->vad_tree, 
-        _TreeCompare, 
-        _TreeAllocNode, 
-        vad)))
-    {
-        goto done;
-    }
-
-    rc = 0;
-
-done:
-    return rc;
-}
-
-static int _TreeRemove(
-    OE_Heap* heap,
-    OE_VAD* vad)
-{
-    int rc = -1;
-
-    if (!OE_Tdelete(vad, (void**)&heap->vad_tree, _TreeCompare, NULL))
-        goto done;
-
-    rc = 0;
-
-done:
-    return rc;
-}
-
-static OE_VAD* _TreeFind(
-    OE_Heap* heap,
-    uintptr_t addr)
-{
-    return (OE_VAD*)OE_Tfind(&addr, (void**)&heap->vad_tree, _TreeRangeCompare);
-}
-
-/*
-**==============================================================================
-**
 ** _List functions
 **
 **==============================================================================
 */
 
-/* TODO: optimize by using tree to find the insertion point in O(log n) */
 static void _ListInsert(
     OE_Heap* heap,
     OE_VAD* vad)
@@ -271,6 +177,23 @@ static void _ListRemove(
     }
 }
 
+/* Find a VAD that contains the given address */
+static OE_VAD* _ListFind(
+    OE_Heap* heap,
+    uintptr_t addr)
+{
+    OE_VAD* p;
+
+    for (p = heap->vad_list; p; p = p->next)
+    {
+        if (addr >= p->addr && addr < _End(p))
+            return p;
+    }
+
+    /* Not found */
+    return NULL;
+}
+
 /*
 **==============================================================================
 **
@@ -303,9 +226,6 @@ static int _HeapInsertVAD(
     OE_Heap* heap,
     OE_VAD* vad)
 {
-    if (_TreeInsert(heap, vad) != 0)
-        return -1;
-
     _ListInsert(heap, vad);
 
     /* Update TOP */
@@ -345,10 +265,6 @@ static int _HeapRemoveVAD(OE_Heap* heap, OE_VAD* vad)
 {
     int rc = -1;
 
-    /* Remove from tree */
-    if (_TreeRemove(heap, vad) != 0)
-        goto done;
-
     /* Remove from doubly-linked list */
     _ListRemove(heap, vad);
 
@@ -360,7 +276,6 @@ static int _HeapRemoveVAD(OE_Heap* heap, OE_VAD* vad)
 
     rc = 0;
 
-done:
     return rc;
 }
 
@@ -386,7 +301,6 @@ done:
 **     (1) TOP == HEAD
 **     (2) TOP == END
 **
-** TODO: Optimize to use tree to find gaps (add maxgap field to tree).
 */
 static uintptr_t _HeapFindGap(
     OE_Heap* heap,
@@ -824,7 +738,7 @@ OE_Result OE_HeapUnmap(
     uintptr_t end = (uintptr_t)addr + length;
 
     /* Find the VAD that contains this address */
-    if (!(vad = _TreeFind(heap, start)))
+    if (!(vad = _ListFind(heap, start)))
     {
         _SetErr(heap, "address not found");
         OE_THROW(OE_INVALID_PARAMETER);
@@ -989,7 +903,7 @@ void* OE_HeapRemap(
     uintptr_t new_end = (uintptr_t)addr + new_size;
 
     /* Find the VAD for the starting address */
-    if (!(vad = _TreeFind(heap, start)))
+    if (!(vad = _ListFind(heap, start)))
     {
         _SetErr(heap, "invalid addr parameter: mapping not found");
         goto done;

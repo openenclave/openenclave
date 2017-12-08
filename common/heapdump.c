@@ -2,23 +2,12 @@
 #include <assert.h>
 #include <openenclave/bits/heap.h>
 #include <openenclave/thread.h>
-#include <openenclave/bits/search.h>
 
 static void _DumpVAD(const OE_VAD* vad)
 {
     size_t pages = vad->size / OE_PAGE_SIZE;
     printf("    OE_VAD{addr=%lx, end=%lx size=%u pages=%zu}\n", 
         vad->addr, vad->addr + vad->size, vad->size, pages);
-}
-
-static void _DumpTree(const OE_VAD* root)
-{
-    if (!root)
-        return;
-
-    _DumpTree((OE_VAD*)root->tnode.left);
-    _DumpVAD(root);
-    _DumpTree((OE_VAD*)root->tnode.right);
 }
 
 static void _PrintGap(
@@ -75,13 +64,6 @@ void OE_HeapDump(const OE_Heap* h, bool full)
 
         for (p = h->free_vads; p; p = p->next)
             _DumpVAD(p);
-    }
-
-    /* Dump the VAD tree */
-    if (full)
-    {
-        printf("vad_tree:\n");
-        _DumpTree(h->vad_tree);
     }
 
     /* Dump the VAD list */

@@ -3,7 +3,6 @@
 
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
-#include <openenclave/bits/search.h>
 #include <openenclave/thread.h>
 #include <openenclave/result.h>
 
@@ -26,9 +25,6 @@ OE_EXTERNC_BEGIN
 /* Virtual Address Descriptor */
 typedef struct _OE_VAD
 {
-    /* Tree node for AVL tree */
-    struct OE_Tnode tnode;
-
     /* Pointer to next OE_VAD on linked list */
     struct _OE_VAD* next;
 
@@ -49,7 +45,7 @@ typedef struct _OE_VAD
 }
 OE_VAD;
 
-OE_STATIC_ASSERT(sizeof(OE_VAD) == 64);
+OE_STATIC_ASSERT(sizeof(OE_VAD) == 32);
 
 #define OE_HEAP_MAGIC 0xcc8e1732ebd80b0b
 
