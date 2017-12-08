@@ -96,7 +96,7 @@ static bool _IsFlush(const OE_Heap* heap, const OE_VAD* list)
     if (!list)
         return true;
 
-    if (heap->map_top != list->addr)
+    if (heap->map != list->addr)
         return false;
 
     for (p = list; p; prev = p, p = p->next)
@@ -186,8 +186,8 @@ void TestHeap1()
     assert((uintptr_t)h.next_vad == h.base);
     assert(h.end_vad == h.next_vad + npages);
     assert(h.start == (uintptr_t)h.end_vad);
-    assert(h.brk_top == h.start);
-    assert(h.map_top == h.end);
+    assert(h.brk == h.start);
+    assert(h.map == h.end);
     assert(_IsSorted(h.vad_list));
 
 #if 0
@@ -212,8 +212,8 @@ void TestHeap1()
     OE_HeapDump(&h, true);
 #endif
 
-    assert(h.brk_top == h.start);
-    assert(h.map_top == h.end - m);
+    assert(h.brk == h.start);
+    assert(h.map == h.end - m);
     assert(_IsSorted(h.vad_list));
 
     for (size_t i = 0; i < n; i++)
@@ -405,8 +405,8 @@ void TestHeap3()
     /* ptrs[6] -- 7 page */
     /* ptrs[7] -- 8 page */
 
-    assert(h.brk_top == h.start);
-    assert(h.map_top == h.end - m);
+    assert(h.brk == h.start);
+    assert(h.map == h.end - m);
     assert(_IsSorted(h.vad_list));
 
     /* This should be illegal since it overruns the end */
@@ -479,8 +479,8 @@ void TestHeap4()
         m += r;
     }
 
-    assert(h.brk_top == h.start);
-    assert(h.map_top == h.end - m);
+    assert(h.brk == h.start);
+    assert(h.map == h.end - m);
     assert(_IsSorted(h.vad_list));
 #if 0
     OE_HeapDump(&h, false);

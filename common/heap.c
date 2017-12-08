@@ -244,7 +244,7 @@ static int _HeapInsertVAD(
     _ListInsert(heap, vad);
 
     /* Update TOP */
-    heap->map_top = heap->vad_list->addr;
+    heap->map = heap->vad_list->addr;
 
     return 0;
 }
@@ -285,9 +285,9 @@ static int _HeapRemoveVAD(OE_Heap* heap, OE_VAD* vad)
 
     /* Update TOP */
     if (heap->vad_list)
-        heap->map_top = heap->vad_list->addr;
+        heap->map = heap->vad_list->addr;
     else
-        heap->map_top = heap->end;
+        heap->map = heap->end;
 
     rc = 0;
 
@@ -356,10 +356,10 @@ static uintptr_t _HeapFindGap(
 
     /* No gaps in linked list so obtain memory from mapped memory area */
     {
-        uintptr_t start = heap->map_top - size;
+        uintptr_t start = heap->map - size;
 
         /* If memory was exceeded (overrun of break top) */
-        if (!(heap->brk_top <= start))
+        if (!(heap->brk <= start))
         {
             heap->coverage[OE_HEAP_COVERAGE_14] = true;
             goto done;
@@ -438,10 +438,10 @@ OE_Result OE_HeapInit(
     heap->end = base + size;
 
     /* Set the top of the break memory (grows positively) */
-    heap->brk_top = heap->start;
+    heap->brk = heap->start;
 
     /* Set the top of the mapped memory (grows negativey) */
-    heap->map_top = heap->end;
+    heap->map = heap->end;
 
     /* Set pointer to the next available entry in the OE_VAD array */
     heap->next_vad = (OE_VAD*)base;
@@ -495,13 +495,13 @@ void* OE_HeapSbrk(
     if (increment == 0)
     {
         /* Return the current break value without changing it */
-        ptr = (void*)heap->brk_top;
+        ptr = (void*)heap->brk;
     }
-    else if (increment <= heap->map_top - heap->brk_top)
+    else if (increment <= heap->map - heap->brk)
     {
         /* Increment the break value and return the old break value */
-        ptr = (void*)heap->brk_top;
-        heap->brk_top += increment;
+        ptr = (void*)heap->brk;
+        heap->brk += increment;
     }
     else
     {
@@ -532,14 +532,14 @@ OE_Result OE_HeapBrk(
     _ClearErr(heap);
 
     /* Fail if requested address is not within the break memory area */
-    if (addr < heap->start || addr >= heap->map_top)
+    if (addr < heap->start || addr >= heap->map)
     {
         _SetErr(heap, "address is out of range");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* Set the break value */
-    heap->brk_top = addr;
+    heap->brk = addr;
 
     if (!_HeapSane(heap))
         OE_THROW(OE_FAILURE);
@@ -1093,31 +1093,31 @@ bool OE_HeapSane(OE_Heap* heap)
         goto done;
     }
 
-    if (!(heap->start <= heap->brk_top))
+    if (!(heap->start <= heap->brk))
     {
-        _SetErr(heap, "!(heap->start <= heap->brk_top)");
+        _SetErr(heap, "!(heap->start <= heap->brk)");
         goto done;
     }
 
-    if (!(heap->map_top <= heap->end))
+    if (!(heap->map <= heap->end))
     {
-        _SetErr(heap, "!(heap->map_top <= heap->end)");
+        _SetErr(heap, "!(heap->map <= heap->end)");
         goto done;
     }
 
     if (heap->vad_list)
     {
-        if (heap->map_top != heap->vad_list->addr)
+        if (heap->map != heap->vad_list->addr)
         {
-            _SetErr(heap, "heap->map_top != heap->vad_list->addr");
+            _SetErr(heap, "heap->map != heap->vad_list->addr");
             goto done;
         }
     }
     else
     {
-        if (heap->map_top != heap->end)
+        if (heap->map != heap->end)
         {
-            _SetErr(heap, "heap->map_top != heap->end");
+            _SetErr(heap, "heap->map != heap->end");
             goto done;
         }
     }

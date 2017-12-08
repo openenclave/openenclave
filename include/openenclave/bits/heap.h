@@ -100,11 +100,11 @@ typedef struct _OE_Heap
     /* End of heap (points to first page after end of heap) */
     uintptr_t end;
 
-    /* Top of break memory partition (grows positively) */
-    uintptr_t brk_top;
+    /* Current break value: top of break memory partition (grows positively) */
+    uintptr_t brk;
 
-    /* Top of mapped memory partition (grows negatively) */
-    uintptr_t map_top;
+    /* Current map value: top of mapped memory partition (grows negatively) */
+    uintptr_t map;
 
     /* The next available OE_VAD in the VADs array */
     OE_VAD* next_vad;
