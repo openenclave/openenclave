@@ -24,7 +24,7 @@
 /*
 **==============================================================================
 **
-** Utility functions:
+** Local utility functions:
 **
 **==============================================================================
 */
@@ -313,7 +313,7 @@ static uintptr_t _HeapFindGap(
     {
         uintptr_t start = heap->map - size;
 
-        /* If memory was exceeded (overrun of break top) */
+        /* If memory was exceeded (overrun of break value) */
         if (!(heap->brk <= start))
         {
             heap->coverage[OE_HEAP_COVERAGE_14] = true;
@@ -335,7 +335,7 @@ done:
 /*
 **==============================================================================
 **
-** OE_Heap functions
+** Public interface
 **
 **==============================================================================
 */
@@ -353,21 +353,21 @@ OE_Result OE_HeapInit(
     /* Check for invalid parameters */
     if (!heap || !base || !size)
     {
-        _HeapSetErr(heap, "invalid parameter");
+        _HeapSetErr(heap, "bad parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* BASE must be aligned on a page boundary */
     if (base % OE_PAGE_SIZE)
     {
-        _HeapSetErr(heap, "invalid base parameter");
+        _HeapSetErr(heap, "bad base parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* SIZE must be a mulitple of the page size */
     if (size % OE_PAGE_SIZE)
     {
-        _HeapSetErr(heap, "invalid size parameter");
+        _HeapSetErr(heap, "bad size parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
@@ -526,7 +526,7 @@ void* OE_HeapMap(
     /* Check for valid heap parameter */
     if (!heap || heap->magic != OE_HEAP_MAGIC)
     {
-        _HeapSetErr(heap, "invalid parameter");
+        _HeapSetErr(heap, "bad parameter");
         goto done;
     }
 
@@ -536,14 +536,14 @@ void* OE_HeapMap(
     /* ADDR must be page aligned */
     if (addr && (uintptr_t)addr % OE_PAGE_SIZE)
     {
-        _HeapSetErr(heap, "invalid addr parameter");
+        _HeapSetErr(heap, "bad addr parameter");
         goto done;
     }
 
     /* LENGTH must be non-zero */
     if (length == 0)
     {
-        _HeapSetErr(heap, "invalid length parameter");
+        _HeapSetErr(heap, "bad length parameter");
         goto done;
     }
 
@@ -551,19 +551,19 @@ void* OE_HeapMap(
     {
         if (!(prot & OE_PROT_READ))
         {
-            _HeapSetErr(heap, "invalid prot parameter: need OE_PROT_READ");
+            _HeapSetErr(heap, "bad prot parameter: need OE_PROT_READ");
             goto done;
         }
 
         if (!(prot & OE_PROT_WRITE))
         {
-            _HeapSetErr(heap, "invalid prot parameter: need OE_PROT_WRITE");
+            _HeapSetErr(heap, "bad prot parameter: need OE_PROT_WRITE");
             goto done;
         }
 
         if (prot & OE_PROT_EXEC)
         {
-            _HeapSetErr(heap, "invalid prot parameter: remove OE_PROT_EXEC");
+            _HeapSetErr(heap, "bad prot parameter: remove OE_PROT_EXEC");
             goto done;
         }
     }
@@ -572,25 +572,25 @@ void* OE_HeapMap(
     {
         if (!(flags & OE_MAP_ANONYMOUS))
         {
-            _HeapSetErr(heap, "invalid flags parameter: need OE_MAP_ANONYMOUS");
+            _HeapSetErr(heap, "bad flags parameter: need OE_MAP_ANONYMOUS");
             goto done;
         }
 
         if (!(flags & OE_MAP_PRIVATE))
         {
-            _HeapSetErr(heap, "invalid flags parameter: need OE_MAP_PRIVATE");
+            _HeapSetErr(heap, "bad flags parameter: need OE_MAP_PRIVATE");
             goto done;
         }
 
         if (flags & OE_MAP_SHARED)
         {
-            _HeapSetErr(heap, "invalid flags parameter: remove OE_MAP_SHARED");
+            _HeapSetErr(heap, "bad flags parameter: remove OE_MAP_SHARED");
             goto done;
         }
 
         if (flags & OE_MAP_FIXED)
         {
-            _HeapSetErr(heap, "invalid flags parameter: remove OE_MAP_FIXED");
+            _HeapSetErr(heap, "bad flags parameter: remove OE_MAP_FIXED");
             goto done;
         }
     }
@@ -601,7 +601,7 @@ void* OE_HeapMap(
     if (addr)
     {
         /* TODO: implement to support mapping non-zero addresses */
-        _HeapSetErr(heap, "invalid addr parameter: must be null");
+        _HeapSetErr(heap, "bad addr parameter: must be null");
         goto done;
     }
     else
@@ -646,11 +646,11 @@ void* OE_HeapMap(
         {
             OE_VAD* vad;
 
-            /* Create a new VAD and insert it into the tree and list. */
+            /* Create a new VAD and insert it into the list */
 
             if (!(vad = _HeapNewVAD(heap, start, length, prot, flags)))
             {
-                _HeapSetErr(heap, "unexpected: tree insertion failed (2)");
+                _HeapSetErr(heap, "unexpected: list insert failed");
                 goto done;
             }
 
@@ -690,7 +690,7 @@ OE_Result OE_HeapUnmap(
     /* Reject invaid parameters */
     if (!heap || heap->magic != OE_HEAP_MAGIC || !addr || !length)
     {
-        _HeapSetErr(heap, "invalid parameter");
+        _HeapSetErr(heap, "bad parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
@@ -700,14 +700,14 @@ OE_Result OE_HeapUnmap(
     /* ADDRESS must be aligned on a page boundary */
     if ((uintptr_t)addr % OE_PAGE_SIZE)
     {
-        _HeapSetErr(heap, "invalid addr parameter");
+        _HeapSetErr(heap, "bad addr parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* LENGTH must be a multiple of the page size */
     if (length % OE_PAGE_SIZE)
     {
-        _HeapSetErr(heap, "invalid length parameter");
+        _HeapSetErr(heap, "bad length parameter");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
@@ -725,7 +725,7 @@ OE_Result OE_HeapUnmap(
     /* Fail if this VAD does not contain the end address */
     if (end > _End(vad))
     {
-        _HeapSetErr(heap, "invalid range");
+        _HeapSetErr(heap, "illegal range");
         OE_THROW(OE_INVALID_PARAMETER);
     }
 
@@ -834,7 +834,7 @@ void* OE_HeapRemap(
     /* ADDR must be page aligned */
     if ((uintptr_t)addr % OE_PAGE_SIZE)
     {
-        _HeapSetErr(heap, "invalid addr parameter: must be multiple of page size");
+        _HeapSetErr(heap, "bad addr parameter: must be multiple of page size");
         goto done;
     }
 
