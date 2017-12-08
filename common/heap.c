@@ -29,6 +29,21 @@
 **==============================================================================
 */
 
+OE_INLINE void _Lock(OE_Heap* heap, bool* locked)
+{
+    OE_MutexLock(&heap->lock);
+    *locked = true;
+}
+
+OE_INLINE void _Unlock(OE_Heap* heap, bool* locked)
+{
+    if (*locked)
+    {
+        OE_MutexUnlock(&heap->lock);
+        *locked = false;
+    }
+}
+
 OE_INLINE uintptr_t _End(OE_VAD* vad)
 {
     return vad->addr + vad->size;
@@ -449,6 +464,9 @@ OE_Result OE_HeapInit(
     /* Set the magic number */
     heap->magic = OE_HEAP_MAGIC;
 
+    /* Initialize the mutex */
+    OE_MutexInit(&heap->lock);
+
     /* Finally, set initialized to true */
     heap->initialized = 1;
 
@@ -468,6 +486,9 @@ void* OE_HeapSbrk(
 {
     void* result = NULL;
     void* ptr = NULL;
+    bool locked = false;
+
+    _Lock(heap, &locked);
 
     _ClearErr(heap);
 
@@ -497,6 +518,7 @@ void* OE_HeapSbrk(
     result = ptr;
 
 done:
+    _Unlock(heap, &locked);
     return result;
 }
 
@@ -506,6 +528,9 @@ OE_Result OE_HeapBrk(
     uintptr_t addr)
 {
     OE_Result result = OE_FAILURE;
+    bool locked = false;
+
+    _Lock(heap, &locked);
 
     _ClearErr(heap);
 
@@ -525,6 +550,7 @@ OE_Result OE_HeapBrk(
     result = OE_OK;
 
 catch:
+    _Unlock(heap, &locked);
     return result;
 }
 
@@ -537,6 +563,9 @@ void* OE_HeapMap(
 {
     void* result = NULL;
     uintptr_t start = 0;
+    bool locked = false;
+
+    _Lock(heap, &locked);
 
     _ClearErr(heap);
 
@@ -695,7 +724,7 @@ void* OE_HeapMap(
     result = (void*)start;
 
 done:
-
+    _Unlock(heap, &locked);
     return result;
 }
 
@@ -706,6 +735,9 @@ OE_Result OE_HeapUnmap(
 {
     OE_Result result = OE_FAILURE;
     OE_VAD* vad = NULL;
+    bool locked = false;
+
+    _Lock(heap, &locked);
 
     _ClearErr(heap);
 
@@ -837,6 +869,7 @@ OE_Result OE_HeapUnmap(
     result = OE_OK;
 
 catch:
+    _Unlock(heap, &locked);
     return result;
 }
 
@@ -850,6 +883,9 @@ void* OE_HeapRemap(
     void* new_addr = NULL;
     void* result = NULL;
     OE_VAD* vad = NULL;
+    bool locked = false;
+
+    _Lock(heap, &locked);
 
     _ClearErr(heap);
 
@@ -1015,7 +1051,7 @@ void* OE_HeapRemap(
     result = new_addr;
 
 done:
-
+    _Unlock(heap, &locked);
     return result;
 }
 

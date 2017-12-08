@@ -8,11 +8,12 @@
 OE_EXTERNC_BEGIN
 
 OE_Heap __oe_heap = OE_HEAP_INITIALIZER;
-static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
 
 /* Initialize the __oe_heap object on the first call */
 static void _Init(void)
 {
+    static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
+
     OE_SpinLock(&_lock);
 
     if (__oe_heap.initialized == false)
@@ -31,9 +32,7 @@ int OE_Brk(uintptr_t addr)
     if (__oe_heap.initialized == false)
         _Init();
 
-    OE_SpinLock(&_lock);
     OE_Result result = OE_HeapBrk(&__oe_heap, addr);
-    OE_SpinUnlock(&_lock);
 
     return result == OE_OK ? 0 : -1;
 }
@@ -58,9 +57,7 @@ void* OE_Sbrk(ptrdiff_t increment)
     if (__oe_heap.initialized == false)
         _Init();
 
-    OE_SpinLock(&_lock);
     ptr = OE_HeapSbrk(&__oe_heap, increment);
-    OE_SpinUnlock(&_lock);
 
     /* Map null to expected sbrk() error return type */
     if (!ptr)

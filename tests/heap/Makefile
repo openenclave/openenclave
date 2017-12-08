@@ -8,7 +8,7 @@ SOURCES = $(wildcard *.c)
 
 LIBRARIES += $(LIBDIR)/host/liboehost.a
 
-LDFLAGS += -L$(LIBDIR) -lcrypto
+LDFLAGS += -L$(LIBDIR) -lcrypto -pthread
 
 all:
 	$(MAKE) program

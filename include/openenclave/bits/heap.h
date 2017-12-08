@@ -127,6 +127,9 @@ typedef struct _OE_Heap
     /* Whether to scrub memory when it is unmapped (fill with 0xDD) */
     bool scrub;
 
+    /* Heap locking */
+    OE_Mutex lock;
+
     /* Error string */
     char err[OE_HEAP_ERROR_SIZE];
 
