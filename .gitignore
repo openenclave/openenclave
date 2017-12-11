@@ -2,6 +2,8 @@
 *.o
 *.so
 
+/.vs
+
 build/
 
 prereqs/aesm/.build
@@ -13,4 +15,3 @@ prereqs/aesm/dynamic-application-loader-host-interface/
 prereqs/aesm/linux-sgx/
 prereqs/isgx/linux-sgx-driver/
 prereqs/packages/.packages
-/.vs

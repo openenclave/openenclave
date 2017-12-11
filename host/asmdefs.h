@@ -63,11 +63,11 @@ struct __OE_HostOCallFrame
 }_OE_HostOCallFrame;
 
 void _OE_NotifyOCallStart(
-    _OE_HostOCallFrame* frame_point,
+    _OE_HostOCallFrame* frame_pointer,
     void* tcs);
 
 void _OE_NotifyOCallEnd(
-    _OE_HostOCallFrame* frame_point,
+    _OE_HostOCallFrame* frame_pointer,
     void* tcs);
 #endif
 

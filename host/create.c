@@ -1007,6 +1007,12 @@ OE_Result __OE_BuildEnclave(
 
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
+
+/*
+** This function is needed to notify the debugger. It should not be optimized
+** out even it doesn't do anything in here.
+*/
+
 void _OE_NotifyGdbEnclaveCreation(
     const OE_Enclave* enclave,
     const char* enclavePath,
@@ -1094,6 +1100,12 @@ OE_Result OE_CreateEnclave(
 
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
+
+/*
+** This function is needed to notify the debugger. It should not be optimized
+** out even it doesn't do anything in here.
+*/
+
 void _OE_NotifyGdbEnclaveTermination(
     const OE_Enclave* enclave,
     const char* enclavePath,

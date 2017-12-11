@@ -69,7 +69,7 @@ OE_Main:
 
 .clean_entry:
 
-    // Calculate stack base relative to TCS (subtract guard page size)    
+    // Calculate stack base relative to TCS (subtract guard page size)
     mov %rbx, %rsp 
     sub $PAGE_SIZE, %rsp
     mov %rsp, %rbp

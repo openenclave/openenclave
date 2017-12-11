@@ -749,21 +749,27 @@ catch:
 
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
+
+/*
+** These two functions are needed to notify the debugger. They should not be 
+** optimized out even they don't do anything in here.
+*/
+
 void _OE_NotifyOCallStart(
-    _OE_HostOCallFrame* frame_point,
+    _OE_HostOCallFrame* frame_pointer,
     void* tcs)
 {
-    UNREFERENCED_PARAMETER(frame_point);
+    UNREFERENCED_PARAMETER(frame_pointer);
     UNREFERENCED_PARAMETER(tcs);
 
     return;
 }
 
 void _OE_NotifyOCallEnd(
-    _OE_HostOCallFrame* frame_point,
+    _OE_HostOCallFrame* frame_pointer,
     void* tcs)
 {
-    UNREFERENCED_PARAMETER(frame_point);
+    UNREFERENCED_PARAMETER(frame_pointer);
     UNREFERENCED_PARAMETER(tcs);
 
     return;

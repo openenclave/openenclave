@@ -131,7 +131,7 @@ def set_tcs_debug_flag(tcs_addr):
     flag = struct.unpack('I', string)[0]
     flag |= 1
     gdb_cmd = "set *(unsigned int *)%#x = %#x" %(tcs_addr + 8, flag)
-    print ("set tcs [{0:#x}] flag, {1}" .format(tcs_addr, gdb_cmd))
+    # print ("set tcs [{0:#x}] flag, {1}" .format(tcs_addr, gdb_cmd))
     gdb.execute(gdb_cmd, False, True)
     return True
 
@@ -156,7 +156,7 @@ def enable_oeencalve_debug(oe_enclave_addr, enclave_path):
     thread_data_blob = read_from_memory(thread_data_addr, THREAD_DATA_HEADER_LENGTH)
     thread_data_tuple = struct.unpack(THREAD_DATA_HEADER_FORMAT, thread_data_blob)
     while thread_data_tuple[0] > 0 :
-        print ("tcs address {0:#x}" .format(thread_data_tuple[0]))
+        # print ("tcs address {0:#x}" .format(thread_data_tuple[0]))
         set_tcs_debug_flag(thread_data_tuple[0])
         # Iterate the array
         thread_data_addr = thread_data_addr + THREAD_DATA_SIZE
@@ -210,7 +210,6 @@ class EnlaveTerminationBreakpoint(gdb.Breakpoint):
         enclave_path_blob = read_from_memory(enclave_path_addr, enclave_path_length)
         dataFormat = str(enclave_path_length) + 's'
         enclave_path = struct.unpack_from(dataFormat, enclave_path_blob)[0].decode(encoding='UTF-8')
-        print ("Enclave path: {}" .format(enclave_path))
         # Unload the enclave symbol. Need not to reset the debug flag for TCSs.
         unload_enclave_symbol(enclave_path, enclave_tuple[OE_ENCLAVE_ADDR_FIELD])
         return False
