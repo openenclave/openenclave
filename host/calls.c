@@ -755,6 +755,7 @@ catch:
 ** optimized out even they don't do anything in here.
 */
 
+__attribute__((noinline))
 void _OE_NotifyOCallStart(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)
@@ -765,6 +766,7 @@ void _OE_NotifyOCallStart(
     return;
 }
 
+__attribute__((noinline))
 void _OE_NotifyOCallEnd(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)

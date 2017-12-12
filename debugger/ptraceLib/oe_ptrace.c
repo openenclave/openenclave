@@ -57,6 +57,7 @@ static long OE_GetGprHandler(
     struct user_regs_struct *regs = (struct user_regs_struct *)data;
     if(OE_IsAEP(pid, regs))
     {
+        // rbx has the TCS of enclave thread.
         if (OE_GetEnclaveThreadGpr(pid, (void*)regs->rbx, regs) != 0)
         {
             return -1;
@@ -86,6 +87,7 @@ static long OE_SetGprHandler(
     // Set the enclave thread gpr if the pc is an AEP.
     if(OE_IsAEP(pid, &aep_regs))
     {
+        // rbx has the TCS of enclave thread.
         struct user_regs_struct *regs = (struct user_regs_struct *)data;
         if (OE_SetEnclaveThreadGpr(pid, (void*)aep_regs.rbx, regs) != 0)
         {
@@ -120,6 +122,7 @@ static long OE_GetFprHandler(
     // Get the fpr values from enclave thread if the pc is an AEP.
     if (OE_IsAEP(pid, &regs))
     {
+        // rbx has the TCS of enclave thread.
         if (OE_GetEnclaveThreadFpr(pid, (void*)regs.rbx, (struct user_fpregs_struct *)data) != 0)
         {
             return -1;
@@ -153,6 +156,7 @@ static long OE_SetFprHandler(
     // Set the fpr values to enclave thread if the pc is an AEP.
     if (OE_IsAEP(pid, &regs))
     {
+        // rbx has the TCS of enclave thread.
         if (OE_SetEnclaveThreadFpr(pid, (void*)regs.rbx, (struct user_fpregs_struct *)data) != 0)
         {
             return -1;
@@ -192,6 +196,7 @@ static long OE_GetRegSetHandler(
             return -1;
         }
 
+        // rbx has the TCS of enclave thread.
         struct iovec *iov = (struct iovec *)data;
         if (iov->iov_base 
             && iov->iov_len
@@ -234,6 +239,7 @@ static long OE_SetRegSetHandler(
             return -1;
         }
 
+        // rbx has the TCS of enclave thread.
         struct iovec *iov = (struct iovec *)data;
         if (iov->iov_base 
             && iov->iov_len
