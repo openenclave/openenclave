@@ -2,7 +2,6 @@
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/fault.h>
-#include <openenclave/bits/globals.h>
 #include "../args.h"
 
 OE_ECALL void Test2(void* args_)

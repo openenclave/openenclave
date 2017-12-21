@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/calls.h>
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/jump.h>
 #include "../args.h"
