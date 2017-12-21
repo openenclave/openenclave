@@ -16,6 +16,8 @@
 #define OE_MAX_ECALLS 1024
 #define OE_MAX_OCALLS 1024
 
+OE_EXTERNC_BEGIN
+
 typedef struct _OE_Enclave OE_Enclave;
 
 typedef void (*OE_ECallFunction)(
@@ -25,8 +27,6 @@ typedef void (*OE_ECallFunction)(
 typedef void (*OE_OCallFunction)(
     uint64_t argIn,
     uint64_t* argOut);
-
-OE_EXTERNC_BEGIN
 
 /*
 **==============================================================================
