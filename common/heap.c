@@ -1,3 +1,35 @@
+/*
+**==============================================================================
+**
+** This file implements the following operations over a contiguous memory 
+** space (or heap).
+**
+**     [..................................................................]
+**     ^     ^             ^             ^                                ^
+**   BASE  START          BRK           MAP                              END
+**
+** BRK - reserves a chunk of memory
+** MAP - reserves an area of memory
+** REMAP - expands or shrinks a memory area obtained with MAP
+** UNMAP - releases a memory area obtained with MAP
+**
+** The memory space is partitioned into two parts:
+**
+**     break memory - managed by the BRK operation
+**     mapped memory - managed with the MAP, REMAP, and UNMAP operations
+**
+** The memory space and this partitioning are depicted as follows.
+**
+** The variabes shown in this diagram are defined as follows.
+**
+**     START - the 
+**
+**
+** START and END define the boundaries of the memory space. BRK (the
+**
+**==============================================================================
+*/
+
 #include <openenclave/enclave.h>
 #include <openenclave/bits/heap.h>
 #include <openenclave/thread.h>
