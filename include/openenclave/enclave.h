@@ -143,30 +143,6 @@ OE_PRINTF_FORMAT(1, 2)
 int OE_HostPrintf(const char* fmt, ...);
 
 /**
- * Allocates space on the stack frame of the caller.
- *
- * This function allocates **size** bytes of space on the stack frame of the
- * caller. The returned address will be a multiple of **alignment** (if
- * non-zero). The allocated space is automatically freed when the calling
- * function returns. If the stack overflows, the behavior is undefined.
- *
- * @param size The number of bytes to allocate.
- * @param alignment The alignment requirement (see above).
- *
- * @returns Returns the address of the allocated space.
- *
- */
-OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(size_t size, size_t alignment)
-{
-    void* ptr = __builtin_alloca(size + alignment);
-
-    if (alignment)
-        ptr = (void*)(((uint64_t)ptr + alignment - 1) / alignment * alignment);
-
-    return ptr;
-}
-
-/**
  * Allocates space on the host's stack frame.
  *
  * This function allocates **size** bytes of space on the stack frame of the
