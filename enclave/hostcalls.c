@@ -102,8 +102,8 @@ int __OE_HostPrint(int device, const char* str, size_t len)
         len = OE_Strlen(str);
 
     /* Allocate space for the arguments followed by null-terminated string */
-    if (!(args = (OE_PrintArgs*)OE_HostStackMalloc(
-        sizeof(OE_PrintArgs) + len + 1)))
+    if (!(args = (OE_PrintArgs*)OE_HostAllocForCallHost(
+        sizeof(OE_PrintArgs) + len + 1, 0, false)))
     {
         goto done;
     }

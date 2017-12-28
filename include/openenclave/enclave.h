@@ -143,84 +143,21 @@ OE_PRINTF_FORMAT(1, 2)
 int OE_HostPrintf(const char* fmt, ...);
 
 /**
- * Allocates space on the host's stack frame.
+ * Allocates space for parameters of the next call to host on the host's stack frame.
  *
  * This function allocates **size** bytes of space on the stack frame of the
  * host. The returned address will be a multiple of **alignment** (if
  * non-zero). The allocated space is freed automatically when the OCALL
  * returns. If the stack overflows, the behavior is undefined.
  *
- * Caution: This function should only be used when performing an OCALL.
- *
  * @param size The number of bytes to allocate.
  * @param alignment The alignment requirement (see above).
+ * @param isZeroInit Whether the allocated memory is zero-initialized.
  *
  * @returns Returns the address of the allocated space.
  *
  */
-void *OE_HostStackMemalign(size_t size, size_t alignment);
-
-/**
- * Allocates space on the host's stack frame.
- *
- * This function allocates **size** bytes of space on the stack frame of the
- * host. The allocated space is freed automatically when the OCALL
- * returns. If the stack overflows, the behavior is undefined.
- *
- * Caution: This function should only be used when performing an OCALL.
- *
- * @param size The number of bytes to allocate.
- *
- * @returns Returns the address of the allocated space.
- *
- */
-void *OE_HostStackMalloc(size_t size);
-
-/**
- * Allocates and zero-fills space on the host's stack frame.
- *
- * This function allocates **nmemb** times **size** bytes of space on the stack
- * frame of the host and fills this space with zero bytes. The allocated space
- * is freed automatically when the OCALL returns. If the stack overflows, the
- * behavior is undefined.
- *
- * Caution: This function should only be used when performing an OCALL.
- *
- * @param nmem The number of members.
- * @param size The size of each member.
- *
- * @returns Returns the address of the allocated space.
- *
- */
-void *OE_HostStackCalloc(size_t nmem, size_t size);
-
-/**
- * Implements the no-op free interface for host stack allocation.
- *
- * This function implements a free() compatible signature for the host stack
- * allocation scheme. Calling this function has no effect and not necessary
- * since host stack allocations are reclaimed automatically when the OCALL
- * returns. It was provided for functions that require free/malloc callbacks.
- */
-
-OE_INLINE void OE_HostStackFree(void* ptr)
-{
-    /* NO-OP */
-}
-
-/**
- * Make a copy of a string on the host's stack frame.
- *
- * This function allocates memory on the host's stack frame, copies the **str**
- * parameter to that memory, and returns a pointer to the newly allocated
- * memory.
- *
- * @param str The string to be copied.
- *
- * @returns A pointer to the newly allocated string or NULL if unable to
- * allocate the storage.
- */
-char* OE_HostStackStrdup(const char* str);
+void *OE_HostAllocForCallHost(size_t size, size_t alignment, bool isZeroInit);
 
 /**
  * Allocate bytes from the host's heap.

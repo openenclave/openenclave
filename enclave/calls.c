@@ -373,7 +373,7 @@ OE_Result OE_CallHost(
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args = OE_HostStackMalloc(sizeof(OE_CallHostArgs) + len + 1)))
+        if (!(args = OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1, 0, false)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
         OE_Memcpy(args->func, func, len + 1);

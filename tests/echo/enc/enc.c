@@ -2,6 +2,18 @@
 #include <openenclave/bits/enclavelibc.h>
 #include "../args.h"
 
+char* OE_HostStackStrdup(const char* str)
+{
+    size_t n = OE_Strlen(str);
+
+    char* dup = (char*)OE_HostAllocForCallHost(n + 1, 0, false);
+
+    if (dup)
+        OE_Memcpy(dup, str, n + 1);
+
+    return dup;
+}
+
 OE_ECALL void Echo(void* args_)
 {
     EchoArgs* args = (EchoArgs*)args_;

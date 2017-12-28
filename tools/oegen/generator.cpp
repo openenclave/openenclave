@@ -421,7 +421,6 @@ static void _GenTrustedICALL(
     const Function& f = *function;
     const ReturnType& r = f.returnType;
     bool empty = (r.Empty() && f.params.size() == 0);
-    string callocStr = "OE_HostCalloc";
     string mallocStr = "OE_HostMalloc";
     string freeStr = "OE_HostFree";
     Ind ind;
@@ -765,9 +764,9 @@ static void _GenOCALL(
 {
     const ReturnType& r = f->returnType;
     const string& fn = f->name;
-    string callocStr = "OE_HostStackCalloc";
-    string mallocStr = "OE_HostStackMalloc";
-    string freeStr = "OE_HostStackFree";
+    string hostAllocStr = "OE_HostAllocForCallHost";
+    string mallocStr = "_HostStackMalloc";
+    string freeStr = "_HostStackNoOpFree";
 
     os << pf("/* OCALL: %s(%u) */\n", __FILE__, __LINE__);
     _GenCallOutFunctionPrototype(os, true, f, false);
@@ -815,14 +814,14 @@ static void _GenOCALL(
 
     {
         const char text[] =
-            "    if (!(__a = (__Args*)$0(1, sizeof(__Args))))\n"
+            "    if (!(__a = (__Args*)$0(sizeof(__Args), 0, true)))\n"
             "    {\n"
             "        __r = OE_OUT_OF_MEMORY;\n"
             "        goto done;\n"
             "    }\n"
             "\n";
 
-        os << sub(text, callocStr);
+        os << sub(text, hostAllocStr);
     }
 
     // Copy parameters into args structure */
@@ -931,11 +930,11 @@ static void _GenOCALL(
             "done:\n"
             "\n"
             "    if (__a)\n"
-            "        OE_FreeStruct(__ti, __a, OE_HostStackFree);\n"
+            "        OE_FreeStruct(__ti, __a, $0);\n"
             "\n"
             "    return __r;\n"
             "}\n";
-        os << text;
+        os << sub(text, freeStr);
     }
 
     os << endl;
@@ -1500,6 +1499,23 @@ int Generator::GenerateSourceFile(
         "    return $0((void*)dest, src, n);\n"
         "}\n\n";
         os << sub(text, MEMCPY) << endl;
+    }
+
+    // Inject wrapper functions for OCALL host stack allocations
+    if (trusted)
+    {
+        const char mallocText[] =
+        "OE_INLINE void* _HostStackMalloc(size_t size)\n"
+        "{\n"
+        "    return OE_HostAllocForCallHost(size, sizeof(uint64_t), false);\n"
+        "}\n\n";
+        os << mallocText << endl;
+
+        const char freeText[] =
+        "OE_INLINE void _HostStackNoOpFree(void* ptr)\n"
+        "{\n"
+        "}\n\n";
+        os << freeText << endl;
     }
 
     // Generate struct type information:
