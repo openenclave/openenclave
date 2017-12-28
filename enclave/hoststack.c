@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/utils.h>
 #include "td.h"
 

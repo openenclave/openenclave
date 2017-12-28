@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 #include "../args.h"
 
 OE_ECALL void Echo(void* args_)

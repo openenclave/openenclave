@@ -1457,7 +1457,10 @@ int Generator::GenerateSourceFile(
     }
 
     if (trusted)
+    {
         os << "#include <openenclave/enclave.h>" << endl;
+        os << "#include <openenclave/bits/enclavelibc.h>" << endl;
+    }
     else
         os << "#include <openenclave/host.h>" << endl;
 

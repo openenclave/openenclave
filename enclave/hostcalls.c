@@ -1,5 +1,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/print.h>
 #include "td.h"
 

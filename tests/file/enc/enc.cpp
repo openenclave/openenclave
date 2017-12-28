@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 #include "file_t.h"
 
 extern OE_StructTI Object_ti;

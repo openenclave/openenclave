@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/fault.h>
 #include <openenclave/bits/malloc.h>
