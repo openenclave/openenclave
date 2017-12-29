@@ -18,7 +18,6 @@
 #include "result.h"
 #include "thread.h"
 #include "bits/sha.h"
-#include "typeinfo.h"
 
 OE_EXTERNC_BEGIN
 

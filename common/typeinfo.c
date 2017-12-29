@@ -5,6 +5,7 @@
 #include <wchar.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <openenclave/bits/typeinfo.h>
 
 /*
 **==============================================================================

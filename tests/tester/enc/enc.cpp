@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <openenclave/enclave.h>
+#include <openenclave/bits/typeinfo.h>
 #include "tester_t.h"
 
 static struct Object* _MakeObject(

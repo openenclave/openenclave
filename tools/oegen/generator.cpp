@@ -1463,6 +1463,7 @@ int Generator::GenerateSourceFile(
     else
         os << "#include <openenclave/host.h>" << endl;
 
+    os << "#include <openenclave/bits/typeinfo.h>" << endl;
     os << "#include <stdlib.h>" << endl;
 
     // Include header for this source file:
