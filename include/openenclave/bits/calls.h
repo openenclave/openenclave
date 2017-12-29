@@ -68,6 +68,7 @@ typedef enum _OE_Func
     OE_FUNC_THREAD_WAIT        = 0x06000000,
     OE_FUNC_THREAD_WAKE_WAIT   = 0x07000000,
     OE_FUNC_MALLOC             = 0x08000000,
+    OE_FUNC_REALLOC            = 0x08800000,
     OE_FUNC_FREE               = 0x09000000,
     OE_FUNC_PUTS               = 0x0A000000,
     OE_FUNC_PUTCHAR            = 0x0B000000,
@@ -253,6 +254,23 @@ typedef struct _OE_PrintArgs
     char* str;
 }
 OE_PrintArgs;
+
+/*
+**==============================================================================
+**
+** OE_ReallocArgs
+**
+**     void* realloc(void* ptr, size_t size)
+**
+**==============================================================================
+*/
+
+typedef struct _OE_ReallocArgs
+{
+    void* ptr;
+    size_t size;
+}
+OE_ReallocArgs;
 
 /**
  * Perform a low-level enclave function call (ECALL).

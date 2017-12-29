@@ -175,6 +175,31 @@ void *OE_HostAllocForCallHost(size_t size, size_t alignment, bool isZeroInit);
 void* OE_HostMalloc(size_t size);
 
 /**
+ * Reallocate bytes from the host's heap.
+ *
+ * This function changes the size of the memory block pointed to by **ptr**
+ * on the host's heap to **size** bytes. The memory block may be moved to a 
+ * new location, which is returned by this function. The implementation 
+ * performs an OCALL to the host, which calls realloc(). To free the memory,
+ * it must be passed to OE_HostFree().
+ *
+ * @param ptr The memory block to change the size of. If NULL, this method 
+ * allocates **size** bytes as if OE_HostMalloc was invoked. If not NULL, 
+ * it should be a pointer returned by a previous call to OE_HostCalloc, 
+ * OE_HostMalloc or OE_HostRealloc.
+ * @param size The number of bytes to be allocated. If 0, this method 
+ * deallocates the memory at **ptr**. If the new size is larger, the value
+ * of the memory in the new allocated range is indeterminate. 
+ *
+ * @returns The pointer to the reallocated memory or NULL if **ptr** was 
+ * freed (**size** was set to 0). This method also returns NULL if it was 
+ * unable to reallocate the memory, in which case the orignal **ptr** 
+ * remains valid and its contents are unchanged. 
+ *
+ */
+void* OE_HostRealloc(void* ptr, size_t size);
+
+/**
  * Allocate zero-filled bytes from the host's heap.
  *
  * This function allocates **size** bytes from the host's heap and fills it

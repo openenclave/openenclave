@@ -7,6 +7,7 @@ void HandlePutchar(uint64_t argIn);
 void HandlePutws(uint64_t argIn);
 
 void HandleMalloc(uint64_t argIn, uint64_t* argOut);
+void HandleRealloc(uint64_t argIn, uint64_t* argOut);
 void HandleFree(uint64_t arg);
 
 void HandleThreadWait(uint64_t arg);

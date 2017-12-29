@@ -27,6 +27,29 @@ void* OE_HostCalloc(size_t nmemb, size_t size)
     return ptr;
 }
 
+void* OE_HostRealloc(void* ptr, size_t size)
+{
+    OE_ReallocArgs* argIn = NULL;
+    uint64_t argOut = 0;
+
+    /* Allocate host stack memory for the arguments */
+    if (!(argIn = (OE_ReallocArgs*)OE_HostAllocForCallHost(
+        sizeof(OE_ReallocArgs), 0, false)))
+    {
+        return NULL;
+    }
+
+    argIn->ptr = ptr;
+    argIn->size = size;
+
+    if (OE_OCall(OE_FUNC_REALLOC, (uint64_t)argIn, &argOut) != OE_OK)
+    {
+        return NULL;
+    }
+
+    return (void*)argOut;
+}
+
 void OE_HostFree(void* ptr)
 {
     OE_OCall(OE_FUNC_FREE, (uint64_t)ptr, NULL);

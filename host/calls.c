@@ -341,6 +341,10 @@ static OE_Result _HandleOCALL(
             HandleMalloc(argIn, argOut);
             break;
 
+        case OE_FUNC_REALLOC:
+            HandleRealloc(argIn, argOut);
+            break;
+
         case OE_FUNC_FREE:
             HandleFree(argIn);
             break;
