@@ -12,6 +12,7 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/trace.h>
 #include "log.h"
 
 #define SGX_MAGIC 0xA4
@@ -333,7 +334,7 @@ static OE_Result _ECreateProc(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (secs)
         free(secs);
@@ -389,7 +390,7 @@ static OE_Result _EAddProc(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -428,7 +429,7 @@ static OE_Result _EInitProc(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -450,7 +451,7 @@ static OE_Result _GetHashProc(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -470,7 +471,7 @@ static OE_Result _CloseProc(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -516,7 +517,7 @@ OE_SGXDevice* __OE_OpenSGXDriver(bool simulate)
 
     result = &self->base;
 
-catch:
+OE_CATCH:
 
     if (!result)
         free(self);

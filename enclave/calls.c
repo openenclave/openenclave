@@ -7,6 +7,7 @@
 #include <openenclave/bits/reloc.h>
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/atexit.h>
+#include <openenclave/bits/trace.h>
 #include "asmdefs.h"
 #include "td.h"
 #include "init.h"
@@ -201,7 +202,7 @@ OE_Result OE_RegisterECall(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     OE_SpinUnlock(&_ecalls_spinlock);
     return result;
 }
@@ -346,7 +347,7 @@ OE_Result OE_OCall(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -390,7 +391,7 @@ OE_Result OE_CallHost(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
