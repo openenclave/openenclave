@@ -10,6 +10,7 @@ add_library(oeenclave STATIC
     memory.c
     once.c
     report.c
+    result.c
     sbrk.c
     snprintf.c
     spinlock.c
