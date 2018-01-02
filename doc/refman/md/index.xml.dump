@@ -175,24 +175,6 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a38cb9b14ddef3a1143fdc84a6d199bcb
-            kind=define
-            name
-            {
-                chars="OE_MAX_ECALLS"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_1a16a9d9cfbebae7af4254140b01b588c8
-            kind=define
-            name
-            {
-                chars="OE_MAX_OCALLS"
-            }
-        }
-        member
-        {
             refid=enclave_8h_a1df224cdefe0cfb6726a3c55dbf51ef9_1a1df224cdefe0cfb6726a3c55dbf51ef9
             kind=define
             name
@@ -202,56 +184,11 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_1a923cf176aae96b897d7b0b54f506a9ad
-            kind=typedef
-            name
-            {
-                chars="OE_ECallFunction"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_aece7da9aeffed24f8be4f4b599c193ff_1aece7da9aeffed24f8be4f4b599c193ff
-            kind=function
-            name
-            {
-                chars="OE_Constructor"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a2c5467663b98a8413cf2dff6e4be9d38_1a2c5467663b98a8413cf2dff6e4be9d38
-            kind=function
-            name
-            {
-                chars="OE_Destructor"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a9613c7919aaabdd63711d0b12d286a13_1a9613c7919aaabdd63711d0b12d286a13
-            kind=function
-            name
-            {
-                chars="OE_OCall"
-            }
-        }
-        member
-        {
             refid=enclave_8h_a3f4d990cf1e916d65a82481a55aafbf4_1a3f4d990cf1e916d65a82481a55aafbf4
             kind=function
             name
             {
                 chars="OE_CallHost"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a1a810b4ba3bc63e3ad982fe49a7ed91d_1a1a810b4ba3bc63e3ad982fe49a7ed91d
-            kind=function
-            name
-            {
-                chars="OE_RegisterECall"
             }
         }
         member
@@ -283,87 +220,6 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_a501a4416e8e702f358c2c9a2f2db0085_1a501a4416e8e702f358c2c9a2f2db0085
-            kind=function
-            name
-            {
-                chars="OE_Strlen"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_aadd1c980d0964072b06c924a6571589a_1aadd1c980d0964072b06c924a6571589a
-            kind=function
-            name
-            {
-                chars="OE_Strcmp"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a6a6de71dcece7c98bd97e0a1d16787a8_1a6a6de71dcece7c98bd97e0a1d16787a8
-            kind=function
-            name
-            {
-                chars="OE_Strlcpy"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a110fd4262b8ef3f490167ea4fc90835b_1a110fd4262b8ef3f490167ea4fc90835b
-            kind=function
-            name
-            {
-                chars="OE_Strlcat"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a9a5f74272bec8ad2a6ed9f72262d79c7_1a9a5f74272bec8ad2a6ed9f72262d79c7
-            kind=function
-            name
-            {
-                chars="OE_Memcpy"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_ae24bfe0db16cb4f14dadf5c0e8e1642d_1ae24bfe0db16cb4f14dadf5c0e8e1642d
-            kind=function
-            name
-            {
-                chars="OE_Memset"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a28c68a9d56437166de29345a2ad2346c_1a28c68a9d56437166de29345a2ad2346c
-            kind=function
-            name
-            {
-                chars="OE_Memcmp"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a6b091c1631b6fcd1826c4e7eaac12f0a_1a6b091c1631b6fcd1826c4e7eaac12f0a
-            kind=function
-            name
-            {
-                chars="OE_Vsnprintf"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a278cf78b75ffd7901c00248ae2a655c7_1a278cf78b75ffd7901c00248ae2a655c7
-            kind=function
-            name
-            {
-                chars="OE_Snprintf"
-            }
-        }
-        member
-        {
             refid=enclave_8h_a3593f7245e4dfc759435d3815eeccf51_1a3593f7245e4dfc759435d3815eeccf51
             kind=function
             name
@@ -373,56 +229,11 @@ doxygenindex
         }
         member
         {
-            refid=enclave_8h_a1c0f1e4f4f25df87c37777a5ef9fa8c7_1a1c0f1e4f4f25df87c37777a5ef9fa8c7
+            refid=enclave_8h_a70c2f5823298203226ec746864a33eb5_1a70c2f5823298203226ec746864a33eb5
             kind=function
             name
             {
-                chars="OE_StackAlloc"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a0d995eec3dbaf4ab6970914853a2c9e5_1a0d995eec3dbaf4ab6970914853a2c9e5
-            kind=function
-            name
-            {
-                chars="OE_HostStackMemalign"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a0c54554ccb045ea0e7be51882310b0a3_1a0c54554ccb045ea0e7be51882310b0a3
-            kind=function
-            name
-            {
-                chars="OE_HostStackMalloc"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a8ec0b07ff51894c36a83667d6c5912d4_1a8ec0b07ff51894c36a83667d6c5912d4
-            kind=function
-            name
-            {
-                chars="OE_HostStackCalloc"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_a0af8c7aae8ad80e1892c6057e2b0f767_1a0af8c7aae8ad80e1892c6057e2b0f767
-            kind=function
-            name
-            {
-                chars="OE_HostStackFree"
-            }
-        }
-        member
-        {
-            refid=enclave_8h_aa0c7f46378eaa84d0e894ee9ffc2c191_1aa0c7f46378eaa84d0e894ee9ffc2c191
-            kind=function
-            name
-            {
-                chars="OE_HostStackStrdup"
+                chars="OE_HostAllocForCallHost"
             }
         }
         member
@@ -432,6 +243,15 @@ doxygenindex
             name
             {
                 chars="OE_HostMalloc"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_a9710b76344a56ca798b6b794e6400702_1a9710b76344a56ca798b6b794e6400702
+            kind=function
+            name
+            {
+                chars="OE_HostRealloc"
             }
         }
         member
@@ -526,38 +346,11 @@ doxygenindex
         }
         member
         {
-            refid=host_8h_1a38cb9b14ddef3a1143fdc84a6d199bcb
-            kind=define
-            name
-            {
-                chars="OE_MAX_ECALLS"
-            }
-        }
-        member
-        {
-            refid=host_8h_1a16a9d9cfbebae7af4254140b01b588c8
-            kind=define
-            name
-            {
-                chars="OE_MAX_OCALLS"
-            }
-        }
-        member
-        {
             refid=host_8h_1a80a03dd519e9bc099de34c6ae2fdd033
             kind=typedef
             name
             {
                 chars="OE_Enclave"
-            }
-        }
-        member
-        {
-            refid=host_8h_1ab168d97a37e192db5d4976fbebb4e1a5
-            kind=typedef
-            name
-            {
-                chars="OE_OCallFunction"
             }
         }
         member
@@ -580,29 +373,11 @@ doxygenindex
         }
         member
         {
-            refid=host_8h_af10a19642d3955cab59d4fe273323f3d_1af10a19642d3955cab59d4fe273323f3d
-            kind=function
-            name
-            {
-                chars="OE_ECall"
-            }
-        }
-        member
-        {
             refid=host_8h_a5a1d79498b0488d2aea62b0596bcdd4d_1a5a1d79498b0488d2aea62b0596bcdd4d
             kind=function
             name
             {
                 chars="OE_CallEnclave"
-            }
-        }
-        member
-        {
-            refid=host_8h_acafe99d14d239622e2b7a5fda4b7eb1d_1acafe99d14d239622e2b7a5fda4b7eb1d
-            kind=function
-            name
-            {
-                chars="OE_RegisterOCall"
             }
         }
         member
@@ -622,33 +397,6 @@ doxygenindex
         name
         {
             chars="result.h"
-        }
-        member
-        {
-            refid=result_8h_1a9f8475b06818ff2965efca8814f3a2a8
-            kind=define
-            name
-            {
-                chars="OE_CATCH"
-            }
-        }
-        member
-        {
-            refid=result_8h_a3c646f57163e5de318e9fed90f766bf5_1a3c646f57163e5de318e9fed90f766bf5
-            kind=define
-            name
-            {
-                chars="OE_THROW"
-            }
-        }
-        member
-        {
-            refid=result_8h_a3243ffdc71f9126dd803f0cba2c2bbdd_1a3243ffdc71f9126dd803f0cba2c2bbdd
-            kind=define
-            name
-            {
-                chars="OE_TRY"
-            }
         }
         member
         {
@@ -945,24 +693,6 @@ doxygenindex
             name
             {
                 chars="OE_ResultStr"
-            }
-        }
-        member
-        {
-            refid=result_8h_1a3bb8ad07fa09551f6792838ade9ec16c
-            kind=function
-            name
-            {
-                chars="__OE_TraceThrow"
-            }
-        }
-        member
-        {
-            refid=result_8h_1ab449cb520a1fb20522dc26be04c1743a
-            kind=function
-            name
-            {
-                chars="__OE_TraceTry"
             }
         }
     }

@@ -16,19 +16,29 @@ including:
 
 The xml2md tool is used to generate Markdown format (from Doxygen-generated
 XML files). The generated Markdown files are the only ones that are checked
-into the Github repository. This allows one to brose the documentation from
+into the Github repository. This allows one to browse the documentation from
 the Github site.
 
-All output formats are generated from this directory by typing
+To update the generated documentation, create the cmake build tree by using
+the instructions in [Getting Started with OpenEnclave](doc/GettingStarted.md).
+Assuming that _/build_ is the root of the cmake build tree, a successful make
+will build the HTML, LaTeX and XML reference documentation by default:
 
 ```
-$ make
+build$ make
 ```
 
-or from the top-level directory by typing;
+The resulting documentation can be found in the cmake tree under:
 
 ```
-$ make refman
+build/doc/refman/refman-prefix/src/refman-build
+```
+
+To update the generated Markdown files for commit into Github, you will need
+to also run the following from the cmake build root:
+
+```
+build$ make refman-source
 ```
 
 ## Adding headers files to Doxygen
@@ -40,7 +50,7 @@ current directory).
 doxygen.conf
 ```
 
-Append new sources to the **INPUT**  variable.
+Append new sources to the **INPUT** variable.
 
 ## Source-code documentation conventions
 

@@ -191,8 +191,8 @@ void* OE_HostMalloc(size_t size);
  * of the memory in the new allocated range is indeterminate. 
  *
  * @returns The pointer to the reallocated memory or NULL if **ptr** was 
- * freed (**size** was set to 0). This method also returns NULL if it was 
- * unable to reallocate the memory, in which case the orignal **ptr** 
+ * freed by setting **size** to 0. This method also returns NULL if it was 
+ * unable to reallocate the memory, in which case the original **ptr** 
  * remains valid and its contents are unchanged. 
  *
  */

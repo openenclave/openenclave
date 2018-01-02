@@ -32,7 +32,7 @@ else()
     message("Use target 'refman-source' to populate refman *.md-files into source tree")
     add_custom_target(refman-source
         DEPENDS refman
-        COMMAND dox2md ${CMAKE_CURRENT_BINARY_DIR}/xml/index.xml
+        COMMAND dox2md ${CMAKE_CURRENT_BINARY_DIR}/refman-prefix/src/refman-build/xml/index.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/md
         COMMENT "Generating refman documentation into source-tree" VERBATIM
     )
