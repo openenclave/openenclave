@@ -23,28 +23,7 @@ typedef struct _OE_Registers
 }
 OE_Registers;
 
-__attribute__((always_inline))
-static __inline__ void OE_SaveRegisters(OE_Registers* regs)
-{
-    asm volatile(
-        "mov %%rsp, %0\n\t"
-        "mov %%rbp, %1\n\t"
-        "mov %%rbx, %2\n\t"
-        "mov %%r12, %3\n\t"
-        "mov %%r13, %4\n\t"
-        "mov %%r14, %5\n\t"
-        "mov %%r15, %6\n\t"
-        :
-        "=m"(regs->rsp),
-        "=m"(regs->rbp),
-        "=m"(regs->rbx),
-        "=m"(regs->r12),
-        "=m"(regs->r13),
-        "=m"(regs->r14),
-        "=m"(regs->r15));
-}
-
-static __inline__ void OE_AssertRegisters(
+OE_INLINE void OE_AssertRegisters(
     const OE_Registers* lhs,
     const OE_Registers* rhs)
 {

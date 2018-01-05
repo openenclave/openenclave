@@ -1,13 +1,19 @@
 #define OE_TRACE_LEVEL 1
 #include "log.h"
-#include <errno.h>
-#include <sys/mman.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <dlfcn.h>
-#include <errno.h>
+#include "strings.h"
+
+#if defined(__linux__)
+# include <errno.h>
+# include <sys/mman.h>
+# include <sys/ioctl.h>
+# include <sys/stat.h>
+# include <stdlib.h>
+# include <fcntl.h>
+# include <dlfcn.h>
+#elif defined(_WIN32)
+# include <windows.h>
+#endif
+
 #include <string.h>
 #include <assert.h>
 #include <openenclave/host.h>
@@ -659,7 +665,7 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     {
         ECallNameAddr tmp;
 
-        if (!(tmp.name = strdup(name)))
+        if (!(tmp.name = Strdup(name)))
             goto done;
 
         tmp.code = StrCode(name, strlen(name));
@@ -981,7 +987,7 @@ OE_Result __OE_BuildEnclave(
     OE_TRY(_SaveTextAddress(enclave, &elf));
 
     /* Save path of this enclave */
-    if (!(enclave->path = strdup(path)))
+    if (!(enclave->path = Strdup(path)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
     result = OE_OK;
@@ -1087,7 +1093,11 @@ OE_Result OE_TerminateEnclave(
     enclave->magic = 0;
 
     /* Unmap the enclave memory */
+#if defined(__linux__)
     munmap((void*)enclave->addr, enclave->size);
+#elif defined(_WIN32)
+    /* ATTN: port for windows */
+#endif
 
     /* Release the enclave->ecalls[] array */
     {
@@ -1111,3 +1121,5 @@ catch:
 
     return result;
 }
+
+xxx;

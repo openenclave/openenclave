@@ -1,16 +1,24 @@
 if (UNIX)
 set(PLATFORM_SRC
-    aesm.c
     registers.c
     thread-linux.c
+    aep.S
+    enter.S
+    entersim.S
+    aesm-linux.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
     thread-win.c
+    aesm-win.c
     )
 endif()
 
 add_library(oehost STATIC
+    strings.c
+    fopen.c
+    dupenv.c
+    files.c
     calls.c
     create.c
     elf.c
@@ -28,9 +36,6 @@ add_library(oehost STATIC
     sha.c
     tests.c
     typeinfo.c
-    aep.S
-    enter.S
-    entersim.S
     ${PLATFORM_SRC}
     )
 

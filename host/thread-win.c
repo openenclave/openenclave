@@ -91,8 +91,7 @@ int OE_H_MutexDestroy(OE_H_Mutex* Lock)
 */
 
 int OE_H_ThreadKeyCreate(
-    OE_H_ThreadKey* key,
-    void (*destructor)(void* value))
+    OE_H_ThreadKey* key)
 {
     OE_H_ThreadKey k;
     k = TlsAlloc();

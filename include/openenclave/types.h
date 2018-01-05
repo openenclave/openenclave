@@ -35,7 +35,7 @@
 **==============================================================================
 */
 
-#ifdef __GNUC__
+#if defined(__GNUC__)
 
 typedef long ssize_t;
 typedef unsigned long size_t;
@@ -52,8 +52,9 @@ typedef long ptrdiff_t;
 
 #define OE_INT64_F "%ld"
 #define OE_UINT64_F "%lu"
+#define OE_INT64X_F "%lx"
 
-#elif _MSC_VER
+#elif defined(_MSC_VER)
 
 typedef long long ssize_t;
 typedef unsigned long long size_t;
@@ -70,9 +71,10 @@ typedef long long ptrdiff_t;
 
 #define OE_INT64_F "%I64d"
 #define OE_UINT64_F "%I64u"
+#define OE_INT64X_F "%I64x"
 
 #else
-# error unknown compiler - please adapt basic types
+# error "unknown compiler - please adapt basic types"
 #endif
 
 

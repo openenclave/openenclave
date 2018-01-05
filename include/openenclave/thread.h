@@ -12,11 +12,11 @@
 
 OE_EXTERNC_BEGIN
 
-typedef unsigned long OE_Thread;
+typedef uint64_t OE_Thread;
 
 typedef struct _OE_ThreadAttr
 {
-    long __impl[7];
+    uint64_t __impl[7];
 }
 OE_ThreadAttr;
 
@@ -246,7 +246,7 @@ typedef struct _OE_Cond
         void* back;
     }
     queue;
-    unsigned char padding[24];
+    uint64_t padding[3];
 }
 OE_Cond;
 

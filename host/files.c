@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <openenclave/host.h>
 #include <openenclave/bits/files.h>
+#include "fopen.h"
 
 bool __OE_FileExists(
     const char* path)
@@ -48,7 +49,7 @@ OE_Result __OE_LoadFile(
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Open the file */
-    if (!(is = fopen(path, "rb")))
+    if (Fopen(&is, path, "rb") != 0)
         OE_THROW(OE_NOT_FOUND);
 
     /* Read file into memory */

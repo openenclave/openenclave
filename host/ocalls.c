@@ -1,14 +1,22 @@
 #include <stdio.h>
-#include <time.h>
-#include <sys/time.h>
-#include <stdlib.h>
 #include <assert.h>
-#include <linux/futex.h>
-#include <unistd.h>
-#include <sys/syscall.h>
+
+#if defined(__linux__)
+# include <time.h>
+# include <sys/time.h>
+# include <stdlib.h>
+# include <linux/futex.h>
+# include <unistd.h>
+# include <sys/syscall.h>
+#endif
 
 #include <openenclave/host.h>
-#define __OE_NEED_TIME_CALLS
+
+/* ATTN: WIN: port time routines to Windows */
+#if defined(__linux__)
+# define __OE_NEED_TIME_CALLS
+#endif
+
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/utils.h>
 #include "enclave.h"
@@ -60,6 +68,8 @@ void HandlePutchar(uint64_t argIn)
 
 void HandleThreadWait(uint64_t argIn)
 {
+#if defined(__linux__)
+
     const uint64_t tcs = argIn;
     uint32_t* event;
 
@@ -68,10 +78,18 @@ void HandleThreadWait(uint64_t argIn)
 
     if (__sync_fetch_and_add(&event, -1) == 0)
         syscall(__NR_futex, &event, FUTEX_WAIT, -1, NULL, NULL, 0);
+
+#elif defined(_WIN32)
+
+    /* ATTN: WIN: port this! */
+
+#endif
 }
 
 void HandleThreadWake(uint64_t argIn)
 {
+#if defined(__linux__)
+
     const uint64_t tcs = argIn;
     uint32_t* event;
 
@@ -80,10 +98,18 @@ void HandleThreadWake(uint64_t argIn)
 
     if (__sync_fetch_and_add(&event, 1) != 0)
         syscall(__NR_futex, &event, FUTEX_WAKE, 1, NULL, NULL, 0);
+
+#elif defined(_WIN32)
+
+    /* ATTN: WIN: port this! */
+
+#endif
 }
 
 void HandleThreadWakeWait(uint64_t argIn)
 {
+#if defined(__linux__)
+
     OE_ThreadWakeWaitArgs* args = (OE_ThreadWakeWaitArgs*)argIn;
 
     if (!args)
@@ -91,8 +117,15 @@ void HandleThreadWakeWait(uint64_t argIn)
 
     HandleThreadWake((uint64_t)args->waiter_tcs);
     HandleThreadWait((uint64_t)args->self_tcs);
+
+#elif defined(_WIN32)
+
+    /* ATTN: WIN: port this! */
+
+#endif
 }
 
+#if defined(__OE_NEED_TIME_CALLS)
 void HandleInitQuote(uint64_t argIn)
 {
     OE_InitQuoteArgs* args = (OE_InitQuoteArgs*)argIn;
@@ -102,7 +135,9 @@ void HandleInitQuote(uint64_t argIn)
 
     args->result = SGX_InitQuote(&args->targetInfo, &args->epidGroupID);
 }
+#endif
 
+#if defined(__OE_NEED_TIME_CALLS)
 void HandleStrftime(uint64_t argIn)
 {
     OE_StrftimeArgs* args = (OE_StrftimeArgs*)argIn;
@@ -112,7 +147,9 @@ void HandleStrftime(uint64_t argIn)
 
     args->ret = strftime(args->str, sizeof(args->str), args->format, &args->tm);
 }
+#endif
 
+#if defined(__OE_NEED_TIME_CALLS)
 void HandleGettimeofday(uint64_t argIn)
 {
     OE_GettimeofdayArgs* args = (OE_GettimeofdayArgs*)argIn;
@@ -122,7 +159,9 @@ void HandleGettimeofday(uint64_t argIn)
 
     args->ret = gettimeofday(args->tv, args->tz);
 }
+#endif
 
+#if defined(__OE_NEED_TIME_CALLS)
 void HandleClockgettime(uint64_t argIn)
 {
     OE_ClockgettimeArgs* args = (OE_ClockgettimeArgs*)argIn;
@@ -132,7 +171,9 @@ void HandleClockgettime(uint64_t argIn)
 
     args->ret = clock_gettime(args->clk_id, args->tp);
 }
+#endif
 
+#if defined(__OE_NEED_TIME_CALLS)
 void HandleNanosleep(uint64_t argIn)
 {
     OE_NanosleepArgs* args = (OE_NanosleepArgs*)argIn;
@@ -142,3 +183,4 @@ void HandleNanosleep(uint64_t argIn)
 
     args->ret = nanosleep(args->req, args->rem);
 }
+#endif

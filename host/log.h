@@ -4,18 +4,14 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <openenclave/defs.h>
-
-#if __GNUC__
-/* GCC doesn't seem to support Annex K of C11 */
-#define fopen_s(fp, fmt, mode)  (((*(fp) = fopen((fmt), (mode))) == NULL) ? errno : 0)
-#endif
+#include "fopen.h"
 
 OE_PRINTF_FORMAT(1,2)
 OE_INLINE void Log(const char* fmt, ...)
 {
     FILE* os;
 
-    if (!fopen_s(&os, "/tmp/log.txt", "ab"))
+    if (Fopen(&os, "/tmp/log.txt", "ab") != 0)
     {
         va_list ap;
         va_start(ap, fmt);
@@ -34,7 +30,7 @@ OE_INLINE void LogData(
     if (!data || !size)
         return;
 
-    if (!fopen_s(&os, "/tmp/log.bin", "ab"))
+    if (Fopen(&os, "/tmp/log.bin", "ab") != 0)
     {
         fwrite(data, 1, size, os);
         fclose(os);
@@ -51,7 +47,7 @@ OE_INLINE void LogHex(
     if (!data || !size)
         return;
 
-    if (!fopen_s(&os, "/tmp/log.txt", "ab"))
+    if (Fopen(&os, "/tmp/log.txt", "ab") != 0)
     {
         size_t i;
 
@@ -73,7 +69,7 @@ OE_INLINE void LogHexReverse(
     if (!data || !size)
         return;
 
-    if (!fopen_s(&os, "/tmp/log.txt", "ab"))
+    if (Fopen(&os, "/tmp/log.txt", "ab") != 0)
     {
         while (size)
             fprintf(os, "%02x", data[--size]);

@@ -468,7 +468,7 @@ MEM_INLINE int str_split(
 
 MEM_INLINE int str_u64(
     str_t* str,
-    unsigned long* u64)
+    unsigned long long* u64)
 {
     unsigned long long x;
     char* end;

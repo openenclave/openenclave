@@ -1,3 +1,4 @@
+#if 0
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <stdlib.h>
@@ -5,6 +6,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#endif
+
 #include <openenclave/host.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/bits/build.h>

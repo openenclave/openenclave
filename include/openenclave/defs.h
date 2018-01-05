@@ -13,7 +13,11 @@
 
 #define OE_DEPRECATED(MSG) __attribute__((deprecated(MSG)))
 
-#define OE_ALWAYS_INLINE __attribute__((always_inline))
+#if defined(__linux__)
+# define OE_ALWAYS_INLINE __attribute__((always_inline))
+#elif defined(_WIN32)
+# define OE_ALWAYS_INLINE __forceinline
+#endif
 
 #ifdef _MSC_VER
 # define OE_INLINE static __inline

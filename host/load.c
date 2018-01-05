@@ -1,7 +1,5 @@
 #define OE_TRACE_LEVEL 1
-#include <errno.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <openenclave/host.h>

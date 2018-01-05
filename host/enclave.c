@@ -60,17 +60,15 @@ void enc(void)
 
     if (enclave)
     {
-#if 0
         OE_SHA256Str hash;
         OE_SHA256ToStr(&enclave->hash, &hash);
         printf("Hash: %s\n", hash.buf);
-#endif
         printf("\n");
         printf("Path: %s\n", enclave->path);
-        printf("Addr: 0x%lx\n", enclave->addr);
-        printf("Size: %lu\n", enclave->size);
-        printf("TCSs: %lu\n", enclave->num_bindings);
-        printf("Syms: add-symbol-file %s 0x%lx\n", enclave->path,
+        printf("Addr: 0x" OE_INT64X_F "\n", enclave->addr);
+        printf("Size: " OE_UINT64_F "\n", enclave->size);
+        printf("TCSs: %zu\n", enclave->num_bindings);
+        printf("Syms: add-symbol-file %s 0x" OE_INT64X_F "\n", enclave->path,
             enclave->text);
         printf("\n");
     }

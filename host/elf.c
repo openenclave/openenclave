@@ -5,6 +5,8 @@
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/mem.h>
+#include "strings.h"
+#include "fopen.h"
 
 #define GOTO(LABEL) \
     do \
@@ -198,7 +200,7 @@ int Elf64_Load(
         goto done;
 
     /* Open input file */
-    if (!(is = fopen(path, "rb")))
+    if (Fopen(&is, path, "rb") != 0)
         goto done;
 
     /* Get the size of this file */
@@ -1400,7 +1402,7 @@ int Elf64_AddSection(
     const void* secdata,
     size_t secsize)
 {
-    size_t rc = -1;
+    int rc = -1;
     size_t secoffset;
     size_t nameoffset;
     size_t namesize;
@@ -1490,7 +1492,7 @@ int Elf64_AddSection(
             goto done;
 
         /* Copy the section name to the .shstrtab section */
-        strcpy((char*)elf->data + nameoffset, name);
+        Strlcat((char*)elf->data + nameoffset, name, namesize);
 
         /* Update the size of the .shstrtab section */
         elf->shdrs[shstrndx].sh_size += strlen(name) + 1;
@@ -1502,7 +1504,7 @@ int Elf64_AddSection(
 
         /* Initialize the new section header */
         memset(&sh, 0, sizeof(Elf64_Shdr));
-        sh.sh_name = nameoffset - elf->shdrs[shstrndx].sh_offset;
+        sh.sh_name = (Elf64_Word)(nameoffset - elf->shdrs[shstrndx].sh_offset);
         sh.sh_type = type;
         sh.sh_offset = secoffset;
         sh.sh_size = secsize;

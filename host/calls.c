@@ -1,12 +1,20 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <dlfcn.h>
-#include <setjmp.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <linux/futex.h>
-#include <sys/syscall.h>
+
+#if defined(__linux__)
+# include <dlfcn.h>
+# include <setjmp.h>
+# include <sys/mman.h>
+# include <unistd.h>
+# include <linux/futex.h>
+# include <sys/syscall.h>
+#elif defined(_WIN32)
+# include <Windows.h>
+#else
+# error "unsupported platform"
+#endif
+
 #include "asmdefs.h"
 #include "enclave.h"
 #include <openenclave/host.h>
@@ -14,7 +22,6 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
-#include <openenclave/bits/registers.h>
 #include <openenclave/bits/registers.h>
 #include "ocalls.h"
 
@@ -86,7 +93,7 @@ ThreadBinding* GetThreadBinding()
 static OE_Result _EnterSim(
     OE_Enclave* enclave,
     void* tcs_,
-    void (*aep)(),
+    void (*aep)(void),
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
@@ -148,7 +155,7 @@ catch:
 **==============================================================================
 */
 
-__attribute__((always_inline))
+OE_ALWAYS_INLINE
 static OE_Result _DoEENTER(
     OE_Enclave* enclave,
     void* tcs,
@@ -219,16 +226,27 @@ catch:
 static OE_HostFunc _FindHostFunc(
     const char* name)
 {
+#if defined(__linux__)
+
     void* handle = dlopen(NULL, RTLD_NOW | RTLD_GLOBAL);
-    OE_HostFunc func;
+    if (!handle)
+        return NULL;
+
+    OE_HostFunc func = (OE_HostFunc)dlsym(handle, name);
+    dlclose(handle);
+
+    return func;
+
+#elif defined(_WIN32)
+
+    HANDLE handle = GetModuleHandle(NULL);
 
     if (!handle)
         return NULL;
 
-    func = (OE_HostFunc)dlsym(handle, name);
-    dlclose(handle);
+    return (OE_HostFunc)GetProcAddress(handle, name);
 
-    return func;
+#endif
 }
 
 /*
@@ -592,12 +610,11 @@ static void _ReleaseTCS(
 **
 ** OE_ECall()
 **
-**     This function initiates and ECALL.
+**     This function initiates an ECALL.
 **
 **==============================================================================
 */
 
-__attribute__((cdecl))
 OE_Result OE_ECall(
     OE_Enclave* enclave,
     uint32_t func,
