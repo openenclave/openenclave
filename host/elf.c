@@ -1504,6 +1504,9 @@ int Elf64_AddSection(
 
         /* Initialize the new section header */
         memset(&sh, 0, sizeof(Elf64_Shdr));
+        /* ATTN: Bug: Need to assert arithmetic boundary check and downcasting 
+         * check
+         */
         sh.sh_name = (Elf64_Word)(nameoffset - elf->shdrs[shstrndx].sh_offset);
         sh.sh_type = type;
         sh.sh_offset = secoffset;

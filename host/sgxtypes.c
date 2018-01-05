@@ -7,8 +7,8 @@ void __SGX_DumpEinitToken(
 {
     printf("=== SGX_EInitToken:\n");
     printf("valid=%u\n", p->valid);
-    printf("attributes.flags=" OE_INT64X_F "\n", p->attributes.flags);
-    printf("attributes.xfrm=" OE_INT64X_F "\n", p->attributes.xfrm);
+    printf("attributes.flags=" OE_I64X_F "\n", p->attributes.flags);
+    printf("attributes.xfrm=" OE_I64X_F "\n", p->attributes.xfrm);
 
     printf("mrenclave=");
     __OE_HexDump(p->mrenclave, sizeof(p->mrenclave));
@@ -25,8 +25,8 @@ void __SGX_DumpEinitToken(
 
     printf("maskedmiscselectle=%u\n", p->maskedmiscselectle);
 
-    printf("maskedattributesle.flags=" OE_INT64X_F "\n", p->maskedattributesle.flags);
-    printf("maskedattributesle.xfrm=" OE_INT64X_F "\n", p->maskedattributesle.xfrm);
+    printf("maskedattributesle.flags=" OE_I64X_F "\n", p->maskedattributesle.flags);
+    printf("maskedattributesle.xfrm=" OE_I64X_F "\n", p->maskedattributesle.xfrm);
 
     printf("keyid=");
     __OE_HexDump(p->keyid, sizeof(p->keyid));
@@ -50,10 +50,10 @@ void __SGX_DumpSigStruct(
     printf("signature="); __OE_HexDump(p->signature, sizeof(p->signature));
     printf("miscselect=%08x\n", p->miscselect);
     printf("miscmask=%08x\n", p->miscmask);
-    printf("attributes.flags=" OE_INT64X_F "\n", p->attributes.flags);
-    printf("attributes.xfrm=" OE_INT64X_F "\n", p->attributes.xfrm);
-    printf("attributemask.flags=" OE_INT64X_F "\n", p->attributemask.flags);
-    printf("attributemask.xfrm=" OE_INT64X_F "\n", p->attributemask.xfrm);
+    printf("attributes.flags=" OE_I64X_F "\n", p->attributes.flags);
+    printf("attributes.xfrm=" OE_I64X_F "\n", p->attributes.xfrm);
+    printf("attributemask.flags=" OE_I64X_F "\n", p->attributemask.flags);
+    printf("attributemask.xfrm=" OE_I64X_F "\n", p->attributemask.xfrm);
     printf("enclavehash=");
     __OE_HexDump(p->enclavehash, sizeof(p->enclavehash));
     printf("isvprodid=%04x\n", p->isvprodid);

@@ -65,10 +65,10 @@ void enc(void)
         printf("Hash: %s\n", hash.buf);
         printf("\n");
         printf("Path: %s\n", enclave->path);
-        printf("Addr: 0x" OE_INT64X_F "\n", enclave->addr);
-        printf("Size: " OE_UINT64_F "\n", enclave->size);
+        printf("Addr: 0x" OE_I64X_F "\n", enclave->addr);
+        printf("Size: " OE_I64U_F "\n", enclave->size);
         printf("TCSs: %zu\n", enclave->num_bindings);
-        printf("Syms: add-symbol-file %s 0x" OE_INT64X_F "\n", enclave->path,
+        printf("Syms: add-symbol-file %s 0x" OE_I64X_F "\n", enclave->path,
             enclave->text);
         printf("\n");
     }

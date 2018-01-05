@@ -719,11 +719,11 @@ static void _PrintScalar(
             break;
         case OE_LONG_T:
         case OE_INT64_T:
-            printf(OE_INT64_F, *(const int64_t*)p);
+            printf(OE_I64D_F, *(const int64_t*)p);
             break;
         case OE_ULONG_T:
         case OE_UINT64_T:
-            printf(OE_INT64_F, *(const uint64_t*)p);
+            printf(OE_I64U_F, *(const uint64_t*)p);
             break;
         case OE_FLOAT_T:
             printf("%f", *(const float*)p);
