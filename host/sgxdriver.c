@@ -329,7 +329,7 @@ static int _IoctlReal(
                 return -1;
 
             /* Ask OS to create the enclave */
-            void* enclaveHandle = CreateEnclave(
+            void* base = CreateEnclave(
                 GetCurrentProcess(),
                 (void*)secs->base,
                 secs->size,
@@ -339,7 +339,7 @@ static int _IoctlReal(
                 sizeof(ENCLAVE_CREATE_INFO_SGX),
                 &enclaveError);
 
-            if (!enclaveHandle)
+            if (base != (void*)secs->base)
                 return -1;
 
             return 0;
