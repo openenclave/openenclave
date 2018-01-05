@@ -20,16 +20,23 @@
 #include <openenclave/bits/sgxtypes.h>
 #include "log.h"
 
-#ifdef _WIN32
-# define PROT_READ      1
-# define PROT_WRITE     2
-# define PROT_EXEC      4
-# define MAP_SHARED     0x01
-# define MAP_ANONYMOUS  0x20
-# define MAP_FAILED     ((void*)-1)
-#endif
+/*
+**==============================================================================
+**
+** POSIX mman implementations for Windows: mmap(), mprotect(), munmap()
+**
+**==============================================================================
+*/
 
 #if defined(_WIN32)
+
+#define PROT_READ       1
+#define PROT_WRITE      2
+#define PROT_EXEC       4
+#define MAP_SHARED      0x01
+#define MAP_ANONYMOUS   0x20
+#define MAP_FAILED      ((void*)-1)
+
 static DWORD _MakeProtectParam(int prot)
 {
     if ((prot & PROT_EXEC) && (prot & PROT_READ) && (prot & PROT_WRITE))
@@ -43,19 +50,14 @@ static DWORD _MakeProtectParam(int prot)
 
     return PAGE_NOACCESS;
 }
-#endif
 
-static int _Mprotect(void *addr, size_t len, int prot)
+static int mprotect(void *addr, size_t len, int prot)
 {
-#ifdef __linux__
-    return mprotect(addr, len, prot);
-#else
     DWORD protect = _MakeProtectParam(prot);
     return VirtualProtect(addr, len, protect, NULL) ? 0 : -1;
-#endif
 }
 
-static void* _Mmap(
+static void* mmap(
     void *addr, 
     size_t length, 
     int prot, 
@@ -63,38 +65,28 @@ static void* _Mmap(
     int fd, 
     uint64_t offset)
 {
-#if defined(__linux__)
-    return mmap(addr, length, prot, flags, fd, offset);
-#else
     DWORD protect = _MakeProtectParam(prot);
     void* p = VirtualAlloc(addr, length, MEM_COMMIT | MEM_RESERVE, protect);
-
-    if (!p)
-        return MAP_FAILED;
-
-    return p;
-#endif
+    return p ? p : MAP_FAILED;
 }
 
-static int _Munmap(void *addr, size_t length)
+static int munmap(void *addr, size_t length)
 {
-#if defined(__linux__)
-    return munmap(addr, length);
-#else
     return VirtualFree(addr, length, MEM_RELEASE) ? 0 : -1;
-#endif
 }
 
-#define SGX_MAGIC 0xA4
+#endif /* defined(_WIN32) */
 
-#define SGX_IOC_ENCLAVE_CREATE \
-    _IOW(SGX_MAGIC, 0x00, SGXECreateParam)
-
-#define SGX_IOC_ENCLAVE_ADD_PAGE \
-    _IOW(SGX_MAGIC, 0x01, SGXEAddParam)
-
-#define SGX_IOC_ENCLAVE_INIT \
-    _IOW(SGX_MAGIC, 0x02, SGXEinitParam)
+#if defined(__linux)
+# define SGX_MAGIC 0xA4
+# define SGX_IOC_ENCLAVE_CREATE   _IOW(SGX_MAGIC, 0x00, SGXECreateParam)
+# define SGX_IOC_ENCLAVE_ADD_PAGE _IOW(SGX_MAGIC, 0x01, SGXEAddParam)
+# define SGX_IOC_ENCLAVE_INIT     _IOW(SGX_MAGIC, 0x02, SGXEinitParam)
+#elif defined(_WIN32)
+# define SGX_IOC_ENCLAVE_CREATE   1
+# define SGX_IOC_ENCLAVE_ADD_PAGE 2
+# define SGX_IOC_ENCLAVE_INIT     3
+#endif
 
 typedef struct _Simulate
 {
@@ -275,7 +267,7 @@ static int _IoctlSimulate(
             {
                 uint8_t flags = _MakeMProtectFlags(secinfo->flags);
 
-                if (_Mprotect(addr, OE_PAGE_SIZE, flags) != 0)
+                if (mprotect(addr, OE_PAGE_SIZE, flags) != 0)
                     return -1;
             }
 
@@ -420,7 +412,7 @@ static OE_Result _ECreateProc(
             mflags |= MAP_ANONYMOUS;
 
         /* Allocate double so BASE can be aligned on SIZE boundary */
-        mptr = _Mmap(NULL, enclaveSize * 2, mprot, mflags, self->fd, 0);
+        mptr = mmap(NULL, enclaveSize * 2, mprot, mflags, self->fd, 0);
 
         if(mptr == MAP_FAILED)
             OE_THROW(OE_FAILURE);
@@ -451,7 +443,7 @@ static OE_Result _ECreateProc(
         uint8_t* start = (uint8_t*)mptr;
         uint8_t* end = (uint8_t*)base;
 
-        if (start != end && _Munmap(start, end - start) != 0)
+        if (start != end && munmap(start, end - start) != 0)
             OE_THROW(OE_FAILURE);
     }
 
@@ -460,7 +452,7 @@ static OE_Result _ECreateProc(
         uint8_t* start = (uint8_t*)base + enclaveSize;
         uint8_t* end = (uint8_t*)mptr + enclaveSize * 2;
 
-        if (start != end && _Munmap(start, end - start) != 0)
+        if (start != end && munmap(start, end - start) != 0)
             OE_THROW(OE_FAILURE);
     }
 
