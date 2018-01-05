@@ -51,18 +51,21 @@ static DWORD _MakeProtectParam(int prot)
     return PAGE_NOACCESS;
 }
 
-static int mprotect(void *addr, size_t len, int prot)
+static int mprotect(
+    void *addr,
+    size_t len,
+    int prot)
 {
     DWORD protect = _MakeProtectParam(prot);
     return VirtualProtect(addr, len, protect, NULL) ? 0 : -1;
 }
 
 static void* mmap(
-    void *addr, 
-    size_t length, 
-    int prot, 
+    void *addr,
+    size_t length,
+    int prot,
     int flags,
-    int fd, 
+    int fd,
     uint64_t offset)
 {
     DWORD protect = _MakeProtectParam(prot);
@@ -77,30 +80,15 @@ static int munmap(void *addr, size_t length)
 
 #endif /* defined(_WIN32) */
 
-#if defined(__linux)
-# define SGX_MAGIC 0xA4
-# define SGX_IOC_ENCLAVE_CREATE   _IOW(SGX_MAGIC, 0x00, SGXECreateParam)
-# define SGX_IOC_ENCLAVE_ADD_PAGE _IOW(SGX_MAGIC, 0x01, SGXEAddParam)
-# define SGX_IOC_ENCLAVE_INIT     _IOW(SGX_MAGIC, 0x02, SGXEinitParam)
-#elif defined(_WIN32)
-# define SGX_IOC_ENCLAVE_CREATE   1
-# define SGX_IOC_ENCLAVE_ADD_PAGE 2
-# define SGX_IOC_ENCLAVE_INIT     3
-#endif
+/*
+**==============================================================================
+**
+** Definition of Self struct (extends OE_SGXDevice)
+**
+**==============================================================================
+*/
 
-typedef struct _Simulate
-{
-    /* Base address of enclave */
-    void* addr;
-
-    /* Size of enclave in bytes */
-    size_t size;
-}
-Simulate;
-
-typedef struct _Self Self;
-
-typedef struct _Self
+typedef struct _Self /* extends OE_SGXDevice */
 {
     OE_SGXDevice base;
     unsigned int magic;
@@ -111,7 +99,15 @@ typedef struct _Self
     bool simulate;
 
     /* Simulate mode fields (used when simulate == true) */
-    Simulate sim;
+    struct _Simulate
+    {
+        /* Base address of enclave */
+        void* addr;
+
+        /* Size of enclave in bytes */
+        size_t size;
+    }
+    sim;
 
     int (*ioctl)(struct _Self* dev, unsigned long request, void* param);
 }
@@ -121,6 +117,27 @@ static int _Ok(const Self* self)
 {
     return self && self->magic == SGX_DRIVER_MAGIC;
 }
+
+/*
+**==============================================================================
+**
+** Implementation of Intel SGX IOCTL interface, real and simulated:
+**
+**     _Ioctl() => _IoctlReal() or _IoctlSimulate()
+**
+**==============================================================================
+*/
+
+#if defined(__linux)
+# define SGX_MAGIC 0xA4
+# define SGX_IOC_ENCLAVE_CREATE   _IOW(SGX_MAGIC, 0x00, SGXECreateParam)
+# define SGX_IOC_ENCLAVE_ADD_PAGE _IOW(SGX_MAGIC, 0x01, SGXEAddParam)
+# define SGX_IOC_ENCLAVE_INIT     _IOW(SGX_MAGIC, 0x02, SGXEinitParam)
+#elif defined(_WIN32)
+# define SGX_IOC_ENCLAVE_CREATE   1
+# define SGX_IOC_ENCLAVE_ADD_PAGE 2
+# define SGX_IOC_ENCLAVE_INIT     3
+#endif
 
 OE_PACK(
 typedef struct __SGXECreateParam
@@ -300,6 +317,7 @@ static int _IoctlReal(
         {
             const SGXECreateParam* p;
             const SGX_Secs* secs;
+            DWORD enclaveError;
 
             if (!(p = (const SGXECreateParam*)param))
                 return -1;
@@ -310,7 +328,19 @@ static int _IoctlReal(
             if (!secs->base || !secs->size)
                 return -1;
 
-            /* ATTN: WIN: implement! */
+            /* Ask OS to create the enclave */
+            void* enclaveHandle = CreateEnclave(
+                GetCurrentProcess(),
+                (void*)secs->base,
+                secs->size,
+                secs->size,
+                ENCLAVE_TYPE_SGX,
+                (void*)secs,
+                sizeof(ENCLAVE_CREATE_INFO_SGX),
+                &enclaveError);
+
+            if (!enclaveHandle)
+                return -1;
 
             return 0;
         }
@@ -374,6 +404,21 @@ static int _Ioctl(
     else
         return _IoctlReal(dev, request, param);
 }
+
+/*
+**==============================================================================
+**
+** Definition of the following OE_SGXDevice methods:
+**
+**     OE_SGXDevice.ecreate()
+**     OE_SGXDevice.eadd()
+**     OE_SGXDevice.einit()
+**     OE_SGXDevice.gethash()
+**     OE_SGXDevice.close()
+**     OE_SGXDevice.getmagic()
+**
+**==============================================================================
+*/
 
 static OE_Result _ECreateProc(
     OE_SGXDevice* dev,
