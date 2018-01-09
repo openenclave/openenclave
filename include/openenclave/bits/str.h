@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include "mem.h"
 
 #define STR_NPOS ((size_t)-1)
@@ -468,15 +469,15 @@ MEM_INLINE int str_split(
 
 MEM_INLINE int str_u64(
     str_t* str,
-    unsigned long long* u64)
+    uint64_t* u64)
 {
-    unsigned long long x;
+    uint64_t x;
     char* end;
 
     if (!str_ok(str) || !u64)
         return -1;
 
-    x = strtoul(str_ptr(str), &end, 10);
+    x = strtoull(str_ptr(str), &end, 10);
 
     if (!end || *end)
         return -1;

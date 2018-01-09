@@ -188,6 +188,7 @@ done:
     return flags;
 }
 
+#ifdef _WIN32
 static DWORD _SecinfoToWindowsFlags(uint64_t f)
 {
     DWORD flags = 0;
@@ -215,6 +216,7 @@ static DWORD _SecinfoToWindowsFlags(uint64_t f)
 
     return PAGE_NOACCESS;
 }
+#endif
 
 OE_PACK_BEGIN
 typedef struct __SGXEAddParam
