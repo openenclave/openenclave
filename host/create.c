@@ -1,5 +1,4 @@
 #define OE_TRACE_LEVEL 1
-#include "log.h"
 #include "strings.h"
 
 #if defined(__linux__)
@@ -65,7 +64,7 @@
 **==============================================================================
 */
 
-OE_CHECK_SIZE(sizeof(Sigstruct),1808);
+OE_CHECK_SIZE(sizeof(SGX_SigStruct),1808);
 
 static uint64_t _MakeSecinfoFlags(uint32_t flags)
 {

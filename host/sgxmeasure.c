@@ -12,7 +12,6 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
-#include "log.h"
 
 typedef struct _OE_SGXMeasurer
 {
