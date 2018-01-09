@@ -49,14 +49,18 @@
 
 /*
  * Define packed types, such as:
- * OE_PACK(struct foo {int a,b};)
+ *     OE_PACK_BEGIN
+ *     struct foo {int a,b};
+ *     OE_PACK_END
  */
 #if defined(__GNUC__)
-# define OE_PACK(DEFINITION) _Pragma("pack(push, 1)") DEFINITION _Pragma("pack(pop)")
+# define OE_PACK_BEGIN _Pragma("pack(push, 1)")
+# define OE_PACK_END _Pragma("pack(pop)")
 #elif _MSC_VER
-# define OE_PACK(DEFINITION) __pragma(pack(push, 1)) DEFINITION __pragma(pack(pop))
+# define OE_PACK_BEGIN __pragma(pack(push, 1))
+# define OE_PACK_END __pragma(pack(pop))
 #else
-# error OE_PACK not implemented
+# error "OE_PACK_BEGIN and OE_PACK_END not implemented"
 #endif
 
 #ifdef __GNUC__

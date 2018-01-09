@@ -62,14 +62,14 @@ SGX_ENCLULeaf;
 **==============================================================================
 */
 
-OE_PACK(
+OE_PACK_BEGIN
 typedef struct _SGX_Attributes
 {
     uint64_t flags;
     uint64_t xfrm;
 }
 SGX_Attributes;
-)
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_Attributes),16);
 
@@ -82,7 +82,7 @@ OE_CHECK_SIZE(sizeof(SGX_Attributes),16);
 */
 
 /* 1808 bytes */
-OE_PACK(
+OE_PACK_BEGIN
 typedef struct _SGX_SigStruct
 {
     /* ======== HEADER-SECTION ======== */
@@ -160,7 +160,7 @@ typedef struct _SGX_SigStruct
     uint8_t q2[OE_KEY_SIZE];
 }
 SGX_SigStruct;
-)
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_SigStruct),1808);
 
@@ -243,7 +243,7 @@ SGX_LaunchToken;
 #define SGX_KEYID_SIZE 32
 #define SGX_MAC_SIZE 16
 
-OE_PACK(
+OE_PACK_BEGIN
 typedef struct _SGX_EInitToken
 {
     /* (0) 0=invalid, 1=valid */
@@ -292,7 +292,7 @@ typedef struct _SGX_EInitToken
     uint8_t mac[SGX_MAC_SIZE];
 }
 SGX_EInitToken;
-)
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_EInitToken),304);
 
@@ -498,7 +498,7 @@ typedef struct _OE_EnclaveSettings
 OE_EnclaveSettings;
 
 /* Enclave signature section (.oesig) written to ELF-64 libraries */
-OE_PACK(
+OE_PACK_BEGIN
 typedef struct _OE_SignatureSection
 {
     uint64_t magic;
@@ -506,7 +506,7 @@ typedef struct _OE_SignatureSection
     SGX_SigStruct sigstruct;
 }
 OE_SignatureSection;
-)
+OE_PACK_END
 
 /*
 **==============================================================================
@@ -640,7 +640,7 @@ OE_CHECK_SIZE(sizeof(SGX_Report),432);
 **==============================================================================
 */
 
-OE_PACK(
+OE_PACK_BEGIN
 typedef struct _SGX_Quote
 {
     /* (0) */
@@ -674,7 +674,7 @@ typedef struct _SGX_Quote
     uint8_t signature[82];
 }
 SGX_Quote;
-)
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_Quote),518);
 
