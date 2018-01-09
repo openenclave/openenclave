@@ -1,6 +1,5 @@
 if (UNIX)
 set(PLATFORM_SRC
-    registers.c
     thread-linux.c
     aep.S
     enter.S
@@ -15,6 +14,7 @@ set(PLATFORM_SRC
 endif()
 
 add_library(oehost STATIC
+    registers.c
     strings.c
     fopen.c
     dupenv.c
