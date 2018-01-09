@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-int Fopen(
+int OE_Fopen(
     FILE** fp,
     const char* path,
     const char* mode);

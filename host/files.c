@@ -49,7 +49,7 @@ OE_Result __OE_LoadFile(
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Open the file */
-    if (Fopen(&is, path, "rb") != 0)
+    if (OE_Fopen(&is, path, "rb") != 0)
         OE_THROW(OE_NOT_FOUND);
 
     /* Read file into memory */

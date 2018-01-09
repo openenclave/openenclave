@@ -1,7 +1,8 @@
 #include "fopen.h"
 #include <errno.h>
+#include <stdio.h>
 
-int Fopen(
+int OE_Fopen(
     FILE** fp,
     const char* path,
     const char* mode)

@@ -94,7 +94,6 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = OE_GetCreateFlags();
 
-printf("FLAGS=%08X\n", flags);
 
     result = OE_CreateEnclave(argv[1], flags, &enclave);
     if (result != OE_OK)

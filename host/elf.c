@@ -200,7 +200,7 @@ int Elf64_Load(
         goto done;
 
     /* Open input file */
-    if (Fopen(&is, path, "rb") != 0)
+    if (OE_Fopen(&is, path, "rb") != 0)
         goto done;
 
     /* Get the size of this file */

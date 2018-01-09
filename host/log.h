@@ -11,7 +11,7 @@ OE_INLINE void Log(const char* fmt, ...)
 {
     FILE* os;
 
-    if (Fopen(&os, "/tmp/log.txt", "ab") != 0)
+    if (OE_Fopen(&os, "/tmp/log.txt", "ab") != 0)
     {
         va_list ap;
         va_start(ap, fmt);
@@ -30,7 +30,7 @@ OE_INLINE void LogData(
     if (!data || !size)
         return;
 
-    if (Fopen(&os, "/tmp/log.bin", "ab") != 0)
+    if (OE_Fopen(&os, "/tmp/log.bin", "ab") != 0)
     {
         fwrite(data, 1, size, os);
         fclose(os);
@@ -47,7 +47,7 @@ OE_INLINE void LogHex(
     if (!data || !size)
         return;
 
-    if (Fopen(&os, "/tmp/log.txt", "ab") != 0)
+    if (OE_Fopen(&os, "/tmp/log.txt", "ab") != 0)
     {
         size_t i;
 
@@ -69,7 +69,7 @@ OE_INLINE void LogHexReverse(
     if (!data || !size)
         return;
 
-    if (Fopen(&os, "/tmp/log.txt", "ab") != 0)
+    if (OE_Fopen(&os, "/tmp/log.txt", "ab") != 0)
     {
         while (size)
             fprintf(os, "%02x", data[--size]);
