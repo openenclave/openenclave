@@ -594,7 +594,7 @@ static void _ReleaseTCS(
                 {
                     binding->busy = false;
                     binding->thread = 0;
-                    binding->event = 0;
+                    memset(&binding->event, 0, sizeof(binding->event));
                     _SetThreadBinding(NULL);
                     assert(GetThreadBinding() == NULL);
                 }

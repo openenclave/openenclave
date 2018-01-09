@@ -1048,6 +1048,23 @@ OE_Result OE_CreateEnclave(
     if (!(enclave = (OE_Enclave*)calloc(1, sizeof(OE_Enclave))))
         OE_THROW(OE_OUT_OF_MEMORY);
 
+#if defined(_WIN32)
+
+    /* Create Windows events for each TCS binding. Enclaves use
+     * this event when calling into the host to handle waits/wakes
+     * as part of the enclave mutex and condition variable 
+     * implementation.
+     */
+    for (size_t i = 0; i < enclave->num_bindings; i++)
+    {
+        ThreadBinding* binding = &enclave->bindings[i];
+
+        if (!(binding->event.handle = CreateEvent(0, TRUE, FALSE, 0)))
+            OE_THROW(OE_FAILURE);
+    }
+
+#endif
+
     /* Open the SGX driver */
     if (!(dev = __OE_OpenSGXDriver(simulate)))
         OE_THROW(OE_FAILURE);

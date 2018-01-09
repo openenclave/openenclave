@@ -8,6 +8,8 @@
 # include <linux/futex.h>
 # include <unistd.h>
 # include <sys/syscall.h>
+#elif defined(_WIN32)
+# include <Windows.h>
 #endif
 
 #include <openenclave/host.h>
@@ -68,59 +70,56 @@ void HandlePutchar(uint64_t argIn)
 
 void HandleThreadWait(uint64_t argIn)
 {
-#if defined(__linux__)
-
     const uint64_t tcs = argIn;
-    uint32_t* event;
-
-    event = GetEnclaveEvent(tcs);
+    EnclaveEvent* event = GetEnclaveEvent(tcs);
     assert(event);
 
-    if (__sync_fetch_and_add(&event, -1) == 0)
-        syscall(__NR_futex, &event, FUTEX_WAIT, -1, NULL, NULL, 0);
+#if defined(__linux__)
+
+    if (__sync_fetch_and_add(&event->value, -1) == 0)
+        syscall(__NR_futex, &event->value, FUTEX_WAIT, -1, NULL, NULL, 0);
 
 #elif defined(_WIN32)
 
-    /* ATTN: WIN: port this! */
+    WaitForSingleObject(event->handle, INFINITE);
 
 #endif
 }
 
 void HandleThreadWake(uint64_t argIn)
 {
-#if defined(__linux__)
-
     const uint64_t tcs = argIn;
-    uint32_t* event;
-
-    event = GetEnclaveEvent(tcs);
+    EnclaveEvent* event = GetEnclaveEvent(tcs);
     assert(event);
 
-    if (__sync_fetch_and_add(&event, 1) != 0)
-        syscall(__NR_futex, &event, FUTEX_WAKE, 1, NULL, NULL, 0);
+#if defined(__linux__)
+
+    if (__sync_fetch_and_add(&event->value, 1) != 0)
+        syscall(__NR_futex, &event->value, FUTEX_WAKE, 1, NULL, NULL, 0);
 
 #elif defined(_WIN32)
 
-    /* ATTN: WIN: port this! */
+    SetEvent(event->handle);
 
 #endif
 }
 
 void HandleThreadWakeWait(uint64_t argIn)
 {
-#if defined(__linux__)
-
     OE_ThreadWakeWaitArgs* args = (OE_ThreadWakeWaitArgs*)argIn;
 
     if (!args)
         return;
+
+#if defined(__linux__)
 
     HandleThreadWake((uint64_t)args->waiter_tcs);
     HandleThreadWait((uint64_t)args->self_tcs);
 
 #elif defined(_WIN32)
 
-    /* ATTN: WIN: port this! */
+    HandleThreadWake((uint64_t)args->waiter_tcs);
+    HandleThreadWait((uint64_t)args->self_tcs);
 
 #endif
 }

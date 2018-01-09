@@ -88,10 +88,10 @@ void enc(void)
 **==============================================================================
 */
 
-uint32_t* GetEnclaveEvent(uint64_t tcs)
+EnclaveEvent* GetEnclaveEvent(uint64_t tcs)
 {
     OE_Enclave* enclave = GetEnclave();
-    uint32_t* event = NULL;
+    EnclaveEvent* event = NULL;
 
     if (!enclave)
         return NULL;

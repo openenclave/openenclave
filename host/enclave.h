@@ -8,6 +8,20 @@
 #include "asmdefs.h"
 #include "h_thread.h"
 
+#ifdef _WIN32
+# include <windows.h>
+#endif
+
+typedef struct _EnclaveEvent
+{
+#if defined(__linux__)
+    uint32_t value;
+#elif defined(_WIN32)
+    HANDLE handle;
+#endif
+}
+EnclaveEvent;
+
 #define ENCLAVE_MAGIC 0x20dc98463a5ad8b8
 
 typedef struct _ECallNameAddr
@@ -59,7 +73,7 @@ typedef struct _ThreadBinding
     uint64_t count;
 
     /* Event signaling object for enclave threading implementation */
-    uint32_t event;
+    EnclaveEvent event;
 }
 ThreadBinding;
 
@@ -111,6 +125,6 @@ OE_Enclave* GetEnclave(void);
 void SetEnclave(OE_Enclave* enclave);
 
 /* Get the event for the given TCS */
-uint32_t* GetEnclaveEvent(uint64_t tcs);
+EnclaveEvent* GetEnclaveEvent(uint64_t tcs);
 
 #endif /* _OE_HOST_ENCLAVE_H */
