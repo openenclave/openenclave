@@ -1120,7 +1120,7 @@ OE_Result OE_TerminateEnclave(
 #if defined(__linux__)
     munmap((void*)enclave->addr, enclave->size);
 #elif defined(_WIN32)
-    /* ATTN: port for windows */
+    /* ATTN-WIN: port for windows */
 #endif
 
     /* Release the enclave->ecalls[] array */

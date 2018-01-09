@@ -277,7 +277,7 @@ OE_Result AESMGetLaunchToken(
         (PUINT8)attributes,             /* se_attributes */
         sizeof(SGX_Attributes),         /* se_attributes_size */
         (PUINT8)launchToken,            /* lictoken */
-        /* ATTN: MSR-SDK passes sizeof(SGX_EInitToken) */
+        /* MSR-SDK passes sizeof(SGX_EInitToken) */
         sizeof(SGX_EInitToken),         /* lictoken_size */
         &error);                        /* result */
 
