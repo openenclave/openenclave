@@ -92,17 +92,17 @@ OE_INLINE unsigned int Checksum(
     return x;
 }
 
-OE_PACK(
+OE_PACK_BEGIN
 typedef struct _SigstructAttributes
 {
     unsigned long long flags;
     unsigned long long xfrm;
 }
 SigstructAttributes;
-)
+OE_PACK_END
 
 /* 1808 bytes */
-OE_PACK(
+OE_PACK_BEGIN
 typedef struct _Sigstruct
 {
     /* (0) must be (06000000E100000000000100H) */
@@ -172,7 +172,7 @@ typedef struct _Sigstruct
     unsigned char q2[384];
 }
 Sigstruct;
-)
+OE_PACK_END
 
 
 OE_INLINE void LogSigstruct(const Sigstruct* p)

@@ -976,6 +976,14 @@ OE_Result __OE_BuildEnclave(
             &launchToken));
     }
 
+#if defined(_WIN32)
+    {
+        ENCLAVE_INIT_INFO_SGX info;
+        OE_STATIC_ASSERT(sizeof(info.SigStruct) == sizeof(sigsec.sigstruct));
+        OE_STATIC_ASSERT(sizeof(info.EInitToken) <= sizeof(launchToken));
+    }
+#endif
+
     /* Ask the ISGX driver to initialize the enclave (and finalize the hash) */
     OE_TRY(dev->einit(dev, enclaveAddr, (uint64_t)&sigsec.sigstruct,
         (uint64_t)&launchToken));

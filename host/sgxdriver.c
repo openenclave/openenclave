@@ -42,6 +42,12 @@ static DWORD _MakeProtectParam(int prot)
     if ((prot & PROT_EXEC) && (prot & PROT_READ) && (prot & PROT_WRITE))
         return PAGE_EXECUTE_READWRITE;
 
+    if ((prot & PROT_EXEC) && (prot & PROT_READ))
+        return PAGE_EXECUTE_READ;
+
+    if ((prot & PROT_EXEC))
+        return PAGE_EXECUTE;
+
     if ((prot & PROT_READ) && (prot & PROT_WRITE))
         return PAGE_READWRITE;
 
@@ -139,13 +145,13 @@ static int _Ok(const Self* self)
 # define SGX_IOC_ENCLAVE_INIT     3
 #endif
 
-OE_PACK(
+OE_PACK_BEGIN
 typedef struct __SGXECreateParam
 {
     uint64_t src;
 }
 SGXECreateParam;
-)
+OE_PACK_END
 
 typedef struct _SecInfo
 {
@@ -182,7 +188,35 @@ done:
     return flags;
 }
 
-OE_PACK(
+static DWORD _SecinfoToWindowsFlags(uint64_t f)
+{
+    DWORD flags = 0;
+
+    if (f & SGX_SECINFO_TCS)
+        return PAGE_ENCLAVE_THREAD_CONTROL;
+
+    if (f & SGX_SECINFO_REG)
+    {
+        if ((f & SGX_SECINFO_X) && (f & SGX_SECINFO_R) && (f & SGX_SECINFO_W))
+            return PAGE_EXECUTE_READWRITE;
+
+        if ((f & SGX_SECINFO_X) && (f & SGX_SECINFO_R))
+            return PAGE_EXECUTE_READ;
+
+        if ((f & SGX_SECINFO_X))
+            return PAGE_EXECUTE;
+
+        if ((f & SGX_SECINFO_R) && (f & SGX_SECINFO_W))
+            return PAGE_READWRITE;
+
+        if ((f & SGX_SECINFO_R))
+            return PAGE_READONLY;
+    }
+
+    return PAGE_NOACCESS;
+}
+
+OE_PACK_BEGIN
 typedef struct __SGXEAddParam
 {
     uint64_t addr;    /* enclaves address to copy to */
@@ -191,9 +225,9 @@ typedef struct __SGXEAddParam
     uint16_t mrmask;  /* 0xffff if extend (measurement) will be performed */
 }
 SGXEAddParam;
-)
+OE_PACK_END
 
-OE_PACK(
+OE_PACK_BEGIN
 typedef struct __SGXEinitParam
 {
     uint64_t addr;
@@ -201,7 +235,7 @@ typedef struct __SGXEinitParam
     uint64_t einittoken;
 }
 SGXEinitParam;
-)
+OE_PACK_END
 
 static SGX_Secs* _NewSecs(uint64_t base, uint64_t size)
 {
@@ -316,13 +350,13 @@ static int _IoctlReal(
         case SGX_IOC_ENCLAVE_CREATE:
         {
             const SGXECreateParam* p;
-            const SGX_Secs* secs;
+            SGX_Secs* secs;
             DWORD enclaveError;
 
             if (!(p = (const SGXECreateParam*)param))
                 return -1;
 
-            if (!(secs = (const SGX_Secs*)p->src))
+            if (!(secs = (SGX_Secs*)p->src))
                 return -1;
 
             if (!secs->base || !secs->size)
@@ -331,7 +365,7 @@ static int _IoctlReal(
             /* Ask OS to create the enclave */
             void* base = CreateEnclave(
                 GetCurrentProcess(),
-                (void*)secs->base,
+                NULL, /* Let OS choose the enclave base address */
                 secs->size,
                 secs->size,
                 ENCLAVE_TYPE_SGX,
@@ -339,8 +373,10 @@ static int _IoctlReal(
                 sizeof(ENCLAVE_CREATE_INFO_SGX),
                 &enclaveError);
 
-            if (base != (void*)secs->base)
+            if (!base)
                 return -1;
+
+            secs->base = (uint64_t)base;
 
             return 0;
         }
@@ -363,13 +399,45 @@ static int _IoctlReal(
             if (!(secinfo = (const SecInfo*)p->secinfo))
                 return -1;
 
-            /* ATTN: WIN: implement! */
+            DWORD protect = _SecinfoToWindowsFlags(secinfo->flags);
+            SIZE_T num_bytes = 0;
+            DWORD enclaveError;
+
+            if (!LoadEnclaveData(
+                GetCurrentProcess(),
+                addr,
+                src,
+                OE_PAGE_SIZE,
+                protect,
+                NULL,
+                0,
+                &num_bytes,
+                &enclaveError))
+            {
+                return -1;
+            }
 
             return 0;
         }
         case SGX_IOC_ENCLAVE_INIT:
         {
-            /* ATTN: WIN: implement! */
+            DWORD enclaveError;
+            const SGXEinitParam* p = (const SGXEinitParam*)param;
+            ENCLAVE_INIT_INFO_SGX info;
+
+            memset(&info, 0, sizeof(info));
+            memcpy(&info.SigStruct, (void*)p->sigstruct, sizeof(info.SigStruct));
+            memcpy(&info.EInitToken, (void*)p->einittoken, sizeof(info.EInitToken));
+
+            if (!InitializeEnclave(
+                GetCurrentProcess(),
+                (void*)p->addr,
+                &info,
+                sizeof(info),
+                &enclaveError))
+            {
+                return -1;
+            }
 
             return 0;
         }
@@ -427,15 +495,24 @@ static OE_Result _ECreateProc(
 {
     Self* self = (Self*)dev;
     OE_Result result = OE_UNEXPECTED;
-    void* mptr = NULL;
     void* base = NULL;
     SGX_Secs* secs = NULL;
+    bool useMappedMemory = false;
 
     if (enclaveAddr)
         *enclaveAddr = 0;
 
     if (!_Ok(self) || !enclaveSize || !enclaveAddr)
         OE_THROW(OE_INVALID_PARAMETER);
+
+    /* Always use mapped memory in simulation mode */
+    if (self->simulate)
+        useMappedMemory = true;
+
+    /* Always use mapped memory on Linux */
+#if defined(__linux__)
+    useMappedMemory = true;
+#endif
 
     /* Measure this operation */
     if (self->measurer->ecreate(
@@ -448,57 +525,63 @@ static OE_Result _ECreateProc(
     if (enclaveSize != OE_RoundU64ToPow2(enclaveSize))
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Map memory to share with "/dev/isgx" */
+    /* Allocation memory region if mapped memory is enabled */
+    if (useMappedMemory)
     {
-        int mprot = PROT_READ | PROT_WRITE | PROT_EXEC;
-        int mflags = MAP_SHARED;
+        void* mptr = NULL;
 
-        if (self->simulate)
-            mflags |= MAP_ANONYMOUS;
+        /* Map memory region */
+        {
+            int mprot = PROT_READ | PROT_WRITE | PROT_EXEC;
+            int mflags = MAP_SHARED;
 
-        /* Allocate double so BASE can be aligned on SIZE boundary */
-        mptr = mmap(NULL, enclaveSize * 2, mprot, mflags, self->fd, 0);
+            if (self->simulate)
+                mflags |= MAP_ANONYMOUS;
 
-        if(mptr == MAP_FAILED)
-            OE_THROW(OE_FAILURE);
-    }
+            /* Allocate double so BASE can be aligned on SIZE boundary */
+            mptr = mmap(NULL, enclaveSize * 2, mprot, mflags, self->fd, 0);
 
-    /* Align BASE on a boundary of SIZE */
-    {
-        uint64_t n = enclaveSize;
-        uint64_t addr = ((uint64_t)mptr + (n - 1)) / n * n;
-        base = (void*)addr;
-    }
+            if(mptr == MAP_FAILED)
+                OE_THROW(OE_FAILURE);
+        }
 
-    /*
-    ** Resulting mmap() layout:
-    **
-    **    [............xxxxxxxxxxxxxxxxxxxxxxxx...............]
-    **     ^           ^                       ^              ^
-    **    MPTR        BASE                 BASE+SIZE      MPTR+SIZE*2
-    **
-    **    [MPTR...BASE]                 - unused
-    **    [BASE...BASE+SIZE]            - used
-    **    [BASE+SIZE...MPTR+SIZE*2]     - unused
-    **
-    */
+        /* Align BASE on a boundary of SIZE */
+        {
+            uint64_t n = enclaveSize;
+            uint64_t addr = ((uint64_t)mptr + (n - 1)) / n * n;
+            base = (void*)addr;
+        }
 
-    /* Unmap [MPTR...BASE] */
-    {
-        uint8_t* start = (uint8_t*)mptr;
-        uint8_t* end = (uint8_t*)base;
+        /*
+        ** Resulting mmap() layout:
+        **
+        **    [............xxxxxxxxxxxxxxxxxxxxxxxx...............]
+        **     ^           ^                       ^              ^
+        **    MPTR        BASE                 BASE+SIZE      MPTR+SIZE*2
+        **
+        **    [MPTR...BASE]                 - unused
+        **    [BASE...BASE+SIZE]            - used
+        **    [BASE+SIZE...MPTR+SIZE*2]     - unused
+        **
+        */
 
-        if (start != end && munmap(start, end - start) != 0)
-            OE_THROW(OE_FAILURE);
-    }
+        /* Unmap [MPTR...BASE] */
+        {
+            uint8_t* start = (uint8_t*)mptr;
+            uint8_t* end = (uint8_t*)base;
 
-    /* Unmap [BASE+SIZE...MPTR+SIZE*2] */
-    {
-        uint8_t* start = (uint8_t*)base + enclaveSize;
-        uint8_t* end = (uint8_t*)mptr + enclaveSize * 2;
+            if (start != end && munmap(start, end - start) != 0)
+                OE_THROW(OE_FAILURE);
+        }
 
-        if (start != end && munmap(start, end - start) != 0)
-            OE_THROW(OE_FAILURE);
+        /* Unmap [BASE+SIZE...MPTR+SIZE*2] */
+        {
+            uint8_t* start = (uint8_t*)base + enclaveSize;
+            uint8_t* end = (uint8_t*)mptr + enclaveSize * 2;
+
+            if (start != end && munmap(start, end - start) != 0)
+                OE_THROW(OE_FAILURE);
+        }
     }
 
     /* Create SECS structure */
@@ -516,7 +599,7 @@ static OE_Result _ECreateProc(
             OE_THROW(OE_IOCTL_FAILED);
     }
 
-    *enclaveAddr = (uint64_t)base;
+    *enclaveAddr = base ? (uint64_t)base : secs->base;
 
     result = OE_OK;
 
