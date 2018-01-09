@@ -1,3 +1,7 @@
+#if defined(__linux__)
+# define __OE_NEED_TIME_CALLS
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -393,6 +397,8 @@ static OE_Result _HandleOCALL(
             HandleInitQuote(argIn);
             break;
 
+#if defined(__OE_NEED_TIME_CALLS)
+
         case OE_FUNC_STRFTIME:
             HandleStrftime(argIn);
             break;
@@ -408,6 +414,8 @@ static OE_Result _HandleOCALL(
         case OE_FUNC_NANOSLEEP:
             HandleNanosleep(argIn);
             break;
+
+#endif /* defined(__OE_NEED_TIME_CALLS) */
 
         case OE_FUNC_DESTRUCTOR:
         case OE_FUNC_CALL_ENCLAVE:

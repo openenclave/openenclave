@@ -1,3 +1,7 @@
+#if defined(__linux__)
+# define __OE_NEED_TIME_CALLS
+#endif
+
 #include <stdio.h>
 #include <assert.h>
 
@@ -13,11 +17,6 @@
 #endif
 
 #include <openenclave/host.h>
-
-/* ATTN: WIN: port time routines to Windows */
-#if defined(__linux__)
-# define __OE_NEED_TIME_CALLS
-#endif
 
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/utils.h>
@@ -124,7 +123,6 @@ void HandleThreadWakeWait(uint64_t argIn)
 #endif
 }
 
-#if defined(__OE_NEED_TIME_CALLS)
 void HandleInitQuote(uint64_t argIn)
 {
     OE_InitQuoteArgs* args = (OE_InitQuoteArgs*)argIn;
@@ -134,7 +132,6 @@ void HandleInitQuote(uint64_t argIn)
 
     args->result = SGX_InitQuote(&args->targetInfo, &args->epidGroupID);
 }
-#endif
 
 #if defined(__OE_NEED_TIME_CALLS)
 void HandleStrftime(uint64_t argIn)
