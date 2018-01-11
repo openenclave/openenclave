@@ -26,7 +26,6 @@ OE_AEP:
     lea .aep, %rcx // AEP
     mov $0, %rdx
     ENCLU
-
     ud2
 
 .cfi_endproc
