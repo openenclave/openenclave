@@ -166,7 +166,7 @@ static void _HandleExit(
     long func, 
     uint64_t arg)
 {
-    OE_Exit(OE_MAKE_WORD(code, func), arg);
+    OE_Exit(OE_MakeArg(OE_ARG_FLAGS, code, func), arg);
 }
 
 /*
@@ -498,8 +498,8 @@ void __OE_HandleMain(
     uint64_t cssa,
     void* tcs)
 {
-    OE_Code code = OE_HI_WORD(arg1);
-    uint32_t func = OE_LO_WORD(arg1);
+    OE_Code code = OE_GetArgCode(arg1);
+    uint32_t func = OE_GetArgFunc(arg1);
     uint64_t argIn = arg2;
 
     /* Get pointer to the thread data structure */

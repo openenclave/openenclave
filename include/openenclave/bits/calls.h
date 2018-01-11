@@ -18,7 +18,24 @@ OE_EXTERNC_BEGIN
 /*
 **==============================================================================
 **
-** ECN_Code
+** Define the OE_ARG_FLAGS for this platform.
+**
+**==============================================================================
+*/
+
+/* Causes enclave to use GS segment register rather than FS segment register */
+#define OE_ARG_FLAG_GS 1
+
+#if defined(__linux__)
+# define OE_ARG_FLAGS OE_ARG_FLAG_GS
+#elif define(_WIN32)
+# define OE_ARG_FLAGS 0
+#endif
+
+/*
+**==============================================================================
+**
+** OE_Code
 **
 **     The code parameter for OE_ECall() and OE_OCall()
 **
@@ -65,6 +82,65 @@ typedef enum _OE_Func
     OE_FUNC_NANOSLEEP          = 0x10000000,
 }
 OE_Func;
+
+/*
+**==============================================================================
+**
+** OE_MakeArg()
+**
+**     Form the first argument to OE_Main(), which consists of flags, a code,
+**     and a function number.
+**
+**==============================================================================
+*/
+
+OE_INLINE uint64_t OE_MakeArg(
+    uint16_t flags,
+    OE_Code code,
+    OE_Func func)
+{
+    /* [ FLAGS:16, CODE:16, FUNC:32 ] */
+    return ((uint64_t)flags << 48) | ((uint64_t)code << 32) | ((uint64_t)func);
+}
+
+/*
+**==============================================================================
+**
+** OE_GetArgFlags()
+**
+**==============================================================================
+*/
+
+OE_INLINE uint16_t OE_GetArgFlags(uint64_t arg1)
+{
+    return (uint16_t)((0xFFFF000000000000 & arg1) >> 48);
+}
+
+/*
+**==============================================================================
+**
+** OE_GetArgCode()
+**
+**==============================================================================
+*/
+
+OE_INLINE OE_Code OE_GetArgCode(uint64_t arg1)
+{
+    return (OE_Code)((0x0000FFFF00000000 & arg1) >> 32);
+}
+
+/*
+**==============================================================================
+**
+** OE_GetArgFunc()
+**
+**==============================================================================
+*/
+
+OE_INLINE OE_Func OE_GetArgFunc(uint64_t arg1)
+{
+    return (OE_Func)(0x00000000FFFFFFFF & arg1);
+}
 
 /*
 **==============================================================================

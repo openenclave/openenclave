@@ -33,6 +33,10 @@
 OE_Main:
 .cfi_startproc
 
+.resolve_gs_or_fs:
+    // ATTN!
+
+
 .save_host_registers:
 
     // Save host registers (restored on EEXIT)
