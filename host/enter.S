@@ -140,7 +140,4 @@ OE_Enter:
 
     ret
 
-.forever:
-	jmp .forever
-
 .cfi_endproc
