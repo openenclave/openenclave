@@ -121,7 +121,6 @@ static uint32_t _MakeMemoryProtectParam(
             flags |= PROT_WRITE;
     }
 
-done:
     return flags;
 
 #elif defined(_WIN32)
@@ -275,7 +274,7 @@ static int _IoctlSimulate(
                 uint32_t prot = _MakeMemoryProtectParam(secinfo, true);
 
 #if defined(__linux__)
-                if (mprotect(addr, OE_PAGE_SIZE, prot != 0)
+                if (mprotect(addr, OE_PAGE_SIZE, prot) != 0)
                     return -1;
 #elif defined(_WIN32)
                 if (!VirtualProtect(addr, OE_PAGE_SIZE, prot, NULL))
