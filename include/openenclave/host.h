@@ -1,5 +1,5 @@
 /**
- * \file host.h 
+ * \file host.h
  *
  * This file defines the programming interface for developing host applications.
  *
@@ -16,17 +16,12 @@
 #include "defs.h"
 #include "types.h"
 #include "result.h"
-#include "thread.h"
 #include "bits/sha.h"
 #include "typeinfo.h"
 
 OE_EXTERNC_BEGIN
 
-#ifdef __cplusplus
-# define OE_OCALL OE_EXTERNC OE_EXPORT
-#else
-# define OE_OCALL OE_EXPORT
-#endif
+#define OE_OCALL OE_EXTERNC OE_EXPORT
 
 typedef struct _OE_Enclave OE_Enclave;
 
@@ -42,7 +37,7 @@ typedef void (*OE_OCallFunction)(uint64_t argIn, uint64_t* argOut);
  * Creates an enclave from an enclave image file.
  *
  * This function creates an enclave from an enclave image file. While creating
- * the enclave, this function interacts with the Intel(R) SGX drviver and the 
+ * the enclave, this function interacts with the Intel(R) SGX drviver and the
  * Intel(R) AESM service. Enclave creation peforms the following steps.
  *     - Loads an enclave image file
  *     - Maps the enclave memory image onto the driver device (/dev/isgx)
@@ -90,25 +85,25 @@ OE_Result OE_TerminateEnclave(
 /**
  * Perform a low-level enclave function call (ECALL).
  *
- * This function performs a low-level enclave function call by invoking the 
- * function indicated by the **func** parameter. The enclave defines and 
+ * This function performs a low-level enclave function call by invoking the
+ * function indicated by the **func** parameter. The enclave defines and
  * registers a corresponding function with the following signature.
  *
- *     void (*)(uint64_t argIn, uint64_t* argOut); 
+ *     void (*)(uint64_t argIn, uint64_t* argOut);
  *
  * The meaning of the **argIn** arg **argOut** parameters is defined by the
  * implementer of the function and either may be null.
  *
- * OpenEnclave uses the low-level ECALL interface to implement internal calls, 
- * used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application 
+ * OpenEnclave uses the low-level ECALL interface to implement internal calls,
+ * used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application
  * developers are encouraged to use OE_CallEnclave() instead.
  *
- * At the software layer, this function sends an **ECALL** message to the 
+ * At the software layer, this function sends an **ECALL** message to the
  * enclave and waits for an **ERET** message. Note that the ECALL implementation
  * may call back into the host (an OCALL) before returning.
  *
  * At the hardware layer, this function executes the **ENCLU.EENTER**
- * instruction to enter the enclave. When the enclave returns from the ECALL, 
+ * instruction to enter the enclave. When the enclave returns from the ECALL,
  * it executes the **ENCLU.EEXIT** instruction exit the enclave and to resume
  * host execution.
  *
@@ -149,7 +144,7 @@ OE_Result OE_ECall(
  * where the function number is given by the **OE_FUNC_CALL_ENCLAVE** constant.
  *
  * Note that the return value of this function only indicates the success of
- * the call and not of the underlying function. The ECALL implementation must 
+ * the call and not of the underlying function. The ECALL implementation must
  * define its own error reporting scheme based on **args**.
  *
  * @param func The name of the enclave function that will be called.
@@ -165,6 +160,8 @@ OE_Result OE_CallEnclave(
 
 /**
  * Registers a low-level OCALL function.
+ *
+ * TODO: Redesign this, this needs to be enclave-specific.
  *
  * This function registers a low-level OCALL function that may be called
  * from the encalve by the **OE_OCall()** function. The registered function

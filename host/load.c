@@ -1,5 +1,4 @@
 #define OE_TRACE_LEVEL 1
-#include <unistd.h>
 #include <errno.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -111,13 +110,13 @@ OE_Result __OE_LoadSegments(
 
         /* Set OE_Segment.flags */
         {
-            if (ph->p_flags & PF_R) 
+            if (ph->p_flags & PF_R)
                 seg.flags |= OE_SEGMENT_FLAG_READ;
 
-            if (ph->p_flags & PF_W) 
+            if (ph->p_flags & PF_W)
                 seg.flags |= OE_SEGMENT_FLAG_WRITE;
 
-            if (ph->p_flags & PF_X) 
+            if (ph->p_flags & PF_X)
                 seg.flags |= OE_SEGMENT_FLAG_EXEC;
         }
 
@@ -227,7 +226,7 @@ OE_Result __OE_CombineSegments(
 
     if (pages)
         *pages = NULL;
-        
+
     if (npages)
         *npages = 0;
 

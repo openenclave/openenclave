@@ -1,15 +1,21 @@
-#ifndef _log_h
-#define _log_h
+#pragma once
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <errno.h>
+#include <openenclave/defs.h>
 
-__attribute__((format(printf, 1, 2)))
-static __inline__ void Log(const char* fmt, ...)
+#if __GNUC__
+/* GCC doesn't seem to support Annex K of C11 */
+#define fopen_s(fp, fmt, mode)  (((*(fp) = fopen((fmt), (mode))) == NULL) ? errno : 0)
+#endif
+
+OE_PRINTF_FORMAT(1,2)
+OE_INLINE void Log(const char* fmt, ...)
 {
-    FILE* os = fopen("/tmp/log.txt", "ab");
+    FILE* os;
 
-    if (os)
+    if (!fopen_s(&os, "/tmp/log.txt", "ab"))
     {
         va_list ap;
         va_start(ap, fmt);
@@ -19,7 +25,7 @@ static __inline__ void Log(const char* fmt, ...)
     }
 }
 
-static __inline__ void LogData(
+OE_INLINE void LogData(
     const void* data,
     size_t size)
 {
@@ -28,14 +34,14 @@ static __inline__ void LogData(
     if (!data || !size)
         return;
 
-    if ((os = fopen("/tmp/log.bin", "ab")))
+    if (!fopen_s(&os, "/tmp/log.bin", "ab"))
     {
         fwrite(data, 1, size, os);
         fclose(os);
     }
 }
 
-static __inline__ void LogHex(
+OE_INLINE void LogHex(
     const void* data_,
     size_t size)
 {
@@ -45,7 +51,7 @@ static __inline__ void LogHex(
     if (!data || !size)
         return;
 
-    if ((os = fopen("/tmp/log.txt", "ab")))
+    if (!fopen_s(&os, "/tmp/log.txt", "ab"))
     {
         size_t i;
 
@@ -58,7 +64,7 @@ static __inline__ void LogHex(
 }
 
 /* Reverse form of LogHex() */
-static __inline__ void LogHexReverse(
+OE_INLINE void LogHexReverse(
     const unsigned char* data,
     size_t size)
 {
@@ -67,7 +73,7 @@ static __inline__ void LogHexReverse(
     if (!data || !size)
         return;
 
-    if ((os = fopen("/tmp/log.txt", "ab")))
+    if (!fopen_s(&os, "/tmp/log.txt", "ab"))
     {
         while (size)
             fprintf(os, "%02x", data[--size]);
@@ -77,7 +83,7 @@ static __inline__ void LogHexReverse(
     }
 }
 
-static __inline__ unsigned int Checksum(
+OE_INLINE unsigned int Checksum(
     const void* data,
     size_t size)
 {
@@ -90,15 +96,17 @@ static __inline__ unsigned int Checksum(
     return x;
 }
 
+OE_PACK(
 typedef struct _SigstructAttributes
 {
     unsigned long long flags;
     unsigned long long xfrm;
 }
-__attribute__((packed))
 SigstructAttributes;
+)
 
 /* 1808 bytes */
+OE_PACK(
 typedef struct _Sigstruct
 {
     /* (0) must be (06000000E100000000000100H) */
@@ -167,10 +175,11 @@ typedef struct _Sigstruct
     /* (1424) Q2 value for RSA Signature Verification */
     unsigned char q2[384];
 }
-__attribute__((packed))
 Sigstruct;
+)
 
-static __inline__ void LogSigstruct(const Sigstruct* p)
+
+OE_INLINE void LogSigstruct(const Sigstruct* p)
 {
     Log("=== Sigstruct\n");
     Log("header="); LogHex(p->header, sizeof(p->header));
@@ -195,4 +204,3 @@ static __inline__ void LogSigstruct(const Sigstruct* p)
     Log("q2="); LogHex(p->q2, sizeof(p->q2));
 }
 
-#endif /* _log_h */

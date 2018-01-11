@@ -42,7 +42,7 @@ typedef struct _Self
     OE_SGXDevice base;
     unsigned int magic;
     int fd;
-    OE_SGXDevice* measurer; 
+    OE_SGXDevice* measurer;
 
     /* Simulate mode */
     bool simulate;
@@ -59,12 +59,13 @@ static int _Ok(const Self* self)
     return self && self->magic == SGX_DRIVER_MAGIC;
 }
 
-typedef struct __SGXECreateParam  
+OE_PACK(
+typedef struct __SGXECreateParam
 {
     uint64_t src;
 }
-OE_PACKED
 SGXECreateParam;
+)
 
 typedef struct _SecInfo
 {
@@ -101,6 +102,7 @@ done:
     return flags;
 }
 
+OE_PACK(
 typedef struct __SGXEAddParam
 {
     uint64_t addr;    /* enclaves address to copy to */
@@ -108,17 +110,18 @@ typedef struct __SGXEAddParam
     uint64_t secinfo; /* section information about this page */
     uint16_t mrmask;  /* 0xffff if extend (measurement) will be performed */
 }
-OE_PACKED
 SGXEAddParam;
+)
 
-typedef struct __SGXEinitParam 
+OE_PACK(
+typedef struct __SGXEinitParam
 {
     uint64_t addr;
     uint64_t sigstruct;
     uint64_t einittoken;
-} 
-OE_PACKED
+}
 SGXEinitParam;
+)
 
 static SGX_Secs* _NewSecs(uint64_t base, uint64_t size)
 {
@@ -188,7 +191,7 @@ static int _IoctlSimulate(
                 return -1;
 
             /* Verify that page is within enclave boundaries */
-            if (addr < self->sim.addr || 
+            if (addr < self->sim.addr ||
                 addr > self->sim.addr + self->sim.size - OE_PAGE_SIZE)
             {
                 return -1;
@@ -487,7 +490,7 @@ static uint32_t _GetMagic(
 
 OE_SGXDevice* __OE_OpenSGXDriver(bool simulate)
 {
-    OE_SGXDevice* result = NULL; 
+    OE_SGXDevice* result = NULL;
     Self* self;
 
     if (!(self = (Self*)calloc(1, sizeof(Self))))

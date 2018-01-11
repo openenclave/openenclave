@@ -1,5 +1,16 @@
-add_library(oehost STATIC
+if (UNIX)
+set(PLATFORM_SRC
     aesm.c
+    registers.c
+    thread-linux.c
+    )
+elseif (WIN32)
+set(PLATFORM_SRC
+    thread-win.c
+    )
+endif()
+
+add_library(oehost STATIC
     calls.c
     create.c
     elf.c
@@ -10,36 +21,36 @@ add_library(oehost STATIC
     load.c
     ocalls.c
     quote.c
-    registers.c
     result.c
     sgxdriver.c
     sgxmeasure.c
     sgxtypes.c
     sha.c
-    spinlock.c
     tests.c
-    thread.c
     typeinfo.c
     aep.S
     enter.S
     entersim.S
+    ${PLATFORM_SRC}
     )
 
 # we and dependents need the OE includes to compile
 target_link_libraries(oehost oe_includes)
 
+if(UNIX)
 find_library(CRYPTO_LIB NAMES crypto)
 find_library(DL_LIB NAMES dl)
+endif(UNIX)
 find_package(Threads REQUIRED)
 
 # linking also requires a number of libs on the host
 target_link_libraries(oehost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 
-target_compile_options(oehost PRIVATE 
-    -Wall -Werror -Wno-attributes -Wmissing-prototypes
-    -m64
-    )
-target_compile_definitions(oehost PRIVATE -DOE_BUILD_UNTRUSTED)
+if(UNIX)
+target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -m64)
+target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
+endif(UNIX)
+target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)

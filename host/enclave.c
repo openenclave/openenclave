@@ -12,18 +12,18 @@
 **==============================================================================
 */
 
-static OE_OnceType _enclave_once;
-static OE_ThreadKey _enclave_key;
+static OE_H_OnceType _enclave_once;
+static OE_H_ThreadKey _enclave_key;
 
 static void _CreateEnclaveKey(void)
 {
-    OE_ThreadKeyCreate(&_enclave_key, NULL);
+    OE_H_ThreadKeyCreate(&_enclave_key);
 }
 
 void SetEnclave(OE_Enclave* enclave)
 {
-    OE_Once(&_enclave_once, _CreateEnclaveKey);
-    OE_ThreadSetSpecific(_enclave_key, enclave);
+    OE_H_Once(&_enclave_once, _CreateEnclaveKey);
+    OE_H_ThreadSetSpecific(_enclave_key, enclave);
 }
 
 /*
@@ -38,8 +38,8 @@ void SetEnclave(OE_Enclave* enclave)
 
 OE_Enclave* GetEnclave()
 {
-    OE_Once(&_enclave_once, _CreateEnclaveKey);
-    return (OE_Enclave*)OE_ThreadGetSpecific(_enclave_key);
+    OE_H_Once(&_enclave_once, _CreateEnclaveKey);
+    return (OE_Enclave*)OE_H_ThreadGetSpecific(_enclave_key);
 }
 
 /*
@@ -70,7 +70,7 @@ void enc(void)
         printf("Addr: 0x%lx\n", enclave->addr);
         printf("Size: %lu\n", enclave->size);
         printf("TCSs: %lu\n", enclave->num_bindings);
-        printf("Syms: add-symbol-file %s 0x%lx\n", enclave->path, 
+        printf("Syms: add-symbol-file %s 0x%lx\n", enclave->path,
             enclave->text);
         printf("\n");
     }
@@ -98,7 +98,7 @@ uint32_t* GetEnclaveEvent(uint64_t tcs)
     if (!enclave)
         return NULL;
 
-    OE_SpinLock(&enclave->lock);
+    OE_H_MutexLock(&enclave->lock);
     {
         size_t i;
 
@@ -113,7 +113,7 @@ uint32_t* GetEnclaveEvent(uint64_t tcs)
             }
         }
     }
-    OE_SpinUnlock(&enclave->lock);
+    OE_H_MutexUnlock(&enclave->lock);
 
     return event;
 }
