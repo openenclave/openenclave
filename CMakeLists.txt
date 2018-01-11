@@ -3,9 +3,19 @@
 #
 cmake_minimum_required(VERSION 3.5.1)
 
+# Use ML64 as assembler on Windows
+if (WIN32)
+set(CMAKE_ASM_MASM_COMPILER "ml64")
+endif()
+
 # define project, take version from "VERSION" file
 file(STRINGS "VERSION" OE_VERSION)
+
+if (UNIX)
 project("openenclave" VERSION ${OE_VERSION} LANGUAGES ASM C CXX)
+elseif (WIN32)
+project("openenclave" VERSION ${OE_VERSION} LANGUAGES ASM_MASM C CXX)
+endif()
 
 # allow simpler include() of our scripts
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")

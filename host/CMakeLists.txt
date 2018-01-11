@@ -10,6 +10,7 @@ elseif (WIN32)
 set(PLATFORM_SRC
     thread-win.c
     aesm-win.c
+    aep.asm
     )
 endif()
 
