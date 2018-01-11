@@ -1120,7 +1120,10 @@ OE_Result OE_TerminateEnclave(
 #if defined(__linux__)
     munmap((void*)enclave->addr, enclave->size);
 #elif defined(_WIN32)
-    VirtualFree(enclave->addr, enclave->size, MEM_RELEASE);
+    if (enclave->simulate)
+        VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
+    else
+        DeleteEnclave((void*)enclave->addr);
 #endif
 
     /* Release the enclave->ecalls[] array */
