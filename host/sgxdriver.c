@@ -528,7 +528,7 @@ done:
         uint8_t* start = (uint8_t*)mptr;
         uint8_t* end = (uint8_t*)base;
 
-        if (start != end && !VirtualFree(start, end - start, MEM_RESERVE))
+        if (start != end && !VirtualFree(start, end - start, MEM_RELEASE))
             goto done;
     }
 

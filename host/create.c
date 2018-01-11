@@ -1120,7 +1120,7 @@ OE_Result OE_TerminateEnclave(
 #if defined(__linux__)
     munmap((void*)enclave->addr, enclave->size);
 #elif defined(_WIN32)
-    /* ATTN-WIN: port for windows */
+    VirtualFree(enclave->addr, enclave->size, MEM_RELEASE);
 #endif
 
     /* Release the enclave->ecalls[] array */
@@ -1131,6 +1131,18 @@ OE_Result OE_TerminateEnclave(
         free(enclave->ecalls);
     }
 
+#if defined(_WIN32)
+
+    /* Release Windows events created during enclave creation */
+    for (size_t i = 0; i < enclave->num_bindings; i++)
+    {
+        ThreadBinding* binding = &enclave->bindings[i];
+        CloseHandle(binding->event.handle);
+    }
+
+#endif
+
+    /* Free the path name of the enclave image file */
     free(enclave->path);
 
     /* Clear the contents of the enclave structure */
