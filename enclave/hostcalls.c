@@ -32,7 +32,6 @@ void* OE_HostRealloc(void* ptr, size_t size)
     OE_ReallocArgs* argIn = NULL;
     uint64_t argOut = 0;
 
-    /* Allocate host stack memory for the arguments */
     if (!(argIn = (OE_ReallocArgs*)OE_HostAllocForCallHost(
         sizeof(OE_ReallocArgs), 0, false)))
     {

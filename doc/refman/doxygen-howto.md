@@ -22,20 +22,21 @@ the Github site.
 To update the generated documentation, create the cmake build tree by using
 the instructions in [Getting Started with OpenEnclave](doc/GettingStarted.md).
 Assuming that _/build_ is the root of the cmake build tree, a successful make
-will build the HTML, LaTeX and XML reference documentation by default:
+will build the HTML, LaTeX and XML reference documentation by default. You can
+also make the documentation directly:
 
 ```
-build$ make
+build$ make refman
 ```
 
 The resulting documentation can be found in the cmake tree under:
 
 ```
-build/doc/refman/refman-prefix/src/refman-build
+build/doc/refman
 ```
 
-To update the generated Markdown files for commit into Github, you will need
-to also run the following from the cmake build root:
+To update the generated Markdown files in the source tree for commit into
+Github, you will need to also run the following from the cmake build root:
 
 ```
 build$ make refman-source
