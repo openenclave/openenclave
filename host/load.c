@@ -276,7 +276,7 @@ OE_Result __OE_CombineSegments(
 catch:
 
     if (result != OE_OK)
-        free(data);
+        MemalignFree(data);
 
     return result;
 }

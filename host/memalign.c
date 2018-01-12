@@ -15,3 +15,12 @@ void *Memalign(size_t alignment, size_t size)
     return _aligned_malloc(size, alignment);
 #endif
 }
+
+void MemalignFree(void* ptr)
+{
+#if defined(__linux__)
+    free(ptr);
+#elif defined(_WIN32)
+    _aligned_free(ptr);
+#endif
+}

@@ -615,7 +615,7 @@ static OE_Result _AddPages(
 catch:
 
     if (segpages)
-        free(segpages);
+        MemalignFree(segpages);
 
     return result;
 }
@@ -1121,7 +1121,7 @@ OE_Result OE_TerminateEnclave(
     munmap((void*)enclave->addr, enclave->size);
 #elif defined(_WIN32)
     if (enclave->simulate)
-        VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
+        VirtualFree((void*)enclave->addr, enclave->size, MEM_DECOMMIT);
 #if 0
     /* ATTN-WIN: suppress "unresolved external symbol: __imp_DeleteEnclave" */
     else

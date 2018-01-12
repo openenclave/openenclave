@@ -277,7 +277,8 @@ static int _IoctlSimulate(
                 if (mprotect(addr, OE_PAGE_SIZE, prot) != 0)
                     return -1;
 #elif defined(_WIN32)
-                if (!VirtualProtect(addr, OE_PAGE_SIZE, prot, NULL))
+                DWORD old;
+                if (!VirtualProtect(addr, OE_PAGE_SIZE, prot, &old))
                     return -1;
 #endif
             }
@@ -510,7 +511,7 @@ done:
     if (!(mptr = VirtualAlloc(
         NULL, 
         enclaveSize * 2, 
-        MEM_COMMIT | MEM_RESERVE, 
+        MEM_COMMIT | MEM_RESERVE,
         PAGE_EXECUTE_READWRITE)))
     {
         goto done;
@@ -528,8 +529,9 @@ done:
         uint8_t* start = (uint8_t*)mptr;
         uint8_t* end = (uint8_t*)base;
 
-        if (start != end && !VirtualFree(start, end - start, MEM_RELEASE))
+        if (start != end && !VirtualFree(start, end - start, MEM_DECOMMIT))
             goto done;
+
     }
 
     /* Release [BASE+SIZE...MPTR+SIZE*2] */
@@ -537,7 +539,7 @@ done:
         uint8_t* start = (uint8_t*)base + enclaveSize;
         uint8_t* end = (uint8_t*)mptr + enclaveSize * 2;
 
-        if (start != end && !VirtualFree(start, end - start, MEM_RELEASE))
+        if (start != end && !VirtualFree(start, end - start, MEM_DECOMMIT))
             goto done;
     }
 
@@ -597,7 +599,8 @@ static OE_Result _ECreateProc(
 #endif
     {
         /* Allocation memory-mapped region */
-        base = _AllocateEnclaveMemory(enclaveSize, self->fd);
+        if (!(base = _AllocateEnclaveMemory(enclaveSize, self->fd)))
+            OE_THROW(OE_OUT_OF_MEMORY);
     }
 
     /* Create SECS structure */
@@ -622,7 +625,7 @@ static OE_Result _ECreateProc(
 catch:
 
     if (secs)
-        free(secs);
+        MemalignFree(secs);
 
     return result;
 }

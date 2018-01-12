@@ -63,14 +63,14 @@ call_oe_main:
     ;; Call OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
     mov rax, CSSA
     mov rbx, TCS
-    mov rdx, [rbx+72] ;; RDX=TCS.u.main (72)
     mov rdi, ARG1
     mov rsi, ARG2
     lea rcx, retaddr
-    jmp rdx ;; ATTN: review for correctness!
+    jmp qword ptr [rbx+72] ;; TCS.u.main(72)
 retaddr:
     mov ARG1OUT, rdi
     mov ARG2OUT, rsi
+
 
 dispatch_ocall_sim:
 
@@ -142,6 +142,9 @@ return_from_ecall_sim:
 
     BEGIN_EPILOGUE
     ret
+
+forever:
+    jmp forever
 
 NESTED_END OE_EnterSim, _TEXT$00
 

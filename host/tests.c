@@ -1,6 +1,7 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "dupenv.h"
 
 uint32_t OE_GetCreateFlags(void)
