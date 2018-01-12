@@ -28,7 +28,7 @@ OE_EXTERNC_BEGIN
 
 #if defined(__linux__)
 # define OE_ARG_FLAGS OE_ARG_FLAG_GS
-#elif define(_WIN32)
+#elif defined(_WIN32)
 # define OE_ARG_FLAGS 0
 #endif
 
