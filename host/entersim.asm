@@ -33,6 +33,7 @@ ARG1OUT         EQU [rbp-56]
 ARG2OUT         EQU [rbp-64]
 CSSA            EQU [rbp-72]
 _RSP            EQU [rbp-84]
+TCS_u_main      EQU 72
 
 NESTED_ENTRY OE_EnterSim, _TEXT$00
     END_PROLOGUE
@@ -43,12 +44,16 @@ NESTED_ENTRY OE_EnterSim, _TEXT$00
 
     ;; Save parameters on stack for later reference:
     sub rsp, PARAMS_SPACE
-    mov TCS, rdi
-    mov AEP, rsi
-    mov ARG1, rdx
-    mov ARG2, rcx
-    mov ARG3, r8
-    mov ARG4, r9
+    mov TCS, rcx
+    mov AEP, rdx
+    mov ARG1, r8
+    mov ARG2, r9
+    mov rax, [rbp+48]
+    mov ARG3, rax
+    mov rax, [rbp+56]
+    mov ARG4, rax
+
+    ;; Load CSSA with zero initially:
     mov rax, 0
     mov CSSA, rax
 
@@ -66,11 +71,10 @@ call_oe_main:
     mov rdi, ARG1
     mov rsi, ARG2
     lea rcx, retaddr
-    jmp qword ptr [rbx+72] ;; TCS.u.main(72)
+    jmp qword ptr [rbx+TCS_u_main]
 retaddr:
     mov ARG1OUT, rdi
     mov ARG2OUT, rsi
-
 
 dispatch_ocall_sim:
 
@@ -86,17 +90,20 @@ dispatch_ocall_sim:
     push r13
 
     ;; Call __OE_DispatchOCall():
-    ;;     RDI=arg1
-    ;;     RSI=arg2
-    ;;     RDX=arg1Out
-    ;;     RCX=arg2Out
-    ;;     R8=TCS
-    mov rdi, ARG1OUT
-    mov rsi, ARG2OUT
-    lea rdx, ARG1OUT ;; ATTN: review for correctness! Had to remove 'q' suffix
-    lea rcx, ARG2OUT ;; ATTN: review for correctness! Had to remove 'q' suffix
-    mov r8, TCS
+    ;;     RCX=arg1
+    ;;     RDX=arg2
+    ;;     R8=arg1Out
+    ;;     R9=arg2Out
+    ;;     STACK=TCS
+    sub rsp, 56
+    mov rcx, ARG1OUT
+    mov rdx, ARG2OUT
+    lea r8, qword ptr ARG1OUT
+    lea r9, qword ptr ARG2OUT
+    mov rax, qword ptr TCS
+    mov qword ptr [rsp+32], rax
     call __OE_DispatchOCall
+    add rsp, 56
 
     ;; Restore registers saved above:
     pop r13
