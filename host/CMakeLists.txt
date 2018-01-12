@@ -1,10 +1,10 @@
 if (UNIX)
 set(PLATFORM_SRC
     thread-linux.c
+    aesm-linux.c
     aep.S
     enter.S
     entersim.S
-    aesm-linux.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
