@@ -6,8 +6,7 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/elf.h>
-
-extern void *memalign(size_t alignment, size_t size);
+#include "memalign.h"
 
 OE_Result __OE_LoadSegments(
     const char* path,
@@ -256,7 +255,7 @@ OE_Result __OE_CombineSegments(
     OE_TRY(__OE_CalculateSegmentsSize(segments, nsegments, &size));
 
     /* Allocate data on a page boundary */
-    if (!(data = (unsigned char*)memalign(OE_PAGE_SIZE, size)))
+    if (!(data = (unsigned char*)Memalign(OE_PAGE_SIZE, size)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Clear the image memory */

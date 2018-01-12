@@ -39,6 +39,7 @@ add_library(oehost STATIC
     sha.c
     tests.c
     typeinfo.c
+    memalign.c
     ${PLATFORM_SRC}
     )
 
@@ -52,7 +53,11 @@ endif(UNIX)
 find_package(Threads REQUIRED)
 
 # linking also requires a number of libs on the host
+if(UNIX)
 target_link_libraries(oehost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
+elseif(WIN32)
+target_link_libraries(oehost bcrypt)
+endif()
 
 if(UNIX)
 target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -m64)
@@ -62,7 +67,11 @@ target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)
+if(UNIX)
 target_link_libraries(oehostapp INTERFACE oehost -rdynamic)
+elseif(WIN32)
+target_link_libraries(oehostapp INTERFACE oehost)
+endif()
 
 # assemble lib-archive into proper dir
 set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)

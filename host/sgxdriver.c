@@ -19,6 +19,7 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
+#include "memalign.h"
 
 /*
 **==============================================================================
@@ -195,9 +196,8 @@ OE_PACK_END
 static SGX_Secs* _NewSecs(uint64_t base, uint64_t size)
 {
     SGX_Secs* secs = NULL;
-    extern void *memalign(size_t alignment, size_t size);
 
-    if (!(secs = (SGX_Secs*)memalign(OE_PAGE_SIZE, sizeof(SGX_Secs))))
+    if (!(secs = (SGX_Secs*)Memalign(OE_PAGE_SIZE, sizeof(SGX_Secs))))
         return NULL;
 
     memset(secs, 0, sizeof(SGX_Secs));

@@ -1122,8 +1122,11 @@ OE_Result OE_TerminateEnclave(
 #elif defined(_WIN32)
     if (enclave->simulate)
         VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
+#if 0
+    /* ATTN: suppress "unresolved external symbol: __imp_DeleteEnclave" */
     else
         DeleteEnclave((void*)enclave->addr);
+#endif
 #endif
 
     /* Release the enclave->ecalls[] array */
