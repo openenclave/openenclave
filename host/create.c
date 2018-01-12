@@ -1123,7 +1123,7 @@ OE_Result OE_TerminateEnclave(
     if (enclave->simulate)
         VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
 #if 0
-    /* ATTN: suppress "unresolved external symbol: __imp_DeleteEnclave" */
+    /* ATTN-WIN: suppress "unresolved external symbol: __imp_DeleteEnclave" */
     else
         DeleteEnclave((void*)enclave->addr);
 #endif
