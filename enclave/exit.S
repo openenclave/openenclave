@@ -62,7 +62,7 @@ OE_Exit:
 
 .determine_exit_type_gs:
     // Check the depth of the ECALL stack (zero for clean exit)
-    mov %fs:TD_depth, %r8
+    mov %gs:TD_depth, %r8
     jmp .determine_exit_type_join
 
 .determine_exit_type_join:
