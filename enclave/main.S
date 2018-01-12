@@ -55,7 +55,7 @@ OE_Main:
     mov %r15, %fs:TD_host_r15
     mov %rsp, %fs:TD_host_rsp
     mov %rbp, %fs:TD_host_rbp
-    jmp .save_host_registers_common
+    jmp .save_host_registers_join
 
 .save_host_registers_gs:
     // Save host registers (restored on EEXIT)
@@ -71,9 +71,9 @@ OE_Main:
     mov %r15, %gs:TD_host_r15
     mov %rsp, %gs:TD_host_rsp
     mov %rbp, %gs:TD_host_rbp
-    jmp .save_host_registers_common
+    jmp .save_host_registers_join
 
-.save_host_registers_common:
+.save_host_registers_join:
 	
 //=======================//
 // .determine_entry_type //
@@ -86,14 +86,14 @@ OE_Main:
 .determine_entry_type_fs:
     // Check whether this is a clean entry or a nested entry
     mov %fs:TD_depth, %r8 
-    jmp .determine_entry_type_common
+    jmp .determine_entry_type_join
 
 .determine_entry_type_gs:
     // Check whether this is a clean entry or a nested entry
     mov %gs:TD_depth, %r8 
-    jmp .determine_entry_type_common
+    jmp .determine_entry_type_join
 
-.determine_entry_type_common:
+.determine_entry_type_join:
     cmp $0, %r8 
     je .clean_entry
 
@@ -108,14 +108,14 @@ OE_Main:
 .nested_entry_fs:
     // Restore stack pointer and enclave registers:
     mov %fs:TD_last_sp, %rsp
-    jmp .nested_entry_common
+    jmp .nested_entry_join
 
 .nested_entry_gs:
     // Restore stack pointer and enclave registers:
     mov %gs:TD_last_sp, %rsp
-    jmp .nested_entry_common
+    jmp .nested_entry_join
 
-.nested_entry_common:
+.nested_entry_join:
     pop %r15
     pop %r14
     pop %r13
