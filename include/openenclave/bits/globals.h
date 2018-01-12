@@ -33,6 +33,9 @@ const void* __OE_GetHeapBase(void);
 const void* __OE_GetHeapEnd(void);
 const size_t __OE_GetHeapSize(void);
 
+/* The OE_ARG_FLAGS that were passed to OE_Main() */
+uint16_t __oe_arg_flags;
+
 OE_EXTERNC_END
 
 #endif /* _OE_ALLOC_H */

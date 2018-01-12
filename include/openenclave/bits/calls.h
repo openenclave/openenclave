@@ -95,25 +95,12 @@ OE_Func;
 */
 
 OE_INLINE uint64_t OE_MakeArg(
-    uint16_t flags,
     OE_Code code,
-    OE_Func func)
+    OE_Func func,
+    uint16_t flags)
 {
     /* [ FLAGS:16, CODE:16, FUNC:32 ] */
-    return ((uint64_t)flags << 48) | ((uint64_t)code << 32) | ((uint64_t)func);
-}
-
-/*
-**==============================================================================
-**
-** OE_GetArgFlags()
-**
-**==============================================================================
-*/
-
-OE_INLINE uint16_t OE_GetArgFlags(uint64_t arg1)
-{
-    return (uint16_t)((0xFFFF000000000000 & arg1) >> 48);
+    return ((uint64_t)code << 48) | ((uint64_t)func << 16) | ((uint64_t)flags);
 }
 
 /*
@@ -126,7 +113,7 @@ OE_INLINE uint16_t OE_GetArgFlags(uint64_t arg1)
 
 OE_INLINE OE_Code OE_GetArgCode(uint64_t arg1)
 {
-    return (OE_Code)((0x0000FFFF00000000 & arg1) >> 32);
+    return (OE_Code)((0xFFFF000000000000 & arg1) >> 48);
 }
 
 /*
@@ -139,7 +126,20 @@ OE_INLINE OE_Code OE_GetArgCode(uint64_t arg1)
 
 OE_INLINE OE_Func OE_GetArgFunc(uint64_t arg1)
 {
-    return (OE_Func)(0x00000000FFFFFFFF & arg1);
+    return (OE_Func)((0x0000FFFFFFFF0000 & arg1) >> 16);
+}
+
+/*
+**==============================================================================
+**
+** OE_GetArgFlags()
+**
+**==============================================================================
+*/
+
+OE_INLINE uint16_t OE_GetArgFlags(uint64_t arg1)
+{
+    return (uint16_t)(0x000000000000FFFF & arg1);
 }
 
 /*

@@ -192,7 +192,7 @@ static OE_Result _DoEENTER(
 
     /* Call OE_Enter() assembly function (enter.S) */
     {
-        uint64_t arg1 = OE_MakeArg(OE_ARG_FLAGS, codeIn, funcIn);
+        uint64_t arg1 = OE_MakeArg(codeIn, funcIn, OE_ARG_FLAGS);
         uint64_t arg2 = (uint64_t)argIn;
         uint64_t arg3;
         uint64_t arg4;
@@ -493,7 +493,7 @@ int __OE_DispatchOCall(
         /* ATTN: ignored! */
         (void)result;
 
-        *arg1Out = OE_MakeArg(OE_ARG_FLAGS, OE_CODE_ORET, func);
+        *arg1Out = OE_MakeArg(OE_CODE_ORET, func, OE_ARG_FLAGS);
         *arg2Out = argOut;
 
         return 0;

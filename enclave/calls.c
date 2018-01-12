@@ -166,7 +166,7 @@ static void _HandleExit(
     long func, 
     uint64_t arg)
 {
-    OE_Exit(OE_MakeArg(OE_ARG_FLAGS, code, func), arg);
+    OE_Exit(OE_MakeArg(code, func, __oe_arg_flags), arg);
 }
 
 /*
@@ -498,6 +498,7 @@ void __OE_HandleMain(
     uint64_t cssa,
     void* tcs)
 {
+    __oe_arg_flags = OE_GetArgFlags(arg1);
     OE_Code code = OE_GetArgCode(arg1);
     uint32_t func = OE_GetArgFunc(arg1);
     uint64_t argIn = arg2;

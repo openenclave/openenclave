@@ -33,12 +33,31 @@
 OE_Main:
 .cfi_startproc
 
-.resolve_gs_or_fs:
-    // ATTN!
-
+//======================//
+// .save_host_registers //
+//======================//
 
 .save_host_registers:
+    test $OE_ARG_FLAG_GS, %rdi
+    jnz .save_host_registers_gs
 
+.save_host_registers_fs:
+    // Save host registers (restored on EEXIT)
+    mov %rcx, %fs:TD_host_rcx // host return address here
+    mov %rdx, %fs:TD_host_rdx
+    mov %r8,  %fs:TD_host_r8
+    mov %r9,  %fs:TD_host_r9
+    mov %r10, %fs:TD_host_r10
+    mov %r11, %fs:TD_host_r11
+    mov %r12, %fs:TD_host_r12
+    mov %r13, %fs:TD_host_r13
+    mov %r14, %fs:TD_host_r14
+    mov %r15, %fs:TD_host_r15
+    mov %rsp, %fs:TD_host_rsp
+    mov %rbp, %fs:TD_host_rbp
+    jmp .save_host_registers_common
+
+.save_host_registers_gs:
     // Save host registers (restored on EEXIT)
     mov %rcx, %gs:TD_host_rcx // host return address here
     mov %rdx, %gs:TD_host_rdx
@@ -52,41 +71,76 @@ OE_Main:
     mov %r15, %gs:TD_host_r15
     mov %rsp, %gs:TD_host_rsp
     mov %rbp, %gs:TD_host_rbp
-	
-.determine_entry_type:
+    jmp .save_host_registers_common
 
+.save_host_registers_common:
+	
+//=======================//
+// .determine_entry_type //
+//=======================//
+
+.determine_entry_type:
+    test $OE_ARG_FLAG_GS, %rdi
+    jnz .determine_entry_type_gs
+
+.determine_entry_type_fs:
+    // Check whether this is a clean entry or a nested entry
+    mov %fs:TD_depth, %r8 
+    jmp .determine_entry_type_common
+
+.determine_entry_type_gs:
     // Check whether this is a clean entry or a nested entry
     mov %gs:TD_depth, %r8 
+    jmp .determine_entry_type_common
+
+.determine_entry_type_common:
     cmp $0, %r8 
     je .clean_entry
 
-.nested_entry:
+//===============//
+// .nested_entry //
+//===============//
 
+.nested_entry:
+    test $OE_ARG_FLAG_GS, %rdi
+    jnz .nested_entry_gs
+
+.nested_entry_fs:
+    // Restore stack pointer and enclave registers:
+    mov %fs:TD_last_sp, %rsp
+    jmp .nested_entry_common
+
+.nested_entry_gs:
     // Restore stack pointer and enclave registers:
     mov %gs:TD_last_sp, %rsp
+    jmp .nested_entry_common
+
+.nested_entry_common:
     pop %r15
     pop %r14
     pop %r13
     pop %r12
-
     jmp .call_function
 
-.clean_entry:
+//==============//
+// .clean_entry //
+//==============//
 
+.clean_entry:
     // Calculate stack base relative to TCS (subtract guard page size)
     mov %rbx, %rsp 
     sub $PAGE_SIZE, %rsp
     mov %rsp, %rbp
 
-.call_function:
+//================//
+// .call_function //
+//================//
 
+.call_function:
     // Call __OE_HandleMain(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX)
     mov %rax, %rdx 
     mov %rbx, %rcx
     call __OE_HandleMain
     ud2
-
-.forever:
-    jmp .forever
 
 .cfi_endproc
