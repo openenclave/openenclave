@@ -60,4 +60,5 @@ endif()
 
 if(WIN32)
 add_subdirectory(tests/echo/host)
+add_subdirectory(tests/ecall/host)
 endif()

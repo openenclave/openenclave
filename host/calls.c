@@ -135,6 +135,12 @@ static OE_Result _EnterSim(
 
     /* Call into enclave */
     {
+        if (arg3)
+            *arg3 = 0;
+
+        if (arg4)
+            *arg4 = 0;
+
         OE_EnterSim(tcs, aep, arg1, arg2, arg3, arg4);
 
         /* Restore the GS segment register */
@@ -194,8 +200,8 @@ static OE_Result _DoEENTER(
     {
         uint64_t arg1 = OE_MakeArg(codeIn, funcIn, OE_ARG_FLAGS);
         uint64_t arg2 = (uint64_t)argIn;
-        uint64_t arg3;
-        uint64_t arg4;
+        uint64_t arg3 = 0;
+        uint64_t arg4 = 0;
 
         if (enclave->simulate)
         {
