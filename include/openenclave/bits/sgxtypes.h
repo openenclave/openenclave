@@ -745,7 +745,7 @@ typedef struct _OE_ECallPages
     uint64_t num_vaddrs;
 
     /* ECALL virtual addresses (index by function number) */
-    uint64_t vaddrs[];
+    uint64_t vaddrs[1];
 }
 OE_ECallPages;
 
