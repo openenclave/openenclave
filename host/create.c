@@ -26,6 +26,7 @@
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/calls.h>
 #include "enclave.h"
+#include "memalign.h"
 
 /*
 **==============================================================================
