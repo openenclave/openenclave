@@ -133,15 +133,9 @@ dispatch_ocall_sim:
 return_from_ecall_sim:
 
     ;; Set output parameters:
-    ;; mov rax, ARG1OUT
-    ;; mov [rbp+48], rax
-    ;; mov rax, ARG2OUT
-    ;; mov [rbp+56], rax
-
     mov rbx, ARG1OUT
     mov rax, qword ptr [rbp+48]
     mov qword ptr [rax], rbx
-
     mov rbx, ARG2OUT
     mov rax, qword ptr [rbp+56]
     mov qword ptr [rax], rbx
