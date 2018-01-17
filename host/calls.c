@@ -642,6 +642,10 @@ OE_Result OE_ECall(
     uint32_t funcOut = 0;
     uint64_t argOut = 0;
 
+#if 0
+    printf("=== OE_ECall()\n");
+#endif
+
     if (!enclave)
         OE_THROW(OE_INVALID_PARAMETER);
 
@@ -681,6 +685,10 @@ catch:
     /* ATTN: this causes an assertion with call nesting. */
     /* ATTN: make enclave argument a cookie. */
     /* SetEnclave(NULL); */
+
+#if 0
+    printf("=== OE_ECall(): result=%u\n", result);
+#endif
 
     return result;
 }

@@ -13,12 +13,12 @@ extern __OE_DispatchOCall:proc
 ;;     [OUT] uint64_t* arg4);
 ;;
 ;; Registers:
-;;     RDI   - tcs: thread control structure
-;;     RSI   - aep: asynchronous execution procedure
-;;     RDX   - arg1
-;;     RCX   - arg2
-;;     R8    - arg3
-;;     R9    - arg4
+;;     RCX      - tcs: thread control structure (extended)
+;;     RDX      - aep: asynchronous execution procedure
+;;     R8       - arg1
+;;     R9       - arg2
+;;     [RBP+48] - arg3
+;;     [RBP+56] - arg4
 ;;
 ;;==============================================================================
 

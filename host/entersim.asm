@@ -13,12 +13,12 @@ extern __OE_DispatchOCall:proc
 ;;     [OUT] uint64_t* arg4);
 ;;
 ;; Registers:
-;;     RDI   - tcs: thread control structure (extended)
-;;     RSI   - aep: asynchronous execution procedure
-;;     RDX   - arg1
-;;     RCX   - arg2
-;;     R8    - arg3
-;;     R9    - arg4
+;;     RCX      - tcs: thread control structure (extended)
+;;     RDX      - aep: asynchronous execution procedure
+;;     R8       - arg1
+;;     R9       - arg2
+;;     [RBP+48] - arg3
+;;     [RBP+56] - arg4
 ;;
 ;;==============================================================================
 
@@ -42,7 +42,24 @@ NESTED_ENTRY OE_EnterSim, _TEXT$00
     push rbp
     mov rbp, rsp
 
+    ;; Layout of stack at this point (per Microsoft x64 calling convention)
+    ;;     [ RBP          ] [RBP+0]
+    ;;     [ RETURN-VALUE ] [RBP+8]
+    ;;     [ SHADOW-SPACE ] [RBP+16]
+    ;;     [ SHADOW-SPACE ] [RBP+24]
+    ;;     [ SHADOW-SPACE ] [RBP+32]
+    ;;     [ SHADOW-SPACE ] [RBP+40]
+    ;;     [ ARG3         ] [RBP+48]
+    ;;     [ ARG4         ] [RBP+56]
+
     ;; Save parameters on stack for later reference:
+    ;;     TCS  := [RBP-8]  <- RCX
+    ;;     AEP  := [RBP-16] <- RDX
+    ;;     ARG1 := [RBP-24] <- R8
+    ;;     ARG2 := [RBP-32] <- R9
+    ;;     ARG3 := [RBP-40] <- [RBP+48]
+    ;;     ARG4 := [RBP-48] <- [RBP+56]
+    ;;
     sub rsp, PARAMS_SPACE
     mov TCS, rcx
     mov AEP, rdx
@@ -65,14 +82,15 @@ call_oe_main:
     ;; Save the stack pointer so enclave can use the stack.
     mov _RSP, rsp
 
-    ;; Call OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
+    ;; Call OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2) in enclave
     mov rax, CSSA
     mov rbx, TCS
+    lea rcx, retaddr
     mov rdi, ARG1
     mov rsi, ARG2
-    lea rcx, retaddr
     jmp qword ptr [rbx+TCS_u_main]
 retaddr:
+    mov CSSA, rax ;; ATTN: new
     mov ARG1OUT, rdi
     mov ARG2OUT, rsi
 
@@ -89,12 +107,12 @@ dispatch_ocall_sim:
     push r12
     push r13
 
-    ;; Call __OE_DispatchOCall():
+    ;; Call __OE_DispatchOCall() using Microsoft X64 calling convention:
     ;;     RCX=arg1
     ;;     RDX=arg2
     ;;     R8=arg1Out
     ;;     R9=arg2Out
-    ;;     STACK=TCS
+    ;;     [RSP+32]=TCS
     sub rsp, 56
     mov rcx, ARG1OUT
     mov rdx, ARG2OUT
@@ -120,6 +138,7 @@ dispatch_ocall_sim:
     mov rsp, _RSP
 
     ;; If this was not an OCALL, then return from ECALL.
+    mov rax, CSSA ;; ATTN: new
     cmp rax, 0
     jne return_from_ecall_sim
 
