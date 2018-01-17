@@ -20,6 +20,12 @@ extern __OE_DispatchOCall:proc
 ;;     [RBP+48] - arg3
 ;;     [RBP+56] - arg4
 ;;
+;; These registers are destroyed across function calls:
+;;     RAX, RCX, RDX, R8, R9, R10, R11
+;;
+;; These registers must be preserved across function calls:
+;;     RBX, RBP, RDI, RSI, RSP, R12, R13, R14, and R15
+;;
 ;;==============================================================================
 
 PARAMS_SPACE    EQU 128
@@ -104,6 +110,8 @@ dispatch_ocall_sim:
     push rbx
     push r8
     push r9
+    push r10
+    push r11
     push r12
     push r13
 
@@ -126,6 +134,8 @@ dispatch_ocall_sim:
     ;; Restore registers saved above:
     pop r13
     pop r12
+    pop r11
+    pop r10
     pop r9
     pop r8
     pop rbx
