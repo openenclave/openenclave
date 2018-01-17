@@ -38,7 +38,7 @@ ARG4            EQU [rbp-48]
 ARG1OUT         EQU [rbp-56]
 ARG2OUT         EQU [rbp-64]
 CSSA            EQU [rbp-72]
-_RSP            EQU [rbp-84]
+STACKPTR        EQU [rbp-84]
 TCS_u_main      EQU 72
 
 NESTED_ENTRY OE_EnterSim, _TEXT$00
@@ -47,16 +47,6 @@ NESTED_ENTRY OE_EnterSim, _TEXT$00
     ;; Setup stack frame:
     push rbp
     mov rbp, rsp
-
-    ;; Layout of stack at this point (per Microsoft x64 calling convention)
-    ;;     [ RBP          ] [RBP+0]
-    ;;     [ RETURN-VALUE ] [RBP+8]
-    ;;     [ SHADOW-SPACE ] [RBP+16]
-    ;;     [ SHADOW-SPACE ] [RBP+24]
-    ;;     [ SHADOW-SPACE ] [RBP+32]
-    ;;     [ SHADOW-SPACE ] [RBP+40]
-    ;;     [ ARG3         ] [RBP+48]
-    ;;     [ ARG4         ] [RBP+56]
 
     ;; Save parameters on stack for later reference:
     ;;     TCS  := [RBP-8]  <- RCX
@@ -82,11 +72,17 @@ NESTED_ENTRY OE_EnterSim, _TEXT$00
 
     ;; Save registers:
     push rbx
+    push rdi
+    push rsi
+    push r12
+    push r13
+    push r14
+    push r15
 
 call_oe_main:
 
     ;; Save the stack pointer so enclave can use the stack.
-    mov _RSP, rsp
+    mov STACKPTR, rsp
 
     ;; Call OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2) in enclave
     mov rax, CSSA
@@ -96,31 +92,17 @@ call_oe_main:
     mov rsi, ARG2
     jmp qword ptr [rbx+TCS_u_main]
 retaddr:
-    mov CSSA, rax ;; ATTN: new
     mov ARG1OUT, rdi
     mov ARG2OUT, rsi
 
 dispatch_ocall_sim:
 
-    ;; Save registers that could get clobbered below or by function call.
-    push rdi
-    push rsi
-    push rdx
-    push rcx
-    push rbx
-    push r8
-    push r9
-    push r10
-    push r11
-    push r12
-    push r13
-
-    ;; Call __OE_DispatchOCall() using Microsoft X64 calling convention:
+    ;; RAX = __OE_DispatchOCall(
     ;;     RCX=arg1
     ;;     RDX=arg2
     ;;     R8=arg1Out
     ;;     R9=arg2Out
-    ;;     [RSP+32]=TCS
+    ;;     [RSP+32]=TCS)
     sub rsp, 56
     mov rcx, ARG1OUT
     mov rdx, ARG2OUT
@@ -128,27 +110,13 @@ dispatch_ocall_sim:
     lea r9, qword ptr ARG2OUT
     mov rax, qword ptr TCS
     mov qword ptr [rsp+32], rax
-    call __OE_DispatchOCall
+    call __OE_DispatchOCall ;; RAX contains return value
     add rsp, 56
 
-    ;; Restore registers saved above:
-    pop r13
-    pop r12
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rbx
-    pop rcx
-    pop rdx
-    pop rsi
-    pop rdi
-
     ;; Restore the stack pointer:
-    mov rsp, _RSP
+    mov rsp, STACKPTR
 
     ;; If this was not an OCALL, then return from ECALL.
-    mov rax, CSSA ;; ATTN: new
     cmp rax, 0
     jne return_from_ecall_sim
 
@@ -161,15 +129,23 @@ dispatch_ocall_sim:
 
 return_from_ecall_sim:
 
-    ;; Set output parameters:
+    ;; Set ARG3 (out)
     mov rbx, ARG1OUT
     mov rax, qword ptr [rbp+48]
     mov qword ptr [rax], rbx
+
+    ;; Set ARG4 (out)
     mov rbx, ARG2OUT
     mov rax, qword ptr [rbp+56]
     mov qword ptr [rax], rbx
 
     ;; Restore registers:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rsi
+    pop rdi
     pop rbx
 
     ;; Return parameters space:
@@ -180,9 +156,6 @@ return_from_ecall_sim:
 
     BEGIN_EPILOGUE
     ret
-
-forever:
-    jmp forever
 
 NESTED_END OE_EnterSim, _TEXT$00
 

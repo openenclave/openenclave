@@ -478,8 +478,7 @@ int __OE_DispatchOCall(
     uint64_t arg2,
     uint64_t* arg1Out,
     uint64_t* arg2Out,
-    void* tcs,
-    void* rsp)
+    void* tcs)
 {
     const OE_Code code = OE_GetArgCode(arg1);
     const uint32_t func = OE_GetArgFunc(arg1);
@@ -642,7 +641,7 @@ OE_Result OE_ECall(
     uint32_t funcOut = 0;
     uint64_t argOut = 0;
 
-#if 0
+#if 1
     printf("=== OE_ECall()\n");
 #endif
 
@@ -686,7 +685,7 @@ catch:
     /* ATTN: make enclave argument a cookie. */
     /* SetEnclave(NULL); */
 
-#if 0
+#if 1
     printf("=== OE_ECall(): result=%u\n", result);
 #endif
 

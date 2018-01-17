@@ -81,19 +81,17 @@ OE_Enter:
     push %r12
     push %r13
 
-    // Call __OE_DispatchOCall():
+    // RAX = __OE_DispatchOCall(
     //     RDI=arg1
     //     RSI=arg2
     //     RDX=arg1Out
     //     RCX=arg2Out
-    //     R8=TCS
-    //     R9=RSP
+    //     R8=TCS)
     mov ARG1OUT, %rdi
     mov ARG2OUT, %rsi
     leaq ARG1OUT, %rdx
     leaq ARG2OUT, %rcx
     mov TCS, %r8
-    mov RSP, %r9
     call __OE_DispatchOCall
 
     // Restore registers (except RDI and RSI)

@@ -20,6 +20,12 @@ extern __OE_DispatchOCall:proc
 ;;     [RBP+48] - arg3
 ;;     [RBP+56] - arg4
 ;;
+;; These registers are destroyed across function calls:
+;;     RAX, RCX, RDX, R8, R9, R10, R11
+;;
+;; These registers must be preserved across function calls:
+;;     RBX, RBP, RDI, RSI, RSP, R12, R13, R14, and R15
+;;
 ;;==============================================================================
 
 ENCLU_EENTER    EQU 2
@@ -32,7 +38,7 @@ ARG3            EQU [rbp-40]
 ARG4            EQU [rbp-48]
 ARG1OUT         EQU [rbp-56]
 ARG2OUT         EQU [rbp-64]
-_RSP            EQU [rbp-72]
+STACKPTR        EQU [rbp-72]
 
 NESTED_ENTRY OE_Enter, _TEXT$00
     END_PROLOGUE
@@ -42,21 +48,36 @@ NESTED_ENTRY OE_Enter, _TEXT$00
     mov rbp, rsp
 
     ;; Save parameters on stack for later reference:
+    ;;     TCS  := [RBP-8]  <- RCX
+    ;;     AEP  := [RBP-16] <- RDX
+    ;;     ARG1 := [RBP-24] <- R8
+    ;;     ARG2 := [RBP-32] <- R9
+    ;;     ARG3 := [RBP-40] <- [RBP+48]
+    ;;     ARG4 := [RBP-48] <- [RBP+56]
+    ;;
     sub rsp, PARAMS_SPACE
-    mov TCS, rdi
-    mov AEP, rsi
-    mov ARG1, rdx
-    mov ARG2, rcx
-    mov ARG3, r8
-    mov ARG4, r9
+    mov TCS, rcx
+    mov AEP, rdx
+    mov ARG1, r8
+    mov ARG2, r9
+    mov rax, [rbp+48]
+    mov ARG3, rax
+    mov rax, [rbp+56]
+    mov ARG4, rax
 
     ;; Save registers:
     push rbx
+    push rdi
+    push rsi
+    push r12
+    push r13
+    push r14
+    push r15
 
 execute_eenter:
 
     ;; Save the stack pointer so enclave can use the stack.
-    mov _RSP, rsp
+    mov STACKPTR, rsp
 
     ;; EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2)
     mov rbx, TCS
@@ -71,45 +92,24 @@ execute_eenter:
 
 dispatch_ocall:
 
-    ;; Save registers that could get clobbered below or by function call.
-    push rdi
-    push rsi
-    push rdx
-    push rcx
-    push rbx
-    push r8
-    push r9
-    push r12
-    push r13
-
-    ;; Call __OE_DispatchOCall():
+    ;; RAX = __OE_DispatchOCall(
     ;;     RDI=arg1
     ;;     RSI=arg2
     ;;     RDX=arg1Out
     ;;     RCX=arg2Out
-    ;;     R8=TCS
-    ;;     R9=RSP
-    mov rdi, ARG1OUT
-    mov rsi, ARG2OUT
-    lea rdx, ARG1OUT      ;; ATTN: ported 'leaq' to 'lea'!
-    lea rcx, ARG2OUT      ;; ATTN: ported 'leaq' to 'lea'!
-    mov r8, TCS
-    mov r9, _RSP
-    call __OE_DispatchOCall
-
-    ;; Restore registers (except RDI and RSI)
-    pop r13
-    pop r12
-    pop r9
-    pop r8
-    pop rbx
-    pop rcx
-    pop rdx
-    pop rsi
-    pop rdi
+    ;;     R8=TCS)
+    sub rsp, 56
+    mov rcx, ARG1OUT
+    mov rdx, ARG2OUT
+    lea r8, qword ptr ARG1OUT
+    lea r9, qword ptr ARG2OUT
+    mov rax, qword ptr TCS
+    mov qword ptr [rsp+32], rax
+    call __OE_DispatchOCall ;; RAX contains return value
+    add rsp, 56
 
     ;; Restore the stack pointer:
-    mov rsp, _RSP
+    mov rsp, STACKPTR
 
     ;; If this was not an OCALL, then return from ECALL.
     cmp rax, 0
@@ -124,13 +124,23 @@ dispatch_ocall:
 
 return_from_ecall:
 
-    ;; Set output parameters:
-    mov rax, ARG1OUT
-    mov [r8], rax
-    mov rax, ARG2OUT
-    mov [r9], rax
+    ;; Set ARG3 (out)
+    mov rbx, ARG1OUT
+    mov rax, qword ptr [rbp+48]
+    mov qword ptr [rax], rbx
+
+    ;; Set ARG4 (out)
+    mov rbx, ARG2OUT
+    mov rax, qword ptr [rbp+56]
+    mov qword ptr [rax], rbx
 
     ;; Restore registers:
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rsi
+    pop rdi
     pop rbx
 
     ;; Return parameters space:

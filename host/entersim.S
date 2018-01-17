@@ -84,12 +84,12 @@ OE_EnterSim:
     push %r12
     push %r13
 
-    // Call __OE_DispatchOCall():
+    // RAX = __OE_DispatchOCall(
     //     RDI=arg1
     //     RSI=arg2
     //     RDX=arg1Out
     //     RCX=arg2Out
-    //     R8=TCS
+    //     R8=TCS)
     mov ARG1OUT, %rdi
     mov ARG2OUT, %rsi
     leaq ARG1OUT, %rdx

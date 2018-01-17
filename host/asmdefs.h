@@ -39,8 +39,7 @@ int __OE_DispatchOCall(
     uint64_t arg2,
     uint64_t* arg1Out,
     uint64_t* arg2Out,
-    void* tcs,
-    void* rsp);
+    void* tcs);
 #endif
 
 #endif /* _ASMDEFS_H */
