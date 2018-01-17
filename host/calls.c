@@ -641,7 +641,7 @@ OE_Result OE_ECall(
     uint32_t funcOut = 0;
     uint64_t argOut = 0;
 
-#if 1
+#if 0
     printf("=== OE_ECall()\n");
 #endif
 
@@ -685,7 +685,7 @@ catch:
     /* ATTN: make enclave argument a cookie. */
     /* SetEnclave(NULL); */
 
-#if 1
+#if 0
     printf("=== OE_ECall(): result=%u\n", result);
 #endif
 
