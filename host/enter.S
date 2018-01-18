@@ -3,12 +3,12 @@
 //==============================================================================
 //
 // void __morestack(
-//     [IN] void* tcs,
-//     [IN] void (*aep)(),
-//     [IN] uint64_t arg1,
-//     [IN] uint64_t arg2,
-//     [OUT] uint64_t* arg3,
-//     [OUT] uint64_t* arg4);
+//     [IN] void* tcs,          /* RDI */
+//     [IN] void (*aep)(),      /* RSI */
+//     [IN] uint64_t arg1,      /* RDX */
+//     [IN] uint64_t arg2,      /* RCX */
+//     [OUT] uint64_t* arg3,    /* R8 */
+//     [OUT] uint64_t* arg4);   /* R9 */
 //
 // Registers:
 //     RDI   - tcs: thread control structure
@@ -90,19 +90,20 @@ __morestack:
     push %r12
     push %r13
 
-    // Call _OE_HostStackBridge():
+    // RAX = __OE_HostStackBridge(
     //     RDI=arg1
     //     RSI=arg2
     //     RDX=arg1Out
     //     RCX=arg2Out
-    //     R8=TCS)
+    //     R8=TCS,
+    //     R9=RSP)
     mov ARG1OUT, %rdi
     mov ARG2OUT, %rsi
     leaq ARG1OUT, %rdx
     leaq ARG2OUT, %rcx
     mov TCS, %r8
     mov RSP, %r9
-    call _OE_HostStackBridge
+    call __OE_HostStackBridge
 
     // Restore registers (except RDI and RSI)
     pop %r13
@@ -152,10 +153,16 @@ __morestack:
 
 //==============================================================================
 // 
-// _OE_HostStackBridge():
+// __OE_HostStackBridge(
+//     [IN] uint64_t arg1,      /* RDI */
+//     [IN] uint64_t arg2,      /* RSI */
+//     [OUT] uint64_t* arg3,    /* RDX */
+//     [OUT] uint64_t* arg4,    /* RCX */
+//     [IN] void* tcs,          /* R8 */
+//     [IN] void* rsp)          /* R9 */
 //
-//     This function is wrapper of __OE_DispatchOCall. It is needed to stitch 
-//     the host stack and enclave stack together.
+// This function is wrapper of __OE_DispatchOCall. It is needed to stitch 
+// the host stack and enclave stack together.
 //
 //==============================================================================
 
@@ -170,13 +177,13 @@ __morestack:
 #define HB_SAVED_RETURN_ADDR    (6*OE_WORDSIZE)(%rsp)
 #define HB_SAVED_FRAME_POINTER  (7*OE_WORDSIZE)(%rsp)
 
-.globl _OE_HostStackBridge
-.type _OE_HostStackBridge, @function
+.globl __OE_HostStackBridge
+.type __OE_HostStackBridge, @function
 .type _OE_NotifyOCallStart,@function
 .hidden _OE_NotifyOCallStart
 .type _OE_NotifyOCallEnd,@function
 .hidden _OE_NotifyOCallEnd
-_OE_HostStackBridge:
+__OE_HostStackBridge:
 .cfi_startproc
     push %rbp
 .cfi_def_cfa_offset 16
@@ -185,7 +192,7 @@ _OE_HostStackBridge:
 .cfi_def_cfa_register   rbp
     sub $HB_STACK_LENGTH, %rsp
 
-    // Save the current return address and frame point of _OE_HostStackBridge 
+    // Save the current return address and frame point of __OE_HostStackBridge 
     // into stack.
     mov 0(%rbp), %rax
     mov %rax, HB_SAVED_FRAME_POINTER
@@ -228,7 +235,7 @@ _OE_HostStackBridge:
 
     // Because of stack stitching, the return address might be overwritten by 
     // gdb. Restore the current return address and frame point of 
-    // _OE_HostStackBridge from stack.
+    // __OE_HostStackBridge from stack.
     mov HB_SAVED_FRAME_POINTER, %rax
     mov %rax, (0*OE_WORDSIZE)(%rbp)
     mov HB_SAVED_RETURN_ADDR, %rax
