@@ -129,7 +129,7 @@ static OE_Result _EnterSim(
 
         OE_SetGSRegisterBase(gsbase);
         OE_EnterSim(tcs, aep, arg1, arg2, arg3, arg4);
-        //OE_SetGSRegisterBase(saved_gsbase);
+        OE_SetGSRegisterBase(saved_gsbase);
     }
 
     result = OE_OK;
