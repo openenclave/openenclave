@@ -39,6 +39,7 @@ add_subdirectory(doc/refman)
 add_subdirectory(enclave)
 add_subdirectory(host)      # convertable to Windows
 add_subdirectory(idl)
+add_subdirectory(debugger)
 add_subdirectory(include)   # convertable to Windows
 add_subdirectory(libc)
 add_subdirectory(libcxx)

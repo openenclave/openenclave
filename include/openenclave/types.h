@@ -63,6 +63,8 @@ typedef signed char int8_t;
 
 typedef unsigned char uint8_t;
 
+typedef unsigned char byte;
+
 typedef short int16_t;
 
 typedef unsigned short uint16_t;
@@ -183,5 +185,20 @@ OE_ALIGNED(OE_PAGE_SIZE);
 #define OE_va_arg __builtin_va_arg
 #define OE_va_end __builtin_va_end
 #define OE_va_copy __builtin_va_copy
+
+/*
+**==============================================================================
+**
+** OE_OCallContext:
+**
+**==============================================================================
+*/
+
+typedef struct _OE_OCallContext
+{
+    uintptr_t rbp;
+    uintptr_t ret;
+}
+OE_OCallContext;
 
 #endif /* _OE_TYPES_H */

@@ -2,7 +2,7 @@
 
 //==============================================================================
 //
-// void OE_Enter(
+// void __morestack(
 //     [IN] void* tcs,
 //     [IN] void (*aep)(),
 //     [IN] uint64_t arg1,
@@ -18,6 +18,9 @@
 //     R8    - arg3
 //     R9    - arg4
 //
+// N.B: Don't change the function name, otherwise debugger can't work. 
+//	GDB depends on this hardcode function name when does stack walking for split 
+//	stack.
 //==============================================================================
 
 #define PARAMS_SPACE 128
@@ -31,10 +34,9 @@
 #define ARG2OUT -64(%rbp)
 #define RSP     -72(%rbp)
 
-.globl OE_Enter
-.type OE_Enter, @function
-OE_Enter:
-.cfi_startproc
+.globl __morestack
+.type __morestack, @function
+__morestack:
 
     // Setup stack frame:
     push %rbp
@@ -68,6 +70,12 @@ OE_Enter:
     mov %rdi, ARG1OUT
     mov %rsi, ARG2OUT
 
+	// Check if it is an OCALL needed to be dispatched.
+	mov %rdi, %r10
+	shr $0x20, %r10
+	cmpq $OE_OCALL_CODE, %r10
+	jne .return_from_ecall
+
 .dispatch_ocall:
 
     // Save registers that could get clobbered below or by function call.
@@ -81,7 +89,7 @@ OE_Enter:
     push %r12
     push %r13
 
-    // Call __OE_DispatchOCall():
+    // Call _OE_HostStackBridge():
     //     RDI=arg1
     //     RSI=arg2
     //     RDX=arg1Out
@@ -94,7 +102,7 @@ OE_Enter:
     leaq ARG2OUT, %rcx
     mov TCS, %r8
     mov RSP, %r9
-    call __OE_DispatchOCall
+    call _OE_HostStackBridge
 
     // Restore registers (except RDI and RSI)
     pop %r13
@@ -143,4 +151,91 @@ OE_Enter:
 .forever:
 	jmp .forever
 
+.size __morestack, .-__morestack
+
+//==============================================================================
+// 
+// This function is wrapper of __OE_DispatchOCall. It is needed to stitch the host 
+// stack and enclave stack together.
+//
+//==============================================================================
+
+#define HB_STACK_LENGTH			0X50
+#define HB_SAVED_ARG1			(0*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_OCALL_RETURN	(0*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG2			(1*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG3			(2*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG4			(3*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG5			(4*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG6			(5*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_RETURN_ADDR	(6*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_FRAME_POINTER	(7*OE_WORDSIZE)(%rsp)
+
+.globl _OE_HostStackBridge
+.type _OE_HostStackBridge, @function
+.type _OE_NotifyOCallStart,@function
+.hidden _OE_NotifyOCallStart
+.type _OE_NotifyOCallEnd,@function
+.hidden _OE_NotifyOCallEnd
+_OE_HostStackBridge:
+.cfi_startproc
+    push %rbp
+.cfi_def_cfa_offset		16
+.cfi_offset				rbp,-16
+    mov %rsp, %rbp
+.cfi_def_cfa_register	rbp
+    sub $HB_STACK_LENGTH, %rsp
+
+	// Save the current return address and frame point of _OE_HostStackBridge into stack.
+    mov 0(%rbp), %rax
+    mov %rax, HB_SAVED_FRAME_POINTER
+    mov (1*OE_WORDSIZE)(%rbp), %rax
+    mov %rax, HB_SAVED_RETURN_ADDR
+
+    // Save the function parameters needed for __OE_DispatchOCall into stack.
+    mov %rdi, HB_SAVED_ARG1
+    mov %rsi, HB_SAVED_ARG2
+    mov %rdx, HB_SAVED_ARG3
+    mov %rcx, HB_SAVED_ARG4
+	mov %r8,  HB_SAVED_ARG5
+	mov %r9, HB_SAVED_ARG6
+
+    // Notify that an ocall happens in current host thread.
+	// _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
+    mov %rbp, %rdi
+    mov %r8,  %rsi
+    call _OE_NotifyOCallStart
+
+    // Restore the parameters for __OE_DispatchOCall.
+    mov HB_SAVED_ARG1, %rdi
+    mov HB_SAVED_ARG2, %rsi
+    mov HB_SAVED_ARG3, %rdx
+    mov HB_SAVED_ARG4, %rcx
+	mov HB_SAVED_ARG5, %r8
+	mov HB_SAVED_ARG6, %r9
+
+    // Do actual OCALL.
+    call __OE_DispatchOCall
+    
+    // Save the return value of OCALL dispatch.
+    mov %rax, HB_SAVED_OCALL_RETURN
+
+    // Notify that an ocall is done in current host thread.
+	// _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
+	mov %rbp, %rdi
+	mov HB_SAVED_ARG5, %rsi
+    call _OE_NotifyOCallEnd
+
+	// Because of stack stitching, the return address might be overwritten by gdb.
+    // Restore the current return address and frame point of _OE_HostStackBridge from stack.
+    mov HB_SAVED_FRAME_POINTER, %rax
+    mov %rax, (0*OE_WORDSIZE)(%rbp)
+    mov HB_SAVED_RETURN_ADDR, %rax
+    mov %rax, (1*OE_WORDSIZE)(%rbp)
+    
+    // Restore the return value of OCALL dispatch.
+    mov HB_SAVED_OCALL_RETURN, %rax
+
+    leave
+    ret
 .cfi_endproc

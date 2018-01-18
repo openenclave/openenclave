@@ -26,6 +26,16 @@ OE_Result __OE_BuildEnclave(
     bool simulate,
     OE_Enclave* enclave);
 
+void _OE_NotifyGdbEnclaveCreation(
+    const OE_Enclave* enclave,
+    const char* enclavePath,
+    uint32_t enclavePathLength);
+
+void _OE_NotifyGdbEnclaveTermination(
+    const OE_Enclave* enclave,
+    const char* enclavePath,
+    uint32_t enclavePathLength);
+
 OE_EXTERNC_END
 
 #endif /* _OE_BUILD_H */
