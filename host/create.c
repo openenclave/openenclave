@@ -1020,8 +1020,10 @@ catch:
     return result;
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
+#if defined(__linux__)
+# pragma GCC push_options
+# pragma GCC optimize ("O0")
+#endif
 
 /*
 ** These functions are needed to notify the debugger. They should not be optimized
@@ -1052,7 +1054,10 @@ void _OE_NotifyGdbEnclaveCreation(
 
     return;
 }
-#pragma GCC pop_options
+
+#if defined(__linux__)
+# pragma GCC pop_options
+#endif
 
 OE_Result OE_CreateEnclave(
     const char* enclavePath,
@@ -1121,7 +1126,7 @@ OE_Result OE_CreateEnclave(
     _OE_NotifyGdbEnclaveCreation(
         enclave,
         enclave->path,
-        strlen(enclave->path));
+        (uint32_t)strlen(enclave->path));
 
     *enclaveOut = enclave;
     result = OE_OK;
@@ -1159,7 +1164,7 @@ OE_Result OE_TerminateEnclave(
     _OE_NotifyGdbEnclaveTermination(
         enclave,
         enclave->path,
-        strlen(enclave->path));
+        (uint32_t)strlen(enclave->path));
 
     /* Clear the magic number */
     enclave->magic = 0;

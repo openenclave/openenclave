@@ -14,7 +14,10 @@
 #define ThreadBinding_tcs 0
 #define OE_WORDSIZE 8
 #define	OE_OCALL_CODE 3
-#define OE_Enter __morestack
+
+#if defined(__linux__)
+# define OE_Enter __morestack
+#endif
 
 #ifndef __ASSEMBLER__
 void OE_Enter(

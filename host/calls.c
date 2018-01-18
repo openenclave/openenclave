@@ -775,15 +775,19 @@ catch:
     return result;
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
+#if defined(__linux__)
+# pragma GCC push_options
+# pragma GCC optimize ("O0")
+#endif
 
 /*
 ** These two functions are needed to notify the debugger. They should not be 
 ** optimized out even they don't do anything in here.
 */
 
+#if defined(__linux__)
 __attribute__((noinline))
+#endif
 void _OE_NotifyOCallStart(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)
@@ -794,7 +798,9 @@ void _OE_NotifyOCallStart(
     return;
 }
 
+#if defined(__linux__)
 __attribute__((noinline))
+#endif
 void _OE_NotifyOCallEnd(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)
@@ -805,4 +811,6 @@ void _OE_NotifyOCallEnd(
     return;
 }
 
-#pragma GCC pop_options
+#if defined(__linux__)
+# pragma GCC pop_options
+#endif

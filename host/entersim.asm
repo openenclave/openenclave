@@ -1,7 +1,6 @@
 include ksamd64.inc
 
 extern __OE_DispatchOCall:proc
-extern __Dump:proc
 
 ;;==============================================================================
 ;;
