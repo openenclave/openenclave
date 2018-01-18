@@ -775,7 +775,34 @@ catch:
     return result;
 }
 
-void __Dump(uint64_t x)
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
+/*
+** These two functions are needed to notify the debugger. They should not be 
+** optimized out even they don't do anything in here.
+*/
+
+__attribute__((noinline))
+void _OE_NotifyOCallStart(
+    _OE_HostOCallFrame* frame_pointer,
+    void* tcs)
 {
-    printf("__Dump: x=%llx\n", x);
+    UNREFERENCED_PARAMETER(frame_pointer);
+    UNREFERENCED_PARAMETER(tcs);
+
+    return;
 }
+
+__attribute__((noinline))
+void _OE_NotifyOCallEnd(
+    _OE_HostOCallFrame* frame_pointer,
+    void* tcs)
+{
+    UNREFERENCED_PARAMETER(frame_pointer);
+    UNREFERENCED_PARAMETER(tcs);
+
+    return;
+}
+
+#pragma GCC pop_options

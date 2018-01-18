@@ -10,6 +10,7 @@
 
 #define PAGE_SIZE 4096
 #define STATIC_STACK_SIZE 8*100
+#define OE_WORD_SIZE 8
 
 #define CODE_ERET 0x200000000
 
@@ -42,6 +43,7 @@
 #define TD_callsites            296
 #define TD_simulate             304
 
+#define OE_Exit __morestack
 #ifndef __ASSEMBLER__
 void OE_Exit(uint64_t arg1, uint64_t arg2);
 #endif
@@ -54,4 +56,10 @@ void __OE_HandleMain(
     void* tcs);
 #endif
 
+#ifndef __ASSEMBLER__
+void _OE_NotifyNestedExistStart(
+    uint64_t arg1,
+    OE_OCallContext* ocallContext
+);
+#endif
 #endif /* _ASMDEFS_H */

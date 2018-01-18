@@ -2,7 +2,7 @@
 
 //==============================================================================
 //
-// void OE_Exit(uint64_t arg1, uint64_t arg2)
+// void _OE_Exit(uint64_t arg1, uint64_t arg2)
 //
 // Registers:
 //     RDI - arg1
@@ -41,10 +41,10 @@
 //
 //==============================================================================
 
-.globl OE_Exit
-.hidden OE_Exit
-.type OE_Exit, @function
-OE_Exit:
+.globl _OE_Exit
+.hidden _OE_Exit
+.type _OE_Exit, @function
+_OE_Exit:
 .cfi_startproc
 
 //======================//
@@ -79,6 +79,26 @@ OE_Exit:
     push %r13
     push %r14
     push %r15
+
+    // Construct the OE_OCallContext(rbp, return address).
+    mov (4*OE_WORD_SIZE)(%rsp), %r12
+    push %r12
+    push %rbp
+    mov	%rsp, %r12
+
+    // Save the parameters of _OE_Exit into stack.
+    push %rdi
+    push %rsi
+
+    // Notify a nested exit happens.
+    // _OE_NotifyNestedExistStart(rdi=arg1, rsi=ocallContext)
+    mov %r12, %rsi
+    call _OE_NotifyNestedExistStart
+
+    // Restore the parameters of _OE_Exit from stack.
+    pop %rsi
+    pop %rdi
+
     test $OE_ARG_FLAG_GS, %rdi
     jnz .nested_exit_gs
 
@@ -220,3 +240,34 @@ OE_Exit:
     ud2
 
 .cfi_endproc
+
+.size _OE_Exit, .-_OE_Exit
+ 
+//==============================================================================
+// 
+// This function is wrapper of _OE_Exit. It is needed to stitch the host 
+// stack and enclave stack together.
+//
+// N.B: Don't change the function name, otherwise debugger can't work. 
+//	GDB depends on this hardcode function name when does stack walking for split 
+//	stack.
+//==============================================================================
+
+.globl __morestack
+.type __morestack, @function
+
+__morestack:
+.cfi_startproc
+    push %rbp
+.cfi_def_cfa_offset     16
+.cfi_offset             rbp, -16
+    mov %rsp, %rbp
+.cfi_def_cfa_register   rbp
+
+    call        _OE_Exit
+    
+	leave
+    ret
+.cfi_endproc
+
+.size __morestack, .-__morestack

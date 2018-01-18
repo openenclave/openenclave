@@ -19,6 +19,8 @@
 # define OE_ALWAYS_INLINE __forceinline
 #endif
 
+#define UNREFERENCED_PARAMETER(P)          (void)(P)
+
 #ifdef _MSC_VER
 # define OE_INLINE static __inline
 #elif __GNUC__

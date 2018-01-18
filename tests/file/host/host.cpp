@@ -15,32 +15,32 @@ void Log(const char* s, uint64_t x)
     printf("Log(%s, %lu)\n", s, x);
 }
 
-FILE *Fopen(
+MY_FILE *Fopen(
     const char *filename,
     const char *modes)
 {
     D( printf("Fopen(filename=%s, modes=%s)\n", filename, modes); )
     FILE* is = fopen(filename, modes);
     D( printf("Fopen(): return=%p\n", is); )
-    return is;
+    return (MY_FILE*)is;
 }
 
 size_t Fread(
     void *ptr,
     size_t size,
-    FILE *stream)
+    MY_FILE *stream)
 {
     D( printf("Fread(ptr=%p, size=%zu, stream=%p)\n", ptr, size, stream); )
-    size_t n = fread(ptr, 1, size, stream);
+    size_t n = fread(ptr, 1, size, (FILE*)stream);
     D( printf("Fread(): return=%zu\n", n); )
     return n;
 }
 
 int Fclose(
-    FILE *stream)
+    MY_FILE *stream)
 {
     D( printf("Fclose(stream=%p)\n", stream); )
-    int r = fclose(stream);
+    int r = fclose((FILE*)stream);
     D( printf("Fclose(): return=%d\n", r); )
     return r;
 }
@@ -124,7 +124,8 @@ int main(int argc, const char* argv[])
 
         if (checksum1 != checksum2)
         {
-            fprintf(stderr, "%s: checksum mismatch\n", argv[0]);
+            fprintf(stderr, "%s: checksum mismatch: checksum1=%x, checksum2=%#x\n",
+                    argv[0], checksum1, checksum2);
             return 1;
         }
 

@@ -573,3 +573,29 @@ void __OE_HandleMain(
         OE_Abort();
     }
 }
+
+/*
+**==============================================================================
+**
+** _OE_NotifyNestedExistStart()
+**
+**     Notify the nested exist happens.
+**
+**==============================================================================
+*/
+void _OE_NotifyNestedExistStart(
+    uint64_t arg1,
+    OE_OCallContext* ocallContext)
+{
+    // Check if it is an OCALL.
+    OE_Code code = OE_HI_WORD(arg1);
+    if (code != OE_CODE_OCALL)
+        return;
+
+    // Save the ocallcontext to the callsite of current enclave thread.
+    TD* td = TD_Get();
+    Callsite* callsite = td->callsites;
+    callsite->ocallContext = ocallContext;
+
+    return;
+}

@@ -1020,6 +1020,40 @@ catch:
     return result;
 }
 
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
+/*
+** These functions are needed to notify the debugger. They should not be optimized
+** out even they don't do anything in here.
+*/
+
+void _OE_NotifyGdbEnclaveTermination(
+    const OE_Enclave* enclave,
+    const char* enclavePath,
+    uint32_t enclavePathLength)
+{
+    UNREFERENCED_PARAMETER(enclave);
+    UNREFERENCED_PARAMETER(enclavePath);
+    UNREFERENCED_PARAMETER(enclavePathLength);
+
+    return;
+}
+
+void _OE_NotifyGdbEnclaveCreation(
+    const OE_Enclave* enclave,
+    const char* enclavePath,
+    uint32_t enclavePathLength
+)
+{
+    UNREFERENCED_PARAMETER(enclave);
+    UNREFERENCED_PARAMETER(enclavePath);
+    UNREFERENCED_PARAMETER(enclavePathLength);
+
+    return;
+}
+#pragma GCC pop_options
+
 OE_Result OE_CreateEnclave(
     const char* enclavePath,
     uint32_t flags,
@@ -1083,6 +1117,12 @@ OE_Result OE_CreateEnclave(
     /* Set the magic number */
     enclave->magic = ENCLAVE_MAGIC;
 
+    /* Notify GDB that a new enclave is created */
+    _OE_NotifyGdbEnclaveCreation(
+        enclave,
+        enclave->path,
+        strlen(enclave->path));
+
     *enclaveOut = enclave;
     result = OE_OK;
 
@@ -1114,6 +1154,12 @@ OE_Result OE_TerminateEnclave(
 
     /* Call the enclave destructor */
     OE_TRY(OE_ECall(enclave, OE_FUNC_DESTRUCTOR, 0, NULL));
+
+    /* Notify GDB that this enclave is terminated */
+    _OE_NotifyGdbEnclaveTermination(
+        enclave,
+        enclave->path,
+        strlen(enclave->path));
 
     /* Clear the magic number */
     enclave->magic = 0;

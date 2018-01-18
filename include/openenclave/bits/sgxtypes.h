@@ -41,6 +41,8 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
+#define ENCLU_INSTRUCTION 0xd7010f
+
 typedef enum _SGX_ENCLULeaf
 {
     ENCLU_EREPORT       = 0x00,
@@ -216,6 +218,76 @@ typedef struct _SGX_Secs
 SGX_Secs;
 
 OE_CHECK_SIZE(sizeof(SGX_Secs),4096);
+
+/*
+**==============================================================================
+**
+** SGX_ExitInfo:
+**
+**==============================================================================
+*/
+
+typedef union
+{
+    struct
+    {
+        uint32_t vector : 8;
+        uint32_t exitType : 3;
+        uint32_t mbz : 20;
+        uint32_t valid : 1;
+    } asFields;
+    uint32_t asUINT32;
+} SGX_ExitInfo;
+
+/*
+**==============================================================================
+**
+** SGX_SsaGpr:
+**
+**==============================================================================
+*/
+
+typedef struct SGX_SsaGpr
+{
+    uint64_t rax;
+    uint64_t rcx;
+    uint64_t rdx;
+    uint64_t rbx;
+    uint64_t rsp;
+    uint64_t rbp;
+    uint64_t rsi;
+    uint64_t rdi;
+    uint64_t r8;
+    uint64_t r9;
+    uint64_t r10;
+    uint64_t r11;
+    uint64_t r12;
+    uint64_t r13;
+    uint64_t r14;
+    uint64_t r15;
+    uint64_t rflags;
+    uint64_t rip;
+    uint64_t ursp;
+    uint64_t urbp;
+    SGX_ExitInfo exitInfo;
+    uint32_t reserved;
+    uint64_t fSBase;
+    uint64_t gSBase;
+} SGX_SsaGpr, *PSGX_SsaGpr;
+
+/*
+**==============================================================================
+**
+** OE SGX constants
+**
+**==============================================================================
+*/
+
+#define OE_TD_FROM_TCS_BYTE_OFFSET 4 * OE_PAGE_SIZE
+#define OE_SSA_FROM_TCS_BYTE_OFFSET OE_PAGE_SIZE
+#define OE_DEFAULT_SSA_FRAME_SIZE 1
+#define OE_SGX_GPR_BYTE_SIZE 184
+#define OE_SGX_TCS_HEADER_BYTE_SIZE 72
 
 /*
 **==============================================================================
