@@ -4,31 +4,33 @@
 
 OE_ECALL void TestHostRealloc(void* _args)
 {
-    TestHostReallocArgs* args = (TestHostReallocArgs*)_args;
+    TestHostReallocArgs args = *(TestHostReallocArgs*)_args;
 
     /* Check that pointers passed in are not enclave pointers */
-    if (args->inPtr && args->oldSize > 0)
+    if (args.inPtr && args.oldSize > 0)
     {
-        if (!OE_IsOutsideEnclave(args->inPtr, args->oldSize))
+        if (!OE_IsOutsideEnclave(args.inPtr, args.oldSize))
         {
             OE_Abort();
             return;
         }
     }
 
-    args->outPtr = OE_HostRealloc(args->inPtr, args->newSize);
+    args.outPtr = OE_HostRealloc(args.inPtr, args.newSize);
     
     /* Initialize only newly allocated bytes for verification by host */
-    if (args->outPtr)
+    if (args.outPtr)
     {
-        if (!args->inPtr)
+        if (!args.inPtr)
         {
-            OE_Memset(args->outPtr, TEST_HOSTREALLOC_INIT_VALUE, args->newSize);
+            OE_Memset(args.outPtr, TEST_HOSTREALLOC_INIT_VALUE, args.newSize);
         }
-        else if (args->oldSize < args->newSize)
+        else if (args.oldSize < args.newSize)
         {
-            void* extPtr = (void*)((uint64_t)args->outPtr + args->oldSize);
-            OE_Memset(extPtr, TEST_HOSTREALLOC_INIT_VALUE, args->newSize - args->oldSize);
+            void* extPtr = (void*)((uint64_t)args.outPtr + args.oldSize);
+            OE_Memset(extPtr, TEST_HOSTREALLOC_INIT_VALUE, args.newSize - args.oldSize);
         }
     }
+
+    ((TestHostReallocArgs*)_args)->outPtr = args.outPtr;
 }
