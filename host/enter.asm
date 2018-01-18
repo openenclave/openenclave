@@ -20,7 +20,7 @@ extern __OE_DispatchOCall:proc
 ;;     [RBP+48] - arg3
 ;;     [RBP+56] - arg4
 ;;
-;; These registers are destroyed across function calls:
+;; These registers may be destroyed across function calls:
 ;;     RAX, RCX, RDX, R8, R9, R10, R11
 ;;
 ;; These registers must be preserved across function calls:
@@ -115,7 +115,7 @@ dispatch_ocall:
     cmp rax, 0
     jne return_from_ecall
 
-    ;; Execute EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2)
+    ;; Prepare to reenter the enclave, calling OE_Main()
     mov rax, ARG1OUT
     mov ARG1, rax
     mov rax, ARG2OUT

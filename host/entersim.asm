@@ -1,6 +1,7 @@
 include ksamd64.inc
 
 extern __OE_DispatchOCall:proc
+extern __Dump:proc
 
 ;;==============================================================================
 ;;
@@ -20,7 +21,7 @@ extern __OE_DispatchOCall:proc
 ;;     [RBP+48] - arg3
 ;;     [RBP+56] - arg4
 ;;
-;; These registers are destroyed across function calls:
+;; These registers may be destroyed across function calls:
 ;;     RAX, RCX, RDX, R8, R9, R10, R11
 ;;
 ;; These registers must be preserved across function calls:
@@ -38,7 +39,7 @@ ARG4            EQU [rbp-48]
 ARG1OUT         EQU [rbp-56]
 ARG2OUT         EQU [rbp-64]
 CSSA            EQU [rbp-72]
-STACKPTR        EQU [rbp-84]
+STACKPTR        EQU [rbp-80]
 TCS_u_main      EQU 72
 
 NESTED_ENTRY OE_EnterSim, _TEXT$00
@@ -120,7 +121,7 @@ dispatch_ocall_sim:
     cmp rax, 0
     jne return_from_ecall_sim
 
-    ;; (RDI=TCS, RDX=ARG1, RCX=ARG2)
+    ;; Prepare to reenter the enclave, calling OE_Main()
     mov rax, ARG1OUT
     mov ARG1, rax
     mov rax, ARG2OUT
@@ -156,6 +157,9 @@ return_from_ecall_sim:
 
     BEGIN_EPILOGUE
     ret
+
+forever:
+    jmp forever
 
 NESTED_END OE_EnterSim, _TEXT$00
 

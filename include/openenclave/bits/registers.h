@@ -6,9 +6,11 @@
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
 
-int OE_SetGSRegisterBase(const void *ptr);
+void OE_SetGSRegisterBase(const void *ptr);
 
-int OE_GetGSRegisterBase(const void **ptr);
+void* OE_GetGSRegisterBase();
+
+bool OE_TestGSRegisterBase(const void *ptr);
 
 OE_EXTERNC_END
 

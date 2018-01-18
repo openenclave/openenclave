@@ -56,10 +56,7 @@ void OE_AEP(void);
 
 static void _SetThreadBinding(ThreadBinding* binding)
 {
-    if (OE_SetGSRegisterBase(binding) != 0)
-    {
-        assert(0);
-    }
+    OE_SetGSRegisterBase(binding);
 }
 
 /*
@@ -74,14 +71,7 @@ static void _SetThreadBinding(ThreadBinding* binding)
 
 ThreadBinding* GetThreadBinding()
 {
-    const void* ptr;
-
-    if (OE_GetGSRegisterBase(&ptr) != 0)
-    {
-        assert(0);
-    }
-
-    return (ThreadBinding*)ptr;
+    return (ThreadBinding*)OE_GetGSRegisterBase();
 }
 
 /*
@@ -117,14 +107,10 @@ static OE_Result _EnterSim(
         OE_THROW(OE_NOT_FOUND);
 
     /* Save old GS register base, and set new one */
+    const void* gsbase;
     {
-        const void* gsbase = (void*)(enclave->addr + tcs->gsbase);
-
-        if (OE_GetGSRegisterBase(&saved_gsbase) != 0)
-            OE_THROW(OE_FAILURE);
-
-        if (OE_SetGSRegisterBase(gsbase) != 0)
-            OE_THROW(OE_FAILURE);
+        gsbase = (void*)(enclave->addr + tcs->gsbase);
+        saved_gsbase = OE_GetGSRegisterBase(&saved_gsbase);
 
         /* Set TD.simulate flag */
         {
@@ -141,11 +127,9 @@ static OE_Result _EnterSim(
         if (arg4)
             *arg4 = 0;
 
+        OE_SetGSRegisterBase(gsbase);
         OE_EnterSim(tcs, aep, arg1, arg2, arg3, arg4);
-
-        /* Restore the GS segment register */
-        if (OE_SetGSRegisterBase(saved_gsbase) != 0)
-            OE_THROW(OE_FAILURE);
+        //OE_SetGSRegisterBase(saved_gsbase);
     }
 
     result = OE_OK;
@@ -628,6 +612,10 @@ static void _ReleaseTCS(
 **==============================================================================
 */
 
+#if defined(_WIN32)
+# define TRACE_ECALLS
+#endif
+
 OE_Result OE_ECall(
     OE_Enclave* enclave,
     uint32_t func,
@@ -641,7 +629,7 @@ OE_Result OE_ECall(
     uint32_t funcOut = 0;
     uint64_t argOut = 0;
 
-#if 0
+#if defined(TRACE_ECALLS)
     printf("=== OE_ECall()\n");
 #endif
 
@@ -685,7 +673,7 @@ catch:
     /* ATTN: make enclave argument a cookie. */
     /* SetEnclave(NULL); */
 
-#if 0
+#if defined(TRACE_ECALLS)
     printf("=== OE_ECall(): result=%u\n", result);
 #endif
 
@@ -785,4 +773,9 @@ OE_Result OE_CallEnclave(
 
 catch:
     return result;
+}
+
+void __Dump(uint64_t x)
+{
+    printf("__Dump: x=%llx\n", x);
 }
