@@ -19,14 +19,15 @@
 OE_AEP:
 .cfi_startproc
 
-// N.B, the AEP must be a ERESUME(ENCLU[3]) directly, otherwise single step debugging
-//	can't work. When an AEX happens, the rax in processor synthentic state will be 
-//	set to 3, and the rbx will be set to TCS of interrupted enclave thread automatically. 
-//	Host side doesn't need to and shouldn't do additional settings.
+// N.B, the AEP must be a ERESUME(ENCLU[3]) directly, otherwise single step
+// debugging can't work. When an AEX happens, the rax in processor synthentic
+// state will be set to 3, and the rbx will be set to TCS of interrupted
+// enclave thread automatically. Host side doesn't need to and shouldn't do
+// additional settings.
+
 .aep:
 
     ENCLU
-	
     ud2
 
 .cfi_endproc
