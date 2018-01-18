@@ -70,13 +70,14 @@ __morestack:
     mov %rdi, ARG1OUT
     mov %rsi, ARG2OUT
 
-	// Check if it is an OCALL needed to be dispatched.
-	mov %rdi, %r10
-	shr $0x20, %r10
-	cmpq $OE_OCALL_CODE, %r10
-	jne .return_from_ecall
+    // Check if it is an OCALL needed to be dispatched.
+    mov %rdi, %r10
+    shr $48, %r10
+    cmpq $OE_OCALL_CODE, %r10
+    jne .return_from_ecall
 
 .dispatch_ocall:
+
 
     // Save registers that could get clobbered below or by function call.
     push %rdi

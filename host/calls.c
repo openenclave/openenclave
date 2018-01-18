@@ -193,9 +193,7 @@ static OE_Result _DoEENTER(
         }
         else
         {
-printf("<<< OE_Enter()\n");
             OE_Enter(tcs, aep, arg1, arg2, &arg3, &arg4);
-printf(">>> OE_Enter()\n");
         }
 
         *codeOut = OE_GetArgCode(arg3);
