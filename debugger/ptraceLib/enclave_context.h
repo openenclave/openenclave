@@ -1,5 +1,5 @@
-#ifndef _OE_EAL_HOST_H_
-#define _OE_EAL_HOST_H_
+#ifndef _OE_ENCLAVE_CONTEXT_H_
+#define _OE_ENCLAVE_CONTEXT_H_
 #include <openenclave/bits/sgxtypes.h>
 
 int OE_ReadProcessMemory(

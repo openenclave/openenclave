@@ -9,7 +9,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
-#include <openenclave/eal_host.h>
+#include "enclave_context.h"
 
 typedef struct _SSA_Info
 {

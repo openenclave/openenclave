@@ -38,7 +38,6 @@ add_subdirectory(3rdparty)
 add_subdirectory(doc/refman)
 add_subdirectory(enclave)
 add_subdirectory(host)      # convertable to Windows
-add_subdirectory(eal_host)
 add_subdirectory(idl)
 add_subdirectory(debugger)
 add_subdirectory(include)   # convertable to Windows

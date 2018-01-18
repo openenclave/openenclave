@@ -1,11 +1,11 @@
 add_library(oe_ptrace SHARED
     oe_ptrace.c
 	inferior_status.c
+    enclave_context.c
 	)
 
 # we and dependents need the OE includes to compile
 target_link_libraries(oe_ptrace oe_includes)
-target_link_libraries(oe_ptrace oe_eal_host)
 
 find_library(DL_LIB NAMES dl)
 find_package(Threads REQUIRED)
