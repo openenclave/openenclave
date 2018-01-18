@@ -110,7 +110,7 @@ static OE_Result _EnterSim(
     const void* gsbase;
     {
         gsbase = (void*)(enclave->addr + tcs->gsbase);
-        saved_gsbase = OE_GetGSRegisterBase(&saved_gsbase);
+        saved_gsbase = OE_GetGSRegisterBase();
 
         /* Set TD.simulate flag */
         {
@@ -193,7 +193,9 @@ static OE_Result _DoEENTER(
         }
         else
         {
+printf("<<< OE_Enter()\n");
             OE_Enter(tcs, aep, arg1, arg2, &arg3, &arg4);
+printf(">>> OE_Enter()\n");
         }
 
         *codeOut = OE_GetArgCode(arg3);

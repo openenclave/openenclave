@@ -588,7 +588,7 @@ void _OE_NotifyNestedExistStart(
     OE_OCallContext* ocallContext)
 {
     // Check if it is an OCALL.
-    OE_Code code = OE_HI_WORD(arg1);
+    OE_Code code = OE_GetArgCode(arg1);
     if (code != OE_CODE_OCALL)
         return;
 

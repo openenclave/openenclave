@@ -32,16 +32,3 @@ void* OE_GetGSRegisterBase()
     return (void*)_readfsbase_u64();
 #endif
 }
-
-bool OE_TestGSRegisterBase(const void *ptr)
-{
-    void* tmp = NULL;
-
-    if (OE_GetGSRegisterBase(&tmp) != 0)
-        return false;
-
-    if (tmp != ptr)
-        return false;
-
-    return true;
-}

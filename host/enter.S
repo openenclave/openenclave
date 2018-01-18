@@ -70,11 +70,11 @@ __morestack:
     mov %rdi, ARG1OUT
     mov %rsi, ARG2OUT
 
-    // Check if it is an OCALL needed to be dispatched.
-    mov %rdi, %r10
-    shr $0x20, %r10
-    cmpq $OE_OCALL_CODE, %r10
-    jne .return_from_ecall
+	// Check if it is an OCALL needed to be dispatched.
+	mov %rdi, %r10
+	shr $0x20, %r10
+	cmpq $OE_OCALL_CODE, %r10
+	jne .return_from_ecall
 
 .dispatch_ocall:
 
@@ -94,7 +94,8 @@ __morestack:
     //     RSI=arg2
     //     RDX=arg1Out
     //     RCX=arg2Out
-    //     R8=TCS)
+    //     R8=TCS
+    //     R9=RSP
     mov ARG1OUT, %rdi
     mov ARG2OUT, %rsi
     leaq ARG1OUT, %rdx
@@ -147,6 +148,9 @@ __morestack:
 
     ret
 
+.forever:
+	jmp .forever
+
 .size __morestack, .-__morestack
 
 //==============================================================================
@@ -176,14 +180,13 @@ __morestack:
 _OE_HostStackBridge:
 .cfi_startproc
     push %rbp
-.cfi_def_cfa_offset 16
-.cfi_offset rbp,-16
+.cfi_def_cfa_offset		16
+.cfi_offset				rbp,-16
     mov %rsp, %rbp
 .cfi_def_cfa_register	rbp
     sub $HB_STACK_LENGTH, %rsp
 
-    // Save the current return address and frame point of _OE_HostStackBridge 
-    // into stack.
+	// Save the current return address and frame point of _OE_HostStackBridge into stack.
     mov 0(%rbp), %rax
     mov %rax, HB_SAVED_FRAME_POINTER
     mov (1*OE_WORDSIZE)(%rbp), %rax
@@ -194,8 +197,8 @@ _OE_HostStackBridge:
     mov %rsi, HB_SAVED_ARG2
     mov %rdx, HB_SAVED_ARG3
     mov %rcx, HB_SAVED_ARG4
-    mov %r8,  HB_SAVED_ARG5
-    mov %r9, HB_SAVED_ARG6
+	mov %r8,  HB_SAVED_ARG5
+	mov %r9, HB_SAVED_ARG6
 
     // Notify that an ocall happens in current host thread.
 	// _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
@@ -208,8 +211,8 @@ _OE_HostStackBridge:
     mov HB_SAVED_ARG2, %rsi
     mov HB_SAVED_ARG3, %rdx
     mov HB_SAVED_ARG4, %rcx
-    mov HB_SAVED_ARG5, %r8
-    mov HB_SAVED_ARG6, %r9
+	mov HB_SAVED_ARG5, %r8
+	mov HB_SAVED_ARG6, %r9
 
     // Do actual OCALL.
     call __OE_DispatchOCall
@@ -218,14 +221,13 @@ _OE_HostStackBridge:
     mov %rax, HB_SAVED_OCALL_RETURN
 
     // Notify that an ocall is done in current host thread.
-    // _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
-    mov %rbp, %rdi
-    mov HB_SAVED_ARG5, %rsi
+	// _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
+	mov %rbp, %rdi
+	mov HB_SAVED_ARG5, %rsi
     call _OE_NotifyOCallEnd
 
-    // Because of stack stitching, the return address might be overwritten by 
-    // gdb. Restore the current return address and frame point of 
-    // _OE_HostStackBridge from stack.
+	// Because of stack stitching, the return address might be overwritten by gdb.
+    // Restore the current return address and frame point of _OE_HostStackBridge from stack.
     mov HB_SAVED_FRAME_POINTER, %rax
     mov %rax, (0*OE_WORDSIZE)(%rbp)
     mov HB_SAVED_RETURN_ADDR, %rax

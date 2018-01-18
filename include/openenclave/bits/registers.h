@@ -8,9 +8,7 @@
 
 void OE_SetGSRegisterBase(const void *ptr);
 
-void* OE_GetGSRegisterBase();
-
-bool OE_TestGSRegisterBase(const void *ptr);
+void* OE_GetGSRegisterBase(void);
 
 OE_EXTERNC_END
 
