@@ -1,6 +1,7 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/typeinfo.h>
 #include <climits>
 #include <cwchar>
 #include <cstdarg>

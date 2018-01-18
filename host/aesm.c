@@ -5,11 +5,8 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/aesm.h>
+#include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
-
-#if 0
-#define TRACE 1
-#endif
 
 /*
 **==============================================================================
@@ -165,7 +162,7 @@ static OE_Result _PackBytes(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -184,7 +181,7 @@ static int _PackVarInt(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -208,7 +205,7 @@ static OE_Result _UnpackVarInt(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -241,7 +238,7 @@ static OE_Result _UnpackLengthDelimited(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -279,7 +276,7 @@ static OE_Result _WriteRequest(
     OE_Result result = OE_UNEXPECTED;
     mem_t envelope = MEM_DYNAMIC_INIT;
 
-#ifdef TRACE
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     printf("=== _WriteRequest:\n");
     __OE_HexDump(mem_ptr(message), mem_size(message));
 #endif
@@ -303,7 +300,7 @@ static OE_Result _WriteRequest(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     mem_free(&envelope);
 
@@ -361,14 +358,14 @@ static OE_Result _ReadResponse(
         mem_cat(message, mem_ptr(&envelope) + pos, size);
     }
 
-#ifdef TRACE
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     printf("=== _ReadResponse():\n");
     __OE_HexDump(mem_ptr(message), mem_size(message));
 #endif
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     mem_free(&envelope);
 
@@ -482,7 +479,7 @@ OE_Result AESMGetLaunchToken(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     mem_free(&request);
     mem_free(&response);
@@ -543,7 +540,7 @@ OE_Result AESMInitQuote(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     mem_free(&request);
     mem_free(&response);
@@ -635,7 +632,7 @@ OE_Result AESMGetQuote(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }

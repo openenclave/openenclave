@@ -1,5 +1,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/print.h>
 #include "td.h"
 
@@ -24,6 +25,28 @@ void* OE_HostCalloc(size_t nmemb, size_t size)
         OE_Memset(ptr, 0, nmemb * size);
 
     return ptr;
+}
+
+void* OE_HostRealloc(void* ptr, size_t size)
+{
+    OE_ReallocArgs* argIn = NULL;
+    uint64_t argOut = 0;
+
+    if (!(argIn = (OE_ReallocArgs*)OE_HostAllocForCallHost(
+        sizeof(OE_ReallocArgs), 0, false)))
+    {
+        return NULL;
+    }
+
+    argIn->ptr = ptr;
+    argIn->size = size;
+
+    if (OE_OCall(OE_FUNC_REALLOC, (uint64_t)argIn, &argOut) != OE_OK)
+    {
+        return NULL;
+    }
+
+    return (void*)argOut;
 }
 
 void OE_HostFree(void* ptr)
@@ -101,8 +124,8 @@ int __OE_HostPrint(int device, const char* str, size_t len)
         len = OE_Strlen(str);
 
     /* Allocate space for the arguments followed by null-terminated string */
-    if (!(args = (OE_PrintArgs*)OE_HostStackMalloc(
-        sizeof(OE_PrintArgs) + len + 1)))
+    if (!(args = (OE_PrintArgs*)OE_HostAllocForCallHost(
+        sizeof(OE_PrintArgs) + len + 1, 0, false)))
     {
         goto done;
     }

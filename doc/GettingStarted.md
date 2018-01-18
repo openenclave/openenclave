@@ -164,7 +164,7 @@ This builds the entire OpenEnclave SDK, creating the following files.
 | output/lib/enclave/liboelibc.a    | C runtime library for enclave                         |
 | output/lib/enclave/liboelibcxx.a  | C++ runtime library for enclave                       |
 | output/lib/host/liboehost.a       | Library for building host applications                |
-| output/share/doc/openenclave/     | Reference manual for OpenEnclave                      |
+| output/share/doc/openenclave/     | HTML API reference for OpenEnclave                    |
 
 If things break, set the **VERBOSE** make variable to print all invoked commands.
 
@@ -175,7 +175,7 @@ build$ make VERBOSE=1
 Building from within a subtree of the build-tree builds all dependencies for that directory as well. 
 "**make clean**" is handy before a spot-rebuild in verbose mode.
 
-HTML reference documentation is build by default and installed. To update the refman *.md-files
+A successful build only outputs the HTML API reference into the build-tree. To update the refman *.md-files
 in the source-tree, use
 
 ```
@@ -230,7 +230,7 @@ Specify the install-prefix to the cmake call. As of now, there is no real need
 to install the SDK system-wide, so you might use a tree in your home directory:
 
 ```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
 build$ make install
 ```
 

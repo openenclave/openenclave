@@ -12,6 +12,7 @@
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/str.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/trace.h>
 #include "../host/log.h"
 #include "../host/enclave.h"
 
@@ -99,7 +100,7 @@ static OE_Result _GetDate(unsigned int* date)
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -124,7 +125,7 @@ static OE_Result _GetModulus(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -166,7 +167,7 @@ static OE_Result _GetExponent(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -281,7 +282,7 @@ OE_Result _GetQ1AndQ2(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (s)
         BN_free(s);
@@ -434,7 +435,7 @@ OE_Result _InitSigstruct(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 

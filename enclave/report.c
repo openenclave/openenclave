@@ -1,6 +1,8 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/types.h>
 
@@ -74,7 +76,7 @@ OE_Result SGX_CreateReport(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (ti)
         OE_Memset(ti, 0, sizeof(SGX_TargetInfo));
@@ -135,7 +137,7 @@ OE_Result OE_GetReportForRemoteAttestation(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (args)
         OE_HostFree(args);

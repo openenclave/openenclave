@@ -5,6 +5,8 @@
 #include <wchar.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <openenclave/bits/trace.h>
+#include <openenclave/bits/typeinfo.h>
 
 /*
 **==============================================================================
@@ -175,7 +177,7 @@ static OE_Result _GetCount(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -436,7 +438,7 @@ static OE_Result _StructsEq(
     *flag = true;
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -466,7 +468,7 @@ static OE_Result _FieldEq(
     fti = &sti->fields[index];
 
 #if (OE_TRACE_LEVEL >= 2)
-    printf("_FieldEq(): %s.%s\n", sti->name, fti->name);
+    OE_PRINTF("_FieldEq(): %s.%s\n", sti->name, fti->name);
 #endif
 
     if (fti->flags & OE_FLAG_COUNT)
@@ -582,7 +584,7 @@ static OE_Result _FieldEq(
     *flag = true;
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -612,7 +614,7 @@ OE_Result OE_StructEq(
     *flag = true;
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -628,7 +630,7 @@ catch:
 static void _Indent(size_t n)
 {
     for (size_t i = 0; i < n; i++)
-        printf("    ");
+        OE_PRINTF("    ");
 }
 #endif
 
@@ -686,62 +688,62 @@ static void _PrintScalar(
         case OE_NONE_T:
             break;
         case OE_CHAR_T:
-            printf("%02X", *(const char*)p);
+            OE_PRINTF("%02X", *(const char*)p);
             break;
         case OE_WCHAR_T:
-            printf("%02X", *(const wchar_t*)p);
+            OE_PRINTF("%02X", *(const wchar_t*)p);
             break;
         case OE_BOOL_T:
-            printf("%s", (*(const bool*)p) ? "true" : "false");
+            OE_PRINTF("%s", (*(const bool*)p) ? "true" : "false");
             break;
         case OE_INT8_T:
-            printf("%d", *(const int8_t*)p);
+            OE_PRINTF("%d", *(const int8_t*)p);
             break;
         case OE_UCHAR_T:
         case OE_UINT8_T:
-            printf("%u", *(const uint8_t*)p);
+            OE_PRINTF("%u", *(const uint8_t*)p);
             break;
         case OE_SHORT_T:
         case OE_INT16_T:
-            printf("%d", *(const int16_t*)p);
+            OE_PRINTF("%d", *(const int16_t*)p);
             break;
         case OE_USHORT_T:
         case OE_UINT16_T:
-            printf("%u", *(const uint16_t*)p);
+            OE_PRINTF("%u", *(const uint16_t*)p);
             break;
         case OE_INT_T:
         case OE_INT32_T:
-            printf("%d", *(const int32_t*)p);
+            OE_PRINTF("%d", *(const int32_t*)p);
             break;
         case OE_UINT_T:
         case OE_UINT32_T:
-            printf("%u", *(const uint32_t*)p);
+            OE_PRINTF("%u", *(const uint32_t*)p);
             break;
         case OE_LONG_T:
         case OE_INT64_T:
-            printf(OE_INT64_F, *(const int64_t*)p);
+            OE_PRINTF(OE_INT64_F, *(const int64_t*)p);
             break;
         case OE_ULONG_T:
         case OE_UINT64_T:
-            printf(OE_INT64_F, *(const uint64_t*)p);
+            OE_PRINTF(OE_INT64_F, *(const uint64_t*)p);
             break;
         case OE_FLOAT_T:
-            printf("%f", *(const float*)p);
+            OE_PRINTF("%f", *(const float*)p);
             break;
         case OE_DOUBLE_T:
-            printf("%lf", *(const double*)p);
+            OE_PRINTF("%lf", *(const double*)p);
             break;
         case OE_SIZE_T:
-            printf("%zu", *(const size_t*)p);
+            OE_PRINTF("%zu", *(const size_t*)p);
             break;
         case OE_SSIZE_T:
-            printf("%zd", *(const ssize_t*)p);
+            OE_PRINTF("%zd", *(const ssize_t*)p);
             break;
         case OE_STRUCT_T:
             _PrintStruct(fti->sti, p, depth);
             break;
         case OE_VOID_T:
-            printf("%02X", *(const uint8_t*)p);
+            OE_PRINTF("%02X", *(const uint8_t*)p);
             break;
     }
 }
@@ -772,13 +774,13 @@ static void _PrintArray(
 
     if (lineSeparated)
     {
-        printf("\n");
+        OE_PRINTF("\n");
         Iprintf(depth, "{\n");
         depth++;
         _Indent(depth);
     }
     else
-        printf("{ ");
+        OE_PRINTF("{ ");
     
     for (size_t i = 0; i < arrSize; i++)
     {
@@ -786,15 +788,15 @@ static void _PrintArray(
 
         if (i + 1 != arrSize)
         {
-            printf(", ");
+            OE_PRINTF(", ");
             if (lineSeparated)
             {
-                printf("\n");
+                OE_PRINTF("\n");
                 _Indent(depth);
             }
         }
         else
-            printf(" ");
+            OE_PRINTF(" ");
 
         p += elemSize;
     }
@@ -802,11 +804,11 @@ static void _PrintArray(
     if (lineSeparated)
     {
         depth--;
-        printf("\n");
+        OE_PRINTF("\n");
         Iprintf(depth, "}");
     }
     else
-        printf("}");
+        OE_PRINTF("}");
 }
 #endif
 
@@ -822,7 +824,7 @@ static void _PrintStruct(
     if (!ti)
         return;
 
-    printf("struct %s\n", ti->name);
+    OE_PRINTF("struct %s\n", ti->name);
     Iprintf(depth, "{\n");
     depth++;
 
@@ -841,7 +843,7 @@ static void _PrintStruct(
 
         if (fti->flags & OE_FLAG_UNCHECKED)
         {
-            printf("<unchecked type>\n");
+            OE_PRINTF("<unchecked type>\n");
         }
         else if (fti->flags & OE_FLAG_PTR)
         {
@@ -851,36 +853,36 @@ static void _PrintStruct(
 
             if (ptr == NULL)
             {
-                printf("NULL\n");
+                OE_PRINTF("NULL\n");
                 continue;
             }
             else if (fti->flags & OE_FLAG_STRING)
             {
                 _PrintArray(fti, ptr, elemSize, 0xFFFFFFFF, depth);
-                printf("\n");
+                OE_PRINTF("\n");
             }
             else if (fti->flags & OE_FLAG_COUNT)
             {
                 if (_GetCount(ti, structIn, fti, &arrSize) != OE_OK)
                 {
-                    printf("\n");
+                    OE_PRINTF("\n");
                     continue;
                 }
 
                 _PrintArray(fti, ptr, elemSize, arrSize, depth);
-                printf("\n");
+                OE_PRINTF("\n");
             }
         }
         else if (fti->flags & OE_FLAG_ARRAY)
         {
             _PrintArray(fti, p, fti->size / fti->subscript, fti->subscript, 
                 depth);
-            printf("\n");
+            OE_PRINTF("\n");
         }
         else
         {
             _PrintScalar(fti, p, depth);
-            printf("\n");
+            OE_PRINTF("\n");
         }
     }
 
@@ -895,7 +897,7 @@ void OE_PrintStruct(
     const void* structIn)
 {
     _PrintStruct(ti, structIn, 0);
-    printf("\n");
+    OE_PRINTF("\n");
 }
 #endif
 
@@ -996,7 +998,7 @@ static OE_Result _ClonePtrField(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (result != OE_OK)
     {
@@ -1060,7 +1062,7 @@ static OE_Result _CopyField(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     
     return result;
 }
@@ -1085,7 +1087,7 @@ static OE_Result _DestroyStructs(
 
     return OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -1117,7 +1119,7 @@ OE_Result OE_CopyStruct(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     
     return result;
 }
@@ -1161,7 +1163,7 @@ static OE_Result _CloneStructs(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -1183,7 +1185,7 @@ static OE_Result _CloneBlob(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -1212,7 +1214,7 @@ static OE_Result _ApplyStructsPtrProc(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -1312,7 +1314,7 @@ static OE_Result _ApplyStructPtrProc(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -1340,7 +1342,7 @@ OE_Result OE_DestroyStruct(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -1360,7 +1362,7 @@ OE_Result OE_FreeStruct(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -1515,7 +1517,7 @@ OE_Result OE_ClearArg(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -1559,7 +1561,7 @@ OE_Result OE_ClearArgByName(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -1710,7 +1712,7 @@ OE_Result OE_SetArg(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -1810,7 +1812,7 @@ OE_Result OE_InitArg(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -1838,7 +1840,7 @@ OE_Result OE_SetArgByName(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -1874,7 +1876,7 @@ static OE_Result _CheckOptConstraint(
 
     OE_THROW(OE_OK);
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -1906,7 +1908,7 @@ OE_Result OE_CheckPreConstraints(
 
     OE_THROW(OE_OK);
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -1936,7 +1938,7 @@ OE_Result OE_CheckPostConstraints(
 
     OE_THROW(OE_OK);
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -2037,7 +2039,7 @@ static OE_Result _TestOrFillPadding(
 
     OE_THROW(OE_OK);
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -2068,7 +2070,7 @@ OE_Result OE_CheckStruct(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }

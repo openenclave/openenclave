@@ -1,14 +1,17 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 #include "../args.h"
 
-OE_EXPORT void OE_Constructor(void)
+char* OE_HostStackStrdup(const char* str)
 {
-    OE_HostPrintf("Hello from Echo constructor!\n");
-}
+    size_t n = OE_Strlen(str);
 
-OE_EXPORT void OE_Destructor(void)
-{
-    OE_HostPrintf("Hello from Echo destructor!\n");
+    char* dup = (char*)OE_HostAllocForCallHost(n + 1, 0, false);
+
+    if (dup)
+        OE_Memcpy(dup, str, n + 1);
+
+    return dup;
 }
 
 OE_ECALL void Echo(void* args_)

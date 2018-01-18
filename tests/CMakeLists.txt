@@ -10,6 +10,7 @@ add_subdirectory(aesm)
 add_subdirectory(ecall)
 add_subdirectory(echo)
 add_subdirectory(file)
+add_subdirectory(hostcalls)
 
 if(ENABLE_LIBC_TESTS)
     add_subdirectory(libc)

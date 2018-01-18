@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <openenclave/enclave.h>
+#include <openenclave/bits/calls.h>
 #include "../host/ocalls.h"
 #include "../host/args.h"
 

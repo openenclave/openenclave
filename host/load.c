@@ -9,6 +9,7 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/elf.h>
+#include <openenclave/bits/trace.h>
 
 extern void *memalign(size_t alignment, size_t size);
 
@@ -144,7 +145,7 @@ OE_Result __OE_LoadSegments(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (result != OE_OK)
     {
@@ -207,7 +208,7 @@ OE_Result __OE_CalculateSegmentsSize(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -277,7 +278,7 @@ OE_Result __OE_CombineSegments(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (result != OE_OK)
         free(data);

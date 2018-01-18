@@ -20,6 +20,17 @@ void HandleMalloc(uint64_t argIn, uint64_t* argOut)
         *argOut = (uint64_t)malloc(argIn);
 }
 
+void HandleRealloc(uint64_t argIn, uint64_t* argOut)
+{
+    OE_ReallocArgs* args = (OE_ReallocArgs*)argIn;
+
+    if (args)
+    {
+        if (argOut)
+            *argOut = (uint64_t)realloc(args->ptr, args->size);
+    }
+}
+
 void HandleFree(uint64_t arg)
 {
     free((void*)arg);

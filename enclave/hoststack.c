@@ -1,10 +1,12 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/utils.h>
 #include "td.h"
 
-void *OE_HostStackMemalign(
+void *OE_HostAllocForCallHost(
     size_t size, 
-    size_t alignment)
+    size_t alignment,
+    bool isZeroInit)
 {
     TD* td = TD_Get();
 
@@ -42,39 +44,12 @@ void *OE_HostStackMemalign(
 
     void* ptr = (void*)td->host_rsp;
 
-#if 0
-    OE_Memset(ptr, 0xAA, total_size);
-#endif
-
     /* Align the memory */
     ptr = (void*)OE_AlignPointer(ptr, alignment);
 
+    /* Clear the memory if requested */
+    if (ptr && isZeroInit)
+        OE_Memset(ptr, 0, size);
+        
     return ptr;
-}
-
-void *OE_HostStackMalloc(size_t size)
-{
-    return OE_HostStackMemalign(size, sizeof(uint64_t));
-}
-
-void *OE_HostStackCalloc(size_t nmem, size_t size)
-{
-    void* ptr = OE_HostStackMalloc(nmem * size);
-    
-    if (ptr)
-        OE_Memset(ptr, 0, nmem * size);
-
-    return ptr;
-}
-
-char* OE_HostStackStrdup(const char* s)
-{
-    size_t n = OE_Strlen(s);
-
-    char* r = (char*)OE_HostStackMalloc(n + 1);
-
-    if (r)
-        OE_Memcpy(r, s, n + 1);
-
-    return r;
 }

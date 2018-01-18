@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <openenclave/host.h>
 #include <openenclave/bits/files.h>
+#include <openenclave/bits/trace.h>
 
 bool __OE_FileExists(
     const char* path)
@@ -62,7 +63,7 @@ OE_Result __OE_LoadFile(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (result != OE_OK)
     {
@@ -108,7 +109,7 @@ OE_Result __OE_LoadPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (result != OE_OK)
         free(data);
