@@ -485,10 +485,6 @@ OE_CHECK_SIZE(sizeof(OE_ThreadData),152);
 
 OE_ThreadData* OE_GetThreadData(void);
 
-int OE_ThreadWait(OE_ThreadData* self);
-
-int OE_ThreadWake(OE_ThreadData* self);
-
 /*
 **==============================================================================
 **
