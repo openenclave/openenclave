@@ -39,7 +39,7 @@
 **
 ** The BREAK section expands by increasing the BRK value. The MAPPED section
 ** expands by decreasing the MAP value. The BRK and MAP value grow towards
-** one another until both BREAK memory and MAPPED all memory is exhausted.
+** one another until all unassigned memory is exhausted.
 **
 ** A VAD (virtual address descriptor) is a structure that defines a memory
 ** region obtained with the MMAP or MREMAP operations. A VAD keeps track
