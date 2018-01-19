@@ -23,7 +23,7 @@ else()
         BUILD_COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
         INSTALL_COMMAND $(CMAKE_COMMAND) -E copy_directory
             html ${OE_DOCDIR}/openenclave/html
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
     )
     install (DIRECTORY ${OE_DOCDIR}/openenclave/html DESTINATION ${CMAKE_INSTALL_DOCDIR})
 

@@ -27,15 +27,8 @@
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/registers.h>
+#include <openenclave/bits/trace.h>
 #include "ocalls.h"
-
-#define TRACE 0
-
-#if 0
-# define D(X) X
-#else
-# define D(X)
-#endif
 
 void OE_AEP(void);
 
@@ -134,7 +127,7 @@ static OE_Result _EnterSim(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -175,10 +168,8 @@ static OE_Result _DoEENTER(
     if (!codeOut || !funcOut || !argOut)
         OE_THROW(OE_INVALID_PARAMETER);
 
-#if (TRACE == 2)
-    printf("_DoEENTER(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%lx)\n",
+    OE_TRACE_INFO("_DoEENTER(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%lx)\n",
         tcs, aep, codeIn, funcIn, argIn);
-#endif
 
     /* Call OE_Enter() assembly function (enter.S) */
     {
@@ -203,7 +194,7 @@ static OE_Result _DoEENTER(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -315,7 +306,7 @@ OE_Result OE_RegisterOCall(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     OE_H_MutexUnlock(&_ocalls_lock);
     return result;
 }
@@ -353,6 +344,10 @@ static OE_Result _HandleOCALL(
 
         case OE_FUNC_MALLOC:
             HandleMalloc(argIn, argOut);
+            break;
+
+        case OE_FUNC_REALLOC:
+            HandleRealloc(argIn, argOut);
             break;
 
         case OE_FUNC_FREE:
@@ -431,7 +426,7 @@ static OE_Result _HandleOCALL(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -664,7 +659,7 @@ OE_Result OE_ECall(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
@@ -771,7 +766,7 @@ OE_Result OE_CallEnclave(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 

@@ -1,6 +1,7 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 
 OE_Result SGX_InitQuote(
@@ -17,7 +18,7 @@ OE_Result SGX_InitQuote(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (aesm)
         AESMDisconnect(aesm);
@@ -72,7 +73,7 @@ OE_Result SGX_GetQuote(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (aesm)
         AESMDisconnect(aesm);
@@ -128,7 +129,7 @@ OE_Result OE_GetQuote(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }

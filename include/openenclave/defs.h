@@ -13,6 +13,8 @@
 
 #define OE_DEPRECATED(MSG) __attribute__((deprecated(MSG)))
 
+#define UNREFERENCED_PARAMETER(P) (void)(P)
+
 #if defined(__linux__)
 # define OE_ALWAYS_INLINE __attribute__((always_inline))
 #elif defined(_WIN32)

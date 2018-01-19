@@ -1,3 +1,8 @@
+/**
+ * This file is only intended as an include into typeinfo.c for 
+ * defining char and wchar_t strings in the absence of templates in C.
+ * FUNCTION, TYPE, PREFIX and FORMAT are all expected to be macro substitutions.
+ */
 static void FUNCTION(
     const TYPE* str,
     size_t len)
@@ -38,7 +43,7 @@ static void FUNCTION(
                     printf("\\a");
                     break;
                 default:
-                    printf("\\%03o", (unsigned int)c);
+                    printf("\\%03o", (uint32_t)c);
                     break;
             }
         }

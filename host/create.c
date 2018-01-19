@@ -25,6 +25,7 @@
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/trace.h>
 #include "enclave.h"
 #include "memalign.h"
 
@@ -157,7 +158,7 @@ static OE_Result _AddSegmentPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -202,7 +203,7 @@ static OE_Result _AddFilledPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -323,7 +324,7 @@ static OE_Result _AddControlPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -374,7 +375,7 @@ static OE_Result _CalculateEnclaveSize(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -409,7 +410,7 @@ static OE_Result _AddRelocationPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -443,7 +444,7 @@ static OE_Result _AddECallPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -613,7 +614,7 @@ static OE_Result _AddPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (segpages)
         MemalignFree(segpages);
@@ -712,7 +713,7 @@ static OE_Result _BuildECallArray(OE_Enclave* enclave, Elf64* elf)
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -734,7 +735,7 @@ static OE_Result _SaveTextAddress(OE_Enclave* enclave, Elf64* elf)
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -811,7 +812,7 @@ static OE_Result _BuildECallData(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -1001,7 +1002,7 @@ OE_Result __OE_BuildEnclave(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (aesm)
         AESMDisconnect(aesm);
@@ -1131,7 +1132,7 @@ OE_Result OE_CreateEnclave(
     *enclaveOut = enclave;
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (result != OE_OK)
     {
@@ -1212,7 +1213,7 @@ OE_Result OE_TerminateEnclave(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }

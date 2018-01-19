@@ -7,6 +7,7 @@ int OE_Once(
     if (!once)
         return -1;
 
+    /* Use doubled-checked locking technique to avoid subsequence locks */
     if (*once == 0)
     {
         static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
