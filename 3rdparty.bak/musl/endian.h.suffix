@@ -1,3 +1,0 @@
-#pragma GCC diagnostic pop
-
-#endif /* __MUSL_ENDIAN_H_WRAPPER */
