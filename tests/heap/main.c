@@ -11,6 +11,7 @@ static size_t PGSZ = OE_PAGE_SIZE;
 
 static bool _coverage[OE_HEAP_COVERAGE_N];
 
+/* Merge heap implementation coverage branches into _coverage[] variable */
 static void _MergeCoverage(const OE_Heap* heap)
 {
     for (size_t i = 0; i < OE_HEAP_COVERAGE_N; i++)
@@ -20,6 +21,7 @@ static void _MergeCoverage(const OE_Heap* heap)
     }
 }
 
+/* Check that all branches were reached in the heap implementation */
 static void _CheckCoverage()
 {
     for (size_t i = 0; i < OE_HEAP_COVERAGE_N; i++)
@@ -36,6 +38,7 @@ static void _CheckCoverage()
     }
 }
 
+/* Cound the VADs in the VAD list */
 static size_t _CountVADs(const OE_VAD* list)
 {
     const OE_VAD* p;
@@ -47,6 +50,7 @@ static size_t _CountVADs(const OE_VAD* list)
     return count;
 }
 
+/* Initialize the heap object */
 static int _InitHeap(OE_Heap* heap, size_t size)
 {
     void* base;
@@ -68,11 +72,13 @@ static int _InitHeap(OE_Heap* heap, size_t size)
     return 0;
 }
 
+/* Free the base of the heap */
 static void _FreeHeap(OE_Heap* heap)
 {
     free((void*)heap->base);
 }
 
+/* Check that the VAD list is sorted by starting address */
 static bool _IsSorted(const OE_VAD* list)
 {
     const OE_VAD* p;
@@ -114,6 +120,7 @@ static bool _IsFlush(const OE_Heap* heap, const OE_VAD* list)
     return true;
 }
 
+/* Helper for calling OE_HeapMap() */
 static void* _HeapMap(
     OE_Heap* heap,
     void* addr,
@@ -130,6 +137,7 @@ static void* _HeapMap(
     return result;
 }
 
+/* Helper for calling OE_HeapMap() without printing an error */
 static void* _HeapMapNoErr(
     OE_Heap* heap,
     void* addr,
@@ -143,6 +151,7 @@ static void* _HeapMapNoErr(
     return result;
 }
 
+/* Helper for calling OE_HeapRemap() */
 static void* _HeapRemap(
     OE_Heap* heap,
     void* addr,
@@ -159,6 +168,7 @@ static void* _HeapRemap(
     return result;
 }
 
+/* Helper for calling OE_HeapUnmap() */
 static int _HeapUnmap(
     OE_Heap* heap,
     void* address,
@@ -172,6 +182,13 @@ static int _HeapUnmap(
     return rc;
 }
 
+/*
+** TestHeap1()
+**
+**     Test OE_HeapMap() and OE_HeapUnmap() and check expected state between
+**     operations. Unmap leaves gaps and then map checks to see if those gaps
+**     are filled.
+*/
 void TestHeap1()
 {
     OE_Heap h;
@@ -292,6 +309,14 @@ void TestHeap1()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestHeap2()
+**
+**     Test OE_HeapMap() and OE_HeapUnmap() and check expected state between
+**     operations. Map several regions and then unmap regions leaving gaps.
+**     Map again and see if the new regions were allocated within the expected
+**     gaps.
+*/
 void TestHeap2()
 {
     OE_Heap h;
@@ -374,6 +399,13 @@ void TestHeap2()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestHeap3()
+**
+**     Test mapping N regions. Then free the first 2 regions. Check that
+**     subsequent mapping will allocate memory over those leading regions.
+**
+*/
 void TestHeap3()
 {
     OE_Heap h;
@@ -457,6 +489,13 @@ void TestHeap3()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestHeap4()
+**
+**     Perform mapping and then negative test to unmap memory that is not
+**     validly mapped.
+**
+*/
 void TestHeap4()
 {
     OE_Heap h;
@@ -501,6 +540,13 @@ void TestHeap4()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestHeap5()
+**
+**     Perform mapping of separate regions and then try unmapping the entire
+**     space with a single unmap.
+**
+*/
 void TestHeap5()
 {
     OE_Heap h;
@@ -542,6 +588,13 @@ void TestHeap5()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestHeap6()
+**
+**     Perform mapping of large segment and then try unmapping that segment
+**     with several unmaps of smaller regions.
+**
+*/
 void TestHeap6()
 {
     OE_Heap h;
@@ -575,6 +628,13 @@ void TestHeap6()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestRemap1()
+** 
+**     Test remap that enlarges the allocation. Then test remap that shrinks
+**     the region.
+**
+*/
 void TestRemap1()
 {
     OE_Heap h;
@@ -633,6 +693,13 @@ void TestRemap1()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestRemap2()
+** 
+**     Map two regions so that they are contiguous. Then try remapping the
+**     combined region, making it bigger.
+**
+*/
 void TestRemap2()
 {
     OE_Heap h;
@@ -642,7 +709,6 @@ void TestRemap2()
     size_t new_size;
 
     assert(_InitHeap(&h, size) == 0);
-
 
     /* Map N pages */
     old_size = 8*PGSZ;
@@ -674,6 +740,13 @@ void TestRemap2()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestRemap3()
+** 
+**     Map two regions so that they are contiguous. Remap trailing portion of
+**     combined region, make it lareger.
+**
+*/
 void TestRemap3()
 {
     OE_Heap h;
@@ -715,6 +788,13 @@ void TestRemap3()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestRemap3()
+** 
+**     Map two regions so that they are contiguous. Unmap trailing porition
+**     of combined regions.
+**
+*/
 void TestRemap4()
 {
     OE_Heap h;
@@ -790,6 +870,13 @@ static bool _CheckMem(Elem* elem)
     return true;
 }
 
+/*
+** TestHeapRandomly()
+** 
+**     Test random allocation of memory. Loop such that each iteration
+**     randomly chooses to map, unmap, or remap memory. Finally unmap
+**     all memory.
+*/
 void TestHeapRandomly()
 {
     OE_Heap h;
@@ -881,6 +968,12 @@ void TestHeapRandomly()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/*
+** TestOutOfMemory()
+**
+**     Loop while mapping memory until all memory is exhausted.
+**
+*/
 void TestOutOfMemory()
 {
     OE_Heap h;
