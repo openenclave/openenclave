@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <pthread.h>
 #include "../args.h"
 
 static OE_Mutex mutex = OE_MUTEX_INITIALIZER;
@@ -24,9 +25,20 @@ static void _TestParallelMallocs()
     }
 }
 
+/* Check consistency of OE/pthread mutex static-initializer layout */
+void TestMutexLayoutConsistency()
+{
+    assert(sizeof(OE_Mutex) == sizeof(pthread_mutex_t));
+    static pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
+    static OE_Mutex m2 = OE_MUTEX_INITIALIZER;
+    assert(memcmp(&m1, &m2, sizeof(pthread_mutex_t)) == 0);
+}
+
 OE_ECALL void TestMutex(void* args_)
 {
     TestMutexArgs* args = (TestMutexArgs*)args_;
+
+    TestMutexLayoutConsistency();
 
     OE_MutexLock(&mutex);
     args->count++;
