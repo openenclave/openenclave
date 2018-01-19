@@ -48,6 +48,7 @@ typedef struct _Chunk
 }
 Chunk;
 
+/* Randomly test malloc/free/realloc on random sizes */
 void TestAllocFree(
     size_t num_chunks, 
     size_t iterations, 
