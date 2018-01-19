@@ -1,0 +1,33 @@
+#include <tar.h>
+#define C(n) switch(n){case n:;}
+static void f()
+{
+{char s[] = "" TMAGIC;}
+C(TMAGLEN)
+{char s[] = "" TVERSION;}
+C(TVERSLEN)
+C(REGTYPE)
+C(AREGTYPE)
+C(LNKTYPE)
+C(SYMTYPE)
+C(CHRTYPE)
+C(BLKTYPE)
+C(DIRTYPE)
+C(FIFOTYPE)
+C(CONTTYPE)
+C(TSUID)
+C(TSGID)
+#ifdef _XOPEN_SOURCE
+C(TSVTX)
+#endif
+C(TUREAD)
+C(TUWRITE)
+C(TUEXEC)
+C(TGREAD)
+C(TGWRITE)
+C(TGEXEC)
+C(TOREAD)
+C(TOWRITE)
+C(TOEXEC)
+}
+

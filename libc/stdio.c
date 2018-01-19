@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <string.h>
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/print.h>
 #include "../3rdparty/musl/musl/src/internal/stdio_impl.h"

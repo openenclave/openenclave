@@ -1,0 +1,2 @@
+add_executable(SampleAppHost CallWrappers.cpp SampleAppHost.cpp)
+target_link_libraries(SampleAppHost oehostapp)

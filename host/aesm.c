@@ -5,17 +5,14 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/aesm.h>
+#include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 
-#if 0
-#define TRACE 1
-#endif
-
-/* 
+/*
 **==============================================================================
 **
-** This module implements a socket client to AESM (SGX Application Enclave 
-** Services Manager). On linux, this service is called 'aesmd'. See if it 
+** This module implements a socket client to AESM (SGX Application Enclave
+** Services Manager). On linux, this service is called 'aesmd'. See if it
 ** is running with this command:
 **
 **     $ services aesmd status
@@ -57,7 +54,7 @@ static uint32_t _MakeTag(
     unsigned int fieldnum,
     unsigned int wiretype)
 {
-    return (fieldnum << 3) | wiretype;    
+    return (fieldnum << 3) | wiretype;
 }
 
 static int _PackVariantUint32(
@@ -68,7 +65,7 @@ static int _PackVariantUint32(
     uint8_t* p = data;
     const uint8_t* end = data + sizeof(data);
 
-    while (x >= 0x80) 
+    while (x >= 0x80)
     {
         if (p == end)
             return -1;
@@ -123,7 +120,7 @@ static ssize_t _UnpackVariantUint32(
 
     p = (const uint8_t*)mem_ptr_at(buf, pos);
 
-    do 
+    do
     {
         /* Check for overflow */
         if (count == sizeof(uint32_t))
@@ -165,7 +162,7 @@ static OE_Result _PackBytes(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -184,7 +181,7 @@ static int _PackVarInt(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -208,7 +205,7 @@ static OE_Result _UnpackVarInt(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -220,7 +217,7 @@ static OE_Result _UnpackLengthDelimited(
     size_t dataSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    uint8_t tag;
+    uint8_t tag = 0;
     uint32_t size;
 
     if ((*pos = _UnpackTag(buf, *pos, &tag)) == -1)
@@ -241,7 +238,7 @@ static OE_Result _UnpackLengthDelimited(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -251,7 +248,7 @@ static int _Read(
     size_t size)
 {
     ssize_t n;
-    
+
     if ((n = read(sock, data, size)) != size)
         return -1;
 
@@ -264,7 +261,7 @@ static int _Write(
     size_t size)
 {
     ssize_t n;
-    
+
     if ((n = write(sock, data, size)) != size)
         return -1;
 
@@ -279,7 +276,7 @@ static OE_Result _WriteRequest(
     OE_Result result = OE_UNEXPECTED;
     mem_t envelope = MEM_DYNAMIC_INIT;
 
-#ifdef TRACE
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     printf("=== _WriteRequest:\n");
     __OE_HexDump(mem_ptr(message), mem_size(message));
 #endif
@@ -295,7 +292,7 @@ static OE_Result _WriteRequest(
         /* Send message size */
         if (_Write(aesm->sock, &size, sizeof(uint32_t)) != 0)
             OE_THROW(OE_FAILURE);
-            
+
         /* Send message data */
         if (_Write(aesm->sock, mem_ptr(&envelope), mem_size(&envelope)) != 0)
             OE_THROW(OE_FAILURE);
@@ -303,7 +300,7 @@ static OE_Result _WriteRequest(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     mem_free(&envelope);
 
@@ -361,14 +358,14 @@ static OE_Result _ReadResponse(
         mem_cat(message, mem_ptr(&envelope) + pos, size);
     }
 
-#ifdef TRACE
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     printf("=== _ReadResponse():\n");
     __OE_HexDump(mem_ptr(message), mem_size(message));
 #endif
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     mem_free(&envelope);
 
@@ -449,7 +446,7 @@ OE_Result AESMGetLaunchToken(
         OE_TRY(_PackBytes(&request, 2, modulus, OE_KEY_SIZE));
 
         /* Pack ATTRIBUTES */
-        OE_TRY(_PackBytes(&request, 3, attributes, 
+        OE_TRY(_PackBytes(&request, 3, attributes,
             sizeof(SGX_Attributes)));
 
         /* Pack TIMEOUT */
@@ -469,7 +466,7 @@ OE_Result AESMGetLaunchToken(
         /* Unpack the error code */
         {
             uint32_t errcode;
-            OE_TRY(_UnpackVarInt(&response, &pos, 1, &errcode)); 
+            OE_TRY(_UnpackVarInt(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
                 OE_THROW(OE_FAILURE);
@@ -482,7 +479,7 @@ OE_Result AESMGetLaunchToken(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     mem_free(&request);
     mem_free(&response);
@@ -526,7 +523,7 @@ OE_Result AESMInitQuote(
         /* Unpack the error code */
         {
             uint32_t errcode;
-            OE_TRY(_UnpackVarInt(&response, &pos, 1, &errcode)); 
+            OE_TRY(_UnpackVarInt(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
                 OE_THROW(OE_FAILURE);
@@ -543,7 +540,7 @@ OE_Result AESMInitQuote(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     mem_free(&request);
     mem_free(&response);
@@ -616,7 +613,7 @@ OE_Result AESMGetQuote(
         /* Unpack the error code */
         {
             uint32_t errcode;
-            OE_TRY(_UnpackVarInt(&response, &pos, 1, &errcode)); 
+            OE_TRY(_UnpackVarInt(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
                 OE_THROW(OE_FAILURE);
@@ -628,14 +625,14 @@ OE_Result AESMGetQuote(
         /* Unpack optional reportOut */
         if (reportOut)
         {
-            OE_TRY(_UnpackLengthDelimited(&response, &pos, 3, reportOut, 
+            OE_TRY(_UnpackLengthDelimited(&response, &pos, 3, reportOut,
                 sizeof(SGX_Report)));
         }
     }
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }

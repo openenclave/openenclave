@@ -1,0 +1,20 @@
+T(RN,                  0x0p+0,           0, 0)
+T(RN,                 -0x0p+0,           0, 0)
+T(RN,                  0x1p-1,           0, INEXACT)
+T(RN,                 -0x1p-1,           0, INEXACT)
+T(RN,                  0x1p+0,           1, 0)
+T(RN,                 -0x1p+0,          -1, 0)
+T(RN,             0x1.0001p+0,           1, INEXACT)
+T(RN,            -0x1.0001p+0,          -1, INEXACT)
+T(RN,             0x1.ffffp-1,           1, INEXACT)
+T(RN,            -0x1.ffffp-1,          -1, INEXACT)
+T(RN,                0x1p-100,           0, INEXACT)
+T(RN,               -0x1p-100,           0, INEXACT)
+// TODO: return value is unspecified
+#if INVALID
+T(RN,                     nan,           0, INVALID)
+T(RN,                     inf,           0, INVALID)
+T(RN,                    -inf,           0, INVALID)
+T(RN,                0x1p+100,           0, INVALID)
+T(RN,               -0x1p+100,           0, INVALID)
+#endif

@@ -112,6 +112,8 @@
 #include <openenclave/bits/heap.h>
 #include <openenclave/thread.h>
 #include <openenclave/bits/utils.h>
+#include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/trace.h>
 
 #ifdef OE_BUILD_UNTRUSTED
 # include <stdio.h>

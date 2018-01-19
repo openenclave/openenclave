@@ -1,0 +1,60 @@
+
+OpenEnclave has dependencies on the following open source packages. Licensing
+information for these is shown below.
+
+    (*) dlmalloc
+
+        website: http://g.oswego.edu/dl/html/malloc.html
+
+        download: 
+            wget ftp://gee.cs.oswego.edu/pub/misc/malloc.h
+            wget ftp://gee.cs.oswego.edu/pub/misc/malloc.c
+
+        license: public domain
+
+    (*) musl libc 
+
+        website: https://www.musl-libc.org
+
+        download: http://www.musl-libc.org/releases/musl-1.1.10.tar.gz
+
+        license: MIT/BSD (see 3rdparty/musl/musl/COPYRIGHT)
+
+    (*) openssl:
+
+        website: https://www.openssl.org
+
+        download: https://www.openssl.org/source/openssl-1.0.21.tar.gz
+
+        license: "Apache-style" (see 3rdparty/openssl/openssl/LICENSE)
+
+    (*) libcxxrt:
+
+        website: none
+
+        download: https://github.com/pathscale/libcxxrt
+
+        license: BSD (see 3rdparty/libcxxrt/libcxxrt/LICENSE)
+
+    (*) libunwind:
+
+        website: none
+
+        download: https://github.com/pathscale/libunwind
+
+        license: MIT (see 3rdparty/libunwind/libunwind/LICENSE)
+
+    (*) libcxx (LLVM):
+
+        website: http://libcxx.llvm.org
+
+        download: http://llvm.org/svn/llvm-project/libcxx/trunk
+
+        license: "BSD-Like" and MIT (see 3rdparty/libcxx/trunk/LICENSE.TXT)
+
+    (*) mbedtls:
+
+        download: https://tls.mbed.org/download/mbedtls-2.6.0-apache.tgz
+
+        license: Apache 2.0 (see 3rdparty/mbedtls/mbedtls/LICENSE)
+

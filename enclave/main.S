@@ -76,6 +76,20 @@ OE_Main:
 
 .call_function:
 
+	// Get the host stack pointer.
+	mov %gs:TD_host_rsp, %r8
+	mov %gs:TD_host_rbp, %r9
+
+	// Construct the frame and align the stack.
+	pushq $0
+	pushq %r8
+	pushq %rcx
+	pushq %r9
+.cfi_def_cfa_offset		16
+.cfi_offset				rbp, -16
+	mov %rsp, %rbp
+.cfi_def_cfa_register	rbp
+	
     // Call __OE_HandleMain(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX)
     mov %rax, %rdx 
     mov %rbx, %rcx
@@ -86,3 +100,5 @@ OE_Main:
     jmp .forever
 
 .cfi_endproc
+
+.size OE_Main, .-OE_Main

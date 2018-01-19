@@ -1,0 +1,5 @@
+T(RN,   -0x1.0223ap+3,   0x1.22484cp+2,   0x1.52fb12p-1,  -0x1.1f6956p+5,    -0x1.81b2p-3, INEXACT)
+T(RN,   0x1.161868p+2,  -0x1.1c6a6cp+3,   0x1.ab3ff8p-5,  -0x1.348bdep+5,    0x1.9eb7cp-2, INEXACT)
+T(RN,  -0x1.0c34b4p+3,  -0x1.61bde2p+1,   0x1.eb4a2ep+2,   0x1.ed6e28p+4,    0x1.392a3p-2, INEXACT)
+T(RN,   -0x1.a206fp+2,    0x1.24528p+2,  -0x1.95882cp-1,  -0x1.ea02e2p+4,      0x1.716p-3, INEXACT)
+T(RN,   0x1.288bbcp+3,   0x1.33eddap+2,  -0x1.1e159ep-1,   0x1.603ac2p+5,    0x1.ff5e8p-5, INEXACT)

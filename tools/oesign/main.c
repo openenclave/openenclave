@@ -12,6 +12,7 @@
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/str.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/trace.h>
 #include "../host/log.h"
 #include "../host/enclave.h"
 
@@ -83,7 +84,7 @@ static OE_Result _GetDate(unsigned int* date)
         char s[9];
         unsigned char b[8];
 
-        snprintf(s, sizeof(s), "%04u%02u%02u", 
+        snprintf(s, sizeof(s), "%04u%02u%02u",
             tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
 
         for (i = 0; i < sizeof(b); i++)
@@ -99,7 +100,7 @@ static OE_Result _GetDate(unsigned int* date)
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -124,7 +125,7 @@ static OE_Result _GetModulus(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -166,7 +167,7 @@ static OE_Result _GetExponent(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -281,7 +282,7 @@ OE_Result _GetQ1AndQ2(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (s)
         BN_free(s);
@@ -317,9 +318,9 @@ OE_Result _InitSigstruct(
     /* SGX_SigStruct.header */
     {
         const uint8_t bytes[] =
-        { 
+        {
             0x06,0x00,0x00,0x00,0xe1,0x00,
-            0x00,0x00,0x00,0x00,0x01,0x00 
+            0x00,0x00,0x00,0x00,0x01,0x00
         };
 
         memcpy(sigstruct->header, bytes, sizeof(sigstruct->header));
@@ -337,8 +338,8 @@ OE_Result _InitSigstruct(
     /* SGX_SigStruct.header2 */
     {
         const uint8_t bytes[] =
-        { 
-            0x01, 0x01, 0x00, 0x00, 0x60, 0x00, 0x00, 0x00, 
+        {
+            0x01, 0x01, 0x00, 0x00, 0x60, 0x00, 0x00, 0x00,
             0x60, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00
         };
 
@@ -400,11 +401,11 @@ OE_Result _InitSigstruct(
             OE_SHA256Final(&context, &sha256);
 
             if (!RSA_sign(
-                NID_sha256, 
+                NID_sha256,
                 sha256.buf,
-                sizeof(sha256), 
+                sizeof(sha256),
                 signature,
-                &signatureSize, 
+                &signatureSize,
                 rsa))
             {
                 fprintf(stderr, "OOPS!\n");
@@ -434,21 +435,22 @@ OE_Result _InitSigstruct(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
+//
+// Replace .so-extension with .signed.so. If there is no .so extension,
+// append .signed.so.
+//
 static char* _MakeSignedLibName(
     const char* path)
 {
     const char* p;
     mem_t buf = MEM_DYNAMIC_INIT;
 
-    if (!(p = strrchr(path, '.')))
-        return NULL;
-
-    if (strcmp(p, ".so") != 0)
-        return NULL;
+    if ((!(p = strrchr(path, '.'))) || (strcmp(p, ".so") != 0))
+        p = path + strlen(path);
 
     mem_append(&buf, path, p - path);
     mem_append(&buf, ".signed.so", 11);
@@ -531,13 +533,13 @@ static int _SignAndWriteSharedLib(
         sec.sigstruct = *sigstruct;
 
         if (Elf64_AddSection(
-            &elf, 
-            secname, 
+            &elf,
+            secname,
             SHT_PROGBITS,
-            &sec, 
+            &sec,
             sizeof(sec)) != 0)
         {
-            fprintf(stderr, "%s: failed to add seciton\n", arg0);
+            fprintf(stderr, "%s: failed to add section\n", arg0);
             goto done;
         }
     }
@@ -633,7 +635,7 @@ int LoadConfigFile(
         {
             if (str_u64(&rhs, &settings->debug) != 0)
             {
-                fprintf(stderr, "%s: %s(%zu): bad value for 'Debug'\n", 
+                fprintf(stderr, "%s: %s(%zu): bad value for 'Debug'\n",
                     arg0, path, line);
                 goto done;
             }
@@ -642,7 +644,7 @@ int LoadConfigFile(
         {
             if (str_u64(&rhs, &settings->numHeapPages) != 0)
             {
-                fprintf(stderr, "%s: %s(%zu): bad value for 'NumHeapPages'\n", 
+                fprintf(stderr, "%s: %s(%zu): bad value for 'NumHeapPages'\n",
                     arg0, path, line);
                 goto done;
             }
@@ -651,7 +653,7 @@ int LoadConfigFile(
         {
             if (str_u64(&rhs, &settings->numStackPages) != 0)
             {
-                fprintf(stderr, "%s: %s(%zu): bad value for 'NumStackPages'\n", 
+                fprintf(stderr, "%s: %s(%zu): bad value for 'NumStackPages'\n",
                     arg0, path, line);
                 goto done;
             }
@@ -660,14 +662,14 @@ int LoadConfigFile(
         {
             if (str_u64(&rhs, &settings->numTCS) != 0)
             {
-                fprintf(stderr, "%s: %s(%zu): bad value for 'NumTCS'\n", 
+                fprintf(stderr, "%s: %s(%zu): bad value for 'NumTCS'\n",
                     arg0, path, line);
                 goto done;
             }
         }
         else
         {
-            fprintf(stderr, "%s: %s(%zu): unknown setting: '%s'\n", 
+            fprintf(stderr, "%s: %s(%zu): unknown setting: '%s'\n",
                 arg0, path, line, str_ptr(&rhs));
             goto done;
         }
@@ -731,7 +733,7 @@ int main(int argc, const char* argv[])
         OE_PutErr("__OE_OpenSGXDriver() failed");
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
-    if ((result = __OE_BuildEnclave(dev, enclave, &settings, 
+    if ((result = __OE_BuildEnclave(dev, enclave, &settings,
         false, false, &enc)) != OE_OK)
     {
         OE_PutErr("__OE_BuildEnclave(): result=%u", result);
@@ -756,17 +758,17 @@ int main(int argc, const char* argv[])
         OE_PutErr("Failed to get hash: result=%u", result);
 
     /* Initialize the SigStruct object */
-    if (_InitSigstruct(&sigstruct, &mrenclave, rsa) != 0)
+    if ((result = _InitSigstruct(&sigstruct, &mrenclave, rsa) != 0))
         OE_PutErr("_InitSigstruct() failed: result=%u", result);
 
     /* Create signature section and write out new file */
-    if (_SignAndWriteSharedLib(
-        enclave, 
+    if ((result = _SignAndWriteSharedLib(
+        enclave,
         numHeapPages,
         numStackPages,
         numTCS,
         &settings,
-        &sigstruct) != OE_OK)
+        &sigstruct)) != OE_OK)
     {
         OE_PutErr("_SignAndWriteSharedLib(): result=%u", result);
     }

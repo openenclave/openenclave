@@ -6,9 +6,9 @@ Microsoft(R) OpenEnclave SDK
 Introduction
 ------------
 
-OpenEnclave is an SDK for builiding enclave applications in C and C++. An
+OpenEnclave is an SDK for building enclave applications in C and C++. An
 enclave application partitions itself into a trusted component (called the
-host) and an untrusted compoment (called the enclave). An enclave is a secure
+host) and an untrusted component (called the enclave). An enclave is a secure
 container whose memory is protected from entities outside the enclave. These 
 protections allow enclaves to perform secure computations with assurances that 
 secrets will not be compromised.
@@ -43,11 +43,11 @@ OpenEnclave runs on the following platforms:
 
 It supports two modes: **SGX mode** and **simulation mode**. 
 
-**Simulation mode** has package depedencies that may be installed from
+**Simulation mode** has package dependencies that may be installed from
 the root of the source distribution as follows.
 
 ```
-# ./scripts/install-prereqs
+$ sudo ./scripts/install-prereqs
 ```
 
 **SGX mode** has the following prerequisites.
@@ -61,77 +61,75 @@ To install these prerequisites type the following commands from the root of
 the source distribution.
 
 ```
-# ./scripts/install-prereqs
-# make prereqs
+$ sudo ./scripts/install-prereqs
+$ sudo make -C prereqs
+$ sudo make -C prereqs install
 ```
 
-### Configuring
+### Building
 
-To configure OpenEnclave for installation in the default location, simply type:
-
-```
-# ./configure
-```
-
-### Compiling
-
-To compile, just type:
+Build is generally out-of-tree (in-tree is possible, though not recommended).
+To build, pick a directory to build under ("build/" below). Then use cmake to configure
+the build and generate the out-of-tree make files and build.
 
 ```
-# make
+$ mkdir build/
+$ cd build/
+build$ cmake ..
+build$ make
 ```
 
 ### Running the tests
 
-Verify the build by running the tests. For SGX mode type:
+After building, tests can be executed via ctest, see "man ctest" for details.
+
+For SGX mode, type:
 
 ```
-# make SGX=1 tests
+build$ ctest
 ```
 
 For simulation mode, type:
 
 ```
-# make SIM=1 tests
+build$ OE_SIMULATION=1 ctest
 ```
 
 ### Installing
 
-To install OpenEnclave, type:
+Specify the install-prefix to the cmake call. As of now, there is no real need to install the SDK
+system-wide, so you might use a tree in your home directory:
 
 ```
-# make install
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
+build$ make install
 ```
 
-The default configurtion install this under this directory.
+For more details on installation, see the *Getting Started with OpenEnclave* doc.
 
-```
-/opt/openenclave
-```
 
 Source tree layout
 ------------------
 
 The files and directories in the top-level directory are described as follows.
 
-- [README.md](README.md) - This README file
 - [LICENSE](LICENSE) - The OpenEnclave license
-- [configure](configure) - Script for configuring the build
+- [README.md](README.md) - This README file
 - [3rdparty](3rdparty) - Contains third-party software packages
-- [enclave](enclave) - Contains the source for the oeenclave library
-- [libc](libc) - Contains sources for the oelibc enclave library
-- [libcxx](libcxx) - Contains makefile for building the oelibcxx library
-- [idl](idl) - Contains source for the oeidl library
-- [host](host) - Contains source for the oehost library
+- [cmake](cmake) - Contains CMake scripts for building OpenEnclave.
 - [common](common) - Contains sources that work in the enclave and the host
-- [tools](tools) - Contains command-line tools (oesgx, oesign, oegen, oeelf)
 - [doc](doc) - Contains documentation
+- [enclave](enclave) - Contains the source for the oeenclave library
+- [host](host) - Contains source for the oehost library
+- [idl](idl) - Contains source for the oeidl library
 - [include](include) - Contains C header files
+- [libc](libc) - Contains sources for the oelibc enclave library
+- [libcxx](libcxx) - Contains logic for building the oelibcxx library
 - [prereqs](prereqs) - Contains scripts for installing prerequisite software
-- [mak](mak) - Contains shared make scripts (the build system)
-- [tests](tests) - Constains all test programs, which may also serve as samples
-- [samples](samples) - Constains enclave-development sample sources
+- [samples](samples) - Contains enclave-development sample sources
 - [scripts](scripts) - Contains Shell scripts
+- [tests](tests) - Contains all test programs, which may also serve as samples
+- [tools](tools) - Contains command-line tools (oesgx, oesign, oegen, oeelf)
 
 License
 -------

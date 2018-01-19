@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/jump.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/fault.h>
@@ -6,6 +7,7 @@
 #include <openenclave/bits/reloc.h>
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/atexit.h>
+#include <openenclave/bits/trace.h>
 #include "asmdefs.h"
 #include "td.h"
 #include "init.h"
@@ -200,7 +202,7 @@ OE_Result OE_RegisterECall(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     OE_SpinUnlock(&_ecalls_spinlock);
     return result;
 }
@@ -233,12 +235,6 @@ static void _HandleECall(
         OE_Once(&_once, OE_CallInitFunctions);
     }
 
-    /* Call the OE_Constructor() on the first call */
-    {
-        static OE_OnceType _once = OE_ONCE_INITIALIZER;
-        OE_Once(&_once, OE_Constructor);
-    }
-
     /* Dispatch the ECALL */
     switch (func)
     {
@@ -249,9 +245,6 @@ static void _HandleECall(
         }
         case OE_FUNC_DESTRUCTOR:
         {
-            /* Call any user-defined OE_Destructor() function */
-            OE_Destructor();
-
             /* Call functions installed by __cxa_atexit() and OE_AtExit() */
             OE_CallAtExitFunctions();
 
@@ -354,7 +347,7 @@ OE_Result OE_OCall(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -381,7 +374,7 @@ OE_Result OE_CallHost(
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args = OE_HostStackMalloc(sizeof(OE_CallHostArgs) + len + 1)))
+        if (!(args = OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1, 0, false)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
         OE_Memcpy(args->func, func, len + 1);
@@ -398,7 +391,7 @@ OE_Result OE_CallHost(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -537,4 +530,30 @@ void __OE_HandleMain(
         /* ATTN: handle asynchronous exception (AEX) */
         OE_Abort();
     }
+}
+
+/*
+**==============================================================================
+**
+** _OE_NotifyNestedExistStart()
+**
+**     Notify the nested exist happens.
+**
+**==============================================================================
+*/
+void _OE_NotifyNestedExistStart(
+    uint64_t arg1,
+    OE_OCallContext* ocallContext)
+{
+    // Check if it is an OCALL.
+    OE_Code code = OE_HI_WORD(arg1);
+    if (code != OE_CODE_OCALL)
+        return;
+
+    // Save the ocallcontext to the callsite of current enclave thread.
+    TD* td = TD_Get();
+    Callsite* callsite = td->callsites;
+    callsite->ocallContext = ocallContext;
+
+    return;
 }

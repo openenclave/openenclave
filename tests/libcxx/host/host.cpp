@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <assert.h>
 #include <openenclave/host.h>
+#include <openenclave/bits/calls.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/error.h>
 #include "ocalls.h"
@@ -72,6 +73,7 @@ int main(int argc, const char* argv[])
     // Check for the --sim option:
     if (_GetOpt(argc, argv, "--simulate") == 1)
         flags |= OE_FLAG_SIMULATE;
+    else flags = OE_GetCreateFlags();
 
     // Check argument count:
     if (argc != 2)

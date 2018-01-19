@@ -21,6 +21,7 @@
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/trace.h>
 #include "enclave.h"
 
 /*
@@ -152,7 +153,7 @@ static OE_Result _AddSegmentPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -197,7 +198,7 @@ static OE_Result _AddFilledPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -318,7 +319,7 @@ static OE_Result _AddControlPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -369,7 +370,7 @@ static OE_Result _CalculateEnclaveSize(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -404,7 +405,7 @@ static OE_Result _AddRelocationPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -438,7 +439,7 @@ static OE_Result _AddECallPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -608,7 +609,7 @@ static OE_Result _AddPages(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (segpages)
         free(segpages);
@@ -707,7 +708,7 @@ static OE_Result _BuildECallArray(OE_Enclave* enclave, Elf64* elf)
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -729,7 +730,7 @@ static OE_Result _SaveTextAddress(OE_Enclave* enclave, Elf64* elf)
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
     return result;
 }
 
@@ -805,7 +806,7 @@ static OE_Result _BuildECallData(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }
@@ -986,7 +987,7 @@ OE_Result __OE_BuildEnclave(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (aesm)
         AESMDisconnect(aesm);
@@ -1004,6 +1005,40 @@ catch:
 
     return result;
 }
+
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
+/*
+** These functions are needed to notify the debugger. They should not be optimized
+** out even they don't do anything in here.
+*/
+
+void _OE_NotifyGdbEnclaveTermination(
+    const OE_Enclave* enclave,
+    const char* enclavePath,
+    uint32_t enclavePathLength)
+{
+    UNREFERENCED_PARAMETER(enclave);
+    UNREFERENCED_PARAMETER(enclavePath);
+    UNREFERENCED_PARAMETER(enclavePathLength);
+
+    return;
+}
+
+void _OE_NotifyGdbEnclaveCreation(
+    const OE_Enclave* enclave,
+    const char* enclavePath,
+    uint32_t enclavePathLength
+)
+{
+    UNREFERENCED_PARAMETER(enclave);
+    UNREFERENCED_PARAMETER(enclavePath);
+    UNREFERENCED_PARAMETER(enclavePathLength);
+
+    return;
+}
+#pragma GCC pop_options
 
 OE_Result OE_CreateEnclave(
     const char* enclavePath,
@@ -1051,10 +1086,16 @@ OE_Result OE_CreateEnclave(
     /* Set the magic number */
     enclave->magic = ENCLAVE_MAGIC;
 
+    /* Notify GDB that a new enclave is created */
+    _OE_NotifyGdbEnclaveCreation(
+        enclave,
+        enclave->path,
+        strlen(enclave->path));
+
     *enclaveOut = enclave;
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     if (result != OE_OK)
     {
@@ -1083,6 +1124,12 @@ OE_Result OE_TerminateEnclave(
     /* Call the enclave destructor */
     OE_TRY(OE_ECall(enclave, OE_FUNC_DESTRUCTOR, 0, NULL));
 
+    /* Notify GDB that this enclave is terminated */
+    _OE_NotifyGdbEnclaveTermination(
+        enclave,
+        enclave->path,
+        strlen(enclave->path));
+
     /* Clear the magic number */
     enclave->magic = 0;
 
@@ -1107,7 +1154,7 @@ OE_Result OE_TerminateEnclave(
 
     result = OE_OK;
 
-catch:
+OE_CATCH:
 
     return result;
 }

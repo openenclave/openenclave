@@ -1,4 +1,5 @@
 #include <openenclave/enclave.h>
+#include <openenclave/bits/enclavelibc.h>
 
 static char _NibbleToChar(uint64_t x)
 {

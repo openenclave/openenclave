@@ -15,20 +15,20 @@ Microsoft plans to release the OpenEnclave SDK under the MIT license, included h
 
 OpenEnclave builds on various third-party packages. It modifies and redistributes libunwind and in addition downloads other third-party packages on-the-fly during the build process. Licensing details for all third-party packages shown in the table below.  
 
-| Package   | License                                                                           |
-|-----------|-----------------------------------------------------------------------------------|
-| dlmalloc  | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/dlmalloc/LICENSE>  |
-| musl libc | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/musl/COPYRIGHT>    |
-| OpenSSL   | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/openssl/LICENSE>   |
-| libcxx    | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/libcxx/LICENSE>    |
-| libcxxrt  | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/libcxxrt/LICENSE>  |
-| libunwind | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/libunwind/LICENSE> |
+| Package   | License                                                                                 |
+|-----------|-----------------------------------------------------------------------------------------|
+| dlmalloc  | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/dlmalloc/LICENSE>        |
+| libcxx    | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/libcxx/LICENSE>          |
+| libcxxrt  | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/libcxxrt/LICENSE>        |
+| libunwind | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/libunwind/LICENSE>       |
+| mbedtls   | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/mbedtls/mbedtls/LICENSE> |
+| musl libc | <https://github.com/Microsoft/openenclave/blob/master/3rdparty/musl/COPYRIGHT>          |
 
 
 Obtaining the source distribution
 ---------------------------------
 
-OpenEnclave is available from Github. Use the following command to download 
+OpenEnclave is available from GitHub. Use the following command to download
 the source distribution.
 
 ```
@@ -48,29 +48,36 @@ Chapters 5 through 7 discuss prerequisites, building, and installing in some det
 Execute the following commands from the root of the source tree to install the prerequisites (required packages, the SGX driver, and the SGX AESM service).
 
 ```
-# ./scripts/install-prereqs
-# make prereqs
+$ sudo ./scripts/install-prereqs
+$ sudo make -C prereqs
+$ sudo make -C prereqs install
 ```
 
-The second command is only necessary if you wish to install the Intel(R)
+The second and third commands are only necessary if you wish to install the Intel(R)
 SGX driver and the Intel(R) AESM service. OpenEnclave can be used in
 simulation mode without these components.
 
 ### Building
 
-To configure for installation into the default location and to build, type the following command.
+Build is generally out-of-tree (in-tree is possible, though not recommended).
+To build, pick a directory to build under ("*build/*" below). Then use cmake to configure
+the build and generate the out-of-tree make files and build.
 
 ```
-# ./configure
-# make
+$ mkdir build/
+$ cd build/
+build$ cmake ..
+build$ make
 ```
 
 ### Installing
 
-The following command install OpenEnclave in the default location (/opt/openenclave).
+As of now, there is no real need to install the SDK system-wide, so you might
+use a tree in your home directory:
 
 ```
-# make install
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
+build$ make install
 ```
 
 Prerequisites
@@ -84,7 +91,7 @@ The following are prerequisites for building and running OpenEnclave.
 - Intel® SGX Driver (/dev/isgx)
 - Intel® SGX AESM Service (from the Intel® SGX SDK)
 
-Once Linux and the various packages are installed, it is necessary to install the SGX driver and the SGX AESM service. These can be obtained from the following Github repositories.
+Once Linux and the various packages are installed, it is necessary to install the SGX driver and the SGX AESM service. These can be obtained from the following GitHub repositories.
 
 - <https://github.com/01org/linux-sgx-driver>
 - <https://github.com/01org/linux-sgx>
@@ -92,13 +99,14 @@ Once Linux and the various packages are installed, it is necessary to install th
 Both contain detailed instructions about building and installing these pieces. As a convenience, OpenEnclave provides a script for downloading, building and installing both the driver and the AESM service. From the root of the OpenEnclave source tree, type the following command:
 
 ```
-# make prereqs
+$ sudo make -C prereqs
+$ sudo make -C prereqs install
 ```
 
 After this completes, verify that the AESM service is running as follows.
 
 ```
-# service aesmd status
+$ service aesmd status
 ```
 
 Look for the string “active (running)”, usually highlighted in green.
@@ -107,107 +115,173 @@ Look for the string “active (running)”, usually highlighted in green.
 Building
 --------
 
-To build the OpenEnclave SDK, type the following command from the root of the source tree.
+Build is generally out-of-tree (in-tree is possible, though not recommended).
+To build, pick a directory to build under ("*build/*" below).
 
 ```
-# ./configure
-
-.
-.
-.
-Configured for x86_64-ubuntu-linux-gnu
+$ mkdir build/
+$ cd build/
 ```
 
-This configures for installation in the default location (/opt/openenclave). Configure provides options to install components in alternative locations. Use the --help option to display options for doing this. Once configured, just type make to build everything.
+Configure with
 
 ```
-# make
+build$ cmake ..
+```
+
+In addition to the standard CMake variables, the following CMake variables
+control the behavior of the Linux make generator for OpenEnclave:
+
+| Variable            | Description                                          |
+|---------------------|------------------------------------------------------|
+| CMAKE_BUILD_TYPE    | Build configuration (*Debug*, *Release*, *RelWithDebInfo*). Default is *Debug*. |
+| ENABLE_LIBC_TESTS   | Enable Libc tests. Default is enabled, disable with setting to "Off", "No", "0", ... |
+| ENABLE_LIBCXX_TESTS | Enable Libc++ tests. Default is disabled, enable with setting to "On", "1", ... |
+| ENABLE_REFMAN       | Enable building of reference manual. Requires Doxygen to be installed. Default is enabled, disable with setting to "Off", "No", "0", ... |
+
+
+E.g., to generate an optimized release-build with debug info, use
+
+```
+ build$ cmake .. -DCMAKE_BUILD_TYPE=relwithdebinfo
+````
+
+Multiple variables can be defined at the call with multiple "-D*Var*=*Value*" arguments.
+
+Once configured, build with
+
+```
+build$ make
 ```
 
 This builds the entire OpenEnclave SDK, creating the following files.
 
-| Filename                      | Description                                           |
-|-------------------------------|-------------------------------------------------------|
-| lib/host/liboehost.a          | Library for building host applications                |
-| lib/enclave/liboeenclave.a    | Core library for building enclave applications        |
-| lib/enclave/liboelibc.a       | C runtime library for enclave                         |
-| lib/enclave/liboelibcxx.a     | C++ runtime library for enclave                       |
-| bin/oesign                    | Utility for signing enclaves                          |
-| bin/oegen                     | Utility for generating ECALL and OCALL stubs from IDL |
+| Filename                          | Description                                           |
+|-----------------------------------|-------------------------------------------------------|
+| output/bin/oegen                  | Utility for generating ECALL and OCALL stubs from IDL |
+| output/bin/oesign                 | Utility for signing enclaves                          |
+| output/lib/enclave/liboeenclave.a | Core library for building enclave applications        |
+| output/lib/enclave/liboelibc.a    | C runtime library for enclave                         |
+| output/lib/enclave/liboelibcxx.a  | C++ runtime library for enclave                       |
+| output/lib/host/liboehost.a       | Library for building host applications                |
+| output/share/doc/openenclave/     | HTML API reference for OpenEnclave                    |
 
-Now that everything is built, try running the tests.
+If things break, set the **VERBOSE** make variable to print all invoked commands.
 
 ```
-# make tests
+build$ make VERBOSE=1
+```
+
+Building from within a subtree of the build-tree builds all dependencies for that directory as well. 
+"**make clean**" is handy before a spot-rebuild in verbose mode.
+
+A successful build only outputs the HTML API reference into the build-tree. To update the refman *.md-files
+in the source-tree, use
+
+```
+build$ make refman-source
+```
+
+
+Testing
+-------
+
+After everything has been built, execute the tests via **ctest** (see "**man ctest**" for details).
+
+```
+build$ ctest
+```
+
+To run the tests in simulation mode, use
+
+```
+build$ OE_SIMULATION=1 ctest
+```
+
+If things fail, "**ctest -V**" provides test details. Executing ctest from a sub-dir executes the tests underneath.
+
+libcxx tests are omitted by default due to their huge cost on building
+(30mins+). Enable by setting the cmake variable **ENABLE_LIBCXX_TESTS** before building.
+
+```
+build$ cmake -DENABLE_LIBCXX_TESTS=ON ..
+build$ make
+```
+
+If you are in a hurry and just need a quick confirmation, disable the libc
+tests with the **ENABLE_LIBC_TESTS** cmake variable like so:
+  
+```
+build$ cmake -DENABLE_LIBC_TESTS=OFF ..
+[...]
+```
+
+To run valgrind-tests, add "**-D ExperimentalMemCheck**" to the ctest call.
+Enclave tests all seem to fail today, though this succeeds:
+
+```
+build$ ctest -D ExperimentalMemCheck -R oeelf
 ```
 
 Installing
 ----------
 
-To install the OpenEnclave SDK, type this command.
+Specify the install-prefix to the cmake call. As of now, there is no real need
+to install the SDK system-wide, so you might use a tree in your home directory:
 
 ```
-# make install
-Created /opt/openenclave/lib/openenclave
-Created /opt/openenclave/include/openenclave
-Created /opt/openenclave/share/openenclave
-Created /opt/openenclave/share/openenclave/enclave.mak
-
-Source /opt/openenclave/share/openenclave/environment to initialize the OpenEnclave environment
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
+build$ make install
 ```
 
-By default, all files are installed under /opt/openenclave. Source the given environment script to update the PATH and to define environment variables used by makefiles.
+If you want the SDK tools to be available to all users and headers/libs
+available from a system default location, you may opt to install system-wide.
+This naturally requires root privileges. Note that there is no uninstall
+script (we target an rpm/deb-based SDK install in the future), hence we
+recommend overwriting the default (/usr/local/) with a singular tree.
+
+```
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
+build$ sudo make install
+```
+
+On Linux, there is also the **DESTDIR** mechanism, prepending the install prefix
+with the given path:
+```
+build$ make install DESTDIR=foo
+```
 
 The following table shows where key components are installed.
 
-| Path                                          | Description           |
-|-----------------------------------------------|-----------------------|
-| /opt/openenclave/lib/openenclave/enclave      | Enclave libraries     |
-| /opt/openenclave/lib/openenclave/host         | Host libraries        |
-| /opt/openenclave/include/openenclave          | Includes              |
-| /opt/openenclave/bin                          | Programs              |
-| /opt/openenclave/share/openenclave            | Data files            |
+| Path                                     | Description              |
+|------------------------------------------|--------------------------|
+| <install_prefix>/bin                     | Programs                 |
+| <install_prefix>/include/openenclave     | Includes                 |
+| <install_prefix>/lib/openenclave/enclave | Enclave libraries        |
+| <install_prefix>/lib/openenclave/host    | Host libraries           |
+| <install_prefix>/share/doc/openenclave   | Documentation            |
+| <install_prefix>/share/openenclave       | Samples and make-include |
+
+You may use the make-include in **<install_prefix>/share/openenclave/config.mak**
+in your own project for sourcing variables containing version info and SDK install paths.
 
 
 Samples
 -------
 
-Above the samples were installed here: /opt/openenclave/share/openenclave/samples. Copy these to another location. For example:
+Find the samples under **share/openenclave/samples/** of the installation.
+
+Change to the new samples directory and build and run the samples.
 
 ```
-# cp -r /opt/openenclave/share/openenclave/samples /home/john/samples
-```
-
-Next source the environment script as follows:
-
-```
-# source /opt/openenclave/share/openenclave/environment 
-```
-
-Finally, change to the new samples directory and build and run the samples.
-
-```
-# cd /home/john/samples
-# make
-# make run
-.
-.
-.
+$ cd $home/share/openenclave/samples
+$ export OPENENCLAVE_CONFIG=$home/share/openenclave/config.mak
+$ make
+$ make run
+[...]
 ```
 
 If these samples run without an error, then OpenEnclave is installed and working correctly.
-
-
-Uninstalling
-------------
-
-To uninstall OpenEnclave, use the oeuninstall script (in the installed bin directory). For example, to run it from the default location do this.
-
-```
-# source /opt/openenclave/bin/oeuninstall 
-```
-
-This script silently removes all installed components.
 
 
 Developing a simple enclave (echo)
