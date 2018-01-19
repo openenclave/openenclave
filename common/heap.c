@@ -1,31 +1,109 @@
 /*
 **==============================================================================
 **
-** This file implements the following operations over a contiguous memory 
-** space (or heap).
+** OVERVIEW:
+** =========
 **
+** This file implements the following operations over a flat memory space, 
+** called a heap.
+**
+**     BRK   - changes the 'break value' of the memory region
+**     SBRK  - reserves a chunk of memory
+**     MAP   - reserves an area of memory
+**     REMAP - expands or shrinks a memory area obtained with MAP
+**     UNMAP - releases a memory area obtained with MAP
+**
+** The memory space has the following layout.
+**
+**     <---VADs---><---BREAK---><--UNASSIGNED--><---------MAPPED---------->
 **     [..................................................................]
-**     ^     ^             ^             ^                                ^
-**   BASE  START          BRK           MAP                              END
+**     ^           ^            ^               ^                         ^
+**    BASE       START         BRK             MAP                       END
 **
-** BRK - reserves a chunk of memory
-** MAP - reserves an area of memory
-** REMAP - expands or shrinks a memory area obtained with MAP
-** UNMAP - releases a memory area obtained with MAP
+** The memory space is partitioned into four sections:
 **
-** The memory space is partitioned into two parts:
+**     VADs       - VADs or virtual address descriptors: (BASE, START)
+**     BREAK      - Managed by the BRK and SBRK: [START, BRK)
+**     UNASSIGNED - Unassigned memory: [BRK, MAP)
+**     MAPPED     - Manged by the MAP, REMAP, and UNMAP: [MAP, END)
 **
-**     break memory - managed by the BRK operation
-**     mapped memory - managed with the MAP, REMAP, and UNMAP operations
+** The following diagram depicts the values of BASE, START, BRK, MAP, and
+** END for a freshly initialized memory space.
 **
-** The memory space and this partitioning are depicted as follows.
+**     <---VADs---><---------------UNASSIGNED----------------------------->
+**     [..................................................................]
+**     ^           ^                                                      ^
+**    BASE       START                                                   END
+**                 ^                                                      ^
+**                BRK                                                    MAP
 **
-** The variabes shown in this diagram are defined as follows.
+** The BREAK section expands by increasing the BRK value. The MAPPED section
+** expands by decreasing the MAP value. The BRK and MAP value grow towards
+** one another until both BREAK memory and MAPPED all memory is exhausted.
 **
-**     START - the 
+** A VAD (virtual address descriptor) is a structure that defines a memory
+** region obtained with the MMAP or MREMAP operations. A VAD keeps track
+** of the following information about a memory region.
 **
+**     - The next VAD on the linked list (see description below).
+**     - The previous VAD on the linked list (see description below).
+**     - The starting address of the memory region.
+**     - The size of the memory region.
+**     - Memory projection flags (must be read-write for SGX1).
+**     - Memory mapping flags (must be anonymous-private for SGX1).
 **
-** START and END define the boundaries of the memory space. BRK (the
+** VADs are either assigned or free. Assigned VADs are kept on a doubly-linked
+** list, sorted by starting address. When VADs are freed (by the UNMAP 
+** operation), they are inserted to the singly-linked VAD free list.
+**
+** PERFORMANCE:
+** ============
+**
+** The current implementation organizes VADs onto a simple linear linked list.
+** The time complexities of the related operations (MAP, REMAP, and UNMAP) are 
+** all O(N), where N is the number of VADs in the linked list.
+**
+** In the worst case, N is the maximum number of pages, where a memory region
+** is assigned for every available page. For a 128 MB memory space, N is less
+** than 32,768.
+**
+** The MUSL memory allocator (malloc, realloc, calloc, free) uses both 
+**
+**     - BREAK memory -- for allocations less than 56 pages
+**     - MAPPED memory -- for allocates greater or equal to 57 pages
+**
+** In this context, the time complexities of the mapping operations fall to
+** O(M), where M is:
+**
+**     NUM_PAGES = 32,768 pages
+**     SMALLEST_ALLOCATION = 57 pages
+**     M = NUM_PAGES / SMALLEST_ALLOCATION
+**     M = 574
+**
+** M will even be smaller when the VADs and BREAK regions are subtracted from 
+** NUM_PAGES. A rough estimates puts the time complexity for the mapping 
+** operations at about O(M), where M == 400.
+**
+** OPTIMIZATION:
+** =============
+**
+** To optimize performance, one might consider organizing the active VADs into
+** a balanced binary tree variant (AVL or red-black). Two operations must be
+** accounted for.
+**
+**     - Address lookup -- lookup the VAD that contains the given address
+**     - Gap lookup -- find a gap greater than a given size
+**
+** For address lookup a simple AVL tree will suffice such that the key is the
+** starting address of the VAD. The lookup function should check to see if the
+** address falls within the address range given by the VAD. Address lookup will
+** be O(log 2 N).
+**
+** Gap lookup is more complicated. The AVL tree could be extended so that each
+** node in the tree (that is each VAD) contains the maximum gap size of the
+** subtree for which it is a root. The lookup function simply looks for any
+** gap that is large enough. An alternative is to look for the best fit, but
+** this is not strictly necessary. Gap lookup will be O(log 2 N).
 **
 **==============================================================================
 */
@@ -61,6 +139,7 @@
 **==============================================================================
 */
 
+/* Get the end address of a VAD */
 OE_INLINE uintptr_t _End(OE_VAD* vad)
 {
     return vad->addr + vad->size;
@@ -218,12 +297,14 @@ static OE_VAD* _ListFind(
 **==============================================================================
 */
 
+/* Lock the heap and set the 'locked' parameter to true */
 OE_INLINE void _HeapLock(OE_Heap* heap, bool* locked)
 {
     OE_MutexLock(&heap->lock);
     *locked = true;
 }
 
+/* Unlock the heap and set the 'locked' parameter to false */
 OE_INLINE void _HeapUnlock(OE_Heap* heap, bool* locked)
 {
     if (*locked)
@@ -233,18 +314,21 @@ OE_INLINE void _HeapUnlock(OE_Heap* heap, bool* locked)
     }
 }
 
+/* Clear the heap error message */
 static void _HeapClearErr(OE_Heap* heap)
 {
     if (heap)
         heap->err[0] = '\0';
 }
 
+/* Set the heap error message */
 static void _HeapSetErr(OE_Heap* heap, const char* str)
 {
     if (heap && str)
         SNPRINTF(heap->err, sizeof(heap->err), "%s", str);
 }
 
+/* Inline Helper function to check heap sanity (if enable) */
 OE_INLINE bool _HeapSane(OE_Heap* heap)
 {
     if (heap->sanity)
@@ -253,6 +337,7 @@ OE_INLINE bool _HeapSane(OE_Heap* heap)
     return true;
 }
 
+/* Allocate and initialize a new VAD */
 static OE_VAD* _HeapNewVAD(
     OE_Heap* heap,
     uintptr_t addr,
@@ -372,7 +457,23 @@ done:
 **==============================================================================
 */
 
-/* Initialize the heap structure. Caller acquires the lock */
+/*
+**
+** OE_HeapInit()
+**
+**     Initialize a heap structure by setting the 'base' and 'size' and other
+**     internal state variables. Note that the caller must obtain a lock if
+**     one is needed.
+**
+** Parameters:
+**     [IN] heap - heap structure to be initialized.
+**     [IN] base - base address of the heap (must be must be page aligned).
+**     [IN] size - size of the heap in bytes (must be multiple of page size).
+**
+** Returns:
+**     OE_OK if successful.
+**
+*/
 OE_Result OE_HeapInit(
     OE_Heap* heap,
     uintptr_t base,
@@ -466,6 +567,25 @@ catch:
     return result;
 }
 
+/*
+**
+** OE_HeapSbrk()
+**
+**     Allocate space from the BREAK region (between the START and BRK value)
+**     This increases the BRK value by at least the increment size (rounding
+**     up to multiple of 8).
+**
+** Parameters:
+**     [IN] heap - heap structure
+**     [IN] increment - allocate this must space.
+**
+** Returns:
+**     Pointer to allocate memory or NULL if BREAK memory has been exhausted.
+**
+** Notes:
+**     This function is similar to the POSIX sbrk() function.
+**
+*/
 void* OE_HeapSbrk(
     OE_Heap* heap,
     ptrdiff_t increment)
@@ -508,7 +628,26 @@ done:
     return result;
 }
 
-/* Implementation of standard brk() function */
+/*
+**
+** OE_HeapBrk()
+**
+**     Change the BREAK value (within the BREAK region). Increasing the
+**     break value has the effect of allocating memory. Decresing the
+**     break value has the effect of releasing memory.
+**
+** Parameters:
+**     [IN] heap - heap structure
+**     [IN] addr - set the BREAK value to this address (must reside within
+**     the break region (beween START and BREAK value).
+**
+** Returns:
+**     OE_OK if successful.
+**
+** Notes:
+**     This function is similar to the POSIX brk() function.
+**
+*/
 OE_Result OE_HeapBrk(
     OE_Heap* heap,
     uintptr_t addr)
@@ -540,6 +679,32 @@ catch:
     return result;
 }
 
+/*
+**
+** OE_HeapMap()
+**
+**     Allocate 'length' bytes from the MAPPED region. The 'length' parameter
+**     is rounded to a multiple of the page size.
+**     
+** Parameters:
+**     [IN] heap - heap structure
+**     [IN] addr - must be null in this implementation
+**     [IN] length - length in bytes of the new allocation
+**     [IN] prot - must be (OE_PROT_READ | OE_PROT_WRITE)
+**     [IN] flags - must be (OE_MAP_ANONYMOUS | OE_MAP_PRIVATE)
+**
+** Returns:
+**     OE_OK if successful.
+**
+** Notes:
+**     This function is similar to the POSIX mmap() function.
+**
+** Implementation:
+**     This function searches for a gap such that gap >= length. If found,
+**     it initializes a new VAD structure and inserts it into the active
+**     VAD list.
+**
+*/
 void* OE_HeapMap(
     OE_Heap* heap,
     void* addr,
@@ -706,6 +871,33 @@ done:
     return result;
 }
 
+/*
+**
+** OE_HeapUnmap()
+**
+**     Release a memory mapping obtained with OE_HeapMap() or OE_HeapRemap().
+**     Note that partial mappings are supported, in which case a portion of
+**     the memory obtained with OE_HeapMap() or OE_HeapRemap() is released.
+**     
+** Parameters:
+**     [IN] heap - heap structure
+**     [IN] addr - addresss or memory being released (must be page aligned).
+**     [IN] length - length of memory being released (multiple of page size).
+**
+** Returns:
+**     OE_OK if successful.
+**
+** Notes:
+**     This function is similar to the POSIX munmap() function.
+**
+** Implementation:
+**     This function searches the active VAD list for a VAD that contains
+**     the range given by 'addr' and 'length'. If the VAD region is larger
+**     than the range being freed, then it is split into smaller VADs. The
+**     leftward excess (if any) is split into its own VAD and the rightward
+**     excess (if any) is split into its own VAD.
+**
+*/
 OE_Result OE_HeapUnmap(
     OE_Heap* heap,
     void* addr,
@@ -837,6 +1029,30 @@ catch:
     return result;
 }
 
+/*
+**
+** OE_HeapRemap()
+**
+**     Remap an existing memory region, either making it bigger or smaller.
+**     
+** Parameters:
+**     [IN] heap - heap structure
+**     [IN] addr - addresss being remapped (must be multiple of page size)
+**     [IN] old_size - original size of the memory mapping
+**     [IN] new_size - new size of memory mapping (rounded up to page multiple)
+**     [IN] flags - must be OE_MREMAP_MAYMOVE
+**
+** Returns:
+**     Pointer to new memory region.
+**
+** Notes:
+**     This function is similar to the POSIX mremap() function.
+**
+** Implementation:
+**     This function attempts to keep the memory in place if possible. If 
+**     not, it moves it to a new location.
+**
+*/
 void* OE_HeapRemap(
     OE_Heap* heap,
     void* addr,
@@ -1019,6 +1235,23 @@ done:
     return result;
 }
 
+/*
+**
+** OE_HeapSane()
+**
+**     Debugging function used to check sanity (validity) of a heap structure.
+**     
+** Parameters:
+**     [IN] heap - heap structure
+**
+** Returns:
+**     true if heap is sane
+**
+** Implementation:
+**     Checks various contraints such as ranges being correct and VAD list
+**     being sorted.
+**
+*/
 bool OE_HeapSane(OE_Heap* heap)
 {
     bool result = false;
@@ -1127,6 +1360,20 @@ done:
     return result;
 }
 
+/*
+**
+** OE_HeapSetSanity()
+**
+**     Enable live sanity checking on the given heap structure. Once enabled,
+**     sanity checking is performed in all mapping functions. Be aware that
+**     this slows down the implementation and should be used for debugging
+**     and testing only.
+**     
+** Parameters:
+**     [IN] heap - heap structure
+**     [IN] sanity - true to enable sanity checking; false otherwise.
+**
+*/
 void OE_HeapSetSanity(
     OE_Heap* heap,
     bool sanity)
