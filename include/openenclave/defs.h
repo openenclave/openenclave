@@ -120,6 +120,13 @@
 #define OE_WEAK_ALIAS(OLD, NEW) \
     extern __typeof(OLD) NEW __attribute__((weak, alias(#OLD)))
 
+#ifdef _WIN32
+/* nonstandard extension used: zero-sized array in struct/union */
+# define OE_ZERO_SIZED_ARRAY __pragma(warning(suppress:4200))
+#else
+# define OE_ZERO_SIZED_ARRAY /* empty */
+#endif
+
 /*
  * Are we missing proper type usage? This might be tedious to fix.
  * TODO #55: Do a CR on proper used of integer types.
