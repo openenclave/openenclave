@@ -1036,9 +1036,9 @@ void _OE_NotifyGdbEnclaveTermination(
     const char* enclavePath,
     uint32_t enclavePathLength)
 {
-    OE_UNUSED(enclave);
-    OE_UNUSED(enclavePath);
-    OE_UNUSED(enclavePathLength);
+    OE_UNUSED_PARAMETER(enclave);
+    OE_UNUSED_PARAMETER(enclavePath);
+    OE_UNUSED_PARAMETER(enclavePathLength);
 
     return;
 }
@@ -1049,9 +1049,9 @@ void _OE_NotifyGdbEnclaveCreation(
     uint32_t enclavePathLength
 )
 {
-    OE_UNUSED(enclave);
-    OE_UNUSED(enclavePath);
-    OE_UNUSED(enclavePathLength);
+    OE_UNUSED_PARAMETER(enclave);
+    OE_UNUSED_PARAMETER(enclavePath);
+    OE_UNUSED_PARAMETER(enclavePathLength);
 
     return;
 }
