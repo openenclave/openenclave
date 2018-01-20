@@ -189,7 +189,7 @@ typedef struct OE_CallHostArgs
 {
     void* args;
     OE_Result result;
-    char func[];
+    OE_ZERO_SIZED_ARRAY char func[];
 }
 OE_CallHostArgs;
 
