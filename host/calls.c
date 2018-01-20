@@ -787,8 +787,8 @@ void _OE_NotifyOCallStart(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)
 {
-    OE_UNUSED_PARAMETER(frame_pointer);
-    OE_UNUSED_PARAMETER(tcs);
+    OE_UNUSED(frame_pointer);
+    OE_UNUSED(tcs);
 
     return;
 }
@@ -800,8 +800,8 @@ void _OE_NotifyOCallEnd(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)
 {
-    OE_UNUSED_PARAMETER(frame_pointer);
-    OE_UNUSED_PARAMETER(tcs);
+    OE_UNUSED(frame_pointer);
+    OE_UNUSED(tcs);
 
     return;
 }
