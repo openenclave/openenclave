@@ -188,6 +188,14 @@ static inline void mark_as_used(void *v UNUSED) {
 # define SIGPROCMASK(how, new_mask, old_mask) mark_as_used(old_mask)
 #endif
 
+/* Disable use of adaptive mutexes, which are defined by GCC headers but not
+ * supported by MUSL pthreads. Note that libunwind is compiled with GCC headers
+ * but linked with MUSL libc.
+ */
+#ifdef PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP
+#undef PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP
+#endif
+
 /* Prefer adaptive mutexes if available */
 #ifdef PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP
 #define UNW_PTHREAD_MUTEX_INITIALIZER PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP

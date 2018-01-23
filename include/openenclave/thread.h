@@ -16,6 +16,7 @@ typedef uint64_t OE_Thread;
 
 typedef struct _OE_ThreadAttr
 {
+    /* Internal private implementation */
     uint64_t __impl[7];
 }
 OE_ThreadAttr;
@@ -143,26 +144,15 @@ int OE_SpinUnlock(
  */
 int OE_SpinDestroy(OE_Spinlock* spinlock);
 
-#define OE_MUTEX_INITIALIZER \
-    {OE_SPINLOCK_INITIALIZER,0,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{NULL,NULL}}
+#define OE_MUTEX_INITIALIZER {{0}}
 
 /* Definition of a mutex */
 typedef struct _OE_Mutex
 {
-    OE_Spinlock lock;
-    unsigned int refs;
-    unsigned char __padding[16]; /* align with system pthread_t */
-    struct
-    {
-        void* front;
-        void* back;
-    }
-    queue;
+    /* Internal private implementation */
+    uint64_t __impl[8];
 }
 OE_Mutex;
-
-/* This must be the same size as pthread_mutex_t in GLIBC */
-OE_STATIC_ASSERT((sizeof(OE_Mutex) == 40));
 
 /**
  * Initialize a mutex.
@@ -235,24 +225,15 @@ int OE_MutexUnlock(OE_Mutex* mutex);
  */
 int OE_MutexDestroy(OE_Mutex* mutex);
 
-#define OE_COND_INITIALIZER {OE_SPINLOCK_INITIALIZER}
+#define OE_COND_INITIALIZER {{0}}
 
 /* Condition variable representation */
 typedef struct _OE_Cond
 {
-    OE_Spinlock lock;
-    struct
-    {
-        void* front;
-        void* back;
-    }
-    queue;
-    uint64_t padding[3];
+    /* Internal private implementation */
+    uint64_t __impl[8];
 }
 OE_Cond;
-
-/* This must the same size as pthread_cond_t in GLIBC */
-OE_STATIC_ASSERT((sizeof(OE_Cond) == 48));
 
 /**
  * Initializes a condition variable.
