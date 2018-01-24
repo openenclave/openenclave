@@ -259,6 +259,7 @@ The following table shows where key components are installed.
 | <install_prefix>/include/openenclave     | Includes                 |
 | <install_prefix>/lib/openenclave/enclave | Enclave libraries        |
 | <install_prefix>/lib/openenclave/host    | Host libraries           |
+| <install_prefix>/lib/openenclave/debugger| Debugger libraries       |
 | <install_prefix>/share/doc/openenclave   | Documentation            |
 | <install_prefix>/share/openenclave       | Samples and make-include |
 
@@ -477,3 +478,26 @@ After building the host application, we are ready to run the host.
 
 Hello
 ```
+
+### Debugging the enclave
+
+We can't use GDB directly to debug enclave application since it doesn't understand enclave yet. 
+OpenEnclave includes a GDB plugin to help developers to debug enclaves that is developed using this SDK.
+
+Note: the enclave must be created with debug opt-in flag, otherwise debugger can't work since it can't read the enclave memory. 
+The default sample enclave is created with debug flag, refer to:
+
+```
+result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave);
+```
+
+This flag (OE_FLAG_DEBUG) should only be set in development phase. It must be clear out for production enclave.
+
+The debugger is installed at <install_prefix>/bin/oe-gdb. The usage is same with GDB, for example: the following command will 
+launch the simple enclave application under debugger: 
+
+```
+# /opt/openenclave/bin/oe-gdb -arg ./host/echohost ./enc/echoenc.signed.so
+```
+
+After the enclave application is loaded, you can use b to set breakpoint, bt to check stack etc.
