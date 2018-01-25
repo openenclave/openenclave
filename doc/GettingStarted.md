@@ -41,11 +41,15 @@ This creates a source tree under the directory called openenclave.
 Quick Start
 -----------
 
-Chapters 5 through 7 discuss prerequisites, building, and installing in some detail. This chapter explains how to perform these steps quickly when one wishes to install OpenEnclave into the default location (/opt/openenclave).  If this suffices, then perform the steps below, skip those chapters and proceed to chapter 8.
+Chapters 5 through 7 discuss prerequisites, building, and installing in some
+detail. This chapter explains how to perform these steps quickly when one
+wishes to install OpenEnclave. If this suffices, then perform the steps below,
+skip those chapters and proceed to chapter 8.
 
 ### Prerequisites
 
-Execute the following commands from the root of the source tree to install the prerequisites (required packages, the SGX driver, and the SGX AESM service).
+Execute the following commands from the root of the source tree to install the
+prerequisites (required packages, the SGX driver, and the SGX AESM service).
 
 ```
 $ sudo ./scripts/install-prereqs
@@ -91,12 +95,17 @@ The following are prerequisites for building and running OpenEnclave.
 - Intel® SGX Driver (/dev/isgx)
 - Intel® SGX AESM Service (from the Intel® SGX SDK)
 
-Once Linux and the various packages are installed, it is necessary to install the SGX driver and the SGX AESM service. These can be obtained from the following GitHub repositories.
+Once Linux and the various packages are installed, it is necessary to install
+the SGX driver and the SGX AESM service. These can be obtained from the
+following GitHub repositories.
 
 - <https://github.com/01org/linux-sgx-driver>
 - <https://github.com/01org/linux-sgx>
 
-Both contain detailed instructions about building and installing these pieces. As a convenience, OpenEnclave provides a script for downloading, building and installing both the driver and the AESM service. From the root of the OpenEnclave source tree, type the following command:
+Both contain detailed instructions about building and installing these pieces.
+As a convenience, OpenEnclave provides a script for downloading, building and
+installing both the driver and the AESM service. From the root of the
+OpenEnclave source tree, type the following command:
 
 ```
 $ sudo make -C prereqs
@@ -226,6 +235,10 @@ build$ ctest -D ExperimentalMemCheck -R oeelf
 Installing
 ----------
 
+This chapter describes how to locally install the SDK from the compiled
+OpenEnclave tree. To create a redistributable binary package (such as a .deb
+pacakge), see the next chapter.
+
 Specify the install-prefix to the cmake call. As of now, there is no real need
 to install the SDK system-wide, so you might use a tree in your home directory:
 
@@ -262,9 +275,38 @@ The following table shows where key components are installed.
 | <install_prefix>/share/doc/openenclave   | Documentation            |
 | <install_prefix>/share/openenclave       | Samples and make-include |
 
-You may use the make-include in **<install_prefix>/share/openenclave/config.mak**
-in your own project for sourcing variables containing version info and SDK install paths.
+For *Makefile* based projects, you may use the make-include in
+**<install_prefix>/share/openenclave/config.mak** in your own project for
+sourcing variables containing version info and SDK install paths.
 
+For *CMake* based projets, you may use the cmake-include in
+**<install_prefix>/share/openenclave/openenclave.cmake** in your own project.
+It provides the following taregets (e.g., for inclusion in
+**target_link_libraries**) to set the required compiler flags, include dirs,
+and libraries.
+
+| Target           | Description                                                                         |
+|------------------|-------------------------------------------------------------------------------------|
+| oeenclave        | Enclave code: OpenEnclave intrinsic functions. Must be present in all enclave code. |
+| oelibc           | Enclave code: OpenEnclave C library. Includes oeenclave.                            |
+| oelibcxx         | Enclave code: OpenEnclave C++ library. Includes oelibc.                             |
+| oeidl            | Enclave code: Misc helpers required with IDL-compiled code. Includes oelibc.        |
+| oehost           | Host code: OpenEnclave instrinsic functions.                                        |
+| oehostapp        | Host code: Must be present with host binary for proper linker flags.                |
+| oesign           | Build: shorthand for the signing tool executable.                                   |
+| oegen            | Build: shorthand for the IDL compiler executable.                                   |
+
+Create Redistributable SDK pacakge
+----------------------------------
+
+To create a redistributable package (deb, rpm, ...), use cpack. Specify the final
+installation prefix to cmake using the CMAKE_INSTALL_PREFIX variable as above.
+E.g., to create a debian package that will install the SDK to /opt/opernenclave, use:
+
+```
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
+build$ cpack -G DEB
+```
 
 Samples
 -------
@@ -275,10 +317,7 @@ Change to the new samples directory and build and run the samples.
 
 ```
 $ cd $home/share/openenclave/samples
-$ export OPENENCLAVE_CONFIG=$home/share/openenclave/config.mak
-$ make
-$ make run
-[...]
+$ sh test-samples.sh
 ```
 
 If these samples run without an error, then OpenEnclave is installed and working correctly.
@@ -287,7 +326,10 @@ If these samples run without an error, then OpenEnclave is installed and working
 Developing a simple enclave (echo)
 ----------------------------------
 
-This chapter shows how to develop a simple enclave called echo. The next chapter explains how to use this enclave in a host application. This example is included in the installed samples directory (see /opt/openenclave/share/openenclave/samples/hello).
+This chapter shows how to develop a simple enclave called echo. The next
+chapter explains how to use this enclave in a host application. This example
+is included in the installed samples directory (see
+<prefix>/openenclave/share/openenclave/samples/make/hello).
 
 ### The ECALL
 

@@ -33,7 +33,9 @@ The first document explains how to build and use OpenEnclave.
 Installing
 ----------
 
-This section explains briefly how to install the OpenEnclave SDK from source.  For a detailed explanation, see [Getting Started with OpenEnclave](doc/GettingStarted.md).
+This section explains briefly how to install the OpenEnclave SDK from source.
+For a detailed explanation, see [Getting Started with
+OpenEnclave](doc/GettingStarted.md).
 
 ### Prerequisites
 
@@ -105,7 +107,8 @@ build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
 build$ make install
 ```
 
-For more details on installation, see the *Getting Started with OpenEnclave* doc.
+For more details on installation, such as how to create redistributable packages,
+see the [Getting Started with OpenEnclave](doc/GettingStarted.md) doc.
 
 
 Source tree layout
