@@ -346,6 +346,10 @@ with the given path:</p>
 <td>Host libraries</td>
 </tr>
 <tr>
+<td>&lt;install_prefix&gt;/lib/openenclave/debugger</td>
+<td>Debugger libraries</td>
+</tr>
+<tr>
 <td>&lt;install_prefix&gt;/share/doc/openenclave</td>
 <td>Documentation</td>
 </tr>
@@ -561,6 +565,20 @@ int main(int argc, const char* argv[])
 
 Hello
 </code></pre>
+<h3>
+<a id="user-content-debugging-the-enclave" class="anchor" href="#debugging-the-enclave" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Debugging the enclave</h3>
+<p>We can't use GDB directly to debug enclave application since it doesn't understand enclave yet.
+OpenEnclave includes a GDB plugin to help developers to debug enclaves that is developed using this SDK.</p>
+<p>Note: the enclave must be created with debug opt-in flag, otherwise debugger can't work since it can't read the enclave memory.
+The default sample enclave is created with debug flag, refer to:</p>
+<pre><code>result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &amp;enclave);
+</code></pre>
+<p>This flag (OE_FLAG_DEBUG) should only be set in development phase. It must be clear out for production enclave.</p>
+<p>The debugger is installed at &lt;install_prefix&gt;/bin/oe-gdb. The usage is same with GDB, for example: the following command will
+launch the simple enclave application under debugger:</p>
+<pre><code># /opt/openenclave/bin/oe-gdb -arg ./host/echohost ./enc/echoenc.signed.so
+</code></pre>
+<p>After the enclave application is loaded, you can use b to set breakpoint, bt to check stack etc.</p>
 
               </article>
             </div>
