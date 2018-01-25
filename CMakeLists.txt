@@ -26,12 +26,13 @@ set(OE_DOCDIR ${OE_OUTPUT_DIR}/share/doc CACHE INTERNAL "Doc collector root")
 set(OE_INCDIR ${OE_OUTPUT_DIR}/include CACHE INTERNAL "Include collector")
 set(OE_LIBDIR ${OE_OUTPUT_DIR}/lib CACHE INTERNAL "Library collector")
 
-# generate config-file for using projects
+# generate config-file for other projects using Makefile
 include(gen_config_file)
-
-# generate config for install
 gen_config_file(${OE_DATADIR}/openenclave/config.mak "${CMAKE_INSTALL_PREFIX}")
-install (FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
+install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
+
+# generate & install CMake Export file for other projects using CMAKE
+install(EXPORT openenclave DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
 
 # finally, add all dirs that matter
 add_subdirectory(3rdparty)
