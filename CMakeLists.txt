@@ -34,6 +34,16 @@ install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_D
 # generate & install CMake Export file for other projects using CMAKE
 install(EXPORT openenclave DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
 
+# cpack package handling
+include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenEnclave SDK")
+set(CPACK_PACKAGE_CONTACT "openenclave@microsoft.com")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_VERSION ${OE_VERSION})
+set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+include(CPack)
+
 # finally, add all dirs that matter
 add_subdirectory(3rdparty)
 add_subdirectory(doc/refman)
