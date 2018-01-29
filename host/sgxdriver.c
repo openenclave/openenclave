@@ -262,7 +262,7 @@ static int _IoctlSimulate(
 
             /* Verify that page is within enclave boundaries */
             if (addr < self->sim.addr ||
-                addr > self->sim.addr + self->sim.size - OE_PAGE_SIZE)
+                (uint8_t*)addr > (uint8_t*)self->sim.addr + self->sim.size - OE_PAGE_SIZE)
             {
                 return -1;
             }
