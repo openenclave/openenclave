@@ -80,11 +80,11 @@
 #endif
 
 #ifdef __GNUC__
-# define __OE_UNUSED_ATTRIBUTE __attribute__((unused))
+# define OE_UNUSED_ATTRIBUTE __attribute__((unused))
 #elif _MSC_VER
-# define __OE_UNUSED_ATTRIBUTE
+# define OE_UNUSED_ATTRIBUTE
 #else
-# error __OE_UNUSED_ATTRIBUTE not implemented
+# error OE_UNUSED_ATTRIBUTE not implemented
 #endif
 
 #define OE_COUNTOF(ARR) (sizeof(ARR) / sizeof((ARR)[0]))
@@ -106,11 +106,11 @@
 
 #define OE_CHECK_SIZE(N, M) \
     typedef unsigned char  \
-    OE_CONCAT(__OE_CHECK_SIZE, __LINE__)[((N)==(M))?1:-1] __OE_UNUSED_ATTRIBUTE
+    OE_CONCAT(__OE_CHECK_SIZE, __LINE__)[((N)==(M))?1:-1] OE_UNUSED_ATTRIBUTE
 
 #define OE_STATIC_ASSERT(COND) \
     typedef unsigned char  \
-    OE_CONCAT(__OE_STATIC_ASSERT, __LINE__)[(COND)?1:-1] __OE_UNUSED_ATTRIBUTE
+    OE_CONCAT(__OE_STATIC_ASSERT, __LINE__)[(COND)?1:-1] OE_UNUSED_ATTRIBUTE
 
 #define OE_TRACE printf("OE_TRACE: %s(%u): %s()\n", \
     __FILE__, __LINE__, __FUNCTION__)
