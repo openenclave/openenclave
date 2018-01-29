@@ -16,6 +16,7 @@
 #include <string.h>
 #include <assert.h>
 #include <openenclave/host.h>
+#include <openenclave/defs.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/elf.h>
@@ -980,9 +981,12 @@ OE_Result __OE_BuildEnclave(
 
 #if defined(_WIN32)
     {
-        ENCLAVE_INIT_INFO_SGX info;
-        OE_STATIC_ASSERT(sizeof(info.SigStruct) == sizeof(sigsec.sigstruct));
-        OE_STATIC_ASSERT(sizeof(info.EInitToken) <= sizeof(launchToken));
+        OE_STATIC_ASSERT(
+            OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX,SigStruct) == 
+            sizeof(sigsec.sigstruct));
+        OE_STATIC_ASSERT(
+            OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX,EInitToken) 
+            <= sizeof(launchToken));
     }
 #endif
 

@@ -101,6 +101,8 @@
 # error OE_OFFSETOF not implemented
 #endif
 
+#define OE_FIELD_SIZE(TYPE, FIELD) (sizeof(((TYPE*)0)->FIELD))
+
 #define __OE_CONCAT(X,Y) X##Y
 #define OE_CONCAT(X,Y) __OE_CONCAT(X,Y)
 
