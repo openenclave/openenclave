@@ -3,6 +3,10 @@
 
 #include <stdio.h>
 
+/* Open a file where 'path' and 'mode' have the same meaning as for
+ * the standard fopen() function. The 'fp' parameter is set upon success.
+ * Return 0 on success, -1 on failure.
+ */
 int OE_Fopen(
     FILE** fp,
     const char* path,

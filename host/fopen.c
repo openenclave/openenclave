@@ -10,16 +10,19 @@ int OE_Fopen(
 #if defined(__linux__)
 
     if (!fp)
-        return EINVAL;
+        return -1;
 
     if ((*fp = fopen(path, mode)) == NULL)
-        return errno;
+        return -1;
 
     return 0;
 
 #elif defined(_MSC_VER)
 
-    return fopen_s(fp, path, mode);
+    if (fopen_s(fp, path, mode) != 0)
+        return -1;
+
+    return 0;
 
 #endif
 }
