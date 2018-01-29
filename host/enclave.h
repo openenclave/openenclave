@@ -6,7 +6,7 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
 #include "asmdefs.h"
-#include "h_thread.h"
+#include "hostthread.h"
 
 #if defined(_WIN32)
 # include <windows.h>

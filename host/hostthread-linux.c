@@ -1,7 +1,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include <openenclave/host.h>
-#include "h_thread.h"
+#include "hostthread.h"
 
 /*
 **==============================================================================

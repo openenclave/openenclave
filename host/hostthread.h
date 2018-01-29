@@ -1,10 +1,11 @@
 /**
- * \file h_thread.h
+ * \file hostthread.h
  *
  * This file defines threading primitives used by the host.
  *
  */
- #pragma once
+#ifndef _HOSTTHREAD_H
+#define _HOSTTHREAD_H
 
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
@@ -219,3 +220,4 @@ void* OE_H_ThreadGetSpecific(
 
 OE_EXTERNC_END
 
+#endif /* _HOSTTHREAD_H */

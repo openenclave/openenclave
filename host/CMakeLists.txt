@@ -4,7 +4,7 @@ set(PLATFORM_SRC
     aesm-linux.c
     enter.S
     entersim.S
-    thread-linux.c
+    hostthread-linux.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -12,7 +12,7 @@ set(PLATFORM_SRC
     aesm-win.c
     enter.asm
     entersim.asm
-    thread-win.c
+    hostthread-win.c
     )
 endif()
 
