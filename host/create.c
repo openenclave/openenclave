@@ -1101,8 +1101,14 @@ OE_Result OE_CreateEnclave(
     {
         ThreadBinding* binding = &enclave->bindings[i];
 
-        if (!(binding->event.handle = CreateEvent(0, TRUE, FALSE, 0)))
+        if (!(binding->event.handle = CreateEvent(
+            0,     /* No security attributes */
+            FALSE, /* Event is reset automatically */
+            FALSE, /* Event is not put in a signaled state upon creation */
+            0)))   /* No name */
+        {
             OE_THROW(OE_FAILURE);
+        }
     }
 
 #endif

@@ -804,10 +804,7 @@ OE_CATCH:
 ** optimized out even they don't do anything in here.
 */
 
-#if defined(__linux__)
-__attribute__((noinline))
-#endif
-void _OE_NotifyOCallStart(
+OE_NEVER_INLINE void _OE_NotifyOCallStart(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)
 {
@@ -817,10 +814,7 @@ void _OE_NotifyOCallStart(
     return;
 }
 
-#if defined(__linux__)
-__attribute__((noinline))
-#endif
-void _OE_NotifyOCallEnd(
+OE_NEVER_INLINE void _OE_NotifyOCallEnd(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)
 {

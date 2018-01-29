@@ -22,6 +22,12 @@
 #endif
 
 #ifdef _MSC_VER
+# define OE_NEVER_INLINE __declspec(noinline)
+#elif __GNUC__
+# define OE_NEVER_INLINE __attribute__((noinline))
+#endif
+
+#ifdef _MSC_VER
 # define OE_INLINE static __inline
 #elif __GNUC__
 # define OE_INLINE static __inline__
