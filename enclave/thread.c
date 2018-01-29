@@ -148,7 +148,7 @@ typedef struct _OE_MutexImpl
     /* Lock used to synchronize access to OE_ThreadData queue */
     OE_Spinlock lock;
 
-    /* Number of references to support recursiving locking */
+    /* Number of references to support recurse locking */
     unsigned int refs;
 
     /* Queue of waiting threads (front holds the mutex) */
