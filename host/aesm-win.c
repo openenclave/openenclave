@@ -8,7 +8,10 @@ typedef UINT32 aesm_error_t;
 
 typedef struct _IAESMInterface IAESMInterface;
 
-/* Copied from MSR-SDK */
+/* Copied from MSR-SDK. This is the COM interface for calling into Intel's
+ * AESM interface. This will eventually be replaced by a different interface
+ * that Intel will be providing.
+ */
 typedef struct IAESMInterfaceVtbl
 {
     BEGIN_INTERFACE
