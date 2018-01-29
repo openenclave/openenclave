@@ -46,22 +46,11 @@ OE_ThreadData* OE_GetThreadData()
 {
     OE_ThreadData* td = NULL;
 
-    if (OE_FetchArgFlags() & OE_ARG_FLAG_GS)
-    {
-        asm volatile(
-            "mov %%gs:0, %%rax\n\t"
-            "mov %%rax, %0\n\t"
-            : 
-            "=a"(td));
-    }
-    else
-    {
-        asm volatile(
-            "mov %%fs:0, %%rax\n\t"
-            "mov %%rax, %0\n\t"
-            : 
-            "=a"(td));
-    }
+    asm volatile(
+        "mov %%gs:0, %%rax\n\t"
+        "mov %%rax, %0\n\t"
+        : 
+        "=a"(td));
 
     return td;
 }

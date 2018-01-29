@@ -156,39 +156,6 @@ static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
 /*
 **==============================================================================
 **
-** OE_FetchArgFlags()
-** _SaveArgFlags()
-**
-**     Functions to set and get the args flags: the flags passed to OE_Main()
-**     as part of argument 1.
-**
-**==============================================================================
-*/
-
-static uint64_t _oe_arg_flags;
-static OE_Spinlock _oe_arg_flags_spinlock = OE_SPINLOCK_INITIALIZER;
-
-uint16_t OE_FetchArgFlags(void)
-{
-    uint16_t flags;
-
-    OE_SpinLock(&_oe_arg_flags_spinlock);
-    flags = _oe_arg_flags;
-    OE_SpinUnlock(&_oe_arg_flags_spinlock);
-
-    return flags;
-}
-
-static void _SaveArgFlags(uint16_t flags)
-{
-    OE_SpinLock(&_oe_arg_flags_spinlock);
-    _oe_arg_flags = flags;
-    OE_SpinUnlock(&_oe_arg_flags_spinlock);
-}
-
-/*
-**==============================================================================
-**
 ** _HandleExit()
 **
 **     Initiate call to EEXIT.
@@ -201,7 +168,7 @@ static void _HandleExit(
     long func, 
     uint64_t arg)
 {
-    OE_Exit(OE_MakeArg(code, func, OE_FetchArgFlags()), arg);
+    OE_Exit(OE_MakeCallArg1(code, func, 0), arg);
 }
 
 /*
@@ -524,10 +491,8 @@ void __OE_HandleMain(
     uint64_t cssa,
     void* tcs)
 {
-    _SaveArgFlags(OE_GetArgFlags(arg1));
-
-    OE_Code code = OE_GetArgCode(arg1);
-    uint32_t func = OE_GetArgFunc(arg1);
+    OE_Code code = OE_GetCodeFromCallArg1(arg1);
+    uint32_t func = OE_GetFuncFromCallArg1(arg1);
     uint64_t argIn = arg2;
 
     /* Get pointer to the thread data structure */
@@ -581,7 +546,7 @@ void _OE_NotifyNestedExistStart(
     OE_OCallContext* ocallContext)
 {
     // Check if it is an OCALL.
-    OE_Code code = OE_GetArgCode(arg1);
+    OE_Code code = OE_GetCodeFromCallArg1(arg1);
     if (code != OE_CODE_OCALL)
         return;
 

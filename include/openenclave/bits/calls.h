@@ -31,19 +31,13 @@ typedef void (*OE_OCallFunction)(
 /*
 **==============================================================================
 **
-** Define the OE_ARG_FLAGS for this platform.
+** The flags parameter for OE_ECall() and OE_OCall()
 **
 **==============================================================================
 */
 
-/* Causes enclave to use GS segment register rather than FS segment register */
-#define OE_ARG_FLAG_GS 1
-
-#if defined(__linux__)
-# define OE_ARG_FLAGS OE_ARG_FLAG_GS
-#elif defined(_WIN32)
-# define OE_ARG_FLAGS 0
-#endif
+/* Allow OCALLs to call back into enclave with an ECALL */
+#define OE_CALL_ARG_REENTRANT_OCALL     (1 << 0)
 
 /*
 **==============================================================================
@@ -100,15 +94,19 @@ OE_Func;
 /*
 **==============================================================================
 **
-** OE_MakeArg()
+** OE_MakeCallArg1()
 **
-**     Form the first argument to OE_Main(), which consists of flags, a code,
-**     and a function number.
+**     Form the 'arg1' parameter to both OE_Enter() and OE_Exit(). This
+**     parameter is a 64-bit integer that contains:
+**
+**         code -- indicating whether ECALL, OCALL, ERET, or ORET
+**         func -- the number of the function beging called
+**         flags -- any bit flags 
 **
 **==============================================================================
 */
 
-OE_INLINE uint64_t OE_MakeArg(
+OE_INLINE uint64_t OE_MakeCallArg1(
     OE_Code code,
     OE_Func func,
     uint16_t flags)
@@ -120,40 +118,40 @@ OE_INLINE uint64_t OE_MakeArg(
 /*
 **==============================================================================
 **
-** OE_GetArgCode()
+** OE_GetCodeFromCallArg1()
 **
 **==============================================================================
 */
 
-OE_INLINE OE_Code OE_GetArgCode(uint64_t arg1)
+OE_INLINE OE_Code OE_GetCodeFromCallArg1(uint64_t arg)
 {
-    return (OE_Code)((0xFFFF000000000000 & arg1) >> 48);
+    return (OE_Code)((0xFFFF000000000000 & arg) >> 48);
 }
 
 /*
 **==============================================================================
 **
-** OE_GetArgFunc()
+** OE_GetFuncFromCallArg1()
 **
 **==============================================================================
 */
 
-OE_INLINE OE_Func OE_GetArgFunc(uint64_t arg1)
+OE_INLINE OE_Func OE_GetFuncFromCallArg1(uint64_t arg)
 {
-    return (OE_Func)((0x0000FFFFFFFF0000 & arg1) >> 16);
+    return (OE_Func)((0x0000FFFFFFFF0000 & arg) >> 16);
 }
 
 /*
 **==============================================================================
 **
-** OE_GetArgFlags()
+** OE_GetFlagsFromCallArg1()
 **
 **==============================================================================
 */
 
-OE_INLINE uint16_t OE_GetArgFlags(uint64_t arg1)
+OE_INLINE uint16_t OE_GetFlagsFromCallArg1(uint64_t arg)
 {
-    return (uint16_t)(0x000000000000FFFF & arg1);
+    return (uint16_t)(0x000000000000FFFF & arg);
 }
 
 /*

@@ -173,7 +173,7 @@ static OE_Result _DoEENTER(
 
     /* Call OE_Enter() assembly function (enter.S) */
     {
-        uint64_t arg1 = OE_MakeArg(codeIn, funcIn, OE_ARG_FLAGS);
+        uint64_t arg1 = OE_MakeCallArg1(codeIn, funcIn, 0);
         uint64_t arg2 = (uint64_t)argIn;
         uint64_t arg3 = 0;
         uint64_t arg4 = 0;
@@ -187,8 +187,8 @@ static OE_Result _DoEENTER(
             OE_Enter(tcs, aep, arg1, arg2, &arg3, &arg4);
         }
 
-        *codeOut = OE_GetArgCode(arg3);
-        *funcOut = OE_GetArgFunc(arg3);
+        *codeOut = OE_GetCodeFromCallArg1(arg3);
+        *funcOut = OE_GetFuncFromCallArg1(arg3);
         *argOut = arg4;
     }
 
@@ -459,8 +459,8 @@ int __OE_DispatchOCall(
     uint64_t* arg2Out,
     void* tcs)
 {
-    const OE_Code code = OE_GetArgCode(arg1);
-    const uint32_t func = OE_GetArgFunc(arg1);
+    const OE_Code code = OE_GetCodeFromCallArg1(arg1);
+    const uint32_t func = OE_GetFuncFromCallArg1(arg1);
     const uint64_t arg = arg2;
 
     if (code == OE_CODE_OCALL)
@@ -477,7 +477,7 @@ int __OE_DispatchOCall(
         /* ATTN: ignored! */
         (void)result;
 
-        *arg1Out = OE_MakeArg(OE_CODE_ORET, func, OE_ARG_FLAGS);
+        *arg1Out = OE_MakeCallArg1(OE_CODE_ORET, func, 0);
         *arg2Out = argOut;
 
         return 0;
