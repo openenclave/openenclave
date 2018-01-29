@@ -16,8 +16,7 @@ void OE_SetGSRegisterBase(const void *ptr)
 #if defined(__linux__)
     syscall(__NR_arch_prctl, ARCH_SET_GS, ptr);
 #elif defined(_WIN32)
-    /* On Windows use the FS register instead of GS */
-    _writefsbase_u64((uint64_t)ptr);
+    _writegsbase_u64((uint64_t)ptr);
 #endif
 }
 
@@ -28,7 +27,6 @@ void* OE_GetGSRegisterBase()
     syscall(__NR_arch_prctl, ARCH_GET_GS, &ptr);
     return ptr;
 #elif defined(_WIN32)
-    /* On Windows use the FS register instead of GS */
-    return (void*)_readfsbase_u64();
+    return (void*)_readgsbase_u64();
 #endif
 }

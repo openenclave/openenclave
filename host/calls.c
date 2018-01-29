@@ -38,8 +38,8 @@ void OE_AEP(void);
 ** _SetThreadBinding()
 **
 **     Store the thread data in the GS segement register. Note that the GS
-**     register is unused on X86-64, unlike the FS register that is used by
-**     the pthread implementation.
+**     register is unused on X86-64 on Linux, unlike the FS register that is 
+**     used by the pthread implementation.
 **
 **     The OE_AEP() function (aep.S) uses the GS segment register to retrieve
 **     the ThreadBinding.tcs field.
@@ -47,9 +47,28 @@ void OE_AEP(void);
 **==============================================================================
 */
 
+#define USE_TLS_FOR_THREADING_BINDING
+
+#if defined(USE_TLS_FOR_THREADING_BINDING)
+static OE_H_OnceType _threadBindingOnce;
+static OE_H_ThreadKey _threadBindingKey;
+#endif
+
+#if defined(USE_TLS_FOR_THREADING_BINDING)
+static void _CreateThreadBindingKey(void)
+{
+    OE_H_ThreadKeyCreate(&_threadBindingKey);
+}
+#endif
+
 static void _SetThreadBinding(ThreadBinding* binding)
 {
-    OE_SetGSRegisterBase(binding);
+#if defined(USE_TLS_FOR_THREADING_BINDING)
+    OE_H_Once(&_threadBindingOnce, _CreateThreadBindingKey);
+    OE_H_ThreadSetSpecific(_threadBindingKey, binding);
+#else
+    return (ThreadBinding*)OE_GetGSRegisterBase();
+#endif
 }
 
 /*
@@ -64,7 +83,12 @@ static void _SetThreadBinding(ThreadBinding* binding)
 
 ThreadBinding* GetThreadBinding()
 {
+#if defined(USE_TLS_FOR_THREADING_BINDING)
+    OE_H_Once(&_threadBindingOnce, _CreateThreadBindingKey);
+    return (ThreadBinding*)OE_H_ThreadGetSpecific(_threadBindingKey);
+#else
     return (ThreadBinding*)OE_GetGSRegisterBase();
+#endif
 }
 
 /*
