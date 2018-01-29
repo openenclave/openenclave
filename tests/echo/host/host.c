@@ -17,7 +17,7 @@ OE_OCALL void Echo(void* args_)
     assert(strcmp(args->str2, "OE_HostStackStrdup2") == 0);
     assert(strcmp(args->str3, "OE_HostStackStrdup3") == 0);
 
-    if (!(args->out = Strdup(args->in)))
+    if (!(args->out = OE_Strdup(args->in)))
     {
         args->ret = -1;
         return;
@@ -45,7 +45,7 @@ int main(int argc, const char* argv[])
     EchoArgs args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
-    if (!(args.in = Strdup("Hello World")))
+    if (!(args.in = OE_Strdup("Hello World")))
         OE_PutErr("Strdup() failed");
 
     if ((result = OE_CallEnclave(enclave, "Echo", &args)) != OE_OK)

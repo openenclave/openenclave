@@ -667,7 +667,7 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     {
         ECallNameAddr tmp;
 
-        if (!(tmp.name = Strdup(name)))
+        if (!(tmp.name = OE_Strdup(name)))
             goto done;
 
         tmp.code = StrCode(name, strlen(name));
@@ -1001,7 +1001,7 @@ OE_Result __OE_BuildEnclave(
     OE_TRY(_SaveTextAddress(enclave, &elf));
 
     /* Save path of this enclave */
-    if (!(enclave->path = Strdup(path)))
+    if (!(enclave->path = OE_Strdup(path)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
     result = OE_OK;

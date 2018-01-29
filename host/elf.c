@@ -1492,7 +1492,7 @@ int Elf64_AddSection(
             goto done;
 
         /* Copy the section name to the .shstrtab section */
-        Strlcat((char*)elf->data + nameoffset, name, namesize);
+        OE_Strlcat((char*)elf->data + nameoffset, name, namesize);
 
         /* Update the size of the .shstrtab section */
         elf->shdrs[shstrndx].sh_size += strlen(name) + 1;

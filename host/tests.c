@@ -6,7 +6,7 @@
 
 uint32_t OE_GetCreateFlags(void)
 {
-    char* env = Dupenv("OE_SIMULATION");
+    char* env = OE_Dupenv("OE_SIMULATION");
 
     if (env && strcmp(env, "1") == 0)
     {

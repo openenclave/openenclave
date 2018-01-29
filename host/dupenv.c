@@ -2,8 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-char* Dupenv(
-    const char* name)
+char* OE_Dupenv(const char* name)
 {
 #if defined(__linux__)
 

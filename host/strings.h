@@ -3,15 +3,15 @@
 
 #include <stddef.h>
 
-char* Strdup(
+char* OE_Strdup(
     const char* str);
 
-size_t Strlcpy(
+size_t OE_Strlcpy(
     char* dest, 
     const char* src, 
     size_t size);
 
-size_t Strlcat(
+size_t OE_Strlcat(
     char* dest, 
     const char* src, 
     size_t size);

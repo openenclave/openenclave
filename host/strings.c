@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-char* Strdup(const char* str)
+char* OE_Strdup(const char* str)
 {
 #if defined(__linux__)
     return strdup(str);
@@ -11,7 +11,7 @@ char* Strdup(const char* str)
 #endif
 }
 
-size_t Strlcpy(
+size_t OE_Strlcpy(
     char* dest, 
     const char* src, 
     size_t size)
@@ -34,7 +34,7 @@ size_t Strlcpy(
     return src - start;
 }
 
-size_t Strlcat(
+size_t OE_Strlcat(
     char* dest, 
     const char* src, 
     size_t size)
