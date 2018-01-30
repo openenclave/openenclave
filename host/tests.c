@@ -6,14 +6,19 @@
 
 uint32_t OE_GetCreateFlags(void)
 {
-    char* env = OE_Dupenv("OE_SIMULATION");
+    uint32_t result = OE_FLAG_DEBUG;
+    char* env = NULL;
+    
+    if (!(env = OE_Dupenv("OE_SIMULATION")))
+        goto done;
 
-    if (env && strcmp(env, "1") == 0)
-    {
+    if (strcmp(env, "1") == 0)
+        result |= OE_FLAG_SIMULATE;
+
+done:
+
+    if (env)
         free(env);
-        return OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
-    }
 
-    free(env);
-    return OE_FLAG_DEBUG;
+    return result;
 }

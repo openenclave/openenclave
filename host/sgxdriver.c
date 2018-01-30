@@ -336,7 +336,7 @@ static int _IoctlReal(
                 secs->size,
                 secs->size,
                 ENCLAVE_TYPE_SGX,
-                (void*)secs,
+                (const void*)secs,
                 sizeof(ENCLAVE_CREATE_INFO_SGX),
                 &enclaveError);
 
@@ -397,7 +397,7 @@ static int _IoctlReal(
 
             if (!InitializeEnclave(
                 GetCurrentProcess(),
-                (void*)p->addr,
+                (const void*)p->addr,
                 &info,
                 sizeof(info),
                 &enclaveError))
@@ -414,7 +414,7 @@ static int _IoctlReal(
     }
 
     /* Unreachable */
-    return 0;
+    return -1;
 
 #endif
 }

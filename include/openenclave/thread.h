@@ -14,6 +14,12 @@ OE_EXTERNC_BEGIN
 
 typedef uint64_t OE_Thread;
 
+/*
+ * Note that all the __impl[] fields in the below implementations are
+ * all larger than what is actually needed. This is to account for 
+ * possible future expansion by evolving implementations.
+ */
+
 typedef struct _OE_ThreadAttr
 {
     /* Internal private implementation */
