@@ -6,7 +6,7 @@
 # include <Windows.h>
 #endif
 
-void *Memalign(size_t alignment, size_t size)
+void *OE_Memalign(size_t alignment, size_t size)
 {
 #if defined(__linux__)
     extern void *memalign(size_t alignment, size_t size);
@@ -16,7 +16,7 @@ void *Memalign(size_t alignment, size_t size)
 #endif
 }
 
-void MemalignFree(void* ptr)
+void OE_MemalignFree(void* ptr)
 {
 #if defined(__linux__)
     free(ptr);

@@ -618,7 +618,7 @@ static OE_Result _AddPages(
 OE_CATCH:
 
     if (segpages)
-        MemalignFree(segpages);
+        OE_MemalignFree(segpages);
 
     return result;
 }

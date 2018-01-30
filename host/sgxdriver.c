@@ -198,7 +198,7 @@ static SGX_Secs* _NewSecs(uint64_t base, uint64_t size)
 {
     SGX_Secs* secs = NULL;
 
-    if (!(secs = (SGX_Secs*)Memalign(OE_PAGE_SIZE, sizeof(SGX_Secs))))
+    if (!(secs = (SGX_Secs*)OE_Memalign(OE_PAGE_SIZE, sizeof(SGX_Secs))))
         return NULL;
 
     memset(secs, 0, sizeof(SGX_Secs));
@@ -626,7 +626,7 @@ static OE_Result _ECreateProc(
 OE_CATCH:
 
     if (secs)
-        MemalignFree(secs);
+        OE_MemalignFree(secs);
 
     return result;
 }

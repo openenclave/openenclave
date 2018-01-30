@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
-void *Memalign(size_t alignment, size_t size);
+void *OE_Memalign(size_t alignment, size_t size);
 
-void MemalignFree(void* ptr);
+void OE_MemalignFree(void* ptr);
 
 #endif /* _OE_HOST_MEMALIGN_H */

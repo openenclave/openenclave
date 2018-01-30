@@ -256,7 +256,7 @@ OE_Result __OE_CombineSegments(
     OE_TRY(__OE_CalculateSegmentsSize(segments, nsegments, &size));
 
     /* Allocate data on a page boundary */
-    if (!(data = (unsigned char*)Memalign(OE_PAGE_SIZE, size)))
+    if (!(data = (unsigned char*)OE_Memalign(OE_PAGE_SIZE, size)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Clear the image memory */
@@ -277,7 +277,7 @@ OE_Result __OE_CombineSegments(
 OE_CATCH:
 
     if (result != OE_OK)
-        MemalignFree(data);
+        OE_MemalignFree(data);
 
     return result;
 }
