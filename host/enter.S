@@ -1,4 +1,5 @@
 #include "asmdefs.h"
+#include <openenclave/bits/context.inc>
 
 //==============================================================================
 //
@@ -23,16 +24,17 @@
 //	stack.
 //==============================================================================
 
-#define PARAMS_SPACE 128
-#define TCS     -8(%rbp)
-#define AEP     -16(%rbp)
-#define ARG1    -24(%rbp)
-#define ARG2    -32(%rbp)
-#define ARG3    -40(%rbp)
-#define ARG4    -48(%rbp)
-#define ARG1OUT -56(%rbp)
-#define ARG2OUT -64(%rbp)
-#define RSP     -72(%rbp)
+#define PARAMS_SPACE    0x2c0
+#define TCS             -8(%rbp)
+#define AEP             -16(%rbp)
+#define ARG1            -24(%rbp)
+#define ARG2            -32(%rbp)
+#define ARG3            -40(%rbp)
+#define ARG4            -48(%rbp)
+#define ARG1OUT         -56(%rbp)
+#define ARG2OUT         -64(%rbp)
+#define RSP             -72(%rbp)
+#define HOST_CONTEXT    -80(%rbp)
 
 .globl __morestack
 .type __morestack, @function
@@ -51,15 +53,29 @@ __morestack:
     mov %r8,  ARG3
     mov %r9,  ARG4
 
-    // Save registers:
-    push %rbx
+    // The host context will be saved in the host stack.
+    mov %rsp, HOST_CONTEXT
 
 .execute_eenter:
+
+    // Save the current context.
+    mov HOST_CONTEXT, %rdi
+    call snap_current_context
 
     // Save the stack pointer so enclave can use the stack.
     mov %rsp, RSP
 
-    // EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2)
+    // The EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2) contract:
+    // Input: 
+    //      RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2,
+    //      RBP=Current host stack rbp,
+    //      RSP=Current host stack rSP.
+    //      All other registers are NOT used/ignored.
+    // Output:
+    //      RDI=ARG1OUT, RSI=ARG2OUT, 
+    //      RBP is not changed, 
+    //      RSP might be decreased because of host stack memory allocation.
+    //      All other Registers are clobbered.
     mov TCS, %rbx
     mov AEP, %rcx
     mov ARG1, %rdi
@@ -67,11 +83,18 @@ __morestack:
     mov $ENCLU_EENTER, %rax
     ENCLU
 
+    // Align the stack since enclave code change the host rsp for call out.
+    and $-16, %rsp 
+
     mov %rdi, ARG1OUT
     mov %rsi, ARG2OUT
 
+    // Restore the saved host context.
+    mov HOST_CONTEXT, %rdi
+    call restore_partial_context
+
 	// Check if it is an OCALL needed to be dispatched.
-	mov %rdi, %r10
+	mov ARG1OUT, %r10
 	shr $0x20, %r10
 	cmpq $OE_OCALL_CODE, %r10
 	jne .return_from_ecall
@@ -87,6 +110,8 @@ __morestack:
     push %r8
     push %r9
     push %r12
+    push %r13
+    // Push an extra one to keep stack aligned
     push %r13
 
     // Call _OE_HostStackBridge():
@@ -105,6 +130,7 @@ __morestack:
     call _OE_HostStackBridge
 
     // Restore registers (except RDI and RSI)
+    pop %r13
     pop %r13
     pop %r12
     pop %r9
@@ -137,13 +163,8 @@ __morestack:
     mov ARG2OUT, %rax
     mov %rax, (%r9) /* arg3 */
 
-    // Restore registers:
-    pop %rbx
-
-    // Return parameters space:
-    add $PARAMS_SPACE, %rsp
-
     // Restore stack frame:
+    mov %rbp, %rsp
     pop %rbp
 
     ret

@@ -4,7 +4,6 @@
 #ifndef __ASSEMBLER__
 #include <openenclave/types.h>
 #include <stdint.h>
-#include "constants_x64.inc"
 
 // X87 and SSE data.
 typedef struct _OE_BASIC_XSATE

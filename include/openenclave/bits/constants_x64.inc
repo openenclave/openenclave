@@ -1,6 +1,25 @@
+#ifndef _CONSTANTS_X64_INC
+#define _CONSTANTS_X64_INC
 //
 // Contains AMD64 architecture constants.
 //
+
+//
+// SGX hardware constant definitions.
+//
+
+#define SGX_SSA_RSP_OFFSET              0XF68
+
+//
+// Openenclave layout constant definitions.
+//
+
+#define OE_PAGE_SIZE                    0x1000
+#define OE_SSA_FROM_TCS_BYTE_OFFSET     OE_PAGE_SIZE
+#define OE_TD_FROM_TCS_BYTE_OFFSET      (4 * OE_PAGE_SIZE)
+#define OE_DEFAULT_SSA_FRAME_SIZE       0x1
+#define OE_SGX_GPR_BYTE_SIZE            0xb8
+#define OE_SGX_TCS_HEADER_BYTE_SIZE     0x48
 
 //
 // OE_CONTEXT Structure size and offset definitions.
@@ -29,4 +48,4 @@
 #define OE_CONTEXT_MXCSR    0x90
 #define OE_CONTEXT_FLOAT    0xA0
 
-
+#endif /* _CONSTANTS_X64_INC */
