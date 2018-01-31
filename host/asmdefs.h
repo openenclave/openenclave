@@ -4,6 +4,7 @@
 #ifndef __ASSEMBLER__
 #include <openenclave/types.h>
 #include <stdint.h>
+#include <openenclave/bits/context.h>
 #endif
 
 #ifdef __ASSEMBLER__
@@ -24,6 +25,8 @@ void OE_Enter(
     uint64_t arg2,
     uint64_t* arg3,
     uint64_t* arg4);
+
+void OE_AEP(void);
 #endif
 
 #ifndef __ASSEMBLER__

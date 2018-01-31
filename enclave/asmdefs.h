@@ -17,26 +17,26 @@
 /* Offsets into TD structure */
 #define TD_self_addr            0
 #define TD_last_sp              8
-#define TD_magic                152
-#define TD_depth                160
-#define TD_initialized          168
-#define TD_host_rcx             176
-#define TD_host_rdx             184
-#define TD_host_r8              192
-#define TD_host_r9              200
-#define TD_host_r10             208
-#define TD_host_r11             216
-#define TD_host_r12             224
-#define TD_host_r13             232
-#define TD_host_r14             240
-#define TD_host_r15             248
-#define TD_host_rsp             256
-#define TD_host_rbp             264
-#define TD_host_stack_base      272
-#define TD_oret_func            280
-#define TD_oret_arg             288
-#define TD_callsites            296
-#define TD_simulate             304
+#define TD_magic                168
+#define TD_depth                (TD_magic + 8)
+#define TD_initialized          (TD_depth + 8)
+#define TD_host_rcx             (TD_initialized + 8)
+#define TD_host_rdx             (TD_host_rcx + 8)
+#define TD_host_r8              (TD_host_rdx + 8)
+#define TD_host_r9              (TD_host_r8 + 8)
+#define TD_host_r10             (TD_host_r9 + 8)
+#define TD_host_r11             (TD_host_r10 + 8)
+#define TD_host_r12             (TD_host_r11 + 8)
+#define TD_host_r13             (TD_host_r12 + 8)
+#define TD_host_r14             (TD_host_r13 + 8)
+#define TD_host_r15             (TD_host_r14 + 8)
+#define TD_host_rsp             (TD_host_r15 + 8)
+#define TD_host_rbp             (TD_host_rsp + 8)
+#define TD_host_stack_base      (TD_host_rbp + 8)
+#define TD_oret_func            (TD_host_stack_base + 8)
+#define TD_oret_arg             (TD_oret_func + 8)
+#define TD_callsites            (TD_oret_arg + 8)
+#define TD_simulate             (TD_callsites + 8)
 
 #define OE_Exit __morestack
 #ifndef __ASSEMBLER__
@@ -48,7 +48,12 @@ void __OE_HandleMain(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t cssa,
-    void* tcs);
+    void* tcs,
+    uint64_t *outputArg1,
+    uint64_t *outputArg2);
+
+void OE_ExceptionDispatcher(
+    void* context);
 #endif
 
 #ifndef __ASSEMBLER__

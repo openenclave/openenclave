@@ -18,8 +18,6 @@
 #include <openenclave/bits/trace.h>
 #include "ocalls.h"
 
-void OE_AEP(void);
-
 /*
 **==============================================================================
 **
