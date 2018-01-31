@@ -4,16 +4,22 @@ Getting Started with OpenEnclave
 Introduction
 ------------
 
-This document provides a step-by-step tutorial to begin using the OpenEnclave SDK. It explains how to obtain, build, and install the SDK. It also describes how to develop and build a few simple enclave applications.
+This document provides a step-by-step tutorial to begin using the OpenEnclave
+SDK. It explains how to obtain, build, and install the SDK. It also describes
+how to develop and build a few simple enclave applications.
 
 Licenses
 --------
 
-Microsoft plans to release the OpenEnclave SDK under the MIT license, included here in the source distribution.
+Microsoft plans to release the OpenEnclave SDK under the MIT license, included
+here in the source distribution.
 
 <https://github.com/Microsoft/openenclave/blob/master/LICENSE>
 
-OpenEnclave builds on various third-party packages. It modifies and redistributes libunwind and in addition downloads other third-party packages on-the-fly during the build process. Licensing details for all third-party packages shown in the table below.  
+OpenEnclave builds on various third-party packages. It modifies and
+redistributes libunwind and in addition downloads other third-party packages
+on-the-fly during the build process. Licensing details for all third-party
+packages shown in the table below.
 
 | Package   | License                                                                                 |
 |-----------|-----------------------------------------------------------------------------------------|
@@ -41,10 +47,10 @@ This creates a source tree under the directory called openenclave.
 Quick Start
 -----------
 
-Chapters 5 through 7 discuss prerequisites, building, and installing in some
-detail. This chapter explains how to perform these steps quickly when one
-wishes to install OpenEnclave. If this suffices, then perform the steps below,
-skip those chapters and proceed to chapter 8.
+If you wish to skip ahead to the section on developing a simple enclave, you
+can follow the instructions below to set up a working environment. If you want
+more details on prerequisites, building or installing, refer to the subsequent
+sections that discussing each topic individually.
 
 ### Prerequisites
 
@@ -80,7 +86,7 @@ As of now, there is no real need to install the SDK system-wide, so you might
 use a tree in your home directory:
 
 ```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
 build$ make install
 ```
 
@@ -181,7 +187,7 @@ If things break, set the **VERBOSE** make variable to print all invoked commands
 build$ make VERBOSE=1
 ```
 
-Building from within a subtree of the build-tree builds all dependencies for that directory as well. 
+Building from within a subtree of the build-tree builds all dependencies for that directory as well.
 "**make clean**" is handy before a spot-rebuild in verbose mode.
 
 A successful build only outputs the HTML API reference into the build-tree. To update the refman *.md-files
@@ -219,7 +225,7 @@ build$ make
 
 If you are in a hurry and just need a quick confirmation, disable the libc
 tests with the **ENABLE_LIBC_TESTS** cmake variable like so:
-  
+
 ```
 build$ cmake -DENABLE_LIBC_TESTS=OFF ..
 [...]
@@ -237,7 +243,7 @@ Installing
 
 This chapter describes how to locally install the SDK from the compiled
 OpenEnclave tree. To create a redistributable binary package (such as a .deb
-pacakge), see the next chapter.
+package), see the next chapter.
 
 Specify the install-prefix to the cmake call. As of now, there is no real need
 to install the SDK system-wide, so you might use a tree in your home directory:
@@ -266,15 +272,15 @@ build$ make install DESTDIR=foo
 
 The following table shows where key components are installed.
 
-| Path                                     | Description              |
-|------------------------------------------|--------------------------|
-| <install_prefix>/bin                     | Programs                 |
-| <install_prefix>/include/openenclave     | Includes                 |
-| <install_prefix>/lib/openenclave/enclave | Enclave libraries        |
-| <install_prefix>/lib/openenclave/host    | Host libraries           |
-| <install_prefix>/lib/openenclave/debugger| Debugger libraries       |
-| <install_prefix>/share/doc/openenclave   | Documentation            |
-| <install_prefix>/share/openenclave       | Samples and make-include |
+| Path                                     | Description                     |
+|------------------------------------------|---------------------------------|
+| <install_prefix>/bin                     | Programs                        |
+| <install_prefix>/include/openenclave     | Includes                        |
+| <install_prefix>/lib/openenclave/enclave | Enclave libraries               |
+| <install_prefix>/lib/openenclave/host    | Host libraries                  |
+| <install_prefix>/lib/openenclave/debugger| Debugger libraries              |
+| <install_prefix>/share/doc/openenclave   | Documentation                   |
+| <install_prefix>/share/openenclave       | Samples and make/cmake-includes |
 
 For *Makefile* based projects, you may use the make-include in
 **<install_prefix>/share/openenclave/config.mak** in your own project for
@@ -292,7 +298,7 @@ and libraries.
 | oelibc           | Enclave code: OpenEnclave C library. Includes oeenclave.                            |
 | oelibcxx         | Enclave code: OpenEnclave C++ library. Includes oelibc.                             |
 | oeidl            | Enclave code: Misc helpers required with IDL-compiled code. Includes oelibc.        |
-| oehost           | Host code: OpenEnclave instrinsic functions.                                        |
+| oehost           | Host code: OpenEnclave intrinsic functions.                                         |
 | oehostapp        | Host code: Must be present with host binary for proper linker flags.                |
 | oesign           | Build: shorthand for the signing tool executable.                                   |
 | oegen            | Build: shorthand for the IDL compiler executable.                                   |
@@ -300,9 +306,10 @@ and libraries.
 Create Redistributable SDK pacakge
 ----------------------------------
 
-To create a redistributable package (deb, rpm, ...), use cpack. Specify the final
-installation prefix to cmake using the CMAKE_INSTALL_PREFIX variable as above.
-E.g., to create a debian package that will install the SDK to /opt/opernenclave, use:
+To create a redistributable package (deb, rpm, ...), use **cpack**. Specify
+the final installation prefix to cmake using the CMAKE_INSTALL_PREFIX variable
+as above. E.g., to create a debian package that will install the SDK to
+/opt/openenclave, use:
 
 ```
 build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/openenclave ..
@@ -317,7 +324,7 @@ Find the samples under **share/openenclave/samples/** of the installation.
 Change to the new samples directory and build and run the samples.
 
 ```
-$ cd $home/share/openenclave/samples
+$ cd ~/openenclave/share/openenclave/samples
 $ sh test-samples.sh
 ```
 
@@ -330,21 +337,27 @@ Developing a simple enclave (echo)
 This chapter shows how to develop a simple enclave called echo. The next
 chapter explains how to use this enclave in a host application. This example
 is included in the installed samples directory (see
-<prefix>/openenclave/share/openenclave/samples/make/hello).
+\<install_prefix\>/openenclave/share/openenclave/samples/cmake/hello/).
 
 ### The ECALL
 
-The echo enclave implements a single ECALL named EnclaveEcho(), which is called by the host (in the next chapter). This function has the following signature.
+The echo enclave implements a single ECALL named EnclaveEcho(), which is
+called by the host (in the next chapter). This function has the following
+signature.
 
 ```
 OE_ECALL void EnclaveEcho(void* args);
 ```
 
-The args parameter can be whatever the host and the enclave agree on. In this case args is a pointer to a zero-terminated string. The OE_ECALL macro exports the function and injects it into a special section (.ecall) in the ELF image. When the host loads the enclave, it builds a table of all ECALLs exported by the enclave.
+The args parameter can be whatever the host and the enclave agree on. In this
+case args is a pointer to a zero-terminated string in host memory. The
+OE_ECALL macro exports the function and injects it into a special section
+(.ecall) in the ELF image. When the host loads the enclave, it builds a table
+of all ECALLs exported by the enclave.
 
 ### The Echo enclave Listing
 
-Here’s the full listing for the echo enclave (enc.c):
+Here’s the full listing for the echo enclave (enc/enc.c):
 
 ```
 #include <openenclave/enclave.h>
@@ -355,88 +368,39 @@ OE_ECALL void EnclaveEcho(void* args)
 }
 ```
 
-Notice EnclaveEcho() performs an OCALL, calling the host’s HostEcho() function with the same arguments.
+Notice EnclaveEcho() performs an OCALL, calling the host’s HostEcho()
+function with the same arguments.
 
-### Compiling enc.c
+### Enclave build collateral
 
-This sample includes a makefile for building this enclave, but to be more instructive, this chapter shows how to build components from scratch. First, we define the INCLUDES make variable as follows.
-
-```
-INCLUDES=-I/opt/openenclave/include/openenclave/enclave
-```
-
-This is the directory that contains the **openenclave.h** header, as well as C headers files.
-
-Next, we define the CFLAGS make variable as follows.
+The samples provides cmake helper includes under samples/cmake/cmake/
+simplifying OpenEnclave application writing. **add_enclave_executable.cmake**
+provides the **add_enclave_executable()** function. It extends CMake's
+**add_executable()** by adding the intrinsic target (oeenclave) and also
+signing the enclave. For the echo sample, this ***CMakeLists.txt*** suffices:
 
 ```
-CFLAGS=-O2 -nostdinc -fPIC
+include(add_enclave_executable)
+add_enclave_executable(samples-echoenc echo.conf private.pem
+    enc.c
+    )
 ```
 
-Finally, we compile the source file.
-
-```
-gcc -c $(CFLAGS) $(INCLUDES) enc.c
-```
-
-This produces enc.o.
-
-### Linking the enclave
-
-Next, we link the enclave to produce echoenc.so. First, we define the LDFLAGS make variable.
-
-```
-LDFLAGS=\
-    -nostdlib \
-    -nodefaultlibs \
-    -nostartfiles \
-    -Wl,--no-undefined \
-    -Wl,-Bstatic \
-    -Wl,-Bsymbolic \
-    -Wl,--export-dynamic \
-    -Wl,-pie \
-    -Wl,-eOE_Main
-```
-
-The -eOE_Main option requires some explanation (see the ld man page about other options). This option specifies the name of the entry point for the enclave. The linker stores the virtual address of the OE_Main() function in the ELF header (Elf64_Ehdr.e_entry) of the resulting binary. When the enclave is instantiated by the host, this entry point is copied to each TCS (Thread Control Structure) in the image. When the host invokes the SGX EENTER instruction on a TCS, the hardware fetches the entry point from the TCS and jumps to that address and the OE_Main() function begins to execute.
-
-Next, we define the LIBRARIES make variable.
-
-```
-LIBRARIES=-L/opt/openenclave/lib/openenclave/enclave -loeenclave
-```
-
-The LIBRARIES make variable specifies the enclave library, which contains the enclave intrinsics, including the OE_Main() entry point. Note that this sample uses neither a C or C++ runtime library. Other samples will show how these are used.
-
-Finally, we link the enclave.
-
-```
-gcc $(LDFLAGS) $(LIBRARIES) enc.o -o echoenc.so
-```
-
-### Signing the enclave
-
-The final step in creating an enclave is to sign it with the oesign tool. This tool takes the following parameters.
-
-```
-# oesign
-
-Usage: oesign ENCLAVE CONFFILE KEYFILE
-```
-
-The CONFFILE argument is the name of a configuration file that defines enclave settings, such as stack size, heap size, and the maximum number of threads (TCSs). Here is a sample:
+The **echo.conf** argument is the name of a configuration file that defines
+enclave settings, such as stack size, heap size, and the maximum number of
+threads (TCSs). Here is the echo sample:
 
 ```
 # echo.conf
 Debug=1
 NumHeapPages=1024
 NumStackPages=1024
-NumTCS=16
+NumTCS=2
 ```
 
-The KEYFILE argument is a private RSA key used to sign the enclave.
-
-A self-signed private key can be generated using OpenSSL as follows.
+The **private.pem** argument is a private RSA key used to sign the enclave,
+here included with the sample. To generate a self-signed private key yourself,
+use OpenSSL as follows.
 
 ```
 # openssl genrsa -out private.pem -3 3072
@@ -448,19 +412,11 @@ Then the public key can be generated from this key as follows.
 # openssl rsa -in private.pem -pubout -out public.pem
 ```
 
-Finally, we sign the enclave as follows.
-
-```
-# oesign echoenc.so echo.conf private.pem
-```
-
-Created echoenc.signed.so
-
-
 Developing a simple host (echohost)
 -----------------------------------
 
-Next, we develop a host to run the echoenc.signed.so enclave that we developed in the previous chapter. The listing follows.
+Next, we develop a host to run the echoenc.signed.so enclave that we developed
+in the previous chapter. The listing from samples/cmake/echo/host follows.
 
 ```
 #include <openenclave/host.h>
@@ -513,20 +469,111 @@ This host performs the following tasks:
 - Calls into the enclave: OE_CallEnclave()
 - Terminates the enclave: OE_TerminateEnclave()
 
-After building the host application, we are ready to run the host.
+### Host build collateral
+
+The ***CMakeLists.txt*** is rather straight-forward, though note the
+**oehostapp** link target in the add_executable() call:
 
 ```
-# host/echohost ./enc/echoenc.signed.so
-
-Hello
+add_executable(samples-echohost host.c)
+target_link_libraries(samples-echohost oehostapp)
 ```
+
+The additional target instructs CMake to provide the open enclave includes and
+host libraries (via oehost), as well as the proper linker flags for the host
+OCall targets to be resolved.
+
+Completing the echo sample
+--------------------------
+
+In the project file **samples/cmake/CMakeLists.txt**, note the line:
+```
+include(${OE_PREFIX}/share/openenclave/openenclave.cmake)
+```
+
+This sources the CMake include providing the OpenEnclave targets.
+
+Build the samples, e.g. in a subdirectory under samples/cmake:
+```
+samples/cmake$ mkdir build && cd build
+samples/cmake/build$ cmake .. -DOE_PREFIX=../../../.. && make
+```
+
+After building, we are ready to run the samples:
+
+```
+samples/cmake/build$ ctest
+```
+
+------------------------------------------------
+
+Other build systems
+-------------------
+
+If you are not using CMake for your project, the Makefile samples under
+***samples/make/*** provide guidance on the necessary includes, libraries, and
+flag definitions.
+
+Specifically, the OpenEnclave includes for the intrinsics are located under
+<PREFIX>/include/openenclave (or via the **OE_INCLUDEDIR** make variable when
+using the make include installed under <PREFIX>/share/openenclave/config.mak).
+
+Necessary gcc compiler flags for enclave code are:
+```
+CFLAGS=-nostdinc -fPIC
+```
+
+Necessary gcc linker flags for an enclave are:
+```
+LDFLAGS=\
+    -nostdlib \
+    -nodefaultlibs \
+    -nostartfiles \
+    -Wl,--no-undefined \
+    -Wl,-Bstatic \
+    -Wl,-Bsymbolic \
+    -Wl,--export-dynamic \
+    -Wl,-pie \
+    -Wl,-eOE_Main
+```
+
+The -eOE_Main option requires some explanation (see the ld man page about
+other options). This option specifies the name of the entry point for the
+enclave. The linker stores the virtual address of the OE_Main() function in
+the ELF header (Elf64_Ehdr.e_entry) of the resulting binary. When the enclave
+is instantiated by the host, this entry point is copied to each TCS (Thread
+Control Structure) in the image. When the host invokes the SGX EENTER
+instruction on a TCS, the hardware fetches the entry point from the TCS and
+jumps to that address and the OE_Main() function begins to execute.
+
+The necessary enclave library contains the enclave intrinsics, including the
+OE_Main() entry point. Note that the echo sample uses neither a C nor C++
+runtime library. Other samples will show how these are used.
+
+```
+LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loeenclave
+```
+
+To sign the enclave, use the **oesign** tool. This tool takes the following
+parameters.
+
+```
+$ oesign
+
+Usage: oesign ENCLAVE CONFFILE KEYFILE
+```
+
+The CONFFILE argument is the name of a configuration file that defines enclave
+settings, and the KEYFILE argument is a private RSA key used to sign the
+enclave. See the CMake section for details on these files.
+
 
 ### Debugging the enclave
 
-We can't use GDB directly to debug enclave application since it doesn't understand enclave yet. 
+We can't use GDB directly to debug enclave application since it doesn't understand enclave yet.
 OpenEnclave includes a GDB plugin to help developers to debug enclaves that is developed using this SDK.
 
-Note: the enclave must be created with debug opt-in flag, otherwise debugger can't work since it can't read the enclave memory. 
+Note: the enclave must be created with debug opt-in flag, otherwise debugger can't work since it can't read the enclave memory.
 The default sample enclave is created with debug flag, refer to:
 
 ```
@@ -535,8 +582,8 @@ result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave);
 
 This flag (OE_FLAG_DEBUG) should only be set in development phase. It must be clear out for production enclave.
 
-The debugger is installed at <install_prefix>/bin/oe-gdb. The usage is same with GDB, for example: the following command will 
-launch the simple enclave application under debugger: 
+The debugger is installed at <install_prefix>/bin/oe-gdb. The usage is same with GDB, for example: the following command will
+launch the simple enclave application under debugger:
 
 ```
 # /opt/openenclave/bin/oe-gdb -arg ./host/echohost ./enc/echoenc.signed.so

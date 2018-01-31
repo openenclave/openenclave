@@ -9,11 +9,11 @@ Introduction
 OpenEnclave is an SDK for building enclave applications in C and C++. An
 enclave application partitions itself into a trusted component (called the
 host) and an untrusted component (called the enclave). An enclave is a secure
-container whose memory is protected from entities outside the enclave. These 
-protections allow enclaves to perform secure computations with assurances that 
+container whose memory is protected from entities outside the enclave. These
+protections allow enclaves to perform secure computations with assurances that
 secrets will not be compromised.
 
-The current implementation of OpenEnclave is built on the Intel Software Guard 
+The current implementation of OpenEnclave is built on the Intel Software Guard
 Extensions (SGX), although OpenEnclave may support other memory protection
 architectures in the future, such as Microsoft Virtual Secure Mode.
 
@@ -43,7 +43,7 @@ OpenEnclave runs on the following platforms:
 
 - Ubuntu 16.04-LTS 64-bits
 
-It supports two modes: **SGX mode** and **simulation mode**. 
+It supports two modes: **SGX mode** and **simulation mode**.
 
 **Simulation mode** has package dependencies that may be installed from
 the root of the source distribution as follows.
@@ -103,7 +103,7 @@ Specify the install-prefix to the cmake call. As of now, there is no real need t
 system-wide, so you might use a tree in your home directory:
 
 ```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$home/openenclave ..
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$~/openenclave ..
 build$ make install
 ```
 
