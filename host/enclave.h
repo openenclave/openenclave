@@ -118,13 +118,7 @@ struct _OE_Enclave
     bool simulate;
 };
 
-/* Get enclave from thread-specific data (TSD) */
-OE_Enclave* GetEnclave(void);
-
-/* Set enclave into thread-specific data (TSD) */
-void SetEnclave(OE_Enclave* enclave);
-
 /* Get the event for the given TCS */
-EnclaveEvent* GetEnclaveEvent(uint64_t tcs);
+EnclaveEvent* GetEnclaveEvent(OE_Enclave* enclave, uint64_t tcs);
 
 #endif /* _OE_HOST_ENCLAVE_H */

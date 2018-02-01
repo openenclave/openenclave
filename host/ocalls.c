@@ -78,10 +78,10 @@ void HandlePutchar(uint64_t argIn)
     putchar(c);
 }
 
-void HandleThreadWait(uint64_t argIn)
+void HandleThreadWait(OE_Enclave* enclave, uint64_t argIn)
 {
     const uint64_t tcs = argIn;
-    EnclaveEvent* event = GetEnclaveEvent(tcs);
+    EnclaveEvent* event = GetEnclaveEvent(enclave, tcs);
     assert(event);
 
 #if defined(__linux__)
@@ -96,10 +96,10 @@ void HandleThreadWait(uint64_t argIn)
 #endif
 }
 
-void HandleThreadWake(uint64_t argIn)
+void HandleThreadWake(OE_Enclave* enclave, uint64_t argIn)
 {
     const uint64_t tcs = argIn;
-    EnclaveEvent* event = GetEnclaveEvent(tcs);
+    EnclaveEvent* event = GetEnclaveEvent(enclave, tcs);
     assert(event);
 
 #if defined(__linux__)
@@ -114,7 +114,7 @@ void HandleThreadWake(uint64_t argIn)
 #endif
 }
 
-void HandleThreadWakeWait(uint64_t argIn)
+void HandleThreadWakeWait(OE_Enclave* enclave, uint64_t argIn)
 {
     OE_ThreadWakeWaitArgs* args = (OE_ThreadWakeWaitArgs*)argIn;
 
@@ -123,13 +123,13 @@ void HandleThreadWakeWait(uint64_t argIn)
 
 #if defined(__linux__)
 
-    HandleThreadWake((uint64_t)args->waiter_tcs);
-    HandleThreadWait((uint64_t)args->self_tcs);
+    HandleThreadWake(enclave, (uint64_t)args->waiter_tcs);
+    HandleThreadWait(enclave, (uint64_t)args->self_tcs);
 
 #elif defined(_WIN32)
 
-    HandleThreadWake((uint64_t)args->waiter_tcs);
-    HandleThreadWait((uint64_t)args->self_tcs);
+    HandleThreadWake(enclave, (uint64_t)args->waiter_tcs);
+    HandleThreadWait(enclave, (uint64_t)args->self_tcs);
 
 #endif
 }

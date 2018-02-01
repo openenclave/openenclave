@@ -8,7 +8,8 @@
 //     [IN] uint64_t arg1,
 //     [IN] uint64_t arg2,
 //     [OUT] uint64_t* arg3,
-//     [OUT] uint64_t* arg4);
+//     [OUT] uint64_t* arg4,
+//     [IN] OE_Enclave* enclave);
 //
 // Registers:
 //     RDI   - tcs: thread control structure (extended)
@@ -20,17 +21,18 @@
 //
 //==============================================================================
 
-#define PARAMS_SPACE 128
-#define TCS     -8(%rbp)
-#define AEP     -16(%rbp)
-#define ARG1    -24(%rbp)
-#define ARG2    -32(%rbp)
-#define ARG3    -40(%rbp)
-#define ARG4    -48(%rbp)
-#define ARG1OUT -56(%rbp)
-#define ARG2OUT -64(%rbp)
-#define CSSA    -72(%rbp)
-#define RSP     -84(%rbp)
+#define TCS             (-1*OE_WORDSIZE)(%rbp)
+#define AEP             (-2*OE_WORDSIZE)(%rbp)
+#define ARG1            (-3*OE_WORDSIZE)(%rbp)
+#define ARG2            (-4*OE_WORDSIZE)(%rbp)
+#define ARG3            (-5*OE_WORDSIZE)(%rbp)
+#define ARG4            (-6*OE_WORDSIZE)(%rbp)
+#define ENCLAVE          (-7*OE_WORDSIZE)(%rbp)
+#define ARG1OUT         (-8*OE_WORDSIZE)(%rbp)
+#define ARG2OUT         (-9*OE_WORDSIZE)(%rbp)
+#define CSSA            (-10*OE_WORDSIZE)(%rbp)
+#define RSP             (-11*OE_WORDSIZE)(%rbp)
+#define PARAMS_SPACE    (12*OE_WORDSIZE)
 
 .globl OE_EnterSim
 .type OE_EnterSim, @function
@@ -49,6 +51,8 @@ OE_EnterSim:
     mov %rcx, ARG2
     mov %r8, ARG3
     mov %r9, ARG4
+    mov 16(%rbp), %rax  // enclave parameter
+    mov %rax, ENCLAVE
     movq $0, CSSA
 
     // Save registers:
@@ -95,6 +99,7 @@ OE_EnterSim:
     leaq ARG1OUT, %rdx
     leaq ARG2OUT, %rcx
     mov TCS, %r8
+    mov ENCLAVE, %r9
     call __OE_DispatchOCall
 
     // Restore registers saved above:

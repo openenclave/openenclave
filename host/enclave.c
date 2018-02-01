@@ -5,46 +5,6 @@
 /*
 **==============================================================================
 **
-** SetEnclave()
-**
-**     Set enclave into thread-specific data.
-**
-**==============================================================================
-*/
-
-static OE_H_OnceType _enclave_once;
-static OE_H_ThreadKey _enclave_key;
-
-static void _CreateEnclaveKey(void)
-{
-    OE_H_ThreadKeyCreate(&_enclave_key);
-}
-
-void SetEnclave(OE_Enclave* enclave)
-{
-    OE_H_Once(&_enclave_once, _CreateEnclaveKey);
-    OE_H_ThreadSetSpecific(_enclave_key, enclave);
-}
-
-/*
-**==============================================================================
-**
-** GetEnclave()
-**
-**     Get enclave from thread-specific data.
-**
-**==============================================================================
-*/
-
-OE_Enclave* GetEnclave()
-{
-    OE_H_Once(&_enclave_once, _CreateEnclaveKey);
-    return (OE_Enclave*)OE_H_ThreadGetSpecific(_enclave_key);
-}
-
-/*
-**==============================================================================
-**
 ** GetText()
 **
 **     Print the address where to load enclave symbols in GDB (add-symbol-file)
@@ -52,6 +12,10 @@ OE_Enclave* GetEnclave()
 **==============================================================================
 */
 
+#if 0
+/* ATTN: should this be removed: disabled after debugger work. It is useful
+ * for debugging simulated mode.
+ */
 void enc(void);
 
 void enc(void)
@@ -77,6 +41,7 @@ void enc(void)
         printf("No enclave is active\n");
     }
 }
+#endif
 
 /*
 **==============================================================================
@@ -88,9 +53,8 @@ void enc(void)
 **==============================================================================
 */
 
-EnclaveEvent* GetEnclaveEvent(uint64_t tcs)
+EnclaveEvent* GetEnclaveEvent(OE_Enclave* enclave, uint64_t tcs)
 {
-    OE_Enclave* enclave = GetEnclave();
     EnclaveEvent* event = NULL;
 
     if (!enclave)

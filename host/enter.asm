@@ -10,7 +10,8 @@ extern __OE_DispatchOCall:proc
 ;;     [IN] uint64_t arg1,
 ;;     [IN] uint64_t arg2,
 ;;     [OUT] uint64_t* arg3,
-;;     [OUT] uint64_t* arg4);
+;;     [OUT] uint64_t* arg4,
+;;     [OUT] OE_Enclave* enclave);
 ;;
 ;; Registers:
 ;;     RCX      - tcs: thread control structure (extended)
@@ -36,9 +37,10 @@ ARG1            EQU [rbp-24]
 ARG2            EQU [rbp-32]
 ARG3            EQU [rbp-40]
 ARG4            EQU [rbp-48]
-ARG1OUT         EQU [rbp-56]
-ARG2OUT         EQU [rbp-64]
-STACKPTR        EQU [rbp-72]
+ENCLAVE          EQU [rbp-56]
+ARG1OUT         EQU [rbp-64]
+ARG2OUT         EQU [rbp-72]
+STACKPTR        EQU [rbp-80]
 
 NESTED_ENTRY OE_Enter, _TEXT$00
     END_PROLOGUE
@@ -54,6 +56,7 @@ NESTED_ENTRY OE_Enter, _TEXT$00
     ;;     ARG2 := [RBP-32] <- R9
     ;;     ARG3 := [RBP-40] <- [RBP+48]
     ;;     ARG4 := [RBP-48] <- [RBP+56]
+    ;;     ENCLAVE := [RBP-56] <- [RBP+64]
     ;;
     sub rsp, PARAMS_SPACE
     mov TCS, rcx
@@ -64,6 +67,8 @@ NESTED_ENTRY OE_Enter, _TEXT$00
     mov ARG3, rax
     mov rax, [rbp+56]
     mov ARG4, rax
+    mov rax, [rbp+64]
+    mov ENCLAVE, rax
 
     ;; Save registers:
     push rbx
@@ -93,11 +98,12 @@ execute_eenter:
 dispatch_ocall:
 
     ;; RAX = __OE_DispatchOCall(
-    ;;     RDI=arg1
-    ;;     RSI=arg2
-    ;;     RDX=arg1Out
-    ;;     RCX=arg2Out
-    ;;     R8=TCS)
+    ;;     RCX=arg1
+    ;;     RDX=arg2
+    ;;     R8=arg1Out
+    ;;     R9=arg2Out
+    ;;     [RSP+32]=TCS,
+    ;;     [RSP+40]=ENCLAVE);
     sub rsp, 56
     mov rcx, ARG1OUT
     mov rdx, ARG2OUT
@@ -105,6 +111,8 @@ dispatch_ocall:
     lea r9, qword ptr ARG2OUT
     mov rax, qword ptr TCS
     mov qword ptr [rsp+32], rax
+    mov rax, qword ptr ENCLAVE
+    mov qword ptr [rsp+40], rax
     call __OE_DispatchOCall ;; RAX contains return value
     add rsp, 56
 

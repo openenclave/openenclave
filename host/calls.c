@@ -145,7 +145,7 @@ static OE_Result _EnterSim(
             *arg4 = 0;
 
         OE_SetGSRegisterBase(gsbase);
-        OE_EnterSim(tcs, aep, arg1, arg2, arg3, arg4);
+        OE_EnterSim(tcs, aep, arg1, arg2, arg3, arg4, enclave);
         OE_SetGSRegisterBase(saved_gsbase);
     }
 
@@ -208,7 +208,7 @@ static OE_Result _DoEENTER(
         }
         else
         {
-            OE_Enter(tcs, aep, arg1, arg2, &arg3, &arg4);
+            OE_Enter(tcs, aep, arg1, arg2, &arg3, &arg4, enclave);
         }
 
         *codeOut = OE_GetCodeFromCallArg1(arg3);
@@ -391,15 +391,15 @@ static OE_Result _HandleOCALL(
             break;
 
         case OE_FUNC_THREAD_WAIT:
-            HandleThreadWait(argIn);
+            HandleThreadWait(enclave, argIn);
             break;
 
         case OE_FUNC_THREAD_WAKE:
-            HandleThreadWake(argIn);
+            HandleThreadWake(enclave, argIn);
             break;
 
         case OE_FUNC_THREAD_WAKE_WAIT:
-            HandleThreadWakeWait(argIn);
+            HandleThreadWakeWait(enclave, argIn);
             break;
 
         case OE_FUNC_INIT_QUOTE:
@@ -481,7 +481,8 @@ int __OE_DispatchOCall(
     uint64_t arg2,
     uint64_t* arg1Out,
     uint64_t* arg2Out,
-    void* tcs)
+    void* tcs,
+    OE_Enclave* enclave)
 {
     const OE_Code code = OE_GetCodeFromCallArg1(arg1);
     const uint32_t func = OE_GetFuncFromCallArg1(arg1);
@@ -489,7 +490,6 @@ int __OE_DispatchOCall(
 
     if (code == OE_CODE_OCALL)
     {
-        OE_Enclave* enclave = GetEnclave();
         /* ATTN: this asserts with call nesting!  */
         /* Pass enclave as argument to _DoEnter() */
         assert(enclave != NULL);
@@ -654,9 +654,6 @@ OE_Result OE_ECall(
 
     if (!enclave)
         OE_THROW(OE_INVALID_PARAMETER);
-
-    /* Set into thread local storage so it can be retrieved during an OCALL */
-    SetEnclave(enclave);
 
     /* Assign a TD for this operation */
     if (!(tcs = _AssignTCS(enclave)))
