@@ -2,8 +2,9 @@
 #define _CONTEXT_H
 
 #ifndef __ASSEMBLER__
+#include <openenclave/defs.h>
 #include <openenclave/types.h>
-#include <stdint.h>
+#include "sgxtypes.h"
 
 // X87 and SSE data.
 typedef struct _OE_BASIC_XSATE
@@ -73,6 +74,24 @@ OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, basic_xstate), OE_CONTEXT_FLOAT);
 
 void snap_current_context(OE_CONTEXT * oe_context);
 void restore_partial_context(OE_CONTEXT * oe_context);
+void continue_execution(OE_CONTEXT * oe_context);
+
+typedef struct _OE_EXCEPTION_RECORD
+{
+    // Exception code.
+    uint32_t    code;
+
+    // Exception flags.
+    uint32_t    flags;
+
+    // Exception address.
+    uint64_t    address;
+
+    // Context.
+    OE_CONTEXT  *context;
+} OE_EXCEPTION_RECORD;
+
+typedef uint64_t(*POE_VECTORED_EXCEPTION_HANDLER)(OE_EXCEPTION_RECORD *exceptionContext);
 #endif // !__ASSEMBLER__ 
 
 #endif /* _CONTEXT_H */

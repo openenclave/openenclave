@@ -2,6 +2,7 @@ add_library(oeenclave STATIC
     assert.c
     atexit.c
     calls.c
+    exception.c
     globals.c
     hostcalls.c
     hoststack.c
