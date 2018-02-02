@@ -1,18 +1,18 @@
 if (UNIX)
 set(PLATFORM_SRC
-    aep.S
-    aesm-linux.c
-    enter.S
-    entersim.S
-    hostthread-linux.c
+    linux/aep.S
+    linux/aesm.c
+    linux/enter.S
+    linux/entersim.S
+    linux/hostthread.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
-    aep.asm
-    aesm-win.c
-    enter.asm
-    entersim.asm
-    hostthread-win.c
+    windows/aep.asm
+    windows/aesm.c
+    windows/enter.asm
+    windows/entersim.asm
+    windows/hostthread.c
     )
 endif()
 

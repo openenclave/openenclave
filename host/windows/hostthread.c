@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <openenclave/host.h>
-#include "hostthread.h"
+#include "../hostthread.h"
 
 /*
 **==============================================================================
