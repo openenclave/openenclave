@@ -12,10 +12,9 @@
 #include "td.h"
 #include "init.h"
 
-//#define MAX_EXCEPTION_HANDLER_COUNT 64
-#define MAX_EXCEPTION_HANDLER_COUNT 4 // For test.
+#define MAX_EXCEPTION_HANDLER_COUNT 64
 
-// The spin lock to sychronize the exception handler access.
+// The spin lock to synchronize the exception handler access.
 static OE_Spinlock g_exception_lock;
 
 // Current registered exception handler count.
