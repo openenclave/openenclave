@@ -64,7 +64,7 @@ OE_Main:
     // Get the address of current SSA.
     add %r10, %rax
 
-    // Get the saved rsp. We can't depend on the TLS value to get the encalve rsp in exception entry since the value may 
+    // Get the saved rsp. We can't depend on the TLS value to get the enclave rsp in exception entry since the value may 
     // not be set correctly.
     add $SGX_SSA_RSP_OFFSET, %r10
     mov (%r10), %rsp
@@ -256,7 +256,7 @@ OE_Main:
 .type OE_ExceptionDispatcher, @function
 OE_ExceptionDispatcher:
 .cfi_startproc
-    // Save the reigsters that will be clobbered before snap context is called. 
+    // Save the registers that will be clobbered before snap context is called. 
     push %rsp
     push %rbp
     push %rdi

@@ -50,7 +50,7 @@ OE_EXTERNC_BEGIN
 * @param isFirstHandler The parameter indicates if the input handler should be 
 * the first exception handler to be called. If it is zero, the input handler will
 * be append to the end of exception handler chain, otherwise it will be added as 
-* the first one in the exception hanler chain.
+* the first one in the exception handler chain.
 * @param vectoredHandler The input vector exception handler that must be a function
 * inside enclave. One handler can be registered multiple times, but the same handler will
 * only be called once when an exception happens.
@@ -66,7 +66,7 @@ void* OE_AddVectoredExceptionHandler(
 /**
 * Remove an existing exception handler.
 *
-* @param vectoredHandler The pointer to a registered excepion handler that is a return 
+* @param vectoredHandler The pointer to a registered exception handler that is a return 
 * value from a successful OE_AddVectoredExceptionHandler call.
 *
 * @returns This function returns ZERO if success.
@@ -181,7 +181,7 @@ OE_Result OE_GetReportForRemoteAttestation(
 /**
  * Print formatted characters to the host's console.
  *
- * This function writes formatted characters to the host console. Is is based
+ * This function writes formatted characters to the host console. It is based
  * on OE_Vsnprintf(), which has limited support for format types.
  *
  * @param fmt The limited printf style format.

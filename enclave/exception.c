@@ -154,7 +154,7 @@ static int _GetEnclaveThreadFirstSsaInfo(
         ssa_frame_size = OE_DEFAULT_SSA_FRAME_SIZE;
     }
 
-    // Get first SSA base addr and size.
+    // Get first SSA base address and size.
     ssa_info->base_address = (void*)((byte*)tcs + OE_SSA_FROM_TCS_BYTE_OFFSET);
     ssa_info->frame_byte_size = ssa_frame_size * OE_PAGE_SIZE;
     return 0;
@@ -164,7 +164,7 @@ static int _GetEnclaveThreadFirstSsaInfo(
 #define SGX_EXIT_TYPE_HADEWARE  0x3
 #define SGX_EXIT_TYPE_SOFTWARE  0x6
 
-// Mapping between the sgx exception vector value and the OE exception code.
+// Mapping between the SGX exception vector value and the OE exception code.
 static struct
 {
     uint32_t    sgx_vector;
@@ -191,7 +191,7 @@ static struct
 **  This function composes the valid OE_EXCEPTION_RECORD, and call the registered 
 **  exception handlers one by one. If one handler returns EXCEPTION_CONTINUE_EXECUTION, 
 **  this function will continue execution on the context. Otherwise the enclave will 
-**  be aborted because unhanled exception happened.
+**  be aborted because un-handled exception happened.
 **
 **==============================================================================
 */
@@ -255,7 +255,7 @@ void _VirtualExceptionDispatcher(
     SSA_Info ssa_info;
     OE_Memset(&ssa_info, 0, sizeof(SSA_Info));
 
-    // Verify if the first ssa has valid exception info.
+    // Verify if the first SSA has valid exception info.
     _GetEnclaveThreadFirstSsaInfo(td, &ssa_info);
 
     SGX_SsaGpr* ssa_gpr = (SGX_SsaGpr*)(((byte*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
@@ -294,7 +294,7 @@ void _VirtualExceptionDispatcher(
     // Cleanup the exception flag to avoid the exception handler is called again.
     ssa_gpr->exitInfo.asFields.valid = 0;
 
-    // Acknoledge this exception is an enclave exception, host should let keep running, and let enclave handle
+    // Acknowledge this exception is an enclave exception, host should let keep running, and let enclave handle
     // the exception.
     *argOut = EXCEPTION_CONTINUE_EXECUTION;
     return;

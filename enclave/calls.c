@@ -475,7 +475,7 @@ OE_CATCH:
 **     are exhausted (i.e., TCS.CSSA == TCS.NSSA)
 **
 **     This function ultimately calls EEXIT to exit the enclave. An enclave may
-**     exit to the host for two reasons (asside from an asynchronous exception 
+**     exit to the host for two reasons (aside from an asynchronous exception 
 **     already mentioned):
 **
 **         (1) To return normally from an ECALL

@@ -92,7 +92,7 @@ static void _HostSignalHandler(
 
         // If the g_previous_sigaction set SA_RESETHAND, it will break the chain which means
         // g_previous_sigaction->next_old_sigact will not be called. Our signal handler does not
-        // responsible for that. We just follow what os do on SA_RESETHAND.
+        // responsible for that. We just follow what OS do on SA_RESETHAND.
         if (g_previous_sigaction[sigNum].sa_flags & SA_RESETHAND)
             g_previous_sigaction[sigNum].sa_handler = SIG_DFL;
     }

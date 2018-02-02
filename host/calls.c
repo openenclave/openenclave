@@ -23,7 +23,7 @@
 **
 ** _SetThreadBinding()
 **
-**     Store the thread data in the GS segement register. Note that the GS
+**     Store the thread data in the GS segment register. Note that the GS
 **     register is unused on X86-64, unlike the FS register that is used by
 **     the pthread implementation.
 **

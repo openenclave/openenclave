@@ -279,7 +279,7 @@ static OE_Result _AddControlPages(
         /* The entry point for the program (from ELF) */
         tcs->oentry = entry;
 
-        /* FS segement: points to page following SSA slots (page[3]) */
+        /* FS segment: points to page following SSA slots (page[3]) */
         tcs->fsbase = *vaddr + (4 * OE_PAGE_SIZE);
 
         /* GS segment: points to page following SSA slots (page[3]) */
@@ -486,7 +486,7 @@ static OE_Result _AddPages(
     /* The ecall pages follow the relocation pages */
     baseECallPage = baseRelocPage + (relocSize / OE_PAGE_SIZE);
 
-    /* The heap follows the ecall pages pages */
+    /* The heap follows the ecall pages */
     baseHeapPage = baseECallPage + (ecallSize / OE_PAGE_SIZE);
 
     /* Patch the "__oe_baseRelocPage" */
