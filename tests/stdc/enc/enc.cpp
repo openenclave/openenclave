@@ -1,5 +1,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/malloc.h>
+#include <openenclave/bits/heap.h>
 #include <assert.h>
 #include <ctype.h>
 #include <endian.h>
@@ -25,13 +26,114 @@
 #include <time.h>
 #include "../args.h"
 
-/* ATTN: implement these! */
-#if 0
-# include <complex.h>
-# include <float.h>
-# include <math.h>
-# include <time.h>
-#endif
+extern OE_Heap __oe_heap;
+
+bool CheckMem(void* ptr, size_t n, uint8_t c)
+{
+    const uint8_t* p = (const uint8_t*)ptr;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        if (p[i] != c)
+            return false;
+    }
+
+    return true;
+}
+
+typedef struct _Chunk
+{
+    void* ptr;
+    size_t size;
+}
+Chunk;
+
+/* Randomly test malloc/free/realloc on random sizes */
+void TestAllocFree(
+    size_t num_chunks, 
+    size_t iterations, 
+    size_t max_size)
+{
+    Chunk chunks[num_chunks];
+
+    memset(chunks, 0, sizeof(chunks));
+
+    for (size_t i = 0; i < iterations; i++)
+    {
+        size_t index = (rand() % num_chunks);
+
+        if (chunks[index].ptr)
+        {
+            if (rand() % 2)
+            {
+                /* Perform free() */
+
+                void* ptr = chunks[index].ptr;
+                size_t size = chunks[index].size;
+                uint8_t byte = size % 256;
+
+                assert(CheckMem(ptr, size, byte));
+                memset(ptr, 0xDD, size);
+                free(ptr);
+                chunks[index].ptr = NULL;
+                chunks[index].size = 0;
+            }
+            else
+            {
+                /* Perform realloc() */
+
+                void* old_ptr = chunks[index].ptr;
+                size_t old_size = chunks[index].size;
+                uint8_t old_byte = old_size % 256;
+                void* new_ptr;
+                size_t new_size = (rand() % max_size) + 1;
+                uint8_t new_byte = new_size % 256;
+
+                assert(CheckMem(old_ptr, old_size, old_byte));
+                if (old_size > new_size)
+                {
+                    memset((uint8_t*)old_ptr + new_size, 
+                        0xDD, old_size - new_size);
+                }
+
+                new_ptr = realloc(old_ptr, new_size);
+                assert(new_ptr != NULL);
+                memset(new_ptr, new_byte, new_size);
+
+                chunks[index].ptr = new_ptr;
+                chunks[index].size = new_size;
+            }
+        }
+        else
+        {
+            /* Perform malloc() */
+
+            size_t size = (rand() % max_size) + 1;
+            uint8_t byte = size % 256;
+
+            assert(size <= max_size);
+
+            void* ptr = malloc(size);
+            assert(ptr != NULL);
+            memset(ptr, byte, size);
+
+            chunks[index].ptr = ptr;
+            chunks[index].size = size;
+        }
+    }
+
+    /* Free any remaining chunks */
+    for (size_t i = 0; i < num_chunks; i++)
+    {
+        void* ptr = chunks[i].ptr;
+        size_t size = chunks[i].size;
+        uint8_t byte = size % 256;
+
+        assert(CheckMem(ptr, size, byte));
+        memset(ptr, 0xDD, size);
+        free(ptr);
+    }
+}
 
 void Test_strtol()
 {
@@ -157,9 +259,10 @@ static void _AllocationFailureCallback(
     const char* func, 
     size_t size)
 {
+#if 0
     printf("OE_AllocationFailureCallback(): %s(%zu): %s: %zu\n",
         file, line, func, size);
-
+#endif
     _calledAllocationFailureCallback = true;
 }
 
@@ -223,6 +326,68 @@ OE_ECALL void Test(void* args_)
     void* p = malloc(1024 * 1024 * 1024);
     assert(p == NULL);
     assert(_calledAllocationFailureCallback);
+
+    /* Test random allocations and frees */
+    {
+        /* Enable sanity checking */
+        OE_HeapSetSanity(&__oe_heap, true);
+
+        /* Perform tests */
+        const size_t iterations = 10000;
+        TestAllocFree(4096, iterations, 16);
+        TestAllocFree(4096, iterations, 256);
+        TestAllocFree(4096, iterations, 4096);
+        TestAllocFree(256, iterations, 64*4096);
+
+        /* Check coverage */
+        for (size_t i = 0; i < OE_HEAP_COVERAGE_N; i++)
+        {
+            /* Ignore OE_HEAP_COVERAGE_12 (it occurs only when remapping a 
+             * memory area to the same size).
+             */
+            if (!__oe_heap.coverage[i] && i != OE_HEAP_COVERAGE_12)
+            {
+                fprintf(stderr, "*** not covered: OE_HEAP_COVERAGE_%zu\n", i);
+                assert(0);
+            }
+        }
+
+        /* Recheck sanity */
+        assert(OE_HeapSane(&__oe_heap));
+
+        /* Fail if VAD list is not empty */
+        if (__oe_heap.vad_list)
+        {
+            fprintf(stderr, "*** VAD list not empty\n");
+            assert(0);
+        }
+    }
+
+    /* Test allocation of all sizes */
+    {
+        /* Enable sanity checking */
+        OE_HeapSetSanity(&__oe_heap, true);
+
+        for (size_t i = 1; i < 1024*1024; i += 4096)
+        {
+            void* ptr = malloc(i);
+
+            if (!ptr)
+                break;
+
+            free(ptr);
+        }
+
+        /* Recheck sanity */
+        assert(OE_HeapSane(&__oe_heap));
+
+        /* Fail if VAD list is not empty */
+        if (__oe_heap.vad_list)
+        {
+            fprintf(stderr, "*** VAD list not empty\n");
+            assert(0);
+        }
+    }
 
 #if 0
     printf("UINT_MIN=%u UINT_MAX=%u\n", 0, UINT_MAX);

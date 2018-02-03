@@ -11,7 +11,7 @@ add_library(oeenclave STATIC
     once.c
     report.c
     result.c
-    sbrk.c
+    heap.c
     snprintf.c
     spinlock.c
     string.c

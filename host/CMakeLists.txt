@@ -6,6 +6,7 @@ add_library(oehost STATIC
     enclave.c
     error.c
     files.c
+    heap.c
     hexdump.c
     load.c
     ocalls.c

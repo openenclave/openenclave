@@ -7,10 +7,10 @@ add_library(oelibc STATIC
     assert.c
     errno.c
     libcxxrt_stubs.c
-    libunwind_stubs.c
     link.c
     locale.c
     malloc.c
+    mman.c
     pthread.c
     sched.c
     __stack_chk_fail.c

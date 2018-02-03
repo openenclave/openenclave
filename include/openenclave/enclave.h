@@ -246,21 +246,6 @@ char* OE_HostStrdup(const char* str);
 void OE_Abort(void);
 
 /**
- * Enclave implementation of the standard Unix sbrk() system call.
- *
- * This function provides an enclave equivalent to the sbrk() system call.
- * It increments the current end of the heap by **increment** bytes. Calling
- * OE_Sbrk() with an increment of 0, returns the current end of the heap.
- *
- * @param increment Number of bytes to increment the heap end by.
- *
- * @returns The old end of the heap (before the increment) or (void*)-1 if
- * there are less than **increment** bytes left on the heap.
- *
- */
-void* OE_Sbrk(ptrdiff_t increment);
-
-/**
  * Called whenever an assertion fails.
  *
  * This internal function is called when the expression of the OE_Assert()

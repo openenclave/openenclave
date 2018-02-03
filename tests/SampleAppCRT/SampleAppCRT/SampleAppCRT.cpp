@@ -22,14 +22,14 @@ uint32_t threadLocalDynamic = func();
 char asciistring[] = "HelloWorld";
 wchar_t wcstring[] = L"HelloWorld";
 
-OE_ECALL OE_Result Test(void* args)
+OE_ECALL void Test(void* args)
 {
     int* returnValuePtr = (int*)args;
 
 #if 1
     if (!OE_IsOutsideEnclave(returnValuePtr, sizeof(int)))
     {
-        return OE_OCALL_FAILED;
+        return;
     }
 #endif
 
@@ -45,20 +45,20 @@ OE_ECALL OE_Result Test(void* args)
     if (tempRegion == NULL)
     {
         *returnValuePtr = -2;
-        return OE_OK;
+        return;
     }
     tempRegion = realloc(tempRegion, sizeof(asciistring));
     if (tempRegion == NULL)
     {
         *returnValuePtr = -3;
-        return OE_OK;
+        return;
     }
 
     wcstombs((char*)tempRegion, wcstring, wcslen(wcstring));
     if (strcmp(asciistring, (char*)tempRegion) != 0)
     {
         *returnValuePtr = -4;
-        return OE_OK;
+        return;
     }
 
     memset(tempRegion, 0, sizeof(asciistring));
@@ -66,15 +66,17 @@ OE_ECALL OE_Result Test(void* args)
     if (strcmp(asciistring, (char*)tempRegion) != 0)
     {
         *returnValuePtr = -5;
-        return OE_OK;
+        return;
     }
 
     tempRegion = realloc(tempRegion, sizeof(wcstring));
     if (tempRegion == NULL)
     {
         *returnValuePtr = -6;
-        return OE_OK;
+        return;
     }
+
+    memset(tempRegion, 0, sizeof(wcstring));
 
     mbstowcs((wchar_t*)tempRegion, asciistring, strlen(asciistring));
 
@@ -83,12 +85,11 @@ OE_ECALL OE_Result Test(void* args)
     if (wcscmp(wcstring, (wchar_t*)tempRegion) != 0)
     {
         *returnValuePtr = -7;
-        return OE_OK;
+        return;
     }
 #endif
     
     free(tempRegion);
 
     *returnValuePtr = 0;
-    return OE_OK;
 }

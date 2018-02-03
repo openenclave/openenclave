@@ -1,5 +1,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/atexit.h>
+#include <openenclave/bits/heap.h>
 
 /*
 **==============================================================================

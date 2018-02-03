@@ -3,57 +3,108 @@
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/fault.h>
 #include <openenclave/bits/malloc.h>
-#include <errno.h>
 #include <stdio.h>
+#include <assert.h>
 
-#define OE_ENABLE_MALLOC_WRAPPERS
-#define HAVE_MMAP 0
-#define LACKS_UNISTD_H
-#define LACKS_SYS_PARAM_H
-#define LACKS_SYS_TYPES_H
-#define LACKS_TIME_H
-#define NO_MALLOC_STATS 1
-#define MORECORE sbrk
-#define ABORT OE_Abort()
-#define USE_DL_PREFIX
-#define LACKS_STDLIB_H
-#define LACKS_STRING_H
-#define LACKS_ERRNO_H
-#define USE_LOCKS 1
-#define size_t size_t
-#define ptrdiff_t ptrdiff_t
-#define memset OE_Memset
-#define memcpy OE_Memcpy
-#define sbrk OE_Sbrk
+static void __wait(
+    volatile int *addr, 
+    volatile int *waiters, 
+    int val, 
+    int priv);
 
-/* Replacement for sched_yield() in dlmalloc sources below */
-static int __sched_yield(void)
+static void __wake(
+    volatile void *addr, 
+    int cnt, 
+    int priv);
+
+#define _PTHREAD_IMPL_H
+#define malloc musl_malloc
+#define calloc musl_calloc
+#define free musl_free
+#define realloc musl_realloc
+#define memalign musl_memalign
+#define posix_memalign musl_posix_memalign
+#include "../3rdparty/musl/musl/src/malloc/malloc.c"
+#include "../3rdparty/musl/musl/src/malloc/calloc.c"
+#include "../3rdparty/musl/musl/src/malloc/memalign.c"
+#include "../3rdparty/musl/musl/src/malloc/posix_memalign.c"
+#undef malloc
+#undef calloc
+#undef free
+#undef realloc
+#undef memalign
+#undef posix_memalign
+
+static OE_Mutex _mutex = OE_MUTEX_INITIALIZER;
+
+static void __wait(
+    volatile int *addr, 
+    volatile int *waiters, 
+    int val, /* will be 1 */
+    int priv)
 {
-    __asm__ __volatile__("pause");
-    return 0;
+    int spins = 100;
+
+    while (spins-- && (!waiters || !*waiters)) 
+    {
+        if (*addr == val) 
+            a_spin();
+        else 
+            return;
+    }
+
+    if (waiters) 
+        a_inc(waiters);
+
+    while (*addr == val) 
+    {
+        OE_MutexLock(&_mutex);
+
+        if (*addr != val)
+        {
+            OE_MutexUnlock(&_mutex);
+            break;
+        }
+
+        OE_MutexUnlock(&_mutex);
+    }
+
+    if (waiters) 
+        a_dec(waiters);
 }
 
-/* Since Dlmalloc provides no way to override the SPIN_LOCK_YIELD macro,
- * redefine sched_yield() directly. Dlmalloc spins for a given number of
- * times and then calls sched_yield(), attempting to yield to other threads.
- */
-#define sched_yield __sched_yield
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-prototypes"
-#pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#include "../3rdparty/dlmalloc/dlmalloc/malloc.c"
+static void __wake(
+    volatile void *addr, 
+    int cnt, /* will be 1 */
+    int priv) /* ignored */
+{
+    if (addr)
+    {
+        OE_MutexLock(&_mutex);
+        *((volatile int*)addr) = 0;
+        OE_MutexUnlock(&_mutex);
+    }
+}
 
 /*
 **==============================================================================
 **
-** Use malloc wrappers to support OE_SetAllocationFailureCallback() if
-** OE_ENABLE_MALLOC_WRAPPERS is defined.
+** malloc wrappers around MUSL calls (with failure callbacks)
 **
 **==============================================================================
 */
 
-#if defined(OE_ENABLE_MALLOC_WRAPPERS)
+/* Enable MUSL locking on first entry */
+OE_INLINE void _EnableMUSLLocking()
+{
+    if (libc.threads_minus_1 == 0)
+    {
+        static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
+        OE_SpinLock(&_lock);
+        libc.threads_minus_1 = 1;
+        OE_SpinUnlock(&_lock);
+    }
+}
 
 static OE_AllocationFailureCallback _failureCallback;
 
@@ -64,7 +115,8 @@ void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function)
 
 void *malloc(size_t size)
 {
-    void* p = dlmalloc(size);
+    _EnableMUSLLocking();
+    void* p = musl_malloc(size);
 
     if (!p && size)
     {
@@ -79,12 +131,16 @@ void *malloc(size_t size)
 
 void free(void *ptr)
 {
-    dlfree(ptr);
+    _EnableMUSLLocking();
+    musl_free(ptr);
 }
 
 void *calloc(size_t nmemb, size_t size)
 {
-    void* p = dlcalloc(nmemb, size);
+    void *musl_calloc(size_t nmemb, size_t size);
+
+    _EnableMUSLLocking();
+    void* p = musl_calloc(nmemb, size);
 
     if (!p && nmemb && size)
     {
@@ -99,7 +155,24 @@ void *calloc(size_t nmemb, size_t size)
 
 void *realloc(void *ptr, size_t size)
 {
-    void* p = dlrealloc(ptr, size);
+    _EnableMUSLLocking();
+    void* p = musl_realloc(ptr, size);
+
+    if (!p && size)
+    {
+        errno = ENOMEM;
+
+        if (_failureCallback)
+            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+    }
+
+    return p;
+}
+
+void *memalign(size_t alignment, size_t size)
+{
+    _EnableMUSLLocking();
+    void* p = musl_memalign(alignment, size);
 
     if (!p && size)
     {
@@ -114,7 +187,8 @@ void *realloc(void *ptr, size_t size)
 
 int posix_memalign(void **memptr, size_t alignment, size_t size)
 {
-    int rc = dlposix_memalign(memptr, alignment, size);
+    _EnableMUSLLocking();
+    int rc = musl_posix_memalign(memptr, alignment, size);
 
     if (rc != 0 && size)
     {
@@ -126,38 +200,3 @@ int posix_memalign(void **memptr, size_t alignment, size_t size)
 
     return rc;
 }
-
-void *memalign(size_t alignment, size_t size)
-{
-    void* p = dlmemalign(alignment, size);
-
-    if (!p && size)
-    {
-        errno = ENOMEM;
-
-        if (_failureCallback)
-            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
-    }
-
-    return p;
-}
-
-/*
-**==============================================================================
-**
-** Alias dlmalloc functions to standard function names if 
-** OE_ENABLE_MALLOC_WRAPPERS is not defined.
-**
-**==============================================================================
-*/
-
-#else /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */
-
-OE_WEAK_ALIAS(dlmalloc, malloc);
-OE_WEAK_ALIAS(dlcalloc, calloc);
-OE_WEAK_ALIAS(dlrealloc, realloc);
-OE_WEAK_ALIAS(dlfree, free);
-OE_WEAK_ALIAS(dlmemalign, memalign);
-OE_WEAK_ALIAS(dlposix_memalign, posix_memalign);
-
-#endif /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */
