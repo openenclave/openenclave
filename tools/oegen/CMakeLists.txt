@@ -14,5 +14,5 @@ target_link_libraries(oegen oehost)
 set_property(TARGET oegen PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 
 # install rule
-install (TARGETS oegen DESTINATION ${CMAKE_INSTALL_BINDIR})
+install (TARGETS oegen EXPORT openenclave DESTINATION ${CMAKE_INSTALL_BINDIR})
 

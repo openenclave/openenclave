@@ -20,7 +20,7 @@ ExternalProject_Add(oelibc_includes
     )
 
 # install-rule can be generated here, usage requirements defined in <ROOT>/libc/.
-install (DIRECTORY ${OE_INCDIR}/openenclave/libc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
+install(DIRECTORY ${OE_INCDIR}/openenclave/libc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
 
 #
 # genearl tidbits follow - find a better home

@@ -9,7 +9,7 @@ define NEWLINE
 
 endef
 
-DIRS = hello sort echo
+DIRS = sort
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )

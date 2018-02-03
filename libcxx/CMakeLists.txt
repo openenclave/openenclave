@@ -23,10 +23,13 @@ ExternalProject_Add(oelibcxx_tmp
 # Interface lib to propagate includes&lib and install-rule
 add_library(oelibcxx INTERFACE)
 add_dependencies(oelibcxx oelibcxx_tmp)
-target_link_libraries(oelibcxx INTERFACE ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a)
+target_link_libraries(oelibcxx INTERFACE
+    $<BUILD_INTERFACE:${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a>
+    $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${CMAKE_INSTALL_LIBDIR}/openenclave/enclave/liboelibcxx.a>
+    )
 target_link_libraries(oelibcxx INTERFACE oelibcxx_cxx)
-install (FILES ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
-
+install(FILES ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install(TARGETS oelibcxx EXPORT openenclave)
 
 # At some point, we should convert the 3rdparty-libs into true CMake OBJECT libs,
 # so we could source the objects directly like this:
@@ -41,4 +44,4 @@ install (FILES ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a DESTINATION ${CMAK
 # assemble lib-archive into proper dir
 #set_property(TARGET oelibcxx PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/enclave)
 # install lib-archive upon install-time
-#install (TARGETS oelibcxx ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/enclave)
+#install (TARGETS oelibcxx EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/enclave)
