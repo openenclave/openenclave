@@ -179,6 +179,9 @@ continue_execution:
     movq    OE_CONTEXT_RBP(%rdi), %rbp
     movq    OE_CONTEXT_RSP(%rdi), %rsp
 
+    // Put local variables under the red zone.
+    sub     $ABI_REDZONE_BYTE_SIZE, %rsp
+
     // Push the target address to stack.
     pushq   OE_CONTEXT_RIP(%rdi)
 
@@ -191,6 +194,9 @@ continue_execution:
     // Restore flags.
     popfq
 
-    // Return to target.
-    retq
+    // Recovery the correct rsp. 
+    add     $(ABI_REDZONE_BYTE_SIZE + 8), %rsp
+
+    // Jump to the target.
+    jmp     *-(ABI_REDZONE_BYTE_SIZE + 8)(%rsp)
 .cfi_endproc

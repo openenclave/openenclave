@@ -48,4 +48,11 @@
 #define OE_CONTEXT_MXCSR    0x90
 #define OE_CONTEXT_FLOAT    0xA0
 
+//
+//  AMD64 ABI related constants.
+//
+
+//  AMD64 ABI needs a 128 bytes redzone.
+#define ABI_REDZONE_BYTE_SIZE   0x80
+
 #endif /* _CONSTANTS_X64_INC */

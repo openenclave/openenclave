@@ -10,15 +10,28 @@
 #include <openenclave/bits/trace.h>
 #include "../args.h"
 
-volatile int s = 0;
-
 // This function will generate the divide by zero function. 
 // The handler will catch this exception and fix it, and continue execute.
+// It will return 0 if success.
 int DivideByZeroExceptionFunction(void)
 {
     int ret = 1;
+    int s = 0;
+    float f = 0;
+    double d = 0;
+
+    f = 0.31;
+    d = 0.32;
+
     ret = ret / s;
-    return ret;
+
+    // Check if the float registers are recovered correctly after the exception is handled.
+    if (f < 0.309 || f > 0.321 || d < 0.319 || d > 0.321)
+    {
+        return ret;
+    }
+
+    return 0;
 }
 
 uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD *exception_record)
@@ -29,7 +42,7 @@ uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD *exception_record)
     }
 
     // Skip the idiv instruction.
-    exception_record->context->rip += 2;
+    exception_record->context->rip += 3;
     return EXCEPTION_CONTINUE_EXECUTION;
 }
 
@@ -217,7 +230,12 @@ OE_ECALL void TestVectorException(void* args_)
     }
 
     OE_HostPrintf("TestVectorException: will generate a hardware exception inside enclave!\n");
-    DivideByZeroExceptionFunction();
+    if (DivideByZeroExceptionFunction() != 0)
+    {
+        args->ret = -1;
+        return;
+    }
+
     OE_HostPrintf("TestVectorException: hardware exception is handled correctly!\n");
 
     args->ret = 0;

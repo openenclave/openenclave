@@ -19,7 +19,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    printf("=== This program is used to test basic vector exception functionalities.");
+    printf("=== This program is used to test basic vector exception functionalities.\n");
 
     const uint32_t flags = OE_GetCreateFlags();
 

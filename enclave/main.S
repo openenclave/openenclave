@@ -71,6 +71,9 @@ OE_Main:
 
     // align stack.
     and $-16, %rsp
+
+    // Start the new stack under the red zone.
+    sub $ABI_REDZONE_BYTE_SIZE, %rsp
     jmp .call_function
 
 .nested_entry:
@@ -80,6 +83,9 @@ OE_Main:
 
     // align the stack
     and $-16, %rsp 
+
+    // Start the new stack under the red zone.
+    sub $ABI_REDZONE_BYTE_SIZE, %rsp
     jmp .call_function
 
 .clean_entry:
@@ -256,6 +262,9 @@ OE_Main:
 .type OE_ExceptionDispatcher, @function
 OE_ExceptionDispatcher:
 .cfi_startproc
+    // Start the new stack under the red zone.
+    sub $ABI_REDZONE_BYTE_SIZE, %rsp
+
     // Save the registers that will be clobbered before snap context is called. 
     push %rsp
     push %rbp
@@ -280,6 +289,7 @@ OE_ExceptionDispatcher:
 
     // Restore the previous rsp to rsp of OE_CONTEXT.
     movq ED_SAVED_RSP, %rax
+    add $ABI_REDZONE_BYTE_SIZE, %rax
     movq %rax, OE_CONTEXT_RSP(%rdi)
 
     // Restore the previous rdi to rdi of OE_CONTEXT.
