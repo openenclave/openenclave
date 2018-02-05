@@ -48,7 +48,7 @@ static void _HostSignalHandler(
         uint64_t arg4 = 0;
 
         OE_Enter((void*)tcsAddress, OE_AEP, arg1, arg2, &arg3, &arg4);
-        if (arg4 == EXCEPTION_CONTINUE_EXECUTION)
+        if (arg4 == OE_EXCEPTION_CONTINUE_EXECUTION)
         {
             // This exception has been handled by the enclave. Let's resume.
             return;
@@ -164,7 +164,7 @@ static void _InitializeException(void)
     _RegisterSignalHandlers();
 }
 
-void InitializeException()
+void _OE_InitializeHostException()
 {
     OE_Once(&_enclave_exception_once, _InitializeException);
 }

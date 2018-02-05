@@ -1051,7 +1051,7 @@ OE_Result OE_CreateEnclave(
     bool simulate = false;
     bool debug = false;
 
-    InitializeException();
+    _OE_InitializeHostException();
 
     if (enclaveOut)
         *enclaveOut = NULL;

@@ -81,8 +81,8 @@ typedef enum _OE_Func
 }
 OE_Func;
 
-#define EXCEPTION_CONTINUE_SEARCH       0x0
-#define EXCEPTION_CONTINUE_EXECUTION    0xFFFFFFFF
+#define OE_EXCEPTION_CONTINUE_SEARCH       0x0
+#define OE_EXCEPTION_CONTINUE_EXECUTION    0xFFFFFFFF
 
 /*
 **==============================================================================

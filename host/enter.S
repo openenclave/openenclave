@@ -60,7 +60,7 @@ __morestack:
 
     // Save the current context.
     mov HOST_CONTEXT, %rdi
-    call snap_current_context
+    call OE_SnapCurrentContext
 
     // Save the stack pointer so enclave can use the stack.
     mov %rsp, RSP
@@ -91,7 +91,7 @@ __morestack:
 
     // Restore the saved host context.
     mov HOST_CONTEXT, %rdi
-    call restore_partial_context
+    call OE_RestorePartialContext
 
 	// Check if it is an OCALL needed to be dispatched.
 	mov ARG1OUT, %r10

@@ -48,6 +48,8 @@ typedef struct _OE_CONTEXT
 
     // Basic XState.
     OE_BASIC_XSATE  basic_xstate;
+
+    // Don't need to manipulate other XSTATE (AVE etc.). 
 } OE_CONTEXT;
 
 OE_CHECK_SIZE(sizeof(OE_CONTEXT), OE_CONTEXT_SIZE);
@@ -72,9 +74,9 @@ OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rip), OE_CONTEXT_RIP);
 OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, mxcsr), OE_CONTEXT_MXCSR);
 OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, basic_xstate), OE_CONTEXT_FLOAT);
 
-void snap_current_context(OE_CONTEXT * oe_context);
-void restore_partial_context(OE_CONTEXT * oe_context);
-void continue_execution(OE_CONTEXT * oe_context);
+void OE_SnapCurrentContext(OE_CONTEXT * oe_context);
+void OE_RestorePartialContext(OE_CONTEXT * oe_context);
+void OE_ContinueExecution(OE_CONTEXT * oe_context);
 
 typedef struct _OE_EXCEPTION_RECORD
 {

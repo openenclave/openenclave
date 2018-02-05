@@ -280,7 +280,7 @@ OE_ExceptionDispatcher:
     // Recapture the context of exception. The output context is all correct except:
     // rbp, rsp, rdi, and rip.
     lea ED_OE_CONTEXT, %rdi
-    call snap_current_context
+    call OE_SnapCurrentContext
 
     // Restore the previous rbp to rbp of OE_CONTEXT.
     lea ED_OE_CONTEXT, %rdi
@@ -296,9 +296,9 @@ OE_ExceptionDispatcher:
     movq ED_SAVED_RDI, %rax
     movq %rax, OE_CONTEXT_RDI(%rdi)
 
-    call _ExceptionDispatcher
+    call _OE_ExceptionDispatcher
 
-    // Should never reach here since _ExceptionDispatcher will not return.
+    // Should never reach here since _OE_ExceptionDispatcher will not return.
 
 .foreverLoop:
     jmp .foreverLoop

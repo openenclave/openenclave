@@ -113,6 +113,6 @@ void SetEnclave(OE_Enclave* enclave);
 uint32_t* GetEnclaveEvent(uint64_t tcs);
 
 /* Initialize the exception processing. */
-void InitializeException(void);
+void _OE_InitializeHostException(void);
 
 #endif /* _OE_HOST_ENCLAVE_H */

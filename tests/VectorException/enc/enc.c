@@ -36,14 +36,14 @@ int DivideByZeroExceptionFunction(void)
 
 uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD *exception_record)
 {
-    if (exception_record->code != EXCEPTION_DIVIDE_BY_ZERO)
+    if (exception_record->code != OE_EXCEPTION_DIVIDE_BY_ZERO)
     {
-        return EXCEPTION_CONTINUE_SEARCH;
+        return OE_EXCEPTION_CONTINUE_SEARCH;
     }
 
     // Skip the idiv instruction.
     exception_record->context->rip += 3;
-    return EXCEPTION_CONTINUE_EXECUTION;
+    return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
 #define MAX_EXCEPTION_HANDLER_COUNT 64
@@ -51,7 +51,7 @@ uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD *exception_record)
 #define PASSTHROUGH_EXCEPTION_HANDLER(__exception_hanlder_name_) \
 uint64_t __exception_hanlder_name_(OE_EXCEPTION_RECORD *exception_record)\
 {\
-    return EXCEPTION_CONTINUE_SEARCH;\
+    return OE_EXCEPTION_CONTINUE_SEARCH;\
 }\
 \
 

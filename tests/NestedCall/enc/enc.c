@@ -1,13 +1,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/jump.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/fault.h>
 #include <openenclave/bits/calls.h>
-#include <openenclave/bits/reloc.h>
-#include <openenclave/bits/globals.h>
-#include <openenclave/bits/atexit.h>
-#include <openenclave/bits/trace.h>
 #include "../args.h"
 
 // This function will generate the divide by zero function. 
@@ -36,14 +29,14 @@ int DivideByZeroExceptionFunction(void)
 
 uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD *exception_record)
 {
-    if (exception_record->code != EXCEPTION_DIVIDE_BY_ZERO)
+    if (exception_record->code != OE_EXCEPTION_DIVIDE_BY_ZERO)
     {
-        return EXCEPTION_CONTINUE_SEARCH;
+        return OE_EXCEPTION_CONTINUE_SEARCH;
     }
 
     // Skip the idiv instruction.
     exception_record->context->rip += 3;
-    return EXCEPTION_CONTINUE_EXECUTION;
+    return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
 static OE_OnceType _enclave_exception_once;

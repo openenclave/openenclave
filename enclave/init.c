@@ -191,37 +191,39 @@ void OE_CallFiniFunctions(void)
     }
 }
 
+
+static void _InitializeEnclaveImage()
+{
+    /* Relocate symbols */
+    _ApplyRelocations();
+
+    /* Check that memory boundaries are within enclave */
+    _CheckMemoryBoundaries();
+}
+
+static OE_OnceType _enclave_initialize_once;
+
+void _OE_InitializeException();
+
+static void _InitializeEnclaveImp(void)
+{
+    _InitializeEnclaveImage();
+    _OE_InitializeException();
+}
+
 /*
 **==============================================================================
 **
 ** OE_InitializeEnclave()
 **
 **     This function is called the first time the enclave is entered. It
-**     performs any necessary initialization, such as applying relocations.
+**     performs any necessary enclave initialization, such as applying 
+**     relocations, initializing exception etc.
 **
 **==============================================================================
 */
 
-void OE_InitializeEnclave(TD* td)
+void OE_InitializeEnclave()
 {
-    if (td->initialized == 0)
-    {
-        static OE_Spinlock _spin = OE_SPINLOCK_INITIALIZER;
-
-        /* Prevent more than one thread from entering here */
-        OE_SpinLock(&_spin);
-        {
-            if (td->initialized == 0)
-            {
-                /* Relocate symbols */
-                _ApplyRelocations();
-
-                /* Check that memory boundaries are within enclave */
-                _CheckMemoryBoundaries();
-
-                td->initialized = 1;
-            }
-        }
-        OE_SpinUnlock(&_spin);
-    }
+    OE_Once(&_enclave_initialize_once, _InitializeEnclaveImp);
 }

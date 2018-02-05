@@ -26,20 +26,20 @@ OE_EXTERNC_BEGIN
 
 
 // Exception codes.
-#define EXCEPTION_DIVIDE_BY_ZERO        0x0
-#define EXCEPTION_BREAKPOINT            0x1
-#define EXCEPTION_BOUND_OUT_OF_RANGE    0x2
-#define EXCEPTION_ILLEGAL_INSTRUCTION   0x3
-#define EXCEPTION_ACCESS_VIOLATION      0x4
-#define EXCEPTION_PAGE_FAULT            0x5
-#define EXCEPTION_X87_FLOAT_POINT       0x6
-#define EXCEPTION_MISALIGNMENT          0x7
-#define EXCEPTION_SIMD_FLOAT_POINT      0x8
-#define EXCEPTION_UNKOWN                0xFFFFFFFF
+#define OE_EXCEPTION_DIVIDE_BY_ZERO        0x0
+#define OE_EXCEPTION_BREAKPOINT            0x1
+#define OE_EXCEPTION_BOUND_OUT_OF_RANGE    0x2
+#define OE_EXCEPTION_ILLEGAL_INSTRUCTION   0x3
+#define OE_EXCEPTION_ACCESS_VIOLATION      0x4
+#define OE_EXCEPTION_PAGE_FAULT            0x5
+#define OE_EXCEPTION_X87_FLOAT_POINT       0x6
+#define OE_EXCEPTION_MISALIGNMENT          0x7
+#define OE_EXCEPTION_SIMD_FLOAT_POINT      0x8
+#define OE_EXCEPTION_UNKOWN                0xFFFFFFFF
 
 // Exception flags.
-#define EXCEPTION_HARDWARE      0x1
-#define EXCEPTION_SOFTWARE      0x2
+#define OE_EXCEPTION_HARDWARE      0x1
+#define OE_EXCEPTION_SOFTWARE      0x2
 
 /**
 * Register a new vector exception handler.
@@ -52,8 +52,8 @@ OE_EXTERNC_BEGIN
 * be append to the end of exception handler chain, otherwise it will be added as 
 * the first one in the exception handler chain.
 * @param vectoredHandler The input vector exception handler that must be a function
-* inside enclave. One handler can be registered multiple times, but the same handler will
-* only be called once when an exception happens.
+* inside enclave. The same handler can only be registered once, the 2nd registration will 
+* fail.
 *
 * @returns This function return a opaque handler of new registered handler on success, 
 * caller can use the return value to remove the handler later. Return NULL if fail.

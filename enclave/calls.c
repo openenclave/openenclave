@@ -207,8 +207,7 @@ OE_CATCH:
     return result;
 }
 
-void _VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
-void _InitializeException();
+void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
 
 /*
 **==============================================================================
@@ -259,7 +258,7 @@ static void _HandleECall(
         }
         case OE_FUNC_VIRTUAL_EXCEPTION_HANDLER:
         {
-            _VirtualExceptionDispatcher(td, argIn, &argOut);
+            _OE_VirtualExceptionDispatcher(td, argIn, &argOut);
             break;
         }
         default:
@@ -511,18 +510,15 @@ void __OE_HandleMain(
     *outputArg1 = 0;
     *outputArg2 = 0;
 
+    /* Initialize the enclave the first time it is ever entered */
+    OE_InitializeEnclave();
+
     /* Get pointer to the thread data structure */
     TD* td = TD_FromTCS(tcs);
     
     /* Initialize thread data structure (if not already initialized) */
     if (!TD_Initialized(td))
         TD_Init(td);
-
-    /* Initialize the enclave the first time it is ever entered */
-    if (td->initialized == 0)
-        OE_InitializeEnclave(td);
-
-    _InitializeException();
 
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)

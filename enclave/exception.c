@@ -48,7 +48,6 @@ void* OE_AddVectoredExceptionHandler(
     {
         if (g_exception_handler_arr[i] == vectoredHandler)
         {
-            func_ret = vectoredHandler;
             goto cleanup;
         }
     }
@@ -171,31 +170,31 @@ static struct
     uint32_t    exception_code;
 } g_vector_to_exception_code_mapping[] =
 {
-    { 0, EXCEPTION_DIVIDE_BY_ZERO },
-    { 3, EXCEPTION_BREAKPOINT },
-    { 5, EXCEPTION_BOUND_OUT_OF_RANGE },
-    { 6, EXCEPTION_ILLEGAL_INSTRUCTION },
-    { 13, EXCEPTION_ACCESS_VIOLATION },
-    { 14, EXCEPTION_PAGE_FAULT },
-    { 16, EXCEPTION_X87_FLOAT_POINT },
-    { 17, EXCEPTION_MISALIGNMENT },
-    { 19, EXCEPTION_SIMD_FLOAT_POINT },
+    { 0, OE_EXCEPTION_DIVIDE_BY_ZERO },
+    { 3, OE_EXCEPTION_BREAKPOINT },
+    { 5, OE_EXCEPTION_BOUND_OUT_OF_RANGE },
+    { 6, OE_EXCEPTION_ILLEGAL_INSTRUCTION },
+    { 13, OE_EXCEPTION_ACCESS_VIOLATION },
+    { 14, OE_EXCEPTION_PAGE_FAULT },
+    { 16, OE_EXCEPTION_X87_FLOAT_POINT },
+    { 17, OE_EXCEPTION_MISALIGNMENT },
+    { 19, OE_EXCEPTION_SIMD_FLOAT_POINT },
 };
 
 /*
 **==============================================================================
 **
-** _ExceptionDispatcher(OE_CONTEXT *oe_context)
+** _OE_ExceptionDispatcher(OE_CONTEXT *oe_context)
 **
 **  The real(second pass) exception dispatcher. It is called by OE_ExceptionDispatcher.
 **  This function composes the valid OE_EXCEPTION_RECORD, and call the registered 
-**  exception handlers one by one. If one handler returns EXCEPTION_CONTINUE_EXECUTION, 
+**  exception handlers one by one. If one handler returns OE_EXCEPTION_CONTINUE_EXECUTION, 
 **  this function will continue execution on the context. Otherwise the enclave will 
 **  be aborted because un-handled exception happened.
 **
 **==============================================================================
 */
-void _ExceptionDispatcher(OE_CONTEXT *oe_context)
+void _OE_ExceptionDispatcher(OE_CONTEXT *oe_context)
 {
     TD* td = TD_Get();
 
@@ -203,6 +202,9 @@ void _ExceptionDispatcher(OE_CONTEXT *oe_context)
     oe_context->rip = td->base.exception_address;
 
     // Compose the OE_EXCEPTION_RECORD.
+    // N.B, In second pass exception handling, the XSTATE are recovered by SGX hardware 
+    // correctly on ERSUME, our exception code doesn't touch them, so that we don't
+    // need to recover them again.
     OE_EXCEPTION_RECORD oe_exception_record;
     OE_Memset(&oe_exception_record, 0, sizeof(OE_EXCEPTION_RECORD));
     oe_exception_record.code = td->base.exception_code;
@@ -210,21 +212,21 @@ void _ExceptionDispatcher(OE_CONTEXT *oe_context)
     oe_exception_record.address = td->base.exception_address;
     oe_exception_record.context = oe_context;
 
-    // Traversal the existing exception handlers, stop when EXCEPTION_CONTINUE_EXECUTION is found.
-    uint64_t handler_ret = EXCEPTION_CONTINUE_SEARCH;
+    // Traversal the existing exception handlers, stop when OE_EXCEPTION_CONTINUE_EXECUTION is found.
+    uint64_t handler_ret = OE_EXCEPTION_CONTINUE_SEARCH;
     for (uint32_t i = 0; i < g_current_exception_handler_count; i++)
     {
         handler_ret = g_exception_handler_arr[i](&oe_exception_record);
-        if (handler_ret == EXCEPTION_CONTINUE_EXECUTION)
+        if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
         {
             break;
         }
     }
 
     // Jump to the point where oe_context refers to and continue.
-    if (handler_ret == EXCEPTION_CONTINUE_EXECUTION)
+    if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
     {
-        continue_execution(oe_exception_record.context);
+        OE_ContinueExecution(oe_exception_record.context);
 
         // Code should never run to here.
         OE_Abort();
@@ -239,7 +241,7 @@ void _ExceptionDispatcher(OE_CONTEXT *oe_context)
 /*
 **==============================================================================
 **
-** _VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
+** _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 **
 **  The virtual(first pass) exception dispatcher. It checks whether or not there 
 **  is an exception in current enclave thread, and save minimal exception context 
@@ -247,7 +249,7 @@ void _ExceptionDispatcher(OE_CONTEXT *oe_context)
 **
 **==============================================================================
 */
-void _VirtualExceptionDispatcher(
+void _OE_VirtualExceptionDispatcher(
     TD* td, 
     uint64_t argIn, 
     uint64_t* argOut)
@@ -262,13 +264,13 @@ void _VirtualExceptionDispatcher(
     if (!ssa_gpr->exitInfo.asFields.valid)
     {
         // Not a valid/expected enclave exception;
-        *argOut = EXCEPTION_CONTINUE_SEARCH;
+        *argOut = OE_EXCEPTION_CONTINUE_SEARCH;
         return;
     }
 
     // Get the exception address, code, and flags.
     td->base.exception_address = ssa_gpr->rip;
-    td->base.exception_code = EXCEPTION_UNKOWN;
+    td->base.exception_code = OE_EXCEPTION_UNKOWN;
     for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping); i++)
     {
         if (g_vector_to_exception_code_mapping[i].sgx_vector == ssa_gpr->exitInfo.asFields.vector)
@@ -281,11 +283,11 @@ void _VirtualExceptionDispatcher(
     td->base.exception_flags = 0;
     if (ssa_gpr->exitInfo.asFields.exitType == SGX_EXIT_TYPE_HADEWARE)
     {
-        td->base.exception_flags |= EXCEPTION_HARDWARE;
+        td->base.exception_flags |= OE_EXCEPTION_HARDWARE;
     }
     else if (ssa_gpr->exitInfo.asFields.exitType == SGX_EXIT_TYPE_SOFTWARE)
     {
-        td->base.exception_flags |= EXCEPTION_SOFTWARE;
+        td->base.exception_flags |= OE_EXCEPTION_SOFTWARE;
     }
 
     // Modify the ssa_gpr so that e_resume will go to second pass exception handler.
@@ -296,14 +298,11 @@ void _VirtualExceptionDispatcher(
 
     // Acknowledge this exception is an enclave exception, host should let keep running, and let enclave handle
     // the exception.
-    *argOut = EXCEPTION_CONTINUE_EXECUTION;
+    *argOut = OE_EXCEPTION_CONTINUE_EXECUTION;
     return;
 }
 
-// The enclave exception only need to be initialized once per enclave.
-static OE_OnceType _enclave_exception_once;
-
-static void _InitializeExceptionImp(void)
+void _OE_InitializeException()
 {
     // Initialize the global lock that will be used to synchronize the operation on exception data structure.
     if (OE_SpinInit(&g_exception_lock) != 0)
@@ -313,9 +312,4 @@ static void _InitializeExceptionImp(void)
     }
 
     OE_Memset(&g_exception_handler_arr, 0, sizeof(g_exception_handler_arr));
-}
-
-void _InitializeException()
-{
-    OE_Once(&_enclave_exception_once, _InitializeExceptionImp);
 }
