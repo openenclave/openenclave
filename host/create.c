@@ -1184,16 +1184,11 @@ OE_Result OE_TerminateEnclave(
 #if defined(__linux__)
     munmap((void*)enclave->addr, enclave->size);
 #elif defined(_WIN32)
+
     if (enclave->simulate)
         VirtualFree((void*)enclave->addr, enclave->size, MEM_DECOMMIT);
-#if 0
-    /* ATTN-WIN: Resolve "unresolved external symbol: __imp_DeleteEnclave" 
-     * and uncomment this code.
-     */
     else
-        DeleteEnclave((void*)enclave->addr);
-#endif
-#endif
+        VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
 
     /* Release the enclave->ecalls[] array */
     {
