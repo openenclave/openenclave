@@ -530,7 +530,7 @@ done:
         uint8_t* start = (uint8_t*)mptr;
         uint8_t* end = (uint8_t*)base;
 
-        if (start != end && !VirtualFree(start, end - start, MEM_RELEASE))
+        if (start != end && !VirtualFree(start, end - start, MEM_DECOMMIT))
             goto done;
 
     }
@@ -540,7 +540,7 @@ done:
         uint8_t* start = (uint8_t*)base + enclaveSize;
         uint8_t* end = (uint8_t*)mptr + enclaveSize * 2;
 
-        if (start != end && !VirtualFree(start, end - start, MEM_RELEASE))
+        if (start != end && !VirtualFree(start, end - start, MEM_DECOMMIT))
             goto done;
     }
 
