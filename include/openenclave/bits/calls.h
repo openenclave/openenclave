@@ -31,7 +31,18 @@ typedef void (*OE_OCallFunction)(
 /*
 **==============================================================================
 **
-** ECN_Code
+** The flags parameter for OE_ECall() and OE_OCall()
+**
+**==============================================================================
+*/
+
+/* Allow OCALLs to call back into enclave with an ECALL */
+#define OE_CALL_ARG_REENTRANT_OCALL     (1 << 0)
+
+/*
+**==============================================================================
+**
+** OE_Code
 **
 **     The code parameter for OE_ECall() and OE_OCall()
 **
@@ -83,6 +94,69 @@ OE_Func;
 /*
 **==============================================================================
 **
+** OE_MakeCallArg1()
+**
+**     Form the 'arg1' parameter to both OE_Enter() and OE_Exit(). This
+**     parameter is a 64-bit integer that contains:
+**
+**         code -- indicating whether ECALL, OCALL, ERET, or ORET
+**         func -- the number of the function beging called
+**         flags -- any bit flags 
+**
+**==============================================================================
+*/
+
+OE_INLINE uint64_t OE_MakeCallArg1(
+    OE_Code code,
+    OE_Func func,
+    uint16_t flags)
+{
+    /* [ FLAGS:16, CODE:16, FUNC:32 ] */
+    return ((uint64_t)code << 48) | ((uint64_t)func << 16) | ((uint64_t)flags);
+}
+
+/*
+**==============================================================================
+**
+** OE_GetCodeFromCallArg1()
+**
+**==============================================================================
+*/
+
+OE_INLINE OE_Code OE_GetCodeFromCallArg1(uint64_t arg)
+{
+    return (OE_Code)((0xFFFF000000000000 & arg) >> 48);
+}
+
+/*
+**==============================================================================
+**
+** OE_GetFuncFromCallArg1()
+**
+**==============================================================================
+*/
+
+OE_INLINE OE_Func OE_GetFuncFromCallArg1(uint64_t arg)
+{
+    return (OE_Func)((0x0000FFFFFFFF0000 & arg) >> 16);
+}
+
+/*
+**==============================================================================
+**
+** OE_GetFlagsFromCallArg1()
+**
+**==============================================================================
+*/
+
+OE_INLINE uint16_t OE_GetFlagsFromCallArg1(uint64_t arg)
+{
+    return (uint16_t)(0x000000000000FFFF & arg);
+}
+
+/*
+**==============================================================================
+**
 ** OE_CallEnclaveArgs
 **
 **==============================================================================
@@ -113,7 +187,7 @@ typedef struct OE_CallHostArgs
 {
     void* args;
     OE_Result result;
-    char func[];
+    OE_ZERO_SIZED_ARRAY char func[];
 }
 OE_CallHostArgs;
 
@@ -389,6 +463,8 @@ OE_Result OE_RegisterECall(
 /**
  * Registers a low-level OCALL function.
  *
+ * TODO: Redesign this, this needs to be enclave-specific.
+ * 
  * This function registers a low-level OCALL function that may be called
  * from the encalve by the **OE_OCall()** function. The registered function
  * has the following prototype.
@@ -412,4 +488,4 @@ OE_Result OE_RegisterOCall(
 
 OE_EXTERNC_END
 
-#endif /* _OE_ALLOC_H */
+#endif /* _OE_CALLS_H */

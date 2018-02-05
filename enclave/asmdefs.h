@@ -14,6 +14,11 @@
 
 #define CODE_ERET 0x200000000
 
+/* Use GS register if this flag is set */
+#ifdef __ASSEMBLER__
+#define OE_ARG_FLAG_GS 0x0001
+#endif
+
 /* Offsets into TD structure */
 #define TD_self_addr            0
 #define TD_last_sp              8

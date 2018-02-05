@@ -13,7 +13,6 @@
 #include <openenclave/bits/str.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/trace.h>
-#include "../host/log.h"
 #include "../host/enclave.h"
 
 static const char* arg0;

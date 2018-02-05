@@ -1,17 +1,22 @@
 #define OE_TRACE_LEVEL 1
-#include "log.h"
-#include <unistd.h>
-#include <errno.h>
-#include <sys/mman.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <dlfcn.h>
-#include <errno.h>
+#include "strings.h"
+
+#if defined(__linux__)
+# include <errno.h>
+# include <sys/mman.h>
+# include <sys/ioctl.h>
+# include <sys/stat.h>
+# include <stdlib.h>
+# include <fcntl.h>
+# include <dlfcn.h>
+#elif defined(_WIN32)
+# include <windows.h>
+#endif
+
 #include <string.h>
 #include <assert.h>
 #include <openenclave/host.h>
+#include <openenclave/defs.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/elf.h>
@@ -23,6 +28,7 @@
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/trace.h>
 #include "enclave.h"
+#include "memalign.h"
 
 /*
 **==============================================================================
@@ -35,11 +41,11 @@
 **     GUARD = an unmapped guard page
 **
 **     [PAGES]:
-**         [PROGRAM-PAGES] 
-**         [HEAP-PAGE]*NHEAP 
+**         [PROGRAM-PAGES]
+**         [HEAP-PAGE]*NHEAP
 **         ( [GUARD] [STACK-PAGE]*NSTACK [TCS-PAGES]*1 ) * NTCS
 **
-**     [PROGRAM-PAGES]: 
+**     [PROGRAM-PAGES]:
 **         [CODE-PAGES]: flags=reg|x|r content=(ELF segment)
 **         [DATA-PAGES]: flags=reg|w|r content=(ELF segment)
 **
@@ -61,7 +67,7 @@
 **==============================================================================
 */
 
-OE_CHECK_SIZE(sizeof(Sigstruct),1808);
+OE_CHECK_SIZE(sizeof(SGX_SigStruct),1808);
 
 static uint64_t _MakeSecinfoFlags(uint32_t flags)
 {
@@ -115,7 +121,7 @@ static OE_Result _AddSegmentPages(
     OE_Result result = OE_UNEXPECTED;
     size_t i;
 
-    if (!dev || !enclaveAddr || !enclaveSize || !segments || !nsegments || 
+    if (!dev || !enclaveAddr || !enclaveSize || !segments || !nsegments ||
         !pages || !npages || !vaddr)
     {
         OE_THROW(OE_INVALID_PARAMETER);
@@ -140,7 +146,7 @@ static OE_Result _AddSegmentPages(
         flags |= SGX_SECINFO_REG;
 
         /* Fail if ADDR is not between BASEADDR and BASEADDR+SIZE */
-        if (addr < enclaveAddr || 
+        if (addr < enclaveAddr ||
             addr > enclaveAddr + enclaveSize - OE_PAGE_SIZE)
         {
             OE_THROW(OE_FAILURE);
@@ -343,8 +349,8 @@ static OE_Result _CalculateEnclaveSize(
     if (enclaveSize)
         *enclaveSize = 0;
 
-    if (!segments || !nsegments || !nheappages || !nstackpages || !num_bindings || 
-        !enclaveSize) 
+    if (!segments || !nsegments || !nheappages || !nstackpages || !num_bindings ||
+        !enclaveSize)
     {
         OE_THROW(OE_INVALID_PARAMETER);
     }
@@ -362,7 +368,7 @@ static OE_Result _CalculateEnclaveSize(
     controlSize = 6 * OE_PAGE_SIZE;
 
     /* Compute end of the enclave */
-    *enclaveEnd = segmentsSize + relocSize + ecallSize + heapSize + 
+    *enclaveEnd = segmentsSize + relocSize + ecallSize + heapSize +
         (num_bindings * (stackSize + controlSize));
 
     /* Calculate the total size of the enclave */
@@ -375,15 +381,15 @@ OE_CATCH:
 }
 
 static OE_Result _AddRelocationPages(
-    OE_SGXDevice* dev, 
+    OE_SGXDevice* dev,
     uint64_t enclaveAddr,
-    const void* relocData, 
+    const void* relocData,
     const size_t relocSize,
     uint64_t* vaddr)
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!dev || !vaddr) 
+    if (!dev || !vaddr)
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (relocData && relocSize)
@@ -410,15 +416,15 @@ OE_CATCH:
 }
 
 static OE_Result _AddECallPages(
-    OE_SGXDevice* dev, 
+    OE_SGXDevice* dev,
     uint64_t enclaveAddr,
-    const void* ecallData, 
+    const void* ecallData,
     const size_t ecallSize,
     uint64_t* vaddr)
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!dev || !ecallData || !ecallSize || !vaddr) 
+    if (!dev || !ecallData || !ecallSize || !vaddr)
         OE_THROW(OE_INVALID_PARAMETER);
 
     {
@@ -471,7 +477,7 @@ static OE_Result _AddPages(
     size_t baseHeapPage;
 
     /* Reject invalid parameters */
-    if (!dev || !enclaveAddr || !enclaveSize || !segments || !nsegments || 
+    if (!dev || !enclaveAddr || !enclaveSize || !segments || !nsegments ||
         !num_bindings || !nstackpages || !nheappages || !enclave)
     {
         OE_THROW(OE_INVALID_PARAMETER);
@@ -506,7 +512,7 @@ static OE_Result _AddPages(
         if (Elf64_FindDynamicSymbolByName(elf, "__oe_numRelocPages", &sym) != 0)
             OE_THROW(OE_FAILURE);
 
-        *(uint64_t*)((uint8_t*)segpages + sym.st_value) = 
+        *(uint64_t*)((uint8_t*)segpages + sym.st_value) =
             relocSize / OE_PAGE_SIZE;
     }
 
@@ -566,7 +572,7 @@ static OE_Result _AddPages(
     {
         Elf64_Sym sym;
 
-        if (Elf64_FindDynamicSymbolByName(elf, "__oe_virtualBaseAddr", &sym) 
+        if (Elf64_FindDynamicSymbolByName(elf, "__oe_virtualBaseAddr", &sym)
             != 0)
         {
             OE_THROW(OE_FAILURE);
@@ -576,7 +582,7 @@ static OE_Result _AddPages(
     }
 
     /* Add the program segments first */
-    OE_TRY(_AddSegmentPages(dev, enclaveAddr, enclaveSize, segments, 
+    OE_TRY(_AddSegmentPages(dev, enclaveAddr, enclaveSize, segments,
         nsegments, segpages, nsegpages, &vaddr));
 
     /* Add the relocation pages (contain relocation entries) */
@@ -612,7 +618,7 @@ static OE_Result _AddPages(
 OE_CATCH:
 
     if (segpages)
-        free(segpages);
+        OE_MemalignFree(segpages);
 
     return result;
 }
@@ -661,7 +667,7 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     {
         ECallNameAddr tmp;
 
-        if (!(tmp.name = strdup(name)))
+        if (!(tmp.name = OE_Strdup(name)))
             goto done;
 
         tmp.code = StrCode(name, strlen(name));
@@ -785,7 +791,8 @@ static OE_Result _BuildECallData(
 
     /* Calculate size needed for the ECALL pages */
     size_t size = __OE_RoundUpToPageSize(
-        sizeof(OE_ECallPages) + enclave->num_ecalls * sizeof(uint64_t));
+        sizeof(OE_ECallPages) + 
+        (enclave->num_ecalls * sizeof(uint64_t)));
 
     /* Allocate the pages */
     if (!(data = (OE_ECallPages*)calloc(1, size)))
@@ -850,8 +857,9 @@ OE_Result __OE_BuildEnclave(
         enclave->simulate = simulate;
     }
 
-    /* Initialize the spin lock */
-    OE_SpinInit(&enclave->lock);
+    /* Initialize the lock */
+    if (OE_H_MutexInit(&enclave->lock))
+        OE_THROW(OE_FAILURE);
 
     /* Reject invalid parameters */
     if (!dev || !path || !enclave)
@@ -881,7 +889,7 @@ OE_Result __OE_BuildEnclave(
     }
 
     /* Load the program segments into memory */
-    OE_TRY(__OE_LoadSegments(path, segments, &numSegments, &entryAddr, 
+    OE_TRY(__OE_LoadSegments(path, segments, &numSegments, &entryAddr,
         &startAddr));
 
     /* Load the relocations into memory (zero-padded to next page size) */
@@ -899,12 +907,12 @@ OE_Result __OE_BuildEnclave(
 
     /* Calculate the size of this enclave in memory */
     OE_TRY(_CalculateEnclaveSize(
-        segments, 
-        numSegments, 
+        segments,
+        numSegments,
         relocSize,
         ecallSize,
-        sigsec.settings.numHeapPages, 
-        sigsec.settings.numStackPages, 
+        sigsec.settings.numHeapPages,
+        sigsec.settings.numStackPages,
         sigsec.settings.numTCS,
         &enclaveEnd,
         &enclaveSize));
@@ -935,18 +943,18 @@ OE_Result __OE_BuildEnclave(
     OE_TRY(_AddPages(
         dev,
         &elf,
-        enclaveAddr, 
-        enclaveEnd, 
+        enclaveAddr,
+        enclaveEnd,
         enclaveSize,
-        segments, 
+        segments,
         numSegments,
         relocData,
         relocSize,
         ecallData,
         ecallSize,
-        entryAddr, 
-        sigsec.settings.numHeapPages, 
-        sigsec.settings.numStackPages, 
+        entryAddr,
+        sigsec.settings.numHeapPages,
+        sigsec.settings.numStackPages,
         sigsec.settings.numTCS,
         enclave));
 
@@ -964,12 +972,23 @@ OE_Result __OE_BuildEnclave(
             OE_THROW(OE_FAILURE);
 
         OE_TRY(AESMGetLaunchToken(
-            aesm, 
+            aesm,
             sigsec.sigstruct.enclavehash,
             sigsec.sigstruct.modulus,
             &attributes,
             &launchToken));
     }
+
+#if defined(_WIN32)
+    {
+        OE_STATIC_ASSERT(
+            OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX,SigStruct) == 
+            sizeof(sigsec.sigstruct));
+        OE_STATIC_ASSERT(
+            OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX,EInitToken) 
+            <= sizeof(launchToken));
+    }
+#endif
 
     /* Ask the ISGX driver to initialize the enclave (and finalize the hash) */
     OE_TRY(dev->einit(dev, enclaveAddr, (uint64_t)&sigsec.sigstruct,
@@ -982,7 +1001,7 @@ OE_Result __OE_BuildEnclave(
     OE_TRY(_SaveTextAddress(enclave, &elf));
 
     /* Save path of this enclave */
-    if (!(enclave->path = strdup(path)))
+    if (!(enclave->path = OE_Strdup(path)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
     result = OE_OK;
@@ -1006,8 +1025,10 @@ OE_CATCH:
     return result;
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
+#if defined(__linux__)
+# pragma GCC push_options
+# pragma GCC optimize ("O0")
+#endif
 
 /*
 ** These functions are needed to notify the debugger. They should not be optimized
@@ -1019,9 +1040,9 @@ void _OE_NotifyGdbEnclaveTermination(
     const char* enclavePath,
     uint32_t enclavePathLength)
 {
-    UNREFERENCED_PARAMETER(enclave);
-    UNREFERENCED_PARAMETER(enclavePath);
-    UNREFERENCED_PARAMETER(enclavePathLength);
+    OE_UNUSED(enclave);
+    OE_UNUSED(enclavePath);
+    OE_UNUSED(enclavePathLength);
 
     return;
 }
@@ -1032,13 +1053,16 @@ void _OE_NotifyGdbEnclaveCreation(
     uint32_t enclavePathLength
 )
 {
-    UNREFERENCED_PARAMETER(enclave);
-    UNREFERENCED_PARAMETER(enclavePath);
-    UNREFERENCED_PARAMETER(enclavePathLength);
+    OE_UNUSED(enclave);
+    OE_UNUSED(enclavePath);
+    OE_UNUSED(enclavePathLength);
 
     return;
 }
-#pragma GCC pop_options
+
+#if defined(__linux__)
+# pragma GCC pop_options
+#endif
 
 OE_Result OE_CreateEnclave(
     const char* enclavePath,
@@ -1070,17 +1094,40 @@ OE_Result OE_CreateEnclave(
     if (!(enclave = (OE_Enclave*)calloc(1, sizeof(OE_Enclave))))
         OE_THROW(OE_OUT_OF_MEMORY);
 
+#if defined(_WIN32)
+
+    /* Create Windows events for each TCS binding. Enclaves use
+     * this event when calling into the host to handle waits/wakes
+     * as part of the enclave mutex and condition variable 
+     * implementation.
+     */
+    for (size_t i = 0; i < enclave->num_bindings; i++)
+    {
+        ThreadBinding* binding = &enclave->bindings[i];
+
+        if (!(binding->event.handle = CreateEvent(
+            0,     /* No security attributes */
+            FALSE, /* Event is reset automatically */
+            FALSE, /* Event is not put in a signaled state upon creation */
+            0)))   /* No name */
+        {
+            OE_THROW(OE_FAILURE);
+        }
+    }
+
+#endif
+
     /* Open the SGX driver */
     if (!(dev = __OE_OpenSGXDriver(simulate)))
         OE_THROW(OE_FAILURE);
 
     /* Build the enclave */
     OE_TRY(__OE_BuildEnclave(
-        dev, 
-        enclavePath, 
-        NULL, 
-        debug, 
-        simulate, 
+        dev,
+        enclavePath,
+        NULL,
+        debug,
+        simulate,
         enclave));
 
     /* Set the magic number */
@@ -1090,7 +1137,7 @@ OE_Result OE_CreateEnclave(
     _OE_NotifyGdbEnclaveCreation(
         enclave,
         enclave->path,
-        strlen(enclave->path));
+        (uint32_t)strlen(enclave->path));
 
     *enclaveOut = enclave;
     result = OE_OK;
@@ -1128,13 +1175,17 @@ OE_Result OE_TerminateEnclave(
     _OE_NotifyGdbEnclaveTermination(
         enclave,
         enclave->path,
-        strlen(enclave->path));
+        (uint32_t)strlen(enclave->path));
 
     /* Clear the magic number */
     enclave->magic = 0;
 
     /* Unmap the enclave memory */
+#if defined(__linux__)
     munmap((void*)enclave->addr, enclave->size);
+#elif defined(_WIN32)
+    VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
+#endif
 
     /* Release the enclave->ecalls[] array */
     {
@@ -1144,12 +1195,24 @@ OE_Result OE_TerminateEnclave(
         free(enclave->ecalls);
     }
 
+#if defined(_WIN32)
+
+    /* Release Windows events created during enclave creation */
+    for (size_t i = 0; i < enclave->num_bindings; i++)
+    {
+        ThreadBinding* binding = &enclave->bindings[i];
+        CloseHandle(binding->event.handle);
+    }
+
+#endif
+
+    /* Free the path name of the enclave image file */
     free(enclave->path);
 
     /* Clear the contents of the enclave structure */
     memset(enclave, 0x00, sizeof(OE_Enclave));
 
-    /* Free the enclave structure */
+   /* Free the enclave structure */
     free(enclave);
 
     result = OE_OK;

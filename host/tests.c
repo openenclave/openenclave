@@ -1,15 +1,24 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include "dupenv.h"
 
 uint32_t OE_GetCreateFlags(void)
 {
-    char* env = getenv("OE_SIMULATION");
+    uint32_t result = OE_FLAG_DEBUG;
+    char* env = NULL;
+    
+    if (!(env = OE_Dupenv("OE_SIMULATION")))
+        goto done;
 
-    if (env && strcmp(env, "1") == 0)
-    {
-        return OE_FLAG_DEBUG | OE_FLAG_SIMULATE;
-    }
+    if (strcmp(env, "1") == 0)
+        result |= OE_FLAG_SIMULATE;
 
-    return OE_FLAG_DEBUG;
+done:
+
+    if (env)
+        free(env);
+
+    return result;
 }

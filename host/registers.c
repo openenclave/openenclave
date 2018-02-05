@@ -1,14 +1,32 @@
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <asm/prctl.h>
+#if defined(__linux__)
+# include <unistd.h>
+# include <sys/syscall.h>
+# include <asm/prctl.h>
+#elif defined(_WIN32)
+# include <Windows.h>
+#endif
+
+#include <stdio.h>
+#include <assert.h>
+
 #include <openenclave/bits/registers.h>
 
-int OE_SetGSRegisterBase(const void *ptr)
+void OE_SetGSRegisterBase(const void *ptr)
 {
-    return syscall(__NR_arch_prctl, ARCH_SET_GS, ptr);
+#if defined(__linux__)
+    syscall(__NR_arch_prctl, ARCH_SET_GS, ptr);
+#elif defined(_WIN32)
+    _writegsbase_u64((uint64_t)ptr);
+#endif
 }
 
-int OE_GetGSRegisterBase(const void **ptr)
+void* OE_GetGSRegisterBase()
 {
-    return syscall(__NR_arch_prctl, ARCH_GET_GS, ptr);
+#if defined(__linux__)
+    void* ptr = NULL;
+    syscall(__NR_arch_prctl, ARCH_GET_GS, &ptr);
+    return ptr;
+#elif defined(_WIN32)
+    return (void*)_readgsbase_u64();
+#endif
 }

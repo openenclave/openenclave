@@ -14,7 +14,14 @@
 #define ThreadBinding_tcs 0
 #define OE_WORDSIZE 8
 #define	OE_OCALL_CODE 3
-#define OE_Enter __morestack
+
+#if defined(__linux__)
+# define OE_Enter __morestack
+#endif
+
+#ifndef __ASSEMBLER__
+typedef struct _OE_Enclave OE_Enclave;
+#endif
 
 #ifndef __ASSEMBLER__
 void OE_Enter(
@@ -23,7 +30,8 @@ void OE_Enter(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
-    uint64_t* arg4);
+    uint64_t* arg4,
+    OE_Enclave* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
@@ -33,7 +41,8 @@ void OE_EnterSim(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
-    uint64_t* arg4);
+    uint64_t* arg4,
+    OE_Enclave* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
@@ -43,7 +52,7 @@ int __OE_DispatchOCall(
     uint64_t* arg1Out,
     uint64_t* arg2Out,
     void* tcs,
-    void* rsp);
+    OE_Enclave* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
@@ -54,18 +63,24 @@ int _OE_HostStackBridge(
     uint64_t* arg2Out,
     void* tcs,
     void* rsp);
+#endif
 
-typedef
-struct __OE_HostOCallFrame
+#ifndef __ASSEMBLER__
+typedef struct __OE_HostOCallFrame
 {
     uint64_t previous_rbp;
     uint64_t return_address;
-}_OE_HostOCallFrame;
+}
+_OE_HostOCallFrame;
+#endif
 
+#ifndef __ASSEMBLER__
 void _OE_NotifyOCallStart(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs);
+#endif
 
+#ifndef __ASSEMBLER__
 void _OE_NotifyOCallEnd(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs);

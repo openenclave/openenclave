@@ -1,14 +1,15 @@
-#include "asmdefs.h"
+#include "../asmdefs.h"
 
 //==============================================================================
 //
 // void __morestack(
-//     [IN] void* tcs,
-//     [IN] void (*aep)(),
-//     [IN] uint64_t arg1,
-//     [IN] uint64_t arg2,
-//     [OUT] uint64_t* arg3,
-//     [OUT] uint64_t* arg4);
+//     [IN] void* tcs,                  /* RDI */
+//     [IN] void (*aep)(),              /* RSI */
+//     [IN] uint64_t arg1,              /* RDX */
+//     [IN] uint64_t arg2,              /* RCX */
+//     [OUT] uint64_t* arg3,            /* R8 */
+//     [OUT] uint64_t* arg4,            /* R9 */
+//     [IN] OE_Enclave* enclave);       /* on stack */
 //
 // Registers:
 //     RDI   - tcs: thread control structure
@@ -19,20 +20,24 @@
 //     R9    - arg4
 //
 // N.B: Don't change the function name, otherwise debugger can't work. 
-//	GDB depends on this hardcode function name when does stack walking for split 
-//	stack.
+// GDB depends on this hardcode function name when does stack walking for split 
+// stack.
+//
+// Note that OE_Enter is defined to __morestack
+//
 //==============================================================================
 
-#define PARAMS_SPACE 128
-#define TCS     -8(%rbp)
-#define AEP     -16(%rbp)
-#define ARG1    -24(%rbp)
-#define ARG2    -32(%rbp)
-#define ARG3    -40(%rbp)
-#define ARG4    -48(%rbp)
-#define ARG1OUT -56(%rbp)
-#define ARG2OUT -64(%rbp)
-#define RSP     -72(%rbp)
+#define TCS             (-1*OE_WORDSIZE)(%rbp)
+#define AEP             (-2*OE_WORDSIZE)(%rbp)
+#define ARG1            (-3*OE_WORDSIZE)(%rbp)
+#define ARG2            (-4*OE_WORDSIZE)(%rbp)
+#define ARG3            (-5*OE_WORDSIZE)(%rbp)
+#define ARG4            (-6*OE_WORDSIZE)(%rbp)
+#define ENCLAVE          (-7*OE_WORDSIZE)(%rbp)
+#define ARG1OUT         (-8*OE_WORDSIZE)(%rbp)
+#define ARG2OUT         (-9*OE_WORDSIZE)(%rbp)
+#define RSP             (-10*OE_WORDSIZE)(%rbp)
+#define PARAMS_SPACE    (11*OE_WORDSIZE)
 
 .globl __morestack
 .type __morestack, @function
@@ -50,6 +55,8 @@ __morestack:
     mov %rcx, ARG2
     mov %r8,  ARG3
     mov %r9,  ARG4
+    mov 16(%rbp), %rax  // enclave parameter
+    mov %rax, ENCLAVE
 
     // Save registers:
     push %rbx
@@ -70,11 +77,11 @@ __morestack:
     mov %rdi, ARG1OUT
     mov %rsi, ARG2OUT
 
-	// Check if it is an OCALL needed to be dispatched.
-	mov %rdi, %r10
-	shr $0x20, %r10
-	cmpq $OE_OCALL_CODE, %r10
-	jne .return_from_ecall
+    // Check if it is an OCALL needed to be dispatched.
+    mov %rdi, %r10
+    shr $48, %r10
+    cmpq $OE_OCALL_CODE, %r10
+    jne .return_from_ecall
 
 .dispatch_ocall:
 
@@ -89,20 +96,22 @@ __morestack:
     push %r12
     push %r13
 
-    // Call _OE_HostStackBridge():
+    // RAX = __OE_HostStackBridge(
     //     RDI=arg1
     //     RSI=arg2
     //     RDX=arg1Out
     //     RCX=arg2Out
-    //     R8=TCS
-    //     R9=RSP
+    //     R8=TCS,
+    //     R9=RSP)
     mov ARG1OUT, %rdi
     mov ARG2OUT, %rsi
     leaq ARG1OUT, %rdx
     leaq ARG2OUT, %rcx
     mov TCS, %r8
     mov RSP, %r9
-    call _OE_HostStackBridge
+    push ENCLAVE // push enclave parameter
+    call __OE_HostStackBridge
+    add $8, %rsp // pop enclave parameter
 
     // Restore registers (except RDI and RSI)
     pop %r13
@@ -148,60 +157,70 @@ __morestack:
 
     ret
 
-.forever:
-	jmp .forever
-
 .size __morestack, .-__morestack
 
 //==============================================================================
 // 
-// This function is wrapper of __OE_DispatchOCall. It is needed to stitch the host 
-// stack and enclave stack together.
+// __OE_HostStackBridge(
+//     [IN] uint64_t arg1,      /* RDI */
+//     [IN] uint64_t arg2,      /* RSI */
+//     [OUT] uint64_t* arg3,    /* RDX */
+//     [OUT] uint64_t* arg4,    /* RCX */
+//     [IN] void* tcs,          /* R8 */
+//     [IN] void* rsp,          /* R9 */
+//     [IN] uint64_t enclave)    /* STACK */
+//
+// This function is wrapper of __OE_DispatchOCall. It is needed to stitch 
+// the host stack and enclave stack together.
 //
 //==============================================================================
 
-#define HB_STACK_LENGTH			0X50
-#define HB_SAVED_ARG1			(0*OE_WORDSIZE)(%rsp)
-#define HB_SAVED_OCALL_RETURN	(0*OE_WORDSIZE)(%rsp)
-#define HB_SAVED_ARG2			(1*OE_WORDSIZE)(%rsp)
-#define HB_SAVED_ARG3			(2*OE_WORDSIZE)(%rsp)
-#define HB_SAVED_ARG4			(3*OE_WORDSIZE)(%rsp)
-#define HB_SAVED_ARG5			(4*OE_WORDSIZE)(%rsp)
-#define HB_SAVED_ARG6			(5*OE_WORDSIZE)(%rsp)
-#define HB_SAVED_RETURN_ADDR	(6*OE_WORDSIZE)(%rsp)
-#define HB_SAVED_FRAME_POINTER	(7*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_OCALL_RETURN   (0*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG1           (1*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG2           (2*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG3           (3*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG4           (4*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_TCS            (5*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_RSP            (6*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ENCLAVE         (7*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_RETURN_ADDR    (8*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_FRAME_POINTER  (9*OE_WORDSIZE)(%rsp)
+#define HB_STACK_LENGTH         (10*OE_WORDSIZE)
 
-.globl _OE_HostStackBridge
-.type _OE_HostStackBridge, @function
+.globl __OE_HostStackBridge
+.type __OE_HostStackBridge, @function
 .type _OE_NotifyOCallStart,@function
 .hidden _OE_NotifyOCallStart
 .type _OE_NotifyOCallEnd,@function
 .hidden _OE_NotifyOCallEnd
-_OE_HostStackBridge:
+__OE_HostStackBridge:
 .cfi_startproc
     push %rbp
-.cfi_def_cfa_offset		16
-.cfi_offset				rbp,-16
+.cfi_def_cfa_offset 16
+.cfi_offset rbp,-16
     mov %rsp, %rbp
-.cfi_def_cfa_register	rbp
+.cfi_def_cfa_register   rbp
     sub $HB_STACK_LENGTH, %rsp
 
-	// Save the current return address and frame point of _OE_HostStackBridge into stack.
+    // Save the current return address and frame point of __OE_HostStackBridge 
+    // into stack.
     mov 0(%rbp), %rax
     mov %rax, HB_SAVED_FRAME_POINTER
     mov (1*OE_WORDSIZE)(%rbp), %rax
     mov %rax, HB_SAVED_RETURN_ADDR
 
     // Save the function parameters needed for __OE_DispatchOCall into stack.
-    mov %rdi, HB_SAVED_ARG1
-    mov %rsi, HB_SAVED_ARG2
-    mov %rdx, HB_SAVED_ARG3
-    mov %rcx, HB_SAVED_ARG4
-	mov %r8,  HB_SAVED_ARG5
-	mov %r9, HB_SAVED_ARG6
+    mov %rdi, HB_SAVED_ARG1     // arg1
+    mov %rsi, HB_SAVED_ARG2     // arg2
+    mov %rdx, HB_SAVED_ARG3     // arg3
+    mov %rcx, HB_SAVED_ARG4     // arg4
+    mov %r8,  HB_SAVED_TCS      // tcs
+    mov %r9, HB_SAVED_RSP       // rsp
+    mov 16(%rbp), %rax          // enclave
+    mov %rax, HB_SAVED_ENCLAVE
 
     // Notify that an ocall happens in current host thread.
-	// _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
+    // _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
     mov %rbp, %rdi
     mov %r8,  %rsi
     call _OE_NotifyOCallStart
@@ -211,8 +230,8 @@ _OE_HostStackBridge:
     mov HB_SAVED_ARG2, %rsi
     mov HB_SAVED_ARG3, %rdx
     mov HB_SAVED_ARG4, %rcx
-	mov HB_SAVED_ARG5, %r8
-	mov HB_SAVED_ARG6, %r9
+    mov HB_SAVED_TCS, %r8
+    mov HB_SAVED_ENCLAVE, %r9
 
     // Do actual OCALL.
     call __OE_DispatchOCall
@@ -221,13 +240,14 @@ _OE_HostStackBridge:
     mov %rax, HB_SAVED_OCALL_RETURN
 
     // Notify that an ocall is done in current host thread.
-	// _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
-	mov %rbp, %rdi
-	mov HB_SAVED_ARG5, %rsi
+    // _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
+    mov %rbp, %rdi
+    mov HB_SAVED_TCS, %rsi
     call _OE_NotifyOCallEnd
 
-	// Because of stack stitching, the return address might be overwritten by gdb.
-    // Restore the current return address and frame point of _OE_HostStackBridge from stack.
+    // Because of stack stitching, the return address might be overwritten by 
+    // gdb. Restore the current return address and frame point of 
+    // __OE_HostStackBridge from stack.
     mov HB_SAVED_FRAME_POINTER, %rax
     mov %rax, (0*OE_WORDSIZE)(%rbp)
     mov HB_SAVED_RETURN_ADDR, %rax
@@ -238,4 +258,5 @@ _OE_HostStackBridge:
 
     leave
     ret
+
 .cfi_endproc

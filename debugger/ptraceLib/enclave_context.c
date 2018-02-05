@@ -218,7 +218,7 @@ static int _GetEnclaveThreadCurrentSsaInfo(
     }
 
     // Get current SSA base addr and size.
-    ssa_info->base_address = (void*)(((byte*)tcs_addr) + OE_SSA_FROM_TCS_BYTE_OFFSET
+    ssa_info->base_address = (void*)(((uint8_t*)tcs_addr) + OE_SSA_FROM_TCS_BYTE_OFFSET
         + (tcs.cssa - 1) * ssa_frame_size * OE_PAGE_SIZE);
     ssa_info->frame_byte_size = ssa_frame_size * OE_PAGE_SIZE;
     return 0;
@@ -321,7 +321,7 @@ int OE_GetEnclaveThreadGpr(
     }
 
     // Get gpr base address. Gpr is at the end of an SSA frame.
-    gpr_addr = (void*)(((byte*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+    gpr_addr = (void*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
 
     // Read gpr from ssa.
     ret = OE_ReadProcessMemory(pid, gpr_addr, (void*)&ssa_gpr, sizeof(SGX_SsaGpr), &read_byte_length);
@@ -380,7 +380,7 @@ int OE_SetEnclaveThreadGpr(
     }
 
     // Get gpr base address. Gpr is at the end of an SSA frame.
-    gpr_addr = (void*)(((byte*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+    gpr_addr = (void*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
 
     // Read gpr from ssa.
     ret = OE_ReadProcessMemory(pid, gpr_addr, (void*)&ssa_gpr, sizeof(SGX_SsaGpr), &read_byte_length);

@@ -64,13 +64,14 @@ SGX_ENCLULeaf;
 **==============================================================================
 */
 
+OE_PACK_BEGIN
 typedef struct _SGX_Attributes
 {
     uint64_t flags;
     uint64_t xfrm;
 }
-OE_PACKED
 SGX_Attributes;
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_Attributes),16);
 
@@ -83,6 +84,7 @@ OE_CHECK_SIZE(sizeof(SGX_Attributes),16);
 */
 
 /* 1808 bytes */
+OE_PACK_BEGIN
 typedef struct _SGX_SigStruct
 {
     /* ======== HEADER-SECTION ======== */
@@ -159,8 +161,8 @@ typedef struct _SGX_SigStruct
     /* (1424) Q2 value for RSA Signature Verification */
     uint8_t q2[OE_KEY_SIZE];
 }
-OE_PACKED
 SGX_SigStruct;
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_SigStruct),1808);
 
@@ -181,7 +183,7 @@ OE_INLINE const void* SGX_SigStructBody(const SGX_SigStruct* ss)
 
 OE_INLINE size_t SGX_SigStructBodySize(void)
 {
-    return 
+    return
         OE_OFFSETOF(SGX_SigStruct,reserved4) - OE_OFFSETOF(SGX_SigStruct,miscselect);
 }
 
@@ -313,6 +315,7 @@ SGX_LaunchToken;
 #define SGX_KEYID_SIZE 32
 #define SGX_MAC_SIZE 16
 
+OE_PACK_BEGIN
 typedef struct _SGX_EInitToken
 {
     /* (0) 0=invalid, 1=valid */
@@ -360,8 +363,8 @@ typedef struct _SGX_EInitToken
     /* (288) CMAC using Launch Token Key */
     uint8_t mac[SGX_MAC_SIZE];
 }
-OE_PACKED
 SGX_EInitToken;
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_EInitToken),304);
 
@@ -379,42 +382,42 @@ void __SGX_DumpEinitToken(
 typedef struct _SGX_TCS
 {
     /* (0) enclave execution state (0=available, 1=unavailable) */
-    uint64_t state; 
+    uint64_t state;
 
     /* (8) thread's execution flags */
     uint64_t flags;
 
     /* (16) offset to the base of the State Save Area (SSA) stack */
-    uint64_t ossa; 
+    uint64_t ossa;
 
     /* (24) Current slot of an SSA frame */
-    uint32_t cssa; 
+    uint32_t cssa;
 
     /* (28) Number of available slots for SSA frames */
-    uint32_t nssa; 
+    uint32_t nssa;
 
     /* (32) entry point where control is transferred upon EENTER */
-    uint64_t oentry; 
+    uint64_t oentry;
 
     /* (40) Value of asynchronous exit pointer saved at EENTER time */
-    uint64_t aep; 
+    uint64_t aep;
 
     /* (48) Added to enclave base address to get the FS segment address */
-    uint64_t fsbase; 
+    uint64_t fsbase;
 
     /* (56) Added to enclave base address to get the GS segment address */
-    uint64_t gsbase; 
+    uint64_t gsbase;
 
     /* (64) Size to become the new FS limit in 32-bit mode */
-    uint32_t fslimit; 
+    uint32_t fslimit;
 
     /* (68) Size to become the new GS limit in 32-bit mode */
-    uint32_t gslimit; 
+    uint32_t gslimit;
 
     /* (72) reserved */
     union
     {
-        uint8_t reserved[4024];  
+        uint8_t reserved[4024];
 
         /* (72) Enclave's OE_Main() function */
         void (*main)(void);
@@ -443,10 +446,10 @@ OE_CHECK_SIZE(OE_OFFSETOF(SGX_TCS, u.main), 72);
 **
 ** OE_ThreadData
 **
-**     This structure defines information about an enclave thread. Each 
-**     instance is associated with one thread control structure (TCS). This 
-**     structure resides in the GS segment page (referenced by the GS segment 
-**     register). A thread obtains its thread data structure by calling 
+**     This structure defines information about an enclave thread. Each
+**     instance is associated with one thread control structure (TCS). This
+**     structure resides in the GS segment page (referenced by the GS segment
+**     register). A thread obtains its thread data structure by calling
 **     OE_GetThreadData(), which fetches the address at offset zero in
 **     the GS segment register (%gs:0) which contains OE_ThreadData.self_addr.
 **
@@ -462,13 +465,13 @@ struct _OE_ThreadData
     uint64_t self_addr;
 
     /* The last stack pointer (set by enclave when making an OCALL) */
-    uint64_t last_sp; 
+    uint64_t last_sp;
 
     uint64_t __stack_base_addr;
     uint64_t __stack_limit_addr;
     uint64_t __first_ssa_gpr;
     uint64_t __stack_guard; /* 0x28 for x64 */
-    uint64_t __reserved;
+    uint64_t __reserved_0;
     uint64_t __ssa_frame_size;
     uint64_t __last_error;
 
@@ -528,8 +531,8 @@ typedef struct _TD
     uint64_t host_stack_base;
 
     /* Return arguments from OCALL */
-    long oret_func;
-    long oret_arg;
+    int64_t oret_func;
+    int64_t oret_arg;
 
     /* List of Callsite structures (most recent call is first) */
     Callsite* callsites;
@@ -567,14 +570,15 @@ typedef struct _OE_EnclaveSettings
 OE_EnclaveSettings;
 
 /* Enclave signature section (.oesig) written to ELF-64 libraries */
+OE_PACK_BEGIN
 typedef struct _OE_SignatureSection
 {
     uint64_t magic;
     OE_EnclaveSettings settings;
     SGX_SigStruct sigstruct;
 }
-OE_PACKED
 OE_SignatureSection;
+OE_PACK_END
 
 /*
 **==============================================================================
@@ -632,7 +636,7 @@ OE_CHECK_SIZE(sizeof(SGX_EPIDGroupID),4);
 typedef struct _SGX_ReportData
 {
     unsigned char field[64];
-} 
+}
 SGX_ReportData;
 
 OE_CHECK_SIZE(sizeof(SGX_ReportData),64);
@@ -654,7 +658,7 @@ typedef struct _SGX_ReportBody
     uint32_t miscselect;
 
     /* (20) Reserved */
-    uint8_t reserved1[28];  
+    uint8_t reserved1[28];
 
     /* (48) Enclave attributes */
     SGX_Attributes attributes;
@@ -663,7 +667,7 @@ typedef struct _SGX_ReportBody
     uint8_t mrenclave[OE_SHA256_SIZE];
 
     /* (96) */
-    uint8_t reserved2[32];  
+    uint8_t reserved2[32];
 
     /* (128) The value of the enclave's SIGNER measurement */
     uint8_t mrsigner[OE_SHA256_SIZE];
@@ -678,7 +682,7 @@ typedef struct _SGX_ReportBody
     uint16_t isvsvn;
 
     /* (260) Reserved */
-    uint8_t reserved4[60];  
+    uint8_t reserved4[60];
 
     /* (320) User report data */
     SGX_ReportData reportData;
@@ -708,10 +712,11 @@ OE_CHECK_SIZE(sizeof(SGX_Report),432);
 **==============================================================================
 */
 
+OE_PACK_BEGIN
 typedef struct _SGX_Quote
 {
     /* (0) */
-    uint16_t version;        
+    uint16_t version;
 
     /* (2) */
     uint16_t sign_type;
@@ -723,7 +728,7 @@ typedef struct _SGX_Quote
     uint16_t qe_svn;
 
     /* (10) */
-    uint16_t pce_svn;        
+    uint16_t pce_svn;
 
     /* (12) */
     uint32_t xeid;
@@ -740,8 +745,8 @@ typedef struct _SGX_Quote
     /* (436) */
     uint8_t signature[82];
 }
-OE_PACKED
 SGX_Quote;
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_Quote),518);
 
@@ -812,7 +817,7 @@ typedef struct _OE_ECallPages
     uint64_t num_vaddrs;
 
     /* ECALL virtual addresses (index by function number) */
-    uint64_t vaddrs[];
+    OE_ZERO_SIZED_ARRAY uint64_t vaddrs[];
 }
 OE_ECallPages;
 

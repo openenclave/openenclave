@@ -2,6 +2,8 @@
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/fault.h>
+#include <openenclave/bits/globals.h>
+#include <openenclave/bits/calls.h>
 #include "td.h"
 #include "asmdefs.h"
 

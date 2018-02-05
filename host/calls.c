@@ -1,12 +1,24 @@
+#if defined(__linux__)
+# define __OE_NEED_TIME_CALLS
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <dlfcn.h>
-#include <setjmp.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <linux/futex.h>
-#include <sys/syscall.h>
+
+#if defined(__linux__)
+# include <dlfcn.h>
+# include <setjmp.h>
+# include <sys/mman.h>
+# include <unistd.h>
+# include <linux/futex.h>
+# include <sys/syscall.h>
+#elif defined(_WIN32)
+# include <Windows.h>
+#else
+# error "unsupported platform"
+#endif
+
 #include "asmdefs.h"
 #include "enclave.h"
 #include <openenclave/host.h>
@@ -26,8 +38,8 @@ void OE_AEP(void);
 ** _SetThreadBinding()
 **
 **     Store the thread data in the GS segement register. Note that the GS
-**     register is unused on X86-64, unlike the FS register that is used by
-**     the pthread implementation.
+**     register is unused on X86-64 on Linux, unlike the FS register that is 
+**     used by the pthread implementation.
 **
 **     The OE_AEP() function (aep.S) uses the GS segment register to retrieve
 **     the ThreadBinding.tcs field.
@@ -35,12 +47,28 @@ void OE_AEP(void);
 **==============================================================================
 */
 
+#define USE_TLS_FOR_THREADING_BINDING
+
+#if defined(USE_TLS_FOR_THREADING_BINDING)
+static OE_H_OnceType _threadBindingOnce;
+static OE_H_ThreadKey _threadBindingKey;
+#endif
+
+#if defined(USE_TLS_FOR_THREADING_BINDING)
+static void _CreateThreadBindingKey(void)
+{
+    OE_H_ThreadKeyCreate(&_threadBindingKey);
+}
+#endif
+
 static void _SetThreadBinding(ThreadBinding* binding)
 {
-    if (OE_SetGSRegisterBase(binding) != 0)
-    {
-        assert(0);
-    }
+#if defined(USE_TLS_FOR_THREADING_BINDING)
+    OE_H_Once(&_threadBindingOnce, _CreateThreadBindingKey);
+    OE_H_ThreadSetSpecific(_threadBindingKey, binding);
+#else
+    return (ThreadBinding*)OE_GetGSRegisterBase();
+#endif
 }
 
 /*
@@ -55,14 +83,12 @@ static void _SetThreadBinding(ThreadBinding* binding)
 
 ThreadBinding* GetThreadBinding()
 {
-    const void* ptr;
-
-    if (OE_GetGSRegisterBase(&ptr) != 0)
-    {
-        assert(0);
-    }
-
-    return (ThreadBinding*)ptr;
+#if defined(USE_TLS_FOR_THREADING_BINDING)
+    OE_H_Once(&_threadBindingOnce, _CreateThreadBindingKey);
+    return (ThreadBinding*)OE_H_ThreadGetSpecific(_threadBindingKey);
+#else
+    return (ThreadBinding*)OE_GetGSRegisterBase();
+#endif
 }
 
 /*
@@ -78,7 +104,7 @@ ThreadBinding* GetThreadBinding()
 static OE_Result _EnterSim(
     OE_Enclave* enclave,
     void* tcs_,
-    void (*aep)(),
+    void (*aep)(void),
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
@@ -98,14 +124,10 @@ static OE_Result _EnterSim(
         OE_THROW(OE_NOT_FOUND);
 
     /* Save old GS register base, and set new one */
+    const void* gsbase;
     {
-        const void* gsbase = (void*)(enclave->addr + tcs->gsbase);
-
-        if (OE_GetGSRegisterBase(&saved_gsbase) != 0)
-            OE_THROW(OE_FAILURE);
-
-        if (OE_SetGSRegisterBase(gsbase) != 0)
-            OE_THROW(OE_FAILURE);
+        gsbase = (void*)(enclave->addr + tcs->gsbase);
+        saved_gsbase = OE_GetGSRegisterBase();
 
         /* Set TD.simulate flag */
         {
@@ -116,11 +138,15 @@ static OE_Result _EnterSim(
 
     /* Call into enclave */
     {
-        OE_EnterSim(tcs, aep, arg1, arg2, arg3, arg4);
+        if (arg3)
+            *arg3 = 0;
 
-        /* Restore the GS segment register */
-        if (OE_SetGSRegisterBase(saved_gsbase) != 0)
-            OE_THROW(OE_FAILURE);
+        if (arg4)
+            *arg4 = 0;
+
+        OE_SetGSRegisterBase(gsbase);
+        OE_EnterSim(tcs, aep, arg1, arg2, arg3, arg4, enclave);
+        OE_SetGSRegisterBase(saved_gsbase);
     }
 
     result = OE_OK;
@@ -140,11 +166,11 @@ OE_CATCH:
 **==============================================================================
 */
 
-__attribute__((always_inline))
+OE_ALWAYS_INLINE
 static OE_Result _DoEENTER(
     OE_Enclave* enclave,
     void* tcs,
-    void (*aep)(void), 
+    void (*aep)(void),
     OE_Code codeIn,
     uint32_t funcIn,
     uint64_t argIn,
@@ -171,10 +197,10 @@ static OE_Result _DoEENTER(
 
     /* Call OE_Enter() assembly function (enter.S) */
     {
-        uint64_t arg1 = OE_MAKE_WORD(codeIn, funcIn);
+        uint64_t arg1 = OE_MakeCallArg1(codeIn, funcIn, 0);
         uint64_t arg2 = (uint64_t)argIn;
-        uint64_t arg3;
-        uint64_t arg4;
+        uint64_t arg3 = 0;
+        uint64_t arg4 = 0;
 
         if (enclave->simulate)
         {
@@ -182,11 +208,11 @@ static OE_Result _DoEENTER(
         }
         else
         {
-            OE_Enter(tcs, aep, arg1, arg2, &arg3, &arg4);
+            OE_Enter(tcs, aep, arg1, arg2, &arg3, &arg4, enclave);
         }
 
-        *codeOut = (OE_Code)OE_HI_WORD(arg3);
-        *funcOut = OE_LO_WORD(arg3);
+        *codeOut = OE_GetCodeFromCallArg1(arg3);
+        *funcOut = OE_GetFuncFromCallArg1(arg3);
         *argOut = arg4;
     }
 
@@ -209,16 +235,27 @@ OE_CATCH:
 static OE_HostFunc _FindHostFunc(
     const char* name)
 {
+#if defined(__linux__)
+
     void* handle = dlopen(NULL, RTLD_NOW | RTLD_GLOBAL);
-    OE_HostFunc func;
+    if (!handle)
+        return NULL;
+
+    OE_HostFunc func = (OE_HostFunc)dlsym(handle, name);
+    dlclose(handle);
+
+    return func;
+
+#elif defined(_WIN32)
+
+    HANDLE handle = GetModuleHandle(NULL);
 
     if (!handle)
         return NULL;
 
-    func = (OE_HostFunc)dlsym(handle, name);
-    dlclose(handle);
+    return (OE_HostFunc)GetProcAddress(handle, name);
 
-    return func;
+#endif
 }
 
 /*
@@ -268,18 +305,20 @@ static void _HandleCallHost(uint64_t arg)
 **     Register the given OCALL function, associate it with the given function
 **     number.
 **
+**  TODO: Redesign this, this needs to be per-enclave.
+**
 **==============================================================================
 */
 
 static OE_OCallFunction _ocalls[OE_MAX_OCALLS];
-static OE_Spinlock _ocalls_spinlock = OE_SPINLOCK_INITIALIZER;
+static OE_H_Mutex _ocalls_lock = OE_H_MUTEX_INITIALIZER;
 
 OE_Result OE_RegisterOCall(
     uint32_t func,
     OE_OCallFunction ocall)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_SpinLock(&_ocalls_spinlock);
+    OE_H_MutexLock(&_ocalls_lock);
 
     if (func >= OE_MAX_OCALLS)
         OE_THROW(OE_OUT_OF_RANGE);
@@ -292,7 +331,7 @@ OE_Result OE_RegisterOCall(
     result = OE_OK;
 
 OE_CATCH:
-    OE_SpinUnlock(&_ocalls_spinlock);
+    OE_H_MutexUnlock(&_ocalls_lock);
     return result;
 }
 
@@ -352,20 +391,22 @@ static OE_Result _HandleOCALL(
             break;
 
         case OE_FUNC_THREAD_WAIT:
-            HandleThreadWait(argIn);
+            HandleThreadWait(enclave, argIn);
             break;
 
         case OE_FUNC_THREAD_WAKE:
-            HandleThreadWake(argIn);
+            HandleThreadWake(enclave, argIn);
             break;
 
         case OE_FUNC_THREAD_WAKE_WAIT:
-            HandleThreadWakeWait(argIn);
+            HandleThreadWakeWait(enclave, argIn);
             break;
 
         case OE_FUNC_INIT_QUOTE:
             HandleInitQuote(argIn);
             break;
+
+#if defined(__OE_NEED_TIME_CALLS)
 
         case OE_FUNC_STRFTIME:
             HandleStrftime(argIn);
@@ -383,6 +424,8 @@ static OE_Result _HandleOCALL(
             HandleNanosleep(argIn);
             break;
 
+#endif /* defined(__OE_NEED_TIME_CALLS) */
+
         case OE_FUNC_DESTRUCTOR:
         case OE_FUNC_CALL_ENCLAVE:
             assert("Invalid OCALL" == NULL);
@@ -393,9 +436,9 @@ static OE_Result _HandleOCALL(
             /* Dispatch user-registered OCALLs */
             if (func < OE_MAX_OCALLS)
             {
-                OE_SpinLock(&_ocalls_spinlock);
+                OE_H_MutexLock(&_ocalls_lock);
                 OE_OCallFunction ocall = _ocalls[func];
-                OE_SpinUnlock(&_ocalls_spinlock);
+                OE_H_MutexUnlock(&_ocalls_lock);
 
                 if (ocall)
                     ocall(argIn, argOut);
@@ -417,7 +460,7 @@ OE_CATCH:
 ** __OE_DispatchOCall()
 **
 **     This function is called by OE_Enter() (see enter.S). It checks to
-**     to see if EENTER returned in order to perform an OCALL. If so it 
+**     to see if EENTER returned in order to perform an OCALL. If so it
 **     dispatches the OCALL.
 **
 ** Parameters:
@@ -439,19 +482,14 @@ int __OE_DispatchOCall(
     uint64_t* arg1Out,
     uint64_t* arg2Out,
     void* tcs,
-    void* rsp)
+    OE_Enclave* enclave)
 {
-    const OE_Code code = (OE_Code)OE_HI_WORD(arg1);
-    const uint32_t func = (OE_Code)OE_LO_WORD(arg1);
+    const OE_Code code = OE_GetCodeFromCallArg1(arg1);
+    const uint32_t func = OE_GetFuncFromCallArg1(arg1);
     const uint64_t arg = arg2;
 
     if (code == OE_CODE_OCALL)
     {
-        OE_Enclave* enclave = GetEnclave();
-        // ATTN: this asserts with call nesting!
-        // Pass enclave as argument to _DoEnter()
-        assert(enclave != NULL);
-
         uint64_t argOut = 0;
 
         OE_Result result = _HandleOCALL(enclave, tcs, func, arg, &argOut);
@@ -459,7 +497,7 @@ int __OE_DispatchOCall(
         /* ATTN: ignored! */
         (void)result;
 
-        *arg1Out = OE_MAKE_WORD(OE_CODE_ORET, func);
+        *arg1Out = OE_MakeCallArg1(OE_CODE_ORET, func, 0);
         *arg2Out = argOut;
 
         return 0;
@@ -493,9 +531,9 @@ static void* _AssignTCS(
 {
     void* tcs = NULL;
     size_t i;
-    OE_Thread thread = OE_ThreadSelf();
+    OE_H_Thread thread = OE_H_ThreadSelf();
 
-    OE_SpinLock(&enclave->lock);
+    OE_H_MutexLock(&enclave->lock);
     {
         /* First attempt to find a busy TD owned by this thread */
         for (i = 0; i < enclave->num_bindings; i++)
@@ -532,7 +570,7 @@ static void* _AssignTCS(
             }
         }
     }
-    OE_SpinUnlock(&enclave->lock);
+    OE_H_MutexUnlock(&enclave->lock);
 
     return tcs;
 }
@@ -542,7 +580,7 @@ static void* _AssignTCS(
 **
 ** _ReleaseTCS()
 **
-**     Decrement the ThreadBinding.count field of the binding assocated with 
+**     Decrement the ThreadBinding.count field of the binding assocated with
 **     the given TCS. If the field becomes zero, the binding is dissolved.
 **
 **==============================================================================
@@ -554,7 +592,7 @@ static void _ReleaseTCS(
 {
     size_t i;
 
-    OE_SpinLock(&enclave->lock);
+    OE_H_MutexLock(&enclave->lock);
     {
         for (i = 0; i < enclave->num_bindings; i++)
         {
@@ -568,7 +606,7 @@ static void _ReleaseTCS(
                 {
                     binding->busy = false;
                     binding->thread = 0;
-                    binding->event = 0;
+                    memset(&binding->event, 0, sizeof(binding->event));
                     _SetThreadBinding(NULL);
                     assert(GetThreadBinding() == NULL);
                 }
@@ -576,7 +614,7 @@ static void _ReleaseTCS(
             }
         }
     }
-    OE_SpinUnlock(&enclave->lock);
+    OE_H_MutexUnlock(&enclave->lock);
 }
 
 /*
@@ -584,12 +622,15 @@ static void _ReleaseTCS(
 **
 ** OE_ECall()
 **
-**     This function initiates and ECALL.
+**     This function initiates an ECALL.
 **
 **==============================================================================
 */
 
-__attribute__((cdecl))
+#if defined(_WIN32)
+# define TRACE_ECALLS
+#endif
+
 OE_Result OE_ECall(
     OE_Enclave* enclave,
     uint32_t func,
@@ -603,11 +644,12 @@ OE_Result OE_ECall(
     uint32_t funcOut = 0;
     uint64_t argOut = 0;
 
+#if defined(TRACE_ECALLS)
+    printf("=== OE_ECall()\n");
+#endif
+
     if (!enclave)
         OE_THROW(OE_INVALID_PARAMETER);
-
-    /* Set into thread local storage so it can be retrieved during an OCALL */
-    SetEnclave(enclave);
 
     /* Assign a TD for this operation */
     if (!(tcs = _AssignTCS(enclave)))
@@ -616,13 +658,13 @@ OE_Result OE_ECall(
     /* Perform ECALL or ORET */
     OE_TRY(_DoEENTER(
         enclave,
-        tcs, 
-        OE_AEP, 
+        tcs,
+        OE_AEP,
         code,
-        func, 
-        arg, 
+        func,
+        arg,
         &codeOut,
-        &funcOut, 
+        &funcOut,
         &argOut));
 
     /* Process OCALLS */
@@ -639,9 +681,13 @@ OE_CATCH:
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
 
-    // ATTN: this causes an assertion with call nesting.
-    // ATTN: make enclave argument a cookie.
-    // SetEnclave(NULL);
+    /* ATTN: this causes an assertion with call nesting. */
+    /* ATTN: make enclave argument a cookie. */
+    /* SetEnclave(NULL); */
+
+#if defined(TRACE_ECALLS)
+    printf("=== OE_ECall(): result=%u\n", result);
+#endif
 
     return result;
 }
@@ -726,9 +772,9 @@ OE_Result OE_CallEnclave(
         uint64_t argOut = 0;
 
         OE_TRY(OE_ECall(
-            enclave, 
-            OE_FUNC_CALL_ENCLAVE, 
-            (uint64_t)&callEnclaveArgs, 
+            enclave,
+            OE_FUNC_CALL_ENCLAVE,
+            (uint64_t)&callEnclaveArgs,
             &argOut));
     }
 
@@ -741,33 +787,36 @@ OE_CATCH:
     return result;
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
+#if defined(__linux__)
+# pragma GCC push_options
+# pragma GCC optimize ("O0")
+#endif
 
 /*
 ** These two functions are needed to notify the debugger. They should not be 
 ** optimized out even they don't do anything in here.
 */
 
-__attribute__((noinline))
-void _OE_NotifyOCallStart(
+OE_NEVER_INLINE void _OE_NotifyOCallStart(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)
 {
-    UNREFERENCED_PARAMETER(frame_pointer);
-    UNREFERENCED_PARAMETER(tcs);
+    OE_UNUSED(frame_pointer);
+    OE_UNUSED(tcs);
 
     return;
 }
 
-__attribute__((noinline))
-void _OE_NotifyOCallEnd(
+OE_NEVER_INLINE void _OE_NotifyOCallEnd(
     _OE_HostOCallFrame* frame_pointer,
     void* tcs)
 {
-    UNREFERENCED_PARAMETER(frame_pointer);
-    UNREFERENCED_PARAMETER(tcs);
+    OE_UNUSED(frame_pointer);
+    OE_UNUSED(tcs);
 
     return;
 }
-#pragma GCC pop_options
+
+#if defined(__linux__)
+# pragma GCC pop_options
+#endif

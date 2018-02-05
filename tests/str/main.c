@@ -144,8 +144,13 @@ void TestStr(str_t* s)
         size_t n = 1;
         int r;
 
+#if defined(_WIN32)
+        if (fopen_s(&is, "test1.txt", "r") != 0)
+            assert(0);
+#elif defined(__linux__)
         is = fopen("test1.txt", "r");
         assert(is);
+#endif
 
         while ((r = str_fgets(&str, is)) == 0)
         {
