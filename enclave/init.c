@@ -203,12 +203,9 @@ static void _InitializeEnclaveImage()
 
 static OE_OnceType _enclave_initialize_once;
 
-void _OE_InitializeException();
-
 static void _InitializeEnclaveImp(void)
 {
     _InitializeEnclaveImage();
-    _OE_InitializeException();
 }
 
 /*

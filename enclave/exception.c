@@ -15,7 +15,7 @@
 #define MAX_EXCEPTION_HANDLER_COUNT 64
 
 // The spin lock to synchronize the exception handler access.
-static OE_Spinlock g_exception_lock;
+static OE_Spinlock g_exception_lock = OE_SPINLOCK_INITIALIZER;
 
 // Current registered exception handler count.
 uint32_t g_current_exception_handler_count = 0;
@@ -300,16 +300,4 @@ void _OE_VirtualExceptionDispatcher(
     // the exception.
     *argOut = OE_EXCEPTION_CONTINUE_EXECUTION;
     return;
-}
-
-void _OE_InitializeException()
-{
-    // Initialize the global lock that will be used to synchronize the operation on exception data structure.
-    if (OE_SpinInit(&g_exception_lock) != 0)
-    {
-        OE_Abort();
-        return;
-    }
-
-    OE_Memset(&g_exception_handler_arr, 0, sizeof(g_exception_handler_arr));
 }
