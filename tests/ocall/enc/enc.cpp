@@ -78,7 +78,7 @@ OE_ECALL void TestMyOCall(void* args_)
 
     if (args)
     {
-        OE_Result result = OE_OCall(0, 1000, &args->result);
+        OE_Result result = OE_OCall(0, 1000, &args->result, 0);
         OE_Assert(result == OE_OK);
     }
 }

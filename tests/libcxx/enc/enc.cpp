@@ -13,7 +13,7 @@ extern "C" int main(int argc, const char* argv[]);
 
 extern "C" void _exit(int status)
 {
-    OE_OCall(OCALL_EXIT, status, NULL);
+    OE_OCall(OCALL_EXIT, status, NULL, 0);
     abort();
 }
 

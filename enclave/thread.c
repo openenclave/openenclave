@@ -16,7 +16,7 @@ static int _ThreadWait(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (OE_OCall(OE_FUNC_THREAD_WAIT, (uint64_t)tcs, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_THREAD_WAIT, (uint64_t)tcs, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         return -1;
 
     return 0;
@@ -26,7 +26,7 @@ static int _ThreadWake(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (OE_OCall(OE_FUNC_THREAD_WAKE, (uint64_t)tcs, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_THREAD_WAKE, (uint64_t)tcs, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         return -1;
 
     return 0;
@@ -43,7 +43,7 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
     args->waiter_tcs = TD_ToTCS((TD*)waiter);
     args->self_tcs = TD_ToTCS((TD*)self);
 
-    if (OE_OCall(OE_FUNC_THREAD_WAKE_WAIT, (uint64_t)args, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_THREAD_WAKE_WAIT, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         goto done;
 
     ret = 0;
@@ -407,7 +407,7 @@ int OE_CondWait(
                     _ThreadWakeWait(waiter, self);
                     waiter = NULL;
                 }
-                else 
+                else
                 {
                     _ThreadWait(self);
                 }
@@ -494,7 +494,7 @@ static void** _GetTSDPage(void)
 }
 
 int OE_ThreadKeyCreate(
-    OE_ThreadKey* key, 
+    OE_ThreadKey* key,
     void (*destructor)(void* value))
 {
     int rc = -1;
@@ -555,7 +555,7 @@ int OE_ThreadKeyDelete(
 }
 
 int OE_ThreadSetSpecific(
-    OE_ThreadKey key, 
+    OE_ThreadKey key,
     const void* value)
 {
     void** tsd_page;

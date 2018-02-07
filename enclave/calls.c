@@ -27,7 +27,7 @@ typedef unsigned long long WORD;
 **                is not accessible to the enclave itself. The enclave stores
 **                state about the execution of a thread in this structure,
 **                such as the entry point (TCS.oentry), which refers to the
-**                OE_Main function. It also maintains the index of the 
+**                OE_Main function. It also maintains the index of the
 **                current SSA (TCS.cssa) and the number of SSA's (TCS.nssa).
 **
 **     TD       - Thread data. Per thread data as defined by the OE_ThreadData
@@ -55,16 +55,16 @@ typedef unsigned long long WORD;
 **                parameter to EENTER).
 **
 **     SSA      - State Save Area. When a fault occurs in the enclave, the
-**                hardware saves the state here (general purpose registers) 
+**                hardware saves the state here (general purpose registers)
 **                and then transfers control to the host AEP. If the AEP
 **                executes the ERESUME instruction, the hardware restores the
 **                state from the SSA.
 **
 **     EENTER   - An untrusted instruction that is executed by the host to
 **                enter the enclave. The caller passes the address of a TCS page
-**                within the enclave, an AEP, and any parameters in the RDI and 
-**                RSI registers. This implementation passes the operation 
-**                number (FUNC) in RDI and a pointer to the arguments structure 
+**                within the enclave, an AEP, and any parameters in the RDI and
+**                RSI registers. This implementation passes the operation
+**                number (FUNC) in RDI and a pointer to the arguments structure
 **                (ARGS) in RSI.
 **
 **     EEXIT    - An instruction that is executed by the host to exit the
@@ -80,7 +80,7 @@ typedef unsigned long long WORD;
 **
 **     CSSA     - The current SSA slot index (as given by TCS.cssa). EENTER
 **                passes a CSSA parameter (RAX) to OE_Main(). A CSSA of zero
-**                indicates a normal entry. A non-zero CSSA indicates an 
+**                indicates a normal entry. A non-zero CSSA indicates an
 **                exception entry (an AEX has occurred).
 **
 **     NSSA     - The number of SSA slots in the thread section (of this
@@ -91,7 +91,7 @@ typedef unsigned long long WORD;
 **                the enclave. The host executes the EENTER instruction to
 **                enter the enclave.
 **
-**     ERET     - A return from an ECALL initiated by the enclave. The 
+**     ERET     - A return from an ECALL initiated by the enclave. The
 **                enclave executes the EEXIT instruction to exit the enclave.
 **
 **     OCALL    - A function call initiated by the enclave and carried out
@@ -114,7 +114,7 @@ typedef unsigned long long WORD;
 **==============================================================================
 */
 
-static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
+static void _HandleCallEnclave(uint64_t argIn)
 {
     OE_CallEnclaveArgs* args = (OE_CallEnclaveArgs*)argIn;
 
@@ -148,9 +148,6 @@ static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
 
     func(args->args);
     args->result = OE_OK;
-    
-    if (argOut)
-        *argOut = 0;
 }
 
 /*
@@ -165,7 +162,7 @@ static void _HandleCallEnclave(uint64_t argIn, uint64_t* argOut)
 
 static void _HandleExit(
     OE_Code code,
-    long func, 
+    long func,
     uint64_t arg)
 {
     OE_Exit(OE_MakeCallArg1(code, func, 0), arg);
@@ -229,10 +226,24 @@ static void _HandleECall(
     OE_Memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
 
-    /* Call all global initializer functions on the first call */
+    /*
+     * Call all global initializer functions on the first call. Clarify if
+     * global initializers can perform call-outs. If so, this call must happen
+     * after the callsite has been pushed (as it is now). If not, this could
+     * be consolidated with the init-code in __OE_HandleMain().
+     */
     {
         static OE_OnceType _once = OE_ONCE_INITIALIZER;
         OE_Once(&_once, OE_CallInitFunctions);
+    }
+
+    /* Are ecalls permitted? Always allow destructor call. */
+    if ((func != OE_FUNC_DESTRUCTOR) &&
+        (td->ocall_flags & OE_OCALL_FLAG_NOT_REENTRANT))
+    {
+        /* ecalls not permitted. */
+        argOut = OE_UNEXPECTED;
+        goto Exit;
     }
 
     /* Dispatch the ECALL */
@@ -240,7 +251,7 @@ static void _HandleECall(
     {
         case OE_FUNC_CALL_ENCLAVE:
         {
-            _HandleCallEnclave(argIn, &argOut);
+            _HandleCallEnclave(argIn);
             break;
         }
         case OE_FUNC_DESTRUCTOR:
@@ -268,6 +279,7 @@ static void _HandleECall(
         }
     }
 
+Exit:
     /* Remove ECALL context from front of TD.ecalls list */
     TD_PopCallsite(td);
 
@@ -314,11 +326,13 @@ static __inline__ void _HandleORET(
 OE_Result OE_OCall(
     uint32_t func,
     uint64_t argIn,
-    uint64_t* argOut)
+    uint64_t* argOut,
+    int ocall_flags)
 {
     OE_Result result = OE_UNEXPECTED;
     TD* td = TD_Get();
     Callsite* callsite = td->callsites;
+    int old_ocall_flags = td->ocall_flags;
 
     /* Check for unexpected failures */
     if (!callsite)
@@ -327,6 +341,8 @@ OE_Result OE_OCall(
     /* Check for unexpected failures */
     if (!TD_Initialized(td))
         OE_TRY(OE_FAILURE);
+
+    td->ocall_flags |= ocall_flags;
 
     /* Save call site where execution will resume after OCALL */
     if (OE_Setjmp(&callsite->jmpbuf) == 0)
@@ -344,6 +360,8 @@ OE_Result OE_OCall(
 
         /* ORET here */
     }
+
+    td->ocall_flags = old_ocall_flags;
 
     result = OE_OK;
 
@@ -384,7 +402,7 @@ OE_Result OE_CallHost(
     }
 
     /* Call into the host */
-    OE_TRY(OE_OCall(OE_FUNC_CALL_HOST, (long)args, NULL));
+    OE_TRY(OE_OCall(OE_FUNC_CALL_HOST, (long)args, NULL, 0));
 
     /* Check the result */
     OE_TRY(args->result);
@@ -401,8 +419,8 @@ OE_CATCH:
 **
 ** __OE_HandleMain()
 **
-**     This function is called by OE_Main(), which is called by the EENTER 
-**     instruction (executed by the host). The host passes the following 
+**     This function is called by OE_Main(), which is called by the EENTER
+**     instruction (executed by the host). The host passes the following
 **     parameters to EENTER:
 **
 **         RBX - TCS - address of a TCS page in the enclave
@@ -463,7 +481,7 @@ OE_CATCH:
 **     are exhausted (i.e., TCS.CSSA == TCS.NSSA)
 **
 **     This function ultimately calls EEXIT to exit the enclave. An enclave may
-**     exit to the host for two reasons (asside from an asynchronous exception 
+**     exit to the host for two reasons (asside from an asynchronous exception
 **     already mentioned):
 **
 **         (1) To return normally from an ECALL
@@ -479,7 +497,7 @@ OE_CATCH:
 **         (*) For non-nested calls, the stack pointer is calculated relative
 **             to the TCS (one page before minus the STATIC stack size).
 **
-**         (*) For nested calls the stack pointer is obtained from the 
+**         (*) For nested calls the stack pointer is obtained from the
 **             TD.last_sp field (saved by the previous call).
 **
 **==============================================================================
@@ -495,32 +513,33 @@ void __OE_HandleMain(
     uint32_t func = OE_GetFuncFromCallArg1(arg1);
     uint64_t argIn = arg2;
 
+    /* Initialize the enclave the first time it is ever entered */
+    {
+        static OE_OnceType _once = OE_ONCE_INITIALIZER;
+        OE_Once(&_once, OE_InitializeEnclave);
+    }
+
     /* Get pointer to the thread data structure */
     TD* td = TD_FromTCS(tcs);
-    
+
     /* Initialize thread data structure (if not already initialized) */
     if (!TD_Initialized(td))
         TD_Init(td);
 
-    /* Initialize the enclave the first time it is ever entered */
-    if (td->initialized == 0)
-        OE_InitializeEnclave(td);
-
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)
     {
-        if (code == OE_CODE_ECALL)
-        {
+        switch (code) {
+        case OE_CODE_ECALL:
             _HandleECall(td, func, argIn);
-            return;
-        }
-        else if (code == OE_CODE_ORET)
-        {
-            /* Eventually calls OE_Exit() and never returns here */
+            break;
+
+        case OE_CODE_ORET:
+            /* Eventually calls OE_Exit() and never returns here if successful */
             _HandleORET(td, func, argIn);
-        }
-        else
-        {
+            // fallthrough
+
+        default:
             /* Unexpected case */
             OE_Abort();
         }
@@ -538,6 +557,9 @@ void __OE_HandleMain(
 ** _OE_NotifyNestedExistStart()
 **
 **     Notify the nested exist happens.
+**
+** TODO: Write a comment on what this function does, and who consumes that
+**       information.
 **
 **==============================================================================
 */
@@ -557,3 +579,4 @@ void _OE_NotifyNestedExistStart(
 
     return;
 }
+

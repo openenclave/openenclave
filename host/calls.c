@@ -38,7 +38,7 @@ void OE_AEP(void);
 ** _SetThreadBinding()
 **
 **     Store the thread data in the GS segement register. Note that the GS
-**     register is unused on X86-64 on Linux, unlike the FS register that is 
+**     register is unused on X86-64 on Linux, unlike the FS register that is
 **     used by the pthread implementation.
 **
 **     The OE_AEP() function (aep.S) uses the GS segment register to retrieve
@@ -635,7 +635,7 @@ OE_Result OE_ECall(
     OE_Enclave* enclave,
     uint32_t func,
     uint64_t arg,
-    uint64_t* argOut_)
+    uint64_t* argOutPtr)
 {
     OE_Result result = OE_UNEXPECTED;
     void* tcs = NULL;
@@ -671,8 +671,8 @@ OE_Result OE_ECall(
     if (codeOut != OE_CODE_ERET)
         OE_THROW(OE_UNEXPECTED);
 
-    if (argOut)
-        *argOut_ = argOut;
+    if (argOutPtr)
+        *argOutPtr = argOut;
 
     result = OE_OK;
 
@@ -776,6 +776,7 @@ OE_Result OE_CallEnclave(
             OE_FUNC_CALL_ENCLAVE,
             (uint64_t)&callEnclaveArgs,
             &argOut));
+        OE_TRY(argOut);
     }
 
     /* Check the result */
@@ -793,7 +794,7 @@ OE_CATCH:
 #endif
 
 /*
-** These two functions are needed to notify the debugger. They should not be 
+** These two functions are needed to notify the debugger. They should not be
 ** optimized out even they don't do anything in here.
 */
 
