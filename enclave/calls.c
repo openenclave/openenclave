@@ -242,10 +242,10 @@ static void _HandleECall(
     TD_PushCallsite(td, &callsite);
 
     /*
-     * Call all global initializer functions on the first call. Clarify if
-     * global initializers can perform call-outs. If so, this call must happen
-     * after the callsite has been pushed (as it is now). If not, this could
-     * be consolidated with the init-code in __OE_HandleMain().
+     * Call all global initializer functions on the first call. To support
+     * OCalls from global initializers, this needs to be done after the
+     * callsite has been pushed, otherwise, they could have been invoked as
+     * part of consolidated init-code in __OE_HandleMain().
      */
     {
         static OE_OnceType _once = OE_ONCE_INITIALIZER;
@@ -342,7 +342,7 @@ OE_Result OE_OCall(
     uint32_t func,
     uint64_t argIn,
     uint64_t* argOut,
-    int ocall_flags)
+    uint32_t ocall_flags)
 {
     OE_Result result = OE_UNEXPECTED;
     TD* td = TD_Get();
@@ -573,7 +573,7 @@ void __OE_HandleMain(
 **
 **     Notify the nested exist happens.
 **
-** TODO: Write a comment on what this function does, and who consumes that
+** TODO: #92 - Write a comment on what this function does, and who consumes that
 **       information.
 **
 **==============================================================================

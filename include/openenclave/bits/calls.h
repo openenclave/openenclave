@@ -31,13 +31,16 @@ typedef void (*OE_OCallFunction)(
 /*
 **==============================================================================
 **
-** The flags parameter for OE_ECall() and OE_OCall()
+** The flags parameter for OE_OCall()
+**
+** Flags stack with the ones on the current thread (i.e., are or'd together)
+** for the duration of the ocall.
 **
 **==============================================================================
 */
 
 /* Disallow OCALLs to call back into enclave with an ECALL */
-#define OE_OCALL_FLAG_NOT_REENTRANT     (1 << 0)
+#define OE_OCALL_FLAG_NOT_REENTRANT     (1u << 0)
 
 /*
 **==============================================================================
@@ -421,8 +424,10 @@ OE_Result OE_ECall(
  * error reporting scheme based on its parameters.
  *
  * @param func The number of the function to be called.
- * @param argsIn The input argument passed to the function.
- * @param argsIn The output argument passed back from the function.
+ * @param argIn The input argument passed to the function.
+ * @param argOut The output argument passed back from the function.
+ * @param ocall_flags Additional flags for the duration of this ocall, such as
+ *              OE_OCALL_FLAG_NOT_REENTRANT.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -435,7 +440,7 @@ OE_Result OE_OCall(
     uint32_t func,
     uint64_t argIn,
     uint64_t* argOut,
-    int ocall_flags);
+    uint32_t ocall_flags);
 /**
  * Registers a low-level ECALL function.
  *

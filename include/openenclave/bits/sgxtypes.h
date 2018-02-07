@@ -541,7 +541,7 @@ typedef struct _TD
     int linux_errno;
 
     /* Currently active ocall flags */
-    int ocall_flags;
+    uint32_t ocall_flags;
 
     /* Reserved */
     uint8_t reserved[3784];
