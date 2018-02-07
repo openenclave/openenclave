@@ -114,40 +114,55 @@ typedef unsigned long long WORD;
 **==============================================================================
 */
 
-static void _HandleCallEnclave(uint64_t argIn)
+static OE_Result _HandleCallEnclave(uint64_t argIn)
 {
-    OE_CallEnclaveArgs* args = (OE_CallEnclaveArgs*)argIn;
+    OE_CallEnclaveArgs args, *argsPtr;
+    OE_Result result = OE_OK;
 
-    if (!args->vaddr)
-    {
-        args->result = OE_INVALID_PARAMETER;
-        return;
-    }
-
-    /* Get ECALL pages */
+    /* Get ECALL pages and check that ECALL pages are valid */
     const OE_ECallPages* pages = (const OE_ECallPages*)__OE_GetECallBase();
-
-    /* Check that ECALL pages are valid */
     if (pages->magic != OE_ECALL_PAGES_MAGIC)
         OE_Abort();
 
+    if (!OE_IsOutsideEnclave((void*)argIn, sizeof(OE_CallEnclaveArgs)))
+    {
+        OE_TRY(OE_INVALID_PARAMETER);
+    }
+    argsPtr = (OE_CallEnclaveArgs*)argIn;
+    args = *argsPtr;
+
+    if (!args.vaddr)
+    {
+        argsPtr->result = OE_INVALID_PARAMETER;
+        goto OE_CATCH;
+    }
+
     /* Check whether function is out of bounds */
-    if (args->func >= pages->num_vaddrs)
-        OE_Abort();
+    if (args.func >= pages->num_vaddrs)
+    {
+        argsPtr->result = OE_INVALID_PARAMETER;
+        goto OE_CATCH;
+    }
 
     /* Convert function number to virtual address */
-    uint64_t vaddr = pages->vaddrs[args->func];
+    uint64_t vaddr = pages->vaddrs[args.func];
 
     /* Check virtual address against expected value */
-    if (vaddr != args->vaddr)
-        OE_Abort();
+    if (vaddr != args.vaddr)
+    {
+        argsPtr->result = OE_INVALID_PARAMETER;
+        goto OE_CATCH;
+    }
 
     /* Translate function address from virtual to real address */
     OE_EnclaveFunc func = (OE_EnclaveFunc)(
         (uint64_t)__OE_GetEnclaveBase() + vaddr);
 
-    func(args->args);
-    args->result = OE_OK;
+    func(args.args);
+    argsPtr->result = OE_OK;
+
+OE_CATCH:
+    return result;
 }
 
 /*
@@ -251,7 +266,7 @@ static void _HandleECall(
     {
         case OE_FUNC_CALL_ENCLAVE:
         {
-            _HandleCallEnclave(argIn);
+            argOut = _HandleCallEnclave(argIn);
             break;
         }
         case OE_FUNC_DESTRUCTOR:
