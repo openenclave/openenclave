@@ -118,11 +118,7 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
 {
     OE_CallEnclaveArgs args, *argsPtr;
     OE_Result result = OE_OK;
-
-    /* Get ECALL pages and check that ECALL pages are valid */
-    const OE_ECallPages* pages = (const OE_ECallPages*)__OE_GetECallBase();
-    if (pages->magic != OE_ECALL_PAGES_MAGIC)
-        OE_Abort();
+    uint64_t vaddr;
 
     if (!OE_IsOutsideEnclave((void*)argIn, sizeof(OE_CallEnclaveArgs)))
     {
@@ -131,27 +127,11 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
     argsPtr = (OE_CallEnclaveArgs*)argIn;
     args = *argsPtr;
 
-    if (!args.vaddr)
+    if (!args.vaddr ||
+        (args.func >= OE_ECallPagesPtr->num_vaddrs) ||
+        ((vaddr = OE_ECallPagesPtr->vaddrs[args.func]) != args.vaddr))
     {
-        argsPtr->result = OE_INVALID_PARAMETER;
-        goto OE_CATCH;
-    }
-
-    /* Check whether function is out of bounds */
-    if (args.func >= pages->num_vaddrs)
-    {
-        argsPtr->result = OE_INVALID_PARAMETER;
-        goto OE_CATCH;
-    }
-
-    /* Convert function number to virtual address */
-    uint64_t vaddr = pages->vaddrs[args.func];
-
-    /* Check virtual address against expected value */
-    if (vaddr != args.vaddr)
-    {
-        argsPtr->result = OE_INVALID_PARAMETER;
-        goto OE_CATCH;
+        OE_TRY(OE_INVALID_PARAMETER);
     }
 
     /* Translate function address from virtual to real address */
@@ -347,7 +327,7 @@ OE_Result OE_OCall(
     OE_Result result = OE_UNEXPECTED;
     TD* td = TD_Get();
     Callsite* callsite = td->callsites;
-    int old_ocall_flags = td->ocall_flags;
+    uint32_t old_ocall_flags = td->ocall_flags;
 
     /* Check for unexpected failures */
     if (!callsite)

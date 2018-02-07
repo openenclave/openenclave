@@ -9,6 +9,8 @@
 #include "asmdefs.h"
 #include "td.h"
 
+const OE_ECallPages* OE_ECallPagesPtr;
+
 /*
 **==============================================================================
 **
@@ -210,5 +212,11 @@ void OE_InitializeEnclave(void)
 
     /* Check that memory boundaries are within enclave */
     _CheckMemoryBoundaries();
+
+    /* Get ECALL pages, check that ECALL pages are valid, and cache address. */
+    const OE_ECallPages* pages = (const OE_ECallPages*)__OE_GetECallBase();
+    if (pages->magic != OE_ECALL_PAGES_MAGIC)
+        OE_Abort();
+    OE_ECallPagesPtr = pages;
 }
 

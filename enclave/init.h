@@ -4,6 +4,8 @@
 #include <openenclave/enclave.h>
 #include "td.h"
 
+const OE_ECallPages* OE_ECallPagesPtr;
+
 void OE_InitializeEnclave(void);
 
 void OE_CallInitFunctions(void);
