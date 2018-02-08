@@ -114,11 +114,26 @@ typedef unsigned long long WORD;
 **==============================================================================
 */
 
+/* Get ECALL pages, check that ECALL pages are valid, and cache. */
+static const OE_ECallPages* _GetECallPages()
+{
+    static const OE_ECallPages* pages;
+
+    if (!pages)
+    {
+        pages = (const OE_ECallPages*)__OE_GetECallBase();
+        if (pages->magic != OE_ECALL_PAGES_MAGIC)
+            OE_Abort();
+    }
+    return pages;
+}
+
 static OE_Result _HandleCallEnclave(uint64_t argIn)
 {
     OE_CallEnclaveArgs args, *argsPtr;
     OE_Result result = OE_OK;
     uint64_t vaddr;
+    const OE_ECallPages* ecallPages = _GetECallPages();
 
     if (!OE_IsOutsideEnclave((void*)argIn, sizeof(OE_CallEnclaveArgs)))
     {
@@ -128,8 +143,8 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
     args = *argsPtr;
 
     if (!args.vaddr ||
-        (args.func >= OE_ECallPagesPtr->num_vaddrs) ||
-        ((vaddr = OE_ECallPagesPtr->vaddrs[args.func]) != args.vaddr))
+        (args.func >= ecallPages->num_vaddrs) ||
+        ((vaddr = ecallPages->vaddrs[args.func]) != args.vaddr))
     {
         OE_TRY(OE_INVALID_PARAMETER);
     }
@@ -232,9 +247,8 @@ static void _HandleECall(
         OE_Once(&_once, OE_CallInitFunctions);
     }
 
-    /* Are ecalls permitted? Always allow destructor call. */
-    if ((func != OE_FUNC_DESTRUCTOR) &&
-        (td->ocall_flags & OE_OCALL_FLAG_NOT_REENTRANT))
+    /* Are ecalls permitted? */
+    if (td->ocall_flags & OE_OCALL_FLAG_NOT_REENTRANT)
     {
         /* ecalls not permitted. */
         argOut = OE_UNEXPECTED;
