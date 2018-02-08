@@ -76,17 +76,17 @@ static void _CheckMemoryBoundaries(void)
 **
 ** OE_CallInitFunctions()
 **
-**     Call all global initialization functions. The compiler generates an 
-**     array of initialization functions which it places in one of the dynamic 
-**     program segments (where Elf64_Phdr.type == PT_DYNAMIC). This segment 
+**     Call all global initialization functions. The compiler generates an
+**     array of initialization functions which it places in one of the dynamic
+**     program segments (where Elf64_Phdr.type == PT_DYNAMIC). This segment
 **     contains two Elf64_Dyn structures whose tags are given as follows:
 **
 **         Elf64_Dyn.d_tag == DT_INIT_ARRAY
 **         Elf64_Dyn.d_tag == DT_INIT_ARRAYSZ
 **
 **     The first (INIT_ARRAY) is an array of function pointers to global
-**     initializers. The second (INIT_ARRAYSZ) is the size of that array in 
-**     bytes (not the number of functions). When the compiler encounters the 
+**     initializers. The second (INIT_ARRAYSZ) is the size of that array in
+**     bytes (not the number of functions). When the compiler encounters the
 **     following extern declarations in user object code
 **
 **         extern void (*__init_array_start)(void);
@@ -103,7 +103,7 @@ static void _CheckMemoryBoundaries(void)
 **         (1) C functions tagged with __attribute__(constructor)
 **         (2) C++ global constuctors
 **
-**     OE_CallInitFunctions() invokes all functions in this array from start 
+**     OE_CallInitFunctions() invokes all functions in this array from start
 **     to finish.
 **
 **     Here are some notes on initialization functions that relate to C++
@@ -115,7 +115,7 @@ static void _CheckMemoryBoundaries(void)
 **         (1) Invokes the constructor
 **         (2) Invokes __cxa_atexit() passing it the destructor
 **
-**     Note that the FINI_ARRAY (used by OE_CallFiniFunctions) does not 
+**     Note that the FINI_ARRAY (used by OE_CallFiniFunctions) does not
 **     contain any finalization functions for calling destructors. Instead
 **     the __cxa_atexit() implementation must save the destructor functions
 **     and invoke them on enclave termination.
@@ -140,17 +140,17 @@ void OE_CallInitFunctions(void)
 **
 ** OE_CallFiniFunctions()
 **
-**     Call all global finalization functions. The compiler generates an array 
-**     of finalization functions which it places in one of the dynamic program 
-**     segments (where Elf64_Phdr.type == PT_DYNAMIC). This segment contains 
+**     Call all global finalization functions. The compiler generates an array
+**     of finalization functions which it places in one of the dynamic program
+**     segments (where Elf64_Phdr.type == PT_DYNAMIC). This segment contains
 **     two Elf64_Dyn structures whose tags are given as follows:
 **
 **         Elf64_Dyn.d_tag == DT_FINI_ARRAY
 **         Elf64_Dyn.d_tag == DT_FINI_ARRAYSZ
 **
-**     The first (FINI_ARRAY) is an array of function pointers to the 
-**     finalizers. The second (FINI_ARRAYSZ) is the size of that array in 
-**     bytes (not the number of functions). When the compiler encounters the 
+**     The first (FINI_ARRAY) is an array of function pointers to the
+**     finalizers. The second (FINI_ARRAYSZ) is the size of that array in
+**     bytes (not the number of functions). When the compiler encounters the
 **     following extern declarations in user object code:
 **
 **         extern void (*__fini_array_start)(void);
@@ -170,10 +170,10 @@ void OE_CallInitFunctions(void)
 **     Destructors are passed to __cxa_atexit() by invoking functions in the
 **     INIT_ARRAY (see OE_CallInitFunctions() for more information).
 **
-**     OE_CallFiniFunctions() invokes all functions in this array from finish 
+**     OE_CallFiniFunctions() invokes all functions in this array from finish
 **     to start (reverse order).
 **
-**     For more information on C++ destruction invocation, see the  
+**     For more information on C++ destruction invocation, see the
 **     "Itanium C++ ABI".
 **
 **==============================================================================
@@ -198,30 +198,17 @@ void OE_CallFiniFunctions(void)
 **
 **     This function is called the first time the enclave is entered. It
 **     performs any necessary initialization, such as applying relocations.
+**     This function must be called exactly once.
 **
 **==============================================================================
 */
 
-void OE_InitializeEnclave(TD* td)
+void OE_InitializeEnclave(void)
 {
-    if (td->initialized == 0)
-    {
-        static OE_Spinlock _spin = OE_SPINLOCK_INITIALIZER;
+    /* Relocate symbols */
+    _ApplyRelocations();
 
-        /* Prevent more than one thread from entering here */
-        OE_SpinLock(&_spin);
-        {
-            if (td->initialized == 0)
-            {
-                /* Relocate symbols */
-                _ApplyRelocations();
-
-                /* Check that memory boundaries are within enclave */
-                _CheckMemoryBoundaries();
-
-                td->initialized = 1;
-            }
-        }
-        OE_SpinUnlock(&_spin);
-    }
+    /* Check that memory boundaries are within enclave */
+    _CheckMemoryBoundaries();
 }
+

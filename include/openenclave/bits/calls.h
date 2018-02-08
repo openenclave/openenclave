@@ -31,13 +31,16 @@ typedef void (*OE_OCallFunction)(
 /*
 **==============================================================================
 **
-** The flags parameter for OE_ECall() and OE_OCall()
+** The flags parameter for OE_OCall()
+**
+** Flags stack with the ones on the current thread (i.e., are or'd together)
+** for the duration of the ocall.
 **
 **==============================================================================
 */
 
-/* Allow OCALLs to call back into enclave with an ECALL */
-#define OE_CALL_ARG_REENTRANT_OCALL     (1 << 0)
+/* Disallow OCALLs to call back into enclave with an ECALL */
+#define OE_OCALL_FLAG_NOT_REENTRANT     (1u << 0)
 
 /*
 **==============================================================================
@@ -101,7 +104,7 @@ OE_Func;
 **
 **         code -- indicating whether ECALL, OCALL, ERET, or ORET
 **         func -- the number of the function beging called
-**         flags -- any bit flags 
+**         flags -- any bit flags
 **
 **==============================================================================
 */
@@ -228,8 +231,8 @@ OE_InitQuoteArgs;
 ** OE_StrftimeArgs
 **
 **     size_t strftime(
-**         char *str, 
-**         size_t max, 
+**         char *str,
+**         size_t max,
 **         const char *format,
 **         const struct tm *tm);
 **
@@ -349,25 +352,25 @@ OE_ReallocArgs;
 /**
  * Perform a low-level enclave function call (ECALL).
  *
- * This function performs a low-level enclave function call by invoking the 
- * function indicated by the **func** parameter. The enclave defines and 
+ * This function performs a low-level enclave function call by invoking the
+ * function indicated by the **func** parameter. The enclave defines and
  * registers a corresponding function with the following signature.
  *
- *     void (*)(uint64_t argIn, uint64_t* argOut); 
+ *     void (*)(uint64_t argIn, uint64_t* argOut);
  *
  * The meaning of the **argIn** arg **argOut** parameters is defined by the
  * implementer of the function and either may be null.
  *
- * OpenEnclave uses the low-level ECALL interface to implement internal calls, 
- * used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application 
+ * OpenEnclave uses the low-level ECALL interface to implement internal calls,
+ * used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application
  * developers are encouraged to use OE_CallEnclave() instead.
  *
- * At the software layer, this function sends an **ECALL** message to the 
+ * At the software layer, this function sends an **ECALL** message to the
  * enclave and waits for an **ERET** message. Note that the ECALL implementation
  * may call back into the host (an OCALL) before returning.
  *
  * At the hardware layer, this function executes the **ENCLU.EENTER**
- * instruction to enter the enclave. When the enclave returns from the ECALL, 
+ * instruction to enter the enclave. When the enclave returns from the ECALL,
  * it executes the **ENCLU.EEXIT** instruction exit the enclave and to resume
  * host execution.
  *
@@ -421,8 +424,10 @@ OE_Result OE_ECall(
  * error reporting scheme based on its parameters.
  *
  * @param func The number of the function to be called.
- * @param argsIn The input argument passed to the function.
- * @param argsIn The output argument passed back from the function.
+ * @param argIn The input argument passed to the function.
+ * @param argOut The output argument passed back from the function.
+ * @param ocall_flags Additional flags for the duration of this ocall, such as
+ *              OE_OCALL_FLAG_NOT_REENTRANT.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -434,8 +439,8 @@ OE_Result OE_ECall(
 OE_Result OE_OCall(
     uint32_t func,
     uint64_t argIn,
-    uint64_t* argOut);
-
+    uint64_t* argOut,
+    uint32_t ocall_flags);
 /**
  * Registers a low-level ECALL function.
  *
@@ -464,7 +469,7 @@ OE_Result OE_RegisterECall(
  * Registers a low-level OCALL function.
  *
  * TODO: Redesign this, this needs to be enclave-specific.
- * 
+ *
  * This function registers a low-level OCALL function that may be called
  * from the encalve by the **OE_OCall()** function. The registered function
  * has the following prototype.

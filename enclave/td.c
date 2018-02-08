@@ -9,7 +9,6 @@
 
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, magic) == TD_magic);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, depth) == TD_depth);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, initialized) == TD_initialized);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rcx) == TD_host_rcx);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rdx) == TD_host_rdx);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r8) == TD_host_r8);
@@ -35,7 +34,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(TD, simulate) == TD_simulate);
 **
 **     Returns a pointer to the thread data structure for the current thread.
 **     This structure resides in the GS segment. Offset zero of this segment
-**     contains the OE_ThreadData.self_addr field (a back pointer to the 
+**     contains the OE_ThreadData.self_addr field (a back pointer to the
 **     structure itself). This field is zero until the structure is initialized
 **     by __OE_HandleEnter (which happens immediately an EENTER).
 **
@@ -49,7 +48,7 @@ OE_ThreadData* OE_GetThreadData()
     asm volatile(
         "mov %%gs:0, %%rax\n\t"
         "mov %%rax, %0\n\t"
-        : 
+        :
         "=a"(td));
 
     return td;
@@ -193,7 +192,7 @@ bool TD_Initialized(TD* td)
 ** TD_Init()
 **
 **     Initialize the thread data structure (TD) if not already initialized.
-**     The TD resides in the GS segment and is located relative to the TCS. 
+**     The TD resides in the GS segment and is located relative to the TCS.
 **     Refer to the following layout.
 **
 **         +-------------------------+
@@ -243,6 +242,9 @@ void TD_Init(TD* td)
 
         /* List of callsites is initially empty */
         td->callsites = NULL;
+
+        /* by default, ECalls are not restricted. */
+        td->ocall_flags = 0;
     }
 }
 

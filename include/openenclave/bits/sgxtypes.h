@@ -512,9 +512,6 @@ typedef struct _TD
     /* Depth of ECALL stack (zero indicates that it is unwound) */
     uint64_t depth;
 
-    /* Non-zero once the enclave has been initialized */
-    uint64_t initialized;
-
     /* Host registers saved here on entry and restored on exit */
     uint64_t host_rcx; /* EENTER return address */
     uint64_t host_rdx;
@@ -543,8 +540,11 @@ typedef struct _TD
     /* Linux error number: from <errno.h> */
     int linux_errno;
 
+    /* Currently active ocall flags */
+    uint32_t ocall_flags;
+
     /* Reserved */
-    uint8_t reserved[3776];
+    uint8_t reserved[3784];
 }
 TD;
 
