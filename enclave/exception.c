@@ -142,6 +142,16 @@ typedef struct _SSA_Info
     uint64_t frame_byte_size;
 } SSA_Info;
 
+/*
+**==============================================================================
+**
+** _GetEnclaveThreadFirstSsaInfo()
+**
+**     Get the enclave thread first SSA information.
+**     Return 0 if success.
+**
+**==============================================================================
+*/
 static int _GetEnclaveThreadFirstSsaInfo(
     TD *td,
     SSA_Info *ssa_info)
@@ -258,7 +268,11 @@ void _OE_VirtualExceptionDispatcher(
     OE_Memset(&ssa_info, 0, sizeof(SSA_Info));
 
     // Verify if the first SSA has valid exception info.
-    _GetEnclaveThreadFirstSsaInfo(td, &ssa_info);
+    if (_GetEnclaveThreadFirstSsaInfo(td, &ssa_info) != 0)
+    {
+        *argOut = OE_EXCEPTION_CONTINUE_SEARCH;
+        return;
+    }
 
     SGX_SsaGpr* ssa_gpr = (SGX_SsaGpr*)(((byte*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
     if (!ssa_gpr->exitInfo.asFields.valid)

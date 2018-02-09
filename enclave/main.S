@@ -42,20 +42,19 @@ OE_Main:
     mov %rbp, %gs:TD_host_rbp
 
 .determine_entry_type:
+    // Check if this is exception dispatching request.
+    cmp $0, %rax
+    jne .exception_entry
 
     // Check whether this is a clean entry or a nested entry
     mov %gs:TD_depth, %r8 
     cmp $0, %r8 
     je .clean_entry
-
-    // Check if this is exception dispatching request.
-    cmp $0, %rax
-    je .nested_entry
+    jmp .nested_entry
 
 .exception_entry:
     // Get the first ssa address from tcs.
-    mov %rbx, %r10
-    add $OE_SSA_FROM_TCS_BYTE_OFFSET, %r10
+    lea OE_SSA_FROM_TCS_BYTE_OFFSET(%rbx), %r10
 
     // Get the offset of current SSA from the begining of the SSA.
     dec %rax
@@ -66,8 +65,7 @@ OE_Main:
 
     // Get the saved rsp. We can't depend on the TLS value to get the enclave rsp in exception entry since the value may 
     // not be set correctly.
-    add $SGX_SSA_RSP_OFFSET, %r10
-    mov (%r10), %rsp
+    mov SGX_SSA_RSP_OFFSET(%r10), %rsp
 
     // align stack.
     and $-16, %rsp
@@ -302,12 +300,6 @@ OE_ExceptionDispatcher:
 
 .foreverLoop:
     jmp .foreverLoop
-
-    mov %rbp, %rsp
-    pop %rdi
-    pop %rbp
-    pop %rsp
-    retq
 .cfi_endproc
 
 .size OE_ExceptionDispatcher, .-OE_ExceptionDispatcher
