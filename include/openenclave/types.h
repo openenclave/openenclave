@@ -155,8 +155,6 @@ typedef void (*OE_DeallocProc)(void* ptr);
 **==============================================================================
 */
 
-#define OE_PAGE_SIZE 4096
-
 typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
 {
     unsigned char data[OE_PAGE_SIZE];

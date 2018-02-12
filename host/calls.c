@@ -30,14 +30,12 @@
 #include <openenclave/bits/trace.h>
 #include "ocalls.h"
 
-void OE_AEP(void);
-
 /*
 **==============================================================================
 **
 ** _SetThreadBinding()
 **
-**     Store the thread data in the GS segement register. Note that the GS
+**     Store the thread data in the GS segment register. Note that the GS
 **     register is unused on X86-64 on Linux, unlike the FS register that is
 **     used by the pthread implementation.
 **

@@ -1,0 +1,2 @@
+add_executable(VectorExceptionHost host.c)
+target_link_libraries(VectorExceptionHost oehostapp)

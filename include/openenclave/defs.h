@@ -1,6 +1,8 @@
 #ifndef _OE_DEFS_H
 #define _OE_DEFS_H
 
+#include "bits/constants_x64.inc"
+
 #if !defined(_MSC_VER) && !defined(__GNUC__)
 # error "Unsupported platform"
 #endif

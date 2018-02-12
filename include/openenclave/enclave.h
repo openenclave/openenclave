@@ -12,6 +12,7 @@
 #include "result.h"
 #include "thread.h"
 #include "bits/sha.h"
+#include "bits/context.h"
 
 OE_EXTERNC_BEGIN
 
@@ -22,6 +23,56 @@ OE_EXTERNC_BEGIN
 #define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section (".ecall")))
 
 #define OE_REPORT_DATA_SIZE 64
+
+
+// Exception codes.
+#define OE_EXCEPTION_DIVIDE_BY_ZERO        0x0
+#define OE_EXCEPTION_BREAKPOINT            0x1
+#define OE_EXCEPTION_BOUND_OUT_OF_RANGE    0x2
+#define OE_EXCEPTION_ILLEGAL_INSTRUCTION   0x3
+#define OE_EXCEPTION_ACCESS_VIOLATION      0x4
+#define OE_EXCEPTION_PAGE_FAULT            0x5
+#define OE_EXCEPTION_X87_FLOAT_POINT       0x6
+#define OE_EXCEPTION_MISALIGNMENT          0x7
+#define OE_EXCEPTION_SIMD_FLOAT_POINT      0x8
+#define OE_EXCEPTION_UNKOWN                0xFFFFFFFF
+
+// Exception flags.
+#define OE_EXCEPTION_HARDWARE      0x1
+#define OE_EXCEPTION_SOFTWARE      0x2
+
+/**
+* Register a new vector exception handler.
+*
+* Call this function to add a new vector exception handler. If success, the registered
+* handler will be called when an exception happens inside enclave. 
+*
+* @param isFirstHandler The parameter indicates if the input handler should be 
+* the first exception handler to be called. If it is zero, the input handler will
+* be append to the end of exception handler chain, otherwise it will be added as 
+* the first one in the exception handler chain.
+* @param vectoredHandler The input vector exception handler that must be a function
+* inside enclave. The same handler can only be registered once, the 2nd registration will 
+* fail.
+*
+* @returns This function return a opaque handler of new registered handler on success, 
+* caller can use the return value to remove the handler later. Return NULL if fail.
+*
+*/
+void* OE_AddVectoredExceptionHandler(
+    uint64_t      isFirstHandler,
+    POE_VECTORED_EXCEPTION_HANDLER vectoredHandler);
+
+/**
+* Remove an existing exception handler.
+*
+* @param vectoredHandler The pointer to a registered exception handler that is a return 
+* value from a successful OE_AddVectoredExceptionHandler call.
+*
+* @returns This function returns ZERO if success.
+*/
+uint64_t OE_RemoveVectoredExceptionHandler(
+    void* vectoredHandler);
 
 /**
  * Perform a high-level enclave function call (OCALL).
@@ -130,7 +181,7 @@ OE_Result OE_GetReportForRemoteAttestation(
 /**
  * Print formatted characters to the host's console.
  *
- * This function writes formatted characters to the host console. Is is based
+ * This function writes formatted characters to the host console. It is based
  * on OE_Vsnprintf(), which has limited support for format types.
  *
  * @param fmt The limited printf style format.

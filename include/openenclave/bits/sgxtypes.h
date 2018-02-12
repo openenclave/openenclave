@@ -275,19 +275,6 @@ typedef struct SGX_SsaGpr
     uint64_t gSBase;
 } SGX_SsaGpr, *PSGX_SsaGpr;
 
-/*
-**==============================================================================
-**
-** OE SGX constants
-**
-**==============================================================================
-*/
-
-#define OE_TD_FROM_TCS_BYTE_OFFSET 4 * OE_PAGE_SIZE
-#define OE_SSA_FROM_TCS_BYTE_OFFSET OE_PAGE_SIZE
-#define OE_DEFAULT_SSA_FRAME_SIZE 1
-#define OE_SGX_GPR_BYTE_SIZE 184
-#define OE_SGX_TCS_HEADER_BYTE_SIZE 72
 
 /*
 **==============================================================================
@@ -482,9 +469,16 @@ struct _OE_ThreadData
     uint64_t __tls_array;
     uint64_t __exception_flag; /* number of exceptions being handled */
     uint64_t __cxx_thread_info[6];
+
+    // The exception code.
+    uint32_t exception_code;
+    // The exception flags.
+    uint32_t exception_flags;
+    // The rip when exception happened.
+    uint64_t exception_address;
 };
 
-OE_CHECK_SIZE(sizeof(OE_ThreadData),152);
+OE_CHECK_SIZE(sizeof(OE_ThreadData), 168);
 
 OE_ThreadData* OE_GetThreadData(void);
 
@@ -544,7 +538,7 @@ typedef struct _TD
     uint32_t ocall_flags;
 
     /* Reserved */
-    uint8_t reserved[3784];
+    uint8_t reserved[3768];
 }
 TD;
 

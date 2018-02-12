@@ -91,8 +91,12 @@ typedef enum _OE_Func
     OE_FUNC_GETTIMEOFDAY       = 0x0E000000,
     OE_FUNC_CLOCK_GETTIME      = 0x0F000000,
     OE_FUNC_NANOSLEEP          = 0x10000000,
+    OE_FUNC_VIRTUAL_EXCEPTION_HANDLER = 0x20000000,
 }
 OE_Func;
+
+#define OE_EXCEPTION_CONTINUE_SEARCH       0x0
+#define OE_EXCEPTION_CONTINUE_EXECUTION    0xFFFFFFFF
 
 /*
 **==============================================================================
@@ -103,7 +107,7 @@ OE_Func;
 **     parameter is a 64-bit integer that contains:
 **
 **         code -- indicating whether ECALL, OCALL, ERET, or ORET
-**         func -- the number of the function beging called
+**         func -- the number of the function being called
 **         flags -- any bit flags
 **
 **==============================================================================

@@ -121,4 +121,7 @@ struct _OE_Enclave
 /* Get the event for the given TCS */
 EnclaveEvent* GetEnclaveEvent(OE_Enclave* enclave, uint64_t tcs);
 
+/* Initialize the exception processing. */
+void _OE_InitializeHostException(void);
+
 #endif /* _OE_HOST_ENCLAVE_H */

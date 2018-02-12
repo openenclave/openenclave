@@ -110,15 +110,6 @@ _OE_Exit:
 .restore_host_registers:
 
     mov %gs:TD_host_rcx, %rcx
-    mov %gs:TD_host_rdx, %rdx
-    mov %gs:TD_host_r8,  %r8
-    mov %gs:TD_host_r9,  %r9
-    mov %gs:TD_host_r10, %r10
-    mov %gs:TD_host_r11, %r11
-    mov %gs:TD_host_r12, %r12
-    mov %gs:TD_host_r13, %r13
-    mov %gs:TD_host_r14, %r14
-    mov %gs:TD_host_r15, %r15
     mov %gs:TD_host_rsp, %rsp
     mov %gs:TD_host_rbp, %rbp
 

@@ -191,19 +191,8 @@ void OE_CallFiniFunctions(void)
     }
 }
 
-/*
-**==============================================================================
-**
-** OE_InitializeEnclave()
-**
-**     This function is called the first time the enclave is entered. It
-**     performs any necessary initialization, such as applying relocations.
-**     This function must be called exactly once.
-**
-**==============================================================================
-*/
 
-void OE_InitializeEnclave(void)
+static void _InitializeEnclaveImage()
 {
     /* Relocate symbols */
     _ApplyRelocations();
@@ -212,3 +201,25 @@ void OE_InitializeEnclave(void)
     _CheckMemoryBoundaries();
 }
 
+static OE_OnceType _enclave_initialize_once;
+
+static void _InitializeEnclaveImp(void)
+{
+    _InitializeEnclaveImage();
+}
+
+/*
+**==============================================================================
+**
+** OE_InitializeEnclave()
+**
+**     This function is called the first time the enclave is entered. It
+**     performs any necessary enclave initialization, such as applying 
+**     relocations, initializing exception etc.
+**
+**==============================================================================
+*/
+void OE_InitializeEnclave()
+{
+    OE_Once(&_enclave_initialize_once, _InitializeEnclaveImp);
+}

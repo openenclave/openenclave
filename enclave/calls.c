@@ -214,6 +214,8 @@ OE_CATCH:
     return result;
 }
 
+void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
+
 /*
 **==============================================================================
 **
@@ -227,7 +229,9 @@ OE_CATCH:
 static void _HandleECall(
     TD* td,
     uint32_t func,
-    uint64_t argIn)
+    uint64_t argIn,
+    uint64_t *outputArg1,
+    uint64_t *outputArg2)
 {
     /* Insert ECALL context onto front of TD.ecalls list */
     Callsite callsite;
@@ -272,6 +276,11 @@ static void _HandleECall(
             OE_CallFiniFunctions();
             break;
         }
+        case OE_FUNC_VIRTUAL_EXCEPTION_HANDLER:
+        {
+            _OE_VirtualExceptionDispatcher(td, argIn, &argOut);
+            break;
+        }
         default:
         {
             /* Dispatch user-registered ECALLs */
@@ -293,7 +302,9 @@ Exit:
     TD_PopCallsite(td);
 
     /* Perform ERET, giving control back to host */
-    _HandleExit(OE_CODE_ERET, func, argOut);
+    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+    *outputArg2 = argOut;
+    return;
 }
 
 /*
@@ -490,7 +501,7 @@ OE_CATCH:
 **     are exhausted (i.e., TCS.CSSA == TCS.NSSA)
 **
 **     This function ultimately calls EEXIT to exit the enclave. An enclave may
-**     exit to the host for two reasons (asside from an asynchronous exception
+**     exit to the host for two reasons (aside from an asynchronous exception 
 **     already mentioned):
 **
 **         (1) To return normally from an ECALL
@@ -516,17 +527,18 @@ void __OE_HandleMain(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t cssa,
-    void* tcs)
+    void* tcs,
+    uint64_t *outputArg1,
+    uint64_t *outputArg2)
 {
     OE_Code code = OE_GetCodeFromCallArg1(arg1);
     uint32_t func = OE_GetFuncFromCallArg1(arg1);
     uint64_t argIn = arg2;
+    *outputArg1 = 0;
+    *outputArg2 = 0;
 
     /* Initialize the enclave the first time it is ever entered */
-    {
-        static OE_OnceType _once = OE_ONCE_INITIALIZER;
-        OE_Once(&_once, OE_InitializeEnclave);
-    }
+    OE_InitializeEnclave();
 
     /* Get pointer to the thread data structure */
     TD* td = TD_FromTCS(tcs);
@@ -540,7 +552,7 @@ void __OE_HandleMain(
     {
         switch (code) {
         case OE_CODE_ECALL:
-            _HandleECall(td, func, argIn);
+            _HandleECall(td, func, argIn, outputArg1, outputArg2);
             break;
 
         case OE_CODE_ORET:
@@ -555,6 +567,12 @@ void __OE_HandleMain(
     }
     else /* cssa > 0 */
     {
+        if ((code == OE_CODE_ECALL) && (func == OE_FUNC_VIRTUAL_EXCEPTION_HANDLER))
+        {
+            _HandleECall(td, func, argIn, outputArg1, outputArg2);
+            return;
+        }
+
         /* ATTN: handle asynchronous exception (AEX) */
         OE_Abort();
     }

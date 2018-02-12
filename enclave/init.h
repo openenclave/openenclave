@@ -4,7 +4,7 @@
 #include <openenclave/enclave.h>
 #include "td.h"
 
-void OE_InitializeEnclave(void);
+void OE_InitializeEnclave();
 
 void OE_CallInitFunctions(void);
 
