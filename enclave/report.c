@@ -125,7 +125,7 @@ OE_Result OE_GetReportForRemoteAttestation(
             OE_THROW(OE_OUT_OF_MEMORY);
         }
 
-        OE_TRY(OE_OCall(OE_FUNC_INIT_QUOTE, (uint64_t)args, NULL));
+        OE_TRY(OE_OCall(OE_FUNC_INIT_QUOTE, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT));
         OE_Memcpy(&targetInfo, &args->targetInfo, sizeof(SGX_TargetInfo));
     }
 

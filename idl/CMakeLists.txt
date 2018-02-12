@@ -22,4 +22,4 @@ target_link_libraries(oeidl oelibc)
 set_property(TARGET oeidl PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
 # install lib-archive upon install-time
-install (TARGETS oeidl ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install (TARGETS oeidl EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

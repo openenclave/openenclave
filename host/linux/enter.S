@@ -1,0 +1,280 @@
+#include "../asmdefs.h"
+#include <openenclave/bits/context.inc>
+
+//==============================================================================
+//
+// void __morestack(
+//     [IN] void* tcs,                  /* RDI */
+//     [IN] void (*aep)(),              /* RSI */
+//     [IN] uint64_t arg1,              /* RDX */
+//     [IN] uint64_t arg2,              /* RCX */
+//     [OUT] uint64_t* arg3,            /* R8 */
+//     [OUT] uint64_t* arg4,            /* R9 */
+//     [IN] OE_Enclave* enclave);       /* on stack */
+//
+// Registers:
+//     RDI   - tcs: thread control structure
+//     RSI   - aep: asynchronous execution procedure
+//     RDX   - arg1
+//     RCX   - arg2
+//     R8    - arg3
+//     R9    - arg4
+//
+// N.B: Don't change the function name, otherwise debugger can't work. 
+// GDB depends on this hardcode function name when does stack walking for split 
+// stack.
+//
+// Note that OE_Enter is defined to __morestack
+//
+//==============================================================================
+
+#define TCS             (-1*OE_WORDSIZE)(%rbp)
+#define AEP             (-2*OE_WORDSIZE)(%rbp)
+#define ARG1            (-3*OE_WORDSIZE)(%rbp)
+#define ARG2            (-4*OE_WORDSIZE)(%rbp)
+#define ARG3            (-5*OE_WORDSIZE)(%rbp)
+#define ARG4            (-6*OE_WORDSIZE)(%rbp)
+#define ENCLAVE         (-7*OE_WORDSIZE)(%rbp)
+#define ARG1OUT         (-8*OE_WORDSIZE)(%rbp)
+#define ARG2OUT         (-9*OE_WORDSIZE)(%rbp)
+#define RSP             (-10*OE_WORDSIZE)(%rbp)
+#define HOST_CONTEXT    (-11*OE_WORDSIZE)(%rbp)
+#define PARAMS_SPACE    0x2d0
+
+.globl __morestack
+.type __morestack, @function
+__morestack:
+
+    // Setup stack frame:
+    push %rbp
+    mov %rsp, %rbp
+
+    // Save parameters on stack for later reference:
+    sub $PARAMS_SPACE, %rsp
+    mov %rdi, TCS
+    mov %rsi, AEP
+    mov %rdx, ARG1
+    mov %rcx, ARG2
+    mov %r8,  ARG3
+    mov %r9,  ARG4
+    mov 16(%rbp), %rax  // enclave parameter
+    mov %rax, ENCLAVE
+
+    // The host context will be saved in the host stack.
+    mov %rsp, HOST_CONTEXT
+
+.execute_eenter:
+
+    // Save the current context.
+    mov HOST_CONTEXT, %rdi
+    call OE_SnapCurrentContext
+
+    // Save the stack pointer so enclave can use the stack.
+    mov %rsp, RSP
+
+    // The EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2) contract:
+    // Input: 
+    //      RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2,
+    //      RBP=Current host stack rbp,
+    //      RSP=Current host stack rSP.
+    //      All other registers are NOT used/ignored.
+    // Output:
+    //      RDI=ARG1OUT, RSI=ARG2OUT, 
+    //      RBP is not changed, 
+    //      RSP might be decreased because of host stack memory allocation.
+    //      All other Registers are clobbered.
+    mov TCS, %rbx
+    mov AEP, %rcx
+    mov ARG1, %rdi
+    mov ARG2, %rsi
+    mov $ENCLU_EENTER, %rax
+    ENCLU
+
+    // Align the stack since enclave code change the host rsp for call out.
+    and $-16, %rsp 
+
+    mov %rdi, ARG1OUT
+    mov %rsi, ARG2OUT
+
+    // Restore the saved host context.
+    mov HOST_CONTEXT, %rdi
+    call OE_RestorePartialContext
+
+    // Check if it is an OCALL needed to be dispatched.
+    mov ARG1OUT, %r10
+    shr $48, %r10
+    cmpq $OE_OCALL_CODE, %r10
+    jne .return_from_ecall
+
+.dispatch_ocall:
+
+    // Save registers that could get clobbered below or by function call.
+    push %rdi
+    push %rsi
+    push %rdx
+    push %rcx
+    push %rbx
+    push %r8
+    push %r9
+    push %r12
+    push %r13
+
+    // RAX = __OE_HostStackBridge(
+    //     RDI=arg1
+    //     RSI=arg2
+    //     RDX=arg1Out
+    //     RCX=arg2Out
+    //     R8=TCS,
+    //     R9=RSP)
+    mov ARG1OUT, %rdi
+    mov ARG2OUT, %rsi
+    leaq ARG1OUT, %rdx
+    leaq ARG2OUT, %rcx
+    mov TCS, %r8
+    mov RSP, %r9
+    push ENCLAVE // push enclave parameter
+    call __OE_HostStackBridge
+    add $8, %rsp // pop enclave parameter
+
+    // Restore registers (except RDI and RSI)
+    pop %r13
+    pop %r12
+    pop %r9
+    pop %r8
+    pop %rbx
+    pop %rcx
+    pop %rdx
+    pop %rsi
+    pop %rdi
+
+    // Restore the stack pointer:
+    mov RSP, %rsp
+
+    // If this was not an OCALL, then return from ECALL.
+    cmp $0, %rax
+    jne .return_from_ecall
+
+    // Execute EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2)
+    mov ARG1OUT, %rax
+    mov %rax, ARG1
+    mov ARG2OUT, %rax
+    mov %rax, ARG2
+    jmp .execute_eenter
+
+.return_from_ecall:
+
+    // Set output parameters:
+    mov ARG1OUT, %rax
+    mov %rax, (%r8) /* arg3 */
+    mov ARG2OUT, %rax
+    mov %rax, (%r9) /* arg3 */
+
+    // Restore stack frame:
+    mov %rbp, %rsp
+    pop %rbp
+
+    ret
+
+.size __morestack, .-__morestack
+
+//==============================================================================
+// 
+// __OE_HostStackBridge(
+//     [IN] uint64_t arg1,      /* RDI */
+//     [IN] uint64_t arg2,      /* RSI */
+//     [OUT] uint64_t* arg3,    /* RDX */
+//     [OUT] uint64_t* arg4,    /* RCX */
+//     [IN] void* tcs,          /* R8 */
+//     [IN] void* rsp,          /* R9 */
+//     [IN] uint64_t enclave)    /* STACK */
+//
+// This function is wrapper of __OE_DispatchOCall. It is needed to stitch 
+// the host stack and enclave stack together.
+//
+//==============================================================================
+
+#define HB_SAVED_OCALL_RETURN   (0*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG1           (1*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG2           (2*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG3           (3*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ARG4           (4*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_TCS            (5*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_RSP            (6*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_ENCLAVE         (7*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_RETURN_ADDR    (8*OE_WORDSIZE)(%rsp)
+#define HB_SAVED_FRAME_POINTER  (9*OE_WORDSIZE)(%rsp)
+#define HB_STACK_LENGTH         (10*OE_WORDSIZE)
+
+.globl __OE_HostStackBridge
+.type __OE_HostStackBridge, @function
+.type _OE_NotifyOCallStart,@function
+.hidden _OE_NotifyOCallStart
+.type _OE_NotifyOCallEnd,@function
+.hidden _OE_NotifyOCallEnd
+__OE_HostStackBridge:
+.cfi_startproc
+    push %rbp
+.cfi_def_cfa_offset 16
+.cfi_offset rbp,-16
+    mov %rsp, %rbp
+.cfi_def_cfa_register   rbp
+    sub $HB_STACK_LENGTH, %rsp
+
+    // Save the current return address and frame point of __OE_HostStackBridge 
+    // into stack.
+    mov 0(%rbp), %rax
+    mov %rax, HB_SAVED_FRAME_POINTER
+    mov (1*OE_WORDSIZE)(%rbp), %rax
+    mov %rax, HB_SAVED_RETURN_ADDR
+
+    // Save the function parameters needed for __OE_DispatchOCall into stack.
+    mov %rdi, HB_SAVED_ARG1     // arg1
+    mov %rsi, HB_SAVED_ARG2     // arg2
+    mov %rdx, HB_SAVED_ARG3     // arg3
+    mov %rcx, HB_SAVED_ARG4     // arg4
+    mov %r8,  HB_SAVED_TCS      // tcs
+    mov %r9, HB_SAVED_RSP       // rsp
+    mov 16(%rbp), %rax          // enclave
+    mov %rax, HB_SAVED_ENCLAVE
+
+    // Notify that an ocall happens in current host thread.
+    // _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
+    mov %rbp, %rdi
+    mov %r8,  %rsi
+    call _OE_NotifyOCallStart
+
+    // Restore the parameters for __OE_DispatchOCall.
+    mov HB_SAVED_ARG1, %rdi
+    mov HB_SAVED_ARG2, %rsi
+    mov HB_SAVED_ARG3, %rdx
+    mov HB_SAVED_ARG4, %rcx
+    mov HB_SAVED_TCS, %r8
+    mov HB_SAVED_ENCLAVE, %r9
+
+    // Do actual OCALL.
+    call __OE_DispatchOCall
+    
+    // Save the return value of OCALL dispatch.
+    mov %rax, HB_SAVED_OCALL_RETURN
+
+    // Notify that an ocall is done in current host thread.
+    // _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
+    mov %rbp, %rdi
+    mov HB_SAVED_TCS, %rsi
+    call _OE_NotifyOCallEnd
+
+    // Because of stack stitching, the return address might be overwritten by 
+    // gdb. Restore the current return address and frame point of 
+    // __OE_HostStackBridge from stack.
+    mov HB_SAVED_FRAME_POINTER, %rax
+    mov %rax, (0*OE_WORDSIZE)(%rbp)
+    mov HB_SAVED_RETURN_ADDR, %rax
+    mov %rax, (1*OE_WORDSIZE)(%rbp)
+    
+    // Restore the return value of OCALL dispatch.
+    mov HB_SAVED_OCALL_RETURN, %rax
+
+    leave
+    ret
+
+.cfi_endproc

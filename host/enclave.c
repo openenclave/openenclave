@@ -5,46 +5,6 @@
 /*
 **==============================================================================
 **
-** SetEnclave()
-**
-**     Set enclave into thread-specific data.
-**
-**==============================================================================
-*/
-
-static OE_OnceType _enclave_once;
-static OE_ThreadKey _enclave_key;
-
-static void _CreateEnclaveKey(void)
-{
-    OE_ThreadKeyCreate(&_enclave_key, NULL);
-}
-
-void SetEnclave(OE_Enclave* enclave)
-{
-    OE_Once(&_enclave_once, _CreateEnclaveKey);
-    OE_ThreadSetSpecific(_enclave_key, enclave);
-}
-
-/*
-**==============================================================================
-**
-** GetEnclave()
-**
-**     Get enclave from thread-specific data.
-**
-**==============================================================================
-*/
-
-OE_Enclave* GetEnclave()
-{
-    OE_Once(&_enclave_once, _CreateEnclaveKey);
-    return (OE_Enclave*)OE_ThreadGetSpecific(_enclave_key);
-}
-
-/*
-**==============================================================================
-**
 ** GetText()
 **
 **     Print the address where to load enclave symbols in GDB (add-symbol-file)
@@ -52,6 +12,10 @@ OE_Enclave* GetEnclave()
 **==============================================================================
 */
 
+#if 0
+/* ATTN: should this be removed: disabled after debugger work. It is useful
+ * for debugging simulated mode.
+ */
 void enc(void);
 
 void enc(void)
@@ -60,17 +24,15 @@ void enc(void)
 
     if (enclave)
     {
-#if 0
         OE_SHA256Str hash;
         OE_SHA256ToStr(&enclave->hash, &hash);
         printf("Hash: %s\n", hash.buf);
-#endif
         printf("\n");
         printf("Path: %s\n", enclave->path);
-        printf("Addr: 0x%lx\n", enclave->addr);
-        printf("Size: %lu\n", enclave->size);
-        printf("TCSs: %lu\n", enclave->num_bindings);
-        printf("Syms: add-symbol-file %s 0x%lx\n", enclave->path, 
+        printf("Addr: 0x" OE_I64X_F "\n", enclave->addr);
+        printf("Size: " OE_I64U_F "\n", enclave->size);
+        printf("TCSs: %zu\n", enclave->num_bindings);
+        printf("Syms: add-symbol-file %s 0x" OE_I64X_F "\n", enclave->path,
             enclave->text);
         printf("\n");
     }
@@ -79,6 +41,7 @@ void enc(void)
         printf("No enclave is active\n");
     }
 }
+#endif
 
 /*
 **==============================================================================
@@ -90,15 +53,14 @@ void enc(void)
 **==============================================================================
 */
 
-uint32_t* GetEnclaveEvent(uint64_t tcs)
+EnclaveEvent* GetEnclaveEvent(OE_Enclave* enclave, uint64_t tcs)
 {
-    OE_Enclave* enclave = GetEnclave();
-    uint32_t* event = NULL;
+    EnclaveEvent* event = NULL;
 
     if (!enclave)
         return NULL;
 
-    OE_SpinLock(&enclave->lock);
+    OE_H_MutexLock(&enclave->lock);
     {
         size_t i;
 
@@ -113,7 +75,7 @@ uint32_t* GetEnclaveEvent(uint64_t tcs)
             }
         }
     }
-    OE_SpinUnlock(&enclave->lock);
+    OE_H_MutexUnlock(&enclave->lock);
 
     return event;
 }

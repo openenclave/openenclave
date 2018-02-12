@@ -1,8 +1,5 @@
 #define OE_TRACE_LEVEL 1
-#include <unistd.h>
-#include <errno.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <openenclave/host.h>
@@ -10,8 +7,7 @@
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/trace.h>
-
-extern void *memalign(size_t alignment, size_t size);
+#include "memalign.h"
 
 OE_Result __OE_LoadSegments(
     const char* path,
@@ -112,13 +108,13 @@ OE_Result __OE_LoadSegments(
 
         /* Set OE_Segment.flags */
         {
-            if (ph->p_flags & PF_R) 
+            if (ph->p_flags & PF_R)
                 seg.flags |= OE_SEGMENT_FLAG_READ;
 
-            if (ph->p_flags & PF_W) 
+            if (ph->p_flags & PF_W)
                 seg.flags |= OE_SEGMENT_FLAG_WRITE;
 
-            if (ph->p_flags & PF_X) 
+            if (ph->p_flags & PF_X)
                 seg.flags |= OE_SEGMENT_FLAG_EXEC;
         }
 
@@ -228,7 +224,7 @@ OE_Result __OE_CombineSegments(
 
     if (pages)
         *pages = NULL;
-        
+
     if (npages)
         *npages = 0;
 
@@ -260,7 +256,7 @@ OE_Result __OE_CombineSegments(
     OE_TRY(__OE_CalculateSegmentsSize(segments, nsegments, &size));
 
     /* Allocate data on a page boundary */
-    if (!(data = (unsigned char*)memalign(OE_PAGE_SIZE, size)))
+    if (!(data = (unsigned char*)OE_Memalign(OE_PAGE_SIZE, size)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Clear the image memory */
@@ -281,7 +277,7 @@ OE_Result __OE_CombineSegments(
 OE_CATCH:
 
     if (result != OE_OK)
-        free(data);
+        OE_MemalignFree(data);
 
     return result;
 }

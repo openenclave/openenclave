@@ -1,5 +1,5 @@
 /**
- * \file host.h 
+ * \file host.h
  *
  * This file defines the programming interface for developing host applications.
  *
@@ -16,16 +16,11 @@
 #include "defs.h"
 #include "types.h"
 #include "result.h"
-#include "thread.h"
 #include "bits/sha.h"
 
 OE_EXTERNC_BEGIN
 
-#ifdef __cplusplus
-# define OE_OCALL OE_EXTERNC OE_EXPORT
-#else
-# define OE_OCALL OE_EXPORT
-#endif
+#define OE_OCALL OE_EXTERNC OE_EXPORT
 
 typedef struct _OE_Enclave OE_Enclave;
 
@@ -36,7 +31,7 @@ typedef struct _OE_Enclave OE_Enclave;
  * Creates an enclave from an enclave image file.
  *
  * This function creates an enclave from an enclave image file. While creating
- * the enclave, this function interacts with the Intel(R) SGX drviver and the 
+ * the enclave, this function interacts with the Intel(R) SGX drviver and the
  * Intel(R) AESM service. Enclave creation peforms the following steps.
  *     - Loads an enclave image file
  *     - Maps the enclave memory image onto the driver device (/dev/isgx)
@@ -97,7 +92,7 @@ OE_Result OE_TerminateEnclave(
  * where the function number is given by the **OE_FUNC_CALL_ENCLAVE** constant.
  *
  * Note that the return value of this function only indicates the success of
- * the call and not of the underlying function. The ECALL implementation must 
+ * the call and not of the underlying function. The ECALL implementation must
  * define its own error reporting scheme based on **args**.
  *
  * @param func The name of the enclave function that will be called.

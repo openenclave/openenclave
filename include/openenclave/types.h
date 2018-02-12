@@ -22,26 +22,10 @@
 /*
 **==============================================================================
 **
-** OE_COUNTOF()
-** OE_OFFSETOF()
-**
-**==============================================================================
-*/
-
-#define OE_COUNTOF(ARR) (sizeof(ARR) / sizeof(ARR[0]))
-
-#define OE_OFFSETOF(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
-
-/*
-**==============================================================================
-**
 ** Printf format specifiers
 **
 **==============================================================================
 */
-
-#define OE_INT64_F "%ld"
-#define OE_UINT64_F "%lu"
 
 /*
 **==============================================================================
@@ -51,39 +35,63 @@
 **==============================================================================
 */
 
-#ifndef __cplusplus
-typedef int wchar_t;
-#endif
+#if defined(__GNUC__)
 
 typedef long ssize_t;
-
 typedef unsigned long size_t;
-
 typedef signed char int8_t;
-
 typedef unsigned char uint8_t;
-
-typedef unsigned char byte;
-
 typedef short int16_t;
-
 typedef unsigned short uint16_t;
-
 typedef int int32_t;
-
 typedef unsigned int uint32_t;
-
 typedef long int64_t;
-
 typedef unsigned long uint64_t;
-
 typedef unsigned long uintptr_t;
-
 typedef long ptrdiff_t;
 
-#ifdef __cplusplus
-# define true true
+#define OE_I64D_F "%ld"
+#define OE_I64U_F "%lu"
+#define OE_I64X_F "%lx"
+
+#elif defined(_MSC_VER)
+
+typedef long long ssize_t;
+typedef unsigned long long size_t;
+typedef signed char int8_t;
+typedef unsigned char uint8_t;
+typedef short int16_t;
+typedef unsigned short uint16_t;
+typedef int int32_t;
+typedef unsigned int uint32_t;
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
+typedef unsigned long long uintptr_t;
+typedef long long ptrdiff_t;
+
+#define OE_I64D_F "%I64d"
+#define OE_I64U_F "%I64u"
+#define OE_I64X_F "%I64x"
+
 #else
+# error "unknown compiler - please adapt basic types"
+#endif
+
+
+/* Some basic verifications */
+OE_STATIC_ASSERT(sizeof(void*) == 8);
+OE_STATIC_ASSERT(sizeof(ssize_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(size_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(int16_t) == 2);
+OE_STATIC_ASSERT(sizeof(uint16_t) == 2);
+OE_STATIC_ASSERT(sizeof(int32_t) == 4);
+OE_STATIC_ASSERT(sizeof(int32_t) == 4);
+OE_STATIC_ASSERT(sizeof(int64_t) == 8);
+OE_STATIC_ASSERT(sizeof(uint64_t) == 8);
+OE_STATIC_ASSERT(sizeof(uintptr_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
+
+#ifndef __cplusplus
 # define true 1
 # define false 0
 # define bool _Bool
@@ -130,22 +138,6 @@ OE_Type;
 /*
 **==============================================================================
 **
-** OE_HI_WORD()
-** OE_LO_WORD()
-** OE_MAKE_WORD()
-**
-**==============================================================================
-*/
-
-#define OE_HI_WORD(X) ((uint64_t)(X >> 32))
-
-#define OE_LO_WORD(X) ((uint64_t)X & 0x00000000FFFFFFFF)
-
-#define OE_MAKE_WORD(HI, LO) (((uint64_t)HI << 32) | (uint64_t)LO)
-
-/*
-**==============================================================================
-**
 ** Signature of allocation and deallocation functions.
 **
 **==============================================================================
@@ -163,12 +155,13 @@ typedef void (*OE_DeallocProc)(void* ptr);
 **==============================================================================
 */
 
-typedef struct _OE_Page
+typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
 {
     unsigned char data[OE_PAGE_SIZE];
 }
-OE_Page
-OE_ALIGNED(OE_PAGE_SIZE);
+OE_Page;
+
+OE_STATIC_ASSERT(__alignof(OE_Page) == OE_PAGE_SIZE);
 
 /*
 **==============================================================================

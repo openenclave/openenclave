@@ -8,6 +8,11 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_Jmpbuf
 {
+    /* These are the registers that are preserved across function calls
+     * according to the 'System V AMD64 ABI' calling conventions:
+     * RBX, RSP, RBP, R12, R13, R14, R15. In addition, OE_Setjmp() saves 
+     * the RIP register (intruction pointer) to know where to jump back to).
+     */
     uint64_t rsp;
     uint64_t rbp;
     uint64_t rip;

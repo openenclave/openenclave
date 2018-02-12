@@ -14,13 +14,17 @@
 
 #define CODE_ERET 0x200000000
 
+/* Use GS register if this flag is set */
+#ifdef __ASSEMBLER__
+#define OE_ARG_FLAG_GS 0x0001
+#endif
+
 /* Offsets into TD structure */
 #define TD_self_addr            0
 #define TD_last_sp              8
 #define TD_magic                168
 #define TD_depth                (TD_magic + 8)
-#define TD_initialized          (TD_depth + 8)
-#define TD_host_rcx             (TD_initialized + 8)
+#define TD_host_rcx             (TD_depth + 8)
 #define TD_host_rdx             (TD_host_rcx + 8)
 #define TD_host_r8              (TD_host_rdx + 8)
 #define TD_host_r9              (TD_host_r8 + 8)
@@ -62,4 +66,5 @@ void _OE_NotifyNestedExistStart(
     OE_OCallContext* ocallContext
 );
 #endif
+
 #endif /* _ASMDEFS_H */

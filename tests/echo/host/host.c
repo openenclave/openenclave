@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "../args.h"
+#include "../../../host/strings.h"
 
 OE_OCALL void Echo(void* args_)
 {
@@ -16,7 +17,7 @@ OE_OCALL void Echo(void* args_)
     assert(strcmp(args->str2, "OE_HostStackStrdup2") == 0);
     assert(strcmp(args->str3, "OE_HostStackStrdup3") == 0);
 
-    if (!(args->out = strdup(args->in)))
+    if (!(args->out = OE_Strdup(args->in)))
     {
         args->ret = -1;
         return;
@@ -44,8 +45,8 @@ int main(int argc, const char* argv[])
     EchoArgs args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
-    if (!(args.in = strdup("Hello World")))
-        OE_PutErr("strdup() failed");
+    if (!(args.in = OE_Strdup("Hello World")))
+        OE_PutErr("Strdup() failed");
 
     if ((result = OE_CallEnclave(enclave, "Echo", &args)) != OE_OK)
         OE_PutErr("OE_CallEnclave() failed: result=%u", result);

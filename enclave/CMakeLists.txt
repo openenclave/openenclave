@@ -44,4 +44,4 @@ set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 target_compile_definitions(oeenclave PRIVATE -DOE_BUILD_ENCLAVE)
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
-install (TARGETS oeenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install (TARGETS oeenclave EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

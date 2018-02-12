@@ -1,6 +1,5 @@
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +7,7 @@
 #include <openenclave/host.h>
 #include <openenclave/bits/files.h>
 #include <openenclave/bits/trace.h>
+#include "fopen.h"
 
 bool __OE_FileExists(
     const char* path)
@@ -50,7 +50,7 @@ OE_Result __OE_LoadFile(
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Open the file */
-    if (!(is = fopen(path, "rb")))
+    if (OE_Fopen(&is, path, "rb") != 0)
         OE_THROW(OE_NOT_FOUND);
 
     /* Read file into memory */

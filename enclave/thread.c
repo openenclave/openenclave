@@ -16,7 +16,7 @@ static int _ThreadWait(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (OE_OCall(OE_FUNC_THREAD_WAIT, (uint64_t)tcs, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_THREAD_WAIT, (uint64_t)tcs, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         return -1;
 
     return 0;
@@ -26,7 +26,7 @@ static int _ThreadWake(OE_ThreadData* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (OE_OCall(OE_FUNC_THREAD_WAKE, (uint64_t)tcs, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_THREAD_WAKE, (uint64_t)tcs, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         return -1;
 
     return 0;
@@ -43,7 +43,7 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
     args->waiter_tcs = TD_ToTCS((TD*)waiter);
     args->self_tcs = TD_ToTCS((TD*)self);
 
-    if (OE_OCall(OE_FUNC_THREAD_WAKE_WAIT, (uint64_t)args, NULL) != OE_OK)
+    if (OE_OCall(OE_FUNC_THREAD_WAKE_WAIT, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         goto done;
 
     ret = 0;
@@ -142,8 +142,31 @@ int OE_ThreadEqual(OE_Thread thread1, OE_Thread thread2)
 **==============================================================================
 */
 
-int OE_MutexInit(OE_Mutex* m)
+/* Internal mutex implementation */
+typedef struct _OE_MutexImpl
 {
+    /* Lock used to synchronize access to OE_ThreadData queue */
+    OE_Spinlock lock;
+
+    /* Number of references to support recursive locking */
+    unsigned int refs;
+
+    /* Queue of waiting threads (front holds the mutex) */
+    struct
+    {
+        OE_ThreadData* front;
+        OE_ThreadData* back;
+    }
+    queue;
+}
+OE_MutexImpl;
+
+OE_STATIC_ASSERT(sizeof(OE_MutexImpl) <= sizeof(OE_Mutex));
+
+int OE_MutexInit(OE_Mutex* mutex)
+{
+    OE_MutexImpl* m = (OE_MutexImpl*)mutex;
+
     if (m)
     {
         OE_Memset(m, 0, sizeof(OE_Mutex));
@@ -153,8 +176,9 @@ int OE_MutexInit(OE_Mutex* m)
     return 0;
 }
 
-int OE_MutexLock(OE_Mutex* m)
+int OE_MutexLock(OE_Mutex* mutex)
 {
+    OE_MutexImpl* m = (OE_MutexImpl*)mutex;
     OE_ThreadData* self = OE_GetThreadData();
 
     if (!m)
@@ -188,8 +212,9 @@ int OE_MutexLock(OE_Mutex* m)
     /* Unreachable! */
 }
 
-int OE_MutexTryLock(OE_Mutex* m)
+int OE_MutexTryLock(OE_Mutex* mutex)
 {
+    OE_MutexImpl* m = (OE_MutexImpl*)mutex;
     OE_ThreadData* self = OE_GetThreadData();
 
     if (!m)
@@ -220,8 +245,9 @@ int OE_MutexTryLock(OE_Mutex* m)
     return -1;
 }
 
-static int _MutexUnlock(OE_Mutex* m, OE_ThreadData** waiter)
+static int _MutexUnlock(OE_Mutex* mutex, OE_ThreadData** waiter)
 {
+    OE_MutexImpl* m = (OE_MutexImpl*)mutex;
     OE_ThreadData* self = OE_GetThreadData();
     int ret = -1;
 
@@ -268,8 +294,9 @@ int OE_MutexUnlock(OE_Mutex* m)
 }
 
 int OE_MutexDestroy(
-    OE_Mutex* m)
+    OE_Mutex* mutex)
 {
+    OE_MutexImpl* m = (OE_MutexImpl*)mutex;
     int ret = -1;
 
     if (!m)
@@ -297,8 +324,28 @@ done:
 **==============================================================================
 */
 
-int OE_CondInit(OE_Cond* cond)
+/* Internal condition variable implementation */
+typedef struct _OE_CondImpl
 {
+    /* Spinlock for synchronizing access to thread queue and mutex parameter */
+    OE_Spinlock lock;
+
+    /* Queue of threads waiting on this condition variable */
+    struct
+    {
+        OE_ThreadData* front;
+        OE_ThreadData* back;
+    }
+    queue;
+}
+OE_CondImpl;
+
+OE_STATIC_ASSERT(sizeof(OE_CondImpl) <= sizeof(OE_Cond));
+
+int OE_CondInit(OE_Cond* condition)
+{
+    OE_CondImpl* cond = (OE_CondImpl*)condition;
+
     if (cond)
     {
         OE_Memset(cond, 0, sizeof(OE_Cond));
@@ -309,8 +356,10 @@ int OE_CondInit(OE_Cond* cond)
 }
 
 int OE_CondDestroy(
-    OE_Cond* cond)
+    OE_Cond* condition)
 {
+    OE_CondImpl* cond = (OE_CondImpl*)condition;
+
     if (!cond)
         return -1;
 
@@ -329,9 +378,10 @@ int OE_CondDestroy(
 }
 
 int OE_CondWait(
-    OE_Cond* cond, 
+    OE_Cond* condition,
     OE_Mutex* mutex)
 {
+    OE_CondImpl* cond = (OE_CondImpl*)condition;
     OE_ThreadData* self = OE_GetThreadData();
 
     OE_SpinLock(&cond->lock);
@@ -357,7 +407,7 @@ int OE_CondWait(
                     _ThreadWakeWait(waiter, self);
                     waiter = NULL;
                 }
-                else 
+                else
                 {
                     _ThreadWait(self);
                 }
@@ -376,8 +426,9 @@ int OE_CondWait(
 }
 
 int OE_CondSignal(
-    OE_Cond* cond)
+    OE_Cond* condition)
 {
+    OE_CondImpl* cond = (OE_CondImpl*)condition;
     OE_ThreadData* waiter;
 
     OE_SpinLock(&cond->lock);
@@ -392,8 +443,9 @@ int OE_CondSignal(
 }
 
 int OE_CondBroadcast(
-    OE_Cond* cond)
+    OE_Cond* condition)
 {
+    OE_CondImpl* cond = (OE_CondImpl*)condition;
     Queue waiters = { NULL, NULL };
 
     OE_SpinLock(&cond->lock);
@@ -442,7 +494,7 @@ static void** _GetTSDPage(void)
 }
 
 int OE_ThreadKeyCreate(
-    OE_ThreadKey* key, 
+    OE_ThreadKey* key,
     void (*destructor)(void* value))
 {
     int rc = -1;
@@ -503,7 +555,7 @@ int OE_ThreadKeyDelete(
 }
 
 int OE_ThreadSetSpecific(
-    OE_ThreadKey key, 
+    OE_ThreadKey key,
     const void* value)
 {
     void** tsd_page;
