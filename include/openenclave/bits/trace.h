@@ -2,6 +2,7 @@
 #define _OE_TRACE_H
 
 #include <openenclave/defs.h>
+#include <openenclave/result.h>
 
 #ifdef OE_BUILD_ENCLAVE
 # include <openenclave/enclave.h>

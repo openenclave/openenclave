@@ -1,6 +1,8 @@
 #ifndef _OE_ENCLAVE_CONTEXT_H_
 #define _OE_ENCLAVE_CONTEXT_H_
 #include <openenclave/bits/sgxtypes.h>
+#include <pthread.h>
+#include <sys/user.h>
 
 int OE_ReadProcessMemory(
     pid_t proc, 
