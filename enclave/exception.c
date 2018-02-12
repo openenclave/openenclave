@@ -164,7 +164,7 @@ static int _GetEnclaveThreadFirstSsaInfo(
     }
 
     // Get first SSA base address and size.
-    ssa_info->base_address = (void*)((byte*)tcs + OE_SSA_FROM_TCS_BYTE_OFFSET);
+    ssa_info->base_address = (void*)((uint8_t*)tcs + OE_SSA_FROM_TCS_BYTE_OFFSET);
     ssa_info->frame_byte_size = ssa_frame_size * OE_PAGE_SIZE;
     return 0;
 }
@@ -274,7 +274,7 @@ void _OE_VirtualExceptionDispatcher(
         return;
     }
 
-    SGX_SsaGpr* ssa_gpr = (SGX_SsaGpr*)(((byte*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+    SGX_SsaGpr* ssa_gpr = (SGX_SsaGpr*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
     if (!ssa_gpr->exitInfo.asFields.valid)
     {
         // Not a valid/expected enclave exception;

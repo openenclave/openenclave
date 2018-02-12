@@ -302,7 +302,7 @@ Exit:
     TD_PopCallsite(td);
 
     /* Perform ERET, giving control back to host */
-    *outputArg1 = OE_MAKE_WORD(OE_CODE_ERET, func);
+    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
     *outputArg2 = argOut;
     return;
 }

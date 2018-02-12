@@ -23,11 +23,6 @@
 
 static struct sigaction g_previous_sigaction[_NSIG];
 
-// These constants must align with the data structure defined ucontext.h. 
-#define REG_RAX 13
-#define REG_RBX 11
-#define REG_RIP 16
-
 static void _HostSignalHandler(
     int sigNum, 
     siginfo_t* sigInfo, 
@@ -42,12 +37,12 @@ static void _HostSignalHandler(
     if ((exitAddress == (uint64_t)OE_AEP) && (exitCode == ENCLU_ERESUME))
     {
         // Call-in enclave to handle the exception.
-        uint64_t arg1 = OE_MAKE_WORD(OE_CODE_ECALL, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER);
+        uint64_t arg1 = OE_MakeCallArg1(OE_CODE_ECALL, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0);
         uint64_t arg2 = 0;
         uint64_t arg3 = 0;
         uint64_t arg4 = 0;
 
-        OE_Enter((void*)tcsAddress, OE_AEP, arg1, arg2, &arg3, &arg4);
+        OE_Enter((void*)tcsAddress, OE_AEP, arg1, arg2, &arg3, &arg4, NULL);
         if (arg4 == OE_EXCEPTION_CONTINUE_EXECUTION)
         {
             // This exception has been handled by the enclave. Let's resume.
@@ -157,7 +152,7 @@ static void _RegisterSignalHandlers(void)
 }
 
 // The exception only need to be initialized once per process.
-static OE_OnceType _enclave_exception_once;
+static OE_H_OnceType _enclave_exception_once;
 
 static void _InitializeException(void)
 {
@@ -166,5 +161,5 @@ static void _InitializeException(void)
 
 void _OE_InitializeHostException()
 {
-    OE_Once(&_enclave_exception_once, _InitializeException);
+    OE_H_Once(&_enclave_exception_once, _InitializeException);
 }

@@ -107,7 +107,7 @@ OE_Func;
 **     parameter is a 64-bit integer that contains:
 **
 **         code -- indicating whether ECALL, OCALL, ERET, or ORET
-**         func -- the number of the function beging called
+**         func -- the number of the function being called
 **         flags -- any bit flags
 **
 **==============================================================================
