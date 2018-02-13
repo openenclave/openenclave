@@ -32,7 +32,8 @@
 #define ARG2OUT         (-9*OE_WORDSIZE)(%rbp)
 #define CSSA            (-10*OE_WORDSIZE)(%rbp)
 #define RSP             (-11*OE_WORDSIZE)(%rbp)
-#define PARAMS_SPACE    (12*OE_WORDSIZE)
+#define HOST_CONTEXT    (-12*OE_WORDSIZE)(%rbp)
+#define PARAMS_SPACE    0x2d0
 
 .globl OE_EnterSim
 .type OE_EnterSim, @function
@@ -55,10 +56,17 @@ OE_EnterSim:
     mov %rax, ENCLAVE
     movq $0, CSSA
 
+    // The host context will be saved in the host stack.
+    mov %rsp, HOST_CONTEXT
+
     // Save registers:
     push %rbx
 
 .call_oe_main:
+
+    // Save the current context.
+    mov HOST_CONTEXT, %rdi
+    call OE_SnapCurrentContext
 
     // Save the stack pointer so enclave can use the stack.
     mov %rsp, RSP
@@ -75,6 +83,13 @@ OE_EnterSim:
     mov %rdi, ARG1OUT
     mov %rsi, ARG2OUT
 
+    // Align the stack since enclave code change the host rsp for call out.
+    and $-16, %rsp 
+
+    // Restore the saved host context.
+    mov HOST_CONTEXT, %rdi
+    call OE_RestorePartialContext
+
 .dispatch_ocall_sim:
 
     // Save registers that could get clobbered below or by function call.
@@ -86,6 +101,8 @@ OE_EnterSim:
     push %r8
     push %r9
     push %r12
+    push %r13
+    // Push one extra register to keep the stack aligned.
     push %r13
 
     // RAX = __OE_DispatchOCall(
@@ -103,6 +120,7 @@ OE_EnterSim:
     call __OE_DispatchOCall
 
     // Restore registers saved above:
+    pop %r13
     pop %r13
     pop %r12
     pop %r9
