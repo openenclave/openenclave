@@ -1,20 +1,19 @@
 #define OE_TRACE_LEVEL 1
 
+#include <openenclave/bits/elf.h>
+#include <openenclave/bits/load.h>
+#include <openenclave/bits/trace.h>
+#include <openenclave/bits/utils.h>
+#include <openenclave/host.h>
 #include <stdlib.h>
 #include <string.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/utils.h>
-#include <openenclave/bits/load.h>
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/trace.h>
 #include "memalign.h"
 
-OE_Result __OE_LoadSegments(
-    const char* path,
-    OE_Segment segments[OE_MAX_SEGMENTS],
-    size_t* nsegments,
-    uint64_t* entryaddr,
-    uint64_t* textaddr)
+OE_Result __OE_LoadSegments(const char* path,
+                            OE_Segment segments[OE_MAX_SEGMENTS],
+                            size_t* nsegments,
+                            uint64_t* entryaddr,
+                            uint64_t* textaddr)
 {
     OE_Result result = OE_UNEXPECTED;
     Elf64 elf = ELF64_INIT;
@@ -41,7 +40,7 @@ OE_Result __OE_LoadSegments(
     /* Save pointer to header for convenience */
     eh = elf.ehdr;
 
-    /* Fail if not a dynamic object */
+/* Fail if not a dynamic object */
 #if 0
     if (eh->e_type != ET_DYN)
         OE_THROW(OE_FAILURE);
@@ -162,14 +161,11 @@ OE_CATCH:
     return result;
 }
 
-OE_Result __OE_CalculateSegmentsSize(
-    const OE_Segment* segments,
-    size_t nsegments,
-    size_t* size)
+OE_Result __OE_CalculateSegmentsSize(const OE_Segment* segments, size_t nsegments, size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     uint64_t lo = 0xFFFFFFFFFFFFFFFF; /* lowest address of all segments */
-    uint64_t hi = 0; /* highest address of all segments */
+    uint64_t hi = 0;                  /* highest address of all segments */
     size_t i;
 
     if (size)
@@ -209,15 +205,11 @@ OE_CATCH:
     return result;
 }
 
-OE_Result __OE_CombineSegments(
-    const OE_Segment* segments,
-    size_t nsegments,
-    OE_Page** pages,
-    size_t* npages)
+OE_Result __OE_CombineSegments(const OE_Segment* segments, size_t nsegments, OE_Page** pages, size_t* npages)
 {
     OE_Result result = OE_UNEXPECTED;
     uint64_t lo = 0xFFFFFFFFFFFFFFFF; /* lowest address of all segments */
-    uint64_t hi = 0; /* highest address of all segments */
+    uint64_t hi = 0;                  /* highest address of all segments */
     size_t i;
     unsigned char* data = NULL;
     size_t size;

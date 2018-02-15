@@ -8,7 +8,6 @@ typedef struct _TestArgs
     char buf1[1024];
     char buf2[1024];
     int strdupOk;
-}
-TestArgs;
+} TestArgs;
 
 #endif /* _stdc_args_h */

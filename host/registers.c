@@ -1,17 +1,17 @@
 #if defined(__linux__)
-# include <unistd.h>
-# include <sys/syscall.h>
-# include <asm/prctl.h>
+#include <asm/prctl.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 #elif defined(_WIN32)
-# include <Windows.h>
+#include <Windows.h>
 #endif
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include <openenclave/bits/registers.h>
 
-void OE_SetGSRegisterBase(const void *ptr)
+void OE_SetGSRegisterBase(const void* ptr)
 {
 #if defined(__linux__)
     syscall(__NR_arch_prctl, ARCH_SET_GS, ptr);

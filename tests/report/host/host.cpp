@@ -1,13 +1,13 @@
+#include <assert.h>
+#include <openenclave/bits/aesm.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/bits/utils.h>
+#include <openenclave/host.h>
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstdio>
-#include <assert.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/aesm.h>
-#include <openenclave/bits/utils.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
 #include "../args.h"
 
 int main(int argc, const char* argv[])
@@ -52,29 +52,24 @@ int main(int argc, const char* argv[])
     __OE_HexDump(&args.report, sizeof(SGX_Report));
 #endif
 
-    SGX_SPID spid = 
-    {
-        {
-            0x21, 0x68, 0x79, 0xB4, 0x42, 0xA0, 0x4A, 0x07,
-            0x60, 0xF6, 0x39, 0x91, 0x7F, 0x4E, 0x8B, 0x04,
-        }
-    };
+    SGX_SPID spid = {{
+        0x21, 0x68, 0x79, 0xB4, 0x42, 0xA0, 0x4A, 0x07, 0x60, 0xF6, 0x39, 0x91, 0x7F, 0x4E, 0x8B, 0x04,
+    }};
 
     /* Get the quote */
     {
         SGX_Quote quote;
         memset(&quote, 0xDD, sizeof(quote));
 
-        if ((result = SGX_GetQuote(
-            &args.report,
-            SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
-            &spid,
-            NULL, /* nonce */
-            NULL, /* signatureRevocationList */
-            0, /* signatureRevocationListSize */
-            NULL, /* reportOut */
-            &quote,
-            sizeof(SGX_Quote))) != OE_OK)
+        if ((result = SGX_GetQuote(&args.report,
+                                   SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
+                                   &spid,
+                                   NULL, /* nonce */
+                                   NULL, /* signatureRevocationList */
+                                   0,    /* signatureRevocationListSize */
+                                   NULL, /* reportOut */
+                                   &quote,
+                                   sizeof(SGX_Quote))) != OE_OK)
         {
             OE_PutErr("__SGX_GetQuote(): result=%u", result);
         }

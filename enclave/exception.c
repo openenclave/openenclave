@@ -1,16 +1,16 @@
-#include <openenclave/enclave.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/jump.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/reloc.h>
-#include <openenclave/bits/globals.h>
 #include <openenclave/bits/atexit.h>
+#include <openenclave/bits/calls.h>
+#include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/fault.h>
+#include <openenclave/bits/globals.h>
+#include <openenclave/bits/jump.h>
+#include <openenclave/bits/reloc.h>
+#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/enclave.h>
 #include "asmdefs.h"
-#include "td.h"
 #include "init.h"
+#include "td.h"
 
 #define MAX_EXCEPTION_HANDLER_COUNT 64
 
@@ -23,11 +23,9 @@ uint32_t g_current_exception_handler_count = 0;
 // Current registered exception handlers.
 POE_VECTORED_EXCEPTION_HANDLER g_exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
 
-void* OE_AddVectoredExceptionHandler(
-    uint64_t      isFirstHandler,
-    POE_VECTORED_EXCEPTION_HANDLER vectoredHandler)
+void* OE_AddVectoredExceptionHandler(uint64_t isFirstHandler, POE_VECTORED_EXCEPTION_HANDLER vectoredHandler)
 {
-    void *func_ret = NULL;
+    void* func_ret = NULL;
     int lock_ret = -1;
 
     // Sanity check.
@@ -88,8 +86,7 @@ cleanup:
     return func_ret;
 }
 
-uint64_t OE_RemoveVectoredExceptionHandler(
-    void* vectoredHandler)
+uint64_t OE_RemoveVectoredExceptionHandler(void* vectoredHandler)
 {
     uint64_t func_ret = 1;
     int lock_ret = -1;
@@ -135,10 +132,9 @@ cleanup:
     return func_ret;
 }
 
-
 typedef struct _SSA_Info
 {
-    void    *base_address;
+    void* base_address;
     uint64_t frame_byte_size;
 } SSA_Info;
 
@@ -152,11 +148,9 @@ typedef struct _SSA_Info
 **
 **==============================================================================
 */
-static int _GetEnclaveThreadFirstSsaInfo(
-    TD *td,
-    SSA_Info *ssa_info)
+static int _GetEnclaveThreadFirstSsaInfo(TD* td, SSA_Info* ssa_info)
 {
-    SGX_TCS *tcs = (SGX_TCS*)TD_ToTCS(td);
+    SGX_TCS* tcs = (SGX_TCS*)TD_ToTCS(td);
     uint64_t ssa_frame_size = td->base.__ssa_frame_size;
     if (ssa_frame_size == 0)
     {
@@ -170,25 +164,24 @@ static int _GetEnclaveThreadFirstSsaInfo(
 }
 
 // SGX hardware exit type, must align with Intel SDM.
-#define SGX_EXIT_TYPE_HADEWARE  0x3
-#define SGX_EXIT_TYPE_SOFTWARE  0x6
+#define SGX_EXIT_TYPE_HADEWARE 0x3
+#define SGX_EXIT_TYPE_SOFTWARE 0x6
 
 // Mapping between the SGX exception vector value and the OE exception code.
 static struct
 {
-    uint32_t    sgx_vector;
-    uint32_t    exception_code;
-} g_vector_to_exception_code_mapping[] =
-{
-    { 0, OE_EXCEPTION_DIVIDE_BY_ZERO },
-    { 3, OE_EXCEPTION_BREAKPOINT },
-    { 5, OE_EXCEPTION_BOUND_OUT_OF_RANGE },
-    { 6, OE_EXCEPTION_ILLEGAL_INSTRUCTION },
-    { 13, OE_EXCEPTION_ACCESS_VIOLATION },
-    { 14, OE_EXCEPTION_PAGE_FAULT },
-    { 16, OE_EXCEPTION_X87_FLOAT_POINT },
-    { 17, OE_EXCEPTION_MISALIGNMENT },
-    { 19, OE_EXCEPTION_SIMD_FLOAT_POINT },
+    uint32_t sgx_vector;
+    uint32_t exception_code;
+} g_vector_to_exception_code_mapping[] = {
+    {0, OE_EXCEPTION_DIVIDE_BY_ZERO},
+    {3, OE_EXCEPTION_BREAKPOINT},
+    {5, OE_EXCEPTION_BOUND_OUT_OF_RANGE},
+    {6, OE_EXCEPTION_ILLEGAL_INSTRUCTION},
+    {13, OE_EXCEPTION_ACCESS_VIOLATION},
+    {14, OE_EXCEPTION_PAGE_FAULT},
+    {16, OE_EXCEPTION_X87_FLOAT_POINT},
+    {17, OE_EXCEPTION_MISALIGNMENT},
+    {19, OE_EXCEPTION_SIMD_FLOAT_POINT},
 };
 
 /*
@@ -197,14 +190,14 @@ static struct
 ** _OE_ExceptionDispatcher(OE_CONTEXT *oe_context)
 **
 **  The real(second pass) exception dispatcher. It is called by OE_ExceptionDispatcher.
-**  This function composes the valid OE_EXCEPTION_RECORD, and call the registered 
-**  exception handlers one by one. If one handler returns OE_EXCEPTION_CONTINUE_EXECUTION, 
-**  this function will continue execution on the context. Otherwise the enclave will 
+**  This function composes the valid OE_EXCEPTION_RECORD, and call the registered
+**  exception handlers one by one. If one handler returns OE_EXCEPTION_CONTINUE_EXECUTION,
+**  this function will continue execution on the context. Otherwise the enclave will
 **  be aborted because un-handled exception happened.
 **
 **==============================================================================
 */
-void _OE_ExceptionDispatcher(OE_CONTEXT *oe_context)
+void _OE_ExceptionDispatcher(OE_CONTEXT* oe_context)
 {
     TD* td = TD_Get();
 
@@ -212,7 +205,7 @@ void _OE_ExceptionDispatcher(OE_CONTEXT *oe_context)
     oe_context->rip = td->base.exception_address;
 
     // Compose the OE_EXCEPTION_RECORD.
-    // N.B, In second pass exception handling, the XSTATE are recovered by SGX hardware 
+    // N.B, In second pass exception handling, the XSTATE are recovered by SGX hardware
     // correctly on ERSUME, our exception code doesn't touch them, so that we don't
     // need to recover them again.
     OE_EXCEPTION_RECORD oe_exception_record;
@@ -253,16 +246,13 @@ void _OE_ExceptionDispatcher(OE_CONTEXT *oe_context)
 **
 ** _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 **
-**  The virtual(first pass) exception dispatcher. It checks whether or not there 
-**  is an exception in current enclave thread, and save minimal exception context 
+**  The virtual(first pass) exception dispatcher. It checks whether or not there
+**  is an exception in current enclave thread, and save minimal exception context
 **  to TLS, and then return to host.
 **
 **==============================================================================
 */
-void _OE_VirtualExceptionDispatcher(
-    TD* td, 
-    uint64_t argIn, 
-    uint64_t* argOut)
+void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 {
     SSA_Info ssa_info;
     OE_Memset(&ssa_info, 0, sizeof(SSA_Info));
@@ -274,7 +264,8 @@ void _OE_VirtualExceptionDispatcher(
         return;
     }
 
-    SGX_SsaGpr* ssa_gpr = (SGX_SsaGpr*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
+    SGX_SsaGpr* ssa_gpr =
+        (SGX_SsaGpr*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
     if (!ssa_gpr->exitInfo.asFields.valid)
     {
         // Not a valid/expected enclave exception;

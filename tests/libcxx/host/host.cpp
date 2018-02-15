@@ -1,14 +1,14 @@
+#include <assert.h>
+#include <openenclave/bits/calls.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstdio>
-#include <assert.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
-#include "ocalls.h"
 #include "args.h"
+#include "ocalls.h"
 
 void Test(OE_Enclave* enclave)
 {
@@ -34,11 +34,7 @@ static void _ExitOCall(uint64_t argIn, uint64_t* argOut)
     exit(argIn);
 }
 
-static int _GetOpt(
-    int& argc,
-    const char* argv[],
-    const char* name,
-    const char** arg = NULL)
+static int _GetOpt(int& argc, const char* argv[], const char* name, const char** arg = NULL)
 {
     for (int i = 0; i < argc; i++)
     {
@@ -46,7 +42,7 @@ static int _GetOpt(
         {
             if (!arg)
             {
-                memmove((void*)&argv[i], &argv[i+1], (argc-i) * sizeof(char*));
+                memmove((void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
                 argc--;
                 return 1;
             }
@@ -54,8 +50,8 @@ static int _GetOpt(
             if (i + 1 == argc)
                 return -1;
 
-            *arg = argv[i+1];
-            memmove((char**)&argv[i], &argv[i+2], (argc-i-1) * sizeof(char*));
+            *arg = argv[i + 1];
+            memmove((char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
             argc -= 2;
             return 1;
         }
@@ -73,7 +69,8 @@ int main(int argc, const char* argv[])
     // Check for the --sim option:
     if (_GetOpt(argc, argv, "--simulate") == 1)
         flags |= OE_FLAG_SIMULATE;
-    else flags = OE_GetCreateFlags();
+    else
+        flags = OE_GetCreateFlags();
 
     // Check argument count:
     if (argc != 2)

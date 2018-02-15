@@ -1,13 +1,9 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 
 static char _NibbleToChar(uint64_t x)
 {
-    static char _table[] =
-    {
-        '0', '1', '2', '3', '4', '5', '6', '7', 
-        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-    };
+    static char _table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     return _table[x & 0x000000000000000f];
 }
@@ -32,14 +28,12 @@ static const char* _U64ToHexStr(char buf[17], uint64_t x)
     uint64_t lo = (0x00000000ffffffff & x);
 
     _U32ToHexStr(buf, hi);
-    _U32ToHexStr(buf+8, lo);
+    _U32ToHexStr(buf + 8, lo);
 
     return buf;
 }
 
-static const char* _U64ToStr(
-    char buf[21],
-    uint64_t x)
+static const char* _U64ToStr(char buf[21], uint64_t x)
 {
     char* end = &buf[21];
 
@@ -66,7 +60,7 @@ static const char* _S64ToStr(char buf[21], int64_t x)
     char* p;
     int neg = 0;
 
-    if (x == (-9223372036854775807-1))
+    if (x == (-9223372036854775807 - 1))
         return "-9223372036854775808";
 
     if (x < 0)
@@ -81,12 +75,10 @@ static const char* _S64ToStr(char buf[21], int64_t x)
     do
     {
         *--p = '0' + x % 10;
-    }
-    while (x /= 10);
+    } while (x /= 10);
 
-    if(neg)
+    if (neg)
         *--p = '-';
-
 
     return p;
 }

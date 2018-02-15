@@ -1,9 +1,9 @@
-#include <enc/host.h>
 #include <enc/build.h>
+#include <enc/host.h>
 #include <enc/sha.h>
 
 #if 1
-# define USE_DRIVER
+#define USE_DRIVER
 #endif
 
 static OE_SGXDevice* OpenDevice()
@@ -49,11 +49,7 @@ int main(int argc, const char* argv[])
     if (!(dev = OpenDevice()))
         OE_PutErr("__OE_OpenSGXDriver() failed");
 
-    if ((result = __OE_BuildEnclave(
-        dev,
-        argv[1],
-        GetEnclaveSettings(),
-        &enclave)) != OE_OK)
+    if ((result = __OE_BuildEnclave(dev, argv[1], GetEnclaveSettings(), &enclave)) != OE_OK)
     {
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
     }

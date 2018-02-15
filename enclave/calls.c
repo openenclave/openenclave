@@ -1,16 +1,16 @@
-#include <openenclave/enclave.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/jump.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/reloc.h>
-#include <openenclave/bits/globals.h>
 #include <openenclave/bits/atexit.h>
+#include <openenclave/bits/calls.h>
+#include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/fault.h>
+#include <openenclave/bits/globals.h>
+#include <openenclave/bits/jump.h>
+#include <openenclave/bits/reloc.h>
+#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/enclave.h>
 #include "asmdefs.h"
-#include "td.h"
 #include "init.h"
+#include "td.h"
 
 typedef unsigned long long WORD;
 
@@ -142,16 +142,13 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
     argsPtr = (OE_CallEnclaveArgs*)argIn;
     args = *argsPtr;
 
-    if (!args.vaddr ||
-        (args.func >= ecallPages->num_vaddrs) ||
-        ((vaddr = ecallPages->vaddrs[args.func]) != args.vaddr))
+    if (!args.vaddr || (args.func >= ecallPages->num_vaddrs) || ((vaddr = ecallPages->vaddrs[args.func]) != args.vaddr))
     {
         OE_TRY(OE_INVALID_PARAMETER);
     }
 
     /* Translate function address from virtual to real address */
-    OE_EnclaveFunc func = (OE_EnclaveFunc)(
-        (uint64_t)__OE_GetEnclaveBase() + vaddr);
+    OE_EnclaveFunc func = (OE_EnclaveFunc)((uint64_t)__OE_GetEnclaveBase() + vaddr);
 
     func(args.args);
     argsPtr->result = OE_OK;
@@ -170,10 +167,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-static void _HandleExit(
-    OE_Code code,
-    long func,
-    uint64_t arg)
+static void _HandleExit(OE_Code code, long func, uint64_t arg)
 {
     OE_Exit(OE_MakeCallArg1(code, func, 0), arg);
 }
@@ -192,9 +186,7 @@ static void _HandleExit(
 static OE_ECallFunction _ecalls[OE_MAX_ECALLS];
 static OE_Spinlock _ecalls_spinlock = OE_SPINLOCK_INITIALIZER;
 
-OE_Result OE_RegisterECall(
-    uint32_t func,
-    OE_ECallFunction ecall)
+OE_Result OE_RegisterECall(uint32_t func, OE_ECallFunction ecall)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SpinLock(&_ecalls_spinlock);
@@ -226,12 +218,7 @@ void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
 **==============================================================================
 */
 
-static void _HandleECall(
-    TD* td,
-    uint32_t func,
-    uint64_t argIn,
-    uint64_t *outputArg1,
-    uint64_t *outputArg2)
+static void _HandleECall(TD* td, uint32_t func, uint64_t argIn, uint64_t* outputArg1, uint64_t* outputArg2)
 {
     /* Insert ECALL context onto front of TD.ecalls list */
     Callsite callsite;
@@ -317,10 +304,7 @@ Exit:
 **==============================================================================
 */
 
-static __inline__ void _HandleORET(
-    TD* td,
-    long func,
-    long arg)
+static __inline__ void _HandleORET(TD* td, long func, long arg)
 {
     Callsite* callsite = td->callsites;
 
@@ -343,11 +327,7 @@ static __inline__ void _HandleORET(
 **==============================================================================
 */
 
-OE_Result OE_OCall(
-    uint32_t func,
-    uint64_t argIn,
-    uint64_t* argOut,
-    uint32_t ocall_flags)
+OE_Result OE_OCall(uint32_t func, uint64_t argIn, uint64_t* argOut, uint32_t ocall_flags)
 {
     OE_Result result = OE_UNEXPECTED;
     TD* td = TD_Get();
@@ -397,9 +377,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-OE_Result OE_CallHost(
-    const char *func,
-    void *argsIn)
+OE_Result OE_CallHost(const char* func, void* argsIn)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_CallHostArgs* args = NULL;
@@ -501,7 +479,7 @@ OE_CATCH:
 **     are exhausted (i.e., TCS.CSSA == TCS.NSSA)
 **
 **     This function ultimately calls EEXIT to exit the enclave. An enclave may
-**     exit to the host for two reasons (aside from an asynchronous exception 
+**     exit to the host for two reasons (aside from an asynchronous exception
 **     already mentioned):
 **
 **         (1) To return normally from an ECALL
@@ -523,13 +501,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-void __OE_HandleMain(
-    uint64_t arg1,
-    uint64_t arg2,
-    uint64_t cssa,
-    void* tcs,
-    uint64_t *outputArg1,
-    uint64_t *outputArg2)
+void __OE_HandleMain(uint64_t arg1, uint64_t arg2, uint64_t cssa, void* tcs, uint64_t* outputArg1, uint64_t* outputArg2)
 {
     OE_Code code = OE_GetCodeFromCallArg1(arg1);
     uint32_t func = OE_GetFuncFromCallArg1(arg1);
@@ -550,19 +522,20 @@ void __OE_HandleMain(
     /* If this is a normal (non-exception) entry */
     if (cssa == 0)
     {
-        switch (code) {
-        case OE_CODE_ECALL:
-            _HandleECall(td, func, argIn, outputArg1, outputArg2);
-            break;
+        switch (code)
+        {
+            case OE_CODE_ECALL:
+                _HandleECall(td, func, argIn, outputArg1, outputArg2);
+                break;
 
-        case OE_CODE_ORET:
-            /* Eventually calls OE_Exit() and never returns here if successful */
-            _HandleORET(td, func, argIn);
+            case OE_CODE_ORET:
+                /* Eventually calls OE_Exit() and never returns here if successful */
+                _HandleORET(td, func, argIn);
             // fallthrough
 
-        default:
-            /* Unexpected case */
-            OE_Abort();
+            default:
+                /* Unexpected case */
+                OE_Abort();
         }
     }
     else /* cssa > 0 */
@@ -590,9 +563,7 @@ void __OE_HandleMain(
 **
 **==============================================================================
 */
-void _OE_NotifyNestedExistStart(
-    uint64_t arg1,
-    OE_OCallContext* ocallContext)
+void _OE_NotifyNestedExistStart(uint64_t arg1, OE_OCallContext* ocallContext)
 {
     // Check if it is an OCALL.
     OE_Code code = OE_GetCodeFromCallArg1(arg1);
@@ -606,4 +577,3 @@ void _OE_NotifyNestedExistStart(
 
     return;
 }
-

@@ -1,14 +1,14 @@
 #define __OE_NEED_TIME_CALLS
 #define _GNU_SOURCE
-#include <sys/time.h>
-#include <time.h>
 #include <assert.h>
+#include <openenclave/bits/calls.h>
+#include <openenclave/enclave.h>
 #include <stdint.h>
 #include <string.h>
-#include <openenclave/enclave.h>
-#include <openenclave/bits/calls.h>
+#include <sys/time.h>
+#include <time.h>
 
-time_t time(time_t *tloc)
+time_t time(time_t* tloc)
 {
     struct timeval tv;
 
@@ -63,7 +63,7 @@ done:
     return ret;
 }
 
-int clock_gettime(clockid_t clk_id, struct timespec *tp)
+int clock_gettime(clockid_t clk_id, struct timespec* tp)
 {
     size_t ret = -1;
     OE_ClockgettimeArgs* args = NULL;
@@ -94,11 +94,7 @@ done:
     return ret;
 }
 
-size_t strftime(
-    char *str,
-    size_t max,
-    const char *format,
-    const struct tm *tm)
+size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
 {
     size_t ret = 0;
     OE_StrftimeArgs* a = NULL;
@@ -133,17 +129,12 @@ done:
     return ret;
 }
 
-size_t strftime_l(
-    char *s,
-    size_t max,
-    const char *format,
-    const struct tm *tm,
-    locale_t loc)
+size_t strftime_l(char* s, size_t max, const char* format, const struct tm* tm, locale_t loc)
 {
     return strftime(s, max, format, tm);
 }
 
-int nanosleep(const struct timespec *req, struct timespec *rem)
+int nanosleep(const struct timespec* req, struct timespec* rem)
 {
     size_t ret = -1;
     OE_NanosleepArgs* args = NULL;

@@ -1,11 +1,11 @@
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
-#include <limits.h>
-#include <string.h>
-#include <stdio.h>
 #include <assert.h>
+#include <limits.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../args.h"
 
 OE_Enclave* enclave = NULL;
@@ -68,7 +68,7 @@ OE_OCALL void HostNestCalls(void* args_)
         free((char*)newArgs.out);
         newArgs.out = NULL;
     }
-    
+
     args->ret = 0;
 
     printf("host: HostNestCalls depth [%d] returned!.\n", args->depth);
@@ -77,7 +77,7 @@ OE_OCALL void HostNestCalls(void* args_)
 
 void TestNestedCalls(int testEh, int depth)
 {
-    //OE_Result result;
+    // OE_Result result;
     Args args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;

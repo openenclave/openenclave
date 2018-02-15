@@ -1,14 +1,14 @@
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
-#include <limits.h>
-#include <string.h>
-#include <stdio.h>
 #include <assert.h>
+#include <limits.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../args.h"
 
-#define SKIP_RETURN_CODE    2
+#define SKIP_RETURN_CODE 2
 
 int main(int argc, const char* argv[])
 {

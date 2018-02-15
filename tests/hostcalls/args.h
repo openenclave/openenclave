@@ -9,7 +9,6 @@ typedef struct _TestHostReallocArgs
     size_t oldSize;
     size_t newSize;
     void* outPtr;
-}
-TestHostReallocArgs;
+} TestHostReallocArgs;
 
 #endif /* _HOSTCALLS_ARGS_H */

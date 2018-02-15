@@ -1,10 +1,10 @@
-#include <openenclave/enclave.h>
+#include "td.h"
+#include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/fault.h>
 #include <openenclave/bits/globals.h>
-#include <openenclave/bits/calls.h>
-#include "td.h"
+#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/enclave.h>
 #include "asmdefs.h"
 
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, magic) == TD_magic);
@@ -45,11 +45,9 @@ OE_ThreadData* OE_GetThreadData()
 {
     OE_ThreadData* td = NULL;
 
-    asm volatile(
-        "mov %%gs:0, %%rax\n\t"
-        "mov %%rax, %0\n\t"
-        :
-        "=a"(td));
+    asm volatile("mov %%gs:0, %%rax\n\t"
+                 "mov %%rax, %0\n\t"
+                 : "=a"(td));
 
     return td;
 }

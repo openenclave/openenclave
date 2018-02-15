@@ -7,14 +7,9 @@
 
 OE_EXTERNC_BEGIN
 
-typedef void (*OE_AllocationFailureCallback)(
-    const char* file, 
-    size_t line, 
-    const char* func, 
-    size_t size);
+typedef void (*OE_AllocationFailureCallback)(const char* file, size_t line, const char* func, size_t size);
 
-void OE_SetAllocationFailureCallback(
-    OE_AllocationFailureCallback function);
+void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function);
 
 OE_EXTERNC_END
 

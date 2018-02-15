@@ -1,20 +1,13 @@
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
 #include <iostream>
 #include <vector>
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
 
-int EnclaveSecureStrPatching(
-    OE_Enclave* Enclave,
-    const char *src,
-    char *dst,
-    int dstLength);
+int EnclaveSecureStrPatching(OE_Enclave* Enclave, const char* src, char* dst, int dstLength);
 
-const char *Message = "Hello world from Host\n\0";
+const char* Message = "Hello world from Host\n\0";
 
-int UnsecureStrPatching(
-    const char *src,
-    char *dst,
-    int dstLength)
+int UnsecureStrPatching(const char* src, char* dst, int dstLength)
 {
     int runningLength = dstLength;
     while (runningLength > 0 && *src != '\0')
@@ -24,7 +17,7 @@ int UnsecureStrPatching(
         src++;
         dst++;
     }
-    const char *ptr = Message;
+    const char* ptr = Message;
     while (runningLength > 0 && *ptr != '\0')
     {
         *dst = *ptr;
@@ -47,9 +40,9 @@ int main(int argc, const char* argv[])
 
     if (argc != 2)
     {
-        fprintf(stderr, 
-            "Usage: SampleAppHost.exe <path to  packaged enc/dev dll>\n"
-            "Example: SampleAppHost.exe SampleApp.dev.pkg\\SampleApp.dll\n");
+        fprintf(stderr,
+                "Usage: SampleAppHost.exe <path to  packaged enc/dev dll>\n"
+                "Example: SampleAppHost.exe SampleApp.dev.pkg\\SampleApp.dll\n");
         return 1;
     }
 
@@ -62,7 +55,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
     char dst[1024];
-    const char *src = "My First App\n";
+    const char* src = "My First App\n";
     int res = EnclaveSecureStrPatching(enclave, src, dst, OE_COUNTOF(dst));
 
     if (res != 0)
@@ -71,11 +64,10 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const char expect[] =
-        "My First App\n"
-        "Hello world from Enclave\n"
-        "My First App\n"
-        "Hello world from Host\n";
+    const char expect[] = "My First App\n"
+                          "Hello world from Enclave\n"
+                          "My First App\n"
+                          "Hello world from Host\n";
 
     if (strcmp(dst, expect) != 0)
     {

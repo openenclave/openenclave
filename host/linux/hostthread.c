@@ -1,7 +1,7 @@
-#include <pthread.h>
+#include "../hostthread.h"
 #include <assert.h>
 #include <openenclave/host.h>
-#include "../hostthread.h"
+#include <pthread.h>
 
 /*
 **==============================================================================
@@ -29,9 +29,7 @@ int OE_H_ThreadEqual(OE_H_Thread thread1, OE_H_Thread thread2)
 **==============================================================================
 */
 
-int OE_H_Once(
-    OE_H_OnceType* once,
-    void (*func)(void))
+int OE_H_Once(OE_H_OnceType* once, void (*func)(void))
 {
     return pthread_once(once, func);
 }
@@ -80,28 +78,22 @@ int OE_H_MutexDestroy(OE_H_Mutex* Lock)
 **==============================================================================
 */
 
-int OE_H_ThreadKeyCreate(
-    OE_H_ThreadKey* key)
+int OE_H_ThreadKeyCreate(OE_H_ThreadKey* key)
 {
     return pthread_key_create(key, NULL);
 }
 
-int OE_H_ThreadKeyDelete(
-    OE_H_ThreadKey key)
+int OE_H_ThreadKeyDelete(OE_H_ThreadKey key)
 {
     return pthread_key_delete(key);
 }
 
-int OE_H_ThreadSetSpecific(
-    OE_H_ThreadKey key,
-    void* value)
+int OE_H_ThreadSetSpecific(OE_H_ThreadKey key, void* value)
 {
     return pthread_setspecific(key, value);
 }
 
-void* OE_H_ThreadGetSpecific(
-    OE_H_ThreadKey key)
+void* OE_H_ThreadGetSpecific(OE_H_ThreadKey key)
 {
     return pthread_getspecific(key);
 }
-

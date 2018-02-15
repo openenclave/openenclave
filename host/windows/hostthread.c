@@ -1,6 +1,6 @@
+#include "../hostthread.h"
 #include <assert.h>
 #include <openenclave/host.h>
-#include "../hostthread.h"
 
 /*
 **==============================================================================
@@ -28,18 +28,13 @@ int OE_H_ThreadEqual(OE_H_Thread thread1, OE_H_Thread thread2)
 **==============================================================================
 */
 
-static BOOL CALLBACK OnceHelper(
-  _Inout_     PINIT_ONCE InitOnce,
-  _Inout_opt_ PVOID      Parameter,
-  _Out_opt_   PVOID      *Context)
+static BOOL CALLBACK OnceHelper(_Inout_ PINIT_ONCE InitOnce, _Inout_opt_ PVOID Parameter, _Out_opt_ PVOID* Context)
 {
-    ((void(*)(void))Parameter)();
+    ((void (*)(void))Parameter)();
     return TRUE;
 }
 
-int OE_H_Once(
-    OE_H_OnceType* once,
-    void (*func)(void))
+int OE_H_Once(OE_H_OnceType* once, void (*func)(void))
 {
     return InitOnceExecuteOnce(once, OnceHelper, func, NULL);
 }
@@ -90,8 +85,7 @@ int OE_H_MutexDestroy(OE_H_Mutex* Lock)
 **==============================================================================
 */
 
-int OE_H_ThreadKeyCreate(
-    OE_H_ThreadKey* key)
+int OE_H_ThreadKeyCreate(OE_H_ThreadKey* key)
 {
     OE_H_ThreadKey k;
     k = TlsAlloc();
@@ -102,22 +96,17 @@ int OE_H_ThreadKeyCreate(
     return 0;
 }
 
-int OE_H_ThreadKeyDelete(
-    OE_H_ThreadKey key)
+int OE_H_ThreadKeyDelete(OE_H_ThreadKey key)
 {
     return !TlsFree(key);
 }
 
-int OE_H_ThreadSetSpecific(
-    OE_H_ThreadKey key,
-    void* value)
+int OE_H_ThreadSetSpecific(OE_H_ThreadKey key, void* value)
 {
     return !TlsSetValue(key, value);
 }
 
-void* OE_H_ThreadGetSpecific(
-    OE_H_ThreadKey key)
+void* OE_H_ThreadGetSpecific(OE_H_ThreadKey key)
 {
     return TlsGetValue(key);
 }
-

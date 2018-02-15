@@ -1,5 +1,5 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
 OE_ECALL void TestHostRealloc(void* _args)
@@ -17,7 +17,7 @@ OE_ECALL void TestHostRealloc(void* _args)
     }
 
     args.outPtr = OE_HostRealloc(args.inPtr, args.newSize);
-    
+
     /* Initialize only newly allocated bytes for verification by host */
     if (args.outPtr)
     {

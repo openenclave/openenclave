@@ -1,21 +1,17 @@
+#include <openenclave/bits/error.h>
+#include <openenclave/host.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/error.h>
 
 static const char* _programName = "";
 
-void OE_SetProgramName(
-    const char* name)
+void OE_SetProgramName(const char* name)
 {
     _programName = name;
 }
 
 OE_PRINTF_FORMAT(3, 4)
-void __OE_PutErr(
-    const char* file, 
-    unsigned int line, 
-    const char* format, ...)
+void __OE_PutErr(const char* file, unsigned int line, const char* format, ...)
 {
     fprintf(stderr, "%s: %s(%u): error: ", _programName, file, line);
 

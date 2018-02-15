@@ -1,7 +1,7 @@
-#include <openenclave/defs.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
+#include <openenclave/defs.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -28,8 +28,7 @@ void DumpEntryPoint(Elf64* elf)
     Elf64_Sym sym;
     const char* name;
 
-    if (Elf64_FindDynamicSymbolByAddress(
-        elf, elf->ehdr->e_entry, STT_FUNC, &sym) != 0)
+    if (Elf64_FindDynamicSymbolByAddress(elf, elf->ehdr->e_entry, STT_FUNC, &sym) != 0)
     {
         err("cannot find entry point symbol");
         return;
@@ -66,7 +65,7 @@ void DumpSignatureSection(Elf64* elf)
         err("cannot find .oesig section");
         return;
     }
-        
+
     if (size != sizeof(OE_SignatureSection))
     {
         err("size of .oesig section is wrong");
@@ -108,8 +107,7 @@ typedef struct _VisitSymData
     const Elf64* elf;
     const Elf64_Shdr* shdr;
     OE_Result result;
-}
-VisitSymData;
+} VisitSymData;
 
 static int _VisitSym(const Elf64_Sym* sym, void* data_)
 {
@@ -128,8 +126,7 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     }
 
     /* Skip symbol if not in the ".ecall" section */
-    if (sym->st_value < shdr->sh_addr ||
-        sym->st_value + sym->st_size > shdr->sh_addr + shdr->sh_size)
+    if (sym->st_value < shdr->sh_addr || sym->st_value + sym->st_size > shdr->sh_addr + shdr->sh_size)
     {
         rc = 0;
         goto done;

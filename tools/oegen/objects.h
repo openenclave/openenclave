@@ -1,25 +1,25 @@
 #ifndef _OE_OBJECTS_H
 #define _OE_OBJECTS_H
 
-#include <vector>
 #include <string>
+#include <vector>
 
 // Type flags:
-#define FLAG_STRUCT     (1 << 0)
-#define FLAG_CONST      (1 << 1)
-#define FLAG_PTR        (1 << 2)
-#define FLAG_ARRAY      (1 << 3)
+#define FLAG_STRUCT (1 << 0)
+#define FLAG_CONST (1 << 1)
+#define FLAG_PTR (1 << 2)
+#define FLAG_ARRAY (1 << 3)
 
 // Qualifier flags:
-#define FLAG_ECALL      (1 << 5)
-#define FLAG_OCALL      (1 << 6)
-#define FLAG_IN         (1 << 7)
-#define FLAG_OUT        (1 << 8)
-#define FLAG_REF        (1 << 9)
-#define FLAG_UNCHECKED  (1 << 10)
-#define FLAG_COUNT      (1 << 11)
-#define FLAG_STRING     (1 << 12)
-#define FLAG_OPT        (1 << 13)
+#define FLAG_ECALL (1 << 5)
+#define FLAG_OCALL (1 << 6)
+#define FLAG_IN (1 << 7)
+#define FLAG_OUT (1 << 8)
+#define FLAG_REF (1 << 9)
+#define FLAG_UNCHECKED (1 << 10)
+#define FLAG_COUNT (1 << 11)
+#define FLAG_STRING (1 << 12)
+#define FLAG_OPT (1 << 13)
 
 struct QualifierValues
 {
@@ -65,7 +65,7 @@ struct Param
     std::string name;
     unsigned int subscript;
 
-    Param() : flags(0) , subscript(0)
+    Param() : flags(0), subscript(0)
     {
     }
 
@@ -87,7 +87,7 @@ struct Param
         return true;
     }
 
-    // Return true if this parameter has the right type to be the argument of 
+    // Return true if this parameter has the right type to be the argument of
     // a [count=?] qualifier.
     bool IsCounter() const
     {
@@ -105,7 +105,7 @@ struct Field
     std::string name;
     unsigned int subscript;
 
-    Field() : flags(0) , subscript(0)
+    Field() : flags(0), subscript(0)
     {
     }
 
@@ -127,7 +127,7 @@ struct Field
         return true;
     }
 
-    // Return true if this field has the right type to be the argument of 
+    // Return true if this field has the right type to be the argument of
     // a [count=?] qualifier.
     bool IsCounter() const
     {
@@ -139,8 +139,7 @@ struct Field
 
 class Object
 {
-public:
-
+  public:
     virtual ~Object();
 
     virtual void Dump() const = 0;
@@ -148,8 +147,7 @@ public:
 
 class Function : public Object
 {
-public:
-
+  public:
     std::string name;
     ReturnType returnType;
     std::vector<Param> params;
@@ -168,9 +166,7 @@ public:
     size_t FindParam(const std::string& name) const;
 };
 
-inline size_t FindParam(
-    const std::vector<Param>& params, 
-    const std::string& name)
+inline size_t FindParam(const std::vector<Param>& params, const std::string& name)
 {
     for (size_t i = 0; i < params.size(); i++)
     {
@@ -183,8 +179,7 @@ inline size_t FindParam(
 
 class Struct : public Object
 {
-public:
-
+  public:
     std::string name;
     std::vector<Field> fields;
 
@@ -203,8 +198,7 @@ public:
 
 class Verbatim : public Object
 {
-public:
-
+  public:
     std::string filename;
 
     virtual ~Verbatim();

@@ -1,6 +1,6 @@
 #include "parser.h"
-#include <cstdlib>
 #include <climits>
+#include <cstdlib>
 #include <set>
 #include "files.h"
 #include "types.h"
@@ -12,9 +12,7 @@ static bool _initializeTypes;
 
 // #define HAVE_PTR_PTR
 
-static int _AddType(
-    unsigned int flags,
-    const string& type)
+static int _AddType(unsigned int flags, const string& type)
 {
     string fullTypeName;
 
@@ -31,9 +29,7 @@ static int _AddType(
     return 0;
 }
 
-static int _CheckType(
-    unsigned int flags,
-    const string& type)
+static int _CheckType(unsigned int flags, const string& type)
 {
     if (!_initializeTypes)
     {
@@ -67,10 +63,7 @@ static bool _IsNumber(const string& s)
     return true;
 }
 
-static int _ParseQualifiers(
-    Lexer& lexer, 
-    unsigned int& flags,
-    QualifierValues& qvals)
+static int _ParseQualifiers(Lexer& lexer, unsigned int& flags, QualifierValues& qvals)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -135,7 +128,7 @@ static int _ParseQualifiers(
                 goto malformedQualifierList;
         }
 
-parseInitializer:
+    parseInitializer:
 
         switch ((tok = lexer.Next()))
         {
@@ -161,8 +154,7 @@ parseInitializer:
         }
         else
         {
-            lexer.SetErr("illegal qualifier initializer for %s", 
-                ident.c_str());
+            lexer.SetErr("illegal qualifier initializer for %s", ident.c_str());
             rc = -1;
             goto done;
         }
@@ -177,15 +169,14 @@ parseInitializer:
                 goto malformedQualifierList;
         }
 
-parseComma:
+    parseComma:
 
         continue;
 
-parseCloseBracket:
+    parseCloseBracket:
 
         rc = 0;
         goto done;
-
     }
 
     lexer.SetErr("missing closing bracket");
@@ -202,13 +193,12 @@ done:
     return rc;
 }
 
-static int _CheckQualifiers(
-    Lexer& lexer,
-    bool isReturnType,
-    bool isParam,
-    const string& name,
-    unsigned int flags,
-    const string& type)
+static int _CheckQualifiers(Lexer& lexer,
+                            bool isReturnType,
+                            bool isParam,
+                            const string& name,
+                            unsigned int flags,
+                            const string& type)
 {
     int rc = -1;
 
@@ -258,8 +248,7 @@ static int _CheckQualifiers(
             {
                 if (!Writable(flags))
                 {
-                    lexer.SetErr("[out] illegal on non-writable '%s'", 
-                        name.c_str());
+                    lexer.SetErr("[out] illegal on non-writable '%s'", name.c_str());
                     goto done;
                 }
             }
@@ -269,15 +258,13 @@ static int _CheckQualifiers(
         {
             if (flags & FLAG_COUNT)
             {
-                lexer.SetErr( "[unchecked] and [count] are incompatible: '%s'",
-                    name.c_str());
+                lexer.SetErr("[unchecked] and [count] are incompatible: '%s'", name.c_str());
                 goto done;
             }
 
             if (flags & FLAG_STRING)
             {
-                lexer.SetErr("[unchecked] and [string] are incompatible: '%s'",
-                    name.c_str());
+                lexer.SetErr("[unchecked] and [string] are incompatible: '%s'", name.c_str());
                 goto done;
             }
         }
@@ -286,8 +273,7 @@ static int _CheckQualifiers(
         {
             if (!(flags & FLAG_PTR))
             {
-                lexer.SetErr("[count] only allowed on pointers: '%s'",
-                    name.c_str());
+                lexer.SetErr("[count] only allowed on pointers: '%s'", name.c_str());
                 goto done;
             }
         }
@@ -300,15 +286,13 @@ static int _CheckQualifiers(
 
             if (!isChar || (!isPtr && !isArr))
             {
-                lexer.SetErr("[string] not allowed on this type: '%s'",
-                    name.c_str());
+                lexer.SetErr("[string] not allowed on this type: '%s'", name.c_str());
                 goto done;
             }
 
             if (isChar && isPtr && (flags & FLAG_OUT) && !(flags & FLAG_COUNT))
             {
-                lexer.SetErr("[count] qalifier required here: '%s'", 
-                    name.c_str());
+                lexer.SetErr("[count] qalifier required here: '%s'", name.c_str());
                 goto done;
             }
         }
@@ -324,19 +308,15 @@ static int _CheckQualifiers(
 
         if (flags & FLAG_PTR)
         {
-            if (!(flags & FLAG_UNCHECKED) && 
-                !(flags & FLAG_COUNT) && 
-                !(flags & FLAG_STRING))
+            if (!(flags & FLAG_UNCHECKED) && !(flags & FLAG_COUNT) && !(flags & FLAG_STRING))
             {
                 if (type == "char" || type == "wchar")
                 {
-                    lexer.SetErr("need [unchecked], [count] or [string]: '%s'",
-                        name.c_str());
+                    lexer.SetErr("need [unchecked], [count] or [string]: '%s'", name.c_str());
                 }
                 else
                 {
-                    lexer.SetErr("need [unchecked] or [count]: '%s'",
-                        name.c_str());
+                    lexer.SetErr("need [unchecked] or [count]: '%s'", name.c_str());
                 }
                 goto done;
             }
@@ -352,12 +332,11 @@ static int _CheckQualifiers(
 
     if ((flags & FLAG_REF) && (flags & FLAG_IN))
     {
-        lexer.SetErr("[ref] only valid on output parameters: '%s'", 
-            name.c_str());
+        lexer.SetErr("[ref] only valid on output parameters: '%s'", name.c_str());
         goto done;
     }
 
-    // Handle qualifiers on pointer-params and array-params:
+// Handle qualifiers on pointer-params and array-params:
 #if 0
     if (isParam && (flags & FLAG_PTR || flags & FLAG_ARRAY))
 #endif
@@ -386,9 +365,7 @@ done:
     return rc;
 }
 
-static int _ParseReturnType(
-    Lexer& lexer, 
-    ReturnType& x)
+static int _ParseReturnType(Lexer& lexer, ReturnType& x)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -577,11 +554,7 @@ done:
     return rc;
 }
 
-static int _ParseField(
-    Lexer& lexer, 
-    const Struct& s,
-    Field& x,
-    bool& found)
+static int _ParseField(Lexer& lexer, const Struct& s, Field& x, bool& found)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -789,7 +762,7 @@ parseSubscript:
         {
             lexer.SetErr("invalid subscript: %s", lexer.text);
             goto done;
-        } 
+        }
 
         x.subscript = (unsigned int)tmp;
         tok = lexer.Next();
@@ -832,9 +805,7 @@ checkQualifiers:
 
 checkType:
 
-    if (x.name.size() && 
-        _CheckType(x.flags, x.type) != 0 && 
-        !(x.flags & FLAG_UNCHECKED))
+    if (x.name.size() && _CheckType(x.flags, x.type) != 0 && !(x.flags & FLAG_UNCHECKED))
     {
         rc = -1;
         lexer.SetErr("undefined field type: %s\n", x.type.c_str());
@@ -847,11 +818,7 @@ done:
     return rc;
 }
 
-static int _ParseParam(
-    Lexer& lexer, 
-    const Function& f,
-    Param& x,
-    bool& found)
+static int _ParseParam(Lexer& lexer, const Function& f, Param& x, bool& found)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -1060,7 +1027,7 @@ parseSubscript:
         {
             lexer.SetErr("invalid subscript: %s", lexer.text);
             goto done;
-        } 
+        }
 
         x.subscript = (unsigned int)tmp;
         tok = lexer.Next();
@@ -1105,9 +1072,7 @@ checkQualifiers:
 
 checkType:
 
-    if (x.type.size() &&
-        _CheckType(x.flags, x.type) != 0 && 
-        !(x.flags & FLAG_UNCHECKED))
+    if (x.type.size() && _CheckType(x.flags, x.type) != 0 && !(x.flags & FLAG_UNCHECKED))
     {
         lexer.SetErr("undefined parameter type: %s\n", x.type.c_str());
         rc = -1;
@@ -1119,9 +1084,7 @@ done:
     return rc;
 }
 
-static int _CheckFunctionQualifiers(
-    Lexer& lexer, 
-    const vector<Param>& params)
+static int _CheckFunctionQualifiers(Lexer& lexer, const vector<Param>& params)
 {
     int rc = -1;
 
@@ -1139,17 +1102,14 @@ static int _CheckFunctionQualifiers(
                 // If qalifier parameter argument not found:
                 if (pos == (size_t)-1)
                 {
-                    lexer.SetErr("parameter given by [count=%s] not found",
-                        p.qvals.count.c_str());
+                    lexer.SetErr("parameter given by [count=%s] not found", p.qvals.count.c_str());
                     goto done;
                 }
 
                 // If qalifier parameter argument is not a counter:
                 if (!params[pos].IsCounter())
                 {
-                    lexer.SetErr(
-                        "parameter given by [count=%s] is not a counter",
-                        p.qvals.count.c_str());
+                    lexer.SetErr("parameter given by [count=%s] is not a counter", p.qvals.count.c_str());
                     goto done;
                 }
             }
@@ -1163,9 +1123,7 @@ done:
     return rc;
 }
 
-static int _CheckStructQualifiers(
-    Lexer& lexer, 
-    Struct& s)
+static int _CheckStructQualifiers(Lexer& lexer, Struct& s)
 {
     int rc = -1;
 
@@ -1183,17 +1141,14 @@ static int _CheckStructQualifiers(
                 // If qalifier parameter argument not found:
                 if (pos == (size_t)-1)
                 {
-                    lexer.SetErr("parameter given by [count=%s] not found",
-                        f.qvals.count.c_str());
+                    lexer.SetErr("parameter given by [count=%s] not found", f.qvals.count.c_str());
                     goto done;
                 }
 
                 // If qalifier parameter argument is not a counter:
                 if (!s.fields[pos].IsCounter())
                 {
-                    lexer.SetErr(
-                        "parameter given by [count=%s] is not a counter",
-                        f.qvals.count.c_str());
+                    lexer.SetErr("parameter given by [count=%s] is not a counter", f.qvals.count.c_str());
                     goto done;
                 }
             }
@@ -1207,9 +1162,7 @@ done:
     return rc;
 }
 
-static int _ParseFunction(
-    Lexer& lexer, 
-    Function& x)
+static int _ParseFunction(Lexer& lexer, Function& x)
 {
     int rc = -1;
     ReturnType returnType;
@@ -1273,9 +1226,7 @@ done:
     return rc;
 }
 
-static int _ParseStruct(
-    Lexer& lexer, 
-    Struct& x)
+static int _ParseStruct(Lexer& lexer, Struct& x)
 {
     int rc = -1;
     ReturnType returnType;
@@ -1339,9 +1290,7 @@ done:
     return rc;
 }
 
-static int _ParseVerbatim(
-    Lexer& lexer, 
-    Verbatim& x)
+static int _ParseVerbatim(Lexer& lexer, Verbatim& x)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -1355,7 +1304,7 @@ static int _ParseVerbatim(
         }
 
         string text = lexer.text;
-        x.filename = text.substr(1, text.size()-2);
+        x.filename = text.substr(1, text.size() - 2);
     }
 
     rc = 0;
@@ -1365,9 +1314,7 @@ done:
     return rc;
 }
 
-static int _ParseInclude(
-    Lexer& lexer, 
-    string& filename)
+static int _ParseInclude(Lexer& lexer, string& filename)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -1383,7 +1330,7 @@ static int _ParseInclude(
         }
 
         string text = lexer.text;
-        filename = text.substr(1, text.size()-2);
+        filename = text.substr(1, text.size() - 2);
     }
 
     rc = 0;

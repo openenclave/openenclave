@@ -1,9 +1,9 @@
-#include <pthread.h>
 #include <assert.h>
 #include <openenclave/enclave.h>
+#include <pthread.h>
 
 #ifdef pthread_equal
-# undef pthread_equal
+#undef pthread_equal
 #endif
 
 /*
@@ -24,17 +24,13 @@ int pthread_equal(pthread_t thread1, pthread_t thread2)
     return OE_ThreadEqual((OE_Thread)thread1, (OE_Thread)thread2);
 }
 
-int pthread_create(
-    pthread_t *thread,
-    const pthread_attr_t *attr,
-    void *(*start_routine) (void *),
-    void *arg)
+int pthread_create(pthread_t* thread, const pthread_attr_t* attr, void* (*start_routine)(void*), void* arg)
 {
     OE_Assert("pthread_create(): panic" == NULL);
     return -1;
 }
 
-int pthread_join(pthread_t thread, void **retval)
+int pthread_join(pthread_t thread, void** retval)
 {
     assert("pthread_join(): panic" == NULL);
     return -1;
@@ -143,9 +139,7 @@ int pthread_mutex_destroy(pthread_mutex_t* m)
 **==============================================================================
 */
 
-int pthread_rwlock_init(
-    pthread_rwlock_t* rwlock, 
-    const pthread_rwlockattr_t* attr)
+int pthread_rwlock_init(pthread_rwlock_t* rwlock, const pthread_rwlockattr_t* attr)
 {
     if (rwlock)
         return pthread_mutex_init((pthread_mutex_t*)rwlock, NULL);
@@ -198,21 +192,18 @@ int pthread_cond_init(pthread_cond_t* cond, const pthread_condattr_t* attr)
     return OE_CondInit((OE_Cond*)cond);
 }
 
-int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t* mutex)
+int pthread_cond_wait(pthread_cond_t* cond, pthread_mutex_t* mutex)
 {
     return OE_CondWait((OE_Cond*)cond, (OE_Mutex*)mutex);
 }
 
-int pthread_cond_timedwait(
-    pthread_cond_t *cond, 
-    pthread_mutex_t* mutex,
-    const struct timespec* ts)
+int pthread_cond_timedwait(pthread_cond_t* cond, pthread_mutex_t* mutex, const struct timespec* ts)
 {
     assert("pthread_cond_timedwait(): panic" == NULL);
     return -1;
 }
 
-int pthread_cond_signal(pthread_cond_t *cond)
+int pthread_cond_signal(pthread_cond_t* cond)
 {
     return OE_CondSignal((OE_Cond*)cond);
 }
@@ -222,7 +213,7 @@ int pthread_cond_broadcast(pthread_cond_t* cond)
     return OE_CondBroadcast((OE_Cond*)cond);
 }
 
-int pthread_cond_destroy(pthread_cond_t *cond)
+int pthread_cond_destroy(pthread_cond_t* cond)
 {
     return OE_CondDestroy((OE_Cond*)cond);
 }

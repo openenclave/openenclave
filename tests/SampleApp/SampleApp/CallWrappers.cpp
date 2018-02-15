@@ -2,20 +2,17 @@
 
 #define __OE_DebugBreak()
 
-int SecureStrPatching(
-    const char *src,
-    char *dst,
-    int dstLength);
+int SecureStrPatching(const char* src, char* dst, int dstLength);
 
 struct SecureStrPatchingARGS
 {
-    const char *src;
-    char *dst;
+    const char* src;
+    char* dst;
     int dstLength;
     int ret;
 };
 
-OE_ECALL OE_Result SecureStrPatching(void *data)
+OE_ECALL OE_Result SecureStrPatching(void* data)
 {
     if (!OE_IsOutsideEnclave(data, sizeof(SecureStrPatchingARGS)))
         return OE_FAILURE;
@@ -25,13 +22,10 @@ OE_ECALL OE_Result SecureStrPatching(void *data)
     return OE_OK;
 }
 
-int HostUnsecureStrPatching(
-    const char *src,
-    char *dst,
-    int dstLength)
+int HostUnsecureStrPatching(const char* src, char* dst, int dstLength)
 {
     SecureStrPatchingARGS* args;
-    
+
     args = (SecureStrPatchingARGS*)OE_HostMalloc(sizeof(SecureStrPatchingARGS));
     if (args == NULL)
     {

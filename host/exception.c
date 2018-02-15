@@ -1,34 +1,31 @@
-#include <stdio.h>
-#include <string.h>
 #include <assert.h>
 #include <dlfcn.h>
-#include <setjmp.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <signal.h>
-#include <ucontext.h>
-#include "asmdefs.h"
-#include "enclave.h"
-#include <openenclave/host.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/bits/build.h>
-#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/registers.h>
+#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/bits/utils.h>
+#include <openenclave/host.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <ucontext.h>
+#include <unistd.h>
+#include "asmdefs.h"
+#include "enclave.h"
 
 #if !defined(_NSIG) && defined(_SIG_MAXSIG)
-# define _NSIG (_SIG_MAXSIG - 1)
+#define _NSIG (_SIG_MAXSIG - 1)
 #endif
 
 static struct sigaction g_previous_sigaction[_NSIG];
 
-static void _HostSignalHandler(
-    int sigNum, 
-    siginfo_t* sigInfo, 
-    void *sigData)
+static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
 {
-    ucontext_t* context = (ucontext_t *)sigData;
+    ucontext_t* context = (ucontext_t*)sigData;
     uint64_t exitCode = context->uc_mcontext.gregs[REG_RAX];
     uint64_t tcsAddress = context->uc_mcontext.gregs[REG_RBX];
     uint64_t exitAddress = context->uc_mcontext.gregs[REG_RIP];
@@ -54,16 +51,16 @@ static void _HostSignalHandler(
             abort();
         }
     }
-    else if(g_previous_sigaction[sigNum].sa_handler == SIG_DFL)
+    else if (g_previous_sigaction[sigNum].sa_handler == SIG_DFL)
     {
-        // If not an enclave exception, and no valid previous signal handler is set, raise it again, and let the 
+        // If not an enclave exception, and no valid previous signal handler is set, raise it again, and let the
         // default signal handler handle it.
         signal(sigNum, SIG_DFL);
         raise(sigNum);
     }
     else
     {
-        // If not an enclave exception, and there is old signal handler, we need transfer the signal to the old 
+        // If not an enclave exception, and there is old signal handler, we need transfer the signal to the old
         // signal handler;
         if (!(g_previous_sigaction[sigNum].sa_flags & SA_NODEFER))
         {
@@ -103,18 +100,18 @@ static void _RegisterSignalHandlers(void)
     memset(&sigAction, 0, sizeof(sigAction));
     sigAction.sa_sigaction = _HostSignalHandler;
 
-    // To use sa_sigaction instead of sa_handler, and allow catch the same signal as the one you're currently handling, 
+    // To use sa_sigaction instead of sa_handler, and allow catch the same signal as the one you're currently handling,
     // and automatically restart the system call interrupted the signal.
     sigAction.sa_flags = SA_SIGINFO | SA_NODEFER | SA_RESTART;
 
-    // Should honor the current signal masks. 
+    // Should honor the current signal masks.
     sigemptyset(&sigAction.sa_mask);
     if (sigprocmask(SIG_SETMASK, NULL, &sigAction.sa_mask) != 0)
     {
         abort();
     }
 
-    // Unmask the signals we want to receive. 
+    // Unmask the signals we want to receive.
     sigdelset(&sigAction.sa_mask, SIGSEGV);
     sigdelset(&sigAction.sa_mask, SIGFPE);
     sigdelset(&sigAction.sa_mask, SIGILL);
@@ -127,7 +124,6 @@ static void _RegisterSignalHandlers(void)
         abort();
     }
 
-    
     if (sigaction(SIGFPE, &sigAction, &g_previous_sigaction[SIGFPE]) != 0)
     {
         abort();
@@ -142,7 +138,7 @@ static void _RegisterSignalHandlers(void)
     {
         abort();
     }
-    
+
     if (sigaction(SIGTRAP, &sigAction, &g_previous_sigaction[SIGTRAP]) != 0)
     {
         abort();

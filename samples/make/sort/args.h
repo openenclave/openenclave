@@ -5,7 +5,6 @@ typedef struct _Args
 {
     size_t* data;
     size_t size;
-}
-Args;
+} Args;
 
 #endif /* _ARGS_H */

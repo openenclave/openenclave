@@ -2,10 +2,10 @@
 #include <cstdlib>
 #include <fstream>
 #include "files.h"
-#include "objects.h"
-#include "lexer.h"
-#include "parser.h"
 #include "generator.h"
+#include "lexer.h"
+#include "objects.h"
+#include "parser.h"
 
 const char* arg0;
 
@@ -62,11 +62,7 @@ static string StripExtension(const string& path, const string& ext)
     return path.substr(0, npos);
 }
 
-int GetOpt(
-    int& argc, 
-    const char* argv[], 
-    const char* name, 
-    const char** arg = NULL)
+int GetOpt(int& argc, const char* argv[], const char* name, const char** arg = NULL)
 {
     for (int i = 0; i < argc; i++)
     {
@@ -74,7 +70,7 @@ int GetOpt(
         {
             if (!arg)
             {
-                memmove((void*)&argv[i], &argv[i+1], (argc-i) * sizeof(char*));
+                memmove((void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
                 argc--;
                 return 1;
             }
@@ -82,8 +78,8 @@ int GetOpt(
             if (i + 1 == argc)
                 return -1;
 
-            *arg = argv[i+1];
-            memmove((char**)&argv[i], &argv[i+2], (argc-i-1) * sizeof(char*));
+            *arg = argv[i + 1];
+            memmove((char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
             argc -= 2;
             return 1;
         }
@@ -92,15 +88,14 @@ int GetOpt(
     return 0;
 }
 
-const char HELP[] =
-    "Usage: %s OPTIONS IDL-FILENAME\n"
-    "\n"
-    "OPTIONS:\n"
-    "    -t, --trusted    - generate trusted sources (enclave).\n"
-    "    -u, --untrusted  - generate untrusted sources (application).\n"
-    "    -d, --dir PATH   - directory where sources are written.\n"
-    "    -h, --help       - print this help message.\n"
-    "\n";
+const char HELP[] = "Usage: %s OPTIONS IDL-FILENAME\n"
+                    "\n"
+                    "OPTIONS:\n"
+                    "    -t, --trusted    - generate trusted sources (enclave).\n"
+                    "    -u, --untrusted  - generate untrusted sources (application).\n"
+                    "    -d, --dir PATH   - directory where sources are written.\n"
+                    "    -h, --help       - print this help message.\n"
+                    "\n";
 
 int main(int argc, const char* argv[])
 {
@@ -129,12 +124,11 @@ int main(int argc, const char* argv[])
     {
         const char* arg = NULL;
 
-        if (GetOpt(argc, argv, "-d", &arg) == 1 || 
-            GetOpt(argc, argv, "--dir", &arg) == 1)
+        if (GetOpt(argc, argv, "-d", &arg) == 1 || GetOpt(argc, argv, "--dir", &arg) == 1)
         {
             dirname = arg;
 
-            if (dirname.size() && dirname[dirname.size()-1] != '/')
+            if (dirname.size() && dirname[dirname.size() - 1] != '/')
                 dirname += '/';
         }
     }
@@ -194,8 +188,7 @@ int main(int argc, const char* argv[])
             if (!os)
                 ErrExit("failed to open: %s", path.c_str());
 
-            if (Generator::GenerateHeaderFile(
-                os, path, true, parser.Objects()) != 0)
+            if (Generator::GenerateHeaderFile(os, path, true, parser.Objects()) != 0)
             {
                 ErrExit("failed to generate: %s", path.c_str());
             }
@@ -211,8 +204,7 @@ int main(int argc, const char* argv[])
             if (!os)
                 ErrExit("failed to open: %s", path.c_str());
 
-            if (Generator::GenerateSourceFile(
-                os, path, true, parser.Objects()) != 0)
+            if (Generator::GenerateSourceFile(os, path, true, parser.Objects()) != 0)
             {
                 ErrExit("failed to generate: %s", path.c_str());
             }
@@ -232,8 +224,7 @@ int main(int argc, const char* argv[])
             if (!os)
                 ErrExit("failed to open: %s", path.c_str());
 
-            if (Generator::GenerateHeaderFile(
-                os, path, false, parser.Objects()) != 0)
+            if (Generator::GenerateHeaderFile(os, path, false, parser.Objects()) != 0)
             {
                 ErrExit("failed to generate: %s", path.c_str());
             }
@@ -249,8 +240,7 @@ int main(int argc, const char* argv[])
             if (!os)
                 ErrExit("failed to open: %s", path.c_str());
 
-            if (Generator::GenerateSourceFile(
-                os, path, false, parser.Objects()) != 0)
+            if (Generator::GenerateSourceFile(os, path, false, parser.Objects()) != 0)
             {
                 ErrExit("failed to generate: %s", path.c_str());
             }

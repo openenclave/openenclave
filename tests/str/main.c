@@ -1,7 +1,7 @@
 #define MEM_MIN_CAP 1
 #include <assert.h>
-#include <stdio.h>
 #include <openenclave/bits/str.h>
+#include <stdio.h>
 
 void TestStr(str_t* s)
 {
@@ -103,8 +103,7 @@ void TestStr(str_t* s)
 
     /* Test sprintf */
     {
-        assert(str_printf(s, "%s%s%s%s%s", 
-            "abcdefg", "hijk", "lmnop", "qrstuv", "wxyz") == 0);
+        assert(str_printf(s, "%s%s%s%s%s", "abcdefg", "hijk", "lmnop", "qrstuv", "wxyz") == 0);
         assert(str_len(s) == 26);
         assert(strcmp(str_ptr(s), "abcdefghijklmnopqrstuvwxyz") == 0);
 

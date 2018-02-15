@@ -1,8 +1,8 @@
 #include <expat.h>
-#include <iostream>
-#include <cstdio>
 #include <cstdarg>
+#include <cstdio>
 #include <fstream>
+#include <iostream>
 #include "element.h"
 #include "err.h"
 #include "utils.h"
@@ -37,11 +37,7 @@ enum Trait
     REF,
 };
 
-void SubstituteTrait(
-    string& chars, 
-    Trait trait,
-    const string& text,
-    const string& arg = string())
+void SubstituteTrait(string& chars, Trait trait, const string& text, const string& arg = string())
 {
     if (trait == VERBATIM)
     {
@@ -171,9 +167,7 @@ bool PrintSimpleSect(const Element& elem, ostream& os)
     return true;
 }
 
-bool PrintDetailedDescription(
-    const Element& detaileddescription, 
-    ostream& os)
+bool PrintDetailedDescription(const Element& detaileddescription, ostream& os)
 {
     vector<Element> paras;
     detaileddescription.find("para", paras);
@@ -274,9 +268,9 @@ bool GenerateFunctionFile(const Element& elem)
 
             os << "        " << type;
 
-            if (type.size() && type[type.size()-1] != '*' && declname.size())
+            if (type.size() && type[type.size() - 1] != '*' && declname.size())
                 os << ' ';
-            
+
             os << declname;
 
             if (i + 1 == params.size())
@@ -325,8 +319,7 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
 
         if (!Element::parse(xmlfile, root, error))
         {
-            err("%u(%s): %s", error.line(), xmlfile.c_str(), 
-                error.message().c_str());
+            err("%u(%s): %s", error.line(), xmlfile.c_str(), error.message().c_str());
             return false;
         }
 
@@ -370,10 +363,7 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
         {
             Element f;
 
-            if (!root.search(
-                "compounddef.sectiondef.memberdef.id", 
-                refid, 
-                f))
+            if (!root.search("compounddef.sectiondef.memberdef.id", refid, f))
             {
                 err("failed to find function: %s", name.c_str());
                 return false;

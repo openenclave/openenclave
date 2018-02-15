@@ -5,7 +5,6 @@ typedef struct _RicochetArgs
 {
     int i;
     int count;
-}
-RicochetArgs;
+} RicochetArgs;
 
 #endif /* _RICOCHETARGS_H */

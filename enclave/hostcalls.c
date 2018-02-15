@@ -1,7 +1,7 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/print.h>
+#include <openenclave/enclave.h>
 #include "td.h"
 
 void* OE_HostMalloc(size_t size)
@@ -32,8 +32,7 @@ void* OE_HostRealloc(void* ptr, size_t size)
     OE_ReallocArgs* argIn = NULL;
     uint64_t argOut = 0;
 
-    if (!(argIn = (OE_ReallocArgs*)OE_HostAllocForCallHost(
-        sizeof(OE_ReallocArgs), 0, false)))
+    if (!(argIn = (OE_ReallocArgs*)OE_HostAllocForCallHost(sizeof(OE_ReallocArgs), 0, false)))
     {
         return NULL;
     }
@@ -124,8 +123,7 @@ int __OE_HostPrint(int device, const char* str, size_t len)
         len = OE_Strlen(str);
 
     /* Allocate space for the arguments followed by null-terminated string */
-    if (!(args = (OE_PrintArgs*)OE_HostAllocForCallHost(
-        sizeof(OE_PrintArgs) + len + 1, 0, false)))
+    if (!(args = (OE_PrintArgs*)OE_HostAllocForCallHost(sizeof(OE_PrintArgs) + len + 1, 0, false)))
     {
         goto done;
     }
@@ -152,7 +150,7 @@ done:
 int __OE_HostVprintf(const char* fmt, OE_va_list ap_)
 {
     char buf[256];
-    char *p = buf;
+    char* p = buf;
     int n;
 
     /* Try first with a fixed-length scratch buffer */

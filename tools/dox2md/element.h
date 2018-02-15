@@ -2,15 +2,14 @@
 #define _DOX2MD_ELEMENT_H
 
 #include <iostream>
-#include <vector>
-#include <string>
-#include <stack>
 #include <map>
+#include <stack>
+#include <string>
+#include <vector>
 
 class Error
 {
-public:
-
+  public:
     Error()
     {
         clear();
@@ -28,19 +27,24 @@ public:
         _message = message;
     }
 
-    std::string message() const { return _message; }
+    std::string message() const
+    {
+        return _message;
+    }
 
-    unsigned int line() const { return _line; }
+    unsigned int line() const
+    {
+        return _line;
+    }
 
-private:
+  private:
     unsigned int _line;
     std::string _message;
 };
 
 class Attribute
 {
-public:
-
+  public:
     Attribute(const std::string& name, const std::string& value);
 
     const std::string& name() const;
@@ -49,15 +53,14 @@ public:
 
     void dump(std::ostream& os = std::cout, size_t depth = 0) const;
 
-private:
+  private:
     std::string _name;
     std::string _value;
 };
 
 class Attributes
 {
-public:
-
+  public:
     Attributes();
 
     Attributes(const char** arr);
@@ -76,14 +79,13 @@ public:
 
     void dump(std::ostream& os = std::cout, size_t depth = 0) const;
 
-private:
+  private:
     std::vector<Attribute> _attrs;
 };
 
 struct Element
 {
-public:
-
+  public:
     Element();
 
     const std::string& name() const;
@@ -110,23 +112,15 @@ public:
 
     void dump(std::ostream& os = std::cout, size_t depth = 0) const;
 
-    bool search(
-        const std::string& xmlpath, 
-        const std::string& key, 
-        Element& elem) const;
+    bool search(const std::string& xmlpath, const std::string& key, Element& elem) const;
 
-    void find(
-        const std::string& name,
-        std::vector<Element>& elements) const;
+    void find(const std::string& name, std::vector<Element>& elements) const;
 
     bool contains(const std::string& name) const;
 
-    static bool parse(
-        const std::string& path, 
-        Element& root,
-        Error& error);
+    static bool parse(const std::string& path, Element& root, Error& error);
 
-private:
+  private:
     std::string _name;
     Attributes _attrs;
     std::string _chars;

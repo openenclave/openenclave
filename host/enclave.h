@@ -1,15 +1,15 @@
 #ifndef _OE_HOST_ENCLAVE_H
 #define _OE_HOST_ENCLAVE_H
 
-#include <openenclave/host.h>
-#include <stdbool.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/host.h>
+#include <stdbool.h>
 #include "asmdefs.h"
 #include "hostthread.h"
 
 #if defined(_WIN32)
-# include <windows.h>
+#include <windows.h>
 #endif
 
 typedef struct _EnclaveEvent
@@ -19,8 +19,7 @@ typedef struct _EnclaveEvent
 #elif defined(_WIN32)
     HANDLE handle;
 #endif
-}
-EnclaveEvent;
+} EnclaveEvent;
 
 #define ENCLAVE_MAGIC 0x20dc98463a5ad8b8
 
@@ -34,8 +33,7 @@ typedef struct _ECallNameAddr
 
     /* Virtual address of ECALL function */
     uint64_t vaddr;
-}
-ECallNameAddr;
+} ECallNameAddr;
 
 /*
 **==============================================================================
@@ -74,8 +72,7 @@ typedef struct _ThreadBinding
 
     /* Event signaling object for enclave threading implementation */
     EnclaveEvent event;
-}
-ThreadBinding;
+} ThreadBinding;
 
 OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 

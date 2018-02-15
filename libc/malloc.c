@@ -1,9 +1,9 @@
-#include <openenclave/enclave.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/globals.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/malloc.h>
 #include <errno.h>
+#include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/fault.h>
+#include <openenclave/bits/globals.h>
+#include <openenclave/bits/malloc.h>
+#include <openenclave/enclave.h>
 #include <stdio.h>
 
 #define OE_ENABLE_MALLOC_WRAPPERS
@@ -62,7 +62,7 @@ void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function)
     _failureCallback = function;
 }
 
-void *malloc(size_t size)
+void* malloc(size_t size)
 {
     void* p = dlmalloc(size);
 
@@ -77,12 +77,12 @@ void *malloc(size_t size)
     return p;
 }
 
-void free(void *ptr)
+void free(void* ptr)
 {
     dlfree(ptr);
 }
 
-void *calloc(size_t nmemb, size_t size)
+void* calloc(size_t nmemb, size_t size)
 {
     void* p = dlcalloc(nmemb, size);
 
@@ -97,7 +97,7 @@ void *calloc(size_t nmemb, size_t size)
     return p;
 }
 
-void *realloc(void *ptr, size_t size)
+void* realloc(void* ptr, size_t size)
 {
     void* p = dlrealloc(ptr, size);
 
@@ -112,7 +112,7 @@ void *realloc(void *ptr, size_t size)
     return p;
 }
 
-int posix_memalign(void **memptr, size_t alignment, size_t size)
+int posix_memalign(void** memptr, size_t alignment, size_t size)
 {
     int rc = dlposix_memalign(memptr, alignment, size);
 
@@ -127,7 +127,7 @@ int posix_memalign(void **memptr, size_t alignment, size_t size)
     return rc;
 }
 
-void *memalign(size_t alignment, size_t size)
+void* memalign(size_t alignment, size_t size)
 {
     void* p = dlmemalign(alignment, size);
 
@@ -145,7 +145,7 @@ void *memalign(size_t alignment, size_t size)
 /*
 **==============================================================================
 **
-** Alias dlmalloc functions to standard function names if 
+** Alias dlmalloc functions to standard function names if
 ** OE_ENABLE_MALLOC_WRAPPERS is not defined.
 **
 **==============================================================================

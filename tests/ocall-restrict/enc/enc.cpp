@@ -1,6 +1,6 @@
 #include <openenclave/enclave.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 #include "../args.h"
 
 static int counter;
@@ -17,8 +17,8 @@ static int counter;
 OE_ECALL void Test(void* argPtr)
 {
     OE_Result res;
-    TestORArgs *ta = (TestORArgs*)argPtr;
-    OE_CallHostArgs *cha = &ta->callHost;
+    TestORArgs* ta = (TestORArgs*)argPtr;
+    OE_CallHostArgs* cha = &ta->callHost;
 
     printf("%s(): Called, ta=%p\n", __FUNCTION__, ta);
 
@@ -29,8 +29,7 @@ OE_ECALL void Test(void* argPtr)
 
     printf("%s(): OCALL...\n", __FUNCTION__);
     res = OE_OCall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, 0);
-    printf("%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n",
-        __FUNCTION__, res, ta->result, counter);
+    printf("%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n", __FUNCTION__, res, ta->result, counter);
     OE_Assert(res == OE_OK);
     OE_Assert(ta->result == OE_OK);
     OE_Assert(counter == 1);
@@ -38,8 +37,7 @@ OE_ECALL void Test(void* argPtr)
     /* Perform restricted ocall, expect ecall to fail */
     printf("%s(): OCALL(restricted)...\n", __FUNCTION__);
     res = OE_OCall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
-    printf("%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n",
-        __FUNCTION__, res, ta->result, counter);
+    printf("%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n", __FUNCTION__, res, ta->result, counter);
     OE_Assert(res == OE_OK);
     OE_Assert(ta->result == OE_UNEXPECTED);
     OE_Assert(counter == 1);
@@ -62,4 +60,3 @@ OE_ECALL void ECallNested(void* args)
     counter++;
     printf("%s(): Returning, counter=%d\n", __FUNCTION__, counter);
 }
-

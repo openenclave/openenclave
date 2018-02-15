@@ -1,33 +1,33 @@
 #if defined(__linux__)
-# define __OE_NEED_TIME_CALLS
+#define __OE_NEED_TIME_CALLS
 #endif
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #if defined(__linux__)
-# include <dlfcn.h>
-# include <setjmp.h>
-# include <sys/mman.h>
-# include <unistd.h>
-# include <linux/futex.h>
-# include <sys/syscall.h>
+#include <dlfcn.h>
+#include <linux/futex.h>
+#include <setjmp.h>
+#include <sys/mman.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 #elif defined(_WIN32)
-# include <Windows.h>
+#include <Windows.h>
 #else
-# error "unsupported platform"
+#error "unsupported platform"
 #endif
 
-#include "asmdefs.h"
-#include "enclave.h"
-#include <openenclave/host.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/bits/build.h>
-#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/registers.h>
+#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/bits/utils.h>
+#include <openenclave/host.h>
+#include "asmdefs.h"
+#include "enclave.h"
 #include "ocalls.h"
 
 /*
@@ -99,14 +99,13 @@ ThreadBinding* GetThreadBinding()
 **==============================================================================
 */
 
-static OE_Result _EnterSim(
-    OE_Enclave* enclave,
-    void* tcs_,
-    void (*aep)(void),
-    uint64_t arg1,
-    uint64_t arg2,
-    uint64_t* arg3,
-    uint64_t* arg4)
+static OE_Result _EnterSim(OE_Enclave* enclave,
+                           void* tcs_,
+                           void (*aep)(void),
+                           uint64_t arg1,
+                           uint64_t arg2,
+                           uint64_t* arg3,
+                           uint64_t* arg4)
 {
     OE_Result result = OE_UNEXPECTED;
     SGX_TCS* tcs = (SGX_TCS*)tcs_;
@@ -165,16 +164,15 @@ OE_CATCH:
 */
 
 OE_ALWAYS_INLINE
-static OE_Result _DoEENTER(
-    OE_Enclave* enclave,
-    void* tcs,
-    void (*aep)(void),
-    OE_Code codeIn,
-    uint32_t funcIn,
-    uint64_t argIn,
-    OE_Code* codeOut,
-    uint32_t* funcOut,
-    uint64_t* argOut)
+static OE_Result _DoEENTER(OE_Enclave* enclave,
+                           void* tcs,
+                           void (*aep)(void),
+                           OE_Code codeIn,
+                           uint32_t funcIn,
+                           uint64_t argIn,
+                           OE_Code* codeOut,
+                           uint32_t* funcOut,
+                           uint64_t* argOut)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -190,8 +188,7 @@ static OE_Result _DoEENTER(
     if (!codeOut || !funcOut || !argOut)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    OE_TRACE_INFO("_DoEENTER(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%lx)\n",
-        tcs, aep, codeIn, funcIn, argIn);
+    OE_TRACE_INFO("_DoEENTER(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%lx)\n", tcs, aep, codeIn, funcIn, argIn);
 
     /* Call OE_Enter() assembly function (enter.S) */
     {
@@ -230,8 +227,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-static OE_HostFunc _FindHostFunc(
-    const char* name)
+static OE_HostFunc _FindHostFunc(const char* name)
 {
 #if defined(__linux__)
 
@@ -311,9 +307,7 @@ static void _HandleCallHost(uint64_t arg)
 static OE_OCallFunction _ocalls[OE_MAX_OCALLS];
 static OE_H_Mutex _ocalls_lock = OE_H_MUTEX_INITIALIZER;
 
-OE_Result OE_RegisterOCall(
-    uint32_t func,
-    OE_OCallFunction ocall)
+OE_Result OE_RegisterOCall(uint32_t func, OE_OCallFunction ocall)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_H_MutexLock(&_ocalls_lock);
@@ -343,12 +337,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-static OE_Result _HandleOCALL(
-    OE_Enclave* enclave,
-    void* tcs,
-    uint32_t func,
-    uint64_t argIn,
-    uint64_t* argOut)
+static OE_Result _HandleOCALL(OE_Enclave* enclave, void* tcs, uint32_t func, uint64_t argIn, uint64_t* argOut)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -474,13 +463,12 @@ OE_CATCH:
 **==============================================================================
 */
 
-int __OE_DispatchOCall(
-    uint64_t arg1,
-    uint64_t arg2,
-    uint64_t* arg1Out,
-    uint64_t* arg2Out,
-    void* tcs,
-    OE_Enclave* enclave)
+int __OE_DispatchOCall(uint64_t arg1,
+                       uint64_t arg2,
+                       uint64_t* arg1Out,
+                       uint64_t* arg2Out,
+                       void* tcs,
+                       OE_Enclave* enclave)
 {
     const OE_Code code = OE_GetCodeFromCallArg1(arg1);
     const uint32_t func = OE_GetFuncFromCallArg1(arg1);
@@ -524,8 +512,7 @@ int __OE_DispatchOCall(
 **==============================================================================
 */
 
-static void* _AssignTCS(
-    OE_Enclave* enclave)
+static void* _AssignTCS(OE_Enclave* enclave)
 {
     void* tcs = NULL;
     size_t i;
@@ -584,9 +571,7 @@ static void* _AssignTCS(
 **==============================================================================
 */
 
-static void _ReleaseTCS(
-    OE_Enclave* enclave,
-    void* tcs)
+static void _ReleaseTCS(OE_Enclave* enclave, void* tcs)
 {
     size_t i;
 
@@ -626,14 +611,10 @@ static void _ReleaseTCS(
 */
 
 #if defined(_WIN32)
-# define TRACE_ECALLS
+#define TRACE_ECALLS
 #endif
 
-OE_Result OE_ECall(
-    OE_Enclave* enclave,
-    uint32_t func,
-    uint64_t arg,
-    uint64_t* argOutPtr)
+OE_Result OE_ECall(OE_Enclave* enclave, uint32_t func, uint64_t arg, uint64_t* argOutPtr)
 {
     OE_Result result = OE_UNEXPECTED;
     void* tcs = NULL;
@@ -654,16 +635,7 @@ OE_Result OE_ECall(
         OE_THROW(OE_OUT_OF_THREADS);
 
     /* Perform ECALL or ORET */
-    OE_TRY(_DoEENTER(
-        enclave,
-        tcs,
-        OE_AEP,
-        code,
-        func,
-        arg,
-        &codeOut,
-        &funcOut,
-        &argOut));
+    OE_TRY(_DoEENTER(enclave, tcs, OE_AEP, code, func, arg, &codeOut, &funcOut, &argOut));
 
     /* Process OCALLS */
     if (codeOut != OE_CODE_ERET)
@@ -679,9 +651,9 @@ OE_CATCH:
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
 
-    /* ATTN: this causes an assertion with call nesting. */
-    /* ATTN: make enclave argument a cookie. */
-    /* SetEnclave(NULL); */
+/* ATTN: this causes an assertion with call nesting. */
+/* ATTN: make enclave argument a cookie. */
+/* SetEnclave(NULL); */
 
 #if defined(TRACE_ECALLS)
     printf("=== OE_ECall(): result=%u\n", result);
@@ -700,10 +672,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-static uint64_t _FindEnclaveFunc(
-    OE_Enclave* enclave,
-    const char* func,
-    uint64_t* index)
+static uint64_t _FindEnclaveFunc(OE_Enclave* enclave, const char* func, uint64_t* index)
 {
     size_t i;
 
@@ -720,7 +689,7 @@ static uint64_t _FindEnclaveFunc(
     {
         const ECallNameAddr* p = &enclave->ecalls[i];
 
-        if (p->code == code && memcmp(&p->name[1], &func[1], len-2) == 0)
+        if (p->code == code && memcmp(&p->name[1], &func[1], len - 2) == 0)
         {
             *index = i;
             return enclave->ecalls[i].vaddr;
@@ -741,10 +710,7 @@ static uint64_t _FindEnclaveFunc(
 **==============================================================================
 */
 
-OE_Result OE_CallEnclave(
-    OE_Enclave* enclave,
-    const char* func,
-    void* args)
+OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_CallEnclaveArgs callEnclaveArgs;
@@ -755,8 +721,7 @@ OE_Result OE_CallEnclave(
 
     /* Initialize the callEnclaveArgs structure */
     {
-        if (!(callEnclaveArgs.vaddr = _FindEnclaveFunc(
-            enclave, func, &callEnclaveArgs.func)))
+        if (!(callEnclaveArgs.vaddr = _FindEnclaveFunc(enclave, func, &callEnclaveArgs.func)))
         {
             OE_THROW(OE_NOT_FOUND);
         }
@@ -769,11 +734,7 @@ OE_Result OE_CallEnclave(
     {
         uint64_t argOut = 0;
 
-        OE_TRY(OE_ECall(
-            enclave,
-            OE_FUNC_CALL_ENCLAVE,
-            (uint64_t)&callEnclaveArgs,
-            &argOut));
+        OE_TRY(OE_ECall(enclave, OE_FUNC_CALL_ENCLAVE, (uint64_t)&callEnclaveArgs, &argOut));
         OE_TRY(argOut);
     }
 
@@ -787,8 +748,8 @@ OE_CATCH:
 }
 
 #if defined(__linux__)
-# pragma GCC push_options
-# pragma GCC optimize ("O0")
+#pragma GCC push_options
+#pragma GCC optimize("O0")
 #endif
 
 /*
@@ -796,9 +757,7 @@ OE_CATCH:
 ** optimized out even they don't do anything in here.
 */
 
-OE_NEVER_INLINE void _OE_NotifyOCallStart(
-    _OE_HostOCallFrame* frame_pointer,
-    void* tcs)
+OE_NEVER_INLINE void _OE_NotifyOCallStart(_OE_HostOCallFrame* frame_pointer, void* tcs)
 {
     OE_UNUSED(frame_pointer);
     OE_UNUSED(tcs);
@@ -806,9 +765,7 @@ OE_NEVER_INLINE void _OE_NotifyOCallStart(
     return;
 }
 
-OE_NEVER_INLINE void _OE_NotifyOCallEnd(
-    _OE_HostOCallFrame* frame_pointer,
-    void* tcs)
+OE_NEVER_INLINE void _OE_NotifyOCallEnd(_OE_HostOCallFrame* frame_pointer, void* tcs)
 {
     OE_UNUSED(frame_pointer);
     OE_UNUSED(tcs);
@@ -817,5 +774,5 @@ OE_NEVER_INLINE void _OE_NotifyOCallEnd(
 }
 
 #if defined(__linux__)
-# pragma GCC pop_options
+#pragma GCC pop_options
 #endif

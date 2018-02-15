@@ -1,11 +1,11 @@
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/bits/typeinfo.h>
-#include <climits>
-#include <cwchar>
-#include <cstdarg>
+#include <openenclave/host.h>
 #include <cassert>
+#include <climits>
+#include <cstdarg>
+#include <cwchar>
 #include "tester_u.h"
 
 const char* arg0;
@@ -25,38 +25,29 @@ int ConstructObject(Object& o, size_t id, const char* name)
     return 0;
 }
 
-OE_EXTERNC int32_t OCALL_MultipleParams(
-    const char *strIn,
-    uint32_t numIn,
-    const struct Object *objectIn,
-    char *strOut,
-    uint32_t *numOut,
-    struct Object *objectOut,
-    struct Object **objectRefOut)
+OE_EXTERNC int32_t OCALL_MultipleParams(const char* strIn,
+                                        uint32_t numIn,
+                                        const struct Object* objectIn,
+                                        char* strOut,
+                                        uint32_t* numOut,
+                                        struct Object* objectOut,
+                                        struct Object** objectRefOut)
 {
     return -1;
 }
 
-void __CheckResult(
-    const char* file,
-    unsigned int line,
-    OE_Result result, 
-    const char* msg)
+void __CheckResult(const char* file, unsigned int line, OE_Result result, const char* msg)
 {
     if (result != OE_OK)
     {
-       fprintf(stderr, "%s(%u): result=%u: %s: %s\n", file, line , result, 
-            OE_ResultStr(result), msg);
+        fprintf(stderr, "%s(%u): result=%u: %s: %s\n", file, line, result, OE_ResultStr(result), msg);
         exit(1);
     }
 }
 
 #define CheckResult(...) __CheckResult(__FILE__, __LINE__, __VA_ARGS__)
 
-bool CheckObject(
-    const Object& x,
-    size_t id,
-    const char* name)
+bool CheckObject(const Object& x, size_t id, const char* name)
 {
     return x.id == id && strcmp(x.name, name) == 0;
 }
@@ -227,19 +218,11 @@ int main(int argc, const char* argv[])
         Object objectOut;
         memset(&objectOut, 0, sizeof(Object));
         int32_t ret = -1;
-        char strOut[128] = { '\0' };
+        char strOut[128] = {'\0'};
         uint32_t numOut = 0xFFFFFFFF;
         Object* objectRefOut = NULL;
-        result = ECALL_MultipleParams(
-            enclave, 
-            &ret, 
-            "strIn",
-            999,
-            &objectIn,
-            strOut,
-            &numOut,
-            &objectOut,
-            &objectRefOut);
+        result =
+            ECALL_MultipleParams(enclave, &ret, "strIn", 999, &objectIn, strOut, &numOut, &objectOut, &objectRefOut);
         CheckResult(result, "ECALL_MultipleParams()");
         OE_TEST(ret == 0);
         OE_TEST(strcmp(strOut, "strIn") == 0);
@@ -275,8 +258,7 @@ int main(int argc, const char* argv[])
 
     // Test: ModifyObject()
     {
-        struct Object* object = 
-            (struct Object*)calloc(1, sizeof(struct Object));
+        struct Object* object = (struct Object*)calloc(1, sizeof(struct Object));
         object->id = 1;
         object->name = strdup("Obj1");
 
@@ -298,7 +280,7 @@ int main(int argc, const char* argv[])
         OE_TEST(res == 26);
         OE_TEST(buf[19] == '\0');
         OE_TEST(strlen(buf) == 19);
-        OE_TEST(strncmp(buf, alphabet, sizeof(buf)-1) == 0);
+        OE_TEST(strncmp(buf, alphabet, sizeof(buf) - 1) == 0);
         printf("=== passed TestStlcpy(): 1\n");
     }
 
@@ -342,7 +324,7 @@ int main(int argc, const char* argv[])
     // ReturnIntPtr():
     {
         int* ret;
-        int arr[3] = { 1000, 2000, 3000 };
+        int arr[3] = {1000, 2000, 3000};
         result = ReturnIntPtr(enclave, &ret, arr, OE_COUNTOF(arr));
         CheckResult(result, "ReturnIntPtr()");
         OE_TEST(ret != NULL);
@@ -392,7 +374,7 @@ int main(int argc, const char* argv[])
         CheckResult(result, "ReturnEnclaveMemory()");
         OE_TEST(ret != NULL);
         printf("=== passed ReturnEnclaveMemory()\n");
-        // Uncomment to cause intentional seg-fault: 
+        // Uncomment to cause intentional seg-fault:
         // memset(ret, 0, 1);
     }
 

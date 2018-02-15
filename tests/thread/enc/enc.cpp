@@ -1,7 +1,7 @@
+#include <assert.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include "../args.h"
 
 static OE_Mutex mutex = OE_MUTEX_INITIALIZER;
@@ -33,7 +33,6 @@ OE_ECALL void TestMutex(void* args_)
     OE_MutexUnlock(&mutex);
 
     OE_HostPrintf("Unlocked: %ld\n", OE_ThreadSelf());
-
 }
 
 static OE_Cond cond = OE_COND_INITIALIZER;
