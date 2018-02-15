@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include "../args.h"
 
+#define SKIP_RETURN_CODE    2
+
 int main(int argc, const char* argv[])
 {
     OE_Result result;
@@ -22,6 +24,11 @@ int main(int argc, const char* argv[])
     printf("=== This program is used to test basic vector exception functionalities.\n");
 
     const uint32_t flags = OE_GetCreateFlags();
+    if ((flags & OE_FLAG_SIMULATE) != 0)
+    {
+        printf("=== Skipped unsupported test in simulation mode (VectorException)\n");
+        return SKIP_RETURN_CODE;
+    }
 
     if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
