@@ -7,10 +7,10 @@
 #include "sgxtypes.h"
 
 // X87 and SSE data.
-typedef struct _OE_BASIC_XSATE
+typedef struct _OE_BASIC_XSTATE
 {
     uint8_t blob[512];
-} __attribute__((aligned(16))) OE_BASIC_XSATE;
+} OE_ALIGNED(16) OE_BASIC_XSTATE;
 
 typedef struct _OE_CONTEXT
 {
@@ -47,9 +47,9 @@ typedef struct _OE_CONTEXT
     uint32_t mxcsr;
 
     // Basic XState.
-    OE_BASIC_XSATE basic_xstate;
+    OE_BASIC_XSTATE basic_xstate;
 
-    // Don't need to manipulate other XSTATE (AVE etc.).
+    // Don't need to manipulate other XSTATE (AVX etc.).
 } OE_CONTEXT;
 
 OE_CHECK_SIZE(sizeof(OE_CONTEXT), OE_CONTEXT_SIZE);
