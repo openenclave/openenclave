@@ -14,8 +14,8 @@
 #include <sys/mman.h>
 #include <ucontext.h>
 #include <unistd.h>
-#include "asmdefs.h"
-#include "enclave.h"
+#include "../asmdefs.h"
+#include "../enclave.h"
 
 #if !defined(_NSIG) && defined(_SIG_MAXSIG)
 #define _NSIG (_SIG_MAXSIG - 1)
