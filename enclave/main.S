@@ -5,7 +5,7 @@
 //
 // OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
 //
-//     The EENTER instruction (executed by the host) calls this function to 
+//     The EENTER instruction (executed by the host) calls this function to
 //     enter the enclave.
 //
 //     Registers from EENTER:
@@ -47,8 +47,8 @@ OE_Main:
     jne .exception_entry
 
     // Check whether this is a clean entry or a nested entry
-    mov %gs:TD_depth, %r8 
-    cmp $0, %r8 
+    mov %gs:TD_depth, %r8
+    cmp $0, %r8
     je .clean_entry
     jmp .nested_entry
 
@@ -63,7 +63,7 @@ OE_Main:
     // Get the address of current SSA.
     add %r10, %rax
 
-    // Get the saved rsp. We can't depend on the TLS value to get the enclave rsp in exception entry since the value may 
+    // Get the saved rsp. We can't depend on the TLS value to get the enclave rsp in exception entry since the value may
     // not be set correctly.
     mov SGX_SSA_RSP_OFFSET(%r10), %rsp
 
@@ -80,7 +80,7 @@ OE_Main:
     mov %gs:TD_last_sp, %rsp
 
     // align the stack
-    and $-16, %rsp 
+    and $-16, %rsp
 
     // Start the new stack under the red zone.
     sub $ABI_REDZONE_BYTE_SIZE, %rsp
@@ -89,7 +89,7 @@ OE_Main:
 .clean_entry:
 
     // Calculate stack base relative to TCS (subtract guard page size)
-    mov %rbx, %rsp 
+    mov %rbx, %rsp
     sub $PAGE_SIZE, %rsp
     mov %rsp, %rbp
 
@@ -130,12 +130,12 @@ OE_Main:
     mov %r8, OM_HOST_RETURN_ADDR
 
     // Call __OE_HandleMain(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
-    mov %rax, %rdx 
+    mov %rax, %rdx
     mov %rbx, %rcx
     lea OM_HOST_OUTPUT_ARG1, %r8
     lea OM_HOST_OUTPUT_ARG2, %r9
     call __OE_HandleMain
-    
+
     // Get the output parameters.
     mov OM_HOST_OUTPUT_ARG1, %rdi
     mov OM_HOST_OUTPUT_ARG2, %rsi
@@ -196,7 +196,7 @@ OE_Main:
     xor %r15, %r15
 
     // Reset status flags
-    add %rdx, %rdx 
+    add %rdx, %rdx
 
 .restore_host_registers:
 
@@ -204,7 +204,7 @@ OE_Main:
     mov OM_HOST_RETURN_ADDR, %rbx
     mov OM_HOST_RSP, %rsp
     mov OM_HOST_RBP, %rbp
-    
+
 .execute_eexit:
 
     // Check TD.simulate flag
@@ -240,7 +240,7 @@ OE_Main:
 //
 // Routine Description:
 //
-//   This function is used to dispatch an enclave exception. 
+//   This function is used to dispatch an enclave exception.
 //
 //  Arguments:
 //      None.
@@ -263,12 +263,12 @@ OE_ExceptionDispatcher:
     // Start the new stack under the red zone.
     sub $ABI_REDZONE_BYTE_SIZE, %rsp
 
-    // Save the registers that will be clobbered before snap context is called. 
+    // Save the registers that will be clobbered before snap context is called.
     push %rsp
     push %rbp
     push %rdi
     mov %rsp, %rbp
-    
+
     // align the stack.
     and $-16, %rsp
 

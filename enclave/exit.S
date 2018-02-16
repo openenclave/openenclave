@@ -9,10 +9,10 @@
 //     RSI - arg2
 //
 // Purpose:
-//     Restores user registers and executes the EEXIT instruction to leave the 
+//     Restores user registers and executes the EEXIT instruction to leave the
 //     enclave and return control to the host. This function is called for two
 //     reasons:
-//     
+//
 //         (1) To perform an ERET (ECALL return)
 //         (2) To perform an OCALL
 //
@@ -25,7 +25,7 @@
 //          that no ECALLs are pending.
 //
 //      (2) If this is a nested exit, then save the enclave registers
-//          on the enclave stack and save the stack pointer in the 
+//          on the enclave stack and save the stack pointer in the
 //          thread data structure (TD.last_sp)
 //
 //      (3) If this a clean exit, then store zero in TD.last_sp, forcing
@@ -62,24 +62,24 @@ _OE_Exit:
     push %r14
     push %r15
 
-	// Construct the OE_OCallContext(rbp, return address).
-	mov (4*OE_WORD_SIZE)(%rsp), %r12
-	push %r12
-	push %rbp
-	mov	%rsp, %r12
+    // Construct the OE_OCallContext(rbp, return address).
+    mov (4*OE_WORD_SIZE)(%rsp), %r12
+    push %r12
+    push %rbp
+    mov	%rsp, %r12
 
-	// Save the parameters of _OE_Exit into stack.
-	push %rdi
-	push %rsi
+    // Save the parameters of _OE_Exit into stack.
+    push %rdi
+    push %rsi
 
-	// Notify a nested exit happens.
-	// _OE_NotifyNestedExistStart(rdi=arg1, rsi=ocallContext)
-	mov %r12, %rsi
-	call _OE_NotifyNestedExistStart
+    // Notify a nested exit happens.
+    // _OE_NotifyNestedExistStart(rdi=arg1, rsi=ocallContext)
+    mov %r12, %rsi
+    call _OE_NotifyNestedExistStart
 
-	// Restore the parameters of _OE_Exit from stack.
-	pop %rsi
-	pop %rdi
+    // Restore the parameters of _OE_Exit from stack.
+    pop %rsi
+    pop %rdi
 
     mov %rsp, %gs:TD_last_sp
 
@@ -105,7 +105,7 @@ _OE_Exit:
     xor %r15, %r15
 
     // Reset status flags
-    add %rdx, %rdx 
+    add %rdx, %rdx
 
 .restore_host_registers:
 
@@ -141,14 +141,14 @@ _OE_Exit:
 .cfi_endproc
 
 .size _OE_Exit, .-_OE_Exit
- 
+
 //==============================================================================
-// 
-// This function is wrapper of _OE_Exit. It is needed to stitch the host 
+//
+// This function is wrapper of _OE_Exit. It is needed to stitch the host
 // stack and enclave stack together.
 //
-// N.B: Don't change the function name, otherwise debugger can't work. 
-//	GDB depends on this hardcode function name when does stack walking for split 
+// N.B: Don't change the function name, otherwise debugger can't work.
+//	GDB depends on this hardcode function name when does stack walking for split
 //	stack.
 //==============================================================================
 
@@ -163,9 +163,9 @@ __morestack:
     mov %rsp, %rbp
 .cfi_def_cfa_register   rbp
 
-    call        _OE_Exit
-    
-	leave
+    call _OE_Exit
+
+    leave
     ret
 .cfi_endproc
 
