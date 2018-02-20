@@ -59,7 +59,7 @@ void OE_ExceptionDispatcher(void* context);
 #endif
 
 #ifndef __ASSEMBLER__
-void _OE_NotifyNestedExistStart(uint64_t arg1, OE_OCallContext* ocallContext);
+void _OE_NotifyNestedExitStart(uint64_t arg1, OE_OCallContext* ocallContext);
 #endif
 
 #endif /* _ASMDEFS_H */
