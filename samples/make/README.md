@@ -1,7 +1,6 @@
-samples
-=======
+samples/make
+============
 
-This directory contains OpenEnclave make samples. After installing OpenEnclave
-and setting the OPENENCLAVE_CONFIG environment variable, just type
+This directory contains Open Enclave make samples. After installing Open
+Enclave and setting the OPENENCLAVE_CONFIG environment variable, just type
 "make world" to build and run the samples.
-

@@ -3,7 +3,7 @@ tests
 
 # Overview:
 
-This directory contains all the unit tests for OpenEnclave. Type the following 
+This directory contains all the unit tests for Open Enclave. Type the following
 commands to build and run the tests from the corresponding CMake output folder.
 
 ```
@@ -34,7 +34,7 @@ This creates the following enclave:
 /dev/openenclave/build/tests/ecall/enc/ecallenc.signed.so
 ```
 
-On Windows, build OpenEnclave as follows (for example).
+On Windows, build Open Enclave as follows (for example).
 
 ```
 C:\> C:\PROGRA~2\MIB055~1\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat
@@ -44,7 +44,7 @@ C:\> cd build
 C:\> cmake ..
 C:\> nmake
 
-This builds OpenEnclave and creates the following host application:
+This builds Open Enclave and creates the following host application:
 
 ```
 C:\dev\openenclave\build\tests\ecall\host\ecallhost.exe

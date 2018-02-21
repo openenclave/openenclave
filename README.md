@@ -1,45 +1,45 @@
-Microsoft(R) OpenEnclave SDK
-============================
+Open Enclave SDK
+===============
 
-# OpenEnclave
+# Open Enclave
 
 Introduction
 ------------
 
-OpenEnclave is an SDK for building enclave applications in C and C++. An
+Open Enclave is an SDK for building enclave applications in C and C++. An
 enclave application partitions itself into an untrusted component (called the
 host) and a trusted component (called the enclave). An enclave is a secure
 container whose memory is protected from entities outside the enclave. These
 protections allow enclaves to perform secure computations with assurances that
 secrets will not be compromised.
 
-The current implementation of OpenEnclave is built on the Intel Software Guard
-Extensions (SGX), although OpenEnclave may support other memory protection
+The current implementation of Open Enclave is built on the Intel Software Guard
+Extensions (SGX), although Open Enclave may support other memory protection
 architectures in the future, such as Microsoft Virtual Secure Mode.
 
 Documentation
 -------------
 
-The OpenEnclave project provides the following documents.
+The Open Enclave project provides the following documents.
 
-- [Getting Started with OpenEnclave](doc/GettingStarted.md)
+- [Getting Started with Open Enclave](doc/GettingStarted.md)
 
 - [Open Enclave Function Reference](doc/refman/md/index.md)
 
-- [OpenEnclave Design Overview](doc/DesignOverview.pdf)
+- [Open Enclave Design Overview](doc/DesignOverview.pdf)
 
-The first document explains how to build and use OpenEnclave.
+The first document explains how to build and use Open Enclave.
 
 Installing
 ----------
 
-This section explains briefly how to install the OpenEnclave SDK from source.
+This section explains briefly how to install the Open Enclave SDK from source.
 For a detailed explanation, see [Getting Started with
-OpenEnclave](doc/GettingStarted.md).
+Open Enclave](doc/GettingStarted.md).
 
 ### Prerequisites
 
-OpenEnclave runs on the following platforms:
+Open Enclave runs on the following platforms:
 
 - Ubuntu 16.04-LTS 64-bits
 
@@ -103,12 +103,12 @@ Specify the install-prefix to the cmake call. As of now, there is no real need t
 system-wide, so you might use a tree in your home directory:
 
 ```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$~/openenclave ..
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$~/OpenEnclave ..
 build$ make install
 ```
 
 For more details on installation, such as how to create redistributable packages,
-see the [Getting Started with OpenEnclave](doc/GettingStarted.md) doc.
+see the [Getting Started with Open Enclave](doc/GettingStarted.md) doc.
 
 
 Source tree layout
@@ -116,10 +116,10 @@ Source tree layout
 
 The files and directories in the top-level directory are described as follows.
 
-- [LICENSE](LICENSE) - The OpenEnclave license
+- [LICENSE](LICENSE) - The Open Enclave license
 - [README.md](README.md) - This README file
 - [3rdparty](3rdparty) - Contains third-party software packages
-- [cmake](cmake) - Contains CMake scripts for building OpenEnclave.
+- [cmake](cmake) - Contains CMake scripts for building Open Enclave.
 - [common](common) - Contains sources that work in the enclave and the host
 - [doc](doc) - Contains documentation
 - [enclave](enclave) - Contains the source for the oeenclave library

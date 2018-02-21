@@ -1,22 +1,22 @@
-Getting Started with OpenEnclave
+Getting Started with Open Enclave
 ================================
 
 Introduction
 ------------
 
-This document provides a step-by-step tutorial to begin using the OpenEnclave
+This document provides a step-by-step tutorial to begin using the Open Enclave
 SDK. It explains how to obtain, build, and install the SDK. It also describes
 how to develop and build a few simple enclave applications.
 
 Licenses
 --------
 
-Microsoft plans to release the OpenEnclave SDK under the MIT license, included
+Microsoft plans to release the Open Enclave SDK under the MIT license, included
 here in the source distribution.
 
 <https://github.com/Microsoft/openenclave/blob/master/LICENSE>
 
-OpenEnclave builds on various third-party packages. It modifies and
+Open Enclave builds on various third-party packages. It modifies and
 redistributes libunwind and in addition downloads other third-party packages
 on-the-fly during the build process. Licensing details for all third-party
 packages shown in the table below.
@@ -34,7 +34,7 @@ packages shown in the table below.
 Obtaining the source distribution
 ---------------------------------
 
-OpenEnclave is available from GitHub. Use the following command to download
+Open Enclave is available from GitHub. Use the following command to download
 the source distribution.
 
 ```
@@ -64,7 +64,7 @@ $ sudo make -C prereqs install
 ```
 
 The second and third commands are only necessary if you wish to install the Intel(R)
-SGX driver and the Intel(R) AESM service. OpenEnclave can be used in
+SGX driver and the Intel(R) AESM service. Open Enclave can be used in
 simulation mode without these components.
 
 ### Building
@@ -93,7 +93,7 @@ build$ make install
 Prerequisites
 -------------
 
-The following are prerequisites for building and running OpenEnclave.
+The following are prerequisites for building and running Open Enclave.
 
 - Intel® X86-64bit architecture with SGX1 or SGX2
 - Ubuntu Desktop-16.04-LTS 64bits
@@ -109,9 +109,9 @@ following GitHub repositories.
 - <https://github.com/01org/linux-sgx>
 
 Both contain detailed instructions about building and installing these pieces.
-As a convenience, OpenEnclave provides a script for downloading, building and
+As a convenience, Open Enclave provides a script for downloading, building and
 installing both the driver and the AESM service. From the root of the
-OpenEnclave source tree, type the following command:
+Open Enclave source tree, type the following command:
 
 ```
 $ sudo make -C prereqs
@@ -145,7 +145,7 @@ build$ cmake ..
 ```
 
 In addition to the standard CMake variables, the following CMake variables
-control the behavior of the Linux make generator for OpenEnclave:
+control the behavior of the Linux make generator for Open Enclave:
 
 | Variable            | Description                                          |
 |---------------------|------------------------------------------------------|
@@ -169,7 +169,7 @@ Once configured, build with
 build$ make
 ```
 
-This builds the entire OpenEnclave SDK, creating the following files.
+This builds the entire Open Enclave SDK, creating the following files.
 
 | Filename                          | Description                                           |
 |-----------------------------------|-------------------------------------------------------|
@@ -179,7 +179,7 @@ This builds the entire OpenEnclave SDK, creating the following files.
 | output/lib/enclave/liboelibc.a    | C runtime library for enclave                         |
 | output/lib/enclave/liboelibcxx.a  | C++ runtime library for enclave                       |
 | output/lib/host/liboehost.a       | Library for building host applications                |
-| output/share/doc/openenclave/     | HTML API reference for OpenEnclave                    |
+| output/share/doc/openenclave/     | HTML API reference for Open Enclave                    |
 
 If things break, set the **VERBOSE** make variable to print all invoked commands.
 
@@ -242,7 +242,7 @@ Installing
 ----------
 
 This chapter describes how to locally install the SDK from the compiled
-OpenEnclave tree. To create a redistributable binary package (such as a .deb
+Open Enclave tree. To create a redistributable binary package (such as a .deb
 package), see the next chapter.
 
 Specify the install-prefix to the cmake call. As of now, there is no real need
@@ -294,11 +294,11 @@ and libraries.
 
 | Target           | Description                                                                         |
 |------------------|-------------------------------------------------------------------------------------|
-| oeenclave        | Enclave code: OpenEnclave intrinsic functions. Must be present in all enclave code. |
-| oelibc           | Enclave code: OpenEnclave C library. Includes oeenclave.                            |
-| oelibcxx         | Enclave code: OpenEnclave C++ library. Includes oelibc.                             |
+| oeenclave        | Enclave code: Open Enclave intrinsic functions. Must be present in all enclave code. |
+| oelibc           | Enclave code: Open Enclave C library. Includes oeenclave.                            |
+| oelibcxx         | Enclave code: Open Enclave C++ library. Includes oelibc.                             |
 | oeidl            | Enclave code: Misc helpers required with IDL-compiled code. Includes oelibc.        |
-| oehost           | Host code: OpenEnclave intrinsic functions.                                         |
+| oehost           | Host code: Open Enclave intrinsic functions.                                         |
 | oehostapp        | Host code: Must be present with host binary for proper linker flags.                |
 | oesign           | Build: shorthand for the signing tool executable.                                   |
 | oegen            | Build: shorthand for the IDL compiler executable.                                   |
@@ -328,7 +328,7 @@ $ cd ~/openenclave/share/openenclave/samples
 $ sh test-samples.sh
 ```
 
-If these samples run without an error, then OpenEnclave is installed and working correctly.
+If these samples run without an error, then Open Enclave is installed and working correctly.
 
 
 Developing a simple enclave (echo)
@@ -374,7 +374,7 @@ function with the same arguments.
 ### Enclave build collateral
 
 The samples provides cmake helper includes under samples/cmake/cmake/
-simplifying OpenEnclave application writing. **add_enclave_executable.cmake**
+simplifying Open Enclave application writing. **add_enclave_executable.cmake**
 provides the **add_enclave_executable()** function. It extends CMake's
 **add_executable()** by adding the intrinsic target (oeenclave) and also
 signing the enclave. For the echo sample, this ***CMakeLists.txt*** suffices:
@@ -491,7 +491,7 @@ In the project file **samples/cmake/CMakeLists.txt**, note the line:
 include(${OE_PREFIX}/share/openenclave/openenclave.cmake)
 ```
 
-This sources the CMake include providing the OpenEnclave targets.
+This sources the CMake include providing the Open Enclave targets.
 
 Build the samples, e.g. in a subdirectory under samples/cmake:
 ```
@@ -514,7 +514,7 @@ If you are not using CMake for your project, the Makefile samples under
 ***samples/make/*** provide guidance on the necessary includes, libraries, and
 flag definitions.
 
-Specifically, the OpenEnclave includes for the intrinsics are located under
+Specifically, the Open Enclave includes for the intrinsics are located under
 <PREFIX>/include/openenclave (or via the **OE_INCLUDEDIR** make variable when
 using the make include installed under <PREFIX>/share/openenclave/config.mak).
 
@@ -571,7 +571,7 @@ enclave. See the CMake section for details on these files.
 ### Debugging the enclave
 
 We can't use GDB directly to debug enclave application since it doesn't understand enclave yet.
-OpenEnclave includes a GDB plugin to help developers to debug enclaves that is developed using this SDK.
+Open Enclave includes a GDB plugin to help developers to debug enclaves that is developed using this SDK.
 
 Note: the enclave must be created with debug opt-in flag, otherwise debugger can't work since it can't read the enclave memory.
 The default sample enclave is created with debug flag, refer to:
