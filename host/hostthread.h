@@ -22,27 +22,27 @@ OE_EXTERNC_BEGIN
 
 #if __GNUC__
 
-    typedef pthread_once_t OE_H_OnceType;
-#   define OE_H_ONCE_INITIALIZER PTHREAD_ONCE_INIT
+typedef pthread_once_t OE_H_OnceType;
+#define OE_H_ONCE_INITIALIZER PTHREAD_ONCE_INIT
 
-    typedef pthread_t OE_H_Thread;
+typedef pthread_t OE_H_Thread;
 
-    typedef pthread_mutex_t OE_H_Mutex;
-#   define OE_H_MUTEX_INITIALIZER PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+typedef pthread_mutex_t OE_H_Mutex;
+#define OE_H_MUTEX_INITIALIZER PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
 
-    typedef pthread_key_t OE_H_ThreadKey;
+typedef pthread_key_t OE_H_ThreadKey;
 
 #elif _MSC_VER
 
-    typedef INIT_ONCE OE_H_OnceType;
-#   define OE_H_ONCE_INITIALIZER INIT_ONCE_STATIC_INIT
+typedef INIT_ONCE OE_H_OnceType;
+#define OE_H_ONCE_INITIALIZER INIT_ONCE_STATIC_INIT
 
-    typedef DWORD OE_H_Thread;
+typedef DWORD OE_H_Thread;
 
-    typedef HANDLE OE_H_Mutex;
-#   define OE_H_MUTEX_INITIALIZER INVALID_HANDLE_VALUE
+typedef HANDLE OE_H_Mutex;
+#define OE_H_MUTEX_INITIALIZER INVALID_HANDLE_VALUE
 
-    typedef DWORD OE_H_ThreadKey;
+typedef DWORD OE_H_ThreadKey;
 
 #endif
 
@@ -68,7 +68,6 @@ OE_H_Thread OE_H_ThreadSelf(void);
  * @returns Returns non-zero if the thread identifiers are equal.
  */
 int OE_H_ThreadEqual(OE_H_Thread thread1, OE_H_Thread thread2);
-
 
 /**
  * Calls the given function exactly once.
@@ -97,9 +96,7 @@ int OE_H_ThreadEqual(OE_H_Thread thread1, OE_H_Thread thread2);
  *
  * @return Returns zero on success.
  */
-int OE_H_Once(
-    OE_H_OnceType* once,
-    void (*func)(void));
+int OE_H_Once(OE_H_OnceType* once, void (*func)(void));
 
 /**
  * Initialize a mutex.
@@ -174,8 +171,7 @@ int OE_H_MutexDestroy(OE_H_Mutex* mutex);
  *
  * @return Returns zero on success.
  */
-int OE_H_ThreadKeyCreate(
-    OE_H_ThreadKey* key);
+int OE_H_ThreadKeyCreate(OE_H_ThreadKey* key);
 
 /**
  * Delete a key for accessing thread-specific data.
@@ -187,8 +183,7 @@ int OE_H_ThreadKeyCreate(
  *
  * @return Returns zero on success.
  */
-int OE_H_ThreadKeyDelete(
-    OE_H_ThreadKey key);
+int OE_H_ThreadKeyDelete(OE_H_ThreadKey key);
 
 /**
  * Sets the value of a thread-specific data entry.
@@ -201,9 +196,7 @@ int OE_H_ThreadKeyDelete(
  *
  * @return Returns zero on success.
  */
-int OE_H_ThreadSetSpecific(
-    OE_H_ThreadKey key,
-    void* value);
+int OE_H_ThreadSetSpecific(OE_H_ThreadKey key, void* value);
 
 /**
  * Gets the value of a thread-specific data entry.
@@ -215,8 +208,7 @@ int OE_H_ThreadSetSpecific(
  *
  * @return Returns the TSD value.
  */
-void* OE_H_ThreadGetSpecific(
-    OE_H_ThreadKey key);
+void* OE_H_ThreadGetSpecific(OE_H_ThreadKey key);
 
 OE_EXTERNC_END
 

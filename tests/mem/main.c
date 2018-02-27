@@ -1,7 +1,7 @@
 #define MEM_MIN_CAP 1
-#include <stdio.h>
 #include <assert.h>
 #include <openenclave/bits/mem.h>
+#include <stdio.h>
 
 void TestMem(mem_t* m)
 {
@@ -61,16 +61,16 @@ void TestMem(mem_t* m)
     assert(memcmp(mem_ptr(m), "\0abcdefghijklmnopqrstuvwxyz\0", 28) == 0);
 
     assert(mem_remove(m, 0, 1) == 0);
-    assert(mem_remove(m, mem_size(m)-1, 1) == 0);
+    assert(mem_remove(m, mem_size(m) - 1, 1) == 0);
     assert(memcmp(mem_ptr(m), "abcdefghijklmnopqrstuvwxyz", 26) == 0);
 
     assert(mem_resize(m, 7) == 0);
-    assert(mem_size(m) ==  7);
+    assert(mem_size(m) == 7);
     assert(mem_cap(m) >= 7);
     assert(memcmp(mem_ptr(m), "abcdefg", 7) == 0);
 
     assert(mem_append(m, NULL, 1) == 0);
-    assert(mem_size(m) ==  8);
+    assert(mem_size(m) == 8);
     assert(memcmp(mem_ptr(m), "abcdefg\0", 8) == 0);
 
     printf("=== passed TestMem()\n");

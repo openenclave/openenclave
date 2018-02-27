@@ -1,14 +1,12 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <openenclave/enclave.h>
 #include <openenclave/bits/typeinfo.h>
+#include <openenclave/enclave.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "tester_t.h"
 
-static struct Object* _MakeObject(
-    const char* name,
-    size_t id)
+static struct Object* _MakeObject(const char* name, size_t id)
 {
     struct Object* p;
 
@@ -31,7 +29,7 @@ OE_EXTERNC uint32_t ReturnUint32()
     return 32;
 }
 
-OE_EXTERNC char *ReturnStr()
+OE_EXTERNC char* ReturnStr()
 {
     return strdup("str");
 }
@@ -53,7 +51,7 @@ OE_EXTERNC struct Object ReturnObject()
     return o;
 }
 
-OE_EXTERNC struct Node *ReturnLinkedList()
+OE_EXTERNC struct Node* ReturnLinkedList()
 {
     struct Node* p;
     struct Node* q;
@@ -87,8 +85,7 @@ OE_EXTERNC struct Node *ReturnLinkedList()
     return p;
 }
 
-OE_EXTERNC struct Object *ReturnObjects(
-    size_t count)
+OE_EXTERNC struct Object* ReturnObjects(size_t count)
 {
     struct Object* p;
     size_t i;
@@ -107,15 +104,12 @@ OE_EXTERNC struct Object *ReturnObjects(
     return p;
 }
 
-OE_EXTERNC char *TestStrdup(
-    const char *s)
+OE_EXTERNC char* TestStrdup(const char* s)
 {
     return strdup(s);
 }
 
-OE_EXTERNC int CopyObject(
-    struct Object *dest,
-    const struct Object *src)
+OE_EXTERNC int CopyObject(struct Object* dest, const struct Object* src)
 {
     OE_Result r;
 
@@ -135,9 +129,8 @@ OE_EXTERNC int CopyObject(
     return 0;
 }
 
-OE_EXTERNC int32_t CopyObjects(
-    struct Object dest[2],
-    const struct Object src[2])
+OE_EXTERNC int32_t
+CopyObjects(struct Object dest[2], const struct Object src[2])
 {
     if (CopyObject(&dest[0], &src[0]) != 0)
         return -1;
@@ -155,13 +148,13 @@ OE_EXTERNC int32_t CopyObjects(
 }
 
 OE_EXTERNC int32_t ECALL_MultipleParams(
-    const char *strIn,
+    const char* strIn,
     uint32_t numIn,
-    const struct Object *objectIn,
-    char *strOut,
-    uint32_t *numOut,
-    struct Object *objectOut,
-    struct Object **objectRefOut)
+    const struct Object* objectIn,
+    char* strOut,
+    uint32_t* numOut,
+    struct Object* objectOut,
+    struct Object** objectRefOut)
 {
     if (!strIn || !objectIn || !strOut || !objectOut)
         return -1;
@@ -192,8 +185,7 @@ OE_EXTERNC int32_t ECALL_MultipleParams(
     return 0;
 }
 
-OE_EXTERNC int32_t GetObjectRef(
-    struct Object **object)
+OE_EXTERNC int32_t GetObjectRef(struct Object** object)
 {
     if (!object)
         return -1;
@@ -202,8 +194,7 @@ OE_EXTERNC int32_t GetObjectRef(
     return 0;
 }
 
-OE_EXTERNC int32_t ModifyObject(
-    struct Object *object)
+OE_EXTERNC int32_t ModifyObject(struct Object* object)
 {
     if (!object)
         return -1;
@@ -232,10 +223,7 @@ static size_t _Strlcpy(char* dest, const char* src, size_t size)
     return src - start;
 }
 
-OE_EXTERNC size_t TestStrlcpy(
-    char *dest,
-    const char *src,
-    size_t dsize)
+OE_EXTERNC size_t TestStrlcpy(char* dest, const char* src, size_t dsize)
 {
     if (!dest || !src)
         return 0;
@@ -243,10 +231,7 @@ OE_EXTERNC size_t TestStrlcpy(
     return _Strlcpy(dest, src, dsize);
 }
 
-OE_EXTERNC size_t TestOptQualifier(
-    char *p1,
-    const char *p2,
-    size_t p1size)
+OE_EXTERNC size_t TestOptQualifier(char* p1, const char* p2, size_t p1size)
 {
     return 0;
 }
@@ -255,9 +240,7 @@ OE_EXTERNC void ReturnVoid()
 {
 }
 
-OE_EXTERNC int *ReturnIntPtr(
-    int *p,
-    size_t n)
+OE_EXTERNC int* ReturnIntPtr(int* p, size_t n)
 {
     if (!p)
         return NULL;
@@ -274,8 +257,7 @@ OE_EXTERNC int *ReturnIntPtr(
     return ret;
 }
 
-OE_EXTERNC void TestCallback(
-    void *func)
+OE_EXTERNC void TestCallback(void* func)
 {
     typedef void (*Func)(const char* str);
     Func f = (Func)func;
@@ -284,9 +266,7 @@ OE_EXTERNC void TestCallback(
         f("TestCallback");
 }
 
-OE_EXTERNC bool TestIntPtrRef(
-    int **intPtrOut,
-    size_t n)
+OE_EXTERNC bool TestIntPtrRef(int** intPtrOut, size_t n)
 {
     if (!intPtrOut)
         return false;
@@ -300,21 +280,20 @@ OE_EXTERNC bool TestIntPtrRef(
     return true;
 }
 
-OE_EXTERNC void TestBufferOverun(
-    char str[8])
+OE_EXTERNC void TestBufferOverun(char str[8])
 {
     /* Intentional buffer overrun (will be detected by ENC) */
     strlcpy(str, "123456789", 9);
 }
 
-OE_EXTERNC void *ReturnEnclaveMemory()
+OE_EXTERNC void* ReturnEnclaveMemory()
 {
     return malloc(16);
 }
 
 OE_EXTERNC void TestBufferCopy(
-    void *dest,
-    const void *src,
+    void* dest,
+    const void* src,
     size_t n,
     bool forceOverwrite)
 {

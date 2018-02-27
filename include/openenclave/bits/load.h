@@ -9,31 +9,30 @@ OE_EXTERNC_BEGIN
 
 #define OE_MAX_SEGMENTS 16
 
-#define OE_SEGMENT_FLAG_READ   1
-#define OE_SEGMENT_FLAG_WRITE  2
-#define OE_SEGMENT_FLAG_EXEC   4
+#define OE_SEGMENT_FLAG_READ 1
+#define OE_SEGMENT_FLAG_WRITE 2
+#define OE_SEGMENT_FLAG_EXEC 4
 
 typedef struct _OE_Segment
 {
     /* Pointer to segment from ELF file */
-    void* filedata; 
+    void* filedata;
 
     /* Size of this segment in the ELF file */
-    size_t filesz; 
+    size_t filesz;
 
     /* Size of this segment in memory */
-    size_t memsz; 
+    size_t memsz;
 
     /* Offset of this segment within file */
-    uint64_t offset; 
+    uint64_t offset;
 
     /* Virtual address of this segment */
-    uint64_t vaddr; 
+    uint64_t vaddr;
 
     /* Memory protection flags for this segment */
     uint32_t flags;
-}
-OE_Segment;
+} OE_Segment;
 
 OE_INLINE uint64_t __OE_RoundUpToPageSize(uint64_t x)
 {

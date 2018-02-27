@@ -1,12 +1,9 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/utils.h>
+#include <openenclave/enclave.h>
 #include "td.h"
 
-void *OE_HostAllocForCallHost(
-    size_t size, 
-    size_t alignment,
-    bool isZeroInit)
+void* OE_HostAllocForCallHost(size_t size, size_t alignment, bool isZeroInit)
 {
     TD* td = TD_Get();
 
@@ -50,6 +47,6 @@ void *OE_HostAllocForCallHost(
     /* Clear the memory if requested */
     if (ptr && isZeroInit)
         OE_Memset(ptr, 0, size);
-        
+
     return ptr;
 }

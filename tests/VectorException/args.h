@@ -4,7 +4,6 @@
 typedef struct _Args
 {
     int ret;
-}
-Args;
+} Args;
 
 #endif /* _ARGS_H */

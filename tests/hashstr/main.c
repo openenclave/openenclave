@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include "strings.h"
 
@@ -18,7 +18,7 @@ long Test1(const char* str)
 
 static __inline__ uint64_t StrCode(const char* s, uint64_t n)
 {
-    return (uint64_t)s[0] | ((uint64_t)s[n-1] << 8) | ((uint64_t)n << 16);
+    return (uint64_t)s[0] | ((uint64_t)s[n - 1] << 8) | ((uint64_t)n << 16);
 }
 
 void Setup()
@@ -41,7 +41,7 @@ long Test2(const char* s)
     {
         const Pair* p = &strings[i];
 
-        if (p->code == code && memcmp(&p->str[1], &s[1], n-2) == 0)
+        if (p->code == code && memcmp(&p->str[1], &s[1], n - 2) == 0)
         {
             return i;
         }

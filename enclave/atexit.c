@@ -1,5 +1,5 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/atexit.h>
+#include <openenclave/enclave.h>
 
 /*
 **==============================================================================
@@ -18,7 +18,7 @@ struct _OE_AtExitEntry
 {
     OE_AtExitEntry* next;
     void (*func)(void*);
-    void *arg;
+    void* arg;
 };
 
 static OE_AtExitEntry* _entries;
@@ -60,7 +60,7 @@ static OE_AtExitEntry* _NewAtExitEntry(void (*func)(void*), void* arg)
 **==============================================================================
 */
 
-int __cxa_atexit(void (*func)(void *), void *arg, void *dso_handle)
+int __cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
 {
     OE_AtExitEntry* entry;
 
@@ -114,7 +114,7 @@ int OE_AtExit(void (*function)(void))
 void OE_CallAtExitFunctions(void)
 {
     OE_AtExitEntry* p;
-    
+
     /* Call at-exit functions in reverse order */
     for (p = _entries; p; p = p->next)
     {

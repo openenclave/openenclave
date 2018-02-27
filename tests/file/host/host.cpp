@@ -1,13 +1,13 @@
 #include <limits.h>
-#include <wchar.h>
-#include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
+#include <wchar.h>
 #include "file_u.h"
 
 #if 1
-# define D(X)
+#define D(X)
 #else
-# define D(X) X
+#define D(X) X
 #endif
 
 void Log(const char* s, uint64_t x)
@@ -15,39 +15,31 @@ void Log(const char* s, uint64_t x)
     printf("Log(%s, %lu)\n", s, x);
 }
 
-MY_FILE *Fopen(
-    const char *filename,
-    const char *modes)
+MY_FILE* Fopen(const char* filename, const char* modes)
 {
-    D( printf("Fopen(filename=%s, modes=%s)\n", filename, modes); )
+    D(printf("Fopen(filename=%s, modes=%s)\n", filename, modes);)
     FILE* is = fopen(filename, modes);
-    D( printf("Fopen(): return=%p\n", is); )
+    D(printf("Fopen(): return=%p\n", is);)
     return (MY_FILE*)is;
 }
 
-size_t Fread(
-    void *ptr,
-    size_t size,
-    MY_FILE *stream)
+size_t Fread(void* ptr, size_t size, MY_FILE* stream)
 {
-    D( printf("Fread(ptr=%p, size=%zu, stream=%p)\n", ptr, size, stream); )
+    D(printf("Fread(ptr=%p, size=%zu, stream=%p)\n", ptr, size, stream);)
     size_t n = fread(ptr, 1, size, (FILE*)stream);
-    D( printf("Fread(): return=%zu\n", n); )
+    D(printf("Fread(): return=%zu\n", n);)
     return n;
 }
 
-int Fclose(
-    MY_FILE *stream)
+int Fclose(MY_FILE* stream)
 {
-    D( printf("Fclose(stream=%p)\n", stream); )
+    D(printf("Fclose(stream=%p)\n", stream);)
     int r = fclose((FILE*)stream);
-    D( printf("Fclose(): return=%d\n", r); )
+    D(printf("Fclose(): return=%d\n", r);)
     return r;
 }
 
-static int _GetFileCheckSum(
-    const char *path,
-    unsigned int *checksum)
+static int _GetFileCheckSum(const char* path, unsigned int* checksum)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -94,7 +86,6 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = OE_GetCreateFlags();
 
-
     result = OE_CreateEnclave(argv[1], flags, &enclave);
     if (result != OE_OK)
     {
@@ -124,8 +115,12 @@ int main(int argc, const char* argv[])
 
         if (checksum1 != checksum2)
         {
-            fprintf(stderr, "%s: checksum mismatch: checksum1=%x, checksum2=%#x\n",
-                    argv[0], checksum1, checksum2);
+            fprintf(
+                stderr,
+                "%s: checksum mismatch: checksum1=%x, checksum2=%#x\n",
+                argv[0],
+                checksum1,
+                checksum2);
             return 1;
         }
 

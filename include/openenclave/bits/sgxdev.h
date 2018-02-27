@@ -1,10 +1,10 @@
 #ifndef _OE_SGXDEV_H
 #define _OE_SGXDEV_H
 
+#include <openenclave/bits/sha.h>
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
-#include <openenclave/bits/sha.h>
 
 OE_EXTERNC_BEGIN
 
@@ -32,15 +32,11 @@ typedef OE_Result (*OE_EInitProc)(
     uint64_t sigstruct,
     uint64_t einittoken);
 
-typedef OE_Result (*OE_GetHash)(
-    OE_SGXDevice* dev,
-    OE_SHA256* hash);
+typedef OE_Result (*OE_GetHash)(OE_SGXDevice* dev, OE_SHA256* hash);
 
-typedef OE_Result (*OE_CloseProc)(
-    OE_SGXDevice* dev);
+typedef OE_Result (*OE_CloseProc)(OE_SGXDevice* dev);
 
-typedef uint32_t (*OE_GetMagic)(
-    const OE_SGXDevice* dev);
+typedef uint32_t (*OE_GetMagic)(const OE_SGXDevice* dev);
 
 struct _OE_SGXDevice
 {

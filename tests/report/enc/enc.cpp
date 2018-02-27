@@ -1,5 +1,5 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
 OE_ECALL void GetReport(void* args_)
@@ -15,7 +15,7 @@ OE_ECALL void GetReport(void* args_)
 
     /* Generate the report */
     if ((args->result = SGX_CreateReport(
-        &copy.targetInfo, &copy.reportData, &copy.report)) != OE_OK)
+             &copy.targetInfo, &copy.reportData, &copy.report)) != OE_OK)
     {
         return;
     }

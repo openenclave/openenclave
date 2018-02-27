@@ -1,14 +1,14 @@
-#include <stdlib.h>
 #include <assert.h>
+#include <errno.h>
+#include <openenclave/bits/calls.h>
+#include <openenclave/enclave.h>
 #include <signal.h>
 #include <stdarg.h>
-#include <string.h>
-#include <errno.h>
 #include <stdio.h>
-#include <openenclave/enclave.h>
-#include <openenclave/bits/calls.h>
-#include "../host/ocalls.h"
+#include <stdlib.h>
+#include <string.h>
 #include "../host/args.h"
+#include "../host/ocalls.h"
 
 int main(int argc, const char* argv[]);
 
@@ -51,7 +51,7 @@ int t_setrlim(int r, long lim)
     return 0;
 }
 
-extern char **__environ;
+extern char** __environ;
 
 extern const char* __test__;
 
@@ -64,7 +64,9 @@ OE_ECALL void Test(Args* args)
         if (!(__environ = (char**)calloc(1, sizeof(char**))))
             args->ret = 1;
 
-        static const char* argv[] = { "test", NULL, };
+        static const char* argv[] = {
+            "test", NULL,
+        };
         args->ret = main(1, argv);
         args->test = OE_HostStrdup(__TEST__);
     }

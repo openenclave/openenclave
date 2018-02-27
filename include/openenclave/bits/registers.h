@@ -1,12 +1,12 @@
 #ifndef _OE_ASM_H
 #define _OE_ASM_H
 
-#include <stdlib.h>
-#include <string.h>
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
+#include <stdlib.h>
+#include <string.h>
 
-void OE_SetGSRegisterBase(const void *ptr);
+void OE_SetGSRegisterBase(const void* ptr);
 
 void* OE_GetGSRegisterBase(void);
 

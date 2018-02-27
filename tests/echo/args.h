@@ -9,7 +9,6 @@ typedef struct _EchoArgs
     char* str2;
     char* str3;
     int ret;
-}
-EchoArgs;
+} EchoArgs;
 
 #endif /* _ECHOARGS_H */

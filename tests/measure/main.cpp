@@ -1,16 +1,16 @@
+#include <enc/defs.h>
+#include <enc/sha.h>
+#include <enc/types.h>
+#include <enc/utils.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <vector>
 #include <string>
-#include <cassert>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <enc/types.h>
-#include <enc/utils.h>
-#include <enc/defs.h>
-#include <unistd.h>
-#include <enc/sha.h>
+#include <vector>
 
 #define PAGE_SIZE 4096
 
@@ -28,11 +28,7 @@ struct Page
     unsigned char buf[PAGE_SIZE];
 };
 
-int LoadFile(
-    const char* path,
-    size_t extraBytes,
-    void** data,
-    size_t* size)
+int LoadFile(const char* path, size_t extraBytes, void** data, size_t* size)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -95,9 +91,7 @@ done:
     return rc;
 }
 
-int LoadPages(
-    const char* path,
-    std::vector<Page>& v)
+int LoadPages(const char* path, std::vector<Page>& v)
 {
     void* data = NULL;
     size_t size;
@@ -125,9 +119,7 @@ int LoadPages(
     return 0;
 }
 
-static int ReadLog(
-    const char* path,
-    vector<Entry>& log)
+static int ReadLog(const char* path, vector<Entry>& log)
 {
     FILE* is;
     int n;
@@ -138,16 +130,18 @@ static int ReadLog(
     do
     {
         Entry ent;
-        n = fscanf(is, 
+        n = fscanf(
+            is,
             "EADD: flags=%llx vaddr=%llx sum=%*x content=%*x attr=%u\n",
-            &ent.flags, &ent.vaddr, &ent.attr);
+            &ent.flags,
+            &ent.vaddr,
+            &ent.attr);
 
         if (n != 3)
             break;
 
         log.push_back(ent);
-    }
-    while (1);
+    } while (1);
 
     fclose(is);
     return 0;
@@ -168,9 +162,8 @@ int MeasureECreate(OE_SHA256Context* context)
         unsigned int ssa_frame_size;
         unsigned long long size;
         unsigned char reserved[44];
-    }
-    OE_PACKED;
-    OE_CHECK_SIZE(sizeof(ECreateMeasurement),64);
+    } OE_PACKED;
+    OE_CHECK_SIZE(sizeof(ECreateMeasurement), 64);
     struct ECreateMeasurement m;
 
     memset(&m, 0, sizeof(m));
@@ -196,13 +189,12 @@ int MeasureEExtend(
         char name[8];
         unsigned long long offset;
         unsigned char reserved[48];
-    }
-    OE_PACKED;
-    OE_CHECK_SIZE(sizeof(EEXtendMeasurement),64);
+    } OE_PACKED;
+    OE_CHECK_SIZE(sizeof(EEXtendMeasurement), 64);
     struct EEXtendMeasurement m;
     unsigned long long offset = 0;
 
-printf("=== EEXTEND: vaddr=%016llx\n", vaddr);
+    printf("=== EEXTEND: vaddr=%016llx\n", vaddr);
 
     /* Write this page (256 bytes at a time) */
     while (offset < PAGE_SIZE)
@@ -221,10 +213,10 @@ printf("=== EEXTEND: vaddr=%016llx\n", vaddr);
         {
             OE_SHA256Update(context, (unsigned char*)page + offset, 64);
             offset += 64;
-printf("OFFSET=%llu\n", offset);
+            printf("OFFSET=%llu\n", offset);
         }
 
-DumpCtx(*context);
+        DumpCtx(*context);
     }
 
     return 0;
@@ -243,13 +235,12 @@ int MeasureEAdd(
         unsigned long long offset;
         unsigned long long secinfo_flags;
         unsigned long long secinfo_reserved[5];
-    }
-    OE_PACKED;
-    OE_CHECK_SIZE(sizeof(EAddMeasurement),64);
+    } OE_PACKED;
+    OE_CHECK_SIZE(sizeof(EAddMeasurement), 64);
     struct EAddMeasurement m;
 
-printf("=== EADD : flags=%llx vaddr=%016llx\n", flags, vaddr);
-printf("CHECKSUM=%u\n", OE_Checksum(page, PAGE_SIZE));
+    printf("=== EADD : flags=%llx vaddr=%016llx\n", flags, vaddr);
+    printf("CHECKSUM=%u\n", OE_Checksum(page, PAGE_SIZE));
 
     memset(&m, 0, sizeof(m));
     memcpy(m.name, "EADD\0\0\0", 8);
@@ -257,7 +248,7 @@ printf("CHECKSUM=%u\n", OE_Checksum(page, PAGE_SIZE));
     m.secinfo_flags = flags;
     OE_SHA256Update(context, &m, sizeof(m));
 
-DumpCtx(*context);
+    DumpCtx(*context);
 
     if (attr & 2)
     {

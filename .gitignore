@@ -2,8 +2,8 @@
 *.o
 *.so
 
-/.vs
-
+.vs/
+.vscode/
 build/
 
 prereqs/aesm/.build

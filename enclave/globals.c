@@ -1,5 +1,5 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/globals.h>
+#include <openenclave/enclave.h>
 
 /* Note: The variables below are initialized during enclave loading */
 

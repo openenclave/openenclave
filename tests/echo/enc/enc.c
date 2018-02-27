@@ -1,5 +1,5 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
 char* OE_HostStackStrdup(const char* str)

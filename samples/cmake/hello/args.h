@@ -6,7 +6,6 @@ typedef struct _Args
     const char* in;
     char* out;
     int ret;
-}
-Args;
+} Args;
 
 #endif /* _ARGS_H */

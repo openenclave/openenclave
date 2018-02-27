@@ -1,5 +1,5 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/globals.h>
+#include <openenclave/enclave.h>
 
 void* OE_Sbrk(ptrdiff_t increment)
 {

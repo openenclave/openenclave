@@ -1,6 +1,6 @@
+#include <assert.h>
 #include <sched.h>
 #include <stdio.h>
-#include <assert.h>
 
 int sched_yield(void)
 {
