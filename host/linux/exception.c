@@ -34,7 +34,8 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
     if ((exitAddress == (uint64_t)OE_AEP) && (exitCode == ENCLU_ERESUME))
     {
         // Call-in enclave to handle the exception.
-        uint64_t arg1 = OE_MakeCallArg1(OE_CODE_ECALL, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0);
+        uint64_t arg1 = OE_MakeCallArg1(
+            OE_CODE_ECALL, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0);
         uint64_t arg2 = 0;
         uint64_t arg3 = 0;
         uint64_t arg4 = 0;
@@ -53,22 +54,23 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
     }
     else if (g_previous_sigaction[sigNum].sa_handler == SIG_DFL)
     {
-        // If not an enclave exception, and no valid previous signal handler is set, raise it again, and let the
-        // default signal handler handle it.
+        // If not an enclave exception, and no valid previous signal handler is
+        // set, raise it again, and let the default signal handler handle it.
         signal(sigNum, SIG_DFL);
         raise(sigNum);
     }
     else
     {
-        // If not an enclave exception, and there is old signal handler, we need transfer the signal to the old
-        // signal handler;
+        // If not an enclave exception, and there is old signal handler, we need
+        // to transfer the signal to the old signal handler.
         if (!(g_previous_sigaction[sigNum].sa_flags & SA_NODEFER))
         {
             sigaddset(&g_previous_sigaction[sigNum].sa_mask, sigNum);
         }
 
         sigset_t currentSet;
-        pthread_sigmask(SIG_SETMASK, &g_previous_sigaction[sigNum].sa_mask, &currentSet);
+        pthread_sigmask(
+            SIG_SETMASK, &g_previous_sigaction[sigNum].sa_mask, &currentSet);
 
         // Call sa_handler or sa_sigaction based on the flags.
         if (g_previous_sigaction[sigNum].sa_flags & SA_SIGINFO)
@@ -82,9 +84,10 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
 
         pthread_sigmask(SIG_SETMASK, &currentSet, NULL);
 
-        // If the g_previous_sigaction set SA_RESETHAND, it will break the chain which means
-        // g_previous_sigaction->next_old_sigact will not be called. Our signal handler does not
-        // responsible for that. We just follow what OS do on SA_RESETHAND.
+        // If the g_previous_sigaction set SA_RESETHAND, it will break the chain
+        // which means g_previous_sigaction->next_old_sigact will not be called.
+        // This signal handler is not responsible for that, it just follows what
+        // the OS does on SA_RESETHAND.
         if (g_previous_sigaction[sigNum].sa_flags & SA_RESETHAND)
             g_previous_sigaction[sigNum].sa_handler = SIG_DFL;
     }
@@ -100,8 +103,9 @@ static void _RegisterSignalHandlers(void)
     memset(&sigAction, 0, sizeof(sigAction));
     sigAction.sa_sigaction = _HostSignalHandler;
 
-    // To use sa_sigaction instead of sa_handler, and allow catch the same signal as the one you're currently handling,
-    // and automatically restart the system call interrupted the signal.
+    // Use sa_sigaction instead of sa_handler, allow catching the same signal as
+    // the one you're currently handling, and automatically restart the system
+    // call that interrupted the signal.
     sigAction.sa_flags = SA_SIGINFO | SA_NODEFER | SA_RESTART;
 
     // Should honor the current signal masks.
@@ -118,7 +122,8 @@ static void _RegisterSignalHandlers(void)
     sigdelset(&sigAction.sa_mask, SIGBUS);
     sigdelset(&sigAction.sa_mask, SIGTRAP);
 
-    // Set the signal handlers, and store the previous signal action into a global array.
+    // Set the signal handlers, and store the previous signal action into a
+    // global array.
     if (sigaction(SIGSEGV, &sigAction, &g_previous_sigaction[SIGSEGV]) != 0)
     {
         abort();

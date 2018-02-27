@@ -9,7 +9,8 @@ void* OE_HostMalloc(size_t size)
     uint64_t argIn = size;
     uint64_t argOut = 0;
 
-    if (OE_OCall(OE_FUNC_MALLOC, argIn, &argOut, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (OE_OCall(OE_FUNC_MALLOC, argIn, &argOut, OE_OCALL_FLAG_NOT_REENTRANT) !=
+        OE_OK)
     {
         return NULL;
     }
@@ -32,7 +33,8 @@ void* OE_HostRealloc(void* ptr, size_t size)
     OE_ReallocArgs* argIn = NULL;
     uint64_t argOut = 0;
 
-    if (!(argIn = (OE_ReallocArgs*)OE_HostAllocForCallHost(sizeof(OE_ReallocArgs), 0, false)))
+    if (!(argIn = (OE_ReallocArgs*)OE_HostAllocForCallHost(
+              sizeof(OE_ReallocArgs), 0, false)))
     {
         return NULL;
     }
@@ -40,7 +42,11 @@ void* OE_HostRealloc(void* ptr, size_t size)
     argIn->ptr = ptr;
     argIn->size = size;
 
-    if (OE_OCall(OE_FUNC_REALLOC, (uint64_t)argIn, &argOut, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (OE_OCall(
+            OE_FUNC_REALLOC,
+            (uint64_t)argIn,
+            &argOut,
+            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
     {
         return NULL;
     }
@@ -75,7 +81,9 @@ int __OE_HostPutchar(int c)
 {
     int ret = -1;
 
-    if (OE_OCall(OE_FUNC_PUTCHAR, (uint64_t)c, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (OE_OCall(
+            OE_FUNC_PUTCHAR, (uint64_t)c, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
+        OE_OK)
         goto done;
 
     ret = 0;
@@ -96,7 +104,9 @@ int __OE_HostPuts(const char* str)
     if (!(hstr = OE_HostStrdup(str)))
         goto done;
 
-    if (OE_OCall(OE_FUNC_PUTS, (uint64_t)hstr, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (OE_OCall(
+            OE_FUNC_PUTS, (uint64_t)hstr, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
+        OE_OK)
         goto done;
 
     ret = 0;
@@ -123,7 +133,8 @@ int __OE_HostPrint(int device, const char* str, size_t len)
         len = OE_Strlen(str);
 
     /* Allocate space for the arguments followed by null-terminated string */
-    if (!(args = (OE_PrintArgs*)OE_HostAllocForCallHost(sizeof(OE_PrintArgs) + len + 1, 0, false)))
+    if (!(args = (OE_PrintArgs*)OE_HostAllocForCallHost(
+              sizeof(OE_PrintArgs) + len + 1, 0, false)))
     {
         goto done;
     }
@@ -135,7 +146,9 @@ int __OE_HostPrint(int device, const char* str, size_t len)
     args->str[len] = '\0';
 
     /* Perform OCALL */
-    if (OE_OCall(OE_FUNC_PRINT, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (OE_OCall(
+            OE_FUNC_PRINT, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
+        OE_OK)
         goto done;
 
     ret = 0;

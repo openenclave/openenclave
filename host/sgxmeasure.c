@@ -37,7 +37,11 @@ static void _MeasureECreate(OE_SHA256Context* context, uint64_t enclaveSize)
     OE_SHA256UpdateZeros(context, 44);
 }
 
-static void _MeasureEExtend(OE_SHA256Context* context, uint64_t vaddr, uint64_t flags, const void* page)
+static void _MeasureEExtend(
+    OE_SHA256Context* context,
+    uint64_t vaddr,
+    uint64_t flags,
+    const void* page)
 {
     uint64_t pgoff = 0;
     const uint64_t CHUNK_SIZE = 256;
@@ -54,7 +58,12 @@ static void _MeasureEExtend(OE_SHA256Context* context, uint64_t vaddr, uint64_t 
     }
 }
 
-static void _MeasureEAdd(OE_SHA256Context* context, uint64_t vaddr, uint64_t flags, bool extend, const void* page)
+static void _MeasureEAdd(
+    OE_SHA256Context* context,
+    uint64_t vaddr,
+    uint64_t flags,
+    bool extend,
+    const void* page)
 {
     OE_SHA256Update(context, "EADD\0\0\0", 8);
     OE_SHA256Update(context, &vaddr, sizeof(vaddr));
@@ -65,7 +74,10 @@ static void _MeasureEAdd(OE_SHA256Context* context, uint64_t vaddr, uint64_t fla
         _MeasureEExtend(context, vaddr, flags, page);
 }
 
-static OE_Result _ECreateProc(OE_SGXDevice* dev, uint64_t enclaveSize, uint64_t* enclaveAddr)
+static OE_Result _ECreateProc(
+    OE_SGXDevice* dev,
+    uint64_t enclaveSize,
+    uint64_t* enclaveAddr)
 {
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;
     OE_Result result = OE_UNEXPECTED;
@@ -92,7 +104,13 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _EAddProc(OE_SGXDevice* dev, uint64_t base, uint64_t addr, uint64_t src, uint64_t flags, bool extend)
+static OE_Result _EAddProc(
+    OE_SGXDevice* dev,
+    uint64_t base,
+    uint64_t addr,
+    uint64_t src,
+    uint64_t flags,
+    bool extend)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;
@@ -111,7 +129,11 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _EInitProc(OE_SGXDevice* dev, uint64_t addr, uint64_t sigstruct, uint64_t einittoken)
+static OE_Result _EInitProc(
+    OE_SGXDevice* dev,
+    uint64_t addr,
+    uint64_t sigstruct,
+    uint64_t einittoken)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;

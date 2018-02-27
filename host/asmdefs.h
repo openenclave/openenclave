@@ -25,38 +25,47 @@ typedef struct _OE_Enclave OE_Enclave;
 #endif
 
 #ifndef __ASSEMBLER__
-void OE_Enter(void* tcs,
-              void (*aep)(void),
-              uint64_t arg1,
-              uint64_t arg2,
-              uint64_t* arg3,
-              uint64_t* arg4,
-              OE_Enclave* enclave);
+void OE_Enter(
+    void* tcs,
+    void (*aep)(void),
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t* arg3,
+    uint64_t* arg4,
+    OE_Enclave* enclave);
 
 void OE_AEP(void);
 #endif
 
 #ifndef __ASSEMBLER__
-void OE_EnterSim(void* tcs,
-                 void (*aep)(void),
-                 uint64_t arg1,
-                 uint64_t arg2,
-                 uint64_t* arg3,
-                 uint64_t* arg4,
-                 OE_Enclave* enclave);
+void OE_EnterSim(
+    void* tcs,
+    void (*aep)(void),
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t* arg3,
+    uint64_t* arg4,
+    OE_Enclave* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
-int __OE_DispatchOCall(uint64_t arg1,
-                       uint64_t arg2,
-                       uint64_t* arg1Out,
-                       uint64_t* arg2Out,
-                       void* tcs,
-                       OE_Enclave* enclave);
+int __OE_DispatchOCall(
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t* arg1Out,
+    uint64_t* arg2Out,
+    void* tcs,
+    OE_Enclave* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
-int _OE_HostStackBridge(uint64_t arg1, uint64_t arg2, uint64_t* arg1Out, uint64_t* arg2Out, void* tcs, void* rsp);
+int _OE_HostStackBridge(
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t* arg1Out,
+    uint64_t* arg2Out,
+    void* tcs,
+    void* rsp);
 #endif
 
 #ifndef __ASSEMBLER__

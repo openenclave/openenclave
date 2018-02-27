@@ -56,7 +56,10 @@ typedef struct _OE_Enclave OE_Enclave;
  * @returns Returns OE_OK on success.
  *
  */
-OE_Result OE_CreateEnclave(const char* path, uint32_t flags, OE_Enclave** enclave);
+OE_Result OE_CreateEnclave(
+    const char* path,
+    uint32_t flags,
+    OE_Enclave** enclave);
 
 /**
  * Terminates an enclave and reclaims its resources.
@@ -123,7 +126,11 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
  * @retval OE_SERVICE_UNAVAILABLE The AESM service is unavailable.
  *
  */
-OE_Result OE_GetQuote(const void* report, size_t reportSize, void* quote, size_t* quoteSize);
+OE_Result OE_GetQuote(
+    const void* report,
+    size_t reportSize,
+    void* quote,
+    size_t* quoteSize);
 
 OE_EXTERNC_END
 

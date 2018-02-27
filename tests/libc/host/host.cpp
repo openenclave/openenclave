@@ -34,7 +34,11 @@ static void _ExitOCall(uint64_t argIn, uint64_t* argOut)
     exit(argIn);
 }
 
-static int _GetOpt(int& argc, const char* argv[], const char* name, const char** arg = NULL)
+static int _GetOpt(
+    int& argc,
+    const char* argv[],
+    const char* name,
+    const char** arg = NULL)
 {
     for (int i = 0; i < argc; i++)
     {
@@ -42,7 +46,8 @@ static int _GetOpt(int& argc, const char* argv[], const char* name, const char**
         {
             if (!arg)
             {
-                memmove((void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
+                memmove(
+                    (void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
                 argc--;
                 return 1;
             }
@@ -51,7 +56,8 @@ static int _GetOpt(int& argc, const char* argv[], const char* name, const char**
                 return -1;
 
             *arg = argv[i + 1];
-            memmove((char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
+            memmove(
+                (char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
             argc -= 2;
             return 1;
         }

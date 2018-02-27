@@ -37,7 +37,11 @@ enum Trait
     REF,
 };
 
-void SubstituteTrait(string& chars, Trait trait, const string& text, const string& arg = string())
+void SubstituteTrait(
+    string& chars,
+    Trait trait,
+    const string& text,
+    const string& arg = string())
 {
     if (trait == VERBATIM)
     {
@@ -319,7 +323,10 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
 
         if (!Element::parse(xmlfile, root, error))
         {
-            err("%u(%s): %s", error.line(), xmlfile.c_str(), error.message().c_str());
+            err("%u(%s): %s",
+                error.line(),
+                xmlfile.c_str(),
+                error.message().c_str());
             return false;
         }
 

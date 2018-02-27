@@ -7,7 +7,10 @@
 
 #define TRACE printf("TRACE: %s(%u): %s()\n", __FILE__, __LINE__, __FUNCTION__)
 
-OE_Result HostGetAppEnclaveReport(OE_Enclave* enclave, void** Report, size_t* ReportSize)
+OE_Result HostGetAppEnclaveReport(
+    OE_Enclave* enclave,
+    void** Report,
+    size_t* ReportSize)
 {
     OE_Result Result;
     CREATE_APP_ENCLAVE_REPORT_ARGS Args{OE_OK};
@@ -72,7 +75,11 @@ Cleanup:
     return Result;
 }
 
-OE_Result GetQuoteWrapper(void* Report, size_t ReportSize, void** Quote, size_t* QuoteSize)
+OE_Result GetQuoteWrapper(
+    void* Report,
+    size_t ReportSize,
+    void** Quote,
+    size_t* QuoteSize)
 {
     OE_Result Result;
     *Quote = NULL;
@@ -203,9 +210,12 @@ int main(int argc, const char* argv[])
 
     if (argc != 2)
     {
-        fprintf(stderr,
-                "Usage: SampleAppAttestationHost.exe <path to  packaged enc/dev dll>\n"
-                "Example: SampleAppAttestationHost.exe SampleAppAttestation.dev.pkg\\SampleAppAttestation.dll\n");
+        fprintf(
+            stderr,
+            "Usage: SampleAppAttestationHost.exe <path to packaged "
+            "enc/dev dll>\n"
+            "Example: SampleAppAttestationHost.exe "
+            "SampleAppAttestation.dev.pkg\\SampleAppAttestation.dll\n");
         return 1;
     }
 

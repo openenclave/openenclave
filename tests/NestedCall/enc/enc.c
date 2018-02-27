@@ -18,7 +18,8 @@ int DivideByZeroExceptionFunction(void)
 
     ret = ret / s;
 
-    // Check if the float registers are recovered correctly after the exception is handled.
+    // Check if the float registers are recovered correctly after the exception
+    // is handled.
     if (f < 0.309 || f > 0.321 || d < 0.319 || d > 0.321)
     {
         return ret;
@@ -76,7 +77,8 @@ OE_ECALL void EnclaveNestCalls(void* args_)
 
     if (args->depth <= 0)
     {
-        OE_HostPrintf("Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
+        OE_HostPrintf(
+            "Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
         args->ret = 0;
         return;
     }

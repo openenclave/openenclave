@@ -130,7 +130,12 @@ static int ReadLog(const char* path, vector<Entry>& log)
     do
     {
         Entry ent;
-        n = fscanf(is, "EADD: flags=%llx vaddr=%llx sum=%*x content=%*x attr=%u\n", &ent.flags, &ent.vaddr, &ent.attr);
+        n = fscanf(
+            is,
+            "EADD: flags=%llx vaddr=%llx sum=%*x content=%*x attr=%u\n",
+            &ent.flags,
+            &ent.vaddr,
+            &ent.attr);
 
         if (n != 3)
             break;
@@ -173,7 +178,11 @@ int MeasureECreate(OE_SHA256Context* context)
     return 0;
 }
 
-int MeasureEExtend(OE_SHA256Context* context, unsigned long long vaddr, unsigned long long flags, const void* page)
+int MeasureEExtend(
+    OE_SHA256Context* context,
+    unsigned long long vaddr,
+    unsigned long long flags,
+    const void* page)
 {
     struct EEXtendMeasurement
     {
@@ -213,11 +222,12 @@ int MeasureEExtend(OE_SHA256Context* context, unsigned long long vaddr, unsigned
     return 0;
 }
 
-int MeasureEAdd(OE_SHA256Context* context,
-                unsigned long long vaddr,
-                unsigned long long flags,
-                unsigned long long attr,
-                const void* page)
+int MeasureEAdd(
+    OE_SHA256Context* context,
+    unsigned long long vaddr,
+    unsigned long long flags,
+    unsigned long long attr,
+    const void* page)
 {
     struct EAddMeasurement
     {

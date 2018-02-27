@@ -13,7 +13,11 @@
 #include "inferior_status.h"
 
 // Function pointer definitions.
-typedef long (*OE_PtraceFunc)(enum __ptrace_request request, pid_t pid, void* addr, void* data);
+typedef long (*OE_PtraceFunc)(
+    enum __ptrace_request request,
+    pid_t pid,
+    void* addr,
+    void* data);
 
 typedef pid_t (*OE_WaitpidFunc)(pid_t pid, int* status, int options);
 
@@ -107,7 +111,8 @@ static long OE_GetFprHandler(pid_t pid, void* addr, void* data)
     if (OE_IsAEP(pid, &regs))
     {
         // rbx has the TCS of enclave thread.
-        if (OE_GetEnclaveThreadFpr(pid, (void*)regs.rbx, (struct user_fpregs_struct*)data) != 0)
+        if (OE_GetEnclaveThreadFpr(
+                pid, (void*)regs.rbx, (struct user_fpregs_struct*)data) != 0)
         {
             return -1;
         }
@@ -138,7 +143,8 @@ static long OE_SetFprHandler(pid_t pid, void* addr, void* data)
     if (OE_IsAEP(pid, &regs))
     {
         // rbx has the TCS of enclave thread.
-        if (OE_SetEnclaveThreadFpr(pid, (void*)regs.rbx, (struct user_fpregs_struct*)data) != 0)
+        if (OE_SetEnclaveThreadFpr(
+                pid, (void*)regs.rbx, (struct user_fpregs_struct*)data) != 0)
         {
             return -1;
         }
@@ -177,7 +183,9 @@ static long OE_GetRegSetHandler(pid_t pid, void* addr, void* data)
         // rbx has the TCS of enclave thread.
         struct iovec* iov = (struct iovec*)data;
         if (iov->iov_base && iov->iov_len &&
-            (OE_GetEnclaveThreadXState(pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) == 0))
+            (OE_GetEnclaveThreadXState(
+                 pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) ==
+             0))
         {
             return 0;
         }
@@ -216,7 +224,9 @@ static long OE_SetRegSetHandler(pid_t pid, void* addr, void* data)
         // rbx has the TCS of enclave thread.
         struct iovec* iov = (struct iovec*)data;
         if (iov->iov_base && iov->iov_len &&
-            (OE_SetEnclaveThreadXState(pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) == 0))
+            (OE_SetEnclaveThreadXState(
+                 pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) ==
+             0))
         {
             return 0;
         }
@@ -258,7 +268,8 @@ struct
     {PTRACE_GETFPXREGS, OE_GetFprHandler},
     {PTRACE_SETFPXREGS, OE_SetFprHandler},
 
-    // Register set request, can be used to get extended processor states(XState).
+    // Register set request, can be used to get extended processor
+    // states(XState).
     {PTRACE_GETREGSET, OE_GetRegSetHandler},
     {PTRACE_SETREGSET, OE_SetRegSetHandler},
 
@@ -290,7 +301,8 @@ long ptrace(OE_PtraceRequestType __request, ...)
     data = va_arg(ap, void*);
     va_end(ap);
 
-    // If the request should be handled by the customized handler, calls customer handler.
+    // If the request should be handled by the customized handler, calls
+    // customer handler.
     for (uint32_t i = 0; i < OE_COUNTOF(g_request_handlers); i++)
     {
         if (__request == g_request_handlers[i].request_type)
@@ -351,7 +363,8 @@ pid_t waitpid(pid_t pid, int* status, int options)
             if (OE_GetEnclaveThreadGpr(ret_pid, (void*)tcs, &regs) == 0)
             {
                 uint8_t bp = 0;
-                ret = OE_ReadProcessMemory(ret_pid, (void*)regs.rip, (void*)&bp, 1, NULL);
+                ret = OE_ReadProcessMemory(
+                    ret_pid, (void*)regs.rip, (void*)&bp, 1, NULL);
                 if ((ret == 0) && (bp == 0xcc))
                 {
                     regs.rip++;

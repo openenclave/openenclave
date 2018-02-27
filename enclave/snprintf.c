@@ -3,7 +3,22 @@
 
 static char _NibbleToChar(uint64_t x)
 {
-    static char _table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    static char _table[] = {'0',
+                            '1',
+                            '2',
+                            '3',
+                            '4',
+                            '5',
+                            '6',
+                            '7',
+                            '8',
+                            '9',
+                            'A',
+                            'B',
+                            'C',
+                            'D',
+                            'E',
+                            'F'};
 
     return _table[x & 0x000000000000000f];
 }

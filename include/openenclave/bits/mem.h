@@ -36,7 +36,11 @@
 #endif
 
 /* mem_t.__type */
-typedef enum _mem_type_t { MEM_TYPE_NONE = 1, MEM_TYPE_DYNAMIC = 1, MEM_TYPE_STATIC = 4 } mem_type_t;
+typedef enum _mem_type_t {
+    MEM_TYPE_NONE = 1,
+    MEM_TYPE_DYNAMIC = 1,
+    MEM_TYPE_STATIC = 4
+} mem_type_t;
 
 typedef struct _mem_t
 {
@@ -278,10 +282,11 @@ MEM_INLINE int mem_set(mem_t* mem, size_t pos, unsigned char c, size_t size)
     return 0;
 }
 
-MEM_INLINE int mem_insert(mem_t* mem,
-                          size_t pos,
-                          const void* ptr, /* If NULL, insert SIZE zero characters */
-                          size_t size)
+MEM_INLINE int mem_insert(
+    mem_t* mem,
+    size_t pos,
+    const void* ptr, /* If NULL, insert SIZE zero characters */
+    size_t size)
 {
     size_t rem;
 
@@ -309,9 +314,10 @@ MEM_INLINE int mem_insert(mem_t* mem,
     return 0;
 }
 
-MEM_INLINE int mem_append(mem_t* mem,
-                          const void* ptr, /* If NULL, append SIZE zero characters */
-                          size_t size)
+MEM_INLINE int mem_append(
+    mem_t* mem,
+    const void* ptr, /* If NULL, append SIZE zero characters */
+    size_t size)
 {
     if (!mem_ok(mem))
         return -1;
@@ -329,9 +335,10 @@ MEM_INLINE int mem_append(mem_t* mem,
     return 0;
 }
 
-MEM_INLINE int mem_cat(mem_t* mem,
-                       const void* ptr, /* If NULL, append SIZE zero characters */
-                       size_t size)
+MEM_INLINE int mem_cat(
+    mem_t* mem,
+    const void* ptr, /* If NULL, append SIZE zero characters */
+    size_t size)
 {
     return mem_append(mem, ptr, size);
 }
@@ -341,9 +348,10 @@ MEM_INLINE int mem_catc(mem_t* mem, unsigned char c)
     return mem_append(mem, &c, 1);
 }
 
-MEM_INLINE int mem_prepend(mem_t* mem,
-                           const void* ptr, /* If NULL, prepend SIZE zero characters */
-                           size_t size)
+MEM_INLINE int mem_prepend(
+    mem_t* mem,
+    const void* ptr, /* If NULL, prepend SIZE zero characters */
+    size_t size)
 {
     return mem_insert(mem, 0, ptr, size);
 }

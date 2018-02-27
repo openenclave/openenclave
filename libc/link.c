@@ -7,7 +7,9 @@
 
 /* Used by libunwind to iterate program ELF phdrs */
 
-int dl_iterate_phdr(int (*callback)(struct dl_phdr_info* info, size_t size, void* data), void* data)
+int dl_iterate_phdr(
+    int (*callback)(struct dl_phdr_info* info, size_t size, void* data),
+    void* data)
 {
     const Elf64_Ehdr* ehdr = (Elf64_Ehdr*)__OE_GetEnclaveBase();
 

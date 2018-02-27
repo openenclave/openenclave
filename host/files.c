@@ -15,7 +15,11 @@ bool __OE_FileExists(const char* path)
     return stat(path, &st) == 0 ? true : false;
 }
 
-OE_Result __OE_LoadFile(const char* path, size_t extraBytes, void** data, size_t* size)
+OE_Result __OE_LoadFile(
+    const char* path,
+    size_t extraBytes,
+    void** data,
+    size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     FILE* is = NULL;

@@ -136,7 +136,8 @@ ostream& operator<<(ostream& os, const Indent& indent)
 //
 //==============================================================================
 
-Attribute::Attribute(const std::string& name, const std::string& value) : _name(name), _value(value)
+Attribute::Attribute(const std::string& name, const std::string& value)
+    : _name(name), _value(value)
 {
 }
 
@@ -335,7 +336,10 @@ void Element::dump(std::ostream& os, size_t depth) const
     os << indent << "}" << endl;
 }
 
-bool Element::search(const std::string& xmlpath, const std::string& key, Element& elem) const
+bool Element::search(
+    const std::string& xmlpath,
+    const std::string& key,
+    Element& elem) const
 {
     size_t dot = xmlpath.find('.');
 
@@ -376,7 +380,8 @@ bool Element::search(const std::string& xmlpath, const std::string& key, Element
     return false;
 }
 
-void Element::find(const std::string& name, std::vector<Element>& elements) const
+void Element::find(const std::string& name, std::vector<Element>& elements)
+    const
 {
     elements.clear();
 
@@ -406,7 +411,8 @@ typedef struct _Context
     std::stack<Element> stack;
 } Context;
 
-static void XMLCALL _HandleStart(void* userData_, const XML_Char* name, const XML_Char** attrs)
+static void XMLCALL
+_HandleStart(void* userData_, const XML_Char* name, const XML_Char** attrs)
 {
     Context* context = (Context*)userData_;
 
@@ -488,7 +494,9 @@ bool Element::parse(const std::string& path, Element& root, Error& error)
 
         if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR)
         {
-            error.set(XML_ErrorString(XML_GetErrorCode(parser)), XML_GetCurrentLineNumber(parser));
+            error.set(
+                XML_ErrorString(XML_GetErrorCode(parser)),
+                XML_GetCurrentLineNumber(parser));
             goto done;
         }
     } while (!done);

@@ -28,7 +28,10 @@ int OE_H_ThreadEqual(OE_H_Thread thread1, OE_H_Thread thread2)
 **==============================================================================
 */
 
-static BOOL CALLBACK OnceHelper(_Inout_ PINIT_ONCE InitOnce, _Inout_opt_ PVOID Parameter, _Out_opt_ PVOID* Context)
+static BOOL CALLBACK OnceHelper(
+    _Inout_ PINIT_ONCE InitOnce,
+    _Inout_opt_ PVOID Parameter,
+    _Out_opt_ PVOID* Context)
 {
     ((void (*)(void))Parameter)();
     return TRUE;

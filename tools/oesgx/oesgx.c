@@ -11,9 +11,10 @@ typedef struct _Regs
 
 static void _CPUID(Regs* regs)
 {
-    asm volatile("cpuid"
-                 : "=a"(regs->eax), "=b"(regs->ebx), "=c"(regs->ecx), "=d"(regs->edx)
-                 : "0"(regs->eax), "2"(regs->ecx));
+    asm volatile(
+        "cpuid"
+        : "=a"(regs->eax), "=b"(regs->ebx), "=c"(regs->ecx), "=d"(regs->edx)
+        : "0"(regs->eax), "2"(regs->ecx));
 }
 
 #define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)

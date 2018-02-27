@@ -3,7 +3,9 @@
 
 #include <pthread.h>
 
-typedef enum _OE_Inferior_Flags { OE_INFERIOR_SINGLE_STEP = 0X1 } OE_Inferior_Flags;
+typedef enum _OE_Inferior_Flags {
+    OE_INFERIOR_SINGLE_STEP = 0X1
+} OE_Inferior_Flags;
 
 int _OE_TrackInferior(pid_t pid);
 

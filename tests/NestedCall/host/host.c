@@ -45,7 +45,8 @@ OE_OCALL void HostNestCalls(void* args_)
         exit(1);
     }
 
-    if ((result = OE_CallEnclave(enclave, "EnclaveNestCalls", &newArgs)) != OE_OK)
+    if ((result = OE_CallEnclave(enclave, "EnclaveNestCalls", &newArgs)) !=
+        OE_OK)
     {
         fprintf(stderr, "OE_CallEnclave() failed: result=%u", result);
         exit(1);
@@ -108,7 +109,9 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    printf("=== This program is used to test nest calls and hardware exception behavior in nest calls.");
+    printf(
+        "=== This program is used to test nest calls and hardware exception "
+        "behavior in nest calls.");
 
     const uint32_t flags = OE_GetCreateFlags();
 
@@ -125,7 +128,8 @@ int main(int argc, const char* argv[])
     TestNestedCalls(0, 64);
 
     /*
-    printf("Test nest calls test with exception inside enclave for each call in.\n");
+    printf("Test nest calls test with exception inside enclave for each call "
+           "in.\n");
     for (int i = 1; i < 17; i++)
     {
         TestNestedCalls(1, i);

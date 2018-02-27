@@ -28,7 +28,8 @@ void DumpEntryPoint(Elf64* elf)
     Elf64_Sym sym;
     const char* name;
 
-    if (Elf64_FindDynamicSymbolByAddress(elf, elf->ehdr->e_entry, STT_FUNC, &sym) != 0)
+    if (Elf64_FindDynamicSymbolByAddress(
+            elf, elf->ehdr->e_entry, STT_FUNC, &sym) != 0)
     {
         err("cannot find entry point symbol");
         return;
@@ -126,7 +127,8 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     }
 
     /* Skip symbol if not in the ".ecall" section */
-    if (sym->st_value < shdr->sh_addr || sym->st_value + sym->st_size > shdr->sh_addr + shdr->sh_size)
+    if (sym->st_value < shdr->sh_addr ||
+        sym->st_value + sym->st_size > shdr->sh_addr + shdr->sh_size)
     {
         rc = 0;
         goto done;

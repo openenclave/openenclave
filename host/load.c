@@ -9,11 +9,12 @@
 #include <string.h>
 #include "memalign.h"
 
-OE_Result __OE_LoadSegments(const char* path,
-                            OE_Segment segments[OE_MAX_SEGMENTS],
-                            size_t* nsegments,
-                            uint64_t* entryaddr,
-                            uint64_t* textaddr)
+OE_Result __OE_LoadSegments(
+    const char* path,
+    OE_Segment segments[OE_MAX_SEGMENTS],
+    size_t* nsegments,
+    uint64_t* entryaddr,
+    uint64_t* textaddr)
 {
     OE_Result result = OE_UNEXPECTED;
     Elf64 elf = ELF64_INIT;
@@ -161,7 +162,10 @@ OE_CATCH:
     return result;
 }
 
-OE_Result __OE_CalculateSegmentsSize(const OE_Segment* segments, size_t nsegments, size_t* size)
+OE_Result __OE_CalculateSegmentsSize(
+    const OE_Segment* segments,
+    size_t nsegments,
+    size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     uint64_t lo = 0xFFFFFFFFFFFFFFFF; /* lowest address of all segments */
@@ -205,7 +209,11 @@ OE_CATCH:
     return result;
 }
 
-OE_Result __OE_CombineSegments(const OE_Segment* segments, size_t nsegments, OE_Page** pages, size_t* npages)
+OE_Result __OE_CombineSegments(
+    const OE_Segment* segments,
+    size_t nsegments,
+    OE_Page** pages,
+    size_t* npages)
 {
     OE_Result result = OE_UNEXPECTED;
     uint64_t lo = 0xFFFFFFFFFFFFFFFF; /* lowest address of all segments */

@@ -126,7 +126,11 @@ static ssize_t _UnpackVariantUint32(mem_t* buf, size_t pos, uint32_t* value)
     return pos + count;
 }
 
-static OE_Result _PackBytes(mem_t* buf, unsigned int fieldnum, const void* data, uint32_t size)
+static OE_Result _PackBytes(
+    mem_t* buf,
+    unsigned int fieldnum,
+    const void* data,
+    uint32_t size)
 {
     OE_Result result = OE_UNEXPECTED;
     unsigned char tag = _MakeTag(fieldnum, WIRETYPE_LENGTH_DELIMITED);
@@ -162,7 +166,11 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _UnpackVarInt(mem_t* buf, size_t* pos, unsigned fieldnum, uint32_t* value)
+static OE_Result _UnpackVarInt(
+    mem_t* buf,
+    size_t* pos,
+    unsigned fieldnum,
+    uint32_t* value)
 {
     OE_Result result = OE_UNEXPECTED;
     uint8_t tag;
@@ -182,7 +190,12 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _UnpackLengthDelimited(mem_t* buf, size_t* pos, unsigned fieldnum, void* data, size_t dataSize)
+static OE_Result _UnpackLengthDelimited(
+    mem_t* buf,
+    size_t* pos,
+    unsigned fieldnum,
+    void* data,
+    size_t dataSize)
 {
     OE_Result result = OE_UNEXPECTED;
     uint8_t tag = 0;
@@ -230,7 +243,10 @@ static int _Write(int sock, const void* data, size_t size)
     return 0;
 }
 
-static OE_Result _WriteRequest(AESM* aesm, MessageType messageType, const mem_t* message)
+static OE_Result _WriteRequest(
+    AESM* aesm,
+    MessageType messageType,
+    const mem_t* message)
 {
     OE_Result result = OE_UNEXPECTED;
     mem_t envelope = MEM_DYNAMIC_INIT;
@@ -241,7 +257,9 @@ static OE_Result _WriteRequest(AESM* aesm, MessageType messageType, const mem_t*
 #endif
 
     /* Wrap message in envelope */
-    OE_TRY(_PackBytes(&envelope, messageType, mem_ptr(message), mem_size(message)));
+    OE_TRY(
+        _PackBytes(
+            &envelope, messageType, mem_ptr(message), mem_size(message)));
 
     /* Send the envelope to the AESM service */
     {
@@ -265,7 +283,10 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _ReadResponse(AESM* aesm, MessageType messageType, mem_t* message)
+static OE_Result _ReadResponse(
+    AESM* aesm,
+    MessageType messageType,
+    mem_t* message)
 {
     OE_Result result = OE_UNEXPECTED;
     uint32_t size;
@@ -373,11 +394,12 @@ void AESMDisconnect(AESM* aesm)
     }
 }
 
-OE_Result AESMGetLaunchToken(AESM* aesm,
-                             uint8_t mrenclave[OE_SHA256_SIZE],
-                             uint8_t modulus[OE_KEY_SIZE],
-                             const SGX_Attributes* attributes,
-                             SGX_LaunchToken* launchToken)
+OE_Result AESMGetLaunchToken(
+    AESM* aesm,
+    uint8_t mrenclave[OE_SHA256_SIZE],
+    uint8_t modulus[OE_KEY_SIZE],
+    const SGX_Attributes* attributes,
+    SGX_LaunchToken* launchToken)
 {
     OE_Result result = OE_UNEXPECTED;
     uint64_t timeout = 15000;
@@ -426,7 +448,9 @@ OE_Result AESMGetLaunchToken(AESM* aesm,
         }
 
         /* Unpack the launch token */
-        OE_TRY(_UnpackLengthDelimited(&response, &pos, 2, launchToken, sizeof(SGX_LaunchToken)));
+        OE_TRY(
+            _UnpackLengthDelimited(
+                &response, &pos, 2, launchToken, sizeof(SGX_LaunchToken)));
     }
 
     result = OE_OK;
@@ -439,7 +463,10 @@ OE_CATCH:
     return result;
 }
 
-OE_Result AESMInitQuote(AESM* aesm, SGX_TargetInfo* targetInfo, SGX_EPIDGroupID* epidGroupID)
+OE_Result AESMInitQuote(
+    AESM* aesm,
+    SGX_TargetInfo* targetInfo,
+    SGX_EPIDGroupID* epidGroupID)
 {
     OE_Result result = OE_UNEXPECTED;
     uint64_t timeout = 15000;
@@ -479,10 +506,14 @@ OE_Result AESMInitQuote(AESM* aesm, SGX_TargetInfo* targetInfo, SGX_EPIDGroupID*
         }
 
         /* Unpack targetInfo */
-        OE_TRY(_UnpackLengthDelimited(&response, &pos, 2, targetInfo, sizeof(SGX_TargetInfo)));
+        OE_TRY(
+            _UnpackLengthDelimited(
+                &response, &pos, 2, targetInfo, sizeof(SGX_TargetInfo)));
 
         /* Unpack epidGroupID */
-        OE_TRY(_UnpackLengthDelimited(&response, &pos, 3, epidGroupID, sizeof(SGX_EPIDGroupID)));
+        OE_TRY(
+            _UnpackLengthDelimited(
+                &response, &pos, 3, epidGroupID, sizeof(SGX_EPIDGroupID)));
     }
 
     result = OE_OK;
@@ -495,16 +526,17 @@ OE_CATCH:
     return result;
 }
 
-OE_Result AESMGetQuote(AESM* aesm,
-                       const SGX_Report* report,
-                       SGX_QuoteType quoteType,
-                       const SGX_SPID* spid,
-                       const SGX_Nonce* nonce,
-                       const uint8_t* signatureRevocationList,
-                       uint32_t signatureRevocationListSize,
-                       SGX_Report* reportOut, /* ATTN: support this! */
-                       SGX_Quote* quote,
-                       uint32_t quoteSize)
+OE_Result AESMGetQuote(
+    AESM* aesm,
+    const SGX_Report* report,
+    SGX_QuoteType quoteType,
+    const SGX_SPID* spid,
+    const SGX_Nonce* nonce,
+    const uint8_t* signatureRevocationList,
+    uint32_t signatureRevocationListSize,
+    SGX_Report* reportOut, /* ATTN: support this! */
+    SGX_Quote* quote,
+    uint32_t quoteSize)
 {
     uint64_t timeout = 15000;
     mem_t request = MEM_DYNAMIC_INIT;
@@ -532,7 +564,12 @@ OE_Result AESMGetQuote(AESM* aesm,
         /* Pack SIGNATURE-REVOCATION-LIST */
         if (signatureRevocationListSize)
         {
-            OE_TRY(_PackBytes(&request, 5, signatureRevocationList, signatureRevocationListSize));
+            OE_TRY(
+                _PackBytes(
+                    &request,
+                    5,
+                    signatureRevocationList,
+                    signatureRevocationListSize));
         }
 
         /* Pack QUOTE-SIZE */
@@ -570,7 +607,9 @@ OE_Result AESMGetQuote(AESM* aesm,
         /* Unpack optional reportOut */
         if (reportOut)
         {
-            OE_TRY(_UnpackLengthDelimited(&response, &pos, 3, reportOut, sizeof(SGX_Report)));
+            OE_TRY(
+                _UnpackLengthDelimited(
+                    &response, &pos, 3, reportOut, sizeof(SGX_Report)));
         }
     }
 

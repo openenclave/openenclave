@@ -21,12 +21,16 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    printf("=== This program is used to test basic vector exception functionalities.\n");
+    printf(
+        "=== This program is used to test basic vector exception "
+        "functionalities.\n");
 
     const uint32_t flags = OE_GetCreateFlags();
     if ((flags & OE_FLAG_SIMULATE) != 0)
     {
-        printf("=== Skipped unsupported test in simulation mode (VectorException)\n");
+        printf(
+            "=== Skipped unsupported test in simulation mode "
+            "(VectorException)\n");
         return SKIP_RETURN_CODE;
     }
 
@@ -37,7 +41,8 @@ int main(int argc, const char* argv[])
     memset(&args, 0, sizeof(args));
     args.ret = -1;
 
-    if ((result = OE_CallEnclave(enclave, "TestVectorException", &args)) != OE_OK)
+    if ((result = OE_CallEnclave(enclave, "TestVectorException", &args)) !=
+        OE_OK)
         OE_PutErr("OE_CallEnclave() failed: result=%u", result);
 
     if (args.ret != 0)

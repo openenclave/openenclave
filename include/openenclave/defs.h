@@ -52,7 +52,8 @@
 #ifdef __GNUC__
 #define OE_EXPORT __attribute__((visibility("default")))
 #elif _MSC_VER
-#define OE_EXPORT __declspec(dllexport) /* TODO #54: Find the right mechanism here */
+#define OE_EXPORT \
+    __declspec(dllexport) /* TODO #54: Find the right mechanism here */
 #else
 #error "OE_EXPORT unimplemented"
 #endif
@@ -95,7 +96,8 @@
 #define OE_OFFSETOF(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
 #elif _MSC_VER
 #ifdef __cplusplus
-#define OE_OFFSETOF(TYPE, MEMBER) ((size_t) & reinterpret_cast<char const volatile&>((((TYPE*)0)->MEMBER)))
+#define OE_OFFSETOF(TYPE, MEMBER) \
+    ((size_t) & reinterpret_cast<char const volatile&>((((TYPE*)0)->MEMBER)))
 #else
 #define OE_OFFSETOF(TYPE, MEMBER) ((size_t) & (((TYPE*)0)->MEMBER))
 #endif
@@ -108,13 +110,16 @@
 #define __OE_CONCAT(X, Y) X##Y
 #define OE_CONCAT(X, Y) __OE_CONCAT(X, Y)
 
-#define OE_CHECK_SIZE(N, M) \
-    typedef unsigned char OE_CONCAT(__OE_CHECK_SIZE, __LINE__)[((N) == (M)) ? 1 : -1] OE_UNUSED_ATTRIBUTE
+#define OE_CHECK_SIZE(N, M)          \
+    typedef unsigned char OE_CONCAT( \
+        __OE_CHECK_SIZE, __LINE__)[((N) == (M)) ? 1 : -1] OE_UNUSED_ATTRIBUTE
 
-#define OE_STATIC_ASSERT(COND) \
-    typedef unsigned char OE_CONCAT(__OE_STATIC_ASSERT, __LINE__)[(COND) ? 1 : -1] OE_UNUSED_ATTRIBUTE
+#define OE_STATIC_ASSERT(COND)       \
+    typedef unsigned char OE_CONCAT( \
+        __OE_STATIC_ASSERT, __LINE__)[(COND) ? 1 : -1] OE_UNUSED_ATTRIBUTE
 
-#define OE_TRACE printf("OE_TRACE: %s(%u): %s()\n", __FILE__, __LINE__, __FUNCTION__)
+#define OE_TRACE \
+    printf("OE_TRACE: %s(%u): %s()\n", __FILE__, __LINE__, __FUNCTION__)
 
 #ifndef NULL
 #ifdef __cplusplus
@@ -124,7 +129,8 @@
 #endif
 #endif
 
-#define OE_WEAK_ALIAS(OLD, NEW) extern __typeof(OLD) NEW __attribute__((weak, alias(#OLD)))
+#define OE_WEAK_ALIAS(OLD, NEW) \
+    extern __typeof(OLD) NEW __attribute__((weak, alias(#OLD)))
 
 #ifdef _WIN32
 /* nonstandard extension used: zero-sized array in struct/union */

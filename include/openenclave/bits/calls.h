@@ -372,7 +372,11 @@ typedef struct _OE_ReallocArgs
  * @retval OE_UNEXPECTED An unexpected error occurred.
  *
  */
-OE_Result OE_ECall(OE_Enclave* enclave, uint32_t func, uint64_t argIn, uint64_t* argOut);
+OE_Result OE_ECall(
+    OE_Enclave* enclave,
+    uint32_t func,
+    uint64_t argIn,
+    uint64_t* argOut);
 
 /**
  * Perform a low-level host function call (OCALL).
@@ -415,7 +419,11 @@ OE_Result OE_ECall(OE_Enclave* enclave, uint32_t func, uint64_t argIn, uint64_t*
  * @retval OE_UNEXPECTED An unexpected error occurred.
  *
  */
-OE_Result OE_OCall(uint32_t func, uint64_t argIn, uint64_t* argOut, uint32_t ocall_flags);
+OE_Result OE_OCall(
+    uint32_t func,
+    uint64_t argIn,
+    uint64_t* argOut,
+    uint32_t ocall_flags);
 /**
  * Registers a low-level ECALL function.
  *

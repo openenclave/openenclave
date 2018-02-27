@@ -8,9 +8,14 @@ struct SecureStrPatchingARGS
     int ret;
 };
 
-int EnclaveSecureStrPatching(OE_Enclave* Enclave, const char* src, char* dst, int dstLength)
+int EnclaveSecureStrPatching(
+    OE_Enclave* Enclave,
+    const char* src,
+    char* dst,
+    int dstLength)
 {
-    SecureStrPatchingARGS* data = (SecureStrPatchingARGS*)malloc(sizeof(SecureStrPatchingARGS));
+    SecureStrPatchingARGS* data =
+        (SecureStrPatchingARGS*)malloc(sizeof(SecureStrPatchingARGS));
     data->dst = dst;
     data->src = src;
     data->dstLength = dstLength;

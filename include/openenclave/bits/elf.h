@@ -102,9 +102,9 @@ ELF_EXTERNC_BEGIN
 #define PT_LOPROC 0x70000000 /* Processor-specific use */
 #define PT_HIPROC 0x7FFFFFFF
 
-#define SHF_WRITE 0x1           /* Section contains writable data */
-#define SHF_ALLOC 0x2           /* Section is allocated in memory image of program */
-#define SHF_EXECINSTR 0x4       /* Section contains executable instructions */
+#define SHF_WRITE 0x1     /* Section contains writable data */
+#define SHF_ALLOC 0x2     /* Section is allocated in memory image of program */
+#define SHF_EXECINSTR 0x4 /* Section contains executable instructions */
 #define SHF_MASKOS 0x0F000000   /* Environment-specific use */
 #define SHF_MASKPROC 0xF0000000 /* Processor-specific use */
 
@@ -271,33 +271,53 @@ int Elf64_FindSymbolByName(const Elf64* elf, const char* name, Elf64_Sym* sym);
 
 const char* Elf64_GetStringFromDynstr(const Elf64* elf, Elf64_Word offset);
 
-int Elf64_FindDynamicSymbolByName(const Elf64* elf, const char* name, Elf64_Sym* sym);
+int Elf64_FindDynamicSymbolByName(
+    const Elf64* elf,
+    const char* name,
+    Elf64_Sym* sym);
 
-int Elf64_FindDynamicSymbolByAddress(const Elf64* elf,
-                                     Elf64_Addr addr,
-                                     unsigned int type, /* STT_? */
-                                     Elf64_Sym* sym);
+int Elf64_FindDynamicSymbolByAddress(
+    const Elf64* elf,
+    Elf64_Addr addr,
+    unsigned int type, /* STT_? */
+    Elf64_Sym* sym);
 
-int Elf64_FindSymbolByAddress(const Elf64* elf,
-                              Elf64_Addr addr,
-                              unsigned int type, /* STT_? */
-                              Elf64_Sym* sym);
+int Elf64_FindSymbolByAddress(
+    const Elf64* elf,
+    Elf64_Addr addr,
+    unsigned int type, /* STT_? */
+    Elf64_Sym* sym);
 
-int Elf64_FindSection(const Elf64* elf, const char* name, const void** data, size_t* size);
+int Elf64_FindSection(
+    const Elf64* elf,
+    const char* name,
+    const void** data,
+    size_t* size);
 
 const char* Elf64_GetStringFromShstrtab(const Elf64* elf, Elf64_Word offset);
 
 const char* Elf64_GetStringFromStrtab(const Elf64* elf, Elf64_Word offset);
 
-int Elf64_AddSection(Elf64* elf, const char* name, unsigned int type, const void* secdata, size_t secsize);
+int Elf64_AddSection(
+    Elf64* elf,
+    const char* name,
+    unsigned int type,
+    const void* secdata,
+    size_t secsize);
 
 void Elf64_DumpSectionNames(const Elf64* elf);
 
 void Elf64_DumpStrings(const Elf64* elf);
 
-int Elf64_FindSectionHeader(const Elf64* elf, const char* name, Elf64_Shdr* shdr);
+int Elf64_FindSectionHeader(
+    const Elf64* elf,
+    const char* name,
+    Elf64_Shdr* shdr);
 
-int Elf64_VisitSymbols(const Elf64* elf, int (*visit)(const Elf64_Sym* sym, void* data), void* data);
+int Elf64_VisitSymbols(
+    const Elf64* elf,
+    int (*visit)(const Elf64_Sym* sym, void* data),
+    void* data);
 
 /* Load relocations (size will be a multiple of the page size) */
 int Elf64_LoadRelocations(const Elf64* elf, void** data, size_t* size);

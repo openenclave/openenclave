@@ -14,7 +14,8 @@ OE_ECALL void GetReport(void* args_)
     copy = *args;
 
     /* Generate the report */
-    if ((args->result = SGX_CreateReport(&copy.targetInfo, &copy.reportData, &copy.report)) != OE_OK)
+    if ((args->result = SGX_CreateReport(
+             &copy.targetInfo, &copy.reportData, &copy.report)) != OE_OK)
     {
         return;
     }

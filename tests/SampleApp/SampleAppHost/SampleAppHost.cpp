@@ -3,7 +3,11 @@
 #include <iostream>
 #include <vector>
 
-int EnclaveSecureStrPatching(OE_Enclave* Enclave, const char* src, char* dst, int dstLength);
+int EnclaveSecureStrPatching(
+    OE_Enclave* Enclave,
+    const char* src,
+    char* dst,
+    int dstLength);
 
 const char* Message = "Hello world from Host\n\0";
 
@@ -40,9 +44,10 @@ int main(int argc, const char* argv[])
 
     if (argc != 2)
     {
-        fprintf(stderr,
-                "Usage: SampleAppHost.exe <path to  packaged enc/dev dll>\n"
-                "Example: SampleAppHost.exe SampleApp.dev.pkg\\SampleApp.dll\n");
+        fprintf(
+            stderr,
+            "Usage: SampleAppHost.exe <path to  packaged enc/dev dll>\n"
+            "Example: SampleAppHost.exe SampleApp.dev.pkg\\SampleApp.dll\n");
         return 1;
     }
 

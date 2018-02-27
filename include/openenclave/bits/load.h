@@ -45,15 +45,23 @@ OE_INLINE uint64_t __OE_RoundDownToPageSize(uint64_t x)
     return x & ~(OE_PAGE_SIZE - 1);
 }
 
-OE_Result __OE_LoadSegments(const char* path,
-                            OE_Segment segments[OE_MAX_SEGMENTS],
-                            size_t* nsegments,
-                            uint64_t* entryaddr, /* virtual address of entry point */
-                            uint64_t* textaddr); /* virtual address of text section */
+OE_Result __OE_LoadSegments(
+    const char* path,
+    OE_Segment segments[OE_MAX_SEGMENTS],
+    size_t* nsegments,
+    uint64_t* entryaddr, /* virtual address of entry point */
+    uint64_t* textaddr); /* virtual address of text section */
 
-OE_Result __OE_CalculateSegmentsSize(const OE_Segment* segments, size_t nsegments, size_t* size);
+OE_Result __OE_CalculateSegmentsSize(
+    const OE_Segment* segments,
+    size_t nsegments,
+    size_t* size);
 
-OE_Result __OE_CombineSegments(const OE_Segment* segments, size_t nsegments, OE_Page** pages, size_t* npages);
+OE_Result __OE_CombineSegments(
+    const OE_Segment* segments,
+    size_t nsegments,
+    OE_Page** pages,
+    size_t* npages);
 
 OE_EXTERNC_END
 

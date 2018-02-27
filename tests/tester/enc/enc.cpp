@@ -129,7 +129,8 @@ OE_EXTERNC int CopyObject(struct Object* dest, const struct Object* src)
     return 0;
 }
 
-OE_EXTERNC int32_t CopyObjects(struct Object dest[2], const struct Object src[2])
+OE_EXTERNC int32_t
+CopyObjects(struct Object dest[2], const struct Object src[2])
 {
     if (CopyObject(&dest[0], &src[0]) != 0)
         return -1;
@@ -146,13 +147,14 @@ OE_EXTERNC int32_t CopyObjects(struct Object dest[2], const struct Object src[2]
     return 0;
 }
 
-OE_EXTERNC int32_t ECALL_MultipleParams(const char* strIn,
-                                        uint32_t numIn,
-                                        const struct Object* objectIn,
-                                        char* strOut,
-                                        uint32_t* numOut,
-                                        struct Object* objectOut,
-                                        struct Object** objectRefOut)
+OE_EXTERNC int32_t ECALL_MultipleParams(
+    const char* strIn,
+    uint32_t numIn,
+    const struct Object* objectIn,
+    char* strOut,
+    uint32_t* numOut,
+    struct Object* objectOut,
+    struct Object** objectRefOut)
 {
     if (!strIn || !objectIn || !strOut || !objectOut)
         return -1;
@@ -289,7 +291,11 @@ OE_EXTERNC void* ReturnEnclaveMemory()
     return malloc(16);
 }
 
-OE_EXTERNC void TestBufferCopy(void* dest, const void* src, size_t n, bool forceOverwrite)
+OE_EXTERNC void TestBufferCopy(
+    void* dest,
+    const void* src,
+    size_t n,
+    bool forceOverwrite)
 {
     if (forceOverwrite)
         memcpy(dest, src, n + 1);

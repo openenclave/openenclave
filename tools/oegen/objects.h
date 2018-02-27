@@ -166,7 +166,9 @@ class Function : public Object
     size_t FindParam(const std::string& name) const;
 };
 
-inline size_t FindParam(const std::vector<Param>& params, const std::string& name)
+inline size_t FindParam(
+    const std::vector<Param>& params,
+    const std::string& name)
 {
     for (size_t i = 0; i < params.size(); i++)
     {

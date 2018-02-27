@@ -200,7 +200,12 @@ MEM_INLINE int str_substr(str_t* str, const char* s, size_t pos, size_t len)
     return str_ncpy(str, s + pos, len);
 }
 
-MEM_INLINE int str_replace(str_t* str, const char* match, size_t mlen, const char* replacement, size_t rlen)
+MEM_INLINE int str_replace(
+    str_t* str,
+    const char* match,
+    size_t mlen,
+    const char* replacement,
+    size_t rlen)
 {
     size_t pos;
 
@@ -221,7 +226,10 @@ MEM_INLINE int str_replace(str_t* str, const char* match, size_t mlen, const cha
                 if (str_reserve(str, __str_size(str) + delta) != 0)
                     return -1;
 
-                memmove(__str_ptr(str) + pos + rlen, __str_ptr(str) + pos + mlen, __str_size(str) - pos - mlen);
+                memmove(
+                    __str_ptr(str) + pos + rlen,
+                    __str_ptr(str) + pos + mlen,
+                    __str_size(str) - pos - mlen);
 
                 memcpy(__str_ptr(str) + pos, replacement, rlen);
 
@@ -231,7 +239,10 @@ MEM_INLINE int str_replace(str_t* str, const char* match, size_t mlen, const cha
             {
                 size_t delta = mlen - rlen;
 
-                memmove(__str_ptr(str) + pos + rlen, __str_ptr(str) + pos + mlen, __str_size(str) - pos - rlen);
+                memmove(
+                    __str_ptr(str) + pos + rlen,
+                    __str_ptr(str) + pos + mlen,
+                    __str_size(str) - pos - rlen);
 
                 memcpy(__str_ptr(str) + pos, replacement, rlen);
 

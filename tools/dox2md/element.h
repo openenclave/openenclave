@@ -112,7 +112,10 @@ struct Element
 
     void dump(std::ostream& os = std::cout, size_t depth = 0) const;
 
-    bool search(const std::string& xmlpath, const std::string& key, Element& elem) const;
+    bool search(
+        const std::string& xmlpath,
+        const std::string& key,
+        Element& elem) const;
 
     void find(const std::string& name, std::vector<Element>& elements) const;
 

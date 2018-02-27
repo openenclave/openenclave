@@ -28,7 +28,10 @@ OE_ECALL void TestHostRealloc(void* _args)
         else if (args.oldSize < args.newSize)
         {
             void* extPtr = (void*)((uint64_t)args.outPtr + args.oldSize);
-            OE_Memset(extPtr, TEST_HOSTREALLOC_INIT_VALUE, args.newSize - args.oldSize);
+            OE_Memset(
+                extPtr,
+                TEST_HOSTREALLOC_INIT_VALUE,
+                args.newSize - args.oldSize);
         }
     }
 

@@ -117,7 +117,12 @@ int main(int argc, const char* argv[])
 
         if (checksum1 != checksum2)
         {
-            fprintf(stderr, "%s: checksum mismatch: checksum1=%x, checksum2=%#x\n", argv[0], checksum1, checksum2);
+            fprintf(
+                stderr,
+                "%s: checksum mismatch: checksum1=%x, checksum2=%#x\n",
+                argv[0],
+                checksum1,
+                checksum2);
             return 1;
         }
 

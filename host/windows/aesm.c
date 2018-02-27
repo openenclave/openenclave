@@ -167,13 +167,20 @@ static IAESMInterface* _CreateInstance()
 {
     IAESMInterface* instance = NULL;
     static const CLSID CLSID_AESMInterface = {
-        0x82367CAB, 0xF2B9, 0x461A, {0xB6, 0xC6, 0x88, 0x9D, 0x13, 0xEF, 0xC6, 0xCA}};
+        0x82367CAB,
+        0xF2B9,
+        0x461A,
+        {0xB6, 0xC6, 0x88, 0x9D, 0x13, 0xEF, 0xC6, 0xCA}};
     static const IID IID_IAESMInterface = {
-        0x50AFD900, 0xF309, 0x4557, {0x8F, 0xCB, 0x10, 0xCF, 0xAB, 0x80, 0x2C, 0xDD}};
+        0x50AFD900,
+        0xF309,
+        0x4557,
+        {0x8F, 0xCB, 0x10, 0xCF, 0xAB, 0x80, 0x2C, 0xDD}};
 
     /* Initialize COM library */
     {
-        HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+        HRESULT hr = CoInitializeEx(
+            NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
         /* If COM initialization failed */
         if (hr != S_OK && hr != S_FALSE)
@@ -181,7 +188,13 @@ static IAESMInterface* _CreateInstance()
     }
 
     /* Create AESMInterface object */
-    if (!SUCCEEDED(CoCreateInstance(&CLSID_AESMInterface, NULL, CLSCTX_ALL, &IID_IAESMInterface, &instance)))
+    if (!SUCCEEDED(
+            CoCreateInstance(
+                &CLSID_AESMInterface,
+                NULL,
+                CLSCTX_ALL,
+                &IID_IAESMInterface,
+                &instance)))
     {
         CoUninitialize();
         goto done;
@@ -242,11 +255,12 @@ void AESMDisconnect(AESM* aesm)
     }
 }
 
-OE_Result AESMGetLaunchToken(AESM* aesm,
-                             uint8_t mrenclave[OE_SHA256_SIZE],
-                             uint8_t modulus[OE_KEY_SIZE],
-                             const SGX_Attributes* attributes,
-                             SGX_LaunchToken* launchToken)
+OE_Result AESMGetLaunchToken(
+    AESM* aesm,
+    uint8_t mrenclave[OE_SHA256_SIZE],
+    uint8_t modulus[OE_KEY_SIZE],
+    const SGX_Attributes* attributes,
+    SGX_LaunchToken* launchToken)
 {
     OE_Result result = OE_UNEXPECTED;
     aesm_error_t error;
@@ -260,17 +274,18 @@ OE_Result AESMGetLaunchToken(AESM* aesm,
         goto done;
 
     /* Obtain a luanch token */
-    HRESULT hr = instance->lpVtbl->GetLicenseToken(instance,               /* this */
-                                                   mrenclave,              /* mrenclave */
-                                                   OE_SHA256_SIZE,         /* mrenclave_size */
-                                                   modulus,                /* public_key */
-                                                   OE_KEY_SIZE,            /* public_key_size */
-                                                   (PUINT8)attributes,     /* se_attributes */
-                                                   sizeof(SGX_Attributes), /* se_attributes_size */
-                                                   (PUINT8)launchToken,    /* lictoken */
-                                                   /* MSR-SDK passes sizeof(SGX_EInitToken) */
-                                                   sizeof(SGX_EInitToken), /* lictoken_size */
-                                                   &error);                /* result */
+    HRESULT hr = instance->lpVtbl->GetLicenseToken(
+        instance,               /* this */
+        mrenclave,              /* mrenclave */
+        OE_SHA256_SIZE,         /* mrenclave_size */
+        modulus,                /* public_key */
+        OE_KEY_SIZE,            /* public_key_size */
+        (PUINT8)attributes,     /* se_attributes */
+        sizeof(SGX_Attributes), /* se_attributes_size */
+        (PUINT8)launchToken,    /* lictoken */
+        /* MSR-SDK passes sizeof(SGX_EInitToken) */
+        sizeof(SGX_EInitToken), /* lictoken_size */
+        &error);                /* result */
 
     if (!SUCCEEDED(hr) || error != 0)
     {
@@ -288,7 +303,10 @@ done:
     return result;
 }
 
-OE_Result AESMInitQuote(AESM* aesm, SGX_TargetInfo* targetInfo, SGX_EPIDGroupID* epidGroupID)
+OE_Result AESMInitQuote(
+    AESM* aesm,
+    SGX_TargetInfo* targetInfo,
+    SGX_EPIDGroupID* epidGroupID)
 {
     OE_Result result = OE_UNEXPECTED;
     aesm_error_t error;
@@ -303,7 +321,12 @@ OE_Result AESMInitQuote(AESM* aesm, SGX_TargetInfo* targetInfo, SGX_EPIDGroupID*
 
     // Get quote for a given report.
     HRESULT hr = instance->lpVtbl->InitQuote(
-        instance, (uint8_t*)targetInfo, sizeof(SGX_TargetInfo), (uint8_t*)epidGroupID, sizeof(SGX_EPIDGroupID), &error);
+        instance,
+        (uint8_t*)targetInfo,
+        sizeof(SGX_TargetInfo),
+        (uint8_t*)epidGroupID,
+        sizeof(SGX_EPIDGroupID),
+        &error);
 
     if (!SUCCEEDED(hr) || error != 0)
     {
@@ -321,16 +344,17 @@ done:
     return result;
 }
 
-OE_Result AESMGetQuote(AESM* aesm,
-                       const SGX_Report* report,
-                       SGX_QuoteType quoteType,
-                       const SGX_SPID* spid,
-                       const SGX_Nonce* nonce,
-                       const uint8_t* signatureRevocationList,
-                       uint32_t signatureRevocationListSize,
-                       SGX_Report* reportOut, /* ATTN: support this! */
-                       SGX_Quote* quote,
-                       uint32_t quoteSize)
+OE_Result AESMGetQuote(
+    AESM* aesm,
+    const SGX_Report* report,
+    SGX_QuoteType quoteType,
+    const SGX_SPID* spid,
+    const SGX_Nonce* nonce,
+    const uint8_t* signatureRevocationList,
+    uint32_t signatureRevocationListSize,
+    SGX_Report* reportOut, /* ATTN: support this! */
+    SGX_Quote* quote,
+    uint32_t quoteSize)
 {
     OE_Result result = OE_UNEXPECTED;
     aesm_error_t error;
@@ -344,21 +368,22 @@ OE_Result AESMGetQuote(AESM* aesm,
         goto done;
 
     // Get quote for a given report.
-    HRESULT hr = instance->lpVtbl->GetQuote(instance,                          /* this */
-                                            (uint8_t*)report,                  /* report */
-                                            sizeof(SGX_Report),                /* report_size */
-                                            (uint32_t)quoteType,               /* type */
-                                            (uint8_t*)spid,                    /* spid */
-                                            sizeof(SGX_SPID),                  /* spid_size */
-                                            (uint8_t*)nonce,                   /* nonce */
-                                            sizeof(SGX_Nonce),                 /* nonce_size */
-                                            (uint8_t*)signatureRevocationList, /* sigrl */
-                                            signatureRevocationListSize,       /* sigrl_size */
-                                            (uint8_t*)reportOut,               /* qe_report */
-                                            sizeof(SGX_Report),                /* qe_report_size */
-                                            (uint8_t*)quote,                   /* quote */
-                                            quoteSize,                         /* buffer_size */
-                                            &error);
+    HRESULT hr = instance->lpVtbl->GetQuote(
+        instance,                          /* this */
+        (uint8_t*)report,                  /* report */
+        sizeof(SGX_Report),                /* report_size */
+        (uint32_t)quoteType,               /* type */
+        (uint8_t*)spid,                    /* spid */
+        sizeof(SGX_SPID),                  /* spid_size */
+        (uint8_t*)nonce,                   /* nonce */
+        sizeof(SGX_Nonce),                 /* nonce_size */
+        (uint8_t*)signatureRevocationList, /* sigrl */
+        signatureRevocationListSize,       /* sigrl_size */
+        (uint8_t*)reportOut,               /* qe_report */
+        sizeof(SGX_Report),                /* qe_report_size */
+        (uint8_t*)quote,                   /* quote */
+        quoteSize,                         /* buffer_size */
+        &error);
 
     if (!SUCCEEDED(hr) || error != 0)
     {

@@ -11,11 +11,12 @@ OE_EXTERNC_BEGIN
 
 #define OE_SHA256_STRING_SIZE ((OE_SHA256_SIZE)*2 + 1)
 
-#define OE_SHA256_INIT                                                                                     \
-    {                                                                                                      \
-        {                                                                                                  \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
-        }                                                                                                  \
+#define OE_SHA256_INIT                                                        \
+    {                                                                         \
+        {                                                                     \
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                  \
+        }                                                                     \
     }
 
 typedef struct _OE_SHA256Context

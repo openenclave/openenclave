@@ -93,7 +93,8 @@ typedef struct _OE_EXCEPTION_RECORD
     OE_CONTEXT* context;
 } OE_EXCEPTION_RECORD;
 
-typedef uint64_t (*POE_VECTORED_EXCEPTION_HANDLER)(OE_EXCEPTION_RECORD* exceptionContext);
+typedef uint64_t (*POE_VECTORED_EXCEPTION_HANDLER)(
+    OE_EXCEPTION_RECORD* exceptionContext);
 #endif // !__ASSEMBLER__
 
 #endif /* _CONTEXT_H */

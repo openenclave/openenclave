@@ -43,28 +43,31 @@ OE_EXTERNC_BEGIN
 /**
 * Register a new vector exception handler.
 *
-* Call this function to add a new vector exception handler. If success, the registered
-* handler will be called when an exception happens inside enclave.
+* Call this function to add a new vectored exception handler. If successful, the
+* registered handler will be called when an exception happens inside enclave.
 *
 * @param isFirstHandler The parameter indicates if the input handler should be
-* the first exception handler to be called. If it is zero, the input handler will
-* be append to the end of exception handler chain, otherwise it will be added as
-* the first one in the exception handler chain.
-* @param vectoredHandler The input vector exception handler that must be a function
-* inside enclave. The same handler can only be registered once, the 2nd registration will
-* fail.
+* the first exception handler to be called. If it is zero, the input handler
+* will be append to the end of exception handler chain, otherwise it will be
+* added as the first one in the exception handler chain.
+* @param vectoredHandler The input vectored exception handler to register. It
+* must be a function defined in the enclave. The same handler can only be
+* registered once; a 2nd registration will fail.
 *
-* @returns This function return a opaque handler of new registered handler on success,
-* caller can use the return value to remove the handler later. Return NULL if fail.
+* @returns This function returns an opaque pointer to the registered handler on
+* success, or NULL on failure. A caller can use a successfully returned pointer
+* to call OE_RemoveVectoredExceptionHandler() to unregister the handler later.
 *
 */
-void* OE_AddVectoredExceptionHandler(uint64_t isFirstHandler, POE_VECTORED_EXCEPTION_HANDLER vectoredHandler);
+void* OE_AddVectoredExceptionHandler(
+    uint64_t isFirstHandler,
+    POE_VECTORED_EXCEPTION_HANDLER vectoredHandler);
 
 /**
 * Remove an existing exception handler.
 *
-* @param vectoredHandler The pointer to a registered exception handler that is a return
-* value from a successful OE_AddVectoredExceptionHandler call.
+* @param vectoredHandler The pointer to a registered exception handler returned
+* from a successful OE_AddVectoredExceptionHandler() call.
 *
 * @returns This function returns ZERO if success.
 */
@@ -163,8 +166,10 @@ bool OE_IsOutsideEnclave(const void* ptr, size_t size);
  * @retval OE_OUT_OF_MEMORY Failed to allocate host heap memory.
  *
  */
-OE_Result
-OE_GetReportForRemoteAttestation(const uint8_t reportData[OE_REPORT_DATA_SIZE], void* report, size_t* reportSize);
+OE_Result OE_GetReportForRemoteAttestation(
+    const uint8_t reportData[OE_REPORT_DATA_SIZE],
+    void* report,
+    size_t* reportSize);
 
 /**
  * Print formatted characters to the host's console.
@@ -181,7 +186,8 @@ OE_PRINTF_FORMAT(1, 2)
 int OE_HostPrintf(const char* fmt, ...);
 
 /**
- * Allocates space for parameters of the next call to host on the host's stack frame.
+ * Allocates space for parameters of the next call to host on the host's stack
+ * frame.
  *
  * This function allocates **size** bytes of space on the stack frame of the
  * host. The returned address will be a multiple of **alignment** (if
@@ -320,7 +326,11 @@ void* OE_Sbrk(ptrdiff_t increment);
  * @param line The name of the function that invoked OE_Assert().
  *
  */
-void __OE_AssertFail(const char* expr, const char* file, int line, const char* func);
+void __OE_AssertFail(
+    const char* expr,
+    const char* file,
+    int line,
+    const char* func);
 
 #define OE_Assert(EXPR)                                               \
     do                                                                \

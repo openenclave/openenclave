@@ -142,13 +142,15 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
     argsPtr = (OE_CallEnclaveArgs*)argIn;
     args = *argsPtr;
 
-    if (!args.vaddr || (args.func >= ecallPages->num_vaddrs) || ((vaddr = ecallPages->vaddrs[args.func]) != args.vaddr))
+    if (!args.vaddr || (args.func >= ecallPages->num_vaddrs) ||
+        ((vaddr = ecallPages->vaddrs[args.func]) != args.vaddr))
     {
         OE_TRY(OE_INVALID_PARAMETER);
     }
 
     /* Translate function address from virtual to real address */
-    OE_EnclaveFunc func = (OE_EnclaveFunc)((uint64_t)__OE_GetEnclaveBase() + vaddr);
+    OE_EnclaveFunc func =
+        (OE_EnclaveFunc)((uint64_t)__OE_GetEnclaveBase() + vaddr);
 
     func(args.args);
     argsPtr->result = OE_OK;
@@ -218,7 +220,12 @@ void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
 **==============================================================================
 */
 
-static void _HandleECall(TD* td, uint32_t func, uint64_t argIn, uint64_t* outputArg1, uint64_t* outputArg2)
+static void _HandleECall(
+    TD* td,
+    uint32_t func,
+    uint64_t argIn,
+    uint64_t* outputArg1,
+    uint64_t* outputArg2)
 {
     /* Insert ECALL context onto front of TD.ecalls list */
     Callsite callsite;
@@ -327,7 +334,11 @@ static __inline__ void _HandleORET(TD* td, long func, long arg)
 **==============================================================================
 */
 
-OE_Result OE_OCall(uint32_t func, uint64_t argIn, uint64_t* argOut, uint32_t ocall_flags)
+OE_Result OE_OCall(
+    uint32_t func,
+    uint64_t argIn,
+    uint64_t* argOut,
+    uint32_t ocall_flags)
 {
     OE_Result result = OE_UNEXPECTED;
     TD* td = TD_Get();
@@ -390,7 +401,8 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args = OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1, 0, false)))
+        if (!(args = OE_HostAllocForCallHost(
+                  sizeof(OE_CallHostArgs) + len + 1, 0, false)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
         OE_Memcpy(args->func, func, len + 1);
@@ -501,7 +513,13 @@ OE_CATCH:
 **==============================================================================
 */
 
-void __OE_HandleMain(uint64_t arg1, uint64_t arg2, uint64_t cssa, void* tcs, uint64_t* outputArg1, uint64_t* outputArg2)
+void __OE_HandleMain(
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t cssa,
+    void* tcs,
+    uint64_t* outputArg1,
+    uint64_t* outputArg2)
 {
     OE_Code code = OE_GetCodeFromCallArg1(arg1);
     uint32_t func = OE_GetFuncFromCallArg1(arg1);
@@ -529,7 +547,8 @@ void __OE_HandleMain(uint64_t arg1, uint64_t arg2, uint64_t cssa, void* tcs, uin
                 break;
 
             case OE_CODE_ORET:
-                /* Eventually calls OE_Exit() and never returns here if successful */
+                /* Eventually calls OE_Exit() and never returns here if
+                 * successful */
                 _HandleORET(td, func, argIn);
             // fallthrough
 
@@ -540,7 +559,8 @@ void __OE_HandleMain(uint64_t arg1, uint64_t arg2, uint64_t cssa, void* tcs, uin
     }
     else /* cssa > 0 */
     {
-        if ((code == OE_CODE_ECALL) && (func == OE_FUNC_VIRTUAL_EXCEPTION_HANDLER))
+        if ((code == OE_CODE_ECALL) &&
+            (func == OE_FUNC_VIRTUAL_EXCEPTION_HANDLER))
         {
             _HandleECall(td, func, argIn, outputArg1, outputArg2);
             return;
@@ -558,16 +578,17 @@ void __OE_HandleMain(uint64_t arg1, uint64_t arg2, uint64_t cssa, void* tcs, uin
 **
 **     Notify the nested exist happens.
 **
-**     This function saves the current ocall context to the thread data. The 
-**     ocall context contains the stack pointer and the return address of the 
-**     function when ocall happens inside enclave (i.e. one type of nested exit). 
-**     When debugger does stack stitching, it will update the untrusted ocall 
-**     frames previous stack frame pointer and return address with the ocall 
-**     context from trusted thread data. When GDB does stack walking, the parent 
-**     stack of an untrusted ocall will be stack of the _OE_EXIT trusted function 
-**     instead of stack of OE_Enter/__morestack untrusted function.
-**     Refer to the _OE_NotifyOCallStart function in host side, and the 
-**     OCallStartBreakpoint and update_untrusted_ocall_frame function in the 
+**     This function saves the current ocall context to the thread data. The
+**     ocall context contains the stack pointer and the return address of the
+**     function when ocall happens inside enclave (i.e. one type of nested
+**     exit).
+**     When debugger does stack stitching, it will update the untrusted ocall
+**     frames previous stack frame pointer and return address with the ocall
+**     context from trusted thread data. When GDB does stack walking, the parent
+**     stack of an untrusted ocall will be stack of the _OE_EXIT trusted
+**     function instead of stack of OE_Enter/__morestack untrusted function.
+**     Refer to the _OE_NotifyOCallStart function in host side, and the
+**     OCallStartBreakpoint and update_untrusted_ocall_frame function in the
 **     python plugin.
 **
 **==============================================================================

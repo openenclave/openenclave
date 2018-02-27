@@ -17,18 +17,30 @@
 
 OE_EXTERNC_BEGIN
 
-OE_INLINE void __OE_TraceResult(const char* op, OE_Result result, const char* file, unsigned int line, const char* expr)
+OE_INLINE void __OE_TraceResult(
+    const char* op,
+    OE_Result result,
+    const char* file,
+    unsigned int line,
+    const char* expr)
 {
     if (result == OE_OK)
     {
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-        OE_PRINTF("\nok: %s: %s(%u): result=%u: %s\n", op, file, line, result, expr);
+        OE_PRINTF(
+            "\nok: %s: %s(%u): result=%u: %s\n", op, file, line, result, expr);
 #endif
     }
     else
     {
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_ERROR)
-        OE_PRINTF("\nfail: %s: %s(%u): result=%u: %s\n", op, file, line, result, expr);
+        OE_PRINTF(
+            "\nfail: %s: %s(%u): result=%u: %s\n",
+            op,
+            file,
+            line,
+            result,
+            expr);
 #endif
     }
 }

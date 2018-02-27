@@ -49,7 +49,8 @@ int main(int argc, const char* argv[])
     if (!(dev = OpenDevice()))
         OE_PutErr("__OE_OpenSGXDriver() failed");
 
-    if ((result = __OE_BuildEnclave(dev, argv[1], GetEnclaveSettings(), &enclave)) != OE_OK)
+    if ((result = __OE_BuildEnclave(
+             dev, argv[1], GetEnclaveSettings(), &enclave)) != OE_OK)
     {
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
     }

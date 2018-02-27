@@ -135,12 +135,15 @@ static uint32_t _MakeMemoryProtectParam(const SecInfo* secinfo, bool simulate)
 
     if (secinfo->flags & SGX_SECINFO_REG)
     {
-        if ((secinfo->flags & SGX_SECINFO_X) && (secinfo->flags & SGX_SECINFO_R) && (secinfo->flags & SGX_SECINFO_W))
+        if ((secinfo->flags & SGX_SECINFO_X) &&
+            (secinfo->flags & SGX_SECINFO_R) &&
+            (secinfo->flags & SGX_SECINFO_W))
         {
             return PAGE_EXECUTE_READWRITE;
         }
 
-        if ((secinfo->flags & SGX_SECINFO_X) && (secinfo->flags & SGX_SECINFO_R))
+        if ((secinfo->flags & SGX_SECINFO_X) &&
+            (secinfo->flags & SGX_SECINFO_R))
         {
             return PAGE_EXECUTE_READ;
         }
@@ -148,7 +151,8 @@ static uint32_t _MakeMemoryProtectParam(const SecInfo* secinfo, bool simulate)
         if ((secinfo->flags & SGX_SECINFO_X))
             return PAGE_EXECUTE;
 
-        if ((secinfo->flags & SGX_SECINFO_R) && (secinfo->flags & SGX_SECINFO_W))
+        if ((secinfo->flags & SGX_SECINFO_R) &&
+            (secinfo->flags & SGX_SECINFO_W))
         {
             return PAGE_READWRITE;
         }
@@ -245,7 +249,9 @@ static int _IoctlSimulate(Self* self, unsigned long request, void* param)
                 return -1;
 
             /* Verify that page is within enclave boundaries */
-            if (addr < self->sim.addr || (uint8_t*)addr > (uint8_t*)self->sim.addr + self->sim.size - OE_PAGE_SIZE)
+            if (addr < self->sim.addr ||
+                (uint8_t*)addr >
+                    (uint8_t*)self->sim.addr + self->sim.size - OE_PAGE_SIZE)
             {
                 return -1;
             }
@@ -310,14 +316,15 @@ static int _IoctlReal(Self* self, unsigned long request, void* param)
                 return -1;
 
             /* Ask OS to create the enclave */
-            void* base = CreateEnclave(GetCurrentProcess(),
-                                       NULL, /* Let OS choose the enclave base address */
-                                       secs->size,
-                                       secs->size,
-                                       ENCLAVE_TYPE_SGX,
-                                       (const void*)secs,
-                                       sizeof(ENCLAVE_CREATE_INFO_SGX),
-                                       &enclaveError);
+            void* base = CreateEnclave(
+                GetCurrentProcess(),
+                NULL, /* Let OS choose the enclave base address */
+                secs->size,
+                secs->size,
+                ENCLAVE_TYPE_SGX,
+                (const void*)secs,
+                sizeof(ENCLAVE_CREATE_INFO_SGX),
+                &enclaveError);
 
             if (!base)
                 return -1;
@@ -348,15 +355,16 @@ static int _IoctlReal(Self* self, unsigned long request, void* param)
             SIZE_T num_bytes = 0;
             DWORD enclaveError;
 
-            if (!LoadEnclaveData(GetCurrentProcess(),
-                                 addr,
-                                 src,
-                                 OE_PAGE_SIZE,
-                                 _MakeMemoryProtectParam(secinfo, false),
-                                 NULL,
-                                 0,
-                                 &num_bytes,
-                                 &enclaveError))
+            if (!LoadEnclaveData(
+                    GetCurrentProcess(),
+                    addr,
+                    src,
+                    OE_PAGE_SIZE,
+                    _MakeMemoryProtectParam(secinfo, false),
+                    NULL,
+                    0,
+                    &num_bytes,
+                    &enclaveError))
             {
                 return -1;
             }
@@ -370,10 +378,19 @@ static int _IoctlReal(Self* self, unsigned long request, void* param)
             ENCLAVE_INIT_INFO_SGX info;
 
             memset(&info, 0, sizeof(info));
-            memcpy(&info.SigStruct, (void*)p->sigstruct, sizeof(info.SigStruct));
-            memcpy(&info.EInitToken, (void*)p->einittoken, sizeof(info.EInitToken));
+            memcpy(
+                &info.SigStruct, (void*)p->sigstruct, sizeof(info.SigStruct));
+            memcpy(
+                &info.EInitToken,
+                (void*)p->einittoken,
+                sizeof(info.EInitToken));
 
-            if (!InitializeEnclave(GetCurrentProcess(), (void*)p->addr, &info, sizeof(info), &enclaveError))
+            if (!InitializeEnclave(
+                    GetCurrentProcess(),
+                    (void*)p->addr,
+                    &info,
+                    sizeof(info),
+                    &enclaveError))
             {
                 return -1;
             }
@@ -479,7 +496,11 @@ done:
     void* mptr = NULL;
 
     /* Allocate virtual memory for this enclave */
-    if (!(mptr = VirtualAlloc(NULL, enclaveSize * 2, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE)))
+    if (!(mptr = VirtualAlloc(
+              NULL,
+              enclaveSize * 2,
+              MEM_COMMIT | MEM_RESERVE,
+              PAGE_EXECUTE_READWRITE)))
     {
         goto done;
     }
@@ -533,7 +554,10 @@ done:
 **==============================================================================
 */
 
-static OE_Result _ECreateProc(OE_SGXDevice* dev, uint64_t enclaveSize, uint64_t* enclaveAddr)
+static OE_Result _ECreateProc(
+    OE_SGXDevice* dev,
+    uint64_t enclaveSize,
+    uint64_t* enclaveAddr)
 {
     Self* self = (Self*)dev;
     OE_Result result = OE_UNEXPECTED;
@@ -547,7 +571,8 @@ static OE_Result _ECreateProc(OE_SGXDevice* dev, uint64_t enclaveSize, uint64_t*
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    if (self->measurer->ecreate(self->measurer, enclaveSize, enclaveAddr) != OE_OK)
+    if (self->measurer->ecreate(self->measurer, enclaveSize, enclaveAddr) !=
+        OE_OK)
     {
         OE_THROW(OE_FAILURE);
     }
@@ -592,7 +617,13 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _EAddProc(OE_SGXDevice* dev, uint64_t base, uint64_t addr, uint64_t src, uint64_t flags, bool extend)
+static OE_Result _EAddProc(
+    OE_SGXDevice* dev,
+    uint64_t base,
+    uint64_t addr,
+    uint64_t src,
+    uint64_t flags,
+    bool extend)
 {
     Self* self = (Self*)dev;
     OE_Result result = OE_UNEXPECTED;
@@ -601,7 +632,8 @@ static OE_Result _EAddProc(OE_SGXDevice* dev, uint64_t base, uint64_t addr, uint
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    if (self->measurer->eadd(self->measurer, base, addr, src, flags, extend) != OE_OK)
+    if (self->measurer->eadd(self->measurer, base, addr, src, flags, extend) !=
+        OE_OK)
     {
         OE_THROW(OE_FAILURE);
     }
@@ -638,7 +670,11 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _EInitProc(OE_SGXDevice* dev, uint64_t addr, uint64_t sigstruct, uint64_t einittoken)
+static OE_Result _EInitProc(
+    OE_SGXDevice* dev,
+    uint64_t addr,
+    uint64_t sigstruct,
+    uint64_t einittoken)
 {
     Self* self = (Self*)dev;
     OE_Result result = OE_UNEXPECTED;
@@ -647,7 +683,8 @@ static OE_Result _EInitProc(OE_SGXDevice* dev, uint64_t addr, uint64_t sigstruct
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    if (self->measurer->einit(self->measurer, addr, sigstruct, einittoken) != OE_OK)
+    if (self->measurer->einit(self->measurer, addr, sigstruct, einittoken) !=
+        OE_OK)
     {
         OE_THROW(OE_FAILURE);
     }

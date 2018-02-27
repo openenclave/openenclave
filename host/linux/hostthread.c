@@ -48,7 +48,8 @@ int OE_H_MutexInit(OE_H_Mutex* Lock)
 
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
-    if ((err = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP)) != 0)
+    if ((err = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP)) !=
+        0)
         return err;
     pthread_mutex_init(Lock, &attr);
     pthread_mutexattr_destroy(&attr);

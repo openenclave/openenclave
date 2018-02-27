@@ -48,12 +48,13 @@ void OE_Exit(uint64_t arg1, uint64_t arg2);
 #endif
 
 #ifndef __ASSEMBLER__
-void __OE_HandleMain(uint64_t arg1,
-                     uint64_t arg2,
-                     uint64_t cssa,
-                     void* tcs,
-                     uint64_t* outputArg1,
-                     uint64_t* outputArg2);
+void __OE_HandleMain(
+    uint64_t arg1,
+    uint64_t arg2,
+    uint64_t cssa,
+    void* tcs,
+    uint64_t* outputArg1,
+    uint64_t* outputArg2);
 
 void OE_ExceptionDispatcher(void* context);
 #endif

@@ -25,22 +25,34 @@ int ConstructObject(Object& o, size_t id, const char* name)
     return 0;
 }
 
-OE_EXTERNC int32_t OCALL_MultipleParams(const char* strIn,
-                                        uint32_t numIn,
-                                        const struct Object* objectIn,
-                                        char* strOut,
-                                        uint32_t* numOut,
-                                        struct Object* objectOut,
-                                        struct Object** objectRefOut)
+OE_EXTERNC int32_t OCALL_MultipleParams(
+    const char* strIn,
+    uint32_t numIn,
+    const struct Object* objectIn,
+    char* strOut,
+    uint32_t* numOut,
+    struct Object* objectOut,
+    struct Object** objectRefOut)
 {
     return -1;
 }
 
-void __CheckResult(const char* file, unsigned int line, OE_Result result, const char* msg)
+void __CheckResult(
+    const char* file,
+    unsigned int line,
+    OE_Result result,
+    const char* msg)
 {
     if (result != OE_OK)
     {
-        fprintf(stderr, "%s(%u): result=%u: %s: %s\n", file, line, result, OE_ResultStr(result), msg);
+        fprintf(
+            stderr,
+            "%s(%u): result=%u: %s: %s\n",
+            file,
+            line,
+            result,
+            OE_ResultStr(result),
+            msg);
         exit(1);
     }
 }
@@ -221,8 +233,16 @@ int main(int argc, const char* argv[])
         char strOut[128] = {'\0'};
         uint32_t numOut = 0xFFFFFFFF;
         Object* objectRefOut = NULL;
-        result =
-            ECALL_MultipleParams(enclave, &ret, "strIn", 999, &objectIn, strOut, &numOut, &objectOut, &objectRefOut);
+        result = ECALL_MultipleParams(
+            enclave,
+            &ret,
+            "strIn",
+            999,
+            &objectIn,
+            strOut,
+            &numOut,
+            &objectOut,
+            &objectRefOut);
         CheckResult(result, "ECALL_MultipleParams()");
         OE_TEST(ret == 0);
         OE_TEST(strcmp(strOut, "strIn") == 0);
@@ -258,7 +278,8 @@ int main(int argc, const char* argv[])
 
     // Test: ModifyObject()
     {
-        struct Object* object = (struct Object*)calloc(1, sizeof(struct Object));
+        struct Object* object =
+            (struct Object*)calloc(1, sizeof(struct Object));
         object->id = 1;
         object->name = strdup("Obj1");
 

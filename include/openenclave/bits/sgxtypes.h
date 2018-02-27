@@ -179,7 +179,8 @@ OE_INLINE const void* SGX_SigStructBody(const SGX_SigStruct* ss)
 
 OE_INLINE size_t SGX_SigStructBodySize(void)
 {
-    return OE_OFFSETOF(SGX_SigStruct, reserved4) - OE_OFFSETOF(SGX_SigStruct, miscselect);
+    return OE_OFFSETOF(SGX_SigStruct, reserved4) -
+           OE_OFFSETOF(SGX_SigStruct, miscselect);
 }
 
 void __SGX_DumpSigStruct(const SGX_SigStruct* p);
@@ -794,15 +795,16 @@ typedef struct _OE_ECallPages
 **==============================================================================
 */
 
-OE_Result SGX_GetQuote(const SGX_Report* report,
-                       SGX_QuoteType quoteType,
-                       const SGX_SPID* spid,
-                       const SGX_Nonce* nonce,
-                       const uint8_t* signatureRevocationList,
-                       uint32_t signatureRevocationListSize,
-                       SGX_Report* reportOut,
-                       SGX_Quote* quote,
-                       uint32_t quoteSize);
+OE_Result SGX_GetQuote(
+    const SGX_Report* report,
+    SGX_QuoteType quoteType,
+    const SGX_SPID* spid,
+    const SGX_Nonce* nonce,
+    const uint8_t* signatureRevocationList,
+    uint32_t signatureRevocationListSize,
+    SGX_Report* reportOut,
+    SGX_Quote* quote,
+    uint32_t quoteSize);
 
 /*
 **==============================================================================
@@ -812,7 +814,9 @@ OE_Result SGX_GetQuote(const SGX_Report* report,
 **==============================================================================
 */
 
-OE_Result SGX_InitQuote(SGX_TargetInfo* targetInfo, SGX_EPIDGroupID* epidGroupID);
+OE_Result SGX_InitQuote(
+    SGX_TargetInfo* targetInfo,
+    SGX_EPIDGroupID* epidGroupID);
 
 /*
 **==============================================================================
@@ -822,7 +826,10 @@ OE_Result SGX_InitQuote(SGX_TargetInfo* targetInfo, SGX_EPIDGroupID* epidGroupID
 **==============================================================================
 */
 
-OE_Result SGX_CreateReport(const SGX_TargetInfo* targetInfo, const SGX_ReportData* reportData, SGX_Report* report);
+OE_Result SGX_CreateReport(
+    const SGX_TargetInfo* targetInfo,
+    const SGX_ReportData* reportData,
+    SGX_Report* report);
 
 OE_EXTERNC_END
 

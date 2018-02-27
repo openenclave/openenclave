@@ -10,12 +10,13 @@ static unsigned int _spin_set_locked(OE_Spinlock* spinlock)
     unsigned int oldValue;
     const unsigned int newValue = 1;
 
-    asm volatile("lock xchg %2, %1;"
-                 "mov %2, %0"
-                 : "=m"(oldValue)  /* %0 */
-                 : "m"(*spinlock), /* %1 */
-                   "r"(newValue)   /* %2 */
-                 : "memory");
+    asm volatile(
+        "lock xchg %2, %1;"
+        "mov %2, %0"
+        : "=m"(oldValue)  /* %0 */
+        : "m"(*spinlock), /* %1 */
+          "r"(newValue)   /* %2 */
+        : "memory");
 
     return oldValue;
 }

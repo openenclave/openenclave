@@ -35,7 +35,8 @@ void OE_SHA256Init(OE_SHA256Context* context)
 #if defined(__linux__)
     SHA256_Init(&impl->ctx);
 #elif defined(_WIN32)
-    BCryptCreateHash(BCRYPT_SHA256_ALG_HANDLE, &impl->handle, NULL, 0, NULL, 0, 0);
+    BCryptCreateHash(
+        BCRYPT_SHA256_ALG_HANDLE, &impl->handle, NULL, 0, NULL, 0, 0);
 #endif
 }
 

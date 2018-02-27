@@ -29,15 +29,26 @@ OE_ECALL void Test(void* argPtr)
 
     printf("%s(): OCALL...\n", __FUNCTION__);
     res = OE_OCall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, 0);
-    printf("%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n", __FUNCTION__, res, ta->result, counter);
+    printf(
+        "%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n",
+        __FUNCTION__,
+        res,
+        ta->result,
+        counter);
     OE_Assert(res == OE_OK);
     OE_Assert(ta->result == OE_OK);
     OE_Assert(counter == 1);
 
     /* Perform restricted ocall, expect ecall to fail */
     printf("%s(): OCALL(restricted)...\n", __FUNCTION__);
-    res = OE_OCall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
-    printf("%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n", __FUNCTION__, res, ta->result, counter);
+    res = OE_OCall(
+        OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
+    printf(
+        "%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n",
+        __FUNCTION__,
+        res,
+        ta->result,
+        counter);
     OE_Assert(res == OE_OK);
     OE_Assert(ta->result == OE_UNEXPECTED);
     OE_Assert(counter == 1);

@@ -69,12 +69,14 @@ done:
 
 static void _SetShdrs(Elf64* elf)
 {
-    elf->shdrs = (Elf64_Shdr*)((const unsigned char*)elf->data + elf->ehdr->e_shoff);
+    elf->shdrs =
+        (Elf64_Shdr*)((const unsigned char*)elf->data + elf->ehdr->e_shoff);
 }
 
 static void _SetPhdrs(Elf64* elf)
 {
-    elf->phdrs = (Elf64_Phdr*)((const unsigned char*)elf->data + elf->ehdr->e_phoff);
+    elf->phdrs =
+        (Elf64_Phdr*)((const unsigned char*)elf->data + elf->ehdr->e_phoff);
 }
 
 static int _GetSections(Elf64* elf)
@@ -417,7 +419,10 @@ done:
     return result;
 }
 
-int Elf64_FindDynamicSymbolByName(const Elf64* elf, const char* name, Elf64_Sym* sym)
+int Elf64_FindDynamicSymbolByName(
+    const Elf64* elf,
+    const char* name,
+    Elf64_Sym* sym)
 {
     int rc = -1;
     size_t index;
@@ -480,7 +485,11 @@ done:
     return rc;
 }
 
-int Elf64_FindSymbolByAddress(const Elf64* elf, Elf64_Addr addr, unsigned int type, Elf64_Sym* sym)
+int Elf64_FindSymbolByAddress(
+    const Elf64* elf,
+    Elf64_Addr addr,
+    unsigned int type,
+    Elf64_Sym* sym)
 {
     int rc = -1;
     size_t index;
@@ -542,7 +551,11 @@ done:
     return rc;
 }
 
-int Elf64_FindDynamicSymbolByAddress(const Elf64* elf, Elf64_Addr addr, unsigned int type, Elf64_Sym* sym)
+int Elf64_FindDynamicSymbolByAddress(
+    const Elf64* elf,
+    Elf64_Addr addr,
+    unsigned int type,
+    Elf64_Sym* sym)
 {
     int rc = -1;
     size_t index;
@@ -811,8 +824,12 @@ int Elf64_DumpSections(const Elf64* elf)
     if (!elf->sections)
         goto done;
 
-    puts("Num   Name                     Offset           Size             Seg ");
-    puts("======================================================================");
+    puts(
+        "Num   Name                     Offset           Size             "
+        "Seg ");
+    puts(
+        "====================================================================="
+        "=");
 
     for (i = 0; i < elf->ehdr->e_shnum; i++)
     {
@@ -820,7 +837,12 @@ int Elf64_DumpSections(const Elf64* elf)
         const char* name = Elf64_GetStringFromShstrtab(elf, sh->sh_name);
         size_t segment = _FindSegmentFor(elf, sh);
 
-        printf("[%03zu] %-24s %016llx %016llx ", i, name, sh->sh_offset, sh->sh_size);
+        printf(
+            "[%03zu] %-24s %016llx %016llx ",
+            i,
+            name,
+            sh->sh_offset,
+            sh->sh_size);
 
         if (segment == (size_t)-1)
             printf("[???]\n");
@@ -1020,7 +1042,10 @@ void Elf64_DumpSymbol(const Elf64* elf, const Elf64_Sym* sym)
     printf("\n");
 }
 
-int Elf64_VisitSymbols(const Elf64* elf, int (*visit)(const Elf64_Sym* sym, void* data), void* data)
+int Elf64_VisitSymbols(
+    const Elf64* elf,
+    int (*visit)(const Elf64_Sym* sym, void* data),
+    void* data)
 {
     int rc = -1;
     size_t index;
@@ -1125,7 +1150,11 @@ static size_t _FindSection(const Elf64* elf, const char* name)
     return (size_t)-1;
 }
 
-int Elf64_FindSection(const Elf64* elf, const char* name, const void** data, size_t* size)
+int Elf64_FindSection(
+    const Elf64* elf,
+    const char* name,
+    const void** data,
+    size_t* size)
 {
     size_t i;
 
@@ -1157,7 +1186,10 @@ int Elf64_FindSection(const Elf64* elf, const char* name, const void** data, siz
     return -1;
 }
 
-int Elf64_FindSectionHeader(const Elf64* elf, const char* name, Elf64_Shdr* shdr)
+int Elf64_FindSectionHeader(
+    const Elf64* elf,
+    const char* name,
+    Elf64_Shdr* shdr)
 {
     size_t i;
 
@@ -1324,7 +1356,12 @@ static void _AdjustSectionOffsets(Elf64* elf, size_t offset, size_t adjustment)
 **==============================================================================
 */
 
-int Elf64_AddSection(Elf64* elf, const char* name, unsigned int type, const void* secdata, size_t secsize)
+int Elf64_AddSection(
+    Elf64* elf,
+    const char* name,
+    unsigned int type,
+    const void* secdata,
+    size_t secsize)
 {
     int rc = -1;
     size_t secoffset;

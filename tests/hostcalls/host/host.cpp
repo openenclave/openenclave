@@ -109,7 +109,7 @@ int main(int argc, const char* argv[])
         OE_Result result = OE_CallEnclave(enclave, "TestHostRealloc", &args);
         assert(result == OE_OK);
 
-        /* Resulting buffer should retain its original zero contents from calloc */
+        // Resulting buffer should retain its original zero contents from calloc
         assert(args.outPtr);
         uint8_t* outBytes = (uint8_t*)args.outPtr;
         for (uint32_t i = 0; i < args.oldSize; i++)
@@ -117,7 +117,8 @@ int main(int argc, const char* argv[])
             assert(outBytes[i] == 0);
         }
 
-        /* TestHostRealloc only writes init value into expanded area for this check */
+        /* TestHostRealloc only writes init value into expanded area for this
+         * check */
         assert(outBytes[args.oldSize] == TEST_HOSTREALLOC_INIT_VALUE);
 
         free(args.outPtr);

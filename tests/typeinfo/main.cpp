@@ -23,7 +23,8 @@ static void __Test(const char* file, unsigned int line, const char* cond)
         }                                      \
     } while (0)
 
-OE_EXTERNC int32_t UCopy(char* p, size_t m, const char* q, size_t n, struct Object** object)
+OE_EXTERNC int32_t
+UCopy(char* p, size_t m, const char* q, size_t n, struct Object** object)
 {
     return 0;
 }
@@ -346,15 +347,16 @@ int MyFunctionCall(MyFunctionArgs* a)
     return 0;
 }
 
-int MyFunction(const char* cstr,
-               char* str,
-               uint32_t nstr,
-               uint32_t* u32,
-               uint32_t u32a[4],
-               char stra[3],
-               struct Object obj,
-               struct Object* objp,
-               struct Object** objr)
+int MyFunction(
+    const char* cstr,
+    char* str,
+    uint32_t nstr,
+    uint32_t* u32,
+    uint32_t u32a[4],
+    char stra[3],
+    struct Object obj,
+    struct Object* objp,
+    struct Object** objr)
 {
     const OE_StructTI* ti = &MyFunctionArgs_ti;
     struct MyFunctionArgs args;
@@ -420,7 +422,9 @@ static int TestParams(bool trace)
     CXXObject* objr = new CXXObject(3, "objr");
     TEST(objr);
 
-    if (MyFunction("cstr", str, nstr, &u32, u32a, stra, obj, objp, (Object**)&objr) != 0)
+    if (MyFunction(
+            "cstr", str, nstr, &u32, u32a, stra, obj, objp, (Object**)&objr) !=
+        0)
     {
         OE_PutErr("MyFunction() failed");
     }

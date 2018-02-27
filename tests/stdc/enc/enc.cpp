@@ -151,9 +151,18 @@ void Test_atox()
 
 static bool _calledAllocationFailureCallback;
 
-static void _AllocationFailureCallback(const char* file, size_t line, const char* func, size_t size)
+static void _AllocationFailureCallback(
+    const char* file,
+    size_t line,
+    const char* func,
+    size_t size)
 {
-    printf("OE_AllocationFailureCallback(): %s(%zu): %s: %zu\n", file, line, func, size);
+    printf(
+        "OE_AllocationFailureCallback(): %s(%zu): %s: %zu\n",
+        file,
+        line,
+        func,
+        size);
 
     _calledAllocationFailureCallback = true;
 }
