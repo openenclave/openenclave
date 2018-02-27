@@ -13,47 +13,11 @@ doxygenindex
         }
         member
         {
-            refid=struct__OE__Cond_1a0dba21ec1247bf6ed8cd7601f43664db
+            refid=struct__OE__Cond_1af89d8a0f8ad7aee766b8e72a4abd22b1
             kind=variable
             name
             {
-                chars="lock"
-            }
-        }
-        member
-        {
-            refid=struct__OE__Cond_1a56c6b139c7a96516257c52a99b21915b
-            kind=variable
-            name
-            {
-                chars="front"
-            }
-        }
-        member
-        {
-            refid=struct__OE__Cond_1a6a819ed2fa06eb555ef435eec67c0fa8
-            kind=variable
-            name
-            {
-                chars="back"
-            }
-        }
-        member
-        {
-            refid=struct__OE__Cond_1a694b8854395131aa2dab9bfd0a3a91f1
-            kind=variable
-            name
-            {
-                chars="queue"
-            }
-        }
-        member
-        {
-            refid=struct__OE__Cond_1a1f1fc98c1ce171d180cec94d53082ffd
-            kind=variable
-            name
-            {
-                chars="padding"
+                chars="__impl"
             }
         }
     }
@@ -67,56 +31,11 @@ doxygenindex
         }
         member
         {
-            refid=struct__OE__Mutex_1a2756e5e82c933d5c04f7848c6f855572
+            refid=struct__OE__Mutex_1a9b13d5d83e41e6cfcf30dcbefac3cd79
             kind=variable
             name
             {
-                chars="lock"
-            }
-        }
-        member
-        {
-            refid=struct__OE__Mutex_1a4f184f2686b8fbdccffb6b3c8288db1b
-            kind=variable
-            name
-            {
-                chars="refs"
-            }
-        }
-        member
-        {
-            refid=struct__OE__Mutex_1a26b78a4b4a85470584bf07ab616b4fad
-            kind=variable
-            name
-            {
-                chars="__padding"
-            }
-        }
-        member
-        {
-            refid=struct__OE__Mutex_1ae37d8a3107e8f66e8eb25e76385d639a
-            kind=variable
-            name
-            {
-                chars="front"
-            }
-        }
-        member
-        {
-            refid=struct__OE__Mutex_1a188f9b503923f5f78a621069475d8ca8
-            kind=variable
-            name
-            {
-                chars="back"
-            }
-        }
-        member
-        {
-            refid=struct__OE__Mutex_1a50df8516f0cda206fe86c0421bef0421
-            kind=variable
-            name
-            {
-                chars="queue"
+                chars="__impl"
             }
         }
     }
@@ -130,7 +49,7 @@ doxygenindex
         }
         member
         {
-            refid=struct__OE__ThreadAttr_1accc21f83fe9bc1ff6bc4aa0d3d35b760
+            refid=struct__OE__ThreadAttr_1aaf56778adf7adc5fe67c87038375cfa4
             kind=variable
             name
             {
@@ -175,11 +94,137 @@ doxygenindex
         }
         member
         {
+            refid=enclave_8h_1a62801dd8df2ce1785f9e81ee541a973a
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_DIVIDE_BY_ZERO"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1a6138381b065c175f7e145cf77b994260
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_BREAKPOINT"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1aeac1179cd2dc2a8e25510f4e64f68e73
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_BOUND_OUT_OF_RANGE"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1a6f83d40dd7e1a4f5cb15d72d2c4f2640
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_ILLEGAL_INSTRUCTION"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1aba33581963869f65745f0d2abe257eb0
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_ACCESS_VIOLATION"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1a5ab69e7d10ec473ee853ffa4d92aa017
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_PAGE_FAULT"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1ada9c24b738cfa0146d0705dcb79f3030
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_X87_FLOAT_POINT"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1abba9790193ebb0342cfcec322ad465a5
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_MISALIGNMENT"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1a0fac4034618323fc601b1f6739006d95
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_SIMD_FLOAT_POINT"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1afed60ffaf114676db50633e179952c84
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_UNKOWN"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1a3660d67efdd819112d76c2d0fffcf608
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_HARDWARE"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_1aad7af0ec369e7feefc598ff3c57f1431
+            kind=define
+            name
+            {
+                chars="OE_EXCEPTION_SOFTWARE"
+            }
+        }
+        member
+        {
             refid=enclave_8h_a1df224cdefe0cfb6726a3c55dbf51ef9_1a1df224cdefe0cfb6726a3c55dbf51ef9
             kind=define
             name
             {
                 chars="OE_Assert"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_a78fb6ff9e998dd578567f65f1f66ef92_1a78fb6ff9e998dd578567f65f1f66ef92
+            kind=function
+            name
+            {
+                chars="OE_AddVectoredExceptionHandler"
+            }
+        }
+        member
+        {
+            refid=enclave_8h_a721105240a9d051a94ed6826f61518af_1a721105240a9d051a94ed6826f61518af
+            kind=function
+            name
+            {
+                chars="OE_RemoveVectoredExceptionHandler"
             }
         }
         member
@@ -679,7 +724,7 @@ doxygenindex
         }
         member
         {
-            refid=result_8h_1ac2eb4734754498f9bdb08d6b2573ba8b
+            refid=result_8h_1a8b77a983dd95c4363477cb3abbd099d0
             kind=typedef
             name
             {
@@ -724,7 +769,7 @@ doxygenindex
         }
         member
         {
-            refid=thread_8h_1aead8e438f728b5946f850b9e64610694
+            refid=thread_8h_aead8e438f728b5946f850b9e64610694_1aead8e438f728b5946f850b9e64610694
             kind=define
             name
             {
@@ -733,7 +778,7 @@ doxygenindex
         }
         member
         {
-            refid=thread_8h_1a7f423ee45fe788da16e4406f4a3c31c4
+            refid=thread_8h_a7f423ee45fe788da16e4406f4a3c31c4_1a7f423ee45fe788da16e4406f4a3c31c4
             kind=define
             name
             {
@@ -751,7 +796,7 @@ doxygenindex
         }
         member
         {
-            refid=thread_8h_1a542724dc1e4ce561285abf4ddcf2e1be
+            refid=thread_8h_1af96d657223bac49587d061dc14bf1dc7
             kind=variable
             name
             {
@@ -760,7 +805,7 @@ doxygenindex
         }
         member
         {
-            refid=thread_8h_1af7fccd1c8de5914413964f40fed76247
+            refid=thread_8h_1acbba97b259fa3024d698a6cb2373a01b
             kind=typedef
             name
             {
@@ -787,7 +832,7 @@ doxygenindex
         }
         member
         {
-            refid=thread_8h_1a75499dc3d99258761eddcb1088b23a11
+            refid=thread_8h_1afd8db7dc5e8c63431c779577bc5c7749
             kind=typedef
             name
             {
@@ -796,7 +841,7 @@ doxygenindex
         }
         member
         {
-            refid=thread_8h_1a1089f20c6281206ad31fa4191561113a
+            refid=thread_8h_1ad8ba448c7989ef56d7402b02d9a7a32a
             kind=typedef
             name
             {
@@ -877,15 +922,6 @@ doxygenindex
         }
         member
         {
-            refid=thread_8h_1a83dbeab2cd5780e1093b9767edda0d11
-            kind=function
-            name
-            {
-                chars="OE_STATIC_ASSERT"
-            }
-        }
-        member
-        {
             refid=thread_8h_ad8292b32628aac53cdbd108af6d28ac5_1ad8292b32628aac53cdbd108af6d28ac5
             kind=function
             name
@@ -927,15 +963,6 @@ doxygenindex
             name
             {
                 chars="OE_MutexDestroy"
-            }
-        }
-        member
-        {
-            refid=thread_8h_1a42af170b201622a2c6d18235dd2014d5
-            kind=function
-            name
-            {
-                chars="OE_STATIC_ASSERT"
             }
         }
         member

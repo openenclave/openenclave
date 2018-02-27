@@ -11,7 +11,6 @@ including:
 
 - HTML (html directory)
 - XML (xml directory)
-- LaTeX (latex directory)
 - Markdown (md directory)
 
 The xml2md tool is used to generate Markdown format (from Doxygen-generated
@@ -22,7 +21,7 @@ the Github site.
 To update the generated documentation, create the cmake build tree by using
 the instructions in [Getting Started with Open Enclave](doc/GettingStarted.md).
 Assuming that _/build_ is the root of the cmake build tree, a successful make
-will build the HTML, LaTeX and XML reference documentation by default. You can
+will build the HTML and XML reference documentation by default. You can
 also make the documentation directly:
 
 ```

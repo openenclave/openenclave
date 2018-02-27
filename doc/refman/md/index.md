@@ -6,6 +6,10 @@
 
 ### enclave.h
 
+* [OE_AddVectoredExceptionHandler()](enclave_8h_a78fb6ff9e998dd578567f65f1f66ef92_1a78fb6ff9e998dd578567f65f1f66ef92.md)
+
+* [OE_RemoveVectoredExceptionHandler()](enclave_8h_a721105240a9d051a94ed6826f61518af_1a721105240a9d051a94ed6826f61518af.md)
+
 * [OE_CallHost()](enclave_8h_a3f4d990cf1e916d65a82481a55aafbf4_1a3f4d990cf1e916d65a82481a55aafbf4.md)
 
 * [OE_IsWithinEnclave()](enclave_8h_a02ef8b20b64a998bb97dfbdddb0c6ba5_1a02ef8b20b64a998bb97dfbdddb0c6ba5.md)

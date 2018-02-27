@@ -28,17 +28,11 @@ doxygen
             local=yes
             chars="/root/openenclave/include/openenclave/enclave.h"
         }
-        includedby
-        {
-            refid=host_8h
-            local=yes
-            chars="/root/openenclave/include/openenclave/host.h"
-        }
         incdepgraph
         {
             node
             {
-                id=35
+                id=42
                 label
                 {
                     chars="/root/openenclave/include/openenclave/thread.h"
@@ -49,18 +43,18 @@ doxygen
                 }
                 childnode
                 {
-                    refid=36
+                    refid=43
                     relation=include
                 }
                 childnode
                 {
-                    refid=37
+                    refid=44
                     relation=include
                 }
             }
             node
             {
-                id=36
+                id=43
                 label
                 {
                     chars="defs.h"
@@ -68,7 +62,7 @@ doxygen
             }
             node
             {
-                id=37
+                id=44
                 label
                 {
                     chars="types.h"
@@ -79,7 +73,7 @@ doxygen
         {
             node
             {
-                id=39
+                id=46
                 label
                 {
                     chars="/root/openenclave/include/openenclave/enclave.h"
@@ -91,7 +85,7 @@ doxygen
             }
             node
             {
-                id=38
+                id=45
                 label
                 {
                     chars="/root/openenclave/include/openenclave/thread.h"
@@ -102,25 +96,8 @@ doxygen
                 }
                 childnode
                 {
-                    refid=39
+                    refid=46
                     relation=include
-                }
-                childnode
-                {
-                    refid=40
-                    relation=include
-                }
-            }
-            node
-            {
-                id=40
-                label
-                {
-                    chars="/root/openenclave/include/openenclave/host.h"
-                }
-                link
-                {
-                    refid=host_8h
                 }
             }
         }
@@ -171,10 +148,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=50
+                    line=56
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=50
+                    bodystart=56
                     bodyend=-1
                 }
             }
@@ -204,17 +181,17 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=84
+                    line=88
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=84
+                    bodystart=88
                     bodyend=-1
                 }
             }
             memberdef
             {
                 kind=define
-                id=thread_8h_1aead8e438f728b5946f850b9e64610694
+                id=thread_8h_aead8e438f728b5946f850b9e64610694_1aead8e438f728b5946f850b9e64610694
                 prot=public
                 static=no
                 name
@@ -223,7 +200,7 @@ doxygen
                 }
                 initializer
                 {
-                    chars="{OE_SPINLOCK_INITIALIZER,0,{NULL,NULL},{0}}"
+                    chars="{                        \\n        {                    \\n            0                \\n        }                    \\n    }"
                 }
                 briefdescription
                 {
@@ -237,17 +214,17 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=146
+                    line=149
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=146
+                    bodystart=149
                     bodyend=-1
                 }
             }
             memberdef
             {
                 kind=define
-                id=thread_8h_1a7f423ee45fe788da16e4406f4a3c31c4
+                id=thread_8h_a7f423ee45fe788da16e4406f4a3c31c4_1a7f423ee45fe788da16e4406f4a3c31c4
                 prot=public
                 static=no
                 name
@@ -256,7 +233,7 @@ doxygen
                 }
                 initializer
                 {
-                    chars="{OE_SPINLOCK_INITIALIZER,{NULL, NULL},{0,0,0}}"
+                    chars="{                       \\n        {                   \\n            0               \\n        }                   \\n    }"
                 }
                 briefdescription
                 {
@@ -270,10 +247,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=237
+                    line=234
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=237
+                    bodystart=234
                     bodyend=-1
                 }
             }
@@ -303,10 +280,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=350
+                    line=337
                     column=9
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=350
+                    bodystart=337
                     bodyend=-1
                 }
             }
@@ -317,17 +294,17 @@ doxygen
             memberdef
             {
                 kind=variable
-                id=thread_8h_1a542724dc1e4ce561285abf4ddcf2e1be
+                id=thread_8h_1af96d657223bac49587d061dc14bf1dc7
                 prot=public
                 static=no
                 mutable=no
                 type
                 {
-                    chars="OE_EXTERNC_BEGIN typedef unsigned long"
+                    chars="OE_EXTERNC_BEGIN typedef uint64_t"
                 }
                 definition
                 {
-                    chars="OE_EXTERNC_BEGIN typedef unsigned long OE_Thread"
+                    chars="OE_EXTERNC_BEGIN typedef uint64_t OE_Thread"
                 }
                 argsstring
                 {
@@ -362,7 +339,7 @@ doxygen
             memberdef
             {
                 kind=typedef
-                id=thread_8h_1af7fccd1c8de5914413964f40fed76247
+                id=thread_8h_1acbba97b259fa3024d698a6cb2373a01b
                 prot=public
                 static=no
                 type
@@ -377,7 +354,7 @@ doxygen
                 }
                 definition
                 {
-                    chars="typedef struct _OE_ThreadAttr\n OE_ThreadAttr"
+                    chars="typedef struct _OE_ThreadAttr  OE_ThreadAttr"
                 }
                 argsstring
                 {
@@ -398,7 +375,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=21
+                    line=27
                     column=1
                 }
             }
@@ -435,10 +412,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=48
+                    line=54
                     column=1
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=48
+                    bodystart=54
                     bodyend=-1
                 }
             }
@@ -475,17 +452,17 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=86
+                    line=90
                     column=1
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=86
+                    bodystart=90
                     bodyend=-1
                 }
             }
             memberdef
             {
                 kind=typedef
-                id=thread_8h_1a75499dc3d99258761eddcb1088b23a11
+                id=thread_8h_1afd8db7dc5e8c63431c779577bc5c7749
                 prot=public
                 static=no
                 type
@@ -500,7 +477,7 @@ doxygen
                 }
                 definition
                 {
-                    chars="typedef struct _OE_Mutex\n OE_Mutex"
+                    chars="typedef struct _OE_Mutex  OE_Mutex"
                 }
                 argsstring
                 {
@@ -528,7 +505,7 @@ doxygen
             memberdef
             {
                 kind=typedef
-                id=thread_8h_1a1089f20c6281206ad31fa4191561113a
+                id=thread_8h_1ad8ba448c7989ef56d7402b02d9a7a32a
                 prot=public
                 static=no
                 type
@@ -543,7 +520,7 @@ doxygen
                 }
                 definition
                 {
-                    chars="typedef struct _OE_Cond\n OE_Cond"
+                    chars="typedef struct _OE_Cond  OE_Cond"
                 }
                 argsstring
                 {
@@ -564,7 +541,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=251
+                    line=246
                     column=1
                 }
             }
@@ -601,10 +578,10 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=352
+                    line=339
                     column=1
                     bodyfile=/root/openenclave/include/openenclave/thread.h
-                    bodystart=352
+                    bodystart=339
                     bodyend=-1
                 }
             }
@@ -682,7 +659,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=32
+                    line=38
                     column=1
                 }
             }
@@ -821,7 +798,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=46
+                    line=52
                     column=1
                 }
             }
@@ -963,7 +940,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=80
+                    line=86
                     column=1
                 }
             }
@@ -1076,7 +1053,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=104
+                    line=108
                     column=1
                 }
             }
@@ -1169,7 +1146,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=119
+                    line=123
                     column=1
                 }
             }
@@ -1262,7 +1239,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=131
+                    line=135
                     column=1
                 }
             }
@@ -1355,61 +1332,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=144
-                    column=1
-                }
-            }
-            memberdef
-            {
-                kind=function
-                id=thread_8h_1a83dbeab2cd5780e1093b9767edda0d11
-                prot=public
-                static=no
-                const=no
-                explicit=no
-                inline=no
-                virt=non-virtual
-                type
-                {
-                }
-                definition
-                {
-                    chars="OE_STATIC_ASSERT"
-                }
-                argsstring
-                {
-                    chars="((sizeof(OE_Mutex)==40))"
-                }
-                name
-                {
-                    chars="OE_STATIC_ASSERT"
-                }
-                param
-                {
-                    type
-                    {
-                        ref
-                        {
-                            refid=struct__OE__Mutex
-                            kindref=compound
-                            chars="OE_Mutex"
-                        }
-                        chars="(sizeof()==40)"
-                    }
-                }
-                briefdescription
-                {
-                }
-                detaileddescription
-                {
-                }
-                inbodydescription
-                {
-                }
-                location
-                {
-                    file=/root/openenclave/include/openenclave/thread.h
-                    line=164
+                    line=147
                     column=1
                 }
             }
@@ -1519,7 +1442,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=178
+                    line=175
                     column=1
                 }
             }
@@ -1627,7 +1550,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=193
+                    line=190
                     column=1
                 }
             }
@@ -1731,7 +1654,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=207
+                    line=204
                     column=1
                 }
             }
@@ -1845,7 +1768,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=223
+                    line=220
                     column=1
                 }
             }
@@ -1949,61 +1872,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=235
-                    column=1
-                }
-            }
-            memberdef
-            {
-                kind=function
-                id=thread_8h_1a42af170b201622a2c6d18235dd2014d5
-                prot=public
-                static=no
-                const=no
-                explicit=no
-                inline=no
-                virt=non-virtual
-                type
-                {
-                }
-                definition
-                {
-                    chars="OE_STATIC_ASSERT"
-                }
-                argsstring
-                {
-                    chars="((sizeof(OE_Cond)==48))"
-                }
-                name
-                {
-                    chars="OE_STATIC_ASSERT"
-                }
-                param
-                {
-                    type
-                    {
-                        ref
-                        {
-                            refid=struct__OE__Cond
-                            kindref=compound
-                            chars="OE_Cond"
-                        }
-                        chars="(sizeof()==48)"
-                    }
-                }
-                briefdescription
-                {
-                }
-                detaileddescription
-                {
-                }
-                inbodydescription
-                {
-                }
-                location
-                {
-                    file=/root/openenclave/include/openenclave/thread.h
-                    line=254
+                    line=232
                     column=1
                 }
             }
@@ -2109,7 +1978,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=272
+                    line=264
                     column=1
                 }
             }
@@ -2266,7 +2135,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=295
+                    line=287
                     column=1
                 }
             }
@@ -2386,7 +2255,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=316
+                    line=306
                     column=1
                 }
             }
@@ -2502,7 +2371,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=334
+                    line=323
                     column=1
                 }
             }
@@ -2600,7 +2469,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=347
+                    line=335
                     column=1
                 }
             }
@@ -2737,7 +2606,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=367
+                    line=354
                     column=1
                 }
             }
@@ -2840,7 +2709,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=383
+                    line=368
                     column=1
                 }
             }
@@ -2961,7 +2830,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=398
+                    line=382
                     column=1
                 }
             }
@@ -3054,7 +2923,7 @@ doxygen
                 location
                 {
                     file=/root/openenclave/include/openenclave/thread.h
-                    line=413
+                    line=395
                     column=1
                 }
             }
@@ -3063,7 +2932,7 @@ doxygen
         {
             para
             {
-                chars="This file defines threading primitives used by hosts and enclaves."
+                chars="This file defines threading primitives used by enclaves."
             }
         }
         detaileddescription
@@ -3202,31 +3071,10 @@ doxygen
                     sp
                     {
                     }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="unsigned"
-                }
-                highlight
-                {
-                    class=normal
                     sp
                     {
                     }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="long"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="OE_Thread;"
+                    chars="uint64_tOE_Thread;"
                 }
             }
             codeline
@@ -3240,6 +3088,166 @@ doxygen
             codeline
             {
                 lineno=17
+                highlight
+                {
+                    class=normal
+                }
+                highlight
+                {
+                    class=comment
+                    chars="/*"
+                }
+            }
+            codeline
+            {
+                lineno=18
+                highlight
+                {
+                    class=comment
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="*Notethatallthe__impl[]fieldsinthebelowimplementationsare"
+                }
+            }
+            codeline
+            {
+                lineno=19
+                highlight
+                {
+                    class=comment
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="*alllargerthanwhatisactuallyneeded.Thisistoaccountfor"
+                }
+            }
+            codeline
+            {
+                lineno=20
+                highlight
+                {
+                    class=comment
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="*possiblefutureexpansionbyevolvingimplementations."
+                }
+            }
+            codeline
+            {
+                lineno=21
+                highlight
+                {
+                    class=comment
+                    sp
+                    {
+                    }
+                    chars="*/"
+                }
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=22
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=23
                 refid=struct__OE__ThreadAttr
                 refkind=compound
                 highlight
@@ -3275,14 +3283,11 @@ doxygen
                         kindref=compound
                         chars="_OE_ThreadAttr"
                     }
-                    sp
-                    {
-                    }
                 }
             }
             codeline
             {
-                lineno=18
+                lineno=24
                 highlight
                 {
                     class=normal
@@ -3291,7 +3296,7 @@ doxygen
             }
             codeline
             {
-                lineno=19
+                lineno=25
                 highlight
                 {
                     class=normal
@@ -3310,45 +3315,71 @@ doxygen
                 }
                 highlight
                 {
-                    class=keywordtype
-                    chars="long"
+                    class=comment
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="/*Internalprivateimplementation*/"
                 }
                 highlight
                 {
                     class=normal
-                    sp
-                    {
-                    }
-                    chars="__impl[7];"
                 }
             }
             codeline
             {
-                lineno=20
+                lineno=26
                 highlight
                 {
                     class=normal
-                    chars="}"
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="uint64_t__impl[7];"
                 }
             }
             codeline
             {
-                lineno=21
+                lineno=27
                 highlight
                 {
                     class=normal
+                    sp
+                    {
+                    }
                     ref
                     {
                         refid=struct__OE__ThreadAttr
                         kindref=compound
                         chars="OE_ThreadAttr"
                     }
-                    chars=";"
+                    chars="};"
                 }
             }
             codeline
             {
-                lineno=22
+                lineno=28
                 highlight
                 {
                     class=normal
@@ -3356,7 +3387,7 @@ doxygen
             }
             codeline
             {
-                lineno=32
+                lineno=38
                 highlight
                 {
                     class=normal
@@ -3384,7 +3415,7 @@ doxygen
             }
             codeline
             {
-                lineno=33
+                lineno=39
                 highlight
                 {
                     class=normal
@@ -3392,7 +3423,7 @@ doxygen
             }
             codeline
             {
-                lineno=46
+                lineno=52
                 highlight
                 {
                     class=keywordtype
@@ -3424,7 +3455,7 @@ doxygen
             }
             codeline
             {
-                lineno=47
+                lineno=53
                 highlight
                 {
                     class=normal
@@ -3432,7 +3463,7 @@ doxygen
             }
             codeline
             {
-                lineno=48
+                lineno=54
                 highlight
                 {
                     class=normal
@@ -3477,7 +3508,7 @@ doxygen
             }
             codeline
             {
-                lineno=49
+                lineno=55
                 highlight
                 {
                     class=normal
@@ -3485,7 +3516,7 @@ doxygen
             }
             codeline
             {
-                lineno=50
+                lineno=56
                 highlight
                 {
                     class=normal
@@ -3508,7 +3539,7 @@ doxygen
             }
             codeline
             {
-                lineno=51
+                lineno=57
                 highlight
                 {
                     class=normal
@@ -3516,7 +3547,7 @@ doxygen
             }
             codeline
             {
-                lineno=80
+                lineno=86
                 highlight
                 {
                     class=keywordtype
@@ -3534,54 +3565,13 @@ doxygen
                         kindref=member
                         chars="OE_Once"
                     }
-                    chars="("
-                }
-            }
-            codeline
-            {
-                lineno=81
-                highlight
-                {
-                    class=normal
                     sp
                     {
                     }
                     sp
                     {
                     }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_OnceType*once,"
-                }
-            }
-            codeline
-            {
-                lineno=82
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
+                    chars="(OE_OnceType*once,"
                 }
                 highlight
                 {
@@ -3609,7 +3599,7 @@ doxygen
             }
             codeline
             {
-                lineno=83
+                lineno=87
                 highlight
                 {
                     class=normal
@@ -3617,7 +3607,7 @@ doxygen
             }
             codeline
             {
-                lineno=84
+                lineno=88
                 highlight
                 {
                     class=normal
@@ -3640,7 +3630,7 @@ doxygen
             }
             codeline
             {
-                lineno=85
+                lineno=89
                 highlight
                 {
                     class=normal
@@ -3648,7 +3638,7 @@ doxygen
             }
             codeline
             {
-                lineno=86
+                lineno=90
                 highlight
                 {
                     class=normal
@@ -3705,7 +3695,7 @@ doxygen
             }
             codeline
             {
-                lineno=87
+                lineno=91
                 highlight
                 {
                     class=normal
@@ -3713,7 +3703,7 @@ doxygen
             }
             codeline
             {
-                lineno=104
+                lineno=108
                 highlight
                 {
                     class=keywordtype
@@ -3739,7 +3729,7 @@ doxygen
             }
             codeline
             {
-                lineno=105
+                lineno=109
                 highlight
                 {
                     class=normal
@@ -3747,7 +3737,7 @@ doxygen
             }
             codeline
             {
-                lineno=119
+                lineno=123
                 highlight
                 {
                     class=keywordtype
@@ -3773,7 +3763,7 @@ doxygen
             }
             codeline
             {
-                lineno=120
+                lineno=124
                 highlight
                 {
                     class=normal
@@ -3781,7 +3771,7 @@ doxygen
             }
             codeline
             {
-                lineno=131
+                lineno=135
                 highlight
                 {
                     class=keywordtype
@@ -3799,36 +3789,15 @@ doxygen
                         kindref=member
                         chars="OE_SpinUnlock"
                     }
-                    chars="("
+                    sp
+                    {
+                    }
+                    chars="(OE_Spinlock*spinlock);"
                 }
             }
             codeline
             {
-                lineno=132
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_Spinlock*spinlock);"
-                }
-            }
-            codeline
-            {
-                lineno=133
+                lineno=136
                 highlight
                 {
                     class=normal
@@ -3836,7 +3805,7 @@ doxygen
             }
             codeline
             {
-                lineno=144
+                lineno=147
                 highlight
                 {
                     class=keywordtype
@@ -3862,7 +3831,7 @@ doxygen
             }
             codeline
             {
-                lineno=145
+                lineno=148
                 highlight
                 {
                     class=normal
@@ -3870,7 +3839,7 @@ doxygen
             }
             codeline
             {
-                lineno=146
+                lineno=149
                 highlight
                 {
                     class=normal
@@ -3884,7 +3853,400 @@ doxygen
                     sp
                     {
                     }
-                    chars="#defineOE_MUTEX_INITIALIZER{OE_SPINLOCK_INITIALIZER,0,{NULL,NULL},{0}}"
+                    chars="#defineOE_MUTEX_INITIALIZER\"
+                }
+            }
+            codeline
+            {
+                lineno=150
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="{\"
+                }
+            }
+            codeline
+            {
+                lineno=151
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="{\"
+                }
+            }
+            codeline
+            {
+                lineno=152
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="0\"
+                }
+            }
+            codeline
+            {
+                lineno=153
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="}\"
+                }
+            }
+            codeline
+            {
+                lineno=154
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="}"
                 }
                 highlight
                 {
@@ -3893,7 +4255,7 @@ doxygen
             }
             codeline
             {
-                lineno=147
+                lineno=155
                 highlight
                 {
                     class=normal
@@ -3901,7 +4263,7 @@ doxygen
             }
             codeline
             {
-                lineno=148
+                lineno=156
                 highlight
                 {
                     class=normal
@@ -3933,7 +4295,7 @@ doxygen
             }
             codeline
             {
-                lineno=149
+                lineno=157
                 refid=struct__OE__Mutex
                 refkind=compound
                 highlight
@@ -3973,316 +4335,11 @@ doxygen
             }
             codeline
             {
-                lineno=150
-                highlight
-                {
-                    class=normal
-                    chars="{"
-                }
-            }
-            codeline
-            {
-                lineno=151
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_Spinlocklock;"
-                }
-            }
-            codeline
-            {
-                lineno=152
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="unsigned"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="int"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="refs;"
-                }
-            }
-            codeline
-            {
-                lineno=153
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="unsigned"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="char"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="__padding[16];"
-                }
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="/*alignwithsystempthread_t*/"
-                }
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=154
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keyword
-                    sp
-                    {
-                    }
-                    chars="struct"
-                }
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=155
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="{"
-                }
-            }
-            codeline
-            {
-                lineno=156
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="void"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="*front;"
-                }
-            }
-            codeline
-            {
-                lineno=157
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="void"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="*back;"
-                }
-            }
-            codeline
-            {
                 lineno=158
                 highlight
                 {
                     class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="}"
+                    chars="{"
                 }
             }
             codeline
@@ -4303,47 +4360,6 @@ doxygen
                     sp
                     {
                     }
-                    chars="queue;"
-                }
-            }
-            codeline
-            {
-                lineno=160
-                highlight
-                {
-                    class=normal
-                    chars="}"
-                }
-            }
-            codeline
-            {
-                lineno=161
-                highlight
-                {
-                    class=normal
-                    ref
-                    {
-                        refid=struct__OE__Mutex
-                        kindref=compound
-                        chars="OE_Mutex"
-                    }
-                    chars=";"
-                }
-            }
-            codeline
-            {
-                lineno=162
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=163
-                highlight
-                {
-                    class=normal
                 }
                 highlight
                 {
@@ -4360,28 +4376,7 @@ doxygen
                     sp
                     {
                     }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="/*Thismustbethesamesizeaspthread_mutex_tinGLIBC*/"
+                    chars="/*Internalprivateimplementation*/"
                 }
                 highlight
                 {
@@ -4390,38 +4385,49 @@ doxygen
             }
             codeline
             {
-                lineno=164
+                lineno=160
                 highlight
                 {
                     class=normal
-                    chars="OE_STATIC_ASSERT(("
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="uint64_t__impl[8];"
                 }
-                highlight
-                {
-                    class=keyword
-                    chars="sizeof"
-                }
+            }
+            codeline
+            {
+                lineno=161
                 highlight
                 {
                     class=normal
+                    sp
+                    {
+                    }
                     ref
                     {
                         refid=struct__OE__Mutex
                         kindref=compound
                         chars="OE_Mutex"
                     }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="()==40));"
+                    chars="};"
                 }
             }
             codeline
             {
-                lineno=165
+                lineno=162
                 highlight
                 {
                     class=normal
@@ -4429,7 +4435,7 @@ doxygen
             }
             codeline
             {
-                lineno=178
+                lineno=175
                 highlight
                 {
                     class=keywordtype
@@ -4461,7 +4467,7 @@ doxygen
             }
             codeline
             {
-                lineno=179
+                lineno=176
                 highlight
                 {
                     class=normal
@@ -4469,7 +4475,7 @@ doxygen
             }
             codeline
             {
-                lineno=193
+                lineno=190
                 highlight
                 {
                     class=keywordtype
@@ -4501,7 +4507,7 @@ doxygen
             }
             codeline
             {
-                lineno=194
+                lineno=191
                 highlight
                 {
                     class=normal
@@ -4509,7 +4515,7 @@ doxygen
             }
             codeline
             {
-                lineno=207
+                lineno=204
                 highlight
                 {
                     class=keywordtype
@@ -4541,7 +4547,7 @@ doxygen
             }
             codeline
             {
-                lineno=208
+                lineno=205
                 highlight
                 {
                     class=normal
@@ -4549,7 +4555,7 @@ doxygen
             }
             codeline
             {
-                lineno=223
+                lineno=220
                 highlight
                 {
                     class=keywordtype
@@ -4581,7 +4587,7 @@ doxygen
             }
             codeline
             {
-                lineno=224
+                lineno=221
                 highlight
                 {
                     class=normal
@@ -4589,7 +4595,7 @@ doxygen
             }
             codeline
             {
-                lineno=235
+                lineno=232
                 highlight
                 {
                     class=keywordtype
@@ -4621,7 +4627,7 @@ doxygen
             }
             codeline
             {
-                lineno=236
+                lineno=233
                 highlight
                 {
                     class=normal
@@ -4629,7 +4635,7 @@ doxygen
             }
             codeline
             {
-                lineno=237
+                lineno=234
                 highlight
                 {
                     class=normal
@@ -4643,14 +4649,277 @@ doxygen
                     sp
                     {
                     }
+                    chars="#defineOE_COND_INITIALIZER\"
+                }
+            }
+            codeline
+            {
+                lineno=235
+                highlight
+                {
+                    class=preprocessor
                     sp
                     {
                     }
-                    chars="#defineOE_COND_INITIALIZER{OE_SPINLOCK_INITIALIZER,{NULL,NULL},{0,0,0}}"
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="{\"
                 }
+            }
+            codeline
+            {
+                lineno=236
                 highlight
                 {
-                    class=normal
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="{\"
+                }
+            }
+            codeline
+            {
+                lineno=237
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="0\"
                 }
             }
             codeline
@@ -4658,12 +4927,127 @@ doxygen
                 lineno=238
                 highlight
                 {
-                    class=normal
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="}\"
                 }
             }
             codeline
             {
                 lineno=239
+                highlight
+                {
+                    class=preprocessor
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="}"
+                }
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=240
+                highlight
+                {
+                    class=normal
+                }
+            }
+            codeline
+            {
+                lineno=241
                 highlight
                 {
                     class=normal
@@ -4692,7 +5076,7 @@ doxygen
             }
             codeline
             {
-                lineno=240
+                lineno=242
                 refid=struct__OE__Cond
                 refkind=compound
                 highlight
@@ -4732,67 +5116,11 @@ doxygen
             }
             codeline
             {
-                lineno=241
-                highlight
-                {
-                    class=normal
-                    chars="{"
-                }
-            }
-            codeline
-            {
-                lineno=242
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_Spinlocklock;"
-                }
-            }
-            codeline
-            {
                 lineno=243
                 highlight
                 {
                     class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keyword
-                    sp
-                    {
-                    }
-                    chars="struct"
-                }
-                highlight
-                {
-                    class=normal
+                    chars="{"
                 }
             }
             codeline
@@ -4813,7 +5141,27 @@ doxygen
                     sp
                     {
                     }
-                    chars="{"
+                }
+                highlight
+                {
+                    class=comment
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    sp
+                    {
+                    }
+                    chars="/*Internalprivateimplementation*/"
+                }
+                highlight
+                {
+                    class=normal
                 }
             }
             codeline
@@ -4837,28 +5185,7 @@ doxygen
                     sp
                     {
                     }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="void"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="*front;"
+                    chars="uint64_t__impl[8];"
                 }
             }
             codeline
@@ -4870,40 +5197,13 @@ doxygen
                     sp
                     {
                     }
-                    sp
+                    ref
                     {
+                        refid=struct__OE__Cond
+                        kindref=compound
+                        chars="OE_Cond"
                     }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="void"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="*back;"
+                    chars="};"
                 }
             }
             codeline
@@ -4912,208 +5212,11 @@ doxygen
                 highlight
                 {
                     class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="}"
                 }
             }
             codeline
             {
-                lineno=248
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="queue;"
-                }
-            }
-            codeline
-            {
-                lineno=249
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="unsigned"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                }
-                highlight
-                {
-                    class=keywordtype
-                    chars="long"
-                }
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    chars="padding[3];"
-                }
-            }
-            codeline
-            {
-                lineno=250
-                highlight
-                {
-                    class=normal
-                    chars="}"
-                }
-            }
-            codeline
-            {
-                lineno=251
-                highlight
-                {
-                    class=normal
-                    ref
-                    {
-                        refid=struct__OE__Cond
-                        kindref=compound
-                        chars="OE_Cond"
-                    }
-                    chars=";"
-                }
-            }
-            codeline
-            {
-                lineno=252
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=253
-                highlight
-                {
-                    class=normal
-                }
-                highlight
-                {
-                    class=comment
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="/*Thismustthesamesizeaspthread_cond_tinGLIBC*/"
-                }
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=254
-                highlight
-                {
-                    class=normal
-                    chars="OE_STATIC_ASSERT(("
-                }
-                highlight
-                {
-                    class=keyword
-                    chars="sizeof"
-                }
-                highlight
-                {
-                    class=normal
-                    ref
-                    {
-                        refid=struct__OE__Cond
-                        kindref=compound
-                        chars="OE_Cond"
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="()==48));"
-                }
-            }
-            codeline
-            {
-                lineno=255
-                highlight
-                {
-                    class=normal
-                }
-            }
-            codeline
-            {
-                lineno=272
+                lineno=264
                 highlight
                 {
                     class=keywordtype
@@ -5145,7 +5248,7 @@ doxygen
             }
             codeline
             {
-                lineno=273
+                lineno=265
                 highlight
                 {
                     class=normal
@@ -5153,7 +5256,7 @@ doxygen
             }
             codeline
             {
-                lineno=295
+                lineno=287
                 highlight
                 {
                     class=keywordtype
@@ -5171,53 +5274,11 @@ doxygen
                         kindref=member
                         chars="OE_CondWait"
                     }
-                    chars="("
-                }
-            }
-            codeline
-            {
-                lineno=296
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
                     ref
                     {
                         refid=struct__OE__Cond
                         kindref=compound
                         chars="OE_Cond"
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="*cond,"
-                }
-            }
-            codeline
-            {
-                lineno=297
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
                     }
                     sp
                     {
@@ -5234,12 +5295,12 @@ doxygen
                     sp
                     {
                     }
-                    chars="*mutex);"
+                    chars="(*cond,*mutex);"
                 }
             }
             codeline
             {
-                lineno=298
+                lineno=288
                 highlight
                 {
                     class=normal
@@ -5247,7 +5308,7 @@ doxygen
             }
             codeline
             {
-                lineno=316
+                lineno=306
                 highlight
                 {
                     class=keywordtype
@@ -5265,27 +5326,6 @@ doxygen
                         kindref=member
                         chars="OE_CondSignal"
                     }
-                    chars="("
-                }
-            }
-            codeline
-            {
-                lineno=317
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
                     ref
                     {
                         refid=struct__OE__Cond
@@ -5295,12 +5335,12 @@ doxygen
                     sp
                     {
                     }
-                    chars="*cond);"
+                    chars="(*cond);"
                 }
             }
             codeline
             {
-                lineno=318
+                lineno=307
                 highlight
                 {
                     class=normal
@@ -5308,7 +5348,7 @@ doxygen
             }
             codeline
             {
-                lineno=334
+                lineno=323
                 highlight
                 {
                     class=keywordtype
@@ -5326,27 +5366,6 @@ doxygen
                         kindref=member
                         chars="OE_CondBroadcast"
                     }
-                    chars="("
-                }
-            }
-            codeline
-            {
-                lineno=335
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
                     ref
                     {
                         refid=struct__OE__Cond
@@ -5356,12 +5375,12 @@ doxygen
                     sp
                     {
                     }
-                    chars="*cond);"
+                    chars="(*cond);"
                 }
             }
             codeline
             {
-                lineno=336
+                lineno=324
                 highlight
                 {
                     class=normal
@@ -5369,7 +5388,7 @@ doxygen
             }
             codeline
             {
-                lineno=347
+                lineno=335
                 highlight
                 {
                     class=keywordtype
@@ -5387,27 +5406,6 @@ doxygen
                         kindref=member
                         chars="OE_CondDestroy"
                     }
-                    chars="("
-                }
-            }
-            codeline
-            {
-                lineno=348
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
                     ref
                     {
                         refid=struct__OE__Cond
@@ -5417,12 +5415,12 @@ doxygen
                     sp
                     {
                     }
-                    chars="*cond);"
+                    chars="(*cond);"
                 }
             }
             codeline
             {
-                lineno=349
+                lineno=336
                 highlight
                 {
                     class=normal
@@ -5430,7 +5428,7 @@ doxygen
             }
             codeline
             {
-                lineno=350
+                lineno=337
                 highlight
                 {
                     class=normal
@@ -5453,7 +5451,7 @@ doxygen
             }
             codeline
             {
-                lineno=351
+                lineno=338
                 highlight
                 {
                     class=normal
@@ -5461,7 +5459,7 @@ doxygen
             }
             codeline
             {
-                lineno=352
+                lineno=339
                 highlight
                 {
                     class=normal
@@ -5506,7 +5504,7 @@ doxygen
             }
             codeline
             {
-                lineno=353
+                lineno=340
                 highlight
                 {
                     class=normal
@@ -5514,7 +5512,7 @@ doxygen
             }
             codeline
             {
-                lineno=367
+                lineno=354
                 highlight
                 {
                     class=keywordtype
@@ -5532,54 +5530,13 @@ doxygen
                         kindref=member
                         chars="OE_ThreadKeyCreate"
                     }
-                    chars="("
-                }
-            }
-            codeline
-            {
-                lineno=368
-                highlight
-                {
-                    class=normal
                     sp
                     {
                     }
                     sp
                     {
                     }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_ThreadKey*key,"
-                }
-            }
-            codeline
-            {
-                lineno=369
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
+                    chars="(OE_ThreadKey*key,"
                 }
                 highlight
                 {
@@ -5610,7 +5567,7 @@ doxygen
             }
             codeline
             {
-                lineno=370
+                lineno=355
                 highlight
                 {
                     class=normal
@@ -5618,7 +5575,7 @@ doxygen
             }
             codeline
             {
-                lineno=383
+                lineno=368
                 highlight
                 {
                     class=keywordtype
@@ -5636,36 +5593,15 @@ doxygen
                         kindref=member
                         chars="OE_ThreadKeyDelete"
                     }
-                    chars="("
+                    sp
+                    {
+                    }
+                    chars="(OE_ThreadKeykey);"
                 }
             }
             codeline
             {
-                lineno=384
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_ThreadKeykey);"
-                }
-            }
-            codeline
-            {
-                lineno=385
+                lineno=369
                 highlight
                 {
                     class=normal
@@ -5673,7 +5609,7 @@ doxygen
             }
             codeline
             {
-                lineno=398
+                lineno=382
                 highlight
                 {
                     class=keywordtype
@@ -5691,54 +5627,13 @@ doxygen
                         kindref=member
                         chars="OE_ThreadSetSpecific"
                     }
-                    chars="("
-                }
-            }
-            codeline
-            {
-                lineno=399
-                highlight
-                {
-                    class=normal
                     sp
                     {
                     }
                     sp
                     {
                     }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_ThreadKeykey,"
-                }
-            }
-            codeline
-            {
-                lineno=400
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
+                    chars="(OE_ThreadKeykey,"
                 }
                 highlight
                 {
@@ -5768,7 +5663,7 @@ doxygen
             }
             codeline
             {
-                lineno=401
+                lineno=383
                 highlight
                 {
                     class=normal
@@ -5776,7 +5671,7 @@ doxygen
             }
             codeline
             {
-                lineno=413
+                lineno=395
                 highlight
                 {
                     class=keywordtype
@@ -5794,36 +5689,15 @@ doxygen
                         kindref=member
                         chars="OE_ThreadGetSpecific"
                     }
-                    chars="*("
+                    sp
+                    {
+                    }
+                    chars="*(OE_ThreadKeykey);"
                 }
             }
             codeline
             {
-                lineno=414
-                highlight
-                {
-                    class=normal
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    sp
-                    {
-                    }
-                    chars="OE_ThreadKeykey);"
-                }
-            }
-            codeline
-            {
-                lineno=415
+                lineno=396
                 highlight
                 {
                     class=normal
@@ -5831,7 +5705,7 @@ doxygen
             }
             codeline
             {
-                lineno=416
+                lineno=397
                 highlight
                 {
                     class=normal
@@ -5840,7 +5714,7 @@ doxygen
             }
             codeline
             {
-                lineno=417
+                lineno=398
                 highlight
                 {
                     class=normal
@@ -5848,7 +5722,7 @@ doxygen
             }
             codeline
             {
-                lineno=418
+                lineno=399
                 highlight
                 {
                     class=normal
