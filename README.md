@@ -7,8 +7,8 @@ Introduction
 ------------
 
 OpenEnclave is an SDK for building enclave applications in C and C++. An
-enclave application partitions itself into a trusted component (called the
-host) and an untrusted component (called the enclave). An enclave is a secure
+enclave application partitions itself into an untrusted component (called the
+host) and a trusted component (called the enclave). An enclave is a secure
 container whose memory is protected from entities outside the enclave. These
 protections allow enclaves to perform secure computations with assurances that
 secrets will not be compromised.
