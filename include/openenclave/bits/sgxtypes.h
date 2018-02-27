@@ -714,12 +714,12 @@ typedef struct _SGX_Quote
     /* (432) */
     uint32_t signature_len;
 
-    /* (436) */
-    uint8_t signature[82];
+    /* (436) Large enough to hold any signature type */
+    uint8_t signature[2048];
 } SGX_Quote;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(SGX_Quote), 518);
+OE_CHECK_SIZE(sizeof(SGX_Quote), 2484);
 
 /*
 **==============================================================================
@@ -803,8 +803,7 @@ OE_Result SGX_GetQuote(
     const uint8_t* signatureRevocationList,
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut,
-    SGX_Quote* quote,
-    uint32_t quoteSize);
+    SGX_Quote* quote);
 
 /*
 **==============================================================================

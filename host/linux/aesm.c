@@ -535,15 +535,19 @@ OE_Result AESMGetQuote(
     const uint8_t* signatureRevocationList,
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut, /* ATTN: support this! */
-    SGX_Quote* quote,
-    uint32_t quoteSize)
+    SGX_Quote* quote)
 {
     uint64_t timeout = 15000;
     mem_t request = MEM_DYNAMIC_INIT;
     mem_t response = MEM_DYNAMIC_INIT;
     OE_Result result = OE_UNEXPECTED;
 
-    if (!_AESMValid(aesm))
+    /* Zero initialize the quote */
+    if (quote)
+        memset(quote, 0, sizeof(SGX_Quote));
+
+    /* Check for invalid parameters */
+    if (!_AESMValid(aesm) || !report || !spid || !quote)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Build the PAYLOAD */
@@ -573,20 +577,21 @@ OE_Result AESMGetQuote(
         }
 
         /* Pack QUOTE-SIZE */
-        OE_TRY(_PackVarInt(&request, 6, quoteSize));
+        OE_TRY(_PackVarInt(&request, 6, sizeof(SGX_Quote)));
 
         /* Pack boolean indicating whether REPORT-OUT is present */
-        OE_TRY(_PackVarInt(&request, 7, reportOut ? 1 : 0));
+        if (reportOut)
+            OE_TRY(_PackVarInt(&request, 7, 1));
 
         /* Pack TIMEOUT */
         OE_TRY(_PackVarInt(&request, 9, timeout));
     }
 
     /* Send the request to the AESM service */
-    OE_TRY(_WriteRequest(aesm, MESSAGE_TYPE_INIT_QUOTE, &request));
+    OE_TRY(_WriteRequest(aesm, MESSAGE_TYPE_GET_QUOTE, &request));
 
     /* Receive the response from AESM service */
-    OE_TRY(_ReadResponse(aesm, MESSAGE_TYPE_INIT_QUOTE, &response));
+    OE_TRY(_ReadResponse(aesm, MESSAGE_TYPE_GET_QUOTE, &response));
 
     /* Unpack the response */
     {
@@ -602,7 +607,9 @@ OE_Result AESMGetQuote(
         }
 
         /* Unpack quote */
-        OE_TRY(_UnpackLengthDelimited(&response, &pos, 2, quote, quoteSize));
+        OE_TRY(
+            _UnpackLengthDelimited(
+                &response, &pos, 2, quote, sizeof(SGX_Quote)));
 
         /* Unpack optional reportOut */
         if (reportOut)
@@ -611,6 +618,34 @@ OE_Result AESMGetQuote(
                 _UnpackLengthDelimited(
                     &response, &pos, 3, reportOut, sizeof(SGX_Report)));
         }
+    }
+
+    printf("XXXXXXXXX\n");
+    /* Verify the signature type */
+    if (quote->sign_type != quoteType)
+        OE_TRY(OE_FAILURE);
+
+    printf("YYYYYYYYY\n");
+    /* Verify that the quote contains the original report */
+    if (memcmp(&report->body, &quote->report_body, sizeof(SGX_ReportBody)) != 0)
+        OE_THROW(OE_FAILURE);
+
+    /* Verify that signature length is non-zero */
+    if (quote->signature_len == 0)
+        OE_THROW(OE_FAILURE);
+
+    /* Verify that signature is not zero-filled */
+    {
+        const uint8_t* p = quote->signature;
+        const uint8_t* end = quote->signature + quote->signature_len;
+
+        /* Skip over zero bytes */
+        while (p != end && *p == '\0')
+            p++;
+
+        /* Fail if a non-zero byte was not found */
+        if (p == end)
+            OE_THROW(OE_FAILURE);
     }
 
     result = OE_OK;

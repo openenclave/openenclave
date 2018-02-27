@@ -34,13 +34,12 @@ OE_Result SGX_GetQuote(
     const uint8_t* signatureRevocationList,
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut,
-    SGX_Quote* quote,
-    uint32_t quoteSize)
+    SGX_Quote* quote)
 {
     OE_Result result = OE_UNEXPECTED;
     AESM* aesm = NULL;
 
-    if (!report || !spid || !quote || !quoteSize)
+    if (!report || !spid || !quote)
         OE_THROW(OE_INVALID_PARAMETER);
 
 #if 0
@@ -69,8 +68,7 @@ OE_Result SGX_GetQuote(
             signatureRevocationList,
             signatureRevocationListSize,
             reportOut,
-            quote,
-            quoteSize));
+            quote));
 
     result = OE_OK;
 
@@ -136,8 +134,7 @@ OE_Result OE_GetQuote(
                 NULL, /* signature revocation list */
                 0,    /* signature revocation list size */
                 NULL, /* report out */
-                (SGX_Quote*)quote,
-                sizeof(SGX_Quote)));
+                (SGX_Quote*)quote));
     }
 
     result = OE_OK;
