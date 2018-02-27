@@ -594,17 +594,18 @@ OE_Result AESMGetQuote(
         OE_TRY(_PackVarInt(&request, 6, quoteSize));
 
         /* Pack boolean indicating whether REPORT-OUT is present */
-        OE_TRY(_PackVarInt(&request, 7, reportOut ? 1 : 0));
+        if (reportOut)
+            OE_TRY(_PackVarInt(&request, 7, 1));
 
         /* Pack TIMEOUT */
         OE_TRY(_PackVarInt(&request, 9, timeout));
     }
 
     /* Send the request to the AESM service */
-    OE_TRY(_WriteRequest(aesm, MESSAGE_TYPE_INIT_QUOTE, &request));
+    OE_TRY(_WriteRequest(aesm, MESSAGE_TYPE_GET_QUOTE, &request));
 
     /* Receive the response from AESM service */
-    OE_TRY(_ReadResponse(aesm, MESSAGE_TYPE_INIT_QUOTE, &response));
+    OE_TRY(_ReadResponse(aesm, MESSAGE_TYPE_GET_QUOTE, &response));
 
     /* Unpack the response */
     {
