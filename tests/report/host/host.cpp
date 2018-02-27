@@ -123,8 +123,7 @@ int main(int argc, const char* argv[])
             NULL, /* signatureRevocationList */
             0, /* signatureRevocationListSize */
             NULL, /* reportOut */
-            &quote,
-            sizeof(SGX_Quote))) != OE_OK)
+            &quote)) != OE_OK)
         {
             OE_PutErr("__SGX_GetQuote(): result=%u", result);
         }

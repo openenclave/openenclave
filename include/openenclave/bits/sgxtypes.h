@@ -832,8 +832,7 @@ OE_Result SGX_GetQuote(
     const uint8_t* signatureRevocationList,
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut,
-    SGX_Quote* quote,
-    uint32_t quoteSize);
+    SGX_Quote* quote);
 
 /*
 **==============================================================================
