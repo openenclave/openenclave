@@ -10,6 +10,56 @@
 #include <openenclave/bits/error.h>
 #include "../args.h"
 
+void DumpReport(SGX_Report* report)
+{
+    printf("=== SGX_Report:\n");
+
+    printf("body=");
+    __OE_HexDump(&report->body, sizeof(report->body));
+    printf("\n");
+
+    printf("keyid=");
+    __OE_HexDump(&report->keyid, sizeof(report->keyid));
+    printf("\n");
+
+    printf("mac=");
+    __OE_HexDump(&report->mac, sizeof(report->mac));
+    printf("\n");
+
+    printf("\n");
+}
+
+void DumpQuote(SGX_Quote* quote)
+{
+    printf("=== SGX_Quote:\n");
+    printf("version=%u\n", quote->version);
+    printf("sign_type=%u\n", quote->sign_type);
+
+    printf("epid_group_id=");
+    __OE_HexDump(&quote->epid_group_id, sizeof(quote->epid_group_id));
+    printf("\n");
+
+    printf("qe_svn=%u\n", quote->qe_svn);
+    printf("pce_svn=%u\n", quote->pce_svn);
+    printf("xeid=%u\n", quote->xeid);
+
+    printf("basename=");
+    __OE_HexDump(quote->basename, sizeof(quote->basename));
+    printf("\n");
+
+    printf("report_body=");
+    __OE_HexDump(&quote->report_body, sizeof(quote->report_body));
+    printf("\n");
+
+    printf("signature_len=%u\n", quote->signature_len);
+
+    printf("signature=");
+    __OE_HexDump(quote->signature, quote->signature_len);
+    printf("\n");
+
+    printf("\n");
+}
+
 int main(int argc, const char* argv[])
 {
     OE_Result result;
@@ -49,7 +99,7 @@ int main(int argc, const char* argv[])
     }
 
 #if 0
-    __OE_HexDump(&args.report, sizeof(SGX_Report));
+    DumpReport(&args.report);
 #endif
 
     SGX_SPID spid = 
@@ -63,7 +113,7 @@ int main(int argc, const char* argv[])
     /* Get the quote */
     {
         SGX_Quote quote;
-        memset(&quote, 0xDD, sizeof(quote));
+        memset(&quote, 0, sizeof(quote));
 
         if ((result = SGX_GetQuote(
             &args.report,
@@ -79,9 +129,15 @@ int main(int argc, const char* argv[])
             OE_PutErr("__SGX_GetQuote(): result=%u", result);
         }
 
-#if 0
-        __OE_HexDump(&quote, sizeof(quote));
+#if 1
+        DumpQuote(&quote);
 #endif
+
+        /* Verify that the quote contains the report */
+        assert(memcmp(
+            &args.report.body,
+            &quote.report_body,
+            sizeof(SGX_ReportBody)) == 0);
     }
 
     /* Terminate the enclave */

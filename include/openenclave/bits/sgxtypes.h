@@ -737,12 +737,13 @@ typedef struct _SGX_Quote
     uint32_t signature_len;
 
     /* (436) */
-    uint8_t signature[82];
+    /* The signature size varies so we pick a size big enough for any case */
+    uint8_t signature[2048];
 }
 SGX_Quote;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(SGX_Quote),518);
+OE_CHECK_SIZE(sizeof(SGX_Quote),2484);
 
 /*
 **==============================================================================
