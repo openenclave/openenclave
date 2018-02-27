@@ -620,12 +620,10 @@ OE_Result AESMGetQuote(
         }
     }
 
-    printf("XXXXXXXXX\n");
     /* Verify the signature type */
     if (quote->sign_type != quoteType)
         OE_TRY(OE_FAILURE);
 
-    printf("YYYYYYYYY\n");
     /* Verify that the quote contains the original report */
     if (memcmp(&report->body, &quote->report_body, sizeof(SGX_ReportBody)) != 0)
         OE_THROW(OE_FAILURE);
