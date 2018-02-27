@@ -1,9 +1,9 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <openenclave/bits/elf.h>
 #include <assert.h>
+#include <openenclave/bits/elf.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-/* 
+/*
 **==============================================================================
 **
 ** To use this for loading an enclave, check these:
@@ -59,7 +59,7 @@ exit(0);
         Elf64_Sym sym;
 
         if (Elf64_FindSymbolByAddress(
-            &elf, elf.ehdr->e_entry, STT_FUNC, &sym) != 0)
+                &elf, elf.ehdr->e_entry, STT_FUNC, &sym) != 0)
         {
             fprintf(stderr, "%s: cannot find entry point symbol\n", argv[0]);
             goto done;
@@ -80,8 +80,8 @@ exit(0);
 
         if (Elf64_FindSymbolByName(&elf, entry, &sym) != 0)
         {
-            fprintf(stderr, "%s: failed to find entry point: %s\n", 
-                argv[0], entry);
+            fprintf(
+                stderr, "%s: failed to find entry point: %s\n", argv[0], entry);
             goto done;
         }
 

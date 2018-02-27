@@ -2,22 +2,22 @@
 #define _ASMDEFS_H
 
 #ifndef __ASSEMBLER__
+#include <openenclave/bits/context.h>
 #include <openenclave/types.h>
 #include <stdint.h>
-#include <openenclave/bits/context.h>
 #endif
 
 #ifdef __ASSEMBLER__
-# define ENCLU_EENTER 2
-# define ENCLU_ERESUME 3
+#define ENCLU_EENTER 2
+#define ENCLU_ERESUME 3
 #endif
 
 #define ThreadBinding_tcs 0
 #define OE_WORDSIZE 8
-#define	OE_OCALL_CODE 3
+#define OE_OCALL_CODE 3
 
 #if defined(__linux__)
-# define OE_Enter __morestack
+#define OE_Enter __morestack
 #endif
 
 #ifndef __ASSEMBLER__
@@ -33,7 +33,7 @@ void OE_Enter(
     uint64_t* arg3,
     uint64_t* arg4,
     OE_Enclave* enclave);
-    
+
 void OE_AEP(void);
 #endif
 
@@ -73,20 +73,15 @@ typedef struct __OE_HostOCallFrame
 {
     uint64_t previous_rbp;
     uint64_t return_address;
-}
-_OE_HostOCallFrame;
+} _OE_HostOCallFrame;
 #endif
 
 #ifndef __ASSEMBLER__
-void _OE_NotifyOCallStart(
-    _OE_HostOCallFrame* frame_pointer,
-    void* tcs);
+void _OE_NotifyOCallStart(_OE_HostOCallFrame* frame_pointer, void* tcs);
 #endif
 
 #ifndef __ASSEMBLER__
-void _OE_NotifyOCallEnd(
-    _OE_HostOCallFrame* frame_pointer,
-    void* tcs);
+void _OE_NotifyOCallEnd(_OE_HostOCallFrame* frame_pointer, void* tcs);
 #endif
 
 #endif /* _ASMDEFS_H */

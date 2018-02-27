@@ -1,7 +1,7 @@
 #include <signal.h>
 
-int sigfillset(sigset_t *set)
+int sigfillset(sigset_t* set)
 {
-    //assert("sigfillset() called" == NULL);
+    // assert("sigfillset() called" == NULL);
     return 0;
 }

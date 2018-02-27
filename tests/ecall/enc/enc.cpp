@@ -1,11 +1,11 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/jump.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
-void MyECall(uint64_t argIn, uint64_t *argOut)
+void MyECall(uint64_t argIn, uint64_t* argOut)
 {
     if (argOut)
         *argOut = argIn * 3;
@@ -114,38 +114,39 @@ OE_ECALL void Test(void* args_)
 
         {
             char buf[128];
-            int n = OE_Snprintf(buf, sizeof(buf), "INT_MIN=%d", -2147483647-1);
+            int n =
+                OE_Snprintf(buf, sizeof(buf), "INT_MIN=%d", -2147483647 - 1);
             OE_Assert(OE_Strcmp(buf, "INT_MIN=-2147483648") == 0);
             OE_Assert(n == 19);
         }
 
         {
             char buf[128];
-            int n = OE_Snprintf(buf, sizeof(buf), "ULONG_MAX=%lu", 
-                18446744073709551615UL);
+            int n = OE_Snprintf(
+                buf, sizeof(buf), "ULONG_MAX=%lu", 18446744073709551615UL);
             OE_Assert(OE_Strcmp(buf, "ULONG_MAX=18446744073709551615") == 0);
             OE_Assert(n == 30);
         }
 
         {
             char buf[128];
-            int n = OE_Snprintf(buf, sizeof(buf), "LONG_MAX=%ld", 
-                9223372036854775807);
+            int n = OE_Snprintf(
+                buf, sizeof(buf), "LONG_MAX=%ld", 9223372036854775807);
             OE_Assert(OE_Strcmp(buf, "LONG_MAX=9223372036854775807") == 0);
             OE_Assert(n == 28);
         }
 
         {
             char buf[128];
-            int n = OE_Snprintf(buf, sizeof(buf), "LONG_MIN=%ld", 
-                -9223372036854775807-1);
+            int n = OE_Snprintf(
+                buf, sizeof(buf), "LONG_MIN=%ld", -9223372036854775807 - 1);
             OE_Assert(OE_Strcmp(buf, "LONG_MIN=-9223372036854775808") == 0);
             OE_Assert(n == 29);
         }
         {
             char buf[12];
-            int n = OE_Snprintf(buf, sizeof(buf), "LONG_MIN=%ld", 
-                -9223372036854775807-1);
+            int n = OE_Snprintf(
+                buf, sizeof(buf), "LONG_MIN=%ld", -9223372036854775807 - 1);
             OE_Assert(OE_Strcmp(buf, "LONG_MIN=-9") == 0);
             OE_Assert(n == 29);
         }

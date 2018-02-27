@@ -7,8 +7,7 @@ typedef struct Pair
 {
     unsigned long code;
     const char* str;
-}
-Pair;
+} Pair;
 
 extern Pair strings[];
 extern long nstrings;

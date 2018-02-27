@@ -22,7 +22,6 @@ typedef struct _TestArgs
     unsigned int yyyy;
     unsigned int setjmpResult;
     unsigned int magic2;
-}
-TestArgs;
+} TestArgs;
 
 #endif /* _new_args_h */

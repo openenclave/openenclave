@@ -1,7 +1,6 @@
 #include <openenclave/result.h>
 
-const char* OE_ResultStr(
-    OE_Result result)
+const char* OE_ResultStr(OE_Result result)
 {
     switch (result)
     {

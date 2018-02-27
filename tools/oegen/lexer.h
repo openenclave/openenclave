@@ -1,11 +1,11 @@
 #ifndef _OE_LEXER_H
 #define _OE_LEXER_H
 
+#include <openenclave/host.h>
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
-#include <openenclave/host.h>
 
 #define LEXER_MAX_TEXT_SIZE 1024
 #define LEXER_MAX_ERROR_SIZE 1024
@@ -67,10 +67,12 @@ struct Lexer
 
     Tok Next();
 
-    unsigned int GetLine() const { return _line; }
+    unsigned int GetLine() const
+    {
+        return _line;
+    }
 
-private:
-
+  private:
     Tok _Next();
 
     const char* _file;

@@ -1,7 +1,7 @@
-#include <openenclave/enclave.h>
-#include <openenclave/bits/print.h>
-#include <stdio.h>
 #include <assert.h>
+#include <openenclave/bits/print.h>
+#include <openenclave/enclave.h>
+#include <stdio.h>
 #include "../args.h"
 
 OE_ECALL void TestPrint(void* args_)

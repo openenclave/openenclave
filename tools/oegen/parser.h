@@ -1,13 +1,12 @@
 #ifndef _OE_PARSER_H
 #define _OE_PARSER_H
 
-#include "objects.h"
 #include "lexer.h"
+#include "objects.h"
 
 class Parser
 {
-public:
-
+  public:
     Parser();
 
     ~Parser();
@@ -20,7 +19,7 @@ public:
 
     const std::vector<Object*>& Objects() const;
 
-private:
+  private:
     std::vector<Object*> _objects;
 };
 

@@ -1,9 +1,9 @@
-#include <openenclave/enclave.h>
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
-// This function will generate the divide by zero function. 
+// This function will generate the divide by zero function.
 // The handler will catch this exception and fix it, and continue execute.
 // It will return 0 if success.
 int DivideByZeroExceptionFunction(void)
@@ -18,7 +18,8 @@ int DivideByZeroExceptionFunction(void)
 
     ret = ret / s;
 
-    // Check if the float registers are recovered correctly after the exception is handled.
+    // Check if the float registers are recovered correctly after the exception
+    // is handled.
     if (f < 0.309 || f > 0.321 || d < 0.319 || d > 0.321)
     {
         return ret;
@@ -27,7 +28,7 @@ int DivideByZeroExceptionFunction(void)
     return 0;
 }
 
-uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD *exception_record)
+uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD* exception_record)
 {
     if (exception_record->code != OE_EXCEPTION_DIVIDE_BY_ZERO)
     {
@@ -62,7 +63,7 @@ OE_ECALL void EnclaveNestCalls(void* args_)
     char str[128];
     int curDepth = args->depth;
     OE_Snprintf(str, sizeof(str), "Nested call depth [%d].", curDepth);
-    
+
     // Register exception handler.
     _RegisterExceptionHandler();
 
@@ -76,7 +77,8 @@ OE_ECALL void EnclaveNestCalls(void* args_)
 
     if (args->depth <= 0)
     {
-        OE_HostPrintf("Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
+        OE_HostPrintf(
+            "Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
         args->ret = 0;
         return;
     }

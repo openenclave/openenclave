@@ -1,13 +1,13 @@
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
-#include <limits.h>
-#include <string.h>
-#include <stdio.h>
 #include <assert.h>
+#include <limits.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include "../args.h"
+#include <string.h>
 #include "../../../host/strings.h"
+#include "../args.h"
 
 OE_OCALL void Echo(void* args_)
 {

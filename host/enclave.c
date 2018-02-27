@@ -1,6 +1,6 @@
+#include "enclave.h"
 #include <assert.h>
 #include <openenclave/host.h>
-#include "enclave.h"
 
 /*
 **==============================================================================

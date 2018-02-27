@@ -1,6 +1,6 @@
 #include <openenclave/enclave.h>
-#include <cstdio>
 #include <algorithm>
+#include <cstdio>
 #include "../args.h"
 
 using namespace std;

@@ -1,10 +1,10 @@
-#include <cwchar>
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/bits/typeinfo.h>
-#include "typeinfo_u.h"
+#include <openenclave/host.h>
+#include <cwchar>
 #include "CXXObject.h"
+#include "typeinfo_u.h"
 
 #define err(...) OE_PutErr(__VA_ARGS__)
 
@@ -13,31 +13,23 @@ static void __Test(const char* file, unsigned int line, const char* cond)
     fprintf(stderr, "%s(%u): %s: (test failed)\n", file, line, cond);
 }
 
-#define TEST(COND) \
-    do \
-    { \
-        if (!(COND)) \
-        { \
+#define TEST(COND)                             \
+    do                                         \
+    {                                          \
+        if (!(COND))                           \
+        {                                      \
             __Test(__FILE__, __LINE__, #COND); \
-            exit(1); \
-        } \
-    } \
-    while (0)
+            exit(1);                           \
+        }                                      \
+    } while (0)
 
-OE_EXTERNC int32_t UCopy(
-    char *p,
-    size_t m,
-    const char *q,
-    size_t n,
-    struct Object** object)
+OE_EXTERNC int32_t
+UCopy(char* p, size_t m, const char* q, size_t n, struct Object** object)
 {
     return 0;
 }
 
-int InitObject(
-    struct Object& object,
-    size_t id,
-    const char* name)
+int InitObject(struct Object& object, size_t id, const char* name)
 {
     memset(&object, 0, sizeof(Object));
     object.id = id;
@@ -48,14 +40,11 @@ int InitObject(
     return 0;
 }
 
-void DestroyObject(
-    struct Object& object)
+void DestroyObject(struct Object& object)
 {
 }
 
-struct Object* MakeObject(
-    size_t id,
-    const char* name)
+struct Object* MakeObject(size_t id, const char* name)
 {
     struct Object* p;
 
@@ -83,7 +72,7 @@ int TestContainer(bool trace)
     Container c;
     memset(&c, 0, sizeof(c));
 
-    uint32_t arr[] = { 100, 200, 300 };
+    uint32_t arr[] = {100, 200, 300};
     c.arrData = arr;
     c.arrSize = OE_COUNTOF(arr);
 
@@ -110,7 +99,7 @@ int TestContainer(bool trace)
 
     memcpy(&c.ae[1], &c.e, sizeof(c.e));
 
-    unsigned char varr[5] = { 0, 1, 2, 3, 4 };
+    unsigned char varr[5] = {0, 1, 2, 3, 4};
     c.varr = varr;
     c.sizevarr = 5;
 
@@ -118,8 +107,7 @@ int TestContainer(bool trace)
         OE_PrintStruct(&Container_ti, &c);
 
     Container* s;
-    OE_Result result = OE_CloneStruct(
-        &Container_ti, &c, (void**)&s, malloc);
+    OE_Result result = OE_CloneStruct(&Container_ti, &c, (void**)&s, malloc);
 
     if (result != OE_OK)
     {
@@ -168,7 +156,7 @@ int TestCopyOver(bool trace)
 {
     Object* obj1;
     Object* obj2;
-    
+
     if (!(obj1 = MakeObject(10, "O10")))
         return -1;
 
@@ -217,7 +205,7 @@ int TestAllTypes(bool trace)
     x.obj1.id = 1;
     x.obj1.name = strdup("Object1");
     x.obj2 = MakeObject(2, "Object2");
-    uint32_t* data = (uint32_t*)malloc(sizeof(uint32_t)*3);
+    uint32_t* data = (uint32_t*)malloc(sizeof(uint32_t) * 3);
     data[0] = 0;
     data[1] = 1;
     data[2] = 2;
@@ -233,7 +221,6 @@ int TestAllTypes(bool trace)
     bool flag;
     if (OE_StructEq(&AllTypes_ti, &x, &y, &flag) != OE_OK || !flag)
         err("OE_StructEq()");
-
 
     if (trace)
         OE_PrintStruct(&AllTypes_ti, &y);
@@ -336,13 +323,12 @@ int TestAllTypes(bool trace)
     return 0;
 }
 
-int MyFunctionCall(
-    MyFunctionArgs* a)
+int MyFunctionCall(MyFunctionArgs* a)
 {
     TEST(a->str);
     TEST(a->nstr);
 
-    strncpy(a->str, "aaaaaaaaaaaaaaaaaaaaaa", a->nstr-1);
+    strncpy(a->str, "aaaaaaaaaaaaaaaaaaaaaa", a->nstr - 1);
 
     if (a->u32)
         *a->u32 = 66;
@@ -423,7 +409,7 @@ static int TestParams(bool trace)
     size_t nstr = sizeof(str);
     strcpy(str, "This is my 'str'");
 
-    uint32_t u32a[4] = { 1, 2, 3, 4 };
+    uint32_t u32a[4] = {1, 2, 3, 4};
 
     char stra[32];
     strcpy(stra, "stra");
@@ -437,15 +423,8 @@ static int TestParams(bool trace)
     TEST(objr);
 
     if (MyFunction(
-        "cstr",
-        str,
-        nstr,
-        &u32,
-        u32a,
-        stra,
-        obj,
-        objp,
-        (Object**)&objr) != 0)
+            "cstr", str, nstr, &u32, u32a, stra, obj, objp, (Object**)&objr) !=
+        0)
     {
         OE_PutErr("MyFunction() failed");
     }

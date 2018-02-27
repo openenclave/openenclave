@@ -1,21 +1,19 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <fstream>
 #include <openenclave/host.h>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 #include "../SampleAppAttestation/SampleAppAttestationShared.h"
 
 #define TRACE printf("TRACE: %s(%u): %s()\n", __FILE__, __LINE__, __FUNCTION__)
 
-OE_Result
-HostGetAppEnclaveReport(
+OE_Result HostGetAppEnclaveReport(
     OE_Enclave* enclave,
-    void **Report,
-    size_t* ReportSize
-)
+    void** Report,
+    size_t* ReportSize)
 {
     OE_Result Result;
-    CREATE_APP_ENCLAVE_REPORT_ARGS Args { OE_OK };
+    CREATE_APP_ENCLAVE_REPORT_ARGS Args{OE_OK};
 
     //
     // Call into enclave to get needed report size.
@@ -64,7 +62,6 @@ HostGetAppEnclaveReport(
         *ReportSize = Args.ReportSize;
     }
 
-
 Cleanup:
     if (Result != OE_OK)
     {
@@ -78,13 +75,11 @@ Cleanup:
     return Result;
 }
 
-OE_Result
-GetQuoteWrapper(
-    void *Report,
+OE_Result GetQuoteWrapper(
+    void* Report,
     size_t ReportSize,
-    void **Quote,
-    size_t *QuoteSize
-)
+    void** Quote,
+    size_t* QuoteSize)
 {
     OE_Result Result;
     *Quote = NULL;
@@ -94,10 +89,7 @@ GetQuoteWrapper(
     // Get needed quote size.
     //
 
-    Result = OE_GetQuote(Report,
-                      ReportSize,
-                      NULL,
-                      QuoteSize);
+    Result = OE_GetQuote(Report, ReportSize, NULL, QuoteSize);
 
     if (Result != OE_BUFFER_TOO_SMALL)
     {
@@ -120,10 +112,7 @@ GetQuoteWrapper(
     // Get quote.
     //
 
-    Result = OE_GetQuote(Report,
-                      ReportSize,
-                      *Quote,
-                      QuoteSize);
+    Result = OE_GetQuote(Report, ReportSize, *Quote, QuoteSize);
     if (Result != OE_OK)
     {
         printf("Error: OE_GetQuote(): %u\n", Result);
@@ -144,15 +133,12 @@ Cleanup:
     return Result;
 }
 
-bool SaveQuoteToFile(
-    const char *Filename,
-    void *Quote,
-    size_t QuoteSize
-)
+bool SaveQuoteToFile(const char* Filename, void* Quote, size_t QuoteSize)
 {
     std::ofstream fileStream;
     fileStream.open(Filename, std::ios::binary);
-    if (!fileStream.good()) {
+    if (!fileStream.good())
+    {
         printf("%s can't be created.\n", Filename);
         return false;
     }
@@ -167,17 +153,13 @@ bool SaveQuoteToFile(
     return true;
 }
 
-bool
-GetEnclaveQuote(
-    OE_Enclave* enclave,
-    const char* Filename
-)
+bool GetEnclaveQuote(OE_Enclave* enclave, const char* Filename)
 {
     bool Result = false;
     OE_Result Status;
-    void *Report = NULL;
+    void* Report = NULL;
     size_t ReportSize = 0;
-    void *Quote = NULL;
+    void* Quote = NULL;
     size_t QuoteSize = 0;
 
     Status = HostGetAppEnclaveReport(enclave, &Report, &ReportSize);
@@ -228,9 +210,12 @@ int main(int argc, const char* argv[])
 
     if (argc != 2)
     {
-        fprintf(stderr,
-            "Usage: SampleAppAttestationHost.exe <path to  packaged enc/dev dll>\n"
-            "Example: SampleAppAttestationHost.exe SampleAppAttestation.dev.pkg\\SampleAppAttestation.dll\n");
+        fprintf(
+            stderr,
+            "Usage: SampleAppAttestationHost.exe <path to  packaged enc/dev "
+            "dll>\n"
+            "Example: SampleAppAttestationHost.exe "
+            "SampleAppAttestation.dev.pkg\\SampleAppAttestation.dll\n");
         return 1;
     }
 
@@ -241,7 +226,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const char *Filename = "SampleAppEnclaveQuote.bin";
+    const char* Filename = "SampleAppEnclaveQuote.bin";
 
     //
     // Get the app enclave quote, and save the quote blob to disk file.
@@ -253,7 +238,7 @@ int main(int argc, const char* argv[])
         printf("GetEnclaveQuote, quote is saved to %s\n", Filename);
 #endif
     }
-    else 
+    else
     {
         fprintf(stderr, "%s: GetEnclaveQuote failed.\n", argv[0]);
         return 1;

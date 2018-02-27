@@ -1,36 +1,36 @@
-#include <openenclave/enclave.h>
-#include <openenclave/bits/malloc.h>
+#include <assert.h>
 #include <assert.h>
 #include <ctype.h>
 #include <endian.h>
 #include <errno.h>
+#include <inttypes.h>
+#include <inttypes.h>
 #include <iso646.h>
 #include <limits.h>
+#include <openenclave/bits/malloc.h>
+#include <openenclave/enclave.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h>
-#include <wctype.h>
-#include <stdint.h>
-#include <assert.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <inttypes.h>
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
+#include <wchar.h>
+#include <wctype.h>
 #include "../args.h"
 
 /* ATTN: implement these! */
 #if 0
-# include <complex.h>
-# include <float.h>
-# include <math.h>
-# include <time.h>
+#include <complex.h>
+#include <float.h>
+#include <math.h>
+#include <time.h>
 #endif
 
 void Test_strtol()
@@ -82,7 +82,7 @@ int compare(const void* p1, const void* p2)
 
 void Test_qsort()
 {
-    int arr[] = { 100, 300, 200 };
+    int arr[] = {100, 300, 200};
     qsort(arr, OE_COUNTOF(arr), sizeof(int), compare);
     assert(arr[0] == 100);
     assert(arr[1] == 200);
@@ -91,7 +91,7 @@ void Test_qsort()
 
 void Test_bsearch()
 {
-    int arr[] = { 100, 300, 200 };
+    int arr[] = {100, 300, 200};
     void* key = &arr[1];
     void* r = bsearch(key, arr, OE_COUNTOF(arr), sizeof(int), compare);
     assert(r != NULL);
@@ -152,13 +152,17 @@ void Test_atox()
 static bool _calledAllocationFailureCallback;
 
 static void _AllocationFailureCallback(
-    const char* file, 
-    size_t line, 
-    const char* func, 
+    const char* file,
+    size_t line,
+    const char* func,
     size_t size)
 {
-    printf("OE_AllocationFailureCallback(): %s(%zu): %s: %zu\n",
-        file, line, func, size);
+    printf(
+        "OE_AllocationFailureCallback(): %s(%zu): %s: %zu\n",
+        file,
+        line,
+        func,
+        size);
 
     _calledAllocationFailureCallback = true;
 }
@@ -206,14 +210,14 @@ OE_ECALL void Test(void* args_)
 #endif
     Test_atox();
 
-    struct timeval tv = { 0, 0 };
+    struct timeval tv = {0, 0};
     assert(gettimeofday(&tv, NULL) == 0);
 
     struct timespec ts;
     clock_gettime(0, &ts);
 
     /* Sleep for a second */
-    timespec req = { 1, 0 };
+    timespec req = {1, 0};
     timespec rem;
     nanosleep(&req, &rem);
 

@@ -1,13 +1,13 @@
+#include <assert.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
+#include <pthread.h>
 #include <unistd.h>
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstdio>
-#include <assert.h>
-#include <pthread.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
 #include "../args.h"
 
 static TestMutexArgs _args;

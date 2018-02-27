@@ -1,8 +1,8 @@
 #ifndef _CXXOBJECT_H
 #define _CXXOBJECT_H
 
-#include "typeinfo_u.h"
 #include <new>
+#include "typeinfo_u.h"
 
 struct CXXObject : public Object
 {
@@ -11,9 +11,7 @@ struct CXXObject : public Object
         memset(this, 0, sizeof(*this));
     }
 
-    CXXObject(
-        size_t id_,
-        const char* name_)
+    CXXObject(size_t id_, const char* name_)
     {
         id = id_;
         name = strdup(name_);

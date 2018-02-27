@@ -1,15 +1,20 @@
 #define _GNU_SOURCE
-#include <sys/mman.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <sys/mman.h>
 #include <unistd.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 
-void *__libunwind_mmap(
-    void *addr, size_t length, int prot, int flags, int fd, off_t offset)
+void* __libunwind_mmap(
+    void* addr,
+    size_t length,
+    int prot,
+    int flags,
+    int fd,
+    off_t offset)
 {
     void* result = MAP_FAILED;
 
@@ -24,12 +29,12 @@ void *__libunwind_mmap(
 
     result = memalign(4096, length);
 
-done: 
+done:
 
     return result;
 }
 
-int __libunwind_munmap(void *addr, size_t length)
+int __libunwind_munmap(void* addr, size_t length)
 {
     if (!addr)
         return -1;
@@ -40,17 +45,17 @@ int __libunwind_munmap(void *addr, size_t length)
     return 0;
 }
 
-int __libunwind_msync(void *addr, size_t length, int flags)
+int __libunwind_msync(void* addr, size_t length, int flags)
 {
     return 0;
 }
 
-int __libunwind_mincore(void *addr, size_t length, unsigned char *vec)
+int __libunwind_mincore(void* addr, size_t length, unsigned char* vec)
 {
     if (!addr || !vec)
         return -1;
 
-    size_t n = (length + getpagesize() -1 ) / getpagesize();
+    size_t n = (length + getpagesize() - 1) / getpagesize();
     memset(vec, 1, n);
 
     return 0;

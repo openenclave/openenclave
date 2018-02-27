@@ -109,7 +109,7 @@ size_t OE_Strlcat(char* dest, const char* src, size_t size)
 **==============================================================================
 */
 
-void *OE_Memcpy(void *dest, const void *src, size_t n)
+void* OE_Memcpy(void* dest, const void* src, size_t n)
 {
     unsigned char* p = (unsigned char*)dest;
     const unsigned char* q = (const unsigned char*)src;
@@ -152,7 +152,7 @@ void *OE_Memcpy(void *dest, const void *src, size_t n)
     return dest;
 }
 
-void *OE_Memset(void *s, int c, size_t n)
+void* OE_Memset(void* s, int c, size_t n)
 {
     unsigned char* p = (unsigned char*)s;
 
@@ -190,7 +190,7 @@ void *OE_Memset(void *s, int c, size_t n)
     return s;
 }
 
-int OE_Memcmp(const void *s1, const void *s2, size_t n)
+int OE_Memcmp(const void* s1, const void* s2, size_t n)
 {
     const unsigned char* p = (const unsigned char*)s1;
     const unsigned char* q = (const unsigned char*)s2;

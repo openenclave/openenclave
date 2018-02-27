@@ -7,16 +7,16 @@
 #ifndef _OE_HOST_H
 #define _OE_HOST_H
 
-#include <stddef.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
 #include <stdarg.h>
-#include "defs.h"
-#include "types.h"
-#include "result.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "bits/sha.h"
+#include "defs.h"
+#include "result.h"
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 
@@ -73,8 +73,7 @@ OE_Result OE_CreateEnclave(
  * @returns Returns OE_OK on success.
  *
  */
-OE_Result OE_TerminateEnclave(
-    OE_Enclave* enclave);
+OE_Result OE_TerminateEnclave(OE_Enclave* enclave);
 
 /**
  * Perform a high-level enclave function call (ECALL).
@@ -101,10 +100,7 @@ OE_Result OE_TerminateEnclave(
  * @returns This function return **OE_OK** on success.
  *
  */
-OE_Result OE_CallEnclave(
-    OE_Enclave* enclave,
-    const char* func,
-    void* args);
+OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
 
 /**
  * Gets a quote from the Intel(R) quote enclave.

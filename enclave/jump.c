@@ -32,8 +32,7 @@ int OE_Setjmp(OE_Jmpbuf* env)
           "=m"(env->r14),
           "=m"(env->r15),
           "=r"(env->rsp),
-          "=r"(env->rip)
-        );
+          "=r"(env->rip));
 
     return 0;
 }
@@ -62,14 +61,12 @@ void OE_Longjmp(OE_Jmpbuf* env, int val)
         "jmp *%8;"
         :
         : "a"(val),
-          "m" (env->rbx),
-          "m" (env->rbp),
+          "m"(env->rbx),
+          "m"(env->rbp),
           "m"(env->r12),
           "m"(env->r13),
           "m"(env->r14),
           "m"(env->r15),
           "m"(env->rsp),
-          "r"(env->rip)
-        );
+          "r"(env->rip));
 }
-

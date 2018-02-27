@@ -1,14 +1,14 @@
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
-#include <limits.h>
-#include <string.h>
-#include <stdio.h>
 #include <assert.h>
+#include <limits.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../args.h"
 
-#define SKIP_RETURN_CODE    2
+#define SKIP_RETURN_CODE 2
 
 int main(int argc, const char* argv[])
 {
@@ -21,12 +21,14 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    printf("=== This program is used to test basic vector exception functionalities.\n");
+    printf("=== This program is used to test basic vector exception "
+           "functionalities.\n");
 
     const uint32_t flags = OE_GetCreateFlags();
     if ((flags & OE_FLAG_SIMULATE) != 0)
     {
-        printf("=== Skipped unsupported test in simulation mode (VectorException)\n");
+        printf("=== Skipped unsupported test in simulation mode "
+               "(VectorException)\n");
         return SKIP_RETURN_CODE;
     }
 
@@ -37,7 +39,8 @@ int main(int argc, const char* argv[])
     memset(&args, 0, sizeof(args));
     args.ret = -1;
 
-    if ((result = OE_CallEnclave(enclave, "TestVectorException", &args)) != OE_OK)
+    if ((result = OE_CallEnclave(enclave, "TestVectorException", &args)) !=
+        OE_OK)
         OE_PutErr("OE_CallEnclave() failed: result=%u", result);
 
     if (args.ret != 0)

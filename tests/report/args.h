@@ -14,7 +14,6 @@ typedef struct _Args
 
     /* Return result */
     OE_Result result;
-}
-Args;
+} Args;
 
 #endif /* _new_args_h */
