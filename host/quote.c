@@ -55,7 +55,7 @@ OE_Result SGX_GetQuoteSize(
     }
 
     /* Calculate variable size of EPID_Signature with N entries */
-    signatureSize = sizeof(EPID_Signature) + (n * sizeof(EPID_NRProof));
+    signatureSize = sizeof(SGX_EPID_Signature) + (n * sizeof(SGX_EPID_NRProof));
 
     *quoteSize = sizeof(SGX_Quote) + sizeof(SGX_WrapKey) + SGX_QUOTE_IV_SIZE +
                  sizeof(uint32_t) + signatureSize + SGX_MAC_SIZE;

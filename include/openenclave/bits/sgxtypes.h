@@ -745,7 +745,7 @@ typedef struct _SGX_SigRL
     uint16_t epidIdentifier;
 
     /* Signature revocation list implementation */
-    EPID_SigRL sigrl;
+    SGX_EPID_SigRL sigrl;
 
 } SGX_SigRL;
 OE_PACK_END
@@ -899,7 +899,7 @@ typedef struct _SGX_QuoteSignature
     uint32_t payload_size;
 
     /* (304) encrypted field */
-    EPID_BasicSignature basic_signature;
+    SGX_EPID_BasicSignature basic_signature;
 
     /* (656) encrypted field */
     uint32_t rl_ver;
