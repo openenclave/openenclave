@@ -535,7 +535,8 @@ OE_Result AESMGetQuote(
     const uint8_t* signatureRevocationList,
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut, /* ATTN: support this! */
-    SGX_Quote* quote)
+    SGX_Quote* quote,
+    size_t quoteSize)
 {
     uint64_t timeout = 15000;
     mem_t request = MEM_DYNAMIC_INIT;
@@ -544,10 +545,10 @@ OE_Result AESMGetQuote(
 
     /* Zero initialize the quote */
     if (quote)
-        memset(quote, 0, sizeof(SGX_Quote));
+        memset(quote, 0, quoteSize);
 
     /* Check for invalid parameters */
-    if (!_AESMValid(aesm) || !report || !spid || !quote)
+    if (!_AESMValid(aesm) || !report || !spid || !quote || !quoteSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Build the PAYLOAD */
@@ -577,7 +578,7 @@ OE_Result AESMGetQuote(
         }
 
         /* Pack QUOTE-SIZE */
-        OE_TRY(_PackVarInt(&request, 6, sizeof(SGX_Quote)));
+        OE_TRY(_PackVarInt(&request, 6, quoteSize));
 
         /* Pack boolean indicating whether REPORT-OUT is present */
         if (reportOut)
@@ -609,7 +610,7 @@ OE_Result AESMGetQuote(
         /* Unpack quote */
         OE_TRY(
             _UnpackLengthDelimited(
-                &response, &pos, 2, quote, sizeof(SGX_Quote)));
+                &response, &pos, 2, quote, quoteSize));
 
         /* Unpack optional reportOut */
         if (reportOut)

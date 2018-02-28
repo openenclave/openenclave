@@ -130,7 +130,7 @@ OE_Result OE_GetQuote(
     const void* report,
     size_t reportSize,
     void* quote,
-    size_t* quoteSize);
+    size_t* quoteSize); /* in-out */
 
 OE_EXTERNC_END
 

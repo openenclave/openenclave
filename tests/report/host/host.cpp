@@ -73,8 +73,23 @@ int main(int argc, const char* argv[])
 
     /* Get the quote */
     {
-        SGX_Quote quote;
-        memset(&quote, 0xDD, sizeof(quote));
+        SGX_Quote* quote;
+        size_t quoteSize;
+
+        /* Get the quote size without a signature revocation list */
+        if ((result = SGX_GetQuoteSize(NULL, &quoteSize)) != OE_OK)
+        {
+            OE_PutErr("SGX_GetQuoteSize(): result=%u", result);
+        }
+
+        /* Allocate the structure */
+        if (!(quote = (SGX_Quote*)malloc(quoteSize)))
+        {
+            OE_PutErr("malloc(): failed");
+        }
+
+        /* Clear the quote structure */
+        memset(quote, 0xDD, quoteSize);
 
         if ((result = SGX_GetQuote(
                  &args.report,
@@ -84,14 +99,18 @@ int main(int argc, const char* argv[])
                  NULL, /* signatureRevocationList */
                  0,    /* signatureRevocationListSize */
                  NULL, /* reportOut */
-                 &quote)) != OE_OK)
+                 quote,
+                 quoteSize)) != OE_OK)
         {
-            OE_PutErr("__SGX_GetQuote(): result=%u", result);
+            OE_PutErr("SGX_GetQuote(): result=%u", result);
         }
 
-#if 0
-        __OE_HexDump(&quote, sizeof(quote));
-#endif
+        /* Verify that quote contains report body */
+        assert(memcmp(&args.report.body, 
+            &quote->report_body, sizeof(SGX_ReportBody)) == 0);
+
+        /* Free the quote structure */
+        free(quote);
     }
 
     /* Terminate the enclave */

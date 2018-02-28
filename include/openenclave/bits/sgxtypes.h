@@ -7,6 +7,7 @@
 #include <openenclave/types.h>
 #include "jump.h"
 #include "load.h"
+#include "epid.h"
 
 OE_EXTERNC_BEGIN
 
@@ -30,6 +31,11 @@ OE_EXTERNC_BEGIN
 #define SGX_SECINFO_SECS 0x0000000000000000000
 #define SGX_SECINFO_TCS 0x0000000000000000100
 #define SGX_SECINFO_REG 0x0000000000000000200
+
+#define SGX_SE_EPID_SIG_RL_VERSION 0x200
+#define SGX_SE_EPID_SIG_RL_ID 0xE00
+
+#define SGX_QUOTE_IV_SIZE 12
 
 /* Rename OE_? types to SGX_? to make SGX types more explicit */
 
@@ -714,12 +720,52 @@ typedef struct _SGX_Quote
     /* (432) */
     uint32_t signature_len;
 
-    /* (436) Large enough to hold any signature type */
-    uint8_t signature[2048];
+    /* (436) signature array (varying length) */
+    OE_ZERO_SIZED_ARRAY uint8_t signature[];
 } SGX_Quote;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(SGX_Quote), 2484);
+OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
+
+/*
+**==============================================================================
+**
+** SGX_SigRL
+**
+**==============================================================================
+*/
+
+OE_PACK_BEGIN
+typedef struct _SGX_SigRL 
+{
+    /* big-endian */
+    uint16_t  protocolVersion; 
+
+    /* big-endian (14 for sig_rl) */
+    uint16_t  epidIdentifier;
+
+    /* Signature revocation list implementation */
+    EPID_SigRL sigrl;
+
+} SGX_SigRL;
+OE_PACK_END
+
+/*
+**==============================================================================
+**
+** SGX_WrapKey
+**
+**==============================================================================
+*/
+
+OE_PACK_BEGIN
+typedef struct _SGX_WrapKey
+{
+    uint8_t encrypted_key[256];
+    uint8_t key_hash[32];
+}
+SGX_WrapKey;
+OE_PACK_END
 
 /*
 **==============================================================================
@@ -803,7 +849,8 @@ OE_Result SGX_GetQuote(
     const uint8_t* signatureRevocationList,
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut,
-    SGX_Quote* quote);
+    SGX_Quote* quote,
+    size_t quoteSize);
 
 /*
 **==============================================================================
@@ -829,6 +876,57 @@ OE_Result SGX_CreateReport(
     const SGX_TargetInfo* targetInfo,
     const SGX_ReportData* reportData,
     SGX_Report* report);
+
+/*
+**==============================================================================
+**
+** SGX_QuoteSignature
+**
+**     Layout of signature obtained with SGX_GetQuote operation
+**
+**==============================================================================
+*/
+
+OE_PACK_BEGIN
+typedef struct _SGX_QuoteSignature
+{
+    /* (0) */
+    SGX_WrapKey wrap_key;
+    
+    /* (288) */
+    uint8_t iv[SGX_QUOTE_IV_SIZE];
+
+    /* (300) */
+    uint32_t payload_size;
+
+    /* (304) encrypted field */
+    EPID_BasicSignature basic_signature;
+
+    /* (656) encrypted field */
+    uint32_t rl_ver;
+
+    /* (660) encrypted field */
+    uint32_t rl_num;
+
+    /* (664) encrypted NRP followed by MAC */
+    uint8_t nrp_mac[];
+}
+SGX_QuoteSignature;
+OE_PACK_END
+
+OE_STATIC_ASSERT(sizeof(SGX_QuoteSignature) == 664);
+
+/*
+**==============================================================================
+**
+** SGX_GetQuoteSize()
+**
+**==============================================================================
+*/
+
+OE_Result SGX_GetQuoteSize(
+    const uint8_t* signatureRevocationList,
+    size_t* quoteSize);
 
 OE_EXTERNC_END
 
