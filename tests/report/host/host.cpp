@@ -73,8 +73,23 @@ int main(int argc, const char* argv[])
 
     /* Get the quote */
     {
-        SGX_Quote quote;
-        memset(&quote, 0xDD, sizeof(quote));
+        SGX_Quote* quote;
+        size_t quoteSize;
+
+        /* Get the quote size without a signature revocation list */
+        if ((result = SGX_GetQuoteSize(NULL, &quoteSize)) != OE_OK)
+        {
+            OE_PutErr("SGX_GetQuoteSize(): result=%u", result);
+        }
+
+        /* Allocate the structure */
+        if (!(quote = (SGX_Quote*)malloc(quoteSize)))
+        {
+            OE_PutErr("malloc(): failed");
+        }
+
+        /* Clear the quote structure */
+        memset(quote, 0xDD, quoteSize);
 
         if ((result = SGX_GetQuote(
                  &args.report,
@@ -84,15 +99,40 @@ int main(int argc, const char* argv[])
                  NULL, /* signatureRevocationList */
                  0,    /* signatureRevocationListSize */
                  NULL, /* reportOut */
-                 &quote,
-                 sizeof(SGX_Quote))) != OE_OK)
+                 quote,
+                 quoteSize)) != OE_OK)
         {
-            OE_PutErr("__SGX_GetQuote(): result=%u", result);
+            OE_PutErr("SGX_GetQuote(): result=%u", result);
         }
 
-#if 0
-        __OE_HexDump(&quote, sizeof(quote));
-#endif
+        /* Verify that quote contains report body */
+        assert(
+            memcmp(
+                &args.report.body,
+                &quote->report_body,
+                sizeof(SGX_ReportBody)) == 0);
+
+        /* Verify that quote type is correct */
+        assert(quote->sign_type == SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE);
+
+        /* Verify that signature length is non-zero */
+        assert(quote->signature_len != 0);
+
+        /* Verify that signature is not zero-filled */
+        {
+            const uint8_t* p = quote->signature;
+            const uint8_t* end = quote->signature + quote->signature_len;
+
+            /* Skip over zero bytes */
+            while (p != end && *p == '\0')
+                p++;
+
+            /* Fail if a non-zero byte was not found */
+            assert(p != end);
+        }
+
+        /* Free the quote structure */
+        free(quote);
     }
 
     /* Terminate the enclave */

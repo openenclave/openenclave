@@ -536,14 +536,19 @@ OE_Result AESMGetQuote(
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut, /* ATTN: support this! */
     SGX_Quote* quote,
-    uint32_t quoteSize)
+    size_t quoteSize)
 {
     uint64_t timeout = 15000;
     mem_t request = MEM_DYNAMIC_INIT;
     mem_t response = MEM_DYNAMIC_INIT;
     OE_Result result = OE_UNEXPECTED;
 
-    if (!_AESMValid(aesm))
+    /* Zero initialize the quote */
+    if (quote)
+        memset(quote, 0, quoteSize);
+
+    /* Check for invalid parameters */
+    if (!_AESMValid(aesm) || !report || !spid || !quote || !quoteSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Build the PAYLOAD */
@@ -576,17 +581,18 @@ OE_Result AESMGetQuote(
         OE_TRY(_PackVarInt(&request, 6, quoteSize));
 
         /* Pack boolean indicating whether REPORT-OUT is present */
-        OE_TRY(_PackVarInt(&request, 7, reportOut ? 1 : 0));
+        if (reportOut)
+            OE_TRY(_PackVarInt(&request, 7, 1));
 
         /* Pack TIMEOUT */
         OE_TRY(_PackVarInt(&request, 9, timeout));
     }
 
     /* Send the request to the AESM service */
-    OE_TRY(_WriteRequest(aesm, MESSAGE_TYPE_INIT_QUOTE, &request));
+    OE_TRY(_WriteRequest(aesm, MESSAGE_TYPE_GET_QUOTE, &request));
 
     /* Receive the response from AESM service */
-    OE_TRY(_ReadResponse(aesm, MESSAGE_TYPE_INIT_QUOTE, &response));
+    OE_TRY(_ReadResponse(aesm, MESSAGE_TYPE_GET_QUOTE, &response));
 
     /* Unpack the response */
     {
