@@ -608,9 +608,7 @@ OE_Result AESMGetQuote(
         }
 
         /* Unpack quote */
-        OE_TRY(
-            _UnpackLengthDelimited(
-                &response, &pos, 2, quote, quoteSize));
+        OE_TRY(_UnpackLengthDelimited(&response, &pos, 2, quote, quoteSize));
 
         /* Unpack optional reportOut */
         if (reportOut)

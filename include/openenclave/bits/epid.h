@@ -26,7 +26,7 @@ OE_EXTERNC_BEGIN
 
 /* 32-bit octet string */
 OE_PACK_BEGIN
-typedef struct _EPID_OctStr32 
+typedef struct _EPID_OctStr32
 {
     uint8_t data[32 / 8];
 } EPID_OctStr32;
@@ -34,7 +34,7 @@ OE_PACK_END
 
 /* 256-bit octet string */
 OE_PACK_BEGIN
-typedef struct _EPID_OctStr256 
+typedef struct _EPID_OctStr256
 {
     uint8_t data[256 / 8];
 } EPID_OctStr256;
@@ -49,7 +49,8 @@ OE_PACK_END
 */
 
 OE_PACK_BEGIN
-typedef struct _EPID_FqElemStr {
+typedef struct _EPID_FqElemStr
+{
     EPID_OctStr256 data;
 } EPID_FqElemStr;
 OE_PACK_END
@@ -63,8 +64,8 @@ OE_PACK_END
 */
 
 OE_PACK_BEGIN
-typedef struct _EPID_FpElemStr {
-
+typedef struct _EPID_FpElemStr
+{
     EPID_OctStr256 data;
 } EPID_FpElemStr;
 OE_PACK_END
@@ -104,8 +105,7 @@ typedef struct _EPID_BasicSignature
     EPID_FpElemStr sf;
     EPID_FpElemStr sa;
     EPID_FpElemStr sb;
-}
-EPID_BasicSignature;
+} EPID_BasicSignature;
 OE_PACK_END
 
 /*
@@ -117,7 +117,7 @@ OE_PACK_END
 */
 
 OE_PACK_BEGIN
-typedef struct _EPID_NRProof 
+typedef struct _EPID_NRProof
 {
     EPID_G1ElemStr T;
     EPID_FpElemStr c;
@@ -162,7 +162,7 @@ OE_PACK_END
 */
 
 OE_PACK_BEGIN
-typedef struct _EPID_SigRLEntry 
+typedef struct _EPID_SigRLEntry
 {
     EPID_G1ElemStr b;
     EPID_G1ElemStr k;

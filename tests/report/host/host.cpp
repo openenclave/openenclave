@@ -106,8 +106,11 @@ int main(int argc, const char* argv[])
         }
 
         /* Verify that quote contains report body */
-        assert(memcmp(&args.report.body, 
-            &quote->report_body, sizeof(SGX_ReportBody)) == 0);
+        assert(
+            memcmp(
+                &args.report.body,
+                &quote->report_body,
+                sizeof(SGX_ReportBody)) == 0);
 
         /* Free the quote structure */
         free(quote);

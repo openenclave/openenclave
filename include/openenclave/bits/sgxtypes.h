@@ -5,9 +5,9 @@
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
+#include "epid.h"
 #include "jump.h"
 #include "load.h"
-#include "epid.h"
 
 OE_EXTERNC_BEGIN
 
@@ -736,13 +736,13 @@ OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
 */
 
 OE_PACK_BEGIN
-typedef struct _SGX_SigRL 
+typedef struct _SGX_SigRL
 {
     /* big-endian */
-    uint16_t  protocolVersion; 
+    uint16_t protocolVersion;
 
     /* big-endian (14 for sig_rl) */
-    uint16_t  epidIdentifier;
+    uint16_t epidIdentifier;
 
     /* Signature revocation list implementation */
     EPID_SigRL sigrl;
@@ -763,8 +763,7 @@ typedef struct _SGX_WrapKey
 {
     uint8_t encrypted_key[256];
     uint8_t key_hash[32];
-}
-SGX_WrapKey;
+} SGX_WrapKey;
 OE_PACK_END
 
 /*
@@ -892,7 +891,7 @@ typedef struct _SGX_QuoteSignature
 {
     /* (0) */
     SGX_WrapKey wrap_key;
-    
+
     /* (288) */
     uint8_t iv[SGX_QUOTE_IV_SIZE];
 
@@ -910,8 +909,7 @@ typedef struct _SGX_QuoteSignature
 
     /* (664) encrypted NRP followed by MAC */
     uint8_t nrp_mac[];
-}
-SGX_QuoteSignature;
+} SGX_QuoteSignature;
 OE_PACK_END
 
 OE_STATIC_ASSERT(sizeof(SGX_QuoteSignature) == 664);

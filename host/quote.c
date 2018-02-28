@@ -1,9 +1,9 @@
+#include <limits.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
-#include <limits.h>
 
 OE_Result SGX_InitQuote(
     SGX_TargetInfo* targetInfo,
@@ -57,13 +57,8 @@ OE_Result SGX_GetQuoteSize(
     /* Calculate variable size of EPID_Signature with N entries */
     signatureSize = sizeof(EPID_Signature) + (n * sizeof(EPID_NRProof));
 
-    *quoteSize = 
-        sizeof(SGX_Quote) +
-        sizeof(SGX_WrapKey) +
-        SGX_QUOTE_IV_SIZE +
-        sizeof(uint32_t) +
-        signatureSize +
-        SGX_MAC_SIZE;
+    *quoteSize = sizeof(SGX_Quote) + sizeof(SGX_WrapKey) + SGX_QUOTE_IV_SIZE +
+                 sizeof(uint32_t) + signatureSize + SGX_MAC_SIZE;
 
     if (*quoteSize > (uint64_t)UINT_MAX)
         goto done;
