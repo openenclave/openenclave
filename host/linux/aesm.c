@@ -619,32 +619,6 @@ OE_Result AESMGetQuote(
         }
     }
 
-    /* Verify the signature type */
-    if (quote->sign_type != quoteType)
-        OE_TRY(OE_FAILURE);
-
-    /* Verify that the quote contains the original report */
-    if (memcmp(&report->body, &quote->report_body, sizeof(SGX_ReportBody)) != 0)
-        OE_THROW(OE_FAILURE);
-
-    /* Verify that signature length is non-zero */
-    if (quote->signature_len == 0)
-        OE_THROW(OE_FAILURE);
-
-    /* Verify that signature is not zero-filled */
-    {
-        const uint8_t* p = quote->signature;
-        const uint8_t* end = quote->signature + quote->signature_len;
-
-        /* Skip over zero bytes */
-        while (p != end && *p == '\0')
-            p++;
-
-        /* Fail if a non-zero byte was not found */
-        if (p == end)
-            OE_THROW(OE_FAILURE);
-    }
-
     result = OE_OK;
 
 OE_CATCH:

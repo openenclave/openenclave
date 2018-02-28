@@ -112,6 +112,25 @@ int main(int argc, const char* argv[])
                 &quote->report_body,
                 sizeof(SGX_ReportBody)) == 0);
 
+        /* Verify that quote type is correct */
+        assert(quote->sign_type == SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE);
+
+        /* Verify that signature length is non-zero */
+        assert(quote->signature_len != 0);
+
+        /* Verify that signature is not zero-filled */
+        {
+            const uint8_t* p = quote->signature;
+            const uint8_t* end = quote->signature + quote->signature_len;
+
+            /* Skip over zero bytes */
+            while (p != end && *p == '\0')
+                p++;
+
+            /* Fail if a non-zero byte was not found */
+            assert(p != end);
+        }
+
         /* Free the quote structure */
         free(quote);
     }
