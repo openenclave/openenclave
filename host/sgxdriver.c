@@ -129,7 +129,12 @@ static uint32_t _MakeMemoryProtectParam(const SecInfo* secinfo, bool simulate)
         }
         else
         {
-            return PAGE_ENCLAVE_THREAD_CONTROL;
+/*WINPORT2*/
+#if 0
+            return PAGE_ENCLAVE_THREAD_CONTROL | PAGE_READWRITE;
+#else
+            return PAGE_ENCLAVE_THREAD_CONTROL | PAGE_READWRITE;
+#endif
         }
     }
 

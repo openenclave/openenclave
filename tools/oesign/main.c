@@ -388,8 +388,14 @@ OE_Result _InitSigstruct(
     sigstruct->miscmask = 0xFFFFFFFF;
 
     /* SGX_SigStruct.attributes (ATTN: ?) */
+/*WINPORT2*/
+#if 0
     sigstruct->attributes.flags = 0x0000000000000004;
     sigstruct->attributes.xfrm = 0x0000000000000003;
+#else
+    sigstruct->attributes.flags = 0x0000000000000006;
+    sigstruct->attributes.xfrm = 0x0000000000000007;
+#endif
 
     /* SGX_SigStruct.attributemask (ATTN: ?) */
     sigstruct->attributemask.flags = 0xFFFFFFFFFFFFFFFd;
