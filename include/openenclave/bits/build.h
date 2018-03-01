@@ -1,10 +1,10 @@
 #ifndef _OE_BUILD_H
 #define _OE_BUILD_H
 
+#include <openenclave/bits/sha.h>
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
-#include <openenclave/bits/sha.h>
 #include "sgxdev.h"
 #include "sgxtypes.h"
 

@@ -10,7 +10,7 @@ typedef struct _OE_Jmpbuf
 {
     /* These are the registers that are preserved across function calls
      * according to the 'System V AMD64 ABI' calling conventions:
-     * RBX, RSP, RBP, R12, R13, R14, R15. In addition, OE_Setjmp() saves 
+     * RBX, RSP, RBP, R12, R13, R14, R15. In addition, OE_Setjmp() saves
      * the RIP register (intruction pointer) to know where to jump back to).
      */
     uint64_t rsp;
@@ -21,8 +21,7 @@ typedef struct _OE_Jmpbuf
     uint64_t r13;
     uint64_t r14;
     uint64_t r15;
-}
-OE_Jmpbuf;
+} OE_Jmpbuf;
 
 OE_CHECK_SIZE(sizeof(OE_Jmpbuf), 64);
 

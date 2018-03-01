@@ -1,15 +1,11 @@
 #include "files.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
-int LoadFile(
-    const char* path,
-    size_t extraBytes,
-    void** data,
-    size_t* size)
+int LoadFile(const char* path, size_t extraBytes, void** data, size_t* size)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -72,10 +68,7 @@ done:
     return rc;
 }
 
-int LoadFile(
-    const char* path,
-    size_t extraBytes,
-    std::vector<char>& v)
+int LoadFile(const char* path, size_t extraBytes, std::vector<char>& v)
 {
     void* data;
     size_t size;

@@ -1,8 +1,6 @@
 #include <openenclave/enclave.h>
 
-int OE_Once(
-    OE_OnceType* once, 
-    void (*func)(void))
+int OE_Once(OE_OnceType* once, void (*func)(void))
 {
     if (!once)
         return -1;

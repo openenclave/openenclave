@@ -1,10 +1,11 @@
 #ifndef _OE_SGXTYPES_H
 #define _OE_SGXTYPES_H
 
+#include <openenclave/bits/sha.h>
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
-#include <openenclave/bits/sha.h>
+#include "epid.h"
 #include "jump.h"
 #include "load.h"
 
@@ -13,23 +14,28 @@ OE_EXTERNC_BEGIN
 #define OE_KEY_SIZE 384
 #define OE_EXPONENT_SIZE 4
 
-#define SGX_FLAGS_INITTED               0x0000000000000001ULL
-#define SGX_FLAGS_DEBUG                 0x0000000000000002ULL
-#define SGX_FLAGS_MODE64BIT             0x0000000000000004ULL
-#define SGX_FLAGS_PROVISION_KEY         0x0000000000000010ULL
-#define SGX_FLAGS_EINITTOKEN_KEY        0x0000000000000020ULL
+#define SGX_FLAGS_INITTED 0x0000000000000001ULL
+#define SGX_FLAGS_DEBUG 0x0000000000000002ULL
+#define SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
+#define SGX_FLAGS_PROVISION_KEY 0x0000000000000010ULL
+#define SGX_FLAGS_EINITTOKEN_KEY 0x0000000000000020ULL
 
-#define SGX_XFRM_LEGACY                 0x0000000000000003ULL
-#define SGX_XFRM_AVX                    0x0000000000000006ULL
-#define SGX_XFRM_AVX512                 0x00000000000000E6ULL
-#define SGX_XFRM_MPX                    0x0000000000000018ULL
+#define SGX_XFRM_LEGACY 0x0000000000000003ULL
+#define SGX_XFRM_AVX 0x0000000000000006ULL
+#define SGX_XFRM_AVX512 0x00000000000000E6ULL
+#define SGX_XFRM_MPX 0x0000000000000018ULL
 
-#define SGX_SECINFO_R                   0x0000000000000000001
-#define SGX_SECINFO_W                   0x0000000000000000002
-#define SGX_SECINFO_X                   0x0000000000000000004
-#define SGX_SECINFO_SECS                0x0000000000000000000
-#define SGX_SECINFO_TCS                 0x0000000000000000100
-#define SGX_SECINFO_REG                 0x0000000000000000200
+#define SGX_SECINFO_R 0x0000000000000000001
+#define SGX_SECINFO_W 0x0000000000000000002
+#define SGX_SECINFO_X 0x0000000000000000004
+#define SGX_SECINFO_SECS 0x0000000000000000000
+#define SGX_SECINFO_TCS 0x0000000000000000100
+#define SGX_SECINFO_REG 0x0000000000000000200
+
+#define SGX_SE_EPID_SIG_RL_VERSION 0x200
+#define SGX_SE_EPID_SIG_RL_ID 0xE00
+
+#define SGX_QUOTE_IV_SIZE 12
 
 /* Rename OE_? types to SGX_? to make SGX types more explicit */
 
@@ -43,18 +49,16 @@ OE_EXTERNC_BEGIN
 
 #define ENCLU_INSTRUCTION 0xd7010f
 
-typedef enum _SGX_ENCLULeaf
-{
-    ENCLU_EREPORT       = 0x00,
-    ENCLU_EGETKEY       = 0x01,
-    ENCLU_EENTER        = 0x02,
-    ENCLU_ERESUME       = 0x03,
-    ENCLU_EEXIT         = 0x04,
-    ENCLU_EACCEPT       = 0x05,
-    ENCLU_EMODPE        = 0x06,
-    ENCLU_EACCEPTCOPY   = 0x07,
-}
-SGX_ENCLULeaf;
+typedef enum _SGX_ENCLULeaf {
+    ENCLU_EREPORT = 0x00,
+    ENCLU_EGETKEY = 0x01,
+    ENCLU_EENTER = 0x02,
+    ENCLU_ERESUME = 0x03,
+    ENCLU_EEXIT = 0x04,
+    ENCLU_EACCEPT = 0x05,
+    ENCLU_EMODPE = 0x06,
+    ENCLU_EACCEPTCOPY = 0x07,
+} SGX_ENCLULeaf;
 
 /*
 **==============================================================================
@@ -69,11 +73,10 @@ typedef struct _SGX_Attributes
 {
     uint64_t flags;
     uint64_t xfrm;
-}
-SGX_Attributes;
+} SGX_Attributes;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(SGX_Attributes),16);
+OE_CHECK_SIZE(sizeof(SGX_Attributes), 16);
 
 /*
 **==============================================================================
@@ -160,11 +163,10 @@ typedef struct _SGX_SigStruct
 
     /* (1424) Q2 value for RSA Signature Verification */
     uint8_t q2[OE_KEY_SIZE];
-}
-SGX_SigStruct;
+} SGX_SigStruct;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(SGX_SigStruct),1808);
+OE_CHECK_SIZE(sizeof(SGX_SigStruct), 1808);
 
 OE_INLINE const void* SGX_SigStructHeader(const SGX_SigStruct* ss)
 {
@@ -173,7 +175,7 @@ OE_INLINE const void* SGX_SigStructHeader(const SGX_SigStruct* ss)
 
 OE_INLINE size_t SGX_SigStructHeaderSize(void)
 {
-    return OE_OFFSETOF(SGX_SigStruct,modulus);
+    return OE_OFFSETOF(SGX_SigStruct, modulus);
 }
 
 OE_INLINE const void* SGX_SigStructBody(const SGX_SigStruct* ss)
@@ -183,12 +185,11 @@ OE_INLINE const void* SGX_SigStructBody(const SGX_SigStruct* ss)
 
 OE_INLINE size_t SGX_SigStructBodySize(void)
 {
-    return
-        OE_OFFSETOF(SGX_SigStruct,reserved4) - OE_OFFSETOF(SGX_SigStruct,miscselect);
+    return OE_OFFSETOF(SGX_SigStruct, reserved4) -
+           OE_OFFSETOF(SGX_SigStruct, miscselect);
 }
 
-void __SGX_DumpSigStruct(
-    const SGX_SigStruct* p);
+void __SGX_DumpSigStruct(const SGX_SigStruct* p);
 
 /*
 **==============================================================================
@@ -200,24 +201,23 @@ void __SGX_DumpSigStruct(
 
 typedef struct _SGX_Secs
 {
-    uint64_t size;            /* 0 */
-    uint64_t base;            /* 8 */
-    uint32_t ssaframesize;    /* 16 */
-    uint32_t misc_select;     /* 20 */
-    uint8_t reserved1[24];    /* 24 */
-    uint64_t flags;           /* 48 */
-    uint64_t xfrm;            /* 56 */
-    uint32_t mrenclave[8];    /* 64 */
-    uint8_t reserved2[32];    /* 96 */
-    uint32_t mrsigner[8];     /* 128 */
-    uint8_t reserved3[96];    /* 160 */
-    uint16_t isvvprodid;      /* 256 */
-    uint16_t isvsvn;          /* 258 */
-    uint8_t reserved[3836];   /* 260 */
-}
-SGX_Secs;
+    uint64_t size;          /* 0 */
+    uint64_t base;          /* 8 */
+    uint32_t ssaframesize;  /* 16 */
+    uint32_t misc_select;   /* 20 */
+    uint8_t reserved1[24];  /* 24 */
+    uint64_t flags;         /* 48 */
+    uint64_t xfrm;          /* 56 */
+    uint32_t mrenclave[8];  /* 64 */
+    uint8_t reserved2[32];  /* 96 */
+    uint32_t mrsigner[8];   /* 128 */
+    uint8_t reserved3[96];  /* 160 */
+    uint16_t isvvprodid;    /* 256 */
+    uint16_t isvsvn;        /* 258 */
+    uint8_t reserved[3836]; /* 260 */
+} SGX_Secs;
 
-OE_CHECK_SIZE(sizeof(SGX_Secs),4096);
+OE_CHECK_SIZE(sizeof(SGX_Secs), 4096);
 
 /*
 **==============================================================================
@@ -227,8 +227,7 @@ OE_CHECK_SIZE(sizeof(SGX_Secs),4096);
 **==============================================================================
 */
 
-typedef union
-{
+typedef union {
     struct
     {
         uint32_t vector : 8;
@@ -275,7 +274,6 @@ typedef struct SGX_SsaGpr
     uint64_t gSBase;
 } SGX_SsaGpr, *PSGX_SsaGpr;
 
-
 /*
 **==============================================================================
 **
@@ -287,8 +285,7 @@ typedef struct SGX_SsaGpr
 typedef struct _SGX_LaunchToken
 {
     unsigned char contents[1024];
-}
-SGX_LaunchToken;
+} SGX_LaunchToken;
 
 /*
 **==============================================================================
@@ -349,14 +346,12 @@ typedef struct _SGX_EInitToken
 
     /* (288) CMAC using Launch Token Key */
     uint8_t mac[SGX_MAC_SIZE];
-}
-SGX_EInitToken;
+} SGX_EInitToken;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(SGX_EInitToken),304);
+OE_CHECK_SIZE(sizeof(SGX_EInitToken), 304);
 
-void __SGX_DumpEinitToken(
-    const SGX_EInitToken* p);
+void __SGX_DumpEinitToken(const SGX_EInitToken* p);
 
 /*
 **==============================================================================
@@ -402,18 +397,15 @@ typedef struct _SGX_TCS
     uint32_t gslimit;
 
     /* (72) reserved */
-    union
-    {
+    union {
         uint8_t reserved[4024];
 
         /* (72) Enclave's OE_Main() function */
         void (*main)(void);
-    }
-    u;
-}
-SGX_TCS;
+    } u;
+} SGX_TCS;
 
-OE_CHECK_SIZE(sizeof(SGX_TCS),4096);
+OE_CHECK_SIZE(sizeof(SGX_TCS), 4096);
 OE_CHECK_SIZE(OE_OFFSETOF(SGX_TCS, state), 0);
 OE_CHECK_SIZE(OE_OFFSETOF(SGX_TCS, flags), 8);
 OE_CHECK_SIZE(OE_OFFSETOF(SGX_TCS, ossa), 16);
@@ -539,8 +531,7 @@ typedef struct _TD
 
     /* Reserved */
     uint8_t reserved[3768];
-}
-TD;
+} TD;
 
 OE_CHECK_SIZE(sizeof(TD), 4096);
 
@@ -560,8 +551,7 @@ typedef struct _OE_EnclaveSettings
     uint64_t numHeapPages;
     uint64_t numStackPages;
     uint64_t numTCS;
-}
-OE_EnclaveSettings;
+} OE_EnclaveSettings;
 
 /* Enclave signature section (.oesig) written to ELF-64 libraries */
 OE_PACK_BEGIN
@@ -570,8 +560,7 @@ typedef struct _OE_SignatureSection
     uint64_t magic;
     OE_EnclaveSettings settings;
     SGX_SigStruct sigstruct;
-}
-OE_SignatureSection;
+} OE_SignatureSection;
 OE_PACK_END
 
 /*
@@ -598,10 +587,9 @@ typedef struct _SGX_TargetInfo
 
     /* (56) Reserved */
     uint8_t reserved2[456];
-}
-SGX_TargetInfo;
+} SGX_TargetInfo;
 
-OE_CHECK_SIZE(sizeof(SGX_TargetInfo),512);
+OE_CHECK_SIZE(sizeof(SGX_TargetInfo), 512);
 
 /*
 **==============================================================================
@@ -614,10 +602,9 @@ OE_CHECK_SIZE(sizeof(SGX_TargetInfo),512);
 typedef struct _SGX_EPIDGroupID
 {
     uint8_t id[4];
-}
-SGX_EPIDGroupID;
+} SGX_EPIDGroupID;
 
-OE_CHECK_SIZE(sizeof(SGX_EPIDGroupID),4);
+OE_CHECK_SIZE(sizeof(SGX_EPIDGroupID), 4);
 
 /*
 **==============================================================================
@@ -630,10 +617,9 @@ OE_CHECK_SIZE(sizeof(SGX_EPIDGroupID),4);
 typedef struct _SGX_ReportData
 {
     unsigned char field[64];
-}
-SGX_ReportData;
+} SGX_ReportData;
 
-OE_CHECK_SIZE(sizeof(SGX_ReportData),64);
+OE_CHECK_SIZE(sizeof(SGX_ReportData), 64);
 
 /*
 **==============================================================================
@@ -680,8 +666,7 @@ typedef struct _SGX_ReportBody
 
     /* (320) User report data */
     SGX_ReportData reportData;
-}
-SGX_ReportBody;
+} SGX_ReportBody;
 
 typedef struct _SGX_Report
 {
@@ -693,10 +678,9 @@ typedef struct _SGX_Report
 
     /* (416) Message autentication code over fields of this structure */
     uint8_t mac[SGX_MAC_SIZE];
-}
-SGX_Report;
+} SGX_Report;
 
-OE_CHECK_SIZE(sizeof(SGX_Report),432);
+OE_CHECK_SIZE(sizeof(SGX_Report), 432);
 
 /*
 **==============================================================================
@@ -736,13 +720,51 @@ typedef struct _SGX_Quote
     /* (432) */
     uint32_t signature_len;
 
-    /* (436) */
-    uint8_t signature[82];
-}
-SGX_Quote;
+    /* (436) signature array (varying length) */
+    OE_ZERO_SIZED_ARRAY uint8_t signature[];
+} SGX_Quote;
 OE_PACK_END
 
-OE_CHECK_SIZE(sizeof(SGX_Quote),518);
+OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
+
+/*
+**==============================================================================
+**
+** SGX_SigRL
+**
+**==============================================================================
+*/
+
+OE_PACK_BEGIN
+typedef struct _SGX_SigRL
+{
+    /* big-endian */
+    uint16_t protocolVersion;
+
+    /* big-endian (14 for sig_rl) */
+    uint16_t epidIdentifier;
+
+    /* Signature revocation list implementation */
+    SGX_EPID_SigRL sigrl;
+
+} SGX_SigRL;
+OE_PACK_END
+
+/*
+**==============================================================================
+**
+** SGX_WrapKey
+**
+**==============================================================================
+*/
+
+OE_PACK_BEGIN
+typedef struct _SGX_WrapKey
+{
+    uint8_t encrypted_key[256];
+    uint8_t key_hash[32];
+} SGX_WrapKey;
+OE_PACK_END
 
 /*
 **==============================================================================
@@ -752,12 +774,10 @@ OE_CHECK_SIZE(sizeof(SGX_Quote),518);
 **==============================================================================
 */
 
-typedef enum _SGX_QuoteType
-{
+typedef enum _SGX_QuoteType {
     SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
     SGX_QUOTE_TYPE_LINKABLE_SIGNATURE,
-}
-SGX_QuoteType;
+} SGX_QuoteType;
 
 /*
 **==============================================================================
@@ -770,8 +790,7 @@ SGX_QuoteType;
 typedef struct _SGX_SPID
 {
     uint8_t id[16];
-}
-SGX_SPID;
+} SGX_SPID;
 
 /*
 **==============================================================================
@@ -784,8 +803,7 @@ SGX_SPID;
 typedef struct _SGX_Nonce
 {
     uint8_t rand[16];
-}
-SGX_Nonce;
+} SGX_Nonce;
 
 /*
 **==============================================================================
@@ -812,8 +830,7 @@ typedef struct _OE_ECallPages
 
     /* ECALL virtual addresses (index by function number) */
     OE_ZERO_SIZED_ARRAY uint64_t vaddrs[];
-}
-OE_ECallPages;
+} OE_ECallPages;
 
 /*
 **==============================================================================
@@ -832,7 +849,7 @@ OE_Result SGX_GetQuote(
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut,
     SGX_Quote* quote,
-    uint32_t quoteSize);
+    size_t quoteSize);
 
 /*
 **==============================================================================
@@ -858,6 +875,56 @@ OE_Result SGX_CreateReport(
     const SGX_TargetInfo* targetInfo,
     const SGX_ReportData* reportData,
     SGX_Report* report);
+
+/*
+**==============================================================================
+**
+** SGX_QuoteSignature
+**
+**     Layout of signature obtained with SGX_GetQuote operation
+**
+**==============================================================================
+*/
+
+OE_PACK_BEGIN
+typedef struct _SGX_QuoteSignature
+{
+    /* (0) */
+    SGX_WrapKey wrap_key;
+
+    /* (288) */
+    uint8_t iv[SGX_QUOTE_IV_SIZE];
+
+    /* (300) */
+    uint32_t payload_size;
+
+    /* (304) encrypted field */
+    SGX_EPID_BasicSignature basic_signature;
+
+    /* (656) encrypted field */
+    uint32_t rl_ver;
+
+    /* (660) encrypted field */
+    uint32_t rl_num;
+
+    /* (664) encrypted NRP followed by MAC */
+    uint8_t nrp_mac[];
+} SGX_QuoteSignature;
+OE_PACK_END
+
+OE_STATIC_ASSERT(sizeof(SGX_QuoteSignature) == 664);
+
+/*
+**==============================================================================
+**
+** SGX_GetQuoteSize()
+**
+**==============================================================================
+*/
+
+OE_Result SGX_GetQuoteSize(
+    const uint8_t* signatureRevocationList,
+    size_t* quoteSize);
 
 OE_EXTERNC_END
 

@@ -1,18 +1,18 @@
 #if 0
-#include <sys/mman.h>
-#include <sys/ioctl.h>
-#include <stdlib.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #endif
 
-#include <openenclave/host.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/bits/utils.h>
+#include <openenclave/host.h>
 
 typedef struct _OE_SGXMeasurer
 {
@@ -20,17 +20,14 @@ typedef struct _OE_SGXMeasurer
     unsigned int magic;
     OE_SHA256Context context;
     OE_SHA256 hash;
-}
-OE_SGXMeasurer;
+} OE_SGXMeasurer;
 
 static int _Ok(const OE_SGXMeasurer* driver)
 {
     return driver && driver->magic == SGX_MEASURER_MAGIC;
 }
 
-static void _MeasureECreate(
-    OE_SHA256Context* context,
-    uint64_t enclaveSize)
+static void _MeasureECreate(OE_SHA256Context* context, uint64_t enclaveSize)
 {
     const uint32_t ssaframesize = 1;
 
@@ -154,9 +151,7 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _GetHashProc(
-    OE_SGXDevice* dev,
-    OE_SHA256* hash)
+static OE_Result _GetHashProc(OE_SGXDevice* dev, OE_SHA256* hash)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;
@@ -172,8 +167,7 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _CloseProc(
-    OE_SGXDevice* dev)
+static OE_Result _CloseProc(OE_SGXDevice* dev)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;
@@ -189,8 +183,7 @@ OE_CATCH:
     return result;
 }
 
-static uint32_t _GetMagic(
-    const OE_SGXDevice* dev)
+static uint32_t _GetMagic(const OE_SGXDevice* dev)
 {
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;
 
@@ -202,7 +195,7 @@ static uint32_t _GetMagic(
 
 OE_SGXDevice* __OE_OpenSGXMeasurer()
 {
-    OE_SGXDevice* result = NULL; 
+    OE_SGXDevice* result = NULL;
     OE_SGXMeasurer* self;
 
     if (!(self = (OE_SGXMeasurer*)calloc(1, sizeof(OE_SGXMeasurer))))

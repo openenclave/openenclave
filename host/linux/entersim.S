@@ -84,7 +84,7 @@ OE_EnterSim:
     mov %rsi, ARG2OUT
 
     // Align the stack since enclave code change the host rsp for call out.
-    and $-16, %rsp 
+    and $-16, %rsp
 
     // Restore the saved host context.
     mov HOST_CONTEXT, %rdi

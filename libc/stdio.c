@@ -1,12 +1,12 @@
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <stdarg.h>
 #include <assert.h>
-#include <string.h>
-#include <openenclave/enclave.h>
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/print.h>
+#include <openenclave/enclave.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 #include "../3rdparty/musl/musl/src/internal/stdio_impl.h"
 
 FILE* const stdin = ((FILE*)0x10000000);
@@ -26,7 +26,7 @@ int putchar(int c)
 int vprintf(const char* fmt, va_list ap_)
 {
     char buf[256];
-    char *p = buf;
+    char* p = buf;
     int n;
 
     /* Try first with a fixed-length scratch buffer */
@@ -97,7 +97,7 @@ int fprintf(FILE* stream, const char* fmt, ...)
     {
         if (!(p = OE_StackAlloc(n + 1, 0)))
             return 0;
-        
+
         va_list ap;
         va_start(ap, fmt);
         n = vsnprintf(p, n + 1, fmt, ap);
@@ -111,41 +111,40 @@ int fprintf(FILE* stream, const char* fmt, ...)
 
 OE_WEAK_ALIAS(fprintf, __libcxxrt_fprintf);
 
-size_t __fwritex(const unsigned char *restrict s, size_t l, FILE *restrict f)
+size_t __fwritex(const unsigned char* restrict s, size_t l, FILE* restrict f)
 {
     return f->write(f, s, l);
 }
 
-int __lockfile(FILE *f)
+int __lockfile(FILE* f)
 {
     assert("__lockfile() panic" == NULL);
     return 0;
 }
 
-void __unlockfile(FILE *f)
+void __unlockfile(FILE* f)
 {
     assert("__unlockfile() panic" == NULL);
 }
 
-int __overflow(FILE *stream, int c)
+int __overflow(FILE* stream, int c)
 {
     return c;
 }
 
-int getc(FILE *stream)
+int getc(FILE* stream)
 {
     assert("getc() panic" == NULL);
     return 0;
 }
 
-int ungetc(int c, FILE *stream)
+int ungetc(int c, FILE* stream)
 {
     assert("ungetc() panic" == NULL);
     return -1;
 }
 
-size_t fwrite(
-    const void *ptr, size_t size, size_t nmemb, FILE *stream)
+size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)
 {
     if (stream == stdout)
     {
@@ -168,7 +167,7 @@ size_t fwrite(
     return 0;
 }
 
-int fflush(FILE *stream)
+int fflush(FILE* stream)
 {
     return 0;
 }

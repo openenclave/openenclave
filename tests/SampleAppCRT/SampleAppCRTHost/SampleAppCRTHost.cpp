@@ -1,6 +1,6 @@
 #include <limits.h>
-#include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
 
 int main(int argc, const char* argv[])
 {

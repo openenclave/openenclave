@@ -1,16 +1,10 @@
 #include <openenclave/enclave.h>
 
-const char *ProtectedMessage = "Hello world from Enclave\n\0";
+const char* ProtectedMessage = "Hello world from Enclave\n\0";
 
-int HostUnsecureStrPatching(
-    const char* src,
-    char* dst,
-    int dstLength);
+int HostUnsecureStrPatching(const char* src, char* dst, int dstLength);
 
-int SecureStrPatching(
-    const char* src,
-    char* dst,
-    int dstLength)
+int SecureStrPatching(const char* src, char* dst, int dstLength)
 {
     if (!OE_IsOutsideEnclave(dst, dstLength))
     {
@@ -20,7 +14,7 @@ int SecureStrPatching(
     {
         return -1;
     }
-    const char *runningSrc = src;
+    const char* runningSrc = src;
     int runningLength = dstLength;
     while (runningLength > 0 && *runningSrc != '\0')
     {
@@ -33,7 +27,7 @@ int SecureStrPatching(
             return -1;
         }
     }
-    const char *ptr = ProtectedMessage;
+    const char* ptr = ProtectedMessage;
     while (runningLength > 0 && *ptr != '\0')
     {
         *dst = *ptr;

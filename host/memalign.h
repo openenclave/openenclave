@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-void *OE_Memalign(size_t alignment, size_t size);
+void* OE_Memalign(size_t alignment, size_t size);
 
 void OE_MemalignFree(void* ptr);
 

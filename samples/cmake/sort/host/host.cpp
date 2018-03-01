@@ -1,11 +1,11 @@
-#include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
-#include <iostream>
-#include <climits>
-#include <cstring>
-#include <cstdio>
+#include <openenclave/host.h>
 #include <cassert>
+#include <climits>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <iostream>
 #include "../args.h"
 
 using namespace std;
@@ -39,7 +39,7 @@ int main(int argc, const char* argv[])
     {
         Args args;
 
-        size_t data[] = { 2, 1, 4, 5, 3, 10, 6, 7, 8, 9 };
+        size_t data[] = {2, 1, 4, 5, 3, 10, 6, 7, 8, 9};
         size_t size = OE_COUNTOF(data);
 
         args.data = data;

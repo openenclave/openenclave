@@ -37,7 +37,7 @@ OE_Result AESMGetQuote(
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut,
     SGX_Quote* quote,
-    uint32_t quoteSize);
+    size_t quoteSize);
 
 OE_EXTERNC_END
 

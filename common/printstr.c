@@ -1,11 +1,9 @@
 /**
- * This file is only intended as an include into typeinfo.c for 
+ * This file is only intended as an include into typeinfo.c for
  * defining char and wchar_t strings in the absence of templates in C.
  * FUNCTION, TYPE, PREFIX and FORMAT are all expected to be macro substitutions.
  */
-static void FUNCTION(
-    const TYPE* str,
-    size_t len)
+static void FUNCTION(const TYPE* str, size_t len)
 {
     size_t i;
 

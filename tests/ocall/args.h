@@ -1,15 +1,14 @@
 #ifndef _ocall_args_h
 #define _ocall_args_h
 
-#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/sgxtypes.h>
 
 #define TEST1_MAGIC 0xec9a613e
 
 typedef struct _Test1Args
 {
     void* self;
-
 
     /* --- Input arguments --- */
 
@@ -33,46 +32,39 @@ typedef struct _Test1Args
     void* func;
 
     int ret;
-}
-Test1Args;
+} Test1Args;
 
 typedef struct _Test2Args
 {
     long in;
     long out;
-}
-Test2Args;
+} Test2Args;
 
 typedef struct _TestAllocatorArgs
 {
     int ret;
-}
-TestAllocatorArgs;
+} TestAllocatorArgs;
 
 typedef struct _Func1Args
 {
     char buf[128];
-}
-Func1Args;
+} Func1Args;
 
 typedef struct _SetTSDArgs
 {
     void* value;
     int ret;
-}
-SetTSDArgs;
+} SetTSDArgs;
 
 typedef struct _GetTSDArgs
 {
     void* value;
     int ret;
-}
-GetTSDArgs;
+} GetTSDArgs;
 
 typedef struct _TestMyOCallArgs
 {
     uint64_t result;
-}
-TestMyOCallArgs;
+} TestMyOCallArgs;
 
 #endif /* _ocall_args_h */

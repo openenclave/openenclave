@@ -8,7 +8,6 @@ typedef struct _Args
     int depth;
     char* out;
     int ret;
-}
-Args;
+} Args;
 
 #endif /* _ARGS_H */

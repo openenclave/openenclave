@@ -1,18 +1,18 @@
-#include <sys/user.h>
-#include <sys/wait.h>
+#include "inferior_status.h"
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
-#include "inferior_status.h"
+#include <sys/user.h>
+#include <sys/wait.h>
 
 typedef struct _OE_Inferior_Info
 {
     struct _OE_Inferior_Info* next;
-    pid_t   pid;
-    long    flags;
+    pid_t pid;
+    long flags;
 } OE_Inferior_Info;
 
-static OE_Inferior_Info *g_inferior_info_head = NULL;
+static OE_Inferior_Info* g_inferior_info_head = NULL;
 static pthread_mutex_t inferior_info_lock;
 
 int _OE_TrackInferior(pid_t pid)
@@ -21,7 +21,7 @@ int _OE_TrackInferior(pid_t pid)
     pthread_mutex_lock(&inferior_info_lock);
 
     // Check if the inferior is already in the track list.
-    OE_Inferior_Info *inferior_info = g_inferior_info_head;
+    OE_Inferior_Info* inferior_info = g_inferior_info_head;
     while (inferior_info != NULL)
     {
         if (inferior_info->pid == pid)
@@ -56,8 +56,8 @@ int _OE_UntrackInferior(pid_t pid)
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
 
-    OE_Inferior_Info *prev_inferior_info = NULL;
-    OE_Inferior_Info *cur_inferior_info = g_inferior_info_head;
+    OE_Inferior_Info* prev_inferior_info = NULL;
+    OE_Inferior_Info* cur_inferior_info = g_inferior_info_head;
 
     while (cur_inferior_info != NULL)
     {
@@ -105,12 +105,12 @@ cleanup:
 **==============================================================================
 */
 
-int _OE_GetInferiorFlags(pid_t pid, long *flags)
+int _OE_GetInferiorFlags(pid_t pid, long* flags)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
 
-    OE_Inferior_Info *inferior_info = g_inferior_info_head;
+    OE_Inferior_Info* inferior_info = g_inferior_info_head;
     while (inferior_info != NULL)
     {
         if (inferior_info->pid == pid)
@@ -151,7 +151,7 @@ int _OE_SetInferiorFlags(pid_t pid, long flags)
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
 
-    OE_Inferior_Info *inferior_info = g_inferior_info_head;
+    OE_Inferior_Info* inferior_info = g_inferior_info_head;
     while (inferior_info != NULL)
     {
         if (inferior_info->pid == pid)

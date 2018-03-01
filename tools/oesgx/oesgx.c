@@ -7,21 +7,14 @@ typedef struct _Regs
     unsigned int ebx;
     unsigned int ecx;
     unsigned int edx;
-}
-Regs;
+} Regs;
 
 static void _CPUID(Regs* regs)
 {
     asm volatile(
         "cpuid"
-        :
-        "=a"(regs->eax),
-        "=b"(regs->ebx),
-        "=c"(regs->ecx),
-        "=d"(regs->edx)
-        :
-        "0"(regs->eax),
-        "2"(regs->ecx));
+        : "=a"(regs->eax), "=b"(regs->ebx), "=c"(regs->ecx), "=d"(regs->edx)
+        : "0"(regs->eax), "2"(regs->ecx));
 }
 
 #define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)
@@ -40,7 +33,7 @@ int main(int argc, const char* argv[])
 
     /* Figure out whether CPU supports SGX */
     {
-        Regs regs = { 0x7, 0, 0x0, 0 };
+        Regs regs = {0x7, 0, 0x0, 0};
 
         _CPUID(&regs);
 
@@ -53,7 +46,7 @@ int main(int argc, const char* argv[])
 
     /* Figure out whether CPU supports SGX-1 or SGX-2 */
     {
-        Regs regs = { 0x12, 0, 0x0, 0 };
+        Regs regs = {0x12, 0, 0x0, 0};
 
         _CPUID(&regs);
 
@@ -68,7 +61,7 @@ int main(int argc, const char* argv[])
             return 0;
         }
     }
-       
+
     printf("0\n");
 
     return 0;

@@ -1,7 +1,7 @@
 #include <assert.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
 #include "../args.h"
 
 OE_INLINE bool IsReallocBufferTestInitialized(void* ptr, size_t size)
@@ -32,7 +32,7 @@ int main(int argc, const char* argv[])
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
     TestHostReallocArgs args;
-    
+
     /* OE_HostRealloc with null ptr should behave like malloc */
     {
         args.inPtr = NULL;
@@ -80,8 +80,8 @@ int main(int argc, const char* argv[])
         assert(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
     }
 
-    /* OE_HostRealloc to 0 size should free the pointer 
-     * This is not a behavior specified by C-standard, but we assert it for 
+    /* OE_HostRealloc to 0 size should free the pointer
+     * This is not a behavior specified by C-standard, but we assert it for
      * consistency between compilers for enclave use.
      */
     {
@@ -95,7 +95,7 @@ int main(int argc, const char* argv[])
     }
 
     /* OE_HostRealloc of pointer from calloc.
-     * Note that OE_HostRealloc of host allocated buffers is not generally 
+     * Note that OE_HostRealloc of host allocated buffers is not generally
      * supported, but in this case OE_HostMalloc uses the same static-linked
      * libc in host anyway.
      */
@@ -109,7 +109,7 @@ int main(int argc, const char* argv[])
         OE_Result result = OE_CallEnclave(enclave, "TestHostRealloc", &args);
         assert(result == OE_OK);
 
-        /* Resulting buffer should retain its original zero contents from calloc */
+        // Resulting buffer should retain its original zero contents from calloc
         assert(args.outPtr);
         uint8_t* outBytes = (uint8_t*)args.outPtr;
         for (uint32_t i = 0; i < args.oldSize; i++)
@@ -117,7 +117,8 @@ int main(int argc, const char* argv[])
             assert(outBytes[i] == 0);
         }
 
-        /* TestHostRealloc only writes init value into expanded area for this check */
+        /* TestHostRealloc only writes init value into expanded area for this
+         * check */
         assert(outBytes[args.oldSize] == TEST_HOSTREALLOC_INIT_VALUE);
 
         free(args.outPtr);

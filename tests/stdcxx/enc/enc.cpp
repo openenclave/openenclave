@@ -1,10 +1,10 @@
+#include <openenclave/bits/atexit.h>
+#include <openenclave/enclave.h>
+#include <iostream>
+#include <map>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <iostream>
-#include <sstream>
-#include <map>
-#include <openenclave/enclave.h>
-#include <openenclave/bits/atexit.h>
 #include "../args.h"
 
 #define BROKEN
@@ -18,11 +18,11 @@ static string _str;
 
 class X
 {
-public:
+  public:
     X() : _x(0)
     {
     }
-    
+
     virtual ~X()
     {
     }
@@ -31,15 +31,14 @@ public:
     {
     }
 
-private:
+  private:
     int _x;
 };
 
 class Y : public X
 {
-public:
-
-    Y() : X() 
+  public:
+    Y() : X()
     {
     }
 
@@ -54,14 +53,13 @@ public:
 
 class G
 {
-public:
-
+  public:
     G()
     {
         numConstructions++;
         printf("G::G()\n");
     }
-    
+
     ~G()
     {
         numDestructions++;
@@ -114,7 +112,7 @@ OE_ECALL void Test(void* args_)
 
     /* Try maps */
     {
-        map<string,int> m;
+        map<string, int> m;
         m["red"] = 0;
         m["green"] = 1;
         m["blue"] = 2;
@@ -144,7 +142,7 @@ OE_ECALL void Test(void* args_)
             return;
         }
 
-        delete [] p;
+        delete[] p;
     }
 
     /* Test virtual destructors */
@@ -167,7 +165,9 @@ OE_ECALL void Test(void* args_)
 
     /* Test exceptions */
     {
-        struct E { };
+        struct E
+        {
+        };
 
         try
         {
@@ -197,15 +197,13 @@ OE_ECALL void Test(void* args_)
     args->ret = 0;
 }
 
-__attribute__((constructor))
-void Constructor(void)
+__attribute__((constructor)) void Constructor(void)
 {
     OE_HostPrintf("Constructor()\n");
     assert(numConstructions == 0);
 }
 
-__attribute__((destructor))
-void Destructor(void)
+__attribute__((destructor)) void Destructor(void)
 {
     OE_HostPrintf("Destructor()\n");
     assert(numConstructions == 6);

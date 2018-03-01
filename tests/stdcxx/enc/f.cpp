@@ -6,14 +6,13 @@ extern size_t numDestructions;
 
 class F
 {
-public:
-
+  public:
     F()
     {
         numConstructions++;
         printf("F::F()\n");
     }
-    
+
     ~F()
     {
         numDestructions++;
@@ -24,4 +23,3 @@ public:
 F _f0;
 F _f1;
 F _f2;
-

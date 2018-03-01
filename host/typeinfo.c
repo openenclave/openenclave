@@ -1,2 +1,2 @@
-#include <openenclave/host.h>
 #include "../common/typeinfo.c"
+#include <openenclave/host.h>

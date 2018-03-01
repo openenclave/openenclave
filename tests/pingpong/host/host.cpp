@@ -1,18 +1,16 @@
 #include <limits.h>
-#include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
 #include "pingpong_u.h"
 
 static bool gotPong = false;
 
-OE_EXTERNC void Log(
-    const char *str,
-    uint64_t x)
+OE_EXTERNC void Log(const char* str, uint64_t x)
 {
     printf("LOG: %s: %lu\n", str, x);
 }
 
-void Pong(const char *in, char *out)
+void Pong(const char* in, char* out)
 {
     // printf("Pong: %s %s\n", in, out);
 

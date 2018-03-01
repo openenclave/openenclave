@@ -1,6 +1,6 @@
+#include <openenclave/bits/aesm.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <openenclave/bits/aesm.h>
 
 int main(int argc, const char* argv[])
 {

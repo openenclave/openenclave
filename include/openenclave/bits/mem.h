@@ -1,20 +1,20 @@
 #ifndef _MEM_H
 #define _MEM_H
 
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef __cplusplus
-# define MEM_INLINE inline
+#define MEM_INLINE inline
 #else
-# define MEM_INLINE static __inline
+#define MEM_INLINE static __inline
 #endif
 
 #ifdef __GNUC__
-# define MEM_PRINTF_FORMAT(N,M) __attribute__((format(printf, N, M)))
+#define MEM_PRINTF_FORMAT(N, M) __attribute__((format(printf, N, M)))
 #else
-# define MEM_PRINTF_FORMAT(N,M)
+#define MEM_PRINTF_FORMAT(N, M)
 #endif
 
 /* mem_t.__magic */
@@ -22,27 +22,25 @@
 
 /* mem_t.__cap */
 #ifndef MEM_MIN_CAP
-# define MEM_MIN_CAP 32
+#define MEM_MIN_CAP 32
 #endif
 
 #define MEM_NPOS ((size_t)-1)
 
 #ifndef MEM_REALLOC
-# define MEM_REALLOC realloc
+#define MEM_REALLOC realloc
 #endif
 
 #ifndef MEM_FREE
-# define MEM_FREE free
+#define MEM_FREE free
 #endif
 
 /* mem_t.__type */
-typedef enum _mem_type_t
-{
+typedef enum _mem_type_t {
     MEM_TYPE_NONE = 1,
     MEM_TYPE_DYNAMIC = 1,
     MEM_TYPE_STATIC = 4
-}
-mem_type_t;
+} mem_type_t;
 
 typedef struct _mem_t
 {
@@ -51,12 +49,17 @@ typedef struct _mem_t
     unsigned char* __ptr;
     size_t __size;
     size_t __cap;
-}
-mem_t;
+} mem_t;
 
-#define MEM_NULL_INIT { 0, 0, NULL, 0 }
+#define MEM_NULL_INIT \
+    {                 \
+        0, 0, NULL, 0 \
+    }
 
-#define MEM_DYNAMIC_INIT { MEM_MAGIC, MEM_TYPE_DYNAMIC, NULL, 0 }
+#define MEM_DYNAMIC_INIT                     \
+    {                                        \
+        MEM_MAGIC, MEM_TYPE_DYNAMIC, NULL, 0 \
+    }
 
 MEM_INLINE int mem_ok(const mem_t* mem)
 {
@@ -64,11 +67,7 @@ MEM_INLINE int mem_ok(const mem_t* mem)
 }
 
 /* Dynamic initializer */
-MEM_INLINE int mem_dynamic(
-    mem_t* mem,
-    void* ptr,
-    size_t size,
-    size_t cap)
+MEM_INLINE int mem_dynamic(mem_t* mem, void* ptr, size_t size, size_t cap)
 {
     if (!mem || (ptr && cap == 0))
         return -1;
@@ -191,9 +190,7 @@ MEM_INLINE size_t mem_cap(const mem_t* mem)
     return mem->__cap;
 }
 
-MEM_INLINE int mem_reserve(
-    mem_t* mem,
-    size_t cap)
+MEM_INLINE int mem_reserve(mem_t* mem, size_t cap)
 {
     if (!mem_ok(mem))
         return -1;
@@ -227,9 +224,7 @@ MEM_INLINE int mem_reserve(
     return 0;
 }
 
-MEM_INLINE int mem_resize(
-    mem_t* mem,
-    size_t size)
+MEM_INLINE int mem_resize(mem_t* mem, size_t size)
 {
     if (!mem_ok(mem))
         return -1;
@@ -248,8 +243,7 @@ MEM_INLINE int mem_resize(
     return 0;
 }
 
-MEM_INLINE int mem_clear(
-    mem_t* mem)
+MEM_INLINE int mem_clear(mem_t* mem)
 {
     if (!mem_ok(mem))
         return -1;
@@ -258,10 +252,7 @@ MEM_INLINE int mem_clear(
     return 0;
 }
 
-MEM_INLINE int mem_cpy(
-    mem_t* mem,
-    const void* ptr,
-    size_t size)
+MEM_INLINE int mem_cpy(mem_t* mem, const void* ptr, size_t size)
 {
     if (!mem_ok(mem))
         return -1;
@@ -275,11 +266,7 @@ MEM_INLINE int mem_cpy(
     return 0;
 }
 
-MEM_INLINE int mem_set(
-    mem_t* mem,
-    size_t pos,
-    unsigned char c,
-    size_t size)
+MEM_INLINE int mem_set(mem_t* mem, size_t pos, unsigned char c, size_t size)
 {
     if (!mem_ok(mem))
         return -1;
@@ -356,9 +343,7 @@ MEM_INLINE int mem_cat(
     return mem_append(mem, ptr, size);
 }
 
-MEM_INLINE int mem_catc(
-    mem_t* mem,
-    unsigned char c)
+MEM_INLINE int mem_catc(mem_t* mem, unsigned char c)
 {
     return mem_append(mem, &c, 1);
 }
@@ -371,10 +356,7 @@ MEM_INLINE int mem_prepend(
     return mem_insert(mem, 0, ptr, size);
 }
 
-MEM_INLINE int mem_remove(
-    mem_t* mem,
-    size_t pos,
-    size_t size)
+MEM_INLINE int mem_remove(mem_t* mem, size_t pos, size_t size)
 {
     size_t rem;
 

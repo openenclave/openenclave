@@ -1,7 +1,7 @@
 #ifdef OE_BUILD_ENCLAVE
-# include <openenclave/enclave.h>
+#include <openenclave/enclave.h>
 #else
-# include <openenclave/host.h>
+#include <openenclave/host.h>
 #endif
 
 /* Set the spinlock value to 1 and return the old value */
@@ -13,13 +13,10 @@ static unsigned int _spin_set_locked(OE_Spinlock* spinlock)
     asm volatile(
         "lock xchg %2, %1;"
         "mov %2, %0"
-        : 
-        "=m" (oldValue)  /* %0 */
-        : 
-        "m" (*spinlock), /* %1 */
-        "r" (newValue)   /* %2 */
-        : 
-        "memory");
+        : "=m"(oldValue)  /* %0 */
+        : "m"(*spinlock), /* %1 */
+          "r"(newValue)   /* %2 */
+        : "memory");
 
     return oldValue;
 }
@@ -43,7 +40,7 @@ int OE_SpinLock(OE_Spinlock* spinlock)
             {
                 /* Yield to CPU */
                 asm volatile("pause");
-            } 
+            }
         }
     }
 

@@ -1,12 +1,12 @@
 #include "element.h"
 #include <expat.h>
-#include <iostream>
+#include <cassert>
+#include <cctype>
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
-#include <cassert>
-#include <cstdarg>
-#include <cctype>
 #include <cstring>
+#include <iostream>
 
 using namespace std;
 
@@ -25,12 +25,12 @@ static string _TrimString(const string& s)
 
     size_t last = r.size();
 
-    while (last > 0 && isspace(r[last-1]))
+    while (last > 0 && isspace(r[last - 1]))
     {
         last--;
         r.erase(last);
     }
-     
+
     return r;
 }
 
@@ -96,8 +96,7 @@ static void _PrintString(ostream& os, const char* s)
 
 class Indent
 {
-public:
-
+  public:
     Indent(size_t depth) : _depth(depth)
     {
     }
@@ -112,12 +111,12 @@ public:
         _depth--;
     }
 
-    size_t depth() const 
-    { 
-        return _depth; 
+    size_t depth() const
+    {
+        return _depth;
     }
 
-private:
+  private:
     size_t _depth;
 };
 
@@ -140,17 +139,16 @@ ostream& operator<<(ostream& os, const Indent& indent)
 Attribute::Attribute(const std::string& name, const std::string& value)
     : _name(name), _value(value)
 {
-
 }
 
-const std::string& Attribute::name() const 
-{ 
-    return _name; 
+const std::string& Attribute::name() const
+{
+    return _name;
 }
 
-const std::string& Attribute::value() const 
-{ 
-    return _value; 
+const std::string& Attribute::value() const
+{
+    return _value;
 }
 
 void Attribute::dump(std::ostream& os, size_t depth) const
@@ -249,54 +247,54 @@ Element::Element()
 {
 }
 
-const std::string& Element::name() const 
-{ 
-    return _name; 
+const std::string& Element::name() const
+{
+    return _name;
 }
 
-void Element::name(const std::string& name) 
-{ 
-    _name = name; 
+void Element::name(const std::string& name)
+{
+    _name = name;
 }
 
 const Attributes& Element::attrs() const
-{ 
-    return _attrs; 
+{
+    return _attrs;
 }
 
-void Element::attrs(const Attributes& attrs) 
-{ 
-    _attrs = attrs; 
+void Element::attrs(const Attributes& attrs)
+{
+    _attrs = attrs;
 }
 
-const std::string& Element::chars() const 
-{ 
-    return _chars; 
+const std::string& Element::chars() const
+{
+    return _chars;
 }
 
-std::string& Element::chars() 
-{ 
-    return _chars; 
+std::string& Element::chars()
+{
+    return _chars;
 }
 
-void Element::chars(const std::string& chars) 
+void Element::chars(const std::string& chars)
 {
     _chars = _TrimString(chars);
 }
 
-void Element::append(const Element& elem) 
-{ 
-    _children.push_back(elem); 
+void Element::append(const Element& elem)
+{
+    _children.push_back(elem);
 }
 
-size_t Element::size() const 
-{ 
-    return _children.size(); 
+size_t Element::size() const
+{
+    return _children.size();
 }
 
-const Element& Element::operator[](size_t i) const 
-{ 
-    return _children[i]; 
+const Element& Element::operator[](size_t i) const
+{
+    return _children[i];
 }
 
 const Element& Element::operator[](const std::string& name) const
@@ -339,8 +337,8 @@ void Element::dump(std::ostream& os, size_t depth) const
 }
 
 bool Element::search(
-    const std::string& xmlpath, 
-    const std::string& key, 
+    const std::string& xmlpath,
+    const std::string& key,
     Element& elem) const
 {
     size_t dot = xmlpath.find('.');
@@ -382,9 +380,8 @@ bool Element::search(
     return false;
 }
 
-void Element::find(
-    const std::string& name,
-    std::vector<Element>& elements) const
+void Element::find(const std::string& name, std::vector<Element>& elements)
+    const
 {
     elements.clear();
 
@@ -412,20 +409,17 @@ typedef struct _Context
 {
     Element root;
     std::stack<Element> stack;
-}
-Context;
+} Context;
 
-static void XMLCALL _HandleStart(
-    void *userData_, 
-    const XML_Char *name, 
-    const XML_Char **attrs)
+static void XMLCALL
+_HandleStart(void* userData_, const XML_Char* name, const XML_Char** attrs)
 {
     Context* context = (Context*)userData_;
 
     Element element;
     element.name(name);
     element.attrs(Attributes(attrs));
-    
+
 #if 0
     if (!context->stack.empty())
         context->stack.top().append(element);
@@ -434,19 +428,14 @@ static void XMLCALL _HandleStart(
     context->stack.push(element);
 }
 
-static void XMLCALL _HandleChars(
-    void *userData_,
-    const XML_Char* s,
-    int len)
+static void XMLCALL _HandleChars(void* userData_, const XML_Char* s, int len)
 {
     Context* context = (Context*)userData_;
     Element& element = context->stack.top();
     element.chars() += string(s, len);
 }
 
-static void XMLCALL _HandleEnd(
-    void *userData_,
-    const XML_Char *name)
+static void XMLCALL _HandleEnd(void* userData_, const XML_Char* name)
 {
     Context* context = (Context*)userData_;
 
@@ -465,10 +454,7 @@ static void XMLCALL _HandleEnd(
     }
 }
 
-bool Element::parse(
-    const std::string& path, 
-    Element& root,
-    Error& error)
+bool Element::parse(const std::string& path, Element& root, Error& error)
 {
     bool result = false;
     XML_Parser parser = NULL;
@@ -513,8 +499,7 @@ bool Element::parse(
                 XML_GetCurrentLineNumber(parser));
             goto done;
         }
-    }
-    while (!done);
+    } while (!done);
 
     root = context.root;
     result = true;

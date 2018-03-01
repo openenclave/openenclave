@@ -81,7 +81,7 @@ Tok Lexer::_Next()
         while (isalnum(*_p) || *_p == '_')
             _p++;
 
-        if (this->SetText(start, _p  - start) != 0)
+        if (this->SetText(start, _p - start) != 0)
             goto done;
 
         /* Determine token type */
@@ -117,7 +117,7 @@ Tok Lexer::_Next()
         while (isdigit(*_p))
             _p++;
 
-        if (this->SetText(start, _p  - start) != 0)
+        if (this->SetText(start, _p - start) != 0)
             goto done;
 
         tok = this->tok = TOK_NUMBER;
@@ -140,7 +140,7 @@ Tok Lexer::_Next()
 
         _p++;
 
-        if (this->SetText(start, _p  - start) != 0)
+        if (this->SetText(start, _p - start) != 0)
             goto done;
 
         tok = this->tok = TOK_STRING;

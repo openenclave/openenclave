@@ -12,8 +12,7 @@ typedef struct _OE_Reloc
     uint64_t offset;
     uint64_t info;
     int64_t addend;
-}
-OE_Reloc;
+} OE_Reloc;
 
 OE_EXTERNC_END
 

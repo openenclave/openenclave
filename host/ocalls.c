@@ -1,19 +1,19 @@
 #if defined(__linux__)
-# define __OE_NEED_TIME_CALLS
+#define __OE_NEED_TIME_CALLS
 #endif
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 #if defined(__linux__)
-# include <time.h>
-# include <sys/time.h>
-# include <stdlib.h>
-# include <linux/futex.h>
-# include <unistd.h>
-# include <sys/syscall.h>
+#include <linux/futex.h>
+#include <stdlib.h>
+#include <sys/syscall.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 #elif defined(_WIN32)
-# include <Windows.h>
+#include <Windows.h>
 #endif
 
 #include <openenclave/host.h>

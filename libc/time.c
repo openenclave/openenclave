@@ -1,14 +1,14 @@
 #define __OE_NEED_TIME_CALLS
 #define _GNU_SOURCE
-#include <sys/time.h>
-#include <time.h>
 #include <assert.h>
+#include <openenclave/bits/calls.h>
+#include <openenclave/enclave.h>
 #include <stdint.h>
 #include <string.h>
-#include <openenclave/enclave.h>
-#include <openenclave/bits/calls.h>
+#include <sys/time.h>
+#include <time.h>
 
-time_t time(time_t *tloc)
+time_t time(time_t* tloc)
 {
     struct timeval tv;
 
@@ -41,7 +41,11 @@ int gettimeofday(struct timeval* tv, void* tz)
     if (tz)
         args->tz = NULL;
 
-    if (OE_OCall(OE_FUNC_GETTIMEOFDAY, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (OE_OCall(
+            OE_FUNC_GETTIMEOFDAY,
+            (uint64_t)args,
+            NULL,
+            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         goto done;
 
     if (args->ret == 0)
@@ -63,7 +67,7 @@ done:
     return ret;
 }
 
-int clock_gettime(clockid_t clk_id, struct timespec *tp)
+int clock_gettime(clockid_t clk_id, struct timespec* tp)
 {
     size_t ret = -1;
     OE_ClockgettimeArgs* args = NULL;
@@ -75,7 +79,11 @@ int clock_gettime(clockid_t clk_id, struct timespec *tp)
     args->clk_id = clk_id;
     args->tp = tp ? &args->tpbuf : NULL;
 
-    if (OE_OCall(OE_FUNC_CLOCK_GETTIME, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (OE_OCall(
+            OE_FUNC_CLOCK_GETTIME,
+            (uint64_t)args,
+            NULL,
+            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         goto done;
 
     if (args->ret == 0)
@@ -94,11 +102,7 @@ done:
     return ret;
 }
 
-size_t strftime(
-    char *str,
-    size_t max,
-    const char *format,
-    const struct tm *tm)
+size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
 {
     size_t ret = 0;
     OE_StrftimeArgs* a = NULL;
@@ -114,7 +118,9 @@ size_t strftime(
 
     memcpy(&a->tm, tm, sizeof(struct tm));
 
-    if (OE_OCall(OE_FUNC_STRFTIME, (uint64_t)a, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (OE_OCall(
+            OE_FUNC_STRFTIME, (uint64_t)a, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
+        OE_OK)
         goto done;
 
     if (strlcpy(str, a->str, max) >= max)
@@ -134,16 +140,16 @@ done:
 }
 
 size_t strftime_l(
-    char *s,
+    char* s,
     size_t max,
-    const char *format,
-    const struct tm *tm,
+    const char* format,
+    const struct tm* tm,
     locale_t loc)
 {
     return strftime(s, max, format, tm);
 }
 
-int nanosleep(const struct timespec *req, struct timespec *rem)
+int nanosleep(const struct timespec* req, struct timespec* rem)
 {
     size_t ret = -1;
     OE_NanosleepArgs* args = NULL;
@@ -162,7 +168,11 @@ int nanosleep(const struct timespec *req, struct timespec *rem)
     if (rem)
         args->rem = &args->rembuf;
 
-    if (OE_OCall(OE_FUNC_NANOSLEEP, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (OE_OCall(
+            OE_FUNC_NANOSLEEP,
+            (uint64_t)args,
+            NULL,
+            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         goto done;
 
     if (args->ret == 0)

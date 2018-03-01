@@ -3,11 +3,12 @@
 apt-get -y install gcc
 apt-get -y install g++
 apt-get -y install make
+apt-get -y install clang-format
 apt-get -y install cmake
-apt-get -y install automake
-apt-get -y install autoconf
-apt-get -y install libtool
+# Needed for 3rdparty/libcxx/update.make 
 apt-get -y install subversion
+# Needed for oesign
 apt-get -y install openssl
 apt-get -y install libssl-dev
+# Needed for dox2md document generation
 apt-get -y install libexpat1-dev

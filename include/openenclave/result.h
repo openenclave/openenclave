@@ -14,8 +14,7 @@ OE_EXTERNC_BEGIN
 /**
  * Result codes.
  */
-typedef enum _OE_Result
-{
+typedef enum _OE_Result {
     OE_OK,
     OE_FAILURE,
     OE_BUFFER_TOO_SMALL,
@@ -46,8 +45,7 @@ typedef enum _OE_Result
     OE_OUT_OF_RANGE,
     OE_ALREADY_IN_USE,
     OE_SERVICE_UNAVAILABLE,
-}
-OE_Result;
+} OE_Result;
 
 /**
  * Retrieves a string for a result code.
@@ -60,8 +58,7 @@ OE_Result;
  * @returns Returns a pointer to a static string description.
  *
  */
-const char* OE_ResultStr(
-    OE_Result result);
+const char* OE_ResultStr(OE_Result result);
 
 OE_EXTERNC_END
 

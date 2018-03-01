@@ -1,5 +1,5 @@
 
-extern "C" __attribute__((section (".ecall"))) void __Ping(void* args);
+extern "C" __attribute__((section(".ecall"))) void __Ping(void* args);
 
 int main()
 {

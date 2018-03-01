@@ -6,7 +6,6 @@
 typedef struct _TestPrintArgs
 {
     int rc;
-}
-TestPrintArgs;
+} TestPrintArgs;
 
 #endif /* _stdc_args_h */

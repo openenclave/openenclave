@@ -1,11 +1,11 @@
-#include <stdlib.h>
 #include <assert.h>
+#include <openenclave/bits/calls.h>
+#include <openenclave/enclave.h>
 #include <signal.h>
 #include <stdio.h>
-#include <openenclave/enclave.h>
-#include <openenclave/bits/calls.h>
-#include "../host/ocalls.h"
+#include <stdlib.h>
 #include "../host/args.h"
+#include "../host/ocalls.h"
 
 extern const char* __test__;
 
@@ -49,7 +49,9 @@ OE_ECALL void Test(Args* args)
     if (args)
     {
         printf("RUNNING: %s\n", __TEST__NAME);
-        static const char* argv[] = { "test", NULL, };
+        static const char* argv[] = {
+            "test", NULL,
+        };
         static int argc = sizeof(argv) / sizeof(argv[0]);
         args->ret = main(argc, argv);
         args->test = OE_HostStrdup(__TEST__NAME);

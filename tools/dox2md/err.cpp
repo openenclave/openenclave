@@ -1,10 +1,9 @@
-#include <cstdio>
 #include <cstdarg>
+#include <cstdio>
 
 extern const char* arg0;
 
-__attribute__((format(printf, 1, 2)))
-void err(const char* fmt, ...)
+__attribute__((format(printf, 1, 2))) void err(const char* fmt, ...)
 {
     va_list ap;
 

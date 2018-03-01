@@ -1,11 +1,11 @@
-#include <cstring>
+#include <assert.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <assert.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
+#include <cstring>
 #include "../args.h"
 
 static bool _func1Called = false;
@@ -15,7 +15,7 @@ OE_OCALL void Func1(void* args)
     _func1Called = true;
 }
 
-void MyOCall(uint64_t argIn, uint64_t *argOut)
+void MyOCall(uint64_t argIn, uint64_t* argOut)
 {
     if (argOut)
         *argOut = argIn * 7;
@@ -25,7 +25,7 @@ static bool _func2Ok;
 
 OE_OCALL void Func2(void* args)
 {
-    //unsigned char* buf = (unsigned char*)args;
+    // unsigned char* buf = (unsigned char*)args;
     _func2Ok = true;
 }
 

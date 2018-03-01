@@ -12,11 +12,11 @@
 */
 
 #if defined(MAX_PATH)
-# define OE_MAX_PATH MAX_PATH
+#define OE_MAX_PATH MAX_PATH
 #elif defined(PATH_MAX)
-# define OE_MAX_PATH PATH_MAX
+#define OE_MAX_PATH PATH_MAX
 #else
-# define OE_MAX_PATH 1024
+#define OE_MAX_PATH 1024
 #endif
 
 /*
@@ -74,9 +74,8 @@ typedef long long ptrdiff_t;
 #define OE_I64X_F "%I64x"
 
 #else
-# error "unknown compiler - please adapt basic types"
+#error "unknown compiler - please adapt basic types"
 #endif
-
 
 /* Some basic verifications */
 OE_STATIC_ASSERT(sizeof(void*) == 8);
@@ -92,9 +91,9 @@ OE_STATIC_ASSERT(sizeof(uintptr_t) == sizeof(void*));
 OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 
 #ifndef __cplusplus
-# define true 1
-# define false 0
-# define bool _Bool
+#define true 1
+#define false 0
+#define bool _Bool
 #endif
 
 /*
@@ -105,8 +104,7 @@ OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 **==============================================================================
 */
 
-typedef enum _OE_TYPE
-{
+typedef enum _OE_TYPE {
     OE_NONE_T,
     OE_CHAR_T,
     OE_UCHAR_T,
@@ -132,8 +130,7 @@ typedef enum _OE_TYPE
     OE_SSIZE_T,
     OE_STRUCT_T,
     OE_VOID_T,
-}
-OE_Type;
+} OE_Type;
 
 /*
 **==============================================================================
@@ -158,8 +155,7 @@ typedef void (*OE_DeallocProc)(void* ptr);
 typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
 {
     unsigned char data[OE_PAGE_SIZE];
-}
-OE_Page;
+} OE_Page;
 
 OE_STATIC_ASSERT(__alignof(OE_Page) == OE_PAGE_SIZE);
 
@@ -189,7 +185,6 @@ typedef struct _OE_OCallContext
 {
     uintptr_t rbp;
     uintptr_t ret;
-}
-OE_OCallContext;
+} OE_OCallContext;
 
 #endif /* _OE_TYPES_H */
