@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <limits.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/host.h>
 
@@ -354,7 +355,7 @@ OE_Result AESMGetQuote(
     uint32_t signatureRevocationListSize,
     SGX_Report* reportOut, /* ATTN: support this! */
     SGX_Quote* quote,
-    uint32_t quoteSize)
+    size_t quoteSize)
 {
     OE_Result result = OE_UNEXPECTED;
     aesm_error_t error;
@@ -365,6 +366,9 @@ OE_Result AESMGetQuote(
 
     /* Obtain AESM COM instance */
     if (!(instance = _CreateInstance()))
+        goto done;
+
+    if (quoteSize > UINT_MAX)
         goto done;
 
     // Get quote for a given report.
@@ -382,7 +386,7 @@ OE_Result AESMGetQuote(
         (uint8_t*)reportOut,               /* qe_report */
         sizeof(SGX_Report),                /* qe_report_size */
         (uint8_t*)quote,                   /* quote */
-        quoteSize,                         /* buffer_size */
+        (uint32_t)quoteSize,               /* buffer_size */
         &error);
 
     if (!SUCCEEDED(hr) || error != 0)

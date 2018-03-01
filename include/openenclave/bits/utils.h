@@ -61,6 +61,7 @@ OE_INLINE uint32_t OE_ByteSwap32(uint32_t x)
 #if defined(__GNUC__)
     return __builtin_bswap32(x);
 #elif defined(_WIN32)
+    unsigned long _byteswap_ulong(unsigned long val);
     return _byteswap_ulong(x);
 #endif
 }
