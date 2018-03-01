@@ -135,7 +135,7 @@ static OE_Result _PackBytes(
     OE_Result result = OE_UNEXPECTED;
     unsigned char tag = _MakeTag(fieldnum, WIRETYPE_LENGTH_DELIMITED);
 
-    if (mem_cat(buf, &tag, 1) != 0)
+    if (mem_cat(buf, &tag, sizeof(tag)) != 0)
         OE_THROW(OE_FAILURE);
 
     if (_PackVariantUint32(buf, size) != 0)
