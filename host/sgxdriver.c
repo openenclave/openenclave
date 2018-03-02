@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #if defined(__linux__)
 #include <fcntl.h>
@@ -166,6 +167,7 @@ static uint32_t _MakeMemoryProtectParam(const SecInfo* secinfo, bool simulate)
             return PAGE_READONLY;
     }
 
+assert(0);
     return PAGE_NOACCESS;
 
 #endif
@@ -317,7 +319,7 @@ static int _IoctlReal(Self* self, unsigned long request, void* param)
             if (!(secs = (SGX_Secs*)p->src))
                 return -1;
 
-            if (!secs->base || !secs->size)
+            if (!secs->size)
                 return -1;
 
             /* Ask OS to create the enclave */
@@ -360,12 +362,20 @@ static int _IoctlReal(Self* self, unsigned long request, void* param)
             SIZE_T num_bytes = 0;
             DWORD enclaveError;
 
+            DWORD protect = _MakeMemoryProtectParam(secinfo, false);
+
+            if (p->mrmask != 0xffff)
+            {
+                /* Do not extend (measure) this page */
+                protect |= PAGE_ENCLAVE_UNVALIDATED;
+            }
+
             if (!LoadEnclaveData(
                     GetCurrentProcess(),
                     addr,
                     src,
                     OE_PAGE_SIZE,
-                    _MakeMemoryProtectParam(secinfo, false),
+                    protect,
                     NULL,
                     0,
                     &num_bytes,
@@ -397,6 +407,7 @@ static int _IoctlReal(Self* self, unsigned long request, void* param)
                     sizeof(info),
                     &enclaveError))
             {
+printf("enclaveError=%u\n", enclaveError);
                 return -1;
             }
 
