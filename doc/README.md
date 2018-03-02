@@ -16,6 +16,13 @@ $ pip install grip
 $ grip GettingStarted.md --export GettingStarted.html
 ```
 
+[Getting Started on Windows](GettingStarted.windows.md)
+-----------------------------------
+
+This document explains how to use the experimental support for building host
+applications on Windows that can use enclaves created with the Open Enclave
+SDK.
+
 [Open Enclave Design Overview](DesignOverview.pdf)
 ------------------------------
 
