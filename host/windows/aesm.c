@@ -361,14 +361,20 @@ OE_Result AESMGetQuote(
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 
-    if (!_AESMValid(aesm))
+    if (quoteSize > UINT_MAX)
+    {
+        result = OE_INVALID_PARAMETER;
         goto done;
+    }
+
+    if (!_AESMValid(aesm))
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
 
     /* Obtain AESM COM instance */
     if (!(instance = _CreateInstance()))
-        goto done;
-
-    if (quoteSize > UINT_MAX)
         goto done;
 
     // Get quote for a given report.
