@@ -388,8 +388,8 @@ OE_Result _InitSigstruct(
     sigstruct->miscmask = 0xFFFFFFFF;
 
     /* SGX_SigStruct.attributes (ATTN: ?) */
-    sigstruct->attributes.flags = 0x0000000000000006;
-    sigstruct->attributes.xfrm = 0x0000000000000007;
+    sigstruct->attributes.flags = SGX_ATTRIBUTES_DEFAULT_FLAGS;
+    sigstruct->attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
     /* SGX_SigStruct.attributemask (ATTN: ?) */
     sigstruct->attributemask.flags = 0xFFFFFFFFFFFFFFFd;
