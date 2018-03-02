@@ -1,5 +1,6 @@
 #include "asmdefs.h"
 #include <openenclave/bits/context.inc>
+#include "asmcommon.inc"
 
 //==============================================================================
 //
@@ -35,6 +36,11 @@ OE_Main:
 .cfi_startproc
 
 .save_host_registers:
+    // Backup the current host rbp and rsp to previous.
+    mov %gs:TD_host_rbp, %r8
+    mov %r8, %gs:TD_host_previous_rbp
+    mov %gs:TD_host_rsp, %r8
+    mov %r8, %gs:TD_host_previous_rsp
 
     // Save host registers (restored on EEXIT)
     mov %rcx, %gs:TD_host_rcx // host return address here
@@ -184,19 +190,7 @@ OE_Main:
 .clear_enclave_registers:
 
     // Clear these so information will not be leaked to host
-    xor %rcx, %rcx
-    xor %rdx, %rdx
-    xor %r8,  %r8
-    xor %r9,  %r9
-    xor %r10, %r10
-    xor %r11, %r11
-    xor %r12, %r12
-    xor %r13, %r13
-    xor %r14, %r14
-    xor %r15, %r15
-
-    // Reset status flags
-    add %rdx, %rdx
+    _oe_cleanup_registers
 
 .restore_host_registers:
 

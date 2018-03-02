@@ -80,23 +80,23 @@
  */
 
 #if defined(QUEUE_MACRO_DEBUG) || (defined(_KERNEL) && defined(DIAGNOSTIC))
-#define _Q_INVALIDATE(a) (a) = ((void *)-1)
+#define _OE_Q_INVALIDATE(a) (a) = ((void *)-1)
 #else
-#define _Q_INVALIDATE(a)
+#define _OE_Q_INVALIDATE(a)
 #endif
 
 /*
  * Singly-linked List definitions.
  */
-#define SLIST_HEAD(name, type)						\
+#define OE_SLIST_HEAD(name, type)						\
 struct name {								\
 	struct type *slh_first;	/* first element */			\
 }
 
-#define	SLIST_HEAD_INITIALIZER(head)					\
+#define	OE_SLIST_HEAD_INITIALIZER(head)					\
 	{ NULL }
 
-#define SLIST_ENTRY(type)						\
+#define OE_SLIST_ENTRY(type)						\
 struct {								\
 	struct type *sle_next;	/* next element */			\
 }
@@ -104,49 +104,49 @@ struct {								\
 /*
  * Singly-linked List access methods.
  */
-#define	SLIST_FIRST(head)	((head)->slh_first)
-#define	SLIST_END(head)		NULL
-#define	SLIST_EMPTY(head)	(SLIST_FIRST(head) == SLIST_END(head))
-#define	SLIST_NEXT(elm, field)	((elm)->field.sle_next)
+#define	OE_SLIST_FIRST(head)	((head)->slh_first)
+#define	OE_SLIST_END(head)		NULL
+#define	OE_SLIST_EMPTY(head)	(OE_SLIST_FIRST(head) == OE_SLIST_END(head))
+#define	OE_SLIST_NEXT(elm, field)	((elm)->field.sle_next)
 
-#define	SLIST_FOREACH(var, head, field)					\
-	for((var) = SLIST_FIRST(head);					\
-	    (var) != SLIST_END(head);					\
-	    (var) = SLIST_NEXT(var, field))
+#define	OE_SLIST_FOREACH(var, head, field)					\
+	for((var) = OE_SLIST_FIRST(head);					\
+	    (var) != OE_SLIST_END(head);					\
+	    (var) = OE_SLIST_NEXT(var, field))
 
-#define	SLIST_FOREACH_SAFE(var, head, field, tvar)			\
-	for ((var) = SLIST_FIRST(head);				\
-	    (var) && ((tvar) = SLIST_NEXT(var, field), 1);		\
+#define	OE_SLIST_FOREACH_SAFE(var, head, field, tvar)			\
+	for ((var) = OE_SLIST_FIRST(head);				\
+	    (var) && ((tvar) = OE_SLIST_NEXT(var, field), 1);		\
 	    (var) = (tvar))
 
 /*
  * Singly-linked List functions.
  */
-#define	SLIST_INIT(head) {						\
-	SLIST_FIRST(head) = SLIST_END(head);				\
+#define	OE_SLIST_INIT(head) {						\
+	OE_SLIST_FIRST(head) = OE_SLIST_END(head);				\
 }
 
-#define	SLIST_INSERT_AFTER(slistelm, elm, field) do {			\
+#define	OE_SLIST_INSERT_AFTER(slistelm, elm, field) do {			\
 	(elm)->field.sle_next = (slistelm)->field.sle_next;		\
 	(slistelm)->field.sle_next = (elm);				\
 } while (0)
 
-#define	SLIST_INSERT_HEAD(head, elm, field) do {			\
+#define	OE_SLIST_INSERT_HEAD(head, elm, field) do {			\
 	(elm)->field.sle_next = (head)->slh_first;			\
 	(head)->slh_first = (elm);					\
 } while (0)
 
-#define	SLIST_REMOVE_AFTER(elm, field) do {				\
+#define	OE_SLIST_REMOVE_AFTER(elm, field) do {				\
 	(elm)->field.sle_next = (elm)->field.sle_next->field.sle_next;	\
 } while (0)
 
-#define	SLIST_REMOVE_HEAD(head, field) do {				\
+#define	OE_SLIST_REMOVE_HEAD(head, field) do {				\
 	(head)->slh_first = (head)->slh_first->field.sle_next;		\
 } while (0)
 
-#define SLIST_REMOVE(head, elm, type, field) do {			\
+#define OE_SLIST_REMOVE(head, elm, type, field) do {			\
 	if ((head)->slh_first == (elm)) {				\
-		SLIST_REMOVE_HEAD((head), field);			\
+		OE_SLIST_REMOVE_HEAD((head), field);			\
 	} else {							\
 		struct type *curelm = (head)->slh_first;		\
 									\
@@ -155,7 +155,7 @@ struct {								\
 		curelm->field.sle_next =				\
 		    curelm->field.sle_next->field.sle_next;		\
 	}								\
-	_Q_INVALIDATE((elm)->field.sle_next);				\
+	_OE_Q_INVALIDATE((elm)->field.sle_next);				\
 } while (0)
 
 /*
@@ -227,8 +227,8 @@ struct {								\
 		(elm)->field.le_next->field.le_prev =			\
 		    (elm)->field.le_prev;				\
 	*(elm)->field.le_prev = (elm)->field.le_next;			\
-	_Q_INVALIDATE((elm)->field.le_prev);				\
-	_Q_INVALIDATE((elm)->field.le_next);				\
+	_OE_Q_INVALIDATE((elm)->field.le_prev);				\
+	_OE_Q_INVALIDATE((elm)->field.le_next);				\
 } while (0)
 
 #define LIST_REPLACE(elm, elm2, field) do {				\
@@ -237,8 +237,8 @@ struct {								\
 		    &(elm2)->field.le_next;				\
 	(elm2)->field.le_prev = (elm)->field.le_prev;			\
 	*(elm2)->field.le_prev = (elm2);				\
-	_Q_INVALIDATE((elm)->field.le_prev);				\
-	_Q_INVALIDATE((elm)->field.le_next);				\
+	_OE_Q_INVALIDATE((elm)->field.le_prev);				\
+	_OE_Q_INVALIDATE((elm)->field.le_next);				\
 } while (0)
 
 /*
@@ -505,8 +505,8 @@ struct {								\
 	else								\
 		(head)->tqh_last = (elm)->field.tqe_prev;		\
 	*(elm)->field.tqe_prev = (elm)->field.tqe_next;			\
-	_Q_INVALIDATE((elm)->field.tqe_prev);				\
-	_Q_INVALIDATE((elm)->field.tqe_next);				\
+	_OE_Q_INVALIDATE((elm)->field.tqe_prev);				\
+	_OE_Q_INVALIDATE((elm)->field.tqe_next);				\
 } while (0)
 
 #define TAILQ_REPLACE(head, elm, elm2, field) do {			\
@@ -517,8 +517,8 @@ struct {								\
 		(head)->tqh_last = &(elm2)->field.tqe_next;		\
 	(elm2)->field.tqe_prev = (elm)->field.tqe_prev;			\
 	*(elm2)->field.tqe_prev = (elm2);				\
-	_Q_INVALIDATE((elm)->field.tqe_prev);				\
-	_Q_INVALIDATE((elm)->field.tqe_next);				\
+	_OE_Q_INVALIDATE((elm)->field.tqe_prev);				\
+	_OE_Q_INVALIDATE((elm)->field.tqe_next);				\
 } while (0)
 
 #define TAILQ_CONCAT(head1, head2, field) do {				\

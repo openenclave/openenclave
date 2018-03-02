@@ -1,8 +1,8 @@
 #include <openenclave/bits/aesm.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
-#include <openenclave/bits/hexdump.h>
 #include <openenclave/host.h>
 #include <sys/socket.h>
 #include <sys/types.h>

@@ -28,7 +28,7 @@ THREAD_DATA_HEADER_FORMAT = 'Q'
 TD_OFFSET_FROM_TCS =  0X4000
 
 # This constant definition must align with TD structure in bits\sgxtypes.h.
-TD_CALLSITE_OFFSET = 0X130
+TD_CALLSITE_OFFSET = 0XF0
 
 # This constant definition must align with Callsite structure in enclave\td.h.
 CALLSITE_OCALLCONTEXT_OFFSET = 0X40

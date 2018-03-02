@@ -34,14 +34,16 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
     if ((exitAddress == (uint64_t)OE_AEP) && (exitCode == ENCLU_ERESUME))
     {
         // Call-in enclave to handle the exception.
-        uint64_t arg1 = OE_MakeCallArg1(
-            OE_CODE_ECALL, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0);
-        uint64_t arg2 = 0;
-        uint64_t arg3 = 0;
-        uint64_t arg4 = 0;
+        OE_Enclave* enclave = _OE_QueryEnclaveInstance((void*)tcsAddress);
+        if (enclave == NULL)
+        {
+            abort();
+        }
 
-        OE_Enter((void*)tcsAddress, OE_AEP, arg1, arg2, &arg3, &arg4, NULL);
-        if (arg4 == OE_EXCEPTION_CONTINUE_EXECUTION)
+        uint64_t argOut = 0;
+        OE_Result result =
+            OE_ECall(enclave, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0, &argOut);
+        if (result == OE_OK || argOut == OE_EXCEPTION_CONTINUE_EXECUTION)
         {
             // This exception has been handled by the enclave. Let's resume.
             return;
@@ -153,14 +155,7 @@ static void _RegisterSignalHandlers(void)
 }
 
 // The exception only need to be initialized once per process.
-static OE_H_OnceType _enclave_exception_once;
-
-static void _InitializeException(void)
-{
-    _RegisterSignalHandlers();
-}
-
 void _OE_InitializeHostException()
 {
-    OE_H_Once(&_enclave_exception_once, _InitializeException);
+    _RegisterSignalHandlers();
 }

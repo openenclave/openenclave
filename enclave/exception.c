@@ -238,6 +238,14 @@ void _OE_ExceptionDispatcher(OE_CONTEXT* oe_context)
     // Jump to the point where oe_context refers to and continue.
     if (handler_ret == OE_EXCEPTION_CONTINUE_EXECUTION)
     {
+        // Refer to OE_Enter in host/enter.S. The contract we defined for EENTER
+        // is the RBP should not change after return from EENTER.
+        // When the exception is handled, restores the host RBP, RSP to the
+        // value when regular ECALL happens before first pass exception 
+        // handling.
+        td->host_rbp = td->host_previous_rbp;
+        td->host_rsp = td->host_previous_rsp;
+
         OE_ContinueExecution(oe_exception_record.context);
 
         // Code should never run to here.
@@ -320,3 +328,31 @@ void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
     *argOut = OE_EXCEPTION_CONTINUE_EXECUTION;
     return;
 }
+
+#pragma GCC push_options
+#pragma GCC target("xsave")
+/*
+**==============================================================================
+**
+** void _OE_CleanupXStates(void)
+**
+**  Cleanup all XSTATE registers that include both legacy registers and extended
+**  registers.
+**
+**==============================================================================
+*/
+
+void _OE_CleanupXStates(void)
+{
+    OE_ALIGNED(XSAVE_ALIGNMENT)
+    uint8_t xsave_area[MINIMAL_XSTATE_AREA_LENGTH] = {0};
+    uint64_t restore_mask = ~((uint64_t)0x0);
+
+    // The legacy registers(F87, SSE) values will be loaded from the
+    // LEGACY_XSAVE_AREA that at beginning of xsave_area.The extended registers
+    // will be initialized to their default values.
+    __builtin_ia32_xrstor64(xsave_area, restore_mask);
+
+    return;
+}
+#pragma GCC pop_options

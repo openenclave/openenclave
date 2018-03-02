@@ -1,7 +1,7 @@
 #include <openenclave/bits/elf.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
-#include <openenclave/bits/hexdump.h>
 #include <openenclave/defs.h>
 #include <stdarg.h>
 #include <string.h>
