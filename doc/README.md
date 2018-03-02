@@ -3,18 +3,22 @@ doc
 
 This directory contains all documentation for the Open Enclave SDK.
 
+[Contributing to Open Enclave](Contributing.md)
+------------------------------
+
+This document discusses the guidelines and expectations for contributing to the
+Open Enclave SDK.
+
+[Development Guide](DevelopmentGuide.md)
+-------------------
+
+This document provides guidelines for developing code in the Open Enclave repo,
+such as style guides and development processes.
+
 [Getting Started with Open Enclave](GettingStarted.md)
 -----------------------------------
 
-This document explains how to build and use the Open Enclave SDK. It is
-maintained as Markdown and can be updated in plaintext, and developers can
-convert it to a format of their choice. For example, to convert MD into HTML:
-
-```
-$ sudo apt install python-pip
-$ pip install grip
-$ grip GettingStarted.md --export GettingStarted.html
-```
+This document explains how to build and use the Open Enclave SDK.
 
 [Getting Started on Windows](GettingStarted.windows.md)
 -----------------------------------
@@ -36,5 +40,17 @@ design overview is updated.
 ---------------------------------
 
 The API reference for the Open Enclave SDK is generated using Doxygen in the
-refman/ subfolder. For more details on how to update the API reference using
+`refman` subfolder. For more details on how to update the API reference using
 Doxygen, refer to [Using Doxygen in Open Enclave](doxygen-howto.md).
+
+### Converting MD to HMTL
+
+While we maintain most documents in as Markdown for ease of updating,
+developers who wish to read them in HTML format can convert them easily.
+For example, to convert GettingStarted.md into HTML:
+
+```
+$ sudo apt install python-pip
+$ pip install grip
+$ grip GettingStarted.md --export GettingStarted.html
+```

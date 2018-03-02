@@ -1,7 +1,5 @@
 Open Enclave SDK
-===============
-
-# Open Enclave
+================
 
 Introduction
 ------------
@@ -15,7 +13,8 @@ secrets will not be compromised.
 
 The current implementation of Open Enclave is built on the Intel Software Guard
 Extensions (SGX), although Open Enclave may support other memory protection
-architectures in the future, such as Microsoft Virtual Secure Mode.
+architectures in the future, such as Microsoft Virtualization Based Security
+(VBS).
 
 Documentation
 -------------
@@ -160,6 +159,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 ```
+
+Contributing
+------------
+See [Contributing to Open Enclave](doc/Contributing.md) for information about
+contributing to the Open Enclave project.
+
+See the [Development Guide](doc/DevelopmentGuide.md) for details about developing
+code in this repo, such as coding style and development processes.
 
 Code of Conduct
 ---------------
