@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #if defined(__linux__)
 #include <fcntl.h>
@@ -162,7 +161,6 @@ static uint32_t _MakeMemoryProtectParam(const SecInfo* secinfo, bool simulate)
             return PAGE_READONLY;
     }
 
-assert(0);
     return PAGE_NOACCESS;
 
 #endif
