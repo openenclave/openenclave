@@ -1,6 +1,7 @@
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/defs.h>
 #include <stdarg.h>
 #include <string.h>
@@ -92,10 +93,10 @@ void DumpSignatureSection(Elf64* elf)
     printf("numTCS=%lu\n", s.settings.numTCS);
 
     printf("mrenclave=");
-    __OE_HexDump(&s.sigstruct.enclavehash, sizeof(s.sigstruct.enclavehash));
+    OE_HexDump(&s.sigstruct.enclavehash, sizeof(s.sigstruct.enclavehash));
 
     printf("signature=");
-    __OE_HexDump(&s.sigstruct.signature, sizeof(s.sigstruct.signature));
+    OE_HexDump(&s.sigstruct.signature, sizeof(s.sigstruct.signature));
 
     printf("\n");
 

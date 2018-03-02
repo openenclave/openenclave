@@ -3,6 +3,7 @@
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/utils.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/host.h>
 #include <cassert>
 #include <cstdio>
@@ -49,7 +50,7 @@ int main(int argc, const char* argv[])
     }
 
 #if 0
-    __OE_HexDump(&args.report, sizeof(SGX_Report));
+    OE_HexDump(&args.report, sizeof(SGX_Report));
 #endif
 
     SGX_SPID spid = {{
