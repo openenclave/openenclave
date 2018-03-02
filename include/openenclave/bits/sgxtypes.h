@@ -68,6 +68,12 @@ typedef enum _SGX_ENCLULeaf {
 **==============================================================================
 */
 
+/* Default value for SGX_Attributes.flags */
+#define SGX_ATTRIBUTES_DEFAULT_FLAGS 0x0000000000000006
+
+/* Default value for SGX_Attributes.xfrm */
+#define SGX_ATTRIBUTES_DEFAULT_XFRM 0x0000000000000007
+
 OE_PACK_BEGIN
 typedef struct _SGX_Attributes
 {
@@ -908,7 +914,7 @@ typedef struct _SGX_QuoteSignature
     uint32_t rl_num;
 
     /* (664) encrypted NRP followed by MAC */
-    uint8_t nrp_mac[];
+    OE_ZERO_SIZED_ARRAY uint8_t nrp_mac[];
 } SGX_QuoteSignature;
 OE_PACK_END
 

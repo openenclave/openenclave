@@ -129,7 +129,7 @@ static uint32_t _MakeMemoryProtectParam(const SecInfo* secinfo, bool simulate)
         }
         else
         {
-            return PAGE_ENCLAVE_THREAD_CONTROL;
+            return PAGE_ENCLAVE_THREAD_CONTROL | PAGE_READWRITE;
         }
     }
 
@@ -195,11 +195,16 @@ static SGX_Secs* _NewSecs(uint64_t base, uint64_t size)
     memset(secs, 0, sizeof(SGX_Secs));
     secs->size = size;
     secs->base = base;
+
     /* ATTN: debug is hardcoded here; pass this in as parameter */
     secs->flags = SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT;
-    secs->xfrm = 0x07; /* what the driver sees with SGX SDK */
+
+    /* what the driver sees with SGX SDK */
+    secs->xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM; 
+
     /* COMMENT1: ssaframesize hardcoded to one for now */
     secs->ssaframesize = 1;
+
     /* secs->flags |= SGX_FLAGS_EINITTOKEN_KEY; */
     /* secs->flags |= SGX_FLAGS_PROVISION_KEY; */
 
@@ -312,7 +317,7 @@ static int _IoctlReal(Self* self, unsigned long request, void* param)
             if (!(secs = (SGX_Secs*)p->src))
                 return -1;
 
-            if (!secs->base || !secs->size)
+            if (!secs->size)
                 return -1;
 
             /* Ask OS to create the enclave */
@@ -355,12 +360,20 @@ static int _IoctlReal(Self* self, unsigned long request, void* param)
             SIZE_T num_bytes = 0;
             DWORD enclaveError;
 
+            DWORD protect = _MakeMemoryProtectParam(secinfo, false);
+
+            if (p->mrmask != 0xffff)
+            {
+                /* Do not extend (measure) this page */
+                protect |= PAGE_ENCLAVE_UNVALIDATED;
+            }
+
             if (!LoadEnclaveData(
                     GetCurrentProcess(),
                     addr,
                     src,
                     OE_PAGE_SIZE,
-                    _MakeMemoryProtectParam(secinfo, false),
+                    protect,
                     NULL,
                     0,
                     &num_bytes,
