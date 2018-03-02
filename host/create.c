@@ -301,12 +301,7 @@ static OE_Result _AddControlPages(
         {
             uint64_t addr = enclaveAddr + *vaddr;
             uint64_t src = (uint64_t)&page;
-/*WINPORT2*/
-#if 1
-           uint64_t flags = SGX_SECINFO_TCS;
-#else
-            uint64_t flags = SGX_SECINFO_TCS | SGX_SECINFO_R | SGX_SECINFO_W;
-#endif
+            uint64_t flags = SGX_SECINFO_TCS;
             bool extend = true;
 
             OE_TRY(dev->eadd(dev, enclaveAddr, addr, src, flags, extend));

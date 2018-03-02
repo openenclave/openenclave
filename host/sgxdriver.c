@@ -130,12 +130,7 @@ static uint32_t _MakeMemoryProtectParam(const SecInfo* secinfo, bool simulate)
         }
         else
         {
-/*WINPORT2*/
-#if 0
-            return PAGE_ENCLAVE_THREAD_CONTROL;
-#else
             return PAGE_ENCLAVE_THREAD_CONTROL | PAGE_READWRITE;
-#endif
         }
     }
 
@@ -407,7 +402,6 @@ static int _IoctlReal(Self* self, unsigned long request, void* param)
                     sizeof(info),
                     &enclaveError))
             {
-printf("enclaveError=%u\n", enclaveError);
                 return -1;
             }
 
@@ -713,9 +707,6 @@ static OE_Result _EInitProc(
         param.addr = addr;
         param.sigstruct = sigstruct;
         param.einittoken = einittoken;
-
-__SGX_DumpSigStruct((SGX_SigStruct*)sigstruct);
-__SGX_DumpEinitToken((SGX_EInitToken*)einittoken);
 
         if (_Ioctl(self, SGX_IOC_ENCLAVE_INIT, &param) != 0)
             OE_THROW(OE_IOCTL_FAILED);
