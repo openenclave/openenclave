@@ -54,8 +54,6 @@ OE_INLINE const void* OE_AlignPointer(const void* ptr, size_t aligment)
     return (const void*)OE_RoundUpToMultiple((uint64_t)ptr, aligment);
 }
 
-void __OE_HexDump(const void* data_, size_t size);
-
 OE_INLINE uint32_t OE_ByteSwap32(uint32_t x)
 {
     return

@@ -253,7 +253,7 @@ static OE_Result _WriteRequest(
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     printf("=== _WriteRequest:\n");
-    __OE_HexDump(mem_ptr(message), mem_size(message));
+    OE_HexDump(mem_ptr(message), mem_size(message));
 #endif
 
     /* Wrap message in envelope */
@@ -336,7 +336,7 @@ static OE_Result _ReadResponse(
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     printf("=== _ReadResponse():\n");
-    __OE_HexDump(mem_ptr(message), mem_size(message));
+    OE_HexDump(mem_ptr(message), mem_size(message));
 #endif
 
     result = OE_OK;
