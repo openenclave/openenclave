@@ -30,6 +30,7 @@ install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a DESTINATION ${CM
 # Convenience lib for use in target_link_libraries
 add_library(mbedcrypto INTERFACE)
 add_dependencies(mbedcrypto mbedtls-wrap)
+target_sources(mbedcrypto INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/openenclave_rand_impl.c) # Include our HW entropy collector
 target_include_directories(mbedcrypto INTERFACE ${OE_INCDIR}/openenclave/oe-mbedtls)
 target_link_libraries(mbedcrypto INTERFACE ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a)
 # For the libc dependency, We would just want to use "oelibc". However, we need

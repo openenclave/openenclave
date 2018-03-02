@@ -398,9 +398,9 @@
  * Enabling the switch negates any security provided by the library.
  *
  * Requires MBEDTLS_ENTROPY_C, MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
- *
- */
-//#define MBEDTLS_TEST_NULL_ENTROPY
+ * @TODO uncomment this
+ */ 
+#define MBEDTLS_TEST_NULL_ENTROPY
 
 /**
  * \def MBEDTLS_ENTROPY_HARDWARE_ALT
@@ -894,8 +894,9 @@
  * application.
  *
  * Uncomment this macro to prevent loading of default entropy functions.
+ * @TODO undo me
  */
-//#define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
+#define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
 
 /**
  * \def MBEDTLS_NO_PLATFORM_ENTROPY
