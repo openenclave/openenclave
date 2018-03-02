@@ -3,6 +3,7 @@
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/utils.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/host.h>
 #include <cassert>
 #include <cstdio>
