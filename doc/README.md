@@ -41,7 +41,7 @@ design overview is updated.
 
 The API reference for the Open Enclave SDK is generated using Doxygen in the
 `refman` subfolder. For more details on how to update the API reference using
-Doxygen, refer to [Using Doxygen in Open Enclave](doxygen-howto.md).
+Doxygen, refer to [Using Doxygen in Open Enclave](refman/doxygen-howto.md).
 
 ### Converting MD to HMTL
 

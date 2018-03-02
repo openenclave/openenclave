@@ -102,7 +102,7 @@ Specify the install-prefix to the cmake call. As of now, there is no real need t
 system-wide, so you might use a tree in your home directory:
 
 ```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$~/OpenEnclave ..
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=$~/openenclave ..
 build$ make install
 ```
 

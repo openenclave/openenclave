@@ -19,7 +19,7 @@ into the Github repository. This allows one to browse the documentation from
 the Github site.
 
 To update the generated documentation, create the cmake build tree by using
-the instructions in [Getting Started with Open Enclave](doc/GettingStarted.md).
+the instructions in [Getting Started with Open Enclave](../GettingStarted.md).
 Assuming that _/build_ is the root of the cmake build tree, a successful make
 will build the HTML and XML reference documentation by default. You can
 also make the documentation directly:

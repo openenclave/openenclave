@@ -56,9 +56,9 @@ Open Enclave is available from GitHub.
 ### In Visual Studio 2017:
 1. Under Team > Manage Connections... > Local Git Repositories, select the Clone
    dropdown
-2. Set the clone URL to https://github.com/Microsoft/openenclave and optionally
-   the local path you want to clone the repo to.
-3. Click the Clone button.
+2. Set the URL to clone as: https://github.com/Microsoft/openenclave.
+3. Set the local path you want to clone the repo to (e.g. C:/openenclave).
+4. Click the Clone button.
 
 ### In Git shell:
 ```
@@ -97,9 +97,8 @@ https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studi
    loaded. VS2017 will then recursively walk the repo directory structure and
    generate a cache for the project to display Intellisense.
 4. Open Enclave is only supported for 64-bit, so change the build flavor to
-   `x64-Debug`
-  a. You may need to cancel cache generation and start it again after changing
-     the build flavor.
+   `x64-Debug`. You may need to cancel cache generation and start it again after
+   changing the build flavor.
 5. Once cache generation is complete, you can build the project via the CMake >
    Build All menu option.
 
@@ -189,9 +188,9 @@ Troubleshooting
    & Security > Windows Update and check for updates.
 
 2. Get the latest releases of the Intel SGX drivers from Windows Update Catalog:
-   a. Download and extract the contents of the latest [ACPI\INT0E0C package](
+   1. Download and extract the contents of the latest [ACPI\INT0E0C package](
      http://download.windowsupdate.com/d/msdownload/update/driver/drvs/2018/01/af564f2c-2bc5-43be-a863-437a5a0008cb_61e7ba0c2e17c87caf4d5d3cdf1f35f6be462b38.cab)
-   b. Download and extract the contents of the latest [VEN_INT&DEV_0E0C package](
+   2. Download and extract the contents of the latest [VEN_INT&DEV_0E0C package](
      http://download.windowsupdate.com/d/msdownload/update/driver/drvs/2018/01/6f61d533-e985-49dd-94c7-eeab74c216b7_3f45627e8b3be2f53db09b4b209cca7ec598cc4c.cab)
 
 3. Install the packages to the local driver store using [pnputil.exe](

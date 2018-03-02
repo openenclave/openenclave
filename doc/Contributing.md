@@ -17,7 +17,7 @@ The team marks the most straightforward issues as ["help wanted"](https://github
 Contribution "Bar"
 ------------------
 
-Project maintainers will merge changes that improve the product significantly and broadly and that align with the [Open Enclave roadmap](https://github.com/Microsoft/openenclave/projects). 
+Project maintainers will merge changes that improve the product significantly and broadly and that align with the [Open Enclave roadmap](https://github.com/Microsoft/openenclave/projects).
 
 Contributions must also satisfy the other published guidelines defined in this document. We may revert changes if they are found to be breaking.
 
@@ -29,7 +29,7 @@ Please do:
 * **DO** follow our coding style described in the [Development Guide](DevelopmentGuide.md)
 * **DO** give priority to the current style of the project or file you're changing even if it diverges from the general guidelines.
 * **DO** include tests when adding new features. When fixing bugs, start with adding a test that highlights how the current behavior is broken.
-* **DO** update README.md files in the source tree and other documents to be up to date with changes in the code. 
+* **DO** update README.md files in the source tree and other documents to be up to date with changes in the code.
 * **DO** keep the discussions focused. When a new or related topic comes up it's often better to create new issue than to side track the discussion.
 
 DOs and DON'Ts for Pull Requests
@@ -65,7 +65,7 @@ Please use ["Squash and Merge"](https://github.com/blog/2141-squash-your-commits
 
   - The change is easier to understand as a series of focused commits. Each commit in the series must be buildable so as not to break `git bisect`.
   - Contributor is using an e-mail address other than the primary GitHub address and wants that preserved in the history. Contributor must be willing to squash the commits manually before acceptance.
-    
+
 Commit Messages
 ---------------
 
@@ -75,14 +75,14 @@ Please format commit messages as follows (based on [A Note About Git Commit Mess
 Summarize change in 50 characters or less
 
 Provide more detail after the first line. Leave one blank line below the
-summary and wrap all lines at 72 characters or less. 
+summary and wrap all lines at 72 characters or less.
 
 - Bullet points are okay, especially to break down descriptions of a
   complex fix or feature.
-  
+
 - Typically, a hyphen or asterisk is used for the bullet, followed by a
   single space, with blank lines in between.
-  
+
 - Use a hanging indent
 
 If the change fixes an issue, leave another blank line after the final
@@ -110,7 +110,7 @@ The following rules must be followed for PRs that include files from another pro
 
 - The license of the file is [permissive](https://en.wikipedia.org/wiki/Permissive_free_software_licence).
 - The license of the file is left intact.
-- The contribution is correctly attributed in the [3rd party notices](../THIRD-PARTY-NOTICES) file in the repository, as needed.
+- The contribution is correctly attributed in the [3rd party notices](../THIRD_PARTY_NOTICES) file in the repository, as needed.
 
 Porting Files from Other Projects
 ---------------------------------

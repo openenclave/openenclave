@@ -16,5 +16,5 @@ build and run.
 
 # Testing on Windows
 
-Refer to [Getting Started on Windows](doc/GettingStarted.Windows.md) for
+Refer to [Getting Started on Windows](../doc/GettingStarted.Windows.md) for
 instructions on testing Linux-built enclaves with Windows-built host apps.
