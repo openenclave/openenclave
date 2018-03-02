@@ -58,12 +58,11 @@ void __OE_HexDump(const void* data_, size_t size);
 
 OE_INLINE uint32_t OE_ByteSwap32(uint32_t x)
 {
-#if defined(__GNUC__)
-    return __builtin_bswap32(x);
-#elif defined(_WIN32)
-    unsigned long _byteswap_ulong(unsigned long val);
-    return _byteswap_ulong(x);
-#endif
+    return
+        ((uint32_t)((x & 0x000000FF) << 24)) |
+        ((uint32_t)((x & 0x0000FF00) << 8)) |
+        ((uint32_t)((x & 0x00FF0000) >> 8)) |
+        ((uint32_t)((x & 0xFF000000) >> 24));
 }
 
 /**
