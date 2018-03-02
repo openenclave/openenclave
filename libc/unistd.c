@@ -1,5 +1,5 @@
-#include <unistd.h>
 #include <errno.h>
+#include <unistd.h>
 
 long sysconf(int name)
 {

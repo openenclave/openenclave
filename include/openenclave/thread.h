@@ -16,7 +16,7 @@ typedef uint64_t OE_Thread;
 
 /*
  * Note that all the __impl[] fields in the below implementations are
- * all larger than what is actually needed. This is to account for 
+ * all larger than what is actually needed. This is to account for
  * possible future expansion by evolving implementations.
  */
 
@@ -24,8 +24,7 @@ typedef struct _OE_ThreadAttr
 {
     /* Internal private implementation */
     uint64_t __impl[7];
-}
-OE_ThreadAttr;
+} OE_ThreadAttr;
 
 /**
  * Returns the identifier of the current thread.
@@ -84,9 +83,7 @@ typedef unsigned int OE_OnceType;
  * @return Returns zero on success.
  *
  */
-int OE_Once(
-    OE_OnceType* once,
-    void (*func)(void));
+int OE_Once(OE_OnceType* once, void (*func)(void));
 
 #define OE_SPINLOCK_INITIALIZER 0
 
@@ -135,8 +132,7 @@ int OE_SpinLock(OE_Spinlock* spinlock);
  * @return Return zero if successful
  *
  */
-int OE_SpinUnlock(
-    OE_Spinlock* spinlock);
+int OE_SpinUnlock(OE_Spinlock* spinlock);
 
 /**
  * Destroy a spin lock.
@@ -150,15 +146,19 @@ int OE_SpinUnlock(
  */
 int OE_SpinDestroy(OE_Spinlock* spinlock);
 
-#define OE_MUTEX_INITIALIZER {{0}}
+#define OE_MUTEX_INITIALIZER \
+    {                        \
+        {                    \
+            0                \
+        }                    \
+    }
 
 /* Definition of a mutex */
 typedef struct _OE_Mutex
 {
     /* Internal private implementation */
     uint64_t __impl[8];
-}
-OE_Mutex;
+} OE_Mutex;
 
 /**
  * Initialize a mutex.
@@ -231,15 +231,19 @@ int OE_MutexUnlock(OE_Mutex* mutex);
  */
 int OE_MutexDestroy(OE_Mutex* mutex);
 
-#define OE_COND_INITIALIZER {{0}}
+#define OE_COND_INITIALIZER \
+    {                       \
+        {                   \
+            0               \
+        }                   \
+    }
 
 /* Condition variable representation */
 typedef struct _OE_Cond
 {
     /* Internal private implementation */
     uint64_t __impl[8];
-}
-OE_Cond;
+} OE_Cond;
 
 /**
  * Initializes a condition variable.
@@ -280,9 +284,7 @@ int OE_CondInit(OE_Cond* cond);
  * @return Returns zero on success.
  *
  */
-int OE_CondWait(
-    OE_Cond* cond,
-    OE_Mutex* mutex);
+int OE_CondWait(OE_Cond* cond, OE_Mutex* mutex);
 
 /**
  * Signal a thread waiting on a condition variable.
@@ -301,8 +303,7 @@ int OE_CondWait(
  * @return Returns zero on success.
  *
  */
-int OE_CondSignal(
-    OE_Cond* cond);
+int OE_CondSignal(OE_Cond* cond);
 
 /**
  * Signals all threads waiting on a condition variable.
@@ -319,8 +320,7 @@ int OE_CondSignal(
  * @return Returns zero on success.
  *
  */
-int OE_CondBroadcast(
-    OE_Cond* cond);
+int OE_CondBroadcast(OE_Cond* cond);
 
 /**
  * Destroys a condition variable.
@@ -332,8 +332,7 @@ int OE_CondBroadcast(
  * @return Returns zero on success.
  *
  */
-int OE_CondDestroy(
-    OE_Cond* cond);
+int OE_CondDestroy(OE_Cond* cond);
 
 #define OE_THREADKEY_INITIALIZER 0
 
@@ -352,9 +351,7 @@ typedef unsigned int OE_ThreadKey;
  * @return Returns zero on success.
  *
  */
-int OE_ThreadKeyCreate(
-    OE_ThreadKey* key,
-    void (*destructor)(void* value));
+int OE_ThreadKeyCreate(OE_ThreadKey* key, void (*destructor)(void* value));
 
 /**
  * Delete a key for accessing thread-specific data.
@@ -368,8 +365,7 @@ int OE_ThreadKeyCreate(
  * @return Returns zero on success.
  *
  */
-int OE_ThreadKeyDelete(
-    OE_ThreadKey key);
+int OE_ThreadKeyDelete(OE_ThreadKey key);
 
 /**
  * Sets the value of a thread-specific data entry.
@@ -383,9 +379,7 @@ int OE_ThreadKeyDelete(
  * @return Returns zero on success.
  *
  */
-int OE_ThreadSetSpecific(
-    OE_ThreadKey key,
-    const void* value);
+int OE_ThreadSetSpecific(OE_ThreadKey key, const void* value);
 
 /**
  * Gets the value of a thread-specific data entry.
@@ -398,8 +392,7 @@ int OE_ThreadSetSpecific(
  * @return Returns the TSD value.
  *
  */
-void* OE_ThreadGetSpecific(
-    OE_ThreadKey key);
+void* OE_ThreadGetSpecific(OE_ThreadKey key);
 
 OE_EXTERNC_END
 

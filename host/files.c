@@ -1,16 +1,15 @@
-#include <sys/stat.h>
-#include <sys/types.h>
+#include <openenclave/bits/files.h>
+#include <openenclave/bits/trace.h>
+#include <openenclave/host.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/files.h>
-#include <openenclave/bits/trace.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "fopen.h"
 
-bool __OE_FileExists(
-    const char* path)
+bool __OE_FileExists(const char* path)
 {
     struct stat st;
     return stat(path, &st) == 0 ? true : false;
@@ -83,10 +82,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result __OE_LoadPages(
-    const char* path,
-    OE_Page** pages,
-    size_t* npages)
+OE_Result __OE_LoadPages(const char* path, OE_Page** pages, size_t* npages)
 {
     OE_Result result = OE_UNEXPECTED;
     void* data = NULL;

@@ -1,8 +1,8 @@
 #ifndef _TD_H
 #define _TD_H
 
-#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/jump.h>
+#include <openenclave/bits/sgxtypes.h>
 #include "asmdefs.h"
 
 /*
@@ -18,8 +18,8 @@
 **         (*) Pointer to the next callsite on the list
 **
 **     When the OCALL returns, a callsite is used restore the registers
-**     and to jump (OE_Longjmp) to the instrution where the callsite 
-**     information was recorded (by OE_SetJmp). 
+**     and to jump (OE_Longjmp) to the instrution where the callsite
+**     information was recorded (by OE_SetJmp).
 **
 **     Since ECALLS and OCALLS can be nested, more than one instance of this
 **     structure is needed, so callsites are kept on the enclave stack and
@@ -44,7 +44,7 @@ struct _Callsite
     OE_Jmpbuf jmpbuf;
 
     /* Pointer ot the ocall context */
-    OE_OCallContext *ocallContext;
+    OE_OCallContext* ocallContext;
 
     /* Pointer to next ECALL context */
     Callsite* next;

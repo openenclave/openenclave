@@ -1,12 +1,12 @@
 #define OE_TRACE_LEVEL 0
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <wchar.h>
 #include <ctype.h>
-#include <stdarg.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/typeinfo.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wchar.h>
 
 /*
 **==============================================================================
@@ -16,9 +16,7 @@
 **==============================================================================
 */
 
-static void* _Calloc(
-    size_t n,
-    void* (alloc)(size_t size))
+static void* _Calloc(size_t n, void*(alloc)(size_t size))
 {
     void* p;
 
@@ -28,10 +26,7 @@ static void* _Calloc(
     return memset(p, 0, n);
 }
 
-static char* _Strdup(
-    const char* s,
-    size_t n,
-    void* (alloc)(size_t size))
+static char* _Strdup(const char* s, size_t n, void*(alloc)(size_t size))
 {
     char* p;
 
@@ -48,10 +43,7 @@ static char* _Strdup(
     return memcpy(p, s, n * sizeof(char));
 }
 
-static char* _Wcsdup(
-    const wchar_t* s,
-    size_t n,
-    void* (alloc)(size_t size))
+static char* _Wcsdup(const wchar_t* s, size_t n, void*(alloc)(size_t size))
 {
     wchar_t* p;
 
@@ -119,9 +111,7 @@ static OE_Result _StrToSize(const char* str, size_t* size)
     return OE_OK;
 }
 
-static const OE_FieldTI* _FindFieldTI(
-    const OE_StructTI* ti,
-    const char* name)
+static const OE_FieldTI* _FindFieldTI(const OE_StructTI* ti, const char* name)
 {
     size_t i;
 
@@ -182,8 +172,7 @@ OE_CATCH:
 }
 
 /* Get the size of the given type */
-static size_t _GetTypeSizeFromType(
-    OE_Type type)
+static size_t _GetTypeSizeFromType(OE_Type type)
 {
     switch (type)
     {
@@ -242,8 +231,7 @@ static size_t _GetTypeSizeFromType(
 }
 
 /* Get type-size of this field (not necessarily the same as field size) */
-static size_t _GetTypeSize(
-    const OE_FieldTI* fti)
+static size_t _GetTypeSize(const OE_FieldTI* fti)
 {
     if (fti->type == OE_STRUCT_T)
         return fti->sti->size;
@@ -259,10 +247,7 @@ static size_t _GetTypeSize(
 **==============================================================================
 */
 
-static bool _ScalarEq(
-    OE_Type type,
-    const void* p1,
-    const void* p2)
+static bool _ScalarEq(OE_Type type, const void* p1, const void* p2)
 {
     switch (type)
     {
@@ -321,10 +306,7 @@ static bool _ScalarEq(
     return false;
 }
 
-static bool _Real32Eq(
-    const float* p1,
-    const float* p2,
-    size_t n)
+static bool _Real32Eq(const float* p1, const float* p2, size_t n)
 {
     size_t i;
 
@@ -335,10 +317,7 @@ static bool _Real32Eq(
     return true;
 }
 
-static bool _Real64Eq(
-    const double* p1,
-    const double* p2,
-    size_t n)
+static bool _Real64Eq(const double* p1, const double* p2, size_t n)
 {
     size_t i;
 
@@ -354,11 +333,7 @@ static bool _BytesEq(const void* p1, const void* p2, size_t n)
     return memcmp(p1, p2, n) == 0 ? true : false;
 }
 
-static bool _ArrayEq(
-    OE_Type type,
-    const void* p1,
-    const void* p2,
-    size_t n)
+static bool _ArrayEq(OE_Type type, const void* p1, const void* p2, size_t n)
 {
     switch (type)
     {
@@ -678,10 +653,7 @@ static void _PrintStruct(
 #endif
 
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
-static void _PrintScalar(
-    const OE_FieldTI* fti,
-    const void* p,
-    size_t depth)
+static void _PrintScalar(const OE_FieldTI* fti, const void* p, size_t depth)
 {
     switch (fti->type)
     {
@@ -754,7 +726,7 @@ static void _PrintArray(
     const OE_FieldTI* fti,
     const void* arr,
     size_t elemSize, // elemSize in bytes of one elements:
-    size_t arrSize, // number of total elements:
+    size_t arrSize,  // number of total elements:
     size_t depth)
 {
     const unsigned char* p = (const unsigned char*)arr;
@@ -781,7 +753,7 @@ static void _PrintArray(
     }
     else
         OE_PRINTF("{ ");
-    
+
     for (size_t i = 0; i < arrSize; i++)
     {
         _PrintScalar(fti, p, depth);
@@ -875,8 +847,8 @@ static void _PrintStruct(
         }
         else if (fti->flags & OE_FLAG_ARRAY)
         {
-            _PrintArray(fti, p, fti->size / fti->subscript, fti->subscript,
-                depth);
+            _PrintArray(
+                fti, p, fti->size / fti->subscript, fti->subscript, depth);
             OE_PRINTF("\n");
         }
         else
@@ -892,9 +864,7 @@ static void _PrintStruct(
 #endif
 
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
-void OE_PrintStruct(
-    const OE_StructTI* ti,
-    const void* structIn)
+void OE_PrintStruct(const OE_StructTI* ti, const void* structIn)
 {
     _PrintStruct(ti, structIn, 0);
     OE_PRINTF("\n");
@@ -914,7 +884,7 @@ static OE_Result _CopyStructs(
     const void* structIn,
     size_t count,
     void* structOut,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     const uint8_t* src = (uint8_t*)structIn;
     uint8_t* dest = (uint8_t*)structOut;
@@ -940,7 +910,7 @@ static OE_Result _ClonePtrField(
     const OE_FieldTI* fti,
     const void* ptrIn,
     void** ptrOut,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
     size_t count = 0;
@@ -1017,12 +987,12 @@ static OE_Result _CopyField(
     const OE_FieldTI* fti,
     const void* fin,
     void* fout,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
 
     /* Check for null parameters */
-    if (!fti || !fin || !fout|| (alloc == NULL))
+    if (!fti || !fin || !fout || (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Zero-initialize this field */
@@ -1063,7 +1033,7 @@ static OE_Result _CopyField(
     result = OE_OK;
 
 OE_CATCH:
-    
+
     return result;
 }
 
@@ -1096,7 +1066,7 @@ OE_Result OE_CopyStruct(
     const OE_StructTI* sti,
     const void* sin,
     void* sout,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
     size_t i;
@@ -1120,7 +1090,7 @@ OE_Result OE_CopyStruct(
     result = OE_OK;
 
 OE_CATCH:
-    
+
     return result;
 }
 
@@ -1128,7 +1098,7 @@ OE_Result OE_CloneStruct(
     const OE_StructTI* sti,
     const void* sin,
     void** sout,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     if (sout)
         *sout = NULL;
@@ -1149,7 +1119,7 @@ static OE_Result _CloneStructs(
     const void* sin,
     size_t count,
     void** sout,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -1171,7 +1141,7 @@ static OE_Result _CloneBlob(
     const void* dataIn,
     size_t size,
     void** dataOut,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -1231,7 +1201,6 @@ static OE_Result _ApplyStructPtrProc(
     if (!ti || !strct)
         OE_THROW(OE_INVALID_PARAMETER);
 
-
     /* For each field */
     for (i = 0; i < ti->nfields; i++)
     {
@@ -1280,8 +1249,9 @@ static OE_Result _ApplyStructPtrProc(
                 /* Handle struct-pointers with [count] qualifier */
                 if (fti->type == OE_STRUCT_T)
                 {
-                    OE_TRY(_ApplyStructsPtrProc(
-                        fti->sti, ptr, count, proc, procData));
+                    OE_TRY(
+                        _ApplyStructsPtrProc(
+                            fti->sti, ptr, count, proc, procData));
                     proc(ptr, fti->sti->size * count, procData);
                 }
                 else
@@ -1297,20 +1267,19 @@ static OE_Result _ApplyStructPtrProc(
         {
             if (fti->type == OE_STRUCT_T)
             {
-                OE_TRY(_ApplyStructsPtrProc(
-                    fti->sti, fptr, fti->subscript, proc, procData));
+                OE_TRY(
+                    _ApplyStructsPtrProc(
+                        fti->sti, fptr, fti->subscript, proc, procData));
             }
         }
         else /* scalar */
         {
             if (fti->type == OE_STRUCT_T)
             {
-                OE_TRY(_ApplyStructPtrProc(
-                    fti->sti, fptr, proc, procData));
+                OE_TRY(_ApplyStructPtrProc(fti->sti, fptr, proc, procData));
             }
         }
     }
-
 
     result = OE_OK;
 
@@ -1522,9 +1491,7 @@ OE_CATCH:
     return result;
 }
 
-size_t OE_StructFindField(
-    const OE_StructTI* sti,
-    const char* name)
+size_t OE_StructFindField(const OE_StructTI* sti, const char* name)
 {
     if (!sti || !name)
         return (size_t)-1;
@@ -1571,7 +1538,7 @@ OE_Result OE_SetArg(
     size_t index,
     bool isPtrPtr,
     void* arg,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_FieldTI* fti = NULL;
@@ -1723,7 +1690,7 @@ OE_Result OE_InitArg(
     size_t index,
     bool isPtrPtr,
     void* arg,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_FieldTI* fti = NULL;
@@ -1823,7 +1790,7 @@ OE_Result OE_SetArgByName(
     const char* name,
     bool isPtrPtr,
     void* arg,
-    void* (alloc)(size_t size))
+    void*(alloc)(size_t size))
 {
     OE_Result result = OE_UNEXPECTED;
     size_t index;
@@ -1880,9 +1847,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_CheckPreConstraints(
-    const OE_StructTI* sti,
-    const void* sin)
+OE_Result OE_CheckPreConstraints(const OE_StructTI* sti, const void* sin)
 {
     OE_Result result = OE_UNEXPECTED;
     size_t i;
@@ -1912,9 +1877,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_CheckPostConstraints(
-    const OE_StructTI* sti,
-    const void* sin)
+OE_Result OE_CheckPostConstraints(const OE_StructTI* sti, const void* sin)
 {
     OE_Result result = OE_UNEXPECTED;
     size_t i;
@@ -1985,7 +1948,6 @@ static OE_Result _TestOrFillPadding(
             end = (uint8_t*)sin + sti->size;
         }
 
-
         /* Test or fill the padding after this structure */
         while (start != end)
         {
@@ -1998,9 +1960,9 @@ static OE_Result _TestOrFillPadding(
                 *start++ = byte;
         }
 
-        /* This code breaks ECALLs and OCALLs where the callee changes
-         * the contents of one of the structure arguments.
-         */
+/* This code breaks ECALLs and OCALLs where the callee changes
+ * the contents of one of the structure arguments.
+ */
 #if 0
         /* Recurse if this field is a structure */
         if (fti->type == OE_STRUCT_T)
@@ -2043,23 +2005,17 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_TestStructPadding(
-    const OE_StructTI* sti,
-    const void* sin)
+OE_Result OE_TestStructPadding(const OE_StructTI* sti, const void* sin)
 {
     return _TestOrFillPadding(sti, sin, true, 0xAA);
 }
 
-OE_Result OE_PadStruct(
-    const OE_StructTI* sti,
-    const void* sin)
+OE_Result OE_PadStruct(const OE_StructTI* sti, const void* sin)
 {
     return _TestOrFillPadding(sti, sin, false, 0xAA);
 }
 
-OE_Result OE_CheckStruct(
-    const OE_StructTI* ti,
-    void* strct)
+OE_Result OE_CheckStruct(const OE_StructTI* ti, void* strct)
 {
     OE_Result result = OE_UNEXPECTED;
 

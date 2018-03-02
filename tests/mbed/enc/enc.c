@@ -1,7 +1,7 @@
-#include <openenclave/enclave.h>
-#include <string.h>
-#include <stdio.h>
 #include <mbedtls/sha256.h>
+#include <openenclave/enclave.h>
+#include <stdio.h>
+#include <string.h>
 #include "../args.h"
 
 OE_ECALL void Hash(void* args_)

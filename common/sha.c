@@ -1,17 +1,17 @@
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #if defined(__linux__)
-# include <openssl/sha.h>
+#include <openssl/sha.h>
 #elif defined(_WIN32)
-# include <Windows.h>
-# include <bcrypt.h>
+#include <Windows.h>
+#include <bcrypt.h>
 #endif
 
 #ifdef OE_BUILD_ENCLAVE
-# include <openenclave/enclave.h>
+#include <openenclave/enclave.h>
 #else
-# include <openenclave/host.h>
+#include <openenclave/host.h>
 #endif
 
 typedef struct _OE_SHA256ContextImpl
@@ -21,13 +21,11 @@ typedef struct _OE_SHA256ContextImpl
 #elif defined(_WIN32)
     BCRYPT_HASH_HANDLE handle;
 #endif
-}
-OE_SHA256ContextImpl;
+} OE_SHA256ContextImpl;
 
 OE_STATIC_ASSERT(sizeof(OE_SHA256ContextImpl) <= sizeof(OE_SHA256Context));
 
-void OE_SHA256Init(
-    OE_SHA256Context* context)
+void OE_SHA256Init(OE_SHA256Context* context)
 {
     if (!context)
         return;
@@ -38,20 +36,11 @@ void OE_SHA256Init(
     SHA256_Init(&impl->ctx);
 #elif defined(_WIN32)
     BCryptCreateHash(
-        BCRYPT_SHA256_ALG_HANDLE, 
-        &impl->handle, 
-        NULL, 
-        0, 
-        NULL, 
-        0, 
-        0);
+        BCRYPT_SHA256_ALG_HANDLE, &impl->handle, NULL, 0, NULL, 0, 0);
 #endif
 }
 
-void OE_SHA256Update(
-    OE_SHA256Context* context,
-    const void* data,
-    size_t size)
+void OE_SHA256Update(OE_SHA256Context* context, const void* data, size_t size)
 {
     if (!context)
         return;
@@ -65,9 +54,7 @@ void OE_SHA256Update(
 #endif
 }
 
-void OE_SHA256UpdateZeros(
-    OE_SHA256Context* context,
-    size_t size)
+void OE_SHA256UpdateZeros(OE_SHA256Context* context, size_t size)
 {
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
     char zeros[128];
@@ -100,9 +87,7 @@ void OE_SHA256UpdateZeros(
     }
 }
 
-void OE_SHA256Final(
-    OE_SHA256Context* context,
-    OE_SHA256* sha256)
+void OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256)
 {
     if (!context)
         return;
@@ -116,21 +101,18 @@ void OE_SHA256Final(
 #endif
 }
 
-void OE_SHA256ToStr(
-    const OE_SHA256* sha256,
-    OE_SHA256Str* str)
+void OE_SHA256ToStr(const OE_SHA256* sha256, OE_SHA256Str* str)
 {
     if (sha256 && str)
     {
         size_t i;
 
         for (i = 0; i < OE_SHA256_SIZE; i++)
-            snprintf(&str->buf[i*2], 3, "%02x", sha256->buf[i]);
+            snprintf(&str->buf[i * 2], 3, "%02x", sha256->buf[i]);
     }
 }
 
-OE_SHA256Str OE_SHA256StrOf(
-    const OE_SHA256* sha256)
+OE_SHA256Str OE_SHA256StrOf(const OE_SHA256* sha256)
 {
     static OE_SHA256Str empty;
     static OE_SHA256Str result;
@@ -142,8 +124,7 @@ OE_SHA256Str OE_SHA256StrOf(
     return result;
 }
 
-OE_SHA256Str OE_SHA256StrOfContext(
-    const OE_SHA256Context* context)
+OE_SHA256Str OE_SHA256StrOfContext(const OE_SHA256Context* context)
 {
     static OE_SHA256Str empty;
     static OE_SHA256Context copy;
@@ -157,4 +138,3 @@ OE_SHA256Str OE_SHA256StrOfContext(
     OE_SHA256Final(&copy, &sha256);
     return OE_SHA256StrOf(&sha256);
 }
-

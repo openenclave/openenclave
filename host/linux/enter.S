@@ -20,8 +20,8 @@
 //     R8    - arg3
 //     R9    - arg4
 //
-// N.B: Don't change the function name, otherwise debugger can't work. 
-// GDB depends on this hardcode function name when does stack walking for split 
+// N.B: Don't change the function name, otherwise debugger can't work.
+// GDB depends on this hardcode function name when does stack walking for split
 // stack.
 //
 // Note that OE_Enter is defined to __morestack
@@ -73,14 +73,14 @@ __morestack:
     mov %rsp, RSP
 
     // The EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2) contract:
-    // Input: 
+    // Input:
     //      RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2,
     //      RBP=Current host stack rbp,
     //      RSP=Current host stack rSP.
     //      All other registers are NOT used/ignored.
     // Output:
-    //      RDI=ARG1OUT, RSI=ARG2OUT, 
-    //      RBP is not changed, 
+    //      RDI=ARG1OUT, RSI=ARG2OUT,
+    //      RBP is not changed,
     //      RSP might be decreased because of host stack memory allocation.
     //      All other Registers are clobbered.
     mov TCS, %rbx
@@ -91,7 +91,7 @@ __morestack:
     ENCLU
 
     // Align the stack since enclave code change the host rsp for call out.
-    and $-16, %rsp 
+    and $-16, %rsp
 
     mov %rdi, ARG1OUT
     mov %rsi, ARG2OUT
@@ -178,7 +178,7 @@ __morestack:
 .size __morestack, .-__morestack
 
 //==============================================================================
-// 
+//
 // __OE_HostStackBridge(
 //     [IN] uint64_t arg1,      /* RDI */
 //     [IN] uint64_t arg2,      /* RSI */
@@ -188,7 +188,7 @@ __morestack:
 //     [IN] void* rsp,          /* R9 */
 //     [IN] uint64_t enclave)    /* STACK */
 //
-// This function is wrapper of __OE_DispatchOCall. It is needed to stitch 
+// This function is wrapper of __OE_DispatchOCall. It is needed to stitch
 // the host stack and enclave stack together.
 //
 //==============================================================================
@@ -220,7 +220,7 @@ __OE_HostStackBridge:
 .cfi_def_cfa_register   rbp
     sub $HB_STACK_LENGTH, %rsp
 
-    // Save the current return address and frame point of __OE_HostStackBridge 
+    // Save the current return address and frame point of __OE_HostStackBridge
     // into stack.
     mov 0(%rbp), %rax
     mov %rax, HB_SAVED_FRAME_POINTER
@@ -253,7 +253,7 @@ __OE_HostStackBridge:
 
     // Do actual OCALL.
     call __OE_DispatchOCall
-    
+
     // Save the return value of OCALL dispatch.
     mov %rax, HB_SAVED_OCALL_RETURN
 
@@ -263,14 +263,14 @@ __OE_HostStackBridge:
     mov HB_SAVED_TCS, %rsi
     call _OE_NotifyOCallEnd
 
-    // Because of stack stitching, the return address might be overwritten by 
-    // gdb. Restore the current return address and frame point of 
+    // Because of stack stitching, the return address might be overwritten by
+    // gdb. Restore the current return address and frame point of
     // __OE_HostStackBridge from stack.
     mov HB_SAVED_FRAME_POINTER, %rax
     mov %rax, (0*OE_WORDSIZE)(%rbp)
     mov HB_SAVED_RETURN_ADDR, %rax
     mov %rax, (1*OE_WORDSIZE)(%rbp)
-    
+
     // Restore the return value of OCALL dispatch.
     mov HB_SAVED_OCALL_RETURN, %rax
 

@@ -1,0 +1,236 @@
+#!/bin/bash
+
+##==============================================================================
+##
+## Echo if verbose flag is specified
+##
+##==============================================================================
+log_verbose()
+{
+    if [ "${verbose}" = "1" ]; then
+        echo "$1"
+    fi
+}
+
+##==============================================================================
+##
+## Echo if whatif flag is specified
+##
+##==============================================================================
+log_whatif()
+{
+    if [ "${whatif}" = "1" ]; then
+        echo "$1"
+    fi
+}
+
+##==============================================================================
+##
+## Process command-line options:
+##
+##==============================================================================
+
+for opt in "$@"
+do
+
+  case $opt in
+
+    -h | --help)
+        help=1
+        ;;
+
+    -v | --verbose)
+        verbose=1
+        ;;
+
+    -w | --whatif)
+        whatif=1
+        ;;
+
+    --exclude-dirs=*)
+        userExcludeDirs="${opt#*=}"
+        ;;
+
+    --include-exts=*)
+        userIncludeExts="${opt#*=}"
+        ;;
+        
+    *)
+      echo "$0: unknown option:  $opt"
+      exit 1
+      ;;
+
+  esac
+
+done
+
+##==============================================================================
+##
+## Display help
+##
+##==============================================================================
+
+if [ "${help}" = "1" ]; then
+    cat<<EOF
+
+OVERVIEW:
+
+Formats all C/C++ source files based on the .clang-format rules
+
+    $ format-code [-h] [-v] [-w] [--exclude-dirs="..."] [--include-exts="..."]
+
+OPTIONS:
+    -h, --help              Print this help message.
+    -v, --verbose           Display verbose output. When used with --whatif,
+                            will also display XML output of expected changes.
+    -w, --whatif            Run the script without actually modifying the files.
+    --exclude-dirs          Subdirectories to exclude. If unspecified, then
+                            ./3rdparty, ./build and ./prereqs are excluded.
+                            All subdirectories are relative to the current path.
+    --include-exts          File extensions to include for formatting. If
+                            unspecified, then *.h, *.c and *.cpp are included.
+
+EXAMPLES:
+
+To determine what lines of each file in the default configuration would be
+modified by format-code, you can run from the root folder:
+
+    $ ./scripts/format-code -v -w
+
+To update only all .c and .cpp files in tests/ except for tests/echo/host, you
+can run from the tests folder:
+
+    tests$ ../scripts/format-code --exclude-dirs="echo/host" \
+      --include-exts="c cpp"
+
+EOF
+    exit 0
+fi
+
+##==============================================================================
+##
+## Check for acceptable version of clang-format
+##
+##==============================================================================
+check_version()
+{
+    v1=(${1//./ })
+    v2=(${2//./ })
+    if [ ${#v1[@]} != ${#v2[@]} ]; then
+        echo "Cannot parse clang-format version number: $2"
+        exit 1
+    fi
+    for ((i=0; i<${#v1[@]}; i++));
+    do
+        if [ ${v1[$i]} -gt ${v2[$i]} ]; then
+            echo "format-code requires clang-format version $1, installed version is $2"
+            exit 1
+        fi
+    done
+}
+
+##==============================================================================
+##
+## Check for installed clang-format tool
+##
+##==============================================================================
+check_clang-format()
+{
+    cf=`which clang-format 2> /dev/null`
+
+    if [ ! -x "${cf}" ]; then
+        echo "clang-format is not installed. Please run scripts/install-prereqs first."
+        exit 1
+    fi
+
+    local mincfver='3.6.0'
+    local cfver=$(${cf} --version | grep -o -E '[0-9]+.[0-9]+.[0-9]+')
+    check_version ${mincfver} ${cfver}
+}
+
+check_clang-format
+
+##==============================================================================
+##
+## Determine parameters for finding files to format 
+##
+##==============================================================================
+
+findargs=' .'
+
+get_find_args()
+{
+    local defaultExcludeDirs='3rdparty prereqs build'
+    local defaultIncludeExts='h c cpp'
+    
+    if [ -z "${userExcludeDirs}" ]; then
+        local excludeDirs=( ${defaultExcludeDirs} )
+    else
+        log_verbose "Using user directory exclusions: ${userExcludeDirs}"
+        local excludeDirs=( ${userExcludeDirs} )
+    fi
+
+    for exc in "${excludeDirs[@]}"
+    do
+        findargs="${findargs} ! ( -path ./${exc} -prune )"
+    done
+
+    if [ -z "${userIncludeExts}" ]; then
+        local includeExts=( ${defaultIncludeExts} )
+    else
+        log_verbose "Using user extension inclusions: ${userIncludeExts}"
+        local includeExts=( ${userIncludeExts} )
+    fi
+
+    findargs="${findargs} ("
+    for ((i=0; i<${#includeExts[@]}; i++));
+    do 
+        findargs="${findargs} -iname *.${includeExts[$i]}"
+        if [ $((i + 1)) -lt ${#includeExts[@]} ]; then
+            findargs="${findargs} -o"
+        fi
+    done
+    findargs="${findargs} )"
+}
+
+get_find_args
+
+log_verbose "Query for files for format:"
+log_verbose "find ${findargs}"
+log_verbose ""
+
+##==============================================================================
+##
+## Call clang-format for each file to be formatted 
+##
+##==============================================================================
+
+filecount=0
+failcount=0
+
+if [ "${whatif}" = "1" ]; then
+    cfargs='-style=file -output-replacements-xml '
+else 
+    cfargs='-style=file -i '
+fi
+
+for file in `find ${findargs}`
+do
+    ((filecount+=1))
+    
+    log_whatif "Formatting $file ..."
+
+    if [ "${verbose}" = "1" ]; then
+        ${cf} ${cfargs} $file
+    else
+        ${cf} ${cfargs} $file > /dev/null
+    fi
+
+    if [ "$?" != "0" ]; then
+        echo "clang-format failed on file: $file."
+        ((failcount+=1))
+    fi
+done
+
+log_whatif "${filecount} files processed, ${failcount} failures."
+exit 0

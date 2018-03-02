@@ -1,11 +1,11 @@
 #include "init.h"
-#include <openenclave/enclave.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/jump.h>
-#include <openenclave/bits/fault.h>
 #include <openenclave/bits/calls.h>
-#include <openenclave/bits/reloc.h>
+#include <openenclave/bits/fault.h>
 #include <openenclave/bits/globals.h>
+#include <openenclave/bits/jump.h>
+#include <openenclave/bits/reloc.h>
+#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/enclave.h>
 #include "asmdefs.h"
 #include "td.h"
 
@@ -125,7 +125,7 @@ static void _CheckMemoryBoundaries(void)
 
 void OE_CallInitFunctions(void)
 {
-    void(**fn)(void);
+    void (**fn)(void);
     extern void (*__init_array_start)(void);
     extern void (*__init_array_end)(void);
 
@@ -181,16 +181,15 @@ void OE_CallInitFunctions(void)
 
 void OE_CallFiniFunctions(void)
 {
-    void(**fn)(void);
+    void (**fn)(void);
     extern void (*__fini_array_start)(void);
     extern void (*__fini_array_end)(void);
 
-    for (fn = &__fini_array_end-1; fn >= &__fini_array_start; fn--)
+    for (fn = &__fini_array_end - 1; fn >= &__fini_array_start; fn--)
     {
         (*fn)();
     }
 }
-
 
 static void _InitializeEnclaveImage()
 {
@@ -214,7 +213,7 @@ static void _InitializeEnclaveImp(void)
 ** OE_InitializeEnclave()
 **
 **     This function is called the first time the enclave is entered. It
-**     performs any necessary enclave initialization, such as applying 
+**     performs any necessary enclave initialization, such as applying
 **     relocations, initializing exception etc.
 **
 **==============================================================================

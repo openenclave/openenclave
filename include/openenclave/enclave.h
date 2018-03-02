@@ -7,72 +7,71 @@
 #ifndef _OE_ENCLAVE_H
 #define _OE_ENCLAVE_H
 
+#include "bits/context.h"
+#include "bits/sha.h"
 #include "defs.h"
-#include "types.h"
 #include "result.h"
 #include "thread.h"
-#include "bits/sha.h"
-#include "bits/context.h"
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 
 #ifndef OE_BUILD_ENCLAVE
-# define OE_BUILD_ENCLAVE
+#define OE_BUILD_ENCLAVE
 #endif
 
-#define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section (".ecall")))
+#define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
 
 #define OE_REPORT_DATA_SIZE 64
 
-
 // Exception codes.
-#define OE_EXCEPTION_DIVIDE_BY_ZERO        0x0
-#define OE_EXCEPTION_BREAKPOINT            0x1
-#define OE_EXCEPTION_BOUND_OUT_OF_RANGE    0x2
-#define OE_EXCEPTION_ILLEGAL_INSTRUCTION   0x3
-#define OE_EXCEPTION_ACCESS_VIOLATION      0x4
-#define OE_EXCEPTION_PAGE_FAULT            0x5
-#define OE_EXCEPTION_X87_FLOAT_POINT       0x6
-#define OE_EXCEPTION_MISALIGNMENT          0x7
-#define OE_EXCEPTION_SIMD_FLOAT_POINT      0x8
-#define OE_EXCEPTION_UNKOWN                0xFFFFFFFF
+#define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
+#define OE_EXCEPTION_BREAKPOINT 0x1
+#define OE_EXCEPTION_BOUND_OUT_OF_RANGE 0x2
+#define OE_EXCEPTION_ILLEGAL_INSTRUCTION 0x3
+#define OE_EXCEPTION_ACCESS_VIOLATION 0x4
+#define OE_EXCEPTION_PAGE_FAULT 0x5
+#define OE_EXCEPTION_X87_FLOAT_POINT 0x6
+#define OE_EXCEPTION_MISALIGNMENT 0x7
+#define OE_EXCEPTION_SIMD_FLOAT_POINT 0x8
+#define OE_EXCEPTION_UNKOWN 0xFFFFFFFF
 
 // Exception flags.
-#define OE_EXCEPTION_HARDWARE      0x1
-#define OE_EXCEPTION_SOFTWARE      0x2
+#define OE_EXCEPTION_HARDWARE 0x1
+#define OE_EXCEPTION_SOFTWARE 0x2
 
 /**
 * Register a new vector exception handler.
 *
-* Call this function to add a new vector exception handler. If success, the registered
-* handler will be called when an exception happens inside enclave. 
+* Call this function to add a new vectored exception handler. If successful, the
+* registered handler will be called when an exception happens inside enclave.
 *
-* @param isFirstHandler The parameter indicates if the input handler should be 
-* the first exception handler to be called. If it is zero, the input handler will
-* be append to the end of exception handler chain, otherwise it will be added as 
-* the first one in the exception handler chain.
-* @param vectoredHandler The input vector exception handler that must be a function
-* inside enclave. The same handler can only be registered once, the 2nd registration will 
-* fail.
+* @param isFirstHandler The parameter indicates if the input handler should be
+* the first exception handler to be called. If it is zero, the input handler
+* will be append to the end of exception handler chain, otherwise it will be
+* added as the first one in the exception handler chain.
+* @param vectoredHandler The input vectored exception handler to register. It
+* must be a function defined in the enclave. The same handler can only be
+* registered once; a 2nd registration will fail.
 *
-* @returns This function return a opaque handler of new registered handler on success, 
-* caller can use the return value to remove the handler later. Return NULL if fail.
+* @returns This function returns an opaque pointer to the registered handler on
+* success, or NULL on failure. A caller can use a successfully returned pointer
+* to call OE_RemoveVectoredExceptionHandler() to unregister the handler later.
 *
 */
 void* OE_AddVectoredExceptionHandler(
-    uint64_t      isFirstHandler,
+    uint64_t isFirstHandler,
     POE_VECTORED_EXCEPTION_HANDLER vectoredHandler);
 
 /**
 * Remove an existing exception handler.
 *
-* @param vectoredHandler The pointer to a registered exception handler that is a return 
-* value from a successful OE_AddVectoredExceptionHandler call.
+* @param vectoredHandler The pointer to a registered exception handler returned
+* from a successful OE_AddVectoredExceptionHandler() call.
 *
 * @returns This function returns ZERO if success.
 */
-uint64_t OE_RemoveVectoredExceptionHandler(
-    void* vectoredHandler);
+uint64_t OE_RemoveVectoredExceptionHandler(void* vectoredHandler);
 
 /**
  * Perform a high-level enclave function call (OCALL).
@@ -99,9 +98,7 @@ uint64_t OE_RemoveVectoredExceptionHandler(
  * @returns This function return **OE_OK** on success.
  *
  */
-OE_Result OE_CallHost(
-    const char *func,
-    void *args);
+OE_Result OE_CallHost(const char* func, void* args);
 
 /**
  * Check whether the given buffer is strictly within the enclave.
@@ -117,9 +114,7 @@ OE_Result OE_CallHost(
  * @retval false At least some part of the buffer is outside the enclave.
  *
  */
-bool OE_IsWithinEnclave(
-    const void* ptr,
-    size_t size);
+bool OE_IsWithinEnclave(const void* ptr, size_t size);
 
 /**
  * Check whether the given buffer is strictly outside the enclave.
@@ -135,9 +130,7 @@ bool OE_IsWithinEnclave(
  * @retval false At least some part of the buffer is within the enclave.
  *
  */
-bool OE_IsOutsideEnclave(
-    const void* ptr,
-    size_t size);
+bool OE_IsOutsideEnclave(const void* ptr, size_t size);
 
 /**
  * Get a report for use in remote attestation.
@@ -175,7 +168,7 @@ bool OE_IsOutsideEnclave(
  */
 OE_Result OE_GetReportForRemoteAttestation(
     const uint8_t reportData[OE_REPORT_DATA_SIZE],
-    void *report,
+    void* report,
     size_t* reportSize);
 
 /**
@@ -193,7 +186,8 @@ OE_PRINTF_FORMAT(1, 2)
 int OE_HostPrintf(const char* fmt, ...);
 
 /**
- * Allocates space for parameters of the next call to host on the host's stack frame.
+ * Allocates space for parameters of the next call to host on the host's stack
+ * frame.
  *
  * This function allocates **size** bytes of space on the stack frame of the
  * host. The returned address will be a multiple of **alignment** (if
@@ -207,7 +201,7 @@ int OE_HostPrintf(const char* fmt, ...);
  * @returns Returns the address of the allocated space.
  *
  */
-void *OE_HostAllocForCallHost(size_t size, size_t alignment, bool isZeroInit);
+void* OE_HostAllocForCallHost(size_t size, size_t alignment, bool isZeroInit);
 
 /**
  * Allocate bytes from the host's heap.
@@ -228,23 +222,23 @@ void* OE_HostMalloc(size_t size);
  * Reallocate bytes from the host's heap.
  *
  * This function changes the size of the memory block pointed to by **ptr**
- * on the host's heap to **size** bytes. The memory block may be moved to a 
- * new location, which is returned by this function. The implementation 
+ * on the host's heap to **size** bytes. The memory block may be moved to a
+ * new location, which is returned by this function. The implementation
  * performs an OCALL to the host, which calls realloc(). To free the memory,
  * it must be passed to OE_HostFree().
  *
- * @param ptr The memory block to change the size of. If NULL, this method 
- * allocates **size** bytes as if OE_HostMalloc was invoked. If not NULL, 
- * it should be a pointer returned by a previous call to OE_HostCalloc, 
+ * @param ptr The memory block to change the size of. If NULL, this method
+ * allocates **size** bytes as if OE_HostMalloc was invoked. If not NULL,
+ * it should be a pointer returned by a previous call to OE_HostCalloc,
  * OE_HostMalloc or OE_HostRealloc.
- * @param size The number of bytes to be allocated. If 0, this method 
+ * @param size The number of bytes to be allocated. If 0, this method
  * deallocates the memory at **ptr**. If the new size is larger, the value
- * of the memory in the new allocated range is indeterminate. 
+ * of the memory in the new allocated range is indeterminate.
  *
- * @returns The pointer to the reallocated memory or NULL if **ptr** was 
- * freed by setting **size** to 0. This method also returns NULL if it was 
- * unable to reallocate the memory, in which case the original **ptr** 
- * remains valid and its contents are unchanged. 
+ * @returns The pointer to the reallocated memory or NULL if **ptr** was
+ * freed by setting **size** to 0. This method also returns NULL if it was
+ * unable to reallocate the memory, in which case the original **ptr**
+ * remains valid and its contents are unchanged.
  *
  */
 void* OE_HostRealloc(void* ptr, size_t size);
@@ -333,18 +327,17 @@ void* OE_Sbrk(ptrdiff_t increment);
  *
  */
 void __OE_AssertFail(
-    const char *expr,
-    const char *file,
+    const char* expr,
+    const char* file,
     int line,
-    const char *func);
+    const char* func);
 
-#define OE_Assert(EXPR) \
-    do \
-    { \
-        if (!(EXPR)) \
+#define OE_Assert(EXPR)                                               \
+    do                                                                \
+    {                                                                 \
+        if (!(EXPR))                                                  \
             __OE_AssertFail(#EXPR, __FILE__, __LINE__, __FUNCTION__); \
-    } \
-    while (0)
+    } while (0)
 
 OE_EXTERNC_END
 

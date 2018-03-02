@@ -31,9 +31,7 @@ OE_INLINE uint64_t OE_RoundU64ToPow2(uint64_t n)
     return x + 1;
 }
 
-OE_INLINE unsigned int OE_Checksum(
-    const void* data,
-    size_t size)
+OE_INLINE unsigned int OE_Checksum(const void* data, size_t size)
 {
     const unsigned char* p = (const unsigned char*)data;
     unsigned int x = 0;
@@ -56,9 +54,14 @@ OE_INLINE const void* OE_AlignPointer(const void* ptr, size_t aligment)
     return (const void*)OE_RoundUpToMultiple((uint64_t)ptr, aligment);
 }
 
-void __OE_HexDump(
-    const void* data_,
-    size_t size);
+OE_INLINE uint32_t OE_ByteSwap32(uint32_t x)
+{
+    return
+        ((uint32_t)((x & 0x000000FF) << 24)) |
+        ((uint32_t)((x & 0x0000FF00) << 8)) |
+        ((uint32_t)((x & 0x00FF0000) >> 8)) |
+        ((uint32_t)((x & 0xFF000000) >> 24));
+}
 
 /**
  *==============================================================================
@@ -71,7 +74,7 @@ void __OE_HexDump(
  *     - The strings have the same first character
  *     - The strings have the same last character
  *
- * If strings 's1' and 's2' have the same code, then the strings are identical 
+ * If strings 's1' and 's2' have the same code, then the strings are identical
  * if the following expression is true.
  *
  *     memcmp(&s1[1], &s2[1], len-2) == 0
@@ -90,7 +93,7 @@ void __OE_HexDump(
  */
 OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
 {
-    return (uint64_t)s[0] | ((uint64_t)s[n-1] << 8) | ((uint64_t)n << 16);
+    return (uint64_t)s[0] | ((uint64_t)s[n - 1] << 8) | ((uint64_t)n << 16);
 }
 
 OE_EXTERNC_END

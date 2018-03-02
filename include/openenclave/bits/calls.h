@@ -2,8 +2,8 @@
 #define _OE_CALLS_H
 
 #ifdef __OE_NEED_TIME_CALLS
-# include <sys/time.h>
-# include <time.h>
+#include <sys/time.h>
+#include <time.h>
 #endif
 
 #include <openenclave/defs.h>
@@ -20,13 +20,9 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_Enclave OE_Enclave;
 
-typedef void (*OE_ECallFunction)(
-    uint64_t argIn,
-    uint64_t* argOut);
+typedef void (*OE_ECallFunction)(uint64_t argIn, uint64_t* argOut);
 
-typedef void (*OE_OCallFunction)(
-    uint64_t argIn,
-    uint64_t* argOut);
+typedef void (*OE_OCallFunction)(uint64_t argIn, uint64_t* argOut);
 
 /*
 **==============================================================================
@@ -40,7 +36,7 @@ typedef void (*OE_OCallFunction)(
 */
 
 /* Disallow OCALLs to call back into enclave with an ECALL */
-#define OE_OCALL_FLAG_NOT_REENTRANT     (1u << 0)
+#define OE_OCALL_FLAG_NOT_REENTRANT (1u << 0)
 
 /*
 **==============================================================================
@@ -52,15 +48,13 @@ typedef void (*OE_OCallFunction)(
 **==============================================================================
 */
 
-typedef enum _OE_Code
-{
-    OE_CODE_NONE  = 0,
+typedef enum _OE_Code {
+    OE_CODE_NONE = 0,
     OE_CODE_ECALL = 1,
-    OE_CODE_ERET  = 2,
+    OE_CODE_ERET = 2,
     OE_CODE_OCALL = 3,
-    OE_CODE_ORET  = 4
-}
-OE_Code;
+    OE_CODE_ORET = 4
+} OE_Code;
 
 /*
 **==============================================================================
@@ -72,31 +66,29 @@ OE_Code;
 **==============================================================================
 */
 
-typedef enum _OE_Func
-{
-    OE_FUNC_DESTRUCTOR         = 0x01000000,
-    OE_FUNC_CALL_ENCLAVE       = 0x02000000,
-    OE_FUNC_CALL_HOST          = 0x03000000,
-    OE_FUNC_INIT_QUOTE         = 0x04000000,
-    OE_FUNC_THREAD_WAKE        = 0x05000000,
-    OE_FUNC_THREAD_WAIT        = 0x06000000,
-    OE_FUNC_THREAD_WAKE_WAIT   = 0x07000000,
-    OE_FUNC_MALLOC             = 0x08000000,
-    OE_FUNC_REALLOC            = 0x08800000,
-    OE_FUNC_FREE               = 0x09000000,
-    OE_FUNC_PUTS               = 0x0A000000,
-    OE_FUNC_PUTCHAR            = 0x0B000000,
-    OE_FUNC_PRINT              = 0x0C000000,
-    OE_FUNC_STRFTIME           = 0x0D000000,
-    OE_FUNC_GETTIMEOFDAY       = 0x0E000000,
-    OE_FUNC_CLOCK_GETTIME      = 0x0F000000,
-    OE_FUNC_NANOSLEEP          = 0x10000000,
+typedef enum _OE_Func {
+    OE_FUNC_DESTRUCTOR = 0x01000000,
+    OE_FUNC_CALL_ENCLAVE = 0x02000000,
+    OE_FUNC_CALL_HOST = 0x03000000,
+    OE_FUNC_INIT_QUOTE = 0x04000000,
+    OE_FUNC_THREAD_WAKE = 0x05000000,
+    OE_FUNC_THREAD_WAIT = 0x06000000,
+    OE_FUNC_THREAD_WAKE_WAIT = 0x07000000,
+    OE_FUNC_MALLOC = 0x08000000,
+    OE_FUNC_REALLOC = 0x08800000,
+    OE_FUNC_FREE = 0x09000000,
+    OE_FUNC_PUTS = 0x0A000000,
+    OE_FUNC_PUTCHAR = 0x0B000000,
+    OE_FUNC_PRINT = 0x0C000000,
+    OE_FUNC_STRFTIME = 0x0D000000,
+    OE_FUNC_GETTIMEOFDAY = 0x0E000000,
+    OE_FUNC_CLOCK_GETTIME = 0x0F000000,
+    OE_FUNC_NANOSLEEP = 0x10000000,
     OE_FUNC_VIRTUAL_EXCEPTION_HANDLER = 0x20000000,
-}
-OE_Func;
+} OE_Func;
 
-#define OE_EXCEPTION_CONTINUE_SEARCH       0x0
-#define OE_EXCEPTION_CONTINUE_EXECUTION    0xFFFFFFFF
+#define OE_EXCEPTION_CONTINUE_SEARCH 0x0
+#define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
 
 /*
 **==============================================================================
@@ -113,10 +105,7 @@ OE_Func;
 **==============================================================================
 */
 
-OE_INLINE uint64_t OE_MakeCallArg1(
-    OE_Code code,
-    OE_Func func,
-    uint16_t flags)
+OE_INLINE uint64_t OE_MakeCallArg1(OE_Code code, OE_Func func, uint16_t flags)
 {
     /* [ FLAGS:16, CODE:16, FUNC:32 ] */
     return ((uint64_t)code << 48) | ((uint64_t)func << 16) | ((uint64_t)flags);
@@ -177,8 +166,7 @@ typedef struct OE_CallEnclaveArgs
     uint64_t vaddr;
     void* args;
     OE_Result result;
-}
-OE_CallEnclaveArgs;
+} OE_CallEnclaveArgs;
 
 /*
 **==============================================================================
@@ -195,8 +183,7 @@ typedef struct OE_CallHostArgs
     void* args;
     OE_Result result;
     OE_ZERO_SIZED_ARRAY char func[];
-}
-OE_CallHostArgs;
+} OE_CallHostArgs;
 
 /*
 **==============================================================================
@@ -210,8 +197,7 @@ typedef struct _OE_ThreadWakeWaitArgs
 {
     const void* waiter_tcs;
     const void* self_tcs;
-}
-OE_ThreadWakeWaitArgs;
+} OE_ThreadWakeWaitArgs;
 
 /*
 **==============================================================================
@@ -226,8 +212,7 @@ typedef struct _OE_InitQuoteArgs
     OE_Result result;
     SGX_TargetInfo targetInfo;
     SGX_EPIDGroupID epidGroupID;
-}
-OE_InitQuoteArgs;
+} OE_InitQuoteArgs;
 
 /*
 **==============================================================================
@@ -250,8 +235,7 @@ typedef struct _OE_StrftimeArgs
     char str[256];
     char format[256];
     struct tm tm;
-}
-OE_StrftimeArgs;
+} OE_StrftimeArgs;
 #endif
 
 /*
@@ -268,12 +252,11 @@ OE_StrftimeArgs;
 typedef struct _OE_GettimeofdayArgs
 {
     int ret;
-    struct timeval *tv;
+    struct timeval* tv;
     struct timeval tvbuf;
-    struct timezone *tz;
+    struct timezone* tz;
     uint64_t tzbuf[2];
-}
-OE_GettimeofdayArgs;
+} OE_GettimeofdayArgs;
 #endif
 
 /*
@@ -293,8 +276,7 @@ typedef struct _OE_ClockgettimeArgs
     clockid_t clk_id;
     struct timespec* tp;
     struct timespec tpbuf;
-}
-OE_ClockgettimeArgs;
+} OE_ClockgettimeArgs;
 #endif
 
 /*
@@ -315,8 +297,7 @@ typedef struct _OE_NanosleepArgs
     struct timespec reqbuf;
     struct timespec* rem;
     struct timespec rembuf;
-}
-OE_NanosleepArgs;
+} OE_NanosleepArgs;
 #endif
 
 /*
@@ -333,8 +314,7 @@ typedef struct _OE_PrintArgs
 {
     int device;
     char* str;
-}
-OE_PrintArgs;
+} OE_PrintArgs;
 
 /*
 **==============================================================================
@@ -350,8 +330,7 @@ typedef struct _OE_ReallocArgs
 {
     void* ptr;
     size_t size;
-}
-OE_ReallocArgs;
+} OE_ReallocArgs;
 
 /**
  * Perform a low-level enclave function call (ECALL).
@@ -465,9 +444,7 @@ OE_Result OE_OCall(
  * @retval OE_ALREADY_IN_USE The function number is already in use.
  *
  */
-OE_Result OE_RegisterECall(
-    uint32_t func,
-    OE_ECallFunction ecall);
+OE_Result OE_RegisterECall(uint32_t func, OE_ECallFunction ecall);
 
 /**
  * Registers a low-level OCALL function.
@@ -491,9 +468,7 @@ OE_Result OE_RegisterECall(
  * @retval OE_ALREADY_IN_USE The function number is already in use.
  *
  */
-OE_Result OE_RegisterOCall(
-    uint32_t func,
-    OE_OCallFunction ocall);
+OE_Result OE_RegisterOCall(uint32_t func, OE_OCallFunction ocall);
 
 OE_EXTERNC_END
 

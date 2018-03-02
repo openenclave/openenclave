@@ -1,15 +1,15 @@
+#include <assert.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstdio>
-#include <assert.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
 #include "../args.h"
 
 #if 0
-# define ECHO
+#define ECHO
 #endif
 
 uint64_t prev;

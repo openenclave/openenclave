@@ -1,25 +1,25 @@
 #define OE_TRACE_LEVEL 1
 
-#include <stdlib.h>
-#include <string.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #if defined(__linux__)
-# include <sys/mman.h>
-# include <sys/ioctl.h>
-# include <fcntl.h>
-# include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #elif defined(_WIN32)
-# include <Windows.h>
+#include <Windows.h>
 #endif
 
-#include <openenclave/bits/utils.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/bits/utils.h>
 #include "memalign.h"
 
 /*
@@ -48,12 +48,10 @@ typedef struct _Self /* extends OE_SGXDevice */
 
         /* Size of enclave in bytes */
         size_t size;
-    }
-    sim;
+    } sim;
 
     int (*ioctl)(struct _Self* dev, unsigned long request, void* param);
-}
-Self;
+} Self;
 
 static int _Ok(const Self* self)
 {
@@ -71,29 +69,24 @@ static int _Ok(const Self* self)
 */
 
 #define SGX_MAGIC 0xA4
-#define SGX_IOC_ENCLAVE_CREATE   _IOW(SGX_MAGIC, 0x00, SGXECreateParam)
+#define SGX_IOC_ENCLAVE_CREATE _IOW(SGX_MAGIC, 0x00, SGXECreateParam)
 #define SGX_IOC_ENCLAVE_ADD_PAGE _IOW(SGX_MAGIC, 0x01, SGXEAddParam)
-#define SGX_IOC_ENCLAVE_INIT     _IOW(SGX_MAGIC, 0x02, SGXEinitParam)
+#define SGX_IOC_ENCLAVE_INIT _IOW(SGX_MAGIC, 0x02, SGXEinitParam)
 
 OE_PACK_BEGIN
 typedef struct __SGXECreateParam
 {
     uint64_t src;
-}
-SGXECreateParam;
+} SGXECreateParam;
 OE_PACK_END
 
 typedef struct _SecInfo
 {
     uint64_t flags;
     uint64_t reserved[7];
-}
-OE_ALIGNED(128)
-SecInfo;
+} OE_ALIGNED(128) SecInfo;
 
-static uint32_t _MakeMemoryProtectParam(
-    const SecInfo* secinfo,
-    bool simulate)
+static uint32_t _MakeMemoryProtectParam(const SecInfo* secinfo, bool simulate)
 {
 #if defined(__linux__)
 
@@ -136,20 +129,20 @@ static uint32_t _MakeMemoryProtectParam(
         }
         else
         {
-            return PAGE_ENCLAVE_THREAD_CONTROL;
+            return PAGE_ENCLAVE_THREAD_CONTROL | PAGE_READWRITE;
         }
     }
 
     if (secinfo->flags & SGX_SECINFO_REG)
     {
-        if ((secinfo->flags & SGX_SECINFO_X) && 
-            (secinfo->flags & SGX_SECINFO_R) && 
+        if ((secinfo->flags & SGX_SECINFO_X) &&
+            (secinfo->flags & SGX_SECINFO_R) &&
             (secinfo->flags & SGX_SECINFO_W))
         {
             return PAGE_EXECUTE_READWRITE;
         }
 
-        if ((secinfo->flags & SGX_SECINFO_X) && 
+        if ((secinfo->flags & SGX_SECINFO_X) &&
             (secinfo->flags & SGX_SECINFO_R))
         {
             return PAGE_EXECUTE_READ;
@@ -158,7 +151,7 @@ static uint32_t _MakeMemoryProtectParam(
         if ((secinfo->flags & SGX_SECINFO_X))
             return PAGE_EXECUTE;
 
-        if ((secinfo->flags & SGX_SECINFO_R) && 
+        if ((secinfo->flags & SGX_SECINFO_R) &&
             (secinfo->flags & SGX_SECINFO_W))
         {
             return PAGE_READWRITE;
@@ -180,8 +173,7 @@ typedef struct __SGXEAddParam
     uint64_t src;     /* user address to copy from */
     uint64_t secinfo; /* section information about this page */
     uint16_t mrmask;  /* 0xffff if extend (measurement) will be performed */
-}
-SGXEAddParam;
+} SGXEAddParam;
 OE_PACK_END
 
 OE_PACK_BEGIN
@@ -190,8 +182,7 @@ typedef struct __SGXEinitParam
     uint64_t addr;
     uint64_t sigstruct;
     uint64_t einittoken;
-}
-SGXEinitParam;
+} SGXEinitParam;
 OE_PACK_END
 
 static SGX_Secs* _NewSecs(uint64_t base, uint64_t size)
@@ -204,21 +195,23 @@ static SGX_Secs* _NewSecs(uint64_t base, uint64_t size)
     memset(secs, 0, sizeof(SGX_Secs));
     secs->size = size;
     secs->base = base;
+
     /* ATTN: debug is hardcoded here; pass this in as parameter */
     secs->flags = SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT;
-    secs->xfrm = 0x07; /* what the driver sees with SGX SDK */
+
+    /* what the driver sees with SGX SDK */
+    secs->xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM; 
+
     /* COMMENT1: ssaframesize hardcoded to one for now */
     secs->ssaframesize = 1;
+
     /* secs->flags |= SGX_FLAGS_EINITTOKEN_KEY; */
     /* secs->flags |= SGX_FLAGS_PROVISION_KEY; */
 
     return secs;
 }
 
-static int _IoctlSimulate(
-    Self* self,
-    unsigned long request,
-    void* param)
+static int _IoctlSimulate(Self* self, unsigned long request, void* param)
 {
     switch (request)
     {
@@ -262,7 +255,8 @@ static int _IoctlSimulate(
 
             /* Verify that page is within enclave boundaries */
             if (addr < self->sim.addr ||
-                (uint8_t*)addr > (uint8_t*)self->sim.addr + self->sim.size - OE_PAGE_SIZE)
+                (uint8_t*)addr >
+                    (uint8_t*)self->sim.addr + self->sim.size - OE_PAGE_SIZE)
             {
                 return -1;
             }
@@ -301,10 +295,7 @@ static int _IoctlSimulate(
     return 0;
 }
 
-static int _IoctlReal(
-    Self* self,
-    unsigned long request,
-    void* param)
+static int _IoctlReal(Self* self, unsigned long request, void* param)
 {
 #if defined(__linux__)
 
@@ -326,7 +317,7 @@ static int _IoctlReal(
             if (!(secs = (SGX_Secs*)p->src))
                 return -1;
 
-            if (!secs->base || !secs->size)
+            if (!secs->size)
                 return -1;
 
             /* Ask OS to create the enclave */
@@ -369,16 +360,24 @@ static int _IoctlReal(
             SIZE_T num_bytes = 0;
             DWORD enclaveError;
 
+            DWORD protect = _MakeMemoryProtectParam(secinfo, false);
+
+            if (p->mrmask != 0xffff)
+            {
+                /* Do not extend (measure) this page */
+                protect |= PAGE_ENCLAVE_UNVALIDATED;
+            }
+
             if (!LoadEnclaveData(
-                GetCurrentProcess(),
-                addr,
-                src,
-                OE_PAGE_SIZE,
-                _MakeMemoryProtectParam(secinfo, false),
-                NULL,
-                0,
-                &num_bytes,
-                &enclaveError))
+                    GetCurrentProcess(),
+                    addr,
+                    src,
+                    OE_PAGE_SIZE,
+                    protect,
+                    NULL,
+                    0,
+                    &num_bytes,
+                    &enclaveError))
             {
                 return -1;
             }
@@ -392,15 +391,19 @@ static int _IoctlReal(
             ENCLAVE_INIT_INFO_SGX info;
 
             memset(&info, 0, sizeof(info));
-            memcpy(&info.SigStruct, (void*)p->sigstruct, sizeof(info.SigStruct));
-            memcpy(&info.EInitToken, (void*)p->einittoken, sizeof(info.EInitToken));
+            memcpy(
+                &info.SigStruct, (void*)p->sigstruct, sizeof(info.SigStruct));
+            memcpy(
+                &info.EInitToken,
+                (void*)p->einittoken,
+                sizeof(info.EInitToken));
 
             if (!InitializeEnclave(
-                GetCurrentProcess(),
-                (void*)p->addr,
-                &info,
-                sizeof(info),
-                &enclaveError))
+                    GetCurrentProcess(),
+                    (void*)p->addr,
+                    &info,
+                    sizeof(info),
+                    &enclaveError))
             {
                 return -1;
             }
@@ -419,10 +422,7 @@ static int _IoctlReal(
 #endif
 }
 
-static int _Ioctl(
-    Self* dev,
-    unsigned long request,
-    void* param)
+static int _Ioctl(Self* dev, unsigned long request, void* param)
 {
     if (dev->simulate)
         return _IoctlSimulate(dev, request, param);
@@ -432,18 +432,18 @@ static int _Ioctl(
 
 static void* _AllocateEnclaveMemory(uint64_t enclaveSize, int fd)
 {
-    /*
-    ** Resulting memory layout:
-    **
-    **    [............xxxxxxxxxxxxxxxxxxxxxxxx...............]
-    **     ^           ^                       ^              ^
-    **    MPTR        BASE                 BASE+SIZE      MPTR+SIZE*2
-    **
-    **    [MPTR...BASE]                 - unused
-    **    [BASE...BASE+SIZE]            - used
-    **    [BASE+SIZE...MPTR+SIZE*2]     - unused
-    **
-    */
+/*
+** Resulting memory layout:
+**
+**    [............xxxxxxxxxxxxxxxxxxxxxxxx...............]
+**     ^           ^                       ^              ^
+**    MPTR        BASE                 BASE+SIZE      MPTR+SIZE*2
+**
+**    [MPTR...BASE]                 - unused
+**    [BASE...BASE+SIZE]            - used
+**    [BASE+SIZE...MPTR+SIZE*2]     - unused
+**
+*/
 
 #if defined(__linux__)
 
@@ -510,10 +510,10 @@ done:
 
     /* Allocate virtual memory for this enclave */
     if (!(mptr = VirtualAlloc(
-        NULL, 
-        enclaveSize * 2, 
-        MEM_COMMIT | MEM_RESERVE,
-        PAGE_EXECUTE_READWRITE)))
+              NULL,
+              enclaveSize * 2,
+              MEM_COMMIT | MEM_RESERVE,
+              PAGE_EXECUTE_READWRITE)))
     {
         goto done;
     }
@@ -532,7 +532,6 @@ done:
 
         if (start != end && !VirtualFree(start, end - start, MEM_DECOMMIT))
             goto done;
-
     }
 
     /* Release [BASE+SIZE...MPTR+SIZE*2] */
@@ -585,8 +584,8 @@ static OE_Result _ECreateProc(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    if (self->measurer->ecreate(
-        self->measurer, enclaveSize, enclaveAddr) != OE_OK)
+    if (self->measurer->ecreate(self->measurer, enclaveSize, enclaveAddr) !=
+        OE_OK)
     {
         OE_THROW(OE_FAILURE);
     }
@@ -646,8 +645,8 @@ static OE_Result _EAddProc(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    if (self->measurer->eadd(
-        self->measurer, base, addr, src, flags, extend) != OE_OK)
+    if (self->measurer->eadd(self->measurer, base, addr, src, flags, extend) !=
+        OE_OK)
     {
         OE_THROW(OE_FAILURE);
     }
@@ -697,8 +696,8 @@ static OE_Result _EInitProc(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    if (self->measurer->einit(
-        self->measurer, addr, sigstruct, einittoken) != OE_OK)
+    if (self->measurer->einit(self->measurer, addr, sigstruct, einittoken) !=
+        OE_OK)
     {
         OE_THROW(OE_FAILURE);
     }
@@ -723,10 +722,7 @@ OE_CATCH:
     return result;
 }
 
-
-static OE_Result _GetHashProc(
-    OE_SGXDevice* dev,
-    OE_SHA256* hash)
+static OE_Result _GetHashProc(OE_SGXDevice* dev, OE_SHA256* hash)
 {
     OE_Result result = OE_UNEXPECTED;
     Self* self = (Self*)dev;
@@ -744,8 +740,7 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _CloseProc(
-    OE_SGXDevice* dev)
+static OE_Result _CloseProc(OE_SGXDevice* dev)
 {
     OE_Result result = OE_UNEXPECTED;
     Self* self = (Self*)dev;
@@ -766,8 +761,7 @@ OE_CATCH:
     return result;
 }
 
-static uint32_t _GetMagic(
-    const OE_SGXDevice* dev)
+static uint32_t _GetMagic(const OE_SGXDevice* dev)
 {
     Self* self = (Self*)dev;
 

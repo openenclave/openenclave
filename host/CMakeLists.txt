@@ -4,6 +4,7 @@ set(PLATFORM_SRC
     linux/aesm.c
     linux/enter.S
     linux/entersim.S
+    linux/exception.c
     linux/hostthread.c
     )
 elseif (WIN32)
@@ -12,6 +13,7 @@ set(PLATFORM_SRC
     windows/aesm.c
     windows/enter.asm
     windows/entersim.asm
+    windows/exception.c
     windows/hostthread.c
     )
 endif()
@@ -23,8 +25,6 @@ add_library(oehost STATIC
     elf.c
     enclave.c
     error.c
-    exception.c
-    files.c
     files.c
     fopen.c
     hexdump.c

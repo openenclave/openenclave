@@ -8,7 +8,6 @@ typedef struct _Args
     const void* data;
     size_t size;
     unsigned char hash[32];
-}
-Args;
+} Args;
 
 #endif /* _ARGS_H */

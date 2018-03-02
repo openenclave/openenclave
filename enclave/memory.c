@@ -1,9 +1,7 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/globals.h>
+#include <openenclave/enclave.h>
 
-bool OE_IsWithinEnclave(
-    const void* p,
-    size_t n)
+bool OE_IsWithinEnclave(const void* p, size_t n)
 {
     const uint8_t* start = (const uint8_t*)p;
     const uint8_t* end = (const uint8_t*)p + n;
@@ -24,9 +22,7 @@ bool OE_IsWithinEnclave(
     return true;
 }
 
-bool OE_IsOutsideEnclave(
-    const void* p,
-    size_t n)
+bool OE_IsOutsideEnclave(const void* p, size_t n)
 {
     const uint8_t* start = (const uint8_t*)p;
     const uint8_t* end = (const uint8_t*)p + n;

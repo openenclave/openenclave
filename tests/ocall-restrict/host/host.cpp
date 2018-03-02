@@ -1,15 +1,14 @@
-#include <cstring>
+#include <assert.h>
+#include <openenclave/bits/error.h>
+#include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <assert.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/error.h>
+#include <cstring>
 #include "../args.h"
 
 static OE_Enclave* enclave;
-
 
 OE_OCALL void TestEcall(void* args)
 {

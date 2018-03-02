@@ -39,21 +39,21 @@ size_t OE_Strlcat(char* dest, const char* src, size_t size);
  *
  * Refer to documentation for memcpy() function.
  */
-void *OE_Memcpy(void *dest, const void *src, size_t n);
+void* OE_Memcpy(void* dest, const void* src, size_t n);
 
 /**
  * Enclave implementation of the standard memset() function.
  *
  * Refer to documentation for memset() function.
  */
-void *OE_Memset(void *s, int c, size_t n);
+void* OE_Memset(void* s, int c, size_t n);
 
 /**
  * Enclave implementation of the standard memcmp() function.
  *
  * Refer to documentation for memcmp() function.
  */
-int OE_Memcmp(const void *s1, const void *s2, size_t n);
+int OE_Memcmp(const void* s1, const void* s2, size_t n);
 
 /**
  * Produce output according to a given format string.
@@ -114,7 +114,7 @@ int OE_Snprintf(char* str, size_t size, const char* fmt, ...);
  * @returns Returns the address of the allocated space.
  *
  */
-OE_ALWAYS_INLINE OE_INLINE void *OE_StackAlloc(size_t size, size_t alignment)
+OE_ALWAYS_INLINE OE_INLINE void* OE_StackAlloc(size_t size, size_t alignment)
 {
     void* ptr = __builtin_alloca(size + alignment);
 

@@ -9,7 +9,6 @@ typedef struct _TestArgs
     bool caught;
     bool dynamicCastWorks;
     size_t numConstructions;
-}
-TestArgs;
+} TestArgs;
 
 #endif /* _stdc_args_h */

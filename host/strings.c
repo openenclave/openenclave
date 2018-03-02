@@ -1,6 +1,6 @@
 #include "strings.h"
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 char* OE_Strdup(const char* str)
 {
@@ -11,10 +11,7 @@ char* OE_Strdup(const char* str)
 #endif
 }
 
-size_t OE_Strlcpy(
-    char* dest, 
-    const char* src, 
-    size_t size)
+size_t OE_Strlcpy(char* dest, const char* src, size_t size)
 {
     const char* start = src;
 
@@ -34,10 +31,7 @@ size_t OE_Strlcpy(
     return src - start;
 }
 
-size_t OE_Strlcat(
-    char* dest, 
-    const char* src, 
-    size_t size)
+size_t OE_Strlcat(char* dest, const char* src, size_t size)
 {
     size_t n = 0;
 

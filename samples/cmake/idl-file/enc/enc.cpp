@@ -1,10 +1,8 @@
-#include <openenclave/enclave.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 #include "file_t.h"
 
-OE_EXTERNC int TestReadFile(
-    const char *path,
-    unsigned int *checksum)
+OE_EXTERNC int TestReadFile(const char* path, unsigned int* checksum)
 {
     int rc = -1;
     MY_FILE* is = NULL;

@@ -1,9 +1,9 @@
-#include <openenclave/enclave.h>
+#include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/calls.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
+#include <openenclave/enclave.h>
 #include <openenclave/types.h>
 
 OE_Result SGX_CreateReport(
@@ -65,11 +65,7 @@ OE_Result SGX_CreateReport(
         "mov %3, %%rax\n\t" /* EREPORT */
         "ENCLU\n\t"
         :
-        :
-        "m"(ti),
-        "m"(rd),
-        "m"(r),
-        "i"(ENCLU_EREPORT));
+        : "m"(ti), "m"(rd), "m"(r), "i"(ENCLU_EREPORT));
 
     /* Copy REPORT to caller's buffer */
     OE_Memcpy(report, r, sizeof(SGX_Report));
@@ -94,7 +90,7 @@ OE_CHECK_SIZE(sizeof(SGX_ReportData), OE_REPORT_DATA_SIZE);
 
 OE_Result OE_GetReportForRemoteAttestation(
     const uint8_t reportData[OE_REPORT_DATA_SIZE],
-    void *report,
+    void* report,
     size_t* reportSize)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -120,20 +116,24 @@ OE_Result OE_GetReportForRemoteAttestation(
     /* Have host initialize the quote (SGX_InitQuote) */
     {
         if (!(args = (OE_InitQuoteArgs*)OE_HostCalloc(
-            1, sizeof(OE_InitQuoteArgs))))
+                  1, sizeof(OE_InitQuoteArgs))))
         {
             OE_THROW(OE_OUT_OF_MEMORY);
         }
 
-        OE_TRY(OE_OCall(OE_FUNC_INIT_QUOTE, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT));
+        OE_TRY(
+            OE_OCall(
+                OE_FUNC_INIT_QUOTE,
+                (uint64_t)args,
+                NULL,
+                OE_OCALL_FLAG_NOT_REENTRANT));
         OE_Memcpy(&targetInfo, &args->targetInfo, sizeof(SGX_TargetInfo));
     }
 
     /* Create the report */
-    OE_TRY((SGX_CreateReport(
-        &targetInfo,
-        (SGX_ReportData*)reportData,
-        (SGX_Report*)report)));
+    OE_TRY(
+        (SGX_CreateReport(
+            &targetInfo, (SGX_ReportData*)reportData, (SGX_Report*)report)));
 
     result = OE_OK;
 

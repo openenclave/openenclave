@@ -1,10 +1,7 @@
+#include <openenclave/bits/hexdump.h>
 #include <stdio.h>
-#include <openenclave/host.h>
-#include <openenclave/bits/utils.h>
 
-void __OE_HexDump(
-    const void* data_,
-    size_t size)
+void OE_HexDump(const void* data_, size_t size)
 {
     size_t i;
     const unsigned char* data = (const unsigned char*)data_;
