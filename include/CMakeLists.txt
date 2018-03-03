@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # OE main include files, add interface library, add install steps
 
 add_library(oe_includes INTERFACE)

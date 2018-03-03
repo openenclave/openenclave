@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <dirent.h>
 #include <sys/types.h>
 #include <cstdio>

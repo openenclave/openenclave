@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef _ENCGEN_TYPES_H
 #define _ENCGEN_TYPES_H
 

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef _OE_ENCLAVE_CONTEXT_H_
 #define _OE_ENCLAVE_CONTEXT_H_
 #include <openenclave/bits/sgxtypes.h>

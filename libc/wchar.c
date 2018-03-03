@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <wchar.h>
 
 int wcscoll(const wchar_t* s1, const wchar_t* s2)

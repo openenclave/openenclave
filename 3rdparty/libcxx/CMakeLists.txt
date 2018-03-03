@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # Copy headers to collector-dir, patch, compile libcxx into intermittent library
 # place install rule
 

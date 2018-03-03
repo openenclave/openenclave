@@ -1,5 +1,8 @@
 #!/usr/bin/make -f
 
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # mbedTLS library definitions
 VERSION=2.6.0
 BASE=mbedtls-$(VERSION)

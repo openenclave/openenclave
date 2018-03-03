@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+#
 # Helper function to obtain name for a test-case. Given a filename, chop
 # extension, dir-prefix, and replace special chars.
 #

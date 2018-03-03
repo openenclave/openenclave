@@ -1,6 +1,9 @@
 #!/usr/bin/make -f
 
-#MUSL C library definitions
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+# MUSL C library definitions
 VERSION=1.1.10
 BASE=musl-$(VERSION)
 PKG=$(BASE).tar.gz

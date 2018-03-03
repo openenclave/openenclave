@@ -106,7 +106,7 @@ The BSD License
 
 Copyright 2010-2011 PathScale, Inc. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
@@ -371,7 +371,7 @@ License notice for musl
 musl as a whole is licensed under the following standard MIT license:
 
 ----------------------------------------------------------------------
-Copyright © 2005-2014 Rich Felker, et al.
+Copyright ï¿½ 2005-2014 Rich Felker, et al.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -402,7 +402,7 @@ Bobby Bingham
 Boris Brezillon
 Brent Cook
 Chris Spiegel
-Clément Vasseur
+Clï¿½ment Vasseur
 Denys Vlasenko
 Emil Renner Berthing
 Felix Fietkau
@@ -430,7 +430,7 @@ sin
 Solar Designer
 Stefan Kristiansson
 Szabolcs Nagy
-Timo Teräs
+Timo Terï¿½s
 Trutz Behn
 Valentin Ochs
 William Haddon
@@ -439,37 +439,37 @@ Portions of this software are derived from third-party works licensed
 under terms compatible with the above MIT license:
 
 The TRE regular expression implementation (src/regex/reg* and
-src/regex/tre*) is Copyright © 2001-2008 Ville Laurikari and licensed
+src/regex/tre*) is Copyright ï¿½ 2001-2008 Ville Laurikari and licensed
 under a 2-clause BSD license (license text in the source files). The
 included version has been heavily modified by Rich Felker in 2012, in
 the interests of size, simplicity, and namespace cleanliness.
 
 Much of the math library code (src/math/* and src/complex/*) is
-Copyright © 1993,2004 Sun Microsystems or
-Copyright © 2003-2011 David Schultz or
-Copyright © 2003-2009 Steven G. Kargl or
-Copyright © 2003-2009 Bruce D. Evans or
-Copyright © 2008 Stephen L. Moshier
+Copyright ï¿½ 1993,2004 Sun Microsystems or
+Copyright ï¿½ 2003-2011 David Schultz or
+Copyright ï¿½ 2003-2009 Steven G. Kargl or
+Copyright ï¿½ 2003-2009 Bruce D. Evans or
+Copyright ï¿½ 2008 Stephen L. Moshier
 and labelled as such in comments in the individual source files. All
 have been licensed under extremely permissive terms.
 
-The ARM memcpy code (src/string/armel/memcpy.s) is Copyright © 2008
+The ARM memcpy code (src/string/armel/memcpy.s) is Copyright ï¿½ 2008
 The Android Open Source Project and is licensed under a two-clause BSD
 license. It was taken from Bionic libc, used on Android.
 
 The implementation of DES for crypt (src/misc/crypt_des.c) is
-Copyright © 1994 David Burren. It is licensed under a BSD license.
+Copyright ï¿½ 1994 David Burren. It is licensed under a BSD license.
 
 The implementation of blowfish crypt (src/misc/crypt_blowfish.c) was
 originally written by Solar Designer and placed into the public
 domain. The code also comes with a fallback permissive license for use
 in jurisdictions that may not recognize the public domain.
 
-The smoothsort implementation (src/stdlib/qsort.c) is Copyright © 2011
+The smoothsort implementation (src/stdlib/qsort.c) is Copyright ï¿½ 2011
 Valentin Ochs and is licensed under an MIT-style license.
 
 The BSD PRNG implementation (src/prng/random.c) and XSI search API
-(src/search/*.c) functions are Copyright © 2011 Szabolcs Nagy and
+(src/search/*.c) functions are Copyright ï¿½ 2011 Szabolcs Nagy and
 licensed under following terms: "Permission to use, copy, modify,
 and/or distribute this code for any purpose with or without fee is
 hereby granted. There is no warranty."
@@ -508,3 +508,37 @@ the first place, and hereby explicitly released to the Public Domain:
 
 All public headers: include/*, arch/*/bits/*
 Startup files: crt/*
+
+
+License notice for Intel SGX SDK
+--------------------------------
+
+BSD License
+
+Copyright (C) 2011-2017 Intel Corporation. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+  * Neither the name of Intel Corporation nor the names of its
+    contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

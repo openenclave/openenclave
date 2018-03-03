@@ -1,5 +1,8 @@
 #!/usr/bin/make -f
 
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 all: update-dlmalloc
 	echo All done - please review changes
 

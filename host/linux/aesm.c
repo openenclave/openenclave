@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/trace.h>

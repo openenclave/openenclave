@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # Copy MUSL headers to collector dir and wrap
 # actual compilation and lib-generation happens in <ROOT>/libc/
 

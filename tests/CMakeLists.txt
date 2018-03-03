@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 option(ENABLE_LIBC_TESTS "Build libc tests and include in test list" ON)
 option(ENABLE_LIBCXX_TESTS "Build libcxx tests and include in test list" OFF)
 

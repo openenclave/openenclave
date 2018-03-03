@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <enc/build.h>
 #include <enc/host.h>
 #include <enc/sha.h>

@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # create a binary for each testcase listed in ../tests.supported
 
 include(add_enclave_executable)

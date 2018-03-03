@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/sgxdev.h>

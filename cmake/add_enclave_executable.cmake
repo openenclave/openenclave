@@ -1,4 +1,6 @@
-
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+#
 # Helper function to create enclave binary
 #
 # Generates a target for an enclave binary

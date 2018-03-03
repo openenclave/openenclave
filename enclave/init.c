@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "init.h"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/fault.h>

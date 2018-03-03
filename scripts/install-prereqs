@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 apt-get -y install gcc
 apt-get -y install g++
 apt-get -y install make

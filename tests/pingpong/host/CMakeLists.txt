@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 include(oeidl_file)
 oeidl_file(../pingpong.idl host gen)
 

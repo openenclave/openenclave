@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <limits.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>

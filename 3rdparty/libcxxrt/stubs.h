@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef __OE_LIBCXXRT_STUBS_H
 #define __OE_LIBCXXRT_STUBS_H
 
@@ -7,6 +10,6 @@
 
 #define fprintf __libcxxrt_fprintf
 
-#define sched_yield __libcxxrt_sched_yield 
+#define sched_yield __libcxxrt_sched_yield
 
 #endif /* __OE_LIBCXXRT_STUBS_H */

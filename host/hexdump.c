@@ -1,4 +1,9 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/bits/hexdump.h>
+#include <openenclave/bits/utils.h>
+#include <openenclave/host.h>
 #include <stdio.h>
 
 void OE_HexDump(const void* data_, size_t size)

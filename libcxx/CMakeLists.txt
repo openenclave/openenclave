@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+#
 # CMake project for CXX lib - re-archive the objects from
 # external libcxx, libcxxrt, libunwind and wrap in easy-to-use CMake target
 #

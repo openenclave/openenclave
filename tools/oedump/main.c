@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>

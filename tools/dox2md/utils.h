@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef _DOX2MD_UTILS_H
 #define _DOX2MD_UTILS_H
 

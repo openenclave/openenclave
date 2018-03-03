@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef __OPEN_ENCLAVE_LIBCXX_CONFIG
 #define __OPEN_ENCLAVE_LIBCXX_CONFIG
 

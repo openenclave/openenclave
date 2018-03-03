@@ -1,5 +1,8 @@
 # !/bin/bash
-
+#
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+#
 # script to test the samples
 #
 # Arguments: [-i <install_prefix> <bin_dir>]

@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 .PHONY: sgx1
 
 ##==============================================================================
@@ -29,7 +32,7 @@ build: .build
 	$(MAKE) .sdk_installer
 	rm -f ./linux-sgx/linux/installer/bin/sgx_linux_x64_psw_*.bin
 	$(MAKE) .psw_installer
-	$(MAKE) build-dynamic-application-loader-host-interface 
+	$(MAKE) build-dynamic-application-loader-host-interface
 	touch .build
 
 linux-sgx:
@@ -102,7 +105,7 @@ install:
 	$(MAKE) install-psw
 	$(MAKE) start
 
-install-sdk: 
+install-sdk:
 ifdef INSTALL_SDK
 	$(MAKE) /opt/intel/sgxsdk
 endif

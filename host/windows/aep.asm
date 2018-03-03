@@ -1,3 +1,6 @@
+;; Copyright (c) Microsoft Corporation. All rights reserved.
+;; Licensed under the MIT License.
+
 include ksamd64.inc
 
 ;; ThreadBinding_tcs EQU 0h

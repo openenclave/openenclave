@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # install the samples w/o this very CMakeLists.txt
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave

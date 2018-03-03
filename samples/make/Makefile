@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 ifndef OPENENCLAVE_CONFIG
 $(error Please define the OPENENCLAVE_CONFIG environment variable manually or by sourcing the installed OpenEnclave 'environment' file)
 endif
