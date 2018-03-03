@@ -127,7 +127,6 @@ int main(int argc, const char* argv[])
     TestNestedCalls(0, 32);
     TestNestedCalls(0, 64);
 
-    /*
     printf("Test nest calls test with exception inside enclave for each call "
            "in.\n");
     for (int i = 1; i < 17; i++)
@@ -137,7 +136,6 @@ int main(int argc, const char* argv[])
 
     TestNestedCalls(1, 32);
     TestNestedCalls(1, 64);
-    */
 
     OE_TerminateEnclave(enclave);
 
