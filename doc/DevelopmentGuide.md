@@ -9,8 +9,8 @@ Coding Conventions
    `long, unsigned char`).
 
 * **DO** use `const` and `static` and visibility modifiers to scope exposure of
-   variables and methods as much as possible. 
-   
+   variables and methods as much as possible.
+
 * **DON'T** use global variables where possible.
 
 Style Guide
@@ -31,7 +31,7 @@ The [.clang-format](../.clang-format) file describes the style that is enforced
 by the script, which is based off the LLVM style with modifications closer to
 the default Visual Studio style. See [clang-format style options](
 http://releases.llvm.org/3.6.0/tools/clang/docs/ClangFormatStyleOptions.html)
-for details. 
+for details.
 
 Naming conventions we use that are not automated include:
 
@@ -43,10 +43,10 @@ Naming conventions we use that are not automated include:
    `MemCtx`).
 6. Prefix names with `_` to indicate internal and private fields or methods
    (e.g. `_internalField, _InternalMethod()`).
-7. Prefix Open Enclave specific names in the global namespace with `OE_` 
+7. Prefix Open Enclave specific names in the global namespace with `OE_`
    (e.g. `OE_Result, OE_CallEnclave`).
 
-Above all, if a file happens to differ in style from these guidelines (e.g. 
+Above all, if a file happens to differ in style from these guidelines (e.g.
 private members are named `m_member` rather than `_member`), the existing style
 in that file takes precedence.
 
