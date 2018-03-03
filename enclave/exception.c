@@ -241,7 +241,7 @@ void _OE_ExceptionDispatcher(OE_CONTEXT* oe_context)
         // Refer to OE_Enter in host/enter.S. The contract we defined for EENTER
         // is the RBP should not change after return from EENTER.
         // When the exception is handled, restores the host RBP, RSP to the
-        // value when regular ECALL happens before first pass exception 
+        // value when regular ECALL happens before first pass exception
         // handling.
         td->host_rbp = td->host_previous_rbp;
         td->host_rsp = td->host_previous_rsp;

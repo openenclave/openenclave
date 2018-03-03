@@ -33,6 +33,14 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
     // Check if the signal happens inside the enclave.
     if ((exitAddress == (uint64_t)OE_AEP) && (exitCode == ENCLU_ERESUME))
     {
+        // Check if the enclave exception happens inside the first pass
+        // exception handler.
+        ThreadBinding* thread_data = GetThreadBinding();
+        if (thread_data->flags & _OE_THREAD_HANDLING_EXCEPTION)
+        {
+            abort();
+        }
+
         // Call-in enclave to handle the exception.
         OE_Enclave* enclave = _OE_QueryEnclaveInstance((void*)tcsAddress);
         if (enclave == NULL)
@@ -40,10 +48,17 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
             abort();
         }
 
+        // Set the flag marks this thread is handling an enclave exception.
+        thread_data->flags |= _OE_THREAD_HANDLING_EXCEPTION;
+
+        // Call into enclave first pass exception handler.
         uint64_t argOut = 0;
         OE_Result result =
             OE_ECall(enclave, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0, &argOut);
-        if (result == OE_OK || argOut == OE_EXCEPTION_CONTINUE_EXECUTION)
+
+        // Reset the flag
+        thread_data->flags &= (~_OE_THREAD_HANDLING_EXCEPTION);
+        if (result == OE_OK && argOut == OE_EXCEPTION_CONTINUE_EXECUTION)
         {
             // This exception has been handled by the enclave. Let's resume.
             return;
