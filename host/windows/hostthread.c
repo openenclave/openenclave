@@ -74,7 +74,7 @@ int OE_H_MutexLock(OE_H_Mutex* Lock)
                 Lock, newLock, OE_H_MUTEX_INITIALIZER) !=
             OE_H_MUTEX_INITIALIZER)
             {
-                if (OE_H_MutexDestroy(newLock))
+                if (OE_H_MutexDestroy(&newLock))
                     return 1;
             }
     }
