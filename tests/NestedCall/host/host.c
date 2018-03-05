@@ -127,6 +127,13 @@ int main(int argc, const char* argv[])
     TestNestedCalls(0, 32);
     TestNestedCalls(0, 64);
 
+    // Skip the tests not suitable for simulation mode.
+    if ((flags & OE_FLAG_SIMULATE) != 0)
+    {
+        printf("=== passed all tests (NestedCall)\n");
+        return 0;
+    }
+
     printf(
         "Test nest calls test with exception inside enclave for each call "
         "in.\n");

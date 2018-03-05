@@ -3,12 +3,12 @@
 #include <openenclave/host.h>
 #include <openenclave/oe_queue.h>
 
-static OE_SLIST_HEAD(EnclaveListHead, _EnclaveEntry) g_enclave_list_head;
+static OE_LIST_HEAD(EnclaveListHead, _EnclaveEntry) g_enclave_list_head;
 static OE_H_Mutex g_enclave_list_lock = OE_H_MUTEX_INITIALIZER;
 
 typedef struct _EnclaveEntry
 {
-    OE_SLIST_ENTRY(_EnclaveEntry) next_entry;
+    OE_LIST_ENTRY(_EnclaveEntry) next_entry;
     OE_Enclave* enclave;
 } EnclaveEntry;
 
@@ -38,7 +38,7 @@ uint32_t _OE_PushEnclaveInstance(OE_Enclave* enclave)
 
     // Return error if the enclave is already in global list.
     EnclaveEntry* tmp;
-    OE_SLIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
+    OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
     {
         if (tmp->enclave == enclave)
         {
@@ -56,7 +56,7 @@ uint32_t _OE_PushEnclaveInstance(OE_Enclave* enclave)
     newEntry->enclave = enclave;
 
     // Insert to the beginning of the list.
-    OE_SLIST_INSERT_HEAD(&g_enclave_list_head, newEntry, next_entry);
+    OE_LIST_INSERT_HEAD(&g_enclave_list_head, newEntry, next_entry);
 
     // Return success.
     ret = 0;
@@ -100,12 +100,11 @@ uint32_t _OE_RemoveEnclaveInstance(OE_Enclave* enclave)
 
     // Enumerate the enclave list, remove the target entry if find it.
     EnclaveEntry* tmp;
-    OE_SLIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
+    OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
     {
         if (tmp->enclave == enclave)
         {
-            OE_SLIST_REMOVE(
-                &g_enclave_list_head, tmp, _EnclaveEntry, next_entry);
+            OE_LIST_REMOVE(tmp, next_entry);
             free(tmp);
             ret = 0;
             break;
@@ -151,7 +150,7 @@ OE_Enclave* _OE_QueryEnclaveInstance(void* tcs)
 
     // Enumerate the enclave list, find which enclave owns the TCS.
     EnclaveEntry* tmp;
-    OE_SLIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
+    OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
     {
         OE_Enclave* enclave = tmp->enclave;
         for (uint32_t i = 0; i < OE_COUNTOF(enclave->bindings); i++)
