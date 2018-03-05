@@ -64,8 +64,18 @@ int OE_H_MutexInit(OE_H_Mutex* Lock)
 
 int OE_H_MutexLock(OE_H_Mutex* Lock)
 {
-    if ((*Lock == OE_H_MUTEX_INITIALIZER) && OE_H_MutexInit(Lock))
-        return 1;
+    if (*Lock == OE_H_MUTEX_INITIALIZER)
+    {
+        if (OE_H_MutexInit(&newLock))
+            return 1;
+        if (InterlockedCompareExchangePointer(
+                Lock, newLock, OE_H_MUTEX_INITIALIZER)) !=
+            OE_H_MUTEX_INITIALIZER)
+            {
+                if (OE_H_MutexDestroy(newLock))
+                    return 1;
+            }
+    }
 
     return WaitForSingleObject(*Lock, INFINITE) != WAIT_OBJECT_0;
 }
