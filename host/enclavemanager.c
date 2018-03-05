@@ -175,13 +175,3 @@ cleanup:
 
     return ret;
 }
-
-void _OE_InitializeEnclaveManager(void)
-{
-    if (OE_H_MutexInit(&g_enclave_list_lock) != 0)
-    {
-        abort();
-    }
-
-    return;
-}

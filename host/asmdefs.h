@@ -95,8 +95,4 @@ uint32_t _OE_RemoveEnclaveInstance(OE_Enclave* enclave);
 #ifndef __ASSEMBLER__
 OE_Enclave* _OE_QueryEnclaveInstance(void* tcs);
 #endif
-
-#ifndef __ASSEMBLER__
-void _OE_InitializeEnclaveManager(void);
-#endif
 #endif /* _ASMDEFS_H */

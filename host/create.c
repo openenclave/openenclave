@@ -35,7 +35,6 @@ static OE_H_OnceType _enclave_init_once;
 static void _InitializeEnclave(void)
 {
     _OE_InitializeHostException();
-    _OE_InitializeEnclaveManager();
 }
 
 
