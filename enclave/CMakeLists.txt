@@ -25,6 +25,10 @@ add_library(oeenclave STATIC
 
 target_link_libraries(oeenclave PUBLIC oe_includes)
 
+# we strip the default include containing the compiler-provided intrinsics
+# add it back in
+target_include_directories(oeenclave SYSTEM PUBLIC ${OE_C_COMPILER_INCDIR})
+
 target_compile_options(oeenclave PUBLIC
     -m64 -fPIC
     -nostdinc
