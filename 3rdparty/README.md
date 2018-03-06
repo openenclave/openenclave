@@ -1,7 +1,7 @@
 3rdparty
 ========
 
-This directory contains third-party software used in OpenEnclave. It contains
+This directory contains third-party software used in Open Enclave. It contains
 the following directories:
 
 - [dlmalloc](dlmalloc) - Dynamic memory allocator (used in oelibc)
@@ -17,4 +17,3 @@ the following directories:
 - [mbedtls](mbedtls) - Crypto library
 
 - [openssl](openssl) - Crypto library
-

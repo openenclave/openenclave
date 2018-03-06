@@ -41,7 +41,7 @@ OE_EXTERNC_BEGIN
 #define OE_EXCEPTION_SOFTWARE 0x2
 
 /**
-* Register a new vector exception handler.
+* Register a new vectored exception handler.
 *
 * Call this function to add a new vectored exception handler. If successful, the
 * registered handler will be called when an exception happens inside enclave.
@@ -64,12 +64,12 @@ void* OE_AddVectoredExceptionHandler(
     POE_VECTORED_EXCEPTION_HANDLER vectoredHandler);
 
 /**
-* Remove an existing exception handler.
+* Remove an existing vectored exception handler.
 *
 * @param vectoredHandler The pointer to a registered exception handler returned
 * from a successful OE_AddVectoredExceptionHandler() call.
 *
-* @returns This function returns ZERO if success.
+* @returns This function returns 0 on success.
 */
 uint64_t OE_RemoveVectoredExceptionHandler(void* vectoredHandler);
 

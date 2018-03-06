@@ -1,7 +1,0 @@
-
-    (*) Prevent re-entrancy of all "system" OCALLs.
-
-    (*) Add a flag to OE_OCall() to prevent re-entrancy.
-
-    (*) Consider stack protection schemes. (what does GCC offer?)
-

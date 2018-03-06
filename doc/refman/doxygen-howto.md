@@ -1,17 +1,16 @@
-Using Doxygen in OpenEnclave
-============================
+Using Doxygen in Open Enclave
+=============================
 
-This short document explains how to use Doxygen within OpenEnclave.
+This short document explains how to use Doxygen within Open Enclave.
 
 ## Overview
 
-Doxygen is used to extract documentation from the OpenEnclave source code.
+Doxygen is used to extract documentation from the Open Enclave source code.
 This directory contains a makefile for building all Doxygen output formats
 including:
 
 - HTML (html directory)
 - XML (xml directory)
-- LaTeX (latex directory)
 - Markdown (md directory)
 
 The xml2md tool is used to generate Markdown format (from Doxygen-generated
@@ -20,9 +19,9 @@ into the Github repository. This allows one to browse the documentation from
 the Github site.
 
 To update the generated documentation, create the cmake build tree by using
-the instructions in [Getting Started with OpenEnclave](doc/GettingStarted.md).
+the instructions in [Getting Started with Open Enclave](../GettingStarted.md).
 Assuming that _/build_ is the root of the cmake build tree, a successful make
-will build the HTML, LaTeX and XML reference documentation by default. You can
+will build the HTML and XML reference documentation by default. You can
 also make the documentation directly:
 
 ```
@@ -55,7 +54,7 @@ Append new sources to the **INPUT** variable.
 
 ## Source-code documentation conventions
 
-OpenEnclave uses the Doxygen Markdown style througout the sources. To learn
+Open Enclave uses the Doxygen Markdown style througout the sources. To learn
 more about Doyxgen Markdown, see:
 
   [Doxygen Markdown Support](https://www.stack.nl/~dimitri/doxygen/manual/markdown.html)
@@ -66,7 +65,7 @@ The sections below explain the basics.
 
 ### Comment blocks
 
-In OpenEnclave, Doxygen comment blocks are defined as follows.
+In Open Enclave, Doxygen comment blocks are defined as follows.
 
 ```
 /**
@@ -195,4 +194,3 @@ For example.
  *
  */
 ```
-
