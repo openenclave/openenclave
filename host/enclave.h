@@ -64,8 +64,8 @@ typedef struct _ThreadBinding
     /* The thread this slot is assigned to */
     OE_H_Thread thread;
 
-    /* Whether this binding is busy */
-    bool busy;
+    /* Flags */
+    uint64_t flags;
 
     /* The number of bindings in effect */
     uint64_t count;
@@ -75,6 +75,12 @@ typedef struct _ThreadBinding
 } ThreadBinding;
 
 OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
+
+/* Whether this binding is busy */
+#define _OE_THREAD_BUSY 0X1UL
+
+/* Whether the thread is handling an exception */
+#define _OE_THREAD_HANDLING_EXCEPTION 0X2UL
 
 /* Get thread data from thread-specific data (TSD) */
 ThreadBinding* GetThreadBinding(void);

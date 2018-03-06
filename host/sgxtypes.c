@@ -1,6 +1,6 @@
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
-#include <openenclave/bits/hexdump.h>
 #include <stdio.h>
 
 void __SGX_DumpEinitToken(const SGX_EInitToken* p)

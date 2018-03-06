@@ -84,4 +84,15 @@ void _OE_NotifyOCallStart(_OE_HostOCallFrame* frame_pointer, void* tcs);
 void _OE_NotifyOCallEnd(_OE_HostOCallFrame* frame_pointer, void* tcs);
 #endif
 
+#ifndef __ASSEMBLER__
+uint32_t _OE_PushEnclaveInstance(OE_Enclave* enclave);
+#endif
+
+#ifndef __ASSEMBLER__
+uint32_t _OE_RemoveEnclaveInstance(OE_Enclave* enclave);
+#endif
+
+#ifndef __ASSEMBLER__
+OE_Enclave* _OE_QueryEnclaveInstance(void* tcs);
+#endif
 #endif /* _ASMDEFS_H */

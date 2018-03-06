@@ -506,18 +506,10 @@ typedef struct _TD
 
     /* Host registers saved here on entry and restored on exit */
     uint64_t host_rcx; /* EENTER return address */
-    uint64_t host_rdx;
-    uint64_t host_r8;
-    uint64_t host_r9;
-    uint64_t host_r10;
-    uint64_t host_r11;
-    uint64_t host_r12;
-    uint64_t host_r13;
-    uint64_t host_r14;
-    uint64_t host_r15;
     uint64_t host_rsp;
     uint64_t host_rbp;
-    uint64_t host_stack_base;
+    uint64_t host_previous_rsp;
+    uint64_t host_previous_rbp;
 
     /* Return arguments from OCALL */
     int64_t oret_func;
@@ -536,7 +528,7 @@ typedef struct _TD
     uint32_t ocall_flags;
 
     /* Reserved */
-    uint8_t reserved[3768];
+    uint8_t reserved[3832];
 } TD;
 
 OE_CHECK_SIZE(sizeof(TD), 4096);

@@ -10,18 +10,10 @@
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, magic) == TD_magic);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, depth) == TD_depth);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rcx) == TD_host_rcx);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rdx) == TD_host_rdx);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r8) == TD_host_r8);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r9) == TD_host_r9);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r10) == TD_host_r10);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r11) == TD_host_r11);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r12) == TD_host_r12);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r13) == TD_host_r13);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r14) == TD_host_r14);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_r15) == TD_host_r15);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rsp) == TD_host_rsp);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_rbp) == TD_host_rbp);
-OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_stack_base) == TD_host_stack_base);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_previous_rsp) == TD_host_previous_rsp);
+OE_STATIC_ASSERT(OE_OFFSETOF(TD, host_previous_rbp) == TD_host_previous_rbp);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, oret_func) == TD_oret_func);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, oret_arg) == TD_oret_arg);
 OE_STATIC_ASSERT(OE_OFFSETOF(TD, callsites) == TD_callsites);
@@ -236,9 +228,6 @@ void TD_Init(TD* td)
         /* Set the ECALL depth to zero */
         td->depth = 0;
 
-        /* Set the base of the stack to zero for now */
-        td->host_stack_base = 0;
-
         /* List of callsites is initially empty */
         td->callsites = NULL;
 
@@ -269,9 +258,6 @@ void TD_Clear(TD* td)
 
     /* Clear the magic number */
     td->magic = 0;
-
-    /* Clear the stack base since we are no longer in an OCALL */
-    td->host_stack_base = 0;
 
     /* Never clear TD.initialized nor host registers */
 }
