@@ -40,7 +40,6 @@ static void _InitializeEnclave(void)
     _OE_InitializeHostException();
 }
 
-
 /*
 **==============================================================================
 **

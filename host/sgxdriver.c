@@ -203,7 +203,7 @@ static SGX_Secs* _NewSecs(uint64_t base, uint64_t size)
     secs->flags = SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT;
 
     /* what the driver sees with SGX SDK */
-    secs->xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM; 
+    secs->xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
     /* COMMENT1: ssaframesize hardcoded to one for now */
     secs->ssaframesize = 1;

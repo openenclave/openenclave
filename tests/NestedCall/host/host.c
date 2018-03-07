@@ -133,7 +133,8 @@ int main(int argc, const char* argv[])
     // Skip the tests not suitable for simulation mode.
     if ((flags & OE_FLAG_SIMULATE) != 0)
     {
-        printf("Skip the hardware exception tests not suitable for simulation"
+        printf(
+            "Skip the hardware exception tests not suitable for simulation"
             "mode.\n");
     }
     else

@@ -598,7 +598,8 @@ static void _ReleaseTCS(OE_Enclave* enclave, void* tcs)
         {
             ThreadBinding* binding = &enclave->bindings[i];
 
-            if ((binding->flags & _OE_THREAD_BUSY) && (void*)binding->tcs == tcs)
+            if ((binding->flags & _OE_THREAD_BUSY) &&
+                (void*)binding->tcs == tcs)
             {
                 binding->count--;
 
