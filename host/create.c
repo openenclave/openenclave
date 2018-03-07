@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #define OE_TRACE_LEVEL 1
 #include "strings.h"
 
@@ -36,7 +39,6 @@ static void _InitializeEnclave(void)
 {
     _OE_InitializeHostException();
 }
-
 
 /*
 **==============================================================================

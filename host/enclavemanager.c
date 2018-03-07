@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "enclave.h"
 #include <assert.h>
 #include <openenclave/host.h>

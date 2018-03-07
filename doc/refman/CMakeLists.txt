@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+#
 # CMake project for reference manual
 #
 # Build and install reference manual. Disable with "ENABLE_REFMAN=OFF", such as when do Doxygen is installed.

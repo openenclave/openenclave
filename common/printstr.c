@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /**
  * This file is only intended as an include into typeinfo.c for
  * defining char and wchar_t strings in the absence of templates in C.

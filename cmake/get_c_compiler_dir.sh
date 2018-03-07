@@ -1,5 +1,8 @@
 #!/bin/bash
-
+#
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+#
 # obtain default compiler include holding the intrinsics
 #
 # Args: <CC> - The C-compiler to use

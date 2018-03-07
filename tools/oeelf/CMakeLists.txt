@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 add_executable(oeelf main.c)
 
 target_link_libraries(oeelf oehost)

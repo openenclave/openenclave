@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 struct Date
 {
@@ -37,11 +39,11 @@ function [ecall, string] char* TestStrdup(
     [string, in] const char* s);
 
 function [ecall] int32 CopyObject(
-    [inout, one] struct Object* dest, 
+    [inout, one] struct Object* dest,
     [in, one] const struct Object* src);
 
 function [ecall] int32 CopyObjects(
-    [out] struct Object dest[2], 
+    [out] struct Object dest[2],
     [in] const struct Object src[2]);
 
 function [ecall] int32 ECALL_MultipleParams(
@@ -64,7 +66,7 @@ function [ocall] int32 OCALL_MultipleParams(
 
 function [ecall] int32 GetObjectRef(
     [out, ref, one] struct Object* object);
- 
+
 function [ecall] int32 ModifyObject(
     [inout, one] struct Object* object);
 
@@ -86,7 +88,7 @@ function [ecall] void TestCallback(
     [in, unchecked] void* func);
 
 function [ecall] bool TestIntPtrRef(
-    [out, ref, count=n] int* intPtrOut, 
+    [out, ref, count=n] int* intPtrOut,
     [in] size_t n);
 
 function [ecall] void TestBufferOverun(

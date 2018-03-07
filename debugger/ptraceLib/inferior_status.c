@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "inferior_status.h"
 #include <pthread.h>
 #include <stdlib.h>

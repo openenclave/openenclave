@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #if defined(__linux__)
 #define __OE_NEED_TIME_CALLS
 #endif
@@ -595,7 +598,8 @@ static void _ReleaseTCS(OE_Enclave* enclave, void* tcs)
         {
             ThreadBinding* binding = &enclave->bindings[i];
 
-            if ((binding->flags & _OE_THREAD_BUSY) && (void*)binding->tcs == tcs)
+            if ((binding->flags & _OE_THREAD_BUSY) &&
+                (void*)binding->tcs == tcs)
             {
                 binding->count--;
 

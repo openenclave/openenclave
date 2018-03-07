@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
 #else

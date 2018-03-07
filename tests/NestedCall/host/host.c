@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <assert.h>
 #include <limits.h>
 #include <openenclave/bits/error.h>
@@ -130,7 +133,8 @@ int main(int argc, const char* argv[])
     // Skip the tests not suitable for simulation mode.
     if ((flags & OE_FLAG_SIMULATE) != 0)
     {
-        printf("Skip the hardware exception tests not suitable for simulation"
+        printf(
+            "Skip the hardware exception tests not suitable for simulation"
             "mode.\n");
     }
     else

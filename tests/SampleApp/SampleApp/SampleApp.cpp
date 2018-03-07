@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/enclave.h>
 
 const char* ProtectedMessage = "Hello world from Enclave\n\0";

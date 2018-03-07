@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "constants_x64.inc"
 
 //==============================================================================
@@ -6,9 +9,9 @@
 //
 // Routine Description:
 //
-//   This function captures the context of the caller. All register values except 
-//   the rip are exactly same as the values before this function call instruction 
-//   is executed, the rip in the output context will be set the return address of 
+//   This function captures the context of the caller. All register values except
+//   the rip are exactly same as the values before this function call instruction
+//   is executed, the rip in the output context will be set the return address of
 //   this function.
 //
 //  Arguments:
@@ -23,8 +26,8 @@
 OE_SnapCurrentContext:
 .cfi_startproc
     // Save the flags to stack.
-    pushfq 
-    
+    pushfq
+
     // Get general registers.
     // Save rax, rbx, rcx, rdx.
     movq    %rax, OE_CONTEXT_RAX(%rdi)
@@ -77,7 +80,7 @@ OE_SnapCurrentContext:
 
 //==============================================================================
 //
-// This macro is used to restore the X87, SSE, rax, rbx, rcx, rdx, rsi, and r8, 
+// This macro is used to restore the X87, SSE, rax, rbx, rcx, rdx, rsi, and r8,
 // r9 ... r15
 //
 //==============================================================================
@@ -115,11 +118,11 @@ OE_SnapCurrentContext:
 //
 // Routine Description:
 //
-//   This function restore following partial context in the specified context 
+//   This function restore following partial context in the specified context
 //   record.
 //       1. GPR excluding RIP, RSP and RBP.
 //       2. X87, SSE.
-//       3. Flags. 
+//       3. Flags.
 //
 // Arguments:
 //
@@ -156,7 +159,7 @@ OE_RestorePartialContext:
 //
 // Routine Description:
 //
-//   This function restores the full oe_context, and continue run on the rip of 
+//   This function restores the full oe_context, and continue run on the rip of
 //   input context.
 //
 // Arguments:
@@ -194,7 +197,7 @@ OE_ContinueExecution:
     // Restore flags.
     popfq
 
-    // Recovery the correct rsp. 
+    // Recovery the correct rsp.
     add     $(ABI_REDZONE_BYTE_SIZE + 8), %rsp
 
     // Jump to the target.

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef _CONSTANTS_X64_INC
 #define _CONSTANTS_X64_INC
 //

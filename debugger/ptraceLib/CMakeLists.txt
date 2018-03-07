@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 add_library(oe_ptrace SHARED
     oe_ptrace.c
 	inferior_status.c

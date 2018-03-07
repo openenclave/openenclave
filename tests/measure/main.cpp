@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <enc/defs.h>
 #include <enc/sha.h>
 #include <enc/types.h>

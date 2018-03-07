@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 all: linux-sgx-driver build
 
 build:
@@ -13,7 +16,7 @@ distclean:
 	rm -rf linux-sgx-driver
 
 ##==============================================================================
-## 
+##
 ## install:
 ##
 ##==============================================================================
@@ -28,8 +31,8 @@ DEV=$(wildcard /dev/isgx)
 
 RUNNING=$(shell lsmod | grep isgx)
 
-install: 
-	$(MAKE) -s stop-aesm 
+install:
+	$(MAKE) -s stop-aesm
 	$(MAKE) -s run-rmmod
 	$(MAKE) mkdir
 	$(MAKE) check-module
@@ -39,12 +42,12 @@ install:
 	$(MAKE) run-depmod
 	$(MAKE) run-modprobe
 	$(MAKE) check-running
-	$(MAKE) -s start-aesm 
+	$(MAKE) -s start-aesm
 
-stop-aesm: 
+stop-aesm:
 	-@ service aesmd stop 2> /dev/null > /dev/null
 
-start-aesm: 
+start-aesm:
 	-@ service aesmd start 2> /dev/null > /dev/null
 
 run-rmmod:
@@ -88,12 +91,12 @@ ifeq ($(DEV),)
 endif
 
 ##==============================================================================
-## 
+##
 ## uninstall:
 ##
 ##==============================================================================
 
-uninstall: 
-	$(MAKE) -s stop-aesm 
+uninstall:
+	$(MAKE) -s stop-aesm
 	$(MAKE) -s run-rmmod
 

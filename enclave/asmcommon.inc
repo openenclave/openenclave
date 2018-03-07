@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef _ASM_COMMON_INC
 #define _ASM_COMMON_INC
 
@@ -5,7 +8,7 @@
 //
 // This macro is used to cleanup the enclave Registers. Following registers will be scrubbed:
 // 1. General Purpose registers excluding RAX, RBX, RCX, RDI, RSI, RBP, and RSP
-//     RAX and RBX are input registers of EEXIT. 
+//     RAX and RBX are input registers of EEXIT.
 //     RCX is output register of EEXIT.
 //     RDI and RSI is output parameters defined by SDK.
 //     RBP and RSP will be set to host rbp and rsp right before EEXIT is executed.

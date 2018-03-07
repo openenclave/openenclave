@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/enclave.h>
 
 int OE_Once(OE_OnceType* once, void (*func)(void))

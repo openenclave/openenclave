@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # Copy libunwind sources and build out-of-tree
 
 set (OELIBCXX_UNWIND_OPTS

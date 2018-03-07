@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef _HOSTCALLS_ARGS_H
 #define _HOSTCALLS_ARGS_H
 
