@@ -35,6 +35,18 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
     # to fix warnings as they arise, so they don't accumulate "to be fixed later".
     add_compile_options(-Wall -Werror)
 
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+        # Obtain default gcc include dir to gain access to intrinsics
+        execute_process(
+            COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/cmake/get_c_compiler_dir.sh ${CMAKE_C_COMPILER}
+            OUTPUT_VARIABLE OE_C_COMPILER_INCDIR
+            ERROR_VARIABLE OE_ERR
+        )
+        if(NOT "${OE_ERR}" STREQUAL "")
+            message(FATAL_ERROR ${OE_ERR})
+        endif()
+    endif()
+
 elseif(MSVC)
     # MSVC options go here
 endif()

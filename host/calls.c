@@ -542,7 +542,7 @@ static void* _AssignTCS(OE_Enclave* enclave)
         {
             ThreadBinding* binding = &enclave->bindings[i];
 
-            if (binding->busy && binding->thread == thread)
+            if ((binding->flags & _OE_THREAD_BUSY) && binding->thread == thread)
             {
                 binding->count++;
                 tcs = (void*)binding->tcs;
@@ -557,9 +557,9 @@ static void* _AssignTCS(OE_Enclave* enclave)
             {
                 ThreadBinding* binding = &enclave->bindings[i];
 
-                if (!binding->busy)
+                if (!(binding->flags & _OE_THREAD_BUSY))
                 {
-                    binding->busy = true;
+                    binding->flags |= _OE_THREAD_BUSY;
                     binding->thread = thread;
                     binding->count = 1;
                     tcs = (void*)binding->tcs;
@@ -598,13 +598,13 @@ static void _ReleaseTCS(OE_Enclave* enclave, void* tcs)
         {
             ThreadBinding* binding = &enclave->bindings[i];
 
-            if (binding->busy && (void*)binding->tcs == tcs)
+            if ((binding->flags & _OE_THREAD_BUSY) && (void*)binding->tcs == tcs)
             {
                 binding->count--;
 
                 if (binding->count == 0)
                 {
-                    binding->busy = false;
+                    binding->flags &= (~_OE_THREAD_BUSY);
                     binding->thread = 0;
                     memset(&binding->event, 0, sizeof(binding->event));
                     _SetThreadBinding(NULL);

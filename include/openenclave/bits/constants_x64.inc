@@ -52,6 +52,16 @@
 #define OE_CONTEXT_FLOAT    0xA0
 
 //
+// XSTATE constants.
+//
+
+
+#define XSAVE_ALIGNMENT             0x40
+#define LEGACY_XSAVE_AREA           0X200
+#define XSAVE_HEADER_LENGTH         0X40
+#define MINIMAL_XSTATE_AREA_LENGTH  (LEGACY_XSAVE_AREA + XSAVE_HEADER_LENGTH)
+
+//
 //  AMD64 ABI related constants.
 //
 

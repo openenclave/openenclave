@@ -33,6 +33,27 @@
 #include "enclave.h"
 #include "memalign.h"
 
+static OE_H_OnceType _enclave_init_once;
+
+static void _InitializeEnclave(void)
+{
+    _OE_InitializeHostException();
+}
+
+
+/*
+**==============================================================================
+**
+** The per process enclave host side initialization.
+**
+**==============================================================================
+*/
+
+static void _InitializeEnclaveHost()
+{
+    OE_H_Once(&_enclave_init_once, _InitializeEnclave);
+}
+
 /*
 **==============================================================================
 **
@@ -1090,7 +1111,7 @@ OE_Result OE_CreateEnclave(
     bool simulate = false;
     bool debug = false;
 
-    _OE_InitializeHostException();
+    _InitializeEnclaveHost();
 
     if (enclaveOut)
         *enclaveOut = NULL;
@@ -1145,6 +1166,12 @@ OE_Result OE_CreateEnclave(
     /* Set the magic number */
     enclave->magic = ENCLAVE_MAGIC;
 
+    /* Push the new created enclave to the global list. */
+    if (_OE_PushEnclaveInstance(enclave) != 0)
+    {
+        OE_THROW(OE_FAILURE);
+    }
+
     /* Notify GDB that a new enclave is created */
     _OE_NotifyGdbEnclaveCreation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
@@ -1183,6 +1210,9 @@ OE_Result OE_TerminateEnclave(OE_Enclave* enclave)
     /* Notify GDB that this enclave is terminated */
     _OE_NotifyGdbEnclaveTermination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+    /* Remove this enclave from the global list. */
+    _OE_RemoveEnclaveInstance(enclave);
 
     /* Clear the magic number */
     enclave->magic = 0;

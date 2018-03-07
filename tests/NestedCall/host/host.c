@@ -130,17 +130,25 @@ int main(int argc, const char* argv[])
     TestNestedCalls(0, 32);
     TestNestedCalls(0, 64);
 
-    /*
-    printf("Test nest calls test with exception inside enclave for each call "
-           "in.\n");
-    for (int i = 1; i < 17; i++)
+    // Skip the tests not suitable for simulation mode.
+    if ((flags & OE_FLAG_SIMULATE) != 0)
     {
-        TestNestedCalls(1, i);
+        printf("Skip the hardware exception tests not suitable for simulation"
+            "mode.\n");
     }
+    else
+    {
+        printf(
+            "Test nest calls test with exception inside enclave for each call "
+            "in.\n");
+        for (int i = 1; i < 17; i++)
+        {
+            TestNestedCalls(1, i);
+        }
 
-    TestNestedCalls(1, 32);
-    TestNestedCalls(1, 64);
-    */
+        TestNestedCalls(1, 32);
+        TestNestedCalls(1, 64);
+    }
 
     OE_TerminateEnclave(enclave);
 

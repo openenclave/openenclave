@@ -27,6 +27,7 @@ add_library(oehost STATIC
     dupenv.c
     elf.c
     enclave.c
+    enclavemanager.c
     error.c
     files.c
     fopen.c
