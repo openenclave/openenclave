@@ -12,6 +12,7 @@ install(FILES
     ${PROJECT_SOURCE_DIR}/cmake/add_enclave_executable.cmake
     ${PROJECT_SOURCE_DIR}/cmake/compilersettings.cmake
     ${PROJECT_SOURCE_DIR}/cmake/oeidl_file.cmake
+    ${PROJECT_SOURCE_DIR}/cmake/get_c_compiler_dir.sh
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples/cmake/cmake
     )
 

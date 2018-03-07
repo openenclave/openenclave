@@ -8,9 +8,11 @@ apt-get -y install g++
 apt-get -y install make
 apt-get -y install clang-format
 apt-get -y install cmake
+# Needed for cmake/get_c_compiler_dir.sh
+apt-get -y install gawk
 # Needed to generate documentation during make
 apt-get -y install doxygen
-# Needed for 3rdparty/libcxx/update.make 
+# Needed for 3rdparty/libcxx/update.make
 apt-get -y install subversion
 # Needed for oesign
 apt-get -y install openssl
