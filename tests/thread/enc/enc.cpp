@@ -5,9 +5,11 @@
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "../args.h"
 
-static OE_Mutex mutex = OE_MUTEX_INITIALIZER;
+static OE_Mutex mutex1 = OE_MUTEX_INITIALIZER;
+static OE_Mutex mutex2 = OE_MUTEX_INITIALIZER;
 
 // Force parallel invocation of malloc():
 static void _TestParallelMallocs()
@@ -31,9 +33,16 @@ OE_ECALL void TestMutex(void* args_)
 {
     TestMutexArgs* args = (TestMutexArgs*)args_;
 
-    OE_MutexLock(&mutex);
-    args->count++;
-    OE_MutexUnlock(&mutex);
+    assert(OE_MutexLock(&mutex1) == 0);
+    assert(OE_MutexLock(&mutex1) == 0);
+    args->count1++;
+    assert(OE_MutexLock(&mutex2) == 0);
+    assert(OE_MutexLock(&mutex2) == 0);
+    args->count2++;
+    assert(OE_MutexUnlock(&mutex1) == 0);
+    assert(OE_MutexUnlock(&mutex1) == 0);
+    assert(OE_MutexUnlock(&mutex2) == 0);
+    assert(OE_MutexUnlock(&mutex2) == 0);
 
     OE_HostPrintf("Unlocked: %ld\n", OE_ThreadSelf());
 }

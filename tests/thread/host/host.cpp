@@ -37,7 +37,8 @@ void TestMutex(OE_Enclave* enclave)
     for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    assert(_args.count == NUM_THREADS);
+    assert(_args.count1 == NUM_THREADS);
+    assert(_args.count2 == NUM_THREADS);
 }
 
 void* WaiterThread(void* args)

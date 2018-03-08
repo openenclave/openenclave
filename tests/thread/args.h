@@ -8,7 +8,8 @@
 
 typedef struct _TestMutexArgs
 {
-    size_t count;
+    size_t count1;
+    size_t count2;
 } TestMutexArgs;
 
 #endif /* _stdc_args_h */

@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/sgxtypes.h>
@@ -163,8 +160,11 @@ typedef struct _OE_MutexImpl
     /* Lock used to synchronize access to OE_ThreadData queue */
     OE_Spinlock lock;
 
-    /* Number of references to support recursive locking */
+    /* Number of references to support recurse locking */
     unsigned int refs;
+
+    /* The thread that has locked this mutex */
+    OE_ThreadData* owner;
 
     /* Queue of waiting threads (front holds the mutex) */
     struct
@@ -189,6 +189,45 @@ int OE_MutexInit(OE_Mutex* mutex)
     return 0;
 }
 
+/* Caller manages the spinlock */
+static int _MutexLock(OE_MutexImpl* m, OE_ThreadData* self)
+{
+    /* If this thread has already locked the mutex */
+    if (m->owner == self)
+    {
+        /* Increase the reference count */
+        m->refs++;
+        return 0;
+    }
+
+    /* If no thread has locked this mutex yet */
+    if (m->owner == NULL)
+    {
+        /* If the waiters queue is empty */
+        if (m->queue.front == NULL)
+        {
+            /* Obtain the mutex */
+            m->owner = self;
+            m->refs++;
+            return 0;
+        }
+
+        /* If this thread is at the front of the waiters queue */
+        if (m->queue.front == self)
+        {
+            /* Remove this thread from front of the waiters queue */
+            _QueuePopFront((Queue*)&m->queue);
+
+            /* Obtain the mutex */
+            m->owner = self;
+            m->refs = 1;
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
 int OE_MutexLock(OE_Mutex* mutex)
 {
     OE_MutexImpl* m = (OE_MutexImpl*)mutex;
@@ -202,18 +241,18 @@ int OE_MutexLock(OE_Mutex* mutex)
     {
         OE_SpinLock(&m->lock);
         {
-            /* If SELF not on queue, insert at back */
-            if (!_QueueContains((Queue*)&m->queue, self))
+            /* Attempt to acquire lock */
+            if (_MutexLock(m, self) == 0)
             {
-                _QueuePushBack((Queue*)&m->queue, self);
-            }
-
-            /* If self at front of queue */
-            if (m->queue.front == self)
-            {
-                m->refs++;
                 OE_SpinUnlock(&m->lock);
                 return 0;
+            }
+
+            /* If the waiters queue does not contain this thread */
+            if (!_QueueContains((Queue*)&m->queue, self))
+            {
+                /* Insert thread at back of waiters queue */
+                _QueuePushBack((Queue*)&m->queue, self);
             }
         }
         OE_SpinUnlock(&m->lock);
@@ -235,19 +274,9 @@ int OE_MutexTryLock(OE_Mutex* mutex)
 
     OE_SpinLock(&m->lock);
     {
-        /* If this thread is already the owner, grab the lock */
-        if (m->queue.front == self)
+        /* Attempt to acquire lock */
+        if (_MutexLock(m, self) == 0)
         {
-            m->refs++;
-            OE_SpinUnlock(&m->lock);
-            return 0;
-        }
-
-        /* If waiter queue is empty, grab the lock */
-        if (_QueueEmpty((Queue*)&m->queue))
-        {
-            _QueuePushBack((Queue*)&m->queue, self);
-            m->refs++;
             OE_SpinUnlock(&m->lock);
             return 0;
         }
@@ -268,12 +297,16 @@ static int _MutexUnlock(OE_Mutex* mutex, OE_ThreadData** waiter)
 
     OE_SpinLock(&m->lock);
     {
-        /* If SELF is the owner */
-        if (m->queue.front == self)
+        /* If this thread has the mutex locked */
+        if (m->owner == self)
         {
+            /* If decreasing the reference count causes it to become zero */
             if (--m->refs == 0)
             {
-                _QueuePopFront((Queue*)&m->queue);
+                /* Thread no longer has this mutex locked */
+                m->owner = NULL;
+
+                /* Set waiter to the next thread on the queue (maybe none) */
                 *waiter = m->queue.front;
             }
 
