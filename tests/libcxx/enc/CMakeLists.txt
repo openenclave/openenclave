@@ -14,6 +14,12 @@ add_library(libcxxtest-support
     )
 target_compile_options(libcxxtest-support PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
+    -Wno-error=attributes
+    -Wno-error=maybe-uninitialized
+    -Wno-error=strict-overflow
+    -Wno-error=unused-but-set-variable
+    -Wno-error=unused-local-typedefs
+    -Wno-error=unused-variable
     )
 target_link_libraries(libcxxtest-support PUBLIC oelibcxx)
 target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
