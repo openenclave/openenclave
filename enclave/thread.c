@@ -424,7 +424,7 @@ int OE_CondWait(OE_Cond* condition, OE_Mutex* mutex)
         }
     }
     OE_SpinUnlock(&cond->lock);
-    OE_MutexUnlock(mutex);
+    OE_MutexLock(mutex);
 
     return 0;
 }
