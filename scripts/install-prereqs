@@ -3,19 +3,25 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-apt-get -y install gcc
-apt-get -y install g++
-apt-get -y install make
+# Install required packages.
+#
+# When using new tools, obtain the corresponding package they come from with
+# dpkg -S <binary-name>
+# and add it to the list.
+#
 apt-get -y install clang-format
 apt-get -y install cmake
-# Needed for cmake/get_c_compiler_dir.sh
-apt-get -y install gawk
 # Needed to generate documentation during make
 apt-get -y install doxygen
-# Needed for 3rdparty/libcxx/update.make
-apt-get -y install subversion
-# Needed for oesign
-apt-get -y install openssl
-apt-get -y install libssl-dev
+# Needed for cmake/get_c_compiler_dir.sh
+apt-get -y install gawk
+apt-get -y install gcc
+apt-get -y install g++
 # Needed for dox2md document generation
 apt-get -y install libexpat1-dev
+apt-get -y install libssl-dev
+apt-get -y install make
+# Needed for oesign
+apt-get -y install openssl
+# Needed for 3rdparty/libcxx/update.make
+apt-get -y install subversion
