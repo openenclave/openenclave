@@ -90,12 +90,12 @@ void* ExclusiveAccessThread(void* args)
 
 void TestThreadWakeWait(OE_Enclave* enclave)
 {
-    pthread_t threads[4];
+    pthread_t threads[NUM_THREADS];
 
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_create(&threads[i], NULL, ExclusiveAccessThread, enclave);
 
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
     // The OE_Calls in this test should succeed without any segv/double free.
