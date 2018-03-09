@@ -48,6 +48,8 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
     int ret = -1;
     OE_ThreadWakeWaitArgs* args = NULL;
 
+    // OE_HostAllocForCallHost allocates memory on the host stack.
+    // This allocated memory does not have to be explicitly freed.
     if (!(args =
               OE_HostAllocForCallHost(sizeof(OE_ThreadWakeWaitArgs), 0, false)))
         goto done;
@@ -65,10 +67,6 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
     ret = 0;
 
 done:
-
-    if (args)
-        OE_HostFree(args);
-
     return ret;
 }
 

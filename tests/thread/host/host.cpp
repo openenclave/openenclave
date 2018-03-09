@@ -66,6 +66,41 @@ void TestCond(OE_Enclave* enclave)
         pthread_join(threads[i], NULL);
 }
 
+void* ExclusiveAccessThread(void* args)
+{
+    const size_t ITERS = 2;
+    OE_Enclave* enclave = (OE_Enclave*)args;
+
+    printf("Thread Starting\n");
+    for (size_t i = 0; i < ITERS; i++)
+    {
+        sleep(1);
+        assert(
+            OE_CallEnclave(enclave, "WaitForExclusiveAccess", NULL) == OE_OK);
+        sleep(1);
+
+        assert(
+            OE_CallEnclave(enclave, "RelinquishExclusiveAccess", NULL) ==
+            OE_OK);
+        sleep(1);
+    }
+    printf("Thread Ending\n");
+    return NULL;
+}
+
+void TestThreadWakeWait(OE_Enclave* enclave)
+{
+    pthread_t threads[4];
+
+    for (size_t i = 0; i < 4; i++)
+        pthread_create(&threads[i], NULL, ExclusiveAccessThread, enclave);
+
+    for (size_t i = 0; i < 4; i++)
+        pthread_join(threads[i], NULL);
+
+    // The OE_Calls in this test should succeed without any segv/double free.
+}
+
 int main(int argc, const char* argv[])
 {
     OE_Result result;
@@ -87,6 +122,8 @@ int main(int argc, const char* argv[])
     TestMutex(enclave);
 
     TestCond(enclave);
+
+    //TestThreadWakeWait(enclave);
 
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
     {
