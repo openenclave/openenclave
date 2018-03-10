@@ -36,7 +36,7 @@
 #define CSSA            (-10*OE_WORDSIZE)(%rbp)
 #define RSP             (-11*OE_WORDSIZE)(%rbp)
 #define HOST_CONTEXT    (-12*OE_WORDSIZE)(%rbp)
-#define PARAMS_SPACE    0x2d0
+#define PARAMS_SPACE    0x300
 
 .globl OE_EnterSim
 .type OE_EnterSim, @function

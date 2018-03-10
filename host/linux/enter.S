@@ -42,7 +42,7 @@
 #define ARG2OUT         (-9*OE_WORDSIZE)(%rbp)
 #define RSP             (-10*OE_WORDSIZE)(%rbp)
 #define HOST_CONTEXT    (-11*OE_WORDSIZE)(%rbp)
-#define PARAMS_SPACE    0x2d0
+#define PARAMS_SPACE    0x300
 
 .globl __morestack
 .type __morestack, @function
