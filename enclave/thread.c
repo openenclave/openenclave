@@ -167,11 +167,7 @@ typedef struct _OE_MutexImpl
     OE_ThreadData* owner;
 
     /* Queue of waiting threads (front holds the mutex) */
-    struct
-    {
-        OE_ThreadData* front;
-        OE_ThreadData* back;
-    } queue;
+    Queue queue;
 } OE_MutexImpl;
 
 OE_STATIC_ASSERT(sizeof(OE_MutexImpl) <= sizeof(OE_Mutex));
@@ -216,7 +212,7 @@ static int _MutexLock(OE_MutexImpl* m, OE_ThreadData* self)
         if (m->queue.front == self)
         {
             /* Remove this thread from front of the waiters queue */
-            _QueuePopFront((Queue*)&m->queue);
+            _QueuePopFront(&m->queue);
 
             /* Obtain the mutex */
             m->owner = self;
@@ -249,10 +245,10 @@ int OE_MutexLock(OE_Mutex* mutex)
             }
 
             /* If the waiters queue does not contain this thread */
-            if (!_QueueContains((Queue*)&m->queue, self))
+            if (!_QueueContains(&m->queue, self))
             {
                 /* Insert thread at back of waiters queue */
-                _QueuePushBack((Queue*)&m->queue, self);
+                _QueuePushBack(&m->queue, self);
             }
         }
         OE_SpinUnlock(&m->lock);
@@ -348,7 +344,7 @@ int OE_MutexDestroy(OE_Mutex* mutex)
 
     OE_SpinLock(&m->lock);
     {
-        if (_QueueEmpty((Queue*)&m->queue))
+        if (_QueueEmpty(&m->queue))
         {
             OE_Memset(m, 0, sizeof(OE_Mutex));
             ret = 0;
