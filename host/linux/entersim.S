@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "../asmdefs.h"
+#include <openenclave/bits/constants_x64.inc>
 
 //==============================================================================
 //
@@ -36,7 +37,7 @@
 #define CSSA            (-10*OE_WORDSIZE)(%rbp)
 #define RSP             (-11*OE_WORDSIZE)(%rbp)
 #define HOST_CONTEXT    (-12*OE_WORDSIZE)(%rbp)
-#define PARAMS_SPACE    0x300
+#define PARAMS_SPACE    ((12*OE_WORDSIZE) + OE_CONTEXT_SIZE)
 
 .globl OE_EnterSim
 .type OE_EnterSim, @function
