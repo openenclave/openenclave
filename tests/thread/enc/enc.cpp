@@ -43,15 +43,61 @@ OE_ECALL void TestMutex(void* args_)
     assert(OE_MutexUnlock(&mutex2) == 0);
     assert(OE_MutexUnlock(&mutex2) == 0);
 
-    OE_HostPrintf("Unlocked: %ld\n", OE_ThreadSelf());
+    OE_HostPrintf("TestMutex: %ld\n", OE_ThreadSelf());
+}
+
+static void _TestMutex1(size_t* count)
+{
+    assert(OE_MutexLock(&mutex1) == 0);
+    (*count)++;
+    assert(OE_MutexUnlock(&mutex1) == 0);
+    OE_HostPrintf("TestMutex1: %ld\n", OE_ThreadSelf());
+}
+
+static void _TestMutex2(size_t* count)
+{
+    assert(OE_MutexLock(&mutex2) == 0);
+    (*count)++;
+    assert(OE_MutexUnlock(&mutex2) == 0);
+    OE_HostPrintf("TestMutex2: %ld\n", OE_ThreadSelf());
 }
 
 static OE_Cond cond = OE_COND_INITIALIZER;
 static OE_Mutex cond_mutex = OE_MUTEX_INITIALIZER;
 
+/* Assign a mutex to be used in test below: returns 1 or 2 */
+static size_t AssignMutex()
+{
+    static size_t _n = 0;
+    static OE_Spinlock _lock;
+
+    OE_SpinLock(&_lock);
+    _n++;
+    OE_SpinUnlock(&_lock);
+
+    /* Return 0 or 1 */
+    return (_n % 2) ? 1 : 2;
+}
+
 OE_ECALL void Wait(void* args_)
 {
+    static size_t _count1 = 0;
+    static size_t _count2 = 0;
+    WaitArgs* args = (WaitArgs*)args_;
+
     _TestParallelMallocs();
+
+    /* Assign the mutex to test */
+    size_t n = AssignMutex();
+
+    if (n == 1)
+        _TestMutex1(&_count1);
+    else if (n == 2)
+        _TestMutex2(&_count2);
+    else
+        assert(0);
+
+    OE_HostPrintf("TestMutex2%zu()\n", n);
 
     /* Wait on the condition variable */
     OE_HostPrintf("Waiting: %ld\n", OE_ThreadSelf());
@@ -62,6 +108,9 @@ OE_ECALL void Wait(void* args_)
     OE_HostPrintf("Done waiting!\n");
 
     OE_MutexUnlock(&cond_mutex);
+
+    assert(_count1 + _count2 == args->numThreads);
+
     _TestParallelMallocs();
 }
 

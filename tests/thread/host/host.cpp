@@ -44,8 +44,9 @@ void TestMutex(OE_Enclave* enclave)
 void* WaiterThread(void* args)
 {
     OE_Enclave* enclave = (OE_Enclave*)args;
+    static WaitArgs _args = { NUM_THREADS };
 
-    OE_Result result = OE_CallEnclave(enclave, "Wait", NULL);
+    OE_Result result = OE_CallEnclave(enclave, "Wait", &_args);
     assert(result == OE_OK);
 
     return NULL;
