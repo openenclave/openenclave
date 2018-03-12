@@ -57,7 +57,7 @@ do
     --include-exts=*)
         userIncludeExts="${opt#*=}"
         ;;
-        
+
     *)
       echo "$0: unknown option:  $opt"
       exit 1
@@ -155,17 +155,17 @@ check_clang-format
 
 ##==============================================================================
 ##
-## Determine parameters for finding files to format 
+## Determine parameters for finding files to format
 ##
 ##==============================================================================
 
-findargs=' .'
+findargs='find .'
 
 get_find_args()
 {
     local defaultExcludeDirs='3rdparty prereqs build'
     local defaultIncludeExts='h c cpp'
-    
+
     if [ -z "${userExcludeDirs}" ]; then
         local excludeDirs=( ${defaultExcludeDirs} )
     else
@@ -175,7 +175,7 @@ get_find_args()
 
     for exc in "${excludeDirs[@]}"
     do
-        findargs="${findargs} ! ( -path ./${exc} -prune )"
+        findargs="${findargs} ! \( -path ./${exc} -prune \)"
     done
 
     if [ -z "${userIncludeExts}" ]; then
@@ -185,26 +185,26 @@ get_find_args()
         local includeExts=( ${userIncludeExts} )
     fi
 
-    findargs="${findargs} ("
+    findargs="${findargs} \("
     for ((i=0; i<${#includeExts[@]}; i++));
-    do 
-        findargs="${findargs} -iname *.${includeExts[$i]}"
+    do
+        findargs="${findargs} -iname '*.${includeExts[$i]}'"
         if [ $((i + 1)) -lt ${#includeExts[@]} ]; then
             findargs="${findargs} -o"
         fi
     done
-    findargs="${findargs} )"
+    findargs="${findargs} \)"
 }
 
 get_find_args
 
 log_verbose "Query for files for format:"
-log_verbose "find ${findargs}"
+log_verbose "${findargs}"
 log_verbose ""
 
 ##==============================================================================
 ##
-## Call clang-format for each file to be formatted 
+## Call clang-format for each file to be formatted
 ##
 ##==============================================================================
 
@@ -213,14 +213,14 @@ failcount=0
 
 if [ "${whatif}" = "1" ]; then
     cfargs='-style=file -output-replacements-xml '
-else 
+else
     cfargs='-style=file -i '
 fi
 
-for file in `find ${findargs}`
+for file in $(eval $findargs)
 do
     ((filecount+=1))
-    
+
     log_whatif "Formatting $file ..."
 
     if [ "${verbose}" = "1" ]; then
