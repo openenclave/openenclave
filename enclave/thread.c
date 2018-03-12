@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/sgxtypes.h>
@@ -158,7 +160,7 @@ typedef struct _OE_MutexImpl
     /* Lock used to synchronize access to OE_ThreadData queue */
     OE_Spinlock lock;
 
-    /* Number of references to support recurse locking */
+    /* Number of references to support recursive locking */
     unsigned int refs;
 
     /* The thread that has locked this mutex */
@@ -178,11 +180,11 @@ int OE_MutexInit(OE_Mutex* mutex)
 {
     OE_MutexImpl* m = (OE_MutexImpl*)mutex;
 
-    if (m)
-    {
-        OE_Memset(m, 0, sizeof(OE_Mutex));
-        m->lock = OE_SPINLOCK_INITIALIZER;
-    }
+    if (!m)
+        return -1;
+
+    OE_Memset(m, 0, sizeof(OE_Mutex));
+    m->lock = OE_SPINLOCK_INITIALIZER;
 
     return 0;
 }
@@ -206,7 +208,7 @@ static int _MutexLock(OE_MutexImpl* m, OE_ThreadData* self)
         {
             /* Obtain the mutex */
             m->owner = self;
-            m->refs++;
+            m->refs = 1;
             return 0;
         }
 
