@@ -226,7 +226,7 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
             OE_SpinUnlock(&_lock);
         }
 
-        OE_CallHost("host_usleep", (void*)(100 * 1000));
+        OE_CallHost("host_usleep", (void*)(3 * 1000));
 
         // Lock next specified mutex.
         LockAndUnlockMutexes(mutexes + 1);
@@ -244,6 +244,6 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
 
         OE_HostPrintf("%ld: Unlocking %s \n", OE_ThreadSelf(), name);
         OE_MutexUnlock(mutex);
-        OE_CallHost("host_usleep", (void*)(100 * 1000));
+        OE_CallHost("host_usleep", (void*)(3 * 1000));
     }
 }

@@ -104,7 +104,7 @@ void TestThreadWakeWait(OE_Enclave* enclave)
     printf("TestThreadWakeWait Complete\n");
 }
 
-void host_usleep(void* args)
+OE_OCALL void host_usleep(void* args)
 {
     usleep((size_t)args);
 }
