@@ -57,7 +57,7 @@ do
     --include-exts=*)
         userIncludeExts="${opt#*=}"
         ;;
-        
+
     *)
       echo "$0: unknown option:  $opt"
       exit 1
@@ -84,9 +84,9 @@ Formats all C/C++ source files based on the .clang-format rules
 
 OPTIONS:
     -h, --help              Print this help message.
-    -v, --verbose           Display verbose output. When used with --whatif,
-                            will also display XML output of expected changes.
-    -w, --whatif            Run the script without actually modifying the files.
+    -v, --verbose           Display verbose output.
+    -w, --whatif            Run the script without actually modifying the files
+                            and display the diff of expected changes, if any.
     --exclude-dirs          Subdirectories to exclude. If unspecified, then
                             ./3rdparty, ./build and ./prereqs are excluded.
                             All subdirectories are relative to the current path.
@@ -98,7 +98,7 @@ EXAMPLES:
 To determine what lines of each file in the default configuration would be
 modified by format-code, you can run from the root folder:
 
-    $ ./scripts/format-code -v -w
+    $ ./scripts/format-code -w
 
 To update only all .c and .cpp files in tests/ except for tests/echo/host, you
 can run from the tests folder:
@@ -155,17 +155,17 @@ check_clang-format
 
 ##==============================================================================
 ##
-## Determine parameters for finding files to format 
+## Determine parameters for finding files to format
 ##
 ##==============================================================================
 
-findargs=' .'
+findargs='find .'
 
 get_find_args()
 {
     local defaultExcludeDirs='3rdparty prereqs build'
     local defaultIncludeExts='h c cpp'
-    
+
     if [ -z "${userExcludeDirs}" ]; then
         local excludeDirs=( ${defaultExcludeDirs} )
     else
@@ -175,7 +175,7 @@ get_find_args()
 
     for exc in "${excludeDirs[@]}"
     do
-        findargs="${findargs} ! ( -path ./${exc} -prune )"
+        findargs="${findargs} ! \( -path ./${exc} -prune \)"
     done
 
     if [ -z "${userIncludeExts}" ]; then
@@ -185,55 +185,62 @@ get_find_args()
         local includeExts=( ${userIncludeExts} )
     fi
 
-    findargs="${findargs} ("
+    findargs="${findargs} \("
     for ((i=0; i<${#includeExts[@]}; i++));
-    do 
-        findargs="${findargs} -iname *.${includeExts[$i]}"
+    do
+        findargs="${findargs} -iname '*.${includeExts[$i]}'"
         if [ $((i + 1)) -lt ${#includeExts[@]} ]; then
             findargs="${findargs} -o"
         fi
     done
-    findargs="${findargs} )"
+    findargs="${findargs} \)"
 }
 
 get_find_args
 
 log_verbose "Query for files for format:"
-log_verbose "find ${findargs}"
+log_verbose "${findargs}"
 log_verbose ""
 
 ##==============================================================================
 ##
-## Call clang-format for each file to be formatted 
+## Call clang-format for each file to be formatted
 ##
 ##==============================================================================
 
 filecount=0
-failcount=0
+changecount=0
 
 if [ "${whatif}" = "1" ]; then
-    cfargs='-style=file -output-replacements-xml '
-else 
+    cfargs='-style=file '
+else
     cfargs='-style=file -i '
 fi
 
-for file in `find ${findargs}`
+for file in $(eval $findargs)
 do
     ((filecount+=1))
-    
+
     log_whatif "Formatting $file ..."
 
-    if [ "${verbose}" = "1" ]; then
-        ${cf} ${cfargs} $file
+    if [ "${whatif}" = "1" ]; then
+        ${cf} ${cfargs} $file | diff -u "$file" -
     else
-        ${cf} ${cfargs} $file > /dev/null
+        if [ "${verbose}" = "1" ]; then
+            ${cf} ${cfargs} $file
+        else
+            ${cf} ${cfargs} $file > /dev/null
+        fi
     fi
 
     if [ "$?" != "0" ]; then
-        echo "clang-format failed on file: $file."
-        ((failcount+=1))
+        if [ "${whatif}" = "1" ]; then
+            ((changecount+=1))
+        else
+            echo "clang-format failed on file: $file."
+        fi
     fi
 done
 
-log_whatif "${filecount} files processed, ${failcount} failures."
+log_whatif "${filecount} files processed, ${changecount} changed."
 exit 0
