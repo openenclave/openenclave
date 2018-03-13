@@ -42,7 +42,8 @@
 #define ARG2OUT         (-9*OE_WORDSIZE)(%rbp)
 #define RSP             (-10*OE_WORDSIZE)(%rbp)
 #define HOST_CONTEXT    (-11*OE_WORDSIZE)(%rbp)
-#define PARAMS_SPACE    0x2d0
+// We need an extra OE_WORDSIZE to keep the stack aligned.
+#define PARAMS_SPACE    ((12*OE_WORDSIZE) + OE_CONTEXT_SIZE)
 
 .globl __morestack
 .type __morestack, @function
