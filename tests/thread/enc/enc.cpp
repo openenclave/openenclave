@@ -156,3 +156,94 @@ OE_ECALL void RelinquishExclusiveAccess(void* args_)
     OE_HostPrintf("%ld: Relinquished exlusive access\n", OE_ThreadSelf());
     OE_MutexUnlock(&ex_mutex);
 }
+
+static OE_Mutex mutex_a = OE_MUTEX_INITIALIZER;
+static OE_Mutex mutex_b = OE_MUTEX_INITIALIZER;
+static OE_Mutex mutex_c = OE_MUTEX_INITIALIZER;
+
+static OE_Thread a_owner = 0;
+static OE_Thread b_owner = 0;
+static OE_Thread c_owner = 0;
+
+static int a_locks = 0;
+static int b_locks = 0;
+static int c_locks = 0;
+
+// Lock the
+OE_ECALL void LockAndUnlockMutexes(void* arg)
+{
+    // Spinlock is used to modify the  _locked variables.
+    static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
+
+    char* mutexes = (char*)arg;
+    const char m = mutexes[0];
+
+    OE_Mutex* mutex = NULL;
+    const char* name = "";
+    int* locks = NULL;
+    OE_Thread* owner = NULL;
+
+    if (m == 'A')
+    {
+        mutex = &mutex_a;
+        owner = &a_owner;
+        locks = &a_locks;
+        name = "A";
+    }
+    else if (m == 'B')
+    {
+        mutex = &mutex_b;
+        owner = &b_owner;
+        locks = &b_locks;
+        name = "B";
+    }
+    else if (m == 'C')
+    {
+        mutex = &mutex_c;
+        owner = &c_owner;
+        locks = &c_locks;
+        name = "C";
+    }
+
+    if (mutex != NULL)
+    {
+        // Lock mutex
+        OE_MutexLock(mutex);
+        OE_HostPrintf("%ld: Locked %s \n", OE_ThreadSelf(), name);
+        {
+            // Test constraints
+            OE_SpinLock(&_lock);
+
+            // Recursive lock
+            if (*locks > 0)
+                assert(*owner == OE_ThreadSelf());
+            else
+                assert(*owner == 0);
+
+            *owner = OE_ThreadSelf();
+            ++*locks;
+
+            OE_SpinUnlock(&_lock);
+        }
+
+        OE_CallHost("host_usleep", (void*)(100 * 1000));
+
+        // Lock next specified mutex.
+        LockAndUnlockMutexes(mutexes + 1);
+
+        {
+            // Test constraints
+            OE_SpinLock(&_lock);
+
+            assert(*owner == OE_ThreadSelf());
+            if (--*locks == 0)
+                *owner = 0;
+
+            OE_SpinUnlock(&_lock);
+        }
+
+        OE_HostPrintf("%ld: Unlocking %s \n", OE_ThreadSelf(), name);
+        OE_MutexUnlock(mutex);
+        OE_CallHost("host_usleep", (void*)(100 * 1000));
+    }
+}
