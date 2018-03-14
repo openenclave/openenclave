@@ -37,14 +37,16 @@ void TestMutex(OE_Enclave* enclave)
     for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    assert(_args.count == NUM_THREADS);
+    assert(_args.count1 == NUM_THREADS);
+    assert(_args.count2 == NUM_THREADS);
 }
 
 void* WaiterThread(void* args)
 {
     OE_Enclave* enclave = (OE_Enclave*)args;
+    static WaitArgs _args = {NUM_THREADS};
 
-    OE_Result result = OE_CallEnclave(enclave, "Wait", NULL);
+    OE_Result result = OE_CallEnclave(enclave, "Wait", &_args);
     assert(result == OE_OK);
 
     return NULL;
@@ -64,6 +66,130 @@ void TestCond(OE_Enclave* enclave)
 
     for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
+}
+
+void* ExclusiveAccessThread(void* args)
+{
+    const size_t ITERS = 2;
+    OE_Enclave* enclave = (OE_Enclave*)args;
+
+    printf("Thread Starting\n");
+    for (size_t i = 0; i < ITERS; i++)
+    {
+        assert(
+            OE_CallEnclave(enclave, "WaitForExclusiveAccess", NULL) == OE_OK);
+        usleep(20 * 1000);
+
+        assert(
+            OE_CallEnclave(enclave, "RelinquishExclusiveAccess", NULL) ==
+            OE_OK);
+        usleep(20 * 1000);
+    }
+    printf("Thread Ending\n");
+    return NULL;
+}
+
+void TestThreadWakeWait(OE_Enclave* enclave)
+{
+    pthread_t threads[NUM_THREADS];
+
+    printf("TestThreadWakeWait Starting\n");
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        pthread_create(&threads[i], NULL, ExclusiveAccessThread, enclave);
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        pthread_join(threads[i], NULL);
+
+    // The OE_Calls in this test should succeed without any segv/double free.
+    printf("TestThreadWakeWait Complete\n");
+}
+
+void* LockAndUnlockThread1(void* args)
+{
+    OE_Enclave* enclave = (OE_Enclave*)args;
+
+    const size_t ITERS = 20000;
+
+    for (size_t i = 0; i < ITERS; ++i)
+    {
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABC") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"AB") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"AC") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"BC") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABBC") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
+            OE_OK);
+    }
+
+    return NULL;
+}
+
+void* LockAndUnlockThread2(void* args)
+{
+    OE_Enclave* enclave = (OE_Enclave*)args;
+
+    const size_t ITERS = 20000;
+
+    for (size_t i = 0; i < ITERS; ++i)
+    {
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"BC") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABC") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"BBCC") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"BBC") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABAC") ==
+            OE_OK);
+        assert(
+            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
+            OE_OK);
+    }
+
+    return NULL;
+}
+
+// Lauch multiple threads and try out various locking patterns on 3 mutexes.
+// The locking patterns are chosen to not deadlock.
+void TestThreadLockingPatterns(OE_Enclave* enclave)
+{
+    pthread_t threads[NUM_THREADS];
+
+    printf("TestThreadLockingPatterns Starting\n");
+    for (size_t i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_create(
+            &threads[i],
+            NULL,
+            (i & 1) ? LockAndUnlockThread2 : LockAndUnlockThread1,
+            enclave);
+    }
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        pthread_join(threads[i], NULL);
+
+    // The OE_Calls in this test should succeed without any assertions.
+    printf("TestThreadLockingPatterns Complete\n");
 }
 
 int main(int argc, const char* argv[])
@@ -87,6 +213,10 @@ int main(int argc, const char* argv[])
     TestMutex(enclave);
 
     TestCond(enclave);
+
+    TestThreadWakeWait(enclave);
+
+    TestThreadLockingPatterns(enclave);
 
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
     {
