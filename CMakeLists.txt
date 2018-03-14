@@ -68,6 +68,8 @@ add_subdirectory(libcxx)
 add_subdirectory(samples)
 add_subdirectory(tests)
 add_subdirectory(tools)
+add_subdirectory(crypto/enclave)
+add_subdirectory(crypto/host)
 endif()
 
 if(WIN32)
