@@ -1,8 +1,7 @@
 #ifndef BUILD_HOST
 #include <openenclave/enclave.h>
 #endif
-#define MBEDTLS_PEM_PARSE_C
-#include <mbedtls/pem.h>
+#include <mbedtls/config.h>
 #include <mbedtls/x509_crt.h>
 #include <mbedtls/pem.h>
 #include <openenclave/bits/cert.h>
