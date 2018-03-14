@@ -169,7 +169,8 @@ static int a_locks = 0;
 static int b_locks = 0;
 static int c_locks = 0;
 
-// Lock the
+// Lock the specified mutexes in given order 
+// and unlock them in reverse order.
 OE_ECALL void LockAndUnlockMutexes(void* arg)
 {
     // Spinlock is used to modify the  _locked variables.
@@ -179,7 +180,6 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
     const char m = mutexes[0];
 
     OE_Mutex* mutex = NULL;
-    const char* name = "";
     int* locks = NULL;
     OE_Thread* owner = NULL;
 
@@ -188,28 +188,24 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
         mutex = &mutex_a;
         owner = &a_owner;
         locks = &a_locks;
-        name = "A";
     }
     else if (m == 'B')
     {
         mutex = &mutex_b;
         owner = &b_owner;
         locks = &b_locks;
-        name = "B";
     }
     else if (m == 'C')
     {
         mutex = &mutex_c;
         owner = &c_owner;
         locks = &c_locks;
-        name = "C";
     }
 
     if (mutex != NULL)
     {
         // Lock mutex
         OE_MutexLock(mutex);
-        OE_HostPrintf("%ld: Locked %s \n", OE_ThreadSelf(), name);
         {
             // Test constraints
             OE_SpinLock(&_lock);
@@ -226,8 +222,6 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
             OE_SpinUnlock(&_lock);
         }
 
-        OE_CallHost("host_usleep", (void*)(3 * 1000));
-
         // Lock next specified mutex.
         LockAndUnlockMutexes(mutexes + 1);
 
@@ -242,8 +236,6 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
             OE_SpinUnlock(&_lock);
         }
 
-        OE_HostPrintf("%ld: Unlocking %s \n", OE_ThreadSelf(), name);
         OE_MutexUnlock(mutex);
-        OE_CallHost("host_usleep", (void*)(3 * 1000));
     }
 }

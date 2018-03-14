@@ -104,16 +104,11 @@ void TestThreadWakeWait(OE_Enclave* enclave)
     printf("TestThreadWakeWait Complete\n");
 }
 
-OE_OCALL void host_usleep(void* args)
-{
-    usleep((size_t)args);
-}
-
 void* LockAndUnlockThread1(void* args)
 {
     OE_Enclave* enclave = (OE_Enclave*)args;
 
-    const size_t ITERS = 2;
+    const size_t ITERS = 20000;
 
     for (size_t i = 0; i < ITERS; ++i)
     {
@@ -144,7 +139,7 @@ void* LockAndUnlockThread2(void* args)
 {
     OE_Enclave* enclave = (OE_Enclave*)args;
 
-    const size_t ITERS = 2;
+    const size_t ITERS = 20000;
 
     for (size_t i = 0; i < ITERS; ++i)
     {
