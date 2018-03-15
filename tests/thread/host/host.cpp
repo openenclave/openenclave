@@ -68,6 +68,32 @@ void TestCond(OE_Enclave* enclave)
         pthread_join(threads[i], NULL);
 }
 
+void* CondTightLoopThread(void* args)
+{
+    OE_Enclave* enclave = (OE_Enclave*)args;
+
+    assert(OE_CallEnclave(enclave, "CondTightLoopThreadImpl", NULL) == OE_OK);
+
+    return NULL;
+}
+
+void TestCondTightLoop(OE_Enclave* enclave)
+{
+    const size_t NUM_THREADS = 4;
+    pthread_t threads[NUM_THREADS];
+
+    printf("TestCondTightLoop Starting\n");
+    for (size_t i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_create(&threads[i], NULL, CondTightLoopThread, enclave);
+    }
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        pthread_join(threads[i], NULL);
+
+    printf("TestCondTightLoop Complete\n");
+}
+
 void* ExclusiveAccessThread(void* args)
 {
     const size_t ITERS = 2;
@@ -213,6 +239,8 @@ int main(int argc, const char* argv[])
     TestMutex(enclave);
 
     TestCond(enclave);
+
+    TestCondTightLoop(enclave);
 
     TestThreadWakeWait(enclave);
 

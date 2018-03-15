@@ -169,7 +169,7 @@ static int a_locks = 0;
 static int b_locks = 0;
 static int c_locks = 0;
 
-// Lock the specified mutexes in given order 
+// Lock the specified mutexes in given order
 // and unlock them in reverse order.
 OE_ECALL void LockAndUnlockMutexes(void* arg)
 {
@@ -238,4 +238,52 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
 
         OE_MutexUnlock(mutex);
     }
+}
+
+namespace cond_broadcast_test
+{
+static OE_Mutex mutex = OE_MUTEX_INITIALIZER;
+static OE_Cond cond = OE_COND_INITIALIZER;
+volatile int owner = 0;
+
+OE_ECALL void CondTightLoopThreadImpl(void* args)
+{
+    OE_HostPrintf("%ld: Thread Starting\n", OE_ThreadSelf());
+
+    const size_t ITERS = 2000;
+    for (size_t i = 0; i < ITERS; ++i)
+    {
+        {
+            OE_MutexLock(&mutex);
+
+            // Wait until prior owner has released resource
+            while (owner > 0)
+            {
+                OE_CondWait(&cond, &mutex);
+            }
+
+            assert(owner == 0);
+            owner = 1;
+
+            OE_MutexUnlock(&mutex);
+        }
+
+        // This thread is the sole owner
+
+        {
+            OE_MutexLock(&mutex);
+
+            // Release ownership
+            assert(owner == 1);
+            owner = 0;
+
+            // Wake up other waiting threads
+            OE_CondBroadcast(&cond);
+
+            OE_MutexUnlock(&mutex);
+        }
+    }
+
+    OE_HostPrintf("%ld: Thread Exiting\n", OE_ThreadSelf());
+}
 }
