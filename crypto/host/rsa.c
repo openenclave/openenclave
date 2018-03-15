@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <limits.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/sha.h>

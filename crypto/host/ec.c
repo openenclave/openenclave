@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/sha.h>
 #include <openenclave/types.h>

@@ -25,14 +25,14 @@ typedef struct _OE_RSA OE_RSA;
  *
  * @param pemData - pointer to zero-terminated PEM key representation
  * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param key - key structure (pass to OE_RSAFree() to free)
+ * @param privateKey - private key structure (pass to OE_RSAFree() to free)
  *
  * @return OE_OK upon success
  */
 OE_Result OE_RSAReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_RSA** key);
+    OE_RSA** privateKey);
 
 /**
  * Reads a public RSA key from PEM data.
@@ -46,14 +46,14 @@ OE_Result OE_RSAReadPrivateKeyFromPEM(
  *
  * @param pemData - pointer to zero-terminated PEM key representation
  * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param key - key structure (pass to OE_RSAFree() to free)
+ * @param publicKey - public key structure (pass to OE_RSAFree() to free)
  *
  * @return OE_OK upon success
  */
 OE_Result OE_RSAReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_RSA** key);
+    OE_RSA** publicKey);
 
 /**
  * Write an RSA private key to PEM format
@@ -65,14 +65,14 @@ OE_Result OE_RSAReadPublicKeyFromPEM(
  *     ...
  *     -----END RSA PRIVATE KEY-----
  *
- * @param key - key structure
+ * @param privateKey - private key structure
  * @param pemData - pointer to zero-terminated PEM key representation
  * @param pemSize - size of the pemData buffer including the zero-terminator
  *
  * @return OE_OK upon success
  */
 OE_Result OE_RSAWritePrivateKeyToPEM(
-    const OE_RSA* key,
+    const OE_RSA* privateKey,
     void** pemData,
     size_t* pemSize);
 
@@ -86,22 +86,22 @@ OE_Result OE_RSAWritePrivateKeyToPEM(
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param key - key structure
+ * @param publicKey - public key structure
  * @param pemData - pointer to zero-terminated PEM key representation
  * @param pemSize - size of the pemData buffer including the zero-terminator
  *
  * @return OE_OK upon success
  */
 OE_Result OE_RSAWritePublicKeyToPEM(
-    const OE_RSA* key,
+    const OE_RSA* publicKey,
     void** pemData,
     size_t* pemSize);
 
 /**
  * Releases an RSA key structure
  *
- * This function releases an RSA public key sturcture that was created
- * by one of the functions in this module.
+ * This function releases an RSA key structure that was created by one of the 
+ * functions in this module.
  *
  * @param key - pointer to RSA public key struture.
  *
@@ -115,9 +115,10 @@ void OE_RSAFree(OE_RSA* key);
  * This function signs a message (with the given hash) with an RSA private
  * key.
  *
- * @param key - RSA private key
+ * @param privateKey - RSA private key
  * @param hash - SHA-256 hash of the message being signed
  * @param signature - resulting signature
+ * @param signatureSize - size in bytes of the expected signature
  *
  * @return OE_OK if the signing operation was successful
  */
@@ -133,9 +134,10 @@ OE_Result OE_RSASign(
  * This function verifies that a message (with the given hash) was signed by a
  * a given RSA key.
  *
- * @param key - RSA public key
+ * @param publicKey - RSA public key
  * @param hash - SHA-256 hash of the message being verified
  * @param signature - expected signature
+ * @param signatureSize - size in bytes of the expected signature
  *
  * @return OE_OK if the message was signeded with the given certificate
  */
@@ -148,11 +150,13 @@ OE_Result OE_RSAVerify(
 /**
  * Generate an RSA private-public key pair
  *
- * This function generate an RSA private-public key pair from the given
+ * This function generates an RSA private-public key pair from the given
  * parameters.
  *
- * @param privateKey - generate private key
- * @param publicKey - generate public key
+ * @param bits - the number of bits in the key (power of two)
+ * @param exponent - the exponent for this key
+ * @param privateKey - generated private key
+ * @param publicKey - generated public key
  *
  * @return OE_OK on success
  */

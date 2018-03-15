@@ -15,6 +15,7 @@ typedef struct _OE_CertChain OE_CertChain;
 
 typedef struct _OE_CRL OE_CRL;
 
+/* Error message type for OE_VerifyCertError() function */
 typedef struct _OE_VerifyCertError
 {
     char buf[1024];

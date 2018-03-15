@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "init.h"
 #include <openssl/err.h>
 #include <openssl/pem.h>

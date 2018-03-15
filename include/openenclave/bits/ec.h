@@ -25,14 +25,14 @@ typedef struct _OE_EC OE_EC;
  *
  * @param pemData - pointer to zero-terminated PEM key representation
  * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param key - key structure (pass to OE_ECFree() to free)
+ * @param privateKey - private key structure (pass to OE_ECFree() to free)
  *
  * @return OE_OK upon success
  */
 OE_Result OE_ECReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_EC** key);
+    OE_EC** privateKey);
 
 /**
  * Reads a public EC key from PEM data.
@@ -46,54 +46,54 @@ OE_Result OE_ECReadPrivateKeyFromPEM(
  *
  * @param pemData - pointer to zero-terminated PEM key representation
  * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param key - key structure (pass to OE_ECFree() to free)
+ * @param publicKey - public key structure (pass to OE_ECFree() to free)
  *
  * @return OE_OK upon success
  */
 OE_Result OE_ECReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_EC** key);
+    OE_EC** publicKey);
 
 /**
  * Write an EC private key to PEM format
  *
- * This function write an EC private key to PEM representation, which has the
+ * This function writes an EC private key to PEM representation, which has the
  * following format.
  *
  *     -----BEGIN EC PRIVATE KEY-----
  *     ...
  *     -----END EC PRIVATE KEY-----
  *
- * @param key - key structure
+ * @param privateKey - private key structure
  * @param pemData - pointer to zero-terminated PEM key representation
  * @param pemSize - size of the pemData buffer including the zero-terminator
  *
  * @return OE_OK upon success
  */
 OE_Result OE_ECWritePrivateKeyToPEM(
-    const OE_EC* key,
+    const OE_EC* privateKey,
     void** pemData,
     size_t* pemSize);
 
 /**
  * Write an EC public key to PEM format
  *
- * This function write an EC private key to PEM representation, which has the
+ * This function writes an EC private key to PEM representation, which has the
  * following format.
  *
  *     -----BEGIN PUBLIC KEY-----
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param key - key structure
+ * @param publicKey - public key structure
  * @param pemData - pointer to zero-terminated PEM key representation
  * @param pemSize - size of the pemData buffer including the zero-terminator
  *
  * @return OE_OK upon success
  */
 OE_Result OE_ECWritePublicKeyToPEM(
-    const OE_EC* key,
+    const OE_EC* publicKey,
     void** pemData,
     size_t* pemSize);
 
@@ -115,14 +115,16 @@ void OE_ECFree(OE_EC* key);
  * This function signs a message (with the given hash) with an EC private
  * key.
  *
- * @param key - EC private key
+ * @param privateKey - EC private key
  * @param hash - SHA-256 hash of the message being signed
  * @param signature - resulting signature
+ * @param signature - resulting signature
+ * @param signatureSize - size in bytes of the resulting signature
  *
  * @return OE_OK if the signing operation was successful
  */
 OE_Result OE_ECSign(
-    OE_EC* key,
+    OE_EC* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize);
@@ -133,14 +135,15 @@ OE_Result OE_ECSign(
  * This function verifies that a message (with the given hash) was signed by a
  * a given EC key.
  *
- * @param key - EC public key
+ * @param publicKey - EC public key
  * @param hash - SHA-256 hash of the message being verified
  * @param signature - expected signature
+ * @param signature - size in bytes of the expected signature
  *
  * @return OE_OK if the message was signeded with the given certificate
  */
 OE_Result OE_ECVerify(
-    OE_EC* key,
+    OE_EC* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize);

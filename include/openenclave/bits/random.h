@@ -9,6 +9,16 @@
 
 OE_EXTERNC_BEGIN
 
+/**
+ * Generate a sequence of random bytes.
+ *
+ * This function generates a sequence of random bytes.
+ *
+ * @param data - the buffer that will be filled with random bytes
+ * @param size - the size of the buffer
+ *
+ * @return OE_OK on succeess
+ */
 OE_Result OE_Random(void* data, size_t size);
 
 OE_EXTERNC_END
