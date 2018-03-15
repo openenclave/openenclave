@@ -14,6 +14,8 @@
 #include <cstring>
 #include "../args.h"
 
+#define SKIP_RETURN_CODE 2
+
 int main(int argc, const char* argv[])
 {
     OE_Result result;
@@ -25,6 +27,15 @@ int main(int argc, const char* argv[])
     {
         fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
         exit(1);
+    }
+
+    const uint32_t flags = OE_GetCreateFlags();
+    if ((flags & OE_FLAG_SIMULATE) != 0)
+    {
+        printf(
+            "=== Skipped unsupported test in simulation mode "
+            "(report)\n");
+        return SKIP_RETURN_CODE;
     }
 
     /* Create the enclave */

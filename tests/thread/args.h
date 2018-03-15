@@ -8,7 +8,14 @@
 
 typedef struct _TestMutexArgs
 {
-    size_t count;
+    size_t count1;
+    size_t count2;
 } TestMutexArgs;
+
+typedef struct _WaitArgs
+{
+    /* The number of threads that will call wait */
+    size_t numThreads;
+} WaitArgs;
 
 #endif /* _stdc_args_h */

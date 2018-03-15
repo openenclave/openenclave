@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
 #include <fstream>
 #include <iostream>
@@ -9,6 +10,7 @@
 #include "../SampleAppAttestation/SampleAppAttestationShared.h"
 
 #define TRACE printf("TRACE: %s(%u): %s()\n", __FILE__, __LINE__, __FUNCTION__)
+#define SKIP_RETURN_CODE 2
 
 OE_Result HostGetAppEnclaveReport(
     OE_Enclave* enclave,
@@ -220,6 +222,15 @@ int main(int argc, const char* argv[])
             "Example: SampleAppAttestationHost.exe "
             "SampleAppAttestation.dev.pkg\\SampleAppAttestation.dll\n");
         return 1;
+    }
+
+    const uint32_t flags = OE_GetCreateFlags();
+    if ((flags & OE_FLAG_SIMULATE) != 0)
+    {
+        printf(
+            "=== Skipped unsupported test in simulation mode "
+            "(SampleAppAttestation)\n");
+        return SKIP_RETURN_CODE;
     }
 
     result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave);
