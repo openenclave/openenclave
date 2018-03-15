@@ -37,7 +37,7 @@ int main(int argc, const char* argv[])
             "(report)\n");
         return SKIP_RETURN_CODE;
     }
-    
+
     /* Create the enclave */
     if ((result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave)) != OE_OK)
     {

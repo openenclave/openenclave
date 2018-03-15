@@ -21,7 +21,7 @@ int main(int argc, const char* argv[])
             "(aesm)\n");
         return SKIP_RETURN_CODE;
     }
-    
+
     if (!(aesm = AESMConnect()))
     {
         fprintf(stderr, "%s: failed to connect\n", argv[0]);

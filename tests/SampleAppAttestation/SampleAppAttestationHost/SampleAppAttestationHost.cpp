@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/host.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/host.h>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -232,7 +232,7 @@ int main(int argc, const char* argv[])
             "(SampleAppAttestation)\n");
         return SKIP_RETURN_CODE;
     }
-    
+
     result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave);
     if (result != OE_OK)
     {
