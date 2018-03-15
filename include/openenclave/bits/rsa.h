@@ -56,6 +56,48 @@ OE_Result OE_RSALoadPublicKeyFromPEM(
     OE_RSA** key);
 
 /**
+ * Write an RSA private key to PEM format
+ *
+ * This function write an RSA private key to PEM representation, which has the
+ * following format.
+ *
+ *     -----BEGIN RSA PRIVATE KEY-----
+ *     ...
+ *     -----END RSA PRIVATE KEY-----
+ *
+ * @param key - key structure
+ * @param pemData - pointer to zero-terminated PEM key representation
+ * @param pemSize - size of the pemData buffer including the zero-terminator
+ *
+ * @return OE_OK upon success
+ */
+OE_Result OE_RSAWritePrivateKeyToPEM(
+    const OE_RSA* key,
+    void** pemData,
+    size_t* pemSize);
+
+/**
+ * Write an RSA public key to PEM format
+ *
+ * This function write an RSA private key to PEM representation, which has the
+ * following format.
+ *
+ *     -----BEGIN PUBLIC KEY-----
+ *     ...
+ *     -----END PUBLIC KEY-----
+ *
+ * @param key - key structure
+ * @param pemData - pointer to zero-terminated PEM key representation
+ * @param pemSize - size of the pemData buffer including the zero-terminator
+ *
+ * @return OE_OK upon success
+ */
+OE_Result OE_RSAWritePublicKeyToPEM(
+    const OE_RSA* key,
+    void** pemData,
+    size_t* pemSize);
+
+/**
  * Releases an RSA key structure
  *
  * This function releases an RSA public key sturcture that was created

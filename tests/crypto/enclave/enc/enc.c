@@ -21,4 +21,8 @@ OE_ECALL void Test(void* args_)
     TestECSign();
     TestRSAGenerate();
     TestECGenerate();
+    TestRSAWritePrivate();
+    TestRSAWritePublic();
+    TestECWritePublic();
+    TestECWritePrivate();
 }

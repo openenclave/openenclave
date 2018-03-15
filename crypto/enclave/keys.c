@@ -5,6 +5,7 @@
 #include <mbedtls/pk.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/rsa.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -164,7 +165,10 @@ static int _WriteKey(
 
         /* Success */
         if (rc == 0)
+        {
+            *size = OE_Strlen((char*)*data) + 1;
             break;
+        }
 
         /* Expand the buffer if it was not big enough */
         if (rc == MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL)
@@ -351,6 +355,48 @@ OE_Result OE_ECLoadPublicKeyFromPEM(
         pemData, pemSize, MBEDTLS_PK_ECKEY, (mbedtls_pk_context**)key);
 }
 
+OE_Result OE_ECWritePrivateKeyToPEM(
+    const OE_EC* key,
+    void** data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    mbedtls_pk_context* pk = (mbedtls_pk_context*)key;
+
+    /* Write the private key into PEM format */
+    if (_WriteKey(pk, mbedtls_pk_write_key_pem, (uint8_t**)data, size) != 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+OE_Result OE_ECWritePublicKeyToPEM(
+    const OE_EC* key,
+    void** data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    mbedtls_pk_context* pk = (mbedtls_pk_context*)key;
+
+    /* Write the private key into PEM format */
+    if (_WriteKey(pk, mbedtls_pk_write_pubkey_pem, (uint8_t**)data, size) != 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 void OE_ECFree(OE_EC* key)
 {
     _Free((mbedtls_pk_context*)key);
@@ -528,6 +574,48 @@ OE_Result OE_RSALoadPublicKeyFromPEM(
 {
     return _LoadPublicKeyFromPEM(
         pemData, pemSize, MBEDTLS_PK_RSA, (mbedtls_pk_context**)key);
+}
+
+OE_Result OE_RSAWritePrivateKeyToPEM(
+    const OE_RSA* key,
+    void** data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    mbedtls_pk_context* pk = (mbedtls_pk_context*)key;
+
+    /* Write the private key into PEM format */
+    if (_WriteKey(pk, mbedtls_pk_write_key_pem, (uint8_t**)data, size) != 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+OE_Result OE_RSAWritePublicKeyToPEM(
+    const OE_RSA* key,
+    void** data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    mbedtls_pk_context* pk = (mbedtls_pk_context*)key;
+
+    /* Write the private key into PEM format */
+    if (_WriteKey(pk, mbedtls_pk_write_pubkey_pem, (uint8_t**)data, size) != 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 void OE_RSAFree(OE_RSA* key)

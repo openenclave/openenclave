@@ -13,7 +13,7 @@ const char* arg0;
 
 #define OE_HostPrintf printf
 #define OE_Assert assert
-#define TEST_RSA_GENERATE
+#define TEST_HOST
 #include "../tests.c"
 
 int main(int argc, const char* argv[])
@@ -28,6 +28,10 @@ int main(int argc, const char* argv[])
     TestECSign();
     TestRSAGenerate();
     TestECGenerate();
+    TestRSAWritePrivate();
+    TestRSAWritePublic();
+    TestECWritePrivate();
+    TestECWritePublic();
 
     printf("=== passed all tests (%s)\n", arg0);
 

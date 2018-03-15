@@ -56,6 +56,48 @@ OE_Result OE_ECLoadPublicKeyFromPEM(
     OE_EC** key);
 
 /**
+ * Write an EC private key to PEM format
+ *
+ * This function write an EC private key to PEM representation, which has the
+ * following format.
+ *
+ *     -----BEGIN EC PRIVATE KEY-----
+ *     ...
+ *     -----END EC PRIVATE KEY-----
+ *
+ * @param key - key structure
+ * @param pemData - pointer to zero-terminated PEM key representation
+ * @param pemSize - size of the pemData buffer including the zero-terminator
+ *
+ * @return OE_OK upon success
+ */
+OE_Result OE_ECWritePrivateKeyToPEM(
+    const OE_EC* key,
+    void** pemData,
+    size_t* pemSize);
+
+/**
+ * Write an EC public key to PEM format
+ *
+ * This function write an EC private key to PEM representation, which has the
+ * following format.
+ *
+ *     -----BEGIN PUBLIC KEY-----
+ *     ...
+ *     -----END PUBLIC KEY-----
+ *
+ * @param key - key structure
+ * @param pemData - pointer to zero-terminated PEM key representation
+ * @param pemSize - size of the pemData buffer including the zero-terminator
+ *
+ * @return OE_OK upon success
+ */
+OE_Result OE_ECWritePublicKeyToPEM(
+    const OE_EC* key,
+    void** pemData,
+    size_t* pemSize);
+
+/**
  * Releases an EC key structure
  *
  * This function releases an EC public key sturcture that was created

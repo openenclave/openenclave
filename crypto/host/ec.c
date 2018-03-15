@@ -398,3 +398,134 @@ done:
 
     return result;
 }
+
+OE_Result OE_ECWritePrivateKeyToPEM(
+    const OE_EC* key,
+    void** data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    BIO* bio = NULL;
+    EVP_PKEY* pkey = (EVP_PKEY*)key;
+    EC_KEY* ec;
+    const char nullTerminator = '\0';
+
+    /* Create memory BIO object to write key to */
+    if (!(bio = BIO_new(BIO_s_mem())))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Get EC key from public key without increasing reference count */
+    if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+        goto done;
+
+    /* Write key to BIO */
+    if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Write a NULL terminator onto BIO */
+    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Copy the BIO into memory */
+    {
+        BUF_MEM* mem;
+        void* ptr;
+
+        if (!BIO_get_mem_ptr(bio, &mem))
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
+
+        if (!(ptr = malloc(mem->length)))
+        {
+            result = OE_OUT_OF_MEMORY;
+            goto done;
+        }
+
+        memcpy(ptr, mem->data, mem->length);
+        *data = ptr;
+        *size = mem->length;
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (bio)
+        BIO_free(bio);
+
+    return result;
+}
+
+OE_Result OE_ECWritePublicKeyToPEM(
+    const OE_EC* key,
+    void** data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    BIO* bio = NULL;
+    EVP_PKEY* pkey = (EVP_PKEY*)key;
+    const char nullTerminator = '\0';
+
+    /* Create memory BIO object to write key to */
+    if (!(bio = BIO_new(BIO_s_mem())))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Write key to BIO */
+    if (!PEM_write_bio_PUBKEY(bio, pkey))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Write a NULL terminator onto BIO */
+    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Copy the BIO into memory */
+    {
+        BUF_MEM* mem;
+        void* ptr;
+
+        if (!BIO_get_mem_ptr(bio, &mem))
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
+
+        if (!(ptr = malloc(mem->length)))
+        {
+            result = OE_OUT_OF_MEMORY;
+            goto done;
+        }
+
+        memcpy(ptr, mem->data, mem->length);
+        *data = ptr;
+        *size = mem->length;
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (bio)
+        BIO_free(bio);
+
+    return result;
+}

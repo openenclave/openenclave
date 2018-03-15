@@ -1,58 +1,58 @@
 /* Generated with: openssl genrsa -out private.pem -3 3072 */
 static const char PRIVATE_KEY[] =
-    "-----BEGIN RSA PRIVATE KEY-----\r\n"
-    "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\r\n"
-    "-----END RSA PRIVATE KEY-----\r\n";
+    "-----BEGIN RSA PRIVATE KEY-----\n"
+    "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\n"
+    "-----END RSA PRIVATE KEY-----\n";
 
 /* Generated with: openssl rsa -in private.pem -pubout -out public.pem */
 static const char PUBLIC_KEY[] =
-    "-----BEGIN PUBLIC KEY-----\r\n"
-    "MIIBoDANBgkqhkiG9w0BAQEFAAOCAY0AMIIBiAKCAYEAyXKod6+poFfDaMIT6dKe\r\n"
-    "zZG/OeYSSvo2Nw7ufOtBCUrNaXOc5jIi1swpSASOx9nm3aYNeUGCPjDPads+YkSs\r\n"
-    "o8Bmm4HzAR51/4rSt5/fjD5PVMpM4GozwbXSCsK8TjgVcQ3pthk16GgVpL0k1+G4\r\n"
-    "abe+RYZKrS3KFwAT4Uk1ic+NcafKPwRo5uEs2YjX3aj0DiA/O3n95zMQoxsqwgbZ\r\n"
-    "7dzhLfw0gkljr+Bj07Z+w/RUTYFo0OJ/QwW8A5iT5DxOaVvuf2hjbf8462xivQyv\r\n"
-    "Ph9RH15ARvDYrMzdbDwW6Xpz7c+g61+AFtl64wYJDvD6nIkimyjYEcJRLtLeEdds\r\n"
-    "ySqxPVv1Ki9KMlLFwKNnm8J8Pw5KeZ29YucZP95tPOXcPv6tx9/Sx8W21FNPzKrg\r\n"
-    "oxlRJE9M8TDwh+qIxiwy9ComvBat1/px0fFwcSM+3MYG5s0TCsLp56mkn7aiv09e\r\n"
-    "sqkFL5inQfbToVbB8FDxu0o9VUVax6A3V+xJh0yGeD/RAgED\r\n"
-    "-----END PUBLIC KEY-----\r\n";
+    "-----BEGIN PUBLIC KEY-----\n"
+    "MIIBoDANBgkqhkiG9w0BAQEFAAOCAY0AMIIBiAKCAYEAyXKod6+poFfDaMIT6dKe\n"
+    "zZG/OeYSSvo2Nw7ufOtBCUrNaXOc5jIi1swpSASOx9nm3aYNeUGCPjDPads+YkSs\n"
+    "o8Bmm4HzAR51/4rSt5/fjD5PVMpM4GozwbXSCsK8TjgVcQ3pthk16GgVpL0k1+G4\n"
+    "abe+RYZKrS3KFwAT4Uk1ic+NcafKPwRo5uEs2YjX3aj0DiA/O3n95zMQoxsqwgbZ\n"
+    "7dzhLfw0gkljr+Bj07Z+w/RUTYFo0OJ/QwW8A5iT5DxOaVvuf2hjbf8462xivQyv\n"
+    "Ph9RH15ARvDYrMzdbDwW6Xpz7c+g61+AFtl64wYJDvD6nIkimyjYEcJRLtLeEdds\n"
+    "ySqxPVv1Ki9KMlLFwKNnm8J8Pw5KeZ29YucZP95tPOXcPv6tx9/Sx8W21FNPzKrg\n"
+    "oxlRJE9M8TDwh+qIxiwy9ComvBat1/px0fFwcSM+3MYG5s0TCsLp56mkn7aiv09e\n"
+    "sqkFL5inQfbToVbB8FDxu0o9VUVax6A3V+xJh0yGeD/RAgED\n"
+    "-----END PUBLIC KEY-----\n";
 
 static const char ALPHABET[] = "abcdefghijklmnopqrstuvwxyz";
 
@@ -397,17 +397,17 @@ static void TestRandom()
 }
 
 static const char EC_PRIVATE_KEY[] =
-    "-----BEGIN EC PRIVATE KEY-----\r\n"
-    "MHQCAQEEIKVVUe1F/MxIp6jmrZ24/8iI6WTj1QDamxZLHQ8ZbL4woAcGBSuBBAAK\r\n"
-    "oUQDQgAEmAxYbaM1rpk+d1KX5pHn0GuuaL5wgEA8xoLzHqVcX1dCOyN1rnZP9axj\r\n"
-    "h8t36IjqPhnxNvCPruzBq/KRbbpIZA==\r\n"
-    "-----END EC PRIVATE KEY-----\r\n";
+    "-----BEGIN EC PRIVATE KEY-----\n"
+    "MHQCAQEEIKVVUe1F/MxIp6jmrZ24/8iI6WTj1QDamxZLHQ8ZbL4woAcGBSuBBAAK\n"
+    "oUQDQgAEmAxYbaM1rpk+d1KX5pHn0GuuaL5wgEA8xoLzHqVcX1dCOyN1rnZP9axj\n"
+    "h8t36IjqPhnxNvCPruzBq/KRbbpIZA==\n"
+    "-----END EC PRIVATE KEY-----\n";
 
 static const char EC_PUBLIC_KEY[] =
-    "-----BEGIN PUBLIC KEY-----\r\n"
-    "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEmAxYbaM1rpk+d1KX5pHn0GuuaL5wgEA8\r\n"
-    "xoLzHqVcX1dCOyN1rnZP9axjh8t36IjqPhnxNvCPruzBq/KRbbpIZA==\r\n"
-    "-----END PUBLIC KEY-----\r\n";
+    "-----BEGIN PUBLIC KEY-----\n"
+    "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEmAxYbaM1rpk+d1KX5pHn0GuuaL5wgEA8\n"
+    "xoLzHqVcX1dCOyN1rnZP9axjh8t36IjqPhnxNvCPruzBq/KRbbpIZA==\n"
+    "-----END PUBLIC KEY-----\n";
 
 /*
 **
@@ -505,4 +505,114 @@ static void TestECGenerate()
     OE_ECFree(publicKey);
 
     printf("=== passed TestECGenerate()\n");
+}
+
+static void TestRSAWritePrivate()
+{
+    printf("=== begin TestRSAWritePrivate()\n");
+
+    OE_Result r;
+    OE_RSA* key = NULL;
+    void* pemData = NULL;
+    size_t pemSize;
+
+    r = OE_RSALoadPrivateKeyFromPEM(PRIVATE_KEY, sizeof(PRIVATE_KEY), &key);
+    assert(r == OE_OK);
+
+    r = OE_RSAWritePrivateKeyToPEM(key, &pemData, &pemSize);
+    assert(r == OE_OK);
+
+    assert(sizeof(PRIVATE_KEY) == pemSize);
+    assert(memcmp(PRIVATE_KEY, pemData, pemSize) == 0);
+
+    free(pemData);
+    OE_RSAFree(key);
+
+    printf("=== passed TestRSAWritePrivate()\n");
+}
+
+static void TestRSAWritePublic()
+{
+    printf("=== begin TestRSAWritePublic()\n");
+
+    OE_Result r;
+    OE_RSA* key = NULL;
+    void* pemData = NULL;
+    size_t pemSize;
+
+    r = OE_RSALoadPublicKeyFromPEM(PUBLIC_KEY, sizeof(PUBLIC_KEY), &key);
+    assert(r == OE_OK);
+
+    r = OE_RSAWritePublicKeyToPEM(key, &pemData, &pemSize);
+    assert(r == OE_OK);
+
+    assert(sizeof(PUBLIC_KEY) == pemSize);
+    assert(memcmp(PUBLIC_KEY, pemData, pemSize) == 0);
+
+    free(pemData);
+    OE_RSAFree(key);
+
+    printf("=== passed TestRSAWritePublic()\n");
+}
+
+static void TestECWritePrivate()
+{
+    printf("=== begin TestECWritePrivate()\n");
+
+    OE_Result r;
+    OE_EC* publicKey = NULL;
+    OE_EC* key1 = NULL;
+    OE_EC* key2 = NULL;
+    void* pemData1 = NULL;
+    size_t pemSize1;
+    void* pemData2 = NULL;
+    size_t pemSize2;
+
+    r = OE_ECGenerate("secp521r1", &key1, &publicKey);
+    assert(r == OE_OK);
+
+    r = OE_ECWritePrivateKeyToPEM(key1, &pemData1, &pemSize1);
+    assert(r == OE_OK);
+
+    r = OE_ECLoadPrivateKeyFromPEM(pemData1, pemSize1, &key2);
+    assert(r == OE_OK);
+
+    r = OE_ECWritePrivateKeyToPEM(key2, &pemData2, &pemSize2);
+    assert(r == OE_OK);
+
+    assert(pemSize1 == pemSize2);
+    assert(memcmp(pemData1, pemData2, pemSize1) == 0);
+
+    free(pemData1);
+    free(pemData2);
+    OE_ECFree(publicKey);
+    OE_ECFree(key1);
+    OE_ECFree(key2);
+
+    printf("=== passed TestECWritePrivate()\n");
+}
+
+static void TestECWritePublic()
+{
+    printf("=== begin TestECWritePublic()\n");
+
+    OE_Result r;
+    OE_EC* key = NULL;
+    void* pemData = NULL;
+    size_t pemSize;
+
+    r = OE_ECLoadPublicKeyFromPEM(
+        EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
+    assert(r == OE_OK);
+
+    r = OE_ECWritePublicKeyToPEM(key, &pemData, &pemSize);
+    assert(r == OE_OK);
+
+    assert(sizeof(EC_PUBLIC_KEY) == pemSize);
+    assert(memcmp(EC_PUBLIC_KEY, pemData, pemSize) == 0);
+
+    free(pemData);
+    OE_ECFree(key);
+
+    printf("=== passed TestECWritePublic()\n");
 }

@@ -4,6 +4,7 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <stdio.h>
+#include <string.h>
 #include "init.h"
 
 OE_Result OE_RSALoadPrivateKeyFromPEM(
@@ -401,6 +402,167 @@ done:
             *publicKey = NULL;
         }
     }
+
+    return result;
+}
+
+OE_Result OE_RSAWritePrivateKeyToPEM(
+    const OE_RSA* key,
+    void** data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    RSA* rsa = (RSA*)key;
+    BIO* bio = NULL;
+    const char nullTerminator = '\0';
+
+    if (data)
+        *data = NULL;
+
+    if (size)
+        *size = 0;
+
+    /* Check parameters */
+    if (!key || !data || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Create memory BIO to write to */
+    if (!(bio = BIO_new(BIO_s_mem())))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Write key to the BIO */
+    if (!PEM_write_bio_RSAPrivateKey(bio, rsa, NULL, NULL, 0, NULL, NULL))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Write a null terminator onto the BIO */
+    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Copy the BIO into memory */
+    {
+        BUF_MEM* mem;
+        void* ptr;
+
+        if (!BIO_get_mem_ptr(bio, &mem))
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
+
+        if (!(ptr = malloc(mem->length)))
+        {
+            result = OE_OUT_OF_MEMORY;
+            goto done;
+        }
+
+        memcpy(ptr, mem->data, mem->length);
+        *data = ptr;
+        *size = mem->length;
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (bio)
+        BIO_free(bio);
+
+    return result;
+}
+
+OE_Result OE_RSAWritePublicKeyToPEM(
+    const OE_RSA* key,
+    void** data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    RSA* rsa = (RSA*)key;
+    BIO* bio = NULL;
+    EVP_PKEY* pkey = NULL;
+    const char nullTerminator = '\0';
+
+    /* Create memory BIO object to write key to */
+    if (!(bio = BIO_new(BIO_s_mem())))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Create PKEY wrapper structure */
+    if (!(pkey = EVP_PKEY_new()))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Assign key into PKEY wrapper structure */
+    {
+        if (!(EVP_PKEY_assign_RSA(pkey, rsa)))
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
+
+        RSA_up_ref(rsa);
+    }
+
+    /* Write key to BIO */
+    if (!PEM_write_bio_PUBKEY(bio, pkey))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Write a NULL terminator onto BIO */
+    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Copy the BIO into memory */
+    {
+        BUF_MEM* mem;
+        void* ptr;
+
+        if (!BIO_get_mem_ptr(bio, &mem))
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
+
+        if (!(ptr = malloc(mem->length)))
+        {
+            result = OE_OUT_OF_MEMORY;
+            goto done;
+        }
+
+        memcpy(ptr, mem->data, mem->length);
+        *data = ptr;
+        *size = mem->length;
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (bio)
+        BIO_free(bio);
+
+    if (pkey)
+        EVP_PKEY_free(pkey);
 
     return result;
 }
