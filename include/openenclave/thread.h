@@ -337,6 +337,139 @@ int OE_CondBroadcast(OE_Cond* cond);
  */
 int OE_CondDestroy(OE_Cond* cond);
 
+#define OE_RWLOCK_INITIALIZER \
+    {                         \
+        {                     \
+            0                 \
+        }                     \
+    }
+
+/* Readers-writer lock representation */
+typedef struct _OE_RWLock
+{
+    /* Internal private implementation */
+    uint64_t __impl[17];
+} OE_RWLock;
+
+/**
+ * Initializes a readers-writer lock.
+ *
+ * This function initializes a readers-writer lock. Readers-writer locks can
+ * also be initialized statically as follows.
+ *
+ *     OE_Cond cond = OE_RW_LOCK_INITIALIZER;
+ *
+ * At any given time, a readers-writer lock allows either concurrent read access
+ * for multiple threads (readers) or write access for a single thread (writer).
+ *
+ * @param rwLock Initialize this readers-writer variable.
+ *
+ * @return Returns zero on success.
+ *
+ */
+int OE_RWLockInit(OE_RWLock* rwLock);
+
+/**
+ * Acquires a read lock on a readers-writer lock.
+ *
+ * This function acquires a read lock on a readers-writer lock.
+ * Multiple reader threads can concurrently lock a readers-writer lock.
+ *
+ * @param rwLock Acquire a read lock on this readers-writer lock.
+ *
+ * @return Returns zero on success.
+ *
+ */
+int OE_RWLockReadLock(OE_RWLock* rwLock);
+
+/**
+ * Tries to acquire a read lock on a readers-writer lock.
+ *
+ * This function attempts to acquire a read lock on the given readers-writer
+ * lock if it is available. If the lock is held by a writer thread,
+ * the function returns -1 otherwise it succeeds and returns 0.
+ *
+ * @param rwLock Acquire a read lock on this readers-writer lock.
+ *
+ * @return Returns zero if the lock was obtained and non-zero if not.
+ *
+ */
+int OE_RWLockTryReadLock(OE_RWLock* rwLock);
+
+/**
+ * Releases a read lock on a readers-writer lock.
+ *
+ * This function releases the read lock on a readers-writer lock obtained with
+ * either OE_RWLockReadLock() or OE_RWLockTryReadLock().
+ *
+ * Any threads waiting on the lock are woken up.
+ *
+ * @param rwLock Release the read lock on this readers-writer lock.
+ *
+ * @return Returns zero on success.
+ *
+ */
+int OE_RWLockReadUnlock(OE_RWLock* rwLock);
+
+/**
+ * Acquires a write lock on a readers-writer lock.
+ *
+ * This function acquires a write lock on a readers-writer lock.
+ * Only one writer thread can lock a readers-writer lock for writing.
+ * When a readers-writer lock has been locked for writing, all OE_RWLockReadLock
+ * calls block and all OE_RWLockTryReadLock calls fail till the writer releases
+ * the lock.
+ *
+ * @param rwLock Acquire a write lock on this readers-writer lock.
+ *
+ * @return Returns zero on success.
+ *
+ */
+int OE_RWLockWriteLock(OE_RWLock* rwLock);
+
+/**
+ * Tries to acquire a write lock on a readers-writer lock.
+ *
+ * This function attempts to acquire a write lock on the given readers-writer
+ * lock if it is available. If the lock held by a reader thread or another
+ * writer thread,
+ * this function return -1 otherwise it succeeds and returns 0.
+ *
+ * @param rwLock Acquire a write lock on this readers-writer lock.
+ *
+ * @return Returns zero if the lock was obtained and non-zero if not.
+ *
+ */
+int OE_RWLockTryWriteLock(OE_RWLock* rwLock);
+
+/**
+ * Releases a write lock on a readers-writer lock.
+ *
+ * This function releases the write lock on a readers-writer lock obtained with
+ * either OE_RWLockWriteLock() or OE_RWLockTryWriteLock().
+ *
+ * Any threads waiting on the lock are woken up.
+ *
+ * @param rwLock Release the write lock on this readers-writer lock.
+ *
+ * @return Returns zero on success.
+ *
+ */
+int OE_RWLockWriteUnlock(OE_RWLock* rwLock);
+
+/**
+ * Destroys a readers-writer lock.
+ *
+ * This function destroys a readers-writer lock that was initialized with
+ * OE_RWLockInit().
+ *
+ * @param Destroy this readers-writer lock.
+ *
+ * @return Returns zero on success.
+ *
+ */
+int OE_RWLockDestroy(OE_RWLock* rwLock);
+
 #define OE_THREADKEY_INITIALIZER 0
 
 typedef unsigned int OE_ThreadKey;

@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
@@ -490,9 +491,235 @@ int OE_CondBroadcast(OE_Cond* condition)
     }
     OE_SpinUnlock(&cond->lock);
 
-    for (OE_ThreadData* p = waiters.front; p; p = p->next)
+    OE_ThreadData* p_next = NULL;
+    for (OE_ThreadData* p = waiters.front; p; p = p_next)
+    {
+        // p could wake up and immediately use a synchronization
+        // primitve that could modify the next field.
+        // Therefore fetch the next thread before waking up p.
+        p_next = p->next;
         _ThreadWake(p);
+    }
 
+    return 0;
+}
+
+/*
+**==============================================================================
+**
+** OE_RWLock
+**
+**==============================================================================
+*/
+
+/* Internal readers-writer lock variable implementation */
+typedef struct _OE_RWLockImpl
+{
+    /* Number of reader threads owning this lock */
+    volatile unsigned int readers;
+
+    /* Number of writer threads owning this lock. 0 or 1.*/
+    volatile unsigned int writers;
+
+    /* Mutex for synchronizing readers and writers. Held only for a brief
+     * time.*/
+    OE_Mutex mutex;
+
+    /* Condition variable that indicates whether the r/w lock is unlocked. */
+    OE_Cond unlocked;
+} OE_RWLockImpl;
+
+OE_STATIC_ASSERT(sizeof(OE_RWLockImpl) <= sizeof(OE_RWLock));
+
+int OE_RWLockInit(OE_RWLock* readWriteLock)
+{
+    OE_RWLockImpl* rwLock = (OE_RWLockImpl*)readWriteLock;
+
+    if (!rwLock)
+        return -1;
+
+    OE_Memset(rwLock, 0, sizeof(OE_RWLock));
+    OE_MutexInit(&rwLock->mutex);
+    OE_CondInit(&rwLock->unlocked);
+
+    return 0;
+}
+
+int OE_RWLockReadLock(OE_RWLock* readWriteLock)
+{
+    OE_RWLockImpl* rwLock = (OE_RWLockImpl*)readWriteLock;
+
+    if (!rwLock)
+        return -1;
+
+    OE_MutexLock(&rwLock->mutex);
+
+    // Wait for writer to finish.
+    while (rwLock->writers > 0)
+    {
+        // Release mutex and wait for the r/w lock to be unlocked.
+        OE_HostPrintf("%ld: Reader waiting\n", OE_ThreadSelf());
+        OE_CondWait(&rwLock->unlocked, &rwLock->mutex);
+    }
+
+    // Increment number of readers
+    rwLock->readers++;
+
+    OE_HostPrintf("%ld: Reader success\n", OE_ThreadSelf());
+    OE_MutexUnlock(&rwLock->mutex);
+
+    return 0;
+}
+
+int OE_RWLockTryReadLock(OE_RWLock* readWriteLock)
+{
+    OE_RWLockImpl* rwLock = (OE_RWLockImpl*)readWriteLock;
+
+    if (!rwLock)
+        return -1;
+
+    OE_MutexLock(&rwLock->mutex);
+
+    int r = -1;
+    // If no writer is active, then lock is successful.
+    if (rwLock->writers == 0)
+    {
+        rwLock->readers++;
+        r = 0;
+    }
+
+    OE_MutexUnlock(&rwLock->mutex);
+
+    return r;
+}
+
+int OE_RWLockReadUnlock(OE_RWLock* readWriteLock)
+{
+    OE_RWLockImpl* rwLock = (OE_RWLockImpl*)readWriteLock;
+
+    if (!rwLock)
+        return -1;
+
+    OE_MutexLock(&rwLock->mutex);
+
+    // There must be atleast 1 reader and no writers.
+    if (rwLock->readers < 1 || rwLock->writers > 0)
+    {
+        OE_MutexUnlock(&rwLock->mutex);
+        OE_HostPrintf("ERROR-A\n");
+        return -1;
+    }
+
+    if (--rwLock->readers == 0)
+    {
+        // This is the last reader.
+        // Signal waiting threads by marking the r/w lock as unlocked.
+
+        OE_HostPrintf("%ld: Reader Broadcasting\n", OE_ThreadSelf());
+
+        OE_CondBroadcast(&rwLock->unlocked);
+
+        OE_HostPrintf("%ld: Reader Broadcasted\n", OE_ThreadSelf());
+    }
+
+    OE_MutexUnlock(&rwLock->mutex);
+    return 0;
+}
+
+int OE_RWLockWriteLock(OE_RWLock* readWriteLock)
+{
+    OE_RWLockImpl* rwLock = (OE_RWLockImpl*)readWriteLock;
+
+    if (!rwLock)
+        return -1;
+
+    OE_MutexLock(&rwLock->mutex);
+
+    // Wait for all readers and any other writer to finish.
+    while (rwLock->readers > 0 || rwLock->writers > 0)
+    {
+        // Release mutex and wait for the r/w lock to be unlocked.
+        OE_HostPrintf("%ld: Writer waiting\n", OE_ThreadSelf());
+        OE_CondWait(&rwLock->unlocked, &rwLock->mutex);
+    }
+
+    rwLock->writers = 1;
+    OE_HostPrintf("%ld: Writer success\n", OE_ThreadSelf());
+    OE_MutexUnlock(&rwLock->mutex);
+
+    return 0;
+}
+
+int OE_RWLockTryWriteLock(OE_RWLock* readWriteLock)
+{
+    OE_RWLockImpl* rwLock = (OE_RWLockImpl*)readWriteLock;
+
+    if (!rwLock)
+        return -1;
+
+    int r = -1;
+    OE_MutexLock(&rwLock->mutex);
+
+    // If no readers and no writers are active, then lock is successful.
+    if (rwLock->readers == 0 && rwLock->writers == 0)
+    {
+        rwLock->writers = 1;
+        r = 0;
+    }
+
+    OE_MutexUnlock(&rwLock->mutex);
+
+    return r;
+}
+
+int OE_RWLockWriteUnlock(OE_RWLock* readWriteLock)
+{
+    OE_RWLockImpl* rwLock = (OE_RWLockImpl*)readWriteLock;
+
+    if (!rwLock)
+        return -1;
+
+    OE_MutexLock(&rwLock->mutex);
+
+    // There must be one writer and no readers
+    if (rwLock->writers != 1 || rwLock->readers > 0)
+    {
+        OE_MutexUnlock(&rwLock->mutex);
+        OE_HostPrintf("ERROR-B\n");
+        return -1;
+    }
+
+    // Mark writer as done
+    rwLock->writers = 0;
+
+    OE_HostPrintf("%ld: Writer Broadcasting\n", OE_ThreadSelf());
+    // Signal waiting threads by marking the lock as unlocked
+    OE_CondBroadcast(&rwLock->unlocked);
+    OE_HostPrintf("%ld: Writer Broadcasted\n", OE_ThreadSelf());
+
+    OE_MutexUnlock(&rwLock->mutex);
+    return 0;
+}
+
+int OE_RWLockDestroy(OE_RWLock* readWriteLock)
+{
+    OE_RWLockImpl* rwLock = (OE_RWLockImpl*)readWriteLock;
+
+    if (!rwLock)
+        return -1;
+
+    OE_MutexLock(&rwLock->mutex);
+
+    // There must not be any active readers or writers
+    if (rwLock->readers != 0 || rwLock->writers != 0)
+    {
+        OE_MutexUnlock(&rwLock->mutex);
+        return -1;
+    }
+
+    OE_CondDestroy(&rwLock->unlocked);
+    OE_MutexUnlock(&rwLock->mutex);
+    OE_MutexDestroy(&rwLock->mutex);
     return 0;
 }
 

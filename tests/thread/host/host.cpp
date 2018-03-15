@@ -192,6 +192,55 @@ void TestThreadLockingPatterns(OE_Enclave* enclave)
     printf("TestThreadLockingPatterns Complete\n");
 }
 
+static TestRWLockArgs _rwArgs;
+
+void* ReaderThread(void* args)
+{
+    // OE_Enclave* enclave = (OE_Enclave*)args;
+    // assert( OE_CallEnclave(enclave, "ReaderThreadImpl", &_rwArgs) == OE_OK );
+
+    // printf("ReaderThread exiting\n");
+    return NULL;
+}
+
+void* WriterThread(void* args)
+{
+    OE_Enclave* enclave = (OE_Enclave*)args;
+    assert(OE_CallEnclave(enclave, "WriterThreadImpl", &_rwArgs) == OE_OK);
+
+    // printf("WriterThread exiting\n");
+    return NULL;
+}
+
+// Launch multiple reader and writer threads and assert invariants.
+void TestReadersWriterLock(OE_Enclave* enclave)
+{
+    pthread_t threads[NUM_THREADS];
+
+    memset(&_rwArgs, 0, sizeof(_rwArgs));
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_create(
+            &threads[i], NULL, (i & 1) ? WriterThread : ReaderThread, enclave);
+    }
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        pthread_join(threads[i], NULL);
+
+    // There can be atmost 1 writer thread active.
+    // assert(_rwArgs.maxWriters == 1);
+
+    printf("MaxReaders = %d\n", (int)_rwArgs.maxReaders);
+
+    // There can be atmost NUM_THREADS/2 reader threads active
+    // and no thread was starved.
+    // assert(_rwArgs.maxReaders <= NUM_THREADS/2);
+
+    // Readers and writer threads should never be simultaneously active.
+    // assert(_rwArgs.readersAndWriters == false);
+}
+
 int main(int argc, const char* argv[])
 {
     OE_Result result;
@@ -210,13 +259,15 @@ int main(int argc, const char* argv[])
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
     }
 
-    TestMutex(enclave);
+    // TestMutex(enclave);
 
-    TestCond(enclave);
+    // TestCond(enclave);
 
-    TestThreadWakeWait(enclave);
+    // TestThreadWakeWait(enclave);
 
-    TestThreadLockingPatterns(enclave);
+    // TestThreadLockingPatterns(enclave);
+
+    TestReadersWriterLock(enclave);
 
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
     {
