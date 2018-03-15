@@ -12,7 +12,10 @@ OE_Result OE_CheckForNullTerminator(const void* pemData, size_t pemSize)
 
     /* Check parameters */
     if (!pemData || !pemSize)
+    {
+        result = OE_UNEXPECTED;
         goto done;
+    }
 
     /* Search for a null terminator */
     while (*p && p != end)
