@@ -233,7 +233,7 @@ void OE_CertChainFree(OE_CertChain* chain)
 OE_Result OE_CertVerify(
     OE_Cert* cert,
     OE_CertChain* chain,
-    OE_CRL* crl, /* ATTN: placeholder for future feature work */
+    OE_CRL* crl, /* ATTN: placeholder (future feature work) */
     OE_VerifyCertError* error)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -251,6 +251,7 @@ OE_Result OE_CertVerify(
         goto done;
     }
 
+    /* ATTN: Convert crl to cacrl here (future feature work) */
     OE_Memset(&cacrl, 0, sizeof(cacrl));
 
     /* Verify the certificate */

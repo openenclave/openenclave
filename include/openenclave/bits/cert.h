@@ -109,7 +109,7 @@ void OE_CertChainFree(OE_CertChain* chain);
 OE_Result OE_CertVerify(
     OE_Cert* cert,
     OE_CertChain* chain,
-    OE_CRL* crl, /* ATTN: placeholder for future feature work */
+    OE_CRL* crl,
     OE_VerifyCertError* error);
 
 OE_EXTERNC_END
