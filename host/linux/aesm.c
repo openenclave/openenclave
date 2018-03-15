@@ -30,8 +30,10 @@
 
 #define AESM_SOCKET "/var/run/aesmd/aesm.socket"
 
-#define WIRETYPE_VARINT 0
-#define WIRETYPE_LENGTH_DELIMITED 2
+typedef enum _WireType {
+    WIRETYPE_VARINT = 0,
+    WIRETYPE_LENGTH_DELIMITED = 2
+} WireType;
 
 #define AESM_MAGIC 0x4efaa2a3
 
@@ -52,9 +54,9 @@ static int _AESMValid(const AESM* aesm)
     return aesm != NULL && aesm->magic == AESM_MAGIC;
 }
 
-static uint32_t _MakeTag(unsigned int fieldnum, unsigned int wiretype)
+static uint8_t _MakeTag(uint8_t fieldNum, WireType wireType)
 {
-    return (fieldnum << 3) | wiretype;
+    return (fieldNum << 3) | (uint8_t)wireType;
 }
 
 static int _PackVariantUint32(mem_t* buf, uint32_t x)
@@ -80,10 +82,10 @@ static int _PackVariantUint32(mem_t* buf, uint32_t x)
     return mem_cat(buf, data, p - data);
 }
 
-static int _PackTag(mem_t* buf, unsigned int fieldnum, unsigned int wiretype)
+static int _PackTag(mem_t* buf, uint8_t fieldNum, WireType wireType)
 {
-    unsigned char tag = _MakeTag(fieldnum, wiretype);
-    return mem_cat(buf, &tag, 1);
+    uint8_t tag = _MakeTag(fieldNum, wireType);
+    return mem_cat(buf, &tag, sizeof(uint8_t));
 }
 
 static ssize_t _UnpackTag(const mem_t* buf, size_t pos, uint8_t* tag)
@@ -132,14 +134,14 @@ static ssize_t _UnpackVariantUint32(mem_t* buf, size_t pos, uint32_t* value)
 
 static OE_Result _PackBytes(
     mem_t* buf,
-    unsigned int fieldnum,
+    uint8_t fieldNum,
     const void* data,
     uint32_t size)
 {
     OE_Result result = OE_UNEXPECTED;
-    unsigned char tag = _MakeTag(fieldnum, WIRETYPE_LENGTH_DELIMITED);
+    uint8_t tag = _MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED);
 
-    if (mem_cat(buf, &tag, 1) != 0)
+    if (mem_cat(buf, &tag, sizeof(tag)) != 0)
         OE_THROW(OE_FAILURE);
 
     if (_PackVariantUint32(buf, size) != 0)
@@ -154,11 +156,11 @@ OE_CATCH:
     return result;
 }
 
-static int _PackVarInt(mem_t* buf, unsigned int fieldnum, uint64_t value)
+static int _PackVarInt(mem_t* buf, uint8_t fieldNum, uint64_t value)
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (_PackTag(buf, fieldnum, WIRETYPE_VARINT) != 0)
+    if (_PackTag(buf, fieldNum, WIRETYPE_VARINT) != 0)
         OE_THROW(OE_FAILURE);
 
     if (_PackVariantUint32(buf, value) != 0)
@@ -173,7 +175,7 @@ OE_CATCH:
 static OE_Result _UnpackVarInt(
     mem_t* buf,
     size_t* pos,
-    unsigned fieldnum,
+    uint8_t fieldNum,
     uint32_t* value)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -182,7 +184,7 @@ static OE_Result _UnpackVarInt(
     if ((*pos = _UnpackTag(buf, *pos, &tag)) == -1)
         OE_THROW(OE_FAILURE);
 
-    if (_MakeTag(fieldnum, WIRETYPE_VARINT) != tag)
+    if (_MakeTag(fieldNum, WIRETYPE_VARINT) != tag)
         OE_THROW(OE_FAILURE);
 
     if ((*pos = _UnpackVariantUint32(buf, *pos, value)) == -1)
@@ -197,7 +199,7 @@ OE_CATCH:
 static OE_Result _UnpackLengthDelimited(
     mem_t* buf,
     size_t* pos,
-    unsigned fieldnum,
+    uint8_t fieldNum,
     void* data,
     size_t dataSize)
 {
@@ -208,7 +210,7 @@ static OE_Result _UnpackLengthDelimited(
     if ((*pos = _UnpackTag(buf, *pos, &tag)) == -1)
         OE_THROW(OE_FAILURE);
 
-    if (_MakeTag(fieldnum, WIRETYPE_LENGTH_DELIMITED) != tag)
+    if (_MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED) != tag)
         OE_THROW(OE_FAILURE);
 
     if ((*pos = _UnpackVariantUint32(buf, *pos, &size)) == -1)
