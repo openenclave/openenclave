@@ -43,8 +43,8 @@ static void _CrtFree(mbedtls_x509_crt* crt)
     }
 }
 
-/* Load an MBEDTLS X509 certificate from PEM data */
-static int _CrtLoad(mbedtls_x509_crt* crt, const char* data, size_t* size)
+/* Read an MBEDTLS X509 certificate from PEM data */
+static int _CrtRead(mbedtls_x509_crt* crt, const char* data, size_t* size)
 {
     int ret = -1;
     mbedtls_pem_context pem;
@@ -80,7 +80,7 @@ done:
     return ret;
 }
 
-static int _CrtChainLoad(mbedtls_x509_crt* chain, const char* data)
+static int _CrtChainRead(mbedtls_x509_crt* chain, const char* data)
 {
     int ret = -1;
 
@@ -92,8 +92,8 @@ static int _CrtChainLoad(mbedtls_x509_crt* chain, const char* data)
     {
         size_t size;
 
-        /* Load the certificate pointed to by data */
-        if (_CrtLoad(chain, data, &size) != 0)
+        /* Read the certificate pointed to by data */
+        if (_CrtRead(chain, data, &size) != 0)
             goto done;
 
         /* Skip to next certificate (if any) */
@@ -115,7 +115,7 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_CertLoad(const char* pem, OE_Cert** cert)
+OE_Result OE_CertRead(const char* pem, OE_Cert** cert)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_x509_crt* crt = NULL;
@@ -139,7 +139,7 @@ OE_Result OE_CertLoad(const char* pem, OE_Cert** cert)
     }
 
     /* Read the PEM buffer into DER format */
-    if (_CrtLoad(crt, pem, &len) != 0)
+    if (_CrtRead(crt, pem, &len) != 0)
         goto done;
 
     *cert = (OE_Cert*)crt;
@@ -161,7 +161,7 @@ void OE_CertFree(OE_Cert* cert)
         _CrtFree((mbedtls_x509_crt*)cert);
 }
 
-OE_Result OE_CertChainLoad(const char* pem, OE_CertChain** chain)
+OE_Result OE_CertChainRead(const char* pem, OE_CertChain** chain)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_x509_crt* crt = NULL;
@@ -184,7 +184,7 @@ OE_Result OE_CertChainLoad(const char* pem, OE_CertChain** chain)
     }
 
     /* Read the PEM buffer into DER format */
-    if (_CrtChainLoad(crt, pem) != 0)
+    if (_CrtChainRead(crt, pem) != 0)
         goto done;
 
     *chain = (OE_CertChain*)crt;

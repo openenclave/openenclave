@@ -19,7 +19,7 @@
 **==============================================================================
 */
 
-static STACK_OF(X509) * _LoadCertChain(const char* pem)
+static STACK_OF(X509) * _ReadCertChain(const char* pem)
 {
     static const char BEGIN_CERTIFICATE[] = "-----BEGIN CERTIFICATE-----";
     static const size_t BEGIN_CERTIFICATE_LEN = sizeof(BEGIN_CERTIFICATE) - 1;
@@ -139,7 +139,7 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_CertLoad(const char* pem, OE_Cert** cert)
+OE_Result OE_CertRead(const char* pem, OE_Cert** cert)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
@@ -194,7 +194,7 @@ void OE_CertFree(OE_Cert* cert)
         X509_free((X509*)cert);
 }
 
-OE_Result OE_CertChainLoad(const char* pem, OE_CertChain** chain)
+OE_Result OE_CertChainRead(const char* pem, OE_CertChain** chain)
 {
     OE_Result result = OE_UNEXPECTED;
     STACK_OF(X509)* sk = NULL;
@@ -212,8 +212,8 @@ OE_Result OE_CertChainLoad(const char* pem, OE_CertChain** chain)
     /* Initialize OpenSSL (if not already initialized) */
     OE_InitializeOpenSSL();
 
-    /* Load the cerfificate chain into memory */
-    if (!(sk = _LoadCertChain(pem)))
+    /* Read the cerfificate chain into memory */
+    if (!(sk = _ReadCertChain(pem)))
     {
         result = OE_FAILURE;
         goto done;

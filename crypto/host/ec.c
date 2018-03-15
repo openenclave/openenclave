@@ -6,7 +6,7 @@
 #include <string.h>
 #include "init.h"
 
-OE_Result OE_ECLoadPrivateKeyFromPEM(
+OE_Result OE_ECReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_EC** key)
@@ -53,7 +53,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECLoadPublicKeyFromPEM(
+OE_Result OE_ECReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_EC** key)
@@ -322,7 +322,7 @@ OE_Result OE_ECGenerate(
             goto done;
         }
 
-        if (OE_ECLoadPrivateKeyFromPEM(mem->data, mem->length, privateKey) !=
+        if (OE_ECReadPrivateKeyFromPEM(mem->data, mem->length, privateKey) !=
             OE_OK)
         {
             result = OE_FAILURE;
@@ -357,7 +357,7 @@ OE_Result OE_ECGenerate(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_ECLoadPublicKeyFromPEM(mem->data, mem->length, publicKey) !=
+        if (OE_ECReadPublicKeyFromPEM(mem->data, mem->length, publicKey) !=
             OE_OK)
         {
             result = OE_FAILURE;

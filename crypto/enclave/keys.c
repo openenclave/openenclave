@@ -18,7 +18,7 @@
 **==============================================================================
 */
 
-static OE_Result _LoadPrivateKeyFromPEM(
+static OE_Result _ReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     mbedtls_pk_type_t type,
@@ -75,7 +75,7 @@ done:
     return result;
 }
 
-static OE_Result _LoadPublicKeyFromPEM(
+static OE_Result _ReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     mbedtls_pk_type_t type,
@@ -337,21 +337,21 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_ECLoadPrivateKeyFromPEM(
+OE_Result OE_ECReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_EC** key)
 {
-    return _LoadPrivateKeyFromPEM(
+    return _ReadPrivateKeyFromPEM(
         pemData, pemSize, MBEDTLS_PK_ECKEY, (mbedtls_pk_context**)key);
 }
 
-OE_Result OE_ECLoadPublicKeyFromPEM(
+OE_Result OE_ECReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_EC** key)
 {
-    return _LoadPublicKeyFromPEM(
+    return _ReadPublicKeyFromPEM(
         pemData, pemSize, MBEDTLS_PK_ECKEY, (mbedtls_pk_context**)key);
 }
 
@@ -502,7 +502,7 @@ OE_Result OE_ECGenerate(
         if (_WriteKey(&pk, mbedtls_pk_write_key_pem, &data, &size) != 0)
             goto done;
 
-        if (OE_ECLoadPrivateKeyFromPEM(data, size, privateKey) != OE_OK)
+        if (OE_ECReadPrivateKeyFromPEM(data, size, privateKey) != OE_OK)
             goto done;
 
         free(data);
@@ -514,7 +514,7 @@ OE_Result OE_ECGenerate(
         if (_WriteKey(&pk, mbedtls_pk_write_pubkey_pem, &data, &size) != 0)
             goto done;
 
-        if (OE_ECLoadPublicKeyFromPEM(data, size, publicKey) != OE_OK)
+        if (OE_ECReadPublicKeyFromPEM(data, size, publicKey) != OE_OK)
             goto done;
 
         free(data);
@@ -558,21 +558,21 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_RSALoadPrivateKeyFromPEM(
+OE_Result OE_RSAReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_RSA** key)
 {
-    return _LoadPrivateKeyFromPEM(
+    return _ReadPrivateKeyFromPEM(
         pemData, pemSize, MBEDTLS_PK_RSA, (mbedtls_pk_context**)key);
 }
 
-OE_Result OE_RSALoadPublicKeyFromPEM(
+OE_Result OE_RSAReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_RSA** key)
 {
-    return _LoadPublicKeyFromPEM(
+    return _ReadPublicKeyFromPEM(
         pemData, pemSize, MBEDTLS_PK_RSA, (mbedtls_pk_context**)key);
 }
 
@@ -721,7 +721,7 @@ OE_Result OE_RSAGenerate(
         if (_WriteKey(&pk, mbedtls_pk_write_key_pem, &data, &size) != 0)
             goto done;
 
-        if (OE_RSALoadPrivateKeyFromPEM(data, size, privateKey) != OE_OK)
+        if (OE_RSAReadPrivateKeyFromPEM(data, size, privateKey) != OE_OK)
             goto done;
 
         free(data);
@@ -733,7 +733,7 @@ OE_Result OE_RSAGenerate(
         if (_WriteKey(&pk, mbedtls_pk_write_pubkey_pem, &data, &size) != 0)
             goto done;
 
-        if (OE_RSALoadPublicKeyFromPEM(data, size, publicKey) != OE_OK)
+        if (OE_RSAReadPublicKeyFromPEM(data, size, publicKey) != OE_OK)
             goto done;
 
         free(data);

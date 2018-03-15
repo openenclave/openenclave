@@ -14,7 +14,7 @@ OE_EXTERNC_BEGIN
 typedef struct _OE_RSA OE_RSA;
 
 /**
- * Loads a public RSA key from PEM data.
+ * Reads a public RSA key from PEM data.
  *
  * This function loads an RSA key from a data buffer that contains a PEM
  * representation of an RSA key with the following format.
@@ -29,13 +29,13 @@ typedef struct _OE_RSA OE_RSA;
  *
  * @return OE_OK upon success
  */
-OE_Result OE_RSALoadPrivateKeyFromPEM(
+OE_Result OE_RSAReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_RSA** key);
 
 /**
- * Loads a public RSA key from PEM data.
+ * Reads a public RSA key from PEM data.
  *
  * This function loads an RSA key from a data buffer that contains a PEM
  * representation of an RSA key with the following format.
@@ -50,7 +50,7 @@ OE_Result OE_RSALoadPrivateKeyFromPEM(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_RSALoadPublicKeyFromPEM(
+OE_Result OE_RSAReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize, /* ATTN: use zero-terminated PEM data */
     OE_RSA** key);

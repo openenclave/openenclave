@@ -150,7 +150,7 @@ static void TestSign()
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_RSALoadPrivateKeyFromPEM(PRIVATE_KEY, sizeof(PRIVATE_KEY), &key);
+    r = OE_RSAReadPrivateKeyFromPEM(PRIVATE_KEY, sizeof(PRIVATE_KEY), &key);
     assert(r == OE_OK);
 
     r = OE_RSASign(key, &HASH, &signature, &signatureSize);
@@ -178,7 +178,7 @@ static void TestVerify()
     OE_Result r;
     OE_RSA* key = NULL;
 
-    r = OE_RSALoadPublicKeyFromPEM(PUBLIC_KEY, sizeof(PUBLIC_KEY), &key);
+    r = OE_RSAReadPublicKeyFromPEM(PUBLIC_KEY, sizeof(PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
     r = OE_RSAVerify(key, &HASH, SIGNATURE, SIGNATURE_SIZE);
@@ -305,10 +305,10 @@ static void TestCertVerifyGood()
     OE_CertChain* chain = NULL;
     OE_CRL* crl = NULL;
 
-    r = OE_CertLoad(CERT, &cert);
+    r = OE_CertRead(CERT, &cert);
     assert(r == OE_OK);
 
-    r = OE_CertChainLoad(CHAIN, &chain);
+    r = OE_CertChainRead(CHAIN, &chain);
     assert(r == OE_OK);
 
     r = OE_CertVerify(cert, chain, crl, &error);
@@ -330,10 +330,10 @@ static void TestCertVerifyBad()
     OE_CertChain* chain = NULL;
     OE_CRL* crl = NULL;
 
-    r = OE_CertLoad(CERT, &cert);
+    r = OE_CertRead(CERT, &cert);
     assert(r == OE_OK);
 
-    r = OE_CertChainLoad(BAD_CHAIN, &chain);
+    r = OE_CertChainRead(BAD_CHAIN, &chain);
     assert(r == OE_OK);
 
     r = OE_CertVerify(cert, chain, crl, &error);
@@ -357,13 +357,13 @@ static void TestCertVerify()
         OE_CertChain* badChain = NULL;
         OE_CRL* crl = NULL;
 
-        r = OE_CertLoad(CERT, &cert);
+        r = OE_CertRead(CERT, &cert);
         assert(r == OE_OK);
 
-        r = OE_CertChainLoad(CHAIN, &chain);
+        r = OE_CertChainRead(CHAIN, &chain);
         assert(r == OE_OK);
 
-        r = OE_CertChainLoad(BAD_CHAIN, &badChain);
+        r = OE_CertChainRead(BAD_CHAIN, &badChain);
         assert(r == OE_OK);
 
         r = OE_CertVerify(cert, chain, crl, &error);
@@ -425,7 +425,7 @@ static void TestECSign()
     {
         OE_EC* key = NULL;
 
-        r = OE_ECLoadPrivateKeyFromPEM(
+        r = OE_ECReadPrivateKeyFromPEM(
             EC_PRIVATE_KEY, sizeof(EC_PRIVATE_KEY), &key);
         assert(r == OE_OK);
 
@@ -438,7 +438,7 @@ static void TestECSign()
     {
         OE_EC* key = NULL;
 
-        r = OE_ECLoadPublicKeyFromPEM(
+        r = OE_ECReadPublicKeyFromPEM(
             EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
         assert(r == OE_OK);
 
@@ -516,7 +516,7 @@ static void TestRSAWritePrivate()
     void* pemData = NULL;
     size_t pemSize;
 
-    r = OE_RSALoadPrivateKeyFromPEM(PRIVATE_KEY, sizeof(PRIVATE_KEY), &key);
+    r = OE_RSAReadPrivateKeyFromPEM(PRIVATE_KEY, sizeof(PRIVATE_KEY), &key);
     assert(r == OE_OK);
 
     r = OE_RSAWritePrivateKeyToPEM(key, &pemData, &pemSize);
@@ -540,7 +540,7 @@ static void TestRSAWritePublic()
     void* pemData = NULL;
     size_t pemSize;
 
-    r = OE_RSALoadPublicKeyFromPEM(PUBLIC_KEY, sizeof(PUBLIC_KEY), &key);
+    r = OE_RSAReadPublicKeyFromPEM(PUBLIC_KEY, sizeof(PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
     r = OE_RSAWritePublicKeyToPEM(key, &pemData, &pemSize);
@@ -574,7 +574,7 @@ static void TestECWritePrivate()
     r = OE_ECWritePrivateKeyToPEM(key1, &pemData1, &pemSize1);
     assert(r == OE_OK);
 
-    r = OE_ECLoadPrivateKeyFromPEM(pemData1, pemSize1, &key2);
+    r = OE_ECReadPrivateKeyFromPEM(pemData1, pemSize1, &key2);
     assert(r == OE_OK);
 
     r = OE_ECWritePrivateKeyToPEM(key2, &pemData2, &pemSize2);
@@ -601,7 +601,7 @@ static void TestECWritePublic()
     void* pemData = NULL;
     size_t pemSize;
 
-    r = OE_ECLoadPublicKeyFromPEM(
+    r = OE_ECReadPublicKeyFromPEM(
         EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 

@@ -14,7 +14,7 @@ OE_EXTERNC_BEGIN
 typedef struct _OE_EC OE_EC;
 
 /**
- * Loads a public EC key from PEM data.
+ * Reads a public EC key from PEM data.
  *
  * This function loads an EC key from a data buffer that contains a PEM
  * representation of an EC key with the following format.
@@ -29,13 +29,13 @@ typedef struct _OE_EC OE_EC;
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECLoadPrivateKeyFromPEM(
+OE_Result OE_ECReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_EC** key);
 
 /**
- * Loads a public EC key from PEM data.
+ * Reads a public EC key from PEM data.
  *
  * This function loads an EC key from a data buffer that contains a PEM
  * representation of an EC key with the following format.
@@ -50,7 +50,7 @@ OE_Result OE_ECLoadPrivateKeyFromPEM(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECLoadPublicKeyFromPEM(
+OE_Result OE_ECReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_EC** key);

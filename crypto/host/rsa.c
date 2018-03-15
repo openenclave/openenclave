@@ -7,7 +7,7 @@
 #include <string.h>
 #include "init.h"
 
-OE_Result OE_RSALoadPrivateKeyFromPEM(
+OE_Result OE_RSAReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_RSA** key)
@@ -37,7 +37,7 @@ OE_Result OE_RSALoadPrivateKeyFromPEM(
         goto done;
     }
 
-    /* Load the RSA structure from the PEM data */
+    /* Read the RSA structure from the PEM data */
     if (!(rsa = PEM_read_bio_RSAPrivateKey(bio, &rsa, NULL, NULL)))
     {
         result = OE_FAILURE;
@@ -61,7 +61,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSALoadPublicKeyFromPEM(
+OE_Result OE_RSAReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
     OE_RSA** key)
@@ -92,7 +92,7 @@ OE_Result OE_RSALoadPublicKeyFromPEM(
         goto done;
     }
 
-    /* Load the RSA structure from the PEM data */
+    /* Read the RSA structure from the PEM data */
     if (!(pkey = PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL)))
     {
         result = OE_FAILURE;
@@ -315,7 +315,7 @@ OE_Result OE_RSAGenerate(
             goto done;
         }
 
-        if (OE_RSALoadPrivateKeyFromPEM(mem->data, mem->length, privateKey) !=
+        if (OE_RSAReadPrivateKeyFromPEM(mem->data, mem->length, privateKey) !=
             OE_OK)
         {
             result = OE_FAILURE;
@@ -364,7 +364,7 @@ OE_Result OE_RSAGenerate(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_RSALoadPublicKeyFromPEM(mem->data, mem->length, publicKey) !=
+        if (OE_RSAReadPublicKeyFromPEM(mem->data, mem->length, publicKey) !=
             OE_OK)
         {
             result = OE_FAILURE;
