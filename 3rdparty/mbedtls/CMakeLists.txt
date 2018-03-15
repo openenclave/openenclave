@@ -1,5 +1,5 @@
-# Copyright (c) Microsoft Corporation. All rights reserved. 
-# Licensed under the MIT License. 
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
 # Copy mbedtls sources to replace config.h and build w/ own flags
 
