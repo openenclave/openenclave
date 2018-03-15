@@ -68,30 +68,44 @@ void TestCond(OE_Enclave* enclave)
         pthread_join(threads[i], NULL);
 }
 
-void* CondTightLoopThread(void* args)
+void* CBTestWaiterThread(void* args)
 {
     OE_Enclave* enclave = (OE_Enclave*)args;
 
-    assert(OE_CallEnclave(enclave, "CondTightLoopThreadImpl", NULL) == OE_OK);
+    assert(OE_CallEnclave(enclave, "CBTestWaiterThreadImpl", NULL) == OE_OK);
 
     return NULL;
 }
 
-void TestCondTightLoop(OE_Enclave* enclave)
+void* CBTestSignalThread(void* args)
 {
-    const size_t NUM_THREADS = 4;
-    pthread_t threads[NUM_THREADS];
+    OE_Enclave* enclave = (OE_Enclave*)args;
 
-    printf("TestCondTightLoop Starting\n");
+    assert(OE_CallEnclave(enclave, "CBTestSignalThreadImpl", NULL) == OE_OK);
+
+    return NULL;
+}
+
+void TestCondBroadcast(OE_Enclave* enclave)
+{
+    pthread_t threads[NUM_THREADS];
+    pthread_t signal_thread;
+
+    printf("TestCondBroadcast Starting\n");
+
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
-        pthread_create(&threads[i], NULL, CondTightLoopThread, enclave);
+        pthread_create(&threads[i], NULL, CBTestWaiterThread, enclave);
     }
+
+    pthread_create(&signal_thread, NULL, CBTestSignalThread, enclave);
 
     for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    printf("TestCondTightLoop Complete\n");
+    pthread_join(signal_thread, NULL);
+
+    printf("TestCondBroadcast Complete\n");
 }
 
 void* ExclusiveAccessThread(void* args)
@@ -240,7 +254,7 @@ int main(int argc, const char* argv[])
 
     TestCond(enclave);
 
-    TestCondTightLoop(enclave);
+    TestCondBroadcast(enclave);
 
     TestThreadWakeWait(enclave);
 

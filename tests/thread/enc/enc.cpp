@@ -244,46 +244,79 @@ namespace cond_broadcast_test
 {
 static OE_Mutex mutex = OE_MUTEX_INITIALIZER;
 static OE_Cond cond = OE_COND_INITIALIZER;
-volatile int owner = 0;
 
-OE_ECALL void CondTightLoopThreadImpl(void* args)
+// Number of waiting threads.
+volatile int num_waiting = 0;
+
+// Number of woken up threads.
+volatile int num_woken = 0;
+
+volatile bool exit = false;
+
+OE_ECALL void CBTestWaiterThreadImpl(void* args)
 {
-    OE_HostPrintf("%ld: Thread Starting\n", OE_ThreadSelf());
+    while (!exit)
+    {
+        OE_MutexLock(&mutex);
 
+        // Increment counter and wait.
+        ++num_waiting;
+        OE_CondWait(&cond, &mutex);
+
+        // After waking up, update counters.
+        --num_waiting;
+        ++num_woken;
+
+        OE_MutexUnlock(&mutex);
+    }
+}
+
+OE_ECALL void CBTestSignalThreadImpl(void* args)
+{
     const size_t ITERS = 2000;
+
     for (size_t i = 0; i < ITERS; ++i)
     {
+        OE_MutexLock(&mutex);
+
+        // No thread should wake up until broadcast.
+        assert(num_woken == 0);
+
+        // Signal waiting threads to wake up.
+        // Stash the number of threads expected to wake up.
+        int num_expected = num_waiting;
+        OE_CondBroadcast(&cond);
+
+        OE_MutexUnlock(&mutex);
+
+        // There is no guarantee whether the woken up threads
+        // are scheduled for execution immediately.
+        // Therefore, wait until expected number of threads are woken up.
+        bool done = false;
+        while (!done)
         {
             OE_MutexLock(&mutex);
 
-            // Wait until prior owner has released resource
-            while (owner > 0)
+            // No more than desired number of threads should be woken up.
+            assert(num_woken <= num_expected);
+
+            if (num_expected == num_woken)
             {
-                OE_CondWait(&cond, &mutex);
+                // Test succeeded. Clear counter.
+                num_woken = 0;
+                done = true;
             }
-
-            assert(owner == 0);
-            owner = 1;
-
-            OE_MutexUnlock(&mutex);
-        }
-
-        // This thread is the sole owner
-
-        {
-            OE_MutexLock(&mutex);
-
-            // Release ownership
-            assert(owner == 1);
-            owner = 0;
-
-            // Wake up other waiting threads
-            OE_CondBroadcast(&cond);
 
             OE_MutexUnlock(&mutex);
         }
     }
 
-    OE_HostPrintf("%ld: Thread Exiting\n", OE_ThreadSelf());
+    // Signal waiter threads to exit.
+    OE_MutexLock(&mutex);
+
+    exit = true;
+    OE_CondBroadcast(&cond);
+
+    OE_MutexUnlock(&mutex);
 }
 }
