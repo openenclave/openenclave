@@ -36,10 +36,7 @@ typedef struct _OE_VerifyCertError
  *
  * @return OE_OK load was successful
  */
-OE_Result OE_CertReadPEM(
-    const void* pemData,
-    size_t pemSize, 
-    OE_Cert** cert);
+OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert** cert);
 
 /**
  * Read a certificate chain from PEM format.
@@ -64,7 +61,7 @@ OE_Result OE_CertReadPEM(
  */
 OE_Result OE_CertChainReadPEM(
     const void* pemData,
-    size_t pemSize, 
+    size_t pemSize,
     OE_CertChain** chain);
 
 /**

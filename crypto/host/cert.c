@@ -12,8 +12,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
-#include "init.h"
 #include "../util.h"
+#include "init.h"
 
 /*
 **==============================================================================
@@ -143,10 +143,7 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_CertReadPEM(
-    const void* pemData, 
-    size_t pemSize,
-    OE_Cert** cert)
+OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert** cert)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
@@ -209,7 +206,7 @@ void OE_CertFree(OE_Cert* cert)
 }
 
 OE_Result OE_CertChainReadPEM(
-    const void* pemData, 
+    const void* pemData,
     size_t pemSize,
     OE_CertChain** chain)
 {

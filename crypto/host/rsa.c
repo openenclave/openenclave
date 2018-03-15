@@ -8,8 +8,8 @@
 #include <openssl/rsa.h>
 #include <stdio.h>
 #include <string.h>
-#include "init.h"
 #include "../util.h"
+#include "init.h"
 
 OE_Result OE_RSAReadPrivateKeyFromPEM(
     const void* pemData,

@@ -119,10 +119,7 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_CertReadPEM(
-    const void* pemData, 
-    size_t pemSize,
-    OE_Cert** cert)
+OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert** cert)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_x509_crt* crt = NULL;

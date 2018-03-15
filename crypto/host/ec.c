@@ -7,8 +7,8 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <string.h>
-#include "init.h"
 #include "../util.h"
+#include "init.h"
 
 OE_Result OE_ECReadPrivateKeyFromPEM(
     const void* pemData,
@@ -417,10 +417,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECWritePrivateKeyToPEM(
-    const OE_EC* key,
-    void** data,
-    size_t* size)
+OE_Result OE_ECWritePrivateKeyToPEM(const OE_EC* key, void** data, size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
@@ -485,10 +482,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECWritePublicKeyToPEM(
-    const OE_EC* key,
-    void** data,
-    size_t* size)
+OE_Result OE_ECWritePublicKeyToPEM(const OE_EC* key, void** data, size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;

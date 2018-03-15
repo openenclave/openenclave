@@ -4,9 +4,7 @@
 #include "util.h"
 
 /* Verify that the only null terminator is the final byte */
-OE_Result OE_CheckForNullTerminator(
-    const void* pemData,
-    size_t pemSize)
+OE_Result OE_CheckForNullTerminator(const void* pemData, size_t pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
     const char* p = (const char*)pemData;

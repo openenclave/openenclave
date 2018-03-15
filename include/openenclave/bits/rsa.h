@@ -100,7 +100,7 @@ OE_Result OE_RSAWritePublicKeyToPEM(
 /**
  * Releases an RSA key structure
  *
- * This function releases an RSA key structure that was created by one of the 
+ * This function releases an RSA key structure that was created by one of the
  * functions in this module.
  *
  * @param key - pointer to RSA public key struture.

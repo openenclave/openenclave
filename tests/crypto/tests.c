@@ -601,8 +601,7 @@ static void TestECWritePublic()
     void* pemData = NULL;
     size_t pemSize;
 
-    r = OE_ECReadPublicKeyFromPEM(
-        EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
+    r = OE_ECReadPublicKeyFromPEM(EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
     r = OE_ECWritePublicKeyToPEM(key, &pemData, &pemSize);

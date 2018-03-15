@@ -7,8 +7,8 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
 #include <openenclave/bits/ec.h>
-#include <openenclave/bits/rsa.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/rsa.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -373,10 +373,7 @@ OE_Result OE_ECReadPublicKeyFromPEM(
         pemData, pemSize, MBEDTLS_PK_ECKEY, (mbedtls_pk_context**)key);
 }
 
-OE_Result OE_ECWritePrivateKeyToPEM(
-    const OE_EC* key,
-    void** data,
-    size_t* size)
+OE_Result OE_ECWritePrivateKeyToPEM(const OE_EC* key, void** data, size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_pk_context* pk = (mbedtls_pk_context*)key;
@@ -394,10 +391,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECWritePublicKeyToPEM(
-    const OE_EC* key,
-    void** data,
-    size_t* size)
+OE_Result OE_ECWritePublicKeyToPEM(const OE_EC* key, void** data, size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_pk_context* pk = (mbedtls_pk_context*)key;
