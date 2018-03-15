@@ -41,7 +41,6 @@ add_library(oehost STATIC
     sgxdriver.c
     sgxmeasure.c
     sgxtypes.c
-    sha.c
     strings.c
     tests.c
     typeinfo.c
@@ -73,7 +72,7 @@ target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)
 if(UNIX)
-target_link_libraries(oehostapp INTERFACE oehost -rdynamic)
+target_link_libraries(oehostapp INTERFACE oehost oecryptohost -rdynamic)
 elseif(WIN32)
 target_link_libraries(oehostapp INTERFACE oehost)
 endif()

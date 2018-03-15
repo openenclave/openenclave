@@ -43,9 +43,18 @@ set_property(
     ARCHIVE_OUTPUT_DIRECTORY 
     ${OE_LIBDIR}/openenclave/host)
 
+#install(
+#    TARGETS 
+#    oecryptohost 
+#    ARCHIVE 
+#    DESTINATION 
+#    ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+
 install(
     TARGETS 
     oecryptohost 
+    EXPORT 
+    openenclave 
     ARCHIVE 
     DESTINATION 
     ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
