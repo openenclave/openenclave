@@ -237,7 +237,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAGenerateKeyPair(
+OE_Result OE_RSAGenerate(
     uint64_t bits,
     uint64_t exponent,
     OE_RSA** privateKey,

@@ -459,9 +459,24 @@ static void TestRSAGenerate()
 {
     printf("=== begin TestRSAGenerate()\n");
 
+    OE_Result r;
     OE_RSA* privateKey;
     OE_RSA* publicKey;
-    assert(OE_RSAGenerateKeyPair(1024, 3, &privateKey, &publicKey) == OE_OK);
+    uint8_t* signature = NULL;
+    size_t signatureSize = 0;
+
+    r = OE_RSAGenerate(1024, 3, &privateKey, &publicKey);
+    assert(r == OE_OK);
+
+    r = OE_RSASign(privateKey, &HASH, &signature, &signatureSize);
+    assert(r == OE_OK);
+
+    r = OE_RSAVerify(publicKey, &HASH, signature, signatureSize);
+    assert(r == OE_OK);
+
+    free(signature);
+    OE_RSAFree(privateKey);
+    OE_RSAFree(publicKey);
 
     printf("=== passed TestRSAGenerate()\n");
 }
@@ -470,9 +485,24 @@ static void TestECGenerate()
 {
     printf("=== begin TestECGenerate()\n");
 
+    OE_Result r;
     OE_EC* privateKey;
     OE_EC* publicKey;
-    assert(OE_ECGenerateKeyPair("secp521r1", &privateKey, &publicKey) == OE_OK);
+    uint8_t* signature = NULL;
+    size_t signatureSize = 0;
+
+    r = OE_ECGenerate("secp521r1", &privateKey, &publicKey);
+    assert(r == OE_OK);
+
+    r = OE_ECSign(privateKey, &HASH, &signature, &signatureSize);
+    assert(r == OE_OK);
+
+    r = OE_ECVerify(publicKey, &HASH, signature, signatureSize);
+    assert(r == OE_OK);
+
+    free(signature);
+    OE_ECFree(privateKey);
+    OE_ECFree(publicKey);
 
     printf("=== passed TestECGenerate()\n");
 }

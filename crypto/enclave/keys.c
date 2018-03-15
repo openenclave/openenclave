@@ -384,7 +384,7 @@ OE_Result OE_ECVerify(
         signatureSize);
 }
 
-OE_Result OE_ECGenerateKeyPair(
+OE_Result OE_ECGenerate(
     const char* curveName,
     OE_EC** privateKey,
     OE_EC** publicKey)
@@ -563,7 +563,7 @@ OE_Result OE_RSAVerify(
         signatureSize);
 }
 
-OE_Result OE_RSAGenerateKeyPair(
+OE_Result OE_RSAGenerate(
     uint64_t bits,
     uint64_t exponent,
     OE_RSA** privateKey,

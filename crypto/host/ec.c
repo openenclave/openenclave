@@ -226,7 +226,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECGenerateKeyPair(
+OE_Result OE_ECGenerate(
     const char* curveName,
     OE_EC** privateKey,
     OE_EC** publicKey)

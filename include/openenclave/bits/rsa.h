@@ -114,7 +114,7 @@ OE_Result OE_RSAVerify(
  *
  * @return OE_OK on success
  */
-OE_Result OE_RSAGenerateKeyPair(
+OE_Result OE_RSAGenerate(
     uint64_t bits,
     uint64_t exponent,
     OE_RSA** privateKey,
