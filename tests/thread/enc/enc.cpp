@@ -169,7 +169,7 @@ static int a_locks = 0;
 static int b_locks = 0;
 static int c_locks = 0;
 
-// Lock the specified mutexes in given order 
+// Lock the specified mutexes in given order
 // and unlock them in reverse order.
 OE_ECALL void LockAndUnlockMutexes(void* arg)
 {

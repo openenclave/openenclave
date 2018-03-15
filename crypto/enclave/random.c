@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <openenclave/bits/enclavelibc.h>
@@ -9,7 +8,6 @@ OE_Result OE_Random(void* data, size_t size)
 {
     OE_Result result = OE_FAILURE;
 
-
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_entropy_context entropy;
 
@@ -17,7 +15,7 @@ OE_Result OE_Random(void* data, size_t size)
     mbedtls_entropy_init(&entropy);
 
     if (mbedtls_ctr_drbg_seed(
-        &ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0) != 0)
+            &ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0) != 0)
     {
         goto done;
     }
