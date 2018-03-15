@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../util.h"
 
 /*
 **==============================================================================
@@ -33,6 +34,13 @@ static OE_Result _ReadPrivateKeyFromPEM(
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !key)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* The position of the null terminator must be the last byte */
+    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -90,6 +98,13 @@ static OE_Result _ReadPublicKeyFromPEM(
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !key)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* The position of the null terminator must be the last byte */
+    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
     {
         result = OE_INVALID_PARAMETER;
         goto done;

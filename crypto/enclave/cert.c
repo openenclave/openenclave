@@ -8,6 +8,7 @@
 #include <openenclave/bits/enclavelibc.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../util.h"
 
 /*
 **==============================================================================
@@ -115,7 +116,10 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_CertRead(const char* pem, OE_Cert** cert)
+OE_Result OE_CertReadPEM(
+    const void* pemData, 
+    size_t pemSize,
+    OE_Cert** cert)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_x509_crt* crt = NULL;
@@ -125,7 +129,14 @@ OE_Result OE_CertRead(const char* pem, OE_Cert** cert)
         *cert = NULL;
 
     /* Check parameters */
-    if (!pem || !cert)
+    if (!pemData || !pemSize || !cert)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* The position of the null terminator must be the last byte */
+    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -139,7 +150,7 @@ OE_Result OE_CertRead(const char* pem, OE_Cert** cert)
     }
 
     /* Read the PEM buffer into DER format */
-    if (_CrtRead(crt, pem, &len) != 0)
+    if (_CrtRead(crt, (const char*)pemData, &len) != 0)
         goto done;
 
     *cert = (OE_Cert*)crt;
@@ -161,7 +172,10 @@ void OE_CertFree(OE_Cert* cert)
         _CrtFree((mbedtls_x509_crt*)cert);
 }
 
-OE_Result OE_CertChainRead(const char* pem, OE_CertChain** chain)
+OE_Result OE_CertChainReadPEM(
+    const void* pemData,
+    size_t pemSize,
+    OE_CertChain** chain)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_x509_crt* crt = NULL;
@@ -170,7 +184,14 @@ OE_Result OE_CertChainRead(const char* pem, OE_CertChain** chain)
         *chain = NULL;
 
     /* Check parameters */
-    if (!pem || !chain)
+    if (!pemData || !pemSize || !chain)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* The position of the null terminator must be the last byte */
+    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -184,7 +205,7 @@ OE_Result OE_CertChainRead(const char* pem, OE_CertChain** chain)
     }
 
     /* Read the PEM buffer into DER format */
-    if (_CrtChainRead(crt, pem) != 0)
+    if (_CrtChainRead(crt, (const char*)pemData) != 0)
         goto done;
 
     *chain = (OE_CertChain*)crt;

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "init.h"
+#include "../util.h"
 
 OE_Result OE_RSAReadPrivateKeyFromPEM(
     const void* pemData,
@@ -22,6 +23,13 @@ OE_Result OE_RSAReadPrivateKeyFromPEM(
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !key)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* The position of the null terminator must be the last byte */
+    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -77,6 +85,13 @@ OE_Result OE_RSAReadPublicKeyFromPEM(
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !key)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* The position of the null terminator must be the last byte */
+    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
     {
         result = OE_INVALID_PARAMETER;
         goto done;

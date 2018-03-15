@@ -6,7 +6,8 @@ add_library(
     cert.c
     random.c
     rsa.c
-    ec.c)
+    ec.c
+    ../util.c)
 
 target_link_libraries(oecryptohost oe_includes)
 

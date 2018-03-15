@@ -305,10 +305,10 @@ static void TestCertVerifyGood()
     OE_CertChain* chain = NULL;
     OE_CRL* crl = NULL;
 
-    r = OE_CertRead(CERT, &cert);
+    r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
     assert(r == OE_OK);
 
-    r = OE_CertChainRead(CHAIN, &chain);
+    r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
     assert(r == OE_OK);
 
     r = OE_CertVerify(cert, chain, crl, &error);
@@ -330,10 +330,10 @@ static void TestCertVerifyBad()
     OE_CertChain* chain = NULL;
     OE_CRL* crl = NULL;
 
-    r = OE_CertRead(CERT, &cert);
+    r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
     assert(r == OE_OK);
 
-    r = OE_CertChainRead(BAD_CHAIN, &chain);
+    r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &chain);
     assert(r == OE_OK);
 
     r = OE_CertVerify(cert, chain, crl, &error);
@@ -357,13 +357,13 @@ static void TestCertVerify()
         OE_CertChain* badChain = NULL;
         OE_CRL* crl = NULL;
 
-        r = OE_CertRead(CERT, &cert);
+        r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
         assert(r == OE_OK);
 
-        r = OE_CertChainRead(CHAIN, &chain);
+        r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
         assert(r == OE_OK);
 
-        r = OE_CertChainRead(BAD_CHAIN, &badChain);
+        r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &badChain);
         assert(r == OE_OK);
 
         r = OE_CertVerify(cert, chain, crl, &error);

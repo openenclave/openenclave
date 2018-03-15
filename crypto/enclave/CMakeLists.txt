@@ -4,7 +4,8 @@ add_library(
     sha.c
     cert.c
     random.c
-    keys.c)
+    keys.c
+    ../util.c)
 
 target_link_libraries(
     oecrypto 

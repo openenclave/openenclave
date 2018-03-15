@@ -23,7 +23,7 @@ typedef struct _OE_VerifyCertError
 /**
  * Read a certificate from PEM format.
  *
- * This function loads a certificate from PEM data in the following PEM
+ * This function reads a certificate from PEM data in the following PEM
  * format.
  *
  *     -----BEGIN CERT-----
@@ -35,23 +35,15 @@ typedef struct _OE_VerifyCertError
  *
  * @return OE_OK load was successful
  */
-OE_Result OE_CertRead(const char* pem, OE_Cert** cert);
-
-/**
- * Releases a certificate
- *
- * This function releases a certificate structure.
- *
- * @param cert - pointer to certificate
- *
- * @return OE_OK load was successful
- */
-void OE_CertFree(OE_Cert* cert);
+OE_Result OE_CertReadPEM(
+    const void* pemData,
+    size_t pemSize, 
+    OE_Cert** cert);
 
 /**
  * Read a certificate chain from PEM format.
  *
- * This function loads a certificate chain from PEM data in the following PEM
+ * This function reads a certificate chain from PEM data in the following PEM
  * format.
  *
  *     -----BEGIN CERT-----
@@ -69,7 +61,21 @@ void OE_CertFree(OE_Cert* cert);
  *
  * @return OE_OK load was successful
  */
-OE_Result OE_CertChainRead(const char* pem, OE_CertChain** chain);
+OE_Result OE_CertChainReadPEM(
+    const void* pemData,
+    size_t pemSize, 
+    OE_CertChain** chain);
+
+/**
+ * Releases a certificate
+ *
+ * This function releases a certificate structure.
+ *
+ * @param cert - pointer to certificate
+ *
+ * @return OE_OK load was successful
+ */
+void OE_CertFree(OE_Cert* cert);
 
 /**
  * Releases a certificate chain

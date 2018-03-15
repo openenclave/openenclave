@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "init.h"
+#include "../util.h"
 
 /*
 **==============================================================================
@@ -139,7 +140,10 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_CertRead(const char* pem, OE_Cert** cert)
+OE_Result OE_CertReadPEM(
+    const void* pemData, 
+    size_t pemSize,
+    OE_Cert** cert)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
@@ -149,7 +153,14 @@ OE_Result OE_CertRead(const char* pem, OE_Cert** cert)
         *cert = NULL;
 
     /* Check parameters */
-    if (!pem || !cert)
+    if (!pemData || !pemSize || !cert)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* The position of the null terminator must be the last byte */
+    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -159,7 +170,7 @@ OE_Result OE_CertRead(const char* pem, OE_Cert** cert)
     OE_InitializeOpenSSL();
 
     /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pem, strlen(pem))))
+    if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
     {
         result = OE_FAILURE;
         goto done;
@@ -194,7 +205,10 @@ void OE_CertFree(OE_Cert* cert)
         X509_free((X509*)cert);
 }
 
-OE_Result OE_CertChainRead(const char* pem, OE_CertChain** chain)
+OE_Result OE_CertChainReadPEM(
+    const void* pemData, 
+    size_t pemSize,
+    OE_CertChain** chain)
 {
     OE_Result result = OE_UNEXPECTED;
     STACK_OF(X509)* sk = NULL;
@@ -203,7 +217,14 @@ OE_Result OE_CertChainRead(const char* pem, OE_CertChain** chain)
         *chain = NULL;
 
     /* Check parameters */
-    if (!pem || !chain)
+    if (!pemData || !pemSize || !chain)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* The position of the null terminator must be the last byte */
+    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -213,7 +234,7 @@ OE_Result OE_CertChainRead(const char* pem, OE_CertChain** chain)
     OE_InitializeOpenSSL();
 
     /* Read the cerfificate chain into memory */
-    if (!(sk = _ReadCertChain(pem)))
+    if (!(sk = _ReadCertChain((const char*)pemData)))
     {
         result = OE_FAILURE;
         goto done;

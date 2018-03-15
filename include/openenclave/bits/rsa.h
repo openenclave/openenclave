@@ -52,7 +52,7 @@ OE_Result OE_RSAReadPrivateKeyFromPEM(
  */
 OE_Result OE_RSAReadPublicKeyFromPEM(
     const void* pemData,
-    size_t pemSize, /* ATTN: use zero-terminated PEM data */
+    size_t pemSize,
     OE_RSA** key);
 
 /**
