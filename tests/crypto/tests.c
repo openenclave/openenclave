@@ -124,12 +124,15 @@ static void _DumpHex(const void* data_, size_t size)
 */
 static void TestSHA256()
 {
+    printf("=== begin TestSHA25\n");
+
     OE_SHA256 hash;
     OE_SHA256Context ctx;
     OE_SHA256Init(&ctx);
     OE_SHA256Update(&ctx, ALPHABET, strlen(ALPHABET));
     OE_SHA256Final(&ctx, &hash);
     assert(memcmp(&hash, &HASH, sizeof(OE_SHA256)) == 0);
+
     printf("=== passed TestSHA25\n");
 }
 
@@ -140,6 +143,8 @@ static void TestSHA256()
 */
 static void TestSign()
 {
+    printf("=== begin TestSign\n");
+
     OE_Result r;
     OE_RSA* key = NULL;
     uint8_t* signature = NULL;
@@ -292,6 +297,8 @@ static const char BAD_CHAIN[] =
 
 static void TestCertVerifyGood()
 {
+    printf("=== begin TestCertVerifyGood()\n");
+
     OE_Result r;
     OE_VerifyCertError error;
     OE_Cert* cert = NULL;
@@ -315,6 +322,8 @@ static void TestCertVerifyGood()
 
 static void TestCertVerifyBad()
 {
+    printf("=== begin TestCertVerifyBad()\n");
+
     OE_Result r;
     OE_VerifyCertError error;
     OE_Cert* cert = NULL;
@@ -338,6 +347,8 @@ static void TestCertVerifyBad()
 
 static void TestCertVerify()
 {
+    printf("=== begin TestCertVerifyCert()\n");
+
     {
         OE_Result r;
         OE_VerifyCertError error;
@@ -374,6 +385,8 @@ static void TestCertVerify()
 
 static void TestRandom()
 {
+    printf("=== begin TestRandom()\n");
+
     unsigned char buf[19] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -403,6 +416,8 @@ static const char EC_PUBLIC_KEY[] =
 */
 static void TestECSign()
 {
+    printf("=== begin TestECSign()\n");
+
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
     OE_Result r;
@@ -442,6 +457,8 @@ static void TestECSign()
 
 static void TestRSAGenerate()
 {
+    printf("=== begin TestRSAGenerate()\n");
+
     OE_RSA* privateKey;
     OE_RSA* publicKey;
     assert(OE_RSAGenerateKeyPair(1024, 3, &privateKey, &publicKey) == OE_OK);
@@ -451,6 +468,8 @@ static void TestRSAGenerate()
 
 static void TestECGenerate()
 {
+    printf("=== begin TestECGenerate()\n");
+
     OE_EC* privateKey;
     OE_EC* publicKey;
     assert(OE_ECGenerateKeyPair("secp521r1", &privateKey, &publicKey) == OE_OK);

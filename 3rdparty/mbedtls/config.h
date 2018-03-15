@@ -1504,7 +1504,8 @@
  *
  * This modules adds support for the AES-NI instructions on x86-64
  */
-#define MBEDTLS_AESNI_C
+// OpenEnclave disabled (causes OE_Random() to crash)
+//#define MBEDTLS_AESNI_C
 
 /**
  * \def MBEDTLS_AES_C

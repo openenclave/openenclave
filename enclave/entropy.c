@@ -45,7 +45,7 @@ int mbedtls_hardware_poll(
         }
     }
 
-    /* Copy reamining random bytes to output */
+    /* Copy remaining random bytes to output */
     {
         size_t r = len % sizeof(uint64_t);
         uint64_t x = _rdrand();
