@@ -54,9 +54,33 @@ static int _AESMValid(const AESM* aesm)
     return aesm != NULL && aesm->magic == AESM_MAGIC;
 }
 
-static uint8_t _MakeTag(uint8_t fieldNum, WireType wireType)
+static int _MakeTag(uint8_t fieldNum, WireType wireType, uint8_t* tag)
 {
-    return (fieldNum << 3) | (uint8_t)wireType;
+    int ret = -1;
+
+    /* Initialize the tag in case of failure */
+    if (tag)
+        *tag = 0;
+    
+    /* Check parameter */
+    if (!tag)
+        goto done;
+
+    /* Check for overflow (fieldNum will occupy the upper 5 bits) */
+    if (fieldNum & 0xE0)
+        goto done;
+
+    /* Check for overflow (wireType will occupy the lower 3 bits) */
+    if ((uint8_t)wireType & 0xF8)
+        goto done;
+
+    /* Form the tag */
+    *tag = (fieldNum << 3) | (uint8_t)wireType;
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 static int _PackVariantUint32(mem_t* buf, uint32_t x)
@@ -84,7 +108,11 @@ static int _PackVariantUint32(mem_t* buf, uint32_t x)
 
 static int _PackTag(mem_t* buf, uint8_t fieldNum, WireType wireType)
 {
-    uint8_t tag = _MakeTag(fieldNum, wireType);
+    uint8_t tag;
+    
+    if (_MakeTag(fieldNum, wireType, &tag) != 0)
+        return -1;
+
     return mem_cat(buf, &tag, sizeof(uint8_t));
 }
 
@@ -139,7 +167,10 @@ static OE_Result _PackBytes(
     uint32_t size)
 {
     OE_Result result = OE_UNEXPECTED;
-    uint8_t tag = _MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED);
+    uint8_t tag;
+    
+    if (_MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED, &tag) != 0)
+        OE_THROW(OE_FAILURE);
 
     if (mem_cat(buf, &tag, sizeof(tag)) != 0)
         OE_THROW(OE_FAILURE);
@@ -180,11 +211,15 @@ static OE_Result _UnpackVarInt(
 {
     OE_Result result = OE_UNEXPECTED;
     uint8_t tag;
+    uint8_t tmpTag;
 
     if ((*pos = _UnpackTag(buf, *pos, &tag)) == -1)
         OE_THROW(OE_FAILURE);
 
-    if (_MakeTag(fieldNum, WIRETYPE_VARINT) != tag)
+    if (_MakeTag(fieldNum, WIRETYPE_VARINT, &tmpTag) != 0)
+        OE_THROW(OE_FAILURE);
+
+    if (tag != tmpTag)
         OE_THROW(OE_FAILURE);
 
     if ((*pos = _UnpackVariantUint32(buf, *pos, value)) == -1)
@@ -205,12 +240,16 @@ static OE_Result _UnpackLengthDelimited(
 {
     OE_Result result = OE_UNEXPECTED;
     uint8_t tag = 0;
+    uint8_t tmpTag = 0;
     uint32_t size;
 
     if ((*pos = _UnpackTag(buf, *pos, &tag)) == -1)
         OE_THROW(OE_FAILURE);
 
-    if (_MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED) != tag)
+    if (_MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED, &tmpTag) != 0)
+        OE_THROW(OE_FAILURE);
+
+    if (tag != tmpTag)
         OE_THROW(OE_FAILURE);
 
     if ((*pos = _UnpackVariantUint32(buf, *pos, &size)) == -1)
@@ -318,6 +357,7 @@ static OE_Result _ReadResponse(
     /* Copy envelope contents into MESSAGE */
     {
         uint8_t tag;
+        uint8_t tmpTag;
         size_t pos = 0;
         uint32_t size;
 
@@ -325,7 +365,10 @@ static OE_Result _ReadResponse(
         if ((pos = _UnpackTag(&envelope, pos, &tag)) == (size_t)-1)
             OE_THROW(OE_FAILURE);
 
-        if (tag != _MakeTag(messageType, WIRETYPE_LENGTH_DELIMITED))
+        if (_MakeTag(messageType, WIRETYPE_LENGTH_DELIMITED, &tmpTag) != 0)
+            OE_THROW(OE_FAILURE);
+
+        if (tag != tmpTag)
             OE_THROW(OE_FAILURE);
 
         /* Get the size of this payload */
