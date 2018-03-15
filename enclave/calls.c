@@ -12,6 +12,7 @@
 #include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
 #include "asmdefs.h"
+#include "cpuid.h"
 #include "init.h"
 #include "td.h"
 
@@ -106,6 +107,36 @@ typedef unsigned long long WORD;
 **
 **==============================================================================
 */
+
+/*
+**==============================================================================
+**
+** _InitializeEnclave()
+**
+**     Handle the OE_FUNC_INIT_ENCLAVE from host and ensures that each state
+**     initialization function in the enclave only runs once.
+**
+**==============================================================================
+*/
+void _InitializeEnclave(uint64_t argIn)
+{
+    static OE_OnceType _once = OE_ONCE_INITIALIZER;
+
+    if (_once == OE_ONCE_INITIALIZER)
+    {
+        static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
+        OE_SpinLock(&_lock);
+
+        if (_once == OE_ONCE_INITIALIZER)
+        {
+            /* Call all enclave state initialization functions */
+            OE_InitializeCpuid(argIn);
+            _once = 1;
+        }
+
+        OE_SpinUnlock(&_lock);
+    }
+}
 
 /*
 **==============================================================================
@@ -276,6 +307,11 @@ static void _HandleECall(
         case OE_FUNC_VIRTUAL_EXCEPTION_HANDLER:
         {
             _OE_VirtualExceptionDispatcher(td, argIn, &argOut);
+            break;
+        }
+        case OE_FUNC_INIT_ENCLAVE:
+        {
+            _InitializeEnclave(argIn);
             break;
         }
         default:
