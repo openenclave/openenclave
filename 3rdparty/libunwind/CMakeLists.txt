@@ -6,14 +6,21 @@
 set (OELIBCXX_UNWIND_OPTS
     --enable-shared=no
     --disable-block-signals
-    --enable-debug=no
-    --enable-debug-frame==no
     --enable-cxx-exceptions
     )
 
 set (OELIBCXX_UNWIND_CFLAGS
     "-DUNW_LOCAL_ONLY -DWSIZE=8 -fno-builtin -fPIC -DOPEN_ENCLAVE -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h"
     )
+
+string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
+if ((uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG") OR (uppercase_CMAKE_BUILD_TYPE STREQUAL "RELWITHDEBINFO"))
+    list (APPEND OELIBCXX_UNWIND_OPTS "--enable-debug=yes" "--enable-debug-frame==yes")
+
+    set (OELIBCXX_UNWIND_CFLAGS "${OELIBCXX_UNWIND_CFLAGS} -g")
+else()
+    list (APPEND OELIBCXX_UNWIND_OPTS "--enable-debug=no" "--enable-debug-frame==no")
+endif()
 
 include (ExternalProject)
 ExternalProject_Add(oelibcxx_unwind
