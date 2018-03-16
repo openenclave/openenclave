@@ -68,6 +68,46 @@ void TestCond(OE_Enclave* enclave)
         pthread_join(threads[i], NULL);
 }
 
+void* CBTestWaiterThread(void* args)
+{
+    OE_Enclave* enclave = (OE_Enclave*)args;
+
+    assert(OE_CallEnclave(enclave, "CBTestWaiterThreadImpl", NULL) == OE_OK);
+
+    return NULL;
+}
+
+void* CBTestSignalThread(void* args)
+{
+    OE_Enclave* enclave = (OE_Enclave*)args;
+
+    assert(OE_CallEnclave(enclave, "CBTestSignalThreadImpl", NULL) == OE_OK);
+
+    return NULL;
+}
+
+void TestCondBroadcast(OE_Enclave* enclave)
+{
+    pthread_t threads[NUM_THREADS];
+    pthread_t signal_thread;
+
+    printf("TestCondBroadcast Starting\n");
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_create(&threads[i], NULL, CBTestWaiterThread, enclave);
+    }
+
+    pthread_create(&signal_thread, NULL, CBTestSignalThread, enclave);
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        pthread_join(threads[i], NULL);
+
+    pthread_join(signal_thread, NULL);
+
+    printf("TestCondBroadcast Complete\n");
+}
+
 void* ExclusiveAccessThread(void* args)
 {
     const size_t ITERS = 2;
@@ -192,54 +232,7 @@ void TestThreadLockingPatterns(OE_Enclave* enclave)
     printf("TestThreadLockingPatterns Complete\n");
 }
 
-static TestRWLockArgs _rwArgs;
-
-void* ReaderThread(void* args)
-{
-    // OE_Enclave* enclave = (OE_Enclave*)args;
-    // assert( OE_CallEnclave(enclave, "ReaderThreadImpl", &_rwArgs) == OE_OK );
-
-    // printf("ReaderThread exiting\n");
-    return NULL;
-}
-
-void* WriterThread(void* args)
-{
-    OE_Enclave* enclave = (OE_Enclave*)args;
-    assert(OE_CallEnclave(enclave, "WriterThreadImpl", &_rwArgs) == OE_OK);
-
-    // printf("WriterThread exiting\n");
-    return NULL;
-}
-
-// Launch multiple reader and writer threads and assert invariants.
-void TestReadersWriterLock(OE_Enclave* enclave)
-{
-    pthread_t threads[NUM_THREADS];
-
-    memset(&_rwArgs, 0, sizeof(_rwArgs));
-
-    for (size_t i = 0; i < NUM_THREADS; i++)
-    {
-        pthread_create(
-            &threads[i], NULL, (i & 1) ? WriterThread : ReaderThread, enclave);
-    }
-
-    for (size_t i = 0; i < NUM_THREADS; i++)
-        pthread_join(threads[i], NULL);
-
-    // There can be atmost 1 writer thread active.
-    // assert(_rwArgs.maxWriters == 1);
-
-    printf("MaxReaders = %d\n", (int)_rwArgs.maxReaders);
-
-    // There can be atmost NUM_THREADS/2 reader threads active
-    // and no thread was starved.
-    // assert(_rwArgs.maxReaders <= NUM_THREADS/2);
-
-    // Readers and writer threads should never be simultaneously active.
-    // assert(_rwArgs.readersAndWriters == false);
-}
+void TestReadersWriterLock(OE_Enclave* enclave);
 
 int main(int argc, const char* argv[])
 {
@@ -259,13 +252,15 @@ int main(int argc, const char* argv[])
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
     }
 
-    // TestMutex(enclave);
+    TestMutex(enclave);
 
-    // TestCond(enclave);
+    TestCond(enclave);
 
-    // TestThreadWakeWait(enclave);
+    TestCondBroadcast(enclave);
 
-    // TestThreadLockingPatterns(enclave);
+    TestThreadWakeWait(enclave);
+
+    TestThreadLockingPatterns(enclave);
 
     TestReadersWriterLock(enclave);
 

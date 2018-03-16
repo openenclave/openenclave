@@ -357,7 +357,7 @@ typedef struct _OE_RWLock
  * This function initializes a readers-writer lock. Readers-writer locks can
  * also be initialized statically as follows.
  *
- *     OE_Cond cond = OE_RW_LOCK_INITIALIZER;
+ *     OE_Cond cond = OE_RWLOCK_INITIALIZER;
  *
  * At any given time, a readers-writer lock allows either concurrent read access
  * for multiple threads (readers) or write access for a single thread (writer).
@@ -386,7 +386,7 @@ int OE_RWLockReadLock(OE_RWLock* rwLock);
  * Tries to acquire a read lock on a readers-writer lock.
  *
  * This function attempts to acquire a read lock on the given readers-writer
- * lock if it is available. If the lock is held by a writer thread,
+ * lock and immediately returns. If the lock is held by a writer thread,
  * the function returns -1 otherwise it succeeds and returns 0.
  *
  * @param rwLock Acquire a read lock on this readers-writer lock.
@@ -416,9 +416,11 @@ int OE_RWLockReadUnlock(OE_RWLock* rwLock);
  *
  * This function acquires a write lock on a readers-writer lock.
  * Only one writer thread can lock a readers-writer lock for writing.
- * When a readers-writer lock has been locked for writing, all OE_RWLockReadLock
- * calls block and all OE_RWLockTryReadLock calls fail till the writer releases
- * the lock.
+ * When a readers-writer lock has been locked for writing, all
+ * OE_RWLockReadLock,
+ * OE_RWLockWriteLock calls block and all OE_RWLockTryReadLock,
+ * OE_RWLockTryWriteLock
+ * calls fail till the writer releases the lock.
  *
  * @param rwLock Acquire a write lock on this readers-writer lock.
  *
@@ -431,9 +433,8 @@ int OE_RWLockWriteLock(OE_RWLock* rwLock);
  * Tries to acquire a write lock on a readers-writer lock.
  *
  * This function attempts to acquire a write lock on the given readers-writer
- * lock if it is available. If the lock held by a reader thread or another
- * writer thread,
- * this function return -1 otherwise it succeeds and returns 0.
+ * and immediately returns. If the lock held by a reader thread or another
+ * writer thread, this function return -1 otherwise it succeeds and returns 0.
  *
  * @param rwLock Acquire a write lock on this readers-writer lock.
  *
