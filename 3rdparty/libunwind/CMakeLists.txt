@@ -4,7 +4,7 @@
 # Copy libunwind sources and build out-of-tree
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
-if (uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+if ((uppercase_CMAKE_BUILD_TYPE STREQUAL "DEBUG") OR (uppercase_CMAKE_BUILD_TYPE STREQUAL "RELWITHDEBINFO"))
     set (OELIBCXX_UNWIND_OPTS
         --enable-shared=no
         --disable-block-signals
