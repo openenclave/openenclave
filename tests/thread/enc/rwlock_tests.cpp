@@ -10,7 +10,7 @@
 static OE_RWLock rwLock = OE_RWLOCK_INITIALIZER;
 static OE_Spinlock rwArgsLock = OE_SPINLOCK_INITIALIZER;
 
-static const size_t RWLOCK_TEST_ITERS = 20000;
+static const size_t RWLOCK_TEST_ITERS = 2000;
 
 // Amout of microseconds to sleep after obtaining a read or writer locks
 // to allow another thread to contend for the lock.

@@ -14,4 +14,4 @@ Test various OE synchronization primitives:
 
 
   **OE_RWLock**
-  1. *TestReadersWriterLock* : Tests readers-writer lock invariants by launching multiple readers and writers threads racing agains eachother.
+  1. *TestReadersWriterLock* : Tests readers-writer lock invariants by launching multiple reader and writer threads racing against each other. Asserts that multiple/all readers can be simultaneously active, only one writer is active,  readers and writers are never simultaneously active.
