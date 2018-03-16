@@ -15,4 +15,4 @@ target_compile_options(threadenc PRIVATE
     -fno-builtin-memset
     )
 
-target_link_libraries(threadenc oelibc)
+target_link_libraries(threadenc oelibc oelibcxx)

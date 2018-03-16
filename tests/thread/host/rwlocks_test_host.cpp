@@ -15,12 +15,16 @@
 
 static TestRWLockArgs _rwArgs;
 
+OE_OCALL void host_usleep(void* args)
+{
+    usleep((size_t)args);
+}
+
 void* ReaderThread(void* args)
 {
-    // OE_Enclave* enclave = (OE_Enclave*)args;
-    // assert( OE_CallEnclave(enclave, "ReaderThreadImpl", &_rwArgs) == OE_OK );
+    OE_Enclave* enclave = (OE_Enclave*)args;
+    assert(OE_CallEnclave(enclave, "ReaderThreadImpl", &_rwArgs) == OE_OK);
 
-    // printf("ReaderThread exiting\n");
     return NULL;
 }
 
@@ -29,13 +33,15 @@ void* WriterThread(void* args)
     OE_Enclave* enclave = (OE_Enclave*)args;
     assert(OE_CallEnclave(enclave, "WriterThreadImpl", &_rwArgs) == OE_OK);
 
-    // printf("WriterThread exiting\n");
     return NULL;
 }
 
 // Launch multiple reader and writer threads and assert invariants.
 void TestReadersWriterLock(OE_Enclave* enclave)
 {
+    // Total number of threads. Half readers and half writers.
+    // Keep NUM_READER_THREADS in rwlock_tests.cpp in sync with NUM_THREADS.
+    const size_t NUM_THREADS = 8;
     pthread_t threads[NUM_THREADS];
 
     memset(&_rwArgs, 0, sizeof(_rwArgs));
@@ -58,4 +64,8 @@ void TestReadersWriterLock(OE_Enclave* enclave)
 
     // Readers and writer threads should never be simultaneously active.
     assert(_rwArgs.readersAndWriters == false);
+
+    // Additionally, the test requires that all readers are
+    // simultaneously active atleast once.
+    assert(_rwArgs.maxReaders == NUM_THREADS / 2);
 }
