@@ -95,8 +95,7 @@ OE_ECALL void CBTestSignalThreadImpl(void* args)
     OE_CondBroadcast(&cond);
 
     // Since the signal thread owns the mutex now, any running waiter thread
-    // would
-    // be currently in a OE_CondWait or in a OE_MutexLock.
+    // would be currently in a OE_CondWait or in a OE_MutexLock.
     // Once the signal thread releases the mutex, the waiter thread would return
     // from either of the calls and then check the exit_thread flag and quit.
     OE_MutexUnlock(&mutex);
