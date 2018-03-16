@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
@@ -490,8 +491,15 @@ int OE_CondBroadcast(OE_Cond* condition)
     }
     OE_SpinUnlock(&cond->lock);
 
-    for (OE_ThreadData* p = waiters.front; p; p = p->next)
+    OE_ThreadData* p_next = NULL;
+    for (OE_ThreadData* p = waiters.front; p; p = p_next)
+    {
+        // p could wake up and immediately use a synchronization
+        // primitve that could modify the next field.
+        // Therefore fetch the next thread before waking up p.
+        p_next = p->next;
         _ThreadWake(p);
+    }
 
     return 0;
 }
