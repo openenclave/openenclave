@@ -11,11 +11,6 @@ add_library(
 
 target_link_libraries(oecryptohost oe_includes)
 
-if(UNIX)
-    find_library(CRYPTO_LIB NAMES crypto)
-    find_library(DL_LIB NAMES dl)
-endif()
-
 find_package(Threads REQUIRED)
 
 if(UNIX)
