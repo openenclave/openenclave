@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/globals.h> // for __OE_GetEnclaveBase()
-#include <openenclave/enclave.h>
 #include <stdio.h>
+#define OE_TRACE_LEVEL 1
+
+#include <openenclave/bits/globals.h> // for __OE_GetEnclaveBase()
+#include <openenclave/bits/trace.h>
+#include <openenclave/enclave.h>
 #include <mutex>
 #include <system_error>
 #include "../args.h"
@@ -138,8 +141,12 @@ OE_ECALL void EncRecursion(void* Args_)
     EncRecursionArg* argsHost = (EncRecursionArg*)Args_;
     EncRecursionArg args = *argsHost;
 
-    // printf("%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
-    //    __FUNCTION__, args.FlowId, args.RecursionsLeft, args.Crc);
+    OE_TRACE_INFO(
+        "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
+        __FUNCTION__,
+        args.flowId,
+        args.recursionsLeft,
+        args.crc);
 
     if (args.isInitial)
     {
@@ -222,7 +229,8 @@ OE_ECALL void EncTestNonExistingFunction(void* Args_)
     if (!OE_IsOutsideEnclave(Args_, sizeof(EncTestNonExistingFunctionArg)))
         return;
 
-    EncTestNonExistingFunctionArg* argsHost = (EncTestNonExistingFunctionArg*)Args_;
+    EncTestNonExistingFunctionArg* argsHost =
+        (EncTestNonExistingFunctionArg*)Args_;
     EncTestNonExistingFunctionArg args = *argsHost;
 
     // Testing for a string to be outside the enclave is ugly. We might want

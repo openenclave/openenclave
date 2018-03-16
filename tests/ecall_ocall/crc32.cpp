@@ -45,7 +45,7 @@
 #include <stddef.h>
 #include <stdint.h>
 //__FBSDID("$FreeBSD: head/sys/libkern/crc32.c 233517 2012-03-26 18:22:04Z
-//marius $");
+// marius $");
 
 const uint32_t crc32_tab[] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -792,6 +792,7 @@ uint32_t calculate_crc32c(
     }
     else
     {
-        return (multitable_crc32c(crc32c, (const unsigned char*)buffer, length));
+        return (
+            multitable_crc32c(crc32c, (const unsigned char*)buffer, length));
     }
 }

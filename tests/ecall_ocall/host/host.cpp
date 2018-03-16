@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_TRACE_LEVEL 1
+
 #include <assert.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
 #include <atomic>
 #include <cassert>
@@ -180,12 +183,12 @@ static void ParallelThread(
     args.counter = Counter;
     args.release = Release;
 
-    // printf("%s(Enclave=%u, Flow=%u) started\n", __FUNCTION__, EnclaveNr,
-    // FlowId);
+    OE_TRACE_INFO(
+        "%s(Enclave=%u, Flow=%u) started\n", __FUNCTION__, EnclaveNr, FlowId);
     result = OE_CallEnclave(
         EnclaveWrap::Get(EnclaveNr), "EncParallelExecution", &args);
-    // printf("%s(Enclave=%u, Flow=%u) done.\n", __FUNCTION__, EnclaveNr,
-    // FlowId);
+    OE_TRACE_INFO(
+        "%s(Enclave=%u, Flow=%u) done.\n", __FUNCTION__, EnclaveNr, FlowId);
     assert(result == OE_OK);
     assert(args.result == OE_OK);
 }
@@ -219,12 +222,15 @@ static void TestExecutionParallel(
     // wait for all enclave-threads to have incremented the counter
     while (counter < EnclaveNrs.size() * ThreadCount)
     {
-#if 0
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
+
         static unsigned oldVal;
         if (counter != oldVal)
         {
-            printf("%s(): Looking for counter=%u, have %u.\n",
-                __FUNCTION__, (unsigned)EnclaveNrs.size() * ThreadCount,
+            printf(
+                "%s(): Looking for counter=%u, have %u.\n",
+                __FUNCTION__,
+                (unsigned)EnclaveNrs.size() * ThreadCount,
                 counter);
             oldVal = counter;
         }
@@ -315,8 +321,12 @@ static uint32_t CalcRecursionHashEnc(const EncRecursionArg* Args)
     EncRecursionArg argsHost;
     OE_Result result = OE_OK;
 
-    // printf("%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
-    //    __FUNCTION__, args.FlowId, args.RecursionsLeft, args.Crc);
+    OE_TRACE_INFO(
+        "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
+        __FUNCTION__,
+        args.flowId,
+        args.recursionsLeft,
+        args.crc);
 
     // catch initial state: Tag + Input-struct + EnclaveId
     {
@@ -357,8 +367,12 @@ static uint32_t TestRecursion(
     OE_Result result;
     EncRecursionArg args = {0};
 
-    // printf("%s(EnclaveNr=%lu, FlowId=%u, Recursions=%u\n",
-    //    __FUNCTION__, EnclaveNr, FlowId, RecursionDepth);
+    OE_TRACE_INFO(
+        "%s(EnclaveNr=%lu, FlowId=%u, Recursions=%u)\n",
+        __FUNCTION__,
+        EnclaveNr,
+        FlowId,
+        RecursionDepth);
 
     args.enclaveId = EnclaveNr;
     args.flowId = FlowId;
@@ -371,7 +385,7 @@ static uint32_t TestRecursion(
     assert(result == OE_OK);
 
     printf(
-        "%s(EnclaveNr=%lu, FlowId=%u, RecursionDepth=%u: Expect CRC %#x, have "
+        "%s(EnclaveNr=%lu, FlowId=%u, RecursionDepth=%u): Expect CRC %#x, have "
         "CRC %#x, %s\n",
         __FUNCTION__,
         EnclaveNr,
@@ -512,7 +526,7 @@ int main(int argc, const char* argv[])
     // Test parallel recursion in one enclave
     TestRecursionParallel({enc1.GetId()}, THREAD_COUNT, 100, 3000);
 
-    // And parallel across multiple enclaves
+    // And parallel with multiple enclaves
     TestRecursionParallel(
         {enc1.GetId(), enc2.GetId()}, THREAD_COUNT, 20, 10000);
 
