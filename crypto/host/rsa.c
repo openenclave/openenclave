@@ -151,7 +151,7 @@ void OE_RSAFree(OE_RSA* key)
 }
 
 OE_Result OE_RSASign(
-    OE_RSA* privateKey,
+    const OE_RSA* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize)
@@ -218,7 +218,7 @@ done:
 }
 
 OE_Result OE_RSAVerify(
-    OE_RSA* publicKey,
+    const OE_RSA* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize)

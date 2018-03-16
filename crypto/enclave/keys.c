@@ -172,8 +172,11 @@ static int _WriteKey(
     if (!pk || !data || !size)
         goto done;
 
+    /* Set the initial size of the buffer */
+    *size = DATA_SIZE;
+
     /* Allocate a zero-filled the buffer */
-    if (!(*data = (uint8_t*)calloc(*size = DATA_SIZE, sizeof(uint8_t))))
+    if (!(*data = (uint8_t*)calloc(*size, sizeof(uint8_t))))
         goto done;
 
     /* Write the key (expand buffer size and retry if necessary) */
@@ -415,7 +418,7 @@ void OE_ECFree(OE_EC* key)
 }
 
 OE_Result OE_ECSign(
-    OE_EC* privateKey,
+    const OE_EC* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize)
@@ -429,7 +432,7 @@ OE_Result OE_ECSign(
 }
 
 OE_Result OE_ECVerify(
-    OE_EC* publicKey,
+    const OE_EC* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize)
@@ -636,7 +639,7 @@ void OE_RSAFree(OE_RSA* key)
 }
 
 OE_Result OE_RSASign(
-    OE_RSA* privateKey,
+    const OE_RSA* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize)
@@ -650,7 +653,7 @@ OE_Result OE_RSASign(
 }
 
 OE_Result OE_RSAVerify(
-    OE_RSA* publicKey,
+    const OE_RSA* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize)

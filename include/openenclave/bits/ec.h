@@ -118,13 +118,12 @@ void OE_ECFree(OE_EC* key);
  * @param privateKey - EC private key
  * @param hash - SHA-256 hash of the message being signed
  * @param signature - resulting signature
- * @param signature - resulting signature
  * @param signatureSize - size in bytes of the resulting signature
  *
  * @return OE_OK if the signing operation was successful
  */
 OE_Result OE_ECSign(
-    OE_EC* privateKey,
+    const OE_EC* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize);
@@ -138,12 +137,12 @@ OE_Result OE_ECSign(
  * @param publicKey - EC public key
  * @param hash - SHA-256 hash of the message being verified
  * @param signature - expected signature
- * @param signature - size in bytes of the expected signature
+ * @param signatureSize - size in bytes of the expected signature
  *
  * @return OE_OK if the message was signeded with the given certificate
  */
 OE_Result OE_ECVerify(
-    OE_EC* publicKey,
+    const OE_EC* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize);

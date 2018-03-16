@@ -2,13 +2,12 @@
 // Licensed under the MIT License.
 
 #include "util.h"
+#include <string.h>
 
 /* Verify that the only null terminator is the final byte */
 OE_Result OE_CheckForNullTerminator(const void* pemData, size_t pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const char* p = (const char*)pemData;
-    const char* end = (const char*)pemData + pemSize;
 
     /* Check parameters */
     if (!pemData || !pemSize)
@@ -17,12 +16,8 @@ OE_Result OE_CheckForNullTerminator(const void* pemData, size_t pemSize)
         goto done;
     }
 
-    /* Search for a null terminator */
-    while (*p && p != end)
-        p++;
-
-    /* Check that null terminator must be the last byte */
-    if (p != end - 1)
+    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
+    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
     {
         result = OE_FAILURE;
         goto done;

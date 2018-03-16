@@ -123,7 +123,7 @@ void OE_RSAFree(OE_RSA* key);
  * @return OE_OK if the signing operation was successful
  */
 OE_Result OE_RSASign(
-    OE_RSA* privateKey,
+    const OE_RSA* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize);
@@ -142,7 +142,7 @@ OE_Result OE_RSASign(
  * @return OE_OK if the message was signeded with the given certificate
  */
 OE_Result OE_RSAVerify(
-    OE_RSA* publicKey,
+    const OE_RSA* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize);

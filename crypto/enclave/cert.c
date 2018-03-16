@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef BUILD_HOST
 #include <openenclave/enclave.h>
-#endif
 #include <mbedtls/config.h>
 #include <mbedtls/pem.h>
 #include <mbedtls/x509_crt.h>

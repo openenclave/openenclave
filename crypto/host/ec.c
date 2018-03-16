@@ -124,7 +124,7 @@ void OE_ECFree(OE_EC* key)
 }
 
 OE_Result OE_ECSign(
-    OE_EC* key,
+    const OE_EC* key,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize)
@@ -196,7 +196,7 @@ done:
 }
 
 OE_Result OE_ECVerify(
-    OE_EC* key,
+    const OE_EC* key,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize)

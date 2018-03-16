@@ -7,7 +7,9 @@ uint64_t _rdrand(void)
     __asm__ volatile(
         "rdrand %%rax\n\t"
         "mov %%rax, %0\n\t"
-        : "=m"(r));
+        : "=m"(r)
+        :
+        : "rax");
 
     return r;
 }

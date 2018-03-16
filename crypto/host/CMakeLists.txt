@@ -1,12 +1,12 @@
 add_library(
     oecryptohost 
     STATIC
-    init.c
-    sha.c
     cert.c
+    ec.c
+    init.c
     random.c
     rsa.c
-    ec.c
+    sha.c
     ../util.c)
 
 target_link_libraries(oecryptohost oe_includes)
@@ -36,23 +36,12 @@ endif(UNIX)
 
 target_compile_definitions(oecryptohost PRIVATE OE_BUILD_UNTRUSTED)
 
-set_property(
-    TARGET 
-    oecryptohost 
+set_property(TARGET oecryptohost 
     PROPERTY 
     ARCHIVE_OUTPUT_DIRECTORY 
     ${OE_LIBDIR}/openenclave/host)
 
-#install(
-#    TARGETS 
-#    oecryptohost 
-#    ARCHIVE 
-#    DESTINATION 
-#    ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
-
-install(
-    TARGETS 
-    oecryptohost 
+install(TARGETS oecryptohost 
     EXPORT 
     openenclave 
     ARCHIVE 
