@@ -3,39 +3,39 @@
 
 #pragma once
 
-struct TestEcallOcallSetEncIdArg
+struct EncSetEnclaveIdArg
 {
-    OE_Result Result;     // Out
-    unsigned Id;          // In
-    const void* BaseAddr; // Out
+    OE_Result result;     // Out
+    unsigned id;          // In
+    const void* baseAddr; // Out
 };
 
-struct TestEcallOcallParArg
+struct EncParallelExecutionArg
 {
-    OE_Result Result;           // Out
-    unsigned EnclaveNr;         // In
-    unsigned FlowId;            // In
-    volatile unsigned* Counter; // Inout
-    volatile unsigned* Release; // In
+    OE_Result result;           // Out
+    unsigned enclaveId;         // In
+    unsigned flowId;            // In
+    volatile unsigned* counter; // Inout
+    volatile unsigned* release; // In
 };
 
 /*
  * Used for recursion tests as in/outcall/out buffer in host memory. Host
  * provides fresh one with each new recursion.
  */
-struct TestEcallOcallRecArg
+struct EncRecursionArg
 {
-    unsigned EnclaveNr;      // In
-    unsigned FlowId;         // In
-    unsigned RecursionsLeft; // InOut
-    unsigned IsInitial;      // InOut
-    uint32_t Crc;            // InOut
+    unsigned enclaveId;      // In
+    unsigned flowId;         // In
+    unsigned recursionsLeft; // InOut
+    unsigned isInitial;      // InOut
+    uint32_t crc;            // InOut
 };
 
-struct TestEcallOcallNAArg
+struct EncTestNonExistingFunctionArg
 {
-    OE_Result Result;         // Out
-    const char* FunctionName; // In
+    OE_Result result;         // Out
+    const char* functionName; // In
 };
 
 enum

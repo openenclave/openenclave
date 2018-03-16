@@ -20,13 +20,13 @@
 #define THREAD_COUNT 5 // must not exceed what is configured in sign.conf
 
 // Slighly specialized wrapper around an OE_Enclave object to allow
-// scope-based lifetime mgmt. ALso a bit of identifying glue (which relies on
+// scope-based lifetime mgmt. Also a bit of identifying glue (which relies on
 // custom code in the enclave).
 struct EnclaveWrap
 {
     EnclaveWrap(const char* EnclavePath, uint32_t Flags)
     {
-        TestEcallOcallSetEncIdArg args = {};
+        EncSetEnclaveIdArg args = {};
         OE_Enclave* enclave;
         OE_Result result;
 
@@ -37,21 +37,21 @@ struct EnclaveWrap
         }
         m_Id = m_Enclaves.size();
 
-        args.Result = OE_FAILURE;
-        args.Id = m_Id;
+        args.result = OE_FAILURE;
+        args.id = m_Id;
         if ((result = OE_CallEnclave(enclave, "EncSetEnclaveId", &args)) !=
             OE_OK)
         {
             OE_PutErr("OE_CallEnclave(EncSetEnclaveId): result=%u", result);
             throw std::runtime_error("OE_CallEnclave(EncSetEnclaveId) failed");
         }
-        if (args.Result != OE_OK)
+        if (args.result != OE_OK)
         {
             OE_PutErr("EncSetEnclaveId(): result=%u", result);
             throw std::runtime_error("EncSetEnclaveId() failed");
         }
 
-        m_EnclaveBase = args.BaseAddr;
+        m_EnclaveBase = args.baseAddr;
         m_Enclaves.push_back(enclave);
     }
 
@@ -122,7 +122,7 @@ extern "C" void DummyHostFunction(void*)
 static void TestInvalidFunctions(unsigned EnclaveNr)
 {
     OE_Result result;
-    TestEcallOcallNAArg args = {};
+    EncTestNonExistingFunctionArg args = {};
 
     result = OE_CallEnclave(
         EnclaveWrap::Get(EnclaveNr), "EncDummyEncFunction", NULL);
@@ -139,29 +139,29 @@ static void TestInvalidFunctions(unsigned EnclaveNr)
     printf("OE_CallEnclave(NonExistingFunction): %u\n", result);
     assert(result == OE_NOT_FOUND);
 
-    args.Result = OE_FAILURE;
-    args.FunctionName = "DummyHostFunction";
+    args.result = OE_FAILURE;
+    args.functionName = "DummyHostFunction";
     result = OE_CallEnclave(
         EnclaveWrap::Get(EnclaveNr), "EncTestNonExistingFunction", &args);
     printf(
         "OE_CallEnclave(EncTestNonExistingFunction, DummyHostFunction): "
         "%u/%u\n",
         result,
-        args.Result);
+        args.result);
     assert(result == OE_OK);
-    assert(args.Result == OE_OK); // intended?
+    assert(args.result == OE_OK); // See #137, intended?
 
-    args.Result = OE_FAILURE;
-    args.FunctionName = "NonExistingFunction";
+    args.result = OE_FAILURE;
+    args.functionName = "NonExistingFunction";
     result = OE_CallEnclave(
         EnclaveWrap::Get(EnclaveNr), "EncTestNonExistingFunction", &args);
     printf(
         "OE_CallEnclave(EncTestNonExistingFunction, NonExistingFunction): "
         "%u/%u\n",
         result,
-        args.Result);
+        args.result);
     assert(result == OE_OK);
-    assert(args.Result == OE_NOT_FOUND);
+    assert(args.result == OE_NOT_FOUND);
 }
 
 // Helper function for parallel test
@@ -173,12 +173,12 @@ static void ParallelThread(
 {
     OE_Result result;
 
-    TestEcallOcallParArg args = {};
-    args.Result = OE_FAILURE;
-    args.EnclaveNr = EnclaveNr;
-    args.FlowId = FlowId;
-    args.Counter = Counter;
-    args.Release = Release;
+    EncParallelExecutionArg args = {};
+    args.result = OE_FAILURE;
+    args.enclaveId = EnclaveNr;
+    args.flowId = FlowId;
+    args.counter = Counter;
+    args.release = Release;
 
     // printf("%s(Enclave=%u, Flow=%u) started\n", __FUNCTION__, EnclaveNr,
     // FlowId);
@@ -187,7 +187,7 @@ static void ParallelThread(
     // printf("%s(Enclave=%u, Flow=%u) done.\n", __FUNCTION__, EnclaveNr,
     // FlowId);
     assert(result == OE_OK);
-    assert(args.Result == OE_OK);
+    assert(args.result == OE_OK);
 }
 
 // Parallel execution test - verify parallel threads are actually executed
@@ -219,14 +219,16 @@ static void TestExecutionParallel(
     // wait for all enclave-threads to have incremented the counter
     while (counter < EnclaveNrs.size() * ThreadCount)
     {
+#if 0
         static unsigned oldVal;
         if (counter != oldVal)
         {
-            // printf("%s(): Looking for counter=%u, have %u.\n",
-            //    __FUNCTION__, (unsigned)EnclaveNrs.size() * ThreadCount,
-            //    counter);
+            printf("%s(): Looking for counter=%u, have %u.\n",
+                __FUNCTION__, (unsigned)EnclaveNrs.size() * ThreadCount,
+                counter);
             oldVal = counter;
         }
+#endif
     }
 
     // all threads arrived and spin on the release
@@ -243,23 +245,23 @@ OE_OCALL void RecursionOcall(void* Args_)
 {
     OE_Result result = OE_OK;
 
-    TestEcallOcallRecArg* argsPtr = (TestEcallOcallRecArg*)Args_;
-    TestEcallOcallRecArg args = *argsPtr;
-    TestEcallOcallRecArg argsRec;
+    EncRecursionArg* argsPtr = (EncRecursionArg*)Args_;
+    EncRecursionArg args = *argsPtr;
+    EncRecursionArg argsRec;
 
     // catch initial state: Tag + Input-struct
     {
         Crc32 crc(TAG_START_HOST);
-        args.Crc = crc(args);
+        args.crc = crc(args);
     }
     argsRec = args;
 
     // recurse as needed, passing initial-state-crc as input
-    if (args.RecursionsLeft)
+    if (args.recursionsLeft)
     {
-        argsRec.RecursionsLeft--;
+        argsRec.recursionsLeft--;
         result = OE_CallEnclave(
-            EnclaveWrap::Get(args.EnclaveNr), "EncRecursion", &argsRec);
+            EnclaveWrap::Get(args.enclaveId), "EncRecursion", &argsRec);
     }
 
     // catch output state: Tag + result + output, and again original input
@@ -267,34 +269,34 @@ OE_OCALL void RecursionOcall(void* Args_)
     crc(result);
     crc(argsRec);
     crc(args);
-    argsPtr->Crc = crc();
+    argsPtr->crc = crc();
 }
 
-static uint32_t CalcRecursionHashHost(const TestEcallOcallRecArg* Args);
-static uint32_t CalcRecursionHashEnc(const TestEcallOcallRecArg* Args);
+static uint32_t CalcRecursionHashHost(const EncRecursionArg* Args);
+static uint32_t CalcRecursionHashEnc(const EncRecursionArg* Args);
 
 // calc recursion hash locally, host part
-static uint32_t CalcRecursionHashHost(const TestEcallOcallRecArg* Args)
+static uint32_t CalcRecursionHashHost(const EncRecursionArg* Args)
 {
-    TestEcallOcallRecArg args = *Args;
-    TestEcallOcallRecArg argsRec;
+    EncRecursionArg args = *Args;
+    EncRecursionArg argsRec;
     OE_Result result = OE_OK;
 
     // catch initial state: Tag + Input-struct
     {
         Crc32 crc(TAG_START_HOST);
-        args.Crc = crc(args);
+        args.crc = crc(args);
     }
     argsRec = args;
 
     // recurse as needed, passing initial-state-crc as input
-    if (args.RecursionsLeft)
+    if (args.recursionsLeft)
     {
-        argsRec.RecursionsLeft--;
-        argsRec.Crc = CalcRecursionHashEnc(&argsRec);
-        if (argsRec.RecursionsLeft)
+        argsRec.recursionsLeft--;
+        argsRec.crc = CalcRecursionHashEnc(&argsRec);
+        if (argsRec.recursionsLeft)
         {
-            argsRec.RecursionsLeft--;
+            argsRec.recursionsLeft--;
         }
     }
 
@@ -307,10 +309,10 @@ static uint32_t CalcRecursionHashHost(const TestEcallOcallRecArg* Args)
 }
 
 // calc recursion hash locally, enc part
-static uint32_t CalcRecursionHashEnc(const TestEcallOcallRecArg* Args)
+static uint32_t CalcRecursionHashEnc(const EncRecursionArg* Args)
 {
-    TestEcallOcallRecArg args = *Args;
-    TestEcallOcallRecArg argsHost;
+    EncRecursionArg args = *Args;
+    EncRecursionArg argsHost;
     OE_Result result = OE_OK;
 
     // printf("%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
@@ -322,15 +324,15 @@ static uint32_t CalcRecursionHashEnc(const TestEcallOcallRecArg* Args)
         crc(args);
         crc(0u);
         crc(0u);
-        args.Crc = crc();
+        args.crc = crc();
     }
 
     argsHost = args;
-    if (args.RecursionsLeft > 0)
+    if (args.recursionsLeft > 0)
     {
-        argsHost.IsInitial = 0;
-        argsHost.RecursionsLeft--;
-        argsHost.Crc = CalcRecursionHashHost(&argsHost);
+        argsHost.isInitial = 0;
+        argsHost.recursionsLeft--;
+        argsHost.crc = CalcRecursionHashHost(&argsHost);
     }
 
     // catch output state: Tag + result + modified host-struct
@@ -353,15 +355,15 @@ static uint32_t TestRecursion(
     unsigned RecursionDepth)
 {
     OE_Result result;
-    TestEcallOcallRecArg args = {0};
+    EncRecursionArg args = {0};
 
     // printf("%s(EnclaveNr=%lu, FlowId=%u, Recursions=%u\n",
     //    __FUNCTION__, EnclaveNr, FlowId, RecursionDepth);
 
-    args.EnclaveNr = EnclaveNr;
-    args.FlowId = FlowId;
-    args.RecursionsLeft = RecursionDepth;
-    args.IsInitial = 1;
+    args.enclaveId = EnclaveNr;
+    args.flowId = FlowId;
+    args.recursionsLeft = RecursionDepth;
+    args.isInitial = 1;
 
     uint32_t crc = CalcRecursionHashEnc(&args);
 
@@ -376,9 +378,9 @@ static uint32_t TestRecursion(
         FlowId,
         RecursionDepth,
         crc,
-        args.Crc,
-        (crc == args.Crc) ? "MATCH" : "MISMATCH");
-    assert(crc == args.Crc);
+        args.crc,
+        (crc == args.crc) ? "MATCH" : "MISMATCH");
+    assert(crc == args.crc);
     return crc;
 }
 
@@ -394,17 +396,17 @@ static void RecursionThread(
     for (unsigned l = 0; l < LoopCount; l++)
     {
         OE_Result result;
-        TestEcallOcallRecArg args = {0};
+        EncRecursionArg args = {0};
 
-        args.EnclaveNr = EnclaveNr;
-        args.FlowId = FlowId;
-        args.RecursionsLeft = RecursionDepth;
-        args.IsInitial = 1;
+        args.enclaveId = EnclaveNr;
+        args.flowId = FlowId;
+        args.recursionsLeft = RecursionDepth;
+        args.isInitial = 1;
 
         result =
             OE_CallEnclave(EnclaveWrap::Get(EnclaveNr), "EncRecursion", &args);
         assert(result == OE_OK);
-        assert(args.Crc == ExpectedCrc);
+        assert(args.crc == ExpectedCrc);
     }
 }
 
@@ -432,11 +434,11 @@ static void TestRecursionParallel(
     {
         for (unsigned i = 0; i < ThreadCount; i++)
         {
-            TestEcallOcallRecArg args = {};
-            args.EnclaveNr = enclaveNr;
-            args.FlowId = i + 1;
-            args.RecursionsLeft = RecursionDepth + i;
-            args.IsInitial = 1;
+            EncRecursionArg args = {};
+            args.enclaveId = enclaveNr;
+            args.flowId = i + 1;
+            args.recursionsLeft = RecursionDepth + i;
+            args.isInitial = 1;
 
             expectedCrcs[enclaveNr].push_back(CalcRecursionHashEnc(&args));
         }
