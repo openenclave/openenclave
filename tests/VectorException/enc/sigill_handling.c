@@ -57,7 +57,8 @@ bool TestGetsecInstruction()
         "mov %2, %%rcx\n\t" /* reserved 2 */
         "GETSEC\n\t"
         :
-        : "i"(OE_GETSEC_CAPABILITIES), "m"(r1), "m"(r2));
+        : "i"(OE_GETSEC_CAPABILITIES), "m"(r1), "m"(r2)
+        : "rax", "rbx", "rcx");
 
     // Verify that unused variables are untouched on continue
     if (r1 != c_r1 || r2 != c_r2)
