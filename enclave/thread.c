@@ -516,13 +516,14 @@ int OE_CondBroadcast(OE_Cond* condition)
 typedef struct _OE_RWLockImpl
 {
     /* Number of reader threads owning this lock. */
-    volatile unsigned int readers;
+    unsigned int readers;
 
     /* Number of writer threads owning this lock. 0 or 1.*/
-    volatile unsigned int writers;
+    unsigned int writers;
 
-    /* Mutex for synchronizing readers and writers. Held only for a brief
-     * time.*/
+    /* Mutex for synchronizing readers and writers.
+    ** Held only for a brief time.
+    */
     OE_Mutex mutex;
 
     /* Condition variable that indicates whether the r/w lock is unlocked. */

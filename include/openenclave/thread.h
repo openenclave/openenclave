@@ -348,7 +348,7 @@ int OE_CondDestroy(OE_Cond* cond);
 typedef struct _OE_RWLock
 {
     /* Internal private implementation */
-    uint64_t __impl[17];
+    uint64_t __impl[20];
 } OE_RWLock;
 
 /**
