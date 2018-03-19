@@ -1,0 +1,117 @@
+#!/bin/bash
+
+##==============================================================================
+##
+## check-license:
+##
+##     This script checks for OpenEnclave sources that are missing the license
+##     header. It prints the names of files with missing headers to standard
+##     output.
+##
+##     To ignore certain sources from this check, add them to:
+##         ./scripts/.check-license.ignore
+##
+##==============================================================================
+
+##==============================================================================
+##
+## Reject any parameters.
+##
+##==============================================================================
+
+if [ "$#" != "0" ]; then
+    echo "$0: too many parameters"
+    echo "Usage: $0"
+    exit 1
+fi
+
+##==============================================================================
+##
+## The script must be run from the root of the openenclave source tree.
+##
+##==============================================================================
+
+bn=`basename ${PWD}`
+
+if [ "${bn}" != "openenclave" ]; then
+    echo "$0: please run root of openenclave source tree"
+    exit 1
+fi
+
+##==============================================================================
+##
+## Form the list of all OpenEnclave source files.
+##
+##==============================================================================
+
+sourcefiles=`(find . -name '*.[ch]' ; find . -name '*.cpp') | egrep -v '((^./3rdparty/)|(^./prereqs/))|(^./build/)'`
+
+##==============================================================================
+##
+## Form the list of files to ignore from the test below.
+##
+##==============================================================================
+
+ignorefile="./scripts/.check-license.ignore"
+
+if [ ! -f "${ignorefile}" ]; then
+    echo "$0: missing file: ${ignorefile}"
+    exit 1
+fi
+
+ignorelist=`cat ${ignorefile}`
+
+##==============================================================================
+##
+## Write the license header to a temporary file.
+##
+##==============================================================================
+
+license=`/bin/mktemp`
+
+cat > ${license} <<EOF
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+EOF
+
+##==============================================================================
+##
+## Check each openenclave source file for the license.
+##
+##==============================================================================
+
+tmpfile=`/bin/mktemp`
+
+success=0
+
+for i in ${sourcefiles}
+do
+    # Skip this file if it is on the ignore list:
+    ignore=0
+    for e in ${ignorelist}
+    do 
+        if [ "${e}" == "${i}" ]; then
+            ignore=1
+        fi
+    done
+
+    # If this source file is not ignored:
+    if [ "${ignore}" == "0" ]; then
+        # Check the first two lines of this file:
+        head --lines=2 ${i} > ${tmpfile}
+        diff -w ${tmpfile} ${license} > /dev/null 2> /dev/null
+        if [ "$?" != "0" ]; then
+            echo ${i}
+            success=1
+        fi
+    fi
+done
+
+##==============================================================================
+##
+## Cleanup temporary files and print exit
+##
+##==============================================================================
+
+rm -f ${tmpfile} ${license}
+exit ${success}
