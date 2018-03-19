@@ -34,7 +34,7 @@ fi
 bn=`basename ${PWD}`
 
 if [ "${bn}" != "openenclave" ]; then
-    echo "$0: please run root of openenclave source tree"
+    echo "$0: please run from root of openenclave source tree"
     exit 1
 fi
 
