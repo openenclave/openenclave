@@ -743,7 +743,7 @@ int main(int argc, const char* argv[])
     size_t numHeapPages = 2;
     size_t numStackPages = 1;
     size_t numTCS = 2;
-    OE_SHA256 mrenclave = OE_SHA256_INIT;
+    OE_SHA256 mrenclave;
     OE_EnclaveSettings settings;
     SGX_SigStruct sigstruct;
     FILE* is = NULL;
