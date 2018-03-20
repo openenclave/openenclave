@@ -381,8 +381,7 @@ int OE_RWLockInit(OE_RWLock* rwLock);
  *    2. If the lock is currently locked for writing, OE_RWLockReadLock blocks
  *       until the writer releases the lock.
  *    3. Multiple reader threads can concurrently lock a r/w lock.
- *    4. The same thread can lock a r/w lock multiple times. (recursive
- * locking).
+ *    4. Recursive locking. The same thread can lock a r/w lock multiple times.
  *       To release the lock, the thread must make same number of
  *       OE_RWLockReadUnlock calls.
  *    5. A deadlock will occur if the writer thread that currently owns the lock
