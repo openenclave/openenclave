@@ -232,6 +232,8 @@ void TestThreadLockingPatterns(OE_Enclave* enclave)
     printf("TestThreadLockingPatterns Complete\n");
 }
 
+void TestReadersWriterLock(OE_Enclave* enclave);
+
 int main(int argc, const char* argv[])
 {
     OE_Result result;
@@ -259,6 +261,8 @@ int main(int argc, const char* argv[])
     TestThreadWakeWait(enclave);
 
     TestThreadLockingPatterns(enclave);
+
+    TestReadersWriterLock(enclave);
 
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
     {
