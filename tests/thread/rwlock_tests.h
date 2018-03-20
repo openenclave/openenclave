@@ -4,7 +4,7 @@
 #ifndef _rwlock_tests_h
 #define _rwlock_tests_h
 
-#include <cstdio>
+#include <openenclave/types.h>
 
 const size_t RWLOCK_TEST_ITERS = 2000;
 
