@@ -5,7 +5,6 @@
 
 openssl genrsa -out private.pem -3 3072
 openssl rsa -in private.pem -pubout -out public.pem
-#openssl rsa -in private.pem -RSAPublicKey_out -out public.pem
 
 openssl ecparam -name secp256k1 -genkey -noout -out ecprivate.pem
 openssl ec -in ecprivate.pem -pubout -out ecpublic.pem
