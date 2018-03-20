@@ -12,8 +12,5 @@ Testing various functionality around ecalls/ocalls:
   + single-threaded
   + multi-threaded
   + multi-enclave / multi-threaded
-
-Not tested:
 - recursive ECall/OCall across enclaves (ECall into enclave A, OCall, ECall into enclave B)
-  + This is known to break atm, further work needed.
 

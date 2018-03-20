@@ -142,13 +142,15 @@ OE_ECALL void EncRecursion(void* Args_)
     EncRecursionArg args = *argsHost;
 
     OE_TRACE_INFO(
-        "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
+        "%s(): EnclaveId=%u/%u, Flow=%u, recLeft=%u, inCrc=%#x\n",
         __FUNCTION__,
+        EnclaveId,
+        args.enclaveId,
         args.flowId,
         args.recursionsLeft,
         args.crc);
 
-    if (args.isInitial)
+    if (args.initialCount)
     {
         if (unsigned oldFlowId = PerThreadFlowId.GetU())
         {
@@ -173,13 +175,13 @@ OE_ECALL void EncRecursion(void* Args_)
     // recurse as needed, passing initial-state-crc as input
     if (args.recursionsLeft)
     {
-        argsHost->isInitial = 0;
+        if (args.initialCount) argsHost->initialCount = args.initialCount - 1;
         argsHost->recursionsLeft = args.recursionsLeft - 1;
         result = OE_CallHost("RecursionOcall", argsHost);
     }
 
     // double-check FlowId is still intact and clobber it
-    if (args.isInitial)
+    if (args.initialCount)
     {
         unsigned oldFlowId = PerThreadFlowId.GetU();
         if (oldFlowId != args.flowId)
@@ -189,7 +191,7 @@ OE_ECALL void EncRecursion(void* Args_)
                 __FUNCTION__,
                 args.flowId,
                 oldFlowId);
-            args.isInitial = 0;
+            args.initialCount = 0;
         }
     }
 
@@ -203,7 +205,7 @@ OE_ECALL void EncRecursion(void* Args_)
         EnclaveId - args.enclaveId,
         PerThreadFlowId.GetU() - args.flowId);
 
-    if (args.isInitial)
+    if (args.initialCount)
     {
         PerThreadFlowId.Set(0u);
     }
