@@ -354,13 +354,15 @@ typedef struct _OE_RWLock
 /**
  * Initializes a readers-writer lock.
  *
- * This function initializes a readers-writer lock. Readers-writer locks can
- * also be initialized statically as follows.
+ * OE_RWLockInit initializes the lock to an unlocked state.
+ * Readers-writer locks can also be initialized statically as follows.
  *
  *     OE_Cond cond = OE_RWLOCK_INITIALIZER;
  *
- * At any given time, a readers-writer lock allows either concurrent read access
- * for multiple threads (readers) or write access for a single thread (writer).
+ * Undefined behavior:
+ *    1. Results of using an un-initialized r/w lock are undefined.
+ *    2. Results of using a copy of a r/w lock are undefined.
+ *    3. Results of re-initializing an initialized r/w lock are undefined.
  *
  * @param rwLock Initialize this readers-writer variable.
  *
@@ -372,8 +374,24 @@ int OE_RWLockInit(OE_RWLock* rwLock);
 /**
  * Acquires a read lock on a readers-writer lock.
  *
- * This function acquires a read lock on a readers-writer lock.
- * Multiple reader threads can concurrently lock a readers-writer lock.
+ * Behavior:
+ *    1. The lock is acquired if no writer thread currently owns the lock.
+ *    2. If the lock is currently locked for writing, OE_RWLockReadLock blocks
+ *       until the writer releases the lock.
+ *    3. Multiple reader threads can concurrently lock a r/w lock.
+ *    4. The same thread can lock a r/w lock multiple times. (recursive
+ * locking).
+ *       To release the lock, the thread must make same number of
+ *       OE_RWLockReadUnlock calls.
+ *    5. A deadlock will occur if the writer thread that currently owns the lock
+ *       makes a OE_RWLockReadLock call.
+ *    6. There is no limit to the number of readers that can acquire
+ *       the lock simultaneously.
+ *    7. No scheduling guarantee is provided in regards to which threads acquire
+ *       the lock in presence of contention.
+ *
+ * Undefined behavior:
+ *    1. Results of using an un-initialized or destroyed r/w lock are undefined.
  *
  * @param rwLock Acquire a read lock on this readers-writer lock.
  *
@@ -385,9 +403,14 @@ int OE_RWLockReadLock(OE_RWLock* rwLock);
 /**
  * Tries to acquire a read lock on a readers-writer lock.
  *
- * This function attempts to acquire a read lock on the given readers-writer
- * lock and immediately returns. If the lock is held by a writer thread,
- * the function returns -1 otherwise it succeeds and returns 0.
+ * Behavior:
+ *    1. If the lock is currently not held by a writer, the lock is acquired
+ *       and returns 0.
+ *    2. If the lock is currently held by a writer, the function immediately
+ *       returns -1.
+ *
+ * Undefined behavior:
+ *    1. Results of using an un-initialized or destroyed r/w lock are undefined.
  *
  * @param rwLock Acquire a read lock on this readers-writer lock.
  *
@@ -402,7 +425,18 @@ int OE_RWLockTryReadLock(OE_RWLock* rwLock);
  * This function releases the read lock on a readers-writer lock obtained with
  * either OE_RWLockReadLock() or OE_RWLockTryReadLock().
  *
- * Any threads waiting on the lock are woken up.
+ * Behavior:
+ *    1. To release a lock, a reader thread must make the same number of
+ *       OE_RWLockReadUnlock as the number of
+ *       OE_RWLockReadLock/OE_RWLockTryReadLock calls.
+ *    2. When all the readers have released the lock, the r/w lock goes into
+ *       unlocked state and can then be acquired by writer or reader threads.
+ *    3. No guarantee is provided in regards to whether a waiting writer thread
+ *       or reader threads will (re)acquire the lock.
+ *
+ * Undefined behavior:
+ *    1. Results of a OE_RWLockReadUnlock call by a thread that currently does
+ *       not have a read-lock on the r/w lock are undefined.
  *
  * @param rwLock Release the read lock on this readers-writer lock.
  *
@@ -414,13 +448,23 @@ int OE_RWLockReadUnlock(OE_RWLock* rwLock);
 /**
  * Acquires a write lock on a readers-writer lock.
  *
- * This function acquires a write lock on a readers-writer lock.
- * Only one writer thread can lock a readers-writer lock for writing.
- * When a readers-writer lock has been locked for writing, all
- * OE_RWLockReadLock,
- * OE_RWLockWriteLock calls block and all OE_RWLockTryReadLock,
- * OE_RWLockTryWriteLock
- * calls fail till the writer releases the lock.
+ * Behavior:
+ *    1. If the r/w lock is in an unlocked state, the OE_RWLockReadUnlock
+ *       is successful and returns 0.
+ *    2. If the r/w lock is currently held by reader threads or by another
+ *       writer thread, the OE_RWLockReadUnlock call blocks until the lock is
+ *       available for locking.
+ *    3. No guarantee is provided in regards to whether a waiting writer thread
+ *       or reader threads will (re)acquire the lock.
+ *    4. OE_RWLockReadUnlock will deadlock if called by a thread that currently
+ *       owns the lock for reading.
+ *    5. OE_RWLockReadUnlock will deadlock if called by a thread that currently
+ *       owns the lock for writing. That is, recursive-locking by writers will
+ *       cause deadlocks.
+ *
+ * Undefined behavior:
+ *    1. Results of using an un-initialized or destroyed r/w lock are undefined.
+ *
  *
  * @param rwLock Acquire a write lock on this readers-writer lock.
  *
@@ -432,9 +476,13 @@ int OE_RWLockWriteLock(OE_RWLock* rwLock);
 /**
  * Tries to acquire a write lock on a readers-writer lock.
  *
- * This function attempts to acquire a write lock on the given readers-writer
- * and immediately returns. If the lock held by a reader thread or another
- * writer thread, this function return -1 otherwise it succeeds and returns 0.
+ * Behavior:
+ *    1. If the r/w lock is currently not held by readers or by another writer,
+ *       the r/w lock is acquired and returns 0.
+ *    2. If the lock is currently locked, the function immediately returns -1.
+ *
+ * Undefined behavior:
+ *    1. Results of using an un-initialized or destroyed r/w lock are undefined.
  *
  * @param rwLock Acquire a write lock on this readers-writer lock.
  *
@@ -449,7 +497,15 @@ int OE_RWLockTryWriteLock(OE_RWLock* rwLock);
  * This function releases the write lock on a readers-writer lock obtained with
  * either OE_RWLockWriteLock() or OE_RWLockTryWriteLock().
  *
- * Any threads waiting on the lock are woken up.
+ * Behavior:
+ *    1. To lock goes into unlocked state and can then be acquired by
+ *       reader or writer threads.
+ *    2. No guarantee is provided in regards to whether a waiting reader threads
+ *       or writer thread will (re)acquire the lock.
+ *
+ * Undefined behavior:
+ *    1. Results of a OE_RWLockTryWriteLock call by a thread that currently does
+ *       not have a write-lock on the r/w lock are undefined.
  *
  * @param rwLock Release the write lock on this readers-writer lock.
  *
@@ -461,8 +517,14 @@ int OE_RWLockWriteUnlock(OE_RWLock* rwLock);
 /**
  * Destroys a readers-writer lock.
  *
- * This function destroys a readers-writer lock that was initialized with
- * OE_RWLockInit().
+ * This function destroys a readers-writer lock and releases any resources used
+ * by the lock. The lock must be in an unlocked state.
+ *
+ * Undefined behavior:
+ *    1. Results of using the r/w lock after it is destroyed are undefined.
+ *    2. Results of using the r/w lock during its destruction are undefined.
+ *    3. Results of destroying a locked r/w lock are undefined.
+ *    4. Results of destroying an uninitialized r/w lock are undefined.
  *
  * @param Destroy this readers-writer lock.
  *
