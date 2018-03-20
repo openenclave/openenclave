@@ -25,16 +25,22 @@ ExternalProject_Add(mbedtls-wrap
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory
         <SOURCE_DIR>/include/mbedtls ${OE_INCDIR}/openenclave/oe-mbedtls/mbedtls
         COMMAND ${CMAKE_COMMAND} -E copy
+        <BINARY_DIR>/library/libmbedx509.a ${OE_LIBDIR}/openenclave/enclave/
         <BINARY_DIR>/library/libmbedcrypto.a ${OE_LIBDIR}/openenclave/enclave/
     )
 install (DIRECTORY ${OE_INCDIR}/openenclave/oe-mbedtls DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
+install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedx509.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
 # Convenience lib for use in target_link_libraries
+add_library(mbedx509 INTERFACE)
 add_library(mbedcrypto INTERFACE)
+add_dependencies(mbedx509 mbedtls-wrap)
 add_dependencies(mbedcrypto mbedtls-wrap)
 target_include_directories(mbedcrypto INTERFACE ${OE_INCDIR}/openenclave/oe-mbedtls)
-target_link_libraries(mbedcrypto INTERFACE ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a)
+target_link_libraries(mbedcrypto INTERFACE
+    ${OE_LIBDIR}/openenclave/enclave/libmbedx509.a
+    ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a)
 # For the libc dependency, We would just want to use "oelibc". However, we need
 # an actual lib-dependency between crypto an libc, which is not expressable
 # with CMake. If using the target "oelibc", CMake reorders the libs, resulting
