@@ -78,7 +78,7 @@ expand_ignore_file()
                 echo ${i} >> ${tempfile}
             else
                 set +f
-                ls -1 ${i} >> ${tempfile}
+                ls -1 ${i} >> ${tempfile} 2> /dev/null
                 set -f
             fi
         fi
