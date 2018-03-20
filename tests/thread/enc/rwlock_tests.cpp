@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "../rwlock_tests.h"
 #include <assert.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
@@ -9,15 +10,6 @@
 
 static OE_RWLock rwLock = OE_RWLOCK_INITIALIZER;
 static OE_Spinlock rwArgsLock = OE_SPINLOCK_INITIALIZER;
-
-static const size_t RWLOCK_TEST_ITERS = 2000;
-
-// Amout of microseconds to sleep after obtaining a read or writer locks
-// to allow another thread to contend for the lock.
-static const size_t sleep_utime = 10;
-
-// Number of reader threads. Also see NUM_THREADS in rwlocks_test_host.cpp.
-static const size_t NUM_READER_THREADS = 4;
 
 inline size_t max(size_t a, size_t b)
 {
@@ -32,12 +24,12 @@ class ScopedSpinLock
         OE_SpinLock(slock);
     }
 
-    void lock()
+    void Lock()
     {
         OE_SpinLock(slock);
     }
 
-    void unlock()
+    void Unlock()
     {
         OE_SpinUnlock(slock);
     }
@@ -77,9 +69,9 @@ OE_ECALL void ReaderThreadImpl(void* args_)
             // at least once.
             while (args->maxReaders < NUM_READER_THREADS)
             {
-                lock.unlock();
+                lock.Unlock();
                 OE_CallHost("host_usleep", (void*)sleep_utime);
-                lock.lock();
+                lock.Lock();
             }
 
             // Are readers and writers simultaneously active?

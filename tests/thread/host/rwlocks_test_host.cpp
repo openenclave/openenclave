@@ -55,10 +55,10 @@ void TestReadersWriterLock(OE_Enclave* enclave)
     for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    // There can be atmost 1 writer thread active.
+    // There can be at most 1 writer thread active.
     assert(_rwArgs.maxWriters == 1);
 
-    // There can be atmost NUM_THREADS/2 reader threads active
+    // There can be at most NUM_THREADS/2 reader threads active
     // and no thread was starved.
     assert(_rwArgs.maxReaders <= NUM_THREADS / 2);
 
@@ -66,6 +66,6 @@ void TestReadersWriterLock(OE_Enclave* enclave)
     assert(_rwArgs.readersAndWriters == false);
 
     // Additionally, the test requires that all readers are
-    // simultaneously active atleast once.
+    // simultaneously active at least once.
     assert(_rwArgs.maxReaders == NUM_THREADS / 2);
 }

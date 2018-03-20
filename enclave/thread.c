@@ -516,10 +516,10 @@ int OE_CondBroadcast(OE_Cond* condition)
 typedef struct _OE_RWLockImpl
 {
     /* Number of reader threads owning this lock. */
-    unsigned int readers;
+    uint32_t readers;
 
     /* Number of writer threads owning this lock. 0 or 1.*/
-    unsigned int writers;
+    uint32_t writers;
 
     /* Mutex for synchronizing readers and writers.
     ** Held only for a brief time.
@@ -602,7 +602,7 @@ int OE_RWLockReadUnlock(OE_RWLock* readWriteLock)
 
     OE_MutexLock(&rwLock->mutex);
 
-    // There must be atleast 1 reader and no writers.
+    // There must be at least 1 reader and no writers.
     if (rwLock->readers < 1 || rwLock->writers > 0)
     {
         OE_MutexUnlock(&rwLock->mutex);

@@ -347,7 +347,9 @@ int OE_CondDestroy(OE_Cond* cond);
 /* Readers-writer lock representation */
 typedef struct _OE_RWLock
 {
-    /* Internal private implementation */
+    /* Internal private implementation.
+    *  Size is 20 for forward ABI compatibility.
+    */
     uint64_t __impl[20];
 } OE_RWLock;
 
@@ -357,7 +359,7 @@ typedef struct _OE_RWLock
  * OE_RWLockInit initializes the lock to an unlocked state.
  * Readers-writer locks can also be initialized statically as follows.
  *
- *     OE_Cond cond = OE_RWLOCK_INITIALIZER;
+ *     OE_RWLock rwLock = OE_RWLOCK_INITIALIZER;
  *
  * Undefined behavior:
  *    1. Results of using an un-initialized r/w lock are undefined.
