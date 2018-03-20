@@ -318,6 +318,7 @@ static void TestCertVerifyBad()
     r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
     assert(r == OE_OK);
 
+    /* Chain does not contain a root for this certificate */
     r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &chain);
     assert(r == OE_OK);
 
@@ -348,6 +349,7 @@ static void TestCertVerify()
         r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
         assert(r == OE_OK);
 
+        /* Chain does not contain a root for this certificate */
         r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &badChain);
         assert(r == OE_OK);
 
