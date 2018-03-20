@@ -70,15 +70,15 @@ expand_ignore_file()
     set -f
     for i in `cat ${filename}`
     do
-        if [ -e "${i}" ]; then
-            echo ${i} >> ${tempfile}
+        bn=`basename ${i}`
+        if [ "${bn}" == "${i}" ]; then
+            find . -name "${bn}" >> ${tempfile}
         else
-            bn=`basename ${i}`
-            if [ "${bn}" == "${i}" ]; then
-                find . -name "${bn}" >> ${tempfile}
+            if [ -e "${i}" ]; then
+                echo ${i} >> ${tempfile}
             else
                 set +f
-                echo ${i} >> ${tempfile}
+                ls -1 ${i} >> ${tempfile}
                 set -f
             fi
         fi
@@ -112,7 +112,12 @@ form_filelist()
     for i in `cat ${ignorefile}`
     do
         cp ${files} ${tmpfile}
-        fgrep -v ${i} ${tmpfile} > ${files}
+
+        if [ -d "${i}" ]; then
+            grep -v "${i}/" ${tmpfile} > ${files}
+        else
+            grep -v "^${i}\$" ${tmpfile} > ${files}
+        fi
     done
 
     filelist=`cat ${files}`
