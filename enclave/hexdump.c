@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/enclave.h>
 
 /* Convert a nibble to an ASCII character: Example 0xF => 'F' */
