@@ -17,13 +17,6 @@ void OE_HexDump(const void* data_, size_t size)
     for (i = 0; i < size; i++)
     {
         printf("%02x", data[i]);
-
-#if 0
-        if ((i + 1) % 16 == 0)
-            printf("\n");
-        else
-            printf(" ");
-#endif
     }
 
     printf("\n");

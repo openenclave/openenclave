@@ -10,6 +10,7 @@ add_library(oeenclave STATIC
     globals.c
     hostcalls.c
     hoststack.c
+    hexdump.c
     init.c
     jump.c
     memory.c

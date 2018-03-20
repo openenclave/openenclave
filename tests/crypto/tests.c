@@ -104,22 +104,6 @@ static const uint8_t SIGNATURE[] = {
 
 static const size_t SIGNATURE_SIZE = sizeof(SIGNATURE);
 
-static void _DumpHex(const void* data_, size_t size)
-{
-    const uint8_t* data = (const uint8_t*)data_;
-    size_t i;
-
-    for (i = 0; i < size; i++)
-    {
-        printf("0x%02X ", data[i]);
-
-        if ((i + 1) % 8 == 0)
-            printf("\n");
-    }
-
-    printf("\n");
-}
-
 /*
 **
 ** Test computation of SHA-256 hash over an ASCII alphabet string.
@@ -162,8 +146,8 @@ static void TestSign()
     assert(signatureSize == SIGNATURE_SIZE);
     assert(memcmp(signature, &SIGNATURE, SIGNATURE_SIZE) == 0);
 
-#if 0
-    _DumpHex(signature, signatureSize);
+#if 1
+    OE_HexDump(signature, signatureSize);
 #endif
 
     free(signature);
@@ -188,8 +172,6 @@ static void TestVerify()
     assert(r == OE_OK);
 
     printf("=== passed TestVerify\n");
-
-    (void)_DumpHex;
 }
 
 static const char CERT[] =
@@ -449,8 +431,8 @@ static void TestECSign()
         assert(r == OE_OK);
     }
 
-#if 0
-    _DumpHex(signature, signatureSize);
+#if 1
+    OE_HexDump(signature, signatureSize);
 #endif
 
     free(signature);

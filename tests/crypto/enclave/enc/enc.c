@@ -8,6 +8,7 @@
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/sha.h>
 #include <openenclave/enclave.h>
+#include <openenclave/bits/hexdump.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
