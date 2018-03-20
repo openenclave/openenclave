@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>

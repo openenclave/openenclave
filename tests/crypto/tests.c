@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 /* Generated with: openssl genrsa -out private.pem -3 3072 */
 static const char PRIVATE_KEY[] =
     "-----BEGIN RSA PRIVATE KEY-----\n"
