@@ -163,13 +163,11 @@ OE_ECALL void EncRecursion(void* Args_)
     }
 
     // catch initial state: Tag, Input-struct, EnclaveId, FlowId
-    {
-        Crc32 crc(TAG_START_ENC);
-        crc(args);
-        crc(EnclaveId - args.enclaveId);
-        crc(PerThreadFlowId.GetU() - args.flowId);
-        args.crc = crc();
-    }
+    args.crc = Crc32::Hash(
+        TAG_START_ENC,
+        args,
+        EnclaveId - args.enclaveId,
+        PerThreadFlowId.GetU() - args.flowId);
     argsHost->crc = args.crc;
 
     // recurse as needed, passing initial-state-crc as input
@@ -195,22 +193,20 @@ OE_ECALL void EncRecursion(void* Args_)
         }
     }
 
-    // catch output state: Tag + result + modified host-struct
-    Crc32 crc(TAG_END_ENC);
-    crc(result);
-    crc(*argsHost);
-
-    // and extend by original input and ID-diffs
-    crc(args);
-    crc(EnclaveId - args.enclaveId);
-    crc(PerThreadFlowId.GetU() - args.flowId);
+    // catch output state: Tag + result + modified host-struct, original
+    // input, and ID-diffs
+    argsHost->crc = Crc32::Hash(
+        TAG_END_ENC,
+        result,
+        *argsHost,
+        args,
+        EnclaveId - args.enclaveId,
+        PerThreadFlowId.GetU() - args.flowId);
 
     if (args.isInitial)
     {
         PerThreadFlowId.Set(0u);
     }
-
-    argsHost->crc = crc();
 }
 
 // Exported helper function for reachability test

@@ -256,10 +256,7 @@ OE_OCALL void RecursionOcall(void* Args_)
     EncRecursionArg argsRec;
 
     // catch initial state: Tag + Input-struct
-    {
-        Crc32 crc(TAG_START_HOST);
-        args.crc = crc(args);
-    }
+    args.crc = Crc32::Hash(TAG_START_HOST, args);
     argsRec = args;
 
     // recurse as needed, passing initial-state-crc as input
@@ -271,11 +268,7 @@ OE_OCALL void RecursionOcall(void* Args_)
     }
 
     // catch output state: Tag + result + output, and again original input
-    Crc32 crc(TAG_END_HOST);
-    crc(result);
-    crc(argsRec);
-    crc(args);
-    argsPtr->crc = crc();
+    argsPtr->crc = Crc32::Hash(TAG_END_HOST, result, argsRec, args);
 }
 
 static uint32_t CalcRecursionHashHost(const EncRecursionArg* Args);
@@ -289,10 +282,7 @@ static uint32_t CalcRecursionHashHost(const EncRecursionArg* Args)
     OE_Result result = OE_OK;
 
     // catch initial state: Tag + Input-struct
-    {
-        Crc32 crc(TAG_START_HOST);
-        args.crc = crc(args);
-    }
+    args.crc = Crc32::Hash(TAG_START_HOST, args);
     argsRec = args;
 
     // recurse as needed, passing initial-state-crc as input
@@ -307,11 +297,7 @@ static uint32_t CalcRecursionHashHost(const EncRecursionArg* Args)
     }
 
     // catch output state: Tag + result + output, and again original input
-    Crc32 crc(TAG_END_HOST);
-    crc(result);
-    crc(argsRec);
-    crc(args);
-    return crc();
+    return Crc32::Hash(TAG_END_HOST, result, argsRec, args);
 }
 
 // calc recursion hash locally, enc part
@@ -329,13 +315,7 @@ static uint32_t CalcRecursionHashEnc(const EncRecursionArg* Args)
         args.crc);
 
     // catch initial state: Tag + Input-struct + EnclaveId
-    {
-        Crc32 crc(TAG_START_ENC);
-        crc(args);
-        crc(0u);
-        crc(0u);
-        args.crc = crc();
-    }
+    args.crc = Crc32::Hash(TAG_START_ENC, args, 0u, 0u);
 
     argsHost = args;
     if (args.recursionsLeft > 0)
@@ -345,16 +325,9 @@ static uint32_t CalcRecursionHashEnc(const EncRecursionArg* Args)
         argsHost.crc = CalcRecursionHashHost(&argsHost);
     }
 
-    // catch output state: Tag + result + modified host-struct
-    Crc32 crc(TAG_END_ENC);
-    crc(result);
-    crc(argsHost);
-
-    // and extend by original input and diffs
-    crc(args);
-    crc(0u);
-    crc(0u);
-    return crc();
+    // catch output state: Tag + result + modified host-struct, original
+    // input, and ID-diffs
+    return Crc32::Hash(TAG_END_ENC, result, argsHost, args, 0u, 0u);
 }
 
 // Actual enclave/host/... recursion test. Trail of execution is gathered via

@@ -27,9 +27,23 @@ struct Crc32
         return Extend(&Value, sizeof(T));
     }
 
+    template <class T1, class... T2>
+    uint32_t operator()(const T1& Value1, const T2&... Value2)
+    {
+        Extend(&Value1, sizeof(T1));
+        return (*this)(Value2...);
+    }
+
     uint32_t operator()() const
     {
         return m_Crc;
+    }
+
+    template <class... T1>
+    static uint32_t Hash(unsigned Start, const T1&... Value1)
+    {
+        Crc32 crc(Start);
+        return crc(Value1...);
     }
 
   private:
