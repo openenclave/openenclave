@@ -61,7 +61,7 @@ static int _MakeTag(uint8_t fieldNum, WireType wireType, uint8_t* tag)
     /* Initialize the tag in case of failure */
     if (tag)
         *tag = 0;
-    
+
     /* Check parameter */
     if (!tag)
         goto done;
@@ -109,7 +109,7 @@ static int _PackVariantUint32(mem_t* buf, uint32_t x)
 static int _PackTag(mem_t* buf, uint8_t fieldNum, WireType wireType)
 {
     uint8_t tag;
-    
+
     if (_MakeTag(fieldNum, wireType, &tag) != 0)
         return -1;
 
@@ -168,7 +168,7 @@ static OE_Result _PackBytes(
 {
     OE_Result result = OE_UNEXPECTED;
     uint8_t tag;
-    
+
     if (_MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED, &tag) != 0)
         OE_THROW(OE_FAILURE);
 

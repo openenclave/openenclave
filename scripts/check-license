@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 ##==============================================================================
 ##
 ## check-license:
@@ -40,14 +43,6 @@ fi
 
 ##==============================================================================
 ##
-## Form the list of all OpenEnclave source files.
-##
-##==============================================================================
-
-sourcefiles=`(find . -name '*.[ch]' ; find . -name '*.cpp') | egrep -v '((^./3rdparty/)|(^./prereqs/))|(^./build/)'`
-
-##==============================================================================
-##
 ## Form the list of files to ignore from the test below.
 ##
 ##==============================================================================
@@ -63,6 +58,92 @@ ignorelist=`cat ${ignorefile}`
 
 ##==============================================================================
 ##
+## Form the list of files to include from the test below.
+##
+##==============================================================================
+
+includefile="./scripts/.check-license.include"
+
+if [ ! -f "${includefile}" ]; then
+    echo "$0: missing file: ${includefile}"
+    exit 1
+fi
+
+##==============================================================================
+##
+## Form the list of all OpenEnclave files.
+##
+##==============================================================================
+
+files=`/bin/mktemp`
+
+find . -name '*.h' >> ${files}
+find . -name '*.c' >> ${files}
+find . -name '*.cpp' >> ${files}
+find . -name '*.asm' >> ${files}
+find . -name '*.S' >> ${files}
+find . -name '*.conf' >> ${files}
+find . -name '*.idl' >> ${files}
+find . -name '*.inc' >> ${files}
+find . -name '*.cmake' >> ${files}
+find . -name 'CMakeLists.txt' >> ${files}
+find . -name 'Makefile' >> ${files}
+find . -name '*.make' >> ${files}
+find . -name '*.py' >> ${files}
+grep '#[ \t]*!.*bash' -r -l . >> ${files}
+
+# Append include file to files:
+cat ${includefile} >> ${files}
+
+tmpfile=`/bin/mktemp`
+
+# Remove lines that match entries from ignore file:
+for i in ${ignorelist}
+do
+    cp ${files} ${tmpfile}
+    fgrep -v ${i} ${tmpfile} > ${files}
+done
+
+fileslist=`cat ${files}`
+
+rm -f ${tmpfile}
+
+##==============================================================================
+##
+## Verify that ${fileslist} was properly formed (check that each file exists)
+##
+##==============================================================================
+
+for i in ${fileslist}
+do 
+    if [ ! -f "${i}" ]; then
+        echo "$0: file not found: ${i}"
+        exit 1
+    fi
+done
+
+##==============================================================================
+##
+## Find files that are not included but that have Microsoft license:
+##
+##==============================================================================
+
+function check_not_included()
+{
+    tmpfile1=`/bin/mktemp`
+    ls ${fileslist} | sed 's/^..//g' | sort >> ${tmpfile1}
+
+    tmpfile2=`/bin/mktemp`
+    grep -r -l 'Copyright (c) Microsoft Corporation' | sort >> ${tmpfile2}
+
+    echo diff ${tmpfile1} ${tmpfile2}
+    diff ${tmpfile1} ${tmpfile2}
+
+    exit
+}
+
+##==============================================================================
+##
 ## Write the license header to a temporary file.
 ##
 ##==============================================================================
@@ -70,8 +151,8 @@ ignorelist=`cat ${ignorefile}`
 license=`/bin/mktemp`
 
 cat > ${license} <<EOF
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the MIT License.
 EOF
 
 ##==============================================================================
@@ -84,26 +165,22 @@ tmpfile=`/bin/mktemp`
 
 success=0
 
-for i in ${sourcefiles}
+for i in ${fileslist}
 do
-    # Skip this file if it is on the ignore list:
-    ignore=0
-    for e in ${ignorelist}
-    do 
-        if [ "${e}" == "${i}" ]; then
-            ignore=1
-        fi
-    done
+    # Grep for first 'Copyright' line (-m1)
+    # Print the following line too (-A1)
+    # Use SED to strip leading '//' or leading '#':
+    grep -m1 -A1 "Copyright (c) Microsoft Corporation" ${i} | \
+    sed 's~// ~~g' | \
+    sed 's~;; ~~g' | \
+    sed 's~^# ~~g' \
+    > ${tmpfile}
 
-    # If this source file is not ignored:
-    if [ "${ignore}" == "0" ]; then
-        # Check the first two lines of this file:
-        head --lines=2 ${i} > ${tmpfile}
-        diff -w ${tmpfile} ${license} > /dev/null 2> /dev/null
-        if [ "$?" != "0" ]; then
-            echo ${i}
-            success=1
-        fi
+    # Diff matching file with expected license text:
+    diff -w ${tmpfile} ${license} > /dev/null 2> /dev/null
+    if [ "$?" != "0" ]; then
+        echo ${i}
+        success=1
     fi
 done
 
@@ -113,5 +190,5 @@ done
 ##
 ##==============================================================================
 
-rm -f ${tmpfile} ${license}
+rm -f ${tmpfile} ${license} ${files}
 exit ${success}

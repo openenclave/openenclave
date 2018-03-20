@@ -1,1 +1,16 @@
+./prereqs/aesm/dynamic-application-loader-host-interface/
+./prereqs/aesm/linux-sgx/
+./prereqs/isgx/linux-sgx-driver/
+./3rdparty/libcxx/libcxx/
+./3rdparty/libcxxrt/libcxxrt/
+./3rdparty/libunwind/libunwind/
+./3rdparty/mbedtls/mbedtls/
+./3rdparty/musl/musl/
+./3rdparty/musl/libc-test/
+./3rdparty/dlmalloc/dlmalloc/
+./build/
+./.git/
+./debugger/pythonExtension/load_symbol_cmd.py
+./debugger/pythonExtension/readelf.py
+./3rdparty/mbedtls/config.h
 ./include/openenclave/bits/queue.h
