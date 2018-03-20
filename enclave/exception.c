@@ -207,7 +207,7 @@ static struct
 **
 **==============================================================================
 */
-bool _EmulateIllegalInstruction(SGX_SsaGpr* ssa_gpr)
+int _EmulateIllegalInstruction(SGX_SsaGpr* ssa_gpr)
 {
     // Emulate CPUID
     if (*((uint16_t*)ssa_gpr->rip) == OE_CPUID_OPCODE)
@@ -216,7 +216,7 @@ bool _EmulateIllegalInstruction(SGX_SsaGpr* ssa_gpr)
             &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx);
     }
 
-    return false;
+    return -1;
 }
 
 /*
@@ -343,7 +343,7 @@ void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
     }
 
     if (td->base.exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
-        _EmulateIllegalInstruction(ssa_gpr))
+        _EmulateIllegalInstruction(ssa_gpr) == 0)
     {
         // Restore the RBP & RSP as required by return from EENTER
         td->host_rbp = td->host_previous_rbp;

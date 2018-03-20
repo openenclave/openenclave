@@ -111,27 +111,27 @@ typedef unsigned long long WORD;
 /*
 **==============================================================================
 **
-** _InitializeEnclave()
+** _HandleInitEnclave()
 **
 **     Handle the OE_FUNC_INIT_ENCLAVE from host and ensures that each state
 **     initialization function in the enclave only runs once.
 **
 **==============================================================================
 */
-void _InitializeEnclave(uint64_t argIn)
+void _HandleInitEnclave(uint64_t argIn)
 {
-    static OE_OnceType _once = OE_ONCE_INITIALIZER;
+    static bool _once = false;
 
-    if (_once == OE_ONCE_INITIALIZER)
+    if (_once == false)
     {
         static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
         OE_SpinLock(&_lock);
 
-        if (_once == OE_ONCE_INITIALIZER)
+        if (_once == false)
         {
             /* Call all enclave state initialization functions */
             OE_InitializeCpuid(argIn);
-            _once = 1;
+            _once = true;
         }
 
         OE_SpinUnlock(&_lock);
@@ -171,7 +171,7 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
 
     if (!OE_IsOutsideEnclave((void*)argIn, sizeof(OE_CallEnclaveArgs)))
     {
-        OE_TRY(OE_INVALID_PARAMETER);
+        OE_THROW(OE_INVALID_PARAMETER);
     }
     argsPtr = (OE_CallEnclaveArgs*)argIn;
     args = *argsPtr;
@@ -179,7 +179,7 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
     if (!args.vaddr || (args.func >= ecallPages->num_vaddrs) ||
         ((vaddr = ecallPages->vaddrs[args.func]) != args.vaddr))
     {
-        OE_TRY(OE_INVALID_PARAMETER);
+        OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* Translate function address from virtual to real address */
@@ -311,7 +311,7 @@ static void _HandleECall(
         }
         case OE_FUNC_INIT_ENCLAVE:
         {
-            _InitializeEnclave(argIn);
+            _HandleInitEnclave(argIn);
             break;
         }
         default:
@@ -386,11 +386,11 @@ OE_Result OE_OCall(
 
     /* Check for unexpected failures */
     if (!callsite)
-        OE_TRY(OE_UNEXPECTED);
+        OE_THROW(OE_UNEXPECTED);
 
     /* Check for unexpected failures */
     if (!TD_Initialized(td))
-        OE_TRY(OE_FAILURE);
+        OE_THROW(OE_FAILURE);
 
     td->ocall_flags |= ocall_flags;
 

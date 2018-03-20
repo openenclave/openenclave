@@ -4,6 +4,7 @@
 #include "cpuid.h"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/cpuid.h>
+#include <openenclave/bits/enclavelibc.h>
 
 static uint32_t _OE_CpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 
@@ -22,13 +23,10 @@ void OE_InitializeCpuid(uint64_t argIn)
     OE_InitEnclaveArgs* args = (OE_InitEnclaveArgs*)argIn;
     if (args != NULL)
     {
-        for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
-        {
-            for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
-            {
-                _OE_CpuidTable[i][j] = args->cpuidTable[i][j];
-            }
-        }
+        OE_Memcpy(
+            _OE_CpuidTable,
+            args->cpuidTable,
+            OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT * sizeof(_OE_CpuidTable[0][0]));
     }
 }
 
@@ -46,11 +44,11 @@ void OE_InitializeCpuid(uint64_t argIn)
 **     includes up to structured extended information. This primarily allows
 **     checking of CPU feature bits important for compat and crypto.
 **
-**     Returns true if referenced CPUID leaf is available, false otherwise.
+**     Returns 0 if referenced CPUID leaf is available, -1 otherwise.
 **
 **==============================================================================
 */
-bool OE_EmulateCpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx)
+int OE_EmulateCpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx)
 {
     // upper bits zeroed on 64-bit for CPUID
     uint32_t cpuidLeaf = (*rax) & 0xFFFFFFFF;
@@ -61,7 +59,7 @@ bool OE_EmulateCpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx)
         *rbx = _OE_CpuidTable[cpuidLeaf][OE_CPUID_RBX];
         *rcx = _OE_CpuidTable[cpuidLeaf][OE_CPUID_RCX];
         *rdx = _OE_CpuidTable[cpuidLeaf][OE_CPUID_RDX];
-        return true;
+        return 0;
     }
-    return false;
+    return -1;
 }

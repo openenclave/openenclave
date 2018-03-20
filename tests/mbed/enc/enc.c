@@ -13,7 +13,7 @@ OE_ECALL void Hash(void* args_)
 {
     HashArgs* args = (HashArgs*)args_;
 
-    if (!args || !args->data || !args->hash)
+    if (!args || !args->data)
         return;
 
     memset(args->hash, 0, sizeof(args->hash));

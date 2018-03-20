@@ -874,7 +874,7 @@ static OE_Result _InitializeEnclave(OE_Enclave* enclave)
             &args.cpuidTable[i][OE_CPUID_RCX],
             &args.cpuidTable[i][OE_CPUID_RDX]);
         if (!supported)
-            OE_TRY(OE_UNSUPPORTED);
+            OE_THROW(OE_UNSUPPORTED);
     }
 
     OE_TRY(OE_ECall(enclave, OE_FUNC_INIT_ENCLAVE, (uint64_t)&args, NULL));
