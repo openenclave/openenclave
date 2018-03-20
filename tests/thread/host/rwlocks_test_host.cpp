@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "../args.h"
+#include "../rwlock_tests.h"
 
 static TestRWLockArgs _rwArgs;
 
@@ -39,20 +40,17 @@ void* WriterThread(void* args)
 // Launch multiple reader and writer threads and assert invariants.
 void TestReadersWriterLock(OE_Enclave* enclave)
 {
-    // Total number of threads. Half readers and half writers.
-    // Keep NUM_READER_THREADS in rwlock_tests.cpp in sync with NUM_THREADS.
-    const size_t NUM_THREADS = 8;
-    pthread_t threads[NUM_THREADS];
+    pthread_t threads[NUM_RW_TEST_THREADS];
 
     memset(&_rwArgs, 0, sizeof(_rwArgs));
 
-    for (size_t i = 0; i < NUM_THREADS; i++)
+    for (size_t i = 0; i < NUM_RW_TEST_THREADS; i++)
     {
         pthread_create(
             &threads[i], NULL, (i & 1) ? WriterThread : ReaderThread, enclave);
     }
 
-    for (size_t i = 0; i < NUM_THREADS; i++)
+    for (size_t i = 0; i < NUM_RW_TEST_THREADS; i++)
         pthread_join(threads[i], NULL);
 
     // There can be at most 1 writer thread active.
@@ -60,12 +58,12 @@ void TestReadersWriterLock(OE_Enclave* enclave)
 
     // There can be at most NUM_THREADS/2 reader threads active
     // and no thread was starved.
-    assert(_rwArgs.maxReaders <= NUM_THREADS / 2);
+    assert(_rwArgs.maxReaders <= NUM_READER_THREADS);
 
     // Readers and writer threads should never be simultaneously active.
     assert(_rwArgs.readersAndWriters == false);
 
     // Additionally, the test requires that all readers are
     // simultaneously active at least once.
-    assert(_rwArgs.maxReaders == NUM_THREADS / 2);
+    assert(_rwArgs.maxReaders == NUM_READER_THREADS);
 }
