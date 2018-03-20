@@ -396,7 +396,7 @@ int main( int argc, char *argv[] )
 #endif
 
 /* Slow tests last */
-
+#if 0
 #if defined(MBEDTLS_TIMING_C)
     if( mbedtls_timing_self_test( v ) != 0 )
     {
@@ -404,7 +404,7 @@ int main( int argc, char *argv[] )
     }
     suites_tested++;
 #endif
-
+#endif
     if( v != 0 )
     {
 #if defined(MBEDTLS_MEMORY_BUFFER_ALLOC_C) && defined(MBEDTLS_MEMORY_DEBUG)
