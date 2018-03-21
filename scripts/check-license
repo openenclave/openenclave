@@ -7,7 +7,7 @@
 ##
 ## check-license:
 ##
-##     This script checks for OpenEnclave files that are missing the license
+##     This script checks for Open Enclave files that are missing the license
 ##     header. It prints the names of files with missing headers to standard
 ##     output.
 ##
@@ -161,7 +161,7 @@ EOF
 ##
 ## check_for_missing_license_headers(filelist, license)
 ##
-##     Check each OpenEnclave files that are missing the license header.
+##     Check each Open Enclave files that are missing the license header.
 ##
 ##==============================================================================
 
