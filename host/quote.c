@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <assert.h>
 #include <limits.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/sgxtypes.h>
@@ -54,7 +55,9 @@ OE_Result SGX_GetQuoteSize(
             goto done;
         }
 
-        n = OE_ByteSwap32(*(uint32_t*)&sigrl->sigrl.n2);
+	assert(sizeof(sigrl->sigrl.n2) == sizeof(uint32_t));
+	const void* tmp = &sigrl->sigrl.n2;
+        n = OE_ByteSwap32(*(uint32_t*)tmp);
     }
 
     /* Calculate variable size of EPID_Signature with N entries */
