@@ -12,7 +12,7 @@
 ##     output.
 ##
 ##     To ignore certain files or directories, add them to:
-##         ./scripts/.check-license.ignore
+##         .check-license.ignore
 ##
 ##==============================================================================
 
@@ -57,33 +57,33 @@ check_directory
 
 expand_ignore_file()
 {
-    local filename="./scripts/.check-license.ignore"
+    local filename=".check-license.ignore"
     local tempfile=`/bin/mktemp`
 
-    # Fail if ignore file does not exist:
-    if [ ! -f "${filename}" ]; then
-        echo "$0: missing file: ${filename}"
-        exit 1
-    fi
+    # Create empty ignore file:
+    touch ${tempfile}
 
-    # Expand each entry in the ignore file:
-    set -f
-    for i in `cat ${filename}`
-    do
-        bn=`basename ${i}`
-        if [ "${bn}" == "${i}" ]; then
-            find . -name "${bn}" >> ${tempfile}
-        else
-            if [ -e "${i}" ]; then
-                echo ${i} >> ${tempfile}
+    # Fail if ignore file does not exist:
+    if [ -f "${filename}" ]; then
+        # Expand each entry in the ignore file:
+        set -f
+        for i in `cat ${filename}`
+        do
+            bn=`basename ${i}`
+            if [ "${bn}" == "${i}" ]; then
+                find . -name "${bn}" >> ${tempfile}
             else
-                set +f
-                ls -1 ${i} >> ${tempfile} 2> /dev/null
-                set -f
+                if [ -e "${i}" ]; then
+                    echo ${i} >> ${tempfile}
+                else
+                    set +f
+                    ls -1 ${i} >> ${tempfile} 2> /dev/null
+                    set -f
+                fi
             fi
-        fi
-    done
-    set +f
+        done
+        set +f
+    fi
 
     echo ${tempfile}
 }

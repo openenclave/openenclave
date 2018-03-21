@@ -32,7 +32,7 @@ LICENSE
 ./prereqs/aesm/.sdk
 ./prereqs/aesm/.sdk_installer
 ./prereqs/isgx/linux-sgx-driver
-./scripts/.check-license.ignore
+./.check-license.ignore
 ./tests/eenter/dead.txt
 ./tests/hashstr/dead.txt
 ./tests/libc/tests.*
