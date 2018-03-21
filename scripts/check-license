@@ -123,29 +123,6 @@ rm -rf ${ignorefile}
 
 ##==============================================================================
 ##
-## check_not_included():
-##
-##     Find files that are not included but that have Microsoft license.
-##
-##==============================================================================
-
-check_not_included()
-{
-    tmpfile1=`/bin/mktemp`
-    ls ${filelist} | sed 's/^..//g' | sort >> ${tmpfile1}
-
-    tmpfile2=`/bin/mktemp`
-    grep -r -l 'Copyright (c) Microsoft Corporation' | sort >> ${tmpfile2}
-
-    echo diff ${tmpfile1} ${tmpfile2}
-    diff ${tmpfile1} ${tmpfile2}
-
-    rm -f ${tmpfile1}
-    rm -f ${tmpfile2}
-}
-
-##==============================================================================
-##
 ## Write the license header to a temporary file.
 ##
 ##==============================================================================
