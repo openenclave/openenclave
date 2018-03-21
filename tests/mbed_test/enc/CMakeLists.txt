@@ -22,9 +22,6 @@ function(add_libmbed_test_enc NAME CXXFILE)
     target_include_directories(libmbedtest-${NAME} PUBLIC
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
-#        ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/mbedtls/include
-#        ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test/support
-#        ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/fuzzing
         )
     target_compile_options(libmbedtest-${NAME} PRIVATE -Wno-error --std=c++14)
     target_compile_definitions(libmbedtest-${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
