@@ -9,7 +9,6 @@
 #include <time.h>
 #endif
 
-#include <openenclave/bits/cpuid.h>
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
 #include "sgxtypes.h"
@@ -63,7 +62,7 @@ typedef enum _OE_Code {
 /*
 **==============================================================================
 **
-** OE_Func
+** ECN_Func
 **
 **     The func parameter for OE_ECall() and OE_OCall()
 **
@@ -72,7 +71,6 @@ typedef enum _OE_Code {
 
 typedef enum _OE_Func {
     OE_FUNC_DESTRUCTOR = 0x01000000,
-    OE_FUNC_INIT_ENCLAVE = 0x01800000,
     OE_FUNC_CALL_ENCLAVE = 0x02000000,
     OE_FUNC_CALL_HOST = 0x03000000,
     OE_FUNC_INIT_QUOTE = 0x04000000,
@@ -379,22 +377,6 @@ typedef struct _OE_ReallocArgs
     void* ptr;
     size_t size;
 } OE_ReallocArgs;
-
-/*
-**==============================================================================
-**
-** OE_InitEnclaveArgs
-**
-**     Runtime state to initialize enclave state with, includes
-**     - First 8 leaves of CPUID for enclave emulation
-**
-**==============================================================================
-*/
-
-typedef struct _OE_InitEnclaveArgs
-{
-    uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
-} OE_InitEnclaveArgs;
 
 /**
  * Perform a low-level enclave function call (ECALL).
