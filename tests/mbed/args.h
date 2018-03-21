@@ -6,17 +6,11 @@
 
 #include <stddef.h>
 
-typedef struct _HashArgs
+typedef struct _Args
 {
     const void* data;
     size_t size;
     unsigned char hash[32];
-} HashArgs;
-
-typedef struct _AesArgs
-{
-    uint8_t plaintext[128];
-    uint8_t encrypted[128];
-} AesArgs;
+} Args;
 
 #endif /* _ARGS_H */

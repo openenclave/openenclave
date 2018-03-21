@@ -5,7 +5,6 @@
 #include "strings.h"
 
 #if defined(__linux__)
-#include <cpuid.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -21,7 +20,6 @@
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/calls.h>
-#include <openenclave/bits/cpuid.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/files.h>
 #include <openenclave/bits/load.h>
@@ -37,7 +35,7 @@
 
 static OE_H_OnceType _enclave_init_once;
 
-static void _InitializeExceptionHandling(void)
+static void _InitializeEnclave(void)
 {
     _OE_InitializeHostException();
 }
@@ -52,7 +50,7 @@ static void _InitializeExceptionHandling(void)
 
 static void _InitializeEnclaveHost()
 {
-    OE_H_Once(&_enclave_init_once, _InitializeExceptionHandling);
+    OE_H_Once(&_enclave_init_once, _InitializeEnclave);
 }
 
 /*
@@ -848,43 +846,6 @@ OE_CATCH:
     return result;
 }
 
-/*
-**==============================================================================
-**
-** _InitializeEnclave()
-**
-**     Invokes first OE_ECall into the enclave to trigger rebase and set up
-**     enclave runtime global state, such as CPUID information from host.
-**
-**==============================================================================
-*/
-
-static OE_Result _InitializeEnclave(OE_Enclave* enclave)
-{
-    OE_Result result = OE_UNEXPECTED;
-    OE_InitEnclaveArgs args;
-
-    // Initialize enclave cache of CPUID info for emulation
-    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
-    {
-        int supported = __get_cpuid(
-            i,
-            &args.cpuidTable[i][OE_CPUID_RAX],
-            &args.cpuidTable[i][OE_CPUID_RBX],
-            &args.cpuidTable[i][OE_CPUID_RCX],
-            &args.cpuidTable[i][OE_CPUID_RDX]);
-        if (!supported)
-            OE_TRY(OE_UNSUPPORTED);
-    }
-
-    OE_TRY(OE_ECall(enclave, OE_FUNC_INIT_ENCLAVE, (uint64_t)&args, NULL));
-
-    result = OE_OK;
-
-OE_CATCH:
-    return result;
-}
-
 OE_Result __OE_BuildEnclave(
     OE_SGXDevice* dev,
     const char* path,
@@ -1079,9 +1040,6 @@ OE_Result __OE_BuildEnclave(
     if (!(enclave->path = OE_Strdup(path)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
-    /* Set the magic number */
-    enclave->magic = ENCLAVE_MAGIC;
-
     result = OE_OK;
 
 OE_CATCH:
@@ -1204,8 +1162,8 @@ OE_Result OE_CreateEnclave(
     /* Build the enclave */
     OE_TRY(__OE_BuildEnclave(dev, enclavePath, NULL, debug, simulate, enclave));
 
-    /* Invoke enclave initialization */
-    OE_TRY(_InitializeEnclave(enclave));
+    /* Set the magic number */
+    enclave->magic = ENCLAVE_MAGIC;
 
     /* Push the new created enclave to the global list. */
     if (_OE_PushEnclaveInstance(enclave) != 0)
