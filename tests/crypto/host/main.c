@@ -25,11 +25,11 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
 
     TestSHA256();
-    TestSign();
-    TestVerify();
+    TestRSASign();
+    TestRSAVerify();
     TestCertVerify();
     TestRandom();
-    TestECSign();
+    TestECSignAndVerify();
     TestRSAGenerate();
     TestECGenerate();
     TestRSAWritePrivate();

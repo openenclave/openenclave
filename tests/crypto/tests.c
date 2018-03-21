@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /* Generated with: openssl genrsa -out private.pem -3 3072 */
-static const char PRIVATE_KEY[] =
+static const char RSA_PRIVATE_KEY[] =
     "-----BEGIN RSA PRIVATE KEY-----\n"
     "MIIG5AIBAAKCAYEAyXKod6+poFfDaMIT6dKezZG/OeYSSvo2Nw7ufOtBCUrNaXOc\n"
     "5jIi1swpSASOx9nm3aYNeUGCPjDPads+YkSso8Bmm4HzAR51/4rSt5/fjD5PVMpM\n"
@@ -44,7 +44,7 @@ static const char PRIVATE_KEY[] =
     "-----END RSA PRIVATE KEY-----\n";
 
 /* Generated with: openssl rsa -in private.pem -pubout -out public.pem */
-static const char PUBLIC_KEY[] =
+static const char RSA_PUBLIC_KEY[] =
     "-----BEGIN PUBLIC KEY-----\n"
     "MIIBoDANBgkqhkiG9w0BAQEFAAOCAY0AMIIBiAKCAYEAyXKod6+poFfDaMIT6dKe\n"
     "zZG/OeYSSvo2Nw7ufOtBCUrNaXOc5jIi1swpSASOx9nm3aYNeUGCPjDPads+YkSs\n"
@@ -66,8 +66,8 @@ static OE_SHA256 HASH = {{
     0xfc, 0x8d, 0x9e, 0xd8, 0x32, 0xf2, 0xda, 0xf1, 0x8b, 0x73,
 }};
 
-/* Singature of HASH using PRIVATE_KEY */
-static const uint8_t SIGNATURE[] = {
+/* Singature of HASH using RSA_PRIVATE_KEY */
+static const uint8_t RSA_SIGNATURE[] = {
     0x65, 0x98, 0x25, 0xBA, 0xE8, 0x08, 0xAF, 0x10, 0xC0, 0xAC, 0xDF, 0xAB,
     0x83, 0x65, 0x8D, 0x6E, 0xE8, 0x36, 0x42, 0xAC, 0x01, 0x4B, 0x5D, 0x9E,
     0xF0, 0x26, 0xB3, 0x25, 0x46, 0x4D, 0xD3, 0xC7, 0xB6, 0x4D, 0xA3, 0xCB,
@@ -102,7 +102,7 @@ static const uint8_t SIGNATURE[] = {
     0x68, 0xA8, 0x08, 0xE8, 0xF1, 0x10, 0xFB, 0x78, 0xDA, 0x7E, 0xB3, 0x56,
 };
 
-static const size_t SIGNATURE_SIZE = sizeof(SIGNATURE);
+static const size_t RSA_SIGNATURE_SIZE = sizeof(RSA_SIGNATURE);
 
 /*
 **
@@ -128,31 +128,31 @@ static void TestSHA256()
 ** Test RSA signing operation over an ASCII alphabet string.
 **
 */
-static void TestSign()
+static void TestRSASign()
 {
-    printf("=== begin TestSign\n");
+    printf("=== begin TestRSASign\n");
 
     OE_Result r;
     OE_RSA* key = NULL;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_RSAReadPrivateKeyFromPEM(PRIVATE_KEY, sizeof(PRIVATE_KEY), &key);
+    r = OE_RSAReadPrivateKeyFromPEM(RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     assert(r == OE_OK);
 
     r = OE_RSASign(key, &HASH, &signature, &signatureSize);
     assert(r == OE_OK);
 
-    assert(signatureSize == SIGNATURE_SIZE);
-    assert(memcmp(signature, &SIGNATURE, SIGNATURE_SIZE) == 0);
+    assert(signatureSize == RSA_SIGNATURE_SIZE);
+    assert(memcmp(signature, &RSA_SIGNATURE, RSA_SIGNATURE_SIZE) == 0);
 
-#if 1
+#if 0
     OE_HexDump(signature, signatureSize);
 #endif
 
     free(signature);
 
-    printf("=== passed TestSign\n");
+    printf("=== passed TestRSASign\n");
 }
 
 /*
@@ -160,18 +160,18 @@ static void TestSign()
 ** Test RSA verify operation over an ASCII alphabet string.
 **
 */
-static void TestVerify()
+static void TestRSAVerify()
 {
     OE_Result r;
     OE_RSA* key = NULL;
 
-    r = OE_RSAReadPublicKeyFromPEM(PUBLIC_KEY, sizeof(PUBLIC_KEY), &key);
+    r = OE_RSAReadPublicKeyFromPEM(RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSAVerify(key, &HASH, SIGNATURE, SIGNATURE_SIZE);
+    r = OE_RSAVerify(key, &HASH, RSA_SIGNATURE, RSA_SIGNATURE_SIZE);
     assert(r == OE_OK);
 
-    printf("=== passed TestVerify\n");
+    printf("=== passed TestRSAVerify\n");
 }
 
 static const char CERT[] =
@@ -386,7 +386,9 @@ static void TestRandom()
         if (OE_Random(buf[i], M * sizeof(uint8_t)) != OE_OK)
             OE_Assert("OE_Random() failed" == NULL);
 
+#if 0
         OE_HexDump(buf[i], M * sizeof(uint8_t));
+#endif
 
         /* Be sure buffer is not filled with same character */
         {
@@ -422,14 +424,30 @@ static const char EC_PUBLIC_KEY[] =
     "xoLzHqVcX1dCOyN1rnZP9axjh8t36IjqPhnxNvCPruzBq/KRbbpIZA==\n"
     "-----END PUBLIC KEY-----\n";
 
+static const uint8_t EC_SIGNATURE[] = {
+0x30, 0x45, 0x02, 0x21, 0x00, 0x89, 0x3a, 0xf7, 
+0xe5, 0xf2, 0x21, 0xe1, 0xf9, 0xdc, 0xe0, 0x92, 
+0x82, 0xe6, 0xe4, 0xec, 0xcc, 0x68, 0x6d, 0x00,
+0x5d, 0x0e, 0x9c, 0xd5, 0x08, 0x48, 0x8b, 0x09,
+0x5f, 0x20, 0xee, 0xbe, 0x95, 0x02, 0x20, 0x6e,
+0xaa, 0xd2, 0x15, 0xf9, 0xf3, 0xaa, 0xc2, 0x19,
+0xc5, 0x4c, 0x44, 0x0b, 0xa7, 0x2c, 0x3e, 0xe9,
+0xc3, 0xb6, 0xf3, 0xb4, 0x04, 0x51, 0xc6, 0xe9,
+0xf1, 0x69, 0x46, 0xb0, 0x3e, 0x22, 0xe6,
+};
+
+static size_t EC_SIGNATURE_SIZE = sizeof(EC_SIGNATURE);
+
 /*
 **
-** Test EC signing operation over an ASCII alphabet string.
+** Test EC signing operation over an ASCII alphabet string. Note that two
+** signatures over the same data produce different hex sequences, although
+** signature verification will still succeed.
 **
 */
-static void TestECSign()
+static void TestECSignAndVerify()
 {
-    printf("=== begin TestECSign()\n");
+    printf("=== begin TestECSignAndVerify()\n");
 
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
@@ -457,6 +475,9 @@ static void TestECSign()
 
         r = OE_ECVerify(key, &HASH, signature, signatureSize);
         assert(r == OE_OK);
+
+        r = OE_ECVerify(key, &HASH, EC_SIGNATURE, EC_SIGNATURE_SIZE);
+        assert(r == OE_OK);
     }
 
 #if 1
@@ -465,7 +486,7 @@ static void TestECSign()
 
     free(signature);
 
-    printf("=== passed TestECSign()\n");
+    printf("=== passed TestECSignAndVerify()\n");
 }
 
 static void TestRSAGenerate()
@@ -529,14 +550,14 @@ static void TestRSAWritePrivate()
     void* pemData = NULL;
     size_t pemSize;
 
-    r = OE_RSAReadPrivateKeyFromPEM(PRIVATE_KEY, sizeof(PRIVATE_KEY), &key);
+    r = OE_RSAReadPrivateKeyFromPEM(RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     assert(r == OE_OK);
 
     r = OE_RSAWritePrivateKeyToPEM(key, &pemData, &pemSize);
     assert(r == OE_OK);
 
-    assert(sizeof(PRIVATE_KEY) == pemSize);
-    assert(memcmp(PRIVATE_KEY, pemData, pemSize) == 0);
+    assert(sizeof(RSA_PRIVATE_KEY) == pemSize);
+    assert(memcmp(RSA_PRIVATE_KEY, pemData, pemSize) == 0);
 
     free(pemData);
     OE_RSAFree(key);
@@ -553,14 +574,14 @@ static void TestRSAWritePublic()
     void* pemData = NULL;
     size_t pemSize;
 
-    r = OE_RSAReadPublicKeyFromPEM(PUBLIC_KEY, sizeof(PUBLIC_KEY), &key);
+    r = OE_RSAReadPublicKeyFromPEM(RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
     r = OE_RSAWritePublicKeyToPEM(key, &pemData, &pemSize);
     assert(r == OE_OK);
 
-    assert(sizeof(PUBLIC_KEY) == pemSize);
-    assert(memcmp(PUBLIC_KEY, pemData, pemSize) == 0);
+    assert(sizeof(RSA_PUBLIC_KEY) == pemSize);
+    assert(memcmp(RSA_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
     OE_RSAFree(key);

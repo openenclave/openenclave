@@ -18,11 +18,11 @@
 OE_ECALL void Test(void* args_)
 {
     TestSHA256();
-    TestSign();
-    TestVerify();
+    TestRSASign();
+    TestRSAVerify();
     TestCertVerify();
     TestRandom();
-    TestECSign();
+    TestECSignAndVerify();
     TestRSAGenerate();
     TestECGenerate();
     TestRSAWritePrivate();
