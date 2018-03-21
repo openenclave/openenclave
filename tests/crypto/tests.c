@@ -374,11 +374,37 @@ static void TestRandom()
 {
     printf("=== begin TestRandom()\n");
 
-    unsigned char buf[19] = {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    static const size_t N = 64;
+    static const size_t M = 19;
+    uint8_t buf[N][M];
 
-    if (OE_Random(buf, sizeof(buf)) != OE_OK)
-        OE_Assert("OE_Random() failed" == NULL);
+    memset(buf, 0, sizeof(buf));
+
+    for (size_t i = 0; i < N; i++)
+    {
+        /* Generate a random sequence */
+        if (OE_Random(buf[i], M * sizeof(uint8_t)) != OE_OK)
+            OE_Assert("OE_Random() failed" == NULL);
+
+        OE_HexDump(buf[i], M * sizeof(uint8_t));
+
+        /* Be sure buffer is not filled with same character */
+        {
+            size_t m;
+            uint8_t c = buf[i][0];
+
+            for (m = 1; m < M && buf[i][m] == c; m++)
+                ;
+
+            assert(m != M);
+        }
+
+        /* Check whether duplicate of one of the previous calls */
+        for (size_t j = 0; j < i; j++)
+        {
+            assert(memcmp(buf[j], buf[i], M * sizeof(uint8_t)) != 0);
+        }
+    }
 
     printf("=== passed TestRandom()\n");
 }
