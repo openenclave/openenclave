@@ -39,7 +39,7 @@ fi
 
 check_directory()
 {
-    if [ "`basename ${PWD}`" != "openenclave" ]; then
+    if [ ! -d "./include/openenclave" ]; then
         echo "$0: please run from root of openenclave source tree"
         exit 1
     fi
