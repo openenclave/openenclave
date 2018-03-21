@@ -605,9 +605,12 @@ int main(int argc, const char* argv[])
     TestRecursionParallel(
         {enc1.GetId(), enc2.GetId()}, THREAD_COUNT, 20, 10000);
 
-    // Parallel across enclaves
+    // Parallel across enclaves. Leave one thread unused to stir things, add
+    // yet another enclave.
+    EnclaveWrap enc3(argv[1], flags);
+
     TestRecursionCrossEnclave(
-        {enc1.GetId(), enc2.GetId()}, THREAD_COUNT - 1, 20, 1000);
+        {enc1.GetId(), enc2.GetId(), enc3.GetId()}, THREAD_COUNT - 1, 20, 1000);
 
     return 0;
 }
