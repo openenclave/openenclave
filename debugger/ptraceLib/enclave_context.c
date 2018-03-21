@@ -204,7 +204,7 @@ static int _GetEnclaveThreadCurrentSsaInfo(
 {
     int ret;
     size_t read_byte_length;
-    long ssa_frame_size;
+    long ssa_frame_size = 0;
     SGX_TCS tcs;
 
     // Read TCS header.

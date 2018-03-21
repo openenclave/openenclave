@@ -18,4 +18,22 @@ typedef struct _WaitArgs
     size_t numThreads;
 } WaitArgs;
 
+typedef struct _TestRWLockArgs
+{
+    // Number of simultaneously active readers
+    size_t readers;
+
+    // Number of simultaneously active writers
+    size_t writers;
+
+    // Maximum number of simultaneously active readers
+    size_t maxReaders;
+
+    // Maximum number of simultaneously active writers
+    size_t maxWriters;
+
+    // Readers and writers active at same time
+    bool readersAndWriters;
+} TestRWLockArgs;
+
 #endif /* _stdc_args_h */
