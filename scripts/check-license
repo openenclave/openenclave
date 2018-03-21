@@ -30,25 +30,6 @@ fi
 
 ##==============================================================================
 ##
-## check_directory()
-##
-##     Check that script is running from the root of the openenclave 
-##     distribution.
-##
-##==============================================================================
-
-check_directory()
-{
-    if [ ! -d "./include/openenclave" ]; then
-        echo "$0: please run from root of openenclave source tree"
-        exit 1
-    fi
-}
-
-check_directory
-
-##==============================================================================
-##
 ## expand_ignore_file():
 ##
 ##     Expand any wildcards in the .check-license.ignore file:
