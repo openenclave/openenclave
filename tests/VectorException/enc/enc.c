@@ -52,8 +52,8 @@ uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD* exception_record)
 
 #define MAX_EXCEPTION_HANDLER_COUNT 64
 
-#define PASSTHROUGH_EXCEPTION_HANDLER(__exception_hanlder_name_)              \
-    uint64_t __exception_hanlder_name_(OE_EXCEPTION_RECORD* exception_record) \
+#define PASSTHROUGH_EXCEPTION_HANDLER(__exception_handler_name_)              \
+    uint64_t __exception_handler_name_(OE_EXCEPTION_RECORD* exception_record) \
     {                                                                         \
         return OE_EXCEPTION_CONTINUE_SEARCH;                                  \
     }
@@ -107,6 +107,8 @@ static POE_VECTORED_EXCEPTION_HANDLER
         TestPassThroughHandler6_1,
         TestPassThroughHandler6_2,
         TestPassThroughHandler6_3};
+
+static POE_VECTORED_EXCEPTION_HANDLER g_test_div_by_zero_handler;
 
 int VectorExceptionSetup()
 {
@@ -211,8 +213,9 @@ int VectorExceptionSetup()
     }
 
     // Add the real handler to the end.
-    handler = OE_AddVectoredExceptionHandler(0, TestDivideByZeroHandler);
-    if (handler == NULL)
+    g_test_div_by_zero_handler =
+        OE_AddVectoredExceptionHandler(0, TestDivideByZeroHandler);
+    if (g_test_div_by_zero_handler == NULL)
     {
         return ret;
     }
@@ -221,12 +224,34 @@ int VectorExceptionSetup()
     return ret;
 }
 
+int VectorExceptionCleanup()
+{
+    // Remove all handlers.
+    int ret = OE_RemoveVectoredExceptionHandler(g_test_div_by_zero_handler);
+    if (ret != 0)
+    {
+        return ret;
+    }
+
+    for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers) - 1; i++)
+    {
+        ret =
+            OE_RemoveVectoredExceptionHandler(g_test_pass_through_handlers[i]);
+        if (ret != 0)
+        {
+            return ret;
+        }
+    }
+
+    return ret;
+}
+
 OE_ECALL void TestVectorException(void* args_)
 {
-    Args* args = (Args*)args_;
+    TestVectorExceptionArgs* args = (TestVectorExceptionArgs*)args_;
     args->ret = -1;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(Args)))
+    if (!OE_IsOutsideEnclave(args, sizeof(TestVectorExceptionArgs)))
     {
         return;
     }
@@ -247,6 +272,11 @@ OE_ECALL void TestVectorException(void* args_)
 
     OE_HostPrintf(
         "TestVectorException: hardware exception is handled correctly!\n");
+
+    if (VectorExceptionCleanup() != 0)
+    {
+        return;
+    }
 
     args->ret = 0;
     return;
