@@ -389,12 +389,12 @@ OE_CATCH:
 OE_Result OE_RSAGenerate(
     uint64_t bits,
     uint64_t exponent,
-    OE_RSA_KEY* __privateKey,
-    OE_RSA_KEY* __publicKey)
+    OE_RSA_KEY* privateKey,
+    OE_RSA_KEY* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSA_KEY_IMPL* privateImpl = (OE_RSA_KEY_IMPL*)__privateKey;
-    OE_RSA_KEY_IMPL* publicImpl = (OE_RSA_KEY_IMPL*)__publicKey;
+    OE_RSA_KEY_IMPL* privateImpl = (OE_RSA_KEY_IMPL*)privateKey;
+    OE_RSA_KEY_IMPL* publicImpl = (OE_RSA_KEY_IMPL*)publicKey;
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_pk_context pk;
@@ -451,7 +451,7 @@ OE_Result OE_RSAGenerate(
             (OE_RSA_KEY*)&dummy, (void**)&data, &size));
         pk = dummy.pk;
 
-        OE_TRY(OE_RSAReadPrivateKeyFromPEM(data, size, __privateKey));
+        OE_TRY(OE_RSAReadPrivateKeyFromPEM(data, size, privateKey));
         free(data);
         data = NULL;
     }
@@ -466,7 +466,7 @@ OE_Result OE_RSAGenerate(
             (OE_RSA_KEY*)&dummy, (void**)&data, &size));
         pk = dummy.pk;
 
-        OE_TRY(OE_RSAReadPublicKeyFromPEM(data, size, __publicKey));
+        OE_TRY(OE_RSAReadPublicKeyFromPEM(data, size, publicKey));
         free(data);
         data = NULL;
     }
@@ -485,10 +485,10 @@ OE_CATCH:
     if (result != OE_OK)
     {
         if (_ValidImpl(privateImpl))
-            OE_RSAFree(__privateKey);
+            OE_RSAFree(privateKey);
 
         if (_ValidImpl(publicImpl))
-            OE_RSAFree(__publicKey);
+            OE_RSAFree(publicKey);
     }
 
     return result;
