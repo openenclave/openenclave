@@ -30,12 +30,12 @@ OE_RSA_KEY;
  *
  * @param pemData - pointer to zero-terminated PEM key representation
  * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param privateKey - private key structure (pass to OE_RSAFree() to free)
+ * @param privateKey - private key structure (pass to OE_RSAFree() to release)
  *
  * @return OE_OK upon success
  */
 OE_Result OE_RSAReadPrivateKeyFromPEM(
-    const void* pemData,
+    const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* privateKey);
 
@@ -56,50 +56,56 @@ OE_Result OE_RSAReadPrivateKeyFromPEM(
  * @return OE_OK upon success
  */
 OE_Result OE_RSAReadPublicKeyFromPEM(
-    const void* pemData,
+    const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* publicKey);
 
 /**
  * Write an RSA private key to PEM format
  *
- * This function write an RSA private key to PEM representation, which has the
- * following format.
- *
- *     -----BEGIN RSA PRIVATE KEY-----
- *     ...
- *     -----END RSA PRIVATE KEY-----
- *
- * @param privateKey - private key structure
- * @param pemData - pointer to zero-terminated PEM key representation
- * @param pemSize - size of the pemData buffer including the zero-terminator
- *
- * @return OE_OK upon success
- */
-OE_Result OE_RSAWritePrivateKeyToPEM(
-    const OE_RSA_KEY* privateKey,
-    void** pemData,
-    size_t* pemSize);
-
-/**
- * Write an RSA public key to PEM format
- *
- * This function write an RSA private key to PEM representation, which has the
- * following format.
+ * This function writes an RSA private key to PEM format, which has the
+ * following form.
  *
  *     -----BEGIN PUBLIC KEY-----
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param publicKey - public key structure
- * @param pemData - pointer to zero-terminated PEM key representation
- * @param pemSize - size of the pemData buffer including the zero-terminator
+ * @param privateKey - private key to be written
+ * @param pemData - buffer where PEM data is written
+ * @param[in,out] pemSize - size of the PEM buffer on input; size of the actual
+ *     PEM data on output. If the former is less than the latter, this function
+ *     returns OE_BUFFER_TOO_SMALL.
  *
  * @return OE_OK upon success
+ * @return OE_BUFFER_TOO_SMALL PEM buffer is not big engough
+ */
+OE_Result OE_RSAWritePrivateKeyToPEM(
+    const OE_RSA_KEY* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize);
+
+/**
+ * Write an RSA public key to PEM format
+ *
+ * This function writes an RSA public key to PEM form, which has the
+ * following form.
+ *
+ *     -----BEGIN PUBLIC KEY-----
+ *     ...
+ *     -----END PUBLIC KEY-----
+ *
+ * @param publicKey - public key to be written
+ * @param pemData - buffer where PEM data is written
+ * @param[in,out] pemSize - size of the PEM buffer on input; size of the actual
+ *     PEM data on output. If the former is less than the latter, this function
+ *     returns OE_BUFFER_TOO_SMALL.
+ *
+ * @return OE_OK upon success
+ * @return OE_BUFFER_TOO_SMALL PEM buffer is not big engough
  */
 OE_Result OE_RSAWritePublicKeyToPEM(
     const OE_RSA_KEY* publicKey,
-    void** pemData,
+    uint8_t* pemData,
     size_t* pemSize);
 
 /**
@@ -115,22 +121,24 @@ OE_Result OE_RSAWritePublicKeyToPEM(
 OE_Result OE_RSAFree(OE_RSA_KEY* key);
 
 /**
- * Sign a message with the given RSA private key
+ * Digitaly signs a message with an RSA private key
  *
- * This function signs a message (with the given hash) with an RSA private
- * key.
+ * This function uses an RSA private key to sign a message with the given hash.
  *
  * @param privateKey - RSA private key
  * @param hash - SHA-256 hash of the message being signed
- * @param signature - resulting signature
- * @param signatureSize - size in bytes of the expected signature
+ * @param signature - signature buffer (may be null)
+ * @param[in,out] signatureSize - size of signature buffer on input; size of 
+ *     actual signature on output. If the former is less than the latter, this 
+ *     function returns OE_BUFFER_TOO_SMALL.
  *
- * @return OE_OK if the signing operation was successful
+ * @return OE_OK on success
+ * @return OE_BUFFER_TOO_SMALL if signature buffer is too small
  */
 OE_Result OE_RSASign(
     const OE_RSA_KEY* privateKey,
     const OE_SHA256* hash,
-    uint8_t** signature,
+    uint8_t* signature,
     size_t* signatureSize);
 
 /**

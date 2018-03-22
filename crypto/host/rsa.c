@@ -53,7 +53,7 @@ OE_INLINE bool _ValidImpl(const OE_RSA_KEY_IMPL* impl)
 */
 
 OE_Result OE_RSAReadPrivateKeyFromPEM(
-    const void* pemData,
+    const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* key)
 {
@@ -115,7 +115,7 @@ done:
 }
 
 OE_Result OE_RSAReadPublicKeyFromPEM(
-    const void* pemData,
+    const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* key)
 {
@@ -214,20 +214,21 @@ done:
 OE_Result OE_RSASign(
     const OE_RSA_KEY* privateKey,
     const OE_SHA256* hash,
-    uint8_t** signature,
+    uint8_t* signature,
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)privateKey;
 
-    if (signature)
-        *signature = NULL;
-
-    if (signatureSize)
-        *signatureSize = 0;
-
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hash || !signature || !signatureSize)
+    if (!_ValidImpl(impl) || !hash || !signatureSize)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* If signature buffer is null, then signature size must be zero */
+    if (!signature && *signatureSize != 0)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -236,14 +237,18 @@ OE_Result OE_RSASign(
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
 
-    /* Determine the size of the signature */
-    *signatureSize = RSA_size(impl->rsa);
-
-    /* Allocate the signature buffer */
-    if (!(*signature = (uint8_t*)malloc(*signatureSize)))
+    /* Determine the size of the signature; fail if buffer is too small */
     {
-        result = OE_OUT_OF_MEMORY;
-        goto done;
+        size_t size = RSA_size(impl->rsa);
+
+        if (size > *signatureSize)
+        {
+            *signatureSize = size;
+            result = OE_BUFFER_TOO_SMALL;
+            goto done;
+        }
+
+        *signatureSize = size;
     }
 
     /* Verify that the data is signed by the given RSA private key */
@@ -252,7 +257,7 @@ OE_Result OE_RSASign(
             NID_sha256, 
             hash->buf, 
             sizeof(OE_SHA256), 
-            *signature, 
+            signature, 
             &siglen, 
             impl->rsa))
     {
@@ -263,22 +268,13 @@ OE_Result OE_RSASign(
     /* This should never happen */
     if (siglen != *signatureSize)
     {
-        result = OE_FAILURE;
+        result = OE_UNEXPECTED;
         goto done;
     }
 
     result = OE_OK;
 
 done:
-
-    if (result != OE_OK)
-    {
-        if (signature && *signature)
-            free(*signature);
-
-        if (signatureSize)
-            *signatureSize = 0;
-    }
 
     return result;
 }
@@ -398,8 +394,8 @@ OE_Result OE_RSAGenerate(
             goto done;
         }
 
-        if (OE_RSAReadPrivateKeyFromPEM(mem->data, mem->length, privateKey) !=
-            OE_OK)
+        if (OE_RSAReadPrivateKeyFromPEM(
+            (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
             result = OE_FAILURE;
             goto done;
@@ -447,8 +443,7 @@ OE_Result OE_RSAGenerate(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_RSAReadPublicKeyFromPEM(mem->data, mem->length, publicKey) !=
-            OE_OK)
+        if (OE_RSAReadPublicKeyFromPEM((uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
             result = OE_FAILURE;
             goto done;
@@ -485,7 +480,7 @@ done:
 
 OE_Result OE_RSAWritePrivateKeyToPEM(
     const OE_RSA_KEY* key,
-    void** data,
+    uint8_t* data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -493,14 +488,15 @@ OE_Result OE_RSAWritePrivateKeyToPEM(
     BIO* bio = NULL;
     const char nullTerminator = '\0';
 
-    if (data)
-        *data = NULL;
-
-    if (size)
-        *size = 0;
-
     /* Check parameters */
-    if (!_ValidImpl(impl) || !data || !size)
+    if (!_ValidImpl(impl) || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* If buffer is null, then size must be zero */
+    if (!data && *size != 0)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -527,10 +523,9 @@ OE_Result OE_RSAWritePrivateKeyToPEM(
         goto done;
     }
 
-    /* Copy the BIO into memory */
+    /* Copy the BIO onto caller's memory */
     {
         BUF_MEM* mem;
-        void* ptr;
 
         if (!BIO_get_mem_ptr(bio, &mem))
         {
@@ -538,14 +533,16 @@ OE_Result OE_RSAWritePrivateKeyToPEM(
             goto done;
         }
 
-        if (!(ptr = malloc(mem->length)))
+        /* If buffer is too small */
+        if (*size < mem->length)
         {
-            result = OE_OUT_OF_MEMORY;
+            *size = mem->length;
+            result = OE_BUFFER_TOO_SMALL;
             goto done;
         }
 
-        memcpy(ptr, mem->data, mem->length);
-        *data = ptr;
+        /* Copy buffer onto caller's memory */
+        memcpy(data, mem->data, mem->length);
         *size = mem->length;
     }
 
@@ -561,7 +558,7 @@ done:
 
 OE_Result OE_RSAWritePublicKeyToPEM(
     const OE_RSA_KEY* key,
-    void** data,
+    uint8_t* data,
     size_t* size)
 {
     const OE_RSA_KEY_IMPL* impl = (const OE_RSA_KEY_IMPL*)key;
@@ -571,7 +568,14 @@ OE_Result OE_RSAWritePublicKeyToPEM(
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !data || !size)
+    if (!_ValidImpl(impl) || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* If buffer is null, then size must be zero */
+    if (!data && *size != 0)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -616,10 +620,9 @@ OE_Result OE_RSAWritePublicKeyToPEM(
         goto done;
     }
 
-    /* Copy the BIO into memory */
+    /* Copy the BIO onto caller's memory */
     {
         BUF_MEM* mem;
-        void* ptr;
 
         if (!BIO_get_mem_ptr(bio, &mem))
         {
@@ -627,14 +630,16 @@ OE_Result OE_RSAWritePublicKeyToPEM(
             goto done;
         }
 
-        if (!(ptr = malloc(mem->length)))
+        /* If buffer is too small */
+        if (*size < mem->length)
         {
-            result = OE_OUT_OF_MEMORY;
+            *size = mem->length;
+            result = OE_BUFFER_TOO_SMALL;
             goto done;
         }
 
-        memcpy(ptr, mem->data, mem->length);
-        *data = ptr;
+        /* Copy buffer onto caller's memory */
+        memcpy(data, mem->data, mem->length);
         *size = mem->length;
     }
 

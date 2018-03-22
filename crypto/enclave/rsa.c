@@ -15,6 +15,10 @@
 #include <string.h>
 #include "../util.h"
 
+// MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
+// of time, so we are forced to use a maximum buffer size.
+#define OE_PEM_MAX_BYTES (16 * 1024)
+
 /*
 **==============================================================================
 **
@@ -69,7 +73,7 @@ OE_INLINE void _ClearImpl(OE_RSA_KEY_IMPL* impl)
 */
 
 OE_Result OE_RSAReadPrivateKeyFromPEM(
-    const void* pemData,
+    const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* privateKey)
 {
@@ -102,7 +106,7 @@ OE_CATCH:
 }
 
 OE_Result OE_RSAReadPublicKeyFromPEM(
-    const void* pemData,
+    const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* publicKey)
 {
@@ -136,68 +140,37 @@ OE_CATCH:
 
 OE_Result OE_RSAWritePrivateKeyToPEM(
     const OE_RSA_KEY* key, 
-    void** data, 
-    size_t* size)
+    uint8_t* pemData, 
+    size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
-    const size_t DATA_SIZE = 1024;
-
-    if (data)
-        *data = NULL;
-
-    if (size)
-        *size = 0;
+    uint8_t buf[OE_PEM_MAX_BYTES];
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !data || !size)
+    if (!_ValidImpl(impl) || !pemSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Set the initial size of the buffer */
-    *size = DATA_SIZE;
-
-    /* Allocate a zero-filled the buffer */
-    if (!(*data = (uint8_t*)calloc(*size, sizeof(uint8_t))))
-        OE_THROW(OE_OUT_OF_MEMORY);
+    /* If buffer is null, then size must be zero */
+    if (!pemData && *pemSize != 0)
+        OE_THROW(OE_INVALID_PARAMETER);
 
     /* Write the key (expand buffer size and retry if necessary) */
-    for (;;)
-    {
-        int rc = mbedtls_pk_write_key_pem(&impl->pk, *data, *size);
-
-        /* Success */
-        if (rc == 0)
-        {
-            *size = OE_Strlen((char*)*data) + 1;
-            break;
-        }
-
-        /* Expand the buffer if it was not big enough */
-        if (rc == MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL)
-        {
-            void* ptr;
-
-            /* Double the size */
-            *size *= 2;
-
-            /* Expand the buffer */
-            if (!(ptr = (uint8_t*)realloc(*data, *size)))
-            {
-                free(*data);
-                *data = NULL;
-                *size = 0;
-                OE_THROW(OE_OUT_OF_MEMORY);
-            }
-
-            *data = ptr;
-
-            /* Zero-fill the buffer */
-            memset(*data, 0, *size);
-            continue;
-        }
-
-        /* Fail */
+    if (mbedtls_pk_write_key_pem(&impl->pk, buf, sizeof(buf)) != 0)
         OE_THROW(OE_FAILURE);
+
+    /* Handle case where caller's buffer is too small */
+    {
+        size_t size = OE_Strlen((char*)buf) + 1;
+
+        if (*pemSize < size)
+        {
+            *pemSize = size;
+            OE_THROW(OE_BUFFER_TOO_SMALL);
+        }
+
+        OE_Memcpy(pemData, buf, size);
+        *pemSize = size;
     }
 
     result = OE_OK;
@@ -208,68 +181,37 @@ OE_CATCH:
 
 OE_Result OE_RSAWritePublicKeyToPEM(
     const OE_RSA_KEY* key, 
-    void** data, 
-    size_t* size)
+    uint8_t* pemData, 
+    size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
-    const size_t DATA_SIZE = 1024;
-
-    if (data)
-        *data = NULL;
-
-    if (size)
-        *size = 0;
+    uint8_t buf[OE_PEM_MAX_BYTES];
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !data || !size)
+    if (!_ValidImpl(impl) || !pemSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Set the initial size of the buffer */
-    *size = DATA_SIZE;
-
-    /* Allocate a zero-filled the buffer */
-    if (!(*data = (uint8_t*)calloc(*size, sizeof(uint8_t))))
-        OE_THROW(OE_OUT_OF_MEMORY);
+    /* If buffer is null, then size must be zero */
+    if (!pemData && *pemSize != 0)
+        OE_THROW(OE_INVALID_PARAMETER);
 
     /* Write the key (expand buffer size and retry if necessary) */
-    for (;;)
-    {
-        int rc = mbedtls_pk_write_pubkey_pem(&impl->pk, *data, *size);
-
-        /* Success */
-        if (rc == 0)
-        {
-            *size = OE_Strlen((char*)*data) + 1;
-            break;
-        }
-
-        /* Expand the buffer if it was not big enough */
-        if (rc == MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL)
-        {
-            void* ptr;
-
-            /* Double the size */
-            *size *= 2;
-
-            /* Expand the buffer */
-            if (!(ptr = (uint8_t*)realloc(*data, *size)))
-            {
-                free(*data);
-                *data = NULL;
-                *size = 0;
-                OE_THROW(OE_OUT_OF_MEMORY);
-            }
-
-            *data = ptr;
-
-            /* Zero-fill the buffer */
-            memset(*data, 0, *size);
-            continue;
-        }
-
-        /* Fail */
+    if (mbedtls_pk_write_pubkey_pem(&impl->pk, buf, sizeof(buf)) != 0)
         OE_THROW(OE_FAILURE);
+
+    /* Handle case where caller's buffer is too small */
+    {
+        size_t size = OE_Strlen((char*)buf) + 1;
+
+        if (*pemSize < size)
+        {
+            *pemSize = size;
+            OE_THROW(OE_BUFFER_TOO_SMALL);
+        }
+
+        OE_Memcpy(pemData, buf, size);
+        *pemSize = size;
     }
 
     result = OE_OK;
@@ -297,59 +239,51 @@ OE_CATCH:
 OE_Result OE_RSASign(
     const OE_RSA_KEY* privateKey,
     const OE_SHA256* hash,
-    uint8_t** signature,
+    uint8_t* signature,
     size_t* signatureSize)
 {
-    const OE_RSA_KEY_IMPL* impl = (const OE_RSA_KEY_IMPL*)privateKey;
     OE_Result result = OE_UNEXPECTED;
+    const OE_RSA_KEY_IMPL* impl = (const OE_RSA_KEY_IMPL*)privateKey;
+    uint8_t buffer[MBEDTLS_MPI_MAX_SIZE];
+    size_t bufferSize = 0;
 
-    if (signature)
-        *signature = NULL;
-
-    if (signatureSize)
-        *signatureSize = 0;
-
-    /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hash || !signature || !signatureSize)
+    /* Check parameters */
+    if (!_ValidImpl(impl) || !hash || !signatureSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Allocate signature */
-    if (!(*signature = (uint8_t*)malloc(MBEDTLS_MPI_MAX_SIZE)))
-        OE_THROW(OE_OUT_OF_MEMORY);
+    /* If signature buffer is null, then signature size must be zero */
+    if (!signature && *signatureSize != 0)
+        OE_THROW(OE_INVALID_PARAMETER);
 
-    size_t siglen = 0;
-
-    /* Sign the message */
+    // Sign the message. Note that bufferSize is an output parameter only.
+    // MEBEDTLS provides no way to determine the size of the buffer up front.
     if (mbedtls_pk_sign(
             (mbedtls_pk_context*)&impl->pk,
             MBEDTLS_MD_SHA256,
             hash->buf,
             0,
-            *signature,
-            &siglen,
+            buffer,
+            &bufferSize,
             NULL,
             NULL) != 0)
     {
         OE_THROW(OE_FAILURE);
     }
 
-    if (siglen > MBEDTLS_MPI_MAX_SIZE)
-        OE_THROW(OE_FAILURE);
+    // If signature buffer parameter is too small:
+    if (*signatureSize < bufferSize)
+    {
+        *signatureSize = bufferSize;
+        OE_THROW(OE_BUFFER_TOO_SMALL);
+    }
 
-    *signatureSize = siglen;
+    /* Copy buffer onto signature buffer */
+    OE_Memcpy(signature, buffer, bufferSize);
+    *signatureSize = bufferSize;
 
     result = OE_OK;
 
 OE_CATCH:
-
-    if (result != OE_OK)
-    {
-        if (signature && *signature)
-            free(*signature);
-
-        if (signatureSize)
-            *signatureSize = 0;
-    }
 
     return result;
 }
@@ -398,8 +332,6 @@ OE_Result OE_RSAGenerate(
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_pk_context pk;
-    uint8_t* data = NULL;
-    size_t size;
 
     /* Initialize structures */
     mbedtls_entropy_init(&entropy);
@@ -444,31 +376,29 @@ OE_Result OE_RSAGenerate(
     /* Initialize the private key parameter */
     {
         OE_RSA_KEY_IMPL dummy;
+        uint8_t data[OE_PEM_MAX_BYTES];
+        size_t size = sizeof(data);
 
         dummy.magic = OE_RSA_KEY_MAGIC;
         dummy.pk = pk;
-        OE_TRY(OE_RSAWritePrivateKeyToPEM(
-            (OE_RSA_KEY*)&dummy, (void**)&data, &size));
+        OE_TRY(OE_RSAWritePrivateKeyToPEM((OE_RSA_KEY*)&dummy, data, &size));
         pk = dummy.pk;
 
         OE_TRY(OE_RSAReadPrivateKeyFromPEM(data, size, privateKey));
-        free(data);
-        data = NULL;
     }
 
-    /* Initialize the public key parameter */
+    /* Initialize the private key parameter */
     {
         OE_RSA_KEY_IMPL dummy;
+        uint8_t data[OE_PEM_MAX_BYTES];
+        size_t size = sizeof(data);
 
         dummy.magic = OE_RSA_KEY_MAGIC;
         dummy.pk = pk;
-        OE_TRY(OE_RSAWritePublicKeyToPEM(
-            (OE_RSA_KEY*)&dummy, (void**)&data, &size));
+        OE_TRY(OE_RSAWritePublicKeyToPEM((OE_RSA_KEY*)&dummy, data, &size));
         pk = dummy.pk;
 
-        OE_TRY(OE_RSAReadPublicKeyFromPEM(data, size, publicKey));
-        free(data);
-        data = NULL;
+        OE_TRY(OE_RSAReadPublicKeyFromPEM(data, size, privateKey));
     }
 
     result = OE_OK;
@@ -478,9 +408,6 @@ OE_CATCH:
     mbedtls_entropy_free(&entropy);
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_pk_free(&pk);
-
-    if (data)
-        free(data);
 
     if (result != OE_OK)
     {

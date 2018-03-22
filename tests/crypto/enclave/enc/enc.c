@@ -23,8 +23,13 @@ OE_ECALL void Test(void* args_)
     TestCertVerify();
     TestRandom();
     TestECSignAndVerify();
+#if 0
     TestRSAGenerate();
     TestECGenerate();
+#else
+    (void)TestRSAGenerate;
+    (void)TestECGenerate;
+#endif
     TestRSAWritePrivate();
     TestRSAWritePublic();
     TestECWritePublic();

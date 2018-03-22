@@ -52,7 +52,7 @@ OE_INLINE bool _ValidImpl(const OE_EC_KEY_IMPL* impl)
 */
 
 OE_Result OE_ECReadPrivateKeyFromPEM(
-    const void* pemData,
+    const uint8_t* pemData,
     size_t pemSize,
     OE_EC_KEY* key)
 {
@@ -108,7 +108,7 @@ done:
 }
 
 OE_Result OE_ECReadPublicKeyFromPEM(
-    const void* pemData,
+    const uint8_t* pemData,
     size_t pemSize,
     OE_EC_KEY* key)
 {
@@ -190,21 +190,22 @@ done:
 OE_Result OE_ECSign(
     const OE_EC_KEY* privateKey,
     const OE_SHA256* hash,
-    uint8_t** signature,
+    uint8_t* signature,
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)privateKey;
     EVP_PKEY_CTX* ctx = NULL;
 
-    if (signature)
-        *signature = NULL;
-
-    if (signatureSize)
-        *signatureSize = 0;
-
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hash || !signature || !signatureSize)
+    if (!_ValidImpl(impl) || !hash || !signatureSize)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* If signature buffer is null, then signature size must be zero */
+    if (!signature && *signatureSize != 0)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -225,27 +226,30 @@ OE_Result OE_ECSign(
     if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
         goto done;
 
-    /* Determine the size of the signature buffer */
-    if (EVP_PKEY_sign(ctx, NULL, signatureSize, hash->buf, sizeof(OE_SHA256)) <=
-        0)
+    /* Determine the size of the signature; fail if buffer is too small */
     {
-        goto done;
-    }
+        size_t size;
 
-    /* Allocate the signature buffer */
-    if (!(*signature = (uint8_t*)malloc(*signatureSize)))
-    {
-        *signatureSize = 0;
-        goto done;
+        if (EVP_PKEY_sign(ctx, NULL, &size, hash->buf, sizeof(OE_SHA256)) <= 0)
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
+
+        if (size > *signatureSize)
+        {
+            *signatureSize = size;
+            result = OE_BUFFER_TOO_SMALL;
+            goto done;
+        }
+
+        *signatureSize = size;
     }
 
     /* Compute the signature */
     if (EVP_PKEY_sign(
-            ctx, *signature, signatureSize, hash->buf, sizeof(OE_SHA256)) <= 0)
+            ctx, signature, signatureSize, hash->buf, sizeof(OE_SHA256)) <= 0)
     {
-        free(*signature);
-        *signature = NULL;
-        *signatureSize = 0;
         goto done;
     }
 
@@ -404,8 +408,8 @@ OE_Result OE_ECGenerate(
             goto done;
         }
 
-        if (OE_ECReadPrivateKeyFromPEM(mem->data, mem->length, privateKey) !=
-            OE_OK)
+        if (OE_ECReadPrivateKeyFromPEM(
+            (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
             result = OE_FAILURE;
             goto done;
@@ -439,8 +443,8 @@ OE_Result OE_ECGenerate(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_ECReadPublicKeyFromPEM(mem->data, mem->length, publicKey) !=
-            OE_OK)
+        if (OE_ECReadPublicKeyFromPEM(
+            (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
             result = OE_FAILURE;
             goto done;
@@ -477,7 +481,7 @@ done:
 
 OE_Result OE_ECWritePrivateKeyToPEM(
     const OE_EC_KEY* key,
-    void** data, 
+    uint8_t* data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -487,7 +491,14 @@ OE_Result OE_ECWritePrivateKeyToPEM(
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !data || !size)
+    if (!_ValidImpl(impl) || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* If buffer is null, then size must be zero */
+    if (!data && *size != 0)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -518,10 +529,9 @@ OE_Result OE_ECWritePrivateKeyToPEM(
         goto done;
     }
 
-    /* Copy the BIO into memory */
+    /* Copy the BIO onto caller's memory */
     {
         BUF_MEM* mem;
-        void* ptr;
 
         if (!BIO_get_mem_ptr(bio, &mem))
         {
@@ -529,14 +539,16 @@ OE_Result OE_ECWritePrivateKeyToPEM(
             goto done;
         }
 
-        if (!(ptr = malloc(mem->length)))
+        /* If buffer is too small */
+        if (*size < mem->length)
         {
-            result = OE_OUT_OF_MEMORY;
+            *size = mem->length;
+            result = OE_BUFFER_TOO_SMALL;
             goto done;
         }
 
-        memcpy(ptr, mem->data, mem->length);
-        *data = ptr;
+        /* Copy buffer onto caller's memory */
+        memcpy(data, mem->data, mem->length);
         *size = mem->length;
     }
 
@@ -552,7 +564,7 @@ done:
 
 OE_Result OE_ECWritePublicKeyToPEM(
     const OE_EC_KEY* key,
-    void** data, 
+    uint8_t* data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -561,7 +573,14 @@ OE_Result OE_ECWritePublicKeyToPEM(
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !data || !size)
+    if (!_ValidImpl(impl) || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* If buffer is null, then size must be zero */
+    if (!data && *size != 0)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -588,10 +607,9 @@ OE_Result OE_ECWritePublicKeyToPEM(
         goto done;
     }
 
-    /* Copy the BIO into memory */
+    /* Copy the BIO onto caller's memory */
     {
         BUF_MEM* mem;
-        void* ptr;
 
         if (!BIO_get_mem_ptr(bio, &mem))
         {
@@ -599,14 +617,16 @@ OE_Result OE_ECWritePublicKeyToPEM(
             goto done;
         }
 
-        if (!(ptr = malloc(mem->length)))
+        /* If buffer is too small */
+        if (*size < mem->length)
         {
-            result = OE_OUT_OF_MEMORY;
+            *size = mem->length;
+            result = OE_BUFFER_TOO_SMALL;
             goto done;
         }
 
-        memcpy(ptr, mem->data, mem->length);
-        *data = ptr;
+        /* Copy buffer onto caller's memory */
+        memcpy(data, mem->data, mem->length);
         *size = mem->length;
     }
 

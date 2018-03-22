@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /* Generated with: openssl genrsa -out private.pem -3 3072 */
-static const char RSA_PRIVATE_KEY[] =
+static char RSA_PRIVATE_KEY[] =
     "-----BEGIN RSA PRIVATE KEY-----\n"
     "MIIG5AIBAAKCAYEAyXKod6+poFfDaMIT6dKezZG/OeYSSvo2Nw7ufOtBCUrNaXOc\n"
     "5jIi1swpSASOx9nm3aYNeUGCPjDPads+YkSso8Bmm4HzAR51/4rSt5/fjD5PVMpM\n"
@@ -137,10 +137,16 @@ static void TestRSASign()
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_RSAReadPrivateKeyFromPEM(RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
+    r = OE_RSAReadPrivateKeyFromPEM(
+        (const uint8_t*)RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSASign(&key, &HASH, &signature, &signatureSize);
+    r = OE_RSASign(&key, &HASH, signature, &signatureSize);
+    assert(r == OE_BUFFER_TOO_SMALL);
+
+    assert(signature = (uint8_t*)malloc(signatureSize));
+
+    r = OE_RSASign(&key, &HASH, signature, &signatureSize);
     assert(r == OE_OK);
 
     assert(signatureSize == RSA_SIGNATURE_SIZE);
@@ -165,7 +171,8 @@ static void TestRSAVerify()
     OE_Result r;
     OE_RSA_KEY key;
 
-    r = OE_RSAReadPublicKeyFromPEM(RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
+    r = OE_RSAReadPublicKeyFromPEM(
+        (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
     r = OE_RSAVerify(&key, &HASH, RSA_SIGNATURE, RSA_SIGNATURE_SIZE);
@@ -457,11 +464,17 @@ static void TestECSignAndVerify()
         OE_EC_KEY key;
 
         r = OE_ECReadPrivateKeyFromPEM(
-            EC_PRIVATE_KEY, sizeof(EC_PRIVATE_KEY), &key);
+            (const uint8_t*)EC_PRIVATE_KEY, sizeof(EC_PRIVATE_KEY), &key);
         assert(r == OE_OK);
 
-        r = OE_ECSign(&key, &HASH, &signature, &signatureSize);
+        r = OE_ECSign(&key, &HASH, signature, &signatureSize);
+        assert(r == OE_BUFFER_TOO_SMALL);
+
+        assert(signature = (uint8_t*)malloc(signatureSize));
+
+        r = OE_ECSign(&key, &HASH, signature, &signatureSize);
         assert(r == OE_OK);
+
         assert(signature != NULL);
         assert(signatureSize != 0);
     }
@@ -470,7 +483,7 @@ static void TestECSignAndVerify()
         OE_EC_KEY key;
 
         r = OE_ECReadPublicKeyFromPEM(
-            EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
+            (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
         assert(r == OE_OK);
 
         r = OE_ECVerify(&key, &HASH, signature, signatureSize);
@@ -502,7 +515,12 @@ static void TestRSAGenerate()
     r = OE_RSAGenerate(1024, 3, &privateKey, &publicKey);
     assert(r == OE_OK);
 
-    r = OE_RSASign(&privateKey, &HASH, &signature, &signatureSize);
+    r = OE_RSASign(&privateKey, &HASH, signature, &signatureSize);
+    assert(r == OE_BUFFER_TOO_SMALL);
+
+    assert(signature = (uint8_t*)malloc(signatureSize));
+
+    r = OE_RSASign(&privateKey, &HASH, signature, &signatureSize);
     assert(r == OE_OK);
 
     r = OE_RSAVerify(&publicKey, &HASH, signature, signatureSize);
@@ -528,7 +546,12 @@ static void TestECGenerate()
     r = OE_ECGenerate("secp521r1", &privateKey, &publicKey);
     assert(r == OE_OK);
 
-    r = OE_ECSign(&privateKey, &HASH, &signature, &signatureSize);
+    r = OE_ECSign(&privateKey, &HASH, signature, &signatureSize);
+    assert(r == OE_BUFFER_TOO_SMALL);
+
+    assert(signature = (uint8_t*)malloc(signatureSize));
+
+    r = OE_ECSign(&privateKey, &HASH, signature, &signatureSize);
     assert(r == OE_OK);
 
     r = OE_ECVerify(&publicKey, &HASH, signature, signatureSize);
@@ -548,12 +571,18 @@ static void TestRSAWritePrivate()
     OE_Result r;
     OE_RSA_KEY key;
     void* pemData = NULL;
-    size_t pemSize;
+    size_t pemSize = 0;
 
-    r = OE_RSAReadPrivateKeyFromPEM(RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
+    r = OE_RSAReadPrivateKeyFromPEM(
+        (const uint8_t*)RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSAWritePrivateKeyToPEM(&key, &pemData, &pemSize);
+    r = OE_RSAWritePrivateKeyToPEM(&key, pemData, &pemSize);
+    assert(r == OE_BUFFER_TOO_SMALL);
+
+    assert(pemData = (uint8_t*)malloc(pemSize));
+
+    r = OE_RSAWritePrivateKeyToPEM(&key, pemData, &pemSize);
     assert(r == OE_OK);
 
     assert(sizeof(RSA_PRIVATE_KEY) == pemSize);
@@ -572,12 +601,18 @@ static void TestRSAWritePublic()
     OE_Result r;
     OE_RSA_KEY key;
     void* pemData = NULL;
-    size_t pemSize;
+    size_t pemSize = 0;
 
-    r = OE_RSAReadPublicKeyFromPEM(RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
+    r = OE_RSAReadPublicKeyFromPEM(
+        (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSAWritePublicKeyToPEM(&key, &pemData, &pemSize);
+    r = OE_RSAWritePublicKeyToPEM(&key, pemData, &pemSize);
+    assert(r == OE_BUFFER_TOO_SMALL);
+
+    assert(pemData = (uint8_t*)malloc(pemSize));
+
+    r = OE_RSAWritePublicKeyToPEM(&key, pemData, &pemSize);
     assert(r == OE_OK);
 
     assert(sizeof(RSA_PUBLIC_KEY) == pemSize);
@@ -597,22 +632,41 @@ static void TestECWritePrivate()
     OE_EC_KEY publicKey;
     OE_EC_KEY key1;
     OE_EC_KEY key2;
-    void* pemData1 = NULL;
-    size_t pemSize1;
-    void* pemData2 = NULL;
-    size_t pemSize2;
+    uint8_t* pemData1 = NULL;
+    size_t pemSize1 = 0;
+    uint8_t* pemData2 = NULL;
+    size_t pemSize2 = 0;
+
 
     r = OE_ECGenerate("secp521r1", &key1, &publicKey);
     assert(r == OE_OK);
 
-    r = OE_ECWritePrivateKeyToPEM(&key1, &pemData1, &pemSize1);
-    assert(r == OE_OK);
+    {
+        r = OE_ECWritePrivateKeyToPEM(&key1, pemData1, &pemSize1);
+        assert(r == OE_BUFFER_TOO_SMALL);
+
+        assert(pemData1 = (uint8_t*)malloc(pemSize1));
+
+        r = OE_ECWritePrivateKeyToPEM(&key1, pemData1, &pemSize1);
+        assert(r == OE_OK);
+    }
+
+    assert(pemSize1 != 0);
+    assert(pemData1[pemSize1-1] == '\0');
+    assert(strlen((char*)pemData1) == pemSize1 - 1);
 
     r = OE_ECReadPrivateKeyFromPEM(pemData1, pemSize1, &key2);
     assert(r == OE_OK);
 
-    r = OE_ECWritePrivateKeyToPEM(&key2, &pemData2, &pemSize2);
-    assert(r == OE_OK);
+    {
+        r = OE_ECWritePrivateKeyToPEM(&key2, pemData2, &pemSize2);
+        assert(r == OE_BUFFER_TOO_SMALL);
+
+        assert(pemData2 = (uint8_t*)malloc(pemSize2));
+
+        r = OE_ECWritePrivateKeyToPEM(&key2, pemData2, &pemSize2);
+        assert(r == OE_OK);
+    }
 
     assert(pemSize1 == pemSize2);
     assert(memcmp(pemData1, pemData2, pemSize1) == 0);
@@ -633,13 +687,21 @@ static void TestECWritePublic()
     OE_Result r;
     OE_EC_KEY key;
     void* pemData = NULL;
-    size_t pemSize;
+    size_t pemSize = 0;
 
-    r = OE_ECReadPublicKeyFromPEM(EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
+    r = OE_ECReadPublicKeyFromPEM(
+        (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_ECWritePublicKeyToPEM(&key, &pemData, &pemSize);
-    assert(r == OE_OK);
+    {
+        r = OE_ECWritePublicKeyToPEM(&key, pemData, &pemSize);
+        assert(r == OE_BUFFER_TOO_SMALL);
+
+        assert(pemData = (uint8_t*)malloc(pemSize));
+
+        r = OE_ECWritePublicKeyToPEM(&key, pemData, &pemSize);
+        assert(r == OE_OK);
+    }
 
     assert(sizeof(EC_PUBLIC_KEY) == pemSize);
     assert(memcmp(EC_PUBLIC_KEY, pemData, pemSize) == 0);
