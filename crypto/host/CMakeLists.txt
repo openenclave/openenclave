@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_library(
-    oecryptohost 
-    STATIC
+add_library(oecryptohost STATIC
     cert.c
     ec.c
     init.c
