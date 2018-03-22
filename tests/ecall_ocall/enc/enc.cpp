@@ -175,7 +175,8 @@ OE_ECALL void EncRecursion(void* Args_)
     // recurse as needed, passing initial-state-crc as input
     if (args.recursionsLeft)
     {
-        if (args.initialCount) argsHost->initialCount = args.initialCount - 1;
+        if (args.initialCount)
+            argsHost->initialCount = args.initialCount - 1;
         argsHost->recursionsLeft = args.recursionsLeft - 1;
         result = OE_CallHost("RecursionOcall", argsHost);
     }

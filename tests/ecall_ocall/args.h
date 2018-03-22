@@ -25,12 +25,12 @@ struct EncParallelExecutionArg
  */
 struct EncRecursionArg
 {
-    unsigned enclaveId;      // In
-    unsigned flowId;         // In
-    unsigned recursionsLeft; // InOut
-    unsigned initialCount : 31;  // InOut
+    unsigned enclaveId;             // In
+    unsigned flowId;                // In
+    unsigned recursionsLeft;        // InOut
+    unsigned initialCount : 31;     // InOut
     unsigned isRotatingEnclave : 1; // In
-    uint32_t crc;            // InOut
+    uint32_t crc;                   // InOut
 };
 
 struct EncTestNonExistingFunctionArg
