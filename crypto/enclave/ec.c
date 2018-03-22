@@ -34,15 +34,30 @@ OE_EC_KEY_IMPL;
 
 OE_STATIC_ASSERT(sizeof(OE_EC_KEY_IMPL) <= sizeof(OE_EC_KEY));
 
+OE_INLINE bool _ValidImpl(const OE_EC_KEY_IMPL* impl)
+{
+    return impl && impl->magic == OE_EC_KEY_MAGIC;
+}
+
+OE_INLINE void _InitImpl(OE_EC_KEY_IMPL* impl)
+{
+    impl->magic = OE_EC_KEY_MAGIC;
+    mbedtls_pk_init(&impl->pk);
+}
+
+OE_INLINE void _FreeImpl(OE_EC_KEY_IMPL* impl)
+{
+    if (impl)
+    {
+        mbedtls_pk_free(&impl->pk);
+        OE_Memset(impl, 0, sizeof(OE_EC_KEY_IMPL));
+    }
+}
+
 OE_INLINE void _ClearImpl(OE_EC_KEY_IMPL* impl)
 {
     if (impl)
         OE_Memset(impl, 0, sizeof(OE_EC_KEY_IMPL));
-}
-
-OE_INLINE bool _ValidImpl(const OE_EC_KEY_IMPL* impl)
-{
-    return impl && impl->magic == OE_EC_KEY_MAGIC;
 }
 
 /*
@@ -63,10 +78,7 @@ OE_Result OE_ECReadPrivateKeyFromPEM(
 
     /* Initialize the key */
     if (impl)
-    {
-        impl->magic = OE_EC_KEY_MAGIC;
-        mbedtls_pk_init(&impl->pk);
-    }
+        _InitImpl(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -84,10 +96,7 @@ OE_Result OE_ECReadPrivateKeyFromPEM(
 OE_CATCH:
 
     if (result != OE_OK)
-    {
-        mbedtls_pk_free(&impl->pk);
-        _ClearImpl(impl);
-    }
+        _FreeImpl(impl);
 
     return result;
 }
@@ -102,10 +111,7 @@ OE_Result OE_ECReadPublicKeyFromPEM(
 
     /* Initialize the key */
     if (impl)
-    {
-        impl->magic = OE_EC_KEY_MAGIC;
-        mbedtls_pk_init(&impl->pk);
-    }
+        _InitImpl(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -123,10 +129,7 @@ OE_Result OE_ECReadPublicKeyFromPEM(
 OE_CATCH:
 
     if (result != OE_OK)
-    {
-        mbedtls_pk_free(&impl->pk);
-        _ClearImpl(impl);
-    }
+        _FreeImpl(impl);
 
     return result;
 }
@@ -283,8 +286,7 @@ OE_Result OE_ECFree(OE_EC_KEY* key)
     if (!_ValidImpl(impl))
         OE_THROW(OE_INVALID_PARAMETER);
 
-    impl->magic = OE_EC_KEY_MAGIC;
-    mbedtls_pk_free(&impl->pk);
+    _FreeImpl(impl);
 
     result = OE_OK;
 
