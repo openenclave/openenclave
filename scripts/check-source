@@ -174,7 +174,7 @@ check_tabs()
     local file=${1}
     local matchfile=`/bin/mktemp`
 
-    # Find all lines that contain comment openers (include the line number):
+    # Find all lines that contain tabs:
     grep -n -P '\t' ${file} > ${matchfile}
 
     # Read each line of match file:
@@ -183,7 +183,7 @@ check_tabs()
         # Split line into line number (n) and string (s)
         n=${line%%:*}
         s=${line##*:}
-        echo "${file}(${n}): illegal tab character"
+        echo "${file}(${n}): illegal tab"
         ret=1
     done < ${matchfile}
 
@@ -238,7 +238,7 @@ check_carriage_return()
     local file=${1}
     local matchfile=`/bin/mktemp`
 
-    # Find all lines that contain comment openers (include the line number):
+    # Find all lines that carriage return characters:
     grep -n -P '\r' ${file} > ${matchfile}
 
     # Read each line of match file:
@@ -247,7 +247,7 @@ check_carriage_return()
         # Split line into line number (n) and string (s)
         n=${line%%:*}
         s=${line##*:}
-        echo "${file}(${n}): illegal carriage return character"
+        echo "${file}(${n}): illegal carriage return"
         ret=1
     done < ${matchfile}
 
