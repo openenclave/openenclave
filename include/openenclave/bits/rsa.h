@@ -11,7 +11,12 @@
 OE_EXTERNC_BEGIN
 
 /* Opaque representation of an RSA public key */
-typedef struct _OE_RSA OE_RSA;
+typedef struct _OE_RSA 
+{
+    /* Internal private implementation */
+    uint64_t impl[4];
+}
+OE_RSA_KEY;
 
 /**
  * Reads a public RSA key from PEM data.
@@ -32,7 +37,7 @@ typedef struct _OE_RSA OE_RSA;
 OE_Result OE_RSAReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_RSA** privateKey);
+    OE_RSA_KEY* privateKey);
 
 /**
  * Reads a public RSA key from PEM data.
@@ -53,7 +58,7 @@ OE_Result OE_RSAReadPrivateKeyFromPEM(
 OE_Result OE_RSAReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_RSA** publicKey);
+    OE_RSA_KEY* publicKey);
 
 /**
  * Write an RSA private key to PEM format
@@ -72,7 +77,7 @@ OE_Result OE_RSAReadPublicKeyFromPEM(
  * @return OE_OK upon success
  */
 OE_Result OE_RSAWritePrivateKeyToPEM(
-    const OE_RSA* privateKey,
+    const OE_RSA_KEY* privateKey,
     void** pemData,
     size_t* pemSize);
 
@@ -93,7 +98,7 @@ OE_Result OE_RSAWritePrivateKeyToPEM(
  * @return OE_OK upon success
  */
 OE_Result OE_RSAWritePublicKeyToPEM(
-    const OE_RSA* publicKey,
+    const OE_RSA_KEY* publicKey,
     void** pemData,
     size_t* pemSize);
 
@@ -107,7 +112,7 @@ OE_Result OE_RSAWritePublicKeyToPEM(
  *
  * @return OE_OK upon success
  */
-void OE_RSAFree(OE_RSA* key);
+OE_Result OE_RSAFree(OE_RSA_KEY* key);
 
 /**
  * Sign a message with the given RSA private key
@@ -123,7 +128,7 @@ void OE_RSAFree(OE_RSA* key);
  * @return OE_OK if the signing operation was successful
  */
 OE_Result OE_RSASign(
-    const OE_RSA* privateKey,
+    const OE_RSA_KEY* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize);
@@ -142,7 +147,7 @@ OE_Result OE_RSASign(
  * @return OE_OK if the message was signeded with the given certificate
  */
 OE_Result OE_RSAVerify(
-    const OE_RSA* publicKey,
+    const OE_RSA_KEY* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize);
@@ -163,8 +168,8 @@ OE_Result OE_RSAVerify(
 OE_Result OE_RSAGenerate(
     uint64_t bits,
     uint64_t exponent,
-    OE_RSA** privateKey,
-    OE_RSA** publicKey);
+    OE_RSA_KEY* privateKey,
+    OE_RSA_KEY* publicKey);
 
 OE_EXTERNC_END
 

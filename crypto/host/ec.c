@@ -10,21 +10,62 @@
 #include "../util.h"
 #include "init.h"
 
+/*
+**==============================================================================
+**
+** Local defintions:
+**
+**==============================================================================
+*/
+
+#define OE_EC_KEY_MAGIC 0x278c216447aa1f84
+
+typedef struct _OE_EC_KEY_IMPL
+{
+    uint64_t magic;
+    EVP_PKEY* pkey;
+}
+OE_EC_KEY_IMPL;
+
+OE_STATIC_ASSERT(sizeof(OE_EC_KEY_IMPL) <= sizeof(OE_EC_KEY));
+
+OE_INLINE void _ClearImpl(OE_EC_KEY_IMPL* impl)
+{
+    if (impl)
+    {
+        impl->magic = 0;
+        impl->pkey = NULL;
+    }
+}
+
+OE_INLINE bool _ValidImpl(const OE_EC_KEY_IMPL* impl)
+{
+    return impl && impl->magic == OE_EC_KEY_MAGIC && impl->pkey ? true : false;
+}
+
+/*
+**==============================================================================
+**
+** Public functions:
+**
+**==============================================================================
+*/
+
 OE_Result OE_ECReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_EC** key)
+    OE_EC_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
+    OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
 
     /* Initialize the key output parameter */
-    if (key)
-        *key = NULL;
+    _ClearImpl(impl);
 
     /* Check parameters */
-    if (!pemData || pemSize == 0 || !key)
+    if (!pemData || pemSize == 0 || !impl)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -48,7 +89,9 @@ OE_Result OE_ECReadPrivateKeyFromPEM(
     if (!(pkey = PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL)))
         goto done;
 
-    *key = (OE_EC*)pkey;
+    /* Initialize the key */
+    impl->magic = OE_EC_KEY_MAGIC;
+    impl->pkey = pkey;
     pkey = NULL;
 
     result = OE_OK;
@@ -67,17 +110,18 @@ done:
 OE_Result OE_ECReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_EC** key)
+    OE_EC_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
+    OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
 
-    if (key)
-        *key = NULL;
+    /* Zero-initialize the key */
+    _ClearImpl(impl);
 
     /* Check parameters */
-    if (!pemData || pemSize == 0 || !key)
+    if (!pemData || pemSize == 0 || !impl)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -101,7 +145,9 @@ OE_Result OE_ECReadPublicKeyFromPEM(
     if (!(pkey = PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL)))
         goto done;
 
-    *key = (OE_EC*)pkey;
+    /* Initialize the key */
+    impl->magic = OE_EC_KEY_MAGIC;
+    impl->pkey = pkey;
     pkey = NULL;
 
     result = OE_OK;
@@ -117,20 +163,38 @@ done:
     return result;
 }
 
-void OE_ECFree(OE_EC* key)
+OE_Result OE_ECFree(OE_EC_KEY* key)
 {
-    if (key)
-        EVP_PKEY_free((EVP_PKEY*)key);
+    OE_Result result = OE_UNEXPECTED;
+    OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
+
+    /* Check parameter */
+    if (!_ValidImpl(impl))
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Release the key */
+    EVP_PKEY_free(impl->pkey);
+
+    /* Clear the fields of the implementation */
+    _ClearImpl(impl);
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 OE_Result OE_ECSign(
-    const OE_EC* key,
+    const OE_EC_KEY* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    EVP_PKEY* pkey = (EVP_PKEY*)key;
+    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)privateKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     if (signature)
@@ -140,7 +204,7 @@ OE_Result OE_ECSign(
         *signatureSize = 0;
 
     /* Check for null parameters */
-    if (!key || !signature || !hash || !signature || !signatureSize)
+    if (!_ValidImpl(impl) || !hash || !signature || !signatureSize)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -150,7 +214,7 @@ OE_Result OE_ECSign(
     OE_InitializeOpenSSL();
 
     /* Create signing context */
-    if (!(ctx = EVP_PKEY_CTX_new(pkey, NULL)))
+    if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
         goto done;
 
     /* Initialize the signing context */
@@ -196,17 +260,17 @@ done:
 }
 
 OE_Result OE_ECVerify(
-    const OE_EC* key,
+    const OE_EC_KEY* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    EVP_PKEY* pkey = (EVP_PKEY*)key;
+    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)publicKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!key || !signature || !hash || !signature || !signatureSize)
+    if (!_ValidImpl(impl) || !hash || !signature || !signatureSize)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -216,7 +280,7 @@ OE_Result OE_ECVerify(
     OE_InitializeOpenSSL();
 
     /* Create signing context */
-    if (!(ctx = EVP_PKEY_CTX_new(pkey, NULL)))
+    if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
         goto done;
 
     /* Initialize the signing context */
@@ -246,22 +310,22 @@ done:
 
 OE_Result OE_ECGenerate(
     const char* curveName,
-    OE_EC** privateKey,
-    OE_EC** publicKey)
+    OE_EC_KEY* privateKey,
+    OE_EC_KEY* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
+    OE_EC_KEY_IMPL* privateImpl = (OE_EC_KEY_IMPL*)privateKey;
+    OE_EC_KEY_IMPL* publicImpl = (OE_EC_KEY_IMPL*)publicKey;
     int nid;
     EC_KEY* key = NULL;
     EVP_PKEY* pkey = NULL;
     BIO* bio = NULL;
     const char nullTerminator = '\0';
 
-    if (privateKey)
-        *privateKey = NULL;
+    _ClearImpl(privateImpl);
+    _ClearImpl(publicImpl);
 
-    if (publicKey)
-        *publicKey = NULL;
-
+    /* Check parameters */
     if (!privateKey || !publicKey || !curveName)
     {
         result = OE_INVALID_PARAMETER;
@@ -401,30 +465,34 @@ done:
 
     if (result != OE_OK)
     {
-        if (privateKey && *privateKey)
-        {
-            OE_ECFree(*privateKey);
-            *privateKey = NULL;
-        }
+        if (_ValidImpl(privateImpl))
+            OE_ECFree(privateKey);
 
-        if (publicKey && *publicKey)
-        {
-            OE_ECFree(*publicKey);
-            *publicKey = NULL;
-        }
+        if (_ValidImpl(publicImpl))
+            OE_ECFree(publicKey);
     }
 
     return result;
 }
 
-OE_Result OE_ECWritePrivateKeyToPEM(const OE_EC* key, void** data, size_t* size)
+OE_Result OE_ECWritePrivateKeyToPEM(
+    const OE_EC_KEY* key,
+    void** data, 
+    size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
+    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)key;
     BIO* bio = NULL;
-    EVP_PKEY* pkey = (EVP_PKEY*)key;
     EC_KEY* ec;
     const char nullTerminator = '\0';
 
+    /* Check parameters */
+    if (!_ValidImpl(impl) || !data || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+    
     /* Create memory BIO object to write key to */
     if (!(bio = BIO_new(BIO_s_mem())))
     {
@@ -433,7 +501,7 @@ OE_Result OE_ECWritePrivateKeyToPEM(const OE_EC* key, void** data, size_t* size)
     }
 
     /* Get EC key from public key without increasing reference count */
-    if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+    if (!(ec = EVP_PKEY_get1_EC_KEY(impl->pkey)))
         goto done;
 
     /* Write key to BIO */
@@ -482,12 +550,22 @@ done:
     return result;
 }
 
-OE_Result OE_ECWritePublicKeyToPEM(const OE_EC* key, void** data, size_t* size)
+OE_Result OE_ECWritePublicKeyToPEM(
+    const OE_EC_KEY* key,
+    void** data, 
+    size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
-    EVP_PKEY* pkey = (EVP_PKEY*)key;
+    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)key;
     const char nullTerminator = '\0';
+
+    /* Check parameters */
+    if (!_ValidImpl(impl) || !data || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
 
     /* Create memory BIO object to write key to */
     if (!(bio = BIO_new(BIO_s_mem())))
@@ -497,7 +575,7 @@ OE_Result OE_ECWritePublicKeyToPEM(const OE_EC* key, void** data, size_t* size)
     }
 
     /* Write key to BIO */
-    if (!PEM_write_bio_PUBKEY(bio, pkey))
+    if (!PEM_write_bio_PUBKEY(bio, impl->pkey))
     {
         result = OE_FAILURE;
         goto done;

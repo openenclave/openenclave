@@ -3,7 +3,8 @@
 
 add_library(oecrypto STATIC 
     cert.c
-    keys.c
+    ec.c
+    rsa.c
     random.c
     sha.c
     ../util.c)

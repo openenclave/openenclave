@@ -133,14 +133,14 @@ static void TestRSASign()
     printf("=== begin TestRSASign\n");
 
     OE_Result r;
-    OE_RSA* key = NULL;
+    OE_RSA_KEY key;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
     r = OE_RSAReadPrivateKeyFromPEM(RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSASign(key, &HASH, &signature, &signatureSize);
+    r = OE_RSASign(&key, &HASH, &signature, &signatureSize);
     assert(r == OE_OK);
 
     assert(signatureSize == RSA_SIGNATURE_SIZE);
@@ -163,12 +163,12 @@ static void TestRSASign()
 static void TestRSAVerify()
 {
     OE_Result r;
-    OE_RSA* key = NULL;
+    OE_RSA_KEY key;
 
     r = OE_RSAReadPublicKeyFromPEM(RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSAVerify(key, &HASH, RSA_SIGNATURE, RSA_SIGNATURE_SIZE);
+    r = OE_RSAVerify(&key, &HASH, RSA_SIGNATURE, RSA_SIGNATURE_SIZE);
     assert(r == OE_OK);
 
     printf("=== passed TestRSAVerify\n");
@@ -454,29 +454,29 @@ static void TestECSignAndVerify()
     OE_Result r;
 
     {
-        OE_EC* key = NULL;
+        OE_EC_KEY key;
 
         r = OE_ECReadPrivateKeyFromPEM(
             EC_PRIVATE_KEY, sizeof(EC_PRIVATE_KEY), &key);
         assert(r == OE_OK);
 
-        r = OE_ECSign(key, &HASH, &signature, &signatureSize);
+        r = OE_ECSign(&key, &HASH, &signature, &signatureSize);
         assert(r == OE_OK);
         assert(signature != NULL);
         assert(signatureSize != 0);
     }
 
     {
-        OE_EC* key = NULL;
+        OE_EC_KEY key;
 
         r = OE_ECReadPublicKeyFromPEM(
             EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
         assert(r == OE_OK);
 
-        r = OE_ECVerify(key, &HASH, signature, signatureSize);
+        r = OE_ECVerify(&key, &HASH, signature, signatureSize);
         assert(r == OE_OK);
 
-        r = OE_ECVerify(key, &HASH, EC_SIGNATURE, EC_SIGNATURE_SIZE);
+        r = OE_ECVerify(&key, &HASH, EC_SIGNATURE, EC_SIGNATURE_SIZE);
         assert(r == OE_OK);
     }
 
@@ -494,23 +494,23 @@ static void TestRSAGenerate()
     printf("=== begin TestRSAGenerate()\n");
 
     OE_Result r;
-    OE_RSA* privateKey;
-    OE_RSA* publicKey;
+    OE_RSA_KEY privateKey;
+    OE_RSA_KEY publicKey;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
     r = OE_RSAGenerate(1024, 3, &privateKey, &publicKey);
     assert(r == OE_OK);
 
-    r = OE_RSASign(privateKey, &HASH, &signature, &signatureSize);
+    r = OE_RSASign(&privateKey, &HASH, &signature, &signatureSize);
     assert(r == OE_OK);
 
-    r = OE_RSAVerify(publicKey, &HASH, signature, signatureSize);
+    r = OE_RSAVerify(&publicKey, &HASH, signature, signatureSize);
     assert(r == OE_OK);
 
     free(signature);
-    OE_RSAFree(privateKey);
-    OE_RSAFree(publicKey);
+    OE_RSAFree(&privateKey);
+    OE_RSAFree(&publicKey);
 
     printf("=== passed TestRSAGenerate()\n");
 }
@@ -520,23 +520,23 @@ static void TestECGenerate()
     printf("=== begin TestECGenerate()\n");
 
     OE_Result r;
-    OE_EC* privateKey;
-    OE_EC* publicKey;
+    OE_EC_KEY privateKey;
+    OE_EC_KEY publicKey;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
     r = OE_ECGenerate("secp521r1", &privateKey, &publicKey);
     assert(r == OE_OK);
 
-    r = OE_ECSign(privateKey, &HASH, &signature, &signatureSize);
+    r = OE_ECSign(&privateKey, &HASH, &signature, &signatureSize);
     assert(r == OE_OK);
 
-    r = OE_ECVerify(publicKey, &HASH, signature, signatureSize);
+    r = OE_ECVerify(&publicKey, &HASH, signature, signatureSize);
     assert(r == OE_OK);
 
     free(signature);
-    OE_ECFree(privateKey);
-    OE_ECFree(publicKey);
+    OE_ECFree(&privateKey);
+    OE_ECFree(&publicKey);
 
     printf("=== passed TestECGenerate()\n");
 }
@@ -546,21 +546,21 @@ static void TestRSAWritePrivate()
     printf("=== begin TestRSAWritePrivate()\n");
 
     OE_Result r;
-    OE_RSA* key = NULL;
+    OE_RSA_KEY key;
     void* pemData = NULL;
     size_t pemSize;
 
     r = OE_RSAReadPrivateKeyFromPEM(RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSAWritePrivateKeyToPEM(key, &pemData, &pemSize);
+    r = OE_RSAWritePrivateKeyToPEM(&key, &pemData, &pemSize);
     assert(r == OE_OK);
 
     assert(sizeof(RSA_PRIVATE_KEY) == pemSize);
     assert(memcmp(RSA_PRIVATE_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAFree(key);
+    OE_RSAFree(&key);
 
     printf("=== passed TestRSAWritePrivate()\n");
 }
@@ -570,21 +570,21 @@ static void TestRSAWritePublic()
     printf("=== begin TestRSAWritePublic()\n");
 
     OE_Result r;
-    OE_RSA* key = NULL;
+    OE_RSA_KEY key;
     void* pemData = NULL;
     size_t pemSize;
 
     r = OE_RSAReadPublicKeyFromPEM(RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSAWritePublicKeyToPEM(key, &pemData, &pemSize);
+    r = OE_RSAWritePublicKeyToPEM(&key, &pemData, &pemSize);
     assert(r == OE_OK);
 
     assert(sizeof(RSA_PUBLIC_KEY) == pemSize);
     assert(memcmp(RSA_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAFree(key);
+    OE_RSAFree(&key);
 
     printf("=== passed TestRSAWritePublic()\n");
 }
@@ -594,9 +594,9 @@ static void TestECWritePrivate()
     printf("=== begin TestECWritePrivate()\n");
 
     OE_Result r;
-    OE_EC* publicKey = NULL;
-    OE_EC* key1 = NULL;
-    OE_EC* key2 = NULL;
+    OE_EC_KEY publicKey;
+    OE_EC_KEY key1;
+    OE_EC_KEY key2;
     void* pemData1 = NULL;
     size_t pemSize1;
     void* pemData2 = NULL;
@@ -605,13 +605,13 @@ static void TestECWritePrivate()
     r = OE_ECGenerate("secp521r1", &key1, &publicKey);
     assert(r == OE_OK);
 
-    r = OE_ECWritePrivateKeyToPEM(key1, &pemData1, &pemSize1);
+    r = OE_ECWritePrivateKeyToPEM(&key1, &pemData1, &pemSize1);
     assert(r == OE_OK);
 
     r = OE_ECReadPrivateKeyFromPEM(pemData1, pemSize1, &key2);
     assert(r == OE_OK);
 
-    r = OE_ECWritePrivateKeyToPEM(key2, &pemData2, &pemSize2);
+    r = OE_ECWritePrivateKeyToPEM(&key2, &pemData2, &pemSize2);
     assert(r == OE_OK);
 
     assert(pemSize1 == pemSize2);
@@ -619,9 +619,9 @@ static void TestECWritePrivate()
 
     free(pemData1);
     free(pemData2);
-    OE_ECFree(publicKey);
-    OE_ECFree(key1);
-    OE_ECFree(key2);
+    OE_ECFree(&publicKey);
+    OE_ECFree(&key1);
+    OE_ECFree(&key2);
 
     printf("=== passed TestECWritePrivate()\n");
 }
@@ -631,21 +631,21 @@ static void TestECWritePublic()
     printf("=== begin TestECWritePublic()\n");
 
     OE_Result r;
-    OE_EC* key = NULL;
+    OE_EC_KEY key;
     void* pemData = NULL;
     size_t pemSize;
 
     r = OE_ECReadPublicKeyFromPEM(EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_ECWritePublicKeyToPEM(key, &pemData, &pemSize);
+    r = OE_ECWritePublicKeyToPEM(&key, &pemData, &pemSize);
     assert(r == OE_OK);
 
     assert(sizeof(EC_PUBLIC_KEY) == pemSize);
     assert(memcmp(EC_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_ECFree(key);
+    OE_ECFree(&key);
 
     printf("=== passed TestECWritePublic()\n");
 }

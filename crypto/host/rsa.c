@@ -11,21 +11,62 @@
 #include "../util.h"
 #include "init.h"
 
+/*
+**==============================================================================
+**
+** Local defintions:
+**
+**==============================================================================
+*/
+
+#define OE_RSA_KEY_MAGIC 0x2a11ed055e91b281
+
+typedef struct _OE_RSA_KEY_IMPL
+{
+    uint64_t magic;
+    RSA* rsa;
+}
+OE_RSA_KEY_IMPL;
+
+OE_STATIC_ASSERT(sizeof(OE_RSA_KEY_IMPL) <= sizeof(OE_RSA_KEY));
+
+OE_INLINE void _ClearImpl(OE_RSA_KEY_IMPL* impl)
+{
+    if (impl)
+    {
+        impl->magic = 0;
+        impl->rsa = NULL;
+    }
+}
+
+OE_INLINE bool _ValidImpl(const OE_RSA_KEY_IMPL* impl)
+{
+    return impl && impl->magic == OE_RSA_KEY_MAGIC && impl->rsa ? true : false;
+}
+
+/*
+**==============================================================================
+**
+** Public defintions:
+**
+**==============================================================================
+*/
+
 OE_Result OE_RSAReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_RSA** key)
+    OE_RSA_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
+    OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
     BIO* bio = NULL;
     RSA* rsa = NULL;
 
     /* Initialize the key output parameter */
-    if (key)
-        *key = NULL;
+    _ClearImpl(impl);
 
     /* Check parameters */
-    if (!pemData || pemSize == 0 || !key)
+    if (!pemData || pemSize == 0 || !impl)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -56,7 +97,8 @@ OE_Result OE_RSAReadPrivateKeyFromPEM(
     }
 
     /* Set the output key parameter */
-    *key = (OE_RSA*)rsa;
+    impl->magic = OE_RSA_KEY_MAGIC;
+    impl->rsa = rsa;
     rsa = NULL;
 
     result = OE_OK;
@@ -75,19 +117,19 @@ done:
 OE_Result OE_RSAReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_RSA** key)
+    OE_RSA_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
+    OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
     BIO* bio = NULL;
     RSA* rsa = NULL;
     EVP_PKEY* pkey = NULL;
 
     /* Initialize the key output parameter */
-    if (key)
-        *key = NULL;
+    _ClearImpl(impl);
 
     /* Check parameters */
-    if (!pemData || pemSize == 0 || !key)
+    if (!pemData || pemSize == 0 || !impl)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -125,7 +167,8 @@ OE_Result OE_RSAReadPublicKeyFromPEM(
     RSA_up_ref(rsa);
 
     /* Set the output key parameter */
-    *key = (OE_RSA*)rsa;
+    impl->magic = OE_RSA_KEY_MAGIC;
+    impl->rsa = rsa;
     rsa = NULL;
 
     result = OE_OK;
@@ -144,20 +187,38 @@ done:
     return result;
 }
 
-void OE_RSAFree(OE_RSA* key)
+OE_Result OE_RSAFree(OE_RSA_KEY* key)
 {
-    if (key)
-        RSA_free((RSA*)key);
+    OE_Result result = OE_UNEXPECTED;
+    OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
+
+    /* Check the parameter */
+    if (!_ValidImpl(impl))
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Release the RSA object */
+    RSA_free(impl->rsa);
+
+    /* Clear the fields in the implementation */
+    _ClearImpl(impl);
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 OE_Result OE_RSASign(
-    const OE_RSA* privateKey,
+    const OE_RSA_KEY* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    RSA* rsa = (RSA*)privateKey;
+    const OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)privateKey;
 
     if (signature)
         *signature = NULL;
@@ -166,7 +227,7 @@ OE_Result OE_RSASign(
         *signatureSize = 0;
 
     /* Check for null parameters */
-    if (!privateKey || !hash || !signature || !signatureSize)
+    if (!_ValidImpl(impl) || !hash || !signature || !signatureSize)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -176,7 +237,7 @@ OE_Result OE_RSASign(
     OE_InitializeOpenSSL();
 
     /* Determine the size of the signature */
-    *signatureSize = RSA_size(rsa);
+    *signatureSize = RSA_size(impl->rsa);
 
     /* Allocate the signature buffer */
     if (!(*signature = (uint8_t*)malloc(*signatureSize)))
@@ -188,7 +249,12 @@ OE_Result OE_RSASign(
     /* Verify that the data is signed by the given RSA private key */
     unsigned int siglen;
     if (!RSA_sign(
-            NID_sha256, hash->buf, sizeof(OE_SHA256), *signature, &siglen, rsa))
+            NID_sha256, 
+            hash->buf, 
+            sizeof(OE_SHA256), 
+            *signature, 
+            &siglen, 
+            impl->rsa))
     {
         result = OE_FAILURE;
         goto done;
@@ -218,16 +284,16 @@ done:
 }
 
 OE_Result OE_RSAVerify(
-    const OE_RSA* publicKey,
+    const OE_RSA_KEY* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    RSA* rsa = (RSA*)publicKey;
+    const OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)publicKey;
 
     /* Check for null parameters */
-    if (!publicKey || !hash || !signature || signatureSize == 0)
+    if (!_ValidImpl(impl) || !hash || !signature || signatureSize == 0)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -243,7 +309,7 @@ OE_Result OE_RSAVerify(
             sizeof(OE_SHA256),
             signature,
             signatureSize,
-            rsa))
+            impl->rsa))
     {
         result = OE_FAILURE;
         goto done;
@@ -259,23 +325,22 @@ done:
 OE_Result OE_RSAGenerate(
     uint64_t bits,
     uint64_t exponent,
-    OE_RSA** privateKey,
-    OE_RSA** publicKey)
+    OE_RSA_KEY* privateKey,
+    OE_RSA_KEY* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
+    OE_RSA_KEY_IMPL* privateImpl = (OE_RSA_KEY_IMPL*)privateKey;
+    OE_RSA_KEY_IMPL* publicImpl = (OE_RSA_KEY_IMPL*)publicKey;
     RSA* rsa = NULL;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
     const char nullTerminator = '\0';
 
-    if (privateKey)
-        *privateKey = NULL;
-
-    if (publicKey)
-        *publicKey = NULL;
+    _ClearImpl(privateImpl);
+    _ClearImpl(publicImpl);
 
     /* Check parameters */
-    if (!privateKey || !publicKey)
+    if (!privateImpl || !publicImpl)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -408,29 +473,23 @@ done:
 
     if (result != OE_OK)
     {
-        if (privateKey && *privateKey)
-        {
-            OE_RSAFree(*privateKey);
-            *privateKey = NULL;
-        }
+        if (_ValidImpl(privateImpl))
+            OE_RSAFree(privateKey);
 
-        if (publicKey && *publicKey)
-        {
-            OE_RSAFree(*publicKey);
-            *publicKey = NULL;
-        }
+        if (_ValidImpl(publicImpl))
+            OE_RSAFree(publicKey);
     }
 
     return result;
 }
 
 OE_Result OE_RSAWritePrivateKeyToPEM(
-    const OE_RSA* key,
+    const OE_RSA_KEY* key,
     void** data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
-    RSA* rsa = (RSA*)key;
+    const OE_RSA_KEY_IMPL* impl = (const OE_RSA_KEY_IMPL*)key;
     BIO* bio = NULL;
     const char nullTerminator = '\0';
 
@@ -441,7 +500,7 @@ OE_Result OE_RSAWritePrivateKeyToPEM(
         *size = 0;
 
     /* Check parameters */
-    if (!key || !data || !size)
+    if (!_ValidImpl(impl) || !data || !size)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -455,7 +514,7 @@ OE_Result OE_RSAWritePrivateKeyToPEM(
     }
 
     /* Write key to the BIO */
-    if (!PEM_write_bio_RSAPrivateKey(bio, rsa, NULL, NULL, 0, NULL, NULL))
+    if (!PEM_write_bio_RSAPrivateKey(bio, impl->rsa, NULL, NULL, 0, NULL, NULL))
     {
         result = OE_FAILURE;
         goto done;
@@ -501,15 +560,22 @@ done:
 }
 
 OE_Result OE_RSAWritePublicKeyToPEM(
-    const OE_RSA* key,
+    const OE_RSA_KEY* key,
     void** data,
     size_t* size)
 {
+    const OE_RSA_KEY_IMPL* impl = (const OE_RSA_KEY_IMPL*)key;
     OE_Result result = OE_UNEXPECTED;
-    RSA* rsa = (RSA*)key;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
     const char nullTerminator = '\0';
+
+    /* Check parameters */
+    if (!_ValidImpl(impl) || !data || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
 
     /* Create memory BIO object to write key to */
     if (!(bio = BIO_new(BIO_s_mem())))
@@ -527,13 +593,13 @@ OE_Result OE_RSAWritePublicKeyToPEM(
 
     /* Assign key into PKEY wrapper structure */
     {
-        if (!(EVP_PKEY_assign_RSA(pkey, rsa)))
+        if (!(EVP_PKEY_assign_RSA(pkey, impl->rsa)))
         {
             result = OE_FAILURE;
             goto done;
         }
 
-        RSA_up_ref(rsa);
+        RSA_up_ref(impl->rsa);
     }
 
     /* Write key to BIO */

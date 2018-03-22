@@ -11,7 +11,12 @@
 OE_EXTERNC_BEGIN
 
 /* Opaque representation of an EC public key */
-typedef struct _OE_EC OE_EC;
+typedef struct _OE_EC 
+{
+    /* Internal private implementation */
+    uint64_t impl[4];
+}
+OE_EC_KEY;
 
 /**
  * Reads a public EC key from PEM data.
@@ -32,7 +37,7 @@ typedef struct _OE_EC OE_EC;
 OE_Result OE_ECReadPrivateKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_EC** privateKey);
+    OE_EC_KEY* privateKey);
 
 /**
  * Reads a public EC key from PEM data.
@@ -53,7 +58,7 @@ OE_Result OE_ECReadPrivateKeyFromPEM(
 OE_Result OE_ECReadPublicKeyFromPEM(
     const void* pemData,
     size_t pemSize,
-    OE_EC** publicKey);
+    OE_EC_KEY* publicKey);
 
 /**
  * Write an EC private key to PEM format
@@ -72,7 +77,7 @@ OE_Result OE_ECReadPublicKeyFromPEM(
  * @return OE_OK upon success
  */
 OE_Result OE_ECWritePrivateKeyToPEM(
-    const OE_EC* privateKey,
+    const OE_EC_KEY* privateKey,
     void** pemData,
     size_t* pemSize);
 
@@ -93,7 +98,7 @@ OE_Result OE_ECWritePrivateKeyToPEM(
  * @return OE_OK upon success
  */
 OE_Result OE_ECWritePublicKeyToPEM(
-    const OE_EC* publicKey,
+    const OE_EC_KEY* publicKey,
     void** pemData,
     size_t* pemSize);
 
@@ -107,7 +112,7 @@ OE_Result OE_ECWritePublicKeyToPEM(
  *
  * @return OE_OK upon success
  */
-void OE_ECFree(OE_EC* key);
+OE_Result OE_ECFree(OE_EC_KEY* key);
 
 /**
  * Sign a message with the given EC private key
@@ -123,7 +128,7 @@ void OE_ECFree(OE_EC* key);
  * @return OE_OK if the signing operation was successful
  */
 OE_Result OE_ECSign(
-    const OE_EC* privateKey,
+    const OE_EC_KEY* privateKey,
     const OE_SHA256* hash,
     uint8_t** signature,
     size_t* signatureSize);
@@ -142,7 +147,7 @@ OE_Result OE_ECSign(
  * @return OE_OK if the message was signeded with the given certificate
  */
 OE_Result OE_ECVerify(
-    const OE_EC* publicKey,
+    const OE_EC_KEY* publicKey,
     const OE_SHA256* hash,
     const uint8_t* signature,
     size_t signatureSize);
@@ -161,8 +166,8 @@ OE_Result OE_ECVerify(
  */
 OE_Result OE_ECGenerate(
     const char* curveName,
-    OE_EC** privateKey,
-    OE_EC** publicKey);
+    OE_EC_KEY* privateKey,
+    OE_EC_KEY* publicKey);
 
 OE_EXTERNC_END
 
