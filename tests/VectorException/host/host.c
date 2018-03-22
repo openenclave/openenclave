@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <cpuid.h>
 #include <limits.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
@@ -12,6 +13,59 @@
 #include "../args.h"
 
 #define SKIP_RETURN_CODE 2
+
+void TestVectorException(OE_Enclave* enclave)
+{
+    TestVectorExceptionArgs args;
+    memset(&args, 0, sizeof(args));
+    args.ret = -1;
+    OE_Result result = OE_CallEnclave(enclave, "TestVectorException", &args);
+    if (result != OE_OK)
+        OE_PutErr("OE_CallEnclave() failed: result=%u", result);
+
+    if (args.ret != 0)
+        OE_PutErr("ECALL TestVectorException failed args.result=%d", args.ret);
+
+    assert(args.ret == 0);
+}
+
+void TestSigillHandling(OE_Enclave* enclave)
+{
+    TestSigillHandlingArgs args;
+    memset(&args, 0, sizeof(args));
+    args.ret = -1;
+    OE_Result result = OE_CallEnclave(enclave, "TestSigillHandling", &args);
+    if (result != OE_OK)
+        OE_PutErr("OE_CallEnclave() failed: result=%u", result);
+
+    if (args.ret != 0)
+        OE_PutErr("ECALL TestSigillHandling failed args.result=%d", args.ret);
+
+    assert(args.ret == 0);
+
+    // Verify that the enclave cached CPUID values match host's
+    for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
+    {
+        uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
+        int supported = __get_cpuid(
+            i,
+            &cpuidInfo[OE_CPUID_RAX],
+            &cpuidInfo[OE_CPUID_RBX],
+            &cpuidInfo[OE_CPUID_RCX],
+            &cpuidInfo[OE_CPUID_RDX]);
+
+        if (!supported)
+            OE_PutErr(
+                "Test machine does not support CPUID leaf %x expected by "
+                "TestSigillHandling.\n",
+                i);
+
+        for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
+        {
+            assert(cpuidInfo[j] == args.cpuidTable[i][j]);
+        }
+    }
+}
 
 int main(int argc, const char* argv[])
 {
@@ -40,16 +94,8 @@ int main(int argc, const char* argv[])
     if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
-    Args args;
-    memset(&args, 0, sizeof(args));
-    args.ret = -1;
-
-    if ((result = OE_CallEnclave(enclave, "TestVectorException", &args)) !=
-        OE_OK)
-        OE_PutErr("OE_CallEnclave() failed: result=%u", result);
-
-    if (args.ret != 0)
-        OE_PutErr("ECALL TestVectorException failed args.result=%d", args.ret);
+    TestVectorException(enclave);
+    TestSigillHandling(enclave);
 
     OE_TerminateEnclave(enclave);
 

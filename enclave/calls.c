@@ -12,6 +12,7 @@
 #include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
 #include "asmdefs.h"
+#include "cpuid.h"
 #include "init.h"
 #include "td.h"
 
@@ -110,6 +111,36 @@ typedef unsigned long long WORD;
 /*
 **==============================================================================
 **
+** _HandleInitEnclave()
+**
+**     Handle the OE_FUNC_INIT_ENCLAVE from host and ensures that each state
+**     initialization function in the enclave only runs once.
+**
+**==============================================================================
+*/
+void _HandleInitEnclave(uint64_t argIn)
+{
+    static bool _once = false;
+
+    if (_once == false)
+    {
+        static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
+        OE_SpinLock(&_lock);
+
+        if (_once == false)
+        {
+            /* Call all enclave state initialization functions */
+            OE_InitializeCpuid(argIn);
+            _once = true;
+        }
+
+        OE_SpinUnlock(&_lock);
+    }
+}
+
+/*
+**==============================================================================
+**
 ** _HandleCallEnclave()
 **
 **     This function handles a high-level enclave call.
@@ -140,7 +171,7 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
 
     if (!OE_IsOutsideEnclave((void*)argIn, sizeof(OE_CallEnclaveArgs)))
     {
-        OE_TRY(OE_INVALID_PARAMETER);
+        OE_THROW(OE_INVALID_PARAMETER);
     }
     argsPtr = (OE_CallEnclaveArgs*)argIn;
     args = *argsPtr;
@@ -148,7 +179,7 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
     if (!args.vaddr || (args.func >= ecallPages->num_vaddrs) ||
         ((vaddr = ecallPages->vaddrs[args.func]) != args.vaddr))
     {
-        OE_TRY(OE_INVALID_PARAMETER);
+        OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* Translate function address from virtual to real address */
@@ -278,6 +309,11 @@ static void _HandleECall(
             _OE_VirtualExceptionDispatcher(td, argIn, &argOut);
             break;
         }
+        case OE_FUNC_INIT_ENCLAVE:
+        {
+            _HandleInitEnclave(argIn);
+            break;
+        }
         default:
         {
             /* Dispatch user-registered ECALLs */
@@ -350,11 +386,11 @@ OE_Result OE_OCall(
 
     /* Check for unexpected failures */
     if (!callsite)
-        OE_TRY(OE_UNEXPECTED);
+        OE_THROW(OE_UNEXPECTED);
 
     /* Check for unexpected failures */
     if (!TD_Initialized(td))
-        OE_TRY(OE_FAILURE);
+        OE_THROW(OE_FAILURE);
 
     td->ocall_flags |= ocall_flags;
 
