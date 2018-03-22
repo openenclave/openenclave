@@ -33,8 +33,7 @@ typedef struct _OE_EC_KEY_IMPL
 {
     uint64_t magic;
     mbedtls_pk_context pk;
-}
-OE_EC_KEY_IMPL;
+} OE_EC_KEY_IMPL;
 
 OE_STATIC_ASSERT(sizeof(OE_EC_KEY_IMPL) <= sizeof(OE_EC_KEY));
 
@@ -139,8 +138,8 @@ OE_CATCH:
 }
 
 OE_Result OE_ECWritePrivateKeyToPEM(
-    const OE_EC_KEY* key, 
-    uint8_t* pemData, 
+    const OE_EC_KEY* key,
+    uint8_t* pemData,
     size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -180,8 +179,8 @@ OE_CATCH:
 }
 
 OE_Result OE_ECWritePublicKeyToPEM(
-    const OE_EC_KEY* key, 
-    uint8_t* pemData, 
+    const OE_EC_KEY* key,
+    uint8_t* pemData,
     size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -342,7 +341,7 @@ OE_Result OE_ECGenerate(
     _ClearImpl(publicImpl);
 
     /* Check for invalid parameters */
-    if (!privateImpl|| !publicImpl || !curveName)
+    if (!privateImpl || !publicImpl || !curveName)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Resolve the curveName parameter to an EC-curve identifier */

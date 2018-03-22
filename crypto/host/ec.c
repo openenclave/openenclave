@@ -24,8 +24,7 @@ typedef struct _OE_EC_KEY_IMPL
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-}
-OE_EC_KEY_IMPL;
+} OE_EC_KEY_IMPL;
 
 OE_STATIC_ASSERT(sizeof(OE_EC_KEY_IMPL) <= sizeof(OE_EC_KEY));
 
@@ -409,7 +408,7 @@ OE_Result OE_ECGenerate(
         }
 
         if (OE_ECReadPrivateKeyFromPEM(
-            (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
+                (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
             result = OE_FAILURE;
             goto done;
@@ -444,7 +443,7 @@ OE_Result OE_ECGenerate(
         BIO_get_mem_ptr(bio, &mem);
 
         if (OE_ECReadPublicKeyFromPEM(
-            (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
+                (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
             result = OE_FAILURE;
             goto done;
@@ -503,7 +502,7 @@ OE_Result OE_ECWritePrivateKeyToPEM(
         result = OE_INVALID_PARAMETER;
         goto done;
     }
-    
+
     /* Create memory BIO object to write key to */
     if (!(bio = BIO_new(BIO_s_mem())))
     {

@@ -25,8 +25,7 @@ typedef struct _OE_RSA_KEY_IMPL
 {
     uint64_t magic;
     RSA* rsa;
-}
-OE_RSA_KEY_IMPL;
+} OE_RSA_KEY_IMPL;
 
 OE_STATIC_ASSERT(sizeof(OE_RSA_KEY_IMPL) <= sizeof(OE_RSA_KEY));
 
@@ -254,11 +253,11 @@ OE_Result OE_RSASign(
     /* Verify that the data is signed by the given RSA private key */
     unsigned int siglen;
     if (!RSA_sign(
-            NID_sha256, 
-            hash->buf, 
-            sizeof(OE_SHA256), 
-            signature, 
-            &siglen, 
+            NID_sha256,
+            hash->buf,
+            sizeof(OE_SHA256),
+            signature,
+            &siglen,
             impl->rsa))
     {
         result = OE_FAILURE;
@@ -395,7 +394,7 @@ OE_Result OE_RSAGenerate(
         }
 
         if (OE_RSAReadPrivateKeyFromPEM(
-            (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
+                (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
             result = OE_FAILURE;
             goto done;
@@ -443,7 +442,8 @@ OE_Result OE_RSAGenerate(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_RSAReadPublicKeyFromPEM((uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
+        if (OE_RSAReadPublicKeyFromPEM(
+                (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
             result = OE_FAILURE;
             goto done;

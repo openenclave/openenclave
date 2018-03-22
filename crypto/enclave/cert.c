@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/enclave.h>
 #include <mbedtls/config.h>
 #include <mbedtls/pem.h>
 #include <mbedtls/x509_crt.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../util.h"

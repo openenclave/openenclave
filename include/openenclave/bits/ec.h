@@ -11,12 +11,11 @@
 OE_EXTERNC_BEGIN
 
 /* Opaque representation of an EC public key */
-typedef struct _OE_EC 
+typedef struct _OE_EC
 {
     /* Internal private implementation */
     uint64_t impl[4];
-}
-OE_EC_KEY;
+} OE_EC_KEY;
 
 /**
  * Reads a public EC key from PEM data.
@@ -170,8 +169,8 @@ OE_Result OE_ECFree(OE_EC_KEY* key);
  * @param privateKey - EC private key
  * @param hash - SHA-256 hash of the message being signed
  * @param signature - signature buffer (may be null)
- * @param[in,out] signatureSize - size of signature buffer on input; size of 
- *     actual signature on output. If the former is less than the latter, this 
+ * @param[in,out] signatureSize - size of signature buffer on input; size of
+ *     actual signature on output. If the former is less than the latter, this
  *     function returns OE_BUFFER_TOO_SMALL.
  *
  * @return OE_OK on success

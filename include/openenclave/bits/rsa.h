@@ -11,12 +11,11 @@
 OE_EXTERNC_BEGIN
 
 /* Opaque representation of an RSA public key */
-typedef struct _OE_RSA 
+typedef struct _OE_RSA
 {
     /* Internal private implementation */
     uint64_t impl[4];
-}
-OE_RSA_KEY;
+} OE_RSA_KEY;
 
 /**
  * Reads a public RSA key from PEM data.
@@ -128,8 +127,8 @@ OE_Result OE_RSAFree(OE_RSA_KEY* key);
  * @param privateKey - RSA private key
  * @param hash - SHA-256 hash of the message being signed
  * @param signature - signature buffer (may be null)
- * @param[in,out] signatureSize - size of signature buffer on input; size of 
- *     actual signature on output. If the former is less than the latter, this 
+ * @param[in,out] signatureSize - size of signature buffer on input; size of
+ *     actual signature on output. If the former is less than the latter, this
  *     function returns OE_BUFFER_TOO_SMALL.
  *
  * @return OE_OK on success

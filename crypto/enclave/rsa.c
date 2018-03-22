@@ -33,8 +33,7 @@ typedef struct _OE_RSA_KEY_IMPL
 {
     uint64_t magic;
     mbedtls_pk_context pk;
-}
-OE_RSA_KEY_IMPL;
+} OE_RSA_KEY_IMPL;
 
 OE_STATIC_ASSERT(sizeof(OE_RSA_KEY_IMPL) <= sizeof(OE_RSA_KEY));
 
@@ -139,8 +138,8 @@ OE_CATCH:
 }
 
 OE_Result OE_RSAWritePrivateKeyToPEM(
-    const OE_RSA_KEY* key, 
-    uint8_t* pemData, 
+    const OE_RSA_KEY* key,
+    uint8_t* pemData,
     size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -180,8 +179,8 @@ OE_CATCH:
 }
 
 OE_Result OE_RSAWritePublicKeyToPEM(
-    const OE_RSA_KEY* key, 
-    uint8_t* pemData, 
+    const OE_RSA_KEY* key,
+    uint8_t* pemData,
     size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;

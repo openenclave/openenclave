@@ -7,9 +7,7 @@
 uint64_t _rdrand(void)
 {
     uint64_t r;
-    __asm__ volatile(
-        "rdrand %0\n\t"
-        : "=r"(r));
+    __asm__ volatile("rdrand %0\n\t" : "=r"(r));
 
     return r;
 }
