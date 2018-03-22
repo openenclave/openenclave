@@ -1,0 +1,304 @@
+#!/bin/bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+##==============================================================================
+##
+## check-source
+##
+##     This script checks C and C++ source files for various coding-style
+##     errors, which include:
+##
+##         (1) Comments that extend beyond column 80
+##         (2) Tab characters
+##         (3) Carriage return characters (Ctrl-M)
+##         (4) Extraneous spaces at the end of the line
+##
+##==============================================================================
+
+##==============================================================================
+##
+## Check usage:
+##
+##==============================================================================
+
+if [ "$#" != "0" ]; then
+    echo "$0: Too many arguments"
+    echo "Usage: $0"
+    exit 1
+fi
+
+##==============================================================================
+##
+## expand_ignore_file():
+##
+##     Expand any wildcards in the .check-source.ignore file:
+##
+##==============================================================================
+
+expand_ignore_file()
+{
+    local filename=".check-source.ignore"
+    local tempfile=`/bin/mktemp`
+
+    # Create empty ignore file:
+    touch ${tempfile}
+
+    # Fail if ignore file does not exist:
+    if [ -f "${filename}" ]; then
+        # Expand each entry in the ignore file:
+        set -f
+        for i in `cat ${filename}`
+        do
+            bn=`basename ${i}`
+            if [ "${bn}" == "${i}" ]; then
+                find . -name "${bn}" >> ${tempfile}
+            else
+                if [ -e "${i}" ]; then
+                    echo ${i} >> ${tempfile}
+                else
+                    set +f
+                    ls -1 ${i} >> ${tempfile} 2> /dev/null
+                    set -f
+                fi
+            fi
+        done
+        set +f
+    fi
+
+    echo ${tempfile}
+}
+
+ignorefile=`expand_ignore_file`
+
+##==============================================================================
+##
+## form_filelist(ignorefile):
+##
+##     Form the list of files by finding all regular files and then removing
+##     ignore files.
+##
+##==============================================================================
+
+form_filelist()
+{
+    local ignorefile=$1
+    local files=`/bin/mktemp`
+    local tmpfile=`/bin/mktemp`
+
+    # Find all C and C++ source files:
+    find . -name '*.[ch]' >> ${files}
+    find . -name '*.cpp' >> ${files}
+
+    # Remove lines that match entries from ignore file:
+    for i in `cat ${ignorefile}`
+    do
+        cp ${files} ${tmpfile}
+
+        if [ -d "${i}" ]; then
+            grep -v "${i}/" ${tmpfile} > ${files}
+        else
+            grep -v "^${i}\$" ${tmpfile} > ${files}
+        fi
+    done
+
+    filelist=`cat ${files}`
+
+    rm -f ${files}
+    rm -f ${tmpfile}
+
+    # Sanity check: make sure all files in list exist:
+    for i in ${filelist}
+    do 
+        if [ ! -f "${i}" ]; then
+            echo "$0: file not found: ${i}"
+            exit 1
+        fi
+    done
+
+    echo ${filelist}
+}
+
+filelist=`form_filelist ${ignorefile}`
+rm -rf ${ignorefile}
+
+##==============================================================================
+##
+## check_comments():
+##
+##     Check file for comments that extend beyond column 80.
+##
+##==============================================================================
+
+check_comments()
+{
+    local ret=0
+    local file=${1}
+    local matchfile=`/bin/mktemp`
+
+    # Find all lines that contain comment openers (include the line number):
+    fgrep -n "/*" ${file} > ${matchfile}
+    fgrep -n "//" ${file} >> ${matchfile}
+
+    # Read each line of match file:
+    while IFS= read -r line
+    do
+        # Split line into line number (n) and string (s)
+        n=${line%%:*}
+        s=${line##*:}
+
+        # Check for lines longer than 80 characters:
+        if [ "${#s}" -gt 80 ]; then
+            echo "${file}(${n}): comment extends beyond 80 bytes"
+            ret=1
+        fi
+    done < ${matchfile}
+
+    rm -rf ${matchfile}
+
+    return ${ret}
+}
+
+##==============================================================================
+##
+## check_tabs():
+##
+##     Check for illegal tab characters.
+##
+##==============================================================================
+
+check_tabs()
+{
+    local ret=0
+    local file=${1}
+    local matchfile=`/bin/mktemp`
+
+    # Find all lines that contain comment openers (include the line number):
+    grep -n -P '\t' ${file} > ${matchfile}
+
+    # Read each line of match file:
+    while IFS= read -r line
+    do
+        # Split line into line number (n) and string (s)
+        n=${line%%:*}
+        s=${line##*:}
+        echo "${file}(${n}): illegal tab character"
+        ret=1
+    done < ${matchfile}
+
+    rm -rf ${matchfile}
+
+    return ${ret}
+}
+
+##==============================================================================
+##
+## check_extraneous_spaces():
+##
+##     Check for illegal carriage-return characters.
+##
+##==============================================================================
+
+check_extraneous_spaces()
+{
+    local ret=0
+    local file=${1}
+    local matchfile=`/bin/mktemp`
+
+    # Find lines that have at least one space at the end of the line.
+    grep -n "[ ]$" ${file} > ${matchfile}
+
+    # Read each line of match file:
+    while IFS= read -r line
+    do
+        # Split line into line number (n) and string (s)
+        n=${line%%:*}
+        s=${line##*:}
+        echo "${file}(${n}): extraneous spaces"
+        ret=1
+    done < ${matchfile}
+
+    rm -rf ${matchfile}
+
+    return ${ret}
+}
+
+##==============================================================================
+##
+## check_carriage_return():
+##
+##     Check for illegal carriage-return characters.
+##
+##==============================================================================
+
+check_carriage_return()
+{
+    local ret=0
+    local file=${1}
+    local matchfile=`/bin/mktemp`
+
+    # Find all lines that contain comment openers (include the line number):
+    grep -n -P '\r' ${file} > ${matchfile}
+
+    # Read each line of match file:
+    while IFS= read -r line
+    do
+        # Split line into line number (n) and string (s)
+        n=${line%%:*}
+        s=${line##*:}
+        echo "${file}(${n}): illegal carriage return character"
+        ret=1
+    done < ${matchfile}
+
+    rm -rf ${matchfile}
+
+    return ${ret}
+}
+
+##==============================================================================
+##
+## check_source():
+##
+##     Check source files for coding-style errors.
+##
+##==============================================================================
+
+check_source()
+{
+    local ret=0
+
+    # For each source file:
+    set -f
+    for i in ${filelist}
+    do
+        # Check for comments extending beyond 80 characters:
+        check_comments ${i}
+        if [ "$?" != "0" ]; then
+            ret=1
+        fi
+
+        # Check for illegal tab characters:
+        check_tabs ${i}
+        if [ "$?" != "0" ]; then
+            ret=1
+        fi
+
+        # Check for illegal carriage return characters:
+        check_carriage_return ${i}
+        if [ "$?" != "0" ]; then
+            ret=1
+        fi
+
+        # Check for extraneous spaces at the end of the line:
+        check_extraneous_spaces ${i}
+        if [ "$?" != "0" ]; then
+            ret=1
+        fi
+    done
+    set +f
+
+    exit ${ret}
+}
+
+check_source
