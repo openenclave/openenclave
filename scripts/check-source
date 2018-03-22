@@ -13,7 +13,7 @@
 ##         (1) Comments that extend beyond column 80
 ##         (2) Tab characters
 ##         (3) Carriage return characters (Ctrl-M)
-##         (4) Extraneous spaces at the end of the line
+##         (4) Extraneous spaces at the end of lines
 ##
 ##==============================================================================
 
@@ -76,7 +76,7 @@ ignorefile=`expand_ignore_file`
 ##
 ## form_filelist(ignorefile):
 ##
-##     Form the list of files by finding all regular files and then removing
+##     Form the list of files by finding all source files and then removing
 ##     ignore files.
 ##
 ##==============================================================================
@@ -180,9 +180,8 @@ check_tabs()
     # Read each line of match file:
     while IFS= read -r line
     do
-        # Split line into line number (n) and string (s)
+        # Extract the line number:
         n=${line%%:*}
-        s=${line##*:}
         echo "${file}(${n}): illegal tab"
         ret=1
     done < ${matchfile}
@@ -212,9 +211,8 @@ check_extraneous_spaces()
     # Read each line of match file:
     while IFS= read -r line
     do
-        # Split line into line number (n) and string (s)
+        # Extract the line number:
         n=${line%%:*}
-        s=${line##*:}
         echo "${file}(${n}): extraneous spaces"
         ret=1
     done < ${matchfile}
@@ -244,9 +242,8 @@ check_carriage_return()
     # Read each line of match file:
     while IFS= read -r line
     do
-        # Split line into line number (n) and string (s)
+        # Extract the line number:
         n=${line%%:*}
-        s=${line##*:}
         echo "${file}(${n}): illegal carriage return"
         ret=1
     done < ${matchfile}
