@@ -6,6 +6,7 @@
 #include <openenclave/bits/sgxdev.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/host.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +64,9 @@ int main(int argc, const char* argv[])
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
     }
 
-    printf("MRENCLAVE=%s\n", OE_SHA256StrOf(&enclave.hash).buf);
+    char buf[2*OE_SHA256_SIZE+1];
+    OE_HexString(buf, sizeof(buf), &enclave.hash, sizeof(enclave.hash));
+    printf("MRENCLAVE=%s\n", buf);
 
     printf("BASEADDR=%016lx\n", enclave.addr);
 

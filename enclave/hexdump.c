@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/bits/hexdump.h>
 
 /* Convert a nibble to an ASCII character: Example 0xF => 'F' */
 OE_INLINE char _NibbleToHexChar(uint8_t x)
@@ -38,4 +39,24 @@ void OE_HexDump(const void* data, size_t size)
     }
 
     OE_HostPrintf("\n");
+}
+
+char* OE_HexString(
+    char* str, 
+    size_t strSize, 
+    const void* data, 
+    size_t dataSize)
+{
+    if (!str || !data)
+        return NULL;
+
+    if (strSize < (2 * dataSize + 1))
+        return NULL;
+
+    for (size_t i = 0; i < dataSize; i++)
+        _ByteToHexString(((const uint8_t*)data)[i], &str[i*2]);
+
+    str[strSize - 1] = '\0';
+
+    return str;
 }

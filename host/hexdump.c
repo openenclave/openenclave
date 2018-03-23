@@ -16,8 +16,30 @@ void OE_HexDump(const void* data_, size_t size)
 
     for (i = 0; i < size; i++)
     {
-        printf("%02x", data[i]);
+        printf("%02X", data[i]);
     }
 
     printf("\n");
+}
+
+char* OE_HexString(
+    char* str, 
+    size_t strSize, 
+    const void* data, 
+    size_t dataSize)
+{
+    if (!str || !data)
+        return NULL;
+
+    if (strSize < (2 * dataSize + 1))
+        return NULL;
+
+    for (size_t i = 0; i < dataSize; i++)
+    {
+        snprintf(&str[i*2], 3, "%02X", ((const uint8_t*)data)[i]);
+    }
+
+    str[strSize - 1] = '\0';
+
+    return str;
 }

@@ -11,6 +11,7 @@
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/str.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/host.h>
 #include <openssl/bn.h>
 #include <openssl/pem.h>
@@ -815,8 +816,12 @@ int main(int argc, const char* argv[])
     }
 
 #if 0
-    printf("MRENCLAVE=%s\n", OE_SHA256StrOf(&mrenclave).buf);
-    DumpSigstruct(&sigstruct);
+    {
+        char buf[2*OE_SHA256_SIZE + 1];
+        printf("MRENCLAVE=%s\n",
+            OE_HexString(buf, sizeof(buf), &mrenclave, sizeof(mrenclave)));
+        DumpSigstruct(&sigstruct);
+    }
 #endif
 
     ret = 0;

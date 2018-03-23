@@ -30,6 +30,27 @@ static int _Ok(const OE_SGXMeasurer* driver)
     return driver && driver->magic == SGX_MEASURER_MAGIC;
 }
 
+static void _MeasureZeros(OE_SHA256Context* context, size_t size)
+{
+    char zeros[128];
+
+    memset(zeros, 0, sizeof(zeros));
+
+    while (size)
+    {
+        if (size < sizeof(zeros))
+        {
+            OE_SHA256Update(context, zeros, size);
+            size -= size;
+        }
+        else
+        {
+            OE_SHA256Update(context, zeros, sizeof(zeros));
+            size -= sizeof(zeros);
+        }
+    }
+}
+
 static void _MeasureECreate(OE_SHA256Context* context, uint64_t enclaveSize)
 {
     const uint32_t ssaframesize = 1;
@@ -37,7 +58,7 @@ static void _MeasureECreate(OE_SHA256Context* context, uint64_t enclaveSize)
     OE_SHA256Update(context, "ECREATE", 8);
     OE_SHA256Update(context, &ssaframesize, sizeof(uint32_t));
     OE_SHA256Update(context, &enclaveSize, sizeof(uint64_t));
-    OE_SHA256UpdateZeros(context, 44);
+    _MeasureZeros(context, 44);
 }
 
 static void _MeasureEExtend(
@@ -56,7 +77,7 @@ static void _MeasureEExtend(
 
         OE_SHA256Update(context, "EEXTEND", 8);
         OE_SHA256Update(context, &moffset, sizeof(moffset));
-        OE_SHA256UpdateZeros(context, 48);
+        _MeasureZeros(context, 48);
         OE_SHA256Update(context, (const uint8_t*)page + pgoff, CHUNK_SIZE);
     }
 }
@@ -71,7 +92,7 @@ static void _MeasureEAdd(
     OE_SHA256Update(context, "EADD\0\0\0", 8);
     OE_SHA256Update(context, &vaddr, sizeof(vaddr));
     OE_SHA256Update(context, &flags, sizeof(flags));
-    OE_SHA256UpdateZeros(context, 40);
+    _MeasureZeros(context, 40);
 
     if (extend)
         _MeasureEExtend(context, vaddr, flags, page);
