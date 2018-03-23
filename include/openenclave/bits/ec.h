@@ -7,6 +7,7 @@
 #include "../result.h"
 #include "../types.h"
 #include "sha.h"
+#include "hash.h"
 
 OE_EXTERNC_BEGIN
 
@@ -167,7 +168,9 @@ OE_Result OE_ECFree(OE_EC_KEY* key);
  * This function uses an EC private key to sign a message with the given hash.
  *
  * @param privateKey - EC private key
- * @param hash - SHA-256 hash of the message being signed
+ * @param hashType - type of hash parameter
+ * @param hashData - hash of the message being signed
+ * @param hashSize - size in bytes of hash data
  * @param signature - signature buffer (may be null)
  * @param[in,out] signatureSize - size of signature buffer on input; size of
  *     actual signature on output. If the former is less than the latter, this
@@ -178,7 +181,9 @@ OE_Result OE_ECFree(OE_EC_KEY* key);
  */
 OE_Result OE_ECSign(
     const OE_EC_KEY* privateKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     uint8_t* signature,
     size_t* signatureSize);
 
@@ -189,7 +194,9 @@ OE_Result OE_ECSign(
  * a given EC key.
  *
  * @param publicKey - EC public key
- * @param hash - SHA-256 hash of the message being verified
+ * @param hashType - type of hash parameter
+ * @param hashData - hash of the message being signed
+ * @param hashSize - size in bytes of hash data
  * @param signature - expected signature
  * @param signatureSize - size in bytes of the expected signature
  *
@@ -197,7 +204,9 @@ OE_Result OE_ECSign(
  */
 OE_Result OE_ECVerify(
     const OE_EC_KEY* publicKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     const uint8_t* signature,
     size_t signatureSize);
 

@@ -43,6 +43,20 @@ OE_INLINE bool _ValidImpl(const OE_RSA_KEY_IMPL* impl)
     return impl && impl->magic == OE_RSA_KEY_MAGIC && impl->rsa ? true : false;
 }
 
+static int _MapHashType(OE_HashType md)
+{
+    switch (md)
+    {
+        case OE_HASH_TYPE_SHA256:
+            return NID_sha256;
+        case OE_HASH_TYPE_SHA512:
+            return NID_sha512;
+    }
+
+    /* Unreachable */
+    return 0;
+}
+
 /*
 **==============================================================================
 **
@@ -212,15 +226,18 @@ done:
 
 OE_Result OE_RSASign(
     const OE_RSA_KEY* privateKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     uint8_t* signature,
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)privateKey;
+    int type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hash || !signatureSize)
+    if (!_ValidImpl(impl) || !hashData || !hashSize || !signatureSize)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -253,9 +270,9 @@ OE_Result OE_RSASign(
     /* Verify that the data is signed by the given RSA private key */
     unsigned int siglen;
     if (!RSA_sign(
-            NID_sha256,
-            hash->buf,
-            sizeof(OE_SHA256),
+            type,
+            hashData,
+            hashSize,
             signature,
             &siglen,
             impl->rsa))
@@ -280,15 +297,18 @@ done:
 
 OE_Result OE_RSAVerify(
     const OE_RSA_KEY* publicKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     const uint8_t* signature,
     size_t signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)publicKey;
+    int type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hash || !signature || signatureSize == 0)
+    if (!_ValidImpl(impl) || !hashSize || !hashData || !signature || signatureSize == 0)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -299,9 +319,9 @@ OE_Result OE_RSAVerify(
 
     /* Verify that the data is signed by the given RSA private key */
     if (!RSA_verify(
-            NID_sha256,
-            hash->buf,
-            sizeof(OE_SHA256),
+            type,
+            hashData,
+            hashSize,
             signature,
             signatureSize,
             impl->rsa))

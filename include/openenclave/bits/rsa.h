@@ -7,6 +7,7 @@
 #include "../result.h"
 #include "../types.h"
 #include "sha.h"
+#include "hash.h"
 
 OE_EXTERNC_BEGIN
 
@@ -125,7 +126,9 @@ OE_Result OE_RSAFree(OE_RSA_KEY* key);
  * This function uses an RSA private key to sign a message with the given hash.
  *
  * @param privateKey - RSA private key
- * @param hash - SHA-256 hash of the message being signed
+ * @param hashType - type of hash parameter
+ * @param hashData - hash of the message being signed
+ * @param hashSize - size in bytes of hash data
  * @param signature - signature buffer (may be null)
  * @param[in,out] signatureSize - size of signature buffer on input; size of
  *     actual signature on output. If the former is less than the latter, this
@@ -136,7 +139,9 @@ OE_Result OE_RSAFree(OE_RSA_KEY* key);
  */
 OE_Result OE_RSASign(
     const OE_RSA_KEY* privateKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     uint8_t* signature,
     size_t* signatureSize);
 
@@ -147,6 +152,9 @@ OE_Result OE_RSASign(
  * a given RSA key.
  *
  * @param publicKey - RSA public key
+ * @param hashType - type of hash parameter
+ * @param hashData - hash of the message being signed
+ * @param hashSize - size in bytes of hash data
  * @param hash - SHA-256 hash of the message being verified
  * @param signature - expected signature
  * @param signatureSize - size in bytes of the expected signature
@@ -155,7 +163,9 @@ OE_Result OE_RSASign(
  */
 OE_Result OE_RSAVerify(
     const OE_RSA_KEY* publicKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     const uint8_t* signature,
     size_t signatureSize);
 

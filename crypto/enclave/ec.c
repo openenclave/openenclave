@@ -63,6 +63,20 @@ OE_INLINE void _ClearImpl(OE_EC_KEY_IMPL* impl)
         OE_Memset(impl, 0, sizeof(OE_EC_KEY_IMPL));
 }
 
+static mbedtls_md_type_t _MapHashType(OE_HashType md)
+{
+    switch (md)
+    {
+        case OE_HASH_TYPE_SHA256:
+            return MBEDTLS_MD_SHA256;
+        case OE_HASH_TYPE_SHA512:
+            return MBEDTLS_MD_SHA512;
+    }
+
+    /* Unreachable */
+    return 0;
+}
+
 /*
 **==============================================================================
 **
@@ -237,7 +251,9 @@ OE_CATCH:
 
 OE_Result OE_ECSign(
     const OE_EC_KEY* privateKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     uint8_t* signature,
     size_t* signatureSize)
 {
@@ -245,9 +261,10 @@ OE_Result OE_ECSign(
     const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)privateKey;
     uint8_t buffer[MBEDTLS_MPI_MAX_SIZE];
     size_t bufferSize = 0;
+    mbedtls_md_type_t type = _MapHashType(hashType);
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !hash || !signatureSize)
+    if (!_ValidImpl(impl) || !hashData || !hashSize || !signatureSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* If signature buffer is null, then signature size must be zero */
@@ -258,9 +275,9 @@ OE_Result OE_ECSign(
     // MEBEDTLS provides no way to determine the size of the buffer up front.
     if (mbedtls_pk_sign(
             (mbedtls_pk_context*)&impl->pk,
-            MBEDTLS_MD_SHA256,
-            hash->buf,
-            0,
+            type,
+            hashData,
+            hashSize,
             buffer,
             &bufferSize,
             NULL,
@@ -289,23 +306,26 @@ OE_CATCH:
 
 OE_Result OE_ECVerify(
     const OE_EC_KEY* publicKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     const uint8_t* signature,
     size_t signatureSize)
 {
     const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)publicKey;
     OE_Result result = OE_UNEXPECTED;
+    mbedtls_md_type_t type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hash || !signature || signatureSize == 0)
+    if (!_ValidImpl(impl) || !hashData || !hashSize || !signature || !signatureSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Verify the signature */
     if (mbedtls_pk_verify(
             (mbedtls_pk_context*)&impl->pk,
-            MBEDTLS_MD_SHA256,
-            hash->buf,
-            0,
+            type,
+            hashData,
+            hashSize,
             signature,
             signatureSize) != 0)
     {

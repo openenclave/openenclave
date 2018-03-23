@@ -188,7 +188,9 @@ done:
 
 OE_Result OE_ECSign(
     const OE_EC_KEY* privateKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     uint8_t* signature,
     size_t* signatureSize)
 {
@@ -197,7 +199,14 @@ OE_Result OE_ECSign(
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hash || !signatureSize)
+    if (!_ValidImpl(impl) || !hashData || !hashSize || !signatureSize)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Check that hash buffer is big enough (hashType is size of that hash) */
+    if (hashType > hashSize)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -229,7 +238,12 @@ OE_Result OE_ECSign(
     {
         size_t size;
 
-        if (EVP_PKEY_sign(ctx, NULL, &size, hash->buf, sizeof(OE_SHA256)) <= 0)
+        if (EVP_PKEY_sign(
+            ctx, 
+            NULL, 
+            &size, 
+            hashData,
+            hashSize) <= 0)
         {
             result = OE_FAILURE;
             goto done;
@@ -246,9 +260,9 @@ OE_Result OE_ECSign(
     }
 
     /* Compute the signature */
-    if (EVP_PKEY_sign(
-            ctx, signature, signatureSize, hash->buf, sizeof(OE_SHA256)) <= 0)
+    if (EVP_PKEY_sign(ctx, signature, signatureSize, hashData, hashSize) <= 0)
     {
+        result = OE_FAILURE;
         goto done;
     }
 
@@ -264,7 +278,9 @@ done:
 
 OE_Result OE_ECVerify(
     const OE_EC_KEY* publicKey,
-    const OE_SHA256* hash,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
     const uint8_t* signature,
     size_t signatureSize)
 {
@@ -273,7 +289,14 @@ OE_Result OE_ECVerify(
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hash || !signature || !signatureSize)
+    if (!_ValidImpl(impl) || !hashData || !hashSize || !signature || !signatureSize)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Check that hash buffer is big enough (hashType is size of that hash) */
+    if (hashType > hashSize)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -296,7 +319,7 @@ OE_Result OE_ECVerify(
 
     /* Compute the signature */
     if (EVP_PKEY_verify(
-            ctx, signature, signatureSize, hash->buf, sizeof(OE_SHA256)) <= 0)
+            ctx, signature, signatureSize, hashData, hashSize) <= 0)
     {
         goto done;
     }
