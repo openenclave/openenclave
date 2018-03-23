@@ -34,7 +34,10 @@ done:
     return result;
 }
 
-OE_Result OE_SHA256Update(OE_SHA256Context* context, const void* data, size_t size)
+OE_Result OE_SHA256Update(
+    OE_SHA256Context* context,
+    const void* data,
+    size_t size)
 {
     OE_Result result = OE_INVALID_PARAMETER;
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
