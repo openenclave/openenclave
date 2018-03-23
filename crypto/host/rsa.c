@@ -269,13 +269,7 @@ OE_Result OE_RSASign(
 
     /* Verify that the data is signed by the given RSA private key */
     unsigned int siglen;
-    if (!RSA_sign(
-            type,
-            hashData,
-            hashSize,
-            signature,
-            &siglen,
-            impl->rsa))
+    if (!RSA_sign(type, hashData, hashSize, signature, &siglen, impl->rsa))
     {
         result = OE_FAILURE;
         goto done;
@@ -308,7 +302,8 @@ OE_Result OE_RSAVerify(
     int type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hashSize || !hashData || !signature || signatureSize == 0)
+    if (!_ValidImpl(impl) || !hashSize || !hashData || !signature ||
+        signatureSize == 0)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -319,12 +314,7 @@ OE_Result OE_RSAVerify(
 
     /* Verify that the data is signed by the given RSA private key */
     if (!RSA_verify(
-            type,
-            hashData,
-            hashSize,
-            signature,
-            signatureSize,
-            impl->rsa))
+            type, hashData, hashSize, signature, signatureSize, impl->rsa))
     {
         result = OE_FAILURE;
         goto done;

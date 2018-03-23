@@ -238,12 +238,7 @@ OE_Result OE_ECSign(
     {
         size_t size;
 
-        if (EVP_PKEY_sign(
-            ctx, 
-            NULL, 
-            &size, 
-            hashData,
-            hashSize) <= 0)
+        if (EVP_PKEY_sign(ctx, NULL, &size, hashData, hashSize) <= 0)
         {
             result = OE_FAILURE;
             goto done;
@@ -289,7 +284,8 @@ OE_Result OE_ECVerify(
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hashData || !hashSize || !signature || !signatureSize)
+    if (!_ValidImpl(impl) || !hashData || !hashSize || !signature ||
+        !signatureSize)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -318,8 +314,7 @@ OE_Result OE_ECVerify(
         goto done;
 
     /* Compute the signature */
-    if (EVP_PKEY_verify(
-            ctx, signature, signatureSize, hashData, hashSize) <= 0)
+    if (EVP_PKEY_verify(ctx, signature, signatureSize, hashData, hashSize) <= 0)
     {
         goto done;
     }

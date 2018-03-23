@@ -6,8 +6,8 @@
 
 #include "../result.h"
 #include "../types.h"
-#include "sha.h"
 #include "hash.h"
+#include "sha.h"
 
 OE_EXTERNC_BEGIN
 

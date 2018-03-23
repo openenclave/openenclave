@@ -317,7 +317,8 @@ OE_Result OE_RSAVerify(
     mbedtls_md_type_t type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hashData || !hashSize || !signature || !signatureSize)
+    if (!_ValidImpl(impl) || !hashData || !hashSize || !signature ||
+        !signatureSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Verify the signature */

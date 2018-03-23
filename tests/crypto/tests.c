@@ -141,12 +141,24 @@ static void TestRSASign()
         (const uint8_t*)RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSASign(&key, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, &signatureSize);
+    r = OE_RSASign(
+        &key,
+        OE_HASH_TYPE_SHA256,
+        &HASH,
+        sizeof(HASH),
+        signature,
+        &signatureSize);
     assert(r == OE_BUFFER_TOO_SMALL);
 
     assert(signature = (uint8_t*)malloc(signatureSize));
 
-    r = OE_RSASign(&key, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, &signatureSize);
+    r = OE_RSASign(
+        &key,
+        OE_HASH_TYPE_SHA256,
+        &HASH,
+        sizeof(HASH),
+        signature,
+        &signatureSize);
     assert(r == OE_OK);
 
     assert(signatureSize == RSA_SIGNATURE_SIZE);
@@ -175,7 +187,13 @@ static void TestRSAVerify()
         (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     assert(r == OE_OK);
 
-    r = OE_RSAVerify(&key, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), RSA_SIGNATURE, RSA_SIGNATURE_SIZE);
+    r = OE_RSAVerify(
+        &key,
+        OE_HASH_TYPE_SHA256,
+        &HASH,
+        sizeof(HASH),
+        RSA_SIGNATURE,
+        RSA_SIGNATURE_SIZE);
     assert(r == OE_OK);
 
     printf("=== passed TestRSAVerify\n");
@@ -464,12 +482,24 @@ static void TestECSignAndVerify()
             (const uint8_t*)EC_PRIVATE_KEY, sizeof(EC_PRIVATE_KEY), &key);
         assert(r == OE_OK);
 
-        r = OE_ECSign(&key, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, &signatureSize);
+        r = OE_ECSign(
+            &key,
+            OE_HASH_TYPE_SHA256,
+            &HASH,
+            sizeof(HASH),
+            signature,
+            &signatureSize);
         assert(r == OE_BUFFER_TOO_SMALL);
 
         assert(signature = (uint8_t*)malloc(signatureSize));
 
-        r = OE_ECSign(&key, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, &signatureSize);
+        r = OE_ECSign(
+            &key,
+            OE_HASH_TYPE_SHA256,
+            &HASH,
+            sizeof(HASH),
+            signature,
+            &signatureSize);
         assert(r == OE_OK);
 
         assert(signature != NULL);
@@ -483,10 +513,22 @@ static void TestECSignAndVerify()
             (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
         assert(r == OE_OK);
 
-        r = OE_ECVerify(&key, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, signatureSize);
+        r = OE_ECVerify(
+            &key,
+            OE_HASH_TYPE_SHA256,
+            &HASH,
+            sizeof(HASH),
+            signature,
+            signatureSize);
         assert(r == OE_OK);
 
-        r = OE_ECVerify(&key, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), EC_SIGNATURE, EC_SIGNATURE_SIZE);
+        r = OE_ECVerify(
+            &key,
+            OE_HASH_TYPE_SHA256,
+            &HASH,
+            sizeof(HASH),
+            EC_SIGNATURE,
+            EC_SIGNATURE_SIZE);
         assert(r == OE_OK);
     }
 
@@ -512,15 +554,33 @@ static void TestRSAGenerate()
     r = OE_RSAGenerate(1024, 3, &privateKey, &publicKey);
     assert(r == OE_OK);
 
-    r = OE_RSASign(&privateKey, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, &signatureSize);
+    r = OE_RSASign(
+        &privateKey,
+        OE_HASH_TYPE_SHA256,
+        &HASH,
+        sizeof(HASH),
+        signature,
+        &signatureSize);
     assert(r == OE_BUFFER_TOO_SMALL);
 
     assert(signature = (uint8_t*)malloc(signatureSize));
 
-    r = OE_RSASign(&privateKey, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, &signatureSize);
+    r = OE_RSASign(
+        &privateKey,
+        OE_HASH_TYPE_SHA256,
+        &HASH,
+        sizeof(HASH),
+        signature,
+        &signatureSize);
     assert(r == OE_OK);
 
-    r = OE_RSAVerify(&publicKey, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, signatureSize);
+    r = OE_RSAVerify(
+        &publicKey,
+        OE_HASH_TYPE_SHA256,
+        &HASH,
+        sizeof(HASH),
+        signature,
+        signatureSize);
     assert(r == OE_OK);
 
     free(signature);
@@ -543,15 +603,33 @@ static void TestECGenerate()
     r = OE_ECGenerate("secp521r1", &privateKey, &publicKey);
     assert(r == OE_OK);
 
-    r = OE_ECSign(&privateKey, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, &signatureSize);
+    r = OE_ECSign(
+        &privateKey,
+        OE_HASH_TYPE_SHA256,
+        &HASH,
+        sizeof(HASH),
+        signature,
+        &signatureSize);
     assert(r == OE_BUFFER_TOO_SMALL);
 
     assert(signature = (uint8_t*)malloc(signatureSize));
 
-    r = OE_ECSign(&privateKey, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, &signatureSize);
+    r = OE_ECSign(
+        &privateKey,
+        OE_HASH_TYPE_SHA256,
+        &HASH,
+        sizeof(HASH),
+        signature,
+        &signatureSize);
     assert(r == OE_OK);
 
-    r = OE_ECVerify(&publicKey, OE_HASH_TYPE_SHA256, &HASH, sizeof(HASH), signature, signatureSize);
+    r = OE_ECVerify(
+        &publicKey,
+        OE_HASH_TYPE_SHA256,
+        &HASH,
+        sizeof(HASH),
+        signature,
+        signatureSize);
     assert(r == OE_OK);
 
     free(signature);

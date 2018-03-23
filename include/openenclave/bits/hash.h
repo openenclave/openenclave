@@ -9,12 +9,10 @@
 OE_EXTERNC_BEGIN
 
 /* Message digest types supported by RSA and EC digital signing */
-typedef enum _OE_HashType
-{
+typedef enum _OE_HashType {
     OE_HASH_TYPE_SHA256 = 32, /* hash size in bytes */
     OE_HASH_TYPE_SHA512 = 64, /* hash size in bytes */
-}
-OE_HashType;
+} OE_HashType;
 
 OE_EXTERNC_END
 
