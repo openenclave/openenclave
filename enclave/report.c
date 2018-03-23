@@ -62,13 +62,12 @@ OE_Result SGX_CreateReport(
 
     /* Invoke EREPORT instruction */
     asm volatile(
-        "mov %0, %%rbx\n\t" /* target info */
-        "mov %1, %%rcx\n\t" /* report data */
-        "mov %2, %%rdx\n\t" /* report */
-        "mov %3, %%rax\n\t" /* EREPORT */
-        "ENCLU\n\t"
+        "ENCLU"
         :
-        : "m"(ti), "m"(rd), "m"(r), "i"(ENCLU_EREPORT));
+        : "a"(ENCLU_EREPORT), "b"(ti), "c"(rd), "d"(r)
+        : "memory"
+        );
+
 
     /* Copy REPORT to caller's buffer */
     OE_Memcpy(report, r, sizeof(SGX_Report));
