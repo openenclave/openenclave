@@ -766,7 +766,7 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args)
         callEnclaveArgs.result = OE_UNEXPECTED;
     }
 
-    /* Peform the ECALL */
+    /* Perform the ECALL */
     {
         uint64_t argOut = 0;
 

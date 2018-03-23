@@ -66,6 +66,10 @@ const char* OE_ResultStr(OE_Result result)
         case OE_ALREADY_IN_USE:
         case OE_SERVICE_UNAVAILABLE:
             return "OE_SERVICE_UNAVAILABLE";
+        case OE_ENCLAVE_CRASHING:
+            return "OE_ENCLAVE_CRASHING";
+        case OE_ENCLAVE_CRASHED:
+            return "OE_ENCLAVE_CRASHED";
     }
 
     return "UNKNOWN";

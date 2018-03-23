@@ -22,7 +22,6 @@ add_library(oeenclave STATIC
     string.c
     td.c
     thread.c
-    abort.S
     exit.S
     main.S
     )
