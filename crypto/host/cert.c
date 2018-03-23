@@ -18,10 +18,74 @@
 /*
 **==============================================================================
 **
-** Local functions
+** Local definitions:
 **
 **==============================================================================
 */
+
+#define OE_CERT_MAGIC 0x882b9943ac1ca95d
+
+typedef struct _OE_CertImpl
+{
+    uint64_t magic;
+    X509* x509;
+}
+OE_CertImpl;
+
+static void _InitCertImpl(OE_CertImpl* impl, X509* x509)
+{
+    if (impl)
+    {
+        impl->magic = OE_CERT_MAGIC;
+        impl->x509 = x509;
+    }
+}
+
+static bool _ValidCertImpl(const OE_CertImpl* impl)
+{
+    return impl && (impl->magic == OE_CERT_MAGIC) && impl->x509;
+}
+
+static void _ClearCertImpl(OE_CertImpl* impl)
+{
+    if (impl)
+    {
+        impl->magic = 0;
+        impl->x509 = NULL;
+    }
+}
+
+#define OE_CERT_CHAIN_MAGIC 0xe863a8d48452376a
+
+typedef struct _OE_CertChainImpl
+{
+    uint64_t magic;
+    STACK_OF(X509)* sk;
+}
+OE_CertChainImpl;
+
+static void _InitCertChainImpl(OE_CertChainImpl* impl, STACK_OF(X509)* sk)
+{
+    if (impl)
+    {
+        impl->magic = OE_CERT_CHAIN_MAGIC;
+        impl->sk = sk;
+    }
+}
+
+static bool _ValidCertChainImpl(const OE_CertChainImpl* impl)
+{
+    return impl && (impl->magic == OE_CERT_CHAIN_MAGIC) && impl->sk;
+}
+
+static void _ClearCertChainImpl(OE_CertChainImpl* impl)
+{
+    if (impl)
+    {
+        impl->magic = 0;
+        impl->sk = NULL;
+    }
+}
 
 static STACK_OF(X509) * _ReadCertChain(const char* pem)
 {
@@ -143,14 +207,16 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert** cert)
+OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
 {
     OE_Result result = OE_UNEXPECTED;
+    OE_CertImpl* impl = (OE_CertImpl*)cert;
     BIO* bio = NULL;
     X509* x509 = NULL;
 
-    if (cert)
-        *cert = NULL;
+    /* Zero-initialize the implementation */
+    if (impl)
+        impl->magic = 0;
 
     /* Check parameters */
     if (!pemData || !pemSize || !cert)
@@ -183,7 +249,7 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert** cert)
         goto done;
     }
 
-    *cert = (OE_Cert*)x509;
+    _InitCertImpl(impl, x509);
     x509 = NULL;
 
     result = OE_OK;
@@ -199,22 +265,40 @@ done:
     return result;
 }
 
-void OE_CertFree(OE_Cert* cert)
+OE_Result OE_CertFree(OE_Cert* cert)
 {
-    if (cert)
-        X509_free((X509*)cert);
+    OE_Result result = OE_UNEXPECTED;
+    OE_CertImpl* impl = (OE_CertImpl*)cert;
+
+    /* Check parameters */
+    if (!_ValidCertImpl(impl))
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Free the certificate */
+    X509_free(impl->x509);
+    _ClearCertImpl(impl);
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 OE_Result OE_CertChainReadPEM(
     const void* pemData,
     size_t pemSize,
-    OE_CertChain** chain)
+    OE_CertChain* chain)
 {
     OE_Result result = OE_UNEXPECTED;
+    OE_CertChainImpl* impl = (OE_CertChainImpl*)chain;
     STACK_OF(X509)* sk = NULL;
 
-    if (chain)
-        *chain = NULL;
+    /* Zero-initialize the implementation */
+    if (impl)
+        impl->magic = 0;
 
     /* Check parameters */
     if (!pemData || !pemSize || !chain)
@@ -240,7 +324,7 @@ OE_Result OE_CertChainReadPEM(
         goto done;
     }
 
-    *chain = (OE_CertChain*)sk;
+    _InitCertChainImpl(impl, sk);
 
     result = OE_OK;
 
@@ -249,19 +333,39 @@ done:
     return result;
 }
 
-void OE_CertChainFree(OE_CertChain* chain)
+OE_Result OE_CertChainFree(OE_CertChain* __chain)
 {
-    if (chain)
-        sk_X509_pop_free((STACK_OF(X509)*)chain, X509_free);
+    OE_Result result = OE_UNEXPECTED;
+    OE_CertChainImpl* impl = (OE_CertChainImpl*)__chain;
+
+    /* Check the parameter */
+    if (_ValidCertChainImpl(impl))
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Release the stack of certificates */
+    sk_X509_pop_free(impl->sk, X509_free);
+
+    /* Clear the implementation */
+    _ClearCertChainImpl(impl);
+    
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 OE_Result OE_CertVerify(
-    OE_Cert* cert,
-    OE_CertChain* chain,
+    OE_Cert* __cert,
+    OE_CertChain* __chain,
     OE_CRL* crl, /* ATTN: placeholder for future feature work */
     OE_VerifyCertError* error)
 {
     OE_Result result = OE_UNEXPECTED;
+    OE_CertImpl* certImpl = (OE_CertImpl*)__cert;
+    OE_CertChainImpl* chainImpl = (OE_CertChainImpl*)__chain;
     X509_STORE_CTX* ctx = NULL;
     X509* x509 = NULL;
 
@@ -270,7 +374,7 @@ OE_Result OE_CertVerify(
         *error->buf = '\0';
 
     /* Reject null parameters */
-    if (!cert || !chain)
+    if (!_ValidCertImpl(certImpl) || !_ValidCertChainImpl(chainImpl))
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -281,7 +385,7 @@ OE_Result OE_CertVerify(
      * likely that some state is stored in the certificate upon successful
      * verification. We can clear this by making a copy.
      */
-    if (!(x509 = _CloneX509((X509*)cert)))
+    if (!(x509 = _CloneX509(certImpl->x509)))
     {
         result = OE_FAILURE;
         goto done;
@@ -308,7 +412,7 @@ OE_Result OE_CertVerify(
     X509_STORE_CTX_set_cert(ctx, x509);
 
     /* Set the CA chain into the verification context */
-    X509_STORE_CTX_trusted_stack(ctx, (STACK_OF(X509)*)chain);
+    X509_STORE_CTX_trusted_stack(ctx, chainImpl->sk);
 
     /* Finally verify the certificate */
     if (!X509_verify_cert(ctx))

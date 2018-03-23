@@ -6,6 +6,7 @@
 #include <mbedtls/x509_crt.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,35 +15,41 @@
 /*
 **==============================================================================
 **
-** Local functions
+** Local definitions:
 **
 **==============================================================================
 */
 
-/* Allocate and initialize a new MBEDTLS X509 certificate */
-static mbedtls_x509_crt* _CrtNew()
+typedef struct _OE_CertImpl
 {
-    mbedtls_x509_crt* crt = NULL;
+    uint64_t magic;
+    mbedtls_x509_crt cert;
+}
+OE_CertImpl;
 
-    /* Allocate memory for the certificate */
-    if (!(crt = (mbedtls_x509_crt*)malloc(sizeof(mbedtls_x509_crt))))
-        goto done;
+OE_STATIC_ASSERT(sizeof(OE_CertImpl) < sizeof(OE_Cert));
 
-    /* Iniialize the certificate */
-    mbedtls_x509_crt_init(crt);
+#define OE_CERT_MAGIC 0x882b9943ac1ca95d
 
-done:
-    return crt;
+static bool _ValidCertImpl(const OE_CertImpl* impl)
+{
+    return impl && (impl->magic == OE_CERT_MAGIC);
 }
 
-/* Free an MBEDTLS X509 certificate */
-static void _CrtFree(mbedtls_x509_crt* crt)
+#define OE_CERT_CHAIN_MAGIC 0xe863a8d48452376a
+
+typedef struct _OE_CertChainImpl
 {
-    if (crt)
-    {
-        mbedtls_x509_crt_free(crt);
-        free(crt);
-    }
+    uint64_t magic;
+    mbedtls_x509_crt chain;
+}
+OE_CertChainImpl;
+
+OE_STATIC_ASSERT(sizeof(OE_CertChainImpl) < sizeof(OE_CertChain));
+
+static bool _ValidCertChainImpl(const OE_CertChainImpl* impl)
+{
+    return impl && (impl->magic == OE_CERT_CHAIN_MAGIC);
 }
 
 /* Read an MBEDTLS X509 certificate from PEM data */
@@ -117,14 +124,15 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert** cert)
+OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
 {
     OE_Result result = OE_UNEXPECTED;
-    mbedtls_x509_crt* crt = NULL;
+    OE_CertImpl* impl = (OE_CertImpl*)cert;
     size_t len;
 
-    if (cert)
-        *cert = NULL;
+    /* Clear the implementation */
+    if (impl)
+        impl->magic = 0;
 
     /* Check parameters */
     if (!pemData || !pemSize || !cert)
@@ -140,46 +148,60 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert** cert)
         goto done;
     }
 
-    /* Allocate memory for the certificate */
-    if (!(crt = _CrtNew()))
-    {
-        result = OE_OUT_OF_MEMORY;
-        goto done;
-    }
+    /* Initialize the implementation */
+    mbedtls_x509_crt_init(&impl->cert);
+    impl->magic = OE_CERT_MAGIC;
 
     /* Read the PEM buffer into DER format */
-    if (_CrtRead(crt, (const char*)pemData, &len) != 0)
+    if (_CrtRead(&impl->cert, (const char*)pemData, &len) != 0)
         goto done;
-
-    *cert = (OE_Cert*)crt;
-    crt = NULL;
 
     result = OE_OK;
 
 done:
 
-    if (crt)
-        _CrtFree(crt);
+    if (result != OE_OK && impl->magic == OE_CERT_MAGIC)
+    {
+        mbedtls_x509_crt_free(&impl->cert);
+        impl->magic = 0;
+    }
 
     return result;
 }
 
-void OE_CertFree(OE_Cert* cert)
+OE_Result OE_CertFree(OE_Cert* cert)
 {
-    if (cert)
-        _CrtFree((mbedtls_x509_crt*)cert);
+    OE_Result result = OE_UNEXPECTED;
+    OE_CertImpl* impl = (OE_CertImpl*)cert;
+
+    /* Check the parameter */
+    if (!_ValidCertImpl(impl))
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Free the certificate */
+    mbedtls_x509_crt_free(&impl->cert);
+    impl->magic = 0;
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 OE_Result OE_CertChainReadPEM(
     const void* pemData,
     size_t pemSize,
-    OE_CertChain** chain)
+    OE_CertChain* chain)
 {
     OE_Result result = OE_UNEXPECTED;
-    mbedtls_x509_crt* crt = NULL;
+    OE_CertChainImpl* impl = (OE_CertChainImpl*)chain;
 
-    if (chain)
-        *chain = NULL;
+    /* Clear the implementation */
+    if (impl)
+        impl->magic = 0;
 
     /* Check parameters */
     if (!pemData || !pemSize || !chain)
@@ -195,34 +217,47 @@ OE_Result OE_CertChainReadPEM(
         goto done;
     }
 
-    /* Allocate memory for the certificate */
-    if (!(crt = _CrtNew()))
-    {
-        result = OE_OUT_OF_MEMORY;
-        goto done;
-    }
+    /* Initialize the implementation */
+    mbedtls_x509_crt_init(&impl->chain);
+    impl->magic = OE_CERT_CHAIN_MAGIC;
 
     /* Read the PEM buffer into DER format */
-    if (_CrtChainRead(crt, (const char*)pemData) != 0)
+    if (_CrtChainRead(&impl->chain, (const char*)pemData) != 0)
         goto done;
-
-    *chain = (OE_CertChain*)crt;
-    crt = NULL;
 
     result = OE_OK;
 
 done:
 
-    if (crt)
-        _CrtFree(crt);
+    if (result != OE_OK && impl->magic == OE_CERT_MAGIC)
+    {
+        mbedtls_x509_crt_free(&impl->chain);
+        impl->magic = 0;
+    }
 
     return result;
 }
 
-void OE_CertChainFree(OE_CertChain* chain)
+OE_Result OE_CertChainFree(OE_CertChain* chain)
 {
-    if (chain)
-        _CrtFree((mbedtls_x509_crt*)chain);
+    OE_Result result = OE_UNEXPECTED;
+    OE_CertChainImpl* impl = (OE_CertChainImpl*)chain;
+
+    /* Check the parameter */
+    if (!_ValidCertChainImpl(impl))
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Free the certificate */
+    mbedtls_x509_crt_free(&impl->chain);
+    impl->magic = 0;
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 OE_Result OE_CertVerify(
@@ -232,27 +267,25 @@ OE_Result OE_CertVerify(
     OE_VerifyCertError* error)
 {
     OE_Result result = OE_UNEXPECTED;
-    mbedtls_x509_crl cacrl;
+    OE_CertImpl* certImpl = (OE_CertImpl*)cert;
+    OE_CertChainImpl* chainImpl = (OE_CertChainImpl*)chain;
     uint32_t flags = 0;
 
-    /* Initialize error to NULL for now */
+    /* Initialize error */
     if (error)
         *error->buf = '\0';
 
     /* Reject null parameters */
-    if (!cert || !chain)
+    if (!_ValidCertImpl(certImpl) || !_ValidCertChainImpl(chainImpl))
     {
         result = OE_INVALID_PARAMETER;
         goto done;
     }
 
-    /* ATTN: Convert crl to cacrl here (future feature work) */
-    OE_Memset(&cacrl, 0, sizeof(cacrl));
-
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
-            (mbedtls_x509_crt*)cert,
-            (mbedtls_x509_crt*)chain,
+            &certImpl->cert,
+            &chainImpl->chain,
             NULL,
             NULL,
             &flags,

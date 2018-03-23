@@ -9,9 +9,19 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _OE_Cert OE_Cert;
+typedef struct _OE_Cert
+{
+    /* Internal private implementation */
+    uint64_t impl[128];
+}
+OE_Cert;
 
-typedef struct _OE_CertChain OE_CertChain;
+typedef struct _OE_CertChain
+{
+    /* Internal private implementation */
+    uint64_t impl[128];
+}
+OE_CertChain;
 
 typedef struct _OE_CRL OE_CRL;
 
@@ -36,7 +46,7 @@ typedef struct _OE_VerifyCertError
  *
  * @return OE_OK load was successful
  */
-OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert** cert);
+OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert);
 
 /**
  * Read a certificate chain from PEM format.
@@ -62,7 +72,7 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert** cert);
 OE_Result OE_CertChainReadPEM(
     const void* pemData,
     size_t pemSize,
-    OE_CertChain** chain);
+    OE_CertChain* chain);
 
 /**
  * Releases a certificate
@@ -73,7 +83,7 @@ OE_Result OE_CertChainReadPEM(
  *
  * @return OE_OK load was successful
  */
-void OE_CertFree(OE_Cert* cert);
+OE_Result OE_CertFree(OE_Cert* cert);
 
 /**
  * Releases a certificate chain
@@ -84,7 +94,7 @@ void OE_CertFree(OE_Cert* cert);
  *
  * @return OE_OK load was successful
  */
-void OE_CertChainFree(OE_CertChain* chain);
+OE_Result OE_CertChainFree(OE_CertChain* chain);
 
 /**
  * Verify the given certificate against a certificate chain.
@@ -95,6 +105,7 @@ void OE_CertChainFree(OE_CertChain* chain);
  *
  * @param cert - the certificate
  * @param chain - the certificate chain
+ * @param crl - the certificate revocation chain
  * @param error - string error if OE_VERIFY_FAILED returned (may be null).
  *        The caller is responsible for passing this string to free().
  *
@@ -106,7 +117,7 @@ void OE_CertChainFree(OE_CertChain* chain);
 OE_Result OE_CertVerify(
     OE_Cert* cert,
     OE_CertChain* chain,
-    OE_CRL* crl,
+    OE_CRL* crl, /* ATTN: placeholder for future capability */
     OE_VerifyCertError* error);
 
 OE_EXTERNC_END

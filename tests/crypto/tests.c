@@ -311,8 +311,8 @@ static void TestCertVerifyGood()
 
     OE_Result r;
     OE_VerifyCertError error;
-    OE_Cert* cert = NULL;
-    OE_CertChain* chain = NULL;
+    OE_Cert cert;
+    OE_CertChain chain;
     OE_CRL* crl = NULL;
 
     r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
@@ -321,11 +321,11 @@ static void TestCertVerifyGood()
     r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
     assert(r == OE_OK);
 
-    r = OE_CertVerify(cert, chain, crl, &error);
+    r = OE_CertVerify(&cert, &chain, crl, &error);
     assert(r == OE_OK);
 
-    OE_CertFree(cert);
-    OE_CertChainFree(chain);
+    OE_CertFree(&cert);
+    OE_CertChainFree(&chain);
 
     printf("=== passed TestCertVerifyGood()\n");
 }
@@ -336,8 +336,8 @@ static void TestCertVerifyBad()
 
     OE_Result r;
     OE_VerifyCertError error;
-    OE_Cert* cert = NULL;
-    OE_CertChain* chain = NULL;
+    OE_Cert cert;
+    OE_CertChain chain;
     OE_CRL* crl = NULL;
 
     r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
@@ -347,26 +347,25 @@ static void TestCertVerifyBad()
     r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &chain);
     assert(r == OE_OK);
 
-    r = OE_CertVerify(cert, chain, crl, &error);
+    r = OE_CertVerify(&cert, &chain, crl, &error);
     assert(r == OE_VERIFY_FAILED);
 
-    OE_CertFree(cert);
-    OE_CertChainFree(chain);
+    OE_CertFree(&cert);
+    OE_CertChainFree(&chain);
 
     printf("=== passed TestCertVerifyBad()\n");
 }
 
 static void TestCertVerify()
 {
-    printf("=== begin TestCertVerifyCert()\n");
+    printf("=== begin TestCertVerify()\n");
 
     {
         OE_Result r;
+        OE_Cert cert;
+        OE_CertChain chain;
+        OE_CertChain badChain;
         OE_VerifyCertError error;
-        OE_Cert* cert = NULL;
-        OE_CertChain* chain = NULL;
-        OE_CertChain* badChain = NULL;
-        OE_CRL* crl = NULL;
 
         r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
         assert(r == OE_OK);
@@ -378,15 +377,15 @@ static void TestCertVerify()
         r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &badChain);
         assert(r == OE_OK);
 
-        r = OE_CertVerify(cert, chain, crl, &error);
+        r = OE_CertVerify(&cert, &chain, NULL, &error);
         assert(r == OE_OK);
 
-        r = OE_CertVerify(cert, badChain, crl, &error);
+        r = OE_CertVerify(&cert, &badChain, NULL, &error);
         assert(r == OE_VERIFY_FAILED);
 
-        OE_CertFree(cert);
-        OE_CertChainFree(chain);
-        OE_CertChainFree(badChain);
+        OE_CertFree(&cert);
+        OE_CertChainFree(&chain);
+        OE_CertChainFree(&badChain);
     }
 
     TestCertVerifyGood();
