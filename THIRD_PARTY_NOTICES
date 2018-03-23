@@ -576,3 +576,10 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 @(#)queue.h	8.5 (Berkeley) 8/20/94
+
+
+License notice for tests/ecall_ocall/crc32.cpp
+--------------------------------
+COPYRIGHT (C) 1986 Gary S. Brown.  You may use this program, or
+code or tables extracted from it, as desired without restriction.
+
