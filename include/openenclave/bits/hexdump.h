@@ -5,8 +5,8 @@
 #define _OE_HEXDUMP_H
 
 #include <openenclave/defs.h>
-#include <openenclave/types.h>
 #include <openenclave/result.h>
+#include <openenclave/types.h>
 
 OE_EXTERNC_BEGIN
 
@@ -23,9 +23,9 @@ void OE_HexDump(const void* data, size_t size);
  * @return first parameter or NULL if str parameter is too small
  */
 char* OE_HexString(
-    char* str, 
-    size_t strSize, 
-    const void* data, 
+    char* str,
+    size_t strSize,
+    const void* data,
     size_t dataSize);
 
 OE_EXTERNC_END

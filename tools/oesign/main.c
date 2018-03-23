@@ -7,11 +7,11 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/str.h>
 #include <openenclave/bits/trace.h>
-#include <openenclave/bits/hexdump.h>
 #include <openenclave/host.h>
 #include <openssl/bn.h>
 #include <openssl/pem.h>

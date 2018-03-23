@@ -3,10 +3,10 @@
 
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxdev.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/tests.h>
-#include <openenclave/bits/hexdump.h>
 #include <openenclave/host.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,7 +64,7 @@ int main(int argc, const char* argv[])
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
     }
 
-    char buf[2*OE_SHA256_SIZE+1];
+    char buf[2 * OE_SHA256_SIZE + 1];
     OE_HexString(buf, sizeof(buf), &enclave.hash, sizeof(enclave.hash));
     printf("MRENCLAVE=%s\n", buf);
 

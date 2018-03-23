@@ -11,11 +11,7 @@
 #include <bcrypt.h>
 #endif
 
-#ifdef OE_BUILD_ENCLAVE
-#include <openenclave/enclave.h>
-#else
 #include <openenclave/host.h>
-#endif
 
 typedef struct _OE_SHA256ContextImpl
 {
@@ -28,45 +24,102 @@ typedef struct _OE_SHA256ContextImpl
 
 OE_STATIC_ASSERT(sizeof(OE_SHA256ContextImpl) <= sizeof(OE_SHA256Context));
 
-void OE_SHA256Init(OE_SHA256Context* context)
+OE_Result OE_SHA256Init(OE_SHA256Context* context)
 {
-    if (!context)
-        return;
-
+    OE_Result result = OE_UNEXPECTED;
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
+    if (!context)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
 #if defined(__linux__)
-    SHA256_Init(&impl->ctx);
+    if (!SHA256_Init(&impl->ctx))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
 #elif defined(_WIN32)
-    BCryptCreateHash(
-        BCRYPT_SHA256_ALG_HANDLE, &impl->handle, NULL, 0, NULL, 0, 0);
+    if (BCryptCreateHash(
+            BCRYPT_SHA256_ALG_HANDLE, &impl->handle, NULL, 0, NULL, 0, 0) !=
+        STATUS_SUCCESS)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
 #endif
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
-void OE_SHA256Update(OE_SHA256Context* context, const void* data, size_t size)
+OE_Result OE_SHA256Update(
+    OE_SHA256Context* context,
+    const void* data,
+    size_t size)
 {
-    if (!context)
-        return;
-
+    OE_Result result = OE_UNEXPECTED;
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
+    if (!context)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
 #if defined(__linux__)
-    SHA256_Update(&impl->ctx, data, size);
+    if (!SHA256_Update(&impl->ctx, data, size))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
 #elif defined(_WIN32)
-    BCryptHashData(impl->handle, (void*)data, (ULONG)size, 0);
+    if (BCryptHashData(impl->handle, (void*)data, (ULONG)size, 0) !=
+        STATUS_SUCCESS)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
 #endif
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
-void OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256)
+OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256)
 {
-    if (!context)
-        return;
-
+    OE_Result result = OE_UNEXPECTED;
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
+    if (!context)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
 #if defined(__linux__)
-    SHA256_Final(sha256->buf, &impl->ctx);
+    if (!SHA256_Final(sha256->buf, &impl->ctx))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
 #elif defined(_WIN32)
-    BCryptFinishHash(impl->handle, sha256->buf, sizeof(OE_SHA256), 0);
+    if (BCryptFinishHash(impl->handle, sha256->buf, sizeof(OE_SHA256), 0) !=
+        STATUS_SUCCESS)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
 #endif
+
+    result = OE_OK;
+
+done:
+    return result;
 }

@@ -22,11 +22,14 @@ typedef struct _OE_SHA256
     unsigned char buf[OE_SHA256_SIZE];
 } OE_SHA256;
 
-void OE_SHA256Init(OE_SHA256Context* context);
+OE_Result OE_SHA256Init(OE_SHA256Context* context);
 
-void OE_SHA256Update(OE_SHA256Context* context, const void* data, size_t size);
+OE_Result OE_SHA256Update(
+    OE_SHA256Context* context,
+    const void* data,
+    size_t size);
 
-void OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256);
+OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256);
 
 OE_EXTERNC_END
 
