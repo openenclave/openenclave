@@ -13,15 +13,13 @@ typedef struct _OE_Cert
 {
     /* Internal private implementation */
     uint64_t impl[128];
-}
-OE_Cert;
+} OE_Cert;
 
 typedef struct _OE_CertChain
 {
     /* Internal private implementation */
     uint64_t impl[128];
-}
-OE_CertChain;
+} OE_CertChain;
 
 typedef struct _OE_CRL OE_CRL;
 

@@ -29,8 +29,7 @@ typedef struct _OE_CertImpl
 {
     uint64_t magic;
     X509* x509;
-}
-OE_CertImpl;
+} OE_CertImpl;
 
 static void _InitCertImpl(OE_CertImpl* impl, X509* x509)
 {
@@ -60,11 +59,10 @@ static void _ClearCertImpl(OE_CertImpl* impl)
 typedef struct _OE_CertChainImpl
 {
     uint64_t magic;
-    STACK_OF(X509)* sk;
-}
-OE_CertChainImpl;
+    STACK_OF(X509) * sk;
+} OE_CertChainImpl;
 
-static void _InitCertChainImpl(OE_CertChainImpl* impl, STACK_OF(X509)* sk)
+static void _InitCertChainImpl(OE_CertChainImpl* impl, STACK_OF(X509) * sk)
 {
     if (impl)
     {
@@ -350,7 +348,7 @@ OE_Result OE_CertChainFree(OE_CertChain* __chain)
 
     /* Clear the implementation */
     _ClearCertChainImpl(impl);
-    
+
     result = OE_OK;
 
 done:

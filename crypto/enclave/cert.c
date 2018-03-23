@@ -24,8 +24,7 @@ typedef struct _OE_CertImpl
 {
     uint64_t magic;
     mbedtls_x509_crt cert;
-}
-OE_CertImpl;
+} OE_CertImpl;
 
 OE_STATIC_ASSERT(sizeof(OE_CertImpl) < sizeof(OE_Cert));
 
@@ -42,8 +41,7 @@ typedef struct _OE_CertChainImpl
 {
     uint64_t magic;
     mbedtls_x509_crt chain;
-}
-OE_CertChainImpl;
+} OE_CertChainImpl;
 
 OE_STATIC_ASSERT(sizeof(OE_CertChainImpl) < sizeof(OE_CertChain));
 
