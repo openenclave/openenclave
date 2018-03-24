@@ -55,8 +55,8 @@ OE_Result SGX_GetQuoteSize(
             goto done;
         }
 
-	assert(sizeof(sigrl->sigrl.n2) == sizeof(uint32_t));
-	const void* tmp = &sigrl->sigrl.n2;
+        assert(sizeof(sigrl->sigrl.n2) == sizeof(uint32_t));
+        const void* tmp = &sigrl->sigrl.n2;
         n = OE_ByteSwap32(*(uint32_t*)tmp);
     }
 

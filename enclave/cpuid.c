@@ -26,7 +26,8 @@ void OE_InitializeCpuid(uint64_t argIn)
         OE_Memcpy(
             _OE_CpuidTable,
             args->cpuidTable,
-            OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT * sizeof(_OE_CpuidTable[0][0]));
+            OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
+                sizeof(_OE_CpuidTable[0][0]));
     }
 }
 
