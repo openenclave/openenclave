@@ -13,20 +13,57 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_SGX_MAX_TCS 32
-
 typedef struct _OE_Enclave OE_Enclave;
 
-OE_SGXDevice* __OE_OpenSGXDriver(bool simulate);
+typedef enum _OE_SgxLoadType {
+    OE_SGXLOAD_UNDEFINED,
+    OE_SGXLOAD_CREATE,
+    OE_SGXLOAD_MEASURE
+} OE_SgxLoadType;
 
-OE_SGXDevice* __OE_OpenSGXMeasurer(void);
+typedef enum _OE_SgxLoadState {
+    OE_SGXLOAD_UNINITIALIZED,
+    OE_SGXLOAD_INITIALIZED,
+    OE_SGXLOAD_ENCLAVE_CREATED,
+    OE_SGXLOAD_ENCLAVE_INITIALIZED,
+} OE_SgxLoadState;
+
+typedef struct _OE_SgxLoadContext
+{
+    OE_SgxLoadType type;
+    OE_SgxLoadState state;
+
+    /* OE_FLAG bits to be applied to the enclave such as debug */
+    uint32_t attributes;
+
+    /* Fields used when attributes contain OE_FLAG_SIMULATION */
+    struct _Simulate
+    {
+        /* Base address of enclave */
+        void* addr;
+
+        /* Size of enclave in bytes */
+        size_t size;
+    } sim;
+
+    /* Handle to isgx driver when creating enclave on Linux */
+    int dev;
+
+    /* Hash context used to measure enclave as it is loaded */
+    OE_SHA256Context hashContext;
+} OE_SgxLoadContext;
+
+OE_Result _InitializeLoadContext(
+    OE_SgxLoadContext* context,
+    OE_SgxLoadType type,
+    uint32_t attributes);
+
+void _CleanupLoadContext(OE_SgxLoadContext* context);
 
 OE_Result __OE_BuildEnclave(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     const char* path,
     const OE_EnclaveSettings* settings,
-    bool debug,
-    bool simulate,
     OE_Enclave* enclave);
 
 void _OE_NotifyGdbEnclaveCreation(

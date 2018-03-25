@@ -4,7 +4,6 @@
 #ifndef _OE_HOST_ENCLAVE_H
 #define _OE_HOST_ENCLAVE_H
 
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/host.h>
 #include <stdbool.h>
@@ -87,6 +86,9 @@ OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 
 /* Get thread data from thread-specific data (TSD) */
 ThreadBinding* GetThreadBinding(void);
+
+/* Max number of threads in an enclave supported */
+#define OE_SGX_MAX_TCS 32
 
 struct _OE_Enclave
 {

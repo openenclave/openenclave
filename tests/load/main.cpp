@@ -12,17 +12,14 @@
 #include <stdlib.h>
 #include "../../host/enclave.h"
 
-#if 1
-#define USE_DRIVER
-#endif
-
-static OE_SGXDevice* OpenDevice()
+static OE_Result InitializeContext(OE_SgxLoadContext* context)
 {
-#ifdef USE_DRIVER
-    return __OE_OpenSGXDriver(false);
+#ifdef MEASURE_ONLY
+    const OE_SgxLoadType type = OE_SGXLOAD_MEASURE;
 #else
-    return __OE_OpenSGXMeasurer();
+    const OE_SgxLoadType type = OE_SGXLOAD_CREATE;
 #endif
+    return _InitializeLoadContext(context, type, OE_FLAG_DEBUG);
 }
 
 static const OE_EnclaveSettings* GetEnclaveSettings()
@@ -45,7 +42,7 @@ static const OE_EnclaveSettings* GetEnclaveSettings()
 int main(int argc, const char* argv[])
 {
     OE_Result result;
-    OE_SGXDevice* dev = NULL;
+    OE_SgxLoadContext context;
     OE_Enclave enclave;
 
     if (argc != 2)
@@ -54,12 +51,11 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    if (!(dev = OpenDevice()))
-        OE_PutErr("__OE_OpenSGXDriver() failed");
+    if (InitializeContext(&context) != OE_OK)
+        OE_PutErr("InitializeContext() failed");
 
     if ((result = __OE_BuildEnclave(
-             dev, argv[1], GetEnclaveSettings(), false, false, &enclave)) !=
-        OE_OK)
+             &context, argv[1], GetEnclaveSettings(), &enclave)) != OE_OK)
     {
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
     }

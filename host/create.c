@@ -6,13 +6,8 @@
 
 #if defined(__linux__)
 #include <cpuid.h>
-#include <dlfcn.h>
 #include <errno.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <sys/ioctl.h>
 #include <sys/mman.h>
-#include <sys/stat.h>
 #elif defined(_WIN32)
 #include <windows.h>
 #endif
@@ -23,7 +18,6 @@
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/cpuid.h>
 #include <openenclave/bits/elf.h>
-#include <openenclave/bits/files.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/sgxtypes.h>
@@ -34,6 +28,7 @@
 #include <string.h>
 #include "enclave.h"
 #include "memalign.h"
+#include "sgxload.h"
 
 static OE_H_OnceType _enclave_init_once;
 
@@ -134,7 +129,7 @@ static void _ResolveFlags(
 }
 
 static OE_Result _AddSegmentPages(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     uint64_t enclaveAddr,
     uint64_t enclaveSize,
     const OE_Segment segments[],
@@ -146,7 +141,7 @@ static OE_Result _AddSegmentPages(
     OE_Result result = OE_UNEXPECTED;
     size_t i;
 
-    if (!dev || !enclaveAddr || !enclaveSize || !segments || !nsegments ||
+    if (!context || !enclaveAddr || !enclaveSize || !segments || !nsegments ||
         !pages || !npages || !vaddr)
     {
         OE_THROW(OE_INVALID_PARAMETER);
@@ -177,7 +172,7 @@ static OE_Result _AddSegmentPages(
             OE_THROW(OE_FAILURE);
         }
 
-        OE_TRY(dev->eadd(dev, enclaveAddr, addr, src, flags, extend));
+        OE_TRY(OE_EAdd(context, enclaveAddr, addr, src, flags, extend));
 
         (*vaddr) = (addr - enclaveAddr) + OE_PAGE_SIZE;
     }
@@ -189,7 +184,7 @@ OE_CATCH:
 }
 
 static OE_Result _AddFilledPages(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     uint64_t enclaveAddr,
     uint64_t* vaddr,
     size_t npages,
@@ -201,7 +196,7 @@ static OE_Result _AddFilledPages(
     size_t i;
 
     /* Reject invalid parameters */
-    if (!dev || !enclaveAddr || !vaddr)
+    if (!context || !enclaveAddr || !vaddr)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Fill or clear the page */
@@ -223,7 +218,7 @@ static OE_Result _AddFilledPages(
         uint64_t src = (uint64_t)&page;
         uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
 
-        OE_TRY(dev->eadd(dev, enclaveAddr, addr, src, flags, extend));
+        OE_TRY(OE_EAdd(context, enclaveAddr, addr, src, flags, extend));
         (*vaddr) += OE_PAGE_SIZE;
     }
 
@@ -234,28 +229,29 @@ OE_CATCH:
 }
 
 static OE_Result _AddStackPages(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     uint64_t enclaveAddr,
     uint64_t* vaddr,
     size_t npages)
 {
     const bool extend = true;
-    return _AddFilledPages(dev, enclaveAddr, vaddr, npages, 0xcccccccc, extend);
+    return _AddFilledPages(
+        context, enclaveAddr, vaddr, npages, 0xcccccccc, extend);
 }
 
 static OE_Result _AddHeapPages(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     uint64_t enclaveAddr,
     uint64_t* vaddr,
     size_t npages)
 {
     /* Do not measure heap pages */
     const bool extend = false;
-    return _AddFilledPages(dev, enclaveAddr, vaddr, npages, 0, extend);
+    return _AddFilledPages(context, enclaveAddr, vaddr, npages, 0, extend);
 }
 
 static OE_Result _AddControlPages(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     uint64_t enclaveAddr,
     uint64_t enclaveSize,
     uint64_t entry,
@@ -264,7 +260,8 @@ static OE_Result _AddControlPages(
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!dev || !enclaveAddr || !enclaveSize || !entry || !vaddr || !enclave)
+    if (!context || !enclaveAddr || !enclaveSize || !entry || !vaddr ||
+        !enclave)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Create four "control" pages:
@@ -329,7 +326,7 @@ static OE_Result _AddControlPages(
             uint64_t flags = SGX_SECINFO_TCS;
             bool extend = true;
 
-            OE_TRY(dev->eadd(dev, enclaveAddr, addr, src, flags, extend));
+            OE_TRY(OE_EAdd(context, enclaveAddr, addr, src, flags, extend));
         }
 
         /* Increment the page size */
@@ -337,16 +334,16 @@ static OE_Result _AddControlPages(
     }
 
     /* Add two blank pages */
-    OE_TRY(_AddFilledPages(dev, enclaveAddr, vaddr, 2, 0, true));
+    OE_TRY(_AddFilledPages(context, enclaveAddr, vaddr, 2, 0, true));
 
     /* Skip over guard page */
     (*vaddr) += OE_PAGE_SIZE;
 
     /* Add one blank pages (for either FS segment or GS segment) */
-    OE_TRY(_AddFilledPages(dev, enclaveAddr, vaddr, 1, 0, true));
+    OE_TRY(_AddFilledPages(context, enclaveAddr, vaddr, 1, 0, true));
 
     /* Add one page for thread-specific data (TSD) slots */
-    OE_TRY(_AddFilledPages(dev, enclaveAddr, vaddr, 1, 0, true));
+    OE_TRY(_AddFilledPages(context, enclaveAddr, vaddr, 1, 0, true));
 
     result = OE_OK;
 
@@ -406,7 +403,7 @@ OE_CATCH:
 }
 
 static OE_Result _AddRelocationPages(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     uint64_t enclaveAddr,
     const void* relocData,
     const size_t relocSize,
@@ -414,7 +411,7 @@ static OE_Result _AddRelocationPages(
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!dev || !vaddr)
+    if (!context || !vaddr)
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (relocData && relocSize)
@@ -429,7 +426,7 @@ static OE_Result _AddRelocationPages(
             uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
             bool extend = true;
 
-            OE_TRY(dev->eadd(dev, enclaveAddr, addr, src, flags, extend));
+            OE_TRY(OE_EAdd(context, enclaveAddr, addr, src, flags, extend));
             (*vaddr) += sizeof(OE_Page);
         }
     }
@@ -441,7 +438,7 @@ OE_CATCH:
 }
 
 static OE_Result _AddECallPages(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     uint64_t enclaveAddr,
     const void* ecallData,
     const size_t ecallSize,
@@ -449,7 +446,7 @@ static OE_Result _AddECallPages(
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!dev || !ecallData || !ecallSize || !vaddr)
+    if (!context || !ecallData || !ecallSize || !vaddr)
         OE_THROW(OE_INVALID_PARAMETER);
 
     {
@@ -463,7 +460,7 @@ static OE_Result _AddECallPages(
             uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R;
             bool extend = true;
 
-            OE_TRY(dev->eadd(dev, enclaveAddr, addr, src, flags, extend));
+            OE_TRY(OE_EAdd(context, enclaveAddr, addr, src, flags, extend));
             (*vaddr) += sizeof(OE_Page);
         }
     }
@@ -475,7 +472,7 @@ OE_CATCH:
 }
 
 static OE_Result _AddPages(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     Elf64* elf,
     uint64_t enclaveAddr,
     size_t enclaveEnd,
@@ -502,7 +499,7 @@ static OE_Result _AddPages(
     size_t baseHeapPage;
 
     /* Reject invalid parameters */
-    if (!dev || !enclaveAddr || !enclaveSize || !segments || !nsegments ||
+    if (!context || !enclaveAddr || !enclaveSize || !segments || !nsegments ||
         !num_bindings || !nstackpages || !nheappages || !enclave)
     {
         OE_THROW(OE_INVALID_PARAMETER);
@@ -609,7 +606,7 @@ static OE_Result _AddPages(
     /* Add the program segments first */
     OE_TRY(
         _AddSegmentPages(
-            dev,
+            context,
             enclaveAddr,
             enclaveSize,
             segments,
@@ -619,13 +616,15 @@ static OE_Result _AddPages(
             &vaddr));
 
     /* Add the relocation pages (contain relocation entries) */
-    OE_TRY(_AddRelocationPages(dev, enclaveAddr, relocData, relocSize, &vaddr));
+    OE_TRY(
+        _AddRelocationPages(
+            context, enclaveAddr, relocData, relocSize, &vaddr));
 
     /* Add the ECALL pages */
-    OE_TRY(_AddECallPages(dev, enclaveAddr, ecallData, ecallSize, &vaddr));
+    OE_TRY(_AddECallPages(context, enclaveAddr, ecallData, ecallSize, &vaddr));
 
     /* Create the heap */
-    OE_TRY(_AddHeapPages(dev, enclaveAddr, &vaddr, nheappages));
+    OE_TRY(_AddHeapPages(context, enclaveAddr, &vaddr, nheappages));
 
     for (i = 0; i < num_bindings; i++)
     {
@@ -633,7 +632,7 @@ static OE_Result _AddPages(
         vaddr += OE_PAGE_SIZE;
 
         /* Create the stack for this thread control structure */
-        OE_TRY(_AddStackPages(dev, enclaveAddr, &vaddr, nstackpages));
+        OE_TRY(_AddStackPages(context, enclaveAddr, &vaddr, nstackpages));
 
         /* Add guard page */
         vaddr += OE_PAGE_SIZE;
@@ -641,7 +640,7 @@ static OE_Result _AddPages(
         /* Add the "control" pages */
         OE_TRY(
             _AddControlPages(
-                dev, enclaveAddr, enclaveSize, entry, &vaddr, enclave));
+                context, enclaveAddr, enclaveSize, entry, &vaddr, enclave));
     }
 
     if (vaddr != enclaveEnd)
@@ -891,11 +890,9 @@ OE_CATCH:
 }
 
 OE_Result __OE_BuildEnclave(
-    OE_SGXDevice* dev,
+    OE_SgxLoadContext* context,
     const char* path,
     const OE_EnclaveSettings* settings,
-    bool debug,
-    bool simulate,
     OE_Enclave* enclave)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -925,8 +922,8 @@ OE_Result __OE_BuildEnclave(
         if (enclave)
             memset(enclave, 0, sizeof(OE_Enclave));
 
-        enclave->debug = debug;
-        enclave->simulate = simulate;
+        enclave->debug = OE_IsContextDebug(context);
+        enclave->simulate = OE_IsContextSimulation(context);
     }
 
     /* Initialize the lock */
@@ -934,7 +931,7 @@ OE_Result __OE_BuildEnclave(
         OE_THROW(OE_FAILURE);
 
     /* Reject invalid parameters */
-    if (!dev || !path || !enclave)
+    if (!context || !path || !enclave)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Load the elf object */
@@ -968,7 +965,8 @@ OE_Result __OE_BuildEnclave(
     /* Load the relocations into memory (zero-padded to next page size) */
     if (Elf64_LoadRelocations(&elf, &relocData, &relocSize) != 0)
         OE_THROW(OE_FAILURE);
-#if 0
+
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     _DumpRelocations(relocData, relocSize);
 #endif
 
@@ -991,8 +989,8 @@ OE_Result __OE_BuildEnclave(
             &enclaveEnd,
             &enclaveSize));
 
-    /* Ask the ISGX driver to perform the ECREATE operation */
-    OE_TRY(dev->ecreate(dev, enclaveSize, &enclaveAddr));
+    /* Perform the ECREATE operation */
+    OE_TRY(OE_ECreate(context, enclaveSize, &enclaveAddr));
 
     /* Save the enclave base address and size */
     enclave->addr = enclaveAddr;
@@ -1016,7 +1014,7 @@ OE_Result __OE_BuildEnclave(
     /* Add pages to enclave page cache (EPC) */
     OE_TRY(
         _AddPages(
-            dev,
+            context,
             &elf,
             enclaveAddr,
             enclaveEnd,
@@ -1033,14 +1031,16 @@ OE_Result __OE_BuildEnclave(
             sigsec.settings.numTCS,
             enclave));
 
+    // ATTN: Refactor this down into sgxload
     /* Get a launch token from the AESM service */
-    if (!simulate && dev->getmagic(dev) == SGX_DRIVER_MAGIC)
+    if (context->type == OE_SGXLOAD_CREATE && !OE_IsContextSimulation(context))
     {
         SGX_Attributes attributes;
 
-        /* ATTN: apply debug parameter here! */
         memset(&attributes, 0, sizeof(SGX_Attributes));
-        attributes.flags = SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT;
+        attributes.flags = SGX_FLAGS_MODE64BIT;
+        if (OE_IsContextDebug(context))
+            attributes.flags |= SGX_FLAGS_DEBUG;
         attributes.xfrm = 0x7;
 
         if (!(aesm = AESMConnect()))
@@ -1066,16 +1066,14 @@ OE_Result __OE_BuildEnclave(
     }
 #endif
 
-    /* Ask the ISGX driver to initialize the enclave (and finalize the hash) */
+    /* Ask the platform to initialize the enclave and finalize the hash */
     OE_TRY(
-        dev->einit(
-            dev,
+        OE_EInit(
+            context,
             enclaveAddr,
             (uint64_t)&sigsec.sigstruct,
-            (uint64_t)&launchToken));
-
-    /* Get the hash and store it in the ENCLAVE object */
-    OE_TRY(dev->gethash(dev, &enclave->hash));
+            (uint64_t)&launchToken,
+            &enclave->hash));
 
     /* Save the offset of the .text section */
     OE_TRY(_SaveTextAddress(enclave, &elf));
@@ -1084,8 +1082,9 @@ OE_Result __OE_BuildEnclave(
     if (!(enclave->path = OE_Strdup(path)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
-    /* Set the magic number */
-    enclave->magic = ENCLAVE_MAGIC;
+    /* Set the magic number only if we have actually created an enclave */
+    if (context->type == OE_SGXLOAD_CREATE)
+        enclave->magic = ENCLAVE_MAGIC;
 
     result = OE_OK;
 
@@ -1153,9 +1152,7 @@ OE_Result OE_CreateEnclave(
 {
     OE_Result result = OE_UNEXPECTED;
     OE_Enclave* enclave = NULL;
-    OE_SGXDevice* dev = NULL;
-    bool simulate = false;
-    bool debug = false;
+    OE_SgxLoadContext context;
 
     _InitializeEnclaveHost();
 
@@ -1165,14 +1162,6 @@ OE_Result OE_CreateEnclave(
     /* Check parameters */
     if (!enclavePath || !enclaveOut)
         OE_THROW(OE_INVALID_PARAMETER);
-
-    /* Set simulate flag */
-    if (flags & OE_FLAG_SIMULATE)
-        simulate = true;
-
-    /* Set debug flag */
-    if (flags & OE_FLAG_DEBUG)
-        debug = true;
 
     /* Allocate and zero-fill the enclave structure */
     if (!(enclave = (OE_Enclave*)calloc(1, sizeof(OE_Enclave))))
@@ -1202,12 +1191,11 @@ OE_Result OE_CreateEnclave(
 
 #endif
 
-    /* Open the SGX driver */
-    if (!(dev = __OE_OpenSGXDriver(simulate)))
-        OE_THROW(OE_FAILURE);
+    /* Initialize the context parameter and any driver handles */
+    OE_TRY(_InitializeLoadContext(&context, OE_SGXLOAD_CREATE, flags));
 
     /* Build the enclave */
-    OE_TRY(__OE_BuildEnclave(dev, enclavePath, NULL, debug, simulate, enclave));
+    OE_TRY(__OE_BuildEnclave(&context, enclavePath, NULL, enclave));
 
     /* Invoke enclave initialization */
     OE_TRY(_InitializeEnclave(enclave));
@@ -1227,16 +1215,12 @@ OE_Result OE_CreateEnclave(
 
 OE_CATCH:
 
-    if (result != OE_OK)
+    if (result != OE_OK && enclave)
     {
-        if (enclave)
-        {
-            if (dev)
-                dev->close(dev);
-
-            free(enclave);
-        }
+        free(enclave);
     }
+
+    _CleanupLoadContext(&context);
 
     return result;
 }

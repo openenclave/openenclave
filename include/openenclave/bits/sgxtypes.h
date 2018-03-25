@@ -9,8 +9,6 @@
 #include <openenclave/result.h>
 #include <openenclave/types.h>
 #include "epid.h"
-#include "jump.h"
-#include "load.h"
 
 OE_EXTERNC_BEGIN
 
@@ -227,6 +225,20 @@ typedef struct _SGX_Secs
 } SGX_Secs;
 
 OE_CHECK_SIZE(sizeof(SGX_Secs), 4096);
+
+/*
+**==============================================================================
+**
+** SGX_SecInfo:
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_SecInfo
+{
+    uint64_t flags;
+    uint64_t reserved[7];
+} OE_ALIGNED(128) SGX_SecInfo;
 
 /*
 **==============================================================================

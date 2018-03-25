@@ -736,11 +736,10 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
     int ret = 1;
     OE_Result result;
-    OE_SGXDevice* dev = NULL;
+    OE_SgxLoadContext context;
     size_t numHeapPages = 2;
     size_t numStackPages = 1;
     size_t numTCS = 2;
-    OE_SHA256 mrenclave;
     OE_EnclaveSettings settings;
     SGX_SigStruct sigstruct;
     FILE* is = NULL;
@@ -766,13 +765,14 @@ int main(int argc, const char* argv[])
     if (LoadConfigFile(conffile, &settings) != 0)
         OE_PutErr("failed to load configuration file: %s\n", conffile);
 
-    /* Open the MEASURER to compute MRENCLAVE */
-    if (!(dev = __OE_OpenSGXMeasurer()))
-        OE_PutErr("__OE_OpenSGXDriver() failed");
+    /* Initialize the context paramters for measurement only */
+    if (_InitializeLoadContext(&context, OE_SGXLOAD_MEASURE, OE_FLAG_DEBUG) !=
+        OE_OK)
+        OE_PutErr("_InitializeLoadContext() failed");
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
-    if ((result = __OE_BuildEnclave(
-             dev, enclave, &settings, false, false, &enc)) != OE_OK)
+    if ((result = __OE_BuildEnclave(&context, enclave, &settings, &enc)) !=
+        OE_OK)
     {
         OE_PutErr("__OE_BuildEnclave(): result=%u", result);
     }
@@ -791,12 +791,8 @@ int main(int argc, const char* argv[])
         goto done;
     }
 
-    /* Get the MRENCLAVE value */
-    if ((result = dev->gethash(dev, &mrenclave)) != OE_OK)
-        OE_PutErr("Failed to get hash: result=%u", result);
-
     /* Initialize the SigStruct object */
-    if ((result = _InitSigstruct(&sigstruct, &mrenclave, rsa) != 0))
+    if ((result = _InitSigstruct(&sigstruct, &enc.hash, rsa) != 0))
         OE_PutErr("_InitSigstruct() failed: result=%u", result);
 
     /* Create signature section and write out new file */
@@ -816,7 +812,7 @@ int main(int argc, const char* argv[])
         char buf[2 * OE_SHA256_SIZE + 1];
         printf(
             "MRENCLAVE=%s\n",
-            OE_HexString(buf, sizeof(buf), &mrenclave, sizeof(mrenclave)));
+            OE_HexString(buf, sizeof(buf), &enc.hash, sizeof(enc.hash)));
         DumpSigstruct(&sigstruct);
     }
 #endif
@@ -828,11 +824,10 @@ done:
     if (is)
         fclose(is);
 
-    if (dev)
-        dev->close(dev);
-
     if (rsa)
         RSA_free(rsa);
+
+    _CleanupLoadContext(&context);
 
     return ret;
 }
