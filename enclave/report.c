@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "report.h"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/sgxtypes.h>
@@ -18,22 +19,11 @@ OE_Result SGX_CreateReport(
     SGX_TargetInfo* ti = NULL;
     SGX_ReportData* rd = NULL;
     SGX_Report* r = NULL;
+    SGX_Report* r1 = NULL;
 
     /* Reject invalid parameters (reportData may be null) */
     if (!targetInfo || !report)
         OE_THROW(OE_INVALID_PARAMETER);
-
-    /* Reject parameters that do not reside in enclave memory */
-    {
-        if (!OE_IsWithinEnclave(targetInfo, sizeof(SGX_TargetInfo)))
-            OE_THROW(OE_FAILURE);
-
-        if (!OE_IsWithinEnclave(reportData, sizeof(SGX_ReportData)))
-            OE_THROW(OE_FAILURE);
-
-        if (report && !OE_IsWithinEnclave(report, sizeof(SGX_Report)))
-            OE_THROW(OE_FAILURE);
-    }
 
     /* Align TARGET INFO on 512 byte boundary */
     {
@@ -60,15 +50,20 @@ OE_Result SGX_CreateReport(
         OE_Memset(r, 0, sizeof(SGX_Report));
     }
 
+    /* Align REPORT on 512 byte boundary */
+    {
+        if (!(r1 = (SGX_Report*)OE_StackAlloc(sizeof(SGX_Report), 512)))
+            OE_THROW(OE_OUT_OF_MEMORY);
+
+        OE_Memset(r1, 0, sizeof(SGX_Report));
+    }
+
     /* Invoke EREPORT instruction */
     asm volatile(
-        "mov %0, %%rbx\n\t" /* target info */
-        "mov %1, %%rcx\n\t" /* report data */
-        "mov %2, %%rdx\n\t" /* report */
-        "mov %3, %%rax\n\t" /* EREPORT */
-        "ENCLU\n\t"
+        "ENCLU"
         :
-        : "m"(ti), "m"(rd), "m"(r), "i"(ENCLU_EREPORT));
+        : "a"(ENCLU_EREPORT), "b"(ti), "c"(rd), "d"(r)
+        : "memory");
 
     /* Copy REPORT to caller's buffer */
     OE_Memcpy(report, r, sizeof(SGX_Report));
@@ -91,59 +86,15 @@ OE_CATCH:
 
 OE_CHECK_SIZE(sizeof(SGX_ReportData), OE_REPORT_DATA_SIZE);
 
-OE_Result OE_GetReportForRemoteAttestation(
-    const uint8_t reportData[OE_REPORT_DATA_SIZE],
-    void* report,
-    size_t* reportSize)
+OE_Result _HandleGetSGXReport(uint64_t argIn)
 {
-    OE_Result result = OE_UNEXPECTED;
-    OE_InitQuoteArgs* args = NULL;
-    SGX_TargetInfo targetInfo;
+    OE_GetSGXReportArgs* args = (OE_GetSGXReportArgs*)argIn;
 
-    /* Check report size */
-    {
-        if (!reportSize)
-            OE_THROW(OE_INVALID_PARAMETER);
+    if (!args)
+        return OE_INVALID_PARAMETER;
 
-        if (*reportSize < sizeof(SGX_Report))
-        {
-            *reportSize = sizeof(SGX_Report);
-            OE_THROW(OE_BUFFER_TOO_SMALL);
-        }
-    }
+    if (!args->targetInfo || !args->reportData || !args->report)
+        return OE_INVALID_PARAMETER;
 
-    /* Check other parameters */
-    if (!reportData || !report)
-        OE_THROW(OE_INVALID_PARAMETER);
-
-    /* Have host initialize the quote (SGX_InitQuote) */
-    {
-        if (!(args = (OE_InitQuoteArgs*)OE_HostCalloc(
-                  1, sizeof(OE_InitQuoteArgs))))
-        {
-            OE_THROW(OE_OUT_OF_MEMORY);
-        }
-
-        OE_TRY(
-            OE_OCall(
-                OE_FUNC_INIT_QUOTE,
-                (uint64_t)args,
-                NULL,
-                OE_OCALL_FLAG_NOT_REENTRANT));
-        OE_Memcpy(&targetInfo, &args->targetInfo, sizeof(SGX_TargetInfo));
-    }
-
-    /* Create the report */
-    OE_TRY(
-        (SGX_CreateReport(
-            &targetInfo, (SGX_ReportData*)reportData, (SGX_Report*)report)));
-
-    result = OE_OK;
-
-OE_CATCH:
-
-    if (args)
-        OE_HostFree(args);
-
-    return result;
+    return SGX_CreateReport(args->targetInfo, args->reportData, args->report);
 }

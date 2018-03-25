@@ -76,6 +76,7 @@ typedef enum _OE_Func {
     OE_FUNC_CALL_ENCLAVE = 0x02000000,
     OE_FUNC_CALL_HOST = 0x03000000,
     OE_FUNC_INIT_QUOTE = 0x04000000,
+    OE_FUNC_GET_SGX_REPORT = 0x04100000,
     OE_FUNC_THREAD_WAKE = 0x05000000,
     OE_FUNC_THREAD_WAIT = 0x06000000,
     OE_FUNC_THREAD_WAKE_WAIT = 0x07000000,
@@ -218,6 +219,21 @@ typedef struct _OE_InitQuoteArgs
     SGX_TargetInfo targetInfo;
     SGX_EPIDGroupID epidGroupID;
 } OE_InitQuoteArgs;
+
+/*
+**==============================================================================
+**
+** OE_GetSGXReportArgs
+**
+**==============================================================================
+*/
+
+typedef struct _OE_GetSGXReportArgs
+{
+    SGX_TargetInfo* targetInfo;
+    SGX_ReportData* reportData;
+    SGX_Report* report;
+} OE_GetSGXReportArgs;
 
 /*
 **==============================================================================

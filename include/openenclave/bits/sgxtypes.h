@@ -841,7 +841,7 @@ typedef struct _OE_ECallPages
 **==============================================================================
 */
 
-OE_Result SGX_GetQuote(
+OE_Result SGX_GetQuoteImpl(
     const SGX_Report* report,
     SGX_QuoteType quoteType,
     const SGX_SPID* spid,
@@ -925,7 +925,29 @@ OE_STATIC_ASSERT(sizeof(SGX_QuoteSignature) == 664);
 
 OE_Result SGX_GetQuoteSize(
     const uint8_t* signatureRevocationList,
-    size_t* quoteSize);
+    uint32_t* quoteSize);
+
+/*
+**==============================================================================
+**
+** SGX_GetQETargetInfo()
+**
+**==============================================================================
+*/
+
+OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo);
+
+/*
+**==============================================================================
+**
+** SGX_GetQuote()
+**
+**==============================================================================
+*/
+OE_Result SGX_GetQuote(
+    const SGX_Report* sgxReport,
+    uint8_t* quote,
+    uint32_t* quoteSize);
 
 OE_EXTERNC_END
 

@@ -14,6 +14,7 @@
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
+#include "report.h"
 #include "td.h"
 
 typedef unsigned long long WORD;
@@ -312,6 +313,11 @@ static void _HandleECall(
         case OE_FUNC_INIT_ENCLAVE:
         {
             _HandleInitEnclave(argIn);
+            break;
+        }
+        case OE_FUNC_GET_SGX_REPORT:
+        {
+            argOut = _HandleGetSGXReport(argIn);
             break;
         }
         default:

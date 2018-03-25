@@ -31,13 +31,22 @@ OE_CATCH:
     return result;
 }
 
+OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
+{
+    memset(targetInfo, 0, sizeof(*targetInfo));
+    SGX_EPIDGroupID epidGroupID;
+    memset(&epidGroupID, 0, sizeof(epidGroupID));
+
+    return SGX_InitQuote(targetInfo, &epidGroupID);
+}
+
 OE_Result SGX_GetQuoteSize(
     const uint8_t* signatureRevocationList,
-    size_t* quoteSize)
+    uint32_t* quoteSize)
 {
     OE_Result result = OE_FAILURE;
-    size_t signatureSize = 0;
-    uint64_t n = 0;
+    uint32_t signatureSize = 0;
+    uint32_t n = 0;
 
     if (quoteSize)
         *quoteSize = 0;
@@ -55,8 +64,8 @@ OE_Result SGX_GetQuoteSize(
             goto done;
         }
 
-	assert(sizeof(sigrl->sigrl.n2) == sizeof(uint32_t));
-	const void* tmp = &sigrl->sigrl.n2;
+        assert(sizeof(sigrl->sigrl.n2) == sizeof(uint32_t));
+        const void* tmp = &sigrl->sigrl.n2;
         n = OE_ByteSwap32(*(uint32_t*)tmp);
     }
 
@@ -75,7 +84,7 @@ done:
     return result;
 }
 
-OE_Result SGX_GetQuote(
+OE_Result SGX_GetQuoteImpl(
     const SGX_Report* report,
     SGX_QuoteType quoteType,
     const SGX_SPID* spid,
@@ -129,11 +138,10 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_GetQuote(
-    const void* report,
-    size_t reportSize,
-    void* quote,
-    size_t* quoteSize)
+OE_Result SGX_GetQuote(
+    const SGX_Report* report,
+    uint8_t* quote,
+    uint32_t* quoteSize)
 {
     OE_Result result = OE_UNEXPECTED;
     static const SGX_SPID spid = {{
@@ -156,12 +164,12 @@ OE_Result OE_GetQuote(
     }};
 
     /* Reject null parameters */
-    if (!report || reportSize != sizeof(SGX_Report) || !quoteSize)
+    if (!report || !quoteSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Reject if quote size not big enough even for quote without SigRLs */
     {
-        size_t size;
+        uint32_t size;
         OE_TRY(SGX_GetQuoteSize(NULL, &size));
 
         if (*quoteSize < size)
@@ -176,11 +184,11 @@ OE_Result OE_GetQuote(
 
     /* Get the quote from the AESM service */
     {
-        memset(quote, 0, sizeof(SGX_Quote));
+        memset(quote, 0, *quoteSize);
 
         OE_TRY(
-            SGX_GetQuote(
-                (const SGX_Report*)report,
+            SGX_GetQuoteImpl(
+                report,
                 SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
                 &spid,
                 NULL, /* nonce */

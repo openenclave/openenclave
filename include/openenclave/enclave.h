@@ -13,6 +13,7 @@
 #include "bits/context.h"
 #include "bits/sha.h"
 #include "defs.h"
+#include "report.h"
 #include "result.h"
 #include "thread.h"
 #include "types.h"
@@ -24,8 +25,6 @@ OE_EXTERNC_BEGIN
 #endif
 
 #define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
-
-#define OE_REPORT_DATA_SIZE 64
 
 // Exception codes.
 #define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
