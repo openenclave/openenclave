@@ -7,8 +7,8 @@
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/hexdump.h>
-#include <openenclave/enclave.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../util.h"

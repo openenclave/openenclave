@@ -11,8 +11,8 @@
 #include <bcrypt.h>
 #endif
 
-#include <openenclave/host.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/host.h>
 
 typedef struct _OE_SHA256ContextImpl
 {
