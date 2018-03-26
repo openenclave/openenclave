@@ -19,10 +19,7 @@ typedef struct _OE_EC
 } OE_EC_KEY;
 
 /* Supported CURVE types */
-typedef enum OE_ECType
-{
-    OE_EC_TYPE_SECP521R1
-} OE_ECType;
+typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
 
 /**
  * Reads a private EC key from PEM data

@@ -4,36 +4,94 @@
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/thread.h>
 #include <openenclave/bits/random.h>
 #include <openenclave/enclave.h>
 
-OE_Result OE_Random(void* data, size_t size)
+/*
+**==============================================================================
+**
+** Local definitions
+**
+**==============================================================================
+*/
+
+static mbedtls_ctr_drbg_context _drbg;
+static mbedtls_entropy_context _entropy;
+static bool _seeded = false;
+
+static OE_Result _SeedEntropySource()
 {
-    OE_Result result = OE_FAILURE;
+    OE_Result result = OE_UNEXPECTED;
+    static OE_Mutex _mutex = OE_MUTEX_INITIALIZER;
 
-    mbedtls_ctr_drbg_context ctr_drbg;
-    mbedtls_entropy_context entropy;
-
-    mbedtls_ctr_drbg_init(&ctr_drbg);
-    mbedtls_entropy_init(&entropy);
-
-    if (mbedtls_ctr_drbg_seed(
-            &ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0) != 0)
+    if (_seeded == false)
     {
-        goto done;
+        OE_MutexLock(&_mutex);
+
+        if (_seeded == false)
+        {
+            mbedtls_ctr_drbg_init(&_drbg);
+            mbedtls_entropy_init(&_entropy);
+
+            if (mbedtls_ctr_drbg_seed(
+                    &_drbg, mbedtls_entropy_func, &_entropy, NULL, 0) != 0)
+            {
+                result = OE_FAILURE;
+                OE_MutexUnlock(&_mutex);
+                goto done;
+            }
+
+            _seeded = true;
+        }
+
+        OE_MutexUnlock(&_mutex);
     }
 
-    if (mbedtls_ctr_drbg_random(&ctr_drbg, data, size) != 0)
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+/*
+**==============================================================================
+**
+** Public functions
+**
+**==============================================================================
+*/
+
+OE_Result OE_Random(void* data, size_t size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    static OE_Mutex _mutex = OE_MUTEX_INITIALIZER;
+    int rc;
+
+    /* Seed the entropy source on the first call */
+    if (_seeded == false)
     {
+        if (_SeedEntropySource() != OE_OK)
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
+    }
+
+    /* Generate random data (synchronize acceess to _drbg instance) */
+    OE_MutexLock(&_mutex);
+    rc = mbedtls_ctr_drbg_random(&_drbg, data, size);
+    OE_MutexUnlock(&_mutex);
+
+    if (rc != 0)
+    {
+        result = OE_FAILURE;
         goto done;
     }
 
     result = OE_OK;
 
 done:
-
-    mbedtls_ctr_drbg_free(&ctr_drbg);
-    mbedtls_entropy_free(&entropy);
 
     return result;
 }

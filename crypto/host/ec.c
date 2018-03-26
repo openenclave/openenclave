@@ -43,8 +43,7 @@ OE_INLINE bool _ValidImpl(const OE_EC_KEY_IMPL* impl)
 }
 
 /* Curve names, indexed by OE_ECType */
-static const char* _curveNames[] =
-{
+static const char* _curveNames[] = {
     "secp521r1" /* OE_EC_TYPE_SECP521R1 */
 };
 
@@ -680,4 +679,3 @@ done:
 
     return result;
 }
-

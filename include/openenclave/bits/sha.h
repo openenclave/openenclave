@@ -12,8 +12,10 @@ OE_EXTERNC_BEGIN
 
 #define OE_SHA256_SIZE 32
 
+/* Opaque representation of a SHA-256 context */
 typedef struct _OE_SHA256Context
 {
+    /* Internal private implementation */
     uint64_t impl[16];
 } OE_SHA256Context;
 
@@ -22,13 +24,46 @@ typedef struct _OE_SHA256
     unsigned char buf[OE_SHA256_SIZE];
 } OE_SHA256;
 
+/**
+ * Initializes a context for computing a SHA-256 hash
+ *
+ * This function initializes a context for computing a SHA-256 hash.
+ *
+ * @param context - handle of context to be initialized
+ *
+ * @return OE_OK upon success
+ */
 OE_Result OE_SHA256Init(OE_SHA256Context* context);
 
+/**
+ * Extends a SHA-256 hash to include additional data
+ *
+ * This function extends the given SHA-256 hash context with additional data.
+ * This function may be called multiple times for the given context.
+ *
+ * @param context - handle of context to extended
+ * @param data - buffer of data to be hashed
+ * @param size - size of the buffer
+ *
+ * @return OE_OK upon success
+ */
 OE_Result OE_SHA256Update(
     OE_SHA256Context* context,
     const void* data,
     size_t size);
 
+/**
+ * Computes the final SHA-256 hash
+ *
+ * This function computes the final SHA-256 hash and writes it to the user
+ * buffer.
+ *
+ * @param context - handle of context to finalized
+ * @param sha256 - buffer where hash is written
+ * @param size - size of the buffer
+ *
+ * @return OE_OK upon success
+ */
 OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256);
 
 OE_EXTERNC_END

@@ -78,8 +78,7 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
 }
 
 /* Curve names, indexed by OE_ECType */
-static const char* _curveNames[] =
-{
+static const char* _curveNames[] = {
     "secp521r1" /* OE_EC_TYPE_SECP521R1 */
 };
 

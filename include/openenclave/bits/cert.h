@@ -100,7 +100,7 @@ OE_Result OE_CertChainFree(OE_CertChain* chain);
 /**
  * Verify the given certificate against a given certificate chain
  *
- * This function verifies the given certificate against the certificate 
+ * This function verifies the given certificate against the certificate
  * authority (CA), given by the certificate chain.
  *
  * @param cert - verify this certificate
