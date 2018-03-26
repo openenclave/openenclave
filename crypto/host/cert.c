@@ -26,6 +26,12 @@
 
 #define OE_CERT_MAGIC 0x882b9943ac1ca95d
 
+#define BEGIN_CERTIFICATE "-----BEGIN CERTIFICATE-----"
+#define BEGIN_CERTIFICATE_LEN (sizeof(BEGIN_CERTIFICATE) - 1)
+
+#define END_CERTIFICATE "-----END CERTIFICATE-----"
+#define END_CERTIFICATE_LEN (sizeof(END_CERTIFICATE) - 1)
+
 typedef struct _OE_CertImpl
 {
     uint64_t magic;
@@ -88,10 +94,6 @@ static void _ClearCertChainImpl(OE_CertChainImpl* impl)
 
 static STACK_OF(X509) * _ReadCertChain(const char* pem)
 {
-    static const char BEGIN_CERTIFICATE[] = "-----BEGIN CERTIFICATE-----";
-    static const size_t BEGIN_CERTIFICATE_LEN = sizeof(BEGIN_CERTIFICATE) - 1;
-    static const char END_CERTIFICATE[] = "-----END CERTIFICATE-----";
-    static const size_t END_CERTIFICATE_LEN = sizeof(END_CERTIFICATE) - 1;
     STACK_OF(X509)* result = NULL;
     STACK_OF(X509)* sk = NULL;
     BIO* bio = NULL;

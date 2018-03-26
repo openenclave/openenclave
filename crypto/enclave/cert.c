@@ -21,6 +21,10 @@
 **==============================================================================
 */
 
+#define BEGIN_CERTIFICATE "-----BEGIN CERTIFICATE-----"
+
+#define END_CERTIFICATE "-----END CERTIFICATE-----"
+
 typedef struct _OE_CertImpl
 {
     uint64_t magic;
@@ -65,8 +69,8 @@ static int _CrtRead(mbedtls_x509_crt* crt, const char* data, size_t* size)
     /* Read the PEM buffer into DER format */
     if (mbedtls_pem_read_buffer(
             &pem,
-            "-----BEGIN CERTIFICATE-----",
-            "-----END CERTIFICATE-----",
+            BEGIN_CERTIFICATE,
+            END_CERTIFICATE,
             (unsigned char*)data,
             NULL, /* pwd */
             0,    /* pwdlen */
