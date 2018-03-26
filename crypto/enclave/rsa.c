@@ -6,6 +6,7 @@
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
+#include <mbedtls/platform.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/rsa.h>
@@ -76,6 +77,88 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
 
     /* Unreachable */
     return 0;
+}
+
+static int _CopyKeyFromKeyPair(
+    mbedtls_pk_context* dest,
+    const mbedtls_pk_context* src,
+    bool public)
+{
+    int ret = -1;
+    const mbedtls_pk_info_t* info;
+    mbedtls_rsa_context* rsa = NULL;
+
+    /* Check parameters */
+    if (!dest || !src)
+        goto done;
+
+    /* Lookup the RSA info */
+    if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA)))
+        goto done;
+
+    /* allocate space for the RSA key */
+    if (!(rsa = mbedtls_calloc(1, sizeof(mbedtls_rsa_context))))
+        goto done;
+
+    /* Initialize the RSA key from the source */
+    if (mbedtls_rsa_copy(rsa, mbedtls_pk_rsa(*src)) != 0)
+        goto done;
+
+    /* If public key, then clear private key fields */
+    if (public)
+    {
+        /* Leave rsa->N and rsa->E (public key fields) */
+
+        mbedtls_mpi_free(&rsa->D);
+        memset(&rsa->D, 0, sizeof(rsa->D));
+
+        mbedtls_mpi_free(&rsa->P);
+        memset(&rsa->D, 0, sizeof(rsa->P));
+
+        mbedtls_mpi_free(&rsa->Q);
+        memset(&rsa->D, 0, sizeof(rsa->Q));
+
+        mbedtls_mpi_free(&rsa->DP);
+        memset(&rsa->D, 0, sizeof(rsa->DP));
+
+        mbedtls_mpi_free(&rsa->DQ);
+        memset(&rsa->D, 0, sizeof(rsa->DQ));
+
+        mbedtls_mpi_free(&rsa->QP);
+        memset(&rsa->D, 0, sizeof(rsa->QP));
+
+        mbedtls_mpi_free(&rsa->RN);
+        memset(&rsa->D, 0, sizeof(rsa->RN));
+
+        mbedtls_mpi_free(&rsa->RP);
+        memset(&rsa->D, 0, sizeof(rsa->RP));
+
+        mbedtls_mpi_free(&rsa->RQ);
+        memset(&rsa->D, 0, sizeof(rsa->RQ));
+
+        mbedtls_mpi_free(&rsa->Vi);
+        memset(&rsa->D, 0, sizeof(rsa->Vi));
+
+        mbedtls_mpi_free(&rsa->Vf);
+        memset(&rsa->D, 0, sizeof(rsa->Vf));
+    }
+
+    /* Initialize the destination */
+    dest->pk_info = info;
+    dest->pk_ctx = rsa;
+    rsa = NULL;
+
+    ret = 0;
+
+done:
+
+    if (ret != 0)
+    {
+        mbedtls_rsa_free(rsa);
+        mbedtls_free(rsa);
+    }
+
+    return ret;
 }
 
 /*
@@ -284,7 +367,6 @@ OE_Result OE_RSASign(
             NULL,
             NULL) != 0)
     {
-printf("****************** mbedtls_pk_sign()\n"); fflush(stdout);
         OE_THROW(OE_FAILURE);
     }
 
@@ -397,30 +479,28 @@ OE_Result OE_RSAGenerate(
 
     /* Initialize the private key parameter */
     {
-        OE_RSA_KEY_IMPL dummy;
-        uint8_t data[OE_PEM_MAX_BYTES];
-        size_t size = sizeof(data);
+        mbedtls_pk_init(&privateImpl->pk);
 
-        dummy.magic = OE_RSA_KEY_MAGIC;
-        dummy.pk = pk;
-        OE_TRY(OE_RSAWritePrivateKeyPEM((OE_RSA_KEY*)&dummy, data, &size));
-        pk = dummy.pk;
+        if (_CopyKeyFromKeyPair(&privateImpl->pk, &pk, false) != 0)
+        {
+            mbedtls_pk_free(&privateImpl->pk);
+            OE_THROW(OE_FAILURE);
+        }
 
-        OE_TRY(OE_RSAReadPrivateKeyPEM(data, size, privateKey));
+        privateImpl->magic = OE_RSA_KEY_MAGIC;
     }
 
     /* Initialize the public key parameter */
     {
-        OE_RSA_KEY_IMPL dummy;
-        uint8_t data[OE_PEM_MAX_BYTES];
-        size_t size = sizeof(data);
+        mbedtls_pk_init(&publicImpl->pk);
 
-        dummy.magic = OE_RSA_KEY_MAGIC;
-        dummy.pk = pk;
-        OE_TRY(OE_RSAWritePublicKeyPEM((OE_RSA_KEY*)&dummy, data, &size));
-        pk = dummy.pk;
+        if (_CopyKeyFromKeyPair(&publicImpl->pk, &pk, true) != 0)
+        {
+            mbedtls_pk_free(&publicImpl->pk);
+            OE_THROW(OE_FAILURE);
+        }
 
-        OE_TRY(OE_RSAReadPublicKeyPEM(data, size, publicKey));
+        publicImpl->magic = OE_RSA_KEY_MAGIC;
     }
 
     OE_THROW(OE_OK);
