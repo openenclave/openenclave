@@ -118,7 +118,7 @@ static void TestSHA256()
     OE_SHA256Init(&ctx);
     OE_SHA256Update(&ctx, ALPHABET, strlen(ALPHABET));
     OE_SHA256Final(&ctx, &hash);
-    assert(memcmp(&hash, &HASH, sizeof(OE_SHA256)) == 0);
+    OE_TEST(memcmp(&hash, &HASH, sizeof(OE_SHA256)) == 0);
 
     printf("=== passed TestSHA25\n");
 }
@@ -139,7 +139,7 @@ static void TestRSASign()
 
     r = OE_RSAReadPrivateKeyPEM(
         (const uint8_t*)RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_RSASign(
         &key,
@@ -148,9 +148,9 @@ static void TestRSASign()
         sizeof(HASH),
         signature,
         &signatureSize);
-    assert(r == OE_BUFFER_TOO_SMALL);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-    assert(signature = (uint8_t*)malloc(signatureSize));
+    OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
     r = OE_RSASign(
         &key,
@@ -159,10 +159,10 @@ static void TestRSASign()
         sizeof(HASH),
         signature,
         &signatureSize);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
-    assert(signatureSize == RSA_SIGNATURE_SIZE);
-    assert(memcmp(signature, &RSA_SIGNATURE, RSA_SIGNATURE_SIZE) == 0);
+    OE_TEST(signatureSize == RSA_SIGNATURE_SIZE);
+    OE_TEST(memcmp(signature, &RSA_SIGNATURE, RSA_SIGNATURE_SIZE) == 0);
 
 #if 0
     OE_HexDump(signature, signatureSize);
@@ -185,7 +185,7 @@ static void TestRSAVerify()
 
     r = OE_RSAReadPublicKeyPEM(
         (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_RSAVerify(
         &key,
@@ -194,7 +194,7 @@ static void TestRSAVerify()
         sizeof(HASH),
         RSA_SIGNATURE,
         RSA_SIGNATURE_SIZE);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     printf("=== passed TestRSAVerify\n");
 }
@@ -316,13 +316,13 @@ static void TestCertVerifyGood()
     OE_CRL* crl = NULL;
 
     r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_CertVerify(&cert, &chain, crl, &error);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     OE_CertFree(&cert);
     OE_CertChainFree(&chain);
@@ -341,14 +341,14 @@ static void TestCertVerifyBad()
     OE_CRL* crl = NULL;
 
     r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     /* Chain does not contain a root for this certificate */
     r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &chain);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_CertVerify(&cert, &chain, crl, &error);
-    assert(r == OE_VERIFY_FAILED);
+    OE_TEST(r == OE_VERIFY_FAILED);
 
     OE_CertFree(&cert);
     OE_CertChainFree(&chain);
@@ -368,20 +368,20 @@ static void TestCertVerify()
         OE_VerifyCertError error;
 
         r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
 
         r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
 
         /* Chain does not contain a root for this certificate */
         r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &badChain);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
 
         r = OE_CertVerify(&cert, &chain, NULL, &error);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
 
         r = OE_CertVerify(&cert, &badChain, NULL, &error);
-        assert(r == OE_VERIFY_FAILED);
+        OE_TEST(r == OE_VERIFY_FAILED);
 
         OE_CertFree(&cert);
         OE_CertChainFree(&chain);
@@ -407,8 +407,7 @@ static void TestRandom()
     for (size_t i = 0; i < N; i++)
     {
         /* Generate a random sequence */
-        if (OE_Random(buf[i], M * sizeof(uint8_t)) != OE_OK)
-            OE_Assert("OE_Random() failed" == NULL);
+        OE_TEST(OE_Random(buf[i], M * sizeof(uint8_t)) == OE_OK);
 
 #if 0
         OE_HexDump(buf[i], M * sizeof(uint8_t));
@@ -422,13 +421,13 @@ static void TestRandom()
             for (m = 1; m < M && buf[i][m] == c; m++)
                 ;
 
-            assert(m != M);
+            OE_TEST(m != M);
         }
 
         /* Check whether duplicate of one of the previous calls */
         for (size_t j = 0; j < i; j++)
         {
-            assert(memcmp(buf[j], buf[i], M * sizeof(uint8_t)) != 0);
+            OE_TEST(memcmp(buf[j], buf[i], M * sizeof(uint8_t)) != 0);
         }
     }
 
@@ -479,7 +478,7 @@ static void TestECSignAndVerify()
 
         r = OE_ECReadPrivateKeyPEM(
             (const uint8_t*)EC_PRIVATE_KEY, sizeof(EC_PRIVATE_KEY), &key);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
 
         r = OE_ECSign(
             &key,
@@ -488,9 +487,9 @@ static void TestECSignAndVerify()
             sizeof(HASH),
             signature,
             &signatureSize);
-        assert(r == OE_BUFFER_TOO_SMALL);
+        OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-        assert(signature = (uint8_t*)malloc(signatureSize));
+        OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
         r = OE_ECSign(
             &key,
@@ -499,10 +498,10 @@ static void TestECSignAndVerify()
             sizeof(HASH),
             signature,
             &signatureSize);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
 
-        assert(signature != NULL);
-        assert(signatureSize != 0);
+        OE_TEST(signature != NULL);
+        OE_TEST(signatureSize != 0);
     }
 
     {
@@ -510,7 +509,7 @@ static void TestECSignAndVerify()
 
         r = OE_ECReadPublicKeyPEM(
             (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
 
         r = OE_ECVerify(
             &key,
@@ -519,7 +518,7 @@ static void TestECSignAndVerify()
             sizeof(HASH),
             signature,
             signatureSize);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
 
         r = OE_ECVerify(
             &key,
@@ -528,10 +527,10 @@ static void TestECSignAndVerify()
             sizeof(HASH),
             EC_SIGNATURE,
             EC_SIGNATURE_SIZE);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
     }
 
-#if 1
+#if 0
     OE_HexDump(signature, signatureSize);
 #endif
 
@@ -551,7 +550,7 @@ static void TestRSAGenerate()
     size_t signatureSize = 0;
 
     r = OE_RSAGenerate(1024, 3, &privateKey, &publicKey);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_RSASign(
         &privateKey,
@@ -560,9 +559,9 @@ static void TestRSAGenerate()
         sizeof(HASH),
         signature,
         &signatureSize);
-    assert(r == OE_BUFFER_TOO_SMALL);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-    assert(signature = (uint8_t*)malloc(signatureSize));
+    OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
     r = OE_RSASign(
         &privateKey,
@@ -571,7 +570,7 @@ static void TestRSAGenerate()
         sizeof(HASH),
         signature,
         &signatureSize);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_RSAVerify(
         &publicKey,
@@ -580,7 +579,7 @@ static void TestRSAGenerate()
         sizeof(HASH),
         signature,
         signatureSize);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     free(signature);
     OE_RSAFree(&privateKey);
@@ -600,7 +599,7 @@ static void TestECGenerate()
     size_t signatureSize = 0;
 
     r = OE_ECGenerate(OE_EC_TYPE_SECP521R1, &privateKey, &publicKey);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_ECSign(
         &privateKey,
@@ -609,9 +608,9 @@ static void TestECGenerate()
         sizeof(HASH),
         signature,
         &signatureSize);
-    assert(r == OE_BUFFER_TOO_SMALL);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-    assert(signature = (uint8_t*)malloc(signatureSize));
+    OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
     r = OE_ECSign(
         &privateKey,
@@ -620,7 +619,7 @@ static void TestECGenerate()
         sizeof(HASH),
         signature,
         &signatureSize);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_ECVerify(
         &publicKey,
@@ -629,7 +628,7 @@ static void TestECGenerate()
         sizeof(HASH),
         signature,
         signatureSize);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     free(signature);
     OE_ECFree(&privateKey);
@@ -649,18 +648,18 @@ static void TestRSAWritePrivate()
 
     r = OE_RSAReadPrivateKeyPEM(
         (const uint8_t*)RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_RSAWritePrivateKeyPEM(&key, pemData, &pemSize);
-    assert(r == OE_BUFFER_TOO_SMALL);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-    assert(pemData = (uint8_t*)malloc(pemSize));
+    OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
     r = OE_RSAWritePrivateKeyPEM(&key, pemData, &pemSize);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
-    assert(sizeof(RSA_PRIVATE_KEY) == pemSize);
-    assert(memcmp(RSA_PRIVATE_KEY, pemData, pemSize) == 0);
+    OE_TEST(sizeof(RSA_PRIVATE_KEY) == pemSize);
+    OE_TEST(memcmp(RSA_PRIVATE_KEY, pemData, pemSize) == 0);
 
     free(pemData);
     OE_RSAFree(&key);
@@ -679,18 +678,18 @@ static void TestRSAWritePublic()
 
     r = OE_RSAReadPublicKeyPEM(
         (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     r = OE_RSAWritePublicKeyPEM(&key, pemData, &pemSize);
-    assert(r == OE_BUFFER_TOO_SMALL);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-    assert(pemData = (uint8_t*)malloc(pemSize));
+    OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
     r = OE_RSAWritePublicKeyPEM(&key, pemData, &pemSize);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
-    assert(sizeof(RSA_PUBLIC_KEY) == pemSize);
-    assert(memcmp(RSA_PUBLIC_KEY, pemData, pemSize) == 0);
+    OE_TEST(sizeof(RSA_PUBLIC_KEY) == pemSize);
+    OE_TEST(memcmp(RSA_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
     OE_RSAFree(&key);
@@ -712,37 +711,37 @@ static void TestECWritePrivate()
     size_t pemSize2 = 0;
 
     r = OE_ECGenerate(OE_EC_TYPE_SECP521R1, &key1, &publicKey);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     {
         r = OE_ECWritePrivateKeyPEM(&key1, pemData1, &pemSize1);
-        assert(r == OE_BUFFER_TOO_SMALL);
+        OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-        assert(pemData1 = (uint8_t*)malloc(pemSize1));
+        OE_TEST(pemData1 = (uint8_t*)malloc(pemSize1));
 
         r = OE_ECWritePrivateKeyPEM(&key1, pemData1, &pemSize1);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
     }
 
-    assert(pemSize1 != 0);
-    assert(pemData1[pemSize1 - 1] == '\0');
-    assert(strlen((char*)pemData1) == pemSize1 - 1);
+    OE_TEST(pemSize1 != 0);
+    OE_TEST(pemData1[pemSize1 - 1] == '\0');
+    OE_TEST(strlen((char*)pemData1) == pemSize1 - 1);
 
     r = OE_ECReadPrivateKeyPEM(pemData1, pemSize1, &key2);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     {
         r = OE_ECWritePrivateKeyPEM(&key2, pemData2, &pemSize2);
-        assert(r == OE_BUFFER_TOO_SMALL);
+        OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-        assert(pemData2 = (uint8_t*)malloc(pemSize2));
+        OE_TEST(pemData2 = (uint8_t*)malloc(pemSize2));
 
         r = OE_ECWritePrivateKeyPEM(&key2, pemData2, &pemSize2);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
     }
 
-    assert(pemSize1 == pemSize2);
-    assert(memcmp(pemData1, pemData2, pemSize1) == 0);
+    OE_TEST(pemSize1 == pemSize2);
+    OE_TEST(memcmp(pemData1, pemData2, pemSize1) == 0);
 
     free(pemData1);
     free(pemData2);
@@ -764,20 +763,20 @@ static void TestECWritePublic()
 
     r = OE_ECReadPublicKeyPEM(
         (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
-    assert(r == OE_OK);
+    OE_TEST(r == OE_OK);
 
     {
         r = OE_ECWritePublicKeyPEM(&key, pemData, &pemSize);
-        assert(r == OE_BUFFER_TOO_SMALL);
+        OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-        assert(pemData = (uint8_t*)malloc(pemSize));
+        OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
         r = OE_ECWritePublicKeyPEM(&key, pemData, &pemSize);
-        assert(r == OE_OK);
+        OE_TEST(r == OE_OK);
     }
 
-    assert(sizeof(EC_PUBLIC_KEY) == pemSize);
-    assert(memcmp(EC_PUBLIC_KEY, pemData, pemSize) == 0);
+    OE_TEST(sizeof(EC_PUBLIC_KEY) == pemSize);
+    OE_TEST(memcmp(EC_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
     OE_ECFree(&key);

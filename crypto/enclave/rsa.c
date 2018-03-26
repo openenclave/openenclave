@@ -10,6 +10,7 @@
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/bits/hexdump.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -283,6 +284,7 @@ OE_Result OE_RSASign(
             NULL,
             NULL) != 0)
     {
+printf("****************** mbedtls_pk_sign()\n"); fflush(stdout);
         OE_THROW(OE_FAILURE);
     }
 
@@ -407,7 +409,7 @@ OE_Result OE_RSAGenerate(
         OE_TRY(OE_RSAReadPrivateKeyPEM(data, size, privateKey));
     }
 
-    /* Initialize the private key parameter */
+    /* Initialize the public key parameter */
     {
         OE_RSA_KEY_IMPL dummy;
         uint8_t data[OE_PEM_MAX_BYTES];
@@ -418,7 +420,7 @@ OE_Result OE_RSAGenerate(
         OE_TRY(OE_RSAWritePublicKeyPEM((OE_RSA_KEY*)&dummy, data, &size));
         pk = dummy.pk;
 
-        OE_TRY(OE_RSAReadPublicKeyPEM(data, size, privateKey));
+        OE_TRY(OE_RSAReadPublicKeyPEM(data, size, publicKey));
     }
 
     OE_THROW(OE_OK);

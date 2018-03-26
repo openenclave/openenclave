@@ -8,6 +8,7 @@
 #include <openenclave/bits/random.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/sha.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,13 +24,8 @@ OE_ECALL void Test(void* args_)
     TestCertVerify();
     TestRandom();
     TestECSignAndVerify();
-#if 0
     TestRSAGenerate();
     TestECGenerate();
-#else
-    (void)TestRSAGenerate;
-    (void)TestECGenerate;
-#endif
     TestRSAWritePrivate();
     TestRSAWritePublic();
     TestECWritePublic();

@@ -8,6 +8,7 @@
 #include <openenclave/bits/random.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/sha.h>
+#include <openenclave/bits/tests.h>
 #include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,9 +16,6 @@
 
 const char* arg0;
 
-#define OE_HostPrintf printf
-#define OE_Assert assert
-#define TEST_HOST
 #include "../tests.c"
 
 int main(int argc, const char* argv[])

@@ -21,7 +21,7 @@ OE_EXTERNC_BEGIN
                 __FILE__,                    \
                 __LINE__,                    \
                 #COND);                      \
-            exit(1);                         \
+            abort();                         \
         }                                    \
     } while (0)
 
