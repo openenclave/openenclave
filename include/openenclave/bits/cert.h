@@ -12,13 +12,13 @@ OE_EXTERNC_BEGIN
 typedef struct _OE_Cert
 {
     /* Internal private implementation */
-    uint64_t impl[128];
+    uint64_t impl[80];
 } OE_Cert;
 
 typedef struct _OE_CertChain
 {
     /* Internal private implementation */
-    uint64_t impl[128];
+    uint64_t impl[80];
 } OE_CertChain;
 
 typedef struct _OE_CRL OE_CRL;
