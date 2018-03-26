@@ -385,7 +385,7 @@ void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 void _OE_CleanupXStates(void)
 {
     OE_ALIGNED(XSAVE_ALIGNMENT)
-    uint8_t xsave_area[MINIMAL_XSTATE_AREA_LENGTH] = {0};
+    uint8_t xsave_area[MINIMAL_XSTATE_AREA_LENGTH + 256] = {0};
     uint64_t restore_mask = ~((uint64_t)0x0);
 
     // The legacy registers(F87, SSE) values will be loaded from the
