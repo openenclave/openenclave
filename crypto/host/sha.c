@@ -12,6 +12,7 @@
 #endif
 
 #include <openenclave/host.h>
+#include <openenclave/bits/trace.h>
 
 typedef struct _OE_SHA256ContextImpl
 {
@@ -30,30 +31,23 @@ OE_Result OE_SHA256Init(OE_SHA256Context* context)
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
     if (!context)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
+        OE_THROW(OE_INVALID_PARAMETER);
 
 #if defined(__linux__)
     if (!SHA256_Init(&impl->ctx))
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
+        OE_THROW(OE_FAILURE);
 #elif defined(_WIN32)
     if (BCryptCreateHash(
             BCRYPT_SHA256_ALG_HANDLE, &impl->handle, NULL, 0, NULL, 0, 0) !=
         STATUS_SUCCESS)
     {
-        result = OE_FAILURE;
-        goto done;
+        OE_THROW(OE_FAILURE);
     }
 #endif
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
-done:
+OE_CATCH:
     return result;
 }
 
@@ -66,29 +60,22 @@ OE_Result OE_SHA256Update(
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
     if (!context)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
+        OE_THROW(OE_INVALID_PARAMETER);
 
 #if defined(__linux__)
     if (!SHA256_Update(&impl->ctx, data, size))
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
+        OE_THROW(OE_FAILURE);
 #elif defined(_WIN32)
     if (BCryptHashData(impl->handle, (void*)data, (ULONG)size, 0) !=
         STATUS_SUCCESS)
     {
-        result = OE_FAILURE;
-        goto done;
+        OE_THROW(OE_FAILURE);
     }
 #endif
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
-done:
+OE_CATCH:
     return result;
 }
 
@@ -98,28 +85,21 @@ OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256)
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
     if (!context)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
+        OE_THROW(OE_INVALID_PARAMETER);
 
 #if defined(__linux__)
     if (!SHA256_Final(sha256->buf, &impl->ctx))
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
+        OE_THROW(OE_FAILURE);
 #elif defined(_WIN32)
     if (BCryptFinishHash(impl->handle, sha256->buf, sizeof(OE_SHA256), 0) !=
         STATUS_SUCCESS)
     {
-        result = OE_FAILURE;
-        goto done;
+        OE_THROW(OE_FAILURE);
     }
 #endif
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
-done:
+OE_CATCH:
     return result;
 }

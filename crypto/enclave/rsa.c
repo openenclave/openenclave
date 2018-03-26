@@ -108,7 +108,7 @@ OE_Result OE_RSAReadPrivateKeyPEM(
     if (mbedtls_pk_parse_key(&impl->pk, pemData, pemSize, NULL, 0) != 0)
         OE_THROW(OE_FAILURE);
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 
@@ -141,7 +141,7 @@ OE_Result OE_RSAReadPublicKeyPEM(
     if (mbedtls_pk_parse_public_key(&impl->pk, pemData, pemSize) != 0)
         OE_THROW(OE_FAILURE);
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 
@@ -186,7 +186,7 @@ OE_Result OE_RSAWritePrivateKeyPEM(
         *pemSize = size;
     }
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
     return result;
@@ -227,7 +227,7 @@ OE_Result OE_RSAWritePublicKeyPEM(
         *pemSize = size;
     }
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
     return result;
@@ -243,7 +243,7 @@ OE_Result OE_RSAFree(OE_RSA_KEY* key)
 
     _FreeImpl(impl);
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
     return result;
@@ -297,7 +297,7 @@ OE_Result OE_RSASign(
     OE_Memcpy(signature, buffer, bufferSize);
     *signatureSize = bufferSize;
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 
@@ -333,7 +333,7 @@ OE_Result OE_RSAVerify(
         OE_THROW(OE_FAILURE);
     }
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 
@@ -421,7 +421,7 @@ OE_Result OE_RSAGenerate(
         OE_TRY(OE_RSAReadPublicKeyPEM(data, size, privateKey));
     }
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 

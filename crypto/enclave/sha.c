@@ -3,6 +3,7 @@
 
 #include <mbedtls/sha256.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/trace.h>
 #include <openenclave/bits/sha.h>
 #include <openenclave/types.h>
 
@@ -15,22 +16,19 @@ OE_STATIC_ASSERT(sizeof(OE_SHA256ContextImpl) <= sizeof(OE_SHA256Context));
 
 OE_Result OE_SHA256Init(OE_SHA256Context* context)
 {
-    OE_Result result = OE_INVALID_PARAMETER;
+    OE_Result result = OE_UNEXPECTED;
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
     if (!context)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
+        OE_THROW(OE_INVALID_PARAMETER);
 
     mbedtls_sha256_init(&impl->ctx);
 
     mbedtls_sha256_starts(&impl->ctx, 0);
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
-done:
+OE_CATCH:
     return result;
 }
 
@@ -43,16 +41,13 @@ OE_Result OE_SHA256Update(
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
     if (!context || !data)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
+        OE_THROW(OE_INVALID_PARAMETER);
 
     mbedtls_sha256_update(&impl->ctx, data, size);
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
-done:
+OE_CATCH:
     return result;
 }
 
@@ -62,15 +57,12 @@ OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256)
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
     if (!context || !sha256)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
+        OE_THROW(OE_INVALID_PARAMETER);
 
     mbedtls_sha256_finish(&impl->ctx, sha256->buf);
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
-done:
+OE_CATCH:
     return result;
 }

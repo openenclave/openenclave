@@ -124,7 +124,7 @@ OE_Result OE_ECReadPrivateKeyPEM(
     if (mbedtls_pk_parse_key(&impl->pk, pemData, pemSize, NULL, 0) != 0)
         OE_THROW(OE_FAILURE);
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 
@@ -157,7 +157,7 @@ OE_Result OE_ECReadPublicKeyPEM(
     if (mbedtls_pk_parse_public_key(&impl->pk, pemData, pemSize) != 0)
         OE_THROW(OE_FAILURE);
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 
@@ -202,7 +202,7 @@ OE_Result OE_ECWritePrivateKeyPEM(
         *pemSize = size;
     }
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
     return result;
@@ -243,7 +243,7 @@ OE_Result OE_ECWritePublicKeyPEM(
         *pemSize = size;
     }
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
     return result;
@@ -259,7 +259,7 @@ OE_Result OE_ECFree(OE_EC_KEY* key)
 
     _FreeImpl(impl);
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
     return result;
@@ -313,7 +313,7 @@ OE_Result OE_ECSign(
     OE_Memcpy(signature, buffer, bufferSize);
     *signatureSize = bufferSize;
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 
@@ -349,7 +349,7 @@ OE_Result OE_ECVerify(
         OE_THROW(OE_FAILURE);
     }
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 
@@ -444,7 +444,7 @@ OE_Result OE_ECGenerate(
         OE_TRY(OE_ECReadPublicKeyPEM(data, size, publicKey));
     }
 
-    result = OE_OK;
+    OE_THROW(OE_OK);
 
 OE_CATCH:
 
