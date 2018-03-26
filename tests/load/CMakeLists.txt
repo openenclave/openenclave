@@ -2,5 +2,4 @@
 # Licensed under the MIT License.
 
 add_executable(load main.cpp)
-#target_link_libraries(load oehost oecryptohost)
 target_link_libraries(load oehostapp)
