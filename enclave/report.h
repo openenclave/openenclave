@@ -7,6 +7,11 @@
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/types.h>
 
+OE_Result SGX_CreateReport(
+    const SGX_TargetInfo* targetInfo,
+    const SGX_ReportData* reportData,
+    SGX_Report* report);
+
 OE_Result _HandleGetSGXReport(uint64_t argIn);
 
 #endif /* _OE_ENCLAVE_REPORT_H */

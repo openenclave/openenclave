@@ -8,8 +8,11 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_REPORT_OPTIONS_LOCAL_ATTESTATION 0x00000001
-#define OE_REPORT_OPTIONS_REMOTE_ATTESTATION 0x00000010
+/*
+ * Options passed to GetReport functions on host and enclave.
+ * Default value (0) is local attestation.
+ */
+#define OE_REPORT_OPTIONS_REMOTE_ATTESTATION 0x00000001
 
 #define OE_REPORT_DATA_SIZE 64
 

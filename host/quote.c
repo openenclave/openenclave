@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "quote.h"
 #include <assert.h>
 #include <limits.h>
 #include <openenclave/bits/aesm.h>
@@ -47,6 +48,7 @@ OE_Result SGX_GetQuoteSize(
     OE_Result result = OE_FAILURE;
     uint32_t signatureSize = 0;
     uint32_t n = 0;
+    const SGX_SigRL* sigrl = NULL;
 
     if (quoteSize)
         *quoteSize = 0;
@@ -54,7 +56,7 @@ OE_Result SGX_GetQuoteSize(
     if (!quoteSize)
         goto done;
 
-    const SGX_SigRL* sigrl = (const SGX_SigRL*)signatureRevocationList;
+    sigrl = (const SGX_SigRL*)signatureRevocationList;
 
     if (sigrl)
     {
@@ -84,7 +86,7 @@ done:
     return result;
 }
 
-OE_Result SGX_GetQuoteImpl(
+static OE_Result _SGX_GetQuoteFromAesm(
     const SGX_Report* report,
     SGX_QuoteType quoteType,
     const SGX_SPID* spid,
@@ -187,7 +189,7 @@ OE_Result SGX_GetQuote(
         memset(quote, 0, *quoteSize);
 
         OE_TRY(
-            SGX_GetQuoteImpl(
+            _SGX_GetQuoteFromAesm(
                 report,
                 SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
                 &spid,

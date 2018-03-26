@@ -25,6 +25,7 @@
 #include <openenclave/bits/utils.h>
 #include "enclave.h"
 #include "ocalls.h"
+#include "quote.h"
 
 void HandleMalloc(uint64_t argIn, uint64_t* argOut)
 {

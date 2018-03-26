@@ -112,25 +112,26 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
  * This function creates a report to be used in local or remote attestation. The
  * report shall contain the data given by the **reportData** parameter.
  *
- * If the *reportSize* parameter is too small, this function returns
- * OE_BUFFER_TOO_SMALL.
+ * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
+ * this function returns OE_BUFFER_TOO_SMALL.
  *
  * @param enclave The handle to the enclave that will generate the report.
- * @param options The bit vector used to specify the type of report to
- * return. For SGX, this can be local or remote (report vs quote).
+ * @param options Specifying default value (0) generates a locally attested
+ * report. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a remotely
+ * attested report.
  * @param reportData The report data that will be included in the report.
  * @param reportDataSize The size of the **reportData** in bytes.
- * @param enclaveParams Optional additional parameters needed for the current
+ * @param optParams Optional additional parameters needed for the current
  * enclave type. For SGX, this can be SGX_TargetInfo for local attestation.
- * @param enclaveParamsSize The size of the **enclaveParams** buffer.
+ * @param optParamsSize The size of the **enclaveParams** buffer.
  * @param reportBuffer The buffer to where the resulting report will be copied.
  * @param reportBufferSize The size of the **report** buffer. This is set to the
  * required size of the report buffer on return.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **reportBuffer** buffer is too small.
- * @retval OE_OUT_OF_MEMORY Failed to allocate host heap memory.
+ * @retval OE_BUFFER_TOO_SMALL The **reportBuffer** buffer is NULL or too small.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
 OE_Result OE_GetReport(
@@ -138,8 +139,8 @@ OE_Result OE_GetReport(
     uint32_t options,
     const uint8_t* reportData,
     uint32_t reportDataSize,
-    const void* enclaveParams,
-    uint32_t enclaveParamsSize,
+    const void* optParams,
+    uint32_t optParamsSize,
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize);
 
