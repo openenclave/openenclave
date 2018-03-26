@@ -65,7 +65,7 @@ static int _MapHashType(OE_HashType md)
 **==============================================================================
 */
 
-OE_Result OE_RSAReadPrivateKeyFromPEM(
+OE_Result OE_RSAReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* key)
@@ -127,7 +127,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAReadPublicKeyFromPEM(
+OE_Result OE_RSAReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* key)
@@ -403,7 +403,7 @@ OE_Result OE_RSAGenerate(
             goto done;
         }
 
-        if (OE_RSAReadPrivateKeyFromPEM(
+        if (OE_RSAReadPrivateKeyPEM(
                 (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
             result = OE_FAILURE;
@@ -452,7 +452,7 @@ OE_Result OE_RSAGenerate(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_RSAReadPublicKeyFromPEM(
+        if (OE_RSAReadPublicKeyPEM(
                 (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
             result = OE_FAILURE;
@@ -488,7 +488,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAWritePrivateKeyToPEM(
+OE_Result OE_RSAWritePrivateKeyPEM(
     const OE_RSA_KEY* key,
     uint8_t* data,
     size_t* size)
@@ -566,7 +566,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAWritePublicKeyToPEM(
+OE_Result OE_RSAWritePublicKeyPEM(
     const OE_RSA_KEY* key,
     uint8_t* data,
     size_t* size)

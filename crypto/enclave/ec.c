@@ -77,6 +77,23 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
     return 0;
 }
 
+/* Curve names, indexed by OE_ECType */
+static const char* _curveNames[] =
+{
+    "secp521r1" /* OE_EC_TYPE_SECP521R1 */
+};
+
+/* Convert ECType to curve name */
+static const char* _ECTypeToString(OE_Type type)
+{
+    size_t index = (size_t)type;
+
+    if (index >= OE_COUNTOF(_curveNames))
+        return NULL;
+
+    return _curveNames[index];
+}
+
 /*
 **==============================================================================
 **
@@ -85,7 +102,7 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
 **==============================================================================
 */
 
-OE_Result OE_ECReadPrivateKeyFromPEM(
+OE_Result OE_ECReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_EC_KEY* privateKey)
@@ -118,7 +135,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_ECReadPublicKeyFromPEM(
+OE_Result OE_ECReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_EC_KEY* publicKey)
@@ -151,7 +168,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_ECWritePrivateKeyToPEM(
+OE_Result OE_ECWritePrivateKeyPEM(
     const OE_EC_KEY* key,
     uint8_t* pemData,
     size_t* pemSize)
@@ -192,7 +209,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_ECWritePublicKeyToPEM(
+OE_Result OE_ECWritePublicKeyPEM(
     const OE_EC_KEY* key,
     uint8_t* pemData,
     size_t* pemSize)
@@ -341,7 +358,7 @@ OE_CATCH:
 }
 
 OE_Result OE_ECGenerate(
-    const char* curveName,
+    OE_ECType type,
     OE_EC_KEY* privateKey,
     OE_EC_KEY* publicKey)
 {
@@ -352,6 +369,7 @@ OE_Result OE_ECGenerate(
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_pk_context pk;
     int curve;
+    const char* curveName;
 
     /* Initialize structures */
     mbedtls_entropy_init(&entropy);
@@ -362,7 +380,11 @@ OE_Result OE_ECGenerate(
     _ClearImpl(publicImpl);
 
     /* Check for invalid parameters */
-    if (!privateImpl || !publicImpl || !curveName)
+    if (!privateImpl || !publicImpl)
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    /* Convert curve type to curve name */
+    if (!(curveName = _ECTypeToString(type)))
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Resolve the curveName parameter to an EC-curve identifier */
@@ -403,10 +425,10 @@ OE_Result OE_ECGenerate(
 
         dummy.magic = OE_EC_KEY_MAGIC;
         dummy.pk = pk;
-        OE_TRY(OE_ECWritePrivateKeyToPEM((OE_EC_KEY*)&dummy, data, &size));
+        OE_TRY(OE_ECWritePrivateKeyPEM((OE_EC_KEY*)&dummy, data, &size));
         pk = dummy.pk;
 
-        OE_TRY(OE_ECReadPrivateKeyFromPEM(data, size, privateKey));
+        OE_TRY(OE_ECReadPrivateKeyPEM(data, size, privateKey));
     }
 
     /* Initialize the public key parameter */
@@ -417,10 +439,10 @@ OE_Result OE_ECGenerate(
 
         dummy.magic = OE_EC_KEY_MAGIC;
         dummy.pk = pk;
-        OE_TRY(OE_ECWritePublicKeyToPEM((OE_EC_KEY*)&dummy, data, &size));
+        OE_TRY(OE_ECWritePublicKeyPEM((OE_EC_KEY*)&dummy, data, &size));
         pk = dummy.pk;
 
-        OE_TRY(OE_ECReadPublicKeyFromPEM(data, size, publicKey));
+        OE_TRY(OE_ECReadPublicKeyPEM(data, size, publicKey));
     }
 
     result = OE_OK;

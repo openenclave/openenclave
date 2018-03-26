@@ -11,173 +11,132 @@
 
 OE_EXTERNC_BEGIN
 
-/* Opaque representation of an EC public key */
+/* Opaque representation of a public EC key */
 typedef struct _OE_EC
 {
     /* Internal private implementation */
     uint64_t impl[4];
 } OE_EC_KEY;
 
+/* Supported CURVE types */
+typedef enum OE_ECType
+{
+    OE_EC_TYPE_SECP521R1
+} OE_ECType;
+
 /**
- * Reads a public EC key from PEM data.
+ * Reads a private EC key from PEM data
  *
- * This function loads an EC key from a data buffer that contains a PEM
- * representation of an EC key with the following format.
+ * This function reads a private EC key from PEM data with the following PEM
+ * headers.
  *
  *     -----BEGIN EC PRIVATE KEY-----
  *     ...
  *     -----END EC PRIVATE KEY-----
  *
- * @param pemData - pointer to zero-terminated PEM key representation
- * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param privateKey - private key structure (pass to OE_ECFree() to free)
+ * @param pemData - zero-terminated PEM data
+ * @param pemSize - size of the PEM data (including the zero-terminator)
+ * @param privateKey - initialized key handle upon return
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECReadPrivateKeyFromPEM(
+OE_Result OE_ECReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_EC_KEY* privateKey);
 
 /**
- * Reads a public EC key from PEM data.
+ * Reads a public EC key from PEM data
  *
- * This function loads an EC key from a data buffer that contains a PEM
- * representation of an EC key with the following format.
+ * This function reads a public EC key from PEM data with the following PEM
+ * headers.
  *
  *     -----BEGIN PUBLIC KEY-----
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param pemData - pointer to zero-terminated PEM key representation
- * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param publicKey - public key structure (pass to OE_ECFree() to free)
+ * @param pemData - zero-terminated PEM data
+ * @param pemSize - size of the PEM data (including the zero-terminator)
+ * @param publicKey - initialized key handle upon return
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECReadPublicKeyFromPEM(
+OE_Result OE_ECReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_EC_KEY* publicKey);
 
 /**
- * Reads a public EC key from PEM data.
+ * Writes a private EC key to PEM format
  *
- * This function loads an EC key from a data buffer that contains a PEM
- * representation of an EC key with the following format.
+ * This function writes a private EC key to PEM data with the following PEM
+ * headers.
  *
  *     -----BEGIN EC PRIVATE KEY-----
  *     ...
  *     -----END EC PRIVATE KEY-----
  *
- * @param pemData - pointer to zero-terminated PEM key representation
- * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param privateKey - private key structure (pass to OE_ECFree() to release)
+ * @param privateKey - key to be written
+ * @param pemData - buffer where PEM data will be written
+ * @param[in,out] pemSize - buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
+ * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_ECReadPrivateKeyFromPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_EC_KEY* privateKey);
-
-/**
- * Reads a public EC key from PEM data.
- *
- * This function loads an EC key from a data buffer that contains a PEM
- * representation of an EC key with the following format.
- *
- *     -----BEGIN PUBLIC KEY-----
- *     ...
- *     -----END PUBLIC KEY-----
- *
- * @param pemData - pointer to zero-terminated PEM key representation
- * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param publicKey - public key structure (pass to OE_ECFree() to free)
- *
- * @return OE_OK upon success
- */
-OE_Result OE_ECReadPublicKeyFromPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_EC_KEY* publicKey);
-
-/**
- * Write an EC private key to PEM format
- *
- * This function writes an EC private key to PEM format, which has the
- * following form.
- *
- *     -----BEGIN PUBLIC KEY-----
- *     ...
- *     -----END PUBLIC KEY-----
- *
- * @param privateKey - private key to be written
- * @param pemData - buffer where PEM data is written
- * @param[in,out] pemSize - size of the PEM buffer on input; size of the actual
- *     PEM data on output. If the former is less than the latter, this function
- *     returns OE_BUFFER_TOO_SMALL.
- *
- * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL PEM buffer is not big engough
- */
-OE_Result OE_ECWritePrivateKeyToPEM(
+OE_Result OE_ECWritePrivateKeyPEM(
     const OE_EC_KEY* privateKey,
     uint8_t* pemData,
     size_t* pemSize);
 
+/*ATTN*/
+
 /**
- * Write an EC public key to PEM format
+ * Writes a public EC key to PEM format
  *
- * This function writes an EC public key to PEM form, which has the
- * following form.
+ * This function writes a public EC key to PEM data with the following PEM
+ * headers.
  *
  *     -----BEGIN PUBLIC KEY-----
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param publicKey - public key to be written
- * @param pemData - buffer where PEM data is written
- * @param[in,out] pemSize - size of the PEM buffer on input; size of the actual
- *     PEM data on output. If the former is less than the latter, this function
- *     returns OE_BUFFER_TOO_SMALL.
+ * @param publicKey - key to be written
+ * @param pemData - buffer where PEM data will be written
+ * @param[in,out] pemSize - buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL PEM buffer is not big engough
+ * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_ECWritePublicKeyToPEM(
+OE_Result OE_ECWritePublicKeyPEM(
     const OE_EC_KEY* publicKey,
     uint8_t* pemData,
     size_t* pemSize);
 
 /**
- * Releases an EC key structure
+ * Releases an EC key
  *
- * This function releases an EC public key sturcture that was created
- * by one of the functions in this module.
+ * This function releases the given EC key.
  *
- * @param key - pointer to EC public key struture.
+ * @param key - handle of key being released
  *
  * @return OE_OK upon success
  */
 OE_Result OE_ECFree(OE_EC_KEY* key);
 
 /**
- * Digitaly signs a message with an EC private key
+ * Digitaly signs a message with a private EC key
  *
- * This function uses an EC private key to sign a message with the given hash.
+ * This function uses a private EC key to sign a message with the given hash.
  *
- * @param privateKey - EC private key
+ * @param privateKey - private EC key of signer
  * @param hashType - type of hash parameter
  * @param hashData - hash of the message being signed
- * @param hashSize - size in bytes of hash data
- * @param signature - signature buffer (may be null)
- * @param[in,out] signatureSize - size of signature buffer on input; size of
- *     actual signature on output. If the former is less than the latter, this
- *     function returns OE_BUFFER_TOO_SMALL.
+ * @param hashSize - size of the hash data
+ * @param signature - signature buffer
+ * @param[in,out] signatureSize - buffer size (in); signature size (out)
  *
  * @return OE_OK on success
- * @return OE_BUFFER_TOO_SMALL if signature buffer is too small
+ * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
 OE_Result OE_ECSign(
     const OE_EC_KEY* privateKey,
@@ -188,17 +147,17 @@ OE_Result OE_ECSign(
     size_t* signatureSize);
 
 /**
- * Verify that a message was signed by a given EC key
+ * Verifies that a message was signed by an EC key
  *
- * This function verifies that a message (with the given hash) was signed by a
- * a given EC key.
+ * This function verifies that the message with the given hash was signed by the
+ * given EC key.
  *
- * @param publicKey - EC public key
+ * @param publicKey - public EC key of signer
  * @param hashType - type of hash parameter
- * @param hashData - hash of the message being signed
- * @param hashSize - size in bytes of hash data
+ * @param hashData - hash of the signed message
+ * @param hashSize - size of the hash data
  * @param signature - expected signature
- * @param signatureSize - size in bytes of the expected signature
+ * @param signatureSize - size of the expected signature
  *
  * @return OE_OK if the message was signeded with the given certificate
  */
@@ -211,19 +170,19 @@ OE_Result OE_ECVerify(
     size_t signatureSize);
 
 /**
- * Generate an EC private-public key pair
+ * Generates an EC private-public key pair
  *
- * This function generate an EC private-public key pair from the given
+ * This function generates an EC private-public key pair from the given
  * parameters.
  *
- * @param curveName - EC curve name (e.g., "secp521r1")
- * @param privateKey - generate private key
- * @param publicKey - generate public key
+ * @param ecType - type of eliptical curve to be generated
+ * @param privateKey - generated private key
+ * @param publicKey - generated public key
  *
  * @return OE_OK on success
  */
 OE_Result OE_ECGenerate(
-    const char* curveName,
+    OE_ECType ecType,
     OE_EC_KEY* privateKey,
     OE_EC_KEY* publicKey);
 

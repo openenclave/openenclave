@@ -42,6 +42,23 @@ OE_INLINE bool _ValidImpl(const OE_EC_KEY_IMPL* impl)
     return impl && impl->magic == OE_EC_KEY_MAGIC && impl->pkey ? true : false;
 }
 
+/* Curve names, indexed by OE_ECType */
+static const char* _curveNames[] =
+{
+    "secp521r1" /* OE_EC_TYPE_SECP521R1 */
+};
+
+/* Convert ECType to curve name */
+static const char* _ECTypeToString(OE_Type type)
+{
+    size_t index = (size_t)type;
+
+    if (index >= OE_COUNTOF(_curveNames))
+        return NULL;
+
+    return _curveNames[index];
+}
+
 /*
 **==============================================================================
 **
@@ -50,7 +67,7 @@ OE_INLINE bool _ValidImpl(const OE_EC_KEY_IMPL* impl)
 **==============================================================================
 */
 
-OE_Result OE_ECReadPrivateKeyFromPEM(
+OE_Result OE_ECReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_EC_KEY* key)
@@ -106,7 +123,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECReadPublicKeyFromPEM(
+OE_Result OE_ECReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_EC_KEY* key)
@@ -155,6 +172,167 @@ done:
 
     if (pkey)
         EVP_PKEY_free(pkey);
+
+    if (bio)
+        BIO_free(bio);
+
+    return result;
+}
+
+OE_Result OE_ECWritePrivateKeyPEM(
+    const OE_EC_KEY* key,
+    uint8_t* data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)key;
+    BIO* bio = NULL;
+    EC_KEY* ec;
+    const char nullTerminator = '\0';
+
+    /* Check parameters */
+    if (!_ValidImpl(impl) || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* If buffer is null, then size must be zero */
+    if (!data && *size != 0)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Create memory BIO object to write key to */
+    if (!(bio = BIO_new(BIO_s_mem())))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Get EC key from public key without increasing reference count */
+    if (!(ec = EVP_PKEY_get1_EC_KEY(impl->pkey)))
+        goto done;
+
+    /* Write key to BIO */
+    if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Write a NULL terminator onto BIO */
+    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Copy the BIO onto caller's memory */
+    {
+        BUF_MEM* mem;
+
+        if (!BIO_get_mem_ptr(bio, &mem))
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
+
+        /* If buffer is too small */
+        if (*size < mem->length)
+        {
+            *size = mem->length;
+            result = OE_BUFFER_TOO_SMALL;
+            goto done;
+        }
+
+        /* Copy buffer onto caller's memory */
+        memcpy(data, mem->data, mem->length);
+        *size = mem->length;
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (bio)
+        BIO_free(bio);
+
+    return result;
+}
+
+OE_Result OE_ECWritePublicKeyPEM(
+    const OE_EC_KEY* key,
+    uint8_t* data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    BIO* bio = NULL;
+    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)key;
+    const char nullTerminator = '\0';
+
+    /* Check parameters */
+    if (!_ValidImpl(impl) || !size)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* If buffer is null, then size must be zero */
+    if (!data && *size != 0)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Create memory BIO object to write key to */
+    if (!(bio = BIO_new(BIO_s_mem())))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Write key to BIO */
+    if (!PEM_write_bio_PUBKEY(bio, impl->pkey))
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Write a NULL terminator onto BIO */
+    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Copy the BIO onto caller's memory */
+    {
+        BUF_MEM* mem;
+
+        if (!BIO_get_mem_ptr(bio, &mem))
+        {
+            result = OE_FAILURE;
+            goto done;
+        }
+
+        /* If buffer is too small */
+        if (*size < mem->length)
+        {
+            *size = mem->length;
+            result = OE_BUFFER_TOO_SMALL;
+            goto done;
+        }
+
+        /* Copy buffer onto caller's memory */
+        memcpy(data, mem->data, mem->length);
+        *size = mem->length;
+    }
+
+    result = OE_OK;
+
+done:
 
     if (bio)
         BIO_free(bio);
@@ -330,7 +508,7 @@ done:
 }
 
 OE_Result OE_ECGenerate(
-    const char* curveName,
+    OE_ECType type,
     OE_EC_KEY* privateKey,
     OE_EC_KEY* publicKey)
 {
@@ -342,12 +520,19 @@ OE_Result OE_ECGenerate(
     EVP_PKEY* pkey = NULL;
     BIO* bio = NULL;
     const char nullTerminator = '\0';
+    const char* curveName;
 
     _ClearImpl(privateImpl);
     _ClearImpl(publicImpl);
 
     /* Check parameters */
-    if (!privateKey || !publicKey || !curveName)
+    if (!privateKey || !publicKey)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    if (!(curveName = _ECTypeToString(type)))
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -425,7 +610,7 @@ OE_Result OE_ECGenerate(
             goto done;
         }
 
-        if (OE_ECReadPrivateKeyFromPEM(
+        if (OE_ECReadPrivateKeyPEM(
                 (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
             result = OE_FAILURE;
@@ -460,7 +645,7 @@ OE_Result OE_ECGenerate(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_ECReadPublicKeyFromPEM(
+        if (OE_ECReadPublicKeyPEM(
                 (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
             result = OE_FAILURE;
@@ -496,163 +681,3 @@ done:
     return result;
 }
 
-OE_Result OE_ECWritePrivateKeyToPEM(
-    const OE_EC_KEY* key,
-    uint8_t* data,
-    size_t* size)
-{
-    OE_Result result = OE_UNEXPECTED;
-    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)key;
-    BIO* bio = NULL;
-    EC_KEY* ec;
-    const char nullTerminator = '\0';
-
-    /* Check parameters */
-    if (!_ValidImpl(impl) || !size)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
-
-    /* If buffer is null, then size must be zero */
-    if (!data && *size != 0)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
-
-    /* Create memory BIO object to write key to */
-    if (!(bio = BIO_new(BIO_s_mem())))
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
-
-    /* Get EC key from public key without increasing reference count */
-    if (!(ec = EVP_PKEY_get1_EC_KEY(impl->pkey)))
-        goto done;
-
-    /* Write key to BIO */
-    if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
-
-    /* Write a NULL terminator onto BIO */
-    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
-
-    /* Copy the BIO onto caller's memory */
-    {
-        BUF_MEM* mem;
-
-        if (!BIO_get_mem_ptr(bio, &mem))
-        {
-            result = OE_FAILURE;
-            goto done;
-        }
-
-        /* If buffer is too small */
-        if (*size < mem->length)
-        {
-            *size = mem->length;
-            result = OE_BUFFER_TOO_SMALL;
-            goto done;
-        }
-
-        /* Copy buffer onto caller's memory */
-        memcpy(data, mem->data, mem->length);
-        *size = mem->length;
-    }
-
-    result = OE_OK;
-
-done:
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}
-
-OE_Result OE_ECWritePublicKeyToPEM(
-    const OE_EC_KEY* key,
-    uint8_t* data,
-    size_t* size)
-{
-    OE_Result result = OE_UNEXPECTED;
-    BIO* bio = NULL;
-    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)key;
-    const char nullTerminator = '\0';
-
-    /* Check parameters */
-    if (!_ValidImpl(impl) || !size)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
-
-    /* If buffer is null, then size must be zero */
-    if (!data && *size != 0)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto done;
-    }
-
-    /* Create memory BIO object to write key to */
-    if (!(bio = BIO_new(BIO_s_mem())))
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
-
-    /* Write key to BIO */
-    if (!PEM_write_bio_PUBKEY(bio, impl->pkey))
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
-
-    /* Write a NULL terminator onto BIO */
-    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-    {
-        result = OE_FAILURE;
-        goto done;
-    }
-
-    /* Copy the BIO onto caller's memory */
-    {
-        BUF_MEM* mem;
-
-        if (!BIO_get_mem_ptr(bio, &mem))
-        {
-            result = OE_FAILURE;
-            goto done;
-        }
-
-        /* If buffer is too small */
-        if (*size < mem->length)
-        {
-            *size = mem->length;
-            result = OE_BUFFER_TOO_SMALL;
-            goto done;
-        }
-
-        /* Copy buffer onto caller's memory */
-        memcpy(data, mem->data, mem->length);
-        *size = mem->length;
-    }
-
-    result = OE_OK;
-
-done:
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}

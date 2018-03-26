@@ -85,7 +85,7 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
 **==============================================================================
 */
 
-OE_Result OE_RSAReadPrivateKeyFromPEM(
+OE_Result OE_RSAReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* privateKey)
@@ -118,7 +118,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_RSAReadPublicKeyFromPEM(
+OE_Result OE_RSAReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* publicKey)
@@ -151,7 +151,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_RSAWritePrivateKeyToPEM(
+OE_Result OE_RSAWritePrivateKeyPEM(
     const OE_RSA_KEY* key,
     uint8_t* pemData,
     size_t* pemSize)
@@ -192,7 +192,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_RSAWritePublicKeyToPEM(
+OE_Result OE_RSAWritePublicKeyPEM(
     const OE_RSA_KEY* key,
     uint8_t* pemData,
     size_t* pemSize)
@@ -401,10 +401,10 @@ OE_Result OE_RSAGenerate(
 
         dummy.magic = OE_RSA_KEY_MAGIC;
         dummy.pk = pk;
-        OE_TRY(OE_RSAWritePrivateKeyToPEM((OE_RSA_KEY*)&dummy, data, &size));
+        OE_TRY(OE_RSAWritePrivateKeyPEM((OE_RSA_KEY*)&dummy, data, &size));
         pk = dummy.pk;
 
-        OE_TRY(OE_RSAReadPrivateKeyFromPEM(data, size, privateKey));
+        OE_TRY(OE_RSAReadPrivateKeyPEM(data, size, privateKey));
     }
 
     /* Initialize the private key parameter */
@@ -415,10 +415,10 @@ OE_Result OE_RSAGenerate(
 
         dummy.magic = OE_RSA_KEY_MAGIC;
         dummy.pk = pk;
-        OE_TRY(OE_RSAWritePublicKeyToPEM((OE_RSA_KEY*)&dummy, data, &size));
+        OE_TRY(OE_RSAWritePublicKeyPEM((OE_RSA_KEY*)&dummy, data, &size));
         pk = dummy.pk;
 
-        OE_TRY(OE_RSAReadPublicKeyFromPEM(data, size, privateKey));
+        OE_TRY(OE_RSAReadPublicKeyPEM(data, size, privateKey));
     }
 
     result = OE_OK;

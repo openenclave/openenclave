@@ -11,7 +11,7 @@
 
 OE_EXTERNC_BEGIN
 
-/* Opaque representation of an RSA public key */
+/* Opaque representation of a public RSA key */
 typedef struct _OE_RSA
 {
     /* Internal private implementation */
@@ -19,123 +19,118 @@ typedef struct _OE_RSA
 } OE_RSA_KEY;
 
 /**
- * Reads a public RSA key from PEM data.
+ * Reads a private RSA key from PEM data
  *
- * This function loads an RSA key from a data buffer that contains a PEM
- * representation of an RSA key with the following format.
+ * This function reads a private RSA key from PEM data with the following PEM
+ * headers.
  *
  *     -----BEGIN RSA PRIVATE KEY-----
  *     ...
  *     -----END RSA PRIVATE KEY-----
  *
- * @param pemData - pointer to zero-terminated PEM key representation
- * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param privateKey - private key structure (pass to OE_RSAFree() to release)
+ * @param pemData - zero-terminated PEM data
+ * @param pemSize - size of the PEM data (including the zero-terminator)
+ * @param privateKey - initialized key handle upon return
  *
  * @return OE_OK upon success
  */
-OE_Result OE_RSAReadPrivateKeyFromPEM(
+OE_Result OE_RSAReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* privateKey);
 
 /**
- * Reads a public RSA key from PEM data.
+ * Reads a public RSA key from PEM data
  *
- * This function loads an RSA key from a data buffer that contains a PEM
- * representation of an RSA key with the following format.
+ * This function reads a public RSA key from PEM data with the following PEM
+ * headers.
  *
  *     -----BEGIN PUBLIC KEY-----
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param pemData - pointer to zero-terminated PEM key representation
- * @param pemSize - size of the pemData buffer including the zero-terminator
- * @param publicKey - public key structure (pass to OE_RSAFree() to free)
+ * @param pemData - zero-terminated PEM data
+ * @param pemSize - size of the PEM data (including the zero-terminator)
+ * @param publicKey - initialized key handle upon return
  *
  * @return OE_OK upon success
  */
-OE_Result OE_RSAReadPublicKeyFromPEM(
+OE_Result OE_RSAReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSA_KEY* publicKey);
 
 /**
- * Write an RSA private key to PEM format
+ * Writes a private RSA key to PEM format
  *
- * This function writes an RSA private key to PEM format, which has the
- * following form.
+ * This function writes a private RSA key to PEM data with the following PEM
+ * headers.
  *
- *     -----BEGIN PUBLIC KEY-----
+ *     -----BEGIN RSA PRIVATE KEY-----
  *     ...
- *     -----END PUBLIC KEY-----
+ *     -----END RSA PRIVATE KEY-----
  *
- * @param privateKey - private key to be written
- * @param pemData - buffer where PEM data is written
- * @param[in,out] pemSize - size of the PEM buffer on input; size of the actual
- *     PEM data on output. If the former is less than the latter, this function
- *     returns OE_BUFFER_TOO_SMALL.
+ * @param privateKey - key to be written
+ * @param pemData - buffer where PEM data will be written
+ * @param[in,out] pemSize - buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL PEM buffer is not big engough
+ * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_RSAWritePrivateKeyToPEM(
+OE_Result OE_RSAWritePrivateKeyPEM(
     const OE_RSA_KEY* privateKey,
     uint8_t* pemData,
     size_t* pemSize);
 
+/*ATTN*/
+
 /**
- * Write an RSA public key to PEM format
+ * Writes a public RSA key to PEM format
  *
- * This function writes an RSA public key to PEM form, which has the
- * following form.
+ * This function writes a public RSA key to PEM data with the following PEM
+ * headers.
  *
  *     -----BEGIN PUBLIC KEY-----
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param publicKey - public key to be written
- * @param pemData - buffer where PEM data is written
- * @param[in,out] pemSize - size of the PEM buffer on input; size of the actual
- *     PEM data on output. If the former is less than the latter, this function
- *     returns OE_BUFFER_TOO_SMALL.
+ * @param publicKey - key to be written
+ * @param pemData - buffer where PEM data will be written
+ * @param[in,out] pemSize - buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL PEM buffer is not big engough
+ * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_RSAWritePublicKeyToPEM(
+OE_Result OE_RSAWritePublicKeyPEM(
     const OE_RSA_KEY* publicKey,
     uint8_t* pemData,
     size_t* pemSize);
 
 /**
- * Releases an RSA key structure
+ * Releases an RSA key
  *
- * This function releases an RSA key structure that was created by one of the
- * functions in this module.
+ * This function releases the given RSA key.
  *
- * @param key - pointer to RSA public key struture.
+ * @param key - handle of key being released
  *
  * @return OE_OK upon success
  */
 OE_Result OE_RSAFree(OE_RSA_KEY* key);
 
 /**
- * Digitaly signs a message with an RSA private key
+ * Digitaly signs a message with a private RSA key
  *
- * This function uses an RSA private key to sign a message with the given hash.
+ * This function uses a private RSA key to sign a message with the given hash.
  *
- * @param privateKey - RSA private key
+ * @param privateKey - private RSA key of signer
  * @param hashType - type of hash parameter
  * @param hashData - hash of the message being signed
- * @param hashSize - size in bytes of hash data
- * @param signature - signature buffer (may be null)
- * @param[in,out] signatureSize - size of signature buffer on input; size of
- *     actual signature on output. If the former is less than the latter, this
- *     function returns OE_BUFFER_TOO_SMALL.
+ * @param hashSize - size of the hash data
+ * @param signature - signature buffer
+ * @param[in,out] signatureSize - buffer size (in); signature size (out)
  *
  * @return OE_OK on success
- * @return OE_BUFFER_TOO_SMALL if signature buffer is too small
+ * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
 OE_Result OE_RSASign(
     const OE_RSA_KEY* privateKey,
@@ -146,18 +141,17 @@ OE_Result OE_RSASign(
     size_t* signatureSize);
 
 /**
- * Verify that a message was signed by a given RSA key
+ * Verifies that a message was signed by an RSA key
  *
- * This function verifies that a message (with the given hash) was signed by a
- * a given RSA key.
+ * This function verifies that the message with the given hash was signed by the
+ * given RSA key.
  *
- * @param publicKey - RSA public key
+ * @param publicKey - public RSA key of signer
  * @param hashType - type of hash parameter
- * @param hashData - hash of the message being signed
- * @param hashSize - size in bytes of hash data
- * @param hash - SHA-256 hash of the message being verified
+ * @param hashData - hash of the signed message
+ * @param hashSize - size of the hash data
  * @param signature - expected signature
- * @param signatureSize - size in bytes of the expected signature
+ * @param signatureSize - size of the expected signature
  *
  * @return OE_OK if the message was signeded with the given certificate
  */
@@ -170,12 +164,12 @@ OE_Result OE_RSAVerify(
     size_t signatureSize);
 
 /**
- * Generate an RSA private-public key pair
+ * Generates an RSA private-public key pair
  *
  * This function generates an RSA private-public key pair from the given
  * parameters.
  *
- * @param bits - the number of bits in the key (power of two)
+ * @param bits - the number of bits in the key
  * @param exponent - the exponent for this key
  * @param privateKey - generated private key
  * @param publicKey - generated public key
