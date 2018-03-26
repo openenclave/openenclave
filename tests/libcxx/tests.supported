@@ -84,7 +84,9 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/extensions/hash/specializations.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/extensions/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/nth_element.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/partial_sort_copy.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/partial_sort.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/partition_copy.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/partition.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/regex_awk.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/regex_ECMAScript.cpp
@@ -95,8 +97,11 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/sort.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/stable_partition.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/stable_sort.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/unique_copy.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/fuzzing/unique.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/include_as_c.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/c.files/version_ccstdio.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/c.files/version_cinttypes.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/file.streams/fstreams/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/iostream.format/input.streams/version.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/input.output/iostream.format/output.streams/version.pass.cpp
@@ -329,6 +334,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/algorithms/alg.sorting/alg.set.operations/set.symmetric.difference/set_symmetric_difference_comp.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/algorithms/alg.sorting/alg.set.operations/set.symmetric.difference/set_symmetric_difference.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/algorithms/alg.sorting/alg.set.operations/set.union/set_union_comp.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/algorithms/alg.sorting/alg.set.operations/set.union/set_union_move.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/algorithms/alg.sorting/alg.set.operations/set.union/set_union.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/algorithms/alg.sorting/alg.sort/is.sorted/is_sorted_comp.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/algorithms/alg.sorting/alg.sort/is.sorted/is_sorted.pass.cpp
@@ -968,6 +974,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/containers/sequences/vector/vector.capacity/swap.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/sequences/vector/vector.cons/assign_initializer_list.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/containers/sequences/vector/vector.cons/assign_iter_iter.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/sequences/vector/vector.cons/assign_move.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/sequences/vector/vector.cons/assign_size_value.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/containers/sequences/vector/vector.cons/construct_default.pass.cpp
@@ -3093,6 +3100,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/egrep.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/exponential.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/grep.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/invert_neg_word_search.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/lookahead.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/no_update_pos.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.except/nothing_to_do.pass.cpp
@@ -3113,6 +3121,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/re/re.def/defns.regex.subexpression/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.def/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.general/nothing_to_do.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/re/re.grammar/excessive_brace_count.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.grammar/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.iter/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.iter/re.regiter/re.regiter.cnstr/cnstr.pass.cpp
