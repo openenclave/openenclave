@@ -4,8 +4,8 @@
 #include <ctype.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/bits/pem.h>
+#include <openenclave/bits/trace.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
@@ -107,7 +107,9 @@ static STACK_OF(X509) * _ReadCertChain(const char* pem)
         const char* end;
 
         /* The PEM certificate must start with this */
-        if (strncmp(pem, OE_PEM_BEGIN_CERTIFICATE, OE_PEM_BEGIN_CERTIFICATE_LEN) != 0)
+        if (strncmp(
+                pem, OE_PEM_BEGIN_CERTIFICATE, OE_PEM_BEGIN_CERTIFICATE_LEN) !=
+            0)
             goto done;
 
         /* Find the end of this PEM certificate */

@@ -8,9 +8,9 @@
 #include <mbedtls/pk.h>
 #include <mbedtls/platform.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/trace.h>
-#include <openenclave/bits/hexdump.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
