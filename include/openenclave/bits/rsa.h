@@ -82,8 +82,6 @@ OE_Result OE_RSAWritePrivateKeyPEM(
     uint8_t* pemData,
     size_t* pemSize);
 
-/*ATTN*/
-
 /**
  * Writes a public RSA key to PEM format
  *
