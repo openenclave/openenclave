@@ -135,45 +135,6 @@ bool OE_IsWithinEnclave(const void* ptr, size_t size);
 bool OE_IsOutsideEnclave(const void* ptr, size_t size);
 
 /**
- * Get a report for use in remote attestation.
- *
- * This function creates a report to be used in remote attestation. The
- * report shall contain the data given by the **reportData** parameter.
- * The following steps are performed:
- *
- * - Calls into the host to request that the AESM service initialize the
- *   quote. This step obtains **target information** for the enclave that
- *   will eventually sign the quote (the Intel(R) quote enclave).
- *
- * - Executes the ENCLU.EREPORT instruction to generate the report, passing
- *   it the **target information** and **report data**. This instruction fills
- *   in the **report** output parameter.
- *
- * The next step is to pass the newly created report to the host so it can
- * get a quote for this report from the Intel(R) quote enclave. See the
- * OE_GetQuote() host function for further details.
- *
- * If the *reportSize* parameter is too small, this function resets it to
- * the required size and returns OE_BUFFER_TOO_SMALL.
- *
- * **Caution:** This function is experimental and subject to change.
- *
- * @param reportData The report data that will be included in the report.
- * @param report The buffer where the report will be copied.
- * @param reportSize The size of the **report** buffer.
- *
- * @retval OE_OK The report was successfully created.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **report** buffer is too small.
- * @retval OE_OUT_OF_MEMORY Failed to allocate host heap memory.
- *
- */
-OE_Result OE_GetReportForRemoteAttestation(
-    const uint8_t reportData[OE_REPORT_DATA_SIZE],
-    void* report,
-    size_t* reportSize);
-
-/**
  * Print formatted characters to the host's console.
  *
  * This function writes formatted characters to the host console. It is based

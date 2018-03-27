@@ -76,7 +76,11 @@ static OE_Result _OE_GetSGXReport(
         OE_THROW(OE_INVALID_PARAMETER);
 
     // optParams may be null, in which case SGX returns the report for the
-    // enclave itself. If supplied, it must be a valid SGX_TargetInfo.
+    // enclave itself.
+    if (optParams == NULL && optParamsSize != 0)
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    // If supplied, it must be a valid SGX_TargetInfo.
     if (optParams != NULL && optParamsSize != sizeof(SGX_TargetInfo))
         OE_THROW(OE_INVALID_PARAMETER);
 
@@ -132,13 +136,15 @@ OE_Result _HandleGetSGXReport(uint64_t argIn)
         OE_IsWithinEnclave(tmp.reportSize, sizeof(*tmp.reportSize)))
         return OE_INVALID_PARAMETER;
 
-    return _OE_GetSGXReport(
+    arg->result = _OE_GetSGXReport(
         tmp.reportData,
         tmp.reportDataSize,
         tmp.targetInfo,
         tmp.targetInfoSize,
         tmp.report,
         tmp.reportSize);
+
+    return OE_OK;
 }
 
 OE_Result _OE_GetRemoteReport(

@@ -179,6 +179,9 @@ OE_Result SGX_GetQuote(
             *quoteSize = size;
             OE_THROW(OE_BUFFER_TOO_SMALL);
         }
+
+        // Return correct size of the quote.
+        *quoteSize = size;
     }
 
     if (!quote)

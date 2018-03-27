@@ -17,6 +17,8 @@ static OE_Result _OE_GetLocalReport(
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize)
 {
+    OE_Result result = OE_OK;
+
     // Fetch the SGX_Report from the enclave.
     OE_GetSGXReportArgs sgxReportArgs;
 
@@ -27,9 +29,16 @@ static OE_Result _OE_GetLocalReport(
 
     sgxReportArgs.report = (SGX_Report*)reportBuffer;
     sgxReportArgs.reportSize = reportBufferSize;
+    sgxReportArgs.result = OE_OK;
 
-    return OE_ECall(
-        enclave, OE_FUNC_GET_SGX_REPORT, (uint64_t)&sgxReportArgs, NULL);
+    OE_TRY(
+        OE_ECall(
+            enclave, OE_FUNC_GET_SGX_REPORT, (uint64_t)&sgxReportArgs, NULL));
+    result = sgxReportArgs.result;
+
+OE_CATCH:
+
+    return result;
 }
 
 static OE_Result _OE_GetRemoteReport(
@@ -52,6 +61,9 @@ static OE_Result _OE_GetRemoteReport(
     // optParams must not be supplied.
     if (optParams != NULL || optParamsSize != 0)
         OE_THROW(OE_INVALID_PARAMETER);
+
+    if (reportBuffer == NULL)
+        OE_THROW(OE_BUFFER_TOO_SMALL);
 
     /*
      * Get target info from Quoting Enclave.

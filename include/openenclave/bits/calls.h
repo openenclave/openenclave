@@ -231,14 +231,16 @@ typedef struct _OE_InitQuoteArgs
 
 typedef struct _OE_GetSGXReportArgs
 {
-    const void* reportData;
-    uint32_t reportDataSize;
+    const void* reportData;  /* in */
+    uint32_t reportDataSize; /* in */
 
-    const void* targetInfo;
-    uint32_t targetInfoSize;
+    const void* targetInfo;  /* in */
+    uint32_t targetInfoSize; /* in */
 
-    void* report;
-    uint32_t* reportSize;
+    void* report;         /* in */
+    uint32_t* reportSize; /* in-out */
+
+    OE_Result result; /* out */
 } OE_GetSGXReportArgs;
 
 /*
