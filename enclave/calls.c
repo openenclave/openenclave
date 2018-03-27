@@ -578,9 +578,8 @@ void __OE_HandleMain(
         break;
 
     case OE_ENCLAVE_CRASHING:
-        // Block any ecall except first time OE_FUNC_DESTRUCTOR call.
-        // Don't block oret here.
-        // We block exception handling here.
+        // Block any ECALL except first time OE_FUNC_DESTRUCTOR call.
+        // Don't block ORET here.
         if (code == OE_CODE_ECALL)
         {
             if (func == OE_FUNC_DESTRUCTOR)
