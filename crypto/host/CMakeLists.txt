@@ -24,9 +24,7 @@ if(UNIX)
     target_compile_definitions(oecryptohost PRIVATE _GNU_SOURCE)
 endif(UNIX)
 
-set_property(TARGET oecryptohost 
-    PROPERTY 
-    ARCHIVE_OUTPUT_DIRECTORY 
+set_property(TARGET oecryptohost PROPERTY ARCHIVE_OUTPUT_DIRECTORY 
     ${OE_LIBDIR}/openenclave/host)
 
 install(TARGETS oecryptohost 
