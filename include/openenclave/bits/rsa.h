@@ -11,7 +11,7 @@
 
 OE_EXTERNC_BEGIN
 
-/* Opaque representation of a public RSA key */
+/* Opaque representation of a private or public RSA key */
 typedef struct _OE_RSA
 {
     /* Internal private implementation */

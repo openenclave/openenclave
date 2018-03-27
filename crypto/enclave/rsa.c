@@ -20,6 +20,8 @@
 // of time, so we are forced to use a maximum buffer size.
 #define OE_PEM_MAX_BYTES (16 * 1024)
 
+mbedtls_ctr_drbg_context* OE_MBEDTLS_GetDrbg();
+
 /*
 **==============================================================================
 **
@@ -402,13 +404,10 @@ OE_Result OE_RSAGenerate(
     OE_Result result = OE_UNEXPECTED;
     OE_RSA_KEY_IMPL* privateImpl = (OE_RSA_KEY_IMPL*)privateKey;
     OE_RSA_KEY_IMPL* publicImpl = (OE_RSA_KEY_IMPL*)publicKey;
-    mbedtls_entropy_context entropy;
-    mbedtls_ctr_drbg_context ctr_drbg;
+    mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
 
     /* Initialize structures */
-    mbedtls_entropy_init(&entropy);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
     mbedtls_pk_init(&pk);
 
     _ClearImpl(privateImpl);
@@ -422,24 +421,19 @@ OE_Result OE_RSAGenerate(
     if (bits > OE_MAX_UINT || exponent > OE_MAX_INT)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Set up an entropy source for reseeds below */
-    if (mbedtls_ctr_drbg_seed(
-            &ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0) != 0)
-    {
+    /* Get the random number generator */
+    if (!(drbg = OE_MBEDTLS_GetDrbg()))
         OE_THROW(OE_FAILURE);
-    }
 
     /* Create key struct */
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA)) != 0)
-    {
         OE_THROW(OE_FAILURE);
-    }
 
     /* Generate the RSA key */
     if (mbedtls_rsa_gen_key(
             mbedtls_pk_rsa(pk),
             mbedtls_ctr_drbg_random,
-            &ctr_drbg,
+            drbg,
             bits,
             exponent) != 0)
     {
@@ -476,8 +470,6 @@ OE_Result OE_RSAGenerate(
 
 OE_CATCH:
 
-    mbedtls_entropy_free(&entropy);
-    mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_pk_free(&pk);
 
     if (result != OE_OK)

@@ -19,6 +19,8 @@
 // of time, so we are forced to use a maximum buffer size.
 #define OE_PEM_MAX_BYTES (16 * 1024)
 
+mbedtls_ctr_drbg_context* OE_MBEDTLS_GetDrbg();
+
 /*
 **==============================================================================
 **
@@ -429,15 +431,12 @@ OE_Result OE_ECGenerate(
     OE_Result result = OE_UNEXPECTED;
     OE_EC_KEY_IMPL* privateImpl = (OE_EC_KEY_IMPL*)privateKey;
     OE_EC_KEY_IMPL* publicImpl = (OE_EC_KEY_IMPL*)publicKey;
-    mbedtls_entropy_context entropy;
-    mbedtls_ctr_drbg_context ctr_drbg;
+    mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
     int curve;
     const char* curveName;
 
     /* Initialize structures */
-    mbedtls_entropy_init(&entropy);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
     mbedtls_pk_init(&pk);
 
     _ClearImpl(privateImpl);
@@ -461,12 +460,9 @@ OE_Result OE_ECGenerate(
         curve = info->grp_id;
     }
 
-    /* Set up an entropy source for reseeds below */
-    if (mbedtls_ctr_drbg_seed(
-            &ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0) != 0)
-    {
-        OE_THROW(OE_INVALID_PARAMETER);
-    }
+    /* Get the drbg object */
+    if (!(drbg = OE_MBEDTLS_GetDrbg()))
+        OE_THROW(OE_FAILURE);
 
     /* Create key struct */
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
@@ -476,7 +472,7 @@ OE_Result OE_ECGenerate(
 
     /* Generate the EC key */
     if (mbedtls_ecp_gen_key(
-            curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, &ctr_drbg) != 0)
+            curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
     {
         OE_THROW(OE_INVALID_PARAMETER);
     }
@@ -511,8 +507,6 @@ OE_Result OE_ECGenerate(
 
 OE_CATCH:
 
-    mbedtls_entropy_free(&entropy);
-    mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_pk_free(&pk);
 
     if (result != OE_OK)

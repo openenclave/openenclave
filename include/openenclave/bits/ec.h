@@ -11,7 +11,7 @@
 
 OE_EXTERNC_BEGIN
 
-/* Opaque representation of a public EC key */
+/* Opaque representation of a private or public EC key */
 typedef struct _OE_EC
 {
     /* Internal private implementation */
