@@ -12,7 +12,7 @@
 OE_EXTERNC_BEGIN
 
 /* Opaque representation of a private or public EC key */
-typedef struct _OE_EC
+typedef struct _OE_EC_KEY
 {
     /* Internal private implementation */
     uint64_t impl[4];
