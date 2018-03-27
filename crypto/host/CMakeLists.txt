@@ -24,8 +24,6 @@ if(UNIX)
     target_compile_definitions(oecryptohost PRIVATE _GNU_SOURCE)
 endif(UNIX)
 
-target_compile_definitions(oecryptohost PRIVATE OE_BUILD_UNTRUSTED)
-
 set_property(TARGET oecryptohost 
     PROPERTY 
     ARCHIVE_OUTPUT_DIRECTORY 
