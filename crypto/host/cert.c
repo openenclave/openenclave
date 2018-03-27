@@ -292,7 +292,7 @@ OE_Result OE_CertChainReadPEM(
     /* Initialize OpenSSL (if not already initialized) */
     OE_InitializeOpenSSL();
 
-    /* Read the cerfificate chain into memory */
+    /* Read the certificate chain into memory */
     if (!(sk = _ReadCertChain((const char*)pemData)))
         OE_THROW(OE_FAILURE);
 
@@ -376,7 +376,6 @@ OE_Result OE_CertVerify(
     {
         if (error)
         {
-            *error->buf = '\0';
             strncat(
                 error->buf,
                 X509_verify_cert_error_string(ctx->error),

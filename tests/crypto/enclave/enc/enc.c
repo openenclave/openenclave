@@ -18,16 +18,16 @@
 
 OE_ECALL void Test(void* args_)
 {
-    TestSHA256();
+    TestCertVerify();
+    TestECGenerate();
+    TestECSignAndVerify();
+    TestECWritePrivate();
+    TestECWritePublic();
+    TestRandom();
+    TestRSAGenerate();
     TestRSASign();
     TestRSAVerify();
-    TestCertVerify();
-    TestRandom();
-    TestECSignAndVerify();
-    TestRSAGenerate();
-    TestECGenerate();
     TestRSAWritePrivate();
     TestRSAWritePublic();
-    TestECWritePublic();
-    TestECWritePrivate();
+    TestSHA256();
 }
