@@ -104,11 +104,7 @@ static const uint8_t RSA_SIGNATURE[] = {
 
 static const size_t RSA_SIGNATURE_SIZE = sizeof(RSA_SIGNATURE);
 
-/*
-**
-** Test computation of SHA-256 hash over an ASCII alphabet string.
-**
-*/
+// Test computation of SHA-256 hash over an ASCII alphabet string.
 static void TestSHA256()
 {
     printf("=== begin TestSHA25\n");
@@ -123,11 +119,7 @@ static void TestSHA256()
     printf("=== passed TestSHA25\n");
 }
 
-/*
-**
-** Test RSA signing operation over an ASCII alphabet string.
-**
-*/
+// Test RSA signing operation over an ASCII alphabet string.
 static void TestRSASign()
 {
     printf("=== begin TestRSASign\n");
@@ -173,11 +165,7 @@ static void TestRSASign()
     printf("=== passed TestRSASign\n");
 }
 
-/*
-**
-** Test RSA verify operation over an ASCII alphabet string.
-**
-*/
+// Test RSA verify operation over an ASCII alphabet string.
 static void TestRSAVerify()
 {
     OE_Result r;
@@ -458,13 +446,10 @@ static const uint8_t EC_SIGNATURE[] = {
 
 static size_t EC_SIGNATURE_SIZE = sizeof(EC_SIGNATURE);
 
-/*
-**
-** Test EC signing operation over an ASCII alphabet string. Note that two
-** signatures over the same data produce different hex sequences, although
-** signature verification will still succeed.
-**
-*/
+// Test EC signing operation over an ASCII alphabet string. Note that two
+// signatures over the same data produce different hex sequences, although
+// signature verification will still succeed.
+
 static void TestECSignAndVerify()
 {
     printf("=== begin TestECSignAndVerify()\n");
