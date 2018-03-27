@@ -116,9 +116,9 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
  * this function returns OE_BUFFER_TOO_SMALL.
  *
  * @param enclave The handle to the enclave that will generate the report.
- * @param options Specifying default value (0) generates a locally attested
- * report. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a remotely
- * attested report.
+ * @param options Specifying default value (0) generates a report for local
+ * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
+ * report for remote attestation.
  * @param reportData The report data that will be included in the report.
  * @param reportDataSize The size of the **reportData** in bytes.
  * @param optParams Optional additional parameters needed for the current
