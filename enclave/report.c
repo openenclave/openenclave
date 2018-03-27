@@ -114,7 +114,7 @@ OE_CATCH:
 OE_Result _HandleGetSGXReport(uint64_t argIn)
 {
     OE_GetSGXReportArgs* arg = (OE_GetSGXReportArgs*)argIn;
-    if (!arg || OE_IsWithinEnclave(arg, sizeof(*arg)))
+    if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
         return OE_INVALID_PARAMETER;
 
     // Copy arg to prevent TOCTOU issues.
@@ -122,18 +122,18 @@ OE_Result _HandleGetSGXReport(uint64_t argIn)
 
     // Check that all the supplied objects lie outside the enclave.
     if (tmp.targetInfo &&
-        OE_IsWithinEnclave(tmp.targetInfo, tmp.targetInfoSize))
+        !OE_IsOutsideEnclave(tmp.targetInfo, tmp.targetInfoSize))
         return OE_INVALID_PARAMETER;
 
     if (tmp.reportData &&
-        OE_IsWithinEnclave(tmp.reportData, tmp.reportDataSize))
+        !OE_IsOutsideEnclave(tmp.reportData, tmp.reportDataSize))
         return OE_INVALID_PARAMETER;
 
-    if (tmp.report && OE_IsWithinEnclave(tmp.report, *tmp.reportSize))
+    if (tmp.report && !OE_IsOutsideEnclave(tmp.report, *tmp.reportSize))
         return OE_INVALID_PARAMETER;
 
     if (tmp.reportSize &&
-        OE_IsWithinEnclave(tmp.reportSize, sizeof(*tmp.reportSize)))
+        !OE_IsOutsideEnclave(tmp.reportSize, sizeof(*tmp.reportSize)))
         return OE_INVALID_PARAMETER;
 
     arg->result = _OE_GetSGXReport(
