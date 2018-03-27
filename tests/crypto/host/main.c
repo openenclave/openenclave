@@ -22,18 +22,7 @@ int main(int argc, const char* argv[])
 {
     arg0 = argv[0];
 
-    TestCertVerify();
-    TestECGenerate();
-    TestECSignAndVerify();
-    TestECWritePrivate();
-    TestECWritePublic();
-    TestRandom();
-    TestRSAGenerate();
-    TestRSASign();
-    TestRSAVerify();
-    TestRSAWritePrivate();
-    TestRSAWritePublic();
-    TestSHA256();
+    RunAllTests();
 
     printf("=== passed all tests (%s)\n", arg0);
 

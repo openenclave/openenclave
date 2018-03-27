@@ -18,16 +18,5 @@
 
 OE_ECALL void Test(void* args_)
 {
-    TestCertVerify();
-    TestECGenerate();
-    TestECSignAndVerify();
-    TestECWritePrivate();
-    TestECWritePublic();
-    TestRandom();
-    TestRSAGenerate();
-    TestRSASign();
-    TestRSAVerify();
-    TestRSAWritePrivate();
-    TestRSAWritePublic();
-    TestSHA256();
+    RunAllTests();
 }

@@ -768,3 +768,19 @@ static void TestECWritePublic()
 
     printf("=== passed TestECWritePublic()\n");
 }
+
+static void RunAllTests()
+{
+    TestCertVerify();
+    TestECGenerate();
+    TestECSignAndVerify();
+    TestECWritePrivate();
+    TestECWritePublic();
+    TestRandom();
+    TestRSAGenerate();
+    TestRSASign();
+    TestRSAVerify();
+    TestRSAWritePrivate();
+    TestRSAWritePublic();
+    TestSHA256();
+}
