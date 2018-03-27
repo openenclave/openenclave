@@ -17,74 +17,19 @@ static OE_Result _OE_GetLocalReport(
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize)
 {
-    OE_Result result = OE_OK;
-    SGX_TargetInfo* sgxTargetInfo = NULL;
-    SGX_ReportData* sgxReportData = NULL;
+    // Fetch the SGX_Report from the enclave.
     OE_GetSGXReportArgs sgxReportArgs;
 
-    if (reportDataSize > OE_REPORT_DATA_SIZE)
-        OE_THROW(OE_INVALID_PARAMETER);
+    sgxReportArgs.targetInfo = optParams;
+    sgxReportArgs.targetInfoSize = optParamsSize;
+    sgxReportArgs.reportData = reportData;
+    sgxReportArgs.reportDataSize = reportDataSize;
 
-    // Optional params may be null, in which case SGX returns the report for the
-    // enclave itself. If supplied, it must be a valid SGX_TargetInfo.
-    if (optParams != NULL && optParamsSize != sizeof(SGX_TargetInfo))
-        OE_THROW(OE_INVALID_PARAMETER);
-
-    // An SGX_Report will be filled into the report buffer.
-    if (reportBufferSize == NULL)
-        OE_THROW(OE_INVALID_PARAMETER);
-
-    // When supplied buffer is small, report the expected buffer size so that
-    // the user can create correctly sized buffer and call OE_GetReport again.
-    if (reportBuffer == NULL || *reportBufferSize < sizeof(SGX_Report))
-    {
-        *reportBufferSize = sizeof(SGX_Report);
-        OE_THROW(OE_BUFFER_TOO_SMALL);
-    }
-
-    sgxTargetInfo = (SGX_TargetInfo*)calloc(1, sizeof(SGX_TargetInfo));
-
-    if (sgxTargetInfo == NULL)
-        OE_THROW(OE_OUT_OF_MEMORY);
-
-    if (optParams)
-        memcpy(sgxTargetInfo, optParams, optParamsSize);
-
-    /*
-     * Get SGX_Report from enclave.
-     */
-    sgxReportData = (SGX_ReportData*)calloc(1, sizeof(SGX_ReportData));
-
-    if (sgxReportData == NULL)
-        OE_THROW(OE_OUT_OF_MEMORY);
-
-    // Report data is optional.
-    if (reportData != NULL)
-        memcpy(sgxReportData, reportData, reportDataSize);
-
-    sgxReportArgs.targetInfo = sgxTargetInfo;
-    sgxReportArgs.reportData = sgxReportData;
     sgxReportArgs.report = (SGX_Report*)reportBuffer;
+    sgxReportArgs.reportSize = reportBufferSize;
 
-    OE_TRY(
-        OE_ECall(
-            enclave, OE_FUNC_GET_SGX_REPORT, (uint64_t)&sgxReportArgs, NULL));
-
-OE_CATCH:
-
-    if (sgxTargetInfo)
-    {
-        memset(sgxTargetInfo, 0, sizeof(*sgxTargetInfo));
-        free(sgxTargetInfo);
-    }
-
-    if (sgxReportData)
-    {
-        memset(sgxReportData, 0, sizeof(*sgxReportData));
-        free(sgxReportData);
-    }
-
-    return result;
+    return OE_ECall(
+        enclave, OE_FUNC_GET_SGX_REPORT, (uint64_t)&sgxReportArgs, NULL);
 }
 
 static OE_Result _OE_GetRemoteReport(
