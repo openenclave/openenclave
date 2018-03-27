@@ -47,20 +47,20 @@ OE_ECALL void TestUnhandledException(void* args_)
     args->ret = 0;
     switch (args->func_num)
     {
-    case EXCEPTION_SPECIFICATION:
-        ExceptionSpecification();
-        break;
+        case EXCEPTION_SPECIFICATION:
+            ExceptionSpecification();
+            break;
 
-    case EXCEPTION_IN_UNWIND:
-        ExceptionInUnwind();
-        break;
+        case EXCEPTION_IN_UNWIND:
+            ExceptionInUnwind();
+            break;
 
-    case UNHANDLED_EXCEPTION:
-        UnhandledException();
-        break;
+        case UNHANDLED_EXCEPTION:
+            UnhandledException();
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
 
     OE_HostPrintf("Error: unreachable code is reached.\n");

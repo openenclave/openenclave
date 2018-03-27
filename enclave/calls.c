@@ -420,16 +420,7 @@ OE_Result OE_OCall(
 
     td->ocall_flags = old_ocall_flags;
 
-    ///* If the enclave is in crashing/crashed status, overwrite the ORET
-    //result */
-    //if (__oe_enclave_status != OE_OK)
-    //{
-    //    result = (OE_Result)__oe_enclave_status;
-    //}
-    //else
-    //{
-        result = OE_OK;
-    //}
+    result = OE_OK;
 
 OE_CATCH:
     return result;

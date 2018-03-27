@@ -6,8 +6,7 @@
 
 #include <stddef.h>
 
-typedef enum _unhandled_exception_func_num
-{
+typedef enum _unhandled_exception_func_num {
     EXCEPTION_SPECIFICATION,
     EXCEPTION_IN_UNWIND,
     UNHANDLED_EXCEPTION,

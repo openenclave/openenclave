@@ -281,8 +281,7 @@ void _OE_ExceptionDispatcher(OE_CONTEXT* oe_context)
     }
 
     // Exception can't be handled by trusted handlers, abort the enclave.
-    // Let the OE_Abort to run on the stack when the exception happens, but do
-    // a ERET with crash status immediately.
+    // Let the OE_Abort to run on the stack where the exception happens.
     td->host_rbp = td->host_previous_rbp;
     td->host_rsp = td->host_previous_rsp;
     oe_exception_record.context->rip = (uint64_t)OE_Abort;

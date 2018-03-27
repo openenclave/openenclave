@@ -8,8 +8,8 @@
 
 typedef struct _Args
 {
-    volatile uint32_t *thread_ready_count;
-    volatile uint32_t *is_enclave_crashed;
+    volatile uint32_t* thread_ready_count;
+    volatile uint32_t* is_enclave_crashed;
 
     int ret;
 } Args;
@@ -29,12 +29,12 @@ enum
 struct EncRecursionArg
 {
     void* enclave;
-    volatile uint32_t *thread_ready_count;
-    volatile uint32_t *is_enclave_crashed;
-    unsigned flowId;                // In
-    unsigned recursionsLeft;        // InOut
-    unsigned initialCount;          // InOut
-    uint32_t crc;                   // InOut
+    volatile uint32_t* thread_ready_count;
+    volatile uint32_t* is_enclave_crashed;
+    unsigned flowId;         // In
+    unsigned recursionsLeft; // InOut
+    unsigned initialCount;   // InOut
+    uint32_t crc;            // InOut
 };
 
 #endif /* _stdc_args_h */

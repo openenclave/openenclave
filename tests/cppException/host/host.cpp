@@ -22,7 +22,8 @@ void TestCppException(OE_Enclave* enclave)
     assert(args.ret == 0);
 }
 
-void TestUnhandledException(OE_Enclave* enclave, 
+void TestUnhandledException(
+    OE_Enclave* enclave,
     unhandled_exception_func_num func_num)
 {
     OE_Result result;
@@ -68,9 +69,7 @@ int main(int argc, const char* argv[])
 
     // Test the un-handled exceptions.
     unhandled_exception_func_num func_nums[] = {
-        EXCEPTION_SPECIFICATION,
-        EXCEPTION_IN_UNWIND,
-        UNHANDLED_EXCEPTION,
+        EXCEPTION_SPECIFICATION, EXCEPTION_IN_UNWIND, UNHANDLED_EXCEPTION,
     };
 
     for (uint32_t i = 0; i < OE_COUNTOF(func_nums); i++)
@@ -87,8 +86,8 @@ int main(int argc, const char* argv[])
             OE_PutErr("OE_TerminateEnclave(): result=%u", result);
         }
 
-        printf("=== passed unhandled cpp exception tests (%d).\n",
-            func_nums[i]);
+        printf(
+            "=== passed unhandled cpp exception tests (%d).\n", func_nums[i]);
     }
 
     printf("=== passed all tests (%s)\n", argv[0]);

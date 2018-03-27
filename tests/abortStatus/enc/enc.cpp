@@ -40,7 +40,7 @@ OE_ECALL void GenerateUnhandledHardwareException(void* args_)
 
     args->ret = 0;
 
-    // Generate a divided by zero hardware exception. Since there is no 
+    // Generate a divided by zero hardware exception. Since there is no
     // handlers to handle it, the enclave should abort itself.
     t = t / s;
 
@@ -130,9 +130,5 @@ OE_ECALL void EncRecursion(void* Args_)
 
     // catch output state: Tag + result + modified host-struct, and original
     // input.
-    argsHost->crc = Crc32::Hash(
-        TAG_END_ENC,
-        result,
-        *argsHost,
-        args);
+    argsHost->crc = Crc32::Hash(TAG_END_ENC, result, *argsHost, args);
 }
