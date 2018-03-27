@@ -280,7 +280,12 @@ static bool TestBasicAbort(const char* enclaveName)
             return false;
         }
 
-        TestAbortStatus(enclave, functionNames[i]);
+        // Skip the last test for simulation mode.
+        if ((flags & OE_FLAG_SIMULATE) == 0 ||
+            (i != OE_COUNTOF(functionNames) - 1))
+        {
+            TestAbortStatus(enclave, functionNames[i]);
+        }
 
         if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
         {
