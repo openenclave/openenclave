@@ -38,14 +38,13 @@ OE_Result SGX_GetQuoteSize(
     OE_Result result = OE_FAILURE;
     size_t signatureSize = 0;
     uint64_t n = 0;
+    const SGX_SigRL* sigrl = (const SGX_SigRL*)signatureRevocationList;
 
     if (quoteSize)
         *quoteSize = 0;
 
     if (!quoteSize)
         goto done;
-
-    const SGX_SigRL* sigrl = (const SGX_SigRL*)signatureRevocationList;
 
     if (sigrl)
     {
