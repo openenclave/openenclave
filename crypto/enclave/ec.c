@@ -6,9 +6,9 @@
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
+#include <mbedtls/platform.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/rsa.h>
 #include <openenclave/bits/trace.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,6 +91,71 @@ static const char* _ECTypeToString(OE_Type type)
         return NULL;
 
     return _curveNames[index];
+}
+
+/* Note: a function similar to this one is missing from MBEDTLS */
+static int _mbedtls_ecp_keypair_copy(
+    mbedtls_ecp_keypair* dest,
+    const mbedtls_ecp_keypair* src)
+{
+    int ret = -1;
+
+    /* Copy group */
+    if (mbedtls_ecp_group_copy(&dest->grp, &src->grp) != 0)
+        goto done;
+
+    /* Copy secret value */
+    if (mbedtls_mpi_copy(&dest->d, &src->d) != 0)
+        goto done;
+
+    /* Copy public value */
+    if (mbedtls_ecp_copy(&dest->Q, &src->Q) != 0)
+        goto done;
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
+static int _CopyKeyFromKeyPair(
+    mbedtls_pk_context* dest,
+    const mbedtls_pk_context* src,
+    bool public)
+{
+    int ret = -1;
+    const mbedtls_pk_info_t* info;
+    mbedtls_ecp_keypair* ec;
+
+    /* Check parameters */
+    if (!dest || !src)
+        goto done;
+
+    /* Lookup the info for this key type */
+    if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)))
+        goto done;
+
+    /* Setup the context for this key type */
+    if (mbedtls_pk_setup(dest, info) != 0)
+        goto done;
+
+    /* Get the context for this key type */
+    if (!(ec = dest->pk_ctx))
+        goto done;
+
+    /* Initialize the EC key from the source */
+    if (_mbedtls_ecp_keypair_copy(ec, mbedtls_pk_ec(*src)) != 0)
+        goto done;
+
+    /* If public key, then clear private key fields */
+    if (public)
+        mbedtls_mpi_free(&ec->d);
+
+    ret = 0;
+
+done:
+
+    return ret;
 }
 
 /*
@@ -418,30 +483,28 @@ OE_Result OE_ECGenerate(
 
     /* Initialize the private key parameter */
     {
-        OE_EC_KEY_IMPL dummy;
-        uint8_t data[OE_PEM_MAX_BYTES];
-        size_t size = sizeof(data);
+        mbedtls_pk_init(&privateImpl->pk);
 
-        dummy.magic = OE_EC_KEY_MAGIC;
-        dummy.pk = pk;
-        OE_TRY(OE_ECWritePrivateKeyPEM((OE_EC_KEY*)&dummy, data, &size));
-        pk = dummy.pk;
+        if (_CopyKeyFromKeyPair(&privateImpl->pk, &pk, false) != 0)
+        {
+            mbedtls_pk_free(&privateImpl->pk);
+            OE_THROW(OE_FAILURE);
+        }
 
-        OE_TRY(OE_ECReadPrivateKeyPEM(data, size, privateKey));
+        privateImpl->magic = OE_EC_KEY_MAGIC;
     }
 
     /* Initialize the public key parameter */
     {
-        OE_EC_KEY_IMPL dummy;
-        uint8_t data[OE_PEM_MAX_BYTES];
-        size_t size = sizeof(data);
+        mbedtls_pk_init(&publicImpl->pk);
 
-        dummy.magic = OE_EC_KEY_MAGIC;
-        dummy.pk = pk;
-        OE_TRY(OE_ECWritePublicKeyPEM((OE_EC_KEY*)&dummy, data, &size));
-        pk = dummy.pk;
+        if (_CopyKeyFromKeyPair(&publicImpl->pk, &pk, true) != 0)
+        {
+            mbedtls_pk_free(&publicImpl->pk);
+            OE_THROW(OE_FAILURE);
+        }
 
-        OE_TRY(OE_ECReadPublicKeyPEM(data, size, publicKey));
+        publicImpl->magic = OE_EC_KEY_MAGIC;
     }
 
     OE_THROW(OE_OK);

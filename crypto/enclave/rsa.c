@@ -7,7 +7,6 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/platform.h>
-#include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/trace.h>
@@ -86,7 +85,7 @@ static int _CopyKeyFromKeyPair(
 {
     int ret = -1;
     const mbedtls_pk_info_t* info;
-    mbedtls_rsa_context* rsa = NULL;
+    mbedtls_rsa_context* rsa;
 
     /* Check parameters */
     if (!dest || !src)
@@ -96,8 +95,12 @@ static int _CopyKeyFromKeyPair(
     if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA)))
         goto done;
 
-    /* allocate space for the RSA key */
-    if (!(rsa = mbedtls_calloc(1, sizeof(mbedtls_rsa_context))))
+    /* Setup the context for this key type */
+    if (mbedtls_pk_setup(dest, info) != 0)
+        goto done;
+
+    /* Get the context for this key type */
+    if (!(rsa = dest->pk_ctx))
         goto done;
 
     /* Initialize the RSA key from the source */
@@ -107,56 +110,22 @@ static int _CopyKeyFromKeyPair(
     /* If public key, then clear private key fields */
     if (public)
     {
-        /* Leave rsa->N and rsa->E (public key fields) */
-
         mbedtls_mpi_free(&rsa->D);
-        memset(&rsa->D, 0, sizeof(rsa->D));
-
         mbedtls_mpi_free(&rsa->P);
-        memset(&rsa->D, 0, sizeof(rsa->P));
-
         mbedtls_mpi_free(&rsa->Q);
-        memset(&rsa->D, 0, sizeof(rsa->Q));
-
         mbedtls_mpi_free(&rsa->DP);
-        memset(&rsa->D, 0, sizeof(rsa->DP));
-
         mbedtls_mpi_free(&rsa->DQ);
-        memset(&rsa->D, 0, sizeof(rsa->DQ));
-
         mbedtls_mpi_free(&rsa->QP);
-        memset(&rsa->D, 0, sizeof(rsa->QP));
-
         mbedtls_mpi_free(&rsa->RN);
-        memset(&rsa->D, 0, sizeof(rsa->RN));
-
         mbedtls_mpi_free(&rsa->RP);
-        memset(&rsa->D, 0, sizeof(rsa->RP));
-
         mbedtls_mpi_free(&rsa->RQ);
-        memset(&rsa->D, 0, sizeof(rsa->RQ));
-
         mbedtls_mpi_free(&rsa->Vi);
-        memset(&rsa->D, 0, sizeof(rsa->Vi));
-
         mbedtls_mpi_free(&rsa->Vf);
-        memset(&rsa->D, 0, sizeof(rsa->Vf));
     }
-
-    /* Initialize the destination */
-    dest->pk_info = info;
-    dest->pk_ctx = rsa;
-    rsa = NULL;
 
     ret = 0;
 
 done:
-
-    if (ret != 0)
-    {
-        mbedtls_rsa_free(rsa);
-        mbedtls_free(rsa);
-    }
 
     return ret;
 }
