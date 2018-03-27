@@ -14,16 +14,10 @@ target_link_libraries(oecryptohost oe_includes)
 
 find_package(Threads REQUIRED)
 
-if(UNIX)
-    target_link_libraries(oecryptohost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
-elseif(WIN32)
-    target_link_libraries(oecryptohost bcrypt)
-endif()
+target_link_libraries(oecryptohost)
 
 if(UNIX)
-    target_compile_options(
-        oecryptohost 
-        PRIVATE 
+    target_compile_options(oecryptohost PRIVATE 
         -Wno-attributes 
         -Wmissing-prototypes 
         -m64)
