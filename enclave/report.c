@@ -141,6 +141,64 @@ OE_Result _HandleGetSGXReport(uint64_t argIn)
         tmp.reportSize);
 }
 
+OE_Result _OE_GetRemoteReport(
+    const uint8_t* reportData,
+    uint32_t reportDataSize,
+    const void* optParams,
+    uint32_t optParamsSize,
+    uint8_t* reportBuffer,
+    uint32_t* reportBufferSize)
+{
+    OE_Result result = OE_OK;
+    OE_GetRemoteReportArgs* args = NULL;
+    uint32_t argsSize = 0;
+
+    // Perform mimimal validations here; the ones that necessary for making the
+    // O_Call.
+    // The implementation on the host will do the full validation.
+
+    if (!reportBufferSize)
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    // For remote reports, optParams must be null.
+    if (optParams != NULL || optParamsSize != 0)
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    if (reportDataSize > OE_REPORT_DATA_SIZE)
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    // Allocate args and report buffer immediately following it.
+    argsSize = sizeof(OE_GetRemoteReportArgs) + *reportBufferSize;
+
+    args = (OE_GetRemoteReportArgs*)OE_HostCalloc(1, argsSize);
+    if (args == NULL)
+        OE_THROW(OE_OUT_OF_MEMORY);
+
+    // Fill args.
+    OE_Memcpy(args->reportData, reportData, reportDataSize);
+    args->reportDataSize = reportDataSize;
+    args->reportBufferSize = *reportBufferSize;
+
+    // Make a re-entrant call to host. The host will call back into the enclave
+    // to get the SGX_Report.
+    OE_TRY(OE_OCall(OE_FUNC_GET_REMOTE_REPORT, (uint64_t)&args, NULL, 0));
+
+    // Copy out-parameters to enclave memory.
+    *reportBufferSize = args->reportBufferSize;
+    OE_Memcpy(reportBuffer, args->reportBuffer, *reportBufferSize);
+    result = args->result;
+
+OE_CATCH:
+
+    if (args)
+    {
+        OE_Memset(args, 0, argsSize);
+        OE_HostFree(args);
+    }
+
+    return result;
+}
+
 OE_Result OE_GetReport(
     uint32_t options,
     const uint8_t* reportData,
@@ -150,10 +208,15 @@ OE_Result OE_GetReport(
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize)
 {
-    // TODO: Call into host for remote attestation
     if (options & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
     {
-        return OE_UNSUPPORTED;
+        return _OE_GetRemoteReport(
+            reportData,
+            reportDataSize,
+            optParams,
+            optParamsSize,
+            reportBuffer,
+            reportBufferSize);
     }
 
     // If no options are specified, default to locally attestable report.

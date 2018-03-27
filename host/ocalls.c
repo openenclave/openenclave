@@ -148,6 +148,23 @@ void HandleInitQuote(uint64_t argIn)
     args->result = SGX_InitQuote(&args->targetInfo, &args->epidGroupID);
 }
 
+void HandleGetRemoteReport(OE_Enclave* enclave, uint64_t argIn)
+{
+    OE_GetRemoteReportArgs* args = (OE_GetRemoteReportArgs*)argIn;
+    if (!args)
+        return;
+
+    args->result = OE_GetReport(
+        enclave,
+        OE_REPORT_OPTIONS_REMOTE_ATTESTATION,
+        args->reportData,
+        args->reportDataSize,
+        NULL,
+        0,
+        args->reportBuffer,
+        &args->reportBufferSize);
+}
+
 #if defined(__OE_NEED_TIME_CALLS)
 void HandleStrftime(uint64_t argIn)
 {
