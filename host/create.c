@@ -810,6 +810,7 @@ static OE_Result _BuildECallData(
 {
     OE_Result result = OE_UNEXPECTED;
     OE_ECallPages* data;
+    size_t size = 0;
 
     if (ecallData)
         *ecallData = NULL;
@@ -821,7 +822,7 @@ static OE_Result _BuildECallData(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Calculate size needed for the ECALL pages */
-    size_t size = __OE_RoundUpToPageSize(
+    size = __OE_RoundUpToPageSize(
         sizeof(OE_ECallPages) + (enclave->num_ecalls * sizeof(uint64_t)));
 
     /* Allocate the pages */

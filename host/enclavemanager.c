@@ -30,6 +30,7 @@ uint32_t _OE_PushEnclaveInstance(OE_Enclave* enclave)
 {
     uint32_t ret = 1;
     bool locked = false;
+    EnclaveEntry* newEntry = NULL;
 
     // Take the lock.
     if (OE_H_MutexLock(&g_enclave_list_lock) != 0)
@@ -50,7 +51,7 @@ uint32_t _OE_PushEnclaveInstance(OE_Enclave* enclave)
     }
 
     // Allocate new entry.
-    EnclaveEntry* newEntry = (EnclaveEntry*)calloc(1, sizeof(EnclaveEntry));
+    newEntry = (EnclaveEntry*)calloc(1, sizeof(EnclaveEntry));
     if (newEntry == NULL)
     {
         goto cleanup;

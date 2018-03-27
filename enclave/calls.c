@@ -183,10 +183,12 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
     }
 
     /* Translate function address from virtual to real address */
-    OE_EnclaveFunc func =
-        (OE_EnclaveFunc)((uint64_t)__OE_GetEnclaveBase() + vaddr);
+    {
+        OE_EnclaveFunc func =
+            (OE_EnclaveFunc)((uint64_t)__OE_GetEnclaveBase() + vaddr);
+        func(args.args);
+    }
 
-    func(args.args);
     argsPtr->result = OE_OK;
 
 OE_CATCH:
