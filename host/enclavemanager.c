@@ -41,12 +41,14 @@ uint32_t _OE_PushEnclaveInstance(OE_Enclave* enclave)
     locked = true;
 
     // Return error if the enclave is already in global list.
-    EnclaveEntry* tmp;
-    OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
     {
-        if (tmp->enclave == enclave)
+        EnclaveEntry* tmp;
+        OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
         {
-            goto cleanup;
+            if (tmp->enclave == enclave)
+            {
+                goto cleanup;
+            }
         }
     }
 
@@ -103,15 +105,17 @@ uint32_t _OE_RemoveEnclaveInstance(OE_Enclave* enclave)
     locked = true;
 
     // Enumerate the enclave list, remove the target entry if find it.
-    EnclaveEntry* tmp;
-    OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
     {
-        if (tmp->enclave == enclave)
+        EnclaveEntry* tmp;
+        OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
         {
-            OE_LIST_REMOVE(tmp, next_entry);
-            free(tmp);
-            ret = 0;
-            break;
+            if (tmp->enclave == enclave)
+            {
+                OE_LIST_REMOVE(tmp, next_entry);
+                free(tmp);
+                ret = 0;
+                break;
+            }
         }
     }
 
@@ -153,16 +157,18 @@ OE_Enclave* _OE_QueryEnclaveInstance(void* tcs)
     locked = true;
 
     // Enumerate the enclave list, find which enclave owns the TCS.
-    EnclaveEntry* tmp;
-    OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
     {
-        OE_Enclave* enclave = tmp->enclave;
-        for (uint32_t i = 0; i < OE_COUNTOF(enclave->bindings); i++)
+        EnclaveEntry* tmp;
+        OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
         {
-            if (enclave->bindings[i].tcs == (uint64_t)tcs)
+            OE_Enclave* enclave = tmp->enclave;
+            for (uint32_t i = 0; i < OE_COUNTOF(enclave->bindings); i++)
             {
-                ret = enclave;
-                goto cleanup;
+                if (enclave->bindings[i].tcs == (uint64_t)tcs)
+                {
+                    ret = enclave;
+                    goto cleanup;
+                }
             }
         }
     }
