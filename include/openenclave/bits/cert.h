@@ -110,7 +110,7 @@ OE_Result OE_CertChainFree(OE_CertChain* chain);
  *
  * @return OE_OK verify ok
  * @return OE_VERIFY_FAILED verify failed and error parameter initialized
- * @return OE_INVALID_PARAMTER
+ * @return OE_INVALID_PARAMETER
  * @return OE_FAILURE
  */
 OE_Result OE_CertVerify(

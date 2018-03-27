@@ -5,6 +5,7 @@
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/bits/pem.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
@@ -25,12 +26,6 @@
 */
 
 #define OE_CERT_MAGIC 0x882b9943ac1ca95d
-
-#define BEGIN_CERTIFICATE "-----BEGIN CERTIFICATE-----"
-#define BEGIN_CERTIFICATE_LEN (sizeof(BEGIN_CERTIFICATE) - 1)
-
-#define END_CERTIFICATE "-----END CERTIFICATE-----"
-#define END_CERTIFICATE_LEN (sizeof(END_CERTIFICATE) - 1)
 
 typedef struct _OE_CertImpl
 {
@@ -112,15 +107,15 @@ static STACK_OF(X509) * _ReadCertChain(const char* pem)
         const char* end;
 
         /* The PEM certificate must start with this */
-        if (strncmp(pem, BEGIN_CERTIFICATE, BEGIN_CERTIFICATE_LEN) != 0)
+        if (strncmp(pem, OE_PEM_BEGIN_CERTIFICATE, OE_PEM_BEGIN_CERTIFICATE_LEN) != 0)
             goto done;
 
         /* Find the end of this PEM certificate */
         {
-            if (!(end = strstr(pem, END_CERTIFICATE)))
+            if (!(end = strstr(pem, OE_PEM_END_CERTIFICATE)))
                 goto done;
 
-            end += END_CERTIFICATE_LEN;
+            end += OE_PEM_END_CERTIFICATE_LEN;
         }
 
         /* Skip trailing spaces */

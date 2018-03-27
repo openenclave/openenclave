@@ -8,6 +8,7 @@
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/bits/pem.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,10 +21,6 @@
 **
 **==============================================================================
 */
-
-#define BEGIN_CERTIFICATE "-----BEGIN CERTIFICATE-----"
-
-#define END_CERTIFICATE "-----END CERTIFICATE-----"
 
 typedef struct _OE_CertImpl
 {
@@ -69,8 +66,8 @@ static int _CrtRead(mbedtls_x509_crt* crt, const char* data, size_t* size)
     /* Read the PEM buffer into DER format */
     if (mbedtls_pem_read_buffer(
             &pem,
-            BEGIN_CERTIFICATE,
-            END_CERTIFICATE,
+            OE_PEM_BEGIN_CERTIFICATE,
+            OE_PEM_END_CERTIFICATE,
             (unsigned char*)data,
             NULL, /* pwd */
             0,    /* pwdlen */
