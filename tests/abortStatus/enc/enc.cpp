@@ -10,7 +10,6 @@
 OE_ECALL void RegularAbort(void* args_)
 {
     Args* args = (Args*)args_;
-    args->ret = -1;
 
     if (!OE_IsOutsideEnclave(args, sizeof(Args)))
     {
@@ -29,7 +28,6 @@ OE_ECALL void RegularAbort(void* args_)
 OE_ECALL void GenerateUnhandledHardwareException(void* args_)
 {
     Args* args = (Args*)args_;
-    args->ret = -1;
     int t = 1;
     int s = 0;
 

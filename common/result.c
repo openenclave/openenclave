@@ -3,6 +3,11 @@
 
 #include <openenclave/result.h>
 
+// OE abort status depends on the order of these enums to transfer status 
+// correctly.
+OE_STATIC_ASSERT(OE_ENCLAVE_CRASHING > OE_OK);
+OE_STATIC_ASSERT(OE_ENCLAVE_CRASHED > OE_ENCLAVE_CRASHING);
+
 const char* OE_ResultStr(OE_Result result)
 {
     switch (result)

@@ -572,6 +572,7 @@ void __OE_HandleMain(
     *outputArg1 = 0;
     *outputArg2 = 0;
 
+    // Block enclave enter based on current enclave status.
     switch (__oe_enclave_status)
     {
     case OE_OK:

@@ -10,13 +10,12 @@ bool TestCppException();
 OE_ECALL void Test(void* args_)
 {
     Args* args = (Args*)args_;
-    args->ret = -1;
-
     if (!OE_IsOutsideEnclave(args, sizeof(Args)))
     {
         return;
     }
 
+    args->ret = -1;
     if (!TestCppException())
     {
         args->ret = -1;
@@ -36,13 +35,12 @@ bool UnhandledException();
 OE_ECALL void TestUnhandledException(void* args_)
 {
     Args* args = (Args*)args_;
-    args->ret = -1;
-
     if (!OE_IsOutsideEnclave(args, sizeof(Args)))
     {
         return;
     }
 
+    args->ret = -1;
     OE_HostPrintf("This test will crash the enclave.\n");
     args->ret = 0;
     switch (args->func_num)
