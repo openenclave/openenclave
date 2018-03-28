@@ -1099,9 +1099,28 @@ void _OE_NotifyGdbEnclaveCreation(
 #pragma GCC pop_options
 #endif
 
+/*
+** This method encapsulates all steps of the enclave creation process:
+**     - Loads an enclave image file
+**     - Lays out the enclave memory image and injects enclave metadata
+**     - Asks the platform to create the enclave (ECREATE)
+**     - Asks the platform to add the pages to the EPC (EADD/EEXTEND)
+**     - Asks the platform to initialized the enclave (EINIT)
+**     - Asks the driver to initialize the enclave with the token (EINIT)
+**
+** When built against the legacy Intel(R) SGX drviver and Intel(R) AESM service
+** dependencies, this method also:
+**     - Maps the enclave memory image onto the driver device (/dev/isgx) for
+**        ECREATE.
+**     - Obtains a launch token (EINITKEY) from the Intel(R) launch enclave (LE)
+**        for EINIT.
+*/
 OE_Result OE_CreateEnclave(
     const char* enclavePath,
+    OE_EnclaveType enclaveType,
     uint32_t flags,
+    const void* config,
+    uint32_t configSize,
     OE_Enclave** enclaveOut)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -1114,7 +1133,8 @@ OE_Result OE_CreateEnclave(
         *enclaveOut = NULL;
 
     /* Check parameters */
-    if (!enclavePath || !enclaveOut)
+    if (!enclavePath || !enclaveOut || enclaveType != OE_TYPE_SGX ||
+        (flags & OE_FLAG_RESERVED) || config || configSize > 0)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Allocate and zero-fill the enclave structure */

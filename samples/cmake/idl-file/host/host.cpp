@@ -91,7 +91,7 @@ int main(int argc, const char* argv[])
 
     printf("FLAGS=%08X\n", flags);
 
-    result = OE_CreateEnclave(argv[1], flags, &enclave);
+    result = OE_CreateEnclave(argv[1], OE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
         fprintf(stderr, "%s: cannot create enclave: %u\n", argv[0], result);

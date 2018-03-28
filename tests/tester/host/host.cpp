@@ -86,7 +86,7 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = OE_GetCreateFlags();
 
-    result = OE_CreateEnclave(argv[1], flags, &enclave);
+    result = OE_CreateEnclave(argv[1], OE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
         OE_PutErr("cannot create enclave");
 

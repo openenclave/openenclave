@@ -90,7 +90,8 @@ int main(int argc, const char* argv[])
     printf("=== %s: %s\n", argv[0], argv[1]);
 
     // Create the enclave:
-    if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
+    if ((result = OE_CreateEnclave(
+             argv[1], OE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
     // Register to handle OCALL_EXIT from tests.

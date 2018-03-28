@@ -34,7 +34,8 @@ int main(int argc, const char* argv[])
     }
 
     /* Create the enclave */
-    if ((result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave)) != OE_OK)
+    if ((result = OE_CreateEnclave(
+             argv[1], OE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
     }

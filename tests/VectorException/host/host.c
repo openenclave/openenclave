@@ -91,7 +91,8 @@ int main(int argc, const char* argv[])
         return SKIP_RETURN_CODE;
     }
 
-    if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
+    if ((result = OE_CreateEnclave(
+             argv[1], OE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
     TestVectorException(enclave);
