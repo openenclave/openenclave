@@ -44,7 +44,6 @@ OE_Result OE_EInit(
     OE_SgxLoadContext* context,
     uint64_t addr,
     uint64_t sigstruct,
-    uint64_t einittoken,
     OE_SHA256* mrenclave);
 
 /*

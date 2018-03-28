@@ -13,7 +13,6 @@
 #endif
 
 #include <assert.h>
-#include <openenclave/bits/aesm.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/cpuid.h>
@@ -904,9 +903,7 @@ OE_Result __OE_BuildEnclave(
     size_t enclaveSize = 0;
     uint64_t enclaveAddr = 0;
     size_t i;
-    AESM* aesm = NULL;
     OE_SignatureSection sigsec;
-    SGX_LaunchToken launchToken;
     Elf64 elf;
     void* relocData = NULL;
     size_t relocSize;
@@ -914,7 +911,6 @@ OE_Result __OE_BuildEnclave(
     size_t ecallSize;
 
     memset(&sigsec, 0, sizeof(OE_SignatureSection));
-    memset(&launchToken, 0, sizeof(SGX_LaunchToken));
     memset(&elf, 0, sizeof(Elf64));
 
     /* Clear and initialize enclave structure */
@@ -1031,49 +1027,10 @@ OE_Result __OE_BuildEnclave(
             sigsec.settings.numTCS,
             enclave));
 
-    // ATTN: Refactor this down into sgxload
-    /* Get a launch token from the AESM service */
-    if (context->type == OE_SGXLOAD_CREATE && !OE_IsContextSimulation(context))
-    {
-        SGX_Attributes attributes;
-
-        memset(&attributes, 0, sizeof(SGX_Attributes));
-        attributes.flags = SGX_FLAGS_MODE64BIT;
-        if (OE_IsContextDebug(context))
-            attributes.flags |= SGX_FLAGS_DEBUG;
-        attributes.xfrm = 0x7;
-
-        if (!(aesm = AESMConnect()))
-            OE_THROW(OE_FAILURE);
-
-        OE_TRY(
-            AESMGetLaunchToken(
-                aesm,
-                sigsec.sigstruct.enclavehash,
-                sigsec.sigstruct.modulus,
-                &attributes,
-                &launchToken));
-    }
-
-#if defined(_WIN32)
-    {
-        OE_STATIC_ASSERT(
-            OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, SigStruct) ==
-            sizeof(sigsec.sigstruct));
-        OE_STATIC_ASSERT(
-            OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, EInitToken) <=
-            sizeof(launchToken));
-    }
-#endif
-
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_TRY(
         OE_EInit(
-            context,
-            enclaveAddr,
-            (uint64_t)&sigsec.sigstruct,
-            (uint64_t)&launchToken,
-            &enclave->hash));
+            context, enclaveAddr, (uint64_t)&sigsec.sigstruct, &enclave->hash));
 
     /* Save the offset of the .text section */
     OE_TRY(_SaveTextAddress(enclave, &elf));
@@ -1089,9 +1046,6 @@ OE_Result __OE_BuildEnclave(
     result = OE_OK;
 
 OE_CATCH:
-
-    if (aesm)
-        AESMDisconnect(aesm);
 
     for (i = 0; i < numSegments; i++)
         free(segments[i].filedata);

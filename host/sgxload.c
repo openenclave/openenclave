@@ -13,6 +13,7 @@
 #include <Windows.h>
 #endif
 
+#include <openenclave/bits/aesm.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
@@ -484,12 +485,11 @@ OE_Result OE_EInit(
     OE_SgxLoadContext* context,
     uint64_t addr,
     uint64_t sigstruct,
-    uint64_t einittoken,
     OE_SHA256* mrenclave)
 {
     OE_Result result = OE_UNEXPECTED;
-
-    if (!context || !addr || !sigstruct || !einittoken || !mrenclave)
+    AESM* aesm = NULL;
+    if (!context || !addr || !sigstruct || !mrenclave)
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (context->state != OE_SGXLOAD_ENCLAVE_CREATED)
@@ -501,22 +501,56 @@ OE_Result OE_EInit(
     /* EINIT has no further action in measurement/simulation mode */
     if (context->type == OE_SGXLOAD_CREATE && !OE_IsContextSimulation(context))
     {
+        /* Get a launch token from the AESM service */
+        SGX_SigStruct* sgxSigStruct = (SGX_SigStruct*)sigstruct;
+
+        SGX_LaunchToken launchToken;
+        memset(&launchToken, 0, sizeof(SGX_LaunchToken));
+
+        SGX_Attributes attributes;
+        memset(&attributes, 0, sizeof(SGX_Attributes));
+        attributes.flags = SGX_FLAGS_MODE64BIT;
+        if (OE_IsContextDebug(context))
+            attributes.flags |= SGX_FLAGS_DEBUG;
+        attributes.xfrm = 0x7;
+
+        if (!(aesm = AESMConnect()))
+            OE_THROW(OE_FAILURE);
+
+        OE_TRY(
+            AESMGetLaunchToken(
+                aesm,
+                sgxSigStruct->enclavehash,
+                sgxSigStruct->modulus,
+                &attributes,
+                &launchToken));
+
+        OE_STATIC_ASSERT(sizeof(*sgxSigStruct) == sizeof(SGX_SigStruct));
+        OE_STATIC_ASSERT(sizeof(SGX_LaunchToken) == sizeof(launchToken));
+
 #if defined(__linux__)
 
         /* Ask the Linux SGX driver to initialize the enclave */
-        if (_SGX_IoctlEnclaveInit(context->dev, addr, sigstruct, einittoken) !=
-            0)
+        if (_SGX_IoctlEnclaveInit(
+                context->dev, addr, sigstruct, (uint64_t)&launchToken) != 0)
             OE_THROW(OE_IOCTL_FAILED);
 
 #elif defined(_WIN32)
+
+        OE_STATIC_ASSERT(
+            OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, SigStruct) ==
+            sizeof(*sgxSigStruct));
+        OE_STATIC_ASSERT(
+            OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, EInitToken) <=
+            sizeof(launchToken));
 
         /* Ask the OS to initialize the enclave */
         DWORD enclaveError;
         ENCLAVE_INIT_INFO_SGX info;
 
         memset(&info, 0, sizeof(info));
-        memcpy(&info.SigStruct, (void*)sigstruct, sizeof(info.SigStruct));
-        memcpy(&info.EInitToken, (void*)einittoken, sizeof(info.EInitToken));
+        memcpy(&info.SigStruct, (void*)sgxSigStruct, sizeof(info.SigStruct));
+        memcpy(&info.EInitToken, (void*)&launchToken, sizeof(info.EInitToken));
 
         if (!InitializeEnclave(
                 GetCurrentProcess(),
@@ -534,6 +568,9 @@ OE_Result OE_EInit(
     result = OE_OK;
 
 OE_CATCH:
+
+    if (aesm)
+        AESMDisconnect(aesm);
 
     return result;
 }
