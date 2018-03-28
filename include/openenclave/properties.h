@@ -23,7 +23,7 @@ OE_EXTERNC_BEGIN
 /*
 **==============================================================================
 **
-** OE_EnclavePropertiesHeader - generic enclave properties base struct
+** OE_EnclavePropertiesHeader - generic enclave properties base type
 **
 **==============================================================================
 */
@@ -44,7 +44,7 @@ OE_EnclaveSizeSettings;
 
 OE_CHECK_SIZE(sizeof(OE_EnclaveSizeSettings), 24);
 
-/* Base struct type for enclave properties */
+/* Base type for enclave properties */
 typedef struct _OE_EnclavePropertiesHeader 
 {
     /* (0) Size of the extended structure */
@@ -63,7 +63,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 /*
 **==============================================================================
 **
-** OE_EnclaveProperties_SGX - SGX enclave properties derived struct
+** OE_EnclaveProperties_SGX - SGX enclave properties derived type
 **
 **==============================================================================
 */
@@ -170,7 +170,7 @@ OE_SGXEnclaveSettings;
 
 OE_CHECK_SIZE(sizeof(OE_SGXEnclaveSettings), 16);
 
-/* extends OE_EnclavePropertiesHeader */
+/* Extends OE_EnclavePropertiesHeader base type */
 typedef struct _OE_EnclaveProperties_SGX 
 { 
     /* (0) */
