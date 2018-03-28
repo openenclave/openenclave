@@ -13,6 +13,7 @@ add_library(oeenclave STATIC
     init.c
     jump.c
     memory.c
+    properties.c
     once.c
     report.c
     result.c

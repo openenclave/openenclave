@@ -8,6 +8,7 @@
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
+#include "../properties.h"
 #include "epid.h"
 #include "jump.h"
 #include "load.h"
@@ -76,106 +77,6 @@ typedef enum _SGX_ENCLULeaf {
 
 /* Default value for SGX_Attributes.xfrm */
 #define SGX_ATTRIBUTES_DEFAULT_XFRM 0x0000000000000007
-
-OE_PACK_BEGIN
-typedef struct _SGX_Attributes
-{
-    uint64_t flags;
-    uint64_t xfrm;
-} SGX_Attributes;
-OE_PACK_END
-
-OE_CHECK_SIZE(sizeof(SGX_Attributes), 16);
-
-/*
-**==============================================================================
-**
-** SGX_Sigstruct:
-**
-**==============================================================================
-*/
-
-/* 1808 bytes */
-OE_PACK_BEGIN
-typedef struct _SGX_SigStruct
-{
-    /* ======== HEADER-SECTION ======== */
-
-    /* (0) must be (06000000E100000000000100H) */
-    uint8_t header[12];
-
-    /* (12) bit 31: 0 = prod, 1 = debug; Bit 30-0: Must be zero */
-    uint32_t type;
-
-    /* (16) Intel=0x8086, ISV=0x0000 */
-    uint32_t vendor;
-
-    /* (20) build date as yyyymmdd */
-    uint32_t date;
-
-    /* (24) must be (01010000600000006000000001000000H) */
-    uint8_t header2[16];
-
-    /* (40) For Launch Enclaves: HWVERSION != 0. Others, HWVERSION = 0 */
-    uint32_t swdefined;
-
-    /* (44) Must be 0 */
-    uint8_t reserved[84];
-
-    /* ======== KEY-SECTION ======== */
-
-    /* (128) Module Public Key (keylength=3072 bits) */
-    uint8_t modulus[OE_KEY_SIZE];
-
-    /* (512) RSA Exponent = 3 */
-    uint8_t exponent[OE_EXPONENT_SIZE];
-
-    /* (516) Signature over Header and Body (HEADER-SECTION | BODY-SECTION) */
-    uint8_t signature[OE_KEY_SIZE];
-
-    /* ======== BODY-SECTION ======== */
-
-    /* (900) The MISCSELECT that must be set */
-    uint32_t miscselect;
-
-    /* (904) Mask of MISCSELECT to enforce */
-    uint32_t miscmask;
-
-    /* (908) Reserved. Must be 0. */
-    uint8_t reserved2[20];
-
-    /* (928) Enclave Attributes that must be set */
-    SGX_Attributes attributes;
-
-    /* (944) Mask of Attributes to Enforce */
-    SGX_Attributes attributemask;
-
-    /* (960) MRENCLAVE - (32 bytes) */
-    uint8_t enclavehash[OE_SHA256_SIZE];
-
-    /* (992) Must be 0 */
-    uint8_t reserved3[32];
-
-    /* (1024) ISV assigned Product ID */
-    uint16_t isvprodid;
-
-    /* (1026) ISV assigned SVN */
-    uint16_t isvsvn;
-
-    /* ======== BUFFER-SECTION ======== */
-
-    /* (1028) Must be 0 */
-    uint8_t reserved4[12];
-
-    /* (1040) Q1 value for RSA Signature Verification */
-    uint8_t q1[OE_KEY_SIZE];
-
-    /* (1424) Q2 value for RSA Signature Verification */
-    uint8_t q2[OE_KEY_SIZE];
-} SGX_SigStruct;
-OE_PACK_END
-
-OE_CHECK_SIZE(sizeof(SGX_SigStruct), 1808);
 
 OE_INLINE const void* SGX_SigStructHeader(const SGX_SigStruct* ss)
 {
