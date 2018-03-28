@@ -7,6 +7,9 @@
  * This file defines enclave-property structures that are injected into
  * the ".oeinfo" section (either by a macro or by the signing tool).
  *
+ * Note: the field sizes were carefully selected so that the packed
+ * sizes and unpacked sizes are the same.
+ *
  */
 
 #ifndef _OE_PROPERTIES_H
@@ -32,20 +35,30 @@ typedef enum _OE_EnclaveType
 OE_EnclaveType;
 
 typedef struct _OE_EnclaveSizeSettings 
-{ 
-    uint64_t numHeapPages; 
-    uint64_t numStackPages; 
-    uint64_t numTCS; 
-} 
+{
+    uint64_t numHeapPages;
+    uint64_t numStackPages;
+    uint64_t numTCS;
+}
 OE_EnclaveSizeSettings; 
 
+OE_CHECK_SIZE(sizeof(OE_EnclaveSizeSettings), 24);
+
+/* Base struct type for enclave properties */
 typedef struct _OE_EnclavePropertiesHeader 
-{ 
+{
+    /* (0) Size of the extended structure */
     uint32_t size; 
-    OE_EnclaveType type; 
+
+    /* (4) Type of enclave (see OE_EnclaveType) */
+    uint32_t enclaveType; 
+
+    /* (8) Type of enclave */
     OE_EnclaveSizeSettings sizeSettings; 
-} 
+}
 OE_EnclavePropertiesHeader; 
+
+OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 
 /*
 **==============================================================================
@@ -55,22 +68,19 @@ OE_EnclavePropertiesHeader;
 **==============================================================================
 */
 
-#define OE_SGX_KEY_SIZE 384
-#define OE_SGX_EXPONENT_SIZE 4
+#define OE_SGXKEY_SIZE 384
+#define OE_SGXEXPONENT_SIZE 4
 #define OE_HASH_SIZE 32
 
-OE_PACK_BEGIN
-typedef struct _SGX_Attributes
+typedef struct _OE_SGXAttributes
 {
     uint64_t flags;
     uint64_t xfrm;
-} SGX_Attributes;
-OE_PACK_END
+} OE_SGXAttributes;
 
-OE_CHECK_SIZE(sizeof(SGX_Attributes), 16);
+OE_CHECK_SIZE(sizeof(OE_SGXAttributes), 16);
 
-OE_PACK_BEGIN
-typedef struct _SGX_SigStruct
+typedef struct _OE_SGXSigStruct
 {
     /* ======== HEADER-SECTION ======== */
 
@@ -98,13 +108,13 @@ typedef struct _SGX_SigStruct
     /* ======== KEY-SECTION ======== */
 
     /* (128) Module Public Key (keylength=3072 bits) */
-    uint8_t modulus[OE_SGX_KEY_SIZE];
+    uint8_t modulus[OE_SGXKEY_SIZE];
 
     /* (512) RSA Exponent = 3 */
-    uint8_t exponent[OE_SGX_EXPONENT_SIZE];
+    uint8_t exponent[OE_SGXEXPONENT_SIZE];
 
     /* (516) Signature over Header and Body (HEADER-SECTION | BODY-SECTION) */
-    uint8_t signature[OE_SGX_KEY_SIZE];
+    uint8_t signature[OE_SGXKEY_SIZE];
 
     /* ======== BODY-SECTION ======== */
 
@@ -118,10 +128,10 @@ typedef struct _SGX_SigStruct
     uint8_t reserved2[20];
 
     /* (928) Enclave Attributes that must be set */
-    SGX_Attributes attributes;
+    OE_SGXAttributes attributes;
 
     /* (944) Mask of Attributes to Enforce */
-    SGX_Attributes attributemask;
+    OE_SGXAttributes attributemask;
 
     /* (960) MRENCLAVE - (32 bytes) */
     uint8_t enclavehash[OE_HASH_SIZE];
@@ -141,32 +151,40 @@ typedef struct _SGX_SigStruct
     uint8_t reserved4[12];
 
     /* (1040) Q1 value for RSA Signature Verification */
-    uint8_t q1[OE_SGX_KEY_SIZE];
+    uint8_t q1[OE_SGXKEY_SIZE];
 
     /* (1424) Q2 value for RSA Signature Verification */
-    uint8_t q2[OE_SGX_KEY_SIZE];
-} SGX_SigStruct;
-OE_PACK_END
+    uint8_t q2[OE_SGXKEY_SIZE];
+} OE_SGXSigStruct;
 
-OE_CHECK_SIZE(sizeof(SGX_SigStruct), 1808);
+OE_CHECK_SIZE(sizeof(OE_SGXSigStruct), 1808);
 
-
-typedef struct _SGX_EnclaveProperties
+typedef struct _OE_SGX_EnclaveSettings
 { 
     uint16_t productID; 
     uint16_t securityVersion; 
+    uint32_t padding; 
     uint64_t attributes; 
-} 
-SGX_EnclaveProperties; 
+}
+OE_SGXEnclaveSettings; 
+
+OE_CHECK_SIZE(sizeof(OE_SGXEnclaveSettings), 16);
 
 /* extends OE_EnclavePropertiesHeader */
 typedef struct _OE_EnclaveProperties_SGX 
 { 
+    /* (0) */
     OE_EnclavePropertiesHeader header; 
-    SGX_EnclaveProperties settings; 
-    SGX_SigStruct sigstruct; 
-} 
+
+    /* (32) */
+    OE_SGXEnclaveSettings settings; 
+
+    /* (48) */
+    OE_SGXSigStruct sigstruct; 
+}
 OE_EnclaveProperties_SGX;
+
+OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 
 OE_EXTERNC_END
 

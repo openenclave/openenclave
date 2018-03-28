@@ -67,16 +67,28 @@ typedef enum _SGX_ENCLULeaf {
 /*
 **==============================================================================
 **
-** SGX_Attributes:
+** SGX_Attributes
 **
 **==============================================================================
 */
+
+typedef OE_SGXAttributes SGX_Attributes;
 
 /* Default value for SGX_Attributes.flags */
 #define SGX_ATTRIBUTES_DEFAULT_FLAGS 0x0000000000000006
 
 /* Default value for SGX_Attributes.xfrm */
 #define SGX_ATTRIBUTES_DEFAULT_XFRM 0x0000000000000007
+
+/*
+**==============================================================================
+**
+** SGX_SigStruct
+**
+**==============================================================================
+*/
+
+typedef OE_SGXSigStruct SGX_SigStruct;
 
 OE_INLINE const void* SGX_SigStructHeader(const SGX_SigStruct* ss)
 {
