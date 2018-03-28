@@ -68,9 +68,9 @@ OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 **==============================================================================
 */
 
-#define OE_SGXKEY_SIZE 384
-#define OE_SGXEXPONENT_SIZE 4
-#define OE_HASH_SIZE 32
+#define OE_SGX_KEY_SIZE 384
+#define OE_SGX_EXPONENT_SIZE 4
+#define OE_SGX_HASH_SIZE 32
 
 typedef struct _OE_SGXAttributes
 {
@@ -108,13 +108,13 @@ typedef struct _OE_SGXSigStruct
     /* ======== KEY-SECTION ======== */
 
     /* (128) Module Public Key (keylength=3072 bits) */
-    uint8_t modulus[OE_SGXKEY_SIZE];
+    uint8_t modulus[OE_SGX_KEY_SIZE];
 
     /* (512) RSA Exponent = 3 */
-    uint8_t exponent[OE_SGXEXPONENT_SIZE];
+    uint8_t exponent[OE_SGX_EXPONENT_SIZE];
 
     /* (516) Signature over Header and Body (HEADER-SECTION | BODY-SECTION) */
-    uint8_t signature[OE_SGXKEY_SIZE];
+    uint8_t signature[OE_SGX_KEY_SIZE];
 
     /* ======== BODY-SECTION ======== */
 
@@ -134,7 +134,7 @@ typedef struct _OE_SGXSigStruct
     OE_SGXAttributes attributemask;
 
     /* (960) MRENCLAVE - (32 bytes) */
-    uint8_t enclavehash[OE_HASH_SIZE];
+    uint8_t enclavehash[OE_SGX_HASH_SIZE];
 
     /* (992) Must be 0 */
     uint8_t reserved3[32];
@@ -151,10 +151,10 @@ typedef struct _OE_SGXSigStruct
     uint8_t reserved4[12];
 
     /* (1040) Q1 value for RSA Signature Verification */
-    uint8_t q1[OE_SGXKEY_SIZE];
+    uint8_t q1[OE_SGX_KEY_SIZE];
 
     /* (1424) Q2 value for RSA Signature Verification */
-    uint8_t q2[OE_SGXKEY_SIZE];
+    uint8_t q2[OE_SGX_KEY_SIZE];
 } OE_SGXSigStruct;
 
 OE_CHECK_SIZE(sizeof(OE_SGXSigStruct), 1808);
