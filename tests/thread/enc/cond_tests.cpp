@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "../args.h"
 
 static OE_Mutex mutex = OE_MUTEX_INITIALIZER;
@@ -54,7 +52,7 @@ OE_ECALL void CBTestSignalThreadImpl(void* args)
         OE_MutexLock(&mutex);
 
         // No thread should wake up until broadcast.
-        assert(num_woken == 0);
+        OE_TEST(num_woken == 0);
 
         // Signal waiting threads to wake up.
         // Stash the number of threads expected to wake up.
@@ -75,7 +73,7 @@ OE_ECALL void CBTestSignalThreadImpl(void* args)
             OE_MutexLock(&mutex);
 
             // No more than desired number of threads should be woken up.
-            assert(num_woken <= num_expected);
+            OE_TEST(num_woken <= num_expected);
 
             if (num_expected == num_woken)
             {

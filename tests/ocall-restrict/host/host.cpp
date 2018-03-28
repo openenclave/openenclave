@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
@@ -48,8 +47,8 @@ int main(int argc, const char* argv[])
     /* Invoke tests */
     {
         OE_Result result = OE_CallEnclave(enclave, "Test", &ta);
-        assert(result == OE_OK);
-        assert(ta.result == OE_OK);
+        OE_TEST(result == OE_OK);
+        OE_TEST(ta.result == OE_OK);
     }
 
     OE_TerminateEnclave(enclave);

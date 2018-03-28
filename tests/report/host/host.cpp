@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/hexdump.h>
@@ -121,17 +120,17 @@ int main(int argc, const char* argv[])
         }
 
         /* Verify that quote contains report body */
-        assert(
+        OE_TEST(
             memcmp(
                 &args.report.body,
                 &quote->report_body,
                 sizeof(SGX_ReportBody)) == 0);
 
         /* Verify that quote type is correct */
-        assert(quote->sign_type == SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE);
+        OE_TEST(quote->sign_type == SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE);
 
         /* Verify that signature length is non-zero */
-        assert(quote->signature_len != 0);
+        OE_TEST(quote->signature_len != 0);
 
         /* Verify that signature is not zero-filled */
         {
@@ -143,7 +142,7 @@ int main(int argc, const char* argv[])
                 p++;
 
             /* Fail if a non-zero byte was not found */
-            assert(p != end);
+            OE_TEST(p != end);
         }
 
         /* Free the quote structure */

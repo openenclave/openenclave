@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
@@ -24,10 +23,10 @@ void TestStdc(OE_Enclave* enclave)
 
     printf("=== %s() \n", __FUNCTION__);
     result = OE_CallEnclave(enclave, "Test", &args);
-    assert(result == OE_OK);
-    assert(strcmp(args.buf1, "AAABBBCCC") == 0);
-    assert(strcmp(args.buf2, "value=100") == 0);
-    assert(args.strdupOk);
+    OE_TEST(result == OE_OK);
+    OE_TEST(strcmp(args.buf1, "AAABBBCCC") == 0);
+    OE_TEST(strcmp(args.buf2, "value=100") == 0);
+    OE_TEST(args.strdupOk);
 }
 
 int main(int argc, const char* argv[])

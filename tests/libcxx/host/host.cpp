@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
@@ -19,7 +18,7 @@ void Test(OE_Enclave* enclave)
     args.ret = 1;
     args.test = NULL;
     OE_Result result = OE_CallEnclave(enclave, "Test", &args);
-    assert(result == OE_OK);
+    OE_TEST(result == OE_OK);
 
     if (args.ret == 0)
     {

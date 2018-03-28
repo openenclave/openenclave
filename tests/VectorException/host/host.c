@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <cpuid.h>
 #include <limits.h>
 #include <openenclave/bits/error.h>
@@ -26,7 +25,7 @@ void TestVectorException(OE_Enclave* enclave)
     if (args.ret != 0)
         OE_PutErr("ECALL TestVectorException failed args.result=%d", args.ret);
 
-    assert(args.ret == 0);
+    OE_TEST(args.ret == 0);
 }
 
 void TestSigillHandling(OE_Enclave* enclave)
@@ -41,7 +40,7 @@ void TestSigillHandling(OE_Enclave* enclave)
     if (args.ret != 0)
         OE_PutErr("ECALL TestSigillHandling failed args.result=%d", args.ret);
 
-    assert(args.ret == 0);
+    OE_TEST(args.ret == 0);
 
     // Verify that the enclave cached CPUID values match host's
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
@@ -62,7 +61,7 @@ void TestSigillHandling(OE_Enclave* enclave)
 
         for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
         {
-            assert(cpuidInfo[j] == args.cpuidTable[i][j]);
+            OE_TEST(cpuidInfo[j] == args.cpuidTable[i][j]);
         }
     }
 }

@@ -33,7 +33,7 @@ build$ ctest
 # Test mechanics
 
 This sub-tree is build with the "NDEBUG" C preprocessor macro undefined,
-even for debug builds. This allows assert() to be used as a simple check,
+even for debug builds. This allows OE_TEST() to be used as a simple check,
 and is the general paradigm in all tests.
 
 Some tests can only be run in certain environments and fail in others. It is

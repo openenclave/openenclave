@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
-#include <stdio.h>
 #include <string.h>
 #include "../args.h"
 
@@ -38,9 +38,9 @@ OE_ECALL void Test(void* argPtr)
         res,
         ta->result,
         counter);
-    OE_Assert(res == OE_OK);
-    OE_Assert(ta->result == OE_OK);
-    OE_Assert(counter == 1);
+    OE_TEST(res == OE_OK);
+    OE_TEST(ta->result == OE_OK);
+    OE_TEST(counter == 1);
 
     /* Perform restricted ocall, expect ecall to fail */
     printf("%s(): OCALL(restricted)...\n", __FUNCTION__);
@@ -52,15 +52,15 @@ OE_ECALL void Test(void* argPtr)
         res,
         ta->result,
         counter);
-    OE_Assert(res == OE_OK);
-    OE_Assert(ta->result == OE_UNEXPECTED);
-    OE_Assert(counter == 1);
+    OE_TEST(res == OE_OK);
+    OE_TEST(ta->result == OE_UNEXPECTED);
+    OE_TEST(counter == 1);
 
     /* Perform regular ocall w/ ecall */
     res = OE_OCall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, 0);
-    OE_Assert(res == OE_OK);
-    OE_Assert(ta->result == OE_OK);
-    OE_Assert(counter == 2);
+    OE_TEST(res == OE_OK);
+    OE_TEST(ta->result == OE_OK);
+    OE_TEST(counter == 2);
 
     ta->result = OE_OK;
 

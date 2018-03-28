@@ -7,6 +7,7 @@
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 OE_EXTERNC_BEGIN
 
@@ -21,7 +22,7 @@ OE_EXTERNC_BEGIN
                 __FILE__,                    \
                 __LINE__,                    \
                 #COND);                      \
-            exit(1);                         \
+            abort();                         \
         }                                    \
     } while (0)
 
