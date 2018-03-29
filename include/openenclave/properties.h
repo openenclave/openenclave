@@ -28,35 +28,29 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-typedef enum _OE_EnclaveType
-{
-    OE_ENCLAVE_TYPE_SGX
-}
-OE_EnclaveType;
+typedef enum _OE_EnclaveType { OE_ENCLAVE_TYPE_SGX } OE_EnclaveType;
 
-typedef struct _OE_EnclaveSizeSettings 
+typedef struct _OE_EnclaveSizeSettings
 {
     uint64_t numHeapPages;
     uint64_t numStackPages;
     uint64_t numTCS;
-}
-OE_EnclaveSizeSettings; 
+} OE_EnclaveSizeSettings;
 
 OE_CHECK_SIZE(sizeof(OE_EnclaveSizeSettings), 24);
 
 /* Base type for enclave properties */
-typedef struct _OE_EnclavePropertiesHeader 
+typedef struct _OE_EnclavePropertiesHeader
 {
     /* (0) Size of the extended structure */
-    uint32_t size; 
+    uint32_t size;
 
     /* (4) Type of enclave (see OE_EnclaveType) */
-    uint32_t enclaveType; 
+    uint32_t enclaveType;
 
     /* (8) Type of enclave */
-    OE_EnclaveSizeSettings sizeSettings; 
-}
-OE_EnclavePropertiesHeader; 
+    OE_EnclaveSizeSettings sizeSettings;
+} OE_EnclavePropertiesHeader;
 
 OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 
@@ -71,6 +65,11 @@ OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 #define OE_SGX_KEY_SIZE 384
 #define OE_SGX_EXPONENT_SIZE 4
 #define OE_SGX_HASH_SIZE 32
+#define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
+#define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
+
+#define OE_MAKE_ATTRIBUTES(_AllowDebug_) \
+    (OE_SGX_FLAGS_MODE64BIT | (_AllowDebug_ ? OE_SGX_FLAGS_DEBUG : 0))
 
 typedef struct _OE_SGXAttributes
 {
@@ -160,31 +159,72 @@ typedef struct _OE_SGXSigStruct
 OE_CHECK_SIZE(sizeof(OE_SGXSigStruct), 1808);
 
 typedef struct _OE_SGX_EnclaveSettings
-{ 
-    uint16_t productID; 
-    uint16_t securityVersion; 
-    uint32_t padding; 
-    uint64_t attributes; 
-}
-OE_SGXEnclaveSettings; 
+{
+    uint16_t productID;
+    uint16_t securityVersion;
+
+    /* Padding to make packed and unpacked size the same */
+    uint32_t padding;
+
+    /* (SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT) */
+    uint64_t attributes;
+} OE_SGXEnclaveSettings;
 
 OE_CHECK_SIZE(sizeof(OE_SGXEnclaveSettings), 16);
 
 /* Extends OE_EnclavePropertiesHeader base type */
-typedef struct _OE_EnclaveProperties_SGX 
-{ 
+typedef struct _OE_EnclaveProperties_SGX
+{
     /* (0) */
-    OE_EnclavePropertiesHeader header; 
+    OE_EnclavePropertiesHeader header;
 
     /* (32) */
-    OE_SGXEnclaveSettings settings; 
+    OE_SGXEnclaveSettings settings;
 
     /* (48) */
-    OE_SGXSigStruct sigstruct; 
-}
-OE_EnclaveProperties_SGX;
+    OE_SGXSigStruct sigstruct;
+} OE_EnclaveProperties_SGX;
 
 OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
+
+/*
+**==============================================================================
+**
+** OE_DEFINE_ENCLAVE_PROPERTIES_SGX()
+**
+**==============================================================================
+*/
+
+#define OE_INFO_SECTION_NAME ".oeinfo"
+#define OE_INFO_SECTION_BEGIN __attribute__((section(OE_INFO_SECTION_NAME)))
+#define OE_INFO_SECTION_END
+
+#define OE_DEFINE_ENCLAVE_PROPERTIES_SGX(                           \
+    _ProductID_,                                                    \
+    _SecurityVersion_,                                              \
+    _AllowDebug_,                                                   \
+    _HeapPageCount_,                                                \
+    _StackPageCount_,                                               \
+    _TcsCount_)                                                     \
+    OE_INFO_SECTION_BEGIN const OE_EnclaveProperties_SGX            \
+        oe_enclavePropertiesSGX = {                                 \
+            .header = {.size = sizeof(OE_EnclaveProperties_SGX),    \
+                       .enclaveType = OE_ENCLAVE_TYPE_SGX,          \
+                       .sizeSettings =                              \
+                           {                                        \
+                               .numHeapPages = _HeapPageCount_,     \
+                               .numStackPages = _StackPageCount_,   \
+                               .numTCS = _TcsCount_,                \
+                           }},                                      \
+            .settings =                                             \
+                {                                                   \
+                    .productID = _ProductID_,                       \
+                    .securityVersion = _SecurityVersion_,           \
+                    .padding = 0,                                   \
+                    .attributes = OE_MAKE_ATTRIBUTES(_AllowDebug_), \
+                },                                                  \
+    };                                                              \
+    OE_INFO_SECTION_END
 
 OE_EXTERNC_END
 
