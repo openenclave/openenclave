@@ -478,7 +478,7 @@ static char* _MakeSignedLibName(const char* path)
     mem_append(&buf, path, p - path);
     mem_append(&buf, ".signed.so", 11);
 
-    return mem_steal(&buf);
+    return (char*)mem_steal(&buf);
 }
 
 static int _SignAndWriteSharedLib(
@@ -792,19 +792,19 @@ int main(int argc, const char* argv[])
     }
 
     /* Initialize the SigStruct object */
-    if ((result = _InitSigstruct(&sigstruct, &enc.hash, rsa) != 0))
-        OE_PutErr("_InitSigstruct() failed: result=%u", result);
+    if ((result = _InitSigstruct(&sigstruct, &enc.hash, rsa)) != OE_OK)
+        OE_PutErr("_InitSigstruct() failed: result=%u\n", result);
 
     /* Create signature section and write out new file */
-    if ((result = _SignAndWriteSharedLib(
-             enclave,
-             numHeapPages,
-             numStackPages,
-             numTCS,
-             &settings,
-             &sigstruct)) != OE_OK)
+    if (_SignAndWriteSharedLib(
+            enclave,
+            numHeapPages,
+            numStackPages,
+            numTCS,
+            &settings,
+            &sigstruct) != 0)
     {
-        OE_PutErr("_SignAndWriteSharedLib(): result=%u", result);
+        OE_PutErr("_SignAndWriteSharedLib()\n");
     }
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
