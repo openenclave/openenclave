@@ -484,18 +484,25 @@ static char* _MakeSignedLibName(const char* path)
     return mem_steal(&buf);
 }
 
+static bool _SectionExists(Elf64* elf, const char* name)
+{
+    const void* data;
+    size_t size;
+    return Elf64_FindSection(elf, name, &data, &size) == 0 ? true : false;
+}
+
 static int _SignAndWriteSharedLib(
     const char* path,
     size_t numHeapPages,
     size_t numStackPages,
     size_t numTCS,
-    const OE_EnclaveSettings* settings,
-    const SGX_SigStruct* sigstruct)
+    const OE_EnclaveProperties_SGX* properties)
 {
     int rc = -1;
     Elf64 elf;
-    const char secname[] = ".oesig";
+    const char secname[] = ".oeinfo";
     FILE* os = NULL;
+    OE_EnclaveProperties_SGX* props = NULL;
 
     /* Open ELF file */
     if (Elf64_Load(path, &elf) != 0)
@@ -504,14 +511,15 @@ static int _SignAndWriteSharedLib(
         goto done;
     }
 
-    /* Fail if the section already exists */
+    /* If .oeinfo section exists, then load the enclave properties */
+    if (_SectionExists(&elf, secname))
     {
-        const void* data;
-        size_t size;
-
-        if (Elf64_FindSection(&elf, secname, &data, &size) == 0)
+        /* Verify that section already contains SGX enclave properties */
+        if (OE_LoadSGXEnclaveProperties(&elf, &props) != OE_OK)
         {
-            fprintf(stderr, "%s: file already signed: %s\n", arg0, path);
+            fprintf(stderr, 
+                "%s: .oeinfo section missing SGX enclave properties: %s\n", 
+                arg0, path);
             goto done;
         }
     }
@@ -551,15 +559,19 @@ static int _SignAndWriteSharedLib(
         }
     }
 
-    /* Add the new section */
+    /* Either update .oeinfo section or add a new one */
+    if (props)
     {
-        OE_SignatureSection sec;
-        sec.magic = OE_META_MAGIC;
-        sec.settings = *settings;
-        sec.sigstruct = *sigstruct;
-
-        if (Elf64_AddSection(&elf, secname, SHT_PROGBITS, &sec, sizeof(sec)) !=
-            0)
+        memcpy(props, properties, sizeof(OE_EnclaveProperties_SGX));
+    }
+    else
+    {
+        if (Elf64_AddSection(
+            &elf, 
+            secname, 
+            SHT_PROGBITS, 
+            properties,
+            sizeof(OE_EnclaveProperties_SGX)) != 0)
         {
             fprintf(stderr, "%s: failed to add section\n", arg0);
             goto done;
@@ -608,7 +620,18 @@ done:
     return rc;
 }
 
-int LoadConfigFile(const char* path, OE_EnclaveSettings* settings)
+typedef struct _ConfigFileOptions
+{
+    bool debug;
+    uint64_t numHeapPages;
+    uint64_t numStackPages;
+    uint64_t numTCS;
+    uint16_t productID;
+    uint16_t securityVersion;
+}
+ConfigFileOptions;
+
+int LoadConfigFile(const char* path, ConfigFileOptions* options)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -618,7 +641,7 @@ int LoadConfigFile(const char* path, OE_EnclaveSettings* settings)
     str_t rhs = STR_NULL_INIT;
     size_t line = 1;
 
-    memset(settings, 0, sizeof(OE_EnclaveSettings));
+    memset(options, 0, sizeof(ConfigFileOptions));
 
     if (!(is = fopen(path, "rb")))
         goto done;
@@ -653,7 +676,9 @@ int LoadConfigFile(const char* path, OE_EnclaveSettings* settings)
         /* Handle each setting */
         if (strcmp(str_ptr(&lhs), "Debug") == 0)
         {
-            if (str_u64(&rhs, &settings->debug) != 0)
+            uint64_t value = 0;
+
+            if (str_u64(&rhs, &value) != 0)
             {
                 fprintf(
                     stderr,
@@ -663,10 +688,13 @@ int LoadConfigFile(const char* path, OE_EnclaveSettings* settings)
                     line);
                 goto done;
             }
+
+            if (value)
+                options->debug = true;
         }
         else if (strcmp(str_ptr(&lhs), "NumHeapPages") == 0)
         {
-            if (str_u64(&rhs, &settings->numHeapPages) != 0)
+            if (str_u64(&rhs, &options->numHeapPages) != 0)
             {
                 fprintf(
                     stderr,
@@ -679,7 +707,7 @@ int LoadConfigFile(const char* path, OE_EnclaveSettings* settings)
         }
         else if (strcmp(str_ptr(&lhs), "NumStackPages") == 0)
         {
-            if (str_u64(&rhs, &settings->numStackPages) != 0)
+            if (str_u64(&rhs, &options->numStackPages) != 0)
             {
                 fprintf(
                     stderr,
@@ -692,11 +720,37 @@ int LoadConfigFile(const char* path, OE_EnclaveSettings* settings)
         }
         else if (strcmp(str_ptr(&lhs), "NumTCS") == 0)
         {
-            if (str_u64(&rhs, &settings->numTCS) != 0)
+            if (str_u64(&rhs, &options->numTCS) != 0)
             {
                 fprintf(
                     stderr,
                     "%s: %s(%zu): bad value for 'NumTCS'\n",
+                    arg0,
+                    path,
+                    line);
+                goto done;
+            }
+        }
+        else if (strcmp(str_ptr(&lhs), "ProductID") == 0)
+        {
+            if (str_u16(&rhs, &options->productID) != 0)
+            {
+                fprintf(
+                    stderr,
+                    "%s: %s(%zu): bad value for 'ProductID'\n",
+                    arg0,
+                    path,
+                    line);
+                goto done;
+            }
+        }
+        else if (strcmp(str_ptr(&lhs), "SecurityVersion") == 0)
+        {
+            if (str_u16(&rhs, &options->securityVersion) != 0)
+            {
+                fprintf(
+                    stderr,
+                    "%s: %s(%zu): bad value for 'SecurityVersion'\n",
                     arg0,
                     path,
                     line);
@@ -744,8 +798,8 @@ int main(int argc, const char* argv[])
     size_t numStackPages = 1;
     size_t numTCS = 2;
     OE_SHA256 mrenclave = OE_SHA256_INIT;
-    OE_EnclaveSettings settings;
-    SGX_SigStruct sigstruct;
+    ConfigFileOptions options;
+    OE_EnclaveProperties_SGX props;
     FILE* is = NULL;
     RSA* rsa = NULL;
     const char* enclave;
@@ -765,9 +819,25 @@ int main(int argc, const char* argv[])
     conffile = argv[2];
     keyfile = argv[3];
 
-    /* Load the configuration file */
-    if (LoadConfigFile(conffile, &settings) != 0)
+    /* Load the configuration file into the enclave properties */
+    if (LoadConfigFile(conffile, &options) != 0)
         OE_PutErr("failed to load configuration file: %s\n", conffile);
+
+    /* Initialize the enclave properties */
+    {
+        memset(&props, 0, sizeof(OE_EnclaveProperties_SGX));
+        props.header.size = sizeof(OE_EnclaveProperties_SGX);
+        props.header.enclaveType = OE_ENCLAVE_TYPE_SGX;
+        props.settings.attributes = OE_SGX_FLAGS_MODE64BIT;
+        props.settings.productID = options.productID;
+        props.settings.securityVersion = options.securityVersion;
+        props.header.sizeSettings.numHeapPages = options.numHeapPages;
+        props.header.sizeSettings.numStackPages = options.numStackPages;
+        props.header.sizeSettings.numTCS = options.numTCS;
+
+        if (options.debug)
+            props.settings.attributes |= OE_SGX_FLAGS_DEBUG;
+    }
 
     /* Open the MEASURER to compute MRENCLAVE */
     if (!(dev = __OE_OpenSGXMeasurer()))
@@ -775,7 +845,7 @@ int main(int argc, const char* argv[])
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     if ((result = __OE_BuildEnclave(
-             dev, enclave, &settings, false, false, &enc)) != OE_OK)
+             dev, enclave, &props, false, false, &enc)) != OE_OK)
     {
         OE_PutErr("__OE_BuildEnclave(): result=%u", result);
     }
@@ -799,7 +869,7 @@ int main(int argc, const char* argv[])
         OE_PutErr("Failed to get hash: result=%u", result);
 
     /* Initialize the SigStruct object */
-    if ((result = _InitSigstruct(&sigstruct, &mrenclave, rsa) != 0))
+    if ((result = _InitSigstruct(&props.sigstruct, &mrenclave, rsa) != 0))
         OE_PutErr("_InitSigstruct() failed: result=%u", result);
 
     /* Create signature section and write out new file */
@@ -808,8 +878,7 @@ int main(int argc, const char* argv[])
              numHeapPages,
              numStackPages,
              numTCS,
-             &settings,
-             &sigstruct)) != OE_OK)
+             &props)) != OE_OK)
     {
         OE_PutErr("_SignAndWriteSharedLib(): result=%u", result);
     }

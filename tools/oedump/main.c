@@ -5,6 +5,7 @@
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
+#include <openenclave/bits/build.h>
 #include <openenclave/defs.h>
 #include <stdarg.h>
 #include <string.h>
@@ -57,54 +58,41 @@ void DumpEntryPoint(Elf64* elf)
     printf("\n");
 }
 
-void DumpSignatureSection(Elf64* elf)
+void DumpEnclaveProperties(Elf64* elf)
 {
-    const void* data;
-    size_t size;
-    OE_SignatureSection s;
+    OE_EnclaveProperties_SGX* props;
+    const SGX_SigStruct* sigstruct;
 
-    memset(&s, 0, sizeof(OE_SignatureSection));
+    if (OE_LoadSGXEnclaveProperties(elf, &props) != OE_OK)
+        err("failed to load SGX enclave properties");
 
-    if (Elf64_FindSection(elf, ".oesig", &data, &size) != 0)
-    {
-        err("cannot find .oesig section");
-        return;
-    }
+    printf("=== SGX Enclave Properties:\n");
 
-    if (size != sizeof(OE_SignatureSection))
-    {
-        err("size of .oesig section is wrong");
-        return;
-    }
+    printf("productID=%u\n", props->settings.productID);
 
-    memcpy(&s, data, size);
+    printf("securityVersion=%u\n", props->settings.securityVersion);
 
-    printf("=== Signature Section:\n");
+    bool debug = props->settings.attributes | OE_SGX_FLAGS_DEBUG;
+    printf("debug=%u\n", debug);
 
-    if (s.magic != 0xdcf53f4c94a5700d)
-    {
-        err("bad magic number on signature section");
-        return;
-    }
+    printf("numHeapPages=%lu\n", props->header.sizeSettings.numHeapPages);
 
-    printf("debug=%lu\n", s.settings.debug);
+    printf("numStackPages=%lu\n", props->header.sizeSettings.numStackPages);
 
-    printf("numHeapPages=%lu\n", s.settings.numHeapPages);
+    printf("numTCS=%lu\n", props->header.sizeSettings.numTCS);
 
-    printf("numStackPages=%lu\n", s.settings.numStackPages);
-
-    printf("numTCS=%lu\n", s.settings.numTCS);
+    sigstruct = &props->sigstruct;
 
     printf("mrenclave=");
-    OE_HexDump(&s.sigstruct.enclavehash, sizeof(s.sigstruct.enclavehash));
+    OE_HexDump(sigstruct->enclavehash, sizeof(sigstruct->enclavehash));
 
     printf("signature=");
-    OE_HexDump(&s.sigstruct.signature, sizeof(s.sigstruct.signature));
+    OE_HexDump(sigstruct->signature, sizeof(sigstruct->signature));
 
     printf("\n");
 
     if (verbose_opt)
-        __SGX_DumpSigStruct(&s.sigstruct);
+        __SGX_DumpSigStruct(sigstruct);
 }
 
 typedef struct _VisitSymData
@@ -238,7 +226,7 @@ int main(int argc, const char* argv[])
     DumpEntryPoint(&elf);
 
     /* Dump the signature section */
-    DumpSignatureSection(&elf);
+    DumpEnclaveProperties(&elf);
 
     /* Dump the ECALL section */
     DumpECallSection(&elf);

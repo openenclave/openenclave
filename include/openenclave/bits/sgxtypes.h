@@ -452,34 +452,6 @@ OE_CHECK_SIZE(sizeof(TD), 4096);
 /*
 **==============================================================================
 **
-** OE_SignatureSection
-**
-**==============================================================================
-*/
-
-#define OE_META_MAGIC 0xdcf53f4c94a5700d
-
-typedef struct _OE_EnclaveSettings
-{
-    uint64_t debug;
-    uint64_t numHeapPages;
-    uint64_t numStackPages;
-    uint64_t numTCS;
-} OE_EnclaveSettings;
-
-/* Enclave signature section (.oesig) written to ELF-64 libraries */
-OE_PACK_BEGIN
-typedef struct _OE_SignatureSection
-{
-    uint64_t magic;
-    OE_EnclaveSettings settings;
-    SGX_SigStruct sigstruct;
-} OE_SignatureSection;
-OE_PACK_END
-
-/*
-**==============================================================================
-**
 ** SGX_TargetInfo
 **
 **==============================================================================

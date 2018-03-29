@@ -24,20 +24,20 @@ static OE_SGXDevice* OpenDevice()
 #endif
 }
 
-static const OE_EnclaveSettings* GetEnclaveSettings()
+static const OE_EnclaveProperties_SGX* GetEnclaveProperties()
 {
 #ifdef USE_DRIVER
     return NULL;
 #else
-    static OE_EnclaveSettings settings;
+    static OE_EnclaveProperties_SGX properties;
 
-    memset(&settings, 0, sizeof(OE_EnclaveSettings));
-    settings.debug = 1;
-    settings.numHeapPages = 2;
-    settings.numStackPages = 1;
-    settings.numTCS = 2;
+    memset(&properties, 0, sizeof(OE_EnclaveProperties_SGX));
+    properties.settings.attributes = OE_SGX_FLAGS_DEBUG;
+    properties.header.sizeSettings.numHeapPages = 2;
+    properties.header.sizeSettings.numStackPages = 1;
+    properties.header.sizeSettings.numTCS = 2;
 
-    return &settings;
+    return &properties;
 #endif
 }
 
@@ -57,7 +57,7 @@ int main(int argc, const char* argv[])
         OE_PutErr("__OE_OpenSGXDriver() failed");
 
     if ((result = __OE_BuildEnclave(
-             dev, argv[1], GetEnclaveSettings(), false, false, &enclave)) !=
+             dev, argv[1], GetEnclaveProperties(), false, false, &enclave)) !=
         OE_OK)
     {
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);

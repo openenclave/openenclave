@@ -890,10 +890,60 @@ OE_CATCH:
     return result;
 }
 
+OE_Result OE_LoadSGXEnclaveProperties(
+    const Elf64* elf,
+    OE_EnclaveProperties_SGX** properties)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const void* data;
+    size_t size;
+
+    if (properties)
+        *properties = NULL;
+
+    /* Check for null parameter */
+    if (!elf || !properties)
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    /* Load the .oeinfo section into memory */
+    if (Elf64_FindSection(elf, ".oeinfo", &data, &size) != 0)
+        OE_THROW(OE_FAILURE);
+
+    /* Search for enclave properties of type SGX_ENCLAVE_TYPE_SGX */
+    {
+        const uint8_t* p = (const uint8_t*)data;
+        const uint8_t* end = p + size;
+
+        while (p < end)
+        {
+            OE_EnclavePropertiesHeader* header = (OE_EnclavePropertiesHeader*)p;
+
+            if (header->enclaveType == OE_ENCLAVE_TYPE_SGX)
+            {
+                *properties = (OE_EnclaveProperties_SGX*)header;
+                break;
+            }
+
+            p += header->size;
+        }
+    }
+
+    if (!*properties)
+    {
+        result = OE_NOT_FOUND;
+        goto OE_CATCH;
+    }
+
+    result = OE_OK;
+
+OE_CATCH:
+    return result;
+}
+
 OE_Result __OE_BuildEnclave(
     OE_SGXDevice* dev,
     const char* path,
-    const OE_EnclaveSettings* settings,
+    const OE_EnclaveProperties_SGX* properties,
     bool debug,
     bool simulate,
     OE_Enclave* enclave)
@@ -908,7 +958,7 @@ OE_Result __OE_BuildEnclave(
     uint64_t enclaveAddr = 0;
     size_t i;
     AESM* aesm = NULL;
-    OE_SignatureSection sigsec;
+    OE_EnclaveProperties_SGX props;
     SGX_LaunchToken launchToken;
     Elf64 elf;
     void* relocData = NULL;
@@ -916,7 +966,7 @@ OE_Result __OE_BuildEnclave(
     void* ecallData = NULL;
     size_t ecallSize;
 
-    memset(&sigsec, 0, sizeof(OE_SignatureSection));
+    memset(&props, 0, sizeof(OE_EnclaveProperties_SGX));
     memset(&launchToken, 0, sizeof(SGX_LaunchToken));
     memset(&elf, 0, sizeof(Elf64));
 
@@ -941,23 +991,16 @@ OE_Result __OE_BuildEnclave(
     if (Elf64_Load(path, &elf) != 0)
         OE_THROW(OE_FAILURE);
 
-    /* If settings parameter non-null, then use those settings */
-    if (settings)
-        sigsec.settings = *settings;
-
-    /* Get the OE_SignatureSection from the ELF shared library */
-    if (!settings)
+    /* Use properties parameter if not null. Else load from ELF */
+    if (properties)
     {
-        const void* data;
-        size_t size;
-
-        if (Elf64_FindSection(&elf, ".oesig", &data, &size) != 0)
-            OE_THROW(OE_FAILURE);
-
-        if (size != sizeof(OE_SignatureSection))
-            OE_THROW(OE_FAILURE);
-
-        memcpy(&sigsec, data, size);
+        props = *properties;
+    }
+    else 
+    {
+        OE_EnclaveProperties_SGX* p;
+        OE_TRY(OE_LoadSGXEnclaveProperties(&elf, &p));
+        props = *p;
     }
 
     /* Load the program segments into memory */
@@ -985,9 +1028,9 @@ OE_Result __OE_BuildEnclave(
             numSegments,
             relocSize,
             ecallSize,
-            sigsec.settings.numHeapPages,
-            sigsec.settings.numStackPages,
-            sigsec.settings.numTCS,
+            props.header.sizeSettings.numHeapPages,
+            props.header.sizeSettings.numStackPages,
+            props.header.sizeSettings.numTCS,
             &enclaveEnd,
             &enclaveSize));
 
@@ -1028,9 +1071,9 @@ OE_Result __OE_BuildEnclave(
             ecallData,
             ecallSize,
             entryAddr,
-            sigsec.settings.numHeapPages,
-            sigsec.settings.numStackPages,
-            sigsec.settings.numTCS,
+            props.header.sizeSettings.numHeapPages,
+            props.header.sizeSettings.numStackPages,
+            props.header.sizeSettings.numTCS,
             enclave));
 
     /* Get a launch token from the AESM service */
@@ -1049,8 +1092,8 @@ OE_Result __OE_BuildEnclave(
         OE_TRY(
             AESMGetLaunchToken(
                 aesm,
-                sigsec.sigstruct.enclavehash,
-                sigsec.sigstruct.modulus,
+                props.sigstruct.enclavehash,
+                props.sigstruct.modulus,
                 &attributes,
                 &launchToken));
     }
@@ -1071,7 +1114,7 @@ OE_Result __OE_BuildEnclave(
         dev->einit(
             dev,
             enclaveAddr,
-            (uint64_t)&sigsec.sigstruct,
+            (uint64_t)&props.sigstruct,
             (uint64_t)&launchToken));
 
     /* Get the hash and store it in the ENCLAVE object */
