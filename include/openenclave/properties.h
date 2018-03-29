@@ -195,36 +195,46 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 **==============================================================================
 */
 
+// clang-format off
+
 #define OE_INFO_SECTION_NAME ".oeinfo"
 #define OE_INFO_SECTION_BEGIN __attribute__((section(OE_INFO_SECTION_NAME)))
 #define OE_INFO_SECTION_END
 
-#define OE_DEFINE_ENCLAVE_PROPERTIES_SGX(                           \
-    _ProductID_,                                                    \
-    _SecurityVersion_,                                              \
-    _AllowDebug_,                                                   \
-    _HeapPageCount_,                                                \
-    _StackPageCount_,                                               \
-    _TcsCount_)                                                     \
-    OE_INFO_SECTION_BEGIN const OE_EnclaveProperties_SGX            \
-        oe_enclavePropertiesSGX = {                                 \
-            .header = {.size = sizeof(OE_EnclaveProperties_SGX),    \
-                       .enclaveType = OE_ENCLAVE_TYPE_SGX,          \
-                       .sizeSettings =                              \
-                           {                                        \
-                               .numHeapPages = _HeapPageCount_,     \
-                               .numStackPages = _StackPageCount_,   \
-                               .numTCS = _TcsCount_,                \
-                           }},                                      \
-            .settings =                                             \
-                {                                                   \
-                    .productID = _ProductID_,                       \
-                    .securityVersion = _SecurityVersion_,           \
-                    .padding = 0,                                   \
-                    .attributes = OE_MAKE_ATTRIBUTES(_AllowDebug_), \
-                },                                                  \
-    };                                                              \
+#define OE_DEFINE_ENCLAVE_PROPERTIES_SGX(                       \
+    _ProductID_,                                                \
+    _SecurityVersion_,                                          \
+    _AllowDebug_,                                               \
+    _HeapPageCount_,                                            \
+    _StackPageCount_,                                           \
+    _TcsCount_)                                                 \
+    OE_INFO_SECTION_BEGIN                                       \
+    const OE_EnclaveProperties_SGX oe_enclavePropertiesSGX =    \
+    {                                                           \
+        .header =                                               \
+        {                                                       \
+            .size = sizeof(OE_EnclaveProperties_SGX),           \
+            .enclaveType = OE_ENCLAVE_TYPE_SGX,                 \
+            .sizeSettings =                                     \
+            {                                                   \
+                .numHeapPages = _HeapPageCount_,                \
+                .numStackPages = _StackPageCount_,              \
+                .numTCS = _TcsCount_                            \
+            }                                                   \
+        },                                                      \
+        .settings =                                             \
+        {                                                       \
+            .productID = _ProductID_,                           \
+            .securityVersion = _SecurityVersion_,               \
+            .padding = 0,                                       \
+            .attributes = OE_MAKE_ATTRIBUTES(_AllowDebug_)      \
+        }                                                       \
+    };                                                          \
     OE_INFO_SECTION_END
+
+// clang-format on
+
+OE_DEFINE_ENCLAVE_PROPERTIES_SGX(0, 0, 0, 0, 0, 0)
 
 OE_EXTERNC_END
 
