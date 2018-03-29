@@ -40,7 +40,9 @@ OE_ThreadData* OE_GetThreadData()
 {
     OE_ThreadData* td;
 
-    asm("mov %%gs:0, %0" : "=r"(td));
+    asm(
+        "mov %%gs:0, %0"
+        : "=r"(td));
 
     return td;
 }
