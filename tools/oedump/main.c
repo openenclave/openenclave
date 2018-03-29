@@ -58,13 +58,9 @@ void DumpEntryPoint(Elf64* elf)
     printf("\n");
 }
 
-void DumpEnclaveProperties(Elf64* elf)
+void DumpEnclaveProperties(const OE_EnclaveProperties_SGX* props)
 {
-    OE_EnclaveProperties_SGX* props;
     const SGX_SigStruct* sigstruct;
-
-    if (OE_LoadSGXEnclaveProperties(elf, &props) != OE_OK)
-        err("failed to load SGX enclave properties");
 
     printf("=== SGX Enclave Properties:\n");
 
@@ -205,6 +201,7 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
     int ret = 1;
     Elf64 elf;
+    OE_EnclaveProperties_SGX* props;
 
     /* Check arguments */
     if (argc != 2)
@@ -220,13 +217,17 @@ int main(int argc, const char* argv[])
         goto done;
     }
 
+    /* Load the SGX enclave properties */
+    if (OE_LoadSGXEnclaveProperties(&elf, &props) != OE_OK)
+        err("failed to load SGX enclave properties");
+
     printf("\n");
 
     /* Dump the entry point */
     DumpEntryPoint(&elf);
 
     /* Dump the signature section */
-    DumpEnclaveProperties(&elf);
+    DumpEnclaveProperties(props);
 
     /* Dump the ECALL section */
     DumpECallSection(&elf);
