@@ -234,8 +234,6 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 
 // clang-format on
 
-OE_DEFINE_ENCLAVE_PROPERTIES_SGX(0, 0, 0, 0, 0, 0)
-
 OE_EXTERNC_END
 
 #endif /* _OE_PROPERTIES_H */
