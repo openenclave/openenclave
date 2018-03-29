@@ -189,6 +189,20 @@ OE_PRINTF_FORMAT(1, 2)
 int OE_HostPrintf(const char* fmt, ...);
 
 /**
+ * Print formatted characters to the host's console.
+ *
+ * This function writes formatted characters to the host's stdout or stderr. It is based
+ * on OE_Vsnprintf(), which has limited support for format types.
+ *
+ * @param fmt The limited printf style format.
+ * @param device 0 for stdout and 1 for stderr
+ * @returns The number of characters that were written.
+ *
+ */
+OE_PRINTF_FORMAT(2, 3)
+int OE_HostFprintf(int device, const char* fmt, ...);
+
+/**
  * Allocates space for parameters of the next call to host on the host's stack
  * frame.
  *
