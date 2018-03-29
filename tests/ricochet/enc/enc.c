@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/tests.h>
+#ifndef OE_BUILD_ENCLAVE
+#define OE_BUILD_ENCLAVE
+#endif
 #include <openenclave/enclave.h>
+#include <openenclave/bits/tests.h>
 #include "../args.h"
 
 OE_ECALL void Ricochet(void* args_)

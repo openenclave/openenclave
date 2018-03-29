@@ -1,12 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#ifndef OE_BUILD_ENCLAVE
+#define OE_BUILD_ENCLAVE
+#endif
+#include <openenclave/enclave.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/jump.h>
 #include <openenclave/bits/tests.h>
-#include <openenclave/enclave.h>
 #include "../args.h"
 
 void MyECall(uint64_t argIn, uint64_t* argOut)

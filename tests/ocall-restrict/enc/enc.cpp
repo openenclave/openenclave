@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <stdio.h>
 #include <string.h>
 #include "../args.h"
 

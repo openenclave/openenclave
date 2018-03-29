@@ -6,11 +6,33 @@
 
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
+#ifdef OE_BUILD_ENCLAVE
+#define OE_ABORT OE_Abort
+#else
 #include <stdio.h>
 #include <stdlib.h>
+#define OE_ABORT abort
+#endif
 
 OE_EXTERNC_BEGIN
 
+#ifdef OE_BUILD_ENCLAVE
+#define OE_TEST(COND)                           \
+    do                                          \
+    {                                           \
+        if (!(COND))                            \
+        {                                       \
+            OE_HostPrintf(                      \
+                "Test failed: %s(%u): %s %s\n", \
+                __FILE__,                       \
+                __LINE__,                       \
+                __FUNCTION__,                   \
+                #COND);                         \
+            OE_ABORT();                         \
+        }                                       \
+    } while (0)
+
+#else
 #define OE_TEST(COND)                        \
     do                                       \
     {                                        \
@@ -22,9 +44,11 @@ OE_EXTERNC_BEGIN
                 __FILE__,                    \
                 __LINE__,                    \
                 #COND);                      \
-            abort();                         \
+            OE_ABORT();                      \
         }                                    \
     } while (0)
+
+#endif
 
 /*
  * Return flags to pass to OE_CreateEnclave() based on the OE_SIMULATION

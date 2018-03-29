@@ -46,6 +46,7 @@ void TestSigillHandling(OE_Enclave* enclave)
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
+        memset(cpuidInfo, 0, sizeof(cpuidInfo));
         int supported = __get_cpuid(
             i,
             &cpuidInfo[OE_CPUID_RAX],

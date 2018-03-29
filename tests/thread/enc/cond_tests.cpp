@@ -3,6 +3,8 @@
 
 #include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "../args.h"
 
 static OE_Mutex mutex = OE_MUTEX_INITIALIZER;

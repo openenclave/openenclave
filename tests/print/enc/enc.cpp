@@ -4,6 +4,7 @@
 #include <openenclave/bits/print.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <stdio.h>
 #include "../args.h"
 
 OE_ECALL void TestPrint(void* args_)

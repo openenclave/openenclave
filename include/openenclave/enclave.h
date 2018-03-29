@@ -325,8 +325,8 @@ void* OE_Sbrk(ptrdiff_t increment);
  *
  * @param expr The argument of the OE_Assert() macro.
  * @param file The name of the file where OE_Assert() was invoked.
- * @param file The line number where OE_Assert() was invoked.
- * @param line The name of the function that invoked OE_Assert().
+ * @param line The line number where OE_Assert() was invoked.
+ * @param func The name of the function that invoked OE_Assert().
  *
  */
 void __OE_AssertFail(
