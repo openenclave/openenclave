@@ -796,7 +796,7 @@ static OE_Result _EInitProc(
 
         /* Initialize the SGX attributes */
         attributes.flags = properties->settings.attributes;
-        attributes.xfrm = 0x7;
+        attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
         if (!(aesm = AESMConnect()))
             OE_THROW(OE_FAILURE);
