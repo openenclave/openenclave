@@ -740,6 +740,18 @@ OE_CATCH:
     return result;
 }
 
+/* Return true if hash is zero-filled */
+static bool _IsZeroHash(const uint8_t hash[OE_SHA256_SIZE])
+{
+    for (size_t i = 0; i < OE_SHA256_SIZE; i++)
+    {
+        if (hash[i])
+            return false;
+    }
+
+    return true;
+}
+
 /* Return true if buffer is zero-filled */
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
@@ -748,7 +760,6 @@ static OE_Result _EInitProc(
 {
     OE_Result result = OE_UNEXPECTED;
     Self* self = (Self*)dev;
-    static OE_SHA256 _zeroHash;
     OE_SGXSigStruct sigstruct;
     AESM* aesm = NULL;
     SGX_LaunchToken launchToken;
@@ -762,8 +773,7 @@ static OE_Result _EInitProc(
         OE_THROW(OE_FAILURE);
 
     /* If sigstruct.enclavehash is full of zeros */
-    if (memcmp(properties->sigstruct.enclavehash, &_zeroHash, OE_SHA256_SIZE) ==
-        0)
+    if (_IsZeroHash(properties->sigstruct.enclavehash))
     {
         /* The enclave is unsigned: sign it now with a well-known key */
         OE_SHA256 hash;

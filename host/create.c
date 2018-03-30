@@ -1002,10 +1002,11 @@ OE_Result __OE_BuildEnclave(
     {
         OE_EnclaveProperties_SGX* p;
 
-        /* Try .oesign section first, then fallback to .oeinfo */
+        /* Try loading the properties from the .oesign section */
         if (OE_LoadSGXEnclaveProperties(&elf, OE_SIGN_SECTION_NAME, &p) !=
             OE_OK)
         {
+            /* Fallback on the .oeinfo section (with empty sigstruct) */
             if (OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &p) !=
                 OE_OK)
             {
