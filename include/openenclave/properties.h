@@ -208,6 +208,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
     _StackPageCount_,                                           \
     _TcsCount_)                                                 \
     OE_INFO_SECTION_BEGIN                                       \
+    __attribute__((visibility("hidden")))                       \
     const OE_EnclaveProperties_SGX oe_enclavePropertiesSGX =    \
     {                                                           \
         .header =                                               \
@@ -227,6 +228,10 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
             .securityVersion = _SecurityVersion_,               \
             .padding = 0,                                       \
             .attributes = OE_MAKE_ATTRIBUTES(_AllowDebug_)      \
+        },                                                      \
+        .sigstruct =                                            \
+        {                                                       \
+            .header = { 0 },                                    \
         }                                                       \
     };                                                          \
     OE_INFO_SECTION_END

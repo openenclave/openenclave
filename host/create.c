@@ -1003,6 +1003,13 @@ OE_Result __OE_BuildEnclave(
         props = *p;
     }
 
+printf("productID=%u\n", props.settings.productID);
+printf("securityVersion=%u\n", props.settings.securityVersion);
+printf("attributes=%016lx\n", props.settings.attributes);
+printf("numHeapPages=%lu\n", props.header.sizeSettings.numHeapPages);
+printf("numStackPages=%lu\n", props.header.sizeSettings.numStackPages);
+printf("numTCS=%lu\n", props.header.sizeSettings.numTCS);
+
     /* Load the program segments into memory */
     OE_TRY(
         __OE_LoadSegments(

@@ -42,6 +42,7 @@ add_library(oehost STATIC
     sgxmeasure.c
     sgxtypes.c
     sha.c
+    sign.c
     strings.c
     tests.c
     typeinfo.c
