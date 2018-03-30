@@ -201,7 +201,7 @@ OE_SGXDevice* __OE_OpenSGXMeasurer()
     OE_SGXMeasurer* self;
 
     if (!(self = (OE_SGXMeasurer*)calloc(1, sizeof(OE_SGXMeasurer))))
-        goto catch;
+        goto done;
 
     self->base.ecreate = _ECreateProc;
     self->base.eadd = _EAddProc;
@@ -213,7 +213,7 @@ OE_SGXDevice* __OE_OpenSGXMeasurer()
 
     result = &self->base;
 
-OE_CATCH:
+done:
 
     if (!result)
         free(self);

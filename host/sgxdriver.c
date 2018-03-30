@@ -888,17 +888,17 @@ OE_SGXDevice* __OE_OpenSGXDriver(bool simulate)
     Self* self;
 
     if (!(self = (Self*)calloc(1, sizeof(Self))))
-        goto catch;
+        goto done;
 
     self->fd = -1;
 
 #if defined(__linux__)
     if (!simulate && (self->fd = open("/dev/isgx", O_RDWR)) == -1)
-        goto catch;
+        goto done;
 #endif
 
     if (!(self->measurer = __OE_OpenSGXMeasurer()))
-        goto catch;
+        goto done;
 
     self->base.ecreate = _ECreateProc;
     self->base.eadd = _EAddProc;
@@ -911,7 +911,7 @@ OE_SGXDevice* __OE_OpenSGXDriver(bool simulate)
 
     result = &self->base;
 
-OE_CATCH:
+done:
 
     if (!result)
         free(self);
