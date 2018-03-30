@@ -7,7 +7,7 @@
  * This file defines enclave-property structures which are injected into
  * the following sections of the enclave image.
  *
- *     .oeinfo - injected by OE_DEFINE_ENCLAVE_PROPERTIES_SGX (contains
+ *     .oeinfo - injected by OE_SET_ENCLAVE_SGX (contains
  *               enclave properties with empty sigstructs)
  *     .oesign - injected by oesign tool (contains enclave properties with
  *               populated sigstructs)
@@ -31,7 +31,7 @@ OE_EXTERNC_BEGIN
 /* Injected by oesign utility */
 #define OE_SIGN_SECTION_NAME ".oesign"
 
-/* Injected by OE_DEFINE_ENCLAVE_PROPERTIES_SGX macro */
+/* Injected by OE_SET_ENCLAVE_SGX macro */
 #define OE_INFO_SECTION_NAME ".oeinfo"
 
 /*
@@ -204,7 +204,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 /*
 **==============================================================================
 **
-** OE_DEFINE_ENCLAVE_PROPERTIES_SGX:
+** OE_SET_ENCLAVE_SGX:
 **     This macro initializes and injects an OE_EnclaveProperties_SGX struct
 **     into the .oeinfo section.
 **
@@ -217,7 +217,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
 
-#define OE_DEFINE_ENCLAVE_PROPERTIES_SGX(                       \
+#define OE_SET_ENCLAVE_SGX(                       \
     _ProductID_,                                                \
     _SecurityVersion_,                                          \
     _AllowDebug_,                                               \

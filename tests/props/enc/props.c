@@ -3,7 +3,7 @@
 
 #include <openenclave/enclave.h>
 
-OE_DEFINE_ENCLAVE_PROPERTIES_SGX(
+OE_SET_ENCLAVE_SGX(
     0,    /* ProductID */
     0,    /* SecurityVersion */
     true, /* AllowDebug */
