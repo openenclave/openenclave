@@ -4,4 +4,5 @@
 add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/props host/propshost ./enc/propsenc)
+add_test(tests/props1 host/propshost ./enc/propsenc.signed.so)
+add_test(tests/props2 host/propshost ./enc/propsenc)

@@ -892,6 +892,7 @@ OE_CATCH:
 
 OE_Result OE_LoadSGXEnclaveProperties(
     const Elf64* elf,
+    const char* sectionName,
     OE_EnclaveProperties_SGX** properties)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -906,7 +907,7 @@ OE_Result OE_LoadSGXEnclaveProperties(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Load the .oeinfo section into memory */
-    if (Elf64_FindSection(elf, ".oeinfo", &data, &size) != 0)
+    if (Elf64_FindSection(elf, sectionName, &data, &size) != 0)
         OE_THROW(OE_FAILURE);
 
     /* Search for enclave properties of type SGX_ENCLAVE_TYPE_SGX */
@@ -957,9 +958,7 @@ OE_Result __OE_BuildEnclave(
     size_t enclaveSize = 0;
     uint64_t enclaveAddr = 0;
     size_t i;
-    AESM* aesm = NULL;
     OE_EnclaveProperties_SGX props;
-    SGX_LaunchToken launchToken;
     Elf64 elf;
     void* relocData = NULL;
     size_t relocSize;
@@ -967,7 +966,6 @@ OE_Result __OE_BuildEnclave(
     size_t ecallSize;
 
     memset(&props, 0, sizeof(OE_EnclaveProperties_SGX));
-    memset(&launchToken, 0, sizeof(SGX_LaunchToken));
     memset(&elf, 0, sizeof(Elf64));
 
     /* Clear and initialize enclave structure */
@@ -999,16 +997,19 @@ OE_Result __OE_BuildEnclave(
     else 
     {
         OE_EnclaveProperties_SGX* p;
-        OE_TRY(OE_LoadSGXEnclaveProperties(&elf, &p));
+
+        if (OE_LoadSGXEnclaveProperties(
+            &elf, OE_SIGN_SECTION_NAME, &p) != OE_OK)
+        {
+            if (OE_LoadSGXEnclaveProperties(
+                &elf, OE_INFO_SECTION_NAME, &p) != OE_OK)
+            {
+                OE_THROW(OE_FAILURE);
+            }
+        }
+
         props = *p;
     }
-
-printf("productID=%u\n", props.settings.productID);
-printf("securityVersion=%u\n", props.settings.securityVersion);
-printf("attributes=%016lx\n", props.settings.attributes);
-printf("numHeapPages=%lu\n", props.header.sizeSettings.numHeapPages);
-printf("numStackPages=%lu\n", props.header.sizeSettings.numStackPages);
-printf("numTCS=%lu\n", props.header.sizeSettings.numTCS);
 
     /* Load the program segments into memory */
     OE_TRY(
@@ -1083,36 +1084,11 @@ printf("numTCS=%lu\n", props.header.sizeSettings.numTCS);
             props.header.sizeSettings.numTCS,
             enclave));
 
-    /* Get a launch token from the AESM service */
-    if (!simulate && dev->getmagic(dev) == SGX_DRIVER_MAGIC)
-    {
-        SGX_Attributes attributes;
-
-        /* ATTN: apply debug parameter here! */
-        memset(&attributes, 0, sizeof(SGX_Attributes));
-        attributes.flags = SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT;
-        attributes.xfrm = 0x7;
-
-        if (!(aesm = AESMConnect()))
-            OE_THROW(OE_FAILURE);
-
-        OE_TRY(
-            AESMGetLaunchToken(
-                aesm,
-                props.sigstruct.enclavehash,
-                props.sigstruct.modulus,
-                &attributes,
-                &launchToken));
-    }
-
 #if defined(_WIN32)
     {
         OE_STATIC_ASSERT(
             OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, SigStruct) ==
             sizeof(sigsec.sigstruct));
-        OE_STATIC_ASSERT(
-            OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, EInitToken) <=
-            sizeof(launchToken));
     }
 #endif
 
@@ -1122,7 +1098,7 @@ printf("numTCS=%lu\n", props.header.sizeSettings.numTCS);
             dev,
             enclaveAddr,
             (uint64_t)&props.sigstruct,
-            (uint64_t)&launchToken));
+            (uint64_t)0));
 
     /* Get the hash and store it in the ENCLAVE object */
     OE_TRY(dev->gethash(dev, &enclave->hash));
@@ -1140,9 +1116,6 @@ printf("numTCS=%lu\n", props.header.sizeSettings.numTCS);
     result = OE_OK;
 
 OE_CATCH:
-
-    if (aesm)
-        AESMDisconnect(aesm);
 
     for (i = 0; i < numSegments; i++)
         free(segments[i].filedata);

@@ -23,6 +23,20 @@ OE_EXTERNC_BEGIN
 /*
 **==============================================================================
 **
+** Enclave property section names
+**
+**==============================================================================
+*/
+
+/* Defined by oesign utility */
+#define OE_SIGN_SECTION_NAME ".oesign"
+
+/* Defined by OE_DEFINE_ENCLAVE_PROPERTIES_SGX macro */
+#define OE_INFO_SECTION_NAME ".oeinfo"
+
+/*
+**==============================================================================
+**
 ** OE_EnclavePropertiesHeader - generic enclave properties base type
 **
 **==============================================================================
@@ -195,7 +209,6 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 **==============================================================================
 */
 
-#define OE_INFO_SECTION_NAME ".oeinfo"
 #define OE_INFO_SECTION_BEGIN __attribute__((section(OE_INFO_SECTION_NAME)))
 #define OE_INFO_SECTION_END
 
@@ -208,7 +221,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
     _StackPageCount_,                                           \
     _TcsCount_)                                                 \
     OE_INFO_SECTION_BEGIN                                       \
-    __attribute__((visibility("hidden")))                       \
+    __attribute__((unused))                                     \
     const OE_EnclaveProperties_SGX oe_enclavePropertiesSGX =    \
     {                                                           \
         .header =                                               \

@@ -41,12 +41,13 @@ void _OE_NotifyGdbEnclaveTermination(
     uint32_t enclavePathLength);
 
 /**
- * Find OE_EnclaveProperties_SGX struct within .oeinfo section
+ * Find OE_EnclaveProperties_SGX struct within a section
  *
  * This function attempts to find the OE_EnclaveProperties_SGX struct within
- * the .oeinfo section of an ELF binary.
+ * the a section of an ELF binary.
  *
  * @param elf ELF instance
+ * @param sectionName look in this section name
  * @param properties pointer to properties struct on successful return
  *
  * @returns OE_OK
@@ -57,6 +58,7 @@ void _OE_NotifyGdbEnclaveTermination(
  */
 OE_Result OE_LoadSGXEnclaveProperties(
     const Elf64* elf,
+    const char* sectionName,
     OE_EnclaveProperties_SGX** properties);
 
 OE_EXTERNC_END

@@ -40,41 +40,19 @@ static char* _MakeSignedLibName(const char* path)
     return mem_steal(&buf);
 }
 
-static bool _SectionExists(Elf64* elf, const char* name)
-{
-    const void* data;
-    size_t size;
-    return Elf64_FindSection(elf, name, &data, &size) == 0 ? true : false;
-}
-
 static int _UpdateAndWriteSharedLib(
     const char* path,
     const OE_EnclaveProperties_SGX* properties)
 {
     int rc = -1;
     Elf64 elf;
-    const char secname[] = ".oeinfo";
     FILE* os = NULL;
-    OE_EnclaveProperties_SGX* props = NULL;
 
     /* Open ELF file */
     if (Elf64_Load(path, &elf) != 0)
     {
         fprintf(stderr, "%s: cannot load ELF file: %s\n", arg0, path);
         goto done;
-    }
-
-    /* If .oeinfo section exists, then load the enclave properties */
-    if (_SectionExists(&elf, secname))
-    {
-        /* Verify that section already contains SGX enclave properties */
-        if (OE_LoadSGXEnclaveProperties(&elf, &props) != OE_OK)
-        {
-            fprintf(stderr, 
-                "%s: .oeinfo section missing SGX enclave properties: %s\n", 
-                arg0, path);
-            goto done;
-        }
     }
 
     /* Verify that this enclave contains required symbols */
@@ -112,23 +90,16 @@ static int _UpdateAndWriteSharedLib(
         }
     }
 
-    /* Either update .oeinfo section or add a new one */
-    if (props)
+    /* Add .oesign section */
+    if (Elf64_AddSection(
+        &elf, 
+        OE_SIGN_SECTION_NAME,
+        SHT_PROGBITS, 
+        properties,
+        sizeof(OE_EnclaveProperties_SGX)) != 0)
     {
-        memcpy(props, properties, sizeof(OE_EnclaveProperties_SGX));
-    }
-    else
-    {
-        if (Elf64_AddSection(
-            &elf, 
-            secname, 
-            SHT_PROGBITS, 
-            properties,
-            sizeof(OE_EnclaveProperties_SGX)) != 0)
-        {
-            fprintf(stderr, "%s: failed to add section\n", arg0);
-            goto done;
-        }
+        fprintf(stderr, "%s: failed to add section\n", arg0);
+        goto done;
     }
 
     /* Write new shared shared library */
@@ -337,7 +308,7 @@ done:
 
 static int _LoadFile(
     const char* path, 
-    uint8_t** data, 
+    void** data, 
     size_t* size)
 {
     int rc = -1;
@@ -410,7 +381,7 @@ int main(int argc, const char* argv[])
     const char* conffile;
     const char* keyfile;
     OE_Enclave enc;
-    uint8_t* pemData = NULL;
+    void* pemData = NULL;
     size_t pemSize;
 
     /* Check arguments */

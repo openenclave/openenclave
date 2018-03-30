@@ -136,12 +136,12 @@ static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
     uint64_t sigstruct,
-    uint64_t einittoken)
+    uint64_t einittoken) /* ATTN: remove einittoken */
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;
 
-    if (!_Ok(self) || !addr || !sigstruct || !einittoken)
+    if (!_Ok(self) || !addr || !sigstruct)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Finalize the measurement */
