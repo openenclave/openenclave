@@ -284,18 +284,18 @@ static OE_Result _InitSigstruct(
     /* OE_SGXSigStruct.signature: fill in after other fields */
 
     /* OE_SGXSigStruct.miscselect (ATTN: ?) */
-    sigstruct->miscselect = 0x00000000;
+    sigstruct->miscselect = OE_SGX_SIGSTRUCT_MISCSELECT;
 
     /* OE_SGXSigStruct.miscmask (ATTN: ?) */
-    sigstruct->miscmask = 0xFFFFFFFF;
+    sigstruct->miscmask = OE_SGX_SIGSTRUCT_MISCMASK;
 
-    /* OE_SGXSigStruct.attributes (ATTN: ?) */
+    /* OE_SGXSigStruct.attributes */
     sigstruct->attributes.flags = SGX_ATTRIBUTES_DEFAULT_FLAGS;
     sigstruct->attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
-    /* OE_SGXSigStruct.attributemask (ATTN: ?) */
-    sigstruct->attributemask.flags = 0xFFFFFFFFFFFFFFFd;
-    sigstruct->attributemask.xfrm = 0xFFFFFFFFFFFFFFFb;
+    /* OE_SGXSigStruct.attributemask */
+    sigstruct->attributemask.flags = OE_SGX_SIGSTRUCT_FLAGS;
+    sigstruct->attributemask.xfrm = OE_SGX_SIGSTRUCT_XFRM;
 
     /* OE_SGXSigStruct.enclavehash */
     memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
