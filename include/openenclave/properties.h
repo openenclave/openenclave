@@ -209,10 +209,12 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 **==============================================================================
 */
 
+// clang-format off
+
 #define OE_INFO_SECTION_BEGIN __attribute__((section(OE_INFO_SECTION_NAME)))
+
 #define OE_INFO_SECTION_END
 
-// clang-format off
 #define OE_DEFINE_ENCLAVE_PROPERTIES_SGX(                       \
     _ProductID_,                                                \
     _SecurityVersion_,                                          \
@@ -221,7 +223,6 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
     _StackPageCount_,                                           \
     _TcsCount_)                                                 \
     OE_INFO_SECTION_BEGIN                                       \
-    __attribute__((unused))                                     \
     const OE_EnclaveProperties_SGX oe_enclavePropertiesSGX =    \
     {                                                           \
         .header =                                               \
@@ -248,6 +249,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
         }                                                       \
     };                                                          \
     OE_INFO_SECTION_END
+
 // clang-format on
 
 OE_EXTERNC_END

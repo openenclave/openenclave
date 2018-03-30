@@ -904,11 +904,17 @@ OE_Result OE_LoadSGXEnclaveProperties(
 
     /* Check for null parameter */
     if (!elf || !properties)
-        OE_THROW(OE_INVALID_PARAMETER);
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
 
     /* Load the .oeinfo section into memory */
     if (Elf64_FindSection(elf, sectionName, &data, &size) != 0)
-        OE_THROW(OE_FAILURE);
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
 
     /* Search for enclave properties of type SGX_ENCLAVE_TYPE_SGX */
     {
@@ -932,12 +938,12 @@ OE_Result OE_LoadSGXEnclaveProperties(
     if (!*properties)
     {
         result = OE_NOT_FOUND;
-        goto OE_CATCH;
+        goto done;
     }
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
