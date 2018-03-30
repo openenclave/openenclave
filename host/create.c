@@ -964,6 +964,7 @@ OE_Result __OE_BuildEnclave(
     size_t relocSize;
     void* ecallData = NULL;
     size_t ecallSize;
+    bool notSigned = false;
 
     memset(&props, 0, sizeof(OE_EnclaveProperties_SGX));
     memset(&elf, 0, sizeof(Elf64));
@@ -1001,6 +1002,8 @@ OE_Result __OE_BuildEnclave(
         if (OE_LoadSGXEnclaveProperties(
             &elf, OE_SIGN_SECTION_NAME, &p) != OE_OK)
         {
+            notSigned = true;
+
             if (OE_LoadSGXEnclaveProperties(
                 &elf, OE_INFO_SECTION_NAME, &p) != OE_OK)
             {
@@ -1093,12 +1096,14 @@ OE_Result __OE_BuildEnclave(
 #endif
 
     /* Ask the ISGX driver to initialize the enclave (and finalize the hash) */
-    OE_TRY(
-        dev->einit(
-            dev,
-            enclaveAddr,
-            (uint64_t)&props.sigstruct,
-            (uint64_t)0));
+    {
+        bool sign = false;
+        
+        if (notSigned && (props.settings.attributes & SGX_FLAGS_DEBUG))
+            sign = true;
+
+        OE_TRY(dev->einit(dev, enclaveAddr, (uint64_t)&props.sigstruct, sign));
+    }
 
     /* Get the hash and store it in the ENCLAVE object */
     OE_TRY(dev->gethash(dev, &enclave->hash));

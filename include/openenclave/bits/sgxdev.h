@@ -33,7 +33,7 @@ typedef OE_Result (*OE_EInitProc)(
     OE_SGXDevice* dev,
     uint64_t addr,
     uint64_t sigstruct,
-    uint64_t einittoken);
+    bool debug);
 
 typedef OE_Result (*OE_GetHash)(OE_SGXDevice* dev, OE_SHA256* hash);
 

@@ -741,22 +741,11 @@ OE_CATCH:
 }
 
 /* Return true if buffer is zero-filled */
-static bool _IsZeroFilled(void* data, size_t size)
-{
-    const uint8_t* p = (const uint8_t*)data;
-    const uint8_t* end = p + size;
-
-    while (p != end && *p == '\0')
-        p++;
-
-    return p == end ? true : false;
-}
-
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
     uint64_t sigstruct_,
-    uint64_t einittoken) /* ATTN: remove einittoken */
+    bool sign)
 {
     Self* self = (Self*)dev;
     OE_Result result = OE_UNEXPECTED;
@@ -774,20 +763,14 @@ static OE_Result _EInitProc(
     memcpy(&sigstruct, (SGX_SigStruct*)sigstruct_, sizeof(SGX_SigStruct));
 
     /* Measure this operation */
-    if (self->measurer->einit(self->measurer, addr, sigstruct_, einittoken) !=
-        OE_OK)
-    {
+    if (self->measurer->einit(self->measurer, addr, sigstruct_, sign) != OE_OK)
         OE_THROW(OE_FAILURE);
-    }
 
-    /* If the sigstruct is zero-filled, then sign on the fly */
-    if (_IsZeroFilled(&sigstruct, sizeof(SGX_SigStruct)))
+    /* Sign on the fly if sign parameter is true */
+    if (sign)
     {
         OE_SHA256 hash;
-
-        /* Get the MRENCLAVE hash */
         OE_TRY(self->measurer->gethash(self->measurer, &hash));
-
         OE_TRY(OE_SignEnclave(&hash, KEY, sizeof(KEY), &sigstruct));
     }
 
