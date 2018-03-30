@@ -239,9 +239,11 @@ OE_CATCH:
 }
 
 static OE_Result _InitSigstruct(
-    OE_SGXSigStruct* sigstruct,
     const OE_SHA256* mrenclave,
-    RSA* rsa)
+    uint16_t productID,
+    uint16_t securityVersion,
+    RSA* rsa,
+    OE_SGXSigStruct* sigstruct)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -303,7 +305,7 @@ static OE_Result _InitSigstruct(
     /* OE_SGXSigStruct.swdefined */
     sigstruct->swdefined = 0;
 
-    /* OE_SGXSigStruct.date */
+    /* OE_SGXSigStruct.modulus */
     OE_TRY(_GetModulus(rsa, sigstruct->modulus));
 
     /* OE_SGXSigStruct.date */
@@ -329,10 +331,10 @@ static OE_Result _InitSigstruct(
     memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
 
     /* OE_SGXSigStruct.isvprodid (ATTN: ?) */
-    sigstruct->isvprodid = 0;
+    sigstruct->isvprodid = productID;
 
-    /* OE_SGXSigStruct.isvsvn (ATTN: ?) */
-    sigstruct->isvsvn = 0;
+    /* OE_SGXSigStruct.isvsvn */
+    sigstruct->isvsvn = securityVersion;
 
     /* Sign header and body sections of SigStruct */
     {
@@ -443,6 +445,8 @@ OE_CATCH:
 
 OE_Result OE_SignEnclave(
     const OE_SHA256* mrenclave,
+    uint16_t productID,
+    uint16_t securityVersion,
     const char* pemData,
     size_t pemSize,
     OE_SGXSigStruct* sigstruct)
@@ -461,7 +465,8 @@ OE_Result OE_SignEnclave(
     OE_TRY(_LoadRSAPrivateKey(pemData, pemSize, &rsa));
 
     /* Initialize the sigstruct */
-    OE_TRY(_InitSigstruct(sigstruct, mrenclave, rsa));
+    OE_TRY(
+        _InitSigstruct(mrenclave, productID, securityVersion, rsa, sigstruct));
 
     result = OE_OK;
 

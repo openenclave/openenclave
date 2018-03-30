@@ -439,7 +439,12 @@ int main(int argc, const char* argv[])
 
     /* Initialize the SigStruct object */
     if ((result = OE_SignEnclave(
-             &mrenclave, pemData, pemSize, &props.sigstruct)) != OE_OK)
+             &mrenclave,
+             props.settings.productID,
+             props.settings.securityVersion,
+             pemData,
+             pemSize,
+             &props.sigstruct)) != OE_OK)
     {
         OE_PutErr("OE_SignEnclave() failed: result=%u", result);
     }

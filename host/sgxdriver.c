@@ -782,7 +782,20 @@ static OE_Result _EInitProc(
         /* The enclave is unsigned: sign it now with a well-known key */
         OE_SHA256 hash;
         OE_TRY(self->measurer->gethash(self->measurer, &hash));
-        OE_TRY(OE_SignEnclave(&hash, KEY, sizeof(KEY), &sigstruct));
+
+        OE_TRY(
+            OE_SignEnclave(
+                &hash,
+                properties->settings.productID,
+                properties->settings.securityVersion,
+                KEY,
+                sizeof(KEY),
+                &sigstruct));
+        // memset(sigstruct.q1, 0, sizeof(sigstruct.q1));
+        // memset(sigstruct.q2, 0, sizeof(sigstruct.q2));
+        // memset(sigstruct.modulus, 0, sizeof(sigstruct.modulus));
+        // memset(sigstruct.exponent, 0, sizeof(sigstruct.exponent));
+        // memset(sigstruct.signature, 0, sizeof(sigstruct.signature));
     }
     else
     {
