@@ -6,8 +6,8 @@
 
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
-#include "sha.h"
 #include "sgxtypes.h"
+#include "sha.h"
 
 OE_EXTERNC_BEGIN
 
@@ -22,7 +22,7 @@ OE_EXTERNC_BEGIN
 * @param mrenclave[in] hash of the enclave being signed
 * @param pemData[in] PEM buffer containing the signing key
 * @param pemSize[in] size of the PEM buffer
-* @param sigstruct[out] the SGX signature 
+* @param sigstruct[out] the SGX signature
 *
 * @return OE_OK success
 */
@@ -30,7 +30,7 @@ OE_Result OE_SignEnclave(
     const OE_SHA256* mrenclave,
     const char* pemData,
     size_t pemSize,
-    SGX_SigStruct* sigstruct);
+    OE_SGXSigStruct* sigstruct);
 
 OE_EXTERNC_END
 

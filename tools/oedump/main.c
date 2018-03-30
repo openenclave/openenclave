@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
-#include <openenclave/bits/build.h>
 #include <openenclave/defs.h>
 #include <stdarg.h>
 #include <string.h>
@@ -60,7 +60,7 @@ void DumpEntryPoint(Elf64* elf)
 
 void DumpEnclaveProperties(const OE_EnclaveProperties_SGX* props)
 {
-    const SGX_SigStruct* sigstruct;
+    const OE_SGXSigStruct* sigstruct;
 
     printf("=== SGX Enclave Properties:\n");
 
@@ -218,11 +218,11 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the SGX enclave properties */
-    if (OE_LoadSGXEnclaveProperties(
-        &elf, OE_SIGN_SECTION_NAME, &props) != OE_OK)
+    if (OE_LoadSGXEnclaveProperties(&elf, OE_SIGN_SECTION_NAME, &props) !=
+        OE_OK)
     {
-        if (OE_LoadSGXEnclaveProperties(
-            &elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
+        if (OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &props) !=
+            OE_OK)
         {
             err("failed to load SGX enclave properties");
         }

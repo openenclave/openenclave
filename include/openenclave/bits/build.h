@@ -8,9 +8,9 @@
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
+#include "elf.h"
 #include "sgxdev.h"
 #include "sgxtypes.h"
-#include "elf.h"
 
 OE_EXTERNC_BEGIN
 

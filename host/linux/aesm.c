@@ -447,7 +447,7 @@ OE_Result AESMGetLaunchToken(
     AESM* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
-    const SGX_Attributes* attributes,
+    const OE_SGXAttributes* attributes,
     SGX_LaunchToken* launchToken)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -471,7 +471,7 @@ OE_Result AESMGetLaunchToken(
         OE_TRY(_PackBytes(&request, 2, modulus, OE_KEY_SIZE));
 
         /* Pack ATTRIBUTES */
-        OE_TRY(_PackBytes(&request, 3, attributes, sizeof(SGX_Attributes)));
+        OE_TRY(_PackBytes(&request, 3, attributes, sizeof(OE_SGXAttributes)));
 
         /* Pack TIMEOUT */
         OE_TRY(_PackVarInt(&request, 9, timeout));

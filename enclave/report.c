@@ -65,8 +65,7 @@ OE_Result SGX_CreateReport(
         "ENCLU"
         :
         : "a"(ENCLU_EREPORT), "b"(ti), "c"(rd), "d"(r)
-        : "memory"
-        );
+        : "memory");
 
     /* Copy REPORT to caller's buffer */
     OE_Memcpy(report, r, sizeof(SGX_Report));

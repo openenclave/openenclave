@@ -92,8 +92,6 @@ static void _InitializeEnclaveHost()
 **==============================================================================
 */
 
-OE_CHECK_SIZE(sizeof(SGX_SigStruct), 1808);
-
 static uint64_t _MakeSecinfoFlags(uint32_t flags)
 {
     uint64_t r = 0;
@@ -1000,16 +998,16 @@ OE_Result __OE_BuildEnclave(
     {
         props = *properties;
     }
-    else 
+    else
     {
         OE_EnclaveProperties_SGX* p;
 
         /* Try .oesign section first, then fallback to .oeinfo */
-        if (OE_LoadSGXEnclaveProperties(
-            &elf, OE_SIGN_SECTION_NAME, &p) != OE_OK)
+        if (OE_LoadSGXEnclaveProperties(&elf, OE_SIGN_SECTION_NAME, &p) !=
+            OE_OK)
         {
-            if (OE_LoadSGXEnclaveProperties(
-                &elf, OE_INFO_SECTION_NAME, &p) != OE_OK)
+            if (OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &p) !=
+                OE_OK)
             {
                 OE_THROW(OE_FAILURE);
             }

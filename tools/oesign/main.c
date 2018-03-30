@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #define OE_TRACE_LEVEL 1
-#include <sys/stat.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/build.h>
@@ -10,13 +9,14 @@
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/sign.h>
 #include <openenclave/bits/str.h>
 #include <openenclave/bits/trace.h>
-#include <openenclave/bits/sign.h>
 #include <openenclave/host.h>
 #include <openssl/bn.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
+#include <sys/stat.h>
 #include <time.h>
 #include "../host/enclave.h"
 
@@ -92,11 +92,11 @@ static int _UpdateAndWriteSharedLib(
 
     /* Add .oesign section */
     if (Elf64_AddSection(
-        &elf, 
-        OE_SIGN_SECTION_NAME,
-        SHT_PROGBITS, 
-        properties,
-        sizeof(OE_EnclaveProperties_SGX)) != 0)
+            &elf,
+            OE_SIGN_SECTION_NAME,
+            SHT_PROGBITS,
+            properties,
+            sizeof(OE_EnclaveProperties_SGX)) != 0)
     {
         fprintf(stderr, "%s: failed to add section\n", arg0);
         goto done;
@@ -152,8 +152,7 @@ typedef struct _ConfigFileOptions
     uint64_t numTCS;
     uint16_t productID;
     uint16_t securityVersion;
-}
-ConfigFileOptions;
+} ConfigFileOptions;
 
 int LoadConfigFile(const char* path, ConfigFileOptions* options)
 {
@@ -306,10 +305,7 @@ done:
     return rc;
 }
 
-static int _LoadFile(
-    const char* path, 
-    void** data, 
-    size_t* size)
+static int _LoadFile(const char* path, void** data, size_t* size)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -443,10 +439,7 @@ int main(int argc, const char* argv[])
 
     /* Initialize the SigStruct object */
     if ((result = OE_SignEnclave(
-        &mrenclave, 
-        pemData, 
-        pemSize, 
-        &props.sigstruct)) != OE_OK)
+             &mrenclave, pemData, pemSize, &props.sigstruct)) != OE_OK)
     {
         OE_PutErr("_InitSigstruct() failed: result=%u", result);
     }

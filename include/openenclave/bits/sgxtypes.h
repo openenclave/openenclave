@@ -72,42 +72,42 @@ typedef enum _SGX_ENCLULeaf {
 **==============================================================================
 */
 
-/* Default value for SGX_Attributes.flags */
+/* Default value for OE_SGXAttributes.flags */
 #define SGX_ATTRIBUTES_DEFAULT_FLAGS 0x0000000000000006
 
-/* Default value for SGX_Attributes.xfrm */
+/* Default value for OE_SGXAttributes.xfrm */
 #define SGX_ATTRIBUTES_DEFAULT_XFRM 0x0000000000000007
 
 /*
 **==============================================================================
 **
-** SGX_SigStruct
+** OE_SGXSigStruct
 **
 **==============================================================================
 */
 
-OE_INLINE const void* SGX_SigStructHeader(const SGX_SigStruct* ss)
+OE_INLINE const void* SGX_SigStructHeader(const OE_SGXSigStruct* ss)
 {
     return ss;
 }
 
 OE_INLINE size_t SGX_SigStructHeaderSize(void)
 {
-    return OE_OFFSETOF(SGX_SigStruct, modulus);
+    return OE_OFFSETOF(OE_SGXSigStruct, modulus);
 }
 
-OE_INLINE const void* SGX_SigStructBody(const SGX_SigStruct* ss)
+OE_INLINE const void* SGX_SigStructBody(const OE_SGXSigStruct* ss)
 {
     return &ss->miscselect;
 }
 
 OE_INLINE size_t SGX_SigStructBodySize(void)
 {
-    return OE_OFFSETOF(SGX_SigStruct, reserved4) -
-           OE_OFFSETOF(SGX_SigStruct, miscselect);
+    return OE_OFFSETOF(OE_SGXSigStruct, reserved4) -
+           OE_OFFSETOF(OE_SGXSigStruct, miscselect);
 }
 
-void __SGX_DumpSigStruct(const SGX_SigStruct* p);
+void __SGX_DumpSigStruct(const OE_SGXSigStruct* p);
 
 /*
 **==============================================================================
@@ -227,7 +227,7 @@ typedef struct _SGX_EInitToken
     uint8_t reserved1[44];
 
     /* (48) attributes of the enclave */
-    SGX_Attributes attributes;
+    OE_SGXAttributes attributes;
 
     /* (64) MRENCLAVE (hash of enclave) */
     uint8_t mrenclave[OE_SHA256_SIZE];
@@ -257,7 +257,7 @@ typedef struct _SGX_EInitToken
     uint32_t maskedmiscselectle;
 
     /* (240) attributes of launch enclave */
-    SGX_Attributes maskedattributesle;
+    OE_SGXAttributes maskedattributesle;
 
     /* (256) value for key wear-out protection */
     uint8_t keyid[SGX_KEYID_SIZE];
@@ -459,7 +459,7 @@ typedef struct _SGX_TargetInfo
     uint8_t mrenclave[OE_SHA256_SIZE];
 
     /* (32) ATTRIBUTES of target enclave */
-    SGX_Attributes attributes;
+    OE_SGXAttributes attributes;
 
     /* (48) Reserved */
     uint8_t reserved1[4];
@@ -523,7 +523,7 @@ typedef struct _SGX_ReportBody
     uint8_t reserved1[28];
 
     /* (48) Enclave attributes */
-    SGX_Attributes attributes;
+    OE_SGXAttributes attributes;
 
     /* (64) Enclave measurement */
     uint8_t mrenclave[OE_SHA256_SIZE];

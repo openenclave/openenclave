@@ -4,12 +4,12 @@
 #ifndef _STR_H
 #define _STR_H
 
+#include <limits.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 #include "mem.h"
 
 #define STR_NPOS ((size_t)-1)

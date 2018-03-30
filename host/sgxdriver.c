@@ -3,13 +3,13 @@
 
 #define OE_TRACE_LEVEL 1
 
+#include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #if defined(__linux__)
 #include <fcntl.h>
@@ -20,14 +20,14 @@
 #include <Windows.h>
 #endif
 
+#include <openenclave/bits/aesm.h>
 #include <openenclave/bits/build.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/sha.h>
+#include <openenclave/bits/sign.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/sign.h>
-#include <openenclave/bits/sha.h>
-#include <openenclave/bits/aesm.h>
 #include "memalign.h"
 
 /*
@@ -749,7 +749,7 @@ static OE_Result _EInitProc(
     OE_Result result = OE_UNEXPECTED;
     Self* self = (Self*)dev;
     static OE_SHA256 _zeroHash;
-    SGX_SigStruct sigstruct;
+    OE_SGXSigStruct sigstruct;
     AESM* aesm = NULL;
     SGX_LaunchToken launchToken;
 
@@ -762,10 +762,8 @@ static OE_Result _EInitProc(
         OE_THROW(OE_FAILURE);
 
     /* If sigstruct.enclavehash is full of zeros */
-    if (memcmp(
-        properties->sigstruct.enclavehash, 
-        &_zeroHash, 
-        OE_SHA256_SIZE) == 0)
+    if (memcmp(properties->sigstruct.enclavehash, &_zeroHash, OE_SHA256_SIZE) ==
+        0)
     {
         /* The enclave is unsigned: sign it now with a well-known key */
         OE_SHA256 hash;
@@ -775,12 +773,12 @@ static OE_Result _EInitProc(
     else
     {
         /* The enclave is signed: copy it's sigstruct */
-        memcpy(&sigstruct, &properties->sigstruct, sizeof(SGX_SigStruct));
+        memcpy(&sigstruct, &properties->sigstruct, sizeof(OE_SGXSigStruct));
     }
 
     /* Obtain a launch token from the AESM service */
     {
-        SGX_Attributes attributes;
+        OE_SGXAttributes attributes;
 
         /* Initialize the SGX attributes */
         attributes.flags = properties->settings.attributes;

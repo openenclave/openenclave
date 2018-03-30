@@ -9,14 +9,14 @@
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/sign.h>
 #include <openenclave/bits/str.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
-#include <openenclave/bits/sign.h>
 #include <openssl/bn.h>
+#include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
-#include <openssl/err.h>
 #include <time.h>
 #include "../host/enclave.h"
 
@@ -239,7 +239,7 @@ OE_CATCH:
 }
 
 static OE_Result _InitSigstruct(
-    SGX_SigStruct* sigstruct,
+    OE_SGXSigStruct* sigstruct,
     const OE_SHA256* mrenclave,
     RSA* rsa)
 {
@@ -249,9 +249,9 @@ static OE_Result _InitSigstruct(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Zero-fill the structure */
-    memset(sigstruct, 0, sizeof(SGX_SigStruct));
+    memset(sigstruct, 0, sizeof(OE_SGXSigStruct));
 
-    /* SGX_SigStruct.header */
+    /* OE_SGXSigStruct.header */
     {
         const uint8_t bytes[] = {0x06,
                                  0x00,
@@ -269,16 +269,16 @@ static OE_Result _InitSigstruct(
         memcpy(sigstruct->header, bytes, sizeof(sigstruct->header));
     }
 
-    /* SGX_SigStruct.type */
+    /* OE_SGXSigStruct.type */
     sigstruct->type = 0;
 
-    /* SGX_SigStruct.vendor */
+    /* OE_SGXSigStruct.vendor */
     sigstruct->vendor = 0;
 
-    /* SGX_SigStruct.date */
+    /* OE_SGXSigStruct.date */
     OE_TRY(_GetDate(&sigstruct->date));
 
-    /* SGX_SigStruct.header2 */
+    /* OE_SGXSigStruct.header2 */
     {
         const uint8_t bytes[] = {0x01,
                                  0x01,
@@ -300,43 +300,43 @@ static OE_Result _InitSigstruct(
         memcpy(sigstruct->header2, bytes, sizeof(sigstruct->header2));
     }
 
-    /* SGX_SigStruct.swdefined */
+    /* OE_SGXSigStruct.swdefined */
     sigstruct->swdefined = 0;
 
-    /* SGX_SigStruct.date */
+    /* OE_SGXSigStruct.date */
     OE_TRY(_GetModulus(rsa, sigstruct->modulus));
 
-    /* SGX_SigStruct.date */
+    /* OE_SGXSigStruct.date */
     OE_TRY(_GetExponent(rsa, sigstruct->exponent));
 
-    /* SGX_SigStruct.signature: fill in after other fields */
+    /* OE_SGXSigStruct.signature: fill in after other fields */
 
-    /* SGX_SigStruct.miscselect (ATTN: ?) */
+    /* OE_SGXSigStruct.miscselect (ATTN: ?) */
     sigstruct->miscselect = 0x00000000;
 
-    /* SGX_SigStruct.miscmask (ATTN: ?) */
+    /* OE_SGXSigStruct.miscmask (ATTN: ?) */
     sigstruct->miscmask = 0xFFFFFFFF;
 
-    /* SGX_SigStruct.attributes (ATTN: ?) */
+    /* OE_SGXSigStruct.attributes (ATTN: ?) */
     sigstruct->attributes.flags = SGX_ATTRIBUTES_DEFAULT_FLAGS;
     sigstruct->attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
-    /* SGX_SigStruct.attributemask (ATTN: ?) */
+    /* OE_SGXSigStruct.attributemask (ATTN: ?) */
     sigstruct->attributemask.flags = 0xFFFFFFFFFFFFFFFd;
     sigstruct->attributemask.xfrm = 0xFFFFFFFFFFFFFFFb;
 
-    /* SGX_SigStruct.enclavehash */
+    /* OE_SGXSigStruct.enclavehash */
     memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
 
-    /* SGX_SigStruct.isvprodid (ATTN: ?) */
+    /* OE_SGXSigStruct.isvprodid (ATTN: ?) */
     sigstruct->isvprodid = 0;
 
-    /* SGX_SigStruct.isvsvn (ATTN: ?) */
+    /* OE_SGXSigStruct.isvsvn (ATTN: ?) */
     sigstruct->isvsvn = 0;
 
     /* Sign header and body sections of SigStruct */
     {
-        unsigned char buf[sizeof(SGX_SigStruct)];
+        unsigned char buf[sizeof(OE_SGXSigStruct)];
         size_t n = 0;
 
         memcpy(buf, SGX_SigStructHeader(sigstruct), SGX_SigStructHeaderSize());
@@ -445,13 +445,13 @@ OE_Result OE_SignEnclave(
     const OE_SHA256* mrenclave,
     const char* pemData,
     size_t pemSize,
-    SGX_SigStruct* sigstruct)
+    OE_SGXSigStruct* sigstruct)
 {
     OE_Result result = OE_UNEXPECTED;
     RSA* rsa = NULL;
 
     if (sigstruct)
-        memset(sigstruct, 0, sizeof(SGX_SigStruct));
+        memset(sigstruct, 0, sizeof(OE_SGXSigStruct));
 
     /* Check parameters */
     if (!mrenclave || !sigstruct)
