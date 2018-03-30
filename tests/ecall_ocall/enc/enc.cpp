@@ -5,6 +5,7 @@
 #define OE_TRACE_LEVEL 1
 
 #include <openenclave/bits/globals.h> // for __OE_GetEnclaveBase()
+#include <openenclave/bits/tests.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
 #include <mutex>
@@ -24,7 +25,7 @@ struct StaticInitOcaller
     {
         m_Result =
             OE_CallHost("InitOcallHandler", (void*)__OE_GetEnclaveBase());
-        OE_Assert(m_Result == OE_OK);
+        OE_TEST(m_Result == OE_OK);
     }
     OE_Result GetOcallResult() const
     {

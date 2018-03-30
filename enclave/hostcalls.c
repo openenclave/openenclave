@@ -163,7 +163,7 @@ done:
     return ret;
 }
 
-int __OE_HostVprintf(const char* fmt, OE_va_list ap_)
+int __OE_HostVfprintf(int device, const char* fmt, OE_va_list ap_)
 {
     char buf[256];
     char* p = buf;
@@ -189,7 +189,7 @@ int __OE_HostVprintf(const char* fmt, OE_va_list ap_)
         OE_va_end(ap);
     }
 
-    __OE_HostPrint(0, p, (size_t)-1);
+    __OE_HostPrint(device, p, (size_t)-1);
 
     return n;
 }
@@ -200,7 +200,19 @@ int OE_HostPrintf(const char* fmt, ...)
 
     OE_va_list ap;
     OE_va_start(ap, fmt);
-    n = __OE_HostVprintf(fmt, ap);
+    n = __OE_HostVfprintf(0, fmt, ap);
+    OE_va_end(ap);
+
+    return n;
+}
+
+int OE_HostFprintf(int device, const char* fmt, ...)
+{
+    int n;
+
+    OE_va_list ap;
+    OE_va_start(ap, fmt);
+    n = __OE_HostVfprintf(device, fmt, ap);
     OE_va_end(ap);
 
     return n;

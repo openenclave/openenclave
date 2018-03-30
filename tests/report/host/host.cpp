@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/hexdump.h>
@@ -396,8 +395,8 @@ int main(int argc, const char* argv[])
     /*
      * Enclave API tests.
      */
-    assert(OE_CallEnclave(enclave, "TestLocalReport", &targetInfo) == OE_OK);
-    assert(OE_CallEnclave(enclave, "TestRemoteReport", &targetInfo) == OE_OK);
+    OE_TEST(OE_CallEnclave(enclave, "TestLocalReport", &targetInfo) == OE_OK);
+    OE_TEST(OE_CallEnclave(enclave, "TestRemoteReport", &targetInfo) == OE_OK);
 
     /* Terminate the enclave */
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)

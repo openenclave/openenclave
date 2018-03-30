@@ -149,6 +149,20 @@ OE_PRINTF_FORMAT(1, 2)
 int OE_HostPrintf(const char* fmt, ...);
 
 /**
+ * Print formatted characters to the host's stdout or stderr.
+ *
+ * This function writes formatted characters to the host's stdout or stderr. It
+ * is based on OE_Vsnprintf(), which has limited support for format types.
+ *
+ * @param fmt The limited printf style format.
+ * @param device 0 for stdout and 1 for stderr
+ * @returns The number of characters that were written.
+ *
+ */
+OE_PRINTF_FORMAT(2, 3)
+int OE_HostFprintf(int device, const char* fmt, ...);
+
+/**
  * Allocates space for parameters of the next call to host on the host's stack
  * frame.
  *
@@ -285,8 +299,8 @@ void* OE_Sbrk(ptrdiff_t increment);
  *
  * @param expr The argument of the OE_Assert() macro.
  * @param file The name of the file where OE_Assert() was invoked.
- * @param file The line number where OE_Assert() was invoked.
- * @param line The name of the function that invoked OE_Assert().
+ * @param line The line number where OE_Assert() was invoked.
+ * @param func The name of the function that invoked OE_Assert().
  *
  */
 void __OE_AssertFail(

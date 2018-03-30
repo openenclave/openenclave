@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <limits.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
@@ -16,9 +15,9 @@ OE_OCALL void Echo(void* args_)
 {
     EchoArgs* args = (EchoArgs*)args_;
 
-    assert(strcmp(args->str1, "OE_HostStackStrdup1") == 0);
-    assert(strcmp(args->str2, "OE_HostStackStrdup2") == 0);
-    assert(strcmp(args->str3, "OE_HostStackStrdup3") == 0);
+    OE_TEST(strcmp(args->str1, "OE_HostStackStrdup1") == 0);
+    OE_TEST(strcmp(args->str2, "OE_HostStackStrdup2") == 0);
+    OE_TEST(strcmp(args->str3, "OE_HostStackStrdup3") == 0);
 
     if (!(args->out = OE_Strdup(args->in)))
     {
@@ -57,8 +56,8 @@ int main(int argc, const char* argv[])
     if (args.ret != 0)
         OE_PutErr("ECALL failed args.result=%d", args.ret);
 
-    assert(args.in);
-    assert(args.out);
+    OE_TEST(args.in);
+    OE_TEST(args.out);
 
     if (strcmp(args.in, args.out) != 0)
         OE_PutErr("ecall failed: %s != %s\n", args.in, args.out);

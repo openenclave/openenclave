@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include "../rwlock_tests.h"
-#include <assert.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>

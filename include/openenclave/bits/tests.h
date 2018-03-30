@@ -6,23 +6,34 @@
 
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
+#ifdef OE_BUILD_ENCLAVE
+#define OE_PRINT OE_HostFprintf
+#define OE_ABORT OE_Abort
+#define STDERR 1
+#else
 #include <stdio.h>
+#include <stdlib.h>
+#define OE_PRINT fprintf
+#define OE_ABORT abort
+#define STDERR stderr
+#endif
 
 OE_EXTERNC_BEGIN
 
-#define OE_TEST(COND)                        \
-    do                                       \
-    {                                        \
-        if (!(COND))                         \
-        {                                    \
-            fprintf(                         \
-                stderr,                      \
-                "Test failed: %s(%u): %s\n", \
-                __FILE__,                    \
-                __LINE__,                    \
-                #COND);                      \
-            exit(1);                         \
-        }                                    \
+#define OE_TEST(COND)                           \
+    do                                          \
+    {                                           \
+        if (!(COND))                            \
+        {                                       \
+            OE_PRINT(                           \
+                STDERR,                         \
+                "Test failed: %s(%u): %s %s\n", \
+                __FILE__,                       \
+                __LINE__,                       \
+                __FUNCTION__,                   \
+                #COND);                         \
+            OE_ABORT();                         \
+        }                                       \
     } while (0)
 
 /*
