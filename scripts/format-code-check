@@ -4,7 +4,7 @@
 ##
 ## format-code-check
 ##
-##     This script checks whether running format-code-check would change any
+##     This script checks whether running format-code would change any
 ##     source files. If so it exits with a non-zero status.
 ##
 ##==============================================================================
