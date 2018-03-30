@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+// Define this for OE_TEST to work without stdio.h being available.
+#define OE_BUILD_ENCLAVE
+
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
 
 static bool CheckReportData(
@@ -50,17 +54,17 @@ OE_ECALL void TestLocalReport(void* args_)
      */
     {
         reportSize = 1024 * 1024;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
-        OE_Assert(reportSize == sizeof(SGX_Report));
-        OE_Assert(
+        OE_TEST(reportSize == sizeof(SGX_Report));
+        OE_TEST(
             CheckReportData(
                 reportBuffer, reportSize, zeros, OE_REPORT_DATA_SIZE));
 
         reportSize = 1024 * 1024;
         reportDataSize = 16;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 0,
                 reportData,
@@ -69,18 +73,18 @@ OE_ECALL void TestLocalReport(void* args_)
                 0,
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_Assert(reportSize == sizeof(SGX_Report));
-        OE_Assert(
+        OE_TEST(reportSize == sizeof(SGX_Report));
+        OE_TEST(
             CheckReportData(
                 reportBuffer, reportSize, reportData, reportDataSize));
-        OE_Assert(
+        OE_TEST(
             CheckReportData(
                 reportBuffer, reportSize, reportData, reportDataSize + 1) ==
             false);
 
         reportSize = 1024 * 1024;
         reportDataSize = OE_REPORT_DATA_SIZE;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 0,
                 reportData,
@@ -89,14 +93,14 @@ OE_ECALL void TestLocalReport(void* args_)
                 0,
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_Assert(reportSize == sizeof(SGX_Report));
-        OE_Assert(
+        OE_TEST(reportSize == sizeof(SGX_Report));
+        OE_TEST(
             CheckReportData(
                 reportBuffer, reportSize, reportData, reportDataSize));
 
         reportSize = 1024 * 1024;
         reportDataSize = OE_REPORT_DATA_SIZE + 1;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 0,
                 reportData,
@@ -117,7 +121,7 @@ OE_ECALL void TestLocalReport(void* args_)
      */
     {
         reportSize = 1024 * 1024;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 0,
                 NULL,
@@ -126,18 +130,18 @@ OE_ECALL void TestLocalReport(void* args_)
                 sizeof(optParams),
                 reportBuffer,
                 &reportSize) == OE_INVALID_PARAMETER);
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(0, NULL, 0, optParams, 5, reportBuffer, &reportSize) ==
             OE_INVALID_PARAMETER);
 
         reportSize = 1024 * 1024;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
-        OE_Assert(reportSize == sizeof(SGX_Report));
+        OE_TEST(reportSize == sizeof(SGX_Report));
 
         reportSize = 1024 * 1024;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 0,
                 NULL,
@@ -146,10 +150,10 @@ OE_ECALL void TestLocalReport(void* args_)
                 sizeof(SGX_TargetInfo),
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_Assert(reportSize == sizeof(SGX_Report));
+        OE_TEST(reportSize == sizeof(SGX_Report));
 
         reportSize = 1024 * 1024;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 0,
                 NULL,
@@ -158,7 +162,7 @@ OE_ECALL void TestLocalReport(void* args_)
                 sizeof(optParams),
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_Assert(reportSize == sizeof(SGX_Report));
+        OE_TEST(reportSize == sizeof(SGX_Report));
     }
 
     /*
@@ -168,12 +172,12 @@ OE_ECALL void TestLocalReport(void* args_)
      */
     {
         reportSize = 1024 * 1204;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(0, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
 
         reportSize = 1;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
     }
@@ -210,16 +214,16 @@ OE_ECALL void TestRemoteReport(void* args_)
      */
     {
         reportSize = 2048;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 options, NULL, 0, NULL, 0, reportBuffer, &reportSize) == OE_OK);
-        OE_Assert(
+        OE_TEST(
             CheckReportData(
                 reportBuffer, reportSize, zeros, OE_REPORT_DATA_SIZE));
 
         reportSize = 2048;
         reportDataSize = 16;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 options,
                 reportData,
@@ -228,17 +232,17 @@ OE_ECALL void TestRemoteReport(void* args_)
                 0,
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_Assert(
+        OE_TEST(
             CheckReportData(
                 reportBuffer, reportSize, reportData, reportDataSize));
-        OE_Assert(
+        OE_TEST(
             CheckReportData(
                 reportBuffer, reportSize, reportData, reportDataSize + 1) ==
             false);
 
         reportSize = 2048;
         reportDataSize = OE_REPORT_DATA_SIZE;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 options,
                 reportData,
@@ -247,13 +251,13 @@ OE_ECALL void TestRemoteReport(void* args_)
                 0,
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_Assert(
+        OE_TEST(
             CheckReportData(
                 reportBuffer, reportSize, reportData, reportDataSize));
 
         reportSize = 2048;
         reportDataSize = OE_REPORT_DATA_SIZE + 1;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 options,
                 reportData,
@@ -270,7 +274,7 @@ OE_ECALL void TestRemoteReport(void* args_)
      */
     {
         reportSize = 2048;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 options,
                 NULL,
@@ -279,7 +283,7 @@ OE_ECALL void TestRemoteReport(void* args_)
                 sizeof(optParams),
                 reportBuffer,
                 &reportSize) == OE_INVALID_PARAMETER);
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 options, NULL, 0, optParams, 5, reportBuffer, &reportSize) ==
             OE_INVALID_PARAMETER);
@@ -292,12 +296,12 @@ OE_ECALL void TestRemoteReport(void* args_)
      */
     {
         reportSize = 2048;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(options, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
 
         reportSize = 1;
-        OE_Assert(
+        OE_TEST(
             OE_GetReport(
                 options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
