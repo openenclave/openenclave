@@ -104,22 +104,9 @@ ${format_code}
 
 ##==============================================================================
 ##
-## Compile list of new and old source files
+## Diff the formattted and unformatted directories
 ##
 ##==============================================================================
-
-cd ${dir1}
-src1=`find . -name '*.[ch]'`
-src1+=" `find . -name '*.cpp'`"
-
-cd ${dir2}
-src2=`find . -name '*.[ch]'`
-src2+=" `find . -name '*.cpp'`"
-
-if [ "${src1}" != "${src2}" ]; then
-    echo "$0: unexpected : new and old source list are different"
-    Exit 1
-fi
 
 diff -r ${dir1} ${dir2}
 if [ "$?" != "0" ]; then
