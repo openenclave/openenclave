@@ -4,12 +4,12 @@
 #ifndef OE_BUILD_ENCLAVE
 #define OE_BUILD_ENCLAVE
 #endif
-#include <openenclave/enclave.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/fault.h>
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
 OE_ECALL void Test2(void* args_)
