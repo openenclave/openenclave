@@ -185,14 +185,21 @@ OE_Result _OE_GetRemoteReport(
     args->reportDataSize = reportDataSize;
     args->reportBufferSize = *reportBufferSize;
 
+    // If reportBuffer is not specified, set size to zero so that the host side
+    // GetReport can report OE_BUFFER_TOO_SMALL and provide the required size of
+    // the reportBuffer.
+    if (reportBuffer == NULL)
+        args->reportBufferSize = 0;
+
     // Make a re-entrant call to host. The host will call back into the enclave
     // to get the SGX_Report.
-    OE_TRY(OE_OCall(OE_FUNC_GET_REMOTE_REPORT, (uint64_t)&args, NULL, 0));
+    OE_TRY(OE_OCall(OE_FUNC_GET_REMOTE_REPORT, (uint64_t)args, NULL, 0));
 
     // Copy out-parameters to enclave memory.
     *reportBufferSize = args->reportBufferSize;
-    OE_Memcpy(reportBuffer, args->reportBuffer, *reportBufferSize);
     result = args->result;
+    if (result == OE_OK)
+        OE_Memcpy(reportBuffer, args->reportBuffer, *reportBufferSize);
 
 OE_CATCH:
 
@@ -206,6 +213,7 @@ OE_CATCH:
 }
 
 OE_Result OE_GetReport(
+
     uint32_t options,
     const uint8_t* reportData,
     uint32_t reportDataSize,

@@ -397,6 +397,7 @@ int main(int argc, const char* argv[])
      * Enclave API tests.
      */
     assert(OE_CallEnclave(enclave, "TestLocalReport", &targetInfo) == OE_OK);
+    assert(OE_CallEnclave(enclave, "TestRemoteReport", &targetInfo) == OE_OK);
 
     /* Terminate the enclave */
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
