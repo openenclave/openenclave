@@ -13,7 +13,7 @@ int __OE_HostPuts(const char* str);
 
 int __OE_HostPrint(int device, const char* str, size_t len);
 
-int __OE_HostDprintf(int device, const char* fmt, OE_va_list ap_);
+int __OE_HostVfprintf(int device, const char* fmt, OE_va_list ap_);
 
 int __OE_HostPutchar(int c);
 

@@ -18,6 +18,7 @@
 #include <string.h>
 #include "bits/sha.h"
 #include "defs.h"
+#include "report.h"
 #include "result.h"
 #include "types.h"
 
@@ -106,34 +107,42 @@ OE_Result OE_TerminateEnclave(OE_Enclave* enclave);
 OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
 
 /**
- * Gets a quote from the Intel(R) quote enclave.
+ * Get a report signed by the enclave platform for use in attestation.
  *
- * This function obtains a quote for the **report** parameter. Enclaves create
- * reports by executing the ENCLU.EREPORT instruction. One way an enclave may
- * create a report is by calling OE_GetReportForRemoteAttestation().
+ * This function creates a report to be used in local or remote attestation. The
+ * report shall contain the data given by the **reportData** parameter.
  *
- * This function obtains a quote from the AESM service, which forwards the
- * request to the Intel(R) quote enclave.
+ * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
+ * this function returns OE_BUFFER_TOO_SMALL.
  *
- * If the *quoteSize* parameter is too small, this function resets it to
- * the required size and returns OE_BUFFER_TOO_SMALL.
+ * @param enclave The handle to the enclave that will generate the report.
+ * @param options Specifying default value (0) generates a report for local
+ * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
+ * report for remote attestation.
+ * @param reportData The report data that will be included in the report.
+ * @param reportDataSize The size of the **reportData** in bytes.
+ * @param optParams Optional additional parameters needed for the current
+ * enclave type. For SGX, this can be SGX_TargetInfo for local attestation.
+ * @param optParamsSize The size of the **enclaveParams** buffer.
+ * @param reportBuffer The buffer to where the resulting report will be copied.
+ * @param reportBufferSize The size of the **report** buffer. This is set to the
+ * required size of the report buffer on return.
  *
- * @param report The report for which the quote is desired.
- * @param reportSize The size of the **report** buffer.
- * @param quote The quote is written to this buffer.
- * @param quoteSize The size of the **quote** buffer.
- *
- * @retval OE_OK The quote was successfully obtained.
+ * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **quote** buffer is too small.
- * @retval OE_SERVICE_UNAVAILABLE The AESM service is unavailable.
+ * @retval OE_BUFFER_TOO_SMALL The **reportBuffer** buffer is NULL or too small.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
-OE_Result OE_GetQuote(
-    const void* report,
-    size_t reportSize,
-    void* quote,
-    size_t* quoteSize); /* in-out */
+OE_Result OE_GetReport(
+    OE_Enclave* enclave,
+    uint32_t options,
+    const uint8_t* reportData,
+    uint32_t reportDataSize,
+    const void* optParams,
+    uint32_t optParamsSize,
+    uint8_t* reportBuffer,
+    uint32_t* reportBufferSize);
 
 OE_EXTERNC_END
 

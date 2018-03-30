@@ -7,7 +7,7 @@
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
 #ifdef OE_BUILD_ENCLAVE
-#define OE_PRINT OE_HostVfprintf
+#define OE_PRINT OE_HostFprintf
 #define OE_ABORT OE_Abort
 #define STDERR 1
 #else

@@ -38,12 +38,9 @@ OE_STATIC_ASSERT(OE_OFFSETOF(TD, simulate) == TD_simulate);
 
 OE_ThreadData* OE_GetThreadData()
 {
-    OE_ThreadData* td = NULL;
+    OE_ThreadData* td;
 
-    asm volatile(
-        "mov %%gs:0, %%rax\n\t"
-        "mov %%rax, %0\n\t"
-        : "=a"(td));
+    asm("mov %%gs:0, %0" : "=r"(td));
 
     return td;
 }
