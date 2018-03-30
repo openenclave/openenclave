@@ -999,6 +999,7 @@ OE_Result __OE_BuildEnclave(
     {
         OE_EnclaveProperties_SGX* p;
 
+        /* Try .oesign section first, then fallback to .oeinfo */
         if (OE_LoadSGXEnclaveProperties(
             &elf, OE_SIGN_SECTION_NAME, &p) != OE_OK)
         {
@@ -1097,12 +1098,14 @@ OE_Result __OE_BuildEnclave(
 
     /* Ask the ISGX driver to initialize the enclave (and finalize the hash) */
     {
-        bool sign = false;
-        
-        if (notSigned && (props.settings.attributes & SGX_FLAGS_DEBUG))
-            sign = true;
+        const SGX_SigStruct* sigstruct;
 
-        OE_TRY(dev->einit(dev, enclaveAddr, (uint64_t)&props.sigstruct, sign));
+        if (notSigned && (props.settings.attributes & SGX_FLAGS_DEBUG))
+            sigstruct = NULL;
+        else
+            sigstruct = &props.sigstruct;
+
+        OE_TRY(dev->einit(dev, enclaveAddr, sigstruct));
     }
 
     /* Get the hash and store it in the ENCLAVE object */

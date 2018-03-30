@@ -744,34 +744,34 @@ OE_CATCH:
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
-    uint64_t sigstruct_,
-    bool sign)
+    const SGX_SigStruct* sigstruct)
 {
     Self* self = (Self*)dev;
     OE_Result result = OE_UNEXPECTED;
-    SGX_SigStruct sigstruct;
+    SGX_SigStruct ss;
     AESM* aesm = NULL;
     SGX_LaunchToken launchToken;
 
-    memset(&sigstruct, 0, sizeof(SGX_SigStruct));
+    memset(&ss, 0, sizeof(SGX_SigStruct));
 
     /* Check parameters */
-    if (!_Ok(self) || !addr || !sigstruct_)
+    if (!_Ok(self) || !addr)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Make a local copy of the sigstruct */
-    memcpy(&sigstruct, (SGX_SigStruct*)sigstruct_, sizeof(SGX_SigStruct));
-
     /* Measure this operation */
-    if (self->measurer->einit(self->measurer, addr, sigstruct_, sign) != OE_OK)
+    if (self->measurer->einit(self->measurer, addr, sigstruct) != OE_OK)
         OE_THROW(OE_FAILURE);
 
-    /* Sign on the fly if sign parameter is true */
-    if (sign)
+    /* If sigstruct parameter is null, then sign on the fly */
+    if (sigstruct)
+    {
+        memcpy(&ss, sigstruct, sizeof(SGX_SigStruct));
+    }
+    else
     {
         OE_SHA256 hash;
         OE_TRY(self->measurer->gethash(self->measurer, &hash));
-        OE_TRY(OE_SignEnclave(&hash, KEY, sizeof(KEY), &sigstruct));
+        OE_TRY(OE_SignEnclave(&hash, KEY, sizeof(KEY), &ss));
     }
 
     /* Obtain a launch token from the AESM service */
@@ -789,8 +789,8 @@ static OE_Result _EInitProc(
         OE_TRY(
             AESMGetLaunchToken(
                 aesm,
-                sigstruct.enclavehash,
-                sigstruct.modulus,
+                ss.enclavehash,
+                ss.modulus,
                 &attributes,
                 &launchToken));
     }
@@ -801,7 +801,7 @@ static OE_Result _EInitProc(
 
         memset(&param, 0, sizeof(param));
         param.addr = addr;
-        param.sigstruct = (uint64_t)&sigstruct;
+        param.sigstruct = (uint64_t)&ss;
         param.einittoken = (uint64_t)&launchToken;
 
         if (_Ioctl(self, SGX_IOC_ENCLAVE_INIT, &param) != 0)
