@@ -254,22 +254,8 @@ static OE_Result _InitSigstruct(
     memset(sigstruct, 0, sizeof(OE_SGXSigStruct));
 
     /* OE_SGXSigStruct.header */
-    {
-        const uint8_t bytes[] = {0x06,
-                                 0x00,
-                                 0x00,
-                                 0x00,
-                                 0xe1,
-                                 0x00,
-                                 0x00,
-                                 0x00,
-                                 0x00,
-                                 0x00,
-                                 0x01,
-                                 0x00};
-
-        memcpy(sigstruct->header, bytes, sizeof(sigstruct->header));
-    }
+    memcpy(
+        sigstruct->header, OE_SGX_SIGSTRUCT_HEADER, sizeof(sigstruct->header));
 
     /* OE_SGXSigStruct.type */
     sigstruct->type = 0;
@@ -281,26 +267,10 @@ static OE_Result _InitSigstruct(
     OE_TRY(_GetDate(&sigstruct->date));
 
     /* OE_SGXSigStruct.header2 */
-    {
-        const uint8_t bytes[] = {0x01,
-                                 0x01,
-                                 0x00,
-                                 0x00,
-                                 0x60,
-                                 0x00,
-                                 0x00,
-                                 0x00,
-                                 0x60,
-                                 0x00,
-                                 0x00,
-                                 0x00,
-                                 0x01,
-                                 0x00,
-                                 0x00,
-                                 0x00};
-
-        memcpy(sigstruct->header2, bytes, sizeof(sigstruct->header2));
-    }
+    memcpy(
+        sigstruct->header2,
+        OE_SGX_SIGSTRUCT_HEADER2,
+        sizeof(sigstruct->header2));
 
     /* OE_SGXSigStruct.swdefined */
     sigstruct->swdefined = 0;
@@ -330,7 +300,7 @@ static OE_Result _InitSigstruct(
     /* OE_SGXSigStruct.enclavehash */
     memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
 
-    /* OE_SGXSigStruct.isvprodid (ATTN: ?) */
+    /* OE_SGXSigStruct.isvprodid */
     sigstruct->isvprodid = productID;
 
     /* OE_SGXSigStruct.isvsvn */

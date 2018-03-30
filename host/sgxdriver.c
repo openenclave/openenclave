@@ -740,18 +740,6 @@ OE_CATCH:
     return result;
 }
 
-/* Return true if hash is zero-filled */
-static bool _IsZeroHash(const uint8_t hash[OE_SHA256_SIZE])
-{
-    for (size_t i = 0; i < OE_SHA256_SIZE; i++)
-    {
-        if (hash[i])
-            return false;
-    }
-
-    return true;
-}
-
 /* Return true if buffer is zero-filled */
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
@@ -772,8 +760,11 @@ static OE_Result _EInitProc(
     if (self->measurer->einit(self->measurer, addr, properties) != OE_OK)
         OE_THROW(OE_FAILURE);
 
-    /* If sigstruct.enclavehash is full of zeros */
-    if (_IsZeroHash(properties->sigstruct.enclavehash))
+    /* If sigstruct.header 'magic number' is incorrect */
+    if (memcmp(
+            properties->sigstruct.header,
+            OE_SGX_SIGSTRUCT_HEADER,
+            sizeof(properties->sigstruct.header)) != 0)
     {
         /* If not debug mode, then fail now */
         if (!(properties->settings.attributes & OE_SGX_FLAGS_DEBUG))

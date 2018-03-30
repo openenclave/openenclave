@@ -82,8 +82,15 @@ OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 
-#define OE_MAKE_ATTRIBUTES(_AllowDebug_) \
-    (OE_SGX_FLAGS_MODE64BIT | (_AllowDebug_ ? OE_SGX_FLAGS_DEBUG : 0))
+/* 06000000E100000000000100H */
+#define OE_SGX_SIGSTRUCT_HEADER \
+    "\006\000\000\000\341\000\000\000\000\000\001\000"
+#define OE_SGX_SIGSTRUCT_HEADER_SIZE (sizeof(OE_SGX_SIGSTRUCT_HEADER) - 1)
+
+/* 01010000600000006000000001000000H */
+#define OE_SGX_SIGSTRUCT_HEADER2 \
+    "\001\001\000\000\140\000\000\000\140\000\000\000\001\000\000\000"
+#define OE_SGX_SIGSTRUCT_HEADER2_SIZE (sizeof(OE_SGX_SIGSTRUCT_HEADER2) - 1)
 
 typedef struct _OE_SGXAttributes
 {
@@ -172,6 +179,14 @@ typedef struct _OE_SGXSigStruct
 
 OE_CHECK_SIZE(sizeof(OE_SGXSigStruct), 1808);
 
+OE_CHECK_SIZE(
+    sizeof((OE_SGXSigStruct*)NULL)->header,
+    OE_SGX_SIGSTRUCT_HEADER_SIZE);
+
+OE_CHECK_SIZE(
+    sizeof((OE_SGXSigStruct*)NULL)->header2,
+    OE_SGX_SIGSTRUCT_HEADER2_SIZE);
+
 typedef struct _OE_SGX_EnclaveSettings
 {
     uint16_t productID;
@@ -213,6 +228,9 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 
 #define OE_INFO_SECTION_BEGIN __attribute__((section(OE_INFO_SECTION_NAME)))
 #define OE_INFO_SECTION_END
+
+#define OE_MAKE_ATTRIBUTES(_AllowDebug_) \
+    (OE_SGX_FLAGS_MODE64BIT | (_AllowDebug_ ? OE_SGX_FLAGS_DEBUG : 0))
 
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
