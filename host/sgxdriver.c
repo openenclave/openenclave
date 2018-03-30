@@ -775,6 +775,10 @@ static OE_Result _EInitProc(
     /* If sigstruct.enclavehash is full of zeros */
     if (_IsZeroHash(properties->sigstruct.enclavehash))
     {
+        /* If not debug mode, then fail now */
+        if (!(properties->settings.attributes & OE_SGX_FLAGS_DEBUG))
+            OE_THROW(OE_FAILURE);
+
         /* The enclave is unsigned: sign it now with a well-known key */
         OE_SHA256 hash;
         OE_TRY(self->measurer->gethash(self->measurer, &hash));
