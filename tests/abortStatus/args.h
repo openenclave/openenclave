@@ -6,13 +6,13 @@
 
 #include <stddef.h>
 
-typedef struct _Args
+typedef struct _AbortStatusArgs
 {
     volatile uint32_t* thread_ready_count;
     volatile uint32_t* is_enclave_crashed;
 
     int ret;
-} Args;
+} AbortStatusArgs;
 
 enum
 {
@@ -26,7 +26,7 @@ enum
 * Used for recursion tests as in/outcall/out buffer in host memory. Host
 * provides fresh one with each new recursion.
 */
-struct EncRecursionArg
+struct AbortStatusEncRecursionArg
 {
     void* enclave;
     volatile uint32_t* thread_ready_count;

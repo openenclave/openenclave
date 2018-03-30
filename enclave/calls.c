@@ -578,7 +578,7 @@ void __OE_HandleMain(
     case OE_OK:
         break;
 
-    case OE_ENCLAVE_CRASHING:
+    case OE_ENCLAVE_ABORTING:
         // Block any ECALL except first time OE_FUNC_DESTRUCTOR call.
         // Don't block ORET here.
         if (code == OE_CODE_ECALL)
@@ -586,7 +586,7 @@ void __OE_HandleMain(
             if (func == OE_FUNC_DESTRUCTOR)
             {
                 // Termination function should be only called once.
-                __oe_enclave_status = OE_ENCLAVE_CRASHED;
+                __oe_enclave_status = OE_ENCLAVE_ABORTED;
             }
             else
             {
@@ -602,7 +602,7 @@ void __OE_HandleMain(
     default:
         // Return crashed status.
         *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
-        *outputArg2 = OE_ENCLAVE_CRASHED;
+        *outputArg2 = OE_ENCLAVE_ABORTED;
         return;
     }
 
@@ -690,9 +690,9 @@ void _OE_NotifyNestedExitStart(uint64_t arg1, OE_OCallContext* ocallContext)
 void OE_Abort(void)
 {
     // Once it starts to crash, the state can only transit forward, not backward.
-    if (__oe_enclave_status < OE_ENCLAVE_CRASHING)
+    if (__oe_enclave_status < OE_ENCLAVE_ABORTING)
     {
-        __oe_enclave_status = OE_ENCLAVE_CRASHING;
+        __oe_enclave_status = OE_ENCLAVE_ABORTING;
     }
 
     // Return to the latest ECALL.

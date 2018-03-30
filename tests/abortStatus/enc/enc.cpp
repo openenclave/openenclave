@@ -9,9 +9,9 @@
 // Explicitly call OE_Abort to abort the enclave.
 OE_ECALL void RegularAbort(void* args_)
 {
-    Args* args = (Args*)args_;
+    AbortStatusArgs* args = (AbortStatusArgs*)args_;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(Args)))
+    if (!OE_IsOutsideEnclave(args, sizeof(AbortStatusArgs)))
     {
         return;
     }
@@ -27,11 +27,11 @@ OE_ECALL void RegularAbort(void* args_)
 // When an un-handled hardware exception happens, enclave should abort itself.
 OE_ECALL void GenerateUnhandledHardwareException(void* args_)
 {
-    Args* args = (Args*)args_;
+    AbortStatusArgs* args = (AbortStatusArgs*)args_;
     int t = 1;
     int s = 0;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(Args)))
+    if (!OE_IsOutsideEnclave(args, sizeof(AbortStatusArgs)))
     {
         return;
     }
@@ -49,10 +49,10 @@ OE_ECALL void GenerateUnhandledHardwareException(void* args_)
 
 OE_ECALL void TestOCallAfterAbort(void* args_)
 {
-    Args* args = (Args*)args_;
+    AbortStatusArgs* args = (AbortStatusArgs*)args_;
     args->ret = -1;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(Args)))
+    if (!OE_IsOutsideEnclave(args, sizeof(AbortStatusArgs)))
     {
         return;
     }
@@ -64,8 +64,8 @@ OE_ECALL void TestOCallAfterAbort(void* args_)
     while (*args->is_enclave_crashed == 0)
         ;
 
-    // OCALL should return OE_ENCLAVE_CRASHING.
-    if (OE_CallHost("RecursionOcall", NULL) == OE_ENCLAVE_CRASHING)
+    // OCALL should return OE_ENCLAVE_ABORTING.
+    if (OE_CallHost("RecursionOcall", NULL) == OE_ENCLAVE_ABORTING)
     {
         args->ret = 0;
     }
@@ -75,10 +75,10 @@ OE_ECALL void TestOCallAfterAbort(void* args_)
 
 OE_ECALL void NormalECall(void* args_)
 {
-    Args* args = (Args*)args_;
+    AbortStatusArgs* args = (AbortStatusArgs*)args_;
     args->ret = -1;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(Args)))
+    if (!OE_IsOutsideEnclave(args, sizeof(AbortStatusArgs)))
     {
         return;
     }
@@ -91,11 +91,11 @@ OE_ECALL void EncRecursion(void* Args_)
 {
     OE_Result result = OE_OK;
 
-    if (!OE_IsOutsideEnclave(Args_, sizeof(EncRecursionArg)))
+    if (!OE_IsOutsideEnclave(Args_, sizeof(AbortStatusEncRecursionArg)))
         return;
 
-    EncRecursionArg* argsHost = (EncRecursionArg*)Args_;
-    EncRecursionArg args = *argsHost;
+    AbortStatusEncRecursionArg* argsHost = (AbortStatusEncRecursionArg*)Args_;
+    AbortStatusEncRecursionArg args = *argsHost;
 
     // catch initial state: Tag, Input-structure.
     args.crc = Crc32::Hash(TAG_START_ENC, args);
@@ -118,8 +118,8 @@ OE_ECALL void EncRecursion(void* Args_)
         while (*argsHost->is_enclave_crashed == 0)
             ;
 
-        // OCALL should return OE_ENCLAVE_CRASHING.
-        if (OE_CallHost("RecursionOcall", NULL) != OE_ENCLAVE_CRASHING)
+        // OCALL should return OE_ENCLAVE_ABORTING.
+        if (OE_CallHost("RecursionOcall", NULL) != OE_ENCLAVE_ABORTING)
         {
             argsHost->crc = 0;
             return;

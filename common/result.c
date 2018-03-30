@@ -5,8 +5,8 @@
 
 // OE abort status depends on the order of these enums to transfer status 
 // correctly.
-OE_STATIC_ASSERT(OE_ENCLAVE_CRASHING > OE_OK);
-OE_STATIC_ASSERT(OE_ENCLAVE_CRASHED > OE_ENCLAVE_CRASHING);
+OE_STATIC_ASSERT(OE_ENCLAVE_ABORTING > OE_OK);
+OE_STATIC_ASSERT(OE_ENCLAVE_ABORTED > OE_ENCLAVE_ABORTING);
 
 const char* OE_ResultStr(OE_Result result)
 {
@@ -71,10 +71,10 @@ const char* OE_ResultStr(OE_Result result)
         case OE_ALREADY_IN_USE:
         case OE_SERVICE_UNAVAILABLE:
             return "OE_SERVICE_UNAVAILABLE";
-        case OE_ENCLAVE_CRASHING:
-            return "OE_ENCLAVE_CRASHING";
-        case OE_ENCLAVE_CRASHED:
-            return "OE_ENCLAVE_CRASHED";
+        case OE_ENCLAVE_ABORTING:
+            return "OE_ENCLAVE_ABORTING";
+        case OE_ENCLAVE_ABORTED:
+            return "OE_ENCLAVE_ABORTED";
     }
 
     return "UNKNOWN";

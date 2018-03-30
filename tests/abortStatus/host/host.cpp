@@ -24,12 +24,12 @@ using namespace std;
 void TestAbortStatus(OE_Enclave* enclave, const char* functionName)
 {
     OE_Result result;
-    Args args;
+    AbortStatusArgs args;
     args.ret = -1;
 
     printf("=== %s(%s)  \n", __FUNCTION__, functionName);
     result = OE_CallEnclave(enclave, functionName, &args);
-    assert(result == OE_ENCLAVE_CRASHING);
+    assert(result == OE_ENCLAVE_ABORTING);
     assert(args.ret == 0);
 }
 
@@ -39,7 +39,7 @@ static void CrashEnclaveThread(
     uint32_t* is_enclave_crashed)
 {
     OE_Result result;
-    Args args;
+    AbortStatusArgs args;
     args.ret = -1;
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
@@ -52,7 +52,7 @@ static void CrashEnclaveThread(
 
     // Crash the enclave to set enclave in abort status.
     result = OE_CallEnclave(enclave, "RegularAbort", &args);
-    assert(result == OE_ENCLAVE_CRASHING);
+    assert(result == OE_ENCLAVE_ABORTING);
     assert(args.ret == 0);
 
     // Release all worker threads.
@@ -66,7 +66,7 @@ static void EcallAfterCrashThread(
     uint32_t* is_enclave_crashed)
 {
     OE_Result result;
-    Args args;
+    AbortStatusArgs args;
     args.ret = -1;
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
@@ -81,7 +81,7 @@ static void EcallAfterCrashThread(
 
     // Try to ECALL into the enclave.
     result = OE_CallEnclave(enclave, "NormalECall", &args);
-    assert(result == OE_ENCLAVE_CRASHING);
+    assert(result == OE_ENCLAVE_ABORTING);
     assert(args.ret == -1);
     return;
 }
@@ -92,7 +92,7 @@ static void OcallAfterCrashThread(
     uint32_t* is_enclave_crashed)
 {
     OE_Result result;
-    Args args;
+    AbortStatusArgs args;
     args.ret = -1;
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
@@ -104,14 +104,14 @@ static void OcallAfterCrashThread(
     return;
 }
 
-static uint32_t CalcRecursionHashHost(const EncRecursionArg* args_);
-static uint32_t CalcRecursionHashEnc(const EncRecursionArg* args_);
+static uint32_t CalcRecursionHashHost(const AbortStatusEncRecursionArg* args_);
+static uint32_t CalcRecursionHashEnc(const AbortStatusEncRecursionArg* args_);
 
 // calc recursion hash locally, host part
-static uint32_t CalcRecursionHashHost(const EncRecursionArg* args_)
+static uint32_t CalcRecursionHashHost(const AbortStatusEncRecursionArg* args_)
 {
-    EncRecursionArg args = *args_;
-    EncRecursionArg argsRec;
+    AbortStatusEncRecursionArg args = *args_;
+    AbortStatusEncRecursionArg argsRec;
     OE_Result result = OE_OK;
 
     printf(
@@ -143,10 +143,10 @@ static uint32_t CalcRecursionHashHost(const EncRecursionArg* args_)
 }
 
 // calc recursion hash locally, enc part
-static uint32_t CalcRecursionHashEnc(const EncRecursionArg* args_)
+static uint32_t CalcRecursionHashEnc(const AbortStatusEncRecursionArg* args_)
 {
-    EncRecursionArg args = *args_;
-    EncRecursionArg argsHost;
+    AbortStatusEncRecursionArg args = *args_;
+    AbortStatusEncRecursionArg argsHost;
     OE_Result result = OE_OK;
 
     printf(
@@ -183,7 +183,7 @@ static uint32_t TestRecursion(
     uint32_t* is_enclave_crashed)
 {
     OE_Result result;
-    EncRecursionArg args = {};
+    AbortStatusEncRecursionArg args = {};
 
     printf(
         "%s(FlowId=%u, Recursions=%u)\n", __FUNCTION__, flowId, recursionDepth);
@@ -219,9 +219,9 @@ OE_OCALL void RecursionOcall(void* args_)
 {
     OE_Result result = OE_OK;
 
-    EncRecursionArg* argsPtr = (EncRecursionArg*)args_;
-    EncRecursionArg args = *argsPtr;
-    EncRecursionArg argsRec;
+    AbortStatusEncRecursionArg* argsPtr = (AbortStatusEncRecursionArg*)args_;
+    AbortStatusEncRecursionArg args = *argsPtr;
+    AbortStatusEncRecursionArg argsRec;
 
     printf(
         "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
@@ -255,7 +255,7 @@ OE_OCALL void RecursionOcall(void* args_)
         assert(
             OE_CallEnclave(
                 (OE_Enclave*)argsRec.enclave, "EncRecursion", NULL) ==
-            OE_ENCLAVE_CRASHING);
+            OE_ENCLAVE_ABORTING);
     }
 
     // catch output state: Tag + result + output, and again original input
