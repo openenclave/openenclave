@@ -4,12 +4,20 @@
 /**
  * \file properties.h
  *
- * This file defines enclave-property structures that are injected into
- * the ".oeinfo" section (either by a macro or by the signing tool).
+ * This file defines enclave-property structures which are injected into
+ * the following sections of the enclave image.
  *
- * Note: the field sizes were carefully selected so that the packed
- * sizes and unpacked sizes are the same.
+ *     .oeinfo - injected by OE_DEFINE_ENCLAVE_PROPERTIES_SGX (contains
+ *               enclave properties with empty sigstructs)
+ *     .oesign - injected by oesign tool (contains enclave properties with
+ *               populated sigstructs)
  *
+ * Since the .oeinfo section is measured during enclave loading, it cannot be
+ * updated during signing (since the signed bits cannot contain the signature
+ * itself).
+ *
+ * The enclave loader uses .oesign if it exists, else it falls back on .oeinfo.
+ * If neither exist, loading fails.
  */
 
 #ifndef _OE_PROPERTIES_H
@@ -20,18 +28,10 @@
 
 OE_EXTERNC_BEGIN
 
-/*
-**==============================================================================
-**
-** Enclave property section names
-**
-**==============================================================================
-*/
-
-/* Defined by oesign utility */
+/* Injected by oesign utility */
 #define OE_SIGN_SECTION_NAME ".oesign"
 
-/* Defined by OE_DEFINE_ENCLAVE_PROPERTIES_SGX macro */
+/* Injected by OE_DEFINE_ENCLAVE_PROPERTIES_SGX macro */
 #define OE_INFO_SECTION_NAME ".oeinfo"
 
 /*
@@ -204,16 +204,18 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 /*
 **==============================================================================
 **
-** OE_DEFINE_ENCLAVE_PROPERTIES_SGX()
+** OE_DEFINE_ENCLAVE_PROPERTIES_SGX:
+**     This macro initializes and injects an OE_EnclaveProperties_SGX struct
+**     into the .oeinfo section.
 **
 **==============================================================================
 */
 
-// clang-format off
-
 #define OE_INFO_SECTION_BEGIN __attribute__((section(OE_INFO_SECTION_NAME)))
-
 #define OE_INFO_SECTION_END
+
+// Note: disable clang-format since it badly misformats this macro
+// clang-format off
 
 #define OE_DEFINE_ENCLAVE_PROPERTIES_SGX(                       \
     _ProductID_,                                                \
