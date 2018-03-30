@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+// Define this for OE_TEST to work without stdio.h being available.
+#define OE_BUILD_ENCLAVE
+
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
