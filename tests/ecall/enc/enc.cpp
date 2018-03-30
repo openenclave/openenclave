@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef OE_BUILD_ENCLAVE
-#define OE_BUILD_ENCLAVE
-#endif
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/globals.h>

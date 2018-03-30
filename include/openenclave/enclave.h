@@ -20,10 +20,6 @@
 
 OE_EXTERNC_BEGIN
 
-#ifndef OE_BUILD_ENCLAVE
-#define OE_BUILD_ENCLAVE
-#endif
-
 #define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
 
 // Exception codes.

@@ -16,8 +16,6 @@ target_compile_options(oeidl PRIVATE
     -fno-builtin-__memset_chk
     )
 
-target_compile_definitions(oeidl PRIVATE -DOE_BUILD_ENCLAVE)
-
 # this project (and is dependents) require the enclave headers+lib
 target_link_libraries(oeidl oelibc)
 
