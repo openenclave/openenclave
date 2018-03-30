@@ -810,6 +810,7 @@ static OE_Result _BuildECallData(
 {
     OE_Result result = OE_UNEXPECTED;
     OE_ECallPages* data;
+    size_t size = 0;
 
     if (ecallData)
         *ecallData = NULL;
@@ -821,7 +822,7 @@ static OE_Result _BuildECallData(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Calculate size needed for the ECALL pages */
-    size_t size = __OE_RoundUpToPageSize(
+    size = __OE_RoundUpToPageSize(
         sizeof(OE_ECallPages) + (enclave->num_ecalls * sizeof(uint64_t)));
 
     /* Allocate the pages */
@@ -867,6 +868,7 @@ static OE_Result _InitializeEnclave(OE_Enclave* enclave)
     // Initialize enclave cache of CPUID info for emulation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
+#if defined(__linux__)
         int supported = __get_cpuid(
             i,
             &args.cpuidTable[i][OE_CPUID_RAX],
@@ -875,6 +877,9 @@ static OE_Result _InitializeEnclave(OE_Enclave* enclave)
             &args.cpuidTable[i][OE_CPUID_RDX]);
         if (!supported)
             OE_THROW(OE_UNSUPPORTED);
+#elif defined(_WIN32)
+        __cpuid(args.cpuidTable[i], i);
+#endif
     }
 
     OE_TRY(OE_ECall(enclave, OE_FUNC_INIT_ENCLAVE, (uint64_t)&args, NULL));

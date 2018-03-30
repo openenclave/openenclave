@@ -46,17 +46,15 @@ OE_Result SGX_GetQuoteSize(
     uint32_t* quoteSize)
 {
     OE_Result result = OE_FAILURE;
-    uint32_t signatureSize = 0;
-    uint32_t n = 0;
-    const SGX_SigRL* sigrl = NULL;
+    size_t signatureSize = 0;
+    uint64_t n = 0;
+    const SGX_SigRL* sigrl = (const SGX_SigRL*)signatureRevocationList;
 
     if (quoteSize)
         *quoteSize = 0;
 
     if (!quoteSize)
         goto done;
-
-    sigrl = (const SGX_SigRL*)signatureRevocationList;
 
     if (sigrl)
     {

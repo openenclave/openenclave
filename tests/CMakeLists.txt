@@ -11,6 +11,7 @@ STRING(APPEND CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE} " -UNDEBUG")
 
 add_subdirectory(aesm)
 add_subdirectory(ecall)
+add_subdirectory(ecall_ocall)
 add_subdirectory(echo)
 add_subdirectory(cppException)
 add_subdirectory(file)
