@@ -441,7 +441,7 @@ int main(int argc, const char* argv[])
     if ((result = OE_SignEnclave(
              &mrenclave, pemData, pemSize, &props.sigstruct)) != OE_OK)
     {
-        OE_PutErr("_InitSigstruct() failed: result=%u", result);
+        OE_PutErr("OE_SignEnclave() failed: result=%u", result);
     }
 
     /* Create signature section and write out new file */

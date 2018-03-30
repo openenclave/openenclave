@@ -65,10 +65,13 @@ OE_INLINE void __OE_TraceResult(
 #define OE_TRY(EXPR)                                                \
     do                                                              \
     {                                                               \
-        result = (EXPR);                                            \
-        __OE_TraceResult("try", result, __FILE__, __LINE__, #EXPR); \
-        if (result != OE_OK)                                        \
+        OE_Result _result_ = (EXPR);                                \
+        __OE_TraceResult("try", _result_, __FILE__, __LINE__, #EXPR); \
+        if (_result_ != OE_OK)                                      \
+        {                                                           \
+            result = _result_;                                      \
             goto OE_CATCH;                                          \
+        }                                                           \
     } while (0)
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_ERROR)

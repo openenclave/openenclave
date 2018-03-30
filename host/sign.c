@@ -463,6 +463,8 @@ OE_Result OE_SignEnclave(
     /* Initialize the sigstruct */
     OE_TRY(_InitSigstruct(sigstruct, mrenclave, rsa));
 
+    result = OE_OK;
+
 OE_CATCH:
 
     if (rsa)
