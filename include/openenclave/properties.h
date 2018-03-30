@@ -96,13 +96,13 @@ OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 #define OE_SGX_SIGSTRUCT_MISCSELECT 0x00000000
 
 /* OE_SGXSigStruct.miscmask */
-#define OE_SGX_SIGSTRUCT_MISCMASK 0xFFFFFFFF
+#define OE_SGX_SIGSTRUCT_MISCMASK 0xffffffff
 
 /* OE_SGXSigStruct.flags */
-#define OE_SGX_SIGSTRUCT_FLAGS 0xFFFFFFFFFFFFFFFd
+#define OE_SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0Xfffffffffffffffd
 
 /* OE_SGXSigStruct.xfrm */
-#define OE_SGX_SIGSTRUCT_XFRM 0xFFFFFFFFFFFFFFFb
+#define OE_SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0xfffffffffffffffb
 
 typedef struct _OE_SGXAttributes
 {

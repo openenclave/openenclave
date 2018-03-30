@@ -294,8 +294,8 @@ static OE_Result _InitSigstruct(
     sigstruct->attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
     /* OE_SGXSigStruct.attributemask */
-    sigstruct->attributemask.flags = OE_SGX_SIGSTRUCT_FLAGS;
-    sigstruct->attributemask.xfrm = OE_SGX_SIGSTRUCT_XFRM;
+    sigstruct->attributemask.flags = OE_SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS;
+    sigstruct->attributemask.xfrm = OE_SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM;
 
     /* OE_SGXSigStruct.enclavehash */
     memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
