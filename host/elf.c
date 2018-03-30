@@ -1143,11 +1143,9 @@ static size_t _FindSection(const Elf64* elf, const char* name)
 
     for (i = 0; i < elf->ehdr->e_shnum; i++)
     {
-printf("INSIDE\n");
         const Elf64_Shdr* sh = &elf->shdrs[i];
         const char* s = Elf64_GetStringFromShstrtab(elf, sh->sh_name);
 
-printf("s=%s\n", s);
         if (s && strcmp(name, s) == 0)
             return i;
     }

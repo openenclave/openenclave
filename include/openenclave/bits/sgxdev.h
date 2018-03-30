@@ -8,7 +8,7 @@
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
-#include "sgxtypes.h"
+#include "../properties.h"
 
 OE_EXTERNC_BEGIN
 
@@ -33,7 +33,7 @@ typedef OE_Result (*OE_EAddProc)(
 typedef OE_Result (*OE_EInitProc)(
     OE_SGXDevice* dev,
     uint64_t addr,
-    const SGX_SigStruct* sigstruct);
+    const OE_EnclaveProperties_SGX* properties);
 
 typedef OE_Result (*OE_GetHash)(OE_SGXDevice* dev, OE_SHA256* hash);
 

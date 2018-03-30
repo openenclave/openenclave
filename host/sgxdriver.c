@@ -744,43 +744,46 @@ OE_CATCH:
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
-    const SGX_SigStruct* sigstruct)
+    const OE_EnclaveProperties_SGX* properties)
 {
-    Self* self = (Self*)dev;
     OE_Result result = OE_UNEXPECTED;
-    SGX_SigStruct ss;
+    Self* self = (Self*)dev;
+    static OE_SHA256 _zeroHash;
+    SGX_SigStruct sigstruct;
     AESM* aesm = NULL;
     SGX_LaunchToken launchToken;
 
-    memset(&ss, 0, sizeof(SGX_SigStruct));
-
     /* Check parameters */
-    if (!_Ok(self) || !addr)
+    if (!_Ok(self) || !addr || !properties)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    if (self->measurer->einit(self->measurer, addr, sigstruct) != OE_OK)
+    if (self->measurer->einit(self->measurer, addr, properties) != OE_OK)
         OE_THROW(OE_FAILURE);
 
-    /* If sigstruct parameter is null, then sign on the fly */
-    if (sigstruct)
+    /* If sigstruct.enclavehash is full of zeros */
+    if (memcmp(
+        properties->sigstruct.enclavehash, 
+        &_zeroHash, 
+        OE_SHA256_SIZE) == 0)
     {
-        memcpy(&ss, sigstruct, sizeof(SGX_SigStruct));
+        /* The enclave is unsigned: sign it now with a well-known key */
+        OE_SHA256 hash;
+        OE_TRY(self->measurer->gethash(self->measurer, &hash));
+        OE_TRY(OE_SignEnclave(&hash, KEY, sizeof(KEY), &sigstruct));
     }
     else
     {
-        OE_SHA256 hash;
-        OE_TRY(self->measurer->gethash(self->measurer, &hash));
-        OE_TRY(OE_SignEnclave(&hash, KEY, sizeof(KEY), &ss));
+        /* The enclave is signed: copy it's sigstruct */
+        memcpy(&sigstruct, &properties->sigstruct, sizeof(SGX_SigStruct));
     }
 
     /* Obtain a launch token from the AESM service */
     {
         SGX_Attributes attributes;
 
-        /* ATTN: apply debug parameter here! */
-        memset(&attributes, 0, sizeof(SGX_Attributes));
-        attributes.flags = SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT;
+        /* Initialize the SGX attributes */
+        attributes.flags = properties->settings.attributes;
         attributes.xfrm = 0x7;
 
         if (!(aesm = AESMConnect()))
@@ -789,8 +792,8 @@ static OE_Result _EInitProc(
         OE_TRY(
             AESMGetLaunchToken(
                 aesm,
-                ss.enclavehash,
-                ss.modulus,
+                sigstruct.enclavehash,
+                sigstruct.modulus,
                 &attributes,
                 &launchToken));
     }
@@ -801,7 +804,7 @@ static OE_Result _EInitProc(
 
         memset(&param, 0, sizeof(param));
         param.addr = addr;
-        param.sigstruct = (uint64_t)&ss;
+        param.sigstruct = (uint64_t)&sigstruct;
         param.einittoken = (uint64_t)&launchToken;
 
         if (_Ioctl(self, SGX_IOC_ENCLAVE_INIT, &param) != 0)

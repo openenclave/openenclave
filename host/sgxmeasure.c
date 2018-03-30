@@ -135,12 +135,12 @@ OE_CATCH:
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
-    const SGX_SigStruct* sigstruct)
+    const OE_EnclaveProperties_SGX* properties)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;
 
-    if (!_Ok(self) || !addr)
+    if (!_Ok(self) || !addr || !properties)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Finalize the measurement */
