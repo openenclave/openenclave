@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <limits.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
@@ -23,7 +22,7 @@ OE_OCALL void Ricochet(void* args_)
     {
         args->i++;
         OE_Result result = OE_CallEnclave(enclave, "Ricochet", args);
-        assert(result == OE_OK);
+        OE_TEST(result == OE_OK);
     }
 }
 

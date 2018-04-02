@@ -3,7 +3,6 @@
 
 #define OE_TRACE_LEVEL 1
 
-#include <assert.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/trace.h>
@@ -113,8 +112,8 @@ static void TestInitOcallResult(unsigned enclaveId)
     resultOcall = OE_FAILURE;
     result = OE_CallEnclave(
         EnclaveWrap::Get(enclaveId), "EncGetInitOcallResult", &resultOcall);
-    assert(result == OE_OK);
-    assert(resultOcall == OE_OK);
+    OE_TEST(result == OE_OK);
+    OE_TEST(resultOcall == OE_OK);
 }
 
 // For ocall-test on not explicitly OE_OCALL-tagged function
@@ -132,17 +131,17 @@ static void TestInvalidFunctions(unsigned enclaveId)
     result = OE_CallEnclave(
         EnclaveWrap::Get(enclaveId), "EncDummyEncFunction", NULL);
     printf("OE_CallEnclave(EncDummyEncFunction): %u\n", result);
-    assert(result == OE_OK);
+    OE_TEST(result == OE_OK);
 
     result = OE_CallEnclave(
         EnclaveWrap::Get(enclaveId), "EncUnExportedFunction", NULL);
     printf("OE_CallEnclave(EncUnExportedFunction): %u\n", result);
-    assert(result == OE_NOT_FOUND);
+    OE_TEST(result == OE_NOT_FOUND);
 
     result = OE_CallEnclave(
         EnclaveWrap::Get(enclaveId), "NonExistingFunction", NULL);
     printf("OE_CallEnclave(NonExistingFunction): %u\n", result);
-    assert(result == OE_NOT_FOUND);
+    OE_TEST(result == OE_NOT_FOUND);
 
     args.result = OE_FAILURE;
     args.functionName = "DummyHostFunction";
@@ -153,8 +152,8 @@ static void TestInvalidFunctions(unsigned enclaveId)
         "%u/%u\n",
         result,
         args.result);
-    assert(result == OE_OK);
-    assert(args.result == OE_OK); // See #137, intended?
+    OE_TEST(result == OE_OK);
+    OE_TEST(args.result == OE_OK); // See #137, intended?
 
     args.result = OE_FAILURE;
     args.functionName = "NonExistingFunction";
@@ -165,8 +164,8 @@ static void TestInvalidFunctions(unsigned enclaveId)
         "%u/%u\n",
         result,
         args.result);
-    assert(result == OE_OK);
-    assert(args.result == OE_NOT_FOUND);
+    OE_TEST(result == OE_OK);
+    OE_TEST(args.result == OE_NOT_FOUND);
 }
 
 // Helper function for parallel test
@@ -191,8 +190,8 @@ static void ParallelThread(
         EnclaveWrap::Get(enclaveId), "EncParallelExecution", &args);
     OE_TRACE_INFO(
         "%s(Enclave=%u, Flow=%u) done.\n", __FUNCTION__, enclaveId, flowId);
-    assert(result == OE_OK);
-    assert(args.result == OE_OK);
+    OE_TEST(result == OE_OK);
+    OE_TEST(args.result == OE_OK);
 }
 
 // Parallel execution test - verify parallel threads are actually executed
@@ -279,7 +278,7 @@ OE_OCALL void RecursionOcall(void* args_)
         {
             std::set<unsigned>::iterator it =
                 g_rotatingEnclaveIds.find(args.enclaveId);
-            assert(it != g_rotatingEnclaveIds.end());
+            OE_TEST(it != g_rotatingEnclaveIds.end());
             if (++it == g_rotatingEnclaveIds.end())
             {
                 it = g_rotatingEnclaveIds.begin();
@@ -324,7 +323,7 @@ static uint32_t CalcRecursionHashHost(const EncRecursionArg* args_)
         {
             std::set<unsigned>::iterator it =
                 g_rotatingEnclaveIds.find(args.enclaveId);
-            assert(it != g_rotatingEnclaveIds.end());
+            OE_TEST(it != g_rotatingEnclaveIds.end());
             if (++it == g_rotatingEnclaveIds.end())
             {
                 it = g_rotatingEnclaveIds.begin();
@@ -402,7 +401,7 @@ static uint32_t TestRecursion(
     uint32_t crc = CalcRecursionHashEnc(&args);
 
     result = OE_CallEnclave(EnclaveWrap::Get(enclaveId), "EncRecursion", &args);
-    assert(result == OE_OK);
+    OE_TEST(result == OE_OK);
 
     printf(
         "%s(EnclaveId=%lu, FlowId=%u, RecursionDepth=%u): Expect CRC %#x, have "
@@ -414,7 +413,7 @@ static uint32_t TestRecursion(
         crc,
         args.crc,
         (crc == args.crc) ? "MATCH" : "MISMATCH");
-    assert(crc == args.crc);
+    OE_TEST(crc == args.crc);
     return crc;
 }
 
@@ -441,8 +440,8 @@ static void RecursionThread(
 
         result =
             OE_CallEnclave(EnclaveWrap::Get(enclaveId), "EncRecursion", &args);
-        assert(result == OE_OK);
-        assert(args.crc == expectedCrc);
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.crc == expectedCrc);
     }
 }
 
@@ -569,12 +568,12 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = OE_GetCreateFlags();
 
-    assert(InitOCallValues.size() == 0);
+    OE_TEST(InitOCallValues.size() == 0);
     EnclaveWrap enc1(argv[1], flags);
     // verify initial OCall succeeded
-    assert(InitOCallValues.size() == 1);
-    assert(InitOCallValues[0] != NULL);
-    assert(InitOCallValues[0] == enc1.GetBase());
+    OE_TEST(InitOCallValues.size() == 1);
+    OE_TEST(InitOCallValues[0] != NULL);
+    OE_TEST(InitOCallValues[0] == enc1.GetBase());
     TestInitOcallResult(enc1.GetId());
 
     // invalid function tests
@@ -584,24 +583,24 @@ int main(int argc, const char* argv[])
     TestExecutionParallel({enc1.GetId()}, THREAD_COUNT);
 
     // serial recursion tests.
-    assert(TestRecursion(enc1.GetId(), 1, 33) == 0xb6b66b4d);
-    assert(TestRecursion(enc1.GetId(), 2, 33) == 0x721ea484);
-    assert(TestRecursion(enc1.GetId(), 3, 100) == 0x83fab7f6);
+    OE_TEST(TestRecursion(enc1.GetId(), 1, 33) == 0xb6b66b4d);
+    OE_TEST(TestRecursion(enc1.GetId(), 2, 33) == 0x721ea484);
+    OE_TEST(TestRecursion(enc1.GetId(), 3, 100) == 0x83fab7f6);
 
     // Test in a 2nd enclave
     EnclaveWrap enc2(argv[1], flags);
     // verify initial OCall succeeded
-    assert(InitOCallValues.size() == 2);
-    assert(InitOCallValues[1] != NULL);
-    assert(InitOCallValues[1] != InitOCallValues[0]);
-    assert(InitOCallValues[1] == enc2.GetBase());
+    OE_TEST(InitOCallValues.size() == 2);
+    OE_TEST(InitOCallValues[1] != NULL);
+    OE_TEST(InitOCallValues[1] != InitOCallValues[0]);
+    OE_TEST(InitOCallValues[1] == enc2.GetBase());
     TestInitOcallResult(enc2.GetId());
 
     // verify threads execute in parallel across enclaves
     TestExecutionParallel({enc1.GetId(), enc2.GetId()}, THREAD_COUNT);
 
     // verify recursion in 2nd enclave by itself
-    assert(TestRecursion(enc2.GetId(), 1, 33) == 0xf3d31c55);
+    OE_TEST(TestRecursion(enc2.GetId(), 1, 33) == 0xf3d31c55);
 
     // Test parallel recursion in one enclave
     TestRecursionParallel({enc1.GetId()}, THREAD_COUNT, 100, 3000);

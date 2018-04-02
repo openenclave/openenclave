@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
-#include <assert.h>
 #include <ctype.h>
 #include <endian.h>
 #include <errno.h>
@@ -11,6 +9,7 @@
 #include <iso646.h>
 #include <limits.h>
 #include <openenclave/bits/malloc.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
 #include <setjmp.h>
 #include <stdarg.h>
@@ -39,43 +38,43 @@
 void Test_strtol()
 {
     long x = strtol("1234", NULL, 10);
-    assert(x == 1234);
+    OE_TEST(x == 1234);
 }
 
 void Test_strtoll()
 {
     long x = strtoll("1234", NULL, 10);
-    assert(x == 1234);
+    OE_TEST(x == 1234);
 }
 
 void Test_strtoul()
 {
     unsigned long x = strtoul("1234", NULL, 10);
-    assert(x == 1234);
+    OE_TEST(x == 1234);
 }
 
 void Test_strtoull()
 {
     unsigned long long x = strtoull("1234", NULL, 10);
-    assert(x == 1234);
+    OE_TEST(x == 1234);
 }
 
 void Test_strtof()
 {
     double x = strtof("0.0", NULL);
-    assert(x == 0);
+    OE_TEST(x == 0);
 }
 
 void Test_strtod()
 {
     double x = strtod("1.0", NULL);
-    assert(x == 1.0);
+    OE_TEST(x == 1.0);
 }
 
 void Test_strtold()
 {
     long double x = strtold("1.0", NULL);
-    assert(x == 1.0);
+    OE_TEST(x == 1.0);
 }
 
 int compare(const void* p1, const void* p2)
@@ -87,9 +86,9 @@ void Test_qsort()
 {
     int arr[] = {100, 300, 200};
     qsort(arr, OE_COUNTOF(arr), sizeof(int), compare);
-    assert(arr[0] == 100);
-    assert(arr[1] == 200);
-    assert(arr[2] == 300);
+    OE_TEST(arr[0] == 100);
+    OE_TEST(arr[1] == 200);
+    OE_TEST(arr[2] == 300);
 }
 
 void Test_bsearch()
@@ -97,37 +96,37 @@ void Test_bsearch()
     int arr[] = {100, 300, 200};
     void* key = &arr[1];
     void* r = bsearch(key, arr, OE_COUNTOF(arr), sizeof(int), compare);
-    assert(r != NULL);
-    assert(r == key);
+    OE_TEST(r != NULL);
+    OE_TEST(r == key);
 }
 
 void Test_abs()
 {
-    assert(abs(-1) == 1);
-    assert(abs(1) == 1);
-    assert(abs(0) == 0);
+    OE_TEST(abs(-1) == 1);
+    OE_TEST(abs(1) == 1);
+    OE_TEST(abs(0) == 0);
 }
 
 void Test_labs()
 {
-    assert(labs(-1) == 1);
-    assert(labs(1) == 1);
-    assert(labs(0) == 0);
+    OE_TEST(labs(-1) == 1);
+    OE_TEST(labs(1) == 1);
+    OE_TEST(labs(0) == 0);
 }
 
 void Test_llabs()
 {
-    assert(llabs(-1) == 1);
-    assert(llabs(1) == 1);
-    assert(llabs(0) == 0);
+    OE_TEST(llabs(-1) == 1);
+    OE_TEST(llabs(1) == 1);
+    OE_TEST(llabs(0) == 0);
 }
 
 #if 0
 void Test_div()
 {
     div_t r = div(5, 3);
-    assert(r.quot == 1);
-    assert(r.rem == 2);
+    OE_TEST(r.quot == 1);
+    OE_TEST(r.rem == 2);
 }
 #endif
 
@@ -146,10 +145,10 @@ int TestSetjmp()
 
 void Test_atox()
 {
-    assert(atoi("100") == 100);
-    assert(atol("100") == 100L);
-    assert(atoll("100") == 100LL);
-    assert(atof("1.0") == 1.0);
+    OE_TEST(atoi("100") == 100);
+    OE_TEST(atol("100") == 100L);
+    OE_TEST(atoll("100") == 100LL);
+    OE_TEST(atof("1.0") == 1.0);
 }
 
 static bool _calledAllocationFailureCallback;
@@ -214,7 +213,7 @@ OE_ECALL void Test(void* args_)
     Test_atox();
 
     struct timeval tv = {0, 0};
-    assert(gettimeofday(&tv, NULL) == 0);
+    OE_TEST(gettimeofday(&tv, NULL) == 0);
 
     struct timespec ts;
     clock_gettime(0, &ts);
@@ -224,12 +223,12 @@ OE_ECALL void Test(void* args_)
     timespec rem;
     nanosleep(&req, &rem);
 
-    assert(TestSetjmp() == 999);
+    OE_TEST(TestSetjmp() == 999);
 
     /* Cause malloc() to fail */
     void* p = malloc(1024 * 1024 * 1024);
-    assert(p == NULL);
-    assert(_calledAllocationFailureCallback);
+    OE_TEST(p == NULL);
+    OE_TEST(_calledAllocationFailureCallback);
 
 #if 0
     printf("UINT_MIN=%u UINT_MAX=%u\n", 0, UINT_MAX);

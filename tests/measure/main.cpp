@@ -302,7 +302,7 @@ int main(int argc, const char* argv[])
     OE_SHA256Context context;
     OE_SHA256Init(&context);
 
-    assert(MeasureECreate(&context) == 0);
+    OE_TEST(MeasureECreate(&context) == 0);
 
     for (size_t i = 0; i < log.size(); i++)
     {

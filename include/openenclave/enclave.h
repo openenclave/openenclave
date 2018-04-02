@@ -13,19 +13,14 @@
 #include "bits/context.h"
 #include "bits/sha.h"
 #include "defs.h"
+#include "report.h"
 #include "result.h"
 #include "thread.h"
 #include "types.h"
 
 OE_EXTERNC_BEGIN
 
-#ifndef OE_BUILD_ENCLAVE
-#define OE_BUILD_ENCLAVE
-#endif
-
 #define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
-
-#define OE_REPORT_DATA_SIZE 64
 
 // Exception codes.
 #define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
@@ -136,45 +131,6 @@ bool OE_IsWithinEnclave(const void* ptr, size_t size);
 bool OE_IsOutsideEnclave(const void* ptr, size_t size);
 
 /**
- * Get a report for use in remote attestation.
- *
- * This function creates a report to be used in remote attestation. The
- * report shall contain the data given by the **reportData** parameter.
- * The following steps are performed:
- *
- * - Calls into the host to request that the AESM service initialize the
- *   quote. This step obtains **target information** for the enclave that
- *   will eventually sign the quote (the Intel(R) quote enclave).
- *
- * - Executes the ENCLU.EREPORT instruction to generate the report, passing
- *   it the **target information** and **report data**. This instruction fills
- *   in the **report** output parameter.
- *
- * The next step is to pass the newly created report to the host so it can
- * get a quote for this report from the Intel(R) quote enclave. See the
- * OE_GetQuote() host function for further details.
- *
- * If the *reportSize* parameter is too small, this function resets it to
- * the required size and returns OE_BUFFER_TOO_SMALL.
- *
- * **Caution:** This function is experimental and subject to change.
- *
- * @param reportData The report data that will be included in the report.
- * @param report The buffer where the report will be copied.
- * @param reportSize The size of the **report** buffer.
- *
- * @retval OE_OK The report was successfully created.
- * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
- * @retval OE_BUFFER_TOO_SMALL The **report** buffer is too small.
- * @retval OE_OUT_OF_MEMORY Failed to allocate host heap memory.
- *
- */
-OE_Result OE_GetReportForRemoteAttestation(
-    const uint8_t reportData[OE_REPORT_DATA_SIZE],
-    void* report,
-    size_t* reportSize);
-
-/**
  * Print formatted characters to the host's console.
  *
  * This function writes formatted characters to the host console. It is based
@@ -187,6 +143,20 @@ OE_Result OE_GetReportForRemoteAttestation(
  */
 OE_PRINTF_FORMAT(1, 2)
 int OE_HostPrintf(const char* fmt, ...);
+
+/**
+ * Print formatted characters to the host's stdout or stderr.
+ *
+ * This function writes formatted characters to the host's stdout or stderr. It
+ * is based on OE_Vsnprintf(), which has limited support for format types.
+ *
+ * @param fmt The limited printf style format.
+ * @param device 0 for stdout and 1 for stderr
+ * @returns The number of characters that were written.
+ *
+ */
+OE_PRINTF_FORMAT(2, 3)
+int OE_HostFprintf(int device, const char* fmt, ...);
 
 /**
  * Allocates space for parameters of the next call to host on the host's stack
@@ -325,8 +295,8 @@ void* OE_Sbrk(ptrdiff_t increment);
  *
  * @param expr The argument of the OE_Assert() macro.
  * @param file The name of the file where OE_Assert() was invoked.
- * @param file The line number where OE_Assert() was invoked.
- * @param line The name of the function that invoked OE_Assert().
+ * @param line The line number where OE_Assert() was invoked.
+ * @param func The name of the function that invoked OE_Assert().
  *
  */
 void __OE_AssertFail(
@@ -341,6 +311,42 @@ void __OE_AssertFail(
         if (!(EXPR))                                                  \
             __OE_AssertFail(#EXPR, __FILE__, __LINE__, __FUNCTION__); \
     } while (0)
+
+/**
+ * Get a report signed by the enclave platform for use in attestation.
+ *
+ * This function creates a report to be used in local or remote attestation. The
+ * report shall contain the data given by the **reportData** parameter.
+ *
+ * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
+ * this function returns OE_BUFFER_TOO_SMALL.
+ *
+ * @param options Specifying default value (0) generates a report for local
+ * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
+ * report for remote attestation.
+ * @param reportData The report data that will be included in the report.
+ * @param reportDataSize The size of the **reportData** in bytes.
+ * @param optParams Optional additional parameters needed for the current
+ * enclave type. For SGX, this can be SGX_TargetInfo for local attestation.
+ * @param optParamsSize The size of the **enclaveParams** buffer.
+ * @param reportBuffer The buffer to where the resulting report will be copied.
+ * @param reportBufferSize The size of the **report** buffer. This is set to the
+ * required size of the report buffer on return.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ * @retval OE_BUFFER_TOO_SMALL The **reportBuffer** buffer is NULL or too small.
+ * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
+ *
+ */
+OE_Result OE_GetReport(
+    uint32_t options,
+    const uint8_t* reportData,
+    uint32_t reportDataSize,
+    const void* optParams,
+    uint32_t optParamsSize,
+    uint8_t* reportBuffer,
+    uint32_t* reportBufferSize);
 
 OE_EXTERNC_END
 

@@ -4,11 +4,6 @@
 option(ENABLE_LIBC_TESTS "Build libc tests and include in test list" ON)
 option(ENABLE_LIBCXX_TESTS "Build libcxx tests and include in test list" OFF)
 
-# The tests rely on assert() for both functional correctness and test 
-# validation.
-STRING(APPEND CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE} " -UNDEBUG")
-STRING(APPEND CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE} " -UNDEBUG")
-
 add_subdirectory(abortStatus)
 add_subdirectory(aesm)
 add_subdirectory(ecall)
@@ -41,7 +36,6 @@ add_subdirectory(print)
 add_subdirectory(report)
 add_subdirectory(ricochet)
 add_subdirectory(SampleApp)
-add_subdirectory(SampleAppAttestation)
 add_subdirectory(SampleAppCRT)
 add_subdirectory(stdc)
 add_subdirectory(stdcxx)

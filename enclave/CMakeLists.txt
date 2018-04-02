@@ -39,6 +39,8 @@ target_compile_options(oeenclave PUBLIC
     -fno-stack-protector -fvisibility=hidden
     )
 
+target_compile_definitions(oeenclave PUBLIC OE_BUILD_ENCLAVE)
+
 # addl link-options for enclave apps
 target_link_libraries(oeenclave INTERFACE
     -nostdlib -nodefaultlibs -nostartfiles
@@ -47,8 +49,6 @@ target_link_libraries(oeenclave INTERFACE
 
 # jump.s must be optimized for the correct call-frame.
 set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
-
-target_compile_definitions(oeenclave PRIVATE -DOE_BUILD_ENCLAVE)
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oeenclave EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

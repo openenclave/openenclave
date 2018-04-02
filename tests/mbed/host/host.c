@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <limits.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
@@ -28,7 +27,7 @@ void TestHash(OE_Enclave* enclave)
     if ((result = OE_CallEnclave(enclave, "Hash", &args)) != OE_OK)
         OE_PutErr("OE_CallEnclave() failed: result=%u", result);
 
-    assert(memcmp(args.hash, hash, sizeof(hash)) == 0);
+    OE_TEST(memcmp(args.hash, hash, sizeof(hash)) == 0);
 }
 
 void TestAesEncrypt(OE_Enclave* enclave)
@@ -59,7 +58,7 @@ void TestAesEncrypt(OE_Enclave* enclave)
         0x21, 0xa3, 0x93, 0x8f, 0x10, 0xa4, 0x3d, 0x11, 0xb0, 0x57, 0x25, 0x03,
         0x28, 0xf4, 0xd0, 0xe4, 0x29, 0x3d, 0x29, 0x64};
 
-    assert(memcmp(expected, args.encrypted, sizeof(expected)) == 0);
+    OE_TEST(memcmp(expected, args.encrypted, sizeof(expected)) == 0);
 }
 
 int main(int argc, const char* argv[])
