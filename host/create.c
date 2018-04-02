@@ -604,6 +604,21 @@ static OE_Result _AddPages(
         *(uint64_t*)((uint8_t*)segpages + sym.st_value) = sym.st_value;
     }
 
+    // Zero-fill the enclave properties (oe_enclavePropertiesSGX) so they will
+    // be excluded from the enclave hash. The signing tool (oesign) updates
+    // this structure with the enclave hash and clearly a hash cannot be a
+    // product of itself.
+    {
+        Elf64_Sym sym;
+
+        if (Elf64_FindDynamicSymbolByName(
+                elf, "oe_enclavePropertiesSGX", &sym) == 0)
+        {
+            void* ptr = (uint8_t*)segpages + sym.st_value;
+            memset(ptr, 0, sizeof(OE_EnclaveProperties_SGX));
+        }
+    }
+
     /* Add the program segments first */
     OE_TRY(
         _AddSegmentPages(
@@ -993,7 +1008,8 @@ OE_Result __OE_BuildEnclave(
     if (Elf64_Load(path, &elf) != 0)
         OE_THROW(OE_FAILURE);
 
-    /* Use properties parameter if not null. Else load from ELF */
+    // If the **properties** parameter is non-null, use those properties.
+    // Else use the properties stored in the .oeinfo section.
     if (properties)
     {
         props = *properties;
@@ -1001,19 +1017,7 @@ OE_Result __OE_BuildEnclave(
     else
     {
         OE_EnclaveProperties_SGX* p;
-
-        /* Try loading the properties from the .oesign section */
-        if (OE_LoadSGXEnclaveProperties(&elf, OE_SIGN_SECTION_NAME, &p) !=
-            OE_OK)
-        {
-            /* Fallback on the .oeinfo section (with empty sigstruct) */
-            if (OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &p) !=
-                OE_OK)
-            {
-                OE_THROW(OE_FAILURE);
-            }
-        }
-
+        OE_TRY(OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &p));
         props = *p;
     }
 

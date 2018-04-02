@@ -218,14 +218,11 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the SGX enclave properties */
-    if (OE_LoadSGXEnclaveProperties(&elf, OE_SIGN_SECTION_NAME, &props) !=
+    if (OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &props) !=
         OE_OK)
     {
-        if (OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &props) !=
-            OE_OK)
-        {
-            err("failed to load SGX enclave properties");
-        }
+        err("failed to load SGX enclave properties from %s section",
+            OE_INFO_SECTION_NAME);
     }
 
     printf("\n");

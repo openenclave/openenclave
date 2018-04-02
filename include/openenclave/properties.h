@@ -9,15 +9,7 @@
  *
  *     .oeinfo - injected by OE_SET_ENCLAVE_SGX (contains
  *               enclave properties with empty sigstructs)
- *     .oesign - injected by oesign tool (contains enclave properties with
- *               populated sigstructs)
  *
- * Since the .oeinfo section is measured during enclave loading, it cannot be
- * updated during signing (since the signed bits cannot contain the signature
- * itself).
- *
- * The enclave loader uses .oesign if it exists, else it falls back on .oeinfo.
- * If neither exist, loading fails.
  */
 
 #ifndef _OE_PROPERTIES_H
@@ -28,10 +20,7 @@
 
 OE_EXTERNC_BEGIN
 
-/* Injected by oesign utility */
-#define OE_SIGN_SECTION_NAME ".oesign"
-
-/* Injected by OE_SET_ENCLAVE_SGX macro */
+/* Injected by OE_SET_ENCLAVE_SGX macro and by the signing tool (oesign) */
 #define OE_INFO_SECTION_NAME ".oeinfo"
 
 /*
@@ -247,39 +236,39 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
 
-#define OE_SET_ENCLAVE_SGX(                       \
-    _ProductID_,                                                \
-    _SecurityVersion_,                                          \
-    _AllowDebug_,                                               \
-    _HeapPageCount_,                                            \
-    _StackPageCount_,                                           \
-    _TcsCount_)                                                 \
-    OE_INFO_SECTION_BEGIN                                       \
-    const OE_EnclaveProperties_SGX oe_enclavePropertiesSGX =    \
-    {                                                           \
-        .header =                                               \
-        {                                                       \
-            .size = sizeof(OE_EnclaveProperties_SGX),           \
-            .enclaveType = OE_ENCLAVE_TYPE_SGX,                 \
-            .sizeSettings =                                     \
-            {                                                   \
-                .numHeapPages = _HeapPageCount_,                \
-                .numStackPages = _StackPageCount_,              \
-                .numTCS = _TcsCount_                            \
-            }                                                   \
-        },                                                      \
-        .settings =                                             \
-        {                                                       \
-            .productID = _ProductID_,                           \
-            .securityVersion = _SecurityVersion_,               \
-            .padding = 0,                                       \
-            .attributes = OE_MAKE_ATTRIBUTES(_AllowDebug_)      \
-        },                                                      \
-        .sigstruct =                                            \
-        {                                                       \
-            .header = { 0 },                                    \
-        }                                                       \
-    };                                                          \
+#define OE_SET_ENCLAVE_SGX(                                             \
+    _ProductID_,                                                        \
+    _SecurityVersion_,                                                  \
+    _AllowDebug_,                                                       \
+    _HeapPageCount_,                                                    \
+    _StackPageCount_,                                                   \
+    _TcsCount_)                                                         \
+    OE_INFO_SECTION_BEGIN                                               \
+    OE_EXPORT const OE_EnclaveProperties_SGX oe_enclavePropertiesSGX =  \
+    {                                                                   \
+        .header =                                                       \
+        {                                                               \
+            .size = sizeof(OE_EnclaveProperties_SGX),                   \
+            .enclaveType = OE_ENCLAVE_TYPE_SGX,                         \
+            .sizeSettings =                                             \
+            {                                                           \
+                .numHeapPages = _HeapPageCount_,                        \
+                .numStackPages = _StackPageCount_,                      \
+                .numTCS = _TcsCount_                                    \
+            }                                                           \
+        },                                                              \
+        .settings =                                                     \
+        {                                                               \
+            .productID = _ProductID_,                                   \
+            .securityVersion = _SecurityVersion_,                       \
+            .padding = 0,                                               \
+            .attributes = OE_MAKE_ATTRIBUTES(_AllowDebug_)              \
+        },                                                              \
+        .sigstruct =                                                    \
+        {                                                               \
+            .header = { 0 },                                            \
+        }                                                               \
+    };                                                                  \
     OE_INFO_SECTION_END
 
 // clang-format on

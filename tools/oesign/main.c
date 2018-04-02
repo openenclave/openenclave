@@ -90,16 +90,26 @@ static int _UpdateAndWriteSharedLib(
         }
     }
 
-    /* Add .oesign section */
-    if (Elf64_AddSection(
-            &elf,
-            OE_SIGN_SECTION_NAME,
-            SHT_PROGBITS,
-            properties,
-            sizeof(OE_EnclaveProperties_SGX)) != 0)
+    // Update or create a new .oeinfo section.
     {
-        fprintf(stderr, "%s: failed to add section\n", arg0);
-        goto done;
+        OE_EnclaveProperties_SGX* p;
+
+        if (OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &p) ==
+            OE_OK)
+        {
+            memcpy(p, properties, sizeof(OE_EnclaveProperties_SGX));
+        }
+        else if (
+            Elf64_AddSection(
+                &elf,
+                OE_INFO_SECTION_NAME,
+                SHT_PROGBITS,
+                properties,
+                sizeof(OE_EnclaveProperties_SGX)) != 0)
+        {
+            fprintf(stderr, "%s: failed to add section\n", arg0);
+            goto done;
+        }
     }
 
     /* Write new shared shared library */
