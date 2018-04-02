@@ -2119,6 +2119,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/types_char32_t.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/types_char.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/types_wchar_t.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.ctype.byname/mask.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.ctype/ctor.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.ctype/locale.ctype.members/is_1.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.ctype/locale.ctype.members/is_many.pass.cpp
@@ -2250,6 +2251,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/localization/locales/locale.global.templates/use_facet.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locales/locale/locale.members/combine.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locales/locale/locale.operators/compare.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/localization/locales/locale/locale.statics/classic.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locales/locale/locale.types/locale.category/category.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locales/locale/locale.types/locale.facet/tested_elsewhere.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locales/locale/locale.types/locale.id/tested_elsewhere.pass.cpp
@@ -3087,6 +3089,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/awk.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/egrep.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/exponential.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/grep.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/lookahead_capture.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/parse_curly_brackets.pass.cpp
