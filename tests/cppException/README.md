@@ -17,3 +17,4 @@ be thrown and caught correctly.
 * Stack local unwind.
 * Stack global unwind.
 * The exception happens in function-try-block is handled.
+* Unhandled exception.

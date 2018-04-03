@@ -280,8 +280,13 @@ void _OE_ExceptionDispatcher(OE_CONTEXT* oe_context)
         return;
     }
 
-    // Exception can't be handled by trusted handlers, smash the enclave.
-    OE_Abort();
+    // Exception can't be handled by trusted handlers, abort the enclave.
+    // Let the OE_Abort to run on the stack where the exception happens.
+    td->host_rbp = td->host_previous_rbp;
+    td->host_rsp = td->host_previous_rsp;
+    oe_exception_record.context->rip = (uint64_t)OE_Abort;
+    OE_ContinueExecution(oe_exception_record.context);
+
     return;
 }
 

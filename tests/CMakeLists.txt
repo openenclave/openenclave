@@ -4,6 +4,7 @@
 option(ENABLE_LIBC_TESTS "Build libc tests and include in test list" ON)
 option(ENABLE_LIBCXX_TESTS "Build libcxx tests and include in test list" OFF)
 
+add_subdirectory(abortStatus)
 add_subdirectory(aesm)
 add_subdirectory(ecall)
 add_subdirectory(ecall_ocall)
