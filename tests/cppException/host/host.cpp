@@ -31,8 +31,8 @@ void TestUnhandledException(
 
     printf("=== %s(%d)  \n", __FUNCTION__, func_num);
     result = OE_CallEnclave(enclave, "TestUnhandledException", &args);
-    assert(result == OE_ENCLAVE_ABORTING);
-    assert(args.ret == 0);
+    OE_TEST(result == OE_ENCLAVE_ABORTING);
+    OE_TEST(args.ret == 0);
 }
 
 int main(int argc, const char* argv[])
