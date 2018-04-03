@@ -12,7 +12,6 @@
 
 #define Memset OE_Memset
 #define Memcpy OE_Memcpy
-#define IsValidMemory(ptr, size) OE_IsOutsideEnclave(ptr, size)
 
 #else
 
@@ -21,7 +20,6 @@
 
 #define Memset memset
 #define Memcpy memcpy
-#define IsValidMemory(ptr, size) true
 
 #endif
 
@@ -50,13 +48,17 @@ static void _OE_ParseSGXReportBody(
         sizeof(parsedReport->identity.uniqueID) >=
         sizeof(reportBody->mrenclave));
     Memcpy(
-        parsedReport->identity.uniqueID, reportBody->mrenclave, OE_SHA256_SIZE);
+        parsedReport->identity.uniqueID,
+        reportBody->mrenclave,
+        sizeof(reportBody->mrenclave));
 
     OE_STATIC_ASSERT(
         sizeof(parsedReport->identity.authorID) >=
         sizeof(reportBody->mrsigner));
     Memcpy(
-        parsedReport->identity.authorID, reportBody->mrsigner, OE_SHA256_SIZE);
+        parsedReport->identity.authorID,
+        reportBody->mrsigner,
+        sizeof(reportBody->mrsigner));
 
     parsedReport->identity.productID[0] = reportBody->isvprodid & 0xFF;
     parsedReport->identity.productID[1] = (reportBody->isvprodid >> 8) & 0xFF;
@@ -77,8 +79,7 @@ OE_Result OE_ParseReport(
 {
     OE_Result result = OE_OK;
 
-    if (report == NULL || parsedReport == NULL ||
-        !IsValidMemory(parsedReport, sizeof(OE_Report)))
+    if (report == NULL || parsedReport == NULL)
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (reportSize == sizeof(SGX_Report))
