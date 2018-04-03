@@ -310,20 +310,24 @@ OE_ExceptionDispatcher:
 //     Registers:
 //         RDI - sgxKeyRequest
 //         RSI - sgxKey
+//
 //     return:
-//         RAX - 0 is success.
+//         Return values in RAX 
+//             SGX_SUCCESS
+//             SGX_INVALID_ATTRIBUTE
+//             SGX_INVALID_CPUSVN
+//             SGX_INVALID_ISVSVN
+//             SGX_INVALID_KEYNAME
 //==============================================================================
 .globl _OE_EGetKey
 .type _OE_EGetKey, @function
 _OE_EGetKey:
 .cfi_startproc
-    // Put key request to rdi, and put output key to rsi.
     movq %rdi, %rbx
     movq %rsi, %rcx
 
     // Execute EGETKEY.
-    // Todo, define a constant for the EGETKEY.
-    movq $1, %rax
+    movq $ENCLU_EGETKEY, %rax
     ENCLU
 
     // EGETKEY return value is put in RAX by the instruction. 
