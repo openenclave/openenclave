@@ -29,8 +29,8 @@ void TestAbortStatus(OE_Enclave* enclave, const char* functionName)
 
     printf("=== %s(%s)  \n", __FUNCTION__, functionName);
     result = OE_CallEnclave(enclave, functionName, &args);
-    assert(result == OE_ENCLAVE_ABORTING);
-    assert(args.ret == 0);
+    OE_TEST(result == OE_ENCLAVE_ABORTING);
+    OE_TEST(args.ret == 0);
 }
 
 static void CrashEnclaveThread(
@@ -52,8 +52,8 @@ static void CrashEnclaveThread(
 
     // Crash the enclave to set enclave in abort status.
     result = OE_CallEnclave(enclave, "RegularAbort", &args);
-    assert(result == OE_ENCLAVE_ABORTING);
-    assert(args.ret == 0);
+    OE_TEST(result == OE_ENCLAVE_ABORTING);
+    OE_TEST(args.ret == 0);
 
     // Release all worker threads.
     *args.is_enclave_crashed = 1;
@@ -81,8 +81,8 @@ static void EcallAfterCrashThread(
 
     // Try to ECALL into the enclave.
     result = OE_CallEnclave(enclave, "NormalECall", &args);
-    assert(result == OE_ENCLAVE_ABORTING);
-    assert(args.ret == -1);
+    OE_TEST(result == OE_ENCLAVE_ABORTING);
+    OE_TEST(args.ret == -1);
     return;
 }
 
@@ -98,8 +98,8 @@ static void OcallAfterCrashThread(
     args.is_enclave_crashed = is_enclave_crashed;
 
     result = OE_CallEnclave(enclave, "TestOCallAfterAbort", &args);
-    assert(result == OE_OK);
-    assert(args.ret == 0);
+    OE_TEST(result == OE_OK);
+    OE_TEST(args.ret == 0);
 
     return;
 }
@@ -198,7 +198,7 @@ static uint32_t TestRecursion(
     uint32_t crc = CalcRecursionHashEnc(&args);
 
     result = OE_CallEnclave(enclave, "EncRecursion", &args);
-    assert(result == OE_OK);
+    OE_TEST(result == OE_OK);
 
     printf(
         "%s(FlowId=%u, RecursionDepth=%u): Expect CRC %#x, have "
@@ -210,7 +210,7 @@ static uint32_t TestRecursion(
         args.crc,
         (crc == args.crc) ? "MATCH" : "MISMATCH");
 
-    assert(crc == args.crc);
+    OE_TEST(crc == args.crc);
     return crc;
 }
 
@@ -252,7 +252,7 @@ OE_OCALL void RecursionOcall(void* args_)
         }
 
         // Verify the ECALL into the enclave will fail after enclave is aborted.
-        assert(
+        OE_TEST(
             OE_CallEnclave(
                 (OE_Enclave*)argsRec.enclave, "EncRecursion", NULL) ==
             OE_ENCLAVE_ABORTING);
