@@ -159,22 +159,31 @@ OE_PRINTF_FORMAT(2, 3)
 int OE_HostFprintf(int device, const char* fmt, ...);
 
 /**
- * Allocates space for parameters of the next call to host on the host's stack
- * frame.
+ * Allocates space from host memory. This function is intended to obtain
+ * memory for OE_CallHost arguments. For repeated small allocations,
+ * performance of OE_HostAllocForCallHost() will generally be higher than
+ * OE_HostMalloc().
  *
- * This function allocates **size** bytes of space on the stack frame of the
- * host. The returned address will be a multiple of **alignment** (if
- * non-zero). The allocated space is freed automatically when the OCALL
- * returns. If the stack overflows, the behavior is undefined.
+ * Note: Memory allocated by OE_HostAllocForCallHost() must be freed by
+ * OE_HostFreeForCallHost(), in reverse order of allocation.
  *
  * @param size The number of bytes to allocate.
- * @param alignment The alignment requirement (see above).
- * @param isZeroInit Whether the allocated memory is zero-initialized.
  *
- * @returns Returns the address of the allocated space.
- *
+ * @returns Returns the address of the allocated space, or NULL in case of
+ *          error.
  */
-void* OE_HostAllocForCallHost(size_t size, size_t alignment, bool isZeroInit);
+void* OE_HostAllocForCallHost(size_t size);
+
+/**
+ * Frees space allocated w/ OE_HostAllocForCallHost().
+ *
+ * Note: Memory allocated by OE_HostAllocForCallHost() must be freed by
+ * OE_HostFreeForCallHost(), in reverse order of allocation.
+ *
+ * @param p Address returned by previous call to OE_HostAllocForCallHost().
+ *      Can be NULL.
+ */
+void OE_HostFreeForCallHost(void* p);
 
 /**
  * Allocate bytes from the host's heap.

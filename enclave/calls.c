@@ -448,8 +448,8 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args = OE_HostAllocForCallHost(
-                  sizeof(OE_CallHostArgs) + len + 1, 0, false)))
+        if (!(args =
+                  OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
         OE_Memcpy(args->func, func, len + 1);
@@ -467,7 +467,7 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     result = OE_OK;
 
 OE_CATCH:
-
+    OE_HostFreeForCallHost(args);
     return result;
 }
 
