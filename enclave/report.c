@@ -9,6 +9,7 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
 #include <openenclave/types.h>
+#include "../common/report.c"
 
 OE_CHECK_SIZE(sizeof(SGX_ReportData), OE_REPORT_DATA_SIZE);
 
@@ -213,7 +214,6 @@ OE_CATCH:
 }
 
 OE_Result OE_GetReport(
-
     uint32_t options,
     const uint8_t* reportData,
     uint32_t reportDataSize,

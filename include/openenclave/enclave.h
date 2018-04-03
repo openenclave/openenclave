@@ -348,6 +348,22 @@ OE_Result OE_GetReport(
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize);
 
+/**
+ * Parse an enclave report into a standard format for reading.
+ *
+ * @param report The buffer containing the report to parse.
+ * @param reportSize The size of the **report** buffer.
+ * @param parsedReport The **OE_Report** structure to populate with the report
+ * properties in a standard format.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ */
+OE_Result OE_ParseReport(
+    const uint8_t* report,
+    uint32_t reportSize,
+    OE_Report* parsedReport);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */

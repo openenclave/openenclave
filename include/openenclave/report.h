@@ -16,6 +16,38 @@ OE_EXTERNC_BEGIN
 
 #define OE_REPORT_DATA_SIZE 64
 
+// Fixed identity property sizes for OEv1
+#define OE_UNIQUE_ID_SIZE 32
+#define OE_AUTHOR_ID_SIZE 32
+#define OE_PRODUCT_ID_SIZE 16
+
+// Enclave report attribute bit masks
+#define OE_REPORT_ATTRIBUTES_DEBUG 0x0000000000000001ULL
+#define OE_REPORT_ATTRIBUTES_REMOTE 0x0000000000000002ULL
+#define OE_REPORT_ATTRIBUTES_RESERVED \
+    (~(OE_REPORT_ATTRIBUTES_DEBUG | OE_REPORT_ATTRIBUTES_REMOTE))
+
+typedef struct _OE_Identity
+{
+    uint32_t idVersion;
+    uint32_t securityVersion;
+    uint64_t attributes;
+    uint8_t uniqueID[OE_UNIQUE_ID_SIZE];
+    uint8_t authorID[OE_AUTHOR_ID_SIZE];
+    uint8_t productID[OE_PRODUCT_ID_SIZE];
+} OE_Identity;
+
+typedef struct _OE_Report
+{
+    uint32_t size;
+    OE_EnclaveType type;
+    uint8_t* reportData;
+    uint32_t reportDataSize;
+    uint8_t* enclaveReport;
+    uint32_t enclaveReportSize;
+    OE_Identity identity;
+} OE_Report;
+
 OE_EXTERNC_END
 
 #endif /* _OE_REPORT_H */
