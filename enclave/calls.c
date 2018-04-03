@@ -20,7 +20,7 @@
 typedef unsigned long long WORD;
 
 #define WORD_SIZE sizeof(WORD)
-
+int TestGetKey();
 uint64_t __oe_enclave_status = OE_OK;
 
 /*
@@ -297,6 +297,7 @@ static void _HandleECall(
     {
         case OE_FUNC_CALL_ENCLAVE:
         {
+            TestGetKey();
             argOut = _HandleCallEnclave(argIn);
             break;
         }

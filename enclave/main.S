@@ -300,3 +300,32 @@ OE_ExceptionDispatcher:
 .cfi_endproc
 
 .size OE_ExceptionDispatcher, .-OE_ExceptionDispatcher
+
+//==============================================================================
+//
+// uint64_t _OE_EGetKey(const SgxKeyRequest* sgxKeyRequest, SgxKey* sgxKey);
+//
+//     The EGETKEY instruction wrapper.
+//
+//     Registers:
+//         RDI - sgxKeyRequest
+//         RSI - sgxKey
+//     return:
+//         RAX - 0 is success.
+//==============================================================================
+.globl _OE_EGetKey
+.type _OE_EGetKey, @function
+_OE_EGetKey:
+.cfi_startproc
+    // Put key request to rdi, and put output key to rsi.
+    movq %rdi, %rbx
+    movq %rsi, %rcx
+
+    // Execute EGETKEY.
+    // Todo, define a constant for the EGETKEY.
+    movq $1, %rax
+    ENCLU
+
+    // EGETKEY return value is put in RAX by the instruction. 
+    ret
+.cfi_endproc

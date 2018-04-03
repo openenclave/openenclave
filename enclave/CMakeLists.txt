@@ -12,6 +12,7 @@ add_library(oeenclave STATIC
     hoststack.c
     init.c
     jump.c
+    keys.c
     memory.c
     once.c
     report.c
