@@ -102,13 +102,13 @@ OE_CATCH:
 
     if (sgxTargetInfo)
     {
-        memset(sgxTargetInfo, 0, sizeof(*sgxTargetInfo));
+        memset(sgxTargetInfo, 0, sizeof(SGX_TargetInfo));
         free(sgxTargetInfo);
     }
 
     if (sgxReport)
     {
-        memset(sgxReport, 0, sizeof(*sgxReport));
+        memset(sgxReport, 0, sizeof(SGX_Report));
         free(sgxReport);
     }
 
