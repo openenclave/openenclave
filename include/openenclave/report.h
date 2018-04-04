@@ -37,14 +37,28 @@ typedef struct _OE_Identity
     uint8_t productID[OE_PRODUCT_ID_SIZE];
 } OE_Identity;
 
+/*
+ * OE_Report structure hold the parsed form of a report.
+*
+ */
 typedef struct _OE_Report
 {
+    /* Size of the OE_Report structure. */
     uint32_t size;
+
+    /* The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
     OE_EnclaveType type;
+
+    /* Pointer to report data field within the report byte-stream supplied to
+     * OE_ParseReport.*/
     uint8_t* reportData;
     uint32_t reportDataSize;
+
+    /* Pointer to report body field within the report byte-stream supplied to
+     * OE_ParseReport. */
     uint8_t* enclaveReport;
     uint32_t enclaveReportSize;
+
     OE_Identity identity;
 } OE_Report;
 
