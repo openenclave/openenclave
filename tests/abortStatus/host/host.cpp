@@ -25,6 +25,7 @@ void TestAbortStatus(OE_Enclave* enclave, const char* functionName)
 {
     OE_Result result;
     AbortStatusArgs args;
+    args.divisor = 0;
     args.ret = -1;
 
     printf("=== %s(%s)  \n", __FUNCTION__, functionName);
