@@ -46,8 +46,9 @@ OE_Result SGX_GetQuoteSize(
     uint32_t* quoteSize)
 {
     OE_Result result = OE_FAILURE;
-    size_t signatureSize = 0;
-    uint64_t n = 0;
+    uint64_t signatureSize = 0;
+    uint32_t n = 0;
+    uint64_t quoteSize64 = 0;
     const SGX_SigRL* sigrl = (const SGX_SigRL*)signatureRevocationList;
 
     if (quoteSize)
@@ -72,12 +73,13 @@ OE_Result SGX_GetQuoteSize(
     /* Calculate variable size of EPID_Signature with N entries */
     signatureSize = sizeof(SGX_EPID_Signature) + (n * sizeof(SGX_EPID_NRProof));
 
-    *quoteSize = sizeof(SGX_Quote) + sizeof(SGX_WrapKey) + SGX_QUOTE_IV_SIZE +
-                 sizeof(uint32_t) + signatureSize + SGX_MAC_SIZE;
+    quoteSize64 = sizeof(SGX_Quote) + sizeof(SGX_WrapKey) + SGX_QUOTE_IV_SIZE +
+                  sizeof(uint32_t) + signatureSize + SGX_MAC_SIZE;
 
-    if (*quoteSize > (uint64_t)UINT_MAX)
+    if (quoteSize64 > (uint64_t)UINT_MAX)
         goto done;
 
+    *quoteSize = (uint32_t)quoteSize64;
     result = OE_OK;
 
 done:
