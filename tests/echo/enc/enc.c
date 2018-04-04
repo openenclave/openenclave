@@ -9,7 +9,7 @@ char* OE_HostStackStrdup(const char* str)
 {
     size_t n = OE_Strlen(str);
 
-    char* dup = (char*)OE_HostAllocForCallHost(n + 1, 0, false);
+    char* dup = (char*)OE_HostAllocForCallHost(n + 1);
 
     if (dup)
         OE_Memcpy(dup, str, n + 1);
@@ -44,6 +44,10 @@ OE_ECALL void Echo(void* args_)
     }
 
     OE_HostPrintf("Hello from Echo function!\n");
+
+    OE_HostFreeForCallHost(args->str3);
+    OE_HostFreeForCallHost(args->str2);
+    OE_HostFreeForCallHost(args->str1);
 
     args->ret = 0;
 }

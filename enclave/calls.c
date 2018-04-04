@@ -394,7 +394,7 @@ OE_Result OE_OCall(
     Callsite* callsite = td->callsites;
     uint32_t old_ocall_flags = td->ocall_flags;
 
-    /* If the enclave is in crashing/crashed status, new OCALL should fail 
+    /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
     if (__oe_enclave_status != OE_OK)
         OE_THROW((OE_Result)__oe_enclave_status);
@@ -455,9 +455,15 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args = OE_HostAllocForCallHost(
-                  sizeof(OE_CallHostArgs) + len + 1, 0, false)))
-            OE_THROW(OE_OUT_OF_MEMORY);
+        if (!(args =
+                  OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1)))
+        {
+            /* If the enclave is in crashing/crashed status, new OCALL should
+             * fail immediately. */
+            OE_THROW(
+                (__oe_enclave_status != OE_OK) ? __oe_enclave_status
+                                               : OE_OUT_OF_MEMORY);
+        }
 
         OE_Memcpy(args->func, func, len + 1);
 
@@ -474,7 +480,7 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     result = OE_OK;
 
 OE_CATCH:
-
+    OE_HostFreeForCallHost(args);
     return result;
 }
 
@@ -583,35 +589,35 @@ void __OE_HandleMain(
     // Block enclave enter based on current enclave status.
     switch (__oe_enclave_status)
     {
-    case OE_OK:
-        break;
+        case OE_OK:
+            break;
 
-    case OE_ENCLAVE_ABORTING:
-        // Block any ECALL except first time OE_FUNC_DESTRUCTOR call.
-        // Don't block ORET here.
-        if (code == OE_CODE_ECALL)
-        {
-            if (func == OE_FUNC_DESTRUCTOR)
+        case OE_ENCLAVE_ABORTING:
+            // Block any ECALL except first time OE_FUNC_DESTRUCTOR call.
+            // Don't block ORET here.
+            if (code == OE_CODE_ECALL)
             {
-                // Termination function should be only called once.
-                __oe_enclave_status = OE_ENCLAVE_ABORTED;
+                if (func == OE_FUNC_DESTRUCTOR)
+                {
+                    // Termination function should be only called once.
+                    __oe_enclave_status = OE_ENCLAVE_ABORTED;
+                }
+                else
+                {
+                    // Return crashing status.
+                    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+                    *outputArg2 = __oe_enclave_status;
+                    return;
+                }
             }
-            else
-            {
-                // Return crashing status.
-                *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
-                *outputArg2 = __oe_enclave_status;
-                return;
-            }
-        }
 
-        break;
+            break;
 
-    default:
-        // Return crashed status.
-        *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
-        *outputArg2 = OE_ENCLAVE_ABORTED;
-        return;
+        default:
+            // Return crashed status.
+            *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+            *outputArg2 = OE_ENCLAVE_ABORTED;
+            return;
     }
 
     /* Initialize the enclave the first time it is ever entered */
@@ -697,7 +703,8 @@ void _OE_NotifyNestedExitStart(uint64_t arg1, OE_OCallContext* ocallContext)
 
 void OE_Abort(void)
 {
-    // Once it starts to crash, the state can only transit forward, not backward.
+    // Once it starts to crash, the state can only transit forward, not
+    // backward.
     if (__oe_enclave_status < OE_ENCLAVE_ABORTING)
     {
         __oe_enclave_status = OE_ENCLAVE_ABORTING;
