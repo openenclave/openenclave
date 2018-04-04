@@ -314,12 +314,16 @@ void __OE_AssertFail(
     int line,
     const char* func);
 
+#ifndef NDEBUG
 #define OE_Assert(EXPR)                                               \
     do                                                                \
     {                                                                 \
         if (!(EXPR))                                                  \
             __OE_AssertFail(#EXPR, __FILE__, __LINE__, __FUNCTION__); \
     } while (0)
+#else
+#define OE_Assert(EXPR)
+#endif
 
 /**
  * Get a report signed by the enclave platform for use in attestation.

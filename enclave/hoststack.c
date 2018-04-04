@@ -83,7 +83,7 @@ static void _HostStackInit(void)
 }
 
 // cleanup handler for regular exit
-void _FreeThreadBucket(void* arg)
+static void _FreeThreadBucket(void* arg)
 {
     ThreadBuckets* tb = (ThreadBuckets*)arg;
     if (tb->standbyHost)
@@ -91,8 +91,7 @@ void _FreeThreadBucket(void* arg)
         OE_HostFree((void*)tb->standbyHost);
         tb->standbyHost = NULL;
     }
-    if (tb->activeHost &&
-        (tb->cached.baseFree == OE_OFFSETOF(Bucket, elements)))
+    if (tb->activeHost && (tb->cached.baseFree == 0))
     {
         OE_HostFree((void*)tb->activeHost);
         tb->activeHost = NULL;
@@ -225,7 +224,8 @@ void* OE_HostAllocForCallHost(size_t size)
             bHost->size = tb->cached.size = allocSize - sizeof(Bucket);
         }
 
-        bHost->baseFree = tb->cached.baseFree = size + sizeof(BucketElement);
+        tb->cached.baseFree = size + sizeof(BucketElement);
+        bHost->baseFree = tb->cached.baseFree;
         bHost->elements[0].bucket = (Bucket*)bHost;
         tb->activeHost = bHost;
         retVal = (void*)(&bHost->elements[0].data);
@@ -252,20 +252,25 @@ void OE_HostFreeForCallHost(void* p)
     tb = _GetThreadBuckets();
     OE_Assert(tb != NULL);
 
-    OE_Assert(tb->activeHost != NULL);
+    OE_Assert(
+        (tb->activeHost != NULL) || (tb->flags & THREAD_BUCKET_FLAG_RUNDOWN));
 
-    if (tb->activeHost != e.bucket)
+    if (e.bucket != tb->activeHost)
     {
         // underflow - rotate active bucket into standby
-        OE_Assert(_GetBucketAvailableBytes((Bucket*)tb->activeHost) == 0);
-        OE_Assert(_GetBucketAvailableBytes(&tb->cached) == 0);
+        if (tb->activeHost != NULL)
+        {
+            OE_Assert(tb->activeHost->baseFree == 0);
+            OE_Assert(tb->cached.baseFree == 0);
+        }
 
         // free old buckets
         if (tb->flags & THREAD_BUCKET_FLAG_RUNDOWN)
         {
             // on rundown, do not bother to cache
             OE_Assert(tb->standbyHost == NULL);
-            OE_HostFree((void*)tb->activeHost);
+            if (tb->activeHost)
+                OE_HostFree((void*)tb->activeHost);
         }
         else
         {
@@ -289,8 +294,7 @@ void OE_HostFreeForCallHost(void* p)
 
     tb->cached.baseFree = (size_t)(eHost) - (size_t)(&tb->activeHost->elements);
 
-    if ((tb->flags & THREAD_BUCKET_FLAG_RUNDOWN) &&
-        (tb->cached.baseFree == OE_OFFSETOF(Bucket, elements)))
+    if ((tb->flags & THREAD_BUCKET_FLAG_RUNDOWN) && (tb->cached.baseFree == 0))
     {
         // on rundown, do not bother to cache
         OE_HostFree((void*)tb->activeHost);
