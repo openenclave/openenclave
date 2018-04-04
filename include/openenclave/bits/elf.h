@@ -236,12 +236,6 @@ typedef struct
 
     /* ELF-64 header */
     Elf64_Ehdr* ehdr;
-
-    /* Pointer to ehdr.e_shnum section headers */
-    Elf64_Shdr* shdrs;
-
-    /* Pointer to ehdr.e_phnum program headers */
-    Elf64_Phdr* phdrs;
 } Elf64;
 
 int Elf64_TestHeader(const Elf64_Ehdr* header);
@@ -325,6 +319,12 @@ int Elf64_LoadRelocations(const Elf64* elf, void** data, size_t* size);
 
 /* Get the segment with the given index; return NULL on error */
 void* Elf64_GetSegment(const Elf64* elf, size_t index);
+
+/* Get the section header with the given index; return NULL on error */
+Elf64_Shdr* Elf64_GetSectionHeader(const Elf64* elf, size_t index);
+
+/* Get the program header with the given index; return NULL on error */
+Elf64_Phdr* Elf64_GetProgramHeader(const Elf64* elf, size_t index);
 
 ELF_EXTERNC_END
 

@@ -65,7 +65,7 @@ OE_Result __OE_LoadSegments(
     {
         for (i = 0; i < eh->e_shnum; i++)
         {
-            const Elf64_Shdr* sh = &elf.shdrs[i];
+            const Elf64_Shdr* sh = Elf64_GetSectionHeader(&elf, i);
             const char* name = Elf64_GetStringFromShstrtab(&elf, sh->sh_name);
 
             if (name && strcmp(name, ".text") == 0)
@@ -83,7 +83,7 @@ OE_Result __OE_LoadSegments(
     /* Add all loadable program segments to SEGMENTS array */
     for (i = 0; i < eh->e_phnum; i++)
     {
-        const Elf64_Phdr* ph = &elf.phdrs[i];
+        const Elf64_Phdr* ph = Elf64_GetProgramHeader(&elf, i);
         OE_Segment seg;
 
         /* Skip non-loadable program segments */

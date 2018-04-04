@@ -70,27 +70,27 @@ done:
     return rc;
 }
 
-static void _SetShdrs(Elf64* elf)
+static Elf64_Shdr* _shdr(const Elf64* elf, size_t index)
 {
-    elf->shdrs =
-        (Elf64_Shdr*)((const unsigned char*)elf->data + elf->ehdr->e_shoff);
+    Elf64_Shdr* shdrs = (Elf64_Shdr*)((uint8_t*)elf->data + elf->ehdr->e_shoff);
+    return &shdrs[index];
 }
 
-static void _SetPhdrs(Elf64* elf)
+static Elf64_Phdr* _phdr(const Elf64* elf, size_t index)
 {
-    elf->phdrs =
-        (Elf64_Phdr*)((const unsigned char*)elf->data + elf->ehdr->e_phoff);
+    Elf64_Phdr* phdrs = (Elf64_Phdr*)((uint8_t*)elf->data + elf->ehdr->e_phoff);
+    return &phdrs[index];
 }
 
 static void* _section(const Elf64* elf, size_t index)
 {
-    const Elf64_Shdr* sh = &elf->shdrs[index];
+    const Elf64_Shdr* sh = _shdr(elf, index);
     return sh->sh_type == PT_NULL ? NULL : (uint8_t*)elf->data + sh->sh_offset;
 }
 
 static void* _segment(const Elf64* elf, size_t index)
 {
-    const Elf64_Phdr* ph = &elf->phdrs[index];
+    const Elf64_Phdr* ph = _phdr(elf, index);
     return ph->p_type == PT_NULL ? NULL : (uint8_t*)elf->data + ph->p_offset;
 }
 
@@ -100,6 +100,22 @@ void* Elf64_GetSegment(const Elf64* elf, size_t index)
         return NULL;
 
     return _segment(elf, index);
+}
+
+Elf64_Shdr* Elf64_GetSectionHeader(const Elf64* elf, size_t index)
+{
+    if (!elf || !elf->ehdr || index >= elf->ehdr->e_phnum)
+        return NULL;
+
+    return _shdr(elf, index);
+}
+
+Elf64_Phdr* Elf64_GetProgramHeader(const Elf64* elf, size_t index)
+{
+    if (!elf || !elf->ehdr || index >= elf->ehdr->e_shnum)
+        return NULL;
+
+    return _phdr(elf, index);
 }
 
 static int _GetParts(Elf64* elf)
@@ -112,12 +128,6 @@ static int _GetParts(Elf64* elf)
     /* Read ehdr */
     if (_GetHeader(elf) != 0)
         GOTO(done);
-
-    /* Get the section table */
-    _SetShdrs(elf);
-
-    /* Get the program table */
-    _SetPhdrs(elf);
 
     rc = 0;
 
@@ -256,7 +266,7 @@ static size_t _FindShdr(const Elf64* elf, const char* name)
 
     for (i = 0; i < elf->ehdr->e_shnum; i++)
     {
-        const Elf64_Shdr* sh = &elf->shdrs[i];
+        const Elf64_Shdr* sh = _shdr(elf, i);
         const char* s = Elf64_GetStringFromShstrtab(elf, sh->sh_name);
 
         if (s && strcmp(name, s) == 0)
@@ -285,7 +295,7 @@ const char* Elf64_GetStringFromStrtab(const Elf64* elf, Elf64_Word offset)
     if (index > elf->ehdr->e_shnum)
         goto done;
 
-    sh = &elf->shdrs[index];
+    sh = _shdr(elf, index);
 
     if (offset >= sh->sh_size)
         goto done;
@@ -311,7 +321,7 @@ const char* Elf64_GetStringFromShstrtab(const Elf64* elf, Elf64_Word offset)
     if (index > elf->ehdr->e_shnum)
         goto done;
 
-    sh = &elf->shdrs[index];
+    sh = _shdr(elf, index);
 
     if (offset >= sh->sh_size)
         goto done;
@@ -346,7 +356,7 @@ int Elf64_FindSymbolByName(const Elf64* elf, const char* name, Elf64_Sym* sym)
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = &elf->shdrs[index]))
+    if (!(sh = _shdr(elf, index)))
         goto done;
 
     /* If this is not a symbol table */
@@ -405,7 +415,7 @@ const char* Elf64_GetStringFromDynstr(const Elf64* elf, Elf64_Word offset)
     if (index > elf->ehdr->e_shnum)
         goto done;
 
-    sh = &elf->shdrs[index];
+    sh = _shdr(elf, index);
 
     if (offset >= sh->sh_size)
         goto done;
@@ -438,7 +448,7 @@ int Elf64_FindDynamicSymbolByName(
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = &elf->shdrs[index]))
+    if (!(sh = _shdr(elf, index)))
         goto done;
 
     /* If this is not a symbol table */
@@ -510,7 +520,7 @@ int Elf64_FindSymbolByAddress(
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = &elf->shdrs[index]))
+    if (!(sh = _shdr(elf, index)))
         goto done;
 
     /* If this is not a symbol table */
@@ -576,7 +586,7 @@ int Elf64_FindDynamicSymbolByAddress(
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = &elf->shdrs[index]))
+    if (!(sh = _shdr(elf, index)))
         goto done;
 
     /* If this is not a symbol table */
@@ -795,7 +805,7 @@ static size_t _FindSegmentFor(const Elf64* elf, const Elf64_Shdr* sh)
 
     for (i = 0; i < elf->ehdr->e_phnum; i++)
     {
-        const Elf64_Phdr* ph = &elf->phdrs[i];
+        const Elf64_Phdr* ph = _phdr(elf, i);
 
         if (sh->sh_offset >= ph->p_offset && sh->sh_size <= ph->p_memsz)
             return i;
@@ -815,9 +825,6 @@ int Elf64_DumpSections(const Elf64* elf)
     if (Elf64_TestHeader(elf->ehdr) != 0)
         goto done;
 
-    if (!elf->shdrs)
-        goto done;
-
     puts(
         "Num   Name                     Offset           Size             "
         "Seg ");
@@ -827,7 +834,7 @@ int Elf64_DumpSections(const Elf64* elf)
 
     for (i = 0; i < elf->ehdr->e_shnum; i++)
     {
-        const Elf64_Shdr* sh = &elf->shdrs[i];
+        const Elf64_Shdr* sh = _shdr(elf, i);
         const char* name = Elf64_GetStringFromShstrtab(elf, sh->sh_name);
         size_t segment = _FindSegmentFor(elf, sh);
 
@@ -1025,7 +1032,7 @@ void Elf64_DumpSymbol(const Elf64* elf, const Elf64_Sym* sym)
 
     if (sym->st_shndx < elf->ehdr->e_shnum)
     {
-        const Elf64_Shdr* sh = &elf->shdrs[sym->st_shndx];
+        const Elf64_Shdr* sh = _shdr(elf, sym->st_shndx);
         secname = Elf64_GetStringFromShstrtab(elf, sh->sh_name);
     }
 
@@ -1063,7 +1070,7 @@ int Elf64_VisitSymbols(
         goto done;
 
     /* Set pointer to section header */
-    if (!(sh = &elf->shdrs[index]))
+    if (!(sh = _shdr(elf, index)))
         goto done;
 
     /* If this is not a symbol table */
@@ -1115,17 +1122,11 @@ void Elf64_Dump(const Elf64* elf)
 
     Elf64_DumpHeader(elf->ehdr);
 
-    if (elf->shdrs)
-    {
-        for (size_t i = 0; i < elf->ehdr->e_shnum; i++)
-            Elf64_DumpShdr(&elf->shdrs[i], i);
-    }
+    for (size_t i = 0; i < elf->ehdr->e_shnum; i++)
+        Elf64_DumpShdr(_shdr(elf, i), i);
 
-    if (elf->phdrs)
-    {
-        for (size_t i = 0; i < elf->ehdr->e_phnum; i++)
-            _DumpPhdr(&elf->phdrs[i], i);
-    }
+    for (size_t i = 0; i < elf->ehdr->e_phnum; i++)
+        _DumpPhdr(_phdr(elf, i), i);
 }
 
 static size_t _FindSection(const Elf64* elf, const char* name)
@@ -1134,7 +1135,7 @@ static size_t _FindSection(const Elf64* elf, const char* name)
 
     for (i = 0; i < elf->ehdr->e_shnum; i++)
     {
-        const Elf64_Shdr* sh = &elf->shdrs[i];
+        const Elf64_Shdr* sh = _shdr(elf, i);
         const char* s = Elf64_GetStringFromShstrtab(elf, sh->sh_name);
 
         if (s && strcmp(name, s) == 0)
@@ -1165,7 +1166,7 @@ int Elf64_FindSection(
     /* Search for section with this name */
     for (i = 0; i < elf->ehdr->e_shnum; i++)
     {
-        const Elf64_Shdr* sh = &elf->shdrs[i];
+        const Elf64_Shdr* sh = _shdr(elf, i);
         const char* s = Elf64_GetStringFromShstrtab(elf, sh->sh_name);
 
         if (s && strcmp(name, s) == 0)
@@ -1197,12 +1198,12 @@ int Elf64_FindSectionHeader(
     /* Search for section with this name */
     for (i = 0; i < elf->ehdr->e_shnum; i++)
     {
-        const Elf64_Shdr* sh = &elf->shdrs[i];
+        const Elf64_Shdr* sh = _shdr(elf, i);
         const char* s = Elf64_GetStringFromShstrtab(elf, sh->sh_name);
 
         if (s && strcmp(name, s) == 0)
         {
-            *shdr = elf->shdrs[i];
+            *shdr = *_shdr(elf, i);
             return 0;
         }
     }
@@ -1214,7 +1215,7 @@ int Elf64_FindSectionHeader(
 void Elf64_DumpSectionNames(const Elf64* elf)
 {
     size_t index = elf->ehdr->e_shstrndx;
-    const Elf64_Shdr* sh = &elf->shdrs[index];
+    const Elf64_Shdr* sh = _shdr(elf, index);
     const char* start = (const char*)_section(elf, index);
     const char* p = start;
     const char* end = start + sh->sh_size;
@@ -1244,7 +1245,7 @@ void Elf64_DumpStrings(const Elf64* elf)
         return;
 
     {
-        const Elf64_Shdr* sh = &elf->shdrs[index];
+        const Elf64_Shdr* sh = _shdr(elf, index);
         const char* start = (const char*)_section(elf, index);
         const char* p = start;
         const char* end = start + sh->sh_size;
@@ -1372,7 +1373,7 @@ int Elf64_AddSection(
         sh.sh_addralign = 1;
 
         /* New section follows .shstrtab section */
-        sh.sh_offset = elf->shdrs[shstrndx].sh_offset;
+        sh.sh_offset = _shdr(elf, shstrndx)->sh_offset;
     }
 
     /* Initialize the memory buffer */
@@ -1393,8 +1394,8 @@ int Elf64_AddSection(
     /* Insert new section name at NAMEOFFSET */
     {
         /* Calculate insertion offset of the new section name */
-        size_t nameoffset = elf->shdrs[shstrndx].sh_offset + 
-            elf->shdrs[shstrndx].sh_size;
+        size_t nameoffset = _shdr(elf, shstrndx)->sh_offset + 
+            _shdr(elf, shstrndx)->sh_size;
 
         /* Calculate number of bytes to be inserted */
         size_t namesize = 
@@ -1412,10 +1413,10 @@ int Elf64_AddSection(
             GOTO(done);
 
         /* Initialize the section name */
-        sh.sh_name = elf->shdrs[shstrndx].sh_size;
+        sh.sh_name = _shdr(elf, shstrndx)->sh_size;
 
         /* Update the size of the .shstrtab section */
-        elf->shdrs[shstrndx].sh_size += namesize;
+        _shdr(elf, shstrndx)->sh_size += namesize;
     }
 
     /* Append a new section header at SHDROFFSET */
@@ -1496,7 +1497,7 @@ int Elf64_RemoveSection(
         goto done;
 
     /* Save section header */
-    shdr = elf->shdrs[secIndex];
+    shdr = *_shdr(elf, secIndex);
 
     /* Remove the section from the image */
     {
@@ -1542,7 +1543,7 @@ int Elf64_RemoveSection(
     /* Remove the section header */
     {
         /* Calculate start-address of section header */
-        Elf64_Shdr* first = &elf->shdrs[secIndex];
+        Elf64_Shdr* first = _shdr(elf, secIndex);
 
         /* Calculate end-address of section header */
         const Elf64_Shdr* last = first + 1;
