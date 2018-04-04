@@ -42,7 +42,7 @@ OE_Result __OE_LoadSegments(
         OE_THROW(OE_FAILURE);
 
     /* Save pointer to header for convenience */
-    eh = elf.ehdr;
+    eh = (Elf64_Ehdr*)elf.data;
 
 /* Fail if not a dynamic object */
 #if 0

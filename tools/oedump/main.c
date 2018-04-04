@@ -34,7 +34,7 @@ void DumpEntryPoint(Elf64* elf)
     const char* name;
 
     if (Elf64_FindDynamicSymbolByAddress(
-            elf, elf->ehdr->e_entry, STT_FUNC, &sym) != 0)
+            elf, Elf64_GetHeader(elf)->e_entry, STT_FUNC, &sym) != 0)
     {
         err("cannot find entry point symbol");
         return;

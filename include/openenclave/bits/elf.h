@@ -233,9 +233,6 @@ typedef struct
 
     /* File image size */
     size_t size;
-
-    /* ELF-64 header */
-    Elf64_Ehdr* ehdr;
 } Elf64;
 
 int Elf64_TestHeader(const Elf64_Ehdr* header);
@@ -325,6 +322,9 @@ Elf64_Shdr* Elf64_GetSectionHeader(const Elf64* elf, size_t index);
 
 /* Get the program header with the given index; return NULL on error */
 Elf64_Phdr* Elf64_GetProgramHeader(const Elf64* elf, size_t index);
+
+/* Get pointer to the Elf64_Ehdr */
+Elf64_Ehdr* Elf64_GetHeader(const Elf64* elf);
 
 ELF_EXTERNC_END
 
