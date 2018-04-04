@@ -145,7 +145,6 @@ typedef enum _OE_TYPE {
 typedef enum _OE_ENCLAVE_TYPE {
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
-
 } OE_EnclaveType;
 
 /*

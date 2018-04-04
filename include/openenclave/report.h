@@ -38,8 +38,7 @@ typedef struct _OE_Identity
 } OE_Identity;
 
 /*
- * OE_Report structure hold the parsed form of a report.
-*
+ * OE_Report structure holds the parsed form of a report.
  */
 typedef struct _OE_Report
 {
