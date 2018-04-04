@@ -604,21 +604,6 @@ static OE_Result _AddPages(
         *(uint64_t*)((uint8_t*)segpages + sym.st_value) = sym.st_value;
     }
 
-    // Zero-fill the enclave properties (oe_enclavePropertiesSGX) so they will
-    // be excluded from the enclave hash. The signing tool (oesign) updates
-    // this structure with the enclave hash and clearly a hash cannot be a
-    // product of itself.
-    {
-        Elf64_Sym sym;
-
-        if (Elf64_FindDynamicSymbolByName(
-                elf, "oe_enclavePropertiesSGX", &sym) == 0)
-        {
-            void* ptr = (uint8_t*)segpages + sym.st_value;
-            memset(ptr, 0, sizeof(OE_EnclaveProperties_SGX));
-        }
-    }
-
     /* Add the program segments first */
     OE_TRY(
         _AddSegmentPages(

@@ -308,6 +308,10 @@ int Elf64_AddSection(
     const void* secdata,
     size_t secsize);
 
+int Elf64_RemoveSection(
+    Elf64* elf,
+    const char* name);
+
 void Elf64_DumpSectionNames(const Elf64* elf);
 
 void Elf64_DumpStrings(const Elf64* elf);

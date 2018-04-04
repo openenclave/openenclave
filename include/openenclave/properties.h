@@ -227,7 +227,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
 **==============================================================================
 */
 
-#define OE_INFO_SECTION_BEGIN __attribute__((section(OE_INFO_SECTION_NAME)))
+#define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo,\"\",@note#")))
 #define OE_INFO_SECTION_END
 
 #define OE_MAKE_ATTRIBUTES(_AllowDebug_) \
