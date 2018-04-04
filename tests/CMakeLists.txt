@@ -15,6 +15,7 @@ add_subdirectory(ecall)
 add_subdirectory(echo)
 add_subdirectory(file)
 add_subdirectory(hostcalls)
+add_subdirectory(hexdump)
 
 if(ENABLE_LIBC_TESTS)
     add_subdirectory(libc)

@@ -10,49 +10,68 @@ OE_INLINE char _NibbleToHexChar(uint8_t x)
     return (x < 10) ? ('0' + x) : ('A' + (x - 10));
 }
 
-/* Convert a byte to an ASCII hex string. Example: 0x3F => "3F" */
-static void _ByteToHexString(uint8_t byte, char buf[3])
+/* Convert high nibble to a hex character */
+OE_INLINE char _HighNibbleToHexChar(uint8_t byte)
 {
-    /* Convert high nibble to character */
-    buf[0] = _NibbleToHexChar(byte >> 4);
-
-    /* Convert low nibble to character */
-    buf[1] = _NibbleToHexChar(byte & 0x0F);
-
-    /* Zero-terminate the string */
-    buf[2] = '\0';
+    return _NibbleToHexChar(byte >> 4);
 }
 
-void OE_HexDump(const void* data, size_t size)
+/* Convert low nibble to a hex character */
+OE_INLINE char _LowNibbleToHexChar(uint8_t byte)
 {
-    size_t i;
-    const uint8_t* p = (const uint8_t*)data;
-
-    if (!data || !size)
-        return;
-
-    for (i = 0; i < size; i++)
-    {
-        char buf[3];
-        _ByteToHexString(p[i], buf);
-        OE_HostPrintf("%s", buf);
-    }
-
-    OE_HostPrintf("\n");
+    return _NibbleToHexChar(byte & 0x0F);
 }
 
 char* OE_HexString(char* str, size_t strSize, const void* data, size_t dataSize)
 {
-    if (!str || !data)
+    /* Check parameters */
+    if (!str || !data || (strSize < (2 * dataSize + 1)))
         return NULL;
 
-    if (strSize < (2 * dataSize + 1))
-        return NULL;
+    char* s = str;
+    const uint8_t* p = (const uint8_t*)data;
+    size_t n = dataSize;
 
-    for (size_t i = 0; i < dataSize; i++)
-        _ByteToHexString(((const uint8_t*)data)[i], &str[i * 2]);
+    /* For each byte in data buffer */
+    while (n--)
+    {
+        *s++ = _HighNibbleToHexChar(*p);
+        *s++ = _LowNibbleToHexChar(*p);
+        p++;
+    }
 
-    str[strSize - 1] = '\0';
+    /* Zero-terminate the string */
+    *s = '\0';
 
     return str;
+}
+
+void OE_HexDump(const void* data, size_t size)
+{
+    const uint8_t* p = (const uint8_t*)data;
+    size_t n = size;
+    const size_t chunkSize = 2;
+    char buf[2 * chunkSize + 1];
+
+    /* Return if nothing to print */
+    if (!data || !size)
+        return;
+
+    /* Print N-sized chunks first to reduce OCALLS */
+    while (n >= chunkSize)
+    {
+        OE_HexString(buf, sizeof(buf), p, chunkSize);
+        OE_HostPrintf("%s", buf);
+        p += chunkSize;
+        n -= chunkSize;
+    }
+
+    /* Print any remaining bytes */
+    if (n)
+    {
+        OE_HexString(buf, sizeof(buf), p, n);
+        OE_HostPrintf("%s", buf);
+    }
+
+    OE_HostPrintf("\n");
 }

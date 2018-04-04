@@ -10,15 +10,23 @@
 
 OE_EXTERNC_BEGIN
 
+/**
+ * Prints data to host console as hex characters
+ *
+ * @param data data to be printed
+ * @param dataSize size in bytes of **data** parameter
+ *
+ * @return first parameter or NULL if str parameter is too small
+ */
 void OE_HexDump(const void* data, size_t size);
 
 /**
  * Converts data to a hexidecimal string
  *
- * @param str - hexidecimal string
- * @param strSize - size of string buffer (must be at least 2*size+1 bytes)
- * @param data - data to be converted
- * @param dataSize - size in bytes of data parameter
+ * @param str hexidecimal string
+ * @param strSize size of string buffer (must be at least 2*size+1 bytes)
+ * @param data data to be converted
+ * @param dataSize size in bytes of **data** parameter
  *
  * @return first parameter or NULL if str parameter is too small
  */
