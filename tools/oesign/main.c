@@ -103,7 +103,7 @@ static int _UpdateAndWriteSharedLib(
             Elf64_AddSection(
                 &elf,
                 OE_INFO_SECTION_NAME,
-                SHT_PROGBITS,
+                SHT_NOTE,
                 properties,
                 sizeof(OE_EnclaveProperties_SGX)) != 0)
         {
