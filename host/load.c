@@ -122,12 +122,12 @@ OE_Result __OE_LoadSegments(
         }
 
         /* Make a heap copy of this segment */
-        if (elf.segments[i])
+        if (Elf64_GetSegment(&elf, i))
         {
             if (!(seg.filedata = malloc(seg.filesz)))
                 OE_THROW(OE_OUT_OF_MEMORY);
 
-            memcpy(seg.filedata, elf.segments[i], seg.filesz);
+            memcpy(seg.filedata, Elf64_GetSegment(&elf, i), seg.filesz);
         }
 
         /* Check for array overflow */

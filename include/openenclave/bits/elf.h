@@ -240,14 +240,8 @@ typedef struct
     /* Pointer to ehdr.e_shnum section headers */
     Elf64_Shdr* shdrs;
 
-    /* Array of pointers to ehdr.e_shnum sections */
-    void** sections;
-
     /* Pointer to ehdr.e_phnum program headers */
     Elf64_Phdr* phdrs;
-
-    /* Array of pointers to ehdr.e_phnum segments */
-    void** segments;
 } Elf64;
 
 int Elf64_TestHeader(const Elf64_Ehdr* header);
@@ -328,6 +322,9 @@ int Elf64_VisitSymbols(
 
 /* Load relocations (size will be a multiple of the page size) */
 int Elf64_LoadRelocations(const Elf64* elf, void** data, size_t* size);
+
+/* Get the segment with the given index; return NULL on error */
+void* Elf64_GetSegment(const Elf64* elf, size_t index);
 
 ELF_EXTERNC_END
 
