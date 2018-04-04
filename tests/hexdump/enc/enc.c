@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/enclave.h>
 #include <openenclave/bits/hexdump.h>
+#include <openenclave/enclave.h>
 #include "../args.h"
 
 OE_ECALL void Test(void* args_)
@@ -12,10 +12,7 @@ OE_ECALL void Test(void* args_)
     OE_HexDump(args->data, sizeof(args->data));
 
     const char* str = OE_HexString(
-        args->hexstr,
-        sizeof(args->hexstr),
-        args->data,
-        sizeof(args->data));
+        args->hexstr, sizeof(args->hexstr), args->data, sizeof(args->data));
 
     if (str != args->hexstr)
     {
