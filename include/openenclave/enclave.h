@@ -354,7 +354,9 @@ OE_Result OE_GetReport(
  * @param report The buffer containing the report to parse.
  * @param reportSize The size of the **report** buffer.
  * @param parsedReport The **OE_Report** structure to populate with the report
- * properties in a standard format.
+ * properties in a standard format. The *parsedReport* holds pointers to fields
+ * within the supplied *report* and must not be used beyond the lifetime of the
+ * *report*.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.

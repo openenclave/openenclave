@@ -31,7 +31,7 @@ static void _OE_ParseSGXReportBody(
     Memset(parsedReport, 0, sizeof(OE_Report));
 
     parsedReport->size = sizeof(OE_Report);
-    parsedReport->type = OE_TYPE_SGX;
+    parsedReport->type = OE_ENCLAVE_TYPE_SGX;
 
     /*
      * Parse identity.
@@ -41,6 +41,7 @@ static void _OE_ParseSGXReportBody(
 
     if (reportBody->attributes.flags & SGX_FLAGS_DEBUG)
         parsedReport->identity.attributes |= OE_REPORT_ATTRIBUTES_DEBUG;
+
     if (remote)
         parsedReport->identity.attributes |= OE_REPORT_ATTRIBUTES_REMOTE;
 
@@ -77,21 +78,27 @@ OE_Result OE_ParseReport(
     uint32_t reportSize,
     OE_Report* parsedReport)
 {
+    const SGX_Report* sgxReport = NULL;
+    const SGX_Quote* sgxQuote = NULL;
     OE_Result result = OE_OK;
 
     if (report == NULL || parsedReport == NULL)
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (reportSize == sizeof(SGX_Report))
-        _OE_ParseSGXReportBody(
-            &((const SGX_Report*)report)->body, false, parsedReport);
-
+    {
+        sgxReport = (const SGX_Report*)report;
+        _OE_ParseSGXReportBody(&sgxReport->body, false, parsedReport);
+    }
     else if (reportSize >= sizeof(SGX_Quote))
-        _OE_ParseSGXReportBody(
-            &((const SGX_Quote*)report)->report_body, false, parsedReport);
-
+    {
+        sgxQuote = (const SGX_Quote*)report;
+        _OE_ParseSGXReportBody(&sgxQuote->report_body, true, parsedReport);
+    }
     else
+    {
         OE_THROW(OE_INVALID_PARAMETER);
+    }
 
 OE_CATCH:
     return result;
