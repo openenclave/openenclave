@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
+#include "random.h"
 #include <mbedtls/base64.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
@@ -19,8 +19,6 @@
 // MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
 // of time, so we are forced to use a maximum buffer size.
 #define OE_PEM_MAX_BYTES (16 * 1024)
-
-mbedtls_ctr_drbg_context* OE_MBEDTLS_GetDrbg();
 
 /*
 **==============================================================================
