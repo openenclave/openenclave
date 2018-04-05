@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/ec.h>
-#include <openenclave/bits/sha.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/sha.h>
 #include <openenclave/types.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
@@ -293,17 +293,21 @@ done:
 OE_Result OE_ECFree(OE_EC_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
 
-    /* Check parameter */
-    if (!_ValidImpl(impl))
-        OE_RAISE(OE_INVALID_PARAMETER);
+    if (key)
+    {
+        OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
 
-    /* Release the key */
-    EVP_PKEY_free(impl->pkey);
+        /* Check parameter */
+        if (!_ValidImpl(impl))
+            OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Clear the fields of the implementation */
-    _ClearImpl(impl);
+        /* Release the key */
+        EVP_PKEY_free(impl->pkey);
+
+        /* Clear the fields of the implementation */
+        _ClearImpl(impl);
+    }
 
     result = OE_OK;
 

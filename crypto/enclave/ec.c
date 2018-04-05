@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "random.h"
 #include <assert.h>
 #include <mbedtls/base64.h>
 #include <mbedtls/ctr_drbg.h>
@@ -15,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../util.h"
+#include "random.h"
 
 // MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
 // of time, so we are forced to use a maximum buffer size. This quantity is
@@ -251,7 +251,7 @@ OE_Result OE_ECWritePrivateKeyPEM(
     if (!pemData && *pemSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Write the key (expand buffer size and retry if necessary) */
+    /* Write the key to PEM format */
     if (mbedtls_pk_write_key_pem(&impl->pk, buf, sizeof(buf)) != 0)
         OE_RAISE(OE_FAILURE);
 
@@ -292,7 +292,7 @@ OE_Result OE_ECWritePublicKeyPEM(
     if (!pemData && *pemSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Write the key (expand buffer size and retry if necessary) */
+    /* Write the key to PEM format */
     if (mbedtls_pk_write_pubkey_pem(&impl->pk, buf, sizeof(buf)) != 0)
         OE_RAISE(OE_FAILURE);
 
@@ -319,12 +319,16 @@ done:
 OE_Result OE_ECFree(OE_EC_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
 
-    if (!_ValidImpl(impl))
-        OE_RAISE(OE_INVALID_PARAMETER);
+    if (key)
+    {
+        OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
 
-    _FreeImpl(impl);
+        if (!_ValidImpl(impl))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        _FreeImpl(impl);
+    }
 
     result = OE_OK;
 

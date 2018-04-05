@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "random.h"
 #include <mbedtls/base64.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
@@ -9,12 +8,13 @@
 #include <mbedtls/platform.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/rsa.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/rsa.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../util.h"
+#include "random.h"
 
 // MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
 // of time, so we are forced to use a maximum buffer size.
@@ -289,12 +289,16 @@ done:
 OE_Result OE_RSAFree(OE_RSA_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
 
-    if (!_ValidImpl(impl))
-        OE_RAISE(OE_INVALID_PARAMETER);
+    if (key)
+    {
+        OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
 
-    _FreeImpl(impl);
+        if (!_ValidImpl(impl))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        _FreeImpl(impl);
+    }
 
     result = OE_OK;
 

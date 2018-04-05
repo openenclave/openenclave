@@ -121,7 +121,7 @@ OE_Result OE_ECWritePublicKeyPEM(
 OE_Result OE_ECFree(OE_EC_KEY* key);
 
 /**
- * Digitaly signs a message with a private EC key
+ * Digitally signs a message with a private EC key
  *
  * This function uses a private EC key to sign a message with the given hash.
  *
@@ -172,7 +172,7 @@ OE_Result OE_ECVerify(
  * This function generates an EC private-public key pair from the given
  * parameters.
  *
- * @param ecType type of eliptical curve to be generated
+ * @param ecType type of elliptical curve to be generated
  * @param privateKey generated private key
  * @param publicKey generated public key
  *

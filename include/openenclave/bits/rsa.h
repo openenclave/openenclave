@@ -116,7 +116,7 @@ OE_Result OE_RSAWritePublicKeyPEM(
 OE_Result OE_RSAFree(OE_RSA_KEY* key);
 
 /**
- * Digitaly signs a message with a private RSA key
+ * Digitally signs a message with a private RSA key
  *
  * This function uses a private RSA key to sign a message with the given hash.
  *

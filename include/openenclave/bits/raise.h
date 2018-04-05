@@ -68,11 +68,12 @@
 OE_EXTERNC_BEGIN
 
 // This macro sets the 'result' and jumps to the 'done' label.
-#define OE_RAISE(RESULT)   \
-    do                     \
-    {                      \
-        result = (RESULT); \
-        goto done;         \
+#define OE_RAISE(RESULT)        \
+    do                          \
+    {                           \
+        result = (RESULT);      \
+        OE_RAISE_TRACE(result); \
+        goto done;              \
     } while (0)
 
 // This macro checks whether the expression argument evaluates to OE_OK. If not
@@ -84,11 +85,17 @@ OE_EXTERNC_BEGIN
         OE_Result _result_ = (EXPRESSION); \
                                            \
         if (_result_ != OE_OK)             \
-        {                                  \
-            result = _result_;             \
-            goto done;                     \
-        }                                  \
+            OE_RAISE(result);              \
     } while (0)
+
+// This macro is used to trace the OE_RAISE macro. It is empty by default but
+// may be defined prior to including this header file.
+#if !defined(OE_RAISE_TRACE)
+#define OE_RAISE_TRACE(RESULT) \
+    do                         \
+    {                          \
+    } while (0)
+#endif
 
 OE_EXTERNC_END
 

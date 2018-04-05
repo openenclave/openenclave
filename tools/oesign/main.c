@@ -813,8 +813,9 @@ int main(int argc, const char* argv[])
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     {
-        char buf[2*OE_SHA256_SIZE + 1];
-        printf("MRENCLAVE=%s\n",
+        char buf[2 * OE_SHA256_SIZE + 1];
+        printf(
+            "MRENCLAVE=%s\n",
             OE_HexString(buf, sizeof(buf), &mrenclave, sizeof(mrenclave)));
         DumpSigstruct(&sigstruct);
     }

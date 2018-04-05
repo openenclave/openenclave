@@ -3,8 +3,8 @@
 
 #include <mbedtls/sha256.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/sha.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/sha.h>
 #include <openenclave/types.h>
 
 typedef struct _OE_SHA256ContextImpl

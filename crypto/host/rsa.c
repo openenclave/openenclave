@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/sha.h>
-#include <openenclave/bits/raise.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <stdio.h>
@@ -316,17 +316,21 @@ done:
 OE_Result OE_RSAFree(OE_RSA_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
 
-    /* Check the parameter */
-    if (!_ValidImpl(impl))
-        OE_RAISE(OE_INVALID_PARAMETER);
+    if (key)
+    {
+        OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
 
-    /* Release the RSA object */
-    RSA_free(impl->rsa);
+        /* Check the parameter */
+        if (!_ValidImpl(impl))
+            OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Clear the fields in the implementation */
-    _ClearImpl(impl);
+        /* Release the RSA object */
+        RSA_free(impl->rsa);
+
+        /* Clear the fields in the implementation */
+        _ClearImpl(impl);
+    }
 
     result = OE_OK;
 
