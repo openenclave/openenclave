@@ -5,3 +5,4 @@ add_subdirectory(enc)
 add_subdirectory(host)
 
 add_test(tests/sealKey host/sealKeyHost ./enc/sealKeyEnc.signed.so)
+set_tests_properties(tests/sealKey PROPERTIES SKIP_RETURN_CODE 2)
