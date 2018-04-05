@@ -32,9 +32,7 @@ static int _Ok(const OE_SGXMeasurer* driver)
 
 static void _MeasureZeros(OE_SHA256Context* context, size_t size)
 {
-    char zeros[128];
-
-    memset(zeros, 0, sizeof(zeros));
+    char zeros[128] = { 0 };
 
     while (size)
     {

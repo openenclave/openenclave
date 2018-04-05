@@ -16,7 +16,8 @@
 #include "../util.h"
 
 // MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
-// of time, so we are forced to use a maximum buffer size.
+// of time, so we are forced to use a maximum buffer size. This quantity is
+// used in MEBEDTLS program that calls mbedtls_pk_write_key_pem.
 #define OE_PEM_MAX_BYTES (16 * 1024)
 
 mbedtls_ctr_drbg_context* OE_MBEDTLS_GetDrbg();

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /* Generated with: openssl genrsa -out private.pem -3 3072 */
-static char RSA_PRIVATE_KEY[] =
+static const char RSA_PRIVATE_KEY[] =
     "-----BEGIN RSA PRIVATE KEY-----\n"
     "MIIG5AIBAAKCAYEAyXKod6+poFfDaMIT6dKezZG/OeYSSvo2Nw7ufOtBCUrNaXOc\n"
     "5jIi1swpSASOx9nm3aYNeUGCPjDPads+YkSso8Bmm4HzAR51/4rSt5/fjD5PVMpM\n"
