@@ -348,34 +348,6 @@ static void TestCertVerify()
 {
     printf("=== begin TestCertVerify()\n");
 
-    {
-        OE_Result r;
-        OE_Cert cert;
-        OE_CertChain chain;
-        OE_CertChain badChain;
-        OE_VerifyCertError error;
-
-        r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
-        OE_TEST(r == OE_OK);
-
-        r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
-        OE_TEST(r == OE_OK);
-
-        /* Chain does not contain a root for this certificate */
-        r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &badChain);
-        OE_TEST(r == OE_OK);
-
-        r = OE_CertVerify(&cert, &chain, NULL, &error);
-        OE_TEST(r == OE_OK);
-
-        r = OE_CertVerify(&cert, &badChain, NULL, &error);
-        OE_TEST(r == OE_VERIFY_FAILED);
-
-        OE_CertFree(&cert);
-        OE_CertChainFree(&chain);
-        OE_CertChainFree(&badChain);
-    }
-
     TestCertVerifyGood();
     TestCertVerifyBad();
 
