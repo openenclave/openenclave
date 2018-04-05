@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_RAISE_TRACE(RESULT) OE_HostPrintf("OE_RAISE_TRACE=%u\n", __LINE__);
 #include <mbedtls/config.h>
 #include <mbedtls/pem.h>
+#include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
@@ -25,16 +27,22 @@
 typedef struct _OE_CertImpl
 {
     uint64_t magic;
-    mbedtls_x509_crt cert;
+    mbedtls_x509_crt* cert;
 } OE_CertImpl;
 
 OE_STATIC_ASSERT(sizeof(OE_CertImpl) < sizeof(OE_Cert));
 
 #define OE_CERT_MAGIC 0x882b9943ac1ca95d
 
-static bool _ValidCertImpl(const OE_CertImpl* impl)
+OE_INLINE bool _ValidCertImpl(const OE_CertImpl* impl)
 {
-    return impl && (impl->magic == OE_CERT_MAGIC);
+    return impl && (impl->magic == OE_CERT_MAGIC) && impl->cert;
+}
+
+OE_INLINE void _ClearCertImpl(OE_CertImpl* impl)
+{
+    impl->magic = 0;
+    impl->cert = NULL;
 }
 
 #define OE_CERT_CHAIN_MAGIC 0xe863a8d48452376a
@@ -42,14 +50,20 @@ static bool _ValidCertImpl(const OE_CertImpl* impl)
 typedef struct _OE_CertChainImpl
 {
     uint64_t magic;
-    mbedtls_x509_crt chain;
+    mbedtls_x509_crt* chain;
 } OE_CertChainImpl;
 
 OE_STATIC_ASSERT(sizeof(OE_CertChainImpl) < sizeof(OE_CertChain));
 
 static bool _ValidCertChainImpl(const OE_CertChainImpl* impl)
 {
-    return impl && (impl->magic == OE_CERT_CHAIN_MAGIC);
+    return impl && (impl->magic == OE_CERT_CHAIN_MAGIC) && impl->chain;
+}
+
+OE_INLINE void _ClearCertChainImpl(OE_CertChainImpl* impl)
+{
+    impl->magic = 0;
+    impl->chain = NULL;
 }
 
 /* Read an MBEDTLS X509 certificate from PEM data */
@@ -128,11 +142,12 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_CertImpl* impl = (OE_CertImpl*)cert;
+    mbedtls_x509_crt* crt = NULL;
     size_t len;
 
     /* Clear the implementation */
     if (impl)
-        impl->magic = 0;
+        _ClearCertImpl(impl);
 
     /* Check parameters */
     if (!pemData || !pemSize || !cert)
@@ -142,22 +157,30 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
     if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Initialize the implementation */
-    mbedtls_x509_crt_init(&impl->cert);
-    impl->magic = OE_CERT_MAGIC;
+    /* Allocate memory for the certificate */
+    if (!(crt = mbedtls_calloc(1, sizeof(mbedtls_x509_crt))))
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* Initialize the certificate struture */
+    mbedtls_x509_crt_init(crt);
 
     /* Read the PEM buffer into DER format */
-    if (_CrtRead(&impl->cert, (const char*)pemData, &len) != 0)
+    if (_CrtRead(crt, (const char*)pemData, &len) != 0)
         OE_RAISE(OE_FAILURE);
+
+    /* Initialize the implementation */
+    impl->magic = OE_CERT_MAGIC;
+    impl->cert = crt;
+    crt = NULL;
 
     result = OE_OK;
 
 done:
 
-    if (result != OE_OK && impl->magic == OE_CERT_MAGIC)
+    if (crt)
     {
-        mbedtls_x509_crt_free(&impl->cert);
-        impl->magic = 0;
+        mbedtls_x509_crt_free(crt);
+        mbedtls_free(crt);
     }
 
     return result;
@@ -173,8 +196,11 @@ OE_Result OE_CertFree(OE_Cert* cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Free the certificate */
-    mbedtls_x509_crt_free(&impl->cert);
-    impl->magic = 0;
+    mbedtls_x509_crt_free(impl->cert);
+    mbedtls_free(impl->cert);
+
+    /* Clear the implementation (making it invalid) */
+    _ClearCertImpl(impl);
 
     result = OE_OK;
 
@@ -189,10 +215,11 @@ OE_Result OE_CertChainReadPEM(
 {
     OE_Result result = OE_UNEXPECTED;
     OE_CertChainImpl* impl = (OE_CertChainImpl*)chain;
+    mbedtls_x509_crt* crt = NULL;
 
-    /* Clear the implementation */
+    /* Clear the implementation (making it invalid) */
     if (impl)
-        impl->magic = 0;
+        _ClearCertChainImpl(impl);
 
     /* Check parameters */
     if (!pemData || !pemSize || !chain)
@@ -202,22 +229,30 @@ OE_Result OE_CertChainReadPEM(
     if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* Allocate memory for the certificate */
+    if (!(crt = mbedtls_calloc(1, sizeof(mbedtls_x509_crt))))
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
     /* Initialize the implementation */
-    mbedtls_x509_crt_init(&impl->chain);
-    impl->magic = OE_CERT_CHAIN_MAGIC;
+    mbedtls_x509_crt_init(crt);
 
     /* Read the PEM buffer into DER format */
-    if (_CrtChainRead(&impl->chain, (const char*)pemData) != 0)
+    if (_CrtChainRead(crt, (const char*)pemData) != 0)
         OE_RAISE(OE_FAILURE);
+
+    /* Initialize the implementation */
+    impl->magic = OE_CERT_CHAIN_MAGIC;
+    impl->chain = crt;
+    crt = NULL;
 
     result = OE_OK;
 
 done:
 
-    if (result != OE_OK && impl->magic == OE_CERT_MAGIC)
+    if (crt)
     {
-        mbedtls_x509_crt_free(&impl->chain);
-        impl->magic = 0;
+        mbedtls_x509_crt_free(crt);
+        mbedtls_free(crt);
     }
 
     return result;
@@ -233,8 +268,10 @@ OE_Result OE_CertChainFree(OE_CertChain* chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Free the certificate */
-    mbedtls_x509_crt_free(&impl->chain);
-    impl->magic = 0;
+    mbedtls_x509_crt_free(impl->chain);
+
+    /* Clear the implementation (making it invalid) */
+    _ClearCertChainImpl(impl);
 
     result = OE_OK;
 
@@ -257,14 +294,18 @@ OE_Result OE_CertVerify(
     if (error)
         *error->buf = '\0';
 
-    /* Reject null parameters */
-    if (!_ValidCertImpl(certImpl) || !_ValidCertChainImpl(chainImpl))
+    /* Reject invalid certificate */
+    if (!_ValidCertImpl(certImpl))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Reject invalid certificate chain */
+    if (!_ValidCertChainImpl(chainImpl))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
-            &certImpl->cert,
-            &chainImpl->chain,
+            certImpl->cert,
+            chainImpl->chain,
             NULL,
             NULL,
             &flags,
