@@ -75,7 +75,7 @@ OE_Result OE_ECReadPublicKeyPEM(
  *
  * @param privateKey key to be written
  * @param pemData buffer where PEM data will be written
- * @param[in,out] pemSize - buffer size (in); PEM data size (out)
+ * @param[in,out] pemSize buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
@@ -99,7 +99,7 @@ OE_Result OE_ECWritePrivateKeyPEM(
  *
  * @param publicKey key to be written
  * @param pemData buffer where PEM data will be written
- * @param[in,out] pemSize - buffer size (in); PEM data size (out)
+ * @param[in,out] pemSize buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
@@ -130,7 +130,7 @@ OE_Result OE_ECFree(OE_EC_KEY* key);
  * @param hashData hash of the message being signed
  * @param hashSize size of the hash data
  * @param signature signature buffer
- * @param[in,out] signatureSize - buffer size (in); signature size (out)
+ * @param[in,out] signatureSize buffer size (in); signature size (out)
  *
  * @return OE_OK on success
  * @return OE_BUFFER_TOO_SMALL signature buffer is too small
