@@ -18,18 +18,18 @@ static OE_Result GetKeyImp(
     Sgx_Key* sgxKey)
 {
     OE_Result ret;
-    uint64_t egetkey_result;
-    OE_ALIGNED(SGX_KEY_REQUEST_ALIGNMENT) Sgx_KeyRequest tmp_key_request;
-    OE_ALIGNED(SGX_KEY_ALIGNMENT) Sgx_Key tmp_sgx_key;
+    uint64_t egetkeyResult;
+    OE_ALIGNED(SGX_KEY_REQUEST_ALIGNMENT) Sgx_KeyRequest tmpKeyRequest;
+    OE_ALIGNED(SGX_KEY_ALIGNMENT) Sgx_Key tmpSgxKey;
 
     // Copy input parameter into local aligned buffers.
-    OE_Memcpy(&tmp_key_request, sgxKeyRequest, sizeof(Sgx_KeyRequest));
+    OE_Memcpy(&tmpKeyRequest, sgxKeyRequest, sizeof(Sgx_KeyRequest));
 
     // Execute EGETKEY instruction.
-    egetkey_result = _OE_EGetKey(&tmp_key_request, &tmp_sgx_key);
+    egetkeyResult = _OE_EGetKey(&tmpKeyRequest, &tmpSgxKey);
 
     // Convert the EGETKEY result to OE_Result.
-    switch (egetkey_result)
+    switch (egetkeyResult)
     {
     case SGX_SUCCESS:
         ret = OE_OK;
@@ -59,35 +59,13 @@ static OE_Result GetKeyImp(
     // Copy the request key to output buffer, and clear it from stack.
     if (ret == OE_OK)
     {
-        OE_Memcpy(sgxKey, &tmp_sgx_key, sizeof(Sgx_Key));
-        OE_Memset(&tmp_sgx_key, 0, sizeof(Sgx_Key));
+        OE_Memcpy(sgxKey, &tmpSgxKey, sizeof(Sgx_Key));
+        OE_Memset(&tmpSgxKey, 0, sizeof(Sgx_Key));
     }
 
     return ret;
 }
 
-/**
- * Get a secret SGX key.
- *
- * Call this function to get a secret SGX key from processor.
- *
- * @param sgxKeyRequest The parameter points to the KEYQUEST structure that
- * describes which key and how it should be derived. This parameter must point
- * to a readable memory block inside enclave.
- * @param sgxKey The parameter points to Sgx_Key structure where the key will be
- * returned. This parameter must point to a writable memory block inside 
- * enclave.
- *
- * @returns This function returns an OE_OK and the requested key is written to 
- *  sgxKey if success, otherwise the sgxKey will be not changed and return 
- *  following errors:
- *  OE_INVALID_PARAMETER - invalid parameter.
- *  OE_INVALID_CPUSVN - invalid CPUSVN in key request.
- *  OE_INVALID_ISVSVN - invalid ISVSVN in key request.
- *  OE_INVALID_KEYNAME - invalid KEYNAME in key request.
- *  OE_UNEXPECTED - unexpected error.
- *  
- */
 OE_Result OE_GetKey(const Sgx_KeyRequest* sgxKeyRequest, Sgx_Key* sgxKey)
 {
     // Check the input parameters.
@@ -132,4 +110,146 @@ OE_Result OE_GetKey(const Sgx_KeyRequest* sgxKeyRequest, Sgx_Key* sgxKey)
     }
 
     return GetKeyImp(sgxKeyRequest, sgxKey);
+}
+
+OE_Result OE_GetSealKey(
+    const uint8_t* keyInfo,
+    uint32_t keyInfoSize,
+    uint8_t* keyBuffer,
+    uint32_t* keyBufferSize)
+{
+    OE_Result ret;
+
+    // Check parameters.
+    if (keyInfoSize != sizeof(Sgx_KeyRequest))
+    {
+        return OE_INVALID_PARAMETER;
+    }
+
+    if (*keyBufferSize < sizeof(Sgx_Key))
+    {
+        *keyBufferSize = sizeof(Sgx_Key);
+        return OE_BUFFER_TOO_SMALL;
+    }
+
+    // Get the key based on input key info.
+    ret = OE_GetKey((Sgx_KeyRequest*)keyInfo, (Sgx_Key*)keyBuffer);
+    if (ret == OE_OK)
+    {
+        *keyBufferSize = sizeof(Sgx_Key);
+    }
+    else
+    {
+        // If OE_GetKey fails, assume the keyInfo is corrupted.
+        ret = OE_INVALID_PARAMETER;
+    }
+
+    return ret;
+}
+
+/*
+ * Get default key request attributes. 
+ * The ISV SVN and CPU SVN are set to value of current enclave. 
+ * Attribute masks are set to OE default values.
+ *
+ * Return OE_OK and set attributes of sgxKeyRequest if success.
+ * Otherwise return error and sgxKeyRquest is not changed.
+ */
+static OE_Result GetDefaultKeyRequestAttributes(Sgx_KeyRequest *sgxKeyRequest)
+{
+    SGX_Report sgxReport = { 0 };
+    uint32_t sgxReportSize = sizeof(SGX_Report);
+    OE_Result ret;
+
+    // Get a local report of current enclave.
+    ret = OE_GetReport(
+        0, 
+        NULL, 
+        0, 
+        NULL, 
+        0, 
+        (uint8_t*)&sgxReport, 
+        &sgxReportSize);
+
+    if (ret != OE_OK)
+    {
+        return ret;
+    }
+
+    // Set key request attributes(isv svn, cpu svn, and attribute masks)
+    sgxKeyRequest->isv_svn = sgxReport.body.isvsvn;
+    OE_Memcpy(&sgxKeyRequest->cpu_svn, sgxReport.body.cpusvn, SGX_CPUSVN_SIZE);
+    sgxKeyRequest->flags_attribute_mask = OE_SEALKEY_DEFAULT_FLAGSMASK;
+    sgxKeyRequest->xfrm_attribute_mask = OE_SEALKEY_DEFAULT_XFRMMASK;
+    sgxKeyRequest->misc_attribute_mask = OE_SEALKEY_DEFAULT_MISCMASK;
+    return OE_OK;
+}
+
+OE_Result OE_GetSealKeyByPolicy(
+    OE_SEAL_ID_POLICY sealPolicy,
+    uint8_t* keyBuffer,
+    uint32_t* keyBufferSize,
+    uint8_t* keyInfo,
+    uint32_t* keyInfoSize)
+{
+    OE_Result ret;
+    Sgx_KeyRequest sgxKeyRequest = { 0 };
+
+    // Check parameters.
+    // Key buffer size must be big enough.
+    if (*keyBufferSize < sizeof(Sgx_Key))
+    {
+        *keyBufferSize = sizeof(Sgx_Key);
+        return OE_BUFFER_TOO_SMALL;
+    }
+
+    // Key info size must be big enough if request key info.
+    if ((keyInfo != NULL) && (*keyInfoSize < sizeof(Sgx_KeyRequest)))
+    {
+        *keyInfoSize = sizeof(Sgx_KeyRequest);
+        return OE_BUFFER_TOO_SMALL;
+    }
+
+    // Get default key request attributes.
+    ret = GetDefaultKeyRequestAttributes(&sgxKeyRequest);
+    if (ret != OE_OK)
+    {
+        return OE_UNEXPECTED;
+    }
+
+    // Set key name and key policy.
+    sgxKeyRequest.key_name = SGX_KEYSELECT_SEAL;
+    switch (sealPolicy)
+    {
+    case OE_SEAL_ID_UNIQUE:
+        sgxKeyRequest.key_policy = SGX_KEYPOLICY_MRENCLAVE;
+        break;
+
+    case OE_SEAL_ID_PRODUCT:
+        sgxKeyRequest.key_policy = SGX_KEYPOLICY_MRSIGNER;
+        break;
+
+    default:
+        return OE_INVALID_PARAMETER;
+    }
+
+    // Get the seal key.
+    ret = OE_GetKey(&sgxKeyRequest, (Sgx_Key*)keyBuffer);
+    if (ret == OE_OK)
+    {
+        *keyBufferSize = sizeof(Sgx_Key);
+
+        if (keyInfo != NULL)
+        {
+            OE_Memcpy(keyInfo, &sgxKeyRequest, sizeof(Sgx_KeyRequest));
+            *keyInfoSize = sizeof(Sgx_KeyRequest);
+        }
+    }
+    else
+    {
+        // OE_GetKey should not fail unless we set the key request wrong.
+        ret = OE_UNEXPECTED;
+    }
+
+    return ret;
 }

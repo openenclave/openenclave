@@ -966,6 +966,37 @@ OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, reserved2), 78);
 // The 128-bit SGX secret key.
 typedef uint8_t Sgx_Key[16];
 
+/* Enclave Flags Bit Masks */
+/* If set, then the enclave is initialized */
+#define SGX_FLAGS_INITTED        0x0000000000000001ULL
+/* If set, then the enclave is debug */
+#define SGX_FLAGS_DEBUG          0x0000000000000002ULL
+/* If set, then the enclave is 64 bit */
+#define SGX_FLAGS_MODE64BIT      0x0000000000000004ULL
+/* If set, then the enclave has access to provision key */
+#define SGX_FLAGS_PROVISION_KEY  0x0000000000000010ULL
+/* If set, then the enclave has access to EINITTOKEN key */
+#define SGX_FLAGS_EINITTOKEN_KEY 0x0000000000000020ULL
+#define SGX_FLAGS_RESERVED       (~(SGX_FLAGS_INITTED | SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT | SGX_FLAGS_PROVISION_KEY | SGX_FLAGS_EINITTOKEN_KEY))
+
+/* Set the bits which have no security implications to 0 for sealed data 
+ migration */
+/* Bits which have no security implications in attributes.flags:
+ *    Reserved bit[55:6]  - 0xFFFFFFFFFFFFC0ULL
+ *    SGX_FLAGS_MODE64BIT
+ *    SGX_FLAGS_PROVISION_KEY
+ *    SGX_FLAGS_EINITTOKEN_KEY */
+#define SGX_FLAGS_NON_SECURITY_BITS     (0xFFFFFFFFFFFFC0ULL | SGX_FLAGS_MODE64BIT | SGX_FLAGS_PROVISION_KEY| SGX_FLAGS_EINITTOKEN_KEY)
+
+ /* bit[27:0]: have no security implications */
+#define SGX_MISC_NON_SECURITY_BITS      0x0FFFFFFF
+
+/* OE seal key default flag masks*/
+#define OE_SEALKEY_DEFAULT_FLAGSMASK     (~SGX_FLAGS_NON_SECURITY_BITS)
+#define OE_SEALKEY_DEFAULT_MISCMASK      (~SGX_MISC_NON_SECURITY_BITS)
+#define OE_SEALKEY_DEFAULT_XFRMMASK    ~(0X0ULL)
+
+
 OE_EXTERNC_END
 
 #endif /* _OE_SGXTYPES_H */
