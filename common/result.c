@@ -3,7 +3,7 @@
 
 #include <openenclave/result.h>
 
-// OE abort status depends on the order of these enums to transfer status 
+// OE abort status depends on the order of these enums to transfer status
 // correctly.
 OE_STATIC_ASSERT(OE_ENCLAVE_ABORTING > OE_OK);
 OE_STATIC_ASSERT(OE_ENCLAVE_ABORTED > OE_ENCLAVE_ABORTING);

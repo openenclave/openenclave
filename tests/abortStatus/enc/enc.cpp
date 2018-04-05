@@ -29,7 +29,6 @@ OE_ECALL void GenerateUnhandledHardwareException(void* args_)
 {
     AbortStatusArgs* args = (AbortStatusArgs*)args_;
     int t = 1;
-    int s = 0;
 
     if (!OE_IsOutsideEnclave(args, sizeof(AbortStatusArgs)))
     {
@@ -38,11 +37,13 @@ OE_ECALL void GenerateUnhandledHardwareException(void* args_)
 
     args->ret = 0;
 
-    // Generate a divided by zero hardware exception. Since there is no
-    // handlers to handle it, the enclave should abort itself.
-    t = t / s;
-
-    OE_HostPrintf("Error: unreachable code is reached.\n");
+    // Generate a divide by zero hardware exception. Since there is no
+    // handler to handle it, the enclave should abort itself.
+    t = t / args->divisor;
+    // We should never get here but this is to trick optimizer
+    args->divisor = t;
+    OE_HostPrintf(
+        "Error: unreachable code is reached. Divisor=%d\n", args->divisor);
     args->ret = -1;
     return;
 }

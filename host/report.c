@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "../common/report.c"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
@@ -14,7 +15,7 @@ static OE_Result _OE_GetLocalReport(
     uint32_t reportDataSize,
     const void* optParams,
     uint32_t optParamsSize,
-    uint8_t* reportBuffer,
+    void* reportBuffer,
     uint32_t* reportBufferSize)
 {
     OE_Result result = OE_OK;
@@ -52,7 +53,7 @@ static OE_Result _OE_GetRemoteReport(
 {
     OE_Result result = OE_OK;
     SGX_TargetInfo* sgxTargetInfo = NULL;
-    void* sgxReport = NULL;
+    SGX_Report* sgxReport = NULL;
     uint32_t sgxReportSize = sizeof(SGX_Report);
 
     // reportData is a validated by _OE_GetLocalReport.
@@ -78,7 +79,7 @@ static OE_Result _OE_GetRemoteReport(
     /*
      * Get SGX_Report from the enclave.
      */
-    sgxReport = calloc(1, sizeof(SGX_Report));
+    sgxReport = (SGX_Report*)calloc(1, sizeof(SGX_Report));
 
     if (sgxReport == NULL)
         OE_THROW(OE_OUT_OF_MEMORY);

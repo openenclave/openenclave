@@ -10,6 +10,7 @@ typedef struct _AbortStatusArgs
 {
     volatile uint32_t* thread_ready_count;
     volatile uint32_t* is_enclave_crashed;
+    int divisor;
 
     int ret;
 } AbortStatusArgs;
