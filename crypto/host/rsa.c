@@ -20,7 +20,7 @@
 **==============================================================================
 */
 
-#define OE_RSA_KEY_MAGIC 0x2a11ed055e91b281
+#define OE_RSA_KEY_MAGIC 0x7bf635929a714b2c
 
 typedef struct _OE_RSA_KEY_IMPL
 {

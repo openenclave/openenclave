@@ -19,7 +19,7 @@
 **==============================================================================
 */
 
-#define OE_EC_KEY_MAGIC 0x278c216447aa1f84
+#define OE_EC_KEY_MAGIC 0x19a751419ae04bbc
 
 typedef struct _OE_EC_KEY_IMPL
 {

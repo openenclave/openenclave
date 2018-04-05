@@ -38,7 +38,7 @@ typedef struct _OE_CertImpl
 
 OE_STATIC_ASSERT(sizeof(OE_CertImpl) < sizeof(OE_Cert));
 
-#define OE_CERT_MAGIC 0x882b9943ac1ca95d
+#define OE_CERT_MAGIC 0x028ce9294bcb451a
 
 OE_INLINE bool _ValidCertImpl(const OE_CertImpl* impl)
 {
@@ -51,7 +51,8 @@ OE_INLINE void _ClearCertImpl(OE_CertImpl* impl)
     impl->cert = NULL;
 }
 
-#define OE_CERT_CHAIN_MAGIC 0xe863a8d48452376a
+#define OE_CERT_CHAIN_MAGIC 0x7d82c57a12af4c70
+
 
 typedef struct _OE_CertChainImpl
 {

@@ -25,7 +25,7 @@
 **==============================================================================
 */
 
-#define OE_CERT_MAGIC 0x882b9943ac1ca95d
+#define OE_CERT_MAGIC 0xbc8e184285de4d2a
 
 static void _SetErr(OE_VerifyCertError* error, const char* str)
 {
@@ -62,7 +62,7 @@ static void _ClearCertImpl(OE_CertImpl* impl)
     }
 }
 
-#define OE_CERT_CHAIN_MAGIC 0xe863a8d48452376a
+#define OE_CERT_CHAIN_MAGIC 0xa5ddf70fb28f4480
 
 typedef struct _OE_CertChainImpl
 {
