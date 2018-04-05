@@ -27,6 +27,12 @@
 
 #define OE_CERT_MAGIC 0x882b9943ac1ca95d
 
+static void _SetErr(OE_VerifyCertError* error, const char* str)
+{
+    if (error)
+        OE_Strlcpy(error->buf, str, sizeof(error->buf));
+}
+
 typedef struct _OE_CertImpl
 {
     uint64_t magic;
@@ -344,9 +350,19 @@ OE_Result OE_CertVerify(
     if (error)
         *error->buf = '\0';
 
-    /* Reject null parameters */
-    if (!_ValidCertImpl(certImpl) || !_ValidCertChainImpl(chainImpl))
+    /* Check for invalid cert parameter */
+    if (!_ValidCertImpl(certImpl))
+    {
+        _SetErr(error, "invalid cert parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* Check for invalid chain parameter */
+    if (!_ValidCertChainImpl(chainImpl))
+    {
+        _SetErr(error, "invalid chain parameter");
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
     /* We must make a copy of the certificate, else previous successful
      * verifications cause subsequent bad verifications to succeed. It is
@@ -354,18 +370,27 @@ OE_Result OE_CertVerify(
      * verification. We can clear this by making a copy.
      */
     if (!(x509 = _CloneX509(certImpl->x509)))
+    {
+        _SetErr(error, "invalid X509 certificate");
         OE_RAISE(OE_FAILURE);
+    }
 
     /* Initialize OpenSSL (if not already initialized) */
     OE_InitializeOpenSSL();
 
     /* Create a context for verification */
     if (!(ctx = X509_STORE_CTX_new()))
+    {
+        _SetErr(error, "failed to allocate X509 context");
         OE_RAISE(OE_FAILURE);
+    }
 
     /* Initialize the context that will be used to verify the certificate */
     if (!X509_STORE_CTX_init(ctx, NULL, NULL, NULL))
+    {
+        _SetErr(error, "failed to initialize X509 context");
         OE_RAISE(OE_FAILURE);
+    }
 
     /* Set the certificate into the verification context */
     X509_STORE_CTX_set_cert(ctx, x509);
@@ -377,12 +402,7 @@ OE_Result OE_CertVerify(
     if (!X509_verify_cert(ctx))
     {
         if (error)
-        {
-            strncat(
-                error->buf,
-                X509_verify_cert_error_string(ctx->error),
-                sizeof(error->buf) - 1);
-        }
+            _SetErr(error, X509_verify_cert_error_string(ctx->error));
 
         OE_RAISE(OE_VERIFY_FAILED);
     }

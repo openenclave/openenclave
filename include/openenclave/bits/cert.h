@@ -112,10 +112,10 @@ OE_Result OE_CertChainFree(OE_CertChain* chain);
  * @param cert verify this certificate
  * @param chain verify the certificate against this certificate chain
  * @param crl verify the certificate against this CRL
- * @param error string error if OE_VERIFY_FAILED was returned (can be null)
+ * @param error holds error message if error returned
  *
  * @return OE_OK verify ok
- * @return OE_VERIFY_FAILED verify failed and error parameter initialized
+ * @return OE_VERIFY_FAILED
  * @return OE_INVALID_PARAMETER
  * @return OE_FAILURE
  */

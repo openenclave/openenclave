@@ -24,6 +24,12 @@
 **==============================================================================
 */
 
+static void _SetErr(OE_VerifyCertError* error, const char* str)
+{
+    if (error)
+        OE_Strlcpy(error->buf, str, sizeof(error->buf));
+}
+
 typedef struct _OE_CertImpl
 {
     uint64_t magic;
@@ -296,11 +302,17 @@ OE_Result OE_CertVerify(
 
     /* Reject invalid certificate */
     if (!_ValidCertImpl(certImpl))
+    {
+        _SetErr(error, "invalid cert parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
     /* Reject invalid certificate chain */
     if (!_ValidCertChainImpl(chainImpl))
+    {
+        _SetErr(error, "invalid chain parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
