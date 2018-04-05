@@ -28,6 +28,9 @@ typedef struct _OE_RSA_KEY
  *     ...
  *     -----END RSA PRIVATE KEY-----
  *
+ * The caller is responsible for releasing the key by passing it to
+ * OE_ECFree().
+ *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
  * @param privateKey initialized key handle upon return
@@ -48,6 +51,9 @@ OE_Result OE_RSAReadPrivateKeyPEM(
  *     -----BEGIN PUBLIC KEY-----
  *     ...
  *     -----END PUBLIC KEY-----
+ *
+ * The caller is responsible for releasing the key by passing it to
+ * OE_ECFree().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
