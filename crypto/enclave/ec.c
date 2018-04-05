@@ -9,7 +9,7 @@
 #include <mbedtls/platform.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/trace.h>
+#include <openenclave/bits/raise.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -182,18 +182,18 @@ OE_Result OE_ECReadPrivateKeyPEM(
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* The position of the null terminator must be the last byte */
-    OE_TRY(OE_CheckForNullTerminator(pemData, pemSize));
+    OE_CHECK(OE_CheckForNullTerminator(pemData, pemSize));
 
     /* Parse PEM format into key structure */
     if (mbedtls_pk_parse_key(&impl->pk, pemData, pemSize, NULL, 0) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (result != OE_OK)
         _FreeImpl(impl);
@@ -215,18 +215,18 @@ OE_Result OE_ECReadPublicKeyPEM(
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* The position of the null terminator must be the last byte */
-    OE_TRY(OE_CheckForNullTerminator(pemData, pemSize));
+    OE_CHECK(OE_CheckForNullTerminator(pemData, pemSize));
 
     /* Parse PEM format into key structure */
     if (mbedtls_pk_parse_public_key(&impl->pk, pemData, pemSize) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (result != OE_OK)
         _FreeImpl(impl);
@@ -245,15 +245,15 @@ OE_Result OE_ECWritePrivateKeyPEM(
 
     /* Check parameters */
     if (!_ValidImpl(impl) || !pemSize)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
     if (!pemData && *pemSize != 0)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Write the key (expand buffer size and retry if necessary) */
     if (mbedtls_pk_write_key_pem(&impl->pk, buf, sizeof(buf)) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Handle case where caller's buffer is too small */
     {
@@ -262,16 +262,16 @@ OE_Result OE_ECWritePrivateKeyPEM(
         if (*pemSize < size)
         {
             *pemSize = size;
-            OE_THROW(OE_BUFFER_TOO_SMALL);
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
         OE_Memcpy(pemData, buf, size);
         *pemSize = size;
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -286,15 +286,15 @@ OE_Result OE_ECWritePublicKeyPEM(
 
     /* Check parameters */
     if (!_ValidImpl(impl) || !pemSize)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
     if (!pemData && *pemSize != 0)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Write the key (expand buffer size and retry if necessary) */
     if (mbedtls_pk_write_pubkey_pem(&impl->pk, buf, sizeof(buf)) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Handle case where caller's buffer is too small */
     {
@@ -303,16 +303,16 @@ OE_Result OE_ECWritePublicKeyPEM(
         if (*pemSize < size)
         {
             *pemSize = size;
-            OE_THROW(OE_BUFFER_TOO_SMALL);
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
         OE_Memcpy(pemData, buf, size);
         *pemSize = size;
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -322,13 +322,13 @@ OE_Result OE_ECFree(OE_EC_KEY* key)
     OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
 
     if (!_ValidImpl(impl))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     _FreeImpl(impl);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -348,11 +348,11 @@ OE_Result OE_ECSign(
 
     /* Check parameters */
     if (!_ValidImpl(impl) || !hashData || !hashSize || !signatureSize)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If signature buffer is null, then signature size must be zero */
     if (!signature && *signatureSize != 0)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     // Sign the message. Note that bufferSize is an output parameter only.
     // MEBEDTLS provides no way to determine the size of the buffer up front.
@@ -366,23 +366,23 @@ OE_Result OE_ECSign(
             NULL,
             NULL) != 0)
     {
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
     }
 
     // If signature buffer parameter is too small:
     if (*signatureSize < bufferSize)
     {
         *signatureSize = bufferSize;
-        OE_THROW(OE_BUFFER_TOO_SMALL);
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Copy buffer onto signature buffer */
     OE_Memcpy(signature, buffer, bufferSize);
     *signatureSize = bufferSize;
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }
@@ -402,7 +402,7 @@ OE_Result OE_ECVerify(
     /* Check for null parameters */
     if (!_ValidImpl(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Verify the signature */
     if (mbedtls_pk_verify(
@@ -413,12 +413,12 @@ OE_Result OE_ECVerify(
             signature,
             signatureSize) != 0)
     {
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }
@@ -444,37 +444,37 @@ OE_Result OE_ECGenerate(
 
     /* Check for invalid parameters */
     if (!privateImpl || !publicImpl)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Convert curve type to curve name */
     if (!(curveName = _ECTypeToString(type)))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Resolve the curveName parameter to an EC-curve identifier */
     {
         const mbedtls_ecp_curve_info* info;
 
         if (!(info = mbedtls_ecp_curve_info_from_name(curveName)))
-            OE_THROW(OE_INVALID_PARAMETER);
+            OE_RAISE(OE_INVALID_PARAMETER);
 
         curve = info->grp_id;
     }
 
     /* Get the drbg object */
     if (!(drbg = OE_MBEDTLS_GetDrbg()))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Create key struct */
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
     {
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     /* Generate the EC key */
     if (mbedtls_ecp_gen_key(
             curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
     {
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     /* Initialize the private key parameter */
@@ -484,7 +484,7 @@ OE_Result OE_ECGenerate(
         if (_CopyKeyFromKeyPair(&privateImpl->pk, &pk, false) != 0)
         {
             mbedtls_pk_free(&privateImpl->pk);
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
         }
 
         privateImpl->magic = OE_EC_KEY_MAGIC;
@@ -497,15 +497,15 @@ OE_Result OE_ECGenerate(
         if (_CopyKeyFromKeyPair(&publicImpl->pk, &pk, true) != 0)
         {
             mbedtls_pk_free(&publicImpl->pk);
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
         }
 
         publicImpl->magic = OE_EC_KEY_MAGIC;
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     mbedtls_pk_free(&pk);
 

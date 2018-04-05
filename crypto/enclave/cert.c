@@ -8,7 +8,7 @@
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/pem.h>
-#include <openenclave/bits/trace.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,11 +136,11 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
 
     /* Check parameters */
     if (!pemData || !pemSize || !cert)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* The position of the null terminator must be the last byte */
     if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the implementation */
     mbedtls_x509_crt_init(&impl->cert);
@@ -148,11 +148,11 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
 
     /* Read the PEM buffer into DER format */
     if (_CrtRead(&impl->cert, (const char*)pemData, &len) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (result != OE_OK && impl->magic == OE_CERT_MAGIC)
     {
@@ -170,15 +170,15 @@ OE_Result OE_CertFree(OE_Cert* cert)
 
     /* Check the parameter */
     if (!_ValidCertImpl(impl))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Free the certificate */
     mbedtls_x509_crt_free(&impl->cert);
     impl->magic = 0;
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -196,11 +196,11 @@ OE_Result OE_CertChainReadPEM(
 
     /* Check parameters */
     if (!pemData || !pemSize || !chain)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* The position of the null terminator must be the last byte */
     if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize the implementation */
     mbedtls_x509_crt_init(&impl->chain);
@@ -208,11 +208,11 @@ OE_Result OE_CertChainReadPEM(
 
     /* Read the PEM buffer into DER format */
     if (_CrtChainRead(&impl->chain, (const char*)pemData) != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (result != OE_OK && impl->magic == OE_CERT_MAGIC)
     {
@@ -230,15 +230,15 @@ OE_Result OE_CertChainFree(OE_CertChain* chain)
 
     /* Check the parameter */
     if (!_ValidCertChainImpl(impl))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Free the certificate */
     mbedtls_x509_crt_free(&impl->chain);
     impl->magic = 0;
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -259,7 +259,7 @@ OE_Result OE_CertVerify(
 
     /* Reject null parameters */
     if (!_ValidCertImpl(certImpl) || !_ValidCertChainImpl(chainImpl))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
@@ -277,12 +277,12 @@ OE_Result OE_CertVerify(
                 error->buf, sizeof(error->buf), "", flags);
         }
 
-        OE_THROW(OE_VERIFY_FAILED);
+        OE_RAISE(OE_VERIFY_FAILED);
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }

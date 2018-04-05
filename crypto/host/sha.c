@@ -11,7 +11,7 @@
 #include <bcrypt.h>
 #endif
 
-#include <openenclave/bits/trace.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/host.h>
 
 typedef struct _OE_SHA256ContextImpl
@@ -31,23 +31,23 @@ OE_Result OE_SHA256Init(OE_SHA256Context* context)
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
     if (!context)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(__linux__)
     if (!SHA256_Init(&impl->ctx))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 #elif defined(_WIN32)
     if (BCryptCreateHash(
             BCRYPT_SHA256_ALG_HANDLE, &impl->handle, NULL, 0, NULL, 0, 0) !=
         STATUS_SUCCESS)
     {
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
     }
 #endif
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -60,22 +60,22 @@ OE_Result OE_SHA256Update(
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
     if (!context)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(__linux__)
     if (!SHA256_Update(&impl->ctx, data, size))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 #elif defined(_WIN32)
     if (BCryptHashData(impl->handle, (void*)data, (ULONG)size, 0) !=
         STATUS_SUCCESS)
     {
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
     }
 #endif
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -85,21 +85,21 @@ OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256)
     OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
 
     if (!context)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(__linux__)
     if (!SHA256_Final(sha256->buf, &impl->ctx))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 #elif defined(_WIN32)
     if (BCryptFinishHash(impl->handle, sha256->buf, sizeof(OE_SHA256), 0) !=
         STATUS_SUCCESS)
     {
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
     }
 #endif
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }

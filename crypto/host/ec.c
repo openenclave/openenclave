@@ -3,7 +3,7 @@
 
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/sha.h>
-#include <openenclave/bits/trace.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/types.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
@@ -82,31 +82,31 @@ OE_Result OE_ECReadPrivateKeyPEM(
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* The position of the null terminator must be the last byte */
     if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Read the key object */
     if (!(pkey = PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
     impl->magic = OE_EC_KEY_MAGIC;
     impl->pkey = pkey;
     pkey = NULL;
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (pkey)
         EVP_PKEY_free(pkey);
@@ -132,31 +132,31 @@ OE_Result OE_ECReadPublicKeyPEM(
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* The position of the null terminator must be the last byte */
     if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Read the key object */
     if (!(pkey = PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
     impl->magic = OE_EC_KEY_MAGIC;
     impl->pkey = pkey;
     pkey = NULL;
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (pkey)
         EVP_PKEY_free(pkey);
@@ -180,40 +180,40 @@ OE_Result OE_ECWritePrivateKeyPEM(
 
     /* Check parameters */
     if (!_ValidImpl(impl) || !size)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
     if (!data && *size != 0)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Create memory BIO object to write key to */
     if (!(bio = BIO_new(BIO_s_mem())))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Get EC key from public key without increasing reference count */
     if (!(ec = EVP_PKEY_get1_EC_KEY(impl->pkey)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Write key to BIO */
     if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Write a NULL terminator onto BIO */
     if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Copy the BIO onto caller's memory */
     {
         BUF_MEM* mem;
 
         if (!BIO_get_mem_ptr(bio, &mem))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* If buffer is too small */
         if (*size < mem->length)
         {
             *size = mem->length;
-            OE_THROW(OE_BUFFER_TOO_SMALL);
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
         /* Copy buffer onto caller's memory */
@@ -221,9 +221,9 @@ OE_Result OE_ECWritePrivateKeyPEM(
         *size = mem->length;
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (bio)
         BIO_free(bio);
@@ -243,36 +243,36 @@ OE_Result OE_ECWritePublicKeyPEM(
 
     /* Check parameters */
     if (!_ValidImpl(impl) || !size)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
     if (!data && *size != 0)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Create memory BIO object to write key to */
     if (!(bio = BIO_new(BIO_s_mem())))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Write key to BIO */
     if (!PEM_write_bio_PUBKEY(bio, impl->pkey))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Write a NULL terminator onto BIO */
     if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Copy the BIO onto caller's memory */
     {
         BUF_MEM* mem;
 
         if (!BIO_get_mem_ptr(bio, &mem))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         /* If buffer is too small */
         if (*size < mem->length)
         {
             *size = mem->length;
-            OE_THROW(OE_BUFFER_TOO_SMALL);
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
         /* Copy buffer onto caller's memory */
@@ -280,9 +280,9 @@ OE_Result OE_ECWritePublicKeyPEM(
         *size = mem->length;
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (bio)
         BIO_free(bio);
@@ -297,7 +297,7 @@ OE_Result OE_ECFree(OE_EC_KEY* key)
 
     /* Check parameter */
     if (!_ValidImpl(impl))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Release the key */
     EVP_PKEY_free(impl->pkey);
@@ -305,9 +305,9 @@ OE_Result OE_ECFree(OE_EC_KEY* key)
     /* Clear the fields of the implementation */
     _ClearImpl(impl);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -325,42 +325,42 @@ OE_Result OE_ECSign(
 
     /* Check for null parameters */
     if (!_ValidImpl(impl) || !hashData || !hashSize || !signatureSize)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check that hash buffer is big enough (hashType is size of that hash) */
     if (hashType > hashSize)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If signature buffer is null, then signature size must be zero */
     if (!signature && *signatureSize != 0)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
 
     /* Create signing context */
     if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Initialize the signing context */
     if (EVP_PKEY_sign_init(ctx) <= 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Set the MD type for the signing operation */
     if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Determine the size of the signature; fail if buffer is too small */
     {
         size_t size;
 
         if (EVP_PKEY_sign(ctx, NULL, &size, hashData, hashSize) <= 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (size > *signatureSize)
         {
             *signatureSize = size;
-            OE_THROW(OE_BUFFER_TOO_SMALL);
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
         *signatureSize = size;
@@ -368,11 +368,11 @@ OE_Result OE_ECSign(
 
     /* Compute the signature */
     if (EVP_PKEY_sign(ctx, signature, signatureSize, hashData, hashSize) <= 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (ctx)
         EVP_PKEY_CTX_free(ctx);
@@ -396,35 +396,35 @@ OE_Result OE_ECVerify(
     if (!_ValidImpl(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
     {
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     /* Check that hash buffer is big enough (hashType is size of that hash) */
     if (hashType > hashSize)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
 
     /* Create signing context */
     if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Initialize the signing context */
     if (EVP_PKEY_verify_init(ctx) <= 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Set the MD type for the signing operation */
     if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Compute the signature */
     if (EVP_PKEY_verify(ctx, signature, signatureSize, hashData, hashSize) <= 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (ctx)
         EVP_PKEY_CTX_free(ctx);
@@ -452,36 +452,36 @@ OE_Result OE_ECGenerate(
 
     /* Check parameters */
     if (!privateKey || !publicKey)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!(curveName = _ECTypeToString(type)))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
 
     /* Resolve the NID for this curve name */
     if ((nid = OBJ_txt2nid(curveName)) == NID_undef)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Create the key */
     if (!(key = EC_KEY_new_by_curve_name(nid)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Set the EC named-curve flag */
     EC_KEY_set_asn1_flag(key, OPENSSL_EC_NAMED_CURVE);
 
     /* Generate the public/private key pair */
     if (!EC_KEY_generate_key(key))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Create the private key structure */
     if (!(pkey = EVP_PKEY_new()))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Initialize the private key from the generated key pair */
     if (!EVP_PKEY_assign_EC_KEY(pkey, key))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Key will be released when pkey is released */
     key = NULL;
@@ -491,21 +491,21 @@ OE_Result OE_ECGenerate(
         BUF_MEM* mem;
 
         if (!(bio = BIO_new(BIO_s_mem())))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (!PEM_write_bio_PrivateKey(bio, pkey, NULL, NULL, 0, 0, NULL))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (!BIO_get_mem_ptr(bio, &mem))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (OE_ECReadPrivateKeyPEM(
                 (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
         }
 
         BIO_free(bio);
@@ -517,29 +517,29 @@ OE_Result OE_ECGenerate(
         BUF_MEM* mem;
 
         if (!(bio = BIO_new(BIO_s_mem())))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (!PEM_write_bio_PUBKEY(bio, pkey))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         BIO_get_mem_ptr(bio, &mem);
 
         if (OE_ECReadPublicKeyPEM(
                 (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
         }
 
         BIO_free(bio);
         bio = NULL;
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (key)
         EC_KEY_free(key);

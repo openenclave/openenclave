@@ -5,7 +5,7 @@
 #include <mbedtls/entropy.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/random.h>
-#include <openenclave/bits/trace.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/enclave.h>
 #include <openenclave/thread.h>
 
@@ -39,7 +39,7 @@ static OE_Result _SeedEntropySource()
                     &_drbg, mbedtls_entropy_func, &_entropy, NULL, 0) != 0)
             {
                 OE_MutexUnlock(&_mutex);
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
             }
 
             _seeded = true;
@@ -48,9 +48,9 @@ static OE_Result _SeedEntropySource()
         OE_MutexUnlock(&_mutex);
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -84,18 +84,18 @@ OE_Result OE_Random(void* data, size_t size)
     if (_seeded == false)
     {
         if (_SeedEntropySource() != OE_OK)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
     }
 
     /* Generate random data (synchronize acceess to _drbg instance) */
     rc = mbedtls_ctr_drbg_random(&_drbg, data, size);
 
     if (rc != 0)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }

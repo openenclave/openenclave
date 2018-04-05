@@ -5,7 +5,7 @@
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/pem.h>
-#include <openenclave/bits/trace.h>
+#include <openenclave/bits/raise.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
@@ -218,29 +218,29 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
 
     /* Check parameters */
     if (!pemData || !pemSize || !cert)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* The position of the null terminator must be the last byte */
     if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL (if not already initialized) */
     OE_InitializeOpenSSL();
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Convert the PEM BIO into a certificate object */
     if (!(x509 = PEM_read_bio_X509(bio, NULL, 0, NULL)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     _InitCertImpl(impl, x509);
     x509 = NULL;
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (bio)
         BIO_free(bio);
@@ -258,15 +258,15 @@ OE_Result OE_CertFree(OE_Cert* cert)
 
     /* Check parameters */
     if (!_ValidCertImpl(impl))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Free the certificate */
     X509_free(impl->x509);
     _ClearCertImpl(impl);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -285,24 +285,24 @@ OE_Result OE_CertChainReadPEM(
 
     /* Check parameters */
     if (!pemData || !pemSize || !chain)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* The position of the null terminator must be the last byte */
     if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL (if not already initialized) */
     OE_InitializeOpenSSL();
 
     /* Read the certificate chain into memory */
     if (!(sk = _ReadCertChain((const char*)pemData)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     _InitCertChainImpl(impl, sk);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }
@@ -314,7 +314,7 @@ OE_Result OE_CertChainFree(OE_CertChain* __chain)
 
     /* Check the parameter */
     if (_ValidCertChainImpl(impl))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Release the stack of certificates */
     sk_X509_pop_free(impl->sk, X509_free);
@@ -322,9 +322,9 @@ OE_Result OE_CertChainFree(OE_CertChain* __chain)
     /* Clear the implementation */
     _ClearCertChainImpl(impl);
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -346,7 +346,7 @@ OE_Result OE_CertVerify(
 
     /* Reject null parameters */
     if (!_ValidCertImpl(certImpl) || !_ValidCertChainImpl(chainImpl))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* We must make a copy of the certificate, else previous successful
      * verifications cause subsequent bad verifications to succeed. It is
@@ -354,18 +354,18 @@ OE_Result OE_CertVerify(
      * verification. We can clear this by making a copy.
      */
     if (!(x509 = _CloneX509(certImpl->x509)))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Initialize OpenSSL (if not already initialized) */
     OE_InitializeOpenSSL();
 
     /* Create a context for verification */
     if (!(ctx = X509_STORE_CTX_new()))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Initialize the context that will be used to verify the certificate */
     if (!X509_STORE_CTX_init(ctx, NULL, NULL, NULL))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Set the certificate into the verification context */
     X509_STORE_CTX_set_cert(ctx, x509);
@@ -384,12 +384,12 @@ OE_Result OE_CertVerify(
                 sizeof(error->buf) - 1);
         }
 
-        OE_THROW(OE_VERIFY_FAILED);
+        OE_RAISE(OE_VERIFY_FAILED);
     }
 
-    OE_THROW(OE_OK);
+    result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (ctx)
         X509_STORE_CTX_free(ctx);
