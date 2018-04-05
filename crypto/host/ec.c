@@ -424,7 +424,7 @@ OE_Result OE_ECVerify(
 
     /* Compute the signature */
     if (EVP_PKEY_verify(ctx, signature, signatureSize, hashData, hashSize) <= 0)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_VERIFY_FAILED);
 
     result = OE_OK;
 
