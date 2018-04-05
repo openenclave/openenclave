@@ -10,6 +10,7 @@
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/rsa.h>
+#include <openenclave/bits/pem.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -167,6 +168,14 @@ done:
     return ret;
 }
 
+static bool _IsRSAKey(const mbedtls_pk_context* pk)
+{
+    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_RSA))
+        return false;
+
+    return true;
+}
+
 /*
 **==============================================================================
 **
@@ -196,6 +205,10 @@ OE_Result OE_RSAReadPrivateKeyPEM(
 
     /* Parse PEM format into key structure */
     if (mbedtls_pk_parse_key(&impl->pk, pemData, pemSize, NULL, 0) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Fail if PEM data did not contain an RSA key */
+    if (!_IsRSAKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -229,6 +242,10 @@ OE_Result OE_RSAReadPublicKeyPEM(
 
     /* Parse PEM format into key structure */
     if (mbedtls_pk_parse_public_key(&impl->pk, pemData, pemSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Fail if PEM data did not contain an RSA key */
+    if (!_IsRSAKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;

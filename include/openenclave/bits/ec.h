@@ -34,9 +34,9 @@ typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
  * This function reads a private EC key from PEM data with the following PEM
  * headers.
  *
- *     -----BEGIN EC PRIVATE KEY-----
+ *     -----BEGIN PRIVATE KEY-----
  *     ...
- *     -----END EC PRIVATE KEY-----
+ *     -----END PRIVATE KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
  * OE_ECFree().

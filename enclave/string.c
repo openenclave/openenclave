@@ -50,6 +50,24 @@ int OE_Strcmp(const char* s1, const char* s2)
     return *s1 - *s2;
 }
 
+int OE_Strncmp(const char* s1, const char* s2, size_t n)
+{
+    /* Compare first n characters only */
+    while (n && (*s1 && *s2) && (*s1 == *s2))
+    {
+        s1++;
+        s2++;
+        n--;
+    }
+
+    /* If first n characters matched */
+    if (n == 0)
+        return 0;
+
+    /* Return difference of mismatching characters */
+    return *s1 - *s2;
+}
+
 size_t OE_Strlcpy(char* dest, const char* src, size_t size)
 {
     const char* start = src;

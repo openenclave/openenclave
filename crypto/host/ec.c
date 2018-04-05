@@ -3,8 +3,9 @@
 
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/raise.h>
-#include <openenclave/bits/sha.h>
 #include <openenclave/types.h>
+#include <openenclave/bits/sha.h>
+#include <openenclave/bits/pem.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <string.h>
@@ -123,6 +124,10 @@ OE_Result OE_ECReadPrivateKeyPEM(
     if (!(pkey = PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL)))
         OE_RAISE(OE_FAILURE);
 
+    /* Verify that it is an EC key */
+    if (!EVP_PKEY_get1_EC_KEY(pkey))
+        OE_RAISE(OE_FAILURE);
+
     /* Initialize the key */
     impl->magic = OE_EC_PRIVATE_KEY_MAGIC;
     impl->pkey = pkey;
@@ -171,6 +176,10 @@ OE_Result OE_ECReadPublicKeyPEM(
 
     /* Read the key object */
     if (!(pkey = PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Verify that it is an EC key */
+    if (!EVP_PKEY_get1_EC_KEY(pkey))
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */

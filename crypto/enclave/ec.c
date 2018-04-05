@@ -10,6 +10,7 @@
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/pem.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -196,6 +197,14 @@ done:
     return ret;
 }
 
+static bool _IsECKey(const mbedtls_pk_context* pk)
+{
+    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY))
+        return false;
+
+    return true;
+}
+
 /*
 **==============================================================================
 **
@@ -225,6 +234,10 @@ OE_Result OE_ECReadPrivateKeyPEM(
 
     /* Parse PEM format into key structure */
     if (mbedtls_pk_parse_key(&impl->pk, pemData, pemSize, NULL, 0) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Fail if PEM data did not contain an EC key */
+    if (!_IsECKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -258,6 +271,10 @@ OE_Result OE_ECReadPublicKeyPEM(
 
     /* Parse PEM format into key structure */
     if (mbedtls_pk_parse_public_key(&impl->pk, pemData, pemSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Fail if PEM data did not contain an EC key */
+    if (!_IsECKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -462,7 +479,9 @@ OE_Result OE_ECVerify(
     /* Check for null parameters */
     if (!_ValidPublicKeyImpl(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
+    {
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
     /* Verify the signature */
     if (mbedtls_pk_verify(

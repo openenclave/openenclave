@@ -24,6 +24,13 @@ size_t OE_Strlen(const char* s);
 int OE_Strcmp(const char* s1, const char* s2);
 
 /**
+ * Enclave implementation of the standard strncmp() function.
+ *
+ * Refer to documentation for strncmp() function.
+ */
+int OE_Strncmp(const char* s1, const char* s2, size_t n);
+
+/**
  * Enclave implementation of the standard strlcpy() function.
  *
  * Refer to documentation for strlcpy() function.
