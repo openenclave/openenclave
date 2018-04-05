@@ -169,7 +169,10 @@ static OE_Result GetDefaultKeyRequestAttributes(Sgx_KeyRequest* sgxKeyRequest)
 
     // Set key request attributes(isv svn, cpu svn, and attribute masks)
     sgxKeyRequest->isv_svn = sgxReport.body.isvsvn;
-    OE_Memcpy(&sgxKeyRequest->cpu_svn, sgxReport.body.cpusvn, SGX_CPUSVN_SIZE);
+    OE_Memcpy(
+        &sgxKeyRequest->cpu_svn,
+        sgxReport.body.cpusvn,
+        OE_FIELD_SIZE(Sgx_KeyRequest, cpu_svn));
     sgxKeyRequest->flags_attribute_mask = OE_SEALKEY_DEFAULT_FLAGSMASK;
     sgxKeyRequest->xfrm_attribute_mask = OE_SEALKEY_DEFAULT_XFRMMASK;
     sgxKeyRequest->misc_attribute_mask = OE_SEALKEY_DEFAULT_MISCMASK;

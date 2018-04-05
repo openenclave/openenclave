@@ -5,7 +5,9 @@
 #define _OE_KEYS_H
 
 #include <openenclave/defs.h>
+#include <openenclave/result.h>
 #include <openenclave/types.h>
+#include "sgxtypes.h"
 
 OE_EXTERNC_BEGIN
 

@@ -27,8 +27,7 @@ int main(int argc, const char* argv[])
     const uint32_t flags = OE_GetCreateFlags();
     if ((flags & OE_FLAG_SIMULATE) != 0)
     {
-        printf(
-            "=== Skipped unsupported test in simulation mode (%s)\n", argv[0]);
+        printf("=== Skipped unsupported test in simulation mode (sealKey)\n");
         return SKIP_RETURN_CODE;
     }
 
