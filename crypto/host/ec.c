@@ -19,17 +19,17 @@
 **==============================================================================
 */
 
-#define OE_EC_KEY_MAGIC 0x19a751419ae04bbc
+#define OE_EC_PRIVATE_KEY_MAGIC 0x19a751419ae04bbc
 
-typedef struct _OE_EC_KEY_IMPL
+typedef struct _OE_ECPrivateKeyImpl
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} OE_EC_KEY_IMPL;
+} OE_ECPrivateKeyImpl;
 
-OE_STATIC_ASSERT(sizeof(OE_EC_KEY_IMPL) <= sizeof(OE_EC_KEY));
+OE_STATIC_ASSERT(sizeof(OE_ECPrivateKeyImpl) <= sizeof(OE_ECPrivateKey));
 
-OE_INLINE void _ClearImpl(OE_EC_KEY_IMPL* impl)
+OE_INLINE void _ClearPrivateKeyImpl(OE_ECPrivateKeyImpl* impl)
 {
     if (impl)
     {
@@ -38,9 +38,33 @@ OE_INLINE void _ClearImpl(OE_EC_KEY_IMPL* impl)
     }
 }
 
-OE_INLINE bool _ValidImpl(const OE_EC_KEY_IMPL* impl)
+OE_INLINE bool _ValidPrivateKeyImpl(const OE_ECPrivateKeyImpl* impl)
 {
-    return impl && impl->magic == OE_EC_KEY_MAGIC && impl->pkey ? true : false;
+    return impl && impl->magic == OE_EC_PRIVATE_KEY_MAGIC && impl->pkey;
+}
+
+#define OE_EC_PUBLIC_KEY_MAGIC 0xb1d39580c1f14c02
+
+typedef struct _OE_ECPublicKeyImpl
+{
+    uint64_t magic;
+    EVP_PKEY* pkey;
+} OE_ECPublicKeyImpl;
+
+OE_STATIC_ASSERT(sizeof(OE_ECPublicKeyImpl) <= sizeof(OE_ECPublicKey));
+
+OE_INLINE void _ClearPublicKeyImpl(OE_ECPublicKeyImpl* impl)
+{
+    if (impl)
+    {
+        impl->magic = 0;
+        impl->pkey = NULL;
+    }
+}
+
+OE_INLINE bool _ValidPublicKeyImpl(const OE_ECPublicKeyImpl* impl)
+{
+    return impl && impl->magic == OE_EC_PUBLIC_KEY_MAGIC && impl->pkey;
 }
 
 /* Curve names, indexed by OE_ECType */
@@ -70,15 +94,15 @@ static const char* _ECTypeToString(OE_Type type)
 OE_Result OE_ECReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_EC_KEY* key)
+    OE_ECPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
+    OE_ECPrivateKeyImpl* impl = (OE_ECPrivateKeyImpl*)key;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
 
     /* Initialize the key output parameter */
-    _ClearImpl(impl);
+    _ClearPrivateKeyImpl(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -100,7 +124,7 @@ OE_Result OE_ECReadPrivateKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
-    impl->magic = OE_EC_KEY_MAGIC;
+    impl->magic = OE_EC_PRIVATE_KEY_MAGIC;
     impl->pkey = pkey;
     pkey = NULL;
 
@@ -120,15 +144,15 @@ done:
 OE_Result OE_ECReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_EC_KEY* key)
+    OE_ECPublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
-    OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
+    OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)key;
 
     /* Zero-initialize the key */
-    _ClearImpl(impl);
+    _ClearPublicKeyImpl(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -150,7 +174,7 @@ OE_Result OE_ECReadPublicKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
-    impl->magic = OE_EC_KEY_MAGIC;
+    impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
     impl->pkey = pkey;
     pkey = NULL;
 
@@ -168,18 +192,18 @@ done:
 }
 
 OE_Result OE_ECWritePrivateKeyPEM(
-    const OE_EC_KEY* key,
+    const OE_ECPrivateKey* key,
     uint8_t* data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)key;
+    const OE_ECPrivateKeyImpl* impl = (const OE_ECPrivateKeyImpl*)key;
     BIO* bio = NULL;
     EC_KEY* ec;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !size)
+    if (!_ValidPrivateKeyImpl(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -232,17 +256,17 @@ done:
 }
 
 OE_Result OE_ECWritePublicKeyPEM(
-    const OE_EC_KEY* key,
+    const OE_ECPublicKey* key,
     uint8_t* data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
-    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)key;
+    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)key;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !size)
+    if (!_ValidPublicKeyImpl(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -290,23 +314,48 @@ done:
     return result;
 }
 
-OE_Result OE_ECFree(OE_EC_KEY* key)
+OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
     if (key)
     {
-        OE_EC_KEY_IMPL* impl = (OE_EC_KEY_IMPL*)key;
+        OE_ECPrivateKeyImpl* impl = (OE_ECPrivateKeyImpl*)key;
 
         /* Check parameter */
-        if (!_ValidImpl(impl))
+        if (!_ValidPrivateKeyImpl(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
         EVP_PKEY_free(impl->pkey);
 
         /* Clear the fields of the implementation */
-        _ClearImpl(impl);
+        _ClearPrivateKeyImpl(impl);
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* key)
+{
+    OE_Result result = OE_UNEXPECTED;
+
+    if (key)
+    {
+        OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)key;
+
+        /* Check parameter */
+        if (!_ValidPublicKeyImpl(impl))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        /* Release the key */
+        EVP_PKEY_free(impl->pkey);
+
+        /* Clear the fields of the implementation */
+        _ClearPublicKeyImpl(impl);
     }
 
     result = OE_OK;
@@ -316,7 +365,7 @@ done:
 }
 
 OE_Result OE_ECSign(
-    const OE_EC_KEY* privateKey,
+    const OE_ECPrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -324,11 +373,11 @@ OE_Result OE_ECSign(
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)privateKey;
+    const OE_ECPrivateKeyImpl* impl = (const OE_ECPrivateKeyImpl*)privateKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hashData || !hashSize || !signatureSize)
+    if (!_ValidPrivateKeyImpl(impl) || !hashData || !hashSize || !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check that hash buffer is big enough (hashType is size of that hash) */
@@ -385,7 +434,7 @@ done:
 }
 
 OE_Result OE_ECVerify(
-    const OE_EC_KEY* publicKey,
+    const OE_ECPublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -393,11 +442,11 @@ OE_Result OE_ECVerify(
     size_t signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_EC_KEY_IMPL* impl = (const OE_EC_KEY_IMPL*)publicKey;
+    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)publicKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hashData || !hashSize || !signature ||
+    if (!_ValidPublicKeyImpl(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -438,12 +487,12 @@ done:
 
 OE_Result OE_ECGenerate(
     OE_ECType type,
-    OE_EC_KEY* privateKey,
-    OE_EC_KEY* publicKey)
+    OE_ECPrivateKey* privateKey,
+    OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_EC_KEY_IMPL* privateImpl = (OE_EC_KEY_IMPL*)privateKey;
-    OE_EC_KEY_IMPL* publicImpl = (OE_EC_KEY_IMPL*)publicKey;
+    OE_ECPrivateKeyImpl* privateImpl = (OE_ECPrivateKeyImpl*)privateKey;
+    OE_ECPublicKeyImpl* publicImpl = (OE_ECPublicKeyImpl*)publicKey;
     int nid;
     EC_KEY* key = NULL;
     EVP_PKEY* pkey = NULL;
@@ -451,8 +500,8 @@ OE_Result OE_ECGenerate(
     const char nullTerminator = '\0';
     const char* curveName;
 
-    _ClearImpl(privateImpl);
-    _ClearImpl(publicImpl);
+    _ClearPrivateKeyImpl(privateImpl);
+    _ClearPublicKeyImpl(publicImpl);
 
     /* Check parameters */
     if (!privateKey || !publicKey)
@@ -556,11 +605,11 @@ done:
 
     if (result != OE_OK)
     {
-        if (_ValidImpl(privateImpl))
-            OE_ECFree(privateKey);
+        if (_ValidPrivateKeyImpl(privateImpl))
+            OE_ECPrivateKeyFree(privateKey);
 
-        if (_ValidImpl(publicImpl))
-            OE_ECFree(publicKey);
+        if (_ValidPublicKeyImpl(publicImpl))
+            OE_ECPublicKeyFree(publicKey);
     }
 
     return result;

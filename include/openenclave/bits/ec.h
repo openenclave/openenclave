@@ -11,12 +11,19 @@
 
 OE_EXTERNC_BEGIN
 
-/* Opaque representation of a private or public EC key */
-typedef struct _OE_EC_KEY
+/* Opaque representation of a private EC key */
+typedef struct _OE_ECPrivateKey
 {
-    /* Internal private implementation */
+    /* Internal implementation */
     uint64_t impl[4];
-} OE_EC_KEY;
+} OE_ECPrivateKey;
+
+/* Opaque representation of a public EC key */
+typedef struct _OE_ECPublicKey
+{
+    /* Internal implementation */
+    uint64_t impl[4];
+} OE_ECPublicKey;
 
 /* Supported CURVE types */
 typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
@@ -43,7 +50,7 @@ typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
 OE_Result OE_ECReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_EC_KEY* privateKey);
+    OE_ECPrivateKey* privateKey);
 
 /**
  * Reads a public EC key from PEM data
@@ -67,7 +74,7 @@ OE_Result OE_ECReadPrivateKeyPEM(
 OE_Result OE_ECReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_EC_KEY* publicKey);
+    OE_ECPublicKey* publicKey);
 
 /**
  * Writes a private EC key to PEM format
@@ -87,7 +94,7 @@ OE_Result OE_ECReadPublicKeyPEM(
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
 OE_Result OE_ECWritePrivateKeyPEM(
-    const OE_EC_KEY* privateKey,
+    const OE_ECPrivateKey* privateKey,
     uint8_t* pemData,
     size_t* pemSize);
 
@@ -111,20 +118,31 @@ OE_Result OE_ECWritePrivateKeyPEM(
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
 OE_Result OE_ECWritePublicKeyPEM(
-    const OE_EC_KEY* publicKey,
+    const OE_ECPublicKey* publicKey,
     uint8_t* pemData,
     size_t* pemSize);
 
 /**
- * Releases an EC key
+ * Releases a private EC key
  *
- * This function releases the given EC key.
+ * This function releases the given EC private key.
  *
  * @param key handle of key being released
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECFree(OE_EC_KEY* key);
+OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey);
+
+/**
+ * Releases a public EC key
+ *
+ * This function releases the given EC public key.
+ *
+ * @param key handle of key being released
+ *
+ * @return OE_OK upon success
+ */
+OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey);
 
 /**
  * Digitally signs a message with a private EC key
@@ -142,7 +160,7 @@ OE_Result OE_ECFree(OE_EC_KEY* key);
  * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
 OE_Result OE_ECSign(
-    const OE_EC_KEY* privateKey,
+    const OE_ECPrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -165,7 +183,7 @@ OE_Result OE_ECSign(
  * @return OE_OK if the message was signeded with the given certificate
  */
 OE_Result OE_ECVerify(
-    const OE_EC_KEY* publicKey,
+    const OE_ECPublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -186,8 +204,8 @@ OE_Result OE_ECVerify(
  */
 OE_Result OE_ECGenerate(
     OE_ECType ecType,
-    OE_EC_KEY* privateKey,
-    OE_EC_KEY* publicKey);
+    OE_ECPrivateKey* privateKey,
+    OE_ECPublicKey* publicKey);
 
 OE_EXTERNC_END
 

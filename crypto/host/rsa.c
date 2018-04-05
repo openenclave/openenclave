@@ -20,17 +20,17 @@
 **==============================================================================
 */
 
-#define OE_RSA_KEY_MAGIC 0x7bf635929a714b2c
+#define OE_RSA_PRIVATE_KEY_MAGIC 0x7bf635929a714b2c
 
-typedef struct _OE_RSA_KEY_IMPL
+typedef struct _OE_RSAPrivateKeyImpl
 {
     uint64_t magic;
     RSA* rsa;
-} OE_RSA_KEY_IMPL;
+} OE_RSAPrivateKeyImpl;
 
-OE_STATIC_ASSERT(sizeof(OE_RSA_KEY_IMPL) <= sizeof(OE_RSA_KEY));
+OE_STATIC_ASSERT(sizeof(OE_RSAPrivateKeyImpl) <= sizeof(OE_RSAPrivateKey));
 
-OE_INLINE void _ClearImpl(OE_RSA_KEY_IMPL* impl)
+OE_INLINE void _ClearPrivateKeyImpl(OE_RSAPrivateKeyImpl* impl)
 {
     if (impl)
     {
@@ -39,9 +39,33 @@ OE_INLINE void _ClearImpl(OE_RSA_KEY_IMPL* impl)
     }
 }
 
-OE_INLINE bool _ValidImpl(const OE_RSA_KEY_IMPL* impl)
+OE_INLINE bool _ValidPrivateKeyImpl(const OE_RSAPrivateKeyImpl* impl)
 {
-    return impl && impl->magic == OE_RSA_KEY_MAGIC && impl->rsa ? true : false;
+    return impl && impl->magic == OE_RSA_PRIVATE_KEY_MAGIC && impl->rsa;
+}
+
+#define OE_RSA_PUBLIC_KEY_MAGIC 0x8f8f72170025426d
+
+typedef struct _OE_RSAPublicKeyImpl
+{
+    uint64_t magic;
+    RSA* rsa;
+} OE_RSAPublicKeyImpl;
+
+OE_STATIC_ASSERT(sizeof(OE_RSAPublicKeyImpl) <= sizeof(OE_RSAPublicKey));
+
+OE_INLINE void _ClearPublicKeyImpl(OE_RSAPublicKeyImpl* impl)
+{
+    if (impl)
+    {
+        impl->magic = 0;
+        impl->rsa = NULL;
+    }
+}
+
+OE_INLINE bool _ValidPublicKeyImpl(const OE_RSAPublicKeyImpl* impl)
+{
+    return impl && impl->magic == OE_RSA_PUBLIC_KEY_MAGIC && impl->rsa;
 }
 
 static int _MapHashType(OE_HashType md)
@@ -69,15 +93,15 @@ static int _MapHashType(OE_HashType md)
 OE_Result OE_RSAReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_RSA_KEY* key)
+    OE_RSAPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
+    OE_RSAPrivateKeyImpl* impl = (OE_RSAPrivateKeyImpl*)key;
     BIO* bio = NULL;
     RSA* rsa = NULL;
 
     /* Initialize the key output parameter */
-    _ClearImpl(impl);
+    _ClearPrivateKeyImpl(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -99,7 +123,7 @@ OE_Result OE_RSAReadPrivateKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Set the output key parameter */
-    impl->magic = OE_RSA_KEY_MAGIC;
+    impl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
     impl->rsa = rsa;
     rsa = NULL;
 
@@ -119,16 +143,16 @@ done:
 OE_Result OE_RSAReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_RSA_KEY* key)
+    OE_RSAPublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
+    OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)key;
     BIO* bio = NULL;
     RSA* rsa = NULL;
     EVP_PKEY* pkey = NULL;
 
     /* Initialize the key output parameter */
-    _ClearImpl(impl);
+    _ClearPublicKeyImpl(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -157,7 +181,7 @@ OE_Result OE_RSAReadPublicKeyPEM(
     RSA_up_ref(rsa);
 
     /* Set the output key parameter */
-    impl->magic = OE_RSA_KEY_MAGIC;
+    impl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
     impl->rsa = rsa;
     rsa = NULL;
 
@@ -178,17 +202,17 @@ done:
 }
 
 OE_Result OE_RSAWritePrivateKeyPEM(
-    const OE_RSA_KEY* key,
+    const OE_RSAPrivateKey* key,
     uint8_t* data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_RSA_KEY_IMPL* impl = (const OE_RSA_KEY_IMPL*)key;
+    const OE_RSAPrivateKeyImpl* impl = (const OE_RSAPrivateKeyImpl*)key;
     BIO* bio = NULL;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !size)
+    if (!_ValidPrivateKeyImpl(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -239,18 +263,18 @@ done:
 }
 
 OE_Result OE_RSAWritePublicKeyPEM(
-    const OE_RSA_KEY* key,
+    const OE_RSAPublicKey* key,
     uint8_t* data,
     size_t* size)
 {
-    const OE_RSA_KEY_IMPL* impl = (const OE_RSA_KEY_IMPL*)key;
+    const OE_RSAPublicKeyImpl* impl = (const OE_RSAPublicKeyImpl*)key;
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_ValidImpl(impl) || !size)
+    if (!_ValidPublicKeyImpl(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -313,23 +337,48 @@ done:
     return result;
 }
 
-OE_Result OE_RSAFree(OE_RSA_KEY* key)
+OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
     if (key)
     {
-        OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)key;
+        OE_RSAPrivateKeyImpl* impl = (OE_RSAPrivateKeyImpl*)key;
 
         /* Check the parameter */
-        if (!_ValidImpl(impl))
+        if (!_ValidPrivateKeyImpl(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the RSA object */
         RSA_free(impl->rsa);
 
         /* Clear the fields in the implementation */
-        _ClearImpl(impl);
+        _ClearPrivateKeyImpl(impl);
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* key)
+{
+    OE_Result result = OE_UNEXPECTED;
+
+    if (key)
+    {
+        OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)key;
+
+        /* Check the parameter */
+        if (!_ValidPublicKeyImpl(impl))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        /* Release the RSA object */
+        RSA_free(impl->rsa);
+
+        /* Clear the fields in the implementation */
+        _ClearPublicKeyImpl(impl);
     }
 
     result = OE_OK;
@@ -339,7 +388,7 @@ done:
 }
 
 OE_Result OE_RSASign(
-    const OE_RSA_KEY* privateKey,
+    const OE_RSAPrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -347,11 +396,11 @@ OE_Result OE_RSASign(
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)privateKey;
+    const OE_RSAPrivateKeyImpl* impl = (OE_RSAPrivateKeyImpl*)privateKey;
     int type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hashData || !hashSize || !signatureSize)
+    if (!_ValidPrivateKeyImpl(impl) || !hashData || !hashSize || !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If signature buffer is null, then signature size must be zero */
@@ -391,7 +440,7 @@ done:
 }
 
 OE_Result OE_RSAVerify(
-    const OE_RSA_KEY* publicKey,
+    const OE_RSAPublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -399,11 +448,11 @@ OE_Result OE_RSAVerify(
     size_t signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_RSA_KEY_IMPL* impl = (OE_RSA_KEY_IMPL*)publicKey;
+    const OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)publicKey;
     int type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!_ValidImpl(impl) || !hashSize || !hashData || !signature ||
+    if (!_ValidPublicKeyImpl(impl) || !hashSize || !hashData || !signature ||
         signatureSize == 0)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -429,18 +478,18 @@ done:
 OE_Result OE_RSAGenerate(
     uint64_t bits,
     uint64_t exponent,
-    OE_RSA_KEY* privateKey,
-    OE_RSA_KEY* publicKey)
+    OE_RSAPrivateKey* privateKey,
+    OE_RSAPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSA_KEY_IMPL* privateImpl = (OE_RSA_KEY_IMPL*)privateKey;
-    OE_RSA_KEY_IMPL* publicImpl = (OE_RSA_KEY_IMPL*)publicKey;
+    OE_RSAPrivateKeyImpl* privateImpl = (OE_RSAPrivateKeyImpl*)privateKey;
+    OE_RSAPublicKeyImpl* publicImpl = (OE_RSAPublicKeyImpl*)publicKey;
     RSA* rsa = NULL;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
 
-    _ClearImpl(privateImpl);
-    _ClearImpl(publicImpl);
+    _ClearPrivateKeyImpl(privateImpl);
+    _ClearPublicKeyImpl(publicImpl);
 
     /* Check parameters */
     if (!privateImpl || !publicImpl)
@@ -466,7 +515,7 @@ OE_Result OE_RSAGenerate(
         if (!(privateImpl->rsa = RSAPrivateKey_dup(rsa)))
             OE_RAISE(OE_FAILURE);
 
-        privateImpl->magic = OE_RSA_KEY_MAGIC;
+        privateImpl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
     }
 
     /* Copy the public key from the key-pair */
@@ -474,7 +523,7 @@ OE_Result OE_RSAGenerate(
         if (!(publicImpl->rsa = RSAPublicKey_dup(rsa)))
             OE_RAISE(OE_FAILURE);
 
-        publicImpl->magic = OE_RSA_KEY_MAGIC;
+        publicImpl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
     }
 
     result = OE_OK;
@@ -492,11 +541,11 @@ done:
 
     if (result != OE_OK)
     {
-        if (_ValidImpl(privateImpl))
-            OE_RSAFree(privateKey);
+        if (_ValidPrivateKeyImpl(privateImpl))
+            OE_RSAPrivateKeyFree(privateKey);
 
-        if (_ValidImpl(publicImpl))
-            OE_RSAFree(publicKey);
+        if (_ValidPublicKeyImpl(publicImpl))
+            OE_RSAPublicKeyFree(publicKey);
     }
 
     return result;

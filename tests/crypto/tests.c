@@ -125,7 +125,7 @@ static void TestRSASign()
     printf("=== begin TestRSASign\n");
 
     OE_Result r;
-    OE_RSA_KEY key;
+    OE_RSAPrivateKey key;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
@@ -169,7 +169,7 @@ static void TestRSASign()
 static void TestRSAVerify()
 {
     OE_Result r;
-    OE_RSA_KEY key;
+    OE_RSAPublicKey key;
 
     r = OE_RSAReadPublicKeyPEM(
         (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
@@ -431,7 +431,7 @@ static void TestECSignAndVerify()
     OE_Result r;
 
     {
-        OE_EC_KEY key;
+        OE_ECPrivateKey key;
 
         r = OE_ECReadPrivateKeyPEM(
             (const uint8_t*)EC_PRIVATE_KEY, sizeof(EC_PRIVATE_KEY), &key);
@@ -462,7 +462,7 @@ static void TestECSignAndVerify()
     }
 
     {
-        OE_EC_KEY key;
+        OE_ECPublicKey key;
 
         r = OE_ECReadPublicKeyPEM(
             (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
@@ -501,8 +501,8 @@ static void TestRSAGenerate()
     printf("=== begin TestRSAGenerate()\n");
 
     OE_Result r;
-    OE_RSA_KEY privateKey;
-    OE_RSA_KEY publicKey;
+    OE_RSAPrivateKey privateKey;
+    OE_RSAPublicKey publicKey;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
@@ -539,8 +539,8 @@ static void TestRSAGenerate()
     OE_TEST(r == OE_OK);
 
     free(signature);
-    OE_RSAFree(&privateKey);
-    OE_RSAFree(&publicKey);
+    OE_RSAPrivateKeyFree(&privateKey);
+    OE_RSAPublicKeyFree(&publicKey);
 
     printf("=== passed TestRSAGenerate()\n");
 }
@@ -550,8 +550,8 @@ static void TestECGenerate()
     printf("=== begin TestECGenerate()\n");
 
     OE_Result r;
-    OE_EC_KEY privateKey;
-    OE_EC_KEY publicKey;
+    OE_ECPrivateKey privateKey;
+    OE_ECPublicKey publicKey;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
@@ -588,8 +588,8 @@ static void TestECGenerate()
     OE_TEST(r == OE_OK);
 
     free(signature);
-    OE_ECFree(&privateKey);
-    OE_ECFree(&publicKey);
+    OE_ECPrivateKeyFree(&privateKey);
+    OE_ECPublicKeyFree(&publicKey);
 
     printf("=== passed TestECGenerate()\n");
 }
@@ -599,7 +599,7 @@ static void TestRSAWritePrivate()
     printf("=== begin TestRSAWritePrivate()\n");
 
     OE_Result r;
-    OE_RSA_KEY key;
+    OE_RSAPrivateKey key;
     void* pemData = NULL;
     size_t pemSize = 0;
 
@@ -619,7 +619,7 @@ static void TestRSAWritePrivate()
     OE_TEST(memcmp(RSA_PRIVATE_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAFree(&key);
+    OE_RSAPrivateKeyFree(&key);
 
     printf("=== passed TestRSAWritePrivate()\n");
 }
@@ -629,7 +629,7 @@ static void TestRSAWritePublic()
     printf("=== begin TestRSAWritePublic()\n");
 
     OE_Result r;
-    OE_RSA_KEY key;
+    OE_RSAPublicKey key;
     void* pemData = NULL;
     size_t pemSize = 0;
 
@@ -649,7 +649,7 @@ static void TestRSAWritePublic()
     OE_TEST(memcmp(RSA_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAFree(&key);
+    OE_RSAPublicKeyFree(&key);
 
     printf("=== passed TestRSAWritePublic()\n");
 }
@@ -659,9 +659,9 @@ static void TestECWritePrivate()
     printf("=== begin TestECWritePrivate()\n");
 
     OE_Result r;
-    OE_EC_KEY publicKey;
-    OE_EC_KEY key1;
-    OE_EC_KEY key2;
+    OE_ECPublicKey publicKey;
+    OE_ECPrivateKey key1;
+    OE_ECPrivateKey key2;
     uint8_t* pemData1 = NULL;
     size_t pemSize1 = 0;
     uint8_t* pemData2 = NULL;
@@ -702,9 +702,9 @@ static void TestECWritePrivate()
 
     free(pemData1);
     free(pemData2);
-    OE_ECFree(&publicKey);
-    OE_ECFree(&key1);
-    OE_ECFree(&key2);
+    OE_ECPublicKeyFree(&publicKey);
+    OE_ECPrivateKeyFree(&key1);
+    OE_ECPrivateKeyFree(&key2);
 
     printf("=== passed TestECWritePrivate()\n");
 }
@@ -714,7 +714,7 @@ static void TestECWritePublic()
     printf("=== begin TestECWritePublic()\n");
 
     OE_Result r;
-    OE_EC_KEY key;
+    OE_ECPublicKey key;
     void* pemData = NULL;
     size_t pemSize = 0;
 
@@ -736,7 +736,7 @@ static void TestECWritePublic()
     OE_TEST(memcmp(EC_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_ECFree(&key);
+    OE_ECPublicKeyFree(&key);
 
     printf("=== passed TestECWritePublic()\n");
 }
