@@ -14,8 +14,8 @@ OE_EXTERNC_BEGIN
  *
  * This function generates a sequence of random bytes.
  *
- * @param data - the buffer that will be filled with random bytes
- * @param size - the size of the buffer
+ * @param data the buffer that will be filled with random bytes
+ * @param size the size of the buffer
  *
  * @return OE_OK on succeess
  */

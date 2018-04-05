@@ -29,7 +29,7 @@ typedef struct _OE_SHA256
  *
  * This function initializes a context for computing a SHA-256 hash.
  *
- * @param context - handle of context to be initialized
+ * @param context handle of context to be initialized
  *
  * @return OE_OK upon success
  */
@@ -41,9 +41,9 @@ OE_Result OE_SHA256Init(OE_SHA256Context* context);
  * This function extends the given SHA-256 hash context with additional data.
  * This function may be called multiple times for the given context.
  *
- * @param context - handle of context to extended
- * @param data - buffer of data to be hashed
- * @param size - size of the buffer
+ * @param context handle of context to extended
+ * @param data buffer of data to be hashed
+ * @param size size of the buffer
  *
  * @return OE_OK upon success
  */
@@ -58,9 +58,9 @@ OE_Result OE_SHA256Update(
  * This function computes the final SHA-256 hash and writes it to the user
  * buffer.
  *
- * @param context - handle of context to finalized
- * @param sha256 - buffer where hash is written
- * @param size - size of the buffer
+ * @param context handle of context to finalized
+ * @param sha256 buffer where hash is written
+ * @param size size of the buffer
  *
  * @return OE_OK upon success
  */

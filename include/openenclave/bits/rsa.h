@@ -28,9 +28,9 @@ typedef struct _OE_RSA_KEY
  *     ...
  *     -----END RSA PRIVATE KEY-----
  *
- * @param pemData - zero-terminated PEM data
- * @param pemSize - size of the PEM data (including the zero-terminator)
- * @param privateKey - initialized key handle upon return
+ * @param pemData zero-terminated PEM data
+ * @param pemSize size of the PEM data (including the zero-terminator)
+ * @param privateKey initialized key handle upon return
  *
  * @return OE_OK upon success
  */
@@ -49,9 +49,9 @@ OE_Result OE_RSAReadPrivateKeyPEM(
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param pemData - zero-terminated PEM data
- * @param pemSize - size of the PEM data (including the zero-terminator)
- * @param publicKey - initialized key handle upon return
+ * @param pemData zero-terminated PEM data
+ * @param pemSize size of the PEM data (including the zero-terminator)
+ * @param publicKey initialized key handle upon return
  *
  * @return OE_OK upon success
  */
@@ -70,8 +70,8 @@ OE_Result OE_RSAReadPublicKeyPEM(
  *     ...
  *     -----END RSA PRIVATE KEY-----
  *
- * @param privateKey - key to be written
- * @param pemData - buffer where PEM data will be written
+ * @param privateKey key to be written
+ * @param pemData buffer where PEM data will be written
  * @param[in,out] pemSize - buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
@@ -92,8 +92,8 @@ OE_Result OE_RSAWritePrivateKeyPEM(
  *     ...
  *     -----END PUBLIC KEY-----
  *
- * @param publicKey - key to be written
- * @param pemData - buffer where PEM data will be written
+ * @param publicKey key to be written
+ * @param pemData buffer where PEM data will be written
  * @param[in,out] pemSize - buffer size (in); PEM data size (out)
  *
  * @return OE_OK upon success
@@ -109,7 +109,7 @@ OE_Result OE_RSAWritePublicKeyPEM(
  *
  * This function releases the given RSA key.
  *
- * @param key - handle of key being released
+ * @param key handle of key being released
  *
  * @return OE_OK upon success
  */
@@ -120,11 +120,11 @@ OE_Result OE_RSAFree(OE_RSA_KEY* key);
  *
  * This function uses a private RSA key to sign a message with the given hash.
  *
- * @param privateKey - private RSA key of signer
- * @param hashType - type of hash parameter
- * @param hashData - hash of the message being signed
- * @param hashSize - size of the hash data
- * @param signature - signature buffer
+ * @param privateKey private RSA key of signer
+ * @param hashType type of hash parameter
+ * @param hashData hash of the message being signed
+ * @param hashSize size of the hash data
+ * @param signature signature buffer
  * @param[in,out] signatureSize - buffer size (in); signature size (out)
  *
  * @return OE_OK on success
@@ -144,12 +144,12 @@ OE_Result OE_RSASign(
  * This function verifies that the message with the given hash was signed by the
  * given RSA key.
  *
- * @param publicKey - public RSA key of signer
- * @param hashType - type of hash parameter
- * @param hashData - hash of the signed message
- * @param hashSize - size of the hash data
- * @param signature - expected signature
- * @param signatureSize - size of the expected signature
+ * @param publicKey public RSA key of signer
+ * @param hashType type of hash parameter
+ * @param hashData hash of the signed message
+ * @param hashSize size of the hash data
+ * @param signature expected signature
+ * @param signatureSize size of the expected signature
  *
  * @return OE_OK if the message was signeded with the given certificate
  */
@@ -167,10 +167,10 @@ OE_Result OE_RSAVerify(
  * This function generates an RSA private-public key pair from the given
  * parameters.
  *
- * @param bits - the number of bits in the key
- * @param exponent - the exponent for this key
- * @param privateKey - generated private key
- * @param publicKey - generated public key
+ * @param bits the number of bits in the key
+ * @param exponent the exponent for this key
+ * @param privateKey generated private key
+ * @param publicKey generated public key
  *
  * @return OE_OK on success
  */

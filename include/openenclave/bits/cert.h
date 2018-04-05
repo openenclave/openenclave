@@ -40,9 +40,9 @@ typedef struct _OE_VerifyCertError
  *     ...
  *     -----END CERT-----
  *
- * @param pemData - zero-terminated PEM data
- * @param pemSize - size of the PEM data (including the zero-terminator)
- * @param cert - initialized certificate handle upon return
+ * @param pemData zero-terminated PEM data
+ * @param pemSize size of the PEM data (including the zero-terminator)
+ * @param cert initialized certificate handle upon return
  *
  * @return OE_OK load was successful
  */
@@ -64,9 +64,9 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert);
  *     ...
  *     -----END CERT-----
  *
- * @param pemData - zero-terminated PEM data
- * @param pemSize - size of the PEM data (including the zero-terminator)
- * @param cert - initialized certificate chain handle upon return
+ * @param pemData zero-terminated PEM data
+ * @param pemSize size of the PEM data (including the zero-terminator)
+ * @param cert initialized certificate chain handle upon return
  *
  * @return OE_OK load was successful
  */
@@ -80,7 +80,7 @@ OE_Result OE_CertChainReadPEM(
  *
  * This function releases the given certificate.
  *
- * @param cert - handle of the certificate being released
+ * @param cert handle of the certificate being released
  *
  * @return OE_OK certificate was successfully released
  */
@@ -91,7 +91,7 @@ OE_Result OE_CertFree(OE_Cert* cert);
  *
  * This function releases the given certificate chain.
  *
- * @param chain - handle of certificate chain being released
+ * @param chain handle of certificate chain being released
  *
  * @return OE_OK certificate chain was successfully released
  */
@@ -103,10 +103,10 @@ OE_Result OE_CertChainFree(OE_CertChain* chain);
  * This function verifies the given certificate against the certificate
  * authority (CA), given by the certificate chain.
  *
- * @param cert - verify this certificate
- * @param chain - verify the certificate against this certificate chain
- * @param crl - verify the certificate against this CRL
- * @param error - string error if OE_VERIFY_FAILED was returned (can be null)
+ * @param cert verify this certificate
+ * @param chain verify the certificate against this certificate chain
+ * @param crl verify the certificate against this CRL
+ * @param error string error if OE_VERIFY_FAILED was returned (can be null)
  *
  * @return OE_OK verify ok
  * @return OE_VERIFY_FAILED verify failed and error parameter initialized
