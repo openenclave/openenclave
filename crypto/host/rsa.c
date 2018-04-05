@@ -223,7 +223,7 @@ OE_Result OE_RSAWritePrivateKeyPEM(
             OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
-        /* Copy buffer onto caller's memory */
+        /* Copy result to output buffer */
         memcpy(data, mem->data, mem->length);
         *size = mem->length;
     }
@@ -295,7 +295,7 @@ OE_Result OE_RSAWritePublicKeyPEM(
             OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
-        /* Copy buffer onto caller's memory */
+        /* Copy result to output buffer */
         memcpy(data, mem->data, mem->length);
         *size = mem->length;
     }

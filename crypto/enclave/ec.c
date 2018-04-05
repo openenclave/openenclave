@@ -380,7 +380,7 @@ OE_Result OE_ECSign(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    /* Copy buffer onto signature buffer */
+    /* Copy result to output buffer */
     OE_Memcpy(signature, buffer, bufferSize);
     *signatureSize = bufferSize;
 
