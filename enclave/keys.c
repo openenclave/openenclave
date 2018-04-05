@@ -10,12 +10,10 @@
 uint64_t _OE_EGetKey(const Sgx_KeyRequest* sgxKeyRequest, Sgx_Key* sgxKey);
 
 /*
- * The get key implementation that requests the key from processor and convert 
+ * The get key implementation that requests the key from processor and convert
  * the error code.
  */
-static OE_Result GetKeyImp(
-    const Sgx_KeyRequest* sgxKeyRequest,
-    Sgx_Key* sgxKey)
+static OE_Result GetKeyImp(const Sgx_KeyRequest* sgxKeyRequest, Sgx_Key* sgxKey)
 {
     OE_Result ret;
     uint64_t egetkeyResult;
@@ -31,29 +29,29 @@ static OE_Result GetKeyImp(
     // Convert the EGETKEY result to OE_Result.
     switch (egetkeyResult)
     {
-    case SGX_SUCCESS:
-        ret = OE_OK;
-        break;
+        case SGX_SUCCESS:
+            ret = OE_OK;
+            break;
 
-    case SGX_INVALID_ATTRIBUTE:
-        ret = OE_INVALID_PARAMETER;
-        break;
+        case SGX_INVALID_ATTRIBUTE:
+            ret = OE_INVALID_PARAMETER;
+            break;
 
-    case SGX_INVALID_CPUSVN:
-        ret = OE_INVALID_CPUSVN;
-        break;
+        case SGX_INVALID_CPUSVN:
+            ret = OE_INVALID_CPUSVN;
+            break;
 
-    case SGX_INVALID_ISVSVN:
-        ret = OE_INVALID_ISVSVN;
-        break;
+        case SGX_INVALID_ISVSVN:
+            ret = OE_INVALID_ISVSVN;
+            break;
 
-    case SGX_INVALID_KEYNAME:
-        ret = OE_INVALID_KEYNAME;
-        break;
+        case SGX_INVALID_KEYNAME:
+            ret = OE_INVALID_KEYNAME;
+            break;
 
-    default:
-        ret = OE_UNEXPECTED;
-        break;
+        default:
+            ret = OE_UNEXPECTED;
+            break;
     }
 
     // Copy the request key to output buffer, and clear it from stack.
@@ -76,8 +74,7 @@ OE_Result OE_GetKey(const Sgx_KeyRequest* sgxKeyRequest, Sgx_Key* sgxKey)
         return OE_INVALID_PARAMETER;
     }
 
-    if ((sgxKey == NULL) ||
-        !OE_IsWithinEnclave(sgxKey, sizeof(Sgx_Key)))
+    if ((sgxKey == NULL) || !OE_IsWithinEnclave(sgxKey, sizeof(Sgx_Key)))
     {
         return OE_INVALID_PARAMETER;
     }
@@ -148,28 +145,22 @@ OE_Result OE_GetSealKey(
 }
 
 /*
- * Get default key request attributes. 
- * The ISV SVN and CPU SVN are set to value of current enclave. 
+ * Get default key request attributes.
+ * The ISV SVN and CPU SVN are set to value of current enclave.
  * Attribute masks are set to OE default values.
  *
  * Return OE_OK and set attributes of sgxKeyRequest if success.
  * Otherwise return error and sgxKeyRquest is not changed.
  */
-static OE_Result GetDefaultKeyRequestAttributes(Sgx_KeyRequest *sgxKeyRequest)
+static OE_Result GetDefaultKeyRequestAttributes(Sgx_KeyRequest* sgxKeyRequest)
 {
-    SGX_Report sgxReport = { 0 };
+    SGX_Report sgxReport = {0};
     uint32_t sgxReportSize = sizeof(SGX_Report);
     OE_Result ret;
 
     // Get a local report of current enclave.
-    ret = OE_GetReport(
-        0, 
-        NULL, 
-        0, 
-        NULL, 
-        0, 
-        (uint8_t*)&sgxReport, 
-        &sgxReportSize);
+    ret =
+        OE_GetReport(0, NULL, 0, NULL, 0, (uint8_t*)&sgxReport, &sgxReportSize);
 
     if (ret != OE_OK)
     {
@@ -193,7 +184,7 @@ OE_Result OE_GetSealKeyByPolicy(
     uint32_t* keyInfoSize)
 {
     OE_Result ret;
-    Sgx_KeyRequest sgxKeyRequest = { 0 };
+    Sgx_KeyRequest sgxKeyRequest = {0};
 
     // Check parameters.
     // Key buffer size must be big enough.
@@ -221,16 +212,16 @@ OE_Result OE_GetSealKeyByPolicy(
     sgxKeyRequest.key_name = SGX_KEYSELECT_SEAL;
     switch (sealPolicy)
     {
-    case OE_SEAL_ID_UNIQUE:
-        sgxKeyRequest.key_policy = SGX_KEYPOLICY_MRENCLAVE;
-        break;
+        case OE_SEAL_ID_UNIQUE:
+            sgxKeyRequest.key_policy = SGX_KEYPOLICY_MRENCLAVE;
+            break;
 
-    case OE_SEAL_ID_PRODUCT:
-        sgxKeyRequest.key_policy = SGX_KEYPOLICY_MRSIGNER;
-        break;
+        case OE_SEAL_ID_PRODUCT:
+            sgxKeyRequest.key_policy = SGX_KEYPOLICY_MRSIGNER;
+            break;
 
-    default:
-        return OE_INVALID_PARAMETER;
+        default:
+            return OE_INVALID_PARAMETER;
     }
 
     // Get the seal key.

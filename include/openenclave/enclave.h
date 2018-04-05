@@ -348,8 +348,7 @@ OE_Result OE_GetReport(
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize);
 
-typedef enum _OE_SEAL_ID_POLICY
-{
+typedef enum _OE_SEAL_ID_POLICY {
     OE_SEAL_ID_UNIQUE = 1,
     OE_SEAL_ID_PRODUCT = 2,
 } OE_SEAL_ID_POLICY;
