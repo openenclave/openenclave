@@ -24,18 +24,24 @@ void OE_HexDump(const void* data_, size_t size)
 
 char* OE_HexString(char* str, size_t strSize, const void* data, size_t dataSize)
 {
+    char* s = str;
+    const uint8_t* p = (const uint8_t*)data;
+    size_t n = dataSize;
+
     if (!str || !data)
         return NULL;
 
     if (strSize < (2 * dataSize + 1))
         return NULL;
 
-    for (size_t i = 0; i < dataSize; i++)
+    while (n--)
     {
-        snprintf(&str[i * 2], 3, "%02X", ((const uint8_t*)data)[i]);
+        snprintf(s, 3, "%02X", *p);
+        p++;
+        s += 2;
     }
 
-    str[strSize - 1] = '\0';
+    *s = '\0';
 
     return str;
 }

@@ -173,6 +173,8 @@ int main(int argc, const char* argv[])
 
         OE_TEST(OE_HexString(hexstr, sizeof(hexstr), data, sizeof(data)));
         OE_TEST(strcmp(hexstr, _hexstr) == 0);
+
+        OE_HexDump(_data, DATA_SIZE);
     }
 
     /* Terminate the test enclave */
