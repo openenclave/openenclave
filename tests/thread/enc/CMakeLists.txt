@@ -4,6 +4,8 @@
 include(add_enclave_executable)
 add_enclave_executable(threadenc sign.conf private.pem
     enc.cpp
+    cond_tests.cpp
+    rwlock_tests.cpp
     )
 
 target_compile_options(threadenc PRIVATE
@@ -13,5 +15,4 @@ target_compile_options(threadenc PRIVATE
     -fno-builtin-memset
     )
 
-target_link_libraries(threadenc oelibc)
-
+target_link_libraries(threadenc oelibc oelibcxx)

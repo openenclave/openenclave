@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
-#include <assert.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +18,7 @@ static void _TestParallelMallocs()
     for (size_t i = 0; i < N; i++)
     {
         if (!(ptrs[i] = malloc(i + 1)))
-            assert(0);
+            OE_TEST(0);
     }
 
     for (size_t i = 0; i < N; i++)
@@ -32,33 +31,33 @@ OE_ECALL void TestMutex(void* args_)
 {
     TestMutexArgs* args = (TestMutexArgs*)args_;
 
-    assert(OE_MutexLock(&mutex1) == 0);
-    assert(OE_MutexLock(&mutex1) == 0);
+    OE_TEST(OE_MutexLock(&mutex1) == 0);
+    OE_TEST(OE_MutexLock(&mutex1) == 0);
     args->count1++;
-    assert(OE_MutexLock(&mutex2) == 0);
-    assert(OE_MutexLock(&mutex2) == 0);
+    OE_TEST(OE_MutexLock(&mutex2) == 0);
+    OE_TEST(OE_MutexLock(&mutex2) == 0);
     args->count2++;
-    assert(OE_MutexUnlock(&mutex1) == 0);
-    assert(OE_MutexUnlock(&mutex1) == 0);
-    assert(OE_MutexUnlock(&mutex2) == 0);
-    assert(OE_MutexUnlock(&mutex2) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex1) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex1) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex2) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex2) == 0);
 
     OE_HostPrintf("TestMutex: %ld\n", OE_ThreadSelf());
 }
 
 static void _TestMutex1(size_t* count)
 {
-    assert(OE_MutexLock(&mutex1) == 0);
+    OE_TEST(OE_MutexLock(&mutex1) == 0);
     (*count)++;
-    assert(OE_MutexUnlock(&mutex1) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex1) == 0);
     OE_HostPrintf("TestMutex1: %ld\n", OE_ThreadSelf());
 }
 
 static void _TestMutex2(size_t* count)
 {
-    assert(OE_MutexLock(&mutex2) == 0);
+    OE_TEST(OE_MutexLock(&mutex2) == 0);
     (*count)++;
-    assert(OE_MutexUnlock(&mutex2) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex2) == 0);
     OE_HostPrintf("TestMutex2: %ld\n", OE_ThreadSelf());
 }
 
@@ -95,7 +94,7 @@ OE_ECALL void Wait(void* args_)
     else if (n == 2)
         _TestMutex2(&_count2);
     else
-        assert(0);
+        OE_TEST(0);
 
     OE_HostPrintf("TestMutex2%zu()\n", n);
 
@@ -109,7 +108,7 @@ OE_ECALL void Wait(void* args_)
 
     OE_MutexUnlock(&cond_mutex);
 
-    assert(_count1 + _count2 == args->numThreads);
+    OE_TEST(_count1 + _count2 == args->numThreads);
 
     _TestParallelMallocs();
 }
@@ -212,9 +211,9 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
 
             // Recursive lock
             if (*locks > 0)
-                assert(*owner == OE_ThreadSelf());
+                OE_TEST(*owner == OE_ThreadSelf());
             else
-                assert(*owner == 0);
+                OE_TEST(*owner == 0);
 
             *owner = OE_ThreadSelf();
             ++*locks;
@@ -229,7 +228,7 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
             // Test constraints
             OE_SpinLock(&_lock);
 
-            assert(*owner == OE_ThreadSelf());
+            OE_TEST(*owner == OE_ThreadSelf());
             if (--*locks == 0)
                 *owner = 0;
 

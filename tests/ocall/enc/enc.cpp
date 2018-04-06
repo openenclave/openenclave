@@ -5,6 +5,7 @@
 #include <openenclave/bits/fault.h>
 #include <openenclave/bits/globals.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
 #include "../args.h"
 
@@ -82,6 +83,6 @@ OE_ECALL void TestMyOCall(void* args_)
     if (args)
     {
         OE_Result result = OE_OCall(0, 1000, &args->result, 0);
-        OE_Assert(result == OE_OK);
+        OE_TEST(result == OE_OK);
     }
 }

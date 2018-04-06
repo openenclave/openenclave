@@ -1,9 +1,0 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License.
-
-./.git
-./3rdparty/musl/COPYRIGHT
-./doc/GettingStarted.pdf
-./doc/GettingStarted.docx
-./doc/DesignOverview.pdf
-./doc/DesignOverview.docx

@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/atexit.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/cpuid.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/fault.h>
 #include <openenclave/bits/globals.h>
@@ -12,6 +13,7 @@
 #include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
 #include "asmdefs.h"
+#include "cpuid.h"
 #include "init.h"
 #include "td.h"
 
@@ -198,6 +200,28 @@ static struct
 /*
 **==============================================================================
 **
+** _EmulateIllegalInstruction()
+**
+** Handle illegal instruction exceptions such as CPUID as part of the first
+** chance exception dispatcher.
+**
+**==============================================================================
+*/
+int _EmulateIllegalInstruction(SGX_SsaGpr* ssa_gpr)
+{
+    // Emulate CPUID
+    if (*((uint16_t*)ssa_gpr->rip) == OE_CPUID_OPCODE)
+    {
+        return OE_EmulateCpuid(
+            &ssa_gpr->rax, &ssa_gpr->rbx, &ssa_gpr->rcx, &ssa_gpr->rdx);
+    }
+
+    return -1;
+}
+
+/*
+**==============================================================================
+**
 ** _OE_ExceptionDispatcher(OE_CONTEXT *oe_context)
 **
 **  The real (second pass) exception dispatcher. It is called by
@@ -256,8 +280,13 @@ void _OE_ExceptionDispatcher(OE_CONTEXT* oe_context)
         return;
     }
 
-    // Exception can't be handled by trusted handlers, smash the enclave.
-    OE_Abort();
+    // Exception can't be handled by trusted handlers, abort the enclave.
+    // Let the OE_Abort to run on the stack where the exception happens.
+    td->host_rbp = td->host_previous_rbp;
+    td->host_rsp = td->host_previous_rsp;
+    oe_exception_record.context->rip = (uint64_t)OE_Abort;
+    OE_ContinueExecution(oe_exception_record.context);
+
     return;
 }
 
@@ -318,9 +347,22 @@ void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
         td->base.exception_flags |= OE_EXCEPTION_SOFTWARE;
     }
 
-    // Modify the ssa_gpr so that e_resume will go to second pass exception
-    // handler.
-    ssa_gpr->rip = (uint64_t)OE_ExceptionDispatcher;
+    if (td->base.exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
+        _EmulateIllegalInstruction(ssa_gpr) == 0)
+    {
+        // Restore the RBP & RSP as required by return from EENTER
+        td->host_rbp = td->host_previous_rbp;
+        td->host_rsp = td->host_previous_rsp;
+
+        // Advance RIP to the next instruction for continuation
+        ssa_gpr->rip += 2;
+    }
+    else
+    {
+        // Modify the ssa_gpr so that e_resume will go to second pass exception
+        // handler.
+        ssa_gpr->rip = (uint64_t)OE_ExceptionDispatcher;
+    }
 
     // Cleanup the exception flag to avoid the exception handler is called
     // again.

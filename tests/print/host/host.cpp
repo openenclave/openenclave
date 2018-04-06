@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
@@ -25,8 +24,8 @@ void TestPrint(OE_Enclave* enclave)
     printf("=== %s() \n", __FUNCTION__);
     args.rc = -1;
     result = OE_CallEnclave(enclave, "TestPrint", &args);
-    assert(result == OE_OK);
-    assert(args.rc == 0);
+    OE_TEST(result == OE_OK);
+    OE_TEST(args.rc == 0);
 }
 
 int main(int argc, const char* argv[])

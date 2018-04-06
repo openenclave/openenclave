@@ -19,6 +19,11 @@ OE_EXPORT unsigned long long __oe_virtualBaseAddr;
 
 const void* __OE_GetEnclaveBase()
 {
+    /*
+     * Note: The reference to &__oe_virtualBaseAddr will be compiled
+     * IP-relative by the C-compiler on x86_64, and hence does not have a
+     * relocation entry. Thus it works both pre- and post-relocation.
+     */
     return (uint8_t*)&__oe_virtualBaseAddr - __oe_virtualBaseAddr;
 }
 

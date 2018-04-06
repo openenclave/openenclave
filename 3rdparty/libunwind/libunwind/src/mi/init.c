@@ -43,6 +43,7 @@ long unwi_debug_level;
 HIDDEN void
 mi_init (void)
 {
+#ifndef OPEN_ENCLAVE
 #if UNW_DEBUG
   const char *str = getenv ("UNW_DEBUG_LEVEL");
 
@@ -55,6 +56,7 @@ mi_init (void)
       setbuf (stderr, NULL);
     }
 #endif
+#endif /* !OPEN_ENCLAVE */
 
   assert (sizeof (struct cursor) <= sizeof (unw_cursor_t));
 }

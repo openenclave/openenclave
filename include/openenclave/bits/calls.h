@@ -9,6 +9,7 @@
 #include <time.h>
 #endif
 
+#include <openenclave/bits/cpuid.h>
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
 #include "sgxtypes.h"
@@ -62,7 +63,7 @@ typedef enum _OE_Code {
 /*
 **==============================================================================
 **
-** ECN_Func
+** OE_Func
 **
 **     The func parameter for OE_ECall() and OE_OCall()
 **
@@ -71,9 +72,12 @@ typedef enum _OE_Code {
 
 typedef enum _OE_Func {
     OE_FUNC_DESTRUCTOR = 0x01000000,
+    OE_FUNC_INIT_ENCLAVE = 0x01800000,
     OE_FUNC_CALL_ENCLAVE = 0x02000000,
     OE_FUNC_CALL_HOST = 0x03000000,
     OE_FUNC_INIT_QUOTE = 0x04000000,
+    OE_FUNC_GET_SGX_REPORT = 0x04100000,
+    OE_FUNC_GET_REMOTE_REPORT = 0x04200000,
     OE_FUNC_THREAD_WAKE = 0x05000000,
     OE_FUNC_THREAD_WAIT = 0x06000000,
     OE_FUNC_THREAD_WAKE_WAIT = 0x07000000,
@@ -220,6 +224,47 @@ typedef struct _OE_InitQuoteArgs
 /*
 **==============================================================================
 **
+** OE_GetSGXReportArgs
+**
+**==============================================================================
+*/
+
+typedef struct _OE_GetSGXReportArgs
+{
+    const void* reportData;  /* in */
+    uint32_t reportDataSize; /* in */
+
+    const void* targetInfo;  /* in */
+    uint32_t targetInfoSize; /* in */
+
+    void* report;         /* in */
+    uint32_t* reportSize; /* in-out */
+
+    OE_Result result; /* out */
+} OE_GetSGXReportArgs;
+
+/*
+**==============================================================================
+**
+** OE_GetReportArgs
+**
+**==============================================================================
+*/
+
+typedef struct _OE_GetRemoteReportArgs
+{
+    uint8_t reportData[sizeof(SGX_ReportData)]; /* in */
+    uint32_t reportDataSize;                    /* in */
+
+    OE_Result result; /* out */
+
+    uint32_t reportBufferSize; /* in-out */
+    uint8_t reportBuffer[1];   /* out */
+} OE_GetRemoteReportArgs;
+
+/*
+**==============================================================================
+**
 ** OE_StrftimeArgs
 **
 **     size_t strftime(
@@ -335,6 +380,22 @@ typedef struct _OE_ReallocArgs
     size_t size;
 } OE_ReallocArgs;
 
+/*
+**==============================================================================
+**
+** OE_InitEnclaveArgs
+**
+**     Runtime state to initialize enclave state with, includes
+**     - First 8 leaves of CPUID for enclave emulation
+**
+**==============================================================================
+*/
+
+typedef struct _OE_InitEnclaveArgs
+{
+    uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+} OE_InitEnclaveArgs;
+
 /**
  * Perform a low-level enclave function call (ECALL).
  *
@@ -366,7 +427,7 @@ typedef struct _OE_ReallocArgs
  *
  * @param func The number of the function to be called.
  * @param argsIn The input argument passed to the function.
- * @param argsIn The output argument passed back from the function.
+ * @param argsOut The output argument passed back from the function.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.

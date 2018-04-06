@@ -409,6 +409,10 @@ static OE_Result _HandleOCALL(
             HandleInitQuote(argIn);
             break;
 
+        case OE_FUNC_GET_REMOTE_REPORT:
+            HandleGetRemoteReport(enclave, argIn);
+            break;
+
 #if defined(__OE_NEED_TIME_CALLS)
 
         case OE_FUNC_STRFTIME:
@@ -766,7 +770,7 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args)
         callEnclaveArgs.result = OE_UNEXPECTED;
     }
 
-    /* Peform the ECALL */
+    /* Perform the ECALL */
     {
         uint64_t argOut = 0;
 

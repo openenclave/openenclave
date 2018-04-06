@@ -12,12 +12,16 @@
 #include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
 #include "asmdefs.h"
+#include "cpuid.h"
 #include "init.h"
+#include "report.h"
 #include "td.h"
 
 typedef unsigned long long WORD;
 
 #define WORD_SIZE sizeof(WORD)
+
+uint64_t __oe_enclave_status = OE_OK;
 
 /*
 **==============================================================================
@@ -110,6 +114,36 @@ typedef unsigned long long WORD;
 /*
 **==============================================================================
 **
+** _HandleInitEnclave()
+**
+**     Handle the OE_FUNC_INIT_ENCLAVE from host and ensures that each state
+**     initialization function in the enclave only runs once.
+**
+**==============================================================================
+*/
+void _HandleInitEnclave(uint64_t argIn)
+{
+    static bool _once = false;
+
+    if (_once == false)
+    {
+        static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
+        OE_SpinLock(&_lock);
+
+        if (_once == false)
+        {
+            /* Call all enclave state initialization functions */
+            OE_InitializeCpuid(argIn);
+            _once = true;
+        }
+
+        OE_SpinUnlock(&_lock);
+    }
+}
+
+/*
+**==============================================================================
+**
 ** _HandleCallEnclave()
 **
 **     This function handles a high-level enclave call.
@@ -140,7 +174,7 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
 
     if (!OE_IsOutsideEnclave((void*)argIn, sizeof(OE_CallEnclaveArgs)))
     {
-        OE_TRY(OE_INVALID_PARAMETER);
+        OE_THROW(OE_INVALID_PARAMETER);
     }
     argsPtr = (OE_CallEnclaveArgs*)argIn;
     args = *argsPtr;
@@ -148,14 +182,16 @@ static OE_Result _HandleCallEnclave(uint64_t argIn)
     if (!args.vaddr || (args.func >= ecallPages->num_vaddrs) ||
         ((vaddr = ecallPages->vaddrs[args.func]) != args.vaddr))
     {
-        OE_TRY(OE_INVALID_PARAMETER);
+        OE_THROW(OE_INVALID_PARAMETER);
     }
 
     /* Translate function address from virtual to real address */
-    OE_EnclaveFunc func =
-        (OE_EnclaveFunc)((uint64_t)__OE_GetEnclaveBase() + vaddr);
+    {
+        OE_EnclaveFunc func =
+            (OE_EnclaveFunc)((uint64_t)__OE_GetEnclaveBase() + vaddr);
+        func(args.args);
+    }
 
-    func(args.args);
     argsPtr->result = OE_OK;
 
 OE_CATCH:
@@ -278,6 +314,16 @@ static void _HandleECall(
             _OE_VirtualExceptionDispatcher(td, argIn, &argOut);
             break;
         }
+        case OE_FUNC_INIT_ENCLAVE:
+        {
+            _HandleInitEnclave(argIn);
+            break;
+        }
+        case OE_FUNC_GET_SGX_REPORT:
+        {
+            argOut = _HandleGetSGXReport(argIn);
+            break;
+        }
         default:
         {
             /* Dispatch user-registered ECALLs */
@@ -348,13 +394,18 @@ OE_Result OE_OCall(
     Callsite* callsite = td->callsites;
     uint32_t old_ocall_flags = td->ocall_flags;
 
+    /* If the enclave is in crashing/crashed status, new OCALL should fail
+    immediately. */
+    if (__oe_enclave_status != OE_OK)
+        OE_THROW((OE_Result)__oe_enclave_status);
+
     /* Check for unexpected failures */
     if (!callsite)
-        OE_TRY(OE_UNEXPECTED);
+        OE_THROW(OE_UNEXPECTED);
 
     /* Check for unexpected failures */
     if (!TD_Initialized(td))
-        OE_TRY(OE_FAILURE);
+        OE_THROW(OE_FAILURE);
 
     td->ocall_flags |= ocall_flags;
 
@@ -515,7 +566,6 @@ OE_CATCH:
 **
 **==============================================================================
 */
-
 void __OE_HandleMain(
     uint64_t arg1,
     uint64_t arg2,
@@ -529,6 +579,40 @@ void __OE_HandleMain(
     uint64_t argIn = arg2;
     *outputArg1 = 0;
     *outputArg2 = 0;
+
+    // Block enclave enter based on current enclave status.
+    switch (__oe_enclave_status)
+    {
+        case OE_OK:
+            break;
+
+        case OE_ENCLAVE_ABORTING:
+            // Block any ECALL except first time OE_FUNC_DESTRUCTOR call.
+            // Don't block ORET here.
+            if (code == OE_CODE_ECALL)
+            {
+                if (func == OE_FUNC_DESTRUCTOR)
+                {
+                    // Termination function should be only called once.
+                    __oe_enclave_status = OE_ENCLAVE_ABORTED;
+                }
+                else
+                {
+                    // Return crashing status.
+                    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+                    *outputArg2 = __oe_enclave_status;
+                    return;
+                }
+            }
+
+            break;
+
+        default:
+            // Return crashed status.
+            *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+            *outputArg2 = OE_ENCLAVE_ABORTED;
+            return;
+    }
 
     /* Initialize the enclave the first time it is ever entered */
     OE_InitializeEnclave();
@@ -608,5 +692,19 @@ void _OE_NotifyNestedExitStart(uint64_t arg1, OE_OCallContext* ocallContext)
     Callsite* callsite = td->callsites;
     callsite->ocallContext = ocallContext;
 
+    return;
+}
+
+void OE_Abort(void)
+{
+    // Once it starts to crash, the state can only transit forward, not
+    // backward.
+    if (__oe_enclave_status < OE_ENCLAVE_ABORTING)
+    {
+        __oe_enclave_status = OE_ENCLAVE_ABORTING;
+    }
+
+    // Return to the latest ECALL.
+    _HandleExit(OE_CODE_ERET, 0, __oe_enclave_status);
     return;
 }
