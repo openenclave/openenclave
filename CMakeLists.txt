@@ -56,11 +56,11 @@ include(CPack)
 
 # finally, add all dirs that matter
 add_subdirectory(host)		# convertable to Windows
+add_subdirectory(crypto)	# convertable to Windows
 add_subdirectory(include)	# convertable to Windows
 if (UNIX)
 add_subdirectory(3rdparty)
 add_subdirectory(doc/refman)
-add_subdirectory(crypto)
 add_subdirectory(debugger)
 add_subdirectory(enclave)
 add_subdirectory(idl)

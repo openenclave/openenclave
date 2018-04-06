@@ -1,13 +1,19 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_library(oecryptohost STATIC
+if (UNIX)
+set(PLATFORM_SRC
     cert.c
     ec.c
     init.c
     random.c
     rsa.c
     ../util.c)
+endif()
+
+add_library(oecryptohost STATIC
+    sha.c
+    ${PLATFORM_SRC})
 
 target_link_libraries(oecryptohost oe_includes)
 

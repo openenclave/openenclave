@@ -39,7 +39,6 @@ add_library(oehost STATIC
     registers.c
     report.c
     result.c
-    sha.c
     sgxdriver.c
     sgxmeasure.c
     sgxtypes.c
@@ -62,7 +61,7 @@ find_package(Threads REQUIRED)
 if(UNIX)
 target_link_libraries(oehost oecryptohost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 elseif(WIN32)
-target_link_libraries(oehost bcrypt)
+target_link_libraries(oehost oecryptohost bcrypt)
 endif()
 
 if(UNIX)
