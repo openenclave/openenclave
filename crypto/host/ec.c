@@ -614,11 +614,8 @@ done:
 
     if (result != OE_OK)
     {
-        if (_ValidPrivateKeyImpl(privateImpl))
-            OE_ECFreePrivateKey(privateKey);
-
-        if (_ValidPublicKeyImpl(publicImpl))
-            OE_ECFreePublicKey(publicKey);
+        OE_ECFreePrivateKey(privateKey);
+        OE_ECFreePublicKey(publicKey);
     }
 
     return result;

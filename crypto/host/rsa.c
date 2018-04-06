@@ -541,11 +541,8 @@ done:
 
     if (result != OE_OK)
     {
-        if (_ValidPrivateKeyImpl(privateImpl))
-            OE_RSAFreePrivateKey(privateKey);
-
-        if (_ValidPublicKeyImpl(publicImpl))
-            OE_RSAFreePublicKey(publicKey);
+        OE_RSAFreePrivateKey(privateKey);
+        OE_RSAFreePublicKey(publicKey);
     }
 
     return result;
