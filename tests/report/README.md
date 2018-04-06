@@ -1,7 +1,7 @@
 OE_GetReport API tests
 =====================
 
-Test behavior of OE_GetReport API:
+Test behavior of OE_GetReport, OE_ParseReport APIs:
 
 - **Host Side**
   1. *TestLocalReport* : Tests reportData scenarios (null, partial, full), optParams scenarios (null, valid target info), small report buffer scenarios, and succeeding invocations.
