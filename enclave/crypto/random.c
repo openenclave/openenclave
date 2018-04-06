@@ -19,35 +19,17 @@
 */
 
 static mbedtls_ctr_drbg_context _drbg;
-static bool _seeded = false;
+static mbedtls_entropy_context _entropy;
 
 static OE_Result _SeedEntropySource()
 {
     OE_Result result = OE_UNEXPECTED;
-    static OE_Mutex _mutex = OE_MUTEX_INITIALIZER;
-    static mbedtls_entropy_context _entropy;
 
-    if (_seeded == false)
-    {
-        OE_MutexLock(&_mutex);
+    mbedtls_ctr_drbg_init(&_drbg);
+    mbedtls_entropy_init(&_entropy);
 
-        if (_seeded == false)
-        {
-            mbedtls_ctr_drbg_init(&_drbg);
-            mbedtls_entropy_init(&_entropy);
-
-            if (mbedtls_ctr_drbg_seed(
-                    &_drbg, mbedtls_entropy_func, &_entropy, NULL, 0) != 0)
-            {
-                OE_MutexUnlock(&_mutex);
-                OE_RAISE(OE_FAILURE);
-            }
-
-            _seeded = true;
-        }
-
-        OE_MutexUnlock(&_mutex);
-    }
+    OE_CHECK(mbedtls_ctr_drbg_seed(
+            &_drbg, mbedtls_entropy_func, &_entropy, NULL, 0));
 
     result = OE_OK;
 
@@ -55,16 +37,18 @@ done:
     return result;
 }
 
-static mbedtls_ctr_drbg_context _drbg;
+static OE_Result _seedResult = OE_UNEXPECTED;
+static OE_OnceType _seedOnce = OE_ONCE_INITIALIZER;
+
+/* Wrapper to set file-scope _seedResult */
+static void _SeedEntropySourceOnce()
+{
+    _seedResult = _SeedEntropySource();
+}
 
 mbedtls_ctr_drbg_context* OE_MBEDTLS_GetDrbg()
 {
-    if (_seeded == false)
-    {
-        if (_SeedEntropySource() != OE_OK)
-            return NULL;
-    }
-
+    OE_Once(&_seedOnce, _SeedEntropySourceOnce);
     return &_drbg;
 }
 
@@ -82,10 +66,9 @@ OE_Result OE_Random(void* data, size_t size)
     int rc;
 
     /* Seed the entropy source on the first call */
-    if (_seeded == false)
     {
-        if (_SeedEntropySource() != OE_OK)
-            OE_RAISE(OE_FAILURE);
+        OE_Once(&_seedOnce, _SeedEntropySourceOnce);
+        OE_CHECK(_seedResult);
     }
 
     /* Generate random data (synchronize acceess to _drbg instance) */
