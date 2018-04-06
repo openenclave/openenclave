@@ -13,7 +13,6 @@ LDFLAGS += -rdynamic
 
 LIBRARIES += -L$(OE_LIBDIR)/openenclave/host 
 LIBRARIES += -loehost 
-LIBRARIES += -loecryptohost
 LIBRARIES += -lcrypto 
 LIBRARIES += -lpthread 
 LIBRARIES += -ldl

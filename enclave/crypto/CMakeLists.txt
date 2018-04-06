@@ -7,7 +7,7 @@ add_library(oecrypto STATIC
     rsa.c
     random.c
     sha.c
-    ../util.c)
+    ../../common/crypto/util.c)
 
 target_link_libraries(oecrypto PUBLIC 
     mbedcrypto

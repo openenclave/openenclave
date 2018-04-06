@@ -9,7 +9,7 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <string.h>
-#include "../util.h"
+#include "../../common/crypto/util.h"
 #include "init.h"
 
 /*

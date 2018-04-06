@@ -1,24 +1,25 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <assert.h>
 #include <mbedtls/base64.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/platform.h>
+#include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/raise.h>
-#include <openenclave/bits/rsa.h>
 #include <openenclave/bits/pem.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../util.h"
+#include "../../common/crypto/util.h"
 #include "random.h"
 
 // MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
-// of time, so we are forced to use a maximum buffer size.
+// of time, so we are forced to use a maximum buffer size. This quantity is
+// used in MEBEDTLS program that calls mbedtls_pk_write_key_pem.
 #define OE_PEM_MAX_BYTES (16 * 1024)
 
 /*
@@ -29,78 +30,77 @@
 **==============================================================================
 */
 
-#define OE_RSA_PRIVATE_KEY_MAGIC 0xd48de5bae3994b41
+#define OE_EC_PRIVATE_KEY_MAGIC 0xf12c37bb02814eeb
 
-typedef struct _OE_RSAPrivateKeyImpl
+typedef struct _OE_ECPrivateKeyImpl
 {
     uint64_t magic;
     mbedtls_pk_context pk;
-} OE_RSAPrivateKeyImpl;
+} OE_ECPrivateKeyImpl;
 
-OE_STATIC_ASSERT(sizeof(OE_RSAPrivateKeyImpl) <= sizeof(OE_RSAPrivateKey));
+OE_STATIC_ASSERT(sizeof(OE_ECPrivateKeyImpl) <= sizeof(OE_ECPrivateKey));
 
-OE_INLINE bool _ValidPrivateKeyImpl(const OE_RSAPrivateKeyImpl* impl)
+OE_INLINE bool _ValidPrivateKeyImpl(const OE_ECPrivateKeyImpl* impl)
 {
-    return impl && impl->magic == OE_RSA_PRIVATE_KEY_MAGIC;
+    return impl && impl->magic == OE_EC_PRIVATE_KEY_MAGIC;
 }
 
-OE_INLINE void _InitPrivateKeyImpl(OE_RSAPrivateKeyImpl* impl)
+OE_INLINE void _InitPrivateKeyImpl(OE_ECPrivateKeyImpl* impl)
 {
-    impl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
+    impl->magic = OE_EC_PRIVATE_KEY_MAGIC;
     mbedtls_pk_init(&impl->pk);
 }
 
-OE_INLINE void _FreePrivateKeyImpl(OE_RSAPrivateKeyImpl* impl)
+OE_INLINE void _FreePrivateKeyImpl(OE_ECPrivateKeyImpl* impl)
 {
     if (impl)
     {
         mbedtls_pk_free(&impl->pk);
-        OE_Memset(impl, 0, sizeof(OE_RSAPrivateKeyImpl));
+        OE_Memset(impl, 0, sizeof(OE_ECPrivateKeyImpl));
     }
 }
 
-OE_INLINE void _ClearPrivateKeyImpl(OE_RSAPrivateKeyImpl* impl)
+OE_INLINE void _ClearPrivateKeyImpl(OE_ECPrivateKeyImpl* impl)
 {
     if (impl)
-        OE_Memset(impl, 0, sizeof(OE_RSAPrivateKeyImpl));
+        OE_Memset(impl, 0, sizeof(OE_ECPrivateKeyImpl));
 }
 
-#define OE_RSA_PUBLIC_KEY_MAGIC 0x713600af058c447a
+#define OE_EC_PUBLIC_KEY_MAGIC 0xd7490a56f6504ee6
 
-typedef struct _OE_RSAPublicKeyImpl
+typedef struct _OE_ECPublicKeyImpl
 {
     uint64_t magic;
     mbedtls_pk_context pk;
-} OE_RSAPublicKeyImpl;
+} OE_ECPublicKeyImpl;
 
-OE_STATIC_ASSERT(sizeof(OE_RSAPublicKeyImpl) <= sizeof(OE_RSAPublicKey));
+OE_STATIC_ASSERT(sizeof(OE_ECPublicKeyImpl) <= sizeof(OE_ECPublicKey));
 
-OE_INLINE bool _ValidPublicKeyImpl(const OE_RSAPublicKeyImpl* impl)
+OE_INLINE bool _ValidPublicKeyImpl(const OE_ECPublicKeyImpl* impl)
 {
-    return impl && impl->magic == OE_RSA_PUBLIC_KEY_MAGIC;
+    return impl && impl->magic == OE_EC_PUBLIC_KEY_MAGIC;
 }
 
-OE_INLINE void _InitPublicKeyImpl(OE_RSAPublicKeyImpl* impl)
+OE_INLINE void _InitPublicKeyImpl(OE_ECPublicKeyImpl* impl)
 {
-    impl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
+    impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
     mbedtls_pk_init(&impl->pk);
 }
 
-OE_INLINE void _FreePublicKeyImpl(OE_RSAPublicKeyImpl* impl)
+OE_INLINE void _FreePublicKeyImpl(OE_ECPublicKeyImpl* impl)
 {
     if (impl)
     {
         mbedtls_pk_free(&impl->pk);
-        OE_Memset(impl, 0, sizeof(OE_RSAPublicKeyImpl));
+        OE_Memset(impl, 0, sizeof(OE_ECPublicKeyImpl));
     }
 }
 
-OE_INLINE void _ClearPublicKeyImpl(OE_RSAPublicKeyImpl* impl)
+OE_INLINE void _ClearPublicKeyImpl(OE_ECPublicKeyImpl* impl)
 {
     if (impl)
-        OE_Memset(impl, 0, sizeof(OE_RSAPublicKeyImpl));
+        OE_Memset(impl, 0, sizeof(OE_ECPublicKeyImpl));
 }
-
 
 static mbedtls_md_type_t _MapHashType(OE_HashType md)
 {
@@ -116,6 +116,47 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
     return 0;
 }
 
+/* Curve names, indexed by OE_ECType */
+static const char* _curveNames[] = {
+    "secp521r1" /* OE_EC_TYPE_SECP521R1 */
+};
+
+/* Convert ECType to curve name */
+static const char* _ECTypeToString(OE_Type type)
+{
+    size_t index = (size_t)type;
+
+    if (index >= OE_COUNTOF(_curveNames))
+        return NULL;
+
+    return _curveNames[index];
+}
+
+/* Note: a function similar to this one is missing from MBEDTLS */
+static int _mbedtls_ecp_keypair_copy(
+    mbedtls_ecp_keypair* dest,
+    const mbedtls_ecp_keypair* src)
+{
+    int ret = -1;
+
+    /* Copy group */
+    if (mbedtls_ecp_group_copy(&dest->grp, &src->grp) != 0)
+        goto done;
+
+    /* Copy secret value */
+    if (mbedtls_mpi_copy(&dest->d, &src->d) != 0)
+        goto done;
+
+    /* Copy public value */
+    if (mbedtls_ecp_copy(&dest->Q, &src->Q) != 0)
+        goto done;
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
 static int _CopyKeyFromKeyPair(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
@@ -123,14 +164,14 @@ static int _CopyKeyFromKeyPair(
 {
     int ret = -1;
     const mbedtls_pk_info_t* info;
-    mbedtls_rsa_context* rsa;
+    mbedtls_ecp_keypair* ec;
 
     /* Check parameters */
     if (!dest || !src)
         goto done;
 
-    /* Lookup the RSA info */
-    if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA)))
+    /* Lookup the info for this key type */
+    if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)))
         goto done;
 
     /* Setup the context for this key type */
@@ -138,28 +179,16 @@ static int _CopyKeyFromKeyPair(
         goto done;
 
     /* Get the context for this key type */
-    if (!(rsa = dest->pk_ctx))
+    if (!(ec = dest->pk_ctx))
         goto done;
 
-    /* Initialize the RSA key from the source */
-    if (mbedtls_rsa_copy(rsa, mbedtls_pk_rsa(*src)) != 0)
+    /* Initialize the EC key from the source */
+    if (_mbedtls_ecp_keypair_copy(ec, mbedtls_pk_ec(*src)) != 0)
         goto done;
 
     /* If public key, then clear private key fields */
     if (public)
-    {
-        mbedtls_mpi_free(&rsa->D);
-        mbedtls_mpi_free(&rsa->P);
-        mbedtls_mpi_free(&rsa->Q);
-        mbedtls_mpi_free(&rsa->DP);
-        mbedtls_mpi_free(&rsa->DQ);
-        mbedtls_mpi_free(&rsa->QP);
-        mbedtls_mpi_free(&rsa->RN);
-        mbedtls_mpi_free(&rsa->RP);
-        mbedtls_mpi_free(&rsa->RQ);
-        mbedtls_mpi_free(&rsa->Vi);
-        mbedtls_mpi_free(&rsa->Vf);
-    }
+        mbedtls_mpi_free(&ec->d);
 
     ret = 0;
 
@@ -168,9 +197,9 @@ done:
     return ret;
 }
 
-static bool _IsRSAKey(const mbedtls_pk_context* pk)
+static bool _IsECKey(const mbedtls_pk_context* pk)
 {
-    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_RSA))
+    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY))
         return false;
 
     return true;
@@ -184,13 +213,13 @@ static bool _IsRSAKey(const mbedtls_pk_context* pk)
 **==============================================================================
 */
 
-OE_Result OE_RSAReadPrivateKeyPEM(
+OE_Result OE_ECReadPrivateKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_RSAPrivateKey* privateKey)
+    OE_ECPrivateKey* privateKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSAPrivateKeyImpl* impl = (OE_RSAPrivateKeyImpl*)privateKey;
+    OE_ECPrivateKeyImpl* impl = (OE_ECPrivateKeyImpl*)privateKey;
 
     /* Initialize the key */
     if (impl)
@@ -207,8 +236,8 @@ OE_Result OE_RSAReadPrivateKeyPEM(
     if (mbedtls_pk_parse_key(&impl->pk, pemData, pemSize, NULL, 0) != 0)
         OE_RAISE(OE_FAILURE);
 
-    /* Fail if PEM data did not contain an RSA key */
-    if (!_IsRSAKey(&impl->pk))
+    /* Fail if PEM data did not contain an EC key */
+    if (!_IsECKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -221,12 +250,12 @@ done:
     return result;
 }
 
-OE_Result OE_RSAReadPublicKeyPEM(
+OE_Result OE_ECReadPublicKeyPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_RSAPublicKey* publicKey)
+    OE_ECPublicKey* publicKey)
 {
-    OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)publicKey;
+    OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
 
     /* Initialize the key */
@@ -244,8 +273,8 @@ OE_Result OE_RSAReadPublicKeyPEM(
     if (mbedtls_pk_parse_public_key(&impl->pk, pemData, pemSize) != 0)
         OE_RAISE(OE_FAILURE);
 
-    /* Fail if PEM data did not contain an RSA key */
-    if (!_IsRSAKey(&impl->pk))
+    /* Fail if PEM data did not contain an EC key */
+    if (!_IsECKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -258,13 +287,13 @@ done:
     return result;
 }
 
-OE_Result OE_RSAWritePrivateKeyPEM(
-    const OE_RSAPrivateKey* key,
+OE_Result OE_ECWritePrivateKeyPEM(
+    const OE_ECPrivateKey* key,
     uint8_t* pemData,
     size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSAPrivateKeyImpl* impl = (OE_RSAPrivateKeyImpl*)key;
+    OE_ECPrivateKeyImpl* impl = (OE_ECPrivateKeyImpl*)key;
     uint8_t buf[OE_PEM_MAX_BYTES];
 
     /* Check parameters */
@@ -275,7 +304,7 @@ OE_Result OE_RSAWritePrivateKeyPEM(
     if (!pemData && *pemSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Write the key (expand buffer size and retry if necessary) */
+    /* Write the key to PEM format */
     if (mbedtls_pk_write_key_pem(&impl->pk, buf, sizeof(buf)) != 0)
         OE_RAISE(OE_FAILURE);
 
@@ -299,13 +328,13 @@ done:
     return result;
 }
 
-OE_Result OE_RSAWritePublicKeyPEM(
-    const OE_RSAPublicKey* key,
+OE_Result OE_ECWritePublicKeyPEM(
+    const OE_ECPublicKey* key,
     uint8_t* pemData,
     size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)key;
+    OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)key;
     uint8_t buf[OE_PEM_MAX_BYTES];
 
     /* Check parameters */
@@ -316,7 +345,7 @@ OE_Result OE_RSAWritePublicKeyPEM(
     if (!pemData && *pemSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Write the key (expand buffer size and retry if necessary) */
+    /* Write the key to PEM format */
     if (mbedtls_pk_write_pubkey_pem(&impl->pk, buf, sizeof(buf)) != 0)
         OE_RAISE(OE_FAILURE);
 
@@ -340,13 +369,13 @@ done:
     return result;
 }
 
-OE_Result OE_RSAFreePrivateKey(OE_RSAPrivateKey* key)
+OE_Result OE_ECFreePrivateKey(OE_ECPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
     if (key)
     {
-        OE_RSAPrivateKeyImpl* impl = (OE_RSAPrivateKeyImpl*)key;
+        OE_ECPrivateKeyImpl* impl = (OE_ECPrivateKeyImpl*)key;
 
         if (!_ValidPrivateKeyImpl(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
@@ -360,13 +389,13 @@ done:
     return result;
 }
 
-OE_Result OE_RSAFreePublicKey(OE_RSAPublicKey* key)
+OE_Result OE_ECFreePublicKey(OE_ECPublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
     if (key)
     {
-        OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)key;
+        OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)key;
 
         if (!_ValidPublicKeyImpl(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
@@ -380,8 +409,8 @@ done:
     return result;
 }
 
-OE_Result OE_RSASign(
-    const OE_RSAPrivateKey* privateKey,
+OE_Result OE_ECSign(
+    const OE_ECPrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -389,7 +418,7 @@ OE_Result OE_RSASign(
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_RSAPrivateKeyImpl* impl = (const OE_RSAPrivateKeyImpl*)privateKey;
+    const OE_ECPrivateKeyImpl* impl = (const OE_ECPrivateKeyImpl*)privateKey;
     uint8_t buffer[MBEDTLS_MPI_MAX_SIZE];
     size_t bufferSize = 0;
     mbedtls_md_type_t type = _MapHashType(hashType);
@@ -435,22 +464,24 @@ done:
     return result;
 }
 
-OE_Result OE_RSAVerify(
-    const OE_RSAPublicKey* publicKey,
+OE_Result OE_ECVerify(
+    const OE_ECPublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
     const uint8_t* signature,
     size_t signatureSize)
 {
-    const OE_RSAPublicKeyImpl* impl = (const OE_RSAPublicKeyImpl*)publicKey;
+    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     mbedtls_md_type_t type = _MapHashType(hashType);
 
     /* Check for null parameters */
     if (!_ValidPublicKeyImpl(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
+    {
         OE_RAISE(OE_INVALID_PARAMETER);
+    }
 
     /* Verify the signature */
     if (mbedtls_pk_verify(
@@ -471,17 +502,18 @@ done:
     return result;
 }
 
-OE_Result OE_RSAGenerate(
-    uint64_t bits,
-    uint64_t exponent,
-    OE_RSAPrivateKey* privateKey,
-    OE_RSAPublicKey* publicKey)
+OE_Result OE_ECGenerate(
+    OE_ECType type,
+    OE_ECPrivateKey* privateKey,
+    OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_RSAPrivateKeyImpl* privateImpl = (OE_RSAPrivateKeyImpl*)privateKey;
-    OE_RSAPublicKeyImpl* publicImpl = (OE_RSAPublicKeyImpl*)publicKey;
+    OE_ECPrivateKeyImpl* privateImpl = (OE_ECPrivateKeyImpl*)privateKey;
+    OE_ECPublicKeyImpl* publicImpl = (OE_ECPublicKeyImpl*)publicKey;
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
+    int curve;
+    const char* curveName;
 
     /* Initialize structures */
     mbedtls_pk_init(&pk);
@@ -493,27 +525,35 @@ OE_Result OE_RSAGenerate(
     if (!privateImpl || !publicImpl)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Check range of bits and exponent parameters */
-    if (bits > OE_MAX_UINT || exponent > OE_MAX_INT)
+    /* Convert curve type to curve name */
+    if (!(curveName = _ECTypeToString(type)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get the random number generator */
+    /* Resolve the curveName parameter to an EC-curve identifier */
+    {
+        const mbedtls_ecp_curve_info* info;
+
+        if (!(info = mbedtls_ecp_curve_info_from_name(curveName)))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        curve = info->grp_id;
+    }
+
+    /* Get the drbg object */
     if (!(drbg = OE_MBEDTLS_GetDrbg()))
         OE_RAISE(OE_FAILURE);
 
     /* Create key struct */
-    if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA)) != 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Generate the RSA key */
-    if (mbedtls_rsa_gen_key(
-            mbedtls_pk_rsa(pk),
-            mbedtls_ctr_drbg_random,
-            drbg,
-            bits,
-            exponent) != 0)
+    if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
     {
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* Generate the EC key */
+    if (mbedtls_ecp_gen_key(
+            curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     /* Initialize the private key parameter */
@@ -526,7 +566,7 @@ OE_Result OE_RSAGenerate(
             OE_RAISE(OE_FAILURE);
         }
 
-        privateImpl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
+        privateImpl->magic = OE_EC_PRIVATE_KEY_MAGIC;
     }
 
     /* Initialize the public key parameter */
@@ -539,7 +579,7 @@ OE_Result OE_RSAGenerate(
             OE_RAISE(OE_FAILURE);
         }
 
-        publicImpl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
+        publicImpl->magic = OE_EC_PUBLIC_KEY_MAGIC;
     }
 
     result = OE_OK;
@@ -550,8 +590,8 @@ done:
 
     if (result != OE_OK)
     {
-        OE_RSAFreePrivateKey(privateKey);
-        OE_RSAFreePublicKey(publicKey);
+        OE_ECFreePrivateKey(privateKey);
+        OE_ECFreePublicKey(publicKey);
     }
 
     return result;

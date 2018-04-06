@@ -14,7 +14,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
-#include "../util.h"
+#include "../../common/crypto/util.h"
 #include "init.h"
 
 /*

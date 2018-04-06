@@ -3,6 +3,12 @@
 
 if (UNIX)
 set(PLATFORM_SRC
+    crypto/cert.c
+    crypto/ec.c
+    crypto/init.c
+    crypto/random.c
+    crypto/rsa.c
+    ../common/crypto/util.c
     linux/aep.S
     linux/aesm.c
     linux/enter.S
@@ -45,6 +51,7 @@ add_library(oehost STATIC
     strings.c
     tests.c
     typeinfo.c
+    crypto/sha.c
     ${PLATFORM_SRC}
     )
 
@@ -59,9 +66,9 @@ find_package(Threads REQUIRED)
 
 # linking also requires a number of libs on the host
 if(UNIX)
-target_link_libraries(oehost oecryptohost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
+target_link_libraries(oehost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 elseif(WIN32)
-target_link_libraries(oehost oecryptohost bcrypt)
+target_link_libraries(oehost bcrypt)
 endif()
 
 if(UNIX)
