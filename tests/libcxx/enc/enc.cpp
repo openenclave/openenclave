@@ -5,6 +5,8 @@
 #include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "../host/args.h"
 #include "../host/ocalls.h"
 
