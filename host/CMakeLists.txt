@@ -3,6 +3,11 @@
 
 if (UNIX)
 set(PLATFORM_SRC
+    crypto/cert.c
+    crypto/ec.c
+    crypto/init.c
+    crypto/random.c
+    crypto/rsa.c
     linux/aep.S
     linux/aesm.c
     linux/enter.S
@@ -42,10 +47,10 @@ add_library(oehost STATIC
     sgxdriver.c
     sgxmeasure.c
     sgxtypes.c
-    sha.c
     strings.c
     tests.c
     typeinfo.c
+    crypto/sha.c
     ${PLATFORM_SRC}
     )
 
