@@ -35,11 +35,7 @@ install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a DESTINATION ${CMAKE
 install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 
 # Convenience lib for use in target_link_libraries
-add_library(mbedx509 INTERFACE)
-add_library(mbedtls INTERFACE)
 add_library(mbedcrypto INTERFACE)
-add_dependencies(mbedx509 mbedtls-wrap)
-add_dependencies(mbedtls mbedtls-wrap)
 add_dependencies(mbedcrypto mbedtls-wrap)
 target_include_directories(mbedcrypto INTERFACE ${OE_INCDIR}/openenclave/oe-mbedtls)
 target_link_libraries(mbedcrypto INTERFACE 

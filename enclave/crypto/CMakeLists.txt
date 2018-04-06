@@ -10,8 +10,7 @@ add_library(oecrypto STATIC
 
 target_link_libraries(oecrypto PUBLIC 
     mbedcrypto
-    oelibc
-    oe_includes)
+    oelibc)
 
 set_property(TARGET oecrypto PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
