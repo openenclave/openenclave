@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <stdlib.h>
-
+#include <immintrin.h>
 /*
  * Random implementation needed by libcxx as alternative to device oriented
  * randomness (/dev/rand)
@@ -10,10 +10,8 @@
 
 unsigned int arc4random(void)
 {
-    unsigned long r;
-    __asm__ volatile(
-        "rdrand %%rax\n\t"
-        "mov %%rax, %0\n\t"
-        : "=m"(r));
-    return (unsigned int)r;
+    unsigned int r;
+
+    while (!_rdrand32_step(&r));
+    return r;
 }
