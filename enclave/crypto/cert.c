@@ -32,8 +32,9 @@ typedef struct _OE_CertImpl
     mbedtls_x509_crt* cert;
 } OE_CertImpl;
 
-OE_STATIC_ASSERT(sizeof(OE_CertImpl) < sizeof(OE_Cert));
+OE_STATIC_ASSERT(sizeof(OE_CertImpl) <= sizeof(OE_Cert));
 
+/* Randomly generated magic number */
 #define OE_CERT_MAGIC 0x028ce9294bcb451a
 
 OE_INLINE bool _ValidCertImpl(const OE_CertImpl* impl)
@@ -47,6 +48,7 @@ OE_INLINE void _ClearCertImpl(OE_CertImpl* impl)
     impl->cert = NULL;
 }
 
+/* Randomly generated magic number */
 #define OE_CERT_CHAIN_MAGIC 0x7d82c57a12af4c70
 
 
@@ -56,7 +58,7 @@ typedef struct _OE_CertChainImpl
     mbedtls_x509_crt* chain;
 } OE_CertChainImpl;
 
-OE_STATIC_ASSERT(sizeof(OE_CertChainImpl) < sizeof(OE_CertChain));
+OE_STATIC_ASSERT(sizeof(OE_CertChainImpl) <= sizeof(OE_CertChain));
 
 static bool _ValidCertChainImpl(const OE_CertChainImpl* impl)
 {

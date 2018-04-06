@@ -24,6 +24,7 @@
 **==============================================================================
 */
 
+/* Randomly generated magic number */
 #define OE_CERT_MAGIC 0xbc8e184285de4d2a
 
 static void _SetErr(OE_VerifyCertError* error, const char* str)
@@ -61,6 +62,7 @@ static void _ClearCertImpl(OE_CertImpl* impl)
     }
 }
 
+/* Randomly generated magic number */
 #define OE_CERT_CHAIN_MAGIC 0xa5ddf70fb28f4480
 
 typedef struct _OE_CertChainImpl

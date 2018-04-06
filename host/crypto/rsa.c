@@ -19,6 +19,7 @@
 **==============================================================================
 */
 
+/* Randomly generated magic number */
 #define OE_RSA_PRIVATE_KEY_MAGIC 0x7bf635929a714b2c
 
 typedef struct _OE_RSAPrivateKeyImpl
@@ -43,6 +44,7 @@ OE_INLINE bool _ValidPrivateKeyImpl(const OE_RSAPrivateKeyImpl* impl)
     return impl && impl->magic == OE_RSA_PRIVATE_KEY_MAGIC && impl->rsa;
 }
 
+/* Randomly generated magic number */
 #define OE_RSA_PUBLIC_KEY_MAGIC 0x8f8f72170025426d
 
 typedef struct _OE_RSAPublicKeyImpl

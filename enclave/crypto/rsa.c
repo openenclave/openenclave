@@ -25,6 +25,7 @@
 **==============================================================================
 */
 
+/* Randomly generated magic number */
 #define OE_RSA_PRIVATE_KEY_MAGIC 0xd48de5bae3994b41
 
 typedef struct _OE_RSAPrivateKeyImpl
@@ -61,6 +62,7 @@ OE_INLINE void _ClearPrivateKeyImpl(OE_RSAPrivateKeyImpl* impl)
         OE_Memset(impl, 0, sizeof(OE_RSAPrivateKeyImpl));
 }
 
+/* Randomly generated magic number */
 #define OE_RSA_PUBLIC_KEY_MAGIC 0x713600af058c447a
 
 typedef struct _OE_RSAPublicKeyImpl

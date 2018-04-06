@@ -26,6 +26,7 @@
 **==============================================================================
 */
 
+/* Randomly generated magic number */
 #define OE_EC_PRIVATE_KEY_MAGIC 0xf12c37bb02814eeb
 
 typedef struct _OE_ECPrivateKeyImpl
@@ -62,6 +63,7 @@ OE_INLINE void _ClearPrivateKeyImpl(OE_ECPrivateKeyImpl* impl)
         OE_Memset(impl, 0, sizeof(OE_ECPrivateKeyImpl));
 }
 
+/* Randomly generated magic number */
 #define OE_EC_PUBLIC_KEY_MAGIC 0xd7490a56f6504ee6
 
 typedef struct _OE_ECPublicKeyImpl

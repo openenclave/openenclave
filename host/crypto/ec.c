@@ -19,6 +19,7 @@
 **==============================================================================
 */
 
+/* Randomly generated magic number */
 #define OE_EC_PRIVATE_KEY_MAGIC 0x19a751419ae04bbc
 
 typedef struct _OE_ECPrivateKeyImpl
@@ -43,6 +44,7 @@ OE_INLINE bool _ValidPrivateKeyImpl(const OE_ECPrivateKeyImpl* impl)
     return impl && impl->magic == OE_EC_PRIVATE_KEY_MAGIC && impl->pkey;
 }
 
+/* Randomly generated magic number */
 #define OE_EC_PUBLIC_KEY_MAGIC 0xb1d39580c1f14c02
 
 typedef struct _OE_ECPublicKeyImpl
