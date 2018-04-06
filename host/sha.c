@@ -7,7 +7,10 @@
 #if defined(__linux__)
 #include <openssl/sha.h>
 #elif defined(_WIN32)
+#define WIN32_NO_STATUS
 #include <Windows.h>
+#undef WIN32_NO_STATUS
+#include <ntstatus.h>
 #include <bcrypt.h>
 #endif
 

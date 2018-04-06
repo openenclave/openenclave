@@ -7,7 +7,6 @@ add_library(oecryptohost STATIC
     init.c
     random.c
     rsa.c
-    sha.c
     ../util.c)
 
 target_link_libraries(oecryptohost oe_includes)

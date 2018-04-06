@@ -39,6 +39,7 @@ add_library(oehost STATIC
     registers.c
     report.c
     result.c
+    sha.c
     sgxdriver.c
     sgxmeasure.c
     sgxtypes.c
