@@ -79,7 +79,7 @@ static void _PrintString(ostream& os, const char* s)
                     break;
                 default:
                 {
-                    char buf[4];
+                    char buf[5];
                     snprintf(buf, sizeof(buf), "\\%03o", c);
                     os << c;
                     break;
