@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../common/crypto/util.h"
 #include "random.h"
 
 // MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
@@ -229,8 +228,9 @@ OE_Result OE_ECReadPrivateKeyPEM(
     if (!pemData || pemSize == 0 || !impl)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* The position of the null terminator must be the last byte */
-    OE_CHECK(OE_CheckForNullTerminator(pemData, pemSize));
+    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
+    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse PEM format into key structure */
     if (mbedtls_pk_parse_key(&impl->pk, pemData, pemSize, NULL, 0) != 0)
@@ -266,8 +266,9 @@ OE_Result OE_ECReadPublicKeyPEM(
     if (!pemData || pemSize == 0 || !impl)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* The position of the null terminator must be the last byte */
-    OE_CHECK(OE_CheckForNullTerminator(pemData, pemSize));
+    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
+    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse PEM format into key structure */
     if (mbedtls_pk_parse_public_key(&impl->pk, pemData, pemSize) != 0)

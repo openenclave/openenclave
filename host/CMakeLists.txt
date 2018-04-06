@@ -8,7 +8,6 @@ set(PLATFORM_SRC
     crypto/init.c
     crypto/random.c
     crypto/rsa.c
-    ../common/crypto/util.c
     linux/aep.S
     linux/aesm.c
     linux/enter.S

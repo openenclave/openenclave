@@ -14,7 +14,6 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../common/crypto/util.h"
 #include "init.h"
 
 /*
@@ -226,8 +225,8 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
     if (!pemData || !pemSize || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* The position of the null terminator must be the last byte */
-    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
+    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
+    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL (if not already initialized) */
@@ -293,8 +292,8 @@ OE_Result OE_CertChainReadPEM(
     if (!pemData || !pemSize || !chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* The position of the null terminator must be the last byte */
-    if (OE_CheckForNullTerminator(pemData, pemSize) != OE_OK)
+    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
+    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL (if not already initialized) */
