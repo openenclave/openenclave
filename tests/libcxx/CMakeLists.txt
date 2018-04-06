@@ -5,7 +5,12 @@
 include(${CMAKE_CURRENT_LIST_DIR}/../libc/get_testcase_name.cmake)
 
 # read tests.supported, sanitize the cpp-file, and create the test-case
-file(STRINGS "tests.supported" alltests)
+if (ENABLE_FULL_LIBCXX_TESTS)
+    file(STRINGS "tests.supported.all" alltests)
+else()
+    file(STRINGS "tests.supported" alltests)
+endif()
+
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name)
     add_test(tests/libcxx/${name} host/libcxxhost ./enc/libcxxtest-${name}.signed.so)

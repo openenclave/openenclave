@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 option(ENABLE_LIBC_TESTS "Build libc tests and include in test list" ON)
-option(ENABLE_LIBCXX_TESTS "Build libcxx tests and include in test list" OFF)
+option(ENABLE_FULL_LIBCXX_TESTS "Build all libcxx tests and include in test list" OFF)
 
 add_subdirectory(abortStatus)
 add_subdirectory(aesm)
@@ -19,12 +19,12 @@ else()
     message("ENABLE_LIBC_TESTS not set - omit libc tests")
 endif()
 
-if(ENABLE_LIBCXX_TESTS)
-    add_subdirectory(libcxx)
+if(ENABLE_FULL_LIBCXX_TESTS)
+    message("ENABLE_FULL_LIBCXX_TESTS set - building all libcxx tests")
 else()
-    message("ENABLE_LIBCXX_TESTS not set - omit libcxx tests")
+    message("ENABLE_FULL_LIBCXX_TESTS not set - building some libcxx tests")
 endif()
-
+add_subdirectory(libcxx)
 add_subdirectory(load)
 add_subdirectory(mbed)
 add_subdirectory(mem)
