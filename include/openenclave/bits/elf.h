@@ -218,9 +218,9 @@ typedef struct
 } Elf64_Rela;
 
 #define ELF_MAGIC 0x7d7ad33b
-#define ELF64_INIT                                 \
-    {                                              \
-        ELF_MAGIC, NULL, 0, NULL, NULL, NULL, NULL \
+#define ELF64_INIT         \
+    {                      \
+        ELF_MAGIC, NULL, 0 \
     }
 
 typedef struct

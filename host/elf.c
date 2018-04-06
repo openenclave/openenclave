@@ -1375,7 +1375,13 @@ int Elf64_AddSection(
             GOTO(done);
 
         /* Initialize the section name */
-        sh.sh_name = _GetShdr(elf, shstrndx)->sh_size;
+        {
+            sh.sh_name = (Elf64_Word)_GetShdr(elf, shstrndx)->sh_size;
+
+            /* Check for integer overflow */
+            if ((Elf64_Xword)sh.sh_name != _GetShdr(elf, shstrndx)->sh_size)
+                GOTO(done);
+        }
 
         /* Update the size of the .shstrtab section */
         _GetShdr(elf, shstrndx)->sh_size += namesize;
@@ -1479,7 +1485,15 @@ int Elf64_RemoveSection(Elf64* elf, const char* name)
         elf->size -= shdr.sh_size;
 
         /* Update affected section-related offsets */
-        _AdjustSectionHeaderOffsets(elf, shdr.sh_offset, -shdr.sh_size);
+        {
+            ssize_t adjustment;
+
+            /* Check for conversion error */
+            if ((adjustment = (ssize_t)shdr.sh_size) < 0)
+                goto done;
+
+            _AdjustSectionHeaderOffsets(elf, shdr.sh_offset, -adjustment);
+        }
     }
 
     /* Remove section name from .shsttab without changing the section size */

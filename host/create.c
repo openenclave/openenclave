@@ -1083,7 +1083,7 @@ OE_Result __OE_BuildEnclave(
     {
         OE_STATIC_ASSERT(
             OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, SigStruct) ==
-            sizeof(sigsec.sigstruct));
+            sizeof(props.sigstruct));
     }
 #endif
 
