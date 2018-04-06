@@ -1,0 +1,117 @@
+#!/bin/bash
+
+##==============================================================================
+##
+## format-code-check
+##
+##     This script checks whether running format-code would change any
+##     source files. If so it exits with a non-zero status.
+##
+##==============================================================================
+
+##==============================================================================
+##
+## Check command line arguments.
+##
+##==============================================================================
+
+if [ "$#" != "0" ]; then
+    echo "$0: too many parameters"
+    echo "Usage: $0"
+    Exit 1
+fi
+
+##==============================================================================
+##
+## Exit:
+##
+##==============================================================================
+
+Exit()
+{
+    if [ "${tmpdir1}" != "" ]; then
+        rm -rf ${tmpdir1}
+    fi
+
+    if [ "${tmpdir2}" != "" ]; then
+        rm -rf ${tmpdir2}
+    fi
+
+    exit $1
+}
+
+##==============================================================================
+##
+## Check for ./scripts/format-code script
+##
+##==============================================================================
+
+format_code=./scripts/format-code
+
+if [ ! -x "${format_code}" ]; then
+    echo "$0: ${format_code} not found"
+    Exit 1
+fi
+
+##==============================================================================
+##
+## Copy source tree to two temporary directories
+##
+##==============================================================================
+
+dn=`dirname ${PWD}`
+bn=`basename ${PWD}`
+
+tmpdir1=`/bin/mktemp -d`
+cp -r ../${bn} ${tmpdir1}
+if [ "$?" != "0" ]; then
+    echo "$0: copy failed: ${tmpdir1}"
+    Exit 1
+fi
+
+tmpdir2=`/bin/mktemp -d`
+cp -r ../${bn} ${tmpdir2}
+if [ "$?" != "0" ]; then
+    echo "$0: copy failed: ${tmpdir2}"
+    Exit 1
+fi
+
+dir1=${tmpdir1}/${bn}
+dir2=${tmpdir2}/${bn}
+
+# Remove uneeded directories
+rm -rf ${dir1}/3rdparty ${dir1}/build ${dir1}/prereqs
+rm -rf ${dir2}/3rdparty ${dir2}/build ${dir2}/prereqs
+
+##==============================================================================
+##
+## Change to first directory and run format-code
+##
+##==============================================================================
+
+cd ${dir1}
+if [ "$?" != "0" ]; then
+    echo "$0: cannot change to ${dir1}"
+    Exit 1
+fi
+
+if [ ! -x "${format_code}" ]; then
+    echo "$0: not found: ${format_code}"
+    Exit 1
+fi
+
+${format_code}
+
+##==============================================================================
+##
+## Diff the formattted and unformatted directories
+##
+##==============================================================================
+
+diff -r ${dir1} ${dir2}
+if [ "$?" != "0" ]; then
+    echo "$0: failed"
+    Exit 1
+fi
+
+Exit 0
