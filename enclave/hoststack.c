@@ -65,8 +65,9 @@ static void _Once(struct OnceType* once, void (*f)(void))
     if (!once->initialized)
     {
         OE_SpinLock(&once->lock);
-        if (!once->initialized)
+        if (!((volatile struct OnceType*)once)->initialized)
             f();
+        asm volatile ("":::"memory");
         once->initialized = 1;
         OE_SpinUnlock(&once->lock);
     }
