@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_RAISE_TRACE(RESULT) OE_HostPrintf("OE_RAISE_TRACE=%u\n", __LINE__);
 #include <mbedtls/config.h>
 #include <mbedtls/pem.h>
 #include <mbedtls/platform.h>

@@ -369,7 +369,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* key)
+OE_Result OE_ECFreePrivateKey(OE_ECPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -389,7 +389,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* key)
+OE_Result OE_ECFreePublicKey(OE_ECPublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -492,7 +492,7 @@ OE_Result OE_ECVerify(
             signature,
             signatureSize) != 0)
     {
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_VERIFY_FAILED);
     }
 
     result = OE_OK;
@@ -590,11 +590,8 @@ done:
 
     if (result != OE_OK)
     {
-        if (_ValidPrivateKeyImpl(privateImpl))
-            OE_ECPrivateKeyFree(privateKey);
-
-        if (_ValidPublicKeyImpl(publicImpl))
-            OE_ECPublicKeyFree(publicKey);
+        OE_ECFreePrivateKey(privateKey);
+        OE_ECFreePublicKey(publicKey);
     }
 
     return result;

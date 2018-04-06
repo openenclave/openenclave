@@ -39,7 +39,7 @@ typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
  *     -----END PRIVATE KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * OE_ECFree().
+ * OE_ECFreePrivateKey().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -63,7 +63,7 @@ OE_Result OE_ECReadPrivateKeyPEM(
  *     -----END PUBLIC KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * OE_ECFree().
+ * OE_ECFreePublicKey().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -131,7 +131,7 @@ OE_Result OE_ECWritePublicKeyPEM(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey);
+OE_Result OE_ECFreePrivateKey(OE_ECPrivateKey* privateKey);
 
 /**
  * Releases a public EC key
@@ -142,7 +142,7 @@ OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey);
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey);
+OE_Result OE_ECFreePublicKey(OE_ECPublicKey* publicKey);
 
 /**
  * Digitally signs a message with a private EC key

@@ -50,7 +50,7 @@ void OE_HexDump(const void* data, size_t size)
 {
     const uint8_t* p = (const uint8_t*)data;
     size_t n = size;
-    const size_t chunkSize = 2;
+    const size_t chunkSize = 1024;
     char buf[2 * chunkSize + 1];
 
     /* Return if nothing to print */

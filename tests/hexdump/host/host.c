@@ -143,11 +143,11 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    /* Create tyhe enclave */
+    /* Create the enclave */
     const uint32_t flags = OE_GetCreateFlags();
     OE_TEST((result = OE_CreateEnclave(argv[1], flags, &enclave)) == OE_OK);
 
-    /* Check bufer sizes */
+    /* Check buffer sizes */
     {
         Args args;
         OE_TEST(sizeof(args.data) == sizeof(_data));

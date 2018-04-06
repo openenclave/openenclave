@@ -340,7 +340,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* key)
+OE_Result OE_RSAFreePrivateKey(OE_RSAPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -360,7 +360,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* key)
+OE_Result OE_RSAFreePublicKey(OE_RSAPublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -461,7 +461,7 @@ OE_Result OE_RSAVerify(
             signature,
             signatureSize) != 0)
     {
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_VERIFY_FAILED);
     }
 
     result = OE_OK;
@@ -550,11 +550,8 @@ done:
 
     if (result != OE_OK)
     {
-        if (_ValidPrivateKeyImpl(privateImpl))
-            OE_RSAPrivateKeyFree(privateKey);
-
-        if (_ValidPublicKeyImpl(publicImpl))
-            OE_RSAPublicKeyFree(publicKey);
+        OE_RSAFreePrivateKey(privateKey);
+        OE_RSAFreePublicKey(publicKey);
     }
 
     return result;

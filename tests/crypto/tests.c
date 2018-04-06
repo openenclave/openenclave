@@ -539,8 +539,8 @@ static void TestRSAGenerate()
     OE_TEST(r == OE_OK);
 
     free(signature);
-    OE_RSAPrivateKeyFree(&privateKey);
-    OE_RSAPublicKeyFree(&publicKey);
+    OE_RSAFreePrivateKey(&privateKey);
+    OE_RSAFreePublicKey(&publicKey);
 
     printf("=== passed TestRSAGenerate()\n");
 }
@@ -588,8 +588,8 @@ static void TestECGenerate()
     OE_TEST(r == OE_OK);
 
     free(signature);
-    OE_ECPrivateKeyFree(&privateKey);
-    OE_ECPublicKeyFree(&publicKey);
+    OE_ECFreePrivateKey(&privateKey);
+    OE_ECFreePublicKey(&publicKey);
 
     printf("=== passed TestECGenerate()\n");
 }
@@ -619,7 +619,7 @@ static void TestRSAWritePrivate()
     OE_TEST(memcmp(RSA_PRIVATE_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAPrivateKeyFree(&key);
+    OE_RSAFreePrivateKey(&key);
 
     printf("=== passed TestRSAWritePrivate()\n");
 }
@@ -649,7 +649,7 @@ static void TestRSAWritePublic()
     OE_TEST(memcmp(RSA_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAPublicKeyFree(&key);
+    OE_RSAFreePublicKey(&key);
 
     printf("=== passed TestRSAWritePublic()\n");
 }
@@ -702,9 +702,9 @@ static void TestECWritePrivate()
 
     free(pemData1);
     free(pemData2);
-    OE_ECPublicKeyFree(&publicKey);
-    OE_ECPrivateKeyFree(&key1);
-    OE_ECPrivateKeyFree(&key2);
+    OE_ECFreePublicKey(&publicKey);
+    OE_ECFreePrivateKey(&key1);
+    OE_ECFreePrivateKey(&key2);
 
     printf("=== passed TestECWritePrivate()\n");
 }
@@ -736,7 +736,7 @@ static void TestECWritePublic()
     OE_TEST(memcmp(EC_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_ECPublicKeyFree(&key);
+    OE_ECFreePublicKey(&key);
 
     printf("=== passed TestECWritePublic()\n");
 }
