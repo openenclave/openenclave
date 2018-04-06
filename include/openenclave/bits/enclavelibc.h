@@ -17,6 +17,13 @@ OE_EXTERNC_BEGIN
 size_t OE_Strlen(const char* s);
 
 /**
+ * Enclave implementation of the standard strnlen() function.
+ *
+ * Refer to documentation for strnlen() function.
+ */
+size_t OE_Strnlen(const char* s, size_t n);
+
+/**
  * Enclave implementation of the standard strcmp() function.
  *
  * Refer to documentation for strcmp() function.

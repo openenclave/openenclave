@@ -11,9 +11,6 @@
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/pem.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "random.h"
 
 // MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
@@ -200,7 +197,7 @@ OE_Result OE_RSAReadPrivateKeyPEM(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pemSize-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
+    if (OE_Strnlen((const char*)pemData, pemSize) != pemSize - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse PEM format into key structure */
@@ -238,7 +235,7 @@ OE_Result OE_RSAReadPublicKeyPEM(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Must have pemSize-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
+    if (OE_Strnlen((const char*)pemData, pemSize) != pemSize - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse PEM format into key structure */
