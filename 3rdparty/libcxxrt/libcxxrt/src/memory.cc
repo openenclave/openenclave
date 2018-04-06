@@ -156,14 +156,14 @@ void operator delete[](void * ptr) NOEXCEPT
 #if __cplusplus >= 201402L
 
 __attribute__((weak))
-void operator delete(void * ptr, std::size_t) NOEXCEPT
+void operator delete(void * ptr, size_t) NOEXCEPT
 {
 	::operator delete(ptr);
 }
 
 
 __attribute__((weak))
-void operator delete[](void * ptr, std::size_t) NOEXCEPT
+void operator delete[](void * ptr, size_t) NOEXCEPT
 {
 	::operator delete(ptr);
 }
