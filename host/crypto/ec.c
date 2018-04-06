@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/ec.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/types.h>
-#include <openenclave/bits/sha.h>
 #include <openenclave/bits/pem.h>
+#include <openenclave/bits/raise.h>
+#include <openenclave/bits/sha.h>
+#include <openenclave/types.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <string.h>

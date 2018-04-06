@@ -10,8 +10,8 @@
 #define WIN32_NO_STATUS
 #include <Windows.h>
 #undef WIN32_NO_STATUS
-#include <ntstatus.h>
 #include <bcrypt.h>
+#include <ntstatus.h>
 #endif
 
 #include <openenclave/bits/raise.h>

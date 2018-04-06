@@ -28,7 +28,8 @@ static OE_Result _SeedEntropySource()
     mbedtls_ctr_drbg_init(&_drbg);
     mbedtls_entropy_init(&_entropy);
 
-    OE_CHECK(mbedtls_ctr_drbg_seed(
+    OE_CHECK(
+        mbedtls_ctr_drbg_seed(
             &_drbg, mbedtls_entropy_func, &_entropy, NULL, 0));
 
     result = OE_OK;

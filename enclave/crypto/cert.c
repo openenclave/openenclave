@@ -51,7 +51,6 @@ OE_INLINE void _ClearCertImpl(OE_CertImpl* impl)
 /* Randomly generated magic number */
 #define OE_CERT_CHAIN_MAGIC 0x7d82c57a12af4c70
 
-
 typedef struct _OE_CertChainImpl
 {
     uint64_t magic;
@@ -315,13 +314,8 @@ OE_Result OE_CertVerify(
 
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
-            certImpl->cert,
-            chainImpl->chain,
-            NULL,
-            NULL,
-            &flags,
-            NULL,
-            NULL) != 0)
+            certImpl->cert, chainImpl->chain, NULL, NULL, &flags, NULL, NULL) !=
+        0)
     {
         if (error)
         {

@@ -67,7 +67,7 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert);
  *     ...
  *     -----END CERT-----
  *
- * The caller is responsible for releasing the certificate chain by passing it 
+ * The caller is responsible for releasing the certificate chain by passing it
  * to OE_CertChainFree().
  *
  * @param pemData zero-terminated PEM data

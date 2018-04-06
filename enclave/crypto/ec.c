@@ -9,8 +9,8 @@
 #include <mbedtls/platform.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/raise.h>
 #include <openenclave/bits/pem.h>
+#include <openenclave/bits/raise.h>
 #include "random.h"
 
 // MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
