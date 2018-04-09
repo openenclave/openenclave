@@ -48,6 +48,7 @@ add_library(oehost STATIC
     sgxdriver.c
     sgxmeasure.c
     sgxtypes.c
+    signkey.c
     strings.c
     tests.c
     typeinfo.c
