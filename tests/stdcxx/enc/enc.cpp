@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/atexit.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
 #include <iostream>
 #include <map>
@@ -76,8 +77,8 @@ G _g2;
 
 void MyAtExit()
 {
-    assert(numConstructions == 6);
-    assert(numDestructions == 0);
+    OE_TEST(numConstructions == 6);
+    OE_TEST(numDestructions == 0);
     OE_HostPrintf("MyAtExit()\n");
 }
 
@@ -163,7 +164,7 @@ OE_ECALL void Test(void* args_)
         string s;
         os >> s;
 
-        assert(s == "hello");
+        OE_TEST(s == "hello");
     }
 
     /* Test exceptions */
@@ -203,12 +204,12 @@ OE_ECALL void Test(void* args_)
 __attribute__((constructor)) void Constructor(void)
 {
     OE_HostPrintf("Constructor()\n");
-    assert(numConstructions == 0);
+    OE_TEST(numConstructions == 0);
 }
 
 __attribute__((destructor)) void Destructor(void)
 {
     OE_HostPrintf("Destructor()\n");
-    assert(numConstructions == 6);
-    assert(numDestructions == 6);
+    OE_TEST(numConstructions == 6);
+    OE_TEST(numDestructions == 6);
 }

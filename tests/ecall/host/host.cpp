@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
@@ -26,18 +25,18 @@ void TestECall(OE_Enclave* enclave)
 
     {
         result = OE_CallEnclave(enclave, "Test", &args);
-        assert(result == OE_OK);
+        OE_TEST(result == OE_OK);
 
-        assert(args.self = &args);
-        assert(args.magic == NEW_MAGIC);
-        assert(args.magic2 == NEW_MAGIC);
+        OE_TEST(args.self = &args);
+        OE_TEST(args.magic == NEW_MAGIC);
+        OE_TEST(args.magic2 == NEW_MAGIC);
     }
 
-    assert(args.mm == 12);
-    assert(args.dd == 31);
-    assert(args.yyyy == 1962);
+    OE_TEST(args.mm == 12);
+    OE_TEST(args.dd == 31);
+    OE_TEST(args.yyyy == 1962);
 
-    assert(args.setjmpResult == 999);
+    OE_TEST(args.setjmpResult == 999);
 
 #ifdef ECHO
     printf("setjmpResult=%u\n", args.setjmpResult);
@@ -65,7 +64,7 @@ void TestUserDefinedECall(OE_Enclave* enclave)
     uint64_t argOut = 0;
 
     OE_ECall(enclave, 0, 1000, &argOut);
-    assert(argOut == 3000);
+    OE_TEST(argOut == 3000);
 }
 
 int main(int argc, const char* argv[])

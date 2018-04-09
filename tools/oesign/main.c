@@ -7,6 +7,7 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/sign.h>
@@ -380,9 +381,6 @@ int main(int argc, const char* argv[])
     int ret = 1;
     OE_Result result;
     OE_SGXDevice* dev = NULL;
-    OE_SHA256 mrenclave = OE_SHA256_INIT;
-    ConfigFileOptions options;
-    OE_EnclaveProperties_SGX props;
     const char* enclave;
     const char* conffile;
     const char* keyfile;

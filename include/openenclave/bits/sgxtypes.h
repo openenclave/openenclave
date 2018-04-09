@@ -857,25 +857,6 @@ typedef struct _OE_ECallPages
 /*
 **==============================================================================
 **
-** __SGX_GetQuote()
-**
-**==============================================================================
-*/
-
-OE_Result SGX_GetQuote(
-    const SGX_Report* report,
-    SGX_QuoteType quoteType,
-    const SGX_SPID* spid,
-    const SGX_Nonce* nonce,
-    const uint8_t* signatureRevocationList,
-    uint32_t signatureRevocationListSize,
-    SGX_Report* reportOut,
-    SGX_Quote* quote,
-    size_t quoteSize);
-
-/*
-**==============================================================================
-**
 ** __SGX_InitQuote()
 **
 **==============================================================================
@@ -884,19 +865,6 @@ OE_Result SGX_GetQuote(
 OE_Result SGX_InitQuote(
     SGX_TargetInfo* targetInfo,
     SGX_EPIDGroupID* epidGroupID);
-
-/*
-**==============================================================================
-**
-** SGX_CreateReport()
-**
-**==============================================================================
-*/
-
-OE_Result SGX_CreateReport(
-    const SGX_TargetInfo* targetInfo,
-    const SGX_ReportData* reportData,
-    SGX_Report* report);
 
 /*
 **==============================================================================
@@ -935,18 +903,6 @@ typedef struct _SGX_QuoteSignature
 OE_PACK_END
 
 OE_STATIC_ASSERT(sizeof(SGX_QuoteSignature) == 664);
-
-/*
-**==============================================================================
-**
-** SGX_GetQuoteSize()
-**
-**==============================================================================
-*/
-
-OE_Result SGX_GetQuoteSize(
-    const uint8_t* signatureRevocationList,
-    size_t* quoteSize);
 
 OE_EXTERNC_END
 

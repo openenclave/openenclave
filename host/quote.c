@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "quote.h"
 #include <assert.h>
 #include <limits.h>
 #include <openenclave/bits/aesm.h>
@@ -31,13 +32,23 @@ OE_CATCH:
     return result;
 }
 
+OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
+{
+    memset(targetInfo, 0, sizeof(*targetInfo));
+    SGX_EPIDGroupID epidGroupID;
+    memset(&epidGroupID, 0, sizeof(epidGroupID));
+
+    return SGX_InitQuote(targetInfo, &epidGroupID);
+}
+
 OE_Result SGX_GetQuoteSize(
     const uint8_t* signatureRevocationList,
-    size_t* quoteSize)
+    uint32_t* quoteSize)
 {
     OE_Result result = OE_FAILURE;
-    size_t signatureSize = 0;
-    uint64_t n = 0;
+    uint64_t signatureSize = 0;
+    uint32_t n = 0;
+    uint64_t quoteSize64 = 0;
     const SGX_SigRL* sigrl = (const SGX_SigRL*)signatureRevocationList;
 
     if (quoteSize)
@@ -62,19 +73,20 @@ OE_Result SGX_GetQuoteSize(
     /* Calculate variable size of EPID_Signature with N entries */
     signatureSize = sizeof(SGX_EPID_Signature) + (n * sizeof(SGX_EPID_NRProof));
 
-    *quoteSize = sizeof(SGX_Quote) + sizeof(SGX_WrapKey) + SGX_QUOTE_IV_SIZE +
-                 sizeof(uint32_t) + signatureSize + SGX_MAC_SIZE;
+    quoteSize64 = sizeof(SGX_Quote) + sizeof(SGX_WrapKey) + SGX_QUOTE_IV_SIZE +
+                  sizeof(uint32_t) + signatureSize + SGX_MAC_SIZE;
 
-    if (*quoteSize > (uint64_t)UINT_MAX)
+    if (quoteSize64 > (uint64_t)UINT_MAX)
         goto done;
 
+    *quoteSize = (uint32_t)quoteSize64;
     result = OE_OK;
 
 done:
     return result;
 }
 
-OE_Result SGX_GetQuote(
+static OE_Result _SGX_GetQuoteFromAesm(
     const SGX_Report* report,
     SGX_QuoteType quoteType,
     const SGX_SPID* spid,
@@ -128,11 +140,10 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_GetQuote(
-    const void* report,
-    size_t reportSize,
-    void* quote,
-    size_t* quoteSize)
+OE_Result SGX_GetQuote(
+    const SGX_Report* report,
+    uint8_t* quote,
+    uint32_t* quoteSize)
 {
     OE_Result result = OE_UNEXPECTED;
     static const SGX_SPID spid = {{
@@ -155,12 +166,12 @@ OE_Result OE_GetQuote(
     }};
 
     /* Reject null parameters */
-    if (!report || reportSize != sizeof(SGX_Report) || !quoteSize)
+    if (!report || !quoteSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Reject if quote size not big enough even for quote without SigRLs */
     {
-        size_t size;
+        uint32_t size;
         OE_TRY(SGX_GetQuoteSize(NULL, &size));
 
         if (*quoteSize < size)
@@ -168,6 +179,9 @@ OE_Result OE_GetQuote(
             *quoteSize = size;
             OE_THROW(OE_BUFFER_TOO_SMALL);
         }
+
+        // Return correct size of the quote.
+        *quoteSize = size;
     }
 
     if (!quote)
@@ -175,11 +189,11 @@ OE_Result OE_GetQuote(
 
     /* Get the quote from the AESM service */
     {
-        memset(quote, 0, sizeof(SGX_Quote));
+        memset(quote, 0, *quoteSize);
 
         OE_TRY(
-            SGX_GetQuote(
-                (const SGX_Report*)report,
+            _SGX_GetQuoteFromAesm(
+                report,
                 SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
                 &spid,
                 NULL, /* nonce */

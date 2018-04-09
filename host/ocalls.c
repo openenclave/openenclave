@@ -25,6 +25,7 @@
 #include <openenclave/bits/utils.h>
 #include "enclave.h"
 #include "ocalls.h"
+#include "quote.h"
 
 void HandleMalloc(uint64_t argIn, uint64_t* argOut)
 {
@@ -90,7 +91,23 @@ void HandleThreadWait(OE_Enclave* enclave, uint64_t argIn)
 #if defined(__linux__)
 
     if (__sync_fetch_and_add(&event->value, -1) == 0)
-        syscall(__NR_futex, &event->value, FUTEX_WAIT, -1, NULL, NULL, 0);
+    {
+        do
+        {
+            syscall(
+                __NR_futex,
+                &event->value,
+                FUTEX_WAIT_PRIVATE,
+                -1,
+                NULL,
+                NULL,
+                0);
+            // If event->value is still -1, then this is a spurious-wake.
+            // Spurious-wakes are ignored by going back to FUTEX_WAIT.
+            // Since FUTEX_WAIT uses atomic instructions to load event->value,
+            // it is safe to use a non-atomic operation here.
+        } while (event->value == -1);
+    }
 
 #elif defined(_WIN32)
 
@@ -108,7 +125,8 @@ void HandleThreadWake(OE_Enclave* enclave, uint64_t argIn)
 #if defined(__linux__)
 
     if (__sync_fetch_and_add(&event->value, 1) != 0)
-        syscall(__NR_futex, &event->value, FUTEX_WAKE, 1, NULL, NULL, 0);
+        syscall(
+            __NR_futex, &event->value, FUTEX_WAKE_PRIVATE, 1, NULL, NULL, 0);
 
 #elif defined(_WIN32)
 
@@ -145,6 +163,23 @@ void HandleInitQuote(uint64_t argIn)
         return;
 
     args->result = SGX_InitQuote(&args->targetInfo, &args->epidGroupID);
+}
+
+void HandleGetRemoteReport(OE_Enclave* enclave, uint64_t argIn)
+{
+    OE_GetRemoteReportArgs* args = (OE_GetRemoteReportArgs*)argIn;
+    if (!args)
+        return;
+
+    args->result = OE_GetReport(
+        enclave,
+        OE_REPORT_OPTIONS_REMOTE_ATTESTATION,
+        args->reportData,
+        args->reportDataSize,
+        NULL,
+        0,
+        args->reportBuffer,
+        &args->reportBufferSize);
 }
 
 #if defined(__OE_NEED_TIME_CALLS)

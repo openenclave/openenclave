@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
@@ -54,15 +53,15 @@ int main(int argc, const char* argv[])
         args.in = 123456789;
         args.out = 0;
         OE_Result result = OE_CallEnclave(enclave, "Test2", &args);
-        assert(result == OE_OK);
-        assert(args.out == args.in);
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.out == args.in);
     }
 
     /* Call Test4() */
     {
         OE_Result result = OE_CallEnclave(enclave, "Test4", NULL);
-        assert(result == OE_OK);
-        assert(_func2Ok);
+        OE_TEST(result == OE_OK);
+        OE_TEST(_func2Ok);
     }
 
     /* Call SetTSD() */
@@ -70,7 +69,7 @@ int main(int argc, const char* argv[])
         SetTSDArgs args;
         args.value = (void*)0xAAAAAAAABBBBBBBB;
         OE_Result result = OE_CallEnclave(enclave, "SetTSD", &args);
-        assert(result == OE_OK);
+        OE_TEST(result == OE_OK);
     }
 
     /* Call GetTSD() */
@@ -78,20 +77,20 @@ int main(int argc, const char* argv[])
         GetTSDArgs args;
         args.value = 0;
         OE_Result result = OE_CallEnclave(enclave, "GetTSD", &args);
-        assert(result == OE_OK);
-        assert(args.value == (void*)0xAAAAAAAABBBBBBBB);
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.value == (void*)0xAAAAAAAABBBBBBBB);
     }
 
     /* Call TestMyOcall() */
     {
         OE_Result result = OE_RegisterOCall(0, MyOCall);
-        assert(result == OE_OK);
+        OE_TEST(result == OE_OK);
 
         TestMyOCallArgs args;
         args.result = 0;
         result = OE_CallEnclave(enclave, "TestMyOCall", &args);
-        assert(result == OE_OK);
-        assert(args.result == 7000);
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.result == 7000);
     }
 
     OE_TerminateEnclave(enclave);

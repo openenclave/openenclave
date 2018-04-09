@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
 #include "../host/args.h"
 #include "../host/ocalls.h"
 
@@ -42,7 +42,7 @@ Handler signal(int signal, Handler)
 
 extern "C" int close(int fd)
 {
-    assert("close() panic" == NULL);
+    OE_TEST("close() panic" == NULL);
     return 0;
 }
 

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
@@ -43,9 +42,9 @@ int main(int argc, const char* argv[])
         args.newSize = 1023;
         args.outPtr = NULL;
         OE_Result result = OE_CallEnclave(enclave, "TestHostRealloc", &args);
-        assert(result == OE_OK);
-        assert(args.outPtr);
-        assert(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.outPtr);
+        OE_TEST(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
     }
 
     /* OE_HostRealloc to expand an existing pointer */
@@ -55,9 +54,9 @@ int main(int argc, const char* argv[])
         args.newSize = 65537;
         args.outPtr = NULL;
         OE_Result result = OE_CallEnclave(enclave, "TestHostRealloc", &args);
-        assert(result == OE_OK);
-        assert(args.outPtr);
-        assert(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.outPtr);
+        OE_TEST(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
     }
 
     /* OE_HostRealloc no-op to same size buffer */
@@ -66,9 +65,9 @@ int main(int argc, const char* argv[])
         args.oldSize = args.newSize;
         args.outPtr = NULL;
         OE_Result result = OE_CallEnclave(enclave, "TestHostRealloc", &args);
-        assert(result == OE_OK);
-        assert(args.outPtr);
-        assert(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.outPtr);
+        OE_TEST(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
     }
 
     /* OE_HostRealloc to contract an existing pointer */
@@ -78,13 +77,13 @@ int main(int argc, const char* argv[])
         args.newSize = 1;
         args.outPtr = NULL;
         OE_Result result = OE_CallEnclave(enclave, "TestHostRealloc", &args);
-        assert(result == OE_OK);
-        assert(args.outPtr);
-        assert(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.outPtr);
+        OE_TEST(IsReallocBufferTestInitialized(args.outPtr, args.newSize));
     }
 
     /* OE_HostRealloc to 0 size should free the pointer
-     * This is not a behavior specified by C-standard, but we assert it for
+     * This is not a behavior specified by C-standard, but we OE_TEST it for
      * consistency between compilers for enclave use.
      */
     {
@@ -93,8 +92,8 @@ int main(int argc, const char* argv[])
         args.newSize = 0;
         args.outPtr = NULL;
         OE_Result result = OE_CallEnclave(enclave, "TestHostRealloc", &args);
-        assert(result == OE_OK);
-        assert(!args.outPtr);
+        OE_TEST(result == OE_OK);
+        OE_TEST(!args.outPtr);
     }
 
     /* OE_HostRealloc of pointer from calloc.
@@ -110,19 +109,19 @@ int main(int argc, const char* argv[])
         args.newSize = args.oldSize + 1;
         args.outPtr = NULL;
         OE_Result result = OE_CallEnclave(enclave, "TestHostRealloc", &args);
-        assert(result == OE_OK);
+        OE_TEST(result == OE_OK);
 
         // Resulting buffer should retain its original zero contents from calloc
-        assert(args.outPtr);
+        OE_TEST(args.outPtr);
         uint8_t* outBytes = (uint8_t*)args.outPtr;
         for (uint32_t i = 0; i < args.oldSize; i++)
         {
-            assert(outBytes[i] == 0);
+            OE_TEST(outBytes[i] == 0);
         }
 
         /* TestHostRealloc only writes init value into expanded area for this
          * check */
-        assert(outBytes[args.oldSize] == TEST_HOSTREALLOC_INIT_VALUE);
+        OE_TEST(outBytes[args.oldSize] == TEST_HOSTREALLOC_INIT_VALUE);
 
         free(args.outPtr);
     }

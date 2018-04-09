@@ -14,11 +14,14 @@
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
+#include "report.h"
 #include "td.h"
 
 typedef unsigned long long WORD;
 
 #define WORD_SIZE sizeof(WORD)
+
+uint64_t __oe_enclave_status = OE_OK;
 
 /*
 **==============================================================================
@@ -316,6 +319,11 @@ static void _HandleECall(
             _HandleInitEnclave(argIn);
             break;
         }
+        case OE_FUNC_GET_SGX_REPORT:
+        {
+            argOut = _HandleGetSGXReport(argIn);
+            break;
+        }
         default:
         {
             /* Dispatch user-registered ECALLs */
@@ -385,6 +393,11 @@ OE_Result OE_OCall(
     TD* td = TD_Get();
     Callsite* callsite = td->callsites;
     uint32_t old_ocall_flags = td->ocall_flags;
+
+    /* If the enclave is in crashing/crashed status, new OCALL should fail
+    immediately. */
+    if (__oe_enclave_status != OE_OK)
+        OE_THROW((OE_Result)__oe_enclave_status);
 
     /* Check for unexpected failures */
     if (!callsite)
@@ -553,7 +566,6 @@ OE_CATCH:
 **
 **==============================================================================
 */
-
 void __OE_HandleMain(
     uint64_t arg1,
     uint64_t arg2,
@@ -567,6 +579,40 @@ void __OE_HandleMain(
     uint64_t argIn = arg2;
     *outputArg1 = 0;
     *outputArg2 = 0;
+
+    // Block enclave enter based on current enclave status.
+    switch (__oe_enclave_status)
+    {
+        case OE_OK:
+            break;
+
+        case OE_ENCLAVE_ABORTING:
+            // Block any ECALL except first time OE_FUNC_DESTRUCTOR call.
+            // Don't block ORET here.
+            if (code == OE_CODE_ECALL)
+            {
+                if (func == OE_FUNC_DESTRUCTOR)
+                {
+                    // Termination function should be only called once.
+                    __oe_enclave_status = OE_ENCLAVE_ABORTED;
+                }
+                else
+                {
+                    // Return crashing status.
+                    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+                    *outputArg2 = __oe_enclave_status;
+                    return;
+                }
+            }
+
+            break;
+
+        default:
+            // Return crashed status.
+            *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+            *outputArg2 = OE_ENCLAVE_ABORTED;
+            return;
+    }
 
     /* Initialize the enclave the first time it is ever entered */
     OE_InitializeEnclave();
@@ -646,5 +692,19 @@ void _OE_NotifyNestedExitStart(uint64_t arg1, OE_OCallContext* ocallContext)
     Callsite* callsite = td->callsites;
     callsite->ocallContext = ocallContext;
 
+    return;
+}
+
+void OE_Abort(void)
+{
+    // Once it starts to crash, the state can only transit forward, not
+    // backward.
+    if (__oe_enclave_status < OE_ENCLAVE_ABORTING)
+    {
+        __oe_enclave_status = OE_ENCLAVE_ABORTING;
+    }
+
+    // Return to the latest ECALL.
+    _HandleExit(OE_CODE_ERET, 0, __oe_enclave_status);
     return;
 }
