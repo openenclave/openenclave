@@ -68,7 +68,7 @@ void DumpEnclaveProperties(const OE_EnclaveProperties_SGX* props)
 
     printf("securityVersion=%u\n", props->config.securityVersion);
 
-    bool debug = props->config.attributes | OE_SGX_FLAGS_DEBUG;
+    bool debug = props->config.attributes & OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
     printf("numHeapPages=%lu\n", props->header.sizeSettings.numHeapPages);

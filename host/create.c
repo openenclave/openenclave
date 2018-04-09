@@ -1083,7 +1083,28 @@ OE_Result __OE_BuildEnclave(
     }
     else
     {
-        OE_TRY(OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, &enclave->properties));
+        OE_TRY(OE_LoadEnclaveProperties_SGX(
+            &elf, 
+            OE_INFO_SECTION_NAME, 
+            &enclave->properties));
+    }
+
+    /* Consolidate enclave-debug-flag with create-debug-flag */
+    if (enclave->properties.config.attributes & OE_SGX_FLAGS_DEBUG)
+    {
+        if (!debug)
+        {
+            /* Upgrade to non-debug mode */
+            enclave->properties.config.attributes &= ~OE_SGX_FLAGS_DEBUG;
+        }
+    }
+    else
+    {
+        if (debug)
+        {
+            /* Attempted to downgrade to debug mode */
+            OE_THROW(OE_DEBUG_DOWNGRADE);
+        }
     }
 
     /* Load the program segments into memory */

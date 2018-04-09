@@ -358,13 +358,6 @@ OE_CATCH:
     return result;
 }
 
-static void _InitializeOpenSSL(void)
-{
-    OpenSSL_add_all_algorithms();
-    ERR_load_BIO_strings();
-    ERR_load_crypto_strings();
-}
-
 static OE_Result _LoadRSAPrivateKey(
     const char* pemData,
     size_t pemSize,
@@ -382,7 +375,9 @@ static OE_Result _LoadRSAPrivateKey(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
-    _InitializeOpenSSL();
+    OpenSSL_add_all_algorithms();
+    ERR_load_BIO_strings();
+    ERR_load_crypto_strings();
 
     /* Create a BIO object for loading the PEM data */
     if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
