@@ -67,6 +67,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
+#define OE_SGX_SIGSTRUCT_SIZE 1808
 
 typedef struct _OE_EnclaveSettings_SGX
 {
@@ -76,7 +77,7 @@ typedef struct _OE_EnclaveSettings_SGX
     /* Padding to make packed and unpacked size the same */
     uint32_t padding;
 
-    /* (SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT) */
+    /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
     uint64_t attributes;
 } OE_EnclaveSettings_SGX;
 
@@ -92,7 +93,7 @@ typedef struct _OE_EnclaveProperties_SGX
     OE_EnclaveSettings_SGX settings;
 
     /* (48) */
-    uint8_t sigstruct[1808];
+    uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
 } OE_EnclaveProperties_SGX;
 
 OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);

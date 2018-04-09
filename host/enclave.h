@@ -4,6 +4,7 @@
 #ifndef _OE_HOST_ENCLAVE_H
 #define _OE_HOST_ENCLAVE_H
 
+#include <openenclave/properties.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/host.h>
@@ -122,6 +123,10 @@ struct _OE_Enclave
 
     /* Simulation mode */
     bool simulate;
+
+    // This structure is copied from the enclave properties section during
+    // enclave loading.
+    OE_EnclaveProperties_SGX properties;
 };
 
 /* Get the event for the given TCS */

@@ -4,6 +4,8 @@
 #ifndef _PROPERTIES_ARGS_H
 #define _PROPERTIES_ARGS_H
 
+#include <openenclave/properties.h>
+
 typedef struct _Args
 {
     int ret;

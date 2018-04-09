@@ -962,14 +962,12 @@ OE_Result __OE_BuildEnclave(
     size_t enclaveSize = 0;
     uint64_t enclaveAddr = 0;
     size_t i;
-    OE_EnclaveProperties_SGX props;
     Elf64 elf;
     void* relocData = NULL;
     size_t relocSize;
     void* ecallData = NULL;
     size_t ecallSize;
 
-    memset(&props, 0, sizeof(OE_EnclaveProperties_SGX));
     memset(&elf, 0, sizeof(Elf64));
 
     /* Clear and initialize enclave structure */
@@ -997,13 +995,13 @@ OE_Result __OE_BuildEnclave(
     // Else use the properties stored in the .oeinfo section.
     if (properties)
     {
-        props = *properties;
+        enclave->properties = *properties;
     }
     else
     {
         OE_EnclaveProperties_SGX* p;
         OE_TRY(OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &p));
-        props = *p;
+        enclave->properties = *p;
     }
 
     /* Load the program segments into memory */
@@ -1031,9 +1029,9 @@ OE_Result __OE_BuildEnclave(
             numSegments,
             relocSize,
             ecallSize,
-            props.header.sizeSettings.numHeapPages,
-            props.header.sizeSettings.numStackPages,
-            props.header.sizeSettings.numTCS,
+            enclave->properties.header.sizeSettings.numHeapPages,
+            enclave->properties.header.sizeSettings.numStackPages,
+            enclave->properties.header.sizeSettings.numTCS,
             &enclaveEnd,
             &enclaveSize));
 
@@ -1074,9 +1072,9 @@ OE_Result __OE_BuildEnclave(
             ecallData,
             ecallSize,
             entryAddr,
-            props.header.sizeSettings.numHeapPages,
-            props.header.sizeSettings.numStackPages,
-            props.header.sizeSettings.numTCS,
+            enclave->properties.header.sizeSettings.numHeapPages,
+            enclave->properties.header.sizeSettings.numStackPages,
+            enclave->properties.header.sizeSettings.numTCS,
             enclave));
 
 #if defined(_WIN32)
@@ -1088,7 +1086,7 @@ OE_Result __OE_BuildEnclave(
 #endif
 
     /* Ask the ISGX driver to initialize the enclave (and finalize the hash) */
-    OE_TRY(dev->einit(dev, enclaveAddr, &props));
+    OE_TRY(dev->einit(dev, enclaveAddr, &enclave->properties));
 
     /* Get the hash and store it in the ENCLAVE object */
     OE_TRY(dev->gethash(dev, &enclave->hash));
