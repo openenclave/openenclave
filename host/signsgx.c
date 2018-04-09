@@ -9,7 +9,7 @@
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/sign.h>
+#include <openenclave/bits/signsgx.h>
 #include <openenclave/bits/str.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/host.h>

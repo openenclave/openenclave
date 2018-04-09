@@ -25,7 +25,7 @@
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/sha.h>
-#include <openenclave/bits/sign.h>
+#include <openenclave/bits/signsgx.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 #include "memalign.h"

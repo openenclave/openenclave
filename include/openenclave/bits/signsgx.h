@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_SIGN_H
-#define _OE_SIGN_H
+#ifndef _OE_SIGNSGX_H
+#define _OE_SIGNSGX_H
 
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
@@ -36,4 +36,4 @@ OE_Result OE_SignEnclave_SGX(
 
 OE_EXTERNC_END
 
-#endif /* _OE_SIGN_H */
+#endif /* _OE_SIGNSGX_H */
