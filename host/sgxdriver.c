@@ -767,7 +767,7 @@ static OE_Result _EInitProc(
             sizeof(sigstruct.header)) != 0)
     {
         /* If not debug mode, then fail now */
-        if (!(properties->settings.attributes & SGX_FLAGS_DEBUG))
+        if (!(properties->config.attributes & SGX_FLAGS_DEBUG))
             OE_THROW(OE_FAILURE);
 
 #if defined(__linux__)
@@ -779,8 +779,8 @@ static OE_Result _EInitProc(
             OE_TRY(
                 OE_SignEnclave(
                     &hash,
-                    properties->settings.productID,
-                    properties->settings.securityVersion,
+                    properties->config.productID,
+                    properties->config.securityVersion,
                     KEY,
                     sizeof(KEY),
                     &sigstruct));
@@ -801,7 +801,7 @@ static OE_Result _EInitProc(
         SGX_Attributes attributes;
 
         /* Initialize the SGX attributes */
-        attributes.flags = properties->settings.attributes;
+        attributes.flags = properties->config.attributes;
         attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
         if (!(aesm = AESMConnect()))

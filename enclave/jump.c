@@ -8,7 +8,7 @@
  * relies on the precise layout of the stack (and thereby preamble) to obtain
  * the correct rsp and rip.
  *
- * Really, this should go into a separate .s-file to ensure correct register 
+ * Really, this should go into a separate .s-file to ensure correct register
  * access.
  */
 

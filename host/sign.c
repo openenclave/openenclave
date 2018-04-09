@@ -254,8 +254,7 @@ static OE_Result _InitSigstruct(
     memset(sigstruct, 0, sizeof(SGX_SigStruct));
 
     /* SGX_SigStruct.header */
-    memcpy(
-        sigstruct->header, SGX_SIGSTRUCT_HEADER, sizeof(sigstruct->header));
+    memcpy(sigstruct->header, SGX_SIGSTRUCT_HEADER, sizeof(sigstruct->header));
 
     /* SGX_SigStruct.type */
     sigstruct->type = 0;
@@ -268,9 +267,7 @@ static OE_Result _InitSigstruct(
 
     /* SGX_SigStruct.header2 */
     memcpy(
-        sigstruct->header2,
-        SGX_SIGSTRUCT_HEADER2,
-        sizeof(sigstruct->header2));
+        sigstruct->header2, SGX_SIGSTRUCT_HEADER2, sizeof(sigstruct->header2));
 
     /* SGX_SigStruct.swdefined */
     sigstruct->swdefined = 0;

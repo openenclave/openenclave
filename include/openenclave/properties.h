@@ -46,13 +46,17 @@ typedef struct _OE_EnclavePropertiesHeader
     /* (0) Size of the extended structure */
     uint32_t size;
 
-    /* (4) Type of enclave (see OE_EnclaveType) */
-    uint32_t enclaveType;
+    /* (4) Enclave type */
+    OE_EnclaveType enclaveType;
 
-    /* (8) Type of enclave */
+    /* (8) Enclave settings */
     OE_EnclaveSizeSettings sizeSettings;
 } OE_EnclavePropertiesHeader;
 
+OE_STATIC_ASSERT(sizeof(OE_EnclaveType) == sizeof(uint32_t));
+OE_STATIC_ASSERT(OE_OFFSETOF(OE_EnclavePropertiesHeader, size) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(OE_EnclavePropertiesHeader, enclaveType) == 4);
+OE_STATIC_ASSERT(OE_OFFSETOF(OE_EnclavePropertiesHeader, sizeSettings) == 8);
 OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 
 /*
@@ -67,7 +71,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
 
-typedef struct _OE_EnclaveSettings_SGX
+typedef struct _OE_EnclaveConfig_SGX
 {
     uint16_t productID;
     uint16_t securityVersion;
@@ -77,9 +81,9 @@ typedef struct _OE_EnclaveSettings_SGX
 
     /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
     uint64_t attributes;
-} OE_EnclaveSettings_SGX;
+} OE_EnclaveConfig_SGX;
 
-OE_CHECK_SIZE(sizeof(OE_EnclaveSettings_SGX), 16);
+OE_CHECK_SIZE(sizeof(OE_EnclaveConfig_SGX), 16);
 
 /* Extends OE_EnclavePropertiesHeader base type */
 typedef struct _OE_EnclaveProperties_SGX
@@ -88,7 +92,7 @@ typedef struct _OE_EnclaveProperties_SGX
     OE_EnclavePropertiesHeader header;
 
     /* (32) */
-    OE_EnclaveSettings_SGX settings;
+    OE_EnclaveConfig_SGX config;
 
     /* (48) */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
@@ -136,7 +140,7 @@ OE_CHECK_SIZE(sizeof(OE_EnclaveProperties_SGX), 1856);
                 .numTCS = _TcsCount_                                    \
             }                                                           \
         },                                                              \
-        .settings =                                                     \
+        .config =                                                       \
         {                                                               \
             .productID = _ProductID_,                                   \
             .securityVersion = _SecurityVersion_,                       \

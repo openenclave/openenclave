@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <stdio.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <stdio.h>
 #include "../../../host/enclave.h"
 #include "../args.h"
 
@@ -19,7 +19,7 @@ static void _CheckProperties(
     uint64_t numTCS)
 {
     const OE_EnclavePropertiesHeader* header = &props->header;
-    const OE_EnclaveSettings_SGX* settings = &props->settings;
+    const OE_EnclaveConfig_SGX* config = &props->config;
 
     /* Check the header */
     OE_TEST(header->size == sizeof(OE_EnclaveProperties_SGX));
@@ -28,14 +28,14 @@ static void _CheckProperties(
     OE_TEST(header->sizeSettings.numStackPages == numStackPages);
     OE_TEST(header->sizeSettings.numTCS == numTCS);
 
-    /* Check the SGX settings */
-    OE_TEST(settings->productID == productID);
-    OE_TEST(settings->securityVersion == securityVersion);
-    OE_TEST(settings->padding == 0);
-    OE_TEST(settings->attributes == attributes);
+    /* Check the SGX config */
+    OE_TEST(config->productID == productID);
+    OE_TEST(config->securityVersion == securityVersion);
+    OE_TEST(config->padding == 0);
+    OE_TEST(config->attributes == attributes);
 
     /* Initailize a zero-filled sigstruct */
-    const uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE] = { 0 };
+    const uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE] = {0};
 
     /* Check for presence or absence of the signature */
     if (isSigned)
@@ -82,24 +82,24 @@ int main(int argc, const char* argv[])
         _CheckProperties(
             &enclave->properties,
             isSigned,
-            0, /* productID */
-            0, /* securityVersion */
+            0,                                           /* productID */
+            0,                                           /* securityVersion */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            2048, /* numHeapPages  */
-            1024, /* numStackPages */
-            8); /* numTCS */
+            2048,                                        /* numHeapPages  */
+            1024,                                        /* numStackPages */
+            8);                                          /* numTCS */
     }
     else
     {
         _CheckProperties(
             &enclave->properties,
             isSigned,
-            1234, /* productID */
-            5678, /* securityVersion */
+            1234,                                        /* productID */
+            5678,                                        /* securityVersion */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            1024, /* numHeapPages  */
-            512, /* numStackPages */
-            4); /* numTCS */
+            1024,                                        /* numHeapPages  */
+            512,                                         /* numStackPages */
+            4);                                          /* numTCS */
     }
 
     Args args;
