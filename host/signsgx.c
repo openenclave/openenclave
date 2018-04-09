@@ -280,10 +280,10 @@ static OE_Result _InitSigstruct(
 
     /* SGX_SigStruct.signature: fill in after other fields */
 
-    /* SGX_SigStruct.miscselect (ATTN: ?) */
+    /* SGX_SigStruct.miscselect */
     sigstruct->miscselect = SGX_SIGSTRUCT_MISCSELECT;
 
-    /* SGX_SigStruct.miscmask (ATTN: ?) */
+    /* SGX_SigStruct.miscmask */
     sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK;
 
     /* SGX_SigStruct.attributes */
