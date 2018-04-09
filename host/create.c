@@ -888,7 +888,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_LoadSGXEnclaveProperties(
+OE_Result OE_LoadEnclaveProperties_SGX(
     const Elf64* elf,
     const char* sectionName,
     OE_EnclaveProperties_SGX** properties)
@@ -1000,7 +1000,7 @@ OE_Result __OE_BuildEnclave(
     else
     {
         OE_EnclaveProperties_SGX* p;
-        OE_TRY(OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &p));
+        OE_TRY(OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, &p));
         enclave->properties = *p;
     }
 

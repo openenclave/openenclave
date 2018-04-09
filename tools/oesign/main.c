@@ -95,7 +95,7 @@ static int _UpdateAndWriteSharedLib(
     {
         OE_EnclaveProperties_SGX* p;
 
-        if (OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &p) ==
+        if (OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, &p) ==
             OE_OK)
         {
             memcpy(p, properties, sizeof(OE_EnclaveProperties_SGX));
