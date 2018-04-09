@@ -1104,7 +1104,7 @@ static size_t _FindSection(const Elf64* elf, const char* name)
 int Elf64_FindSection(
     const Elf64* elf,
     const char* name,
-    const void** data,
+    uint8_t** data,
     size_t* size)
 {
     size_t i;
@@ -1416,7 +1416,7 @@ int Elf64_AddSection(
 
     /* Finally verify that a section with this name exists and matches */
     {
-        const void* data;
+        uint8_t* data;
         size_t size;
 
         if (Elf64_FindSection(elf, name, &data, &size) != 0)
@@ -1542,7 +1542,7 @@ done:
 int Elf64_LoadRelocations(const Elf64* elf, void** dataOut, size_t* sizeOut)
 {
     int rc = -1;
-    const void* data;
+    uint8_t* data;
     size_t size;
     const Elf64_Rela* p;
     const Elf64_Rela* end;

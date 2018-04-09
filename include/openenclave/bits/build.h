@@ -41,25 +41,47 @@ void _OE_NotifyGdbEnclaveTermination(
     uint32_t enclavePathLength);
 
 /**
- * Find OE_EnclaveProperties_SGX struct within a section
+ * Find the OE_EnclaveProperties_SGX struct within the given section
  *
- * This function attempts to find the OE_EnclaveProperties_SGX struct within
+ * This function attempts to find the **OE_EnclaveProperties_SGX** struct within
  * the specified section of the ELF binary.
  *
  * @param elf ELF instance
- * @param sectionName name of section to search for **OE_EnclaveProperties_SGX**
- * @param properties pointer to properties struct on successful return
+ * @param sectionName name of section to search for enclave properties
+ * @param properties pointer where enclave properties are copied
  *
  * @returns OE_OK
  * @returns OE_INVALID_PARAMETER null parameter
- * @returns OE_FAILURE .oeinfo section not found
- * @returns OE_NOT_FOUND SGX properties struct not found
+ * @returns OE_FAILURE section was not found
+ * @returns OE_NOT_FOUND enclave properties struct not found
  *
  */
 OE_Result OE_LoadEnclaveProperties_SGX(
     const Elf64* elf,
     const char* sectionName,
-    OE_EnclaveProperties_SGX** properties);
+    OE_EnclaveProperties_SGX* properties);
+
+/**
+ * Update the OE_EnclaveProperties_SGX struct within the given section
+ *
+ * This function attempts to update the **OE_EnclaveProperties_SGX** struct 
+ * within the specified section of the ELF binary. If found, the section is
+ * updated with the value of the **properties** parameter.
+ *
+ * @param elf ELF instance
+ * @param sectionName name of section to search for enclave properties
+ * @param properties new value of enclave properties
+ *
+ * @returns OE_OK
+ * @returns OE_INVALID_PARAMETER null parameter
+ * @returns OE_FAILURE section was not found
+ * @returns OE_NOT_FOUND enclave properties struct not found
+ *
+ */
+OE_Result OE_UpdateEnclaveProperties_SGX(
+    const Elf64* elf,
+    const char* sectionName,
+    const OE_EnclaveProperties_SGX* properties);
 
 OE_EXTERNC_END
 

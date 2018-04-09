@@ -92,16 +92,9 @@ static int _UpdateAndWriteSharedLib(
     }
 
     // Update or create a new .oeinfo section.
+    if (OE_UpdateEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
-        OE_EnclaveProperties_SGX* p;
-
-        if (OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, &p) ==
-            OE_OK)
-        {
-            memcpy(p, properties, sizeof(OE_EnclaveProperties_SGX));
-        }
-        else if (
-            Elf64_AddSection(
+        if (Elf64_AddSection(
                 &elf,
                 OE_INFO_SECTION_NAME,
                 SHT_NOTE,

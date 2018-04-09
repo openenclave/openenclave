@@ -64,11 +64,11 @@ void DumpEnclaveProperties(const OE_EnclaveProperties_SGX* props)
 
     printf("=== SGX Enclave Properties:\n");
 
-    printf("productID=%u\n", props->settings.productID);
+    printf("productID=%u\n", props->config.productID);
 
-    printf("securityVersion=%u\n", props->settings.securityVersion);
+    printf("securityVersion=%u\n", props->config.securityVersion);
 
-    bool debug = props->settings.attributes | OE_SGX_FLAGS_DEBUG;
+    bool debug = props->config.attributes | OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
     printf("numHeapPages=%lu\n", props->header.sizeSettings.numHeapPages);
@@ -201,7 +201,7 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
     int ret = 1;
     Elf64 elf;
-    OE_EnclaveProperties_SGX* props;
+    OE_EnclaveProperties_SGX props;
 
     /* Check arguments */
     if (argc != 2)
@@ -218,7 +218,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the SGX enclave properties */
-    if (OE_LoadSGXEnclaveProperties(&elf, OE_INFO_SECTION_NAME, &props) !=
+    if (OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, &props) !=
         OE_OK)
     {
         err("failed to load SGX enclave properties from %s section",
@@ -231,7 +231,7 @@ int main(int argc, const char* argv[])
     DumpEntryPoint(&elf);
 
     /* Dump the signature section */
-    DumpEnclaveProperties(props);
+    DumpEnclaveProperties(&props);
 
     /* Dump the ECALL section */
     DumpECallSection(&elf);

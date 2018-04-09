@@ -888,55 +888,114 @@ OE_CATCH:
     return result;
 }
 
+static OE_EnclavePropertiesHeader* _FindEnclavePropertiesHeader(
+    uint8_t* sectionData,
+    size_t sectionSize,
+    OE_EnclaveType enclaveType)
+{
+    uint8_t* p = sectionData;
+    uint8_t* end = p + sectionSize;
+
+    /* While there are more enclave property structures */
+    while (p < end)
+    {
+        OE_EnclavePropertiesHeader* header = (OE_EnclavePropertiesHeader*)p;
+
+        if (header->enclaveType == enclaveType)
+            return header;
+
+        p += header->size;
+    }
+
+    /* Not found */
+    return NULL;
+}
+
 OE_Result OE_LoadEnclaveProperties_SGX(
     const Elf64* elf,
     const char* sectionName,
-    OE_EnclaveProperties_SGX** properties)
+    OE_EnclaveProperties_SGX* properties)
 {
     OE_Result result = OE_UNEXPECTED;
-    const void* data;
-    size_t size;
+    uint8_t* sectionData;
+    size_t sectionSize;
 
     if (properties)
-        *properties = NULL;
+        memset(properties, 0, sizeof(OE_EnclaveProperties_SGX));
 
     /* Check for null parameter */
-    if (!elf || !properties)
+    if (!elf || !sectionName || !properties)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
     }
 
-    /* Load the .oeinfo section into memory */
-    if (Elf64_FindSection(elf, sectionName, &data, &size) != 0)
+    /* Get pointer to and size of the given section */
+    if (Elf64_FindSection(elf, sectionName, &sectionData, &sectionSize) != 0)
     {
         result = OE_FAILURE;
         goto done;
     }
 
-    /* Search for enclave properties of type SGX_ENCLAVE_TYPE_SGX */
+    /* Find SGX enclave property struct */
     {
-        const uint8_t* p = (const uint8_t*)data;
-        const uint8_t* end = p + size;
+        const OE_EnclavePropertiesHeader* header;
 
-        while (p < end)
+        if (!(header = _FindEnclavePropertiesHeader(
+            sectionData, 
+            sectionSize, 
+            OE_ENCLAVE_TYPE_SGX)))
         {
-            OE_EnclavePropertiesHeader* header = (OE_EnclavePropertiesHeader*)p;
-
-            if (header->enclaveType == OE_ENCLAVE_TYPE_SGX)
-            {
-                *properties = (OE_EnclaveProperties_SGX*)header;
-                break;
-            }
-
-            p += header->size;
+            result = OE_NOT_FOUND;
+            goto done;
         }
+
+        memcpy(properties, header, sizeof(OE_EnclaveProperties_SGX));
     }
 
-    if (!*properties)
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+OE_Result OE_UpdateEnclaveProperties_SGX(
+    const Elf64* elf,
+    const char* sectionName,
+    const OE_EnclaveProperties_SGX* properties)
+{
+    OE_Result result = OE_UNEXPECTED;
+    uint8_t* sectionData;
+    size_t sectionSize;
+
+    /* Check for null parameter */
+    if (!elf || !sectionName || !properties)
     {
-        result = OE_NOT_FOUND;
+        result = OE_INVALID_PARAMETER;
         goto done;
+    }
+
+    /* Get pointer to and size of the given section */
+    if (Elf64_FindSection(elf, sectionName, &sectionData, &sectionSize) != 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Find SGX enclave property struct */
+    {
+        OE_EnclavePropertiesHeader* header;
+
+        if (!(header = _FindEnclavePropertiesHeader(
+            sectionData, 
+            sectionSize, 
+            OE_ENCLAVE_TYPE_SGX)))
+        {
+            result = OE_NOT_FOUND;
+            goto done;
+        }
+
+        memcpy(header, properties, sizeof(OE_EnclaveProperties_SGX));
     }
 
     result = OE_OK;
@@ -999,9 +1058,7 @@ OE_Result __OE_BuildEnclave(
     }
     else
     {
-        OE_EnclaveProperties_SGX* p;
-        OE_TRY(OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, &p));
-        enclave->properties = *p;
+        OE_TRY(OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, &enclave->properties));
     }
 
     /* Load the program segments into memory */

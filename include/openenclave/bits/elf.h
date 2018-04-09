@@ -279,7 +279,7 @@ int Elf64_FindSymbolByAddress(
 int Elf64_FindSection(
     const Elf64* elf,
     const char* name,
-    const void** data,
+    unsigned char** data,
     size_t* size);
 
 const char* Elf64_GetStringFromShstrtab(const Elf64* elf, Elf64_Word offset);
