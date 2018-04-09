@@ -387,6 +387,9 @@ int main(int argc, const char* argv[])
     OE_Enclave enc;
     void* pemData = NULL;
     size_t pemSize;
+    ConfigFileOptions options;
+    OE_EnclaveProperties_SGX props;
+    OE_SHA256 mrenclave;
 
     /* Check arguments */
     if (argc != 4)

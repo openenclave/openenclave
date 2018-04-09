@@ -31,8 +31,6 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-typedef enum _OE_EnclaveType { OE_ENCLAVE_TYPE_SGX } OE_EnclaveType;
-
 typedef struct _OE_EnclaveSizeSettings
 {
     uint64_t numHeapPages;
