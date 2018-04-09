@@ -60,7 +60,7 @@ void DumpEntryPoint(Elf64* elf)
 
 void DumpEnclaveProperties(const OE_EnclaveProperties_SGX* props)
 {
-    const OE_SGXSigStruct* sigstruct;
+    const SGX_SigStruct* sigstruct;
 
     printf("=== SGX Enclave Properties:\n");
 
@@ -77,7 +77,7 @@ void DumpEnclaveProperties(const OE_EnclaveProperties_SGX* props)
 
     printf("numTCS=%lu\n", props->header.sizeSettings.numTCS);
 
-    sigstruct = &props->sigstruct;
+    sigstruct = (const SGX_SigStruct*)props->sigstruct;
 
     printf("mrenclave=");
     OE_HexDump(sigstruct->enclavehash, sizeof(sigstruct->enclavehash));

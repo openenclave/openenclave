@@ -41,7 +41,7 @@ void __SGX_DumpEinitToken(const SGX_EInitToken* p)
     OE_HexDump(p->mac, sizeof(p->mac));
 }
 
-void __SGX_DumpSigStruct(const OE_SGXSigStruct* p)
+void __SGX_DumpSigStruct(const SGX_SigStruct* p)
 {
     printf("=== SGX_Sigstruct\n");
     printf("header=");

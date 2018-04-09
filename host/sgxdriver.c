@@ -748,7 +748,7 @@ static OE_Result _EInitProc(
 {
     OE_Result result = OE_UNEXPECTED;
     Self* self = (Self*)dev;
-    OE_SGXSigStruct sigstruct;
+    SGX_SigStruct sigstruct;
     AESM* aesm = NULL;
     SGX_LaunchToken launchToken;
 
@@ -762,12 +762,12 @@ static OE_Result _EInitProc(
 
     /* If sigstruct.header 'magic number' is incorrect */
     if (memcmp(
-            properties->sigstruct.header,
-            OE_SGX_SIGSTRUCT_HEADER,
-            sizeof(properties->sigstruct.header)) != 0)
+            ((SGX_SigStruct*)properties->sigstruct)->header,
+            SGX_SIGSTRUCT_HEADER,
+            sizeof(sigstruct.header)) != 0)
     {
         /* If not debug mode, then fail now */
-        if (!(properties->settings.attributes & OE_SGX_FLAGS_DEBUG))
+        if (!(properties->settings.attributes & SGX_FLAGS_DEBUG))
             OE_THROW(OE_FAILURE);
 
 #if defined(__linux__)
@@ -793,12 +793,12 @@ static OE_Result _EInitProc(
     else
     {
         /* The enclave is signed: copy it's sigstruct */
-        memcpy(&sigstruct, &properties->sigstruct, sizeof(OE_SGXSigStruct));
+        memcpy(&sigstruct, properties->sigstruct, sizeof(SGX_SigStruct));
     }
 
     /* Obtain a launch token from the AESM service */
     {
-        OE_SGXAttributes attributes;
+        SGX_Attributes attributes;
 
         /* Initialize the SGX attributes */
         attributes.flags = properties->settings.attributes;

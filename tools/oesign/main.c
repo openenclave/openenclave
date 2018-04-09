@@ -417,7 +417,7 @@ int main(int argc, const char* argv[])
         memset(&props, 0, sizeof(OE_EnclaveProperties_SGX));
         props.header.size = sizeof(OE_EnclaveProperties_SGX);
         props.header.enclaveType = OE_ENCLAVE_TYPE_SGX;
-        props.settings.attributes = OE_SGX_FLAGS_MODE64BIT;
+        props.settings.attributes = SGX_FLAGS_MODE64BIT;
         props.settings.productID = options.productID;
         props.settings.securityVersion = options.securityVersion;
         props.header.sizeSettings.numHeapPages = options.numHeapPages;
@@ -425,7 +425,7 @@ int main(int argc, const char* argv[])
         props.header.sizeSettings.numTCS = options.numTCS;
 
         if (options.debug)
-            props.settings.attributes |= OE_SGX_FLAGS_DEBUG;
+            props.settings.attributes |= SGX_FLAGS_DEBUG;
     }
 
     /* Open the MEASURER to compute MRENCLAVE */
@@ -454,7 +454,7 @@ int main(int argc, const char* argv[])
              props.settings.securityVersion,
              pemData,
              pemSize,
-             &props.sigstruct)) != OE_OK)
+             (SGX_SigStruct*)props.sigstruct)) != OE_OK)
     {
         OE_PutErr("OE_SignEnclave() failed: result=%u", result);
     }

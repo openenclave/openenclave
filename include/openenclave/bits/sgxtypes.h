@@ -72,42 +72,178 @@ typedef enum _SGX_ENCLULeaf {
 **==============================================================================
 */
 
-/* Default value for OE_SGXAttributes.flags */
+/* Default value for SGX_Attributes.flags */
 #define SGX_ATTRIBUTES_DEFAULT_FLAGS 0x0000000000000006
 
-/* Default value for OE_SGXAttributes.xfrm */
+/* Default value for SGX_Attributes.xfrm */
 #define SGX_ATTRIBUTES_DEFAULT_XFRM 0x0000000000000007
 
 /*
 **==============================================================================
 **
-** OE_SGXSigStruct
+** SGX_Attributes:
 **
 **==============================================================================
 */
 
-OE_INLINE const void* SGX_SigStructHeader(const OE_SGXSigStruct* ss)
+/* Default value for SGX_Attributes.flags */
+#define SGX_ATTRIBUTES_DEFAULT_FLAGS 0x0000000000000006
+
+/* Default value for SGX_Attributes.xfrm */
+#define SGX_ATTRIBUTES_DEFAULT_XFRM 0x0000000000000007
+
+OE_PACK_BEGIN
+typedef struct _SGX_Attributes
+{
+    uint64_t flags;
+    uint64_t xfrm;
+} SGX_Attributes;
+OE_PACK_END
+
+OE_CHECK_SIZE(sizeof(SGX_Attributes), 16);
+
+/*
+**==============================================================================
+**
+** SGX_SigStruct
+**
+**==============================================================================
+*/
+
+/* SGX_SigStruct.header: 06000000E100000000000100H */
+#define SGX_SIGSTRUCT_HEADER \
+    "\006\000\000\000\341\000\000\000\000\000\001\000"
+#define SGX_SIGSTRUCT_HEADER_SIZE (sizeof(SGX_SIGSTRUCT_HEADER) - 1)
+
+/* SGX_SigStruct.header2: 01010000600000006000000001000000H */
+#define SGX_SIGSTRUCT_HEADER2 \
+    "\001\001\000\000\140\000\000\000\140\000\000\000\001\000\000\000"
+#define SGX_SIGSTRUCT_HEADER2_SIZE (sizeof(SGX_SIGSTRUCT_HEADER2) - 1)
+
+/* SGX_SigStruct.miscselect */
+#define SGX_SIGSTRUCT_MISCSELECT 0x00000000
+
+/* SGX_SigStruct.miscmask */
+#define SGX_SIGSTRUCT_MISCMASK 0xffffffff
+
+/* SGX_SigStruct.flags */
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0Xfffffffffffffffd
+
+/* SGX_SigStruct.xfrm */
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0xfffffffffffffffb
+
+/* 1808 bytes */
+OE_PACK_BEGIN
+typedef struct _SGX_SigStruct
+{
+    /* ======== HEADER-SECTION ======== */
+
+    /* (0) must be (06000000E100000000000100H) */
+    uint8_t header[12];
+
+    /* (12) bit 31: 0 = prod, 1 = debug; Bit 30-0: Must be zero */
+    uint32_t type;
+
+    /* (16) Intel=0x8086, ISV=0x0000 */
+    uint32_t vendor;
+
+    /* (20) build date as yyyymmdd */
+    uint32_t date;
+
+    /* (24) must be (01010000600000006000000001000000H) */
+    uint8_t header2[16];
+
+    /* (40) For Launch Enclaves: HWVERSION != 0. Others, HWVERSION = 0 */
+    uint32_t swdefined;
+
+    /* (44) Must be 0 */
+    uint8_t reserved[84];
+
+    /* ======== KEY-SECTION ======== */
+
+    /* (128) Module Public Key (keylength=3072 bits) */
+    uint8_t modulus[OE_KEY_SIZE];
+
+    /* (512) RSA Exponent = 3 */
+    uint8_t exponent[OE_EXPONENT_SIZE];
+
+    /* (516) Signature over Header and Body (HEADER-SECTION | BODY-SECTION) */
+    uint8_t signature[OE_KEY_SIZE];
+
+    /* ======== BODY-SECTION ======== */
+
+    /* (900) The MISCSELECT that must be set */
+    uint32_t miscselect;
+
+    /* (904) Mask of MISCSELECT to enforce */
+    uint32_t miscmask;
+
+    /* (908) Reserved. Must be 0. */
+    uint8_t reserved2[20];
+
+    /* (928) Enclave Attributes that must be set */
+    SGX_Attributes attributes;
+
+    /* (944) Mask of Attributes to Enforce */
+    SGX_Attributes attributemask;
+
+    /* (960) MRENCLAVE - (32 bytes) */
+    uint8_t enclavehash[OE_SHA256_SIZE];
+
+    /* (992) Must be 0 */
+    uint8_t reserved3[32];
+
+    /* (1024) ISV assigned Product ID */
+    uint16_t isvprodid;
+
+    /* (1026) ISV assigned SVN */
+    uint16_t isvsvn;
+
+    /* ======== BUFFER-SECTION ======== */
+
+    /* (1028) Must be 0 */
+    uint8_t reserved4[12];
+
+    /* (1040) Q1 value for RSA Signature Verification */
+    uint8_t q1[OE_KEY_SIZE];
+
+    /* (1424) Q2 value for RSA Signature Verification */
+    uint8_t q2[OE_KEY_SIZE];
+} SGX_SigStruct;
+OE_PACK_END
+
+OE_CHECK_SIZE(sizeof(SGX_SigStruct), 1808);
+
+OE_CHECK_SIZE(
+    sizeof((SGX_SigStruct*)NULL)->header,
+    SGX_SIGSTRUCT_HEADER_SIZE);
+
+OE_CHECK_SIZE(
+    sizeof((SGX_SigStruct*)NULL)->header2,
+    SGX_SIGSTRUCT_HEADER2_SIZE);
+
+OE_INLINE const void* SGX_SigStructHeader(const SGX_SigStruct* ss)
 {
     return ss;
 }
 
 OE_INLINE size_t SGX_SigStructHeaderSize(void)
 {
-    return OE_OFFSETOF(OE_SGXSigStruct, modulus);
+    return OE_OFFSETOF(SGX_SigStruct, modulus);
 }
 
-OE_INLINE const void* SGX_SigStructBody(const OE_SGXSigStruct* ss)
+OE_INLINE const void* SGX_SigStructBody(const SGX_SigStruct* ss)
 {
     return &ss->miscselect;
 }
 
 OE_INLINE size_t SGX_SigStructBodySize(void)
 {
-    return OE_OFFSETOF(OE_SGXSigStruct, reserved4) -
-           OE_OFFSETOF(OE_SGXSigStruct, miscselect);
+    return OE_OFFSETOF(SGX_SigStruct, reserved4) -
+           OE_OFFSETOF(SGX_SigStruct, miscselect);
 }
 
-void __SGX_DumpSigStruct(const OE_SGXSigStruct* p);
+void __SGX_DumpSigStruct(const SGX_SigStruct* p);
 
 /*
 **==============================================================================
@@ -227,7 +363,7 @@ typedef struct _SGX_EInitToken
     uint8_t reserved1[44];
 
     /* (48) attributes of the enclave */
-    OE_SGXAttributes attributes;
+    SGX_Attributes attributes;
 
     /* (64) MRENCLAVE (hash of enclave) */
     uint8_t mrenclave[OE_SHA256_SIZE];
@@ -257,7 +393,7 @@ typedef struct _SGX_EInitToken
     uint32_t maskedmiscselectle;
 
     /* (240) attributes of launch enclave */
-    OE_SGXAttributes maskedattributesle;
+    SGX_Attributes maskedattributesle;
 
     /* (256) value for key wear-out protection */
     uint8_t keyid[SGX_KEYID_SIZE];
@@ -459,7 +595,7 @@ typedef struct _SGX_TargetInfo
     uint8_t mrenclave[OE_SHA256_SIZE];
 
     /* (32) ATTRIBUTES of target enclave */
-    OE_SGXAttributes attributes;
+    SGX_Attributes attributes;
 
     /* (48) Reserved */
     uint8_t reserved1[4];
@@ -523,7 +659,7 @@ typedef struct _SGX_ReportBody
     uint8_t reserved1[28];
 
     /* (48) Enclave attributes */
-    OE_SGXAttributes attributes;
+    SGX_Attributes attributes;
 
     /* (64) Enclave measurement */
     uint8_t mrenclave[OE_SHA256_SIZE];

@@ -32,7 +32,7 @@ OE_Result OE_SignEnclave(
     uint16_t securityVersion,
     const char* pemData,
     size_t pemSize,
-    OE_SGXSigStruct* sigstruct);
+    SGX_SigStruct* sigstruct);
 
 OE_EXTERNC_END
 

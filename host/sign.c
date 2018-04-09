@@ -243,7 +243,7 @@ static OE_Result _InitSigstruct(
     uint16_t productID,
     uint16_t securityVersion,
     RSA* rsa,
-    OE_SGXSigStruct* sigstruct)
+    SGX_SigStruct* sigstruct)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -251,64 +251,64 @@ static OE_Result _InitSigstruct(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Zero-fill the structure */
-    memset(sigstruct, 0, sizeof(OE_SGXSigStruct));
+    memset(sigstruct, 0, sizeof(SGX_SigStruct));
 
-    /* OE_SGXSigStruct.header */
+    /* SGX_SigStruct.header */
     memcpy(
-        sigstruct->header, OE_SGX_SIGSTRUCT_HEADER, sizeof(sigstruct->header));
+        sigstruct->header, SGX_SIGSTRUCT_HEADER, sizeof(sigstruct->header));
 
-    /* OE_SGXSigStruct.type */
+    /* SGX_SigStruct.type */
     sigstruct->type = 0;
 
-    /* OE_SGXSigStruct.vendor */
+    /* SGX_SigStruct.vendor */
     sigstruct->vendor = 0;
 
-    /* OE_SGXSigStruct.date */
+    /* SGX_SigStruct.date */
     OE_TRY(_GetDate(&sigstruct->date));
 
-    /* OE_SGXSigStruct.header2 */
+    /* SGX_SigStruct.header2 */
     memcpy(
         sigstruct->header2,
-        OE_SGX_SIGSTRUCT_HEADER2,
+        SGX_SIGSTRUCT_HEADER2,
         sizeof(sigstruct->header2));
 
-    /* OE_SGXSigStruct.swdefined */
+    /* SGX_SigStruct.swdefined */
     sigstruct->swdefined = 0;
 
-    /* OE_SGXSigStruct.modulus */
+    /* SGX_SigStruct.modulus */
     OE_TRY(_GetModulus(rsa, sigstruct->modulus));
 
-    /* OE_SGXSigStruct.date */
+    /* SGX_SigStruct.date */
     OE_TRY(_GetExponent(rsa, sigstruct->exponent));
 
-    /* OE_SGXSigStruct.signature: fill in after other fields */
+    /* SGX_SigStruct.signature: fill in after other fields */
 
-    /* OE_SGXSigStruct.miscselect (ATTN: ?) */
-    sigstruct->miscselect = OE_SGX_SIGSTRUCT_MISCSELECT;
+    /* SGX_SigStruct.miscselect (ATTN: ?) */
+    sigstruct->miscselect = SGX_SIGSTRUCT_MISCSELECT;
 
-    /* OE_SGXSigStruct.miscmask (ATTN: ?) */
-    sigstruct->miscmask = OE_SGX_SIGSTRUCT_MISCMASK;
+    /* SGX_SigStruct.miscmask (ATTN: ?) */
+    sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK;
 
-    /* OE_SGXSigStruct.attributes */
+    /* SGX_SigStruct.attributes */
     sigstruct->attributes.flags = SGX_ATTRIBUTES_DEFAULT_FLAGS;
     sigstruct->attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
-    /* OE_SGXSigStruct.attributemask */
-    sigstruct->attributemask.flags = OE_SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS;
-    sigstruct->attributemask.xfrm = OE_SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM;
+    /* SGX_SigStruct.attributemask */
+    sigstruct->attributemask.flags = SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS;
+    sigstruct->attributemask.xfrm = SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM;
 
-    /* OE_SGXSigStruct.enclavehash */
+    /* SGX_SigStruct.enclavehash */
     memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
 
-    /* OE_SGXSigStruct.isvprodid */
+    /* SGX_SigStruct.isvprodid */
     sigstruct->isvprodid = productID;
 
-    /* OE_SGXSigStruct.isvsvn */
+    /* SGX_SigStruct.isvsvn */
     sigstruct->isvsvn = securityVersion;
 
     /* Sign header and body sections of SigStruct */
     {
-        unsigned char buf[sizeof(OE_SGXSigStruct)];
+        unsigned char buf[sizeof(SGX_SigStruct)];
         size_t n = 0;
 
         memcpy(buf, SGX_SigStructHeader(sigstruct), SGX_SigStructHeaderSize());
@@ -419,13 +419,13 @@ OE_Result OE_SignEnclave(
     uint16_t securityVersion,
     const char* pemData,
     size_t pemSize,
-    OE_SGXSigStruct* sigstruct)
+    SGX_SigStruct* sigstruct)
 {
     OE_Result result = OE_UNEXPECTED;
     RSA* rsa = NULL;
 
     if (sigstruct)
-        memset(sigstruct, 0, sizeof(OE_SGXSigStruct));
+        memset(sigstruct, 0, sizeof(SGX_SigStruct));
 
     /* Check parameters */
     if (!mrenclave || !sigstruct)

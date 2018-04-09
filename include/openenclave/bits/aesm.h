@@ -22,7 +22,7 @@ OE_Result AESMGetLaunchToken(
     AESM* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
-    const OE_SGXAttributes* attributes,
+    const SGX_Attributes* attributes,
     SGX_LaunchToken* launchToken);
 
 OE_Result AESMInitQuote(
