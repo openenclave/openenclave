@@ -888,13 +888,19 @@ OE_CATCH:
     return result;
 }
 
-static OE_EnclavePropertiesHeader* _FindEnclavePropertiesHeader(
+/* Find enclave property struct within an .oeinfo section */
+static OE_Result _FindEnclavePropertiesHeader(
     uint8_t* sectionData,
     size_t sectionSize,
-    OE_EnclaveType enclaveType)
+    OE_EnclaveType enclaveType,
+    size_t structSize,
+    OE_EnclavePropertiesHeader** headerOut)
 {
+    OE_Result result = OE_UNEXPECTED;
     uint8_t* p = sectionData;
     uint8_t* end = p + sectionSize;
+
+    *headerOut = NULL;
 
     /* While there are more enclave property structures */
     while (p < end)
@@ -902,13 +908,30 @@ static OE_EnclavePropertiesHeader* _FindEnclavePropertiesHeader(
         OE_EnclavePropertiesHeader* header = (OE_EnclavePropertiesHeader*)p;
 
         if (header->enclaveType == enclaveType)
-            return header;
+        {
+            /* Calculate bytes reamining */
+            size_t remaining = end - p;
+
+            /* Check structure size constraints */
+            if (remaining < structSize || header->size != structSize)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+            *headerOut = header;
+            result = OE_OK;
+            goto done;
+        }
 
         p += header->size;
     }
 
-    /* Not found */
-    return NULL;
+    /* Structure was not found */
+    result = OE_NOT_FOUND;
+
+done:
+    return result;
 }
 
 OE_Result OE_LoadEnclaveProperties_SGX(
@@ -939,14 +962,15 @@ OE_Result OE_LoadEnclaveProperties_SGX(
 
     /* Find SGX enclave property struct */
     {
-        const OE_EnclavePropertiesHeader* header;
+        OE_EnclavePropertiesHeader* header;
 
-        if (!(header = _FindEnclavePropertiesHeader(
+        if ((result = _FindEnclavePropertiesHeader(
             sectionData, 
             sectionSize, 
-            OE_ENCLAVE_TYPE_SGX)))
+            OE_ENCLAVE_TYPE_SGX,
+            sizeof(OE_EnclaveProperties_SGX),
+            &header)) != OE_OK)
         {
-            result = OE_NOT_FOUND;
             goto done;
         }
 
@@ -986,12 +1010,13 @@ OE_Result OE_UpdateEnclaveProperties_SGX(
     {
         OE_EnclavePropertiesHeader* header;
 
-        if (!(header = _FindEnclavePropertiesHeader(
+        if ((result = _FindEnclavePropertiesHeader(
             sectionData, 
             sectionSize, 
-            OE_ENCLAVE_TYPE_SGX)))
+            OE_ENCLAVE_TYPE_SGX,
+            sizeof(OE_EnclaveProperties_SGX),
+            &header)) != OE_OK)
         {
-            result = OE_NOT_FOUND;
             goto done;
         }
 
