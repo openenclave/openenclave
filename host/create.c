@@ -894,37 +894,37 @@ static OE_Result _FindEnclavePropertiesHeader(
     size_t sectionSize,
     OE_EnclaveType enclaveType,
     size_t structSize,
-    OE_EnclavePropertiesHeader** headerOut)
+    OE_EnclavePropertiesHeader** header)
 {
     OE_Result result = OE_UNEXPECTED;
     uint8_t* p = sectionData;
     uint8_t* end = p + sectionSize;
 
-    *headerOut = NULL;
+    *header = NULL;
 
     /* While there are more enclave property structures */
     while (p < end)
     {
-        OE_EnclavePropertiesHeader* header = (OE_EnclavePropertiesHeader*)p;
+        OE_EnclavePropertiesHeader* h = (OE_EnclavePropertiesHeader*)p;
 
-        if (header->enclaveType == enclaveType)
+        if (h->enclaveType == enclaveType)
         {
-            /* Calculate bytes reamining */
+            /* Calculate bytes reamining in section */
             size_t remaining = end - p;
 
-            /* Check structure size constraints */
-            if (remaining < structSize || header->size != structSize)
+            /* Check struct size constraints */
+            if (remaining < structSize || h->size != structSize)
             {
                 result = OE_FAILURE;
                 goto done;
             }
 
-            *headerOut = header;
+            *header = h;
             result = OE_OK;
             goto done;
         }
 
-        p += header->size;
+        p += h->size;
     }
 
     /* Structure was not found */
