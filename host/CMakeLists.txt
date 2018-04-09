@@ -14,7 +14,7 @@ set(PLATFORM_SRC
     linux/entersim.S
     linux/exception.c
     linux/hostthread.c
-    signsgx.c
+    linux/signsgx.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -24,6 +24,7 @@ set(PLATFORM_SRC
     windows/entersim.asm
     windows/exception.c
     windows/hostthread.c
+    windows/signsgx.c
     )
 endif()
 

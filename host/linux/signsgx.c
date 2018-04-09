@@ -4,7 +4,6 @@
 #define OE_TRACE_LEVEL 1
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/build.h>
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/mem.h>

@@ -722,7 +722,6 @@ static OE_Result _EInitProc(
         if (!(properties->config.attributes & SGX_FLAGS_DEBUG))
             OE_THROW(OE_FAILURE);
 
-#if defined(__linux__)
         /* The enclave is unsigned: sign it now with a well-known key */
         {
             OE_SHA256 hash;
@@ -737,10 +736,6 @@ static OE_Result _EInitProc(
                     OE_DEBUG_SIGN_KEY_SIZE,
                     &sigstruct));
         }
-#elif defined(_WIN32)
-        // ATTN: port sign.c to support auto-signing of debug enclaves.
-        OE_THROW(OE_FAILURE);
-#endif
     }
     else
     {

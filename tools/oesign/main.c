@@ -6,7 +6,6 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
-#include <openenclave/bits/error.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/sgxtypes.h>
@@ -19,14 +18,24 @@
 #include <openssl/rsa.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <stdarg.h>
 #include "../host/enclave.h"
 
 static const char* arg0;
 
-//
+OE_PRINTF_FORMAT(1, 2)
+void Err(const char* format, ...)
+{
+    fprintf(stderr, "%s: ", arg0);
+
+    va_list ap;
+    va_start(ap, format);
+    vfprintf(stderr, format, ap);
+    va_end(ap);
+}
+
 // Replace .so-extension with .signed.so. If there is no .so extension,
 // append .signed.so.
-//
 static char* _MakeSignedLibName(const char* path)
 {
     const char* p;
@@ -52,7 +61,7 @@ static int _UpdateAndWriteSharedLib(
     /* Open ELF file */
     if (Elf64_Load(path, &elf) != 0)
     {
-        fprintf(stderr, "%s: cannot load ELF file: %s\n", arg0, path);
+        Err("cannot load ELF file: %s\n", path);
         goto done;
     }
 
@@ -62,31 +71,31 @@ static int _UpdateAndWriteSharedLib(
 
         if (Elf64_FindSymbolByName(&elf, "OE_Main", &sym) != 0)
         {
-            fprintf(stderr, "%s: OE_Main() undefined\n", arg0);
+            Err("OE_Main() undefined");
             goto done;
         }
 
         if (Elf64_FindSymbolByName(&elf, "__oe_numPages", &sym) != 0)
         {
-            fprintf(stderr, "%s: __oe_numPages undefined\n", arg0);
+            Err("__oe_numPages() undefined");
             goto done;
         }
 
         if (Elf64_FindSymbolByName(&elf, "__oe_baseHeapPage", &sym) != 0)
         {
-            fprintf(stderr, "%s: __oe_baseHeapPage undefined\n", arg0);
+            Err("__oe_baseHeapPage() undefined");
             goto done;
         }
 
         if (Elf64_FindSymbolByName(&elf, "__oe_numHeapPages", &sym) != 0)
         {
-            fprintf(stderr, "%s: __oe_numHeapPages undefined\n", arg0);
+            Err("__oe_numHeapPages() undefined");
             goto done;
         }
 
         if (Elf64_FindSymbolByName(&elf, "__oe_virtualBaseAddr", &sym) != 0)
         {
-            fprintf(stderr, "%s: __oe_virtualBaseAddr undefined\n", arg0);
+            Err("__oe_virtualBaseAddr() undefined");
             goto done;
         }
     }
@@ -101,7 +110,7 @@ static int _UpdateAndWriteSharedLib(
                 properties,
                 sizeof(OE_EnclaveProperties_SGX)) != 0)
         {
-            fprintf(stderr, "%s: failed to add section\n", arg0);
+            Err("failed to add section: %s", OE_INFO_SECTION_NAME);
             goto done;
         }
     }
@@ -112,19 +121,19 @@ static int _UpdateAndWriteSharedLib(
 
         if (!p)
         {
-            fprintf(stderr, "%s: bad shared library name: %s\n", arg0, path);
+            Err("bad shared library name: %s", path);
             goto done;
         }
 
         if (!(os = fopen(p, "wb")))
         {
-            fprintf(stderr, "%s: failed to open: %s\n", arg0, p);
+            Err("failed to open: %s", p);
             goto done;
         }
 
         if (fwrite(elf.data, 1, elf.size, os) != elf.size)
         {
-            fprintf(stderr, "%s: failed to write: %s\n", arg0, p);
+            Err("failed to write: %s", p);
             goto done;
         }
 
@@ -194,7 +203,7 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
         if (str_split(&str, " \t=", &lhs, &rhs) != 0 || str_len(&lhs) == 0 ||
             str_len(&rhs) == 0)
         {
-            fprintf(stderr, "%s: %s(%zu): syntax error\n", arg0, path, line);
+            Err("%s(%zu): syntax error", path, line);
             goto done;
         }
 
@@ -205,12 +214,7 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
 
             if (str_u64(&rhs, &value) != 0)
             {
-                fprintf(
-                    stderr,
-                    "%s: %s(%zu): bad value for 'Debug'\n",
-                    arg0,
-                    path,
-                    line);
+                Err("%s(%zu): bad value for 'Debug'", path, line);
                 goto done;
             }
 
@@ -221,12 +225,7 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             if (str_u64(&rhs, &options->numHeapPages) != 0)
             {
-                fprintf(
-                    stderr,
-                    "%s: %s(%zu): bad value for 'NumHeapPages'\n",
-                    arg0,
-                    path,
-                    line);
+                Err("%s(%zu): bad value for 'NumHeapPages'", path, line);
                 goto done;
             }
         }
@@ -234,12 +233,7 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             if (str_u64(&rhs, &options->numStackPages) != 0)
             {
-                fprintf(
-                    stderr,
-                    "%s: %s(%zu): bad value for 'NumStackPages'\n",
-                    arg0,
-                    path,
-                    line);
+                Err("%s(%zu): bad value for 'NumStackPages'", path, line);
                 goto done;
             }
         }
@@ -247,12 +241,7 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             if (str_u64(&rhs, &options->numTCS) != 0)
             {
-                fprintf(
-                    stderr,
-                    "%s: %s(%zu): bad value for 'NumTCS'\n",
-                    arg0,
-                    path,
-                    line);
+                Err("%s(%zu): bad value for 'NumTCS'", path, line);
                 goto done;
             }
         }
@@ -260,12 +249,7 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             if (str_u16(&rhs, &options->productID) != 0)
             {
-                fprintf(
-                    stderr,
-                    "%s: %s(%zu): bad value for 'ProductID'\n",
-                    arg0,
-                    path,
-                    line);
+                Err("%s(%zu): bad value for 'ProductID'", path, line);
                 goto done;
             }
         }
@@ -273,24 +257,14 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             if (str_u16(&rhs, &options->securityVersion) != 0)
             {
-                fprintf(
-                    stderr,
-                    "%s: %s(%zu): bad value for 'SecurityVersion'\n",
-                    arg0,
-                    path,
-                    line);
+                Err("%s(%zu): bad value for 'SecurityVersion'", 
+                    path, line);
                 goto done;
             }
         }
         else
         {
-            fprintf(
-                stderr,
-                "%s: %s(%zu): unknown setting: '%s'\n",
-                arg0,
-                path,
-                line,
-                str_ptr(&rhs));
+            Err("%s(%zu): unknown setting: %s", path, line, str_ptr(&rhs));
             goto done;
         }
     }
@@ -404,7 +378,10 @@ int main(int argc, const char* argv[])
 
     /* Load the configuration file into the enclave properties */
     if (LoadConfigFile(conffile, &options) != 0)
-        OE_PutErr("failed to load configuration file: %s\n", conffile);
+    {
+        Err("failed to load configuration file: %s", conffile);
+        goto done;
+    }
 
     /* Initialize the enclave properties */
     {
@@ -424,22 +401,32 @@ int main(int argc, const char* argv[])
 
     /* Open the MEASURER to compute MRENCLAVE */
     if (!(dev = __OE_OpenSGXMeasurer()))
-        OE_PutErr("__OE_OpenSGXDriver() failed");
+    {
+        Err("__OE_OpenSGXDriver() failed");
+        goto done;
+    }
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     if ((result = __OE_BuildEnclave(
              dev, enclave, &props, false, false, &enc)) != OE_OK)
     {
-        OE_PutErr("__OE_BuildEnclave(): result=%u", result);
+        Err("__OE_BuildEnclave(): result=%u", result);
+        goto done;
     }
 
     /* Load private key into memory */
     if (_LoadFile(keyfile, &pemData, &pemSize) != 0)
-        OE_PutErr("Failed to load file: %s", keyfile);
+    {
+        Err("Failed to load file: %s", keyfile);
+        goto done;
+    }
 
     /* Get the MRENCLAVE value */
     if ((result = dev->gethash(dev, &mrenclave)) != OE_OK)
-        OE_PutErr("Failed to get hash: result=%u", result);
+    {
+        Err("Failed to get hash: result=%u", result);
+        goto done;
+    }
 
     /* Initialize the SigStruct object */
     if ((result = OE_SignEnclave_SGX(
@@ -450,19 +437,26 @@ int main(int argc, const char* argv[])
              pemSize,
              (SGX_SigStruct*)props.sigstruct)) != OE_OK)
     {
-        OE_PutErr("OE_SignEnclave() failed: result=%u", result);
+        Err("OE_SignEnclave() failed: result=%u", result);
+        goto done;
     }
 
     /* Create signature section and write out new file */
     if ((result = _UpdateAndWriteSharedLib(enclave, &props)) != OE_OK)
     {
-        OE_PutErr("_UpdateAndWriteSharedLib(): result=%u", result);
+        Err("_UpdateAndWriteSharedLib(): result=%u", result);
+        goto done;
     }
 
     ret = 0;
 
+done:
+
     if (dev)
         dev->close(dev);
+
+    if (pemData)
+        free(pemData);
 
     return ret;
 }
