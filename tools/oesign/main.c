@@ -449,7 +449,7 @@ int main(int argc, const char* argv[])
         OE_PutErr("Failed to get hash: result=%u", result);
 
     /* Initialize the SigStruct object */
-    if ((result = OE_SignEnclave(
+    if ((result = OE_SignEnclave_SGX(
              &mrenclave,
              props.config.productID,
              props.config.securityVersion,

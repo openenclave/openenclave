@@ -410,7 +410,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_SignEnclave(
+OE_Result OE_SignEnclave_SGX(
     const OE_SHA256* mrenclave,
     uint16_t productID,
     uint16_t securityVersion,

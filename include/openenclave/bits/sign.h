@@ -12,7 +12,7 @@
 OE_EXTERNC_BEGIN
 
 /**
-* Digitially sign the enclave with the given hash
+* Digitally sign the enclave with the given hash
 *
 * This function digitally signs the enclave whose hash is given by the
 * **mrenclave** parameter. The signing key is given by the **pemData**
@@ -26,7 +26,7 @@ OE_EXTERNC_BEGIN
 *
 * @return OE_OK success
 */
-OE_Result OE_SignEnclave(
+OE_Result OE_SignEnclave_SGX(
     const OE_SHA256* mrenclave,
     uint16_t productID,
     uint16_t securityVersion,

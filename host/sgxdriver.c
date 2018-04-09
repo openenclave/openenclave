@@ -777,7 +777,7 @@ static OE_Result _EInitProc(
             OE_TRY(self->measurer->gethash(self->measurer, &hash));
 
             OE_TRY(
-                OE_SignEnclave(
+                OE_SignEnclave_SGX(
                     &hash,
                     properties->config.productID,
                     properties->config.securityVersion,
