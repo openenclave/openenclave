@@ -98,6 +98,27 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
     return (uint64_t)s[0] | ((uint64_t)s[n - 1] << 8) | ((uint64_t)n << 16);
 }
 
+/**
+ * Acquire and Release memory barriers for open enclave.
+ *
+ * An acquire barrier prevents the memory reordering of any read which precedes
+ * it in program order with any read or write which follows it in program order.
+ * A release barrier prevents the memory reordering of any read or write which
+ * precedes it in program order with any write which follows it in program
+ * order.
+ *
+ * Barriers generally operate both at the compiler level as well as at the
+ * processor level. x86 is a strongly ordered platform and the acquire and
+ * release barriers do not generate any additional machine code. The act as
+ * bi-directionaly compiler barriers only.
+ * For more information see Release-Acquire ordering in
+ * http://en.cppreference.com/w/cpp/atomic/memory_order. For a deeper
+ * understanding see "C++ and the Perils of Double-Checked Locking"
+ * http://www.aristeia.com/Papers/DDJ_Jul_Aug_2004_revised.pdf.
+*/
+#define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() asm volatile("" ::: "memory")
+#define OE_ATOMIC_MEMORY_BARRIER_RELEASE() asm volatile("" ::: "memory")
+
 OE_EXTERNC_END
 
 #endif /* _OE_UTILS_H */
