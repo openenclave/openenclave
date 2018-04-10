@@ -263,7 +263,7 @@ OE_Result AESMGetLaunchToken(
     AESM* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
-    const OE_SGXAttributes* attributes,
+    const SGX_Attributes* attributes,
     SGX_LaunchToken* launchToken)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -285,7 +285,7 @@ OE_Result AESMGetLaunchToken(
         modulus,                  /* public_key */
         OE_KEY_SIZE,              /* public_key_size */
         (PUINT8)attributes,       /* se_attributes */
-        sizeof(OE_SGXAttributes), /* se_attributes_size */
+        sizeof(SGX_Attributes), /* se_attributes_size */
         (PUINT8)launchToken,      /* lictoken */
         /* MSR-SDK passes sizeof(SGX_EInitToken) */
         sizeof(SGX_EInitToken), /* lictoken_size */
