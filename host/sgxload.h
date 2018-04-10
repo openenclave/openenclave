@@ -14,12 +14,12 @@ OE_EXTERNC_BEGIN
 
 OE_INLINE bool OE_IsContextSimulation(OE_SgxLoadContext* context)
 {
-    return (context && (context->attributes & OE_FLAG_SIMULATE));
+    return (context && (context->attributes & OE_ENCLAVE_FLAG_SIMULATE));
 }
 
 OE_INLINE bool OE_IsContextDebug(OE_SgxLoadContext* context)
 {
-    return (context && (context->attributes & OE_FLAG_DEBUG));
+    return (context && (context->attributes & OE_ENCLAVE_FLAG_DEBUG));
 }
 
 /*

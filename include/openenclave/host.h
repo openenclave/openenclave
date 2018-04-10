@@ -28,14 +28,10 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_Enclave OE_Enclave;
 
-#define OE_FLAG_DEBUG 0x00000001
-#define OE_FLAG_SIMULATE 0x00000002
-#define OE_FLAG_RESERVED (~(OE_FLAG_DEBUG | OE_FLAG_SIMULATE))
-
-typedef enum _OE_EnclaveType {
-    OE_TYPE_UNDEFINED,
-    OE_TYPE_SGX,
-} OE_EnclaveType;
+#define OE_ENCLAVE_FLAG_DEBUG 0x00000001
+#define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
+#define OE_ENCLAVE_FLAG_RESERVED \
+    (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SIMULATE))
 
 /**
  * Creates an enclave from an enclave image file.
@@ -48,11 +44,11 @@ typedef enum _OE_EnclaveType {
  * **oesign** tool.
  *
  * @param type The type of enclave supported by the enclave image file.
- *     - OE_TYPE_SGX - An SGX enclave
+ *     - OE_ENCLAVE_TYPE_SGX - An SGX enclave
  *
  * @param flags These flags control how the enclave is run.
- *     - OE_FLAG_DEBUG - runs the enclave in debug mode
- *     - OE_FLAG_SIMULATE - runs the enclave in simulation mode
+ *     - OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode
+ *     - OE_ENCLAVE_FLAG_SIMULATE - runs the enclave in simulation mode
  *
  * @param config Additional enclave creation configuration data for the specific
  * enclave type. This parameter is reserved and must be NULL.

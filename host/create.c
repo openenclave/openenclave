@@ -1133,8 +1133,8 @@ OE_Result OE_CreateEnclave(
         *enclaveOut = NULL;
 
     /* Check parameters */
-    if (!enclavePath || !enclaveOut || enclaveType != OE_TYPE_SGX ||
-        (flags & OE_FLAG_RESERVED) || config || configSize > 0)
+    if (!enclavePath || !enclaveOut || enclaveType != OE_ENCLAVE_TYPE_SGX ||
+        (flags & OE_ENCLAVE_FLAG_RESERVED) || config || configSize > 0)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Allocate and zero-fill the enclave structure */

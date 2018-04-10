@@ -34,7 +34,8 @@ struct EnclaveWrap
         OE_Result result;
 
         if ((result = OE_CreateEnclave(
-                 enclavePath, OE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+                 enclavePath, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+            OE_OK)
         {
             OE_PutErr("OE_CreateEnclave(): result=%u", result);
             throw std::runtime_error("OE_CreateEnclave() failed");

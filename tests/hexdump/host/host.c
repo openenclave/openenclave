@@ -145,7 +145,9 @@ int main(int argc, const char* argv[])
 
     /* Create the enclave */
     const uint32_t flags = OE_GetCreateFlags();
-    OE_TEST((result = OE_CreateEnclave(argv[1], flags, &enclave)) == OE_OK);
+    OE_TEST(
+        (result = OE_CreateEnclave(
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) == OE_OK);
 
     /* Check buffer sizes */
     {

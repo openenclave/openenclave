@@ -19,7 +19,7 @@ static OE_Result InitializeContext(OE_SgxLoadContext* context)
 #else
     const OE_SgxLoadType type = OE_SGXLOAD_CREATE;
 #endif
-    return _InitializeLoadContext(context, type, OE_FLAG_DEBUG);
+    return _InitializeLoadContext(context, type, OE_ENCLAVE_FLAG_DEBUG);
 }
 
 static const OE_EnclaveSettings* GetEnclaveSettings()

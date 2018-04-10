@@ -72,11 +72,11 @@ int main(int argc, const char* argv[])
 {
     OE_Result result;
     OE_Enclave* enclave = NULL;
-    uint32_t flags = OE_FLAG_DEBUG;
+    uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
 
     // Check for the --sim option:
     if (_GetOpt(argc, argv, "--simulate") == 1)
-        flags |= OE_FLAG_SIMULATE;
+        flags |= OE_ENCLAVE_FLAG_SIMULATE;
     else
         flags = OE_GetCreateFlags();
 
@@ -91,7 +91,7 @@ int main(int argc, const char* argv[])
 
     // Create the enclave:
     if ((result = OE_CreateEnclave(
-             argv[1], OE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
     // Register to handle OCALL_EXIT from tests.

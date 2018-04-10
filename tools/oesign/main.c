@@ -766,8 +766,8 @@ int main(int argc, const char* argv[])
         OE_PutErr("failed to load configuration file: %s\n", conffile);
 
     /* Initialize the context paramters for measurement only */
-    if (_InitializeLoadContext(&context, OE_SGXLOAD_MEASURE, OE_FLAG_DEBUG) !=
-        OE_OK)
+    if (_InitializeLoadContext(
+            &context, OE_SGXLOAD_MEASURE, OE_ENCLAVE_FLAG_DEBUG) != OE_OK)
         OE_PutErr("_InitializeLoadContext() failed");
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
