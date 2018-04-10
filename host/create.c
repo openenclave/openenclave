@@ -916,16 +916,21 @@ static OE_Result _FindEnclavePropertiesHeader(
                 goto done;
             }
 
+            /* Found it! */
             *header = h;
-            result = OE_OK;
-            goto done;
+            break;
         }
 
         p += h->size;
     }
 
-    /* Structure was not found */
-    result = OE_NOT_FOUND;
+    if (*header == NULL)
+    {
+        result = OE_NOT_FOUND;
+        goto done;
+    }
+
+    result = OE_OK;
 
 done:
     return result;
