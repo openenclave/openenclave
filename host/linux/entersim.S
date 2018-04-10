@@ -81,7 +81,7 @@ OE_EnterSim:
     mov 72(%rbx), %rdx  // RDX=TCS.u.main (72)
     mov ARG1, %rdi
     mov ARG2, %rsi
-    lea .retaddr, %rcx
+    lea .retaddr(%rip), %rcx
     jmp *%rdx
 .retaddr:
     mov %rdi, ARG1OUT
