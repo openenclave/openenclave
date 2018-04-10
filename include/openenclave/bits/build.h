@@ -84,24 +84,23 @@ OE_Result OE_UpdateEnclaveProperties_SGX(
     const OE_EnclaveProperties_SGX* properties);
 
 /**
- * Validate the values of an SGX enclave properties structure
+ * Validate certain fields of an SGX enclave properties structure.
  *
- * This function checks whether any of the SGX enclave properties have
- * invalid values. If so the **errorMessage** output parameter points
- * to a static error message that identifies the invalid property and
- * any additional information.
+ * This function checks whether certain fields of the SGX enclave properties 
+ * structure have invalid values. If so the **fieldName** output parameter 
+ * points to the name of the first field with an invalid value.
  *
  * @param properties SGX enclave properties
- * @param errorMessage[output] static error message
+ * @param fieldName[output] name of first invalid field (may be null)
  *
  * @returns OE_OK
  * @returns OE_INVALID_PARAMETER a parameter is null
- * @returns OE_FAILURE at least one property is invalid
+ * @returns OE_FAILURE at least one field is invalid
  *
  */
 OE_Result OE_ValidateEnclaveProperties_SGX(
     const OE_EnclaveProperties_SGX* properties,
-    const char** errorMessage);
+    const char** fieldName);
 
 OE_EXTERNC_END
 

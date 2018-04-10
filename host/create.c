@@ -1034,12 +1034,12 @@ done:
 
 OE_Result OE_ValidateEnclaveProperties_SGX(
     const OE_EnclaveProperties_SGX* properties,
-    const char** errorMessage)
+    const char** fieldName)
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (errorMessage)
-        *errorMessage = NULL;
+    if (fieldName)
+        *fieldName = NULL;
 
     /* Check for null parameters */
     if (!properties)
@@ -1050,48 +1050,48 @@ OE_Result OE_ValidateEnclaveProperties_SGX(
 
     if (!OE_ValidAttributes(properties->config.attributes))
     {
-        if (errorMessage)
-            *errorMessage = "config.attributes";
+        if (fieldName)
+            *fieldName = "config.attributes";
         result = OE_FAILURE;
         goto done;
     }
 
     if (!OE_ValidNumHeapPages(properties->header.sizeSettings.numHeapPages))
     {
-        if (errorMessage)
-            *errorMessage = "header.sizeSettings.numHeapPages";
+        if (fieldName)
+            *fieldName = "header.sizeSettings.numHeapPages";
         result = OE_FAILURE;
         goto done;
     }
 
     if (!OE_ValidNumStackPages(properties->header.sizeSettings.numStackPages))
     {
-        if (errorMessage)
-            *errorMessage = "sizeSettings.numStackPages";
+        if (fieldName)
+            *fieldName = "header.sizeSettings.numStackPages";
         result = OE_FAILURE;
         goto done;
     }
 
     if (!OE_ValidNumTCS(properties->header.sizeSettings.numTCS))
     {
-        if (errorMessage)
-            *errorMessage = "sizeSettings.numTCS";
+        if (fieldName)
+            *fieldName = "header.sizeSettings.numTCS";
         result = OE_FAILURE;
         goto done;
     }
 
     if (!OE_ValidProductID(properties->config.productID))
     {
-        if (errorMessage)
-            *errorMessage = "config.productID";
+        if (fieldName)
+            *fieldName = "config.productID";
         result = OE_FAILURE;
         goto done;
     }
 
     if (!OE_ValidSecurityVersion(properties->config.productID))
     {
-        if (errorMessage)
-            *errorMessage = "config.securityVersion";
+        if (fieldName)
+            *fieldName = "config.securityVersion";
         result = OE_FAILURE;
         goto done;
     }

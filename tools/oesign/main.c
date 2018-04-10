@@ -522,11 +522,11 @@ int main(int argc, const char* argv[])
 
     /* Check whether enclave properties are valid */
     {
-        const char* errorMessage;
+        const char* fieldName;
 
-        if (OE_ValidateEnclaveProperties_SGX(&props, &errorMessage) != OE_OK)
+        if (OE_ValidateEnclaveProperties_SGX(&props, &fieldName) != OE_OK)
         {
-            Err("invalid enclave property value: %s", errorMessage);
+            Err("invalid enclave property value: %s", fieldName);
             goto done;
         }
     }
