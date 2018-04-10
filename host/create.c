@@ -26,6 +26,7 @@
 #include <openenclave/bits/files.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/mem.h>
+#include <openenclave/bits/properties.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
@@ -1046,99 +1047,50 @@ OE_Result OE_ValidateEnclaveProperties_SGX(
         goto done;
     }
 
-    /* Check for illegal bits in the attributes */
-    {
-        const uint64_t mask = OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT;
-
-        if (properties->config.attributes & ~mask)
-        {
-            if (errorMessage)
-                *errorMessage = "config.attributes: illegal bits";
-            result = OE_FAILURE;
-            goto done;
-        }
-    }
-
-    /* Check for missing MODE64BIT */
-    if (!(properties->config.attributes & OE_SGX_FLAGS_MODE64BIT))
+    if (!OE_ValidAttributes(properties->config.attributes))
     {
         if (errorMessage)
-            *errorMessage = "config.attributes: missing MODE64BIT";
-
+            *errorMessage = "config.attributes";
         result = OE_FAILURE;
         goto done;
     }
 
-    /* Check for invalid NumHeapPages */
-    if (properties->header.sizeSettings.numHeapPages == 0)
+    if (!OE_ValidNumHeapPages(properties->header.sizeSettings.numHeapPages))
     {
         if (errorMessage)
-            *errorMessage = "header.sizeSettings.numHeapPages: zero-valued";
-
-        result = OE_FAILURE;
-        goto done;
-    }
-    else if (properties->header.sizeSettings.numHeapPages == OE_MAX_UINT64)
-    {
-        if (errorMessage)
-            *errorMessage = "header.sizeSettings.numHeapPages: max-valued";
-
+            *errorMessage = "header.sizeSettings.numHeapPages";
         result = OE_FAILURE;
         goto done;
     }
 
-    /* Check for invalid NumStackPages */
-    if (properties->header.sizeSettings.numStackPages == 0)
+    if (!OE_ValidNumStackPages(properties->header.sizeSettings.numStackPages))
     {
         if (errorMessage)
-            *errorMessage = "header.sizeSettings.numStackPages: zero-valued";
-
-        result = OE_FAILURE;
-        goto done;
-    }
-    else if (properties->header.sizeSettings.numStackPages == OE_MAX_UINT64)
-    {
-        if (errorMessage)
-            *errorMessage = "header.sizeSettings.numStackPages: max-valued";
-
+            *errorMessage = "sizeSettings.numStackPages";
         result = OE_FAILURE;
         goto done;
     }
 
-    /* Check for invalid NumTCS */
-    if (properties->header.sizeSettings.numTCS == 0)
+    if (!OE_ValidNumTCS(properties->header.sizeSettings.numTCS))
     {
         if (errorMessage)
-            *errorMessage = "header.sizeSettings.numTCS: zero-valued";
-
-        result = OE_FAILURE;
-        goto done;
-    }
-    else if (properties->header.sizeSettings.numTCS == OE_MAX_UINT64)
-    {
-        if (errorMessage)
-            *errorMessage = "header.sizeSettings.numTCS: max-valued";
-
+            *errorMessage = "sizeSettings.numTCS";
         result = OE_FAILURE;
         goto done;
     }
 
-    /* Check for invalid ProductID */
-    if (properties->config.productID == OE_MAX_UINT16)
+    if (!OE_ValidProductID(properties->config.productID))
     {
         if (errorMessage)
-            *errorMessage = "config.productID: max-valued";
-
+            *errorMessage = "config.productID";
         result = OE_FAILURE;
         goto done;
     }
 
-    /* Check for invalid SecurityVersion */
-    if (properties->config.securityVersion == OE_MAX_UINT16)
+    if (!OE_ValidSecurityVersion(properties->config.productID))
     {
         if (errorMessage)
-            *errorMessage = "config.securityVersion: max-valued";
-
+            *errorMessage = "config.securityVersion";
         result = OE_FAILURE;
         goto done;
     }

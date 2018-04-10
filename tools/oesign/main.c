@@ -3,9 +3,10 @@
 
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
+#include <openenclave/bits/mem.h>
+#include <openenclave/bits/properties.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/signsgx.h>
-#include <openenclave/bits/mem.h>
 #include <openenclave/bits/str.h>
 #include <stdarg.h>
 #include <sys/stat.h>
@@ -226,7 +227,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0 || n == 0 || n == OE_MAX_UINT64)
+            if (str_u64(&rhs, &n) != 0 || !OE_ValidNumHeapPages(n))
             {
                 Err("%s(%zu): bad value for 'NumHeapPages'", path, line);
                 goto done;
@@ -238,7 +239,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0 || n == 0 || n == OE_MAX_UINT64)
+            if (str_u64(&rhs, &n) != 0 || !OE_ValidNumStackPages(n))
             {
                 Err("%s(%zu): bad value for 'NumStackPages'", path, line);
                 goto done;
@@ -250,7 +251,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0 || n == 0 || n == OE_MAX_UINT64)
+            if (str_u64(&rhs, &n) != 0 || !OE_ValidNumTCS(n))
             {
                 Err("%s(%zu): bad value for 'NumTCS'", path, line);
                 goto done;
@@ -262,7 +263,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint16_t n;
 
-            if (str_u16(&rhs, &n) != 0 || n == OE_MAX_UINT64)
+            if (str_u16(&rhs, &n) != 0 || !OE_ValidProductID(n))
             {
                 Err("%s(%zu): bad value for 'ProductID'", path, line);
                 goto done;
@@ -274,7 +275,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint16_t n;
 
-            if (str_u16(&rhs, &n) != 0 || n == OE_MAX_UINT64)
+            if (str_u16(&rhs, &n) != 0 || !OE_ValidSecurityVersion(n))
             {
                 Err("%s(%zu): bad value for 'SecurityVersion'", path, line);
                 goto done;
