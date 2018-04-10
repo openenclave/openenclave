@@ -160,11 +160,22 @@ done:
 typedef struct _ConfigFileOptions
 {
     bool debug;
+    bool debugFound;
+
     uint64_t numHeapPages;
+    bool numHeapPagesFound;
+
     uint64_t numStackPages;
+    bool numStackPagesFound;
+
     uint64_t numTCS;
+    bool numTCSFound;
+
     uint16_t productID;
+    bool productIDFound;
+
     uint16_t securityVersion;
+    bool securityVersionFound;
 } ConfigFileOptions;
 
 int LoadConfigFile(const char* path, ConfigFileOptions* options)
@@ -220,6 +231,8 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
 
             if (value)
                 options->debug = true;
+
+            options->debugFound = true;
         }
         else if (strcmp(str_ptr(&lhs), "NumHeapPages") == 0)
         {
@@ -228,6 +241,8 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
                 Err("%s(%zu): bad value for 'NumHeapPages'", path, line);
                 goto done;
             }
+
+            options->numHeapPagesFound = true;
         }
         else if (strcmp(str_ptr(&lhs), "NumStackPages") == 0)
         {
@@ -236,6 +251,8 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
                 Err("%s(%zu): bad value for 'NumStackPages'", path, line);
                 goto done;
             }
+
+            options->numStackPagesFound = true;
         }
         else if (strcmp(str_ptr(&lhs), "NumTCS") == 0)
         {
@@ -244,6 +261,8 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
                 Err("%s(%zu): bad value for 'NumTCS'", path, line);
                 goto done;
             }
+
+            options->numTCSFound = true;
         }
         else if (strcmp(str_ptr(&lhs), "ProductID") == 0)
         {
@@ -252,6 +271,8 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
                 Err("%s(%zu): bad value for 'ProductID'", path, line);
                 goto done;
             }
+
+            options->productIDFound = true;
         }
         else if (strcmp(str_ptr(&lhs), "SecurityVersion") == 0)
         {
@@ -261,6 +282,8 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
                     path, line);
                 goto done;
             }
+
+            options->securityVersionFound = true;
         }
         else
         {
@@ -460,3 +483,5 @@ done:
 
     return ret;
 }
+
+err;
