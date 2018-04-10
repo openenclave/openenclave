@@ -239,6 +239,7 @@ OE_CATCH:
 
 static OE_Result _InitSigstruct(
     const OE_SHA256* mrenclave,
+    uint64_t attributes,
     uint16_t productID,
     uint16_t securityVersion,
     RSA* rsa,
@@ -286,7 +287,7 @@ static OE_Result _InitSigstruct(
     sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK;
 
     /* SGX_SigStruct.attributes */
-    sigstruct->attributes.flags = SGX_ATTRIBUTES_DEFAULT_FLAGS;
+    sigstruct->attributes.flags = attributes;
     sigstruct->attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
     /* SGX_SigStruct.attributemask */
@@ -406,6 +407,7 @@ OE_CATCH:
 
 OE_Result OE_SignEnclave_SGX(
     const OE_SHA256* mrenclave,
+    uint64_t attributes,
     uint16_t productID,
     uint16_t securityVersion,
     const char* pemData,
@@ -427,7 +429,7 @@ OE_Result OE_SignEnclave_SGX(
 
     /* Initialize the sigstruct */
     OE_TRY(
-        _InitSigstruct(mrenclave, productID, securityVersion, rsa, sigstruct));
+        _InitSigstruct(mrenclave, attributes, productID, securityVersion, rsa, sigstruct));
 
     result = OE_OK;
 

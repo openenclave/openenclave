@@ -454,6 +454,7 @@ int main(int argc, const char* argv[])
     /* Initialize the SigStruct object */
     if ((result = OE_SignEnclave_SGX(
              &mrenclave,
+             props.config.attributes,
              props.config.productID,
              props.config.securityVersion,
              pemData,

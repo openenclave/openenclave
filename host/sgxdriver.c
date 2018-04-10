@@ -730,6 +730,7 @@ static OE_Result _EInitProc(
             OE_TRY(
                 OE_SignEnclave_SGX(
                     &hash,
+                    properties->config.attributes,
                     properties->config.productID,
                     properties->config.securityVersion,
                     OE_DEBUG_SIGN_KEY,
