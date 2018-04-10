@@ -900,11 +900,12 @@ static OE_Result _FindEnclavePropertiesHeader(
     OE_Result result = OE_UNEXPECTED;
     uint8_t* p = sectionData;
     uint8_t* end = p + sectionSize;
+    size_t r = end - p;
 
     *header = NULL;
 
     /* While there are more enclave property structures */
-    while (end - p >= structSize)
+    while (r >= structSize)
     {
         OE_EnclavePropertiesHeader* h = (OE_EnclavePropertiesHeader*)p;
 
@@ -922,6 +923,7 @@ static OE_Result _FindEnclavePropertiesHeader(
         }
 
         p += h->size;
+        r -= h->size;
     }
 
     if (*header == NULL)
@@ -1259,7 +1261,7 @@ OE_Result __OE_BuildEnclave(
     {
         OE_STATIC_ASSERT(
             OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, SigStruct) ==
-            sizeof(props.sigstruct));
+            sizeof(enclave->properties.sigstruct));
     }
 #endif
 
