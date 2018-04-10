@@ -2505,10 +2505,8 @@
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char_unshift.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/utf_sanity_check.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_always_noconv.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_encoding.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_in.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_length.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_max_length.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_out.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_unshift.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.virtuals/tested_elsewhere.pass.cpp
@@ -3914,6 +3912,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/strings/string.conversions/stoull.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/string.conversions/stoul.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/string.conversions/to_string.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/strings/string.conversions/to_wstring.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/strings.general/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/string.view/string.view.access/at.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/string.view/string.view.access/back.pass.cpp
