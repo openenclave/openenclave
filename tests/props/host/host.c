@@ -82,8 +82,8 @@ int main(int argc, const char* argv[])
         _CheckProperties(
             &enclave->properties,
             isSigned,
-            0,                                           /* productID */
-            0,                                           /* securityVersion */
+            1111,                                        /* productID */
+            2222,                                        /* securityVersion */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
             2048,                                        /* numHeapPages  */
             1024,                                        /* numStackPages */
