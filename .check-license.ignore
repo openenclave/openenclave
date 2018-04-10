@@ -59,3 +59,4 @@ VERSION
 ./prereqs/packages/.packages
 ./doc/refman/md/*.dump
 ./3rdparty/LICENSES
+./tests/ecall_ocall/crc32.cpp
