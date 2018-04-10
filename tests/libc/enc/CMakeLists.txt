@@ -13,16 +13,7 @@ add_library(libctest-support
     tls_align_dso.c
     )
 target_compile_options(libctest-support PRIVATE
-    -Wno-error=attributes
-    -Wno-error=overflow
-    -Wno-error=maybe-uninitialized
-    -Wno-error=missing-braces
-    -Wno-error=strict-overflow
-    -Wno-error=unused-but-set-variable
-    -Wno-error=unused-function
-    -Wno-error=unused-local-typedefs
-    -Wno-error=unused-value
-    -Wno-error=unused-variable
+    -Wno-error
     )
 target_link_libraries(libctest-support PUBLIC oelibc)
 
@@ -37,10 +28,7 @@ function(add_libc_test_enc NAME CFILE)
         ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common
         )
     target_compile_options(libctest-${NAME} PRIVATE
-        -Wno-error=missing-braces
-        -Wno-error=overflow
-        -Wno-error=unused-value
-        -Wno-error=unused-variable
+        -Wno-error
         )
     target_compile_definitions(libctest-${NAME} PRIVATE -D__TEST__="${CFILE}")
     target_link_libraries(libctest-${NAME} libctest-support)
