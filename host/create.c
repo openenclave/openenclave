@@ -904,17 +904,13 @@ static OE_Result _FindEnclavePropertiesHeader(
     *header = NULL;
 
     /* While there are more enclave property structures */
-    while (p < end)
+    while (end - p >= structSize)
     {
         OE_EnclavePropertiesHeader* h = (OE_EnclavePropertiesHeader*)p;
 
         if (h->enclaveType == enclaveType)
         {
-            /* Calculate bytes reamining in section */
-            size_t remaining = end - p;
-
-            /* Check struct size constraints */
-            if (remaining < structSize || h->size != structSize)
+            if (h->size != structSize)
             {
                 result = OE_FAILURE;
                 goto done;
