@@ -922,6 +922,10 @@ static OE_Result _FindEnclavePropertiesHeader(
             break;
         }
 
+        /* If size of structure extends beyond end of section */
+        if (h->size > r)
+            break;
+
         p += h->size;
         r -= h->size;
     }
