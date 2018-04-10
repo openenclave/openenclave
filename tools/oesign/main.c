@@ -1,24 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 1
-#include <openenclave/bits/aesm.h>
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/mem.h>
-#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/signsgx.h>
+#include <openenclave/bits/mem.h>
 #include <openenclave/bits/str.h>
-#include <openenclave/bits/trace.h>
-#include <openenclave/host.h>
-#include <openssl/bn.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <sys/stat.h>
-#include <time.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 #include "../host/enclave.h"
 
 static const char* arg0;
@@ -32,6 +22,8 @@ void Err(const char* format, ...)
     va_start(ap, format);
     vfprintf(stderr, format, ap);
     va_end(ap);
+
+    fprintf(stderr, "\n");
 }
 
 // Replace .so-extension with .signed.so. If there is no .so extension,
@@ -61,7 +53,7 @@ static int _UpdateAndWriteSharedLib(
     /* Open ELF file */
     if (Elf64_Load(path, &elf) != 0)
     {
-        Err("cannot load ELF file: %s\n", path);
+        Err("cannot load ELF file: %s", path);
         goto done;
     }
 
@@ -101,7 +93,8 @@ static int _UpdateAndWriteSharedLib(
     }
 
     // Update or create a new .oeinfo section.
-    if (OE_UpdateEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
+    if (OE_UpdateEnclaveProperties_SGX(
+            &elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
         if (Elf64_AddSection(
                 &elf,
@@ -159,7 +152,7 @@ done:
 
 typedef struct _ConfigFileOptions
 {
-    bool debug;
+    uint64_t debug;
     uint64_t numHeapPages;
     uint64_t numStackPages;
     uint64_t numTCS;
@@ -167,7 +160,7 @@ typedef struct _ConfigFileOptions
     uint16_t securityVersion;
 } ConfigFileOptions;
 
-int LoadConfigFile(const char* path, ConfigFileOptions* options)
+static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -176,6 +169,14 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
     str_t lhs = STR_NULL_INIT;
     str_t rhs = STR_NULL_INIT;
     size_t line = 1;
+
+    /* Set all fields to the uninitialized value */
+    options->debug = OE_MAX_UINT64;
+    options->numHeapPages = OE_MAX_UINT64;
+    options->numStackPages = OE_MAX_UINT64;
+    options->numTCS = OE_MAX_UINT64;
+    options->productID = OE_MAX_UINT16;
+    options->securityVersion = OE_MAX_UINT16;
 
     if (!(is = fopen(path, "rb")))
         goto done;
@@ -210,57 +211,76 @@ int LoadConfigFile(const char* path, ConfigFileOptions* options)
         /* Handle each setting */
         if (strcmp(str_ptr(&lhs), "Debug") == 0)
         {
-            uint64_t value = 0;
+            uint64_t value;
 
-            if (str_u64(&rhs, &value) != 0)
+            // Debug must be 0 or 1
+            if (str_u64(&rhs, &value) != 0 || (value != 0 && value != 1))
             {
                 Err("%s(%zu): bad value for 'Debug'", path, line);
                 goto done;
             }
 
-            if (value)
-                options->debug = true;
+            options->debug = value;
         }
         else if (strcmp(str_ptr(&lhs), "NumHeapPages") == 0)
         {
-            if (str_u64(&rhs, &options->numHeapPages) != 0)
+            uint64_t n;
+
+            if (str_u64(&rhs, &n) != 0 || n == 0 || n == OE_MAX_UINT64)
             {
                 Err("%s(%zu): bad value for 'NumHeapPages'", path, line);
                 goto done;
             }
+
+            options->numHeapPages = n;
         }
         else if (strcmp(str_ptr(&lhs), "NumStackPages") == 0)
         {
-            if (str_u64(&rhs, &options->numStackPages) != 0)
+            uint64_t n;
+
+            if (str_u64(&rhs, &n) != 0 || n == 0 || n == OE_MAX_UINT64)
             {
                 Err("%s(%zu): bad value for 'NumStackPages'", path, line);
                 goto done;
             }
+
+            options->numStackPages = n;
         }
         else if (strcmp(str_ptr(&lhs), "NumTCS") == 0)
         {
-            if (str_u64(&rhs, &options->numTCS) != 0)
+            uint64_t n;
+
+            if (str_u64(&rhs, &n) != 0 || n == 0 || n == OE_MAX_UINT64)
             {
                 Err("%s(%zu): bad value for 'NumTCS'", path, line);
                 goto done;
             }
+
+            options->numTCS = n;
         }
         else if (strcmp(str_ptr(&lhs), "ProductID") == 0)
         {
-            if (str_u16(&rhs, &options->productID) != 0)
+            uint16_t n;
+
+            if (str_u16(&rhs, &n) != 0 || n == OE_MAX_UINT64)
             {
                 Err("%s(%zu): bad value for 'ProductID'", path, line);
                 goto done;
             }
+
+            options->productID = n;
         }
         else if (strcmp(str_ptr(&lhs), "SecurityVersion") == 0)
         {
-            if (str_u16(&rhs, &options->securityVersion) != 0)
+            uint16_t n;
+
+            if (str_u16(&rhs, &n) != 0 || n == OE_MAX_UINT64)
             {
-                Err("%s(%zu): bad value for 'SecurityVersion'", 
-                    path, line);
+                Err("%s(%zu): bad value for 'SecurityVersion'", path, line);
                 goto done;
             }
+
+            options->securityVersion = n;
         }
         else
         {
@@ -342,6 +362,108 @@ done:
     return rc;
 }
 
+// Load the SGX enclave properties from an enclave's .oeinfo section.
+static OE_Result _LoadEnclaveProperties_SGX(
+    const char* path,
+    OE_EnclaveProperties_SGX* properties)
+{
+    OE_Result result = OE_UNEXPECTED;
+    Elf64 elf = ELF64_INIT;
+
+    if (properties)
+        memset(properties, 0, sizeof(OE_EnclaveProperties_SGX));
+
+    /* Check parameters */
+    if (!path || !properties)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Load the ELF image */
+    if (Elf64_Load(path, &elf) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Load the SGX enclave properties */
+    if (OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, properties) !=
+        OE_OK)
+    {
+        OE_RAISE(OE_NOT_FOUND);
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (elf.magic == ELF_MAGIC)
+        Elf64_Unload(&elf);
+
+    return result;
+}
+
+/* Merge configuration file options into enclave properties */
+void _MergeConfigFileOptions(
+    OE_EnclaveProperties_SGX* properties,
+    const char* path,
+    const ConfigFileOptions* options)
+{
+    bool initialized = false;
+
+    /* Determine whether the properties are already initialized */
+    if (properties->header.size == sizeof(OE_EnclaveProperties_SGX))
+        initialized = true;
+
+    /* Initialize properties if not already initialized */
+    if (!initialized)
+    {
+        properties->header.size = sizeof(OE_EnclaveProperties_SGX);
+        properties->header.enclaveType = OE_ENCLAVE_TYPE_SGX;
+        properties->config.attributes = SGX_FLAGS_MODE64BIT;
+    }
+
+    /* If Debug option is present */
+    if (options->debug != OE_MAX_UINT64)
+    {
+        /* If properties were already initialized on function entry */
+        if (initialized)
+        {
+            /* Override enclave properties debug option */
+            if (properties->config.attributes & OE_SGX_FLAGS_DEBUG)
+            {
+                if (!options->debug)
+                    properties->config.attributes &= ~OE_SGX_FLAGS_DEBUG;
+            }
+            else if (options->debug)
+            {
+                Err("%s: attempt to downgrade enclave properties "
+                    "from non-debug mode to debug mode",
+                    path);
+            }
+        }
+        else
+        {
+            properties->config.attributes |= OE_SGX_FLAGS_DEBUG;
+        }
+    }
+
+    /* If ProductID option is present */
+    if (options->productID != OE_MAX_UINT16)
+        properties->config.productID = options->productID;
+
+    /* If SecurityVersion option is present */
+    if (options->securityVersion != OE_MAX_UINT16)
+        properties->config.securityVersion = options->securityVersion;
+
+    /* If NumHeapPages option is present */
+    if (options->numHeapPages != OE_MAX_UINT64)
+        properties->header.sizeSettings.numHeapPages = options->numHeapPages;
+
+    /* If NumStackPages option is present */
+    if (options->numStackPages != OE_MAX_UINT64)
+        properties->header.sizeSettings.numStackPages = options->numStackPages;
+
+    /* If NumTCS option is present */
+    if (options->numTCS != OE_MAX_UINT64)
+        properties->header.sizeSettings.numTCS = options->numTCS;
+}
+
 int main(int argc, const char* argv[])
 {
     arg0 = argv[0];
@@ -376,27 +498,36 @@ int main(int argc, const char* argv[])
     options.numStackPages = 1;
     options.numTCS = 2;
 
-    /* Load the configuration file into the enclave properties */
-    if (LoadConfigFile(conffile, &options) != 0)
+    /* Load the enclave properties from the enclave */
+    {
+        result = _LoadEnclaveProperties_SGX(enclave, &props);
+
+        if (result != OE_OK && result != OE_NOT_FOUND)
+        {
+            Err("failed to load enclave: %s: result=%u", enclave, result);
+            goto done;
+        }
+    }
+
+    /* Load the configuration file */
+    if (_LoadConfigFile(conffile, &options) != 0)
     {
         Err("failed to load configuration file: %s", conffile);
         goto done;
     }
 
-    /* Initialize the enclave properties */
-    {
-        memset(&props, 0, sizeof(OE_EnclaveProperties_SGX));
-        props.header.size = sizeof(OE_EnclaveProperties_SGX);
-        props.header.enclaveType = OE_ENCLAVE_TYPE_SGX;
-        props.config.attributes = SGX_FLAGS_MODE64BIT;
-        props.config.productID = options.productID;
-        props.config.securityVersion = options.securityVersion;
-        props.header.sizeSettings.numHeapPages = options.numHeapPages;
-        props.header.sizeSettings.numStackPages = options.numStackPages;
-        props.header.sizeSettings.numTCS = options.numTCS;
+    /* Merge the configuration file options into the enclave properties */
+    _MergeConfigFileOptions(&props, conffile, &options);
 
-        if (options.debug)
-            props.config.attributes |= SGX_FLAGS_DEBUG;
+    /* Check whether enclave properties are valid */
+    {
+        const char* errorMessage;
+
+        if (OE_ValidateEnclaveProperties_SGX(&props, &errorMessage) != OE_OK)
+        {
+            Err("invalid enclave property value: %s", errorMessage);
+            goto done;
+        }
     }
 
     /* Open the MEASURER to compute MRENCLAVE */

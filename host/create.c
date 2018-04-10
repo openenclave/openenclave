@@ -956,7 +956,7 @@ OE_Result OE_LoadEnclaveProperties_SGX(
     /* Get pointer to and size of the given section */
     if (Elf64_FindSection(elf, sectionName, &sectionData, &sectionSize) != 0)
     {
-        result = OE_FAILURE;
+        result = OE_NOT_FOUND;
         goto done;
     }
 
@@ -965,12 +965,13 @@ OE_Result OE_LoadEnclaveProperties_SGX(
         OE_EnclavePropertiesHeader* header;
 
         if ((result = _FindEnclavePropertiesHeader(
-            sectionData, 
-            sectionSize, 
-            OE_ENCLAVE_TYPE_SGX,
-            sizeof(OE_EnclaveProperties_SGX),
-            &header)) != OE_OK)
+                 sectionData,
+                 sectionSize,
+                 OE_ENCLAVE_TYPE_SGX,
+                 sizeof(OE_EnclaveProperties_SGX),
+                 &header)) != OE_OK)
         {
+            result = OE_NOT_FOUND;
             goto done;
         }
 
@@ -1011,16 +1012,135 @@ OE_Result OE_UpdateEnclaveProperties_SGX(
         OE_EnclavePropertiesHeader* header;
 
         if ((result = _FindEnclavePropertiesHeader(
-            sectionData, 
-            sectionSize, 
-            OE_ENCLAVE_TYPE_SGX,
-            sizeof(OE_EnclaveProperties_SGX),
-            &header)) != OE_OK)
+                 sectionData,
+                 sectionSize,
+                 OE_ENCLAVE_TYPE_SGX,
+                 sizeof(OE_EnclaveProperties_SGX),
+                 &header)) != OE_OK)
         {
             goto done;
         }
 
         memcpy(header, properties, sizeof(OE_EnclaveProperties_SGX));
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+OE_Result OE_ValidateEnclaveProperties_SGX(
+    const OE_EnclaveProperties_SGX* properties,
+    const char** errorMessage)
+{
+    OE_Result result = OE_UNEXPECTED;
+
+    if (errorMessage)
+        *errorMessage = NULL;
+
+    /* Check for null parameters */
+    if (!properties)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Check for illegal bits in the attributes */
+    {
+        const uint64_t mask = OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT;
+
+        if (properties->config.attributes & ~mask)
+        {
+            if (errorMessage)
+                *errorMessage = "config.attributes: illegal bits";
+            result = OE_FAILURE;
+            goto done;
+        }
+    }
+
+    /* Check for missing MODE64BIT */
+    if (!(properties->config.attributes & OE_SGX_FLAGS_MODE64BIT))
+    {
+        if (errorMessage)
+            *errorMessage = "config.attributes: missing MODE64BIT";
+
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Check for invalid NumHeapPages */
+    if (properties->header.sizeSettings.numHeapPages == 0)
+    {
+        if (errorMessage)
+            *errorMessage = "header.sizeSettings.numHeapPages: zero-valued";
+
+        result = OE_FAILURE;
+        goto done;
+    }
+    else if (properties->header.sizeSettings.numHeapPages == OE_MAX_UINT64)
+    {
+        if (errorMessage)
+            *errorMessage = "header.sizeSettings.numHeapPages: max-valued";
+
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Check for invalid NumStackPages */
+    if (properties->header.sizeSettings.numStackPages == 0)
+    {
+        if (errorMessage)
+            *errorMessage = "header.sizeSettings.numStackPages: zero-valued";
+
+        result = OE_FAILURE;
+        goto done;
+    }
+    else if (properties->header.sizeSettings.numStackPages == OE_MAX_UINT64)
+    {
+        if (errorMessage)
+            *errorMessage = "header.sizeSettings.numStackPages: max-valued";
+
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Check for invalid NumTCS */
+    if (properties->header.sizeSettings.numTCS == 0)
+    {
+        if (errorMessage)
+            *errorMessage = "header.sizeSettings.numTCS: zero-valued";
+
+        result = OE_FAILURE;
+        goto done;
+    }
+    else if (properties->header.sizeSettings.numTCS == OE_MAX_UINT64)
+    {
+        if (errorMessage)
+            *errorMessage = "header.sizeSettings.numTCS: max-valued";
+
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Check for invalid ProductID */
+    if (properties->config.productID == OE_MAX_UINT16)
+    {
+        if (errorMessage)
+            *errorMessage = "config.productID: max-valued";
+
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Check for invalid SecurityVersion */
+    if (properties->config.securityVersion == OE_MAX_UINT16)
+    {
+        if (errorMessage)
+            *errorMessage = "config.securityVersion: max-valued";
+
+        result = OE_FAILURE;
+        goto done;
     }
 
     result = OE_OK;
@@ -1083,11 +1203,13 @@ OE_Result __OE_BuildEnclave(
     }
     else
     {
-        OE_TRY(OE_LoadEnclaveProperties_SGX(
-            &elf, 
-            OE_INFO_SECTION_NAME, 
-            &enclave->properties));
+        OE_TRY(
+            OE_LoadEnclaveProperties_SGX(
+                &elf, OE_INFO_SECTION_NAME, &enclave->properties));
     }
+
+    /* Validate the enclave properties structure */
+    OE_TRY(OE_ValidateEnclaveProperties_SGX(&enclave->properties, NULL));
 
     /* Consolidate enclave-debug-flag with create-debug-flag */
     if (enclave->properties.config.attributes & OE_SGX_FLAGS_DEBUG)

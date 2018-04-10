@@ -429,7 +429,8 @@ OE_Result OE_SignEnclave_SGX(
 
     /* Initialize the sigstruct */
     OE_TRY(
-        _InitSigstruct(mrenclave, attributes, productID, securityVersion, rsa, sigstruct));
+        _InitSigstruct(
+            mrenclave, attributes, productID, securityVersion, rsa, sigstruct));
 
     result = OE_OK;
 

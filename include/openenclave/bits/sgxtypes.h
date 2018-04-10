@@ -129,10 +129,10 @@ OE_CHECK_SIZE(sizeof(SGX_Attributes), 16);
 #define SGX_SIGSTRUCT_MISCMASK 0xffffffff
 
 /* SGX_SigStruct.flags */
-#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0Xfffffffffffffffd
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0Xfffffffffffffffb
 
 /* SGX_SigStruct.xfrm */
-#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0xfffffffffffffffb
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0x0000000000000000
 
 /* 1808 bytes */
 OE_PACK_BEGIN

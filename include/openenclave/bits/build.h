@@ -64,7 +64,7 @@ OE_Result OE_LoadEnclaveProperties_SGX(
 /**
  * Update the OE_EnclaveProperties_SGX struct within the given section
  *
- * This function attempts to update the **OE_EnclaveProperties_SGX** struct 
+ * This function attempts to update the **OE_EnclaveProperties_SGX** struct
  * within the specified section of the ELF binary. If found, the section is
  * updated with the value of the **properties** parameter.
  *
@@ -82,6 +82,26 @@ OE_Result OE_UpdateEnclaveProperties_SGX(
     const Elf64* elf,
     const char* sectionName,
     const OE_EnclaveProperties_SGX* properties);
+
+/**
+ * Validate the values of an SGX enclave properties structure
+ *
+ * This function checks whether any of the SGX enclave properties have
+ * invalid values. If so the **errorMessage** output parameter points
+ * to a static error message that identifies the invalid property and
+ * any additional information.
+ *
+ * @param properties SGX enclave properties
+ * @param errorMessage[output] static error message
+ *
+ * @returns OE_OK
+ * @returns OE_INVALID_PARAMETER a parameter is null
+ * @returns OE_FAILURE at least one property is invalid
+ *
+ */
+OE_Result OE_ValidateEnclaveProperties_SGX(
+    const OE_EnclaveProperties_SGX* properties,
+    const char** errorMessage);
 
 OE_EXTERNC_END
 
