@@ -4,6 +4,10 @@
 #define OE_TRACE_LEVEL 1
 
 #include "sgxload.h"
+#if defined(OE_USE_LIBSGX)
+#include <sgx_enclave_common.h>
+#endif
+
 #if defined(__linux__)
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -26,79 +30,83 @@
 
 static uint32_t _MakeMemoryProtectParam(uint64_t inflags, bool simulate)
 {
-#if defined(__linux__)
-
     uint32_t outflags = 0;
 
     if (inflags & SGX_SECINFO_TCS)
     {
         if (simulate)
         {
-            /* TCS can be read and written in simulation mode */
+/* TCS can be read and written in simulation mode */
+#if defined(__linux__)
             outflags = PROT_READ | PROT_WRITE;
+#elif defined(_WIN32)
+            outflags = PAGE_READWRITE;
+#endif
         }
         else
         {
+#if defined(OE_USE_LIBSGX)
+            /* libsgx is only used when not in simulation mode */
+            outflags = ENCLAVE_PAGE_THREAD_CONTROL | ENCLAVE_PAGE_READ |
+                       ENCLAVE_PAGE_WRITE;
+#elif defined(__linux__)
             outflags = PROT_NONE;
+#elif defined(_WIN32)
+            outflags = PAGE_ENCLAVE_THREAD_CONTROL | PAGE_READWRITE;
+#endif
         }
     }
     else if (inflags & SGX_SECINFO_REG)
     {
-        if (inflags & SGX_SECINFO_R)
-            outflags |= PROT_READ;
-
-        if (inflags & SGX_SECINFO_W)
-            outflags |= PROT_WRITE;
-
-        if (inflags & SGX_SECINFO_X)
-            outflags |= PROT_EXEC;
-    }
-
-    return outflags;
-
-#elif defined(_WIN32)
-
-    if (inflags & SGX_SECINFO_TCS)
-    {
-        if (simulate)
+#if defined(OE_USE_LIBSGX)
+        if (!simulate)
         {
-            /* TCS can be read and written in simulation mode */
-            return PAGE_READWRITE;
+            /* libsgx is only used when not in simulation mode */
+            if (inflags & SGX_SECINFO_R)
+                outflags |= ENCLAVE_PAGE_READ;
+
+            if (inflags & SGX_SECINFO_W)
+                outflags |= ENCLAVE_PAGE_WRITE;
+
+            if (inflags & SGX_SECINFO_X)
+                outflags |= ENCLAVE_PAGE_EXECUTE;
         }
         else
         {
-            return PAGE_ENCLAVE_THREAD_CONTROL | PAGE_READWRITE;
-        }
-    }
+/* simulation mode falls back to OS memory protection settings */
+#endif
+#if defined(__linux__)
+            if (inflags & SGX_SECINFO_R)
+                outflags |= PROT_READ;
 
-    if (inflags & SGX_SECINFO_REG)
-    {
+            if (inflags & SGX_SECINFO_W)
+                outflags |= PROT_WRITE;
+
+            if (inflags & SGX_SECINFO_X)
+                outflags |= PROT_EXEC;
+#elif defined(_WIN32)
         if ((inflags & SGX_SECINFO_X) && (inflags & SGX_SECINFO_R) &&
             (inflags & SGX_SECINFO_W))
         {
-            return PAGE_EXECUTE_READWRITE;
+            outflags = PAGE_EXECUTE_READWRITE;
         }
-
-        if ((inflags & SGX_SECINFO_X) && (inflags & SGX_SECINFO_R))
-        {
-            return PAGE_EXECUTE_READ;
+        else if ((inflags & SGX_SECINFO_X) && (inflags & SGX_SECINFO_R))
+            outflags = PAGE_EXECUTE_READ;
+        else if ((inflags & SGX_SECINFO_X))
+            outflags = PAGE_EXECUTE;
+        else if ((inflags & SGX_SECINFO_R) && (inflags & SGX_SECINFO_W))
+            outflags = PAGE_READWRITE;
+        else if ((inflags & SGX_SECINFO_R))
+            outflags = PAGE_READONLY;
+        else
+            outflags = PAGE_NOACCESS;
+#endif
+#if defined(OE_USE_LIBSGX)
         }
-
-        if ((inflags & SGX_SECINFO_X))
-            return PAGE_EXECUTE;
-
-        if ((inflags & SGX_SECINFO_R) && (inflags & SGX_SECINFO_W))
-        {
-            return PAGE_READWRITE;
-        }
-
-        if ((inflags & SGX_SECINFO_R))
-            return PAGE_READONLY;
+#endif
     }
 
-    return PAGE_NOACCESS;
-
-#endif
+    return outflags;
 }
 
 static SGX_Secs* _NewSecs(uint64_t base, uint64_t size, bool debug)
@@ -256,22 +264,14 @@ done:
 #endif /* defined(_WIN32) */
 }
 
-static OE_Result _GetEInitArgs(
+static OE_Result _GetSigStruct(
     const OE_SGXEnclaveProperties* properties,
     const OE_SHA256* mrenclave,
-    SGX_SigStruct* sigstruct,
-    SGX_LaunchToken* launchToken)
+    SGX_SigStruct* sigstruct)
 {
     OE_Result result = OE_UNEXPECTED;
-    AESM* aesm = NULL;
 
     memset(sigstruct, 0, sizeof(SGX_SigStruct));
-    memset(launchToken, 0, sizeof(SGX_LaunchToken));
-
-    /* Initialize the SGX attributes */
-    SGX_Attributes attributes = {0};
-    attributes.flags = properties->config.attributes;
-    attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
     /* If sigstruct doesn't have expected header, treat enclave as unsigned */
     if (memcmp(
@@ -300,6 +300,30 @@ static OE_Result _GetEInitArgs(
         memcpy(sigstruct, properties->sigstruct, sizeof(SGX_SigStruct));
     }
 
+    result = OE_OK;
+
+done:
+
+    return result;
+}
+
+/* obtaining a launch token is only necessary when not using libsgx */
+#if !defined(OE_USE_LIBSGX)
+static OE_Result _GetLaunchToken(
+    const OE_SGXEnclaveProperties* properties,
+    SGX_SigStruct* sigstruct,
+    SGX_LaunchToken* launchToken)
+{
+    OE_Result result = OE_UNEXPECTED;
+    AESM* aesm = NULL;
+
+    memset(launchToken, 0, sizeof(SGX_LaunchToken));
+
+    /* Initialize the SGX attributes */
+    SGX_Attributes attributes = {0};
+    attributes.flags = properties->config.attributes;
+    attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
+
     /* Obtain a launch token from the AESM service */
     if (!(aesm = AESMConnect()))
         OE_RAISE(OE_FAILURE);
@@ -321,6 +345,7 @@ done:
 
     return result;
 }
+#endif
 
 OE_Result OE_SGXInitializeLoadContext(
     OE_SGXLoadContext* context,
@@ -357,7 +382,7 @@ done:
 
 void OE_SGXCleanupLoadContext(OE_SGXLoadContext* context)
 {
-#if defined(__linux__)
+#if !defined(OE_USE_LIBSGX) && defined(__linux__)
     if (context && context->dev != OE_SGX_NO_DEVICE_HANDLE)
         close(context->dev);
 #endif
@@ -387,7 +412,7 @@ OE_Result OE_SGXCreateEnclave(
     if (enclaveSize != OE_RoundU64ToPow2(enclaveSize))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if defined(_WIN32)
+#if defined(OE_USE_LIBSGX) || defined(_WIN32)
     if (OE_SGXLoadIsSimulation(context))
 #endif
     {
@@ -417,7 +442,24 @@ OE_Result OE_SGXCreateEnclave(
     }
     else
     {
-#if defined(__linux__)
+#if defined(OE_USE_LIBSGX)
+
+        uint32_t enclaveError;
+        void* base = enclave_create(
+            NULL, /* Let OS choose the enclave base address */
+            secs->size,
+            secs->size,
+            ENCLAVE_TYPE_SGX1,
+            (const void*)secs,
+            sizeof(SGX_Secs),
+            &enclaveError);
+
+        if (!base)
+            OE_RAISE(OE_PLATFORM_ERROR);
+
+        secs->base = (uint64_t)base;
+
+#elif defined(__linux__)
 
         /* Ask the Linux SGX driver to create the enclave */
         if (SGX_IoctlEnclaveCreate(context->dev, secs) != 0)
@@ -518,7 +560,25 @@ OE_Result OE_SGXLoadEnclaveData(
     }
     else
     {
-#if defined(__linux__)
+#if defined(OE_USE_LIBSGX)
+
+        uint32_t protect =
+            _MakeMemoryProtectParam(flags, false /*not simulate*/);
+        if (!extend)
+            protect |= ENCLAVE_PAGE_UNVALIDATED;
+
+        uint32_t enclaveError;
+        if (enclave_load_data(
+                (void*)addr,
+                OE_PAGE_SIZE,
+                (const void*)src,
+                protect,
+                &enclaveError) != OE_PAGE_SIZE)
+        {
+            OE_RAISE(OE_PLATFORM_ERROR);
+        }
+
+#elif defined(__linux__)
 
         /* Ask the Linux SGX driver to add a page to the enclave */
         if (SGX_IoctlEnclaveAddPage(context->dev, addr, src, flags, extend) !=
@@ -583,11 +643,25 @@ OE_Result OE_SGXInitializeEnclave(
     if (context->type == OE_SGX_LOAD_TYPE_CREATE &&
         !OE_SGXLoadIsSimulation(context))
     {
-        /* Get the launch token from AESM, and a debug sigstruct if needed */
-        SGX_LaunchToken launchToken;
+        /* Get a debug sigstruct for MRENCLAVE if necessary */
         SGX_SigStruct sigstruct;
-        OE_CHECK(
-            _GetEInitArgs(properties, mrenclave, &sigstruct, &launchToken));
+        OE_CHECK(_GetSigStruct(properties, mrenclave, &sigstruct));
+
+#if defined(OE_USE_LIBSGX)
+
+        uint32_t enclaveError = 0;
+        if (!enclave_initialize(
+                (void*)addr,
+                (const void*)&sigstruct,
+                sizeof(SGX_SigStruct),
+                &enclaveError))
+            OE_RAISE(OE_PLATFORM_ERROR);
+        if (enclaveError != 0)
+            OE_RAISE(OE_PLATFORM_ERROR);
+#else
+        /* If not using libsgx, get a launch token from the AESM service */
+        SGX_LaunchToken launchToken;
+        OE_CHECK(_GetLaunchToken(properties, &sigstruct, &launchToken));
 
 #if defined(__linux__)
 
@@ -625,6 +699,7 @@ OE_Result OE_SGXInitializeEnclave(
         {
             OE_RAISE(OE_PLATFORM_ERROR);
         }
+#endif
 #endif
     }
 

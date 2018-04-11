@@ -82,6 +82,18 @@ target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
 endif(UNIX)
 target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 
+# Additional compilation and link options when using libsgx
+if(USE_LIBSGX)
+message("USE_LIBSGX is set, building oehost with FLC dependency")
+add_dependencies(oehost libsgx_includes)
+target_include_directories(oehost PUBLIC
+    $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libsgx>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/libsgx>
+    )
+target_link_libraries(oehost libsgx_enclave_common)
+target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
+endif()
+
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)
 if(UNIX)
