@@ -14,7 +14,7 @@
 #
 function(get_testcase_name FILENAME NAMEVAR)
         string(REGEX REPLACE "\.c(pp)?$" "" n ${FILENAME})
-        string(REGEX REPLACE "^\.\./\.\./3rdparty/(libcxx/libcxx/test/|musl/libc-test/src/)" "" n ${n})
+        string(REGEX REPLACE "^\.\./\.\./3rdparty/(mbedtls/mbedtls/programs/test/|libcxx/libcxx/test/|musl/libc-test/src/)" "" n ${n})
         string(REGEX REPLACE "[/=]" "_" n ${n})
         string(REGEX REPLACE "[\!]" "-" n ${n})
 	set(${NAMEVAR} ${n} PARENT_SCOPE)
