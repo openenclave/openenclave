@@ -7,6 +7,7 @@
 build/
 winbuild/
 
+3rdparty/libsgx/libsgx
 prereqs/aesm/.build
 prereqs/aesm/.prebuilt
 prereqs/aesm/.psw_installer
