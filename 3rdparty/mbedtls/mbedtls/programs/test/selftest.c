@@ -396,6 +396,7 @@ int main( int argc, char *argv[] )
 #endif
 
 /* Slow tests last */
+
 #if defined(MBEDTLS_TIMING_C)
     if( mbedtls_timing_self_test( v ) != 0 )
     {
