@@ -5,6 +5,7 @@
 #include "strings.h"
 
 #if defined(__linux__)
+#include <cpuid.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -20,6 +21,7 @@
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/cpuid.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/files.h>
 #include <openenclave/bits/load.h>
@@ -35,7 +37,7 @@
 
 static OE_H_OnceType _enclave_init_once;
 
-static void _InitializeEnclave(void)
+static void _InitializeExceptionHandling(void)
 {
     _OE_InitializeHostException();
 }
@@ -50,7 +52,7 @@ static void _InitializeEnclave(void)
 
 static void _InitializeEnclaveHost()
 {
-    OE_H_Once(&_enclave_init_once, _InitializeEnclave);
+    OE_H_Once(&_enclave_init_once, _InitializeExceptionHandling);
 }
 
 /*
@@ -1082,6 +1084,9 @@ OE_Result __OE_BuildEnclave(
     if (!(enclave->path = OE_Strdup(path)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
+    /* Set the magic number */
+    enclave->magic = ENCLAVE_MAGIC;
+
     result = OE_OK;
 
 OE_CATCH:
@@ -1204,8 +1209,8 @@ OE_Result OE_CreateEnclave(
     /* Build the enclave */
     OE_TRY(__OE_BuildEnclave(dev, enclavePath, NULL, debug, simulate, enclave));
 
-    /* Set the magic number */
-    enclave->magic = ENCLAVE_MAGIC;
+    /* Invoke enclave initialization */
+    OE_TRY(_InitializeEnclave(enclave));
 
     /* Push the new created enclave to the global list. */
     if (_OE_PushEnclaveInstance(enclave) != 0)

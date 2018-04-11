@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/atexit.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/cpuid.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/fault.h>
 #include <openenclave/bits/globals.h>
@@ -12,6 +13,7 @@
 #include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
 #include "asmdefs.h"
+#include "cpuid.h"
 #include "init.h"
 #include "td.h"
 

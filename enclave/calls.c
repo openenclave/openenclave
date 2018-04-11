@@ -12,6 +12,7 @@
 #include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
 #include "asmdefs.h"
+#include "cpuid.h"
 #include "init.h"
 #include "report.h"
 #include "td.h"
@@ -313,7 +314,6 @@ static void _HandleECall(
             _OE_VirtualExceptionDispatcher(td, argIn, &argOut);
             break;
         }
-<<<<<<< 1e11769a879f46b2500c2976100549ccfe41d55a
         case OE_FUNC_INIT_ENCLAVE:
         {
             _HandleInitEnclave(argIn);
@@ -324,8 +324,6 @@ static void _HandleECall(
             argOut = _HandleGetSGXReport(argIn);
             break;
         }
-=======
->>>>>>> Removing simon commit for CPUID from my branch
         default:
         {
             /* Dispatch user-registered ECALLs */
