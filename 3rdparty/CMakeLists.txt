@@ -8,3 +8,8 @@ add_subdirectory(libcxxrt)
 add_subdirectory(libunwind)
 add_subdirectory(musl)
 add_subdirectory(mbedtls) # after musl
+
+# Additional library publishing and install for libsgx
+if(USE_LIBSGX)
+add_subdirectory(libsgx)
+endif()
