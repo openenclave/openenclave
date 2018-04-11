@@ -13,10 +13,10 @@
 bool TestOEGetPrivilegeKeys()
 {
     OE_Result result;
-    Sgx_KeyRequest sgxKeyRequest = {0};
-    Sgx_Key sgxKey = {0};
-    sgxKeyRequest.flags_attribute_mask = OE_SEALKEY_DEFAULT_FLAGSMASK;
-    sgxKeyRequest.xfrm_attribute_mask = OE_SEALKEY_DEFAULT_XFRMMASK;
+    SGX_KeyRequest sgxKeyRequest = {0};
+    SGX_Key sgxKey = {0};
+    sgxKeyRequest.attribute_mask.flags = OE_SEALKEY_DEFAULT_FLAGSMASK;
+    sgxKeyRequest.attribute_mask.xfrm = OE_SEALKEY_DEFAULT_XFRMMASK;
     sgxKeyRequest.misc_attribute_mask = OE_SEALKEY_DEFAULT_MISCMASK;
 
     for (uint16_t keyName = SGX_KEYSELECT_EINITTOKEN;
@@ -45,10 +45,10 @@ bool TestOEGetPrivilegeKeys()
 bool TestOEGetRegularKeys()
 {
     OE_Result result;
-    Sgx_KeyRequest sgxKeyRequest = {0};
-    Sgx_Key sgxKey = {0};
-    sgxKeyRequest.flags_attribute_mask = OE_SEALKEY_DEFAULT_FLAGSMASK;
-    sgxKeyRequest.xfrm_attribute_mask = OE_SEALKEY_DEFAULT_XFRMMASK;
+    SGX_KeyRequest sgxKeyRequest = {0};
+    SGX_Key sgxKey = {0};
+    sgxKeyRequest.attribute_mask.flags = OE_SEALKEY_DEFAULT_FLAGSMASK;
+    sgxKeyRequest.attribute_mask.xfrm = OE_SEALKEY_DEFAULT_XFRMMASK;
     sgxKeyRequest.misc_attribute_mask = OE_SEALKEY_DEFAULT_MISCMASK;
 
     for (uint16_t keyName = SGX_KEYSELECT_REPORT; keyName <= SGX_KEYSELECT_SEAL;
@@ -79,47 +79,47 @@ bool TestOEGetSealKey()
          sealPolicy <= OE_SEAL_ID_PRODUCT;
          sealPolicy++)
     {
-        uint8_t keyBuffer[sizeof(Sgx_Key)] = {0};
+        uint8_t keyBuffer[sizeof(SGX_Key)] = {0};
         uint32_t keyBufferSize = 0;
         OE_Result ret;
 
+        // Get the seal key should fail if the keyBuffer is NULL.
+        ret = OE_GetSealKeyByPolicy(
+            (OE_SealIDPolicy)sealPolicy, NULL, NULL, NULL, NULL);
+        if (ret != OE_INVALID_PARAMETER)
+        {
+            return false;
+        }
+
         // Get the seal key should fail if the buffer is too small.
         ret = OE_GetSealKeyByPolicy(
-            (OE_SEAL_ID_POLICY)sealPolicy,
-            keyBuffer,
-            &keyBufferSize,
-            NULL,
-            NULL);
+            (OE_SealIDPolicy)sealPolicy, keyBuffer, &keyBufferSize, NULL, NULL);
         if (ret != OE_BUFFER_TOO_SMALL)
         {
             return false;
         }
 
         // The correct buffer size should be returned.
-        OE_TEST(keyBufferSize == sizeof(Sgx_Key));
+        OE_TEST(keyBufferSize == sizeof(SGX_Key));
 
         // Get the seal key by policy and without output the key info.
         ret = OE_GetSealKeyByPolicy(
-            (OE_SEAL_ID_POLICY)sealPolicy,
-            keyBuffer,
-            &keyBufferSize,
-            NULL,
-            NULL);
+            (OE_SealIDPolicy)sealPolicy, keyBuffer, &keyBufferSize, NULL, NULL);
         if (ret != OE_OK)
         {
             return false;
         }
 
-        OE_TEST(keyBufferSize == sizeof(Sgx_Key));
+        OE_TEST(keyBufferSize == sizeof(SGX_Key));
 
-        uint8_t secondKeyBuffer[sizeof(Sgx_Key)] = {0};
+        uint8_t secondKeyBuffer[sizeof(SGX_Key)] = {0};
         uint32_t secondKeyBufferSize = sizeof(secondKeyBuffer);
-        uint8_t keyInfo[sizeof(Sgx_KeyRequest)] = {0};
+        uint8_t keyInfo[sizeof(SGX_KeyRequest)] = {0};
         uint32_t keyInfoSize = sizeof(keyInfo);
 
         // Get the seal key by policy and output the key info.
         ret = OE_GetSealKeyByPolicy(
-            (OE_SEAL_ID_POLICY)sealPolicy,
+            (OE_SealIDPolicy)sealPolicy,
             secondKeyBuffer,
             &secondKeyBufferSize,
             keyInfo,
@@ -129,10 +129,10 @@ bool TestOEGetSealKey()
             return false;
         }
 
-        OE_TEST(secondKeyBufferSize == sizeof(Sgx_Key));
-        OE_TEST(keyInfoSize == sizeof(Sgx_KeyRequest));
+        OE_TEST(secondKeyBufferSize == sizeof(SGX_Key));
+        OE_TEST(keyInfoSize == sizeof(SGX_KeyRequest));
 
-        uint8_t thirdKeyBuffer[sizeof(Sgx_Key)] = {0};
+        uint8_t thirdKeyBuffer[sizeof(SGX_Key)] = {0};
         uint32_t thirdKeyBufferSize = sizeof(thirdKeyBuffer);
 
         // Get the seal key using saved key info.
@@ -143,11 +143,35 @@ bool TestOEGetSealKey()
             return false;
         }
 
-        OE_TEST(thirdKeyBufferSize == sizeof(Sgx_Key));
+        OE_TEST(thirdKeyBufferSize == sizeof(SGX_Key));
 
         // The seal keys should match.
-        if ((OE_Memcmp(keyBuffer, secondKeyBuffer, sizeof(Sgx_Key)) != 0) ||
-            (OE_Memcmp(keyBuffer, thirdKeyBuffer, sizeof(Sgx_Key)) != 0))
+        if ((OE_Memcmp(keyBuffer, secondKeyBuffer, sizeof(SGX_Key)) != 0) ||
+            (OE_Memcmp(keyBuffer, thirdKeyBuffer, sizeof(SGX_Key)) != 0))
+        {
+            return false;
+        }
+
+        // Modify the isv_svn of key request to invalid and verify the function
+        // can't get seal key.
+        SGX_KeyRequest* keyRequest = (SGX_KeyRequest*)keyInfo;
+        uint16_t curIsvSvn = keyRequest->isv_svn;
+        keyRequest->isv_svn = 0XFFFF;
+        ret = OE_GetSealKey(
+            keyInfo, keyInfoSize, thirdKeyBuffer, &thirdKeyBufferSize);
+        if (ret != OE_INVALID_ISVSVN)
+        {
+            return false;
+        }
+
+        // Modify the cpu_svn of key request to invalid and verify the function
+        // can't get seal key.
+        keyRequest->isv_svn = curIsvSvn;
+        OE_Memset(
+            keyRequest->cpu_svn, 0XFF, OE_FIELD_SIZE(SGX_KeyRequest, cpu_svn));
+        ret = OE_GetSealKey(
+            keyInfo, keyInfoSize, thirdKeyBuffer, &thirdKeyBufferSize);
+        if (ret != OE_INVALID_CPUSVN)
         {
             return false;
         }

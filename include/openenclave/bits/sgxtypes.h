@@ -897,7 +897,7 @@ OE_STATIC_ASSERT(sizeof(SGX_QuoteSignature) == 664);
 #define SGX_KEYPOLICY_ALL (SGX_KEYPOLICY_MRENCLAVE | SGX_KEYPOLICY_MRSIGNER)
 
 OE_PACK_BEGIN
-typedef struct _Sgx_KeyRequest
+typedef struct _SGX_KeyRequest
 {
     /* (0) Identifies the Key Required. */
     uint16_t key_name;
@@ -919,8 +919,7 @@ typedef struct _Sgx_KeyRequest
 
     /* (24) A mask defining which SECS.ATTRIBUTES bits will be included in key
     derivation*/
-    uint64_t flags_attribute_mask;
-    uint64_t xfrm_attribute_mask;
+    SGX_Attributes attribute_mask;
 
     /* (40) Value for key wear-out protection. */
     uint8_t key_id[SGX_KEYID_SIZE];
@@ -935,21 +934,20 @@ typedef struct _Sgx_KeyRequest
 
     /* (78) Must be zero.*/
     uint8_t reserved2[434];
-} Sgx_KeyRequest;
+} SGX_KeyRequest;
 OE_PACK_END
 
-OE_STATIC_ASSERT(sizeof(Sgx_KeyRequest) == 512);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, key_name), 0);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, key_policy), 2);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, isv_svn), 4);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, reserved1), 6);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, cpu_svn), 8);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, flags_attribute_mask), 24);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, xfrm_attribute_mask), 32);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, key_id), 40);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, misc_attribute_mask), 72);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, config_svn), 76);
-OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, reserved2), 78);
+OE_STATIC_ASSERT(sizeof(SGX_KeyRequest) == 512);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, key_name), 0);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, key_policy), 2);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, isv_svn), 4);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, reserved1), 6);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, cpu_svn), 8);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, attribute_mask), 24);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, key_id), 40);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, misc_attribute_mask), 72);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, config_svn), 76);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, reserved2), 78);
 
 /* Refer to EGETKEY leaf instruction in Intel SDM. */
 /* EGETKEY instruction return values. */
@@ -964,7 +962,10 @@ OE_CHECK_SIZE(OE_OFFSETOF(Sgx_KeyRequest, reserved2), 78);
 #define SGX_KEY_ALIGNMENT 16
 
 /* The 128-bit SGX secret key. */
-typedef uint8_t Sgx_Key[16];
+typedef struct _SGX_Key
+{
+    uint8_t buf[16];
+} SGX_Key;
 
 /* Enclave Flags Bit Masks */
 /* If set, then the enclave is initialized */

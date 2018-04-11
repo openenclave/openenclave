@@ -366,10 +366,10 @@ OE_Result OE_ParseReport(
     uint32_t reportSize,
     OE_Report* parsedReport);
 
-typedef enum _OE_SEAL_ID_POLICY {
+typedef enum _OE_SealIDPolicy {
     OE_SEAL_ID_UNIQUE = 1,
     OE_SEAL_ID_PRODUCT = 2,
-} OE_SEAL_ID_POLICY;
+} OE_SealIDPolicy;
 
 /**
 * Get a symmetric encryption key derived from the specified policy and coupled
@@ -396,15 +396,15 @@ typedef enum _OE_SEAL_ID_POLICY {
 * @retval OE_UNEXPECTED An unexpected error happened.
 */
 OE_Result OE_GetSealKeyByPolicy(
-    OE_SEAL_ID_POLICY sealPolicy,
+    OE_SealIDPolicy sealPolicy,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize,
     uint8_t* keyInfo,
     uint32_t* keyInfoSize);
 
 /**
-* Get a symmetric encryption key from the enclave platform using on existing
-* key information.
+* Get a symmetric encryption key from the enclave platform using existing key
+* information.
 *
 * @param keyInfo The enclave-specific key information to derive the seal key
 * with.
@@ -419,7 +419,9 @@ OE_Result OE_GetSealKeyByPolicy(
 * @retval OE_OK The seal key was successfully requested.
 * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
 * @retval OE_BUFFER_TOO_SMALL The **keyBuffer** buffer is too small.
-*
+* @retval OE_INVALID_CPUSVN **keyInfo** contains an invalid CPUSVN.
+* @retval OE_INVALID_ISVSVN **keyInfo** contains an invalid ISVSVN.
+* @retval OE_INVALID_KEYNAME **keyInfo** contains an invalid KEYNAME.
 */
 OE_Result OE_GetSealKey(
     const uint8_t* keyInfo,

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _sealkey_args_h
-#define _sealkey_args_h
+#ifndef _SEALKEY_ARGS_H
+#define _SEALKEY_ARGS_H
 
 #include <stddef.h>
 
@@ -11,4 +11,4 @@ typedef struct _SealKeyArgs
     int ret;
 } SealKeyArgs;
 
-#endif /* _sealkey_args_h */
+#endif /* _SEALKEY_ARGS_H */

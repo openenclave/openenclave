@@ -24,6 +24,7 @@ add_library(oeenclave STATIC
     td.c
     thread.c
     exit.S
+    getkey.S
     main.S
     )
 
