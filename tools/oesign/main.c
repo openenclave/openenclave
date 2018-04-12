@@ -225,7 +225,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->debug = value;
+            options->debug = (uint8_t)value;
         }
         else if (strcmp(str_ptr(&lhs), "NumHeapPages") == 0)
         {
@@ -423,30 +423,9 @@ void _MergeConfigFileOptions(
         properties->config.attributes = SGX_FLAGS_MODE64BIT;
     }
 
-    /* If Debug option is present */
+    /* Debug option is present */
     if (options->debug != OE_MAX_UINT8)
-    {
-        /* If properties were already initialized on function entry */
-        if (initialized)
-        {
-            /* Override enclave properties debug option */
-            if (properties->config.attributes & OE_SGX_FLAGS_DEBUG)
-            {
-                if (!options->debug)
-                    properties->config.attributes &= ~OE_SGX_FLAGS_DEBUG;
-            }
-            else if (options->debug)
-            {
-                Err("%s: attempt to downgrade enclave properties "
-                    "from non-debug mode to debug mode",
-                    path);
-            }
-        }
-        else
-        {
-            properties->config.attributes |= OE_SGX_FLAGS_DEBUG;
-        }
-    }
+        properties->config.attributes |= SGX_FLAGS_DEBUG;
 
     /* If ProductID option is present */
     if (options->productID != OE_MAX_UINT16)
