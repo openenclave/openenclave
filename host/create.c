@@ -1070,7 +1070,8 @@ OE_Result OE_ValidateEnclaveProperties_SGX(
         goto done;
     }
 
-    if (!OE_SGXValidNumStackPages(properties->header.sizeSettings.numStackPages))
+    if (!OE_SGXValidNumStackPages(
+            properties->header.sizeSettings.numStackPages))
     {
         if (fieldName)
             *fieldName = "header.sizeSettings.numStackPages";

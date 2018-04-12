@@ -163,15 +163,31 @@ typedef struct _ConfigFileOptions
     uint16_t securityVersion;
 } ConfigFileOptions;
 
-#define CONFIG_FILE_OPTIONS_INITIALIZER \
-    { \
-        .debug = OE_MAX_UINT8, \
-        .numHeapPages = OE_MAX_UINT64, \
-        .numStackPages = OE_MAX_UINT64, \
-        .numTCS = OE_MAX_UINT64, \
-        .productID = OE_MAX_UINT16, \
-        .securityVersion = OE_MAX_UINT16, \
+#define CONFIG_FILE_OPTIONS_INITIALIZER                               \
+    {                                                                 \
+        .debug = OE_MAX_UINT8, .numHeapPages = OE_MAX_UINT64,         \
+        .numStackPages = OE_MAX_UINT64, .numTCS = OE_MAX_UINT64,      \
+        .productID = OE_MAX_UINT16, .securityVersion = OE_MAX_UINT16, \
     }
+
+/* Check whether the .conf file is missing required options */
+static void _CheckForMissingOptions(const ConfigFileOptions* options)
+{
+    if (options->numHeapPages == OE_MAX_UINT64)
+        Err("%s: missing option: NumHeapPages", arg0);
+
+    if (options->numStackPages == OE_MAX_UINT64)
+        Err("%s: missing option: NumStackPages", arg0);
+
+    if (options->numTCS == OE_MAX_UINT64)
+        Err("%s: missing option: NumTCS", arg0);
+
+    if (options->productID == OE_MAX_UINT16)
+        Err("%s: missing option: ProductID", arg0);
+
+    if (options->securityVersion == OE_MAX_UINT16)
+        Err("%s: missing option: SecurityVersion", arg0);
+}
 
 static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
 {
@@ -476,6 +492,13 @@ int main(int argc, const char* argv[])
     conffile = argv[2];
     keyfile = argv[3];
 
+    /* Load the configuration file */
+    if (_LoadConfigFile(conffile, &options) != 0)
+    {
+        Err("failed to load configuration file: %s", conffile);
+        goto done;
+    }
+
     /* Load the enclave properties from the enclave */
     {
         result = _LoadEnclaveProperties_SGX(enclave, &props);
@@ -485,13 +508,10 @@ int main(int argc, const char* argv[])
             Err("failed to load enclave: %s: result=%u", enclave, result);
             goto done;
         }
-    }
 
-    /* Load the configuration file */
-    if (_LoadConfigFile(conffile, &options) != 0)
-    {
-        Err("failed to load configuration file: %s", conffile);
-        goto done;
+        /* If enclave properties not found, then options must be complete */
+        if (result == OE_NOT_FOUND)
+            _CheckForMissingOptions(&options);
     }
 
     /* Merge the configuration file options into the enclave properties */

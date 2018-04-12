@@ -95,7 +95,7 @@ OE_Result OE_UpdateEnclaveProperties_SGX(
  *     - numHeapPages
  *     - numTCS
  *
- * If not the **fieldName** output parameter points to the name of the first 
+ * If not the **fieldName** output parameter points to the name of the first
  * field with an invalid value.
  *
  * @param properties SGX enclave properties
