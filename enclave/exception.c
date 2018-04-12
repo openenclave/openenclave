@@ -381,8 +381,8 @@ void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 // as the reserved guard pages which are beyond the legacy area (0x240 bytes)
 // are incorrectly accessed by xrstor64, resulting in a fault.
 OE_ALIGNED(XSAVE_ALIGNMENT)
-uint8_t xsave_area[MAX_XSTATE_AREA_LENGTH];
-uint64_t restore_mask;
+uint8_t xsave_area[MAX_XSTATE_AREA_LENGTH] = {0};
+uint64_t restore_mask = ~((uint64_t)0x0);
 
 /*
 **==============================================================================
@@ -400,8 +400,6 @@ void _OE_CleanupXStates(void)
     // The legacy registers(F87, SSE) values will be loaded from the
     // LEGACY_XSAVE_AREA that at beginning of xsave_area.The extended registers
     // will be initialized to their default values.
-    restore_mask = ~((uint64_t)0x0);
-    OE_Memset(xsave_area, 0, 0x240);
     __builtin_ia32_xrstor64(xsave_area, restore_mask);
 
     return;
