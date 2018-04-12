@@ -123,10 +123,6 @@ struct _OE_Enclave
 
     /* Simulation mode */
     bool simulate;
-
-    // This structure is copied from the enclave properties section during
-    // enclave loading.
-    OE_EnclaveProperties_SGX properties;
 };
 
 /* Get the event for the given TCS */

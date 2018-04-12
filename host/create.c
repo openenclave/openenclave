@@ -1130,6 +1130,7 @@ OE_Result __OE_BuildEnclave(
     size_t relocSize;
     void* ecallData = NULL;
     size_t ecallSize;
+    OE_EnclaveProperties_SGX props;
 
     memset(&elf, 0, sizeof(Elf64));
 
@@ -1158,25 +1159,24 @@ OE_Result __OE_BuildEnclave(
     // Else use the properties stored in the .oeinfo section.
     if (properties)
     {
-        enclave->properties = *properties;
+        props = *properties;
     }
     else
     {
         OE_TRY(
-            OE_LoadEnclaveProperties_SGX(
-                &elf, OE_INFO_SECTION_NAME, &enclave->properties));
+            OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, &props));
     }
 
     /* Validate the enclave properties structure */
-    OE_TRY(OE_ValidateEnclaveProperties_SGX(&enclave->properties, NULL));
+    OE_TRY(OE_ValidateEnclaveProperties_SGX(&props, NULL));
 
     /* Consolidate enclave-debug-flag with create-debug-flag */
-    if (enclave->properties.config.attributes & OE_SGX_FLAGS_DEBUG)
+    if (props.config.attributes & OE_SGX_FLAGS_DEBUG)
     {
         if (!debug)
         {
             /* Upgrade to non-debug mode */
-            enclave->properties.config.attributes &= ~OE_SGX_FLAGS_DEBUG;
+            props.config.attributes &= ~OE_SGX_FLAGS_DEBUG;
         }
     }
     else
@@ -1213,9 +1213,9 @@ OE_Result __OE_BuildEnclave(
             numSegments,
             relocSize,
             ecallSize,
-            enclave->properties.header.sizeSettings.numHeapPages,
-            enclave->properties.header.sizeSettings.numStackPages,
-            enclave->properties.header.sizeSettings.numTCS,
+            props.header.sizeSettings.numHeapPages,
+            props.header.sizeSettings.numStackPages,
+            props.header.sizeSettings.numTCS,
             &enclaveEnd,
             &enclaveSize));
 
@@ -1256,21 +1256,21 @@ OE_Result __OE_BuildEnclave(
             ecallData,
             ecallSize,
             entryAddr,
-            enclave->properties.header.sizeSettings.numHeapPages,
-            enclave->properties.header.sizeSettings.numStackPages,
-            enclave->properties.header.sizeSettings.numTCS,
+            props.header.sizeSettings.numHeapPages,
+            props.header.sizeSettings.numStackPages,
+            props.header.sizeSettings.numTCS,
             enclave));
 
 #if defined(_WIN32)
     {
         OE_STATIC_ASSERT(
             OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, SigStruct) ==
-            sizeof(enclave->properties.sigstruct));
+            sizeof(props.sigstruct));
     }
 #endif
 
     /* Ask the ISGX driver to initialize the enclave (and finalize the hash) */
-    OE_TRY(dev->einit(dev, enclaveAddr, &enclave->properties));
+    OE_TRY(dev->einit(dev, enclaveAddr, &props));
 
     /* Get the hash and store it in the ENCLAVE object */
     OE_TRY(dev->gethash(dev, &enclave->hash));

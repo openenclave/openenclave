@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/host.h>
 #include <stdio.h>
 #include "../../../host/enclave.h"
@@ -44,11 +45,47 @@ static void _CheckProperties(
         OE_TEST(memcmp(props->sigstruct, sigstruct, sizeof(sigstruct)) == 0);
 }
 
+static OE_Result _LoadEnclaveProperties_SGX(
+    const char* path,
+    OE_EnclaveProperties_SGX* properties)
+{
+    OE_Result result = OE_UNEXPECTED;
+    Elf64 elf = ELF64_INIT;
+
+    if (properties)
+        memset(properties, 0, sizeof(OE_EnclaveProperties_SGX));
+
+    /* Check parameters */
+    if (!path || !properties)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Load the ELF image */
+    if (Elf64_Load(path, &elf) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Load the SGX enclave properties */
+    if (OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, properties) !=
+        OE_OK)
+    {
+        OE_RAISE(OE_NOT_FOUND);
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (elf.magic == ELF_MAGIC)
+        Elf64_Unload(&elf);
+
+    return result;
+}
+
 int main(int argc, const char* argv[])
 {
     OE_Result result;
     OE_Enclave* enclave = NULL;
     bool isSigned = false;
+    OE_EnclaveProperties_SGX properties;
 
     if (argc != 3)
     {
@@ -71,6 +108,12 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
+    /* Load the enclave properties */
+    if ((result = _LoadEnclaveProperties_SGX(argv[1], &properties)) != OE_OK)
+    {
+        OE_PutErr("OE_LoadEnclaveProperties_SGX(): result=%u", result);
+    }
+
     const uint32_t flags = OE_GetCreateFlags();
 
     if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
@@ -80,7 +123,7 @@ int main(int argc, const char* argv[])
     if (isSigned)
     {
         _CheckProperties(
-            &enclave->properties,
+            &properties,
             isSigned,
             1111,                                        /* productID */
             2222,                                        /* securityVersion */
@@ -92,7 +135,7 @@ int main(int argc, const char* argv[])
     else
     {
         _CheckProperties(
-            &enclave->properties,
+            &properties,
             isSigned,
             1234,                                        /* productID */
             5678,                                        /* securityVersion */
