@@ -8,6 +8,11 @@ cmake_minimum_required(VERSION 3.5.1)
 # define project, take version from "VERSION" file
 file(STRINGS "VERSION" OE_VERSION)
 
+option(ADD_WINDOWS_ENCLAVE_TESTS "Copy Linux binaries and Build windows enclave test" 0)
+option(WND_BIN_DIR "Windows bianry files path" C:\\wind_build_oe)
+option(LINUX_BIN_DIR "Linux binary files path" /home/vvdn/openenclave/linux_build_oe)
+option(VS_CMAKE_TESTS_DIR "Direcotry to store both windows and linux binaries for Visual studio CMake tests" C:\\wnd_linux_build_oe)
+
 # Select the assembler
 if (UNIX)
   set(OE_ASM ASM)
@@ -75,4 +80,11 @@ add_subdirectory(tests/echo/host)
 add_subdirectory(tests/ecall/host)
 add_subdirectory(tests/mem)
 add_subdirectory(tests/str)
+
+if(ADD_WINDOWS_ENCLAVE_TESTS)
+add_subdirectory(tests/windows)
+else()
+Message("ADD_WINDOWS_ENCLAVE_TESTS - Not set, Tests directory ommited.")
+endif()
+
 endif()
