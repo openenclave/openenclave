@@ -82,7 +82,8 @@ int fprintf(FILE* stream, const char* fmt, ...)
         device = 0;
     else if (stream == stderr)
         device = 1;
-    else {
+    else
+    {
         va_list ap;
         va_start(ap, fmt);
         int r = vfprintf(stream, fmt, ap);

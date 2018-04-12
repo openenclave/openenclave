@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <stdlib.h>
 #include <assert.h>
+#include <openenclave/bits/calls.h>
+#include <openenclave/enclave.h>
 #include <signal.h>
 #include <stdio.h>
-#include <openenclave/enclave.h>
-#include <openenclave/bits/calls.h>
-#include "../host/ocalls.h"
+#include <stdlib.h>
 #include "../host/args.h"
+#include "../host/ocalls.h"
 
 extern const char* __test__;
 
@@ -52,11 +52,13 @@ OE_ECALL void Test(Args* args)
     if (args)
     {
         printf("RUNNING: %s\n", __TEST__NAME);
-        static const char* argv[] = { "test", "hello", };
+        static const char* argv[] = {
+            "test", "hello",
+        };
         static int argc = sizeof(argv) / sizeof(argv[0]);
-	printf("\n before main %d\n",argc);
+        printf("\n before main %d\n", argc);
         args->ret = main(argc, argv);
-	printf("\n in main\n");
+        printf("\n in main\n");
         args->test = OE_HostStrdup(__TEST__NAME);
     }
 }
