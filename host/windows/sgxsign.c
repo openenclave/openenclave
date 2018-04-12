@@ -4,7 +4,7 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/result.h>
 
-OE_Result OE_SignEnclave_SGX(
+OE_Result OE_SGXSignEnclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,

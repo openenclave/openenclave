@@ -25,14 +25,14 @@ static OE_SGXDevice* OpenDevice()
 #endif
 }
 
-static const OE_EnclaveProperties_SGX* GetEnclaveProperties()
+static const OE_SGXEnclaveProperties* GetEnclaveProperties()
 {
 #ifdef USE_DRIVER
     return NULL;
 #else
-    static OE_EnclaveProperties_SGX properties;
+    static OE_SGXEnclaveProperties properties;
 
-    memset(&properties, 0, sizeof(OE_EnclaveProperties_SGX));
+    memset(&properties, 0, sizeof(OE_SGXEnclaveProperties));
     properties.settings.attributes = OE_SGX_FLAGS_DEBUG;
     properties.header.sizeSettings.numHeapPages = 2;
     properties.header.sizeSettings.numStackPages = 1;

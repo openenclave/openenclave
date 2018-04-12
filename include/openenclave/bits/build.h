@@ -25,7 +25,7 @@ OE_SGXDevice* __OE_OpenSGXMeasurer(void);
 OE_Result __OE_BuildEnclave(
     OE_SGXDevice* dev,
     const char* path,
-    const OE_EnclaveProperties_SGX* properties,
+    const OE_SGXEnclaveProperties* properties,
     bool debug,
     bool simulate,
     OE_Enclave* enclave);
@@ -41,9 +41,9 @@ void _OE_NotifyGdbEnclaveTermination(
     uint32_t enclavePathLength);
 
 /**
- * Find the OE_EnclaveProperties_SGX struct within the given section
+ * Find the OE_SGXEnclaveProperties struct within the given section
  *
- * This function attempts to find the **OE_EnclaveProperties_SGX** struct within
+ * This function attempts to find the **OE_SGXEnclaveProperties** struct within
  * the specified section of the ELF binary.
  *
  * @param elf ELF instance
@@ -56,15 +56,15 @@ void _OE_NotifyGdbEnclaveTermination(
  * @returns OE_NOT_FOUND enclave properties struct not found
  *
  */
-OE_Result OE_LoadEnclaveProperties_SGX(
+OE_Result OE_SGXLoadProperties(
     const Elf64* elf,
     const char* sectionName,
-    OE_EnclaveProperties_SGX* properties);
+    OE_SGXEnclaveProperties* properties);
 
 /**
- * Update the OE_EnclaveProperties_SGX struct within the given section
+ * Update the OE_SGXEnclaveProperties struct within the given section
  *
- * This function attempts to update the **OE_EnclaveProperties_SGX** struct
+ * This function attempts to update the **OE_SGXEnclaveProperties** struct
  * within the specified section of the ELF binary. If found, the section is
  * updated with the value of the **properties** parameter.
  *
@@ -78,16 +78,16 @@ OE_Result OE_LoadEnclaveProperties_SGX(
  * @returns OE_NOT_FOUND enclave properties struct not found
  *
  */
-OE_Result OE_UpdateEnclaveProperties_SGX(
+OE_Result OE_SGXUpdateEnclaveProperties(
     const Elf64* elf,
     const char* sectionName,
-    const OE_EnclaveProperties_SGX* properties);
+    const OE_SGXEnclaveProperties* properties);
 
 /**
  * Validate certain fields of an SGX enclave properties structure.
  *
  * This function checks whether the following fields of the
- * **OE_EnclaveProperties_SGX** structure have valid values.
+ * **OE_SGXEnclaveProperties** structure have valid values.
  *
  *     - productID
  *     - securityVersion
@@ -106,8 +106,8 @@ OE_Result OE_UpdateEnclaveProperties_SGX(
  * @returns OE_FAILURE at least one field is invalid
  *
  */
-OE_Result OE_ValidateEnclaveProperties_SGX(
-    const OE_EnclaveProperties_SGX* properties,
+OE_Result OE_SGXValidateEnclaveProperties(
+    const OE_SGXEnclaveProperties* properties,
     const char** fieldName);
 
 OE_EXTERNC_END

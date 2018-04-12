@@ -154,7 +154,7 @@ OE_CATCH:
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
-    const OE_EnclaveProperties_SGX* properties)
+    const OE_SGXEnclaveProperties* properties)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;

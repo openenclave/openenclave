@@ -33,7 +33,7 @@ typedef OE_Result (*OE_EAddProc)(
 typedef OE_Result (*OE_EInitProc)(
     OE_SGXDevice* dev,
     uint64_t addr,
-    const OE_EnclaveProperties_SGX* properties);
+    const OE_SGXEnclaveProperties* properties);
 
 typedef OE_Result (*OE_GetHash)(OE_SGXDevice* dev, OE_SHA256* hash);
 

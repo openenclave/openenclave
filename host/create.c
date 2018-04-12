@@ -941,17 +941,17 @@ done:
     return result;
 }
 
-OE_Result OE_LoadEnclaveProperties_SGX(
+OE_Result OE_SGXLoadProperties(
     const Elf64* elf,
     const char* sectionName,
-    OE_EnclaveProperties_SGX* properties)
+    OE_SGXEnclaveProperties* properties)
 {
     OE_Result result = OE_UNEXPECTED;
     uint8_t* sectionData;
     size_t sectionSize;
 
     if (properties)
-        memset(properties, 0, sizeof(OE_EnclaveProperties_SGX));
+        memset(properties, 0, sizeof(OE_SGXEnclaveProperties));
 
     /* Check for null parameter */
     if (!elf || !sectionName || !properties)
@@ -975,14 +975,14 @@ OE_Result OE_LoadEnclaveProperties_SGX(
                  sectionData,
                  sectionSize,
                  OE_ENCLAVE_TYPE_SGX,
-                 sizeof(OE_EnclaveProperties_SGX),
+                 sizeof(OE_SGXEnclaveProperties),
                  &header)) != OE_OK)
         {
             result = OE_NOT_FOUND;
             goto done;
         }
 
-        memcpy(properties, header, sizeof(OE_EnclaveProperties_SGX));
+        memcpy(properties, header, sizeof(OE_SGXEnclaveProperties));
     }
 
     result = OE_OK;
@@ -991,10 +991,10 @@ done:
     return result;
 }
 
-OE_Result OE_UpdateEnclaveProperties_SGX(
+OE_Result OE_SGXUpdateEnclaveProperties(
     const Elf64* elf,
     const char* sectionName,
-    const OE_EnclaveProperties_SGX* properties)
+    const OE_SGXEnclaveProperties* properties)
 {
     OE_Result result = OE_UNEXPECTED;
     uint8_t* sectionData;
@@ -1022,13 +1022,13 @@ OE_Result OE_UpdateEnclaveProperties_SGX(
                  sectionData,
                  sectionSize,
                  OE_ENCLAVE_TYPE_SGX,
-                 sizeof(OE_EnclaveProperties_SGX),
+                 sizeof(OE_SGXEnclaveProperties),
                  &header)) != OE_OK)
         {
             goto done;
         }
 
-        memcpy(header, properties, sizeof(OE_EnclaveProperties_SGX));
+        memcpy(header, properties, sizeof(OE_SGXEnclaveProperties));
     }
 
     result = OE_OK;
@@ -1037,8 +1037,8 @@ done:
     return result;
 }
 
-OE_Result OE_ValidateEnclaveProperties_SGX(
-    const OE_EnclaveProperties_SGX* properties,
+OE_Result OE_SGXValidateEnclaveProperties(
+    const OE_SGXEnclaveProperties* properties,
     const char** fieldName)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -1111,7 +1111,7 @@ done:
 OE_Result __OE_BuildEnclave(
     OE_SGXDevice* dev,
     const char* path,
-    const OE_EnclaveProperties_SGX* properties,
+    const OE_SGXEnclaveProperties* properties,
     bool debug,
     bool simulate,
     OE_Enclave* enclave)
@@ -1130,7 +1130,7 @@ OE_Result __OE_BuildEnclave(
     size_t relocSize;
     void* ecallData = NULL;
     size_t ecallSize;
-    OE_EnclaveProperties_SGX props;
+    OE_SGXEnclaveProperties props;
 
     memset(&elf, 0, sizeof(Elf64));
 
@@ -1164,11 +1164,11 @@ OE_Result __OE_BuildEnclave(
     else
     {
         OE_TRY(
-            OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, &props));
+            OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, &props));
     }
 
     /* Validate the enclave properties structure */
-    OE_TRY(OE_ValidateEnclaveProperties_SGX(&props, NULL));
+    OE_TRY(OE_SGXValidateEnclaveProperties(&props, NULL));
 
     /* Consolidate enclave-debug-flag with create-debug-flag */
     if (props.config.attributes & OE_SGX_FLAGS_DEBUG)

@@ -696,7 +696,7 @@ OE_CATCH:
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
-    const OE_EnclaveProperties_SGX* properties)
+    const OE_SGXEnclaveProperties* properties)
 {
     OE_Result result = OE_UNEXPECTED;
     Self* self = (Self*)dev;
@@ -728,7 +728,7 @@ static OE_Result _EInitProc(
             OE_TRY(self->measurer->gethash(self->measurer, &hash));
 
             OE_TRY(
-                OE_SignEnclave_SGX(
+                OE_SGXSignEnclave(
                     &hash,
                     properties->config.attributes,
                     properties->config.productID,

@@ -45,7 +45,7 @@ static char* _MakeSignedLibName(const char* path)
 
 static int _UpdateAndWriteSharedLib(
     const char* path,
-    const OE_EnclaveProperties_SGX* properties)
+    const OE_SGXEnclaveProperties* properties)
 {
     int rc = -1;
     Elf64 elf;
@@ -94,7 +94,7 @@ static int _UpdateAndWriteSharedLib(
     }
 
     // Update or create a new .oeinfo section.
-    if (OE_UpdateEnclaveProperties_SGX(
+    if (OE_SGXUpdateEnclaveProperties(
             &elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
         if (Elf64_AddSection(
@@ -102,7 +102,7 @@ static int _UpdateAndWriteSharedLib(
                 OE_INFO_SECTION_NAME,
                 SHT_NOTE,
                 properties,
-                sizeof(OE_EnclaveProperties_SGX)) != 0)
+                sizeof(OE_SGXEnclaveProperties)) != 0)
         {
             Err("failed to add section: %s", OE_INFO_SECTION_NAME);
             goto done;
@@ -384,15 +384,15 @@ done:
 }
 
 // Load the SGX enclave properties from an enclave's .oeinfo section.
-static OE_Result _LoadEnclaveProperties_SGX(
+static OE_Result _SGXLoadEnclaveProperties(
     const char* path,
-    OE_EnclaveProperties_SGX* properties)
+    OE_SGXEnclaveProperties* properties)
 {
     OE_Result result = OE_UNEXPECTED;
     Elf64 elf = ELF64_INIT;
 
     if (properties)
-        memset(properties, 0, sizeof(OE_EnclaveProperties_SGX));
+        memset(properties, 0, sizeof(OE_SGXEnclaveProperties));
 
     /* Check parameters */
     if (!path || !properties)
@@ -403,7 +403,7 @@ static OE_Result _LoadEnclaveProperties_SGX(
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
-    if (OE_LoadEnclaveProperties_SGX(&elf, OE_INFO_SECTION_NAME, properties) !=
+    if (OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, properties) !=
         OE_OK)
     {
         OE_RAISE(OE_NOT_FOUND);
@@ -421,20 +421,20 @@ done:
 
 /* Merge configuration file options into enclave properties */
 void _MergeConfigFileOptions(
-    OE_EnclaveProperties_SGX* properties,
+    OE_SGXEnclaveProperties* properties,
     const char* path,
     const ConfigFileOptions* options)
 {
     bool initialized = false;
 
     /* Determine whether the properties are already initialized */
-    if (properties->header.size == sizeof(OE_EnclaveProperties_SGX))
+    if (properties->header.size == sizeof(OE_SGXEnclaveProperties))
         initialized = true;
 
     /* Initialize properties if not already initialized */
     if (!initialized)
     {
-        properties->header.size = sizeof(OE_EnclaveProperties_SGX);
+        properties->header.size = sizeof(OE_SGXEnclaveProperties);
         properties->header.enclaveType = OE_ENCLAVE_TYPE_SGX;
         properties->config.attributes = SGX_FLAGS_MODE64BIT;
     }
@@ -477,7 +477,7 @@ int main(int argc, const char* argv[])
     void* pemData = NULL;
     size_t pemSize;
     ConfigFileOptions options = CONFIG_FILE_OPTIONS_INITIALIZER;
-    OE_EnclaveProperties_SGX props;
+    OE_SGXEnclaveProperties props;
     OE_SHA256 mrenclave;
 
     /* Check arguments */
@@ -501,7 +501,7 @@ int main(int argc, const char* argv[])
 
     /* Load the enclave properties from the enclave */
     {
-        result = _LoadEnclaveProperties_SGX(enclave, &props);
+        result = _SGXLoadEnclaveProperties(enclave, &props);
 
         if (result != OE_OK && result != OE_NOT_FOUND)
         {
@@ -521,7 +521,7 @@ int main(int argc, const char* argv[])
     {
         const char* fieldName;
 
-        if (OE_ValidateEnclaveProperties_SGX(&props, &fieldName) != OE_OK)
+        if (OE_SGXValidateEnclaveProperties(&props, &fieldName) != OE_OK)
         {
             Err("invalid enclave property value: %s", fieldName);
             goto done;
@@ -558,7 +558,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Initialize the SigStruct object */
-    if ((result = OE_SignEnclave_SGX(
+    if ((result = OE_SGXSignEnclave(
              &mrenclave,
              props.config.attributes,
              props.config.productID,
