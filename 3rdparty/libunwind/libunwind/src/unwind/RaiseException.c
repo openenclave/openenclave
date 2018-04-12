@@ -23,12 +23,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "stdbool.h"
+#include <stdbool.h>
 #include "unwind-internal.h"
 
 #ifdef OPEN_ENCLAVE
 extern bool OE_IsWithinEnclave(const void* ptr, size_t size);
-extern bool OE_IsOutsideEnclave(const void* ptr, size_t size);
 
 //
 // Check if the current cursor points to something inside the enclave.
