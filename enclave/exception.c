@@ -377,13 +377,6 @@ void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 #pragma GCC push_options
 #pragma GCC target("xsave")
 
-// Workaround for #144 where tests built with Release/RelDbgWithInfo Fail
-// as the reserved guard pages which are beyond the legacy area (0x240 bytes)
-// are incorrectly accessed by xrstor64, resulting in a fault.
-OE_ALIGNED(XSAVE_ALIGNMENT)
-uint8_t xsave_area[MAX_XSTATE_AREA_LENGTH] = {0};
-uint64_t restore_mask = ~((uint64_t)0x0);
-
 /*
 **==============================================================================
 **
@@ -397,6 +390,15 @@ uint64_t restore_mask = ~((uint64_t)0x0);
 
 void _OE_CleanupXStates(void)
 {
+    // Temporary workaround for #144 xrstor64 fault with optimized builds as
+    // reserved guard pages
+    // are incorrectly accessed. Xsave area is increased from 0x240 to 0x1000.
+    // Making these static
+    OE_ALIGNED(XSAVE_ALIGNMENT)
+    static uint8_t
+        xsave_area[MINIMAL_XSTATE_AREA_LENGTH]; //#144 Making this static
+    uint64_t restore_mask = ~((uint64_t)0x0);
+
     // The legacy registers(F87, SSE) values will be loaded from the
     // LEGACY_XSAVE_AREA that at beginning of xsave_area.The extended registers
     // will be initialized to their default values.
