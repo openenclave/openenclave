@@ -898,16 +898,15 @@ static OE_Result _FindEnclavePropertiesHeader(
     OE_EnclavePropertiesHeader** header)
 {
     OE_Result result = OE_UNEXPECTED;
-    uint8_t* p = sectionData;
-    uint8_t* end = p + sectionSize;
-    size_t r = end - p;
+    uint8_t* ptr = sectionData;
+    size_t bytesRemaining = sectionSize;
 
     *header = NULL;
 
     /* While there are more enclave property structures */
-    while (r >= structSize)
+    while (bytesRemaining >= structSize)
     {
-        OE_EnclavePropertiesHeader* h = (OE_EnclavePropertiesHeader*)p;
+        OE_EnclavePropertiesHeader* h = (OE_EnclavePropertiesHeader*)ptr;
 
         if (h->enclaveType == enclaveType)
         {
@@ -923,11 +922,11 @@ static OE_Result _FindEnclavePropertiesHeader(
         }
 
         /* If size of structure extends beyond end of section */
-        if (h->size > r)
+        if (h->size > bytesRemaining)
             break;
 
-        p += h->size;
-        r -= h->size;
+        ptr += h->size;
+        bytesRemaining -= h->size;
     }
 
     if (*header == NULL)
