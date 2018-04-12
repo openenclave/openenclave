@@ -1054,7 +1054,7 @@ OE_Result OE_ValidateEnclaveProperties_SGX(
         goto done;
     }
 
-    if (!OE_ValidAttributes(properties->config.attributes))
+    if (!OE_SGXValidAttributes(properties->config.attributes))
     {
         if (fieldName)
             *fieldName = "config.attributes";
@@ -1062,7 +1062,7 @@ OE_Result OE_ValidateEnclaveProperties_SGX(
         goto done;
     }
 
-    if (!OE_ValidNumHeapPages(properties->header.sizeSettings.numHeapPages))
+    if (!OE_SGXValidNumHeapPages(properties->header.sizeSettings.numHeapPages))
     {
         if (fieldName)
             *fieldName = "header.sizeSettings.numHeapPages";
@@ -1070,7 +1070,7 @@ OE_Result OE_ValidateEnclaveProperties_SGX(
         goto done;
     }
 
-    if (!OE_ValidNumStackPages(properties->header.sizeSettings.numStackPages))
+    if (!OE_SGXValidNumStackPages(properties->header.sizeSettings.numStackPages))
     {
         if (fieldName)
             *fieldName = "header.sizeSettings.numStackPages";
@@ -1078,7 +1078,7 @@ OE_Result OE_ValidateEnclaveProperties_SGX(
         goto done;
     }
 
-    if (!OE_ValidNumTCS(properties->header.sizeSettings.numTCS))
+    if (!OE_SGXValidNumTCS(properties->header.sizeSettings.numTCS))
     {
         if (fieldName)
             *fieldName = "header.sizeSettings.numTCS";
@@ -1086,7 +1086,7 @@ OE_Result OE_ValidateEnclaveProperties_SGX(
         goto done;
     }
 
-    if (!OE_ValidProductID(properties->config.productID))
+    if (!OE_SGXValidProductID(properties->config.productID))
     {
         if (fieldName)
             *fieldName = "config.productID";
@@ -1094,7 +1094,7 @@ OE_Result OE_ValidateEnclaveProperties_SGX(
         goto done;
     }
 
-    if (!OE_ValidSecurityVersion(properties->config.productID))
+    if (!OE_SGXValidSecurityVersion(properties->config.productID))
     {
         if (fieldName)
             *fieldName = "config.securityVersion";

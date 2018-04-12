@@ -279,14 +279,14 @@ OE_Result AESMGetLaunchToken(
 
     /* Obtain a luanch token */
     HRESULT hr = instance->lpVtbl->GetLicenseToken(
-        instance,                 /* this */
-        mrenclave,                /* mrenclave */
-        OE_SHA256_SIZE,           /* mrenclave_size */
-        modulus,                  /* public_key */
-        OE_KEY_SIZE,              /* public_key_size */
-        (PUINT8)attributes,       /* se_attributes */
+        instance,               /* this */
+        mrenclave,              /* mrenclave */
+        OE_SHA256_SIZE,         /* mrenclave_size */
+        modulus,                /* public_key */
+        OE_KEY_SIZE,            /* public_key_size */
+        (PUINT8)attributes,     /* se_attributes */
         sizeof(SGX_Attributes), /* se_attributes_size */
-        (PUINT8)launchToken,      /* lictoken */
+        (PUINT8)launchToken,    /* lictoken */
         /* MSR-SDK passes sizeof(SGX_EInitToken) */
         sizeof(SGX_EInitToken), /* lictoken_size */
         &error);                /* result */

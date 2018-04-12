@@ -4,7 +4,7 @@
 #include "signkey.h"
 
 /* The key for auto-signing debug enclaves */
-const char OE_DEBUG_SIGN_KEY[] =
+const uint8_t OE_DEBUG_SIGN_KEY[] =
     "-----BEGIN RSA PRIVATE KEY-----\n"
     "MIIG4gIBAAKCAYEAukAt/kn+T5FG64MM2dDvR26WSrDjGu8XDjYisFwBbktinVUF\n"
     "E05mFO9X1GDBlOqS8lqZuq8fhwm4lZFSc01im6LlLRp4l+EOAHkhfRl+y4SDPlLb\n"

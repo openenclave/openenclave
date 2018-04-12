@@ -86,9 +86,17 @@ OE_Result OE_UpdateEnclaveProperties_SGX(
 /**
  * Validate certain fields of an SGX enclave properties structure.
  *
- * This function checks whether certain fields of the SGX enclave properties
- * structure have invalid values. If so the **fieldName** output parameter
- * points to the name of the first field with an invalid value.
+ * This function checks whether the following fields of the
+ * **OE_EnclaveProperties_SGX** structure have valid values.
+ *
+ *     - productID
+ *     - securityVersion
+ *     - numStackPages
+ *     - numHeapPages
+ *     - numTCS
+ *
+ * If not the **fieldName** output parameter points to the name of the first 
+ * field with an invalid value.
  *
  * @param properties SGX enclave properties
  * @param fieldName[output] name of first invalid field (may be null)

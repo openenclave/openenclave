@@ -31,7 +31,7 @@ OE_Result OE_SignEnclave_SGX(
     uint64_t attributes,
     uint16_t productID,
     uint16_t securityVersion,
-    const char* pemData,
+    const uint8_t* pemData,
     size_t pemSize,
     SGX_SigStruct* sigstruct);
 

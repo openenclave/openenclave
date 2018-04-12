@@ -151,15 +151,27 @@ done:
     return rc;
 }
 
+// Options loaded from .conf file. Unitialized fields contain the maximum
+// integer value for the corresponding type.
 typedef struct _ConfigFileOptions
 {
-    uint64_t debug;
+    uint8_t debug;
     uint64_t numHeapPages;
     uint64_t numStackPages;
     uint64_t numTCS;
     uint16_t productID;
     uint16_t securityVersion;
 } ConfigFileOptions;
+
+#define CONFIG_FILE_OPTIONS_INITIALIZER \
+    { \
+        .debug = OE_MAX_UINT8, \
+        .numHeapPages = OE_MAX_UINT64, \
+        .numStackPages = OE_MAX_UINT64, \
+        .numTCS = OE_MAX_UINT64, \
+        .productID = OE_MAX_UINT16, \
+        .securityVersion = OE_MAX_UINT16, \
+    }
 
 static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
 {
@@ -170,14 +182,6 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
     str_t lhs = STR_NULL_INIT;
     str_t rhs = STR_NULL_INIT;
     size_t line = 1;
-
-    /* Set all fields to the uninitialized value */
-    options->debug = OE_MAX_UINT64;
-    options->numHeapPages = OE_MAX_UINT64;
-    options->numStackPages = OE_MAX_UINT64;
-    options->numTCS = OE_MAX_UINT64;
-    options->productID = OE_MAX_UINT16;
-    options->securityVersion = OE_MAX_UINT16;
 
     if (!(is = fopen(path, "rb")))
         goto done;
@@ -227,7 +231,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0 || !OE_ValidNumHeapPages(n))
+            if (str_u64(&rhs, &n) != 0 || !OE_SGXValidNumHeapPages(n))
             {
                 Err("%s(%zu): bad value for 'NumHeapPages'", path, line);
                 goto done;
@@ -239,7 +243,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0 || !OE_ValidNumStackPages(n))
+            if (str_u64(&rhs, &n) != 0 || !OE_SGXValidNumStackPages(n))
             {
                 Err("%s(%zu): bad value for 'NumStackPages'", path, line);
                 goto done;
@@ -251,7 +255,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint64_t n;
 
-            if (str_u64(&rhs, &n) != 0 || !OE_ValidNumTCS(n))
+            if (str_u64(&rhs, &n) != 0 || !OE_SGXValidNumTCS(n))
             {
                 Err("%s(%zu): bad value for 'NumTCS'", path, line);
                 goto done;
@@ -263,7 +267,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint16_t n;
 
-            if (str_u16(&rhs, &n) != 0 || !OE_ValidProductID(n))
+            if (str_u16(&rhs, &n) != 0 || !OE_SGXValidProductID(n))
             {
                 Err("%s(%zu): bad value for 'ProductID'", path, line);
                 goto done;
@@ -275,7 +279,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
         {
             uint16_t n;
 
-            if (str_u16(&rhs, &n) != 0 || !OE_ValidSecurityVersion(n))
+            if (str_u16(&rhs, &n) != 0 || !OE_SGXValidSecurityVersion(n))
             {
                 Err("%s(%zu): bad value for 'SecurityVersion'", path, line);
                 goto done;
@@ -420,7 +424,7 @@ void _MergeConfigFileOptions(
     }
 
     /* If Debug option is present */
-    if (options->debug != OE_MAX_UINT64)
+    if (options->debug != OE_MAX_UINT8)
     {
         /* If properties were already initialized on function entry */
         if (initialized)
@@ -477,7 +481,7 @@ int main(int argc, const char* argv[])
     OE_Enclave enc;
     void* pemData = NULL;
     size_t pemSize;
-    ConfigFileOptions options;
+    ConfigFileOptions options = CONFIG_FILE_OPTIONS_INITIALIZER;
     OE_EnclaveProperties_SGX props;
     OE_SHA256 mrenclave;
 
@@ -492,12 +496,6 @@ int main(int argc, const char* argv[])
     enclave = argv[1];
     conffile = argv[2];
     keyfile = argv[3];
-
-    /* Set default options */
-    memset(&options, 0, sizeof(ConfigFileOptions));
-    options.numHeapPages = 2;
-    options.numStackPages = 1;
-    options.numTCS = 2;
 
     /* Load the enclave properties from the enclave */
     {

@@ -34,7 +34,7 @@ static void _CheckProperties(
     OE_TEST(config->padding == 0);
     OE_TEST(config->attributes == attributes);
 
-    /* Initailize a zero-filled sigstruct */
+    /* Initialize a zero-filled sigstruct */
     const uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE] = {0};
 
     /* Check for presence or absence of the signature */

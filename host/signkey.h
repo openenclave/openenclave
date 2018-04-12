@@ -7,7 +7,7 @@
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
 
-extern const char OE_DEBUG_SIGN_KEY[];
+extern const uint8_t OE_DEBUG_SIGN_KEY[];
 
 extern size_t OE_DEBUG_SIGN_KEY_SIZE;
 

@@ -6,32 +6,32 @@
 
 #include "../properties.h"
 
-OE_INLINE bool OE_ValidProductID(uint16_t x)
+OE_INLINE bool OE_SGXValidProductID(uint16_t x)
 {
-    return (x >= 0 && x < OE_MAX_UINT16) ? true : false;
+    return x < OE_MAX_UINT16;
 }
 
-OE_INLINE bool OE_ValidSecurityVersion(uint16_t x)
+OE_INLINE bool OE_SGXValidSecurityVersion(uint16_t x)
 {
-    return (x >= 0 && x < OE_MAX_UINT16) ? true : false;
+    return x < OE_MAX_UINT16;
 }
 
-OE_INLINE bool OE_ValidNumHeapPages(uint64_t x)
+OE_INLINE bool OE_SGXValidNumHeapPages(uint64_t x)
 {
-    return (x > 0 && x < OE_MAX_UINT64) ? true : false;
+    return x < OE_MAX_UINT64;
 }
 
-OE_INLINE bool OE_ValidNumStackPages(uint64_t x)
+OE_INLINE bool OE_SGXValidNumStackPages(uint64_t x)
 {
-    return (x > 0 && x < OE_MAX_UINT64) ? true : false;
+    return x < OE_MAX_UINT64;
 }
 
-OE_INLINE bool OE_ValidNumTCS(uint64_t x)
+OE_INLINE bool OE_SGXValidNumTCS(uint64_t x)
 {
-    return (x > 0 && x < OE_MAX_UINT64) ? true : false;
+    return x < OE_MAX_UINT64;
 }
 
-OE_INLINE bool OE_ValidAttributes(uint64_t x)
+OE_INLINE bool OE_SGXValidAttributes(uint64_t x)
 {
     /* Check for illegal bits */
     if (x & ~(OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT))
