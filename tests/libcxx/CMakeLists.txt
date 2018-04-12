@@ -6,9 +6,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/../libc/get_testcase_name.cmake)
 
 # read tests.supported, sanitize the cpp-file, and create the test-case
 if (ENABLE_FULL_LIBCXX_TESTS)
-    file(STRINGS "tests.supported.all" alltests)
-else()
     file(STRINGS "tests.supported" alltests)
+else()
+    file(STRINGS "tests.supported.default" alltests)
 endif()
 
 foreach(testcase ${alltests})
