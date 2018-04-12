@@ -547,6 +547,7 @@ target_compile_options(oelibc PRIVATE
     -ffreestanding
     -fexcess-precision=standard
     -frounding-math
+    -mrdrnd
     )
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)

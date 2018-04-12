@@ -7,6 +7,7 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/str.h>
@@ -105,10 +106,6 @@ static OE_Result _GetDate(unsigned int* date)
 
         *date = (b[0] << 28) | (b[1] << 24) | (b[2] << 20) | (b[3] << 16) |
                 (b[4] << 12) | (b[5] << 8) | (b[6] << 4) | b[7];
-
-#if 0
-        *date = 0x20170705;
-#endif
     }
 
     result = OE_OK;
@@ -125,7 +122,7 @@ static OE_Result _GetModulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
     if (!rsa || !modulus)
         OE_THROW(OE_INVALID_PARAMETER);
 
-#if 0
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     fprintf(stderr, "modulus.bytes=%u\n", BN_num_bytes(rsa->n));
 #endif
 
@@ -159,7 +156,7 @@ static OE_Result _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
         exponent[3] = (x & 0x00000000FF000000) >> 24;
     }
 
-#if 0
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     if (!BN_bn2bin(rsa->e, buf))
         OE_THROW(OE_FAILURE);
 
@@ -254,7 +251,7 @@ OE_Result _GetQ1AndQ2(
             OE_THROW(OE_FAILURE);
     }
 
-#if 0
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     fprintf(stderr, "s.bytes=%d\n", BN_num_bytes(s));
     fprintf(stderr, "m.bytes=%d\n", BN_num_bytes(m));
     fprintf(stderr, "q1.bytes=%d\n", BN_num_bytes(q1));
@@ -715,7 +712,7 @@ int LoadConfigFile(const char* path, OE_EnclaveSettings* settings)
             goto done;
         }
 
-#if 0
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
         printf("{%s}={%s}\n", str_ptr(&lhs), str_ptr(&rhs));
 #endif
     }
@@ -743,7 +740,7 @@ int main(int argc, const char* argv[])
     size_t numHeapPages = 2;
     size_t numStackPages = 1;
     size_t numTCS = 2;
-    OE_SHA256 mrenclave = OE_SHA256_INIT;
+    OE_SHA256 mrenclave;
     OE_EnclaveSettings settings;
     SGX_SigStruct sigstruct;
     FILE* is = NULL;
@@ -814,9 +811,14 @@ int main(int argc, const char* argv[])
         OE_PutErr("_SignAndWriteSharedLib(): result=%u", result);
     }
 
-#if 0
-    printf("MRENCLAVE=%s\n", OE_SHA256StrOf(&mrenclave).buf);
-    DumpSigstruct(&sigstruct);
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
+    {
+        char buf[2 * OE_SHA256_SIZE + 1];
+        printf(
+            "MRENCLAVE=%s\n",
+            OE_HexString(buf, sizeof(buf), &mrenclave, sizeof(mrenclave)));
+        DumpSigstruct(&sigstruct);
+    }
 #endif
 
     ret = 0;

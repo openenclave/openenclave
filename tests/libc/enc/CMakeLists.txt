@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# create a binary for each testcase listed in ../tests.supported
+# Create a binary for each testcase listed in ../tests.supported
+# These tests generate a large number of warnings, some of them specific to compiler versions.
+# Disabling warning-as-errors for the specific warnings is painful across multiple different compilers.
+# It was agreed to, that it is best to just disable warnings-as-errors for these tests specifically.
 
 include(add_enclave_executable)
 include(${CMAKE_CURRENT_LIST_DIR}/../get_testcase_name.cmake)
@@ -13,16 +16,7 @@ add_library(libctest-support
     tls_align_dso.c
     )
 target_compile_options(libctest-support PRIVATE
-    -Wno-error=attributes
-    -Wno-error=overflow
-    -Wno-error=maybe-uninitialized
-    -Wno-error=missing-braces
-    -Wno-error=strict-overflow
-    -Wno-error=unused-but-set-variable
-    -Wno-error=unused-function
-    -Wno-error=unused-local-typedefs
-    -Wno-error=unused-value
-    -Wno-error=unused-variable
+    -Wno-error
     )
 target_link_libraries(libctest-support PUBLIC oelibc)
 
@@ -37,10 +31,7 @@ function(add_libc_test_enc NAME CFILE)
         ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common
         )
     target_compile_options(libctest-${NAME} PRIVATE
-        -Wno-error=missing-braces
-        -Wno-error=overflow
-        -Wno-error=unused-value
-        -Wno-error=unused-variable
+        -Wno-error
         )
     target_compile_definitions(libctest-${NAME} PRIVATE -D__TEST__="${CFILE}")
     target_link_libraries(libctest-${NAME} libctest-support)

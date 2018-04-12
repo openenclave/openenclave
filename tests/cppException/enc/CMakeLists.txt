@@ -8,4 +8,5 @@ add_enclave_executable(cppExceptionEnc sign.conf private.pem
     )
 
 target_compile_features(cppExceptionEnc PRIVATE cxx_generalized_initializers)
+target_compile_options(cppExceptionEnc PRIVATE -Wno-terminate)
 target_link_libraries(cppExceptionEnc oelibcxx)

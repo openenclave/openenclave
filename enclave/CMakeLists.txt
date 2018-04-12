@@ -6,10 +6,12 @@ add_library(oeenclave STATIC
     atexit.c
     calls.c
     cpuid.c
+    entropy.c
     exception.c
     globals.c
     hostcalls.c
     hoststack.c
+    hexdump.c
     init.c
     jump.c
     memory.c

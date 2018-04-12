@@ -6,12 +6,14 @@ option(ENABLE_FULL_LIBCXX_TESTS "Build all libcxx tests and include in test list
 
 add_subdirectory(abortStatus)
 add_subdirectory(aesm)
+add_subdirectory(crypto)
 add_subdirectory(ecall)
 add_subdirectory(ecall_ocall)
 add_subdirectory(echo)
 add_subdirectory(cppException)
 add_subdirectory(file)
 add_subdirectory(hostcalls)
+add_subdirectory(hexdump)
 
 if(ENABLE_LIBC_TESTS)
     add_subdirectory(libc)
