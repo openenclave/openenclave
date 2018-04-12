@@ -464,6 +464,42 @@ void _MergeConfigFileOptions(
         properties->header.sizeSettings.numTCS = options->numTCS;
 }
 
+static const char _usage[] =
+"Usage: %s EnclaveImage ConfigFile KeyFile\n"
+"\n"
+"Where:\n"
+"    EnclaveImage -- path of an enclave image file\n"
+"    ConfigFile -- configuration file containing enclave properties\n"
+"    KeyFile -- private key file used to digitally sign the image\n"
+"\n"
+"Description:\n"
+"    This utility (1) injects runtime properties into an enclave image and\n"
+"    (2) digitally signs that image.\n"
+"\n"
+"    The properties are read from the <ConfigFile>. They override any\n"
+"    properties that were already defined inside the enclave image through\n"
+"    use of the OE_SET_ENCLAVE_SGX macro. These properties include:\n"
+"\n"
+"        Debug - whether enclave debug mode should be enabled (1) or not (0)\n"
+"        ProductID - the product identified number\n"
+"        SecurityVersion - the security version number\n"
+"        NumHeapPages - the number of heap pages for this enclave\n"
+"        NumStackPages - the number of stack pages for this enclave\n"
+"        NumTCS - the number of thread control structures for this enclave\n"
+"\n"
+"    The configuration file contains simple NAME=VALUE entries. For example:\n"
+"\n"
+"        Debug=1\n"
+"        NumHeapPages=1024\n"
+"\n"
+"    The key is read from <KeyFile> and contains a private RSA key in PEM\n"
+"    format. The keyfile must contain the following header.\n"
+"\n"
+"        -----BEGIN RSA PRIVATE KEY-----\n"
+"\n"
+"    The resulting image is written to <EnclaveImage>.signed.so.\n"
+"\n";
+
 int main(int argc, const char* argv[])
 {
     arg0 = argv[0];
@@ -483,7 +519,7 @@ int main(int argc, const char* argv[])
     /* Check arguments */
     if (argc != 4)
     {
-        fprintf(stderr, "Usage: %s ENCLAVE CONFFILE KEYFILE\n", arg0);
+        fprintf(stderr, _usage, arg0);
         exit(1);
     }
 
