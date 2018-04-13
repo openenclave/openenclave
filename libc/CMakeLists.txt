@@ -405,7 +405,7 @@ add_library(oelibc STATIC
 
     ${MUSLSRC}/fenv/fegetexceptflag.c
     ${MUSLSRC}/fenv/feholdexcept.c
-    ${MUSLSRC}/fenv/fenv.c
+    ${MUSLSRC}/fenv/x86_64/fenv.s
     ${MUSLSRC}/fenv/fesetexceptflag.c
     ${MUSLSRC}/fenv/fesetround.c
     ${MUSLSRC}/fenv/feupdateenv.c
