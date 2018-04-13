@@ -59,7 +59,10 @@
 #define XSAVE_ALIGNMENT             0x40
 #define LEGACY_XSAVE_AREA           0X200
 #define XSAVE_HEADER_LENGTH         0X40
-#define MINIMAL_XSTATE_AREA_LENGTH  (LEGACY_XSAVE_AREA + XSAVE_HEADER_LENGTH)
+//#define MINIMAL_XSTATE_AREA_LENGTH  (LEGACY_XSAVE_AREA + XSAVE_HEADER_LENGTH)
+//Workaround for #144 xrstor64 fault - Increasing from 0x240 to 0x1000
+#define MINIMAL_XSTATE_AREA_LENGTH  0x1000
+
 
 //
 //  AMD64 ABI related constants.

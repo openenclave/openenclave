@@ -38,7 +38,7 @@ OE_Result OE_SGXLoadEnclaveData(
 OE_Result OE_SGXInitializeEnclave(
     OE_SGXLoadContext* context,
     uint64_t addr,
-    uint64_t sigstruct,
+    const OE_SGXEnclaveProperties* properties,
     OE_SHA256* mrenclave);
 
 OE_EXTERNC_END

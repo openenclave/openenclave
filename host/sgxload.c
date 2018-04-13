@@ -17,10 +17,12 @@
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/signsgx.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 #include "memalign.h"
 #include "sgxmeasure.h"
+#include "signkey.h"
 
 static uint32_t _MakeMemoryProtectParam(uint64_t inflags, bool simulate)
 {
@@ -252,6 +254,72 @@ done:
     return result;
 
 #endif /* defined(_WIN32) */
+}
+
+static OE_Result _GetEInitArgs(
+    const OE_SGXEnclaveProperties* properties,
+    const OE_SHA256* mrenclave,
+    SGX_SigStruct* sigstruct,
+    SGX_LaunchToken* launchToken)
+{
+    OE_Result result = OE_UNEXPECTED;
+    AESM* aesm = NULL;
+
+    memset(sigstruct, 0, sizeof(SGX_SigStruct));
+    memset(launchToken, 0, sizeof(SGX_LaunchToken));
+
+    /* Initialize the SGX attributes */
+    SGX_Attributes attributes = {0};
+    attributes.flags = properties->config.attributes;
+    attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
+
+    /* If sigstruct doesn't have expected header, treat enclave as unsigned */
+    if (memcmp(
+            ((SGX_SigStruct*)properties->sigstruct)->header,
+            SGX_SIGSTRUCT_HEADER,
+            sizeof(SGX_SIGSTRUCT_HEADER)) != 0)
+    {
+        /* Only debug-sign unsigned enclaves in debug mode, fail otherwise */
+        if (!(properties->config.attributes & SGX_FLAGS_DEBUG))
+            OE_RAISE(OE_FAILURE);
+
+        /* Perform debug-signing with well-known debug-signing key */
+        OE_CHECK(
+            OE_SGXSignEnclave(
+                mrenclave,
+                properties->config.attributes,
+                properties->config.productID,
+                properties->config.securityVersion,
+                OE_DEBUG_SIGN_KEY,
+                OE_DEBUG_SIGN_KEY_SIZE,
+                sigstruct));
+    }
+    else
+    {
+        /* Otherwise, treat enclave as signed and use its sigstruct */
+        memcpy(sigstruct, properties->sigstruct, sizeof(SGX_SigStruct));
+    }
+
+    /* Obtain a launch token from the AESM service */
+    if (!(aesm = AESMConnect()))
+        OE_RAISE(OE_FAILURE);
+
+    OE_CHECK(
+        AESMGetLaunchToken(
+            aesm,
+            sigstruct->enclavehash,
+            sigstruct->modulus,
+            &attributes,
+            launchToken));
+
+    result = OE_OK;
+
+done:
+
+    if (aesm)
+        AESMDisconnect(aesm);
+
+    return result;
 }
 
 OE_Result OE_SGXInitializeLoadContext(
@@ -494,16 +562,15 @@ done:
 OE_Result OE_SGXInitializeEnclave(
     OE_SGXLoadContext* context,
     uint64_t addr,
-    uint64_t sigstruct,
+    const OE_SGXEnclaveProperties* properties,
     OE_SHA256* mrenclave)
 {
     OE_Result result = OE_UNEXPECTED;
-    AESM* aesm = NULL;
 
     if (mrenclave)
         memset(mrenclave, 0, sizeof(OE_SHA256));
 
-    if (!context || !addr || !sigstruct || !mrenclave)
+    if (!context || !addr || !properties || !mrenclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (context->state != OE_SGX_LOADSTATE_ENCLAVE_CREATED)
@@ -516,45 +583,23 @@ OE_Result OE_SGXInitializeEnclave(
     if (context->type == OE_SGX_LOADTYPE_CREATE &&
         !OE_SGXLoadIsSimulation(context))
     {
-        /* Get a launch token from the AESM service */
-        SGX_SigStruct* sgxSigStruct = (SGX_SigStruct*)sigstruct;
-
+        /* Get the launch token from AESM, and a debug sigstruct if needed */
         SGX_LaunchToken launchToken;
-        memset(&launchToken, 0, sizeof(SGX_LaunchToken));
-
-        SGX_Attributes attributes;
-        memset(&attributes, 0, sizeof(SGX_Attributes));
-        attributes.flags = SGX_FLAGS_MODE64BIT;
-        if (OE_SGXLoadIsDebug(context))
-            attributes.flags |= SGX_FLAGS_DEBUG;
-        attributes.xfrm = 0x7;
-
-        if (!(aesm = AESMConnect()))
-            OE_RAISE(OE_FAILURE);
-
-        OE_CHECK(
-            AESMGetLaunchToken(
-                aesm,
-                sgxSigStruct->enclavehash,
-                sgxSigStruct->modulus,
-                &attributes,
-                &launchToken));
-
-        OE_STATIC_ASSERT(sizeof(*sgxSigStruct) == sizeof(SGX_SigStruct));
-        OE_STATIC_ASSERT(sizeof(SGX_LaunchToken) == sizeof(launchToken));
+        SGX_SigStruct sigstruct;
+        OE_CHECK(_GetEInitArgs(properties, mrenclave, &sigstruct, &launchToken));
 
 #if defined(__linux__)
 
         /* Ask the Linux SGX driver to initialize the enclave */
         if (SGX_IoctlEnclaveInit(
-                context->dev, addr, sigstruct, (uint64_t)&launchToken) != 0)
+                context->dev, addr, (uint64_t)&sigstruct, (uint64_t)&launchToken) != 0)
             OE_RAISE(OE_IOCTL_FAILED);
 
 #elif defined(_WIN32)
 
         OE_STATIC_ASSERT(
             OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, SigStruct) ==
-            sizeof(*sgxSigStruct));
+            sizeof(sigstruct));
         OE_STATIC_ASSERT(
             OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, EInitToken) <=
             sizeof(launchToken));
@@ -564,7 +609,7 @@ OE_Result OE_SGXInitializeEnclave(
         ENCLAVE_INIT_INFO_SGX info;
 
         memset(&info, 0, sizeof(info));
-        memcpy(&info.SigStruct, (void*)sgxSigStruct, sizeof(info.SigStruct));
+        memcpy(&info.SigStruct, (void*)&sigstruct, sizeof(info.SigStruct));
         memcpy(&info.EInitToken, (void*)&launchToken, sizeof(info.EInitToken));
 
         if (!InitializeEnclave(
@@ -583,9 +628,6 @@ OE_Result OE_SGXInitializeEnclave(
     result = OE_OK;
 
 done:
-
-    if (aesm)
-        AESMDisconnect(aesm);
 
     return result;
 }

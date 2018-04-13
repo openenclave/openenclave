@@ -21,20 +21,20 @@ static OE_Result InitializeContext(OE_SGXLoadContext* context)
     return OE_SGXInitializeLoadContext(context, type, OE_ENCLAVE_FLAG_DEBUG);
 }
 
-static const OE_EnclaveSettings* GetEnclaveSettings()
+static const OE_SGXEnclaveProperties* GetEnclaveProperties()
 {
 #ifdef USE_DRIVER
     return NULL;
 #else
-    static OE_EnclaveSettings settings;
+    static OE_SGXEnclaveProperties properties;
 
-    memset(&settings, 0, sizeof(OE_EnclaveSettings));
-    settings.debug = 1;
-    settings.numHeapPages = 2;
-    settings.numStackPages = 1;
-    settings.numTCS = 2;
+    memset(&properties, 0, sizeof(OE_SGXEnclaveProperties));
+    properties.config.attributes = OE_SGX_FLAGS_DEBUG;
+    properties.header.sizeSettings.numHeapPages = 2;
+    properties.header.sizeSettings.numStackPages = 1;
+    properties.header.sizeSettings.numTCS = 2;
 
-    return &settings;
+    return &properties;
 #endif
 }
 
@@ -54,7 +54,7 @@ int main(int argc, const char* argv[])
         OE_PutErr("InitializeContext() failed");
 
     if ((result = OE_SGXBuildEnclave(
-             &context, argv[1], GetEnclaveSettings(), &enclave)) != OE_OK)
+             &context, argv[1], GetEnclaveProperties(), &enclave)) != OE_OK)
     {
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
     }

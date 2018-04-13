@@ -51,6 +51,7 @@ typedef enum _OE_Result {
     OE_ENCLAVE_ABORTING,
     OE_ENCLAVE_ABORTED,
     OE_PLATFORM_ERROR,
+    OE_DEBUG_DOWNGRADE,
 } OE_Result;
 
 /**

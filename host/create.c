@@ -20,6 +20,7 @@
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/properties.h>
 #include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
@@ -87,8 +88,6 @@ static void _InitializeEnclaveHost()
 **
 **==============================================================================
 */
-
-OE_CHECK_SIZE(sizeof(SGX_SigStruct), 1808);
 
 static uint64_t _MakeSecinfoFlags(uint32_t flags)
 {
@@ -901,10 +900,229 @@ done:
     return result;
 }
 
+/* Find enclave property struct within an .oeinfo section */
+static OE_Result _FindEnclavePropertiesHeader(
+    uint8_t* sectionData,
+    size_t sectionSize,
+    OE_EnclaveType enclaveType,
+    size_t structSize,
+    OE_EnclavePropertiesHeader** header)
+{
+    OE_Result result = OE_UNEXPECTED;
+    uint8_t* ptr = sectionData;
+    size_t bytesRemaining = sectionSize;
+
+    *header = NULL;
+
+    /* While there are more enclave property structures */
+    while (bytesRemaining >= structSize)
+    {
+        OE_EnclavePropertiesHeader* h = (OE_EnclavePropertiesHeader*)ptr;
+
+        if (h->enclaveType == enclaveType)
+        {
+            if (h->size != structSize)
+            {
+                result = OE_FAILURE;
+                goto done;
+            }
+
+            /* Found it! */
+            *header = h;
+            break;
+        }
+
+        /* If size of structure extends beyond end of section */
+        if (h->size > bytesRemaining)
+            break;
+
+        ptr += h->size;
+        bytesRemaining -= h->size;
+    }
+
+    if (*header == NULL)
+    {
+        result = OE_NOT_FOUND;
+        goto done;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+OE_Result OE_SGXLoadProperties(
+    const Elf64* elf,
+    const char* sectionName,
+    OE_SGXEnclaveProperties* properties)
+{
+    OE_Result result = OE_UNEXPECTED;
+    uint8_t* sectionData;
+    size_t sectionSize;
+
+    if (properties)
+        memset(properties, 0, sizeof(OE_SGXEnclaveProperties));
+
+    /* Check for null parameter */
+    if (!elf || !sectionName || !properties)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Get pointer to and size of the given section */
+    if (Elf64_FindSection(elf, sectionName, &sectionData, &sectionSize) != 0)
+    {
+        result = OE_NOT_FOUND;
+        goto done;
+    }
+
+    /* Find SGX enclave property struct */
+    {
+        OE_EnclavePropertiesHeader* header;
+
+        if ((result = _FindEnclavePropertiesHeader(
+                 sectionData,
+                 sectionSize,
+                 OE_ENCLAVE_TYPE_SGX,
+                 sizeof(OE_SGXEnclaveProperties),
+                 &header)) != OE_OK)
+        {
+            result = OE_NOT_FOUND;
+            goto done;
+        }
+
+        memcpy(properties, header, sizeof(OE_SGXEnclaveProperties));
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+OE_Result OE_SGXUpdateEnclaveProperties(
+    const Elf64* elf,
+    const char* sectionName,
+    const OE_SGXEnclaveProperties* properties)
+{
+    OE_Result result = OE_UNEXPECTED;
+    uint8_t* sectionData;
+    size_t sectionSize;
+
+    /* Check for null parameter */
+    if (!elf || !sectionName || !properties)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Get pointer to and size of the given section */
+    if (Elf64_FindSection(elf, sectionName, &sectionData, &sectionSize) != 0)
+    {
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Find SGX enclave property struct */
+    {
+        OE_EnclavePropertiesHeader* header;
+
+        if ((result = _FindEnclavePropertiesHeader(
+                 sectionData,
+                 sectionSize,
+                 OE_ENCLAVE_TYPE_SGX,
+                 sizeof(OE_SGXEnclaveProperties),
+                 &header)) != OE_OK)
+        {
+            goto done;
+        }
+
+        memcpy(header, properties, sizeof(OE_SGXEnclaveProperties));
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+OE_Result OE_SGXValidateEnclaveProperties(
+    const OE_SGXEnclaveProperties* properties,
+    const char** fieldName)
+{
+    OE_Result result = OE_UNEXPECTED;
+
+    if (fieldName)
+        *fieldName = NULL;
+
+    /* Check for null parameters */
+    if (!properties)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    if (!OE_SGXValidAttributes(properties->config.attributes))
+    {
+        if (fieldName)
+            *fieldName = "config.attributes";
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    if (!OE_SGXValidNumHeapPages(properties->header.sizeSettings.numHeapPages))
+    {
+        if (fieldName)
+            *fieldName = "header.sizeSettings.numHeapPages";
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    if (!OE_SGXValidNumStackPages(
+            properties->header.sizeSettings.numStackPages))
+    {
+        if (fieldName)
+            *fieldName = "header.sizeSettings.numStackPages";
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    if (!OE_SGXValidNumTCS(properties->header.sizeSettings.numTCS))
+    {
+        if (fieldName)
+            *fieldName = "header.sizeSettings.numTCS";
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    if (!OE_SGXValidProductID(properties->config.productID))
+    {
+        if (fieldName)
+            *fieldName = "config.productID";
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    if (!OE_SGXValidSecurityVersion(properties->config.productID))
+    {
+        if (fieldName)
+            *fieldName = "config.securityVersion";
+        result = OE_FAILURE;
+        goto done;
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 OE_Result OE_SGXBuildEnclave(
     OE_SGXLoadContext* context,
     const char* path,
-    const OE_EnclaveSettings* settings,
+    const OE_SGXEnclaveProperties* properties,
     OE_Enclave* enclave)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -916,14 +1134,13 @@ OE_Result OE_SGXBuildEnclave(
     size_t enclaveSize = 0;
     uint64_t enclaveAddr = 0;
     size_t i;
-    OE_SignatureSection sigsec;
     Elf64 elf;
     void* relocData = NULL;
     size_t relocSize;
     void* ecallData = NULL;
     size_t ecallSize;
+    OE_SGXEnclaveProperties props;
 
-    memset(&sigsec, 0, sizeof(OE_SignatureSection));
     memset(&elf, 0, sizeof(Elf64));
 
     /* Clear and initialize enclave structure */
@@ -947,23 +1164,36 @@ OE_Result OE_SGXBuildEnclave(
     if (Elf64_Load(path, &elf) != 0)
         OE_RAISE(OE_FAILURE);
 
-    /* If settings parameter non-null, then use those settings */
-    if (settings)
-        sigsec.settings = *settings;
-
-    /* Get the OE_SignatureSection from the ELF shared library */
-    if (!settings)
+    // If the **properties** parameter is non-null, use those properties.
+    // Else use the properties stored in the .oeinfo section.
+    if (properties)
     {
-        const void* data;
-        size_t size;
+        props = *properties;
+    }
+    else
+    {
+        OE_CHECK(OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, &props));
+    }
 
-        if (Elf64_FindSection(&elf, ".oesig", &data, &size) != 0)
-            OE_RAISE(OE_FAILURE);
+    /* Validate the enclave properties structure */
+    OE_CHECK(OE_SGXValidateEnclaveProperties(&props, NULL));
 
-        if (size != sizeof(OE_SignatureSection))
-            OE_RAISE(OE_FAILURE);
-
-        memcpy(&sigsec, data, size);
+    /* Consolidate enclave-debug-flag with create-debug-flag */
+    if (props.config.attributes & OE_SGX_FLAGS_DEBUG)
+    {
+        if (!enclave->debug)
+        {
+            /* Upgrade to non-debug mode */
+            props.config.attributes &= ~OE_SGX_FLAGS_DEBUG;
+        }
+    }
+    else
+    {
+        if (enclave->debug)
+        {
+            /* Attempted to downgrade to debug mode */
+            OE_RAISE(OE_DEBUG_DOWNGRADE);
+        }
     }
 
     /* Load the program segments into memory */
@@ -992,9 +1222,9 @@ OE_Result OE_SGXBuildEnclave(
             numSegments,
             relocSize,
             ecallSize,
-            sigsec.settings.numHeapPages,
-            sigsec.settings.numStackPages,
-            sigsec.settings.numTCS,
+            props.header.sizeSettings.numHeapPages,
+            props.header.sizeSettings.numStackPages,
+            props.header.sizeSettings.numTCS,
             &enclaveEnd,
             &enclaveSize));
 
@@ -1035,15 +1265,15 @@ OE_Result OE_SGXBuildEnclave(
             ecallData,
             ecallSize,
             entryAddr,
-            sigsec.settings.numHeapPages,
-            sigsec.settings.numStackPages,
-            sigsec.settings.numTCS,
+            props.header.sizeSettings.numHeapPages,
+            props.header.sizeSettings.numStackPages,
+            props.header.sizeSettings.numTCS,
             enclave));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(
         OE_SGXInitializeEnclave(
-            context, enclaveAddr, (uint64_t)&sigsec.sigstruct, &enclave->hash));
+            context, enclaveAddr, &props, &enclave->hash));
 
     /* Save the offset of the .text section */
     OE_CHECK(_SaveTextAddress(enclave, &elf));

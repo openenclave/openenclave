@@ -4,6 +4,7 @@
 #ifndef _STR_H
 #define _STR_H
 
+#include <limits.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -442,7 +443,7 @@ MEM_INLINE int str_u64(str_t* str, uint64_t* u64)
 
 MEM_INLINE int str_u32(str_t* str, unsigned int* u32)
 {
-    unsigned int x;
+    unsigned long x;
     char* end;
 
     if (!str_ok(str) || !u32)
@@ -450,10 +451,27 @@ MEM_INLINE int str_u32(str_t* str, unsigned int* u32)
 
     x = strtoul(str_ptr(str), &end, 10);
 
-    if (!end || *end)
+    if (!end || *end || x > UINT_MAX)
         return -1;
 
     *u32 = x;
+    return 0;
+}
+
+MEM_INLINE int str_u16(str_t* str, unsigned short* u16)
+{
+    unsigned long x;
+    char* end;
+
+    if (!str_ok(str) || !u16)
+        return -1;
+
+    x = strtoul(str_ptr(str), &end, 10);
+
+    if (!end || *end || x > USHRT_MAX)
+        return -1;
+
+    *u16 = (unsigned short)x;
     return 0;
 }
 

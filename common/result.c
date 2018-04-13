@@ -78,6 +78,8 @@ const char* OE_ResultStr(OE_Result result)
             return "OE_ENCLAVE_ABORTED";
         case OE_PLATFORM_ERROR:
             return "OE_PLATFORM_ERROR";
+        case OE_DEBUG_DOWNGRADE:
+            return "OE_DEBUG_DOWNGRADE";
     }
 
     return "UNKNOWN";
