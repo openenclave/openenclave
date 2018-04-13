@@ -94,8 +94,8 @@ static int _UpdateAndWriteSharedLib(
     }
 
     // Update or create a new .oeinfo section.
-    if (OE_SGXUpdateEnclaveProperties(
-            &elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
+    if (OE_SGXUpdateEnclaveProperties(&elf, OE_INFO_SECTION_NAME, properties) !=
+        OE_OK)
     {
         if (Elf64_AddSection(
                 &elf,
@@ -155,7 +155,7 @@ done:
 // integer value for the corresponding type.
 typedef struct _ConfigFileOptions
 {
-    uint8_t debug;
+    bool debug;
     uint64_t numHeapPages;
     uint64_t numStackPages;
     uint64_t numTCS;
@@ -165,7 +165,7 @@ typedef struct _ConfigFileOptions
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                               \
     {                                                                 \
-        .debug = OE_MAX_UINT8, .numHeapPages = OE_MAX_UINT64,         \
+        .debug = false, .numHeapPages = OE_MAX_UINT64,                \
         .numStackPages = OE_MAX_UINT64, .numTCS = OE_MAX_UINT64,      \
         .productID = OE_MAX_UINT16, .securityVersion = OE_MAX_UINT16, \
     }
@@ -235,13 +235,13 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
             uint64_t value;
 
             // Debug must be 0 or 1
-            if (str_u64(&rhs, &value) != 0 || (value != 0 && value != 1))
+            if (str_u64(&rhs, &value) != 0 || (value > 1))
             {
                 Err("%s(%zu): bad value for 'Debug'", path, line);
                 goto done;
             }
 
-            options->debug = (uint8_t)value;
+            options->debug = (bool)value;
         }
         else if (strcmp(str_ptr(&lhs), "NumHeapPages") == 0)
         {
@@ -403,8 +403,7 @@ static OE_Result _SGXLoadEnclaveProperties(
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
-    if (OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, properties) !=
-        OE_OK)
+    if (OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
         OE_RAISE(OE_NOT_FOUND);
     }
@@ -440,7 +439,7 @@ void _MergeConfigFileOptions(
     }
 
     /* Debug option is present */
-    if (options->debug != OE_MAX_UINT8)
+    if (options->debug)
         properties->config.attributes |= SGX_FLAGS_DEBUG;
 
     /* If ProductID option is present */
@@ -465,40 +464,45 @@ void _MergeConfigFileOptions(
 }
 
 static const char _usage[] =
-"Usage: %s EnclaveImage ConfigFile KeyFile\n"
-"\n"
-"Where:\n"
-"    EnclaveImage -- path of an enclave image file\n"
-"    ConfigFile -- configuration file containing enclave properties\n"
-"    KeyFile -- private key file used to digitally sign the image\n"
-"\n"
-"Description:\n"
-"    This utility (1) injects runtime properties into an enclave image and\n"
-"    (2) digitally signs that image.\n"
-"\n"
-"    The properties are read from the <ConfigFile>. They override any\n"
-"    properties that were already defined inside the enclave image through\n"
-"    use of the OE_SET_ENCLAVE_SGX macro. These properties include:\n"
-"\n"
-"        Debug - whether enclave debug mode should be enabled (1) or not (0)\n"
-"        ProductID - the product identified number\n"
-"        SecurityVersion - the security version number\n"
-"        NumHeapPages - the number of heap pages for this enclave\n"
-"        NumStackPages - the number of stack pages for this enclave\n"
-"        NumTCS - the number of thread control structures for this enclave\n"
-"\n"
-"    The configuration file contains simple NAME=VALUE entries. For example:\n"
-"\n"
-"        Debug=1\n"
-"        NumHeapPages=1024\n"
-"\n"
-"    The key is read from <KeyFile> and contains a private RSA key in PEM\n"
-"    format. The keyfile must contain the following header.\n"
-"\n"
-"        -----BEGIN RSA PRIVATE KEY-----\n"
-"\n"
-"    The resulting image is written to <EnclaveImage>.signed.so.\n"
-"\n";
+    "Usage: %s EnclaveImage ConfigFile KeyFile\n"
+    "\n"
+    "Where:\n"
+    "    EnclaveImage -- path of an enclave image file\n"
+    "    ConfigFile -- configuration file containing enclave properties\n"
+    "    KeyFile -- private key file used to digitally sign the image\n"
+    "\n"
+    "Description:\n"
+    "    This utility (1) injects runtime properties into an enclave image "
+    "and\n"
+    "    (2) digitally signs that image.\n"
+    "\n"
+    "    The properties are read from the <ConfigFile>. They override any\n"
+    "    properties that were already defined inside the enclave image "
+    "through\n"
+    "    use of the OE_SET_ENCLAVE_SGX macro. These properties include:\n"
+    "\n"
+    "        Debug - whether enclave debug mode should be enabled (1) or not "
+    "(0)\n"
+    "        ProductID - the product identified number\n"
+    "        SecurityVersion - the security version number\n"
+    "        NumHeapPages - the number of heap pages for this enclave\n"
+    "        NumStackPages - the number of stack pages for this enclave\n"
+    "        NumTCS - the number of thread control structures for this "
+    "enclave\n"
+    "\n"
+    "    The configuration file contains simple NAME=VALUE entries. For "
+    "example:\n"
+    "\n"
+    "        Debug=1\n"
+    "        NumHeapPages=1024\n"
+    "\n"
+    "    The key is read from <KeyFile> and contains a private RSA key in PEM\n"
+    "    format. The keyfile must contain the following header.\n"
+    "\n"
+    "        -----BEGIN RSA PRIVATE KEY-----\n"
+    "\n"
+    "    The resulting image is written to <EnclaveImage>.signed.so.\n"
+    "\n";
 
 int main(int argc, const char* argv[])
 {

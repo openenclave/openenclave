@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/error.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
 #include <stdio.h>
 #include "../../../host/enclave.h"
@@ -64,8 +64,7 @@ static OE_Result _SGXLoadEnclaveProperties(
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
-    if (OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, properties) !=
-        OE_OK)
+    if (OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
         OE_RAISE(OE_NOT_FOUND);
     }

@@ -6,9 +6,9 @@
 
 #include <openenclave/bits/sha.h>
 #include <openenclave/defs.h>
+#include <openenclave/properties.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
-#include "../properties.h"
 
 OE_EXTERNC_BEGIN
 

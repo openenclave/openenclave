@@ -4,7 +4,7 @@
 #ifndef _OE_BITS_PROPERTIES_H
 #define _OE_BITS_PROPERTIES_H
 
-#include "../properties.h"
+#include <openenclave/properties.h>
 
 OE_INLINE bool OE_SGXValidProductID(uint16_t x)
 {

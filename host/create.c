@@ -1163,8 +1163,7 @@ OE_Result __OE_BuildEnclave(
     }
     else
     {
-        OE_TRY(
-            OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, &props));
+        OE_TRY(OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, &props));
     }
 
     /* Validate the enclave properties structure */
