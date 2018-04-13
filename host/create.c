@@ -19,8 +19,8 @@
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/mem.h>
-#include <openenclave/bits/raise.h>
 #include <openenclave/bits/properties.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
@@ -1272,8 +1272,7 @@ OE_Result OE_SGXBuildEnclave(
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(
-        OE_SGXInitializeEnclave(
-            context, enclaveAddr, &props, &enclave->hash));
+        OE_SGXInitializeEnclave(context, enclaveAddr, &props, &enclave->hash));
 
     /* Save the offset of the .text section */
     OE_CHECK(_SaveTextAddress(enclave, &elf));

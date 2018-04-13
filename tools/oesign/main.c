@@ -6,8 +6,7 @@
 #include <openenclave/bits/properties.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxcreate.h>
-//#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/signsgx.h>
+#include <openenclave/bits/sgxsign.h>
 #include <openenclave/bits/str.h>
 #include <stdarg.h>
 #include <sys/stat.h>

@@ -16,8 +16,8 @@
 #include <openenclave/bits/aesm.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxcreate.h>
+#include <openenclave/bits/sgxsign.h>
 #include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/signsgx.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 #include "memalign.h"
@@ -586,13 +586,17 @@ OE_Result OE_SGXInitializeEnclave(
         /* Get the launch token from AESM, and a debug sigstruct if needed */
         SGX_LaunchToken launchToken;
         SGX_SigStruct sigstruct;
-        OE_CHECK(_GetEInitArgs(properties, mrenclave, &sigstruct, &launchToken));
+        OE_CHECK(
+            _GetEInitArgs(properties, mrenclave, &sigstruct, &launchToken));
 
 #if defined(__linux__)
 
         /* Ask the Linux SGX driver to initialize the enclave */
         if (SGX_IoctlEnclaveInit(
-                context->dev, addr, (uint64_t)&sigstruct, (uint64_t)&launchToken) != 0)
+                context->dev,
+                addr,
+                (uint64_t)&sigstruct,
+                (uint64_t)&launchToken) != 0)
             OE_RAISE(OE_IOCTL_FAILED);
 
 #elif defined(_WIN32)
