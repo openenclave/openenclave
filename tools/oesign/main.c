@@ -3,12 +3,11 @@
 
 #define OE_TRACE_LEVEL 1
 #include <openenclave/bits/aesm.h>
-#include <openenclave/bits/build.h>
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/mem.h>
+#include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/str.h>
 #include <openenclave/bits/trace.h>

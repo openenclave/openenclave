@@ -14,11 +14,12 @@
 #endif
 
 #include <openenclave/bits/aesm.h>
-#include <openenclave/bits/build.h>
+#include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 #include "memalign.h"
+#include "sgxmeasure.h"
 
 static uint32_t _MakeMemoryProtectParam(uint64_t inflags, bool simulate)
 {

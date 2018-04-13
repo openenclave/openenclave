@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "sgxmeasure.h"
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
-#include "sgxload.h"
 
 static void _MeasureZeros(OE_SHA256Context* context, size_t size)
 {

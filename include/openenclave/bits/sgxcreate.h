@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_BUILD_H
-#define _OE_BUILD_H
+#ifndef _OE_SGXCREATE_H
+#define _OE_SGXCREATE_H
 
-#include <openenclave/bits/sha.h>
-#include <openenclave/defs.h>
 #include <openenclave/result.h>
-#include <openenclave/types.h>
 #include "sgxtypes.h"
+#include "sha.h"
 
 OE_EXTERNC_BEGIN
 
@@ -65,16 +63,6 @@ OE_Result OE_SGXBuildEnclave(
     const OE_EnclaveSettings* settings,
     OE_Enclave* enclave);
 
-void _OE_NotifyGdbEnclaveCreation(
-    const OE_Enclave* enclave,
-    const char* enclavePath,
-    uint32_t enclavePathLength);
-
-void _OE_NotifyGdbEnclaveTermination(
-    const OE_Enclave* enclave,
-    const char* enclavePath,
-    uint32_t enclavePathLength);
-
 OE_EXTERNC_END
 
-#endif /* _OE_BUILD_H */
+#endif /* _OE_SGXCREATE_H */

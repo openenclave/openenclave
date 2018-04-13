@@ -13,12 +13,13 @@
 #endif
 
 #include <assert.h>
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/cpuid.h>
+#include <openenclave/bits/debug.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/mem.h>
+#include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>

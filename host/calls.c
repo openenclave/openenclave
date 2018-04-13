@@ -22,7 +22,6 @@
 #error "unsupported platform"
 #endif
 
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/registers.h>
 #include <openenclave/bits/sgxtypes.h>

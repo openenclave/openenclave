@@ -4,7 +4,7 @@
 #ifndef _OE_SGXLOAD_H
 #define _OE_SGXLOAD_H
 
-#include <openenclave/bits/build.h>
+#include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/host.h>
 
@@ -22,11 +22,6 @@ OE_INLINE bool OE_SGXLoadIsDebug(const OE_SGXLoadContext* context)
     return (context && (context->attributes & OE_ENCLAVE_FLAG_DEBUG));
 }
 
-/*
-**==============================================================================
-** SGX Enclave creation methods implemented by sgxload.c
-**==============================================================================
-*/
 OE_Result OE_SGXCreateEnclave(
     OE_SGXLoadContext* context,
     uint64_t enclaveSize,
@@ -44,25 +39,6 @@ OE_Result OE_SGXInitializeEnclave(
     OE_SGXLoadContext* context,
     uint64_t addr,
     uint64_t sigstruct,
-    OE_SHA256* mrenclave);
-
-/*
-**==============================================================================
-** SGX Enclave measurement methods implemented by sgxmeasure.c
-**==============================================================================
-*/
-OE_Result OE_SGXMeasureCreateEnclave(OE_SHA256Context* context, SGX_Secs* secs);
-
-OE_Result OE_SGXMeasureLoadEnclaveData(
-    OE_SHA256Context* context,
-    uint64_t base,
-    uint64_t addr,
-    uint64_t src,
-    uint64_t flags,
-    bool extend);
-
-OE_Result OE_SGXMeasureInitializeEnclave(
-    OE_SHA256Context* context,
     OE_SHA256* mrenclave);
 
 OE_EXTERNC_END
