@@ -4,7 +4,6 @@
 #ifndef _OE_SGXTYPES_H
 #define _OE_SGXTYPES_H
 
-#include <openenclave/bits/sha.h>
 #include <openenclave/defs.h>
 #include <openenclave/properties.h>
 #include <openenclave/result.h>
@@ -12,6 +11,7 @@
 #include "epid.h"
 #include "jump.h"
 #include "load.h"
+#include "sha.h"
 
 OE_EXTERNC_BEGIN
 

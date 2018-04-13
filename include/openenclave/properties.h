@@ -15,8 +15,8 @@
 #ifndef _OE_PROPERTIES_H
 #define _OE_PROPERTIES_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include "defs.h"
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 
