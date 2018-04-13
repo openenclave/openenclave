@@ -299,6 +299,7 @@
 ../../3rdparty/musl/libc-test/src/regression/execle-env.c
 ../../3rdparty/musl/libc-test/src/regression/fflush-exit.c
 ../../3rdparty/musl/libc-test/src/regression/fgets-eof.c
+../../3rdparty/musl/libc-test/src/regression/fgetwc-buffering.c
 ../../3rdparty/musl/libc-test/src/regression/flockfile-list.c
 ../../3rdparty/musl/libc-test/src/regression/fpclassify-invalid-ld80.c
 ../../3rdparty/musl/libc-test/src/regression/ftello-unflushed-append.c
