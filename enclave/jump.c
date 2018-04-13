@@ -7,6 +7,9 @@
  * This file must be compiled with optimization enabled because the code
  * relies on the precise layout of the stack (and thereby preamble) to obtain
  * the correct rsp and rip.
+ *
+ * Really, this should go into a separate .s-file to ensure correct register
+ * access.
  */
 
 int OE_Setjmp(OE_Jmpbuf* env)
@@ -71,5 +74,5 @@ void OE_Longjmp(OE_Jmpbuf* env, int val)
           "m"(env->r14),
           "m"(env->r15),
           "m"(env->rsp),
-          "r"(env->rip));
+          "d"(env->rip));
 }

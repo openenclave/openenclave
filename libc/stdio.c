@@ -83,8 +83,13 @@ int fprintf(FILE* stream, const char* fmt, ...)
     else if (stream == stderr)
         device = 1;
     else
-        return 0;
-
+    {
+        va_list ap;
+        va_start(ap, fmt);
+        int r = vfprintf(stream, fmt, ap);
+        va_end(ap);
+        return r;
+    }
     memset(buf, 0, sizeof(buf));
 
     /* First try writing to 'buf' with possible truncation */

@@ -1,4 +1,4 @@
-/**
+ /**
  * \file config.h
  *
  * \brief Configuration options (set of defines)
@@ -81,7 +81,7 @@
  * example, if double-width division is implemented in software, disabling
  * it can reduce code size in some embedded targets.
  */
-//OpenEnclave: enabled
+//Open Enclave: enabled
 #define MBEDTLS_NO_UDBL_DIVISION
 
 /**
@@ -91,7 +91,8 @@
  *
  * Uncomment if the CPU supports SSE2 (IA-32 specific).
  */
-//#define MBEDTLS_HAVE_SSE2
+//Open Enclave: enabled since SGX chips should all support SSE2
+#define MBEDTLS_HAVE_SSE2
 
 /**
  * \def MBEDTLS_HAVE_TIME
@@ -106,7 +107,8 @@
  *
  * Comment if your system does not support time functions
  */
-#define MBEDTLS_HAVE_TIME
+//Open Enclave TODO: enable when enclave secure time is available: issue #182
+//#define MBEDTLS_HAVE_TIME
 
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
@@ -118,7 +120,7 @@
  *
  * Comment if your system does not have a correct clock.
  */
-//OpenEnclave: disabled
+//Open Enclave TODO: enable when enclave secure time is available: issue #182
 //#define MBEDTLS_HAVE_TIME_DATE
 
 /**
@@ -208,7 +210,7 @@
  *
  * Uncomment to get warnings on using deprecated functions.
  */
-//#define MBEDTLS_DEPRECATED_WARNING
+#define MBEDTLS_DEPRECATED_WARNING
 
 /**
  * \def MBEDTLS_DEPRECATED_REMOVED
@@ -220,7 +222,7 @@
  *
  * Uncomment to get errors on using deprecated functions.
  */
-//#define MBEDTLS_DEPRECATED_REMOVED
+#define MBEDTLS_DEPRECATED_REMOVED
 
 /* \} name SECTION: System support */
 
@@ -413,7 +415,8 @@
  *
  * Uncomment to use your own hardware entropy collector.
  */
-//#define MBEDTLS_ENTROPY_HARDWARE_ALT
+// Open Enclave: enable custom entropy collector: mbedtls_hardware_poll()
+#define MBEDTLS_ENTROPY_HARDWARE_ALT
 
 /**
  * \def MBEDTLS_AES_ROM_TABLES
@@ -445,7 +448,8 @@
  *
  * Enable Cipher Feedback mode (CFB) for symmetric ciphers.
  */
-#define MBEDTLS_CIPHER_MODE_CFB
+//Open Enclave: Block known weak cipher block mode
+//#define MBEDTLS_CIPHER_MODE_CFB
 
 /**
  * \def MBEDTLS_CIPHER_MODE_CTR
@@ -539,17 +543,20 @@
  *
  * Comment macros to disable the curve and functions for it
  */
-#define MBEDTLS_ECP_DP_SECP192R1_ENABLED
-#define MBEDTLS_ECP_DP_SECP224R1_ENABLED
+//Open Enclave: Remove uncommon elliptic curve choices from the list.
+//#define MBEDTLS_ECP_DP_SECP192R1_ENABLED
+//#define MBEDTLS_ECP_DP_SECP224R1_ENABLED
+// p256, p384 and p521 matches NSA's suite B
 #define MBEDTLS_ECP_DP_SECP256R1_ENABLED
 #define MBEDTLS_ECP_DP_SECP384R1_ENABLED
 #define MBEDTLS_ECP_DP_SECP521R1_ENABLED
-#define MBEDTLS_ECP_DP_SECP192K1_ENABLED
-#define MBEDTLS_ECP_DP_SECP224K1_ENABLED
+//#define MBEDTLS_ECP_DP_SECP192K1_ENABLED
+//#define MBEDTLS_ECP_DP_SECP224K1_ENABLED
+// p256k1 is used by bitcoin
 #define MBEDTLS_ECP_DP_SECP256K1_ENABLED
-#define MBEDTLS_ECP_DP_BP256R1_ENABLED
-#define MBEDTLS_ECP_DP_BP384R1_ENABLED
-#define MBEDTLS_ECP_DP_BP512R1_ENABLED
+//#define MBEDTLS_ECP_DP_BP256R1_ENABLED
+//#define MBEDTLS_ECP_DP_BP384R1_ENABLED
+//#define MBEDTLS_ECP_DP_BP512R1_ENABLED
 #define MBEDTLS_ECP_DP_CURVE25519_ENABLED
 
 /**
@@ -597,7 +604,9 @@
  *      MBEDTLS_TLS_PSK_WITH_3DES_EDE_CBC_SHA
  *      MBEDTLS_TLS_PSK_WITH_RC4_128_SHA
  */
-#define MBEDTLS_KEY_EXCHANGE_PSK_ENABLED
+//Open Enclave: Disable pre-shared keys in enclaves until we have a use case.
+// Basic PSK has no perfect forward secrecy, not recommended for future use.
+//#define MBEDTLS_KEY_EXCHANGE_PSK_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
@@ -621,7 +630,9 @@
  *      MBEDTLS_TLS_DHE_PSK_WITH_3DES_EDE_CBC_SHA
  *      MBEDTLS_TLS_DHE_PSK_WITH_RC4_128_SHA
  */
-#define MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
+//Open Enclave: Disable pre-shared keys in enclaves until we have a use case.
+// Consider ECDHE_PSK instead of DHE_PSK for performance
+//#define MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECDHE_PSK_ENABLED
@@ -641,7 +652,8 @@
  *      MBEDTLS_TLS_ECDHE_PSK_WITH_3DES_EDE_CBC_SHA
  *      MBEDTLS_TLS_ECDHE_PSK_WITH_RC4_128_SHA
  */
-#define MBEDTLS_KEY_EXCHANGE_ECDHE_PSK_ENABLED
+//Open Enclave: Disable pre-shared keys in enclaves until we have a use case.
+//#define MBEDTLS_KEY_EXCHANGE_ECDHE_PSK_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED
@@ -666,7 +678,9 @@
  *      MBEDTLS_TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA
  *      MBEDTLS_TLS_RSA_PSK_WITH_RC4_128_SHA
  */
-#define MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED
+//Open Enclave: Disable pre-shared keys in enclaves until we have a use case.
+// RSA PSK has no perfect forward secrecy, not recommended for future use.
+//#define MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
@@ -694,6 +708,8 @@
  *      MBEDTLS_TLS_RSA_WITH_RC4_128_SHA
  *      MBEDTLS_TLS_RSA_WITH_RC4_128_MD5
  */
+//Open Enclave: Support for backwards compatibility
+// Consider ECDHE key exchange instead for forward secrecy
 #define MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
 
 /**
@@ -720,7 +736,8 @@
  *      MBEDTLS_TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA
  *      MBEDTLS_TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA
  */
-#define MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
+//Open Enclave: Not supported in favor of ECDHE for performance
+//#define MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
@@ -793,7 +810,8 @@
  *      MBEDTLS_TLS_ECDH_ECDSA_WITH_CAMELLIA_128_GCM_SHA256
  *      MBEDTLS_TLS_ECDH_ECDSA_WITH_CAMELLIA_256_GCM_SHA384
  */
-#define MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA_ENABLED
+//Open Enclave: Drop uncommon protocol to minimize TCB
+//#define MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED
@@ -817,7 +835,8 @@
  *      MBEDTLS_TLS_ECDH_RSA_WITH_CAMELLIA_128_GCM_SHA256
  *      MBEDTLS_TLS_ECDH_RSA_WITH_CAMELLIA_256_GCM_SHA384
  */
-#define MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED
+//Open Enclave: Drop uncommon protocol to minimize TCB
+//#define MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECJPAKE_ENABLED
@@ -881,7 +900,7 @@
  *
  * Enable functions that use the filesystem.
  */
-//OpenEnclave: disabled
+//Open Enclave: disabled
 //#define MBEDTLS_FS_IO
 
 /**
@@ -906,7 +925,7 @@
  *
  * Uncomment this macro to disable the built-in platform entropy functions.
  */
-//OpenEnclave: enabled
+//Open Enclave: enabled, using Open Enclave runtime provided entropy function
 #define MBEDTLS_NO_PLATFORM_ENTROPY
 
 /**
@@ -1024,6 +1043,7 @@
  *
  * Enable the checkup functions (*_self_test).
  */
+//Open Enclave: Enable these by default for compliance checks
 #define MBEDTLS_SELF_TEST
 
 /**
@@ -1145,7 +1165,8 @@
  *
  * Comment this macro to disable 1/n-1 record splitting.
  */
-#define MBEDTLS_SSL_CBC_RECORD_SPLITTING
+//Open Enclave: Unnecessary since SSL 1.0 & SSL 3.0 are not supported
+//#define MBEDTLS_SSL_CBC_RECORD_SPLITTING
 
 /**
  * \def MBEDTLS_SSL_RENEGOTIATION
@@ -1160,7 +1181,8 @@
  *
  * Comment this to disable support for renegotiation.
  */
-#define MBEDTLS_SSL_RENEGOTIATION
+//Open Enclave: Disable given history of misuse
+//#define MBEDTLS_SSL_RENEGOTIATION
 
 /**
  * \def MBEDTLS_SSL_SRV_SUPPORT_SSLV2_CLIENT_HELLO
@@ -1213,7 +1235,8 @@
  *
  * Comment this macro to disable support for TLS 1.0
  */
-#define MBEDTLS_SSL_PROTO_TLS1
+//Open Enclave: Block insecure protocol standard
+//#define MBEDTLS_SSL_PROTO_TLS1
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_1
@@ -1225,7 +1248,8 @@
  *
  * Comment this macro to disable support for TLS 1.1 / DTLS 1.0
  */
-#define MBEDTLS_SSL_PROTO_TLS1_1
+//Open Enclave: Block insecure protocol standard
+//#define MBEDTLS_SSL_PROTO_TLS1_1
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_2
@@ -1365,7 +1389,9 @@
  *
  * Comment this macro to disable support for truncated HMAC in SSL
  */
-#define MBEDTLS_SSL_TRUNCATED_HMAC
+//Open Enclave: Disable per recommendation that cipher suites should
+// define MAC size as part of suite definition (https://tools.ietf.org/html/rfc6066)
+//#define MBEDTLS_SSL_TRUNCATED_HMAC
 
 /**
  * \def MBEDTLS_THREADING_ALT
@@ -1503,7 +1529,7 @@
  *
  * This modules adds support for the AES-NI instructions on x86-64
  */
-#define MBEDTLS_AESNI_C
+/* #define MBEDTLS_AESNI_C */
 
 /**
  * \def MBEDTLS_AES_C
@@ -1601,7 +1627,8 @@
  *      MBEDTLS_TLS_RSA_PSK_WITH_RC4_128_SHA
  *      MBEDTLS_TLS_PSK_WITH_RC4_128_SHA
  */
-#define MBEDTLS_ARC4_C
+//Open Enclave: Block insecure cipher
+//#define MBEDTLS_ARC4_C
 
 /**
  * \def MBEDTLS_ASN1_PARSE_C
@@ -1666,7 +1693,8 @@
  *
  * Module:  library/blowfish.c
  */
-#define MBEDTLS_BLOWFISH_C
+//Open Enclave: Drop support for uncommon cipher
+//#define MBEDTLS_BLOWFISH_C
 
 /**
  * \def MBEDTLS_CAMELLIA_C
@@ -1721,7 +1749,8 @@
  *      MBEDTLS_TLS_PSK_WITH_CAMELLIA_128_GCM_SHA256
  *      MBEDTLS_TLS_PSK_WITH_CAMELLIA_128_CBC_SHA256
  */
-#define MBEDTLS_CAMELLIA_C
+//Open Enclave: Drop support for uncommon cipher
+//#define MBEDTLS_CAMELLIA_C
 
 /**
  * \def MBEDTLS_CCM_C
@@ -1747,6 +1776,7 @@
  *
  * This module is used for testing (ssl_client/server).
  */
+//Open Enclave TODO: disable in non-debug builds
 #define MBEDTLS_CERTS_C
 
 /**
@@ -1772,7 +1802,8 @@
  * Requires: MBEDTLS_AES_C or MBEDTLS_DES_C
  *
  */
-//#define MBEDTLS_CMAC_C
+//Open Enclave: Enable as it's broadly used, allowed by NIST SP standards.
+#define MBEDTLS_CMAC_C
 
 /**
  * \def MBEDTLS_CTR_DRBG_C
@@ -1800,6 +1831,7 @@
  *
  * This module provides debugging functions.
  */
+ //Open Enclave TODO: disable in non-debug builds
 #define MBEDTLS_DEBUG_C
 
 /**
@@ -1826,6 +1858,7 @@
  *
  * PEM_PARSE uses DES/3DES for decrypting encrypted keys.
  */
+//Open Enclave: Enable for back-compat as some protocols (e.g. payment industry) use it.
 #define MBEDTLS_DES_C
 
 /**
@@ -1840,7 +1873,8 @@
  * This module is used by the following key exchanges:
  *      DHE-RSA, DHE-PSK
  */
-#define MBEDTLS_DHM_C
+//Open Enclave: Disable, not supporting DHE-RSA/DHE-PSK
+//#define MBEDTLS_DHM_C
 
 /**
  * \def MBEDTLS_ECDH_C
@@ -1918,6 +1952,7 @@
  *
  * This module provides a generic entropy pool
  */
+//Open Enclave TODO: evaluate if this interacts well with MBEDTLS_NO_PLATFORM_ENTROPY
 #define MBEDTLS_ENTROPY_C
 
 /**
@@ -2032,6 +2067,7 @@
  * This module is required for SSL/TLS and X.509.
  * PEM_PARSE uses MD5 for decrypting encrypted keys.
  */
+//Open Enclave: Enable for back-compat, still commonly used
 #define MBEDTLS_MD5_C
 
 /**
@@ -2067,7 +2103,7 @@
  *
  * This module provides networking routines.
  */
-//OpenEnclave: disabled
+//Open Enclave: disabled
 //#define MBEDTLS_NET_C
 
 /**
@@ -2105,7 +2141,8 @@
  *
  * This modules adds support for the VIA PadLock on x86.
  */
-#define MBEDTLS_PADLOCK_C
+//Open Enclave: Unsupported in enclaves
+//#define MBEDTLS_PADLOCK_C
 
 /**
  * \def MBEDTLS_PEM_PARSE_C
@@ -2259,7 +2296,8 @@
  * Caller:  library/md.c
  *
  */
-#define MBEDTLS_RIPEMD160_C
+//Open Enclave: Drop uncommon hash algorithm to minimize TCB
+//#define MBEDTLS_RIPEMD160_C
 
 /**
  * \def MBEDTLS_RSA_C
@@ -2426,6 +2464,7 @@
  *
  * Enable this layer to allow use of mutexes within mbed TLS
  */
+//Open Enclave TODO: enable and test threading in enclave context
 //#define MBEDTLS_THREADING_C
 
 /**
@@ -2449,7 +2488,7 @@
  *
  * This module is used by the HAVEGE random number generator.
  */
-//OpenEnclave: disabled
+//Open Enclave: Disable, HAVEGE RNG is not supported
 //#define MBEDTLS_TIMING_C
 
 /**
@@ -2571,7 +2610,8 @@
  * Module:  library/xtea.c
  * Caller:
  */
-#define MBEDTLS_XTEA_C
+//Open Enclave: Drop uncommon cipher to minimize TCB
+//#define MBEDTLS_XTEA_C
 
 /* \} name SECTION: mbed TLS modules */
 
@@ -2696,6 +2736,7 @@
  * of SHA-1 in handshake signatures, hence this option is turned on by default
  * for compatibility with existing peers.
  */
+//Open Enclave: Support for back-compat. Still common, but should move to SHA256
 #define MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE
 
 /* \} name SECTION: Customisation configuration options */
