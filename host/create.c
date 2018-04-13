@@ -1282,7 +1282,7 @@ OE_Result OE_SGXBuildEnclave(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Set the magic number only if we have actually created an enclave */
-    if (context->type == OE_SGX_LOADTYPE_CREATE)
+    if (context->type == OE_SGX_LOAD_TYPE_CREATE)
         enclave->magic = ENCLAVE_MAGIC;
 
     result = OE_OK;
@@ -1408,7 +1408,7 @@ OE_Result OE_CreateEnclave(
 
     /* Initialize the context parameter and any driver handles */
     OE_CHECK(
-        OE_SGXInitializeLoadContext(&context, OE_SGX_LOADTYPE_CREATE, flags));
+        OE_SGXInitializeLoadContext(&context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
     /* Build the enclave */
     OE_CHECK(OE_SGXBuildEnclave(&context, enclavePath, NULL, enclave));

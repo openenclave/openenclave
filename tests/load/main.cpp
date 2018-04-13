@@ -14,9 +14,9 @@
 static OE_Result InitializeContext(OE_SGXLoadContext* context)
 {
 #ifdef MEASURE_ONLY
-    const OE_SGXLoadType type = OE_SGX_LOADTYPE_MEASURE;
+    const OE_SGXLoadType type = OE_SGX_LOAD_TYPE_MEASURE;
 #else
-    const OE_SGXLoadType type = OE_SGX_LOADTYPE_CREATE;
+    const OE_SGXLoadType type = OE_SGX_LOAD_TYPE_CREATE;
 #endif
     return OE_SGXInitializeLoadContext(context, type, OE_ENCLAVE_FLAG_DEBUG);
 }

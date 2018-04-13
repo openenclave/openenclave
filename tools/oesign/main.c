@@ -569,7 +569,7 @@ int main(int argc, const char* argv[])
 
     /* Initialize the context paramters for measurement only */
     if (OE_SGXInitializeLoadContext(
-            &context, OE_SGX_LOADTYPE_MEASURE, OE_ENCLAVE_FLAG_DEBUG) != OE_OK)
+            &context, OE_SGX_LOAD_TYPE_MEASURE, OE_ENCLAVE_FLAG_DEBUG) != OE_OK)
     {
         Err("OE_SGXInitializeLoadContext() failed");
         goto done;

@@ -332,7 +332,7 @@ OE_Result OE_SGXInitializeLoadContext(
     if (context)
         memset(context, 0, sizeof(OE_SGXLoadContext));
 
-    if (!context || type == OE_SGX_LOADTYPE_UNDEFINED)
+    if (!context || type == OE_SGX_LOAD_TYPE_UNDEFINED)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Set attributes before checking context properties */
@@ -340,7 +340,7 @@ OE_Result OE_SGXInitializeLoadContext(
     context->attributes = attributes;
     context->dev = OE_SGX_NO_DEVICE_HANDLE;
 #if defined(__linux__)
-    if (type != OE_SGX_LOADTYPE_MEASURE && !OE_SGXLoadIsSimulation(context))
+    if (type != OE_SGX_LOAD_TYPE_MEASURE && !OE_SGXLoadIsSimulation(context))
     {
         context->dev = open("/dev/isgx", O_RDWR);
         if (context->dev == OE_SGX_NO_DEVICE_HANDLE)
@@ -348,7 +348,7 @@ OE_Result OE_SGXInitializeLoadContext(
     }
 #endif
 
-    context->state = OE_SGX_LOADSTATE_INITIALIZED;
+    context->state = OE_SGX_LOAD_STATE_INITIALIZED;
     result = OE_OK;
 
 done:
@@ -380,7 +380,7 @@ OE_Result OE_SGXCreateEnclave(
     if (!context || !enclaveSize || !enclaveAddr)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (context->state != OE_SGX_LOADSTATE_INITIALIZED)
+    if (context->state != OE_SGX_LOAD_STATE_INITIALIZED)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* SIZE must be a power of two */
@@ -404,7 +404,7 @@ OE_Result OE_SGXCreateEnclave(
     /* Measure this operation */
     OE_CHECK(OE_SGXMeasureCreateEnclave(&context->hashContext, secs));
 
-    if (context->type == OE_SGX_LOADTYPE_MEASURE)
+    if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
     {
         /* Create a phony address */
         base = (void*)0xffffffff00000000;
@@ -446,7 +446,7 @@ OE_Result OE_SGXCreateEnclave(
     }
 
     *enclaveAddr = base ? (uint64_t)base : secs->base;
-    context->state = OE_SGX_LOADSTATE_ENCLAVE_CREATED;
+    context->state = OE_SGX_LOAD_STATE_ENCLAVE_CREATED;
     result = OE_OK;
 
 done:
@@ -470,7 +470,7 @@ OE_Result OE_SGXLoadEnclaveData(
     if (!context || !base || !addr || !src || !flags)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (context->state != OE_SGX_LOADSTATE_ENCLAVE_CREATED)
+    if (context->state != OE_SGX_LOAD_STATE_ENCLAVE_CREATED)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* ADDR must be page aligned */
@@ -482,7 +482,7 @@ OE_Result OE_SGXLoadEnclaveData(
         OE_SGXMeasureLoadEnclaveData(
             &context->hashContext, base, addr, src, flags, extend));
 
-    if (context->type == OE_SGX_LOADTYPE_MEASURE)
+    if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
     {
         /* EADD has no further action in measurement mode */
         result = OE_OK;
@@ -573,14 +573,14 @@ OE_Result OE_SGXInitializeEnclave(
     if (!context || !addr || !properties || !mrenclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (context->state != OE_SGX_LOADSTATE_ENCLAVE_CREATED)
+    if (context->state != OE_SGX_LOAD_STATE_ENCLAVE_CREATED)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
     OE_CHECK(OE_SGXMeasureInitializeEnclave(&context->hashContext, mrenclave));
 
     /* EINIT has no further action in measurement/simulation mode */
-    if (context->type == OE_SGX_LOADTYPE_CREATE &&
+    if (context->type == OE_SGX_LOAD_TYPE_CREATE &&
         !OE_SGXLoadIsSimulation(context))
     {
         /* Get the launch token from AESM, and a debug sigstruct if needed */
@@ -628,7 +628,7 @@ OE_Result OE_SGXInitializeEnclave(
 #endif
     }
 
-    context->state = OE_SGX_LOADSTATE_ENCLAVE_INITIALIZED;
+    context->state = OE_SGX_LOAD_STATE_ENCLAVE_INITIALIZED;
     result = OE_OK;
 
 done:
