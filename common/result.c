@@ -75,6 +75,8 @@ const char* OE_ResultStr(OE_Result result)
             return "OE_ENCLAVE_ABORTING";
         case OE_ENCLAVE_ABORTED:
             return "OE_ENCLAVE_ABORTED";
+        case OE_DEBUG_DOWNGRADE:
+            return "OE_DEBUG_DOWNGRADE";
     }
 
     return "UNKNOWN";

@@ -154,13 +154,12 @@ OE_CATCH:
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
-    uint64_t sigstruct,
-    uint64_t einittoken)
+    const OE_SGXEnclaveProperties* properties)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;
 
-    if (!_Ok(self) || !addr || !sigstruct || !einittoken)
+    if (!_Ok(self) || !addr || !properties)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Finalize the measurement */
@@ -221,7 +220,7 @@ OE_SGXDevice* __OE_OpenSGXMeasurer()
     OE_SGXMeasurer* self;
 
     if (!(self = (OE_SGXMeasurer*)calloc(1, sizeof(OE_SGXMeasurer))))
-        goto catch;
+        goto done;
 
     self->base.ecreate = _ECreateProc;
     self->base.eadd = _EAddProc;
@@ -233,7 +232,7 @@ OE_SGXDevice* __OE_OpenSGXMeasurer()
 
     result = &self->base;
 
-OE_CATCH:
+done:
 
     if (!result)
         free(self);

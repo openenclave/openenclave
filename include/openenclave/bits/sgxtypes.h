@@ -4,13 +4,14 @@
 #ifndef _OE_SGXTYPES_H
 #define _OE_SGXTYPES_H
 
-#include <openenclave/bits/sha.h>
 #include <openenclave/defs.h>
+#include <openenclave/properties.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
 #include "epid.h"
 #include "jump.h"
 #include "load.h"
+#include "sha.h"
 
 OE_EXTERNC_BEGIN
 
@@ -39,6 +40,9 @@ OE_EXTERNC_BEGIN
 #define SGX_SE_EPID_SIG_RL_ID 0xE00
 
 #define SGX_QUOTE_IV_SIZE 12
+
+OE_STATIC_ASSERT(SGX_FLAGS_DEBUG == OE_SGX_FLAGS_DEBUG);
+OE_STATIC_ASSERT(SGX_FLAGS_MODE64BIT == OE_SGX_FLAGS_MODE64BIT);
 
 /* Rename OE_? types to SGX_? to make SGX types more explicit */
 
@@ -90,10 +94,31 @@ OE_CHECK_SIZE(sizeof(SGX_Attributes), 16);
 /*
 **==============================================================================
 **
-** SGX_Sigstruct:
+** SGX_SigStruct
 **
 **==============================================================================
 */
+
+/* SGX_SigStruct.header: 06000000E100000000000100H */
+#define SGX_SIGSTRUCT_HEADER "\006\000\000\000\341\000\000\000\000\000\001\000"
+#define SGX_SIGSTRUCT_HEADER_SIZE (sizeof(SGX_SIGSTRUCT_HEADER) - 1)
+
+/* SGX_SigStruct.header2: 01010000600000006000000001000000H */
+#define SGX_SIGSTRUCT_HEADER2 \
+    "\001\001\000\000\140\000\000\000\140\000\000\000\001\000\000\000"
+#define SGX_SIGSTRUCT_HEADER2_SIZE (sizeof(SGX_SIGSTRUCT_HEADER2) - 1)
+
+/* SGX_SigStruct.miscselect */
+#define SGX_SIGSTRUCT_MISCSELECT 0x00000000
+
+/* SGX_SigStruct.miscmask */
+#define SGX_SIGSTRUCT_MISCMASK 0xffffffff
+
+/* SGX_SigStruct.flags */
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS 0Xfffffffffffffffb
+
+/* SGX_SigStruct.xfrm */
+#define SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM 0x0000000000000000
 
 /* 1808 bytes */
 OE_PACK_BEGIN
@@ -176,6 +201,13 @@ typedef struct _SGX_SigStruct
 OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_SigStruct), 1808);
+OE_CHECK_SIZE(sizeof(SGX_SigStruct), OE_SGX_SIGSTRUCT_SIZE);
+
+OE_CHECK_SIZE(sizeof((SGX_SigStruct*)NULL)->header, SGX_SIGSTRUCT_HEADER_SIZE);
+
+OE_CHECK_SIZE(
+    sizeof((SGX_SigStruct*)NULL)->header2,
+    SGX_SIGSTRUCT_HEADER2_SIZE);
 
 OE_INLINE const void* SGX_SigStructHeader(const SGX_SigStruct* ss)
 {
@@ -535,34 +567,6 @@ typedef struct _TD
 } TD;
 
 OE_CHECK_SIZE(sizeof(TD), 4096);
-
-/*
-**==============================================================================
-**
-** OE_SignatureSection
-**
-**==============================================================================
-*/
-
-#define OE_META_MAGIC 0xdcf53f4c94a5700d
-
-typedef struct _OE_EnclaveSettings
-{
-    uint64_t debug;
-    uint64_t numHeapPages;
-    uint64_t numStackPages;
-    uint64_t numTCS;
-} OE_EnclaveSettings;
-
-/* Enclave signature section (.oesig) written to ELF-64 libraries */
-OE_PACK_BEGIN
-typedef struct _OE_SignatureSection
-{
-    uint64_t magic;
-    OE_EnclaveSettings settings;
-    SGX_SigStruct sigstruct;
-} OE_SignatureSection;
-OE_PACK_END
 
 /*
 **==============================================================================
