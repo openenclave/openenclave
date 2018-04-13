@@ -26,6 +26,7 @@
 .type OE_EGetKey, @function
 OE_EGetKey:
 .cfi_startproc
+    movq %rbx, %rdx
     movq %rdi, %rbx
     movq %rsi, %rcx
 
@@ -33,6 +34,7 @@ OE_EGetKey:
     movq $ENCLU_EGETKEY, %rax
     ENCLU
 
+    movq %rdx, %rbx
     // EGETKEY return value is put in RAX by the instruction. 
     ret
 .cfi_endproc

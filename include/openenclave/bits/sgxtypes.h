@@ -883,7 +883,15 @@ OE_PACK_END
 
 OE_STATIC_ASSERT(sizeof(SGX_QuoteSignature) == 664);
 
-/* Refer to KEY REQUEST (KEYREQUEST) in Intel SDM. */
+/*
+**==============================================================================
+**
+** SGX key-related definitions
+** Refer to KEY REQUEST (KEYREQUEST) in Intel SDM.
+**
+**==============================================================================
+*/
+
 /* Key name. */
 #define SGX_KEYSELECT_EINITTOKEN 0x0000U
 #define SGX_KEYSELECT_PROVISION 0x0001U
