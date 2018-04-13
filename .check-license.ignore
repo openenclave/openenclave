@@ -44,7 +44,7 @@ LICENSE
 ./tests/load/dead.txt
 ./tests/measure/dead.txt
 ./tests/measure/log.txt
-./tests/mbed_test/tests.supported
+./tests/mbed/tests.*
 ./tests/ocall/debugging.txt
 ./tests/pingpong/enc/signconf.xml
 ./tests/print/printhost.stderr

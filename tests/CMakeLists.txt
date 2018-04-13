@@ -29,7 +29,6 @@ endif()
 
 add_subdirectory(load)
 add_subdirectory(mbed)
-add_subdirectory(mbed_test)
 add_subdirectory(mem)
 add_subdirectory(NestedCall)
 add_subdirectory(ocall)

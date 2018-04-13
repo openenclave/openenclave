@@ -46,6 +46,6 @@ endfunction(add_libcxx_test_enc)
 # iterate over the supported tests and create a binary for each.
 file(STRINGS "../tests.supported" alltests)
 foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name)
+    get_testcase_name(${testcase} name "../../3rdparty/libcxx/libcxx/test/")
     add_libcxx_test_enc("${name}" "${testcase}")
 endforeach(testcase)

@@ -36,6 +36,6 @@ endfunction(add_libc_test_enc)
 
 file(STRINGS "../tests.supported" alltests)
 foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name)
+    get_testcase_name(${testcase} name "../../3rdparty/musl/libc-test/src/")
     add_libc_test_enc("${name}" "${testcase}")
 endforeach(testcase)
