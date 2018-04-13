@@ -81,6 +81,8 @@ const char* OE_ResultStr(OE_Result result)
             return "OE_INVALID_ISVSVN";
         case OE_INVALID_KEYNAME:
             return "OE_INVALID_KEYNAME";
+        case OE_DEBUG_DOWNGRADE:
+            return "OE_DEBUG_DOWNGRADE";
     }
 
     return "UNKNOWN";

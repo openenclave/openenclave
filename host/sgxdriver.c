@@ -3,6 +3,7 @@
 
 #define OE_TRACE_LEVEL 1
 
+#include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -19,11 +20,16 @@
 #include <Windows.h>
 #endif
 
+#include <openenclave/bits/aesm.h>
 #include <openenclave/bits/build.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/sha.h>
+#include <openenclave/bits/signsgx.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 #include "memalign.h"
+#include "signkey.h"
 
 /*
 **==============================================================================
@@ -686,23 +692,76 @@ OE_CATCH:
     return result;
 }
 
+/* Return true if buffer is zero-filled */
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
-    uint64_t sigstruct,
-    uint64_t einittoken)
+    const OE_SGXEnclaveProperties* properties)
 {
-    Self* self = (Self*)dev;
     OE_Result result = OE_UNEXPECTED;
+    Self* self = (Self*)dev;
+    SGX_SigStruct sigstruct;
+    AESM* aesm = NULL;
+    SGX_LaunchToken launchToken;
 
-    if (!_Ok(self) || !addr || !sigstruct || !einittoken)
+    /* Check parameters */
+    if (!_Ok(self) || !addr || !properties)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    if (self->measurer->einit(self->measurer, addr, sigstruct, einittoken) !=
-        OE_OK)
-    {
+    if (self->measurer->einit(self->measurer, addr, properties) != OE_OK)
         OE_THROW(OE_FAILURE);
+
+    /* If sigstruct.header 'magic number' is incorrect */
+    if (memcmp(
+            ((SGX_SigStruct*)properties->sigstruct)->header,
+            SGX_SIGSTRUCT_HEADER,
+            sizeof(sigstruct.header)) != 0)
+    {
+        /* If not debug mode, then fail now */
+        if (!(properties->config.attributes & SGX_FLAGS_DEBUG))
+            OE_THROW(OE_FAILURE);
+
+        /* The enclave is unsigned: sign it now with a well-known key */
+        {
+            OE_SHA256 hash;
+            OE_TRY(self->measurer->gethash(self->measurer, &hash));
+
+            OE_TRY(
+                OE_SGXSignEnclave(
+                    &hash,
+                    properties->config.attributes,
+                    properties->config.productID,
+                    properties->config.securityVersion,
+                    OE_DEBUG_SIGN_KEY,
+                    OE_DEBUG_SIGN_KEY_SIZE,
+                    &sigstruct));
+        }
+    }
+    else
+    {
+        /* The enclave is signed: copy it's sigstruct */
+        memcpy(&sigstruct, properties->sigstruct, sizeof(SGX_SigStruct));
+    }
+
+    /* Obtain a launch token from the AESM service */
+    {
+        SGX_Attributes attributes;
+
+        /* Initialize the SGX attributes */
+        attributes.flags = properties->config.attributes;
+        attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
+
+        if (!(aesm = AESMConnect()))
+            OE_THROW(OE_FAILURE);
+
+        OE_TRY(
+            AESMGetLaunchToken(
+                aesm,
+                sigstruct.enclavehash,
+                sigstruct.modulus,
+                &attributes,
+                &launchToken));
     }
 
     /* Ask driver to perform EINIT */
@@ -711,8 +770,8 @@ static OE_Result _EInitProc(
 
         memset(&param, 0, sizeof(param));
         param.addr = addr;
-        param.sigstruct = sigstruct;
-        param.einittoken = einittoken;
+        param.sigstruct = (uint64_t)&sigstruct;
+        param.einittoken = (uint64_t)&launchToken;
 
         if (_Ioctl(self, SGX_IOC_ENCLAVE_INIT, &param) != 0)
             OE_THROW(OE_IOCTL_FAILED);
@@ -721,6 +780,9 @@ static OE_Result _EInitProc(
     result = OE_OK;
 
 OE_CATCH:
+
+    if (aesm)
+        AESMDisconnect(aesm);
 
     return result;
 }
@@ -780,17 +842,17 @@ OE_SGXDevice* __OE_OpenSGXDriver(bool simulate)
     Self* self;
 
     if (!(self = (Self*)calloc(1, sizeof(Self))))
-        goto catch;
+        goto done;
 
     self->fd = -1;
 
 #if defined(__linux__)
     if (!simulate && (self->fd = open("/dev/isgx", O_RDWR)) == -1)
-        goto catch;
+        goto done;
 #endif
 
     if (!(self->measurer = __OE_OpenSGXMeasurer()))
-        goto catch;
+        goto done;
 
     self->base.ecreate = _ECreateProc;
     self->base.eadd = _EAddProc;
@@ -803,7 +865,7 @@ OE_SGXDevice* __OE_OpenSGXDriver(bool simulate)
 
     result = &self->base;
 
-OE_CATCH:
+done:
 
     if (!result)
         free(self);

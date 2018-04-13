@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/error.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxdev.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/tests.h>
@@ -24,20 +25,20 @@ static OE_SGXDevice* OpenDevice()
 #endif
 }
 
-static const OE_EnclaveSettings* GetEnclaveSettings()
+static const OE_SGXEnclaveProperties* GetEnclaveProperties()
 {
 #ifdef USE_DRIVER
     return NULL;
 #else
-    static OE_EnclaveSettings settings;
+    static OE_SGXEnclaveProperties properties;
 
-    memset(&settings, 0, sizeof(OE_EnclaveSettings));
-    settings.debug = 1;
-    settings.numHeapPages = 2;
-    settings.numStackPages = 1;
-    settings.numTCS = 2;
+    memset(&properties, 0, sizeof(OE_SGXEnclaveProperties));
+    properties.settings.attributes = OE_SGX_FLAGS_DEBUG;
+    properties.header.sizeSettings.numHeapPages = 2;
+    properties.header.sizeSettings.numStackPages = 1;
+    properties.header.sizeSettings.numTCS = 2;
 
-    return &settings;
+    return &properties;
 #endif
 }
 
@@ -57,13 +58,15 @@ int main(int argc, const char* argv[])
         OE_PutErr("__OE_OpenSGXDriver() failed");
 
     if ((result = __OE_BuildEnclave(
-             dev, argv[1], GetEnclaveSettings(), false, false, &enclave)) !=
+             dev, argv[1], GetEnclaveProperties(), false, false, &enclave)) !=
         OE_OK)
     {
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
     }
 
-    printf("MRENCLAVE=%s\n", OE_SHA256StrOf(&enclave.hash).buf);
+    char buf[2 * OE_SHA256_SIZE + 1];
+    OE_HexString(buf, sizeof(buf), &enclave.hash, sizeof(enclave.hash));
+    printf("MRENCLAVE=%s\n", buf);
 
     printf("BASEADDR=%016lx\n", enclave.addr);
 

@@ -3,12 +3,18 @@
 
 if (UNIX)
 set(PLATFORM_SRC
+    crypto/cert.c
+    crypto/ec.c
+    crypto/init.c
+    crypto/random.c
+    crypto/rsa.c
     linux/aep.S
     linux/aesm.c
     linux/enter.S
     linux/entersim.S
     linux/exception.c
     linux/hostthread.c
+    linux/sgxsign.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -18,6 +24,7 @@ set(PLATFORM_SRC
     windows/entersim.asm
     windows/exception.c
     windows/hostthread.c
+    windows/sgxsign.c
     )
 endif()
 
@@ -42,10 +49,11 @@ add_library(oehost STATIC
     sgxdriver.c
     sgxmeasure.c
     sgxtypes.c
-    sha.c
+    signkey.c
     strings.c
     tests.c
     typeinfo.c
+    crypto/sha.c
     ${PLATFORM_SRC}
     )
 

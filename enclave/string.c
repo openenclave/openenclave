@@ -39,6 +39,16 @@ size_t OE_Strlen(const char* s)
     return 0;
 }
 
+size_t OE_Strnlen(const char* s, size_t n)
+{
+    const char* p = s;
+
+    while (n-- && *p)
+        p++;
+
+    return p - s;
+}
+
 int OE_Strcmp(const char* s1, const char* s2)
 {
     while ((*s1 && *s2) && (*s1 == *s2))
@@ -47,6 +57,24 @@ int OE_Strcmp(const char* s1, const char* s2)
         s2++;
     }
 
+    return *s1 - *s2;
+}
+
+int OE_Strncmp(const char* s1, const char* s2, size_t n)
+{
+    /* Compare first n characters only */
+    while (n && (*s1 && *s2) && (*s1 == *s2))
+    {
+        s1++;
+        s2++;
+        n--;
+    }
+
+    /* If first n characters matched */
+    if (n == 0)
+        return 0;
+
+    /* Return difference of mismatching characters */
     return *s1 - *s2;
 }
 

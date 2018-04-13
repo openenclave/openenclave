@@ -30,6 +30,25 @@ static int _Ok(const OE_SGXMeasurer* driver)
     return driver && driver->magic == SGX_MEASURER_MAGIC;
 }
 
+static void _MeasureZeros(OE_SHA256Context* context, size_t size)
+{
+    char zeros[128] = {0};
+
+    while (size)
+    {
+        if (size < sizeof(zeros))
+        {
+            OE_SHA256Update(context, zeros, size);
+            size -= size;
+        }
+        else
+        {
+            OE_SHA256Update(context, zeros, sizeof(zeros));
+            size -= sizeof(zeros);
+        }
+    }
+}
+
 static void _MeasureECreate(OE_SHA256Context* context, uint64_t enclaveSize)
 {
     const uint32_t ssaframesize = 1;
@@ -37,7 +56,7 @@ static void _MeasureECreate(OE_SHA256Context* context, uint64_t enclaveSize)
     OE_SHA256Update(context, "ECREATE", 8);
     OE_SHA256Update(context, &ssaframesize, sizeof(uint32_t));
     OE_SHA256Update(context, &enclaveSize, sizeof(uint64_t));
-    OE_SHA256UpdateZeros(context, 44);
+    _MeasureZeros(context, 44);
 }
 
 static void _MeasureEExtend(
@@ -56,7 +75,7 @@ static void _MeasureEExtend(
 
         OE_SHA256Update(context, "EEXTEND", 8);
         OE_SHA256Update(context, &moffset, sizeof(moffset));
-        OE_SHA256UpdateZeros(context, 48);
+        _MeasureZeros(context, 48);
         OE_SHA256Update(context, (const uint8_t*)page + pgoff, CHUNK_SIZE);
     }
 }
@@ -71,7 +90,7 @@ static void _MeasureEAdd(
     OE_SHA256Update(context, "EADD\0\0\0", 8);
     OE_SHA256Update(context, &vaddr, sizeof(vaddr));
     OE_SHA256Update(context, &flags, sizeof(flags));
-    OE_SHA256UpdateZeros(context, 40);
+    _MeasureZeros(context, 40);
 
     if (extend)
         _MeasureEExtend(context, vaddr, flags, page);
@@ -135,13 +154,12 @@ OE_CATCH:
 static OE_Result _EInitProc(
     OE_SGXDevice* dev,
     uint64_t addr,
-    uint64_t sigstruct,
-    uint64_t einittoken)
+    const OE_SGXEnclaveProperties* properties)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_SGXMeasurer* self = (OE_SGXMeasurer*)dev;
 
-    if (!_Ok(self) || !addr || !sigstruct || !einittoken)
+    if (!_Ok(self) || !addr || !properties)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Finalize the measurement */
@@ -202,7 +220,7 @@ OE_SGXDevice* __OE_OpenSGXMeasurer()
     OE_SGXMeasurer* self;
 
     if (!(self = (OE_SGXMeasurer*)calloc(1, sizeof(OE_SGXMeasurer))))
-        goto catch;
+        goto done;
 
     self->base.ecreate = _ECreateProc;
     self->base.eadd = _EAddProc;
@@ -214,7 +232,7 @@ OE_SGXDevice* __OE_OpenSGXMeasurer()
 
     result = &self->base;
 
-OE_CATCH:
+done:
 
     if (!result)
         free(self);
