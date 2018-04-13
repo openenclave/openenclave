@@ -1,6 +1,3 @@
-../../3rdparty/musl/libc-test/src/common/runtest.c
-../../3rdparty/musl/libc-test/src/functional/mbc.c
-../../3rdparty/musl/libc-test/src/functional/swprintf.c
 ../../3rdparty/musl/libc-test/src/math/acosh.c
 ../../3rdparty/musl/libc-test/src/math/acosl.c
 ../../3rdparty/musl/libc-test/src/math/asinh.c
@@ -45,14 +42,5 @@
 ../../3rdparty/musl/libc-test/src/math/y0.c
 ../../3rdparty/musl/libc-test/src/math/y0f.c
 ../../3rdparty/musl/libc-test/src/math/ynf.c
-../../3rdparty/musl/libc-test/src/musl/pleval.c
-../../3rdparty/musl/libc-test/src/regression/fgetwc-buffering.c
-../../3rdparty/musl/libc-test/src/regression/malloc-brk-fail.c
 ../../3rdparty/musl/libc-test/src/regression/putenv-doublefree.c
-../../3rdparty/musl/libc-test/src/regression/regex-backref-0.c
-../../3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c
-../../3rdparty/musl/libc-test/src/regression/regexec-nosub.c
-../../3rdparty/musl/libc-test/src/regression/regex-ere-backref.c
-../../3rdparty/musl/libc-test/src/regression/regex-escaped-high-byte.c
-../../3rdparty/musl/libc-test/src/regression/regex-negated-range.c
 ../../3rdparty/musl/libc-test/src/regression/strverscmp.c
