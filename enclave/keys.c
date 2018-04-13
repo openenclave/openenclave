@@ -59,6 +59,8 @@ static OE_Result _GetKeyImp(
     // Copy the request key to output buffer, and clear it from stack.
     if (ret == OE_OK)
     {
+        // The sgx key is the secret, it should not be left on stack. Clean it
+        // up to avoid leak by incident.
         OE_Memcpy(sgxKey, &tmpSgxKey, sizeof(SGX_Key));
         OE_Memset(&tmpSgxKey, 0, sizeof(SGX_Key));
     }
