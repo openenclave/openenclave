@@ -8,36 +8,35 @@
 #include <openenclave/defs.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
-#include "sgxdev.h"
 #include "sgxtypes.h"
 
 OE_EXTERNC_BEGIN
 
 typedef struct _OE_Enclave OE_Enclave;
 
-typedef enum _OE_SgxLoadType {
-    OE_SGXLOAD_UNDEFINED,
-    OE_SGXLOAD_CREATE,
-    OE_SGXLOAD_MEASURE
-} OE_SgxLoadType;
+typedef enum _OE_SGXLoadType {
+    OE_SGX_LOADTYPE_UNDEFINED,
+    OE_SGX_LOADTYPE_CREATE,
+    OE_SGX_LOADTYPE_MEASURE
+} OE_SGXLoadType;
 
-typedef enum _OE_SgxLoadState {
-    OE_SGXLOAD_UNINITIALIZED,
-    OE_SGXLOAD_INITIALIZED,
-    OE_SGXLOAD_ENCLAVE_CREATED,
-    OE_SGXLOAD_ENCLAVE_INITIALIZED,
-} OE_SgxLoadState;
+typedef enum _OE_SGXLoadState {
+    OE_SGX_LOADSTATE_UNINITIALIZED,
+    OE_SGX_LOADSTATE_INITIALIZED,
+    OE_SGX_LOADSTATE_ENCLAVE_CREATED,
+    OE_SGX_LOADSTATE_ENCLAVE_INITIALIZED,
+} OE_SGXLoadState;
 
-typedef struct _OE_SgxLoadContext
+typedef struct _OE_SGXLoadContext
 {
-    OE_SgxLoadType type;
-    OE_SgxLoadState state;
+    OE_SGXLoadType type;
+    OE_SGXLoadState state;
 
     /* OE_FLAG bits to be applied to the enclave such as debug */
     uint32_t attributes;
 
     /* Fields used when attributes contain OE_FLAG_SIMULATION */
-    struct _Simulate
+    struct
     {
         /* Base address of enclave */
         void* addr;
@@ -51,17 +50,17 @@ typedef struct _OE_SgxLoadContext
 
     /* Hash context used to measure enclave as it is loaded */
     OE_SHA256Context hashContext;
-} OE_SgxLoadContext;
+} OE_SGXLoadContext;
 
-OE_Result _InitializeLoadContext(
-    OE_SgxLoadContext* context,
-    OE_SgxLoadType type,
+OE_Result OE_SGXInitializeLoadContext(
+    OE_SGXLoadContext* context,
+    OE_SGXLoadType type,
     uint32_t attributes);
 
-void _CleanupLoadContext(OE_SgxLoadContext* context);
+void OE_SGXCleanupLoadContext(OE_SGXLoadContext* context);
 
-OE_Result __OE_BuildEnclave(
-    OE_SgxLoadContext* context,
+OE_Result OE_SGXBuildEnclave(
+    OE_SGXLoadContext* context,
     const char* path,
     const OE_EnclaveSettings* settings,
     OE_Enclave* enclave);

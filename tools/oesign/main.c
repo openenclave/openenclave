@@ -736,7 +736,7 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
     int ret = 1;
     OE_Result result;
-    OE_SgxLoadContext context;
+    OE_SGXLoadContext context;
     size_t numHeapPages = 2;
     size_t numStackPages = 1;
     size_t numTCS = 2;
@@ -766,15 +766,15 @@ int main(int argc, const char* argv[])
         OE_PutErr("failed to load configuration file: %s\n", conffile);
 
     /* Initialize the context paramters for measurement only */
-    if (_InitializeLoadContext(
-            &context, OE_SGXLOAD_MEASURE, OE_ENCLAVE_FLAG_DEBUG) != OE_OK)
-        OE_PutErr("_InitializeLoadContext() failed");
+    if (OE_SGXInitializeLoadContext(
+            &context, OE_SGX_LOADTYPE_MEASURE, OE_ENCLAVE_FLAG_DEBUG) != OE_OK)
+        OE_PutErr("OE_SGXInitializeLoadContext() failed");
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
-    if ((result = __OE_BuildEnclave(&context, enclave, &settings, &enc)) !=
+    if ((result = OE_SGXBuildEnclave(&context, enclave, &settings, &enc)) !=
         OE_OK)
     {
-        OE_PutErr("__OE_BuildEnclave(): result=%u", result);
+        OE_PutErr("OE_SGXBuildEnclave(): result=%u", result);
     }
 
     /* Open the key file */
@@ -827,7 +827,7 @@ done:
     if (rsa)
         RSA_free(rsa);
 
-    _CleanupLoadContext(&context);
+    OE_SGXCleanupLoadContext(&context);
 
     return ret;
 }

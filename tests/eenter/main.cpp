@@ -40,7 +40,6 @@ extern "C" void __ecall(OE_SGXEnclave* enclave);
 int main(int argc, const char* argv[])
 {
     OE_Result result;
-    OE_SGXDevice* dev = NULL;
     OE_SGXEnclave enclave;
 
     if (argc != 2)
@@ -52,7 +51,7 @@ int main(int argc, const char* argv[])
     if (!(dev = OpenDevice()))
         OE_PutErr("__OE_OpenSGXDriver() failed");
 
-    if ((result = __OE_BuildEnclave(
+    if ((result = OE_SGXBuildEnclave(
              dev, argv[1], GetEnclaveSettings(), &enclave)) != OE_OK)
     {
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);

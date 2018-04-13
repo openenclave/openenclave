@@ -17,7 +17,7 @@
 #define SGX_MAGIC 0xA4
 #define SGX_IOC_ENCLAVE_CREATE _IOW(SGX_MAGIC, 0x00, SGXECreateParam)
 #define SGX_IOC_ENCLAVE_ADD_PAGE _IOW(SGX_MAGIC, 0x01, SGXEAddParam)
-#define SGX_IOC_ENCLAVE_INIT _IOW(SGX_MAGIC, 0x02, SGXEinitParam)
+#define SGX_IOC_ENCLAVE_INIT _IOW(SGX_MAGIC, 0x02, SGXEInitParam)
 
 OE_PACK_BEGIN
 typedef struct __SGXECreateParam
@@ -37,15 +37,15 @@ typedef struct __SGXEAddParam
 OE_PACK_END
 
 OE_PACK_BEGIN
-typedef struct __SGXEinitParam
+typedef struct __SGXEInitParam
 {
     uint64_t addr;
     uint64_t sigstruct;
     uint64_t einittoken;
-} SGXEinitParam;
+} SGXEInitParam;
 OE_PACK_END
 
-int _SGX_IoctlEnclaveCreate(int dev, SGX_Secs* secs)
+int SGX_IoctlEnclaveCreate(int dev, SGX_Secs* secs)
 {
     SGXECreateParam param;
 
@@ -58,7 +58,7 @@ int _SGX_IoctlEnclaveCreate(int dev, SGX_Secs* secs)
     return ioctl(dev, SGX_IOC_ENCLAVE_CREATE, &param);
 }
 
-int _SGX_IoctlEnclaveAddPage(
+int SGX_IoctlEnclaveAddPage(
     int dev,
     uint64_t addr,
     uint64_t src,
@@ -86,13 +86,13 @@ int _SGX_IoctlEnclaveAddPage(
     return ioctl(dev, SGX_IOC_ENCLAVE_ADD_PAGE, &param);
 }
 
-int _SGX_IoctlEnclaveInit(
+int SGX_IoctlEnclaveInit(
     int dev,
     uint64_t addr,
     uint64_t sigstruct,
     uint64_t einittoken)
 {
-    SGXEinitParam param;
+    SGXEInitParam param;
 
     if (dev == -1 || !addr || !sigstruct || !einittoken)
         return -1;

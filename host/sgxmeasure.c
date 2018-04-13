@@ -46,7 +46,7 @@ static void _MeasureEExtend(
     }
 }
 
-OE_Result OE_MeasureECreate(OE_SHA256Context* context, SGX_Secs* secs)
+OE_Result OE_SGXMeasureCreateEnclave(OE_SHA256Context* context, SGX_Secs* secs)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -68,7 +68,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_MeasureEAdd(
+OE_Result OE_SGXMeasureLoadEnclaveData(
     OE_SHA256Context* context,
     uint64_t base,
     uint64_t addr,
@@ -98,7 +98,9 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_MeasureEInit(OE_SHA256Context* context, OE_SHA256* mrenclave)
+OE_Result OE_SGXMeasureInitializeEnclave(
+    OE_SHA256Context* context,
+    OE_SHA256* mrenclave)
 {
     OE_Result result = OE_UNEXPECTED;
 

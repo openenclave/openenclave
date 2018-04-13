@@ -4,7 +4,6 @@
 #include <openenclave/bits/build.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/sgxdev.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
@@ -12,14 +11,14 @@
 #include <stdlib.h>
 #include "../../host/enclave.h"
 
-static OE_Result InitializeContext(OE_SgxLoadContext* context)
+static OE_Result InitializeContext(OE_SGXLoadContext* context)
 {
 #ifdef MEASURE_ONLY
-    const OE_SgxLoadType type = OE_SGXLOAD_MEASURE;
+    const OE_SGXLoadType type = OE_SGX_LOADTYPE_MEASURE;
 #else
-    const OE_SgxLoadType type = OE_SGXLOAD_CREATE;
+    const OE_SGXLoadType type = OE_SGX_LOADTYPE_CREATE;
 #endif
-    return _InitializeLoadContext(context, type, OE_ENCLAVE_FLAG_DEBUG);
+    return OE_SGXInitializeLoadContext(context, type, OE_ENCLAVE_FLAG_DEBUG);
 }
 
 static const OE_EnclaveSettings* GetEnclaveSettings()
@@ -42,7 +41,7 @@ static const OE_EnclaveSettings* GetEnclaveSettings()
 int main(int argc, const char* argv[])
 {
     OE_Result result;
-    OE_SgxLoadContext context;
+    OE_SGXLoadContext context;
     OE_Enclave enclave;
 
     if (argc != 2)
@@ -54,7 +53,7 @@ int main(int argc, const char* argv[])
     if (InitializeContext(&context) != OE_OK)
         OE_PutErr("InitializeContext() failed");
 
-    if ((result = __OE_BuildEnclave(
+    if ((result = OE_SGXBuildEnclave(
              &context, argv[1], GetEnclaveSettings(), &enclave)) != OE_OK)
     {
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
