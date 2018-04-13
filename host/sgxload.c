@@ -14,6 +14,7 @@
 #endif
 
 #include <openenclave/bits/aesm.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
@@ -264,7 +265,7 @@ OE_Result OE_SGXInitializeLoadContext(
         memset(context, 0, sizeof(OE_SGXLoadContext));
 
     if (!context || type == OE_SGX_LOADTYPE_UNDEFINED)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Set attributes before checking context properties */
     context->type = type;
@@ -275,14 +276,14 @@ OE_Result OE_SGXInitializeLoadContext(
     {
         context->dev = open("/dev/isgx", O_RDWR);
         if (context->dev == OE_SGX_NO_DEVICE_HANDLE)
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
     }
 #endif
 
     context->state = OE_SGX_LOADSTATE_INITIALIZED;
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -309,14 +310,14 @@ OE_Result OE_SGXCreateEnclave(
         *enclaveAddr = 0;
 
     if (!context || !enclaveSize || !enclaveAddr)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (context->state != OE_SGX_LOADSTATE_INITIALIZED)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* SIZE must be a power of two */
     if (enclaveSize != OE_RoundU64ToPow2(enclaveSize))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(_WIN32)
     if (OE_SGXLoadIsSimulation(context))
@@ -324,16 +325,16 @@ OE_Result OE_SGXCreateEnclave(
     {
         /* Allocation memory-mapped region */
         if (!(base = _AllocateEnclaveMemory(enclaveSize, context->dev)))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Create SECS structure */
     if (!(secs = _NewSecs(
               (uint64_t)base, enclaveSize, OE_SGXLoadIsDebug(context))))
-        OE_THROW(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Measure this operation */
-    OE_TRY(OE_SGXMeasureCreateEnclave(&context->hashContext, secs));
+    OE_CHECK(OE_SGXMeasureCreateEnclave(&context->hashContext, secs));
 
     if (context->type == OE_SGX_LOADTYPE_MEASURE)
     {
@@ -352,7 +353,7 @@ OE_Result OE_SGXCreateEnclave(
 
         /* Ask the Linux SGX driver to create the encalve */
         if (SGX_IoctlEnclaveCreate(context->dev, secs) != 0)
-            OE_THROW(OE_IOCTL_FAILED);
+            OE_RAISE(OE_IOCTL_FAILED);
 
 #elif defined(_WIN32)
 
@@ -369,7 +370,7 @@ OE_Result OE_SGXCreateEnclave(
             &enclaveError);
 
         if (!base)
-            OE_THROW(OE_PLATFORM_ERROR);
+            OE_RAISE(OE_PLATFORM_ERROR);
 
         secs->base = (uint64_t)base;
 
@@ -380,7 +381,7 @@ OE_Result OE_SGXCreateEnclave(
     context->state = OE_SGX_LOADSTATE_ENCLAVE_CREATED;
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (secs)
         OE_MemalignFree(secs);
@@ -399,17 +400,17 @@ OE_Result OE_SGXLoadEnclaveData(
     OE_Result result = OE_UNEXPECTED;
 
     if (!context || !base || !addr || !src || !flags)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (context->state != OE_SGX_LOADSTATE_ENCLAVE_CREATED)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* ADDR must be page aligned */
     if (addr % OE_PAGE_SIZE)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    OE_TRY(
+    OE_CHECK(
         OE_SGXMeasureLoadEnclaveData(
             &context->hashContext, base, addr, src, flags, extend));
 
@@ -417,7 +418,7 @@ OE_Result OE_SGXLoadEnclaveData(
     {
         /* EADD has no further action in measurement mode */
         result = OE_OK;
-        goto OE_CATCH;
+        goto done;
     }
     else if (OE_SGXLoadIsSimulation(context))
     {
@@ -427,7 +428,7 @@ OE_Result OE_SGXLoadEnclaveData(
             (uint8_t*)addr >
                 (uint8_t*)context->sim.addr + context->sim.size - OE_PAGE_SIZE)
         {
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
         }
 
         /* Copy page contents onto memory-mapped region */
@@ -439,11 +440,11 @@ OE_Result OE_SGXLoadEnclaveData(
 
 #if defined(__linux__)
             if (mprotect((void*)addr, OE_PAGE_SIZE, prot) != 0)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 #elif defined(_WIN32)
             DWORD old;
             if (!VirtualProtect((LPVOID)addr, OE_PAGE_SIZE, prot, &old))
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 #endif
         }
     }
@@ -454,7 +455,7 @@ OE_Result OE_SGXLoadEnclaveData(
         /* Ask the Linux SGX driver to add a page to the enclave */
         if (SGX_IoctlEnclaveAddPage(context->dev, addr, src, flags, extend) !=
             0)
-            OE_THROW(OE_IOCTL_FAILED);
+            OE_RAISE(OE_IOCTL_FAILED);
 
 #elif defined(_WIN32)
 
@@ -477,7 +478,7 @@ OE_Result OE_SGXLoadEnclaveData(
                 &num_bytes,
                 &enclaveError))
         {
-            OE_THROW(OE_PLATFORM_ERROR);
+            OE_RAISE(OE_PLATFORM_ERROR);
         }
 
 #endif
@@ -485,7 +486,7 @@ OE_Result OE_SGXLoadEnclaveData(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     return result;
 }
@@ -503,13 +504,13 @@ OE_Result OE_SGXInitializeEnclave(
         memset(mrenclave, 0, sizeof(OE_SHA256));
 
     if (!context || !addr || !sigstruct || !mrenclave)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (context->state != OE_SGX_LOADSTATE_ENCLAVE_CREATED)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    OE_TRY(OE_SGXMeasureInitializeEnclave(&context->hashContext, mrenclave));
+    OE_CHECK(OE_SGXMeasureInitializeEnclave(&context->hashContext, mrenclave));
 
     /* EINIT has no further action in measurement/simulation mode */
     if (context->type == OE_SGX_LOADTYPE_CREATE &&
@@ -529,9 +530,9 @@ OE_Result OE_SGXInitializeEnclave(
         attributes.xfrm = 0x7;
 
         if (!(aesm = AESMConnect()))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
-        OE_TRY(
+        OE_CHECK(
             AESMGetLaunchToken(
                 aesm,
                 sgxSigStruct->enclavehash,
@@ -547,7 +548,7 @@ OE_Result OE_SGXInitializeEnclave(
         /* Ask the Linux SGX driver to initialize the enclave */
         if (SGX_IoctlEnclaveInit(
                 context->dev, addr, sigstruct, (uint64_t)&launchToken) != 0)
-            OE_THROW(OE_IOCTL_FAILED);
+            OE_RAISE(OE_IOCTL_FAILED);
 
 #elif defined(_WIN32)
 
@@ -573,7 +574,7 @@ OE_Result OE_SGXInitializeEnclave(
                 sizeof(info),
                 &enclaveError))
         {
-            OE_THROW(OE_PLATFORM_ERROR);
+            OE_RAISE(OE_PLATFORM_ERROR);
         }
 #endif
     }
@@ -581,7 +582,7 @@ OE_Result OE_SGXInitializeEnclave(
     context->state = OE_SGX_LOADSTATE_ENCLAVE_INITIALIZED;
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (aesm)
         AESMDisconnect(aesm);

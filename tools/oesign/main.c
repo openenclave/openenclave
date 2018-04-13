@@ -7,6 +7,7 @@
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/mem.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/str.h>
@@ -81,12 +82,12 @@ static OE_Result _GetDate(unsigned int* date)
     size_t i;
 
     if (!date)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     t = time(NULL);
 
     if (localtime_r(&t, &tm) == NULL)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     {
         char s[9];
@@ -109,7 +110,7 @@ static OE_Result _GetDate(unsigned int* date)
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -119,20 +120,20 @@ static OE_Result _GetModulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
     uint8_t buf[OE_KEY_SIZE];
 
     if (!rsa || !modulus)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     fprintf(stderr, "modulus.bytes=%u\n", BN_num_bytes(rsa->n));
 #endif
 
     if (!BN_bn2bin(rsa->n, buf))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     _MemReverse(modulus, buf, OE_KEY_SIZE);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -142,10 +143,10 @@ static OE_Result _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
     // uint8_t buf[OE_EXPONENT_SIZE];
 
     if (!rsa || !exponent)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (rsa->e->top != 1)
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     {
         unsigned long long x = rsa->e->d[0];
@@ -157,7 +158,7 @@ static OE_Result _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     if (!BN_bn2bin(rsa->e, buf))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     printf("d=%lx\n", rsa->e->d[0]);
 
@@ -172,7 +173,7 @@ static OE_Result _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -202,7 +203,7 @@ OE_Result _GetQ1AndQ2(
     if (!signature || !signatureSize || !modulus || !modulusSize || !q1Out ||
         !q1OutSize || !q2Out || !q2OutSize)
     {
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     memset(sbuf, 0, sizeof(sbuf));
@@ -214,40 +215,40 @@ OE_Result _GetQ1AndQ2(
     /* Create new objects */
     {
         if (!(s = BN_bin2bn(sbuf, sizeof(sbuf), NULL)))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(m = BN_bin2bn(mbuf, sizeof(mbuf), NULL)))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(q1 = BN_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(q2 = BN_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(t1 = BN_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(t2 = BN_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         if (!(ctx = BN_CTX_new()))
-            OE_THROW(OE_OUT_OF_MEMORY);
+            OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Perform arithmetic */
     {
         if (!BN_mul(t1, s, s, ctx))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (!BN_div(q1, t2, t1, m, ctx))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (!BN_mul(t1, s, t2, ctx))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (!BN_div(q2, t2, t1, m, ctx))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
     }
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
@@ -262,7 +263,7 @@ OE_Result _GetQ1AndQ2(
         size_t n = BN_num_bytes(q1);
 
         if (n > sizeof(q1buf))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (n > q1OutSize)
             n = q1OutSize;
@@ -276,7 +277,7 @@ OE_Result _GetQ1AndQ2(
         size_t n = BN_num_bytes(q2);
 
         if (n > sizeof(q2buf))
-            OE_THROW(OE_FAILURE);
+            OE_RAISE(OE_FAILURE);
 
         if (n > q2OutSize)
             n = q2OutSize;
@@ -287,7 +288,7 @@ OE_Result _GetQ1AndQ2(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (s)
         BN_free(s);
@@ -315,7 +316,7 @@ OE_Result _InitSigstruct(
     OE_Result result = OE_UNEXPECTED;
 
     if (!sigstruct)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Zero-fill the structure */
     memset(sigstruct, 0, sizeof(SGX_SigStruct));
@@ -345,7 +346,7 @@ OE_Result _InitSigstruct(
     sigstruct->vendor = 0;
 
     /* SGX_SigStruct.date */
-    OE_TRY(_GetDate(&sigstruct->date));
+    OE_CHECK(_GetDate(&sigstruct->date));
 
     /* SGX_SigStruct.header2 */
     {
@@ -373,10 +374,10 @@ OE_Result _InitSigstruct(
     sigstruct->swdefined = 0;
 
     /* SGX_SigStruct.date */
-    OE_TRY(_GetModulus(rsa, sigstruct->modulus));
+    OE_CHECK(_GetModulus(rsa, sigstruct->modulus));
 
     /* SGX_SigStruct.date */
-    OE_TRY(_GetExponent(rsa, sigstruct->exponent));
+    OE_CHECK(_GetExponent(rsa, sigstruct->exponent));
 
     /* SGX_SigStruct.signature: fill in after other fields */
 
@@ -436,7 +437,7 @@ OE_Result _InitSigstruct(
             }
 
             if (sizeof(sigstruct->signature) != signatureSize)
-                OE_THROW(OE_FAILURE);
+                OE_RAISE(OE_FAILURE);
 
             /* The signature is backwards and needs to be reversed */
             _MemReverse(sigstruct->signature, signature, sizeof(signature));
@@ -444,7 +445,7 @@ OE_Result _InitSigstruct(
     }
 
 #if 1
-    OE_TRY(
+    OE_CHECK(
         _GetQ1AndQ2(
             sigstruct->signature,
             sizeof(sigstruct->signature),
@@ -458,7 +459,7 @@ OE_Result _InitSigstruct(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 

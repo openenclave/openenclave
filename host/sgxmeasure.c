@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "sgxmeasure.h"
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
@@ -51,7 +52,7 @@ OE_Result OE_SGXMeasureCreateEnclave(OE_SHA256Context* context, SGX_Secs* secs)
     OE_Result result = OE_UNEXPECTED;
 
     if (!context || !secs)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize measurement */
     OE_SHA256Init(context);
@@ -64,7 +65,7 @@ OE_Result OE_SGXMeasureCreateEnclave(OE_SHA256Context* context, SGX_Secs* secs)
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -80,7 +81,7 @@ OE_Result OE_SGXMeasureLoadEnclaveData(
     uint64_t vaddr = addr - base;
 
     if (!context || !base || !addr || !src || !flags || addr < base)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Measure EADD */
     OE_SHA256Update(context, "EADD\0\0\0", 8);
@@ -94,7 +95,7 @@ OE_Result OE_SGXMeasureLoadEnclaveData(
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
 
@@ -105,13 +106,13 @@ OE_Result OE_SGXMeasureInitializeEnclave(
     OE_Result result = OE_UNEXPECTED;
 
     if (!context || !mrenclave)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Finalize measurement like EINIT */
     OE_SHA256Final(context, mrenclave);
 
     result = OE_OK;
 
-OE_CATCH:
+done:
     return result;
 }
