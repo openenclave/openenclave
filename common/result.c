@@ -75,6 +75,12 @@ const char* OE_ResultStr(OE_Result result)
             return "OE_ENCLAVE_ABORTING";
         case OE_ENCLAVE_ABORTED:
             return "OE_ENCLAVE_ABORTED";
+        case OE_INVALID_CPUSVN:
+            return "OE_INVALID_CPUSVN";
+        case OE_INVALID_ISVSVN:
+            return "OE_INVALID_ISVSVN";
+        case OE_INVALID_KEYNAME:
+            return "OE_INVALID_KEYNAME";
         case OE_DEBUG_DOWNGRADE:
             return "OE_DEBUG_DOWNGRADE";
     }

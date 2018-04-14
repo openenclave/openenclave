@@ -14,6 +14,7 @@ add_library(oeenclave STATIC
     hexdump.c
     init.c
     jump.c
+    keys.c
     memory.c
     once.c
     report.c
@@ -25,6 +26,7 @@ add_library(oeenclave STATIC
     td.c
     thread.c
     exit.S
+    getkey.S
     main.S
     )
 

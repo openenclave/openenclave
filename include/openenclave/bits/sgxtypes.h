@@ -887,6 +887,132 @@ OE_PACK_END
 
 OE_STATIC_ASSERT(sizeof(SGX_QuoteSignature) == 664);
 
+/*
+**==============================================================================
+**
+** SGX key-related definitions
+** Refer to KEY REQUEST (KEYREQUEST) in Intel SDM.
+**
+**==============================================================================
+*/
+
+/* Key name. */
+#define SGX_KEYSELECT_EINITTOKEN 0x0000U
+#define SGX_KEYSELECT_PROVISION 0x0001U
+#define SGX_KEYSELECT_PROVISION_SEAL 0x0002U
+#define SGX_KEYSELECT_REPORT 0x0003U
+#define SGX_KEYSELECT_SEAL 0x0004U
+
+/* Key policy. */
+#define SGX_KEYPOLICY_MRENCLAVE 0x0001U
+#define SGX_KEYPOLICY_MRSIGNER 0x0002U
+#define SGX_KEYPOLICY_ALL (SGX_KEYPOLICY_MRENCLAVE | SGX_KEYPOLICY_MRSIGNER)
+
+OE_PACK_BEGIN
+typedef struct _SGX_KeyRequest
+{
+    /* (0) Identifies the Key Required. */
+    uint16_t key_name;
+
+    /* (2) Identifies which inputs are required to be used in the key derivation
+    .*/
+    uint16_t key_policy;
+
+    /* (4) The ISV security version number that will be used in the key
+    derivation.*/
+    uint16_t isv_svn;
+
+    /* (6) Must be zero.*/
+    uint16_t reserved1;
+
+    /* (8) The security version number of the processor used in the key
+    derivation.*/
+    uint8_t cpu_svn[SGX_CPUSVN_SIZE];
+
+    /* (24) A mask defining which SECS.ATTRIBUTES bits will be included in key
+    derivation*/
+    SGX_Attributes attribute_mask;
+
+    /* (40) Value for key wear-out protection. */
+    uint8_t key_id[SGX_KEYID_SIZE];
+
+    /* (72) A mask defining which MISCSELECT bits will be included in key
+    derivation.*/
+    uint32_t misc_attribute_mask;
+
+    /* (76) Identifies which enclave Configuration's Security Version should be
+    used in key derivation.*/
+    uint16_t config_svn;
+
+    /* (78) Must be zero.*/
+    uint8_t reserved2[434];
+} SGX_KeyRequest;
+OE_PACK_END
+
+OE_STATIC_ASSERT(sizeof(SGX_KeyRequest) == 512);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, key_name), 0);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, key_policy), 2);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, isv_svn), 4);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, reserved1), 6);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, cpu_svn), 8);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, attribute_mask), 24);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, key_id), 40);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, misc_attribute_mask), 72);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, config_svn), 76);
+OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, reserved2), 78);
+
+/* Refer to EGETKEY leaf instruction in Intel SDM. */
+/* EGETKEY instruction return values. */
+#define SGX_SUCCESS 0
+#define SGX_INVALID_ATTRIBUTE (1 << (1))
+#define SGX_INVALID_CPUSVN (1 << (5))
+#define SGX_INVALID_ISVSVN (1 << (6))
+#define SGX_INVALID_KEYNAME (1 << (8))
+
+/* Alignment requirement. */
+#define SGX_KEY_REQUEST_ALIGNMENT 512
+#define SGX_KEY_ALIGNMENT 16
+
+/* The 128-bit SGX secret key. */
+typedef struct _SGX_Key
+{
+    uint8_t buf[16];
+} SGX_Key;
+
+/* Enclave Flags Bit Masks */
+/* If set, then the enclave is initialized */
+#define SGX_FLAGS_INITTED 0x0000000000000001ULL
+/* If set, then the enclave is debug */
+#define SGX_FLAGS_DEBUG 0x0000000000000002ULL
+/* If set, then the enclave is 64 bit */
+#define SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
+/* If set, then the enclave has access to provision key */
+#define SGX_FLAGS_PROVISION_KEY 0x0000000000000010ULL
+/* If set, then the enclave has access to EINITTOKEN key */
+#define SGX_FLAGS_EINITTOKEN_KEY 0x0000000000000020ULL
+#define SGX_FLAGS_RESERVED                                         \
+    (~(SGX_FLAGS_INITTED | SGX_FLAGS_DEBUG | SGX_FLAGS_MODE64BIT | \
+       SGX_FLAGS_PROVISION_KEY | SGX_FLAGS_EINITTOKEN_KEY))
+
+/* Set the bits which have no security implications to 0 for sealed data
+ migration */
+/* Bits which have no security implications in attributes.flags:
+ *    Reserved bit[55:6]  - 0xFFFFFFFFFFFFC0ULL
+ *    SGX_FLAGS_MODE64BIT
+ *    SGX_FLAGS_PROVISION_KEY
+ *    SGX_FLAGS_EINITTOKEN_KEY */
+#define SGX_FLAGS_NON_SECURITY_BITS                                        \
+    (0xFFFFFFFFFFFFC0ULL | SGX_FLAGS_MODE64BIT | SGX_FLAGS_PROVISION_KEY | \
+     SGX_FLAGS_EINITTOKEN_KEY)
+
+/* bit[27:0]: have no security implications */
+#define SGX_MISC_NON_SECURITY_BITS 0x0FFFFFFF
+
+/* OE seal key default flag masks*/
+#define OE_SEALKEY_DEFAULT_FLAGSMASK (~SGX_FLAGS_NON_SECURITY_BITS)
+#define OE_SEALKEY_DEFAULT_MISCMASK (~SGX_MISC_NON_SECURITY_BITS)
+#define OE_SEALKEY_DEFAULT_XFRMMASK (0X0ULL)
+
 OE_EXTERNC_END
 
 #endif /* _OE_SGXTYPES_H */
