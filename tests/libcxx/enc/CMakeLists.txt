@@ -44,7 +44,11 @@ function(add_libcxx_test_enc NAME CXXFILE)
 endfunction(add_libcxx_test_enc)
 
 # iterate over the supported tests and create a binary for each.
-file(STRINGS "../tests.supported" alltests)
+if (ENABLE_FULL_LIBCXX_TESTS)
+    file(STRINGS "../tests.supported" alltests)
+else()
+    file(STRINGS "../tests.supported.default" alltests)
+endif()
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name)
     add_libcxx_test_enc("${name}" "${testcase}")
