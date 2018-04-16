@@ -20,14 +20,14 @@
 #define SGX_IOC_ENCLAVE_INIT _IOW(SGX_MAGIC, 0x02, SGXEInitParam)
 
 OE_PACK_BEGIN
-typedef struct __SGXECreateParam
+typedef struct _SGXECreateParam
 {
     uint64_t secs;
 } SGXECreateParam;
 OE_PACK_END
 
 OE_PACK_BEGIN
-typedef struct __SGXEAddParam
+typedef struct _SGXEAddParam
 {
     uint64_t addr;    /* enclaves address to copy to */
     uint64_t src;     /* user address to copy from */
@@ -37,7 +37,7 @@ typedef struct __SGXEAddParam
 OE_PACK_END
 
 OE_PACK_BEGIN
-typedef struct __SGXEInitParam
+typedef struct _SGXEInitParam
 {
     uint64_t addr;
     uint64_t sigstruct;

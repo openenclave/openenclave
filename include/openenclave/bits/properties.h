@@ -28,7 +28,7 @@ OE_INLINE bool OE_SGXValidNumStackPages(uint64_t x)
 
 OE_INLINE bool OE_SGXValidNumTCS(uint64_t x)
 {
-    return x < OE_MAX_UINT64;
+    return x <= OE_SGX_MAX_TCS;
 }
 
 OE_INLINE bool OE_SGXValidAttributes(uint64_t x)

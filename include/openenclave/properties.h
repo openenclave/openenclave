@@ -31,6 +31,9 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
+/* Max number of threads in an enclave supported */
+#define OE_SGX_MAX_TCS 32
+
 typedef struct _OE_EnclaveSizeSettings
 {
     uint64_t numHeapPages;

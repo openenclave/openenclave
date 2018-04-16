@@ -88,9 +88,6 @@ OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 /* Get thread data from thread-specific data (TSD) */
 ThreadBinding* GetThreadBinding(void);
 
-/* Max number of threads in an enclave supported */
-#define OE_SGX_MAX_TCS 32
-
 struct _OE_Enclave
 {
     /* A "magic number" to validate structure */
