@@ -446,7 +446,14 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave);
+    result = OE_CreateEnclave(
+        argv[1],
+        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_FLAG_DEBUG,
+        NULL,
+        0,
+        &enclave);
+
     if (result != OE_OK)
     {
         fprintf(stderr, "%s: OE_CreateEnclave(): %u\n", argv[0], result);
@@ -581,10 +588,16 @@ Note: the enclave must be created with debug opt-in flag, otherwise debugger can
 The default sample enclave is created with debug flag, refer to:
 
 ```
-result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave);
+result = OE_CreateEnclave(
+        argv[1],
+        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_FLAG_DEBUG,
+        NULL,
+        0,
+        &enclave);
 ```
 
-This flag (OE_FLAG_DEBUG) should only be set in development phase. It must be clear out for production enclave.
+This flag (OE_ENCLAVE_FLAG_DEBUG) should only be set in development phase. It needs to be removed for a production enclave.
 
 The debugger is installed at <install_prefix>/bin/oe-gdb. The usage is same with GDB, for example: the following command will
 launch the simple enclave application under debugger:

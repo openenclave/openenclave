@@ -4,7 +4,6 @@
 #ifndef _OE_HOST_ENCLAVE_H
 #define _OE_HOST_ENCLAVE_H
 
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/host.h>
 #include <openenclave/properties.h>

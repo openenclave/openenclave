@@ -25,7 +25,7 @@ int main(int argc, const char* argv[])
     }
 
     const uint32_t flags = OE_GetCreateFlags();
-    if ((flags & OE_FLAG_SIMULATE) != 0)
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
         printf("=== Skipped unsupported test in simulation mode (sealKey)\n");
         return SKIP_RETURN_CODE;
@@ -33,7 +33,8 @@ int main(int argc, const char* argv[])
 
     printf("=== This program is used to test enclave seal key functions.\n");
 
-    if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
+    if ((result = OE_CreateEnclave(
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
         return 1;

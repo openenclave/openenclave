@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
 #include <stdio.h>
@@ -115,7 +116,8 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = OE_GetCreateFlags();
 
-    if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
+    if ((result = OE_CreateEnclave(
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
     /* Check expected enclave property values */

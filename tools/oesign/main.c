@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/elf.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/properties.h>
 #include <openenclave/bits/raise.h>
-#include <openenclave/bits/signsgx.h>
+#include <openenclave/bits/sgxcreate.h>
+#include <openenclave/bits/sgxsign.h>
 #include <openenclave/bits/str.h>
 #include <stdarg.h>
 #include <sys/stat.h>
@@ -40,7 +40,7 @@ static char* _MakeSignedLibName(const char* path)
     mem_append(&buf, path, p - path);
     mem_append(&buf, ".signed.so", 11);
 
-    return mem_steal(&buf);
+    return (char*)mem_steal(&buf);
 }
 
 static int _UpdateAndWriteSharedLib(
@@ -509,7 +509,6 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
     int ret = 1;
     OE_Result result;
-    OE_SGXDevice* dev = NULL;
     const char* enclave;
     const char* conffile;
     const char* keyfile;
@@ -518,7 +517,7 @@ int main(int argc, const char* argv[])
     size_t pemSize;
     ConfigFileOptions options = CONFIG_FILE_OPTIONS_INITIALIZER;
     OE_SGXEnclaveProperties props;
-    OE_SHA256 mrenclave;
+    OE_SGXLoadContext context;
 
     /* Check arguments */
     if (argc != 4)
@@ -568,18 +567,18 @@ int main(int argc, const char* argv[])
         }
     }
 
-    /* Open the MEASURER to compute MRENCLAVE */
-    if (!(dev = __OE_OpenSGXMeasurer()))
+    /* Initialize the context paramters for measurement only */
+    if (OE_SGXInitializeLoadContext(
+            &context, OE_SGX_LOAD_TYPE_MEASURE, OE_ENCLAVE_FLAG_DEBUG) != OE_OK)
     {
-        Err("__OE_OpenSGXDriver() failed");
+        Err("OE_SGXInitializeLoadContext() failed");
         goto done;
     }
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
-    if ((result = __OE_BuildEnclave(
-             dev, enclave, &props, false, false, &enc)) != OE_OK)
+    if ((result = OE_SGXBuildEnclave(&context, enclave, &props, &enc)) != OE_OK)
     {
-        Err("__OE_BuildEnclave(): result=%u", result);
+        Err("OE_SGXBuildEnclave(): result=%u", result);
         goto done;
     }
 
@@ -590,16 +589,9 @@ int main(int argc, const char* argv[])
         goto done;
     }
 
-    /* Get the MRENCLAVE value */
-    if ((result = dev->gethash(dev, &mrenclave)) != OE_OK)
-    {
-        Err("Failed to get hash: result=%u", result);
-        goto done;
-    }
-
     /* Initialize the SigStruct object */
     if ((result = OE_SGXSignEnclave(
-             &mrenclave,
+             &enc.hash,
              props.config.attributes,
              props.config.productID,
              props.config.securityVersion,
@@ -607,7 +599,7 @@ int main(int argc, const char* argv[])
              pemSize,
              (SGX_SigStruct*)props.sigstruct)) != OE_OK)
     {
-        Err("OE_SignEnclave() failed: result=%u", result);
+        Err("OE_SGXSignEnclave() failed: result=%u", result);
         goto done;
     }
 
@@ -622,11 +614,10 @@ int main(int argc, const char* argv[])
 
 done:
 
-    if (dev)
-        dev->close(dev);
-
     if (pemData)
         free(pemData);
+
+    OE_SGXCleanupLoadContext(&context);
 
     return ret;
 }

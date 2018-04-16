@@ -14,6 +14,7 @@ set(PLATFORM_SRC
     linux/entersim.S
     linux/exception.c
     linux/hostthread.c
+    linux/sgxioctl.c
     linux/sgxsign.c
     )
 elseif (WIN32)
@@ -46,7 +47,7 @@ add_library(oehost STATIC
     registers.c
     report.c
     result.c
-    sgxdriver.c
+    sgxload.c
     sgxmeasure.c
     sgxtypes.c
     signkey.c

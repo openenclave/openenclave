@@ -40,8 +40,8 @@ OE_ECALL void AesEncrypt(void* args_)
                        0xa1, 0xb8, 0x50, 0xae, 0x08, 0xe3, 0xb0, 0xf7};
 
     mbedtls_aes_context aes;
-    uint8_t iv[16];
-    char errstring[256];
+    uint8_t iv[16] = {0};
+    char errstring[256] = {0};
 
     int err = mbedtls_aes_setkey_enc(&aes, key, 256);
     if (err)

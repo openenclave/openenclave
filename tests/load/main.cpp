@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/sgxdev.h>
+#include <openenclave/bits/sgxcreate.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
@@ -12,17 +11,14 @@
 #include <stdlib.h>
 #include "../../host/enclave.h"
 
-#if 1
-#define USE_DRIVER
-#endif
-
-static OE_SGXDevice* OpenDevice()
+static OE_Result InitializeContext(OE_SGXLoadContext* context)
 {
-#ifdef USE_DRIVER
-    return __OE_OpenSGXDriver(false);
+#ifdef MEASURE_ONLY
+    const OE_SGXLoadType type = OE_SGX_LOAD_TYPE_MEASURE;
 #else
-    return __OE_OpenSGXMeasurer();
+    const OE_SGXLoadType type = OE_SGX_LOAD_TYPE_CREATE;
 #endif
+    return OE_SGXInitializeLoadContext(context, type, OE_ENCLAVE_FLAG_DEBUG);
 }
 
 static const OE_SGXEnclaveProperties* GetEnclaveProperties()
@@ -33,7 +29,7 @@ static const OE_SGXEnclaveProperties* GetEnclaveProperties()
     static OE_SGXEnclaveProperties properties;
 
     memset(&properties, 0, sizeof(OE_SGXEnclaveProperties));
-    properties.settings.attributes = OE_SGX_FLAGS_DEBUG;
+    properties.config.attributes = OE_SGX_FLAGS_DEBUG;
     properties.header.sizeSettings.numHeapPages = 2;
     properties.header.sizeSettings.numStackPages = 1;
     properties.header.sizeSettings.numTCS = 2;
@@ -45,7 +41,7 @@ static const OE_SGXEnclaveProperties* GetEnclaveProperties()
 int main(int argc, const char* argv[])
 {
     OE_Result result;
-    OE_SGXDevice* dev = NULL;
+    OE_SGXLoadContext context;
     OE_Enclave enclave;
 
     if (argc != 2)
@@ -54,12 +50,11 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    if (!(dev = OpenDevice()))
-        OE_PutErr("__OE_OpenSGXDriver() failed");
+    if (InitializeContext(&context) != OE_OK)
+        OE_PutErr("InitializeContext() failed");
 
-    if ((result = __OE_BuildEnclave(
-             dev, argv[1], GetEnclaveProperties(), false, false, &enclave)) !=
-        OE_OK)
+    if ((result = OE_SGXBuildEnclave(
+             &context, argv[1], GetEnclaveProperties(), &enclave)) != OE_OK)
     {
         OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
     }

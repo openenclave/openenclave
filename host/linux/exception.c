@@ -3,7 +3,6 @@
 
 #include <assert.h>
 #include <dlfcn.h>
-#include <openenclave/bits/build.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/registers.h>
 #include <openenclave/bits/sgxtypes.h>
