@@ -364,7 +364,7 @@ OE_Result OE_SGXInitializeLoadContext(
     context->type = type;
     context->attributes = attributes;
     context->dev = OE_SGX_NO_DEVICE_HANDLE;
-#if defined(__linux__)
+#if !defined(OE_USE_LIBSGX) && defined(__linux__)
     if (type != OE_SGX_LOAD_TYPE_MEASURE && !OE_SGXLoadIsSimulation(context))
     {
         context->dev = open("/dev/isgx", O_RDWR);
