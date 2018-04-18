@@ -30,6 +30,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
     add_enclave_executable(libcxxtest-${NAME} sign.conf private.pem
         main.cpp
         )
+    target_link_libraries(libcxxtest-${NAME} oelibcxx oeruntime)
 
     target_include_directories(libcxxtest-${NAME} PRIVATE
         ..

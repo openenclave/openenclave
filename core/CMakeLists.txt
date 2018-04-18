@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_library(oeenclave STATIC
+add_library(oecore STATIC
     assert.c
     atexit.c
     calls.c
@@ -30,23 +30,23 @@ add_library(oeenclave STATIC
     main.S
     )
 
-target_link_libraries(oeenclave PUBLIC oe_includes)
+target_link_libraries(oecore PUBLIC oe_includes)
 
 # we strip the default include containing the compiler-provided intrinsics
 # add it back in
-target_include_directories(oeenclave SYSTEM PUBLIC ${OE_C_COMPILER_INCDIR})
+target_include_directories(oecore SYSTEM PUBLIC ${OE_C_COMPILER_INCDIR})
 
-target_compile_options(oeenclave PUBLIC
+target_compile_options(oecore PUBLIC
     -m64 -fPIC
     -nostdinc
     $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>
     -fno-stack-protector -fvisibility=hidden
     )
 
-target_compile_definitions(oeenclave PUBLIC OE_BUILD_ENCLAVE)
+target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
 
 # addl link-options for enclave apps
-target_link_libraries(oeenclave INTERFACE
+target_link_libraries(oecore INTERFACE
     -nostdlib -nodefaultlibs -nostartfiles
     -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,-eOE_Main
     )
@@ -54,5 +54,5 @@ target_link_libraries(oeenclave INTERFACE
 # jump.s must be optimized for the correct call-frame.
 set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 
-set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
-install (TARGETS oeenclave EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
+install (TARGETS oecore EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

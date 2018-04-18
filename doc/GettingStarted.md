@@ -178,7 +178,7 @@ This builds the entire Open Enclave SDK, creating the following files.
 |-----------------------------------|-------------------------------------------------------|
 | output/bin/oegen                  | Utility for generating ECALL and OCALL stubs from IDL |
 | output/bin/oesign                 | Utility for signing enclaves                          |
-| output/lib/enclave/liboeenclave.a | Core library for building enclave applications        |
+| output/lib/enclave/liboecore.a    | Core library for building enclave applications        |
 | output/lib/enclave/liboelibc.a    | C runtime library for enclave                         |
 | output/lib/enclave/liboelibcxx.a  | C++ runtime library for enclave                       |
 | output/lib/host/liboehost.a       | Library for building host applications                |
@@ -298,8 +298,8 @@ and libraries.
 
 | Target           | Description                                                                         |
 |------------------|-------------------------------------------------------------------------------------|
-| oeenclave        | Enclave code: Open Enclave intrinsic functions. Must be present in all enclave code. |
-| oelibc           | Enclave code: Open Enclave C library. Includes oeenclave.                            |
+| oecore           | Enclave code: Open Enclave intrinsic functions. Must be present in all enclave code. |
+| oelibc           | Enclave code: Open Enclave C library. Includes oecore.                            |
 | oelibcxx         | Enclave code: Open Enclave C++ library. Includes oelibc.                             |
 | oeidl            | Enclave code: Misc helpers required with IDL-compiled code. Includes oelibc.        |
 | oehost           | Host code: Open Enclave intrinsic functions.                                         |
@@ -380,7 +380,7 @@ function with the same arguments.
 The samples provides cmake helper includes under samples/cmake/cmake/
 simplifying Open Enclave application writing. **add_enclave_executable.cmake**
 provides the **add_enclave_executable()** function. It extends CMake's
-**add_executable()** by adding the intrinsic target (oeenclave) and also
+**add_executable()** by adding the intrinsic target (oecore) and also
 signing the enclave. For the echo sample, this ***CMakeLists.txt*** suffices:
 
 ```
@@ -562,7 +562,7 @@ OE_Main() entry point. Note that the echo sample uses neither a C nor C++
 runtime library. Other samples will show how these are used.
 
 ```
-LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loeenclave
+LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loecore
 ```
 
 To sign the enclave, use the **oesign** tool. This tool takes the following

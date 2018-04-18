@@ -14,4 +14,4 @@ target_compile_options(printenc PRIVATE
     -fno-builtin-memset
     )
 
-target_link_libraries(printenc oelibc)
+target_link_libraries(printenc oeruntime)

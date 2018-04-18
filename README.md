@@ -121,7 +121,8 @@ The files and directories in the top-level directory are described as follows.
 - [cmake](cmake) - Contains CMake scripts for building Open Enclave.
 - [common](common) - Contains sources that work in the enclave and the host
 - [doc](doc) - Contains documentation
-- [enclave](enclave) - Contains the source for the oeenclave library
+- [enclave](core) - Contains the source for the oecore library
+- [enclave](runtime) - Contains the source for the oeruntime library
 - [host](host) - Contains source for the oehost library
 - [idl](idl) - Contains source for the oeidl library
 - [include](include) - Contains C header files

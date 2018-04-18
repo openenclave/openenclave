@@ -553,7 +553,7 @@ target_compile_options(oelibc PRIVATE
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
 
 # this project (and is dependents) require the enclave headers+lib
-target_link_libraries(oelibc oeenclave)
+target_link_libraries(oelibc oecore)
 
 # as a pre-build step, place the musl LIBC headers
 add_dependencies(oelibc oelibc_includes)
