@@ -62,7 +62,7 @@ exit(0);
         Elf64_Sym sym;
 
         if (Elf64_FindSymbolByAddress(
-                &elf, elf.ehdr->e_entry, STT_FUNC, &sym) != 0)
+                &elf, Elf64_GetHeader(&elf)->e_entry, STT_FUNC, &sym) != 0)
         {
             fprintf(stderr, "%s: cannot find entry point symbol\n", argv[0]);
             goto done;

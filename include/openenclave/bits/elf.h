@@ -218,9 +218,9 @@ typedef struct
 } Elf64_Rela;
 
 #define ELF_MAGIC 0x7d7ad33b
-#define ELF64_INIT                                 \
-    {                                              \
-        ELF_MAGIC, NULL, 0, NULL, NULL, NULL, NULL \
+#define ELF64_INIT         \
+    {                      \
+        ELF_MAGIC, NULL, 0 \
     }
 
 typedef struct
@@ -233,21 +233,6 @@ typedef struct
 
     /* File image size */
     size_t size;
-
-    /* ELF-64 header */
-    Elf64_Ehdr* ehdr;
-
-    /* Pointer to ehdr.e_shnum section headers */
-    Elf64_Shdr* shdrs;
-
-    /* Array of pointers to ehdr.e_shnum sections */
-    void** sections;
-
-    /* Pointer to ehdr.e_phnum program headers */
-    Elf64_Phdr* phdrs;
-
-    /* Array of pointers to ehdr.e_phnum segments */
-    void** segments;
 } Elf64;
 
 int Elf64_TestHeader(const Elf64_Ehdr* header);
@@ -294,7 +279,7 @@ int Elf64_FindSymbolByAddress(
 int Elf64_FindSection(
     const Elf64* elf,
     const char* name,
-    const void** data,
+    unsigned char** data,
     size_t* size);
 
 const char* Elf64_GetStringFromShstrtab(const Elf64* elf, Elf64_Word offset);
@@ -307,6 +292,8 @@ int Elf64_AddSection(
     unsigned int type,
     const void* secdata,
     size_t secsize);
+
+int Elf64_RemoveSection(Elf64* elf, const char* name);
 
 void Elf64_DumpSectionNames(const Elf64* elf);
 
@@ -324,6 +311,18 @@ int Elf64_VisitSymbols(
 
 /* Load relocations (size will be a multiple of the page size) */
 int Elf64_LoadRelocations(const Elf64* elf, void** data, size_t* size);
+
+/* Get the segment with the given index; return NULL on error */
+void* Elf64_GetSegment(const Elf64* elf, size_t index);
+
+/* Get the section header with the given index; return NULL on error */
+Elf64_Shdr* Elf64_GetSectionHeader(const Elf64* elf, size_t index);
+
+/* Get the program header with the given index; return NULL on error */
+Elf64_Phdr* Elf64_GetProgramHeader(const Elf64* elf, size_t index);
+
+/* Get pointer to the Elf64_Ehdr */
+Elf64_Ehdr* Elf64_GetHeader(const Elf64* elf);
 
 ELF_EXTERNC_END
 

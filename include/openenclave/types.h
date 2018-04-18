@@ -147,7 +147,7 @@ OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 **==============================================================================
 */
 
-typedef enum _OE_TYPE {
+typedef enum _OE_Type {
     OE_NONE_T,
     OE_CHAR_T,
     OE_UCHAR_T,
@@ -182,7 +182,7 @@ typedef enum _OE_TYPE {
 **
 **==============================================================================
 */
-typedef enum _OE_ENCLAVE_TYPE {
+typedef enum _OE_EnclaveType {
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
 } OE_EnclaveType;

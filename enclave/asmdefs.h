@@ -8,6 +8,7 @@
 #include <openenclave/enclave.h>
 #endif
 
+#define ENCLU_EGETKEY 1
 #define ENCLU_EENTER 2
 #define ENCLU_EEXIT 4
 

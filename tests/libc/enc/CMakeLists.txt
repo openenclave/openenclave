@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# create a binary for each testcase listed in ../tests.supported
+# Create a binary for each testcase listed in ../tests.supported
+# These tests generate a large number of warnings, some of them specific to compiler versions.
+# Disabling warning-as-errors for the specific warnings is painful across multiple different compilers.
+# It was agreed to, that it is best to just disable warnings-as-errors for these tests specifically.
 
 include(add_enclave_executable)
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
