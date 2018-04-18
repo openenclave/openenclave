@@ -36,9 +36,12 @@
 ../../3rdparty/musl/libc-test/src/math/acosf.c
 ../../3rdparty/musl/libc-test/src/math/acoshf.c
 ../../3rdparty/musl/libc-test/src/math/acoshl.c
+../../3rdparty/musl/libc-test/src/math/acosl.c
 ../../3rdparty/musl/libc-test/src/math/asin.c
 ../../3rdparty/musl/libc-test/src/math/asinf.c
 ../../3rdparty/musl/libc-test/src/math/asinhf.c
+../../3rdparty/musl/libc-test/src/math/asinhl.c
+../../3rdparty/musl/libc-test/src/math/asinl.c
 ../../3rdparty/musl/libc-test/src/math/atan2.c
 ../../3rdparty/musl/libc-test/src/math/atan2f.c
 ../../3rdparty/musl/libc-test/src/math/atan2l.c
@@ -73,6 +76,7 @@
 ../../3rdparty/musl/libc-test/src/math/erfl.c
 ../../3rdparty/musl/libc-test/src/math/exp10.c
 ../../3rdparty/musl/libc-test/src/math/exp10f.c
+../../3rdparty/musl/libc-test/src/math/exp10l.c
 ../../3rdparty/musl/libc-test/src/math/exp2.c
 ../../3rdparty/musl/libc-test/src/math/exp2f.c
 ../../3rdparty/musl/libc-test/src/math/exp2l.c
@@ -107,15 +111,9 @@
 ../../3rdparty/musl/libc-test/src/math/frexp.c
 ../../3rdparty/musl/libc-test/src/math/frexpf.c
 ../../3rdparty/musl/libc-test/src/math/frexpl.c
-../../3rdparty/musl/libc-test/src/math/gen/next.c
-../../3rdparty/musl/libc-test/src/math/gen/prev.c
-../../3rdparty/musl/libc-test/src/math/gen/toa.c
-../../3rdparty/musl/libc-test/src/math/gen/toe.c
-../../3rdparty/musl/libc-test/src/math/gen/tof.c
-../../3rdparty/musl/libc-test/src/math/gen/tog.c
-../../3rdparty/musl/libc-test/src/math/gen/tox.c
 ../../3rdparty/musl/libc-test/src/math/hypot.c
 ../../3rdparty/musl/libc-test/src/math/hypotf.c
+../../3rdparty/musl/libc-test/src/math/hypotl.c
 ../../3rdparty/musl/libc-test/src/math/ilogb.c
 ../../3rdparty/musl/libc-test/src/math/ilogbf.c
 ../../3rdparty/musl/libc-test/src/math/ilogbl.c
@@ -169,6 +167,7 @@
 ../../3rdparty/musl/libc-test/src/math/nexttowardl.c
 ../../3rdparty/musl/libc-test/src/math/pow10.c
 ../../3rdparty/musl/libc-test/src/math/pow10f.c
+../../3rdparty/musl/libc-test/src/math/pow10l.c
 ../../3rdparty/musl/libc-test/src/math/pow.c
 ../../3rdparty/musl/libc-test/src/math/powf.c
 ../../3rdparty/musl/libc-test/src/math/powl.c
@@ -195,10 +194,10 @@
 ../../3rdparty/musl/libc-test/src/math/sincosl.c
 ../../3rdparty/musl/libc-test/src/math/sinf.c
 ../../3rdparty/musl/libc-test/src/math/sinhf.c
-../../3rdparty/musl/libc-test/src/math/sinhl.c
 ../../3rdparty/musl/libc-test/src/math/sinl.c
 ../../3rdparty/musl/libc-test/src/math/sqrt.c
 ../../3rdparty/musl/libc-test/src/math/sqrtf.c
+../../3rdparty/musl/libc-test/src/math/sqrtl.c
 ../../3rdparty/musl/libc-test/src/math/tan.c
 ../../3rdparty/musl/libc-test/src/math/tanf.c
 ../../3rdparty/musl/libc-test/src/math/tanh.c

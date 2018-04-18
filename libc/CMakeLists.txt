@@ -195,13 +195,11 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/acosh.c
     ${MUSLSRC}/math/acoshf.c
     ${MUSLSRC}/math/acoshl.c
-    ${MUSLSRC}/math/acosl.c
     ${MUSLSRC}/math/asin.c
     ${MUSLSRC}/math/asinf.c
     ${MUSLSRC}/math/asinh.c
     ${MUSLSRC}/math/asinhf.c
     ${MUSLSRC}/math/asinhl.c
-    ${MUSLSRC}/math/asinl.c
     ${MUSLSRC}/math/atan2.c
     ${MUSLSRC}/math/atan2f.c
     ${MUSLSRC}/math/atan2l.c
@@ -237,7 +235,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/exp10l.c
     ${MUSLSRC}/math/exp2.c
     ${MUSLSRC}/math/exp2f.c
-    ${MUSLSRC}/math/exp2l.c
     ${MUSLSRC}/math/exp.c
     ${MUSLSRC}/math/expf.c
     ${MUSLSRC}/math/expl.c
@@ -386,7 +383,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/sinl.c
     ${MUSLSRC}/math/sqrt.c
     ${MUSLSRC}/math/sqrtf.c
-    ${MUSLSRC}/math/sqrtl.c
     ${MUSLSRC}/math/__tan.c
     ${MUSLSRC}/math/tan.c
     ${MUSLSRC}/math/__tandf.c
@@ -402,14 +398,18 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/trunc.c
     ${MUSLSRC}/math/truncf.c
     ${MUSLSRC}/math/truncl.c
+    ${MUSLSRC}/math/x86_64/acosl.s
+    ${MUSLSRC}/math/x86_64/asinl.s
+    ${MUSLSRC}/math/x86_64/sqrtl.s
+    ${MUSLSRC}/math/x86_64/exp2l.s
 
     ${MUSLSRC}/fenv/fegetexceptflag.c
     ${MUSLSRC}/fenv/feholdexcept.c
-    ${MUSLSRC}/fenv/x86_64/fenv.s
     ${MUSLSRC}/fenv/fesetexceptflag.c
     ${MUSLSRC}/fenv/fesetround.c
     ${MUSLSRC}/fenv/feupdateenv.c
     ${MUSLSRC}/fenv/__flt_rounds.c
+    ${MUSLSRC}/fenv/x86_64/fenv.s
 
     ${MUSLSRC}/internal/floatscan.c
     ${MUSLSRC}/internal/intscan.c
