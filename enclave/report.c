@@ -150,7 +150,7 @@ static OE_Result _OE_GetQuote(
     uint32_t argSize = sizeof(OE_GetQETargetInfoArgs);
 
     // If quote buffer is NULL, then ignore passed in quoteSize value.
-    // This treats scenarios where quote == NULL and *quoteSizee == large-value
+    // This treats scenarios where quote == NULL and *quoteSize == large-value
     // as OE_BUFFER_TOO_SMALL.
     if (quote == NULL)
         *quoteSize = 0;
@@ -210,7 +210,10 @@ OE_Result _OE_GetRemoteReport(
 
     /*
      * OCall: Get target info from Quoting Enclave.
-     * This involves a call to host. The returned targetinfo is trusted.
+     * This involves a call to host. The target provided by targetinfo does not
+     * need to be trusted because returning a report is not an operation that
+     * requires privacy. The trust decision is one of integrity verification
+     * on the part of the report recipient.
      */
     OE_CHECK(_OE_GetSGXTargetInfo(&sgxTargetInfo));
 
