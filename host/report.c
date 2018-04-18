@@ -3,7 +3,7 @@
 
 #include "../common/report.c"
 #include <openenclave/bits/calls.h>
-#include <openenclave/bits/trace.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/host.h>
 #include "quote.h"
 
@@ -29,25 +29,25 @@ OE_Result OE_GetReport(
     // < OE_REPORT_DATA_SIZE. When reportData is NULL, the reportSize must be
     // zero.
     if (reportData == NULL && reportDataSize != 0)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (reportDataSize > OE_REPORT_DATA_SIZE)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     // optParams, if specified, must be a SGX_TargetInfo. When optParams is
     // NULL, optParamsSize must be zero.
     if (optParams != NULL && optParamsSize != sizeof(SGX_TargetInfo))
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (optParams == NULL && optParamsSize != 0)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /*
      * Populate arg fields.
      */
     arg = calloc(1, sizeof(*arg));
     if (arg == NULL)
-        OE_THROW(OE_OUT_OF_MEMORY);
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
     if (reportData != NULL)
         memcpy(arg->reportData, reportData, reportDataSize);
@@ -64,10 +64,10 @@ OE_Result OE_GetReport(
     arg->reportBuffer = reportBuffer;
     arg->reportBufferSize = reportBufferSize;
 
-    OE_TRY(OE_ECall(enclave, OE_FUNC_GET_REPORT, (uint64_t)arg, NULL));
+    OE_CHECK(OE_ECall(enclave, OE_FUNC_GET_REPORT, (uint64_t)arg, NULL));
     result = arg->result;
 
-OE_CATCH:
+done:
     if (arg)
     {
         memset(arg, 0, sizeof(*arg));
