@@ -55,6 +55,8 @@ typedef enum _OE_Result {
     OE_INVALID_ISVSVN,
     OE_INVALID_KEYNAME,
     OE_DEBUG_DOWNGRADE,
+    OE_INVALID_REPORT,
+    OE_INVALID_TARGET_INFO
 } OE_Result;
 
 /**

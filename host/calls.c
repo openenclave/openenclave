@@ -408,8 +408,12 @@ static OE_Result _HandleOCALL(
             HandleInitQuote(argIn);
             break;
 
-        case OE_FUNC_GET_REMOTE_REPORT:
-            HandleGetRemoteReport(enclave, argIn);
+        case OE_FUNC_GET_QUOTE:
+            HandleGetQuote(argIn);
+            break;
+
+        case OE_FUNC_GET_QE_TARGET_INFO:
+            HandleGetQETargetInfo(argIn);
             break;
 
 #if defined(__OE_NEED_TIME_CALLS)

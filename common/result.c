@@ -86,6 +86,10 @@ const char* OE_ResultStr(OE_Result result)
             return "OE_INVALID_KEYNAME";
         case OE_DEBUG_DOWNGRADE:
             return "OE_DEBUG_DOWNGRADE";
+        case OE_INVALID_REPORT:
+            return "OE_INVALID_REPORT";
+        case OE_INVALID_TARGET_INFO:
+            return "OE_INVALID_TARGET_INFO";
     }
 
     return "UNKNOWN";

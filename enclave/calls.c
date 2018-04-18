@@ -319,9 +319,9 @@ static void _HandleECall(
             _HandleInitEnclave(argIn);
             break;
         }
-        case OE_FUNC_GET_SGX_REPORT:
+        case OE_FUNC_GET_REPORT:
         {
-            argOut = _HandleGetSGXReport(argIn);
+            argOut = _HandleGetReport(argIn);
             break;
         }
         default:
