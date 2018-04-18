@@ -120,12 +120,12 @@ static OE_Result _OE_GetSGXTargetInfo(SGX_TargetInfo* targetInfo)
     if (args == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    if (OE_OCall(
+    OE_CHECK(
+        OE_OCall(
             OE_FUNC_GET_QE_TARGET_INFO,
             (uint64_t)args,
             NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
-        OE_RAISE(OE_INVALID_TARGET_INFO);
+            OE_OCALL_FLAG_NOT_REENTRANT));
 
     result = args->result;
     if (result == OE_OK)
@@ -234,23 +234,18 @@ OE_Result _OE_GetRemoteReport(
      */
     OE_CHECK(_OE_GetQuote(&sgxReport, reportBuffer, reportBufferSize));
 
-    if (result == OE_OK)
-    {
-        if (OE_ParseReport(reportBuffer, *reportBufferSize, &parsedReport) !=
-            OE_OK)
-            OE_RAISE(OE_INVALID_REPORT);
+    /*
+     * Check that the entire report body in the returned quote matches the local
+     * report.
+     */
+    if (OE_ParseReport(reportBuffer, *reportBufferSize, &parsedReport) != OE_OK)
+        OE_RAISE(OE_UNEXPECTED);
 
-        if (!(parsedReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE))
-            OE_RAISE(OE_INVALID_REPORT);
-
-        // Check if the report returned from host is trustable.
-        if (reportData != NULL)
-        {
-            if (OE_Memcmp(
-                    parsedReport.reportData, reportData, reportDataSize) != 0)
-                OE_RAISE(OE_INVALID_REPORT);
-        }
-    }
+    if (OE_Memcmp(
+            parsedReport.enclaveReport,
+            &sgxReport.body,
+            sizeof(sgxReport.body)) != 0)
+        OE_RAISE(OE_UNEXPECTED);
 
 done:
 
