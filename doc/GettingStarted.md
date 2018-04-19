@@ -178,8 +178,8 @@ This builds the entire Open Enclave SDK, creating the following files.
 |-----------------------------------|-------------------------------------------------------|
 | output/bin/oegen                  | Utility for generating ECALL and OCALL stubs from IDL |
 | output/bin/oesign                 | Utility for signing enclaves                          |
-| output/lib/enclave/liboecore.a    | Core library for building enclave applications (defines the enclave intrinsics) |
-| output/lib/enclave/liboeruntime.a | Runtime library for building enclave applications (depends enclave extras that depend on mbedtls and oelibc) |
+| output/lib/enclave/liboecore.a    | Core library for building enclave applications (enclave intrinsics) |
+| output/lib/enclave/liboeruntime.a | Runtime library for building enclave applications (enclave extras) |
 | output/lib/enclave/liboelibc.a    | C runtime library for enclave                         |
 | output/lib/enclave/liboelibcxx.a  | C++ runtime library for enclave                       |
 | output/lib/host/liboehost.a       | Library for building host applications                |
