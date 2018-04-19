@@ -4,6 +4,7 @@
 #include "report.h"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/mac.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
@@ -304,4 +305,50 @@ OE_Result _HandleGetReport(uint64_t argIn)
         arg.reportBufferSize);
 
     return OE_OK;
+}
+
+OE_Result OE_VerifyReport(
+    const uint8_t* report,
+    uint32_t reportSize,
+    OE_Report* parsedReport)
+{
+    OE_Result result = OE_OK;
+    OE_Report pReport = {0};
+    uint8_t sealKey[sizeof(SGX_Key)] = {0};
+    uint32_t sealKeySize = sizeof(sealKey);
+    SGX_Report* sgxReport = NULL;
+    OE_MAC mac = {0};
+
+    OE_CHECK(OE_ParseReport(report, reportSize, &pReport));
+
+    if (pReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
+    {
+        OE_RAISE(OE_UNSUPPORTED);
+    }
+    else
+    {
+        sgxReport = (SGX_Report*)report;
+
+        OE_CHECK(
+            OE_GetSealKeyByPolicy(
+                OE_SEAL_ID_UNIQUE, sealKey, &sealKeySize, NULL, 0));
+
+        //static void* p = OE_ECGenerate;
+        OE_CHECK(
+            OE_GetMAC(
+                sealKey,
+                sealKeySize,
+                (uint8_t*)&sgxReport->body,
+                sizeof(sgxReport->body),
+                 &mac));
+
+        if (OE_Memcmp(&mac, sgxReport->mac, sizeof(mac)) != 0)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    if (parsedReport != NULL)
+        *parsedReport = pReport;
+
+done:
+    return result;
 }

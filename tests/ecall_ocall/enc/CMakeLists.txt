@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(ecall_ocall_enc sign.conf private.pem
+add_cxx_enclave_executable(ecall_ocall_enc sign.conf private.pem
     ../crc32.cpp
     enc.cpp
     )

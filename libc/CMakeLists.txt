@@ -570,6 +570,8 @@ target_include_directories(oelibc PUBLIC
 target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
 target_include_directories(oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
 
+target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
+
 # assemble lib-archive into proper dir
 set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 

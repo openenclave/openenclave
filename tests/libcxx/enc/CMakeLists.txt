@@ -27,7 +27,7 @@ target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
     #message("libcxx-test NAME=${NAME} CXXFILE=${CXXFILE}")
-    add_enclave_executable(libcxxtest-${NAME} sign.conf private.pem
+    add_cxx_enclave_executable(libcxxtest-${NAME} sign.conf private.pem
         main.cpp
         )
 
