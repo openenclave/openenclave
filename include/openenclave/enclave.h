@@ -366,6 +366,11 @@ OE_Result OE_ParseReport(
     uint32_t reportSize,
     OE_Report* parsedReport);
 
+OE_Result OE_VerifyReport(
+    const uint8_t* report,
+    uint32_t reportSize,
+    OE_Report* parsedReport);
+
 typedef enum _OE_SealIDPolicy {
     OE_SEAL_ID_UNIQUE = 1,
     OE_SEAL_ID_PRODUCT = 2,
