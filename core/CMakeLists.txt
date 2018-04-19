@@ -34,7 +34,7 @@ target_link_libraries(oecore PUBLIC oe_includes)
 
 # we strip the default include containing the compiler-provided intrinsics
 # add it back in
-target_include_directories(oecore SYSTEM PUBLIC ${OE_C_COMPILER_INCDIR})
+target_include_directories(oecore SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 
 target_compile_options(oecore PUBLIC
     -m64 -fPIC

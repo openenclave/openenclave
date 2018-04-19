@@ -16,4 +16,4 @@ target_compile_options(stdcxxenc PRIVATE
     -fno-builtin-printf
     )
 
-target_link_libraries(stdcxxenc oelibcxx oeruntime)
+target_link_libraries(stdcxxenc oelibcxx oecore)
