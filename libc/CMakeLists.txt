@@ -568,6 +568,7 @@ target_include_directories(oelibc PUBLIC
 # when building this project, we also need a number of internal includes
 target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
 target_include_directories(oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
+
 target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 
 # assemble lib-archive into proper dir

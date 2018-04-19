@@ -8,4 +8,4 @@ add_enclave_executable(abortStatusEnc sign.conf private.pem
     )
 
 target_compile_features(abortStatusEnc PRIVATE cxx_generalized_initializers)
-target_link_libraries(abortStatusEnc oeruntime)
+target_link_libraries(abortStatusEnc oelibcxx)
