@@ -300,7 +300,7 @@ and libraries.
 | Target           | Description                                                                         |
 |------------------|-------------------------------------------------------------------------------------|
 | oecore           | Enclave code: Open Enclave intrinsic functions. Must be present in all enclave code. |
-| oeruntime        | Enclave code: Open Enclave extended functions that depend on the mbedtls and oelibc library. |
+| oeruntime        | Enclave code: Open Enclave extra functions that (depends on mbedtls and oelibc). |
 | oelibc           | Enclave code: Open Enclave C library. Includes oecore.                            |
 | oelibcxx         | Enclave code: Open Enclave C++ library. Includes oelibc.                             |
 | oeidl            | Enclave code: Misc helpers required with IDL-compiled code. Includes oelibc.        |

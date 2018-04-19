@@ -565,6 +565,7 @@ target_include_directories(oelibc PUBLIC
     $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/libc>
     )
+
 # when building this project, we also need a number of internal includes
 target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
 target_include_directories(oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
