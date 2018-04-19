@@ -2,7 +2,7 @@ runtime
 =======
 
 This directory contains the sources for the oeruntime library, which implements
-the enclave extrasi, which depend on mbedtls and oelibc. The main parts include:
+the enclave extras, which depend on mbedtls and oelibc. The main parts include:
 
 - Certificate management ([cert.c](cert.c))
 
