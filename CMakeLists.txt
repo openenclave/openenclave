@@ -59,9 +59,9 @@ add_subdirectory(host)		# convertable to Windows
 add_subdirectory(include)	# convertable to Windows
 if (UNIX)
 add_subdirectory(3rdparty)
+add_subdirectory(core)
 add_subdirectory(doc/refman)
 add_subdirectory(debugger)
-add_subdirectory(core)
 add_subdirectory(idl)
 add_subdirectory(libc)
 add_subdirectory(libcxx)
