@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
 #include <signal.h>
 #include <stdio.h>
@@ -42,7 +43,7 @@ Handler signal(int signal, Handler)
 
 extern "C" int close(int fd)
 {
-    assert("close() panic" == NULL);
+    OE_TEST("close() panic" == NULL);
     return 0;
 }
 

@@ -19,7 +19,7 @@ void Test(OE_Enclave* enclave)
     args.ret = 1;
     args.test = NULL;
     OE_Result result = OE_CallEnclave(enclave, "Test", &args);
-    assert(result == OE_OK);
+    OE_TEST(result == OE_OK);
 
     if (args.ret == 0)
     {
@@ -73,13 +73,8 @@ int main(int argc, const char* argv[])
 {
     OE_Result result;
     OE_Enclave* enclave = NULL;
-    uint32_t flags = OE_FLAG_DEBUG;
 
-    // Check for the --sim option:
-    if (_GetOpt(argc, argv, "--simulate") == 1)
-        flags |= OE_FLAG_SIMULATE;
-    else
-        flags = OE_GetCreateFlags();
+    uint32_t flags = OE_GetCreateFlags();
 
     // Check argument count:
     if (argc != 2)
@@ -91,7 +86,8 @@ int main(int argc, const char* argv[])
     printf("=== %s: %s\n", argv[0], argv[1]);
 
     // Create the enclave:
-    if ((result = OE_CreateEnclave(argv[1], flags, &enclave)) != OE_OK)
+    if ((result = OE_CreateEnclave(
+             argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
     // Register to handle OCALL_EXIT from tests.
