@@ -16,6 +16,7 @@ void err(const char* fmt, ...)
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
     va_end(ap);
+    exit(1);
 }
 
 const char usage[] =
@@ -70,7 +71,28 @@ void DumpRSAPublicKey(const OE_RSAPublicKey* key, size_t level)
 
     Indent(level);
     printf("{\n");
+    level++;
 
+    {
+        OE_RSAPublicKeyInfo info;
+
+        if (OE_RSAGetPublicKeyInfo(key, &info) != 0)
+            err("OE_RSAGetPublicKeyInfo() failed");
+
+        Indent(level);
+        printf("numModulusBytes=%u\n", info.numModulusBytes);
+
+        Indent(level);
+        printf("numModulusBits=%u\n", info.numModulusBits);
+
+        Indent(level);
+        printf("numExponentBytes=%u\n", info.numExponentBytes);
+
+        Indent(level);
+        printf("numExponentBits=%u\n", info.numExponentBits);
+    }
+
+    level--;
     Indent(level);
     printf("}\n");
 }

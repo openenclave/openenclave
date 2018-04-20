@@ -573,3 +573,65 @@ done:
 
     return result;
 }
+
+OE_Result OE_RSAGetPublicKeyInfo(
+    const OE_RSAPublicKey* publicKey,
+    OE_RSAPublicKeyInfo* info)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)publicKey;
+
+    /* Clear the information in case of failure */
+    if (info)
+        memset(info, 0, sizeof(OE_RSAPublicKeyInfo));
+
+    /* Reject invalid parameters */
+    if (!_ValidPublicKeyImpl(impl) || !info)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the number of bytes in the modulus */
+    {
+        int n = RSA_size(impl->rsa);
+
+        if (n <= 0)
+            OE_RAISE(OE_FAILURE);
+
+        info->numModulusBytes = (uint32_t)n;
+    }
+
+    /* Get the number of modulus bits */
+    {
+        int n = BN_num_bits(impl->rsa->n);
+
+        if (n <= 0)
+            OE_RAISE(OE_FAILURE);
+
+        info->numModulusBits = (uint32_t)n;
+    }
+
+    /* Get the number of bytes in the exponent */
+    {
+        int n = BN_num_bytes(impl->rsa->e);
+
+        if (n <= 0)
+            OE_RAISE(OE_FAILURE);
+
+        info->numExponentBytes = (uint32_t)n;
+    }
+
+    /* Get the number of exponent bits */
+    {
+        int n = BN_num_bits(impl->rsa->e);
+
+        if (n <= 0)
+            OE_RAISE(OE_FAILURE);
+
+        info->numExponentBits = (uint32_t)n;
+    }
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}

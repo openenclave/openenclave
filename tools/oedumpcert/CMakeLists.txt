@@ -8,8 +8,10 @@ target_link_libraries(oedumpcert oehost)
 # assemble into proper collector dir
 set_property(TARGET oedumpcert PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 
-# test-case
-add_test(NAME tools/oedump COMMAND oedumpcert cert.pem)
+# test-cases
+add_test(NAME tests/oedumpcert.1 COMMAND oedumpcert cert.pem WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME tests/oedumpcert.2 COMMAND oedumpcert chain.pem WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # install rule
 install (TARGETS oedumpcert DESTINATION ${CMAKE_INSTALL_BINDIR})
+

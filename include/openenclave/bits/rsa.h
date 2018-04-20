@@ -25,6 +25,23 @@ typedef struct _OE_RSAPublicKey
     uint64_t impl[4];
 } OE_RSAPublicKey;
 
+/* Retrievable information about a public key */
+typedef struct _OE_RSAPublicKeyInfo
+{
+    /* The modulus size in bytes */
+    uint32_t numModulusBytes;
+
+    /* The number of signficant modulus bits */
+    uint32_t numModulusBits;
+
+    /* The exponent size in bytes */
+    uint32_t numExponentBytes;
+
+    /* The number of signficant exponent bits */
+    uint32_t numExponentBits;
+}
+OE_RSAPublicKeyInfo;
+
 /**
  * Reads a private RSA key from PEM data
  *
@@ -203,6 +220,22 @@ OE_Result OE_RSAGenerate(
     uint64_t exponent,
     OE_RSAPrivateKey* privateKey,
     OE_RSAPublicKey* publicKey);
+
+/**
+ * Retrieves information about a public key.
+ *
+ * This function retrieves information about the given public key. The 
+ * information is defined above by the **OE_RSAPublicKeyInfo** structure.
+ *
+ * @param publicKey the certificate whose information is retrieved.
+ * @param info the retrieved information on success.
+ *
+ * @return OE_OK on success
+ * @return OE_FAILURE failed to retrieve information about this certificate
+ */
+OE_Result OE_RSAGetPublicKeyInfo(
+    const OE_RSAPublicKey* publicKey,
+    OE_RSAPublicKeyInfo* info);
 
 OE_EXTERNC_END
 
