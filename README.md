@@ -122,7 +122,7 @@ The files and directories in the top-level directory are described as follows.
 - [common](common) - Contains sources that work in the enclave and the host
 - [doc](doc) - Contains documentation
 - [core](core) - Contains the source for the oecore library
-- [runtime](runtime) - Contains the source for the oeruntime library
+- [enclave](enclave) - Contains the source for the oeenclave library
 - [host](host) - Contains source for the oehost library
 - [idl](idl) - Contains source for the oeidl library
 - [include](include) - Contains C header files

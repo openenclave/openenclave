@@ -178,8 +178,8 @@ This builds the entire Open Enclave SDK, creating the following files.
 |-----------------------------------|-------------------------------------------------------|
 | output/bin/oegen                  | Utility for generating ECALL and OCALL stubs from IDL |
 | output/bin/oesign                 | Utility for signing enclaves                          |
-| output/lib/enclave/liboecore.a    | Core library for building enclave applications (enclave intrinsics) |
-| output/lib/enclave/liboeruntime.a | Runtime library for building enclave applications (enclave extras) |
+| output/lib/enclave/liboecore.a    | Core library for building enclave applications (defines enclave intrinsics) |
+| output/lib/enclave/liboeenclave.a | Enclave library for building enclave applications (defines enclave features) |
 | output/lib/enclave/liboelibc.a    | C runtime library for enclave                         |
 | output/lib/enclave/liboelibcxx.a  | C++ runtime library for enclave                       |
 | output/lib/host/liboehost.a       | Library for building host applications                |
@@ -299,8 +299,8 @@ and libraries.
 
 | Target           | Description                                                                         |
 |------------------|-------------------------------------------------------------------------------------|
-| oecore           | Enclave code: Open Enclave intrinsic functions. Must be present in all enclave code. |
-| oeruntime        | Enclave code: Open Enclave extra functions that (depends on mbedtls and oelibc). |
+| oecore           | Enclave code: Open Enclave core features. Must be present in all enclave code. |
+| oeenclave        | Enclave code: Open Enclave features. These features may depend on the mbedcrypto and oelibc libraries. |
 | oelibc           | Enclave code: Open Enclave C library. Includes oecore.                            |
 | oelibcxx         | Enclave code: Open Enclave C++ library. Includes oelibc.                             |
 | oeidl            | Enclave code: Misc helpers required with IDL-compiled code. Includes oelibc.        |
