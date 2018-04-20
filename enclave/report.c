@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "report.h"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/sgxtypes.h>
@@ -112,7 +111,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result _HandleGetSGXReport(uint64_t argIn)
+static OE_Result _HandleGetSGXReport(uint64_t argIn)
 {
     OE_GetSGXReportArgs* arg = (OE_GetSGXReportArgs*)argIn;
     if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
@@ -146,6 +145,11 @@ OE_Result _HandleGetSGXReport(uint64_t argIn)
         tmp.reportSize);
 
     return OE_OK;
+}
+
+static void _GetSGXReportECALL(uint64_t argIn, uint64_t* argOut)
+{
+    *argOut = (uint64_t)_HandleGetSGXReport(argIn);
 }
 
 OE_Result _OE_GetRemoteReport(
@@ -241,4 +245,11 @@ OE_Result OE_GetReport(
         optParamsSize,
         reportBuffer,
         reportBufferSize);
+}
+
+/* This function registers the OE_FUNC_GET_SGX_REPORT ECALL */
+__attribute__((constructor))
+static void _RegisterGetSGXReportECALL()
+{
+    OE_RegisterECall(OE_FUNC_GET_SGX_REPORT, _GetSGXReportECALL);
 }

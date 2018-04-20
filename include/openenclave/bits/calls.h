@@ -76,7 +76,11 @@ typedef enum _OE_Func {
     OE_FUNC_CALL_ENCLAVE = 0x02000000,
     OE_FUNC_CALL_HOST = 0x03000000,
     OE_FUNC_INIT_QUOTE = 0x04000000,
-    OE_FUNC_GET_SGX_REPORT = 0x04100000,
+    // This function number must be less than OE_MAX_ECALLS since this is
+    // a registered ECALL rather than an intrinsic ECALL: see the 
+    // OE_RegisterECall() documentation for more details. The handler for this 
+    // function is contained in report.c in the oeenclave library.
+    OE_FUNC_GET_SGX_REPORT = 0x00000001,
     OE_FUNC_GET_REMOTE_REPORT = 0x04200000,
     OE_FUNC_THREAD_WAKE = 0x05000000,
     OE_FUNC_THREAD_WAIT = 0x06000000,

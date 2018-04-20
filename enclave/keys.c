@@ -4,7 +4,7 @@
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/enclave.h>
-#include "asmdefs.h"
+//#include "asmdefs.h"
 
 /* The EGETKEY wrapper. */
 uint64_t OE_EGetKey(const SGX_KeyRequest* sgxKeyRequest, SGX_Key* sgxKey);

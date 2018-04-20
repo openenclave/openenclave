@@ -14,10 +14,8 @@ add_library(oecore STATIC
     hexdump.c
     init.c
     jump.c
-    keys.c
     memory.c
     once.c
-    report.c
     result.c
     sbrk.c
     snprintf.c
