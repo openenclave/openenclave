@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "rsa.h"
+#include "ec.h"
 #include <ctype.h>
 #include <openenclave/result.h>
 #include <openenclave/bits/cert.h>
@@ -214,6 +215,43 @@ static int _X509_up_ref(X509* x509)
 
     CRYPTO_add(&x509->references, 1, CRYPTO_LOCK_X509); 
     return 1;
+}
+
+static OE_Result _NameToOneline(
+    X509_NAME* name, 
+    char* buffer, 
+    size_t* bufferSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    char* str;
+    size_t strSize;
+
+    /* Convert the name to one line */
+    if (!(str = X509_NAME_oneline(name, NULL, 0)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Determine the required buffer size */
+    strSize = strlen(str) + 1;
+
+    /* Fail if the buffer is null or not big enough */
+    if (!buffer || *bufferSize < strSize)
+    {
+        *bufferSize = strSize;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    /* Copy string to caller's buffer */
+    memcpy(buffer, str, strSize);
+    *bufferSize = strSize;
+
+    result = OE_OK;
+
+done:
+
+    if (str)
+        OPENSSL_free(str);
+
+    return result;
 }
 
 /*
@@ -474,6 +512,43 @@ done:
     return result;
 }
 
+OE_Result OE_CertGetECPublicKey(
+    const OE_Cert* cert,
+    OE_ECPublicKey* publicKey)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const OE_CertImpl* impl = (const OE_CertImpl*)cert;
+    EVP_PKEY* pkey = NULL;
+
+    /* Clear public key for all error pathways */
+    if (publicKey)
+        memset(publicKey, 0, sizeof(OE_ECPublicKey));
+
+    /* Reject invalid parameters */
+    if (!_ValidCertImpl(impl) || !publicKey)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get public key (increments reference count) */
+    if (!(pkey = X509_get_pubkey(impl->x509)))
+        OE_RAISE(OE_FAILURE);
+    
+    /* Initialize the EC public key */
+    OE_ECInitPublicKey(publicKey, pkey);
+    pkey = NULL;
+
+    result = OE_OK;
+
+done:
+
+    if (pkey)
+    {
+        /* Decrement reference count (incremented above) */
+        EVP_PKEY_free(pkey);
+    }
+
+    return result;
+}
+
 OE_Result OE_CertChainGetLength(
     const OE_CertChain* chain,
     uint32_t* length)
@@ -553,6 +628,28 @@ OE_Result OE_CertChainGetCert(
     /* Increment the reference count and initalize the output certificate */
     _X509_up_ref(x509);
     _InitCertImpl((OE_CertImpl*)cert, x509);
+
+done:
+
+    return result;
+}
+
+OE_Result OE_CertGetSubjectName(
+    const OE_Cert* cert,
+    char* name,
+    size_t* nameSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const OE_CertImpl* impl = (const OE_CertImpl*)cert;
+
+    /* Reject invalid parameters */
+    if (!cert || !nameSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Convert the subject name to a single line */
+    OE_CHECK(_NameToOneline(X509_get_subject_name(impl->x509), name, nameSize));
+
+    result = OE_OK;
 
 done:
 

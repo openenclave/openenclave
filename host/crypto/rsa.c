@@ -84,6 +84,13 @@ static int _MapHashType(OE_HashType md)
     return 0;
 }
 
+static void _RSAInitPrivateKey(OE_RSAPrivateKey* privateKey, RSA* rsa)
+{
+    OE_RSAPrivateKeyImpl* impl = (OE_RSAPrivateKeyImpl*)privateKey;
+    impl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
+    impl->rsa = rsa;
+}
+
 /*
 **==============================================================================
 **
@@ -96,13 +103,6 @@ void OE_RSAInitPublicKey(OE_RSAPublicKey* publicKey, RSA* rsa)
 {
     OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)publicKey;
     impl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
-    impl->rsa = rsa;
-}
-
-void OE_RSAInitPrivateKey(OE_RSAPrivateKey* privateKey, RSA* rsa)
-{
-    OE_RSAPrivateKeyImpl* impl = (OE_RSAPrivateKeyImpl*)privateKey;
-    impl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
     impl->rsa = rsa;
 }
 
@@ -147,7 +147,7 @@ OE_Result OE_RSAReadPrivateKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Set the output key parameter */
-    OE_RSAInitPrivateKey(key, rsa);
+    _RSAInitPrivateKey(key, rsa);
     rsa = NULL;
 
     result = OE_OK;
@@ -539,7 +539,7 @@ OE_Result OE_RSAGenerate(
         if (!(privateRSA = RSAPrivateKey_dup(rsa)))
             OE_RAISE(OE_FAILURE);
 
-        OE_RSAInitPrivateKey(privateKey, privateRSA);
+        _RSAInitPrivateKey(privateKey, privateRSA);
     }
 
     /* Copy the public key from the key-pair */
@@ -609,7 +609,7 @@ OE_Result OE_RSAGetPublicKeyInfo(
         info->numModulusBits = (uint32_t)n;
     }
 
-    /* Get the number of bytes in the exponent */
+    /* Get the number of bytes in the public exponent */
     {
         int n = BN_num_bytes(impl->rsa->e);
 
@@ -619,7 +619,7 @@ OE_Result OE_RSAGetPublicKeyInfo(
         info->numExponentBytes = (uint32_t)n;
     }
 
-    /* Get the number of exponent bits */
+    /* Get the number of exponent public bits */
     {
         int n = BN_num_bits(impl->rsa->e);
 
@@ -628,6 +628,8 @@ OE_Result OE_RSAGetPublicKeyInfo(
 
         info->numExponentBits = (uint32_t)n;
     }
+
+    /* Note that for public keys, rsa->d is null */
 
     result = OE_OK;
 

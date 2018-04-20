@@ -7,7 +7,4 @@
 /* Caller is responsible for validating parameters */
 void OE_RSAInitPublicKey(OE_RSAPublicKey* publicKey, RSA* rsa);
 
-/* Caller is responsible for validating parameters */
-void OE_RSAInitPrivateKey(OE_RSAPrivateKey* privateKey, RSA* rsa);
-
 #endif /* _OE_HOST_CRYPTO_RSA_H */

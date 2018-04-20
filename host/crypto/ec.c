@@ -10,6 +10,7 @@
 #include <openssl/rsa.h>
 #include <string.h>
 #include "init.h"
+#include "ec.h"
 
 /*
 **==============================================================================
@@ -83,6 +84,21 @@ static const char* _ECTypeToString(OE_Type type)
         return NULL;
 
     return _curveNames[index];
+}
+
+/*
+**==============================================================================
+**
+** Shared definitions (shared within this directory)
+**
+**==============================================================================
+*/
+
+void OE_ECInitPublicKey(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
+{
+    OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)publicKey;
+    impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
+    impl->pkey = pkey;
 }
 
 /*

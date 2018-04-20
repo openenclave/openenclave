@@ -97,6 +97,18 @@ void DumpRSAPublicKey(const OE_RSAPublicKey* key, size_t level)
     printf("}\n");
 }
 
+void DumpECPublicKey(const OE_ECPublicKey* key, size_t level)
+{
+    Indent(level);
+    printf("ECPublicKey\n");
+
+    Indent(level);
+    printf("{\n");
+
+    Indent(level);
+    printf("}\n");
+}
+
 void DumpCert(const OE_Cert* cert, size_t level)
 {
     Indent(level);
@@ -104,15 +116,47 @@ void DumpCert(const OE_Cert* cert, size_t level)
 
     Indent(level);
     printf("{\n");
+    level++;
+
+    /* Print the subject name */
+    {
+        char* name = NULL;
+        size_t size;
+
+        /* Determine the buffer size */
+        if (OE_CertGetSubjectName(cert, NULL, &size) != OE_BUFFER_TOO_SMALL)
+            err("OE_CertGetSubjectName() failed");
+
+        /* Allocate buffer space */
+        if (!(name = (char*)malloc(size)))
+            err("malloc() failed");
+
+        /* Get the subject name */
+        if (OE_CertGetSubjectName(cert, name, &size) != OE_OK)
+            err("OE_CertGetSubjectName() failed");
+
+        Indent(level);
+        printf("subject=%s\n", name);
+        free(name);
+    }
 
     /* Print the RSA public key (if any) */
     {
         OE_RSAPublicKey key;
 
         if (OE_CertGetRSAPublicKey(cert, &key) == OE_OK)
-            DumpRSAPublicKey(&key, level + 1);
+            DumpRSAPublicKey(&key, level);
     }
 
+    /* Print the EC public key (if any) */
+    {
+        OE_ECPublicKey key;
+
+        if (OE_CertGetECPublicKey(cert, &key) == OE_OK)
+            DumpECPublicKey(&key, level);
+    }
+
+    level--;
     Indent(level);
     printf("}\n");
 }
