@@ -10,7 +10,7 @@ get a more complete dump. For example:
 # openssl x509 -in cert.pem -text -noout
 ```
 
-The utility takes a single command-line argument as shown below.
+The **oedumpcert** utility takes a single command-line argument as shown below.
 
 ```
 # oedumpcert cert.pem
