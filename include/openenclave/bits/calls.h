@@ -76,8 +76,9 @@ typedef enum _OE_Func {
     OE_FUNC_CALL_ENCLAVE = 0x02000000,
     OE_FUNC_CALL_HOST = 0x03000000,
     OE_FUNC_INIT_QUOTE = 0x04000000,
-    OE_FUNC_GET_SGX_REPORT = 0x04100000,
-    OE_FUNC_GET_REMOTE_REPORT = 0x04200000,
+    OE_FUNC_GET_REPORT = 0x04100000,
+    OE_FUNC_GET_QE_TARGET_INFO = 0x04200000,
+    OE_FUNC_GET_QUOTE = 0x04300000,
     OE_FUNC_THREAD_WAKE = 0x05000000,
     OE_FUNC_THREAD_WAIT = 0x06000000,
     OE_FUNC_THREAD_WAKE_WAIT = 0x07000000,
@@ -224,24 +225,30 @@ typedef struct _OE_InitQuoteArgs
 /*
 **==============================================================================
 **
-** OE_GetSGXReportArgs
+** OE_GetQETargetInfoArgs
 **
 **==============================================================================
 */
-
-typedef struct _OE_GetSGXReportArgs
+typedef struct _OE_GetQETargetInfoArgs
 {
-    const void* reportData;  /* in */
-    uint32_t reportDataSize; /* in */
+    OE_Result result;
+    SGX_TargetInfo targetInfo;
+} OE_GetQETargetInfoArgs;
 
-    const void* targetInfo;  /* in */
-    uint32_t targetInfoSize; /* in */
-
-    void* report;         /* in */
-    uint32_t* reportSize; /* in-out */
-
-    OE_Result result; /* out */
-} OE_GetSGXReportArgs;
+/*
+**==============================================================================
+**
+** _OE_GetQuoteArgs
+**
+**==============================================================================
+*/
+typedef struct _OE_GetQuoteArgs
+{
+    OE_Result result;
+    SGX_Report sgxReport;
+    uint32_t quoteSize;
+    uint8_t quote[1];
+} OE_GetQuoteArgs;
 
 /*
 **==============================================================================
@@ -251,16 +258,21 @@ typedef struct _OE_GetSGXReportArgs
 **==============================================================================
 */
 
-typedef struct _OE_GetRemoteReportArgs
+typedef struct _OE_GetReportArgs
 {
+    OE_Result result; /* out */
+
+    uint32_t options; /* in */
+
     uint8_t reportData[sizeof(SGX_ReportData)]; /* in */
     uint32_t reportDataSize;                    /* in */
 
-    OE_Result result; /* out */
+    uint8_t optParams[sizeof(SGX_TargetInfo)]; /* in */
+    uint32_t optParamsSize;                    /* in */
 
-    uint32_t reportBufferSize; /* in-out */
-    uint8_t reportBuffer[1];   /* out */
-} OE_GetRemoteReportArgs;
+    uint8_t* reportBuffer;      /* ptr to output buffer */
+    uint32_t* reportBufferSize; /* in-out */
+} OE_GetReportArgs;
 
 /*
 **==============================================================================
