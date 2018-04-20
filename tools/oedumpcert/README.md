@@ -13,5 +13,19 @@ get a more complete dump. For example:
 The utility takes a single command-line argument as shown below.
 
 ```
-oedumpcert cert.pem
+# oedumpcert cert.pem
+OE_Cert
+{
+    subject=/CN=Test Leaf/ST=Texas/C=US/O=Microsoft/OU=OpenEnclave
+    ...
+    RSAPublicKey
+    {
+        numModulusBytes=256
+        numModulusBits=2048
+        numExponentBytes=3
+        numExponentBits=17
+        ...
+    }
+    ...
+}
 ```

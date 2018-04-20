@@ -531,6 +531,10 @@ OE_Result OE_CertGetECPublicKey(
     /* Get public key (increments reference count) */
     if (!(pkey = X509_get_pubkey(impl->x509)))
         OE_RAISE(OE_FAILURE);
+
+    /* If this is not an EC key */
+    if (!EVP_PKEY_get1_EC_KEY(pkey))
+        OE_RAISE(OE_FAILURE);
     
     /* Initialize the EC public key */
     OE_ECInitPublicKey(publicKey, pkey);
