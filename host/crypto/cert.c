@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "rsa.h"
 #include <ctype.h>
+#include <openenclave/result.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/pem.h>
@@ -204,6 +206,16 @@ done:
     return ret;
 }
 
+/* Needed because some versions of OpenSSL do not support X509_up_ref() */
+static int _X509_up_ref(X509* x509)
+{
+    if (!x509) 
+        return 0;
+
+    CRYPTO_add(&x509->references, 1, CRYPTO_LOCK_X509); 
+    return 1;
+}
+
 /*
 **==============================================================================
 **
@@ -314,10 +326,10 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainFree(OE_CertChain* __chain)
+OE_Result OE_CertChainFree(OE_CertChain* chain)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_CertChainImpl* impl = (OE_CertChainImpl*)__chain;
+    OE_CertChainImpl* impl = (OE_CertChainImpl*)chain;
 
     /* Check the parameter */
     if (_ValidCertChainImpl(impl))
@@ -336,14 +348,14 @@ done:
 }
 
 OE_Result OE_CertVerify(
-    OE_Cert* __cert,
-    OE_CertChain* __chain,
+    OE_Cert* cert,
+    OE_CertChain* chain,
     OE_CRL* crl, /* ATTN: placeholder for future feature work */
     OE_VerifyCertError* error)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_CertImpl* certImpl = (OE_CertImpl*)__cert;
-    OE_CertChainImpl* chainImpl = (OE_CertChainImpl*)__chain;
+    OE_CertImpl* certImpl = (OE_CertImpl*)cert;
+    OE_CertChainImpl* chainImpl = (OE_CertChainImpl*)chain;
     X509_STORE_CTX* ctx = NULL;
     X509* x509 = NULL;
 
@@ -417,6 +429,132 @@ done:
 
     if (x509)
         X509_free(x509);
+
+    return result;
+}
+
+OE_Result OE_CertGetRSAPublicKey(
+    const OE_Cert* cert,
+    OE_RSAPublicKey* publicKey)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const OE_CertImpl* impl = (const OE_CertImpl*)cert;
+    EVP_PKEY* pkey = NULL;
+    RSA* rsa = NULL;
+
+    /* Clear public key for all error pathways */
+    if (publicKey)
+        memset(publicKey, 0, sizeof(OE_RSAPublicKey));
+
+    /* Reject invalid parameters */
+    if (!_ValidCertImpl(impl) || !publicKey)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get public key (increments reference count) */
+    if (!(pkey = X509_get_pubkey(impl->x509)))
+        OE_RAISE(OE_FAILURE);
+    
+    /* Get RSA public key (increments reference count) */
+    if (!(rsa = EVP_PKEY_get1_RSA(pkey)))
+        OE_RAISE(OE_WRONG_TYPE);
+
+    /* Initialize the RSA public key */
+    OE_RSAInitPublicKey(publicKey, rsa);
+
+    result = OE_OK;
+
+done:
+
+    if (pkey)
+    {
+        /* Decrement reference count (incremented above) */
+        EVP_PKEY_free(pkey);
+    }
+
+    return result;
+}
+
+OE_Result OE_CertChainGetLength(
+    const OE_CertChain* chain,
+    uint32_t* length)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const OE_CertChainImpl* impl = (const OE_CertChainImpl*)chain;
+
+    /* Clear the length (for failed return case) */
+    if (length)
+        *length = 0;
+
+    /* Reject invalid parameters */
+    if (!_ValidCertChainImpl(impl) || !length)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the number of items in the stack */
+    {
+        int num = sk_X509_num(impl->sk);
+
+        if (num <= 0)
+            OE_RAISE(OE_FAILURE);
+
+        *length = (uint32_t)num;
+    }
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}
+
+OE_Result OE_CertChainGetCert(
+    const OE_CertChain* chain,
+    uint32_t index,
+    OE_Cert* cert)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const OE_CertChainImpl* impl = (const OE_CertChainImpl*)chain;
+    uint32_t length;
+    X509* x509 = NULL;
+
+    /* Clear the output certificate for all error pathways */
+    if (cert)
+        memset(cert, 0, sizeof(OE_Cert));
+
+    /* Reject invalid parameters */
+    if (!_ValidCertChainImpl(impl) || !cert)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the length of the certificate chain */
+    {
+        int num = sk_X509_num(impl->sk);
+
+        if (num <= 0)
+            OE_RAISE(OE_FAILURE);
+
+        length = (uint32_t)num;
+    }
+
+    /* Adjust index for special case where index == OE_MAX_UINT32 */
+    if (index == OE_MAX_UINT32)
+        index = length - 1;
+
+    /* Check for out of bounds */
+    if (index >= length)
+        OE_RAISE(OE_OUT_OF_BOUNDS);
+
+    /* Check for overflow when converting to int */
+    if (index >= OE_MAX_INT)
+        OE_RAISE(OE_INTEGER_OVERFLOW);
+
+    /* Get the certificate with the given index */
+    if (!(x509 = sk_X509_value(impl->sk, (int)index)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Increment the reference count and initalize the output certificate */
+    _X509_up_ref(x509);
+    _InitCertImpl((OE_CertImpl*)cert, x509);
+
+done:
 
     return result;
 }

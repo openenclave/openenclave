@@ -10,11 +10,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "init.h"
+#include "rsa.h"
 
 /*
 **==============================================================================
 **
-** Local defintions:
+** Local defintions (local to this source file)
 **
 **==============================================================================
 */
@@ -86,6 +87,28 @@ static int _MapHashType(OE_HashType md)
 /*
 **==============================================================================
 **
+** Shared definitions (shared within this directory)
+**
+**==============================================================================
+*/
+
+void OE_RSAInitPublicKey(OE_RSAPublicKey* publicKey, RSA* rsa)
+{
+    OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)publicKey;
+    impl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
+    impl->rsa = rsa;
+}
+
+void OE_RSAInitPrivateKey(OE_RSAPrivateKey* privateKey, RSA* rsa)
+{
+    OE_RSAPrivateKeyImpl* impl = (OE_RSAPrivateKeyImpl*)privateKey;
+    impl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
+    impl->rsa = rsa;
+}
+
+/*
+**==============================================================================
+**
 ** Public defintions:
 **
 **==============================================================================
@@ -124,8 +147,7 @@ OE_Result OE_RSAReadPrivateKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Set the output key parameter */
-    impl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
-    impl->rsa = rsa;
+    OE_RSAInitPrivateKey(key, rsa);
     rsa = NULL;
 
     result = OE_OK;
@@ -182,8 +204,7 @@ OE_Result OE_RSAReadPublicKeyPEM(
     RSA_up_ref(rsa);
 
     /* Set the output key parameter */
-    impl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
-    impl->rsa = rsa;
+    OE_RSAInitPublicKey(key, rsa);
     rsa = NULL;
 
     result = OE_OK;
@@ -513,18 +534,22 @@ OE_Result OE_RSAGenerate(
 
     /* Copy the private key from the key-pair */
     {
-        if (!(privateImpl->rsa = RSAPrivateKey_dup(rsa)))
+        RSA* privateRSA;
+
+        if (!(privateRSA = RSAPrivateKey_dup(rsa)))
             OE_RAISE(OE_FAILURE);
 
-        privateImpl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
+        OE_RSAInitPrivateKey(privateKey, privateRSA);
     }
 
     /* Copy the public key from the key-pair */
     {
-        if (!(publicImpl->rsa = RSAPublicKey_dup(rsa)))
+        RSA* publicRSA;
+
+        if (!(publicRSA = RSAPublicKey_dup(rsa)))
             OE_RAISE(OE_FAILURE);
 
-        publicImpl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
+        OE_RSAInitPublicKey(publicKey, publicRSA);
     }
 
     result = OE_OK;

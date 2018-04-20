@@ -1,5 +1,6 @@
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/files.h>
+#include <openenclave/bits/raise.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -34,14 +35,95 @@ const char usage[] =
 "    Any SGX-specific content (if any) is also dumped.\n"
 "\n";
 
+OE_Result CountCerts(const uint8_t* data, size_t size, uint32_t* length)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_CertChain chain;
+
+    /* Load the chain */
+    if (OE_CertChainReadPEM(data, size, &chain) != OE_OK)
+        OE_RAISE(OE_FAILURE);
+
+    /* Get the length of the chain */
+    if (OE_CertChainGetLength(&chain, length))
+        OE_RAISE(OE_FAILURE);
+
+    result = OE_OK;
+
+done:
+
+    OE_CertChainFree(&chain);
+
+    return result;
+}
+
+static void Indent(size_t level)
+{
+    for (size_t i = 0; i < level; i++)
+        printf("    ");
+}
+
+void DumpRSAPublicKey(const OE_RSAPublicKey* key, size_t level)
+{
+    Indent(level);
+    printf("RSAPublicKey\n");
+
+    Indent(level);
+    printf("{\n");
+
+    Indent(level);
+    printf("}\n");
+}
+
+void DumpCert(const OE_Cert* cert, size_t level)
+{
+    Indent(level);
+    printf("OE_Cert\n");
+
+    Indent(level);
+    printf("{\n");
+
+    /* Print the RSA public key (if any) */
+    {
+        OE_RSAPublicKey key;
+
+        if (OE_CertGetRSAPublicKey(cert, &key) == OE_OK)
+            DumpRSAPublicKey(&key, level + 1);
+    }
+
+    Indent(level);
+    printf("}\n");
+}
+
+void DumpCertChain(const OE_CertChain* chain)
+{
+    uint32_t length;
+
+    /* Get the number of certificates in this chain */
+    if (OE_CertChainGetLength(chain, &length) != OE_OK)
+        err("OE_CertChainGetLength() failed");
+
+    printf("OE_CertChain\n");
+    printf("{\n");
+
+    for (uint32_t i = 0; i < length; i++)
+    {
+        OE_Cert cert;
+
+        if (OE_CertChainGetCert(chain, i, &cert) != OE_OK)
+            DumpCert(&cert, 1);
+    }
+
+    printf("}\n");
+}
+
 int main(int argc, const char* argv[])
 {
     arg0 = argv[0];
     int ret = -1;
-    OE_Result result;
     uint8_t* data = NULL;
     size_t size;
-    OE_Cert cert;
+    uint32_t numCerts;
 
     /* Check command-line arguments */
     if (argc != 2)
@@ -51,15 +133,38 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the file into memory */
-    if (__OE_LoadFile(argv[1], 1, (void**)&data, &size) != OE_OK)
-        err("failed to load certificate file: %s", argv[1]);
+    {
+        if (__OE_LoadFile(argv[1], 1, (void**)&data, &size) != OE_OK)
+            err("failed to load certificate file: %s", argv[1]);
 
-    if (size)
-        data[size-1] = '\0';
+        if (size)
+            data[size-1] = '\0';
+    }
 
-    /* Load the certificate */
-    if ((result = OE_CertReadPEM(data, size, &cert)) != OE_OK)
-        err("failed to read PEM data");
+
+    /* Determine whether a certificate chain */
+    if (CountCerts(data, size, &numCerts) != OE_OK)
+        err("failed to read certificate(s) from PEM data");
+
+    /* If this contains more than one certificate then dump the chain */
+    if (numCerts > 1)
+    {
+        OE_CertChain chain;
+
+        if (OE_CertChainReadPEM(data, size, &chain) != OE_OK)
+            err("OE_CertChainReadPEM() failed");
+
+        DumpCertChain(&chain);
+    }
+    else
+    {
+        OE_Cert cert;
+
+        if (OE_CertReadPEM(data, size, &cert) != OE_OK)
+            err("OE_CertReadPEM() failed");
+
+        DumpCert(&cert, 0);
+    }
 
     ret = 0;
 

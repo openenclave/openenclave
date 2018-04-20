@@ -6,6 +6,7 @@
 
 #include "../result.h"
 #include "../types.h"
+#include "rsa.h"
 
 OE_EXTERNC_BEGIN
 
@@ -124,6 +125,72 @@ OE_Result OE_CertVerify(
     OE_CertChain* chain,
     OE_CRL* crl, /* ATTN: placeholder for future capability */
     OE_VerifyCertError* error);
+
+/**
+ * Get the RSA public key from a certificate.
+ *
+ * This function gets the RSA public key from the given certificate. If the
+ * the certficate does not contain an RSA public key, this function returns
+ * OE_WRONG_TYPE.
+ *
+ * @param cert the certificate whose RSA public key is sought
+ * @param publicKey the handle of an RSA public key upon successful return. 
+ *     If successful, the caller is responsible for eventually releasing the
+ *     key by passing it to **OE_RSAFreePublicKey()**.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_WRONG_TYPE the certificate does not contain an RSA public key
+ * @return OE_FAILURE general failure
+ */
+OE_Result OE_CertGetRSAPublicKey(
+    const OE_Cert* cert,
+    OE_RSAPublicKey* publicKey);
+
+/**
+ * Get the length of a certificate chain.
+ *
+ * This function gets the length of the certificate chain. This length
+ * is the total number of certificates contained in the chain.
+ *
+ * @param chain the chain whose length is to be determined
+ * @param length the certificate chain length on success or zero on failure
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
+OE_Result OE_CertChainGetLength(
+    const OE_CertChain* chain,
+    uint32_t* length);
+
+/**
+ * Fetch the certificate with the given index from a certificate chain.
+ *
+ * This function fetches the certificate with the given index from a
+ * certificate chain. The certificate with index zero is the root certificate,
+ * whereas the certificate with the highest index is the leaf certificate. Use
+ * OE_CertChainGetLength() to determine the total number of certificates in
+ * the chain.
+ *
+ * @param chain the chain whose certificate is to be fetched.
+ * @param index the index of the certificate to be fetched. An index of zero
+ *     obtains the root certificate. The hightest valid index obtains the leaf
+ *     certificate. As a shortcut OE_MAX_UINT32 obtains the leaf certificate,
+ *     which avoids a needless call to OE_CertChainGetLength().
+ * @param cert the handle of a certificate upon successful return. 
+ *     If successful, the caller is responsible for eventually releasing the
+ *     certificate by passing it to **OE_CertFree()**.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_OUT_OF_BOUNDS the certificate index is out of bounds
+ * @return OE_FAILURE general failure
+ */
+OE_Result OE_CertChainGetCert(
+    const OE_CertChain* chain,
+    uint32_t index,
+    OE_Cert* cert);
 
 OE_EXTERNC_END
 
