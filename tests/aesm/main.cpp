@@ -14,7 +14,7 @@ int main(int argc, const char* argv[])
     AESM* aesm;
 
     const uint32_t flags = OE_GetCreateFlags();
-    if ((flags & OE_FLAG_SIMULATE) != 0)
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
         printf(
             "=== Skipped unsupported test in simulation mode "

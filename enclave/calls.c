@@ -10,6 +10,7 @@
 #include <openenclave/bits/reloc.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/trace.h>
+#include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
 #include "asmdefs.h"
 #include "cpuid.h"
@@ -125,7 +126,12 @@ void _HandleInitEnclave(uint64_t argIn)
 {
     static bool _once = false;
 
-    if (_once == false)
+    /* Double checked locking (DCLP). */
+    bool o = _once;
+
+    /* DCLP Acquire barrier. */
+    OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
+    if (o == false)
     {
         static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
         OE_SpinLock(&_lock);
@@ -134,6 +140,9 @@ void _HandleInitEnclave(uint64_t argIn)
         {
             /* Call all enclave state initialization functions */
             OE_InitializeCpuid(argIn);
+
+            /* DCLP Release barrier. */
+            OE_ATOMIC_MEMORY_BARRIER_RELEASE();
             _once = true;
         }
 
@@ -319,9 +328,9 @@ static void _HandleECall(
             _HandleInitEnclave(argIn);
             break;
         }
-        case OE_FUNC_GET_SGX_REPORT:
+        case OE_FUNC_GET_REPORT:
         {
-            argOut = _HandleGetSGXReport(argIn);
+            argOut = _HandleGetReport(argIn);
             break;
         }
         default:

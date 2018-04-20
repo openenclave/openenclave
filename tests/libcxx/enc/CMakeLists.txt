@@ -4,7 +4,7 @@
 # create a binary for each testcase listed in ../tests.supported
 
 include(add_enclave_executable)
-include(${CMAKE_CURRENT_LIST_DIR}/../../libc/get_testcase_name.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 
 # helper lib to contain file needed by some tests
 add_library(libcxxtest-support
@@ -44,8 +44,12 @@ function(add_libcxx_test_enc NAME CXXFILE)
 endfunction(add_libcxx_test_enc)
 
 # iterate over the supported tests and create a binary for each.
-file(STRINGS "../tests.supported" alltests)
+if (ENABLE_FULL_LIBCXX_TESTS)
+    file(STRINGS "../tests.supported" alltests)
+else()
+    file(STRINGS "../tests.supported.default" alltests)
+endif()
 foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name)
+    get_testcase_name(${testcase} name "../../3rdparty/libcxx/libcxx/test/")
     add_libcxx_test_enc("${name}" "${testcase}")
 endforeach(testcase)
