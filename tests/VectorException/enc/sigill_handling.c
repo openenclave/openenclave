@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
 #include <cpuid.h>
 #include <openenclave/bits/calls.h>
-#include <openenclave/bits/cpuid.h>
 #include <openenclave/enclave.h>
 #include "../args.h"
 
@@ -12,7 +10,7 @@
 #define OE_CPUID_EXTENDED_CPUID_LEAF 0x80000000
 
 // Global to track state of TestSigillHandler execution.
-static enum {
+static volatile enum {
     HANDLED_SIGILL_NONE,
     HANDLED_SIGILL_GETSEC,
     HANDLED_SIGILL_CPUID
@@ -39,14 +37,15 @@ uint64_t TestSigillHandler(OE_EXCEPTION_RECORD* exception)
     return OE_EXCEPTION_CONTINUE_SEARCH;
 }
 
-bool TestGetsecInstruction()
+bool TestGetsecInstruction(void* args_)
 {
     // Arbitrary constants to verify r1/r2 have not been clobbered
     const uint32_t c_r1 = 0xDEADBEEF;
     const uint32_t c_r2 = 0xBEEFCAFE;
+    TestSigillHandlingArgs* args = (TestSigillHandlingArgs*)args_;
 
-    uint32_t r1 = c_r1;
-    uint32_t r2 = c_r2;
+    args->r1 = c_r1;
+    args->r2 = c_r2;
 
     g_handledSigill = HANDLED_SIGILL_NONE;
 
@@ -57,26 +56,35 @@ bool TestGetsecInstruction()
         "mov %2, %%rcx\n\t" /* reserved 2 */
         "GETSEC\n\t"
         :
-        : "i"(OE_GETSEC_CAPABILITIES), "m"(r1), "m"(r2)
+        : "i"(OE_GETSEC_CAPABILITIES), "m"(args->r1), "m"(args->r2)
         : "rax", "rbx", "rcx");
 
     // Verify that unused variables are untouched on continue
-    if (r1 != c_r1 || r2 != c_r2)
+    if (args->r1 != c_r1 || args->r2 != c_r2)
     {
         OE_HostPrintf(
             "TestGetsecInstruction stack parameters were corrupted.\n");
         return false;
+    }
+    else
+    {
+        OE_HostPrintf("TestGetsecInstruction stack parameters are ok.\n");
     }
 
     // Verify that illegal instruction was handled by test handler, not by
     // default
     if (g_handledSigill != HANDLED_SIGILL_GETSEC)
     {
-        OE_HostPrintf("Illegal GETSEC did not raise 2nd chance exception.\n");
+        OE_HostPrintf(
+            "%d Illegal GETSEC did not raise 2nd chance exception.\n",
+            g_handledSigill);
         return false;
     }
-
-    return true;
+    else
+    {
+        OE_HostPrintf("Success-Illegal GETSEC raised 2nd chance exception.\n");
+        return true;
+    }
 }
 
 bool TestUnsupportedCpuidLeaf(int leaf)
@@ -105,14 +113,21 @@ bool TestUnsupportedCpuidLeaf(int leaf)
             leaf);
         return false;
     }
-
-    return true;
+    else
+    {
+        OE_HostPrintf(
+            "Success-Unsupported CPUID leaf %x raised 2nd chance exception.\n",
+            leaf);
+        return true;
+    }
 }
 
 OE_ECALL void TestSigillHandling(void* args_)
 {
     TestSigillHandlingArgs* args = (TestSigillHandlingArgs*)args_;
     args->ret = -1;
+    args->r1 = -1;
+    args->r2 = -1;
 
     if (!OE_IsOutsideEnclave(args, sizeof(TestSigillHandlingArgs)))
     {
@@ -129,7 +144,7 @@ OE_ECALL void TestSigillHandling(void* args_)
     }
 
     // Test illegal SGX instruction that is not emulated (GETSEC)
-    if (!TestGetsecInstruction())
+    if (!TestGetsecInstruction(args))
     {
         return;
     }

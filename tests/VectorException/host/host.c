@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
 #include <cpuid.h>
 #include <limits.h>
 #include <openenclave/bits/error.h>
@@ -33,6 +32,9 @@ void TestSigillHandling(OE_Enclave* enclave)
     TestSigillHandlingArgs args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
+    args.r1 = -1;
+    args.r2 = -1;
+
     OE_Result result = OE_CallEnclave(enclave, "TestSigillHandling", &args);
     if (result != OE_OK)
         OE_PutErr("OE_CallEnclave() failed: result=%u", result);

@@ -18,10 +18,10 @@
 // It will return 0 if success.
 int DivideByZeroExceptionFunction(void)
 {
-    int ret = 1;
-    int s = 0;
-    float f = 0;
-    double d = 0;
+    volatile int ret = 1;
+    volatile int s = 0;
+    volatile float f = 0;
+    volatile double d = 0;
 
     f = 0.31;
     d = 0.32;
