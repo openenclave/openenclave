@@ -152,7 +152,7 @@ static void _GetSGXReportECALL(uint64_t argIn, uint64_t* argOut)
     *argOut = (uint64_t)_HandleGetSGXReport(argIn);
 }
 
-OE_Result _OE_GetRemoteReport(
+static OE_Result _OE_GetRemoteReport(
     const uint8_t* reportData,
     uint32_t reportDataSize,
     const void* optParams,
@@ -247,7 +247,8 @@ OE_Result OE_GetReport(
         reportBufferSize);
 }
 
-/* This function registers the OE_FUNC_GET_SGX_REPORT ECALL */
+// This global construtor function registers the OE_FUNC_GET_SGX_REPORT ECALL.
+// Linking in this library will invoke this function.
 __attribute__((constructor))
 static void _RegisterGetSGXReportECALL()
 {
