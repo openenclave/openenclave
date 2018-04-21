@@ -5,7 +5,6 @@
 #include "strings.h"
 
 #if defined(__linux__)
-#include <cpuid.h>
 #include <errno.h>
 #include <sys/mman.h>
 #elif defined(_WIN32)
@@ -879,8 +878,9 @@ static OE_Result _InitializeEnclave(OE_Enclave* enclave)
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
 #if defined(__linux__)
-        int supported = __get_cpuid(
+        int supported = __get_cpuid_count(
             i,
+            0,
             &args.cpuidTable[i][OE_CPUID_RAX],
             &args.cpuidTable[i][OE_CPUID_RBX],
             &args.cpuidTable[i][OE_CPUID_RCX],
