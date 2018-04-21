@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <cpuid.h>
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/cpuid.h>
 #include <openenclave/enclave.h>
 #include "../args.h"
 
@@ -10,6 +10,8 @@
 #define OE_CPUID_EXTENDED_CPUID_LEAF 0x80000000
 
 // Global to track state of TestSigillHandler execution.
+// Making this volatile to prevent optimization as this is modified
+// by the enclave
 static volatile enum {
     HANDLED_SIGILL_NONE,
     HANDLED_SIGILL_GETSEC,
@@ -37,15 +39,14 @@ uint64_t TestSigillHandler(OE_EXCEPTION_RECORD* exception)
     return OE_EXCEPTION_CONTINUE_SEARCH;
 }
 
-bool TestGetsecInstruction(void* args_)
+bool TestGetsecInstruction()
 {
     // Arbitrary constants to verify r1/r2 have not been clobbered
     const uint32_t c_r1 = 0xDEADBEEF;
     const uint32_t c_r2 = 0xBEEFCAFE;
-    TestSigillHandlingArgs* args = (TestSigillHandlingArgs*)args_;
 
-    args->r1 = c_r1;
-    args->r2 = c_r2;
+    uint32_t r1 = c_r1;
+    uint32_t r2 = c_r2;
 
     g_handledSigill = HANDLED_SIGILL_NONE;
 
@@ -56,11 +57,11 @@ bool TestGetsecInstruction(void* args_)
         "mov %2, %%rcx\n\t" /* reserved 2 */
         "GETSEC\n\t"
         :
-        : "i"(OE_GETSEC_CAPABILITIES), "m"(args->r1), "m"(args->r2)
+        : "i"(OE_GETSEC_CAPABILITIES), "m"(r1), "m"(r2)
         : "rax", "rbx", "rcx");
 
     // Verify that unused variables are untouched on continue
-    if (args->r1 != c_r1 || args->r2 != c_r2)
+    if (r1 != c_r1 || r2 != c_r2)
     {
         OE_HostPrintf(
             "TestGetsecInstruction stack parameters were corrupted.\n");
@@ -91,8 +92,9 @@ bool TestUnsupportedCpuidLeaf(int leaf)
 {
     g_handledSigill = HANDLED_SIGILL_NONE;
     uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
-    int supported = __get_cpuid(
+    int supported = __get_cpuid_count(
         leaf,
+        0,
         &cpuidInfo[OE_CPUID_RAX],
         &cpuidInfo[OE_CPUID_RBX],
         &cpuidInfo[OE_CPUID_RCX],
@@ -126,8 +128,6 @@ OE_ECALL void TestSigillHandling(void* args_)
 {
     TestSigillHandlingArgs* args = (TestSigillHandlingArgs*)args_;
     args->ret = -1;
-    args->r1 = -1;
-    args->r2 = -1;
 
     if (!OE_IsOutsideEnclave(args, sizeof(TestSigillHandlingArgs)))
     {
@@ -163,8 +163,9 @@ OE_ECALL void TestSigillHandling(void* args_)
     // Return enclave-cached CPUID leaves to host for further validation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        int supported = __get_cpuid(
+        int supported = __get_cpuid_count(
             i,
+            0,
             &args->cpuidTable[i][OE_CPUID_RAX],
             &args->cpuidTable[i][OE_CPUID_RBX],
             &args->cpuidTable[i][OE_CPUID_RCX],

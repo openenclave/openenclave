@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <cpuid.h>
 #include <limits.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
@@ -32,8 +31,6 @@ void TestSigillHandling(OE_Enclave* enclave)
     TestSigillHandlingArgs args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
-    args.r1 = -1;
-    args.r2 = -1;
 
     OE_Result result = OE_CallEnclave(enclave, "TestSigillHandling", &args);
     if (result != OE_OK)
@@ -49,8 +46,9 @@ void TestSigillHandling(OE_Enclave* enclave)
     {
         uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
         memset(cpuidInfo, 0, sizeof(cpuidInfo));
-        int supported = __get_cpuid(
+        int supported = __get_cpuid_count(
             i,
+            0,
             &cpuidInfo[OE_CPUID_RAX],
             &cpuidInfo[OE_CPUID_RBX],
             &cpuidInfo[OE_CPUID_RCX],
