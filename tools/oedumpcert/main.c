@@ -132,7 +132,6 @@ void DumpECPublicKey(const OE_ECPublicKey* key, size_t level)
     Indent(level);
     printf("key=");
     OE_HexDump(buffer, bufferSize);
-    printf("\n");
 
     level--;
     Indent(level);
