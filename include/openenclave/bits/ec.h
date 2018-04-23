@@ -207,6 +207,25 @@ OE_Result OE_ECGenerate(
     OE_ECPrivateKey* privateKey,
     OE_ECPublicKey* publicKey);
 
+/**
+ * Get the key bytes from an EC public key
+ *
+ * This function gets the key bytes from an EC public key. The bytes
+ * are written to j
+ *
+ * @param publicKey key whose key bytes are fetched.
+ * @param buffer buffer where bytes are written (may be null).
+ * @param bufferSize[in,out] buffer size on input; actual size on output.
+ *
+ * @return OE_OK upon success
+ * @return OE_BUFFER_TOO_SMALL buffer is too small and **size** contains
+ *         the required size.
+ */
+OE_Result OE_ECGetPublicKeyBytes(
+    const OE_ECPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize);
+
 OE_EXTERNC_END
 
 #endif /* _OE_EC_H */

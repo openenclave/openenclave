@@ -1,6 +1,7 @@
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/files.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/hexdump.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -99,12 +100,41 @@ void DumpRSAPublicKey(const OE_RSAPublicKey* key, size_t level)
 
 void DumpECPublicKey(const OE_ECPublicKey* key, size_t level)
 {
+    uint8_t* buffer = NULL;
+    size_t bufferSize = 0;
+    OE_Result r;
+
     Indent(level);
     printf("ECPublicKey\n");
 
     Indent(level);
     printf("{\n");
+    level++;
 
+
+    /* Get the key bytes */
+    {
+        /* Required buffer size */
+        r = OE_ECGetPublicKeyBytes(key, NULL, &bufferSize);
+
+        if (r != OE_BUFFER_TOO_SMALL)
+            err("OE_ECGetPublicKeyBytes() failed 1");
+
+        if (!(buffer = (uint8_t*)malloc(bufferSize)))
+            err("malloc() failed");
+
+        /* Get the key bytes */
+        if (OE_ECGetPublicKeyBytes(key, buffer, &bufferSize) != OE_OK)
+            err("OE_ECGetPublicKeyBytes() failed 2");
+    }
+
+
+    Indent(level);
+    printf("key=");
+    OE_HexDump(buffer, bufferSize);
+    printf("\n");
+
+    level--;
     Indent(level);
     printf("}\n");
 }

@@ -86,15 +86,16 @@ static const char* _ECTypeToString(OE_Type type)
     return _curveNames[index];
 }
 
-static bool _IsECKey(EVP_PKEY* pkey)
+/* Get the EC key without incrementing the reference count */
+static EC_KEY* _GetECKey(EVP_PKEY* pkey)
 {
     EC_KEY* ec;
 
     if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
-        return false;
+        return NULL;
 
     EC_KEY_free(ec);
-    return true;
+    return ec;
 }
 
 /*
@@ -153,7 +154,7 @@ OE_Result OE_ECReadPrivateKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is an EC key */
-    if (!_IsECKey(pkey))
+    if (!_GetECKey(pkey))
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -207,7 +208,7 @@ OE_Result OE_ECReadPublicKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is an EC key */
-    if (!_IsECKey(pkey))
+    if (!_GetECKey(pkey))
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -648,6 +649,54 @@ done:
         OE_ECFreePrivateKey(privateKey);
         OE_ECFreePublicKey(publicKey);
     }
+
+    return result;
+}
+
+OE_Result OE_ECGetPublicKeyBytes(
+    const OE_ECPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)publicKey;
+    OE_Result result = OE_UNEXPECTED;
+    uint8_t* data = NULL;
+    EC_KEY* ec;
+    int requiredSize;
+
+    /* Check for invalid parameters */
+    if (!publicKey || !bufferSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the EC public key */
+    if (!(ec = _GetECKey(impl->pkey)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Set the required buffer size */
+    if ((requiredSize = i2o_ECPublicKey(ec, NULL)) == 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* If buffer is null or not big enough */
+    if (!buffer || (*bufferSize < requiredSize))
+    {
+        *bufferSize = requiredSize;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    /* Get the key bytes */
+    if (!i2o_ECPublicKey(ec, &data))
+        OE_RAISE(OE_FAILURE);
+
+    /* Copy to caller's buffer */
+    memcpy(buffer, data, requiredSize);
+    *bufferSize = requiredSize;
+
+    result = OE_OK;
+
+done:
+
+    if (data)
+        free(data);
 
     return result;
 }
