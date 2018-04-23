@@ -533,8 +533,14 @@ OE_Result OE_CertGetECPublicKey(
         OE_RAISE(OE_FAILURE);
 
     /* If this is not an EC key */
-    if (!EVP_PKEY_get1_EC_KEY(pkey))
-        OE_RAISE(OE_FAILURE);
+    {
+        EC_KEY* ec;
+
+        if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+            OE_RAISE(OE_FAILURE);
+
+        EC_KEY_free(ec);
+    }
     
     /* Initialize the EC public key */
     OE_ECInitPublicKey(publicKey, pkey);

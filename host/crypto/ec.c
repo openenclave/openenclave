@@ -86,6 +86,17 @@ static const char* _ECTypeToString(OE_Type type)
     return _curveNames[index];
 }
 
+static bool _IsECKey(EVP_PKEY* pkey)
+{
+    EC_KEY* ec;
+
+    if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+        return false;
+
+    EC_KEY_free(ec);
+    return true;
+}
+
 /*
 **==============================================================================
 **
@@ -142,7 +153,7 @@ OE_Result OE_ECReadPrivateKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is an EC key */
-    if (!EVP_PKEY_get1_EC_KEY(pkey))
+    if (!_IsECKey(pkey))
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -196,7 +207,7 @@ OE_Result OE_ECReadPublicKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is an EC key */
-    if (!EVP_PKEY_get1_EC_KEY(pkey))
+    if (!_IsECKey(pkey))
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -225,7 +236,7 @@ OE_Result OE_ECWritePrivateKeyPEM(
     OE_Result result = OE_UNEXPECTED;
     const OE_ECPrivateKeyImpl* impl = (const OE_ECPrivateKeyImpl*)key;
     BIO* bio = NULL;
-    EC_KEY* ec;
+    EC_KEY* ec = NULL;
     const char nullTerminator = '\0';
 
     /* Check parameters */
@@ -240,7 +251,7 @@ OE_Result OE_ECWritePrivateKeyPEM(
     if (!(bio = BIO_new(BIO_s_mem())))
         OE_RAISE(OE_FAILURE);
 
-    /* Get EC key from public key without increasing reference count */
+    /* Get EC key from public key (increasing reference count) */
     if (!(ec = EVP_PKEY_get1_EC_KEY(impl->pkey)))
         OE_RAISE(OE_FAILURE);
 
@@ -277,6 +288,9 @@ done:
 
     if (bio)
         BIO_free(bio);
+
+    if (ec)
+        EC_KEY_free(ec);
 
     return result;
 }
