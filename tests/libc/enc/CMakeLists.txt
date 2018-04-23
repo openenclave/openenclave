@@ -7,7 +7,7 @@
 # It was agreed to, that it is best to just disable warnings-as-errors for these tests specifically.
 
 include(add_enclave_executable)
-include(${CMAKE_CURRENT_LIST_DIR}/../get_testcase_name.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 
 # helper lib to contain file needed by some tests
 add_library(libctest-support
@@ -37,8 +37,12 @@ function(add_libc_test_enc NAME CFILE)
     target_link_libraries(libctest-${NAME} libctest-support)
 endfunction(add_libc_test_enc)
 
-file(STRINGS "../tests.supported" alltests)
+if (ENABLE_FULL_LIBC_TESTS)
+    file(STRINGS "../tests.supported" alltests)
+else()
+    file(STRINGS "../tests.supported.default" alltests)
+endif()
 foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name)
+    get_testcase_name(${testcase} name "../../3rdparty/musl/libc-test/src/")
     add_libc_test_enc("${name}" "${testcase}")
 endforeach(testcase)

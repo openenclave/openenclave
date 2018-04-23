@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/defs.h>
 
 #ifdef OE_BUILD_ENCLAVE
@@ -83,7 +83,7 @@ OE_Result OE_ParseReport(
     OE_Result result = OE_OK;
 
     if (report == NULL || parsedReport == NULL)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     if (reportSize == sizeof(SGX_Report))
     {
@@ -97,9 +97,9 @@ OE_Result OE_ParseReport(
     }
     else
     {
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
-OE_CATCH:
+done:
     return result;
 }

@@ -153,7 +153,7 @@ control the behavior of the Linux make generator for Open Enclave:
 | Variable                 | Description                                          |
 |--------------------------|------------------------------------------------------|
 | CMAKE_BUILD_TYPE         | Build configuration (*Debug*, *Release*, *RelWithDebInfo*). Default is *Debug*. |
-| ENABLE_LIBC_TESTS        | Enable Libc tests. Default is enabled, disable with setting to "Off", "No", "0", ... |
+| ENABLE_FULL_LIBC_TESTS   | Enable full Libc tests. Default is disabled, enable with setting to "On", "1", ... |
 | ENABLE_FULL_LIBCXX_TESTS | Enable full Libc++ tests. Default is disabled, enable with setting to "On", "1", ... |
 | ENABLE_REFMAN            | Enable building of reference manual. Requires Doxygen to be installed. Default is enabled, disable with setting to "Off", "No", "0", ... |
 
@@ -219,21 +219,13 @@ build$ OE_SIMULATION=1 ctest
 
 If things fail, "**ctest -V**" provides test details. Executing ctest from a sub-dir executes the tests underneath.
 
-Only a small subset of libcxx tests are enabled by default due to their huge
-cost on building (30mins+). Enable the full set by setting the cmake variable
-**ENABLE_FULL_LIBCXX_TESTS** before building.
+Only a small subset of libc/libcxx tests are enabled by default due to their huge
+cost on building (5/30mins+). Enable the full set by setting the corresponding cmake variable
+**ENABLE_FULL_LIBC_TESTS/ENABLE_FULL_LIBCXX_TESTS** before building.
 
 ```
-build$ cmake -DENABLE_FULL_LIBCXX_TESTS=ON ..
+build$ cmake -DENABLE_FULL_LIBC_TESTS=ON -DENABLE_FULL_LIBCXX_TESTS=ON ..
 build$ make
-```
-
-If you are in a hurry and just need a quick confirmation, disable the libc
-tests with the **ENABLE_LIBC_TESTS** cmake variable like so:
-
-```
-build$ cmake -DENABLE_LIBC_TESTS=OFF ..
-[...]
 ```
 
 To run valgrind-tests, add "**-D ExperimentalMemCheck**" to the ctest call.

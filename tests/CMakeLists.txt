@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-option(ENABLE_LIBC_TESTS "Build libc tests and include in test list" ON)
+option(ENABLE_FULL_LIBC_TESTS "Build all libc tests and include in test list" OFF)
 option(ENABLE_FULL_LIBCXX_TESTS "Build all libcxx tests and include in test list" OFF)
 
 add_subdirectory(abortStatus)
@@ -15,10 +15,10 @@ add_subdirectory(file)
 add_subdirectory(hostcalls)
 add_subdirectory(hexdump)
 
-if(ENABLE_LIBC_TESTS)
-    add_subdirectory(libc)
+if(ENABLE_FULL_LIBC_TESTS)
+    message("ENABLE_FULL_LIBC_TESTS set - building all libc tests")
 else()
-    message("ENABLE_LIBC_TESTS not set - omit libc tests")
+    message("ENABLE_FULL_LIBC_TESTS not set - building some libc tests")
 endif()
 
 if(ENABLE_FULL_LIBCXX_TESTS)
@@ -26,6 +26,8 @@ if(ENABLE_FULL_LIBCXX_TESTS)
 else()
     message("ENABLE_FULL_LIBCXX_TESTS not set - building some libcxx tests")
 endif()
+
+add_subdirectory(libc)
 add_subdirectory(libcxx)
 add_subdirectory(load)
 add_subdirectory(mbed)
