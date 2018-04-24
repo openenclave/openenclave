@@ -360,12 +360,30 @@ OE_Result OE_GetReport(
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ *
  */
 OE_Result OE_ParseReport(
     const uint8_t* report,
     uint32_t reportSize,
     OE_Report* parsedReport);
 
+/**
+ * Verify the integrity of the report and its signature.
+ *
+ * This function verifies that the report signature is valid. If the report is
+ * local, it verifies that it is correctly signed by the enclave
+ * platform. If the report is remote, it verifies that the signing authority is
+ * rooted to a trusted authority such as the enclave platform manufacturer.
+ *
+ * @param report The buffer containing the report to verify.
+ * @param reportSize The size of the **report** buffer.
+ * @param parsedReport Optional **OE_Report** structure to populate with the
+ * report properties in a standard format.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ *
+ */
 OE_Result OE_VerifyReport(
     const uint8_t* report,
     uint32_t reportSize,

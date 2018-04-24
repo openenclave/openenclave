@@ -57,6 +57,7 @@ int main(int argc, const char* argv[])
     TestLocalReport(&targetInfo);
     TestRemoteReport(NULL);
     TestParseReportNegative(NULL);
+    TestLocalVerifyReport(NULL);
 
     /*
      * Enclave API tests.
@@ -69,6 +70,8 @@ int main(int argc, const char* argv[])
     OE_TEST(
         OE_CallEnclave(enclave, "TestParseReportNegative", &targetInfo) ==
         OE_OK);
+
+    OE_TEST(OE_CallEnclave(enclave, "TestLocalVerifyReport", &targetInfo) == OE_OK);
 
     /* Terminate the enclave */
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)

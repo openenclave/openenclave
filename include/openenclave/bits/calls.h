@@ -79,6 +79,7 @@ typedef enum _OE_Func {
     OE_FUNC_GET_REPORT = 0x04100000,
     OE_FUNC_GET_QE_TARGET_INFO = 0x04200000,
     OE_FUNC_GET_QUOTE = 0x04300000,
+    OE_FUNC_VERIFY_REPORT = 0x04400000,
     OE_FUNC_THREAD_WAKE = 0x05000000,
     OE_FUNC_THREAD_WAIT = 0x06000000,
     OE_FUNC_THREAD_WAKE_WAIT = 0x07000000,
@@ -273,6 +274,43 @@ typedef struct _OE_GetReportArgs
     uint8_t* reportBuffer;      /* ptr to output buffer */
     uint32_t* reportBufferSize; /* in-out */
 } OE_GetReportArgs;
+
+/*
+**==============================================================================
+**
+** OE_VerifyReportArgs
+**
+**==============================================================================
+*/
+
+typedef struct _OE_VerifyReportArgs
+{
+    OE_Result result;     /* out */
+
+    uint8_t* report;      /* in */
+    uint32_t reportSize;  /* in */
+} OE_VerifyReportArgs;
+
+
+
+/*
+**==============================================================================
+**
+** OE_GetCMACArgs
+**
+**==============================================================================
+*/
+
+typedef struct _OE_GetCMACArgs
+{
+    OE_Result result;     /* out */
+
+    uint8_t key[sizeof(SGX_Key)]; /* in */
+    uint8_t cmac[16]; /* out */
+
+    uint32_t dataSize; /* in */
+    uint8_t data[384];  /* in */
+} OE_GetCMACArgs;
 
 /*
 **==============================================================================

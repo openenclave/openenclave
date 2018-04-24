@@ -333,6 +333,11 @@ static void _HandleECall(
             argOut = _HandleGetReport(argIn);
             break;
         }
+        case OE_FUNC_VERIFY_REPORT:
+        {
+            argOut = _HandleVerifyReport(argIn);
+            break;
+        }
         default:
         {
             /* Dispatch user-registered ECALLs */

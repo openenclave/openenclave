@@ -197,3 +197,30 @@ OE_Result OE_GetReport(
         reportBuffer,
         reportBufferSize);
 }
+
+OE_Result OE_VerifyReport(
+    OE_Enclave* enclave,
+    const uint8_t* report,
+    uint32_t reportSize,
+    OE_Report* parsedReport)
+{
+    OE_Result result = OE_OK;    
+    OE_VerifyReportArgs arg = { 0 };
+
+    if (report == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+    
+    if (reportSize == 0 || reportSize > OE_MAX_REPORT_SIZE)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    arg.report = (uint8_t*) report;
+    arg.reportSize = reportSize;
+
+    OE_CHECK(OE_ECall(enclave, OE_FUNC_VERIFY_REPORT, (uint64_t) &arg, NULL));
+    if (parsedReport != NULL) 
+        OE_CHECK(OE_ParseReport(report, reportSize, parsedReport));
+
+done:
+
+    return result;
+}
