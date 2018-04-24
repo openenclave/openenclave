@@ -267,29 +267,22 @@ void Test(OE_Enclave* enclave)
 
     char cwd[1024];
     char tail[1024] = "3rdparty/mbedtls/mbedtls/tests/suites/";
-    char out[1024]  = {NULL};
-    char s[2] = "/";
-    char *token;
-
+    char *seperator;
     Args args;
-    args.ret = 1;
+    args.ret = 1; 
     args.test = NULL;
 
     if (getcwd(cwd, sizeof(cwd)) != NULL)
             fprintf(stdout, "Current working dir: %s\n", cwd);
     else
             perror("getcwd() error");
-    token = strtok(cwd, s);
-    /* walk through other tokens */
-    out[0] = '/' ;
-    while( ((token != NULL) && (strcmp(token,"build"))) ) {
-            strcat(out,token);
-            strcat(out,"/");
-            token = strtok(NULL, s);
+    seperator = strstr(cwd,"build"); /* Find address at which string to be seperated */
+    if (seperator == NULL){
+        printf("\n seperator doesn't get the address\n" );
     }
-    strcat(out,tail);
-    printf( "###final out in Test %s\n", out );
-    args.test = out;
+    *seperator = '\0'; /* seperating string */
+    strcat(cwd,tail);
+    args.test = cwd;
     strcat(args.test,data_file_name);
     printf("###final args.test contains data file path  in Test %s\n", args.test);
 
