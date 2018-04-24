@@ -450,42 +450,71 @@ TEST_FCN void TestParseReportNegative(void* args_)
         OE_INVALID_PARAMETER);
 }
 
-
 static void GetSGXTargetInfo(SGX_TargetInfo* sgxTargetInfo)
 {
-    SGX_Report report = { 0 };
+    SGX_Report report = {0};
     uint32_t reportSize = sizeof(SGX_Report);
 
-    OE_TEST(GetReport(0, NULL, 0, NULL, 0, (uint8_t*) &report, &reportSize) == OE_OK);
+    OE_TEST(
+        GetReport(0, NULL, 0, NULL, 0, (uint8_t*)&report, &reportSize) ==
+        OE_OK);
 
     Memset(sgxTargetInfo, 0, sizeof(*sgxTargetInfo));
-    Memcpy(sgxTargetInfo->mrenclave, report.body.mrenclave, sizeof(sgxTargetInfo->mrenclave));
-    Memcpy(&sgxTargetInfo->attributes, &report.body.attributes, sizeof(sgxTargetInfo->attributes));   
-    Memcpy(&sgxTargetInfo->misc_select, &report.body.miscselect, sizeof(sgxTargetInfo->attributes)); 
+    Memcpy(
+        sgxTargetInfo->mrenclave,
+        report.body.mrenclave,
+        sizeof(sgxTargetInfo->mrenclave));
+    Memcpy(
+        &sgxTargetInfo->attributes,
+        &report.body.attributes,
+        sizeof(sgxTargetInfo->attributes));
+    Memcpy(
+        &sgxTargetInfo->misc_select,
+        &report.body.miscselect,
+        sizeof(sgxTargetInfo->attributes));
 }
 
 TEST_FCN void TestLocalVerifyReport(void* args_)
 {
     uint8_t targetInfo[sizeof(SGX_TargetInfo)];
     uint32_t targetInfoSize = sizeof(targetInfo);
-    
-    uint8_t report[sizeof(SGX_Report)] = { 0 };
+
+    uint8_t report[sizeof(SGX_Report)] = {0};
     uint32_t reportSize = sizeof(report);
 
     uint8_t reportData[sizeof(SGX_ReportData)];
-    for(uint32_t i=0; i < sizeof(reportData); ++i) {
+    for (uint32_t i = 0; i < sizeof(reportData); ++i)
+    {
         reportData[i] = i;
     }
 
     GetSGXTargetInfo((SGX_TargetInfo*)targetInfo);
 
-    OE_TEST(GetReport(0, NULL, 0, targetInfo, targetInfoSize, report, &reportSize) == OE_OK);      
-    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);  
+    OE_TEST(
+        GetReport(
+            0, NULL, 0, targetInfo, targetInfoSize, report, &reportSize) ==
+        OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
 
-    OE_TEST(GetReport(0, reportData, sizeof(reportData), targetInfo, targetInfoSize, report, &reportSize) == OE_OK);      
-    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK); 
+    OE_TEST(
+        GetReport(
+            0,
+            reportData,
+            sizeof(reportData),
+            targetInfo,
+            targetInfoSize,
+            report,
+            &reportSize) == OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
 
- 
-    OE_TEST(GetReport(0, reportData, sizeof(reportData)/2, targetInfo, targetInfoSize, report, &reportSize) == OE_OK);      
-    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);      
+    OE_TEST(
+        GetReport(
+            0,
+            reportData,
+            sizeof(reportData) / 2,
+            targetInfo,
+            targetInfoSize,
+            report,
+            &reportSize) == OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
 }

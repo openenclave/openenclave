@@ -19,34 +19,35 @@ OE_Result OE_GetMAC(
     OE_MAC* mac)
 {
     OE_Result result = OE_OK;
-    //mbedtls_cipher_context_t ctx;
+    // mbedtls_cipher_context_t ctx;
     const mbedtls_cipher_info_t* info = NULL;
-    //uint64_t outlen = 0;
+    // uint64_t outlen = 0;
 
-    //mbedtls_cipher_init( &ctx );
+    // mbedtls_cipher_init( &ctx );
 
     if (mac == NULL)
         OE_RAISE(OE_BUFFER_TOO_SMALL);
 
     if (keySize != sizeof(SGX_Key))
         OE_RAISE(OE_INVALID_PARAMETER);
-    
+
     info = mbedtls_cipher_info_from_type(MBEDTLS_CIPHER_AES_128_ECB);
     if (info == NULL)
         OE_RAISE(OE_CRYPTO_ERROR);
 
-
     /*OE_CHECK( mbedtls_cipher_setup(&ctx, info) ? OE_CRYPTO_ERROR : OE_OK );
-    OE_CHECK( mbedtls_cipher_setkey(&ctx, key, sizeof(SGX_Key)*8, MBEDTLS_ENCRYPT ) ? OE_CRYPTO_ERROR : OE_OK );
-    
-    OE_CHECK( mbedtls_cipher_update(&ctx, src, len, mac->bytes, &outlen) ? OE_CRYPTO_ERROR : OE_OK);
-    OE_CHECK( mbedtls_cipher_finish(&ctx, mac->bytes+outlen, &outlen) ? OE_CRYPTO_ERROR : OE_OK);
-    OE_CHECK( outlen != sizeof(SGX_Key)*8 ? OE_CRYPTO_ERROR : OE_OK);*/
-    mbedtls_cipher_cmac(info, key, keySize*8, src, len, mac->bytes);
+    OE_CHECK( mbedtls_cipher_setkey(&ctx, key, sizeof(SGX_Key)*8,
+    MBEDTLS_ENCRYPT ) ? OE_CRYPTO_ERROR : OE_OK );
 
+    OE_CHECK( mbedtls_cipher_update(&ctx, src, len, mac->bytes, &outlen) ?
+    OE_CRYPTO_ERROR : OE_OK);
+    OE_CHECK( mbedtls_cipher_finish(&ctx, mac->bytes+outlen, &outlen) ?
+    OE_CRYPTO_ERROR : OE_OK);
+    OE_CHECK( outlen != sizeof(SGX_Key)*8 ? OE_CRYPTO_ERROR : OE_OK);*/
+    mbedtls_cipher_cmac(info, key, keySize * 8, src, len, mac->bytes);
 
 done:
-    //mbedtls_cipher_free(&ctx);
+    // mbedtls_cipher_free(&ctx);
 
     return result;
 }
@@ -73,12 +74,14 @@ done:
 //     memset( decbuf, 0, 64 );
 
 //     /* Initialise context */
-//     cipher_info = mbedtls_cipher_info_from_type( MBEDTLS_CIPHER_AES_128_CBC );
+//     cipher_info = mbedtls_cipher_info_from_type( MBEDTLS_CIPHER_AES_128_CBC
+//     );
 //     TEST_ASSERT( NULL != cipher_info);
 
 //     TEST_ASSERT( 0 == mbedtls_cipher_setup( &ctx_dec, cipher_info ) );
 
-//     TEST_ASSERT( 0 == mbedtls_cipher_setkey( &ctx_dec, key, 128, MBEDTLS_DECRYPT ) );
+//     TEST_ASSERT( 0 == mbedtls_cipher_setkey( &ctx_dec, key, 128,
+//     MBEDTLS_DECRYPT ) );
 
 //     TEST_ASSERT( 0 == mbedtls_cipher_set_iv( &ctx_dec, iv, 16 ) );
 
@@ -89,9 +92,11 @@ done:
 // #endif
 
 //     /* decode 0-byte string */
-//     TEST_ASSERT( 0 == mbedtls_cipher_update( &ctx_dec, encbuf, 0, decbuf, &outlen ) );
+//     TEST_ASSERT( 0 == mbedtls_cipher_update( &ctx_dec, encbuf, 0, decbuf,
+//     &outlen ) );
 //     TEST_ASSERT( 0 == outlen );
-//     TEST_ASSERT( MBEDTLS_ERR_CIPHER_FULL_BLOCK_EXPECTED == mbedtls_cipher_finish(
+//     TEST_ASSERT( MBEDTLS_ERR_CIPHER_FULL_BLOCK_EXPECTED ==
+//     mbedtls_cipher_finish(
 //                  &ctx_dec, decbuf + outlen, &outlen ) );
 //     TEST_ASSERT( 0 == outlen );
 
