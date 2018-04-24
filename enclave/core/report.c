@@ -4,8 +4,6 @@
 #include "report.h"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/keys.h>
-#include <openenclave/bits/mac.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>

@@ -333,7 +333,6 @@ static void _HandleECall(
             argOut = _HandleGetReport(argIn);
             break;
         }
-
         default:
         {
             /* Dispatch user-registered ECALLs */

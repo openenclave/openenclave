@@ -295,25 +295,6 @@ typedef struct _OE_VerifyReportArgs
 /*
 **==============================================================================
 **
-** OE_GetCMACArgs
-**
-**==============================================================================
-*/
-
-typedef struct _OE_GetCMACArgs
-{
-    OE_Result result; /* out */
-
-    uint8_t key[sizeof(SGX_Key)]; /* in */
-    uint8_t cmac[16];             /* out */
-
-    uint32_t dataSize; /* in */
-    uint8_t data[384]; /* in */
-} OE_GetCMACArgs;
-
-/*
-**==============================================================================
-**
 ** OE_StrftimeArgs
 **
 **     size_t strftime(

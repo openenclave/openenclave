@@ -102,7 +102,7 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
 
 done:
     if (argFromHost)
-        argFromHost->result = OE_FAILURE;
+        argFromHost->result = result;
 }
 
 static OE_Result g_InitECalls =
