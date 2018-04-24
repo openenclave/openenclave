@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_cxx_enclave_executable(stdcxxenc sign.conf private.pem
+add_enclave_executable(stdcxxenc sign.conf private.pem
     enc.cpp
     f.cpp
     )

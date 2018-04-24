@@ -15,8 +15,8 @@
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
-#include "report.h"
 #include "td.h"
+#include "report.h"
 
 typedef unsigned long long WORD;
 
@@ -333,11 +333,7 @@ static void _HandleECall(
             argOut = _HandleGetReport(argIn);
             break;
         }
-        case OE_FUNC_VERIFY_REPORT:
-        {
-            argOut = _HandleVerifyReport(argIn);
-            break;
-        }
+
         default:
         {
             /* Dispatch user-registered ECALLs */

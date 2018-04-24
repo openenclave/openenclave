@@ -119,6 +119,43 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
 #define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() asm volatile("" ::: "memory")
 #define OE_ATOMIC_MEMORY_BARRIER_RELEASE() asm volatile("" ::: "memory")
 
+
+OE_INLINE void OE_Memcpy_s(volatile void* pv1, const volatile void* pv2, uint32_t len)
+{
+    volatile uint8_t* p1 = (uint8_t*) pv1;
+    volatile uint8_t* p2 = (uint8_t*) pv2;
+
+    for(uint32_t i=0; i < len; ++i) {
+        p1[i] = p2[i];
+    }
+}
+
+OE_INLINE void OE_Memset_s(volatile void* pv, int v, uint32_t len)
+{
+    volatile uint8_t* p = (volatile uint8_t*)pv;
+    for (uint32_t i = 0; i < len; ++i)
+    {
+        p[i] = 0;
+    }
+}
+
+OE_INLINE int OE_Memcmp_s(
+    const volatile void* pv1,
+    const volatile void* pv2,
+    uint32_t len)
+{
+    volatile uint8_t* p1 = (uint8_t*)pv1;
+    volatile uint8_t* p2 = (uint8_t*)pv2;
+    uint8_t r = 0;
+
+    for (uint32_t i = 0; i < len; ++i)
+    {
+        r |= p1[i] ^ p2[i];
+    }
+
+    return r;
+}
+
 OE_EXTERNC_END
 
 #endif /* _OE_UTILS_H */
