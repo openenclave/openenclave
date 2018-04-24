@@ -88,6 +88,10 @@ bool TestGetsecInstruction()
     }
 }
 
+#if defined(__linux)
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+#endif
 bool TestUnsupportedCpuidLeaf(int leaf)
 {
     g_handledSigill = HANDLED_SIGILL_NONE;
@@ -123,6 +127,9 @@ bool TestUnsupportedCpuidLeaf(int leaf)
         return true;
     }
 }
+#if defined(__linux)
+#pragma GCC pop_options
+#endif
 
 OE_ECALL void TestSigillHandling(void* args_)
 {

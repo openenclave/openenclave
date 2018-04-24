@@ -880,7 +880,7 @@ static OE_Result _InitializeEnclave(OE_Enclave* enclave)
 #if defined(__linux__)
         int supported = __get_cpuid_count(
             i,
-            0,
+            0, // pass sub-leaf of 0 - needed for leaf 4
             &args.cpuidTable[i][OE_CPUID_RAX],
             &args.cpuidTable[i][OE_CPUID_RBX],
             &args.cpuidTable[i][OE_CPUID_RCX],
