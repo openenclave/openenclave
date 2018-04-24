@@ -216,10 +216,10 @@ OE_Result OE_VerifyReport(
     arg.report = (uint8_t*)report;
     arg.reportSize = reportSize;
     arg.result = OE_FAILURE;
-    
+
     OE_CHECK(OE_ECall(enclave, OE_FUNC_VERIFY_REPORT, (uint64_t)&arg, NULL));
     OE_CHECK(arg.result);
-    
+
     if (parsedReport != NULL)
         OE_CHECK(OE_ParseReport(report, reportSize, parsedReport));
 

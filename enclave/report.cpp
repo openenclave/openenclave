@@ -98,11 +98,12 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
     // Copy report to prevent TOCTOU issues.
     OE_Memcpy(report, arg.report, arg.reportSize);
 
-    OE_CHECK( OE_VerifyReport(report, arg.reportSize, NULL) );
+    OE_CHECK(OE_VerifyReport(report, arg.reportSize, NULL));
 
 done:
     if (argFromHost)
         argFromHost->result = OE_FAILURE;
 }
 
-static OE_Result g_InitECalls = OE_RegisterECall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);
+static OE_Result g_InitECalls =
+    OE_RegisterECall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);

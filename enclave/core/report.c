@@ -15,8 +15,6 @@
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(SGX_ReportData));
 
-
-
 static OE_Result _SGX_CreateReport(
     const void* reportData,
     uint32_t reportDataSize,
