@@ -15,8 +15,8 @@
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
-#include "report.h"
 #include "td.h"
+#include "report.h"
 
 typedef unsigned long long WORD;
 

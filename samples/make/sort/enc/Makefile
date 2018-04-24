@@ -19,7 +19,7 @@ LDFLAGS += -Wl,--export-dynamic
 LDFLAGS += -Wl,-pie
 LDFLAGS += -Wl,-eOE_Main 
 
-LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loelibcxx -loelibc -loeenclave
+LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loelibcxx -loelibc -loecore
 
 all:
 	$(MAKE) build

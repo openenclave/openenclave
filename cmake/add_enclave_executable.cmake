@@ -21,9 +21,6 @@
 function(add_enclave_executable BIN SIGNCONF KEYFILE)
 	add_executable(${BIN} ${ARGN})
 
-	# enclaves depend on the oeenclave lib
-	target_link_libraries(${BIN} oeenclave)
-
 	# custom rule to sign the binary
 	add_custom_command(OUTPUT ${BIN}.signed.so
 		COMMAND oesign $<TARGET_FILE:${BIN}> ${SIGNCONF} ${KEYFILE}
