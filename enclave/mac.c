@@ -20,7 +20,7 @@ OE_Result OE_GetMAC(
 {
     OE_Result result = OE_OK;
     const mbedtls_cipher_info_t* info = NULL;
-    
+
     if (mac == NULL)
         OE_RAISE(OE_BUFFER_TOO_SMALL);
 

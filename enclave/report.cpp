@@ -11,6 +11,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/types.h>
 
+// This file is .cpp in order to use C++ static initialization.
+
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(SGX_ReportData));
 
 static OE_Result _OE_GetReportKey(const SGX_Report* sgxReport, SGX_Key* sgxKey)
@@ -24,10 +26,15 @@ static OE_Result _OE_GetReportKey(const SGX_Report* sgxReport, SGX_Key* sgxKey)
     OE_CHECK(OE_GetKey(&sgxKeyRequest, sgxKey));
 
 done:
+    // Cleanup secret.
     OE_Memset_s(&sgxKeyRequest, 0, sizeof(sgxKeyRequest));
+
     return result;
 }
 
+// OE_VerifyReport needs crypto library's cmac computation. oecore does not have
+// crypto functionality. Hence OE_Verify report is implemented here instead of
+// in oecore. Also see ECall_HandleVerifyReport below.
 OE_Result OE_VerifyReport(
     const uint8_t* report,
     uint32_t reportSize,
@@ -60,19 +67,27 @@ OE_Result OE_VerifyReport(
                 sizeof(sgxReport->body),
                 &mac));
 
-        if (OE_Memcmp_s(sgxReport->mac, mac.bytes, sizeof(mac)) != 0)
-            OE_RAISE(OE_FAILURE);
+        // Perform constant-time mac comparison.
+        if (!OE_Memequal_s(sgxReport->mac, mac.bytes, sizeof(mac)))
+            OE_RAISE(OE_VERIFY_FAILED);
     }
 
+    // Optionally return parsed report.
     if (parsedReport != NULL)
         *parsedReport = pReport;
 
 done:
+    // Cleanup secret.
     OE_Memset_s(&sgxKey, 0, sizeof(sgxKey));
 
     return result;
 }
 
+// The report key is never sent out to the host. The host side OE_VerifyReport
+// invokes OE_FUNC_VERIFY_REPORT ECall on the enclave. ECalls are handled in
+// oecore; however oecore has no access to enclave's OE_VerifyReport (see
+// above). Therefore, OE_VerifyReport is exposed to oecore as a registered
+// ECall.
 static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
 {
     OE_Result result = OE_OK;
@@ -105,5 +120,6 @@ done:
         argFromHost->result = result;
 }
 
+// Use static initializer to register ECall_HandleVerifyReport.
 static OE_Result g_InitECalls =
     OE_RegisterECall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);
