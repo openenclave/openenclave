@@ -16,9 +16,7 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-OE_Result SGX_GetQuoteSize(
-    const uint8_t* signatureRevocationList,
-    uint32_t* quoteSize);
+OE_Result SGX_GetQuoteSize(uint32_t* quoteSize);
 
 /*
 **==============================================================================

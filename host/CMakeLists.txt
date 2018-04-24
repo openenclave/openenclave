@@ -59,7 +59,7 @@ add_library(oehost STATIC
     )
 
 # we and dependents need the OE includes to compile
-target_link_libraries(oehost oe_includes)
+target_link_libraries(oehost PUBLIC oe_includes)
 
 if(UNIX)
 find_library(CRYPTO_LIB NAMES crypto)
@@ -69,9 +69,9 @@ find_package(Threads REQUIRED)
 
 # linking also requires a number of libs on the host
 if(UNIX)
-target_link_libraries(oehost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
+target_link_libraries(oehost PRIVATE ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 elseif(WIN32)
-target_link_libraries(oehost bcrypt)
+target_link_libraries(oehost PRIVATE bcrypt)
 endif()
 
 if(UNIX)
@@ -84,11 +84,11 @@ target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 if(USE_LIBSGX)
 message("USE_LIBSGX is set, building oehost with FLC dependency")
 add_dependencies(oehost libsgx_includes)
-target_include_directories(oehost PUBLIC
+target_include_directories(oehost PRIVATE
     $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libsgx>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/libsgx>
     )
-target_link_libraries(oehost libsgx_enclave_common)
+target_link_libraries(oehost PRIVATE libsgx_enclave_common libsgxoeql libsgx_urts)
 target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
 endif()
 
