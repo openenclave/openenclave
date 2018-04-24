@@ -69,6 +69,7 @@ add_subdirectory(libcxx)
 add_subdirectory(samples)
 add_subdirectory(tests)
 add_subdirectory(tools)
+add_subdirectory(wrap)
 endif()
 
 if(WIN32)

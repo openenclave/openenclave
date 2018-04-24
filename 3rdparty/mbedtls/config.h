@@ -108,7 +108,7 @@
  * Comment if your system does not support time functions
  */
 //Open Enclave TODO: enable when enclave secure time is available: issue #182
-//#define MBEDTLS_HAVE_TIME
+#define MBEDTLS_HAVE_TIME
 
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
@@ -121,7 +121,7 @@
  * Comment if your system does not have a correct clock.
  */
 //Open Enclave TODO: enable when enclave secure time is available: issue #182
-//#define MBEDTLS_HAVE_TIME_DATE
+#define MBEDTLS_HAVE_TIME_DATE
 
 /**
  * \def MBEDTLS_PLATFORM_MEMORY
@@ -449,7 +449,7 @@
  * Enable Cipher Feedback mode (CFB) for symmetric ciphers.
  */
 //Open Enclave: Block known weak cipher block mode
-//#define MBEDTLS_CIPHER_MODE_CFB
+#define MBEDTLS_CIPHER_MODE_CFB
 
 /**
  * \def MBEDTLS_CIPHER_MODE_CTR
@@ -606,7 +606,7 @@
  */
 //Open Enclave: Disable pre-shared keys in enclaves until we have a use case.
 // Basic PSK has no perfect forward secrecy, not recommended for future use.
-//#define MBEDTLS_KEY_EXCHANGE_PSK_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_PSK_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
@@ -632,7 +632,7 @@
  */
 //Open Enclave: Disable pre-shared keys in enclaves until we have a use case.
 // Consider ECDHE_PSK instead of DHE_PSK for performance
-//#define MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECDHE_PSK_ENABLED
@@ -653,7 +653,7 @@
  *      MBEDTLS_TLS_ECDHE_PSK_WITH_RC4_128_SHA
  */
 //Open Enclave: Disable pre-shared keys in enclaves until we have a use case.
-//#define MBEDTLS_KEY_EXCHANGE_ECDHE_PSK_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_ECDHE_PSK_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED
@@ -680,7 +680,7 @@
  */
 //Open Enclave: Disable pre-shared keys in enclaves until we have a use case.
 // RSA PSK has no perfect forward secrecy, not recommended for future use.
-//#define MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
@@ -737,7 +737,7 @@
  *      MBEDTLS_TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA
  */
 //Open Enclave: Not supported in favor of ECDHE for performance
-//#define MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
@@ -811,7 +811,7 @@
  *      MBEDTLS_TLS_ECDH_ECDSA_WITH_CAMELLIA_256_GCM_SHA384
  */
 //Open Enclave: Drop uncommon protocol to minimize TCB
-//#define MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED
@@ -836,7 +836,7 @@
  *      MBEDTLS_TLS_ECDH_RSA_WITH_CAMELLIA_256_GCM_SHA384
  */
 //Open Enclave: Drop uncommon protocol to minimize TCB
-//#define MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECJPAKE_ENABLED
@@ -900,8 +900,8 @@
  *
  * Enable functions that use the filesystem.
  */
-//Open Enclave: disabled
-//#define MBEDTLS_FS_IO
+//OpenEnclave: disabled
+#define MBEDTLS_FS_IO
 
 /**
  * \def MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
@@ -1166,7 +1166,7 @@
  * Comment this macro to disable 1/n-1 record splitting.
  */
 //Open Enclave: Unnecessary since SSL 1.0 & SSL 3.0 are not supported
-//#define MBEDTLS_SSL_CBC_RECORD_SPLITTING
+#define MBEDTLS_SSL_CBC_RECORD_SPLITTING
 
 /**
  * \def MBEDTLS_SSL_RENEGOTIATION
@@ -1182,7 +1182,7 @@
  * Comment this to disable support for renegotiation.
  */
 //Open Enclave: Disable given history of misuse
-//#define MBEDTLS_SSL_RENEGOTIATION
+#define MBEDTLS_SSL_RENEGOTIATION
 
 /**
  * \def MBEDTLS_SSL_SRV_SUPPORT_SSLV2_CLIENT_HELLO
@@ -1236,7 +1236,7 @@
  * Comment this macro to disable support for TLS 1.0
  */
 //Open Enclave: Block insecure protocol standard
-//#define MBEDTLS_SSL_PROTO_TLS1
+#define MBEDTLS_SSL_PROTO_TLS1
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_1
@@ -1249,7 +1249,7 @@
  * Comment this macro to disable support for TLS 1.1 / DTLS 1.0
  */
 //Open Enclave: Block insecure protocol standard
-//#define MBEDTLS_SSL_PROTO_TLS1_1
+#define MBEDTLS_SSL_PROTO_TLS1_1
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_2
@@ -1391,7 +1391,7 @@
  */
 //Open Enclave: Disable per recommendation that cipher suites should
 // define MAC size as part of suite definition (https://tools.ietf.org/html/rfc6066)
-//#define MBEDTLS_SSL_TRUNCATED_HMAC
+#define MBEDTLS_SSL_TRUNCATED_HMAC
 
 /**
  * \def MBEDTLS_THREADING_ALT
@@ -1529,7 +1529,7 @@
  *
  * This modules adds support for the AES-NI instructions on x86-64
  */
-/* #define MBEDTLS_AESNI_C */
+#define MBEDTLS_AESNI_C
 
 /**
  * \def MBEDTLS_AES_C
@@ -1628,7 +1628,7 @@
  *      MBEDTLS_TLS_PSK_WITH_RC4_128_SHA
  */
 //Open Enclave: Block insecure cipher
-//#define MBEDTLS_ARC4_C
+#define MBEDTLS_ARC4_C
 
 /**
  * \def MBEDTLS_ASN1_PARSE_C
@@ -1694,7 +1694,7 @@
  * Module:  library/blowfish.c
  */
 //Open Enclave: Drop support for uncommon cipher
-//#define MBEDTLS_BLOWFISH_C
+#define MBEDTLS_BLOWFISH_C
 
 /**
  * \def MBEDTLS_CAMELLIA_C
@@ -1750,7 +1750,7 @@
  *      MBEDTLS_TLS_PSK_WITH_CAMELLIA_128_CBC_SHA256
  */
 //Open Enclave: Drop support for uncommon cipher
-//#define MBEDTLS_CAMELLIA_C
+#define MBEDTLS_CAMELLIA_C
 
 /**
  * \def MBEDTLS_CCM_C
@@ -1874,7 +1874,7 @@
  *      DHE-RSA, DHE-PSK
  */
 //Open Enclave: Disable, not supporting DHE-RSA/DHE-PSK
-//#define MBEDTLS_DHM_C
+#define MBEDTLS_DHM_C
 
 /**
  * \def MBEDTLS_ECDH_C
@@ -2142,7 +2142,7 @@
  * This modules adds support for the VIA PadLock on x86.
  */
 //Open Enclave: Unsupported in enclaves
-//#define MBEDTLS_PADLOCK_C
+#define MBEDTLS_PADLOCK_C
 
 /**
  * \def MBEDTLS_PEM_PARSE_C
@@ -2297,7 +2297,7 @@
  *
  */
 //Open Enclave: Drop uncommon hash algorithm to minimize TCB
-//#define MBEDTLS_RIPEMD160_C
+#define MBEDTLS_RIPEMD160_C
 
 /**
  * \def MBEDTLS_RSA_C
@@ -2611,7 +2611,7 @@
  * Caller:
  */
 //Open Enclave: Drop uncommon cipher to minimize TCB
-//#define MBEDTLS_XTEA_C
+#define MBEDTLS_XTEA_C
 
 /* \} name SECTION: mbed TLS modules */
 
