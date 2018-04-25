@@ -41,9 +41,7 @@ void* OE_HostRealloc(void* ptr, size_t size)
 
     if (!(argIn =
               (OE_ReallocArgs*)OE_HostAllocForCallHost(sizeof(OE_ReallocArgs))))
-    {
-        return NULL;
-    }
+        goto done;
 
     argIn->ptr = ptr;
     argIn->size = size;

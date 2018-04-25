@@ -18,4 +18,4 @@
 #define OE_HostMalloc MyOE_HostMalloc
 #define OE_HostFree MyOE_HostFree
 
-#include "../../../enclave/hoststack.c"
+#include "../../../enclave/core/hoststack.c"

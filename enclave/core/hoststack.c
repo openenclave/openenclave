@@ -15,11 +15,7 @@
 #include <openenclave/enclave.h>
 
 #ifndef MAX
-#define MAX(a, b) (((a) > b) ? (a) : (b))
-#endif
-
-#ifndef INT32_MAX
-#define INT32_MAX 0x7FFFFFFF
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
 struct Bucket;
@@ -37,7 +33,7 @@ typedef struct Bucket
     BucketElement elements[0];
 } Bucket;
 
-static size_t _bucketMinSize = 4096;
+static const size_t _bucketMinSize = 4096;
 
 typedef enum ThreadBucketFlags {
     THREAD_BUCKET_FLAG_BUSY = 1,
@@ -67,7 +63,7 @@ static void _Once(struct OnceType* once, void (*f)(void))
         OE_SpinLock(&once->lock);
         if (!((volatile struct OnceType*)once)->initialized)
             f();
-        asm volatile ("":::"memory");
+        asm volatile("" ::: "memory");
         once->initialized = 1;
         OE_SpinUnlock(&once->lock);
     }
@@ -154,7 +150,7 @@ static int _FetchBucket(const volatile void* p, Bucket* contents)
         contents->baseFree = bHost->baseFree;
     }
 
-    if (contents->size >= INT32_MAX)
+    if (contents->size >= OE_MAX_SINT32)
         return -1;
     if (contents->baseFree > contents->size)
         return -1;
@@ -175,7 +171,7 @@ void* OE_HostAllocForCallHost(size_t size)
     ThreadBuckets* tb; // deliberate non-init
     void* retVal = NULL;
 
-    if (!size || (size > INT32_MAX))
+    if (!size || (size > OE_MAX_SINT32))
         return NULL;
 
     if ((tb = _GetThreadBuckets()) == NULL)
