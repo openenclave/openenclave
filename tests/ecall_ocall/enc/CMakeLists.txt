@@ -8,4 +8,4 @@ add_enclave_executable(ecall_ocall_enc sign.conf private.pem
     )
 
 target_compile_features(ecall_ocall_enc PRIVATE cxx_auto_type)
-target_link_libraries(ecall_ocall_enc oelibcxx oeenclave)
+target_link_libraries(ecall_ocall_enc oelibcxx)

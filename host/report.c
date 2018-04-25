@@ -220,6 +220,7 @@ OE_Result OE_VerifyReport(
     OE_CHECK(OE_ECall(enclave, OE_FUNC_VERIFY_REPORT, (uint64_t)&arg, NULL));
     OE_CHECK(arg.result);
 
+    // Optionally return parsed report.
     if (parsedReport != NULL)
         OE_CHECK(OE_ParseReport(report, reportSize, parsedReport));
 

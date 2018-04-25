@@ -71,6 +71,8 @@ typedef enum _OE_Code {
 */
 
 typedef enum _OE_Func {
+    // Special func used by oeenclave to allow host to call enclave's
+    // OE_VerifyReport. See enclave/report.cpp.
     OE_FUNC_VERIFY_REPORT = OE_MAX_ECALLS - 1,
 
     OE_FUNC_DESTRUCTOR = 0x01000000,
