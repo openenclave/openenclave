@@ -9,9 +9,8 @@ cmake_minimum_required(VERSION 3.5.1)
 file(STRINGS "VERSION" OE_VERSION)
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Copy Linux binaries and Build windows enclave test" 0)
-option(WND_BIN_DIR "Windows bianry files path" C:\\wind_build_oe)
+option(WND_BIN_DIR "Windows bianry files path" C:\\wnd_build_oe)
 option(LINUX_BIN_DIR "Linux binary files path" /home/vvdn/openenclave/linux_build_oe)
-option(VS_CMAKE_TESTS_DIR "Direcotry to store both windows and linux binaries for Visual studio CMake tests" C:\\wnd_linux_build_oe)
 
 # Select the assembler
 if (UNIX)
@@ -76,14 +75,80 @@ add_subdirectory(tools)
 endif()
 
 if(WIN32)
-add_subdirectory(tests/echo/host)
-add_subdirectory(tests/ecall/host)
-add_subdirectory(tests/mem)
-add_subdirectory(tests/str)
 
+
+# If add windows enclave tests is set, add tests/windows directory.
 if(ADD_WINDOWS_ENCLAVE_TESTS)
+#add_subdirectory(tests/abortStatus)	build failed, see abortstatus_build_failed_log.txt
+add_subdirectory(tests/aesm)			#PASSED just added in top level CMakeLists.txt file, no change in tests/aesm/CMakeLists.txt.
+add_subdirectory(tests/cppException)	#PASSED
+add_subdirectory(tests/ecall)#/host)	#PASSED
+#add_subdirectory(tests/ecall_ocall)	test throws exception, see ecall_ocall_exception_screenshot.png
+add_subdirectory(tests/echo)#/host)		#PASSED
+#add_subdirectory(tests/eenter)			!!!!!!!!does not contain a CMakeLists.txt file.
+#add_subdirectory(tests/file)			build failed, see tests_file_build_failed_log.txt
+#add_subdirectory(tests/hashstr)		!!!!!!!!does not contain a CMakeLists.txt file.
+add_subdirectory(tests/hostcalls)		#PASSED
+#add_subdirectory(tests/libc)			slash is not allowed in name, long path name error, see libs_long_path_error.png
+#add_subdirectory(tests/libcxx)			Linux-Debug compilation failed, see libcxx_linux_debug_failed_log.txt
+add_subdirectory(tests/load)			#PASSED just added in top level CMakeLists.txt file, no change in tests/load/CMakeLists.txt.
+#add_subdirectory(tests/mbed)			Throws exception File : host.c Line No. 82 this function throws exception(inside call.c line no. 217)
+#add_subdirectory(tests/measure)		!!!!!!!!does not contain a CMakeLists.txt file.
+add_subdirectory(tests/mem)				#PASSED
+#add_subdirectory(tests/NestedCall)     Throws exception Integer division by zero File: host.c Line No. 146 (with i = 2, which in turns throws exception at line no. : 50)
+#add_subdirectory(tests/ocall)			build failed, see ocall_build_failed_log.png
+#add_subdirectory(tests/ocall-restrict) build failed, see ocall_restrict_build_failed_log.png
+#add_subdirectory(tests/pingpong)		build failed, see pingpong_build_failed_log.txt
+add_subdirectory(tests/print)			#PASSED
+add_subdirectory(tests/report)			#PASSED
+#add_subdirectory(tests/ricochet)		test failed, see ricochet_test_failed_log.txt
+#add_subdirectory(tests/SampleApp)		can't add because directory structure is different (host & enc folders are missing)
+#add_subdirectory(tests/SampleAppCRT)	can't add because directory structure is different (host & enc folders are missing)
+#add_subdirectory(tests/stdc)			test failed, see stdc_test_failed_log.txt
+add_subdirectory(tests/stdcxx)			#PASSED
+add_subdirectory(tests/str)				#PASSED
+#add_subdirectory(tests/tester)			build failed, see tester_build_failed_log.txt
+#add_subdirectory(tests/thread)			build failed, see thread_build_failed_log.txt
+#add_subdirectory(tests/typeinfo)		don't have .so file, build failed, see typeinfo_build_failed_log.txt
+#add_subdirectory(tests/VectorException) build failed, see vectorexception_build_failed_log.txt
+
 add_subdirectory(tests/windows)
+
 else()
+
+#add_subdirectory(tests/abortStatus)
+add_subdirectory(tests/aesm)
+add_subdirectory(tests/cppException/host)
+add_subdirectory(tests/ecall/host)
+#add_subdirectory(tests/ecall_ocall/host)
+add_subdirectory(tests/echo/host)
+#add_subdirectory(tests/eenter)
+#add_subdirectory(tests/file/host)
+#add_subdirectory(tests/hashstr)
+add_subdirectory(tests/hostcalls/host)
+#add_subdirectory(tests/libc/host)
+#add_subdirectory(tests/libcxx/host)
+add_subdirectory(tests/load)
+#add_subdirectory(tests/mbed/host)
+#add_subdirectory(tests/measure)
+add_subdirectory(tests/mem)
+#add_subdirectory(tests/NestedCall/host)
+#add_subdirectory(tests/ocall/host)
+#add_subdirectory(tests/ocall-restrict/host)
+#add_subdirectory(tests/pingpong/host)
+add_subdirectory(tests/print/host)
+add_subdirectory(tests/report/host)
+#add_subdirectory(tests/ricochet/host)
+#add_subdirectory(tests/SampleApp)
+#add_subdirectory(tests/SampleAppCRT)
+#add_subdirectory(tests/stdc)
+add_subdirectory(tests/stdcxx/host)
+add_subdirectory(tests/str)
+#add_subdirectory(tests/tester/host)
+#add_subdirectory(tests/thread/host)
+#add_subdirectory(tests/typeinfo)
+#add_subdirectory(tests/VectorException)
+
 Message("ADD_WINDOWS_ENCLAVE_TESTS - Not set, Tests directory ommited.")
 endif()
 
