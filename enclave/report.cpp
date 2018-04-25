@@ -27,7 +27,7 @@ static OE_Result _OE_GetReportKey(const SGX_Report* sgxReport, SGX_Key* sgxKey)
 
 done:
     // Cleanup secret.
-    OE_Memset_s(&sgxKeyRequest, 0, sizeof(sgxKeyRequest));
+    OE_SecureZeroFill(&sgxKeyRequest, sizeof(sgxKeyRequest));
 
     return result;
 }
@@ -68,7 +68,7 @@ OE_Result OE_VerifyReport(
                 &mac));
 
         // Perform constant-time mac comparison.
-        if (!OE_Memequal_s(sgxReport->mac, mac.bytes, sizeof(mac)))
+        if (!OE_ConstantTimeMemEqual(sgxReport->mac, mac.bytes, sizeof(mac)))
             OE_RAISE(OE_VERIFY_FAILED);
     }
 
@@ -78,7 +78,7 @@ OE_Result OE_VerifyReport(
 
 done:
     // Cleanup secret.
-    OE_Memset_s(&sgxKey, 0, sizeof(sgxKey));
+    OE_SecureZeroFill(&sgxKey, sizeof(sgxKey));
 
     return result;
 }

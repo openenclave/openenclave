@@ -124,19 +124,18 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
  * Plain memset/for-loops can get optimized away be the compiler.
  * Use OE_Memset_s instead.
  */
-OE_INLINE void OE_Memset_s(volatile void* pv, int v, uint32_t len)
+OE_INLINE void OE_SecureZeroFill(volatile void* ptr, uint32_t size)
 {
-    volatile uint8_t* p = (volatile uint8_t*)pv;
-    for (uint32_t i = 0; i < len; ++i)
-    {
-        p[i] = 0;
+    volatile uint8_t* p = (volatile uint8_t*)ptr;
+    while(size--) {
+        *p++ = 0;
     }
 }
 
 /**
- * OE_Memequal_s does a constant time memory compare.
+ * OE_ConstantTimeMemEqual does a constant time memory compare.
  */
-OE_INLINE int OE_Memequal_s(
+OE_INLINE int OE_ConstantTimeMemEqual(
     const volatile void* pv1,
     const volatile void* pv2,
     uint32_t len)

@@ -134,7 +134,7 @@ static OE_Result _OE_GetSGXTargetInfo(SGX_TargetInfo* targetInfo)
 done:
     if (args)
     {
-        OE_Memset_s(args, 0, sizeof(*args));
+        OE_SecureZeroFill(args, sizeof(*args));
         OE_HostFree(args);
     }
 
@@ -182,7 +182,7 @@ static OE_Result _OE_GetQuote(
 done:
     if (args)
     {
-        OE_Memset_s(args, 0, argSize);
+        OE_SecureZeroFill(args, argSize);
         OE_HostFree(args);
     }
 
