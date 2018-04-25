@@ -282,26 +282,75 @@ OE_Result OE_GetReport(
         reportBufferSize);
 }
 
-OE_Result _HandleGetReport(uint64_t argIn)
-{
-    OE_GetReportArgs* argFromHost = (OE_GetReportArgs*)argIn;
-    OE_GetReportArgs arg;
+#define OE_MAX_REPORT_SIZE (1 * 1024)
 
-    if (!argFromHost || !OE_IsOutsideEnclave(argFromHost, sizeof(*argFromHost)))
-        return OE_INVALID_PARAMETER;
+static OE_Result _Validate_GetReportArgs(
+    uint64_t argIn,
+    OE_GetReportArgs* safeArg,
+    uint8_t* reportBuffer)
+{
+    OE_Result result = OE_OK;
+    OE_GetReportArgs* unsafeArg = (OE_GetReportArgs*)argIn;
+
+    if (!unsafeArg || !OE_IsOutsideEnclave(unsafeArg, sizeof(*unsafeArg)))
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     // Copy arg to prevent TOCTOU issues.
     // All input fields now lie in enclave memory.
-    arg = *argFromHost;
+    *safeArg = *unsafeArg;
 
-    argFromHost->result = OE_GetReport(
+    if (safeArg->reportBufferSize > OE_MAX_REPORT_SIZE)
+        safeArg->reportBufferSize = OE_MAX_REPORT_SIZE;
+
+    // Ensure that output buffer lies outside the enclave.
+    if (safeArg->reportBuffer &&
+        !OE_IsOutsideEnclave(safeArg->reportBuffer, safeArg->reportBufferSize))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Use output buffer within enclave.
+    if (safeArg->reportBuffer)
+        safeArg->reportBuffer = reportBuffer;
+
+done:
+    return result;
+}
+
+static void _Copy_GetReport_Outputs(OE_GetReportArgs* safeArg, uint64_t argIn)
+{
+    OE_GetReportArgs* unsafeArg = (OE_GetReportArgs*)argIn;
+    unsafeArg->result = safeArg->result; 
+    unsafeArg->reportBufferSize = safeArg->reportBufferSize;
+
+    if (safeArg->result == OE_OK) {
+        OE_Memcpy(
+            unsafeArg->reportBuffer,
+            safeArg->reportBuffer,
+            safeArg->reportBufferSize);
+    }               
+}
+
+OE_Result _HandleGetReport(uint64_t argIn)
+{
+    OE_Result result = OE_OK;
+    OE_GetReportArgs arg;
+
+    uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
+
+    // Validate and copy args to prevent TOCTOU issues.
+    OE_CHECK(_Validate_GetReportArgs(argIn, &arg, reportBuffer));
+
+    arg.result = OE_GetReport(
         arg.options,
         (arg.reportDataSize != 0) ? arg.reportData : NULL,
         arg.reportDataSize,
         (arg.optParamsSize != 0) ? arg.optParams : NULL,
         arg.optParamsSize,
         arg.reportBuffer,
-        arg.reportBufferSize);
+        &arg.reportBufferSize);
 
-    return OE_OK;
+    // Copy outputs to host memory.
+    _Copy_GetReport_Outputs(&arg, argIn);            
+
+done:
+    return result;
 }
