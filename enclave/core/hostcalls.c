@@ -18,6 +18,9 @@ void* OE_HostMalloc(size_t size)
         return NULL;
     }
 
+    if (!OE_IsOutsideEnclave((void*)argOut, size))
+        OE_Abort();
+
     return (void*)argOut;
 }
 
@@ -36,11 +39,9 @@ void* OE_HostRealloc(void* ptr, size_t size)
     OE_ReallocArgs* argIn = NULL;
     uint64_t argOut = 0;
 
-    if (!(argIn = (OE_ReallocArgs*)OE_HostAllocForCallHost(
-              sizeof(OE_ReallocArgs), 0, false)))
-    {
-        return NULL;
-    }
+    if (!(argIn =
+              (OE_ReallocArgs*)OE_HostAllocForCallHost(sizeof(OE_ReallocArgs))))
+        goto done;
 
     argIn->ptr = ptr;
     argIn->size = size;
@@ -51,9 +52,15 @@ void* OE_HostRealloc(void* ptr, size_t size)
             &argOut,
             OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
     {
-        return NULL;
+        argOut = 0;
+        goto done;
     }
 
+    if (!OE_IsOutsideEnclave((void*)argOut, size))
+        OE_Abort();
+
+done:
+    OE_HostFreeForCallHost(argIn);
     return (void*)argOut;
 }
 
@@ -137,7 +144,7 @@ int __OE_HostPrint(int device, const char* str, size_t len)
 
     /* Allocate space for the arguments followed by null-terminated string */
     if (!(args = (OE_PrintArgs*)OE_HostAllocForCallHost(
-              sizeof(OE_PrintArgs) + len + 1, 0, false)))
+              sizeof(OE_PrintArgs) + len + 1)))
     {
         goto done;
     }
@@ -157,9 +164,7 @@ int __OE_HostPrint(int device, const char* str, size_t len)
     ret = 0;
 
 done:
-
-    /* Memory obtained by OE_HostStackMalloc() is released automatically */
-
+    OE_HostFreeForCallHost(args);
     return ret;
 }
 

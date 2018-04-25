@@ -15,8 +15,8 @@
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
-#include "td.h"
 #include "report.h"
+#include "td.h"
 
 typedef unsigned long long WORD;
 
@@ -464,9 +464,14 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args = OE_HostAllocForCallHost(
-                  sizeof(OE_CallHostArgs) + len + 1, 0, false)))
+        if (!(args =
+                  OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1)))
+        {
+            /* If the enclave is in crashing/crashed status, new OCALL should
+             * fail immediately. */
+            OE_TRY(__oe_enclave_status);
             OE_THROW(OE_OUT_OF_MEMORY);
+        }
 
         OE_Memcpy(args->func, func, len + 1);
 
@@ -483,7 +488,7 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     result = OE_OK;
 
 OE_CATCH:
-
+    OE_HostFreeForCallHost(args);
     return result;
 }
 
