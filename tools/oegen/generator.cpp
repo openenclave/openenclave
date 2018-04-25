@@ -791,13 +791,13 @@ static void _GenOCALL(std::ostream& os, const Function* f)
     os << "\n";
 
     {
-        const char text[] =
-            "    if (!(__a = (__Args*)$0(sizeof(__Args), 0, true)))\n"
-            "    {\n"
-            "        __r = OE_OUT_OF_MEMORY;\n"
-            "        goto done;\n"
-            "    }\n"
-            "\n";
+        const char text[] = "    if (!(__a = (__Args*)$0(sizeof(__Args))))\n"
+                            "    {\n"
+                            "        __r = OE_OUT_OF_MEMORY;\n"
+                            "        goto done;\n"
+                            "    }\n"
+                            "    OE_Memset(__a, 0, sizeof(__Args));\n"
+                            "\n";
 
         os << sub(text, hostAllocStr);
     }
@@ -1467,14 +1467,14 @@ int Generator::GenerateSourceFile(
         const char mallocText[] =
             "OE_INLINE void* _HostAllocForCallHost(size_t size)\n"
             "{\n"
-            "    return OE_HostAllocForCallHost(size, sizeof(uint64_t), "
-            "false);\n"
+            "    return OE_HostAllocForCallHost(size);\n"
             "}\n\n";
         os << mallocText << endl;
 
         const char freeText[] =
             "OE_INLINE void _HostFreeForCallHost(void* ptr)\n"
             "{\n"
+            "     OE_HostFreeForCallHost(ptr);\n"
             "}\n\n";
         os << freeText << endl;
     }
