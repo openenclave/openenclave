@@ -450,6 +450,7 @@ TEST_FCN void TestParseReportNegative(void* args_)
         OE_INVALID_PARAMETER);
 }
 
+// Use the current enclave itself as the target enclave.
 static void GetSGXTargetInfo(SGX_TargetInfo* sgxTargetInfo)
 {
     SGX_Report report = {0};
@@ -478,6 +479,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 {
     uint8_t targetInfo[sizeof(SGX_TargetInfo)];
     uint32_t targetInfoSize = sizeof(targetInfo);
+    SGX_TargetInfo* t = NULL;
 
     uint8_t report[sizeof(SGX_Report)] = {0};
     uint32_t reportSize = sizeof(report);
@@ -490,12 +492,14 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 
     GetSGXTargetInfo((SGX_TargetInfo*)targetInfo);
 
+    // 1. Report with no custom report data.
     OE_TEST(
         GetReport(
             0, NULL, 0, targetInfo, targetInfoSize, report, &reportSize) ==
         OE_OK);
     OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
 
+    // 2. Report with full custom report data.
     OE_TEST(
         GetReport(
             0,
@@ -507,6 +511,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
             &reportSize) == OE_OK);
     OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
 
+    // 3. Report with partial custom report data.
     OE_TEST(
         GetReport(
             0,
@@ -517,4 +522,16 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
             report,
             &reportSize) == OE_OK);
     OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
+
+    // 4. Negative case.
+
+    // Change target info.
+    t = (SGX_TargetInfo*)targetInfo;
+    t->mrenclave[0]++;
+
+    OE_TEST(
+        GetReport(
+            0, NULL, 0, targetInfo, targetInfoSize, report, &reportSize) ==
+        OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_VERIFY_FAILED);
 }
