@@ -9,14 +9,14 @@
 
 uint32_t OE_GetCreateFlags(void)
 {
-    uint32_t result = OE_FLAG_DEBUG;
+    uint32_t result = OE_ENCLAVE_FLAG_DEBUG;
     char* env = NULL;
 
     if (!(env = OE_Dupenv("OE_SIMULATION")))
         goto done;
 
     if (strcmp(env, "1") == 0)
-        result |= OE_FLAG_SIMULATE;
+        result |= OE_ENCLAVE_FLAG_SIMULATE;
 
 done:
 

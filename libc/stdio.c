@@ -82,7 +82,13 @@ int fprintf(FILE* stream, const char* fmt, ...)
     else if (stream == stderr)
         device = 1;
     else
-        return 0;
+    {
+        va_list ap;
+        va_start(ap, fmt);
+        int r = vfprintf(stream, fmt, ap);
+        va_end(ap);
+        return r;
+    }
 
     {
         va_list ap;
@@ -92,6 +98,8 @@ int fprintf(FILE* stream, const char* fmt, ...)
     }
 
     buf[sizeof(buf) - 1] = 0;
+    if (n > sizeof(buf))
+        n = sizeof(buf);
     __OE_HostPrint(device, buf, n);
     return n;
 }

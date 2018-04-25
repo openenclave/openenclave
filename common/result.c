@@ -69,12 +69,23 @@ const char* OE_ResultStr(OE_Result result)
         case OE_OUT_OF_RANGE:
             return "OE_OUT_OF_RANGE";
         case OE_ALREADY_IN_USE:
+            return "OE_ALREADY_IN_USE";
         case OE_SERVICE_UNAVAILABLE:
             return "OE_SERVICE_UNAVAILABLE";
         case OE_ENCLAVE_ABORTING:
             return "OE_ENCLAVE_ABORTING";
         case OE_ENCLAVE_ABORTED:
             return "OE_ENCLAVE_ABORTED";
+        case OE_PLATFORM_ERROR:
+            return "OE_PLATFORM_ERROR";
+        case OE_INVALID_CPUSVN:
+            return "OE_INVALID_CPUSVN";
+        case OE_INVALID_ISVSVN:
+            return "OE_INVALID_ISVSVN";
+        case OE_INVALID_KEYNAME:
+            return "OE_INVALID_KEYNAME";
+        case OE_DEBUG_DOWNGRADE:
+            return "OE_DEBUG_DOWNGRADE";
     }
 
     return "UNKNOWN";

@@ -379,6 +379,68 @@ OE_Result OE_ParseReport(
     uint32_t reportSize,
     OE_Report* parsedReport);
 
+typedef enum _OE_SealIDPolicy {
+    OE_SEAL_ID_UNIQUE = 1,
+    OE_SEAL_ID_PRODUCT = 2,
+} OE_SealIDPolicy;
+
+/**
+* Get a symmetric encryption key derived from the specified policy and coupled
+* to the enclave platform.
+*
+* @param sealPolicy The policy for the identity properties used to derive the
+* seal key.
+* @param keyBuffer The buffer to write the resulting seal key to.
+* @param keyBufferSize The size of the **keyBuffer** buffer. If this is too
+* small, this function sets it to the required size and returns
+* OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
+* to keyBuffer is set to it.
+* @param keyInfo Optional buffer for the enclave-specific key information which
+* can be used to retrieve the same key later, on a newer security version.
+* @param keyInfoSize The size of the **keyInfo** buffer. If this is too small,
+* this function sets it to the required size and returns OE_BUFFER_TOO_SMALL.
+* When this function success, the number of bytes written to keyInfo is set to
+* it.
+
+* @retval OE_OK The seal key was successfully requested.
+* @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+* @retval OE_BUFFER_TOO_SMALL The **keyBuffer** or **keyInfo** buffer is too
+* small.
+* @retval OE_UNEXPECTED An unexpected error happened.
+*/
+OE_Result OE_GetSealKeyByPolicy(
+    OE_SealIDPolicy sealPolicy,
+    uint8_t* keyBuffer,
+    uint32_t* keyBufferSize,
+    uint8_t* keyInfo,
+    uint32_t* keyInfoSize);
+
+/**
+* Get a symmetric encryption key from the enclave platform using existing key
+* information.
+*
+* @param keyInfo The enclave-specific key information to derive the seal key
+* with.
+* @param keyInfoSize The size of the **keyInfo** buffer.
+* @param keyBuffer The buffer to write the resulting seal key to. It will not
+* be changed if this function fails.
+* @param keyBufferSize The size of the **keyBuffer** buffer. If this is too
+* small, this function sets it to the required size and returns
+* OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
+* to keyBuffer is set to it.
+*
+* @retval OE_OK The seal key was successfully requested.
+* @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+* @retval OE_BUFFER_TOO_SMALL The **keyBuffer** buffer is too small.
+* @retval OE_INVALID_CPUSVN **keyInfo** contains an invalid CPUSVN.
+* @retval OE_INVALID_ISVSVN **keyInfo** contains an invalid ISVSVN.
+* @retval OE_INVALID_KEYNAME **keyInfo** contains an invalid KEYNAME.
+*/
+OE_Result OE_GetSealKey(
+    const uint8_t* keyInfo,
+    uint32_t keyInfoSize,
+    uint8_t* keyBuffer,
+    uint32_t* keyBufferSize);
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */

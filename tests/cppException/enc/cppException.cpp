@@ -781,7 +781,7 @@ class BarClass08 : public std::exception
     {
     }
 
-    ~BarClass08()
+    ~BarClass08() throw()
     {
         throw "X";
     }
