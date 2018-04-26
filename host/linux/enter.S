@@ -71,7 +71,7 @@ __morestack:
 
     // Save the current context.
     mov HOST_CONTEXT, %rdi
-    call OE_SnapCurrentContext
+    call OE_SnapCurrentContext@PLT
 
     // Save the stack pointer so enclave can use the stack.
     mov %rsp, RSP
@@ -102,7 +102,7 @@ __morestack:
 
     // Restore the saved host context.
     mov HOST_CONTEXT, %rdi
-    call OE_RestorePartialContext
+    call OE_RestorePartialContext@PLT
 
     // Check if it is an OCALL needed to be dispatched.
     mov ARG1OUT, %r10
@@ -137,7 +137,7 @@ __morestack:
     mov TCS, %r8
     mov RSP, %r9
     push ENCLAVE // push enclave parameter
-    call __OE_HostStackBridge
+    call __OE_HostStackBridge@PLT
     add $8, %rsp // pop enclave parameter
 
     // Restore registers (except RDI and RSI)
@@ -245,7 +245,7 @@ __OE_HostStackBridge:
     // _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
     mov %rbp, %rdi
     mov %r8,  %rsi
-    call _OE_NotifyOCallStart
+    call _OE_NotifyOCallStart@PLT
 
     // Restore the parameters for __OE_DispatchOCall.
     mov HB_SAVED_ARG1, %rdi
@@ -256,7 +256,7 @@ __OE_HostStackBridge:
     mov HB_SAVED_ENCLAVE, %r9
 
     // Do actual OCALL.
-    call __OE_DispatchOCall
+    call __OE_DispatchOCall@PLT
 
     // Save the return value of OCALL dispatch.
     mov %rax, HB_SAVED_OCALL_RETURN
@@ -265,7 +265,7 @@ __OE_HostStackBridge:
     // _OE_NotifyOCallStart(rdi=host_frame_pointer, rsi=tcs)
     mov %rbp, %rdi
     mov HB_SAVED_TCS, %rsi
-    call _OE_NotifyOCallEnd
+    call _OE_NotifyOCallEnd@PLT
 
     // Because of stack stitching, the return address might be overwritten by
     // gdb. Restore the current return address and frame point of
