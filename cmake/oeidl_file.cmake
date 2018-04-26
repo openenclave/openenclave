@@ -33,7 +33,7 @@ function(oeidl_file IDL_FILE TYPE OUT_FILES_VAR)
 
 	add_custom_command(
 		OUTPUT ${h_file} ${c_file}
-		DEPENDS ${IDL_FILE}
+		DEPENDS ${IDL_FILE} oegen
 		COMMAND oegen -${type_id} -d ${CMAKE_CURRENT_BINARY_DIR} ${IDL_FILE}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)
