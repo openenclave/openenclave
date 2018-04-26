@@ -29,9 +29,6 @@ OE_EXTERNC_BEGIN
 #define OE_REPORT_ATTRIBUTES_RESERVED \
     (~(OE_REPORT_ATTRIBUTES_DEBUG | OE_REPORT_ATTRIBUTES_REMOTE))
 
-// Maximum size of a report.
-#define OE_MAX_REPORT_SIZE (5 * 1024)
-
 typedef struct _OE_Identity
 {
     uint32_t idVersion;
