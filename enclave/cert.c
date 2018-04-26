@@ -5,6 +5,8 @@
 #include <mbedtls/pem.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
+#include <mbedtls/asn1.h>
+#include <mbedtls/oid.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/hexdump.h>
@@ -14,6 +16,9 @@
 #include <openenclave/thread.h>
 #include "ec.h"
 #include "rsa.h"
+#include "pem.h"
+
+#define TRACE printf("TRACE: %s(%u)\n", __FILE__, __LINE__)
 
 /*
 **==============================================================================
@@ -35,14 +40,14 @@ typedef struct _Referent
 } Referent;
 
 /* Allocate and initialize a new referent */
-OE_INLINE Referent* _ReferentNew(const mbedtls_x509_crt* crt)
+OE_INLINE Referent* _ReferentNew(void)
 {
     Referent* referent;
 
     if (!(referent = (Referent*)mbedtls_calloc(1, sizeof(Referent))))
         return NULL;
 
-    OE_Memcpy(&referent->crt, crt, sizeof(mbedtls_x509_crt));
+    mbedtls_x509_crt_init(&referent->crt);
     referent->spin = OE_SPINLOCK_INITIALIZER;
     referent->refs = 1;
 
@@ -73,9 +78,6 @@ OE_INLINE void _ReferentFree(Referent* referent)
     {
         /* Release the MBEDTLS certificate */
         mbedtls_x509_crt_free(&referent->crt);
-
-        /* Clear the referent memory */
-        OE_Memset(referent, 0, sizeof(Referent));
 
         /* Free the referent structure */
         mbedtls_free(referent);
@@ -122,8 +124,22 @@ OE_INLINE bool _CertValid(const Cert* impl)
     return impl && (impl->magic == OE_CERT_MAGIC) && impl->cert;
 }
 
-OE_INLINE void _CertClear(Cert* impl)
+OE_INLINE void _CertFree(Cert* impl)
 {
+    /* Release the referent if its reference count is one */
+    if (impl->referent)
+    {
+        /* impl->cert == &impl->referent->crt */
+        _ReferentFree(impl->referent);
+    }
+    else
+    {
+        /* Release the MBEDTLS certificate */
+        mbedtls_x509_crt_free(impl->cert);
+        mbedtls_free(impl->cert);
+    }
+
+    /* Clear the fields */
     impl->magic = 0;
     impl->cert = NULL;
     impl->referent = NULL;
@@ -152,14 +168,11 @@ OE_STATIC_ASSERT(sizeof(CertChain) <= sizeof(OE_CertChain));
 
 OE_INLINE OE_Result _CertChainInit(
     CertChain* impl, 
-    mbedtls_x509_crt* crt)
+    Referent* referent)
 {
-    /* Create a new referent for this certificate */
-    if (!(impl->referent = _ReferentNew(crt)))
-        return OE_OUT_OF_MEMORY;
-
-    /* Initialize the implementation */
     impl->magic = OE_CERT_CHAIN_MAGIC;
+    impl->referent = referent;
+    _ReferentAddRef(referent);
     return OE_OK;
 }
 
@@ -191,87 +204,6 @@ static void _SetErr(OE_VerifyCertError* error, const char* str)
 /*
 **==============================================================================
 **
-** _CrtRead()
-**     Read an MBEDTLS X509 certificate from PEM data.
-**
-**==============================================================================
-*/
-
-static int _CrtRead(mbedtls_x509_crt* crt, const char* data, size_t* size)
-{
-    int ret = -1;
-    mbedtls_pem_context pem;
-
-    mbedtls_pem_init(&pem);
-
-    if (size)
-        *size = 0;
-
-    /* Read the PEM buffer into DER format */
-    if (mbedtls_pem_read_buffer(
-            &pem,
-            OE_PEM_BEGIN_CERTIFICATE,
-            OE_PEM_END_CERTIFICATE,
-            (unsigned char*)data,
-            NULL, /* pwd */
-            0,    /* pwdlen */
-            size) != 0)
-    {
-        goto done;
-    }
-
-    /* Parse the DER format and add a new certificate to the chain */
-    if (mbedtls_x509_crt_parse_der(crt, pem.buf, pem.buflen) != 0)
-        goto done;
-
-    ret = 0;
-
-done:
-
-    mbedtls_pem_free(&pem);
-
-    return ret;
-}
-
-/*
-**==============================================================================
-**
-** _CrtChainRead()
-**     Read an MBEDTLS X509 certificate chain from PEM data.
-**
-**==============================================================================
-*/
-
-static int _CrtChainRead(mbedtls_x509_crt* chain, const char* data)
-{
-    int ret = -1;
-
-    if (!chain || !data)
-        goto done;
-
-    /* For each PEM certificate in the chain */
-    while (*data)
-    {
-        size_t size;
-
-        /* Read the certificate pointed to by data */
-        if (_CrtRead(chain, data, &size) != 0)
-            goto done;
-
-        /* Skip to next certificate (if any) */
-        data += size;
-    }
-
-    ret = 0;
-
-done:
-
-    return ret;
-}
-
-/*
-**==============================================================================
-**
 ** Public functions
 **
 **==============================================================================
@@ -282,11 +214,10 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
     OE_Result result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
     mbedtls_x509_crt* crt = NULL;
-    size_t len;
 
     /* Clear the implementation */
     if (impl)
-        _CertClear(impl);
+        OE_Memset(impl, 0, sizeof(Cert));
 
     /* Check parameters */
     if (!pemData || !pemSize || !cert)
@@ -304,7 +235,7 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
     mbedtls_x509_crt_init(crt);
 
     /* Read the PEM buffer into DER format */
-    if (_CrtRead(crt, (const char*)pemData, &len) != 0)
+    if (mbedtls_x509_crt_parse(crt, (const uint8_t*)pemData, pemSize) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the implementation */
@@ -333,14 +264,8 @@ OE_Result OE_CertFree(OE_Cert* cert)
     if (!_CertValid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Release the referent if its reference count is one */
-    if (impl->referent)
-        _ReferentFree(impl->referent);
-
     /* Free the certificate */
-    mbedtls_x509_crt_free(impl->cert);
-    mbedtls_free(impl->cert);
-    _CertClear(impl);
+    _CertFree(impl);
 
     result = OE_OK;
 
@@ -355,10 +280,7 @@ OE_Result OE_CertChainReadPEM(
 {
     OE_Result result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
-    mbedtls_x509_crt crt;
-
-    /* Initialize the MBEDTLS certificate */
-    mbedtls_x509_crt_init(&crt);
+    Referent* referent = NULL;
 
     /* Clear the implementation (making it invalid) */
     if (impl)
@@ -372,19 +294,25 @@ OE_Result OE_CertChainReadPEM(
     if (OE_Strnlen((const char*)pemData, pemSize) != pemSize - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Read the PEM buffer into DER format */
-    if (_CrtChainRead(&crt, (const char*)pemData) != 0)
-        OE_RAISE(OE_FAILURE);
+    /* Create the referent */
+    if (!(referent = _ReferentNew()))
+        OE_RAISE(OE_OUT_OF_MEMORY);
 
-    /* Initialize the implementation */
-    OE_CHECK(_CertChainInit(impl, &crt));
+    /* Read the PEM buffer into DER format */
+    if (mbedtls_x509_crt_parse(
+        &referent->crt, (const uint8_t*)pemData, pemSize) != 0)
+    {
+        OE_RAISE(OE_FAILURE);
+    }
+
+    /* Initialize the implementation and increment reference count */
+    OE_CHECK(_CertChainInit(impl, referent));
 
     result = OE_OK;
 
 done:
 
-    if (result != OE_OK)
-        mbedtls_x509_crt_free(&crt);
+    _ReferentFree(referent);
 
     return result;
 }
@@ -481,6 +409,10 @@ OE_Result OE_CertGetRSAPublicKey(
     if (!_CertValid(impl) || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* If certificate does not contain an RSA key */
+    if (!OE_IsRSAKey(&impl->cert->pk))
+        OE_RAISE(OE_FAILURE);
+
     /* Copy the public key from the certificate */
     if (OE_RSACopyKey(&publicKeyImpl->pk, &impl->cert->pk, false) != 0)
         OE_RAISE(OE_FAILURE);
@@ -509,6 +441,10 @@ OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
     if (!_CertValid(impl) || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* If certificate does not contain an EC key */
+    if (!OE_IsECKey(&impl->cert->pk))
+        OE_RAISE(OE_FAILURE);
+
     /* Copy the public key from the certificate */
     if (OE_ECCopyKey(&publicKeyImpl->pk, &impl->cert->pk, false) != 0)
         OE_RAISE(OE_FAILURE);
@@ -523,7 +459,7 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetLength(const OE_CertChain* chain, uint32_t* length)
+OE_Result OE_CertChainGetLength(const OE_CertChain* chain, size_t* length)
 {
     OE_Result result = OE_UNEXPECTED;
     const CertChain* impl = (const CertChain*)chain;
@@ -538,7 +474,7 @@ OE_Result OE_CertChainGetLength(const OE_CertChain* chain, uint32_t* length)
 
     /* Count the certificates in the chain */
     {
-        uint32_t n = 0;
+        size_t n = 0;
 
         for (const mbedtls_x509_crt* p = &impl->referent->crt; p; p = p->next)
             n++;
@@ -555,7 +491,7 @@ done:
 
 OE_Result OE_CertChainGetCert(
     const OE_CertChain* chain,
-    uint32_t index,
+    size_t index,
     OE_Cert* cert)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -596,6 +532,8 @@ OE_Result OE_CertChainGetCert(
 
     /* Initialize the implementation */
     _CertInit(certImpl, crt, impl->referent);
+
+    result = OE_OK;
 
 done:
 

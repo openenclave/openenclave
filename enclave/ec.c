@@ -10,14 +10,11 @@
 #include <mbedtls/platform.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 #include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
 #include "random.h"
-
-// MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
-// of time, so we are forced to use a maximum buffer size. This quantity is
-// used in MEBEDTLS program that calls mbedtls_pk_write_key_pem.
-#define OE_PEM_MAX_BYTES (16 * 1024)
+#include "pem.h"
 
 /*
 **==============================================================================
@@ -191,14 +188,6 @@ done:
     return ret;
 }
 
-static bool _IsECKey(const mbedtls_pk_context* pk)
-{
-    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY))
-        return false;
-
-    return true;
-}
-
 /*
 **==============================================================================
 **
@@ -232,7 +221,7 @@ OE_Result OE_ECReadPrivateKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Fail if PEM data did not contain an EC key */
-    if (!_IsECKey(&impl->pk))
+    if (!OE_IsECKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -270,7 +259,7 @@ OE_Result OE_ECReadPublicKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Fail if PEM data did not contain an EC key */
-    if (!_IsECKey(&impl->pk))
+    if (!OE_IsECKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;

@@ -21,4 +21,12 @@ int OE_RSACopyKey(
     const mbedtls_pk_context* src,
     bool clearPrivateFields);
 
+OE_INLINE bool OE_IsRSAKey(const mbedtls_pk_context* pk)
+{
+    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_RSA))
+        return false;
+
+    return true;
+}
+
 #endif /* _OE_ENCLAVE_RSA_H */

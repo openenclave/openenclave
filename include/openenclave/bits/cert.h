@@ -180,7 +180,7 @@ OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey);
  * @return OE_INVALID_PARAMETER a parameter is invalid
  * @return OE_FAILURE general failure
  */
-OE_Result OE_CertChainGetLength(const OE_CertChain* chain, uint32_t* length);
+OE_Result OE_CertChainGetLength(const OE_CertChain* chain, size_t* length);
 
 /**
  * Fetch the certificate with the given index from a certificate chain.
@@ -207,7 +207,7 @@ OE_Result OE_CertChainGetLength(const OE_CertChain* chain, uint32_t* length);
  */
 OE_Result OE_CertChainGetCert(
     const OE_CertChain* chain,
-    uint32_t index,
+    size_t index,
     OE_Cert* cert);
 
 /**
@@ -230,6 +230,8 @@ OE_Result OE_CertGetSubjectName(
     const OE_Cert* cert,
     char* name,
     size_t* nameSize);
+
+OE_Result OE_CertEqual(const OE_Cert* cert1, const OE_Cert* cert2, bool* flag);
 
 OE_EXTERNC_END
 

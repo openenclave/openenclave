@@ -209,6 +209,52 @@ static const char CERT[] =
     "ln6O0i8HeQ==\n"
     "-----END CERTIFICATE-----\n";
 
+/* Certificate with an EC key */
+#if 0
+static const char ECCERT[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIIDRDCCAuqgAwIBAgIVAO34O//eez2nCYF6dX5lnmDXUhoHMAoGCCqGSM49BAMC\n"
+    "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
+    "DBFJbnRlbCBDb3Jwb3JhdGlvbjEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNV\n"
+    "BAgMAkNBMQswCQYDVQQGEwJVUzAeFw0xODAyMjcxNDI5MTBaFw0yNTAyMjcxNDI5\n"
+    "MTBaMHAxIjAgBgNVBAMMGUludGVsIFNHWCBQQ0sgQ2VydGlmaWNhdGUxGjAYBgNV\n"
+    "BAoMEUludGVsIENvcnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkG\n"
+    "A1UECAwCQ0ExCzAJBgNVBAYTAlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\n"
+    "ebMENxGyc7Ns/OV4bt6OOZy9KxUzFtPOwuGq9chDuJkgz1M/4iLtm0STR8mIENnJ\n"
+    "vwS0E6STuxsCtNGIzNscOKOCAV4wggFaMB8GA1UdIwQYMBaAFJ8Gl+9TIUTU+kx+\n"
+    "6LqNs9Ml5JKQMFgGA1UdHwRRME8wTaBLoEmGR2h0dHBzOi8vY2VydGlmaWNhdGVz\n"
+    "LnRydXN0ZWRzZXJ2aWNlcy5pbnRlbC5jb20vSW50ZWxTR1hQQ0tQcm9jZXNzb3Iu\n"
+    "Y3JsMB0GA1UdDgQWBBQUdCfHZzHpiEurA+45dylYXpVvDjAOBgNVHQ8BAf8EBAMC\n"
+    "BsAwDAYDVR0TAQH/BAIwADCBnwYJKoZIhvhNAQ0BAQH/BIGOMIGLMB4GCiqGSIb4\n"
+    "TQENAQEEEAusByQ8F/2YbRVLVQlDPxUwHgYKKoZIhvhNAQ0BAgQQAAAAAAEBAAAA\n"
+    "AAAAAAAAADAQBgoqhkiG+E0BDQEDBAIAADAQBgoqhkiG+E0BDQEEBAIAADAUBgoq\n"
+    "hkiG+E0BDQEFBAYgkG6hAAAwDwYKKoZIhvhNAQ0BBgoBADAKBggqhkjOPQQDAgNI\n"
+    "ADBFAiEAhY2Bdn5aQJH2Fj1YZriJ7DpmQCbqRyVxU65bd8v0O/4CIA2IWOarGysj\n"
+    "RvR+bMRtTbhiRXkV9JD2FJA24tP32pw+\n"
+    "-----END CERTIFICATE-----\n";
+#endif
+static const char ECCERT[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIIDQzCCAumgAwIBAgIUdR+6mVYDDlP8hjJuqcgn4IcPqw4wCgYIKoZIzj0EAwIw\n"
+    "cTEjMCEGA1UEAwwaSW50ZWwgU0dYIFBDSyBQcm9jZXNzb3IgQ0ExGjAYBgNVBAoM\n"
+    "EUludGVsIENvcnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UE\n"
+    "CAwCQ0ExCzAJBgNVBAYTAlVTMB4XDTE4MDIyNzE0MjkxMFoXDTI1MDIyNzE0Mjkx\n"
+    "MFowcDEiMCAGA1UEAwwZSW50ZWwgU0dYIFBDSyBDZXJ0aWZpY2F0ZTEaMBgGA1UE\n"
+    "CgwRSW50ZWwgQ29ycG9yYXRpb24xFDASBgNVBAcMC1NhbnRhIENsYXJhMQswCQYD\n"
+    "VQQIDAJDQTELMAkGA1UEBhMCVVMwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAQv\n"
+    "PRtPMldth39udx4DOGTNUFNPjc48PMrV79Azs2rvFdHXC32MCaugXtMHklxVJ4u5\n"
+    "kr5+jEdFo9pUBrQwATWIo4IBXjCCAVowHwYDVR0jBBgwFoAUnwaX71MhRNT6TH7o\n"
+    "uo2z0yXkkpAwWAYDVR0fBFEwTzBNoEugSYZHaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMu\n"
+    "dHJ1c3RlZHNlcnZpY2VzLmludGVsLmNvbS9JbnRlbFNHWFBDS1Byb2Nlc3Nvci5j\n"
+    "cmwwHQYDVR0OBBYEFOVlPK/QJasjCkoUSd2SnPtAztqFMA4GA1UdDwEB/wQEAwIG\n"
+    "wDAMBgNVHRMBAf8EAjAAMIGfBgkqhkiG+E0BDQEBAf8EgY4wgYswHgYKKoZIhvhN\n"
+    "AQ0BAQQQvmCGwYVcbjnSXWQH+IstejAeBgoqhkiG+E0BDQECBBAAAAAAAQEAAAAA\n"
+    "AAAAAAAAMBAGCiqGSIb4TQENAQMEAgAAMBAGCiqGSIb4TQENAQQEAgAAMBQGCiqG\n"
+    "SIb4TQENAQUEBiCQbqEAADAPBgoqhkiG+E0BDQEGCgEAMAoGCCqGSM49BAMCA0gA\n"
+    "MEUCIGNJqx4qMGRHerxDaEPmAHKk/FBDY3iSoabweGNlNLW3AiEA2Xln0lMgnQ+Y\n"
+    "9m6MissgAN196nBF9fDmnfULTD042A8=\n"
+    "-----END CERTIFICATE-----\n";
+
 static const char CHAIN[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDUDCCAjgCCQDNkOt+e8l1aDANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n"
@@ -741,9 +787,68 @@ static void TestECWritePublic()
     printf("=== passed TestECWritePublic()\n");
 }
 
+static void TestCertMethods()
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    OE_Result r;
+
+    /* Test OE_CertGetRSAPublicKey() */
+    {
+        OE_Cert cert;
+
+        r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
+        OE_TEST(r == OE_OK);
+
+        OE_RSAPublicKey key;
+        r = OE_CertGetRSAPublicKey(&cert, &key);
+        OE_TEST(r == OE_OK);
+
+        OE_CertFree(&cert);
+    }
+
+    /* Test OE_CertGetECPublicKey() */
+    {
+        OE_Cert cert;
+
+        r = OE_CertReadPEM(ECCERT, sizeof(ECCERT), &cert);
+        OE_TEST(r == OE_OK);
+
+        OE_ECPublicKey key;
+        r = OE_CertGetECPublicKey(&cert, &key);
+        OE_TEST(r == OE_OK);
+
+        OE_CertFree(&cert);
+    }
+
+    /* Test OE_CertChainGetCert() */
+    {
+        OE_CertChain chain;
+
+        r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
+        OE_TEST(r == OE_OK);
+
+        size_t length;
+        r = OE_CertChainGetLength(&chain, &length);
+        OE_TEST(r == OE_OK);
+        OE_TEST(length == 2);
+
+        for(size_t i = 0; i < length; i++)
+        {
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, i, &cert);
+            OE_TEST(r == OE_OK);
+            OE_CertFree(&cert);
+        }
+    }
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 static void RunAllTests()
 {
     TestCertVerify();
+    TestCertMethods();
     TestECGenerate();
     TestECSignAndVerify();
     TestECWritePrivate();

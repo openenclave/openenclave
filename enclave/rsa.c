@@ -165,14 +165,6 @@ done:
     return ret;
 }
 
-static bool _IsRSAKey(const mbedtls_pk_context* pk)
-{
-    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_RSA))
-        return false;
-
-    return true;
-}
-
 /*
 **==============================================================================
 **
@@ -206,7 +198,7 @@ OE_Result OE_RSAReadPrivateKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Fail if PEM data did not contain an RSA key */
-    if (!_IsRSAKey(&impl->pk))
+    if (!OE_IsRSAKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
@@ -244,7 +236,7 @@ OE_Result OE_RSAReadPublicKeyPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Fail if PEM data did not contain an RSA key */
-    if (!_IsRSAKey(&impl->pk))
+    if (!OE_IsRSAKey(&impl->pk))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;

@@ -557,7 +557,7 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetLength(const OE_CertChain* chain, uint32_t* length)
+OE_Result OE_CertChainGetLength(const OE_CertChain* chain, size_t* length)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_CertChainImpl* impl = (const OE_CertChainImpl*)chain;
@@ -577,7 +577,7 @@ OE_Result OE_CertChainGetLength(const OE_CertChain* chain, uint32_t* length)
         if (num <= 0)
             OE_RAISE(OE_FAILURE);
 
-        *length = (uint32_t)num;
+        *length = (size_t)num;
     }
 
     result = OE_OK;
@@ -589,12 +589,12 @@ done:
 
 OE_Result OE_CertChainGetCert(
     const OE_CertChain* chain,
-    uint32_t index,
+    size_t index,
     OE_Cert* cert)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_CertChainImpl* impl = (const OE_CertChainImpl*)chain;
-    uint32_t length;
+    size_t length;
     X509* x509 = NULL;
 
     /* Clear the output certificate for all error pathways */
@@ -612,7 +612,7 @@ OE_Result OE_CertChainGetCert(
         if (num <= 0)
             OE_RAISE(OE_FAILURE);
 
-        length = (uint32_t)num;
+        length = (size_t)num;
     }
 
     /* Adjust index for special case where index == OE_MAX_UINT32 */
@@ -634,6 +634,8 @@ OE_Result OE_CertChainGetCert(
     /* Increment the reference count and initalize the output certificate */
     _X509_up_ref(x509);
     _InitCertImpl((OE_CertImpl*)cert, x509);
+
+    result = OE_OK;
 
 done:
 
