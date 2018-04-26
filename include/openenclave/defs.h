@@ -142,18 +142,8 @@
 #define OE_ZERO_SIZED_ARRAY /* empty */
 #endif
 
-/*
- * Are we missing proper type usage? This might be tedious to fix.
- * TODO #55: Do a CR on proper used of integer types.
- */
-// OE_STATIC_ASSERT(sizeof(long) == sizeof(long long));
-
-// OE_STATIC_ASSERT(sizeof(long) == sizeof(void*));
-
 #define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
 
 #define OE_OCALL OE_EXTERNC OE_EXPORT
-
-
 
 #endif /* _OE_DEFS_H */

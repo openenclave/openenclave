@@ -120,14 +120,15 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
 #define OE_ATOMIC_MEMORY_BARRIER_RELEASE() asm volatile("" ::: "memory")
 
 /**
- * OE_Memset_s is intended to be used to zero out secrets.
+ * OE_SecureZeroFill is intended to be used to zero out secrets.
  * Plain memset/for-loops can get optimized away be the compiler.
- * Use OE_Memset_s instead.
+ * Use OE_SecureZeroFill instead.
  */
 OE_INLINE void OE_SecureZeroFill(volatile void* ptr, uint32_t size)
 {
     volatile uint8_t* p = (volatile uint8_t*)ptr;
-    while(size--) {
+    while (size--)
+    {
         *p++ = 0;
     }
 }
