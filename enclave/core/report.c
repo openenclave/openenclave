@@ -313,18 +313,25 @@ done:
     return result;
 }
 
-static void _SafeCopyGetReportArgsOuput(OE_GetReportArgs* safeArg, uint64_t argIn)
+static OE_Result _SafeCopyGetReportArgsOuput(OE_GetReportArgs* safeArg, uint64_t argIn)
 {
+    OE_Result result = OE_OK;
+
     OE_GetReportArgs* unsafeArg = (OE_GetReportArgs*)argIn;
-    unsafeArg->result = safeArg->result; 
-    unsafeArg->reportBufferSize = safeArg->reportBufferSize;
 
     if (safeArg->result == OE_OK) {
-        OE_Memcpy(
-            unsafeArg->reportBuffer,
-            safeArg->reportBuffer,
-            safeArg->reportBufferSize);
-    }               
+        // Perform validation again. The reportBuffer field could have been changed.
+        uint8_t* hostReportBuffer = unsafeArg->reportBuffer;
+        if (!OE_IsOutsideEnclave(hostReportBuffer, safeArg->reportBufferSize))
+            OE_RAISE(OE_UNEXPECTED);
+        
+        OE_Memcpy(hostReportBuffer, safeArg->reportBuffer, safeArg->reportBufferSize);
+    } 
+
+    unsafeArg->reportBufferSize = safeArg->reportBufferSize;
+    unsafeArg->result = safeArg->result; 
+done:
+    return result;    
 }
 
 OE_Result _HandleGetReport(uint64_t argIn)
@@ -347,7 +354,7 @@ OE_Result _HandleGetReport(uint64_t argIn)
         &arg.reportBufferSize);
 
     // Copy outputs to host memory.
-    _SafeCopyGetReportArgsOuput(&arg, argIn);            
+    OE_CHECK(_SafeCopyGetReportArgsOuput(&arg, argIn));            
 
 done:
     return result;
