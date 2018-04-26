@@ -1,5 +1,8 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#include "cpuid_count.h"
 #include <cpuid.h>
-#include <openenclave/bits/cpuid.h>
 
 /* Same as __get_cpuid, but sub-leaf can be specified.
    Need this function as cpuid level 4 needs the sub-leaf to be specified in ECX

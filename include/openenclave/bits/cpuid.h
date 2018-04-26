@@ -16,12 +16,4 @@
 #define OE_CPUID_RDX 3
 #define OE_CPUID_REG_COUNT 4
 
-int __get_cpuid_count(
-    unsigned int __leaf,
-    unsigned int __subleaf,
-    unsigned int* __eax,
-    unsigned int* __ebx,
-    unsigned int* __ecx,
-    unsigned int* __edx);
-
 #endif /* _OE_CPUID_H */

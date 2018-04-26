@@ -10,7 +10,7 @@ set(PLATFORM_SRC
     crypto/rsa.c
     linux/aep.S
     linux/aesm.c
-    linux/cpuid.c
+    linux/cpuid_count.c
     linux/enter.S
     linux/entersim.S
     linux/exception.c
