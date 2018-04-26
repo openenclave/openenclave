@@ -41,15 +41,15 @@ OE_Result OE_VerifyReport(
     OE_Report* parsedReport)
 {
     OE_Result result = OE_OK;
-    OE_Report pReport = {0};
+    OE_Report oeReport = {0};
     SGX_Key sgxKey = {0};
 
     SGX_Report* sgxReport = NULL;
     OE_MAC mac = {0};
 
-    OE_CHECK(OE_ParseReport(report, reportSize, &pReport));
+    OE_CHECK(OE_ParseReport(report, reportSize, &oeReport));
 
-    if (pReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
+    if (oeReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
     {
         OE_RAISE(OE_UNSUPPORTED);
     }
@@ -74,12 +74,60 @@ OE_Result OE_VerifyReport(
 
     // Optionally return parsed report.
     if (parsedReport != NULL)
-        *parsedReport = pReport;
+        *parsedReport = oeReport;
 
 done:
     // Cleanup secret.
     OE_SecureZeroFill(&sgxKey, sizeof(sgxKey));
 
+    return result;
+}
+
+static OE_Result _SafeCopyVerifyReportArgs(
+    uint64_t argIn,
+    OE_VerifyReportArgs* safeArg,
+    uint8_t* reportBuffer)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_VerifyReportArgs* unsafeArg = (OE_VerifyReportArgs*)argIn;
+
+    if (!unsafeArg || !OE_IsOutsideEnclave(unsafeArg, sizeof(*unsafeArg)))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Copy arg to prevent TOCTOU issues.
+    *safeArg = *unsafeArg;
+
+    if (!safeArg->report ||
+        !OE_IsOutsideEnclave(safeArg->report, safeArg->reportSize))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (safeArg->reportSize > OE_MAX_REPORT_SIZE)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Copy report to prevent TOCTOU issues.
+    OE_Memcpy(reportBuffer, safeArg->report, safeArg->reportSize);
+    safeArg->report = reportBuffer;
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static OE_Result _SafeCopyVerifyReportArgsOuput(
+    OE_VerifyReportArgs* safeArg,
+    uint64_t argIn)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_VerifyReportArgs* unsafeArg = (OE_VerifyReportArgs*)argIn;
+
+    if (!unsafeArg || !OE_IsOutsideEnclave(unsafeArg, sizeof(*unsafeArg)))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    unsafeArg->result = safeArg->result;
+    result = safeArg->result;
+
+done:
     return result;
 }
 
@@ -90,34 +138,20 @@ done:
 // ECall.
 static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
 {
-    OE_Result result = OE_OK;
-    OE_VerifyReportArgs* argFromHost = (OE_VerifyReportArgs*)argIn;
+    OE_Result result = OE_UNEXPECTED;
     OE_VerifyReportArgs arg;
-    uint8_t report[OE_MAX_REPORT_SIZE];
+    uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
 
-    if (!argFromHost || !OE_IsOutsideEnclave(argFromHost, sizeof(*argFromHost)))
-        OE_RAISE(OE_INVALID_PARAMETER);
+    OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, reportBuffer));
 
-    // Copy arg to prevent TOCTOU issues.
-    arg = *argFromHost;
+    OE_CHECK(OE_VerifyReport(reportBuffer, arg.reportSize, NULL));
 
-    if (!arg.report || !OE_IsOutsideEnclave(arg.report, arg.reportSize))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (arg.reportSize > OE_MAX_REPORT_SIZE)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (!argFromHost || !OE_IsOutsideEnclave(argFromHost, sizeof(*argFromHost)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    // Copy report to prevent TOCTOU issues.
-    OE_Memcpy(report, arg.report, arg.reportSize);
-
-    OE_CHECK(OE_VerifyReport(report, arg.reportSize, NULL));
+    // success.
+    result = OE_OK;
 
 done:
-    if (argFromHost)
-        argFromHost->result = result;
+    arg.result = result;
+    _SafeCopyVerifyReportArgsOuput(&arg, argIn);
 }
 
 // Use static initializer to register ECall_HandleVerifyReport.
