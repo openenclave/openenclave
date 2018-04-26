@@ -47,7 +47,7 @@ uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD* exception_record)
     }
 
     // Skip the idiv instruction.
-    exception_record->context->rip += 3;
+    exception_record->context->rip += 2;
     return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
