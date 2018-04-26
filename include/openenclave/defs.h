@@ -150,4 +150,10 @@
 
 // OE_STATIC_ASSERT(sizeof(long) == sizeof(void*));
 
+#define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
+
+#define OE_OCALL OE_EXTERNC OE_EXPORT
+
+
+
 #endif /* _OE_DEFS_H */

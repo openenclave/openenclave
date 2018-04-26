@@ -10,6 +10,10 @@
 #ifndef _OE_HOST_H
 #define _OE_HOST_H
 
+#ifdef _OE_ENCLAVE_H
+#error "enclave.h and host.h must not be included in the same compilation unit."
+#endif
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -23,8 +27,6 @@
 #include "types.h"
 
 OE_EXTERNC_BEGIN
-
-#define OE_OCALL OE_EXTERNC OE_EXPORT
 
 typedef struct _OE_Enclave OE_Enclave;
 

@@ -10,6 +10,10 @@
 #ifndef _OE_ENCLAVE_H
 #define _OE_ENCLAVE_H
 
+#ifdef _OE_HOST_H
+#error "enclave.h and host.h must not be included in the same compilation unit."
+#endif
+
 #include "bits/context.h"
 #include "bits/sha.h"
 #include "defs.h"
@@ -20,7 +24,6 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
 
 // Exception codes.
 #define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
