@@ -52,5 +52,4 @@ ssl
 rsa
 version
 xtea
-x509parse
 x509write
