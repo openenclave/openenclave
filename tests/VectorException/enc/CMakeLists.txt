@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(VectorExceptionEnc sign.conf private.pem
+add_enclave_executable(VectorException_enc sign.conf private.pem
     enc.c
     sigill_handling.c
     )

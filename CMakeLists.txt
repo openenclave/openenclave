@@ -112,7 +112,7 @@ add_subdirectory(tests/str)				#PASSED
 #add_subdirectory(tests/typeinfo)		don't have .so file, build failed, see typeinfo_build_failed_log.txt
 #add_subdirectory(tests/VectorException) build failed, see vectorexception_build_failed_log.txt
 
-add_subdirectory(tests/windows)
+#add_subdirectory(tests/windows)
 
 else()
 

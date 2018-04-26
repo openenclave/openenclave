@@ -2,17 +2,17 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(threadenc sign.conf private.pem
+add_enclave_executable(thread_enc sign.conf private.pem
     enc.cpp
     cond_tests.cpp
     rwlock_tests.cpp
     )
 
-target_compile_options(threadenc PRIVATE
+target_compile_options(thread_enc PRIVATE
     -fno-builtin-strcpy
     -fno-builtin-strcat
     -fno-builtin-memcpy
     -fno-builtin-memset
     )
 
-target_link_libraries(threadenc oelibc oelibcxx)
+target_link_libraries(thread_enc oelibc oelibcxx)

@@ -4,7 +4,7 @@
 if (ADD_WINDOWS_ENCLAVE_TESTS)
 	add_subdirectory(host)
     include(add_wnd_enclave_tests)
-    add_wnd_enclave_tests(ecall_ocall ecall_ocall_host ecall_ocall_enc.signed.so)
+    add_wnd_enclave_tests(ecall_ocall)
 else()
 add_subdirectory(enc)
 add_subdirectory(host)

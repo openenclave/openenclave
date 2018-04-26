@@ -2,6 +2,6 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(hostcallsenc sign.conf private.pem
+add_enclave_executable(hostcalls_enc sign.conf private.pem
     enc.cpp
     )

@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(ricochetenc sign.conf private.pem
+add_enclave_executable(ricochet_enc sign.conf private.pem
     enc.c
     )
   

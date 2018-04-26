@@ -4,10 +4,10 @@
 if (ADD_WINDOWS_ENCLAVE_TESTS)
 	add_subdirectory(host)
     include(add_wnd_enclave_tests)
-    add_wnd_enclave_tests(abortStatus abortStatusHost abortStatusEnc.signed.so)
+    add_wnd_enclave_tests(abortStatus)# abortStatus_host abortStatus_enc.signed.so)
 else()
 add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/abortStatus host/abortStatusHost ./enc/abortStatusEnc.signed.so)
+add_test(tests/abortStatus host/abortStatus_host ./enc/abortStatus_enc.signed.so)
 endif()

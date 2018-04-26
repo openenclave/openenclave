@@ -12,12 +12,12 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
     include(add_wnd_enclave_tests)
 	foreach(testcase ${alltests})
 		get_testcase_name(${testcase} name)
-		add_wnd_enclave_tests(tests_libc_${name} libchost libctest-${name}.signed.so)	#slash in target name gives error, so slash is replaced with underscore.
+		add_wnd_enclave_tests(tests_libc_${name})	#slash in target name gives error, so slash is replaced with underscore.
 	endforeach(testcase)
 else()
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name)
-    add_test(tests/libc/${name} host/libchost ./enc/libctest-${name}.signed.so)
+    add_test(tests/libc/${name} host/libc_host ./enc/libctest-${name}_enc.signed.so)
 endforeach(testcase)
 
 add_subdirectory(enc)

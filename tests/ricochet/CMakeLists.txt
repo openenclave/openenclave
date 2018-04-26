@@ -4,10 +4,10 @@
 if (ADD_WINDOWS_ENCLAVE_TESTS)
 	add_subdirectory(host)
     include(add_wnd_enclave_tests)
-    add_wnd_enclave_tests(ricochet ricochethost ricochetenc.signed.so)
+    add_wnd_enclave_tests(ricochet)
 else()
 add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/ricochet host/ricochethost ./enc/ricochetenc.signed.so)
+add_test(tests/ricochet host/ricochet_host ./enc/ricochet_enc.signed.so)
 endif()

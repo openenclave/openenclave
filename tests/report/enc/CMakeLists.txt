@@ -2,6 +2,6 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(reportenc sign.conf private.pem
+add_enclave_executable(report_enc sign.conf private.pem
     enc.cpp
     )

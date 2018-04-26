@@ -4,10 +4,10 @@
 if (ADD_WINDOWS_ENCLAVE_TESTS)
 	add_subdirectory(host)
     include(add_wnd_enclave_tests)
-    add_wnd_enclave_tests(mbed mbedhost mbedenc.signed.so)
+    add_wnd_enclave_tests(mbed)
 else()
 add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/mbed host/mbedhost ./enc/mbedenc.signed.so)
+add_test(tests/mbed host/mbed_host ./enc/mbed_enc.signed.so)
 endif()
