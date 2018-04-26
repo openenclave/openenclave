@@ -24,7 +24,6 @@
 
 OE_EXTERNC_BEGIN
 
-
 // Exception codes.
 #define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
 #define OE_EXCEPTION_BREAKPOINT 0x1
