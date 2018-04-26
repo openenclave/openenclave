@@ -282,8 +282,6 @@ OE_Result OE_GetReport(
         reportBufferSize);
 }
 
-#define OE_MAX_REPORT_SIZE (1 * 1024)
-
 static OE_Result _SafeCopyGetReportArgs(
     uint64_t argIn,
     OE_GetReportArgs* safeArg,
