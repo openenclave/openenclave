@@ -44,14 +44,14 @@ void OE_InitializeCpuid(uint64_t argIn)
 **     of emulation to only the cached CPUID leaves, which currently only
 **     includes up to structured extended information. Specifically for leaf 4,
 **     only subleaf 0 i.e. topology of processor cores in a physical pacakage
-**     is only cached. Deterministic Cache Parameters for all levels of the
+**     is cached. Deterministic Cache Parameters for all levels of the
 **     processor cache are not supported.
 **
 **     This primarily allows checking of CPU feature bits important for compat
-*and crypto.
+*      and crypto.
 **
 **     Returns 0 if referenced CPUID leaf (and subleaf) is available, -1
-*otherwise.
+*      otherwise.
 **     For CPUID leaf 4, subleaf of 0 is only available as noted above.
 **==============================================================================
 */

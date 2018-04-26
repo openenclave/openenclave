@@ -7,11 +7,12 @@
 
 #define OE_GETSEC_OPCODE 0x370F
 #define OE_GETSEC_CAPABILITIES 0x00
-#define OE_CPUID_EXTENDED_CPUID_LEAF 0x80000000
 
 // Global to track state of TestSigillHandler execution.
-// Making this volatile to prevent optimization as this is modified
-// by the enclave
+// Making this volatile to prevent optimization by the compiler
+// as g_handledSigill is being used as a messaging mechanism
+// during signal handling. This is modified in the signal
+// handlers in the enclave and checked on the host.
 static volatile enum {
     HANDLED_SIGILL_NONE,
     HANDLED_SIGILL_GETSEC,
