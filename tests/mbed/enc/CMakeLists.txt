@@ -8,7 +8,6 @@ include_directories(${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src
 
 # helper function to create enclave binary
 function(add_libmbed_test_enc NAME )
-    #message("libcxx-test NAME=${NAME} CXXFILE=${CXXFILE}")
    
    string(FIND "${NAME}" "." cond)
    if(${cond} GREATER 0 )  
@@ -24,8 +23,6 @@ function(add_libmbed_test_enc NAME )
         OUTPUT test_suite_${data_name}
         COMMAND ${PERL_EXECUTABLE} ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/scripts/generate_code.pl ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites test_suite_${suite_name} test_suite_${data_name}
         DEPENDS ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/scripts/generate_code.pl mbedcrypto ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/helpers.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/main_test.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_${suite_name}.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_${data_name}.data
-   #COMMAND ${CMAKE_COMMAND} -E copy
-   #       test_suite_${data_name}.c  ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/
    )
 
     add_enclave_executable(libmbedtest_suite_${NAME} sign.conf private.pem test_suite_${NAME} 
@@ -44,10 +41,32 @@ function(add_libmbed_test_enc NAME )
     target_link_libraries(libmbedtest_suite_${NAME} mbedcrypto oelibc )
 endfunction(add_libmbed_test_enc)
 
+function(add_libmbed_selftest_enc NAME SOURCE )
+    add_enclave_executable(libmbedtest-${NAME} sign.conf private.pem
+	enc.c
+        main.c
+        )
+
+    target_include_directories(libmbedtest-${NAME} PUBLIC
+        ..
+        ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
+        )
+
+    target_compile_definitions(libmbedtest-${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${SOURCE}")
+    target_link_libraries(libmbedtest-${NAME} mbedcrypto oelibc )
+
+endfunction(add_libmbed_selftest_enc)
+
 # iterate over the supported tests and create a binary for each.
-file(STRINGS "../tests_suites.supported" alltests)
+file(STRINGS "../tests.supported" alltests)
 foreach(testcase ${alltests})
-#    get_testcase_name(${testcase} name "../../3rdparty/mbedtls/mbedtls/programs/test/")
-    add_libmbed_test_enc(${testcase})
+     string(FIND "${testcase}" "selftest" var)
+     if(${var} GREATER 0 )
+	   get_testcase_name(${testcase} name "../../3rdparty/mbedtls/mbedtls/programs/test/")
+	   add_libmbed_selftest_enc( ${name} ${testcase})
+     elseif(${var} LESS 0)
+	   add_libmbed_test_enc(${testcase})
+     endif()
 endforeach(testcase)
+
 File(COPY ${CMAKE_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/data_files DESTINATION ${CMAKE_BINARY_DIR}/tests/mbed )

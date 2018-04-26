@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 include_directories(${CMAKE_SOURCE_DIR}/3rdparty/musl/musl/include)
 include_directories(${CMAKE_BINARY_DIR}/output/include/openenclave/libc)
 add_library(fops STATIC f_ops.c )

@@ -1,12 +1,15 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <dirent.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/print.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 typedef struct FILE_Args
 {
@@ -37,7 +40,7 @@ FILE* fopen(const char* Path, const char* Mode)
 {
     Args* args;
     FILE* fp;
-    if( strstr(Path,"/dev"))
+    if (strstr(Path, "/dev"))
         return stdout;
 
     args = (Args*)OE_HostMalloc(sizeof(Args));
@@ -150,7 +153,7 @@ int fseek(FILE* stream, long offset, int whence)
     return ret;
 }
 
-int fputc(int c, FILE *stream)
+int fputc(int c, FILE* stream)
 {
     int ret;
     Args* args;
@@ -164,18 +167,19 @@ int fputc(int c, FILE *stream)
     else if (stream == stderr)
     {
         /* Write to standard error device */
-        __OE_HostPrint(1,(const char *) &c, 1);
+        __OE_HostPrint(1, (const char*)&c, 1);
         return c;
-    } else {
+    }
+    else
+    {
+        args = (Args*)OE_HostMalloc(sizeof(Args));
+        args->F_ptr = stream;
+        args->i_var = c;
+        OE_CallHost("OE_FPutc", args);
 
-    args = (Args*)OE_HostMalloc(sizeof(Args));
-    args->F_ptr = stream;
-    args->i_var = c;
-    OE_CallHost("OE_FPutc", args);
-
-    ret = args->ret;
-    OE_HostFree(args);
-    return ret;
+        ret = args->ret;
+        OE_HostFree(args);
+        return ret;
     }
 }
 
@@ -192,35 +196,34 @@ long int ftell(FILE* stream)
     return ret;
 }
 
-int fileno(FILE *stream)
+int fileno(FILE* stream)
 {
-
     if (stream == stdout)
-        return (int) stdout;
+        return (int)stdout;
     else if (stream == stderr)
-        return (int) stderr;
-    else 
+        return (int)stderr;
+    else
         return 0;
 }
 
 int dup(int oldfd)
 {
     if ((FILE*)oldfd == stdout)
-        return (int) stdout;
+        return (int)stdout;
     else if ((FILE*)oldfd == stderr)
-        return (int) stderr;
+        return (int)stderr;
     else
         return 0;
 }
 
-FILE *fdopen(int fd, const char *mode)
+FILE* fdopen(int fd, const char* mode)
 {
-   if ((FILE*)fd == stdout)
+    if ((FILE*)fd == stdout)
         return stdout;
     else if ((FILE*)fd == stderr)
         return stderr;
     else
-    	return NULL;
+        return NULL;
 }
 
 DIR* opendir(const char* name)
@@ -267,15 +270,15 @@ int stat(const char* path, struct stat* buf)
 {
     int ret;
     Args* args;
-    struct stat *host;
+    struct stat* host;
     args = (Args*)OE_HostMalloc(sizeof(Args));
-    host = (struct stat *)OE_HostMalloc(sizeof(struct stat));
+    host = (struct stat*)OE_HostMalloc(sizeof(struct stat));
     args->path = OE_HostStackStrdup(path);
     args->ptr = (void*)host;
 
     OE_CallHost("OE_STat", args);
     if (!(args->ret))
-       OE_Memcpy(buf, (struct stat*)args->ptr, sizeof(struct stat));
+        OE_Memcpy(buf, (struct stat*)args->ptr, sizeof(struct stat));
 
     ret = args->ret;
     OE_HostFree(host);
