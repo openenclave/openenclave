@@ -37,7 +37,7 @@ const char usage[] =
     "    Any SGX-specific content (if any) is also dumped.\n"
     "\n";
 
-OE_Result CountCerts(const uint8_t* data, size_t size, uint32_t* length)
+OE_Result CountCerts(const uint8_t* data, size_t size, size_t* length)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_CertChain chain;
@@ -190,7 +190,7 @@ void DumpCert(const OE_Cert* cert, size_t level)
 
 void DumpCertChain(const OE_CertChain* chain)
 {
-    uint32_t length;
+    size_t length;
 
     /* Get the number of certificates in this chain */
     if (OE_CertChainGetLength(chain, &length) != OE_OK)
@@ -216,7 +216,7 @@ int main(int argc, const char* argv[])
     int ret = -1;
     uint8_t* data = NULL;
     size_t size;
-    uint32_t numCerts;
+    size_t numCerts;
 
     /* Check command-line arguments */
     if (argc != 2)
