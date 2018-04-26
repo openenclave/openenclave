@@ -23,13 +23,13 @@
 **==============================================================================
 */
 
-typedef struct _OE_CertChainRep
+typedef struct _OE_ChainReferent
 {
     mbedtls_x509_crt* chain;
     OE_Spinlock spin;
     uint64_t refs;
 }
-OE_CertChainRep;
+OE_ChainReferent;
 
 static void _SetErr(OE_VerifyCertError* error, const char* str)
 {
@@ -44,7 +44,7 @@ typedef struct _OE_CertImpl
 
     // Non-null if certificate is part of a chain (if it was obtained with 
     // the OE_CertChainGetCert() method)
-    OE_CertChainRep* owner;
+    OE_ChainReferent* referent;
 } OE_CertImpl;
 
 OE_STATIC_ASSERT(sizeof(OE_CertImpl) <= sizeof(OE_Cert));
@@ -61,7 +61,7 @@ OE_INLINE void _ClearCertImpl(OE_CertImpl* impl)
 {
     impl->magic = 0;
     impl->cert = NULL;
-    impl->owner = NULL;
+    impl->referent = NULL;
 }
 
 /* Randomly generated magic number */
@@ -72,7 +72,7 @@ typedef struct _OE_CertChainImpl
     uint64_t magic;
 
     /* Pointer to reference-counted internal implementation */
-    OE_CertChainRep* rep;
+    OE_ChainReferent* referent;
 }
 OE_CertChainImpl;
 
@@ -80,25 +80,25 @@ OE_STATIC_ASSERT(sizeof(OE_CertChainImpl) <= sizeof(OE_CertChain));
 
 static bool _ValidCertChainImpl(const OE_CertChainImpl* impl)
 {
-    return impl && (impl->magic == OE_CERT_CHAIN_MAGIC) && impl->rep;
+    return impl && (impl->magic == OE_CERT_CHAIN_MAGIC) && impl->referent;
 }
 
 /* Increase the reference count */
-OE_INLINE void _RefCertChainRep(OE_CertChainRep* rep)
+OE_INLINE void _RefCertChainRep(OE_ChainReferent* referent)
 {
-    OE_SpinLock(&rep->spin);
-    rep->refs++;
-    OE_SpinUnlock(&rep->spin);
+    OE_SpinLock(&referent->spin);
+    referent->refs++;
+    OE_SpinUnlock(&referent->spin);
 }
 
 /* Decrease the reference count and return its new value */
-OE_INLINE uint64_t _UnrefCertChainRep(OE_CertChainRep* rep)
+OE_INLINE uint64_t _UnrefCertChainRep(OE_ChainReferent* referent)
 {
     uint64_t refs;
 
-    OE_SpinLock(&rep->spin);
-    refs = --rep->refs;
-    OE_SpinUnlock(&rep->spin);
+    OE_SpinLock(&referent->spin);
+    refs = --referent->refs;
+    OE_SpinUnlock(&referent->spin);
 
     return refs;
 }
@@ -208,7 +208,7 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
     /* Initialize the implementation */
     impl->magic = OE_CERT_MAGIC;
     impl->cert = crt;
-    impl->owner = NULL;
+    impl->referent = NULL;
     crt = NULL;
 
     result = OE_OK;
@@ -233,13 +233,13 @@ OE_Result OE_CertFree(OE_Cert* cert)
     if (!_ValidCertImpl(impl))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (impl->owner)
+    if (impl->referent)
     {
-        if (_UnrefCertChainRep(impl->owner) == 0)
+        if (_UnrefCertChainRep(impl->referent) == 0)
         {
             /* Free the certificate */
-            mbedtls_x509_crt_free(impl->owner->chain);
-            mbedtls_free(impl->owner);
+            mbedtls_x509_crt_free(impl->referent->chain);
+            mbedtls_free(impl->referent);
         }
     }
     else
@@ -291,17 +291,17 @@ OE_Result OE_CertChainReadPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Allocate internal representation */
-    if (!(impl->rep = 
-        (OE_CertChainRep*)mbedtls_calloc(1, sizeof(OE_CertChainRep))))
+    if (!(impl->referent = 
+        (OE_ChainReferent*)mbedtls_calloc(1, sizeof(OE_ChainReferent))))
     {
         OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Initialize the implementation */
     impl->magic = OE_CERT_CHAIN_MAGIC;
-    impl->rep->chain = crt;
-    impl->rep->spin = OE_SPINLOCK_INITIALIZER;
-    impl->rep->refs = 1;
+    impl->referent->chain = crt;
+    impl->referent->spin = OE_SPINLOCK_INITIALIZER;
+    impl->referent->refs = 1;
     crt = NULL;
 
     result = OE_OK;
@@ -327,10 +327,10 @@ OE_Result OE_CertChainFree(OE_CertChain* chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Free chain if reference count falls to zero */
-    if (_UnrefCertChainRep(impl->rep) == 0)
+    if (_UnrefCertChainRep(impl->referent) == 0)
     {
         /* Free the certificate */
-        mbedtls_x509_crt_free(impl->rep->chain);
+        mbedtls_x509_crt_free(impl->referent->chain);
 
         /* Clear the implementation (making it invalid) */
         OE_Memset(impl, 0, sizeof(OE_CertChainImpl));
@@ -373,7 +373,7 @@ OE_Result OE_CertVerify(
 
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
-            certImpl->cert, chainImpl->rep->chain, NULL, NULL, &flags, NULL, NULL) !=
+            certImpl->cert, chainImpl->referent->chain, NULL, NULL, &flags, NULL, NULL) !=
         0)
     {
         if (error)
@@ -471,7 +471,7 @@ OE_Result OE_CertChainGetLength(
     {
         uint32_t n = 0;
 
-        for (const mbedtls_x509_crt* p = impl->rep->chain; p; p = p->next)
+        for (const mbedtls_x509_crt* p = impl->referent->chain; p; p = p->next)
             n++;
 
         *length = n;
@@ -506,7 +506,7 @@ OE_Result OE_CertChainGetCert(
     {
         size_t i = 0;
         
-        for (mbedtls_x509_crt* p = impl->rep->chain; p; p = p->next, i++)
+        for (mbedtls_x509_crt* p = impl->referent->chain; p; p = p->next, i++)
         {
             if (i == index)
             {
@@ -528,8 +528,8 @@ OE_Result OE_CertChainGetCert(
     /* Initialize the implementation */
     certImpl->magic = OE_CERT_MAGIC;
     certImpl->cert = crt;
-    certImpl->owner = impl->rep;
-    _RefCertChainRep(certImpl->owner);
+    certImpl->referent = impl->referent;
+    _RefCertChainRep(certImpl->referent);
 
 done:
 
