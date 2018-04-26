@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "ec.h"
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
@@ -10,7 +11,6 @@
 #include <openssl/rsa.h>
 #include <string.h>
 #include "init.h"
-#include "ec.h"
 
 /*
 **==============================================================================

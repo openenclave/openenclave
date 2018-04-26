@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "ec.h"
-#include "rsa.h"
 #include <mbedtls/config.h>
 #include <mbedtls/pem.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/thread.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/enclave.h>
+#include <openenclave/thread.h>
+#include "ec.h"
+#include "rsa.h"
 
 /*
 **==============================================================================
@@ -28,8 +28,7 @@ typedef struct _OE_ChainReferent
     mbedtls_x509_crt* chain;
     OE_Spinlock spin;
     uint64_t refs;
-}
-OE_ChainReferent;
+} OE_ChainReferent;
 
 static void _SetErr(OE_VerifyCertError* error, const char* str)
 {
@@ -42,7 +41,7 @@ typedef struct _OE_CertImpl
     uint64_t magic;
     mbedtls_x509_crt* cert;
 
-    // Non-null if certificate is part of a chain (if it was obtained with 
+    // Non-null if certificate is part of a chain (if it was obtained with
     // the OE_CertChainGetCert() method)
     OE_ChainReferent* referent;
 } OE_CertImpl;
@@ -73,8 +72,7 @@ typedef struct _OE_CertChainImpl
 
     /* Pointer to reference-counted internal implementation */
     OE_ChainReferent* referent;
-}
-OE_CertChainImpl;
+} OE_CertChainImpl;
 
 OE_STATIC_ASSERT(sizeof(OE_CertChainImpl) <= sizeof(OE_CertChain));
 
@@ -291,8 +289,8 @@ OE_Result OE_CertChainReadPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Allocate internal representation */
-    if (!(impl->referent = 
-        (OE_ChainReferent*)mbedtls_calloc(1, sizeof(OE_ChainReferent))))
+    if (!(impl->referent =
+              (OE_ChainReferent*)mbedtls_calloc(1, sizeof(OE_ChainReferent))))
     {
         OE_RAISE(OE_OUT_OF_MEMORY);
     }
@@ -373,8 +371,13 @@ OE_Result OE_CertVerify(
 
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
-            certImpl->cert, chainImpl->referent->chain, NULL, NULL, &flags, NULL, NULL) !=
-        0)
+            certImpl->cert,
+            chainImpl->referent->chain,
+            NULL,
+            NULL,
+            &flags,
+            NULL,
+            NULL) != 0)
     {
         if (error)
         {
@@ -422,9 +425,7 @@ done:
     return result;
 }
 
-OE_Result OE_CertGetECPublicKey(
-    const OE_Cert* cert,
-    OE_ECPublicKey* publicKey)
+OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_CertImpl* impl = (const OE_CertImpl*)cert;
@@ -452,9 +453,7 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetLength(
-    const OE_CertChain* chain,
-    uint32_t* length)
+OE_Result OE_CertChainGetLength(const OE_CertChain* chain, uint32_t* length)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_CertChainImpl* impl = (const OE_CertChainImpl*)chain;
@@ -505,8 +504,8 @@ OE_Result OE_CertChainGetCert(
     /* Find the certificate with this index */
     {
         size_t i = 0;
-        
-        for (mbedtls_x509_crt* p = impl->referent->chain; p; p = p->next, i++)
+
+        for (mbedtls_x509_crt *p = impl->referent->chain; p; p = p->next, i++)
         {
             if (i == index)
             {

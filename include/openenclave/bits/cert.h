@@ -6,8 +6,8 @@
 
 #include <openenclave/result.h>
 #include <openenclave/types.h>
-#include "rsa.h"
 #include "ec.h"
+#include "rsa.h"
 
 OE_EXTERNC_BEGIN
 
@@ -135,7 +135,7 @@ OE_Result OE_CertVerify(
  * OE_WRONG_TYPE.
  *
  * @param cert the certificate whose RSA public key is sought.
- * @param publicKey the handle of an RSA public key upon successful return. 
+ * @param publicKey the handle of an RSA public key upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
  *     key by passing it to **OE_RSAFreePublicKey()**.
  *
@@ -156,7 +156,7 @@ OE_Result OE_CertGetRSAPublicKey(
  * OE_WRONG_TYPE.
  *
  * @param cert the certificate whose EC public key is sought.
- * @param publicKey the handle of an EC public key upon successful return. 
+ * @param publicKey the handle of an EC public key upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
  *     key by passing it to **OE_ECFreePublicKey()**.
  *
@@ -165,9 +165,7 @@ OE_Result OE_CertGetRSAPublicKey(
  * @return OE_WRONG_TYPE the certificate does not contain an EC public key
  * @return OE_FAILURE general failure
  */
-OE_Result OE_CertGetECPublicKey(
-    const OE_Cert* cert,
-    OE_ECPublicKey* publicKey);
+OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey);
 
 /**
  * Get the length of a certificate chain.
@@ -182,9 +180,7 @@ OE_Result OE_CertGetECPublicKey(
  * @return OE_INVALID_PARAMETER a parameter is invalid
  * @return OE_FAILURE general failure
  */
-OE_Result OE_CertChainGetLength(
-    const OE_CertChain* chain,
-    uint32_t* length);
+OE_Result OE_CertChainGetLength(const OE_CertChain* chain, uint32_t* length);
 
 /**
  * Fetch the certificate with the given index from a certificate chain.
@@ -200,7 +196,7 @@ OE_Result OE_CertChainGetLength(
  *     obtains the root certificate. The hightest valid index obtains the leaf
  *     certificate. As a shortcut OE_MAX_UINT32 obtains the leaf certificate,
  *     which avoids a needless call to OE_CertChainGetLength().
- * @param cert the handle of a certificate upon successful return. 
+ * @param cert the handle of a certificate upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
  *     certificate by passing it to **OE_CertFree()**.
  *
@@ -218,15 +214,15 @@ OE_Result OE_CertChainGetCert(
  * Get the subject name from the certificate.
  *
  * This function retrieves a certficate's subject name.
- * 
+ *
  * @param cert the certificate whose subject name is retrieved.
  * @param name the buffer containing the subject name on success (this
  *     parameter may be null when determining the required size).
- * @param nameSize[in,out] the buffer size on input or the subject name size 
+ * @param nameSize[in,out] the buffer size on input or the subject name size
  *     on output (including the zero-terminator).
  *
  * @return OE_OK success
- * @return OE_BUFFER_TOO_SMALL the buffer is too small and **nameSize** 
+ * @return OE_BUFFER_TOO_SMALL the buffer is too small and **nameSize**
  *     contains the required buffer size.
  * @return OE_FAILURE failure
  */

@@ -39,8 +39,7 @@ typedef struct _OE_RSAPublicKeyInfo
 
     /* The number of signficant exponent bits */
     uint32_t numExponentBits;
-}
-OE_RSAPublicKeyInfo;
+} OE_RSAPublicKeyInfo;
 
 /**
  * Reads a private RSA key from PEM data
@@ -224,7 +223,7 @@ OE_Result OE_RSAGenerate(
 /**
  * Retrieves information about a public key.
  *
- * This function retrieves information about the given public key. The 
+ * This function retrieves information about the given public key. The
  * information is defined above by the **OE_RSAPublicKeyInfo** structure.
  *
  * @param publicKey the certificate whose information is retrieved.

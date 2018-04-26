@@ -1,10 +1,10 @@
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/files.h>
-#include <openenclave/bits/raise.h>
 #include <openenclave/bits/hexdump.h>
+#include <openenclave/bits/raise.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 
 const char* arg0;
 
@@ -21,21 +21,21 @@ void err(const char* fmt, ...)
 }
 
 const char usage[] =
-"Usage: %s <CertificateFile>\n"
-"\n"
-"Where:\n"
-"    <CertificateFile> is the name of a certificate file in PEM format.\n"
-"\n"
-"Synopsis:\n"
-"    This utility dumps information about the given certificate to\n"
-"    standard output. The certificate must be in PEM format, bearing\n"
-"    the following PEM header and footer lines.\n"
-"\n"
-"        -----BEGIN CERTIFICATE-----\n"
-"        -----END CERTIFICATE-----\n"
-"\n"
-"    Any SGX-specific content (if any) is also dumped.\n"
-"\n";
+    "Usage: %s <CertificateFile>\n"
+    "\n"
+    "Where:\n"
+    "    <CertificateFile> is the name of a certificate file in PEM format.\n"
+    "\n"
+    "Synopsis:\n"
+    "    This utility dumps information about the given certificate to\n"
+    "    standard output. The certificate must be in PEM format, bearing\n"
+    "    the following PEM header and footer lines.\n"
+    "\n"
+    "        -----BEGIN CERTIFICATE-----\n"
+    "        -----END CERTIFICATE-----\n"
+    "\n"
+    "    Any SGX-specific content (if any) is also dumped.\n"
+    "\n";
 
 OE_Result CountCerts(const uint8_t* data, size_t size, uint32_t* length)
 {
@@ -111,7 +111,6 @@ void DumpECPublicKey(const OE_ECPublicKey* key, size_t level)
     printf("{\n");
     level++;
 
-
     /* Get the key bytes */
     {
         /* Required buffer size */
@@ -127,7 +126,6 @@ void DumpECPublicKey(const OE_ECPublicKey* key, size_t level)
         if (OE_ECGetPublicKeyBytes(key, buffer, &bufferSize) != OE_OK)
             err("OE_ECGetPublicKeyBytes() failed 2");
     }
-
 
     Indent(level);
     printf("key=");
@@ -233,9 +231,8 @@ int main(int argc, const char* argv[])
             err("failed to load certificate file: %s", argv[1]);
 
         if (size)
-            data[size-1] = '\0';
+            data[size - 1] = '\0';
     }
-
 
     /* Determine whether a certificate chain */
     if (CountCerts(data, size, &numCerts) != OE_OK)

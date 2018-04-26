@@ -2,8 +2,8 @@
 #define _OE_ENCLAVE_EC_H
 
 #include <mbedtls/pk.h>
-#include <openenclave/types.h>
 #include <openenclave/bits/ec.h>
+#include <openenclave/types.h>
 
 /* Randomly generated magic number */
 #define OE_EC_PUBLIC_KEY_MAGIC 0xd7490a56f6504ee6

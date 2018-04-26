@@ -2,8 +2,8 @@
 #define _OE_ENCLAVE_RSA_H
 
 #include <mbedtls/pk.h>
-#include <openenclave/types.h>
 #include <openenclave/bits/rsa.h>
+#include <openenclave/types.h>
 
 /* Randomly generated magic number */
 #define OE_RSA_PUBLIC_KEY_MAGIC 0x713600af058c447a

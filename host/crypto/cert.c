@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "rsa.h"
-#include "ec.h"
 #include <ctype.h>
-#include <openenclave/result.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/result.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
@@ -17,7 +15,9 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include "ec.h"
 #include "init.h"
+#include "rsa.h"
 
 /*
 **==============================================================================
@@ -210,16 +210,16 @@ done:
 /* Needed because some versions of OpenSSL do not support X509_up_ref() */
 static int _X509_up_ref(X509* x509)
 {
-    if (!x509) 
+    if (!x509)
         return 0;
 
-    CRYPTO_add(&x509->references, 1, CRYPTO_LOCK_X509); 
+    CRYPTO_add(&x509->references, 1, CRYPTO_LOCK_X509);
     return 1;
 }
 
 static OE_Result _NameToOneline(
-    X509_NAME* name, 
-    char* buffer, 
+    X509_NAME* name,
+    char* buffer,
     size_t* bufferSize)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -491,7 +491,7 @@ OE_Result OE_CertGetRSAPublicKey(
     /* Get public key (increments reference count) */
     if (!(pkey = X509_get_pubkey(impl->x509)))
         OE_RAISE(OE_FAILURE);
-    
+
     /* Get RSA public key (increments reference count) */
     if (!(rsa = EVP_PKEY_get1_RSA(pkey)))
         OE_RAISE(OE_WRONG_TYPE);
@@ -512,9 +512,7 @@ done:
     return result;
 }
 
-OE_Result OE_CertGetECPublicKey(
-    const OE_Cert* cert,
-    OE_ECPublicKey* publicKey)
+OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_CertImpl* impl = (const OE_CertImpl*)cert;
@@ -541,7 +539,7 @@ OE_Result OE_CertGetECPublicKey(
 
         EC_KEY_free(ec);
     }
-    
+
     /* Initialize the EC public key */
     OE_ECInitPublicKey(publicKey, pkey);
     pkey = NULL;
@@ -559,9 +557,7 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetLength(
-    const OE_CertChain* chain,
-    uint32_t* length)
+OE_Result OE_CertChainGetLength(const OE_CertChain* chain, uint32_t* length)
 {
     OE_Result result = OE_UNEXPECTED;
     const OE_CertChainImpl* impl = (const OE_CertChainImpl*)chain;

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "rsa.h"
 #include <limits.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/rsa.h>
@@ -10,7 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "init.h"
-#include "rsa.h"
 
 /*
 **==============================================================================
