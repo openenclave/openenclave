@@ -284,7 +284,7 @@ OE_Result OE_GetReport(
 
 #define OE_MAX_REPORT_SIZE (1 * 1024)
 
-static OE_Result _Validate_GetReportArgs(
+static OE_Result _SafeCopyGetReportArgs(
     uint64_t argIn,
     OE_GetReportArgs* safeArg,
     uint8_t* reportBuffer)
@@ -315,7 +315,7 @@ done:
     return result;
 }
 
-static void _Copy_GetReport_Outputs(OE_GetReportArgs* safeArg, uint64_t argIn)
+static void _SafeCopyGetReportArgsOuput(OE_GetReportArgs* safeArg, uint64_t argIn)
 {
     OE_GetReportArgs* unsafeArg = (OE_GetReportArgs*)argIn;
     unsafeArg->result = safeArg->result; 
@@ -337,7 +337,7 @@ OE_Result _HandleGetReport(uint64_t argIn)
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
 
     // Validate and copy args to prevent TOCTOU issues.
-    OE_CHECK(_Validate_GetReportArgs(argIn, &arg, reportBuffer));
+    OE_CHECK(_SafeCopyGetReportArgs(argIn, &arg, reportBuffer));
 
     arg.result = OE_GetReport(
         arg.options,
@@ -349,7 +349,7 @@ OE_Result _HandleGetReport(uint64_t argIn)
         &arg.reportBufferSize);
 
     // Copy outputs to host memory.
-    _Copy_GetReport_Outputs(&arg, argIn);            
+    _SafeCopyGetReportArgsOuput(&arg, argIn);            
 
 done:
     return result;
