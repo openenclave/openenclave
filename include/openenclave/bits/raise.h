@@ -85,7 +85,7 @@ OE_EXTERNC_BEGIN
         OE_Result _result_ = (EXPRESSION); \
                                            \
         if (_result_ != OE_OK)             \
-            OE_RAISE(result);              \
+            OE_RAISE(_result_);            \
     } while (0)
 
 // This macro is used to trace the OE_RAISE macro. It is empty by default but

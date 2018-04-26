@@ -6,3 +6,4 @@ add_enclave_executable(SampleApp sign.conf private.pem
     CallWrappers.cpp
     SampleApp.cpp
     )
+target_link_libraries(SampleApp oecore)

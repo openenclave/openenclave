@@ -75,7 +75,7 @@ target_link_libraries(oehost bcrypt)
 endif()
 
 if(UNIX)
-target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -m64)
+target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC -m64)
 target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
 endif(UNIX)
 target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)

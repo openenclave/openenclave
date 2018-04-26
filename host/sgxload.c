@@ -83,7 +83,7 @@ static uint32_t _MakeMemoryProtectParam(uint64_t inflags, bool simulate)
                 outflags |= PROT_WRITE;
 
             if (inflags & SGX_SECINFO_X)
-                outflags |= PROT_WRITE;
+                outflags |= PROT_EXEC;
 #elif defined(_WIN32)
         if ((inflags & SGX_SECINFO_X) && (inflags & SGX_SECINFO_R) &&
             (inflags & SGX_SECINFO_W))

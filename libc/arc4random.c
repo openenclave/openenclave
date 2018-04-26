@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+/* Ignore unused-variable warning in system header */
+#pragma GCC diagnostic ignored "-Wunused-variable"
 #include <immintrin.h>
 #include <stdlib.h>
 /*

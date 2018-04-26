@@ -40,7 +40,7 @@ typedef struct _OE_Enclave OE_Enclave;
  * return, the enclave is fully initialized and ready to use.
  *
  * @param path The path of an enclave image file in ELF-64 format. This
- * file must have been linked with the **oeenclave** library and signed by the
+ * file must have been linked with the **oecore** library and signed by the
  * **oesign** tool.
  *
  * @param type The type of enclave supported by the enclave image file.
