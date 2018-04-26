@@ -219,6 +219,10 @@ OE_Result OE_VerifyReport(
     arg.reportSize = reportSize;
     arg.result = OE_FAILURE;
 
+    // Call enclave to verify the report. Do not ask the enclave to return a
+    // parsed report since the parsed report will then contain pointers to
+    // enclave memory. Instead, pass NULL as the optional parsedReport out
+    // parameter and parse the report below if requested.
     OE_CHECK(OE_ECall(enclave, OE_FUNC_VERIFY_REPORT, (uint64_t)&arg, NULL));
     OE_CHECK(arg.result);
 
