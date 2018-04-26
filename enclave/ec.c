@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "ec.h"
 #include <assert.h>
 #include <mbedtls/base64.h>
 #include <mbedtls/ctr_drbg.h>
@@ -62,17 +63,6 @@ OE_INLINE void _ClearPrivateKeyImpl(OE_ECPrivateKeyImpl* impl)
     if (impl)
         OE_Memset(impl, 0, sizeof(OE_ECPrivateKeyImpl));
 }
-
-/* Randomly generated magic number */
-#define OE_EC_PUBLIC_KEY_MAGIC 0xd7490a56f6504ee6
-
-typedef struct _OE_ECPublicKeyImpl
-{
-    uint64_t magic;
-    mbedtls_pk_context pk;
-} OE_ECPublicKeyImpl;
-
-OE_STATIC_ASSERT(sizeof(OE_ECPublicKeyImpl) <= sizeof(OE_ECPublicKey));
 
 OE_INLINE bool _ValidPublicKeyImpl(const OE_ECPublicKeyImpl* impl)
 {
@@ -155,14 +145,17 @@ done:
     return ret;
 }
 
-static int _CopyKeyFromKeyPair(
+int OE_ECCopyKey(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
-    bool public)
+    bool clearPrivateFields)
 {
     int ret = -1;
     const mbedtls_pk_info_t* info;
     mbedtls_ecp_keypair* ec;
+
+    if (dest)
+        mbedtls_pk_init(dest);
 
     /* Check parameters */
     if (!dest || !src)
@@ -185,12 +178,15 @@ static int _CopyKeyFromKeyPair(
         goto done;
 
     /* If public key, then clear private key fields */
-    if (public)
+    if (clearPrivateFields)
         mbedtls_mpi_free(&ec->d);
 
     ret = 0;
 
 done:
+
+    if (ret != 0)
+        mbedtls_pk_free(dest);
 
     return ret;
 }
@@ -558,26 +554,16 @@ OE_Result OE_ECGenerate(
 
     /* Initialize the private key parameter */
     {
-        mbedtls_pk_init(&privateImpl->pk);
-
-        if (_CopyKeyFromKeyPair(&privateImpl->pk, &pk, false) != 0)
-        {
-            mbedtls_pk_free(&privateImpl->pk);
+        if (OE_ECCopyKey(&privateImpl->pk, &pk, false) != 0)
             OE_RAISE(OE_FAILURE);
-        }
 
         privateImpl->magic = OE_EC_PRIVATE_KEY_MAGIC;
     }
 
     /* Initialize the public key parameter */
     {
-        mbedtls_pk_init(&publicImpl->pk);
-
-        if (_CopyKeyFromKeyPair(&publicImpl->pk, &pk, true) != 0)
-        {
-            mbedtls_pk_free(&publicImpl->pk);
+        if (OE_ECCopyKey(&publicImpl->pk, &pk, true) != 0)
             OE_RAISE(OE_FAILURE);
-        }
 
         publicImpl->magic = OE_EC_PUBLIC_KEY_MAGIC;
     }

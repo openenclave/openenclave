@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "ec.h"
+#include "rsa.h"
 #include <mbedtls/config.h>
 #include <mbedtls/pem.h>
 #include <mbedtls/platform.h>
@@ -325,6 +327,66 @@ OE_Result OE_CertVerify(
 
         OE_RAISE(OE_VERIFY_FAILED);
     }
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}
+
+OE_Result OE_CertGetRSAPublicKey(
+    const OE_Cert* cert,
+    OE_RSAPublicKey* publicKey)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const OE_CertImpl* impl = (const OE_CertImpl*)cert;
+    OE_RSAPublicKeyImpl* publicKeyImpl = (OE_RSAPublicKeyImpl*)publicKey;
+
+    /* Clear public key for all error pathways */
+    if (publicKey)
+        OE_Memset(publicKey, 0, sizeof(OE_RSAPublicKey));
+
+    /* Reject invalid parameters */
+    if (!_ValidCertImpl(impl) || !publicKey)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Copy the public key from the certificate */
+    if (OE_RSACopyKey(&publicKeyImpl->pk, &impl->cert->pk, false) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Set the magic number */
+    publicKeyImpl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}
+
+OE_Result OE_CertGetECPublicKey(
+    const OE_Cert* cert,
+    OE_ECPublicKey* publicKey)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const OE_CertImpl* impl = (const OE_CertImpl*)cert;
+    OE_ECPublicKeyImpl* publicKeyImpl = (OE_ECPublicKeyImpl*)publicKey;
+
+    /* Clear public key for all error pathways */
+    if (publicKey)
+        OE_Memset(publicKey, 0, sizeof(OE_ECPublicKey));
+
+    /* Reject invalid parameters */
+    if (!_ValidCertImpl(impl) || !publicKey)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Copy the public key from the certificate */
+    if (OE_ECCopyKey(&publicKeyImpl->pk, &impl->cert->pk, false) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Set the magic number */
+    publicKeyImpl->magic = OE_EC_PUBLIC_KEY_MAGIC;
 
     result = OE_OK;
 

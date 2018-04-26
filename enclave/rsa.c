@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "rsa.h"
 #include <mbedtls/base64.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
@@ -62,17 +63,6 @@ OE_INLINE void _ClearPrivateKeyImpl(OE_RSAPrivateKeyImpl* impl)
         OE_Memset(impl, 0, sizeof(OE_RSAPrivateKeyImpl));
 }
 
-/* Randomly generated magic number */
-#define OE_RSA_PUBLIC_KEY_MAGIC 0x713600af058c447a
-
-typedef struct _OE_RSAPublicKeyImpl
-{
-    uint64_t magic;
-    mbedtls_pk_context pk;
-} OE_RSAPublicKeyImpl;
-
-OE_STATIC_ASSERT(sizeof(OE_RSAPublicKeyImpl) <= sizeof(OE_RSAPublicKey));
-
 OE_INLINE bool _ValidPublicKeyImpl(const OE_RSAPublicKeyImpl* impl)
 {
     return impl && impl->magic == OE_RSA_PUBLIC_KEY_MAGIC;
@@ -113,21 +103,28 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
     return 0;
 }
 
-static int _CopyKeyFromKeyPair(
+int OE_RSACopyKey(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
-    bool public)
+    bool clearPrivateFields)
 {
     int ret = -1;
     const mbedtls_pk_info_t* info;
     mbedtls_rsa_context* rsa;
 
-    /* Check parameters */
+    if (dest)
+        mbedtls_pk_init(dest);
+
+    /* Check for invalid parameters */
     if (!dest || !src)
         goto done;
 
     /* Lookup the RSA info */
     if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA)))
+        goto done;
+
+    /* If not an RSA key */
+    if (src->pk_info != info)
         goto done;
 
     /* Setup the context for this key type */
@@ -143,7 +140,7 @@ static int _CopyKeyFromKeyPair(
         goto done;
 
     /* If public key, then clear private key fields */
-    if (public)
+    if (clearPrivateFields)
     {
         mbedtls_mpi_free(&rsa->D);
         mbedtls_mpi_free(&rsa->P);
@@ -161,6 +158,9 @@ static int _CopyKeyFromKeyPair(
     ret = 0;
 
 done:
+
+    if (ret != 0)
+        mbedtls_pk_free(dest);
 
     return ret;
 }
@@ -517,26 +517,16 @@ OE_Result OE_RSAGenerate(
 
     /* Initialize the private key parameter */
     {
-        mbedtls_pk_init(&privateImpl->pk);
-
-        if (_CopyKeyFromKeyPair(&privateImpl->pk, &pk, false) != 0)
-        {
-            mbedtls_pk_free(&privateImpl->pk);
+        if (OE_RSACopyKey(&privateImpl->pk, &pk, false) != 0)
             OE_RAISE(OE_FAILURE);
-        }
 
         privateImpl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
     }
 
     /* Initialize the public key parameter */
     {
-        mbedtls_pk_init(&publicImpl->pk);
-
-        if (_CopyKeyFromKeyPair(&publicImpl->pk, &pk, true) != 0)
-        {
-            mbedtls_pk_free(&publicImpl->pk);
+        if (OE_RSACopyKey(&publicImpl->pk, &pk, true) != 0)
             OE_RAISE(OE_FAILURE);
-        }
 
         publicImpl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
     }
