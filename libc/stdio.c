@@ -87,7 +87,6 @@ OE_WEAK_ALIAS(printf, __libcxxrt_printf);
 int fprintf(FILE* stream, const char* fmt, ...)
 {
     char buf[1024];
-    char* p = buf;
     int n;
     int device;
 
@@ -103,9 +102,7 @@ int fprintf(FILE* stream, const char* fmt, ...)
         va_end(ap);
         return r;
     }
-    memset(buf, 0, sizeof(buf));
 
-    /* First try writing to 'buf' with possible truncation */
     {
         va_list ap;
         va_start(ap, fmt);
@@ -113,20 +110,10 @@ int fprintf(FILE* stream, const char* fmt, ...)
         va_end(ap);
     }
 
-    /* If string was truncated, retry with stack allocated buffer */
-    if (n >= sizeof(buf))
-    {
-        if (!(p = OE_StackAlloc(n + 1, 0)))
-            return 0;
-
-        va_list ap;
-        va_start(ap, fmt);
-        n = vsnprintf(p, n + 1, fmt, ap);
-        va_end(ap);
-    }
-
-    __OE_HostPrint(device, p, n);
-
+    buf[sizeof(buf) - 1] = 0;
+    if (n > sizeof(buf))
+        n = sizeof(buf);
+    __OE_HostPrint(device, buf, n);
     return n;
 }
 

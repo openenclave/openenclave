@@ -553,7 +553,7 @@ target_compile_options(oelibc PRIVATE
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
 
 # this project (and is dependents) require the enclave headers+lib
-target_link_libraries(oelibc oeenclave)
+target_link_libraries(oelibc oecore)
 
 # as a pre-build step, place the musl LIBC headers
 add_dependencies(oelibc oelibc_includes)
@@ -569,6 +569,8 @@ target_include_directories(oelibc PUBLIC
 # when building this project, we also need a number of internal includes
 target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
 target_include_directories(oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
+
+target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 
 # assemble lib-archive into proper dir
 set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)

@@ -64,10 +64,12 @@ static OE_Result _OE_GetLocalReport(
     arg->optParamsSize = optParamsSize;
 
     arg->reportBuffer = reportBuffer;
-    arg->reportBufferSize = reportBufferSize;
+    arg->reportBufferSize = reportBufferSize ? *reportBufferSize : 0;
 
     OE_CHECK(OE_ECall(enclave, OE_FUNC_GET_REPORT, (uint64_t)arg, NULL));
     result = arg->result;
+    if (reportBufferSize)
+        *reportBufferSize = arg->reportBufferSize;
 
 done:
     if (arg)

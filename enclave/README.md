@@ -2,33 +2,15 @@ enclave
 =======
 
 This directory contains the sources for the oeenclave library, which implements
-the enclave intrinsics. The main parts include:
+the enclave extras, which depend on mbedtls and oelibc. The main parts include:
 
-- Enclave entry ([main.S](main.S)) and exit ([exit.S](exit.S)) functions
+- Certificate management ([cert.c](cert.c))
 
-- Enclave initialization ([init.c](init.c))
+- EC key management ([ec.c](ec.c))
 
-- ECALL and OCALL dispatching logic ([calls.c](calls.c))
+- RSA key management ([rsa.c](rsa.c))
 
-- The thread data (TD) structure ([td.c](td.c))
+- Entropy ([random.c](random.c))
 
-- Spinlock implementation ([spinlock.c](spinlock.c))
-
-- Enclave threads implementation ([thread.c](thread.c))
-
-- Functions for testing enclave memory boundaries ([memory.c](memory.c))
-
-- Globals set during enclave signing and loading ([globals.c](globals.c))
-
-- Host calls ([hostcalls.c](hostcalls.c))
-
-- Standard-like string functions ([string.c](string.c))
-
-- Assertion implementation ([assert.c](assert.c))
-
-- Enclave setjmp and longjmp functions ([jump.c](jump.c))
-
-- Functions for report creation (ENCLU.EREPORT) ([report.c](report.c))
-
-- Enclave sbrk() implementation ([sbrk.c](sbrk.c))
+- SHA hash management ([sha.c](sha.c))
 
