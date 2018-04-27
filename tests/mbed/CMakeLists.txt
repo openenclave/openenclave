@@ -12,7 +12,7 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
 include(add_wnd_enclave_tests)
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "../../3rdparty/mbedtls/mbedtls/programs/test/")
-    add_wnd_enclave_tests(libmbedtest-${name})# host/libmbedtest_host ./enc/libmbedtest-${name}.signed.so)
+    add_wnd_enclave_tests(libmbedtest-${name} libmbedtest_host)
 endforeach(testcase)
 
 add_subdirectory(host)

@@ -4,7 +4,7 @@
 if (ADD_WINDOWS_ENCLAVE_TESTS)
 	add_subdirectory(host)
     include(add_wnd_enclave_tests)
-    add_wnd_enclave_tests(props)
+    add_wnd_enclave_tests(props props_host)
 else()
 
 add_subdirectory(enc)

@@ -16,7 +16,7 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
 include(add_wnd_enclave_tests)
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "../../3rdparty/libcxx/libcxx/test/")
-	add_wnd_enclave_tests(libcxxtest-${name})    
+	add_wnd_enclave_tests(libcxxtest-${name} libcxx_host)    
 endforeach(testcase)
 
 add_subdirectory(host)

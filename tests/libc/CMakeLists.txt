@@ -15,8 +15,8 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
 	
     include(add_wnd_enclave_tests)
 	foreach(testcase ${alltests})
-		get_testcase_name(${testcase} name)
-		add_wnd_enclave_tests(tests_libc_${name})	#slash in target name gives error, so slash is replaced with underscore.
+		get_testcase_name(${testcase} name "../../3rdparty/musl/libc-test/src/")
+		add_wnd_enclave_tests(libctest-${name} libc_host)
 	endforeach(testcase)
 
 add_subdirectory(host)

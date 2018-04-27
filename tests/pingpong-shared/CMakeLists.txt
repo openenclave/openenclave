@@ -6,7 +6,7 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
 add_subdirectory(host)
 
 include(add_wnd_enclave_tests)
-add_wnd_enclave_tests(pingpong-shared)
+add_wnd_enclave_tests(pingpong-shared pingpong-shared_host)
 
 else()
 add_subdirectory(enc)

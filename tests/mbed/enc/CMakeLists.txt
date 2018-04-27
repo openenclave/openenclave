@@ -5,14 +5,14 @@ include(add_enclave_executable)
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 include_directories(${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-wrap-prefix/src/mbedtls-wrap/include/)
 # helper lib to contain file needed by some tests
-add_library (libmbedtest-support_enc
+add_library (libmbedtest-support
     enc.cpp
    )
-target_compile_options(libmbedtest-support_enc PRIVATE
+target_compile_options(libmbedtest-support PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     )
-target_link_libraries(libmbedtest-support_enc PUBLIC oelibcxx)
-target_link_libraries(libmbedtest-support_enc INTERFACE -Wl,--undefined=Test)
+target_link_libraries(libmbedtest-support PUBLIC oelibcxx)
+target_link_libraries(libmbedtest-support INTERFACE -Wl,--undefined=Test)
 
 # helper function to create enclave binary
 function(add_libmbed_test_enc NAME CXXFILE)
@@ -28,7 +28,7 @@ function(add_libmbed_test_enc NAME CXXFILE)
     target_compile_options(libmbedtest-${NAME}_enc PRIVATE --std=c++14)
     target_compile_definitions(libmbedtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
     target_link_libraries(libmbedtest-${NAME}_enc mbedcrypto )
-    target_link_libraries(libmbedtest-${NAME}_enc libmbedtest-support_enc)
+    target_link_libraries(libmbedtest-${NAME}_enc libmbedtest-support)
 endfunction(add_libmbed_test_enc)
 
 # iterate over the supported tests and create a binary for each.
