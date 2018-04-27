@@ -18,7 +18,7 @@ static OE_Result _OE_GetLocalReport(
     void* reportBuffer,
     uint32_t* reportBufferSize)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     OE_GetReportArgs* arg = NULL;
 
     /*
@@ -68,6 +68,7 @@ static OE_Result _OE_GetLocalReport(
 
     OE_CHECK(OE_ECall(enclave, OE_FUNC_GET_REPORT, (uint64_t)arg, NULL));
     result = arg->result;
+
     if (reportBufferSize)
         *reportBufferSize = arg->reportBufferSize;
 
@@ -90,7 +91,7 @@ static OE_Result _OE_GetRemoteReport(
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     SGX_TargetInfo* sgxTargetInfo = NULL;
     SGX_Report* sgxReport = NULL;
     uint32_t sgxReportSize = sizeof(SGX_Report);
@@ -152,6 +153,8 @@ static OE_Result _OE_GetRemoteReport(
             sizeof(sgxReport->body)) != 0)
         OE_RAISE(OE_UNEXPECTED);
 
+    result = OE_OK;
+
 done:
 
     if (sgxTargetInfo)
@@ -206,7 +209,7 @@ OE_Result OE_VerifyReport(
     uint32_t reportSize,
     OE_Report* parsedReport)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     OE_VerifyReportArgs arg = {0};
 
     if (report == NULL)
@@ -230,6 +233,7 @@ OE_Result OE_VerifyReport(
     if (parsedReport != NULL)
         OE_CHECK(OE_ParseReport(report, reportSize, parsedReport));
 
+    result = OE_OK;
 done:
 
     return result;
