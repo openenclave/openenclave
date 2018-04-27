@@ -80,6 +80,7 @@ OE_INLINE void _ReferentFree(Referent* referent)
         mbedtls_x509_crt_free(&referent->crt);
 
         /* Free the referent structure */
+        OE_Memset(referent, 0xdd, sizeof(Referent));
         mbedtls_free(referent);
     }
 }
@@ -136,6 +137,7 @@ OE_INLINE void _CertFree(Cert* impl)
     {
         /* Release the MBEDTLS certificate */
         mbedtls_x509_crt_free(impl->cert);
+        OE_Memset(impl->cert, 0xdd, sizeof(mbedtls_x509_crt));
         mbedtls_free(impl->cert);
     }
 
@@ -249,6 +251,7 @@ done:
     if (crt)
     {
         mbedtls_x509_crt_free(crt);
+        OE_Memset(crt, 0xdd, sizeof(mbedtls_x509_crt));
         mbedtls_free(crt);
     }
 
