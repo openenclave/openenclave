@@ -296,11 +296,13 @@ TEST_FCN void TestLocalReport(void* args_)
         OE_TEST(
             GetReport(0, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
+        OE_TEST(reportSize == sizeof(SGX_Report));
 
         reportSize = 1;
         OE_TEST(
             GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
+        OE_TEST(reportSize == sizeof(SGX_Report));
     }
 }
 
@@ -417,11 +419,13 @@ TEST_FCN void TestRemoteReport(void* args_)
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
+        OE_TEST(reportSize == 1116);
 
         reportSize = 1;
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
+        OE_TEST(reportSize == 1116);
     }
 }
 
