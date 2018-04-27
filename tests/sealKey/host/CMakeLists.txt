@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_executable(sealKeyHost host.cpp)
+add_executable(sealKey_host host.cpp)
 
-target_compile_options(sealKeyHost PRIVATE
+target_compile_options(sealKey_host PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     )
 
-target_link_libraries(sealKeyHost oehostapp)
+target_link_libraries(sealKey_host oehostapp)
