@@ -10,11 +10,11 @@
 #include <mbedtls/platform.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/enclave.h>
 #include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
-#include "random.h"
+#include <openenclave/enclave.h>
 #include "pem.h"
+#include "random.h"
 
 /*
 **==============================================================================
@@ -513,9 +513,7 @@ OE_Result OE_ECGenerateKeyPair(
 
     /* Create key struct */
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
-    {
         OE_RAISE(OE_INVALID_PARAMETER);
-    }
 
     /* Generate the EC key */
     if (mbedtls_ecp_gen_key(
@@ -596,9 +594,9 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
         }
 
         int r = mbedtls_ecp_point_write_binary(
-            &ec->grp, 
-            &ec->Q, 
-            MBEDTLS_ECP_PF_UNCOMPRESSED, 
+            &ec->grp,
+            &ec->Q,
+            MBEDTLS_ECP_PF_UNCOMPRESSED,
             &requiredSize,
             data,
             size);

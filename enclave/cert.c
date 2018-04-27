@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <mbedtls/asn1.h>
 #include <mbedtls/config.h>
+#include <mbedtls/oid.h>
 #include <mbedtls/pem.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
-#include <mbedtls/asn1.h>
-#include <mbedtls/oid.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/hexdump.h>
@@ -15,8 +15,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/thread.h>
 #include "ec.h"
-#include "rsa.h"
 #include "pem.h"
+#include "rsa.h"
 
 #define TRACE printf("TRACE: %s(%u)\n", __FILE__, __LINE__)
 
@@ -109,10 +109,7 @@ typedef struct _Cert
 
 OE_STATIC_ASSERT(sizeof(Cert) <= sizeof(OE_Cert));
 
-OE_INLINE void _CertInit(
-    Cert* impl, 
-    mbedtls_x509_crt* cert,
-    Referent* referent)
+OE_INLINE void _CertInit(Cert* impl, mbedtls_x509_crt* cert, Referent* referent)
 {
     impl->magic = OE_CERT_MAGIC;
     impl->cert = cert;
@@ -168,9 +165,7 @@ typedef struct _CertChain
 
 OE_STATIC_ASSERT(sizeof(CertChain) <= sizeof(OE_CertChain));
 
-OE_INLINE OE_Result _CertChainInit(
-    CertChain* impl, 
-    Referent* referent)
+OE_INLINE OE_Result _CertChainInit(CertChain* impl, Referent* referent)
 {
     impl->magic = OE_CERT_CHAIN_MAGIC;
     impl->referent = referent;
@@ -303,7 +298,7 @@ OE_Result OE_CertChainReadPEM(
 
     /* Read the PEM buffer into DER format */
     if (mbedtls_x509_crt_parse(
-        &referent->crt, (const uint8_t*)pemData, pemSize) != 0)
+            &referent->crt, (const uint8_t*)pemData, pemSize) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }

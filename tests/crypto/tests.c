@@ -160,6 +160,7 @@ static void TestRSASign()
     OE_HexDump(signature, signatureSize);
 #endif
 
+    OE_RSAPrivateKeyFree(&key);
     free(signature);
 
     printf("=== passed TestRSASign\n");
@@ -183,6 +184,8 @@ static void TestRSAVerify()
         RSA_SIGNATURE,
         RSA_SIGNATURE_SIZE);
     OE_TEST(r == OE_OK);
+
+    OE_RSAPublicKeyFree(&key);
 
     printf("=== passed TestRSAVerify\n");
 }
@@ -210,8 +213,7 @@ static const char CERT[] =
     "-----END CERTIFICATE-----\n";
 
 /* RSA modulus of CERT */
-static const char CERT_RSA_MODULUS[] =
-{
+static const char CERT_RSA_MODULUS[] = {
     0x00, 0xE8, 0xCB, 0x03, 0x4B, 0x54, 0x3F, 0xF4, 0xB0, 0xF8, 0xBF, 0x4A,
     0xA3, 0x02, 0x8B, 0xF7, 0x83, 0xC9, 0x7B, 0x60, 0x64, 0xF6, 0xED, 0x18,
     0x79, 0xE4, 0x5A, 0xD3, 0x3D, 0x4F, 0xC8, 0x8A, 0x0B, 0x54, 0x4D, 0xCA,
@@ -237,7 +239,7 @@ static const char CERT_RSA_MODULUS[] =
 };
 
 /* RSA exponent of CERT */
-static const char CERT_RSA_EXPONENT[] = { 0x00, 0x01, 0x00, 0x01 };
+static const char CERT_RSA_EXPONENT[] = {0x00, 0x01, 0x00, 0x01};
 
 /* Certificate with an EC key */
 static const char ECCERT[] =
@@ -263,14 +265,13 @@ static const char ECCERT[] =
     "-----END CERTIFICATE-----\n";
 
 /* Key contained in ECCERT */
-const uint8_t CERT_EC_KEY[] =
-{
-    0x04, 0x79, 0xB3, 0x04, 0x37, 0x11, 0xB2, 0x73, 0xB3, 0x6C, 0xFC, 0xE5, 
-    0x78, 0x6E, 0xDE, 0x8E, 0x39, 0x9C, 0xBD, 0x2B, 0x15, 0x33, 0x16, 0xD3,
-    0xCE, 0xC2, 0xE1, 0xAA, 0xF5, 0xC8, 0x43, 0xB8, 0x99, 0x20, 0xCF, 0x53, 
-    0x3F, 0xE2, 0x22, 0xED, 0x9B, 0x44, 0x93, 0x47, 0xC9, 0x88, 0x10, 0xD9,
-    0xC9, 0xBF, 0x04, 0xB4, 0x13, 0xA4, 0x93, 0xBB, 0x1B, 0x02, 0xB4, 0xD1, 
-    0x88, 0xCC, 0xDB, 0x1C, 0x38,
+const uint8_t CERT_EC_KEY[] = {
+    0x04, 0x79, 0xB3, 0x04, 0x37, 0x11, 0xB2, 0x73, 0xB3, 0x6C, 0xFC,
+    0xE5, 0x78, 0x6E, 0xDE, 0x8E, 0x39, 0x9C, 0xBD, 0x2B, 0x15, 0x33,
+    0x16, 0xD3, 0xCE, 0xC2, 0xE1, 0xAA, 0xF5, 0xC8, 0x43, 0xB8, 0x99,
+    0x20, 0xCF, 0x53, 0x3F, 0xE2, 0x22, 0xED, 0x9B, 0x44, 0x93, 0x47,
+    0xC9, 0x88, 0x10, 0xD9, 0xC9, 0xBF, 0x04, 0xB4, 0x13, 0xA4, 0x93,
+    0xBB, 0x1B, 0x02, 0xB4, 0xD1, 0x88, 0xCC, 0xDB, 0x1C, 0x38,
 };
 
 static const char CHAIN[] =
@@ -523,6 +524,8 @@ static void TestECSignAndVerify()
 
         OE_TEST(signature != NULL);
         OE_TEST(signatureSize != 0);
+
+        OE_ECPrivateKeyFree(&key);
     }
 
     {
@@ -549,6 +552,8 @@ static void TestECSignAndVerify()
             EC_SIGNATURE,
             EC_SIGNATURE_SIZE);
         OE_TEST(r == OE_OK);
+
+        OE_ECPublicKeyFree(&key);
     }
 
 #if 0
@@ -871,11 +876,11 @@ static void TestCertMethods()
     /* Test OE_CertGetECPublicKey() */
     {
         OE_Cert cert;
+        OE_ECPublicKey key;
 
         r = OE_CertReadPEM(ECCERT, sizeof(ECCERT), &cert);
         OE_TEST(r == OE_OK);
 
-        OE_ECPublicKey key;
         r = OE_CertGetECPublicKey(&cert, &key);
         OE_TEST(r == OE_OK);
 
@@ -916,13 +921,15 @@ static void TestCertMethods()
         OE_TEST(r == OE_OK);
         OE_TEST(length == 2);
 
-        for(size_t i = 0; i < length; i++)
+        for (size_t i = 0; i < length; i++)
         {
             OE_Cert cert;
             r = OE_CertChainGetCert(&chain, i, &cert);
             OE_TEST(r == OE_OK);
             OE_CertFree(&cert);
         }
+
+        OE_CertChainFree(&chain);
     }
 
     printf("=== passed %s()\n", __FUNCTION__);
@@ -930,8 +937,8 @@ static void TestCertMethods()
 
 static void RunAllTests()
 {
-    TestCertVerify();
     TestCertMethods();
+    TestCertVerify();
     TestECGenerate();
     TestECSignAndVerify();
     TestECWritePrivate();
