@@ -39,7 +39,7 @@ typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
  *     -----END PRIVATE KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * OE_ECFreePrivateKey().
+ * OE_ECPrivateKeyFree().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -47,7 +47,7 @@ typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECReadPrivateKeyPEM(
+OE_Result OE_ECPrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_ECPrivateKey* privateKey);
@@ -63,7 +63,7 @@ OE_Result OE_ECReadPrivateKeyPEM(
  *     -----END PUBLIC KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * OE_ECFreePublicKey().
+ * OE_ECPublicKeyFree().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -71,7 +71,7 @@ OE_Result OE_ECReadPrivateKeyPEM(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECReadPublicKeyPEM(
+OE_Result OE_ECPublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_ECPublicKey* publicKey);
@@ -93,7 +93,7 @@ OE_Result OE_ECReadPublicKeyPEM(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_ECWritePrivateKeyPEM(
+OE_Result OE_ECPrivateKeyWritePEM(
     const OE_ECPrivateKey* privateKey,
     uint8_t* pemData,
     size_t* pemSize);
@@ -117,7 +117,7 @@ OE_Result OE_ECWritePrivateKeyPEM(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_ECWritePublicKeyPEM(
+OE_Result OE_ECPublicKeyWritePEM(
     const OE_ECPublicKey* publicKey,
     uint8_t* pemData,
     size_t* pemSize);
@@ -131,7 +131,7 @@ OE_Result OE_ECWritePublicKeyPEM(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECFreePrivateKey(OE_ECPrivateKey* privateKey);
+OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey);
 
 /**
  * Releases a public EC key
@@ -142,7 +142,7 @@ OE_Result OE_ECFreePrivateKey(OE_ECPrivateKey* privateKey);
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECFreePublicKey(OE_ECPublicKey* publicKey);
+OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey);
 
 /**
  * Digitally signs a message with a private EC key
@@ -159,7 +159,7 @@ OE_Result OE_ECFreePublicKey(OE_ECPublicKey* publicKey);
  * @return OE_OK on success
  * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
-OE_Result OE_ECSign(
+OE_Result OE_ECPrivateKeySign(
     const OE_ECPrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
@@ -182,7 +182,7 @@ OE_Result OE_ECSign(
  *
  * @return OE_OK if the message was signeded with the given certificate
  */
-OE_Result OE_ECVerify(
+OE_Result OE_ECPublicKeyVerify(
     const OE_ECPublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
@@ -202,7 +202,7 @@ OE_Result OE_ECVerify(
  *
  * @return OE_OK on success
  */
-OE_Result OE_ECGenerate(
+OE_Result OE_ECGenerateKeyPair(
     OE_ECType ecType,
     OE_ECPrivateKey* privateKey,
     OE_ECPublicKey* publicKey);
@@ -211,17 +211,17 @@ OE_Result OE_ECGenerate(
  * Get the key bytes from an EC public key
  *
  * This function gets the key bytes from an EC public key. The bytes
- * are written to j
+ * are written to the **buffer** parameter.
  *
  * @param publicKey key whose key bytes are fetched.
  * @param buffer buffer where bytes are written (may be null).
  * @param bufferSize[in,out] buffer size on input; actual size on output.
  *
  * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL buffer is too small and **size** contains
+ * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
  *         the required size.
  */
-OE_Result OE_ECGetPublicKeyBytes(
+OE_Result OE_ECPublicKeyGetKeyBytes(
     const OE_ECPublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize);

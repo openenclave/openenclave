@@ -67,6 +67,8 @@ static void Indent(size_t level)
 
 void DumpRSAPublicKey(const OE_RSAPublicKey* key, size_t level)
 {
+    OE_Result r;
+
     Indent(level);
     printf("RSAPublicKey\n");
 
@@ -74,23 +76,50 @@ void DumpRSAPublicKey(const OE_RSAPublicKey* key, size_t level)
     printf("{\n");
     level++;
 
+    /* Print the modulus */
     {
-        OE_RSAPublicKeyInfo info;
+        uint8_t* buffer = NULL;
+        size_t bufferSize = 0;
 
-        if (OE_RSAGetPublicKeyInfo(key, &info) != 0)
-            err("OE_RSAGetPublicKeyInfo() failed");
+        /* Required buffer size */
+        r = OE_RSAPublicKeyGetModulus(key, NULL, &bufferSize);
+
+        if (r != OE_BUFFER_TOO_SMALL)
+            err("OE_RSAGetPublicKeyBytes() failed 1");
+
+        if (!(buffer = (uint8_t*)malloc(bufferSize)))
+            err("malloc() failed");
+
+        /* Get the key bytes */
+        if (OE_RSAPublicKeyGetModulus(key, buffer, &bufferSize) != OE_OK)
+            err("OE_RSAGetPublicKeyBytes() failed 2");
 
         Indent(level);
-        printf("numModulusBytes=%u\n", info.numModulusBytes);
+        printf("modulus=");
+        OE_HexDump(buffer, bufferSize);
+    }
+
+    /* Print the exponent */
+    {
+        uint8_t* buffer = NULL;
+        size_t bufferSize = 0;
+
+        /* Required buffer size */
+        r = OE_RSAPublicKeyGetExponent(key, NULL, &bufferSize);
+
+        if (r != OE_BUFFER_TOO_SMALL)
+            err("OE_RSAGetPublicKeyBytes() failed 1");
+
+        if (!(buffer = (uint8_t*)malloc(bufferSize)))
+            err("malloc() failed");
+
+        /* Get the key bytes */
+        if (OE_RSAPublicKeyGetExponent(key, buffer, &bufferSize) != OE_OK)
+            err("OE_RSAGetPublicKeyBytes() failed 2");
 
         Indent(level);
-        printf("numModulusBits=%u\n", info.numModulusBits);
-
-        Indent(level);
-        printf("numExponentBytes=%u\n", info.numExponentBytes);
-
-        Indent(level);
-        printf("numExponentBits=%u\n", info.numExponentBits);
+        printf("exponent=");
+        OE_HexDump(buffer, bufferSize);
     }
 
     level--;
@@ -114,17 +143,17 @@ void DumpECPublicKey(const OE_ECPublicKey* key, size_t level)
     /* Get the key bytes */
     {
         /* Required buffer size */
-        r = OE_ECGetPublicKeyBytes(key, NULL, &bufferSize);
+        r = OE_ECPublicKeyGetKeyBytes(key, NULL, &bufferSize);
 
         if (r != OE_BUFFER_TOO_SMALL)
-            err("OE_ECGetPublicKeyBytes() failed 1");
+            err("OE_ECPublicKeyGetKeyBytes() failed 1");
 
         if (!(buffer = (uint8_t*)malloc(bufferSize)))
             err("malloc() failed");
 
         /* Get the key bytes */
-        if (OE_ECGetPublicKeyBytes(key, buffer, &bufferSize) != OE_OK)
-            err("OE_ECGetPublicKeyBytes() failed 2");
+        if (OE_ECPublicKeyGetKeyBytes(key, buffer, &bufferSize) != OE_OK)
+            err("OE_ECPublicKeyGetKeyBytes() failed 2");
     }
 
     Indent(level);

@@ -19,7 +19,7 @@ OE_STATIC_ASSERT(sizeof(OE_ECPublicKeyImpl) <= sizeof(OE_ECPublicKey));
 int OE_ECCopyKey(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
-    bool clearPrivateFields);
+    bool copyPrivateFields);
 
 OE_INLINE bool OE_IsECKey(const mbedtls_pk_context* pk)
 {

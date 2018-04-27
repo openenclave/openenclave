@@ -165,6 +165,59 @@ done:
     return ret;
 }
 
+static OE_Result _GetPublicKeyModulusOrExponent(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize,
+    bool getModulus)
+{
+    const OE_RSAPublicKeyImpl* impl = (const OE_RSAPublicKeyImpl*)publicKey;
+    OE_Result result = OE_UNEXPECTED;
+    size_t requiredSize;
+    mbedtls_rsa_context* rsa;
+    const mbedtls_mpi* mpi;
+
+    /* Check for invalid parameters */
+    if (!_ValidPublicKeyImpl(impl) || !bufferSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If buffer is null, then bufferSize must be zero */
+    if (!buffer && *bufferSize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the RSA context */
+    if (!(rsa = impl->pk.pk_ctx))
+        OE_RAISE(OE_FAILURE);
+
+    /* Pick modulus or exponent */
+    if (!(mpi = getModulus ? &rsa->N : &rsa->E))
+        OE_RAISE(OE_FAILURE);
+
+    /* Determine the required size in bytes */
+    requiredSize = 1 + mbedtls_mpi_size(mpi);
+
+    /* If buffer is null or not big enough */
+    if (!buffer || (*bufferSize < requiredSize))
+    {
+        *bufferSize = requiredSize;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    buffer[0] = 0x00;
+
+    /* Copy key bytes to the caller's buffer */
+    if (mbedtls_mpi_write_binary(mpi, buffer + 1, requiredSize - 1) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    *bufferSize = requiredSize;
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}
+
 /*
 **==============================================================================
 **
@@ -173,7 +226,7 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_RSAReadPrivateKeyPEM(
+OE_Result OE_RSAPrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSAPrivateKey* privateKey)
@@ -211,7 +264,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAReadPublicKeyPEM(
+OE_Result OE_RSAPublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSAPublicKey* publicKey)
@@ -249,7 +302,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAWritePrivateKeyPEM(
+OE_Result OE_RSAPrivateKeyWritePEM(
     const OE_RSAPrivateKey* key,
     uint8_t* pemData,
     size_t* pemSize)
@@ -290,7 +343,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAWritePublicKeyPEM(
+OE_Result OE_RSAPublicKeyWritePEM(
     const OE_RSAPublicKey* key,
     uint8_t* pemData,
     size_t* pemSize)
@@ -331,7 +384,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAFreePrivateKey(OE_RSAPrivateKey* key)
+OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -351,7 +404,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAFreePublicKey(OE_RSAPublicKey* key)
+OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -371,7 +424,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSASign(
+OE_Result OE_RSAPrivateKeySign(
     const OE_RSAPrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
@@ -426,7 +479,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAVerify(
+OE_Result OE_RSAPublicKeyVerify(
     const OE_RSAPublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
@@ -462,7 +515,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAGenerate(
+OE_Result OE_RSAGenerateKeyPair(
     uint64_t bits,
     uint64_t exponent,
     OE_RSAPrivateKey* privateKey,
@@ -531,9 +584,25 @@ done:
 
     if (result != OE_OK)
     {
-        OE_RSAFreePrivateKey(privateKey);
-        OE_RSAFreePublicKey(publicKey);
+        OE_RSAPrivateKeyFree(privateKey);
+        OE_RSAPublicKeyFree(publicKey);
     }
 
     return result;
+}
+
+OE_Result OE_RSAPublicKeyGetModulus(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, true);
+}
+
+OE_Result OE_RSAPublicKeyGetExponent(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, false);
 }

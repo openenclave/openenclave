@@ -121,7 +121,7 @@ void OE_ECInitPublicKey(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
 **==============================================================================
 */
 
-OE_Result OE_ECReadPrivateKeyPEM(
+OE_Result OE_ECPrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_ECPrivateKey* key)
@@ -175,7 +175,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECReadPublicKeyPEM(
+OE_Result OE_ECPublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_ECPublicKey* key)
@@ -229,7 +229,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECWritePrivateKeyPEM(
+OE_Result OE_ECPrivateKeyWritePEM(
     const OE_ECPrivateKey* key,
     uint8_t* data,
     size_t* size)
@@ -296,7 +296,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECWritePublicKeyPEM(
+OE_Result OE_ECPublicKeyWritePEM(
     const OE_ECPublicKey* key,
     uint8_t* data,
     size_t* size)
@@ -355,7 +355,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECFreePrivateKey(OE_ECPrivateKey* key)
+OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -380,7 +380,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECFreePublicKey(OE_ECPublicKey* key)
+OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -405,7 +405,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECSign(
+OE_Result OE_ECPrivateKeySign(
     const OE_ECPrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
@@ -474,7 +474,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECVerify(
+OE_Result OE_ECPublicKeyVerify(
     const OE_ECPublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
@@ -526,7 +526,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECGenerate(
+OE_Result OE_ECGenerateKeyPair(
     OE_ECType type,
     OE_ECPrivateKey* privateKey,
     OE_ECPublicKey* publicKey)
@@ -596,7 +596,7 @@ OE_Result OE_ECGenerate(
         if (!BIO_get_mem_ptr(bio, &mem))
             OE_RAISE(OE_FAILURE);
 
-        if (OE_ECReadPrivateKeyPEM(
+        if (OE_ECPrivateKeyReadPEM(
                 (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -621,7 +621,7 @@ OE_Result OE_ECGenerate(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_ECReadPublicKeyPEM(
+        if (OE_ECPublicKeyReadPEM(
                 (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -646,14 +646,14 @@ done:
 
     if (result != OE_OK)
     {
-        OE_ECFreePrivateKey(privateKey);
-        OE_ECFreePublicKey(publicKey);
+        OE_ECPrivateKeyFree(privateKey);
+        OE_ECPublicKeyFree(publicKey);
     }
 
     return result;
 }
 
-OE_Result OE_ECGetPublicKeyBytes(
+OE_Result OE_ECPublicKeyGetKeyBytes(
     const OE_ECPublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)

@@ -137,7 +137,7 @@ OE_Result OE_CertVerify(
  * @param cert the certificate whose RSA public key is sought.
  * @param publicKey the handle of an RSA public key upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
- *     key by passing it to **OE_RSAFreePublicKey()**.
+ *     key by passing it to **OE_RSAPublicKeyFree()**.
  *
  * @return OE_OK success
  * @return OE_INVALID_PARAMETER a parameter is invalid
@@ -158,7 +158,7 @@ OE_Result OE_CertGetRSAPublicKey(
  * @param cert the certificate whose EC public key is sought.
  * @param publicKey the handle of an EC public key upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
- *     key by passing it to **OE_ECFreePublicKey()**.
+ *     key by passing it to **OE_ECPublicKeyFree()**.
  *
  * @return OE_OK success
  * @return OE_INVALID_PARAMETER a parameter is invalid

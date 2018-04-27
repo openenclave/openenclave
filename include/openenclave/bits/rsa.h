@@ -25,22 +25,6 @@ typedef struct _OE_RSAPublicKey
     uint64_t impl[4];
 } OE_RSAPublicKey;
 
-/* Retrievable information about a public key */
-typedef struct _OE_RSAPublicKeyInfo
-{
-    /* The modulus size in bytes */
-    uint32_t numModulusBytes;
-
-    /* The number of signficant modulus bits */
-    uint32_t numModulusBits;
-
-    /* The exponent size in bytes */
-    uint32_t numExponentBytes;
-
-    /* The number of signficant exponent bits */
-    uint32_t numExponentBits;
-} OE_RSAPublicKeyInfo;
-
 /**
  * Reads a private RSA key from PEM data
  *
@@ -52,7 +36,7 @@ typedef struct _OE_RSAPublicKeyInfo
  *     -----END RSA PRIVATE KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * OE_RSAFreePrivateKey().
+ * OE_RSAPrivateKeyFree().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -60,7 +44,7 @@ typedef struct _OE_RSAPublicKeyInfo
  *
  * @return OE_OK upon success
  */
-OE_Result OE_RSAReadPrivateKeyPEM(
+OE_Result OE_RSAPrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSAPrivateKey* privateKey);
@@ -76,7 +60,7 @@ OE_Result OE_RSAReadPrivateKeyPEM(
  *     -----END PUBLIC KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * OE_RSAFreePublicKey().
+ * OE_RSAPublicKeyFree().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -84,7 +68,7 @@ OE_Result OE_RSAReadPrivateKeyPEM(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_RSAReadPublicKeyPEM(
+OE_Result OE_RSAPublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSAPublicKey* publicKey);
@@ -106,7 +90,7 @@ OE_Result OE_RSAReadPublicKeyPEM(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_RSAWritePrivateKeyPEM(
+OE_Result OE_RSAPrivateKeyWritePEM(
     const OE_RSAPrivateKey* privateKey,
     uint8_t* pemData,
     size_t* pemSize);
@@ -128,7 +112,7 @@ OE_Result OE_RSAWritePrivateKeyPEM(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_RSAWritePublicKeyPEM(
+OE_Result OE_RSAPublicKeyWritePEM(
     const OE_RSAPublicKey* publicKey,
     uint8_t* pemData,
     size_t* pemSize);
@@ -142,7 +126,7 @@ OE_Result OE_RSAWritePublicKeyPEM(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_RSAFreePrivateKey(OE_RSAPrivateKey* privateKey);
+OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* privateKey);
 
 /**
  * Releases an RSA public key
@@ -153,7 +137,7 @@ OE_Result OE_RSAFreePrivateKey(OE_RSAPrivateKey* privateKey);
  *
  * @return OE_OK upon success
  */
-OE_Result OE_RSAFreePublicKey(OE_RSAPublicKey* publicKey);
+OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* publicKey);
 
 /**
  * Digitally signs a message with a private RSA key
@@ -170,7 +154,7 @@ OE_Result OE_RSAFreePublicKey(OE_RSAPublicKey* publicKey);
  * @return OE_OK on success
  * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
-OE_Result OE_RSASign(
+OE_Result OE_RSAPrivateKeySign(
     const OE_RSAPrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
@@ -193,7 +177,7 @@ OE_Result OE_RSASign(
  *
  * @return OE_OK if the message was signeded with the given certificate
  */
-OE_Result OE_RSAVerify(
+OE_Result OE_RSAPublicKeyVerify(
     const OE_RSAPublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
@@ -214,27 +198,49 @@ OE_Result OE_RSAVerify(
  *
  * @return OE_OK on success
  */
-OE_Result OE_RSAGenerate(
+OE_Result OE_RSAGenerateKeyPair(
     uint64_t bits,
     uint64_t exponent,
     OE_RSAPrivateKey* privateKey,
     OE_RSAPublicKey* publicKey);
 
 /**
- * Retrieves information about a public key.
+ * Get the modulus from a public RSA key.
  *
- * This function retrieves information about the given public key. The
- * information is defined above by the **OE_RSAPublicKeyInfo** structure.
+ * This function gets the modulus from a public RSA key. The modulus bytes
+ * are written to **buffer**.
  *
- * @param publicKey the certificate whose information is retrieved.
- * @param info the retrieved information on success.
+ * @param publicKey key whose key bytes are fetched.
+ * @param buffer buffer where modulus is written (may be null).
+ * @param bufferSize[in,out] buffer size on input; actual size on output.
  *
- * @return OE_OK on success
- * @return OE_FAILURE failed to retrieve information about this certificate
+ * @return OE_OK upon success
+ * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
+ *         the required size.
  */
-OE_Result OE_RSAGetPublicKeyInfo(
+OE_Result OE_RSAPublicKeyGetModulus(
     const OE_RSAPublicKey* publicKey,
-    OE_RSAPublicKeyInfo* info);
+    uint8_t* buffer,
+    size_t* bufferSize);
+
+/**
+ * Get the exponent from a public RSA key.
+ *
+ * This function gets the exponent from a public RSA key. The exponent bytes
+ * are written to **buffer**.
+ *
+ * @param publicKey key whose key bytes are fetched.
+ * @param buffer buffer where exponent is written (may be null).
+ * @param bufferSize[in,out] buffer size on input; actual size on output.
+ *
+ * @return OE_OK upon success
+ * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
+ *         the required size.
+ */
+OE_Result OE_RSAPublicKeyGetExponent(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize);
 
 OE_EXTERNC_END
 

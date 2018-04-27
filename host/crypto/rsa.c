@@ -114,7 +114,7 @@ void OE_RSAInitPublicKey(OE_RSAPublicKey* publicKey, RSA* rsa)
 **==============================================================================
 */
 
-OE_Result OE_RSAReadPrivateKeyPEM(
+OE_Result OE_RSAPrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSAPrivateKey* key)
@@ -163,7 +163,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAReadPublicKeyPEM(
+OE_Result OE_RSAPublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
     OE_RSAPublicKey* key)
@@ -223,7 +223,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAWritePrivateKeyPEM(
+OE_Result OE_RSAPrivateKeyWritePEM(
     const OE_RSAPrivateKey* key,
     uint8_t* data,
     size_t* size)
@@ -284,7 +284,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAWritePublicKeyPEM(
+OE_Result OE_RSAPublicKeyWritePEM(
     const OE_RSAPublicKey* key,
     uint8_t* data,
     size_t* size)
@@ -359,7 +359,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAFreePrivateKey(OE_RSAPrivateKey* key)
+OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -384,7 +384,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAFreePublicKey(OE_RSAPublicKey* key)
+OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -409,7 +409,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSASign(
+OE_Result OE_RSAPrivateKeySign(
     const OE_RSAPrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
@@ -461,7 +461,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAVerify(
+OE_Result OE_RSAPublicKeyVerify(
     const OE_RSAPublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
@@ -497,7 +497,7 @@ done:
     return result;
 }
 
-OE_Result OE_RSAGenerate(
+OE_Result OE_RSAGenerateKeyPair(
     uint64_t bits,
     uint64_t exponent,
     OE_RSAPrivateKey* privateKey,
@@ -567,69 +567,107 @@ done:
 
     if (result != OE_OK)
     {
-        OE_RSAFreePrivateKey(privateKey);
-        OE_RSAFreePublicKey(publicKey);
+        OE_RSAPrivateKeyFree(privateKey);
+        OE_RSAPublicKeyFree(publicKey);
     }
 
     return result;
 }
 
-OE_Result OE_RSAGetPublicKeyInfo(
+OE_Result OE_RSAPublicKeyGetModulus(
     const OE_RSAPublicKey* publicKey,
-    OE_RSAPublicKeyInfo* info)
+    uint8_t* buffer,
+    size_t* bufferSize)
 {
+    const OE_RSAPublicKeyImpl* impl = (const OE_RSAPublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
-    OE_RSAPublicKeyImpl* impl = (OE_RSAPublicKeyImpl*)publicKey;
+    size_t requiredSize;
 
-    /* Clear the information in case of failure */
-    if (info)
-        memset(info, 0, sizeof(OE_RSAPublicKeyInfo));
-
-    /* Reject invalid parameters */
-    if (!_ValidPublicKeyImpl(impl) || !info)
+    /* Check for invalid parameters */
+    if (!publicKey || !bufferSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get the number of bytes in the modulus */
+    /* If buffer is null, then bufferSize must be zero */
+    if (!buffer && *bufferSize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Determine the required size in bytes */
     {
-        int n = RSA_size(impl->rsa);
+        int n = BN_num_bytes(impl->rsa->n);
 
         if (n <= 0)
             OE_RAISE(OE_FAILURE);
 
-        info->numModulusBytes = (uint32_t)n;
+        /* Add one leading byte for the leading zero byte */
+        requiredSize = 1 + (size_t)n;
     }
 
-    /* Get the number of modulus bits */
+    /* If buffer is null or not big enough */
+    if (!buffer || (*bufferSize < requiredSize))
     {
-        int n = BN_num_bits(impl->rsa->n);
-
-        if (n <= 0)
-            OE_RAISE(OE_FAILURE);
-
-        info->numModulusBits = (uint32_t)n;
+        *bufferSize = requiredSize;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    /* Get the number of bytes in the public exponent */
+    /* Set leading zero byte */
+    buffer[0] = 0x00;
+
+    /* Copy key bytes to the caller's buffer */
+    if (!BN_bn2bin(impl->rsa->n, buffer + 1))
+        OE_RAISE(OE_FAILURE);
+
+    *bufferSize = requiredSize;
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}
+
+OE_Result OE_RSAPublicKeyGetExponent(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    const OE_RSAPublicKeyImpl* impl = (const OE_RSAPublicKeyImpl*)publicKey;
+    OE_Result result = OE_UNEXPECTED;
+    size_t requiredSize;
+
+    /* Check for invalid parameters */
+    if (!publicKey || !bufferSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If buffer is null, then bufferSize must be zero */
+    if (!buffer && *bufferSize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Determine the required size in bytes */
     {
         int n = BN_num_bytes(impl->rsa->e);
 
         if (n <= 0)
             OE_RAISE(OE_FAILURE);
 
-        info->numExponentBytes = (uint32_t)n;
+        /* Add one leading byte for the leading zero byte */
+        requiredSize = 1 + (size_t)n;
     }
 
-    /* Get the number of exponent public bits */
+    /* If buffer is null or not big enough */
+    if (!buffer || (*bufferSize < requiredSize))
     {
-        int n = BN_num_bits(impl->rsa->e);
-
-        if (n <= 0)
-            OE_RAISE(OE_FAILURE);
-
-        info->numExponentBits = (uint32_t)n;
+        *bufferSize = requiredSize;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    /* Note that for public keys, rsa->d is null */
+    /* Set leading zero byte */
+    buffer[0] = 0x00;
+
+    /* Copy key bytes to the caller's buffer */
+    if (!BN_bn2bin(impl->rsa->e, buffer + 1))
+        OE_RAISE(OE_FAILURE);
+
+    *bufferSize = requiredSize;
 
     result = OE_OK;
 
