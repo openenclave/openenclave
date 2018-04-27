@@ -190,7 +190,7 @@ static size_t _GetTypeSizeFromType(OE_Type type)
         case OE_LONG_T:
 #if defined(__GNUC__)
             return sizeof(long);
-#elif defined(_MSC_VER) 
+#elif defined(_MSC_VER)
             return sizeof(long long);
 #endif
         case OE_USHORT_T:
@@ -200,7 +200,7 @@ static size_t _GetTypeSizeFromType(OE_Type type)
         case OE_ULONG_T:
 #if defined(__GNUC__)
             return sizeof(unsigned long);
-#elif defined(_MSC_VER) 
+#elif defined(_MSC_VER)
             return sizeof(unsigned long long);
 #endif
         case OE_WCHAR_T:
