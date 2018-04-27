@@ -30,7 +30,7 @@ function(add_libc_test_enc NAME CFILE)
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common
         )
-    target_compile_options(libctest-${NAME} PRIVATE
+    target_compile_options(libctest-${NAME}_enc PRIVATE
         -Wno-error
         )
     target_compile_definitions(libctest-${NAME}_enc PRIVATE -D__TEST__="${CFILE}")

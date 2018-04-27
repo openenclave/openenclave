@@ -28,7 +28,7 @@ function(add_libmbed_test_enc NAME CXXFILE)
     target_compile_options(libmbedtest-${NAME}_enc PRIVATE --std=c++14)
     target_compile_definitions(libmbedtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
     target_link_libraries(libmbedtest-${NAME}_enc mbedcrypto )
-    target_link_libraries(libmbedtest-${NAME}_enc libmbedtest-support)
+    target_link_libraries(libmbedtest-${NAME}_enc libmbedtest-support_enc)
 endfunction(add_libmbed_test_enc)
 
 # iterate over the supported tests and create a binary for each.

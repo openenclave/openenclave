@@ -6,4 +6,4 @@ add_enclave_executable(report_enc sign.conf private.pem
     enc.cpp
     )
 
-target_link_libraries(reportenc oeenclave)
+target_link_libraries(report_enc oeenclave)

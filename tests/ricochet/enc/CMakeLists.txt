@@ -6,4 +6,4 @@ add_enclave_executable(ricochet_enc sign.conf private.pem
     enc.c
     )
   
-target_link_libraries(ricochetenc oecore)
+target_link_libraries(ricochet_enc oecore)
