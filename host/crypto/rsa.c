@@ -574,14 +574,16 @@ done:
     return result;
 }
 
-OE_Result OE_RSAPublicKeyGetModulus(
+static OE_Result _GetPublicKeyGetModulusOrExponent(
     const OE_RSAPublicKey* publicKey,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* bufferSize,
+    bool getModulus)
 {
     const OE_RSAPublicKeyImpl* impl = (const OE_RSAPublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     size_t requiredSize;
+    const BIGNUM* bn;
 
     /* Check for invalid parameters */
     if (!publicKey || !bufferSize)
@@ -591,9 +593,12 @@ OE_Result OE_RSAPublicKeyGetModulus(
     if (!buffer && *bufferSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* Select modulus or exponent */
+    bn = getModulus ? impl->rsa->n : impl->rsa->e;
+
     /* Determine the required size in bytes */
     {
-        int n = BN_num_bytes(impl->rsa->n);
+        int n = BN_num_bytes(bn);
 
         if (n <= 0)
             OE_RAISE(OE_FAILURE);
@@ -613,7 +618,7 @@ OE_Result OE_RSAPublicKeyGetModulus(
     buffer[0] = 0x00;
 
     /* Copy key bytes to the caller's buffer */
-    if (!BN_bn2bin(impl->rsa->n, buffer + 1))
+    if (!BN_bn2bin(bn, buffer + 1))
         OE_RAISE(OE_FAILURE);
 
     *bufferSize = requiredSize;
@@ -625,53 +630,26 @@ done:
     return result;
 }
 
+OE_Result OE_RSAPublicKeyGetModulus(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    return _GetPublicKeyGetModulusOrExponent(
+        publicKey, 
+        buffer, 
+        bufferSize,
+        true);
+}
+
 OE_Result OE_RSAPublicKeyGetExponent(
     const OE_RSAPublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    const OE_RSAPublicKeyImpl* impl = (const OE_RSAPublicKeyImpl*)publicKey;
-    OE_Result result = OE_UNEXPECTED;
-    size_t requiredSize;
-
-    /* Check for invalid parameters */
-    if (!publicKey || !bufferSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If buffer is null, then bufferSize must be zero */
-    if (!buffer && *bufferSize != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Determine the required size in bytes */
-    {
-        int n = BN_num_bytes(impl->rsa->e);
-
-        if (n <= 0)
-            OE_RAISE(OE_FAILURE);
-
-        /* Add one leading byte for the leading zero byte */
-        requiredSize = 1 + (size_t)n;
-    }
-
-    /* If buffer is null or not big enough */
-    if (!buffer || (*bufferSize < requiredSize))
-    {
-        *bufferSize = requiredSize;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
-    }
-
-    /* Set leading zero byte */
-    buffer[0] = 0x00;
-
-    /* Copy key bytes to the caller's buffer */
-    if (!BN_bn2bin(impl->rsa->e, buffer + 1))
-        OE_RAISE(OE_FAILURE);
-
-    *bufferSize = requiredSize;
-
-    result = OE_OK;
-
-done:
-
-    return result;
+    return _GetPublicKeyGetModulusOrExponent(
+        publicKey, 
+        buffer, 
+        bufferSize,
+        false);
 }
