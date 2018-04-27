@@ -97,7 +97,7 @@ static OE_Result _OE_GetRemoteReport(
     SGX_Report* sgxReport = NULL;
     uint32_t sgxReportSize = sizeof(SGX_Report);
     OE_Report parsedReport;
-
+    
     // reportData is a validated by _OE_GetLocalReport.
 
     // For remote attestation, the Quoting Enclave's target info is used.
@@ -105,8 +105,11 @@ static OE_Result _OE_GetRemoteReport(
     if (optParams != NULL || optParamsSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    if (reportBufferSize == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     if (reportBuffer == NULL)
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+        *reportBufferSize = 0;
 
     /*
      * Get target info from Quoting Enclave.
