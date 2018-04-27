@@ -3,12 +3,19 @@
 
 if (UNIX)
 set(PLATFORM_SRC
+    crypto/cert.c
+    crypto/ec.c
+    crypto/init.c
+    crypto/random.c
+    crypto/rsa.c
     linux/aep.S
     linux/aesm.c
     linux/enter.S
     linux/entersim.S
     linux/exception.c
     linux/hostthread.c
+    linux/sgxioctl.c
+    linux/sgxsign.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -18,6 +25,7 @@ set(PLATFORM_SRC
     windows/entersim.asm
     windows/exception.c
     windows/hostthread.c
+    windows/sgxsign.c
     )
 endif()
 
@@ -39,13 +47,14 @@ add_library(oehost STATIC
     registers.c
     report.c
     result.c
-    sgxdriver.c
+    sgxload.c
     sgxmeasure.c
     sgxtypes.c
-    sha.c
+    signkey.c
     strings.c
     tests.c
     typeinfo.c
+    crypto/sha.c
     ${PLATFORM_SRC}
     )
 
@@ -66,7 +75,7 @@ target_link_libraries(oehost bcrypt)
 endif()
 
 if(UNIX)
-target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -m64)
+target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC -m64)
 target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
 endif(UNIX)
 target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)

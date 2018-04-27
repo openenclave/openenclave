@@ -150,12 +150,12 @@ build$ cmake ..
 In addition to the standard CMake variables, the following CMake variables
 control the behavior of the Linux make generator for Open Enclave:
 
-| Variable            | Description                                          |
-|---------------------|------------------------------------------------------|
-| CMAKE_BUILD_TYPE    | Build configuration (*Debug*, *Release*, *RelWithDebInfo*). Default is *Debug*. |
-| ENABLE_LIBC_TESTS   | Enable Libc tests. Default is enabled, disable with setting to "Off", "No", "0", ... |
-| ENABLE_LIBCXX_TESTS | Enable Libc++ tests. Default is disabled, enable with setting to "On", "1", ... |
-| ENABLE_REFMAN       | Enable building of reference manual. Requires Doxygen to be installed. Default is enabled, disable with setting to "Off", "No", "0", ... |
+| Variable                 | Description                                          |
+|--------------------------|------------------------------------------------------|
+| CMAKE_BUILD_TYPE         | Build configuration (*Debug*, *Release*, *RelWithDebInfo*). Default is *Debug*. |
+| ENABLE_FULL_LIBC_TESTS   | Enable full Libc tests. Default is disabled, enable with setting to "On", "1", ... |
+| ENABLE_FULL_LIBCXX_TESTS | Enable full Libc++ tests. Default is disabled, enable with setting to "On", "1", ... |
+| ENABLE_REFMAN            | Enable building of reference manual. Requires Doxygen to be installed. Default is enabled, disable with setting to "Off", "No", "0", ... |
 
 
 E.g., to generate an optimized release-build with debug info, use
@@ -178,7 +178,8 @@ This builds the entire Open Enclave SDK, creating the following files.
 |-----------------------------------|-------------------------------------------------------|
 | output/bin/oegen                  | Utility for generating ECALL and OCALL stubs from IDL |
 | output/bin/oesign                 | Utility for signing enclaves                          |
-| output/lib/enclave/liboeenclave.a | Core library for building enclave applications        |
+| output/lib/enclave/liboecore.a    | Core library for building enclave applications (defines enclave intrinsics) |
+| output/lib/enclave/liboeenclave.a | Enclave library for building enclave applications (defines enclave features) |
 | output/lib/enclave/liboelibc.a    | C runtime library for enclave                         |
 | output/lib/enclave/liboelibcxx.a  | C++ runtime library for enclave                       |
 | output/lib/host/liboehost.a       | Library for building host applications                |
@@ -218,20 +219,13 @@ build$ OE_SIMULATION=1 ctest
 
 If things fail, "**ctest -V**" provides test details. Executing ctest from a sub-dir executes the tests underneath.
 
-libcxx tests are omitted by default due to their huge cost on building
-(30mins+). Enable by setting the cmake variable **ENABLE_LIBCXX_TESTS** before building.
+Only a small subset of libc/libcxx tests are enabled by default due to their huge
+cost on building (5/30mins+). Enable the full set by setting the corresponding cmake variable
+**ENABLE_FULL_LIBC_TESTS/ENABLE_FULL_LIBCXX_TESTS** before building.
 
 ```
-build$ cmake -DENABLE_LIBCXX_TESTS=ON ..
+build$ cmake -DENABLE_FULL_LIBC_TESTS=ON -DENABLE_FULL_LIBCXX_TESTS=ON ..
 build$ make
-```
-
-If you are in a hurry and just need a quick confirmation, disable the libc
-tests with the **ENABLE_LIBC_TESTS** cmake variable like so:
-
-```
-build$ cmake -DENABLE_LIBC_TESTS=OFF ..
-[...]
 ```
 
 To run valgrind-tests, add "**-D ExperimentalMemCheck**" to the ctest call.
@@ -297,8 +291,9 @@ and libraries.
 
 | Target           | Description                                                                         |
 |------------------|-------------------------------------------------------------------------------------|
-| oeenclave        | Enclave code: Open Enclave intrinsic functions. Must be present in all enclave code. |
-| oelibc           | Enclave code: Open Enclave C library. Includes oeenclave.                            |
+| oecore           | Enclave code: Open Enclave core features. Must be present in all enclave code. |
+| oeenclave        | Enclave code: Open Enclave features. These features may depend on the mbedcrypto and oelibc libraries. |
+| oelibc           | Enclave code: Open Enclave C library. Includes oecore.                            |
 | oelibcxx         | Enclave code: Open Enclave C++ library. Includes oelibc.                             |
 | oeidl            | Enclave code: Misc helpers required with IDL-compiled code. Includes oelibc.        |
 | oehost           | Host code: Open Enclave intrinsic functions.                                         |
@@ -379,7 +374,7 @@ function with the same arguments.
 The samples provides cmake helper includes under samples/cmake/cmake/
 simplifying Open Enclave application writing. **add_enclave_executable.cmake**
 provides the **add_enclave_executable()** function. It extends CMake's
-**add_executable()** by adding the intrinsic target (oeenclave) and also
+**add_executable()** by adding the intrinsic target (oecore) and also
 signing the enclave. For the echo sample, this ***CMakeLists.txt*** suffices:
 
 ```
@@ -445,7 +440,14 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave);
+    result = OE_CreateEnclave(
+        argv[1],
+        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_FLAG_DEBUG,
+        NULL,
+        0,
+        &enclave);
+
     if (result != OE_OK)
     {
         fprintf(stderr, "%s: OE_CreateEnclave(): %u\n", argv[0], result);
@@ -554,7 +556,7 @@ OE_Main() entry point. Note that the echo sample uses neither a C nor C++
 runtime library. Other samples will show how these are used.
 
 ```
-LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loeenclave
+LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loecore
 ```
 
 To sign the enclave, use the **oesign** tool. This tool takes the following
@@ -580,10 +582,16 @@ Note: the enclave must be created with debug opt-in flag, otherwise debugger can
 The default sample enclave is created with debug flag, refer to:
 
 ```
-result = OE_CreateEnclave(argv[1], OE_FLAG_DEBUG, &enclave);
+result = OE_CreateEnclave(
+        argv[1],
+        OE_ENCLAVE_TYPE_SGX,
+        OE_ENCLAVE_FLAG_DEBUG,
+        NULL,
+        0,
+        &enclave);
 ```
 
-This flag (OE_FLAG_DEBUG) should only be set in development phase. It must be clear out for production enclave.
+This flag (OE_ENCLAVE_FLAG_DEBUG) should only be set in development phase. It needs to be removed for a production enclave.
 
 The debugger is installed at <install_prefix>/bin/oe-gdb. The usage is same with GDB, for example: the following command will
 launch the simple enclave application under debugger:

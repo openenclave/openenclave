@@ -26,9 +26,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind-internal.h"
 
 #ifdef OPEN_ENCLAVE
-// Note: This function declaration is different with the read implementation.
-// bool OE_IsWithinEnclave(const void* ptr, size_t size);
-extern int OE_IsOutsideEnclave(const void* ptr, size_t size);
+#include <stdbool.h>
+extern bool OE_IsWithinEnclave(const void* ptr, size_t size);
 
 //
 // Check if the current cursor points to something inside the enclave.
@@ -40,8 +39,8 @@ int _is_cursor_inside_enclave(unw_cursor_t *cursor)
 
     // Check if the [IP, IP+16) is inside enclave, and
     // check if [cfa, cfa+1024) is inside enclave.
-    if (OE_IsWithinEnclave(c->dwarf.ip, 16) == 1 && 
-        OE_IsWithinEnclave(c->dwarf.cfa, 1024) == 1)
+    if (OE_IsWithinEnclave(c->dwarf.ip, 16) && 
+	OE_IsWithinEnclave(c->dwarf.cfa, 1024))
     {
         return 1;
     }

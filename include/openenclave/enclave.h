@@ -159,22 +159,31 @@ OE_PRINTF_FORMAT(2, 3)
 int OE_HostFprintf(int device, const char* fmt, ...);
 
 /**
- * Allocates space for parameters of the next call to host on the host's stack
- * frame.
+ * Allocates space from host memory. This function is intended to obtain
+ * memory for OE_CallHost arguments. For repeated small allocations,
+ * performance of OE_HostAllocForCallHost() will generally be higher than
+ * OE_HostMalloc().
  *
- * This function allocates **size** bytes of space on the stack frame of the
- * host. The returned address will be a multiple of **alignment** (if
- * non-zero). The allocated space is freed automatically when the OCALL
- * returns. If the stack overflows, the behavior is undefined.
+ * Note: Memory allocated by OE_HostAllocForCallHost() must be freed by
+ * OE_HostFreeForCallHost(), in reverse order of allocation.
  *
  * @param size The number of bytes to allocate.
- * @param alignment The alignment requirement (see above).
- * @param isZeroInit Whether the allocated memory is zero-initialized.
  *
- * @returns Returns the address of the allocated space.
- *
+ * @returns Returns the address of the allocated space, or NULL in case of
+ *          error.
  */
-void* OE_HostAllocForCallHost(size_t size, size_t alignment, bool isZeroInit);
+void* OE_HostAllocForCallHost(size_t size);
+
+/**
+ * Frees space allocated w/ OE_HostAllocForCallHost().
+ *
+ * Note: Memory allocated by OE_HostAllocForCallHost() must be freed by
+ * OE_HostFreeForCallHost(), in reverse order of allocation.
+ *
+ * @param p Address returned by previous call to OE_HostAllocForCallHost().
+ *      Can be NULL.
+ */
+void OE_HostFreeForCallHost(void* p);
 
 /**
  * Allocate bytes from the host's heap.
@@ -305,12 +314,16 @@ void __OE_AssertFail(
     int line,
     const char* func);
 
+#ifndef NDEBUG
 #define OE_Assert(EXPR)                                               \
     do                                                                \
     {                                                                 \
         if (!(EXPR))                                                  \
             __OE_AssertFail(#EXPR, __FILE__, __LINE__, __FUNCTION__); \
     } while (0)
+#else
+#define OE_Assert(EXPR)
+#endif
 
 /**
  * Get a report signed by the enclave platform for use in attestation.
@@ -348,6 +361,86 @@ OE_Result OE_GetReport(
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize);
 
+/**
+ * Parse an enclave report into a standard format for reading.
+ *
+ * @param report The buffer containing the report to parse.
+ * @param reportSize The size of the **report** buffer.
+ * @param parsedReport The **OE_Report** structure to populate with the report
+ * properties in a standard format. The *parsedReport* holds pointers to fields
+ * within the supplied *report* and must not be used beyond the lifetime of the
+ * *report*.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ */
+OE_Result OE_ParseReport(
+    const uint8_t* report,
+    uint32_t reportSize,
+    OE_Report* parsedReport);
+
+typedef enum _OE_SealIDPolicy {
+    OE_SEAL_ID_UNIQUE = 1,
+    OE_SEAL_ID_PRODUCT = 2,
+} OE_SealIDPolicy;
+
+/**
+* Get a symmetric encryption key derived from the specified policy and coupled
+* to the enclave platform.
+*
+* @param sealPolicy The policy for the identity properties used to derive the
+* seal key.
+* @param keyBuffer The buffer to write the resulting seal key to.
+* @param keyBufferSize The size of the **keyBuffer** buffer. If this is too
+* small, this function sets it to the required size and returns
+* OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
+* to keyBuffer is set to it.
+* @param keyInfo Optional buffer for the enclave-specific key information which
+* can be used to retrieve the same key later, on a newer security version.
+* @param keyInfoSize The size of the **keyInfo** buffer. If this is too small,
+* this function sets it to the required size and returns OE_BUFFER_TOO_SMALL.
+* When this function success, the number of bytes written to keyInfo is set to
+* it.
+
+* @retval OE_OK The seal key was successfully requested.
+* @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+* @retval OE_BUFFER_TOO_SMALL The **keyBuffer** or **keyInfo** buffer is too
+* small.
+* @retval OE_UNEXPECTED An unexpected error happened.
+*/
+OE_Result OE_GetSealKeyByPolicy(
+    OE_SealIDPolicy sealPolicy,
+    uint8_t* keyBuffer,
+    uint32_t* keyBufferSize,
+    uint8_t* keyInfo,
+    uint32_t* keyInfoSize);
+
+/**
+* Get a symmetric encryption key from the enclave platform using existing key
+* information.
+*
+* @param keyInfo The enclave-specific key information to derive the seal key
+* with.
+* @param keyInfoSize The size of the **keyInfo** buffer.
+* @param keyBuffer The buffer to write the resulting seal key to. It will not
+* be changed if this function fails.
+* @param keyBufferSize The size of the **keyBuffer** buffer. If this is too
+* small, this function sets it to the required size and returns
+* OE_BUFFER_TOO_SMALL. When this function success, the number of bytes written
+* to keyBuffer is set to it.
+*
+* @retval OE_OK The seal key was successfully requested.
+* @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+* @retval OE_BUFFER_TOO_SMALL The **keyBuffer** buffer is too small.
+* @retval OE_INVALID_CPUSVN **keyInfo** contains an invalid CPUSVN.
+* @retval OE_INVALID_ISVSVN **keyInfo** contains an invalid ISVSVN.
+* @retval OE_INVALID_KEYNAME **keyInfo** contains an invalid KEYNAME.
+*/
+OE_Result OE_GetSealKey(
+    const uint8_t* keyInfo,
+    uint32_t keyInfoSize,
+    uint8_t* keyBuffer,
+    uint32_t* keyBufferSize);
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */

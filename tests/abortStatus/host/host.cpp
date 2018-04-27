@@ -25,6 +25,7 @@ void TestAbortStatus(OE_Enclave* enclave, const char* functionName)
 {
     OE_Result result;
     AbortStatusArgs args;
+    args.divisor = 0;
     args.ret = -1;
 
     printf("=== %s(%s)  \n", __FUNCTION__, functionName);
@@ -275,14 +276,16 @@ static bool TestBasicAbort(const char* enclaveName)
 
     for (uint32_t i = 0; i < OE_COUNTOF(functionNames); i++)
     {
-        if ((result = OE_CreateEnclave(enclaveName, flags, &enclave)) != OE_OK)
+        if ((result = OE_CreateEnclave(
+                 enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+            OE_OK)
         {
             OE_PutErr("OE_CreateEnclave(): result=%u", result);
             return false;
         }
 
         // Skip the last test for simulation mode.
-        if ((flags & OE_FLAG_SIMULATE) == 0 ||
+        if ((flags & OE_ENCLAVE_FLAG_SIMULATE) == 0 ||
             (i != OE_COUNTOF(functionNames) - 1))
         {
             TestAbortStatus(enclave, functionNames[i]);
@@ -317,7 +320,9 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
 
     // Create the enclave.
     const uint32_t flags = OE_GetCreateFlags();
-    if ((result = OE_CreateEnclave(enclaveName, flags, &enclave)) != OE_OK)
+    if ((result = OE_CreateEnclave(
+             enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+        OE_OK)
     {
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
         return false;

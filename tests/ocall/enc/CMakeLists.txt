@@ -5,3 +5,4 @@ include(add_enclave_executable)
 add_enclave_executable(ocall_enc sign.conf private.pem
     enc.cpp
     )
+target_link_libraries(ocallenc oecore)

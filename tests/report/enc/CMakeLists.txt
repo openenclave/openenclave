@@ -5,3 +5,5 @@ include(add_enclave_executable)
 add_enclave_executable(report_enc sign.conf private.pem
     enc.cpp
     )
+
+target_link_libraries(reportenc oeenclave)

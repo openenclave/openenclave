@@ -28,41 +28,44 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_Enclave OE_Enclave;
 
-#define OE_FLAG_DEBUG 1
-#define OE_FLAG_SIMULATE 2
+#define OE_ENCLAVE_FLAG_DEBUG 0x00000001
+#define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
+#define OE_ENCLAVE_FLAG_RESERVED \
+    (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SIMULATE))
 
 /**
  * Creates an enclave from an enclave image file.
  *
- * This function creates an enclave from an enclave image file. While creating
- * the enclave, this function interacts with the Intel(R) SGX drviver and the
- * Intel(R) AESM service. Enclave creation peforms the following steps.
- *     - Loads an enclave image file
- *     - Maps the enclave memory image onto the driver device (/dev/isgx)
- *     - Lays out the enclave memory image and injects metadata
- *     - Asks the driver to create the enclave (ECREATE)
- *     - Asks the driver to add the pages to the EPC (EADD/EEXTEND)
- *     - Asks the Intel(R) launch enclave (LE) for a launch token (EINITKEY)
- *     - Asks the driver to initialize the enclave with the token (EINIT)
- *
- * Once these steps have been performed, the enclave is ready to use.
+ * This function creates an enclave from an enclave image file. On successful
+ * return, the enclave is fully initialized and ready to use.
  *
  * @param path The path of an enclave image file in ELF-64 format. This
- * file must have been linked with the **oeenclave** library and signed by the
+ * file must have been linked with the **oecore** library and signed by the
  * **oesign** tool.
  *
- * @param flags These flags control how the enclave is run.
- *     - OE_FLAG_DEBUG - runs the enclave in debug mode
- *     - OE_FLAG_SIMULATION - runs the enclave in simulation mode
+ * @param type The type of enclave supported by the enclave image file.
+ *     - OE_ENCLAVE_TYPE_SGX - An SGX enclave
  *
- * @param enclave This points to the enclave instance upon succeess.
+ * @param flags These flags control how the enclave is run.
+ *     - OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode
+ *     - OE_ENCLAVE_FLAG_SIMULATE - runs the enclave in simulation mode
+ *
+ * @param config Additional enclave creation configuration data for the specific
+ * enclave type. This parameter is reserved and must be NULL.
+ *
+ * @param configSize The size of the **config** data buffer in bytes.
+ *
+ * @param enclave This points to the enclave instance upon success.
  *
  * @returns Returns OE_OK on success.
  *
  */
 OE_Result OE_CreateEnclave(
     const char* path,
+    OE_EnclaveType type,
     uint32_t flags,
+    const void* config,
+    uint32_t configSize,
     OE_Enclave** enclave);
 
 /**
@@ -143,6 +146,24 @@ OE_Result OE_GetReport(
     uint32_t optParamsSize,
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize);
+
+/**
+ * Parse an enclave report into a standard format for reading.
+ *
+ * @param report The buffer containing the report to parse.
+ * @param reportSize The size of the **report** buffer.
+ * @param parsedReport The **OE_Report** structure to populate with the report
+ * properties in a standard format. The *parsedReport* holds pointers to fields
+ * within the supplied *report* and must not be used beyond the lifetime of the
+ * *report*.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ */
+OE_Result OE_ParseReport(
+    const uint8_t* report,
+    uint32_t reportSize,
+    OE_Report* parsedReport);
 
 OE_EXTERNC_END
 

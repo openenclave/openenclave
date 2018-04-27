@@ -70,7 +70,7 @@ OE_EnterSim:
 
     // Save the current context.
     mov HOST_CONTEXT, %rdi
-    call OE_SnapCurrentContext
+    call OE_SnapCurrentContext@PLT
 
     // Save the stack pointer so enclave can use the stack.
     mov %rsp, RSP
@@ -81,7 +81,7 @@ OE_EnterSim:
     mov 72(%rbx), %rdx  // RDX=TCS.u.main (72)
     mov ARG1, %rdi
     mov ARG2, %rsi
-    lea .retaddr, %rcx
+    lea .retaddr(%rip), %rcx
     jmp *%rdx
 .retaddr:
     mov %rdi, ARG1OUT
@@ -92,7 +92,7 @@ OE_EnterSim:
 
     // Restore the saved host context.
     mov HOST_CONTEXT, %rdi
-    call OE_RestorePartialContext
+    call OE_RestorePartialContext@PLT
 
 .dispatch_ocall_sim:
 
@@ -121,7 +121,7 @@ OE_EnterSim:
     leaq ARG2OUT, %rcx
     mov TCS, %r8
     mov ENCLAVE, %r9
-    call __OE_DispatchOCall
+    call __OE_DispatchOCall@PLT
 
     // Restore registers saved above:
     pop %r13

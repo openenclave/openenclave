@@ -1,6 +1,7 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/algorithms/alg.modifying.operations/alg.random.shuffle/random_shuffle.cxx1z.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/algorithms/debug_less.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/algorithms/version.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/atomics/atomics.align/align.pass.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/atomics/atomics.flag/init_bool.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/atomics/libcpp-has-no-threads.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/atomics/version.pass.cpp
@@ -200,6 +201,7 @@
 ../../3rdparty/libcxx/libcxx/test/libcxx/modules/inttypes_h_exports.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/modules/stdint_h_exports.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/numerics/cfenv/version.pass.cpp
+../../3rdparty/libcxx/libcxx/test/libcxx/numerics/c.math/constexpr-fns.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/numerics/c.math/ctgmath.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/numerics/c.math/fdelayed-template-parsing.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/numerics/c.math/tgmath_h.pass.cpp
@@ -1895,6 +1897,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/experimental/utilities/meta/meta.type.synop/meta.rel.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/experimental/utilities/meta/meta.type.synop/meta.unary.cat.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/experimental/utilities/meta/meta.type.synop/meta.unary.comp.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/experimental/utilities/meta/meta.type.synop/meta.unary.prop.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/experimental/utilities/meta/meta.type.synop/meta.unary.prop.query.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/experimental/utilities/nothing_to_do.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/experimental/utilities/propagate_const/propagate_const.class/propagate_const.assignment/assign_convertible_element_type.pass.cpp
@@ -4820,6 +4823,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_swappable_include_order.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_trivially_assignable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_trivially_constructible.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_trivially_copyable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_trivially_copy_assignable.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_trivially_copy_constructible.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_trivially_default_constructible.pass.cpp
