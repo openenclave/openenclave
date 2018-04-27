@@ -5,7 +5,7 @@ include_directories(${CMAKE_SOURCE_DIR}/3rdparty/musl/musl/include)
 include_directories(${CMAKE_BINARY_DIR}/output/include/openenclave/libc)
 add_library(fops STATIC f_ops.c )
 add_dependencies(fops oelibc_includes)
-target_link_libraries(fops oeenclave )
+target_link_libraries(fops oelibc )
 
 target_compile_options(fops PRIVATE  -Wno-error)
 
