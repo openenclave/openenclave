@@ -636,10 +636,7 @@ OE_Result OE_RSAPublicKeyGetModulus(
     size_t* bufferSize)
 {
     return _GetPublicKeyGetModulusOrExponent(
-        publicKey, 
-        buffer, 
-        bufferSize,
-        true);
+        publicKey, buffer, bufferSize, true);
 }
 
 OE_Result OE_RSAPublicKeyGetExponent(
@@ -648,8 +645,5 @@ OE_Result OE_RSAPublicKeyGetExponent(
     size_t* bufferSize)
 {
     return _GetPublicKeyGetModulusOrExponent(
-        publicKey, 
-        buffer, 
-        bufferSize,
-        false);
+        publicKey, buffer, bufferSize, false);
 }

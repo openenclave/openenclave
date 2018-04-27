@@ -7,6 +7,7 @@
 #include <mbedtls/pem.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
+#include <openenclave/bits/atomic.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/hexdump.h>
@@ -14,7 +15,6 @@
 #include <openenclave/bits/raise.h>
 #include <openenclave/enclave.h>
 #include <openenclave/thread.h>
-#include <openenclave/bits/atomic.h>
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
