@@ -210,29 +210,6 @@ OE_Result OE_CertChainGetCert(
     size_t index,
     OE_Cert* cert);
 
-/**
- * Get the subject name from the certificate.
- *
- * This function retrieves a certficate's subject name.
- *
- * @param cert the certificate whose subject name is retrieved.
- * @param name the buffer containing the subject name on success (this
- *     parameter may be null when determining the required size).
- * @param nameSize[in,out] the buffer size on input or the subject name size
- *     on output (including the zero-terminator).
- *
- * @return OE_OK success
- * @return OE_BUFFER_TOO_SMALL the buffer is too small and **nameSize**
- *     contains the required buffer size.
- * @return OE_FAILURE failure
- */
-OE_Result OE_CertGetSubjectName(
-    const OE_Cert* cert,
-    char* name,
-    size_t* nameSize);
-
-OE_Result OE_CertEqual(const OE_Cert* cert1, const OE_Cert* cert2, bool* flag);
-
 OE_EXTERNC_END
 
 #endif /* _OE_CERT_H */
