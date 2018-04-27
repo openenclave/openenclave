@@ -511,7 +511,9 @@ add_library(oelibc STATIC
     ${MUSLSRC}/env/__environ.c
 
 #   ${MUSLSRC}/time/mktime.c
-#   ${MUSLSRC}/time/gmtime.c
+    ${MUSLSRC}/time/gmtime.c
+    ${MUSLSRC}/time/gmtime_r.c
+    ${MUSLSRC}/time/__secs_to_tm.c
 #   ${MUSLSRC}/time/__tm_to_secs.c
 #   ${MUSLSRC}/time/__year_to_secs.c
 #   ${MUSLSRC}/time/__month_to_secs.c
