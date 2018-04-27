@@ -11,6 +11,7 @@
 #include <windows.h>
 #endif
 
+/* Atomically increment **x** and return its new value */
 OE_INLINE uint64_t OE_AtomicIncrement(volatile uint64_t* x)
 {
 #if defined(__GNUC__)
@@ -22,6 +23,7 @@ OE_INLINE uint64_t OE_AtomicIncrement(volatile uint64_t* x)
 #endif
 }
 
+/* Atomically decrement **x** and return its new value */
 OE_INLINE uint64_t OE_AtomicDecrement(volatile uint64_t* x)
 {
 #if defined(__GNUC__)
