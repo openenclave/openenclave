@@ -134,6 +134,23 @@ OE_INLINE void OE_SecureZeroFill(volatile void* ptr, uint32_t size)
 }
 
 /**
+ * OE_SecureMemcpy guarantees that the memcpy is not optimized away by the
+ * compiler.
+ */
+OE_INLINE void OE_SecureMemcpy(
+    volatile void* dst,
+    const void* src,
+    uint32_t size)
+{
+    volatile uint8_t* d = (volatile uint8_t*)dst;
+    const uint8_t* s = (const uint8_t*)src;
+    while (size--)
+    {
+        *d++ = *s++;
+    }
+}
+
+/**
  * OE_ConstantTimeMemEqual does a constant time memory compare.
  */
 OE_INLINE int OE_ConstantTimeMemEqual(
