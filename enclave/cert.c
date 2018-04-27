@@ -14,6 +14,7 @@
 #include <openenclave/bits/raise.h>
 #include <openenclave/enclave.h>
 #include <openenclave/thread.h>
+#include <openenclave/bits/atomic.h>
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
@@ -33,8 +34,7 @@
 typedef struct _Referent
 {
     mbedtls_x509_crt crt;
-    OE_Spinlock spin;
-    uint64_t refs;
+    volatile uint64_t refs;
 } Referent;
 
 /* Allocate and initialize a new referent */
@@ -46,7 +46,6 @@ OE_INLINE Referent* _ReferentNew(void)
         return NULL;
 
     mbedtls_x509_crt_init(&referent->crt);
-    referent->spin = OE_SPINLOCK_INITIALIZER;
     referent->refs = 1;
 
     return referent;
@@ -56,23 +55,14 @@ OE_INLINE Referent* _ReferentNew(void)
 OE_INLINE void _ReferentAddRef(Referent* referent)
 {
     if (referent)
-    {
-        OE_SpinLock(&referent->spin);
-        referent->refs++;
-        OE_SpinUnlock(&referent->spin);
-    }
+        OE_AtomicIncrement(&referent->refs);
 }
 
 /* Decrease the reference count and return its new value */
 OE_INLINE void _ReferentFree(Referent* referent)
 {
-    /* Decrement the reference counter */
-    OE_SpinLock(&referent->spin);
-    uint64_t refs = --referent->refs;
-    OE_SpinUnlock(&referent->spin);
-
     /* If this was the last reference, release the object */
-    if (refs == 0)
+    if (OE_AtomicDecrement(&referent->refs) == 0)
     {
         /* Release the MBEDTLS certificate */
         mbedtls_x509_crt_free(&referent->crt);
