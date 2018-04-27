@@ -23,7 +23,7 @@ OE_Result OE_Get_AES_CMAC(
     if (cmac == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (keySize != 128)
+    if (keySizeBits != 128)
         OE_RAISE(OE_UNSUPPORTED);
 
     info = mbedtls_cipher_info_from_type(MBEDTLS_CIPHER_AES_128_ECB);
