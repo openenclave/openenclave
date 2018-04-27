@@ -4,6 +4,7 @@
 #include "../common/report.c"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
 #include "quote.h"
 
@@ -75,7 +76,7 @@ static OE_Result _OE_GetLocalReport(
 done:
     if (arg)
     {
-        memset(arg, 0, sizeof(*arg));
+        OE_SecureZeroFill(arg, sizeof(*arg));
         free(arg);
     }
 
@@ -159,13 +160,13 @@ done:
 
     if (sgxTargetInfo)
     {
-        memset(sgxTargetInfo, 0, sizeof(*sgxTargetInfo));
+        OE_SecureZeroFill(sgxTargetInfo, sizeof(*sgxTargetInfo));
         free(sgxTargetInfo);
     }
 
     if (sgxReport)
     {
-        memset(sgxReport, 0, sizeof(*sgxReport));
+        OE_SecureZeroFill(sgxReport, sizeof(*sgxReport));
         free(sgxReport);
     }
 
