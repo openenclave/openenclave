@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/cmac.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/keys.h>
-#include <openenclave/bits/mac.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
@@ -17,13 +17,14 @@ OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(SGX_ReportData));
 
 static OE_Result _OE_GetReportKey(const SGX_Report* sgxReport, SGX_Key* sgxKey)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     SGX_KeyRequest sgxKeyRequest = {0};
 
     sgxKeyRequest.key_name = SGX_KEYSELECT_REPORT;
     OE_Memcpy(sgxKeyRequest.key_id, sgxReport->keyid, sizeof(sgxReport->keyid));
 
     OE_CHECK(OE_GetKey(&sgxKeyRequest, sgxKey));
+    result = OE_OK;
 
 done:
     // Cleanup secret.
@@ -40,12 +41,14 @@ OE_Result OE_VerifyReport(
     uint32_t reportSize,
     OE_Report* parsedReport)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     OE_Report oeReport = {0};
     SGX_Key sgxKey = {0};
 
     SGX_Report* sgxReport = NULL;
-    OE_MAC mac = {0};
+
+    const uint32_t cmacLength = sizeof(sgxKey);
+    uint8_t cmac[cmacLength] = {0};
 
     OE_CHECK(OE_ParseReport(report, reportSize, &oeReport));
 
@@ -59,22 +62,24 @@ OE_Result OE_VerifyReport(
 
         OE_CHECK(_OE_GetReportKey(sgxReport, &sgxKey));
 
-        OE_CHECK(
-            OE_GetMAC(
+        if (OE_Get_AES_CMAC(
                 (uint8_t*)&sgxKey,
                 sizeof(sgxKey),
                 (uint8_t*)&sgxReport->body,
                 sizeof(sgxReport->body),
-                &mac));
+                cmac) != OE_OK)
+            OE_RAISE(OE_UNEXPECTED);
 
         // Perform constant-time mac comparison.
-        if (!OE_ConstantTimeMemEqual(sgxReport->mac, mac.bytes, sizeof(mac)))
+        if (!OE_ConstantTimeMemEqual(sgxReport->mac, cmac, sizeof(cmac)))
             OE_RAISE(OE_VERIFY_FAILED);
     }
 
     // Optionally return parsed report.
     if (parsedReport != NULL)
         *parsedReport = oeReport;
+
+    result = OE_OK;
 
 done:
     // Cleanup secret.
@@ -95,7 +100,7 @@ static OE_Result _SafeCopyVerifyReportArgs(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Copy arg to prevent TOCTOU issues.
-    *safeArg = *unsafeArg;
+    OE_SecureMemcpy(safeArg, unsafeArg, sizeof(*safeArg));
 
     if (!safeArg->report ||
         !OE_IsOutsideEnclave(safeArg->report, safeArg->reportSize))
@@ -105,7 +110,7 @@ static OE_Result _SafeCopyVerifyReportArgs(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Copy report to prevent TOCTOU issues.
-    OE_Memcpy(reportBuffer, safeArg->report, safeArg->reportSize);
+    OE_SecureMemcpy(reportBuffer, safeArg->report, safeArg->reportSize);
     safeArg->report = reportBuffer;
 
     result = OE_OK;
@@ -115,7 +120,7 @@ done:
 }
 
 static OE_Result _SafeCopyVerifyReportArgsOuput(
-    OE_VerifyReportArgs* safeArg,
+    const OE_VerifyReportArgs* safeArg,
     uint64_t argIn)
 {
     OE_Result result = OE_UNEXPECTED;
