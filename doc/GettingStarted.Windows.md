@@ -127,7 +127,7 @@ https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt
    C:\> cd C:\openenclave
    C:\openenclave> mkdir build
    C:\openenclave> cd build
-   C:\openenclave> cmake ..
+   C:\openenclave> cmake -G "NMake Makefiles" ..
    C:\openenclave> nmake
    ```
 
@@ -146,8 +146,26 @@ Testing
 For now, integrated CMake support in VS2017 will only support running tests that
 do not have an enclave dependency:
 
-1. With the Open Enclave CMake project opened in VS2017, select CMake > Run
-   Tests > openenclave
+How to build the CMake project using Visual Studio 2017
+--------------------------------------------------------
+1. Open CMake project in Visual Studio from menu File>Open>CMake... and select 
+	top level CMakeLists.txt file which is present in openenclave folder.
+2. Select Linux-Debug configuration and make sure cache is updated and then 
+	select menu CMake>Build only>All(Targets) to build all the projects.
+	
+	To successfully compile this configuration, set permission for following files in WSL file system.
+	/var/tmp/build/{WorkspaceHash}/build/Linux-Debug/3rdparty/musl/CMakeFiles/oelibc_includes.dir/build.make
+	/var/tmp/build/{WorkspaceHash}/build/Linux-Debug/3rdparty/musl/musl/configure
+	/var/tmp/build/{WorkspaceHash}/build/Linux-Debug/3rdparty/musl/musl/tools/install.sh
+	/var/tmp/build/{WorkspaceHash}/build/Linux-Debug/3rdparty/libunwind/libunwind/autogen.sh
+
+	
+3. Switch to x64-Debug-test configuration and wait for the cache to update and
+	select menu CMake>BuildAll.
+4. Now to run CTest, select menu CMake > Tests > Run openenclave tests.
+
+NOTE : Currently this Tests menu item is not directly available in Visual Studio 2017,
+some workaround is added in tests/CMakeLists.txt file suggested by Microsoft.
 
 The Output window should indicate that `tests/mem` and `tests/str` were run.
 
