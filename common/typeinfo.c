@@ -188,13 +188,21 @@ static size_t _GetTypeSizeFromType(OE_Type type)
         case OE_INT_T:
             return sizeof(int);
         case OE_LONG_T:
+#if defined(__GNUC__)
             return sizeof(long);
+#elif defined(_MSC_VER) 
+            return sizeof(long long);
+#endif
         case OE_USHORT_T:
             return sizeof(unsigned short);
         case OE_UINT_T:
             return sizeof(unsigned int);
         case OE_ULONG_T:
+#if defined(__GNUC__)
             return sizeof(unsigned long);
+#elif defined(_MSC_VER) 
+            return sizeof(unsigned long long);
+#endif
         case OE_WCHAR_T:
             return sizeof(wchar_t);
         case OE_BOOL_T:
