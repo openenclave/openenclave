@@ -91,22 +91,26 @@ bool TestGetsecInstruction()
     }
 }
 
-#if defined(__linux)
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
 bool TestUnsupportedCpuidLeaf(int leaf)
 {
     g_handledSigill = HANDLED_SIGILL_NONE;
-    uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
-    int supported = __get_cpuid_count(
-        leaf,
-        0,
-        &cpuidInfo[OE_CPUID_RAX],
-        &cpuidInfo[OE_CPUID_RBX],
-        &cpuidInfo[OE_CPUID_RCX],
-        &cpuidInfo[OE_CPUID_RDX]);
+    uint32_t cpuidRAX;
+    int supported = 1;
 
+    // Invoking cpuid in assembly and making it volatile to prevent cpuid from
+    // being optimized out
+    // Solely tests availability of cpuid and causes an illegal exception which is
+    // handled by the enclave i.e. 2nd chance exception handler will be executed
+    asm volatile(
+        "cpuid"
+        : "=a"(cpuidRAX)  //Return value in cpuidRAX
+        : "0"(leaf));
+
+    if (cpuidRAX < leaf)
+      {
+	supported = 0;
+      }
+    
     if (!supported)
     {
         OE_HostPrintf(
@@ -130,9 +134,6 @@ bool TestUnsupportedCpuidLeaf(int leaf)
         return true;
     }
 }
-#if defined(__linux)
-#pragma GCC pop_options
-#endif
 
 OE_ECALL void TestSigillHandling(void* args_)
 {
