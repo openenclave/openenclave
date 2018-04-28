@@ -14,7 +14,7 @@
 // Making this volatile to prevent optimization by the compiler
 // as g_handledSigill is being used as a messaging mechanism
 // during signal handling. This is modified in the signal
-// handlers in the enclave and checked on the host.
+// handlers in the enclave and checked in the test functions.
 static volatile enum {
     HANDLED_SIGILL_NONE,
     HANDLED_SIGILL_GETSEC,
@@ -91,33 +91,23 @@ bool TestGetsecInstruction()
     }
 }
 
+// Test Intent: Solely tests unsupported cpuid leaf and if the 2nd chance
+// exception handler in the enclave is executed.
+// Procedure: The call to cpuid with the unsupported cpuid leaf  causes an
+// illegal exception in the host and is passed to the enclave which invokes
+// EmulateCpuid. This routine should return -1 for unsupported
+// cpuid leaves and cause the 2nd chance exception handler to be invoked.
 bool TestUnsupportedCpuidLeaf(int leaf)
 {
     g_handledSigill = HANDLED_SIGILL_NONE;
     uint32_t cpuidRAX;
-    int supported = 1;
 
     // Invoking cpuid in assembly and making it volatile to prevent cpuid from
     // being optimized out
-    // Solely tests availability of cpuid and causes an illegal exception which is
-    // handled by the enclave i.e. 2nd chance exception handler will be executed
     asm volatile(
         "cpuid"
-        : "=a"(cpuidRAX)  //Return value in cpuidRAX
+        : "=a"(cpuidRAX) // Return value in cpuidRAX
         : "0"(leaf));
-
-    if (cpuidRAX < leaf)
-      {
-	supported = 0;
-      }
-    
-    if (!supported)
-    {
-        OE_HostPrintf(
-            "TestSigillHandler failed to handle unsupported CPUID leaf %x.\n",
-            leaf);
-        return false;
-    }
 
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
     {
