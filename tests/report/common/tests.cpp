@@ -416,16 +416,21 @@ TEST_FCN void TestRemoteReport(void* args_)
      */
     {
         reportSize = 2048;
+
+        // Expected report (quote) size for the below calls.
+        // This value is not expected to be same for all calls.
+        const uint32_t expectedReportSize = 1116;
+
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
-        OE_TEST(reportSize == 1116);
+        OE_TEST(reportSize == expectedReportSize);
 
         reportSize = 1;
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
-        OE_TEST(reportSize == 1116);
+        OE_TEST(reportSize == expectedReportSize);
     }
 }
 
