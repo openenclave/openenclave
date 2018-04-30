@@ -578,8 +578,8 @@ OE_Result OE_CertChainGetCert(
         length = (size_t)num;
     }
 
-    /* Adjust index for special case where index == OE_MAX_UINT32 */
-    if (index == OE_MAX_UINT32)
+    /* Adjust index for special case where index == OE_MAX_SIZE_T */
+    if (index == OE_MAX_SIZE_T)
         index = length - 1;
 
     /* Check for out of bounds */

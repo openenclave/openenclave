@@ -913,19 +913,38 @@ static void TestCertMethods()
     {
         OE_CertChain chain;
 
+        /* Load the chain from PEM format */
         r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
         OE_TEST(r == OE_OK);
 
+        /* Get the length of the chain */
         size_t length;
         r = OE_CertChainGetLength(&chain, &length);
         OE_TEST(r == OE_OK);
         OE_TEST(length == 2);
 
+        /* Get each certficate inb the chain */
         for (size_t i = 0; i < length; i++)
         {
             OE_Cert cert;
             r = OE_CertChainGetCert(&chain, i, &cert);
             OE_TEST(r == OE_OK);
+            OE_CertFree(&cert);
+        }
+
+        /* Get the final certificate */
+        {
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, OE_MAX_SIZE_T, &cert);
+            OE_TEST(r == OE_OK);
+            OE_CertFree(&cert);
+        }
+
+        /* Test out of bounds */
+        {
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, length+1, &cert);
+            OE_TEST(r == OE_OUT_OF_BOUNDS);
             OE_CertFree(&cert);
         }
 

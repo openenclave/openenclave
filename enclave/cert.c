@@ -33,7 +33,13 @@
 
 typedef struct _Referent
 {
+    /* The first certificate in the chain (crt->next points to the next) */
     mbedtls_x509_crt crt;
+
+    /* The length of the certificate chain */
+    size_t length;
+
+    /* Reference count */
     volatile uint64_t refs;
 } Referent;
 
@@ -46,9 +52,24 @@ OE_INLINE Referent* _ReferentNew(void)
         return NULL;
 
     mbedtls_x509_crt_init(&referent->crt);
+    referent->length = 0;
     referent->refs = 1;
 
     return referent;
+}
+
+OE_INLINE mbedtls_x509_crt* _ReferentGetCert(Referent* referent, size_t index)
+{
+    size_t i = 0;
+
+    for (mbedtls_x509_crt *p = &referent->crt; p; p = p->next, i++)
+    {
+        if (i == index)
+            return p;
+    }
+
+    /* Out of bounds */
+    return NULL;
 }
 
 /* Increase the reference count */
@@ -291,6 +312,10 @@ OE_Result OE_CertChainReadPEM(
         OE_RAISE(OE_FAILURE);
     }
 
+    /* Calculate the length of the certificate chain */
+    for (mbedtls_x509_crt *p = &referent->crt; p; p = p->next)
+        referent->length++;
+
     /* Initialize the implementation and increment reference count */
     OE_CHECK(_CertChainInit(impl, referent));
 
@@ -458,15 +483,8 @@ OE_Result OE_CertChainGetLength(const OE_CertChain* chain, size_t* length)
     if (!_CertChainValid(impl) || !length)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Count the certificates in the chain */
-    {
-        size_t n = 0;
-
-        for (const mbedtls_x509_crt* p = &impl->referent->crt; p; p = p->next)
-            n++;
-
-        *length = n;
-    }
+    /* Set the length output parameter */
+    *length = impl->referent->length;
 
     result = OE_OK;
 
@@ -493,28 +511,13 @@ OE_Result OE_CertChainGetCert(
     if (!_CertChainValid(impl) || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* Adjust the index to get the last certificate */
+    if (index == (size_t)-1)
+        index = impl->referent->length - 1;
+
     /* Find the certificate with this index */
-    {
-        size_t i = 0;
-
-        for (mbedtls_x509_crt *p = &impl->referent->crt; p; p = p->next, i++)
-        {
-            if (i == index)
-            {
-                crt = p;
-                break;
-            }
-
-            if (index == OE_MAX_UINT32 && !p->next)
-            {
-                crt = p;
-                break;
-            }
-        }
-
-        if (!crt)
-            OE_RAISE(OE_OUT_OF_BOUNDS);
-    }
+    if (!(crt = _ReferentGetCert(impl->referent, index)))
+        OE_RAISE(OE_OUT_OF_BOUNDS);
 
     /* Initialize the implementation */
     _CertInit(certImpl, crt, impl->referent);

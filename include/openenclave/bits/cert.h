@@ -194,7 +194,7 @@ OE_Result OE_CertChainGetLength(const OE_CertChain* chain, size_t* length);
  * @param chain the chain whose certificate is to be fetched.
  * @param index the index of the certificate to be fetched. An index of zero
  *     obtains the root certificate. The hightest valid index obtains the leaf
- *     certificate. As a shortcut OE_MAX_UINT32 obtains the leaf certificate,
+ *     certificate. As a shortcut OE_MAX_SIZE_T obtains the leaf certificate,
  *     which avoids a needless call to OE_CertChainGetLength().
  * @param cert the handle of a certificate upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
