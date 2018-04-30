@@ -14,8 +14,8 @@ int _OE_TrackInferior(pid_t pid);
 
 int _OE_UntrackInferior(pid_t pid);
 
-int _OE_GetInferiorFlags(pid_t pid, long* flags);
+int _OE_GetInferiorFlags(pid_t pid, int64_t* flags);
 
-int _OE_SetInferiorFlags(pid_t pid, long flags);
+int _OE_SetInferiorFlags(pid_t pid, int64_t flags);
 
 #endif

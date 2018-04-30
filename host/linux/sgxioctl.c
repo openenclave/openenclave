@@ -53,7 +53,7 @@ int SGX_IoctlEnclaveCreate(int dev, SGX_Secs* secs)
         return -1;
 
     memset(&param, 0, sizeof(param));
-    param.secs = (unsigned long long)secs;
+    param.secs = (uint64_t)secs;
 
     return ioctl(dev, SGX_IOC_ENCLAVE_CREATE, &param);
 }

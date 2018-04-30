@@ -443,7 +443,7 @@ MEM_INLINE int str_u64(str_t* str, uint64_t* u64)
 
 MEM_INLINE int str_u32(str_t* str, unsigned int* u32)
 {
-    unsigned long x;
+    uint64_t x;
     char* end;
 
     if (!str_ok(str) || !u32)
@@ -460,7 +460,7 @@ MEM_INLINE int str_u32(str_t* str, unsigned int* u32)
 
 MEM_INLINE int str_u16(str_t* str, unsigned short* u16)
 {
-    unsigned long x;
+    uint64_t x;
     char* end;
 
     if (!str_ok(str) || !u16)

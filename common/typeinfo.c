@@ -182,8 +182,8 @@ static size_t _GetTypeSizeFromType(OE_Type type)
         case OE_NONE_T:
             return 0;
         case OE_CHAR_T:
-        case OE_INT8_T:
-            return sizeof(int8_t);
+        case OE_UINT8_T:
+            return sizeof(uint8_t);
         case OE_SHORT_T:
         case OE_INT16_T:
             return sizeof(int16_t);
@@ -207,8 +207,8 @@ static size_t _GetTypeSizeFromType(OE_Type type)
         case OE_BOOL_T:
             return sizeof(bool);
         case OE_UCHAR_T:
-        case OE_UINT8_T:
-            return sizeof(uint8_t);
+        case OE_INT8_T:
+            return sizeof(int8_t);
         case OE_FLOAT_T:
             return sizeof(float);
         case OE_DOUBLE_T:

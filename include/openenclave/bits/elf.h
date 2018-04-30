@@ -141,13 +141,13 @@ ELF_EXTERNC_BEGIN
 #define ELF64_R_TYPE(i) ((i)&0xffffffffL)
 #define ELF64_R_INFO(s, t) (((s) << 32) + ((t)&0xffffffffL))
 
-typedef unsigned long long Elf64_Addr;
-typedef unsigned long long Elf64_Off;
+typedef uint64_t Elf64_Addr;
+typedef uint64_t Elf64_Off;
 typedef unsigned short Elf64_Half;
 typedef unsigned int Elf64_Word;
 typedef signed int Elf64_Sword;
-typedef unsigned long long Elf64_Xword;
-typedef signed long long Elf64_Sxword;
+typedef uint64_t Elf64_Xword;
+typedef int64_t Elf64_Sxword;
 typedef signed int Elf64_Sword;
 
 typedef struct

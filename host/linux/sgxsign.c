@@ -99,7 +99,7 @@ static OE_Result _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
         OE_THROW(OE_FAILURE);
 
     {
-        unsigned long long x = rsa->e->d[0];
+        uint64_t x = rsa->e->d[0];
         exponent[0] = (x & 0x00000000000000FF) >> 0;
         exponent[1] = (x & 0x000000000000FF00) >> 8;
         exponent[2] = (x & 0x0000000000FF0000) >> 16;

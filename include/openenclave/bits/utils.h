@@ -45,9 +45,9 @@ OE_INLINE unsigned int OE_Checksum(const void* data, size_t size)
     return x;
 }
 
-OE_INLINE unsigned long long OE_RoundUpToMultiple(
-    unsigned long long x,
-    unsigned long long m)
+OE_INLINE uint64_t OE_RoundUpToMultiple(
+    uint64_t x,
+    uint64_t m)
 {
     return (x + m - 1) / m * m;
 }
