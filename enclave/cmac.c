@@ -8,19 +8,20 @@
 #include <openenclave/bits/cmac.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/utils.h>
 
 OE_Result OE_AESCMACSign(
     const uint8_t* key,
     uint32_t keySize,
     const uint8_t* message,
     uint32_t messageLength,
-    uint8_t* cmac)
+    OE_AESCMAC* aesCMAC)
 {
     OE_Result result = OE_UNEXPECTED;
     const mbedtls_cipher_info_t* info = NULL;
     uint32_t keySizeBits = keySize * 8;
 
-    if (cmac == NULL)
+    if (aesCMAC == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (keySizeBits != 128)
@@ -30,8 +31,15 @@ OE_Result OE_AESCMACSign(
     if (info == NULL)
         OE_RAISE(OE_FAILURE);
 
+    OE_SecureZeroFill(aesCMAC->impl, sizeof(*aesCMAC));
+
     if (mbedtls_cipher_cmac(
-            info, key, keySizeBits, message, messageLength, cmac) != 0)
+            info,
+            key,
+            keySizeBits,
+            message,
+            messageLength,
+            (uint8_t*)aesCMAC->impl) != 0)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;

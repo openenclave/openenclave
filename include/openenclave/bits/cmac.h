@@ -7,8 +7,25 @@
 #include "../result.h"
 #include "../types.h"
 #include "sgxtypes.h"
+#include "utils.h"
 
 OE_EXTERNC_BEGIN
+
+/* Opaque representation of an AES-CMAC */
+typedef struct _OE_AESCMAC
+{
+    /* Internal implementation */
+    uint64_t impl[4];
+} OE_AESCMAC;
+
+/**
+ * OE_SecureAESCMACEqual does a secure constant time comparison of two OE_AESCMAC
+ * instances. Returns 1 if equal and 0 otherwise.
+ */
+OE_INLINE uint8_t OE_SecureAESCMACEqual(const OE_AESCMAC* a, const OE_AESCMAC* b)
+{
+    return OE_ConstantTimeMemEqual(a, b, sizeof(*a)) ? 1 : 0;
+}
 
 /**
  * OE_AESCMACSign computes the AES-CMAC for the given message using the
@@ -26,7 +43,7 @@ OE_Result OE_AESCMACSign(
     uint32_t keySize,
     const uint8_t* message,
     uint32_t messageLength,
-    uint8_t* cmac);
+    OE_AESCMAC* aesCMAC);
 
 OE_EXTERNC_END
 

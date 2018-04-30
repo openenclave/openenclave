@@ -47,8 +47,9 @@ OE_Result OE_VerifyReport(
 
     SGX_Report* sgxReport = NULL;
 
-    const uint32_t cmacLength = sizeof(sgxKey);
-    uint8_t cmac[cmacLength] = {0};
+    const uint32_t aesCMACLength = sizeof(sgxKey);
+    OE_AESCMAC reportAESCMAC = {{0}};
+    OE_AESCMAC computedAESCMAC = {{0}};
 
     OE_CHECK(OE_ParseReport(report, reportSize, &oeReport));
 
@@ -68,10 +69,13 @@ OE_Result OE_VerifyReport(
                 sizeof(sgxKey),
                 (uint8_t*)&sgxReport->body,
                 sizeof(sgxReport->body),
-                cmac));
+                &computedAESCMAC));
 
-        // Perform constant-time mac comparison.
-        if (!OE_ConstantTimeMemEqual(sgxReport->mac, cmac, sizeof(cmac)))
+        // Fetch cmac from sgxReport.
+        // Note: sizeof(sgxReport->mac) <= sizeof(OE_AESCMAC).
+        OE_SecureMemcpy(&reportAESCMAC, sgxReport->mac, aesCMACLength);
+
+        if (!OE_SecureAESCMACEqual(&computedAESCMAC, &reportAESCMAC))
             OE_RAISE(OE_VERIFY_FAILED);
     }
 
