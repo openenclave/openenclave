@@ -21,7 +21,7 @@
 
 OE_ECALL void Test(void* args_)
 {
-    /* Save the current malloc'c bytes in use */
+    /* Save the current malloc'd bytes in use */
     uint64_t inUseBytes;
     {
         OE_MallocStats stats;
@@ -34,7 +34,7 @@ OE_ECALL void Test(void* args_)
 
     RunAllTests();
 
-    /* Verify that all malloc'c memory has been released */
+    /* Verify that all malloc'd memory has been released */
     {
         OE_MallocStats stats;
 
