@@ -62,13 +62,12 @@ OE_Result OE_VerifyReport(
 
         OE_CHECK(_OE_GetReportKey(sgxReport, &sgxKey));
 
-        if (OE_AESCMACSign(
+        OE_CHECK (OE_AESCMACSign(
                 (uint8_t*)&sgxKey,
                 sizeof(sgxKey),
                 (uint8_t*)&sgxReport->body,
                 sizeof(sgxReport->body),
-                cmac) != OE_OK)
-            OE_RAISE(OE_UNEXPECTED);
+                cmac));
 
         // Perform constant-time mac comparison.
         if (!OE_ConstantTimeMemEqual(sgxReport->mac, cmac, sizeof(cmac)))
