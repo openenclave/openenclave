@@ -108,7 +108,7 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
         "cpuid"
         : "=a"(cpuidRAX) // Return value in cpuidRAX
         : "0"(leaf)
-	: "ebx", "ecx", "edx", "cc");
+        : "ebx", "ecx", "edx", "cc", "memory");
 
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
     {
