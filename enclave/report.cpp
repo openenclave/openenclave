@@ -62,7 +62,7 @@ OE_Result OE_VerifyReport(
 
         OE_CHECK(_OE_GetReportKey(sgxReport, &sgxKey));
 
-        if (OE_Get_AES_CMAC(
+        if (OE_AESCMACSign(
                 (uint8_t*)&sgxKey,
                 sizeof(sgxKey),
                 (uint8_t*)&sgxReport->body,

@@ -9,7 +9,7 @@
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>
 
-OE_Result OE_Get_AES_CMAC(
+OE_Result OE_AESCMACSign(
     const uint8_t* key,
     uint32_t keySize,
     const uint8_t* message,

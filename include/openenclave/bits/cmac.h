@@ -11,7 +11,7 @@
 OE_EXTERNC_BEGIN
 
 /**
- * OE_Get_AES_CMAC computes the AES-CMAC for the given message using the
+ * OE_AESCMACSign computes the AES-CMAC for the given message using the
  * specified key.
  *
  * @param key The key used to compute the AES-CMAC.
@@ -21,7 +21,7 @@ OE_EXTERNC_BEGIN
  *
  * @param cmac Output parameter where the computed AES-CMAC will be written to.
  */
-OE_Result OE_Get_AES_CMAC(
+OE_Result OE_AESCMACSign(
     const uint8_t* key,
     uint32_t keySize,
     const uint8_t* message,
