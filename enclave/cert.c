@@ -504,7 +504,7 @@ OE_Result OE_CertChainGetCert(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Adjust the index to get the last certificate */
-    if (index == (size_t)-1)
+    if (index == OE_MAX_SIZE_T)
         index = impl->referent->length - 1;
 
     /* Find the certificate with this index */
