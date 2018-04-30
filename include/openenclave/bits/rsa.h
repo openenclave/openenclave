@@ -207,10 +207,10 @@ OE_Result OE_RSAGenerateKeyPair(
 /**
  * Get the modulus from a public RSA key.
  *
- * This function gets the modulus from a public RSA key. The modulus bytes
- * are written to **buffer**.
+ * This function gets the modulus from a public RSA key. The modulus is 
+ * written to **buffer**.
  *
- * @param publicKey key whose key bytes are fetched.
+ * @param publicKey key whose modulus is fetched.
  * @param buffer buffer where modulus is written (may be null).
  * @param bufferSize[in,out] buffer size on input; actual size on output.
  *
@@ -226,10 +226,10 @@ OE_Result OE_RSAPublicKeyGetModulus(
 /**
  * Get the exponent from a public RSA key.
  *
- * This function gets the exponent from a public RSA key. The exponent bytes
- * are written to **buffer**.
+ * This function gets the exponent from a public RSA key. The exponent is
+ * written to **buffer**.
  *
- * @param publicKey key whose key bytes are fetched.
+ * @param publicKey key whose exponent is fetched.
  * @param buffer buffer where exponent is written (may be null).
  * @param bufferSize[in,out] buffer size on input; actual size on output.
  *
