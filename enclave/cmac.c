@@ -30,7 +30,8 @@ OE_Result OE_Get_AES_CMAC(
     if (info == NULL)
         OE_RAISE(OE_FAILURE);
 
-    if (mbedtls_cipher_cmac(info, key, keySizeBits, message, messageLength, cmac) != 0)
+    if (mbedtls_cipher_cmac(
+            info, key, keySizeBits, message, messageLength, cmac) != 0)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
