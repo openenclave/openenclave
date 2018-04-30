@@ -943,7 +943,7 @@ static void TestCertMethods()
         /* Test out of bounds */
         {
             OE_Cert cert;
-            r = OE_CertChainGetCert(&chain, length+1, &cert);
+            r = OE_CertChainGetCert(&chain, length + 1, &cert);
             OE_TEST(r == OE_OUT_OF_BOUNDS);
             OE_CertFree(&cert);
         }

@@ -207,7 +207,7 @@ OE_Result OE_RSAGenerateKeyPair(
 /**
  * Get the modulus from a public RSA key.
  *
- * This function gets the modulus from a public RSA key. The modulus is 
+ * This function gets the modulus from a public RSA key. The modulus is
  * written to **buffer**.
  *
  * @param publicKey key whose modulus is fetched.

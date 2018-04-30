@@ -305,7 +305,7 @@ OE_Result OE_CertChainReadPEM(
     }
 
     /* Calculate the length of the certificate chain */
-    for (mbedtls_x509_crt *p = &referent->crt; p; p = p->next)
+    for (mbedtls_x509_crt* p = &referent->crt; p; p = p->next)
         referent->length++;
 
     /* Initialize the implementation and increment reference count */
