@@ -334,7 +334,7 @@ static OE_Result _SafeCopyGetReportArgsOuput(
         if (!OE_IsOutsideEnclave(hostReportBuffer, safeArg->reportBufferSize))
             OE_RAISE(OE_UNEXPECTED);
 
-        OE_Memcpy(
+        OE_SecureMemcpy(
             hostReportBuffer, safeArg->reportBuffer, safeArg->reportBufferSize);
     }
 
