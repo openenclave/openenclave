@@ -97,7 +97,7 @@ bool TestGetsecInstruction()
 // illegal exception in the host and is passed to the enclave which invokes
 // EmulateCpuid. This routine should return -1 for unsupported
 // cpuid leaves and cause the 2nd chance exception handler to be invoked.
-bool TestUnsupportedCpuidLeaf(int leaf)
+bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 {
     g_handledSigill = HANDLED_SIGILL_NONE;
     uint32_t cpuidRAX;
@@ -107,7 +107,8 @@ bool TestUnsupportedCpuidLeaf(int leaf)
     asm volatile(
         "cpuid"
         : "=a"(cpuidRAX) // Return value in cpuidRAX
-        : "0"(leaf));
+        : "0"(leaf)
+	: "ebx", "ecx", "edx", "cc");
 
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
     {
