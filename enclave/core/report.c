@@ -313,18 +313,21 @@ done:
     return result;
 }
 
-static void _SafeCopyGetReportArgsOuput(OE_GetReportArgs* safeArg, uint64_t argIn)
+static void _SafeCopyGetReportArgsOuput(
+    OE_GetReportArgs* safeArg,
+    uint64_t argIn)
 {
     OE_GetReportArgs* unsafeArg = (OE_GetReportArgs*)argIn;
-    unsafeArg->result = safeArg->result; 
+    unsafeArg->result = safeArg->result;
     unsafeArg->reportBufferSize = safeArg->reportBufferSize;
 
-    if (safeArg->result == OE_OK) {
+    if (safeArg->result == OE_OK)
+    {
         OE_Memcpy(
             unsafeArg->reportBuffer,
             safeArg->reportBuffer,
             safeArg->reportBufferSize);
-    }               
+    }
 }
 
 OE_Result _HandleGetReport(uint64_t argIn)
@@ -347,7 +350,7 @@ OE_Result _HandleGetReport(uint64_t argIn)
         &arg.reportBufferSize);
 
     // Copy outputs to host memory.
-    _SafeCopyGetReportArgsOuput(&arg, argIn);            
+    _SafeCopyGetReportArgsOuput(&arg, argIn);
 
 done:
     return result;

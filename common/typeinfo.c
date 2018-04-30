@@ -191,8 +191,16 @@ static size_t _GetTypeSizeFromType(OE_Type type)
         case OE_INT32_T:
             return sizeof(int32_t);
         case OE_LONG_T:
+<<<<<<< HEAD
         case OE_INT64_T:
             return sizeof(int64_t);
+=======
+#if defined(__GNUC__)
+            return sizeof(long);
+#elif defined(_MSC_VER)
+            return sizeof(long long);
+#endif
+>>>>>>> 42f7aca123b1c573552753586e01b8aa62403b94
         case OE_USHORT_T:
         case OE_UINT16_T:
             return sizeof(uint16_t);
@@ -200,8 +208,16 @@ static size_t _GetTypeSizeFromType(OE_Type type)
         case OE_UINT32_T:
             return sizeof(uint32_t);
         case OE_ULONG_T:
+<<<<<<< HEAD
         case OE_UINT64_T:
             return sizeof(uint64_t);
+=======
+#if defined(__GNUC__)
+            return sizeof(unsigned long);
+#elif defined(_MSC_VER)
+            return sizeof(unsigned long long);
+#endif
+>>>>>>> 42f7aca123b1c573552753586e01b8aa62403b94
         case OE_WCHAR_T:
             return sizeof(wchar_t);
         case OE_BOOL_T:
