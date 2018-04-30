@@ -38,7 +38,7 @@ PredefinedType types[] = {
     {"signed char", "signed char", "OE_CHAR_T"},
     {"signed short", "signed short", "OE_SHORT_T"},
     {"signed int", "signed int", "OE_INT_T"},
-    {"signed long", "signed long", "OE_ULONG_T"},
+    {"signed long", "signed long", "OE_LONG_T"},
     {"unsigned char", "unsigned char", "OE_UCHAR_T"},
     {"unsigned short", "unsigned short", "OE_USHORT_T"},
     {"unsigned int", "unsigned int", "OE_UINT_T"},
