@@ -55,7 +55,7 @@ OE_ECALL void Test(void* args_)
     if ((td = OE_GetThreadData()))
     {
         args->threadData = *td;
-        args->threadDataAddr = (unsigned long long)td;
+        args->threadDataAddr = (uint64_t)td;
     }
 
     /* Get enclave offsets and bases */

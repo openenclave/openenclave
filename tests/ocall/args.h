@@ -15,13 +15,13 @@ typedef struct _Test1Args
 
     /* --- Input arguments --- */
 
-    long inNum;
+    int64_t inNum;
 
     const char* inStr;
 
     /* --- Output arguments --- */
 
-    long op;
+    int64_t op;
     unsigned int magic;
 
     char* str;
@@ -39,8 +39,8 @@ typedef struct _Test1Args
 
 typedef struct _Test2Args
 {
-    long in;
-    long out;
+    int64_t in;
+    int64_t out;
 } Test2Args;
 
 typedef struct _TestAllocatorArgs
