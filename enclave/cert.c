@@ -89,7 +89,7 @@ OE_INLINE void _ReferentFree(Referent* referent)
         mbedtls_x509_crt_free(&referent->crt);
 
         /* Free the referent structure */
-        OE_Memset(referent, 0xDD, sizeof(Referent));
+        OE_Memset(referent, 0, sizeof(Referent));
         mbedtls_free(referent);
     }
 }
@@ -143,12 +143,12 @@ OE_INLINE void _CertFree(Cert* impl)
     {
         /* Release the MBEDTLS certificate */
         mbedtls_x509_crt_free(impl->cert);
-        OE_Memset(impl->cert, 0xDD, sizeof(mbedtls_x509_crt));
+        OE_Memset(impl->cert, 0, sizeof(mbedtls_x509_crt));
         mbedtls_free(impl->cert);
     }
 
     /* Clear the fields */
-    OE_Memset(impl, 0xDD, sizeof(Cert));
+    OE_Memset(impl, 0, sizeof(Cert));
 }
 
 /*
@@ -183,12 +183,6 @@ OE_INLINE OE_Result _CertChainInit(CertChain* impl, Referent* referent)
 OE_INLINE bool _CertChainValid(const CertChain* impl)
 {
     return impl && (impl->magic == OE_CERT_CHAIN_MAGIC) && impl->referent;
-}
-
-OE_INLINE void _CertChainClear(CertChain* impl)
-{
-    impl->magic = 0;
-    impl->referent = NULL;
 }
 
 /*
@@ -253,7 +247,7 @@ done:
     if (crt)
     {
         mbedtls_x509_crt_free(crt);
-        OE_Memset(crt, 0xDD, sizeof(mbedtls_x509_crt));
+        OE_Memset(crt, 0, sizeof(mbedtls_x509_crt));
         mbedtls_free(crt);
     }
 
@@ -339,7 +333,7 @@ OE_Result OE_CertChainFree(OE_CertChain* chain)
     _ReferentFree(impl->referent);
 
     /* Clear the implementation (making it invalid) */
-    _CertChainClear(impl);
+    OE_Memset(impl, 0, sizeof(CertChain));
 
     result = OE_OK;
 
