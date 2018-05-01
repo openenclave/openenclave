@@ -5,9 +5,10 @@
 #define _OE_CPUID_H
 
 #include <openenclave/types.h>
-#define OE_CPUID_OPCODE 0xA20F
 
+#define OE_CPUID_OPCODE 0xA20F
 #define OE_CPUID_LEAF_COUNT 8
+#define OE_CPUID_EXTENDED_CPUID_LEAF 0x80000000
 
 #define OE_CPUID_RAX 0
 #define OE_CPUID_RBX 1
