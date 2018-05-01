@@ -4,10 +4,10 @@
 #ifndef _OE_ELF_H
 #define _OE_ELF_H
 
+#include <openenclave/bits/typeinfo.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <openenclave/bits/typeinfo.h>
 
 #ifdef __cplusplus
 #define ELF_EXTERNC_BEGIN extern "C" {
