@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-int64_t sysconf(int name)
+long sysconf(int name)
 {
     errno = EINVAL;
     return -1;
