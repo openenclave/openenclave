@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-typedef struct FILE_Args
+typedef struct _FileArgs
 {
     FILE* F_ptr;
     char* path;
@@ -232,7 +232,7 @@ DIR* opendir(const char* name)
     Args* args;
     args = (Args*)OE_HostMalloc(sizeof(Args));
     args->path = OE_HostStackStrdup(name);
-    OE_CallHost("OE_OPen_dir", args);
+    OE_CallHost("OE_Open_dir", args);
 
     dir = (DIR*)args->ptr;
     OE_HostFree(args);
@@ -245,7 +245,7 @@ int closedir(DIR* ptr)
     Args* args;
     args = (Args*)OE_HostMalloc(sizeof(Args));
     args->ptr = (void*)ptr;
-    OE_CallHost("OE_CLose_dir", args);
+    OE_CallHost("OE_Close_dir", args);
 
     ret = args->ret;
     OE_HostFree(args);
@@ -258,7 +258,7 @@ struct dirent* readdir(DIR* ptr)
     Args* args;
     args = (Args*)OE_HostMalloc(sizeof(Args));
     args->ptr = (void*)ptr;
-    OE_CallHost("OE_REad_dir", args);
+    OE_CallHost("OE_Read_dir", args);
 
     ret = (struct dirent*)args->ptr;
 
@@ -276,7 +276,7 @@ int stat(const char* path, struct stat* buf)
     args->path = OE_HostStackStrdup(path);
     args->ptr = (void*)host;
 
-    OE_CallHost("OE_STat", args);
+    OE_CallHost("OE_Stat", args);
     if (!(args->ret))
         OE_Memcpy(buf, (struct stat*)args->ptr, sizeof(struct stat));
 

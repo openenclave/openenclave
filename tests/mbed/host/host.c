@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <dirent.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
@@ -9,17 +10,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "args.h"
-#include "ocalls.h"
-
-#include <dirent.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include "ocalls.h"
 
-typedef struct FILE_Args
+typedef struct _FileArgs
 {
     FILE* F_ptr;
     char* path;
@@ -43,10 +41,10 @@ typedef struct _Args
 #define DEBUG
 #undef DEBUG
 
-OE_OCALL void OE_FOpen(void* F_ARGS)
+OE_OCALL void OE_FOpen(void* FileArgs)
 {
     FILE* fp;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 #ifdef DEBUG
     printf("#### %s ###########\n", args->path);
 #endif
@@ -63,10 +61,10 @@ OE_OCALL void OE_FOpen(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_FClose(void* F_ARGS)
+OE_OCALL void OE_FClose(void* FileArgs)
 {
     int ret;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     ret = fclose(args->F_ptr);
 
@@ -77,10 +75,10 @@ OE_OCALL void OE_FClose(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_FEof(void* F_ARGS)
+OE_OCALL void OE_FEof(void* FileArgs)
 {
     int ret;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     ret = feof(args->F_ptr);
 
@@ -91,10 +89,10 @@ OE_OCALL void OE_FEof(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_FError(void* F_ARGS)
+OE_OCALL void OE_FError(void* FileArgs)
 {
     int ret;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     ret = ferror(args->F_ptr);
 
@@ -105,10 +103,10 @@ OE_OCALL void OE_FError(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_FGets(void* F_ARGS)
+OE_OCALL void OE_FGets(void* FileArgs)
 {
     char* ret;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     ret = fgets(args->buf, args->len, args->F_ptr);
 
@@ -119,10 +117,10 @@ OE_OCALL void OE_FGets(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_FRead(void* F_ARGS)
+OE_OCALL void OE_FRead(void* FileArgs)
 {
     int ret;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     ret = fread(args->buf, args->len, (size_t)args->i_var, args->F_ptr);
 
@@ -133,10 +131,10 @@ OE_OCALL void OE_FRead(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_FWrite(void* F_ARGS)
+OE_OCALL void OE_FWrite(void* FileArgs)
 {
     int ret;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     ret = fwrite(args->buf, args->len, (size_t)args->i_var, args->F_ptr);
 
@@ -147,10 +145,10 @@ OE_OCALL void OE_FWrite(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_FSeek(void* F_ARGS)
+OE_OCALL void OE_FSeek(void* FileArgs)
 {
     int ret;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     ret = fseek(args->F_ptr, args->li_var, args->i_var);
 
@@ -161,10 +159,10 @@ OE_OCALL void OE_FSeek(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_FPutc(void* F_ARGS)
+OE_OCALL void OE_FPutc(void* FileArgs)
 {
     int ret;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     ret = fputc(args->i_var, args->F_ptr);
 
@@ -175,10 +173,10 @@ OE_OCALL void OE_FPutc(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_FTell(void* F_ARGS)
+OE_OCALL void OE_FTell(void* FileArgs)
 {
     int ret;
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     ret = ftell(args->F_ptr);
 
@@ -189,9 +187,9 @@ OE_OCALL void OE_FTell(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_OPen_dir(void* F_ARGS)
+OE_OCALL void OE_Open_dir(void* FileArgs)
 {
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     args->ptr = (void*)opendir(args->path);
 
@@ -201,9 +199,9 @@ OE_OCALL void OE_OPen_dir(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_CLose_dir(void* F_ARGS)
+OE_OCALL void OE_Close_dir(void* FileArgs)
 {
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     args->ret = closedir((DIR*)args->ptr);
 
@@ -213,9 +211,9 @@ OE_OCALL void OE_CLose_dir(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_REad_dir(void* F_ARGS)
+OE_OCALL void OE_Read_dir(void* FileArgs)
 {
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     args->ptr = (void*)readdir((DIR*)args->ptr);
 
@@ -225,9 +223,9 @@ OE_OCALL void OE_REad_dir(void* F_ARGS)
     return;
 }
 
-OE_OCALL void OE_STat(void* F_ARGS)
+OE_OCALL void OE_Stat(void* FileArgs)
 {
-    F_Args* args = (F_Args*)F_ARGS;
+    F_Args* args = (F_Args*)FileArgs;
 
     args->ret = (int)stat(args->path, (struct stat*)args->ptr);
 

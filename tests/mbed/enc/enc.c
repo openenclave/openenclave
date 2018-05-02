@@ -12,6 +12,7 @@
 #include <string.h>
 #include "../host/args.h"
 #include "../host/ocalls.h"
+
 int main(int argc, const char* argv[]);
 
 void _exit(int status)
@@ -37,13 +38,13 @@ OE_ECALL void Test(Args* args)
     if (args)
     {
         printf("RUNNING: %s\n", __TEST__);
+
         /* verbose option is enabled as some of the functionality in
-           helper.function
-               such as redirect output, restore output is trying to assign
-           values to stdout
-               which inturn causes seg fault. to avoid this we enabled verbose
-           options
-           such that those function calls will be suppressed */
+           helper.function such as redirect output, restore output is trying
+           to assign values to stdout which inturn causes seg fault. to avoid
+           this we enabled verbose options such that those function
+           calls will be suppressed */
+
         static const char* argv[] = {"test", "-v", "NULL"};
         static int argc = sizeof(argv) / sizeof(argv[0]);
         printf("\n before main %d\n", argc);
