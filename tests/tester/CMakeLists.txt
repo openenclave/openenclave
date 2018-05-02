@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if (ADD_WINDOWS_ENCLAVE_TESTS)
-	add_subdirectory(host)
-    include(add_wnd_enclave_tests)
-    add_wnd_enclave_tests(tester tester_host)
-else()
-add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/tester host/tester_host ./enc/tester_enc.signed.so)
+if (UNIX)
+	add_subdirectory(enc)
 endif()
+
+# NOTE : Third parameter is the name of the signed enclave file which should 
+# match with Linux build signed enclave file.
+add_enclave_test(tester tester_host tester_enc)

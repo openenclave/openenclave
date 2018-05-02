@@ -8,8 +8,8 @@ cmake_minimum_required(VERSION 3.5.1)
 # define project, take version from "VERSION" file
 file(STRINGS "VERSION" OE_VERSION)
 
-option(ADD_WINDOWS_ENCLAVE_TESTS "Copy Linux binaries and Build windows enclave test" 0)
-option(LINUX_BIN_DIR "Linux binary files path" /home/vvdn/openenclave/linux_build_oe)
+option(ADD_WINDOWS_ENCLAVE_TESTS "Copy Linux binaries to windows build directory and Build windows enclave test" 0)
+option(LINUX_BIN_DIR "Linux binary files complete path on windows machine" /home/vvdn/openenclave/linux_build_oe)
 
 # Select the assembler
 if (UNIX)
@@ -56,6 +56,8 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VERSION ${OE_VERSION})
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 include(CPack)
+
+include(add_enclave_test)
 
 # finally, add all dirs that matter
 add_subdirectory(host)		# convertable to Windows

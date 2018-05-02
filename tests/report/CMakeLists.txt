@@ -1,14 +1,15 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if (ADD_WINDOWS_ENCLAVE_TESTS)
-	add_subdirectory(host)
-    include(add_wnd_enclave_tests)
-    add_wnd_enclave_tests(report report_host)#TODO : set_tests_properties(tests/report PROPERTIES SKIP_RETURN_CODE 2)
-else()
-add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/report host/report_host ./enc/report_enc.signed.so)
-set_tests_properties(tests/report PROPERTIES SKIP_RETURN_CODE 2)
+if (UNIX)
+	add_subdirectory(enc)
 endif()
+
+# NOTE : Third parameter is the name of the signed enclave file which should 
+# match with Linux build signed enclave file.
+add_enclave_test(report report_host report_enc)
+
+#TODO : add support for below statement.
+#set_tests_properties(tests/report PROPERTIES SKIP_RETURN_CODE 2)

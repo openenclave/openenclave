@@ -11,22 +11,13 @@ else()
     file(STRINGS "tests.supported.default" alltests)
 endif()
 
-if (ADD_WINDOWS_ENCLAVE_TESTS)
-	
-    include(add_wnd_enclave_tests)
-	foreach(testcase ${alltests})
-		get_testcase_name(${testcase} name "../../3rdparty/musl/libc-test/src/")
-		add_wnd_enclave_tests(libctest-${name} libc_host)
-	endforeach(testcase)
-
 add_subdirectory(host)
-else()
+
+if (UNIX)
+	add_subdirectory(enc)
+endif()
 
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "../../3rdparty/musl/libc-test/src/")
-    add_test(tests/libc/${name} host/libc_host ./enc/libctest-${name}_enc.signed.so)
+    add_enclave_test(libc/${name} libc_host libctest-${name}_enc)
 endforeach(testcase)
-
-add_subdirectory(enc)
-add_subdirectory(host)
-endif()
