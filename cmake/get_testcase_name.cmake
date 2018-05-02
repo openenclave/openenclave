@@ -13,7 +13,7 @@
 # namevar - variable to receive the testcase name
 #
 function(get_testcase_name FILENAME NAMEVAR PREFIX)
-        string(REGEX REPLACE "\.c(pp)?$" "" n ${FILENAME})
+        string(REGEX REPLACE "\.c(c|pp)?$" "" n ${FILENAME})
         string(REGEX REPLACE ${PREFIX} "" n ${n})
         string(REGEX REPLACE "[/=]" "_" n ${n})
         string(REGEX REPLACE "[\!]" "-" n ${n})

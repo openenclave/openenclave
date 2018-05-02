@@ -29,6 +29,7 @@ endif()
 
 add_subdirectory(libc)
 add_subdirectory(libcxx)
+add_subdirectory(libcxxrt)
 add_subdirectory(load)
 add_subdirectory(mbed)
 add_subdirectory(mem)
