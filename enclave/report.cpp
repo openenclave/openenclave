@@ -143,7 +143,7 @@ done:
 static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut);
 
 // Use static initializer to register ECall_HandleVerifyReport.
-static OE_Result g_InitEcalls =
+static OE_Result g_InitECalls =
     OE_RegisterECall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);
 
 // The report key is never sent out to the host. The host side OE_VerifyReport
@@ -165,7 +165,7 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
     result = OE_OK;
 
     // Prevent 'defined but not used' warning.
-    (void)g_InitEcalls;
+    OE_UNUSED(g_InitECalls);
 done:
     arg.result = result;
     _SafeCopyVerifyReportArgsOuput(&arg, argIn);
