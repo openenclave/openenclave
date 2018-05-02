@@ -9,7 +9,6 @@ endif()
 
 # NOTE : Third parameter is the name of the signed enclave file which should 
 # match with Linux build signed enclave file.
-add_enclave_test(VectorException VectorException_host VectorException_enc)
+add_enclave_test(VectorException VectorException_host VectorException_enc 2)	# last parameter is to set SKIP_RETURN_CODE properties value.
 
-#TODO : ADD SUPPORT TO UNCOMMENT BELOW LINE.
 #set_tests_properties(tests/VectorException PROPERTIES SKIP_RETURN_CODE 2)

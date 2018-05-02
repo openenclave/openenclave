@@ -39,4 +39,15 @@ endif()
 
 endif()#ADD_WINDOWS_ENCLAVE_TESTS
 
+ # Cannot use ARGN directly with list() command,
+ # so copy it to a variable first.
+set (extra_macro_args ${ARGN})
+list(LENGTH extra_macro_args num_extra_args)
+
+# Did we get any optional args? if yes set SKIP_RETURN_CODE properties value using it.
+if (${num_extra_args} GREATER 0)
+	list(GET extra_macro_args 0 skip_ret_code_arg)
+	set_tests_properties(tests/${TEST_NAME} PROPERTIES SKIP_RETURN_CODE ${skip_ret_code_arg})
+endif ()
+
 endfunction(add_enclave_test)

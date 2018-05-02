@@ -9,7 +9,6 @@ endif()
 
 # NOTE : Third parameter is the name of the signed enclave file which should 
 # match with Linux build signed enclave file.
-add_enclave_test(report report_host report_enc)
+add_enclave_test(report report_host report_enc 2)	# last parameter is to set SKIP_RETURN_CODE properties value.
 
-#TODO : add support for below statement.
 #set_tests_properties(tests/report PROPERTIES SKIP_RETURN_CODE 2)
