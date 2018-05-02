@@ -9,6 +9,8 @@
 
 #define GetReport OE_GetReport
 
+#define VerifyReport OE_VerifyReport
+
 #define TEST_FCN OE_ECALL
 
 #else
@@ -23,6 +25,9 @@ OE_Enclave* g_Enclave = NULL;
 
 #define GetReport(opt, rd, rds, op, ops, rb, rbs) \
     OE_GetReport(g_Enclave, opt, rd, rds, op, ops, rb, rbs)
+
+#define VerifyReport(rpt, rptSize, pr) \
+    OE_VerifyReport(g_Enclave, rpt, rptSize, pr)
 
 #define TEST_FCN
 
@@ -291,11 +296,13 @@ TEST_FCN void TestLocalReport(void* args_)
         OE_TEST(
             GetReport(0, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
+        OE_TEST(reportSize == sizeof(SGX_Report));
 
         reportSize = 1;
         OE_TEST(
             GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
+        OE_TEST(reportSize == sizeof(SGX_Report));
     }
 }
 
@@ -409,14 +416,21 @@ TEST_FCN void TestRemoteReport(void* args_)
      */
     {
         reportSize = 2048;
+
+        // Expected report (quote) size for the below calls.
+        // This value is not expected to be same for all calls.
+        const uint32_t expectedReportSize = 1116;
+
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
+        OE_TEST(reportSize == expectedReportSize);
 
         reportSize = 1;
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
+        OE_TEST(reportSize == expectedReportSize);
     }
 }
 
@@ -443,4 +457,90 @@ TEST_FCN void TestParseReportNegative(void* args_)
     OE_TEST(
         OE_ParseReport(reportBuffer, sizeof(SGX_Quote), NULL) ==
         OE_INVALID_PARAMETER);
+}
+
+// Use the current enclave itself as the target enclave.
+static void GetSGXTargetInfo(SGX_TargetInfo* sgxTargetInfo)
+{
+    SGX_Report report = {0};
+    uint32_t reportSize = sizeof(SGX_Report);
+
+    OE_TEST(
+        GetReport(0, NULL, 0, NULL, 0, (uint8_t*)&report, &reportSize) ==
+        OE_OK);
+
+    Memset(sgxTargetInfo, 0, sizeof(*sgxTargetInfo));
+    Memcpy(
+        sgxTargetInfo->mrenclave,
+        report.body.mrenclave,
+        sizeof(sgxTargetInfo->mrenclave));
+    Memcpy(
+        &sgxTargetInfo->attributes,
+        &report.body.attributes,
+        sizeof(sgxTargetInfo->attributes));
+    Memcpy(
+        &sgxTargetInfo->misc_select,
+        &report.body.miscselect,
+        sizeof(sgxTargetInfo->attributes));
+}
+
+TEST_FCN void TestLocalVerifyReport(void* args_)
+{
+    uint8_t targetInfo[sizeof(SGX_TargetInfo)];
+    uint32_t targetInfoSize = sizeof(targetInfo);
+    SGX_TargetInfo* t = NULL;
+
+    uint8_t report[sizeof(SGX_Report)] = {0};
+    uint32_t reportSize = sizeof(report);
+
+    uint8_t reportData[sizeof(SGX_ReportData)];
+    for (uint32_t i = 0; i < sizeof(reportData); ++i)
+    {
+        reportData[i] = i;
+    }
+
+    GetSGXTargetInfo((SGX_TargetInfo*)targetInfo);
+
+    // 1. Report with no custom report data.
+    OE_TEST(
+        GetReport(
+            0, NULL, 0, targetInfo, targetInfoSize, report, &reportSize) ==
+        OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
+
+    // 2. Report with full custom report data.
+    OE_TEST(
+        GetReport(
+            0,
+            reportData,
+            sizeof(reportData),
+            targetInfo,
+            targetInfoSize,
+            report,
+            &reportSize) == OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
+
+    // 3. Report with partial custom report data.
+    OE_TEST(
+        GetReport(
+            0,
+            reportData,
+            sizeof(reportData) / 2,
+            targetInfo,
+            targetInfoSize,
+            report,
+            &reportSize) == OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
+
+    // 4. Negative case.
+
+    // Change target info.
+    t = (SGX_TargetInfo*)targetInfo;
+    t->mrenclave[0]++;
+
+    OE_TEST(
+        GetReport(
+            0, NULL, 0, targetInfo, targetInfoSize, report, &reportSize) ==
+        OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_VERIFY_FAILED);
 }
