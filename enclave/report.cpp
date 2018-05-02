@@ -140,6 +140,12 @@ done:
     return result;
 }
 
+static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut);
+
+// Use static initializer to register ECall_HandleVerifyReport.
+static OE_Result g_InitEcalls =
+    OE_RegisterECall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);
+
 // The report key is never sent out to the host. The host side OE_VerifyReport
 // invokes OE_FUNC_VERIFY_REPORT ECall on the enclave. ECalls are handled in
 // oecore; however oecore has no access to enclave's OE_VerifyReport (see
@@ -158,11 +164,9 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
     // success.
     result = OE_OK;
 
+    // Prevent 'defined but not used' warning.
+    (void)g_InitEcalls;
 done:
     arg.result = result;
     _SafeCopyVerifyReportArgsOuput(&arg, argIn);
 }
-
-// Use static initializer to register ECall_HandleVerifyReport.
-static OE_Result g_InitECalls =
-    OE_RegisterECall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);
