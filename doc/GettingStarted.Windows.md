@@ -148,24 +148,33 @@ do not have an enclave dependency:
 
 How to build the CMake project using Visual Studio 2017
 --------------------------------------------------------
-1. Open CMake project in Visual Studio from menu File>Open>CMake... and select 
-	top level CMakeLists.txt file which is present in openenclave folder.
+1. Open CMake project in Visual Studio from menu File > Open > CMake...
+	and select top level CMakeLists.txt file which is present in openenclave folder.
 2. Select Linux-Debug configuration and make sure cache is updated and then 
-	select menu CMake>Build only>All(Targets) to build all the projects.
+	select menu CMake > Build only > All(Targets) to build all the projects.
 	
-	To successfully compile this configuration, set permission for following files in WSL file system.
-	/var/tmp/build/{WorkspaceHash}/build/Linux-Debug/3rdparty/musl/CMakeFiles/oelibc_includes.dir/build.make
-	/var/tmp/build/{WorkspaceHash}/build/Linux-Debug/3rdparty/musl/musl/configure
-	/var/tmp/build/{WorkspaceHash}/build/Linux-Debug/3rdparty/musl/musl/tools/install.sh
-	/var/tmp/build/{WorkspaceHash}/build/Linux-Debug/3rdparty/libunwind/libunwind/autogen.sh
-
+	To successfully compile this configuration, set permission for following files
+	in WSL file system.
+	1. Open WSL.
+	2. $ cd /
+	3. var/tmp/build
+	4. At this point, it will show folders with workspace hash as their name,
+	you can check your workspace hash in Visual studio build output window
+	 and go into that folder.
+	For example $ cd 7e0f78cb-8034-763d-93b5-09ee72b571bb
+	5. $ cd build/Linux-Debug
+	6. $ sudo chmod +755 3rdparty/musl/CMakeFiles/oelibc_includes.dir/build.make
+	7. $ sudo chmod +755 3rdparty/musl/musl/configure
+	8. $ sudo chmod +755 3rdparty/musl/musl/tools/install.sh
+	9. $ sudo chmod +755 3rdparty/libunwind/libunwind/autogen.sh
 	
 3. Switch to x64-Debug-test configuration and wait for the cache to update and
-	select menu CMake>BuildAll.
+	select menu CMake > BuildAll.
 4. Now to run CTest, select menu CMake > Tests > Run openenclave tests.
 
-NOTE : Currently this Tests menu item is not directly available in Visual Studio 2017,
-some workaround is added in tests/CMakeLists.txt file suggested by Microsoft.
+NOTE : Currently this Tests menu item is not directly available in
+	Visual Studio 2017 (15.6.6), some workaround is added in tests/CMakeLists.txt
+	file suggested by Microsoft.
 
 The Output window should indicate that `tests/mem` and `tests/str` were run.
 
