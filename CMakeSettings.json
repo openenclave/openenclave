@@ -1,5 +1,20 @@
 {
   // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
+  // Two new configurations are added here : "x64-Debug-tests" and "x64-Release-tests".
+  // "x64-Debug-tests" : This configuration is copied from "x64-Debug" and only change is in
+  //                    cmakeCommandArgs value, "ADD_WINDOWS_ENCLAVE_TESTS" is passed with value
+  //                    set to 1 so that CMake configuration will copy enclave files from Linux
+  //                    build directory to windows build directory and further it can be used
+  //                    this copied enclave file for add tests on windows side.
+  // LINUX_BIN_DIR : This is the complete file path of Linux build directory location on
+  //                  windows machine which is required to copy Linux enclave file into
+  //                  Windows build directory.
+  //env.WSL_ROOTFS : WSL_ROOTFS is user environment variable created on windows machine whose
+  //                  value should point to WSL root file system location in windows machine.
+  //                  (For ex. C:\Users\User\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs)
+  // "x64-Release-tests" : This configuration is copied from "x64-Release" and
+  //                      it has same changes as mentioned above in case of "x64-Debug-tests".
+
   "configurations": [
     {
       "name": "x86-Debug",
