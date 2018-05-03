@@ -10,7 +10,7 @@
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
  *  SPDX-License-Identifier: Apache-2.0
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  Licensed under the Apache License, Version 2.0 (the "License") you may
  *  not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
@@ -178,7 +178,7 @@
  *
  * All these define require MBEDTLS_PLATFORM_C to be defined!
  *
- * \note MBEDTLS_PLATFORM_SNPRINTF_ALT is required on Windows;
+ * \note MBEDTLS_PLATFORM_SNPRINTF_ALT is required on Windows
  * it will be enabled automatically by check_config.h
  *
  * \warning MBEDTLS_PLATFORM_XXX_ALT cannot be defined at the same time as
@@ -844,7 +844,7 @@
  * Enable the ECJPAKE based ciphersuite modes in SSL / TLS.
  *
  * \warning This is currently experimental. EC J-PAKE support is based on the
- * Thread v1.0.0 specification; incompatible changes to the specification
+ * Thread v1.0.0 specification incompatible changes to the specification
  * might still happen. For this reason, this is disabled by default.
  *
  * Requires: MBEDTLS_ECJPAKE_C
@@ -1913,7 +1913,7 @@
  * Enable the elliptic curve J-PAKE library.
  *
  * \warning This is currently experimental. EC J-PAKE support is based on the
- * Thread v1.0.0 specification; incompatible changes to the specification
+ * Thread v1.0.0 specification incompatible changes to the specification
  * might still happen. For this reason, this is disabled by default.
  *
  * Module:  library/ecjpake.c

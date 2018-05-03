@@ -5,6 +5,33 @@
 
 set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-builtin-udivti3")
 
+option(ENABLE_MBEDTLS_CERTS_C "Enable the test certificates for mbedtls" OFF)
+option(ENABLE_MBEDTLS_DEBUG_C "Enable the debug functions for mbedtls" OFF)
+
+FILE(READ ${CMAKE_CURRENT_SOURCE_DIR}/config.h CONFIG_FILE)
+
+if (ENABLE_MBEDTLS_CERTS_C)
+   message("ENABLE_MBEDTLS_CERTS_C set, Enabling test certificates for mbedtls")
+   string(REGEX REPLACE "\/\/\#define\ MBEDTLS_CERTS_C" "\#define\ MBEDTLS_CERTS_C" out ${CONFIG_FILE})
+   file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/config.h "${out}")
+else()
+   message("ENABLE_MBEDTLS_CERTS_C is not set, Disabling test certificates for mbedtls")
+   string(REGEX REPLACE "\#define\ MBEDTLS_CERTS_C" "\/\/\#define\ MBEDTLS_CERTS_C" out ${CONFIG_FILE})
+   file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/config.h "${out}")
+endif()
+
+FILE(READ ${CMAKE_CURRENT_SOURCE_DIR}/config.h CONFIG_FILE)
+
+if (ENABLE_MBEDTLS_DEBUG_C)
+   message("ENABLE_MBEDTLS_DEBUG_C set, Enabling debug functions for mbedtls")
+   string(REGEX REPLACE "\/\/\#define\ MBEDTLS_DEBUG_C" "\#define\ MBEDTLS_DEBUG_C" out ${CONFIG_FILE})
+   file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/config.h "${out}")
+else()
+   message("ENABLE_MBEDTLS_DEBUG_C is not set, Disabling debug functions for mbedtls")
+   string(REGEX REPLACE "\#define\ MBEDTLS_DEBUG_C" "\/\/\#define\ MBEDTLS_DEBUG_C" out ${CONFIG_FILE})
+   file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/config.h "${out}")
+endif()
+
 include (ExternalProject)
 ExternalProject_Add(mbedtls-wrap
     DEPENDS oelibc_includes
