@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
-#include <dirent.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/error.h>
 #include <openenclave/bits/tests.h>
@@ -10,230 +8,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
 #include <unistd.h>
 #include "ocalls.h"
-
-typedef struct _FileArgs
-{
-    FILE* F_ptr;
-    char* path;
-    char* mode;
-    char* buf;
-    void* ptr;
-    int ret;
-
-    long int li_var;
-    int i_var;
-    int len;
-
-} F_Args;
 
 typedef struct _Args
 {
     char* test;
     int ret;
 } Args;
-
-#define DEBUG
-#undef DEBUG
-
-OE_OCALL void OE_FOpen(void* FileArgs)
-{
-    FILE* fp;
-    F_Args* args = (F_Args*)FileArgs;
-#ifdef DEBUG
-    printf("#### %s ###########\n", args->path);
-#endif
-    fp = fopen(args->path, args->mode);
-    if (fp == NULL)
-        printf("fopen error");
-    else
-    {
-#ifdef DEBUG
-        printf("\n ^^^^^^^file opened address fp =%p &&&&&&&&&\n", fp);
-#endif
-        args->F_ptr = fp;
-    }
-    return;
-}
-
-OE_OCALL void OE_FClose(void* FileArgs)
-{
-    int ret;
-    F_Args* args = (F_Args*)FileArgs;
-
-    ret = fclose(args->F_ptr);
-
-#ifdef DEBUG
-    printf("\n fclose Ret = %d \n", ret);
-#endif
-    args->ret = ret;
-    return;
-}
-
-OE_OCALL void OE_FEof(void* FileArgs)
-{
-    int ret;
-    F_Args* args = (F_Args*)FileArgs;
-
-    ret = feof(args->F_ptr);
-
-#ifdef DEBUG
-    printf("\n feof Ret = %d \n", ret);
-#endif
-    args->ret = ret;
-    return;
-}
-
-OE_OCALL void OE_FError(void* FileArgs)
-{
-    int ret;
-    F_Args* args = (F_Args*)FileArgs;
-
-    ret = ferror(args->F_ptr);
-
-#ifdef DEBUG
-    printf("\n feof Ret = %d \n", ret);
-#endif
-    args->ret = ret;
-    return;
-}
-
-OE_OCALL void OE_FGets(void* FileArgs)
-{
-    char* ret;
-    F_Args* args = (F_Args*)FileArgs;
-
-    ret = fgets(args->buf, args->len, args->F_ptr);
-
-#ifdef DEBUG
-    printf("\n fgets Ret = %d --- buf: %s \n", ret, args->buf);
-#endif
-    args->ptr = (void*)ret;
-    return;
-}
-
-OE_OCALL void OE_FRead(void* FileArgs)
-{
-    int ret;
-    F_Args* args = (F_Args*)FileArgs;
-
-    ret = fread(args->buf, args->len, (size_t)args->i_var, args->F_ptr);
-
-#ifdef DEBUG
-    printf("\n fgets Ret = %d --- buf: %s \n", ret, args->buf);
-#endif
-    args->ret = ret;
-    return;
-}
-
-OE_OCALL void OE_FWrite(void* FileArgs)
-{
-    int ret;
-    F_Args* args = (F_Args*)FileArgs;
-
-    ret = fwrite(args->buf, args->len, (size_t)args->i_var, args->F_ptr);
-
-#ifdef DEBUG
-    printf("\n fwrite Ret = %d --- buf: %s \n", ret, args->buf);
-#endif
-    args->ret = ret;
-    return;
-}
-
-OE_OCALL void OE_FSeek(void* FileArgs)
-{
-    int ret;
-    F_Args* args = (F_Args*)FileArgs;
-
-    ret = fseek(args->F_ptr, args->li_var, args->i_var);
-
-#ifdef DEBUG
-    printf("\n fgets Ret = %d \n", ret);
-#endif
-    args->ret = ret;
-    return;
-}
-
-OE_OCALL void OE_FPutc(void* FileArgs)
-{
-    int ret;
-    F_Args* args = (F_Args*)FileArgs;
-
-    ret = fputc(args->i_var, args->F_ptr);
-
-#ifdef DEBUG
-    printf("\n fputc Ret = %d \n", ret);
-#endif
-    args->ret = ret;
-    return;
-}
-
-OE_OCALL void OE_FTell(void* FileArgs)
-{
-    int ret;
-    F_Args* args = (F_Args*)FileArgs;
-
-    ret = ftell(args->F_ptr);
-
-#ifdef DEBUG
-    printf("\n fgets Ret = %d --- \n", ret);
-#endif
-    args->ret = ret;
-    return;
-}
-
-OE_OCALL void OE_Open_dir(void* FileArgs)
-{
-    F_Args* args = (F_Args*)FileArgs;
-
-    args->ptr = (void*)opendir(args->path);
-
-#ifdef DEBUG
-    printf("\n opendir Ret = %d --- buf: %s \n", ret, args->buf);
-#endif
-    return;
-}
-
-OE_OCALL void OE_Close_dir(void* FileArgs)
-{
-    F_Args* args = (F_Args*)FileArgs;
-
-    args->ret = closedir((DIR*)args->ptr);
-
-#ifdef DEBUG
-    printf("\n close dir Ret = %d --- buf: %s \n", ret, args->buf);
-#endif
-    return;
-}
-
-OE_OCALL void OE_Read_dir(void* FileArgs)
-{
-    F_Args* args = (F_Args*)FileArgs;
-
-    args->ptr = (void*)readdir((DIR*)args->ptr);
-
-#ifdef DEBUG
-    printf("\n close dir Ret = %d --- buf: %s \n", ret, args->buf);
-#endif
-    return;
-}
-
-OE_OCALL void OE_Stat(void* FileArgs)
-{
-    F_Args* args = (F_Args*)FileArgs;
-
-    args->ret = (int)stat(args->path, (struct stat*)args->ptr);
-
-#ifdef DEBUG
-    printf("\n stat  Ret = %d --- buf: %s \n", args->ret);
-#endif
-    return;
-}
 
 char* find_data_file(char* str)
 {
@@ -296,7 +78,7 @@ void Test(OE_Enclave* enclave, int selftest, char* data_file_name)
     }
 
     OE_Result result = OE_CallEnclave(enclave, "Test", &args);
-    assert(result == OE_OK);
+    OE_TEST(result == OE_OK);
 
     if (args.ret == 0)
     {

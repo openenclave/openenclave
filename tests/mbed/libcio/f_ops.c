@@ -232,7 +232,7 @@ DIR* opendir(const char* name)
     Args* args;
     args = (Args*)OE_HostMalloc(sizeof(Args));
     args->path = OE_HostStackStrdup(name);
-    OE_CallHost("OE_Open_dir", args);
+    OE_CallHost("OE_Opendir", args);
 
     dir = (DIR*)args->ptr;
     OE_HostFree(args);
@@ -245,7 +245,7 @@ int closedir(DIR* ptr)
     Args* args;
     args = (Args*)OE_HostMalloc(sizeof(Args));
     args->ptr = (void*)ptr;
-    OE_CallHost("OE_Close_dir", args);
+    OE_CallHost("OE_Closedir", args);
 
     ret = args->ret;
     OE_HostFree(args);
@@ -258,7 +258,7 @@ struct dirent* readdir(DIR* ptr)
     Args* args;
     args = (Args*)OE_HostMalloc(sizeof(Args));
     args->ptr = (void*)ptr;
-    OE_CallHost("OE_Read_dir", args);
+    OE_CallHost("OE_Readdir", args);
 
     ret = (struct dirent*)args->ptr;
 

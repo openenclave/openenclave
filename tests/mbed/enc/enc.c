@@ -41,8 +41,8 @@ OE_ECALL void Test(Args* args)
 
         /* verbose option is enabled as some of the functionality in
            helper.function such as redirect output, restore output is trying
-           to assign values to stdout which inturn causes seg fault. to avoid
-           this we enabled verbose options such that those function
+           to assign values to stdout which inturn causes segmentation fault.To
+           avoid this we enabled verbose options such that those function
            calls will be suppressed */
 
         static const char* argv[] = {"test", "-v", "NULL"};

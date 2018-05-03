@@ -42,7 +42,6 @@ target_link_libraries(mbedcrypto INTERFACE
     ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a
     ${OE_LIBDIR}/openenclave/enclave/libmbedx509.a
     ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a
-    ${OE_LIBDIR}/openenclave/enclave/libfops.a
 )
 # For the libc dependency, We would just want to use "oelibc". However, we need
 # an actual lib-dependency between crypto an libc, which is not expressable
