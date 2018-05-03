@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/result.h>
@@ -602,5 +603,106 @@ OE_Result OE_CertChainGetCert(
 
 done:
 
+    return result;
+}
+
+#if 0
+static void _DumpASCII(const void* data_, size_t size)
+{
+    const uint8_t* data = (const uint8_t*)data_;
+
+    for (size_t i = 0; i < size; i++)
+    {
+        uint8_t c = data[i];
+
+        if (isprint(c))
+        {
+            printf("%c", c);
+        }
+        else
+        {
+            printf("<%02X>", c);
+        }
+    }
+
+    printf("\n");
+}
+#endif
+
+// Strictly speaking there is no limit on the length of an OID but we chose
+// 128 (the maximum OID length in the SNMP specification). Also, this value
+// is hardcoded to 64 in many implementations.
+#define OE_MAX_OID_SIZE 128
+
+OE_Result OE_CertGetExtension(
+    OE_Cert* cert, 
+    const char* oid,
+    uint8_t* data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_CertImpl* impl = (OE_CertImpl*)cert;
+    const STACK_OF(X509_EXTENSION)* extensions;
+    int numExtensions;
+
+    /* Reject invalid parameters */
+    if (!_ValidCertImpl(impl) || !oid || !size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Set a pointer to the stack of extensions (possibly NULL) */
+    if (!(extensions = impl->x509->cert_info->extensions))
+        OE_RAISE(OE_NOT_FOUND);
+
+    /* Get the number of extensions (possibly zero) */
+    numExtensions = sk_X509_EXTENSION_num(extensions);
+
+    /* Find the certificate with this OID */
+    for (int i = 0; i < numExtensions; i++)
+    {
+        X509_EXTENSION* ext;
+        ASN1_OBJECT* obj;
+        char extOid[OE_MAX_OID_SIZE];
+
+        /* Get the i-th extension from the stack */
+        if (!(ext = sk_X509_EXTENSION_value(extensions, i)))
+            OE_RAISE(OE_FAILURE);
+
+        /* Get the OID */
+        if (!(obj = X509_EXTENSION_get_object(ext)))
+            OE_RAISE(OE_FAILURE);
+
+        /* Get the string name of the OID */
+        if (!OBJ_obj2txt(extOid, sizeof(extOid), obj, 1))
+            OE_RAISE(OE_FAILURE);
+
+        /* If found then get the data */
+        if (strcmp(extOid, oid) == 0)
+        {
+            ASN1_OCTET_STRING* str;
+
+            /* Get the data from the extension */
+            if (!(str = X509_EXTENSION_get_data(ext)))
+                OE_RAISE(OE_FAILURE);
+
+            /* If the caller's buffer is too small, raise error */
+            if (str->length > *size)
+            {
+                *size = str->length;
+                OE_RAISE(OE_BUFFER_TOO_SMALL);
+            }
+
+            if (data)
+            {
+                memcpy(data, str->data, str->length);
+                *size = str->length;
+                result = OE_OK;
+                goto done;
+            }
+        }
+    }
+
+    result = OE_NOT_FOUND;
+
+done:
     return result;
 }

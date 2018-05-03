@@ -520,3 +520,12 @@ done:
 
     return result;
 }
+
+OE_Result OE_CertGetExtension(
+    OE_Cert* cert,
+    const char* oid,
+    uint8_t* data,
+    size_t* size)
+{
+    return OE_UNSUPPORTED;
+}

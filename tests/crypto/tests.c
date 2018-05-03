@@ -954,8 +954,40 @@ static void TestCertMethods()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+static void TestCertExtensions()
+{
+    OE_Result r;
+    const char SGX_EXTENSIONS[] = "1.2.840.113741.1.13.1";
+
+    (void)SGX_EXTENSIONS;
+
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    /* Test OE_CertGetECPublicKey() */
+    {
+        OE_Cert cert;
+
+        r = OE_CertReadPEM(ECCERT, sizeof(ECCERT), &cert);
+        OE_TEST(r == OE_OK);
+
+        uint8_t data[1024];
+        size_t size = sizeof(data);
+
+        r = OE_CertGetExtension(&cert, SGX_EXTENSIONS, data, &size);
+        OE_TEST(r == OE_OK || r == OE_UNSUPPORTED);
+
+        if (r == OE_OK)
+            OE_HexDump(data, size);
+
+        OE_CertFree(&cert);
+    }
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 static void RunAllTests()
 {
+    TestCertExtensions();
     TestCertMethods();
     TestCertVerify();
     TestECGenerate();
