@@ -62,6 +62,7 @@ include(add_enclave_test)
 # finally, add all dirs that matter
 add_subdirectory(host)		# convertable to Windows
 add_subdirectory(include)	# convertable to Windows
+add_subdirectory(tests)
 if (UNIX)
 add_subdirectory(3rdparty)
 add_subdirectory(doc/refman)
@@ -72,12 +73,5 @@ add_subdirectory(idl)
 add_subdirectory(libc)
 add_subdirectory(libcxx)
 add_subdirectory(samples)
-add_subdirectory(tests)
 add_subdirectory(tools)
-endif()
-
-if(WIN32)
-
-add_subdirectory(tests)
-
 endif()

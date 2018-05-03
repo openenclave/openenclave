@@ -31,11 +31,10 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
 	# add the test (this assumes the syntax correctly copied the linux enc signed 
 	# binary into the host subdir in add_custom_command; tweak it as needed)
 	add_test(tests/${TEST_NAME} ${CMAKE_CURRENT_BINARY_DIR}/host/${HOST_FILE} ${CMAKE_CURRENT_BINARY_DIR}/host/${ENC_FILE}.signed.so)
-else()
 
-if (UNIX)
+elseif(UNIX)
+
 	add_test(tests/${TEST_NAME} host/${HOST_FILE} ./enc/${ENC_FILE}.signed.so)
-endif()
 
 endif()#ADD_WINDOWS_ENCLAVE_TESTS
 
