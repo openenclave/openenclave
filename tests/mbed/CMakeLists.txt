@@ -15,5 +15,5 @@ endif()
 
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "../../3rdparty/mbedtls/mbedtls/programs/test/")
-    add_enclave_test(mbed/${name} libmbedtest_host libmbedtest-${name}_enc)
+	add_enclave_test(tests/mbed/${name} ./host libmbedtest_host ./enc libmbedtest-${name}_enc.signed.so)
 endforeach(testcase)

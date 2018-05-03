@@ -7,6 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-# NOTE : Third parameter is the name of the signed enclave file which should 
-# match with Linux build signed enclave file.
-add_enclave_test(abortStatus abortStatus_host abortStatus_enc)
+add_enclave_test(tests/abortStatus ./host abortStatus_host ./enc abortStatus_enc.signed.so)

@@ -15,6 +15,6 @@ if (UNIX)
 		)
 else()
 
-	add_enclave_test(print print_host print_enc)
+	add_enclave_test(tests/print ./host print_host ./enc print_enc.signed.so)
 
 endif()

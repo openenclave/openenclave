@@ -7,6 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-# NOTE : Third parameter is the name of the signed enclave file which should 
-# match with Linux build signed enclave file.
-add_enclave_test(hexdump hexdump_host hexdump_enc)
+add_enclave_test(tests/hexdump ./host hexdump_host ./enc hexdump_enc.signed.so)

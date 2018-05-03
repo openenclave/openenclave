@@ -7,6 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-# NOTE : Third parameter is the name of the signed enclave file which should 
-# match with Linux build signed enclave file.
-add_enclave_test(pingpong-shared pingpong-shared_host pingpong-shared_enc)
+add_enclave_test(tests/pingpong-shared ./host pingpong-shared_host ./enc pingpong-shared_enc.signed.so)

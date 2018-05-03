@@ -7,8 +7,5 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-# NOTE : Third parameter is the name of the signed enclave file which should 
-# match with Linux build signed enclave file.
-add_enclave_test(sealKey sealKey_host sealKey_enc 2)	# last parameter is to set SKIP_RETURN_CODE properties value.
-
-#set_tests_properties(tests/sealKey PROPERTIES SKIP_RETURN_CODE 2)
+add_enclave_test(tests/sealKey ./host sealKey_host ./enc sealKey_enc.signed.so)
+set_tests_properties(tests/sealKey PROPERTIES SKIP_RETURN_CODE 2)

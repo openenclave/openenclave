@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(NestedCall NestedCall_host NestedCall_enc)
+add_enclave_test(tests/NestedCall ./host NestedCall_host ./enc NestedCall_enc.signed.so)

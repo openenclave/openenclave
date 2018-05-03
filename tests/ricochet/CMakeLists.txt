@@ -7,6 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-# NOTE : Third parameter is the name of the signed enclave file which should 
-# match with Linux build signed enclave file.
-add_enclave_test(ricochet ricochet_host ricochet_enc)
+add_enclave_test(tests/ricochet ./host ricochet_host ./enc ricochet_enc.signed.so)

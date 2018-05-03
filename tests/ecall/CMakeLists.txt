@@ -7,6 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-# NOTE : Third parameter is the name of the signed enclave file which should 
-# match with Linux build signed enclave file.
-add_enclave_test(ecall ecall_host ecall_enc)
+add_enclave_test(tests/ecall ./host ecall_host ./enc ecall_enc.signed.so)

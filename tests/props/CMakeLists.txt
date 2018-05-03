@@ -5,10 +5,10 @@ add_subdirectory(host)
 
 if (UNIX)
 	add_subdirectory(enc)
-
-	# Test unsigned enclave:
-	add_test(tests/props_unsigned host/props_host ./enc/propsenc unsigned)		#TODO : Make it generic so that this will be executed for windows also.
 endif()
 
 # Test a signed enclave:
-add_enclave_test(props props_host props_enc)
+add_enclave_test(tests/props ./host props_host ./enc props_enc.signed.so)
+
+# Test unsigned enclave:
+add_enclave_test(tests/props_unsigned ./host props_host ./enc propsenc)
