@@ -21,30 +21,23 @@
 
 OE_ECALL void Test(void* args_)
 {
+    OE_MallocStats stats;
+
     /* Save the current malloc'd bytes in use */
     uint64_t inUseBytes;
-    {
-        OE_MallocStats stats;
-
-        if (OE_GetMallocStats(&stats) != 0)
-            OE_TEST("OE_GetMallocStats() failed" == NULL);
-
-        inUseBytes = stats.inUseBytes;
-    }
+    OE_TEST(OE_GetMallocStats(&stats) == OE_OK);
+    inUseBytes = stats.inUseBytes;
 
     RunAllTests();
 
     /* Verify that all malloc'd memory has been released */
+    OE_TEST(OE_GetMallocStats(&stats) == OE_OK);
+    if (stats.inUseBytes != inUseBytes)
     {
-        OE_MallocStats stats;
-
-        if (OE_GetMallocStats(&stats) != 0)
-            OE_TEST("OE_GetMallocStats() failed" == NULL);
-
-        if (stats.inUseBytes != inUseBytes)
-        {
-            printf("*** ERROR: bytes in use: %lu\n", stats.inUseBytes);
-            OE_Abort();
-        }
+        fprintf(stderr, "ERROR: memory leaked\n");
+        fprintf(stderr, "In use bytes: %lu\n", stats.inUseBytes);
+        fprintf(stderr, "System bytes: %lu\n", stats.systemBytes);
+        fprintf(stderr, "Peak system bytes: %lu\n", stats.peakSystemBytes);
+        OE_Abort();
     }
 }

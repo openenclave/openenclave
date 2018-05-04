@@ -8,7 +8,6 @@
 #include <openenclave/bits/sha.h>
 #include <openenclave/types.h>
 #include <openssl/pem.h>
-#include <openssl/rsa.h>
 #include <string.h>
 #include "init.h"
 
@@ -23,15 +22,15 @@
 /* Randomly generated magic number */
 #define OE_EC_PRIVATE_KEY_MAGIC 0x19a751419ae04bbc
 
-typedef struct _OE_ECPrivateKeyImpl
+typedef struct _ECPrivateKey
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} OE_ECPrivateKeyImpl;
+} ECPrivateKey;
 
-OE_STATIC_ASSERT(sizeof(OE_ECPrivateKeyImpl) <= sizeof(OE_ECPrivateKey));
+OE_STATIC_ASSERT(sizeof(ECPrivateKey) <= sizeof(OE_ECPrivateKey));
 
-OE_INLINE void _ClearPrivateKeyImpl(OE_ECPrivateKeyImpl* impl)
+OE_INLINE void _ECPrivateKeyClear(ECPrivateKey* impl)
 {
     if (impl)
     {
@@ -40,7 +39,7 @@ OE_INLINE void _ClearPrivateKeyImpl(OE_ECPrivateKeyImpl* impl)
     }
 }
 
-OE_INLINE bool _ValidPrivateKeyImpl(const OE_ECPrivateKeyImpl* impl)
+OE_INLINE bool _ECPrivateKeyValid(const ECPrivateKey* impl)
 {
     return impl && impl->magic == OE_EC_PRIVATE_KEY_MAGIC && impl->pkey;
 }
@@ -48,15 +47,15 @@ OE_INLINE bool _ValidPrivateKeyImpl(const OE_ECPrivateKeyImpl* impl)
 /* Randomly generated magic number */
 #define OE_EC_PUBLIC_KEY_MAGIC 0xb1d39580c1f14c02
 
-typedef struct _OE_ECPublicKeyImpl
+typedef struct _ECPublicKey
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} OE_ECPublicKeyImpl;
+} ECPublicKey;
 
-OE_STATIC_ASSERT(sizeof(OE_ECPublicKeyImpl) <= sizeof(OE_ECPublicKey));
+OE_STATIC_ASSERT(sizeof(ECPublicKey) <= sizeof(OE_ECPublicKey));
 
-OE_INLINE void _ClearPublicKeyImpl(OE_ECPublicKeyImpl* impl)
+OE_INLINE void _ECPublicKeyClear(ECPublicKey* impl)
 {
     if (impl)
     {
@@ -65,7 +64,7 @@ OE_INLINE void _ClearPublicKeyImpl(OE_ECPublicKeyImpl* impl)
     }
 }
 
-OE_INLINE bool _ValidPublicKeyImpl(const OE_ECPublicKeyImpl* impl)
+OE_INLINE bool _ECPublicKeyValid(const ECPublicKey* impl)
 {
     return impl && impl->magic == OE_EC_PUBLIC_KEY_MAGIC && impl->pkey;
 }
@@ -106,9 +105,9 @@ static EC_KEY* _GetECKey(EVP_PKEY* pkey)
 **==============================================================================
 */
 
-void OE_ECInitPublicKey(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
+void OE_ECPublicKeyInit(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
 {
-    OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)publicKey;
+    ECPublicKey* impl = (ECPublicKey*)publicKey;
     impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
     impl->pkey = pkey;
 }
@@ -127,12 +126,12 @@ OE_Result OE_ECPrivateKeyReadPEM(
     OE_ECPrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_ECPrivateKeyImpl* impl = (OE_ECPrivateKeyImpl*)key;
+    ECPrivateKey* impl = (ECPrivateKey*)key;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
 
     /* Initialize the key output parameter */
-    _ClearPrivateKeyImpl(impl);
+    _ECPrivateKeyClear(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -183,10 +182,10 @@ OE_Result OE_ECPublicKeyReadPEM(
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
-    OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)key;
+    ECPublicKey* impl = (ECPublicKey*)key;
 
     /* Zero-initialize the key */
-    _ClearPublicKeyImpl(impl);
+    _ECPublicKeyClear(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -235,13 +234,13 @@ OE_Result OE_ECPrivateKeyWritePEM(
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_ECPrivateKeyImpl* impl = (const OE_ECPrivateKeyImpl*)key;
+    const ECPrivateKey* impl = (const ECPrivateKey*)key;
     BIO* bio = NULL;
     EC_KEY* ec = NULL;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_ValidPrivateKeyImpl(impl) || !size)
+    if (!_ECPrivateKeyValid(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -303,11 +302,11 @@ OE_Result OE_ECPublicKeyWritePEM(
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
-    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)key;
+    const ECPublicKey* impl = (const ECPublicKey*)key;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_ValidPublicKeyImpl(impl) || !size)
+    if (!_ECPublicKeyValid(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -361,17 +360,17 @@ OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* key)
 
     if (key)
     {
-        OE_ECPrivateKeyImpl* impl = (OE_ECPrivateKeyImpl*)key;
+        ECPrivateKey* impl = (ECPrivateKey*)key;
 
         /* Check parameter */
-        if (!_ValidPrivateKeyImpl(impl))
+        if (!_ECPrivateKeyValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
         EVP_PKEY_free(impl->pkey);
 
         /* Clear the fields of the implementation */
-        _ClearPrivateKeyImpl(impl);
+        _ECPrivateKeyClear(impl);
     }
 
     result = OE_OK;
@@ -386,17 +385,17 @@ OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* key)
 
     if (key)
     {
-        OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)key;
+        ECPublicKey* impl = (ECPublicKey*)key;
 
         /* Check parameter */
-        if (!_ValidPublicKeyImpl(impl))
+        if (!_ECPublicKeyValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
         EVP_PKEY_free(impl->pkey);
 
         /* Clear the fields of the implementation */
-        _ClearPublicKeyImpl(impl);
+        _ECPublicKeyClear(impl);
     }
 
     result = OE_OK;
@@ -414,11 +413,11 @@ OE_Result OE_ECPrivateKeySign(
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_ECPrivateKeyImpl* impl = (const OE_ECPrivateKeyImpl*)privateKey;
+    const ECPrivateKey* impl = (const ECPrivateKey*)privateKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_ValidPrivateKeyImpl(impl) || !hashData || !hashSize || !signatureSize)
+    if (!_ECPrivateKeyValid(impl) || !hashData || !hashSize || !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check that hash buffer is big enough (hashType is size of that hash) */
@@ -483,11 +482,11 @@ OE_Result OE_ECPublicKeyVerify(
     size_t signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)publicKey;
+    const ECPublicKey* impl = (const ECPublicKey*)publicKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_ValidPublicKeyImpl(impl) || !hashData || !hashSize || !signature ||
+    if (!_ECPublicKeyValid(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -532,8 +531,8 @@ OE_Result OE_ECGenerateKeyPair(
     OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_ECPrivateKeyImpl* privateImpl = (OE_ECPrivateKeyImpl*)privateKey;
-    OE_ECPublicKeyImpl* publicImpl = (OE_ECPublicKeyImpl*)publicKey;
+    ECPrivateKey* privateImpl = (ECPrivateKey*)privateKey;
+    ECPublicKey* publicImpl = (ECPublicKey*)publicKey;
     int nid;
     EC_KEY* key = NULL;
     EVP_PKEY* pkey = NULL;
@@ -541,8 +540,8 @@ OE_Result OE_ECGenerateKeyPair(
     const char nullTerminator = '\0';
     const char* curveName;
 
-    _ClearPrivateKeyImpl(privateImpl);
-    _ClearPublicKeyImpl(publicImpl);
+    _ECPrivateKeyClear(privateImpl);
+    _ECPublicKeyClear(publicImpl);
 
     /* Check parameters */
     if (!privateKey || !publicKey)
@@ -658,7 +657,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)publicKey;
+    const ECPublicKey* impl = (const ECPublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     uint8_t* data = NULL;
     EC_KEY* ec;
@@ -698,5 +697,43 @@ done:
     if (data)
         free(data);
 
+    return result;
+}
+
+OE_Result OE_ECPublicKeyEqual(
+    const OE_ECPublicKey* publicKey1,
+    const OE_ECPublicKey* publicKey2,
+    bool* equal)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const ECPublicKey* impl1 = (const ECPublicKey*)publicKey1;
+    const ECPublicKey* impl2 = (const ECPublicKey*)publicKey2;
+
+    if (equal)
+        *equal = false;
+
+    /* Reject bad parameters */
+    if (!_ECPublicKeyValid(impl1) || !_ECPublicKeyValid(impl2) || !equal)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    {
+        const EC_KEY* ec1 = _GetECKey(impl1->pkey);
+        const EC_KEY* ec2 = _GetECKey(impl2->pkey);
+        const EC_GROUP* group1 = EC_KEY_get0_group(ec1);
+        const EC_GROUP* group2 = EC_KEY_get0_group(ec2);
+        const EC_POINT* point1 = EC_KEY_get0_public_key(ec1);
+        const EC_POINT* point2 = EC_KEY_get0_public_key(ec2);
+
+        /* Compare group and public key point */
+        if (EC_GROUP_cmp(group1, group2, NULL) == 0 &&
+            EC_POINT_cmp(group1, point1, point2, NULL) == 0)
+        {
+            *equal = true;
+        }
+    }
+
+    result = OE_OK;
+
+done:
     return result;
 }

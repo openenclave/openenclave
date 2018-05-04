@@ -226,6 +226,24 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
     uint8_t* buffer,
     size_t* bufferSize);
 
+/**
+ * Determine whether two EC public keys are identical.
+ *
+ * This function determines whether two EC public keys are identical.
+ *
+ * @param publicKey1 first key.
+ * @param publicKey2 second key.
+ * @param equal[out] true if the keys are identical.
+ *
+ * @return OE_OK successful and **equal** is either true or false.
+ * @return OE_INVALID_PARAMETER a parameter was invalid.
+ *
+ */
+OE_Result OE_ECPublicKeyEqual(
+    const OE_ECPublicKey* publicKey1,
+    const OE_ECPublicKey* publicKey2,
+    bool* equal);
+
 OE_EXTERNC_END
 
 #endif /* _OE_EC_H */

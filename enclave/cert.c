@@ -10,6 +10,7 @@
 #include <openenclave/bits/atomic.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/utils.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
@@ -402,7 +403,7 @@ OE_Result OE_CertGetRSAPublicKey(
 {
     OE_Result result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
-    OE_RSAPublicKeyImpl* publicKeyImpl = (OE_RSAPublicKeyImpl*)publicKey;
+    RSAPublicKey* publicKeyImpl = (RSAPublicKey*)publicKey;
 
     /* Clear public key for all error pathways */
     if (publicKey)
@@ -434,7 +435,7 @@ OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
-    OE_ECPublicKeyImpl* publicKeyImpl = (OE_ECPublicKeyImpl*)publicKey;
+    ECPublicKey* publicKeyImpl = (ECPublicKey*)publicKey;
 
     /* Clear public key for all error pathways */
     if (publicKey)
@@ -503,10 +504,6 @@ OE_Result OE_CertChainGetCert(
     if (!_CertChainValid(impl) || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Adjust the index to get the last certificate */
-    if (index == OE_MAX_SIZE_T)
-        index = impl->referent->length - 1;
-
     /* Find the certificate with this index */
     if (!(crt = _ReferentGetCert(impl->referent, index)))
         OE_RAISE(OE_OUT_OF_BOUNDS);
@@ -518,5 +515,69 @@ OE_Result OE_CertChainGetCert(
 
 done:
 
+    return result;
+}
+
+OE_Result OE_CertChainGetRootCert(
+    const OE_CertChain* chain,
+    OE_Cert* cert)
+{
+    const CertChain* impl = (const CertChain*)chain;
+    Cert* certImpl = (Cert*)cert;
+    OE_Result result = OE_UNEXPECTED;
+    size_t n;
+
+    /* Clear the output certificate for all error pathways */
+    if (cert)
+        OE_Memset(cert, 0, sizeof(OE_Cert));
+
+    /* Reject invalid parameters */
+    if (!_CertChainValid(impl) || !cert)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the number of certificates in the chain */
+    OE_STATIC_ASSERT_TYPE(impl->referent->length, size_t);
+    n = impl->referent->length;
+
+    /* Iterate from leaf upwards looking for a self-signed certificate */
+    while (n--)
+    {
+        mbedtls_x509_crt* crt;
+        
+        if (!(crt = _ReferentGetCert(impl->referent, n)))
+            OE_RAISE(OE_FAILURE);
+
+        const mbedtls_x509_buf* subject = &crt->subject_raw;
+        const mbedtls_x509_buf* issuer = &crt->issuer_raw;
+
+        if (subject->tag == issuer->tag &&
+            subject->len == issuer->len &&
+            OE_Memcmp(subject->p, issuer->p, subject->len) == 0) 
+        {
+            /* Found self-signed certificate */
+            _CertInit(certImpl, crt, impl->referent);
+            OE_RAISE(OE_OK);
+        }
+    }
+
+    /* No self-signed certificate was found */
+    result = OE_NOT_FOUND;
+
+done:
+    return result;
+}
+
+OE_Result OE_CertChainGetLeafCert(
+    const OE_CertChain* chain,
+    OE_Cert* cert)
+{
+    OE_Result result = OE_UNEXPECTED;
+    size_t length;
+
+    OE_CHECK(OE_CertChainGetLength(chain, &length));
+    OE_CHECK(OE_CertChainGetCert(chain, length-1, cert));
+    result = OE_OK;
+
+done:
     return result;
 }

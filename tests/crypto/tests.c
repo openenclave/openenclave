@@ -556,10 +556,6 @@ static void TestECSignAndVerify()
         OE_ECPublicKeyFree(&key);
     }
 
-#if 0
-    OE_HexDump(signature, signatureSize);
-#endif
-
     free(signature);
 
     printf("=== passed TestECSignAndVerify()\n");
@@ -863,10 +859,17 @@ static void TestCertMethods()
             r = OE_RSAPublicKeyGetExponent(&key, data, &size);
             OE_TEST(r == OE_OK);
 
-            /* Does it match expected modulus? */
+            /* Does it match expected exponent */
             OE_TEST(size == sizeof(CERT_RSA_EXPONENT));
             OE_TEST(memcmp(data, CERT_RSA_EXPONENT, size) == 0);
             free(data);
+        }
+
+        /* Test OE_RSAPublicKeyEqual() */
+        {
+            bool equal;
+            OE_TEST(OE_RSAPublicKeyEqual(&key, &key, &equal) == OE_OK);
+            OE_TEST(equal == true);
         }
 
         OE_RSAPublicKeyFree(&key);
@@ -905,6 +908,13 @@ static void TestCertMethods()
             free(data);
         }
 
+        /* Test OE_ECPublicKeyEqual() */
+        {
+            bool equal;
+            OE_TEST(OE_ECPublicKeyEqual(&key, &key, &equal) == OE_OK);
+            OE_TEST(equal == true);
+        }
+
         OE_ECPublicKeyFree(&key);
         OE_CertFree(&cert);
     }
@@ -923,19 +933,11 @@ static void TestCertMethods()
         OE_TEST(r == OE_OK);
         OE_TEST(length == 2);
 
-        /* Get each certficate inb the chain */
+        /* Get each certficate in the chain */
         for (size_t i = 0; i < length; i++)
         {
             OE_Cert cert;
             r = OE_CertChainGetCert(&chain, i, &cert);
-            OE_TEST(r == OE_OK);
-            OE_CertFree(&cert);
-        }
-
-        /* Get the final certificate */
-        {
-            OE_Cert cert;
-            r = OE_CertChainGetCert(&chain, OE_MAX_SIZE_T, &cert);
             OE_TEST(r == OE_OK);
             OE_CertFree(&cert);
         }
@@ -948,6 +950,67 @@ static void TestCertMethods()
             OE_CertFree(&cert);
         }
 
+        OE_CertChainFree(&chain);
+    }
+
+    /* Test OE_CertChainGetRootCert() and OE_CertChainGetLeafCert() */
+    {
+        OE_CertChain chain;
+        OE_Cert root;
+        OE_Cert cert;
+        OE_Cert leaf;
+
+        /* Load the chain from PEM format */
+        r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
+        OE_TEST(r == OE_OK);
+
+        /* Get the root certificate */
+        r = OE_CertChainGetRootCert(&chain, &root);
+        OE_TEST(r == OE_OK);
+
+        /* Get the first certificate */
+        r = OE_CertChainGetCert(&chain, 0, &cert);
+        OE_TEST(r == OE_OK);
+
+        /* Get the leaf certificate */
+        r = OE_CertChainGetLeafCert(&chain, &leaf);
+        OE_TEST(r == OE_OK);
+
+        /* Check that the keys are identical for top and root certificate */
+        {
+            OE_RSAPublicKey rootKey;
+            OE_RSAPublicKey certKey;
+            bool equal;
+
+            OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
+            OE_TEST(OE_CertGetRSAPublicKey(&cert, &certKey) == OE_OK);
+
+            OE_TEST(OE_RSAPublicKeyEqual(&rootKey, &certKey, &equal) == OE_OK);
+            OE_TEST(equal == true);
+
+            OE_RSAPublicKeyFree(&rootKey);
+            OE_RSAPublicKeyFree(&certKey);
+        }
+
+        /* Check that the keys are not identical for leaf and root */
+        {
+            OE_RSAPublicKey rootKey;
+            OE_RSAPublicKey leafKey;
+            bool equal;
+
+            OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
+            OE_TEST(OE_CertGetRSAPublicKey(&leaf, &leafKey) == OE_OK);
+
+            OE_TEST(OE_RSAPublicKeyEqual(&rootKey, &leafKey, &equal) == OE_OK);
+            OE_TEST(equal == false);
+
+            OE_RSAPublicKeyFree(&rootKey);
+            OE_RSAPublicKeyFree(&leafKey);
+        }
+
+        OE_CertFree(&root);
+        OE_CertFree(&cert);
+        OE_CertFree(&leaf);
         OE_CertChainFree(&chain);
     }
 

@@ -11,13 +11,13 @@
 /* Randomly generated magic number */
 #define OE_RSA_PUBLIC_KEY_MAGIC 0x713600af058c447a
 
-typedef struct _OE_RSAPublicKeyImpl
+typedef struct _RSAPublicKey
 {
     uint64_t magic;
     mbedtls_pk_context pk;
-} OE_RSAPublicKeyImpl;
+} RSAPublicKey;
 
-OE_STATIC_ASSERT(sizeof(OE_RSAPublicKeyImpl) <= sizeof(OE_RSAPublicKey));
+OE_STATIC_ASSERT(sizeof(RSAPublicKey) <= sizeof(OE_RSAPublicKey));
 
 int OE_RSACopyKey(
     mbedtls_pk_context* dest,

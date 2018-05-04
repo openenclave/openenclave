@@ -41,7 +41,7 @@ typedef struct _OE_MallocStats
  * @return 0 success
  * @return -1 failure
  */
-int OE_GetMallocStats(OE_MallocStats* stats);
+OE_Result OE_GetMallocStats(OE_MallocStats* stats);
 
 OE_EXTERNC_END
 

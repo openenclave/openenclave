@@ -162,8 +162,8 @@ void* memalign(size_t alignment, size_t size)
 **     fprintf(stderr, "in use bytes     = %10lu\n", (unsigned long)(used));
 **
 ** But, it provides no function to obtain these same values programmatically.
-** This module overrides the fprintf() function (within dlmalloc.c only) to
-** capture these values.
+** This module captures these values by overriding the fprintf() function in 
+** the dlmalloc sources included below.
 **
 **==============================================================================
 */
@@ -171,6 +171,7 @@ void* memalign(size_t alignment, size_t size)
 static OE_MallocStats _mallocStats;
 static size_t _dlmalloc_stats_fprintf_calls;
 
+/* Replacement for fprintf in dlmalloc sources below */
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
 {
     int ret = 0;
@@ -206,15 +207,15 @@ done:
     return ret;
 }
 
-int OE_GetMallocStats(OE_MallocStats* stats)
+OE_Result OE_GetMallocStats(OE_MallocStats* stats)
 {
-    int ret = -1;
-    OE_Mutex mutex = OE_MUTEX_INITIALIZER;
+    OE_Result result = OE_UNEXPECTED;
+    static OE_Mutex _mutex = OE_MUTEX_INITIALIZER;
 
     if (stats)
         memset(stats, 0, sizeof(OE_MallocStats));
 
-    OE_MutexLock(&mutex);
+    OE_MutexLock(&_mutex);
 
     if (!stats)
         goto done;
@@ -230,11 +231,11 @@ int OE_GetMallocStats(OE_MallocStats* stats)
 
     *stats = _mallocStats;
 
-    ret = 0;
+    result = OE_OK;
 
 done:
-    OE_MutexUnlock(&mutex);
-    return ret;
+    OE_MutexUnlock(&_mutex);
+    return result;
 }
 
 /*

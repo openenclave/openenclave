@@ -242,6 +242,24 @@ OE_Result OE_RSAPublicKeyGetExponent(
     uint8_t* buffer,
     size_t* bufferSize);
 
+/**
+ * Determine whether two RSA public keys are identical.
+ *
+ * This function determines whether two RSA public keys are identical.
+ *
+ * @param publicKey1 first key.
+ * @param publicKey2 second key.
+ * @param equal[out] true if the keys are identical.
+ *
+ * @return OE_OK successful and **equal** is either true or false.
+ * @return OE_INVALID_PARAMETER a parameter was invalid.
+ *
+ */
+OE_Result OE_RSAPublicKeyEqual(
+    const OE_RSAPublicKey* publicKey1,
+    const OE_RSAPublicKey* publicKey2,
+    bool* equal);
+
 OE_EXTERNC_END
 
 #endif /* _OE_RSA_H */
