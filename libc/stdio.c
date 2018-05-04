@@ -16,19 +16,6 @@ FILE* const stdin = ((FILE*)0x10000000);
 FILE* const stdout = ((FILE*)0x20000000);
 FILE* const stderr = ((FILE*)0x30000000);
 
-typedef struct FILE_Args
-{
-    FILE* F_ptr;
-    char* path;
-    char* mode;
-    char* buf;
-    void* ptr;
-    int ret;
-    long int li_var;
-    int i_var;
-    int len;
-} Args;
-
 int puts(const char* str)
 {
     return __OE_HostPuts(str);
@@ -154,10 +141,6 @@ int ungetc(int c, FILE* stream)
 
 size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)
 {
-    Args* args;
-    size_t ret;
-    int buf_size;
-
     if (stream == stdout)
     {
         /* Write to standard output device */
@@ -173,29 +156,7 @@ size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)
     else if (size && nmemb)
     {
         /* Only panic if size and nmemb are both non-zero */
-        //        assert("fwrite() panic" == NULL);
-
-        /* Temporary OCALL implementation for fwrite as it needs by mbedtls */
-
-        buf_size = size * nmemb;
-        args = (Args*)OE_HostMalloc(sizeof(Args));
-        args->F_ptr = stream;
-        if (ptr != NULL)
-            args->buf = (char*)OE_HostMalloc(buf_size);
-        else
-            args->buf = NULL;
-
-        args->len = size;
-        args->i_var = nmemb;
-        if (buf_size > 0 && ptr != NULL)
-            OE_Memcpy(args->buf, ptr, buf_size);
-
-        OE_CallHost("OE_FWrite", args);
-
-        ret = (size_t)args->ret;
-        OE_HostFree(args->buf);
-        OE_HostFree(args);
-        return ret;
+        assert("fwrite() panic" == NULL);
     }
 
     return 0;

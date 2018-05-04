@@ -1,14 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <dirent.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/print.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 typedef struct _FileArgs
@@ -81,18 +77,6 @@ int feof(FILE* fp)
     return ret;
 }
 
-int ferror(FILE* fp)
-{
-    int ret;
-    Args* args;
-    args = (Args*)OE_HostMalloc(sizeof(Args));
-    args->F_ptr = fp;
-    OE_CallHost("OE_FError", args);
-    ret = args->ret;
-    OE_HostFree(args);
-    return ret;
-}
-
 char* fgets(char* buf, int len, FILE* fp)
 {
     char* ret;
@@ -110,45 +94,6 @@ char* fgets(char* buf, int len, FILE* fp)
     ret = (char*)args->ptr;
 
     OE_HostFree(args->buf);
-    OE_HostFree(args);
-    return ret;
-}
-
-size_t fread(void* buf, size_t size, size_t nmemb, FILE* stream)
-{
-    Args* args;
-    size_t ret;
-    int buf_size;
-
-    buf_size = size * nmemb;
-    args = (Args*)OE_HostMalloc(sizeof(Args));
-    args->F_ptr = stream;
-    args->buf = (char*)OE_HostMalloc(buf_size);
-    args->len = size;
-    args->i_var = nmemb;
-    OE_CallHost("OE_FRead", args);
-
-    if ((args->ret) > 0)
-        OE_Memcpy(buf, args->buf, buf_size);
-
-    ret = (size_t)args->ret;
-
-    OE_HostFree(args->buf);
-    OE_HostFree(args);
-    return ret;
-}
-
-int fseek(FILE* stream, long offset, int whence)
-{
-    int ret;
-    Args* args;
-    args = (Args*)OE_HostMalloc(sizeof(Args));
-    args->F_ptr = stream;
-    args->li_var = offset;
-    args->i_var = whence;
-    OE_CallHost("OE_FSeek", args);
-
-    ret = args->ret;
     OE_HostFree(args);
     return ret;
 }
@@ -183,19 +128,6 @@ int fputc(int c, FILE* stream)
     }
 }
 
-long int ftell(FILE* stream)
-{
-    long int ret;
-    Args* args;
-    args = (Args*)OE_HostMalloc(sizeof(Args));
-    args->F_ptr = stream;
-    OE_CallHost("OE_FTell", args);
-
-    ret = (long int)args->ret;
-    OE_HostFree(args);
-    return ret;
-}
-
 int fileno(FILE* stream)
 {
     if (stream == stdout)
@@ -226,62 +158,3 @@ FILE* fdopen(int fd, const char* mode)
         return NULL;
 }
 
-DIR* opendir(const char* name)
-{
-    DIR* dir;
-    Args* args;
-    args = (Args*)OE_HostMalloc(sizeof(Args));
-    args->path = OE_HostStackStrdup(name);
-    OE_CallHost("OE_Opendir", args);
-
-    dir = (DIR*)args->ptr;
-    OE_HostFree(args);
-    return dir;
-}
-
-int closedir(DIR* ptr)
-{
-    int ret;
-    Args* args;
-    args = (Args*)OE_HostMalloc(sizeof(Args));
-    args->ptr = (void*)ptr;
-    OE_CallHost("OE_Closedir", args);
-
-    ret = args->ret;
-    OE_HostFree(args);
-    return ret;
-}
-
-struct dirent* readdir(DIR* ptr)
-{
-    struct dirent* ret;
-    Args* args;
-    args = (Args*)OE_HostMalloc(sizeof(Args));
-    args->ptr = (void*)ptr;
-    OE_CallHost("OE_Readdir", args);
-
-    ret = (struct dirent*)args->ptr;
-
-    OE_HostFree(args);
-    return ret;
-}
-
-int stat(const char* path, struct stat* buf)
-{
-    int ret;
-    Args* args;
-    struct stat* host;
-    args = (Args*)OE_HostMalloc(sizeof(Args));
-    host = (struct stat*)OE_HostMalloc(sizeof(struct stat));
-    args->path = OE_HostStackStrdup(path);
-    args->ptr = (void*)host;
-
-    OE_CallHost("OE_Stat", args);
-    if (!(args->ret))
-        OE_Memcpy(buf, (struct stat*)args->ptr, sizeof(struct stat));
-
-    ret = args->ret;
-    OE_HostFree(host);
-    OE_HostFree(args);
-    return ret;
-}
