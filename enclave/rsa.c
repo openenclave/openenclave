@@ -194,7 +194,7 @@ static OE_Result _GetPublicKeyModulusOrExponent(
         OE_RAISE(OE_FAILURE);
 
     /* Determine the required size in bytes */
-    requiredSize = 1 + mbedtls_mpi_size(mpi);
+    requiredSize = mbedtls_mpi_size(mpi);
 
     /* If buffer is null or not big enough */
     if (!buffer || (*bufferSize < requiredSize))
@@ -203,10 +203,8 @@ static OE_Result _GetPublicKeyModulusOrExponent(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    buffer[0] = 0x00;
-
     /* Copy key bytes to the caller's buffer */
-    if (mbedtls_mpi_write_binary(mpi, buffer + 1, requiredSize - 1) != 0)
+    if (mbedtls_mpi_write_binary(mpi, buffer, requiredSize) != 0)
         OE_RAISE(OE_FAILURE);
 
     *bufferSize = requiredSize;

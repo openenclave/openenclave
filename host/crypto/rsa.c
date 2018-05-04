@@ -604,7 +604,7 @@ static OE_Result _GetPublicKeyGetModulusOrExponent(
             OE_RAISE(OE_FAILURE);
 
         /* Add one leading byte for the leading zero byte */
-        requiredSize = 1 + (size_t)n;
+        requiredSize = (size_t)n;
     }
 
     /* If buffer is null or not big enough */
@@ -614,11 +614,8 @@ static OE_Result _GetPublicKeyGetModulusOrExponent(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    /* Set leading zero byte */
-    buffer[0] = 0x00;
-
     /* Copy key bytes to the caller's buffer */
-    if (!BN_bn2bin(bn, buffer + 1))
+    if (!BN_bn2bin(bn, buffer))
         OE_RAISE(OE_FAILURE);
 
     *bufferSize = requiredSize;
