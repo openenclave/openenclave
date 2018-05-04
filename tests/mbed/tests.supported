@@ -41,4 +41,5 @@ ssl
 rsa
 version
 x509write
+x509parse
 
