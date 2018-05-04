@@ -9,7 +9,6 @@ cmake_minimum_required(VERSION 3.5.1)
 file(STRINGS "VERSION" OE_VERSION)
 
 option(ADD_WINDOWS_ENCLAVE_TESTS "Copy Linux binaries to windows build directory and Build windows enclave test" 0)
-option(LINUX_BIN_DIR "Linux binary files complete path on windows machine" /home/vvdn/openenclave/linux_build_oe)
 
 # Select the assembler
 if (UNIX)

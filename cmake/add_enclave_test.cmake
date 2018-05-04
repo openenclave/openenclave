@@ -17,9 +17,9 @@ function(add_enclave_test TEST_NAME HOST_SUBPATH HOST_FILE ENC_SUBPATH ENC_FILE)
 
 if (ADD_WINDOWS_ENCLAVE_TESTS)
 
-	# get test directory name only, remove prefix 'tests/' so that it
-	# can be used to make complete path.
-	get_filename_component(TEST_DIR ${TEST_NAME} NAME)
+	# get test directory name only, so that it can be used to
+	# make complete path.
+	get_filename_component(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
 	# custom rule to copy binary from linux
 	# take a dependency on host binary to make sure it exists in addition to 
@@ -36,8 +36,10 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
 		DEPENDS ${TEST_NAME}_windows_include
 		)
 
-endif()#ADD_WINDOWS_ENCLAVE_TESTS
+	add_test(${TEST_NAME} ${HOST_SUBPATH}/${HOST_FILE} ${HOST_SUBPATH}/${ENC_FILE})
 
-add_test(${TEST_NAME} ${HOST_SUBPATH}/${HOST_FILE} ${HOST_SUBPATH}/${ENC_FILE})
+elseif (UNIX)
+    add_test(${TEST_NAME} ${HOST_SUBPATH}/${HOST_FILE} ${ENC_SUBPATH}/${ENC_FILE})
+endif()
 
 endfunction(add_enclave_test)
