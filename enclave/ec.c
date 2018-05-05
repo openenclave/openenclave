@@ -12,11 +12,11 @@ static OE_Result _CopyKey(
     const mbedtls_pk_context* src,
     bool copyPrivateFields);
 
-#define PRIVATE_KEY_MAGIC 0xf12c37bb02814eeb
-#define PUBLIC_KEY_MAGIC 0xd7490a56f6504ee6
-#define PRIVATE_KEY OE_ECPrivateKey
-#define PUBLIC_KEY OE_ECPublicKey
-#define IS_KEY_FUNCTION OE_IsECKey
+static const uint64_t PRIVATE_KEY_MAGIC = 0xf12c37bb02814eeb;
+static const uint64_t PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
+typedef OE_ECPrivateKey PrivateKey;
+typedef OE_ECPublicKey PublicKey;
+static const mbedtls_pk_type_t MBEDTLS_PK_KEYTYPE = MBEDTLS_PK_ECKEY;
 #include "key.c"
 
 /*
@@ -105,78 +105,15 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_ECPublicKeyInitFrom(
-    OE_ECPublicKey* publicKey,
-    const mbedtls_pk_context* pk)
-{
-    return _PublicKeyInitFrom(publicKey, pk);
-}
-
-OE_Result OE_ECPrivateKeyReadPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_ECPrivateKey* privateKey)
-{
-    return _PrivateKeyReadPEM(pemData, pemSize, privateKey);
-}
-
-OE_Result OE_ECPrivateKeyWritePEM(
-    const OE_ECPrivateKey* key,
-    uint8_t* pemData,
-    size_t* pemSize)
-{
-    return _PrivateKeyWritePEM(key, pemData, pemSize);
-}
-
-OE_Result OE_ECPublicKeyReadPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_ECPublicKey* publicKey)
-{
-    return _PublicKeyReadPEM(pemData, pemSize, publicKey);
-}
-
-OE_Result OE_ECPublicKeyWritePEM(
-    const OE_ECPublicKey* key,
-    uint8_t* pemData,
-    size_t* pemSize)
-{
-    return _PublicKeyWritePEM(key, pemData, pemSize);
-}
-
-OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* key)
-{
-    return _PrivateKeyFree(key);
-}
-
-OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* key)
-{
-    return _PublicKeyFree(key);
-}
-
-OE_Result OE_ECPrivateKeySign(
-    const OE_ECPrivateKey* privateKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    uint8_t* signature,
-    size_t* signatureSize)
-{
-    return _PrivateKeySign(
-        privateKey, hashType, hashData, hashSize, signature, signatureSize);
-}
-
-OE_Result OE_ECPublicKeyVerify(
-    const OE_ECPublicKey* publicKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    const uint8_t* signature,
-    size_t signatureSize)
-{
-    return _PublicKeyVerify(
-        publicKey, hashType, hashData, hashSize, signature, signatureSize);
-}
+OE_WEAK_ALIAS(_PublicKeyInitFrom, OE_ECPublicKeyInitFrom);
+OE_WEAK_ALIAS(_PrivateKeyReadPEM, OE_ECPrivateKeyReadPEM);
+OE_WEAK_ALIAS(_PrivateKeyWritePEM, OE_ECPrivateKeyWritePEM);
+OE_WEAK_ALIAS(_PublicKeyReadPEM, OE_ECPublicKeyReadPEM);
+OE_WEAK_ALIAS(_PublicKeyWritePEM, OE_ECPublicKeyWritePEM);
+OE_WEAK_ALIAS(_PrivateKeyFree, OE_ECPrivateKeyFree);
+OE_WEAK_ALIAS(_PublicKeyFree, OE_ECPublicKeyFree);
+OE_WEAK_ALIAS(_PrivateKeySign, OE_ECPrivateKeySign);
+OE_WEAK_ALIAS(_PublicKeyVerify, OE_ECPublicKeyVerify);
 
 OE_Result OE_ECGenerateKeyPair(
     OE_ECType type,
@@ -184,8 +121,8 @@ OE_Result OE_ECGenerateKeyPair(
     OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    PrivateKey* privateImpl = (PrivateKey*)privateKey;
-    PublicKey* publicImpl = (PublicKey*)publicKey;
+    PrivateKeyImpl* privateImpl = (PrivateKeyImpl*)privateKey;
+    PublicKeyImpl* publicImpl = (PublicKeyImpl*)publicKey;
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
     int curve;
@@ -262,7 +199,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    const PublicKey* impl = (const PublicKey*)publicKey;
+    const PublicKeyImpl* impl = (const PublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
 
     /* Check for invalid parameters */
@@ -327,8 +264,8 @@ OE_Result OE_ECPublicKeyEqual(
     bool* equal)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PublicKey* impl1 = (const PublicKey*)publicKey1;
-    const PublicKey* impl2 = (const PublicKey*)publicKey2;
+    const PublicKeyImpl* impl1 = (const PublicKeyImpl*)publicKey1;
+    const PublicKeyImpl* impl2 = (const PublicKeyImpl*)publicKey2;
 
     if (equal)
         *equal = false;

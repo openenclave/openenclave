@@ -20,11 +20,11 @@ static OE_Result _CopyKey(
     const mbedtls_pk_context* src,
     bool copyPrivateFields);
 
-#define PRIVATE_KEY_MAGIC 0xd48de5bae3994b41
-#define PUBLIC_KEY_MAGIC 0x713600af058c447a
-#define PRIVATE_KEY OE_RSAPrivateKey
-#define PUBLIC_KEY OE_RSAPublicKey
-#define IS_KEY_FUNCTION OE_IsRSAKey
+static const uint64_t PRIVATE_KEY_MAGIC = 0xd48de5bae3994b41;
+static const uint64_t PUBLIC_KEY_MAGIC = 0x713600af058c447a;
+typedef OE_RSAPrivateKey PrivateKey;
+typedef OE_RSAPublicKey PublicKey;
+static const mbedtls_pk_type_t MBEDTLS_PK_KEYTYPE = MBEDTLS_PK_RSA;
 #include "key.c"
 
 static OE_Result _CopyKey(
@@ -95,7 +95,7 @@ static OE_Result _GetPublicKeyModulusOrExponent(
     size_t* bufferSize,
     bool getModulus)
 {
-    const PublicKey* impl = (const PublicKey*)publicKey;
+    const PublicKeyImpl* impl = (const PublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     size_t requiredSize;
     mbedtls_rsa_context* rsa;
@@ -148,78 +148,15 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_RSAPublicKeyInitFrom(
-    OE_RSAPublicKey* publicKey,
-    const mbedtls_pk_context* pk)
-{
-    return _PublicKeyInitFrom(publicKey, pk);
-}
-
-OE_Result OE_RSAPrivateKeyReadPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_RSAPrivateKey* privateKey)
-{
-    return _PrivateKeyReadPEM(pemData, pemSize, privateKey);
-}
-
-OE_Result OE_RSAPrivateKeyWritePEM(
-    const OE_RSAPrivateKey* key,
-    uint8_t* pemData,
-    size_t* pemSize)
-{
-    return _PrivateKeyWritePEM(key, pemData, pemSize);
-}
-
-OE_Result OE_RSAPublicKeyReadPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_RSAPublicKey* publicKey)
-{
-    return _PublicKeyReadPEM(pemData, pemSize, publicKey);
-}
-
-OE_Result OE_RSAPublicKeyWritePEM(
-    const OE_RSAPublicKey* key,
-    uint8_t* pemData,
-    size_t* pemSize)
-{
-    return _PublicKeyWritePEM(key, pemData, pemSize);
-}
-
-OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* key)
-{
-    return _PrivateKeyFree(key);
-}
-
-OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* key)
-{
-    return _PublicKeyFree(key);
-}
-
-OE_Result OE_RSAPrivateKeySign(
-    const OE_RSAPrivateKey* privateKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    uint8_t* signature,
-    size_t* signatureSize)
-{
-    return _PrivateKeySign(
-        privateKey, hashType, hashData, hashSize, signature, signatureSize);
-}
-
-OE_Result OE_RSAPublicKeyVerify(
-    const OE_RSAPublicKey* publicKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    const uint8_t* signature,
-    size_t signatureSize)
-{
-    return _PublicKeyVerify(
-        publicKey, hashType, hashData, hashSize, signature, signatureSize);
-}
+OE_WEAK_ALIAS(_PublicKeyInitFrom, OE_RSAPublicKeyInitFrom);
+OE_WEAK_ALIAS(_PrivateKeyReadPEM, OE_RSAPrivateKeyReadPEM);
+OE_WEAK_ALIAS(_PrivateKeyWritePEM, OE_RSAPrivateKeyWritePEM);
+OE_WEAK_ALIAS(_PublicKeyReadPEM, OE_RSAPublicKeyReadPEM);
+OE_WEAK_ALIAS(_PublicKeyWritePEM, OE_RSAPublicKeyWritePEM);
+OE_WEAK_ALIAS(_PrivateKeyFree, OE_RSAPrivateKeyFree);
+OE_WEAK_ALIAS(_PublicKeyFree, OE_RSAPublicKeyFree);
+OE_WEAK_ALIAS(_PrivateKeySign, OE_RSAPrivateKeySign);
+OE_WEAK_ALIAS(_PublicKeyVerify, OE_RSAPublicKeyVerify);
 
 OE_Result OE_RSAGenerateKeyPair(
     uint64_t bits,
@@ -228,8 +165,8 @@ OE_Result OE_RSAGenerateKeyPair(
     OE_RSAPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    PrivateKey* privateImpl = (PrivateKey*)privateKey;
-    PublicKey* publicImpl = (PublicKey*)publicKey;
+    PrivateKeyImpl* privateImpl = (PrivateKeyImpl*)privateKey;
+    PublicKeyImpl* publicImpl = (PublicKeyImpl*)publicKey;
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
 
@@ -311,8 +248,8 @@ OE_Result OE_RSAPublicKeyEqual(
     bool* equal)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PublicKey* impl1 = (const PublicKey*)publicKey1;
-    const PublicKey* impl2 = (const PublicKey*)publicKey2;
+    const PublicKeyImpl* impl1 = (const PublicKeyImpl*)publicKey1;
+    const PublicKeyImpl* impl2 = (const PublicKeyImpl*)publicKey2;
 
     if (equal)
         *equal = false;
