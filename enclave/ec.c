@@ -24,6 +24,11 @@
 **==============================================================================
 */
 
+static OE_Result _CopyKey(
+    mbedtls_pk_context* dest,
+    const mbedtls_pk_context* src,
+    bool copyPrivateFields);
+
 /* Randomly generated magic number */
 #define OE_EC_PRIVATE_KEY_MAGIC 0xf12c37bb02814eeb
 
@@ -40,13 +45,13 @@ OE_INLINE bool _ECPrivateKeyValid(const ECPrivateKey* impl)
     return impl && impl->magic == OE_EC_PRIVATE_KEY_MAGIC;
 }
 
-OE_INLINE void _InitPrivateKeyImpl(ECPrivateKey* impl)
+OE_INLINE void _ECPrivateKeyInit(ECPrivateKey* impl)
 {
     impl->magic = OE_EC_PRIVATE_KEY_MAGIC;
     mbedtls_pk_init(&impl->pk);
 }
 
-OE_INLINE void _FreePrivateKeyImpl(ECPrivateKey* impl)
+OE_INLINE void _ECPrivateKeyFree(ECPrivateKey* impl)
 {
     if (impl)
     {
@@ -55,10 +60,50 @@ OE_INLINE void _FreePrivateKeyImpl(ECPrivateKey* impl)
     }
 }
 
+static OE_Result _ECPrivateKeyInitFrom(
+    ECPrivateKey* impl, 
+    const mbedtls_pk_context* pk)
+{
+    OE_Result result = OE_UNEXPECTED;
+
+    _ECPrivateKeyInit(impl);
+
+    if (!impl || !pk)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(_CopyKey(&impl->pk, pk, true));
+
+    result = OE_OK;
+
+done:
+
+    if (result != OE_OK)
+        _ECPrivateKeyFree(impl);
+
+    return result;
+}
+
 OE_INLINE void _ECPrivateKeyClear(ECPrivateKey* impl)
 {
     if (impl)
         OE_Memset(impl, 0, sizeof(ECPrivateKey));
+}
+
+/* Randomly generated magic number */
+#define OE_EC_PUBLIC_KEY_MAGIC 0xd7490a56f6504ee6
+
+typedef struct _ECPublicKey
+{
+    uint64_t magic;
+    mbedtls_pk_context pk;
+} ECPublicKey;
+
+OE_STATIC_ASSERT(sizeof(ECPublicKey) <= sizeof(OE_ECPublicKey));
+
+OE_INLINE void _ECPublicKeyInit(ECPublicKey* impl)
+{
+    impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
+    mbedtls_pk_init(&impl->pk);
 }
 
 OE_INLINE bool _ECPublicKeyValid(const ECPublicKey* impl)
@@ -66,13 +111,7 @@ OE_INLINE bool _ECPublicKeyValid(const ECPublicKey* impl)
     return impl && impl->magic == OE_EC_PUBLIC_KEY_MAGIC;
 }
 
-OE_INLINE void _InitPublicKeyImpl(ECPublicKey* impl)
-{
-    impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
-    mbedtls_pk_init(&impl->pk);
-}
-
-OE_INLINE void _FreePublicKeyImpl(ECPublicKey* impl)
+OE_INLINE void _ECPublicKeyFree(ECPublicKey* impl)
 {
     if (impl)
     {
@@ -117,12 +156,12 @@ static const char* _ECTypeToString(OE_Type type)
     return _curveNames[index];
 }
 
-int OE_ECCopyKey(
+static OE_Result _CopyKey(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
     bool copyPrivateFields)
 {
-    int ret = -1;
+    OE_Result result = OE_UNEXPECTED;
     const mbedtls_pk_info_t* info;
 
     if (dest)
@@ -130,15 +169,15 @@ int OE_ECCopyKey(
 
     /* Check parameters */
     if (!dest || !src)
-        goto done;
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Lookup the info for this key type */
     if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)))
-        goto done;
+        OE_RAISE(OE_WRONG_TYPE);
 
     /* Setup the context for this key type */
     if (mbedtls_pk_setup(dest, info) != 0)
-        goto done;
+        OE_RAISE(OE_FAILURE);
 
     /* Copy all fields of the key structure */
     {
@@ -146,29 +185,71 @@ int OE_ECCopyKey(
         const mbedtls_ecp_keypair* ecSrc = mbedtls_pk_ec(*src);
 
         if (!ecDest || !ecSrc)
-            goto done;
+            OE_RAISE(OE_FAILURE);
 
         if (mbedtls_ecp_group_copy(&ecDest->grp, &ecSrc->grp) != 0)
-            goto done;
+            OE_RAISE(OE_FAILURE);
 
         if (copyPrivateFields)
         {
             if (mbedtls_mpi_copy(&ecDest->d, &ecSrc->d) != 0)
-                goto done;
+                OE_RAISE(OE_FAILURE);
         }
 
         if (mbedtls_ecp_copy(&ecDest->Q, &ecSrc->Q) != 0)
-            goto done;
+            OE_RAISE(OE_FAILURE);
     }
 
-    ret = 0;
+    result = OE_OK;
 
 done:
 
-    if (ret != 0)
+    if (result != OE_OK)
         mbedtls_pk_free(dest);
 
-    return ret;
+    return result;
+}
+
+/*
+**==============================================================================
+**
+** Shared functions:
+**
+**==============================================================================
+*/
+
+bool OE_IsECKey(const mbedtls_pk_context* pk)
+{
+    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY))
+        return false;
+
+    return true;
+}
+
+OE_Result OE_ECPublicKeyInitFrom(
+    OE_ECPublicKey* publicKey, 
+    const mbedtls_pk_context* pk)
+{
+    ECPublicKey* impl = (ECPublicKey*)publicKey;
+    OE_Result result = OE_UNEXPECTED;
+
+    _ECPublicKeyInit(impl);
+
+    if (!impl || !pk)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(_CopyKey(&impl->pk, pk, false));
+
+    result = OE_OK;
+
+done:
+
+OE_Assert(_ECPublicKeyValid(impl));
+    if (result != OE_OK)
+        _ECPublicKeyFree(impl);
+OE_Assert(_ECPublicKeyValid(impl));
+
+    return result;
 }
 
 /*
@@ -189,7 +270,7 @@ OE_Result OE_ECPrivateKeyReadPEM(
 
     /* Initialize the key */
     if (impl)
-        _InitPrivateKeyImpl(impl);
+        _ECPrivateKeyInit(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -212,7 +293,7 @@ OE_Result OE_ECPrivateKeyReadPEM(
 done:
 
     if (result != OE_OK)
-        _FreePrivateKeyImpl(impl);
+        _ECPrivateKeyFree(impl);
 
     return result;
 }
@@ -227,7 +308,7 @@ OE_Result OE_ECPublicKeyReadPEM(
 
     /* Initialize the key */
     if (impl)
-        _InitPublicKeyImpl(impl);
+        _ECPublicKeyInit(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -250,7 +331,7 @@ OE_Result OE_ECPublicKeyReadPEM(
 done:
 
     if (result != OE_OK)
-        _FreePublicKeyImpl(impl);
+        _ECPublicKeyFree(impl);
 
     return result;
 }
@@ -348,7 +429,7 @@ OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* key)
         if (!_ECPrivateKeyValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
-        _FreePrivateKeyImpl(impl);
+        _ECPrivateKeyFree(impl);
     }
 
     result = OE_OK;
@@ -368,7 +449,7 @@ OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* key)
         if (!_ECPublicKeyValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
-        _FreePublicKeyImpl(impl);
+        _ECPublicKeyFree(impl);
     }
 
     result = OE_OK;
@@ -444,6 +525,7 @@ OE_Result OE_ECPublicKeyVerify(
     OE_Result result = OE_UNEXPECTED;
     mbedtls_md_type_t type = _MapHashType(hashType);
 
+OE_HostPrintf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     /* Check for null parameters */
     if (!_ECPublicKeyValid(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
@@ -486,8 +568,11 @@ OE_Result OE_ECGenerateKeyPair(
     /* Initialize structures */
     mbedtls_pk_init(&pk);
 
-    _ECPrivateKeyClear(privateImpl);
-    _ECPublicKeyClear(publicImpl);
+    if (privateImpl)
+        OE_Memset(privateImpl, 0, sizeof(*privateImpl));
+
+    if (publicImpl)
+        OE_Memset(publicImpl, 0, sizeof(*publicImpl));
 
     /* Check for invalid parameters */
     if (!privateImpl || !publicImpl)
@@ -523,21 +608,11 @@ OE_Result OE_ECGenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    {
-        if (OE_ECCopyKey(&privateImpl->pk, &pk, true) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        privateImpl->magic = OE_EC_PRIVATE_KEY_MAGIC;
-    }
+    OE_CHECK(_ECPrivateKeyInitFrom(privateImpl, &pk));
 
     /* Initialize the public key parameter */
-    {
-        if (OE_ECCopyKey(&publicImpl->pk, &pk, false) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        publicImpl->magic = OE_EC_PUBLIC_KEY_MAGIC;
-    }
-
+    OE_CHECK(OE_ECPublicKeyInitFrom(publicKey, &pk));
+    
     result = OE_OK;
 
 done:
@@ -546,8 +621,11 @@ done:
 
     if (result != OE_OK)
     {
-        OE_ECPrivateKeyFree(privateKey);
-        OE_ECPublicKeyFree(publicKey);
+        if (_ECPrivateKeyValid(privateImpl))
+            _ECPrivateKeyFree(privateImpl);
+
+        if (_ECPublicKeyValid(publicImpl))
+            _ECPublicKeyFree(publicImpl);
     }
 
     return result;

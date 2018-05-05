@@ -403,7 +403,6 @@ OE_Result OE_CertGetRSAPublicKey(
 {
     OE_Result result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
-    RSAPublicKey* publicKeyImpl = (RSAPublicKey*)publicKey;
 
     /* Clear public key for all error pathways */
     if (publicKey)
@@ -418,11 +417,7 @@ OE_Result OE_CertGetRSAPublicKey(
         OE_RAISE(OE_FAILURE);
 
     /* Copy the public key from the certificate */
-    if (OE_RSACopyKey(&publicKeyImpl->pk, &impl->cert->pk, false) != 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the magic number */
-    publicKeyImpl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
+    OE_CHECK(OE_RSAPublicKeyInitFrom(publicKey, &impl->cert->pk));
 
     result = OE_OK;
 
@@ -435,7 +430,6 @@ OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
-    ECPublicKey* publicKeyImpl = (ECPublicKey*)publicKey;
 
     /* Clear public key for all error pathways */
     if (publicKey)
@@ -450,11 +444,7 @@ OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
         OE_RAISE(OE_FAILURE);
 
     /* Copy the public key from the certificate */
-    if (OE_ECCopyKey(&publicKeyImpl->pk, &impl->cert->pk, false) != 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the magic number */
-    publicKeyImpl->magic = OE_EC_PUBLIC_KEY_MAGIC;
+    OE_RAISE(OE_ECPublicKeyInitFrom(publicKey, &impl->cert->pk));
 
     result = OE_OK;
 

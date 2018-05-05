@@ -8,6 +8,7 @@
 #include <mbedtls/pk.h>
 #include <mbedtls/platform.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
@@ -25,6 +26,11 @@
 **
 **==============================================================================
 */
+
+static OE_Result _CopyKey(
+    mbedtls_pk_context* dest,
+    const mbedtls_pk_context* src,
+    bool copyPrivateFields);
 
 /* Randomly generated magic number */
 #define OE_RSA_PRIVATE_KEY_MAGIC 0xd48de5bae3994b41
@@ -57,11 +63,46 @@ OE_INLINE void _RSAPrivateKeyFree(RSAPrivateKey* impl)
     }
 }
 
+static OE_Result _RSAPrivateKeyInitFrom(
+    RSAPrivateKey* impl, 
+    const mbedtls_pk_context* pk)
+{
+    OE_Result result = OE_UNEXPECTED;
+
+    _RSAPrivateKeyInit(impl);
+
+    if (!impl || !pk)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(_CopyKey(&impl->pk, pk, true));
+
+    result = OE_OK;
+
+done:
+
+    if (result != OE_OK)
+        _RSAPrivateKeyFree(impl);
+
+    return result;
+}
+
+
 OE_INLINE void _RSAPrivateKeyClear(RSAPrivateKey* impl)
 {
     if (impl)
         OE_Memset(impl, 0, sizeof(RSAPrivateKey));
 }
+
+/* Randomly generated magic number */
+#define OE_RSA_PUBLIC_KEY_MAGIC 0x713600af058c447a
+
+typedef struct _RSAPublicKey
+{
+    uint64_t magic;
+    mbedtls_pk_context pk;
+} RSAPublicKey;
+
+OE_STATIC_ASSERT(sizeof(RSAPublicKey) <= sizeof(OE_RSAPublicKey));
 
 OE_INLINE bool _RSAPublicKeyValid(const RSAPublicKey* impl)
 {
@@ -81,6 +122,30 @@ OE_INLINE void _RSAPublicKeyFree(RSAPublicKey* impl)
         mbedtls_pk_free(&impl->pk);
         OE_Memset(impl, 0, sizeof(RSAPublicKey));
     }
+}
+
+OE_Result OE_RSAPublicKeyInitFrom(
+    OE_RSAPublicKey* publicKey, 
+    const mbedtls_pk_context* pk)
+{
+    OE_Result result = OE_UNEXPECTED;
+    RSAPublicKey* impl = (RSAPublicKey*)publicKey;
+
+    _RSAPublicKeyInit(impl);
+
+    if (!impl || !pk)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(_CopyKey(&impl->pk, pk, false));
+
+    result = OE_OK;
+
+done:
+
+    if (result != OE_OK)
+        _RSAPublicKeyFree(impl);
+
+    return result;
 }
 
 OE_INLINE void _RSAPublicKeyClear(RSAPublicKey* impl)
@@ -103,12 +168,12 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
     return 0;
 }
 
-int OE_RSACopyKey(
+static OE_Result _CopyKey(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
-    bool clearPrivateFields)
+    bool copyPrivateFields)
 {
-    int ret = -1;
+    OE_Result result = OE_UNEXPECTED;
     const mbedtls_pk_info_t* info;
     mbedtls_rsa_context* rsa;
 
@@ -117,30 +182,30 @@ int OE_RSACopyKey(
 
     /* Check for invalid parameters */
     if (!dest || !src)
-        goto done;
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Lookup the RSA info */
     if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA)))
-        goto done;
+        OE_RAISE(OE_WRONG_TYPE);
 
     /* If not an RSA key */
     if (src->pk_info != info)
-        goto done;
+        OE_RAISE(OE_FAILURE);
 
     /* Setup the context for this key type */
     if (mbedtls_pk_setup(dest, info) != 0)
-        goto done;
+        OE_RAISE(OE_FAILURE);
 
     /* Get the context for this key type */
     if (!(rsa = dest->pk_ctx))
-        goto done;
+        OE_RAISE(OE_FAILURE);
 
     /* Initialize the RSA key from the source */
     if (mbedtls_rsa_copy(rsa, mbedtls_pk_rsa(*src)) != 0)
-        goto done;
+        OE_RAISE(OE_FAILURE);
 
-    /* If public key, then clear private key fields */
-    if (clearPrivateFields)
+    /* If not a private key, then clear private key fields */
+    if (!copyPrivateFields)
     {
         mbedtls_mpi_free(&rsa->D);
         mbedtls_mpi_free(&rsa->P);
@@ -155,14 +220,14 @@ int OE_RSACopyKey(
         mbedtls_mpi_free(&rsa->Vf);
     }
 
-    ret = 0;
+    result = OE_OK;
 
 done:
 
-    if (ret != 0)
+    if (result != OE_OK)
         mbedtls_pk_free(dest);
 
-    return ret;
+    return result;
 }
 
 static OE_Result _GetPublicKeyModulusOrExponent(
@@ -214,6 +279,22 @@ static OE_Result _GetPublicKeyModulusOrExponent(
 done:
 
     return result;
+}
+
+/*
+**==============================================================================
+**
+** Shared functions:
+**
+**==============================================================================
+*/
+
+bool OE_IsRSAKey(const mbedtls_pk_context* pk)
+{
+    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_RSA))
+        return false;
+
+    return true;
 }
 
 /*
@@ -559,32 +640,31 @@ OE_Result OE_RSAGenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    {
-        if (OE_RSACopyKey(&privateImpl->pk, &pk, false) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        privateImpl->magic = OE_RSA_PRIVATE_KEY_MAGIC;
-    }
+    OE_CHECK(_RSAPrivateKeyInitFrom(privateImpl, &pk));
 
     /* Initialize the public key parameter */
-    {
-        if (OE_RSACopyKey(&publicImpl->pk, &pk, true) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        publicImpl->magic = OE_RSA_PUBLIC_KEY_MAGIC;
-    }
+    OE_CHECK(OE_RSAPublicKeyInitFrom(publicKey, &pk));
 
     result = OE_OK;
 
 done:
 
+OE_Assert(_RSAPublicKeyValid((publicImpl)));
+OE_Assert(_RSAPrivateKeyValid(privateImpl));
+
     mbedtls_pk_free(&pk);
 
     if (result != OE_OK)
     {
-        OE_RSAPrivateKeyFree(privateKey);
-        OE_RSAPublicKeyFree(publicKey);
+        if (_RSAPrivateKeyValid(privateImpl))
+            _RSAPrivateKeyFree(privateImpl);
+
+        if (_RSAPublicKeyValid(publicImpl))
+            _RSAPublicKeyFree(publicImpl);
     }
+
+OE_Assert(_RSAPublicKeyValid((publicImpl)));
+OE_Assert(_RSAPrivateKeyValid(privateImpl));
 
     return result;
 }

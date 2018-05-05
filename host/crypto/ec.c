@@ -85,18 +85,6 @@ static const char* _ECTypeToString(OE_Type type)
     return _curveNames[index];
 }
 
-/* Get the EC key without incrementing the reference count */
-static EC_KEY* _GetECKey(EVP_PKEY* pkey)
-{
-    EC_KEY* ec;
-
-    if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
-        return NULL;
-
-    EC_KEY_free(ec);
-    return ec;
-}
-
 /*
 **==============================================================================
 **
@@ -153,7 +141,7 @@ OE_Result OE_ECPrivateKeyReadPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is an EC key */
-    if (!_GetECKey(pkey))
+    if (pkey->type != EVP_PKEY_EC)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -207,7 +195,7 @@ OE_Result OE_ECPublicKeyReadPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is an EC key */
-    if (!_GetECKey(pkey))
+    if (pkey->type != EVP_PKEY_EC)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -660,7 +648,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
     const ECPublicKey* impl = (const ECPublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     uint8_t* data = NULL;
-    EC_KEY* ec;
+    EC_KEY* ec = NULL;
     int requiredSize;
 
     /* Check for invalid parameters */
@@ -668,7 +656,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the EC public key */
-    if (!(ec = _GetECKey(impl->pkey)))
+    if (!(ec = EVP_PKEY_get1_EC_KEY(impl->pkey)))
         OE_RAISE(OE_FAILURE);
 
     /* Set the required buffer size */
@@ -694,6 +682,9 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
 
 done:
 
+    if (ec)
+        EC_KEY_free(ec);
+
     if (data)
         free(data);
 
@@ -708,6 +699,8 @@ OE_Result OE_ECPublicKeyEqual(
     OE_Result result = OE_UNEXPECTED;
     const ECPublicKey* impl1 = (const ECPublicKey*)publicKey1;
     const ECPublicKey* impl2 = (const ECPublicKey*)publicKey2;
+    EC_KEY* ec1;
+    EC_KEY* ec2;
 
     if (equal)
         *equal = false;
@@ -717,8 +710,8 @@ OE_Result OE_ECPublicKeyEqual(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
-        const EC_KEY* ec1 = _GetECKey(impl1->pkey);
-        const EC_KEY* ec2 = _GetECKey(impl2->pkey);
+        ec1 = EVP_PKEY_get1_EC_KEY(impl1->pkey);
+        ec2 = EVP_PKEY_get1_EC_KEY(impl2->pkey);
         const EC_GROUP* group1 = EC_KEY_get0_group(ec1);
         const EC_GROUP* group2 = EC_KEY_get0_group(ec2);
         const EC_POINT* point1 = EC_KEY_get0_public_key(ec1);
@@ -735,5 +728,12 @@ OE_Result OE_ECPublicKeyEqual(
     result = OE_OK;
 
 done:
+
+    if (ec1)
+        EC_KEY_free(ec1);
+
+    if (ec2)
+        EC_KEY_free(ec2);
+
     return result;
 }
