@@ -603,7 +603,8 @@ OE_Result OE_CertChainGetCert(
         OE_RAISE(OE_FAILURE);
 
     /* Increment the reference count and initalize the output certificate */
-    _X509_up_ref(x509);
+    if (!_X509_up_ref(x509))
+        OE_RAISE(OE_FAILURE);
     _CertInit((Cert*)cert, x509);
 
     result = OE_OK;
