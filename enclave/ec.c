@@ -686,9 +686,6 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
 
         if (r != 0)
             OE_RAISE(OE_FAILURE);
-
-        if (data == scratch)
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     result = OE_OK;

@@ -80,7 +80,7 @@ OE_INLINE void _ReferentAddRef(Referent* referent)
         OE_AtomicIncrement(&referent->refs);
 }
 
-/* Decrease the reference count and return its new value */
+/* Decrease the reference count and release if count becomes zero */
 OE_INLINE void _ReferentFree(Referent* referent)
 {
     /* If this was the last reference, release the object */
