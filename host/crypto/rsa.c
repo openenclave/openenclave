@@ -2,13 +2,9 @@
 // Licensed under the MIT License.
 
 #include "rsa.h"
-#include <limits.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/rsa.h>
-#include <openenclave/bits/sha.h>
 #include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <stdio.h>
 #include <string.h>
 #include "init.h"
 
@@ -20,14 +16,6 @@
 #define KEY_TAG EVP_PKEY_RSA
 #define WRITE_PRIVATE_KEY PEM_write_bio_RSAPrivateKey
 #include "key.c"
-
-/*
-**==============================================================================
-**
-** Public defintions:
-**
-**==============================================================================
-*/
 
 OE_Result OE_RSAGenerateKeyPair(
     uint64_t bits,
@@ -238,14 +226,15 @@ OE_Result OE_RSAPublicKeyEqual(
     if (!_PublicKeyValid(impl1) || !_PublicKeyValid(impl2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    rsa1 = EVP_PKEY_get1_RSA(impl1->pkey);
-    rsa2 = EVP_PKEY_get1_RSA(impl2->pkey);
+    if (!(rsa1 = EVP_PKEY_get1_RSA(impl1->pkey)))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!(rsa2 = EVP_PKEY_get1_RSA(impl2->pkey)))
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare modulus and exponent */
     if (BN_cmp(rsa1->n, rsa2->n) == 0 && BN_cmp(rsa1->e, rsa2->e) == 0)
-    {
         *equal = true;
-    }
 
     result = OE_OK;
 
