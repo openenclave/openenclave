@@ -105,7 +105,7 @@ done:
 **==============================================================================
 */
 
-OE_WEAK_ALIAS(_PublicKeyInitFrom, OE_ECPublicKeyInitFrom);
+OE_WEAK_ALIAS(_PublicKeyImplInitFrom, OE_ECPublicKeyInitFrom);
 OE_WEAK_ALIAS(_PrivateKeyReadPEM, OE_ECPrivateKeyReadPEM);
 OE_WEAK_ALIAS(_PrivateKeyWritePEM, OE_ECPrivateKeyWritePEM);
 OE_WEAK_ALIAS(_PublicKeyReadPEM, OE_ECPublicKeyReadPEM);
@@ -171,7 +171,7 @@ OE_Result OE_ECGenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInitFrom(privateImpl, &pk));
+    OE_CHECK(_PrivateKeyImplInitFrom(privateImpl, &pk));
 
     /* Initialize the public key parameter */
     OE_CHECK(OE_ECPublicKeyInitFrom(publicKey, &pk));
@@ -184,11 +184,11 @@ done:
 
     if (result != OE_OK)
     {
-        if (_PrivateKeyValid(privateImpl))
-            _PrivateKeyRelease(privateImpl);
+        if (_PrivateKeyImplValid(privateImpl))
+            _PrivateKeyImplFree(privateImpl);
 
-        if (_PublicKeyValid(publicImpl))
-            _PublicKeyRelease(publicImpl);
+        if (_PublicKeyImplValid(publicImpl))
+            _PublicKeyImplFree(publicImpl);
     }
 
     return result;
@@ -271,7 +271,7 @@ OE_Result OE_ECPublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(impl1) || !_PublicKeyValid(impl2) || !equal)
+    if (!_PublicKeyImplValid(impl1) || !_PublicKeyImplValid(impl2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the exponent and modulus */

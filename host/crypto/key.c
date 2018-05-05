@@ -7,16 +7,7 @@ typedef struct _PrivateKeyImpl
 
 OE_STATIC_ASSERT(sizeof(PrivateKeyImpl) <= sizeof(PrivateKey));
 
-OE_INLINE void _PrivateKeyClear(PrivateKeyImpl* impl)
-{
-    if (impl)
-    {
-        impl->magic = 0;
-        impl->pkey = NULL;
-    }
-}
-
-OE_INLINE bool _PrivateKeyValid(const PrivateKeyImpl* impl)
+OE_INLINE bool _PrivateKeyImplValid(const PrivateKeyImpl* impl)
 {
     return impl && impl->magic == PRIVATE_KEY_MAGIC && impl->pkey;
 }
@@ -29,16 +20,7 @@ typedef struct _PublicKeyImpl
 
 OE_STATIC_ASSERT(sizeof(PublicKeyImpl) <= sizeof(PublicKey));
 
-OE_INLINE void _PublicKeyClear(PublicKeyImpl* impl)
-{
-    if (impl)
-    {
-        impl->magic = 0;
-        impl->pkey = NULL;
-    }
-}
-
-OE_INLINE bool _PublicKeyValid(const PublicKeyImpl* impl)
+OE_INLINE bool _PublicKeyImplValid(const PublicKeyImpl* impl)
 {
     return impl && impl->magic == PUBLIC_KEY_MAGIC && impl->pkey;
 }
@@ -61,7 +43,8 @@ static OE_Result _PrivateKeyReadPEM(
     EVP_PKEY* pkey = NULL;
 
     /* Initialize the key output parameter */
-    _PrivateKeyClear(impl);
+    if (impl)
+        memset(impl, 0, sizeof(*impl));
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -115,7 +98,8 @@ static OE_Result _PublicKeyReadPEM(
     PublicKeyImpl* impl = (PublicKeyImpl*)key;
 
     /* Zero-initialize the key */
-    _PublicKeyClear(impl);
+    if (impl)
+        memset(impl, 0, sizeof(*impl));
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -170,7 +154,7 @@ static OE_Result _PrivateKeyWritePEM(
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_PrivateKeyValid(impl) || !size)
+    if (!_PrivateKeyImplValid(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -236,7 +220,7 @@ static OE_Result _PublicKeyWritePEM(
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_PublicKeyValid(impl) || !size)
+    if (!_PublicKeyImplValid(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -293,14 +277,15 @@ static OE_Result _PrivateKeyFree(PrivateKey* key)
         PrivateKeyImpl* impl = (PrivateKeyImpl*)key;
 
         /* Check parameter */
-        if (!_PrivateKeyValid(impl))
+        if (!_PrivateKeyImplValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
         EVP_PKEY_free(impl->pkey);
 
         /* Clear the fields of the implementation */
-        _PrivateKeyClear(impl);
+        if (impl)
+            memset(impl, 0, sizeof(*impl));
     }
 
     result = OE_OK;
@@ -318,14 +303,15 @@ static OE_Result _PublicKeyFree(PublicKey* key)
         PublicKeyImpl* impl = (PublicKeyImpl*)key;
 
         /* Check parameter */
-        if (!_PublicKeyValid(impl))
+        if (!_PublicKeyImplValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
         EVP_PKEY_free(impl->pkey);
 
         /* Clear the fields of the implementation */
-        _PublicKeyClear(impl);
+        if (impl)
+            memset(impl, 0, sizeof(*impl));
     }
 
     result = OE_OK;
@@ -347,7 +333,7 @@ static OE_Result _PrivateKeySign(
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_PrivateKeyValid(impl) || !hashData || !hashSize || !signatureSize)
+    if (!_PrivateKeyImplValid(impl) || !hashData || !hashSize || !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check that hash buffer is big enough (hashType is size of that hash) */
@@ -416,7 +402,7 @@ static OE_Result _PublicKeyVerify(
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_PublicKeyValid(impl) || !hashData || !hashSize || !signature ||
+    if (!_PublicKeyImplValid(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
     {
         OE_RAISE(OE_INVALID_PARAMETER);

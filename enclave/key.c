@@ -14,18 +14,18 @@ typedef struct _PrivateKeyImpl
 
 OE_STATIC_ASSERT(sizeof(PrivateKeyImpl) <= sizeof(PrivateKey));
 
-OE_INLINE bool _PrivateKeyValid(const PrivateKeyImpl* impl)
+OE_INLINE bool _PrivateKeyImplValid(const PrivateKeyImpl* impl)
 {
     return impl && impl->magic == PRIVATE_KEY_MAGIC;
 }
 
-OE_INLINE void _PrivateKeyInit(PrivateKeyImpl* impl)
+OE_INLINE void _PrivateKeyImplInit(PrivateKeyImpl* impl)
 {
     impl->magic = PRIVATE_KEY_MAGIC;
     mbedtls_pk_init(&impl->pk);
 }
 
-OE_INLINE void _PrivateKeyRelease(PrivateKeyImpl* impl)
+OE_INLINE void _PrivateKeyImplFree(PrivateKeyImpl* impl)
 {
     if (impl)
     {
@@ -34,13 +34,13 @@ OE_INLINE void _PrivateKeyRelease(PrivateKeyImpl* impl)
     }
 }
 
-static OE_Result _PrivateKeyInitFrom(
+static OE_Result _PrivateKeyImplInitFrom(
     PrivateKeyImpl* impl,
     const mbedtls_pk_context* pk)
 {
     OE_Result result = OE_UNEXPECTED;
 
-    _PrivateKeyInit(impl);
+    _PrivateKeyImplInit(impl);
 
     if (!impl || !pk)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -52,15 +52,9 @@ static OE_Result _PrivateKeyInitFrom(
 done:
 
     if (result != OE_OK)
-        _PrivateKeyRelease(impl);
+        _PrivateKeyImplFree(impl);
 
     return result;
-}
-
-OE_INLINE void _PrivateKeyClear(PrivateKeyImpl* impl)
-{
-    if (impl)
-        OE_Memset(impl, 0, sizeof(PrivateKeyImpl));
 }
 
 /*
@@ -79,30 +73,24 @@ typedef struct _PublicKeyImpl
 
 OE_STATIC_ASSERT(sizeof(PublicKeyImpl) <= sizeof(PublicKey));
 
-OE_INLINE bool _PublicKeyValid(const PublicKeyImpl* impl)
+OE_INLINE bool _PublicKeyImplValid(const PublicKeyImpl* impl)
 {
     return impl && impl->magic == PUBLIC_KEY_MAGIC;
 }
 
-OE_INLINE void _PublicKeyInit(PublicKeyImpl* impl)
+OE_INLINE void _PublicKeyImplInit(PublicKeyImpl* impl)
 {
     impl->magic = PUBLIC_KEY_MAGIC;
     mbedtls_pk_init(&impl->pk);
 }
 
-OE_INLINE void _PublicKeyRelease(PublicKeyImpl* impl)
+OE_INLINE void _PublicKeyImplFree(PublicKeyImpl* impl)
 {
     if (impl)
     {
         mbedtls_pk_free(&impl->pk);
         OE_Memset(impl, 0, sizeof(PublicKeyImpl));
     }
-}
-
-OE_INLINE void _PublicKeyClear(PublicKeyImpl* impl)
-{
-    if (impl)
-        OE_Memset(impl, 0, sizeof(PublicKeyImpl));
 }
 
 /*
@@ -135,14 +123,14 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
 **==============================================================================
 */
 
-static OE_Result _PublicKeyInitFrom(
+static OE_Result _PublicKeyImplInitFrom(
     PublicKey* publicKey,
     const mbedtls_pk_context* pk)
 {
     OE_Result result = OE_UNEXPECTED;
     PublicKeyImpl* impl = (PublicKeyImpl*)publicKey;
 
-    _PublicKeyInit(impl);
+    _PublicKeyImplInit(impl);
 
     if (!impl || !pk)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -154,7 +142,7 @@ static OE_Result _PublicKeyInitFrom(
 done:
 
     if (result != OE_OK)
-        _PublicKeyRelease(impl);
+        _PublicKeyImplFree(impl);
 
     return result;
 }
@@ -169,7 +157,7 @@ static OE_Result _PrivateKeyReadPEM(
 
     /* Initialize the key */
     if (impl)
-        _PrivateKeyInit(impl);
+        _PrivateKeyImplInit(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -192,7 +180,7 @@ static OE_Result _PrivateKeyReadPEM(
 done:
 
     if (result != OE_OK)
-        _PrivateKeyRelease(impl);
+        _PrivateKeyImplFree(impl);
 
     return result;
 }
@@ -207,7 +195,7 @@ static OE_Result _PrivateKeyWritePEM(
     uint8_t buf[OE_PEM_MAX_BYTES];
 
     /* Check parameters */
-    if (!_PrivateKeyValid(impl) || !pemSize)
+    if (!_PrivateKeyImplValid(impl) || !pemSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -248,7 +236,7 @@ static OE_Result _PublicKeyReadPEM(
 
     /* Initialize the key */
     if (impl)
-        _PublicKeyInit(impl);
+        _PublicKeyImplInit(impl);
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !impl)
@@ -271,7 +259,7 @@ static OE_Result _PublicKeyReadPEM(
 done:
 
     if (result != OE_OK)
-        _PublicKeyRelease(impl);
+        _PublicKeyImplFree(impl);
 
     return result;
 }
@@ -286,7 +274,7 @@ static OE_Result _PublicKeyWritePEM(
     uint8_t buf[OE_PEM_MAX_BYTES];
 
     /* Check parameters */
-    if (!_PublicKeyValid(impl) || !pemSize)
+    if (!_PublicKeyImplValid(impl) || !pemSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -325,10 +313,10 @@ static OE_Result _PrivateKeyFree(PrivateKey* key)
     {
         PrivateKeyImpl* impl = (PrivateKeyImpl*)key;
 
-        if (!_PrivateKeyValid(impl))
+        if (!_PrivateKeyImplValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
-        _PrivateKeyRelease(impl);
+        _PrivateKeyImplFree(impl);
     }
 
     result = OE_OK;
@@ -345,10 +333,10 @@ static OE_Result _PublicKeyFree(PublicKey* key)
     {
         PublicKeyImpl* impl = (PublicKeyImpl*)key;
 
-        if (!_PublicKeyValid(impl))
+        if (!_PublicKeyImplValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
-        _PublicKeyRelease(impl);
+        _PublicKeyImplFree(impl);
     }
 
     result = OE_OK;
@@ -372,7 +360,7 @@ static OE_Result _PrivateKeySign(
     mbedtls_md_type_t type = _MapHashType(hashType);
 
     /* Check parameters */
-    if (!_PrivateKeyValid(impl) || !hashData || !hashSize || !signatureSize)
+    if (!_PrivateKeyImplValid(impl) || !hashData || !hashSize || !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If signature buffer is null, then signature size must be zero */
@@ -425,7 +413,7 @@ static OE_Result _PublicKeyVerify(
     mbedtls_md_type_t type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!_PublicKeyValid(impl) || !hashData || !hashSize || !signature ||
+    if (!_PublicKeyImplValid(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 

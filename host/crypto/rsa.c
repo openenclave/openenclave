@@ -68,8 +68,11 @@ OE_Result OE_RSAGenerateKeyPair(
     BIO* bio = NULL;
     const char nullTerminator = '\0';
 
-    _PrivateKeyClear(privateImpl);
-    _PublicKeyClear(publicImpl);
+    if (privateImpl)
+        memset(privateImpl, 0, sizeof(*privateImpl));
+
+    if (publicImpl)
+        memset(publicImpl, 0, sizeof(*publicImpl));
 
     /* Check parameters */
     if (!privateKey || !publicKey)
@@ -260,7 +263,7 @@ OE_Result OE_RSAPublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(impl1) || !_PublicKeyValid(impl2) || !equal)
+    if (!_PublicKeyImplValid(impl1) || !_PublicKeyImplValid(impl2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!(rsa1 = EVP_PKEY_get1_RSA(impl1->pkey)))

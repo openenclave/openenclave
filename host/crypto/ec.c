@@ -90,8 +90,11 @@ OE_Result OE_ECGenerateKeyPair(
     const char nullTerminator = '\0';
     const char* curveName;
 
-    _PrivateKeyClear(privateImpl);
-    _PublicKeyClear(publicImpl);
+    if (privateImpl)
+        memset(privateImpl, 0, sizeof(*privateImpl));
+
+    if (publicImpl)
+        memset(publicImpl, 0, sizeof(*publicImpl));
 
     /* Check parameters */
     if (!privateKey || !publicKey)
@@ -268,7 +271,7 @@ OE_Result OE_ECPublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(impl1) || !_PublicKeyValid(impl2) || !equal)
+    if (!_PublicKeyImplValid(impl1) || !_PublicKeyImplValid(impl2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {

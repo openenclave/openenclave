@@ -102,7 +102,7 @@ static OE_Result _GetPublicKeyModulusOrExponent(
     const mbedtls_mpi* mpi;
 
     /* Check for invalid parameters */
-    if (!_PublicKeyValid(impl) || !bufferSize)
+    if (!_PublicKeyImplValid(impl) || !bufferSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then bufferSize must be zero */
@@ -148,7 +148,7 @@ done:
 **==============================================================================
 */
 
-OE_WEAK_ALIAS(_PublicKeyInitFrom, OE_RSAPublicKeyInitFrom);
+OE_WEAK_ALIAS(_PublicKeyImplInitFrom, OE_RSAPublicKeyInitFrom);
 OE_WEAK_ALIAS(_PrivateKeyReadPEM, OE_RSAPrivateKeyReadPEM);
 OE_WEAK_ALIAS(_PrivateKeyWritePEM, OE_RSAPrivateKeyWritePEM);
 OE_WEAK_ALIAS(_PublicKeyReadPEM, OE_RSAPublicKeyReadPEM);
@@ -173,8 +173,11 @@ OE_Result OE_RSAGenerateKeyPair(
     /* Initialize structures */
     mbedtls_pk_init(&pk);
 
-    _PrivateKeyClear(privateImpl);
-    _PublicKeyClear(publicImpl);
+    if (privateImpl)
+        OE_Memset(privateImpl, 0, sizeof(*privateImpl));
+
+    if (publicImpl)
+        OE_Memset(publicImpl, 0, sizeof(*publicImpl));
 
     /* Check for invalid parameters */
     if (!privateImpl || !publicImpl)
@@ -204,7 +207,7 @@ OE_Result OE_RSAGenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInitFrom(privateImpl, &pk));
+    OE_CHECK(_PrivateKeyImplInitFrom(privateImpl, &pk));
 
     /* Initialize the public key parameter */
     OE_CHECK(OE_RSAPublicKeyInitFrom(publicKey, &pk));
@@ -217,11 +220,11 @@ done:
 
     if (result != OE_OK)
     {
-        if (_PrivateKeyValid(privateImpl))
-            _PrivateKeyRelease(privateImpl);
+        if (_PrivateKeyImplValid(privateImpl))
+            _PrivateKeyImplFree(privateImpl);
 
-        if (_PublicKeyValid(publicImpl))
-            _PublicKeyRelease(publicImpl);
+        if (_PublicKeyImplValid(publicImpl))
+            _PublicKeyImplFree(publicImpl);
     }
 
     return result;
@@ -255,7 +258,7 @@ OE_Result OE_RSAPublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(impl1) || !_PublicKeyValid(impl2) || !equal)
+    if (!_PublicKeyImplValid(impl1) || !_PublicKeyImplValid(impl2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the exponent and modulus */
