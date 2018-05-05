@@ -2,17 +2,8 @@
 // Licensed under the MIT License.
 
 #include "rsa.h"
-#include <mbedtls/base64.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/pk.h>
-#include <mbedtls/platform.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/enclave.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
-#include <openenclave/bits/rsa.h>
 #include "random.h"
 #include "pem.h"
 

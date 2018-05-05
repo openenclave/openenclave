@@ -101,30 +101,6 @@ OE_INLINE void _PublicKeyFree(PublicKey* impl)
     }
 }
 
-OE_Result FUNC(PUBLIC_KEY,InitFrom)(
-    PUBLIC_KEY* publicKey, 
-    const mbedtls_pk_context* pk)
-{
-    OE_Result result = OE_UNEXPECTED;
-    PublicKey* impl = (PublicKey*)publicKey;
-
-    _PublicKeyInit(impl);
-
-    if (!impl || !pk)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    OE_CHECK(_CopyKey(&impl->pk, pk, false));
-
-    result = OE_OK;
-
-done:
-
-    if (result != OE_OK)
-        _PublicKeyFree(impl);
-
-    return result;
-}
-
 OE_INLINE void _PublicKeyClear(PublicKey* impl)
 {
     if (impl)
@@ -160,6 +136,30 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
 **
 **==============================================================================
 */
+
+OE_Result FUNC(PUBLIC_KEY,InitFrom)(
+    PUBLIC_KEY* publicKey, 
+    const mbedtls_pk_context* pk)
+{
+    OE_Result result = OE_UNEXPECTED;
+    PublicKey* impl = (PublicKey*)publicKey;
+
+    _PublicKeyInit(impl);
+
+    if (!impl || !pk)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(_CopyKey(&impl->pk, pk, false));
+
+    result = OE_OK;
+
+done:
+
+    if (result != OE_OK)
+        _PublicKeyFree(impl);
+
+    return result;
+}
 
 OE_Result FUNC(PRIVATE_KEY,ReadPEM)(
     const uint8_t* pemData,
