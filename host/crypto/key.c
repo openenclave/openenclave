@@ -43,16 +43,14 @@ OE_INLINE bool _PublicKeyValid(const PublicKey* impl)
     return impl && impl->magic == PUBLIC_KEY_MAGIC && impl->pkey;
 }
 
-void OE_PASTE(PUBLIC_KEY, Init)(PUBLIC_KEY* publicKey, EVP_PKEY* pkey)
+static void _PublicKeyInit(PUBLIC_KEY* publicKey, EVP_PKEY* pkey)
 {
     PublicKey* impl = (PublicKey*)publicKey;
     impl->magic = PUBLIC_KEY_MAGIC;
     impl->pkey = pkey;
 }
 
-OE_Result OE_PASTE(
-    PRIVATE_KEY,
-    ReadPEM)(const uint8_t* pemData, size_t pemSize, PRIVATE_KEY* key)
+static OE_Result _PrivateKeyReadPEM(const uint8_t* pemData, size_t pemSize, PRIVATE_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
     PrivateKey* impl = (PrivateKey*)key;
@@ -103,9 +101,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(
-    PUBLIC_KEY,
-    ReadPEM)(const uint8_t* pemData, size_t pemSize, PUBLIC_KEY* key)
+static OE_Result _PublicKeyReadPEM(const uint8_t* pemData, size_t pemSize, PUBLIC_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
@@ -156,9 +152,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(
-    PRIVATE_KEY,
-    WritePEM)(const PRIVATE_KEY* privateKey, uint8_t* data, size_t* size)
+static OE_Result _PrivateKeyWritePEM(const PRIVATE_KEY* privateKey, uint8_t* data, size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     const PrivateKey* impl = (const PrivateKey*)privateKey;
@@ -179,7 +173,7 @@ OE_Result OE_PASTE(
         OE_RAISE(OE_FAILURE);
 
     /* Get key from public key (increasing reference count) */
-    if (!(key = OE_PASTE(EVP_PKEY_get1_, KEY)(impl->pkey)))
+    if (!(key = OE_PASTE(EVP_PKEY_get1_, KEY(impl->pkey))))
         OE_RAISE(OE_FAILURE);
 
     /* Write key to BIO */
@@ -211,20 +205,19 @@ OE_Result OE_PASTE(
 
     result = OE_OK;
 
+
 done:
 
     if (bio)
         BIO_free(bio);
 
     if (key)
-        OE_PASTE(KEY, _free)(key);
+        OE_PASTE(KEY, _free(key));
 
     return result;
 }
 
-OE_Result OE_PASTE(
-    PUBLIC_KEY,
-    WritePEM)(const PUBLIC_KEY* key, uint8_t* data, size_t* size)
+static OE_Result _PublicKeyWritePEM(const PUBLIC_KEY* key, uint8_t* data, size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
@@ -280,7 +273,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(PRIVATE_KEY, Free)(PRIVATE_KEY* key)
+static OE_Result _PrivateKeyFree(PRIVATE_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -305,7 +298,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(PUBLIC_KEY, Free)(PUBLIC_KEY* key)
+static OE_Result _PublicKeyFree(PUBLIC_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -330,7 +323,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(PRIVATE_KEY, Sign)(
+static OE_Result _PrivateKeySign(
     const PRIVATE_KEY* privateKey,
     OE_HashType hashType,
     const void* hashData,
@@ -399,7 +392,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(PUBLIC_KEY, Verify)(
+static OE_Result _PublicKeyVerify(
     const PUBLIC_KEY* publicKey,
     OE_HashType hashType,
     const void* hashData,

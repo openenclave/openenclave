@@ -17,6 +17,77 @@
 #define WRITE_PRIVATE_KEY PEM_write_bio_RSAPrivateKey
 #include "key.c"
 
+void OE_RSAPublicKeyInit(PUBLIC_KEY* publicKey, EVP_PKEY* pkey)
+{
+    return _PublicKeyInit(publicKey, pkey);
+}
+
+OE_Result OE_RSAPrivateKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_RSAPrivateKey* privateKey)
+{
+    return _PrivateKeyReadPEM(pemData, pemSize, privateKey);
+}
+
+OE_Result OE_RSAPrivateKeyWritePEM(
+    const OE_RSAPrivateKey* key,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PrivateKeyWritePEM(key, pemData, pemSize);
+}
+
+OE_Result OE_RSAPublicKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_RSAPublicKey* publicKey)
+{
+    return _PublicKeyReadPEM(pemData, pemSize, publicKey);
+}
+
+OE_Result OE_RSAPublicKeyWritePEM(
+    const OE_RSAPublicKey* key,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PublicKeyWritePEM(key, pemData, pemSize);
+}
+
+OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* key)
+{
+    return _PrivateKeyFree(key);
+}
+
+OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* key)
+{
+    return _PublicKeyFree(key);
+}
+
+OE_Result OE_RSAPrivateKeySign(
+    const OE_RSAPrivateKey* privateKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    uint8_t* signature,
+    size_t* signatureSize)
+{
+    return _PrivateKeySign(
+        privateKey, hashType, hashData, hashSize, signature, signatureSize);
+}
+
+OE_Result OE_RSAPublicKeyVerify(
+    const OE_RSAPublicKey* publicKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    const uint8_t* signature,
+    size_t signatureSize)
+{
+    return _PublicKeyVerify(
+        publicKey, hashType, hashData, hashSize, signature, signatureSize);
+}
+
 OE_Result OE_RSAGenerateKeyPair(
     uint64_t bits,
     uint64_t exponent,

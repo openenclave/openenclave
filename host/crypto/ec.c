@@ -40,6 +40,77 @@ static const char* _ECTypeToString(OE_Type type)
     return _curveNames[index];
 }
 
+void OE_ECPublicKeyInit(PUBLIC_KEY* publicKey, EVP_PKEY* pkey)
+{
+    return _PublicKeyInit(publicKey, pkey);
+}
+
+OE_Result OE_ECPrivateKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_ECPrivateKey* privateKey)
+{
+    return _PrivateKeyReadPEM(pemData, pemSize, privateKey);
+}
+
+OE_Result OE_ECPrivateKeyWritePEM(
+    const OE_ECPrivateKey* key,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PrivateKeyWritePEM(key, pemData, pemSize);
+}
+
+OE_Result OE_ECPublicKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_ECPublicKey* publicKey)
+{
+    return _PublicKeyReadPEM(pemData, pemSize, publicKey);
+}
+
+OE_Result OE_ECPublicKeyWritePEM(
+    const OE_ECPublicKey* key,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PublicKeyWritePEM(key, pemData, pemSize);
+}
+
+OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* key)
+{
+    return _PrivateKeyFree(key);
+}
+
+OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* key)
+{
+    return _PublicKeyFree(key);
+}
+
+OE_Result OE_ECPrivateKeySign(
+    const OE_ECPrivateKey* privateKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    uint8_t* signature,
+    size_t* signatureSize)
+{
+    return _PrivateKeySign(
+        privateKey, hashType, hashData, hashSize, signature, signatureSize);
+}
+
+OE_Result OE_ECPublicKeyVerify(
+    const OE_ECPublicKey* publicKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    const uint8_t* signature,
+    size_t signatureSize)
+{
+    return _PublicKeyVerify(
+        publicKey, hashType, hashData, hashSize, signature, signatureSize);
+}
+
 OE_Result OE_ECGenerateKeyPair(
     OE_ECType type,
     OE_ECPrivateKey* privateKey,

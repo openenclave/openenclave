@@ -25,7 +25,7 @@ OE_INLINE void _PrivateKeyInit(PrivateKey* impl)
     mbedtls_pk_init(&impl->pk);
 }
 
-OE_INLINE void _PrivateKeyFree(PrivateKey* impl)
+OE_INLINE void _PrivateKeyRelease(PrivateKey* impl)
 {
     if (impl)
     {
@@ -52,7 +52,7 @@ static OE_Result _PrivateKeyInitFrom(
 done:
 
     if (result != OE_OK)
-        _PrivateKeyFree(impl);
+        _PrivateKeyRelease(impl);
 
     return result;
 }
@@ -90,7 +90,7 @@ OE_INLINE void _PublicKeyInit(PublicKey* impl)
     mbedtls_pk_init(&impl->pk);
 }
 
-OE_INLINE void _PublicKeyFree(PublicKey* impl)
+OE_INLINE void _PublicKeyRelease(PublicKey* impl)
 {
     if (impl)
     {
@@ -135,7 +135,7 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
 **==============================================================================
 */
 
-OE_Result OE_PASTE(PUBLIC_KEY, InitFrom)(
+static OE_Result _PublicKeyInitFrom(
     PUBLIC_KEY* publicKey,
     const mbedtls_pk_context* pk)
 {
@@ -154,14 +154,15 @@ OE_Result OE_PASTE(PUBLIC_KEY, InitFrom)(
 done:
 
     if (result != OE_OK)
-        _PublicKeyFree(impl);
+        _PublicKeyRelease(impl);
 
     return result;
 }
 
-OE_Result OE_PASTE(
-    PRIVATE_KEY,
-    ReadPEM)(const uint8_t* pemData, size_t pemSize, PRIVATE_KEY* privateKey)
+static OE_Result _PrivateKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    PRIVATE_KEY* privateKey)
 {
     OE_Result result = OE_UNEXPECTED;
     PrivateKey* impl = (PrivateKey*)privateKey;
@@ -191,14 +192,15 @@ OE_Result OE_PASTE(
 done:
 
     if (result != OE_OK)
-        _PrivateKeyFree(impl);
+        _PrivateKeyRelease(impl);
 
     return result;
 }
 
-OE_Result OE_PASTE(
-    PRIVATE_KEY,
-    WritePEM)(const PRIVATE_KEY* key, uint8_t* pemData, size_t* pemSize)
+static OE_Result _PrivateKeyWritePEM(
+    const PRIVATE_KEY* key,
+    uint8_t* pemData,
+    size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
     PrivateKey* impl = (PrivateKey*)key;
@@ -236,9 +238,10 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(
-    PUBLIC_KEY,
-    ReadPEM)(const uint8_t* pemData, size_t pemSize, PUBLIC_KEY* publicKey)
+static OE_Result _PublicKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    PUBLIC_KEY* publicKey)
 {
     PublicKey* impl = (PublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
@@ -268,14 +271,15 @@ OE_Result OE_PASTE(
 done:
 
     if (result != OE_OK)
-        _PublicKeyFree(impl);
+        _PublicKeyRelease(impl);
 
     return result;
 }
 
-OE_Result OE_PASTE(
-    PUBLIC_KEY,
-    WritePEM)(const PUBLIC_KEY* key, uint8_t* pemData, size_t* pemSize)
+static OE_Result _PublicKeyWritePEM(
+    const PUBLIC_KEY* key,
+    uint8_t* pemData,
+    size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
     PublicKey* impl = (PublicKey*)key;
@@ -313,7 +317,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(PRIVATE_KEY, Free)(PRIVATE_KEY* key)
+static OE_Result _PrivateKeyFree(PRIVATE_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -324,7 +328,7 @@ OE_Result OE_PASTE(PRIVATE_KEY, Free)(PRIVATE_KEY* key)
         if (!_PrivateKeyValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
-        _PrivateKeyFree(impl);
+        _PrivateKeyRelease(impl);
     }
 
     result = OE_OK;
@@ -333,7 +337,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(PUBLIC_KEY, Free)(PUBLIC_KEY* key)
+static OE_Result _PublicKeyFree(PUBLIC_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -344,7 +348,7 @@ OE_Result OE_PASTE(PUBLIC_KEY, Free)(PUBLIC_KEY* key)
         if (!_PublicKeyValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
-        _PublicKeyFree(impl);
+        _PublicKeyRelease(impl);
     }
 
     result = OE_OK;
@@ -353,7 +357,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(PRIVATE_KEY, Sign)(
+static OE_Result _PrivateKeySign(
     const PRIVATE_KEY* privateKey,
     OE_HashType hashType,
     const void* hashData,
@@ -408,7 +412,7 @@ done:
     return result;
 }
 
-OE_Result OE_PASTE(PUBLIC_KEY, Verify)(
+static OE_Result _PublicKeyVerify(
     const PUBLIC_KEY* publicKey,
     OE_HashType hashType,
     const void* hashData,
