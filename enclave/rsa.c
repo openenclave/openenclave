@@ -14,10 +14,7 @@
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/rsa.h>
 #include "random.h"
-
-// MBEDTLS has no mechanism for determining the size of the PEM buffer ahead
-// of time, so we are forced to use a maximum buffer size.
-#define OE_PEM_MAX_BYTES (16 * 1024)
+#include "pem.h"
 
 /*
 **==============================================================================
