@@ -1,5 +1,3 @@
-#define __FUNC(PREFIX, NAME) PREFIX##NAME
-#define FUNC(PREFIX, NAME) __FUNC(PREFIX, NAME)
 /*
 **==============================================================================
 **
@@ -37,7 +35,7 @@ OE_INLINE void _PrivateKeyFree(PrivateKey* impl)
 }
 
 static OE_Result _PrivateKeyInitFrom(
-    PrivateKey* impl, 
+    PrivateKey* impl,
     const mbedtls_pk_context* pk)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -137,8 +135,8 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
 **==============================================================================
 */
 
-OE_Result FUNC(PUBLIC_KEY,InitFrom)(
-    PUBLIC_KEY* publicKey, 
+OE_Result OE_PASTE(PUBLIC_KEY, InitFrom)(
+    PUBLIC_KEY* publicKey,
     const mbedtls_pk_context* pk)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -161,10 +159,9 @@ done:
     return result;
 }
 
-OE_Result FUNC(PRIVATE_KEY,ReadPEM)(
-    const uint8_t* pemData,
-    size_t pemSize,
-    PRIVATE_KEY* privateKey)
+OE_Result OE_PASTE(
+    PRIVATE_KEY,
+    ReadPEM)(const uint8_t* pemData, size_t pemSize, PRIVATE_KEY* privateKey)
 {
     OE_Result result = OE_UNEXPECTED;
     PrivateKey* impl = (PrivateKey*)privateKey;
@@ -199,10 +196,9 @@ done:
     return result;
 }
 
-OE_Result FUNC(PRIVATE_KEY,WritePEM)(
-    const PRIVATE_KEY* key,
-    uint8_t* pemData,
-    size_t* pemSize)
+OE_Result OE_PASTE(
+    PRIVATE_KEY,
+    WritePEM)(const PRIVATE_KEY* key, uint8_t* pemData, size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
     PrivateKey* impl = (PrivateKey*)key;
@@ -240,10 +236,9 @@ done:
     return result;
 }
 
-OE_Result FUNC(PUBLIC_KEY,ReadPEM)(
-    const uint8_t* pemData,
-    size_t pemSize,
-    PUBLIC_KEY* publicKey)
+OE_Result OE_PASTE(
+    PUBLIC_KEY,
+    ReadPEM)(const uint8_t* pemData, size_t pemSize, PUBLIC_KEY* publicKey)
 {
     PublicKey* impl = (PublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
@@ -278,10 +273,9 @@ done:
     return result;
 }
 
-OE_Result FUNC(PUBLIC_KEY,WritePEM)(
-    const PUBLIC_KEY* key,
-    uint8_t* pemData,
-    size_t* pemSize)
+OE_Result OE_PASTE(
+    PUBLIC_KEY,
+    WritePEM)(const PUBLIC_KEY* key, uint8_t* pemData, size_t* pemSize)
 {
     OE_Result result = OE_UNEXPECTED;
     PublicKey* impl = (PublicKey*)key;
@@ -319,7 +313,7 @@ done:
     return result;
 }
 
-OE_Result FUNC(PRIVATE_KEY,Free)(PRIVATE_KEY* key)
+OE_Result OE_PASTE(PRIVATE_KEY, Free)(PRIVATE_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -339,7 +333,7 @@ done:
     return result;
 }
 
-OE_Result FUNC(PUBLIC_KEY,Free)(PUBLIC_KEY* key)
+OE_Result OE_PASTE(PUBLIC_KEY, Free)(PUBLIC_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -359,7 +353,7 @@ done:
     return result;
 }
 
-OE_Result FUNC(PRIVATE_KEY,Sign)(
+OE_Result OE_PASTE(PRIVATE_KEY, Sign)(
     const PRIVATE_KEY* privateKey,
     OE_HashType hashType,
     const void* hashData,
@@ -414,7 +408,7 @@ done:
     return result;
 }
 
-OE_Result FUNC(PUBLIC_KEY,Verify)(
+OE_Result OE_PASTE(PUBLIC_KEY, Verify)(
     const PUBLIC_KEY* publicKey,
     OE_HashType hashType,
     const void* hashData,

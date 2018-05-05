@@ -4,8 +4,8 @@
 #include "rsa.h"
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
-#include "random.h"
 #include "pem.h"
+#include "random.h"
 
 /*
 **==============================================================================
@@ -232,7 +232,7 @@ OE_Result OE_RSAPublicKeyGetExponent(
     return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, false);
 }
 
-OE_Result OE_RSAPublicKeyEqual( 
+OE_Result OE_RSAPublicKeyEqual(
     const OE_RSAPublicKey* publicKey1,
     const OE_RSAPublicKey* publicKey2,
     bool* equal)

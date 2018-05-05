@@ -13,7 +13,7 @@ OE_INLINE bool OE_IsRSAKey(const mbedtls_pk_context* pk)
 }
 
 OE_Result OE_RSAPublicKeyInitFrom(
-    OE_RSAPublicKey* publicKey, 
+    OE_RSAPublicKey* publicKey,
     const mbedtls_pk_context* pk);
 
 #endif /* _OE_ENCLAVE_RSA_H */

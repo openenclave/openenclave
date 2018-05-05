@@ -10,10 +10,10 @@
 #include <openenclave/bits/atomic.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
 #include <openenclave/thread.h>
 #include "ec.h"
@@ -508,9 +508,7 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetRootCert(
-    const OE_CertChain* chain,
-    OE_Cert* cert)
+OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert)
 {
     const CertChain* impl = (const CertChain*)chain;
     Cert* certImpl = (Cert*)cert;
@@ -533,16 +531,15 @@ OE_Result OE_CertChainGetRootCert(
     while (n--)
     {
         mbedtls_x509_crt* crt;
-        
+
         if (!(crt = _ReferentGetCert(impl->referent, n)))
             OE_RAISE(OE_FAILURE);
 
         const mbedtls_x509_buf* subject = &crt->subject_raw;
         const mbedtls_x509_buf* issuer = &crt->issuer_raw;
 
-        if (subject->tag == issuer->tag &&
-            subject->len == issuer->len &&
-            OE_Memcmp(subject->p, issuer->p, subject->len) == 0) 
+        if (subject->tag == issuer->tag && subject->len == issuer->len &&
+            OE_Memcmp(subject->p, issuer->p, subject->len) == 0)
         {
             /* Found self-signed certificate */
             _CertInit(certImpl, crt, impl->referent);
@@ -557,15 +554,13 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetLeafCert(
-    const OE_CertChain* chain,
-    OE_Cert* cert)
+OE_Result OE_CertChainGetLeafCert(const OE_CertChain* chain, OE_Cert* cert)
 {
     OE_Result result = OE_UNEXPECTED;
     size_t length;
 
     OE_CHECK(OE_CertChainGetLength(chain, &length));
-    OE_CHECK(OE_CertChainGetCert(chain, length-1, cert));
+    OE_CHECK(OE_CertChainGetCert(chain, length - 1, cert));
     result = OE_OK;
 
 done:

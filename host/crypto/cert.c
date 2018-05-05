@@ -97,7 +97,7 @@ static void _CertChainClear(CertChain* impl)
     }
 }
 
-static STACK_OF(X509)* _ReadCertChain(const char* pem)
+static STACK_OF(X509) * _ReadCertChain(const char* pem)
 {
     STACK_OF(X509)* result = NULL;
     STACK_OF(X509)* sk = NULL;
@@ -478,7 +478,8 @@ OE_Result OE_CertGetRSAPublicKey(
         OE_RAISE(OE_WRONG_TYPE);
 
     /* Initialize the RSA public key */
-    OE_RSAInitPublicKey(publicKey, rsa);
+    OE_RSAPublicKeyInit(publicKey, pkey);
+    pkey = NULL;
 
     result = OE_OK;
 
@@ -614,9 +615,7 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetRootCert(
-    const OE_CertChain* chain,
-    OE_Cert* cert)
+OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert)
 {
     const CertChain* impl = (const CertChain*)chain;
     OE_Result result = OE_UNEXPECTED;
@@ -662,15 +661,13 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetLeafCert(
-    const OE_CertChain* chain,
-    OE_Cert* cert)
+OE_Result OE_CertChainGetLeafCert(const OE_CertChain* chain, OE_Cert* cert)
 {
     OE_Result result = OE_UNEXPECTED;
     size_t length;
 
     OE_CHECK(OE_CertChainGetLength(chain, &length));
-    OE_CHECK(OE_CertChainGetCert(chain, length-1, cert));
+    OE_CHECK(OE_CertChainGetCert(chain, length - 1, cert));
     result = OE_OK;
 
 done:

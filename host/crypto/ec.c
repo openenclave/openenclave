@@ -2,11 +2,7 @@
 // Licensed under the MIT License.
 
 #include "ec.h"
-#include <openenclave/bits/ec.h>
-#include <openenclave/bits/pem.h>
 #include <openenclave/bits/raise.h>
-#include <openenclave/bits/sha.h>
-#include <openenclave/types.h>
 #include <openssl/pem.h>
 #include <string.h>
 #include "init.h"
@@ -19,55 +15,14 @@
 **==============================================================================
 */
 
-/* Randomly generated magic number */
-#define OE_EC_PRIVATE_KEY_MAGIC 0x19a751419ae04bbc
-
-typedef struct _ECPrivateKey
-{
-    uint64_t magic;
-    EVP_PKEY* pkey;
-} ECPrivateKey;
-
-OE_STATIC_ASSERT(sizeof(ECPrivateKey) <= sizeof(OE_ECPrivateKey));
-
-OE_INLINE void _ECPrivateKeyClear(ECPrivateKey* impl)
-{
-    if (impl)
-    {
-        impl->magic = 0;
-        impl->pkey = NULL;
-    }
-}
-
-OE_INLINE bool _ECPrivateKeyValid(const ECPrivateKey* impl)
-{
-    return impl && impl->magic == OE_EC_PRIVATE_KEY_MAGIC && impl->pkey;
-}
-
-/* Randomly generated magic number */
-#define OE_EC_PUBLIC_KEY_MAGIC 0xb1d39580c1f14c02
-
-typedef struct _ECPublicKey
-{
-    uint64_t magic;
-    EVP_PKEY* pkey;
-} ECPublicKey;
-
-OE_STATIC_ASSERT(sizeof(ECPublicKey) <= sizeof(OE_ECPublicKey));
-
-OE_INLINE void _ECPublicKeyClear(ECPublicKey* impl)
-{
-    if (impl)
-    {
-        impl->magic = 0;
-        impl->pkey = NULL;
-    }
-}
-
-OE_INLINE bool _ECPublicKeyValid(const ECPublicKey* impl)
-{
-    return impl && impl->magic == OE_EC_PUBLIC_KEY_MAGIC && impl->pkey;
-}
+#define PRIVATE_KEY_MAGIC 0x19a751419ae04bbc
+#define PUBLIC_KEY_MAGIC 0xb1d39580c1f14c02
+#define PRIVATE_KEY OE_ECPrivateKey
+#define PUBLIC_KEY OE_ECPublicKey
+#define KEY EC_KEY
+#define KEY_TAG EVP_PKEY_EC
+#define WRITE_PRIVATE_KEY PEM_write_bio_ECPrivateKey
+#include "key.c"
 
 /* Curve names, indexed by OE_ECType */
 static const char* _curveNames[] = {
@@ -85,442 +40,14 @@ static const char* _ECTypeToString(OE_Type type)
     return _curveNames[index];
 }
 
-/*
-**==============================================================================
-**
-** Shared definitions (shared within this directory)
-**
-**==============================================================================
-*/
-
-void OE_ECPublicKeyInit(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
-{
-    ECPublicKey* impl = (ECPublicKey*)publicKey;
-    impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
-    impl->pkey = pkey;
-}
-
-/*
-**==============================================================================
-**
-** Public functions:
-**
-**==============================================================================
-*/
-
-OE_Result OE_ECPrivateKeyReadPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_ECPrivateKey* key)
-{
-    OE_Result result = OE_UNEXPECTED;
-    ECPrivateKey* impl = (ECPrivateKey*)key;
-    BIO* bio = NULL;
-    EVP_PKEY* pkey = NULL;
-
-    /* Initialize the key output parameter */
-    _ECPrivateKeyClear(impl);
-
-    /* Check parameters */
-    if (!pemData || pemSize == 0 || !impl)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
-
-    /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Read the key object */
-    if (!(pkey = PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Verify that it is an EC key */
-    if (pkey->type != EVP_PKEY_EC)
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the key */
-    impl->magic = OE_EC_PRIVATE_KEY_MAGIC;
-    impl->pkey = pkey;
-    pkey = NULL;
-
-    result = OE_OK;
-
-done:
-
-    if (pkey)
-        EVP_PKEY_free(pkey);
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}
-
-OE_Result OE_ECPublicKeyReadPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_ECPublicKey* key)
-{
-    OE_Result result = OE_UNEXPECTED;
-    BIO* bio = NULL;
-    EVP_PKEY* pkey = NULL;
-    ECPublicKey* impl = (ECPublicKey*)key;
-
-    /* Zero-initialize the key */
-    _ECPublicKeyClear(impl);
-
-    /* Check parameters */
-    if (!pemData || pemSize == 0 || !impl)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
-
-    /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Read the key object */
-    if (!(pkey = PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Verify that it is an EC key */
-    if (pkey->type != EVP_PKEY_EC)
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the key */
-    impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
-    impl->pkey = pkey;
-    pkey = NULL;
-
-    result = OE_OK;
-
-done:
-
-    if (pkey)
-        EVP_PKEY_free(pkey);
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}
-
-OE_Result OE_ECPrivateKeyWritePEM(
-    const OE_ECPrivateKey* key,
-    uint8_t* data,
-    size_t* size)
-{
-    OE_Result result = OE_UNEXPECTED;
-    const ECPrivateKey* impl = (const ECPrivateKey*)key;
-    BIO* bio = NULL;
-    EC_KEY* ec = NULL;
-    const char nullTerminator = '\0';
-
-    /* Check parameters */
-    if (!_ECPrivateKeyValid(impl) || !size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If buffer is null, then size must be zero */
-    if (!data && *size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Create memory BIO object to write key to */
-    if (!(bio = BIO_new(BIO_s_mem())))
-        OE_RAISE(OE_FAILURE);
-
-    /* Get EC key from public key (increasing reference count) */
-    if (!(ec = EVP_PKEY_get1_EC_KEY(impl->pkey)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Write key to BIO */
-    if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
-        OE_RAISE(OE_FAILURE);
-
-    /* Write a NULL terminator onto BIO */
-    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Copy the BIO onto caller's memory */
-    {
-        BUF_MEM* mem;
-
-        if (!BIO_get_mem_ptr(bio, &mem))
-            OE_RAISE(OE_FAILURE);
-
-        /* If buffer is too small */
-        if (*size < mem->length)
-        {
-            *size = mem->length;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-
-        /* Copy result to output buffer */
-        memcpy(data, mem->data, mem->length);
-        *size = mem->length;
-    }
-
-    result = OE_OK;
-
-done:
-
-    if (bio)
-        BIO_free(bio);
-
-    if (ec)
-        EC_KEY_free(ec);
-
-    return result;
-}
-
-OE_Result OE_ECPublicKeyWritePEM(
-    const OE_ECPublicKey* key,
-    uint8_t* data,
-    size_t* size)
-{
-    OE_Result result = OE_UNEXPECTED;
-    BIO* bio = NULL;
-    const ECPublicKey* impl = (const ECPublicKey*)key;
-    const char nullTerminator = '\0';
-
-    /* Check parameters */
-    if (!_ECPublicKeyValid(impl) || !size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If buffer is null, then size must be zero */
-    if (!data && *size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Create memory BIO object to write key to */
-    if (!(bio = BIO_new(BIO_s_mem())))
-        OE_RAISE(OE_FAILURE);
-
-    /* Write key to BIO */
-    if (!PEM_write_bio_PUBKEY(bio, impl->pkey))
-        OE_RAISE(OE_FAILURE);
-
-    /* Write a NULL terminator onto BIO */
-    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Copy the BIO onto caller's memory */
-    {
-        BUF_MEM* mem;
-
-        if (!BIO_get_mem_ptr(bio, &mem))
-            OE_RAISE(OE_FAILURE);
-
-        /* If buffer is too small */
-        if (*size < mem->length)
-        {
-            *size = mem->length;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-
-        /* Copy result to output buffer */
-        memcpy(data, mem->data, mem->length);
-        *size = mem->length;
-    }
-
-    result = OE_OK;
-
-done:
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}
-
-OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* key)
-{
-    OE_Result result = OE_UNEXPECTED;
-
-    if (key)
-    {
-        ECPrivateKey* impl = (ECPrivateKey*)key;
-
-        /* Check parameter */
-        if (!_ECPrivateKeyValid(impl))
-            OE_RAISE(OE_INVALID_PARAMETER);
-
-        /* Release the key */
-        EVP_PKEY_free(impl->pkey);
-
-        /* Clear the fields of the implementation */
-        _ECPrivateKeyClear(impl);
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* key)
-{
-    OE_Result result = OE_UNEXPECTED;
-
-    if (key)
-    {
-        ECPublicKey* impl = (ECPublicKey*)key;
-
-        /* Check parameter */
-        if (!_ECPublicKeyValid(impl))
-            OE_RAISE(OE_INVALID_PARAMETER);
-
-        /* Release the key */
-        EVP_PKEY_free(impl->pkey);
-
-        /* Clear the fields of the implementation */
-        _ECPublicKeyClear(impl);
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-OE_Result OE_ECPrivateKeySign(
-    const OE_ECPrivateKey* privateKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    uint8_t* signature,
-    size_t* signatureSize)
-{
-    OE_Result result = OE_UNEXPECTED;
-    const ECPrivateKey* impl = (const ECPrivateKey*)privateKey;
-    EVP_PKEY_CTX* ctx = NULL;
-
-    /* Check for null parameters */
-    if (!_ECPrivateKeyValid(impl) || !hashData || !hashSize || !signatureSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Check that hash buffer is big enough (hashType is size of that hash) */
-    if (hashType > hashSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If signature buffer is null, then signature size must be zero */
-    if (!signature && *signatureSize != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
-
-    /* Create signing context */
-    if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the signing context */
-    if (EVP_PKEY_sign_init(ctx) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the MD type for the signing operation */
-    if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Determine the size of the signature; fail if buffer is too small */
-    {
-        size_t size;
-
-        if (EVP_PKEY_sign(ctx, NULL, &size, hashData, hashSize) <= 0)
-            OE_RAISE(OE_FAILURE);
-
-        if (size > *signatureSize)
-        {
-            *signatureSize = size;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-
-        *signatureSize = size;
-    }
-
-    /* Compute the signature */
-    if (EVP_PKEY_sign(ctx, signature, signatureSize, hashData, hashSize) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    result = OE_OK;
-
-done:
-
-    if (ctx)
-        EVP_PKEY_CTX_free(ctx);
-
-    return result;
-}
-
-OE_Result OE_ECPublicKeyVerify(
-    const OE_ECPublicKey* publicKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    const uint8_t* signature,
-    size_t signatureSize)
-{
-    OE_Result result = OE_UNEXPECTED;
-    const ECPublicKey* impl = (const ECPublicKey*)publicKey;
-    EVP_PKEY_CTX* ctx = NULL;
-
-    /* Check for null parameters */
-    if (!_ECPublicKeyValid(impl) || !hashData || !hashSize || !signature ||
-        !signatureSize)
-    {
-        OE_RAISE(OE_INVALID_PARAMETER);
-    }
-
-    /* Check that hash buffer is big enough (hashType is size of that hash) */
-    if (hashType > hashSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
-
-    /* Create signing context */
-    if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the signing context */
-    if (EVP_PKEY_verify_init(ctx) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the MD type for the signing operation */
-    if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Compute the signature */
-    if (EVP_PKEY_verify(ctx, signature, signatureSize, hashData, hashSize) <= 0)
-        OE_RAISE(OE_VERIFY_FAILED);
-
-    result = OE_OK;
-
-done:
-
-    if (ctx)
-        EVP_PKEY_CTX_free(ctx);
-
-    return result;
-}
-
 OE_Result OE_ECGenerateKeyPair(
     OE_ECType type,
     OE_ECPrivateKey* privateKey,
     OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    ECPrivateKey* privateImpl = (ECPrivateKey*)privateKey;
-    ECPublicKey* publicImpl = (ECPublicKey*)publicKey;
+    PrivateKey* privateImpl = (PrivateKey*)privateKey;
+    PublicKey* publicImpl = (PublicKey*)publicKey;
     int nid;
     EC_KEY* key = NULL;
     EVP_PKEY* pkey = NULL;
@@ -528,8 +55,8 @@ OE_Result OE_ECGenerateKeyPair(
     const char nullTerminator = '\0';
     const char* curveName;
 
-    _ECPrivateKeyClear(privateImpl);
-    _ECPublicKeyClear(publicImpl);
+    _PrivateKeyClear(privateImpl);
+    _PublicKeyClear(publicImpl);
 
     /* Check parameters */
     if (!privateKey || !publicKey)
@@ -645,7 +172,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    const ECPublicKey* impl = (const ECPublicKey*)publicKey;
+    const PublicKey* impl = (const PublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     uint8_t* data = NULL;
     EC_KEY* ec = NULL;
@@ -697,16 +224,16 @@ OE_Result OE_ECPublicKeyEqual(
     bool* equal)
 {
     OE_Result result = OE_UNEXPECTED;
-    const ECPublicKey* impl1 = (const ECPublicKey*)publicKey1;
-    const ECPublicKey* impl2 = (const ECPublicKey*)publicKey2;
-    EC_KEY* ec1;
-    EC_KEY* ec2;
+    const PublicKey* impl1 = (const PublicKey*)publicKey1;
+    const PublicKey* impl2 = (const PublicKey*)publicKey2;
+    EC_KEY* ec1 = NULL;
+    EC_KEY* ec2 = NULL;
 
     if (equal)
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_ECPublicKeyValid(impl1) || !_ECPublicKeyValid(impl2) || !equal)
+    if (!_PublicKeyValid(impl1) || !_PublicKeyValid(impl2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {

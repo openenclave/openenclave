@@ -13,7 +13,7 @@ OE_INLINE bool OE_IsECKey(const mbedtls_pk_context* pk)
 }
 
 OE_Result OE_ECPublicKeyInitFrom(
-    OE_ECPublicKey* publicKey, 
+    OE_ECPublicKey* publicKey,
     const mbedtls_pk_context* pk);
 
 #endif /* _OE_ENCLAVE_EC_H */

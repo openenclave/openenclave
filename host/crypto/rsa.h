@@ -5,9 +5,9 @@
 #define _OE_HOST_CRYPTO_RSA_H
 
 #include <openenclave/bits/rsa.h>
-#include <openssl/rsa.h>
+#include <openssl/evp.h>
 
 /* Caller is responsible for validating parameters */
-void OE_RSAInitPublicKey(OE_RSAPublicKey* publicKey, RSA* rsa);
+void OE_RSAPublicKeyInit(OE_RSAPublicKey* publicKey, EVP_PKEY* pkey);
 
 #endif /* _OE_HOST_CRYPTO_RSA_H */

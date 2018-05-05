@@ -187,7 +187,7 @@ OE_Result OE_CertChainGetLength(const OE_CertChain* chain, size_t* length);
  *
  * This function fetches the certificate with the given index from a
  * certificate chain. The certificate with the highest index is the leaf
- * certificate. Use OE_CertChainGetLength() to obtain the number of 
+ * certificate. Use OE_CertChainGetLength() to obtain the number of
  * certificates in the chain.
  *
  * @param chain the chain whose certificate is fetched.
@@ -211,9 +211,9 @@ OE_Result OE_CertChainGetCert(
  *
  * This function fetches the root certificate from a certificate chain. The
  * root certificate is found by walking from the leaf certificate upwards
- * until a self-signed certificate is found. A self-signed certificate is one 
+ * until a self-signed certificate is found. A self-signed certificate is one
  * in which the issuer-name and the subject-name are the same.
- * 
+ *
  * @param chain the chain whose root certificate is fetched.
  * @param cert the handle of a certificate upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
@@ -224,15 +224,13 @@ OE_Result OE_CertChainGetCert(
  * @return OE_NOT_FOUND no self-signed certificate was found
  * @return OE_FAILURE general failure
  */
-OE_Result OE_CertChainGetRootCert(
-    const OE_CertChain* chain,
-    OE_Cert* cert);
+OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert);
 
 /**
  * Fetch the leaf certificate from a certificate chain.
  *
  * This function fetches the leaf certificate from a certificate chain.
- * 
+ *
  * @param chain the chain whose root certificate is fetched.
  * @param cert the handle of a certificate upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
@@ -242,9 +240,7 @@ OE_Result OE_CertChainGetRootCert(
  * @return OE_INVALID_PARAMETER a parameter is invalid
  * @return OE_FAILURE general failure
  */
-OE_Result OE_CertChainGetLeafCert(
-    const OE_CertChain* chain,
-    OE_Cert* cert);
+OE_Result OE_CertChainGetLeafCert(const OE_CertChain* chain, OE_Cert* cert);
 
 OE_EXTERNC_END
 

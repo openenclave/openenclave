@@ -4,8 +4,8 @@
 #include "ec.h"
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
-#include "random.h"
 #include "pem.h"
+#include "random.h"
 
 static OE_Result _CopyKey(
     mbedtls_pk_context* dest,
@@ -165,7 +165,7 @@ OE_Result OE_ECGenerateKeyPair(
 
     /* Initialize the public key parameter */
     OE_CHECK(OE_ECPublicKeyInitFrom(publicKey, &pk));
-    
+
     result = OE_OK;
 
 done:

@@ -162,7 +162,7 @@ void* memalign(size_t alignment, size_t size)
 **     fprintf(stderr, "in use bytes     = %10lu\n", (unsigned long)(used));
 **
 ** But, it provides no function to obtain these same values programmatically.
-** This module captures these values by overriding the fprintf() function in 
+** This module captures these values by overriding the fprintf() function in
 ** the dlmalloc sources included below.
 **
 **==============================================================================

@@ -121,12 +121,11 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
 
 /* Statically assert that the argument has the expected type */
 #define OE_STATIC_ASSERT_TYPE(ARG, TYPE) \
-    do \
-    { \
-        const TYPE* _ptr_ = &ARG; \
-        (void)_ptr_; \
-    } \
-    while (0)
+    do                                   \
+    {                                    \
+        const TYPE* _ptr_ = &ARG;        \
+        (void)_ptr_;                     \
+    } while (0)
 
 OE_EXTERNC_END
 
