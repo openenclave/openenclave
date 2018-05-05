@@ -16,11 +16,16 @@
 // Check that input data lies outside the enclave and that
 // fits within maxSize. If so, allocate buffer on enclave
 // stack and copy.
-OE_Result OE_CheckedCopyInputImpl(void** dst, void* src, uint32_t size, uint32_t maxSize, void* buf)
+OE_Result OE_CheckedCopyInputImpl(
+    void** dst,
+    void* src,
+    uint32_t size,
+    uint32_t maxSize,
+    void* buf)
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (size > maxSize || size==0) 
+    if (size > maxSize || size == 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!src || !OE_IsOutsideEnclave((void*)src, size))
@@ -28,9 +33,10 @@ OE_Result OE_CheckedCopyInputImpl(void** dst, void* src, uint32_t size, uint32_t
 
     oe_speculation_barrier();
 
-    if (!*dst) {
+    if (!*dst)
+    {
         // Buffer created and supplied via buf.
-        if(!buf)
+        if (!buf)
             OE_RAISE(OE_OUT_OF_MEMORY);
         *dst = buf;
     }
@@ -38,13 +44,17 @@ OE_Result OE_CheckedCopyInputImpl(void** dst, void* src, uint32_t size, uint32_t
     OE_Memcpy(*dst, (void*)src, size);
     result = OE_OK;
 done:
-    return result;    
+    return result;
 }
 
-
-#define OE_CheckedCopyInput(dst, src, size, maxSize)        \
-    OE_CHECK(OE_CheckedCopyInputImpl((void**)&(dst), (void*)src, size, maxSize, \
-        !dst ? __builtin_alloca(size < maxSize ? size : maxSize) : NULL))
+#define OE_CheckedCopyInput(dst, src, size, maxSize) \
+    OE_CHECK(                                        \
+        OE_CheckedCopyInputImpl(                     \
+            (void**)&(dst),                          \
+            (void*)src,                              \
+            size,                                    \
+            maxSize,                                 \
+            !dst ? __builtin_alloca(size < maxSize ? size : maxSize) : NULL))
 
 // Buffers are allocated on the stack. Automatically cleaned up.
 #define OE_FreeBuffer(buffer)
@@ -79,7 +89,7 @@ OE_ECALL void VerifyQuote(void* args_)
     OE_CheckedCopyInput(encArg, hostArg, sizeof(*encArg), sizeof(*encArg));
 
     // TODO: How to manage memory for all these buffers?
-    // Max size vs actual size vs where to allocate, function stack 
+    // Max size vs actual size vs where to allocate, function stack
     // vs explicit static buffer etc
 
     // Copy input buffers to enclave memory.
@@ -143,29 +153,33 @@ done:
 
 #define OE_QUOTE_VERSION (3)
 
-OE_Result _ParseQuote(const uint8_t* encQuote, uint32_t quoteSize, SGX_Quote** sgxQuote, SGX_ReportBody** reportBody)
+OE_Result _ParseQuote(
+    const uint8_t* encQuote,
+    uint32_t quoteSize,
+    SGX_Quote** sgxQuote,
+    SGX_ReportBody** reportBody)
 {
     OE_Result result = OE_UNEXPECTED;
-    
+
     const uint8_t* p = encQuote;
     const uint8_t* const quoteEnd = encQuote + quoteSize;
 
     *sgxQuote = NULL;
     *reportBody = NULL;
 
-    *sgxQuote = (SGX_Quote*) p;
+    *sgxQuote = (SGX_Quote*)p;
     p += sizeof(SGX_Quote);
     if (p > quoteEnd)
         OE_RAISE(OE_QUOTE_PARSE_ERROR);
 
-    *reportBody = (SGX_ReportBody*) p;
+    *reportBody = (SGX_ReportBody*)p;
     p += sizeof(SGX_ReportBody);
     if (p > quoteEnd)
         OE_RAISE(OE_QUOTE_PARSE_ERROR);
-     
 
+    result = OE_OK;
 done:
-    return result;    
+    return result;
 }
 
 OE_Result VerityQuoteImpl(
@@ -184,16 +198,13 @@ OE_Result VerityQuoteImpl(
 
     OE_CHECK(_ParseQuote(encQuote, quoteSize, &sgxQuote, &reportBody));
 
-
-
-    
-
-    if (sgxQuote->version != OE_QUOTE_VERSION) {
+    if (sgxQuote->version != OE_QUOTE_VERSION)
+    {
         OE_RAISE(OE_VERIFY_FAILED);
     }
 
     /*
-    TODO: 
+    TODO:
         1. Parse pemPckCertificate.
         2. Parse pckCrl.
         3. Parse tcbInfoJson.
@@ -206,7 +217,8 @@ OE_Result VerityQuoteImpl(
         10. checkRevocation(tcbInfoJson, pckCert)
     */
 
-    goto done;
+    result = OE_OK;
+    
 done:
     return result;
 }
