@@ -50,7 +50,10 @@ static void _PublicKeyInit(PUBLIC_KEY* publicKey, EVP_PKEY* pkey)
     impl->pkey = pkey;
 }
 
-static OE_Result _PrivateKeyReadPEM(const uint8_t* pemData, size_t pemSize, PRIVATE_KEY* key)
+static OE_Result _PrivateKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    PRIVATE_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
     PrivateKey* impl = (PrivateKey*)key;
@@ -101,7 +104,10 @@ done:
     return result;
 }
 
-static OE_Result _PublicKeyReadPEM(const uint8_t* pemData, size_t pemSize, PUBLIC_KEY* key)
+static OE_Result _PublicKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    PUBLIC_KEY* key)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
@@ -152,7 +158,10 @@ done:
     return result;
 }
 
-static OE_Result _PrivateKeyWritePEM(const PRIVATE_KEY* privateKey, uint8_t* data, size_t* size)
+static OE_Result _PrivateKeyWritePEM(
+    const PRIVATE_KEY* privateKey,
+    uint8_t* data,
+    size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     const PrivateKey* impl = (const PrivateKey*)privateKey;
@@ -205,7 +214,6 @@ static OE_Result _PrivateKeyWritePEM(const PRIVATE_KEY* privateKey, uint8_t* dat
 
     result = OE_OK;
 
-
 done:
 
     if (bio)
@@ -217,7 +225,10 @@ done:
     return result;
 }
 
-static OE_Result _PublicKeyWritePEM(const PUBLIC_KEY* key, uint8_t* data, size_t* size)
+static OE_Result _PublicKeyWritePEM(
+    const PUBLIC_KEY* key,
+    uint8_t* data,
+    size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
