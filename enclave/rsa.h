@@ -7,7 +7,10 @@
 #include <mbedtls/pk.h>
 #include <openenclave/bits/rsa.h>
 
-bool OE_IsRSAKey(const mbedtls_pk_context* pk);
+OE_INLINE bool OE_IsRSAKey(const mbedtls_pk_context* pk)
+{
+    return pk->pk_info == mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
+}
 
 OE_Result OE_RSAPublicKeyInitFrom(
     OE_RSAPublicKey* publicKey, 
