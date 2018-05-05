@@ -4,9 +4,9 @@ Development Guide
 Coding Conventions
 ------------------
 
-* **DO** use fixed length types defined in include/openenclave/types.h instead of
-   language keywords determined by the compiler (e.g. `int64_t, uint8_t`, not
-   `long, unsigned char`).
+* **DO** use fixed length types defined in include/openenclave/types.h instead
+  of language keywords determined by the compiler (e.g. `int64_t, uint8_t`, not
+  `long, unsigned char`).
 
 * **DO** use `const` and `static` and visibility modifiers to scope exposure of
    variables and methods as much as possible.
@@ -52,7 +52,8 @@ in that file takes precedence.
 
 For other files (.asm, .S, etc.) our current best guidance is consistency:
 
-- When editing files, keep new code and changes consistent with the style in the files.
+- When editing files, keep new code and changes consistent with the style in the
+  files.
 - For new files, it should conform to the style for that component.
 - For new components, any style that is broadly accepted is fine.
 

@@ -1,18 +1,21 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
-#include <cpuid.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/cpuid.h>
 #include <openenclave/enclave.h>
 #include "../args.h"
 
+#include "../../../host/linux/cpuid_count.c"
+
 #define OE_GETSEC_OPCODE 0x370F
 #define OE_GETSEC_CAPABILITIES 0x00
-#define OE_CPUID_EXTENDED_CPUID_LEAF 0x80000000
 
 // Global to track state of TestSigillHandler execution.
-static enum {
+// Making this volatile to prevent optimization by the compiler
+// as g_handledSigill is being used as a messaging mechanism
+// during signal handling. This is modified in the signal
+// handlers in the enclave and checked in the test functions.
+static volatile enum {
     HANDLED_SIGILL_NONE,
     HANDLED_SIGILL_GETSEC,
     HANDLED_SIGILL_CPUID
@@ -67,36 +70,45 @@ bool TestGetsecInstruction()
             "TestGetsecInstruction stack parameters were corrupted.\n");
         return false;
     }
+    else
+    {
+        OE_HostPrintf("TestGetsecInstruction stack parameters are ok.\n");
+    }
 
     // Verify that illegal instruction was handled by test handler, not by
     // default
     if (g_handledSigill != HANDLED_SIGILL_GETSEC)
     {
-        OE_HostPrintf("Illegal GETSEC did not raise 2nd chance exception.\n");
+        OE_HostPrintf(
+            "%d Illegal GETSEC did not raise 2nd chance exception.\n",
+            g_handledSigill);
         return false;
     }
-
-    return true;
+    else
+    {
+        OE_HostPrintf("Success-Illegal GETSEC raised 2nd chance exception.\n");
+        return true;
+    }
 }
 
-bool TestUnsupportedCpuidLeaf(int leaf)
+// Test Intent: Solely tests unsupported cpuid leaf and if the 2nd chance
+// exception handler in the enclave is executed.
+// Procedure: The call to cpuid with the unsupported cpuid leaf  causes an
+// illegal exception in the host and is passed to the enclave which invokes
+// EmulateCpuid. This routine should return -1 for unsupported
+// cpuid leaves and cause the 2nd chance exception handler to be invoked.
+bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 {
     g_handledSigill = HANDLED_SIGILL_NONE;
-    uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
-    int supported = __get_cpuid(
-        leaf,
-        &cpuidInfo[OE_CPUID_RAX],
-        &cpuidInfo[OE_CPUID_RBX],
-        &cpuidInfo[OE_CPUID_RCX],
-        &cpuidInfo[OE_CPUID_RDX]);
+    uint32_t cpuidRAX;
 
-    if (!supported)
-    {
-        OE_HostPrintf(
-            "TestSigillHandler failed to handle unsupported CPUID leaf %x.\n",
-            leaf);
-        return false;
-    }
+    // Invoking cpuid in assembly and making it volatile to prevent cpuid from
+    // being optimized out
+    asm volatile(
+        "cpuid"
+        : "=a"(cpuidRAX) // Return value in cpuidRAX
+        : "0"(leaf)
+        : "ebx", "ecx", "edx", "cc", "memory");
 
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
     {
@@ -105,8 +117,13 @@ bool TestUnsupportedCpuidLeaf(int leaf)
             leaf);
         return false;
     }
-
-    return true;
+    else
+    {
+        OE_HostPrintf(
+            "Success-Unsupported CPUID leaf %x raised 2nd chance exception.\n",
+            leaf);
+        return true;
+    }
 }
 
 OE_ECALL void TestSigillHandling(void* args_)
@@ -129,7 +146,7 @@ OE_ECALL void TestSigillHandling(void* args_)
     }
 
     // Test illegal SGX instruction that is not emulated (GETSEC)
-    if (!TestGetsecInstruction())
+    if (!TestGetsecInstruction(args))
     {
         return;
     }
@@ -148,8 +165,9 @@ OE_ECALL void TestSigillHandling(void* args_)
     // Return enclave-cached CPUID leaves to host for further validation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        int supported = __get_cpuid(
+        int supported = __get_cpuid_count(
             i,
+            0,
             &args->cpuidTable[i][OE_CPUID_RAX],
             &args->cpuidTable[i][OE_CPUID_RBX],
             &args->cpuidTable[i][OE_CPUID_RCX],

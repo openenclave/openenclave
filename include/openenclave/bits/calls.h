@@ -71,6 +71,10 @@ typedef enum _OE_Code {
 */
 
 typedef enum _OE_Func {
+    // Special func used by oeenclave to allow host to call enclave's
+    // OE_VerifyReport. See enclave/report.cpp.
+    OE_FUNC_VERIFY_REPORT = OE_MAX_ECALLS - 1,
+
     OE_FUNC_DESTRUCTOR = 0x01000000,
     OE_FUNC_INIT_ENCLAVE = 0x01800000,
     OE_FUNC_CALL_ENCLAVE = 0x02000000,
@@ -270,9 +274,25 @@ typedef struct _OE_GetReportArgs
     uint8_t optParams[sizeof(SGX_TargetInfo)]; /* in */
     uint32_t optParamsSize;                    /* in */
 
-    uint8_t* reportBuffer;      /* ptr to output buffer */
-    uint32_t* reportBufferSize; /* in-out */
+    uint8_t* reportBuffer;     /* ptr to output buffer */
+    uint32_t reportBufferSize; /* in-out */
 } OE_GetReportArgs;
+
+/*
+**==============================================================================
+**
+** OE_VerifyReportArgs
+**
+**==============================================================================
+*/
+
+typedef struct _OE_VerifyReportArgs
+{
+    OE_Result result; /* out */
+
+    uint8_t* report;     /* in */
+    uint32_t reportSize; /* in */
+} OE_VerifyReportArgs;
 
 /*
 **==============================================================================
