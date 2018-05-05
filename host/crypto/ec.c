@@ -25,19 +25,19 @@ typedef EC_KEY KEYTYPE;
 
 static const __typeof(EVP_PKEY_EC) EVP_PKEY_KEYTYPE = EVP_PKEY_EC;
 
-static EC_KEY* EVP_PKEY_get1_KEYTYPE(EVP_PKEY* pkey)
+static KEYTYPE* EVP_PKEY_get1_KEYTYPE(EVP_PKEY* pkey)
 {
     return EVP_PKEY_get1_EC_KEY(pkey);
 }
 
-static void KEYTYPE_free(EC_KEY* key)
+static void KEYTYPE_free(KEYTYPE* key)
 {
     EC_KEY_free(key);
 }
 
 static int PEM_write_bio_KEYTYPEPrivateKey(
     BIO* bp,
-    EC_KEY* x,
+    KEYTYPE* x,
     const EVP_CIPHER* enc,
     unsigned char* kstr,
     int klen,

@@ -20,19 +20,19 @@ static const __typeof(EVP_PKEY_RSA) EVP_PKEY_KEYTYPE = EVP_PKEY_RSA;
 
 typedef RSA KEYTYPE;
 
-static RSA* EVP_PKEY_get1_KEYTYPE(EVP_PKEY* pkey)
+static KEYTYPE* EVP_PKEY_get1_KEYTYPE(EVP_PKEY* pkey)
 {
     return EVP_PKEY_get1_RSA(pkey);
 }
 
-static void KEYTYPE_free(RSA* key)
+static void KEYTYPE_free(KEYTYPE* key)
 {
     RSA_free(key);
 }
 
 static int PEM_write_bio_KEYTYPEPrivateKey(
     BIO* bp,
-    RSA* x,
+    KEYTYPE* x,
     const EVP_CIPHER* enc,
     unsigned char* kstr,
     int klen,
