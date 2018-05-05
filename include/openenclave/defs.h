@@ -142,9 +142,6 @@
 #define OE_ZERO_SIZED_ARRAY /* empty */
 #endif
 
-#define __OE_PASTE(PREFIX, NAME) PREFIX##NAME
-#define OE_PASTE(PREFIX, NAME) __OE_PASTE(PREFIX, NAME)
-
 /*
  * Are we missing proper type usage? This might be tedious to fix.
  * TODO #55: Do a CR on proper used of integer types.

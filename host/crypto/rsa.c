@@ -4,20 +4,47 @@
 #include "rsa.h"
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/rsa.h>
+#include <openenclave/bits/utils.h>
+#include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <string.h>
 #include "init.h"
 
-#define PRIVATE_KEY_MAGIC 0x7bf635929a714b2c
-#define PUBLIC_KEY_MAGIC 0x8f8f72170025426d
-#define PRIVATE_KEY OE_RSAPrivateKey
-#define PUBLIC_KEY OE_RSAPublicKey
-#define KEY RSA
-#define KEY_TAG EVP_PKEY_RSA
-#define WRITE_PRIVATE_KEY PEM_write_bio_RSAPrivateKey
+static const uint64_t PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
+static const uint64_t PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
+
+typedef OE_RSAPrivateKey PrivateKey;
+typedef OE_RSAPublicKey PublicKey;
+
+static const __typeof(EVP_PKEY_RSA) EVP_PKEY_KEYTYPE = EVP_PKEY_RSA;
+
+typedef RSA KEYTYPE;
+
+static RSA* EVP_PKEY_get1_KEYTYPE(EVP_PKEY* pkey)
+{
+    return EVP_PKEY_get1_RSA(pkey);
+}
+
+static void KEYTYPE_free(RSA* key)
+{
+    RSA_free(key);
+}
+
+static int PEM_write_bio_KEYTYPEPrivateKey(
+    BIO* bp,
+    RSA* x,
+    const EVP_CIPHER* enc,
+    unsigned char* kstr,
+    int klen,
+    pem_password_cb* cb,
+    void* u)
+{
+    return PEM_write_bio_RSAPrivateKey(bp, x, enc, kstr, klen, cb, u);
+}
+
 #include "key.c"
 
-void OE_RSAPublicKeyInit(PUBLIC_KEY* publicKey, EVP_PKEY* pkey)
+void OE_RSAPublicKeyInit(PublicKey* publicKey, EVP_PKEY* pkey)
 {
     return _PublicKeyInit(publicKey, pkey);
 }
@@ -95,8 +122,8 @@ OE_Result OE_RSAGenerateKeyPair(
     OE_RSAPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    PrivateKey* privateImpl = (PrivateKey*)privateKey;
-    PublicKey* publicImpl = (PublicKey*)publicKey;
+    PrivateKeyImpl* privateImpl = (PrivateKeyImpl*)privateKey;
+    PublicKeyImpl* publicImpl = (PublicKeyImpl*)publicKey;
     RSA* key = NULL;
     EVP_PKEY* pkey = NULL;
     BIO* bio = NULL;
@@ -206,7 +233,7 @@ static OE_Result _GetPublicKeyGetModulusOrExponent(
     size_t* bufferSize,
     bool getModulus)
 {
-    const PublicKey* impl = (const PublicKey*)publicKey;
+    const PublicKeyImpl* impl = (const PublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     size_t requiredSize;
     const BIGNUM* bn;
@@ -285,8 +312,8 @@ OE_Result OE_RSAPublicKeyEqual(
     bool* equal)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PublicKey* impl1 = (const PublicKey*)publicKey1;
-    const PublicKey* impl2 = (const PublicKey*)publicKey2;
+    const PublicKeyImpl* impl1 = (const PublicKeyImpl*)publicKey1;
+    const PublicKeyImpl* impl2 = (const PublicKeyImpl*)publicKey2;
     RSA* rsa1 = NULL;
     RSA* rsa2 = NULL;
 

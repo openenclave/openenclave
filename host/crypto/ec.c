@@ -15,13 +15,38 @@
 **==============================================================================
 */
 
-#define PRIVATE_KEY_MAGIC 0x19a751419ae04bbc
-#define PUBLIC_KEY_MAGIC 0xb1d39580c1f14c02
-#define PRIVATE_KEY OE_ECPrivateKey
-#define PUBLIC_KEY OE_ECPublicKey
-#define KEY EC_KEY
-#define KEY_TAG EVP_PKEY_EC
-#define WRITE_PRIVATE_KEY PEM_write_bio_ECPrivateKey
+static const uint64_t PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
+static const uint64_t PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
+
+typedef OE_ECPrivateKey PrivateKey;
+typedef OE_ECPublicKey PublicKey;
+
+typedef EC_KEY KEYTYPE;
+
+static const __typeof(EVP_PKEY_RSA) EVP_PKEY_KEYTYPE = EVP_PKEY_EC;
+
+static EC_KEY* EVP_PKEY_get1_KEYTYPE(EVP_PKEY* pkey)
+{
+    return EVP_PKEY_get1_EC_KEY(pkey);
+}
+
+static void KEYTYPE_free(EC_KEY* key)
+{
+    EC_KEY_free(key);
+}
+
+static int PEM_write_bio_KEYTYPEPrivateKey(
+    BIO* bp,
+    EC_KEY* x,
+    const EVP_CIPHER* enc,
+    unsigned char* kstr,
+    int klen,
+    pem_password_cb* cb,
+    void* u)
+{
+    return PEM_write_bio_ECPrivateKey(bp, x, enc, kstr, klen, cb, u);
+}
+
 #include "key.c"
 
 /* Curve names, indexed by OE_ECType */
@@ -40,7 +65,7 @@ static const char* _ECTypeToString(OE_Type type)
     return _curveNames[index];
 }
 
-void OE_ECPublicKeyInit(PUBLIC_KEY* publicKey, EVP_PKEY* pkey)
+void OE_ECPublicKeyInit(PublicKey* publicKey, EVP_PKEY* pkey)
 {
     return _PublicKeyInit(publicKey, pkey);
 }
@@ -117,8 +142,8 @@ OE_Result OE_ECGenerateKeyPair(
     OE_ECPublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    PrivateKey* privateImpl = (PrivateKey*)privateKey;
-    PublicKey* publicImpl = (PublicKey*)publicKey;
+    PrivateKeyImpl* privateImpl = (PrivateKeyImpl*)privateKey;
+    PublicKeyImpl* publicImpl = (PublicKeyImpl*)publicKey;
     int nid;
     EC_KEY* key = NULL;
     EVP_PKEY* pkey = NULL;
@@ -243,7 +268,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    const PublicKey* impl = (const PublicKey*)publicKey;
+    const PublicKeyImpl* impl = (const PublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     uint8_t* data = NULL;
     EC_KEY* ec = NULL;
@@ -295,8 +320,8 @@ OE_Result OE_ECPublicKeyEqual(
     bool* equal)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PublicKey* impl1 = (const PublicKey*)publicKey1;
-    const PublicKey* impl2 = (const PublicKey*)publicKey2;
+    const PublicKeyImpl* impl1 = (const PublicKeyImpl*)publicKey1;
+    const PublicKeyImpl* impl2 = (const PublicKeyImpl*)publicKey2;
     EC_KEY* ec1 = NULL;
     EC_KEY* ec2 = NULL;
 

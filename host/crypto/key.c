@@ -1,13 +1,13 @@
 
-typedef struct _PrivateKey
+typedef struct _PrivateKeyImpl
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} PrivateKey;
+} PrivateKeyImpl;
 
-OE_STATIC_ASSERT(sizeof(PrivateKey) <= sizeof(PRIVATE_KEY));
+OE_STATIC_ASSERT(sizeof(PrivateKeyImpl) <= sizeof(PrivateKey));
 
-OE_INLINE void _PrivateKeyClear(PrivateKey* impl)
+OE_INLINE void _PrivateKeyClear(PrivateKeyImpl* impl)
 {
     if (impl)
     {
@@ -16,20 +16,20 @@ OE_INLINE void _PrivateKeyClear(PrivateKey* impl)
     }
 }
 
-OE_INLINE bool _PrivateKeyValid(const PrivateKey* impl)
+OE_INLINE bool _PrivateKeyValid(const PrivateKeyImpl* impl)
 {
     return impl && impl->magic == PRIVATE_KEY_MAGIC && impl->pkey;
 }
 
-typedef struct _PublicKey
+typedef struct _PublicKeyImpl
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} PublicKey;
+} PublicKeyImpl;
 
-OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(PUBLIC_KEY));
+OE_STATIC_ASSERT(sizeof(PublicKeyImpl) <= sizeof(PublicKey));
 
-OE_INLINE void _PublicKeyClear(PublicKey* impl)
+OE_INLINE void _PublicKeyClear(PublicKeyImpl* impl)
 {
     if (impl)
     {
@@ -38,14 +38,14 @@ OE_INLINE void _PublicKeyClear(PublicKey* impl)
     }
 }
 
-OE_INLINE bool _PublicKeyValid(const PublicKey* impl)
+OE_INLINE bool _PublicKeyValid(const PublicKeyImpl* impl)
 {
     return impl && impl->magic == PUBLIC_KEY_MAGIC && impl->pkey;
 }
 
-static void _PublicKeyInit(PUBLIC_KEY* publicKey, EVP_PKEY* pkey)
+static void _PublicKeyInit(PublicKey* publicKey, EVP_PKEY* pkey)
 {
-    PublicKey* impl = (PublicKey*)publicKey;
+    PublicKeyImpl* impl = (PublicKeyImpl*)publicKey;
     impl->magic = PUBLIC_KEY_MAGIC;
     impl->pkey = pkey;
 }
@@ -53,10 +53,10 @@ static void _PublicKeyInit(PUBLIC_KEY* publicKey, EVP_PKEY* pkey)
 static OE_Result _PrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    PRIVATE_KEY* key)
+    PrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    PrivateKey* impl = (PrivateKey*)key;
+    PrivateKeyImpl* impl = (PrivateKeyImpl*)key;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
 
@@ -83,7 +83,7 @@ static OE_Result _PrivateKeyReadPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is the right key type */
-    if (pkey->type != KEY_TAG)
+    if (pkey->type != EVP_PKEY_KEYTYPE)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -107,12 +107,12 @@ done:
 static OE_Result _PublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    PUBLIC_KEY* key)
+    PublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
-    PublicKey* impl = (PublicKey*)key;
+    PublicKeyImpl* impl = (PublicKeyImpl*)key;
 
     /* Zero-initialize the key */
     _PublicKeyClear(impl);
@@ -137,7 +137,7 @@ static OE_Result _PublicKeyReadPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is the right key type */
-    if (pkey->type != KEY_TAG)
+    if (pkey->type != EVP_PKEY_KEYTYPE)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
@@ -159,14 +159,14 @@ done:
 }
 
 static OE_Result _PrivateKeyWritePEM(
-    const PRIVATE_KEY* privateKey,
+    const PrivateKey* privateKey,
     uint8_t* data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PrivateKey* impl = (const PrivateKey*)privateKey;
+    const PrivateKeyImpl* impl = (const PrivateKeyImpl*)privateKey;
     BIO* bio = NULL;
-    KEY* key = NULL;
+    KEYTYPE* key = NULL;
     const char nullTerminator = '\0';
 
     /* Check parameters */
@@ -182,11 +182,11 @@ static OE_Result _PrivateKeyWritePEM(
         OE_RAISE(OE_FAILURE);
 
     /* Get key from public key (increasing reference count) */
-    if (!(key = OE_PASTE(EVP_PKEY_get1_, KEY(impl->pkey))))
+    if (!(key = EVP_PKEY_get1_KEYTYPE(impl->pkey)))
         OE_RAISE(OE_FAILURE);
 
     /* Write key to BIO */
-    if (!WRITE_PRIVATE_KEY(bio, key, NULL, NULL, 0, 0, NULL))
+    if (!PEM_write_bio_KEYTYPEPrivateKey(bio, key, NULL, NULL, 0, 0, NULL))
         OE_RAISE(OE_FAILURE);
 
     /* Write a NULL terminator onto BIO */
@@ -220,19 +220,19 @@ done:
         BIO_free(bio);
 
     if (key)
-        OE_PASTE(KEY, _free(key));
+        KEYTYPE_free(key);
 
     return result;
 }
 
 static OE_Result _PublicKeyWritePEM(
-    const PUBLIC_KEY* key,
+    const PublicKey* key,
     uint8_t* data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
-    const PublicKey* impl = (const PublicKey*)key;
+    const PublicKeyImpl* impl = (const PublicKeyImpl*)key;
     const char nullTerminator = '\0';
 
     /* Check parameters */
@@ -284,13 +284,13 @@ done:
     return result;
 }
 
-static OE_Result _PrivateKeyFree(PRIVATE_KEY* key)
+static OE_Result _PrivateKeyFree(PrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
     if (key)
     {
-        PrivateKey* impl = (PrivateKey*)key;
+        PrivateKeyImpl* impl = (PrivateKeyImpl*)key;
 
         /* Check parameter */
         if (!_PrivateKeyValid(impl))
@@ -309,13 +309,13 @@ done:
     return result;
 }
 
-static OE_Result _PublicKeyFree(PUBLIC_KEY* key)
+static OE_Result _PublicKeyFree(PublicKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
 
     if (key)
     {
-        PublicKey* impl = (PublicKey*)key;
+        PublicKeyImpl* impl = (PublicKeyImpl*)key;
 
         /* Check parameter */
         if (!_PublicKeyValid(impl))
@@ -335,7 +335,7 @@ done:
 }
 
 static OE_Result _PrivateKeySign(
-    const PRIVATE_KEY* privateKey,
+    const PrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -343,7 +343,7 @@ static OE_Result _PrivateKeySign(
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PrivateKey* impl = (const PrivateKey*)privateKey;
+    const PrivateKeyImpl* impl = (const PrivateKeyImpl*)privateKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
@@ -404,7 +404,7 @@ done:
 }
 
 static OE_Result _PublicKeyVerify(
-    const PUBLIC_KEY* publicKey,
+    const PublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -412,7 +412,7 @@ static OE_Result _PublicKeyVerify(
     size_t signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PublicKey* impl = (const PublicKey*)publicKey;
+    const PublicKeyImpl* impl = (const PublicKeyImpl*)publicKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
