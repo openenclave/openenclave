@@ -1,33 +1,38 @@
+// Export a private static function to a public function with a different
+// function signature. This permits the implementation structure pointer to
+// be different than the public structure pointer.
+#define EXPORT_STATIC_FUNCTION(OLD, NEW) \
+    extern __typeof(NEW) NEW __attribute__((weak, alias(#OLD)))
 
-typedef struct _PrivateKeyImpl
+typedef struct _PrivateKey
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} PrivateKeyImpl;
+} PrivateKey;
 
-OE_STATIC_ASSERT(sizeof(PrivateKeyImpl) <= sizeof(PrivateKey));
+OE_STATIC_ASSERT(sizeof(PrivateKey) <= sizeof(PrivateKey));
 
-OE_INLINE bool _PrivateKeyImplValid(const PrivateKeyImpl* impl)
+OE_INLINE bool _PrivateKeyValid(const PrivateKey* impl)
 {
     return impl && impl->magic == PRIVATE_KEY_MAGIC && impl->pkey;
 }
 
-typedef struct _PublicKeyImpl
+typedef struct _PublicKey
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} PublicKeyImpl;
+} PublicKey;
 
-OE_STATIC_ASSERT(sizeof(PublicKeyImpl) <= sizeof(PublicKey));
+OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(PublicKey));
 
-OE_INLINE bool _PublicKeyImplValid(const PublicKeyImpl* impl)
+OE_INLINE bool _PublicKeyValid(const PublicKey* impl)
 {
     return impl && impl->magic == PUBLIC_KEY_MAGIC && impl->pkey;
 }
 
 static void _PublicKeyInit(PublicKey* publicKey, EVP_PKEY* pkey)
 {
-    PublicKeyImpl* impl = (PublicKeyImpl*)publicKey;
+    PublicKey* impl = (PublicKey*)publicKey;
     impl->magic = PUBLIC_KEY_MAGIC;
     impl->pkey = pkey;
 }
@@ -38,7 +43,7 @@ static OE_Result _PrivateKeyReadPEM(
     PrivateKey* key)
 {
     OE_Result result = OE_UNEXPECTED;
-    PrivateKeyImpl* impl = (PrivateKeyImpl*)key;
+    PrivateKey* impl = (PrivateKey*)key;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
 
@@ -95,7 +100,7 @@ static OE_Result _PublicKeyReadPEM(
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
-    PublicKeyImpl* impl = (PublicKeyImpl*)key;
+    PublicKey* impl = (PublicKey*)key;
 
     /* Zero-initialize the key */
     if (impl)
@@ -148,13 +153,13 @@ static OE_Result _PrivateKeyWritePEM(
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PrivateKeyImpl* impl = (const PrivateKeyImpl*)privateKey;
+    const PrivateKey* impl = (const PrivateKey*)privateKey;
     BIO* bio = NULL;
     KEYTYPE* key = NULL;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_PrivateKeyImplValid(impl) || !size)
+    if (!_PrivateKeyValid(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -216,11 +221,11 @@ static OE_Result _PublicKeyWritePEM(
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
-    const PublicKeyImpl* impl = (const PublicKeyImpl*)key;
+    const PublicKey* impl = (const PublicKey*)key;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!_PublicKeyImplValid(impl) || !size)
+    if (!_PublicKeyValid(impl) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -274,10 +279,10 @@ static OE_Result _PrivateKeyFree(PrivateKey* key)
 
     if (key)
     {
-        PrivateKeyImpl* impl = (PrivateKeyImpl*)key;
+        PrivateKey* impl = (PrivateKey*)key;
 
         /* Check parameter */
-        if (!_PrivateKeyImplValid(impl))
+        if (!_PrivateKeyValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
@@ -300,10 +305,10 @@ static OE_Result _PublicKeyFree(PublicKey* key)
 
     if (key)
     {
-        PublicKeyImpl* impl = (PublicKeyImpl*)key;
+        PublicKey* impl = (PublicKey*)key;
 
         /* Check parameter */
-        if (!_PublicKeyImplValid(impl))
+        if (!_PublicKeyValid(impl))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
@@ -329,11 +334,11 @@ static OE_Result _PrivateKeySign(
     size_t* signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PrivateKeyImpl* impl = (const PrivateKeyImpl*)privateKey;
+    const PrivateKey* impl = (const PrivateKey*)privateKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_PrivateKeyImplValid(impl) || !hashData || !hashSize || !signatureSize)
+    if (!_PrivateKeyValid(impl) || !hashData || !hashSize || !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check that hash buffer is big enough (hashType is size of that hash) */
@@ -398,11 +403,11 @@ static OE_Result _PublicKeyVerify(
     size_t signatureSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PublicKeyImpl* impl = (const PublicKeyImpl*)publicKey;
+    const PublicKey* impl = (const PublicKey*)publicKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!_PublicKeyImplValid(impl) || !hashData || !hashSize || !signature ||
+    if (!_PublicKeyValid(impl) || !hashData || !hashSize || !signature ||
         !signatureSize)
     {
         OE_RAISE(OE_INVALID_PARAMETER);

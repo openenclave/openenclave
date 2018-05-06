@@ -18,9 +18,6 @@
 static const uint64_t PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
 static const uint64_t PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
 
-typedef OE_ECPrivateKey PrivateKey;
-typedef OE_ECPublicKey PublicKey;
-
 typedef EC_KEY KEYTYPE;
 
 static const __typeof(EVP_PKEY_EC) EVP_PKEY_KEYTYPE = EVP_PKEY_EC;
@@ -49,6 +46,9 @@ static int PEM_write_bio_KEYTYPEPrivateKey(
 
 #include "key.c"
 
+OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_ECPublicKey));
+OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_ECPublicKey));
+
 /* Curve names, indexed by OE_ECType */
 static const char* _curveNames[] = {
     "secp521r1" /* OE_EC_TYPE_SECP521R1 */
@@ -65,24 +65,12 @@ static const char* _ECTypeToString(OE_Type type)
     return _curveNames[index];
 }
 
-OE_WEAK_ALIAS(_PublicKeyInit, OE_ECPublicKeyInit);
-OE_WEAK_ALIAS(_PrivateKeyReadPEM, OE_ECPrivateKeyReadPEM);
-OE_WEAK_ALIAS(_PrivateKeyWritePEM, OE_ECPrivateKeyWritePEM);
-OE_WEAK_ALIAS(_PublicKeyReadPEM, OE_ECPublicKeyReadPEM);
-OE_WEAK_ALIAS(_PublicKeyWritePEM, OE_ECPublicKeyWritePEM);
-OE_WEAK_ALIAS(_PrivateKeyFree, OE_ECPrivateKeyFree);
-OE_WEAK_ALIAS(_PublicKeyFree, OE_ECPublicKeyFree);
-OE_WEAK_ALIAS(_PrivateKeySign, OE_ECPrivateKeySign);
-OE_WEAK_ALIAS(_PublicKeyVerify, OE_ECPublicKeyVerify);
-
-OE_Result OE_ECGenerateKeyPair(
+static OE_Result _GenerateKeyPair(
     OE_ECType type,
-    OE_ECPrivateKey* privateKey,
-    OE_ECPublicKey* publicKey)
+    PrivateKey* privateKey,
+    PublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    PrivateKeyImpl* privateImpl = (PrivateKeyImpl*)privateKey;
-    PublicKeyImpl* publicImpl = (PublicKeyImpl*)publicKey;
     int nid;
     EC_KEY* key = NULL;
     EVP_PKEY* pkey = NULL;
@@ -90,11 +78,11 @@ OE_Result OE_ECGenerateKeyPair(
     const char nullTerminator = '\0';
     const char* curveName;
 
-    if (privateImpl)
-        memset(privateImpl, 0, sizeof(*privateImpl));
+    if (privateKey)
+        memset(privateKey, 0, sizeof(*privateKey));
 
-    if (publicImpl)
-        memset(publicImpl, 0, sizeof(*publicImpl));
+    if (publicKey)
+        memset(publicKey, 0, sizeof(*publicKey));
 
     /* Check parameters */
     if (!privateKey || !publicKey)
@@ -117,22 +105,22 @@ OE_Result OE_ECGenerateKeyPair(
     /* Set the EC named-curve flag */
     EC_KEY_set_asn1_flag(key, OPENSSL_EC_NAMED_CURVE);
 
-    /* Generate the public/private key pair */
+    /* Generate the publicKey/privateKey key pair */
     if (!EC_KEY_generate_key(key))
         OE_RAISE(OE_FAILURE);
 
-    /* Create the private key structure */
+    /* Create the privateKey key structure */
     if (!(pkey = EVP_PKEY_new()))
         OE_RAISE(OE_FAILURE);
 
-    /* Initialize the private key from the generated key pair */
+    /* Initialize the privateKey key from the generated key pair */
     if (!EVP_PKEY_assign_EC_KEY(pkey, key))
         OE_RAISE(OE_FAILURE);
 
     /* Key will be released when pkey is released */
     key = NULL;
 
-    /* Create private key object */
+    /* Create privateKey key object */
     {
         BUF_MEM* mem;
 
@@ -148,7 +136,7 @@ OE_Result OE_ECGenerateKeyPair(
         if (!BIO_get_mem_ptr(bio, &mem))
             OE_RAISE(OE_FAILURE);
 
-        if (OE_ECPrivateKeyReadPEM(
+        if (_PrivateKeyReadPEM(
                 (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -158,7 +146,7 @@ OE_Result OE_ECGenerateKeyPair(
         bio = NULL;
     }
 
-    /* Create public key object */
+    /* Create publicKey key object */
     {
         BUF_MEM* mem;
 
@@ -173,7 +161,7 @@ OE_Result OE_ECGenerateKeyPair(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_ECPublicKeyReadPEM(
+        if (_PublicKeyReadPEM(
                 (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -198,19 +186,18 @@ done:
 
     if (result != OE_OK)
     {
-        OE_ECPrivateKeyFree(privateKey);
-        OE_ECPublicKeyFree(publicKey);
+        _PrivateKeyFree(privateKey);
+        _PublicKeyFree(publicKey);
     }
 
     return result;
 }
 
-OE_Result OE_ECPublicKeyGetKeyBytes(
-    const OE_ECPublicKey* publicKey,
+static OE_Result _PublicKeyGetKeyBytes(
+    const PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    const PublicKeyImpl* impl = (const PublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     uint8_t* data = NULL;
     EC_KEY* ec = NULL;
@@ -221,7 +208,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the EC public key */
-    if (!(ec = EVP_PKEY_get1_EC_KEY(impl->pkey)))
+    if (!(ec = EVP_PKEY_get1_EC_KEY(publicKey->pkey)))
         OE_RAISE(OE_FAILURE);
 
     /* Set the required buffer size */
@@ -256,14 +243,12 @@ done:
     return result;
 }
 
-OE_Result OE_ECPublicKeyEqual(
-    const OE_ECPublicKey* publicKey1,
-    const OE_ECPublicKey* publicKey2,
+static OE_Result _PublicKeyEqual(
+    const PublicKey* publicKey1,
+    const PublicKey* publicKey2,
     bool* equal)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PublicKeyImpl* impl1 = (const PublicKeyImpl*)publicKey1;
-    const PublicKeyImpl* impl2 = (const PublicKeyImpl*)publicKey2;
     EC_KEY* ec1 = NULL;
     EC_KEY* ec2 = NULL;
 
@@ -271,12 +256,12 @@ OE_Result OE_ECPublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyImplValid(impl1) || !_PublicKeyImplValid(impl2) || !equal)
+    if (!_PublicKeyValid(publicKey1) || !_PublicKeyValid(publicKey2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
-        ec1 = EVP_PKEY_get1_EC_KEY(impl1->pkey);
-        ec2 = EVP_PKEY_get1_EC_KEY(impl2->pkey);
+        ec1 = EVP_PKEY_get1_EC_KEY(publicKey1->pkey);
+        ec2 = EVP_PKEY_get1_EC_KEY(publicKey2->pkey);
         const EC_GROUP* group1 = EC_KEY_get0_group(ec1);
         const EC_GROUP* group2 = EC_KEY_get0_group(ec2);
         const EC_POINT* point1 = EC_KEY_get0_public_key(ec1);
@@ -302,3 +287,16 @@ done:
 
     return result;
 }
+
+EXPORT_STATIC_FUNCTION(_PublicKeyInit, OE_ECPublicKeyInit);
+EXPORT_STATIC_FUNCTION(_PrivateKeyReadPEM, OE_ECPrivateKeyReadPEM);
+EXPORT_STATIC_FUNCTION(_PrivateKeyWritePEM, OE_ECPrivateKeyWritePEM);
+EXPORT_STATIC_FUNCTION(_PublicKeyReadPEM, OE_ECPublicKeyReadPEM);
+EXPORT_STATIC_FUNCTION(_PublicKeyWritePEM, OE_ECPublicKeyWritePEM);
+EXPORT_STATIC_FUNCTION(_PrivateKeyFree, OE_ECPrivateKeyFree);
+EXPORT_STATIC_FUNCTION(_PublicKeyFree, OE_ECPublicKeyFree);
+EXPORT_STATIC_FUNCTION(_PrivateKeySign, OE_ECPrivateKeySign);
+EXPORT_STATIC_FUNCTION(_PublicKeyVerify, OE_ECPublicKeyVerify);
+EXPORT_STATIC_FUNCTION(_GenerateKeyPair, OE_ECGenerateKeyPair);
+EXPORT_STATIC_FUNCTION(_PublicKeyGetKeyBytes, OE_ECPublicKeyGetKeyBytes);
+EXPORT_STATIC_FUNCTION(_PublicKeyEqual, OE_ECPublicKeyEqual);

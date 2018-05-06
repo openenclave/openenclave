@@ -13,9 +13,6 @@
 static const uint64_t PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
 static const uint64_t PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
 
-typedef OE_RSAPrivateKey PrivateKey;
-typedef OE_RSAPublicKey PublicKey;
-
 static const __typeof(EVP_PKEY_RSA) EVP_PKEY_KEYTYPE = EVP_PKEY_RSA;
 
 typedef RSA KEYTYPE;
@@ -44,35 +41,26 @@ static int PEM_write_bio_KEYTYPEPrivateKey(
 
 #include "key.c"
 
-OE_WEAK_ALIAS(_PublicKeyInit, OE_RSAPublicKeyInit);
-OE_WEAK_ALIAS(_PrivateKeyReadPEM, OE_RSAPrivateKeyReadPEM);
-OE_WEAK_ALIAS(_PrivateKeyWritePEM, OE_RSAPrivateKeyWritePEM);
-OE_WEAK_ALIAS(_PublicKeyReadPEM, OE_RSAPublicKeyReadPEM);
-OE_WEAK_ALIAS(_PublicKeyWritePEM, OE_RSAPublicKeyWritePEM);
-OE_WEAK_ALIAS(_PrivateKeyFree, OE_RSAPrivateKeyFree);
-OE_WEAK_ALIAS(_PublicKeyFree, OE_RSAPublicKeyFree);
-OE_WEAK_ALIAS(_PrivateKeySign, OE_RSAPrivateKeySign);
-OE_WEAK_ALIAS(_PublicKeyVerify, OE_RSAPublicKeyVerify);
+OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_RSAPublicKey));
+OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_RSAPublicKey));
 
-OE_Result OE_RSAGenerateKeyPair(
+static OE_Result _GenerateKeyPair(
     uint64_t bits,
     uint64_t exponent,
-    OE_RSAPrivateKey* privateKey,
-    OE_RSAPublicKey* publicKey)
+    PrivateKey* privateKey,
+    PublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    PrivateKeyImpl* privateImpl = (PrivateKeyImpl*)privateKey;
-    PublicKeyImpl* publicImpl = (PublicKeyImpl*)publicKey;
     RSA* key = NULL;
     EVP_PKEY* pkey = NULL;
     BIO* bio = NULL;
     const char nullTerminator = '\0';
 
-    if (privateImpl)
-        memset(privateImpl, 0, sizeof(*privateImpl));
+    if (privateKey)
+        memset(privateKey, 0, sizeof(*privateKey));
 
-    if (publicImpl)
-        memset(publicImpl, 0, sizeof(*publicImpl));
+    if (publicKey)
+        memset(publicKey, 0, sizeof(*publicKey));
 
     /* Check parameters */
     if (!privateKey || !publicKey)
@@ -112,7 +100,7 @@ OE_Result OE_RSAGenerateKeyPair(
         if (!BIO_get_mem_ptr(bio, &mem))
             OE_RAISE(OE_FAILURE);
 
-        if (OE_RSAPrivateKeyReadPEM(
+        if (_PrivateKeyReadPEM(
                 (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -137,7 +125,7 @@ OE_Result OE_RSAGenerateKeyPair(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (OE_RSAPublicKeyReadPEM(
+        if (_PublicKeyReadPEM(
                 (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -162,20 +150,19 @@ done:
 
     if (result != OE_OK)
     {
-        OE_RSAPrivateKeyFree(privateKey);
-        OE_RSAPublicKeyFree(publicKey);
+        _PrivateKeyFree(privateKey);
+        _PublicKeyFree(publicKey);
     }
 
     return result;
 }
 
 static OE_Result _GetPublicKeyGetModulusOrExponent(
-    const OE_RSAPublicKey* publicKey,
+    const PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize,
     bool getModulus)
 {
-    const PublicKeyImpl* impl = (const PublicKeyImpl*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     size_t requiredSize;
     const BIGNUM* bn;
@@ -190,7 +177,7 @@ static OE_Result _GetPublicKeyGetModulusOrExponent(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get RSA key */
-    if (!(rsa = EVP_PKEY_get1_RSA(impl->pkey)))
+    if (!(rsa = EVP_PKEY_get1_RSA(publicKey->pkey)))
         OE_RAISE(OE_FAILURE);
 
     /* Select modulus or exponent */
@@ -230,8 +217,8 @@ done:
     return result;
 }
 
-OE_Result OE_RSAPublicKeyGetModulus(
-    const OE_RSAPublicKey* publicKey,
+static OE_Result _PublicKeyGetModulus(
+    const PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
@@ -239,8 +226,8 @@ OE_Result OE_RSAPublicKeyGetModulus(
         publicKey, buffer, bufferSize, true);
 }
 
-OE_Result OE_RSAPublicKeyGetExponent(
-    const OE_RSAPublicKey* publicKey,
+static OE_Result _PublicKeyGetExponent(
+    const PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
@@ -248,14 +235,12 @@ OE_Result OE_RSAPublicKeyGetExponent(
         publicKey, buffer, bufferSize, false);
 }
 
-OE_Result OE_RSAPublicKeyEqual(
-    const OE_RSAPublicKey* publicKey1,
-    const OE_RSAPublicKey* publicKey2,
+static OE_Result _PublicKeyEqual(
+    const PublicKey* publicKey1,
+    const PublicKey* publicKey2,
     bool* equal)
 {
     OE_Result result = OE_UNEXPECTED;
-    const PublicKeyImpl* impl1 = (const PublicKeyImpl*)publicKey1;
-    const PublicKeyImpl* impl2 = (const PublicKeyImpl*)publicKey2;
     RSA* rsa1 = NULL;
     RSA* rsa2 = NULL;
 
@@ -263,13 +248,13 @@ OE_Result OE_RSAPublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyImplValid(impl1) || !_PublicKeyImplValid(impl2) || !equal)
+    if (!_PublicKeyValid(publicKey1) || !_PublicKeyValid(publicKey2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(rsa1 = EVP_PKEY_get1_RSA(impl1->pkey)))
+    if (!(rsa1 = EVP_PKEY_get1_RSA(publicKey1->pkey)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(rsa2 = EVP_PKEY_get1_RSA(impl2->pkey)))
+    if (!(rsa2 = EVP_PKEY_get1_RSA(publicKey2->pkey)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare modulus and exponent */
@@ -288,3 +273,17 @@ done:
 
     return result;
 }
+
+EXPORT_STATIC_FUNCTION(_PublicKeyInit, OE_RSAPublicKeyInit);
+EXPORT_STATIC_FUNCTION(_PrivateKeyReadPEM, OE_RSAPrivateKeyReadPEM);
+EXPORT_STATIC_FUNCTION(_PrivateKeyWritePEM, OE_RSAPrivateKeyWritePEM);
+EXPORT_STATIC_FUNCTION(_PublicKeyReadPEM, OE_RSAPublicKeyReadPEM);
+EXPORT_STATIC_FUNCTION(_PublicKeyWritePEM, OE_RSAPublicKeyWritePEM);
+EXPORT_STATIC_FUNCTION(_PrivateKeyFree, OE_RSAPrivateKeyFree);
+EXPORT_STATIC_FUNCTION(_PublicKeyFree, OE_RSAPublicKeyFree);
+EXPORT_STATIC_FUNCTION(_PrivateKeySign, OE_RSAPrivateKeySign);
+EXPORT_STATIC_FUNCTION(_PublicKeyVerify, OE_RSAPublicKeyVerify);
+EXPORT_STATIC_FUNCTION(_GenerateKeyPair, OE_RSAGenerateKeyPair);
+EXPORT_STATIC_FUNCTION(_PublicKeyGetModulus, OE_RSAPublicKeyGetModulus);
+EXPORT_STATIC_FUNCTION(_PublicKeyGetExponent, OE_RSAPublicKeyGetExponent);
+EXPORT_STATIC_FUNCTION(_PublicKeyEqual, OE_RSAPublicKeyEqual);
