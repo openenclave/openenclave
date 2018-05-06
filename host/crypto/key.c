@@ -1,8 +1,5 @@
-// Export a private static function to a public function with a different
-// function signature. This permits the implementation structure pointer to
-// be different than the public structure pointer.
-#define EXPORT_STATIC_FUNCTION(OLD, NEW) \
-    extern __typeof(NEW) NEW __attribute__((weak, alias(#OLD)))
+// Used to alias static function to public function names
+#define ALIAS(OLD, NEW) extern __typeof(NEW) NEW __attribute__((alias(#OLD)))
 
 typedef struct _PrivateKey
 {

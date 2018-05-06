@@ -265,15 +265,15 @@ done:
     return result;
 }
 
-EXPORT_STATIC_FUNCTION(_PublicKeyInitFrom, OE_ECPublicKeyInitFrom);
-EXPORT_STATIC_FUNCTION(_PrivateKeyReadPEM, OE_ECPrivateKeyReadPEM);
-EXPORT_STATIC_FUNCTION(_PrivateKeyWritePEM, OE_ECPrivateKeyWritePEM);
-EXPORT_STATIC_FUNCTION(_PublicKeyReadPEM, OE_ECPublicKeyReadPEM);
-EXPORT_STATIC_FUNCTION(_PublicKeyWritePEM, OE_ECPublicKeyWritePEM);
-EXPORT_STATIC_FUNCTION(_PrivateKeyFree, OE_ECPrivateKeyFree);
-EXPORT_STATIC_FUNCTION(_PublicKeyFree, OE_ECPublicKeyFree);
-EXPORT_STATIC_FUNCTION(_PrivateKeySign, OE_ECPrivateKeySign);
-EXPORT_STATIC_FUNCTION(_PublicKeyVerify, OE_ECPublicKeyVerify);
-EXPORT_STATIC_FUNCTION(_GenerateKeyPair, OE_ECGenerateKeyPair);
-EXPORT_STATIC_FUNCTION(_PublicKeyGetKeyBytes, OE_ECPublicKeyGetKeyBytes);
-EXPORT_STATIC_FUNCTION(_PublicKeyEqual, OE_ECPublicKeyEqual);
+ALIAS(_PublicKeyInitFrom, OE_ECPublicKeyInitFrom);
+ALIAS(_PrivateKeyReadPEM, OE_ECPrivateKeyReadPEM);
+ALIAS(_PrivateKeyWritePEM, OE_ECPrivateKeyWritePEM);
+ALIAS(_PublicKeyReadPEM, OE_ECPublicKeyReadPEM);
+ALIAS(_PublicKeyWritePEM, OE_ECPublicKeyWritePEM);
+ALIAS(_PrivateKeyFree, OE_ECPrivateKeyFree);
+ALIAS(_PublicKeyFree, OE_ECPublicKeyFree);
+ALIAS(_PrivateKeySign, OE_ECPrivateKeySign);
+ALIAS(_PublicKeyVerify, OE_ECPublicKeyVerify);
+ALIAS(_GenerateKeyPair, OE_ECGenerateKeyPair);
+ALIAS(_PublicKeyGetKeyBytes, OE_ECPublicKeyGetKeyBytes);
+ALIAS(_PublicKeyEqual, OE_ECPublicKeyEqual);

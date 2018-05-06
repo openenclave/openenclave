@@ -253,16 +253,16 @@ done:
     return result;
 }
 
-EXPORT_STATIC_FUNCTION(_PublicKeyInitFrom, OE_RSAPublicKeyInitFrom);
-EXPORT_STATIC_FUNCTION(_PrivateKeyReadPEM, OE_RSAPrivateKeyReadPEM);
-EXPORT_STATIC_FUNCTION(_PrivateKeyWritePEM, OE_RSAPrivateKeyWritePEM);
-EXPORT_STATIC_FUNCTION(_PublicKeyReadPEM, OE_RSAPublicKeyReadPEM);
-EXPORT_STATIC_FUNCTION(_PublicKeyWritePEM, OE_RSAPublicKeyWritePEM);
-EXPORT_STATIC_FUNCTION(_PrivateKeyFree, OE_RSAPrivateKeyFree);
-EXPORT_STATIC_FUNCTION(_PublicKeyFree, OE_RSAPublicKeyFree);
-EXPORT_STATIC_FUNCTION(_PrivateKeySign, OE_RSAPrivateKeySign);
-EXPORT_STATIC_FUNCTION(_PublicKeyVerify, OE_RSAPublicKeyVerify);
-EXPORT_STATIC_FUNCTION(_GenerateKeyPair, OE_RSAGenerateKeyPair);
-EXPORT_STATIC_FUNCTION(_PublicKeyGetModulus, OE_RSAPublicKeyGetModulus);
-EXPORT_STATIC_FUNCTION(_PublicKeyGetExponent, OE_RSAPublicKeyGetExponent);
-EXPORT_STATIC_FUNCTION(_PublicKeyEqual, OE_RSAPublicKeyEqual);
+ALIAS(_PublicKeyInitFrom, OE_RSAPublicKeyInitFrom);
+ALIAS(_PrivateKeyReadPEM, OE_RSAPrivateKeyReadPEM);
+ALIAS(_PrivateKeyWritePEM, OE_RSAPrivateKeyWritePEM);
+ALIAS(_PublicKeyReadPEM, OE_RSAPublicKeyReadPEM);
+ALIAS(_PublicKeyWritePEM, OE_RSAPublicKeyWritePEM);
+ALIAS(_PrivateKeyFree, OE_RSAPrivateKeyFree);
+ALIAS(_PublicKeyFree, OE_RSAPublicKeyFree);
+ALIAS(_PrivateKeySign, OE_RSAPrivateKeySign);
+ALIAS(_PublicKeyVerify, OE_RSAPublicKeyVerify);
+ALIAS(_GenerateKeyPair, OE_RSAGenerateKeyPair);
+ALIAS(_PublicKeyGetModulus, OE_RSAPublicKeyGetModulus);
+ALIAS(_PublicKeyGetExponent, OE_RSAPublicKeyGetExponent);
+ALIAS(_PublicKeyEqual, OE_RSAPublicKeyEqual);
