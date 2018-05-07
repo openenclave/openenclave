@@ -942,88 +942,509 @@ static void TestCertMethods()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static OE_Result _CertFindExtension(
-    const OE_Cert* cert,
-    const char* oid,
-    uint8_t* data,
-    size_t* size)
+/* This utility function generates extension definitions for testing */
+OE_Result DumpExtensions(const char* certData, size_t certSize)
 {
     OE_Result result = OE_UNEXPECTED;
+    OE_Cert cert;
     size_t count;
+    uint8_t data[4096];
+    size_t size = sizeof(data);
+
+    OE_CHECK(OE_CertReadPEM(certData, certSize, &cert));
 
     /* Get the number of extensions */
-    OE_CHECK(OE_CertGetExtensionCount(cert, &count));
+    OE_CHECK(OE_CertGetExtensionCount(&cert, &count));
 
     /* Find the extension with this OID */
     for (size_t i = 0; i < count; i++)
     {
         OE_OIDString extOid;
-        size_t tmpSize = *size;
-        OE_CHECK(OE_CertGetExtension(cert, i, &extOid, data, &tmpSize));
+        size_t tmpSize = size;
+        OE_CHECK(OE_CertGetExtension(&cert, i, &extOid, data, &tmpSize));
+        
+        printf("static const uint8_t _extensions_data%zu[] =\n", i);
+        printf("{\n");
 
-        if (strcmp(oid, extOid.buf) == 0)
+        for (size_t i = 0; i < tmpSize; i++)
         {
-            *size = tmpSize;
-            OE_RAISE(OE_OK);
+            printf("    0x%02x,\n", data[i]);
         }
+
+        printf("};\n\n");
     }
+
+    printf("static const Extension _extensions[] =\n");
+    printf("{\n");
+
+    /* Find the extension with this OID */
+    for (size_t i = 0; i < count; i++)
+    {
+        OE_OIDString extOid;
+        size_t tmpSize = size;
+        OE_CHECK(OE_CertGetExtension(&cert, i, &extOid, data, &tmpSize));
+        
+        printf("    {\n");
+        printf("        .oid = \"%s\",\n", extOid.buf);
+        printf("        .size = %zu,\n", tmpSize);
+        printf("        .data = _extensions_data%zu,\n", i);
+        printf("    },\n");
+    }
+
+    printf("};\n");
+
+    OE_CHECK(OE_CertFree(&cert));
+
+    result = OE_OK;
 
 done:
     return result;
 }
 
-static void TestCertExtensions()
+typedef struct _Extension
 {
-    OE_Result r;
-    const char SGX_EXTENSIONS_OID[] = "1.2.840.113741.1.13.1";
-    const uint8_t SGX_EXTENSIONS_DATA[] = {
-        0x30, 0x81, 0x8B, 0x30, 0x1E, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86, 0xF8,
-        0x4D, 0x01, 0x0D, 0x01, 0x01, 0x04, 0x10, 0x0B, 0xAC, 0x07, 0x24, 0x3C,
-        0x17, 0xFD, 0x98, 0x6D, 0x15, 0x4B, 0x55, 0x09, 0x43, 0x3F, 0x15, 0x30,
-        0x1E, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86, 0xF8, 0x4D, 0x01, 0x0D, 0x01,
-        0x02, 0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x10, 0x06, 0x0A, 0x2A,
-        0x86, 0x48, 0x86, 0xF8, 0x4D, 0x01, 0x0D, 0x01, 0x03, 0x04, 0x02, 0x00,
-        0x00, 0x30, 0x10, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86, 0xF8, 0x4D, 0x01,
-        0x0D, 0x01, 0x04, 0x04, 0x02, 0x00, 0x00, 0x30, 0x14, 0x06, 0x0A, 0x2A,
-        0x86, 0x48, 0x86, 0xF8, 0x4D, 0x01, 0x0D, 0x01, 0x05, 0x04, 0x06, 0x20,
-        0x90, 0x6E, 0xA1, 0x00, 0x00, 0x30, 0x0F, 0x06, 0x0A, 0x2A, 0x86, 0x48,
-        0x86, 0xF8, 0x4D, 0x01, 0x0D, 0x01, 0x06, 0x0A, 0x01, 0x00,
-    };
+    const char* oid;
+    size_t size;
+    const uint8_t* data;
+}
+Extension;
+
+static const uint8_t _eccert_extensions_data0[] =
+{
+    0x30,
+    0x16,
+    0x80,
+    0x14,
+    0x9f,
+    0x06,
+    0x97,
+    0xef,
+    0x53,
+    0x21,
+    0x44,
+    0xd4,
+    0xfa,
+    0x4c,
+    0x7e,
+    0xe8,
+    0xba,
+    0x8d,
+    0xb3,
+    0xd3,
+    0x25,
+    0xe4,
+    0x92,
+    0x90,
+};
+
+static const uint8_t _eccert_extensions_data1[] =
+{
+    0x30,
+    0x4f,
+    0x30,
+    0x4d,
+    0xa0,
+    0x4b,
+    0xa0,
+    0x49,
+    0x86,
+    0x47,
+    0x68,
+    0x74,
+    0x74,
+    0x70,
+    0x73,
+    0x3a,
+    0x2f,
+    0x2f,
+    0x63,
+    0x65,
+    0x72,
+    0x74,
+    0x69,
+    0x66,
+    0x69,
+    0x63,
+    0x61,
+    0x74,
+    0x65,
+    0x73,
+    0x2e,
+    0x74,
+    0x72,
+    0x75,
+    0x73,
+    0x74,
+    0x65,
+    0x64,
+    0x73,
+    0x65,
+    0x72,
+    0x76,
+    0x69,
+    0x63,
+    0x65,
+    0x73,
+    0x2e,
+    0x69,
+    0x6e,
+    0x74,
+    0x65,
+    0x6c,
+    0x2e,
+    0x63,
+    0x6f,
+    0x6d,
+    0x2f,
+    0x49,
+    0x6e,
+    0x74,
+    0x65,
+    0x6c,
+    0x53,
+    0x47,
+    0x58,
+    0x50,
+    0x43,
+    0x4b,
+    0x50,
+    0x72,
+    0x6f,
+    0x63,
+    0x65,
+    0x73,
+    0x73,
+    0x6f,
+    0x72,
+    0x2e,
+    0x63,
+    0x72,
+    0x6c,
+};
+
+static const uint8_t _eccert_extensions_data2[] =
+{
+    0x04,
+    0x14,
+    0x14,
+    0x74,
+    0x27,
+    0xc7,
+    0x67,
+    0x31,
+    0xe9,
+    0x88,
+    0x4b,
+    0xab,
+    0x03,
+    0xee,
+    0x39,
+    0x77,
+    0x29,
+    0x58,
+    0x5e,
+    0x95,
+    0x6f,
+    0x0e,
+};
+
+static const uint8_t _eccert_extensions_data3[] =
+{
+    0x03,
+    0x02,
+    0x06,
+    0xc0,
+};
+
+static const uint8_t _eccert_extensions_data4[] =
+{
+    0x30,
+    0x00,
+};
+
+static const uint8_t _eccert_extensions_data5[] =
+{
+    0x30,
+    0x81,
+    0x8b,
+    0x30,
+    0x1e,
+    0x06,
+    0x0a,
+    0x2a,
+    0x86,
+    0x48,
+    0x86,
+    0xf8,
+    0x4d,
+    0x01,
+    0x0d,
+    0x01,
+    0x01,
+    0x04,
+    0x10,
+    0x0b,
+    0xac,
+    0x07,
+    0x24,
+    0x3c,
+    0x17,
+    0xfd,
+    0x98,
+    0x6d,
+    0x15,
+    0x4b,
+    0x55,
+    0x09,
+    0x43,
+    0x3f,
+    0x15,
+    0x30,
+    0x1e,
+    0x06,
+    0x0a,
+    0x2a,
+    0x86,
+    0x48,
+    0x86,
+    0xf8,
+    0x4d,
+    0x01,
+    0x0d,
+    0x01,
+    0x02,
+    0x04,
+    0x10,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x30,
+    0x10,
+    0x06,
+    0x0a,
+    0x2a,
+    0x86,
+    0x48,
+    0x86,
+    0xf8,
+    0x4d,
+    0x01,
+    0x0d,
+    0x01,
+    0x03,
+    0x04,
+    0x02,
+    0x00,
+    0x00,
+    0x30,
+    0x10,
+    0x06,
+    0x0a,
+    0x2a,
+    0x86,
+    0x48,
+    0x86,
+    0xf8,
+    0x4d,
+    0x01,
+    0x0d,
+    0x01,
+    0x04,
+    0x04,
+    0x02,
+    0x00,
+    0x00,
+    0x30,
+    0x14,
+    0x06,
+    0x0a,
+    0x2a,
+    0x86,
+    0x48,
+    0x86,
+    0xf8,
+    0x4d,
+    0x01,
+    0x0d,
+    0x01,
+    0x05,
+    0x04,
+    0x06,
+    0x20,
+    0x90,
+    0x6e,
+    0xa1,
+    0x00,
+    0x00,
+    0x30,
+    0x0f,
+    0x06,
+    0x0a,
+    0x2a,
+    0x86,
+    0x48,
+    0x86,
+    0xf8,
+    0x4d,
+    0x01,
+    0x0d,
+    0x01,
+    0x06,
+    0x0a,
+    0x01,
+    0x00,
+};
+
+static const Extension _eccert_extensions[] =
+{
+    {
+        .oid = "2.5.29.35",
+        .size = 24,
+        .data = _eccert_extensions_data0,
+    },
+    {
+        .oid = "2.5.29.31",
+        .size = 81,
+        .data = _eccert_extensions_data1,
+    },
+    {
+        .oid = "2.5.29.14",
+        .size = 22,
+        .data = _eccert_extensions_data2,
+    },
+    {
+        .oid = "2.5.29.15",
+        .size = 4,
+        .data = _eccert_extensions_data3,
+    },
+    {
+        .oid = "2.5.29.19",
+        .size = 2,
+        .data = _eccert_extensions_data4,
+    },
+    {
+        .oid = "1.2.840.113741.1.13.1",
+        .size = 142,
+        .data = _eccert_extensions_data5,
+    },
+};
+
+static void TestCertExtensions(
+    const char* certData, 
+    size_t certSize,
+    const Extension* extensions,
+    size_t extensionsCount,
+    const char* testOid)
+{
+    OE_Cert cert;
 
     printf("=== begin %s()\n", __FUNCTION__);
 
-    /* Test OE_CertGetECPublicKey() */
+    OE_TEST(OE_CertReadPEM(certData, certSize, &cert) == OE_OK);
+
+    /* Test getting extensions by index */
     {
-        OE_Cert cert;
+        size_t count;
 
-        r = OE_CertReadPEM(ECCERT, sizeof(ECCERT), &cert);
-        OE_TEST(r == OE_OK);
+        OE_TEST(OE_CertGetExtensionCount(&cert, &count) == OE_OK);
+        OE_TEST(count == extensionsCount);
 
+        for (size_t i = 0; i < extensionsCount; i++)
+        {
+            const Extension* ext = &extensions[i];
+            OE_OIDString oid;
+            uint8_t data[4096];
+            size_t size = sizeof(data);
+
+            OE_TEST(OE_CertGetExtension(&cert, i, &oid, data, &size) == OE_OK);
+
+            OE_TEST(strcmp(oid.buf, ext->oid) == 0);
+            OE_TEST(size == ext->size);
+            OE_TEST(memcmp(data, ext->data, size) == 0);
+        }
+    }
+
+    /* Test finding extensions by OID */
+    {
+
+        for (size_t i = 0; i < extensionsCount; i++)
+        {
+            const Extension* ext = &extensions[i];
+            const char* oid = ext->oid;
+            uint8_t data[4096];
+            size_t size = sizeof(data);
+
+            OE_TEST(OE_CertFindExtension(&cert, oid, data, &size) == OE_OK);
+            OE_TEST(strcmp(oid, ext->oid) == 0);
+            OE_TEST(size == ext->size);
+            OE_TEST(memcmp(data, ext->data, size) == 0);
+        }
+    }
+
+    /* Check for an unknown OID */
+    if (!extensions)
+    {
+        OE_Result r;
         uint8_t data[4096];
         size_t size = sizeof(data);
 
-        r = OE_CertFindExtension(&cert, SGX_EXTENSIONS_OID, data, &size);
-        OE_TEST(r == OE_OK);
-        OE_TEST(size == sizeof(SGX_EXTENSIONS_DATA));
-        OE_TEST(memcmp(SGX_EXTENSIONS_DATA, data, size) == 0);
-
-        memset(data, 0, sizeof(data));
-
-        r = _CertFindExtension(&cert, SGX_EXTENSIONS_OID, data, &size);
-        OE_TEST(r == OE_OK);
-        OE_TEST(size == sizeof(SGX_EXTENSIONS_DATA));
-        OE_TEST(memcmp(SGX_EXTENSIONS_DATA, data, size) == 0);
-
-        OE_CertFree(&cert);
+        r = OE_CertFindExtension(&cert, "1.2.3.4", data, &size);
+        OE_TEST(r == OE_NOT_FOUND);
     }
+
+    /* Find the extension with the given OID and check for OE_NOT_FOUND */
+    if (!extensions)
+    {
+        OE_Result r;
+        uint8_t data[4096];
+        size_t size = sizeof(data);
+
+        r = OE_CertFindExtension(&cert, testOid, data, &size);
+
+        if (extensions)
+            OE_TEST(r == OE_OK);
+        else
+            OE_TEST(r == OE_NOT_FOUND);
+    }
+
+    /* Test for out of bounds */
+    {
+        OE_Result r;
+        OE_OIDString oid;
+        uint8_t data[4096];
+        size_t size = sizeof(data);
+
+        r = OE_CertGetExtension(&cert, extensionsCount, &oid, data, &size);
+        OE_TEST(r == OE_OUT_OF_BOUNDS);
+    }
+
+    OE_CertFree(&cert);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void RunAllTests()
 {
-    TestCertExtensions();
+    /* Test a certificate with extensions */
+    TestCertExtensions(ECCERT, sizeof(ECCERT), _eccert_extensions,
+        OE_COUNTOF(_eccert_extensions), "1.2.840.113741.1.13.1");
+
+    /* Test a certificate without extensions */
+    TestCertExtensions(CERT, sizeof(CERT), NULL, 0, "2.5.29.35");
+
     TestCertMethods();
     TestCertVerify();
     TestECGenerate();

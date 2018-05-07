@@ -650,7 +650,7 @@ OE_Result OE_CertGetExtension(
 
     /* Set a pointer to the stack of extensions (possibly NULL) */
     if (!(extensions = impl->x509->cert_info->extensions))
-        OE_RAISE(OE_OK);
+        OE_RAISE(OE_OUT_OF_BOUNDS);
 
     /* Get the number of extensions (possibly zero) */
     numExtensions = sk_X509_EXTENSION_num(extensions);

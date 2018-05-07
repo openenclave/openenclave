@@ -345,6 +345,12 @@ static int _ParseExtensions(
     int r;
     size_t index = 0;
 
+    if (!p)
+        return 0;
+
+printf("p=%p\n", p);
+printf("end=%p\n", end);
+
     /* Parse tag that introduces the extensions */
     {
         int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
@@ -768,9 +774,7 @@ OE_Result OE_CertGetExtensionCount(const OE_Cert* cert, size_t* count)
         args.count = count;
 
         if (_ParseExtensions(impl->cert, _GetExtensionCount, &args) != 0)
-        {
             OE_RAISE(OE_FAILURE);
-        }
     }
 
     result = OE_OK;
@@ -796,7 +800,7 @@ OE_Result OE_CertGetExtension(
     /* Find the extension with the given OID using a callback */
     {
         GetExtensionArgs args;
-        args.result = OE_NOT_FOUND;
+        args.result = OE_OUT_OF_BOUNDS;
         args.index = index;
         args.oid = oid;
         args.data = data;
