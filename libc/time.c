@@ -13,7 +13,7 @@
 
 /* The definition is replicated from "musl/src/time/__tz.c" as this file has
    some dependencies on other functions which is not developed for enclave
-   enviornment so we are defining the variable here to solve the dependency of
+   environment so we are defining the variable here to solve the dependency of
    extern variable in gmtime_r.c */
 const char __gmt[] = "GMT";
 
