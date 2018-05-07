@@ -211,7 +211,7 @@ OE_Result OE_CertChainGetCert(
     OE_Cert* cert);
 
 OE_Result OE_CertGetExtension(
-    OE_Cert* cert, 
+    const OE_Cert* cert,
     const char* oid,
     uint8_t* data,
     size_t* size);

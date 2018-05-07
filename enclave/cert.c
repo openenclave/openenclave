@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <assert.h>
 #include <mbedtls/asn1.h>
 #include <mbedtls/config.h>
 #include <mbedtls/oid.h>
@@ -521,11 +522,238 @@ done:
     return result;
 }
 
+#if 0
+static void _DumpASCII(const void* data_, size_t size)
+{
+    const uint8_t* data = (const uint8_t*)data_;
+
+    for (size_t i = 0; i < size; i++)
+    {
+        uint8_t c = data[i];
+
+        if (c >= ' ' && c <= '~')
+        {
+            printf("%c", c);
+        }
+        else
+        {
+            printf("%c", c);
+            // printf("<%02X>", c);
+        }
+    }
+
+    printf("\n");
+}
+#endif
+
+#if 0
+static void _DumpOID(const uint8_t* data, size_t size)
+{
+    printf("OID: ");
+
+    for (size_t i = 0; i < size; i++)
+    {
+        printf("%u", data[i]);
+
+        if (i + 1 != size)
+            printf(".");
+    }
+
+    printf("\n");
+}
+#endif
+
+#define MAX_OID_STRING_SIZE 128
+
+/* Returns true when done */
+typedef bool (*ParseExtensionsCallback)(
+    const char* oid,
+    bool critical,
+    const uint8_t* data,
+    size_t size,
+    void* args);
+
+typedef struct _ParseExtensionsCallbackArgs
+{
+    OE_Result result;
+    const char* oid;
+    uint8_t* data;
+    size_t* size;
+} ParseExtensionsCallbackArgs;
+
+static bool _ParseExtensionsCallback(
+    const char* oid,
+    bool critical,
+    const uint8_t* data,
+    size_t size,
+    void* args_)
+{
+    ParseExtensionsCallbackArgs* args = (ParseExtensionsCallbackArgs*)args_;
+
+#if 0
+    printf("== _ExtensionCallback()\n");
+    printf("oid=%s\n", oid);
+    printf("critical=%u\n", critical);
+    printf("data=");
+    OE_HexDump(data, size);
+    printf("\n");
+#endif
+
+    if (OE_Strcmp(oid, args->oid) == 0)
+    {
+        /* If buffer is too small */
+        if (size > *args->size)
+        {
+            *args->size = size;
+            args->result = OE_BUFFER_TOO_SMALL;
+            return true;
+        }
+
+        /* Copy to caller's buffer */
+        if (args->data)
+            OE_Memcpy(args->data, data, *args->size);
+
+        *args->size = size;
+        args->result = OE_OK;
+        return true;
+    }
+
+    /* Keep parsing */
+    return false;
+}
+
+static int _ParseExtensions(
+    const uint8_t* data,
+    size_t size,
+    ParseExtensionsCallback callback,
+    void* args)
+{
+    int ret = -1;
+    uint8_t* p = (uint8_t*)data;
+    uint8_t* end = p + size;
+    size_t len;
+    int r;
+
+    if (!data)
+        goto done;
+
+    /* Parse tag that introduces the extensions */
+    {
+        int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+        /* Get the tag and length of the entire packet */
+        if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+            goto done;
+    }
+
+    /* Parse each extension of the form: [OID | CRITICAL | OCTETS] */
+    while (end - p > 1)
+    {
+        char oidstr[MAX_OID_STRING_SIZE];
+        int isCritical = 0;
+        const uint8_t* octets;
+        size_t octetsSize;
+
+        /* Parse the OID */
+        {
+            mbedtls_x509_buf oid;
+
+            /* Prase the OID tag */
+            {
+                int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+                if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+                    goto done;
+
+                oid.tag = p[0];
+            }
+
+            /* Parse the OID length */
+            {
+                if (mbedtls_asn1_get_tag(&p, end, &len, MBEDTLS_ASN1_OID) != 0)
+                    goto done;
+
+                oid.len = len;
+                oid.p = p;
+                p += oid.len;
+            }
+
+            /* Convert OID to a string */
+            r = mbedtls_oid_get_numeric_string(oidstr, sizeof(oidstr), &oid);
+            if (r < 0)
+                goto done;
+        }
+
+        /* Parse the critical flag */
+        {
+            r = (mbedtls_asn1_get_bool(&p, end, &isCritical));
+            if (r != 0 && r != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG)
+                goto done;
+        }
+
+        /* Parse the octet string */
+        {
+            const int tag = MBEDTLS_ASN1_OCTET_STRING;
+            if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+                goto done;
+
+            octets = p;
+            octetsSize = len;
+            p += len;
+        }
+
+        /* Invoke the caller's callback (returns true when done) */
+        if (callback(oidstr, isCritical, octets, octetsSize, args) == true)
+        {
+            ret = 0;
+            goto done;
+        }
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
 OE_Result OE_CertGetExtension(
-    OE_Cert* cert,
+    const OE_Cert* cert,
     const char* oid,
     uint8_t* data,
     size_t* size)
 {
-    return OE_UNSUPPORTED;
+    OE_Result result = OE_UNEXPECTED;
+    const Cert* impl = (const Cert*)cert;
+    const mbedtls_x509_buf* extensions; /* same as mbedtls_asn1_buf */
+
+    /* Reject invalid parameters */
+    if (!_CertValid(impl) || !oid || !size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get pointer to extensions */
+    extensions = &impl->cert->v3_ext;
+
+    /* Iterate over the extensions using a callback function */
+    {
+        ParseExtensionsCallbackArgs args;
+        args.result = OE_NOT_FOUND;
+        args.oid = oid;
+        args.data = data;
+        args.size = size;
+
+        if (_ParseExtensions(
+                extensions->p,
+                extensions->len,
+                _ParseExtensionsCallback,
+                &args) != 0)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
+
+        result = args.result;
+        goto done;
+    }
+
+done:
+    return result;
 }

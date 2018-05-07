@@ -606,43 +606,20 @@ done:
     return result;
 }
 
-#if 0
-static void _DumpASCII(const void* data_, size_t size)
-{
-    const uint8_t* data = (const uint8_t*)data_;
-
-    for (size_t i = 0; i < size; i++)
-    {
-        uint8_t c = data[i];
-
-        if (isprint(c))
-        {
-            printf("%c", c);
-        }
-        else
-        {
-            printf("<%02X>", c);
-        }
-    }
-
-    printf("\n");
-}
-#endif
-
 // Strictly speaking there is no limit on the length of an OID but we chose
 // 128 (the maximum OID length in the SNMP specification). Also, this value
 // is hardcoded to 64 in many implementations.
 #define OE_MAX_OID_SIZE 128
 
 OE_Result OE_CertGetExtension(
-    OE_Cert* cert, 
+    const OE_Cert* cert,
     const char* oid,
     uint8_t* data,
     size_t* size)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_CertImpl* impl = (OE_CertImpl*)cert;
-    const STACK_OF(X509_EXTENSION)* extensions;
+    const OE_CertImpl* impl = (const OE_CertImpl*)cert;
+    const STACK_OF(X509_EXTENSION) * extensions;
     int numExtensions;
 
     /* Reject invalid parameters */
@@ -674,6 +651,8 @@ OE_Result OE_CertGetExtension(
         /* Get the string name of the OID */
         if (!OBJ_obj2txt(extOid, sizeof(extOid), obj, 1))
             OE_RAISE(OE_FAILURE);
+
+        printf("OID=%s\n", extOid);
 
         /* If found then get the data */
         if (strcmp(extOid, oid) == 0)
