@@ -11,11 +11,6 @@
 
 OE_EXTERNC_BEGIN
 
-// Strictly speaking there is no limit on the length of an OID but we chose
-// 128 (the maximum OID length in the SNMP specification). Also, this value
-// is hardcoded to 64 in many implementations.
-#define OE_OID_STRING_SIZE 128
-
 typedef struct _OE_Cert
 {
     /* Internal private implementation */
@@ -36,6 +31,16 @@ typedef struct _OE_VerifyCertError
     /* Zero-terminated string error message */
     char buf[1024];
 } OE_VerifyCertError;
+
+/* OID string representation (e.g., 1.2.3.4) */
+typedef struct _OE_OIDString
+{
+    // Strictly speaking there is no limit on the length of an OID but we chose
+    // 128 (the maximum OID length in the SNMP specification). Also, this value
+    // is hardcoded to 64 in many implementations.
+    char buf[128];
+}
+OE_OIDString;
 
 /**
  * Read a certificate from PEM format
@@ -220,7 +225,7 @@ OE_Result OE_CertGetExtensionCount(const OE_Cert* cert, size_t* count);
 OE_Result OE_CertGetExtension(
     const OE_Cert* cert,
     size_t index,
-    char oid[OE_OID_STRING_SIZE],
+    OE_OIDString* oid,
     uint8_t* data,
     size_t* size);
 

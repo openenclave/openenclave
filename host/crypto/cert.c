@@ -636,7 +636,7 @@ done:
 OE_Result OE_CertGetExtension(
     const OE_Cert* cert,
     size_t index,
-    char oid[OE_OID_STRING_SIZE],
+    OE_OIDString* oid,
     uint8_t* data,
     size_t* size)
 {
@@ -663,7 +663,7 @@ OE_Result OE_CertGetExtension(
     {
         X509_EXTENSION* ext;
         ASN1_OBJECT* obj;
-        char extOid[OE_OID_STRING_SIZE];
+        OE_OIDString extOid;
         ASN1_OCTET_STRING* str;
 
         /* Get the i-th extension from the stack */
@@ -675,7 +675,7 @@ OE_Result OE_CertGetExtension(
             OE_RAISE(OE_FAILURE);
 
         /* Get the string name of the OID */
-        if (!OBJ_obj2txt(extOid, sizeof(extOid), obj, 1))
+        if (!OBJ_obj2txt(extOid.buf, sizeof(extOid.buf), obj, 1))
             OE_RAISE(OE_FAILURE);
 
         /* Get the data from the extension */
@@ -690,8 +690,8 @@ OE_Result OE_CertGetExtension(
         }
 
         /* Copy the OID to the caller's buffer */
-        *oid = '\0';
-        strncat(oid, extOid, OE_OID_STRING_SIZE);
+        *oid->buf = '\0';
+        strncat(oid->buf, extOid.buf, sizeof(OE_OIDString));
 
         /* Copy the data to the caller's buffer */
         if (data)
@@ -734,7 +734,7 @@ OE_Result OE_CertFindExtension(
     {
         X509_EXTENSION* ext;
         ASN1_OBJECT* obj;
-        char extOid[OE_OID_STRING_SIZE];
+        OE_OIDString extOid;
 
         /* Get the i-th extension from the stack */
         if (!(ext = sk_X509_EXTENSION_value(extensions, i)))
@@ -745,11 +745,11 @@ OE_Result OE_CertFindExtension(
             OE_RAISE(OE_FAILURE);
 
         /* Get the string name of the OID */
-        if (!OBJ_obj2txt(extOid, sizeof(extOid), obj, 1))
+        if (!OBJ_obj2txt(extOid.buf, sizeof(extOid.buf), obj, 1))
             OE_RAISE(OE_FAILURE);
 
         /* If found then get the data */
-        if (strcmp(extOid, oid) == 0)
+        if (strcmp(extOid.buf, oid) == 0)
         {
             ASN1_OCTET_STRING* str;
 

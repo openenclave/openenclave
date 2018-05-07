@@ -605,7 +605,7 @@ typedef struct _GetExtensionCallbackArgs
 {
     OE_Result result;
     size_t index;
-    char* oid;
+    OE_OIDString* oid;
     uint8_t* data;
     size_t* size;
 } GetExtensionCallbackArgs;
@@ -631,7 +631,7 @@ static bool _GetExtensionCallback(
         }
 
         /* Copy the OID to caller's buffer */
-        OE_Strlcpy(args->oid, oid, OE_OID_STRING_SIZE);
+        OE_Strlcpy(args->oid->buf, oid, sizeof(OE_OIDString));
 
         /* Copy to caller's buffer */
         if (args->data)
@@ -674,7 +674,7 @@ static int _ParseExtensions(
     /* Parse each extension of the form: [OID | CRITICAL | OCTETS] */
     while (end - p > 1)
     {
-        char oidstr[OE_OID_STRING_SIZE];
+        OE_OIDString oidstr;
         int isCritical = 0;
         const uint8_t* octets;
         size_t octetsSize;
@@ -704,7 +704,8 @@ static int _ParseExtensions(
             }
 
             /* Convert OID to a string */
-            r = mbedtls_oid_get_numeric_string(oidstr, sizeof(oidstr), &oid);
+            r = mbedtls_oid_get_numeric_string(
+                oidstr.buf, sizeof(oidstr.buf), &oid);
             if (r < 0)
                 goto done;
         }
@@ -728,7 +729,7 @@ static int _ParseExtensions(
         }
 
         /* Invoke the caller's callback (returns true when done) */
-        if (callback(index, oidstr, isCritical, octets, octetsSize, args))
+        if (callback(index, oidstr.buf, isCritical, octets, octetsSize, args))
         {
             ret = 0;
             goto done;
@@ -784,7 +785,7 @@ done:
 OE_Result OE_CertGetExtension(
     const OE_Cert* cert,
     size_t index,
-    char oid[OE_OID_STRING_SIZE],
+    OE_OIDString* oid,
     uint8_t* data,
     size_t* size)
 {

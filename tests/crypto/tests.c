@@ -957,11 +957,11 @@ static OE_Result _CertFindExtension(
     /* Find the extension with this OID */
     for (size_t i = 0; i < count; i++)
     {
-        char extOid[OE_OID_STRING_SIZE];
+        OE_OIDString extOid;
         size_t tmpSize = *size;
-        OE_CHECK(OE_CertGetExtension(cert, i, extOid, data, &tmpSize));
+        OE_CHECK(OE_CertGetExtension(cert, i, &extOid, data, &tmpSize));
 
-        if (strcmp(oid, extOid) == 0)
+        if (strcmp(oid, extOid.buf) == 0)
         {
             *size = tmpSize;
             OE_RAISE(OE_OK);
