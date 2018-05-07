@@ -332,7 +332,7 @@ static bool _GetExtension(
     return false;
 }
 
-/* Parse an MBEDTLS ASN.1 buffer of X509 extensions */
+/* Parse the extensions on an MBEDTLS X509 certificate */
 static int _ParseExtensions(
     const mbedtls_x509_crt* crt,
     ParseExtensions callback,
