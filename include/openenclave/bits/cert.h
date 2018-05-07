@@ -39,8 +39,7 @@ typedef struct _OE_OIDString
     // 128 (the maximum OID length in the SNMP specification). Also, this value
     // is hardcoded to 64 in many implementations.
     char buf[128];
-}
-OE_OIDString;
+} OE_OIDString;
 
 /**
  * Read a certificate from PEM format
