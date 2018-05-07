@@ -203,6 +203,234 @@ static void _SetErr(OE_VerifyCertError* error, const char* str)
 /*
 **==============================================================================
 **
+** _ParseExtensions()
+**
+**==============================================================================
+*/
+
+/* Returns true when done */
+typedef bool (*ParseExtensions)(
+    size_t index,
+    const char* oid,
+    bool critical,
+    const uint8_t* data,
+    size_t size,
+    void* args);
+
+typedef struct _FindExtensionArgs
+{
+    OE_Result result;
+    const char* oid;
+    uint8_t* data;
+    size_t* size;
+} FindExtensionArgs;
+
+static bool _FindExtension(
+    size_t index,
+    const char* oid,
+    bool critical,
+    const uint8_t* data,
+    size_t size,
+    void* args_)
+{
+    FindExtensionArgs* args = (FindExtensionArgs*)args_;
+
+#if 0
+    printf("== _Extension()\n");
+    printf("oid=%s\n", oid);
+    printf("critical=%u\n", critical);
+    printf("data=");
+    OE_HexDump(data, size);
+    printf("\n");
+#endif
+
+    if (OE_Strcmp(oid, args->oid) == 0)
+    {
+        /* If buffer is too small */
+        if (size > *args->size)
+        {
+            *args->size = size;
+            args->result = OE_BUFFER_TOO_SMALL;
+            return true;
+        }
+
+        /* Copy to caller's buffer */
+        if (args->data)
+            OE_Memcpy(args->data, data, *args->size);
+
+        *args->size = size;
+        args->result = OE_OK;
+        return true;
+    }
+
+    /* Keep parsing */
+    return false;
+}
+
+typedef struct _GetExtensionCountArgs
+{
+    size_t* count;
+} GetExtensionCountArgs;
+
+static bool _GetExtensionCount(
+    size_t index,
+    const char* oid,
+    bool critical,
+    const uint8_t* data,
+    size_t size,
+    void* args_)
+{
+    GetExtensionCountArgs* args = (GetExtensionCountArgs*)args_;
+
+    (*args->count)++;
+
+    return false;
+}
+
+typedef struct _GetExtensionArgs
+{
+    OE_Result result;
+    size_t index;
+    OE_OIDString* oid;
+    uint8_t* data;
+    size_t* size;
+} GetExtensionArgs;
+
+static bool _GetExtension(
+    size_t index,
+    const char* oid,
+    bool critical,
+    const uint8_t* data,
+    size_t size,
+    void* args_)
+{
+    GetExtensionArgs* args = (GetExtensionArgs*)args_;
+
+    if (args->index == index)
+    {
+        /* If buffer is too small */
+        if (size > *args->size)
+        {
+            *args->size = size;
+            args->result = OE_BUFFER_TOO_SMALL;
+            return true;
+        }
+
+        /* Copy the OID to caller's buffer */
+        OE_Strlcpy(args->oid->buf, oid, sizeof(OE_OIDString));
+
+        /* Copy to caller's buffer */
+        if (args->data)
+            OE_Memcpy(args->data, data, *args->size);
+
+        *args->size = size;
+        args->result = OE_OK;
+        return true;
+    }
+
+    /* Keep parsing */
+    return false;
+}
+
+/* Parse an MBEDTLS ASN.1 buffer of X509 extensions */
+static int _ParseExtensions(
+    const mbedtls_x509_crt* crt,
+    ParseExtensions callback,
+    void* args)
+{
+    int ret = -1;
+    uint8_t* p = crt->v3_ext.p;
+    uint8_t* end = p + crt->v3_ext.len;
+    size_t len;
+    int r;
+    size_t index = 0;
+
+    /* Parse tag that introduces the extensions */
+    {
+        int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+        /* Get the tag and length of the entire packet */
+        if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+            goto done;
+    }
+
+    /* Parse each extension of the form: [OID | CRITICAL | OCTETS] */
+    while (end - p > 1)
+    {
+        OE_OIDString oidstr;
+        int isCritical = 0;
+        const uint8_t* octets;
+        size_t octetsSize;
+
+        /* Parse the OID */
+        {
+            mbedtls_x509_buf oid;
+
+            /* Prase the OID tag */
+            {
+                int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+                if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+                    goto done;
+
+                oid.tag = p[0];
+            }
+
+            /* Parse the OID length */
+            {
+                if (mbedtls_asn1_get_tag(&p, end, &len, MBEDTLS_ASN1_OID) != 0)
+                    goto done;
+
+                oid.len = len;
+                oid.p = p;
+                p += oid.len;
+            }
+
+            /* Convert OID to a string */
+            r = mbedtls_oid_get_numeric_string(
+                oidstr.buf, sizeof(oidstr.buf), &oid);
+            if (r < 0)
+                goto done;
+        }
+
+        /* Parse the critical flag */
+        {
+            r = (mbedtls_asn1_get_bool(&p, end, &isCritical));
+            if (r != 0 && r != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG)
+                goto done;
+        }
+
+        /* Parse the octet string */
+        {
+            const int tag = MBEDTLS_ASN1_OCTET_STRING;
+            if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+                goto done;
+
+            octets = p;
+            octetsSize = len;
+            p += len;
+        }
+
+        /* Invoke the caller's callback (returns true when done) */
+        if (callback(index, oidstr.buf, isCritical, octets, octetsSize, args))
+        {
+            ret = 0;
+            goto done;
+        }
+
+        /* Increment the index */
+        index++;
+    }
+
+    ret = 0;
+
+done:
+    return ret;
+}
+
+/*
+**==============================================================================
+**
 ** Public functions
 **
 **==============================================================================
@@ -522,234 +750,10 @@ done:
     return result;
 }
 
-/* Returns true when done */
-typedef bool (*ParseExtensionsCallback)(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args);
-
-typedef struct _FindExtensionCallbackArgs
-{
-    OE_Result result;
-    const char* oid;
-    uint8_t* data;
-    size_t* size;
-} FindExtensionCallbackArgs;
-
-static bool _FindExtensionCallback(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args_)
-{
-    FindExtensionCallbackArgs* args = (FindExtensionCallbackArgs*)args_;
-
-#if 0
-    printf("== _ExtensionCallback()\n");
-    printf("oid=%s\n", oid);
-    printf("critical=%u\n", critical);
-    printf("data=");
-    OE_HexDump(data, size);
-    printf("\n");
-#endif
-
-    if (OE_Strcmp(oid, args->oid) == 0)
-    {
-        /* If buffer is too small */
-        if (size > *args->size)
-        {
-            *args->size = size;
-            args->result = OE_BUFFER_TOO_SMALL;
-            return true;
-        }
-
-        /* Copy to caller's buffer */
-        if (args->data)
-            OE_Memcpy(args->data, data, *args->size);
-
-        *args->size = size;
-        args->result = OE_OK;
-        return true;
-    }
-
-    /* Keep parsing */
-    return false;
-}
-
-typedef struct _GetExtensionCountCallbackArgs
-{
-    size_t* count;
-} GetExtensionCountCallbackArgs;
-
-static bool _GetExtensionCountCallback(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args_)
-{
-    GetExtensionCountCallbackArgs* args = (GetExtensionCountCallbackArgs*)args_;
-
-    (*args->count)++;
-
-    return false;
-}
-
-typedef struct _GetExtensionCallbackArgs
-{
-    OE_Result result;
-    size_t index;
-    OE_OIDString* oid;
-    uint8_t* data;
-    size_t* size;
-} GetExtensionCallbackArgs;
-
-static bool _GetExtensionCallback(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args_)
-{
-    GetExtensionCallbackArgs* args = (GetExtensionCallbackArgs*)args_;
-
-    if (args->index == index)
-    {
-        /* If buffer is too small */
-        if (size > *args->size)
-        {
-            *args->size = size;
-            args->result = OE_BUFFER_TOO_SMALL;
-            return true;
-        }
-
-        /* Copy the OID to caller's buffer */
-        OE_Strlcpy(args->oid->buf, oid, sizeof(OE_OIDString));
-
-        /* Copy to caller's buffer */
-        if (args->data)
-            OE_Memcpy(args->data, data, *args->size);
-
-        *args->size = size;
-        args->result = OE_OK;
-        return true;
-    }
-
-    /* Keep parsing */
-    return false;
-}
-
-static int _ParseExtensions(
-    const uint8_t* data,
-    size_t size,
-    ParseExtensionsCallback callback,
-    void* args)
-{
-    int ret = -1;
-    uint8_t* p = (uint8_t*)data;
-    uint8_t* end = p + size;
-    size_t len;
-    int r;
-    size_t index = 0;
-
-    if (!data)
-        goto done;
-
-    /* Parse tag that introduces the extensions */
-    {
-        int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
-
-        /* Get the tag and length of the entire packet */
-        if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
-            goto done;
-    }
-
-    /* Parse each extension of the form: [OID | CRITICAL | OCTETS] */
-    while (end - p > 1)
-    {
-        OE_OIDString oidstr;
-        int isCritical = 0;
-        const uint8_t* octets;
-        size_t octetsSize;
-
-        /* Parse the OID */
-        {
-            mbedtls_x509_buf oid;
-
-            /* Prase the OID tag */
-            {
-                int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
-
-                if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
-                    goto done;
-
-                oid.tag = p[0];
-            }
-
-            /* Parse the OID length */
-            {
-                if (mbedtls_asn1_get_tag(&p, end, &len, MBEDTLS_ASN1_OID) != 0)
-                    goto done;
-
-                oid.len = len;
-                oid.p = p;
-                p += oid.len;
-            }
-
-            /* Convert OID to a string */
-            r = mbedtls_oid_get_numeric_string(
-                oidstr.buf, sizeof(oidstr.buf), &oid);
-            if (r < 0)
-                goto done;
-        }
-
-        /* Parse the critical flag */
-        {
-            r = (mbedtls_asn1_get_bool(&p, end, &isCritical));
-            if (r != 0 && r != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG)
-                goto done;
-        }
-
-        /* Parse the octet string */
-        {
-            const int tag = MBEDTLS_ASN1_OCTET_STRING;
-            if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
-                goto done;
-
-            octets = p;
-            octetsSize = len;
-            p += len;
-        }
-
-        /* Invoke the caller's callback (returns true when done) */
-        if (callback(index, oidstr.buf, isCritical, octets, octetsSize, args))
-        {
-            ret = 0;
-            goto done;
-        }
-
-        /* Increment the index */
-        index++;
-    }
-
-    ret = 0;
-
-done:
-    return ret;
-}
-
 OE_Result OE_CertGetExtensionCount(const OE_Cert* cert, size_t* count)
 {
     OE_Result result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
-    const mbedtls_x509_buf* extensions; /* same as mbedtls_asn1_buf */
 
     if (count)
         *count = 0;
@@ -758,19 +762,12 @@ OE_Result OE_CertGetExtensionCount(const OE_Cert* cert, size_t* count)
     if (!_CertValid(impl) || !count)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get pointer to extensions */
-    extensions = &impl->cert->v3_ext;
-
     /* Get the extension count using a callback */
     {
-        GetExtensionCountCallbackArgs args;
+        GetExtensionCountArgs args;
         args.count = count;
 
-        if (_ParseExtensions(
-                extensions->p,
-                extensions->len,
-                _GetExtensionCountCallback,
-                &args) != 0)
+        if (_ParseExtensions(impl->cert, _GetExtensionCount, &args) != 0)
         {
             OE_RAISE(OE_FAILURE);
         }
@@ -791,30 +788,22 @@ OE_Result OE_CertGetExtension(
 {
     OE_Result result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
-    const mbedtls_x509_buf* extensions; /* same as mbedtls_asn1_buf */
 
     /* Reject invalid parameters */
     if (!_CertValid(impl) || !oid || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get pointer to extensions */
-    extensions = &impl->cert->v3_ext;
-
     /* Find the extension with the given OID using a callback */
     {
-        GetExtensionCallbackArgs args;
+        GetExtensionArgs args;
         args.result = OE_NOT_FOUND;
         args.index = index;
         args.oid = oid;
         args.data = data;
         args.size = size;
 
-        if (_ParseExtensions(
-                extensions->p, extensions->len, _GetExtensionCallback, &args) !=
-            0)
-        {
+        if (_ParseExtensions(impl->cert, _GetExtension, &args) != 0)
             OE_RAISE(OE_FAILURE);
-        }
 
         result = args.result;
         goto done;
@@ -832,31 +821,21 @@ OE_Result OE_CertFindExtension(
 {
     OE_Result result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
-    const mbedtls_x509_buf* extensions; /* same as mbedtls_asn1_buf */
 
     /* Reject invalid parameters */
     if (!_CertValid(impl) || !oid || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get pointer to extensions */
-    extensions = &impl->cert->v3_ext;
-
     /* Find the extension with the given OID using a callback */
     {
-        FindExtensionCallbackArgs args;
+        FindExtensionArgs args;
         args.result = OE_NOT_FOUND;
         args.oid = oid;
         args.data = data;
         args.size = size;
 
-        if (_ParseExtensions(
-                extensions->p,
-                extensions->len,
-                _FindExtensionCallback,
-                &args) != 0)
-        {
+        if (_ParseExtensions(impl->cert, _FindExtension, &args) != 0)
             OE_RAISE(OE_FAILURE);
-        }
 
         result = args.result;
         goto done;
