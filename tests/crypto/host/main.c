@@ -5,6 +5,7 @@
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/hexdump.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/random.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/sha.h>

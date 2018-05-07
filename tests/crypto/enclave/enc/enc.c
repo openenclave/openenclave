@@ -7,6 +7,7 @@
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/malloc.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/random.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/sha.h>

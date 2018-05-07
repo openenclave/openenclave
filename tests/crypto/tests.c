@@ -156,10 +156,6 @@ static void TestRSASign()
     OE_TEST(signatureSize == RSA_SIGNATURE_SIZE);
     OE_TEST(memcmp(signature, &RSA_SIGNATURE, RSA_SIGNATURE_SIZE) == 0);
 
-#if 0
-    OE_HexDump(signature, signatureSize);
-#endif
-
     OE_RSAPrivateKeyFree(&key);
     free(signature);
 
@@ -434,10 +430,6 @@ static void TestRandom()
         /* Generate a random sequence */
         OE_TEST(OE_Random(buf[i], M * sizeof(uint8_t)) == OE_OK);
 
-#if 0
-        OE_HexDump(buf[i], M * sizeof(uint8_t));
-#endif
-
         /* Be sure buffer is not filled with same character */
         {
             size_t m;
@@ -555,10 +547,6 @@ static void TestECSignAndVerify()
 
         OE_ECPublicKeyFree(&key);
     }
-
-#if 0
-    OE_HexDump(signature, signatureSize);
-#endif
 
     free(signature);
 
@@ -954,6 +942,36 @@ static void TestCertMethods()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+static OE_Result _CertFindExtension(
+    const OE_Cert* cert,
+    const char* oid,
+    uint8_t* data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    size_t count;
+
+    /* Get the number of extensions */
+    OE_CHECK(OE_CertGetExtensionCount(cert, &count));
+
+    /* Find the extension with this OID */
+    for (size_t i = 0; i < count; i++)
+    {
+        char extOid[OE_OID_STRING_SIZE];
+        size_t tmpSize = *size;
+        OE_CHECK(OE_CertGetExtension(cert, i, extOid, data, &tmpSize));
+
+        if (strcmp(oid, extOid) == 0)
+        {
+            *size = tmpSize;
+            OE_RAISE(OE_OK);
+        }
+    }
+
+done:
+    return result;
+}
+
 static void TestCertExtensions()
 {
     OE_Result r;
@@ -982,15 +1000,20 @@ static void TestCertExtensions()
         r = OE_CertReadPEM(ECCERT, sizeof(ECCERT), &cert);
         OE_TEST(r == OE_OK);
 
-        uint8_t data[1024];
+        uint8_t data[4096];
         size_t size = sizeof(data);
 
-        r = OE_CertGetExtension(&cert, SGX_EXTENSIONS_OID, data, &size);
+        r = OE_CertFindExtension(&cert, SGX_EXTENSIONS_OID, data, &size);
         OE_TEST(r == OE_OK);
         OE_TEST(size == sizeof(SGX_EXTENSIONS_DATA));
         OE_TEST(memcmp(SGX_EXTENSIONS_DATA, data, size) == 0);
 
-        OE_HexDump(data, size);
+        memset(data, 0, sizeof(data));
+
+        r = _CertFindExtension(&cert, SGX_EXTENSIONS_OID, data, &size);
+        OE_TEST(r == OE_OK);
+        OE_TEST(size == sizeof(SGX_EXTENSIONS_DATA));
+        OE_TEST(memcmp(SGX_EXTENSIONS_DATA, data, size) == 0);
 
         OE_CertFree(&cert);
     }

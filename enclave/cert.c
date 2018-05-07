@@ -522,73 +522,32 @@ done:
     return result;
 }
 
-#if 0
-static void _DumpASCII(const void* data_, size_t size)
-{
-    const uint8_t* data = (const uint8_t*)data_;
-
-    for (size_t i = 0; i < size; i++)
-    {
-        uint8_t c = data[i];
-
-        if (c >= ' ' && c <= '~')
-        {
-            printf("%c", c);
-        }
-        else
-        {
-            printf("%c", c);
-            // printf("<%02X>", c);
-        }
-    }
-
-    printf("\n");
-}
-#endif
-
-#if 0
-static void _DumpOID(const uint8_t* data, size_t size)
-{
-    printf("OID: ");
-
-    for (size_t i = 0; i < size; i++)
-    {
-        printf("%u", data[i]);
-
-        if (i + 1 != size)
-            printf(".");
-    }
-
-    printf("\n");
-}
-#endif
-
-#define MAX_OID_STRING_SIZE 128
-
 /* Returns true when done */
 typedef bool (*ParseExtensionsCallback)(
+    size_t index,
     const char* oid,
     bool critical,
     const uint8_t* data,
     size_t size,
     void* args);
 
-typedef struct _ParseExtensionsCallbackArgs
+typedef struct _FindExtensionCallbackArgs
 {
     OE_Result result;
     const char* oid;
     uint8_t* data;
     size_t* size;
-} ParseExtensionsCallbackArgs;
+} FindExtensionCallbackArgs;
 
-static bool _ParseExtensionsCallback(
+static bool _FindExtensionCallback(
+    size_t index,
     const char* oid,
     bool critical,
     const uint8_t* data,
     size_t size,
     void* args_)
 {
-    ParseExtensionsCallbackArgs* args = (ParseExtensionsCallbackArgs*)args_;
+    FindExtensionCallbackArgs* args = (FindExtensionCallbackArgs*)args_;
 
 #if 0
     printf("== _ExtensionCallback()\n");
@@ -622,6 +581,71 @@ static bool _ParseExtensionsCallback(
     return false;
 }
 
+typedef struct _GetExtensionCountCallbackArgs
+{
+    size_t* count;
+} GetExtensionCountCallbackArgs;
+
+static bool _GetExtensionCountCallback(
+    size_t index,
+    const char* oid,
+    bool critical,
+    const uint8_t* data,
+    size_t size,
+    void* args_)
+{
+    GetExtensionCountCallbackArgs* args = (GetExtensionCountCallbackArgs*)args_;
+
+    (*args->count)++;
+
+    return false;
+}
+
+typedef struct _GetExtensionCallbackArgs
+{
+    OE_Result result;
+    size_t index;
+    char* oid;
+    uint8_t* data;
+    size_t* size;
+} GetExtensionCallbackArgs;
+
+static bool _GetExtensionCallback(
+    size_t index,
+    const char* oid,
+    bool critical,
+    const uint8_t* data,
+    size_t size,
+    void* args_)
+{
+    GetExtensionCallbackArgs* args = (GetExtensionCallbackArgs*)args_;
+
+    if (args->index == index)
+    {
+        /* If buffer is too small */
+        if (size > *args->size)
+        {
+            *args->size = size;
+            args->result = OE_BUFFER_TOO_SMALL;
+            return true;
+        }
+
+        /* Copy the OID to caller's buffer */
+        OE_Strlcpy(args->oid, oid, OE_OID_STRING_SIZE);
+
+        /* Copy to caller's buffer */
+        if (args->data)
+            OE_Memcpy(args->data, data, *args->size);
+
+        *args->size = size;
+        args->result = OE_OK;
+        return true;
+    }
+
+    /* Keep parsing */
+    return false;
+}
+
 static int _ParseExtensions(
     const uint8_t* data,
     size_t size,
@@ -633,6 +657,7 @@ static int _ParseExtensions(
     uint8_t* end = p + size;
     size_t len;
     int r;
+    size_t index = 0;
 
     if (!data)
         goto done;
@@ -649,7 +674,7 @@ static int _ParseExtensions(
     /* Parse each extension of the form: [OID | CRITICAL | OCTETS] */
     while (end - p > 1)
     {
-        char oidstr[MAX_OID_STRING_SIZE];
+        char oidstr[OE_OID_STRING_SIZE];
         int isCritical = 0;
         const uint8_t* octets;
         size_t octetsSize;
@@ -703,11 +728,14 @@ static int _ParseExtensions(
         }
 
         /* Invoke the caller's callback (returns true when done) */
-        if (callback(oidstr, isCritical, octets, octetsSize, args) == true)
+        if (callback(index, oidstr, isCritical, octets, octetsSize, args))
         {
             ret = 0;
             goto done;
         }
+
+        /* Increment the index */
+        index++;
     }
 
     ret = 0;
@@ -716,7 +744,86 @@ done:
     return ret;
 }
 
+OE_Result OE_CertGetExtensionCount(const OE_Cert* cert, size_t* count)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const Cert* impl = (const Cert*)cert;
+    const mbedtls_x509_buf* extensions; /* same as mbedtls_asn1_buf */
+
+    if (count)
+        *count = 0;
+
+    /* Reject invalid parameters */
+    if (!_CertValid(impl) || !count)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get pointer to extensions */
+    extensions = &impl->cert->v3_ext;
+
+    /* Get the extension count using a callback */
+    {
+        GetExtensionCountCallbackArgs args;
+        args.count = count;
+
+        if (_ParseExtensions(
+                extensions->p,
+                extensions->len,
+                _GetExtensionCountCallback,
+                &args) != 0)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 OE_Result OE_CertGetExtension(
+    const OE_Cert* cert,
+    size_t index,
+    char oid[OE_OID_STRING_SIZE],
+    uint8_t* data,
+    size_t* size)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const Cert* impl = (const Cert*)cert;
+    const mbedtls_x509_buf* extensions; /* same as mbedtls_asn1_buf */
+
+    /* Reject invalid parameters */
+    if (!_CertValid(impl) || !oid || !size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get pointer to extensions */
+    extensions = &impl->cert->v3_ext;
+
+    /* Find the extension with the given OID using a callback */
+    {
+        GetExtensionCallbackArgs args;
+        args.result = OE_NOT_FOUND;
+        args.index = index;
+        args.oid = oid;
+        args.data = data;
+        args.size = size;
+
+        if (_ParseExtensions(
+                extensions->p, extensions->len, _GetExtensionCallback, &args) !=
+            0)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
+
+        result = args.result;
+        goto done;
+    }
+
+done:
+    return result;
+}
+
+OE_Result OE_CertFindExtension(
     const OE_Cert* cert,
     const char* oid,
     uint8_t* data,
@@ -733,9 +840,9 @@ OE_Result OE_CertGetExtension(
     /* Get pointer to extensions */
     extensions = &impl->cert->v3_ext;
 
-    /* Iterate over the extensions using a callback function */
+    /* Find the extension with the given OID using a callback */
     {
-        ParseExtensionsCallbackArgs args;
+        FindExtensionCallbackArgs args;
         args.result = OE_NOT_FOUND;
         args.oid = oid;
         args.data = data;
@@ -744,7 +851,7 @@ OE_Result OE_CertGetExtension(
         if (_ParseExtensions(
                 extensions->p,
                 extensions->len,
-                _ParseExtensionsCallback,
+                _FindExtensionCallback,
                 &args) != 0)
         {
             OE_RAISE(OE_FAILURE);
