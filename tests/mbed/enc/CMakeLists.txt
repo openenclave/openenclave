@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 
-# >> All enclave applications are compiled with C compiler instead of C++
 # >> In one of the test "ssl" we are using a variable called new which is a function in C++
 #    causes improper behaviour at compile time leads us to use C instead of C++
 
@@ -43,7 +42,7 @@ function(add_libmbed_test_enc NAME )
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
         )
     target_compile_definitions(libmbedtest_suite_${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c")
-    target_link_libraries(libmbedtest_suite_${NAME} mbedcrypto oelibc fops)
+    target_link_libraries(libmbedtest_suite_${NAME} mbedcrypto oelibc libcio)
 endfunction(add_libmbed_test_enc)
 
 function(add_libmbed_selftest_enc NAME SOURCE )

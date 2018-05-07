@@ -157,4 +157,3 @@ FILE* fdopen(int fd, const char* mode)
     else
         return NULL;
 }
-
