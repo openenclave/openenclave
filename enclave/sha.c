@@ -66,3 +66,14 @@ OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256)
 done:
     return result;
 }
+
+OE_Result OE_ComputeSHA256(const void* data, uint32_t size, OE_SHA256* sha256)
+{
+    OE_Result result = OE_UNEXPECTED;
+
+    mbedtls_sha256((const uint8_t*)data, size, (uint8_t*)sha256, 0);
+
+    result = OE_OK;
+
+    return result;
+}
