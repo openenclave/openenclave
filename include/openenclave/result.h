@@ -56,6 +56,7 @@ typedef enum _OE_Result {
     OE_INVALID_KEYNAME,
     OE_DEBUG_DOWNGRADE,
     OE_QUOTE_PARSE_ERROR,
+    OE_UNSUPPORTED_QE_CERTIFICATION,
 } OE_Result;
 
 /**

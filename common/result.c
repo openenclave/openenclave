@@ -88,6 +88,8 @@ const char* OE_ResultStr(OE_Result result)
             return "OE_DEBUG_DOWNGRADE";
         case OE_QUOTE_PARSE_ERROR:
             return "OE_QUOTE_PARSE_ERROR";
+        case OE_UNSUPPORTED_QE_CERTIFICATION:
+            return "OE_UNSUPPORTED_QE_CERTIFICATION";
     }
 
     return "UNKNOWN";
