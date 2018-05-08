@@ -5,31 +5,11 @@
 
 set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-builtin-udivti3")
 
-option(ENABLE_MBEDTLS_CERTS_C "Enable the test certificates for mbedtls" ON)
-option(ENABLE_MBEDTLS_DEBUG_C "Enable the debug functions for mbedtls" ON)
-
-FILE(READ ${CMAKE_CURRENT_SOURCE_DIR}/config.h CONFIG_FILE)
-
-if (ENABLE_MBEDTLS_CERTS_C)
-   message("ENABLE_MBEDTLS_CERTS_C set, Enabling test certificates for mbedtls")
-   string(REGEX REPLACE "\#undef\ MBEDTLS_CERTS_C" "\#define\ MBEDTLS_CERTS_C" out ${CONFIG_FILE})
-   file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/config.h "${out}")
-else()
-   message("ENABLE_MBEDTLS_CERTS_C is not set, Disabling test certificates for mbedtls")
-   string(REGEX REPLACE "\#define\ MBEDTLS_CERTS_C" "\#undef\ MBEDTLS_CERTS_C" out ${CONFIG_FILE})
-   file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/config.h "${out}")
-endif()
-
-FILE(READ ${CMAKE_CURRENT_SOURCE_DIR}/config.h CONFIG_FILE)
-
-if (ENABLE_MBEDTLS_DEBUG_C)
-   message("ENABLE_MBEDTLS_DEBUG_C set, Enabling debug functions for mbedtls")
-   string(REGEX REPLACE "\#undef\ MBEDTLS_DEBUG_C" "\#define\ MBEDTLS_DEBUG_C" out ${CONFIG_FILE})
-   file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/config.h "${out}")
-else()
-   message("ENABLE_MBEDTLS_DEBUG_C is not set, Disabling debug functions for mbedtls")
-   string(REGEX REPLACE "\#define\ MBEDTLS_DEBUG_C" "\#undef\ MBEDTLS_DEBUG_C" out ${CONFIG_FILE})
-   file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/config.h "${out}")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
+	configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/config.h ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h COPYONLY)
+	file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h "\#define\ MBEDTLS_CERTS_C\n\n\#define\ MBEDTLS_DEBUG_C\n")
+elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config.h DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h)
 endif()
 
 include (ExternalProject)
@@ -39,8 +19,7 @@ ExternalProject_Add(mbedtls-wrap
     DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
     PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/config.h <SOURCE_DIR>/include/mbedtls/config.h
-
+        ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h <SOURCE_DIR>/include/mbedtls/config.h
     # Addl args for compiler
     CMAKE_ARGS
         -DCMAKE_C_FLAGS=${MBEDTLS_WRAP_CFLAGS}
@@ -55,6 +34,7 @@ ExternalProject_Add(mbedtls-wrap
         <BINARY_DIR>/library/libmbedx509.a ${OE_LIBDIR}/openenclave/enclave/
         <BINARY_DIR>/library/libmbedtls.a ${OE_LIBDIR}/openenclave/enclave/
         <BINARY_DIR>/library/libmbedcrypto.a ${OE_LIBDIR}/openenclave/enclave/
+	COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h
     )
 install (DIRECTORY ${OE_INCDIR}/openenclave/oe-mbedtls DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
 install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
