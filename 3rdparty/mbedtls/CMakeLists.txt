@@ -8,8 +8,8 @@ set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-bu
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
 	configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/config.h ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h COPYONLY)
 	file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h "\#define\ MBEDTLS_CERTS_C\n\n\#define\ MBEDTLS_DEBUG_C\n")
-elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config.h DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h)
+elseif("${CMAKE_BUILD_TYPE}" STREQUAL "RELEASE" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RELWITHDEBINFO")
+	configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/config.h ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h COPYONLY)
 endif()
 
 include (ExternalProject)
@@ -18,7 +18,7 @@ ExternalProject_Add(mbedtls-wrap
 
     DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h <SOURCE_DIR>/include/mbedtls/config.h
     # Addl args for compiler
     CMAKE_ARGS
