@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/echo host/echohost ./enc/echoenc.signed.so)
+if (UNIX)
+	add_subdirectory(enc)
+endif()
+
+add_enclave_test(tests/echo ./host echo_host ./enc echo_enc.signed.so)

@@ -37,6 +37,7 @@ function(add_libmbed_test_enc NAME )
       -Wno-error
     )
 
+
     target_include_directories(libmbedtest_suite_${NAME} PUBLIC
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
@@ -46,18 +47,18 @@ function(add_libmbed_test_enc NAME )
 endfunction(add_libmbed_test_enc)
 
 function(add_libmbed_selftest_enc NAME SOURCE )
-    add_enclave_executable(libmbedtest-${NAME} sign.conf private.pem
+    add_enclave_executable(libmbedtest-${NAME}_enc sign.conf private.pem
 	enc.c
         main.c
         )
 
-    target_include_directories(libmbedtest-${NAME} PUBLIC
+    target_include_directories(libmbedtest-${NAME}_enc PUBLIC
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
         )
 
-    target_compile_definitions(libmbedtest-${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${SOURCE}")
-    target_link_libraries(libmbedtest-${NAME} mbedcrypto oelibc )
+    target_compile_definitions(libmbedtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${SOURCE}")
+    target_link_libraries(libmbedtest-${NAME}_enc mbedcrypto oelibc )
 
 endfunction(add_libmbed_selftest_enc)
 

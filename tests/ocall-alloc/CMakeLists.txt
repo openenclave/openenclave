@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/ocall-alloc host/ocall-alloc-host ./enc/ocall-alloc-enc.signed.so)
+if (UNIX)
+	add_subdirectory(enc)
+endif()
+
+add_enclave_test(tests/ocall-alloc ./host ocall-alloc_host ./enc ocall-alloc_enc.signed.so)

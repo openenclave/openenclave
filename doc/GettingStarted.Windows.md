@@ -127,7 +127,7 @@ https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt
    C:\> cd C:\openenclave
    C:\openenclave> mkdir build
    C:\openenclave> cd build
-   C:\openenclave> cmake ..
+   C:\openenclave> cmake -G "NMake Makefiles" ..
    C:\openenclave> nmake
    ```
 
@@ -146,8 +146,34 @@ Testing
 For now, integrated CMake support in VS2017 will only support running tests that
 do not have an enclave dependency:
 
-1. With the Open Enclave CMake project opened in VS2017, select CMake > Run
-   Tests > openenclave
+How to build the CMake project using Visual Studio 2017
+--------------------------------------------------------
+1. Open CMake project in Visual Studio from menu File > Open > CMake...
+	and select top level CMakeLists.txt file which is present in openenclave folder.
+2. Select Linux-Debug configuration and make sure cache is updated and then 
+	select menu CMake > Build only > All(Targets) to build all the projects.
+	
+	VS2017 does not copy script files to the target WSL environment with the correct
+	execute permissions, so they will need to be manually granted after the initial
+	build failure.
+
+	1. Find the CMake target Linux path from the Output window, for example:
+	Build files have been written to: /var/tmp/build/ca6d6e50-e70d-c836-ac64-910bf7e68090/build/Linux-Debug
+
+	2. In a WSL console:
+	$ cd /var/tmp/build/{workspaceHash}/build/{Linux-Debug|Linux-Release}
+	$ sudo chmod +755 3rdparty/musl/CMakeFiles/oelibc_includes.dir/build.make
+	$ sudo chmod +755 3rdparty/musl/musl/configure
+	$ sudo chmod +755 3rdparty/musl/musl/tools/install.sh
+	$ sudo chmod +755 3rdparty/libunwind/libunwind/autogen.sh
+	
+3. Switch to x64-Debug-test configuration and wait for the cache to update and
+	select menu CMake > BuildAll.
+4. Now to run CTest, select menu CMake > Tests > Run openenclave tests.
+
+NOTE : Currently this Tests menu item is not directly available in
+	Visual Studio 2017 (15.6.6), some workaround is added in tests/CMakeLists.txt
+	file suggested by Microsoft.
 
 The Output window should indicate that `tests/mem` and `tests/str` were run.
 
