@@ -4,8 +4,10 @@
 add_library(oeenclave STATIC
     cert.c
     ec.c
-    rsa.c
+    cmac.c
     random.c
+    report.cpp
+    rsa.c
     sha.c)
 
 target_link_libraries(oeenclave PUBLIC

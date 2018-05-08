@@ -16,11 +16,13 @@
 
 * [OE_IsOutsideEnclave()](enclave_8h_a33b395779e9fe73102bfe728261917a6_1a33b395779e9fe73102bfe728261917a6.md)
 
-* [OE_GetReportForRemoteAttestation()](enclave_8h_ab4b70d7070180862df4e92b590fc941d_1ab4b70d7070180862df4e92b590fc941d.md)
-
 * [OE_HostPrintf()](enclave_8h_a3593f7245e4dfc759435d3815eeccf51_1a3593f7245e4dfc759435d3815eeccf51.md)
 
-* [OE_HostAllocForCallHost()](enclave_8h_a70c2f5823298203226ec746864a33eb5_1a70c2f5823298203226ec746864a33eb5.md)
+* [OE_HostFprintf()](enclave_8h_a80cb9ebf7d589e9ee1970531d386448b_1a80cb9ebf7d589e9ee1970531d386448b.md)
+
+* [OE_HostAllocForCallHost()](enclave_8h_ab07f6c74bc260e823b14c90af0e9e29a_1ab07f6c74bc260e823b14c90af0e9e29a.md)
+
+* [OE_HostFreeForCallHost()](enclave_8h_a216dc9b2dc633bc3f59f5ddd956378b8_1a216dc9b2dc633bc3f59f5ddd956378b8.md)
 
 * [OE_HostMalloc()](enclave_8h_aba7207f5f5dd14d9e740548dd8b6b3fd_1aba7207f5f5dd14d9e740548dd8b6b3fd.md)
 
@@ -38,15 +40,29 @@
 
 * [__OE_AssertFail()](enclave_8h_afb7d4049a4bc01b8e5ba49741e447a16_1afb7d4049a4bc01b8e5ba49741e447a16.md)
 
+* [OE_GetReport()](enclave_8h_ad3edd387629cedd8b3ef903696d0a17a_1ad3edd387629cedd8b3ef903696d0a17a.md)
+
+* [OE_ParseReport()](enclave_8h_a0f5d325c55abddf48b21471c53d42420_1a0f5d325c55abddf48b21471c53d42420.md)
+
+* [OE_VerifyReport()](enclave_8h_ac05fd319b55155fd8c2ca8aaef6c28ec_1ac05fd319b55155fd8c2ca8aaef6c28ec.md)
+
+* [OE_GetSealKeyByPolicy()](enclave_8h_a435729c5dfab90e87a990543a2002d3c_1a435729c5dfab90e87a990543a2002d3c.md)
+
+* [OE_GetSealKey()](enclave_8h_aeb2e4976ff556e62b8ff8dc67bd5107f_1aeb2e4976ff556e62b8ff8dc67bd5107f.md)
+
 ### host.h
 
-* [OE_CreateEnclave()](host_8h_a598cc1d7a051a13f5ff4ba6160ccbd82_1a598cc1d7a051a13f5ff4ba6160ccbd82.md)
+* [OE_CreateEnclave()](host_8h_a37e6c31e49055d9fb7fae5be50d88022_1a37e6c31e49055d9fb7fae5be50d88022.md)
 
 * [OE_TerminateEnclave()](host_8h_a20654d7b450c042ac7b256893b287cbe_1a20654d7b450c042ac7b256893b287cbe.md)
 
 * [OE_CallEnclave()](host_8h_a5a1d79498b0488d2aea62b0596bcdd4d_1a5a1d79498b0488d2aea62b0596bcdd4d.md)
 
-* [OE_GetQuote()](host_8h_a0d2e9102af51fc63e9895612310392f5_1a0d2e9102af51fc63e9895612310392f5.md)
+* [OE_GetReport()](host_8h_aec6c97585e37bb37961a1cb0410cfe1d_1aec6c97585e37bb37961a1cb0410cfe1d.md)
+
+* [OE_ParseReport()](host_8h_a0f5d325c55abddf48b21471c53d42420_1a0f5d325c55abddf48b21471c53d42420.md)
+
+* [OE_VerifyReport()](host_8h_a850db238bbabb981072ae33640d3b117_1a850db238bbabb981072ae33640d3b117.md)
 
 ### result.h
 
@@ -87,6 +103,22 @@
 * [OE_CondBroadcast()](thread_8h_a089e8fbdce8abbbc6591222dec91ddb3_1a089e8fbdce8abbbc6591222dec91ddb3.md)
 
 * [OE_CondDestroy()](thread_8h_a1799c5e689755c0dd0506b99d6840b71_1a1799c5e689755c0dd0506b99d6840b71.md)
+
+* [OE_RWLockInit()](thread_8h_add7e99107fa2ebee6bb49adbf2397178_1add7e99107fa2ebee6bb49adbf2397178.md)
+
+* [OE_RWLockReadLock()](thread_8h_a0fdf2d8e974158070bdd677bf24a0209_1a0fdf2d8e974158070bdd677bf24a0209.md)
+
+* [OE_RWLockTryReadLock()](thread_8h_a404a92f2392e655471e5d10738bc0b74_1a404a92f2392e655471e5d10738bc0b74.md)
+
+* [OE_RWLockReadUnlock()](thread_8h_a637d42c50962a8c2a9200114f24ccb33_1a637d42c50962a8c2a9200114f24ccb33.md)
+
+* [OE_RWLockWriteLock()](thread_8h_a4e9062d0f040bc0edfde26817b67c392_1a4e9062d0f040bc0edfde26817b67c392.md)
+
+* [OE_RWLockTryWriteLock()](thread_8h_ad833e15e6322f7db0735465753b6a0d8_1ad833e15e6322f7db0735465753b6a0d8.md)
+
+* [OE_RWLockWriteUnlock()](thread_8h_aca83ee93996515546856bc0e2686ea05_1aca83ee93996515546856bc0e2686ea05.md)
+
+* [OE_RWLockDestroy()](thread_8h_adebd004fe5bd2b52f7f1c56922b6de3c_1adebd004fe5bd2b52f7f1c56922b6de3c.md)
 
 * [OE_ThreadKeyCreate()](thread_8h_a37e5d1d2699359f2e5f584a031eb719a_1a37e5d1d2699359f2e5f584a031eb719a.md)
 

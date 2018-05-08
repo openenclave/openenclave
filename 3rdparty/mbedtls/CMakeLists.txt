@@ -41,7 +41,8 @@ target_include_directories(mbedcrypto INTERFACE ${OE_INCDIR}/openenclave/oe-mbed
 target_link_libraries(mbedcrypto INTERFACE 
     ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a
     ${OE_LIBDIR}/openenclave/enclave/libmbedx509.a
-    ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a)
+    ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a
+)
 # For the libc dependency, We would just want to use "oelibc". However, we need
 # an actual lib-dependency between crypto an libc, which is not expressable
 # with CMake. If using the target "oelibc", CMake reorders the libs, resulting
