@@ -4,6 +4,7 @@
 add_library(oeenclave STATIC
     cert.c
     ec.c
+    ecdsa.c
     cmac.c
     random.c
     report.cpp
