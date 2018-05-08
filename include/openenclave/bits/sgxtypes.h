@@ -749,6 +749,113 @@ OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
 /*
 **==============================================================================
 **
+** SGX_ECDSA256Signature
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_ECDSA256Signature
+{
+    uint8_t r[32];
+    uint8_t s[32];
+} SGX_ECDSA256Signature;
+
+OE_CHECK_SIZE(sizeof(SGX_ECDSA256Signature), 64);
+
+/*
+**==============================================================================
+**
+** SGX_ECDSA256Key
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_ECDSA256Key
+{
+    uint8_t x[32];
+    uint8_t y[32];
+} SGX_ECDSA256Key;
+
+OE_CHECK_SIZE(sizeof(SGX_ECDSA256Key), 64);
+
+/*
+**==============================================================================
+**
+** SGX_QuoteAuthData
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_QuoteAuthData
+{
+    /* (0) Pair of 256 bit ECDSA Signature. */
+    SGX_ECDSA256Signature signature;
+
+    /* (64) Pair of 256 bit ECDSA Key. */
+    SGX_ECDSA256Key attestationKey;
+
+    /* (128) Quoting Enclave Report Body */
+    SGX_ReportBody qeReportBody;
+
+    /* (512) Quoting Enclave Report Body Signature */
+    SGX_ECDSA256Key qeReportBodySignature;
+} SGX_QuoteAuthData;
+
+OE_STATIC_ASSERT(OE_OFFSETOF(SGX_QuoteAuthData, signature) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(SGX_QuoteAuthData, attestationKey) == 64);
+OE_STATIC_ASSERT(OE_OFFSETOF(SGX_QuoteAuthData, qeReportBody) == 128);
+OE_STATIC_ASSERT(OE_OFFSETOF(SGX_QuoteAuthData, qeReportBodySignature) == 512);
+OE_STATIC_ASSERT(sizeof(SGX_QuoteAuthData) == 576);
+
+/*
+**==============================================================================
+**
+** SGX_QEAuthData
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_QEAuthData
+{
+    uint16_t size;
+    uint8_t* data;
+} SGX_QEAuthData;
+
+/*
+**==============================================================================
+**
+** SGX_QECertData
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_QECertData
+{
+    uint16_t type;
+    uint32_t size;
+    uint8_t* data;
+} SGX_QECertData;
+
+/*
+**==============================================================================
+**
+** SGX_PCKId
+**
+**==============================================================================
+*/
+typedef enum _SGX_PCKId {
+    SGX_PCK_ID_PLAIN_PPID = 1,
+    SGX_PCK_ID_ENCRYPTED_PPID_2048 = 2,
+    SGX_PCK_ID_ENCRYPTED_PPID_3072 = 3,
+    SGX_PCK_ID_PCK_CERTIFICATE = 4,
+    SGX_PCK_ID_PCK_CERT_CHAIN = 5
+} SGX_PCKId;
+
+#define SGX_QUOTE_VERSION (3)
+
+/*
+**==============================================================================
+**
 ** SGX_SigRL
 **
 **==============================================================================
