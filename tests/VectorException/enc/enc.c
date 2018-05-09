@@ -18,21 +18,30 @@
 // It will return 0 if success.
 int DivideByZeroExceptionFunction(void)
 {
-    int ret = 1;
-    int s = 0;
-    float f = 0;
-    double d = 0;
+    // Making ret, f and d volatile to prevent optimization
+    volatile int ret = 1;
+    volatile float f = 0;
+    volatile double d = 0;
 
     f = 0.31;
     d = 0.32;
 
-    ret = ret / s;
+    // Using inline assembly for idiv to prevent it being optimized out
+    // completely
+    asm volatile(
+        "idiv %3"
+        : "=a"(ret)
+        : "a"(0), "d"(0), "r"(0) // Divisor of 0 is hard-coded
+        : "%2", "cc"); // cc indicates that flags will be clobbered by ASM
 
     // Check if the float registers are recovered correctly after the exception
     // is handled.
+    // Please note that this register integrity testing is prone to be skipped
+    // with a different compiler/build. This will require that this entire
+    // function be written in assembly.
     if (f < 0.309 || f > 0.321 || d < 0.319 || d > 0.321)
     {
-        return ret;
+        return -1;
     }
 
     return 0;
@@ -45,8 +54,10 @@ uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD* exception_record)
         return OE_EXCEPTION_CONTINUE_SEARCH;
     }
 
-    // Skip the idiv instruction.
-    exception_record->context->rip += 3;
+    // Skip the idiv instruction - 2 is tied to the size of the idiv instruction
+    // and can change with a different compiler/build. Minimizing this with the
+    // use of the inline assembly for integer division
+    exception_record->context->rip += 2;
     return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
