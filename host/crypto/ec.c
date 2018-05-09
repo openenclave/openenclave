@@ -288,18 +288,108 @@ done:
     return result;
 }
 
-// Used to alias static function to public function names
-#define ALIAS(OLD, NEW) extern __typeof(NEW) NEW __attribute__((alias(#OLD)))
+void OE_ECPublicKeyInit(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
+{
+    return _PublicKeyInit((PublicKey*)publicKey, pkey);
+}
 
-ALIAS(_PublicKeyInit, OE_ECPublicKeyInit);
-ALIAS(_PrivateKeyReadPEM, OE_ECPrivateKeyReadPEM);
-ALIAS(_PrivateKeyWritePEM, OE_ECPrivateKeyWritePEM);
-ALIAS(_PublicKeyReadPEM, OE_ECPublicKeyReadPEM);
-ALIAS(_PublicKeyWritePEM, OE_ECPublicKeyWritePEM);
-ALIAS(_PrivateKeyFree, OE_ECPrivateKeyFree);
-ALIAS(_PublicKeyFree, OE_ECPublicKeyFree);
-ALIAS(_PrivateKeySign, OE_ECPrivateKeySign);
-ALIAS(_PublicKeyVerify, OE_ECPublicKeyVerify);
-ALIAS(_GenerateKeyPair, OE_ECGenerateKeyPair);
-ALIAS(_PublicKeyGetKeyBytes, OE_ECPublicKeyGetKeyBytes);
-ALIAS(_PublicKeyEqual, OE_ECPublicKeyEqual);
+OE_Result OE_ECPrivateKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_ECPrivateKey* privateKey)
+{
+    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey);
+}
+
+OE_Result OE_ECPrivateKeyWritePEM(
+    const OE_ECPrivateKey* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize);
+}
+
+OE_Result OE_ECPublicKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_ECPublicKey* privateKey)
+{
+    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey);
+}
+
+OE_Result OE_ECPublicKeyWritePEM(
+    const OE_ECPublicKey* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PublicKeyWritePEM((const PublicKey*)privateKey, pemData, pemSize);
+}
+
+OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey)
+{
+    return _PrivateKeyFree((PrivateKey*)privateKey);
+}
+
+OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey)
+{
+    return _PublicKeyFree((PublicKey*)publicKey);
+}
+
+OE_Result OE_ECPrivateKeySign(
+    const OE_ECPrivateKey* privateKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    uint8_t* signature,
+    size_t* signatureSize)
+{
+    return _PrivateKeySign(
+        (PrivateKey*)privateKey,
+        hashType,
+        hashData,
+        hashSize,
+        signature,
+        signatureSize);
+}
+
+OE_Result OE_ECPublicKeyVerify(
+    const OE_ECPublicKey* publicKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    const uint8_t* signature,
+    size_t signatureSize)
+{
+    return _PublicKeyVerify(
+        (PublicKey*)publicKey,
+        hashType,
+        hashData,
+        hashSize,
+        signature,
+        signatureSize);
+}
+
+OE_Result OE_ECGenerateKeyPair(
+    OE_ECType type,
+    OE_ECPrivateKey* privateKey,
+    OE_ECPublicKey* publicKey)
+{
+    return _GenerateKeyPair(type, (PrivateKey*)privateKey, (PublicKey*)publicKey);
+}
+
+OE_Result OE_ECPublicKeyGetKeyBytes(
+    const OE_ECPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    return _PublicKeyGetKeyBytes((PublicKey*)publicKey, buffer, bufferSize);
+}
+
+OE_Result OE_ECPublicKeyEqual(
+    const OE_ECPublicKey* publicKey1,
+    const OE_ECPublicKey* publicKey2,
+    bool* equal)
+{
+    return _PublicKeyEqual((PublicKey*)publicKey1, (PublicKey*)publicKey2,
+        equal);
+}

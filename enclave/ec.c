@@ -90,13 +90,11 @@ done:
     return result;
 }
 
-OE_Result OE_ECGenerateKeyPair(
+static OE_Result _GenerateKeyPair(
     OE_ECType type,
-    OE_ECPrivateKey* privateKey,
-    OE_ECPublicKey* publicKey)
+    PrivateKey* privateKey,
+    PublicKey* publicKey)
 {
-    PrivateKey* privateKeyImpl = (PrivateKey*)privateKey;
-    PublicKey* publicKeyImpl = (PublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
@@ -146,10 +144,10 @@ OE_Result OE_ECGenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInit(privateKeyImpl, &pk));
+    OE_CHECK(_PrivateKeyInit(privateKey, &pk));
 
     /* Initialize the public key parameter */
-    OE_CHECK(_PublicKeyInit(publicKeyImpl, &pk));
+    OE_CHECK(_PublicKeyInit(publicKey, &pk));
 
     result = OE_OK;
 
@@ -159,22 +157,21 @@ done:
 
     if (result != OE_OK)
     {
-        if (_PrivateKeyValid(privateKeyImpl))
-            _PrivateKeyFree(privateKeyImpl);
+        if (_PrivateKeyValid(privateKey))
+            _PrivateKeyFree(privateKey);
 
-        if (_PublicKeyValid(publicKeyImpl))
-            _PublicKeyFree(publicKeyImpl);
+        if (_PublicKeyValid(publicKey))
+            _PublicKeyFree(publicKey);
     }
 
     return result;
 }
 
-OE_Result OE_ECPublicKeyGetKeyBytes(
-    const OE_ECPublicKey* publicKey,
+static OE_Result _PublicKeyGetKeyBytes(
+    const PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    const PublicKey* impl = (const PublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
 
     /* Check for invalid parameters */
@@ -187,7 +184,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
 
     /* Convert public EC key to binary */
     {
-        const mbedtls_ecp_keypair* ec = mbedtls_pk_ec(impl->pk);
+        const mbedtls_ecp_keypair* ec = mbedtls_pk_ec(publicKey->pk);
         uint8_t scratch[1];
         uint8_t* data;
         size_t size;
@@ -233,26 +230,24 @@ done:
     return result;
 }
 
-OE_Result OE_ECPublicKeyEqual(
-    const OE_ECPublicKey* publicKey1,
-    const OE_ECPublicKey* publicKey2,
+static OE_Result _PublicKeyEqual(
+    const PublicKey* publicKey1,
+    const PublicKey* publicKey2,
     bool* equal)
 {
-    const PublicKey* impl1 = (const PublicKey*)publicKey1;
-    const PublicKey* impl2 = (const PublicKey*)publicKey2;
     OE_Result result = OE_UNEXPECTED;
 
     if (equal)
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(impl1) || !_PublicKeyValid(impl2) || !equal)
+    if (!_PublicKeyValid(publicKey1) || !_PublicKeyValid(publicKey2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the exponent and modulus */
     {
-        const mbedtls_ecp_keypair* ec1 = mbedtls_pk_ec(impl1->pk);
-        const mbedtls_ecp_keypair* ec2 = mbedtls_pk_ec(impl2->pk);
+        const mbedtls_ecp_keypair* ec1 = mbedtls_pk_ec(publicKey1->pk);
+        const mbedtls_ecp_keypair* ec2 = mbedtls_pk_ec(publicKey2->pk);
 
         if (!ec1 || !ec2)
             OE_RAISE(OE_INVALID_PARAMETER);
@@ -351,4 +346,28 @@ OE_Result OE_ECPublicKeyVerify(
         hashSize,
         signature,
         signatureSize);
+}
+
+OE_Result OE_ECGenerateKeyPair(
+    OE_ECType type,
+    OE_ECPrivateKey* privateKey,
+    OE_ECPublicKey* publicKey)
+{
+    return _GenerateKeyPair(type, (PrivateKey*)privateKey, (PublicKey*)publicKey);
+}
+
+OE_Result OE_ECPublicKeyGetKeyBytes(
+    const OE_ECPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    return _PublicKeyGetKeyBytes((PublicKey*)publicKey, buffer, bufferSize);
+}
+
+OE_Result OE_ECPublicKeyEqual(
+    const OE_ECPublicKey* publicKey1,
+    const OE_ECPublicKey* publicKey2,
+    bool* equal)
+{
+    return _PublicKeyEqual((PublicKey*)publicKey1, (PublicKey*)publicKey2, equal);
 }

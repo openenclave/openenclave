@@ -274,19 +274,117 @@ done:
     return result;
 }
 
-// Used to alias static function to public function names
-#define ALIAS(OLD, NEW) extern __typeof(NEW) NEW __attribute__((alias(#OLD)))
+void OE_RSAPublicKeyInit(OE_RSAPublicKey* publicKey, EVP_PKEY* pkey)
+{
+    return _PublicKeyInit((PublicKey*)publicKey, pkey);
+}
 
-ALIAS(_PublicKeyInit, OE_RSAPublicKeyInit);
-ALIAS(_PrivateKeyReadPEM, OE_RSAPrivateKeyReadPEM);
-ALIAS(_PrivateKeyWritePEM, OE_RSAPrivateKeyWritePEM);
-ALIAS(_PublicKeyReadPEM, OE_RSAPublicKeyReadPEM);
-ALIAS(_PublicKeyWritePEM, OE_RSAPublicKeyWritePEM);
-ALIAS(_PrivateKeyFree, OE_RSAPrivateKeyFree);
-ALIAS(_PublicKeyFree, OE_RSAPublicKeyFree);
-ALIAS(_PrivateKeySign, OE_RSAPrivateKeySign);
-ALIAS(_PublicKeyVerify, OE_RSAPublicKeyVerify);
-ALIAS(_GenerateKeyPair, OE_RSAGenerateKeyPair);
-ALIAS(_PublicKeyGetModulus, OE_RSAPublicKeyGetModulus);
-ALIAS(_PublicKeyGetExponent, OE_RSAPublicKeyGetExponent);
-ALIAS(_PublicKeyEqual, OE_RSAPublicKeyEqual);
+OE_Result OE_RSAPrivateKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_RSAPrivateKey* privateKey)
+{
+    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey);
+}
+
+OE_Result OE_RSAPrivateKeyWritePEM(
+    const OE_RSAPrivateKey* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize);
+}
+
+OE_Result OE_RSAPublicKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_RSAPublicKey* privateKey)
+{
+    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey);
+}
+
+OE_Result OE_RSAPublicKeyWritePEM(
+    const OE_RSAPublicKey* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PublicKeyWritePEM((const PublicKey*)privateKey, pemData, pemSize);
+}
+
+OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* privateKey)
+{
+    return _PrivateKeyFree((PrivateKey*)privateKey);
+}
+
+OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* publicKey)
+{
+    return _PublicKeyFree((PublicKey*)publicKey);
+}
+
+OE_Result OE_RSAPrivateKeySign(
+    const OE_RSAPrivateKey* privateKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    uint8_t* signature,
+    size_t* signatureSize)
+{
+    return _PrivateKeySign(
+        (PrivateKey*)privateKey,
+        hashType,
+        hashData,
+        hashSize,
+        signature,
+        signatureSize);
+}
+
+OE_Result OE_RSAPublicKeyVerify(
+    const OE_RSAPublicKey* publicKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    const uint8_t* signature,
+    size_t signatureSize)
+{
+    return _PublicKeyVerify(
+        (PublicKey*)publicKey,
+        hashType,
+        hashData,
+        hashSize,
+        signature,
+        signatureSize);
+}
+
+OE_Result OE_RSAGenerateKeyPair(
+    uint64_t bits,
+    uint64_t exponent,
+    OE_RSAPrivateKey* privateKey,
+    OE_RSAPublicKey* publicKey)
+{
+    return _GenerateKeyPair(bits, exponent, (PrivateKey*)privateKey, (PublicKey*)publicKey);
+}
+
+OE_Result OE_RSAPublicKeyGetModulus(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    return _PublicKeyGetModulus((PublicKey*)publicKey, buffer, bufferSize);
+}
+
+OE_Result OE_RSAPublicKeyGetExponent(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    return _PublicKeyGetExponent((PublicKey*)publicKey, buffer, bufferSize);
+}
+
+OE_Result OE_RSAPublicKeyEqual(
+    const OE_RSAPublicKey* publicKey1,
+    const OE_RSAPublicKey* publicKey2,
+    bool* equal)
+{
+    return _PublicKeyEqual((PublicKey*)publicKey1, (PublicKey*)publicKey2,
+        equal);
+}

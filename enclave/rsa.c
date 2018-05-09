@@ -83,19 +83,18 @@ done:
 }
 
 static OE_Result _GetPublicKeyModulusOrExponent(
-    const OE_RSAPublicKey* publicKey,
+    const PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize,
     bool getModulus)
 {
-    const PublicKey* impl = (const PublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     size_t requiredSize;
     mbedtls_rsa_context* rsa;
     const mbedtls_mpi* mpi;
 
     /* Check for invalid parameters */
-    if (!_PublicKeyValid(impl) || !bufferSize)
+    if (!_PublicKeyValid(publicKey) || !bufferSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then bufferSize must be zero */
@@ -103,7 +102,7 @@ static OE_Result _GetPublicKeyModulusOrExponent(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the RSA context */
-    if (!(rsa = impl->pk.pk_ctx))
+    if (!(rsa = publicKey->pk.pk_ctx))
         OE_RAISE(OE_FAILURE);
 
     /* Pick modulus or exponent */
@@ -133,11 +132,11 @@ done:
     return result;
 }
 
-OE_Result OE_RSAGenerateKeyPair(
+static OE_Result _GenerateKeyPair(
     uint64_t bits,
     uint64_t exponent,
-    OE_RSAPrivateKey* privateKey,
-    OE_RSAPublicKey* publicKey)
+    PrivateKey* privateKey,
+    PublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_ctr_drbg_context* drbg;
@@ -180,10 +179,10 @@ OE_Result OE_RSAGenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInit((PrivateKey*)privateKey, &pk));
+    OE_CHECK(_PrivateKeyInit(privateKey, &pk));
 
     /* Initialize the public key parameter */
-    OE_CHECK(OE_RSAPublicKeyInit(publicKey, &pk));
+    OE_CHECK(_PublicKeyInit(publicKey, &pk));
 
     result = OE_OK;
 
@@ -193,52 +192,50 @@ done:
 
     if (result != OE_OK)
     {
-        if (_PrivateKeyValid((const PrivateKey*)privateKey))
-            _PrivateKeyFree((PrivateKey*)privateKey);
+        if (_PrivateKeyValid(privateKey))
+            _PrivateKeyFree(privateKey);
 
-        if (_PublicKeyValid((const PublicKey*)publicKey))
-            _PublicKeyFree((PublicKey*)publicKey);
+        if (_PublicKeyValid(publicKey))
+            _PublicKeyFree(publicKey);
     }
 
     return result;
 }
 
-OE_Result OE_RSAPublicKeyGetModulus(
-    const OE_RSAPublicKey* publicKey,
+OE_Result _PublicKeyGetModulus(
+    const PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
     return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, true);
 }
 
-OE_Result OE_RSAPublicKeyGetExponent(
-    const OE_RSAPublicKey* publicKey,
+OE_Result _PublicKeyGetExponent(
+    const PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
     return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, false);
 }
 
-OE_Result OE_RSAPublicKeyEqual(
-    const OE_RSAPublicKey* publicKey1,
-    const OE_RSAPublicKey* publicKey2,
+static OE_Result _PublicKeyEqual(
+    const PublicKey* publicKey1,
+    const PublicKey* publicKey2,
     bool* equal)
 {
-    const PublicKey* impl1 = (const PublicKey*)publicKey1;
-    const PublicKey* impl2 = (const PublicKey*)publicKey2;
     OE_Result result = OE_UNEXPECTED;
 
     if (equal)
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(impl1) || !_PublicKeyValid(impl2) || !equal)
+    if (!_PublicKeyValid(publicKey1) || !_PublicKeyValid(publicKey2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the exponent and modulus */
     {
-        const mbedtls_rsa_context* rsa1 = impl1->pk.pk_ctx;
-        const mbedtls_rsa_context* rsa2 = impl2->pk.pk_ctx;
+        const mbedtls_rsa_context* rsa1 = publicKey1->pk.pk_ctx;
+        const mbedtls_rsa_context* rsa2 = publicKey2->pk.pk_ctx;
 
         if (!rsa1 || !rsa2)
             OE_RAISE(OE_INVALID_PARAMETER);
@@ -337,4 +334,38 @@ OE_Result OE_RSAPublicKeyVerify(
         hashSize,
         signature,
         signatureSize);
+}
+
+OE_Result OE_RSAGenerateKeyPair(
+    uint64_t bits,
+    uint64_t exponent,
+    OE_RSAPrivateKey* privateKey,
+    OE_RSAPublicKey* publicKey)
+{
+    return _GenerateKeyPair(bits, exponent, (PrivateKey*)privateKey, (PublicKey*)publicKey);
+}
+
+OE_Result OE_RSAPublicKeyGetModulus(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    return _PublicKeyGetModulus((PublicKey*)publicKey, buffer, bufferSize);
+}
+
+OE_Result OE_RSAPublicKeyGetExponent(
+    const OE_RSAPublicKey* publicKey,
+    uint8_t* buffer,
+    size_t* bufferSize)
+{
+    return _PublicKeyGetExponent((PublicKey*)publicKey, buffer, bufferSize);
+}
+
+OE_Result OE_RSAPublicKeyEqual(
+    const OE_RSAPublicKey* publicKey1,
+    const OE_RSAPublicKey* publicKey2,
+    bool* equal)
+{
+    return _PublicKeyEqual((PublicKey*)publicKey1, (PublicKey*)publicKey2,
+        equal);
 }
