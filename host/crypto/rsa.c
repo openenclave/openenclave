@@ -100,8 +100,8 @@ static OE_Result _GenerateKeyPair(
         if (!BIO_get_mem_ptr(bio, &mem))
             OE_RAISE(OE_FAILURE);
 
-        if (_PrivateKeyReadPEM(
-                (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
+        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey) !=
+            OE_OK)
         {
             OE_RAISE(OE_FAILURE);
         }
@@ -125,8 +125,8 @@ static OE_Result _GenerateKeyPair(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (_PublicKeyReadPEM(
-                (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
+        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey) !=
+            OE_OK)
         {
             OE_RAISE(OE_FAILURE);
         }

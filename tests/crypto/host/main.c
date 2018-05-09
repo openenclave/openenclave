@@ -16,7 +16,6 @@
 
 const char* arg0;
 
-#define BUILD_HOST
 #include "../tests.c"
 
 int main(int argc, const char* argv[])

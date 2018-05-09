@@ -20,8 +20,7 @@ typedef struct _OE_AESCMAC
 
 /**
  * OE_SecureAESCMACEqual does a secure constant time comparison of two
- * OE_AESCMAC
- * instances. Returns 1 if equal and 0 otherwise.
+ * OE_AESCMAC instances. Returns 1 if equal and 0 otherwise.
  */
 OE_INLINE uint8_t
 OE_SecureAESCMACEqual(const OE_AESCMAC* a, const OE_AESCMAC* b)

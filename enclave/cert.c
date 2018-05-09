@@ -524,7 +524,6 @@ OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the number of certificates in the chain */
-    OE_STATIC_ASSERT_TYPE(impl->referent->length, size_t);
     n = impl->referent->length;
 
     /* Iterate from leaf upwards looking for a self-signed certificate */

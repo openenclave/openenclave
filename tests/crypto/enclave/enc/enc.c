@@ -32,12 +32,9 @@ OE_ECALL void Test(void* args_)
 
     /* Verify that all malloc'd memory has been released */
     OE_TEST(OE_GetMallocStats(&stats) == OE_OK);
-    if (stats.inUseBytes != inUseBytes)
+    if (stats.inUseBytes > inUseBytes)
     {
-        fprintf(stderr, "ERROR: memory leaked\n");
-        fprintf(stderr, "In use bytes: %lu\n", stats.inUseBytes);
-        fprintf(stderr, "System bytes: %lu\n", stats.systemBytes);
-        fprintf(stderr, "Peak system bytes: %lu\n", stats.peakSystemBytes);
+        fprintf(stderr, "ERROR: memory leaked: %lu bytes\n", inUseBytes);
         OE_Abort();
     }
 }

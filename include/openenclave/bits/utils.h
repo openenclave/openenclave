@@ -119,14 +119,6 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
 #define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() asm volatile("" ::: "memory")
 #define OE_ATOMIC_MEMORY_BARRIER_RELEASE() asm volatile("" ::: "memory")
 
-/* Statically assert that the argument has the expected type */
-#define OE_STATIC_ASSERT_TYPE(ARG, TYPE) \
-    do                                   \
-    {                                    \
-        const TYPE* _ptr_ = &ARG;        \
-        (void)_ptr_;                     \
-    } while (0)
-
 /**
  * OE_SecureZeroFill is intended to be used to zero out secrets.
  * Plain memset/for-loops can get optimized away be the compiler.
