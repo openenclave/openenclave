@@ -90,11 +90,13 @@ done:
     return result;
 }
 
-static OE_Result _GenerateKeyPair(
+OE_Result OE_ECGenerateKeyPair(
     OE_ECType type,
-    PrivateKey* privateKey,
-    PublicKey* publicKey)
+    OE_ECPrivateKey* privateKey,
+    OE_ECPublicKey* publicKey)
 {
+    PrivateKey* privateKeyImpl = (PrivateKey*)privateKey;
+    PublicKey* publicKeyImpl = (PublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
@@ -144,10 +146,10 @@ static OE_Result _GenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInit(privateKey, &pk));
+    OE_CHECK(_PrivateKeyInit(privateKeyImpl, &pk));
 
     /* Initialize the public key parameter */
-    OE_CHECK(_PublicKeyInit(publicKey, &pk));
+    OE_CHECK(_PublicKeyInit(publicKeyImpl, &pk));
 
     result = OE_OK;
 
@@ -157,21 +159,22 @@ done:
 
     if (result != OE_OK)
     {
-        if (_PrivateKeyValid(privateKey))
-            _PrivateKeyFree(privateKey);
+        if (_PrivateKeyValid(privateKeyImpl))
+            _PrivateKeyFree(privateKeyImpl);
 
-        if (_PublicKeyValid(publicKey))
-            _PublicKeyFree(publicKey);
+        if (_PublicKeyValid(publicKeyImpl))
+            _PublicKeyFree(publicKeyImpl);
     }
 
     return result;
 }
 
-static OE_Result _PublicKeyGetKeyBytes(
-    const PublicKey* publicKey,
+OE_Result OE_ECPublicKeyGetKeyBytes(
+    const OE_ECPublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
+    const PublicKey* impl = (const PublicKey*)publicKey;
     OE_Result result = OE_UNEXPECTED;
 
     /* Check for invalid parameters */
@@ -184,7 +187,7 @@ static OE_Result _PublicKeyGetKeyBytes(
 
     /* Convert public EC key to binary */
     {
-        const mbedtls_ecp_keypair* ec = mbedtls_pk_ec(publicKey->pk);
+        const mbedtls_ecp_keypair* ec = mbedtls_pk_ec(impl->pk);
         uint8_t scratch[1];
         uint8_t* data;
         size_t size;
@@ -230,24 +233,26 @@ done:
     return result;
 }
 
-static OE_Result _PublicKeyEqual(
-    const PublicKey* publicKey1,
-    const PublicKey* publicKey2,
+OE_Result OE_ECPublicKeyEqual(
+    const OE_ECPublicKey* publicKey1,
+    const OE_ECPublicKey* publicKey2,
     bool* equal)
 {
+    const PublicKey* impl1 = (const PublicKey*)publicKey1;
+    const PublicKey* impl2 = (const PublicKey*)publicKey2;
     OE_Result result = OE_UNEXPECTED;
 
     if (equal)
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(publicKey1) || !_PublicKeyValid(publicKey2) || !equal)
+    if (!_PublicKeyValid(impl1) || !_PublicKeyValid(impl2) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the exponent and modulus */
     {
-        const mbedtls_ecp_keypair* ec1 = mbedtls_pk_ec(publicKey1->pk);
-        const mbedtls_ecp_keypair* ec2 = mbedtls_pk_ec(publicKey2->pk);
+        const mbedtls_ecp_keypair* ec1 = mbedtls_pk_ec(impl1->pk);
+        const mbedtls_ecp_keypair* ec2 = mbedtls_pk_ec(impl2->pk);
 
         if (!ec1 || !ec2)
             OE_RAISE(OE_INVALID_PARAMETER);
@@ -265,18 +270,85 @@ done:
     return result;
 }
 
-// Used to alias static function to public function names
-#define ALIAS(OLD, NEW) extern __typeof(NEW) NEW __attribute__((alias(#OLD)))
+OE_Result OE_ECPublicKeyInit(
+    OE_ECPublicKey* publicKey,
+    const mbedtls_pk_context* pk)
+{
+    return _PublicKeyInit((PublicKey*)publicKey, pk);
+}
 
-ALIAS(_PublicKeyInit, OE_ECPublicKeyInit);
-ALIAS(_PrivateKeyReadPEM, OE_ECPrivateKeyReadPEM);
-ALIAS(_PrivateKeyWritePEM, OE_ECPrivateKeyWritePEM);
-ALIAS(_PublicKeyReadPEM, OE_ECPublicKeyReadPEM);
-ALIAS(_PublicKeyWritePEM, OE_ECPublicKeyWritePEM);
-ALIAS(_PrivateKeyFree, OE_ECPrivateKeyFree);
-ALIAS(_PublicKeyFree, OE_ECPublicKeyFree);
-ALIAS(_PrivateKeySign, OE_ECPrivateKeySign);
-ALIAS(_PublicKeyVerify, OE_ECPublicKeyVerify);
-ALIAS(_GenerateKeyPair, OE_ECGenerateKeyPair);
-ALIAS(_PublicKeyGetKeyBytes, OE_ECPublicKeyGetKeyBytes);
-ALIAS(_PublicKeyEqual, OE_ECPublicKeyEqual);
+OE_Result OE_ECPrivateKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_ECPrivateKey* privateKey)
+{
+    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey);
+}
+
+OE_Result OE_ECPrivateKeyWritePEM(
+    const OE_ECPrivateKey* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize);
+}
+
+OE_Result OE_ECPublicKeyReadPEM(
+    const uint8_t* pemData,
+    size_t pemSize,
+    OE_ECPublicKey* privateKey)
+{
+    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey);
+}
+
+OE_Result OE_ECPublicKeyWritePEM(
+    const OE_ECPublicKey* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return _PublicKeyWritePEM((const PublicKey*)privateKey, pemData, pemSize);
+}
+
+OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey)
+{
+    return _PrivateKeyFree((PrivateKey*)privateKey);
+}
+
+OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey)
+{
+    return _PublicKeyFree((PublicKey*)publicKey);
+}
+
+OE_Result OE_ECPrivateKeySign(
+    const OE_ECPrivateKey* privateKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    uint8_t* signature,
+    size_t* signatureSize)
+{
+    return _PrivateKeySign(
+        (PrivateKey*)privateKey,
+        hashType,
+        hashData,
+        hashSize,
+        signature,
+        signatureSize);
+}
+
+OE_Result OE_ECPublicKeyVerify(
+    const OE_ECPublicKey* publicKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    const uint8_t* signature,
+    size_t signatureSize)
+{
+    return _PublicKeyVerify(
+        (PublicKey*)publicKey,
+        hashType,
+        hashData,
+        hashSize,
+        signature,
+        signatureSize);
+}

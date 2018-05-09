@@ -20,7 +20,7 @@ OE_INLINE bool _PrivateKeyValid(const PrivateKey* privateKey)
     return privateKey && privateKey->magic == PRIVATE_KEY_MAGIC;
 }
 
-static OE_Result _PrivateKeyInit(PrivateKey* privateKey, mbedtls_pk_context* pk)
+static OE_Result _PrivateKeyInit(PrivateKey* privateKey, const mbedtls_pk_context* pk)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -70,7 +70,7 @@ OE_INLINE bool _PublicKeyValid(const PublicKey* publicKey)
     return publicKey && publicKey->magic == PUBLIC_KEY_MAGIC;
 }
 
-static OE_Result _PublicKeyInit(PublicKey* publicKey, mbedtls_pk_context* pk)
+static OE_Result _PublicKeyInit(PublicKey* publicKey, const mbedtls_pk_context* pk)
 {
     OE_Result result = OE_UNEXPECTED;
 
