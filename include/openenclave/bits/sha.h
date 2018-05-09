@@ -66,20 +66,6 @@ OE_Result OE_SHA256Update(
  */
 OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256);
 
-/**
- * Computes SHA-256 hash of given data.
- *
- * This function computes the SHA-256 hash and writes it to the user
- * buffer.
- *
- * @param data buffer of data to be hashed
- * @param size size of the buffer
- * @param sha256 buffer where hash is written
- *
- * @return OE_OK upon success
- */
-OE_Result OE_ComputeSHA256(const void* data, uint32_t size, OE_SHA256* sha256);
-
 OE_EXTERNC_END
 
 #endif /* _OE_SHA_H */
