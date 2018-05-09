@@ -417,7 +417,7 @@ OE_Result OE_CertGetRSAPublicKey(
         OE_RAISE(OE_FAILURE);
 
     /* Copy the public key from the certificate */
-    OE_CHECK(OE_RSAPublicKeyInitFrom(publicKey, &impl->cert->pk));
+    OE_CHECK(OE_RSAPublicKeyInit(publicKey, &impl->cert->pk));
 
     result = OE_OK;
 
@@ -444,7 +444,7 @@ OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
         OE_RAISE(OE_FAILURE);
 
     /* Copy the public key from the certificate */
-    OE_RAISE(OE_ECPublicKeyInitFrom(publicKey, &impl->cert->pk));
+    OE_RAISE(OE_ECPublicKeyInit(publicKey, &impl->cert->pk));
 
     result = OE_OK;
 

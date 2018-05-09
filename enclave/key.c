@@ -23,42 +23,35 @@ OE_INLINE bool _PrivateKeyValid(const PrivateKey* privateKey)
     return privateKey && privateKey->magic == PRIVATE_KEY_MAGIC;
 }
 
-OE_INLINE void _PrivateKeyInit(PrivateKey* privateKey)
-{
-    privateKey->magic = PRIVATE_KEY_MAGIC;
-    mbedtls_pk_init(&privateKey->pk);
-}
-
-OE_INLINE void _PrivateKeyRelease(PrivateKey* privateKey)
-{
-    if (privateKey)
-    {
-        mbedtls_pk_free(&privateKey->pk);
-        OE_Memset(privateKey, 0, sizeof(PrivateKey));
-    }
-}
-
-static OE_Result _PrivateKeyInitFrom(
-    PrivateKey* privateKey,
-    const mbedtls_pk_context* pk)
+static OE_Result _PrivateKeyInit(PrivateKey* privateKey, mbedtls_pk_context* pk)
 {
     OE_Result result = OE_UNEXPECTED;
 
-    _PrivateKeyInit(privateKey);
-
-    if (!privateKey || !pk)
+    if (!privateKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(_CopyKey(&privateKey->pk, pk, true));
+    privateKey->magic = 0;
+
+    if (pk)
+        OE_CHECK(_CopyKey(&privateKey->pk, pk, true));
+    else
+        mbedtls_pk_init(&privateKey->pk);
+
+    privateKey->magic = PRIVATE_KEY_MAGIC;
 
     result = OE_OK;
 
 done:
-
-    if (result != OE_OK)
-        _PrivateKeyRelease(privateKey);
-
     return result;
+}
+
+OE_INLINE void _PrivateKeyRelease(PrivateKey* privateKey)
+{
+    if (privateKey && privateKey->magic == PRIVATE_KEY_MAGIC)
+    {
+        mbedtls_pk_free(&privateKey->pk);
+        OE_Memset(privateKey, 0, sizeof(PrivateKey));
+    }
 }
 
 /*
@@ -80,15 +73,31 @@ OE_INLINE bool _PublicKeyValid(const PublicKey* publicKey)
     return publicKey && publicKey->magic == PUBLIC_KEY_MAGIC;
 }
 
-OE_INLINE void _PublicKeyInit(PublicKey* publicKey)
+static OE_Result _PublicKeyInit(PublicKey* publicKey, mbedtls_pk_context* pk)
 {
+    OE_Result result = OE_UNEXPECTED;
+
+    if (!publicKey)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    publicKey->magic = 0;
+
+    if (pk)
+        OE_CHECK(_CopyKey(&publicKey->pk, pk, false));
+    else
+        mbedtls_pk_init(&publicKey->pk);
+
     publicKey->magic = PUBLIC_KEY_MAGIC;
-    mbedtls_pk_init(&publicKey->pk);
+
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 OE_INLINE void _PublicKeyRelease(PublicKey* publicKey)
 {
-    if (publicKey)
+    if (publicKey && publicKey->magic == PUBLIC_KEY_MAGIC)
     {
         mbedtls_pk_free(&publicKey->pk);
         OE_Memset(publicKey, 0, sizeof(PublicKey));
@@ -125,29 +134,6 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
 **==============================================================================
 */
 
-static OE_Result _PublicKeyInitFrom(
-    PublicKey* publicKey,
-    const mbedtls_pk_context* pk)
-{
-    OE_Result result = OE_UNEXPECTED;
-
-    _PublicKeyInit(publicKey);
-
-    if (!publicKey || !pk)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    OE_CHECK(_CopyKey(&publicKey->pk, pk, false));
-
-    result = OE_OK;
-
-done:
-
-    if (result != OE_OK)
-        _PublicKeyRelease(publicKey);
-
-    return result;
-}
-
 static OE_Result _PrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
@@ -157,7 +143,7 @@ static OE_Result _PrivateKeyReadPEM(
 
     /* Initialize the key */
     if (privateKey)
-        _PrivateKeyInit(privateKey);
+        OE_CHECK(_PrivateKeyInit(privateKey, NULL));
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !privateKey)
@@ -237,7 +223,7 @@ static OE_Result _PublicKeyReadPEM(
 
     /* Initialize the key */
     if (publicKey)
-        _PublicKeyInit(publicKey);
+        OE_CHECK(_PublicKeyInit(publicKey, NULL));
 
     /* Check parameters */
     if (!pemData || pemSize == 0 || !publicKey)

@@ -144,10 +144,10 @@ static OE_Result _GenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInitFrom(privateKey, &pk));
+    OE_CHECK(_PrivateKeyInit(privateKey, &pk));
 
     /* Initialize the public key parameter */
-    OE_CHECK(_PublicKeyInitFrom(publicKey, &pk));
+    OE_CHECK(_PublicKeyInit(publicKey, &pk));
 
     result = OE_OK;
 
@@ -265,7 +265,7 @@ done:
     return result;
 }
 
-ALIAS(_PublicKeyInitFrom, OE_ECPublicKeyInitFrom);
+ALIAS(_PublicKeyInit, OE_ECPublicKeyInit);
 ALIAS(_PrivateKeyReadPEM, OE_ECPrivateKeyReadPEM);
 ALIAS(_PrivateKeyWritePEM, OE_ECPrivateKeyWritePEM);
 ALIAS(_PublicKeyReadPEM, OE_ECPublicKeyReadPEM);

@@ -179,10 +179,10 @@ static OE_Result _GenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInitFrom(privateKey, &pk));
+    OE_CHECK(_PrivateKeyInit(privateKey, &pk));
 
     /* Initialize the public key parameter */
-    OE_CHECK(_PublicKeyInitFrom(publicKey, &pk));
+    OE_CHECK(_PublicKeyInit(publicKey, &pk));
 
     result = OE_OK;
 
@@ -253,7 +253,7 @@ done:
     return result;
 }
 
-ALIAS(_PublicKeyInitFrom, OE_RSAPublicKeyInitFrom);
+ALIAS(_PublicKeyInit, OE_RSAPublicKeyInit);
 ALIAS(_PrivateKeyReadPEM, OE_RSAPrivateKeyReadPEM);
 ALIAS(_PrivateKeyWritePEM, OE_RSAPrivateKeyWritePEM);
 ALIAS(_PublicKeyReadPEM, OE_RSAPublicKeyReadPEM);
