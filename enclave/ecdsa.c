@@ -3,13 +3,12 @@
 
 #include <mbedtls/config.h>
 #include <mbedtls/ecdsa.h>
-
+#include <mbedtls/sha256.h>
 #include <openenclave/enclave.h>
 
 #include <openenclave/bits/ecdsa.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/sha.h>
 #include <openenclave/bits/utils.h>
 
 OE_Result OE_ECDSA256_SHA_Verify(
@@ -19,7 +18,7 @@ OE_Result OE_ECDSA256_SHA_Verify(
     const OE_ECDSA256Signature* signature)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_SHA256 sha256 = {0};
+    uint8_t sha256[32];
     int res = 0;
 
     mbedtls_ecp_group grp;
@@ -46,10 +45,9 @@ OE_Result OE_ECDSA256_SHA_Verify(
     if (res != 0)
         goto done;
 
-    OE_CHECK(OE_ComputeSHA256(data, size, &sha256));
+    mbedtls_sha256((const uint8_t*)data, size, sha256, 0);
 
-    if (mbedtls_ecdsa_verify(
-            &grp, (const uint8_t*)&sha256, sizeof(sha256), &Q, &r, &s) != 0)
+    if (mbedtls_ecdsa_verify(&grp, sha256, sizeof(sha256), &Q, &r, &s) != 0)
         OE_RAISE(OE_VERIFY_FAILED);
 
     result = OE_OK;

@@ -115,18 +115,19 @@ OE_ECALL void VerifyQuote(void* args_)
 
     // TODO:
     //      Quote validation
-    OE_CHECK( VerityQuoteImpl(
-        encQuote,
-        encArg->quoteSize,
-        encPemPckCertificate,
-        encArg->pemPckCertificateSize,
-        encPckCrl,
-        encArg->pckCrlSize,
-        encTcbInfoJson,
-        encArg->tcbInfoJsonSize) );
+    OE_CHECK(
+        VerityQuoteImpl(
+            encQuote,
+            encArg->quoteSize,
+            encPemPckCertificate,
+            encArg->pemPckCertificateSize,
+            encPckCrl,
+            encArg->pckCrlSize,
+            encTcbInfoJson,
+            encArg->tcbInfoJsonSize));
 
     result = OE_OK;
-    
+
 done:
     if (hostArg)
         hostArg->result = result;

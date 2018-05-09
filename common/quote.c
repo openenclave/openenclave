@@ -94,6 +94,7 @@ static OE_Result VerityQuoteImpl(
     SGX_QEAuthData qeAuthData = {0};
     SGX_QECertData qeCertData = {0};
     OE_Cert pckCert = {0};
+    OE_SHA256Context sha256Ctx = {};
     OE_SHA256 sha256 = {0};
     uint8_t found = 0;
     uint16_t i;
@@ -134,11 +135,17 @@ static OE_Result VerityQuoteImpl(
     if (!found)
         OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
 
+    OE_CHECK(OE_SHA256Init(&sha256Ctx));
     OE_CHECK(
-        OE_ComputeSHA256(
+        OE_SHA256Update(
+            &sha256Ctx,
             (const uint8_t*)&quoteAuthData->attestationKey,
-            sizeof(quoteAuthData->attestationKey),
-            &sha256));
+            sizeof(quoteAuthData->attestationKey)));
+    if (qeAuthData.size > 0)
+    {
+        OE_CHECK(OE_SHA256Update(&sha256Ctx, qeAuthData.data, qeAuthData.size));
+    }
+    OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
 
     if (!OE_ConstantTimeMemEqual(
             &sha256, &quoteAuthData->qeReportBody.reportData, sizeof(sha256)))
