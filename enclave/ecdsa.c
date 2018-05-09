@@ -24,12 +24,12 @@ OE_Result OE_ECDSA256_SHA_Verify(
 
     mbedtls_ecp_group grp;
     mbedtls_ecp_point Q;
-    mbedtls_mpi d, r, s;
+    mbedtls_mpi r, s;
 
+    // mbedtls setup
     mbedtls_ecp_group_init(&grp);
     mbedtls_ecp_point_init(&Q);
 
-    mbedtls_mpi_init(&d);
     mbedtls_mpi_init(&r);
     mbedtls_mpi_init(&s);
 
@@ -56,7 +56,6 @@ OE_Result OE_ECDSA256_SHA_Verify(
 done:
     mbedtls_ecp_group_free(&grp);
     mbedtls_ecp_point_free(&Q);
-    mbedtls_mpi_free(&d);
     mbedtls_mpi_free(&r);
     mbedtls_mpi_free(&s);
 
