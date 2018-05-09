@@ -4,6 +4,22 @@
 /*
 **==============================================================================
 **
+** key.c:
+**
+** This file is included by other sources to define the static functions below.
+** These function depend on the definition of the following.
+**
+**     PRIVATE_KEY_MAGIC - magic number for this type of private key
+**     PUBLIC_KEY_MAGIC - magic number for this type of public key
+**     MBEDTLS_PK_KEYTYPE - the MBEDTLS key type tag
+**     _CopyKey() - function for copying keys of the given type
+**
+**==============================================================================
+*/
+
+/*
+**==============================================================================
+**
 ** PrivateKey
 **
 **==============================================================================

@@ -1,6 +1,22 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+/*
+**==============================================================================
+**
+** key.c:
+**
+** This file is included by other sources to define the static functions below.
+** These function depend on the definition of the following.
+**
+**     PRIVATE_KEY_MAGIC - magic number for this type of private key
+**     PUBLIC_KEY_MAGIC - magic number for this type of public key
+**     KEYTYPE - typedef of OpenSSL key structure
+**     EVP_PKEY_KEYTYPE - OpenSSL key type tag
+**
+**==============================================================================
+*/
+
 typedef struct _PrivateKey
 {
     uint64_t magic;
