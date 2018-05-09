@@ -16,8 +16,7 @@ typedef struct _OE_JsonParser
 
 uint8_t isAlnum(uint8_t c)
 {
-    return (((unsigned)c|32)-'a' < 26)
-        || ((unsigned)c-'0' < 10);
+    return (((unsigned)c | 32) - 'a' < 26) || ((unsigned)c - '0' < 10);
 }
 
 OE_INLINE uint8_t isSpace(uint8_t c)
@@ -172,7 +171,8 @@ static const uint8_t* readProperty(
     itr = readQuotedString(p, itr, end);
 
     if (!p->parseFailed && p->interface.propertyName)
-        if (p->interface.propertyName(p->data, prop_name, itr - prop_name - 1) != OE_OK)
+        if (p->interface.propertyName(
+                p->data, prop_name, itr - prop_name - 1) != OE_OK)
             return end;
 
     // (3) =>
@@ -245,14 +245,14 @@ static const uint8_t* read(
     {
         itr = readNumber(p, itr, end);
         if (!p->parseFailed && p->interface.number)
-            if (p->interface.number(p->data, start, itr - start)!= OE_OK)                
+            if (p->interface.number(p->data, start, itr - start) != OE_OK)
                 return end;
     }
     else if (*itr == '"' || *itr == '\'')
     {
         itr = readQuotedString(p, itr, end);
         if (!p->parseFailed && p->interface.string)
-            if (p->interface.string(p->data, start, itr - start)!= OE_OK)
+            if (p->interface.string(p->data, start, itr - start) != OE_OK)
                 return end;
     }
     else if (*itr == '[')
@@ -263,7 +263,7 @@ static const uint8_t* read(
     {
         itr = readObject(p, itr, end);
     }
-    
+
     return skipWS(itr, end);
 }
 
@@ -276,19 +276,17 @@ OE_Result OE_ParseJson(
 {
     OE_JsonParser p = {0};
     const uint8_t* itr = json;
-    const uint8_t* end = json+jsonLength;
+    const uint8_t* end = json + jsonLength;
 
     p.parseFailed = 0;
     p.data = callbackData;
     if (interface)
         p.interface = *interface;
-    
 
     itr = read(&p, itr, end);
     if (itr == end && !p.parseFailed)
         return OE_OK;
     return OE_FAILURE;
 }
-
 
 OE_EXTERNC_END
