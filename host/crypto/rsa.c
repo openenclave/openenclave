@@ -274,6 +274,9 @@ done:
     return result;
 }
 
+// Used to alias static function to public function names
+#define ALIAS(OLD, NEW) extern __typeof(NEW) NEW __attribute__((alias(#OLD)))
+
 ALIAS(_PublicKeyInit, OE_RSAPublicKeyInit);
 ALIAS(_PrivateKeyReadPEM, OE_RSAPrivateKeyReadPEM);
 ALIAS(_PrivateKeyWritePEM, OE_RSAPrivateKeyWritePEM);
