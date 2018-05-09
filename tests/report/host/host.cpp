@@ -34,6 +34,9 @@ void TestVerifyQuote()
     std::vector<uint8_t> tcbInfo =
         fileToBytes("./../../../tests/report/data/tcbInfo.json");
 
+    if (pckCert.back() != '\0')
+        pckCert.push_back('\0');
+
     args.quote = &quote[0];
     args.quoteSize = quote.size();
     args.pemPckCertificate = &pckCert[0];
@@ -44,6 +47,7 @@ void TestVerifyQuote()
     args.tcbInfoJsonSize = tcbInfo.size();
 
     OE_TEST(OE_CallEnclave(g_Enclave, "VerifyQuote", &args) == OE_OK);
+    OE_TEST(args.result == OE_OK);
 }
 
 int main(int argc, const char* argv[])
@@ -89,16 +93,16 @@ int main(int argc, const char* argv[])
      * Host API tests.
      */
     g_Enclave = enclave;
-    /*TestLocalReport(&targetInfo);
+    TestLocalReport(&targetInfo);
     TestRemoteReport(NULL);
     TestParseReportNegative(NULL);
-    TestLocalVerifyReport(NULL);*/
+    TestLocalVerifyReport(NULL);
 
     /*
      * Enclave API tests.
      */
 
-    /*OE_TEST(OE_CallEnclave(enclave, "TestLocalReport", &targetInfo) == OE_OK);
+    OE_TEST(OE_CallEnclave(enclave, "TestLocalReport", &targetInfo) == OE_OK);
 
     OE_TEST(OE_CallEnclave(enclave, "TestRemoteReport", &targetInfo) == OE_OK);
 
@@ -107,8 +111,7 @@ int main(int argc, const char* argv[])
         OE_OK);
 
     OE_TEST(
-        OE_CallEnclave(enclave, "TestLocalVerifyReport", &targetInfo) ==
-    OE_OK);*/
+        OE_CallEnclave(enclave, "TestLocalVerifyReport", &targetInfo) == OE_OK);
 
     TestVerifyQuote();
 
