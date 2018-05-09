@@ -10,7 +10,7 @@
 /*
 **==============================================================================
 **
-** Local defintions:
+** Provide definitions needed for key.c and include key.c.
 **
 **==============================================================================
 */
@@ -45,6 +45,14 @@ static int PEM_write_bio_KEYTYPEPrivateKey(
 }
 
 #include "key.c"
+
+/*
+**==============================================================================
+**
+** Definitions below depend on definitions provided by key.c.
+**
+**==============================================================================
+*/
 
 OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_ECPublicKey));
 OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_ECPublicKey));

@@ -13,6 +13,7 @@
 **     PUBLIC_KEY_MAGIC - magic number for this type of public key
 **     MBEDTLS_PK_KEYTYPE - the MBEDTLS key type tag
 **     _CopyKey() - function for copying keys of the given type
+**     EVP_PKEY_get1_KEYTYPE -
 **
 **==============================================================================
 */
@@ -20,7 +21,9 @@
 /*
 **==============================================================================
 **
-** PrivateKey
+** PrivateKey:
+**
+**     Internal implementation for MBEDTLS private key types (e.g., RSA, EC)
 **
 **==============================================================================
 */
@@ -70,7 +73,9 @@ OE_INLINE void _PrivateKeyRelease(PrivateKey* privateKey)
 /*
 **==============================================================================
 **
-** PublicKey
+** PublicKey:
+**
+**     Internal implementation for MBEDTLS public key types (e.g., RSA, EC)
 **
 **==============================================================================
 */

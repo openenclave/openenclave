@@ -7,6 +7,14 @@
 #include "pem.h"
 #include "random.h"
 
+/*
+**==============================================================================
+**
+** Provide definitions needed for key.c and include key.c.
+**
+**==============================================================================
+*/
+
 static OE_Result _CopyKey(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
@@ -15,7 +23,16 @@ static OE_Result _CopyKey(
 static const uint64_t PRIVATE_KEY_MAGIC = 0xd48de5bae3994b41;
 static const uint64_t PUBLIC_KEY_MAGIC = 0x713600af058c447a;
 static const mbedtls_pk_type_t MBEDTLS_PK_KEYTYPE = MBEDTLS_PK_RSA;
+
 #include "key.c"
+
+/*
+**==============================================================================
+**
+** Definitions below depend on definitions provided by key.c.
+**
+**==============================================================================
+*/
 
 OE_STATIC_ASSERT(sizeof(PrivateKey) <= sizeof(OE_RSAPrivateKey));
 OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_RSAPublicKey));

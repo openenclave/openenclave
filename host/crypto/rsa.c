@@ -10,6 +10,14 @@
 #include <string.h>
 #include "init.h"
 
+/*
+**==============================================================================
+**
+** Provide definitions needed for key.c and include key.c.
+**
+**==============================================================================
+*/
+
 static const uint64_t PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
 static const uint64_t PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
 
@@ -40,6 +48,14 @@ static int PEM_write_bio_KEYTYPEPrivateKey(
 }
 
 #include "key.c"
+
+/*
+**==============================================================================
+**
+** Definitions below depend on definitions provided by key.c.
+**
+**==============================================================================
+*/
 
 OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_RSAPublicKey));
 OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_RSAPublicKey));

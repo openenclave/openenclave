@@ -13,6 +13,9 @@
 **     PUBLIC_KEY_MAGIC - magic number for this type of public key
 **     KEYTYPE - typedef of OpenSSL key structure
 **     EVP_PKEY_KEYTYPE - OpenSSL key type tag
+**     EVP_PKEY_get1_KEYTYPE - function to obtain the key type
+**     KEYTYPE_free - function to free a key of the given type
+**     PEM_write_bio_KEYTYPEPrivateKey - function to write a private key to PEM.
 **
 **==============================================================================
 */
