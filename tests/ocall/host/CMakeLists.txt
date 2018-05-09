@@ -5,7 +5,9 @@ add_executable(ocall_host host.cpp)
 
 target_link_libraries(ocall_host oehostapp)
 
+if (UNIX)
 target_compile_options(ocall_host PRIVATE
     -Wno-error=unused-but-set-variable
     -Wno-error=unused-variable
     )
+endif()

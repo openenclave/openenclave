@@ -39,8 +39,8 @@ typedef struct _Test1Args
 
 typedef struct _Test2Args
 {
-    long in;
-    long out;
+	int64_t in;
+	int64_t	out;
 } Test2Args;
 
 typedef struct _TestAllocatorArgs
