@@ -9,6 +9,7 @@
 #include <openssl/pem.h>
 #include <string.h>
 #include "init.h"
+#include "key.h"
 
 /*
 **==============================================================================
@@ -18,9 +19,8 @@
 **==============================================================================
 */
 
-#define KEY_C_PRIVATE_KEY_MAGIC 0x7bf635929a714b2c
-#define KEY_C_PUBLIC_KEY_MAGIC 0x8f8f72170025426d
-#include "key.c"
+static const uint64_t _PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
+static const uint64_t _PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
 
 /*
 **==============================================================================
@@ -110,7 +110,7 @@ static OE_Result _GenerateKeyPair(
         if (!BIO_get_mem_ptr(bio, &mem))
             OE_RAISE(OE_FAILURE);
 
-        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey, EVP_PKEY_RSA) !=
+        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey, EVP_PKEY_RSA, _PRIVATE_KEY_MAGIC) !=
             OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -135,7 +135,7 @@ static OE_Result _GenerateKeyPair(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey, EVP_PKEY_RSA) !=
+        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey, EVP_PKEY_RSA, _PUBLIC_KEY_MAGIC) !=
             OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -160,8 +160,8 @@ done:
 
     if (result != OE_OK)
     {
-        _PrivateKeyFree(privateKey);
-        _PublicKeyFree(publicKey);
+        _PrivateKeyFree(privateKey, _PRIVATE_KEY_MAGIC);
+        _PublicKeyFree(publicKey, _PUBLIC_KEY_MAGIC);
     }
 
     return result;
@@ -258,7 +258,7 @@ static OE_Result _PublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(publicKey1) || !_PublicKeyValid(publicKey2) || !equal)
+    if (!_PublicKeyValid(publicKey1, _PUBLIC_KEY_MAGIC) || !_PublicKeyValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (!(rsa1 = EVP_PKEY_get1_RSA(publicKey1->pkey)))
@@ -286,7 +286,7 @@ done:
 
 void OE_RSAPublicKeyInit(OE_RSAPublicKey* publicKey, EVP_PKEY* pkey)
 {
-    return _PublicKeyInit((PublicKey*)publicKey, pkey);
+    return _PublicKeyInit((PublicKey*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPrivateKeyReadPEM(
@@ -294,7 +294,7 @@ OE_Result OE_RSAPrivateKeyReadPEM(
     size_t pemSize,
     OE_RSAPrivateKey* privateKey)
 {
-    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey, EVP_PKEY_RSA);
+    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey, EVP_PKEY_RSA, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPrivateKeyWritePEM(
@@ -303,15 +303,15 @@ OE_Result OE_RSAPrivateKeyWritePEM(
     size_t* pemSize)
 {
     return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize,
-        _WriteKey);
+        _WriteKey, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_RSAPublicKey* privateKey)
+    OE_RSAPublicKey* publicKey)
 {
-    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey, EVP_PKEY_RSA);
+    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)publicKey, EVP_PKEY_RSA, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyWritePEM(
@@ -319,17 +319,17 @@ OE_Result OE_RSAPublicKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return _PublicKeyWritePEM((const PublicKey*)privateKey, pemData, pemSize);
+    return _PublicKeyWritePEM((const PublicKey*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* privateKey)
 {
-    return _PrivateKeyFree((PrivateKey*)privateKey);
+    return _PrivateKeyFree((PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* publicKey)
 {
-    return _PublicKeyFree((PublicKey*)publicKey);
+    return _PublicKeyFree((PublicKey*)publicKey, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPrivateKeySign(
@@ -346,7 +346,8 @@ OE_Result OE_RSAPrivateKeySign(
         hashData,
         hashSize,
         signature,
-        signatureSize);
+        signatureSize,
+        _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyVerify(
@@ -363,7 +364,8 @@ OE_Result OE_RSAPublicKeyVerify(
         hashData,
         hashSize,
         signature,
-        signatureSize);
+        signatureSize,
+        _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAGenerateKeyPair(

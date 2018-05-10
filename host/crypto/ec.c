@@ -6,6 +6,7 @@
 #include <openssl/pem.h>
 #include <string.h>
 #include "init.h"
+#include "key.h"
 
 /*
 **==============================================================================
@@ -15,9 +16,8 @@
 **==============================================================================
 */
 
-#define KEY_C_PRIVATE_KEY_MAGIC 0x19a751419ae04bbc
-#define KEY_C_PUBLIC_KEY_MAGIC 0xb1d39580c1f14c02
-#include "key.c"
+static const uint64_t _PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
+static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
 
 /*
 **==============================================================================
@@ -138,7 +138,7 @@ static OE_Result _GenerateKeyPair(
         if (!BIO_get_mem_ptr(bio, &mem))
             OE_RAISE(OE_FAILURE);
 
-        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey, EVP_PKEY_EC) != OE_OK)
+        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey, EVP_PKEY_EC, _PRIVATE_KEY_MAGIC) != OE_OK)
         {
             OE_RAISE(OE_FAILURE);
         }
@@ -162,7 +162,7 @@ static OE_Result _GenerateKeyPair(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey, EVP_PKEY_EC) !=
+        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey, EVP_PKEY_EC, _PUBLIC_KEY_MAGIC) !=
             OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -187,8 +187,8 @@ done:
 
     if (result != OE_OK)
     {
-        _PrivateKeyFree(privateKey);
-        _PublicKeyFree(publicKey);
+        _PrivateKeyFree(privateKey, _PRIVATE_KEY_MAGIC);
+        _PublicKeyFree(publicKey, _PUBLIC_KEY_MAGIC);
     }
 
     return result;
@@ -257,7 +257,7 @@ static OE_Result _PublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(publicKey1) || !_PublicKeyValid(publicKey2) || !equal)
+    if (!_PublicKeyValid(publicKey1, _PUBLIC_KEY_MAGIC) || !_PublicKeyValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
@@ -291,7 +291,7 @@ done:
 
 void OE_ECPublicKeyInit(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
 {
-    return _PublicKeyInit((PublicKey*)publicKey, pkey);
+    return _PublicKeyInit((PublicKey*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeyReadPEM(
@@ -299,7 +299,7 @@ OE_Result OE_ECPrivateKeyReadPEM(
     size_t pemSize,
     OE_ECPrivateKey* privateKey)
 {
-    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey, EVP_PKEY_EC);
+    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey, EVP_PKEY_EC, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeyWritePEM(
@@ -307,15 +307,15 @@ OE_Result OE_ECPrivateKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize, _WriteKey);
+    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize, _WriteKey, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_ECPublicKey* privateKey)
+    OE_ECPublicKey* publicKey)
 {
-    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey, EVP_PKEY_EC);
+    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)publicKey, EVP_PKEY_EC, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyWritePEM(
@@ -323,17 +323,17 @@ OE_Result OE_ECPublicKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return _PublicKeyWritePEM((const PublicKey*)privateKey, pemData, pemSize);
+    return _PublicKeyWritePEM((const PublicKey*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey)
 {
-    return _PrivateKeyFree((PrivateKey*)privateKey);
+    return _PrivateKeyFree((PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey)
 {
-    return _PublicKeyFree((PublicKey*)publicKey);
+    return _PublicKeyFree((PublicKey*)publicKey, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeySign(
@@ -350,7 +350,8 @@ OE_Result OE_ECPrivateKeySign(
         hashData,
         hashSize,
         signature,
-        signatureSize);
+        signatureSize,
+        _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyVerify(
@@ -367,7 +368,8 @@ OE_Result OE_ECPublicKeyVerify(
         hashData,
         hashSize,
         signature,
-        signatureSize);
+        signatureSize,
+        _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECGenerateKeyPair(
