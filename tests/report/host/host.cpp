@@ -7,7 +7,6 @@
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
-#include "../../../common/json.c"
 
 #include <fstream>
 #include <streambuf>
@@ -16,27 +15,6 @@
 #include "../common/tests.cpp"
 
 #define SKIP_RETURN_CODE 2
-
-OE_Result printPropertyName(void* obj, const uint8_t* name, uint32_t nameLength)
-{
-    printf("Property Name : %.*s, ", nameLength, name);
-    return OE_OK;
-}
-
-OE_Result printString(void* obj, const uint8_t* str, uint32_t strLength)
-{
-    printf("Property Value : %.*s\n", strLength, str);
-    return OE_OK;
-}
-
-void TestJsonVisitor(const uint8_t* json, uint32_t length)
-{
-    OE_JsonParserCallbackInterface cb = {0};
-    cb.propertyName = printPropertyName;
-    cb.string = printString;
-
-    OE_ParseJson(json, length, NULL, &cb);
-}
 
 std::vector<uint8_t> fileToBytes(const char* path)
 {
@@ -67,8 +45,6 @@ void TestVerifyQuote()
     args.pckCrlSize = pckCrl.size();
     args.tcbInfoJson = &tcbInfo[0];
     args.tcbInfoJsonSize = tcbInfo.size();
-
-    TestJsonVisitor(&tcbInfo[0], tcbInfo.size());
 
     OE_TEST(OE_CallEnclave(g_Enclave, "VerifyQuote", &args) == OE_OK);
     OE_TEST(args.result == OE_OK);
