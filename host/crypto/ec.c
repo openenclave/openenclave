@@ -15,35 +15,8 @@
 **==============================================================================
 */
 
-static const uint64_t PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
-static const uint64_t PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
-
-typedef EC_KEY KEYTYPE;
-
-static const __typeof(EVP_PKEY_EC) EVP_PKEY_KEYTYPE = EVP_PKEY_EC;
-
-static KEYTYPE* EVP_PKEY_get1_KEYTYPE(EVP_PKEY* pkey)
-{
-    return EVP_PKEY_get1_EC_KEY(pkey);
-}
-
-static void KEYTYPE_free(KEYTYPE* key)
-{
-    EC_KEY_free(key);
-}
-
-static int PEM_write_bio_KEYTYPEPrivateKey(
-    BIO* bp,
-    KEYTYPE* x,
-    const EVP_CIPHER* enc,
-    unsigned char* kstr,
-    int klen,
-    pem_password_cb* cb,
-    void* u)
-{
-    return PEM_write_bio_ECPrivateKey(bp, x, enc, kstr, klen, cb, u);
-}
-
+#define KEY_C_PRIVATE_KEY_MAGIC 0x19a751419ae04bbc
+#define KEY_C_PUBLIC_KEY_MAGIC 0xb1d39580c1f14c02
 #include "key.c"
 
 /*
@@ -71,6 +44,27 @@ static const char* _ECTypeToString(OE_Type type)
         return NULL;
 
     return _curveNames[index];
+}
+
+static OE_Result _WriteKey(BIO* bio, EVP_PKEY* pkey)
+{
+    OE_Result result = OE_UNEXPECTED;
+    EC_KEY* ec = NULL;
+
+    if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
+        OE_RAISE(OE_FAILURE);
+
+    if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
+        OE_RAISE(OE_FAILURE);
+
+    result = OE_OK;
+
+done:
+
+    if (ec)
+        EC_KEY_free(ec);
+
+    return result;
 }
 
 static OE_Result _GenerateKeyPair(
@@ -144,8 +138,7 @@ static OE_Result _GenerateKeyPair(
         if (!BIO_get_mem_ptr(bio, &mem))
             OE_RAISE(OE_FAILURE);
 
-        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey) !=
-            OE_OK)
+        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey, EVP_PKEY_EC) != OE_OK)
         {
             OE_RAISE(OE_FAILURE);
         }
@@ -169,7 +162,7 @@ static OE_Result _GenerateKeyPair(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey) !=
+        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey, EVP_PKEY_EC) !=
             OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -306,7 +299,7 @@ OE_Result OE_ECPrivateKeyReadPEM(
     size_t pemSize,
     OE_ECPrivateKey* privateKey)
 {
-    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey);
+    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey, EVP_PKEY_EC);
 }
 
 OE_Result OE_ECPrivateKeyWritePEM(
@@ -314,7 +307,7 @@ OE_Result OE_ECPrivateKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize);
+    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize, _WriteKey);
 }
 
 OE_Result OE_ECPublicKeyReadPEM(
@@ -322,7 +315,7 @@ OE_Result OE_ECPublicKeyReadPEM(
     size_t pemSize,
     OE_ECPublicKey* privateKey)
 {
-    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey);
+    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey, EVP_PKEY_EC);
 }
 
 OE_Result OE_ECPublicKeyWritePEM(

@@ -10,12 +10,6 @@
 ** These function depend on the definition of the following.
 **
 **     PRIVATE_KEY_MAGIC - magic number for this type of private key
-**     PUBLIC_KEY_MAGIC - magic number for this type of public key
-**     KEYTYPE - typedef of OpenSSL key structure
-**     EVP_PKEY_KEYTYPE - OpenSSL key type tag
-**     EVP_PKEY_get1_KEYTYPE - function to obtain the key type
-**     KEYTYPE_free - function to free a key of the given type
-**     PEM_write_bio_KEYTYPEPrivateKey - function to write a private key to PEM.
 **
 **==============================================================================
 */
@@ -30,7 +24,7 @@ OE_STATIC_ASSERT(sizeof(PrivateKey) <= sizeof(PrivateKey));
 
 OE_INLINE bool _PrivateKeyValid(const PrivateKey* impl)
 {
-    return impl && impl->magic == PRIVATE_KEY_MAGIC && impl->pkey;
+    return impl && impl->magic == KEY_C_PRIVATE_KEY_MAGIC && impl->pkey;
 }
 
 typedef struct _PublicKey
@@ -43,20 +37,21 @@ OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(PublicKey));
 
 OE_INLINE bool _PublicKeyValid(const PublicKey* impl)
 {
-    return impl && impl->magic == PUBLIC_KEY_MAGIC && impl->pkey;
+    return impl && impl->magic == KEY_C_PUBLIC_KEY_MAGIC && impl->pkey;
 }
 
 static void _PublicKeyInit(PublicKey* publicKey, EVP_PKEY* pkey)
 {
     PublicKey* impl = (PublicKey*)publicKey;
-    impl->magic = PUBLIC_KEY_MAGIC;
+    impl->magic = KEY_C_PUBLIC_KEY_MAGIC;
     impl->pkey = pkey;
 }
 
 static OE_Result _PrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    PrivateKey* key)
+    PrivateKey* key,
+    int keyType)
 {
     OE_Result result = OE_UNEXPECTED;
     PrivateKey* impl = (PrivateKey*)key;
@@ -87,11 +82,11 @@ static OE_Result _PrivateKeyReadPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is the right key type */
-    if (pkey->type != EVP_PKEY_KEYTYPE)
+    if (pkey->type != keyType)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
-    impl->magic = PRIVATE_KEY_MAGIC;
+    impl->magic = KEY_C_PRIVATE_KEY_MAGIC;
     impl->pkey = pkey;
     pkey = NULL;
 
@@ -111,7 +106,8 @@ done:
 static OE_Result _PublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    PublicKey* key)
+    PublicKey* key,
+    int keyType)
 {
     OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
@@ -142,11 +138,11 @@ static OE_Result _PublicKeyReadPEM(
         OE_RAISE(OE_FAILURE);
 
     /* Verify that it is the right key type */
-    if (pkey->type != EVP_PKEY_KEYTYPE)
+    if (pkey->type != keyType)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the key */
-    impl->magic = PUBLIC_KEY_MAGIC;
+    impl->magic = KEY_C_PUBLIC_KEY_MAGIC;
     impl->pkey = pkey;
     pkey = NULL;
 
@@ -163,15 +159,17 @@ done:
     return result;
 }
 
+typedef OE_Result (*WriteKey)(BIO* bio, EVP_PKEY* pkey);
+
 static OE_Result _PrivateKeyWritePEM(
     const PrivateKey* privateKey,
     uint8_t* data,
-    size_t* size)
+    size_t* size,
+    WriteKey writeKey)
 {
     OE_Result result = OE_UNEXPECTED;
     const PrivateKey* impl = (const PrivateKey*)privateKey;
     BIO* bio = NULL;
-    KEYTYPE* key = NULL;
     const char nullTerminator = '\0';
 
     /* Check parameters */
@@ -186,13 +184,8 @@ static OE_Result _PrivateKeyWritePEM(
     if (!(bio = BIO_new(BIO_s_mem())))
         OE_RAISE(OE_FAILURE);
 
-    /* Get key from public key (increasing reference count) */
-    if (!(key = EVP_PKEY_get1_KEYTYPE(impl->pkey)))
-        OE_RAISE(OE_FAILURE);
-
     /* Write key to BIO */
-    if (!PEM_write_bio_KEYTYPEPrivateKey(bio, key, NULL, NULL, 0, 0, NULL))
-        OE_RAISE(OE_FAILURE);
+    OE_CHECK(writeKey(bio, impl->pkey));
 
     /* Write a NULL terminator onto BIO */
     if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
@@ -223,9 +216,6 @@ done:
 
     if (bio)
         BIO_free(bio);
-
-    if (key)
-        KEYTYPE_free(key);
 
     return result;
 }

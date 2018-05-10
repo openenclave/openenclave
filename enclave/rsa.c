@@ -15,15 +15,8 @@
 **==============================================================================
 */
 
-static OE_Result _CopyKey(
-    mbedtls_pk_context* dest,
-    const mbedtls_pk_context* src,
-    bool copyPrivateFields);
-
-static const uint64_t PRIVATE_KEY_MAGIC = 0xd48de5bae3994b41;
-static const uint64_t PUBLIC_KEY_MAGIC = 0x713600af058c447a;
-static const mbedtls_pk_type_t MBEDTLS_PK_KEYTYPE = MBEDTLS_PK_RSA;
-
+#define KEY_C_PRIVATE_KEY_MAGIC 0xd48de5bae3994b41
+#define KEY_C_PUBLIC_KEY_MAGIC 0x713600af058c447a
 #include "key.c"
 
 /*
@@ -196,10 +189,10 @@ static OE_Result _GenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInit(privateKey, &pk));
+    OE_CHECK(_PrivateKeyInit(privateKey, &pk, _CopyKey));
 
     /* Initialize the public key parameter */
-    OE_CHECK(_PublicKeyInit(publicKey, &pk));
+    OE_CHECK(_PublicKeyInit(publicKey, &pk, _CopyKey));
 
     result = OE_OK;
 
@@ -274,7 +267,7 @@ OE_Result OE_RSAPublicKeyInit(
     OE_RSAPublicKey* publicKey,
     const mbedtls_pk_context* pk)
 {
-    return _PublicKeyInit((PublicKey*)publicKey, pk);
+    return _PublicKeyInit((PublicKey*)publicKey, pk, _CopyKey);
 }
 
 OE_Result OE_RSAPrivateKeyReadPEM(
@@ -282,7 +275,8 @@ OE_Result OE_RSAPrivateKeyReadPEM(
     size_t pemSize,
     OE_RSAPrivateKey* privateKey)
 {
-    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey);
+    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey,
+        MBEDTLS_PK_RSA);
 }
 
 OE_Result OE_RSAPrivateKeyWritePEM(
@@ -298,7 +292,8 @@ OE_Result OE_RSAPublicKeyReadPEM(
     size_t pemSize,
     OE_RSAPublicKey* privateKey)
 {
-    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey);
+    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey,
+        MBEDTLS_PK_RSA);
 }
 
 OE_Result OE_RSAPublicKeyWritePEM(

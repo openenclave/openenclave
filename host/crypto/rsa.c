@@ -18,35 +18,8 @@
 **==============================================================================
 */
 
-static const uint64_t PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
-static const uint64_t PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
-
-static const __typeof(EVP_PKEY_RSA) EVP_PKEY_KEYTYPE = EVP_PKEY_RSA;
-
-typedef RSA KEYTYPE;
-
-static KEYTYPE* EVP_PKEY_get1_KEYTYPE(EVP_PKEY* pkey)
-{
-    return EVP_PKEY_get1_RSA(pkey);
-}
-
-static void KEYTYPE_free(KEYTYPE* key)
-{
-    RSA_free(key);
-}
-
-static int PEM_write_bio_KEYTYPEPrivateKey(
-    BIO* bp,
-    KEYTYPE* x,
-    const EVP_CIPHER* enc,
-    unsigned char* kstr,
-    int klen,
-    pem_password_cb* cb,
-    void* u)
-{
-    return PEM_write_bio_RSAPrivateKey(bp, x, enc, kstr, klen, cb, u);
-}
-
+#define KEY_C_PRIVATE_KEY_MAGIC 0x7bf635929a714b2c
+#define KEY_C_PUBLIC_KEY_MAGIC 0x8f8f72170025426d
 #include "key.c"
 
 /*
@@ -59,6 +32,27 @@ static int PEM_write_bio_KEYTYPEPrivateKey(
 
 OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_RSAPublicKey));
 OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_RSAPublicKey));
+
+static OE_Result _WriteKey(BIO* bio, EVP_PKEY* pkey)
+{
+    OE_Result result = OE_UNEXPECTED;
+    RSA* rsa = NULL;
+
+    if (!(rsa = EVP_PKEY_get1_RSA(pkey)))
+        OE_RAISE(OE_FAILURE);
+
+    if (!PEM_write_bio_RSAPrivateKey(bio, rsa, NULL, NULL, 0, 0, NULL))
+        OE_RAISE(OE_FAILURE);
+
+    result = OE_OK;
+
+done:
+
+    if (rsa)
+        RSA_free(rsa);
+
+    return result;
+}
 
 static OE_Result _GenerateKeyPair(
     uint64_t bits,
@@ -116,7 +110,7 @@ static OE_Result _GenerateKeyPair(
         if (!BIO_get_mem_ptr(bio, &mem))
             OE_RAISE(OE_FAILURE);
 
-        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey) !=
+        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey, EVP_PKEY_RSA) !=
             OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -141,7 +135,7 @@ static OE_Result _GenerateKeyPair(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey) !=
+        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey, EVP_PKEY_RSA) !=
             OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -300,7 +294,7 @@ OE_Result OE_RSAPrivateKeyReadPEM(
     size_t pemSize,
     OE_RSAPrivateKey* privateKey)
 {
-    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey);
+    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey, EVP_PKEY_RSA);
 }
 
 OE_Result OE_RSAPrivateKeyWritePEM(
@@ -308,7 +302,8 @@ OE_Result OE_RSAPrivateKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize);
+    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize,
+        _WriteKey);
 }
 
 OE_Result OE_RSAPublicKeyReadPEM(
@@ -316,7 +311,7 @@ OE_Result OE_RSAPublicKeyReadPEM(
     size_t pemSize,
     OE_RSAPublicKey* privateKey)
 {
-    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey);
+    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey, EVP_PKEY_RSA);
 }
 
 OE_Result OE_RSAPublicKeyWritePEM(

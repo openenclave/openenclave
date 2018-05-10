@@ -15,15 +15,8 @@
 **==============================================================================
 */
 
-static OE_Result _CopyKey(
-    mbedtls_pk_context* dest,
-    const mbedtls_pk_context* src,
-    bool copyPrivateFields);
-
-static const uint64_t PRIVATE_KEY_MAGIC = 0xf12c37bb02814eeb;
-static const uint64_t PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
-static const mbedtls_pk_type_t MBEDTLS_PK_KEYTYPE = MBEDTLS_PK_ECKEY;
-
+#define KEY_C_PRIVATE_KEY_MAGIC 0xf12c37bb02814eeb
+#define KEY_C_PUBLIC_KEY_MAGIC 0xd7490a56f6504ee6
 #include "key.c"
 
 /*
@@ -161,10 +154,10 @@ static OE_Result _GenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInit(privateKey, &pk));
+    OE_CHECK(_PrivateKeyInit(privateKey, &pk, _CopyKey));
 
     /* Initialize the public key parameter */
-    OE_CHECK(_PublicKeyInit(publicKey, &pk));
+    OE_CHECK(_PublicKeyInit(publicKey, &pk, _CopyKey));
 
     result = OE_OK;
 
@@ -286,7 +279,7 @@ OE_Result OE_ECPublicKeyInit(
     OE_ECPublicKey* publicKey,
     const mbedtls_pk_context* pk)
 {
-    return _PublicKeyInit((PublicKey*)publicKey, pk);
+    return _PublicKeyInit((PublicKey*)publicKey, pk, _CopyKey);
 }
 
 OE_Result OE_ECPrivateKeyReadPEM(
@@ -294,7 +287,8 @@ OE_Result OE_ECPrivateKeyReadPEM(
     size_t pemSize,
     OE_ECPrivateKey* privateKey)
 {
-    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey);
+    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey,
+        MBEDTLS_PK_ECKEY);
 }
 
 OE_Result OE_ECPrivateKeyWritePEM(
@@ -310,7 +304,8 @@ OE_Result OE_ECPublicKeyReadPEM(
     size_t pemSize,
     OE_ECPublicKey* privateKey)
 {
-    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey);
+    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey,
+        MBEDTLS_PK_ECKEY);
 }
 
 OE_Result OE_ECPublicKeyWritePEM(
