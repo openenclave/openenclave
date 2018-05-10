@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef _ENCLAVE_KEY_H
 #define _ENCLAVE_KEY_H
 
