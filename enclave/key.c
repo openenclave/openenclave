@@ -45,7 +45,7 @@ done:
 
 void OE_PrivateKeyRelease(OE_PrivateKey* privateKey, uint64_t magic)
 {
-    if (privateKey && privateKey->magic == magic)
+    if (OE_PrivateKeyValid(privateKey, magic))
     {
         mbedtls_pk_free(&privateKey->pk);
         OE_Memset(privateKey, 0, sizeof(OE_PrivateKey));
@@ -85,7 +85,7 @@ done:
 
 void OE_PublicKeyRelease(OE_PublicKey* publicKey, uint64_t magic)
 {
-    if (publicKey && publicKey->magic == magic)
+    if (OE_PublicKeyValid(publicKey, magic))
     {
         mbedtls_pk_free(&publicKey->pk);
         OE_Memset(publicKey, 0, sizeof(OE_PublicKey));
