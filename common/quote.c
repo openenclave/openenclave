@@ -98,7 +98,7 @@ static OE_Result VerityQuoteImpl(
     OE_SHA256 sha256 = {0};
     uint8_t found = 0;
     uint16_t i;
-    
+
     OE_CHECK(
         _ParseQuote(
             encQuote,
@@ -108,67 +108,90 @@ static OE_Result VerityQuoteImpl(
             &qeAuthData,
             &qeCertData));
 
+    // 1. If PckCertificate is provided. Parse and Validate it.
+    // This must do:
+    //      a. Assert subject == PCK_SUBJECT            (TODO)
+    //      b. Assert !expired                          (TODO)
+    //      c. Assert PCK_REQUIRED_EXTENSIONS exist.    (TODO)
+    //      d. Assert PCK_REQUIRED_SGX_EXTENSIONS exist. (TODO)
+    //      e. Assert !revoked                           (TODO)
+    //      f. Assert that latestElements are not out of date using tcbInfo
+    //      (TODO)
+    //      g. Assert !revoked using tcbInfo (TODO)
     if (encPemPckCertificate != NULL)
+    {
         OE_CHECK(
             OE_CertReadPEM(
                 encPemPckCertificate, pemPckCertificateSize, &pckCert));
-
-    if (sgxQuote->version != SGX_QUOTE_VERSION)
-    {
-        OE_RAISE(OE_VERIFY_FAILED);
     }
 
-    found = 0;
-    for (i = 0;
-         i < sizeof(SGX_SUPPORTED_PCK_IDS) / sizeof(SGX_SUPPORTED_PCK_IDS[0]);
-         ++i)
+    // 2. If pckCrl is provided. Parse and Validate it.
+    // This must do:
+    //      a. Assert !expired                  (TODO)
+    //      b. Assert issuer == PCK_PROCESSOR_CRL_ISSUER or
+    //      PCK_PLATFORM_CRL_ISSUER  (TODO)
+    //      c. Assert issuer == pckCertificate.issuer (TODO)
+
+    // 3. Quote validations
+    // This must do:
+    //      a. Assert version == SGX_QUOTE_VERSION  (done)
+    //      b. Assert qeCertData.type is a SGX_SUPPORTED_PCK_IDS (done)
+    //      c. Verify qeCertData
+    //          i.  Check parsedDataSize == data.size()   (N/A done during
+    //          parsing)
+    //      d. Verify SHA256 ECDSA (qeReportBodySignature, qeReportBody,
+    //      PckCertificate.pubKey) (TODO)
+    //      e. Assert SHA256 (attestationKey + qeAuthData.data) ==
+    //      qeReportBody.reportData[0..32] (done)
+    //      f. Verify SHA256 ECDSA (attestationKey, SGX_QUOTE_SIGNED_DATA,
+    //      signature) (done)
     {
-        if (qeCertData.type == SGX_SUPPORTED_PCK_IDS[i])
+        if (sgxQuote->version != SGX_QUOTE_VERSION)
         {
-            found = 1;
-            break;
+            OE_RAISE(OE_VERIFY_FAILED);
         }
+
+        found = 0;
+        for (i = 0; i < sizeof(SGX_SUPPORTED_PCK_IDS) /
+                            sizeof(SGX_SUPPORTED_PCK_IDS[0]);
+             ++i)
+        {
+            if (qeCertData.type == SGX_SUPPORTED_PCK_IDS[i])
+            {
+                found = 1;
+                break;
+            }
+        }
+
+        if (!found)
+            OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
+
+        OE_CHECK(OE_SHA256Init(&sha256Ctx));
+        OE_CHECK(
+            OE_SHA256Update(
+                &sha256Ctx,
+                (const uint8_t*)&quoteAuthData->attestationKey,
+                sizeof(quoteAuthData->attestationKey)));
+        if (qeAuthData.size > 0)
+        {
+            OE_CHECK(
+                OE_SHA256Update(&sha256Ctx, qeAuthData.data, qeAuthData.size));
+        }
+        OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
+
+        if (!OE_ConstantTimeMemEqual(
+                &sha256,
+                &quoteAuthData->qeReportBody.reportData,
+                sizeof(sha256)))
+            OE_RAISE(OE_VERIFY_FAILED);
+
+        OE_CHECK(
+            OE_ECDSA256_SHA_Verify(
+                (const OE_ECDSA256Key*)&quoteAuthData->attestationKey,
+                sgxQuote,
+                SGX_QUOTE_SIGNED_DATA_SIZE,
+                (const OE_ECDSA256Signature*)&quoteAuthData->signature));
     }
-
-    if (!found)
-        OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
-
-    OE_CHECK(OE_SHA256Init(&sha256Ctx));
-    OE_CHECK(
-        OE_SHA256Update(
-            &sha256Ctx,
-            (const uint8_t*)&quoteAuthData->attestationKey,
-            sizeof(quoteAuthData->attestationKey)));
-    if (qeAuthData.size > 0)
-    {
-        OE_CHECK(OE_SHA256Update(&sha256Ctx, qeAuthData.data, qeAuthData.size));
-    }
-    OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
-
-    if (!OE_ConstantTimeMemEqual(
-            &sha256, &quoteAuthData->qeReportBody.reportData, sizeof(sha256)))
-        OE_RAISE(OE_VERIFY_FAILED);
-
-    OE_CHECK(
-        OE_ECDSA256_SHA_Verify(
-            (const OE_ECDSA256Key*)&quoteAuthData->attestationKey,
-            sgxQuote,
-            SGX_QUOTE_SIGNED_DATA_SIZE,
-            (const OE_ECDSA256Signature*)&quoteAuthData->signature));
-
-    /*
-    TODO:
-        1. Parse pemPckCertificate. // Done
-        2. Parse pckCrl.
-        3. Parse tcbInfoJson.
-        4. verifyPCKCert.
-        5. checkValidityPeriodAndIssuer(crl)
-        6. Check crl.getIssuer() == pckCert.getIssuer()
-        7. Check isRevoked(pemPckCertificate)
-        8. Check fmspc(pckCert).asOctetString() == tcbInfoJson.getFmspc()
-        9. Check areLatestElementsOutOfDate(tcbInfoJson, pckCert);
-        10. checkRevocation(tcbInfoJson, pckCert)
-    */
 
     result = OE_OK;
 
