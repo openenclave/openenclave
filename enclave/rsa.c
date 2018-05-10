@@ -6,29 +6,13 @@
 #include <openenclave/bits/raise.h>
 #include "pem.h"
 #include "random.h"
+#include "key.h"
 
-/*
-**==============================================================================
-**
-** Provide definitions needed for key.c and include key.c.
-**
-**==============================================================================
-*/
-
-#define KEY_C_PRIVATE_KEY_MAGIC 0xd48de5bae3994b41
-#define KEY_C_PUBLIC_KEY_MAGIC 0x713600af058c447a
-#include "key.c"
-
-/*
-**==============================================================================
-**
-** Definitions below depend on definitions provided by key.c.
-**
-**==============================================================================
-*/
+static uint64_t _PRIVATE_KEY_MAGIC = 0xd48de5bae3994b41;
+static uint64_t _PUBLIC_KEY_MAGIC = 0x713600af058c447a;
 
 OE_STATIC_ASSERT(sizeof(PrivateKey) <= sizeof(OE_RSAPrivateKey));
-OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_RSAPublicKey));
+OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_RSAPublicKey));
 
 static OE_Result _CopyKey(
     mbedtls_pk_context* dest,
@@ -93,7 +77,7 @@ done:
 }
 
 static OE_Result _GetPublicKeyModulusOrExponent(
-    const PublicKey* publicKey,
+    const OE_PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize,
     bool getModulus)
@@ -104,7 +88,7 @@ static OE_Result _GetPublicKeyModulusOrExponent(
     const mbedtls_mpi* mpi;
 
     /* Check for invalid parameters */
-    if (!_PublicKeyValid(publicKey) || !bufferSize)
+    if (!OE_PublicKeyValid(publicKey, _PUBLIC_KEY_MAGIC) || !bufferSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then bufferSize must be zero */
@@ -146,7 +130,7 @@ static OE_Result _GenerateKeyPair(
     uint64_t bits,
     uint64_t exponent,
     PrivateKey* privateKey,
-    PublicKey* publicKey)
+    OE_PublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_ctr_drbg_context* drbg;
@@ -189,10 +173,10 @@ static OE_Result _GenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(_PrivateKeyInit(privateKey, &pk, _CopyKey));
+    OE_CHECK(OE_PrivateKeyInit(privateKey, &pk, _CopyKey, _PRIVATE_KEY_MAGIC));
 
     /* Initialize the public key parameter */
-    OE_CHECK(_PublicKeyInit(publicKey, &pk, _CopyKey));
+    OE_CHECK(OE_PublicKeyInit(publicKey, &pk, _CopyKey, _PUBLIC_KEY_MAGIC));
 
     result = OE_OK;
 
@@ -202,35 +186,35 @@ done:
 
     if (result != OE_OK)
     {
-        if (_PrivateKeyValid(privateKey))
-            _PrivateKeyFree(privateKey);
+        if (OE_PrivateKeyValid(privateKey, _PRIVATE_KEY_MAGIC))
+            OE_PrivateKeyFree(privateKey, _PRIVATE_KEY_MAGIC);
 
-        if (_PublicKeyValid(publicKey))
-            _PublicKeyFree(publicKey);
+        if (OE_PublicKeyValid(publicKey, _PUBLIC_KEY_MAGIC))
+            OE_PublicKeyFree(publicKey, _PUBLIC_KEY_MAGIC);
     }
 
     return result;
 }
 
-OE_Result _PublicKeyGetModulus(
-    const PublicKey* publicKey,
+OE_Result OE_PublicKeyGetModulus(
+    const OE_PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
     return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, true);
 }
 
-OE_Result _PublicKeyGetExponent(
-    const PublicKey* publicKey,
+OE_Result OE_PublicKeyGetExponent(
+    const OE_PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
     return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, false);
 }
 
-static OE_Result _PublicKeyEqual(
-    const PublicKey* publicKey1,
-    const PublicKey* publicKey2,
+static OE_Result OE_PublicKeyEqual(
+    const OE_PublicKey* publicKey1,
+    const OE_PublicKey* publicKey2,
     bool* equal)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -239,7 +223,7 @@ static OE_Result _PublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(publicKey1) || !_PublicKeyValid(publicKey2) || !equal)
+    if (!OE_PublicKeyValid(publicKey1, _PUBLIC_KEY_MAGIC) || !OE_PublicKeyValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the exponent and modulus */
@@ -267,7 +251,7 @@ OE_Result OE_RSAPublicKeyInit(
     OE_RSAPublicKey* publicKey,
     const mbedtls_pk_context* pk)
 {
-    return _PublicKeyInit((PublicKey*)publicKey, pk, _CopyKey);
+    return OE_PublicKeyInit((OE_PublicKey*)publicKey, pk, _CopyKey, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPrivateKeyReadPEM(
@@ -275,8 +259,8 @@ OE_Result OE_RSAPrivateKeyReadPEM(
     size_t pemSize,
     OE_RSAPrivateKey* privateKey)
 {
-    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey,
-        MBEDTLS_PK_RSA);
+    return OE_PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey,
+        MBEDTLS_PK_RSA, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPrivateKeyWritePEM(
@@ -284,7 +268,7 @@ OE_Result OE_RSAPrivateKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize);
+    return OE_PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyReadPEM(
@@ -292,8 +276,8 @@ OE_Result OE_RSAPublicKeyReadPEM(
     size_t pemSize,
     OE_RSAPublicKey* privateKey)
 {
-    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)privateKey,
-        MBEDTLS_PK_RSA);
+    return OE_PublicKeyReadPEM(pemData, pemSize, (OE_PublicKey*)privateKey,
+        MBEDTLS_PK_RSA, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyWritePEM(
@@ -301,17 +285,17 @@ OE_Result OE_RSAPublicKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return _PublicKeyWritePEM((const PublicKey*)privateKey, pemData, pemSize);
+    return OE_PublicKeyWritePEM((const OE_PublicKey*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* privateKey)
 {
-    return _PrivateKeyFree((PrivateKey*)privateKey);
+    return OE_PrivateKeyFree((PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* publicKey)
 {
-    return _PublicKeyFree((PublicKey*)publicKey);
+    return OE_PublicKeyFree((OE_PublicKey*)publicKey, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPrivateKeySign(
@@ -322,13 +306,14 @@ OE_Result OE_RSAPrivateKeySign(
     uint8_t* signature,
     size_t* signatureSize)
 {
-    return _PrivateKeySign(
+    return OE_PrivateKeySign(
         (PrivateKey*)privateKey,
         hashType,
         hashData,
         hashSize,
         signature,
-        signatureSize);
+        signatureSize,
+        _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyVerify(
@@ -339,13 +324,14 @@ OE_Result OE_RSAPublicKeyVerify(
     const uint8_t* signature,
     size_t signatureSize)
 {
-    return _PublicKeyVerify(
-        (PublicKey*)publicKey,
+    return OE_PublicKeyVerify(
+        (OE_PublicKey*)publicKey,
         hashType,
         hashData,
         hashSize,
         signature,
-        signatureSize);
+        signatureSize,
+        _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_RSAGenerateKeyPair(
@@ -354,7 +340,7 @@ OE_Result OE_RSAGenerateKeyPair(
     OE_RSAPrivateKey* privateKey,
     OE_RSAPublicKey* publicKey)
 {
-    return _GenerateKeyPair(bits, exponent, (PrivateKey*)privateKey, (PublicKey*)publicKey);
+    return _GenerateKeyPair(bits, exponent, (PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
 }
 
 OE_Result OE_RSAPublicKeyGetModulus(
@@ -362,7 +348,7 @@ OE_Result OE_RSAPublicKeyGetModulus(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _PublicKeyGetModulus((PublicKey*)publicKey, buffer, bufferSize);
+    return OE_PublicKeyGetModulus((OE_PublicKey*)publicKey, buffer, bufferSize);
 }
 
 OE_Result OE_RSAPublicKeyGetExponent(
@@ -370,7 +356,7 @@ OE_Result OE_RSAPublicKeyGetExponent(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _PublicKeyGetExponent((PublicKey*)publicKey, buffer, bufferSize);
+    return OE_PublicKeyGetExponent((OE_PublicKey*)publicKey, buffer, bufferSize);
 }
 
 OE_Result OE_RSAPublicKeyEqual(
@@ -378,6 +364,6 @@ OE_Result OE_RSAPublicKeyEqual(
     const OE_RSAPublicKey* publicKey2,
     bool* equal)
 {
-    return _PublicKeyEqual((PublicKey*)publicKey1, (PublicKey*)publicKey2,
+    return OE_PublicKeyEqual((OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2,
         equal);
 }
