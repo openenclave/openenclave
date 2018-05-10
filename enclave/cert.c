@@ -210,6 +210,63 @@ static void _SetErr(OE_VerifyCertError* error, const char* str)
 /*
 **==============================================================================
 **
+** _VerifyWholeChain()
+**
+**     Verify each certificate in the chain against its predecessor.
+**
+**==============================================================================
+*/
+
+static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
+{
+    OE_Result result = OE_UNEXPECTED;
+    uint32_t flags = 0;
+
+    if (!chain)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Verify each certificate in the chain against its predecessor */
+    for (mbedtls_x509_crt* p = chain; p; p = p->next)
+    {
+        if (p->next)
+        {
+            mbedtls_x509_crt* next = p->next;
+            mbedtls_x509_crt* nextNext = next->next;
+
+            /* Temporarily remove these from the certificate chain */
+            p->next = NULL;
+            next->next = NULL;
+
+            /* Verify the next certificate against its predecessor */
+            int r = mbedtls_x509_crt_verify(
+                next,
+                p,
+                NULL,
+                NULL,
+                &flags,
+                NULL,
+                NULL);
+
+            /* Reinsert these back into the certificate chain */
+            next->next = nextNext;
+            p->next = next;
+
+            /* Raise an error if any */
+            if (r != 0)
+                OE_RAISE(OE_FAILURE);
+        }
+    }
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}
+
+/*
+**==============================================================================
+**
 ** Public functions
 **
 **==============================================================================
@@ -311,6 +368,9 @@ OE_Result OE_CertChainReadPEM(
     {
         OE_RAISE(OE_FAILURE);
     }
+
+    /* Verify the whole certificate chain */
+    OE_CHECK(_VerifyWholeChain(&referent->crt));
 
     /* Calculate the length of the certificate chain */
     for (mbedtls_x509_crt* p = &referent->crt; p; p = p->next)

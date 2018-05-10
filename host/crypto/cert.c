@@ -235,6 +235,100 @@ done:
     return result;
 }
 
+/* Verify a certificate against a chain of length 1 */
+static OE_Result _VerifyCert(X509* cert_, X509* chain_)
+{
+    OE_Result result = OE_UNEXPECTED;
+    X509_STORE_CTX* ctx = NULL;
+    X509* cert = NULL;
+    X509* chain = NULL;
+    STACK_OF(X509)* sk = NULL;
+
+    /* Clone the certificate to clear any cached verification state */
+    if (!(cert = _CloneX509(cert_)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Clone the chain to clear any cached verification state */
+    if (!(chain = _CloneX509(chain_)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Create a context for verification */
+    if (!(ctx = X509_STORE_CTX_new()))
+        OE_RAISE(OE_FAILURE);
+
+    /* Initialize the context that will be used to verify the certificate */
+    if (!X509_STORE_CTX_init(ctx, NULL, NULL, NULL))
+        OE_RAISE(OE_FAILURE);
+
+    /* Inject the certificate into the verification context */
+    X509_STORE_CTX_set_cert(ctx, cert);
+
+    /* Bulid a certificate chain that contains a single certificate */
+    {
+        if (!(sk = sk_X509_new(NULL)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!sk_X509_push(sk, chain))
+            OE_RAISE(OE_FAILURE);
+
+        if (!_X509_up_ref(chain))
+            OE_RAISE(OE_FAILURE);
+    }
+
+    /* Set the CA chain into the verification context */
+    X509_STORE_CTX_trusted_stack(ctx, sk);
+
+    /* Finally verify the certificate */
+    if (!X509_verify_cert(ctx))
+        OE_RAISE(OE_FAILURE);
+
+    result = OE_OK;
+
+done:
+
+    if (cert)
+        X509_free(cert);
+
+    if (chain)
+        X509_free(chain);
+
+    if (ctx)
+        X509_STORE_CTX_free(ctx);
+
+    if (sk)
+        sk_X509_pop_free(sk, X509_free);
+
+    return result;
+}
+
+/* Verify each certificate in the chain against its predecessor. */
+static OE_Result _VerifyWholeChain(STACK_OF(X509)* chain)
+{
+    OE_Result result = OE_UNEXPECTED;
+
+    if (!chain)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    for (int i = 0, n = sk_X509_num(chain); i < n; i++)
+    {
+        if (i + 1 != n)
+        {
+            X509* cert = sk_X509_value(chain, i);
+            X509* certNext = sk_X509_value(chain, i+1);
+
+            if (!cert || !certNext)
+                OE_RAISE(OE_FAILURE);
+
+            OE_CHECK(_VerifyCert(certNext, cert));
+        }
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 /*
 **==============================================================================
 **
@@ -335,6 +429,9 @@ OE_Result OE_CertChainReadPEM(
     /* Read the certificate chain into memory */
     if (!(sk = _ReadCertChain((const char*)pemData)))
         OE_RAISE(OE_FAILURE);
+
+    /* Verify the whole certificate chain */
+    OE_CHECK(_VerifyWholeChain(sk));
 
     _CertChainInit(impl, sk);
 

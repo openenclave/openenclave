@@ -190,7 +190,8 @@ static void TestRSAVerify()
     printf("=== passed TestRSAVerify\n");
 }
 
-static const char CERT[] =
+/* Certificate signed by CHAIN1 */
+static const char CERT1[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDMzCCAhsCAhABMA0GCSqGSIb3DQEBCwUAMGMxGjAYBgNVBAMMEVRlc3QgSW50\n"
     "ZXJtZWRpYXRlMQ4wDAYDVQQIDAVUZXhhczELMAkGA1UEBhMCVVMxEjAQBgNVBAoM\n"
@@ -212,8 +213,8 @@ static const char CERT[] =
     "ln6O0i8HeQ==\n"
     "-----END CERTIFICATE-----\n";
 
-/* RSA modulus of CERT */
-static const char CERT_RSA_MODULUS[] = {
+/* RSA modulus of CERT1 */
+static const char CERT1_RSA_MODULUS[] = {
     0xE8, 0xCB, 0x03, 0x4B, 0x54, 0x3F, 0xF4, 0xB0, 0xF8, 0xBF, 0x4A, 0xA3,
     0x02, 0x8B, 0xF7, 0x83, 0xC9, 0x7B, 0x60, 0x64, 0xF6, 0xED, 0x18, 0x79,
     0xE4, 0x5A, 0xD3, 0x3D, 0x4F, 0xC8, 0x8A, 0x0B, 0x54, 0x4D, 0xCA, 0x09,
@@ -274,89 +275,92 @@ const uint8_t CERT_EC_KEY[] = {
     0xBB, 0x1B, 0x02, 0xB4, 0xD1, 0x88, 0xCC, 0xDB, 0x1C, 0x38,
 };
 
-static const char CHAIN[] =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIDUDCCAjgCCQDNkOt+e8l1aDANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n"
-    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n"
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n"
-    "Fw0xODAyMTMxNzUyNTJaFw0yMzAyMTMxNzUyNTJaMGoxCzAJBgNVBAYTAlVTMQ4w\n"
-    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n"
-    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n"
-    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlrzZNtYmicG/Z0ZK0qYzmTyur/n4\n"
-    "94fkDBklgsHb9inbe455MgUsIcrlwE/1qXbcO0SnQmUjmopE2iYJhDVDDnobgDlP\n"
-    "iO1o8E7tIW/jzxRStDyfrO6uOrc8mUAvnsHc800d2Dt6vAHhdbiBeIi8CkIgy5/h\n"
-    "XXQphjk9H0jrVFydJ7KYl53KvwZ95NAodPZpiuCD6WXDEvXOLvQaup2nG9+ha5QB\n"
-    "h0pfdNRhHtsfIcg5ExghoOYXcOhCtEqkVYcllmYr2tf3tn/dRVXO7KYbfqr/mQo+\n"
-    "oPfhziAyyKHxx7a6bfDngV8ORI7q9b774VgZd3dTDDYechYTIH5V4pX61QIDAQAB\n"
-    "MA0GCSqGSIb3DQEBCwUAA4IBAQBbCNHoUIVpUnLhrugyooDCygYQeTebVILY1DHG\n"
-    "Kj7GEpMK70suXQlJ7/hbuL8jTA/kHMtHARy+9DAQDjiWRfRNOpE4eEbUdEiwei4L\n"
-    "2tPke58FBxkq6GcpldPBin16ux379zM43vYwhEf9yuY6KwBfaABg6Eeftrpcuvt3\n"
-    "1Ibbn4oM2MZixhZXTkKsB3O1OlaZ/kw6qPt7LklLhij1SmvtrrlkWGWoAg8JWYh+\n"
-    "+Wd1yIgPZbbio9b4rgQ6j0mpWaRVPm7cKAt3nfhnMgr1QV+RQnPDTlsO+sieCLZm\n"
-    "Z/7gtSYO0BbJnQu3dXzP0OBD1SQvQOpjWXwC71ioBn1rbqDl\n"
+#define CHAIN1 \
+    "-----BEGIN CERTIFICATE-----\n" \
+    "MIIDUDCCAjgCCQDNkOt+e8l1aDANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
+    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
+    "Fw0xODAyMTMxNzUyNTJaFw0yMzAyMTMxNzUyNTJaMGoxCzAJBgNVBAYTAlVTMQ4w\n" \
+    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n" \
+    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n" \
+    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlrzZNtYmicG/Z0ZK0qYzmTyur/n4\n" \
+    "94fkDBklgsHb9inbe455MgUsIcrlwE/1qXbcO0SnQmUjmopE2iYJhDVDDnobgDlP\n" \
+    "iO1o8E7tIW/jzxRStDyfrO6uOrc8mUAvnsHc800d2Dt6vAHhdbiBeIi8CkIgy5/h\n" \
+    "XXQphjk9H0jrVFydJ7KYl53KvwZ95NAodPZpiuCD6WXDEvXOLvQaup2nG9+ha5QB\n" \
+    "h0pfdNRhHtsfIcg5ExghoOYXcOhCtEqkVYcllmYr2tf3tn/dRVXO7KYbfqr/mQo+\n" \
+    "oPfhziAyyKHxx7a6bfDngV8ORI7q9b774VgZd3dTDDYechYTIH5V4pX61QIDAQAB\n" \
+    "MA0GCSqGSIb3DQEBCwUAA4IBAQBbCNHoUIVpUnLhrugyooDCygYQeTebVILY1DHG\n" \
+    "Kj7GEpMK70suXQlJ7/hbuL8jTA/kHMtHARy+9DAQDjiWRfRNOpE4eEbUdEiwei4L\n" \
+    "2tPke58FBxkq6GcpldPBin16ux379zM43vYwhEf9yuY6KwBfaABg6Eeftrpcuvt3\n" \
+    "1Ibbn4oM2MZixhZXTkKsB3O1OlaZ/kw6qPt7LklLhij1SmvtrrlkWGWoAg8JWYh+\n" \
+    "+Wd1yIgPZbbio9b4rgQ6j0mpWaRVPm7cKAt3nfhnMgr1QV+RQnPDTlsO+sieCLZm\n" \
+    "Z/7gtSYO0BbJnQu3dXzP0OBD1SQvQOpjWXwC71ioBn1rbqDl\n" \
+    "-----END CERTIFICATE-----\n" \
+    "-----BEGIN CERTIFICATE-----\n" \
+    "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n" \
+    "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n" \
+    "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n" \
+    "MzE3NTI1M1oXDTE5MDIxMzE3NTI1M1owYzEaMBgGA1UEAwwRVGVzdCBJbnRlcm1l\n" \
+    "ZGlhdGUxDjAMBgNVBAgMBVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQAD\n" \
+    "ggEPADCCAQoCggEBALtrsdnSA0135a5Ry0BlAoiCuvMS4ttmKrG5aNqq1QtXT0rr\n" \
+    "eeVs7uCu43DeuBjoPDCe113LIse68o0VfpyGoEB4k5IEftwNuqt/s9YPnpCjIPw0\n" \
+    "tJIhf/0iNo2HXDK7KVkHnjPTcS1KVlWrnVABP7+Q80nBj7S9yxv7LMuKEzU/NSgG\n" \
+    "TZZWbIDh8DnTvG2YCz9XAtPjBjWAICDOh4Hlkujt2Z/9D3/At3yL577VBBngZG0A\n" \
+    "wCJYE+SpibP8d/f0tuFa6vhNzsDxwqYmBLU1CL1G+3brlCTgfSUCzxC/RSu5lJGo\n" \
+    "fZ7E/0s1+kY07p7iiLCgMOJCBIUE+NP2aX8WSRsCAwEAATANBgkqhkiG9w0BAQsF\n" \
+    "AAOCAQEAWHmQ3uAggLQY/G0Idzk+HhxRArgLXvd4nAlELlArngTGviuZBdcjQhIA\n" \
+    "Do/5GUcoBHLI3Q7lspbT9kbn+2664Gm5jh7A9OU/kpFpMQT+e6aTUDPTlLuHygpx\n" \
+    "bP4X6hn+D5QEBct/befUKcAMZGya46N+m+qWJbH+fplkA2zuZ4NdXav21BsqXRer\n" \
+    "JN6pIxewAEhYGt8nd5mjRFJnMfb6IWs49TRxvk7SntVrWktW36TxPTTWsusuCd8v\n" \
+    "RGTsgD4AIHqFRVi+e+y32K9xxUL4f27s6wSu+f2z2oAQsrfuhHyFMUZT4NLs4KAk\n" \
+    "QbVRkhj9vYJrIP8rRJ+XV9j/IvfdjQ==\n" \
     "-----END CERTIFICATE-----\n"
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n"
-    "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n"
-    "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n"
-    "MzE3NTI1M1oXDTE5MDIxMzE3NTI1M1owYzEaMBgGA1UEAwwRVGVzdCBJbnRlcm1l\n"
-    "ZGlhdGUxDjAMBgNVBAgMBVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWlj\n"
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQAD\n"
-    "ggEPADCCAQoCggEBALtrsdnSA0135a5Ry0BlAoiCuvMS4ttmKrG5aNqq1QtXT0rr\n"
-    "eeVs7uCu43DeuBjoPDCe113LIse68o0VfpyGoEB4k5IEftwNuqt/s9YPnpCjIPw0\n"
-    "tJIhf/0iNo2HXDK7KVkHnjPTcS1KVlWrnVABP7+Q80nBj7S9yxv7LMuKEzU/NSgG\n"
-    "TZZWbIDh8DnTvG2YCz9XAtPjBjWAICDOh4Hlkujt2Z/9D3/At3yL577VBBngZG0A\n"
-    "wCJYE+SpibP8d/f0tuFa6vhNzsDxwqYmBLU1CL1G+3brlCTgfSUCzxC/RSu5lJGo\n"
-    "fZ7E/0s1+kY07p7iiLCgMOJCBIUE+NP2aX8WSRsCAwEAATANBgkqhkiG9w0BAQsF\n"
-    "AAOCAQEAWHmQ3uAggLQY/G0Idzk+HhxRArgLXvd4nAlELlArngTGviuZBdcjQhIA\n"
-    "Do/5GUcoBHLI3Q7lspbT9kbn+2664Gm5jh7A9OU/kpFpMQT+e6aTUDPTlLuHygpx\n"
-    "bP4X6hn+D5QEBct/befUKcAMZGya46N+m+qWJbH+fplkA2zuZ4NdXav21BsqXRer\n"
-    "JN6pIxewAEhYGt8nd5mjRFJnMfb6IWs49TRxvk7SntVrWktW36TxPTTWsusuCd8v\n"
-    "RGTsgD4AIHqFRVi+e+y32K9xxUL4f27s6wSu+f2z2oAQsrfuhHyFMUZT4NLs4KAk\n"
-    "QbVRkhj9vYJrIP8rRJ+XV9j/IvfdjQ==\n"
-    "-----END CERTIFICATE-----\n";
 
-static const char BAD_CHAIN[] =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIDUDCCAjgCCQCCncn7BEtWSzANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n"
-    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n"
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n"
-    "Fw0xODAyMTMwMTQwMDhaFw0yMzAyMTMwMTQwMDhaMGoxCzAJBgNVBAYTAlVTMQ4w\n"
-    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n"
-    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n"
-    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwSnztYAKE2Mq5XL2dCZsFGKsMjsr\n"
-    "pIK37PoBEPJsphL8jrpbRtYklp5HpIpcakT0poL34p90xaW+bIthzbU/MOC/2A/0\n"
-    "63WS4v4n2h33JaMoGVQ4qt+4sV6sZwG70ifbG6linQQAfhdzt+7hxizLr0sh+gys\n"
-    "/E5qkik87pwb2NxDc4tO5vybq50AKf+UVBC5/f//YD0LrXYafUVEruwsCj9fAjso\n"
-    "vAhPqn4nVylOwuNBCjXGkLNF/Rxsi25Cb8rX0rMS1/evjTaTveMRtVYJP4OnDuWL\n"
-    "SzksoGwC4D4hb2SNB+QEMyGv1SnrrmfEXdN/RKf3pCtFJigskcxy/3jgnwIDAQAB\n"
-    "MA0GCSqGSIb3DQEBCwUAA4IBAQABen8yc7HPFjqi+xuiwh+3YcVOYOd5R+gVdsPm\n"
-    "1VLcetXOVx1aRjHF9jwkF3GzQ5UbKex9MSiScjDjLV9ukmJD+HjMwAm3W/Rex+rY\n"
-    "Y7bM6uvKN5zxs5SeuO7odkYP2jHlSnozMJt7jMENr2sJUscIrn073Z3b0gLcv/Cb\n"
-    "QKQY5OSmyQYYu7ib14SxcpIjdZi1T/PH8hlKaKsdt+OFTzA3t8VdN69jZSubwP+A\n"
-    "gBmiW1o/q+r+pN3woaClk5c0/Dh9t/xJcNth4NSKV/YrLHQLZQ76SvICtKexz1RZ\n"
-    "wZSQ03dKw87xW3t3f5GS3O75zDNeT4TMeYd4RMRiK6wDt2WE\n"
+#define CHAIN2 \
+    "-----BEGIN CERTIFICATE-----\n" \
+    "MIIDUDCCAjgCCQCCncn7BEtWSzANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
+    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
+    "Fw0xODAyMTMwMTQwMDhaFw0yMzAyMTMwMTQwMDhaMGoxCzAJBgNVBAYTAlVTMQ4w\n" \
+    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n" \
+    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n" \
+    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwSnztYAKE2Mq5XL2dCZsFGKsMjsr\n" \
+    "pIK37PoBEPJsphL8jrpbRtYklp5HpIpcakT0poL34p90xaW+bIthzbU/MOC/2A/0\n" \
+    "63WS4v4n2h33JaMoGVQ4qt+4sV6sZwG70ifbG6linQQAfhdzt+7hxizLr0sh+gys\n" \
+    "/E5qkik87pwb2NxDc4tO5vybq50AKf+UVBC5/f//YD0LrXYafUVEruwsCj9fAjso\n" \
+    "vAhPqn4nVylOwuNBCjXGkLNF/Rxsi25Cb8rX0rMS1/evjTaTveMRtVYJP4OnDuWL\n" \
+    "SzksoGwC4D4hb2SNB+QEMyGv1SnrrmfEXdN/RKf3pCtFJigskcxy/3jgnwIDAQAB\n" \
+    "MA0GCSqGSIb3DQEBCwUAA4IBAQABen8yc7HPFjqi+xuiwh+3YcVOYOd5R+gVdsPm\n" \
+    "1VLcetXOVx1aRjHF9jwkF3GzQ5UbKex9MSiScjDjLV9ukmJD+HjMwAm3W/Rex+rY\n" \
+    "Y7bM6uvKN5zxs5SeuO7odkYP2jHlSnozMJt7jMENr2sJUscIrn073Z3b0gLcv/Cb\n" \
+    "QKQY5OSmyQYYu7ib14SxcpIjdZi1T/PH8hlKaKsdt+OFTzA3t8VdN69jZSubwP+A\n" \
+    "gBmiW1o/q+r+pN3woaClk5c0/Dh9t/xJcNth4NSKV/YrLHQLZQ76SvICtKexz1RZ\n" \
+    "wZSQ03dKw87xW3t3f5GS3O75zDNeT4TMeYd4RMRiK6wDt2WE\n" \
+    "-----END CERTIFICATE-----\n" \
+    "-----BEGIN CERTIFICATE-----\n" \
+    "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n" \
+    "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n" \
+    "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n" \
+    "MzAxNDAwOFoXDTE5MDIxMzAxNDAwOFowYzEaMBgGA1UEAwwRVGVzdCBJbnRlcm1l\n" \
+    "ZGlhdGUxDjAMBgNVBAgMBVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQAD\n" \
+    "ggEPADCCAQoCggEBALlie2zjCfdy1fckjuM7kXf7CkyVp+hqhkJMUU80ETP8AM2R\n" \
+    "JsJ2Xkvdf8GrIl93lQU9f9O+HRl45O2M/zz2ZTucDF6dWvJ4yCDUWOwE2ro8eh3d\n" \
+    "0BRJvzjs/wgt10v5KJaHnMu9wYVn/8gLWOS/qLwVnPxzqQ507GwOdNaOSHiWXYc9\n" \
+    "fl062HLXirLaKMPx5ZD2QlXDPYQta+lbTHWDReelDNHT3G8FtiKtzQ0uT2EWLw7z\n" \
+    "dOu61+EGf2PdqZc+2MVTPca/qO+cCSwzdzGzOQgUYmtn6YUN1y/GJv73AbnPazvY\n" \
+    "fVysQanSa1g+LD9WFjF4qInlTnCvjvKQEeqGiTsCAwEAATANBgkqhkiG9w0BAQsF\n" \
+    "AAOCAQEAmABx/BVWs4w8bfU0ce5Yj9RYWziMilhrEZJgCmSQzNlNO7DNcPthBbNi\n" \
+    "OAgd8y+lSpcHk5KJ9tm9rD6G+0RbL+8M1TyagrI0M++7Ex2gZV9DSEtvBqnl8XgS\n" \
+    "tlb2xW0x2jol9MdQrsaCcORbrEnogP8YGzICMoJQ8OiJed99PS7q+eQ0lW9A7e+o\n" \
+    "XJ9PjI7n93Wou0xC4kYOszGPGIZ9X5mEPAKqqCcXsxGfruDrgmulB526hb/lHC/5\n" \
+    "1gRic7SCYsyWgxde7R5D+IxxcJNnIWNnt3TUIT8I9fbwonddxA3Qln9tr784dDiB\n" \
+    "/c5qUrfE7k0DrKr4OZvt/xbV9oKMyg==\n" \
     "-----END CERTIFICATE-----\n"
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n"
-    "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n"
-    "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n"
-    "MzAxNDAwOFoXDTE5MDIxMzAxNDAwOFowYzEaMBgGA1UEAwwRVGVzdCBJbnRlcm1l\n"
-    "ZGlhdGUxDjAMBgNVBAgMBVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWlj\n"
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQAD\n"
-    "ggEPADCCAQoCggEBALlie2zjCfdy1fckjuM7kXf7CkyVp+hqhkJMUU80ETP8AM2R\n"
-    "JsJ2Xkvdf8GrIl93lQU9f9O+HRl45O2M/zz2ZTucDF6dWvJ4yCDUWOwE2ro8eh3d\n"
-    "0BRJvzjs/wgt10v5KJaHnMu9wYVn/8gLWOS/qLwVnPxzqQ507GwOdNaOSHiWXYc9\n"
-    "fl062HLXirLaKMPx5ZD2QlXDPYQta+lbTHWDReelDNHT3G8FtiKtzQ0uT2EWLw7z\n"
-    "dOu61+EGf2PdqZc+2MVTPca/qO+cCSwzdzGzOQgUYmtn6YUN1y/GJv73AbnPazvY\n"
-    "fVysQanSa1g+LD9WFjF4qInlTnCvjvKQEeqGiTsCAwEAATANBgkqhkiG9w0BAQsF\n"
-    "AAOCAQEAmABx/BVWs4w8bfU0ce5Yj9RYWziMilhrEZJgCmSQzNlNO7DNcPthBbNi\n"
-    "OAgd8y+lSpcHk5KJ9tm9rD6G+0RbL+8M1TyagrI0M++7Ex2gZV9DSEtvBqnl8XgS\n"
-    "tlb2xW0x2jol9MdQrsaCcORbrEnogP8YGzICMoJQ8OiJed99PS7q+eQ0lW9A7e+o\n"
-    "XJ9PjI7n93Wou0xC4kYOszGPGIZ9X5mEPAKqqCcXsxGfruDrgmulB526hb/lHC/5\n"
-    "1gRic7SCYsyWgxde7R5D+IxxcJNnIWNnt3TUIT8I9fbwonddxA3Qln9tr784dDiB\n"
-    "/c5qUrfE7k0DrKr4OZvt/xbV9oKMyg==\n"
-    "-----END CERTIFICATE-----\n";
+
+/* This chain is a concatenation of two unrelated chains: CHAIN1 and CHAIN2 */
+#define MIXED_CHAIN CHAIN1 CHAIN2
 
 static void TestCertVerifyGood()
 {
@@ -368,10 +372,10 @@ static void TestCertVerifyGood()
     OE_CertChain chain;
     OE_CRL* crl = NULL;
 
-    r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
+    r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
     OE_TEST(r == OE_OK);
 
-    r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
+    r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
     OE_TEST(r == OE_OK);
 
     r = OE_CertVerify(&cert, &chain, crl, &error);
@@ -393,11 +397,11 @@ static void TestCertVerifyBad()
     OE_CertChain chain;
     OE_CRL* crl = NULL;
 
-    r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
+    r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
     OE_TEST(r == OE_OK);
 
     /* Chain does not contain a root for this certificate */
-    r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &chain);
+    r = OE_CertChainReadPEM(CHAIN2, sizeof(CHAIN2), &chain);
     OE_TEST(r == OE_OK);
 
     r = OE_CertVerify(&cert, &chain, crl, &error);
@@ -409,12 +413,34 @@ static void TestCertVerifyBad()
     printf("=== passed TestCertVerifyBad()\n");
 }
 
+static void TestMixedChain()
+{
+    printf("=== begin TestMixedChain()\n");
+
+    OE_Result r;
+    OE_Cert cert;
+    OE_CertChain chain;
+
+    r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
+    OE_TEST(r == OE_OK);
+
+    /* Chain does not contain a root for this certificate */
+    r = OE_CertChainReadPEM(MIXED_CHAIN, sizeof(MIXED_CHAIN), &chain);
+    OE_TEST(r == OE_FAILURE);
+
+    OE_CertFree(&cert);
+    OE_CertChainFree(&chain);
+
+    printf("=== passed TestMixedChain()\n");
+}
+
 static void TestCertVerify()
 {
     printf("=== begin TestCertVerify()\n");
 
     TestCertVerifyGood();
     TestCertVerifyBad();
+    TestMixedChain();
 
     printf("=== passed TestCertVerifyCert()\n");
 }
@@ -816,7 +842,7 @@ static void TestCertMethods()
     {
         OE_Cert cert;
 
-        r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
+        r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
         OE_TEST(r == OE_OK);
 
         OE_RSAPublicKey key;
@@ -831,7 +857,7 @@ static void TestCertMethods()
             /* Determine required buffer size */
             r = OE_RSAPublicKeyGetModulus(&key, NULL, &size);
             OE_TEST(r == OE_BUFFER_TOO_SMALL);
-            OE_TEST(size == sizeof(CERT_RSA_MODULUS));
+            OE_TEST(size == sizeof(CERT1_RSA_MODULUS));
 
             /* Fetch the key bytes */
             OE_TEST(data = (uint8_t*)malloc(size));
@@ -839,8 +865,8 @@ static void TestCertMethods()
             OE_TEST(r == OE_OK);
 
             /* Does it match expected modulus? */
-            OE_TEST(size == sizeof(CERT_RSA_MODULUS));
-            OE_TEST(memcmp(data, CERT_RSA_MODULUS, size) == 0);
+            OE_TEST(size == sizeof(CERT1_RSA_MODULUS));
+            OE_TEST(memcmp(data, CERT1_RSA_MODULUS, size) == 0);
             free(data);
         }
 
@@ -924,7 +950,7 @@ static void TestCertMethods()
         OE_CertChain chain;
 
         /* Load the chain from PEM format */
-        r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
+        r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
         OE_TEST(r == OE_OK);
 
         /* Get the length of the chain */
@@ -961,7 +987,7 @@ static void TestCertMethods()
         OE_Cert leaf;
 
         /* Load the chain from PEM format */
-        r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
+        r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
         OE_TEST(r == OE_OK);
 
         /* Get the root certificate */
