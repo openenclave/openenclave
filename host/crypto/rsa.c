@@ -76,6 +76,14 @@ static OE_Result _GenerateKeyPair(
     if (!privateKey || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* Check range of bits parameter */
+    if (bits > INT_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Check range of exponent */
+    if (exponent > ULONG_MAX)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
 
