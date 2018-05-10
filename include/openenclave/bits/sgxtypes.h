@@ -746,6 +746,10 @@ OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
 
+// Size of actual data within the quote exluding authentication information.
+// This data is signed for quote verification.
+#define SGX_QUOTE_SIGNED_DATA_SIZE OE_OFFSETOF(SGX_Quote, signature_len)
+
 /*
 **==============================================================================
 **

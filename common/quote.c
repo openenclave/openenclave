@@ -98,9 +98,7 @@ static OE_Result VerityQuoteImpl(
     OE_SHA256 sha256 = {0};
     uint8_t found = 0;
     uint16_t i;
-    const uint32_t quoteSignedDataSizesizeToCopy =
-        432; // HEADER_BYTE_LEN + BODY_BYTE_LEN;
-
+    
     OE_CHECK(
         _ParseQuote(
             encQuote,
@@ -155,7 +153,7 @@ static OE_Result VerityQuoteImpl(
         OE_ECDSA256_SHA_Verify(
             (const OE_ECDSA256Key*)&quoteAuthData->attestationKey,
             sgxQuote,
-            quoteSignedDataSizesizeToCopy,
+            SGX_QUOTE_SIGNED_DATA_SIZE,
             (const OE_ECDSA256Signature*)&quoteAuthData->signature));
 
     /*
