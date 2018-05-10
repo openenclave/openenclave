@@ -11,7 +11,7 @@
 static uint64_t _PRIVATE_KEY_MAGIC = 0xd48de5bae3994b41;
 static uint64_t _PUBLIC_KEY_MAGIC = 0x713600af058c447a;
 
-OE_STATIC_ASSERT(sizeof(PrivateKey) <= sizeof(OE_RSAPrivateKey));
+OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_RSAPrivateKey));
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_RSAPublicKey));
 
 static OE_Result _CopyKey(
@@ -129,7 +129,7 @@ done:
 static OE_Result _GenerateKeyPair(
     uint64_t bits,
     uint64_t exponent,
-    PrivateKey* privateKey,
+    OE_PrivateKey* privateKey,
     OE_PublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -259,7 +259,7 @@ OE_Result OE_RSAPrivateKeyReadPEM(
     size_t pemSize,
     OE_RSAPrivateKey* privateKey)
 {
-    return OE_PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey,
+    return OE_PrivateKeyReadPEM(pemData, pemSize, (OE_PrivateKey*)privateKey,
         MBEDTLS_PK_RSA, _PRIVATE_KEY_MAGIC);
 }
 
@@ -268,7 +268,7 @@ OE_Result OE_RSAPrivateKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return OE_PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize, _PRIVATE_KEY_MAGIC);
+    return OE_PrivateKeyWritePEM((const OE_PrivateKey*)privateKey, pemData, pemSize, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyReadPEM(
@@ -290,7 +290,7 @@ OE_Result OE_RSAPublicKeyWritePEM(
 
 OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* privateKey)
 {
-    return OE_PrivateKeyFree((PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
+    return OE_PrivateKeyFree((OE_PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* publicKey)
@@ -307,7 +307,7 @@ OE_Result OE_RSAPrivateKeySign(
     size_t* signatureSize)
 {
     return OE_PrivateKeySign(
-        (PrivateKey*)privateKey,
+        (OE_PrivateKey*)privateKey,
         hashType,
         hashData,
         hashSize,
@@ -340,7 +340,7 @@ OE_Result OE_RSAGenerateKeyPair(
     OE_RSAPrivateKey* privateKey,
     OE_RSAPublicKey* publicKey)
 {
-    return _GenerateKeyPair(bits, exponent, (PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
+    return _GenerateKeyPair(bits, exponent, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
 }
 
 OE_Result OE_RSAPublicKeyGetModulus(

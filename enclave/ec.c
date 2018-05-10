@@ -11,7 +11,7 @@
 static uint64_t _PRIVATE_KEY_MAGIC = 0xf12c37bb02814eeb;
 static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
 
-OE_STATIC_ASSERT(sizeof(PrivateKey) <= sizeof(OE_ECPrivateKey));
+OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_ECPrivateKey));
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
 
 /* Curve names, indexed by OE_ECType */
@@ -86,7 +86,7 @@ done:
 
 static OE_Result _GenerateKeyPair(
     OE_ECType type,
-    PrivateKey* privateKey,
+    OE_PrivateKey* privateKey,
     OE_PublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -268,7 +268,7 @@ OE_Result OE_ECPrivateKeyReadPEM(
     size_t pemSize,
     OE_ECPrivateKey* privateKey)
 {
-    return OE_PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey,
+    return OE_PrivateKeyReadPEM(pemData, pemSize, (OE_PrivateKey*)privateKey,
         MBEDTLS_PK_ECKEY, _PRIVATE_KEY_MAGIC);
 }
 
@@ -277,7 +277,7 @@ OE_Result OE_ECPrivateKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return OE_PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize, _PRIVATE_KEY_MAGIC);
+    return OE_PrivateKeyWritePEM((const OE_PrivateKey*)privateKey, pemData, pemSize, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyReadPEM(
@@ -299,7 +299,7 @@ OE_Result OE_ECPublicKeyWritePEM(
 
 OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey)
 {
-    return OE_PrivateKeyFree((PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
+    return OE_PrivateKeyFree((OE_PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey)
@@ -316,7 +316,7 @@ OE_Result OE_ECPrivateKeySign(
     size_t* signatureSize)
 {
     return OE_PrivateKeySign(
-        (PrivateKey*)privateKey,
+        (OE_PrivateKey*)privateKey,
         hashType,
         hashData,
         hashSize,
@@ -348,7 +348,7 @@ OE_Result OE_ECGenerateKeyPair(
     OE_ECPrivateKey* privateKey,
     OE_ECPublicKey* publicKey)
 {
-    return _GenerateKeyPair(type, (PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
+    return _GenerateKeyPair(type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
 }
 
 OE_Result OE_ECPublicKeyGetKeyBytes(

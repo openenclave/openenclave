@@ -1,8 +1,8 @@
-#ifndef _HOST_CRYPTO_H
-#define _HOST_CRYPTO_H
-
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+
+#ifndef _HOST_CRYPTO_H
+#define _HOST_CRYPTO_H
 
 #include <openenclave/types.h>
 #include <openenclave/result.h>
@@ -10,59 +10,59 @@
 #include <openssl/evp.h>
 #include <openssl/bio.h>
 
-typedef OE_Result (*WriteKey)(BIO* bio, EVP_PKEY* pkey);
+typedef OE_Result (*OE_WriteKey)(BIO* bio, EVP_PKEY* pkey);
 
-typedef struct _PrivateKey
+typedef struct OE_PrivateKey
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} PrivateKey;
+} OE_PrivateKey;
 
-typedef struct _PublicKey
+typedef struct OE_PublicKey
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} PublicKey;
+} OE_PublicKey;
 
-bool _PrivateKeyValid(const PrivateKey* impl, uint64_t magic);
+bool OE_PrivateKeyValid(const OE_PrivateKey* impl, uint64_t magic);
 
-bool _PublicKeyValid(const PublicKey* impl, uint64_t magic);
+bool OE_PublicKeyValid(const OE_PublicKey* impl, uint64_t magic);
 
-void _PublicKeyInit(PublicKey* publicKey, EVP_PKEY* pkey, uint64_t magic);
+void OE_PublicKeyInit(OE_PublicKey* publicKey, EVP_PKEY* pkey, uint64_t magic);
 
-OE_Result _PrivateKeyReadPEM(
+OE_Result OE_PrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    PrivateKey* key,
+    OE_PrivateKey* key,
     int keyType,
     uint64_t magic);
 
-OE_Result _PublicKeyReadPEM(
+OE_Result OE_PublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    PublicKey* key,
+    OE_PublicKey* key,
     int keyType,
     uint64_t magic);
 
-OE_Result _PrivateKeyWritePEM(
-    const PrivateKey* privateKey,
+OE_Result OE_PrivateKeyWritePEM(
+    const OE_PrivateKey* privateKey,
     uint8_t* data,
     size_t* size,
-    WriteKey writeKey,
+    OE_WriteKey writeKey,
     uint64_t magic);
 
-OE_Result _PublicKeyWritePEM(
-    const PublicKey* key,
+OE_Result OE_PublicKeyWritePEM(
+    const OE_PublicKey* key,
     uint8_t* data,
     size_t* size,
     uint64_t magic);
 
-OE_Result _PrivateKeyFree(PrivateKey* key, uint64_t magic);
+OE_Result OE_PrivateKeyFree(OE_PrivateKey* key, uint64_t magic);
 
-OE_Result _PublicKeyFree(PublicKey* key, uint64_t magic);
+OE_Result OE_PublicKeyFree(OE_PublicKey* key, uint64_t magic);
 
-OE_Result _PrivateKeySign(
-    const PrivateKey* privateKey,
+OE_Result OE_PrivateKeySign(
+    const OE_PrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
@@ -70,8 +70,8 @@ OE_Result _PrivateKeySign(
     size_t* signatureSize,
     uint64_t magic);
 
-OE_Result _PublicKeyVerify(
-    const PublicKey* publicKey,
+OE_Result OE_PublicKeyVerify(
+    const OE_PublicKey* publicKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,

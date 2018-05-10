@@ -27,8 +27,8 @@ static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
 **==============================================================================
 */
 
-OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_ECPublicKey));
-OE_STATIC_ASSERT(sizeof(PublicKey) <= sizeof(OE_ECPublicKey));
+OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
+OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
 
 /* Curve names, indexed by OE_ECType */
 static const char* _curveNames[] = {
@@ -69,8 +69,8 @@ done:
 
 static OE_Result _GenerateKeyPair(
     OE_ECType type,
-    PrivateKey* privateKey,
-    PublicKey* publicKey)
+    OE_PrivateKey* privateKey,
+    OE_PublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
     int nid;
@@ -138,7 +138,7 @@ static OE_Result _GenerateKeyPair(
         if (!BIO_get_mem_ptr(bio, &mem))
             OE_RAISE(OE_FAILURE);
 
-        if (_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey, EVP_PKEY_EC, _PRIVATE_KEY_MAGIC) != OE_OK)
+        if (OE_PrivateKeyReadPEM((uint8_t*)mem->data, mem->length, privateKey, EVP_PKEY_EC, _PRIVATE_KEY_MAGIC) != OE_OK)
         {
             OE_RAISE(OE_FAILURE);
         }
@@ -162,7 +162,7 @@ static OE_Result _GenerateKeyPair(
 
         BIO_get_mem_ptr(bio, &mem);
 
-        if (_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey, EVP_PKEY_EC, _PUBLIC_KEY_MAGIC) !=
+        if (OE_PublicKeyReadPEM((uint8_t*)mem->data, mem->length, publicKey, EVP_PKEY_EC, _PUBLIC_KEY_MAGIC) !=
             OE_OK)
         {
             OE_RAISE(OE_FAILURE);
@@ -187,15 +187,15 @@ done:
 
     if (result != OE_OK)
     {
-        _PrivateKeyFree(privateKey, _PRIVATE_KEY_MAGIC);
-        _PublicKeyFree(publicKey, _PUBLIC_KEY_MAGIC);
+        OE_PrivateKeyFree(privateKey, _PRIVATE_KEY_MAGIC);
+        OE_PublicKeyFree(publicKey, _PUBLIC_KEY_MAGIC);
     }
 
     return result;
 }
 
 static OE_Result _PublicKeyGetKeyBytes(
-    const PublicKey* publicKey,
+    const OE_PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
@@ -245,8 +245,8 @@ done:
 }
 
 static OE_Result _PublicKeyEqual(
-    const PublicKey* publicKey1,
-    const PublicKey* publicKey2,
+    const OE_PublicKey* publicKey1,
+    const OE_PublicKey* publicKey2,
     bool* equal)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -257,7 +257,7 @@ static OE_Result _PublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!_PublicKeyValid(publicKey1, _PUBLIC_KEY_MAGIC) || !_PublicKeyValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!OE_PublicKeyValid(publicKey1, _PUBLIC_KEY_MAGIC) || !OE_PublicKeyValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
@@ -291,7 +291,7 @@ done:
 
 void OE_ECPublicKeyInit(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
 {
-    return _PublicKeyInit((PublicKey*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
+    return OE_PublicKeyInit((OE_PublicKey*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeyReadPEM(
@@ -299,7 +299,7 @@ OE_Result OE_ECPrivateKeyReadPEM(
     size_t pemSize,
     OE_ECPrivateKey* privateKey)
 {
-    return _PrivateKeyReadPEM(pemData, pemSize, (PrivateKey*)privateKey, EVP_PKEY_EC, _PRIVATE_KEY_MAGIC);
+    return OE_PrivateKeyReadPEM(pemData, pemSize, (OE_PrivateKey*)privateKey, EVP_PKEY_EC, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeyWritePEM(
@@ -307,7 +307,7 @@ OE_Result OE_ECPrivateKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return _PrivateKeyWritePEM((const PrivateKey*)privateKey, pemData, pemSize, _WriteKey, _PRIVATE_KEY_MAGIC);
+    return OE_PrivateKeyWritePEM((const OE_PrivateKey*)privateKey, pemData, pemSize, _WriteKey, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyReadPEM(
@@ -315,7 +315,7 @@ OE_Result OE_ECPublicKeyReadPEM(
     size_t pemSize,
     OE_ECPublicKey* publicKey)
 {
-    return _PublicKeyReadPEM(pemData, pemSize, (PublicKey*)publicKey, EVP_PKEY_EC, _PUBLIC_KEY_MAGIC);
+    return OE_PublicKeyReadPEM(pemData, pemSize, (OE_PublicKey*)publicKey, EVP_PKEY_EC, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyWritePEM(
@@ -323,17 +323,17 @@ OE_Result OE_ECPublicKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return _PublicKeyWritePEM((const PublicKey*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
+    return OE_PublicKeyWritePEM((const OE_PublicKey*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey)
 {
-    return _PrivateKeyFree((PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
+    return OE_PrivateKeyFree((OE_PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey)
 {
-    return _PublicKeyFree((PublicKey*)publicKey, _PUBLIC_KEY_MAGIC);
+    return OE_PublicKeyFree((OE_PublicKey*)publicKey, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeySign(
@@ -344,8 +344,8 @@ OE_Result OE_ECPrivateKeySign(
     uint8_t* signature,
     size_t* signatureSize)
 {
-    return _PrivateKeySign(
-        (PrivateKey*)privateKey,
+    return OE_PrivateKeySign(
+        (OE_PrivateKey*)privateKey,
         hashType,
         hashData,
         hashSize,
@@ -362,8 +362,8 @@ OE_Result OE_ECPublicKeyVerify(
     const uint8_t* signature,
     size_t signatureSize)
 {
-    return _PublicKeyVerify(
-        (PublicKey*)publicKey,
+    return OE_PublicKeyVerify(
+        (OE_PublicKey*)publicKey,
         hashType,
         hashData,
         hashSize,
@@ -377,7 +377,7 @@ OE_Result OE_ECGenerateKeyPair(
     OE_ECPrivateKey* privateKey,
     OE_ECPublicKey* publicKey)
 {
-    return _GenerateKeyPair(type, (PrivateKey*)privateKey, (PublicKey*)publicKey);
+    return _GenerateKeyPair(type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
 }
 
 OE_Result OE_ECPublicKeyGetKeyBytes(
@@ -385,7 +385,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _PublicKeyGetKeyBytes((PublicKey*)publicKey, buffer, bufferSize);
+    return _PublicKeyGetKeyBytes((OE_PublicKey*)publicKey, buffer, bufferSize);
 }
 
 OE_Result OE_ECPublicKeyEqual(
@@ -393,6 +393,6 @@ OE_Result OE_ECPublicKeyEqual(
     const OE_ECPublicKey* publicKey2,
     bool* equal)
 {
-    return _PublicKeyEqual((PublicKey*)publicKey1, (PublicKey*)publicKey2,
+    return _PublicKeyEqual((OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2,
         equal);
 }

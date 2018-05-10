@@ -10,7 +10,7 @@ typedef struct _OE_PrivateKey
 {
     uint64_t magic;
     mbedtls_pk_context pk;
-} PrivateKey;
+} OE_PrivateKey;
 
 typedef struct _OE_PublicKey
 {
@@ -18,27 +18,27 @@ typedef struct _OE_PublicKey
     mbedtls_pk_context pk;
 } OE_PublicKey;
 
-typedef OE_Result (*CopyKey)(
+typedef OE_Result (*OE_CopyKey)(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
     bool copyPrivateFields);
 
-bool OE_PrivateKeyValid(const PrivateKey* privateKey, uint64_t magic);
+bool OE_PrivateKeyValid(const OE_PrivateKey* privateKey, uint64_t magic);
 
 OE_Result OE_PrivateKeyInit(
-    PrivateKey* privateKey, 
+    OE_PrivateKey* privateKey, 
     const mbedtls_pk_context* pk,
-    CopyKey copyKey,
+    OE_CopyKey copyKey,
     uint64_t magic);
 
-void OE_PrivateKeyRelease(PrivateKey* privateKey, uint64_t magic);
+void OE_PrivateKeyRelease(OE_PrivateKey* privateKey, uint64_t magic);
 
 bool OE_PublicKeyValid(const OE_PublicKey* publicKey, uint64_t magic);
 
 OE_Result OE_PublicKeyInit(
     OE_PublicKey* publicKey, 
     const mbedtls_pk_context* pk,
-    CopyKey copyKey,
+    OE_CopyKey copyKey,
     uint64_t magic);
 
 void OE_PublicKeyRelease(OE_PublicKey* publicKey, uint64_t magic);
@@ -46,12 +46,12 @@ void OE_PublicKeyRelease(OE_PublicKey* publicKey, uint64_t magic);
 OE_Result OE_PrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    PrivateKey* privateKey,
+    OE_PrivateKey* privateKey,
     mbedtls_pk_type_t keyType,
     uint64_t magic);
 
 OE_Result OE_PrivateKeyWritePEM(
-    const PrivateKey* privateKey,
+    const OE_PrivateKey* privateKey,
     uint8_t* pemData,
     size_t* pemSize,
     uint64_t magic);
@@ -69,12 +69,12 @@ OE_Result OE_PublicKeyWritePEM(
     size_t* pemSize,
     uint64_t magic);
 
-OE_Result OE_PrivateKeyFree(PrivateKey* privateKey, uint64_t magic);
+OE_Result OE_PrivateKeyFree(OE_PrivateKey* privateKey, uint64_t magic);
 
 OE_Result OE_PublicKeyFree(OE_PublicKey* publicKey, uint64_t magic);
 
 OE_Result OE_PrivateKeySign(
-    const PrivateKey* privateKey,
+    const OE_PrivateKey* privateKey,
     OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
