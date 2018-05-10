@@ -119,7 +119,11 @@ static void TestInitOcallResult(unsigned enclaveId)
 }
 
 // For ocall-test on not explicitly OE_OCALL-tagged function
+#if defined(__unix__)
 extern "C" void DummyHostFunction(void*)
+#elif defined (_WIN32)
+extern "C" OE_EXPORT void DummyHostFunction(void*)
+#endif
 {
 }
 
