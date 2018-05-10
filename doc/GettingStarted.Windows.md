@@ -161,6 +161,9 @@ How to build the CMake project using Visual Studio 2017
 	Build files have been written to: /var/tmp/build/ca6d6e50-e70d-c836-ac64-910bf7e68090/build/Linux-Debug
 
 	2. In a WSL console:
+	$ cd /var/tmp/src/{workspaceHash}/{Linux-Debug|Linux-Release}
+	$ sudo chmod +755 3rdparty/mbedtls/mbedtls/tests/scripts/generate_code.pl
+
 	$ cd /var/tmp/build/{workspaceHash}/build/{Linux-Debug|Linux-Release}
 	$ sudo chmod +755 3rdparty/musl/CMakeFiles/oelibc_includes.dir/build.make
 	$ sudo chmod +755 3rdparty/musl/musl/configure
