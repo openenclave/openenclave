@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 # create a binary for each testcase listed in ../tests.supported
-
 include(add_enclave_executable)
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
 
@@ -22,7 +21,6 @@ function(add_libcxxrt_test_enc NAME CXXFILE)
     add_enclave_executable(libcxxrttest-${NAME} sign.conf private.pem
         main.cpp
         )
-
     target_include_directories(libcxxrttest-${NAME} PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src
@@ -30,12 +28,15 @@ function(add_libcxxrt_test_enc NAME CXXFILE)
         )
     target_compile_options(libcxxrttest-${NAME} PRIVATE -Wno-error --std=c++14)
     target_compile_definitions(libcxxrttest-${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
-    target_link_libraries(libcxxrttest-${NAME} libcxxrttest-support -Wl,--wrap,_Unwind_RaiseException)
+    target_link_libraries(libcxxrttest-${NAME} libcxxrttest-support)
+    if ("${NAME}" STREQUAL "test_foreign_exceptions")
+        target_link_libraries(libcxxrttest-${NAME} -Wl,--wrap,_Unwind_RaiseException)
+    endif()
 endfunction(add_libcxxrt_test_enc)
 
 # iterate over the supported tests and create a binary for each.
 file(STRINGS "../tests.supported" alltests)
 foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name "../../3rdparty/libcxxrt/libcxxrt/test/")
+    get_testcase_name(${testcase} name "")
     add_libcxxrt_test_enc("${name}" "${testcase}")
 endforeach(testcase)

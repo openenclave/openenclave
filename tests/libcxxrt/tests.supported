@@ -1,1 +1,3 @@
-../../3rdparty/libcxxrt/libcxxrt/test/test_foreign_exceptions.cc
+test_foreign_exceptions.cpp
+test_guard.cpp
+test_typeinfo.cpp

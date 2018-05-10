@@ -20,11 +20,7 @@ void Test(OE_Enclave* enclave)
     OE_Result result = OE_CallEnclave(enclave, "Test", &args);
     OE_TEST(result == OE_OK);
 
-    if (args.ret == 0)
-    {
-        printf("PASSED: %s\n", args.test);
-    }
-    else
+    if (args.ret != 0)
     {
         printf("FAILED: %s (ret=%d)\n", args.test, args.ret);
         abort();
@@ -87,8 +83,6 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    printf("=== %s: %s\n", argv[0], argv[1]);
-
     // Create the enclave:
     if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
@@ -103,8 +97,6 @@ int main(int argc, const char* argv[])
     // Shutdown the enclave.
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
         OE_PutErr("OE_TerminateEnclave(): result=%u", result);
-
-    printf("\n");
 
     return 0;
 }

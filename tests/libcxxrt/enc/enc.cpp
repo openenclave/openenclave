@@ -51,7 +51,6 @@ OE_ECALL void Test(Args* args)
     extern const char* __TEST__NAME;
     if (args)
     {
-        printf("RUNNING: %s\n", __TEST__NAME);
         static const char* argv[] = {
             "test", NULL,
         };
