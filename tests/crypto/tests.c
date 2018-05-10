@@ -957,7 +957,7 @@ static void TestCertMethods()
     {
         OE_CertChain chain;
         OE_Cert root;
-        OE_Cert cert;
+        OE_Cert cert0;
         OE_Cert leaf;
 
         /* Load the chain from PEM format */
@@ -969,7 +969,7 @@ static void TestCertMethods()
         OE_TEST(r == OE_OK);
 
         /* Get the first certificate */
-        r = OE_CertChainGetCert(&chain, 0, &cert);
+        r = OE_CertChainGetCert(&chain, 0, &cert0);
         OE_TEST(r == OE_OK);
 
         /* Get the leaf certificate */
@@ -983,7 +983,7 @@ static void TestCertMethods()
             bool equal;
 
             OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
-            OE_TEST(OE_CertGetRSAPublicKey(&cert, &certKey) == OE_OK);
+            OE_TEST(OE_CertGetRSAPublicKey(&cert0, &certKey) == OE_OK);
 
             OE_TEST(OE_RSAPublicKeyEqual(&rootKey, &certKey, &equal) == OE_OK);
             OE_TEST(equal == true);
@@ -1009,7 +1009,7 @@ static void TestCertMethods()
         }
 
         OE_CertFree(&root);
-        OE_CertFree(&cert);
+        OE_CertFree(&cert0);
         OE_CertFree(&leaf);
         OE_CertChainFree(&chain);
     }
