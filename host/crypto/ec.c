@@ -74,11 +74,12 @@ static OE_Result _GenerateKeyPair(
 {
     OE_Result result = OE_UNEXPECTED;
     int nid;
-    EC_KEY* key = NULL;
-    EVP_PKEY* pkey = NULL;
-    BIO* bio = NULL;
-    const char nullTerminator = '\0';
+    EC_KEY* ecPrivate = NULL;
+    EC_KEY* ecPublic = NULL;
+    EVP_PKEY* pkeyPrivate = NULL;
+    EVP_PKEY* pkeyPublic = NULL;
     const char* curveName;
+    EC_POINT* point = NULL;
 
     if (privateKey)
         memset(privateKey, 0, sizeof(*privateKey));
@@ -90,109 +91,110 @@ static OE_Result _GenerateKeyPair(
     if (!privateKey || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(curveName = _ECTypeToString(type)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
+
+    /* Get the curve name for this EC key type */
+    if (!(curveName = _ECTypeToString(type)))
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Resolve the NID for this curve name */
     if ((nid = OBJ_txt2nid(curveName)) == NID_undef)
         OE_RAISE(OE_FAILURE);
 
-    /* Create the key */
-    if (!(key = EC_KEY_new_by_curve_name(nid)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the EC named-curve flag */
-    EC_KEY_set_asn1_flag(key, OPENSSL_EC_NAMED_CURVE);
-
-    /* Generate the public/private key pair */
-    if (!EC_KEY_generate_key(key))
-        OE_RAISE(OE_FAILURE);
-
-    /* Create the privateKey key structure */
-    if (!(pkey = EVP_PKEY_new()))
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the privateKey key from the generated key pair */
-    if (!EVP_PKEY_assign_EC_KEY(pkey, key))
-        OE_RAISE(OE_FAILURE);
-
-    /* Key will be released when pkey is released */
-    key = NULL;
-
-    /* Create privateKey key object */
+    /* Create the private EC key */
     {
-        BUF_MEM* mem;
-
-        if (!(bio = BIO_new(BIO_s_mem())))
+        /* Create the private key */
+        if (!(ecPrivate = EC_KEY_new_by_curve_name(nid)))
             OE_RAISE(OE_FAILURE);
 
-        if (!PEM_write_bio_PrivateKey(bio, pkey, NULL, NULL, 0, 0, NULL))
-            OE_RAISE(OE_FAILURE);
+        /* Set the EC named-curve flag */
+        EC_KEY_set_asn1_flag(ecPrivate, OPENSSL_EC_NAMED_CURVE);
 
-        if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
+        /* Generate the public/private key pair */
+        if (!EC_KEY_generate_key(ecPrivate))
             OE_RAISE(OE_FAILURE);
-
-        if (!BIO_get_mem_ptr(bio, &mem))
-            OE_RAISE(OE_FAILURE);
-
-        if (OE_PrivateKeyReadPEM(
-                (uint8_t*)mem->data,
-                mem->length,
-                privateKey,
-                EVP_PKEY_EC,
-                _PRIVATE_KEY_MAGIC) != OE_OK)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
-
-        BIO_free(bio);
-        bio = NULL;
     }
 
-    /* Create publicKey key object */
+    /* Create the public EC key */
     {
-        BUF_MEM* mem;
-
-        if (!(bio = BIO_new(BIO_s_mem())))
+        /* Create the public key */
+        if (!(ecPublic = EC_KEY_new_by_curve_name(nid)))
             OE_RAISE(OE_FAILURE);
 
-        if (!PEM_write_bio_PUBKEY(bio, pkey))
-            OE_RAISE(OE_FAILURE);
+        /* Set the EC named-curve flag */
+        EC_KEY_set_asn1_flag(ecPublic, OPENSSL_EC_NAMED_CURVE);
 
-        if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-            OE_RAISE(OE_FAILURE);
-
-        BIO_get_mem_ptr(bio, &mem);
-
-        if (OE_PublicKeyReadPEM(
-                (uint8_t*)mem->data,
-                mem->length,
-                publicKey,
-                EVP_PKEY_EC,
-                _PUBLIC_KEY_MAGIC) != OE_OK)
+        /* Duplicate public key point from the private key */
+        if (!(point = EC_POINT_dup(
+            EC_KEY_get0_public_key(ecPrivate), 
+            EC_KEY_get0_group(ecPublic))))
         {
             OE_RAISE(OE_FAILURE);
         }
 
-        BIO_free(bio);
-        bio = NULL;
+        /* Set the private key */
+        if (!EC_KEY_set_public_key(ecPublic, point))
+            OE_RAISE(OE_FAILURE);
+
+        /* Keep from being freed below */
+        point = NULL;
+    }
+
+    /* Create the PKEY private key wrapper */
+    {
+        /* Create the private key structure */
+        if (!(pkeyPrivate = EVP_PKEY_new()))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the private key from the generated key pair */
+        if (!EVP_PKEY_assign_EC_KEY(pkeyPrivate, ecPrivate))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the private key */
+        OE_PrivateKeyInit(privateKey, pkeyPrivate, _PRIVATE_KEY_MAGIC);
+
+        /* Keep these from being freed below */
+        ecPrivate = NULL;
+        pkeyPrivate = NULL;
+    }
+
+    /* Create the PKEY public key wrapper */
+    {
+        /* Create the public key structure */
+        if (!(pkeyPublic = EVP_PKEY_new()))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the public key from the generated key pair */
+        if (!EVP_PKEY_assign_EC_KEY(pkeyPublic, ecPublic))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the public key */
+        OE_PublicKeyInit(publicKey, pkeyPublic, _PUBLIC_KEY_MAGIC);
+
+        /* Keep these from being freed below */
+        ecPublic = NULL;
+        pkeyPublic = NULL;
     }
 
     result = OE_OK;
 
 done:
 
-    if (key)
-        EC_KEY_free(key);
+    if (ecPrivate)
+        EC_KEY_free(ecPrivate);
 
-    if (pkey)
-        EVP_PKEY_free(pkey);
+    if (ecPublic)
+        EC_KEY_free(ecPublic);
 
-    if (bio)
-        BIO_free(bio);
+    if (pkeyPrivate)
+        EVP_PKEY_free(pkeyPrivate);
+
+    if (pkeyPublic)
+        EVP_PKEY_free(pkeyPublic);
+
+    if (point)
+        EC_POINT_free(point);
 
     if (result != OE_OK)
     {

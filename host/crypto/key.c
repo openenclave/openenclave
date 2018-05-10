@@ -26,6 +26,13 @@ void OE_PublicKeyInit(OE_PublicKey* publicKey, EVP_PKEY* pkey, uint64_t magic)
     impl->pkey = pkey;
 }
 
+void OE_PrivateKeyInit(OE_PrivateKey* privateKey, EVP_PKEY* pkey, uint64_t magic)
+{
+    OE_PrivateKey* impl = (OE_PrivateKey*)privateKey;
+    impl->magic = magic;
+    impl->pkey = pkey;
+}
+
 OE_Result OE_PrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,

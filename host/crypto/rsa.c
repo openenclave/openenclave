@@ -61,10 +61,10 @@ static OE_Result _GenerateKeyPair(
     OE_PublicKey* publicKey)
 {
     OE_Result result = OE_UNEXPECTED;
-    RSA* key = NULL;
-    EVP_PKEY* pkey = NULL;
-    BIO* bio = NULL;
-    const char nullTerminator = '\0';
+    RSA* rsaPrivate = NULL;
+    RSA* rsaPublic = NULL;
+    EVP_PKEY* pkeyPrivate = NULL;
+    EVP_PKEY* pkeyPublic = NULL;
 
     if (privateKey)
         memset(privateKey, 0, sizeof(*privateKey));
@@ -87,92 +87,68 @@ static OE_Result _GenerateKeyPair(
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
 
-    /* Generate an RSA key pair */
-    if (!(key = RSA_generate_key(bits, exponent, 0, 0)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Create the private key structure */
-    if (!(pkey = EVP_PKEY_new()))
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the private key from the generated key pair */
-    if (!EVP_PKEY_assign_RSA(pkey, key))
-        OE_RAISE(OE_FAILURE);
-
-    /* Key will be released when pkey is released */
-    key = NULL;
-
-    /* Create private key object */
+    /* Create the public and private RSA keys */
     {
-        BUF_MEM* mem;
-
-        if (!(bio = BIO_new(BIO_s_mem())))
+        /* Create the private key */
+        if (!(rsaPrivate = RSA_generate_key(bits, exponent, 0, 0)))
             OE_RAISE(OE_FAILURE);
 
-        if (!PEM_write_bio_PrivateKey(bio, pkey, NULL, NULL, 0, 0, NULL))
+        /* Create the public key */
+        if (!(rsaPublic = RSAPublicKey_dup(rsaPrivate)))
             OE_RAISE(OE_FAILURE);
-
-        if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-            OE_RAISE(OE_FAILURE);
-
-        if (!BIO_get_mem_ptr(bio, &mem))
-            OE_RAISE(OE_FAILURE);
-
-        if (OE_PrivateKeyReadPEM(
-                (uint8_t*)mem->data,
-                mem->length,
-                privateKey,
-                EVP_PKEY_RSA,
-                _PRIVATE_KEY_MAGIC) != OE_OK)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
-
-        BIO_free(bio);
-        bio = NULL;
     }
 
-    /* Create public key object */
+    /* Create the PKEY private key wrapper */
     {
-        BUF_MEM* mem;
-
-        if (!(bio = BIO_new(BIO_s_mem())))
+        /* Create the private key structure */
+        if (!(pkeyPrivate = EVP_PKEY_new()))
             OE_RAISE(OE_FAILURE);
 
-        if (!PEM_write_bio_PUBKEY(bio, pkey))
+        /* Initialize the private key from the generated key pair */
+        if (!EVP_PKEY_assign_RSA(pkeyPrivate, rsaPrivate))
             OE_RAISE(OE_FAILURE);
 
-        if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
+        /* Initialize the private key */
+        OE_PrivateKeyInit(privateKey, pkeyPrivate, _PRIVATE_KEY_MAGIC);
+
+        /* Keep these from being freed below */
+        rsaPrivate = NULL;
+        pkeyPrivate = NULL;
+    }
+
+    /* Create the PKEY public key wrapper */
+    {
+        /* Create the public key structure */
+        if (!(pkeyPublic = EVP_PKEY_new()))
             OE_RAISE(OE_FAILURE);
 
-        BIO_get_mem_ptr(bio, &mem);
-
-        if (OE_PublicKeyReadPEM(
-                (uint8_t*)mem->data,
-                mem->length,
-                publicKey,
-                EVP_PKEY_RSA,
-                _PUBLIC_KEY_MAGIC) != OE_OK)
-        {
+        /* Initialize the public key from the generated key pair */
+        if (!EVP_PKEY_assign_RSA(pkeyPublic, rsaPublic))
             OE_RAISE(OE_FAILURE);
-        }
 
-        BIO_free(bio);
-        bio = NULL;
+        /* Initialize the public key */
+        OE_PublicKeyInit(publicKey, pkeyPublic, _PUBLIC_KEY_MAGIC);
+
+        /* Keep these from being freed below */
+        rsaPublic = NULL;
+        pkeyPublic = NULL;
     }
 
     result = OE_OK;
 
 done:
 
-    if (key)
-        RSA_free(key);
+    if (rsaPrivate)
+        RSA_free(rsaPrivate);
 
-    if (pkey)
-        EVP_PKEY_free(pkey);
+    if (rsaPublic)
+        RSA_free(rsaPublic);
 
-    if (bio)
-        BIO_free(bio);
+    if (pkeyPrivate)
+        EVP_PKEY_free(pkeyPrivate);
+
+    if (pkeyPublic)
+        EVP_PKEY_free(pkeyPublic);
 
     if (result != OE_OK)
     {
