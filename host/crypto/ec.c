@@ -278,6 +278,9 @@ static OE_Result _PublicKeyEqual(
         const EC_POINT* point1 = EC_KEY_get0_public_key(ec1);
         const EC_POINT* point2 = EC_KEY_get0_public_key(ec2);
 
+        if (!ec1 || !ec2 || !group1 || !group2 || !point1 || !point2)
+            OE_RAISE(OE_FAILURE);
+
         /* Compare group and public key point */
         if (EC_GROUP_cmp(group1, group2, NULL) == 0 &&
             EC_POINT_cmp(group1, point1, point2, NULL) == 0)
