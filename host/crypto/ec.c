@@ -107,7 +107,7 @@ static OE_Result _GenerateKeyPair(
     /* Set the EC named-curve flag */
     EC_KEY_set_asn1_flag(key, OPENSSL_EC_NAMED_CURVE);
 
-    /* Generate the publicKey/privateKey key pair */
+    /* Generate the public/private key pair */
     if (!EC_KEY_generate_key(key))
         OE_RAISE(OE_FAILURE);
 
