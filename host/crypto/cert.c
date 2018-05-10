@@ -51,7 +51,7 @@ static void _CertInit(Cert* impl, X509* x509)
     }
 }
 
-static bool _CertValid(const Cert* impl)
+static bool _CertIsValid(const Cert* impl)
 {
     return impl && (impl->magic == OE_CERT_MAGIC) && impl->x509;
 }
@@ -83,7 +83,7 @@ static void _CertChainInit(CertChain* impl, STACK_OF(X509) * sk)
     }
 }
 
-static bool _CertChainValid(const CertChain* impl)
+static bool _CertChainIsValid(const CertChain* impl)
 {
     return impl && (impl->magic == OE_CERT_CHAIN_MAGIC) && impl->sk;
 }
@@ -295,7 +295,7 @@ OE_Result OE_CertFree(OE_Cert* cert)
     Cert* impl = (Cert*)cert;
 
     /* Check parameters */
-    if (!_CertValid(impl))
+    if (!_CertIsValid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Free the certificate */
@@ -351,7 +351,7 @@ OE_Result OE_CertChainFree(OE_CertChain* chain)
     CertChain* impl = (CertChain*)chain;
 
     /* Check the parameter */
-    if (_CertChainValid(impl))
+    if (_CertChainIsValid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Release the stack of certificates */
@@ -383,14 +383,14 @@ OE_Result OE_CertVerify(
         *error->buf = '\0';
 
     /* Check for invalid cert parameter */
-    if (!_CertValid(certImpl))
+    if (!_CertIsValid(certImpl))
     {
         _SetErr(error, "invalid cert parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     /* Check for invalid chain parameter */
-    if (!_CertChainValid(chainImpl))
+    if (!_CertChainIsValid(chainImpl))
     {
         _SetErr(error, "invalid chain parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -466,7 +466,7 @@ OE_Result OE_CertGetRSAPublicKey(
         memset(publicKey, 0, sizeof(OE_RSAPublicKey));
 
     /* Reject invalid parameters */
-    if (!_CertValid(impl) || !publicKey)
+    if (!_CertIsValid(impl) || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get public key (increments reference count) */
@@ -505,7 +505,7 @@ OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
         memset(publicKey, 0, sizeof(OE_ECPublicKey));
 
     /* Reject invalid parameters */
-    if (!_CertValid(impl) || !publicKey)
+    if (!_CertIsValid(impl) || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get public key (increments reference count) */
@@ -549,7 +549,7 @@ OE_Result OE_CertChainGetLength(const OE_CertChain* chain, size_t* length)
         *length = 0;
 
     /* Reject invalid parameters */
-    if (!_CertChainValid(impl) || !length)
+    if (!_CertChainIsValid(impl) || !length)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the number of certificates in the chain */
@@ -581,7 +581,7 @@ OE_Result OE_CertChainGetCert(
         memset(cert, 0, sizeof(OE_Cert));
 
     /* Reject invalid parameters */
-    if (!_CertChainValid(impl) || !cert)
+    if (!_CertChainIsValid(impl) || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the length of the certificate chain */
@@ -626,7 +626,7 @@ OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert)
         memset(cert, 0, sizeof(OE_Cert));
 
     /* Reject invalid parameters */
-    if (!_CertChainValid(impl) || !cert)
+    if (!_CertChainIsValid(impl) || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the number of certificates in the chain */

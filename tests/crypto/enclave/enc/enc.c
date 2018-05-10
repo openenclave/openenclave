@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../../../../enclave/crypto.h"
 
 #define BUILD_ENCLAVE
 #include "../../tests.c"
@@ -36,5 +37,16 @@ OE_ECALL void Test(void* args_)
     {
         fprintf(stderr, "ERROR: memory leaked: %lu bytes\n", inUseBytes);
         OE_Abort();
+    }
+
+    /* Verify that all crypto objects have been released */
+    {
+        const uint64_t cryptoRefs = OE_CryptoRefsGet();
+
+        if (cryptoRefs != 0)
+        {
+            fprintf(stderr, "ERROR: crypto objects leaked: %lu\n", cryptoRefs);
+            OE_Abort();
+        }
     }
 }

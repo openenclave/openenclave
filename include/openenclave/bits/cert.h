@@ -231,7 +231,7 @@ OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert);
  *
  * This function fetches the leaf certificate from a certificate chain.
  *
- * @param chain the chain whose root certificate is fetched.
+ * @param chain the chain whose leaf certificate is fetched.
  * @param cert the handle of a certificate upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
  *     certificate by passing it to **OE_CertFree()**.
