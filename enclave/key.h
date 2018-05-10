@@ -26,7 +26,7 @@ typedef OE_Result (*OE_CopyKey)(
     const mbedtls_pk_context* src,
     bool copyPrivateFields);
 
-bool OE_PrivateKeyValid(const OE_PrivateKey* privateKey, uint64_t magic);
+bool OE_PrivateKeyIsValid(const OE_PrivateKey* privateKey, uint64_t magic);
 
 OE_Result OE_PrivateKeyInit(
     OE_PrivateKey* privateKey,
@@ -36,7 +36,7 @@ OE_Result OE_PrivateKeyInit(
 
 void OE_PrivateKeyRelease(OE_PrivateKey* privateKey, uint64_t magic);
 
-bool OE_PublicKeyValid(const OE_PublicKey* publicKey, uint64_t magic);
+bool OE_PublicKeyIsValid(const OE_PublicKey* publicKey, uint64_t magic);
 
 OE_Result OE_PublicKeyInit(
     OE_PublicKey* publicKey,

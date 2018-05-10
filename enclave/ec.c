@@ -232,11 +232,11 @@ static OE_Result OE_PublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!OE_PublicKeyValid(publicKey1, _PUBLIC_KEY_MAGIC) ||
-        !OE_PublicKeyValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!OE_PublicKeyIsValid(publicKey1, _PUBLIC_KEY_MAGIC) ||
+        !OE_PublicKeyIsValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Compare the exponent and modulus */
+    /* Compare the groups and EC points */
     {
         const mbedtls_ecp_keypair* ec1 = mbedtls_pk_ec(publicKey1->pk);
         const mbedtls_ecp_keypair* ec2 = mbedtls_pk_ec(publicKey2->pk);

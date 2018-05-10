@@ -88,7 +88,7 @@ static OE_Result _GetPublicKeyModulusOrExponent(
     const mbedtls_mpi* mpi;
 
     /* Check for invalid parameters */
-    if (!OE_PublicKeyValid(publicKey, _PUBLIC_KEY_MAGIC) || !bufferSize)
+    if (!OE_PublicKeyIsValid(publicKey, _PUBLIC_KEY_MAGIC) || !bufferSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then bufferSize must be zero */
@@ -186,10 +186,10 @@ done:
 
     if (result != OE_OK)
     {
-        if (OE_PrivateKeyValid(privateKey, _PRIVATE_KEY_MAGIC))
+        if (OE_PrivateKeyIsValid(privateKey, _PRIVATE_KEY_MAGIC))
             OE_PrivateKeyFree(privateKey, _PRIVATE_KEY_MAGIC);
 
-        if (OE_PublicKeyValid(publicKey, _PUBLIC_KEY_MAGIC))
+        if (OE_PublicKeyIsValid(publicKey, _PUBLIC_KEY_MAGIC))
             OE_PublicKeyFree(publicKey, _PUBLIC_KEY_MAGIC);
     }
 
@@ -223,8 +223,8 @@ static OE_Result OE_PublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!OE_PublicKeyValid(publicKey1, _PUBLIC_KEY_MAGIC) ||
-        !OE_PublicKeyValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!OE_PublicKeyIsValid(publicKey1, _PUBLIC_KEY_MAGIC) ||
+        !OE_PublicKeyIsValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the exponent and modulus */

@@ -24,9 +24,9 @@ typedef struct OE_PublicKey
 
 typedef OE_Result (*OE_WriteKey)(BIO* bio, EVP_PKEY* pkey);
 
-bool OE_PrivateKeyValid(const OE_PrivateKey* impl, uint64_t magic);
+bool OE_PrivateKeyIsValid(const OE_PrivateKey* impl, uint64_t magic);
 
-bool OE_PublicKeyValid(const OE_PublicKey* impl, uint64_t magic);
+bool OE_PublicKeyIsValid(const OE_PublicKey* impl, uint64_t magic);
 
 void OE_PublicKeyInit(OE_PublicKey* publicKey, EVP_PKEY* pkey, uint64_t magic);
 

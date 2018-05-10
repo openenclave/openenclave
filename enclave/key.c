@@ -12,7 +12,7 @@ typedef OE_Result (*OE_CopyKey)(
     const mbedtls_pk_context* src,
     bool copyPrivateFields);
 
-bool OE_PrivateKeyValid(const OE_PrivateKey* privateKey, uint64_t magic)
+bool OE_PrivateKeyIsValid(const OE_PrivateKey* privateKey, uint64_t magic)
 {
     return privateKey && privateKey->magic == magic;
 }
@@ -45,14 +45,14 @@ done:
 
 void OE_PrivateKeyRelease(OE_PrivateKey* privateKey, uint64_t magic)
 {
-    if (OE_PrivateKeyValid(privateKey, magic))
+    if (OE_PrivateKeyIsValid(privateKey, magic))
     {
         mbedtls_pk_free(&privateKey->pk);
         OE_Memset(privateKey, 0, sizeof(OE_PrivateKey));
     }
 }
 
-bool OE_PublicKeyValid(const OE_PublicKey* publicKey, uint64_t magic)
+bool OE_PublicKeyIsValid(const OE_PublicKey* publicKey, uint64_t magic)
 {
     return publicKey && publicKey->magic == magic;
 }
@@ -85,7 +85,7 @@ done:
 
 void OE_PublicKeyRelease(OE_PublicKey* publicKey, uint64_t magic)
 {
-    if (OE_PublicKeyValid(publicKey, magic))
+    if (OE_PublicKeyIsValid(publicKey, magic))
     {
         mbedtls_pk_free(&publicKey->pk);
         OE_Memset(publicKey, 0, sizeof(OE_PublicKey));
@@ -171,7 +171,7 @@ OE_Result OE_PrivateKeyWritePEM(
     uint8_t buf[OE_PEM_MAX_BYTES];
 
     /* Check parameters */
-    if (!OE_PrivateKeyValid(privateKey, magic) || !pemSize)
+    if (!OE_PrivateKeyIsValid(privateKey, magic) || !pemSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -254,7 +254,7 @@ OE_Result OE_PublicKeyWritePEM(
     uint8_t buf[OE_PEM_MAX_BYTES];
 
     /* Check parameters */
-    if (!OE_PublicKeyValid(publicKey, magic) || !pemSize)
+    if (!OE_PublicKeyIsValid(publicKey, magic) || !pemSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -294,7 +294,7 @@ OE_Result OE_PrivateKeyFree(OE_PrivateKey* privateKey, uint64_t magic)
 
     if (privateKey)
     {
-        if (!OE_PrivateKeyValid(privateKey, magic))
+        if (!OE_PrivateKeyIsValid(privateKey, magic))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         OE_PrivateKeyRelease(privateKey, magic);
@@ -312,7 +312,7 @@ OE_Result OE_PublicKeyFree(OE_PublicKey* publicKey, uint64_t magic)
 
     if (publicKey)
     {
-        if (!OE_PublicKeyValid(publicKey, magic))
+        if (!OE_PublicKeyIsValid(publicKey, magic))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         OE_PublicKeyRelease(publicKey, magic);
@@ -339,7 +339,7 @@ OE_Result OE_PrivateKeySign(
     mbedtls_md_type_t type = _MapHashType(hashType);
 
     /* Check parameters */
-    if (!OE_PrivateKeyValid(privateKey, magic) || !hashData || !hashSize ||
+    if (!OE_PrivateKeyIsValid(privateKey, magic) || !hashData || !hashSize ||
         !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -393,7 +393,7 @@ OE_Result OE_PublicKeyVerify(
     mbedtls_md_type_t type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!OE_PublicKeyValid(publicKey, magic) || !hashData || !hashSize ||
+    if (!OE_PublicKeyIsValid(publicKey, magic) || !hashData || !hashSize ||
         !signature || !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 

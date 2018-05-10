@@ -9,12 +9,12 @@
 #include <string.h>
 #include "init.h"
 
-bool OE_PrivateKeyValid(const OE_PrivateKey* impl, uint64_t magic)
+bool OE_PrivateKeyIsValid(const OE_PrivateKey* impl, uint64_t magic)
 {
     return impl && impl->magic == magic && impl->pkey;
 }
 
-bool OE_PublicKeyValid(const OE_PublicKey* impl, uint64_t magic)
+bool OE_PublicKeyIsValid(const OE_PublicKey* impl, uint64_t magic)
 {
     return impl && impl->magic == magic && impl->pkey;
 }
@@ -153,7 +153,7 @@ OE_Result OE_PrivateKeyWritePEM(
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!OE_PrivateKeyValid(impl, magic) || !size)
+    if (!OE_PrivateKeyIsValid(impl, magic) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -212,7 +212,7 @@ OE_Result OE_PublicKeyWritePEM(
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!OE_PublicKeyValid(impl, magic) || !size)
+    if (!OE_PublicKeyIsValid(impl, magic) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -269,7 +269,7 @@ OE_Result OE_PrivateKeyFree(OE_PrivateKey* key, uint64_t magic)
         OE_PrivateKey* impl = (OE_PrivateKey*)key;
 
         /* Check parameter */
-        if (!OE_PrivateKeyValid(impl, magic))
+        if (!OE_PrivateKeyIsValid(impl, magic))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
@@ -295,7 +295,7 @@ OE_Result OE_PublicKeyFree(OE_PublicKey* key, uint64_t magic)
         OE_PublicKey* impl = (OE_PublicKey*)key;
 
         /* Check parameter */
-        if (!OE_PublicKeyValid(impl, magic))
+        if (!OE_PublicKeyIsValid(impl, magic))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
@@ -326,7 +326,7 @@ OE_Result OE_PrivateKeySign(
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!OE_PrivateKeyValid(impl, magic) || !hashData || !hashSize ||
+    if (!OE_PrivateKeyIsValid(impl, magic) || !hashData || !hashSize ||
         !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -397,7 +397,7 @@ OE_Result OE_PublicKeyVerify(
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!OE_PublicKeyValid(impl, magic) || !hashData || !hashSize ||
+    if (!OE_PublicKeyIsValid(impl, magic) || !hashData || !hashSize ||
         !signature || !signatureSize)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
