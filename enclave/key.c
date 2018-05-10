@@ -1,8 +1,8 @@
 #include "key.h"
-#include "pem.h"
 #include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/raise.h>
 #include <openenclave/bits/hash.h>
+#include <openenclave/bits/raise.h>
+#include "pem.h"
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
@@ -18,7 +18,7 @@ bool OE_PrivateKeyValid(const OE_PrivateKey* privateKey, uint64_t magic)
 }
 
 OE_Result OE_PrivateKeyInit(
-    OE_PrivateKey* privateKey, 
+    OE_PrivateKey* privateKey,
     const mbedtls_pk_context* pk,
     OE_CopyKey copyKey,
     uint64_t magic)
@@ -58,7 +58,7 @@ bool OE_PublicKeyValid(const OE_PublicKey* publicKey, uint64_t magic)
 }
 
 OE_Result OE_PublicKeyInit(
-    OE_PublicKey* publicKey, 
+    OE_PublicKey* publicKey,
     const mbedtls_pk_context* pk,
     OE_CopyKey copyKey,
     uint64_t magic)
@@ -393,8 +393,8 @@ OE_Result OE_PublicKeyVerify(
     mbedtls_md_type_t type = _MapHashType(hashType);
 
     /* Check for null parameters */
-    if (!OE_PublicKeyValid(publicKey, magic) || !hashData || !hashSize || !signature ||
-        !signatureSize)
+    if (!OE_PublicKeyValid(publicKey, magic) || !hashData || !hashSize ||
+        !signature || !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Verify the signature */

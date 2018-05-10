@@ -4,9 +4,9 @@
 #include "ec.h"
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
+#include "key.h"
 #include "pem.h"
 #include "random.h"
-#include "key.h"
 
 static uint64_t _PRIVATE_KEY_MAGIC = 0xf12c37bb02814eeb;
 static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
@@ -232,7 +232,8 @@ static OE_Result OE_PublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!OE_PublicKeyValid(publicKey1, _PUBLIC_KEY_MAGIC) || !OE_PublicKeyValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!OE_PublicKeyValid(publicKey1, _PUBLIC_KEY_MAGIC) ||
+        !OE_PublicKeyValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the exponent and modulus */
@@ -260,7 +261,8 @@ OE_Result OE_ECPublicKeyInit(
     OE_ECPublicKey* publicKey,
     const mbedtls_pk_context* pk)
 {
-    return OE_PublicKeyInit((OE_PublicKey*)publicKey, pk, _CopyKey, _PUBLIC_KEY_MAGIC);
+    return OE_PublicKeyInit(
+        (OE_PublicKey*)publicKey, pk, _CopyKey, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeyReadPEM(
@@ -268,8 +270,12 @@ OE_Result OE_ECPrivateKeyReadPEM(
     size_t pemSize,
     OE_ECPrivateKey* privateKey)
 {
-    return OE_PrivateKeyReadPEM(pemData, pemSize, (OE_PrivateKey*)privateKey,
-        MBEDTLS_PK_ECKEY, _PRIVATE_KEY_MAGIC);
+    return OE_PrivateKeyReadPEM(
+        pemData,
+        pemSize,
+        (OE_PrivateKey*)privateKey,
+        MBEDTLS_PK_ECKEY,
+        _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeyWritePEM(
@@ -277,7 +283,8 @@ OE_Result OE_ECPrivateKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return OE_PrivateKeyWritePEM((const OE_PrivateKey*)privateKey, pemData, pemSize, _PRIVATE_KEY_MAGIC);
+    return OE_PrivateKeyWritePEM(
+        (const OE_PrivateKey*)privateKey, pemData, pemSize, _PRIVATE_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyReadPEM(
@@ -285,8 +292,12 @@ OE_Result OE_ECPublicKeyReadPEM(
     size_t pemSize,
     OE_ECPublicKey* privateKey)
 {
-    return OE_PublicKeyReadPEM(pemData, pemSize, (OE_PublicKey*)privateKey,
-        MBEDTLS_PK_ECKEY, _PUBLIC_KEY_MAGIC);
+    return OE_PublicKeyReadPEM(
+        pemData,
+        pemSize,
+        (OE_PublicKey*)privateKey,
+        MBEDTLS_PK_ECKEY,
+        _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPublicKeyWritePEM(
@@ -294,7 +305,8 @@ OE_Result OE_ECPublicKeyWritePEM(
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return OE_PublicKeyWritePEM((const OE_PublicKey*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
+    return OE_PublicKeyWritePEM(
+        (const OE_PublicKey*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
 }
 
 OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey)
@@ -321,7 +333,7 @@ OE_Result OE_ECPrivateKeySign(
         hashData,
         hashSize,
         signature,
-        signatureSize, 
+        signatureSize,
         _PRIVATE_KEY_MAGIC);
 }
 
@@ -348,7 +360,8 @@ OE_Result OE_ECGenerateKeyPair(
     OE_ECPrivateKey* privateKey,
     OE_ECPublicKey* publicKey)
 {
-    return _GenerateKeyPair(type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
+    return _GenerateKeyPair(
+        type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
 }
 
 OE_Result OE_ECPublicKeyGetKeyBytes(
@@ -356,7 +369,8 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return OE_PublicKeyGetKeyBytes((OE_PublicKey*)publicKey, buffer, bufferSize);
+    return OE_PublicKeyGetKeyBytes(
+        (OE_PublicKey*)publicKey, buffer, bufferSize);
 }
 
 OE_Result OE_ECPublicKeyEqual(
@@ -364,5 +378,6 @@ OE_Result OE_ECPublicKeyEqual(
     const OE_ECPublicKey* publicKey2,
     bool* equal)
 {
-    return OE_PublicKeyEqual((OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2, equal);
+    return OE_PublicKeyEqual(
+        (OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2, equal);
 }

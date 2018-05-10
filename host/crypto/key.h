@@ -4,13 +4,11 @@
 #ifndef _HOST_CRYPTO_H
 #define _HOST_CRYPTO_H
 
-#include <openenclave/types.h>
-#include <openenclave/result.h>
 #include <openenclave/bits/hash.h>
-#include <openssl/evp.h>
+#include <openenclave/result.h>
+#include <openenclave/types.h>
 #include <openssl/bio.h>
-
-typedef OE_Result (*OE_WriteKey)(BIO* bio, EVP_PKEY* pkey);
+#include <openssl/evp.h>
 
 typedef struct OE_PrivateKey
 {
@@ -23,6 +21,8 @@ typedef struct OE_PublicKey
     uint64_t magic;
     EVP_PKEY* pkey;
 } OE_PublicKey;
+
+typedef OE_Result (*OE_WriteKey)(BIO* bio, EVP_PKEY* pkey);
 
 bool OE_PrivateKeyValid(const OE_PrivateKey* impl, uint64_t magic);
 

@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 
 #include "key.h"
-#include "init.h"
-#include <openssl/evp.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
 #include <openenclave/bits/raise.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
 #include <string.h>
+#include "init.h"
 
 bool OE_PrivateKeyValid(const OE_PrivateKey* impl, uint64_t magic)
 {
@@ -260,8 +260,7 @@ done:
     return result;
 }
 
-OE_Result OE_PrivateKeyFree(OE_PrivateKey* key,
-    uint64_t magic)
+OE_Result OE_PrivateKeyFree(OE_PrivateKey* key, uint64_t magic)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -287,8 +286,7 @@ done:
     return result;
 }
 
-OE_Result OE_PublicKeyFree(OE_PublicKey* key,
-    uint64_t magic)
+OE_Result OE_PublicKeyFree(OE_PublicKey* key, uint64_t magic)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -328,7 +326,8 @@ OE_Result OE_PrivateKeySign(
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!OE_PrivateKeyValid(impl, magic) || !hashData || !hashSize || !signatureSize)
+    if (!OE_PrivateKeyValid(impl, magic) || !hashData || !hashSize ||
+        !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check that hash buffer is big enough (hashType is size of that hash) */
@@ -398,8 +397,8 @@ OE_Result OE_PublicKeyVerify(
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!OE_PublicKeyValid(impl, magic) || !hashData || !hashSize || !signature ||
-        !signatureSize)
+    if (!OE_PublicKeyValid(impl, magic) || !hashData || !hashSize ||
+        !signature || !signatureSize)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
     }

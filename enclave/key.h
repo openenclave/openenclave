@@ -2,9 +2,9 @@
 #define _ENCLAVE_KEY_H
 
 #include <mbedtls/pk.h>
+#include <openenclave/bits/hash.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
-#include <openenclave/bits/hash.h>
 
 typedef struct _OE_PrivateKey
 {
@@ -26,7 +26,7 @@ typedef OE_Result (*OE_CopyKey)(
 bool OE_PrivateKeyValid(const OE_PrivateKey* privateKey, uint64_t magic);
 
 OE_Result OE_PrivateKeyInit(
-    OE_PrivateKey* privateKey, 
+    OE_PrivateKey* privateKey,
     const mbedtls_pk_context* pk,
     OE_CopyKey copyKey,
     uint64_t magic);
@@ -36,7 +36,7 @@ void OE_PrivateKeyRelease(OE_PrivateKey* privateKey, uint64_t magic);
 bool OE_PublicKeyValid(const OE_PublicKey* publicKey, uint64_t magic);
 
 OE_Result OE_PublicKeyInit(
-    OE_PublicKey* publicKey, 
+    OE_PublicKey* publicKey,
     const mbedtls_pk_context* pk,
     OE_CopyKey copyKey,
     uint64_t magic);
