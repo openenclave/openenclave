@@ -1,13 +1,20 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_subdirectory(enc)
 add_subdirectory(host)
 
-# note: this is Linux-specific
-add_test(NAME tests/print
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND sh -c "host/printhost ./enc/printenc.signed.so >testout.stdout 2>testout.stderr &&
-        diff ${CMAKE_CURRENT_SOURCE_DIR}/printhost.stdout testout.stdout &&
-        diff ${CMAKE_CURRENT_SOURCE_DIR}/printhost.stderr testout.stderr"
-    )
+if (UNIX)
+	add_subdirectory(enc)
+
+	# note: this is Linux-specific
+	add_test(NAME tests/print
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		COMMAND sh -c "host/print_host ./enc/print_enc.signed.so >testout.stdout 2>testout.stderr &&
+			diff ${CMAKE_CURRENT_SOURCE_DIR}/print_host.stdout testout.stdout &&
+			diff ${CMAKE_CURRENT_SOURCE_DIR}/print_host.stderr testout.stderr"
+		)
+else()
+
+	add_enclave_test(tests/print ./host print_host ./enc print_enc.signed.so)
+
+endif()

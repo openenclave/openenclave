@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/cppException host/cppExceptionHost ./enc/cppExceptionEnc.signed.so)
+if (UNIX)
+	add_subdirectory(enc)
+endif()
+
+add_enclave_test(tests/cppException ./host cppException_host ./enc cppException_enc.signed.so)

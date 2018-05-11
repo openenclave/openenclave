@@ -8,6 +8,8 @@ cmake_minimum_required(VERSION 3.5.1)
 # define project, take version from "VERSION" file
 file(STRINGS "VERSION" OE_VERSION)
 
+option(ADD_WINDOWS_ENCLAVE_TESTS "Copy Linux binaries to windows build directory and Build windows enclave test" 0)
+
 # Select the assembler
 if (UNIX)
   set(OE_ASM ASM)
@@ -54,9 +56,12 @@ set(CPACK_PACKAGE_VERSION ${OE_VERSION})
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 include(CPack)
 
+include(add_enclave_test)
+
 # finally, add all dirs that matter
 add_subdirectory(host)		# convertable to Windows
 add_subdirectory(include)	# convertable to Windows
+add_subdirectory(tests)
 if (UNIX)
 add_subdirectory(3rdparty)
 add_subdirectory(doc/refman)
@@ -67,13 +72,5 @@ add_subdirectory(idl)
 add_subdirectory(libc)
 add_subdirectory(libcxx)
 add_subdirectory(samples)
-add_subdirectory(tests)
 add_subdirectory(tools)
-endif()
-
-if(WIN32)
-add_subdirectory(tests/echo/host)
-add_subdirectory(tests/ecall/host)
-add_subdirectory(tests/mem)
-add_subdirectory(tests/str)
 endif()
