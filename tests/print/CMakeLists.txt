@@ -10,8 +10,8 @@ if (UNIX)
 	add_test(NAME tests/print
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		COMMAND sh -c "host/print_host ./enc/print_enc.signed.so >testout.stdout 2>testout.stderr &&
-			diff ${CMAKE_CURRENT_SOURCE_DIR}/print_host.stdout testout.stdout &&
-			diff ${CMAKE_CURRENT_SOURCE_DIR}/print_host.stderr testout.stderr"
+			diff ${CMAKE_CURRENT_SOURCE_DIR}/printhost.stdout testout.stdout &&
+			diff ${CMAKE_CURRENT_SOURCE_DIR}/printhost.stderr testout.stderr"
 		)
 else()
 
