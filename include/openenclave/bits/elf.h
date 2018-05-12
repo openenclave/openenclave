@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <openenclave/types.h>
 
 #ifdef __cplusplus
 #define ELF_EXTERNC_BEGIN extern "C" {

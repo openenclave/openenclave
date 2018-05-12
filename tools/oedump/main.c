@@ -54,7 +54,7 @@ void DumpEntryPoint(Elf64* elf)
 
     printf("=== Entry point: \n");
     printf("name=%s\n", name);
-    printf("address=%016llx\n", sym.st_value);
+    printf("address=%016lx\n", sym.st_value);
     printf("\n");
 }
 
@@ -130,7 +130,7 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     }
 
     /* Dump the ECALL name */
-    printf("%s (%016llx)\n", name, sym->st_value);
+    printf("%s (%016lx)\n", name, sym->st_value);
 
     rc = 0;
 
@@ -177,7 +177,7 @@ void CheckGlobal(Elf64* elf, const char* name)
         return;
     }
 
-    printf("%s (%016llx)\n", name, sym.st_value);
+    printf("%s (%016lx)\n", name, sym.st_value);
 }
 
 void CheckGlobals(Elf64* elf)
