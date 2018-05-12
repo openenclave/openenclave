@@ -4,6 +4,7 @@
 #ifndef _OE_INFERIOR_STATUS_H_
 #define _OE_INFERIOR_STATUS_H_
 
+#include <openenclave/bits/typeinfo.h>
 #include <pthread.h>
 #include <openenclave/types.h>
 
