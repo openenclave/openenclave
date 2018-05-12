@@ -182,6 +182,7 @@ static size_t _GetTypeSizeFromType(OE_Type type)
         case OE_NONE_T:
             return 0;
         case OE_CHAR_T:
+        case OE_UCHAR_T:
         case OE_UINT8_T:
             return sizeof(uint8_t);
         case OE_SHORT_T:
@@ -206,7 +207,6 @@ static size_t _GetTypeSizeFromType(OE_Type type)
             return sizeof(wchar_t);
         case OE_BOOL_T:
             return sizeof(bool);
-        case OE_UCHAR_T:
         case OE_INT8_T:
             return sizeof(int8_t);
         case OE_FLOAT_T:
@@ -250,6 +250,7 @@ static bool _ScalarEq(OE_Type type, const void* p1, const void* p2)
         case OE_NONE_T:
             return false;
         case OE_CHAR_T:
+        case OE_UCHAR_T:
             return *((char*)p1) == *((char*)p2);
         case OE_SHORT_T:
             return *((short*)p1) == *((short*)p2);
@@ -271,7 +272,6 @@ static bool _ScalarEq(OE_Type type, const void* p1, const void* p2)
             return *((bool*)p1) == *((bool*)p2);
         case OE_INT8_T:
             return *((int8_t*)p1) == *((int8_t*)p2);
-        case OE_UCHAR_T:
         case OE_UINT8_T:
             return *((uint8_t*)p1) == *((uint8_t*)p2);
         case OE_INT16_T:
@@ -334,6 +334,7 @@ static bool _ArrayEq(OE_Type type, const void* p1, const void* p2, size_t n)
         case OE_NONE_T:
             return false;
         case OE_CHAR_T:
+        case OE_UCHAR_T:
             return _BytesEq(p1, p2, sizeof(char) * n);
         case OE_WCHAR_T:
             return _BytesEq(p1, p2, sizeof(wchar_t) * n);
@@ -341,7 +342,6 @@ static bool _ArrayEq(OE_Type type, const void* p1, const void* p2, size_t n)
             return _BytesEq(p1, p2, sizeof(bool) * n);
         case OE_INT8_T:
             return _BytesEq(p1, p2, sizeof(int8_t) * n);
-        case OE_UCHAR_T:
         case OE_UINT8_T:
             return _BytesEq(p1, p2, sizeof(uint8_t) * n);
         case OE_SHORT_T:
@@ -654,6 +654,7 @@ static void _PrintScalar(const OE_FieldTI* fti, const void* p, size_t depth)
         case OE_NONE_T:
             break;
         case OE_CHAR_T:
+        case OE_UCHAR_T:
             OE_PRINTF("%02X", *(const char*)p);
             break;
         case OE_WCHAR_T:
@@ -665,7 +666,6 @@ static void _PrintScalar(const OE_FieldTI* fti, const void* p, size_t depth)
         case OE_INT8_T:
             OE_PRINTF("%d", *(const int8_t*)p);
             break;
-        case OE_UCHAR_T:
         case OE_UINT8_T:
             OE_PRINTF("%u", *(const uint8_t*)p);
             break;

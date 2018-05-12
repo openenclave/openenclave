@@ -18,10 +18,6 @@
 #include "report.h"
 #include "td.h"
 
-typedef uint64_t WORD;
-
-#define WORD_SIZE sizeof(WORD)
-
 uint64_t __oe_enclave_status = OE_OK;
 
 /*
