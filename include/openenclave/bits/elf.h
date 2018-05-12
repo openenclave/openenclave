@@ -4,6 +4,7 @@
 #ifndef _OE_ELF_H
 #define _OE_ELF_H
 
+#include <openenclave/bits/typeinfo.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
