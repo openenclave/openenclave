@@ -11,5 +11,5 @@ set_property(TARGET oeelf PROPERTY RUNTIME_OUTPUT_DIRECTORY ${OE_BINDIR})
 # no install rule - not distributed
 install (TARGETS oeelf DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_test(oeelf ${OE_BINDIR}/oeelf ${PROJECT_BINARY_DIR}/tests/echo/enc/echoenc.signed.so)
+add_test(oeelf ${OE_BINDIR}/oeelf ${PROJECT_BINARY_DIR}/tests/echo/enc/echo_enc.signed.so)
 
