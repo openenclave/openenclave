@@ -1776,7 +1776,6 @@
  *
  * This module is used for testing (ssl_client/server).
  */
-//Open Enclave TODO: disable in non-debug builds
 //#define MBEDTLS_CERTS_C
 
 /**
@@ -1831,7 +1830,6 @@
  *
  * This module provides debugging functions.
  */
- //Open Enclave TODO: disable in non-debug builds
 //#define MBEDTLS_DEBUG_C
 
 /**
