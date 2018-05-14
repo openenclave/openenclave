@@ -11,4 +11,4 @@ endif()
 add_enclave_test(tests/props ./host props_host ./enc props_enc.signed.so signed)
 
 # Test unsigned enclave:
-add_enclave_test(tests/props_unsigned ./host props_host ./enc propsenc unsigned)
+add_enclave_test(tests/props_unsigned ./host props_host ./enc props_enc unsigned)
