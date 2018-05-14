@@ -37,7 +37,6 @@ ExternalProject_Add(mbedtls-wrap
         <BINARY_DIR>/library/libmbedx509.a ${OE_LIBDIR}/openenclave/enclave/
         <BINARY_DIR>/library/libmbedtls.a ${OE_LIBDIR}/openenclave/enclave/
         <BINARY_DIR>/library/libmbedcrypto.a ${OE_LIBDIR}/openenclave/enclave/
-        COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_SOURCE_DIR}/config_final.h
     )
 install (DIRECTORY ${OE_INCDIR}/openenclave/oe-mbedtls DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
 install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
