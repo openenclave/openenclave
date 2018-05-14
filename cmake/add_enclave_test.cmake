@@ -34,7 +34,8 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
 
 	# add a custom target to ALL so that this step always needs to be run if 
 	# this function is invoked 
-	add_custom_target(${TEST_DIR}.windows ALL
+	get_filename_component(TEST_NAME_WITHOUT_SLASH ${TEST_NAME} NAME)
+	add_custom_target(${TEST_NAME_WITHOUT_SLASH}.windows ALL
 		DEPENDS ${TEST_NAME}_windows_include
 		)
 
