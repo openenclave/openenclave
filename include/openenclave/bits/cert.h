@@ -69,6 +69,8 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert);
  *     ...
  *     -----END CERT-----
  *
+ * Each certificate in the chain is verified against its predecessor in the
+ * chain. If any of these verifications fail, this function returns an error.
  * The caller is responsible for releasing the certificate chain by passing it
  * to OE_CertChainFree().
  *

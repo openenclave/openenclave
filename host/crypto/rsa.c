@@ -11,29 +11,14 @@
 #include "init.h"
 #include "key.h"
 
-/*
-**==============================================================================
-**
-** Provide definitions needed for key.c and include key.c.
-**
-**==============================================================================
-*/
-
+/* Magic numbers for the RSA key implementation structures */
 static const uint64_t _PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
 static const uint64_t _PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
 
-/*
-**==============================================================================
-**
-** Definitions below depend on definitions provided by key.c.
-**
-**==============================================================================
-*/
-
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_RSAPublicKey));
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_RSAPublicKey));
 
-static OE_Result _WriteKey(BIO* bio, EVP_PKEY* pkey)
+static OE_Result _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
 {
     OE_Result result = OE_UNEXPECTED;
     RSA* rsa = NULL;
@@ -304,7 +289,7 @@ OE_Result OE_RSAPrivateKeyWritePEM(
         (const OE_PrivateKey*)privateKey,
         pemData,
         pemSize,
-        _WriteKey,
+        _privateKeyWritePEMCallback,
         _PRIVATE_KEY_MAGIC);
 }
 

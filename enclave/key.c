@@ -1,12 +1,12 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "key.h"
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/hash.h>
 #include <openenclave/bits/raise.h>
 #include "pem.h"
 #include "refs.h"
-
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
 
 typedef OE_Result (*OE_CopyKey)(
     mbedtls_pk_context* dest,
@@ -26,12 +26,12 @@ OE_Result OE_PrivateKeyInit(
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!privateKey)
+    if (!privateKey || (pk && !copyKey) || (copyKey && !pk))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     privateKey->magic = 0;
 
-    if (pk)
+    if (pk && copyKey)
         OE_CHECK(copyKey(&privateKey->pk, pk, true));
     else
         mbedtls_pk_init(&privateKey->pk);
@@ -68,7 +68,7 @@ OE_Result OE_PublicKeyInit(
 {
     OE_Result result = OE_UNEXPECTED;
 
-    if (!publicKey)
+    if (!publicKey || (pk && !copyKey) || (copyKey && !pk))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     publicKey->magic = 0;

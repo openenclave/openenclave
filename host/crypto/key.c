@@ -151,7 +151,7 @@ OE_Result OE_PrivateKeyWritePEM(
     const OE_PrivateKey* privateKey,
     uint8_t* data,
     size_t* size,
-    OE_WriteKey writeKey,
+    OE_PrivateKeyWritePEMCallback privateKeyWritePEMCallback,
     uint64_t magic)
 {
     OE_Result result = OE_UNEXPECTED;
@@ -172,7 +172,7 @@ OE_Result OE_PrivateKeyWritePEM(
         OE_RAISE(OE_FAILURE);
 
     /* Write key to BIO */
-    OE_CHECK(writeKey(bio, impl->pkey));
+    OE_CHECK(privateKeyWritePEMCallback(bio, impl->pkey));
 
     /* Write a NULL terminator onto BIO */
     if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)

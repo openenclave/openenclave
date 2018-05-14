@@ -8,24 +8,9 @@
 #include "init.h"
 #include "key.h"
 
-/*
-**==============================================================================
-**
-** Provide definitions needed for key.c and include key.c.
-**
-**==============================================================================
-*/
-
+/* Magic numbers for the EC key implementation structures */
 static const uint64_t _PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
 static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
-
-/*
-**==============================================================================
-**
-** Definitions below depend on definitions provided by key.c.
-**
-**==============================================================================
-*/
 
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
@@ -46,7 +31,7 @@ static const char* _ECTypeToString(OE_Type type)
     return _curveNames[index];
 }
 
-static OE_Result _WriteKey(BIO* bio, EVP_PKEY* pkey)
+static OE_Result _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
 {
     OE_Result result = OE_UNEXPECTED;
     EC_KEY* ec = NULL;
@@ -133,7 +118,7 @@ static OE_Result _GenerateKeyPair(
             OE_RAISE(OE_FAILURE);
         }
 
-        /* Set the private key */
+        /* Set the public key */
         if (!EC_KEY_set_public_key(ecPublic, point))
             OE_RAISE(OE_FAILURE);
 
@@ -331,7 +316,7 @@ OE_Result OE_ECPrivateKeyWritePEM(
         (const OE_PrivateKey*)privateKey,
         pemData,
         pemSize,
-        _WriteKey,
+        _privateKeyWritePEMCallback,
         _PRIVATE_KEY_MAGIC);
 }
 

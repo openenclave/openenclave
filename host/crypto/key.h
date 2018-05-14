@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _HOST_CRYPTO_H
-#define _HOST_CRYPTO_H
+#ifndef _HOST_KEY_H
+#define _HOST_KEY_H
 
 #include <openenclave/bits/hash.h>
 #include <openenclave/result.h>
@@ -22,7 +22,7 @@ typedef struct OE_PublicKey
     EVP_PKEY* pkey;
 } OE_PublicKey;
 
-typedef OE_Result (*OE_WriteKey)(BIO* bio, EVP_PKEY* pkey);
+typedef OE_Result (*OE_PrivateKeyWritePEMCallback)(BIO* bio, EVP_PKEY* pkey);
 
 bool OE_PrivateKeyIsValid(const OE_PrivateKey* impl, uint64_t magic);
 
@@ -50,7 +50,7 @@ OE_Result OE_PrivateKeyWritePEM(
     const OE_PrivateKey* privateKey,
     uint8_t* data,
     size_t* size,
-    OE_WriteKey writeKey,
+    OE_PrivateKeyWritePEMCallback privateKeyWritePEMCallback,
     uint64_t magic);
 
 OE_Result OE_PublicKeyWritePEM(
@@ -81,4 +81,4 @@ OE_Result OE_PublicKeyVerify(
     size_t signatureSize,
     uint64_t magic);
 
-#endif /* _HOST_CRYPTO_H */
+#endif /* _HOST_KEY_H */
