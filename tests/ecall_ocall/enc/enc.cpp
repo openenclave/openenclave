@@ -229,9 +229,8 @@ OE_ECALL void EncTestCallHostFunction(void* Args_)
     if (!OE_IsOutsideEnclave(Args_, sizeof(EncTestCallHostFunctionArg)))
         return;
 
-	EncTestCallHostFunctionArg* argsHost =
-        (EncTestCallHostFunctionArg*)Args_;
-	EncTestCallHostFunctionArg args = *argsHost;
+    EncTestCallHostFunctionArg* argsHost = (EncTestCallHostFunctionArg*)Args_;
+    EncTestCallHostFunctionArg args = *argsHost;
 
     // Testing for a string to be outside the enclave is ugly. We might want
     // to provide a helper.
