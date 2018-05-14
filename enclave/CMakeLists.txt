@@ -8,7 +8,6 @@ add_library(oeenclave STATIC
     key.c
     random.c
     report.cpp
-    refs.c
     rsa.c
     sha.c)
 

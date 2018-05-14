@@ -6,7 +6,6 @@
 #include <openenclave/bits/hash.h>
 #include <openenclave/bits/raise.h>
 #include "pem.h"
-#include "refs.h"
 
 typedef OE_Result (*OE_CopyKey)(
     mbedtls_pk_context* dest,
@@ -37,7 +36,6 @@ OE_Result OE_PrivateKeyInit(
         mbedtls_pk_init(&privateKey->pk);
 
     privateKey->magic = magic;
-    OE_RefsIncrement();
 
     result = OE_OK;
 
@@ -51,7 +49,6 @@ void OE_PrivateKeyRelease(OE_PrivateKey* privateKey, uint64_t magic)
     {
         mbedtls_pk_free(&privateKey->pk);
         OE_Memset(privateKey, 0, sizeof(OE_PrivateKey));
-        OE_RefsDecrement();
     }
 }
 
@@ -79,7 +76,6 @@ OE_Result OE_PublicKeyInit(
         mbedtls_pk_init(&publicKey->pk);
 
     publicKey->magic = magic;
-    OE_RefsIncrement();
 
     result = OE_OK;
 
@@ -93,7 +89,6 @@ void OE_PublicKeyRelease(OE_PublicKey* publicKey, uint64_t magic)
     {
         mbedtls_pk_free(&publicKey->pk);
         OE_Memset(publicKey, 0, sizeof(OE_PublicKey));
-        OE_RefsDecrement();
     }
 }
 

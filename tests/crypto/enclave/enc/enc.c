@@ -16,10 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef NDEBUG
-#include "../../../../enclave/refs.h"
-#endif
-
 #define BUILD_ENCLAVE
 #include "../../tests.c"
 
@@ -42,17 +38,4 @@ OE_ECALL void Test(void* args_)
             stats.inUseBytes - inUseBytes);
         OE_Abort();
     }
-
-#ifndef NDEBUG
-    /* Verify that all crypto objects have been released */
-    {
-        const uint64_t refs = OE_RefsGet();
-
-        if (refs != 0)
-        {
-            fprintf(stderr, "ERROR: objects leaked: %lu\n", refs);
-            OE_Abort();
-        }
-    }
-#endif
 }
