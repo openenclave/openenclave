@@ -19,7 +19,7 @@
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
-#include "crypto.h"
+#include "refs.h"
 
 /*
 **==============================================================================
@@ -56,7 +56,7 @@ OE_INLINE Referent* _ReferentNew(void)
     mbedtls_x509_crt_init(&referent->crt);
     referent->length = 0;
     referent->refs = 1;
-    OE_CryptoRefsIncrement();
+    OE_RefsIncrement();
 
     return referent;
 }
@@ -94,7 +94,7 @@ OE_INLINE void _ReferentFree(Referent* referent)
         /* Free the referent structure */
         OE_Memset(referent, 0, sizeof(Referent));
         mbedtls_free(referent);
-        OE_CryptoRefsDecrement();
+        OE_RefsDecrement();
     }
 }
 
@@ -130,7 +130,7 @@ OE_INLINE void _CertInit(Cert* impl, mbedtls_x509_crt* cert, Referent* referent)
     _ReferentAddRef(impl->referent);
 
     if (!referent)
-        OE_CryptoRefsIncrement();
+        OE_RefsIncrement();
 }
 
 OE_INLINE bool _CertIsValid(const Cert* impl)
@@ -152,7 +152,7 @@ OE_INLINE void _CertFree(Cert* impl)
         mbedtls_x509_crt_free(impl->cert);
         OE_Memset(impl->cert, 0, sizeof(mbedtls_x509_crt));
         mbedtls_free(impl->cert);
-        OE_CryptoRefsDecrement();
+        OE_RefsDecrement();
     }
 
     /* Clear the fields */

@@ -3,12 +3,12 @@
 
 add_library(oeenclave STATIC
     cert.c
-    crypto.c
     ec.c
     cmac.c
     key.c
     random.c
     report.cpp
+    refs.c
     rsa.c
     sha.c)
 
