@@ -224,14 +224,14 @@ extern "C" void EncUnExportedFunction(void*)
 }
 
 // Reachability test calling the host
-OE_ECALL void EncTestNonExistingFunction(void* Args_)
+OE_ECALL void EncTestCallHostFunction(void* Args_)
 {
-    if (!OE_IsOutsideEnclave(Args_, sizeof(EncTestNonExistingFunctionArg)))
+    if (!OE_IsOutsideEnclave(Args_, sizeof(EncTestCallHostFunctionArg)))
         return;
 
-    EncTestNonExistingFunctionArg* argsHost =
-        (EncTestNonExistingFunctionArg*)Args_;
-    EncTestNonExistingFunctionArg args = *argsHost;
+	EncTestCallHostFunctionArg* argsHost =
+        (EncTestCallHostFunctionArg*)Args_;
+	EncTestCallHostFunctionArg args = *argsHost;
 
     // Testing for a string to be outside the enclave is ugly. We might want
     // to provide a helper.

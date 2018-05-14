@@ -119,16 +119,26 @@ static void TestInitOcallResult(unsigned enclaveId)
 }
 
 // For ocall-test on not explicitly OE_OCALL-tagged function
-extern "C" void DummyHostFunction(void*)
+#if defined(__unix__)
+extern "C" void ExportedHostFunction(void*)
+#elif defined (_WIN32)
+extern "C" OE_EXPORT void ExportedHostFunction(void*)
+#endif
 {
 }
+
+#if defined (_WIN32)
+extern "C" void InternalHostFunction(void*) { }
+#else
+extern "C" void __attribute__((visibility("internal"))) InternalHostFunction(void*) { }
+#endif
 
 // Test availability and non-availability of functions, according to their
 // OE_OCALL/OE_ECALL annotations.
 static void TestInvalidFunctions(unsigned enclaveId)
 {
     OE_Result result;
-    EncTestNonExistingFunctionArg args = {};
+	EncTestCallHostFunctionArg args = {};
 
     result = OE_CallEnclave(
         EnclaveWrap::Get(enclaveId), "EncDummyEncFunction", NULL);
@@ -146,28 +156,40 @@ static void TestInvalidFunctions(unsigned enclaveId)
     OE_TEST(result == OE_NOT_FOUND);
 
     args.result = OE_FAILURE;
-    args.functionName = "DummyHostFunction";
+    args.functionName = "InternalHostFunction";
     result = OE_CallEnclave(
-        EnclaveWrap::Get(enclaveId), "EncTestNonExistingFunction", &args);
+        EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
     printf(
-        "OE_CallEnclave(EncTestNonExistingFunction, DummyHostFunction): "
-        "%u/%u\n",
-        result,
-        args.result);
-    OE_TEST(result == OE_OK);
-    OE_TEST(args.result == OE_OK); // See #137, intended?
-
-    args.result = OE_FAILURE;
-    args.functionName = "NonExistingFunction";
-    result = OE_CallEnclave(
-        EnclaveWrap::Get(enclaveId), "EncTestNonExistingFunction", &args);
-    printf(
-        "OE_CallEnclave(EncTestNonExistingFunction, NonExistingFunction): "
+        "OE_CallEnclave(EncTestCallHostFunction, InternalHostFunction): "
         "%u/%u\n",
         result,
         args.result);
     OE_TEST(result == OE_OK);
     OE_TEST(args.result == OE_NOT_FOUND);
+
+    args.result = OE_FAILURE;
+    args.functionName = "NonExistingFunction";
+    result = OE_CallEnclave(
+        EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
+    printf(
+        "OE_CallEnclave(EncTestCallHostFunction, NonExistingFunction): "
+        "%u/%u\n",
+        result,
+        args.result);
+    OE_TEST(result == OE_OK);
+    OE_TEST(args.result == OE_NOT_FOUND);
+
+	args.result = OE_FAILURE;
+	args.functionName = "ExportedHostFunction";
+	result = OE_CallEnclave(
+		EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
+	printf(
+		"OE_CallEnclave(EncTestCallHostFunction, ExportedHostFunction): "
+		"%u/%u\n",
+		result,
+		args.result);
+	OE_TEST(result == OE_OK);
+	OE_TEST(args.result == OE_OK);
 }
 
 // Helper function for parallel test
