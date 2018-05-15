@@ -33,7 +33,7 @@ struct EncRecursionArg
     uint32_t crc;                   // InOut
 };
 
-struct EncTestNonExistingFunctionArg
+struct EncTestCallHostFunctionArg
 {
     OE_Result result;         // Out
     const char* functionName; // In
