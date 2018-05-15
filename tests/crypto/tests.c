@@ -129,11 +129,11 @@ static void TestRSASign()
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_RSAReadPrivateKeyPEM(
+    r = OE_RSAPrivateKeyReadPEM(
         (const uint8_t*)RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSASign(
+    r = OE_RSAPrivateKeySign(
         &key,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -144,7 +144,7 @@ static void TestRSASign()
 
     OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-    r = OE_RSASign(
+    r = OE_RSAPrivateKeySign(
         &key,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -160,6 +160,7 @@ static void TestRSASign()
     OE_HexDump(signature, signatureSize);
 #endif
 
+    OE_RSAPrivateKeyFree(&key);
     free(signature);
 
     printf("=== passed TestRSASign\n");
@@ -171,11 +172,11 @@ static void TestRSAVerify()
     OE_Result r;
     OE_RSAPublicKey key;
 
-    r = OE_RSAReadPublicKeyPEM(
+    r = OE_RSAPublicKeyReadPEM(
         (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAVerify(
+    r = OE_RSAPublicKeyVerify(
         &key,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -184,10 +185,13 @@ static void TestRSAVerify()
         RSA_SIGNATURE_SIZE);
     OE_TEST(r == OE_OK);
 
+    OE_RSAPublicKeyFree(&key);
+
     printf("=== passed TestRSAVerify\n");
 }
 
-static const char CERT[] =
+/* Certificate signed by CHAIN1 */
+static const char CERT1[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDMzCCAhsCAhABMA0GCSqGSIb3DQEBCwUAMGMxGjAYBgNVBAMMEVRlc3QgSW50\n"
     "ZXJtZWRpYXRlMQ4wDAYDVQQIDAVUZXhhczELMAkGA1UEBhMCVVMxEjAQBgNVBAoM\n"
@@ -209,89 +213,154 @@ static const char CERT[] =
     "ln6O0i8HeQ==\n"
     "-----END CERTIFICATE-----\n";
 
-static const char CHAIN[] =
+/* RSA modulus of CERT1 */
+static const char CERT1_RSA_MODULUS[] = {
+    0xE8, 0xCB, 0x03, 0x4B, 0x54, 0x3F, 0xF4, 0xB0, 0xF8, 0xBF, 0x4A, 0xA3,
+    0x02, 0x8B, 0xF7, 0x83, 0xC9, 0x7B, 0x60, 0x64, 0xF6, 0xED, 0x18, 0x79,
+    0xE4, 0x5A, 0xD3, 0x3D, 0x4F, 0xC8, 0x8A, 0x0B, 0x54, 0x4D, 0xCA, 0x09,
+    0xE3, 0x8B, 0x42, 0xE7, 0xA8, 0xEE, 0x04, 0x30, 0x6A, 0x1D, 0x2C, 0xFD,
+    0x90, 0x35, 0xE7, 0x79, 0x60, 0x82, 0x4C, 0xAD, 0xDD, 0x58, 0xCC, 0x39,
+    0x40, 0xB9, 0x14, 0x14, 0xB9, 0x87, 0x2E, 0xFD, 0x55, 0xCA, 0x08, 0x9E,
+    0xBA, 0xD2, 0xF4, 0x31, 0xBC, 0x3E, 0xD6, 0x41, 0x93, 0x70, 0x28, 0x6C,
+    0x37, 0x14, 0x04, 0xD8, 0xA9, 0x58, 0x82, 0x79, 0x96, 0x87, 0xE2, 0x8E,
+    0x9A, 0x62, 0xB9, 0x11, 0x5F, 0xAF, 0x81, 0xED, 0x30, 0xDF, 0x53, 0x60,
+    0x98, 0x5F, 0x5A, 0x76, 0xAE, 0xEE, 0x9B, 0x9E, 0xA7, 0x95, 0xFF, 0x1D,
+    0xE5, 0xB4, 0x93, 0x7F, 0xC7, 0xA3, 0x1F, 0x3E, 0x47, 0xA1, 0x9D, 0xBB,
+    0xBE, 0x10, 0x91, 0x32, 0x0B, 0x56, 0xB0, 0xE1, 0xE8, 0x47, 0x17, 0xCC,
+    0xB5, 0x2F, 0x5D, 0x71, 0x6E, 0xD1, 0xB8, 0xBF, 0xA4, 0x38, 0x68, 0x05,
+    0xE5, 0xBE, 0x1C, 0x6C, 0x4A, 0xF2, 0x8B, 0x7E, 0xC2, 0x32, 0xAD, 0xFC,
+    0xD8, 0xE7, 0x61, 0xCD, 0xCA, 0x96, 0xB3, 0x50, 0x54, 0x3C, 0xC1, 0x0C,
+    0x4A, 0x57, 0xC7, 0x97, 0xA7, 0x58, 0x56, 0xE8, 0xC3, 0x7E, 0xCE, 0xE9,
+    0x16, 0x9B, 0xFA, 0x21, 0xC2, 0x92, 0xF3, 0x98, 0xBC, 0x97, 0xB5, 0xB6,
+    0x02, 0x53, 0xA4, 0x8E, 0xB9, 0x42, 0x2E, 0xBC, 0xF1, 0x77, 0x37, 0xFC,
+    0xD1, 0x73, 0x67, 0x79, 0x40, 0xDC, 0xF1, 0x13, 0xFB, 0x12, 0xA3, 0x8F,
+    0x30, 0x52, 0xD7, 0x01, 0xEB, 0xBA, 0x60, 0xAE, 0xF4, 0xBD, 0xEE, 0x80,
+    0x92, 0x77, 0x65, 0x51, 0xF0, 0x1E, 0x50, 0xD0, 0xF6, 0xEF, 0x6A, 0x4D,
+    0x11, 0xE5, 0x19, 0x87,
+};
+
+/* RSA exponent of CERT */
+static const char CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
+
+/* Certificate with an EC key */
+static const char ECCERT[] =
     "-----BEGIN CERTIFICATE-----\n"
-    "MIIDUDCCAjgCCQDNkOt+e8l1aDANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n"
-    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n"
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n"
-    "Fw0xODAyMTMxNzUyNTJaFw0yMzAyMTMxNzUyNTJaMGoxCzAJBgNVBAYTAlVTMQ4w\n"
-    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n"
-    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n"
-    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlrzZNtYmicG/Z0ZK0qYzmTyur/n4\n"
-    "94fkDBklgsHb9inbe455MgUsIcrlwE/1qXbcO0SnQmUjmopE2iYJhDVDDnobgDlP\n"
-    "iO1o8E7tIW/jzxRStDyfrO6uOrc8mUAvnsHc800d2Dt6vAHhdbiBeIi8CkIgy5/h\n"
-    "XXQphjk9H0jrVFydJ7KYl53KvwZ95NAodPZpiuCD6WXDEvXOLvQaup2nG9+ha5QB\n"
-    "h0pfdNRhHtsfIcg5ExghoOYXcOhCtEqkVYcllmYr2tf3tn/dRVXO7KYbfqr/mQo+\n"
-    "oPfhziAyyKHxx7a6bfDngV8ORI7q9b774VgZd3dTDDYechYTIH5V4pX61QIDAQAB\n"
-    "MA0GCSqGSIb3DQEBCwUAA4IBAQBbCNHoUIVpUnLhrugyooDCygYQeTebVILY1DHG\n"
-    "Kj7GEpMK70suXQlJ7/hbuL8jTA/kHMtHARy+9DAQDjiWRfRNOpE4eEbUdEiwei4L\n"
-    "2tPke58FBxkq6GcpldPBin16ux379zM43vYwhEf9yuY6KwBfaABg6Eeftrpcuvt3\n"
-    "1Ibbn4oM2MZixhZXTkKsB3O1OlaZ/kw6qPt7LklLhij1SmvtrrlkWGWoAg8JWYh+\n"
-    "+Wd1yIgPZbbio9b4rgQ6j0mpWaRVPm7cKAt3nfhnMgr1QV+RQnPDTlsO+sieCLZm\n"
-    "Z/7gtSYO0BbJnQu3dXzP0OBD1SQvQOpjWXwC71ioBn1rbqDl\n"
-    "-----END CERTIFICATE-----\n"
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n"
-    "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n"
-    "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n"
-    "MzE3NTI1M1oXDTE5MDIxMzE3NTI1M1owYzEaMBgGA1UEAwwRVGVzdCBJbnRlcm1l\n"
-    "ZGlhdGUxDjAMBgNVBAgMBVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWlj\n"
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQAD\n"
-    "ggEPADCCAQoCggEBALtrsdnSA0135a5Ry0BlAoiCuvMS4ttmKrG5aNqq1QtXT0rr\n"
-    "eeVs7uCu43DeuBjoPDCe113LIse68o0VfpyGoEB4k5IEftwNuqt/s9YPnpCjIPw0\n"
-    "tJIhf/0iNo2HXDK7KVkHnjPTcS1KVlWrnVABP7+Q80nBj7S9yxv7LMuKEzU/NSgG\n"
-    "TZZWbIDh8DnTvG2YCz9XAtPjBjWAICDOh4Hlkujt2Z/9D3/At3yL577VBBngZG0A\n"
-    "wCJYE+SpibP8d/f0tuFa6vhNzsDxwqYmBLU1CL1G+3brlCTgfSUCzxC/RSu5lJGo\n"
-    "fZ7E/0s1+kY07p7iiLCgMOJCBIUE+NP2aX8WSRsCAwEAATANBgkqhkiG9w0BAQsF\n"
-    "AAOCAQEAWHmQ3uAggLQY/G0Idzk+HhxRArgLXvd4nAlELlArngTGviuZBdcjQhIA\n"
-    "Do/5GUcoBHLI3Q7lspbT9kbn+2664Gm5jh7A9OU/kpFpMQT+e6aTUDPTlLuHygpx\n"
-    "bP4X6hn+D5QEBct/befUKcAMZGya46N+m+qWJbH+fplkA2zuZ4NdXav21BsqXRer\n"
-    "JN6pIxewAEhYGt8nd5mjRFJnMfb6IWs49TRxvk7SntVrWktW36TxPTTWsusuCd8v\n"
-    "RGTsgD4AIHqFRVi+e+y32K9xxUL4f27s6wSu+f2z2oAQsrfuhHyFMUZT4NLs4KAk\n"
-    "QbVRkhj9vYJrIP8rRJ+XV9j/IvfdjQ==\n"
+    "MIIDRDCCAuqgAwIBAgIVAO34O//eez2nCYF6dX5lnmDXUhoHMAoGCCqGSM49BAMC\n"
+    "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
+    "DBFJbnRlbCBDb3Jwb3JhdGlvbjEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNV\n"
+    "BAgMAkNBMQswCQYDVQQGEwJVUzAeFw0xODAyMjcxNDI5MTBaFw0yNTAyMjcxNDI5\n"
+    "MTBaMHAxIjAgBgNVBAMMGUludGVsIFNHWCBQQ0sgQ2VydGlmaWNhdGUxGjAYBgNV\n"
+    "BAoMEUludGVsIENvcnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkG\n"
+    "A1UECAwCQ0ExCzAJBgNVBAYTAlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\n"
+    "ebMENxGyc7Ns/OV4bt6OOZy9KxUzFtPOwuGq9chDuJkgz1M/4iLtm0STR8mIENnJ\n"
+    "vwS0E6STuxsCtNGIzNscOKOCAV4wggFaMB8GA1UdIwQYMBaAFJ8Gl+9TIUTU+kx+\n"
+    "6LqNs9Ml5JKQMFgGA1UdHwRRME8wTaBLoEmGR2h0dHBzOi8vY2VydGlmaWNhdGVz\n"
+    "LnRydXN0ZWRzZXJ2aWNlcy5pbnRlbC5jb20vSW50ZWxTR1hQQ0tQcm9jZXNzb3Iu\n"
+    "Y3JsMB0GA1UdDgQWBBQUdCfHZzHpiEurA+45dylYXpVvDjAOBgNVHQ8BAf8EBAMC\n"
+    "BsAwDAYDVR0TAQH/BAIwADCBnwYJKoZIhvhNAQ0BAQH/BIGOMIGLMB4GCiqGSIb4\n"
+    "TQENAQEEEAusByQ8F/2YbRVLVQlDPxUwHgYKKoZIhvhNAQ0BAgQQAAAAAAEBAAAA\n"
+    "AAAAAAAAADAQBgoqhkiG+E0BDQEDBAIAADAQBgoqhkiG+E0BDQEEBAIAADAUBgoq\n"
+    "hkiG+E0BDQEFBAYgkG6hAAAwDwYKKoZIhvhNAQ0BBgoBADAKBggqhkjOPQQDAgNI\n"
+    "ADBFAiEAhY2Bdn5aQJH2Fj1YZriJ7DpmQCbqRyVxU65bd8v0O/4CIA2IWOarGysj\n"
+    "RvR+bMRtTbhiRXkV9JD2FJA24tP32pw+\n"
     "-----END CERTIFICATE-----\n";
 
-static const char BAD_CHAIN[] =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIDUDCCAjgCCQCCncn7BEtWSzANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n"
-    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n"
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n"
-    "Fw0xODAyMTMwMTQwMDhaFw0yMzAyMTMwMTQwMDhaMGoxCzAJBgNVBAYTAlVTMQ4w\n"
-    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n"
-    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n"
-    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwSnztYAKE2Mq5XL2dCZsFGKsMjsr\n"
-    "pIK37PoBEPJsphL8jrpbRtYklp5HpIpcakT0poL34p90xaW+bIthzbU/MOC/2A/0\n"
-    "63WS4v4n2h33JaMoGVQ4qt+4sV6sZwG70ifbG6linQQAfhdzt+7hxizLr0sh+gys\n"
-    "/E5qkik87pwb2NxDc4tO5vybq50AKf+UVBC5/f//YD0LrXYafUVEruwsCj9fAjso\n"
-    "vAhPqn4nVylOwuNBCjXGkLNF/Rxsi25Cb8rX0rMS1/evjTaTveMRtVYJP4OnDuWL\n"
-    "SzksoGwC4D4hb2SNB+QEMyGv1SnrrmfEXdN/RKf3pCtFJigskcxy/3jgnwIDAQAB\n"
-    "MA0GCSqGSIb3DQEBCwUAA4IBAQABen8yc7HPFjqi+xuiwh+3YcVOYOd5R+gVdsPm\n"
-    "1VLcetXOVx1aRjHF9jwkF3GzQ5UbKex9MSiScjDjLV9ukmJD+HjMwAm3W/Rex+rY\n"
-    "Y7bM6uvKN5zxs5SeuO7odkYP2jHlSnozMJt7jMENr2sJUscIrn073Z3b0gLcv/Cb\n"
-    "QKQY5OSmyQYYu7ib14SxcpIjdZi1T/PH8hlKaKsdt+OFTzA3t8VdN69jZSubwP+A\n"
-    "gBmiW1o/q+r+pN3woaClk5c0/Dh9t/xJcNth4NSKV/YrLHQLZQ76SvICtKexz1RZ\n"
-    "wZSQ03dKw87xW3t3f5GS3O75zDNeT4TMeYd4RMRiK6wDt2WE\n"
+/* Key contained in ECCERT */
+const uint8_t CERT_EC_KEY[] = {
+    0x04, 0x79, 0xB3, 0x04, 0x37, 0x11, 0xB2, 0x73, 0xB3, 0x6C, 0xFC,
+    0xE5, 0x78, 0x6E, 0xDE, 0x8E, 0x39, 0x9C, 0xBD, 0x2B, 0x15, 0x33,
+    0x16, 0xD3, 0xCE, 0xC2, 0xE1, 0xAA, 0xF5, 0xC8, 0x43, 0xB8, 0x99,
+    0x20, 0xCF, 0x53, 0x3F, 0xE2, 0x22, 0xED, 0x9B, 0x44, 0x93, 0x47,
+    0xC9, 0x88, 0x10, 0xD9, 0xC9, 0xBF, 0x04, 0xB4, 0x13, 0xA4, 0x93,
+    0xBB, 0x1B, 0x02, 0xB4, 0xD1, 0x88, 0xCC, 0xDB, 0x1C, 0x38,
+};
+
+#define CHAIN1                                                           \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
+    "MIIDUDCCAjgCCQDNkOt+e8l1aDANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
+    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
+    "Fw0xODAyMTMxNzUyNTJaFw0yMzAyMTMxNzUyNTJaMGoxCzAJBgNVBAYTAlVTMQ4w\n" \
+    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n" \
+    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n" \
+    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlrzZNtYmicG/Z0ZK0qYzmTyur/n4\n" \
+    "94fkDBklgsHb9inbe455MgUsIcrlwE/1qXbcO0SnQmUjmopE2iYJhDVDDnobgDlP\n" \
+    "iO1o8E7tIW/jzxRStDyfrO6uOrc8mUAvnsHc800d2Dt6vAHhdbiBeIi8CkIgy5/h\n" \
+    "XXQphjk9H0jrVFydJ7KYl53KvwZ95NAodPZpiuCD6WXDEvXOLvQaup2nG9+ha5QB\n" \
+    "h0pfdNRhHtsfIcg5ExghoOYXcOhCtEqkVYcllmYr2tf3tn/dRVXO7KYbfqr/mQo+\n" \
+    "oPfhziAyyKHxx7a6bfDngV8ORI7q9b774VgZd3dTDDYechYTIH5V4pX61QIDAQAB\n" \
+    "MA0GCSqGSIb3DQEBCwUAA4IBAQBbCNHoUIVpUnLhrugyooDCygYQeTebVILY1DHG\n" \
+    "Kj7GEpMK70suXQlJ7/hbuL8jTA/kHMtHARy+9DAQDjiWRfRNOpE4eEbUdEiwei4L\n" \
+    "2tPke58FBxkq6GcpldPBin16ux379zM43vYwhEf9yuY6KwBfaABg6Eeftrpcuvt3\n" \
+    "1Ibbn4oM2MZixhZXTkKsB3O1OlaZ/kw6qPt7LklLhij1SmvtrrlkWGWoAg8JWYh+\n" \
+    "+Wd1yIgPZbbio9b4rgQ6j0mpWaRVPm7cKAt3nfhnMgr1QV+RQnPDTlsO+sieCLZm\n" \
+    "Z/7gtSYO0BbJnQu3dXzP0OBD1SQvQOpjWXwC71ioBn1rbqDl\n"                 \
+    "-----END CERTIFICATE-----\n"                                        \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
+    "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n" \
+    "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n" \
+    "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n" \
+    "MzE3NTI1M1oXDTE5MDIxMzE3NTI1M1owYzEaMBgGA1UEAwwRVGVzdCBJbnRlcm1l\n" \
+    "ZGlhdGUxDjAMBgNVBAgMBVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQAD\n" \
+    "ggEPADCCAQoCggEBALtrsdnSA0135a5Ry0BlAoiCuvMS4ttmKrG5aNqq1QtXT0rr\n" \
+    "eeVs7uCu43DeuBjoPDCe113LIse68o0VfpyGoEB4k5IEftwNuqt/s9YPnpCjIPw0\n" \
+    "tJIhf/0iNo2HXDK7KVkHnjPTcS1KVlWrnVABP7+Q80nBj7S9yxv7LMuKEzU/NSgG\n" \
+    "TZZWbIDh8DnTvG2YCz9XAtPjBjWAICDOh4Hlkujt2Z/9D3/At3yL577VBBngZG0A\n" \
+    "wCJYE+SpibP8d/f0tuFa6vhNzsDxwqYmBLU1CL1G+3brlCTgfSUCzxC/RSu5lJGo\n" \
+    "fZ7E/0s1+kY07p7iiLCgMOJCBIUE+NP2aX8WSRsCAwEAATANBgkqhkiG9w0BAQsF\n" \
+    "AAOCAQEAWHmQ3uAggLQY/G0Idzk+HhxRArgLXvd4nAlELlArngTGviuZBdcjQhIA\n" \
+    "Do/5GUcoBHLI3Q7lspbT9kbn+2664Gm5jh7A9OU/kpFpMQT+e6aTUDPTlLuHygpx\n" \
+    "bP4X6hn+D5QEBct/befUKcAMZGya46N+m+qWJbH+fplkA2zuZ4NdXav21BsqXRer\n" \
+    "JN6pIxewAEhYGt8nd5mjRFJnMfb6IWs49TRxvk7SntVrWktW36TxPTTWsusuCd8v\n" \
+    "RGTsgD4AIHqFRVi+e+y32K9xxUL4f27s6wSu+f2z2oAQsrfuhHyFMUZT4NLs4KAk\n" \
+    "QbVRkhj9vYJrIP8rRJ+XV9j/IvfdjQ==\n"                                 \
     "-----END CERTIFICATE-----\n"
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n"
-    "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n"
-    "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n"
-    "MzAxNDAwOFoXDTE5MDIxMzAxNDAwOFowYzEaMBgGA1UEAwwRVGVzdCBJbnRlcm1l\n"
-    "ZGlhdGUxDjAMBgNVBAgMBVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWlj\n"
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQAD\n"
-    "ggEPADCCAQoCggEBALlie2zjCfdy1fckjuM7kXf7CkyVp+hqhkJMUU80ETP8AM2R\n"
-    "JsJ2Xkvdf8GrIl93lQU9f9O+HRl45O2M/zz2ZTucDF6dWvJ4yCDUWOwE2ro8eh3d\n"
-    "0BRJvzjs/wgt10v5KJaHnMu9wYVn/8gLWOS/qLwVnPxzqQ507GwOdNaOSHiWXYc9\n"
-    "fl062HLXirLaKMPx5ZD2QlXDPYQta+lbTHWDReelDNHT3G8FtiKtzQ0uT2EWLw7z\n"
-    "dOu61+EGf2PdqZc+2MVTPca/qO+cCSwzdzGzOQgUYmtn6YUN1y/GJv73AbnPazvY\n"
-    "fVysQanSa1g+LD9WFjF4qInlTnCvjvKQEeqGiTsCAwEAATANBgkqhkiG9w0BAQsF\n"
-    "AAOCAQEAmABx/BVWs4w8bfU0ce5Yj9RYWziMilhrEZJgCmSQzNlNO7DNcPthBbNi\n"
-    "OAgd8y+lSpcHk5KJ9tm9rD6G+0RbL+8M1TyagrI0M++7Ex2gZV9DSEtvBqnl8XgS\n"
-    "tlb2xW0x2jol9MdQrsaCcORbrEnogP8YGzICMoJQ8OiJed99PS7q+eQ0lW9A7e+o\n"
-    "XJ9PjI7n93Wou0xC4kYOszGPGIZ9X5mEPAKqqCcXsxGfruDrgmulB526hb/lHC/5\n"
-    "1gRic7SCYsyWgxde7R5D+IxxcJNnIWNnt3TUIT8I9fbwonddxA3Qln9tr784dDiB\n"
-    "/c5qUrfE7k0DrKr4OZvt/xbV9oKMyg==\n"
-    "-----END CERTIFICATE-----\n";
+
+#define CHAIN2                                                           \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
+    "MIIDUDCCAjgCCQCCncn7BEtWSzANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
+    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
+    "Fw0xODAyMTMwMTQwMDhaFw0yMzAyMTMwMTQwMDhaMGoxCzAJBgNVBAYTAlVTMQ4w\n" \
+    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n" \
+    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n" \
+    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwSnztYAKE2Mq5XL2dCZsFGKsMjsr\n" \
+    "pIK37PoBEPJsphL8jrpbRtYklp5HpIpcakT0poL34p90xaW+bIthzbU/MOC/2A/0\n" \
+    "63WS4v4n2h33JaMoGVQ4qt+4sV6sZwG70ifbG6linQQAfhdzt+7hxizLr0sh+gys\n" \
+    "/E5qkik87pwb2NxDc4tO5vybq50AKf+UVBC5/f//YD0LrXYafUVEruwsCj9fAjso\n" \
+    "vAhPqn4nVylOwuNBCjXGkLNF/Rxsi25Cb8rX0rMS1/evjTaTveMRtVYJP4OnDuWL\n" \
+    "SzksoGwC4D4hb2SNB+QEMyGv1SnrrmfEXdN/RKf3pCtFJigskcxy/3jgnwIDAQAB\n" \
+    "MA0GCSqGSIb3DQEBCwUAA4IBAQABen8yc7HPFjqi+xuiwh+3YcVOYOd5R+gVdsPm\n" \
+    "1VLcetXOVx1aRjHF9jwkF3GzQ5UbKex9MSiScjDjLV9ukmJD+HjMwAm3W/Rex+rY\n" \
+    "Y7bM6uvKN5zxs5SeuO7odkYP2jHlSnozMJt7jMENr2sJUscIrn073Z3b0gLcv/Cb\n" \
+    "QKQY5OSmyQYYu7ib14SxcpIjdZi1T/PH8hlKaKsdt+OFTzA3t8VdN69jZSubwP+A\n" \
+    "gBmiW1o/q+r+pN3woaClk5c0/Dh9t/xJcNth4NSKV/YrLHQLZQ76SvICtKexz1RZ\n" \
+    "wZSQ03dKw87xW3t3f5GS3O75zDNeT4TMeYd4RMRiK6wDt2WE\n"                 \
+    "-----END CERTIFICATE-----\n"                                        \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
+    "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n" \
+    "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n" \
+    "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n" \
+    "MzAxNDAwOFoXDTE5MDIxMzAxNDAwOFowYzEaMBgGA1UEAwwRVGVzdCBJbnRlcm1l\n" \
+    "ZGlhdGUxDjAMBgNVBAgMBVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQAD\n" \
+    "ggEPADCCAQoCggEBALlie2zjCfdy1fckjuM7kXf7CkyVp+hqhkJMUU80ETP8AM2R\n" \
+    "JsJ2Xkvdf8GrIl93lQU9f9O+HRl45O2M/zz2ZTucDF6dWvJ4yCDUWOwE2ro8eh3d\n" \
+    "0BRJvzjs/wgt10v5KJaHnMu9wYVn/8gLWOS/qLwVnPxzqQ507GwOdNaOSHiWXYc9\n" \
+    "fl062HLXirLaKMPx5ZD2QlXDPYQta+lbTHWDReelDNHT3G8FtiKtzQ0uT2EWLw7z\n" \
+    "dOu61+EGf2PdqZc+2MVTPca/qO+cCSwzdzGzOQgUYmtn6YUN1y/GJv73AbnPazvY\n" \
+    "fVysQanSa1g+LD9WFjF4qInlTnCvjvKQEeqGiTsCAwEAATANBgkqhkiG9w0BAQsF\n" \
+    "AAOCAQEAmABx/BVWs4w8bfU0ce5Yj9RYWziMilhrEZJgCmSQzNlNO7DNcPthBbNi\n" \
+    "OAgd8y+lSpcHk5KJ9tm9rD6G+0RbL+8M1TyagrI0M++7Ex2gZV9DSEtvBqnl8XgS\n" \
+    "tlb2xW0x2jol9MdQrsaCcORbrEnogP8YGzICMoJQ8OiJed99PS7q+eQ0lW9A7e+o\n" \
+    "XJ9PjI7n93Wou0xC4kYOszGPGIZ9X5mEPAKqqCcXsxGfruDrgmulB526hb/lHC/5\n" \
+    "1gRic7SCYsyWgxde7R5D+IxxcJNnIWNnt3TUIT8I9fbwonddxA3Qln9tr784dDiB\n" \
+    "/c5qUrfE7k0DrKr4OZvt/xbV9oKMyg==\n"                                 \
+    "-----END CERTIFICATE-----\n"
+
+/* This chain is a concatenation of two unrelated chains: CHAIN1 and CHAIN2 */
+#define MIXED_CHAIN CHAIN1 CHAIN2
 
 static void TestCertVerifyGood()
 {
@@ -303,10 +372,10 @@ static void TestCertVerifyGood()
     OE_CertChain chain;
     OE_CRL* crl = NULL;
 
-    r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
+    r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
     OE_TEST(r == OE_OK);
 
-    r = OE_CertChainReadPEM(CHAIN, sizeof(CHAIN), &chain);
+    r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
     OE_TEST(r == OE_OK);
 
     r = OE_CertVerify(&cert, &chain, crl, &error);
@@ -328,11 +397,11 @@ static void TestCertVerifyBad()
     OE_CertChain chain;
     OE_CRL* crl = NULL;
 
-    r = OE_CertReadPEM(CERT, sizeof(CERT), &cert);
+    r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
     OE_TEST(r == OE_OK);
 
     /* Chain does not contain a root for this certificate */
-    r = OE_CertChainReadPEM(BAD_CHAIN, sizeof(BAD_CHAIN), &chain);
+    r = OE_CertChainReadPEM(CHAIN2, sizeof(CHAIN2), &chain);
     OE_TEST(r == OE_OK);
 
     r = OE_CertVerify(&cert, &chain, crl, &error);
@@ -344,12 +413,34 @@ static void TestCertVerifyBad()
     printf("=== passed TestCertVerifyBad()\n");
 }
 
+static void TestMixedChain()
+{
+    printf("=== begin TestMixedChain()\n");
+
+    OE_Result r;
+    OE_Cert cert;
+    OE_CertChain chain;
+
+    r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
+    OE_TEST(r == OE_OK);
+
+    /* Chain does not contain a root for this certificate */
+    r = OE_CertChainReadPEM(MIXED_CHAIN, sizeof(MIXED_CHAIN), &chain);
+    OE_TEST(r == OE_FAILURE);
+
+    OE_CertFree(&cert);
+    OE_CertChainFree(&chain);
+
+    printf("=== passed TestMixedChain()\n");
+}
+
 static void TestCertVerify()
 {
     printf("=== begin TestCertVerify()\n");
 
     TestCertVerifyGood();
     TestCertVerifyBad();
+    TestMixedChain();
 
     printf("=== passed TestCertVerifyCert()\n");
 }
@@ -433,11 +524,11 @@ static void TestECSignAndVerify()
     {
         OE_ECPrivateKey key;
 
-        r = OE_ECReadPrivateKeyPEM(
+        r = OE_ECPrivateKeyReadPEM(
             (const uint8_t*)EC_PRIVATE_KEY, sizeof(EC_PRIVATE_KEY), &key);
         OE_TEST(r == OE_OK);
 
-        r = OE_ECSign(
+        r = OE_ECPrivateKeySign(
             &key,
             OE_HASH_TYPE_SHA256,
             &HASH,
@@ -448,7 +539,7 @@ static void TestECSignAndVerify()
 
         OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-        r = OE_ECSign(
+        r = OE_ECPrivateKeySign(
             &key,
             OE_HASH_TYPE_SHA256,
             &HASH,
@@ -459,16 +550,18 @@ static void TestECSignAndVerify()
 
         OE_TEST(signature != NULL);
         OE_TEST(signatureSize != 0);
+
+        OE_ECPrivateKeyFree(&key);
     }
 
     {
         OE_ECPublicKey key;
 
-        r = OE_ECReadPublicKeyPEM(
+        r = OE_ECPublicKeyReadPEM(
             (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
         OE_TEST(r == OE_OK);
 
-        r = OE_ECVerify(
+        r = OE_ECPublicKeyVerify(
             &key,
             OE_HASH_TYPE_SHA256,
             &HASH,
@@ -477,7 +570,7 @@ static void TestECSignAndVerify()
             signatureSize);
         OE_TEST(r == OE_OK);
 
-        r = OE_ECVerify(
+        r = OE_ECPublicKeyVerify(
             &key,
             OE_HASH_TYPE_SHA256,
             &HASH,
@@ -485,11 +578,9 @@ static void TestECSignAndVerify()
             EC_SIGNATURE,
             EC_SIGNATURE_SIZE);
         OE_TEST(r == OE_OK);
-    }
 
-#if 0
-    OE_HexDump(signature, signatureSize);
-#endif
+        OE_ECPublicKeyFree(&key);
+    }
 
     free(signature);
 
@@ -506,10 +597,10 @@ static void TestRSAGenerate()
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_RSAGenerate(1024, 3, &privateKey, &publicKey);
+    r = OE_RSAGenerateKeyPair(1024, 3, &privateKey, &publicKey);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSASign(
+    r = OE_RSAPrivateKeySign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -520,7 +611,7 @@ static void TestRSAGenerate()
 
     OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-    r = OE_RSASign(
+    r = OE_RSAPrivateKeySign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -529,7 +620,7 @@ static void TestRSAGenerate()
         &signatureSize);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAVerify(
+    r = OE_RSAPublicKeyVerify(
         &publicKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -539,8 +630,8 @@ static void TestRSAGenerate()
     OE_TEST(r == OE_OK);
 
     free(signature);
-    OE_RSAFreePrivateKey(&privateKey);
-    OE_RSAFreePublicKey(&publicKey);
+    OE_RSAPrivateKeyFree(&privateKey);
+    OE_RSAPublicKeyFree(&publicKey);
 
     printf("=== passed TestRSAGenerate()\n");
 }
@@ -555,10 +646,10 @@ static void TestECGenerate()
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_ECGenerate(OE_EC_TYPE_SECP521R1, &privateKey, &publicKey);
+    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP521R1, &privateKey, &publicKey);
     OE_TEST(r == OE_OK);
 
-    r = OE_ECSign(
+    r = OE_ECPrivateKeySign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -569,7 +660,7 @@ static void TestECGenerate()
 
     OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-    r = OE_ECSign(
+    r = OE_ECPrivateKeySign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -578,7 +669,7 @@ static void TestECGenerate()
         &signatureSize);
     OE_TEST(r == OE_OK);
 
-    r = OE_ECVerify(
+    r = OE_ECPublicKeyVerify(
         &publicKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -588,8 +679,8 @@ static void TestECGenerate()
     OE_TEST(r == OE_OK);
 
     free(signature);
-    OE_ECFreePrivateKey(&privateKey);
-    OE_ECFreePublicKey(&publicKey);
+    OE_ECPrivateKeyFree(&privateKey);
+    OE_ECPublicKeyFree(&publicKey);
 
     printf("=== passed TestECGenerate()\n");
 }
@@ -603,23 +694,23 @@ static void TestRSAWritePrivate()
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = OE_RSAReadPrivateKeyPEM(
+    r = OE_RSAPrivateKeyReadPEM(
         (const uint8_t*)RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAWritePrivateKeyPEM(&key, pemData, &pemSize);
+    r = OE_RSAPrivateKeyWritePEM(&key, pemData, &pemSize);
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
-    r = OE_RSAWritePrivateKeyPEM(&key, pemData, &pemSize);
+    r = OE_RSAPrivateKeyWritePEM(&key, pemData, &pemSize);
     OE_TEST(r == OE_OK);
 
     OE_TEST(sizeof(RSA_PRIVATE_KEY) == pemSize);
     OE_TEST(memcmp(RSA_PRIVATE_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAFreePrivateKey(&key);
+    OE_RSAPrivateKeyFree(&key);
 
     printf("=== passed TestRSAWritePrivate()\n");
 }
@@ -633,23 +724,23 @@ static void TestRSAWritePublic()
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = OE_RSAReadPublicKeyPEM(
+    r = OE_RSAPublicKeyReadPEM(
         (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAWritePublicKeyPEM(&key, pemData, &pemSize);
+    r = OE_RSAPublicKeyWritePEM(&key, pemData, &pemSize);
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
-    r = OE_RSAWritePublicKeyPEM(&key, pemData, &pemSize);
+    r = OE_RSAPublicKeyWritePEM(&key, pemData, &pemSize);
     OE_TEST(r == OE_OK);
 
     OE_TEST(sizeof(RSA_PUBLIC_KEY) == pemSize);
     OE_TEST(memcmp(RSA_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAFreePublicKey(&key);
+    OE_RSAPublicKeyFree(&key);
 
     printf("=== passed TestRSAWritePublic()\n");
 }
@@ -667,16 +758,16 @@ static void TestECWritePrivate()
     uint8_t* pemData2 = NULL;
     size_t pemSize2 = 0;
 
-    r = OE_ECGenerate(OE_EC_TYPE_SECP521R1, &key1, &publicKey);
+    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP521R1, &key1, &publicKey);
     OE_TEST(r == OE_OK);
 
     {
-        r = OE_ECWritePrivateKeyPEM(&key1, pemData1, &pemSize1);
+        r = OE_ECPrivateKeyWritePEM(&key1, pemData1, &pemSize1);
         OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
         OE_TEST(pemData1 = (uint8_t*)malloc(pemSize1));
 
-        r = OE_ECWritePrivateKeyPEM(&key1, pemData1, &pemSize1);
+        r = OE_ECPrivateKeyWritePEM(&key1, pemData1, &pemSize1);
         OE_TEST(r == OE_OK);
     }
 
@@ -684,16 +775,16 @@ static void TestECWritePrivate()
     OE_TEST(pemData1[pemSize1 - 1] == '\0');
     OE_TEST(strlen((char*)pemData1) == pemSize1 - 1);
 
-    r = OE_ECReadPrivateKeyPEM(pemData1, pemSize1, &key2);
+    r = OE_ECPrivateKeyReadPEM(pemData1, pemSize1, &key2);
     OE_TEST(r == OE_OK);
 
     {
-        r = OE_ECWritePrivateKeyPEM(&key2, pemData2, &pemSize2);
+        r = OE_ECPrivateKeyWritePEM(&key2, pemData2, &pemSize2);
         OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
         OE_TEST(pemData2 = (uint8_t*)malloc(pemSize2));
 
-        r = OE_ECWritePrivateKeyPEM(&key2, pemData2, &pemSize2);
+        r = OE_ECPrivateKeyWritePEM(&key2, pemData2, &pemSize2);
         OE_TEST(r == OE_OK);
     }
 
@@ -702,9 +793,9 @@ static void TestECWritePrivate()
 
     free(pemData1);
     free(pemData2);
-    OE_ECFreePublicKey(&publicKey);
-    OE_ECFreePrivateKey(&key1);
-    OE_ECFreePrivateKey(&key2);
+    OE_ECPublicKeyFree(&publicKey);
+    OE_ECPrivateKeyFree(&key1);
+    OE_ECPrivateKeyFree(&key2);
 
     printf("=== passed TestECWritePrivate()\n");
 }
@@ -718,17 +809,17 @@ static void TestECWritePublic()
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = OE_ECReadPublicKeyPEM(
+    r = OE_ECPublicKeyReadPEM(
         (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
     OE_TEST(r == OE_OK);
 
     {
-        r = OE_ECWritePublicKeyPEM(&key, pemData, &pemSize);
+        r = OE_ECPublicKeyWritePEM(&key, pemData, &pemSize);
         OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
         OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
-        r = OE_ECWritePublicKeyPEM(&key, pemData, &pemSize);
+        r = OE_ECPublicKeyWritePEM(&key, pemData, &pemSize);
         OE_TEST(r == OE_OK);
     }
 
@@ -736,13 +827,225 @@ static void TestECWritePublic()
     OE_TEST(memcmp(EC_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_ECFreePublicKey(&key);
+    OE_ECPublicKeyFree(&key);
 
     printf("=== passed TestECWritePublic()\n");
 }
 
+static void TestCertMethods()
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    OE_Result r;
+
+    /* Test OE_CertGetRSAPublicKey() */
+    {
+        OE_Cert cert;
+
+        r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
+        OE_TEST(r == OE_OK);
+
+        OE_RSAPublicKey key;
+        r = OE_CertGetRSAPublicKey(&cert, &key);
+        OE_TEST(r == OE_OK);
+
+        /* Test OE_RSAPublicKeyGetModulus() */
+        {
+            uint8_t* data;
+            size_t size = 0;
+
+            /* Determine required buffer size */
+            r = OE_RSAPublicKeyGetModulus(&key, NULL, &size);
+            OE_TEST(r == OE_BUFFER_TOO_SMALL);
+            OE_TEST(size == sizeof(CERT1_RSA_MODULUS));
+
+            /* Fetch the key bytes */
+            OE_TEST(data = (uint8_t*)malloc(size));
+            r = OE_RSAPublicKeyGetModulus(&key, data, &size);
+            OE_TEST(r == OE_OK);
+
+            /* Does it match expected modulus? */
+            OE_TEST(size == sizeof(CERT1_RSA_MODULUS));
+            OE_TEST(memcmp(data, CERT1_RSA_MODULUS, size) == 0);
+            free(data);
+        }
+
+        /* Test OE_RSAPublicKeyGetExponent() */
+        {
+            uint8_t* data;
+            size_t size = 0;
+
+            /* Determine required buffer size */
+            r = OE_RSAPublicKeyGetExponent(&key, NULL, &size);
+            OE_TEST(r == OE_BUFFER_TOO_SMALL);
+            OE_TEST(size == sizeof(CERT_RSA_EXPONENT));
+
+            /* Fetch the key bytes */
+            OE_TEST(data = (uint8_t*)malloc(size));
+            r = OE_RSAPublicKeyGetExponent(&key, data, &size);
+            OE_TEST(r == OE_OK);
+
+            /* Does it match expected exponent */
+            OE_TEST(size == sizeof(CERT_RSA_EXPONENT));
+            OE_TEST(memcmp(data, CERT_RSA_EXPONENT, size) == 0);
+            free(data);
+        }
+
+        /* Test OE_RSAPublicKeyEqual() */
+        {
+            bool equal;
+            OE_TEST(OE_RSAPublicKeyEqual(&key, &key, &equal) == OE_OK);
+            OE_TEST(equal == true);
+        }
+
+        OE_RSAPublicKeyFree(&key);
+        OE_CertFree(&cert);
+    }
+
+    /* Test OE_CertGetECPublicKey() */
+    {
+        OE_Cert cert;
+        OE_ECPublicKey key;
+
+        r = OE_CertReadPEM(ECCERT, sizeof(ECCERT), &cert);
+        OE_TEST(r == OE_OK);
+
+        r = OE_CertGetECPublicKey(&cert, &key);
+        OE_TEST(r == OE_OK);
+
+        /* Test OE_ECPublicKeyGetKeyBytes() */
+        {
+            uint8_t* data;
+            size_t size = 0;
+
+            /* Determine the required size of the buffer */
+            r = OE_ECPublicKeyGetKeyBytes(&key, NULL, &size);
+            OE_TEST(r == OE_BUFFER_TOO_SMALL);
+            OE_TEST(size == sizeof(CERT_EC_KEY));
+
+            /* Fetch the key bytes */
+            OE_TEST(data = (uint8_t*)malloc(size));
+            r = OE_ECPublicKeyGetKeyBytes(&key, data, &size);
+            OE_TEST(r == OE_OK);
+
+            /* Does it match expected key? */
+            OE_TEST(size == sizeof(CERT_EC_KEY));
+            OE_TEST(memcmp(CERT_EC_KEY, data, sizeof(CERT_EC_KEY)) == 0);
+            free(data);
+        }
+
+        /* Test OE_ECPublicKeyEqual() */
+        {
+            bool equal;
+            OE_TEST(OE_ECPublicKeyEqual(&key, &key, &equal) == OE_OK);
+            OE_TEST(equal == true);
+        }
+
+        OE_ECPublicKeyFree(&key);
+        OE_CertFree(&cert);
+    }
+
+    /* Test OE_CertChainGetCert() */
+    {
+        OE_CertChain chain;
+
+        /* Load the chain from PEM format */
+        r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
+        OE_TEST(r == OE_OK);
+
+        /* Get the length of the chain */
+        size_t length;
+        r = OE_CertChainGetLength(&chain, &length);
+        OE_TEST(r == OE_OK);
+        OE_TEST(length == 2);
+
+        /* Get each certficate in the chain */
+        for (size_t i = 0; i < length; i++)
+        {
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, i, &cert);
+            OE_TEST(r == OE_OK);
+            OE_CertFree(&cert);
+        }
+
+        /* Test out of bounds */
+        {
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, length + 1, &cert);
+            OE_TEST(r == OE_OUT_OF_BOUNDS);
+            OE_CertFree(&cert);
+        }
+
+        OE_CertChainFree(&chain);
+    }
+
+    /* Test OE_CertChainGetRootCert() and OE_CertChainGetLeafCert() */
+    {
+        OE_CertChain chain;
+        OE_Cert root;
+        OE_Cert cert0;
+        OE_Cert leaf;
+
+        /* Load the chain from PEM format */
+        r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
+        OE_TEST(r == OE_OK);
+
+        /* Get the root certificate */
+        r = OE_CertChainGetRootCert(&chain, &root);
+        OE_TEST(r == OE_OK);
+
+        /* Get the first certificate */
+        r = OE_CertChainGetCert(&chain, 0, &cert0);
+        OE_TEST(r == OE_OK);
+
+        /* Get the leaf certificate */
+        r = OE_CertChainGetLeafCert(&chain, &leaf);
+        OE_TEST(r == OE_OK);
+
+        /* Check that the keys are identical for top and root certificate */
+        {
+            OE_RSAPublicKey rootKey;
+            OE_RSAPublicKey certKey;
+            bool equal;
+
+            OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
+            OE_TEST(OE_CertGetRSAPublicKey(&cert0, &certKey) == OE_OK);
+
+            OE_TEST(OE_RSAPublicKeyEqual(&rootKey, &certKey, &equal) == OE_OK);
+            OE_TEST(equal == true);
+
+            OE_RSAPublicKeyFree(&rootKey);
+            OE_RSAPublicKeyFree(&certKey);
+        }
+
+        /* Check that the keys are not identical for leaf and root */
+        {
+            OE_RSAPublicKey rootKey;
+            OE_RSAPublicKey leafKey;
+            bool equal;
+
+            OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
+            OE_TEST(OE_CertGetRSAPublicKey(&leaf, &leafKey) == OE_OK);
+
+            OE_TEST(OE_RSAPublicKeyEqual(&rootKey, &leafKey, &equal) == OE_OK);
+            OE_TEST(equal == false);
+
+            OE_RSAPublicKeyFree(&rootKey);
+            OE_RSAPublicKeyFree(&leafKey);
+        }
+
+        OE_CertFree(&root);
+        OE_CertFree(&cert0);
+        OE_CertFree(&leaf);
+        OE_CertChainFree(&chain);
+    }
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 static void RunAllTests()
 {
+    TestCertMethods();
     TestCertVerify();
     TestECGenerate();
     TestECSignAndVerify();

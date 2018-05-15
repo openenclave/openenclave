@@ -121,16 +121,21 @@ static void TestInitOcallResult(unsigned enclaveId)
 // For ocall-test on not explicitly OE_OCALL-tagged function
 #if defined(__unix__)
 extern "C" void ExportedHostFunction(void*)
-#elif defined (_WIN32)
+#elif defined(_WIN32)
 extern "C" OE_EXPORT void ExportedHostFunction(void*)
 #endif
 {
 }
 
-#if defined (_WIN32)
-extern "C" void InternalHostFunction(void*) { }
+#if defined(_WIN32)
+extern "C" void InternalHostFunction(void*)
+{
+}
 #else
-extern "C" void __attribute__((visibility("internal"))) InternalHostFunction(void*) { }
+extern "C" void __attribute__((visibility("internal")))
+InternalHostFunction(void*)
+{
+}
 #endif
 
 // Test availability and non-availability of functions, according to their
@@ -138,7 +143,7 @@ extern "C" void __attribute__((visibility("internal"))) InternalHostFunction(voi
 static void TestInvalidFunctions(unsigned enclaveId)
 {
     OE_Result result;
-	EncTestCallHostFunctionArg args = {};
+    EncTestCallHostFunctionArg args = {};
 
     result = OE_CallEnclave(
         EnclaveWrap::Get(enclaveId), "EncDummyEncFunction", NULL);
@@ -179,17 +184,17 @@ static void TestInvalidFunctions(unsigned enclaveId)
     OE_TEST(result == OE_OK);
     OE_TEST(args.result == OE_NOT_FOUND);
 
-	args.result = OE_FAILURE;
-	args.functionName = "ExportedHostFunction";
-	result = OE_CallEnclave(
-		EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
-	printf(
-		"OE_CallEnclave(EncTestCallHostFunction, ExportedHostFunction): "
-		"%u/%u\n",
-		result,
-		args.result);
-	OE_TEST(result == OE_OK);
-	OE_TEST(args.result == OE_OK);
+    args.result = OE_FAILURE;
+    args.functionName = "ExportedHostFunction";
+    result = OE_CallEnclave(
+        EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
+    printf(
+        "OE_CallEnclave(EncTestCallHostFunction, ExportedHostFunction): "
+        "%u/%u\n",
+        result,
+        args.result);
+    OE_TEST(result == OE_OK);
+    OE_TEST(args.result == OE_OK);
 }
 
 // Helper function for parallel test

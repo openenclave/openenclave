@@ -139,6 +139,8 @@ OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 #define OE_MAX_LLONG OE_MAX_SINT64
 #define OE_MAX_ULLONG OE_MAX_UINT64
 
+#define OE_MAX_SIZE_T OE_MAX_UINT64
+
 /*
 **==============================================================================
 **
