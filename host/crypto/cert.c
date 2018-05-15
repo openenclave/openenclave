@@ -263,7 +263,7 @@ static OE_Result _VerifyCert(X509* cert_, X509* chain_)
     /* Inject the certificate into the verification context */
     X509_STORE_CTX_set_cert(ctx, cert);
 
-    /* Bulid a certificate chain that contains a single certificate */
+    /* Build a certificate chain that contains a single certificate */
     {
         if (!(sk = sk_X509_new(NULL)))
             OE_RAISE(OE_FAILURE);
@@ -700,7 +700,7 @@ OE_Result OE_CertChainGetCert(
     if (!(x509 = sk_X509_value(impl->sk, (int)index)))
         OE_RAISE(OE_FAILURE);
 
-    /* Increment the reference count and initalize the output certificate */
+    /* Increment the reference count and initialize the output certificate */
     if (!_X509_up_ref(x509))
         OE_RAISE(OE_FAILURE);
     _CertInit((Cert*)cert, x509);

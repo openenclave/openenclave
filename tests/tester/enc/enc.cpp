@@ -283,7 +283,7 @@ OE_EXTERNC bool TestIntPtrRef(int** intPtrOut, size_t n)
     return true;
 }
 
-OE_EXTERNC void TestBufferOverun(char str[8])
+OE_EXTERNC void TestBufferOverrun(char str[8])
 {
     /* Intentional buffer overrun (will be detected by ENC) */
     strlcpy(str, "123456789", 9);
