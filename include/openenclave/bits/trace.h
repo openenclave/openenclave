@@ -18,6 +18,10 @@
 #define OE_TRACE_LEVEL_ERROR 1
 #define OE_TRACE_LEVEL_INFO 2
 
+#ifndef OE_TRACE_LEVEL
+#define OE_TRACE_LEVEL OE_TRACE_LEVEL_NONE
+#endif
+
 OE_EXTERNC_BEGIN
 
 OE_INLINE void __OE_TraceResult(
@@ -27,6 +31,11 @@ OE_INLINE void __OE_TraceResult(
     unsigned int line,
     const char* expr)
 {
+    OE_UNUSED(op);
+    OE_UNUSED(file);
+    OE_UNUSED(line);
+    OE_UNUSED(expr);
+
     if (result == OE_OK)
     {
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
