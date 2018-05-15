@@ -154,7 +154,7 @@ OE_Result OE_GetSealKey(
  * Attribute masks are set to OE default values.
  *
  * Return OE_OK and set attributes of sgxKeyRequest if success.
- * Otherwise return error and sgxKeyRquest is not changed.
+ * Otherwise return error and sgxKeyRequest is not changed.
  */
 static OE_Result _GetDefaultKeyRequestAttributes(SGX_KeyRequest* sgxKeyRequest)
 {

@@ -419,7 +419,7 @@ OE_Result OE_SGXCreateEnclave(
     {
 #if defined(__linux__)
 
-        /* Ask the Linux SGX driver to create the encalve */
+        /* Ask the Linux SGX driver to create the enclave */
         if (SGX_IoctlEnclaveCreate(context->dev, secs) != 0)
             OE_RAISE(OE_IOCTL_FAILED);
 
@@ -527,7 +527,7 @@ OE_Result OE_SGXLoadEnclaveData(
 
 #elif defined(_WIN32)
 
-        /* Ask the OS to add a page to the encalve */
+        /* Ask the OS to add a page to the enclave */
         SIZE_T num_bytes = 0;
         DWORD enclaveError;
 

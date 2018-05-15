@@ -6,6 +6,7 @@ set(PLATFORM_SRC
     crypto/cert.c
     crypto/ec.c
     crypto/init.c
+    crypto/key.c
     crypto/random.c
     crypto/rsa.c
     linux/aep.S

@@ -208,7 +208,7 @@ void* LockAndUnlockThread2(void* args)
     return NULL;
 }
 
-// Lauch multiple threads and try out various locking patterns on 3 mutexes.
+// Launch multiple threads and try out various locking patterns on 3 mutexes.
 // The locking patterns are chosen to not deadlock.
 void TestThreadLockingPatterns(OE_Enclave* enclave)
 {
@@ -227,7 +227,7 @@ void TestThreadLockingPatterns(OE_Enclave* enclave)
     for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    // The OE_Calls in this test should succeed without any OE_TESTions.
+    // The OE_Calls in this test should succeed without any OE_TEST() failures.
     printf("TestThreadLockingPatterns Complete\n");
 }
 

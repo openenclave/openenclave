@@ -21,20 +21,20 @@ target_compile_options(libctest-support PRIVATE
 target_link_libraries(libctest-support PUBLIC oelibc)
 
 function(add_libc_test_enc NAME CFILE)
-    add_enclave_executable(libctest-${NAME} sign.conf private.pem
+    add_enclave_executable(libctest-${NAME}_enc sign.conf private.pem
         enc.c
         main.c
         )
 
-    target_include_directories(libctest-${NAME} PRIVATE
+    target_include_directories(libctest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/musl/libc-test/src/common
         )
-    target_compile_options(libctest-${NAME} PRIVATE
+    target_compile_options(libctest-${NAME}_enc PRIVATE
         -Wno-error
         )
-    target_compile_definitions(libctest-${NAME} PRIVATE -D__TEST__="${CFILE}")
-    target_link_libraries(libctest-${NAME} libctest-support)
+    target_compile_definitions(libctest-${NAME}_enc PRIVATE -D__TEST__="${CFILE}")
+    target_link_libraries(libctest-${NAME}_enc libctest-support)
 endfunction(add_libc_test_enc)
 
 if (ENABLE_FULL_LIBC_TESTS)

@@ -2,12 +2,12 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(stdcxxenc sign.conf private.pem
+add_enclave_executable(stdcxx_enc sign.conf private.pem
     enc.cpp
     f.cpp
     )
 
-target_compile_options(stdcxxenc PRIVATE
+target_compile_options(stdcxx_enc PRIVATE
     -fno-builtin-strcpy
     -fno-builtin-strcat
     -fno-builtin-memcpy
@@ -16,4 +16,4 @@ target_compile_options(stdcxxenc PRIVATE
     -fno-builtin-printf
     )
 
-target_link_libraries(stdcxxenc oelibcxx)
+target_link_libraries(stdcxx_enc oelibcxx)

@@ -6,6 +6,7 @@ add_library(oeenclave STATIC
     ec.c
     ecdsa.c
     cmac.c
+    key.c
     random.c
     report.cpp
     rsa.c

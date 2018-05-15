@@ -2,11 +2,11 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(printenc sign.conf private.pem
+add_enclave_executable(print_enc sign.conf private.pem
     enc.cpp
     )
 
-target_compile_options(printenc PRIVATE
+target_compile_options(print_enc PRIVATE
     -Wno-error=unused-but-set-variable
     -fno-builtin-strcpy
     -fno-builtin-strcat
@@ -14,4 +14,4 @@ target_compile_options(printenc PRIVATE
     -fno-builtin-memset
     )
 
-target_link_libraries(printenc oelibc)
+target_link_libraries(print_enc oelibc)

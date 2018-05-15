@@ -21,7 +21,7 @@
 **         (*) Pointer to the next callsite on the list
 **
 **     When the OCALL returns, a callsite is used restore the registers
-**     and to jump (OE_Longjmp) to the instrution where the callsite
+**     and to jump (OE_Longjmp) to the instruction where the callsite
 **     information was recorded (by OE_SetJmp).
 **
 **     Since ECALLS and OCALLS can be nested, more than one instance of this
