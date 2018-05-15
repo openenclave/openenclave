@@ -695,7 +695,7 @@ typedef struct _SGX_Report
     /* (384) Id of key (?) */
     uint8_t keyid[SGX_KEYID_SIZE];
 
-    /* (416) Message autentication code over fields of this structure */
+    /* (416) Message authentication code over fields of this structure */
     uint8_t mac[SGX_MAC_SIZE];
 } SGX_Report;
 
