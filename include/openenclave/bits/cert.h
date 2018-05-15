@@ -76,7 +76,7 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert);
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
- * @param cert initialized certificate chain handle upon return
+ * @param[out] chain initialized certificate chain handle upon return
  *
  * @return OE_OK load was successful
  */
