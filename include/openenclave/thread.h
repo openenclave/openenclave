@@ -227,7 +227,7 @@ int OE_MutexUnlock(OE_Mutex* mutex);
  *
  * This function destroys a mutex that was initialized with OE_MutexInit().
  *
- * @param Destroy this mutex.
+ * @param mutex Destroy this mutex.
  *
  * @return Returns zero on success.
  *
@@ -527,7 +527,7 @@ int OE_RWLockWriteUnlock(OE_RWLock* rwLock);
  *    3. Results of destroying a locked r/w lock are undefined.
  *    4. Results of destroying an uninitialized r/w lock are undefined.
  *
- * @param Destroy this readers-writer lock.
+ * @param rwLock Destroy this readers-writer lock.
  *
  * @return Returns zero on success.
  *
