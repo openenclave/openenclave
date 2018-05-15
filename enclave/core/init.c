@@ -104,7 +104,7 @@ static void _CheckMemoryBoundaries(void)
 **     Initialization functions are of two types:
 **
 **         (1) C functions tagged with __attribute__(constructor)
-**         (2) C++ global constuctors
+**         (2) C++ global constructors
 **
 **     OE_CallInitFunctions() invokes all functions in this array from start
 **     to finish.

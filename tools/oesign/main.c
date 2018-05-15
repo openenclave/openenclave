@@ -151,7 +151,7 @@ done:
     return rc;
 }
 
-// Options loaded from .conf file. Unitialized fields contain the maximum
+// Options loaded from .conf file. Uninitialized fields contain the maximum
 // integer value for the corresponding type.
 typedef struct _ConfigFileOptions
 {
