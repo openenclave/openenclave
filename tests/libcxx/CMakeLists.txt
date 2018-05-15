@@ -11,10 +11,13 @@ else()
     file(STRINGS "tests.supported.default" alltests)
 endif()
 
+add_subdirectory(host)
+
+if (UNIX)
+	add_subdirectory(enc)
+endif()
+
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "../../3rdparty/libcxx/libcxx/test/")
-    add_test(tests/libcxx/${name} host/libcxxhost ./enc/libcxxtest-${name}.signed.so)
+	add_enclave_test(tests/libcxxtest-${name} ./host libcxx_host ./enc libcxxtest-${name}_enc.signed.so)
 endforeach(testcase)
-
-add_subdirectory(enc)
-add_subdirectory(host)

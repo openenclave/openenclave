@@ -2,12 +2,12 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(ocall-alloc-enc sign.conf private.pem
+add_enclave_executable(ocall-alloc_enc sign.conf private.pem
     enc.cpp
     wrap.cpp
     wrap-hoststack.c
     )
-target_link_libraries(ocall-alloc-enc oelibcxx)
+target_link_libraries(ocall-alloc_enc oelibcxx)
 
-target_compile_features(ocall-alloc-enc PRIVATE cxx_auto_type)
+target_compile_features(ocall-alloc_enc PRIVATE cxx_auto_type)
 
