@@ -35,7 +35,7 @@ typedef struct _OE_VerifyCertError
 /**
  * OID string representation.
  *
- * OID string representation (e.g., "1.2.3.4"). This strucure represents an
+ * OID string representation (e.g., "1.2.3.4"). This structure represents an
  * OID output parameter to prevent buffer length mismatches that the compiler
  * would be unable to detect. For example, consider the following function
  * declaration.

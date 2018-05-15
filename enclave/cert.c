@@ -427,7 +427,7 @@ static int _ParseExtensions(
         {
             mbedtls_x509_buf oid;
 
-            /* Prase the OID tag */
+            /* Parse the OID tag */
             {
                 int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
 
