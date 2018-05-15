@@ -1200,7 +1200,7 @@ void Elf64_DumpStrings(const Elf64* elf)
     if (!_Ok(elf))
         return;
 
-    /* Find the index of the ".strtab" seciton */
+    /* Find the index of the ".strtab" section */
     size_t index;
 
     if ((index = _FindSection(elf, ".strtab")) == (size_t)-1)
@@ -1316,7 +1316,7 @@ int Elf64_AddSection(
     if (!_Ok(elf) || !name || !secdata || !secsize)
         GOTO(done);
 
-    /* Fail if new section mame is invalid */
+    /* Fail if new section name is invalid */
     if (!_IsValidSectionName(name))
         GOTO(done);
 

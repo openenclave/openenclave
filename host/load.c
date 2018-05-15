@@ -182,7 +182,7 @@ OE_Result __OE_CalculateSegmentsSize(
     if (!segments || nsegments == 0 || !size)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Cacluate boundaries (LO and HI) of the image */
+    /* Calculate boundaries (LO and HI) of the image */
     for (i = 0; i < nsegments; i++)
     {
         const OE_Segment* seg = &segments[i];
@@ -235,7 +235,7 @@ OE_Result __OE_CombineSegments(
     if (!segments || nsegments == 0 || !pages || !npages)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Cacluate boundaries (LO and HI) of the image */
+    /* Calculate boundaries (LO and HI) of the image */
     {
         for (i = 0; i < nsegments; i++)
         {

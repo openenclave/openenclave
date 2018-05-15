@@ -363,7 +363,7 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
 #endif
     }
 
-    // Genereate functions:
+    // Generate functions:
     for (size_t i = 0; i < elem.size(); i++)
     {
         const Element& e = elem[i];

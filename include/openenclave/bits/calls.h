@@ -548,7 +548,7 @@ OE_Result OE_RegisterECall(uint32_t func, OE_ECallFunction ecall);
  * TODO: Redesign this, this needs to be enclave-specific.
  *
  * This function registers a low-level OCALL function that may be called
- * from the encalve by the **OE_OCall()** function. The registered function
+ * from the enclave by the **OE_OCall()** function. The registered function
  * has the following prototype.
  *
  *     void (*)(uint64_t argIn, uint64_t* argOut);

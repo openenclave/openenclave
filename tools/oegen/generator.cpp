@@ -352,7 +352,7 @@ static void _GenFunctionStruct(std::ostream& os, const Function* function)
         os << ";" << endl;
         count++;
 
-        /* Generate padding field (for detecting buffer overuns) */
+        /* Generate padding field (for detecting buffer overruns) */
         if (i + 1 != function->params.size() || !_IsZeroArray(x))
             os << sub("    unsigned char __pad$0[4];\n", _NumToStr(count));
     }
@@ -1438,7 +1438,7 @@ int Generator::GenerateSourceFile(
         os << "#include \"" << tmp << "\"" << endl;
     }
 
-    // Generate verbatims:
+    // Generate verbatim definitions:
     for (size_t i = 0; i < objects.size(); i++)
     {
         const Verbatim* verbatim = dynamic_cast<const Verbatim*>(objects[i]);

@@ -72,7 +72,7 @@ OE_Result OE_Random(void* data, size_t size)
         OE_CHECK(_seedResult);
     }
 
-    /* Generate random data (synchronize acceess to _drbg instance) */
+    /* Generate random data (synchronize access to _drbg instance) */
     rc = mbedtls_ctr_drbg_random(&_drbg, data, size);
 
     if (rc != 0)

@@ -17,7 +17,7 @@ OE_EXTERNC_BEGIN
  * @param data the buffer that will be filled with random bytes
  * @param size the size of the buffer
  *
- * @return OE_OK on succeess
+ * @return OE_OK on success
  */
 OE_Result OE_Random(void* data, size_t size);
 

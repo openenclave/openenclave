@@ -65,22 +65,21 @@ locale_t newlocale(int mask, const char* locale, locale_t loc)
 
     if (builtin)
     {
-        /* if locale is already allocated, we need to modify it
-           according to the mask value. Currently we are supporting
-           builtin locales only. So locale modify has no effect. Just return
-           the loc itself. If loc is not a valid locale ptr,
-           then behaviour is undefined */
+        // if locale is already allocated, we need to modify it
+        // according to the mask value. Currently we are supporting
+        // builtin locales only. So locale modify has no effect. Just return
+        // the loc itself. If loc is not a valid locale ptr,
+        // then behavior is undefined
         if (loc)
             return loc;
         else
-            /* if loc is NULL/0, then we will return a dummy C locale reference
-             */
+            // if loc is NULL/0, then we will return a dummy C locale reference
             return (locale_t)&c_locale;
     }
     else
     {
-        /*  Enclave doesnt support any locales other than builtin for the time
-         * being */
+        // Enclave doesn't support any locales other than builtin for the time
+        // being.
         return 0;
     }
 }

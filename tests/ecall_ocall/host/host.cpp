@@ -22,7 +22,7 @@
 
 #define THREAD_COUNT 5 // must not exceed what is configured in sign.conf
 
-// Slighly specialized wrapper around an OE_Enclave object to allow
+// Slightly specialized wrapper around an OE_Enclave object to allow
 // scope-based lifetime mgmt. Also a bit of identifying glue (which relies on
 // custom code in the enclave).
 struct EnclaveWrap
@@ -488,7 +488,7 @@ static void TestRecursionParallel(
         recursionDepth,
         loopCount);
 
-    // Precalc Crcs
+    // Precalculate CRCs
     for (unsigned enclaveId : enclaveIds)
     {
         for (unsigned i = 0; i < threadCount; i++)
@@ -548,7 +548,7 @@ static void TestRecursionCrossEnclave(
     for (unsigned enclaveId : enclaveIds)
         g_rotatingEnclaveIds.insert(enclaveId);
 
-    // Precalc Crcs
+    // Precalculate CRCs
     for (unsigned i = 0; i < threadCount; i++)
     {
         EncRecursionArg args = {};

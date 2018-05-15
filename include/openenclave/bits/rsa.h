@@ -175,7 +175,7 @@ OE_Result OE_RSASign(
  * @param signature expected signature
  * @param signatureSize size of the expected signature
  *
- * @return OE_OK if the message was signeded with the given certificate
+ * @return OE_OK if the message was signed with the given certificate
  */
 OE_Result OE_RSAVerify(
     const OE_RSAPublicKey* publicKey,

@@ -142,7 +142,7 @@ CopyObjects(struct Object dest[2], const struct Object src[2])
         return -1;
 
 #if 0
-    /* Intentional buffer overun */
+    /* Intentional buffer overrun */
     if (CopyObject(&dest[2], &src[1]) != 0)
         return -1;
 #endif
