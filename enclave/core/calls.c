@@ -22,7 +22,7 @@ typedef unsigned long long WORD;
 
 #define WORD_SIZE sizeof(WORD)
 
-uint64_t __oe_enclave_status = OE_OK;
+static OE_Result __oe_enclave_status = OE_OK;
 
 /*
 **==============================================================================
@@ -122,7 +122,7 @@ uint64_t __oe_enclave_status = OE_OK;
 **
 **==============================================================================
 */
-void _HandleInitEnclave(uint64_t argIn)
+static void _HandleInitEnclave(uint64_t argIn)
 {
     static bool _once = false;
 
@@ -464,7 +464,7 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args =
+        if (!(args = (OE_CallHostArgs*)
                   OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1)))
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
