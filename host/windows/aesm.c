@@ -277,7 +277,7 @@ OE_Result AESMGetLaunchToken(
     if (!(instance = _CreateInstance()))
         goto done;
 
-    /* Obtain a luanch token */
+    /* Obtain a launch token */
     HRESULT hr = instance->lpVtbl->GetLicenseToken(
         instance,               /* this */
         mrenclave,              /* mrenclave */

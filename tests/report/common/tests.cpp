@@ -163,8 +163,8 @@ TEST_FCN void TestLocalReport(void* args_)
 
     /*
      * Post conditions:
-     *     1. On a successfull call, the returned report size must always be
-     * sizeof(SGX_Report);
+     *     1. On a successful call, the returned report size must always be
+     *        sizeof(SGX_Report);
      *     2. Report must contain specified report data or zeros as report data.
      */
 

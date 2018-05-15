@@ -384,12 +384,12 @@ int main(int argc, const char* argv[])
         printf("=== passed TestIntPtrRef(): 2\n");
     }
 
-    // TestBufferOverun()
+    // TestBufferOverrun()
     {
         char buf[8];
-        result = TestBufferOverun(enclave, buf);
+        result = TestBufferOverrun(enclave, buf);
         OE_TEST(result == OE_OK);
-        printf("=== passed TestBufferOverun(): 2\n");
+        printf("=== passed TestBufferOverrun(): 2\n");
     }
 
     // ReturnEnclaveMemory()

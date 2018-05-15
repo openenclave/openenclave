@@ -91,7 +91,7 @@ function [ecall] bool TestIntPtrRef(
     [out, ref, count=n] int* intPtrOut,
     [in] size_t n);
 
-function [ecall] void TestBufferOverun(
+function [ecall] void TestBufferOverrun(
     [out] char src[8]);
 
 function [ecall, unchecked] void* ReturnEnclaveMemory();

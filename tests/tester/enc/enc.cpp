@@ -142,7 +142,7 @@ CopyObjects(struct Object dest[2], const struct Object src[2])
         return -1;
 
 #if 0
-    /* Intentional buffer overun */
+    /* Intentional buffer overrun */
     if (CopyObject(&dest[2], &src[1]) != 0)
         return -1;
 #endif
@@ -283,7 +283,7 @@ OE_EXTERNC bool TestIntPtrRef(int** intPtrOut, size_t n)
     return true;
 }
 
-OE_EXTERNC void TestBufferOverun(char str[8])
+OE_EXTERNC void TestBufferOverrun(char str[8])
 {
     /* Intentional buffer overrun (will be detected by ENC) */
     strlcpy(str, "123456789", 9);

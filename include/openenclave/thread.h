@@ -46,8 +46,8 @@ OE_Thread OE_ThreadSelf(void);
  * This function checks whether two thread identifiers refer to the same
  * thread. Thread identifiers are obtained by calling OE_ThreadSelf().
  *
- * @param thread1 A thread identifer obtained with OE_ThreadSelf().
- * @param thread2 A thread identifer obtained with OE_ThreadSelf().
+ * @param thread1 A thread identifier obtained with OE_ThreadSelf().
+ * @param thread2 A thread identifier obtained with OE_ThreadSelf().
  *
  * @returns Returns non-zero if the thread identifiers are equal.
  *
@@ -167,7 +167,7 @@ typedef struct _OE_Mutex
  * Initialize a mutex.
  *
  * This function initializes a mutex. All mutexes are recursive. Once
- * initialized, multiple threads can use this mutex to synchronoze access
+ * initialized, multiple threads can use this mutex to synchronize access
  * to data. See OE_MutexLock() and OE_MutexUnlock().
  *
  * @param mutex Initialize this mutex.
@@ -315,7 +315,7 @@ int OE_CondSignal(OE_Cond* cond);
  * given condition variable. Waiting threads call OE_CondWait(), which places
  * them on a first-come first-served (FCFS) queue, where they wait to be
  * signaled. OE_CondBroadcast() wakes up all threads on the queue, causing
- * them to return from OE_CondWait(). In enclaves, this function performns
+ * them to return from OE_CondWait(). In enclaves, this function performs
  * an OCALL, where it wakes all waiting threads.
  *
  * @param cond The condition variable to be signaled.
@@ -570,7 +570,7 @@ int OE_ThreadKeyDelete(OE_ThreadKey key);
 /**
  * Sets the value of a thread-specific data entry.
  *
- * This funciton sets the value of a thread-specific data (TSD) entry
+ * This function sets the value of a thread-specific data (TSD) entry
  * associated with the given key.
  *
  * @param key Set the TSD entry associated with this key.

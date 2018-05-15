@@ -158,7 +158,7 @@ typedef struct
     Elf64_Word e_version;
     Elf64_Addr e_entry;     /* entry point virtual address */
     Elf64_Off e_phoff;      /* program header table offset */
-    Elf64_Off e_shoff;      /* (40) section header tabble offset */
+    Elf64_Off e_shoff;      /* (40) section header table offset */
     Elf64_Word e_flags;     /* process-specific flags */
     Elf64_Half e_ehsize;    /* ELF header size */
     Elf64_Half e_phentsize; /* Program header table entry size */

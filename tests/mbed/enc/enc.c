@@ -39,11 +39,11 @@ OE_ECALL void Test(Args* args)
     {
         printf("RUNNING: %s\n", __TEST__);
 
-        /* verbose option is enabled as some of the functionality in
-           helper.function such as redirect output, restore output is trying
-           to assign values to stdout which inturn causes segmentation fault.To
-           avoid this we enabled verbose options such that those function
-           calls will be suppressed */
+        // verbose option is enabled as some of the functionality in
+        // helper.function such as redirect output, restore output is trying
+        // to assign values to stdout which in turn causes segmentation fault.
+        // To avoid this we enabled verbose options such that those function
+        // calls will be suppressed.
 
         static const char* argv[] = {"test", "-v", "NULL"};
         static int argc = sizeof(argv) / sizeof(argv[0]);

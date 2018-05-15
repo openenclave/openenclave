@@ -281,7 +281,7 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
     if (!(crt = mbedtls_calloc(1, sizeof(mbedtls_x509_crt))))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    /* Initialize the certificate struture */
+    /* Initialize the certificate structure */
     mbedtls_x509_crt_init(crt);
 
     /* Read the PEM buffer into DER format */

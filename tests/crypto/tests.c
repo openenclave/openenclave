@@ -959,7 +959,7 @@ static void TestCertMethods()
         OE_TEST(r == OE_OK);
         OE_TEST(length == 2);
 
-        /* Get each certficate in the chain */
+        /* Get each certificate in the chain */
         for (size_t i = 0; i < length; i++)
         {
             OE_Cert cert;

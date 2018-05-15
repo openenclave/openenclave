@@ -1350,7 +1350,7 @@ void _OE_NotifyGdbEnclaveCreation(
 **     - Asks the platform to add the pages to the EPC (EADD/EEXTEND)
 **     - Asks the platform to initialize the enclave (EINIT)
 **
-** When built against the legacy Intel(R) SGX drviver and Intel(R) AESM service
+** When built against the legacy Intel(R) SGX driver and Intel(R) AESM service
 ** dependencies, this method also:
 **     - Maps the enclave memory image onto the driver device (/dev/isgx) for
 **        ECREATE.
