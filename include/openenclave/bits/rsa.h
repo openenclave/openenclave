@@ -122,7 +122,7 @@ OE_Result OE_RSAPublicKeyWritePEM(
  *
  * This function releases the given RSA private key.
  *
- * @param key handle of key being released
+ * @param privateKey handle of key being released
  *
  * @return OE_OK upon success
  */
@@ -133,7 +133,7 @@ OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* privateKey);
  *
  * This function releases the given RSA public key.
  *
- * @param key handle of key being released
+ * @param publicKey handle of key being released
  *
  * @return OE_OK upon success
  */
@@ -212,7 +212,7 @@ OE_Result OE_RSAGenerateKeyPair(
  *
  * @param publicKey key whose modulus is fetched.
  * @param buffer buffer where modulus is written (may be null).
- * @param bufferSize[in,out] buffer size on input; actual size on output.
+ * @param[in,out] bufferSize buffer size on input; actual size on output.
  *
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
@@ -231,7 +231,7 @@ OE_Result OE_RSAPublicKeyGetModulus(
  *
  * @param publicKey key whose exponent is fetched.
  * @param buffer buffer where exponent is written (may be null).
- * @param bufferSize[in,out] buffer size on input; actual size on output.
+ * @param[in,out] bufferSize buffer size on input; actual size on output.
  *
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
@@ -249,7 +249,7 @@ OE_Result OE_RSAPublicKeyGetExponent(
  *
  * @param publicKey1 first key.
  * @param publicKey2 second key.
- * @param equal[out] true if the keys are identical.
+ * @param[out] equal true if the keys are identical.
  *
  * @return OE_OK successful and **equal** is either true or false.
  * @return OE_INVALID_PARAMETER a parameter was invalid.

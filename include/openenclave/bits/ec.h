@@ -127,7 +127,7 @@ OE_Result OE_ECPublicKeyWritePEM(
  *
  * This function releases the given EC private key.
  *
- * @param key handle of key being released
+ * @param privateKey handle of key being released
  *
  * @return OE_OK upon success
  */
@@ -138,7 +138,7 @@ OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey);
  *
  * This function releases the given EC public key.
  *
- * @param key handle of key being released
+ * @param publicKey handle of key being released
  *
  * @return OE_OK upon success
  */
@@ -215,7 +215,7 @@ OE_Result OE_ECGenerateKeyPair(
  *
  * @param publicKey key whose key bytes are fetched.
  * @param buffer buffer where bytes are written (may be null).
- * @param bufferSize[in,out] buffer size on input; actual size on output.
+ * @param[in,out] bufferSize buffer size on input; actual size on output.
  *
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
@@ -233,7 +233,7 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
  *
  * @param publicKey1 first key.
  * @param publicKey2 second key.
- * @param equal[out] true if the keys are identical.
+ * @param[out] equal true if the keys are identical.
  *
  * @return OE_OK successful and **equal** is either true or false.
  * @return OE_INVALID_PARAMETER a parameter was invalid.

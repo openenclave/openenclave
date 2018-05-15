@@ -458,8 +458,8 @@ typedef struct _OE_InitEnclaveArgs
  * error reporting scheme based on its parameters.
  *
  * @param func The number of the function to be called.
- * @param argsIn The input argument passed to the function.
- * @param argsOut The output argument passed back from the function.
+ * @param argIn The input argument passed to the function.
+ * @param argOut The output argument passed back from the function.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
