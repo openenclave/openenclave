@@ -112,8 +112,8 @@ static OE_Result _GenerateKeyPair(
 
         /* Duplicate public key point from the private key */
         if (!(point = EC_POINT_dup(
-            EC_KEY_get0_public_key(ecPrivate), 
-            EC_KEY_get0_group(ecPublic))))
+                  EC_KEY_get0_public_key(ecPrivate),
+                  EC_KEY_get0_group(ecPublic))))
         {
             OE_RAISE(OE_FAILURE);
         }

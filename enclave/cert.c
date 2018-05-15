@@ -232,13 +232,7 @@ static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
 
             /* Verify the next certificate against its predecessor */
             int r = mbedtls_x509_crt_verify(
-                next,
-                p,
-                NULL,
-                NULL,
-                &flags,
-                NULL,
-                NULL);
+                next, p, NULL, NULL, &flags, NULL, NULL);
 
             /* Reinsert these back into the certificate chain */
             next->next = nextNext;

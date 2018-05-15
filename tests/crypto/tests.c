@@ -275,8 +275,8 @@ const uint8_t CERT_EC_KEY[] = {
     0xBB, 0x1B, 0x02, 0xB4, 0xD1, 0x88, 0xCC, 0xDB, 0x1C, 0x38,
 };
 
-#define CHAIN1 \
-    "-----BEGIN CERTIFICATE-----\n" \
+#define CHAIN1                                                           \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
     "MIIDUDCCAjgCCQDNkOt+e8l1aDANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
     "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
     "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
@@ -294,9 +294,9 @@ const uint8_t CERT_EC_KEY[] = {
     "2tPke58FBxkq6GcpldPBin16ux379zM43vYwhEf9yuY6KwBfaABg6Eeftrpcuvt3\n" \
     "1Ibbn4oM2MZixhZXTkKsB3O1OlaZ/kw6qPt7LklLhij1SmvtrrlkWGWoAg8JWYh+\n" \
     "+Wd1yIgPZbbio9b4rgQ6j0mpWaRVPm7cKAt3nfhnMgr1QV+RQnPDTlsO+sieCLZm\n" \
-    "Z/7gtSYO0BbJnQu3dXzP0OBD1SQvQOpjWXwC71ioBn1rbqDl\n" \
-    "-----END CERTIFICATE-----\n" \
-    "-----BEGIN CERTIFICATE-----\n" \
+    "Z/7gtSYO0BbJnQu3dXzP0OBD1SQvQOpjWXwC71ioBn1rbqDl\n"                 \
+    "-----END CERTIFICATE-----\n"                                        \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
     "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n" \
     "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n" \
     "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n" \
@@ -314,11 +314,11 @@ const uint8_t CERT_EC_KEY[] = {
     "bP4X6hn+D5QEBct/befUKcAMZGya46N+m+qWJbH+fplkA2zuZ4NdXav21BsqXRer\n" \
     "JN6pIxewAEhYGt8nd5mjRFJnMfb6IWs49TRxvk7SntVrWktW36TxPTTWsusuCd8v\n" \
     "RGTsgD4AIHqFRVi+e+y32K9xxUL4f27s6wSu+f2z2oAQsrfuhHyFMUZT4NLs4KAk\n" \
-    "QbVRkhj9vYJrIP8rRJ+XV9j/IvfdjQ==\n" \
+    "QbVRkhj9vYJrIP8rRJ+XV9j/IvfdjQ==\n"                                 \
     "-----END CERTIFICATE-----\n"
 
-#define CHAIN2 \
-    "-----BEGIN CERTIFICATE-----\n" \
+#define CHAIN2                                                           \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
     "MIIDUDCCAjgCCQCCncn7BEtWSzANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
     "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
     "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
@@ -336,9 +336,9 @@ const uint8_t CERT_EC_KEY[] = {
     "Y7bM6uvKN5zxs5SeuO7odkYP2jHlSnozMJt7jMENr2sJUscIrn073Z3b0gLcv/Cb\n" \
     "QKQY5OSmyQYYu7ib14SxcpIjdZi1T/PH8hlKaKsdt+OFTzA3t8VdN69jZSubwP+A\n" \
     "gBmiW1o/q+r+pN3woaClk5c0/Dh9t/xJcNth4NSKV/YrLHQLZQ76SvICtKexz1RZ\n" \
-    "wZSQ03dKw87xW3t3f5GS3O75zDNeT4TMeYd4RMRiK6wDt2WE\n" \
-    "-----END CERTIFICATE-----\n" \
-    "-----BEGIN CERTIFICATE-----\n" \
+    "wZSQ03dKw87xW3t3f5GS3O75zDNeT4TMeYd4RMRiK6wDt2WE\n"                 \
+    "-----END CERTIFICATE-----\n"                                        \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
     "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n" \
     "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n" \
     "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n" \
@@ -356,7 +356,7 @@ const uint8_t CERT_EC_KEY[] = {
     "tlb2xW0x2jol9MdQrsaCcORbrEnogP8YGzICMoJQ8OiJed99PS7q+eQ0lW9A7e+o\n" \
     "XJ9PjI7n93Wou0xC4kYOszGPGIZ9X5mEPAKqqCcXsxGfruDrgmulB526hb/lHC/5\n" \
     "1gRic7SCYsyWgxde7R5D+IxxcJNnIWNnt3TUIT8I9fbwonddxA3Qln9tr784dDiB\n" \
-    "/c5qUrfE7k0DrKr4OZvt/xbV9oKMyg==\n" \
+    "/c5qUrfE7k0DrKr4OZvt/xbV9oKMyg==\n"                                 \
     "-----END CERTIFICATE-----\n"
 
 /* This chain is a concatenation of two unrelated chains: CHAIN1 and CHAIN2 */

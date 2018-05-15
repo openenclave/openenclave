@@ -34,7 +34,9 @@ OE_ECALL void Test(void* args_)
     OE_TEST(OE_GetMallocStats(&stats) == OE_OK);
     if (stats.inUseBytes > inUseBytes)
     {
-        fprintf(stderr, "ERROR: memory leaked: %lu bytes\n", 
+        fprintf(
+            stderr,
+            "ERROR: memory leaked: %lu bytes\n",
             stats.inUseBytes - inUseBytes);
         OE_Abort();
     }

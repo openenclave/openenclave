@@ -302,7 +302,7 @@ done:
 }
 
 /* Verify each certificate in the chain against its predecessor. */
-static OE_Result _VerifyWholeChain(STACK_OF(X509)* chain)
+static OE_Result _VerifyWholeChain(STACK_OF(X509) * chain)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -314,7 +314,7 @@ static OE_Result _VerifyWholeChain(STACK_OF(X509)* chain)
         if (i + 1 != n)
         {
             X509* cert = sk_X509_value(chain, i);
-            X509* certNext = sk_X509_value(chain, i+1);
+            X509* certNext = sk_X509_value(chain, i + 1);
 
             if (!cert || !certNext)
                 OE_RAISE(OE_FAILURE);

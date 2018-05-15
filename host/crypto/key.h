@@ -30,7 +30,10 @@ bool OE_PublicKeyIsValid(const OE_PublicKey* impl, uint64_t magic);
 
 void OE_PublicKeyInit(OE_PublicKey* publicKey, EVP_PKEY* pkey, uint64_t magic);
 
-void OE_PrivateKeyInit(OE_PrivateKey* privateKey, EVP_PKEY* pkey, uint64_t magic);
+void OE_PrivateKeyInit(
+    OE_PrivateKey* privateKey,
+    EVP_PKEY* pkey,
+    uint64_t magic);
 
 OE_Result OE_PrivateKeyReadPEM(
     const uint8_t* pemData,
