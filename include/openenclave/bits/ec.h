@@ -26,7 +26,7 @@ typedef struct _OE_ECPublicKey
 } OE_ECPublicKey;
 
 /* Supported CURVE types */
-typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
+typedef enum OE_ECType { OE_EC_TYPE_SECP521R1, OE_EC_TYPE_SECP256R1 } OE_ECType;
 
 /**
  * Reads a private EC key from PEM data
@@ -243,6 +243,13 @@ OE_Result OE_ECPublicKeyEqual(
     const OE_ECPublicKey* publicKey1,
     const OE_ECPublicKey* publicKey2,
     bool* equal);
+
+/* ATTN: */
+OE_Result OE_ECPublicKeyFromBytes(
+    OE_ECPublicKey* publicKey,
+    OE_ECType ecType,
+    const uint8_t* buffer,
+    size_t bufferSize);
 
 OE_EXTERNC_END
 

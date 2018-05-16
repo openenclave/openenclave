@@ -1299,6 +1299,96 @@ static void TestCertWithoutExtensions()
     TestCertExtensions(CERT1, sizeof(CERT1), NULL, 0, "2.5.29.35");
 }
 
+#ifdef TEST_EC_KEY_FROM_BYTES
+static void TestECKeyFromBytes()
+{
+    OE_Result r;
+    OE_ECType ecType = OE_EC_TYPE_SECP256R1;
+
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    /* Test creating an EC key from bytes */
+    {
+        OE_ECPublicKey key;
+        const uint8_t bytes[] = 
+        {
+            /* Tag */
+            0x04,
+            /* X */
+            0X1C, 0X22, 0X31, 0X1C, 0XAA, 0XBA, 0X41, 0X9F, 0XBC, 0X92, 0XB1,
+            0XB2, 0X2B, 0X50, 0X50, 0XC9, 0X2B, 0X67, 0X5A, 0XA3, 0X81, 0XA1,
+            0X4A, 0X6E, 0XA7, 0X75, 0X7F, 0X5F, 0XC2, 0XB7, 0XFB, 0X04,
+            /* Y */
+            0X89, 0XC3, 0XF6, 0XD5, 0XAA, 0XAD, 0X49, 0X35, 0X8A, 0X11, 0XDD,
+            0XDA, 0X6D, 0XC7, 0X63, 0X9F, 0XED, 0XC4, 0XAA, 0X02, 0X66, 0X4C,
+            0X40, 0X10, 0XB9, 0XFE, 0XDD, 0X13, 0XD3, 0XC7, 0X6F, 0X24,
+        };
+
+        r = OE_ECPublicKeyFromBytes(&key, ecType, bytes, sizeof(bytes));
+        OE_TEST(r == OE_OK);
+
+        uint8_t data[1024];
+        size_t size = sizeof(data);
+        r = OE_ECPublicKeyGetKeyBytes(&key, data, &size);
+        OE_TEST(r == OE_OK);
+
+        OE_TEST(sizeof(bytes) == size);
+        OE_TEST(memcmp(data, bytes, size) == 0);
+
+        OE_ECPublicKeyFree(&key);
+    }
+
+    /* Test generating a key and then re-creating it from its bytes */
+    {
+        OE_ECPrivateKey privateKey;
+        OE_ECPublicKey publicKey;
+        OE_ECPublicKey publicKey2;
+        uint8_t signature[1024];
+        size_t signatureSize = sizeof(signature);
+
+        /* Generate a key pair */
+        r = OE_ECGenerateKeyPair(ecType, &privateKey, &publicKey);
+        OE_TEST(r == OE_OK);
+
+        /* Get the bytes from the public key */
+        uint8_t data[1024];
+        size_t size = sizeof(data);
+        r = OE_ECPublicKeyGetKeyBytes(&publicKey, data, &size);
+        OE_TEST(r == OE_OK);
+
+        /* Create a second public key from the key bytes */
+        r = OE_ECPublicKeyFromBytes(&publicKey2, ecType, data, size);
+        OE_TEST(r == OE_OK);
+
+        /* Sign data with private key */
+        r = OE_ECPrivateKeySign(
+            &privateKey,
+            OE_HASH_TYPE_SHA256,
+            &HASH,
+            sizeof(HASH),
+            signature,
+            &signatureSize);
+        OE_TEST(r == OE_OK);
+
+        /* Verify data with key created from bytes of original public key */
+        r = OE_ECPublicKeyVerify(
+            &publicKey2,
+            OE_HASH_TYPE_SHA256,
+            &HASH,
+            sizeof(HASH),
+            signature,
+            signatureSize);
+        OE_TEST(r == OE_OK);
+
+        OE_ECPrivateKeyFree(&privateKey);
+        OE_ECPublicKeyFree(&publicKey);
+        OE_ECPublicKeyFree(&publicKey2);
+    }
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+#endif
+
 static void RunAllTests()
 {
     TestCertWithExtensions();
@@ -1316,4 +1406,7 @@ static void RunAllTests()
     TestRSAWritePrivate();
     TestRSAWritePublic();
     TestSHA256();
+#ifdef TEST_EC_KEY_FROM_BYTES
+    TestECKeyFromBytes();
+#endif
 }

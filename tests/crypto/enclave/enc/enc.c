@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUILD_ENCLAVE
+#define TEST_EC_KEY_FROM_BYTES
 #include "../../tests.c"
 
 OE_ECALL void Test(void* args_)

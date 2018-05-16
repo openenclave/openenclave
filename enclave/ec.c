@@ -16,7 +16,13 @@ OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
 
 /* Curve names, indexed by OE_ECType */
 static const char* _curveNames[] = {
-    "secp521r1" /* OE_EC_TYPE_SECP521R1 */
+    "secp521r1", /* OE_EC_TYPE_SECP521R1 */
+    "secp256r1", /* OE_EC_TYPE_SECP256R1 */
+};
+
+static mbedtls_ecp_group_id _groupIDs[] = {
+    MBEDTLS_ECP_DP_SECP521R1,
+    MBEDTLS_ECP_DP_SECP256R1,
 };
 
 /* Convert ECType to curve name */
@@ -161,16 +167,16 @@ done:
 static OE_Result OE_PublicKeyGetKeyBytes(
     const OE_PublicKey* publicKey,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffexSize)
 {
     OE_Result result = OE_UNEXPECTED;
 
     /* Check for invalid parameters */
-    if (!publicKey || !bufferSize)
+    if (!publicKey || !buffexSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If buffer is null, then bufferSize should be zero */
-    if (!buffer && *bufferSize != 0)
+    /* If buffer is null, then buffexSize should be zero */
+    if (!buffer && *buffexSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Convert public EC key to binary */
@@ -184,7 +190,7 @@ static OE_Result OE_PublicKeyGetKeyBytes(
         if (!ec)
             OE_RAISE(OE_FAILURE);
 
-        if (buffer == NULL || *bufferSize == 0)
+        if (buffer == NULL || *buffexSize == 0)
         {
             // mbedtls_ecp_point_write_binary() needs a non-null buffer longer
             // than zero to correctly calculate the required buffer size.
@@ -194,7 +200,7 @@ static OE_Result OE_PublicKeyGetKeyBytes(
         else
         {
             data = buffer;
-            size = *bufferSize;
+            size = *buffexSize;
         }
 
         int r = mbedtls_ecp_point_write_binary(
@@ -205,7 +211,7 @@ static OE_Result OE_PublicKeyGetKeyBytes(
             data,
             size);
 
-        *bufferSize = requiredSize;
+        *buffexSize = requiredSize;
 
         if (r == MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL)
             OE_RAISE(OE_BUFFER_TOO_SMALL);
@@ -367,10 +373,10 @@ OE_Result OE_ECGenerateKeyPair(
 OE_Result OE_ECPublicKeyGetKeyBytes(
     const OE_ECPublicKey* publicKey,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffexSize)
 {
     return OE_PublicKeyGetKeyBytes(
-        (OE_PublicKey*)publicKey, buffer, bufferSize);
+        (OE_PublicKey*)publicKey, buffer, buffexSize);
 }
 
 OE_Result OE_ECPublicKeyEqual(
@@ -380,4 +386,62 @@ OE_Result OE_ECPublicKeyEqual(
 {
     return OE_PublicKeyEqual(
         (OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2, equal);
+}
+
+OE_Result OE_ECPublicKeyFromBytes(
+    OE_ECPublicKey* publicKey,
+    OE_ECType ecType,
+    const uint8_t* buffer,
+    size_t bufferSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_PublicKey* impl = (OE_PublicKey*)publicKey;
+    const mbedtls_pk_info_t* info;
+
+    if (publicKey)
+        OE_Memset(publicKey, 0, sizeof(OE_ECPublicKey));
+
+    if (impl)
+        mbedtls_pk_init(&impl->pk);
+
+    /* Reject invalid parameters */
+    if (!publicKey || !buffer || !bufferSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Lookup the info for this key type */
+    if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)))
+        OE_RAISE(OE_WRONG_TYPE);
+
+    /* Setup the context for this key type */
+    if (mbedtls_pk_setup(&impl->pk, info) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Initialize the key */
+    {
+        mbedtls_ecp_keypair* ecp = mbedtls_pk_ec(impl->pk);
+
+        if (mbedtls_ecp_group_load(&ecp->grp, _groupIDs[ecType]) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_ecp_point_read_binary(
+            &ecp->grp,
+            &ecp->Q,
+            buffer,
+            bufferSize) != 0)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
+    }
+
+    /* Set the magic number */
+    impl->magic = _PUBLIC_KEY_MAGIC;
+
+    result = OE_OK;
+
+done:
+
+    if (result != OE_OK)
+        mbedtls_pk_free(&impl->pk);
+
+    return result;
 }

@@ -3,6 +3,7 @@
 
 #include "ec.h"
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/hexdump.h>
 #include <openssl/pem.h>
 #include <string.h>
 #include "init.h"
@@ -13,11 +14,13 @@ static const uint64_t _PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
 static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
 
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
-OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
+OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_ECPrivateKey));
 
 /* Curve names, indexed by OE_ECType */
 static const char* _curveNames[] = {
-    "secp521r1" /* OE_EC_TYPE_SECP521R1 */
+    "secp521r1", /* OE_EC_TYPE_SECP521R1 */
+    //"secp256r1", /* OE_EC_TYPE_SECP256R1 */
+    "prime256v1", /* OE_EC_TYPE_SECP256R1 */
 };
 
 /* Convert ECType to curve name */
@@ -412,4 +415,94 @@ OE_Result OE_ECPublicKeyEqual(
 {
     return _PublicKeyEqual(
         (OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2, equal);
+}
+
+OE_Result OE_ECPublicKeyFromBytes(
+    OE_ECPublicKey* publicKey,
+    OE_ECType ecType,
+    const uint8_t* buffer,
+    size_t bufferSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_PublicKey* impl = (OE_PublicKey*)publicKey;
+    const char* curveName;
+    int nid;
+    EC_KEY* ec = NULL;
+    EVP_PKEY* pkey = NULL;
+    EC_POINT* point = NULL;
+
+    if (publicKey)
+        memset(publicKey, 0, sizeof(OE_ECPublicKey));
+
+    /* Initialize OpenSSL */
+    OE_InitializeOpenSSL();
+
+    /* Reject invalid parameters */
+    if (!publicKey || !buffer || !bufferSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the curve name for this EC key type */
+    if (!(curveName = _ECTypeToString(ecType)))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Resolve the NID for this curve name */
+    if ((nid = OBJ_txt2nid(curveName)) == NID_undef)
+        OE_RAISE(OE_FAILURE);
+
+    /* Create the public EC key */
+    {
+        /* Create the public key */
+        if (!(ec = EC_KEY_new_by_curve_name(nid)))
+            OE_RAISE(OE_FAILURE);
+
+        /* Set the EC named-curve flag */
+        EC_KEY_set_asn1_flag(ec, OPENSSL_EC_NAMED_CURVE);
+
+/*
+ATTN:
+*/
+printf("<<<<<<<<<<<<<<<\n");
+        if (!o2i_ECPublicKey(&ec, &buffer, bufferSize))
+            OE_RAISE(OE_FAILURE);
+printf(">>>>>>>>>>>>>>>\n");
+
+        /* Set the public key */
+        if (!EC_KEY_set_public_key(ec, point))
+            OE_RAISE(OE_FAILURE);
+
+        point = NULL;
+    }
+
+    /* Create the PKEY public key wrapper */
+    {
+        /* Create the public key structure */
+        if (!(pkey = EVP_PKEY_new()))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the public key from the generated key pair */
+        if (!EVP_PKEY_assign_EC_KEY(pkey, ec))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the public key */
+        OE_PublicKeyInit(impl, pkey, _PUBLIC_KEY_MAGIC);
+
+        /* Keep these from being freed below */
+        ec = NULL;
+        pkey = NULL;
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (ec)
+        EC_KEY_free(ec);
+
+    if (pkey)
+        EVP_PKEY_free(pkey);
+
+    if (point)
+        EC_POINT_free(point);
+
+    return result;
 }
