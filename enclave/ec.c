@@ -14,27 +14,10 @@ static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
 OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_ECPrivateKey));
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
 
-/* Curve names, indexed by OE_ECType */
-static const char* _curveNames[] = {
-    "secp521r1", /* OE_EC_TYPE_SECP521R1 */
-    "secp256r1", /* OE_EC_TYPE_SECP256R1 */
-};
-
 static mbedtls_ecp_group_id _groupIDs[] = {
     MBEDTLS_ECP_DP_SECP521R1,
     MBEDTLS_ECP_DP_SECP256R1,
 };
-
-/* Convert ECType to curve name */
-static const char* _ECTypeToString(OE_Type type)
-{
-    size_t index = (size_t)type;
-
-    if (index >= OE_COUNTOF(_curveNames))
-        return NULL;
-
-    return _curveNames[index];
-}
 
 static OE_Result _CopyKey(
     mbedtls_pk_context* dest,
@@ -91,7 +74,7 @@ done:
 }
 
 static OE_Result _GenerateKeyPair(
-    OE_ECType type,
+    OE_ECType ecType,
     OE_PrivateKey* privateKey,
     OE_PublicKey* publicKey)
 {
@@ -99,7 +82,6 @@ static OE_Result _GenerateKeyPair(
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
     int curve;
-    const char* curveName;
 
     /* Initialize structures */
     mbedtls_pk_init(&pk);
@@ -114,15 +96,11 @@ static OE_Result _GenerateKeyPair(
     if (!privateKey || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Convert curve type to curve name */
-    if (!(curveName = _ECTypeToString(type)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     /* Resolve the curveName parameter to an EC-curve identifier */
     {
         const mbedtls_ecp_curve_info* info;
 
-        if (!(info = mbedtls_ecp_curve_info_from_name(curveName)))
+        if (!(info = mbedtls_ecp_curve_info_from_grp_id(_groupIDs[ecType])))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         curve = info->grp_id;
