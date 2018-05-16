@@ -245,7 +245,6 @@ OE_Result OE_ECPublicKeyToBytes(
  *
  * @return OE_OK successful and **equal** is either true or false.
  * @return OE_INVALID_PARAMETER a parameter was invalid.
- *
  */
 OE_Result OE_ECPublicKeyEqual(
     const OE_ECPublicKey* publicKey1,
@@ -270,8 +269,9 @@ OE_Result OE_ECPublicKeyEqual(
  * OE_ECPublicKeyFree().
  *
  * @param publicKey key which is initialized.
- * @param buffer bytes from which this key is initialized.
- * @param bufferSize the size of the buffer.
+ * @param ecType type of elliptical curve to create.
+ * @param buffer bytes used to initialize this key.
+ * @param bufferSize size of the buffer.
  *
  * @return OE_OK upon success
  * @return OE_FAILED on failure
