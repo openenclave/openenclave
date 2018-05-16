@@ -5,6 +5,7 @@
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/raise.h>
 #include <openssl/pem.h>
+#include <openssl/obj_mac.h>
 #include <string.h>
 #include "init.h"
 #include "key.h"
@@ -16,21 +17,17 @@ static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
 OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_ECPrivateKey));
 
-/* Curve names, indexed by OE_ECType */
-static const char* _curveNames[] = {
-    "secp521r1",  /* OE_EC_TYPE_SECP521R1 */
-    "prime256v1", /* OE_EC_TYPE_SECP256R1 */
-};
-
-/* Convert ECType to curve name */
-static const char* _ECTypeToString(OE_Type type)
+static int _GetNID(OE_ECType ecType)
 {
-    size_t index = (size_t)type;
-
-    if (index >= OE_COUNTOF(_curveNames))
-        return NULL;
-
-    return _curveNames[index];
+    switch (ecType)
+    {
+        case OE_EC_TYPE_SECP521R1:
+            return NID_secp521r1;
+        case OE_EC_TYPE_SECP256R1:
+            return NID_X9_62_prime256v1;
+        default:
+            return NID_undef;
+    }
 }
 
 static OE_Result _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
@@ -55,7 +52,7 @@ done:
 }
 
 static OE_Result _GenerateKeyPair(
-    OE_ECType type,
+    OE_ECType ecType,
     OE_PrivateKey* privateKey,
     OE_PublicKey* publicKey)
 {
@@ -65,7 +62,6 @@ static OE_Result _GenerateKeyPair(
     EC_KEY* ecPublic = NULL;
     EVP_PKEY* pkeyPrivate = NULL;
     EVP_PKEY* pkeyPublic = NULL;
-    const char* curveName;
     EC_POINT* point = NULL;
 
     if (privateKey)
@@ -81,12 +77,8 @@ static OE_Result _GenerateKeyPair(
     /* Initialize OpenSSL */
     OE_InitializeOpenSSL();
 
-    /* Get the curve name for this EC key type */
-    if (!(curveName = _ECTypeToString(type)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Resolve the NID for this curve name */
-    if ((nid = OBJ_txt2nid(curveName)) == NID_undef)
+    /* Get the NID for this curve type */
+    if ((nid = _GetNID(ecType)) == NID_undef)
         OE_RAISE(OE_FAILURE);
 
     /* Create the private EC key */
@@ -434,7 +426,6 @@ OE_Result OE_ECPublicKeyFromBytes(
 {
     OE_Result result = OE_UNEXPECTED;
     OE_PublicKey* impl = (OE_PublicKey*)publicKey;
-    const char* curveName;
     int nid;
     EC_KEY* ec = NULL;
     EVP_PKEY* pkey = NULL;
@@ -450,12 +441,8 @@ OE_Result OE_ECPublicKeyFromBytes(
     if (!publicKey || !buffer || !bufferSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get the curve name for this EC key type */
-    if (!(curveName = _ECTypeToString(ecType)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Resolve the NID for this curve name */
-    if ((nid = OBJ_txt2nid(curveName)) == NID_undef)
+    /* Get the NID for this curve type */
+    if ((nid = _GetNID(ecType)) == NID_undef)
         OE_RAISE(OE_FAILURE);
 
     /* Create the public EC key */

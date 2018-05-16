@@ -14,10 +14,18 @@ static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
 OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_ECPrivateKey));
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
 
-static mbedtls_ecp_group_id _groupIDs[] = {
-    MBEDTLS_ECP_DP_SECP521R1,
-    MBEDTLS_ECP_DP_SECP256R1,
-};
+static mbedtls_ecp_group_id _GetGroupID(OE_ECType ecType)
+{
+    switch (ecType)
+    {
+        case OE_EC_TYPE_SECP521R1:
+            return MBEDTLS_ECP_DP_SECP521R1;
+        case OE_EC_TYPE_SECP256R1:
+            return MBEDTLS_ECP_DP_SECP256R1;
+        default:
+            return MBEDTLS_ECP_DP_NONE;
+    }
+}
 
 static OE_Result _CopyKey(
     mbedtls_pk_context* dest,
@@ -99,8 +107,12 @@ static OE_Result _GenerateKeyPair(
     /* Resolve the curveName parameter to an EC-curve identifier */
     {
         const mbedtls_ecp_curve_info* info;
+        mbedtls_ecp_group_id groupID;
 
-        if (!(info = mbedtls_ecp_curve_info_from_grp_id(_groupIDs[ecType])))
+        if ((groupID = _GetGroupID(ecType)) == MBEDTLS_ECP_DP_NONE)
+            OE_RAISE(OE_FAILURE);
+
+        if (!(info = mbedtls_ecp_curve_info_from_grp_id(groupID)))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         curve = info->grp_id;
@@ -112,13 +124,13 @@ static OE_Result _GenerateKeyPair(
 
     /* Create key struct */
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_FAILURE);
 
     /* Generate the EC key */
     if (mbedtls_ecp_gen_key(
             curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
     {
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_FAILURE);
     }
 
     /* Initialize the private key parameter */
@@ -397,8 +409,12 @@ OE_Result OE_ECPublicKeyFromBytes(
     /* Initialize the key */
     {
         mbedtls_ecp_keypair* ecp = mbedtls_pk_ec(impl->pk);
+        mbedtls_ecp_group_id groupID;
 
-        if (mbedtls_ecp_group_load(&ecp->grp, _groupIDs[ecType]) != 0)
+        if ((groupID = _GetGroupID(ecType)) == MBEDTLS_ECP_DP_NONE)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_ecp_group_load(&ecp->grp, groupID) != 0)
             OE_RAISE(OE_FAILURE);
 
         if (mbedtls_ecp_point_read_binary(
