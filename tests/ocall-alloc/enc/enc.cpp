@@ -19,13 +19,13 @@
 #include "../args.h"
 #include "wrap.h"
 
-// simple xorshift generator
+// simple xor-shift generator
 struct XorShift
 {
     XorShift(uint32_t seed) : Seed(seed){};
     uint32_t operator()()
     {
-        /* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
+        /* Algorithm "xor" from p. 4 of Marsaglia, "xor-shift RNGs" */
         uint32_t x = Seed;
         x ^= x << 13;
         x ^= x >> 17;

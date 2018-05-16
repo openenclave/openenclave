@@ -4,7 +4,7 @@
 /**
  * \file result.h
  *
- * This file defines OpenEnclave return codes (results).
+ * This file defines Open Enclave return codes (results).
  *
  */
 #ifndef _OE_RESULT_H
