@@ -370,7 +370,7 @@ OE_Result OE_ECGenerateKeyPair(
         type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
 }
 
-OE_Result OE_ECPublicKeyGetKeyBytes(
+OE_Result OE_ECPublicKeyToBytes(
     const OE_ECPublicKey* publicKey,
     uint8_t* buffer,
     size_t* buffexSize)
@@ -424,10 +424,7 @@ OE_Result OE_ECPublicKeyFromBytes(
             OE_RAISE(OE_FAILURE);
 
         if (mbedtls_ecp_point_read_binary(
-            &ecp->grp,
-            &ecp->Q,
-            buffer,
-            bufferSize) != 0)
+                &ecp->grp, &ecp->Q, buffer, bufferSize) != 0)
         {
             OE_RAISE(OE_FAILURE);
         }

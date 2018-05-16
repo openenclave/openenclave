@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include "ec.h"
-#include <openenclave/bits/raise.h>
 #include <openenclave/bits/hexdump.h>
+#include <openenclave/bits/raise.h>
 #include <openssl/pem.h>
 #include <string.h>
 #include "init.h"
@@ -18,7 +18,7 @@ OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_ECPrivateKey));
 
 /* Curve names, indexed by OE_ECType */
 static const char* _curveNames[] = {
-    "secp521r1", /* OE_EC_TYPE_SECP521R1 */
+    "secp521r1",  /* OE_EC_TYPE_SECP521R1 */
     "prime256v1", /* OE_EC_TYPE_SECP256R1 */
 };
 
@@ -409,7 +409,7 @@ OE_Result OE_ECGenerateKeyPair(
         type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
 }
 
-OE_Result OE_ECPublicKeyGetKeyBytes(
+OE_Result OE_ECPublicKeyToBytes(
     const OE_ECPublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)

@@ -913,19 +913,19 @@ static void TestCertMethods()
         r = OE_CertGetECPublicKey(&cert, &key);
         OE_TEST(r == OE_OK);
 
-        /* Test OE_ECPublicKeyGetKeyBytes() */
+        /* Test OE_ECPublicKeyToBytes() */
         {
             uint8_t* data;
             size_t size = 0;
 
             /* Determine the required size of the buffer */
-            r = OE_ECPublicKeyGetKeyBytes(&key, NULL, &size);
+            r = OE_ECPublicKeyToBytes(&key, NULL, &size);
             OE_TEST(r == OE_BUFFER_TOO_SMALL);
             OE_TEST(size == sizeof(CERT_EC_KEY));
 
             /* Fetch the key bytes */
             OE_TEST(data = (uint8_t*)malloc(size));
-            r = OE_ECPublicKeyGetKeyBytes(&key, data, &size);
+            r = OE_ECPublicKeyToBytes(&key, data, &size);
             OE_TEST(r == OE_OK);
 
             /* Does it match expected key? */
@@ -1332,7 +1332,7 @@ static void TestECKeyFromBytes()
         uint8_t data[1024];
         size_t size = sizeof(data);
 
-        r = OE_ECPublicKeyGetKeyBytes(&publicKey, data, &size);
+        r = OE_ECPublicKeyToBytes(&publicKey, data, &size);
         OE_TEST(r == OE_OK);
 
         OE_ECPublicKey key;
@@ -1347,9 +1347,13 @@ static void TestECKeyFromBytes()
     /* Test creating an EC key from bytes */
     {
         OE_ECPublicKey key;
-        const uint8_t bytes[65] = 
-        {
-0x04, 0xB5, 0x5D, 0x06, 0xD6, 0xE5, 0xA2, 0xC7, 0x2D, 0x5D, 0xA0, 0xAE, 0xD5, 0x83, 0x61, 0x4C, 0x51, 0x60, 0xD6, 0xFE, 0x90, 0x8A, 0xC2, 0x67, 0xF7, 0x31, 0x56, 0x2A, 0x6B, 0xBC, 0xB0, 0x8D, 0xD0, 0xC6, 0xBD, 0x1F, 0xCB, 0xAF, 0xE1, 0x84, 0xE6, 0x2E, 0x9E, 0xAE, 0xE0, 0x04, 0x4C, 0xC5, 0x59, 0x44, 0x39, 0x52, 0x62, 0x3B, 0x08, 0xC5, 0xED, 0xBB, 0xC2, 0xD6, 0x50, 0xE7, 0x7B, 0x38, 0xDA, 
+        const uint8_t bytes[65] = {
+            0x04, 0xB5, 0x5D, 0x06, 0xD6, 0xE5, 0xA2, 0xC7, 0x2D, 0x5D, 0xA0,
+            0xAE, 0xD5, 0x83, 0x61, 0x4C, 0x51, 0x60, 0xD6, 0xFE, 0x90, 0x8A,
+            0xC2, 0x67, 0xF7, 0x31, 0x56, 0x2A, 0x6B, 0xBC, 0xB0, 0x8D, 0xD0,
+            0xC6, 0xBD, 0x1F, 0xCB, 0xAF, 0xE1, 0x84, 0xE6, 0x2E, 0x9E, 0xAE,
+            0xE0, 0x04, 0x4C, 0xC5, 0x59, 0x44, 0x39, 0x52, 0x62, 0x3B, 0x08,
+            0xC5, 0xED, 0xBB, 0xC2, 0xD6, 0x50, 0xE7, 0x7B, 0x38, 0xDA,
         };
 
         r = OE_ECPublicKeyFromBytes(&key, ecType, bytes, sizeof(bytes));
@@ -1357,7 +1361,7 @@ static void TestECKeyFromBytes()
 
         uint8_t data[1024];
         size_t size = sizeof(data);
-        r = OE_ECPublicKeyGetKeyBytes(&key, data, &size);
+        r = OE_ECPublicKeyToBytes(&key, data, &size);
         OE_TEST(r == OE_OK);
 
         OE_TEST(sizeof(bytes) == size);
@@ -1381,7 +1385,7 @@ static void TestECKeyFromBytes()
         /* Get the bytes from the public key */
         uint8_t data[1024];
         size_t size = sizeof(data);
-        r = OE_ECPublicKeyGetKeyBytes(&publicKey, data, &size);
+        r = OE_ECPublicKeyToBytes(&publicKey, data, &size);
         OE_TEST(r == OE_OK);
 
         /* Create a second public key from the key bytes */
