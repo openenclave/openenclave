@@ -167,16 +167,16 @@ done:
 static OE_Result OE_PublicKeyGetKeyBytes(
     const OE_PublicKey* publicKey,
     uint8_t* buffer,
-    size_t* buffexSize)
+    size_t* bufferSize)
 {
     OE_Result result = OE_UNEXPECTED;
 
     /* Check for invalid parameters */
-    if (!publicKey || !buffexSize)
+    if (!publicKey || !bufferSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If buffer is null, then buffexSize should be zero */
-    if (!buffer && *buffexSize != 0)
+    /* If buffer is null, then bufferSize should be zero */
+    if (!buffer && *bufferSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Convert public EC key to binary */
@@ -190,7 +190,7 @@ static OE_Result OE_PublicKeyGetKeyBytes(
         if (!ec)
             OE_RAISE(OE_FAILURE);
 
-        if (buffer == NULL || *buffexSize == 0)
+        if (buffer == NULL || *bufferSize == 0)
         {
             // mbedtls_ecp_point_write_binary() needs a non-null buffer longer
             // than zero to correctly calculate the required buffer size.
@@ -200,7 +200,7 @@ static OE_Result OE_PublicKeyGetKeyBytes(
         else
         {
             data = buffer;
-            size = *buffexSize;
+            size = *bufferSize;
         }
 
         int r = mbedtls_ecp_point_write_binary(
@@ -211,7 +211,7 @@ static OE_Result OE_PublicKeyGetKeyBytes(
             data,
             size);
 
-        *buffexSize = requiredSize;
+        *bufferSize = requiredSize;
 
         if (r == MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL)
             OE_RAISE(OE_BUFFER_TOO_SMALL);
@@ -373,10 +373,10 @@ OE_Result OE_ECGenerateKeyPair(
 OE_Result OE_ECPublicKeyToBytes(
     const OE_ECPublicKey* publicKey,
     uint8_t* buffer,
-    size_t* buffexSize)
+    size_t* bufferSize)
 {
     return OE_PublicKeyGetKeyBytes(
-        (OE_PublicKey*)publicKey, buffer, buffexSize);
+        (OE_PublicKey*)publicKey, buffer, bufferSize);
 }
 
 OE_Result OE_ECPublicKeyEqual(
