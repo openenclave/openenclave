@@ -85,12 +85,10 @@ target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 # Additional compilation and link options when using libsgx
 if(USE_LIBSGX)
 message("USE_LIBSGX is set, building oehost with FLC dependency")
-add_dependencies(oehost libsgx_includes)
-target_include_directories(oehost PRIVATE
-    $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libsgx>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/libsgx>
-    )
-target_link_libraries(oehost PRIVATE libsgx_enclave_common libsgxoeql libsgx_urts)
+find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
+find_library(LIBSGX_QE NAMES sgxoeql)
+find_library(LIBSGX_URTS NAMES sgx_urts_ng)
+target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS})
 target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
 endif()
 

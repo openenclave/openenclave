@@ -5,7 +5,7 @@
 
 #include "sgxload.h"
 #if defined(OE_USE_LIBSGX)
-#include <sgx_enclave_common.h>
+#include <libsgx/sgx_enclave_common.h>
 #endif
 
 #if defined(__linux__)

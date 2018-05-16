@@ -7,7 +7,6 @@
 build/
 winbuild/
 
-3rdparty/libsgx/libsgx
 prereqs/aesm/.build
 prereqs/aesm/.prebuilt
 prereqs/aesm/.psw_installer
@@ -16,4 +15,6 @@ prereqs/aesm/.sdk_installer
 prereqs/aesm/dynamic-application-loader-host-interface/
 prereqs/aesm/linux-sgx/
 prereqs/isgx/linux-sgx-driver/
+prereqs/ngsa/libsgx/
 prereqs/packages/.packages
+prereqs/sgx-driver/sgx-driver/

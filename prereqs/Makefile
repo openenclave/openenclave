@@ -1,7 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-DIRS = packages isgx aesm
+ifdef USE_LIBSGX
+	DIRS = sgx-driver ngsa
+else
+	DIRS = packages isgx aesm
+endif
 
 define NL
 
