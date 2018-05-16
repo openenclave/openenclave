@@ -19,7 +19,6 @@ OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_ECPrivateKey));
 /* Curve names, indexed by OE_ECType */
 static const char* _curveNames[] = {
     "secp521r1", /* OE_EC_TYPE_SECP521R1 */
-    //"secp256r1", /* OE_EC_TYPE_SECP256R1 */
     "prime256v1", /* OE_EC_TYPE_SECP256R1 */
 };
 
@@ -230,6 +229,16 @@ static OE_Result _PublicKeyGetKeyBytes(
     memcpy(buffer, data, requiredSize);
     *bufferSize = requiredSize;
 
+#if 1
+    {
+        const unsigned char* ptr = buffer;
+        const size_t size = *bufferSize;
+
+        if (!o2i_ECPublicKey(&ec, &ptr, size))
+            OE_RAISE(OE_FAILURE);
+    }
+#endif
+
     result = OE_OK;
 
 done:
@@ -429,7 +438,7 @@ OE_Result OE_ECPublicKeyFromBytes(
     int nid;
     EC_KEY* ec = NULL;
     EVP_PKEY* pkey = NULL;
-    EC_POINT* point = NULL;
+    EC_GROUP* group = NULL;
 
     if (publicKey)
         memset(publicKey, 0, sizeof(OE_ECPublicKey));
@@ -451,26 +460,17 @@ OE_Result OE_ECPublicKeyFromBytes(
 
     /* Create the public EC key */
     {
-        /* Create the public key */
-        if (!(ec = EC_KEY_new_by_curve_name(nid)))
+        if (!(group = EC_GROUP_new_by_curve_name(nid)))
             OE_RAISE(OE_FAILURE);
 
-        /* Set the EC named-curve flag */
-        EC_KEY_set_asn1_flag(ec, OPENSSL_EC_NAMED_CURVE);
+        if (!(ec = EC_KEY_new()))
+            OE_RAISE(OE_FAILURE);
 
-/*
-ATTN:
-*/
-printf("<<<<<<<<<<<<<<<\n");
+        if (!(EC_KEY_set_group(ec, group)))
+            OE_RAISE(OE_FAILURE);
+
         if (!o2i_ECPublicKey(&ec, &buffer, bufferSize))
             OE_RAISE(OE_FAILURE);
-printf(">>>>>>>>>>>>>>>\n");
-
-        /* Set the public key */
-        if (!EC_KEY_set_public_key(ec, point))
-            OE_RAISE(OE_FAILURE);
-
-        point = NULL;
     }
 
     /* Create the PKEY public key wrapper */
@@ -480,15 +480,18 @@ printf(">>>>>>>>>>>>>>>\n");
             OE_RAISE(OE_FAILURE);
 
         /* Initialize the public key from the generated key pair */
-        if (!EVP_PKEY_assign_EC_KEY(pkey, ec))
-            OE_RAISE(OE_FAILURE);
+        {
+            if (!EVP_PKEY_assign_EC_KEY(pkey, ec))
+                OE_RAISE(OE_FAILURE);
+
+            ec = NULL;
+        }
 
         /* Initialize the public key */
-        OE_PublicKeyInit(impl, pkey, _PUBLIC_KEY_MAGIC);
-
-        /* Keep these from being freed below */
-        ec = NULL;
-        pkey = NULL;
+        {
+            OE_PublicKeyInit(impl, pkey, _PUBLIC_KEY_MAGIC);
+            pkey = NULL;
+        }
     }
 
     result = OE_OK;
@@ -498,11 +501,11 @@ done:
     if (ec)
         EC_KEY_free(ec);
 
+    if (group)
+        EC_GROUP_free(group);
+
     if (pkey)
         EVP_PKEY_free(pkey);
-
-    if (point)
-        EC_POINT_free(point);
 
     return result;
 }

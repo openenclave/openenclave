@@ -932,6 +932,22 @@ static void TestCertMethods()
             OE_TEST(size == sizeof(CERT_EC_KEY));
             OE_TEST(memcmp(CERT_EC_KEY, data, sizeof(CERT_EC_KEY)) == 0);
             free(data);
+
+#if 0
+            /* Can we create a new key from these bytes? */
+            {
+                OE_ECPublicKey newKey;
+
+                r = OE_ECPublicKeyFromBytes(
+                    &newKey, 
+                    OE_EC_TYPE_SECP521R1, 
+                    CERT_EC_KEY, 
+                    sizeof(CERT_EC_KEY));
+                OE_TEST(r == OE_OK);
+            }
+#endif
+
+            /* Free the key */
         }
 
         /* Test OE_ECPublicKeyEqual() */
@@ -1299,7 +1315,6 @@ static void TestCertWithoutExtensions()
     TestCertExtensions(CERT1, sizeof(CERT1), NULL, 0, "2.5.29.35");
 }
 
-#ifdef TEST_EC_KEY_FROM_BYTES
 static void TestECKeyFromBytes()
 {
     OE_Result r;
@@ -1307,21 +1322,34 @@ static void TestECKeyFromBytes()
 
     printf("=== begin %s()\n", __FUNCTION__);
 
+    /* Create a public EC key and get its bytes */
+    {
+        OE_ECPrivateKey privateKey;
+        OE_ECPublicKey publicKey;
+        r = OE_ECGenerateKeyPair(ecType, &privateKey, &publicKey);
+        OE_TEST(r == OE_OK);
+
+        uint8_t data[1024];
+        size_t size = sizeof(data);
+
+        r = OE_ECPublicKeyGetKeyBytes(&publicKey, data, &size);
+        OE_TEST(r == OE_OK);
+
+        OE_ECPublicKey key;
+        r = OE_ECPublicKeyFromBytes(&key, ecType, data, size);
+        OE_TEST(r == OE_OK);
+
+        OE_ECPrivateKeyFree(&privateKey);
+        OE_ECPublicKeyFree(&publicKey);
+        OE_ECPublicKeyFree(&key);
+    }
+
     /* Test creating an EC key from bytes */
     {
         OE_ECPublicKey key;
-        const uint8_t bytes[] = 
+        const uint8_t bytes[65] = 
         {
-            /* Tag */
-            0x04,
-            /* X */
-            0X1C, 0X22, 0X31, 0X1C, 0XAA, 0XBA, 0X41, 0X9F, 0XBC, 0X92, 0XB1,
-            0XB2, 0X2B, 0X50, 0X50, 0XC9, 0X2B, 0X67, 0X5A, 0XA3, 0X81, 0XA1,
-            0X4A, 0X6E, 0XA7, 0X75, 0X7F, 0X5F, 0XC2, 0XB7, 0XFB, 0X04,
-            /* Y */
-            0X89, 0XC3, 0XF6, 0XD5, 0XAA, 0XAD, 0X49, 0X35, 0X8A, 0X11, 0XDD,
-            0XDA, 0X6D, 0XC7, 0X63, 0X9F, 0XED, 0XC4, 0XAA, 0X02, 0X66, 0X4C,
-            0X40, 0X10, 0XB9, 0XFE, 0XDD, 0X13, 0XD3, 0XC7, 0X6F, 0X24,
+0x04, 0xB5, 0x5D, 0x06, 0xD6, 0xE5, 0xA2, 0xC7, 0x2D, 0x5D, 0xA0, 0xAE, 0xD5, 0x83, 0x61, 0x4C, 0x51, 0x60, 0xD6, 0xFE, 0x90, 0x8A, 0xC2, 0x67, 0xF7, 0x31, 0x56, 0x2A, 0x6B, 0xBC, 0xB0, 0x8D, 0xD0, 0xC6, 0xBD, 0x1F, 0xCB, 0xAF, 0xE1, 0x84, 0xE6, 0x2E, 0x9E, 0xAE, 0xE0, 0x04, 0x4C, 0xC5, 0x59, 0x44, 0x39, 0x52, 0x62, 0x3B, 0x08, 0xC5, 0xED, 0xBB, 0xC2, 0xD6, 0x50, 0xE7, 0x7B, 0x38, 0xDA, 
         };
 
         r = OE_ECPublicKeyFromBytes(&key, ecType, bytes, sizeof(bytes));
@@ -1387,7 +1415,6 @@ static void TestECKeyFromBytes()
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
-#endif
 
 static void RunAllTests()
 {
@@ -1406,7 +1433,5 @@ static void RunAllTests()
     TestRSAWritePrivate();
     TestRSAWritePublic();
     TestSHA256();
-#ifdef TEST_EC_KEY_FROM_BYTES
     TestECKeyFromBytes();
-#endif
 }

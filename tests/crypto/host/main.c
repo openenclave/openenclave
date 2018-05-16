@@ -17,6 +17,7 @@
 
 const char* arg0;
 
+#define TEST_EC_KEY_FROM_BYTES
 #include "../tests.c"
 
 int main(int argc, const char* argv[])

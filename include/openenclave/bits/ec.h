@@ -244,7 +244,7 @@ OE_Result OE_ECPublicKeyEqual(
     const OE_ECPublicKey* publicKey2,
     bool* equal);
 
-/* ATTN: */
+/* the point is encoded as z||x||y, where z is the octet 0x04  */
 OE_Result OE_ECPublicKeyFromBytes(
     OE_ECPublicKey* publicKey,
     OE_ECType ecType,
