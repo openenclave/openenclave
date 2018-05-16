@@ -37,7 +37,8 @@ OE_SecureAESCMACEqual(const OE_AESCMAC* a, const OE_AESCMAC* b)
  * @param message Pointer to start of the message.
  * @param messageLength Length of the message in bytes.
  *
- * @param aesCMAC Output parameter where the computed AES-CMAC will be written to.
+ * @param aesCMAC Output parameter where the computed AES-CMAC will be written
+ * to.
  */
 OE_Result OE_AESCMACSign(
     const uint8_t* key,
