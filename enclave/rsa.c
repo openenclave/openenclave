@@ -196,7 +196,7 @@ done:
     return result;
 }
 
-OE_Result OE_PublicKeyGetModulus(
+static OE_Result _PublicKeyGetModulus(
     const OE_PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
@@ -204,7 +204,7 @@ OE_Result OE_PublicKeyGetModulus(
     return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, true);
 }
 
-OE_Result OE_PublicKeyGetExponent(
+static OE_Result _PublicKeyGetExponent(
     const OE_PublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
@@ -361,7 +361,7 @@ OE_Result OE_RSAPublicKeyGetModulus(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return OE_PublicKeyGetModulus((OE_PublicKey*)publicKey, buffer, bufferSize);
+    return _PublicKeyGetModulus((OE_PublicKey*)publicKey, buffer, bufferSize);
 }
 
 OE_Result OE_RSAPublicKeyGetExponent(
@@ -369,7 +369,7 @@ OE_Result OE_RSAPublicKeyGetExponent(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return OE_PublicKeyGetExponent(
+    return _PublicKeyGetExponent(
         (OE_PublicKey*)publicKey, buffer, bufferSize);
 }
 

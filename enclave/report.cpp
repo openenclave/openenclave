@@ -157,6 +157,8 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
     OE_VerifyReportArgs arg;
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
 
+    OE_UNUSED(argOut);
+
     OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, reportBuffer));
 
     OE_CHECK(OE_VerifyReport(reportBuffer, arg.reportSize, NULL));

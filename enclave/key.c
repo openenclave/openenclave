@@ -111,7 +111,7 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
     }
 
     /* Unreachable */
-    return 0;
+    return MBEDTLS_MD_NONE;
 }
 
 /*
