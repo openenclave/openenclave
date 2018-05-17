@@ -26,7 +26,7 @@ typedef struct _OE_ECPublicKey
 } OE_ECPublicKey;
 
 /* Supported CURVE types */
-typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
+typedef enum OE_ECType { OE_EC_TYPE_SECP521R1, OE_EC_TYPE_SECP256R1 } OE_ECType;
 
 /**
  * Reads a private EC key from PEM data
@@ -211,7 +211,15 @@ OE_Result OE_ECGenerateKeyPair(
  * Get the key bytes from an EC public key
  *
  * This function gets the key bytes from an EC public key. The bytes
- * are written to the **buffer** parameter.
+ * are written to the **buffer** parameter. The bytes of are of the
+ * form 'Z|X|Y' where Z is 0x04. For example, when the key type is
+ * OE_EC_TYPE_SECP256R1, there are 65 bytes organized as follows.
+ *
+ *    ```
+ *    Z - 0x04
+ *    X - 32 bytes
+ *    Y - 32 bytes
+ *    ```
  *
  * @param publicKey key whose key bytes are fetched.
  * @param buffer buffer where bytes are written (may be null).
@@ -221,7 +229,7 @@ OE_Result OE_ECGenerateKeyPair(
  * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
  *         the required size.
  */
-OE_Result OE_ECPublicKeyGetKeyBytes(
+OE_Result OE_ECPublicKeyToBytes(
     const OE_ECPublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize);
@@ -237,12 +245,42 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
  *
  * @return OE_OK successful and **equal** is either true or false.
  * @return OE_INVALID_PARAMETER a parameter was invalid.
- *
  */
 OE_Result OE_ECPublicKeyEqual(
     const OE_ECPublicKey* publicKey1,
     const OE_ECPublicKey* publicKey2,
     bool* equal);
+
+/**
+ * Initialize an EC public key from a sequence of bytes.
+ *
+ * This function initializes an EC public key from a sequence of bytes.
+ * The bytes of are of the form 'Z|X|Y' where Z is 0x04. For example,
+ * when the key type is OE_EC_TYPE_SECP256R1, there are 65 bytes organized
+ * as follows.
+ *
+ *    ```
+ *    Z - 0x04
+ *    X - 32 bytes
+ *    Y - 32 bytes
+ *    ```
+ *
+ * The caller is responsible for eventually releasing the key by passing it to
+ * OE_ECPublicKeyFree().
+ *
+ * @param publicKey key which is initialized.
+ * @param ecType type of elliptical curve to create.
+ * @param buffer bytes used to initialize this key.
+ * @param bufferSize size of the buffer.
+ *
+ * @return OE_OK upon success
+ * @return OE_FAILED on failure
+ */
+OE_Result OE_ECPublicKeyFromBytes(
+    OE_ECPublicKey* publicKey,
+    OE_ECType ecType,
+    const uint8_t* buffer,
+    size_t bufferSize);
 
 OE_EXTERNC_END
 

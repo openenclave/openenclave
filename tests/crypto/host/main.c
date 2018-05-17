@@ -5,6 +5,7 @@
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/hexdump.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/random.h>
 #include <openenclave/bits/rsa.h>
 #include <openenclave/bits/sha.h>
@@ -16,6 +17,7 @@
 
 const char* arg0;
 
+#define TEST_EC_KEY_FROM_BYTES
 #include "../tests.c"
 
 int main(int argc, const char* argv[])
