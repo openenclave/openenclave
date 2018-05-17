@@ -15,8 +15,8 @@ ExternalProject_Add(libcxxrt-test
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
         ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build/lib/libcxxrt.a ${PROJECT_BINARY_DIR}/tests/libcxxrt/libcxxrt-test.a
         COMMAND ${CMAKE_COMMAND} -E copy
-        ${PROJECT_SOURCE_DIR}/tests/libcxxrt/run_test.sh ${PROJECT_BINARY_DIR}/tests/libcxxrt/
-    )
+        ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test/run_test.sh ${PROJECT_BINARY_DIR}/tests/libcxxrt/
+)
 
 # add a test-case for each file listed in tests.supported
 include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
@@ -26,34 +26,28 @@ file(STRINGS "tests.supported" alltests)
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "")
 
-    if ("${name}" STREQUAL "test_foreign_exceptions")
-        add_test(tests/libcxxrt/${name} host/libcxxrthost ./enc/libcxxrttest-${name}.signed.so)
+    if("${name}" STREQUAL "test_foreign_exceptions")
+        add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc.signed.so)
     else()
         add_executable(${name}
-           enc/${name}.cpp
-           )
+            enc/${name}.cpp
+        )
         add_dependencies(${name} libcxxrt-test)
         target_compile_options(${name} PRIVATE
             -Wno-error
         )
         target_include_directories(${name} PRIVATE
             ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src
+            ${PROJECT_BINARY_DIR}/output/include/openenclave/libcxx
+            ${PROJECT_BINARY_DIR}/output/include/openenclave/libc
         )
         target_link_libraries(${name} ${PROJECT_BINARY_DIR}/tests/libcxxrt/libcxxrt-test.a gcc_s dl c)
-
-        if ("${name}" STREQUAL "test_exception")
-            target_compile_definitions(${name} PUBLIC TEST_FUNC=test_exceptions)
-        elseif ("${name}" STREQUAL "test_guard")
-            target_compile_definitions(${name} PUBLIC TEST_FUNC=test_guards)
-        elseif ("${name}" STREQUAL "test_typeinfo")
-            target_compile_definitions(${name} PUBLIC TEST_FUNC=test_type_info)
-        endif()
-# Generating excpected output with system-test
+# Generating expected output with system-test
         add_custom_target(test-expected-${name}-output ALL
                 COMMAND ${name} > ${PROJECT_BINARY_DIR}/tests/libcxxrt/exp_${name}_output.log 2>&1
                 DEPENDS ${name})
 # Running Enclave test & comparing with normal test
-        add_test(tests/libcxxrt/${name} run_test.sh host/libcxxrthost ./enc/libcxxrttest-${name}.signed.so exp_${name}_output.log ${name}_output.log)
+        add_test(tests/libcxxrt/${name} run_test.sh "./host/libcxxrt_host ./enc/libcxxrttest-${name}_enc.signed.so" exp_${name}_output.log ${name}_output.log)
     endif()
 endforeach(testcase)
 add_subdirectory(enc)

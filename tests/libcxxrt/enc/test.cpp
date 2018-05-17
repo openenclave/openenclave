@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-/* 
-   This file is a clone of ../../../3rdparty/libcxxrt/libcxxrt/test/test.cc 
-   except that we need the ability to run each of the tests it wraps separately, 
-   so we redefine the main() method. main() function is moved to corresponding   
+/*
+   This file is a clone of ../../../3rdparty/libcxxrt/libcxxrt/test/test.cc
+   except that we need the ability to run each of the tests it wraps separately,
+   so we redefine the main() method. main() function is moved to corresponding
    test file in tests/libcxxrt/enc/<test_name>.cpp
 */
 

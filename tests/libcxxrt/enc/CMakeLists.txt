@@ -18,19 +18,19 @@ target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=Test)
 
 # helper function to create enclave binary
 function(add_libcxxrt_test_enc NAME CXXFILE)
-    add_enclave_executable(libcxxrttest-${NAME} sign.conf private.pem
+    add_enclave_executable(libcxxrttest-${NAME}_enc sign.conf private.pem
         main.cpp
         )
-    target_include_directories(libcxxrttest-${NAME} PRIVATE
+    target_include_directories(libcxxrttest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test
         )
-    target_compile_options(libcxxrttest-${NAME} PRIVATE -Wno-error --std=c++14)
-    target_compile_definitions(libcxxrttest-${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
-    target_link_libraries(libcxxrttest-${NAME} libcxxrttest-support)
-    if ("${NAME}" STREQUAL "test_foreign_exceptions")
-        target_link_libraries(libcxxrttest-${NAME} -Wl,--wrap,_Unwind_RaiseException)
+    target_compile_options(libcxxrttest-${NAME}_enc PRIVATE -Wno-error --std=c++14)
+    target_compile_definitions(libcxxrttest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
+    target_link_libraries(libcxxrttest-${NAME}_enc libcxxrttest-support)
+    if("${NAME}" STREQUAL "test_foreign_exceptions")
+        target_link_libraries(libcxxrttest-${NAME}_enc -Wl,--wrap,_Unwind_RaiseException)
     endif()
 endfunction(add_libcxxrt_test_enc)
 
