@@ -708,6 +708,7 @@ OE_CHECK_SIZE(sizeof(SGX_Report), 432);
 **
 **==============================================================================
 */
+#if defined OE_USE_LIBSGX
 
 OE_PACK_BEGIN
 typedef struct _SGX_Quote
@@ -719,7 +720,7 @@ typedef struct _SGX_Quote
     uint16_t sign_type;
 
     /* (4) */
-    SGX_EPIDGroupID epid_group_id;
+    uint8_t reserved[4];   
 
     /* (8) */
     uint16_t qe_svn;
@@ -728,10 +729,10 @@ typedef struct _SGX_Quote
     uint16_t pce_svn;
 
     /* (12) */
-    uint32_t xeid;
-
-    /* (16) */
-    uint8_t basename[32];
+    uint8_t uuid[16];
+    
+    /* (28) */
+    uint8_t user_data[20];
 
     /* (48) */
     SGX_ReportBody report_body;
@@ -854,6 +855,48 @@ typedef enum _SGX_PCKId {
     SGX_PCK_ID_PCK_CERTIFICATE = 4,
     SGX_PCK_ID_PCK_CERT_CHAIN = 5
 } SGX_PCKId;
+
+#else
+OE_PACK_BEGIN
+typedef struct _SGX_Quote
+{
+    /* (0) */
+    uint16_t version;
+
+    /* (2) */
+    uint16_t sign_type;
+
+    /* (4) */
+    SGX_EPIDGroupID epid_group_id;
+
+    /* (8) */
+    uint16_t qe_svn;
+
+    /* (10) */
+    uint16_t pce_svn;
+
+    /* (12) */
+    uint32_t xeid;
+
+    /* (16) */
+    uint8_t basename[32];
+
+    /* (48) */
+    SGX_ReportBody report_body;
+
+    /* (432) */
+    uint32_t signature_len;
+
+    /* (436) signature array (varying length) */
+    OE_ZERO_SIZED_ARRAY uint8_t signature[];
+} SGX_Quote;
+OE_PACK_END
+
+OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
+
+#endif
+
+
 
 #define SGX_QUOTE_VERSION (3)
 

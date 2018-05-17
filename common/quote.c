@@ -12,6 +12,8 @@
 
 OE_EXTERNC_BEGIN
 
+#ifdef OE_USE_LIBSGX
+
 OE_INLINE uint16_t readUint16(const uint8_t* p)
 {
     return (p[0] << 0) | (p[1] << 8);
@@ -198,5 +200,31 @@ static OE_Result VerityQuoteImpl(
 done:
     return result;
 }
+
+#else
+
+static OE_Result VerityQuoteImpl(
+    const uint8_t* encQuote,
+    uint32_t quoteSize,
+    const uint8_t* encPemPckCertificate,
+    uint32_t pemPckCertificateSize,
+    const uint8_t* encPckCrl,
+    uint32_t encPckCrlSize,
+    const uint8_t* encTcbInfoJson,
+    uint32_t encTcbInfoJsonSize)
+{
+    OE_UNUSED(encQuote);
+    OE_UNUSED(quoteSize);
+    OE_UNUSED(encPemPckCertificate);
+    OE_UNUSED(pemPckCertificateSize);
+    OE_UNUSED(encPckCrl);
+    OE_UNUSED(encPckCrlSize);
+    OE_UNUSED(encTcbInfoJson);
+    OE_UNUSED(encTcbInfoJsonSize);
+    
+    return OE_UNIMPLEMENTED;
+}
+
+#endif
 
 OE_EXTERNC_END
