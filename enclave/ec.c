@@ -2,11 +2,16 @@
 // Licensed under the MIT License.
 
 #include "ec.h"
+#include <mbedtls/asn1.h>
+#include <mbedtls/asn1write.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/enclave.h>
 #include "key.h"
 #include "pem.h"
 #include "random.h"
+
+#define printf OE_HostPrintf
 
 static uint64_t _PRIVATE_KEY_MAGIC = 0xf12c37bb02814eeb;
 static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
@@ -433,6 +438,95 @@ done:
 
     if (result != OE_OK)
         mbedtls_pk_free(&impl->pk);
+
+    return result;
+}
+
+static OE_Result _RawSignatureToASN1(
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize,
+    unsigned char* signature,
+    size_t* signatureSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    mbedtls_mpi r;
+    mbedtls_mpi s;
+    unsigned char buf[MBEDTLS_ECDSA_MAX_LEN];
+    unsigned char* p = buf + sizeof(buf);
+    size_t len = 0;
+
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&s);
+
+    /* Convert raw R data to big number */
+    if (mbedtls_mpi_read_binary(&r, rData, rSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert raw S data to big number */
+    if (mbedtls_mpi_read_binary(&s, sData, sSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Write S to ASN.1 */
+    if ((len = mbedtls_asn1_write_mpi(&p, buf, &s)) < 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Write R to ASN.1 */
+    if ((len = mbedtls_asn1_write_mpi(&p, buf, &r)) < 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Write the length to ASN.1 */
+    if ((len = mbedtls_asn1_write_len(&p, buf, len)) < 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Write the tag to ASN.1 */
+    {
+        unsigned char tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+        if ((len = mbedtls_asn1_write_tag(&p, buf, tag)) < 0)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    OE_Memcpy(signature, p, len);
+    *signatureSize = len;
+
+    result = OE_OK;
+
+done:
+
+    mbedtls_mpi_free(&r);
+    mbedtls_mpi_free(&s);
+
+    return result;
+}
+
+OE_Result OE_ECPublicKeyVerifyRaw(
+    const OE_ECPublicKey* publicKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    unsigned char signature[MBEDTLS_ECDSA_MAX_LEN];
+    size_t signatureSize;
+
+    if (!rData || !rSize || !sData || !sSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(
+        _RawSignatureToASN1(
+            rData, rSize, sData, sSize, signature, &signatureSize));
+
+    OE_CHECK(
+        OE_ECPublicKeyVerify(
+            publicKey, hashType, hashData, hashSize, signature, signatureSize));
+
+done:
 
     return result;
 }

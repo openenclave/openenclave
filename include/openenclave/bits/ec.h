@@ -190,6 +190,17 @@ OE_Result OE_ECPublicKeyVerify(
     const uint8_t* signature,
     size_t signatureSize);
 
+/* ATTN: experimental */
+OE_Result OE_ECPublicKeyVerifyRaw(
+    const OE_ECPublicKey* publicKey,
+    OE_HashType hashType,
+    const void* hashData,
+    size_t hashSize,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize);
+
 /**
  * Generates an EC private-public key pair
  *

@@ -4,8 +4,8 @@
 #include "ec.h"
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/raise.h>
-#include <openssl/pem.h>
 #include <openssl/obj_mac.h>
+#include <openssl/pem.h>
 #include <string.h>
 #include "init.h"
 #include "key.h"
