@@ -695,7 +695,7 @@ typedef struct _SGX_Report
     /* (384) Id of key (?) */
     uint8_t keyid[SGX_KEYID_SIZE];
 
-    /* (416) Message autentication code over fields of this structure */
+    /* (416) Message authentication code over fields of this structure */
     uint8_t mac[SGX_MAC_SIZE];
 } SGX_Report;
 
@@ -829,7 +829,7 @@ typedef struct _SGX_Nonce
 **
 ** OE_ECallPages
 **
-**     The enclave image has ECALL adddress pages that keep the virtual
+**     The enclave image has ECALL address pages that keep the virtual
 **     addresses of all ECALL functions. When the host performs an OCALL, it
 **     passes a function number that the enclave uses as an index into this
 **     table to obtain the virtual address of the corresponding function.

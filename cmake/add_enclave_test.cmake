@@ -12,6 +12,8 @@
 ##			enclave file from Linux build location to windows build location 
 ##			after checking if both host and enclave file exists at specified 
 ##			location.
+##			NOTE : Any additional arguments after ENC_FILE argument are passed
+##			directly to add_test.
 
 function(add_enclave_test TEST_NAME HOST_SUBPATH HOST_FILE ENC_SUBPATH ENC_FILE)
 
@@ -32,14 +34,15 @@ if (ADD_WINDOWS_ENCLAVE_TESTS)
 
 	# add a custom target to ALL so that this step always needs to be run if 
 	# this function is invoked 
-	add_custom_target(${TEST_DIR}.windows ALL
+	get_filename_component(TEST_NAME_WITHOUT_SLASH ${TEST_NAME} NAME)
+	add_custom_target(${TEST_NAME_WITHOUT_SLASH}.windows ALL
 		DEPENDS ${TEST_NAME}_windows_include
 		)
 
-	add_test(${TEST_NAME} ${HOST_SUBPATH}/${HOST_FILE} ${HOST_SUBPATH}/${ENC_FILE})
+	add_test(${TEST_NAME} ${HOST_SUBPATH}/${HOST_FILE} ${HOST_SUBPATH}/${ENC_FILE} ${ARGN})
 
 elseif (UNIX)
-    add_test(${TEST_NAME} ${HOST_SUBPATH}/${HOST_FILE} ${ENC_SUBPATH}/${ENC_FILE})
+    add_test(${TEST_NAME} ${HOST_SUBPATH}/${HOST_FILE} ${ENC_SUBPATH}/${ENC_FILE} ${ARGN})
 endif()
 
 endfunction(add_enclave_test)

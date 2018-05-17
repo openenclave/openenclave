@@ -75,7 +75,7 @@ OE_Result OE_CreateEnclave(
  *
  * This function terminates an enclave and reclaims its resources. This
  * involves unmapping the memory that was mapped by **OE_CreateEnclave()**.
- * Once this is peformed, the enclave can no longer be accessed.
+ * Once this is performed, the enclave can no longer be accessed.
  *
  * @param enclave The instance of the enclave to be terminated.
  *

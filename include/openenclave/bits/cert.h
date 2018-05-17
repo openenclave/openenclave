@@ -4,8 +4,10 @@
 #ifndef _OE_CERT_H
 #define _OE_CERT_H
 
-#include "../result.h"
-#include "../types.h"
+#include <openenclave/result.h>
+#include <openenclave/types.h>
+#include "ec.h"
+#include "rsa.h"
 
 OE_EXTERNC_BEGIN
 
@@ -67,6 +69,8 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert);
  *     ...
  *     -----END CERT-----
  *
+ * Each certificate in the chain is verified with respect to its predecessor in
+ * the chain. If any such verification fails, this function returns an error.
  * The caller is responsible for releasing the certificate chain by passing it
  * to OE_CertChainFree().
  *
@@ -124,6 +128,121 @@ OE_Result OE_CertVerify(
     OE_CertChain* chain,
     OE_CRL* crl, /* ATTN: placeholder for future capability */
     OE_VerifyCertError* error);
+
+/**
+ * Get the RSA public key from a certificate.
+ *
+ * This function gets the RSA public key from the given certificate. If the
+ * the certificate does not contain an RSA public key, this function returns
+ * OE_WRONG_TYPE.
+ *
+ * @param cert the certificate whose RSA public key is sought.
+ * @param publicKey the handle of an RSA public key upon successful return.
+ *     If successful, the caller is responsible for eventually releasing the
+ *     key by passing it to **OE_RSAPublicKeyFree()**.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_WRONG_TYPE the certificate does not contain an RSA public key
+ * @return OE_FAILURE general failure
+ */
+OE_Result OE_CertGetRSAPublicKey(
+    const OE_Cert* cert,
+    OE_RSAPublicKey* publicKey);
+
+/**
+ * Get the EC public key from a certificate.
+ *
+ * This function gets the EC public key from the given certificate. If the
+ * the certificate does not contain an EC public key, this function returns
+ * OE_WRONG_TYPE.
+ *
+ * @param cert the certificate whose EC public key is sought.
+ * @param publicKey the handle of an EC public key upon successful return.
+ *     If successful, the caller is responsible for eventually releasing the
+ *     key by passing it to **OE_ECPublicKeyFree()**.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_WRONG_TYPE the certificate does not contain an EC public key
+ * @return OE_FAILURE general failure
+ */
+OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey);
+
+/**
+ * Get the length of a certificate chain.
+ *
+ * This function gets the length of the certificate chain. This length
+ * is the total number of certificates contained in the chain.
+ *
+ * @param chain the chain whose length is to be determined
+ * @param length the certificate chain length on success or zero on failure
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
+OE_Result OE_CertChainGetLength(const OE_CertChain* chain, size_t* length);
+
+/**
+ * Fetch the certificate with the given index from a certificate chain.
+ *
+ * This function fetches the certificate with the given index from a
+ * certificate chain. The certificate with the highest index is the leaf
+ * certificate. Use OE_CertChainGetLength() to obtain the number of
+ * certificates in the chain.
+ *
+ * @param chain the chain whose certificate is fetched.
+ * @param index the index of the certificate to be fetched.
+ * @param cert the handle of a certificate upon successful return.
+ *     If successful, the caller is responsible for eventually releasing the
+ *     certificate by passing it to **OE_CertFree()**.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_OUT_OF_BOUNDS the certificate index is out of bounds
+ * @return OE_FAILURE general failure
+ */
+OE_Result OE_CertChainGetCert(
+    const OE_CertChain* chain,
+    size_t index,
+    OE_Cert* cert);
+
+/**
+ * Fetch the root certificate from a certificate chain.
+ *
+ * This function fetches the root certificate from a certificate chain. The
+ * root certificate is found by walking from the leaf certificate upwards
+ * until a self-signed certificate is found. A self-signed certificate is one
+ * in which the issuer-name and the subject-name are the same.
+ *
+ * @param chain the chain whose root certificate is fetched.
+ * @param cert the handle of a certificate upon successful return.
+ *     If successful, the caller is responsible for eventually releasing the
+ *     certificate by passing it to **OE_CertFree()**.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_NOT_FOUND no self-signed certificate was found
+ * @return OE_FAILURE general failure
+ */
+OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert);
+
+/**
+ * Fetch the leaf certificate from a certificate chain.
+ *
+ * This function fetches the leaf certificate from a certificate chain.
+ *
+ * @param chain the chain whose leaf certificate is fetched.
+ * @param cert the handle of a certificate upon successful return.
+ *     If successful, the caller is responsible for eventually releasing the
+ *     certificate by passing it to **OE_CertFree()**.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
+OE_Result OE_CertChainGetLeafCert(const OE_CertChain* chain, OE_Cert* cert);
 
 OE_EXTERNC_END
 

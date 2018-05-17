@@ -43,7 +43,7 @@ void OE_InitializeCpuid(uint64_t argIn)
 **     CPUID results compared to a per callout approach, but limits the extent
 **     of emulation to only the cached CPUID leaves, which currently only
 **     includes up to structured extended information. Specifically for leaf 4,
-**     only subleaf 0 i.e. topology of processor cores in a physical pacakage
+**     only subleaf 0 i.e. topology of processor cores in a physical package
 **     is cached. Deterministic Cache Parameters for all levels of the
 **     processor cache are not supported.
 **

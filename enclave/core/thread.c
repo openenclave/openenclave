@@ -493,7 +493,7 @@ int OE_CondBroadcast(OE_Cond* condition)
     for (OE_ThreadData* p = waiters.front; p; p = p_next)
     {
         // p could wake up and immediately use a synchronization
-        // primitve that could modify the next field.
+        // primitive that could modify the next field.
         // Therefore fetch the next thread before waking up p.
         p_next = p->next;
         _ThreadWake(p);

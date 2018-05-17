@@ -589,7 +589,7 @@ static void* _AssignTCS(OE_Enclave* enclave)
 **
 ** _ReleaseTCS()
 **
-**     Decrement the ThreadBinding.count field of the binding assocated with
+**     Decrement the ThreadBinding.count field of the binding associated with
 **     the given TCS. If the field becomes zero, the binding is dissolved.
 **
 **==============================================================================

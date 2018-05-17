@@ -1448,7 +1448,7 @@
  *
  * Uncomment to prevent an error.
  */
-//#define MBEDTLS_X509_ALLOW_UNSUPPORTED_CRITICAL_EXTENSION
+#define MBEDTLS_X509_ALLOW_UNSUPPORTED_CRITICAL_EXTENSION
 
 /**
  * \def MBEDTLS_X509_CHECK_KEY_USAGE
@@ -1776,8 +1776,7 @@
  *
  * This module is used for testing (ssl_client/server).
  */
-//Open Enclave TODO: disable in non-debug builds
-#define MBEDTLS_CERTS_C
+//#define MBEDTLS_CERTS_C
 
 /**
  * \def MBEDTLS_CIPHER_C
@@ -1831,8 +1830,7 @@
  *
  * This module provides debugging functions.
  */
- //Open Enclave TODO: disable in non-debug builds
-#define MBEDTLS_DEBUG_C
+//#define MBEDTLS_DEBUG_C
 
 /**
  * \def MBEDTLS_DES_C

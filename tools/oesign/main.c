@@ -151,7 +151,7 @@ done:
     return rc;
 }
 
-// Options loaded from .conf file. Unitialized fields contain the maximum
+// Options loaded from .conf file. Uninitialized fields contain the maximum
 // integer value for the corresponding type.
 typedef struct _ConfigFileOptions
 {
@@ -567,7 +567,7 @@ int main(int argc, const char* argv[])
         }
     }
 
-    /* Initialize the context paramters for measurement only */
+    /* Initialize the context parameters for measurement only */
     if (OE_SGXInitializeLoadContext(
             &context, OE_SGX_LOAD_TYPE_MEASURE, OE_ENCLAVE_FLAG_DEBUG) != OE_OK)
     {

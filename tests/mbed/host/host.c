@@ -50,13 +50,13 @@ void datafileloc(char* data_file_name, char* path)
     else
         perror("getcwd() error");
     seperator = strstr(
-        path, "build"); /* Find address at which string to be seperated */
+        path, "build"); /* Find address at which string to be separated */
     if (seperator == NULL)
     {
         printf("\n seperator doesn't get the address\n");
     }
 
-    *seperator = '\0'; /* seperating string */
+    *seperator = '\0'; /* separating string */
     strcat(path, tail);
     strcat(path, data_file_name);
 
