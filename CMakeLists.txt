@@ -48,7 +48,7 @@ install(EXPORT openenclave DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
 
 # cpack package handling
 include(InstallRequiredSystemLibraries)
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenEnclave SDK")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open Enclave SDK")
 set(CPACK_PACKAGE_CONTACT "openenclave@microsoft.com")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
@@ -57,6 +57,8 @@ set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 include(CPack)
 
 include(add_enclave_test)
+# define build options that affect cmake across multiple subdirectories
+option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
 
 # finally, add all dirs that matter
 add_subdirectory(host)		# convertable to Windows
@@ -64,8 +66,8 @@ add_subdirectory(include)	# convertable to Windows
 add_subdirectory(tests)
 if (UNIX)
 add_subdirectory(3rdparty)
-add_subdirectory(doc/refman)
 add_subdirectory(debugger)
+add_subdirectory(doc/refman)
 add_subdirectory(enclave)
 add_subdirectory(enclave/core)
 add_subdirectory(idl)

@@ -155,16 +155,6 @@ void HandleThreadWakeWait(OE_Enclave* enclave, uint64_t argIn)
 #endif
 }
 
-void HandleInitQuote(uint64_t argIn)
-{
-    OE_InitQuoteArgs* args = (OE_InitQuoteArgs*)argIn;
-
-    if (!args)
-        return;
-
-    args->result = SGX_InitQuote(&args->targetInfo, &args->epidGroupID);
-}
-
 void HandleGetQuote(uint64_t argIn)
 {
     OE_GetQuoteArgs* args = (OE_GetQuoteArgs*)argIn;
