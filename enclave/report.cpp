@@ -10,7 +10,7 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
 #include <openenclave/types.h>
-#include "../common/quote.c"
+#include "../common/quote.h"
 
 // This file is .cpp in order to use C++ static initialization.
 
@@ -61,7 +61,7 @@ OE_Result OE_VerifyReport(
         //  2. pckCRL
         //  3. tcbJsonInfo
         OE_CHECK(
-            VerityQuoteImpl(report, reportSize, NULL, 0, NULL, 0, NULL, 0));
+            VerifyQuoteImpl(report, reportSize, NULL, 0, NULL, 0, NULL, 0));
     }
     else
     {

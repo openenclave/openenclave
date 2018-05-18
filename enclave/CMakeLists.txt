@@ -4,13 +4,17 @@
 add_library(oeenclave STATIC
     cert.c
     ec.c
-    ecdsa.c
+    ../common/quote.c
     cmac.c
     key.c
     random.c
     report.cpp
     rsa.c
     sha.c)
+
+if(USE_LIBSGX)
+target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
+endif()    
 
 target_link_libraries(oeenclave PUBLIC
     mbedcrypto

@@ -3,12 +3,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <openenclave/bits/cert.h>
-#include <openenclave/bits/ecdsa.h>
+#include <openenclave/bits/ec.h>
+#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sha.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
+#include "quote.h"
 
 OE_EXTERNC_BEGIN
 
@@ -80,7 +82,16 @@ done:
     return result;
 }
 
-static OE_Result VerityQuoteImpl(
+static OE_Result _ReadPublicKey(SGX_ECDSA256Key* key, OE_ECPublicKey* publicKey)
+{
+    uint8_t buf[1 + sizeof(*key)] = {0x04};
+    OE_Memcpy(buf + 1, key, sizeof(*key));
+
+    return OE_ECPublicKeyFromBytes(
+        publicKey, OE_EC_TYPE_SECP256R1, buf, sizeof(buf));
+}
+
+OE_Result VerifyQuoteImpl(
     const uint8_t* encQuote,
     uint32_t quoteSize,
     const uint8_t* encPemPckCertificate,
@@ -98,9 +109,13 @@ static OE_Result VerityQuoteImpl(
     OE_Cert pckCert = {0};
     OE_SHA256Context sha256Ctx = {};
     OE_SHA256 sha256 = {0};
+    OE_ECPublicKey attestationKey = {0};
+    uint8_t asn1Signature[256];
+    uint64_t asn1SignatureSize = sizeof(asn1Signature);
+
     uint8_t found = 0;
     uint16_t i;
-
+    
     OE_CHECK(
         _ParseQuote(
             encQuote,
@@ -187,12 +202,33 @@ static OE_Result VerityQuoteImpl(
                 sizeof(sha256)))
             OE_RAISE(OE_VERIFY_FAILED);
 
+        // OE_CHECK(
+        //     OE_ECDSA256_SHA_Verify(
+        //         (const OE_ECDSA256Key*)&quoteAuthData->attestationKey,
+        //         sgxQuote,
+        //         SGX_QUOTE_SIGNED_DATA_SIZE,
+        //         (const OE_ECDSA256Signature*)&quoteAuthData->signature));        
         OE_CHECK(
-            OE_ECDSA256_SHA_Verify(
-                (const OE_ECDSA256Key*)&quoteAuthData->attestationKey,
-                sgxQuote,
-                SGX_QUOTE_SIGNED_DATA_SIZE,
-                (const OE_ECDSA256Signature*)&quoteAuthData->signature));
+            _ReadPublicKey(&quoteAuthData->attestationKey, &attestationKey));
+        
+        OE_CHECK(OE_SHA256Init(&sha256Ctx));
+        OE_CHECK(
+            OE_SHA256Update(&sha256Ctx, sgxQuote, SGX_QUOTE_SIGNED_DATA_SIZE));
+        OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));        
+   
+        OE_CHECK(OE_ECSignatureWriteASN1(
+            asn1Signature, &asn1SignatureSize, 
+            quoteAuthData->signature.r, sizeof(quoteAuthData->signature.r),
+            quoteAuthData->signature.s, sizeof(quoteAuthData->signature.s)));
+
+        OE_CHECK(
+            OE_ECPublicKeyVerify(
+                &attestationKey,
+                OE_HASH_TYPE_SHA256,
+                (uint8_t*) &sha256,
+                sizeof(sha256),
+                asn1Signature,
+                asn1SignatureSize));        
     }
 
     result = OE_OK;
@@ -203,7 +239,7 @@ done:
 
 #else
 
-static OE_Result VerityQuoteImpl(
+OE_Result VerifyQuoteImpl(
     const uint8_t* encQuote,
     uint32_t quoteSize,
     const uint8_t* encPemPckCertificate,
@@ -221,7 +257,7 @@ static OE_Result VerityQuoteImpl(
     OE_UNUSED(encPckCrlSize);
     OE_UNUSED(encTcbInfoJson);
     OE_UNUSED(encTcbInfoJsonSize);
-    
+
     return OE_UNIMPLEMENTED;
 }
 

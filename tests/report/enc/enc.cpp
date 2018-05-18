@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <openenclave/bits/cert.h>
-#include <openenclave/bits/ecdsa.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
-#include <openenclave/bits/sha.h>
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
-#include "../../../common/quote.c"
+#include "../../../common/quote.h"
 #include "../common/args.h"
 #include "../common/tests.cpp"
 
@@ -73,6 +70,7 @@ OE_ECALL void VerifyQuote(void* args_)
     // Take snapshot of hostArg to prevent TOCTOU issues.
     OE_CHECK(OE_CopyInput(encArg, hostArg, sizeof(*encArg), sizeof(*encArg)));
 
+
     // TODO: How to manage memory for all these buffers?
     // Max size vs actual size vs where to allocate, function stack
     // vs explicit static buffer etc
@@ -116,7 +114,7 @@ OE_ECALL void VerifyQuote(void* args_)
     // TODO:
     //      Quote validation
     OE_CHECK(
-        VerityQuoteImpl(
+        VerifyQuoteImpl(
             encQuote,
             encArg->quoteSize,
             encPemPckCertificate,

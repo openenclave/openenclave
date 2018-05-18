@@ -720,7 +720,7 @@ typedef struct _SGX_Quote
     uint16_t sign_type;
 
     /* (4) */
-    uint8_t reserved[4];   
+    uint8_t reserved[4];
 
     /* (8) */
     uint16_t qe_svn;
@@ -730,7 +730,7 @@ typedef struct _SGX_Quote
 
     /* (12) */
     uint8_t uuid[16];
-    
+
     /* (28) */
     uint8_t user_data[20];
 
@@ -895,8 +895,6 @@ OE_PACK_END
 OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
 
 #endif
-
-
 
 #define SGX_QUOTE_VERSION (3)
 

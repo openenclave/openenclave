@@ -11,8 +11,8 @@
 #include <fstream>
 #include <streambuf>
 #include <vector>
-#include "../common/args.h"
 #include "../../../host/quote.h"
+#include "../common/args.h"
 #include "../common/tests.cpp"
 
 #define SKIP_RETURN_CODE 2
