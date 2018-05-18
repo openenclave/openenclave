@@ -190,17 +190,6 @@ OE_Result OE_ECPublicKeyVerify(
     const uint8_t* signature,
     size_t signatureSize);
 
-/* ATTN: experimental */
-OE_Result OE_ECPublicKeyVerifyRaw(
-    const OE_ECPublicKey* publicKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    const uint8_t* rData,
-    size_t rSize,
-    const uint8_t* sData,
-    size_t sSize);
-
 /**
  * Generates an EC private-public key pair
  *
@@ -294,5 +283,23 @@ OE_Result OE_ECPublicKeyFromBytes(
     size_t bufferSize);
 
 OE_EXTERNC_END
+
+/* ATTN: experimental */
+OE_Result OE_ECSignatureToASN1(
+    unsigned char* signature,
+    size_t* signatureSize,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize);
+
+/* ATTN: experimental */
+OE_Result OE_ECSignatureFromASN1(
+    const uint8_t* signature,
+    size_t signatureSize,
+    uint8_t* rData,
+    size_t* rSize,
+    uint8_t* sData,
+    size_t* sSize);
 
 #endif /* _OE_EC_H */

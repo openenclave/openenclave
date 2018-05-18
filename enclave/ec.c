@@ -442,19 +442,20 @@ done:
     return result;
 }
 
-static OE_Result _RawSignatureToASN1(
+OE_Result OE_ECSignatureToASN1(
+    unsigned char* signature,
+    size_t* signatureSize,
     const uint8_t* rData,
     size_t rSize,
     const uint8_t* sData,
-    size_t sSize,
-    unsigned char* signature,
-    size_t* signatureSize)
+    size_t sSize)
 {
     OE_Result result = OE_UNEXPECTED;
     mbedtls_mpi r;
     mbedtls_mpi s;
     unsigned char buf[MBEDTLS_ECDSA_MAX_LEN];
     unsigned char* p = buf + sizeof(buf);
+    int n;
     size_t len = 0;
 
     mbedtls_mpi_init(&r);
@@ -469,23 +470,37 @@ static OE_Result _RawSignatureToASN1(
         OE_RAISE(OE_FAILURE);
 
     /* Write S to ASN.1 */
-    if ((len = mbedtls_asn1_write_mpi(&p, buf, &s)) < 0)
-        OE_RAISE(OE_FAILURE);
+    {
+        if ((n = mbedtls_asn1_write_mpi(&p, buf, &s)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
 
     /* Write R to ASN.1 */
-    if ((len = mbedtls_asn1_write_mpi(&p, buf, &r)) < 0)
-        OE_RAISE(OE_FAILURE);
+    {
+        if ((n = mbedtls_asn1_write_mpi(&p, buf, &r)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
 
     /* Write the length to ASN.1 */
-    if ((len = mbedtls_asn1_write_len(&p, buf, len)) < 0)
-        OE_RAISE(OE_FAILURE);
+    {
+        if ((n = mbedtls_asn1_write_len(&p, buf, len)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
 
     /* Write the tag to ASN.1 */
     {
         unsigned char tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
 
-        if ((len = mbedtls_asn1_write_tag(&p, buf, tag)) < 0)
+        if ((n = mbedtls_asn1_write_tag(&p, buf, tag)) < 0)
             OE_RAISE(OE_FAILURE);
+
+        len += n;
     }
 
     OE_Memcpy(signature, p, len);
@@ -501,32 +516,80 @@ done:
     return result;
 }
 
-OE_Result OE_ECPublicKeyVerifyRaw(
-    const OE_ECPublicKey* publicKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    const uint8_t* rData,
-    size_t rSize,
-    const uint8_t* sData,
-    size_t sSize)
+OE_Result OE_ECSignatureFromASN1(
+    const uint8_t* signature,
+    size_t signatureSize,
+    uint8_t* rData,
+    size_t* rSize,
+    uint8_t* sData,
+    size_t* sSize)
 {
     OE_Result result = OE_UNEXPECTED;
-    unsigned char signature[MBEDTLS_ECDSA_MAX_LEN];
-    size_t signatureSize;
+    mbedtls_mpi r;
+    mbedtls_mpi s;
+    uint8_t* p = (uint8_t*)signature;
+    const uint8_t* end = signature + signatureSize;
+    size_t len;
 
-    if (!rData || !rSize || !sData || !sSize)
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&s);
+
+    if (!signature || !signatureSize || !rSize || !sSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(
-        _RawSignatureToASN1(
-            rData, rSize, sData, sSize, signature, &signatureSize));
+    /* Parse the tag */
+    {
+        unsigned char tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
 
-    OE_CHECK(
-        OE_ECPublicKeyVerify(
-            publicKey, hashType, hashData, hashSize, signature, signatureSize));
+        if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        if (p + len != end)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    /* Parse R */
+    if (mbedtls_asn1_get_mpi(&p, end, &r) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Parse S */
+    if (mbedtls_asn1_get_mpi(&p, end, &s) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Check that output buffers are big enough */
+    {
+        const size_t rBytes = mbedtls_mpi_size(&r);
+        const size_t sBytes = mbedtls_mpi_size(&s);
+
+        if (rBytes > *rSize || sBytes > *sSize)
+        {
+            *rSize = rBytes;
+            *sSize = sBytes;
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        }
+
+        *rSize = rBytes;
+        *sSize = sBytes;
+    }
+
+    /* Fail if buffers are null */
+    if (!rData || !rSize)
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert R to binary */
+    if (mbedtls_mpi_write_binary(&r, rData, *rSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert S to binary */
+    if (mbedtls_mpi_write_binary(&s, sData, *sSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    result = OE_OK;
 
 done:
+
+    mbedtls_mpi_free(&r);
+    mbedtls_mpi_free(&s);
 
     return result;
 }
