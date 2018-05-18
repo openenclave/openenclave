@@ -590,9 +590,7 @@ static void TestECSignAndVerify()
         uint8_t sData[1024];
         size_t sSize = sizeof(sData);
 
-        OE_HexDump(signature, signatureSize);
-
-        r = OE_ECSignatureFromASN1(
+        r = OE_ECSignatureReadASN1(
             signature, 
             signatureSize, 
             rData, 
@@ -605,7 +603,7 @@ static void TestECSignAndVerify()
 
         uint8_t data[signatureSize];
         size_t size = sizeof(data);
-        r = OE_ECSignatureToASN1(data, &size, rData, rSize, sData, sSize);
+        r = OE_ECSignatureWriteASN1(data, &size, rData, rSize, sData, sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(signatureSize == size);
         OE_TEST(memcmp(signature, data, signatureSize) == 0);

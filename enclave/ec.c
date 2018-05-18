@@ -442,9 +442,9 @@ done:
     return result;
 }
 
-OE_Result OE_ECSignatureToASN1(
-    unsigned char* signature,
-    size_t* signatureSize,
+OE_Result OE_ECSignatureWriteASN1(
+    unsigned char* asn1,
+    size_t* asn1Size,
     const uint8_t* rData,
     size_t rSize,
     const uint8_t* sData,
@@ -503,8 +503,15 @@ OE_Result OE_ECSignatureToASN1(
         len += n;
     }
 
-    OE_Memcpy(signature, p, len);
-    *signatureSize = len;
+    /* Check that buffer is big enough */
+    if (len > *asn1Size)
+    {
+        *asn1Size = len;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    OE_Memcpy(asn1, p, len);
+    *asn1Size = len;
 
     result = OE_OK;
 
@@ -516,9 +523,9 @@ done:
     return result;
 }
 
-OE_Result OE_ECSignatureFromASN1(
-    const uint8_t* signature,
-    size_t signatureSize,
+OE_Result OE_ECSignatureReadASN1(
+    const uint8_t* asn1,
+    size_t asn1Size,
     uint8_t* rData,
     size_t* rSize,
     uint8_t* sData,
@@ -527,14 +534,14 @@ OE_Result OE_ECSignatureFromASN1(
     OE_Result result = OE_UNEXPECTED;
     mbedtls_mpi r;
     mbedtls_mpi s;
-    uint8_t* p = (uint8_t*)signature;
-    const uint8_t* end = signature + signatureSize;
+    uint8_t* p = (uint8_t*)asn1;
+    const uint8_t* end = asn1 + asn1Size;
     size_t len;
 
     mbedtls_mpi_init(&r);
     mbedtls_mpi_init(&s);
 
-    if (!signature || !signatureSize || !rSize || !sSize)
+    if (!asn1 || !asn1Size || !rSize || !sSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse the tag */
