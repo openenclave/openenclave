@@ -108,7 +108,7 @@
  * Comment if your system does not support time functions
  */
 //Open Enclave TODO: enable when enclave secure time is available: issue #182
-//#define MBEDTLS_HAVE_TIME
+#define MBEDTLS_HAVE_TIME
 
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
@@ -121,7 +121,7 @@
  * Comment if your system does not have a correct clock.
  */
 //Open Enclave TODO: enable when enclave secure time is available: issue #182
-//#define MBEDTLS_HAVE_TIME_DATE
+#define MBEDTLS_HAVE_TIME_DATE
 
 /**
  * \def MBEDTLS_PLATFORM_MEMORY
