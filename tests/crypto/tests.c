@@ -582,6 +582,34 @@ static void TestECSignAndVerify()
         OE_ECPublicKeyFree(&key);
     }
 
+#ifdef BUILD_ENCLAVE
+    /* Convert signature to raw form and then back to ASN.1 */
+    {
+        uint8_t rData[1024];
+        size_t rSize = sizeof(rData);
+        uint8_t sData[1024];
+        size_t sSize = sizeof(sData);
+
+        r = OE_ECSignatureReadASN1(
+            signature, 
+            signatureSize, 
+            rData, 
+            &rSize,
+            sData, 
+            &sSize);
+        OE_TEST(r == OE_OK);
+        OE_TEST(rSize == 32);
+        OE_TEST(sSize == 32);
+
+        uint8_t data[signatureSize];
+        size_t size = sizeof(data);
+        r = OE_ECSignatureWriteASN1(data, &size, rData, rSize, sData, sSize);
+        OE_TEST(r == OE_OK);
+        OE_TEST(signatureSize == size);
+        OE_TEST(memcmp(signature, data, signatureSize) == 0);
+    }
+#endif
+
     free(signature);
 
     printf("=== passed TestECSignAndVerify()\n");

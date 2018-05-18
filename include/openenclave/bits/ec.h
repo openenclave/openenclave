@@ -284,4 +284,22 @@ OE_Result OE_ECPublicKeyFromBytes(
 
 OE_EXTERNC_END
 
+/* ATTN: experimental */
+OE_Result OE_ECSignatureWriteASN1(
+    unsigned char* asn1,
+    size_t* asn1Size,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize);
+
+/* ATTN: experimental */
+OE_Result OE_ECSignatureReadASN1(
+    const uint8_t* asn1,
+    size_t asn1Size,
+    uint8_t* rData,
+    size_t* rSize,
+    uint8_t* sData,
+    size_t* sSize);
+
 #endif /* _OE_EC_H */
