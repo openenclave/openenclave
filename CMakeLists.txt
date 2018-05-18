@@ -58,6 +58,9 @@ include(CPack)
 
 # define build options that affect cmake across multiple subdirectories
 option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
+if (USE_LIBSGX AND WIN32)
+message(FATAL_ERROR "USE_LIBSGX is not supported on Windows. Disable this when calling cmake with -DUSE_LIBSGX=OFF")
+endif()
 
 include(add_enclave_test)
 
