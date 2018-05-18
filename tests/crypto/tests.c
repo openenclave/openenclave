@@ -591,12 +591,7 @@ static void TestECSignAndVerify()
         size_t sSize = sizeof(sData);
 
         r = OE_ECSignatureReadASN1(
-            signature, 
-            signatureSize, 
-            rData, 
-            &rSize,
-            sData, 
-            &sSize);
+            signature, signatureSize, rData, &rSize, sData, &sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(rSize == 32);
         OE_TEST(sSize == 32);

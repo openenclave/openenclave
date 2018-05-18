@@ -70,7 +70,6 @@ OE_ECALL void VerifyQuote(void* args_)
     // Take snapshot of hostArg to prevent TOCTOU issues.
     OE_CHECK(OE_CopyInput(encArg, hostArg, sizeof(*encArg), sizeof(*encArg)));
 
-
     // TODO: How to manage memory for all these buffers?
     // Max size vs actual size vs where to allocate, function stack
     // vs explicit static buffer etc

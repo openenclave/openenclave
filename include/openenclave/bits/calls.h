@@ -83,6 +83,7 @@ typedef enum _OE_Func {
     OE_FUNC_GET_REPORT = 0x04100000,
     OE_FUNC_GET_QE_TARGET_INFO = 0x04200000,
     OE_FUNC_GET_QUOTE = 0x04300000,
+    OE_FUNC_GET_REVOCATION_INFO = 0x04400000,
     OE_FUNC_THREAD_WAKE = 0x05000000,
     OE_FUNC_THREAD_WAIT = 0x06000000,
     OE_FUNC_THREAD_WAKE_WAIT = 0x07000000,
@@ -293,6 +294,36 @@ typedef struct _OE_VerifyReportArgs
     uint8_t* report;     /* in */
     uint32_t reportSize; /* in */
 } OE_VerifyReportArgs;
+
+/*
+**==============================================================================
+**
+** OE_VerifyReportArgs
+**
+**==============================================================================
+*/
+
+typedef struct _OE_GetRevocationInfoArgs
+{
+    OE_Result result; /* out */
+
+    uint32_t version;
+
+    uint8_t* tcbInfo;     // Intel-signed TCB info structure
+    uint32_t tcbInfoSize; // size of tcb_info
+
+    uint8_t* tcbIssuerChain;     // PEM-encoded certificate chain
+    uint32_t tcbIssuerChainSize; // size of issuer chain for TCB info
+
+    uint8_t* crl;     // RFC 5280 CRL
+    uint32_t crlSize; // size of crl_data
+
+    uint8_t* crlIssuerChain;     // PEM-encoded certificate chain
+    uint32_t crlIssuerChainSize; // size of issuer chain for the CRL
+
+    void* allocatedMemory; // Memory allocated on the host.
+                           // To be freed via OE_HostFree.
+} OE_GetRevocationInfoArgs;
 
 /*
 **==============================================================================

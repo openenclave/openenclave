@@ -2,17 +2,15 @@
 // Licensed under the MIT License.
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include "quote.h"
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sha.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
-#include "quote.h"
 
-OE_EXTERNC_BEGIN
 
 #ifdef OE_USE_LIBSGX
 
@@ -115,7 +113,7 @@ OE_Result VerifyQuoteImpl(
 
     uint8_t found = 0;
     uint16_t i;
-    
+
     OE_CHECK(
         _ParseQuote(
             encQuote,
@@ -207,28 +205,32 @@ OE_Result VerifyQuoteImpl(
         //         (const OE_ECDSA256Key*)&quoteAuthData->attestationKey,
         //         sgxQuote,
         //         SGX_QUOTE_SIGNED_DATA_SIZE,
-        //         (const OE_ECDSA256Signature*)&quoteAuthData->signature));        
+        //         (const OE_ECDSA256Signature*)&quoteAuthData->signature));
         OE_CHECK(
             _ReadPublicKey(&quoteAuthData->attestationKey, &attestationKey));
-        
+
         OE_CHECK(OE_SHA256Init(&sha256Ctx));
         OE_CHECK(
             OE_SHA256Update(&sha256Ctx, sgxQuote, SGX_QUOTE_SIGNED_DATA_SIZE));
-        OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));        
-   
-        OE_CHECK(OE_ECSignatureWriteASN1(
-            asn1Signature, &asn1SignatureSize, 
-            quoteAuthData->signature.r, sizeof(quoteAuthData->signature.r),
-            quoteAuthData->signature.s, sizeof(quoteAuthData->signature.s)));
+        OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
+
+        OE_CHECK(
+            OE_ECSignatureWriteASN1(
+                asn1Signature,
+                &asn1SignatureSize,
+                quoteAuthData->signature.r,
+                sizeof(quoteAuthData->signature.r),
+                quoteAuthData->signature.s,
+                sizeof(quoteAuthData->signature.s)));
 
         OE_CHECK(
             OE_ECPublicKeyVerify(
                 &attestationKey,
                 OE_HASH_TYPE_SHA256,
-                (uint8_t*) &sha256,
+                (uint8_t*)&sha256,
                 sizeof(sha256),
                 asn1Signature,
-                asn1SignatureSize));        
+                asn1SignatureSize));
     }
 
     result = OE_OK;
@@ -262,5 +264,3 @@ OE_Result VerifyQuoteImpl(
 }
 
 #endif
-
-OE_EXTERNC_END
