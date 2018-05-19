@@ -3,6 +3,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include "quote.h"
+#include <openenclave/bits/calls.h>
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
@@ -11,6 +12,19 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
 
+#ifdef OE_BUILD_ENCLAVE
+
+OE_Result OE_GetRevocationInfo(OE_GetRevocationInfoArgs* revocationInfo)
+{
+    OE_HostPrintf("Fetching revocation info from provider via host\n");
+    return OE_OCall(
+        OE_FUNC_GET_REVOCATION_INFO,
+        (uint64_t)revocationInfo,
+        NULL,
+        OE_OCALL_FLAG_NOT_REENTRANT);
+}
+
+#endif
 
 #ifdef OE_USE_LIBSGX
 
@@ -110,6 +124,7 @@ OE_Result VerifyQuoteImpl(
     OE_ECPublicKey attestationKey = {0};
     uint8_t asn1Signature[256];
     uint64_t asn1SignatureSize = sizeof(asn1Signature);
+    OE_GetRevocationInfoArgs revocationInfo = {0};
 
     uint8_t found = 0;
     uint16_t i;
@@ -122,6 +137,22 @@ OE_Result VerifyQuoteImpl(
             &quoteAuthData,
             &qeAuthData,
             &qeCertData));
+
+    // If encPckCrl or encTcbInfoJson is not provided, 
+    // fetch it from provider via host.
+    if (encPckCrl == 0 || encTcbInfoJson == 0) {
+        OE_CHECK(OE_GetRevocationInfo(&revocationInfo));
+
+        // TODO: Copy buffers to enclave memory.
+        encPckCrl = revocationInfo.crl;
+        encPckCrlSize = revocationInfo.crlSize;
+
+        encTcbInfoJson = revocationInfo.tcbInfo;
+        encTcbInfoJsonSize = revocationInfo.tcbInfoSize;
+    }
+
+    if (encPckCrl == 0 || encTcbInfoJson == 0)
+        OE_RAISE(OE_FAILURE);
 
     // 1. If PckCertificate is provided. Parse and Validate it.
     // This must do:
@@ -236,6 +267,10 @@ OE_Result VerifyQuoteImpl(
     result = OE_OK;
 
 done:
+    if (revocationInfo.memoryAllocatedInHost) {
+        OE_HostFree(revocationInfo.memoryAllocatedInHost);
+    }
+
     return result;
 }
 

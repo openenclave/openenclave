@@ -321,8 +321,7 @@ typedef struct _OE_GetRevocationInfoArgs
     uint8_t* crlIssuerChain;     // PEM-encoded certificate chain
     uint32_t crlIssuerChainSize; // size of issuer chain for the CRL
 
-    void* allocatedMemory; // Memory allocated on the host.
-                           // To be freed via OE_HostFree.
+    void* memoryAllocatedInHost; // To be freed via OE_HostFree.
 } OE_GetRevocationInfoArgs;
 
 /*

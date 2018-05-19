@@ -118,9 +118,9 @@ OE_ECALL void VerifyQuote(void* args_)
             encArg->quoteSize,
             encPemPckCertificate,
             encArg->pemPckCertificateSize,
-            encPckCrl,
+            encArg->pckCrlSize ? encPckCrl : NULL,
             encArg->pckCrlSize,
-            encTcbInfoJson,
+            encArg->tcbInfoJsonSize ? encTcbInfoJson : NULL,
             encArg->tcbInfoJsonSize));
 
     result = OE_OK;

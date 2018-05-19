@@ -49,6 +49,16 @@ void TestVerifyQuote()
 
     OE_TEST(OE_CallEnclave(g_Enclave, "VerifyQuote", &args) == OE_OK);
     OE_TEST(args.result == OE_OK);
+
+    // Now test without passing crl and tcb info.
+    // It should be fetched from provider library.
+    args.pckCrl = NULL;
+    args.pckCrlSize = 0;
+    args.tcbInfoJson = NULL;
+    args.tcbInfoJsonSize = 0;
+
+    OE_TEST(OE_CallEnclave(g_Enclave, "VerifyQuote", &args) == OE_OK);
+    OE_TEST(args.result == OE_OK);    
 }
 
 int main(int argc, const char* argv[])

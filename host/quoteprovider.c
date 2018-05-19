@@ -19,7 +19,7 @@
 // Use LD_LIBRARY_PATH to add specific directories to look
 // for .so files.
 // See http://man7.org/linux/man-pages/man3/dlopen.3.html
-#define OE_PLATFORM_PROVIDER_LIBRARY_PATH "/usr/lib/libazquoteprov.so"
+#define OE_PLATFORM_PROVIDER_LIBRARY_PATH "/usr/local/lib/libazquoteprov.so"
 
 static quote3_error_t (*sgx_ql_get_revocation_info_fcn)(
     const sgx_ql_get_revocation_info_params_t* params,
@@ -87,6 +87,7 @@ OE_Result OE_GetRevocationInfo(OE_GetRevocationInfoArgs* revocationInfo)
     sgx_ql_revocation_info_t* info = NULL;
     uint32_t bufferSize = 0;
     uint8_t* buffer = NULL;
+    const char* fmspec = "00707F000000";
 
     OE_H_Once(&g_Init, _LoadPlatformProviderLibrary);
 
@@ -95,8 +96,8 @@ OE_Result OE_GetRevocationInfo(OE_GetRevocationInfoArgs* revocationInfo)
         OE_RAISE(OE_FAILURE);
 
     params.version = SGX_QL_REVOCATION_INFO_VERSION_1;
-    params.fmspc_size = 0; // TODO
-    params.fmspc = NULL;   // TODO
+    params.fmspc_size = 12; // TODO
+    params.fmspc = (uint8_t*) fmspec;   // TODO
 
     if (sgx_ql_get_revocation_info_fcn(&params, &info) != SGX_QL_SUCCESS)
         OE_RAISE(OE_FAILURE);
@@ -115,7 +116,7 @@ OE_Result OE_GetRevocationInfo(OE_GetRevocationInfoArgs* revocationInfo)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     memset(revocationInfo, 0, sizeof(*revocationInfo));
-    revocationInfo->allocatedMemory = buffer;
+    revocationInfo->memoryAllocatedInHost = buffer;
 
     revocationInfo->tcbInfoSize = info->tcb_info_size;
     revocationInfo->tcbIssuerChainSize = info->tcb_issuer_chain_size;
