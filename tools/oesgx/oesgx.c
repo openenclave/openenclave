@@ -53,14 +53,14 @@ int main(int argc, const char* argv[])
 
         _CPUID(&regs);
 
-        if (HAVE_SGX1(regs))
-        {
-            printf("1\n");
-            return 0;
-        }
         if (HAVE_SGX2(regs))
         {
             printf("2\n");
+            return 0;
+        }
+        if (HAVE_SGX1(regs))
+        {
+            printf("1\n");
             return 0;
         }
     }
