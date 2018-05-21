@@ -52,13 +52,14 @@ void TestVerifyQuote()
 
     // Now test without passing crl and tcb info.
     // It should be fetched from provider library.
-    args.pckCrl = NULL;
-    args.pckCrlSize = 0;
-    args.tcbInfoJson = NULL;
-    args.tcbInfoJsonSize = 0;
+    // TODO: Reenable this test after integration with Azure Quote Provider.
+    // args.pckCrl = NULL;
+    // args.pckCrlSize = 0;
+    // args.tcbInfoJson = NULL;
+    // args.tcbInfoJsonSize = 0;
 
-    OE_TEST(OE_CallEnclave(g_Enclave, "VerifyQuote", &args) == OE_OK);
-    OE_TEST(args.result == OE_OK);    
+    // OE_TEST(OE_CallEnclave(g_Enclave, "VerifyQuote", &args) == OE_OK);
+    // OE_TEST(args.result == OE_OK);
 }
 
 int main(int argc, const char* argv[])
@@ -106,6 +107,7 @@ int main(int argc, const char* argv[])
     TestRemoteReport(NULL);
     TestParseReportNegative(NULL);
     TestLocalVerifyReport(NULL);
+    // TestRemoteVerifyReport(NULL);
 
     /*
      * Enclave API tests.
@@ -121,6 +123,10 @@ int main(int argc, const char* argv[])
 
     OE_TEST(
         OE_CallEnclave(enclave, "TestLocalVerifyReport", &targetInfo) == OE_OK);
+
+    OE_TEST(
+        OE_CallEnclave(enclave, "TestRemoteVerifyReport", &targetInfo) ==
+        OE_OK);
 
     TestVerifyQuote();
 

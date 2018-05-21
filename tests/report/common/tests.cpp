@@ -492,10 +492,10 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 {
     uint8_t targetInfo[sizeof(SGX_TargetInfo)];
     uint32_t targetInfoSize = sizeof(targetInfo);
-    SGX_TargetInfo* t = NULL;
 
     uint8_t report[sizeof(SGX_Report)] = {0};
     uint32_t reportSize = sizeof(report);
+    SGX_TargetInfo* t = NULL;
 
     uint8_t reportData[sizeof(SGX_ReportData)];
     for (uint32_t i = 0; i < sizeof(reportData); ++i)
@@ -547,4 +547,64 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
             0, NULL, 0, targetInfo, targetInfoSize, report, &reportSize) ==
         OE_OK);
     OE_TEST(VerifyReport(report, reportSize, NULL) == OE_VERIFY_FAILED);
+}
+
+TEST_FCN void TestRemoteVerifyReport(void* args_)
+{
+    uint8_t reportBuffer[1024 * 4] = {0};
+    uint32_t reportSize = sizeof(reportBuffer);
+
+    uint8_t reportData[sizeof(SGX_ReportData)];
+    uint32_t reportDataSize = sizeof(reportData);
+    for (uint32_t i = 0; i < sizeof(reportData); ++i)
+    {
+        reportData[i] = i;
+    }
+
+    uint32_t options = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
+    /*
+     * Post conditions:
+     *     1. Report must contain specified report data or zeros as report data.
+     */
+
+    /*
+     * Report data parameters scenarios:
+     *      a. Report data can be NULL.
+     *      b. Report data can be < OE_REPORT_DATA_SIZE
+     *      c. Report data can be OE_REPORT_DATA_SIZE
+     *      d. Report data cannot exceed OE_REPORT_DATA_SIZE
+     */
+    {
+        reportSize = sizeof(reportBuffer);
+        OE_TEST(
+            GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
+            OE_OK);
+        OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
+
+        reportSize = 2048;
+        reportDataSize = 16;
+        OE_TEST(
+            GetReport(
+                options,
+                reportData,
+                reportDataSize,
+                NULL,
+                0,
+                reportBuffer,
+                &reportSize) == OE_OK);
+        OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
+
+        reportSize = sizeof(reportBuffer);
+        reportDataSize = OE_REPORT_DATA_SIZE;
+        OE_TEST(
+            GetReport(
+                options,
+                reportData,
+                reportDataSize,
+                NULL,
+                0,
+                reportBuffer,
+                &reportSize) == OE_OK);
+        OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
+    }
 }
