@@ -3,6 +3,15 @@
 
 add_executable(aesm main.cpp)
 target_link_libraries(aesm oehost)
+
+# Additional compilation options when using libsgx instead of AESM
+if(USE_LIBSGX)
+target_include_directories(aesm PUBLIC
+    $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libsgx>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/libsgx>
+    )
+target_compile_definitions(aesm PRIVATE OE_USE_LIBSGX)
+endif()
+
 add_test(NAME tests/aesm COMMAND ./aesm)
 set_tests_properties(tests/aesm PROPERTIES SKIP_RETURN_CODE 2)
-

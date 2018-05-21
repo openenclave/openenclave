@@ -19,8 +19,8 @@ void HandleThreadWait(OE_Enclave* enclave, uint64_t arg);
 void HandleThreadWake(OE_Enclave* enclave, uint64_t arg);
 void HandleThreadWakeWait(OE_Enclave* enclave, uint64_t argIn);
 
-void HandleInitQuote(uint64_t argIn);
 void HandleGetQuote(uint64_t argIn);
+void HandleGetRevocationInfo(uint64_t argIn);
 void HandleGetQETargetInfo(uint64_t argIn);
 
 void HandleStrftime(uint64_t argIn);

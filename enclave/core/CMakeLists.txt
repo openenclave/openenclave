@@ -43,6 +43,10 @@ target_compile_options(oecore PUBLIC
     -fno-stack-protector -fvisibility=hidden
     )
 
+if(USE_LIBSGX)
+target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
+endif()
+
 target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
 
 # addl link-options for enclave apps

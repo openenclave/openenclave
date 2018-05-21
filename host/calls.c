@@ -404,12 +404,12 @@ static OE_Result _HandleOCALL(
             HandleThreadWakeWait(enclave, argIn);
             break;
 
-        case OE_FUNC_INIT_QUOTE:
-            HandleInitQuote(argIn);
-            break;
-
         case OE_FUNC_GET_QUOTE:
             HandleGetQuote(argIn);
+            break;
+
+        case OE_FUNC_GET_REVOCATION_INFO:
+            HandleGetRevocationInfo(argIn);
             break;
 
         case OE_FUNC_GET_QE_TARGET_INFO:

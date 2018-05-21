@@ -2,11 +2,16 @@
 // Licensed under the MIT License.
 
 #include "ec.h"
+#include <mbedtls/asn1.h>
+#include <mbedtls/asn1write.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/enclave.h>
 #include "key.h"
 #include "pem.h"
 #include "random.h"
+
+#define printf OE_HostPrintf
 
 static uint64_t _PRIVATE_KEY_MAGIC = 0xf12c37bb02814eeb;
 static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
@@ -14,20 +19,17 @@ static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
 OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_ECPrivateKey));
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
 
-/* Curve names, indexed by OE_ECType */
-static const char* _curveNames[] = {
-    "secp521r1" /* OE_EC_TYPE_SECP521R1 */
-};
-
-/* Convert ECType to curve name */
-static const char* _ECTypeToString(OE_Type type)
+static mbedtls_ecp_group_id _GetGroupID(OE_ECType ecType)
 {
-    size_t index = (size_t)type;
-
-    if (index >= OE_COUNTOF(_curveNames))
-        return NULL;
-
-    return _curveNames[index];
+    switch (ecType)
+    {
+        case OE_EC_TYPE_SECP521R1:
+            return MBEDTLS_ECP_DP_SECP521R1;
+        case OE_EC_TYPE_SECP256R1:
+            return MBEDTLS_ECP_DP_SECP256R1;
+        default:
+            return MBEDTLS_ECP_DP_NONE;
+    }
 }
 
 static OE_Result _CopyKey(
@@ -85,7 +87,7 @@ done:
 }
 
 static OE_Result _GenerateKeyPair(
-    OE_ECType type,
+    OE_ECType ecType,
     OE_PrivateKey* privateKey,
     OE_PublicKey* publicKey)
 {
@@ -93,7 +95,6 @@ static OE_Result _GenerateKeyPair(
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
     int curve;
-    const char* curveName;
 
     /* Initialize structures */
     mbedtls_pk_init(&pk);
@@ -108,15 +109,15 @@ static OE_Result _GenerateKeyPair(
     if (!privateKey || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Convert curve type to curve name */
-    if (!(curveName = _ECTypeToString(type)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     /* Resolve the curveName parameter to an EC-curve identifier */
     {
         const mbedtls_ecp_curve_info* info;
+        mbedtls_ecp_group_id groupID;
 
-        if (!(info = mbedtls_ecp_curve_info_from_name(curveName)))
+        if ((groupID = _GetGroupID(ecType)) == MBEDTLS_ECP_DP_NONE)
+            OE_RAISE(OE_FAILURE);
+
+        if (!(info = mbedtls_ecp_curve_info_from_grp_id(groupID)))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         curve = info->grp_id;
@@ -128,13 +129,13 @@ static OE_Result _GenerateKeyPair(
 
     /* Create key struct */
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_FAILURE);
 
     /* Generate the EC key */
     if (mbedtls_ecp_gen_key(
             curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
     {
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_FAILURE);
     }
 
     /* Initialize the private key parameter */
@@ -364,7 +365,7 @@ OE_Result OE_ECGenerateKeyPair(
         type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
 }
 
-OE_Result OE_ECPublicKeyGetKeyBytes(
+OE_Result OE_ECPublicKeyToBytes(
     const OE_ECPublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
@@ -380,4 +381,222 @@ OE_Result OE_ECPublicKeyEqual(
 {
     return OE_PublicKeyEqual(
         (OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2, equal);
+}
+
+OE_Result OE_ECPublicKeyFromBytes(
+    OE_ECPublicKey* publicKey,
+    OE_ECType ecType,
+    const uint8_t* buffer,
+    size_t bufferSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_PublicKey* impl = (OE_PublicKey*)publicKey;
+    const mbedtls_pk_info_t* info;
+
+    if (publicKey)
+        OE_Memset(publicKey, 0, sizeof(OE_ECPublicKey));
+
+    if (impl)
+        mbedtls_pk_init(&impl->pk);
+
+    /* Reject invalid parameters */
+    if (!publicKey || !buffer || !bufferSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Lookup the info for this key type */
+    if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)))
+        OE_RAISE(OE_WRONG_TYPE);
+
+    /* Setup the context for this key type */
+    if (mbedtls_pk_setup(&impl->pk, info) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Initialize the key */
+    {
+        mbedtls_ecp_keypair* ecp = mbedtls_pk_ec(impl->pk);
+        mbedtls_ecp_group_id groupID;
+
+        if ((groupID = _GetGroupID(ecType)) == MBEDTLS_ECP_DP_NONE)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_ecp_group_load(&ecp->grp, groupID) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_ecp_point_read_binary(
+                &ecp->grp, &ecp->Q, buffer, bufferSize) != 0)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
+    }
+
+    /* Set the magic number */
+    impl->magic = _PUBLIC_KEY_MAGIC;
+
+    result = OE_OK;
+
+done:
+
+    if (result != OE_OK)
+        mbedtls_pk_free(&impl->pk);
+
+    return result;
+}
+
+OE_Result OE_ECSignatureWriteASN1(
+    unsigned char* asn1,
+    size_t* asn1Size,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    mbedtls_mpi r;
+    mbedtls_mpi s;
+    unsigned char buf[MBEDTLS_ECDSA_MAX_LEN];
+    unsigned char* p = buf + sizeof(buf);
+    int n;
+    size_t len = 0;
+
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&s);
+
+    /* Convert raw R data to big number */
+    if (mbedtls_mpi_read_binary(&r, rData, rSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert raw S data to big number */
+    if (mbedtls_mpi_read_binary(&s, sData, sSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Write S to ASN.1 */
+    {
+        if ((n = mbedtls_asn1_write_mpi(&p, buf, &s)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
+
+    /* Write R to ASN.1 */
+    {
+        if ((n = mbedtls_asn1_write_mpi(&p, buf, &r)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
+
+    /* Write the length to ASN.1 */
+    {
+        if ((n = mbedtls_asn1_write_len(&p, buf, len)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
+
+    /* Write the tag to ASN.1 */
+    {
+        unsigned char tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+        if ((n = mbedtls_asn1_write_tag(&p, buf, tag)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
+
+    /* Check that buffer is big enough */
+    if (len > *asn1Size)
+    {
+        *asn1Size = len;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    OE_Memcpy(asn1, p, len);
+    *asn1Size = len;
+
+    result = OE_OK;
+
+done:
+
+    mbedtls_mpi_free(&r);
+    mbedtls_mpi_free(&s);
+
+    return result;
+}
+
+OE_Result OE_ECSignatureReadASN1(
+    const uint8_t* asn1,
+    size_t asn1Size,
+    uint8_t* rData,
+    size_t* rSize,
+    uint8_t* sData,
+    size_t* sSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    mbedtls_mpi r;
+    mbedtls_mpi s;
+    uint8_t* p = (uint8_t*)asn1;
+    const uint8_t* end = asn1 + asn1Size;
+    size_t len;
+
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&s);
+
+    if (!asn1 || !asn1Size || !rSize || !sSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Parse the tag */
+    {
+        unsigned char tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+        if (mbedtls_asn1_get_tag(&p, end, &len, tag) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        if (p + len != end)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    /* Parse R */
+    if (mbedtls_asn1_get_mpi(&p, end, &r) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Parse S */
+    if (mbedtls_asn1_get_mpi(&p, end, &s) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Check that output buffers are big enough */
+    {
+        const size_t rBytes = mbedtls_mpi_size(&r);
+        const size_t sBytes = mbedtls_mpi_size(&s);
+
+        if (rBytes > *rSize || sBytes > *sSize)
+        {
+            *rSize = rBytes;
+            *sSize = sBytes;
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        }
+
+        *rSize = rBytes;
+        *sSize = sBytes;
+    }
+
+    /* Fail if buffers are null */
+    if (!rData || !rSize)
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert R to binary */
+    if (mbedtls_mpi_write_binary(&r, rData, *rSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert S to binary */
+    if (mbedtls_mpi_write_binary(&s, sData, *sSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    result = OE_OK;
+
+done:
+
+    mbedtls_mpi_free(&r);
+    mbedtls_mpi_free(&s);
+
+    return result;
 }
