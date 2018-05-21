@@ -138,9 +138,20 @@ OE_Result VerifyQuoteImpl(
             &qeAuthData,
             &qeCertData));
 
-    // If encPckCrl or encTcbInfoJson is not provided, 
+    // The certificate provided in the quote is preferred.
+    if (qeCertData.type == SGX_PCK_ID_PCK_CERT_CHAIN)
+    {
+        if (qeCertData.size == 0)
+            OE_RAISE(OE_FAILURE);
+        encPemPckCertificate = qeCertData.data;
+        pemPckCertificateSize = qeCertData.size;
+    }
+
+    // If encPckCrl or encTcbInfoJson is not provided,
     // fetch it from provider via host.
-    if (encPckCrl == 0 || encTcbInfoJson == 0) {
+    // Disabled for now.
+    if (false && (encPckCrl == 0 || encTcbInfoJson == 0))
+    {
         OE_CHECK(OE_GetRevocationInfo(&revocationInfo));
 
         // TODO: Copy buffers to enclave memory.
@@ -151,8 +162,9 @@ OE_Result VerifyQuoteImpl(
         encTcbInfoJsonSize = revocationInfo.tcbInfoSize;
     }
 
-    if (encPckCrl == 0 || encTcbInfoJson == 0)
-        OE_RAISE(OE_FAILURE);
+    // TODO: Enable this after Azure Quote Provider integration.
+    // if (encPckCrl == 0 || encTcbInfoJson == 0)
+    //     OE_RAISE(OE_FAILURE);
 
     // 1. If PckCertificate is provided. Parse and Validate it.
     // This must do:
@@ -267,7 +279,8 @@ OE_Result VerifyQuoteImpl(
     result = OE_OK;
 
 done:
-    if (revocationInfo.memoryAllocatedInHost) {
+    if (revocationInfo.memoryAllocatedInHost)
+    {
         OE_HostFree(revocationInfo.memoryAllocatedInHost);
     }
 
