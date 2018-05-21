@@ -83,7 +83,7 @@ OE_Result OE_GetRevocationInfo(OE_GetRevocationInfoArgs* revocationInfo)
 {
     OE_Result result = OE_UNEXPECTED;
     sgx_ql_get_revocation_info_params_t params;
-    ;
+
     sgx_ql_revocation_info_t* info = NULL;
     uint32_t bufferSize = 0;
     uint8_t* buffer = NULL;
@@ -96,8 +96,8 @@ OE_Result OE_GetRevocationInfo(OE_GetRevocationInfoArgs* revocationInfo)
         OE_RAISE(OE_FAILURE);
 
     params.version = SGX_QL_REVOCATION_INFO_VERSION_1;
-    params.fmspc_size = 12; // TODO
-    params.fmspc = (uint8_t*) fmspec;   // TODO
+    params.fmspc_size = 12;          // TODO
+    params.fmspc = (uint8_t*)fmspec; // TODO
 
     if (sgx_ql_get_revocation_info_fcn(&params, &info) != SGX_QL_SUCCESS)
         OE_RAISE(OE_FAILURE);
