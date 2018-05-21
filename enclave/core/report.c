@@ -103,7 +103,7 @@ static OE_Result _OE_GetSGXReport(
             reportDataSize,
             optParams,
             optParamsSize,
-            reportBuffer));
+            (SGX_Report*)reportBuffer));
 
     *reportBufferSize = sizeof(SGX_Report);
     result = OE_OK;
@@ -191,7 +191,7 @@ done:
     return result;
 }
 
-OE_Result _OE_GetRemoteReport(
+static OE_Result _OE_GetRemoteReport(
     const uint8_t* reportData,
     uint32_t reportDataSize,
     const void* optParams,

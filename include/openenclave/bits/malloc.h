@@ -36,7 +36,7 @@ typedef struct _OE_MallocStats
  *     - the current system bytes allocated
  *     - the number of bytes in use
  *
- * @param stats[output] the malloc statistics
+ * @param[out] stats the malloc statistics
  *
  * @return 0 success
  * @return -1 failure

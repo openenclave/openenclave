@@ -18,11 +18,7 @@
 #include "report.h"
 #include "td.h"
 
-typedef unsigned long long WORD;
-
-#define WORD_SIZE sizeof(WORD)
-
-uint64_t __oe_enclave_status = OE_OK;
+static OE_Result __oe_enclave_status = OE_OK;
 
 /*
 **==============================================================================
@@ -122,7 +118,7 @@ uint64_t __oe_enclave_status = OE_OK;
 **
 **==============================================================================
 */
-void _HandleInitEnclave(uint64_t argIn)
+static void _HandleInitEnclave(uint64_t argIn)
 {
     static bool _once = false;
 
@@ -464,8 +460,8 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args =
-                  OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1)))
+        if (!(args = (OE_CallHostArgs*)OE_HostAllocForCallHost(
+                  sizeof(OE_CallHostArgs) + len + 1)))
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
              * fail immediately. */
@@ -480,7 +476,7 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     }
 
     /* Call into the host */
-    OE_TRY(OE_OCall(OE_FUNC_CALL_HOST, (long)args, NULL, 0));
+    OE_TRY(OE_OCall(OE_FUNC_CALL_HOST, (uint64_t)args, NULL, 0));
 
     /* Check the result */
     OE_TRY(args->result);

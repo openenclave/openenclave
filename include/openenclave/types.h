@@ -174,7 +174,7 @@ typedef enum _OE_Type {
     OE_SIZE_T,
     OE_SSIZE_T,
     OE_STRUCT_T,
-    OE_VOID_T,
+    OE_VOID_T
 } OE_Type;
 
 /*
@@ -186,7 +186,7 @@ typedef enum _OE_Type {
 */
 typedef enum _OE_EnclaveType {
     OE_ENCLAVE_TYPE_UNDEFINED,
-    OE_ENCLAVE_TYPE_SGX,
+    OE_ENCLAVE_TYPE_SGX
 } OE_EnclaveType;
 
 /*

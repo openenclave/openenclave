@@ -20,7 +20,7 @@ static const char* _curveNames[] = {
 };
 
 /* Convert ECType to curve name */
-static const char* _ECTypeToString(OE_Type type)
+static const char* _ECTypeToString(OE_ECType type)
 {
     size_t index = (size_t)type;
 

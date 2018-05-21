@@ -55,7 +55,7 @@ const void* __OE_GetRelocEnd()
     return (const uint8_t*)__OE_GetRelocBase() + __OE_GetRelocSize();
 }
 
-const size_t __OE_GetRelocSize()
+size_t __OE_GetRelocSize()
 {
     return __oe_numRelocPages * OE_PAGE_SIZE;
 }
@@ -83,7 +83,7 @@ const void* __OE_GetECallEnd()
     return (const uint8_t*)__OE_GetECallBase() + __OE_GetECallSize();
 }
 
-const size_t __OE_GetECallSize()
+size_t __OE_GetECallSize()
 {
     return __oe_numECallPages * OE_PAGE_SIZE;
 }
@@ -106,7 +106,7 @@ const void* __OE_GetHeapBase()
     return base + (__oe_baseHeapPage * OE_PAGE_SIZE);
 }
 
-const size_t __OE_GetHeapSize()
+size_t __OE_GetHeapSize()
 {
     return __oe_numHeapPages * OE_PAGE_SIZE;
 }

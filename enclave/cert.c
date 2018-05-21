@@ -278,7 +278,7 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Allocate memory for the certificate */
-    if (!(crt = mbedtls_calloc(1, sizeof(mbedtls_x509_crt))))
+    if (!(crt = (mbedtls_x509_crt*) mbedtls_calloc(1, sizeof(mbedtls_x509_crt))))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Initialize the certificate structure */
@@ -406,6 +406,8 @@ OE_Result OE_CertVerify(
     Cert* certImpl = (Cert*)cert;
     CertChain* chainImpl = (CertChain*)chain;
     uint32_t flags = 0;
+
+    OE_UNUSED(crl);
 
     /* Initialize error */
     if (error)

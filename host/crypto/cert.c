@@ -475,6 +475,8 @@ OE_Result OE_CertVerify(
     X509_STORE_CTX* ctx = NULL;
     X509* x509 = NULL;
 
+    OE_UNUSED(crl);
+    
     /* Initialize error to NULL for now */
     if (error)
         *error->buf = '\0';

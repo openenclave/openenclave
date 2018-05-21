@@ -13,6 +13,7 @@ void OE_SetProgramName(const char* name)
     _programName = name;
 }
 
+__attribute__((noreturn))
 OE_PRINTF_FORMAT(3, 4)
 void __OE_PutErr(const char* file, unsigned int line, const char* format, ...)
 {

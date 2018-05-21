@@ -4,7 +4,9 @@
 #ifndef _OE_REPORT_H
 #define _OE_REPORT_H
 
+#include "bits/sgxtypes.h"
 #include "defs.h"
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 

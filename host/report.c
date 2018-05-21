@@ -47,7 +47,7 @@ static OE_Result _OE_GetLocalReport(
     /*
      * Populate arg fields.
      */
-    arg = calloc(1, sizeof(*arg));
+    arg = (OE_GetReportArgs*) calloc(1, sizeof(*arg));
     if (arg == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -114,7 +114,7 @@ static OE_Result _OE_GetRemoteReport(
     /*
      * Get target info from Quoting Enclave.
      */
-    sgxTargetInfo = calloc(1, sizeof(SGX_TargetInfo));
+    sgxTargetInfo = (SGX_TargetInfo*) calloc(1, sizeof(SGX_TargetInfo));
 
     if (sgxTargetInfo == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);

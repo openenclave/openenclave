@@ -48,7 +48,8 @@ static int _ThreadWakeWait(OE_ThreadData* waiter, OE_ThreadData* self)
     int ret = -1;
     OE_ThreadWakeWaitArgs* args = NULL;
 
-    if (!(args = OE_HostAllocForCallHost(sizeof(OE_ThreadWakeWaitArgs))))
+    if (!(args = (OE_ThreadWakeWaitArgs*)OE_HostAllocForCallHost(
+              sizeof(OE_ThreadWakeWaitArgs))))
         goto done;
 
     args->waiter_tcs = TD_ToTCS((TD*)waiter);

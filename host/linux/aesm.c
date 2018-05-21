@@ -187,7 +187,7 @@ OE_CATCH:
     return result;
 }
 
-static int _PackVarInt(mem_t* buf, uint8_t fieldNum, uint64_t value)
+static OE_Result _PackVarInt(mem_t* buf, uint8_t fieldNum, uint64_t value)
 {
     OE_Result result = OE_UNEXPECTED;
 
