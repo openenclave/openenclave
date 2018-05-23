@@ -20,7 +20,7 @@ such as style guides and development processes.
 
 This document explains how to build and use the Open Enclave SDK.
 
-[Getting Started on Windows](GettingStarted.windows.md)
+[Getting Started on Windows](GettingStarted.Windows.md)
 -----------------------------------
 
 This document explains how to use the experimental support for building host
