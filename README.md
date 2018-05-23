@@ -51,12 +51,13 @@ the root of the source distribution as follows.
 $ sudo ./scripts/install-prereqs
 ```
 
-**SGX mode** has the following prerequisites.
+**SGX mode** requires SGX-1 hardware support and additional package dependencies
+depending on your level of SGX hardware:
 
-- SGX-1 hardware support
+_For Skylake and Kabylake systems (SGX-1):_
+
 - Intel(R) SGX driver
 - Intel(R) AESM service
-- Various package dependencies
 
 To install these prerequisites type the following commands from the root of
 the source distribution.
@@ -67,16 +68,39 @@ $ sudo make -C prereqs
 $ sudo make -C prereqs install
 ```
 
+_For Coffeelake systems (SGX-1 with Flexible Launch Control):_
+
+- Intel(R) SGX driver with FLC support
+- Intel(R) NGSA SDK
+
+To install these prerequisites type the following commands from the root of
+the source distribution.
+
+```
+$ sudo ./scripts/install-prereqs
+$ sudo make -C prereqs USE_LIBSGX=1
+$ sudo make -C prereqs install USE_LIBSGX=1
+```
+
 ### Building
 
 Build is generally out-of-tree (in-tree is possible, though not recommended).
 To build, pick a directory to build under ("build/" below). Then use cmake to configure
 the build and generate the out-of-tree make files and build.
 
+_For Skylake and Kabylake systems (SGX-1):_
 ```
 $ mkdir build/
 $ cd build/
 build$ cmake ..
+build$ make
+```
+
+_For Coffeelake systems (SGX-1 with Flexible Launch Control):_
+```
+$ mkdir build/
+$ cd build/
+build$ cmake .. -DUSE_LIBSGX=1
 build$ make
 ```
 

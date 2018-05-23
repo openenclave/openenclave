@@ -32,6 +32,8 @@ LICENSE
 ./prereqs/aesm/.sdk
 ./prereqs/aesm/.sdk_installer
 ./prereqs/isgx/linux-sgx-driver
+./prereqs/ngsa/libsgx
+./prereqs/sgx-driver/sgx-driver
 ./.check-license.ignore
 ./tests/eenter/dead.txt
 ./tests/hashstr/dead.txt
