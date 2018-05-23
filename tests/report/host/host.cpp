@@ -72,13 +72,20 @@ int main(int argc, const char* argv[])
             "(report)\n");
         return SKIP_RETURN_CODE;
     }
-
-    return 0;
+    
     /* Create the enclave */
     if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
+    }
+
+    /* Initialize the target info */
+    {
+        if ((result = SGX_GetQETargetInfo(&targetInfo)) != OE_OK)
+        {
+            OE_PutErr("SGX_GetQETargetInfo(): result=%u", result);
+        }
     }
 
     /*
