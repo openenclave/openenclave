@@ -708,7 +708,155 @@ OE_CHECK_SIZE(sizeof(SGX_Report), 432);
 **
 **==============================================================================
 */
+#if defined OE_USE_LIBSGX
 
+OE_PACK_BEGIN
+typedef struct _SGX_Quote
+{
+    /* (0) */
+    uint16_t version;
+
+    /* (2) */
+    uint16_t sign_type;
+
+    /* (4) */
+    uint8_t reserved[4];
+
+    /* (8) */
+    uint16_t qe_svn;
+
+    /* (10) */
+    uint16_t pce_svn;
+
+    /* (12) */
+    uint8_t uuid[16];
+
+    /* (28) */
+    uint8_t user_data[20];
+
+    /* (48) */
+    SGX_ReportBody report_body;
+
+    /* (432) */
+    uint32_t signature_len;
+
+    /* (436) signature array (varying length) */
+    OE_ZERO_SIZED_ARRAY uint8_t signature[];
+} SGX_Quote;
+OE_PACK_END
+
+OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
+
+// Size of actual data within the quote exluding authentication information.
+// This data is signed for quote verification.
+#define SGX_QUOTE_SIGNED_DATA_SIZE OE_OFFSETOF(SGX_Quote, signature_len)
+
+/*
+**==============================================================================
+**
+** SGX_ECDSA256Signature
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_ECDSA256Signature
+{
+    uint8_t r[32];
+    uint8_t s[32];
+} SGX_ECDSA256Signature;
+
+OE_CHECK_SIZE(sizeof(SGX_ECDSA256Signature), 64);
+
+/*
+**==============================================================================
+**
+** SGX_ECDSA256Key
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_ECDSA256Key
+{
+    uint8_t x[32];
+    uint8_t y[32];
+} SGX_ECDSA256Key;
+
+OE_CHECK_SIZE(sizeof(SGX_ECDSA256Key), 64);
+
+/*
+**==============================================================================
+**
+** SGX_QuoteAuthData
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_QuoteAuthData
+{
+    /* (0) Pair of 256 bit ECDSA Signature. */
+    SGX_ECDSA256Signature signature;
+
+    /* (64) Pair of 256 bit ECDSA Key. */
+    SGX_ECDSA256Key attestationKey;
+
+    /* (128) Quoting Enclave Report Body */
+    SGX_ReportBody qeReportBody;
+
+    /* (512) Quoting Enclave Report Body Signature */
+    SGX_ECDSA256Key qeReportBodySignature;
+} SGX_QuoteAuthData;
+
+OE_STATIC_ASSERT(OE_OFFSETOF(SGX_QuoteAuthData, signature) == 0);
+OE_STATIC_ASSERT(OE_OFFSETOF(SGX_QuoteAuthData, attestationKey) == 64);
+OE_STATIC_ASSERT(OE_OFFSETOF(SGX_QuoteAuthData, qeReportBody) == 128);
+OE_STATIC_ASSERT(OE_OFFSETOF(SGX_QuoteAuthData, qeReportBodySignature) == 512);
+OE_STATIC_ASSERT(sizeof(SGX_QuoteAuthData) == 576);
+
+/*
+**==============================================================================
+**
+** SGX_QEAuthData
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_QEAuthData
+{
+    uint16_t size;
+    uint8_t* data;
+} SGX_QEAuthData;
+
+/*
+**==============================================================================
+**
+** SGX_QECertData
+**
+**==============================================================================
+*/
+
+typedef struct _SGX_QECertData
+{
+    uint16_t type;
+    uint32_t size;
+    uint8_t* data;
+} SGX_QECertData;
+
+/*
+**==============================================================================
+**
+** SGX_PCKId
+**
+**==============================================================================
+*/
+typedef enum _SGX_PCKId {
+    SGX_PCK_ID_PLAIN_PPID = 1,
+    SGX_PCK_ID_ENCRYPTED_PPID_2048 = 2,
+    SGX_PCK_ID_ENCRYPTED_PPID_3072 = 3,
+    SGX_PCK_ID_PCK_CERTIFICATE = 4,
+    SGX_PCK_ID_PCK_CERT_CHAIN = 5
+} SGX_PCKId;
+
+#else
 OE_PACK_BEGIN
 typedef struct _SGX_Quote
 {
@@ -745,6 +893,10 @@ typedef struct _SGX_Quote
 OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
+
+#endif
+
+#define SGX_QUOTE_VERSION (3)
 
 /*
 **==============================================================================

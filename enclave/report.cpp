@@ -10,6 +10,7 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
 #include <openenclave/types.h>
+#include "../common/quote.h"
 
 // This file is .cpp in order to use C++ static initialization.
 
@@ -55,7 +56,12 @@ OE_Result OE_VerifyReport(
 
     if (oeReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
     {
-        OE_RAISE(OE_UNSUPPORTED);
+        // TODO: Call in to host to fetch:
+        //  1. pckCertificate
+        //  2. pckCRL
+        //  3. tcbJsonInfo
+        OE_CHECK(
+            VerifyQuoteImpl(report, reportSize, NULL, 0, NULL, 0, NULL, 0));
     }
     else
     {
