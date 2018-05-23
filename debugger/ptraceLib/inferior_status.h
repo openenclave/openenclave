@@ -5,8 +5,8 @@
 #define _OE_INFERIOR_STATUS_H_
 
 #include <openenclave/bits/typeinfo.h>
-#include <pthread.h>
 #include <openenclave/types.h>
+#include <pthread.h>
 
 typedef enum _OE_Inferior_Flags {
     OE_INFERIOR_SINGLE_STEP = 0X1
