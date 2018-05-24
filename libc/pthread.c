@@ -9,6 +9,15 @@
 #undef pthread_equal
 #endif
 
+OE_STATIC_ASSERT(sizeof(pthread_once_t) == sizeof(OE_OnceType));
+OE_STATIC_ASSERT(sizeof(pthread_spinlock_t) == sizeof(OE_Spinlock));
+
+OE_STATIC_ASSERT(sizeof(pthread_mutex_t) >= sizeof(OE_Mutex));
+OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(OE_Cond));
+OE_STATIC_ASSERT(sizeof(pthread_rwlock_t) >= sizeof(OE_RWLock));
+
+int OE_RWLockUnLock(OE_RWLock* readWriteLock);
+
 /*
 **==============================================================================
 **
@@ -150,42 +159,27 @@ int pthread_rwlock_init(
     pthread_rwlock_t* rwlock,
     const pthread_rwlockattr_t* attr)
 {
-    if (rwlock)
-        return pthread_mutex_init((pthread_mutex_t*)rwlock, NULL);
-
-    return -1;
+    return OE_RWLockInit((OE_RWLock*)rwlock);
 }
 
 int pthread_rwlock_rdlock(pthread_rwlock_t* rwlock)
 {
-    if (rwlock)
-        return pthread_mutex_lock((pthread_mutex_t*)rwlock);
-
-    return -1;
+    return OE_RWLockReadLock((OE_RWLock*)rwlock);
 }
 
 int pthread_rwlock_wrlock(pthread_rwlock_t* rwlock)
 {
-    if (rwlock)
-        return pthread_mutex_lock((pthread_mutex_t*)rwlock);
-
-    return -1;
+    return OE_RWLockWriteLock((OE_RWLock*)rwlock);
 }
 
 int pthread_rwlock_unlock(pthread_rwlock_t* rwlock)
 {
-    if (rwlock)
-        return pthread_mutex_unlock((pthread_mutex_t*)rwlock);
-
-    return -1;
+    return OE_RWLockUnLock((OE_RWLock*)rwlock);
 }
 
 int pthread_rwlock_destroy(pthread_rwlock_t* rwlock)
 {
-    if (rwlock)
-        return pthread_mutex_destroy((pthread_mutex_t*)rwlock);
-
-    return -1;
+    return OE_RWLockDestroy((OE_RWLock*)rwlock);
 }
 
 /*
