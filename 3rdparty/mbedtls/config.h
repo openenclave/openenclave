@@ -107,7 +107,7 @@
  *
  * Comment if your system does not support time functions
  */
-//Open Enclave TODO: Time methods are not secure against host, enabled only for x509 expiration checks: (issue #182 ) 
+//Open Enclave: Time methods are not secure against host, enabled only for x509 expiration checks 
 #define MBEDTLS_HAVE_TIME
 
 /**
@@ -120,7 +120,7 @@
  *
  * Comment if your system does not have a correct clock.
  */
-//Open Enclave TODO: Time methods are not secure against host, enabled only for x509 expiration checks: (issue #182 )
+//Open Enclave: Time methods are not secure against host, enabled only for x509 expiration checks
 #define MBEDTLS_HAVE_TIME_DATE
 
 /**
