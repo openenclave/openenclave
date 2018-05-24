@@ -1243,11 +1243,11 @@ static int _GenReturnTypeTypeInfo(
         else
             os << ind << "NULL, /* structTI */\n";
 
-        // OE_FieldTI.countParam:
+        // OE_FieldTI.count:
         if (r.flags & FLAG_COUNT)
-            os << ind << '"' << r.qvals.count << "\", /* countParam */\n";
+            os << ind << '"' << r.qvals.count << "\", /* count */\n";
         else
-            os << ind << "NULL, /* countParam */\n";
+            os << ind << "NULL, /* count */\n";
 
         // OE_FieldTI.offset:
         os << ind << "OE_OFFSETOF(struct " << f.name << "Args, " << r.name
@@ -1300,11 +1300,11 @@ static int _GenParamTypeInfo(
         else
             os << ind << "NULL, /* structName */\n";
 
-        // OE_FieldTI.countParam:
+        // OE_FieldTI.count:
         if (p.flags & FLAG_COUNT)
-            os << ind << '"' << p.qvals.count << "\", /* countParam */\n";
+            os << ind << '"' << p.qvals.count << "\", /* count */\n";
         else
-            os << ind << "NULL, /* countParam */\n";
+            os << ind << "NULL, /* count */\n";
 
         // OE_FieldTI.offset:
         os << ind << "OE_OFFSETOF(struct " << f.name << "Args, " << p.name

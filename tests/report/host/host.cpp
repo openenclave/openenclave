@@ -7,6 +7,7 @@
 #include <openenclave/bits/tests.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
+#include "../../../host/quote.h"
 #include "../common/tests.cpp"
 
 #define SKIP_RETURN_CODE 2
@@ -42,11 +43,9 @@ int main(int argc, const char* argv[])
 
     /* Initialize the target info */
     {
-        SGX_EPIDGroupID egid;
-
-        if ((result = SGX_InitQuote(&targetInfo, &egid)) != OE_OK)
+        if ((result = SGX_GetQETargetInfo(&targetInfo)) != OE_OK)
         {
-            OE_PutErr("OE_InitQuote(): result=%u", result);
+            OE_PutErr("SGX_GetQETargetInfo(): result=%u", result);
         }
     }
 

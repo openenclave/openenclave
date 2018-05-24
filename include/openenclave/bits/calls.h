@@ -440,7 +440,7 @@ typedef struct _OE_InitEnclaveArgs
  * The meaning of the **argIn** arg **argOut** parameters is defined by the
  * implementer of the function and either may be null.
  *
- * OpenEnclave uses the low-level ECALL interface to implement internal calls,
+ * Open Enclave uses the low-level ECALL interface to implement internal calls,
  * used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application
  * developers are encouraged to use OE_CallEnclave() instead.
  *
@@ -459,7 +459,7 @@ typedef struct _OE_InitEnclaveArgs
  *
  * @param func The number of the function to be called.
  * @param argsIn The input argument passed to the function.
- * @param argsOut The output argument passed back from the function.
+ * @param argOut The output argument passed back from the function.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -486,7 +486,7 @@ OE_Result OE_ECall(
  * The meaning of the **argIn** arg **argOut** parameters is defined by the
  * implementer of the function and either may be null.
  *
- * OpenEnclave uses this interface to implement internal calls. Enclave
+ * Open Enclave uses this interface to implement internal calls. Enclave
  * application developers are encouraged to use OE_CallHost() instead.
  *
  * At the software layer, this function sends an **OCALL** message to the

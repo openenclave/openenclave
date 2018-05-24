@@ -492,7 +492,7 @@ OE_CHECK_SIZE(OE_OFFSETOF(SGX_TCS, u.main), 72);
 
 typedef struct _OE_ThreadData OE_ThreadData;
 
-/* Note: unsued fields have a "__" prefix */
+/* Note: unused fields have a "__" prefix */
 struct _OE_ThreadData
 {
     /* Points to start of this structure */
@@ -854,7 +854,7 @@ typedef struct _OE_ECallPages
 /*
 **==============================================================================
 **
-** __SGX_InitQuote()
+** SGX_InitQuote()
 **
 **==============================================================================
 */
@@ -911,15 +911,15 @@ OE_STATIC_ASSERT(sizeof(SGX_QuoteSignature) == 664);
 */
 
 /* Key name. */
-#define SGX_KEYSELECT_EINITTOKEN 0x0000U
-#define SGX_KEYSELECT_PROVISION 0x0001U
-#define SGX_KEYSELECT_PROVISION_SEAL 0x0002U
-#define SGX_KEYSELECT_REPORT 0x0003U
-#define SGX_KEYSELECT_SEAL 0x0004U
+#define SGX_KEYSELECT_EINITTOKEN 0x0000
+#define SGX_KEYSELECT_PROVISION 0x0001
+#define SGX_KEYSELECT_PROVISION_SEAL 0x0002
+#define SGX_KEYSELECT_REPORT 0x0003
+#define SGX_KEYSELECT_SEAL 0x0004
 
 /* Key policy. */
-#define SGX_KEYPOLICY_MRENCLAVE 0x0001U
-#define SGX_KEYPOLICY_MRSIGNER 0x0002U
+#define SGX_KEYPOLICY_MRENCLAVE 0x0001
+#define SGX_KEYPOLICY_MRSIGNER 0x0002
 #define SGX_KEYPOLICY_ALL (SGX_KEYPOLICY_MRENCLAVE | SGX_KEYPOLICY_MRSIGNER)
 
 OE_PACK_BEGIN
@@ -977,11 +977,11 @@ OE_CHECK_SIZE(OE_OFFSETOF(SGX_KeyRequest, reserved2), 78);
 
 /* Refer to EGETKEY leaf instruction in Intel SDM. */
 /* EGETKEY instruction return values. */
-#define SGX_SUCCESS 0
-#define SGX_INVALID_ATTRIBUTE (1 << (1))
-#define SGX_INVALID_CPUSVN (1 << (5))
-#define SGX_INVALID_ISVSVN (1 << (6))
-#define SGX_INVALID_KEYNAME (1 << (8))
+#define SGX_EGETKEY_SUCCESS 0
+#define SGX_EGETKEY_INVALID_ATTRIBUTE (1 << (1))
+#define SGX_EGETKEY_INVALID_CPUSVN (1 << (5))
+#define SGX_EGETKEY_INVALID_ISVSVN (1 << (6))
+#define SGX_EGETKEY_INVALID_KEYNAME (1 << (8))
 
 /* Alignment requirement. */
 #define SGX_KEY_REQUEST_ALIGNMENT 512

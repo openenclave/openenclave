@@ -404,10 +404,6 @@ static OE_Result _HandleOCALL(
             HandleThreadWakeWait(enclave, argIn);
             break;
 
-        case OE_FUNC_INIT_QUOTE:
-            HandleInitQuote(argIn);
-            break;
-
         case OE_FUNC_GET_QUOTE:
             HandleGetQuote(argIn);
             break;
@@ -571,7 +567,7 @@ static void* _AssignTCS(OE_Enclave* enclave)
                     binding->count = 1;
                     tcs = (void*)binding->tcs;
 
-                    /* Set into TSD so _HandleAsyncException can get it */
+                    /* Set into TSD so asynchronous exceptions can get it */
                     _SetThreadBinding(binding);
                     assert(GetThreadBinding() == binding);
                     break;
@@ -692,6 +688,7 @@ OE_CATCH:
 
 /* ATTN: this causes an assertion with call nesting. */
 /* ATTN: make enclave argument a cookie. */
+/* ATTN: the SetEnclave() function no longer exists */
 /* SetEnclave(NULL); */
 
 #if defined(TRACE_ECALLS)

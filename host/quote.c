@@ -4,27 +4,34 @@
 #include "quote.h"
 #include <assert.h>
 #include <limits.h>
-#include <openenclave/bits/aesm.h>
+#include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
 
-OE_Result SGX_InitQuote(
-    SGX_TargetInfo* targetInfo,
-    SGX_EPIDGroupID* epidGroupID)
+#if defined(OE_USE_LIBSGX)
+#include <libsgx/sgx_ql_oe_wrapper.h>
+#else
+#include <openenclave/bits/aesm.h>
+#endif
+
+#if !defined(OE_USE_LIBSGX)
+
+static OE_Result _SGX_InitQuoteWithAesm(SGX_TargetInfo* targetInfo)
 {
     OE_Result result = OE_UNEXPECTED;
+    SGX_EPIDGroupID epidGroupID = {0};
+
     AESM* aesm = NULL;
 
     if (!(aesm = AESMConnect()))
-        OE_THROW(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
-    OE_TRY(AESMInitQuote(aesm, targetInfo, epidGroupID));
+    OE_CHECK(AESMInitQuote(aesm, targetInfo, &epidGroupID));
 
     result = OE_OK;
 
-OE_CATCH:
+done:
 
     if (aesm)
         AESMDisconnect(aesm);
@@ -32,16 +39,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
-{
-    memset(targetInfo, 0, sizeof(*targetInfo));
-    SGX_EPIDGroupID epidGroupID;
-    memset(&epidGroupID, 0, sizeof(epidGroupID));
-
-    return SGX_InitQuote(targetInfo, &epidGroupID);
-}
-
-OE_Result SGX_GetQuoteSize(
+static OE_Result _SGX_GetQuoteSizeFromAesm(
     const uint8_t* signatureRevocationList,
     uint32_t* quoteSize)
 {
@@ -89,63 +87,9 @@ done:
 static OE_Result _SGX_GetQuoteFromAesm(
     const SGX_Report* report,
     SGX_QuoteType quoteType,
-    const SGX_SPID* spid,
-    const SGX_Nonce* nonce,
-    const uint8_t* signatureRevocationList,
-    uint32_t signatureRevocationListSize,
-    SGX_Report* reportOut,
     SGX_Quote* quote,
     size_t quoteSize)
 {
-    OE_Result result = OE_UNEXPECTED;
-    AESM* aesm = NULL;
-
-    if (!report || !spid || !quote || !quoteSize)
-        OE_THROW(OE_INVALID_PARAMETER);
-
-    memset(quote, 0, quoteSize);
-
-    if (reportOut)
-        memset(reportOut, 0, sizeof(SGX_Report));
-
-    if (signatureRevocationList && signatureRevocationListSize == 0)
-        OE_THROW(OE_INVALID_PARAMETER);
-
-    if (!signatureRevocationList && signatureRevocationListSize != 0)
-        OE_THROW(OE_INVALID_PARAMETER);
-
-    if (!(aesm = AESMConnect()))
-        OE_THROW(OE_SERVICE_UNAVAILABLE);
-
-    OE_TRY(
-        AESMGetQuote(
-            aesm,
-            report,
-            quoteType,
-            spid,
-            nonce,
-            signatureRevocationList,
-            signatureRevocationListSize,
-            reportOut,
-            quote,
-            quoteSize));
-
-    result = OE_OK;
-
-OE_CATCH:
-
-    if (aesm)
-        AESMDisconnect(aesm);
-
-    return result;
-}
-
-OE_Result SGX_GetQuote(
-    const SGX_Report* report,
-    uint8_t* quote,
-    uint32_t* quoteSize)
-{
-    OE_Result result = OE_UNEXPECTED;
     static const SGX_SPID spid = {{
         0x21,
         0x68,
@@ -165,19 +109,106 @@ OE_Result SGX_GetQuote(
         0x04,
     }};
 
+    OE_Result result = OE_UNEXPECTED;
+    AESM* aesm = NULL;
+
+    if (!report || !quote || !quoteSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!(aesm = AESMConnect()))
+        OE_RAISE(OE_SERVICE_UNAVAILABLE);
+
+    OE_CHECK(
+        AESMGetQuote(
+            aesm,
+            report,
+            quoteType,
+            &spid,
+            NULL, /* nonce */
+            NULL, /* signatureRevocationList */
+            0,    /* signatureRevocationListSize */
+            NULL, /* reportOut */
+            quote,
+            quoteSize));
+
+    result = OE_OK;
+
+done:
+
+    if (aesm)
+        AESMDisconnect(aesm);
+
+    return result;
+}
+
+#endif
+
+OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
+{
+    OE_Result result = OE_UNEXPECTED;
+    memset(targetInfo, 0, sizeof(*targetInfo));
+
+#if defined(OE_USE_LIBSGX)
+    {
+        OE_STATIC_ASSERT(sizeof(SGX_TargetInfo) == sizeof(sgx_target_info_t));
+        quote3_error_t err =
+            sgx_qe_get_target_info((sgx_target_info_t*)targetInfo);
+        result = (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;
+    }
+#else
+
+    result = _SGX_InitQuoteWithAesm(targetInfo);
+
+#endif
+
+    return result;
+}
+
+OE_Result SGX_GetQuoteSize(uint32_t* quoteSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+
+    if (quoteSize)
+        *quoteSize = 0;
+
+    if (!quoteSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+#if defined(OE_USE_LIBSGX)
+    {
+        quote3_error_t err = sgx_qe_get_quote_size(quoteSize);
+        result = (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;
+    }
+#else
+
+    result = _SGX_GetQuoteSizeFromAesm(NULL, quoteSize);
+
+#endif
+
+done:
+    return result;
+}
+
+OE_Result SGX_GetQuote(
+    const SGX_Report* report,
+    uint8_t* quote,
+    uint32_t* quoteSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+
     /* Reject null parameters */
     if (!report || !quoteSize)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Reject if quote size not big enough even for quote without SigRLs */
     {
         uint32_t size;
-        OE_TRY(SGX_GetQuoteSize(NULL, &size));
+        OE_CHECK(SGX_GetQuoteSize(&size));
 
         if (*quoteSize < size)
         {
             *quoteSize = size;
-            OE_THROW(OE_BUFFER_TOO_SMALL);
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
         // Return correct size of the quote.
@@ -185,28 +216,29 @@ OE_Result SGX_GetQuote(
     }
 
     if (!quote)
-        OE_THROW(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get the quote from the AESM service */
+    memset(quote, 0, *quoteSize);
+
+/* Get the quote from the AESM service */
+
+#if defined(OE_USE_LIBSGX)
     {
-        memset(quote, 0, *quoteSize);
-
-        OE_TRY(
-            _SGX_GetQuoteFromAesm(
-                report,
-                SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
-                &spid,
-                NULL, /* nonce */
-                NULL, /* signature revocation list */
-                0,    /* signature revocation list size */
-                NULL, /* report out */
-                (SGX_Quote*)quote,
-                *quoteSize));
+        OE_STATIC_ASSERT(sizeof(SGX_Report) == sizeof(sgx_report_t));
+        quote3_error_t err =
+            sgx_qe_get_quote((sgx_report_t*)report, *quoteSize, quote);
+        result = (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;
     }
+#else
 
-    result = OE_OK;
+    result = _SGX_GetQuoteFromAesm(
+        report,
+        SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
+        (SGX_Quote*)quote,
+        *quoteSize);
+#endif
 
-OE_CATCH:
+done:
 
     return result;
 }

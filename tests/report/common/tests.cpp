@@ -417,10 +417,13 @@ TEST_FCN void TestRemoteReport(void* args_)
     {
         reportSize = 2048;
 
-        // Expected report (quote) size for the below calls.
-        // This value is not expected to be same for all calls.
+// Expected report (quote) size for the below calls.
+// This value is not expected to be same for all calls.
+#if defined(OE_USE_LIBSGX)
+        const uint32_t expectedReportSize = 1456;
+#else
         const uint32_t expectedReportSize = 1116;
-
+#endif
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);

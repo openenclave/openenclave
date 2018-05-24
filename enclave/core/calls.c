@@ -502,7 +502,7 @@ OE_CATCH:
 **     parameters to EENTER:
 **
 **         RBX - TCS - address of a TCS page in the enclave
-**         RCX - AEP - pointer to hosts's asynchronous exception procedure
+**         RCX - AEP - pointer to host's asynchronous exception procedure
 **         RDI - ARGS1 (holds the CODE and FUNC parameters)
 **         RSI - ARGS2 (holds the pointer to the args structure)
 **
