@@ -891,9 +891,6 @@ static OE_Result _InitializeEnclave(OE_Enclave* enclave)
 #elif defined(_WIN32)
         __cpuid(args.cpuidTable[i], i);
 #endif
-        if ((i == 1) &&
-            !(args.cpuidTable[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
-            OE_RAISE(OE_AESNI_FAILED);
     }
 
     OE_CHECK(OE_ECall(enclave, OE_FUNC_INIT_ENCLAVE, (uint64_t)&args, NULL));
