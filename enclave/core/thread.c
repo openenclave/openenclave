@@ -613,8 +613,7 @@ static int _WakeWaiters(OE_RWLockImpl* rwLock)
     // ownership of the rwLock.
     OE_SpinUnlock(&rwLock->lock);
 
-    // Wake the waiters. The waiters are ordered so that producers (writer) and
-    // consumers (readers) alternate. However actual acquisition of the lock
+    // Wake the waiters in FIFO order. However actual acquisition of the lock
     // will be dependent on OS scheduling of the threads.
     while ((p = _QueuePopFront(&waiters)))
         _ThreadWake(p);
