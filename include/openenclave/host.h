@@ -128,7 +128,7 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
  * @param reportDataSize The size of the **reportData** in bytes.
  * @param optParams Optional additional parameters needed for the current
  * enclave type. For SGX, this can be SGX_TargetInfo for local attestation.
- * @param optParamsSize The size of the **enclaveParams** buffer.
+ * @param optParamsSize The size of the **optParams** buffer.
  * @param reportBuffer The buffer to where the resulting report will be copied.
  * @param reportBufferSize The size of the **report** buffer. This is set to the
  * required size of the report buffer on return.
