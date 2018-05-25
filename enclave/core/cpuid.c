@@ -25,9 +25,8 @@ void OE_InitializeCpuid(uint64_t argIn)
     if (args != NULL)
     {
         // Abort the enclave if AESNI support is not present in the cached
-        // CPUID Feature information
-        if ((OE_CPUID_LEAF_COUNT > 1) && (OE_CPUID_REG_COUNT > OE_CPUID_RCX) &&
-            !(args->cpuidTable[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
+        // CPUID Feature information (cpuid leaf of 1)
+        if (!(args->cpuidTable[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
             OE_Abort();
 
         OE_Memcpy(
