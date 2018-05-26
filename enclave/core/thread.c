@@ -599,6 +599,7 @@ int OE_RWLockTryReadLock(OE_RWLock* readWriteLock)
 }
 
 // The current thread must hold the spinlock.
+// _WakeWaiters releases ownership of the spinlock.
 static int _WakeWaiters(OE_RWLockImpl* rwLock)
 {
     OE_ThreadData* p = NULL;
@@ -661,7 +662,7 @@ int OE_RWLockWriteLock(OE_RWLock* readWriteLock)
     // Recursive writer lock.
     if (rwLock->writer == self)
     {
-        OE_SpinLock(&rwLock->lock);
+        OE_SpinUnlock(&rwLock->lock);
         return -1;
     }
 
@@ -763,11 +764,11 @@ int OE_RWLockUnLock(OE_RWLock* readWriteLock)
     if (!rwLock)
         return -1;
 
-    // If the current threat is the writer that owns the lock, then call
+    // If the current thread is the writer that owns the lock, then call
     // OE_RWLockWriteUnlock. Call OE_RWLockReadUnlock otherwise. No locking is
     // necessary here since the condition is expected to be true only when the
     // current thread is the writer thread.
-    if (rwLock->writer == self)
+    if (__sync_bool_compare_and_swap(&rwLock->writer, self, self))
         return OE_RWLockWriteUnlock(readWriteLock);
     else
         return OE_RWLockReadUnlock(readWriteLock);
