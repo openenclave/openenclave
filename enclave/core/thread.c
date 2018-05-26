@@ -768,7 +768,7 @@ int OE_RWLockUnLock(OE_RWLock* readWriteLock)
     // OE_RWLockWriteUnlock. Call OE_RWLockReadUnlock otherwise. No locking is
     // necessary here since the condition is expected to be true only when the
     // current thread is the writer thread.
-    if (__sync_bool_compare_and_swap(&rwLock->writer, self, self))
+    if (rwLock->writer == self)
         return OE_RWLockWriteUnlock(readWriteLock);
     else
         return OE_RWLockReadUnlock(readWriteLock);
