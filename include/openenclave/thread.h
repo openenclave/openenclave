@@ -160,7 +160,7 @@ int OE_SpinDestroy(OE_Spinlock* spinlock);
 typedef struct _OE_Mutex
 {
     /* Internal private implementation */
-    uint64_t __impl[8];
+    uint64_t __impl[4];
 } OE_Mutex;
 
 /**
@@ -245,7 +245,7 @@ int OE_MutexDestroy(OE_Mutex* mutex);
 typedef struct _OE_Cond
 {
     /* Internal private implementation */
-    uint64_t __impl[8];
+    uint64_t __impl[4];
 } OE_Cond;
 
 /**
@@ -347,10 +347,8 @@ int OE_CondDestroy(OE_Cond* cond);
 /* Readers-writer lock representation */
 typedef struct _OE_RWLock
 {
-    /* Internal private implementation.
-    *  Size is 20 for forward ABI compatibility.
-    */
-    uint64_t __impl[20];
+    /* Internal private implementation. */
+    uint64_t __impl[5];
 } OE_RWLock;
 
 /**
