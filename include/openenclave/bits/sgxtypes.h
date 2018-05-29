@@ -747,7 +747,7 @@ OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
 
-// Size of actual data within the quote exluding authentication information.
+// Size of actual data within the quote exlcuding authentication information.
 // This data is signed for quote verification.
 #define SGX_QUOTE_SIGNED_DATA_SIZE OE_OFFSETOF(SGX_Quote, signature_len)
 
@@ -844,19 +844,20 @@ typedef struct _SGX_QECertData
 /*
 **==============================================================================
 **
-** SGX_PCKId
+** OE_SGX_PCKID
 **
 **==============================================================================
 */
-typedef enum _SGX_PCKId {
-    SGX_PCK_ID_PLAIN_PPID = 1,
-    SGX_PCK_ID_ENCRYPTED_PPID_2048 = 2,
-    SGX_PCK_ID_ENCRYPTED_PPID_3072 = 3,
-    SGX_PCK_ID_PCK_CERTIFICATE = 4,
-    SGX_PCK_ID_PCK_CERT_CHAIN = 5
-} SGX_PCKId;
+typedef enum _OE_SGX_PCKID {
+    OE_SGX_PCK_ID_PLAIN_PPID = 1,
+    OE_SGX_PCK_ID_ENCRYPTED_PPID_2048 = 2,
+    OE_SGX_PCK_ID_ENCRYPTED_PPID_3072 = 3,
+    OE_SGX_PCK_ID_PCK_CERTIFICATE = 4,
+    OE_SGX_PCK_ID_PCK_CERT_CHAIN = 5
+} OE_SGX_PCKID;
 
 #else
+
 OE_PACK_BEGIN
 typedef struct _SGX_Quote
 {
@@ -896,7 +897,7 @@ OE_CHECK_SIZE(sizeof(SGX_Quote), 436);
 
 #endif
 
-#define SGX_QUOTE_VERSION (3)
+#define OE_SGX_QUOTE_VERSION (3)
 
 /*
 **==============================================================================
