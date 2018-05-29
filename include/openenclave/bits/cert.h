@@ -33,39 +33,6 @@ typedef struct _OE_VerifyCertError
 } OE_VerifyCertError;
 
 /**
- * OID string representation.
- *
- * OID string representation (e.g., "1.2.3.4"). This structure represents an
- * OID output parameter to prevent buffer length mismatches that the compiler
- * would be unable to detect. For example, consider the following function
- * declaration.
- *
- *     ```
- *     void GetTheOID(char oid[OE_MAX_OID_STRING_SIZE]);
- *     ```
- *
- * This may be called unsafely as follows.
- *
- *     ```
- *     char oid[16];
- *     GetTheOID(oid);
- *     ```
- *
- * Instead, the following definition prevents this coding error.
- *
- *     ```
- *     void GetTheOID(OE_OIDString* oid);
- *     ```
- */
-typedef struct _OE_OIDString
-{
-    // Strictly speaking there is no limit on the length of an OID but we chose
-    // 128 (the maximum OID length in the SNMP specification). Also, this value
-    // is hardcoded to 64 in many implementations.
-    char buf[128];
-} OE_OIDString;
-
-/**
  * Read a certificate from PEM format
  *
  * This function reads a certificate from PEM data with the following PEM
@@ -276,71 +243,6 @@ OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert);
  * @return OE_FAILURE general failure
  */
 OE_Result OE_CertChainGetLeafCert(const OE_CertChain* chain, OE_Cert* cert);
-
-/**
- * Gets the number of certificate extensions.
- *
- * This function gets the number of X.509 certificate extensions, possibly
- * zero.
- *
- * @param cert[in] the certificate.
- * @param count[out] the number of extensions.
- *
- * @return OE_OK success.
- * @return OE_INVALID_PARAMETER a parameter is invalid.
- * @return OE_FAILURE general failure.
- */
-OE_Result OE_CertGetExtensionCount(const OE_Cert* cert, size_t* count);
-
-/**
- * Gets information about the X.509 certificate extension with the given index.
- *
- * This function gets information about the X.509 certificate extension with
- * the given index, obtaining the OID, data, and data size of the extension.
- *
- * @param cert[in] the certificate.
- * @param index[in] the index of the extension.
- * @param oid[out] the OID of the extension.
- * @param data[out] the data of the extension.
- * @param size[in,out] the data buffer size (in) or the actual data size (out).
- *
- * @return OE_OK success.
- * @return OE_INVALID_PARAMETER a parameter is invalid.
- * @return OE_OUT_OF_BOUNDS the index parameter is out of bounds.
- * @return OE_BUFFER_TOO_SMALL the data buffer is too small and the **size**
- *         parameter contains the required size.
- * @return OE_FAILURE general failure.
- */
-OE_Result OE_CertGetExtension(
-    const OE_Cert* cert,
-    size_t index,
-    OE_OIDString* oid,
-    uint8_t* data,
-    size_t* size);
-
-/**
- * Gets information about the X.509 certificate extension with the given OID.
- *
- * This function gets information about the X.509 certificate extension with
- * the given OID, obtaining the data and data size of the extension.
- *
- * @param cert[in] the certificate.
- * @param oid[in] the OID of the extension.
- * @param data[out] the data of the extension.
- * @param size[in,out] the data buffer size (in) or the actual data size (out).
- *
- * @return OE_OK success.
- * @return OE_INVALID_PARAMETER a parameter is invalid.
- * @return OE_NOT_FOUND an extension with the given OID was not found.
- * @return OE_BUFFER_TOO_SMALL the data buffer is too small and the **size**
- *         parameter contains the required size.
- * @return OE_FAILURE general failure.
- */
-OE_Result OE_CertFindExtension(
-    const OE_Cert* cert,
-    const char* oid,
-    uint8_t* data,
-    size_t* size);
 
 OE_EXTERNC_END
 
