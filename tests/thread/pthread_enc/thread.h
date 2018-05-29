@@ -6,11 +6,22 @@
 
 #include <pthread.h>
 
+/* Unlike OE threads, pthreads are not recursive by default */
+static __inline pthread_mutex_t __MutexInitializerRecursive()
+{
+    pthread_mutex_t m;
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&m, &attr);
+    return m;
+}
+
 typedef pthread_t OE_Thread;
 #define OE_ThreadSelf pthread_self
 
 typedef pthread_mutex_t OE_Mutex;
-#define OE_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
+#define OE_MUTEX_INITIALIZER __MutexInitializerRecursive()
 #define OE_MutexLock pthread_mutex_lock
 #define OE_MutexUnlock pthread_mutex_unlock
 
