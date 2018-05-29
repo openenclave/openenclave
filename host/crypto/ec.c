@@ -221,16 +221,6 @@ static OE_Result _PublicKeyGetKeyBytes(
     memcpy(buffer, data, requiredSize);
     *bufferSize = requiredSize;
 
-#if 1
-    {
-        const unsigned char* ptr = buffer;
-        const size_t size = *bufferSize;
-
-        if (!o2i_ECPublicKey(&ec, &ptr, size))
-            OE_RAISE(OE_FAILURE);
-    }
-#endif
-
     result = OE_OK;
 
 done:

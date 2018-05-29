@@ -11,8 +11,8 @@
 
 // Supply unique integer to asm block to prevent the compiler from merging
 // different speculation barriers.
-#define oe_speculation_barrier() \
-    asm volatile("lfence" ::"r"(__COUNTER__) : "memory");
+#define OE_SPECULATION_BARRIER() \
+    asm volatile("lfence " ::"r"(__COUNTER__) : "memory");
 
 // Check that input data lies outside the enclave and that
 // fits within maxSize. If so, allocate buffer on enclave
@@ -34,9 +34,15 @@ OE_Result OE_CopyInput(
     if (dst == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    oe_speculation_barrier();
-
     OE_Memcpy(dst, (void*)src, size);
+
+    // Fix for Spectre-v1 requires lfence to be inserted after bounds
+    // validation. E.g. the OE_IsOutsideEnclave check above is a bounds check.
+    // Without the barrier, even when OE_IsOutsideEnclave is false, the
+    // processor can speculatively start executing code as if
+    // OE_IsOutsideEnclave is true, leading to side-channel vulnerabilities.
+    OE_SPECULATION_BARRIER();
+
     result = OE_OK;
 done:
     return result;
@@ -108,10 +114,8 @@ OE_ECALL void VerifyQuote(void* args_)
     // ...
 
     // Force evaluation of all validations.
-    oe_speculation_barrier();
+    OE_SPECULATION_BARRIER();
 
-    // TODO:
-    //      Quote validation
     OE_CHECK(
         VerifyQuoteImpl(
             encQuote,

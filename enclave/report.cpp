@@ -56,10 +56,6 @@ OE_Result OE_VerifyReport(
 
     if (oeReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
     {
-        // TODO: Call in to host to fetch:
-        //  1. pckCertificate
-        //  2. pckCRL
-        //  3. tcbJsonInfo
         OE_CHECK(
             VerifyQuoteImpl(report, reportSize, NULL, 0, NULL, 0, NULL, 0));
     }

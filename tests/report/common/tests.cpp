@@ -494,7 +494,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 
     uint8_t report[sizeof(SGX_Report)] = {0};
     uint32_t reportSize = sizeof(report);
-    SGX_TargetInfo* t = NULL;
+    SGX_TargetInfo* tamperedTargetInfo = NULL;
 
     uint8_t reportData[sizeof(SGX_ReportData)];
     for (uint32_t i = 0; i < sizeof(reportData); ++i)
@@ -537,9 +537,9 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 
     // 4. Negative case.
 
-    // Change target info.
-    t = (SGX_TargetInfo*)targetInfo;
-    t->mrenclave[0]++;
+    // Tamper with the target info.
+    tamperedTargetInfo = (SGX_TargetInfo*)targetInfo;
+    tamperedTargetInfo->mrenclave[0]++;
 
     OE_TEST(
         GetReport(
@@ -561,17 +561,12 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
     }
 
     uint32_t options = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
-    /*
-     * Post conditions:
-     *     1. Report must contain specified report data or zeros as report data.
-     */
 
     /*
      * Report data parameters scenarios:
      *      a. Report data can be NULL.
      *      b. Report data can be < OE_REPORT_DATA_SIZE
      *      c. Report data can be OE_REPORT_DATA_SIZE
-     *      d. Report data cannot exceed OE_REPORT_DATA_SIZE
      */
     {
         reportSize = sizeof(reportBuffer);

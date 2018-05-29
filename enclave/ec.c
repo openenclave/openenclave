@@ -11,8 +11,6 @@
 #include "pem.h"
 #include "random.h"
 
-#define printf OE_HostPrintf
-
 static uint64_t _PRIVATE_KEY_MAGIC = 0xf12c37bb02814eeb;
 static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
 
@@ -129,13 +127,13 @@ static OE_Result _GenerateKeyPair(
 
     /* Create key struct */
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
-        OE_RAISE(OE_FAILURE);
+         OE_RAISE(OE_FAILURE);
 
     /* Generate the EC key */
     if (mbedtls_ecp_gen_key(
             curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
     {
-        OE_RAISE(OE_FAILURE);
+         OE_RAISE(OE_FAILURE);
     }
 
     /* Initialize the private key parameter */
