@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
 #include "quote.h"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/cert.h>
@@ -14,25 +12,18 @@
 
 #ifdef OE_USE_LIBSGX
 
-OE_INLINE uint16_t readUint16(const uint8_t* p)
+OE_INLINE uint16_t ReadUint16(const uint8_t* p)
 {
-    return (p[0] << 0) | (p[1] << 8);
+    return p[0] | (p[1] << 8);
 }
 
-OE_INLINE uint16_t readUint32(const uint8_t* p)
+OE_INLINE uint32_t ReadUint32(const uint8_t* p)
 {
-    return (p[0] << 0) | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+    return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
 }
-
-static const SGX_PCKId SGX_SUPPORTED_PCK_IDS[5] = {
-    SGX_PCK_ID_PLAIN_PPID,
-    SGX_PCK_ID_ENCRYPTED_PPID_2048,
-    SGX_PCK_ID_ENCRYPTED_PPID_3072,
-    SGX_PCK_ID_PCK_CERTIFICATE,
-    SGX_PCK_ID_PCK_CERT_CHAIN};
 
 static OE_Result _ParseQuote(
-    const uint8_t* encQuote,
+    const uint8_t* quote,
     uint32_t quoteSize,
     SGX_Quote** sgxQuote,
     SGX_QuoteAuthData** quoteAuthData,
@@ -41,8 +32,14 @@ static OE_Result _ParseQuote(
 {
     OE_Result result = OE_UNEXPECTED;
 
-    const uint8_t* p = encQuote;
-    const uint8_t* const quoteEnd = encQuote + quoteSize;
+    const uint8_t* p = quote;
+    const uint8_t* const quoteEnd = quote + quoteSize;
+
+    if (quoteEnd < p)
+    {
+        // Pointer wrapped around.
+        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+    }
 
     *sgxQuote = NULL;
 
@@ -57,7 +54,7 @@ static OE_Result _ParseQuote(
     *quoteAuthData = (SGX_QuoteAuthData*)(*sgxQuote)->signature;
     p += sizeof(SGX_QuoteAuthData);
 
-    qeAuthData->size = readUint16(p);
+    qeAuthData->size = ReadUint16(p);
     p += 2;
     qeAuthData->data = (uint8_t*)p;
     p += qeAuthData->size;
@@ -65,9 +62,9 @@ static OE_Result _ParseQuote(
     if (p > quoteEnd)
         OE_RAISE(OE_QUOTE_PARSE_ERROR);
 
-    qeCertData->type = readUint16(p);
+    qeCertData->type = ReadUint16(p);
     p += 2;
-    qeCertData->size = readUint32(p);
+    qeCertData->size = ReadUint32(p);
     p += 4;
     qeCertData->data = (uint8_t*)p;
     p += qeCertData->size;
@@ -90,14 +87,14 @@ static OE_Result _ReadPublicKey(SGX_ECDSA256Key* key, OE_ECPublicKey* publicKey)
 }
 
 OE_Result VerifyQuoteImpl(
-    const uint8_t* encQuote,
+    const uint8_t* quote,
     uint32_t quoteSize,
-    const uint8_t* encPemPckCertificate,
+    const uint8_t* pemPckCertificate,
     uint32_t pemPckCertificateSize,
-    const uint8_t* encPckCrl,
-    uint32_t encPckCrlSize,
-    const uint8_t* encTcbInfoJson,
-    uint32_t encTcbInfoJsonSize)
+    const uint8_t* pckCrl,
+    uint32_t pckCrlSize,
+    const uint8_t* tcbInfoJson,
+    uint32_t tcbInfoJsonSize)
 {
     OE_Result result = OE_UNEXPECTED;
     SGX_Quote* sgxQuote = NULL;
@@ -105,18 +102,15 @@ OE_Result VerifyQuoteImpl(
     SGX_QEAuthData qeAuthData = {0};
     SGX_QECertData qeCertData = {0};
     OE_Cert pckCert = {0};
-    OE_SHA256Context sha256Ctx = {};
+    OE_SHA256Context sha256Ctx = {0};
     OE_SHA256 sha256 = {0};
     OE_ECPublicKey attestationKey = {0};
     uint8_t asn1Signature[256];
     uint64_t asn1SignatureSize = sizeof(asn1Signature);
 
-    uint8_t found = 0;
-    uint16_t i;
-
     OE_CHECK(
         _ParseQuote(
-            encQuote,
+            quote,
             quoteSize,
             &sgxQuote,
             &quoteAuthData,
@@ -124,16 +118,25 @@ OE_Result VerifyQuoteImpl(
             &qeCertData));
 
     // The certificate provided in the quote is preferred.
-    if (qeCertData.type == SGX_PCK_ID_PCK_CERT_CHAIN)
+    if (qeCertData.type == OE_SGX_PCK_ID_PCK_CERT_CHAIN)
     {
         if (qeCertData.size == 0)
             OE_RAISE(OE_FAILURE);
-        encPemPckCertificate = qeCertData.data;
+        pemPckCertificate = qeCertData.data;
         pemPckCertificateSize = qeCertData.size;
+    }
+    else
+    {
+        // TODO: Raise failure.
     }
 
     // TODO: If encPckCrl or encTcbInfoJson is not provided,
-    // fetch it from provider via host/azure provider.
+    // fetch it from provider via host.    
+    
+
+    // TODO: Enable this after Azure Quote Provider integration.
+    // if (encPckCrl == 0 || encTcbInfoJson == 0)
+    //     OE_RAISE(OE_FAILURE);
 
     // 1. If PckCertificate is provided. Parse and Validate it.
     // This must do:
@@ -145,11 +148,10 @@ OE_Result VerifyQuoteImpl(
     //      f. Assert that latestElements are not out of date using tcbInfo
     //      (TODO)
     //      g. Assert !revoked using tcbInfo (TODO)
-    if (encPemPckCertificate != NULL)
+    if (pemPckCertificate != NULL)
     {
         OE_CHECK(
-            OE_CertReadPEM(
-                encPemPckCertificate, pemPckCertificateSize, &pckCert));
+            OE_CertReadPEM(pemPckCertificate, pemPckCertificateSize, &pckCert));
     }
 
     // 2. If pckCrl is provided. Parse and Validate it.
@@ -161,7 +163,7 @@ OE_Result VerifyQuoteImpl(
 
     // 3. Quote validations
     // This must do:
-    //      a. Assert version == SGX_QUOTE_VERSION  (done)
+    //      a. Assert version == OE_SGX_QUOTE_VERSION  (done)
     //      b. Assert qeCertData.type is a SGX_SUPPORTED_PCK_IDS (done)
     //      c. Verify qeCertData
     //          i.  Check parsedDataSize == data.size()   (N/A done during
@@ -173,25 +175,14 @@ OE_Result VerifyQuoteImpl(
     //      f. Verify SHA256 ECDSA (attestationKey, SGX_QUOTE_SIGNED_DATA,
     //      signature) (done)
     {
-        if (sgxQuote->version != SGX_QUOTE_VERSION)
+        if (sgxQuote->version != OE_SGX_QUOTE_VERSION)
         {
             OE_RAISE(OE_VERIFY_FAILED);
         }
 
-        found = 0;
-        for (i = 0; i < sizeof(SGX_SUPPORTED_PCK_IDS) /
-                            sizeof(SGX_SUPPORTED_PCK_IDS[0]);
-             ++i)
-        {
-            if (qeCertData.type == SGX_SUPPORTED_PCK_IDS[i])
-            {
-                found = 1;
-                break;
-            }
-        }
-
-        if (!found)
-            OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
+        // TODO: Reenable this once Azure quote provider is integrated.
+        //if (qeCertData.type != OE_SGX_PCK_ID_PCK_CERT_CHAIN)
+        //    OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
 
         OE_CHECK(OE_SHA256Init(&sha256Ctx));
         OE_CHECK(
@@ -212,12 +203,6 @@ OE_Result VerifyQuoteImpl(
                 sizeof(sha256)))
             OE_RAISE(OE_VERIFY_FAILED);
 
-        // OE_CHECK(
-        //     OE_ECDSA256_SHA_Verify(
-        //         (const OE_ECDSA256Key*)&quoteAuthData->attestationKey,
-        //         sgxQuote,
-        //         SGX_QUOTE_SIGNED_DATA_SIZE,
-        //         (const OE_ECDSA256Signature*)&quoteAuthData->signature));
         OE_CHECK(
             _ReadPublicKey(&quoteAuthData->attestationKey, &attestationKey));
 
