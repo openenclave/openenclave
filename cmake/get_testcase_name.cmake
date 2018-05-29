@@ -14,7 +14,9 @@
 #
 function(get_testcase_name FILENAME NAMEVAR PREFIX)
         string(REGEX REPLACE "\.c(pp)?$" "" n ${FILENAME})
-        string(REGEX REPLACE ${PREFIX} "" n ${n})
+        if (NOT ${PREFIX} STREQUAL "")
+            string(REGEX REPLACE ${PREFIX} "" n ${n})
+        endif()
         string(REGEX REPLACE "[/=]" "_" n ${n})
         string(REGEX REPLACE "[\!]" "-" n ${n})
 	set(${NAMEVAR} ${n} PARENT_SCOPE)

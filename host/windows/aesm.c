@@ -191,7 +191,7 @@ static IAESMInterface* _CreateInstance()
             goto done;
     }
 
-    /* Create AESMInterface object */
+    /* Create AESM interface object */
     if (!SUCCEEDED(
             CoCreateInstance(
                 &CLSID_AESMInterface,

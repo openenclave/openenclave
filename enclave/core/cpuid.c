@@ -5,6 +5,7 @@
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/cpuid.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/enclave.h>
 
 static uint32_t _OE_CpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 
@@ -23,6 +24,11 @@ void OE_InitializeCpuid(uint64_t argIn)
     OE_InitEnclaveArgs* args = (OE_InitEnclaveArgs*)argIn;
     if (args != NULL)
     {
+        // Abort the enclave if AESNI support is not present in the cached
+        // CPUID Feature information (cpuid leaf of 1)
+        if (!(args->cpuidTable[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
+            OE_Abort();
+
         OE_Memcpy(
             _OE_CpuidTable,
             args->cpuidTable,

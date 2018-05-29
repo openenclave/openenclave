@@ -492,7 +492,7 @@ OE_CHECK_SIZE(OE_OFFSETOF(SGX_TCS, u.main), 72);
 
 typedef struct _OE_ThreadData OE_ThreadData;
 
-/* Note: unsued fields have a "__" prefix */
+/* Note: unused fields have a "__" prefix */
 struct _OE_ThreadData
 {
     /* Points to start of this structure */
@@ -1006,7 +1006,7 @@ typedef struct _OE_ECallPages
 /*
 **==============================================================================
 **
-** __SGX_InitQuote()
+** SGX_InitQuote()
 **
 **==============================================================================
 */

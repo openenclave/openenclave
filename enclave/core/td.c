@@ -31,7 +31,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(TD, simulate) == TD_simulate);
 **     This structure resides in the GS segment. Offset zero of this segment
 **     contains the OE_ThreadData.self_addr field (a back pointer to the
 **     structure itself). This field is zero until the structure is initialized
-**     by __OE_HandleEnter (which happens immediately an EENTER).
+**     by __OE_HandleMain (which happens immediately an EENTER).
 **
 **==============================================================================
 */

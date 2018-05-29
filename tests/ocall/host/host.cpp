@@ -82,7 +82,7 @@ int main(int argc, const char* argv[])
         OE_TEST(args.value == (void*)0xAAAAAAAABBBBBBBB);
     }
 
-    /* Call TestMyOcall() */
+    /* Call TestMyOCall() */
     {
         OE_Result result = OE_RegisterOCall(0, MyOCall);
         OE_TEST(result == OE_OK);
