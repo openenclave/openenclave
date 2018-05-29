@@ -17,7 +17,7 @@
 
 #define SKIP_RETURN_CODE 2
 
-std::vector<uint8_t> fileToBytes(const char* path)
+std::vector<uint8_t> FileToBytes(const char* path)
 {
     std::ifstream f(path, std::ios::binary);
     return std::vector<uint8_t>(
@@ -27,13 +27,13 @@ void TestVerifyQuote()
 {
     VerifyQuoteArgs args = {0};
     std::vector<uint8_t> quote =
-        fileToBytes("./../../../tests/report/data/quote.dat");
+        FileToBytes("./data/quote.dat");
     std::vector<uint8_t> pckCert =
-        fileToBytes("./../../../tests/report/data/pckCert.pem");
+        FileToBytes("./data/pckCert.pem");
     std::vector<uint8_t> pckCrl =
-        fileToBytes("./../../../tests/report/data/intermediateCaCrl.pem");
+        FileToBytes("./data/intermediateCaCrl.pem");
     std::vector<uint8_t> tcbInfo =
-        fileToBytes("./../../../tests/report/data/tcbInfo.json");
+        FileToBytes("./data/tcbInfo.json");
 
     if (pckCert.back() != '\0')
         pckCert.push_back('\0');
@@ -72,7 +72,7 @@ int main(int argc, const char* argv[])
             "(report)\n");
         return SKIP_RETURN_CODE;
     }
-    
+
     /* Create the enclave */
     if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
