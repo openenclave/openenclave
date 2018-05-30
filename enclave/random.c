@@ -28,9 +28,11 @@ static OE_Result _SeedEntropySource()
     mbedtls_ctr_drbg_init(&_drbg);
     mbedtls_entropy_init(&_entropy);
 
-    OE_CHECK(
-        mbedtls_ctr_drbg_seed(
-            &_drbg, mbedtls_entropy_func, &_entropy, NULL, 0));
+    if (mbedtls_ctr_drbg_seed(
+            &_drbg, mbedtls_entropy_func, &_entropy, NULL, 0) != 0)
+    {
+        OE_RAISE(OE_FAILURE);
+    }
 
     result = OE_OK;
 
@@ -73,7 +75,7 @@ OE_Result OE_Random(void* data, size_t size)
     }
 
     /* Generate random data (synchronize access to _drbg instance) */
-    rc = mbedtls_ctr_drbg_random(&_drbg, data, size);
+    rc = mbedtls_ctr_drbg_random(&_drbg, (uint8_t*)data, size);
 
     if (rc != 0)
         OE_RAISE(OE_FAILURE);

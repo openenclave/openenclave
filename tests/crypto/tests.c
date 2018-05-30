@@ -214,7 +214,7 @@ static const char CERT1[] =
     "-----END CERTIFICATE-----\n";
 
 /* RSA modulus of CERT1 */
-static const char CERT1_RSA_MODULUS[] = {
+static const uint8_t CERT1_RSA_MODULUS[] = {
     0xE8, 0xCB, 0x03, 0x4B, 0x54, 0x3F, 0xF4, 0xB0, 0xF8, 0xBF, 0x4A, 0xA3,
     0x02, 0x8B, 0xF7, 0x83, 0xC9, 0x7B, 0x60, 0x64, 0xF6, 0xED, 0x18, 0x79,
     0xE4, 0x5A, 0xD3, 0x3D, 0x4F, 0xC8, 0x8A, 0x0B, 0x54, 0x4D, 0xCA, 0x09,
@@ -691,7 +691,7 @@ static void TestRSAWritePrivate()
 
     OE_Result r;
     OE_RSAPrivateKey key;
-    void* pemData = NULL;
+    uint8_t* pemData = NULL;
     size_t pemSize = 0;
 
     r = OE_RSAPrivateKeyReadPEM(
@@ -721,7 +721,7 @@ static void TestRSAWritePublic()
 
     OE_Result r;
     OE_RSAPublicKey key;
-    void* pemData = NULL;
+    uint8_t* pemData = NULL;
     size_t pemSize = 0;
 
     r = OE_RSAPublicKeyReadPEM(
@@ -806,7 +806,7 @@ static void TestECWritePublic()
 
     OE_Result r;
     OE_ECPublicKey key;
-    void* pemData = NULL;
+    uint8_t* pemData = NULL;
     size_t pemSize = 0;
 
     r = OE_ECPublicKeyReadPEM(

@@ -12,7 +12,7 @@ void* OE_Sbrk(ptrdiff_t increment)
 
     OE_SpinLock(&_lock);
     {
-        size_t remaining;
+        ptrdiff_t remaining;
 
         if (!_heapNext)
             _heapNext = (unsigned char*)__OE_GetHeapBase();

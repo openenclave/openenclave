@@ -56,7 +56,7 @@ typedef struct _mem_t
 
 #define MEM_NULL_INIT \
     {                 \
-        0, 0, NULL, 0 \
+        0, MEM_TYPE_NONE, NULL, 0 \
     }
 
 #define MEM_DYNAMIC_INIT                     \

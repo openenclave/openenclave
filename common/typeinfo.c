@@ -43,7 +43,7 @@ static char* _Strdup(const char* s, size_t n, void*(alloc)(size_t size))
         return NULL;
 
     memset(p, 0, n * sizeof(char));
-    return memcpy(p, s, n * sizeof(char));
+    return (char*)memcpy(p, s, n * sizeof(char));
 }
 
 static char* _Wcsdup(const wchar_t* s, size_t n, void*(alloc)(size_t size))
@@ -60,7 +60,7 @@ static char* _Wcsdup(const wchar_t* s, size_t n, void*(alloc)(size_t size))
         return NULL;
 
     memset(p, 0, n * sizeof(char));
-    return memcpy(p, s, n * sizeof(wchar_t));
+    return (char*)memcpy(p, s, n * sizeof(wchar_t));
 }
 
 static size_t _SizeofStr(const char* s)
@@ -372,9 +372,9 @@ static bool _ArrayEq(OE_Type type, const void* p1, const void* p2, size_t n)
         case OE_UINT64_T:
             return _BytesEq(p1, p2, sizeof(uint64_t) * n);
         case OE_FLOAT_T:
-            return _Real32Eq(p1, p2, sizeof(float) * n);
+            return _Real32Eq((const float*)p1, (const float*)p2, sizeof(float) * n);
         case OE_DOUBLE_T:
-            return _Real64Eq(p1, p2, sizeof(double) * n);
+            return _Real64Eq((const double*)p1, (const double*)p2, sizeof(double) * n);
         case OE_SIZE_T:
             return _BytesEq(p1, p2, sizeof(size_t) * n);
         case OE_SSIZE_T:
@@ -1308,7 +1308,7 @@ OE_Result OE_DestroyStruct(
     if (!ti || !strct || !dealloc)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    OE_TRY(_ApplyStructPtrProc(ti, strct, _FreeProc, dealloc));
+    OE_TRY(_ApplyStructPtrProc(ti, strct, _FreeProc, (void*)dealloc));
 
     memset(strct, 0, ti->size);
 

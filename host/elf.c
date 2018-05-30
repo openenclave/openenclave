@@ -1127,7 +1127,7 @@ int Elf64_FindSection(
 
         if (s && strcmp(name, s) == 0)
         {
-            *data = _GetSection(elf, i);
+            *data = (uint8_t*)_GetSection(elf, i);
             *size = sh->sh_size;
             return 0;
         }

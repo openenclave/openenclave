@@ -367,8 +367,10 @@ OE_Result OE_PrivateKeySign(
     {
         size_t size;
 
-        if (EVP_PKEY_sign(ctx, NULL, &size, hashData, hashSize) <= 0)
+        if (EVP_PKEY_sign(ctx, NULL, &size, (const uint8_t*)hashData, hashSize) <= 0)
+        {
             OE_RAISE(OE_FAILURE);
+        }
 
         if (size > *signatureSize)
         {
@@ -380,8 +382,10 @@ OE_Result OE_PrivateKeySign(
     }
 
     /* Compute the signature */
-    if (EVP_PKEY_sign(ctx, signature, signatureSize, hashData, hashSize) <= 0)
+    if (EVP_PKEY_sign(ctx, signature, signatureSize, (const uint8_t*)hashData, hashSize) <= 0)
+    {
         OE_RAISE(OE_FAILURE);
+    }
 
     result = OE_OK;
 
@@ -433,8 +437,10 @@ OE_Result OE_PublicKeyVerify(
         OE_RAISE(OE_FAILURE);
 
     /* Compute the signature */
-    if (EVP_PKEY_verify(ctx, signature, signatureSize, hashData, hashSize) <= 0)
+    if (EVP_PKEY_verify(ctx, signature, signatureSize, (const uint8_t*)hashData, hashSize) <= 0)
+    {
         OE_RAISE(OE_VERIFY_FAILED);
+    }
 
     result = OE_OK;
 

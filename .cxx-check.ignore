@@ -1,0 +1,8 @@
+libc
+3rdparty
+tests/libc
+tests/libcxx
+tests/mbed
+tests/VectorException
+build
+debugger

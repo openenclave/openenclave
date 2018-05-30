@@ -19,15 +19,25 @@ if(DEFINED CMAKE_VS_PLATFORM_NAME)
     endif()
 endif()
 
-# Use ccache if available
-find_program(CCACHE_FOUND ccache)
-if(CCACHE_FOUND)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-    message("Using ccache")
+set(CXX_CHECK ${PROJECT_SOURCE_DIR}/scripts/cxx-check)
+
+if(ENABLE_CXX_CHECK)
+
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CXX_CHECK})
+
 else()
-    message("ccache not found")
-endif(CCACHE_FOUND)
+
+    # Use ccache if available
+    find_program(CCACHE_FOUND ccache)
+    if(CCACHE_FOUND)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+        message("Using ccache")
+    else()
+        message("ccache not found")
+    endif(CCACHE_FOUND)
+
+endif()
 
 if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
     # Enables all the warnings about constructions that some users consider questionable,

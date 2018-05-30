@@ -6,7 +6,7 @@
 
 OE_Result OE_Random(void* data, size_t size)
 {
-    if (!RAND_bytes(data, size))
+    if (!RAND_bytes((uint8_t*)data, size))
         return OE_FAILURE;
 
     return OE_OK;

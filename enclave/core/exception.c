@@ -83,7 +83,7 @@ void* OE_AddVectoredExceptionHandler(
         g_exception_handler_arr[0] = vectoredHandler;
     }
 
-    func_ret = vectoredHandler;
+    func_ret = (void*)vectoredHandler;
     g_current_exception_handler_count++;
 
 cleanup:

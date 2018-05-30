@@ -119,6 +119,10 @@ OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
 #define OE_MAKE_ATTRIBUTES(_AllowDebug_) \
     (OE_SGX_FLAGS_MODE64BIT | (_AllowDebug_ ? OE_SGX_FLAGS_DEBUG : 0))
 
+/*
+ATTN?
+*/
+
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
 
@@ -130,11 +134,11 @@ OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
     _StackPageCount_,                                                   \
     _TcsCount_)                                                         \
     OE_INFO_SECTION_BEGIN                                               \
-    OE_EXPORT const OE_SGXEnclaveProperties oe_enclavePropertiesSGX =  \
+    const OE_SGXEnclaveProperties oe_enclavePropertiesSGX =             \
     {                                                                   \
         .header =                                                       \
         {                                                               \
-            .size = sizeof(OE_SGXEnclaveProperties),                   \
+            .size = sizeof(OE_SGXEnclaveProperties),                    \
             .enclaveType = OE_ENCLAVE_TYPE_SGX,                         \
             .sizeSettings =                                             \
             {                                                           \

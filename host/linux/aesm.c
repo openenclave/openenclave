@@ -116,7 +116,7 @@ static int _PackTag(mem_t* buf, uint8_t fieldNum, WireType wireType)
     return mem_cat(buf, &tag, sizeof(uint8_t));
 }
 
-static ssize_t _UnpackTag(const mem_t* buf, size_t pos, uint8_t* tag)
+static size_t _UnpackTag(const mem_t* buf, size_t pos, uint8_t* tag)
 {
     size_t size = sizeof(uint8_t);
 
@@ -127,7 +127,7 @@ static ssize_t _UnpackTag(const mem_t* buf, size_t pos, uint8_t* tag)
     return pos + size;
 }
 
-static ssize_t _UnpackVariantUint32(mem_t* buf, size_t pos, uint32_t* value)
+static size_t _UnpackVariantUint32(mem_t* buf, size_t pos, uint32_t* value)
 {
     const uint8_t* p;
     uint32_t result = 0;
@@ -213,7 +213,7 @@ static OE_Result _UnpackVarInt(
     uint8_t tag;
     uint8_t tmpTag;
 
-    if ((*pos = _UnpackTag(buf, *pos, &tag)) == -1)
+    if ((*pos = _UnpackTag(buf, *pos, &tag)) == (size_t)-1)
         OE_THROW(OE_FAILURE);
 
     if (_MakeTag(fieldNum, WIRETYPE_VARINT, &tmpTag) != 0)
@@ -222,7 +222,7 @@ static OE_Result _UnpackVarInt(
     if (tag != tmpTag)
         OE_THROW(OE_FAILURE);
 
-    if ((*pos = _UnpackVariantUint32(buf, *pos, value)) == -1)
+    if ((*pos = _UnpackVariantUint32(buf, *pos, value)) == (size_t)-1)
         OE_THROW(OE_FAILURE);
 
     result = OE_OK;
@@ -243,7 +243,7 @@ static OE_Result _UnpackLengthDelimited(
     uint8_t tmpTag = 0;
     uint32_t size;
 
-    if ((*pos = _UnpackTag(buf, *pos, &tag)) == -1)
+    if ((*pos = _UnpackTag(buf, *pos, &tag)) == (size_t)-1)
         OE_THROW(OE_FAILURE);
 
     if (_MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED, &tmpTag) != 0)
@@ -252,7 +252,7 @@ static OE_Result _UnpackLengthDelimited(
     if (tag != tmpTag)
         OE_THROW(OE_FAILURE);
 
-    if ((*pos = _UnpackVariantUint32(buf, *pos, &size)) == -1)
+    if ((*pos = _UnpackVariantUint32(buf, *pos, &size)) == (size_t)-1)
         OE_THROW(OE_FAILURE);
 
     if (size > dataSize)
@@ -270,9 +270,12 @@ OE_CATCH:
 
 static int _Read(int sock, void* data, size_t size)
 {
-    ssize_t n;
+    ssize_t n = read(sock, data, size);
 
-    if ((n = read(sock, data, size)) != size)
+    if (n < 0)
+        return n;
+
+    if ((size_t)n != size)
         return -1;
 
     return 0;
@@ -280,9 +283,12 @@ static int _Read(int sock, void* data, size_t size)
 
 static int _Write(int sock, const void* data, size_t size)
 {
-    ssize_t n;
+    ssize_t n = write(sock, data, size);
 
-    if ((n = write(sock, data, size)) != size)
+    if (n < 0)
+        return n;
+
+    if ((size_t)n != size)
         return -1;
 
     return 0;
@@ -380,7 +386,7 @@ static OE_Result _ReadResponse(
             OE_THROW(OE_FAILURE);
 
         /* Read the message from the envelope */
-        mem_cat(message, mem_ptr(&envelope) + pos, size);
+        mem_cat(message, (const uint8_t*)mem_ptr(&envelope) + pos, size);
     }
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
@@ -474,7 +480,8 @@ OE_Result AESMGetLaunchToken(
         OE_TRY(_PackBytes(&request, 3, attributes, sizeof(SGX_Attributes)));
 
         /* Pack TIMEOUT */
-        OE_TRY(_PackVarInt(&request, 9, timeout));
+        if (_PackVarInt(&request, 9, timeout) != 0)
+            OE_THROW(OE_FAILURE);
     }
 
     /* Send the request to the AESM service */
@@ -532,7 +539,8 @@ OE_Result AESMInitQuote(
     /* Build the PAYLOAD */
     {
         /* Pack TIMEOUT */
-        OE_TRY(_PackVarInt(&request, 9, timeout));
+        if (_PackVarInt(&request, 9, timeout) != 0)
+            OE_THROW(OE_FAILURE);
     }
 
     /* Send the request to the AESM service */
@@ -606,7 +614,8 @@ OE_Result AESMGetQuote(
         OE_TRY(_PackBytes(&request, 1, report, sizeof(SGX_Report)));
 
         /* Pack QUOTE-TYPE */
-        OE_TRY(_PackVarInt(&request, 2, quoteType));
+        if (_PackVarInt(&request, 2, quoteType) != 0)
+            OE_THROW(OE_FAILURE);
 
         /* Pack SPID */
         OE_TRY(_PackBytes(&request, 3, spid, sizeof(SGX_SPID)));
@@ -627,14 +636,19 @@ OE_Result AESMGetQuote(
         }
 
         /* Pack QUOTE-SIZE */
-        OE_TRY(_PackVarInt(&request, 6, quoteSize));
+        if (_PackVarInt(&request, 6, quoteSize) != 0)
+            OE_THROW(OE_FAILURE);
 
         /* Pack boolean indicating whether REPORT-OUT is present */
         if (reportOut)
-            OE_TRY(_PackVarInt(&request, 7, 1));
+        {
+            if (_PackVarInt(&request, 7, 1) != 0)
+                OE_THROW(OE_FAILURE);
+        }
 
         /* Pack TIMEOUT */
-        OE_TRY(_PackVarInt(&request, 9, timeout));
+        if (_PackVarInt(&request, 9, timeout) != 0)
+            OE_THROW(OE_FAILURE);
     }
 
     /* Send the request to the AESM service */

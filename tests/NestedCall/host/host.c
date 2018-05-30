@@ -87,7 +87,7 @@ void TestNestedCalls(int testEh, int depth)
     args.testEh = testEh;
     args.depth = depth;
     args.in = "";
-    args.out = "";
+    args.out = (char*)"";
 
     printf("host: TestNestedCalls start!\n");
     HostNestCalls((void*)&args);

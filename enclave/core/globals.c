@@ -45,7 +45,7 @@ OE_EXPORT unsigned long long __oe_numRelocPages;
 
 const void* __OE_GetRelocBase()
 {
-    const unsigned char* base = __OE_GetEnclaveBase();
+    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
 
     return base + (__oe_baseRelocPage * OE_PAGE_SIZE);
 }
@@ -73,7 +73,7 @@ OE_EXPORT unsigned long long __oe_numECallPages;
 
 const void* __OE_GetECallBase()
 {
-    const unsigned char* base = __OE_GetEnclaveBase();
+    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
 
     return base + (__oe_baseECallPage * OE_PAGE_SIZE);
 }
@@ -101,7 +101,7 @@ OE_EXPORT unsigned long long __oe_numHeapPages;
 
 const void* __OE_GetHeapBase()
 {
-    const unsigned char* base = __OE_GetEnclaveBase();
+    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
 
     return base + (__oe_baseHeapPage * OE_PAGE_SIZE);
 }

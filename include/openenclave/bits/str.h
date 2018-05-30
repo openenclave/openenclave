@@ -279,8 +279,11 @@ MEM_INLINE int str_printf(str_t* str, const char* format, ...)
     r = vsnprintf(str_mutable_ptr(str), str_cap(str), format, ap);
     va_end(ap);
 
+    if (r < 0)
+        return r;
+
     /* If buffer was not big enough and using dynamic memory */
-    if (r + 1 > str_cap(str))
+    if ((size_t)r + 1 > str_cap(str))
     {
         /* Expand memory allocation to required size */
         if (str_reserve(str, r + 1) != 0)

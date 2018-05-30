@@ -219,7 +219,7 @@ OE_CATCH:
 
 static void _HandleExit(OE_Code code, long func, uint64_t arg)
 {
-    OE_Exit(OE_MakeCallArg1(code, func, 0), arg);
+    OE_Exit(OE_MakeCallArg1(code, (OE_Func)func, 0), arg);
 }
 
 /*
@@ -354,7 +354,7 @@ Exit:
     TD_PopCallsite(td);
 
     /* Perform ERET, giving control back to host */
-    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, (OE_Func)func, 0);
     *outputArg2 = argOut;
     return;
 }
@@ -464,12 +464,12 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args =
+        if (!(args = (OE_CallHostArgs*)
                   OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1)))
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
              * fail immediately. */
-            OE_TRY(__oe_enclave_status);
+            OE_TRY((OE_Result)__oe_enclave_status);
             OE_THROW(OE_OUT_OF_MEMORY);
         }
 
@@ -613,7 +613,7 @@ void __OE_HandleMain(
                 else
                 {
                     // Return crashing status.
-                    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+                    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, (OE_Func)func, 0);
                     *outputArg2 = __oe_enclave_status;
                     return;
                 }
@@ -623,7 +623,7 @@ void __OE_HandleMain(
 
         default:
             // Return crashed status.
-            *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+            *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, (OE_Func)func, 0);
             *outputArg2 = OE_ENCLAVE_ABORTED;
             return;
     }

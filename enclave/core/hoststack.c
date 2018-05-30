@@ -35,10 +35,8 @@ typedef struct Bucket
 
 static const size_t _bucketMinSize = 4096;
 
-typedef enum ThreadBucketFlags {
-    THREAD_BUCKET_FLAG_BUSY = 1,
-    THREAD_BUCKET_FLAG_RUNDOWN = 2,
-} ThreadBucketFlags;
+#define THREAD_BUCKET_FLAG_BUSY 1
+#define THREAD_BUCKET_FLAG_RUNDOWN 2
 
 // per thread struct to hold the active and standby buckets
 typedef struct ThreadBuckets
@@ -46,7 +44,7 @@ typedef struct ThreadBuckets
     volatile Bucket* activeHost;
     volatile Bucket* standbyHost;
     Bucket cached; // valid if activeHost != NULL
-    ThreadBucketFlags flags;
+    uint32_t flags;
 } ThreadBuckets;
 
 // OE_Once() replacement to work around recursion limitation
@@ -102,7 +100,7 @@ static ThreadBuckets* _GetThreadBuckets()
     ThreadBuckets* tb;
 
     _Once(&_HostStackInitialized, _HostStackInit);
-    tb = OE_ThreadGetSpecific(_HostStackTlsKey);
+    tb = (ThreadBuckets*)OE_ThreadGetSpecific(_HostStackTlsKey);
     if (tb == NULL)
     {
         if ((tb = (ThreadBuckets*)OE_Sbrk(sizeof(ThreadBuckets))) == (void*)-1)
