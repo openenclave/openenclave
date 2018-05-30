@@ -11,6 +11,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+
 #define OE_ENABLE_MALLOC_WRAPPERS
 #define HAVE_MMAP 0
 #define LACKS_UNISTD_H
@@ -34,11 +38,13 @@
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
 /* Replacement for sched_yield() in dlmalloc sources below */
+OE_EXTERNC_BEGIN
 static int __sched_yield(void)
 {
     __asm__ __volatile__("pause");
     return 0;
 }
+OE_EXTERNC_END
 
 /* Since Dlmalloc provides no way to override the SPIN_LOCK_YIELD macro,
  * redefine sched_yield() directly. Dlmalloc spins for a given number of

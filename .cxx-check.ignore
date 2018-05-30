@@ -1,7 +1,6 @@
-libc
 3rdparty
-tests/libc
 tests/libcxx
+tests/libc
 tests/mbed
 tests/VectorException
 build
