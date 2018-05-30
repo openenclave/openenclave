@@ -171,22 +171,44 @@ typedef struct _ConfigFileOptions
     }
 
 /* Check whether the .conf file is missing required options */
-static void _CheckForMissingOptions(const ConfigFileOptions* options)
+static int _CheckForMissingOptions(const ConfigFileOptions* options)
 {
+    int ret = -1;
+
     if (options->numHeapPages == OE_MAX_UINT64)
+    {
         Err("%s: missing option: NumHeapPages", arg0);
+        goto done;
+    }
 
     if (options->numStackPages == OE_MAX_UINT64)
+    {
         Err("%s: missing option: NumStackPages", arg0);
+        goto done;
+    }
 
     if (options->numTCS == OE_MAX_UINT64)
+    {
         Err("%s: missing option: NumTCS", arg0);
+        goto done;
+    }
 
     if (options->productID == OE_MAX_UINT16)
+    {
         Err("%s: missing option: ProductID", arg0);
+        goto done;
+    }
 
     if (options->securityVersion == OE_MAX_UINT16)
+    {
         Err("%s: missing option: SecurityVersion", arg0);
+        goto done;
+    }
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
 static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
@@ -550,7 +572,10 @@ int main(int argc, const char* argv[])
 
         /* If enclave properties not found, then options must be complete */
         if (result == OE_NOT_FOUND)
-            _CheckForMissingOptions(&options);
+        {
+            if (_CheckForMissingOptions(&options) != 0)
+                goto done;
+        }
     }
 
     /* Merge the configuration file options into the enclave properties */
