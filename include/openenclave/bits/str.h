@@ -280,7 +280,7 @@ MEM_INLINE int str_printf(str_t* str, const char* format, ...)
     va_end(ap);
 
     if (r < 0)
-        return r;
+        return -1;
 
     /* If buffer was not big enough and using dynamic memory */
     if ((size_t)r + 1 > str_cap(str))

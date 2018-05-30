@@ -119,10 +119,6 @@ OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
 #define OE_MAKE_ATTRIBUTES(_AllowDebug_) \
     (OE_SGX_FLAGS_MODE64BIT | (_AllowDebug_ ? OE_SGX_FLAGS_DEBUG : 0))
 
-/*
-ATTN?
-*/
-
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
 
