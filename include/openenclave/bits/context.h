@@ -9,52 +9,6 @@
 #include <openenclave/types.h>
 #include "sgxtypes.h"
 
-// X87 and SSE data.
-typedef struct _OE_BASIC_XSTATE
-{
-    uint8_t blob[512];
-} OE_ALIGNED(16) OE_BASIC_XSTATE;
-
-typedef struct _OE_CONTEXT
-{
-    // Flags.
-    uint64_t flags;
-
-    // Integer registers.
-    uint64_t rax;
-    uint64_t rbx;
-    uint64_t rcx;
-    uint64_t rdx;
-
-    uint64_t rbp;
-    uint64_t rsp;
-
-    uint64_t rdi;
-    uint64_t rsi;
-
-    uint64_t r8;
-    uint64_t r9;
-    uint64_t r10;
-    uint64_t r11;
-    uint64_t r12;
-    uint64_t r13;
-    uint64_t r14;
-    uint64_t r15;
-
-    uint64_t rip;
-
-    // Don't need to manipulate the segment registers directly.
-    // Ignore them: CS, DS, ES, SS, GS, and FS.
-
-    // SSE control flags.
-    uint32_t mxcsr;
-
-    // Basic XState.
-    OE_BASIC_XSTATE basic_xstate;
-
-    // Don't need to manipulate other XSTATE (AVX etc.).
-} OE_CONTEXT;
-
 OE_CHECK_SIZE(sizeof(OE_CONTEXT), OE_CONTEXT_SIZE);
 OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, flags), OE_CONTEXT_FLAGS);
 OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rax), OE_CONTEXT_RAX);
@@ -81,6 +35,7 @@ void OE_SnapCurrentContext(OE_CONTEXT* oe_context);
 void OE_RestorePartialContext(OE_CONTEXT* oe_context);
 void OE_ContinueExecution(OE_CONTEXT* oe_context);
 
+/*
 typedef struct _OE_EXCEPTION_RECORD
 {
     // Exception code.
@@ -97,7 +52,7 @@ typedef struct _OE_EXCEPTION_RECORD
 } OE_EXCEPTION_RECORD;
 
 typedef uint64_t (*POE_VECTORED_EXCEPTION_HANDLER)(
-    OE_EXCEPTION_RECORD* exceptionContext);
+  OE_EXCEPTION_RECORD* exceptionContext); */
 #endif // !__ASSEMBLER__
 
 #endif /* _CONTEXT_H */

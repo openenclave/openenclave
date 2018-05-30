@@ -64,6 +64,10 @@
 
 * [OE_VerifyReport()](host_8h_a850db238bbabb981072ae33640d3b117_1a850db238bbabb981072ae33640d3b117.md)
 
+### properties.h
+
+### report.h
+
 ### result.h
 
 * [OE_ResultStr()](result_8h_ad6af4f3a22dd8979ba8d33e5f87121be_1ad6af4f3a22dd8979ba8d33e5f87121be.md)
@@ -127,4 +131,12 @@
 * [OE_ThreadSetSpecific()](thread_8h_afe7f5e48461b5262a96ee4b56c07f373_1afe7f5e48461b5262a96ee4b56c07f373.md)
 
 * [OE_ThreadGetSpecific()](thread_8h_af39a5975141e08c467f807f3800410c1_1af39a5975141e08c467f807f3800410c1.md)
+
+### types.h
+
+* [OE_STATIC_ASSERT()](types_8h_ae31000e1eeec98e3edc1d95b4917a60e_1ae31000e1eeec98e3edc1d95b4917a60e.md)
+
+* [OE_ALIGNED()](types_8h_a39a6728a66b82da6d4cff44b650e0d81_1a39a6728a66b82da6d4cff44b650e0d81.md)
+
+* [OE_ALIGNED()](types_8h_aed5fd49d7e6df6e59d02ab7f72b10ee8_1aed5fd49d7e6df6e59d02ab7f72b10ee8.md)
 
