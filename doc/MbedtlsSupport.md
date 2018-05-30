@@ -48,7 +48,7 @@ rsa.h | Yes | - |
 sha1.h | Yes | - |
 sha256.h | Yes | - |
 sha512.h | Yes | - |
-ssl_cache.h | Yes |  ? function: mbedtls_ssl_cache_set_timeout() |
+ssl_cache.h | Yes | - |
 ssl_ciphersuites.h | Partial | Unsupported functions: mbedtls_ssl_ciphersuite_uses_dhe(), mbedtls_ssl_ciphersuite_uses_ecdhe(), mbedtls_ssl_ciphersuite_uses_server_signature() |
 ssl_cookie.h | Yes | - |
 ssl.h | Partial | Unsupported functions: mbedtls_ssl_conf_psk(), mbedtls_ssl_set_hs_psk(), mbedtls_ssl_conf_psk_cb(), mbedtls_ssl_conf_dh_param(), mbedtls_ssl_conf_dh_param_ctx(), mbedtls_ssl_conf_dhm_min_bitlen(), mbedtls_ssl_set_hs_ecjpake_password(), mbedtls_ssl_conf_arc4_support(), mbedtls_ssl_conf_truncated_hmac(), mbedtls_ssl_conf_cbc_record_splitting(), mbedtls_ssl_conf_renegotiation(), mbedtls_ssl_conf_renegotiation_enforced(), mbedtls_ssl_conf_renegotiation_period(), mbedtls_ssl_renegotiate() |
