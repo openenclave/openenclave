@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 ##==============================================================================
 ##
 ## cxx-check:
@@ -86,8 +89,6 @@ done
 
 ignore=${root}/.cxx-check.ignore
 
-#echo "=== SRC=${src}"
-
 if [ -f "${src}" ]; then
 
     if [ -f "${ignore}" ]; then
@@ -121,9 +122,8 @@ fi
 ##
 if [ "${src}" != "" ]; then
 
-cat<<EOF
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-EOF
+    echo "=== cxx-check"
+
     g++ ${args}
     if [ "$?" != "0" ]; then
         exit 1
