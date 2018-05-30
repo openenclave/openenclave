@@ -287,9 +287,6 @@ static int _MutexUnlock(OE_Mutex* mutex, OE_ThreadData** waiter)
     OE_ThreadData* self = OE_GetThreadData();
     int ret = -1;
 
-    if (!m || !waiter)
-        goto done;
-
     OE_SpinLock(&m->lock);
     {
         /* If this thread has the mutex locked */
@@ -310,7 +307,6 @@ static int _MutexUnlock(OE_Mutex* mutex, OE_ThreadData** waiter)
     }
     OE_SpinUnlock(&m->lock);
 
-done:
     return ret;
 }
 
@@ -322,7 +318,7 @@ OE_Result OE_MutexUnlock(OE_Mutex* m)
         return OE_INVALID_PARAMETER;
 
     if (_MutexUnlock(m, &waiter) != 0)
-        return OE_FAILURE;
+        return OE_NOT_OWNER;
 
     if (waiter)
     {
@@ -340,7 +336,7 @@ OE_Result OE_MutexDestroy(OE_Mutex* mutex)
     if (!m)
         return OE_INVALID_PARAMETER;
 
-    OE_Result result = OE_FAILURE;
+    OE_Result result = OE_BUSY;
 
     OE_SpinLock(&m->lock);
     {
@@ -405,7 +401,7 @@ OE_Result OE_CondDestroy(OE_Cond* condition)
     if (cond->queue.front)
     {
         OE_SpinUnlock(&cond->lock);
-        return OE_FAILURE;
+        return OE_BUSY;
     }
 
     OE_SpinUnlock(&cond->lock);
@@ -418,7 +414,7 @@ OE_Result OE_CondWait(OE_Cond* condition, OE_Mutex* mutex)
     OE_CondImpl* cond = (OE_CondImpl*)condition;
     OE_ThreadData* self = OE_GetThreadData();
 
-    if (!cond)
+    if (!cond || !mutex)
         return OE_INVALID_PARAMETER;
 
     OE_SpinLock(&cond->lock);
@@ -428,11 +424,11 @@ OE_Result OE_CondWait(OE_Cond* condition, OE_Mutex* mutex)
         /* Add the self thread to the end of the wait queue */
         _QueuePushBack((Queue*)&cond->queue, self);
 
-        /* Unlock whichever thread is waiting on this mutex (the waiter) */
+        /* Unlock this mutex and get the waiter at the front of the queue */
         if (_MutexUnlock(mutex, &waiter) != 0)
         {
             OE_SpinUnlock(&cond->lock);
-            return OE_FAILURE;
+            return OE_BUSY;
         }
 
         for (;;)
@@ -816,10 +812,10 @@ static void** _GetTSDPage(void)
 
 OE_Result OE_ThreadKeyCreate(OE_ThreadKey* key, void (*destructor)(void* value))
 {
-    OE_Result result = OE_FAILURE;
-
     if (!key)
         return OE_INVALID_PARAMETER;
+
+    OE_Result result = OE_OUT_OF_MEMORY;
 
     /* Search for an available slot (the first slot is not used) */
     {
@@ -876,11 +872,12 @@ OE_Result OE_ThreadSetSpecific(OE_ThreadKey key, const void* value)
 {
     void** tsd_page;
 
-    if (key == 0)
+    /* If key parameter is invalid */
+    if (key == 0 || key >= MAX_KEYS)
         return OE_INVALID_PARAMETER;
 
     if (!(tsd_page = _GetTSDPage()))
-        return OE_FAILURE;
+        return OE_INVALID_PARAMETER;
 
     tsd_page[key] = (void*)value;
 

@@ -30,6 +30,10 @@ OE_INLINE int _ToErrno(OE_Result result)
             return EINVAL;
         case OE_BUSY:
             return EBUSY;
+        case OE_NOT_OWNER:
+            return EPERM;
+        case OE_OUT_OF_MEMORY:
+            return ENOMEM;
         default:
             return EINVAL;
     }

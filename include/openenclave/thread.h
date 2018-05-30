@@ -228,7 +228,7 @@ OE_Result OE_MutexTryLock(OE_Mutex* mutex);
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
- * @return OE_FAILURE the operation failed
+ * @return OE_NOT_OWNER the calling thread does not have the mutex locked
  *
  */
 OE_Result OE_MutexUnlock(OE_Mutex* mutex);
@@ -242,7 +242,7 @@ OE_Result OE_MutexUnlock(OE_Mutex* mutex);
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
- * @return OE_FAILURE the operation failed
+ * @return OE_BUSY threads are still waiting for this mutex
  *
  */
 OE_Result OE_MutexDestroy(OE_Mutex* mutex);
@@ -300,7 +300,7 @@ OE_Result OE_CondInit(OE_Cond* cond);
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
- * @return OE_FAILURE the operation failed
+ * @return OE_BUSY the mutex is not locked by the calling thread.
  *
  */
 OE_Result OE_CondWait(OE_Cond* cond, OE_Mutex* mutex);
@@ -352,6 +352,7 @@ OE_Result OE_CondBroadcast(OE_Cond* cond);
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_BUSY threads are still waiting on this condition
  *
  */
 OE_Result OE_CondDestroy(OE_Cond* cond);
@@ -581,7 +582,7 @@ typedef uint32_t OE_ThreadKey;
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
- * @return OE_FAILURE the operation failed
+ * @return OE_OUT_OF_MEMORY insufficient memory exists to create the key
  *
  */
 OE_Result OE_ThreadKeyCreate(OE_ThreadKey* key, void (*destructor)(void* value));
