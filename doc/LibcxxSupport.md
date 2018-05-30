@@ -54,7 +54,7 @@ stddef | Yes |  - |
 streambuf | Yes | - |
 syncstream | No | - |
 system error | Yes | - |
-thread | Yes | ? function: sleep_until() |
+thread | Yes | Unsupported function: sleep_until() |
 tuple | Partial | Supported function: pair() |
 typeinfo | No | - |
 type_traits | Partial | Supported functions: decltype(), move(), size_of() |
