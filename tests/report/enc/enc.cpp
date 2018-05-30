@@ -16,7 +16,7 @@
 
 // Encode the current source position as a comment to the assembly block. This
 // makes each speculation barrier unique and prevents the compiler from merging
-// different speculation barriers. Additonally it also allows manual
+// different speculation barriers. Additionally it also allows manual
 // verification of lfences in generated assembly code.
 #define OE_SPECULATION_BARRIER() \
     asm volatile("lfence #" OE_SOURCE_POS ::: "memory");
