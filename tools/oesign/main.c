@@ -595,7 +595,7 @@ int main(int argc, const char* argv[])
              props.config.attributes,
              props.config.productID,
              props.config.securityVersion,
-             pemData,
+             (const uint8_t*)pemData,
              pemSize,
              (SGX_SigStruct*)props.sigstruct)) != OE_OK)
     {
@@ -604,9 +604,9 @@ int main(int argc, const char* argv[])
     }
 
     /* Create signature section and write out new file */
-    if ((result = _UpdateAndWriteSharedLib(enclave, &props)) != OE_OK)
+    if (_UpdateAndWriteSharedLib(enclave, &props) != 0)
     {
-        Err("_UpdateAndWriteSharedLib(): result=%u", result);
+        Err("_UpdateAndWriteSharedLib(): failed");
         goto done;
     }
 

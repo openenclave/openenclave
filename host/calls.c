@@ -202,7 +202,7 @@ static OE_Result _DoEENTER(
 
     /* Call OE_Enter() assembly function (enter.S) */
     {
-        uint64_t arg1 = OE_MakeCallArg1(codeIn, funcIn, 0);
+        uint64_t arg1 = OE_MakeCallArg1(codeIn, (OE_Func)funcIn, 0);
         uint64_t arg2 = (uint64_t)argIn;
         uint64_t arg3 = 0;
         uint64_t arg4 = 0;
@@ -503,7 +503,7 @@ int __OE_DispatchOCall(
         /* ATTN: ignored! */
         (void)result;
 
-        *arg1Out = OE_MakeCallArg1(OE_CODE_ORET, func, 0);
+        *arg1Out = OE_MakeCallArg1(OE_CODE_ORET, (OE_Func)func, 0);
         *arg2Out = argOut;
 
         return 0;
@@ -644,7 +644,7 @@ OE_Result OE_ECall(
     OE_Result result = OE_UNEXPECTED;
     void* tcs = NULL;
     OE_Code code = OE_CODE_ECALL;
-    OE_Code codeOut = 0;
+    OE_Code codeOut = OE_CODE_NONE;
     uint32_t funcOut = 0;
     uint64_t argOut = 0;
 
@@ -780,7 +780,7 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args)
                 OE_FUNC_CALL_ENCLAVE,
                 (uint64_t)&callEnclaveArgs,
                 &argOut));
-        OE_TRY(argOut);
+        OE_TRY((OE_Result)argOut);
     }
 
     /* Check the result */

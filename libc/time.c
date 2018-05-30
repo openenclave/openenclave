@@ -2,7 +2,11 @@
 // Licensed under the MIT License.
 
 #define __OE_NEED_TIME_CALLS
-#define _GNU_SOURCE
+
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE
+#endif
+
 #include <assert.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/enclave.h>
@@ -39,7 +43,7 @@ int gettimeofday(struct timeval* tv, void* tz)
     size_t ret = -1;
     OE_GettimeofdayArgs* args = NULL;
 
-    if (!(args = OE_HostCalloc(1, sizeof(OE_GettimeofdayArgs))))
+    if (!(args = (OE_GettimeofdayArgs*)OE_HostCalloc(1, sizeof(*args))))
         goto done;
 
     args->ret = -1;
@@ -81,7 +85,7 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
     size_t ret = -1;
     OE_ClockgettimeArgs* args = NULL;
 
-    if (!(args = OE_HostMalloc(sizeof(OE_ClockgettimeArgs))))
+    if (!(args = (OE_ClockgettimeArgs*)OE_HostMalloc(sizeof(*args))))
         goto done;
 
     args->ret = -1;
@@ -119,7 +123,7 @@ size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
     if (!str || !format || !tm)
         goto done;
 
-    if (!(a = OE_HostCalloc(1, sizeof(OE_StrftimeArgs))))
+    if (!(a = (OE_StrftimeArgs*)OE_HostCalloc(1, sizeof(*a))))
         goto done;
 
     if (strlcpy(a->format, format, sizeof(a->format)) >= sizeof(a->format))
@@ -163,7 +167,7 @@ int nanosleep(const struct timespec* req, struct timespec* rem)
     size_t ret = -1;
     OE_NanosleepArgs* args = NULL;
 
-    if (!(args = OE_HostCalloc(1, sizeof(OE_NanosleepArgs))))
+    if (!(args = (OE_NanosleepArgs*)OE_HostCalloc(1, sizeof(*args))))
         goto done;
 
     args->ret = -1;

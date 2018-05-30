@@ -79,7 +79,7 @@ char* OE_HostStrdup(const char* str)
 
     len = OE_Strlen(str);
 
-    if (!(p = OE_HostMalloc(len + 1)))
+    if (!(p = (char*)OE_HostMalloc(len + 1)))
         return NULL;
 
     OE_Memcpy(p, str, len + 1);
@@ -182,10 +182,13 @@ int __OE_HostVfprintf(int device, const char* fmt, OE_va_list ap_)
         OE_va_end(ap);
     }
 
+    if (n < 0)
+        return -1;
+
     /* If string was truncated, retry with correctly sized buffer */
-    if (n >= sizeof(buf))
+    if ((size_t)n >= sizeof(buf))
     {
-        if (!(p = OE_StackAlloc(n + 1, 0)))
+        if (!(p = (char*)OE_StackAlloc(n + 1, 0)))
             return -1;
 
         OE_va_list ap;

@@ -43,7 +43,7 @@ static OE_Result _CopyKey(
         OE_RAISE(OE_FAILURE);
 
     /* Get the context for this key type */
-    if (!(rsa = dest->pk_ctx))
+    if (!(rsa = (mbedtls_rsa_context*)dest->pk_ctx))
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the RSA key from the source */
@@ -84,7 +84,7 @@ static OE_Result _GetPublicKeyModulusOrExponent(
 {
     OE_Result result = OE_UNEXPECTED;
     size_t requiredSize;
-    mbedtls_rsa_context* rsa;
+    const mbedtls_rsa_context* rsa;
     const mbedtls_mpi* mpi;
 
     /* Check for invalid parameters */
@@ -96,7 +96,7 @@ static OE_Result _GetPublicKeyModulusOrExponent(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the RSA context */
-    if (!(rsa = publicKey->pk.pk_ctx))
+    if (!(rsa = (const mbedtls_rsa_context*)publicKey->pk.pk_ctx))
         OE_RAISE(OE_FAILURE);
 
     /* Pick modulus or exponent */
@@ -229,8 +229,11 @@ static OE_Result OE_PublicKeyEqual(
 
     /* Compare the exponent and modulus */
     {
-        const mbedtls_rsa_context* rsa1 = publicKey1->pk.pk_ctx;
-        const mbedtls_rsa_context* rsa2 = publicKey2->pk.pk_ctx;
+        const mbedtls_rsa_context* rsa1;
+        const mbedtls_rsa_context* rsa2;
+
+        rsa1 = (const mbedtls_rsa_context*)publicKey1->pk.pk_ctx;
+        rsa2 = (const mbedtls_rsa_context*)publicKey2->pk.pk_ctx;
 
         if (!rsa1 || !rsa2)
             OE_RAISE(OE_INVALID_PARAMETER);

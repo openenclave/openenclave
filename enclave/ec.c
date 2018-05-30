@@ -20,7 +20,7 @@ static const char* _curveNames[] = {
 };
 
 /* Convert ECType to curve name */
-static const char* _ECTypeToString(OE_Type type)
+static const char* _ECTypeToString(OE_ECType type)
 {
     size_t index = (size_t)type;
 
@@ -92,7 +92,7 @@ static OE_Result _GenerateKeyPair(
     OE_Result result = OE_UNEXPECTED;
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
-    int curve;
+    mbedtls_ecp_group_id curve;
     const char* curveName;
 
     /* Initialize structures */

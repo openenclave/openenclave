@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define _GNU_SOURCE
+
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE
+#endif
+
 #include <assert.h>
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
@@ -40,10 +44,13 @@ int vprintf(const char* fmt, va_list ap_)
         va_end(ap);
     }
 
+    if (n < 0)
+        return n;
+
     /* If string was truncated, retry with correctly sized buffer */
-    if (n >= sizeof(buf))
+    if ((size_t)n >= sizeof(buf))
     {
-        if (!(p = alloca(n + 1)))
+        if (!(p = (char*)alloca(n + 1)))
             return -1;
 
         va_list ap;
@@ -97,16 +104,22 @@ int fprintf(FILE* stream, const char* fmt, ...)
         va_end(ap);
     }
 
+    if (n < 0)
+        return n;
+
     buf[sizeof(buf) - 1] = 0;
-    if (n > sizeof(buf))
+
+    if ((size_t)n > sizeof(buf))
         n = sizeof(buf);
+
     __OE_HostPrint(device, buf, n);
+
     return n;
 }
 
 OE_WEAK_ALIAS(fprintf, __libcxxrt_fprintf);
 
-size_t __fwritex(const unsigned char* restrict s, size_t l, FILE* restrict f)
+size_t __fwritex(const unsigned char* s, size_t l, FILE* f)
 {
     return f->write(f, s, l);
 }
@@ -144,13 +157,13 @@ size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)
     if (stream == stdout)
     {
         /* Write to standard output device */
-        __OE_HostPrint(0, ptr, size * nmemb);
+        __OE_HostPrint(0, (const char*)ptr, size * nmemb);
         return nmemb;
     }
     else if (stream == stderr)
     {
         /* Write to standard error device */
-        __OE_HostPrint(1, ptr, size * nmemb);
+        __OE_HostPrint(1, (const char*)ptr, size * nmemb);
         return nmemb;
     }
     else if (size && nmemb)
@@ -172,4 +185,7 @@ void __stdio_exit(void)
     assert("__stdio_exit() panic" == NULL);
 }
 
-OE_WEAK_ALIAS(__stdio_exit, __stdio_exit_needed);
+void __stdio_exit_needed(void)
+{
+    __stdio_exit();
+}

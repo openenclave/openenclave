@@ -43,7 +43,7 @@ OE_Result OE_SHA256Update(
     if (!context || !data)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    mbedtls_sha256_update(&impl->ctx, data, size);
+    mbedtls_sha256_update(&impl->ctx, (const uint8_t*)data, size);
 
     result = OE_OK;
 

@@ -18,7 +18,7 @@
 typedef struct _EnclaveEvent
 {
 #if defined(__linux__)
-    uint32_t value;
+    int value;
 #elif defined(_WIN32)
     HANDLE handle;
 #endif

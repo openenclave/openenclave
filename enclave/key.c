@@ -111,7 +111,7 @@ static mbedtls_md_type_t _MapHashType(OE_HashType md)
     }
 
     /* Unreachable */
-    return 0;
+    return MBEDTLS_MD_NONE;
 }
 
 /*
@@ -352,7 +352,7 @@ OE_Result OE_PrivateKeySign(
     if (mbedtls_pk_sign(
             (mbedtls_pk_context*)&privateKey->pk,
             type,
-            hashData,
+            (const uint8_t*)hashData,
             hashSize,
             buffer,
             &bufferSize,
@@ -401,7 +401,7 @@ OE_Result OE_PublicKeyVerify(
     if (mbedtls_pk_verify(
             (mbedtls_pk_context*)&publicKey->pk,
             type,
-            hashData,
+            (const uint8_t*)hashData,
             hashSize,
             signature,
             signatureSize) != 0)

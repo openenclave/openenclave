@@ -22,7 +22,7 @@ typedef unsigned long long WORD;
 
 #define WORD_SIZE sizeof(WORD)
 
-uint64_t __oe_enclave_status = OE_OK;
+static uint64_t _enclave_status = OE_OK;
 
 /*
 **==============================================================================
@@ -219,7 +219,7 @@ OE_CATCH:
 
 static void _HandleExit(OE_Code code, long func, uint64_t arg)
 {
-    OE_Exit(OE_MakeCallArg1(code, func, 0), arg);
+    OE_Exit(OE_MakeCallArg1(code, (OE_Func)func, 0), arg);
 }
 
 /*
@@ -354,7 +354,7 @@ Exit:
     TD_PopCallsite(td);
 
     /* Perform ERET, giving control back to host */
-    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, (OE_Func)func, 0);
     *outputArg2 = argOut;
     return;
 }
@@ -405,8 +405,8 @@ OE_Result OE_OCall(
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
-    if (__oe_enclave_status != OE_OK)
-        OE_THROW((OE_Result)__oe_enclave_status);
+    if (_enclave_status != OE_OK)
+        OE_THROW((OE_Result)_enclave_status);
 
     /* Check for unexpected failures */
     if (!callsite)
@@ -464,12 +464,12 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args =
-                  OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1)))
+        if (!(args = (OE_CallHostArgs*)OE_HostAllocForCallHost(
+                  sizeof(OE_CallHostArgs) + len + 1)))
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
              * fail immediately. */
-            OE_TRY(__oe_enclave_status);
+            OE_TRY((OE_Result)_enclave_status);
             OE_THROW(OE_OUT_OF_MEMORY);
         }
 
@@ -595,7 +595,7 @@ void __OE_HandleMain(
     *outputArg2 = 0;
 
     // Block enclave enter based on current enclave status.
-    switch (__oe_enclave_status)
+    switch (_enclave_status)
     {
         case OE_OK:
             break;
@@ -608,13 +608,14 @@ void __OE_HandleMain(
                 if (func == OE_FUNC_DESTRUCTOR)
                 {
                     // Termination function should be only called once.
-                    __oe_enclave_status = OE_ENCLAVE_ABORTED;
+                    _enclave_status = OE_ENCLAVE_ABORTED;
                 }
                 else
                 {
                     // Return crashing status.
-                    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
-                    *outputArg2 = __oe_enclave_status;
+                    *outputArg1 =
+                        OE_MakeCallArg1(OE_CODE_ERET, (OE_Func)func, 0);
+                    *outputArg2 = _enclave_status;
                     return;
                 }
             }
@@ -623,7 +624,7 @@ void __OE_HandleMain(
 
         default:
             // Return crashed status.
-            *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, func, 0);
+            *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, (OE_Func)func, 0);
             *outputArg2 = OE_ENCLAVE_ABORTED;
             return;
     }
@@ -713,12 +714,12 @@ void OE_Abort(void)
 {
     // Once it starts to crash, the state can only transit forward, not
     // backward.
-    if (__oe_enclave_status < OE_ENCLAVE_ABORTING)
+    if (_enclave_status < OE_ENCLAVE_ABORTING)
     {
-        __oe_enclave_status = OE_ENCLAVE_ABORTING;
+        _enclave_status = OE_ENCLAVE_ABORTING;
     }
 
     // Return to the latest ECALL.
-    _HandleExit(OE_CODE_ERET, 0, __oe_enclave_status);
+    _HandleExit(OE_CODE_ERET, 0, _enclave_status);
     return;
 }

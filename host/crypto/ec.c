@@ -21,7 +21,7 @@ static const char* _curveNames[] = {
 };
 
 /* Convert ECType to curve name */
-static const char* _ECTypeToString(OE_Type type)
+static const char* _ECTypeToString(OE_ECType type)
 {
     size_t index = (size_t)type;
 
@@ -213,7 +213,7 @@ static OE_Result _PublicKeyGetKeyBytes(
         OE_RAISE(OE_FAILURE);
 
     /* If buffer is null or not big enough */
-    if (!buffer || (*bufferSize < requiredSize))
+    if (!buffer || (*bufferSize < (size_t)requiredSize))
     {
         *bufferSize = requiredSize;
         OE_RAISE(OE_BUFFER_TOO_SMALL);

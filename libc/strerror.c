@@ -102,5 +102,5 @@ char* strerror(int errnum)
             return (char*)_errstr[i].str;
     }
 
-    return "Unknown error";
+    return (char*)"Unknown error";
 }

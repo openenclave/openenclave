@@ -47,7 +47,7 @@ static OE_Result _OE_GetLocalReport(
     /*
      * Populate arg fields.
      */
-    arg = calloc(1, sizeof(*arg));
+    arg = (OE_GetReportArgs*)calloc(1, sizeof(*arg));
     if (arg == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -64,7 +64,7 @@ static OE_Result _OE_GetLocalReport(
 
     arg->optParamsSize = optParamsSize;
 
-    arg->reportBuffer = reportBuffer;
+    arg->reportBuffer = (uint8_t*)reportBuffer;
     arg->reportBufferSize = reportBufferSize ? *reportBufferSize : 0;
 
     OE_CHECK(OE_ECall(enclave, OE_FUNC_GET_REPORT, (uint64_t)arg, NULL));
@@ -114,7 +114,7 @@ static OE_Result _OE_GetRemoteReport(
     /*
      * Get target info from Quoting Enclave.
      */
-    sgxTargetInfo = calloc(1, sizeof(SGX_TargetInfo));
+    sgxTargetInfo = (SGX_TargetInfo*)calloc(1, sizeof(SGX_TargetInfo));
 
     if (sgxTargetInfo == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -214,7 +214,7 @@ OE_Result OE_VerifyReport(
     OE_Report* parsedReport)
 {
     OE_Result result = OE_UNEXPECTED;
-    OE_VerifyReportArgs arg = {0};
+    OE_VerifyReportArgs arg = {OE_OK};
 
     if (report == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);

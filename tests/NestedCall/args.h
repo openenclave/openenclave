@@ -9,7 +9,7 @@ typedef struct _Args
     const char* in;
     int testEh;
     int depth;
-    char* out;
+    const char* out;
     int ret;
 } Args;
 
