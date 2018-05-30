@@ -372,9 +372,11 @@ static bool _ArrayEq(OE_Type type, const void* p1, const void* p2, size_t n)
         case OE_UINT64_T:
             return _BytesEq(p1, p2, sizeof(uint64_t) * n);
         case OE_FLOAT_T:
-            return _Real32Eq((const float*)p1, (const float*)p2, sizeof(float) * n);
+            return _Real32Eq(
+                (const float*)p1, (const float*)p2, sizeof(float) * n);
         case OE_DOUBLE_T:
-            return _Real64Eq((const double*)p1, (const double*)p2, sizeof(double) * n);
+            return _Real64Eq(
+                (const double*)p1, (const double*)p2, sizeof(double) * n);
         case OE_SIZE_T:
             return _BytesEq(p1, p2, sizeof(size_t) * n);
         case OE_SSIZE_T:

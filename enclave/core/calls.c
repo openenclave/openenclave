@@ -464,8 +464,8 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     {
         size_t len = OE_Strlen(func);
 
-        if (!(args = (OE_CallHostArgs*)
-                  OE_HostAllocForCallHost(sizeof(OE_CallHostArgs) + len + 1)))
+        if (!(args = (OE_CallHostArgs*)OE_HostAllocForCallHost(
+                  sizeof(OE_CallHostArgs) + len + 1)))
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
              * fail immediately. */
@@ -613,7 +613,8 @@ void __OE_HandleMain(
                 else
                 {
                     // Return crashing status.
-                    *outputArg1 = OE_MakeCallArg1(OE_CODE_ERET, (OE_Func)func, 0);
+                    *outputArg1 =
+                        OE_MakeCallArg1(OE_CODE_ERET, (OE_Func)func, 0);
                     *outputArg2 = __oe_enclave_status;
                     return;
                 }

@@ -231,7 +231,7 @@ static OE_Result OE_PublicKeyEqual(
     {
         const mbedtls_rsa_context* rsa1;
         const mbedtls_rsa_context* rsa2;
-        
+
         rsa1 = (const mbedtls_rsa_context*)publicKey1->pk.pk_ctx;
         rsa2 = (const mbedtls_rsa_context*)publicKey2->pk.pk_ctx;
 

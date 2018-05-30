@@ -54,8 +54,8 @@ typedef struct _mem_t
     size_t __cap;
 } mem_t;
 
-#define MEM_NULL_INIT \
-    {                 \
+#define MEM_NULL_INIT             \
+    {                             \
         0, MEM_TYPE_NONE, NULL, 0 \
     }
 
