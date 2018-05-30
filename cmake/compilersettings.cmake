@@ -19,7 +19,7 @@ if(DEFINED CMAKE_VS_PLATFORM_NAME)
     endif()
 endif()
 
-if(ENABLE_CXX_CHECK)
+if(USE_CXX_CHECK)
     # Enable the cxx-check script to pre-check C files with C++ compiler.
     set(CXX_CHECK ${PROJECT_SOURCE_DIR}/scripts/cxx-check)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CXX_CHECK})

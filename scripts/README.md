@@ -13,6 +13,6 @@ This directory contains the following scripts.
   enable use of this script, configure cmake as follows. 
   
   ``` 
-  cmake -DENABLE_CXX_CHECK=1 ..
+  cmake -DUSE_CXX_CHECK=1 ..
   ```
 
