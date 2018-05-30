@@ -5,6 +5,7 @@
 #define _OE_REPORT_H
 
 #include "defs.h"
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 
