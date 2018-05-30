@@ -16,7 +16,7 @@ OE_EXTERNC_BEGIN
 
 #define OE_REPORT_DATA_SIZE 64
 
-// Upto 10 KB reports are supported.
+// Up to 10 KB reports are supported.
 #define OE_MAX_REPORT_SIZE (10 * 1024)
 
 // Fixed identity property sizes for OEv1
