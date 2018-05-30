@@ -49,12 +49,12 @@ OE_Thread OE_ThreadSelf(void);
  * @param thread1 A thread identifier obtained with OE_ThreadSelf().
  * @param thread2 A thread identifier obtained with OE_ThreadSelf().
  *
- * @returns Returns non-zero if the thread identifiers are equal.
+ * @returns Returns true if the thread identifiers are equal.
  *
  */
-int OE_ThreadEqual(OE_Thread thread1, OE_Thread thread2);
+bool OE_ThreadEqual(OE_Thread thread1, OE_Thread thread2);
 
-typedef unsigned int OE_OnceType;
+typedef uint32_t OE_OnceType;
 
 #define OE_ONCE_INITIALIZER 0
 
@@ -83,14 +83,15 @@ typedef unsigned int OE_OnceType;
  *
  * @param once The variable used to synchronize one-time call to **func**.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_Once(OE_OnceType* once, void (*func)(void));
+OE_Result OE_Once(OE_OnceType* once, void (*func)(void));
 
 #define OE_SPINLOCK_INITIALIZER 0
 
-typedef volatile unsigned int OE_Spinlock;
+typedef volatile uint32_t OE_Spinlock;
 
 /**
  * Initializes a spin lock.
@@ -105,10 +106,11 @@ typedef volatile unsigned int OE_Spinlock;
  *
  * @param spinlock Initialize the given spin lock.
  *
- * @returns Return zero if successful
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_SpinInit(OE_Spinlock* spinlock);
+OE_Result OE_SpinInit(OE_Spinlock* spinlock);
 
 /**
  * Acquire a lock on a spin lock.
@@ -120,10 +122,11 @@ int OE_SpinInit(OE_Spinlock* spinlock);
  *
  * @param spinlock Lock this spin lock.
  *
- * @return Return zero if successful
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_SpinLock(OE_Spinlock* spinlock);
+OE_Result OE_SpinLock(OE_Spinlock* spinlock);
 
 /**
  * Release the lock on a spin lock.
@@ -132,10 +135,11 @@ int OE_SpinLock(OE_Spinlock* spinlock);
  *
  * @param spinlock Unlock this spin lock.
  *
- * @return Return zero if successful
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_SpinUnlock(OE_Spinlock* spinlock);
+OE_Result OE_SpinUnlock(OE_Spinlock* spinlock);
 
 /**
  * Destroy a spin lock.
@@ -144,10 +148,11 @@ int OE_SpinUnlock(OE_Spinlock* spinlock);
  *
  * @param spinlock Destroy this spin lock.
  *
- * @return Return zero if successful
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_SpinDestroy(OE_Spinlock* spinlock);
+OE_Result OE_SpinDestroy(OE_Spinlock* spinlock);
 
 #define OE_MUTEX_INITIALIZER \
     {                        \
@@ -172,10 +177,11 @@ typedef struct _OE_Mutex
  *
  * @param mutex Initialize this mutex.
  *
- * @return Return zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_MutexInit(OE_Mutex* mutex);
+OE_Result OE_MutexInit(OE_Mutex* mutex);
 
 /**
  * Acquires a lock on a mutex.
@@ -187,10 +193,11 @@ int OE_MutexInit(OE_Mutex* mutex);
  *
  * @param mutex Acquire a lock on this mutex.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_MutexLock(OE_Mutex* mutex);
+OE_Result OE_MutexLock(OE_Mutex* mutex);
 
 /**
  * Tries to acquire a lock on a mutex.
@@ -201,10 +208,12 @@ int OE_MutexLock(OE_Mutex* mutex);
  *
  * @param mutex Acquire a lock on this mutex.
  *
- * @return Returns zero if the lock was obtained and non-zero if not.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_BUSY the lock was busy
  *
  */
-int OE_MutexTryLock(OE_Mutex* mutex);
+OE_Result OE_MutexTryLock(OE_Mutex* mutex);
 
 /**
  * Releases a mutex.
@@ -217,10 +226,12 @@ int OE_MutexTryLock(OE_Mutex* mutex);
  *
  * @param mutex Release the lock on this mutex.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_FAILURE the operation failed
  *
  */
-int OE_MutexUnlock(OE_Mutex* mutex);
+OE_Result OE_MutexUnlock(OE_Mutex* mutex);
 
 /**
  * Destroys a mutex.
@@ -229,10 +240,12 @@ int OE_MutexUnlock(OE_Mutex* mutex);
  *
  * @param Destroy this mutex.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_FAILURE the operation failed
  *
  */
-int OE_MutexDestroy(OE_Mutex* mutex);
+OE_Result OE_MutexDestroy(OE_Mutex* mutex);
 
 #define OE_COND_INITIALIZER \
     {                       \
@@ -261,10 +274,11 @@ typedef struct _OE_Cond
  *
  * @param cond Initialize this condition variable.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_CondInit(OE_Cond* cond);
+OE_Result OE_CondInit(OE_Cond* cond);
 
 /**
  * Waits on a condition variable.
@@ -284,10 +298,12 @@ int OE_CondInit(OE_Cond* cond);
  * @param cond Wait on this condition variable.
  * @param mutex This mutex must be locked by the caller.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_FAILURE the operation failed
  *
  */
-int OE_CondWait(OE_Cond* cond, OE_Mutex* mutex);
+OE_Result OE_CondWait(OE_Cond* cond, OE_Mutex* mutex);
 
 /**
  * Signal a thread waiting on a condition variable.
@@ -303,10 +319,11 @@ int OE_CondWait(OE_Cond* cond, OE_Mutex* mutex);
  *
  * @param cond Signal this condition variable.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_CondSignal(OE_Cond* cond);
+OE_Result OE_CondSignal(OE_Cond* cond);
 
 /**
  * Signals all threads waiting on a condition variable.
@@ -320,10 +337,11 @@ int OE_CondSignal(OE_Cond* cond);
  *
  * @param cond The condition variable to be signaled.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_CondBroadcast(OE_Cond* cond);
+OE_Result OE_CondBroadcast(OE_Cond* cond);
 
 /**
  * Destroys a condition variable.
@@ -332,10 +350,11 @@ int OE_CondBroadcast(OE_Cond* cond);
  *
  * @param cond Destroy this condition variable.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_CondDestroy(OE_Cond* cond);
+OE_Result OE_CondDestroy(OE_Cond* cond);
 
 #define OE_RWLOCK_INITIALIZER \
     {                         \
@@ -366,10 +385,11 @@ typedef struct _OE_RWLock
  *
  * @param rwLock Initialize this readers-writer variable.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_RWLockInit(OE_RWLock* rwLock);
+OE_Result OE_RWLockInit(OE_RWLock* rwLock);
 
 /**
  * Acquires a read lock on a readers-writer lock.
@@ -394,29 +414,32 @@ int OE_RWLockInit(OE_RWLock* rwLock);
  *
  * @param rwLock Acquire a read lock on this readers-writer lock.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_RWLockReadLock(OE_RWLock* rwLock);
+OE_Result OE_RWLockReadLock(OE_RWLock* rwLock);
 
 /**
  * Tries to acquire a read lock on a readers-writer lock.
  *
  * Behavior:
  *    1. If the lock is currently not held by a writer, the lock is acquired
- *       and returns 0.
+ *       and returns OE_OK.
  *    2. If the lock is currently held by a writer, the function immediately
- *       returns -1.
+ *       returns OE_BUSY.
  *
  * Undefined behavior:
  *    1. Results of using an un-initialized or destroyed r/w lock are undefined.
  *
  * @param rwLock Acquire a read lock on this readers-writer lock.
  *
- * @return Returns zero if the lock was obtained and non-zero if not.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_BUSY the lock was busy
  *
  */
-int OE_RWLockTryReadLock(OE_RWLock* rwLock);
+OE_Result OE_RWLockTryReadLock(OE_RWLock* rwLock);
 
 /**
  * Releases a read lock on a readers-writer lock.
@@ -439,17 +462,18 @@ int OE_RWLockTryReadLock(OE_RWLock* rwLock);
  *
  * @param rwLock Release the read lock on this readers-writer lock.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_RWLockReadUnlock(OE_RWLock* rwLock);
+OE_Result OE_RWLockReadUnlock(OE_RWLock* rwLock);
 
 /**
  * Acquires a write lock on a readers-writer lock.
  *
  * Behavior:
  *    1. If the r/w lock is in an unlocked state, the OE_RWLockReadUnlock
- *       is successful and returns 0.
+ *       is successful and returns OE_OK.
  *    2. If the r/w lock is currently held by reader threads or by another
  *       writer thread, the OE_RWLockReadUnlock call blocks until the lock is
  *       available for locking.
@@ -467,28 +491,33 @@ int OE_RWLockReadUnlock(OE_RWLock* rwLock);
  *
  * @param rwLock Acquire a write lock on this readers-writer lock.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_FAILURE the operation failed
  *
  */
-int OE_RWLockWriteLock(OE_RWLock* rwLock);
+OE_Result OE_RWLockWriteLock(OE_RWLock* rwLock);
 
 /**
  * Tries to acquire a write lock on a readers-writer lock.
  *
  * Behavior:
  *    1. If the r/w lock is currently not held by readers or by another writer,
- *       the r/w lock is acquired and returns 0.
- *    2. If the lock is currently locked, the function immediately returns -1.
+ *       the r/w lock is acquired and returns OE_OK.
+ *    2. If the lock is currently locked, the function immediately returns
+ *       OE_BUSY.
  *
  * Undefined behavior:
  *    1. Results of using an un-initialized or destroyed r/w lock are undefined.
  *
  * @param rwLock Acquire a write lock on this readers-writer lock.
  *
- * @return Returns zero if the lock was obtained and non-zero if not.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_BUSY the lock was busy
  *
  */
-int OE_RWLockTryWriteLock(OE_RWLock* rwLock);
+OE_Result OE_RWLockTryWriteLock(OE_RWLock* rwLock);
 
 /**
  * Releases a write lock on a readers-writer lock.
@@ -508,10 +537,12 @@ int OE_RWLockTryWriteLock(OE_RWLock* rwLock);
  *
  * @param rwLock Release the write lock on this readers-writer lock.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_FAILURE the operation failed
  *
  */
-int OE_RWLockWriteUnlock(OE_RWLock* rwLock);
+OE_Result OE_RWLockWriteUnlock(OE_RWLock* rwLock);
 
 /**
  * Destroys a readers-writer lock.
@@ -527,14 +558,16 @@ int OE_RWLockWriteUnlock(OE_RWLock* rwLock);
  *
  * @param Destroy this readers-writer lock.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_FAILURE the operation failed
  *
  */
-int OE_RWLockDestroy(OE_RWLock* rwLock);
+OE_Result OE_RWLockDestroy(OE_RWLock* rwLock);
 
 #define OE_THREADKEY_INITIALIZER 0
 
-typedef unsigned int OE_ThreadKey;
+typedef uint32_t OE_ThreadKey;
 
 /**
  * Create a key for accessing thread-specific data.
@@ -546,10 +579,12 @@ typedef unsigned int OE_ThreadKey;
  * @param key Set this key to refer to the newly allocated TSD entry.
  * @param destructor If non-null, call this function from OE_ThreadKeyDelete().
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_FAILURE the operation failed
  *
  */
-int OE_ThreadKeyCreate(OE_ThreadKey* key, void (*destructor)(void* value));
+OE_Result OE_ThreadKeyCreate(OE_ThreadKey* key, void (*destructor)(void* value));
 
 /**
  * Delete a key for accessing thread-specific data.
@@ -560,10 +595,11 @@ int OE_ThreadKeyCreate(OE_ThreadKey* key, void (*destructor)(void* value));
  *
  * @param key Delete the TSD entry associated with this key.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_ThreadKeyDelete(OE_ThreadKey key);
+OE_Result OE_ThreadKeyDelete(OE_ThreadKey key);
 
 /**
  * Sets the value of a thread-specific data entry.
@@ -574,10 +610,11 @@ int OE_ThreadKeyDelete(OE_ThreadKey key);
  * @param key Set the TSD entry associated with this key.
  * @param value Set the TSD entry to this value.
  *
- * @return Returns zero on success.
+ * @return OE_OK the operation was successful
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-int OE_ThreadSetSpecific(OE_ThreadKey key, const void* value);
+OE_Result OE_ThreadSetSpecific(OE_ThreadKey key, const void* value);
 
 /**
  * Gets the value of a thread-specific data entry.
@@ -587,7 +624,7 @@ int OE_ThreadSetSpecific(OE_ThreadKey key, const void* value);
  *
  * @param key Get the TSD entry value associated with this key.
  *
- * @return Returns the TSD value.
+ * @return Returns the TSD value or null if none.
  *
  */
 void* OE_ThreadGetSpecific(OE_ThreadKey key);
