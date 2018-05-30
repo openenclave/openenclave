@@ -5,6 +5,7 @@
 #define _OE_REPORT_H
 
 #include "defs.h"
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 
@@ -16,7 +17,8 @@ OE_EXTERNC_BEGIN
 
 #define OE_REPORT_DATA_SIZE 64
 
-#define OE_MAX_REPORT_SIZE (1 * 1024)
+// Up to 10 KB reports are supported.
+#define OE_MAX_REPORT_SIZE (10 * 1024)
 
 // Fixed identity property sizes for OEv1
 #define OE_UNIQUE_ID_SIZE 32

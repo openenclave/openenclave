@@ -582,6 +582,29 @@ static void TestECSignAndVerify()
         OE_ECPublicKeyFree(&key);
     }
 
+#ifdef BUILD_ENCLAVE
+    /* Convert signature to raw form and then back to ASN.1 */
+    {
+        uint8_t rData[1024];
+        size_t rSize = sizeof(rData);
+        uint8_t sData[1024];
+        size_t sSize = sizeof(sData);
+
+        r = OE_ECSignatureReadASN1(
+            signature, signatureSize, rData, &rSize, sData, &sSize);
+        OE_TEST(r == OE_OK);
+        OE_TEST(rSize == 32);
+        OE_TEST(sSize == 32);
+
+        uint8_t data[signatureSize];
+        size_t size = sizeof(data);
+        r = OE_ECSignatureWriteASN1(data, &size, rData, rSize, sData, sSize);
+        OE_TEST(r == OE_OK);
+        OE_TEST(signatureSize == size);
+        OE_TEST(memcmp(signature, data, signatureSize) == 0);
+    }
+#endif
+
     free(signature);
 
     printf("=== passed TestECSignAndVerify()\n");
@@ -913,25 +936,41 @@ static void TestCertMethods()
         r = OE_CertGetECPublicKey(&cert, &key);
         OE_TEST(r == OE_OK);
 
-        /* Test OE_ECPublicKeyGetKeyBytes() */
+        /* Test OE_ECPublicKeyToBytes() */
         {
             uint8_t* data;
             size_t size = 0;
 
             /* Determine the required size of the buffer */
-            r = OE_ECPublicKeyGetKeyBytes(&key, NULL, &size);
+            r = OE_ECPublicKeyToBytes(&key, NULL, &size);
             OE_TEST(r == OE_BUFFER_TOO_SMALL);
             OE_TEST(size == sizeof(CERT_EC_KEY));
 
             /* Fetch the key bytes */
             OE_TEST(data = (uint8_t*)malloc(size));
-            r = OE_ECPublicKeyGetKeyBytes(&key, data, &size);
+            r = OE_ECPublicKeyToBytes(&key, data, &size);
             OE_TEST(r == OE_OK);
 
             /* Does it match expected key? */
             OE_TEST(size == sizeof(CERT_EC_KEY));
             OE_TEST(memcmp(CERT_EC_KEY, data, sizeof(CERT_EC_KEY)) == 0);
             free(data);
+
+#if 0
+            /* Can we create a new key from these bytes? */
+            {
+                OE_ECPublicKey newKey;
+
+                r = OE_ECPublicKeyFromBytes(
+                    &newKey, 
+                    OE_EC_TYPE_SECP521R1, 
+                    CERT_EC_KEY, 
+                    sizeof(CERT_EC_KEY));
+                OE_TEST(r == OE_OK);
+            }
+#endif
+
+            /* Free the key */
         }
 
         /* Test OE_ECPublicKeyEqual() */
@@ -1043,6 +1082,111 @@ static void TestCertMethods()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+static void TestECKeyFromBytes()
+{
+    OE_Result r;
+    OE_ECType ecType = OE_EC_TYPE_SECP256R1;
+
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    /* Create a public EC key and get its bytes */
+    {
+        OE_ECPrivateKey privateKey;
+        OE_ECPublicKey publicKey;
+        r = OE_ECGenerateKeyPair(ecType, &privateKey, &publicKey);
+        OE_TEST(r == OE_OK);
+
+        uint8_t data[1024];
+        size_t size = sizeof(data);
+
+        r = OE_ECPublicKeyToBytes(&publicKey, data, &size);
+        OE_TEST(r == OE_OK);
+
+        OE_ECPublicKey key;
+        r = OE_ECPublicKeyFromBytes(&key, ecType, data, size);
+        OE_TEST(r == OE_OK);
+
+        OE_ECPrivateKeyFree(&privateKey);
+        OE_ECPublicKeyFree(&publicKey);
+        OE_ECPublicKeyFree(&key);
+    }
+
+    /* Test creating an EC key from bytes */
+    {
+        OE_ECPublicKey key;
+        const uint8_t bytes[65] = {
+            0x04, 0xB5, 0x5D, 0x06, 0xD6, 0xE5, 0xA2, 0xC7, 0x2D, 0x5D, 0xA0,
+            0xAE, 0xD5, 0x83, 0x61, 0x4C, 0x51, 0x60, 0xD6, 0xFE, 0x90, 0x8A,
+            0xC2, 0x67, 0xF7, 0x31, 0x56, 0x2A, 0x6B, 0xBC, 0xB0, 0x8D, 0xD0,
+            0xC6, 0xBD, 0x1F, 0xCB, 0xAF, 0xE1, 0x84, 0xE6, 0x2E, 0x9E, 0xAE,
+            0xE0, 0x04, 0x4C, 0xC5, 0x59, 0x44, 0x39, 0x52, 0x62, 0x3B, 0x08,
+            0xC5, 0xED, 0xBB, 0xC2, 0xD6, 0x50, 0xE7, 0x7B, 0x38, 0xDA,
+        };
+
+        r = OE_ECPublicKeyFromBytes(&key, ecType, bytes, sizeof(bytes));
+        OE_TEST(r == OE_OK);
+
+        uint8_t data[1024];
+        size_t size = sizeof(data);
+        r = OE_ECPublicKeyToBytes(&key, data, &size);
+        OE_TEST(r == OE_OK);
+
+        OE_TEST(sizeof(bytes) == size);
+        OE_TEST(memcmp(data, bytes, size) == 0);
+
+        OE_ECPublicKeyFree(&key);
+    }
+
+    /* Test generating a key and then re-creating it from its bytes */
+    {
+        OE_ECPrivateKey privateKey;
+        OE_ECPublicKey publicKey;
+        OE_ECPublicKey publicKey2;
+        uint8_t signature[1024];
+        size_t signatureSize = sizeof(signature);
+
+        /* Generate a key pair */
+        r = OE_ECGenerateKeyPair(ecType, &privateKey, &publicKey);
+        OE_TEST(r == OE_OK);
+
+        /* Get the bytes from the public key */
+        uint8_t data[1024];
+        size_t size = sizeof(data);
+        r = OE_ECPublicKeyToBytes(&publicKey, data, &size);
+        OE_TEST(r == OE_OK);
+
+        /* Create a second public key from the key bytes */
+        r = OE_ECPublicKeyFromBytes(&publicKey2, ecType, data, size);
+        OE_TEST(r == OE_OK);
+
+        /* Sign data with private key */
+        r = OE_ECPrivateKeySign(
+            &privateKey,
+            OE_HASH_TYPE_SHA256,
+            &HASH,
+            sizeof(HASH),
+            signature,
+            &signatureSize);
+        OE_TEST(r == OE_OK);
+
+        /* Verify data with key created from bytes of original public key */
+        r = OE_ECPublicKeyVerify(
+            &publicKey2,
+            OE_HASH_TYPE_SHA256,
+            &HASH,
+            sizeof(HASH),
+            signature,
+            signatureSize);
+        OE_TEST(r == OE_OK);
+
+        OE_ECPrivateKeyFree(&privateKey);
+        OE_ECPublicKeyFree(&publicKey);
+        OE_ECPublicKeyFree(&publicKey2);
+    }
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 static void RunAllTests()
 {
     TestCertMethods();
@@ -1058,4 +1202,5 @@ static void RunAllTests()
     TestRSAWritePrivate();
     TestRSAWritePublic();
     TestSHA256();
+    TestECKeyFromBytes();
 }
