@@ -107,5 +107,4 @@ set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openen
 install(TARGETS oehost EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
 # provide oehostapp to install-base as well
-#install(EXPORT openenclave-config DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave)
-
+install(TARGETS oehostapp EXPORT openenclave-config)
