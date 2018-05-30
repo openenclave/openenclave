@@ -641,7 +641,7 @@ OE_Result OE_RWLockReadUnlock(OE_RWLock* readWriteLock)
     if (rwLock->readers < 1 || rwLock->writer != NULL)
     {
         OE_SpinUnlock(&rwLock->lock);
-        return OE_FAILURE;
+        return OE_NOT_OWNER;
     }
 
     if (--rwLock->readers == 0)
@@ -669,7 +669,7 @@ OE_Result OE_RWLockWriteLock(OE_RWLock* readWriteLock)
     if (rwLock->writer == self)
     {
         OE_SpinUnlock(&rwLock->lock);
-        return OE_FAILURE;
+        return OE_BUSY;
     }
 
     // Wait for all readers and any other writer to finish.
@@ -727,11 +727,18 @@ OE_Result OE_RWLockWriteUnlock(OE_RWLock* readWriteLock)
 
     OE_SpinLock(&rwLock->lock);
 
-    // Self must be owner and no readers should exist.
-    if (rwLock->writer != self || rwLock->readers > 0)
+    // Self must be the owner.
+    if (rwLock->writer != self)
     {
         OE_SpinUnlock(&rwLock->lock);
-        return OE_FAILURE;
+        return OE_NOT_OWNER;
+    }
+
+    // No readers should exist.
+    if (rwLock->readers > 0)
+    {
+        OE_SpinUnlock(&rwLock->lock);
+        return OE_BUSY;
     }
 
     // Mark writer as done.
@@ -754,7 +761,7 @@ OE_Result OE_RWLockDestroy(OE_RWLock* readWriteLock)
     if (rwLock->readers != 0 || rwLock->writer != NULL)
     {
         OE_SpinUnlock(&rwLock->lock);
-        return OE_FAILURE;
+        return OE_BUSY;
     }
 
     OE_SpinUnlock(&rwLock->lock);

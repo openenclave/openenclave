@@ -35,7 +35,7 @@ OE_INLINE int _ToErrno(OE_Result result)
         case OE_OUT_OF_MEMORY:
             return ENOMEM;
         default:
-            return EINVAL;
+            return EINVAL; /* unreachable */
     }
 }
 

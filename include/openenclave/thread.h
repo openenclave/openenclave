@@ -464,7 +464,7 @@ OE_Result OE_RWLockTryReadLock(OE_RWLock* rwLock);
  * @param rwLock Release the read lock on this readers-writer lock.
  *
  * @return OE_OK the operation was successful
- * @return OE_INVALID_PARAMETER one or more parameters is invalid
+ * @return OE_NOT_OWNER the calling thread does not have this object locked.
  *
  */
 OE_Result OE_RWLockReadUnlock(OE_RWLock* rwLock);
@@ -494,7 +494,7 @@ OE_Result OE_RWLockReadUnlock(OE_RWLock* rwLock);
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
- * @return OE_FAILURE the operation failed
+ * @return OE_BUSY object is already locked for writing by this thread
  *
  */
 OE_Result OE_RWLockWriteLock(OE_RWLock* rwLock);
@@ -540,7 +540,8 @@ OE_Result OE_RWLockTryWriteLock(OE_RWLock* rwLock);
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
- * @return OE_FAILURE the operation failed
+ * @return OE_NOT_OWNER the calling thread does not have the mutex locked
+ * @return OE_BUSY readers still exist
  *
  */
 OE_Result OE_RWLockWriteUnlock(OE_RWLock* rwLock);
@@ -561,7 +562,7 @@ OE_Result OE_RWLockWriteUnlock(OE_RWLock* rwLock);
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
- * @return OE_FAILURE the operation failed
+ * @return OE_BUSY threads are still waiting on this lock
  *
  */
 OE_Result OE_RWLockDestroy(OE_RWLock* rwLock);
