@@ -21,18 +21,11 @@ if [ "$1" == "" ]; then
 fi
 
 ##
-## Get root where ignore file can be found
+## Get the root of the source tree.
 ##
 
-if [ "${CXX_CHECK_ROOT}" == "" ]; then
-    echo "$prog: CXX_CHECK_ROOT not set" 1>&2
-    exit 1
-fi
-
-root=${CXX_CHECK_ROOT}
-
-echo ${root}
-
+root=`dirname ${prog}`
+root=`dirname ${root}`
 
 ##
 ## Remove C-only options and find C source file if any.

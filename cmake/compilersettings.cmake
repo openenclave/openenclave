@@ -19,14 +19,12 @@ if(DEFINED CMAKE_VS_PLATFORM_NAME)
     endif()
 endif()
 
-set(CXX_CHECK ${PROJECT_SOURCE_DIR}/scripts/cxx-check)
-
 if(ENABLE_CXX_CHECK)
-
+    # Enable the cxx-check script to pre-check C files with C++ compiler.
+    set(CXX_CHECK ${PROJECT_SOURCE_DIR}/scripts/cxx-check)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CXX_CHECK})
-
+    message("Enabling cxx-check")
 else()
-
     # Use ccache if available
     find_program(CCACHE_FOUND ccache)
     if(CCACHE_FOUND)
@@ -36,7 +34,6 @@ else()
     else()
         message("ccache not found")
     endif(CCACHE_FOUND)
-
 endif()
 
 if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))

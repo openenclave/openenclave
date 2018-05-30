@@ -187,7 +187,7 @@ OE_CATCH:
     return result;
 }
 
-static int _PackVarInt(mem_t* buf, uint8_t fieldNum, uint64_t value)
+static OE_Result _PackVarInt(mem_t* buf, uint8_t fieldNum, uint64_t value)
 {
     OE_Result result = OE_UNEXPECTED;
 
@@ -273,7 +273,7 @@ static int _Read(int sock, void* data, size_t size)
     ssize_t n = read(sock, data, size);
 
     if (n < 0)
-        return n;
+        return -1;
 
     if ((size_t)n != size)
         return -1;
@@ -286,7 +286,7 @@ static int _Write(int sock, const void* data, size_t size)
     ssize_t n = write(sock, data, size);
 
     if (n < 0)
-        return n;
+        return -1;
 
     if ((size_t)n != size)
         return -1;
@@ -480,8 +480,7 @@ OE_Result AESMGetLaunchToken(
         OE_TRY(_PackBytes(&request, 3, attributes, sizeof(SGX_Attributes)));
 
         /* Pack TIMEOUT */
-        if (_PackVarInt(&request, 9, timeout) != 0)
-            OE_THROW(OE_FAILURE);
+        OE_TRY(_PackVarInt(&request, 9, timeout));
     }
 
     /* Send the request to the AESM service */
@@ -539,8 +538,7 @@ OE_Result AESMInitQuote(
     /* Build the PAYLOAD */
     {
         /* Pack TIMEOUT */
-        if (_PackVarInt(&request, 9, timeout) != 0)
-            OE_THROW(OE_FAILURE);
+        OE_TRY(_PackVarInt(&request, 9, timeout));
     }
 
     /* Send the request to the AESM service */
@@ -614,8 +612,7 @@ OE_Result AESMGetQuote(
         OE_TRY(_PackBytes(&request, 1, report, sizeof(SGX_Report)));
 
         /* Pack QUOTE-TYPE */
-        if (_PackVarInt(&request, 2, quoteType) != 0)
-            OE_THROW(OE_FAILURE);
+        OE_TRY(_PackVarInt(&request, 2, quoteType));
 
         /* Pack SPID */
         OE_TRY(_PackBytes(&request, 3, spid, sizeof(SGX_SPID)));
@@ -636,19 +633,16 @@ OE_Result AESMGetQuote(
         }
 
         /* Pack QUOTE-SIZE */
-        if (_PackVarInt(&request, 6, quoteSize) != 0)
-            OE_THROW(OE_FAILURE);
+        OE_TRY(_PackVarInt(&request, 6, quoteSize));
 
         /* Pack boolean indicating whether REPORT-OUT is present */
         if (reportOut)
         {
-            if (_PackVarInt(&request, 7, 1) != 0)
-                OE_THROW(OE_FAILURE);
+            OE_TRY(_PackVarInt(&request, 7, 1));
         }
 
         /* Pack TIMEOUT */
-        if (_PackVarInt(&request, 9, timeout) != 0)
-            OE_THROW(OE_FAILURE);
+        OE_TRY(_PackVarInt(&request, 9, timeout));
     }
 
     /* Send the request to the AESM service */
