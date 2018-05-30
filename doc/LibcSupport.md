@@ -5,7 +5,6 @@ Header | Supported? | Comments |
 assert.h | Yes | - |
 complex.h | Partial | Unsupported functions: cpow(), cpowf(), cpowl() |
 ctype.h | Yes | - |
-errno.h | ? | ? |
 fenv.h | Yes | - |
 float.h | Yes | - |
 locale.h | Partial | Only basic support for C/POSIX locale |
