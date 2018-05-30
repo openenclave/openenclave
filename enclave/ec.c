@@ -127,13 +127,13 @@ static OE_Result _GenerateKeyPair(
 
     /* Create key struct */
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
-         OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
 
     /* Generate the EC key */
     if (mbedtls_ecp_gen_key(
             curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
     {
-         OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_FAILURE);
     }
 
     /* Initialize the private key parameter */

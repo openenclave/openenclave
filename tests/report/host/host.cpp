@@ -26,14 +26,10 @@ std::vector<uint8_t> FileToBytes(const char* path)
 void TestVerifyQuote()
 {
     VerifyQuoteArgs args = {0};
-    std::vector<uint8_t> quote =
-        FileToBytes("./data/quote.dat");
-    std::vector<uint8_t> pckCert =
-        FileToBytes("./data/pckCert.pem");
-    std::vector<uint8_t> pckCrl =
-        FileToBytes("./data/intermediateCaCrl.pem");
-    std::vector<uint8_t> tcbInfo =
-        FileToBytes("./data/tcbInfo.json");
+    std::vector<uint8_t> quote = FileToBytes("./data/quote.dat");
+    std::vector<uint8_t> pckCert = FileToBytes("./data/pckCert.pem");
+    std::vector<uint8_t> pckCrl = FileToBytes("./data/intermediateCaCrl.pem");
+    std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
 
     if (pckCert.back() != '\0')
         pckCert.push_back('\0');

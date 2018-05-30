@@ -131,8 +131,7 @@ OE_Result VerifyQuoteImpl(
     }
 
     // TODO: If encPckCrl or encTcbInfoJson is not provided,
-    // fetch it from provider via host.    
-    
+    // fetch it from provider via host.
 
     // TODO: Enable this after Azure Quote Provider integration.
     // if (encPckCrl == 0 || encTcbInfoJson == 0)
@@ -181,7 +180,7 @@ OE_Result VerifyQuoteImpl(
         }
 
         // TODO: Reenable this once Azure quote provider is integrated.
-        //if (qeCertData.type != OE_SGX_PCK_ID_PCK_CERT_CHAIN)
+        // if (qeCertData.type != OE_SGX_PCK_ID_PCK_CERT_CHAIN)
         //    OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
 
         OE_CHECK(OE_SHA256Init(&sha256Ctx));

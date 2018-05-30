@@ -9,10 +9,17 @@
 #include "../common/args.h"
 #include "../common/tests.cpp"
 
-// Supply unique integer to asm block to prevent the compiler from merging
-// different speculation barriers.
+// Macro to get current source position as a string literal.
+#define OE_STRINGIFY(x) #x
+#define OE_TOSTRING(x) OE_STRINGIFY(x)
+#define OE_SOURCE_POS __FILE__ ":" OE_TOSTRING(__LINE__)
+
+// Encode the current source position as a comment to the assembly block. This
+// makes each speculation barrier unique and prevents the compiler from merging
+// different speculation barriers. Additonally it also allows manual
+// verification of lfences in generated assembly code.
 #define OE_SPECULATION_BARRIER() \
-    asm volatile("lfence " ::"r"(__COUNTER__) : "memory");
+    asm volatile("lfence #" OE_SOURCE_POS ::: "memory");
 
 // Check that input data lies outside the enclave and that
 // fits within maxSize. If so, allocate buffer on enclave
