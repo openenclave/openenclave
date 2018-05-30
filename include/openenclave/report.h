@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+/**
+ * \file report.h
+ *
+ * This file defines structures and options passed to GetReport functions.
+ *
+ */
 #ifndef _OE_REPORT_H
 #define _OE_REPORT_H
 
@@ -8,7 +14,7 @@
 
 OE_EXTERNC_BEGIN
 
-/*
+/**
  * Options passed to GetReport functions on host and enclave.
  * Default value (0) is local attestation.
  */
@@ -29,6 +35,9 @@ OE_EXTERNC_BEGIN
 #define OE_REPORT_ATTRIBUTES_RESERVED \
     (~(OE_REPORT_ATTRIBUTES_DEBUG | OE_REPORT_ATTRIBUTES_REMOTE))
 
+/**
+ * OE_Identity structure
+ */
 typedef struct _OE_Identity
 {
     uint32_t idVersion;
@@ -39,7 +48,7 @@ typedef struct _OE_Identity
     uint8_t productID[OE_PRODUCT_ID_SIZE];
 } OE_Identity;
 
-/*
+/**
  * OE_Report structure holds the parsed form of a report.
  */
 typedef struct _OE_Report

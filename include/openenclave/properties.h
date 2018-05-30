@@ -23,17 +23,20 @@ OE_EXTERNC_BEGIN
 /* Injected by OE_SET_ENCLAVE_SGX macro and by the signing tool (oesign) */
 #define OE_INFO_SECTION_NAME ".oeinfo"
 
-/*
-**==============================================================================
-**
-** OE_EnclavePropertiesHeader - generic enclave properties base type
-**
-**==============================================================================
-*/
+/**
+ *
+ * OE_EnclavePropertiesHeader - generic enclave properties base type
+ *
+ */
 
 /* Max number of threads in an enclave supported */
 #define OE_SGX_MAX_TCS 32
 
+/**
+ *
+ * OE_EnclaveSizeSettings
+ *
+ */
 typedef struct _OE_EnclaveSizeSettings
 {
     uint64_t numHeapPages;
@@ -43,7 +46,11 @@ typedef struct _OE_EnclaveSizeSettings
 
 OE_CHECK_SIZE(sizeof(OE_EnclaveSizeSettings), 24);
 
-/* Base type for enclave properties */
+/**
+ *
+ * Base type for enclave properties
+ *
+ */
 typedef struct _OE_EnclavePropertiesHeader
 {
     /* (0) Size of the extended structure */
@@ -62,18 +69,20 @@ OE_STATIC_ASSERT(OE_OFFSETOF(OE_EnclavePropertiesHeader, enclaveType) == 4);
 OE_STATIC_ASSERT(OE_OFFSETOF(OE_EnclavePropertiesHeader, sizeSettings) == 8);
 OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 
-/*
-**==============================================================================
-**
-** OE_SGXEnclaveProperties - SGX enclave properties derived type
-**
-**==============================================================================
-*/
+/**
+ *
+ * OE_SGXEnclaveProperties - SGX enclave properties derived type
+ *
+ */
 
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
-
+/**
+ *
+ * OE_SGXEnclaveConfig
+ *
+ */
 typedef struct OE_SGXEnclaveConfig
 {
     uint16_t productID;
@@ -88,7 +97,11 @@ typedef struct OE_SGXEnclaveConfig
 
 OE_CHECK_SIZE(sizeof(OE_SGXEnclaveConfig), 16);
 
-/* Extends OE_EnclavePropertiesHeader base type */
+/**
+ *
+ * Extends OE_SGXEnclavePropertiesHeader base type
+ *
+ */
 typedef struct OE_SGXEnclaveProperties
 {
     /* (0) */
@@ -103,15 +116,13 @@ typedef struct OE_SGXEnclaveProperties
 
 OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
 
-/*
-**==============================================================================
-**
-** OE_SET_ENCLAVE_SGX:
-**     This macro initializes and injects an OE_SGXEnclaveProperties struct
-**     into the .oeinfo section.
-**
-**==============================================================================
-*/
+/**
+ *
+ * OE_SET_ENCLAVE_SGX:
+ *     This macro initializes and injects an OE_SGXEnclaveProperties struct
+ *     into the .oeinfo section.
+ *
+ */
 
 #define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo,\"\",@note#")))
 #define OE_INFO_SECTION_END

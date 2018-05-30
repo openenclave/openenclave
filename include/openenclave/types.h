@@ -1,18 +1,22 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+/**
+ * \file types.h
+ *
+ * This file defines Open Enclave types.
+ *
+ */
 #ifndef _OE_TYPES_H
 #define _OE_TYPES_H
 
 #include "defs.h"
 
-/*
-**==============================================================================
-**
-** EAFI_MAX_PATH
-**
-**==============================================================================
-*/
+/**
+ *
+ * EAFI_MAX_PATH
+ *
+ */
 
 #if defined(MAX_PATH)
 #define OE_MAX_PATH MAX_PATH
@@ -22,21 +26,17 @@
 #define OE_MAX_PATH 1024
 #endif
 
-/*
-**==============================================================================
-**
-** Printf format specifiers
-**
-**==============================================================================
-*/
+/**
+ *
+ * Printf format specifiers
+ *
+ */
 
-/*
-**==============================================================================
-**
-** Basic types:
-**
-**==============================================================================
-*/
+/**
+ *
+ * Basic types:
+ *
+ */
 
 #if defined(__GNUC__)
 
@@ -99,14 +99,11 @@ OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 #define bool _Bool
 #endif
 
-/*
-**==============================================================================
-**
-** Integer limits:
-**
-**==============================================================================
-*/
-
+/**
+ *
+ * Integer limits:
+ *
+ */
 #define OE_MIN_SINT8 (-128)
 #define OE_MAX_SINT8 127
 #define OE_MAX_UINT8 255
@@ -141,14 +138,11 @@ OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 
 #define OE_MAX_SIZE_T OE_MAX_UINT64
 
-/*
-**==============================================================================
-**
-** OE_Type
-**
-**==============================================================================
-*/
-
+/**
+ *
+ * OE_Type:
+ *
+ */
 typedef enum _OE_Type {
     OE_NONE_T,
     OE_CHAR_T,
@@ -177,38 +171,30 @@ typedef enum _OE_Type {
     OE_VOID_T,
 } OE_Type;
 
-/*
-**==============================================================================
-**
-** OE_EnclaveType
-**
-**==============================================================================
-*/
+/**
+ *
+ * OE_EnclaveType:
+ *
+ */
 typedef enum _OE_EnclaveType {
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
 } OE_EnclaveType;
 
-/*
-**==============================================================================
-**
-** Signature of allocation and deallocation functions.
-**
-**==============================================================================
-*/
-
+/**
+ *
+ * Signature of allocation and deallocation functions.
+ *
+ */
 typedef void* (*OE_AllocProc)(size_t size);
 
 typedef void (*OE_DeallocProc)(void* ptr);
 
-/*
-**==============================================================================
-**
-** OE_Page
-**
-**==============================================================================
-*/
-
+/**
+ *
+ * OE_Page:
+ *
+ */
 typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
 {
     unsigned char data[OE_PAGE_SIZE];
@@ -216,32 +202,110 @@ typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
 
 OE_STATIC_ASSERT(__alignof(OE_Page) == OE_PAGE_SIZE);
 
-/*
-**==============================================================================
-**
-** OE_va_list:
-**
-**==============================================================================
-*/
-
+/**
+ *
+ * OE_va_list:
+ *
+ */
 #define OE_va_list __builtin_va_list
 #define OE_va_start __builtin_va_start
 #define OE_va_arg __builtin_va_arg
 #define OE_va_end __builtin_va_end
 #define OE_va_copy __builtin_va_copy
 
-/*
-**==============================================================================
-**
-** OE_OCallContext:
-**
-**==============================================================================
-*/
-
+/**
+ *
+ * OE_OCallContext:
+ *
+ */
 typedef struct _OE_OCallContext
 {
     uintptr_t rbp;
     uintptr_t ret;
 } OE_OCallContext;
+
+/**
+ *
+ * OE_BASIC_XSTATE:
+ *
+ */
+// X87 and SSE data.
+typedef struct _OE_BASIC_XSTATE
+{
+    uint8_t blob[512];
+} OE_ALIGNED(16) OE_BASIC_XSTATE;
+
+/**
+ *
+ * OE_CONTEXT:
+ *
+ */
+typedef struct _OE_CONTEXT
+{
+    // Flags.
+    uint64_t flags;
+
+    // Integer registers.
+    uint64_t rax;
+    uint64_t rbx;
+    uint64_t rcx;
+    uint64_t rdx;
+
+    uint64_t rbp;
+    uint64_t rsp;
+
+    uint64_t rdi;
+    uint64_t rsi;
+
+    uint64_t r8;
+    uint64_t r9;
+    uint64_t r10;
+    uint64_t r11;
+    uint64_t r12;
+    uint64_t r13;
+    uint64_t r14;
+    uint64_t r15;
+
+    uint64_t rip;
+
+    // Don't need to manipulate the segment registers directly.
+    // Ignore them: CS, DS, ES, SS, GS, and FS.
+
+    // SSE control flags.
+    uint32_t mxcsr;
+
+    // Basic XState.
+    OE_BASIC_XSTATE basic_xstate;
+
+    // Don't need to manipulate other XSTATE (AVX etc.).
+} OE_CONTEXT;
+
+/**
+ *
+ * OE_EXCEPTION_RECORD:
+ *
+ */
+typedef struct _OE_EXCEPTION_RECORD
+{
+    // Exception code.
+    uint32_t code;
+
+    // Exception flags.
+    uint32_t flags;
+
+    // Exception address.
+    uint64_t address;
+
+    // Context.
+    OE_CONTEXT* context;
+} OE_EXCEPTION_RECORD;
+
+/**
+ *
+ * POE_VECTORED_EXCEPTION_HANDLER:
+ *
+ */
+typedef uint64_t (*POE_VECTORED_EXCEPTION_HANDLER)(
+    OE_EXCEPTION_RECORD* exceptionContext);
 
 #endif /* _OE_TYPES_H */
