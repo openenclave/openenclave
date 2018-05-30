@@ -16,9 +16,12 @@ LIBRARIES += -loehost
 LIBRARIES += -lcrypto
 LIBRARIES += -lpthread
 LIBRARIES += -ldl
+
+ifeq ($(OE_USE_LIBSGX),1)
 LIBRARIES += -lsgx_enclave_common
 LIBRARIES += -lsgxoeql
 LIBRARIES += -lsgx_urts_ng
+endif
 
 build:
 	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp
