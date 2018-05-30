@@ -44,7 +44,10 @@ gen_config_file(${OE_DATADIR}/openenclave/config.mak "${CMAKE_INSTALL_PREFIX}")
 install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
 
 # generate & install CMake Export file for other projects using CMAKE
-install(EXPORT openenclave DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
+install(
+  EXPORT      openenclave-config
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave
+)
 
 # cpack package handling
 include(InstallRequiredSystemLibraries)
