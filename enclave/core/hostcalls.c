@@ -183,7 +183,7 @@ int __OE_HostVfprintf(int device, const char* fmt, OE_va_list ap_)
     }
 
     if (n < 0)
-        return n;
+        return -1;
 
     /* If string was truncated, retry with correctly sized buffer */
     if ((size_t)n >= sizeof(buf))
