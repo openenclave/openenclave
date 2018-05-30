@@ -637,9 +637,7 @@ OE_Result AESMGetQuote(
 
         /* Pack boolean indicating whether REPORT-OUT is present */
         if (reportOut)
-        {
             OE_TRY(_PackVarInt(&request, 7, 1));
-        }
 
         /* Pack TIMEOUT */
         OE_TRY(_PackVarInt(&request, 9, timeout));
