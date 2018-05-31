@@ -486,3 +486,136 @@ done:
 
     return result;
 }
+
+OE_Result OE_ECSignatureWriteASN1(
+    unsigned char* asn1,
+    size_t* asn1Size,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    ECDSA_SIG* sig = NULL;
+    int sigLen;
+
+    /* Reject invalid parameters */
+    if (!asn1 || !asn1Size || !rData || !rSize || !sData || !sSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Create new signature object */
+    if (!(sig = ECDSA_SIG_new()))
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert R to big number object */
+    if (!(BN_bin2bn(rData, rSize, sig->r)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert S to big number object */
+    if (!(BN_bin2bn(sData, sSize, sig->s)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Determine the size of the binary signature */
+    if ((sigLen = i2d_ECDSA_SIG(sig, NULL)) <= 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Copy binary signature to output buffer */
+    if (asn1 && sigLen <= *asn1Size)
+    {
+        uint8_t* p = asn1;
+
+        if (!i2d_ECDSA_SIG(sig, &p))
+            OE_RAISE(OE_FAILURE);
+
+        if (p - asn1 != sigLen)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    /* Check whether buffer is too small */
+    if (sigLen > *asn1Size)
+    {
+        *asn1Size = sigLen;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    /* Set the size of the output buffer */
+    *asn1Size = sigLen;
+
+    result = OE_OK;
+
+done:
+
+    if (sig)
+        ECDSA_SIG_free(sig);
+
+    return result;
+}
+
+OE_Result OE_ECSignatureReadASN1(
+    const uint8_t* asn1,
+    size_t asn1Size,
+    uint8_t* rData,
+    size_t* rSize,
+    uint8_t* sData,
+    size_t* sSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    const uint8_t* p = (const uint8_t*)asn1;
+    ECDSA_SIG* sig = NULL;
+    int rn;
+    int sn;
+
+    if (!asn1 || !asn1Size || !rSize || !sSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (!(sig = d2i_ECDSA_SIG(NULL, &p, asn1Size)))
+        OE_RAISE(OE_FAILURE);
+
+    if (!sig->r || !sig->s)
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert R to binary */
+    {
+        rn = BN_num_bytes(sig->r);
+        uint8_t buf[rn];
+
+        if (!BN_bn2bin(sig->r, buf))
+            OE_RAISE(OE_FAILURE);
+
+        if (rn <= *rSize && rData)
+            memcpy(rData, buf, rn);
+    }
+
+    /* Convert S to binary */
+    {
+        sn = BN_num_bytes(sig->s);
+        uint8_t buf[sn];
+
+        if (!BN_bn2bin(sig->s, buf))
+            OE_RAISE(OE_FAILURE);
+
+        if (sn <= *sSize && sData)
+            memcpy(sData, buf, sn);
+    }
+
+    /* If buffers are too small */
+    if (rn > *rSize || sn > *sSize)
+    {
+        *rSize = rn;
+        *sSize = sn;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    /* Set output-buffer sizes */
+    *rSize = rn;
+    *sSize = sn;
+
+    result = OE_OK;
+
+done:
+
+    if (sig)
+        ECDSA_SIG_free(sig);
+
+    return result;
+}

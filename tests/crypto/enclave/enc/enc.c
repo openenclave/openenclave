@@ -16,9 +16,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define BUILD_ENCLAVE
-#include "../../tests.c"
+#include "../../hash.h"
+#include "../../sha_tests.h"
+#include "../../rsa_tests.h"
+#include "../../ec_tests.h"
+#include "../../random_tests.h"
 
 OE_ECALL void Test(void* args_)
 {
@@ -29,7 +31,11 @@ OE_ECALL void Test(void* args_)
     OE_TEST(OE_GetMallocStats(&stats) == OE_OK);
     inUseBytes = stats.inUseBytes;
 
-    RunAllTests();
+    /* Run the tests */
+    TestEC();
+    TestRandom();
+    TestRSA();
+    TestSHA();
 
     /* Verify that all malloc'd memory has been released */
     OE_TEST(OE_GetMallocStats(&stats) == OE_OK);

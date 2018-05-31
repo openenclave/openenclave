@@ -3,6 +3,14 @@
 
 include(add_enclave_executable)
 
-add_enclave_executable(cryptoenc sign.conf private.pem enc.c)
+add_enclave_executable(cryptoenc 
+    sign.conf 
+    private.pem 
+    enc.c
+    ../../ec_tests.c
+    ../../hash.c
+    ../../random_tests.c
+    ../../rsa_tests.c
+    ../../sha_tests.c)
 
 target_link_libraries(cryptoenc oeenclave)
