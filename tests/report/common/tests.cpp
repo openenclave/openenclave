@@ -348,11 +348,13 @@ TEST_FCN void TestRemoteReport(void* args_)
      */
 
     /*
-     * Report data parameters scenarios:
+     * Report data parameters scenarios on enclave side:
      *      a. Report data can be NULL.
      *      b. Report data can be < OE_REPORT_DATA_SIZE
      *      c. Report data can be OE_REPORT_DATA_SIZE
      *      d. Report data cannot exceed OE_REPORT_DATA_SIZE
+     * 
+     * Report data must always be null on host side.
      */
     {
 #ifdef OE_BUILD_ENCLAVE
