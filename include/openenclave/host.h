@@ -103,7 +103,10 @@ OE_Result OE_TerminateEnclave(OE_Enclave* enclave);
  * the call and not of the underlying function. The ECALL implementation must
  * define its own error reporting scheme based on **args**.
  *
+ * @param enclave The instance of the enclave to be called.
+ *
  * @param func The name of the enclave function that will be called.
+ *
  * @param args The arguments to be passed to the enclave function.
  *
  * @returns This function return **OE_OK** on success.
@@ -120,7 +123,7 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
  * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
  * this function returns OE_BUFFER_TOO_SMALL.
  *
- * @param enclave The handle to the enclave that will generate the report.
+ * @param enclave The instance of the enclave that will generate the report.
  * @param options Specifying default value (0) generates a report for local
  * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
  * report for remote attestation.

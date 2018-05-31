@@ -12,10 +12,8 @@
 
 #include "defs.h"
 
-/**
- *
+/*
  * EAFI_MAX_PATH
- *
  */
 
 #if defined(MAX_PATH)
@@ -26,17 +24,7 @@
 #define OE_MAX_PATH 1024
 #endif
 
-/**
- *
- * Printf format specifiers
- *
- */
-
-/**
- *
- * Basic types:
- *
- */
+// Basic types and Printf format specifiers
 
 #if defined(__GNUC__)
 
@@ -100,9 +88,7 @@ OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 #endif
 
 /**
- *
  * Integer limits:
- *
  */
 #define OE_MIN_SINT8 (-128)
 #define OE_MAX_SINT8 127
@@ -138,11 +124,11 @@ OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 
 #define OE_MAX_SIZE_T OE_MAX_UINT64
 
-/**
- *
- * OE_Type:
- *
- */
+/*
+**===========================================================================
+**OE_Type:
+**===========================================================================
+*/
 typedef enum _OE_Type {
     OE_NONE_T,
     OE_CHAR_T,
@@ -172,29 +158,26 @@ typedef enum _OE_Type {
 } OE_Type;
 
 /**
- *
- * OE_EnclaveType:
- *
+ * OE_EnclaveType: Defines the enclave type. Currently always
+ * OE_ENCLAVE_TYPE_SGX
  */
 typedef enum _OE_EnclaveType {
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
 } OE_EnclaveType;
 
-/**
- *
+/*
  * Signature of allocation and deallocation functions.
- *
  */
 typedef void* (*OE_AllocProc)(size_t size);
 
 typedef void (*OE_DeallocProc)(void* ptr);
 
-/**
- *
- * OE_Page:
- *
- */
+/*
+**===========================================================================
+**OE_Page: Aligned Page of size 4K
+**===========================================================================
+*/
 typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
 {
     unsigned char data[OE_PAGE_SIZE];
@@ -203,9 +186,7 @@ typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
 OE_STATIC_ASSERT(__alignof(OE_Page) == OE_PAGE_SIZE);
 
 /**
- *
- * OE_va_list:
- *
+ * OE_va_list: Points to __builtin_va_list macros
  */
 #define OE_va_list __builtin_va_list
 #define OE_va_start __builtin_va_start
@@ -213,10 +194,9 @@ OE_STATIC_ASSERT(__alignof(OE_Page) == OE_PAGE_SIZE);
 #define OE_va_end __builtin_va_end
 #define OE_va_copy __builtin_va_copy
 
-/**
+/*! \brief Structure that holds the call context
  *
- * OE_OCallContext:
- *
+ * Pointers to RBP and RET address are saved as part of the call context
  */
 typedef struct _OE_OCallContext
 {
@@ -225,27 +205,24 @@ typedef struct _OE_OCallContext
 } OE_OCallContext;
 
 /**
- *
- * OE_BASIC_XSTATE:
- *
+ * Contains X87 and SSE data
  */
-// X87 and SSE data.
 typedef struct _OE_BASIC_XSTATE
 {
-    uint8_t blob[512];
+    uint8_t blob[512]; /**< Holds XState i.e. X87 and SSE data */
 } OE_ALIGNED(16) OE_BASIC_XSTATE;
 
 /**
- *
- * OE_CONTEXT:
- *
+ * \typedef OE_CONTEXT: typedef to structure _OE_CONTEXT
+ * \struct _OE_CONTEXT: Necessary x64 registers/state that can be
+ * saved before an exception and restored after the exception has been handled
+ * in the enclave.
  */
 typedef struct _OE_CONTEXT
 {
-    // Flags.
-    uint64_t flags;
+    uint64_t flags; /**< Flags */
 
-    // Integer registers.
+    /**< Integer registers. */
     uint64_t rax;
     uint64_t rbx;
     uint64_t rcx;
@@ -271,39 +248,31 @@ typedef struct _OE_CONTEXT
     // Don't need to manipulate the segment registers directly.
     // Ignore them: CS, DS, ES, SS, GS, and FS.
 
-    // SSE control flags.
-    uint32_t mxcsr;
+    uint32_t mxcsr; /**< SSE control flags */
 
-    // Basic XState.
-    OE_BASIC_XSTATE basic_xstate;
+    OE_BASIC_XSTATE basic_xstate; /**< @OE_BASIC_XSTATE - Basic XState */
 
     // Don't need to manipulate other XSTATE (AVX etc.).
 } OE_CONTEXT;
 
 /**
- *
- * OE_EXCEPTION_RECORD:
- *
+ * Exception context structure with the exception code, flags, address and
+ * calling context of the exception.
  */
 typedef struct _OE_EXCEPTION_RECORD
 {
-    // Exception code.
-    uint32_t code;
-
-    // Exception flags.
-    uint32_t flags;
-
-    // Exception address.
-    uint64_t address;
-
-    // Context.
-    OE_CONTEXT* context;
+    uint32_t code;       /**< Exception code */
+    uint32_t flags;      /**< Exception flags */
+    uint64_t address;    /**< Exception address */
+    OE_CONTEXT* context; /**< Structure that holds the calling context i.e.
+                            pointers to RBP and RET address */
 } OE_EXCEPTION_RECORD;
 
 /**
- *
- * POE_VECTORED_EXCEPTION_HANDLER:
- *
+ * POE_VECTORED_EXCEPTION_HANDLER: Pointer to Vectored exception handler
+ * registered in the enclave.
+ * @param exceptionContext - Holds the exception code, flags, address and
+ * calling context.
  */
 typedef uint64_t (*POE_VECTORED_EXCEPTION_HANDLER)(
     OE_EXCEPTION_RECORD* exceptionContext);
