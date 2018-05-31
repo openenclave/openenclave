@@ -21,8 +21,6 @@ static mbedtls_ecp_group_id _GetGroupID(OE_ECType ecType)
 {
     switch (ecType)
     {
-        case OE_EC_TYPE_SECP521R1:
-            return MBEDTLS_ECP_DP_SECP521R1;
         case OE_EC_TYPE_SECP256R1:
             return MBEDTLS_ECP_DP_SECP256R1;
         default:

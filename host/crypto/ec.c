@@ -21,8 +21,6 @@ static int _GetNID(OE_ECType ecType)
 {
     switch (ecType)
     {
-        case OE_EC_TYPE_SECP521R1:
-            return NID_secp521r1;
         case OE_EC_TYPE_SECP256R1:
             return NID_X9_62_prime256v1;
         default:

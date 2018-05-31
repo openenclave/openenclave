@@ -223,7 +223,7 @@ static void _TestGenerate()
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP521R1, &privateKey, &publicKey);
+    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP256R1, &privateKey, &publicKey);
     OE_TEST(r == OE_OK);
 
     r = OE_ECPrivateKeySign(
@@ -275,7 +275,7 @@ static void _TestWritePrivate()
     uint8_t* pemData2 = NULL;
     size_t pemSize2 = 0;
 
-    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP521R1, &key1, &publicKey);
+    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP256R1, &key1, &publicKey);
     OE_TEST(r == OE_OK);
 
     {
