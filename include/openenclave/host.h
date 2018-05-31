@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file host.h
+ * @file host.h
  *
  * This file defines the programming interface for developing host applications.
  *

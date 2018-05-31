@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file thread.h
+ * @file thread.h
  *
  * This file defines threading primitives used by enclaves.
  *

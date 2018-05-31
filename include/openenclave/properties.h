@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file properties.h
+ * @file properties.h
  *
  * This file defines enclave-property structures which are injected into
  * the following sections of the enclave image.

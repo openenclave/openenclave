@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file result.h
+ * @file result.h
  *
  * This file defines Open Enclave return codes (results).
  *

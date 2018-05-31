@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file enclave.h
+ * @file enclave.h
  *
  * This file defines the programming interface for developing enclaves.
  *
