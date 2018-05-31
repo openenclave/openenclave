@@ -284,7 +284,24 @@ OE_Result OE_ECPublicKeyFromBytes(
 
 OE_EXTERNC_END
 
-/* ATTN: experimental */
+/**
+ * Converts raw EC curve data points into ASN.1 format.
+ *
+ * This function converts raw EC curve data points into ASN.1 format suitable
+ * as a signature parameter to the **OE_ECPublicKeyVerify()** function.
+ *
+ * @param[in,out] asn1 buffer size (in); signature size (out)
+ * @param asn1Size output buffer size
+ * @param rData R data-point buffer
+ * @param rData size of rData buffer
+ * @param sData S data-point buffer
+ * @param sSize size of sData buffer
+ *
+ * @return OE_OK upon success
+ * @return OE_INVALID_PARAMETER a parameter was invalid.
+ * @return OE_BUFFER_TOO_SMALL **asn1** buffer is too small and **asn1Size** 
+ *         contains the required size.
+ */
 OE_Result OE_ECSignatureWriteASN1(
     unsigned char* asn1,
     size_t* asn1Size,
@@ -293,7 +310,25 @@ OE_Result OE_ECSignatureWriteASN1(
     const uint8_t* sData,
     size_t sSize);
 
-/* ATTN: experimental */
+/**
+ * Parses an EC signature in ASN.1 format into R and S EC curve data points.
+ *
+ * This function parses an EC signature in ASN.1 format into R and S EC curve 
+ * data points. Signatures in this format are produced by the
+ * **OE_ECPrivateKeySign()** function.
+ *
+ * @param asn1 signature in ASN.1 format
+ * @param asn1Size signature size
+ * @param rData buffer where R data point is written
+ * @param rSize[in,out] size of rData buffer (in); size of data (out)
+ * @param sData buffer where S data point is written
+ * @param sSize[in,out] size of sData buffer (in); size of data (out)
+ *
+ * @return OE_OK upon success
+ * @return OE_INVALID_PARAMETER a parameter was invalid.
+ * @return OE_BUFFER_TOO_SMALL either **rData** or **sData** buffer is too
+ *         small; **rSize** and **sSize** contain the required sizes on output.
+ */
 OE_Result OE_ECSignatureReadASN1(
     const uint8_t* asn1,
     size_t asn1Size,
