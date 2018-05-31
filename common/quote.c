@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+
 #include "quote.h"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/cert.h>

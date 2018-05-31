@@ -955,22 +955,6 @@ static void TestCertMethods()
             OE_TEST(size == sizeof(CERT_EC_KEY));
             OE_TEST(memcmp(CERT_EC_KEY, data, sizeof(CERT_EC_KEY)) == 0);
             free(data);
-
-#if 0
-            /* Can we create a new key from these bytes? */
-            {
-                OE_ECPublicKey newKey;
-
-                r = OE_ECPublicKeyFromBytes(
-                    &newKey, 
-                    OE_EC_TYPE_SECP521R1, 
-                    CERT_EC_KEY, 
-                    sizeof(CERT_EC_KEY));
-                OE_TEST(r == OE_OK);
-            }
-#endif
-
-            /* Free the key */
         }
 
         /* Test OE_ECPublicKeyEqual() */
