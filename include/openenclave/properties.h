@@ -33,9 +33,7 @@ OE_EXTERNC_BEGIN
 #define OE_SGX_MAX_TCS 32
 
 /**
- *
- * OE_EnclaveSizeSettings
- *
+ * Contains the number of Heap Pages, Stack Pages and TCS
  */
 typedef struct _OE_EnclaveSizeSettings
 {
@@ -47,20 +45,15 @@ typedef struct _OE_EnclaveSizeSettings
 OE_CHECK_SIZE(sizeof(OE_EnclaveSizeSettings), 24);
 
 /**
- *
  * Base type for enclave properties
- *
  */
 typedef struct _OE_EnclavePropertiesHeader
 {
-    /* (0) Size of the extended structure */
-    uint32_t size;
+    uint32_t size; /**< (0) Size of the extended structure */
 
-    /* (4) Enclave type */
-    OE_EnclaveType enclaveType;
+    OE_EnclaveType enclaveType; /**< (4) Enclave type */
 
-    /* (8) Enclave settings */
-    OE_EnclaveSizeSettings sizeSettings;
+    OE_EnclaveSizeSettings sizeSettings; /**< (8) Enclave settings */
 } OE_EnclavePropertiesHeader;
 
 OE_STATIC_ASSERT(sizeof(OE_EnclaveType) == sizeof(uint32_t));
@@ -69,38 +62,35 @@ OE_STATIC_ASSERT(OE_OFFSETOF(OE_EnclavePropertiesHeader, enclaveType) == 4);
 OE_STATIC_ASSERT(OE_OFFSETOF(OE_EnclavePropertiesHeader, sizeSettings) == 8);
 OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 
-/**
- *
- * OE_SGXEnclaveProperties - SGX enclave properties derived type
- *
+/*
+ **==========================================================================
+ ** OE_SGXEnclaveProperties SGX enclave properties derived type
+ **==========================================================================
  */
 
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
 /**
- *
- * OE_SGXEnclaveConfig
- *
+ * SGX Enclave Config fields in the enclave signature
  */
 typedef struct OE_SGXEnclaveConfig
 {
-    uint16_t productID;
-    uint16_t securityVersion;
+    uint16_t productID; /**< ISV assigned Product ID (ISVPRODID) to be used in
+                           the enclave signature */
+    uint16_t
+        securityVersion; /**< ISV assigned security version number (ISVSVN) to
+                            be used in the enclave signature */
 
-    /* Padding to make packed and unpacked size the same */
-    uint32_t padding;
+    uint32_t padding; /**< Padding to make packed and unpacked size the same */
 
-    /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
-    uint64_t attributes;
+    uint64_t attributes; /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
 } OE_SGXEnclaveConfig;
 
 OE_CHECK_SIZE(sizeof(OE_SGXEnclaveConfig), 16);
 
 /**
- *
  * Extends OE_SGXEnclavePropertiesHeader base type
- *
  */
 typedef struct OE_SGXEnclaveProperties
 {
@@ -116,12 +106,13 @@ typedef struct OE_SGXEnclaveProperties
 
 OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
 
-/**
- *
- * OE_SET_ENCLAVE_SGX:
- *     This macro initializes and injects an OE_SGXEnclaveProperties struct
- *     into the .oeinfo section.
- *
+/*
+ **==========================================================================
+ ** OE_SET_ENCLAVE_SGX:
+ **     This macro initializes and injects an OE_SGXEnclaveProperties struct
+ **     into the .oeinfo section.
+ **
+ **==========================================================================
  */
 
 #define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo,\"\",@note#")))

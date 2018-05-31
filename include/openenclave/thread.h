@@ -23,10 +23,12 @@ typedef uint64_t OE_Thread;
  * possible future expansion by evolving implementations.
  */
 
+/**
+ * Thread Attribute
+ */
 typedef struct _OE_ThreadAttr
 {
-    /* Internal private implementation */
-    uint64_t __impl[7];
+    uint64_t __impl[7]; /**< Internal private implementation */
 } OE_ThreadAttr;
 
 /**
@@ -156,11 +158,12 @@ int OE_SpinDestroy(OE_Spinlock* spinlock);
         }                    \
     }
 
-/* Definition of a mutex */
+/**
+ * Definition of a mutex
+ */
 typedef struct _OE_Mutex
 {
-    /* Internal private implementation */
-    uint64_t __impl[4];
+    uint64_t __impl[4]; /**< Internal private implementation */
 } OE_Mutex;
 
 /**
@@ -241,11 +244,12 @@ int OE_MutexDestroy(OE_Mutex* mutex);
         }                   \
     }
 
-/* Condition variable representation */
+/**
+ * Condition variable representation
+*/
 typedef struct _OE_Cond
 {
-    /* Internal private implementation */
-    uint64_t __impl[4];
+    uint64_t __impl[4]; /**< Internal private implementation */
 } OE_Cond;
 
 /**
@@ -344,11 +348,12 @@ int OE_CondDestroy(OE_Cond* cond);
         }                     \
     }
 
-/* Readers-writer lock representation */
+/**
+ * Readers-writer lock representation
+ */
 typedef struct _OE_RWLock
 {
-    /* Internal private implementation. */
-    uint64_t __impl[5];
+    uint64_t __impl[5]; /**< Internal private implementation */
 } OE_RWLock;
 
 /**

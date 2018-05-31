@@ -53,23 +53,23 @@ typedef struct _OE_Identity
  */
 typedef struct _OE_Report
 {
-    /* Size of the OE_Report structure. */
-    uint32_t size;
+    uint32_t size; /**< Size of the OE_Report structure. */
 
-    /* The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
-    OE_EnclaveType type;
+    OE_EnclaveType type; /**< @OE_EnclaveType The enclave type. Currently always
+                              OE_ENCLAVE_TYPE_SGX. */
 
-    /* Pointer to report data field within the report byte-stream supplied to
-     * OE_ParseReport.*/
-    uint8_t* reportData;
-    uint32_t reportDataSize;
+    uint8_t* reportData; /**< Pointer to report data field within the report
+                            byte-stream supplied to OE_ParseReport */
 
-    /* Pointer to report body field within the report byte-stream supplied to
-     * OE_ParseReport. */
-    uint8_t* enclaveReport;
-    uint32_t enclaveReportSize;
+    uint32_t reportDataSize; /**< Size of reportData */
 
-    OE_Identity identity;
+    uint8_t* enclaveReport; /**< Pointer to report body field within the report
+                                 byte-stream supplied to OE_ParseReport. */
+
+    uint32_t enclaveReportSize; /**< Size of enclaveReport */
+
+    OE_Identity identity; /**< Contains the IDs and attributes that are
+                   part of OE_Identity */
 } OE_Report;
 
 OE_EXTERNC_END

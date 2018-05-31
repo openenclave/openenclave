@@ -35,24 +35,6 @@ void OE_SnapCurrentContext(OE_CONTEXT* oe_context);
 void OE_RestorePartialContext(OE_CONTEXT* oe_context);
 void OE_ContinueExecution(OE_CONTEXT* oe_context);
 
-/*
-typedef struct _OE_EXCEPTION_RECORD
-{
-    // Exception code.
-    uint32_t code;
-
-    // Exception flags.
-    uint32_t flags;
-
-    // Exception address.
-    uint64_t address;
-
-    // Context.
-    OE_CONTEXT* context;
-} OE_EXCEPTION_RECORD;
-
-typedef uint64_t (*POE_VECTORED_EXCEPTION_HANDLER)(
-  OE_EXCEPTION_RECORD* exceptionContext); */
 #endif // !__ASSEMBLER__
 
 #endif /* _CONTEXT_H */

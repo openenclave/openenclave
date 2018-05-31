@@ -134,9 +134,5 @@
 
 ### types.h
 
-* [OE_STATIC_ASSERT()](types_8h_ae31000e1eeec98e3edc1d95b4917a60e_1ae31000e1eeec98e3edc1d95b4917a60e.md)
-
-* [OE_ALIGNED()](types_8h_a39a6728a66b82da6d4cff44b650e0d81_1a39a6728a66b82da6d4cff44b650e0d81.md)
-
-* [OE_ALIGNED()](types_8h_aed5fd49d7e6df6e59d02ab7f72b10ee8_1aed5fd49d7e6df6e59d02ab7f72b10ee8.md)
+* [OE_ALIGNED()](types_8h_1aed5fd49d7e6df6e59d02ab7f72b10ee8.md)
 
