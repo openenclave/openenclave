@@ -23,12 +23,6 @@ OE_EXTERNC_BEGIN
 /* Injected by OE_SET_ENCLAVE_SGX macro and by the signing tool (oesign) */
 #define OE_INFO_SECTION_NAME ".oeinfo"
 
-/**
- *
- * OE_EnclavePropertiesHeader - generic enclave properties base type
- *
- */
-
 /* Max number of threads in an enclave supported */
 #define OE_SGX_MAX_TCS 32
 
