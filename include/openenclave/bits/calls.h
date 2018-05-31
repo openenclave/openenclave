@@ -268,9 +268,6 @@ typedef struct _OE_GetReportArgs
 
     uint32_t options; /* in */
 
-    uint8_t reportData[sizeof(SGX_ReportData)]; /* in */
-    uint32_t reportDataSize;                    /* in */
-
     uint8_t optParams[sizeof(SGX_TargetInfo)]; /* in */
     uint32_t optParamsSize;                    /* in */
 
