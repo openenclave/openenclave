@@ -173,41 +173,38 @@ typedef struct _ConfigFileOptions
 /* Check whether the .conf file is missing required options */
 static int _CheckForMissingOptions(const ConfigFileOptions* options)
 {
-    int ret = -1;
+    int ret = 0;
 
     if (options->numHeapPages == OE_MAX_UINT64)
     {
         Err("%s: missing option: NumHeapPages", arg0);
-        goto done;
+        ret = -1;
     }
 
     if (options->numStackPages == OE_MAX_UINT64)
     {
         Err("%s: missing option: NumStackPages", arg0);
-        goto done;
+        ret = -1;
     }
 
     if (options->numTCS == OE_MAX_UINT64)
     {
         Err("%s: missing option: NumTCS", arg0);
-        goto done;
+        ret = -1;
     }
 
     if (options->productID == OE_MAX_UINT16)
     {
         Err("%s: missing option: ProductID", arg0);
-        goto done;
+        ret = -1;
     }
 
     if (options->securityVersion == OE_MAX_UINT16)
     {
         Err("%s: missing option: SecurityVersion", arg0);
-        goto done;
+        ret = -1;
     }
 
-    ret = 0;
-
-done:
     return ret;
 }
 
