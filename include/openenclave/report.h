@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file report.h
+ * @file report.h
  *
  * This file defines structures and options passed to GetReport functions.
  *

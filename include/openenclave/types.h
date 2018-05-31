@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file types.h
+ * @file types.h
  *
  * This file defines Open Enclave types.
  *
@@ -194,7 +194,7 @@ OE_STATIC_ASSERT(__alignof(OE_Page) == OE_PAGE_SIZE);
 #define OE_va_end __builtin_va_end
 #define OE_va_copy __builtin_va_copy
 
-/*! \brief Structure that holds the call context
+/*! @brief Structure that holds the call context
  *
  * Pointers to RBP and RET address are saved as part of the call context
  */
