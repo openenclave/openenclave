@@ -15,7 +15,7 @@
 // Test computation of SHA-256 hash over an ASCII alphabet string.
 void TestSHA()
 {
-    printf("=== begin TestSHA25\n");
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_SHA256 hash;
     OE_SHA256Context ctx;
@@ -24,5 +24,5 @@ void TestSHA()
     OE_SHA256Final(&ctx, &hash);
     OE_TEST(memcmp(&hash, &ALPHABET_HASH, sizeof(OE_SHA256)) == 0);
 
-    printf("=== passed TestSHA25\n");
+    printf("=== passed %s()\n", __FUNCTION__);
 }

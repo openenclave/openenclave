@@ -111,7 +111,7 @@ static const size_t _SIGNATURE_SIZE = sizeof(_SIGNATURE);
 // Test RSA signing operation over an ASCII alphabet string.
 static void _TestSign()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_RSAPrivateKey key;
@@ -148,13 +148,13 @@ static void _TestSign()
     OE_RSAPrivateKeyFree(&key);
     free(signature);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 // Test RSA verify operation over an ASCII alphabet string.
 static void _TestVerify()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_RSAPublicKey key;
@@ -174,7 +174,7 @@ static void _TestVerify()
 
     OE_RSAPublicKeyFree(&key);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 /* Certificate signed by CHAIN1 */
@@ -318,7 +318,7 @@ static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
 
 static void _TestCertVerifyGood()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_VerifyCertError error;
@@ -338,12 +338,12 @@ static void _TestCertVerifyGood()
     OE_CertFree(&cert);
     OE_CertChainFree(&chain);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestCertVerifyBad()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_VerifyCertError error;
@@ -364,12 +364,12 @@ static void _TestCertVerifyBad()
     OE_CertFree(&cert);
     OE_CertChainFree(&chain);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestMixedChain()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_Cert cert;
@@ -385,12 +385,12 @@ static void _TestMixedChain()
     OE_CertFree(&cert);
     OE_CertChainFree(&chain);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestGenerate()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_RSAPrivateKey privateKey;
@@ -434,12 +434,12 @@ static void _TestGenerate()
     OE_RSAPrivateKeyFree(&privateKey);
     OE_RSAPublicKeyFree(&publicKey);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestWritePrivate()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_RSAPrivateKey key;
@@ -464,12 +464,12 @@ static void _TestWritePrivate()
     free(pemData);
     OE_RSAPrivateKeyFree(&key);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestWritePublic()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_RSAPublicKey key;
@@ -494,7 +494,7 @@ static void _TestWritePublic()
     free(pemData);
     OE_RSAPublicKeyFree(&key);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestCertMethods()

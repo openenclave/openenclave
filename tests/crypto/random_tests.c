@@ -13,7 +13,7 @@
 
 void TestRandom()
 {
-    printf("=== begin TestRandom()\n");
+    printf("=== begin %s()\n", __FUNCTION__);
 
     static const size_t N = 64;
     static const size_t M = 19;
@@ -44,5 +44,5 @@ void TestRandom()
         }
     }
 
-    printf("=== passed TestRandom()\n");
+    printf("=== passed %s()\n", __FUNCTION__);
 }

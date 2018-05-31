@@ -76,7 +76,7 @@ static size_t _SIGNATURE_SIZE = sizeof(_SIGNATURE);
 // signature verification will still succeed.
 static void _TestSignAndVerify()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
@@ -210,12 +210,12 @@ static void _TestSignAndVerify()
 
     free(signature);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestGenerate()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_ECPrivateKey privateKey;
@@ -259,12 +259,12 @@ static void _TestGenerate()
     OE_ECPrivateKeyFree(&privateKey);
     OE_ECPublicKeyFree(&publicKey);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestWritePrivate()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_ECPublicKey publicKey;
@@ -314,12 +314,12 @@ static void _TestWritePrivate()
     OE_ECPrivateKeyFree(&key1);
     OE_ECPrivateKeyFree(&key2);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestWritePublic()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
     OE_ECPublicKey key;
@@ -346,12 +346,12 @@ static void _TestWritePublic()
     free(pemData);
     OE_ECPublicKeyFree(&key);
 
-    printf("=== passed %s\n", __FUNCTION__);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _TestCertMethods()
 {
-    printf("=== begin %s\n", __FUNCTION__);
+    printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
 
@@ -403,7 +403,7 @@ static void _TestCertMethods()
 
 static void _TestKeyFromBytes()
 {
-    printf("=== begin %s()\n", __FUNCTION__);
+    printf("=== begin %s()()\n", __FUNCTION__);
 
     OE_Result r;
     OE_ECType ecType = OE_EC_TYPE_SECP256R1;
