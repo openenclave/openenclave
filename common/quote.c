@@ -80,11 +80,13 @@ done:
 
 static OE_Result _ReadPublicKey(SGX_ECDSA256Key* key, OE_ECPublicKey* publicKey)
 {
-    uint8_t buf[1 + sizeof(*key)] = {0x04};
-    OE_Memcpy(buf + 1, key, sizeof(*key));
-
     return OE_ECPublicKeyFromBytes(
-        publicKey, OE_EC_TYPE_SECP256R1, buf, sizeof(buf));
+        publicKey, 
+        OE_EC_TYPE_SECP256R1, 
+        key->r,
+        sizeof(key->r),
+        key->s,
+        sizeof(key->s));
 }
 
 OE_Result VerifyQuoteImpl(
