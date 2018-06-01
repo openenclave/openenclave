@@ -28,12 +28,18 @@
 
 OE_EXTERNC_BEGIN
 
+/**
+ * @cond DUMMY
+ */
 typedef struct _OE_Enclave OE_Enclave;
 
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
 #define OE_ENCLAVE_FLAG_RESERVED \
     (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SIMULATE))
+/**
+ * @endcond
+ */
 
 /**
  * Creates an enclave from an enclave image file.

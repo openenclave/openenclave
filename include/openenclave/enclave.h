@@ -24,6 +24,9 @@
 
 OE_EXTERNC_BEGIN
 
+/**
+ * @cond DUMMY
+ */
 // Exception codes.
 #define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
 #define OE_EXCEPTION_BREAKPOINT 0x1
@@ -39,6 +42,10 @@ OE_EXTERNC_BEGIN
 // Exception flags.
 #define OE_EXCEPTION_HARDWARE 0x1
 #define OE_EXCEPTION_SOFTWARE 0x2
+
+/**
+ * @endcond
+ */
 
 /**
 * Register a new vectored exception handler.
