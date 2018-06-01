@@ -210,29 +210,26 @@ OE_Result OE_ECGenerateKeyPair(
 /**
  * Get the key bytes from an EC public key
  *
- * This function gets the key bytes from an EC public key. The bytes
- * are written to the **buffer** parameter. The bytes of are of the
- * form 'Z|X|Y' where Z is 0x04. For example, when the key type is
- * OE_EC_TYPE_SECP256R1, there are 65 bytes organized as follows.
+ * This function gets the key bytes from an EC public key, getting the data for
+ * the X and Y coordinates.
  *
- *    ```
- *    Z - 0x04
- *    X - 32 bytes
- *    Y - 32 bytes
- *    ```
- *
- * @param publicKey key whose key bytes are fetched.
- * @param buffer buffer where bytes are written (may be null).
- * @param bufferSize[in,out] buffer size on input; actual size on output.
+ * @param publicKey key whose key bytes are fetched
+ * @param xData the buffer where the X-coordinate bytes are written
+ * @param xSize[in,out] size of xData buffer (in); size of data (out)
+ * @param yData the buffer where Y-coordinate bytes are written
+ * @param ySize[in,out] size of yData buffer (in); size of data (out)
  *
  * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
- *         the required size.
+ * @return OE_BUFFER_TOO_SMALL either the **xData** or **yData** are too small;
+ *         **xSize** and **ySize** contain the required sizes.
+ *
  */
 OE_Result OE_ECPublicKeyToBytes(
     const OE_ECPublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize);
+    uint8_t* xData,
+    size_t* xSize,
+    uint8_t* yData,
+    size_t* ySize);
 
 /**
  * Determine whether two EC public keys are identical.
@@ -252,26 +249,17 @@ OE_Result OE_ECPublicKeyEqual(
     bool* equal);
 
 /**
- * Initialize an EC public key from a sequence of bytes.
+ * Initializes a public key from key bytes.
  *
- * This function initializes an EC public key from a sequence of bytes.
- * The bytes of are of the form 'Z|X|Y' where Z is 0x04. For example,
- * when the key type is OE_EC_TYPE_SECP256R1, there are 65 bytes organized
- * as follows.
- *
- *    ```
- *    Z - 0x04
- *    X - 32 bytes
- *    Y - 32 bytes
- *    ```
- *
- * The caller is responsible for eventually releasing the key by passing it to
- * OE_ECPublicKeyFree().
+ * This function initializes an EC public key from key bytes. The bytes
+ * are provided for both the X and Y coordinates.
  *
  * @param publicKey key which is initialized.
  * @param ecType type of elliptical curve to create.
- * @param buffer bytes used to initialize this key.
- * @param bufferSize size of the buffer.
+ * @param xData the bytes for the X coordinate
+ * @param xSize the size of the xData buffer
+ * @param yData the bytes for the Y coordinate
+ * @param ySize the size of the yData buffer
  *
  * @return OE_OK upon success
  * @return OE_FAILED on failure
@@ -279,59 +267,62 @@ OE_Result OE_ECPublicKeyEqual(
 OE_Result OE_ECPublicKeyFromBytes(
     OE_ECPublicKey* publicKey,
     OE_ECType ecType,
-    const uint8_t* buffer,
-    size_t bufferSize);
+    const uint8_t* xData,
+    size_t xSize,
+    const uint8_t* yData,
+    size_t ySize);
 
 OE_EXTERNC_END
 
 /**
- * Converts raw EC curve data points into ASN.1 format.
+ * Converts binary ECDSA point coordinates to an DER-encoded signature.
  *
- * This function converts raw EC curve data points into ASN.1 format suitable
- * as a signature parameter to the **OE_ECPublicKeyVerify()** function.
+ * This function converts ECDSA point coordinates (R and S) to an 
+ * DER-encoded signature suitable as an input parameter to the
+ * **OE_ECPublicKeyVerify()** function.
  *
- * @param[in,out] asn1 buffer size (in); signature size (out)
- * @param asn1Size output buffer size
- * @param rData R data-point buffer
- * @param rData size of rData buffer
- * @param sData S data-point buffer
- * @param sSize size of sData buffer
+ * @param signature the buffer that will contain the signature
+ * @param signatureSize[in,out] buffer size (in); signature size (out)
+ * @param rData the R coordinate in binary form
+ * @param rSize the size of the R coordinate buffer
+ * @param sData the S coordinate in binary form
+ * @param sSize the size of the S coordinate buffer
  *
- * @return OE_OK upon success
- * @return OE_INVALID_PARAMETER a parameter was invalid.
- * @return OE_BUFFER_TOO_SMALL **asn1** buffer is too small and **asn1Size** 
- *         contains the required size.
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER invalid parameter
+ * @return OE_BUFFER_TOO_SMALL **signature** buffer is too small
+ *         and **signatureSize** contains the required size.
  */
-OE_Result OE_ECSignatureWriteASN1(
-    unsigned char* asn1,
-    size_t* asn1Size,
+OE_Result OE_ECDSASignatureWriteDER(
+    unsigned char* signature,
+    size_t* signatureSize,
     const uint8_t* rData,
     size_t rSize,
     const uint8_t* sData,
     size_t sSize);
 
 /**
- * Parses an EC signature in ASN.1 format into R and S EC curve data points.
+ * Converts a DER-encoded signature into ECDSA point coordinates.
  *
- * This function parses an EC signature in ASN.1 format into R and S EC curve 
- * data points. Signatures in this format are produced by the
+ * This function converts a DER-encoded signature into binary-encoded ECDSA 
+ * point coordinates (R and S). DER-encoded signatures are generated by the
  * **OE_ECPrivateKeySign()** function.
  *
- * @param asn1 signature in ASN.1 format
- * @param asn1Size signature size
- * @param rData buffer where R data point is written
- * @param rSize[in,out] size of rData buffer (in); size of data (out)
- * @param sData buffer where S data point is written
- * @param sSize[in,out] size of sData buffer (in); size of data (out)
+ * @param signature the DER-encoded signature
+ * @param signatureSize the size of the signature
+ * @param rData the buffer that will contain the R coordinate.
+ * @param rSize[in,out] size of rData buffer (in); size of coordinate (out)
+ * @param sData the buffer that will contain the S coordinate.
+ * @param sSize[in,out] size of sData buffer (in); size of coordinate (out)
  *
  * @return OE_OK upon success
  * @return OE_INVALID_PARAMETER a parameter was invalid.
- * @return OE_BUFFER_TOO_SMALL either **rData** or **sData** buffer is too
+ * @return OE_BUFFER_TOO_SMALL either the **rData** or **sData** buffer is too
  *         small; **rSize** and **sSize** contain the required sizes on output.
  */
-OE_Result OE_ECSignatureReadASN1(
-    const uint8_t* asn1,
-    size_t asn1Size,
+OE_Result OE_ECDSASignatureReadDER(
+    const uint8_t* signature,
+    size_t signatureSize,
     uint8_t* rData,
     size_t* rSize,
     uint8_t* sData,

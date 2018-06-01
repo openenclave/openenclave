@@ -4,6 +4,7 @@
 #include "ec.h"
 #include <mbedtls/asn1.h>
 #include <mbedtls/asn1write.h>
+#include <mbedtls/ecp.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/enclave.h>
@@ -155,68 +156,6 @@ done:
     return result;
 }
 
-static OE_Result OE_PublicKeyGetKeyBytes(
-    const OE_PublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize)
-{
-    OE_Result result = OE_UNEXPECTED;
-
-    /* Check for invalid parameters */
-    if (!publicKey || !bufferSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If buffer is null, then bufferSize should be zero */
-    if (!buffer && *bufferSize != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Convert public EC key to binary */
-    {
-        const mbedtls_ecp_keypair* ec = mbedtls_pk_ec(publicKey->pk);
-        uint8_t scratch[1];
-        uint8_t* data;
-        size_t size;
-        size_t requiredSize;
-
-        if (!ec)
-            OE_RAISE(OE_FAILURE);
-
-        if (buffer == NULL || *bufferSize == 0)
-        {
-            // mbedtls_ecp_point_write_binary() needs a non-null buffer longer
-            // than zero to correctly calculate the required buffer size.
-            data = scratch;
-            size = 1;
-        }
-        else
-        {
-            data = buffer;
-            size = *bufferSize;
-        }
-
-        int r = mbedtls_ecp_point_write_binary(
-            &ec->grp,
-            &ec->Q,
-            MBEDTLS_ECP_PF_UNCOMPRESSED,
-            &requiredSize,
-            data,
-            size);
-
-        *bufferSize = requiredSize;
-
-        if (r == MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL)
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-
-        if (r != 0)
-            OE_RAISE(OE_FAILURE);
-    }
-
-    result = OE_OK;
-
-done:
-
-    return result;
-}
 
 static OE_Result OE_PublicKeyEqual(
     const OE_PublicKey* publicKey1,
@@ -363,11 +302,60 @@ OE_Result OE_ECGenerateKeyPair(
 
 OE_Result OE_ECPublicKeyToBytes(
     const OE_ECPublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize)
+    uint8_t* xData,
+    size_t* xSize,
+    uint8_t* yData,
+    size_t* ySize)
 {
-    return OE_PublicKeyGetKeyBytes(
-        (OE_PublicKey*)publicKey, buffer, bufferSize);
+    OE_PublicKey* impl = (OE_PublicKey*)publicKey;
+    OE_Result result = OE_UNEXPECTED;
+
+    /* Check for invalid parameters */
+    if (!impl || !xSize || !ySize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If xData is null, then xDataSize should be zero */
+    if (!xData && *xSize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If yData is null, then yDataSize should be zero */
+    if (!yData && *ySize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Convert public EC key to binary */
+    {
+        const mbedtls_ecp_keypair* ec;
+        size_t size;
+
+        if (!(ec = mbedtls_pk_ec(impl->pk)))
+            OE_RAISE(OE_FAILURE);
+
+        size = mbedtls_mpi_size(&ec->grp.P);
+
+        if (size > *xSize || size > *ySize)
+        {
+            *xSize = size;
+            *ySize = size;
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        }
+
+        *xSize = size;
+        *ySize = size;
+
+        /* Write the X coordinate */
+        if (mbedtls_mpi_write_binary(&ec->Q.X, xData, *xSize) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        /* Write the Y coordinate */
+        if (mbedtls_mpi_write_binary(&ec->Q.Y, yData, *ySize) != 0)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    result = OE_OK;
+
+done:
+
+    return result;
 }
 
 OE_Result OE_ECPublicKeyEqual(
@@ -382,8 +370,10 @@ OE_Result OE_ECPublicKeyEqual(
 OE_Result OE_ECPublicKeyFromBytes(
     OE_ECPublicKey* publicKey,
     OE_ECType ecType,
-    const uint8_t* buffer,
-    size_t bufferSize)
+    const uint8_t* xData,
+    size_t xSize,
+    const uint8_t* yData,
+    size_t ySize)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_PublicKey* impl = (OE_PublicKey*)publicKey;
@@ -396,7 +386,7 @@ OE_Result OE_ECPublicKeyFromBytes(
         mbedtls_pk_init(&impl->pk);
 
     /* Reject invalid parameters */
-    if (!publicKey || !buffer || !bufferSize)
+    if (!publicKey || !xData || !xSize || !yData || !ySize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Lookup the info for this key type */
@@ -418,11 +408,14 @@ OE_Result OE_ECPublicKeyFromBytes(
         if (mbedtls_ecp_group_load(&ecp->grp, groupID) != 0)
             OE_RAISE(OE_FAILURE);
 
-        if (mbedtls_ecp_point_read_binary(
-                &ecp->grp, &ecp->Q, buffer, bufferSize) != 0)
-        {
+        if (mbedtls_mpi_read_binary(&ecp->Q.X, xData, xSize) != 0)
             OE_RAISE(OE_FAILURE);
-        }
+
+        if (mbedtls_mpi_read_binary(&ecp->Q.Y, yData, ySize) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_mpi_lset(&ecp->Q.Z, 1) != 0)
+            OE_RAISE(OE_FAILURE);
     }
 
     /* Set the magic number */
@@ -432,15 +425,15 @@ OE_Result OE_ECPublicKeyFromBytes(
 
 done:
 
-    if (result != OE_OK)
+    if (result != OE_OK && impl)
         mbedtls_pk_free(&impl->pk);
 
     return result;
 }
 
-OE_Result OE_ECSignatureWriteASN1(
-    unsigned char* asn1,
-    size_t* asn1Size,
+OE_Result OE_ECDSASignatureWriteDER(
+    unsigned char* signature,
+    size_t* signatureSize,
     const uint8_t* rData,
     size_t rSize,
     const uint8_t* sData,
@@ -500,14 +493,14 @@ OE_Result OE_ECSignatureWriteASN1(
     }
 
     /* Check that buffer is big enough */
-    if (len > *asn1Size)
+    if (len > *signatureSize)
     {
-        *asn1Size = len;
+        *signatureSize = len;
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    OE_Memcpy(asn1, p, len);
-    *asn1Size = len;
+    OE_Memcpy(signature, p, len);
+    *signatureSize = len;
 
     result = OE_OK;
 
@@ -519,9 +512,9 @@ done:
     return result;
 }
 
-OE_Result OE_ECSignatureReadASN1(
-    const uint8_t* asn1,
-    size_t asn1Size,
+OE_Result OE_ECDSASignatureReadDER(
+    const uint8_t* signature,
+    size_t signatureSize,
     uint8_t* rData,
     size_t* rSize,
     uint8_t* sData,
@@ -530,14 +523,14 @@ OE_Result OE_ECSignatureReadASN1(
     OE_Result result = OE_UNEXPECTED;
     mbedtls_mpi r;
     mbedtls_mpi s;
-    uint8_t* p = (uint8_t*)asn1;
-    const uint8_t* end = asn1 + asn1Size;
+    uint8_t* p = (uint8_t*)signature;
+    const uint8_t* end = signature + signatureSize;
     size_t len;
 
     mbedtls_mpi_init(&r);
     mbedtls_mpi_init(&s);
 
-    if (!asn1 || !asn1Size || !rSize || !sSize)
+    if (!signature || !signatureSize || !rSize || !sSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse the tag */

@@ -212,7 +212,7 @@ OE_Result VerifyQuoteImpl(
         OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
 
         OE_CHECK(
-            OE_ECSignatureWriteASN1(
+            OE_ECDSASignatureWriteDER(
                 asn1Signature,
                 &asn1SignatureSize,
                 quoteAuthData->signature.r,
