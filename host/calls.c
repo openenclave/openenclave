@@ -432,6 +432,12 @@ static OE_Result _HandleOCALL(
 
 #endif /* defined(__OE_NEED_TIME_CALLS) */
 
+#if defined(_WIN32)
+        case OE_FUNC_CLOCK_GETTIME:
+			HandleClockgettime(argIn);
+			break;
+#endif
+
         case OE_FUNC_DESTRUCTOR:
         case OE_FUNC_CALL_ENCLAVE:
             assert("Invalid OCALL" == NULL);
@@ -660,17 +666,8 @@ OE_Result OE_ECall(
         OE_THROW(OE_OUT_OF_THREADS);
 
     /* Perform ECALL or ORET */
-    OE_TRY(
-        _DoEENTER(
-            enclave,
-            tcs,
-            OE_AEP,
-            code,
-            func,
-            arg,
-            &codeOut,
-            &funcOut,
-            &argOut));
+    OE_TRY(_DoEENTER(
+        enclave, tcs, OE_AEP, code, func, arg, &codeOut, &funcOut, &argOut));
 
     /* Process OCALLS */
     if (codeOut != OE_CODE_ERET)
@@ -686,9 +683,9 @@ OE_CATCH:
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
 
-/* ATTN: this causes an assertion with call nesting. */
-/* ATTN: make enclave argument a cookie. */
-/* SetEnclave(NULL); */
+        /* ATTN: this causes an assertion with call nesting. */
+        /* ATTN: make enclave argument a cookie. */
+        /* SetEnclave(NULL); */
 
 #if defined(TRACE_ECALLS)
     printf("=== OE_ECall(): result=%u\n", result);
@@ -773,12 +770,11 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args)
     {
         uint64_t argOut = 0;
 
-        OE_TRY(
-            OE_ECall(
-                enclave,
-                OE_FUNC_CALL_ENCLAVE,
-                (uint64_t)&callEnclaveArgs,
-                &argOut));
+        OE_TRY(OE_ECall(
+            enclave,
+            OE_FUNC_CALL_ENCLAVE,
+            (uint64_t)&callEnclaveArgs,
+            &argOut));
         OE_TRY(argOut);
     }
 

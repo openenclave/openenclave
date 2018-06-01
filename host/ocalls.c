@@ -210,6 +210,23 @@ void HandleClockgettime(uint64_t argIn)
 }
 #endif
 
+#if defined(_WIN32)
+void HandleClockgettime(uint64_t argIn)
+{
+    OE_ClockgettimeArgs* args = (OE_ClockgettimeArgs*)argIn;
+
+    if (!args)
+        return;
+
+    int64_t wintime;
+    GetSystemTimeAsFileTime((FILETIME*)&wintime);
+    wintime -= 116444736000000000i64;                // 1jan1601 to 1jan1970
+    args->tp->tv_sec = wintime / 10000000i64;        // seconds
+    args->tp->tv_nsec = wintime % 10000000i64 * 100; // nano-seconds
+    args->ret = GetLastError();
+}
+#endif
+
 #if defined(__OE_NEED_TIME_CALLS)
 void HandleNanosleep(uint64_t argIn)
 {

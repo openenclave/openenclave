@@ -38,7 +38,6 @@ int gettimeofday(struct timeval* tv, void* tz)
 {
     size_t ret = -1;
     OE_GettimeofdayArgs* args = NULL;
-
     if (!(args = OE_HostCalloc(1, sizeof(OE_GettimeofdayArgs))))
         goto done;
 
@@ -85,7 +84,9 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
         goto done;
 
     args->ret = -1;
+#ifdef __OE_NEED_TIME_CALLS
     args->clk_id = clk_id;
+#endif
     args->tp = tp ? &args->tpbuf : NULL;
 
     if (OE_OCall(
