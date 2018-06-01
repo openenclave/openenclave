@@ -107,8 +107,8 @@
  *
  * Comment if your system does not support time functions
  */
-//Open Enclave TODO: enable when enclave secure time is available: issue #182
-//#define MBEDTLS_HAVE_TIME
+//Open Enclave: Time methods are not secure against host, enabled only for x509 expiration checks
+#define MBEDTLS_HAVE_TIME
 
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
@@ -120,8 +120,8 @@
  *
  * Comment if your system does not have a correct clock.
  */
-//Open Enclave TODO: enable when enclave secure time is available: issue #182
-//#define MBEDTLS_HAVE_TIME_DATE
+//Open Enclave: Time methods are not secure against host, enabled only for x509 expiration checks
+#define MBEDTLS_HAVE_TIME_DATE
 
 /**
  * \def MBEDTLS_PLATFORM_MEMORY
@@ -1529,7 +1529,7 @@
  *
  * This modules adds support for the AES-NI instructions on x86-64
  */
-/* #define MBEDTLS_AESNI_C */
+#define MBEDTLS_AESNI_C
 
 /**
  * \def MBEDTLS_AES_C

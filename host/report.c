@@ -27,13 +27,8 @@ static OE_Result _OE_GetLocalReport(
      * validation will be done in the enclave side.
      */
 
-    // reportData can either be NULL or it can be a stream of bytes with length
-    // < OE_REPORT_DATA_SIZE. When reportData is NULL, the reportSize must be
-    // zero.
-    if (reportData == NULL && reportDataSize != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (reportDataSize > OE_REPORT_DATA_SIZE)
+    // reportData on the host side must be null.
+    if (reportData != NULL || reportDataSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // optParams, if specified, must be a SGX_TargetInfo. When optParams is
@@ -51,13 +46,8 @@ static OE_Result _OE_GetLocalReport(
     if (arg == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    if (reportData != NULL)
-        memcpy(arg->reportData, reportData, reportDataSize);
-
     // Request local report.
     arg->options = 0;
-
-    arg->reportDataSize = reportDataSize;
 
     if (optParams != NULL)
         memcpy(arg->optParams, optParams, optParamsSize);
@@ -98,7 +88,9 @@ static OE_Result _OE_GetRemoteReport(
     uint32_t sgxReportSize = sizeof(SGX_Report);
     OE_Report parsedReport;
 
-    // reportData is a validated by _OE_GetLocalReport.
+    // reportData on the host side must be null.
+    if (reportData != NULL || reportDataSize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     // For remote attestation, the Quoting Enclave's target info is used.
     // optParams must not be supplied.

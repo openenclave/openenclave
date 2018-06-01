@@ -43,6 +43,7 @@ add_subdirectory(abortStatus)
 add_subdirectory(crypto)
 
 add_subdirectory(libcxx)
+add_subdirectory(libcxxrt)
 add_subdirectory(mbed)
 add_subdirectory(NestedCall)
 add_subdirectory(ocall)

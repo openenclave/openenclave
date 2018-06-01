@@ -16,4 +16,6 @@
 #define OE_CPUID_RDX 3
 #define OE_CPUID_REG_COUNT 4
 
+#define OE_CPUID_AESNI_FEATURE 0x02000000u
+
 #endif /* _OE_CPUID_H */

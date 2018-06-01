@@ -169,18 +169,30 @@ TEST_FCN void TestLocalReport(void* args_)
      */
 
     /*
-     * Report data parameters scenarios:
+     * Report data parameters scenarios on enclave side:
      *      1. Report data can be NULL.
      *      2. Report data can be < OE_REPORT_DATA_SIZE
      *      3. Report data can be OE_REPORT_DATA_SIZE
      *      4. Report data cannot exceed OE_REPORT_DATA_SIZE
+     *
+     * Report data must always be null on host side.
      */
     {
+#ifdef OE_BUILD_ENCLAVE
+        OE_Result expectedResult = OE_OK;
+#else
+        OE_Result expectedResult = OE_INVALID_PARAMETER;
+#endif
+
         reportSize = 1024 * 1024;
         OE_TEST(
             GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) == OE_OK);
-        ValidateReport(
-            reportBuffer, reportSize, false, zeros, OE_REPORT_DATA_SIZE);
+
+        if (expectedResult == OE_OK)
+        {
+            ValidateReport(
+                reportBuffer, reportSize, false, zeros, OE_REPORT_DATA_SIZE);
+        }
 
         reportSize = 1024 * 1024;
         reportDataSize = 16;
@@ -192,14 +204,17 @@ TEST_FCN void TestLocalReport(void* args_)
                 NULL,
                 0,
                 reportBuffer,
-                &reportSize) == OE_OK);
-        ValidateReport(
-            reportBuffer, reportSize, false, reportData, reportDataSize);
+                &reportSize) == expectedResult);
+        if (expectedResult == OE_OK)
+        {
+            ValidateReport(
+                reportBuffer, reportSize, false, reportData, reportDataSize);
 
-        OE_TEST(
-            CheckReportData(
-                reportBuffer, reportSize, reportData, reportDataSize + 1) ==
-            false);
+            OE_TEST(
+                CheckReportData(
+                    reportBuffer, reportSize, reportData, reportDataSize + 1) ==
+                false);
+        }
 
         reportSize = 1024 * 1024;
         reportDataSize = OE_REPORT_DATA_SIZE;
@@ -211,9 +226,13 @@ TEST_FCN void TestLocalReport(void* args_)
                 NULL,
                 0,
                 reportBuffer,
-                &reportSize) == OE_OK);
-        ValidateReport(
-            reportBuffer, reportSize, false, reportData, reportDataSize);
+                &reportSize) == expectedResult);
+
+        if (expectedResult == OE_OK)
+        {
+            ValidateReport(
+                reportBuffer, reportSize, false, reportData, reportDataSize);
+        }
 
         reportSize = 1024 * 1024;
         reportDataSize = OE_REPORT_DATA_SIZE + 1;
@@ -329,13 +348,21 @@ TEST_FCN void TestRemoteReport(void* args_)
      */
 
     /*
-     * Report data parameters scenarios:
+     * Report data parameters scenarios on enclave side:
      *      a. Report data can be NULL.
      *      b. Report data can be < OE_REPORT_DATA_SIZE
      *      c. Report data can be OE_REPORT_DATA_SIZE
      *      d. Report data cannot exceed OE_REPORT_DATA_SIZE
+     * 
+     * Report data must always be null on host side.
      */
     {
+#ifdef OE_BUILD_ENCLAVE
+        OE_Result expectedResult = OE_OK;
+#else
+        OE_Result expectedResult = OE_INVALID_PARAMETER;
+#endif
+
         reportSize = 2048;
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
@@ -353,13 +380,16 @@ TEST_FCN void TestRemoteReport(void* args_)
                 NULL,
                 0,
                 reportBuffer,
-                &reportSize) == OE_OK);
-        ValidateReport(
-            reportBuffer, reportSize, true, reportData, reportDataSize);
-        OE_TEST(
-            CheckReportData(
-                reportBuffer, reportSize, reportData, reportDataSize + 1) ==
-            false);
+                &reportSize) == expectedResult);
+        if (expectedResult == OE_OK)
+        {
+            ValidateReport(
+                reportBuffer, reportSize, true, reportData, reportDataSize);
+            OE_TEST(
+                CheckReportData(
+                    reportBuffer, reportSize, reportData, reportDataSize + 1) ==
+                false);
+        }
 
         reportSize = 2048;
         reportDataSize = OE_REPORT_DATA_SIZE;
@@ -371,9 +401,12 @@ TEST_FCN void TestRemoteReport(void* args_)
                 NULL,
                 0,
                 reportBuffer,
-                &reportSize) == OE_OK);
-        ValidateReport(
-            reportBuffer, reportSize, true, reportData, reportDataSize);
+                &reportSize) == expectedResult);
+        if (expectedResult == OE_OK)
+        {
+            ValidateReport(
+                reportBuffer, reportSize, true, reportData, reportDataSize);
+        }
 
         reportSize = 2048;
         reportDataSize = OE_REPORT_DATA_SIZE + 1;
@@ -511,7 +544,8 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
         OE_OK);
     OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
 
-    // 2. Report with full custom report data.
+// 2. Report with full custom report data.
+#ifdef OE_BUILD_ENCLAVE
     OE_TEST(
         GetReport(
             0,
@@ -534,6 +568,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
             report,
             &reportSize) == OE_OK);
     OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
+#endif
 
     // 4. Negative case.
 
