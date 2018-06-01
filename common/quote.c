@@ -83,10 +83,10 @@ static OE_Result _ReadPublicKey(SGX_ECDSA256Key* key, OE_ECPublicKey* publicKey)
     return OE_ECPublicKeyFromBytes(
         publicKey, 
         OE_EC_TYPE_SECP256R1, 
-        key->r,
-        sizeof(key->r),
-        key->s,
-        sizeof(key->s));
+        key->x,
+        sizeof(key->x),
+        key->y,
+        sizeof(key->y));
 }
 
 OE_Result VerifyQuoteImpl(
