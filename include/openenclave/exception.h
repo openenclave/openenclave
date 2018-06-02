@@ -13,6 +13,7 @@
 
 #ifndef __ASSEMBLER__
 #include "defs.h"
+#include "types.h"
 
 /**
  * Contains X87 and SSE data
