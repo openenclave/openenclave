@@ -5,14 +5,14 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include "rsa_tests.h"
-#include "hash.h"
-#include <openenclave/bits/rsa.h>
 #include <openenclave/bits/cert.h>
+#include <openenclave/bits/rsa.h>
 #include <openenclave/bits/tests.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include "hash.h"
+#include "rsa_tests.h"
 
 /* Generated with: openssl genrsa -out private.pem -3 3072 */
 static const char _PRIVATE_KEY[] =

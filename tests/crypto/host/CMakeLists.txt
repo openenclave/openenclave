@@ -3,6 +3,7 @@
 
 add_executable(hostcrypto 
     main.c
+    ec.c
     ../ec_tests.c
     ../hash.c
     ../random_tests.c

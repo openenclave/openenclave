@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "hash.h"
 
 const char ALPHABET[26] = "abcdefghijklmnopqrstuvwxyz";

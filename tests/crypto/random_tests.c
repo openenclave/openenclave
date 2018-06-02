@@ -1,15 +1,15 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #if defined(OE_BUILD_ENCLAVE)
 #include <openenclave/enclave.h>
 #endif
 
-#include "random_tests.h"
 #include <openenclave/bits/random.h>
 #include <openenclave/bits/tests.h>
 #include <stdio.h>
 #include <string.h>
-
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+#include "random_tests.h"
 
 void TestRandom()
 {

@@ -14,11 +14,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../hash.h"
-#include "../sha_tests.h"
-#include "../rsa_tests.h"
 #include "../ec_tests.h"
+#include "../hash.h"
 #include "../random_tests.h"
+#include "../rsa_tests.h"
+#include "../sha_tests.h"
 
 const char* arg0;
 
