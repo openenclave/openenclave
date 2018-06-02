@@ -6,6 +6,7 @@
 
 #ifndef __ASSEMBLER__
 #include <openenclave/defs.h>
+#include <openenclave/exception.h>
 #include <openenclave/types.h>
 #include "sgxtypes.h"
 

@@ -50,6 +50,10 @@
 
 * [OE_GetSealKey()](enclave_8h_aeb2e4976ff556e62b8ff8dc67bd5107f_1aeb2e4976ff556e62b8ff8dc67bd5107f.md)
 
+### exception.h
+
+* [OE_ALIGNED()](exception_8h_1aed5fd49d7e6df6e59d02ab7f72b10ee8.md)
+
 ### host.h
 
 * [OE_CreateEnclave()](host_8h_af4aaccca15e8dae0ceca687730bb6262_1af4aaccca15e8dae0ceca687730bb6262.md)
@@ -131,8 +135,4 @@
 * [OE_ThreadSetSpecific()](thread_8h_afe7f5e48461b5262a96ee4b56c07f373_1afe7f5e48461b5262a96ee4b56c07f373.md)
 
 * [OE_ThreadGetSpecific()](thread_8h_af39a5975141e08c467f807f3800410c1_1af39a5975141e08c467f807f3800410c1.md)
-
-### types.h
-
-* [OE_ALIGNED()](types_8h_1aed5fd49d7e6df6e59d02ab7f72b10ee8.md)
 

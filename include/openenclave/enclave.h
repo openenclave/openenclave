@@ -17,6 +17,7 @@
 #include "bits/context.h"
 #include "bits/sha.h"
 #include "defs.h"
+#include "exception.h"
 #include "report.h"
 #include "result.h"
 #include "thread.h"
