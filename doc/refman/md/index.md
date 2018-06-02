@@ -6,7 +6,7 @@
 
 ### enclave.h
 
-* [OE_AddVectoredExceptionHandler()](enclave_8h_a78fb6ff9e998dd578567f65f1f66ef92_1a78fb6ff9e998dd578567f65f1f66ef92.md)
+* [OE_AddVectoredExceptionHandler()](enclave_8h_aeb2c1586caf3899ba1863529b65b6171_1aeb2c1586caf3899ba1863529b65b6171.md)
 
 * [OE_RemoveVectoredExceptionHandler()](enclave_8h_a721105240a9d051a94ed6826f61518af_1a721105240a9d051a94ed6826f61518af.md)
 
@@ -52,7 +52,7 @@
 
 ### host.h
 
-* [OE_CreateEnclave()](host_8h_a37e6c31e49055d9fb7fae5be50d88022_1a37e6c31e49055d9fb7fae5be50d88022.md)
+* [OE_CreateEnclave()](host_8h_af4aaccca15e8dae0ceca687730bb6262_1af4aaccca15e8dae0ceca687730bb6262.md)
 
 * [OE_TerminateEnclave()](host_8h_a20654d7b450c042ac7b256893b287cbe_1a20654d7b450c042ac7b256893b287cbe.md)
 

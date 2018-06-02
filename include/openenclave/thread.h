@@ -58,7 +58,37 @@ int OE_ThreadEqual(OE_Thread thread1, OE_Thread thread2);
 
 typedef unsigned int OE_OnceType;
 
+/**
+ * @cond DUMMY
+ */
 #define OE_ONCE_INITIALIZER 0
+#define OE_SPINLOCK_INITIALIZER 0
+#define OE_MUTEX_INITIALIZER \
+    {                        \
+        {                    \
+            0                \
+        }                    \
+    }
+
+#define OE_COND_INITIALIZER \
+    {                       \
+        {                   \
+            0               \
+        }                   \
+    }
+
+#define OE_RWLOCK_INITIALIZER \
+    {                         \
+        {                     \
+            0                 \
+        }                     \
+    }
+
+#define OE_THREADKEY_INITIALIZER 0
+
+/**
+ * @endcond
+ */
 
 /**
  * Calls the given function exactly once.
@@ -89,8 +119,6 @@ typedef unsigned int OE_OnceType;
  *
  */
 int OE_Once(OE_OnceType* once, void (*func)(void));
-
-#define OE_SPINLOCK_INITIALIZER 0
 
 typedef volatile unsigned int OE_Spinlock;
 
@@ -150,13 +178,6 @@ int OE_SpinUnlock(OE_Spinlock* spinlock);
  *
  */
 int OE_SpinDestroy(OE_Spinlock* spinlock);
-
-#define OE_MUTEX_INITIALIZER \
-    {                        \
-        {                    \
-            0                \
-        }                    \
-    }
 
 /**
  * Definition of a mutex
@@ -236,13 +257,6 @@ int OE_MutexUnlock(OE_Mutex* mutex);
  *
  */
 int OE_MutexDestroy(OE_Mutex* mutex);
-
-#define OE_COND_INITIALIZER \
-    {                       \
-        {                   \
-            0               \
-        }                   \
-    }
 
 /**
  * Condition variable representation
@@ -340,13 +354,6 @@ int OE_CondBroadcast(OE_Cond* cond);
  *
  */
 int OE_CondDestroy(OE_Cond* cond);
-
-#define OE_RWLOCK_INITIALIZER \
-    {                         \
-        {                     \
-            0                 \
-        }                     \
-    }
 
 /**
  * Readers-writer lock representation
@@ -536,8 +543,6 @@ int OE_RWLockWriteUnlock(OE_RWLock* rwLock);
  *
  */
 int OE_RWLockDestroy(OE_RWLock* rwLock);
-
-#define OE_THREADKEY_INITIALIZER 0
 
 typedef unsigned int OE_ThreadKey;
 

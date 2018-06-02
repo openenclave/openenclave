@@ -1,0 +1,55 @@
+[Index](index.md)
+
+---
+# OE_CreateEnclave()
+
+Creates an enclave from an enclave image file.
+
+## Syntax
+
+    OE_EXTERNC_BEGIN OE_CreateEnclave(const char *path, OE_EnclaveType type, uint32_t flags, const void *config, uint32_t configSize, OE_Enclave **enclave)
+## Description 
+
+This function creates an enclave from an enclave image file. On successful return, the enclave is fully initialized and ready to use.
+
+
+
+## Parameters
+
+#### path
+
+The path of an enclave image file in ELF-64 format. This file must have been linked with the **oecore** library and signed by the **oesign** tool.
+
+#### type
+
+The type of enclave supported by the enclave image file.
+
+- OE_ENCLAVE_TYPE_SGX - An SGX enclave
+
+#### flags
+
+These flags control how the enclave is run.
+
+- OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode
+
+- OE_ENCLAVE_FLAG_SIMULATE - runs the enclave in simulation mode
+
+#### config
+
+Additional enclave creation configuration data for the specific enclave type. This parameter is reserved and must be NULL.
+
+#### configSize
+
+The size of the **config** data buffer in bytes.
+
+#### enclave
+
+This points to the enclave instance upon success.
+
+## Returns
+
+Returns OE_OK on success.
+
+---
+[Index](index.md)
+
