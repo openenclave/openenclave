@@ -136,3 +136,7 @@
 
 * [OE_ThreadGetSpecific()](thread_8h_af39a5975141e08c467f807f3800410c1_1af39a5975141e08c467f807f3800410c1.md)
 
+### types.h
+
+* [OE_ALIGNED()](types_8h_1aed5fd49d7e6df6e59d02ab7f72b10ee8.md)
+

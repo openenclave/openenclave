@@ -29,9 +29,6 @@ OE_EXTERNC_BEGIN
 /* Max number of threads in an enclave supported */
 #define OE_SGX_MAX_TCS 32
 
-/*
- * Contains the number of Heap Pages, Stack Pages and TCS
- */
 typedef struct _OE_EnclaveSizeSettings
 {
     uint64_t numHeapPages;
@@ -41,9 +38,7 @@ typedef struct _OE_EnclaveSizeSettings
 
 OE_CHECK_SIZE(sizeof(OE_EnclaveSizeSettings), 24);
 
-/*
- * Base type for enclave properties
- */
+/* Base type for enclave properties */
 typedef struct _OE_EnclavePropertiesHeader
 {
     uint32_t size; /**< (0) Size of the extended structure */
@@ -64,24 +59,21 @@ OE_CHECK_SIZE(sizeof(OE_EnclavePropertiesHeader), 32);
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
 
-/*
- * SGX Enclave Config fields in the enclave signature
- */
 typedef struct OE_SGXEnclaveConfig
 {
     uint16_t productID;
     uint16_t securityVersion;
 
-    uint32_t padding; /**< Padding to make packed and unpacked size the same */
+    /* Padding to make packed and unpacked size the same */
+    uint32_t padding;
 
-    uint64_t attributes; /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
+    /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
+    uint64_t attributes;
 } OE_SGXEnclaveConfig;
 
 OE_CHECK_SIZE(sizeof(OE_SGXEnclaveConfig), 16);
 
-/*
- * Extends OE_SGXEnclavePropertiesHeader base type
- */
+/* Extends OE_EnclavePropertiesHeader base type */
 typedef struct OE_SGXEnclaveProperties
 {
     /* (0) */
