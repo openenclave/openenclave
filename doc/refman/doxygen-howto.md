@@ -194,3 +194,17 @@ For example.
  *
  */
 ```
+
+### Disabling doxygen documentation from blocks of code
+
+To disable doxygen documentatation from blocks of code of #defines, #typedefs, etc use
+the @cond command. Here is an example.
+
+/**
+ * @cond DUMMY
+ */
+<your code section goes here>
+/**
+ * @endcond
+ */
+So, unless you define DUMMY to Doxygen, the code block will be ignored.
