@@ -1,36 +1,37 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-INSTALL = apt-get -y install
+# Packages needed for building AESM and ISGX driver
+PACKAGES=build-essential \
+	ocaml \
+	automake \
+	autoconf \
+	libtool \
+	wget \
+	python \
+	libssl-dev \
+	libcurl4-openssl-dev \
+	protobuf-compiler \
+	libprotobuf-dev \
+	build-essential \
+	python \
+	libssl-dev \
+	libcurl4-openssl-dev \
+	libprotobuf-dev \
+	uuid-dev \
+	libxml2-dev \
+	cmake \
+	pkg-config \
+	subversion \
+	cloc \
+	libexpat1 \
+	libexpat1-dev \
+	ccache
 
 all: .packages
 
 .packages:
-	$(INSTALL) build-essential
-	$(INSTALL) ocaml
-	$(INSTALL) automake
-	$(INSTALL) autoconf
-	$(INSTALL) libtool
-	$(INSTALL) wget
-	$(INSTALL) python
-	$(INSTALL) libssl-dev
-	$(INSTALL) libcurl4-openssl-dev
-	$(INSTALL) protobuf-compiler
-	$(INSTALL) libprotobuf-dev
-	$(INSTALL) build-essential
-	$(INSTALL) python
-	$(INSTALL) libssl-dev
-	$(INSTALL) libcurl4-openssl-dev
-	$(INSTALL) libprotobuf-dev
-	$(INSTALL) uuid-dev
-	$(INSTALL) libxml2-dev
-	$(INSTALL) cmake
-	$(INSTALL) pkg-config
-	$(INSTALL) subversion
-	$(INSTALL) cloc
-	$(INSTALL) libexpat1
-	$(INSTALL) libexpat1-dev
-	$(INSTALL) ccache
+	apt-get -y install $(PACKAGES)
 	touch .packages
 
 clean:
