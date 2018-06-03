@@ -4,7 +4,7 @@
 include $(OPENENCLAVE_CONFIG)
 
 define optlib
-$(patsubst /usr/lib/lib%.so, -l%, $(wildcard /usr/lib/lib$1.so))
+$(patsubst /usr/lib/lib%.so,-l%,$(wildcard /usr/lib/lib$(1).so))
 endef
 
 all: build
@@ -20,9 +20,11 @@ LIBRARIES += -loehost
 LIBRARIES += -lcrypto
 LIBRARIES += -lpthread
 LIBRARIES += -ldl
-LIBRARIES += $(call optlib, sgx_enclave_common)
-LIBRARIES += $(call optlib, sgxoeql)
-LIBRARIES += $(call optlib, sgx_urts_ng)
+# Note: Do not insert space after comma as it's included in the
+# call to optlib as part of the $1 parameter
+LIBRARIES += $(call optlib,sgx_enclave_common)
+LIBRARIES += $(call optlib,sgxoeql)
+LIBRARIES += $(call optlib,sgx_urts_ng)
 
 build:
 	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp
