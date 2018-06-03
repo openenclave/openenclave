@@ -39,3 +39,5 @@ distclean:
 	rm -f .packages
 
 install:
+
+uninstall:
