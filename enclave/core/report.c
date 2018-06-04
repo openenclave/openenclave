@@ -356,10 +356,15 @@ OE_Result _HandleGetReport(uint64_t argIn)
     // Validate and copy args to prevent TOCTOU issues.
     OE_CHECK(_SafeCopyGetReportArgs(argIn, &arg, reportBuffer));
 
+    // Host is not allowed to pass report data. Otherwise, the host can use the
+    // enclave to put whatever data it wants in a report. The data field is
+    // intended to be used for digital signatures and is not allowed to be
+    // tampered with by the host.
+
     arg.result = OE_GetReport(
         arg.options,
-        (arg.reportDataSize != 0) ? arg.reportData : NULL,
-        arg.reportDataSize,
+        NULL,
+        0,
         (arg.optParamsSize != 0) ? arg.optParams : NULL,
         arg.optParamsSize,
         arg.reportBuffer,

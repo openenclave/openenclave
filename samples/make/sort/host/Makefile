@@ -3,6 +3,10 @@
 
 include $(OPENENCLAVE_CONFIG)
 
+define optlib
+$(patsubst /usr/lib/lib%.so, -l%, $(wildcard /usr/lib/lib$1.so))
+endef
+
 all: build
 
 CXXFLAGS=-Wall -O2
@@ -16,9 +20,9 @@ LIBRARIES += -loehost
 LIBRARIES += -lcrypto
 LIBRARIES += -lpthread
 LIBRARIES += -ldl
-LIBRARIES += -lsgx_enclave_common
-LIBRARIES += -lsgxoeql
-LIBRARIES += -lsgx_urts_ng
+LIBRARIES += $(call optlib, sgx_enclave_common)
+LIBRARIES += $(call optlib, sgxoeql)
+LIBRARIES += $(call optlib, sgx_urts_ng)
 
 build:
 	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp

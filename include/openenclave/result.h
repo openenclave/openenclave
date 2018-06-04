@@ -57,6 +57,8 @@ typedef enum _OE_Result {
     OE_DEBUG_DOWNGRADE,
     OE_QUOTE_PARSE_ERROR,
     OE_UNSUPPORTED_QE_CERTIFICATION,
+    OE_BUSY,
+    OE_NOT_OWNER,
 } OE_Result;
 
 /**
