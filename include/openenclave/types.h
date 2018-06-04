@@ -79,10 +79,6 @@ typedef long long ptrdiff_t;
 #endif
 
 /* Some basic verifications */
-OE_STATIC_ASSERT(sizeof(bool) == 1);
-OE_STATIC_ASSERT(sizeof(char) == 1);
-OE_STATIC_ASSERT(sizeof(short) == 2);
-OE_STATIC_ASSERT(sizeof(int) == 4);
 OE_STATIC_ASSERT(sizeof(void*) == 8);
 OE_STATIC_ASSERT(sizeof(ssize_t) == sizeof(void*));
 OE_STATIC_ASSERT(sizeof(size_t) == sizeof(void*));
