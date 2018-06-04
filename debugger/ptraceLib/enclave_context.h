@@ -47,11 +47,11 @@ int OE_GetEnclaveThreadXState(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    int64_t xsate_size);
+    int64_t xstate_size);
 
 int OE_SetEnclaveThreadXState(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    int64_t xsate_size);
+    int64_t xstate_size);
 #endif

@@ -551,7 +551,7 @@ int OE_SetEnclaveThreadFpr(
 **     pid - The process id.
 **     tcs_addr - The enclave thread tcs address.
 **     xstate - A pointer to a buffer to receive the xstate content.
-**     xsate_size - The number of byte size of the xstate buffer.
+**     xstate_size - The number of byte size of the xstate buffer.
 **
 ** Returns:
 **     0 - Success.
@@ -564,7 +564,7 @@ int OE_GetEnclaveThreadXState(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    int64_t xsate_size)
+    int64_t xstate_size)
 {
     int ret;
     size_t read_byte_length;
@@ -577,7 +577,7 @@ int OE_GetEnclaveThreadXState(
         return ret;
     }
 
-    if (xsate_size >
+    if (xstate_size >
         (ssa_info.frame_byte_size - sizeof(struct user_regs_struct)))
     {
         return -1;
@@ -588,14 +588,14 @@ int OE_GetEnclaveThreadXState(
         pid,
         ssa_info.base_address,
         (void*)xstate,
-        xsate_size,
+        xstate_size,
         &read_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (read_byte_length != xsate_size)
+    if (read_byte_length != xstate_size)
     {
         return -1;
     }
@@ -614,7 +614,7 @@ int OE_GetEnclaveThreadXState(
 **     pid - The process id.
 **     tcs_addr - The enclave thread tcs address.
 **     xstate - A pointer to a buffer contains the xstate content.
-**     xsate_size - The number of byte size of the xstate buffer.
+**     xstate_size - The number of byte size of the xstate buffer.
 **
 ** Returns:
 **     0 - Success.
@@ -627,7 +627,7 @@ int OE_SetEnclaveThreadXState(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    int64_t xsate_size)
+    int64_t xstate_size)
 {
     int ret;
     size_t write_byte_length;
@@ -640,7 +640,7 @@ int OE_SetEnclaveThreadXState(
         return ret;
     }
 
-    if (xsate_size >
+    if (xstate_size >
         (ssa_info.frame_byte_size - sizeof(struct user_regs_struct)))
     {
         return -1;
@@ -651,14 +651,14 @@ int OE_SetEnclaveThreadXState(
         pid,
         ssa_info.base_address,
         (void*)xstate,
-        xsate_size,
+        xstate_size,
         &write_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (write_byte_length != xsate_size)
+    if (write_byte_length != xstate_size)
     {
         return -1;
     }
