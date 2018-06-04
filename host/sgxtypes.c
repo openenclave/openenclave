@@ -29,11 +29,9 @@ void __SGX_DumpEinitToken(const SGX_EInitToken* p)
     printf("maskedmiscselectle=%u\n", p->maskedmiscselectle);
 
     printf(
-        "maskedattributesle.flags=%llx\n",
-        OE_LLX(p->maskedattributesle.flags));
+        "maskedattributesle.flags=%llx\n", OE_LLX(p->maskedattributesle.flags));
     printf(
-        "maskedattributesle.xfrm=%llx\n",
-        OE_LLX(p->maskedattributesle.xfrm));
+        "maskedattributesle.xfrm=%llx\n", OE_LLX(p->maskedattributesle.xfrm));
 
     printf("keyid=");
     OE_HexDump(p->keyid, sizeof(p->keyid));

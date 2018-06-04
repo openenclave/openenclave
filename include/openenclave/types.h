@@ -302,13 +302,13 @@ OE_INLINE long long OE_CheckLLD(const int64_t* ptr)
 #define OE_LLU(_X_)              \
     ({                           \
         __typeof(_X_) _x_ = _X_; \
-        OE_CheckLLU(&_x_);          \
+        OE_CheckLLU(&_x_);       \
     })
 
 #define OE_LLD(_X_)              \
     ({                           \
         __typeof(_X_) _x_ = _X_; \
-        OE_CheckLLD(&_x_);          \
+        OE_CheckLLD(&_x_);       \
     })
 
 #define OE_LLX(_X_) OE_LLU(_X_)

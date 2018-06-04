@@ -132,7 +132,8 @@ OE_ECALL void WaitForExclusiveAccess(void* args_)
     while (nthreads > 0)
     {
         // Release mutex and wait for owning thread to finish
-        OE_HostPrintf("%llu: Waiting for exclusive access\n", OE_LLU(OE_ThreadSelf()));
+        OE_HostPrintf(
+            "%llu: Waiting for exclusive access\n", OE_LLU(OE_ThreadSelf()));
         OE_CondWait(&exclusive, &ex_mutex);
     }
 
@@ -149,10 +150,12 @@ OE_ECALL void RelinquishExclusiveAccess(void* args_)
     nthreads = 0;
 
     // Signal waiting threads
-    OE_HostPrintf("%llu: Signalling waiting threads\n", OE_LLU(OE_ThreadSelf()));
+    OE_HostPrintf(
+        "%llu: Signalling waiting threads\n", OE_LLU(OE_ThreadSelf()));
     OE_CondSignal(&exclusive);
 
-    OE_HostPrintf("%llu: Relinquished exlusive access\n", OE_LLU(OE_ThreadSelf()));
+    OE_HostPrintf(
+        "%llu: Relinquished exlusive access\n", OE_LLU(OE_ThreadSelf()));
     OE_MutexUnlock(&ex_mutex);
 }
 

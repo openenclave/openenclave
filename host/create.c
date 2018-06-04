@@ -795,8 +795,10 @@ OE_INLINE void _DumpRelocations(const void* data, size_t size)
         if (p->r_offset == 0)
             break;
 
-        printf("offset=%llu addend=%lld\n", 
-            OE_LLU(p->r_offset), OE_LLD(p->r_addend));
+        printf(
+            "offset=%llu addend=%lld\n",
+            OE_LLU(p->r_offset),
+            OE_LLD(p->r_addend));
     }
 }
 

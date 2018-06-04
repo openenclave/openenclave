@@ -148,15 +148,30 @@ int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap)
                 s = _U64ToStr(scratch, OE_va_arg(ap, uint64_t));
                 p += 2;
             }
+            else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'u')
+            {
+                s = _U64ToStr(scratch, OE_va_arg(ap, uint64_t));
+                p += 3;
+            }
             else if (p[0] == 'l' && p[1] == 'd')
             {
                 s = _S64ToStr(scratch, OE_va_arg(ap, int64_t));
                 p += 2;
             }
+            else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'd')
+            {
+                s = _S64ToStr(scratch, OE_va_arg(ap, int64_t));
+                p += 3;
+            }
             else if (p[0] == 'l' && p[1] == 'x')
             {
                 s = _U64ToHexStr(scratch, OE_va_arg(ap, uint64_t));
                 p += 2;
+            }
+            else if (p[0] == 'l' && p[1] == 'x' && p[2] == 'x')
+            {
+                s = _U64ToHexStr(scratch, OE_va_arg(ap, uint64_t));
+                p += 3;
             }
             else if (p[0] == 'z' && p[1] == 'u')
             {
