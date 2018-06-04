@@ -72,7 +72,17 @@ typedef long long ptrdiff_t;
 #error "unknown compiler - please adapt basic types"
 #endif
 
+#ifndef __cplusplus
+#define true 1
+#define false 0
+#define bool _Bool
+#endif
+
 /* Some basic verifications */
+OE_STATIC_ASSERT(sizeof(bool) == 1);
+OE_STATIC_ASSERT(sizeof(char) == 1);
+OE_STATIC_ASSERT(sizeof(short) == 2);
+OE_STATIC_ASSERT(sizeof(int) == 4);
 OE_STATIC_ASSERT(sizeof(void*) == 8);
 OE_STATIC_ASSERT(sizeof(ssize_t) == sizeof(void*));
 OE_STATIC_ASSERT(sizeof(size_t) == sizeof(void*));
@@ -84,12 +94,6 @@ OE_STATIC_ASSERT(sizeof(int64_t) == 8);
 OE_STATIC_ASSERT(sizeof(uint64_t) == 8);
 OE_STATIC_ASSERT(sizeof(uintptr_t) == sizeof(void*));
 OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
-
-#ifndef __cplusplus
-#define true 1
-#define false 0
-#define bool _Bool
-#endif
 
 /*
 **==============================================================================

@@ -294,7 +294,7 @@ static int _CheckQualifiers(
         if (flags & FLAG_STRING)
         {
             bool isPtr = (flags & FLAG_PTR);
-            bool isChar = type == "char" || type == "wchar";
+            bool isChar = type == "char" || type == "wchar_t";
             bool isArr = (flags & FLAG_ARRAY);
 
             if (!isChar || (!isPtr && !isArr))
@@ -326,7 +326,7 @@ static int _CheckQualifiers(
             if (!(flags & FLAG_UNCHECKED) && !(flags & FLAG_COUNT) &&
                 !(flags & FLAG_STRING))
             {
-                if (type == "char" || type == "wchar")
+                if (type == "char" || type == "wchar_t")
                 {
                     lexer.SetErr(
                         "need [unchecked], [count] or [string]: '%s'",
