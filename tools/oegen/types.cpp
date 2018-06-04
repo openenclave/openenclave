@@ -5,7 +5,14 @@
 #include <openenclave/host.h>
 
 PredefinedType types[] = {
+    {"bool", "bool", "OE_BOOL_T"},
     {"char", "char", "OE_CHAR_T"},
+    {"signed char", "signed char", "OE_CHAR_T"},
+    {"unsigned char", "unsigned char", "OE_UCHAR_T"},
+    {"short", "short", "OE_SHORT_T"},
+    {"unsigned short", "unsigned short", "OE_USHORT_T"},
+    {"int", "int", "OE_INT_T"},
+    {"unsigned int", "unsigned int", "OE_UINT_T"},
     {"int8_t", "int8_t", "OE_INT8_T"},
     {"uint8_t", "uint8_t", "OE_UINT8_T"},
     {"int16_t", "int16_t", "OE_INT16_T"},
@@ -16,12 +23,9 @@ PredefinedType types[] = {
     {"uint64_t", "uint64_t", "OE_UINT64_T"},
     {"float", "float", "OE_FLOAT_T"},
     {"double", "double", "OE_DOUBLE_T"},
-    {"bool", "bool", "OE_BOOL_T"},
     {"size_t", "size_t", "OE_SIZE_T"},
     {"ssize_t", "ssize_t", "OE_SSIZE_T"},
     {"void", "void", "OE_VOID_T"},
-    {"signed char", "signed char", "OE_CHAR_T"},
-    {"unsigned char", "unsigned char", "OE_UCHAR_T"},
 };
 
 size_t ntypes = OE_COUNTOF(types);
