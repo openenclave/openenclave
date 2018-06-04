@@ -109,15 +109,12 @@ OE_Result OE_ECDSASignatureReadDER(
         const size_t rBytes = mbedtls_mpi_size(&r);
         const size_t sBytes = mbedtls_mpi_size(&s);
 
-        if (rBytes > *rSize || sBytes > *sSize)
-        {
-            *rSize = rBytes;
-            *sSize = sBytes;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-
+        bool bufferToSmall = (rBytes > *rSize || sBytes > *sSize);
         *rSize = rBytes;
         *sSize = sBytes;
+
+        if (bufferToSmall)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Fail if buffers are null */

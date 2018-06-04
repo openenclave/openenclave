@@ -134,15 +134,12 @@ OE_Result OE_ECPublicKeyToCoordinates(
         size_t xn = BN_num_bytes(x);
         size_t yn = BN_num_bytes(y);
 
-        if (xn > *xSize || yn > *ySize)
-        {
-            *xSize = xn;
-            *ySize = yn;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-
+        bool bufferTooSmall = (xn > *xSize || yn > *ySize);
         *xSize = xn;
         *ySize = yn;
+
+        if (bufferTooSmall)
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Convert X to big number object */
