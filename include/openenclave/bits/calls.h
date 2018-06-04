@@ -9,10 +9,6 @@
 #include <time.h>
 #endif
 
-#ifdef _WIN32
-#include <time.h>
-#endif
-
 #include <openenclave/bits/cpuid.h>
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
@@ -360,13 +356,6 @@ typedef struct _OE_ClockgettimeArgs
 } OE_ClockgettimeArgs;
 #endif
 
-#ifdef _WIN32
-typedef struct _OE_ClockgettimeArgs
-{
-    int ret;
-    struct timespec* tp;
-} OE_ClockgettimeArgs;
-#endif
 
 /*
 **==============================================================================

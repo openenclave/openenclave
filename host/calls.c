@@ -412,8 +412,6 @@ static OE_Result _HandleOCALL(
             HandleGetQETargetInfo(argIn);
             break;
 
-#if defined(__OE_NEED_TIME_CALLS)
-
         case OE_FUNC_STRFTIME:
             HandleStrftime(argIn);
             break;
@@ -429,14 +427,6 @@ static OE_Result _HandleOCALL(
         case OE_FUNC_NANOSLEEP:
             HandleNanosleep(argIn);
             break;
-
-#endif /* defined(__OE_NEED_TIME_CALLS) */
-
-#if defined(_WIN32)
-        case OE_FUNC_CLOCK_GETTIME:
-			HandleClockgettime(argIn);
-			break;
-#endif
 
         case OE_FUNC_DESTRUCTOR:
         case OE_FUNC_CALL_ENCLAVE:
@@ -682,10 +672,6 @@ OE_CATCH:
 
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
-
-        /* ATTN: this causes an assertion with call nesting. */
-        /* ATTN: make enclave argument a cookie. */
-        /* SetEnclave(NULL); */
 
 #if defined(TRACE_ECALLS)
     printf("=== OE_ECall(): result=%u\n", result);

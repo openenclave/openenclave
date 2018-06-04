@@ -84,9 +84,7 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
         goto done;
 
     args->ret = -1;
-#ifdef __OE_NEED_TIME_CALLS
     args->clk_id = clk_id;
-#endif
     args->tp = tp ? &args->tpbuf : NULL;
 
     if (OE_OCall(

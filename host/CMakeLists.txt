@@ -18,6 +18,7 @@ set(PLATFORM_SRC
     linux/hostthread.c
     linux/sgxioctl.c
     linux/sgxsign.c
+	linux/time.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -28,6 +29,7 @@ set(PLATFORM_SRC
     windows/exception.c
     windows/hostthread.c
     windows/sgxsign.c
+	windows/time.c
     )
 endif()
 
