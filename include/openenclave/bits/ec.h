@@ -26,7 +26,7 @@ typedef struct _OE_ECPublicKey
 } OE_ECPublicKey;
 
 /* Supported CURVE types */
-typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
+typedef enum OE_ECType { OE_EC_TYPE_SECP256R1 } OE_ECType;
 
 /**
  * Reads a private EC key from PEM data
@@ -208,25 +208,6 @@ OE_Result OE_ECGenerateKeyPair(
     OE_ECPublicKey* publicKey);
 
 /**
- * Get the key bytes from an EC public key
- *
- * This function gets the key bytes from an EC public key. The bytes
- * are written to the **buffer** parameter.
- *
- * @param publicKey key whose key bytes are fetched.
- * @param buffer buffer where bytes are written (may be null).
- * @param bufferSize[in,out] buffer size on input; actual size on output.
- *
- * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
- *         the required size.
- */
-OE_Result OE_ECPublicKeyGetKeyBytes(
-    const OE_ECPublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize);
-
-/**
  * Determine whether two EC public keys are identical.
  *
  * This function determines whether two EC public keys are identical.
@@ -237,13 +218,63 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
  *
  * @return OE_OK successful and **equal** is either true or false.
  * @return OE_INVALID_PARAMETER a parameter was invalid.
- *
  */
 OE_Result OE_ECPublicKeyEqual(
     const OE_ECPublicKey* publicKey1,
     const OE_ECPublicKey* publicKey2,
     bool* equal);
 
+/**
+ * Initializes a public key from X and Y corrdinates.
+ *
+ * This function initializes an EC public key from X and Y coordinates in
+ * uncompressed format.
+ *
+ * @param publicKey key which is initialized.
+ * @param ecType type of elliptical curve to create.
+ * @param xData the bytes for the X coordinate
+ * @param xSize the size of the xData buffer
+ * @param yData the bytes for the Y coordinate
+ * @param ySize the size of the yData buffer
+ *
+ * @return OE_OK upon success
+ * @return OE_FAILED on failure
+ */
+OE_Result OE_ECPublicKeyFromCoordinates(
+    OE_ECPublicKey* publicKey,
+    OE_ECType ecType,
+    const uint8_t* xData,
+    size_t xSize,
+    const uint8_t* yData,
+    size_t ySize);
+
 OE_EXTERNC_END
+
+/**
+ * Converts binary ECDSA signature values to an DER-encoded signature.
+ *
+ * This function converts ECDSA signature values (r and s) to an
+ * DER-encoded signature suitable as an input parameter to the
+ * **OE_ECPublicKeyVerify()** function.
+ *
+ * @param signature the buffer that will contain the signature
+ * @param signatureSize[in,out] buffer size (in); signature size (out)
+ * @param rData the R coordinate in binary form
+ * @param rSize the size of the R coordinate buffer
+ * @param sData the S coordinate in binary form
+ * @param sSize the size of the S coordinate buffer
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER invalid parameter
+ * @return OE_BUFFER_TOO_SMALL **signature** buffer is too small
+ *         and **signatureSize** contains the required size.
+ */
+OE_Result OE_ECDSASignatureWriteDER(
+    unsigned char* signature,
+    size_t* signatureSize,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize);
 
 #endif /* _OE_EC_H */

@@ -16,7 +16,7 @@ static const uint64_t _PRIVATE_KEY_MAGIC = 0x7bf635929a714b2c;
 static const uint64_t _PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
 
 OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_RSAPublicKey));
-OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_RSAPublicKey));
+OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_RSAPrivateKey));
 
 static OE_Result _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
 {
