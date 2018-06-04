@@ -69,7 +69,7 @@ void* Elf64_GetSegment(const Elf64* elf, size_t index)
 
 Elf64_Shdr* Elf64_GetSectionHeader(const Elf64* elf, size_t index)
 {
-    if (!_Ok(elf) || index >= _GetHeader(elf)->e_phnum)
+    if (!_Ok(elf) || index >= _GetHeader(elf)->e_shnum)
         return NULL;
 
     return _GetShdr(elf, index);
@@ -77,7 +77,7 @@ Elf64_Shdr* Elf64_GetSectionHeader(const Elf64* elf, size_t index)
 
 Elf64_Phdr* Elf64_GetProgramHeader(const Elf64* elf, size_t index)
 {
-    if (!_Ok(elf) || index >= _GetHeader(elf)->e_shnum)
+    if (!_Ok(elf) || index >= _GetHeader(elf)->e_phnum)
         return NULL;
 
     return _GetPhdr(elf, index);
