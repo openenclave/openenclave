@@ -54,7 +54,7 @@ pthread_t pthread_self()
 
 int pthread_equal(pthread_t thread1, pthread_t thread2)
 {
-    return OE_ThreadEqual((OE_Thread)thread1, (OE_Thread)thread2) == true;
+    return (int)OE_ThreadEqual((OE_Thread)thread1, (OE_Thread)thread2);
 }
 
 int pthread_create(
