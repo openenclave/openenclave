@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/format.h>
 #include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
@@ -11,8 +10,8 @@ void __SGX_DumpEinitToken(const SGX_EInitToken* p)
 {
     printf("=== SGX_EInitToken:\n");
     printf("valid=%u\n", p->valid);
-    printf("attributes.flags=%llx\n", OE_TO_LLX(p->attributes.flags));
-    printf("attributes.xfrm=%llx\n", OE_TO_LLX(p->attributes.xfrm));
+    printf("attributes.flags=%llx\n", OE_LLX(p->attributes.flags));
+    printf("attributes.xfrm=%llx\n", OE_LLX(p->attributes.xfrm));
 
     printf("mrenclave=");
     OE_HexDump(p->mrenclave, sizeof(p->mrenclave));
@@ -31,10 +30,10 @@ void __SGX_DumpEinitToken(const SGX_EInitToken* p)
 
     printf(
         "maskedattributesle.flags=%llx\n",
-        OE_TO_LLX(p->maskedattributesle.flags));
+        OE_LLX(p->maskedattributesle.flags));
     printf(
         "maskedattributesle.xfrm=%llx\n",
-        OE_TO_LLX(p->maskedattributesle.xfrm));
+        OE_LLX(p->maskedattributesle.xfrm));
 
     printf("keyid=");
     OE_HexDump(p->keyid, sizeof(p->keyid));
@@ -62,10 +61,10 @@ void __SGX_DumpSigStruct(const SGX_SigStruct* p)
     OE_HexDump(p->signature, sizeof(p->signature));
     printf("miscselect=%08x\n", p->miscselect);
     printf("miscmask=%08x\n", p->miscmask);
-    printf("attributes.flags=%llx\n", OE_TO_LLX(p->attributes.flags));
-    printf("attributes.xfrm=%llx\n", OE_TO_LLX(p->attributes.xfrm));
-    printf("attributemask.flags=%llx\n", OE_TO_LLX(p->attributemask.flags));
-    printf("attributemask.xfrm=%llx\n", OE_TO_LLX(p->attributemask.xfrm));
+    printf("attributes.flags=%llx\n", OE_LLX(p->attributes.flags));
+    printf("attributes.xfrm=%llx\n", OE_LLX(p->attributes.xfrm));
+    printf("attributemask.flags=%llx\n", OE_LLX(p->attributemask.flags));
+    printf("attributemask.xfrm=%llx\n", OE_LLX(p->attributemask.xfrm));
     printf("enclavehash=");
     OE_HexDump(p->enclavehash, sizeof(p->enclavehash));
     printf("isvprodid=%04x\n", p->isvprodid);

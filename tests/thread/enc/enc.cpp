@@ -42,7 +42,7 @@ OE_ECALL void TestMutex(void* args_)
     OE_TEST(OE_MutexUnlock(&mutex2) == 0);
     OE_TEST(OE_MutexUnlock(&mutex2) == 0);
 
-    OE_HostPrintf("TestMutex: %ld\n", OE_ThreadSelf());
+    OE_HostPrintf("TestMutex: %lld\n", OE_LLU(OE_ThreadSelf()));
 }
 
 static void _TestMutex1(size_t* count)
@@ -50,7 +50,7 @@ static void _TestMutex1(size_t* count)
     OE_TEST(OE_MutexLock(&mutex1) == 0);
     (*count)++;
     OE_TEST(OE_MutexUnlock(&mutex1) == 0);
-    OE_HostPrintf("TestMutex1: %ld\n", OE_ThreadSelf());
+    OE_HostPrintf("TestMutex1: %llu\n", OE_LLU(OE_ThreadSelf()));
 }
 
 static void _TestMutex2(size_t* count)
@@ -58,7 +58,7 @@ static void _TestMutex2(size_t* count)
     OE_TEST(OE_MutexLock(&mutex2) == 0);
     (*count)++;
     OE_TEST(OE_MutexUnlock(&mutex2) == 0);
-    OE_HostPrintf("TestMutex2: %ld\n", OE_ThreadSelf());
+    OE_HostPrintf("TestMutex2: %llu\n", OE_LLU(OE_ThreadSelf()));
 }
 
 static OE_Cond cond = OE_COND_INITIALIZER;
@@ -99,7 +99,7 @@ OE_ECALL void Wait(void* args_)
     OE_HostPrintf("TestMutex2%zu()\n", n);
 
     /* Wait on the condition variable */
-    OE_HostPrintf("Waiting: %ld\n", OE_ThreadSelf());
+    OE_HostPrintf("Waiting: %llu\n", OE_LLU(OE_ThreadSelf()));
 
     OE_MutexLock(&cond_mutex);
     OE_CondWait(&cond, &cond_mutex);
@@ -132,11 +132,11 @@ OE_ECALL void WaitForExclusiveAccess(void* args_)
     while (nthreads > 0)
     {
         // Release mutex and wait for owning thread to finish
-        OE_HostPrintf("%ld: Waiting for exclusive access\n", OE_ThreadSelf());
+        OE_HostPrintf("%llu: Waiting for exclusive access\n", OE_LLU(OE_ThreadSelf()));
         OE_CondWait(&exclusive, &ex_mutex);
     }
 
-    OE_HostPrintf("%ld: Obtained exclusive access\n", OE_ThreadSelf());
+    OE_HostPrintf("%llu: Obtained exclusive access\n", OE_LLU(OE_ThreadSelf()));
     nthreads = 1;
     OE_MutexUnlock(&ex_mutex);
 }
@@ -149,10 +149,10 @@ OE_ECALL void RelinquishExclusiveAccess(void* args_)
     nthreads = 0;
 
     // Signal waiting threads
-    OE_HostPrintf("%ld: Signalling waiting threads\n", OE_ThreadSelf());
+    OE_HostPrintf("%llu: Signalling waiting threads\n", OE_LLU(OE_ThreadSelf()));
     OE_CondSignal(&exclusive);
 
-    OE_HostPrintf("%ld: Relinquished exlusive access\n", OE_ThreadSelf());
+    OE_HostPrintf("%llu: Relinquished exlusive access\n", OE_LLU(OE_ThreadSelf()));
     OE_MutexUnlock(&ex_mutex);
 }
 

@@ -234,11 +234,11 @@ OE_Result TestRun(bool doVerifyAllocation, const Allocator alloc)
                 {
                     printf(
                         "Expected %#x bytes allocated in %u chunks, have %#lx "
-                        "bytes in %lu chunks.\n",
+                        "bytes in %llu chunks.\n",
                         cmd.val1,
                         cmd.val2,
                         MyGetAllocationBytes(),
-                        MyGetAllocationCount());
+                        OE_LLU(MyGetAllocationCount()));
                     return OE_FAILURE;
                 }
                 break;

@@ -3,7 +3,6 @@
 
 #define OE_TRACE_LEVEL 0
 #include <ctype.h>
-#include <openenclave/bits/format.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/typeinfo.h>
 #include <stdarg.h>
@@ -697,11 +696,11 @@ static void _PrintScalar(const OE_FieldTI* fti, const void* p, size_t depth)
             break;
         case OE_LONG_T:
         case OE_INT64_T:
-            OE_PRINTF("%lld", OE_TO_LLD(*(const int64_t*)p));
+            OE_PRINTF("%lld", OE_LLD(*(const int64_t*)p));
             break;
         case OE_ULONG_T:
         case OE_UINT64_T:
-            OE_PRINTF("%llu", OE_TO_LLU(*(const uint64_t*)p));
+            OE_PRINTF("%llu", OE_LLU(*(const uint64_t*)p));
             break;
         case OE_FLOAT_T:
             OE_PRINTF("%f", *(const float*)p);

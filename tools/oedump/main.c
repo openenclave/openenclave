@@ -71,11 +71,13 @@ void DumpEnclaveProperties(const OE_SGXEnclaveProperties* props)
     bool debug = props->config.attributes & OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
-    printf("numHeapPages=%lu\n", props->header.sizeSettings.numHeapPages);
+    printf("numHeapPages=%llu\n", 
+        OE_LLU(props->header.sizeSettings.numHeapPages));
 
-    printf("numStackPages=%lu\n", props->header.sizeSettings.numStackPages);
+    printf("numStackPages=%llu\n", 
+        OE_LLU(props->header.sizeSettings.numStackPages));
 
-    printf("numTCS=%lu\n", props->header.sizeSettings.numTCS);
+    printf("numTCS=%llu\n", OE_LLU(props->header.sizeSettings.numTCS));
 
     sigstruct = (const SGX_SigStruct*)props->sigstruct;
 

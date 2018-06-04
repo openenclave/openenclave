@@ -127,7 +127,8 @@ OE_ECALL void Test(void* args_)
         {
             char buf[128];
             int n = OE_Snprintf(
-                buf, sizeof(buf), "ULONG_MAX=%lu", 18446744073709551615UL);
+                buf, sizeof(buf), "ULONG_MAX=%llu", 
+                    OE_LLU(18446744073709551615UL));
             OE_TEST(OE_Strcmp(buf, "ULONG_MAX=18446744073709551615") == 0);
             OE_TEST(n == 30);
         }
@@ -135,7 +136,7 @@ OE_ECALL void Test(void* args_)
         {
             char buf[128];
             int n = OE_Snprintf(
-                buf, sizeof(buf), "LONG_MAX=%ld", 9223372036854775807);
+                buf, sizeof(buf), "LONG_MAX=%lld", OE_LLD(9223372036854775807));
             OE_TEST(OE_Strcmp(buf, "LONG_MAX=9223372036854775807") == 0);
             OE_TEST(n == 28);
         }
@@ -143,14 +144,14 @@ OE_ECALL void Test(void* args_)
         {
             char buf[128];
             int n = OE_Snprintf(
-                buf, sizeof(buf), "LONG_MIN=%ld", -9223372036854775807 - 1);
+                buf, sizeof(buf), "LONG_MIN=%lld", OE_LLD(-9223372036854775807 - 1));
             OE_TEST(OE_Strcmp(buf, "LONG_MIN=-9223372036854775808") == 0);
             OE_TEST(n == 29);
         }
         {
             char buf[12];
             int n = OE_Snprintf(
-                buf, sizeof(buf), "LONG_MIN=%ld", -9223372036854775807 - 1);
+                buf, sizeof(buf), "LONG_MIN=%lld", OE_LLD(-9223372036854775807 - 1));
             OE_TEST(OE_Strcmp(buf, "LONG_MIN=-9") == 0);
             OE_TEST(n == 29);
         }
