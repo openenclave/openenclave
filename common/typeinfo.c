@@ -3,6 +3,7 @@
 
 #define OE_TRACE_LEVEL 0
 #include <ctype.h>
+#include <openenclave/bits/format.h>
 #include <openenclave/bits/trace.h>
 #include <openenclave/bits/typeinfo.h>
 #include <stdarg.h>
@@ -182,33 +183,40 @@ static size_t _GetTypeSizeFromType(OE_Type type)
         case OE_NONE_T:
             return 0;
         case OE_CHAR_T:
-        case OE_UCHAR_T:
-        case OE_UINT8_T:
-            return sizeof(uint8_t);
+            return sizeof(char);
         case OE_SHORT_T:
-        case OE_INT16_T:
-            return sizeof(int16_t);
+            return sizeof(short);
         case OE_INT_T:
-        case OE_INT32_T:
-            return sizeof(int32_t);
+            return sizeof(int);
         case OE_LONG_T:
-        case OE_INT64_T:
-            return sizeof(int64_t);
+            return sizeof(long);
         case OE_USHORT_T:
-        case OE_UINT16_T:
-            return sizeof(uint16_t);
+            return sizeof(unsigned short);
         case OE_UINT_T:
-        case OE_UINT32_T:
-            return sizeof(uint32_t);
+            return sizeof(unsigned int);
         case OE_ULONG_T:
-        case OE_UINT64_T:
-            return sizeof(uint64_t);
+            return sizeof(unsigned long);
         case OE_WCHAR_T:
             return sizeof(wchar_t);
         case OE_BOOL_T:
             return sizeof(bool);
         case OE_INT8_T:
             return sizeof(int8_t);
+        case OE_UCHAR_T:
+        case OE_UINT8_T:
+            return sizeof(uint8_t);
+        case OE_INT16_T:
+            return sizeof(int16_t);
+        case OE_UINT16_T:
+            return sizeof(uint16_t);
+        case OE_INT32_T:
+            return sizeof(int32_t);
+        case OE_UINT32_T:
+            return sizeof(uint32_t);
+        case OE_INT64_T:
+            return sizeof(int64_t);
+        case OE_UINT64_T:
+            return sizeof(uint64_t);
         case OE_FLOAT_T:
             return sizeof(float);
         case OE_DOUBLE_T:
@@ -250,28 +258,26 @@ static bool _ScalarEq(OE_Type type, const void* p1, const void* p2)
         case OE_NONE_T:
             return false;
         case OE_CHAR_T:
-        case OE_UCHAR_T:
             return *((char*)p1) == *((char*)p2);
         case OE_SHORT_T:
             return *((short*)p1) == *((short*)p2);
         case OE_INT_T:
             return *((int*)p1) == *((int*)p2);
         case OE_LONG_T:
-        case OE_INT64_T:
-            return *((int64_t*)p1) == *((int64_t*)p2);
+            return *((long*)p1) == *((long*)p2);
         case OE_USHORT_T:
             return *((unsigned short*)p1) == *((unsigned short*)p2);
         case OE_UINT_T:
             return *((unsigned int*)p1) == *((unsigned int*)p2);
         case OE_ULONG_T:
-        case OE_UINT64_T:
-            return *((uint64_t*)p1) == *((uint64_t*)p2);
+            return *((unsigned long*)p1) == *((unsigned long*)p2);
         case OE_WCHAR_T:
             return *((wchar_t*)p1) == *((wchar_t*)p2);
         case OE_BOOL_T:
             return *((bool*)p1) == *((bool*)p2);
         case OE_INT8_T:
             return *((int8_t*)p1) == *((int8_t*)p2);
+        case OE_UCHAR_T:
         case OE_UINT8_T:
             return *((uint8_t*)p1) == *((uint8_t*)p2);
         case OE_INT16_T:
@@ -282,6 +288,10 @@ static bool _ScalarEq(OE_Type type, const void* p1, const void* p2)
             return *((int32_t*)p1) == *((int32_t*)p2);
         case OE_UINT32_T:
             return *((uint32_t*)p1) == *((uint32_t*)p2);
+        case OE_INT64_T:
+            return *((int64_t*)p1) == *((int64_t*)p2);
+        case OE_UINT64_T:
+            return *((uint64_t*)p1) == *((uint64_t*)p2);
         case OE_FLOAT_T:
             return *((float*)p1) == *((float*)p2);
         case OE_DOUBLE_T:
@@ -334,7 +344,6 @@ static bool _ArrayEq(OE_Type type, const void* p1, const void* p2, size_t n)
         case OE_NONE_T:
             return false;
         case OE_CHAR_T:
-        case OE_UCHAR_T:
             return _BytesEq(p1, p2, sizeof(char) * n);
         case OE_WCHAR_T:
             return _BytesEq(p1, p2, sizeof(wchar_t) * n);
@@ -342,6 +351,7 @@ static bool _ArrayEq(OE_Type type, const void* p1, const void* p2, size_t n)
             return _BytesEq(p1, p2, sizeof(bool) * n);
         case OE_INT8_T:
             return _BytesEq(p1, p2, sizeof(int8_t) * n);
+        case OE_UCHAR_T:
         case OE_UINT8_T:
             return _BytesEq(p1, p2, sizeof(uint8_t) * n);
         case OE_SHORT_T:
@@ -654,7 +664,6 @@ static void _PrintScalar(const OE_FieldTI* fti, const void* p, size_t depth)
         case OE_NONE_T:
             break;
         case OE_CHAR_T:
-        case OE_UCHAR_T:
             OE_PRINTF("%02X", *(const char*)p);
             break;
         case OE_WCHAR_T:
@@ -666,6 +675,7 @@ static void _PrintScalar(const OE_FieldTI* fti, const void* p, size_t depth)
         case OE_INT8_T:
             OE_PRINTF("%d", *(const int8_t*)p);
             break;
+        case OE_UCHAR_T:
         case OE_UINT8_T:
             OE_PRINTF("%u", *(const uint8_t*)p);
             break;
@@ -687,11 +697,11 @@ static void _PrintScalar(const OE_FieldTI* fti, const void* p, size_t depth)
             break;
         case OE_LONG_T:
         case OE_INT64_T:
-            OE_PRINTF(OE_I64D_F, *(const int64_t*)p);
+            OE_PRINTF("%lld", OE_TO_LLD(*(const int64_t*)p));
             break;
         case OE_ULONG_T:
         case OE_UINT64_T:
-            OE_PRINTF(OE_I64U_F, *(const uint64_t*)p);
+            OE_PRINTF("%llu", OE_TO_LLU(*(const uint64_t*)p));
             break;
         case OE_FLOAT_T:
             OE_PRINTF("%f", *(const float*)p);

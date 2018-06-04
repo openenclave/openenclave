@@ -53,10 +53,6 @@ typedef unsigned long uint64_t;
 typedef unsigned long uintptr_t;
 typedef long ptrdiff_t;
 
-#define OE_I64D_F "%ld"
-#define OE_I64U_F "%lu"
-#define OE_I64X_F "%lx"
-
 #elif defined(_MSC_VER)
 
 typedef long long ssize_t;
@@ -71,10 +67,6 @@ typedef long long int64_t;
 typedef unsigned long long uint64_t;
 typedef unsigned long long uintptr_t;
 typedef long long ptrdiff_t;
-
-#define OE_I64D_F "%I64d"
-#define OE_I64U_F "%I64u"
-#define OE_I64X_F "%I64x"
 
 #else
 #error "unknown compiler - please adapt basic types"
