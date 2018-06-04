@@ -590,6 +590,8 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
 
     uint8_t reportData[sizeof(SGX_ReportData)];
     uint32_t reportDataSize = sizeof(reportData);
+
+
     for (uint32_t i = 0; i < sizeof(reportData); ++i)
     {
         reportData[i] = i;
@@ -597,11 +599,13 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
 
     uint32_t options = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
 
+    OE_UNUSED(reportDataSize);
     /*
-     * Report data parameters scenarios:
+     * Report data parameters scenarios on enclave side:
      *      a. Report data can be NULL.
      *      b. Report data can be < OE_REPORT_DATA_SIZE
      *      c. Report data can be OE_REPORT_DATA_SIZE
+     * On host side, report data must be null.
      */
     {
         reportSize = sizeof(reportBuffer);
@@ -610,6 +614,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
             OE_OK);
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
 
+#if OE_BUILD_ENCLAVE
         reportSize = 2048;
         reportDataSize = 16;
         OE_TEST(
@@ -635,5 +640,6 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
                 reportBuffer,
                 &reportSize) == OE_OK);
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
+#endif        
     }
 }
