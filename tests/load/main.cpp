@@ -63,10 +63,10 @@ int main(int argc, const char* argv[])
     OE_HexString(buf, sizeof(buf), &enclave.hash, sizeof(enclave.hash));
     printf("MRENCLAVE=%s\n", buf);
 
-    printf("BASEADDR=%016lx\n", enclave.addr);
+    printf("BASEADDR=%016llx\n", OE_LLX(enclave.addr));
 
     for (size_t i = 0; i < enclave.num_bindings; i++)
-        printf("TCS[%zu]=%016lx\n", i, enclave.bindings[i].tcs);
+        printf("TCS[%zu]=%016llx\n", i, OE_LLX(enclave.bindings[i].tcs));
 
     return 0;
 }

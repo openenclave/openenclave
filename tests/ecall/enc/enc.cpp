@@ -131,7 +131,6 @@ OE_ECALL void Test(void* args_)
                 sizeof(buf),
                 "ULONG_MAX=%llu",
                 OE_LLU(18446744073709551615UL));
-            OE_HostPrintf("bbbbbbbbbbbbbbbbbbbbbbbbbbbbb=%s\n", buf);
             OE_TEST(OE_Strcmp(buf, "ULONG_MAX=18446744073709551615") == 0);
             OE_TEST(n == 30);
         }

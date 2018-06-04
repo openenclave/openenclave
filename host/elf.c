@@ -795,11 +795,11 @@ int Elf64_DumpSections(const Elf64* elf)
         size_t segment = _FindSegmentFor(elf, sh);
 
         printf(
-            "[%03zu] %-24s %016lx %016lx ",
+            "[%03zu] %-24s %016llx %016llx ",
             i,
             name,
-            sh->sh_offset,
-            sh->sh_size);
+            OE_LLX(sh->sh_offset),
+            OE_LLX(sh->sh_size));
 
         if (segment == (size_t)-1)
             printf("[???]\n");
@@ -994,7 +994,7 @@ void Elf64_DumpSymbol(const Elf64* elf, const Elf64_Sym* sym)
 
     printf("st_shndx(%u)=%s\n", sym->st_shndx, secname);
 
-    printf("st_value=%016lx\n", sym->st_value);
+    printf("st_value=%016llx\n", OE_LLX(sym->st_value));
     printf("st_size=%llu\n", OE_LLU(sym->st_size));
     printf("\n");
 }
