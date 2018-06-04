@@ -80,15 +80,15 @@ function [ecall] size_t TestOptQualifier(
     [opt, in, string] const char* p2,
     [in] size_t p1size);
 
-function [ecall, opt, count=n] int* ReturnIntPtr(
-    [inout, opt, count=n] int* p,
+function [ecall, opt, count=n] int32* ReturnIntPtr(
+    [inout, opt, count=n] int32* p,
     [in] size_t n);
 
 function [ecall] void TestCallback(
     [in, unchecked] void* func);
 
 function [ecall] bool TestIntPtrRef(
-    [out, ref, count=n] int* intPtrOut,
+    [out, ref, count=n] int32* intPtrOut,
     [in] size_t n);
 
 function [ecall] void TestBufferOverun(

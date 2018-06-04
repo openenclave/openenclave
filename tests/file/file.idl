@@ -3,7 +3,7 @@
 
 verbatim "../types.h"
 
-function [ecall] int TestReadFile(
+function [ecall] int32 TestReadFile(
     [in, string] const char *path,
     [in, out, count=1] uint32 *checksum);
 
@@ -16,6 +16,6 @@ function [ocall] size_t Fread(
     [in] size_t size,
     [unchecked, in] MY_FILE *stream);
 
-function [ocall] int Fclose(
+function [ocall] int32 Fclose(
     [unchecked, in] MY_FILE *stream);
 

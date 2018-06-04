@@ -110,20 +110,20 @@ struct NewTypes
 {
     char s8;
     uint8 u8;
-    short s16;
+    int16 s16;
     uint16 u16;
-    int s32;
-    unsigned int u32;
+    int32 s32;
+    uint32 u32;
     int64 s64;
     uint64 u64;
     float r32;
     double r64;
     int64 ss;
     uint64 s;
-    signed long sl;
-    unsigned int ui;
-    unsigned long ul;
-    [unchecked] unsigned short* usp;
+    int64 sl;
+    uint32 ui;
+    uint64 ul;
+    [unchecked] uint16* usp;
     unsigned char uc;
 };
 
