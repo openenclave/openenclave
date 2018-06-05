@@ -7,7 +7,7 @@ add_enclave_executable(VectorException_enc sign.conf private.pem
     sigill_handling.c
     )
 
-target_link_libraries(VectorException_enc oecore)
+target_link_libraries(VectorException_enc oecore oelibc)
 
 target_include_directories(VectorException_enc SYSTEM PRIVATE
     ${OE_C_COMPILER_INCDIR})

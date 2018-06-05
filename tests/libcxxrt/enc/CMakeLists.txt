@@ -13,7 +13,7 @@ target_compile_options(libcxxrttest-support PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     -Wno-error
     )
-target_link_libraries(libcxxrttest-support PUBLIC oelibcxx)
+target_link_libraries(libcxxrttest-support PUBLIC oelibcxx oelibc)
 target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=Test)
 
 # helper function to create enclave binary

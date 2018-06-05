@@ -30,7 +30,7 @@ add_library(oecore STATIC
     main.S
     )
 
-target_link_libraries(oecore PUBLIC oe_includes)
+target_link_libraries(oecore PUBLIC oe_includes oelibc)
 
 # we strip the default include containing the compiler-provided intrinsics
 # add it back in

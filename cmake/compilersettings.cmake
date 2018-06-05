@@ -33,9 +33,10 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
     # Enables all the warnings about constructions that some users consider questionable,
     # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
     # to fix warnings as they arise, so they don't accumulate "to be fixed later".
-    add_compile_options(-Wall -Werror $<$<COMPILE_LANGUAGE:C>:-Wjump-misses-init> --no-strict-aliasing)
+    #add_compile_options(-Wall -Werror $<$<COMPILE_LANGUAGE:C>:-Wjump-misses-init> --no-strict-aliasing)
+    add_compile_options(-Wall -Werror -mxsave -Wno-everything)
 
-    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         # Obtain default gcc include dir to gain access to intrinsics
         execute_process(
             COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/cmake/get_c_compiler_dir.sh ${CMAKE_C_COMPILER}
