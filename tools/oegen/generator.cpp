@@ -1401,8 +1401,8 @@ int Generator::GenerateSourceFile(
     bool trusted,
     const std::vector<Object*>& objects)
 {
-    unsigned long flag1;
-    unsigned long flag2;
+    uint64_t flag1;
+    uint64_t flag2;
 
     if (trusted)
     {

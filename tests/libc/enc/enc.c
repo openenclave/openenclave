@@ -48,7 +48,7 @@ int t_printf(const char* s, ...)
     return n;
 }
 
-int t_setrlim(int r, long lim)
+int t_setrlim(int r, int64_t lim)
 {
     return 0;
 }

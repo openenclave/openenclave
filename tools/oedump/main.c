@@ -54,7 +54,7 @@ void DumpEntryPoint(Elf64* elf)
 
     printf("=== Entry point: \n");
     printf("name=%s\n", name);
-    printf("address=%016llx\n", sym.st_value);
+    printf("address=%016llx\n", OE_LLX(sym.st_value));
     printf("\n");
 }
 
@@ -71,11 +71,14 @@ void DumpEnclaveProperties(const OE_SGXEnclaveProperties* props)
     bool debug = props->config.attributes & OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
-    printf("numHeapPages=%lu\n", props->header.sizeSettings.numHeapPages);
+    printf(
+        "numHeapPages=%llu\n", OE_LLU(props->header.sizeSettings.numHeapPages));
 
-    printf("numStackPages=%lu\n", props->header.sizeSettings.numStackPages);
+    printf(
+        "numStackPages=%llu\n",
+        OE_LLU(props->header.sizeSettings.numStackPages));
 
-    printf("numTCS=%lu\n", props->header.sizeSettings.numTCS);
+    printf("numTCS=%llu\n", OE_LLU(props->header.sizeSettings.numTCS));
 
     sigstruct = (const SGX_SigStruct*)props->sigstruct;
 
@@ -130,7 +133,7 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     }
 
     /* Dump the ECALL name */
-    printf("%s (%016llx)\n", name, sym->st_value);
+    printf("%s (%016llx)\n", name, OE_LLX(sym->st_value));
 
     rc = 0;
 
@@ -177,7 +180,7 @@ void CheckGlobal(Elf64* elf, const char* name)
         return;
     }
 
-    printf("%s (%016llx)\n", name, sym.st_value);
+    printf("%s (%016llx)\n", name, OE_LLX(sym.st_value));
 }
 
 void CheckGlobals(Elf64* elf)

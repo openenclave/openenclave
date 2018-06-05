@@ -42,18 +42,18 @@ void TestECall(OE_Enclave* enclave)
     printf("setjmpResult=%u\n", args.setjmpResult);
     printf("%02u/%02u/%04u\n", args.mm, args.dd, args.yyyy);
 
-    printf("baseHeapPage=%llu\n", args.baseHeapPage);
-    printf("numHeapPages=%llu\n", args.numHeapPages);
-    printf("numPages=%llu\n", args.numPages);
+    printf("baseHeapPage=%llu\n", OE_LLU(args.baseHeapPage));
+    printf("numHeapPages=%llu\n", OE_LLU(args.numHeapPages));
+    printf("numPages=%llu\n", OE_LLU(args.numPages));
     printf("base=%p\n", args.base);
 
     void* heap = (unsigned char*)args.base + (args.baseHeapPage * 4096);
     printf("heap=%p\n", heap);
     printf("diff=%zu\n", (unsigned char*)heap - (unsigned char*)args.base);
 
-    printf("threadDataAddr=%llx\n", args.threadDataAddr);
+    printf("threadDataAddr=%llx\n", OE_LLX(args.threadDataAddr));
 
-    printf("last_sp=%llx\n", args.threadData.last_sp);
+    printf("last_sp=%llx\n", OE_LLX(args.threadData.last_sp));
 #endif
 
     prev = args.threadData.last_sp;

@@ -18,10 +18,6 @@
 #include "report.h"
 #include "td.h"
 
-typedef unsigned long long WORD;
-
-#define WORD_SIZE sizeof(WORD)
-
 uint64_t __oe_enclave_status = OE_OK;
 
 /*
@@ -217,7 +213,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-static void _HandleExit(OE_Code code, long func, uint64_t arg)
+static void _HandleExit(OE_Code code, int64_t func, uint64_t arg)
 {
     OE_Exit(OE_MakeCallArg1(code, func, 0), arg);
 }
@@ -369,7 +365,7 @@ Exit:
 **==============================================================================
 */
 
-static __inline__ void _HandleORET(TD* td, long func, long arg)
+static __inline__ void _HandleORET(TD* td, int64_t func, int64_t arg)
 {
     Callsite* callsite = td->callsites;
 
@@ -480,7 +476,7 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     }
 
     /* Call into the host */
-    OE_TRY(OE_OCall(OE_FUNC_CALL_HOST, (long)args, NULL, 0));
+    OE_TRY(OE_OCall(OE_FUNC_CALL_HOST, (int64_t)args, NULL, 0));
 
     /* Check the result */
     OE_TRY(args->result);
