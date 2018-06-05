@@ -12,7 +12,7 @@ define NEWLINE
 
 endef
 
-DIRS = sort
+DIRS = attestation sort
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )
