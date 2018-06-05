@@ -37,15 +37,8 @@
 #define OE_EXCEPTION_HARDWARE 0x1
 #define OE_EXCEPTION_SOFTWARE 0x2
 
-/* Original
-typedef struct _OE_BASIC_XSTATE
-{
-    uint8_t blob[512];
-} OE_ALIGNED(16) OE_BASIC_XSTATE;
-*/
-
 /**
- * @typedef OE_BASIC_XSTATE: type to structure _OE_BASIC_XSTATE
+ * @typedef OE_BASIC_XSTATE: typedef to structure _OE_BASIC_XSTATE
  * @struct _OE_BASIC_XSTATE: Blob that contains X87 and SSE data
  */
 typedef struct _OE_BASIC_XSTATE

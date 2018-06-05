@@ -50,8 +50,7 @@ typedef struct _OE_Identity
     uint32_t idVersion;       /**< Version number */
     uint32_t securityVersion; /**< ISVN - the security version */
     uint64_t attributes; /**< Values of the attributes flags for the enclave */
-    uint8_t
-        uniqueID[OE_UNIQUE_ID_SIZE];     /**< Maps to mrenclave property of the
+    uint8_t uniqueID[OE_UNIQUE_ID_SIZE]; /**< Maps to mrenclave property of the
                                             local report */
     uint8_t authorID[OE_AUTHOR_ID_SIZE]; /**< Maps to mrsigner property of the
                                             local report */
