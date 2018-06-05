@@ -4,8 +4,8 @@
 #ifndef _OE_EC_H
 #define _OE_EC_H
 
-#include "../result.h"
-#include "../types.h"
+#include <openenclave/result.h>
+#include <openenclave/types.h>
 #include "hash.h"
 #include "sha.h"
 

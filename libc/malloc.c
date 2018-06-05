@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/globals.h>
-#include <openenclave/bits/malloc.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/fault.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/malloc.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>

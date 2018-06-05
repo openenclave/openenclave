@@ -3,8 +3,8 @@
 
 #include <Windows.h>
 #include <limits.h>
-#include <openenclave/bits/aesm.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/aesm.h>
 
 static const uint32_t AESM_MAGIC = 0x4efaa2a3;
 

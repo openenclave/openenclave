@@ -4,8 +4,8 @@
 #ifndef _OE_RANDOM_H
 #define _OE_RANDOM_H
 
-#include "../result.h"
-#include "../types.h"
+#include <openenclave/result.h>
+#include <openenclave/types.h>
 
 OE_EXTERNC_BEGIN
 

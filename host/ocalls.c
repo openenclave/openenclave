@@ -21,8 +21,8 @@
 
 #include <openenclave/host.h>
 
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/utils.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/utils.h>
 #include "enclave.h"
 #include "ocalls.h"
 #include "quote.h"

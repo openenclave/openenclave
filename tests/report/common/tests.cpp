@@ -353,7 +353,7 @@ TEST_FCN void TestRemoteReport(void* args_)
      *      b. Report data can be < OE_REPORT_DATA_SIZE
      *      c. Report data can be OE_REPORT_DATA_SIZE
      *      d. Report data cannot exceed OE_REPORT_DATA_SIZE
-     * 
+     *
      * Report data must always be null on host side.
      */
     {
@@ -591,7 +591,6 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
     uint8_t reportData[sizeof(SGX_ReportData)];
     uint32_t reportDataSize = sizeof(reportData);
 
-
     for (uint32_t i = 0; i < sizeof(reportData); ++i)
     {
         reportData[i] = i;
@@ -640,6 +639,6 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
                 reportBuffer,
                 &reportSize) == OE_OK);
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
-#endif        
+#endif
     }
 }

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/error.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/error.h>
 #include <stdio.h>
 #include <stdlib.h>
 

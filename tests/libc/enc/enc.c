@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
-#include <openenclave/bits/calls.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>

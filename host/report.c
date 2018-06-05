@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include "../common/report.c"
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 #include "quote.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(SGX_ReportData));

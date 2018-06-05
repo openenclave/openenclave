@@ -13,20 +13,20 @@
 #endif
 
 #include <assert.h>
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/cpuid.h>
-#include <openenclave/bits/debug.h>
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/load.h>
-#include <openenclave/bits/mem.h>
-#include <openenclave/bits/properties.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxcreate.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/trace.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/defs.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/cpuid.h>
+#include <openenclave/internal/debug.h>
+#include <openenclave/internal/elf.h>
+#include <openenclave/internal/load.h>
+#include <openenclave/internal/mem.h>
+#include <openenclave/internal/properties.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxcreate.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/trace.h>
+#include <openenclave/internal/utils.h>
 #include <string.h>
 #include "enclave.h"
 #include "memalign.h"

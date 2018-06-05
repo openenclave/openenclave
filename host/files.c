@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/files.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/files.h>
+#include <openenclave/internal/trace.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

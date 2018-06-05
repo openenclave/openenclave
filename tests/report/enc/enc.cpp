@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/tests.h>
+#include <openenclave/internal/utils.h>
 #include "../../../common/quote.h"
 #include "../common/args.h"
 #include "../common/tests.cpp"

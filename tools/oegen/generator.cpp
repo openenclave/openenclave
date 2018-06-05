@@ -1418,12 +1418,12 @@ int Generator::GenerateSourceFile(
     if (trusted)
     {
         os << "#include <openenclave/enclave.h>" << endl;
-        os << "#include <openenclave/bits/enclavelibc.h>" << endl;
+        os << "#include <openenclave/internal/enclavelibc.h>" << endl;
     }
     else
         os << "#include <openenclave/host.h>" << endl;
 
-    os << "#include <openenclave/bits/typeinfo.h>" << endl;
+    os << "#include <openenclave/internal/typeinfo.h>" << endl;
     os << "#include <stdlib.h>" << endl;
 
     // Include header for this source file:

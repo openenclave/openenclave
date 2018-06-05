@@ -5,7 +5,7 @@
 #define _ENCLAVE_KEY_H
 
 #include <mbedtls/pk.h>
-#include <openenclave/bits/hash.h>
+#include <openenclave/internal/hash.h>
 #include <openenclave/result.h>
 #include <openenclave/types.h>
 

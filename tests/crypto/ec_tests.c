@@ -5,10 +5,10 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <openenclave/bits/cert.h>
-#include <openenclave/bits/ec.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/tests.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/ec.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/atexit.h>
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/globals.h>
-#include <openenclave/bits/jump.h>
-#include <openenclave/bits/reloc.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atexit.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/fault.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/jump.h>
+#include <openenclave/internal/reloc.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/trace.h>
 #include "../args.h"
 
 // This function will generate the divide by zero function.

@@ -4,7 +4,7 @@
 #ifndef _OE_HOST_CRYPTO_EC_H
 #define _OE_HOST_CRYPTO_EC_H
 
-#include <openenclave/bits/ec.h>
+#include <openenclave/internal/ec.h>
 #include <openssl/evp.h>
 
 /* Caller is responsible for validating parameters */

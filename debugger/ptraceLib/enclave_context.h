@@ -4,7 +4,8 @@
 #ifndef _OE_ENCLAVE_CONTEXT_H
 #define _OE_ENCLAVE_CONTEXT_H
 
-#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/x86_64/constants.h>
+#include <openenclave/internal/sgxtypes.h>
 #include <pthread.h>
 #include <sys/user.h>
 

@@ -2,13 +2,13 @@
 // Licensed under the MIT License.
 
 #include "init.h"
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/globals.h>
-#include <openenclave/bits/jump.h>
-#include <openenclave/bits/reloc.h>
-#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/fault.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/jump.h>
+#include <openenclave/internal/reloc.h>
+#include <openenclave/internal/sgxtypes.h>
 #include "asmdefs.h"
 #include "td.h"
 

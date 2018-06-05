@@ -2,14 +2,14 @@
 // Licensed under the MIT License.
 
 #include "quote.h"
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/cert.h>
-#include <openenclave/bits/ec.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sha.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/ec.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sha.h>
+#include <openenclave/internal/utils.h>
 
 #ifdef OE_USE_LIBSGX
 

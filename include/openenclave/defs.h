@@ -4,7 +4,7 @@
 #ifndef _OE_DEFS_H
 #define _OE_DEFS_H
 
-#include "bits/constants_x64.inc"
+#include "bits/x86_64/constants.h"
 
 #if !defined(_MSC_VER) && !defined(__GNUC__)
 #error "Unsupported platform"

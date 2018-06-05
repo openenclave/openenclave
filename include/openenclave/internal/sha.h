@@ -4,9 +4,9 @@
 #ifndef _OE_SHA_H
 #define _OE_SHA_H
 
-#include "../defs.h"
-#include "../result.h"
-#include "../types.h"
+#include <openenclave/defs.h>
+#include <openenclave/result.h>
+#include <openenclave/types.h>
 
 OE_EXTERNC_BEGIN
 

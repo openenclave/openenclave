@@ -61,8 +61,8 @@ For other files (.asm, .S, etc.) our current best guidance is consistency:
 
 ``enclave/hoststack.c:``
 ```
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/utils.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/utils.h>
 #include <openenclave/enclave.h>
 #include "td.h"
 

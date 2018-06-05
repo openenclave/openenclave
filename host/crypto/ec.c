@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include "ec.h"
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/raise.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/raise.h>
 #include <openssl/obj_mac.h>
 #include <openssl/pem.h>
 #include <string.h>

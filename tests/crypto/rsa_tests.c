@@ -5,9 +5,9 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <openenclave/bits/cert.h>
-#include <openenclave/bits/rsa.h>
-#include <openenclave/bits/tests.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/rsa.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

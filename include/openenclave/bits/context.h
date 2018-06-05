@@ -7,7 +7,7 @@
 #ifndef __ASSEMBLER__
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
-#include "sgxtypes.h"
+#include "x86_64/constants.h"
 
 // X87 and SSE data.
 typedef struct _OE_BASIC_XSTATE

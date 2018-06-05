@@ -4,7 +4,7 @@
 #ifndef _new_args_h
 #define _new_args_h
 
-#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/internal/sgxtypes.h>
 
 #define NEW_MAGIC 0x7541cc89
 

@@ -17,13 +17,13 @@
 #include <Windows.h>
 #endif
 
-#include <openenclave/bits/aesm.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxcreate.h>
-#include <openenclave/bits/sgxsign.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/trace.h>
-#include <openenclave/bits/utils.h>
+#include <openenclave/internal/aesm.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxcreate.h>
+#include <openenclave/internal/sgxsign.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/trace.h>
+#include <openenclave/internal/utils.h>
 #include "memalign.h"
 #include "sgxmeasure.h"
 #include "signkey.h"

@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/error.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxcreate.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxcreate.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include "../../../host/enclave.h"
 #include "../args.h"

@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #define MEM_MIN_CAP 1
-#include <openenclave/bits/str.h>
-#include <openenclave/bits/tests.h>
+#include <openenclave/internal/str.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 
 void TestStr(str_t* s)

@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include "cpuid.h"
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/cpuid.h>
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/cpuid.h>
+#include <openenclave/internal/enclavelibc.h>
 
 static uint32_t _OE_CpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 

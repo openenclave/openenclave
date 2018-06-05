@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "../asmdefs.h"
-#include <openenclave/bits/constants_x64.inc>
+#include <openenclave/bits/x86_64/constants.h>
 
 //==============================================================================
 //

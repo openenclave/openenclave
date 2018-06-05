@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/mem.h>
-#include <openenclave/bits/properties.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxcreate.h>
-#include <openenclave/bits/sgxsign.h>
-#include <openenclave/bits/str.h>
+#include <openenclave/internal/elf.h>
+#include <openenclave/internal/mem.h>
+#include <openenclave/internal/properties.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxcreate.h>
+#include <openenclave/internal/sgxsign.h>
+#include <openenclave/internal/str.h>
 #include <stdarg.h>
 #include <sys/stat.h>
 #include "../host/enclave.h"

@@ -5,10 +5,10 @@
 #include <mbedtls/config.h>
 #include <openenclave/enclave.h>
 
-#include <openenclave/bits/cmac.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/utils.h>
+#include <openenclave/internal/cmac.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/utils.h>
 
 OE_Result OE_AESCMACSign(
     const uint8_t* key,

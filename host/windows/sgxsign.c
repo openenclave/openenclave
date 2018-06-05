@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/sha.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sha.h>
 #include <openenclave/result.h>
 
 OE_Result OE_SGXSignEnclave(

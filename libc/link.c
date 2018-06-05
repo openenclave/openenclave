@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <elf.h>
 #include <link.h>
-#include <openenclave/bits/globals.h>
+#include <openenclave/internal/globals.h>
 #include <stdio.h>
 #include <string.h>
 

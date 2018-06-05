@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <ctype.h>
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/load.h>
-#include <openenclave/bits/mem.h>
-#include <openenclave/bits/utils.h>
+#include <openenclave/internal/elf.h>
+#include <openenclave/internal/load.h>
+#include <openenclave/internal/mem.h>
+#include <openenclave/internal/utils.h>
 #include <stdio.h>
 #include <string.h>
 #include "fopen.h"
@@ -897,7 +897,8 @@ static void _DumpPhdr(const Elf64_Phdr* ph, size_t index)
         printf("\n");
     }
 
-    printf("p_offset=%llu %016llx\n", OE_LLU(ph->p_offset), OE_LLX(ph->p_offset));
+    printf(
+        "p_offset=%llu %016llx\n", OE_LLU(ph->p_offset), OE_LLX(ph->p_offset));
     printf("p_vaddr=%llu %016llx\n", OE_LLU(ph->p_vaddr), OE_LLU(ph->p_vaddr));
     printf("p_paddr=%llu\n", OE_LLU(ph->p_paddr));
     printf("p_filesz=%llu\n", OE_LLU(ph->p_filesz));

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/typeinfo.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/typeinfo.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

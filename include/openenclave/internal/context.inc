@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "constants_x64.inc"
+#include <openenclave/bits/x86_64/constants.h>
 
 //==============================================================================
 //

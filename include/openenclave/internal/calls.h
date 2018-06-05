@@ -9,8 +9,8 @@
 #include <time.h>
 #endif
 
-#include <openenclave/bits/cpuid.h>
 #include <openenclave/defs.h>
+#include <openenclave/internal/cpuid.h>
 #include <openenclave/types.h>
 #include "sgxtypes.h"
 

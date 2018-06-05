@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/cpuid.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/cpuid.h>
 #include "../args.h"
 
 #include "../../../host/linux/cpuid_count.c"

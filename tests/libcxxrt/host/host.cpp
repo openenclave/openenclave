@@ -11,10 +11,10 @@
   Readme.md file
 */
 
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/error.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/tests.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>

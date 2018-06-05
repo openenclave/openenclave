@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/utils.h>
 
 OE_Result OE_Once(OE_OnceType* once, void (*func)(void))
 {
