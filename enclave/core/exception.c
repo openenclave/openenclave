@@ -106,16 +106,11 @@ OE_Result OE_RemoveVectoredExceptionHandler(
     OE_Result result = OE_FAILURE;
     int lock_ret = -1;
 
-    if (!vectoredHandler)
-    {
-        result = OE_INVALID_PARAMETER;
-        goto cleanup;
-    }
-
     // Sanity check.
     if (vectoredHandler == NULL ||
         !OE_IsWithinEnclave((void*)vectoredHandler, 8))
     {
+        result = OE_INVALID_PARAMETER;
         goto cleanup;
     }
 
