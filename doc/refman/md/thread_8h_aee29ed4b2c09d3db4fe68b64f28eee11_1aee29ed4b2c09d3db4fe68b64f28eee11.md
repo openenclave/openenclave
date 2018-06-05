@@ -3,7 +3,7 @@
 ---
 # OE_SpinUnlock()
 
-Release the lock on a spin lock.
+Release the lock on a spin lock and for use inside an enclave.
 
 ## Syntax
 

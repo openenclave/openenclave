@@ -26,29 +26,6 @@
 OE_EXTERNC_BEGIN
 
 /**
- * @cond DUMMY
- */
-// Exception codes.
-#define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
-#define OE_EXCEPTION_BREAKPOINT 0x1
-#define OE_EXCEPTION_BOUND_OUT_OF_RANGE 0x2
-#define OE_EXCEPTION_ILLEGAL_INSTRUCTION 0x3
-#define OE_EXCEPTION_ACCESS_VIOLATION 0x4
-#define OE_EXCEPTION_PAGE_FAULT 0x5
-#define OE_EXCEPTION_X87_FLOAT_POINT 0x6
-#define OE_EXCEPTION_MISALIGNMENT 0x7
-#define OE_EXCEPTION_SIMD_FLOAT_POINT 0x8
-#define OE_EXCEPTION_UNKOWN 0xFFFFFFFF
-
-// Exception flags.
-#define OE_EXCEPTION_HARDWARE 0x1
-#define OE_EXCEPTION_SOFTWARE 0x2
-
-/**
- * @endcond
- */
-
-/**
 * Register a new vectored exception handler.
 *
 * Call this function to add a new vectored exception handler. If successful, the

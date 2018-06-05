@@ -3,7 +3,7 @@
 ---
 # OE_CondBroadcast()
 
-Signals all threads waiting on a condition variable.
+Signals all threads waiting on a condition variable and for use inside an enclave.
 
 ## Syntax
 

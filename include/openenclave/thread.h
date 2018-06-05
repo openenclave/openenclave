@@ -4,7 +4,7 @@
 /**
  * @file thread.h
  *
- * This file defines threading primitives used by enclaves.
+ * This file defines threading primitives for use inside an enclave.
  *
  */
 #ifndef _OE_THREAD_H
@@ -24,7 +24,7 @@ typedef uint64_t OE_Thread;
  */
 
 /**
- * Thread Attribute
+ * Thread Attribute for use inside an enclave
  */
 typedef struct _OE_ThreadAttr
 {
@@ -59,7 +59,7 @@ int OE_ThreadEqual(OE_Thread thread1, OE_Thread thread2);
 typedef unsigned int OE_OnceType;
 
 /**
- * @cond DUMMY
+ * @cond EXCLUDE_FROM_DOC
  */
 #define OE_ONCE_INITIALIZER 0
 #define OE_SPINLOCK_INITIALIZER 0
@@ -123,7 +123,7 @@ int OE_Once(OE_OnceType* once, void (*func)(void));
 typedef volatile unsigned int OE_Spinlock;
 
 /**
- * Initializes a spin lock.
+ * Initializes a spin lock and for use inside an enclave.
  *
  * This function initializes a spin lock. Spin locks can also be initialized
  * statically as follows.
@@ -141,7 +141,7 @@ typedef volatile unsigned int OE_Spinlock;
 int OE_SpinInit(OE_Spinlock* spinlock);
 
 /**
- * Acquire a lock on a spin lock.
+ * Acquire a lock on a spin lock and for use inside an enclave.
  *
  * A thread calls this function to acquire a lock on a spin lock. If
  * another thread has already acquired a lock, the calling thread spins
@@ -156,7 +156,7 @@ int OE_SpinInit(OE_Spinlock* spinlock);
 int OE_SpinLock(OE_Spinlock* spinlock);
 
 /**
- * Release the lock on a spin lock.
+ * Release the lock on a spin lock and for use inside an enclave.
  *
  * A thread calls this function to release a lock on a spin lock.
  *
@@ -168,7 +168,7 @@ int OE_SpinLock(OE_Spinlock* spinlock);
 int OE_SpinUnlock(OE_Spinlock* spinlock);
 
 /**
- * Destroy a spin lock.
+ * Destroy a spin lock and for use inside an enclave.
  *
  * This function destroys a spin lock.
  *
@@ -180,7 +180,7 @@ int OE_SpinUnlock(OE_Spinlock* spinlock);
 int OE_SpinDestroy(OE_Spinlock* spinlock);
 
 /**
- * Definition of a mutex
+ * Definition of a mutex for use inside an enclave
  */
 typedef struct _OE_Mutex
 {
@@ -188,7 +188,7 @@ typedef struct _OE_Mutex
 } OE_Mutex;
 
 /**
- * Initialize a mutex.
+ * Initialize a mutex and for use inside an enclave.
  *
  * This function initializes a mutex. All mutexes are recursive. Once
  * initialized, multiple threads can use this mutex to synchronize access
@@ -202,9 +202,9 @@ typedef struct _OE_Mutex
 int OE_MutexInit(OE_Mutex* mutex);
 
 /**
- * Acquires a lock on a mutex.
+ * Acquires a lock on a mutex and for use inside an enclave.
  *
- * This function acquires a lock on a mutex.
+ * This function acquires a lock on a mutex and for use inside an enclave.
  *
  * For enclaves, OE_MutexLock() performs an OCALL to wait for the mutex to
  * be signaled.
@@ -217,7 +217,7 @@ int OE_MutexInit(OE_Mutex* mutex);
 int OE_MutexLock(OE_Mutex* mutex);
 
 /**
- * Tries to acquire a lock on a mutex.
+ * Tries to acquire a lock on a mutex and for use inside an enclave.
  *
  * This function attempts to acquire a lock on the given mutex if it is
  * available. If the mutex is unavailable, the function returns immediately.
@@ -231,7 +231,7 @@ int OE_MutexLock(OE_Mutex* mutex);
 int OE_MutexTryLock(OE_Mutex* mutex);
 
 /**
- * Releases a mutex.
+ * Releases a mutex and for use inside an enclave.
  *
  * This function releases the lock on a mutex obtained with either
  * OE_MutexLock() or OE_MutexTryLock().
@@ -247,7 +247,7 @@ int OE_MutexTryLock(OE_Mutex* mutex);
 int OE_MutexUnlock(OE_Mutex* mutex);
 
 /**
- * Destroys a mutex.
+ * Destroys a mutex and for use inside an enclave.
  *
  * This function destroys a mutex that was initialized with OE_MutexInit().
  *
@@ -259,7 +259,7 @@ int OE_MutexUnlock(OE_Mutex* mutex);
 int OE_MutexDestroy(OE_Mutex* mutex);
 
 /**
- * Condition variable representation
+ * Condition variable representation and for use inside an enclave
 */
 typedef struct _OE_Cond
 {
@@ -267,7 +267,7 @@ typedef struct _OE_Cond
 } OE_Cond;
 
 /**
- * Initializes a condition variable.
+ * Initializes a condition variable and for use inside an enclave.
  *
  * This function initializes a condition variable. Condition variables can
  * also be initialized statically as follows.
@@ -285,7 +285,7 @@ typedef struct _OE_Cond
 int OE_CondInit(OE_Cond* cond);
 
 /**
- * Waits on a condition variable.
+ * Waits on a condition variable and for use inside an enclave.
  *
  * A thread calls this function to wait on a condition variable. If the
  * condition variable is available, OE_CondWait() returns immediately.
@@ -308,7 +308,8 @@ int OE_CondInit(OE_Cond* cond);
 int OE_CondWait(OE_Cond* cond, OE_Mutex* mutex);
 
 /**
- * Signal a thread waiting on a condition variable.
+ * Signal a thread waiting on a condition variable and for use inside an
+ * enclave.
  *
  * A thread calls this function to signal the next thread waiting on the
  * given condition variable. Waiting threads call OE_CondWait() which places
@@ -327,7 +328,8 @@ int OE_CondWait(OE_Cond* cond, OE_Mutex* mutex);
 int OE_CondSignal(OE_Cond* cond);
 
 /**
- * Signals all threads waiting on a condition variable.
+ * Signals all threads waiting on a condition variable and for use inside an
+ * enclave.
  *
  * A thread calls this function to signal all threads waiting on the
  * given condition variable. Waiting threads call OE_CondWait(), which places
@@ -344,7 +346,7 @@ int OE_CondSignal(OE_Cond* cond);
 int OE_CondBroadcast(OE_Cond* cond);
 
 /**
- * Destroys a condition variable.
+ * Destroys a condition variable and for use inside an enclave.
  *
  * This function destroys the given condition variable.
  *
@@ -356,7 +358,7 @@ int OE_CondBroadcast(OE_Cond* cond);
 int OE_CondDestroy(OE_Cond* cond);
 
 /**
- * Readers-writer lock representation
+ * Readers-writer lock representation for use inside an enclave
  */
 typedef struct _OE_RWLock
 {
@@ -364,7 +366,7 @@ typedef struct _OE_RWLock
 } OE_RWLock;
 
 /**
- * Initializes a readers-writer lock.
+ * Initializes a readers-writer lock and for use inside an enclave.
  *
  * OE_RWLockInit initializes the lock to an unlocked state.
  * Readers-writer locks can also be initialized statically as follows.
@@ -384,7 +386,7 @@ typedef struct _OE_RWLock
 int OE_RWLockInit(OE_RWLock* rwLock);
 
 /**
- * Acquires a read lock on a readers-writer lock.
+ * Acquires a read lock on a readers-writer lock and for use inside an enclave.
  *
  * Behavior:
  *    1. The lock is acquired if no writer thread currently owns the lock.
@@ -431,7 +433,7 @@ int OE_RWLockReadLock(OE_RWLock* rwLock);
 int OE_RWLockTryReadLock(OE_RWLock* rwLock);
 
 /**
- * Releases a read lock on a readers-writer lock.
+ * Releases a read lock on a readers-writer lock and for use inside an enclave.
  *
  * This function releases the read lock on a readers-writer lock obtained with
  * either OE_RWLockReadLock() or OE_RWLockTryReadLock().
@@ -457,7 +459,7 @@ int OE_RWLockTryReadLock(OE_RWLock* rwLock);
 int OE_RWLockReadUnlock(OE_RWLock* rwLock);
 
 /**
- * Acquires a write lock on a readers-writer lock.
+ * Acquires a write lock on a readers-writer lock and for use inside an enclave.
  *
  * Behavior:
  *    1. If the r/w lock is in an unlocked state, the OE_RWLockReadUnlock
@@ -485,7 +487,8 @@ int OE_RWLockReadUnlock(OE_RWLock* rwLock);
 int OE_RWLockWriteLock(OE_RWLock* rwLock);
 
 /**
- * Tries to acquire a write lock on a readers-writer lock.
+ * Tries to acquire a write lock on a readers-writer lock and for use inside an
+ * enclave.
  *
  * Behavior:
  *    1. If the r/w lock is currently not held by readers or by another writer,
@@ -503,7 +506,7 @@ int OE_RWLockWriteLock(OE_RWLock* rwLock);
 int OE_RWLockTryWriteLock(OE_RWLock* rwLock);
 
 /**
- * Releases a write lock on a readers-writer lock.
+ * Releases a write lock on a readers-writer lock and for use inside an enclave.
  *
  * This function releases the write lock on a readers-writer lock obtained with
  * either OE_RWLockWriteLock() or OE_RWLockTryWriteLock().
@@ -526,7 +529,7 @@ int OE_RWLockTryWriteLock(OE_RWLock* rwLock);
 int OE_RWLockWriteUnlock(OE_RWLock* rwLock);
 
 /**
- * Destroys a readers-writer lock.
+ * Destroys a readers-writer lock and for use inside an enclave.
  *
  * This function destroys a readers-writer lock and releases any resources used
  * by the lock. The lock must be in an unlocked state.
@@ -547,7 +550,8 @@ int OE_RWLockDestroy(OE_RWLock* rwLock);
 typedef unsigned int OE_ThreadKey;
 
 /**
- * Create a key for accessing thread-specific data.
+ * Create a key for accessing thread-specific data and for use inside an
+ * enclave.
  *
  * This function allocates a thread-specific data (TSD) entry and initializes
  * a key for accessing it. The function given by the **destructor** parameter
@@ -562,7 +566,8 @@ typedef unsigned int OE_ThreadKey;
 int OE_ThreadKeyCreate(OE_ThreadKey* key, void (*destructor)(void* value));
 
 /**
- * Delete a key for accessing thread-specific data.
+ * Delete a key for accessing thread-specific data and for use inside an
+ * enclave.
  *
  * This function deletes the thread-specific data (TSD) entry associated with
  * the given key, calling the function given by the **destructor** parameter
@@ -576,7 +581,7 @@ int OE_ThreadKeyCreate(OE_ThreadKey* key, void (*destructor)(void* value));
 int OE_ThreadKeyDelete(OE_ThreadKey key);
 
 /**
- * Sets the value of a thread-specific data entry.
+ * Sets the value of a thread-specific data entry and for use inside an enclave.
  *
  * This function sets the value of a thread-specific data (TSD) entry
  * associated with the given key.
@@ -590,7 +595,7 @@ int OE_ThreadKeyDelete(OE_ThreadKey key);
 int OE_ThreadSetSpecific(OE_ThreadKey key, const void* value);
 
 /**
- * Gets the value of a thread-specific data entry.
+ * Gets the value of a thread-specific data entry and for use inside an enclave.
  *
  * This function retrieves the value of a thread-specific data (TSD) entry
  * associated with the given key.

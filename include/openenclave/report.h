@@ -24,6 +24,9 @@ OE_EXTERNC_BEGIN
 
 #define OE_MAX_REPORT_SIZE (1 * 1024)
 
+/**
+ * @cond EXCLUDE_FROM_DOC
+ */
 // Fixed identity property sizes for OEv1
 #define OE_UNIQUE_ID_SIZE 32
 #define OE_AUTHOR_ID_SIZE 32
@@ -36,16 +39,24 @@ OE_EXTERNC_BEGIN
     (~(OE_REPORT_ATTRIBUTES_DEBUG | OE_REPORT_ATTRIBUTES_REMOTE))
 
 /**
+ * @endcond
+ */
+
+/**
  * OE_Identity structure
  */
 typedef struct _OE_Identity
 {
-    uint32_t idVersion;
-    uint32_t securityVersion;
-    uint64_t attributes;
-    uint8_t uniqueID[OE_UNIQUE_ID_SIZE];
-    uint8_t authorID[OE_AUTHOR_ID_SIZE];
-    uint8_t productID[OE_PRODUCT_ID_SIZE];
+    uint32_t idVersion;       /**< Version number */
+    uint32_t securityVersion; /**< ISVN - the security version */
+    uint64_t attributes; /**< Values of the attributes flags for the enclave */
+    uint8_t
+        uniqueID[OE_UNIQUE_ID_SIZE];     /**< Maps to mrenclave property of the
+                                            local report */
+    uint8_t authorID[OE_AUTHOR_ID_SIZE]; /**< Maps to mrsigner property of the
+                                            local report */
+    uint8_t
+        productID[OE_PRODUCT_ID_SIZE]; /**< ISVPRODID - Enclave Product ID */
 } OE_Identity;
 
 /**

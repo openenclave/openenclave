@@ -21,7 +21,7 @@
 OE_EXTERNC_BEGIN
 
 /**
- * @cond DUMMY
+ * @cond EXCLUDE_FROM_DOC
  */
 /* Injected by OE_SET_ENCLAVE_SGX macro and by the signing tool (oesign) */
 #define OE_INFO_SECTION_NAME ".oeinfo"
@@ -109,8 +109,8 @@ OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
  * @param \_ProductID\_ ISV assigned Product ID (ISVPRODID) to be used in the enclave signature 
  * @param \_SecurityVersion\_ ISV assigned Security Version number (ISVSVN) to be used in the enclave signature 
  * @param \_AllowDebug\_ If 1, the enclave permits debugger to read/write data to enclave
- * @param \_HeapPageCount\_ Number of heap pages
- * @param \_StackPageCount\_ Number of stack pages dedicated to the thread context
+ * @param \_HeapPageCount\_ Number of heap pages to allocate in the enclave
+ * @param \_StackPageCount\_ Number of stack pages per thread to reserve in the enclave
  * @param \_TcsCount\_ Number of Thread Control Structures
  */
 #define OE_SET_ENCLAVE_SGX(                                             \

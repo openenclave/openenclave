@@ -52,11 +52,9 @@
 
 ### exception.h
 
-* [OE_ALIGNED()](exception_8h_1aed5fd49d7e6df6e59d02ab7f72b10ee8.md)
-
 ### host.h
 
-* [OE_CreateEnclave()](host_8h_af4aaccca15e8dae0ceca687730bb6262_1af4aaccca15e8dae0ceca687730bb6262.md)
+* [OE_CreateEnclave()](host_8h_a37e6c31e49055d9fb7fae5be50d88022_1a37e6c31e49055d9fb7fae5be50d88022.md)
 
 * [OE_TerminateEnclave()](host_8h_a20654d7b450c042ac7b256893b287cbe_1a20654d7b450c042ac7b256893b287cbe.md)
 

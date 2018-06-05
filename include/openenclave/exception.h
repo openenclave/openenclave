@@ -16,7 +16,37 @@
 #include "types.h"
 
 /**
- * Contains X87 and SSE data
+ * Exception codes used by the vectored exception handlers
+ */
+
+#define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
+#define OE_EXCEPTION_BREAKPOINT 0x1
+#define OE_EXCEPTION_BOUND_OUT_OF_RANGE 0x2
+#define OE_EXCEPTION_ILLEGAL_INSTRUCTION 0x3
+#define OE_EXCEPTION_ACCESS_VIOLATION 0x4
+#define OE_EXCEPTION_PAGE_FAULT 0x5
+#define OE_EXCEPTION_X87_FLOAT_POINT 0x6
+#define OE_EXCEPTION_MISALIGNMENT 0x7
+#define OE_EXCEPTION_SIMD_FLOAT_POINT 0x8
+#define OE_EXCEPTION_UNKOWN 0xFFFFFFFF
+
+/**
+ * Exception flags used by the vectored exception handlers
+ */
+
+#define OE_EXCEPTION_HARDWARE 0x1
+#define OE_EXCEPTION_SOFTWARE 0x2
+
+/* Original
+typedef struct _OE_BASIC_XSTATE
+{
+    uint8_t blob[512];
+} OE_ALIGNED(16) OE_BASIC_XSTATE;
+*/
+
+/**
+ * @typedef OE_BASIC_XSTATE: type to structure _OE_BASIC_XSTATE
+ * @struct _OE_BASIC_XSTATE: Blob that contains X87 and SSE data
  */
 typedef struct _OE_BASIC_XSTATE
 {
@@ -24,10 +54,9 @@ typedef struct _OE_BASIC_XSTATE
 } OE_ALIGNED(16) OE_BASIC_XSTATE;
 
 /**
- * \typedef OE_CONTEXT: typedef to structure _OE_CONTEXT
- * \struct _OE_CONTEXT: Necessary x64 registers/state that can be
- * saved before an exception and restored after the exception has been handled
- * in the enclave.
+ * @typedef OE_CONTEXT: typedef to structure _OE_CONTEXT
+ * @struct _OE_CONTEXT: Register state to  be saved before an exception and
+ * restored after the exception has been handled in the enclave.
  */
 typedef struct _OE_CONTEXT
 {
@@ -61,7 +90,7 @@ typedef struct _OE_CONTEXT
 
     uint32_t mxcsr; /**< SSE control flags */
 
-    OE_BASIC_XSTATE basic_xstate; /**< @OE_BASIC_XSTATE - Basic XState */
+    OE_BASIC_XSTATE basic_xstate; /**< Basic XState */
 
     // Don't need to manipulate other XSTATE (AVX etc.).
 } OE_CONTEXT;

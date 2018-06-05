@@ -3,7 +3,7 @@
 ---
 # OE_MutexUnlock()
 
-Releases a mutex.
+Releases a mutex and for use inside an enclave.
 
 ## Syntax
 
