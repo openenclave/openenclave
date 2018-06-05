@@ -44,4 +44,5 @@ OE_INLINE bool OE_SGXValidAttributes(uint64_t x)
     return true;
 }
 
+
 #endif /* _OE_INTERNAL_PROPERTIES_H */
