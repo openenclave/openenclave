@@ -26,12 +26,12 @@ static OE_Spinlock g_exception_lock = OE_SPINLOCK_INITIALIZER;
 uint32_t g_current_exception_handler_count = 0;
 
 // Current registered exception handlers.
-POE_VECTORED_EXCEPTION_HANDLER
-g_exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
+OE_VectoredExceptionHandler
+    g_exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
 
 void* OE_AddVectoredExceptionHandler(
-    uint64_t isFirstHandler,
-    POE_VECTORED_EXCEPTION_HANDLER vectoredHandler)
+    bool isFirstHandler,
+    OE_VectoredExceptionHandler vectoredHandler)
 {
     void* func_ret = NULL;
     int lock_ret = -1;
@@ -66,7 +66,7 @@ void* OE_AddVectoredExceptionHandler(
     }
 
     // Add the new handler.
-    if (isFirstHandler == 0)
+    if (!isFirstHandler)
     {
         // Append the new handler if it is not the first handler.
         g_exception_handler_arr[g_current_exception_handler_count] =
@@ -222,10 +222,10 @@ int _EmulateIllegalInstruction(SGX_SsaGpr* ssa_gpr)
 /*
 **==============================================================================
 **
-** _OE_ExceptionDispatcher(OE_CONTEXT *oe_context)
+** _OE_ExceptionDispatcher(OE_Context *oe_context)
 **
 **  The real (second pass) exception dispatcher. It is called by
-**  OE_ExceptionDispatcher. This function composes the valid OE_EXCEPTION_RECORD
+**  OE_ExceptionDispatcher. This function composes the valid OE_ExceptionRecord
 **  and calls the registered exception handlers one by one. If a handler returns
 **  OE_EXCEPTION_CONTINUE_EXECUTION, this function will continue execution on
 **  the context. Otherwise the enclave will be aborted due to an unhandled
@@ -233,18 +233,18 @@ int _EmulateIllegalInstruction(SGX_SsaGpr* ssa_gpr)
 **
 **==============================================================================
 */
-void _OE_ExceptionDispatcher(OE_CONTEXT* oe_context)
+void _OE_ExceptionDispatcher(OE_Context* oe_context)
 {
     TD* td = TD_Get();
 
     // Change the rip of oe_context to the real exception address.
     oe_context->rip = td->base.exception_address;
 
-    // Compose the OE_EXCEPTION_RECORD.
+    // Compose the OE_ExceptionRecord.
     // N.B. In second pass exception handling, the XSTATE is recovered by SGX
     // hardware correctly on ERESUME, so we don't touch the XSTATE.
-    OE_EXCEPTION_RECORD oe_exception_record;
-    OE_Memset(&oe_exception_record, 0, sizeof(OE_EXCEPTION_RECORD));
+    OE_ExceptionRecord oe_exception_record;
+    OE_Memset(&oe_exception_record, 0, sizeof(OE_ExceptionRecord));
     oe_exception_record.code = td->base.exception_code;
     oe_exception_record.flags = td->base.exception_flags;
     oe_exception_record.address = td->base.exception_address;

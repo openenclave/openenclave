@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <mbedtls/sha256.h>
+#include <openenclave/bits/types.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sha.h>
-#include <openenclave/bits/types.h>
 
 typedef struct _OE_SHA256ContextImpl
 {

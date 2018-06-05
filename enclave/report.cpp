@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/types.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cmac.h>
@@ -9,7 +10,6 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/bits/types.h>
 #include "../common/quote.h"
 
 // This file is .cpp in order to use C++ static initialization.

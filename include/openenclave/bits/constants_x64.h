@@ -26,7 +26,7 @@
 #define OE_SGX_TCS_HEADER_BYTE_SIZE 0x48
 
 //
-// OE_CONTEXT Structure size and offset definitions.
+// OE_Context Structure size and offset definitions.
 //
 
 #define OE_CONTEXT_SIZE 0X2A0

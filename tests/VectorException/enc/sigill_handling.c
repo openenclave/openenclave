@@ -22,7 +22,7 @@ static volatile enum {
 } g_handledSigill;
 
 // 2nd-chance exception handler to continue on test triggered exceptions
-uint64_t TestSigillHandler(OE_EXCEPTION_RECORD* exception)
+uint64_t TestSigillHandler(OE_ExceptionRecord* exception)
 {
     if (exception->code == OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {
@@ -138,7 +138,7 @@ OE_ECALL void TestSigillHandling(void* args_)
     }
 
     // Register the sigill handler to catch test triggered exceptions
-    void* handler = OE_AddVectoredExceptionHandler(0, TestSigillHandler);
+    void* handler = OE_AddVectoredExceptionHandler(false, TestSigillHandler);
     if (handler == NULL)
     {
         OE_HostPrintf("Failed to register TestSigillHandler.\n");

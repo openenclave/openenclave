@@ -10,8 +10,8 @@
 #endif
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/internal/cpuid.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/cpuid.h>
 #include "sgxtypes.h"
 
 #define __OE_ECALL_BASE ((int)0x00FFFFFF)

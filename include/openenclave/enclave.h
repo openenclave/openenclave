@@ -60,8 +60,8 @@ OE_EXTERNC_BEGIN
 *
 */
 void* OE_AddVectoredExceptionHandler(
-    uint64_t isFirstHandler,
-    POE_VECTORED_EXCEPTION_HANDLER vectoredHandler);
+    bool isFirstHandler,
+    OE_VectoredExceptionHandler vectoredHandler);
 
 /**
 * Remove an existing vectored exception handler.

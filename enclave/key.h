@@ -5,9 +5,9 @@
 #define _ENCLAVE_KEY_H
 
 #include <mbedtls/pk.h>
-#include <openenclave/internal/hash.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/hash.h>
 
 typedef struct _OE_PrivateKey
 {
