@@ -4,7 +4,7 @@
 /**
  * \file result.h
  *
- * This file defines OpenEnclave return codes (results).
+ * This file defines Open Enclave return codes (results).
  *
  */
 #ifndef _OE_RESULT_H
@@ -54,7 +54,9 @@ typedef enum _OE_Result {
     OE_INVALID_CPUSVN,
     OE_INVALID_ISVSVN,
     OE_INVALID_KEYNAME,
-    OE_DEBUG_DOWNGRADE
+    OE_DEBUG_DOWNGRADE,
+    OE_BUSY,
+    OE_NOT_OWNER,
 } OE_Result;
 
 /**

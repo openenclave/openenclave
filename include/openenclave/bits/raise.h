@@ -10,7 +10,7 @@
  *     OE_Result Func1(const char* param)
  *     {
  *         OE_Result result = OE_UNEXPECTED;
- *         OE_Result tmpResult;
+ *         OE_Result r;
  *
  *         if (!param)
  *         {
@@ -18,17 +18,17 @@
  *             goto done;
  *         }
  *
- *         tmpResult = Func2(param);
- *         if (tmpResult != OE_OK)
+ *         r = Func2(param);
+ *         if (r != OE_OK)
  *         {
- *             result = tmpResult;
+ *             result = r;
  *             goto done;
  *         }
  *
- *         tmpResult = Func3(param);
- *         if (tmpResult != OE_OK)
+ *         r = Func3(param);
+ *         if (r != OE_OK)
  *         {
- *             result = tmpResult;
+ *             result = r;
  *             goto done;
  *         }
  *
@@ -43,7 +43,6 @@
  *     OE_Result Func1(const char* param)
  *     {
  *         OE_Result result = OE_UNEXPECTED;
- *         OE_Result tmpResult;
  *
  *         if (!param)
  *             OE_RAISE(OE_INVALID_PARAMETER);

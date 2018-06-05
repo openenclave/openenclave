@@ -65,8 +65,8 @@ OE_H_Thread OE_H_ThreadSelf(void);
  * This function checks whether two thread identifiers refer to the same
  * thread. Thread identifiers are obtained by calling OE_ThreadSelf().
  *
- * @param thread1 A thread identifer obtained with OE_ThreadSelf().
- * @param thread2 A thread identifer obtained with OE_ThreadSelf().
+ * @param thread1 A thread identifier obtained with OE_ThreadSelf().
+ * @param thread2 A thread identifier obtained with OE_ThreadSelf().
  *
  * @returns Returns non-zero if the thread identifiers are equal.
  */
@@ -105,7 +105,7 @@ int OE_H_Once(OE_H_OnceType* once, void (*func)(void));
  * Initialize a mutex.
  *
  * This function initializes a mutex. All mutexes are recursive. Once
- * initialized, multiple threads can use this mutex to synchronoze access
+ * initialized, multiple threads can use this mutex to synchronize access
  * to data. See OE_H_MutexLock() and OE_H_MutexUnlock().
  *
  * @param mutex Initialize this mutex.
@@ -191,7 +191,7 @@ int OE_H_ThreadKeyDelete(OE_H_ThreadKey key);
 /**
  * Sets the value of a thread-specific data entry.
  *
- * This funciton sets the value of a thread-specific data (TSD) entry
+ * This function sets the value of a thread-specific data (TSD) entry
  * associated with the given key.
  *
  * @param key Set the TSD entry associated with this key.

@@ -2,8 +2,12 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(reportenc sign.conf private.pem
+add_enclave_executable(report_enc sign.conf private.pem
     enc.cpp
     )
 
-target_link_libraries(reportenc oeenclave)
+if(USE_LIBSGX)
+target_compile_definitions(report_enc PRIVATE OE_USE_LIBSGX)
+endif()
+
+target_link_libraries(report_enc oeenclave)

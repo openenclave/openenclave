@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(ecallenc sign.conf private.pem
+add_enclave_executable(ecall_enc sign.conf private.pem
     enc.cpp
     )
-target_link_libraries(ecallenc oecore)
+target_link_libraries(ecall_enc oecore)

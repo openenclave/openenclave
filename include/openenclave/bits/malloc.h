@@ -18,6 +18,31 @@ typedef void (*OE_AllocationFailureCallback)(
 
 void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function);
 
+typedef struct _OE_MallocStats
+{
+    uint64_t peakSystemBytes;
+    uint64_t systemBytes;
+    uint64_t inUseBytes;
+} OE_MallocStats;
+
+/**
+ * Obtains enclave malloc statistics.
+ *
+ * This function obtains malloc statistics for the calling enclave. The enclave
+ * must link the **oelibc** library, where this function is defined. These
+ * statistics include:
+ *
+ *     - the peak system bytes allocated
+ *     - the current system bytes allocated
+ *     - the number of bytes in use
+ *
+ * @param stats[output] the malloc statistics
+ *
+ * @return 0 success
+ * @return -1 failure
+ */
+OE_Result OE_GetMallocStats(OE_MallocStats* stats);
+
 OE_EXTERNC_END
 
 #endif /* _OE_MALLOC_H */

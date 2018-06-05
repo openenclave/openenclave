@@ -117,6 +117,57 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
 #define OE_ATOMIC_MEMORY_BARRIER_ACQUIRE() asm volatile("" ::: "memory")
 #define OE_ATOMIC_MEMORY_BARRIER_RELEASE() asm volatile("" ::: "memory")
 
+/**
+ * OE_SecureZeroFill is intended to be used to zero out secrets.
+ * Plain memset/for-loops can get optimized away be the compiler.
+ * Use OE_SecureZeroFill instead.
+ */
+OE_INLINE void OE_SecureZeroFill(volatile void* ptr, uint32_t size)
+{
+    volatile uint8_t* p = (volatile uint8_t*)ptr;
+    while (size--)
+    {
+        *p++ = 0;
+    }
+}
+
+/**
+ * OE_SecureMemcpy guarantees that the memcpy is not optimized away by the
+ * compiler.
+ */
+OE_INLINE void OE_SecureMemcpy(
+    volatile void* dst,
+    const void* src,
+    uint32_t size)
+{
+    volatile uint8_t* d = (volatile uint8_t*)dst;
+    const uint8_t* s = (const uint8_t*)src;
+    while (size--)
+    {
+        *d++ = *s++;
+    }
+}
+
+/**
+ * OE_ConstantTimeMemEqual does a constant time memory compare.
+ */
+OE_INLINE int OE_ConstantTimeMemEqual(
+    const volatile void* pv1,
+    const volatile void* pv2,
+    uint32_t len)
+{
+    volatile uint8_t* p1 = (uint8_t*)pv1;
+    volatile uint8_t* p2 = (uint8_t*)pv2;
+    uint8_t r = 0;
+
+    for (uint32_t i = 0; i < len; ++i)
+    {
+        r |= p1[i] ^ p2[i];
+    }
+
+    return !r;
+}
+
 OE_EXTERNC_END
 
 #endif /* _OE_UTILS_H */

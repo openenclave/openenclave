@@ -1,0 +1,4 @@
+test_foreign_exceptions.cpp
+test_guard.cpp
+test_typeinfo.cpp
+test_exception.cpp

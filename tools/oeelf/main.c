@@ -126,7 +126,7 @@ exit(0);
     }
 #endif
 
-    /* Unload tghe ELF-64 object */
+    /* Unload the ELF-64 object */
     if (Elf64_Unload(&elf) != 0)
     {
         fprintf(stderr, "%s: failed to unload\n", argv[0]);

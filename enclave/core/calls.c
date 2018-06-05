@@ -498,7 +498,7 @@ OE_CATCH:
 **     parameters to EENTER:
 **
 **         RBX - TCS - address of a TCS page in the enclave
-**         RCX - AEP - pointer to hosts's asynchronous exception procedure
+**         RCX - AEP - pointer to host's asynchronous exception procedure
 **         RDI - ARGS1 (holds the CODE and FUNC parameters)
 **         RSI - ARGS2 (holds the pointer to the args structure)
 **
@@ -680,7 +680,7 @@ void __OE_HandleMain(
 **     function when ocall happens inside enclave (i.e. one type of nested
 **     exit).
 **     When debugger does stack stitching, it will update the untrusted ocall
-**     frames previous stack frame pointer and return address with the ocall
+**     frame's previous stack frame pointer and return address with the ocall
 **     context from trusted thread data. When GDB does stack walking, the parent
 **     stack of an untrusted ocall will be stack of the _OE_EXIT trusted
 **     function instead of stack of OE_Enter/__morestack untrusted function.

@@ -31,23 +31,23 @@ static OE_Result _GetKeyImp(
     // Convert the EGETKEY result to OE_Result.
     switch (egetkeyResult)
     {
-        case SGX_SUCCESS:
+        case SGX_EGETKEY_SUCCESS:
             ret = OE_OK;
             break;
 
-        case SGX_INVALID_ATTRIBUTE:
+        case SGX_EGETKEY_INVALID_ATTRIBUTE:
             ret = OE_INVALID_PARAMETER;
             break;
 
-        case SGX_INVALID_CPUSVN:
+        case SGX_EGETKEY_INVALID_CPUSVN:
             ret = OE_INVALID_CPUSVN;
             break;
 
-        case SGX_INVALID_ISVSVN:
+        case SGX_EGETKEY_INVALID_ISVSVN:
             ret = OE_INVALID_ISVSVN;
             break;
 
-        case SGX_INVALID_KEYNAME:
+        case SGX_EGETKEY_INVALID_KEYNAME:
             ret = OE_INVALID_KEYNAME;
             break;
 
@@ -154,7 +154,7 @@ OE_Result OE_GetSealKey(
  * Attribute masks are set to OE default values.
  *
  * Return OE_OK and set attributes of sgxKeyRequest if success.
- * Otherwise return error and sgxKeyRquest is not changed.
+ * Otherwise return error and sgxKeyRequest is not changed.
  */
 static OE_Result _GetDefaultKeyRequestAttributes(SGX_KeyRequest* sgxKeyRequest)
 {

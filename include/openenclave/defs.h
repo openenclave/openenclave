@@ -142,4 +142,8 @@
 #define OE_ZERO_SIZED_ARRAY /* empty */
 #endif
 
+#define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
+
+#define OE_OCALL OE_EXTERNC OE_EXPORT
+
 #endif /* _OE_DEFS_H */

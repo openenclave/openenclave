@@ -11,6 +11,12 @@
 #include <sys/time.h>
 #include <time.h>
 
+// This definition is replicated from "musl/src/time/__tz.c" as this file has
+// some dependencies on other functions which are not developed for the enclave
+// environment so we are defining the variable here to resolve the dependency
+// of extern variable in gmtime_r.c.
+const char __gmt[] = "GMT";
+
 time_t time(time_t* tloc)
 {
     struct timeval tv;

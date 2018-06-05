@@ -71,7 +71,7 @@ static OE_Result _OE_GetSGXReport(
     void* reportBuffer,
     uint32_t* reportBufferSize)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
 
     if (reportDataSize > OE_REPORT_DATA_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -106,6 +106,7 @@ static OE_Result _OE_GetSGXReport(
             reportBuffer));
 
     *reportBufferSize = sizeof(SGX_Report);
+    result = OE_OK;
 
 done:
 
@@ -114,7 +115,7 @@ done:
 
 static OE_Result _OE_GetSGXTargetInfo(SGX_TargetInfo* targetInfo)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     OE_GetQETargetInfoArgs* args =
         (OE_GetQETargetInfoArgs*)OE_HostCalloc(1, sizeof(*args));
     if (args == NULL)
@@ -131,10 +132,11 @@ static OE_Result _OE_GetSGXTargetInfo(SGX_TargetInfo* targetInfo)
     if (result == OE_OK)
         *targetInfo = args->targetInfo;
 
+    result = OE_OK;
 done:
     if (args)
     {
-        OE_Memset(args, 0, sizeof(*args));
+        OE_SecureZeroFill(args, sizeof(*args));
         OE_HostFree(args);
     }
 
@@ -146,7 +148,7 @@ static OE_Result _OE_GetQuote(
     uint8_t* quote,
     uint32_t* quoteSize)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     uint32_t argSize = sizeof(OE_GetQETargetInfoArgs);
 
     // If quote buffer is NULL, then ignore passed in quoteSize value.
@@ -182,7 +184,7 @@ static OE_Result _OE_GetQuote(
 done:
     if (args)
     {
-        OE_Memset(args, 0, argSize);
+        OE_SecureZeroFill(args, argSize);
         OE_HostFree(args);
     }
 
@@ -197,7 +199,7 @@ OE_Result _OE_GetRemoteReport(
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     SGX_TargetInfo sgxTargetInfo = {0};
     SGX_Report sgxReport = {0};
     uint32_t sgxReportSize = sizeof(sgxReport);
@@ -247,6 +249,7 @@ OE_Result _OE_GetRemoteReport(
             sizeof(sgxReport.body)) != 0)
         OE_RAISE(OE_UNEXPECTED);
 
+    result = OE_OK;
 done:
 
     return result;
@@ -287,7 +290,7 @@ static OE_Result _SafeCopyGetReportArgs(
     OE_GetReportArgs* safeArg,
     uint8_t* reportBuffer)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     OE_GetReportArgs* unsafeArg = (OE_GetReportArgs*)argIn;
 
     if (!unsafeArg || !OE_IsOutsideEnclave(unsafeArg, sizeof(*unsafeArg)))
@@ -295,7 +298,7 @@ static OE_Result _SafeCopyGetReportArgs(
 
     // Copy arg to prevent TOCTOU issues.
     // All input fields now lie in enclave memory.
-    *safeArg = *unsafeArg;
+    OE_SecureMemcpy(safeArg, unsafeArg, sizeof(*safeArg));
 
     if (safeArg->reportBufferSize > OE_MAX_REPORT_SIZE)
         safeArg->reportBufferSize = OE_MAX_REPORT_SIZE;
@@ -309,30 +312,43 @@ static OE_Result _SafeCopyGetReportArgs(
     if (safeArg->reportBuffer)
         safeArg->reportBuffer = reportBuffer;
 
+    result = OE_OK;
 done:
     return result;
 }
 
-static void _SafeCopyGetReportArgsOuput(
+static OE_Result _SafeCopyGetReportArgsOuput(
     OE_GetReportArgs* safeArg,
     uint64_t argIn)
 {
+    OE_Result result = OE_UNEXPECTED;
+
     OE_GetReportArgs* unsafeArg = (OE_GetReportArgs*)argIn;
-    unsafeArg->result = safeArg->result;
-    unsafeArg->reportBufferSize = safeArg->reportBufferSize;
 
     if (safeArg->result == OE_OK)
     {
-        OE_Memcpy(
-            unsafeArg->reportBuffer,
-            safeArg->reportBuffer,
-            safeArg->reportBufferSize);
+        // Perform validation again. The reportBuffer field could have been
+        // changed. Use volatile to ensure that the compiler doesn't optimize
+        // away the copy.
+        uint8_t* volatile hostReportBuffer = unsafeArg->reportBuffer;
+        if (!OE_IsOutsideEnclave(hostReportBuffer, safeArg->reportBufferSize))
+            OE_RAISE(OE_UNEXPECTED);
+
+        OE_SecureMemcpy(
+            hostReportBuffer, safeArg->reportBuffer, safeArg->reportBufferSize);
     }
+
+    unsafeArg->reportBufferSize = safeArg->reportBufferSize;
+    unsafeArg->result = safeArg->result;
+    result = OE_OK;
+
+done:
+    return result;
 }
 
 OE_Result _HandleGetReport(uint64_t argIn)
 {
-    OE_Result result = OE_OK;
+    OE_Result result = OE_UNEXPECTED;
     OE_GetReportArgs arg;
 
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
@@ -340,17 +356,23 @@ OE_Result _HandleGetReport(uint64_t argIn)
     // Validate and copy args to prevent TOCTOU issues.
     OE_CHECK(_SafeCopyGetReportArgs(argIn, &arg, reportBuffer));
 
+    // Host is not allowed to pass report data. Otherwise, the host can use the
+    // enclave to put whatever data it wants in a report. The data field is
+    // intended to be used for digital signatures and is not allowed to be
+    // tampered with by the host.
+
     arg.result = OE_GetReport(
         arg.options,
-        (arg.reportDataSize != 0) ? arg.reportData : NULL,
-        arg.reportDataSize,
+        NULL,
+        0,
         (arg.optParamsSize != 0) ? arg.optParams : NULL,
         arg.optParamsSize,
         arg.reportBuffer,
         &arg.reportBufferSize);
 
     // Copy outputs to host memory.
-    _SafeCopyGetReportArgsOuput(&arg, argIn);
+    OE_CHECK(_SafeCopyGetReportArgsOuput(&arg, argIn));
+    result = OE_OK;
 
 done:
     return result;

@@ -154,7 +154,7 @@ void DumpECallSection(Elf64* elf)
         return;
     }
 
-    /* Dump all the ECALs */
+    /* Dump all the ECALLs */
     {
         VisitSymData data;
         data.elf = elf;

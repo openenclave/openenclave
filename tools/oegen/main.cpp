@@ -165,7 +165,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    // Collectd arguments:
+    // Collected arguments:
     idlFile = argv[1];
 
     // Load the IDL file into memory:

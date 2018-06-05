@@ -13,7 +13,7 @@ uint64_t _rdrand(void)
 }
 
 /*
- * MBEDTLS links this function defintion when MBEDTLS_ENTROPY_HARDWARE_ALT
+ * MBEDTLS links this function definition when MBEDTLS_ENTROPY_HARDWARE_ALT
  * is defined in the MBEDTLS config.h file. This is the sole source of entropy
  * for MBEDTLS. All other MBEDTLS entropy sources are disabled since they don't
  * work within enclaves.

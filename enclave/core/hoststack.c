@@ -4,10 +4,10 @@
 /*
  Host allocation for callouts
 
- Facilitate small and nested allocations of host memory. Data is orgranized in
+ Facilitate small and nested allocations of host memory. Data is organized in
  buckets with embedded metadata, with one "active" bucket (to pull allocations
  from) and one "standby" bucket. "active" put to standby on underflow (i.e.,
- freeing from a diferent bucket than the "active").
+ freeing from a different bucket than the "active").
 
 */
 
@@ -113,7 +113,7 @@ static ThreadBuckets* _GetThreadBuckets()
         __cxa_atexit(_FreeThreadBucket, tb, NULL);
     }
 
-    // Under normal operation, there is no reentrency. There could be if the
+    // Under normal operation, there is no reentrancy. There could be if the
     // host attacked us (by unmapping host memory & forcing a pagefault).
     if (tb->flags & THREAD_BUCKET_FLAG_BUSY)
         OE_Abort();

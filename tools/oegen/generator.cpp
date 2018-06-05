@@ -352,7 +352,7 @@ static void _GenFunctionStruct(std::ostream& os, const Function* function)
         os << ";" << endl;
         count++;
 
-        /* Generate padding field (for detecting buffer overuns) */
+        /* Generate padding field (for detecting buffer overruns) */
         if (i + 1 != function->params.size() || !_IsZeroArray(x))
             os << sub("    unsigned char __pad$0[4];\n", _NumToStr(count));
     }
@@ -1243,11 +1243,11 @@ static int _GenReturnTypeTypeInfo(
         else
             os << ind << "NULL, /* structTI */\n";
 
-        // OE_FieldTI.countParam:
+        // OE_FieldTI.count:
         if (r.flags & FLAG_COUNT)
-            os << ind << '"' << r.qvals.count << "\", /* countParam */\n";
+            os << ind << '"' << r.qvals.count << "\", /* count */\n";
         else
-            os << ind << "NULL, /* countParam */\n";
+            os << ind << "NULL, /* count */\n";
 
         // OE_FieldTI.offset:
         os << ind << "OE_OFFSETOF(struct " << f.name << "Args, " << r.name
@@ -1300,11 +1300,11 @@ static int _GenParamTypeInfo(
         else
             os << ind << "NULL, /* structName */\n";
 
-        // OE_FieldTI.countParam:
+        // OE_FieldTI.count:
         if (p.flags & FLAG_COUNT)
-            os << ind << '"' << p.qvals.count << "\", /* countParam */\n";
+            os << ind << '"' << p.qvals.count << "\", /* count */\n";
         else
-            os << ind << "NULL, /* countParam */\n";
+            os << ind << "NULL, /* count */\n";
 
         // OE_FieldTI.offset:
         os << ind << "OE_OFFSETOF(struct " << f.name << "Args, " << p.name
@@ -1438,7 +1438,7 @@ int Generator::GenerateSourceFile(
         os << "#include \"" << tmp << "\"" << endl;
     }
 
-    // Generate verbatims:
+    // Generate verbatim definitions:
     for (size_t i = 0; i < objects.size(); i++)
     {
         const Verbatim* verbatim = dynamic_cast<const Verbatim*>(objects[i]);

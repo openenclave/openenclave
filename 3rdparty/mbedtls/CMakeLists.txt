@@ -5,15 +5,23 @@
 
 set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-builtin-udivti3")
 
+string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
+
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
+	configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/config.h ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h COPYONLY)
+	file(APPEND ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h "\#define\ MBEDTLS_CERTS_C\n\n\#define\ MBEDTLS_DEBUG_C\n")
+else()
+	configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/config.h ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h COPYONLY)
+endif()
+
 include (ExternalProject)
 ExternalProject_Add(mbedtls-wrap
     DEPENDS oelibc_includes
 
     DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/config.h <SOURCE_DIR>/include/mbedtls/config.h
-
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h <SOURCE_DIR>/include/mbedtls/config.h
     # Addl args for compiler
     CMAKE_ARGS
         -DCMAKE_C_FLAGS=${MBEDTLS_WRAP_CFLAGS}
@@ -41,7 +49,8 @@ target_include_directories(mbedcrypto INTERFACE ${OE_INCDIR}/openenclave/oe-mbed
 target_link_libraries(mbedcrypto INTERFACE 
     ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a
     ${OE_LIBDIR}/openenclave/enclave/libmbedx509.a
-    ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a)
+    ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a
+)
 # For the libc dependency, We would just want to use "oelibc". However, we need
 # an actual lib-dependency between crypto an libc, which is not expressable
 # with CMake. If using the target "oelibc", CMake reorders the libs, resulting

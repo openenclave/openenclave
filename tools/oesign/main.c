@@ -151,7 +151,7 @@ done:
     return rc;
 }
 
-// Options loaded from .conf file. Unitialized fields contain the maximum
+// Options loaded from .conf file. Uninitialized fields contain the maximum
 // integer value for the corresponding type.
 typedef struct _ConfigFileOptions
 {
@@ -171,22 +171,41 @@ typedef struct _ConfigFileOptions
     }
 
 /* Check whether the .conf file is missing required options */
-static void _CheckForMissingOptions(const ConfigFileOptions* options)
+static int _CheckForMissingOptions(const ConfigFileOptions* options)
 {
+    int ret = 0;
+
     if (options->numHeapPages == OE_MAX_UINT64)
+    {
         Err("%s: missing option: NumHeapPages", arg0);
+        ret = -1;
+    }
 
     if (options->numStackPages == OE_MAX_UINT64)
+    {
         Err("%s: missing option: NumStackPages", arg0);
+        ret = -1;
+    }
 
     if (options->numTCS == OE_MAX_UINT64)
+    {
         Err("%s: missing option: NumTCS", arg0);
+        ret = -1;
+    }
 
     if (options->productID == OE_MAX_UINT16)
+    {
         Err("%s: missing option: ProductID", arg0);
+        ret = -1;
+    }
 
     if (options->securityVersion == OE_MAX_UINT16)
+    {
         Err("%s: missing option: SecurityVersion", arg0);
+        ret = -1;
+    }
+
+    return ret;
 }
 
 static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
@@ -550,7 +569,10 @@ int main(int argc, const char* argv[])
 
         /* If enclave properties not found, then options must be complete */
         if (result == OE_NOT_FOUND)
-            _CheckForMissingOptions(&options);
+        {
+            if (_CheckForMissingOptions(&options) != 0)
+                goto done;
+        }
     }
 
     /* Merge the configuration file options into the enclave properties */
@@ -567,7 +589,7 @@ int main(int argc, const char* argv[])
         }
     }
 
-    /* Initialize the context paramters for measurement only */
+    /* Initialize the context parameters for measurement only */
     if (OE_SGXInitializeLoadContext(
             &context, OE_SGX_LOAD_TYPE_MEASURE, OE_ENCLAVE_FLAG_DEBUG) != OE_OK)
     {

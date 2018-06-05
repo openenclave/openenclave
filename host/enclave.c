@@ -8,7 +8,7 @@
 /*
 **==============================================================================
 **
-** GetText()
+** enc()
 **
 **     Print the address where to load enclave symbols in GDB (add-symbol-file)
 **

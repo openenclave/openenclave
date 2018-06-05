@@ -56,7 +56,7 @@ int main(int argc, const char* argv[])
     if ((result = OE_SGXBuildEnclave(
              &context, argv[1], GetEnclaveProperties(), &enclave)) != OE_OK)
     {
-        OE_PutErr("__OE_AddSegmentPages(): result=%u", result);
+        OE_PutErr("OE_SGXBuildEnclave(): result=%u", result);
     }
 
     char buf[2 * OE_SHA256_SIZE + 1];

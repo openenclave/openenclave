@@ -10,6 +10,10 @@
 #ifndef _OE_HOST_H
 #define _OE_HOST_H
 
+#ifdef _OE_ENCLAVE_H
+#error "enclave.h and host.h must not be included in the same compilation unit."
+#endif
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -23,8 +27,6 @@
 #include "types.h"
 
 OE_EXTERNC_BEGIN
-
-#define OE_OCALL OE_EXTERNC OE_EXPORT
 
 typedef struct _OE_Enclave OE_Enclave;
 
@@ -73,7 +75,7 @@ OE_Result OE_CreateEnclave(
  *
  * This function terminates an enclave and reclaims its resources. This
  * involves unmapping the memory that was mapped by **OE_CreateEnclave()**.
- * Once this is peformed, the enclave can no longer be accessed.
+ * Once this is performed, the enclave can no longer be accessed.
  *
  * @param enclave The instance of the enclave to be terminated.
  *
@@ -126,7 +128,7 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
  * @param reportDataSize The size of the **reportData** in bytes.
  * @param optParams Optional additional parameters needed for the current
  * enclave type. For SGX, this can be SGX_TargetInfo for local attestation.
- * @param optParamsSize The size of the **enclaveParams** buffer.
+ * @param optParamsSize The size of the **optParams** buffer.
  * @param reportBuffer The buffer to where the resulting report will be copied.
  * @param reportBufferSize The size of the **report** buffer. This is set to the
  * required size of the report buffer on return.
@@ -161,6 +163,29 @@ OE_Result OE_GetReport(
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  */
 OE_Result OE_ParseReport(
+    const uint8_t* report,
+    uint32_t reportSize,
+    OE_Report* parsedReport);
+
+/**
+ * Verify the integrity of the report and its signature.
+ *
+ * This function verifies that the report signature is valid. If the report is
+ * local, it verifies that it is correctly signed by the enclave
+ * platform. If the report is remote, it verifies that the signing authority is
+ * rooted to a trusted authority such as the enclave platform manufacturer.
+ *
+ * @param report The buffer containing the report to verify.
+ * @param reportSize The size of the **report** buffer.
+ * @param parsedReport Optional **OE_Report** structure to populate with the
+ * report properties in a standard format.
+ *
+ * @retval OE_OK The report was successfully created.
+ * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
+ *
+ */
+OE_Result OE_VerifyReport(
+    OE_Enclave* enclave,
     const uint8_t* report,
     uint32_t reportSize,
     OE_Report* parsedReport);
