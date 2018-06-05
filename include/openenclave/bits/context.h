@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _CONTEXT_H
-#define _CONTEXT_H
+#ifndef _OE_BITS_CONTEXT_H
+#define _OE_BITS_CONTEXT_H
 
 #ifndef __ASSEMBLER__
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
-#include "x86_64/constants.h"
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
+#include "constants_x64.h"
 
 // X87 and SSE data.
 typedef struct _OE_BASIC_XSTATE
@@ -100,4 +100,4 @@ typedef uint64_t (*POE_VECTORED_EXCEPTION_HANDLER)(
     OE_EXCEPTION_RECORD* exceptionContext);
 #endif // !__ASSEMBLER__
 
-#endif /* _CONTEXT_H */
+#endif /* _OE_BITS_CONTEXT_H */

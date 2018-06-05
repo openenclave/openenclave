@@ -6,7 +6,7 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/result.h>
+#include <openenclave/bits/result.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>

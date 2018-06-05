@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_DEFS_H
-#define _OE_DEFS_H
+#ifndef _OE_BITS_DEFS_H
+#define _OE_BITS_DEFS_H
 
-#include "bits/x86_64/constants.h"
+#include "constants_x64.h"
 
 #if !defined(_MSC_VER) && !defined(__GNUC__)
 #error "Unsupported platform"
@@ -146,4 +146,4 @@
 
 #define OE_OCALL OE_EXTERNC OE_EXPORT
 
-#endif /* _OE_DEFS_H */
+#endif /* _OE_BITS_DEFS_H */

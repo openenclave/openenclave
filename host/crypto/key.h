@@ -5,8 +5,8 @@
 #define _HOST_KEY_H
 
 #include <openenclave/internal/hash.h>
-#include <openenclave/result.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/bits/types.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 

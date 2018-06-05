@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef _OE_PROPERTIES_H
-#define _OE_PROPERTIES_H
+#ifndef _OE_BITS_PROPERTIES_H
+#define _OE_BITS_PROPERTIES_H
 
 #include "defs.h"
 #include "types.h"
@@ -161,4 +161,4 @@ OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
 
 OE_EXTERNC_END
 
-#endif /* _OE_PROPERTIES_H */
+#endif /* _OE_BITS_PROPERTIES_H */

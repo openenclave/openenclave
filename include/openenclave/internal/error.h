@@ -4,8 +4,8 @@
 #ifndef _OE_ERROR_H
 #define _OE_ERROR_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 #include <stdio.h>
 
 OE_EXTERNC_BEGIN

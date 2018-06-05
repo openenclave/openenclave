@@ -4,8 +4,8 @@
 #ifndef _OE_CMAC_H
 #define _OE_CMAC_H
 
-#include <openenclave/result.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/bits/types.h>
 #include "sgxtypes.h"
 #include "utils.h"
 

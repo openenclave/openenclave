@@ -7,8 +7,8 @@
  * This file defines threading primitives used by enclaves.
  *
  */
-#ifndef _OE_THREAD_H
-#define _OE_THREAD_H
+#ifndef _OE_BITS_THREAD_H
+#define _OE_BITS_THREAD_H
 
 #include "defs.h"
 #include "types.h"
@@ -635,4 +635,4 @@ void* OE_ThreadGetSpecific(OE_ThreadKey key);
 
 OE_EXTERNC_END
 
-#endif /* _OE_THREAD_H */
+#endif /* _OE_BITS_THREAD_H */

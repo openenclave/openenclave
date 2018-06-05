@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_BITS_X86_64_CONSTANTS_H
-#define _OE_BITS_X86_64_CONSTANTS_H
+#ifndef _OE_BITS_CONSTANTS_X64_H
+#define _OE_BITS_CONSTANTS_X64_H
 
 //
 // Contains AMD64 architecture constants.
@@ -70,4 +70,4 @@
 //  AMD64 ABI needs a 128 bytes redzone.
 #define ABI_REDZONE_BYTE_SIZE 0x80
 
-#endif /* _OE_BITS_X86_64_CONSTANTS_H */
+#endif /* _OE_BITS_CONSTANTS_X64_H */

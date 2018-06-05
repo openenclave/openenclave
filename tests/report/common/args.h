@@ -4,7 +4,7 @@
 #ifndef _ARGS_H_
 #define _ARGS_H_
 
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 
 struct VerifyQuoteArgs
 {

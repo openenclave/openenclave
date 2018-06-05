@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_ENCLAVE_LIBC_H
-#define _OE_ENCLAVE_LIBC_H
+#ifndef _OE_ENCLAVELIBC_H
+#define _OE_ENCLAVELIBC_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 
@@ -143,4 +143,4 @@ OE_ALWAYS_INLINE OE_INLINE void* OE_StackAlloc(size_t size, size_t alignment)
 
 OE_EXTERNC_END
 
-#endif /* _OE_ENCLAVE_H */
+#endif /* _OE_ENCLAVELIBC_H */

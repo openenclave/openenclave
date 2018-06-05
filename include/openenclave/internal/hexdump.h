@@ -4,9 +4,9 @@
 #ifndef _OE_HEXDUMP_H
 #define _OE_HEXDUMP_H
 
-#include <openenclave/defs.h>
-#include <openenclave/result.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 

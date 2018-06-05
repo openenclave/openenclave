@@ -5,7 +5,7 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sha.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 
 typedef struct _OE_SHA256ContextImpl
 {

@@ -14,8 +14,8 @@
 #ifndef _OE_EPID_H
 #define _OE_EPID_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 

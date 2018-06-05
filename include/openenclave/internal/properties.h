@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_BITS_PROPERTIES_H
-#define _OE_BITS_PROPERTIES_H
+#ifndef _OE_INTERNAL_PROPERTIES_H
+#define _OE_INTERNAL_PROPERTIES_H
 
-#include <openenclave/properties.h>
+#include <openenclave/bits/properties.h>
 
 OE_INLINE bool OE_SGXValidProductID(uint16_t x)
 {
@@ -44,4 +44,4 @@ OE_INLINE bool OE_SGXValidAttributes(uint64_t x)
     return true;
 }
 
-#endif /* _OE_BITS_PROPERTIES_H */
+#endif /* _OE_INTERNAL_PROPERTIES_H */

@@ -13,7 +13,7 @@
 #endif
 
 #include <assert.h>
-#include <openenclave/defs.h>
+#include <openenclave/bits/defs.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cpuid.h>

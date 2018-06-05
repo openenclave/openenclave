@@ -4,8 +4,8 @@
 #ifndef _OE_RELOC_H
 #define _OE_RELOC_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 

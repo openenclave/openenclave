@@ -8,7 +8,7 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/random.h>
-#include <openenclave/thread.h>
+#include <openenclave/bits/thread.h>
 
 /*
 **==============================================================================

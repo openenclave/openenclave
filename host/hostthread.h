@@ -10,8 +10,8 @@
 #ifndef _HOSTTHREAD_H
 #define _HOSTTHREAD_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
 #if __GNUC__
 #include <pthread.h>

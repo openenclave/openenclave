@@ -4,7 +4,7 @@
 #ifndef _OE_HASH_H
 #define _OE_HASH_H
 
-#include <openenclave/defs.h>
+#include <openenclave/bits/defs.h>
 
 OE_EXTERNC_BEGIN
 

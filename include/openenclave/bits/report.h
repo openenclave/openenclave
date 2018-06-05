@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_REPORT_H
-#define _OE_REPORT_H
+#ifndef _OE_BITS_REPORT_H
+#define _OE_BITS_REPORT_H
 
 #include "defs.h"
 #include "types.h"
@@ -67,4 +67,4 @@ typedef struct _OE_Report
 
 OE_EXTERNC_END
 
-#endif /* _OE_REPORT_H */
+#endif /* _OE_BITS_REPORT_H */

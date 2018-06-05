@@ -9,7 +9,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 #include "../common/quote.h"
 
 // This file is .cpp in order to use C++ static initialization.

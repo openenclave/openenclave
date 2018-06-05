@@ -15,12 +15,12 @@
 #endif
 
 #include "bits/context.h"
-#include "defs.h"
-#include "properties.h"
-#include "report.h"
-#include "result.h"
-#include "thread.h"
-#include "types.h"
+#include "bits/defs.h"
+#include "bits/properties.h"
+#include "bits/report.h"
+#include "bits/result.h"
+#include "bits/thread.h"
+#include "bits/types.h"
 
 OE_EXTERNC_BEGIN
 

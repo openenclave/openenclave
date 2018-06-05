@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _STR_H
-#define _STR_H
+#ifndef _OE_STR_H
+#define _OE_STR_H
 
 #include <limits.h>
 #include <stdarg.h>
@@ -475,4 +475,4 @@ MEM_INLINE int str_u16(str_t* str, unsigned short* u16)
     return 0;
 }
 
-#endif /* _STR_H */
+#endif /* _OE_STR_H */

@@ -4,8 +4,8 @@
 #ifndef _OE_GLOBALS_H
 #define _OE_GLOBALS_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 
@@ -38,4 +38,4 @@ const size_t __OE_GetHeapSize(void);
 
 OE_EXTERNC_END
 
-#endif /* _OE_ALLOC_H */
+#endif /* _OE_GLOBALS_H */

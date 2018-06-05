@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_TYPES_H
-#define _OE_TYPES_H
+#ifndef _OE_BITS_TYPES_H
+#define _OE_BITS_TYPES_H
 
 #include "defs.h"
 
@@ -317,4 +317,4 @@ OE_INLINE long long OE_CheckLLD(const int64_t* ptr)
 
 #endif /* defined(__GNUC__) */
 
-#endif /* _OE_TYPES_H */
+#endif /* _OE_BITS_TYPES_H */

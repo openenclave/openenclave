@@ -4,8 +4,8 @@
 #ifndef _OE_CERT_H
 #define _OE_CERT_H
 
-#include <openenclave/result.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/bits/types.h>
 #include "ec.h"
 #include "rsa.h"
 

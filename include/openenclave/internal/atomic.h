@@ -4,8 +4,8 @@
 #ifndef _OE_ATOMIC_H
 #define _OE_ATOMIC_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
 #if defined(_MSC_VER)
 #include <windows.h>

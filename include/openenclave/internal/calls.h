@@ -9,9 +9,9 @@
 #include <time.h>
 #endif
 
-#include <openenclave/defs.h>
+#include <openenclave/bits/defs.h>
 #include <openenclave/internal/cpuid.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 #include "sgxtypes.h"
 
 #define __OE_ECALL_BASE ((int)0x00FFFFFF)

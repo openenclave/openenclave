@@ -6,8 +6,8 @@
 
 #include <mbedtls/pk.h>
 #include <openenclave/internal/hash.h>
-#include <openenclave/result.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/bits/types.h>
 
 typedef struct _OE_PrivateKey
 {

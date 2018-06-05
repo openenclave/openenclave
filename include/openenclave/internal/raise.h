@@ -61,8 +61,8 @@
 #ifndef _OE_RAISE_H
 #define _OE_RAISE_H
 
-#include <openenclave/defs.h>
-#include <openenclave/result.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/result.h>
 
 OE_EXTERNC_BEGIN
 

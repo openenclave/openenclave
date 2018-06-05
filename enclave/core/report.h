@@ -5,7 +5,7 @@
 #define _OE_ENCLAVE_REPORT_H
 
 #include <openenclave/internal/sgxtypes.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 
 OE_Result _HandleGetReport(uint64_t argIn);
 

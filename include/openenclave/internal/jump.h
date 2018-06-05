@@ -4,8 +4,8 @@
 #ifndef _OE_JUMP_H
 #define _OE_JUMP_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 
@@ -34,4 +34,4 @@ void OE_Longjmp(OE_Jmpbuf* env, int val);
 
 OE_EXTERNC_END
 
-#endif /* _OE_ALLOC_H */
+#endif /* _OE_JUMP_H */

@@ -3,7 +3,7 @@
 
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
-#include <openenclave/result.h>
+#include <openenclave/bits/result.h>
 
 OE_Result OE_SGXSignEnclave(
     const OE_SHA256* mrenclave,

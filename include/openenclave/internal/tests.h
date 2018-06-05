@@ -4,8 +4,8 @@
 #ifndef _OE_TESTS_H
 #define _OE_TESTS_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 #ifdef OE_BUILD_ENCLAVE
 #define OE_PRINT OE_HostFprintf
 #define OE_ABORT OE_Abort

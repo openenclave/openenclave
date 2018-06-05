@@ -4,7 +4,7 @@
 #ifndef _stdc_args_h
 #define _stdc_args_h
 
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 
 typedef struct _TestMutexArgs
 {

@@ -4,7 +4,7 @@
 #ifndef _OE_SGXCREATE_H
 #define _OE_SGXCREATE_H
 
-#include <openenclave/result.h>
+#include <openenclave/bits/result.h>
 #include "elf.h"
 #include "sgxtypes.h"
 #include "sha.h"

@@ -4,8 +4,8 @@
 #ifndef _OE_TYPEINFO_H
 #define _OE_TYPEINFO_H
 
-#include <openenclave/result.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 

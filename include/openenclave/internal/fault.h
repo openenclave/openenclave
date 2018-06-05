@@ -4,7 +4,7 @@
 #ifndef _OE_FAULT_H
 #define _OE_FAULT_H
 
-#include <openenclave/defs.h>
+#include <openenclave/bits/defs.h>
 
 OE_EXTERNC_BEGIN
 
@@ -32,4 +32,4 @@ OE_INLINE void OE_DivideByZero(void)
 
 OE_EXTERNC_END
 
-#endif /* _OE_ALLOC_H */
+#endif /* _OE_FAULT_H */

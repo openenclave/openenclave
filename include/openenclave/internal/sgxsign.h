@@ -4,8 +4,8 @@
 #ifndef _OE_SIGNSGX_H
 #define _OE_SIGNSGX_H
 
-#include <openenclave/defs.h>
-#include <openenclave/result.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/result.h>
 #include "sgxtypes.h"
 #include "sha.h"
 

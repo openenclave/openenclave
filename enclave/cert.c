@@ -15,7 +15,7 @@
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/thread.h>
+#include <openenclave/bits/thread.h>
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
