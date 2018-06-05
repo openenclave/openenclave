@@ -29,17 +29,18 @@ uint32_t g_current_exception_handler_count = 0;
 OE_VectoredExceptionHandler
     g_exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
 
-void* OE_AddVectoredExceptionHandler(
+OE_Result OE_AddVectoredExceptionHandler(
     bool isFirstHandler,
     OE_VectoredExceptionHandler vectoredHandler)
 {
-    void* func_ret = NULL;
+    OE_Result result = OE_UNEXPECTED;
     int lock_ret = -1;
 
     // Sanity check.
     if (vectoredHandler == NULL ||
         !OE_IsWithinEnclave((void*)vectoredHandler, 8))
     {
+        result = OE_INVALID_PARAMETER;
         goto cleanup;
     }
 
@@ -47,6 +48,7 @@ void* OE_AddVectoredExceptionHandler(
     lock_ret = OE_SpinLock(&g_exception_lock);
     if (lock_ret != 0)
     {
+        result = OE_FAILURE;
         goto cleanup;
     }
 
@@ -55,6 +57,7 @@ void* OE_AddVectoredExceptionHandler(
     {
         if (g_exception_handler_arr[i] == vectoredHandler)
         {
+            result = OE_FAILURE;
             goto cleanup;
         }
     }
@@ -62,6 +65,7 @@ void* OE_AddVectoredExceptionHandler(
     // Check if there is space to add a new handler.
     if (g_current_exception_handler_count >= MAX_EXCEPTION_HANDLER_COUNT)
     {
+        result = OE_FAILURE;
         goto cleanup;
     }
 
@@ -83,7 +87,7 @@ void* OE_AddVectoredExceptionHandler(
         g_exception_handler_arr[0] = vectoredHandler;
     }
 
-    func_ret = vectoredHandler;
+    result = OE_OK;
     g_current_exception_handler_count++;
 
 cleanup:
@@ -93,13 +97,20 @@ cleanup:
         OE_SpinUnlock(&g_exception_lock);
     }
 
-    return func_ret;
+    return result;
 }
 
-uint64_t OE_RemoveVectoredExceptionHandler(void* vectoredHandler)
+OE_Result OE_RemoveVectoredExceptionHandler(
+    OE_VectoredExceptionHandler vectoredHandler)
 {
-    uint64_t func_ret = 1;
+    OE_Result result = OE_FAILURE;
     int lock_ret = -1;
+
+    if (!vectoredHandler)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto cleanup;
+    }
 
     // Sanity check.
     if (vectoredHandler == NULL ||
@@ -130,7 +141,7 @@ uint64_t OE_RemoveVectoredExceptionHandler(void* vectoredHandler)
         }
 
         g_current_exception_handler_count--;
-        func_ret = 0;
+        result = OE_OK;
         goto cleanup;
     }
 
@@ -141,7 +152,7 @@ cleanup:
         OE_SpinUnlock(&g_exception_lock);
     }
 
-    return func_ret;
+    return result;
 }
 
 typedef struct _SSA_Info

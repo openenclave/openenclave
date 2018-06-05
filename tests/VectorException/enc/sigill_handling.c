@@ -129,6 +129,8 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 OE_ECALL void TestSigillHandling(void* args_)
 {
     TestSigillHandlingArgs* args = (TestSigillHandlingArgs*)args_;
+    OE_Result result;
+
     args->ret = -1;
 
     if (!OE_IsOutsideEnclave(args, sizeof(TestSigillHandlingArgs)))
@@ -138,8 +140,8 @@ OE_ECALL void TestSigillHandling(void* args_)
     }
 
     // Register the sigill handler to catch test triggered exceptions
-    void* handler = OE_AddVectoredExceptionHandler(false, TestSigillHandler);
-    if (handler == NULL)
+    result = OE_AddVectoredExceptionHandler(false, TestSigillHandler);
+    if (result != OE_OK)
     {
         OE_HostPrintf("Failed to register TestSigillHandler.\n");
         return;
@@ -181,7 +183,7 @@ OE_ECALL void TestSigillHandling(void* args_)
     }
 
     // Clean up sigill handler
-    if (OE_RemoveVectoredExceptionHandler(handler) != 0)
+    if (OE_RemoveVectoredExceptionHandler(TestSigillHandler) != OE_OK)
     {
         OE_HostPrintf("Failed to unregister TestSigillHandler.\n");
         return;

@@ -47,7 +47,7 @@ static OE_OnceType _enclave_exception_once;
 
 static void _InitializeExceptionImp(void)
 {
-    if (OE_AddVectoredExceptionHandler(false, TestDivideByZeroHandler) == NULL)
+    if (OE_AddVectoredExceptionHandler(false, TestDivideByZeroHandler) != OE_OK)
     {
         OE_Abort();
     }

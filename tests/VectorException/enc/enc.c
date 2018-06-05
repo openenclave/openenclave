@@ -123,51 +123,49 @@ static OE_VectoredExceptionHandler g_test_div_by_zero_handler;
 
 int VectorExceptionSetup()
 {
-    void* handler;
     uint64_t ret = -1;
+    OE_Result result;
 
     // Add one exception handler.
-    handler = OE_AddVectoredExceptionHandler(false, TestDivideByZeroHandler);
-    if (handler == NULL)
+    result = OE_AddVectoredExceptionHandler(false, TestDivideByZeroHandler);
+    if (result != OE_OK)
     {
         return ret;
     }
 
     // Remove the exception handler.
-    ret = OE_RemoveVectoredExceptionHandler(handler);
-    if (ret != 0)
+    if (OE_RemoveVectoredExceptionHandler(TestDivideByZeroHandler) != OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     // Insert the exception handler to the front.
-    handler = OE_AddVectoredExceptionHandler(true, TestDivideByZeroHandler);
-    if (handler == NULL)
+    result = OE_AddVectoredExceptionHandler(true, TestDivideByZeroHandler);
+    if (result != OE_OK)
     {
         return ret;
     }
 
     // Remove the exception handler.
-    ret = OE_RemoveVectoredExceptionHandler(handler);
-    if (ret != 0)
+    if (OE_RemoveVectoredExceptionHandler(TestDivideByZeroHandler) != OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     // Append one by one till reach the max.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers); i++)
     {
-        handler = OE_AddVectoredExceptionHandler(
+        result = OE_AddVectoredExceptionHandler(
             false, g_test_pass_through_handlers[i]);
-        if (handler == NULL)
+        if (result != OE_OK)
         {
             return ret;
         }
     }
 
     // Can't add one more.
-    handler = OE_AddVectoredExceptionHandler(false, TestDivideByZeroHandler);
-    if (handler != NULL)
+    result = OE_AddVectoredExceptionHandler(false, TestDivideByZeroHandler);
+    if (result == OE_OK)
     {
         return ret;
     }
@@ -175,28 +173,27 @@ int VectorExceptionSetup()
     // Remove all registered handlers.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers); i++)
     {
-        ret =
-            OE_RemoveVectoredExceptionHandler(g_test_pass_through_handlers[i]);
-        if (ret != 0)
+        if (OE_RemoveVectoredExceptionHandler(
+                g_test_pass_through_handlers[i]) != OE_OK)
         {
-            return ret;
+            return -1;
         }
     }
 
     // Add handles to the front one by one till reach the max.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers); i++)
     {
-        handler = OE_AddVectoredExceptionHandler(
+        result = OE_AddVectoredExceptionHandler(
             true, g_test_pass_through_handlers[i]);
-        if (handler == NULL)
+        if (result != OE_OK)
         {
             return ret;
         }
     }
 
     // Can't add one more.
-    handler = OE_AddVectoredExceptionHandler(true, TestDivideByZeroHandler);
-    if (handler != NULL)
+    result = OE_AddVectoredExceptionHandler(true, TestDivideByZeroHandler);
+    if (result == OE_OK)
     {
         return ret;
     }
@@ -204,29 +201,28 @@ int VectorExceptionSetup()
     // Remove all registered handlers.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers); i++)
     {
-        ret =
-            OE_RemoveVectoredExceptionHandler(g_test_pass_through_handlers[i]);
-        if (ret != 0)
+        if (OE_RemoveVectoredExceptionHandler(
+                g_test_pass_through_handlers[i]) != OE_OK)
         {
-            return ret;
+            return -1;
         }
     }
 
     // Add the test pass through handlers.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers) - 1; i++)
     {
-        handler = OE_AddVectoredExceptionHandler(
+        result = OE_AddVectoredExceptionHandler(
             false, g_test_pass_through_handlers[i]);
-        if (handler == NULL)
+        if (result != OE_OK)
         {
             return ret;
         }
     }
 
     // Add the real handler to the end.
-    g_test_div_by_zero_handler =
-        OE_AddVectoredExceptionHandler(false, TestDivideByZeroHandler);
-    if (g_test_div_by_zero_handler == NULL)
+    g_test_div_by_zero_handler = TestDivideByZeroHandler;
+    result = OE_AddVectoredExceptionHandler(false, TestDivideByZeroHandler);
+    if (result != OE_OK)
     {
         return ret;
     }
@@ -238,23 +234,21 @@ int VectorExceptionSetup()
 int VectorExceptionCleanup()
 {
     // Remove all handlers.
-    int ret = OE_RemoveVectoredExceptionHandler(g_test_div_by_zero_handler);
-    if (ret != 0)
+    if (OE_RemoveVectoredExceptionHandler(g_test_div_by_zero_handler) != OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers) - 1; i++)
     {
-        ret =
-            OE_RemoveVectoredExceptionHandler(g_test_pass_through_handlers[i]);
-        if (ret != 0)
+        if (OE_RemoveVectoredExceptionHandler(
+                g_test_pass_through_handlers[i]) != OE_OK)
         {
-            return ret;
+            return -1;
         }
     }
 
-    return ret;
+    return 0;
 }
 
 OE_ECALL void TestVectorException(void* args_)

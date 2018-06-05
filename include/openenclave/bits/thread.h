@@ -11,6 +11,7 @@
 #define _OE_BITS_THREAD_H
 
 #include "defs.h"
+#include "result.h"
 #include "types.h"
 
 OE_EXTERNC_BEGIN

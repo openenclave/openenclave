@@ -44,22 +44,24 @@ OE_EXTERNC_BEGIN
 * Register a new vectored exception handler.
 *
 * Call this function to add a new vectored exception handler. If successful, the
-* registered handler will be called when an exception happens inside enclave.
+* registered handler will be called when an exception happens inside the
+* enclave.
 *
-* @param isFirstHandler The parameter indicates if the input handler should be
-* the first exception handler to be called. If it is zero, the input handler
-* will be append to the end of exception handler chain, otherwise it will be
-* added as the first one in the exception handler chain.
+* @param isFirstHandler The parameter indicates that the input handler should be
+* the first exception handler to be called. If it is false, the input handler
+* will be appended to the end of exception handler chain, otherwise it will be
+* added as the first handler in the exception handler chain.
 * @param vectoredHandler The input vectored exception handler to register. It
 * must be a function defined in the enclave. The same handler can only be
-* registered once; a 2nd registration will fail.
+* registered once; a 2nd registration will fail. If the function succeeds, the
+* handler may removed later by passing it to
+* OE_RemoveVectoredExceptionHandler().
 *
-* @returns This function returns an opaque pointer to the registered handler on
-* success, or NULL on failure. A caller can use a successfully returned pointer
-* to call OE_RemoveVectoredExceptionHandler() to unregister the handler later.
-*
+* @returns OE_OK successful
+* @returns OE_INVALID_PARAMETER a parameter is invalid
+* @returns OE_FAILED failed to add handler
 */
-void* OE_AddVectoredExceptionHandler(
+OE_Result OE_AddVectoredExceptionHandler(
     bool isFirstHandler,
     OE_VectoredExceptionHandler vectoredHandler);
 
@@ -69,9 +71,12 @@ void* OE_AddVectoredExceptionHandler(
 * @param vectoredHandler The pointer to a registered exception handler returned
 * from a successful OE_AddVectoredExceptionHandler() call.
 *
-* @returns This function returns 0 on success.
+* @returns OE_OK success
+* @returns OE_INVALID_PARAMETER a parameter is invalid
+* @returns OE_FAILED failed to remove handler
 */
-uint64_t OE_RemoveVectoredExceptionHandler(void* vectoredHandler);
+OE_Result OE_RemoveVectoredExceptionHandler(
+    OE_VectoredExceptionHandler vectoredHandler);
 
 /**
  * Perform a high-level enclave function call (OCALL).
