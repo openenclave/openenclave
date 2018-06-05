@@ -897,8 +897,8 @@ static void _DumpPhdr(const Elf64_Phdr* ph, size_t index)
         printf("\n");
     }
 
-    printf("p_offset=%llu %llx\n", OE_LLU(ph->p_offset), OE_LLX(ph->p_offset));
-    printf("p_vaddr=%llu %llx\n", OE_LLU(ph->p_vaddr), OE_LLU(ph->p_vaddr));
+    printf("p_offset=%llu %016llx\n", OE_LLU(ph->p_offset), OE_LLX(ph->p_offset));
+    printf("p_vaddr=%llu %016llx\n", OE_LLU(ph->p_vaddr), OE_LLU(ph->p_vaddr));
     printf("p_paddr=%llu\n", OE_LLU(ph->p_paddr));
     printf("p_filesz=%llu\n", OE_LLU(ph->p_filesz));
     printf("p_memsz=%llu\n", OE_LLU(ph->p_memsz));
