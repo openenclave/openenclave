@@ -161,4 +161,5 @@ OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
 
 OE_EXTERNC_END
 
+
 #endif /* _OE_BITS_PROPERTIES_H */
