@@ -203,6 +203,34 @@ static void _SetErr(OE_VerifyCertError* error, const char* str)
 /*
 **==============================================================================
 **
+** _FindRootCert()
+**
+**     Find the first self-signed certificate in the chain.
+**
+**==============================================================================
+*/
+
+static mbedtls_x509_crt* _FindRootCert(mbedtls_x509_crt* chain)
+{
+    for (mbedtls_x509_crt* p = chain; p; p = p->next)
+    {
+        const mbedtls_x509_buf* subject = &p->subject_raw;
+        const mbedtls_x509_buf* issuer = &p->issuer_raw;
+
+        if (subject->tag == issuer->tag && subject->len == issuer->len &&
+            OE_Memcmp(subject->p, issuer->p, subject->len) == 0)
+        {
+            return p;
+        }
+    }
+
+    /* Not found */
+    return NULL;
+}
+
+/*
+**==============================================================================
+**
 ** _VerifyWholeChain()
 **
 **     Verify each certificate in the chain against its predecessor.
@@ -210,38 +238,58 @@ static void _SetErr(OE_VerifyCertError* error, const char* str)
 **==============================================================================
 */
 
+#if 0
+static size_t _Len(mbedtls_x509_crt* chain)
+{
+    size_t n = 0;
+
+    for (mbedtls_x509_crt* p = chain; p; p = p->next)
+        n++;
+
+    return n;
+}
+#endif
+
 static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
 {
     OE_Result result = OE_UNEXPECTED;
     uint32_t flags = 0;
+    mbedtls_x509_crt* root;
 
     if (!chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Verify each certificate in the chain against its predecessor */
-    for (mbedtls_x509_crt* p = chain; p; p = p->next)
-    {
-        if (p->next)
-        {
-            mbedtls_x509_crt* next = p->next;
-            mbedtls_x509_crt* nextNext = next->next;
+    /* Find the root certificate in this chain */
+    if (!(root = _FindRootCert(chain)))
+        OE_RAISE(OE_FAILURE);
 
-            /* Temporarily remove these from the certificate chain */
-            p->next = NULL;
-            next->next = NULL;
+    /* If the root certificate is first; else it is last */
+    if (root == chain)
+    {
+        mbedtls_x509_crt* prev = NULL;
+
+        for (mbedtls_x509_crt* p = chain; p; p = p->next)
+        {
+            if (prev)
+                prev->next = NULL;
 
             /* Verify the next certificate against its predecessor */
             int r = mbedtls_x509_crt_verify(
-                next, p, NULL, NULL, &flags, NULL, NULL);
+                p, chain, NULL, NULL, &flags, NULL, NULL);
 
-            /* Reinsert these back into the certificate chain */
-            next->next = nextNext;
-            p->next = next;
+            /* Reinsert this certificate into the chain */
+            if (prev)
+                prev->next = p;
 
             /* Raise an error if any */
             if (r != 0)
                 OE_RAISE(OE_FAILURE);
+
+            prev = p;
         }
+    }
+    else
+    {
     }
 
     result = OE_OK;
