@@ -334,8 +334,8 @@ TEST_FCN void TestRemoteReport(void* args_)
 
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 
-    uint32_t reportSize = 2048;
-    uint8_t reportBuffer[2048];
+    uint8_t reportBuffer[10 * 1024];
+    uint32_t reportSize = sizeof(reportBuffer);
 
     uint8_t optParams[sizeof(SGX_TargetInfo)];
     for (uint32_t i = 0; i < sizeof(optParams); ++i)
@@ -353,7 +353,7 @@ TEST_FCN void TestRemoteReport(void* args_)
      *      b. Report data can be < OE_REPORT_DATA_SIZE
      *      c. Report data can be OE_REPORT_DATA_SIZE
      *      d. Report data cannot exceed OE_REPORT_DATA_SIZE
-     * 
+     *
      * Report data must always be null on host side.
      */
     {
@@ -363,14 +363,14 @@ TEST_FCN void TestRemoteReport(void* args_)
         OE_Result expectedResult = OE_INVALID_PARAMETER;
 #endif
 
-        reportSize = 2048;
+        reportSize = sizeof(reportBuffer);
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
         ValidateReport(
             reportBuffer, reportSize, true, zeros, OE_REPORT_DATA_SIZE);
 
-        reportSize = 2048;
+        reportSize = sizeof(reportBuffer);
         reportDataSize = 16;
         OE_TEST(
             GetReport(
@@ -391,7 +391,7 @@ TEST_FCN void TestRemoteReport(void* args_)
                 false);
         }
 
-        reportSize = 2048;
+        reportSize = sizeof(reportBuffer);
         reportDataSize = OE_REPORT_DATA_SIZE;
         OE_TEST(
             GetReport(
@@ -408,7 +408,7 @@ TEST_FCN void TestRemoteReport(void* args_)
                 reportBuffer, reportSize, true, reportData, reportDataSize);
         }
 
-        reportSize = 2048;
+        reportSize = sizeof(reportBuffer);
         reportDataSize = OE_REPORT_DATA_SIZE + 1;
         OE_TEST(
             GetReport(
@@ -426,7 +426,7 @@ TEST_FCN void TestRemoteReport(void* args_)
      *     1. Both optParams and optParamsSize must be NULL/0.
      */
     {
-        reportSize = 2048;
+        reportSize = sizeof(reportBuffer);
         OE_TEST(
             GetReport(
                 options,
@@ -448,25 +448,25 @@ TEST_FCN void TestRemoteReport(void* args_)
      *     b. Size too small.
      */
     {
-        reportSize = 2048;
+        reportSize = sizeof(reportBuffer);
 
-// Expected report (quote) size for the below calls.
+// Expected minimum report (quote) size for the below calls.
 // This value is not expected to be same for all calls.
 #if defined(OE_USE_LIBSGX)
-        const uint32_t expectedReportSize = 1456;
+        const uint32_t expectedMinReportSize = 4625;
 #else
-        const uint32_t expectedReportSize = 1116;
+        const uint32_t expectedMinReportSize = 1116;
 #endif
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
-        OE_TEST(reportSize == expectedReportSize);
+        OE_TEST(reportSize >= expectedMinReportSize);
 
         reportSize = 1;
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
-        OE_TEST(reportSize == expectedReportSize);
+        OE_TEST(reportSize >= expectedMinReportSize);
     }
 }
 
@@ -585,12 +585,11 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 
 TEST_FCN void TestRemoteVerifyReport(void* args_)
 {
-    uint8_t reportBuffer[1024 * 4] = {0};
+    uint8_t reportBuffer[10 * 1024] = {0};
     uint32_t reportSize = sizeof(reportBuffer);
 
     uint8_t reportData[sizeof(SGX_ReportData)];
     uint32_t reportDataSize = sizeof(reportData);
-
 
     for (uint32_t i = 0; i < sizeof(reportData); ++i)
     {
@@ -615,7 +614,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
 
 #if OE_BUILD_ENCLAVE
-        reportSize = 2048;
+        reportSize = sizeof(reportBuffer);
         reportDataSize = 16;
         OE_TEST(
             GetReport(
@@ -640,6 +639,6 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
                 reportBuffer,
                 &reportSize) == OE_OK);
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
-#endif        
+#endif
     }
 }

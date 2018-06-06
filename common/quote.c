@@ -6,12 +6,21 @@
 #include <openenclave/bits/cert.h>
 #include <openenclave/bits/ec.h>
 #include <openenclave/bits/enclavelibc.h>
+#include <openenclave/bits/hexdump.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sha.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
 
+#include <stdio.h>
+
 #ifdef OE_USE_LIBSGX
+
+static const char* g_ExpectedRootCertificateKey =
+    "-----BEGIN PUBLIC KEY-----\n"
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
+    "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
+    "-----END PUBLIC KEY-----\n";
 
 OE_INLINE uint16_t ReadUint16(const uint8_t* p)
 {
@@ -89,6 +98,45 @@ static OE_Result _ReadPublicKey(SGX_ECDSA256Key* key, OE_ECPublicKey* publicKey)
         sizeof(key->y));
 }
 
+static OE_Result _ECDSAVerify(
+    OE_ECPublicKey* publicKey,
+    void* data,
+    uint32_t dataSize,
+    SGX_ECDSA256Signature* signature)
+{
+    OE_Result result = OE_UNEXPECTED;
+    OE_SHA256Context sha256Ctx = {0};
+    OE_SHA256 sha256 = {0};
+    uint8_t asn1Signature[256];
+    uint64_t asn1SignatureSize = sizeof(asn1Signature);
+
+    OE_CHECK(OE_SHA256Init(&sha256Ctx));
+    OE_CHECK(OE_SHA256Update(&sha256Ctx, data, dataSize));
+    OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
+
+    OE_CHECK(
+        OE_ECDSASignatureWriteDER(
+            asn1Signature,
+            &asn1SignatureSize,
+            signature->r,
+            sizeof(signature->r),
+            signature->s,
+            sizeof(signature->s)));
+
+    OE_CHECK(
+        OE_ECPublicKeyVerify(
+            publicKey,
+            OE_HASH_TYPE_SHA256,
+            (uint8_t*)&sha256,
+            sizeof(sha256),
+            asn1Signature,
+            asn1SignatureSize));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
 OE_Result VerifyQuoteImpl(
     const uint8_t* quote,
     uint32_t quoteSize,
@@ -104,12 +152,17 @@ OE_Result VerifyQuoteImpl(
     SGX_QuoteAuthData* quoteAuthData = NULL;
     SGX_QEAuthData qeAuthData = {0};
     SGX_QECertData qeCertData = {0};
-    OE_Cert pckCert = {0};
+    OE_CertChain pckCertChain = {0};
     OE_SHA256Context sha256Ctx = {0};
     OE_SHA256 sha256 = {0};
     OE_ECPublicKey attestationKey = {0};
-    uint8_t asn1Signature[256];
-    uint64_t asn1SignatureSize = sizeof(asn1Signature);
+    uint64_t numCerts = 0;
+    OE_Cert leafCert = {0};
+    OE_Cert rootCert = {0};
+    OE_ECPublicKey leafPublicKey = {0};
+    OE_ECPublicKey rootPublicKey = {0};
+    OE_ECPublicKey expectedRootPublicKey = {0};
+    bool keyEqual = false;
 
     OE_CHECK(
         _ParseQuote(
@@ -130,62 +183,64 @@ OE_Result VerifyQuoteImpl(
     }
     else
     {
-        // TODO: Raise failure.
+        OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
     }
 
-    // TODO: If encPckCrl or encTcbInfoJson is not provided,
-    // fetch it from provider via host.
+    if (pemPckCertificate == NULL)
+        OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
 
-    // TODO: Enable this after Azure Quote Provider integration.
-    // if (encPckCrl == 0 || encTcbInfoJson == 0)
-    //     OE_RAISE(OE_FAILURE);
-
-    // 1. If PckCertificate is provided. Parse and Validate it.
-    // This must do:
-    //      a. Assert subject == PCK_SUBJECT            (TODO)
-    //      b. Assert !expired                          (TODO)
-    //      c. Assert PCK_REQUIRED_EXTENSIONS exist.    (TODO)
-    //      d. Assert PCK_REQUIRED_SGX_EXTENSIONS exist. (TODO)
-    //      e. Assert !revoked                           (TODO)
-    //      f. Assert that latestElements are not out of date using tcbInfo
-    //      (TODO)
-    //      g. Assert !revoked using tcbInfo (TODO)
-    if (pemPckCertificate != NULL)
+    // 1. PckCertificate Chain validations.
     {
+        // a. Read and validate the chain.
         OE_CHECK(
-            OE_CertReadPEM(pemPckCertificate, pemPckCertificateSize, &pckCert));
+            OE_CertChainReadPEM(
+                pemPckCertificate, pemPckCertificateSize, &pckCertChain));
+
+        // b. Ensure enough certs exist.
+        OE_CHECK(OE_CertChainGetLength(&pckCertChain, &numCerts));
+        if (numCerts < 3)
+            OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
+
+        // c. Fetch leaf and root certificates.
+        // TODO: Is the following assumption safe?
+        OE_CHECK(OE_CertChainGetCert(&pckCertChain, 0, &leafCert));
+        OE_CHECK(OE_CertChainGetCert(&pckCertChain, numCerts - 1, &rootCert));
+
+        OE_CHECK(OE_CertGetECPublicKey(&leafCert, &leafPublicKey));
+        OE_CHECK(OE_CertGetECPublicKey(&rootCert, &rootPublicKey));
+
+        // d. Ensure that the root certificate matches root of trust.
+        OE_CHECK(
+            OE_ECPublicKeyReadPEM(
+                (const uint8_t*)g_ExpectedRootCertificateKey,
+                OE_Strlen(g_ExpectedRootCertificateKey) + 1,
+                &expectedRootPublicKey));
+        OE_CHECK(
+            OE_ECPublicKeyEqual(
+                &rootPublicKey, &expectedRootPublicKey, &keyEqual));
+        if (!keyEqual)
+            OE_RAISE(OE_VERIFY_FAILED);
     }
 
-    // 2. If pckCrl is provided. Parse and Validate it.
-    // This must do:
-    //      a. Assert !expired                  (TODO)
-    //      b. Assert issuer == PCK_PROCESSOR_CRL_ISSUER or
-    //      PCK_PLATFORM_CRL_ISSUER  (TODO)
-    //      c. Assert issuer == pckCertificate.issuer (TODO)
-
-    // 3. Quote validations
-    // This must do:
-    //      a. Assert version == OE_SGX_QUOTE_VERSION  (done)
-    //      b. Assert qeCertData.type is a SGX_SUPPORTED_PCK_IDS (done)
-    //      c. Verify qeCertData
-    //          i.  Check parsedDataSize == data.size()   (N/A done during
-    //          parsing)
-    //      d. Verify SHA256 ECDSA (qeReportBodySignature, qeReportBody,
-    //      PckCertificate.pubKey) (TODO)
-    //      e. Assert SHA256 (attestationKey + qeAuthData.data) ==
-    //      qeReportBody.reportData[0..32] (done)
-    //      f. Verify SHA256 ECDSA (attestationKey, SGX_QUOTE_SIGNED_DATA,
-    //      signature) (done)
+    // 2. Quote validations
     {
+        // a. Assert version == OE_SGX_QUOTE_VERSION
         if (sgxQuote->version != OE_SGX_QUOTE_VERSION)
         {
             OE_RAISE(OE_VERIFY_FAILED);
         }
 
-        // TODO: Reenable this once Azure quote provider is integrated.
-        // if (qeCertData.type != OE_SGX_PCK_ID_PCK_CERT_CHAIN)
-        //    OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
+        // b. Verify SHA256 ECDSA (qeReportBodySignature, qeReportBody,
+        // PckCertificate.pubKey)
+        OE_CHECK(
+            _ECDSAVerify(
+                &leafPublicKey,
+                &quoteAuthData->qeReportBody,
+                sizeof(quoteAuthData->qeReportBody),
+                &quoteAuthData->qeReportBodySignature));
 
+        // c. Assert SHA256 (attestationKey + qeAuthData.data) ==
+        // qeReportBody.reportData[0..32]
         OE_CHECK(OE_SHA256Init(&sha256Ctx));
         OE_CHECK(
             OE_SHA256Update(
@@ -205,36 +260,29 @@ OE_Result VerifyQuoteImpl(
                 sizeof(sha256)))
             OE_RAISE(OE_VERIFY_FAILED);
 
+        // d. Verify SHA256 ECDSA (attestationKey, SGX_QUOTE_SIGNED_DATA,
+        // signature)
         OE_CHECK(
             _ReadPublicKey(&quoteAuthData->attestationKey, &attestationKey));
 
-        OE_CHECK(OE_SHA256Init(&sha256Ctx));
         OE_CHECK(
-            OE_SHA256Update(&sha256Ctx, sgxQuote, SGX_QUOTE_SIGNED_DATA_SIZE));
-        OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
-
-        OE_CHECK(
-            OE_ECDSASignatureWriteDER(
-                asn1Signature,
-                &asn1SignatureSize,
-                quoteAuthData->signature.r,
-                sizeof(quoteAuthData->signature.r),
-                quoteAuthData->signature.s,
-                sizeof(quoteAuthData->signature.s)));
-
-        OE_CHECK(
-            OE_ECPublicKeyVerify(
+            _ECDSAVerify(
                 &attestationKey,
-                OE_HASH_TYPE_SHA256,
-                (uint8_t*)&sha256,
-                sizeof(sha256),
-                asn1Signature,
-                asn1SignatureSize));
+                sgxQuote,
+                SGX_QUOTE_SIGNED_DATA_SIZE,
+                &quoteAuthData->signature));
     }
 
     result = OE_OK;
 
 done:
+    OE_ECPublicKeyFree(&leafPublicKey);
+    OE_ECPublicKeyFree(&rootPublicKey);
+    OE_ECPublicKeyFree(&expectedRootPublicKey);
+    OE_ECPublicKeyFree(&attestationKey);
+    OE_CertFree(&leafCert);
+    OE_CertFree(&rootCert);
+    OE_CertChainFree(&pckCertChain);
 
     return result;
 }

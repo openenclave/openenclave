@@ -12,6 +12,8 @@
 #include <openenclave/types.h>
 #include "../common/quote.h"
 
+#include <stdlib.h>
+
 // This file is .cpp in order to use C++ static initialization.
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(SGX_ReportData));
@@ -157,7 +159,7 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_VerifyReportArgs arg;
-    uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
+    uint8_t* reportBuffer = (uint8_t*)malloc(OE_MAX_REPORT_SIZE);
 
     OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, reportBuffer));
 
@@ -169,6 +171,7 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
     // Prevent 'defined but not used' warning.
     OE_UNUSED(g_InitECalls);
 done:
+    free(reportBuffer);
     arg.result = result;
     _SafeCopyVerifyReportArgsOuput(&arg, argIn);
 }
