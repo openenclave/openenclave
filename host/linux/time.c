@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
+#if defined(__linux__)
 #include "../ocalls.h"
 #include "../../include/openenclave/bits/calls.h"
 
@@ -11,9 +11,9 @@ void HandleStrftime(uint64_t argIn)
 
     if (!args)
         return;
-#if defined __OE_NEED_TIME_CALLS
+
     args->ret = strftime(args->str, sizeof(args->str), args->format, &args->tm);
-#endif
+
 }
 
 
@@ -23,9 +23,9 @@ void HandleGettimeofday(uint64_t argIn)
 
     if (!args)
         return;
-#if defined __OE_NEED_TIME_CALLS
+
     args->ret = gettimeofday(args->tv, args->tz);
-#endif
+
 }
 
 void HandleClockgettime(uint64_t argIn)
@@ -34,10 +34,11 @@ void HandleClockgettime(uint64_t argIn)
 
     if (!args)
         return;
-#if defined __OE_NEED_TIME_CALLS
+
     printf("\n\n\n Linux clock_gettime function called ....\n");
     args->ret = clock_gettime(args->clk_id, args->tp);
-#endif
+    printf("\n LINUX  Time in seconds %ld", args->tp->tv_sec);
+    printf("\n LINUX  Time in neno seconds %ld", args->tp->tv_nsec);
 }
 
 void HandleNanosleep(uint64_t argIn)
@@ -46,7 +47,8 @@ void HandleNanosleep(uint64_t argIn)
 
     if (!args)
         return;
-#if defined __OE_NEED_TIME_CALLS
+
     args->ret = nanosleep(args->req, args->rem);
-#endif
+
 }
+#endif//__linux__

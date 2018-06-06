@@ -4,8 +4,7 @@
 #ifndef _OE_CALLS_H
 #define _OE_CALLS_H
 
-#if defined __OE_NEED_TIME_CALLS
-//#if defined(__linux__)
+#if defined(__linux__)
 #include <sys/time.h>
 #include <time.h>
 #endif
@@ -311,7 +310,7 @@ typedef struct _OE_StrftimeArgs
     size_t ret;
     char str[256];
     char format[256];
-#if defined __OE_NEED_TIME_CALLS//(__linux__)
+#if defined(__linux__)
     struct tm tm;
 #elif defined(_WIN32)
 
@@ -331,7 +330,7 @@ typedef struct _OE_StrftimeArgs
 typedef struct _OE_GettimeofdayArgs
 {
     int ret;
-#if defined __OE_NEED_TIME_CALLS//(__linux__)
+#if defined(__linux__)
     struct timeval* tv;
     struct timeval tvbuf;
     struct timezone* tz;
@@ -371,7 +370,7 @@ struct timespec_w
 typedef struct _OE_ClockgettimeArgs
 {
     int ret;
-#if defined __OE_NEED_TIME_CALLS //(__linux__)
+#if defined(__linux__)
     clockid_t clk_id;
     struct timespec* tp;
     struct timespec tpbuf;
@@ -396,7 +395,7 @@ typedef struct _OE_ClockgettimeArgs
 typedef struct _OE_NanosleepArgs
 {
     int ret;
-#if defined __OE_NEED_TIME_CALLS//(__linux__)
+#if defined(__linux__)
     const struct timespec* req;
     struct timespec reqbuf;
     struct timespec* rem;

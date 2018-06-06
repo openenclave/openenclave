@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if defined(__linux__)
-#define __OE_NEED_TIME_CALLS
-#endif
-
 #include <assert.h>
 #include <stdio.h>
 
