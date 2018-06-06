@@ -334,7 +334,7 @@ TEST_FCN void TestRemoteReport(void* args_)
 
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 
-    uint8_t reportBuffer[10 * 1024];
+    uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
     uint32_t reportSize = sizeof(reportBuffer);
 
     uint8_t optParams[sizeof(SGX_TargetInfo)];
@@ -473,7 +473,7 @@ TEST_FCN void TestRemoteReport(void* args_)
 
 TEST_FCN void TestParseReportNegative(void* args_)
 {
-    uint8_t reportBuffer[2048] = {0};
+    uint8_t reportBuffer[OE_MAX_REPORT_SIZE] = {0};
     OE_Report parsedReport = {0};
 
     // 1. Null report passed in.
@@ -586,7 +586,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 
 TEST_FCN void TestRemoteVerifyReport(void* args_)
 {
-    uint8_t reportBuffer[10 * 1024] = {0};
+    uint8_t reportBuffer[OE_MAX_REPORT_SIZE] = {0};
     uint32_t reportSize = sizeof(reportBuffer);
 
     uint8_t reportData[sizeof(SGX_ReportData)];

@@ -46,12 +46,12 @@ add_library(oehost STATIC
     memalign.c
     ocalls.c
     quote.c
-    quoteprovider.c
     registers.c
     report.c
     result.c
     sgxload.c
     sgxmeasure.c
+    sgxquoteprovider.c    
     sgxtypes.c
     signkey.c
     strings.c

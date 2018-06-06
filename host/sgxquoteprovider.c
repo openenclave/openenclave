@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #include "hostthread.h"
-#include "quoteprovider.h"
+#include "sgxquoteprovider.h"
 
 /**
  * This file manages the libngsa_quoteprov.so shared library.
@@ -29,7 +29,7 @@ static void _UnloadQuoteProvider()
     }
 }
 
-static void QuoteProviderLog(int level, const char* message)
+static void _QuoteProviderLog(int level, const char* message)
 {
     const char* levelString = level == 0 ? "ERROR" : "INFO";
     char formatted[1024];
@@ -49,16 +49,17 @@ static void _LoadQuoteProvider()
     if (g_LibHandle == 0)
     {
         g_LibHandle = dlopen("libngsa_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
-        // g_LibHandle = dlopen("libsgxoeql.so", RTLD_LAZY| RTLD_LOCAL);
         if (g_LibHandle != 0)
         {
             set_logging_fcn_t set_log_fcn = (set_logging_fcn_t)dlsym(
                 g_LibHandle, "sgx_ql_set_logging_function");
             if (set_log_fcn != NULL)
             {
-                OE_UNUSED(QuoteProviderLog);
-                // printf("Installed log function\n");
-                // set_log_fcn(QuoteProviderLog);
+                OE_UNUSED(_QuoteProviderLog);
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
+                printf("Installed log function\n");
+                set_log_fcn(_QuoteProviderLog);
+#endif
             }
             else
             {
@@ -73,9 +74,9 @@ static void _LoadQuoteProvider()
     }
 }
 
-int OE_InitializeQuoteProvider()
+OE_Result OE_InitializeQuoteProvider()
 {
     static OE_H_OnceType once = OE_H_ONCE_INITIALIZER;
     OE_H_Once(&once, _LoadQuoteProvider);
-    return g_LibHandle ? 1 : 0;
+    return g_LibHandle ? OE_OK : OE_FAILURE;
 }

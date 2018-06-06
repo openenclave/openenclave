@@ -11,16 +11,28 @@
 #include <openenclave/bits/sha.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
-
 #include <stdio.h>
 
 #ifdef OE_USE_LIBSGX
 
+// Public key of Intel's root certificate.
 static const char* g_ExpectedRootCertificateKey =
     "-----BEGIN PUBLIC KEY-----\n"
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
     "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
     "-----END PUBLIC KEY-----\n";
+
+// The mrsigner value of Intel's Production quoting enclave.
+static const uint8_t g_QEMrSigner[32] = {
+    0x8c, 0x4f, 0x57, 0x75, 0xd7, 0x96, 0x50, 0x3e, 0x96, 0x13, 0x7f,
+    0x77, 0xc6, 0x8a, 0x82, 0x9a, 0x00, 0x56, 0xac, 0x8d, 0xed, 0x70,
+    0x14, 0x0b, 0x08, 0x1b, 0x09, 0x44, 0x90, 0xc5, 0x7b, 0xff};
+
+// The isvprodid value of Intel's Production quoting enclave.
+static const uint32_t g_QEISVProdId = 1;
+
+// The isvsvn value of Intel's Production quoting enclave.
+static const uint32_t g_QEISVSVN = 1;
 
 OE_INLINE uint16_t ReadUint16(const uint8_t* p)
 {
@@ -163,6 +175,13 @@ OE_Result VerifyQuoteImpl(
     OE_ECPublicKey rootPublicKey = {0};
     OE_ECPublicKey expectedRootPublicKey = {0};
     bool keyEqual = false;
+    bool certChainInitialized = false;
+    bool rootCertInitialized = false;
+    bool leafCertInitialized = false;
+    bool attestationKeyInitialized = false;
+    bool leafPublicKeyInitialized = false;
+    bool rootPublicKeyInitialized = false;
+    bool expectedRootPublicKeyInitialized = false;
 
     OE_CHECK(
         _ParseQuote(
@@ -172,6 +191,11 @@ OE_Result VerifyQuoteImpl(
             &quoteAuthData,
             &qeAuthData,
             &qeCertData));
+
+    if (sgxQuote->version != OE_SGX_QUOTE_VERSION)
+    {
+        OE_RAISE(OE_VERIFY_FAILED);
+    }
 
     // The certificate provided in the quote is preferred.
     if (qeCertData.type == OE_SGX_PCK_ID_PCK_CERT_CHAIN)
@@ -189,32 +213,36 @@ OE_Result VerifyQuoteImpl(
     if (pemPckCertificate == NULL)
         OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
 
-    // 1. PckCertificate Chain validations.
+    // PckCertificate Chain validations.
     {
-        // a. Read and validate the chain.
+        // Read and validate the chain.
         OE_CHECK(
             OE_CertChainReadPEM(
                 pemPckCertificate, pemPckCertificateSize, &pckCertChain));
+        certChainInitialized = true;
 
-        // b. Ensure enough certs exist.
-        OE_CHECK(OE_CertChainGetLength(&pckCertChain, &numCerts));
-        if (numCerts < 3)
-            OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
-
-        // c. Fetch leaf and root certificates.
+        // Fetch leaf and root certificates.
         // TODO: Is the following assumption safe?
         OE_CHECK(OE_CertChainGetCert(&pckCertChain, 0, &leafCert));
+        leafCertInitialized = true;
+
+        OE_CHECK(OE_CertChainGetLength(&pckCertChain, &numCerts));
         OE_CHECK(OE_CertChainGetCert(&pckCertChain, numCerts - 1, &rootCert));
+        rootCertInitialized = true;
 
         OE_CHECK(OE_CertGetECPublicKey(&leafCert, &leafPublicKey));
+        leafPublicKeyInitialized = true;
         OE_CHECK(OE_CertGetECPublicKey(&rootCert, &rootPublicKey));
+        rootPublicKeyInitialized = true;
 
-        // d. Ensure that the root certificate matches root of trust.
+        // Ensure that the root certificate matches root of trust.
         OE_CHECK(
             OE_ECPublicKeyReadPEM(
                 (const uint8_t*)g_ExpectedRootCertificateKey,
                 OE_Strlen(g_ExpectedRootCertificateKey) + 1,
                 &expectedRootPublicKey));
+        expectedRootPublicKeyInitialized = true;
+
         OE_CHECK(
             OE_ECPublicKeyEqual(
                 &rootPublicKey, &expectedRootPublicKey, &keyEqual));
@@ -222,15 +250,9 @@ OE_Result VerifyQuoteImpl(
             OE_RAISE(OE_VERIFY_FAILED);
     }
 
-    // 2. Quote validations
+    // Quote validations.
     {
-        // a. Assert version == OE_SGX_QUOTE_VERSION
-        if (sgxQuote->version != OE_SGX_QUOTE_VERSION)
-        {
-            OE_RAISE(OE_VERIFY_FAILED);
-        }
-
-        // b. Verify SHA256 ECDSA (qeReportBodySignature, qeReportBody,
+        // Verify SHA256 ECDSA (qeReportBodySignature, qeReportBody,
         // PckCertificate.pubKey)
         OE_CHECK(
             _ECDSAVerify(
@@ -239,7 +261,7 @@ OE_Result VerifyQuoteImpl(
                 sizeof(quoteAuthData->qeReportBody),
                 &quoteAuthData->qeReportBodySignature));
 
-        // c. Assert SHA256 (attestationKey + qeAuthData.data) ==
+        // Assert SHA256 (attestationKey + qeAuthData.data) ==
         // qeReportBody.reportData[0..32]
         OE_CHECK(OE_SHA256Init(&sha256Ctx));
         OE_CHECK(
@@ -260,10 +282,11 @@ OE_Result VerifyQuoteImpl(
                 sizeof(sha256)))
             OE_RAISE(OE_VERIFY_FAILED);
 
-        // d. Verify SHA256 ECDSA (attestationKey, SGX_QUOTE_SIGNED_DATA,
+        // Verify SHA256 ECDSA (attestationKey, SGX_QUOTE_SIGNED_DATA,
         // signature)
         OE_CHECK(
             _ReadPublicKey(&quoteAuthData->attestationKey, &attestationKey));
+        attestationKeyInitialized = true;
 
         OE_CHECK(
             _ECDSAVerify(
@@ -273,16 +296,51 @@ OE_Result VerifyQuoteImpl(
                 &quoteAuthData->signature));
     }
 
+    // Quoting Enclave validations.
+    {
+        // a. Assert that the qe report's mr signer matches Intel's quoting
+        // enclave's mrsigner.
+        if (!OE_ConstantTimeMemEqual(
+                quoteAuthData->qeReportBody.mrsigner,
+                g_QEMrSigner,
+                sizeof(g_QEMrSigner)))
+            OE_RAISE(OE_VERIFY_FAILED);
+
+        if (quoteAuthData->qeReportBody.isvprodid != g_QEISVProdId)
+            OE_RAISE(OE_VERIFY_FAILED);
+
+        if (quoteAuthData->qeReportBody.isvsvn != g_QEISVSVN)
+            OE_RAISE(OE_VERIFY_FAILED);
+
+#ifndef NDEBUG
+        // Ensure that the QE is not a debug supporting enclave.
+        if (quoteAuthData->qeReportBody.attributes.flags & SGX_FLAGS_DEBUG)
+            OE_RAISE(OE_VERIFY_FAILED);
+#endif
+    }
     result = OE_OK;
 
 done:
-    OE_ECPublicKeyFree(&leafPublicKey);
-    OE_ECPublicKeyFree(&rootPublicKey);
-    OE_ECPublicKeyFree(&expectedRootPublicKey);
-    OE_ECPublicKeyFree(&attestationKey);
-    OE_CertFree(&leafCert);
-    OE_CertFree(&rootCert);
-    OE_CertChainFree(&pckCertChain);
+    if (leafPublicKeyInitialized)
+        OE_ECPublicKeyFree(&leafPublicKey);
+
+    if (rootPublicKeyInitialized)
+        OE_ECPublicKeyFree(&rootPublicKey);
+
+    if (expectedRootPublicKeyInitialized)
+        OE_ECPublicKeyFree(&expectedRootPublicKey);
+
+    if (attestationKeyInitialized)
+        OE_ECPublicKeyFree(&attestationKey);
+
+    if (leafCertInitialized)
+        OE_CertFree(&leafCert);
+
+    if (rootCertInitialized)
+        OE_CertFree(&rootCert);
+
+    if (certChainInitialized)
+        OE_CertChainFree(&pckCertChain);
 
     return result;
 }
