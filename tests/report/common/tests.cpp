@@ -450,23 +450,24 @@ TEST_FCN void TestRemoteReport(void* args_)
     {
         reportSize = sizeof(reportBuffer);
 
-// Expected minimum report (quote) size for the below calls.
-// This value is not expected to be same for all calls.
-#if defined(OE_USE_LIBSGX)
-        const uint32_t expectedMinReportSize = 4625;
-#else
-        const uint32_t expectedMinReportSize = 1116;
-#endif
+        OE_TEST(
+            GetReport(options, NULL, 0, NULL, 0, NULL, &reportSize) ==
+            OE_BUFFER_TOO_SMALL);
+
+        // Assert that with the returned reportSize buffer can be created.
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
-        OE_TEST(reportSize >= expectedMinReportSize);
 
         reportSize = 1;
         OE_TEST(
             GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
-        OE_TEST(reportSize >= expectedMinReportSize);
+
+        // Assert that with the returned reportSize buffer can be created.
+        OE_TEST(
+            GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
+            OE_OK);
     }
 }
 
