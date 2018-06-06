@@ -201,10 +201,10 @@ To disable doxygen documentatation from blocks of code with #defines, #typedefs 
 the @cond command. Here is an example.
 
 /**
- * @cond EXCLUDE_FROM_DOC
+ * @cond DEV
  */
 <your code section goes here>
 /**
  * @endcond
  */
-So, unless you define EXCLUDE_FROM_DOC to Doxygen, the code block will be ignored.
+So, unless you define DEV to Doxygen, the code block will be ignored.

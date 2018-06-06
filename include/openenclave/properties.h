@@ -21,7 +21,7 @@
 OE_EXTERNC_BEGIN
 
 /**
- * @cond EXCLUDE_FROM_DOC
+ * @cond DEV
  */
 /* Injected by OE_SET_ENCLAVE_SGX macro and by the signing tool (oesign) */
 #define OE_INFO_SECTION_NAME ".oeinfo"
@@ -98,21 +98,25 @@ OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
  * @endcond
  */
 
-// Note: disable clang-format since it badly misformats this macro
-// clang-format off
+// This macro initializes and injects an OE_SGXEnclaveProperties struct
+// into the .oeinfo section.
+
 /**
  * This macro is used to set the enclave.
  *
- * This macro initializes and injects an OE_SGXEnclaveProperties struct
- * into the .oeinfo section.
- *
- * @param \_ProductID\_ ISV assigned Product ID (ISVPRODID) to be used in the enclave signature 
- * @param \_SecurityVersion\_ ISV assigned Security Version number (ISVSVN) to be used in the enclave signature 
- * @param \_AllowDebug\_ If 1, the enclave permits debugger to read/write data to enclave
+ * @param \_ProductID\_ ISV assigned Product ID (ISVPRODID) to use in the
+ * enclave signature
+ * @param \_SecurityVersion\_ ISV assigned Security Version number (ISVSVN)
+ * to use in the enclave signature
+ * @param \_AllowDebug\_ If true, allows the enclave to be created with
+ * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
  * @param \_HeapPageCount\_ Number of heap pages to allocate in the enclave
- * @param \_StackPageCount\_ Number of stack pages per thread to reserve in the enclave
- * @param \_TcsCount\_ Number of Thread Control Structures
+ * @param \_StackPageCount\_ Number of stack pages per thread to reserve in
+ * the enclave
+ * @param \_TcsCount\_ Number of concurrent threads in an enclave to support
  */
+// Note: disable clang-format since it badly misformats this macro
+// clang-format off
 #define OE_SET_ENCLAVE_SGX(                                             \
     _ProductID_,                                                        \
     _SecurityVersion_,                                                  \

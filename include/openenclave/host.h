@@ -32,7 +32,7 @@ OE_EXTERNC_BEGIN
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
 
 /**
- * @cond EXCLUDE_FROM_DOC
+ * @cond DEV
  */
 typedef struct _OE_Enclave OE_Enclave;
 

@@ -59,7 +59,7 @@ int OE_ThreadEqual(OE_Thread thread1, OE_Thread thread2);
 typedef unsigned int OE_OnceType;
 
 /**
- * @cond EXCLUDE_FROM_DOC
+ * @cond DEV
  */
 #define OE_ONCE_INITIALIZER 0
 #define OE_SPINLOCK_INITIALIZER 0

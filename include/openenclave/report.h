@@ -25,7 +25,7 @@ OE_EXTERNC_BEGIN
 #define OE_MAX_REPORT_SIZE (1 * 1024)
 
 /**
- * @cond EXCLUDE_FROM_DOC
+ * @cond DEV
  */
 // Fixed identity property sizes for OEv1
 #define OE_UNIQUE_ID_SIZE 32
