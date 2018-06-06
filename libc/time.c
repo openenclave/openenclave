@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
 #define __OE_NEED_TIME_CALLS
 #define _GNU_SOURCE
 #include <assert.h>
@@ -10,6 +9,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
+#include <stdio.h>
 
 // This definition is replicated from "musl/src/time/__tz.c" as this file has
 // some dependencies on other functions which are not developed for the enclave
@@ -79,6 +79,14 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
 {
     size_t ret = -1;
     OE_ClockgettimeArgs* args = NULL;
+
+	printf(
+        "\n Size of OE_ClockgettimeArgs = %llu", sizeof(OE_ClockgettimeArgs));
+    printf("\n Size of clockid_t = %llu", sizeof(clockid_t));
+    printf("\n Size of timespec = %llu", sizeof(struct timespec));
+    printf("\n Size of time_t = %llu", sizeof(time_t));
+    printf("\n Size of long = %llu", sizeof(long));
+    printf("\n Size of int = %llu\n\n", sizeof(int));
 
     if (!(args = OE_HostMalloc(sizeof(OE_ClockgettimeArgs))))
         goto done;

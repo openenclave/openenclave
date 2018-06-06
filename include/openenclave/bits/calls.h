@@ -4,7 +4,8 @@
 #ifndef _OE_CALLS_H
 #define _OE_CALLS_H
 
-#ifdef __OE_NEED_TIME_CALLS
+#if defined __OE_NEED_TIME_CALLS
+//#if defined(__linux__)
 #include <sys/time.h>
 #include <time.h>
 #endif
@@ -305,15 +306,17 @@ typedef struct _OE_VerifyReportArgs
 **==============================================================================
 */
 
-#ifdef __OE_NEED_TIME_CALLS
 typedef struct _OE_StrftimeArgs
 {
     size_t ret;
     char str[256];
     char format[256];
+#if defined __OE_NEED_TIME_CALLS//(__linux__)
     struct tm tm;
-} OE_StrftimeArgs;
+#elif defined(_WIN32)
+
 #endif
+} OE_StrftimeArgs;
 
 /*
 **==============================================================================
@@ -325,15 +328,34 @@ typedef struct _OE_StrftimeArgs
 **==============================================================================
 */
 
-#ifdef __OE_NEED_TIME_CALLS
 typedef struct _OE_GettimeofdayArgs
 {
     int ret;
+#if defined __OE_NEED_TIME_CALLS//(__linux__)
     struct timeval* tv;
     struct timeval tvbuf;
     struct timezone* tz;
+#elif defined(_WIN32)
+
+#endif
     uint64_t tzbuf[2];
 } OE_GettimeofdayArgs;
+
+/*
+**==============================================================================
+**
+** struct timespec_w
+**
+** timespec is linux only, so timespec_w is a windows version of timespec.
+**
+**==============================================================================
+*/
+#if defined(_WIN32)
+struct timespec_w
+{
+    int64_t tv_sec;
+    int64_t tv_nsec;
+};
 #endif
 
 /*
@@ -346,16 +368,20 @@ typedef struct _OE_GettimeofdayArgs
 **==============================================================================
 */
 
-#ifdef __OE_NEED_TIME_CALLS
 typedef struct _OE_ClockgettimeArgs
 {
     int ret;
+#if defined __OE_NEED_TIME_CALLS //(__linux__)
     clockid_t clk_id;
     struct timespec* tp;
     struct timespec tpbuf;
-} OE_ClockgettimeArgs;
+#elif defined(_WIN32)
+	int clk_id;
+    struct timespec_w* tp;
+    struct timespec_w tpbuf;
 #endif
 
+} OE_ClockgettimeArgs;
 
 /*
 **==============================================================================
@@ -367,16 +393,21 @@ typedef struct _OE_ClockgettimeArgs
 **==============================================================================
 */
 
-#ifdef __OE_NEED_TIME_CALLS
 typedef struct _OE_NanosleepArgs
 {
     int ret;
+#if defined __OE_NEED_TIME_CALLS//(__linux__)
     const struct timespec* req;
     struct timespec reqbuf;
     struct timespec* rem;
     struct timespec rembuf;
-} OE_NanosleepArgs;
+#elif defined(_WIN32)
+    const struct timespec_w* req;
+    struct timespec_w reqbuf;
+    struct timespec_w* rem;
+    struct timespec_w rembuf;
 #endif
+} OE_NanosleepArgs;
 
 /*
 **==============================================================================
