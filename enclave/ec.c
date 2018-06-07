@@ -399,7 +399,7 @@ OE_Result OE_ECDSASignatureWriteDER(
     if (!signatureSize || !rData || !rSize || !sData || !sSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If xData is null, then xDataSize should be zero */
+    /* If xData is null, then xSize should be zero */
     if (!signature && *signatureSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 

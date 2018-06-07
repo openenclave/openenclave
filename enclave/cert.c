@@ -243,7 +243,6 @@ static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
     OE_Result result = OE_UNEXPECTED;
     uint32_t flags = 0;
     mbedtls_x509_crt* root;
-    mbedtls_x509_crt** array = NULL;
 
     if (!chain)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -257,12 +256,14 @@ static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
     {
         mbedtls_x509_crt* prev = NULL;
 
+        // Verify each certificate against the preceding subchain. For each i,
+        // verify chain[i] against chain[0:i-1].
         for (mbedtls_x509_crt* p = chain; p; p = p->next)
         {
             if (prev)
                 prev->next = NULL;
 
-            /* Verify the next certificate against its predecessor */
+            /* Verify the next certificate against its preceding predecessors */
             int r = mbedtls_x509_crt_verify(
                 p, chain, NULL, NULL, &flags, NULL, NULL);
 
@@ -279,55 +280,30 @@ static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
     }
     else
     {
-        ssize_t n = 0;
-
-        /* Determine the length of the chain and find last certificate */
-        for (mbedtls_x509_crt* p = chain; p; p = p->next)
-            n++;
-
-        /* Allocte an array to refer to elements of the chain */
-        if (!(array = (mbedtls_x509_crt**)malloc(n * sizeof(void*))))
-            OE_RAISE(OE_OUT_OF_MEMORY);
-
-        /* Initialize the array with pointers to the certificates */
+        // Verify each certificate in the chain against the following subchain.
+        // For each i, verify chain[i] against chain[i+1:...].
+        for (mbedtls_x509_crt* p = chain; p && p->next; p = p->next)
         {
-            size_t i;
+            /* Pointer to subchain of certificates (predecessors) */
+            mbedtls_x509_crt* subchain = p->next;
 
-            for (mbedtls_x509_crt* p = chain; p; p = p->next)
-                array[i++] = p;
-        }
+            /* Verify the next certificate against its following predecessors */
+            int r = mbedtls_x509_crt_verify(
+                p, subchain, NULL, NULL, &flags, NULL, NULL);
 
-        /* Check that final element is the root certificate */
-        if (array[n-1] != root)
-            OE_RAISE(OE_FAILURE);
+            /* Raise an error if any */
+            if (r != 0)
+                OE_RAISE(OE_FAILURE);
 
-        /* Verify each certificate in chain against following subchain */
-        {
-            mbedtls_x509_crt* subchain = root;
-
-            for (ssize_t i = n - 1; i >= 0; i--)
-            {
-                mbedtls_x509_crt* p = array[i];
-
-                /* Verify the next certificate against its predecessor */
-                int r = mbedtls_x509_crt_verify(
-                    p, subchain, NULL, NULL, &flags, NULL, NULL);
-
-                /* Raise an error if any */
-                if (r != 0)
-                    OE_RAISE(OE_FAILURE);
-
-                subchain = p;
-            }
+            /* If the final certificate is not the root */
+            if (subchain->next == NULL && root != subchain)
+                OE_RAISE(OE_FAILURE);
         }
     }
 
     result = OE_OK;
 
 done:
-
-    if (array)
-        free(array);
 
     return result;
 }

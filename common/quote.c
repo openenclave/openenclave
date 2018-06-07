@@ -140,14 +140,14 @@ OE_Result VerifyQuoteImpl(
     // if (encPckCrl == 0 || encTcbInfoJson == 0)
     //     OE_RAISE(OE_FAILURE);
 
-    // 1. If PckCertificate is provided. Parse and Validate it.
+    // 1. If pemPckCertificate is provided. Parse and Validate it.
     // This must do:
     //      a. Assert subject == PCK_SUBJECT            (TODO)
     //      b. Assert !expired                          (TODO)
     //      c. Assert PCK_REQUIRED_EXTENSIONS exist.    (TODO)
     //      d. Assert PCK_REQUIRED_SGX_EXTENSIONS exist. (TODO)
     //      e. Assert !revoked                           (TODO)
-    //      f. Assert that latestElements are not out of date using tcbInfo
+    //      f. Assert that latest elements are not out of date using tcbInfo
     //      (TODO)
     //      g. Assert !revoked using tcbInfo (TODO)
     if (pemPckCertificate != NULL)
@@ -161,17 +161,17 @@ OE_Result VerifyQuoteImpl(
     //      a. Assert !expired                  (TODO)
     //      b. Assert issuer == PCK_PROCESSOR_CRL_ISSUER or
     //      PCK_PLATFORM_CRL_ISSUER  (TODO)
-    //      c. Assert issuer == pckCertificate.issuer (TODO)
+    //      c. Assert issuer == pemPckCertificate.issuer (TODO)
 
     // 3. Quote validations
     // This must do:
     //      a. Assert version == OE_SGX_QUOTE_VERSION  (done)
     //      b. Assert qeCertData.type is a SGX_SUPPORTED_PCK_IDS (done)
     //      c. Verify qeCertData
-    //          i.  Check parsedDataSize == data.size()   (N/A done during
+    //          i.  Check parsed data size == data.size()   (N/A done during
     //          parsing)
     //      d. Verify SHA256 ECDSA (qeReportBodySignature, qeReportBody,
-    //      PckCertificate.pubKey) (TODO)
+    //      pemPckCertificate.pubKey) (TODO)
     //      e. Assert SHA256 (attestationKey + qeAuthData.data) ==
     //      qeReportBody.reportData[0..32] (done)
     //      f. Verify SHA256 ECDSA (attestationKey, SGX_QUOTE_SIGNED_DATA,
@@ -182,7 +182,7 @@ OE_Result VerifyQuoteImpl(
             OE_RAISE(OE_VERIFY_FAILED);
         }
 
-        // TODO: Reenable this once Azure quote provider is integrated.
+        // TODO: Re-enable this once Azure quote provider is integrated.
         // if (qeCertData.type != OE_SGX_PCK_ID_PCK_CERT_CHAIN)
         //    OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
 

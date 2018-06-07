@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <errno.h>
 #include <openenclave/enclave.h>
 #include <pthread.h>
-#include <errno.h>
 
 #ifdef pthread_equal
 #undef pthread_equal

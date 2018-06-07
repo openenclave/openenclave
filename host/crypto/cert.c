@@ -235,7 +235,7 @@ done:
     return result;
 }
 
-static STACK_OF(X509)* _CloneChain(STACK_OF(X509)* chain)
+static STACK_OF(X509) * _CloneChain(STACK_OF(X509) * chain)
 {
     STACK_OF(X509)* sk = NULL;
     int n = sk_X509_num(chain);
@@ -260,7 +260,7 @@ static STACK_OF(X509)* _CloneChain(STACK_OF(X509)* chain)
     return sk;
 }
 
-static OE_Result _VerifyCert(X509* cert_, STACK_OF(X509)* chain_)
+static OE_Result _VerifyCert(X509* cert_, STACK_OF(X509) * chain_)
 {
     OE_Result result = OE_UNEXPECTED;
     X509_STORE_CTX* ctx = NULL;
@@ -385,7 +385,7 @@ static OE_Result _VerifyWholeChain(STACK_OF(X509) * chain)
 
             OE_CHECK(_VerifyCert(cert, subchain));
 
-            /* Add this certficate to the subchain */
+            /* Add this certificate to the subchain */
             {
                 _X509_up_ref(cert);
 
@@ -394,7 +394,7 @@ static OE_Result _VerifyWholeChain(STACK_OF(X509) * chain)
             }
         }
     }
-    else if (root == sk_X509_value(chain, n-1))
+    else if (root == sk_X509_value(chain, n - 1))
     {
         /* Verify each certificate in the chain against the subchain */
         for (int i = sk_X509_num(chain) - 1; i >= 0; i--)
@@ -406,7 +406,7 @@ static OE_Result _VerifyWholeChain(STACK_OF(X509) * chain)
 
             OE_CHECK(_VerifyCert(cert, subchain));
 
-            /* Add this certficate to the subchain */
+            /* Add this certificate to the subchain */
             {
                 _X509_up_ref(cert);
 
