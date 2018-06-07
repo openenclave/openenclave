@@ -238,23 +238,12 @@ static mbedtls_x509_crt* _FindRootCert(mbedtls_x509_crt* chain)
 **==============================================================================
 */
 
-#if 0
-static size_t _Len(mbedtls_x509_crt* chain)
-{
-    size_t n = 0;
-
-    for (mbedtls_x509_crt* p = chain; p; p = p->next)
-        n++;
-
-    return n;
-}
-#endif
-
 static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
 {
     OE_Result result = OE_UNEXPECTED;
     uint32_t flags = 0;
     mbedtls_x509_crt* root;
+    mbedtls_x509_crt** array = NULL;
 
     if (!chain)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -290,11 +279,55 @@ static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
     }
     else
     {
+        ssize_t n = 0;
+
+        /* Determine the length of the chain and find last certificate */
+        for (mbedtls_x509_crt* p = chain; p; p = p->next)
+            n++;
+
+        /* Allocte an array to refer to elements of the chain */
+        if (!(array = (mbedtls_x509_crt**)malloc(n * sizeof(void*))))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        /* Initialize the array with pointers to the certificates */
+        {
+            size_t i;
+
+            for (mbedtls_x509_crt* p = chain; p; p = p->next)
+                array[i++] = p;
+        }
+
+        /* Check that final element is the root certificate */
+        if (array[n-1] != root)
+            OE_RAISE(OE_FAILURE);
+
+        /* Verify each certificate in chain against following subchain */
+        {
+            mbedtls_x509_crt* subchain = root;
+
+            for (ssize_t i = n - 1; i >= 0; i--)
+            {
+                mbedtls_x509_crt* p = array[i];
+
+                /* Verify the next certificate against its predecessor */
+                int r = mbedtls_x509_crt_verify(
+                    p, subchain, NULL, NULL, &flags, NULL, NULL);
+
+                /* Raise an error if any */
+                if (r != 0)
+                    OE_RAISE(OE_FAILURE);
+
+                subchain = p;
+            }
+        }
     }
 
     result = OE_OK;
 
 done:
+
+    if (array)
+        free(array);
 
     return result;
 }
