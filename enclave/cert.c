@@ -189,7 +189,7 @@ OE_INLINE bool _CertChainIsValid(const CertChain* impl)
 /*
 **==============================================================================
 **
-** _SetErr()
+** Location helper functions:
 **
 **==============================================================================
 */
@@ -200,16 +200,7 @@ static void _SetErr(OE_VerifyCertError* error, const char* str)
         OE_Strlcpy(error->buf, str, sizeof(error->buf));
 }
 
-/*
-**==============================================================================
-**
-** _FindRootCert()
-**
-**     Find the first self-signed certificate in the chain.
-**
-**==============================================================================
-*/
-
+/* Find the first self-signed certificate in the chain. */
 static mbedtls_x509_crt* _FindRootCert(mbedtls_x509_crt* chain)
 {
     for (mbedtls_x509_crt* p = chain; p; p = p->next)
@@ -228,16 +219,7 @@ static mbedtls_x509_crt* _FindRootCert(mbedtls_x509_crt* chain)
     return NULL;
 }
 
-/*
-**==============================================================================
-**
-** _VerifyWholeChain()
-**
-**     Verify each certificate in the chain against its predecessor.
-**
-**==============================================================================
-*/
-
+/* Verify each certificate in the chain against its predecessors. */
 static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
 {
     OE_Result result = OE_UNEXPECTED;
