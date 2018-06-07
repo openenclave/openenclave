@@ -175,13 +175,6 @@ OE_Result VerifyQuoteImpl(
     OE_ECPublicKey rootPublicKey = {0};
     OE_ECPublicKey expectedRootPublicKey = {0};
     bool keyEqual = false;
-    bool certChainInitialized = false;
-    bool rootCertInitialized = false;
-    bool leafCertInitialized = false;
-    bool attestationKeyInitialized = false;
-    bool leafPublicKeyInitialized = false;
-    bool rootPublicKeyInitialized = false;
-    bool expectedRootPublicKeyInitialized = false;
 
     OE_CHECK(
         _ParseQuote(
@@ -219,21 +212,16 @@ OE_Result VerifyQuoteImpl(
         OE_CHECK(
             OE_CertChainReadPEM(
                 pemPckCertificate, pemPckCertificateSize, &pckCertChain));
-        certChainInitialized = true;
 
         // Fetch leaf and root certificates.
-        // TODO: Is the following assumption safe?
+        // TODO: Use appropriate cert methods when available.
         OE_CHECK(OE_CertChainGetCert(&pckCertChain, 0, &leafCert));
-        leafCertInitialized = true;
 
         OE_CHECK(OE_CertChainGetLength(&pckCertChain, &numCerts));
         OE_CHECK(OE_CertChainGetCert(&pckCertChain, numCerts - 1, &rootCert));
-        rootCertInitialized = true;
 
         OE_CHECK(OE_CertGetECPublicKey(&leafCert, &leafPublicKey));
-        leafPublicKeyInitialized = true;
         OE_CHECK(OE_CertGetECPublicKey(&rootCert, &rootPublicKey));
-        rootPublicKeyInitialized = true;
 
         // Ensure that the root certificate matches root of trust.
         OE_CHECK(
@@ -241,7 +229,6 @@ OE_Result VerifyQuoteImpl(
                 (const uint8_t*)g_ExpectedRootCertificateKey,
                 OE_Strlen(g_ExpectedRootCertificateKey) + 1,
                 &expectedRootPublicKey));
-        expectedRootPublicKeyInitialized = true;
 
         OE_CHECK(
             OE_ECPublicKeyEqual(
@@ -286,7 +273,6 @@ OE_Result VerifyQuoteImpl(
         // signature)
         OE_CHECK(
             _ReadPublicKey(&quoteAuthData->attestationKey, &attestationKey));
-        attestationKeyInitialized = true;
 
         OE_CHECK(
             _ECDSAVerify(
@@ -298,7 +284,7 @@ OE_Result VerifyQuoteImpl(
 
     // Quoting Enclave validations.
     {
-        // a. Assert that the qe report's mr signer matches Intel's quoting
+        // Assert that the qe report's mr signer matches Intel's quoting
         // enclave's mrsigner.
         if (!OE_ConstantTimeMemEqual(
                 quoteAuthData->qeReportBody.mrsigner,
@@ -312,35 +298,20 @@ OE_Result VerifyQuoteImpl(
         if (quoteAuthData->qeReportBody.isvsvn != g_QEISVSVN)
             OE_RAISE(OE_VERIFY_FAILED);
 
-#ifndef NDEBUG
         // Ensure that the QE is not a debug supporting enclave.
         if (quoteAuthData->qeReportBody.attributes.flags & SGX_FLAGS_DEBUG)
             OE_RAISE(OE_VERIFY_FAILED);
-#endif
     }
     result = OE_OK;
 
 done:
-    if (leafPublicKeyInitialized)
-        OE_ECPublicKeyFree(&leafPublicKey);
-
-    if (rootPublicKeyInitialized)
-        OE_ECPublicKeyFree(&rootPublicKey);
-
-    if (expectedRootPublicKeyInitialized)
-        OE_ECPublicKeyFree(&expectedRootPublicKey);
-
-    if (attestationKeyInitialized)
-        OE_ECPublicKeyFree(&attestationKey);
-
-    if (leafCertInitialized)
-        OE_CertFree(&leafCert);
-
-    if (rootCertInitialized)
-        OE_CertFree(&rootCert);
-
-    if (certChainInitialized)
-        OE_CertChainFree(&pckCertChain);
+    OE_ECPublicKeyFree(&leafPublicKey);
+    OE_ECPublicKeyFree(&rootPublicKey);
+    OE_ECPublicKeyFree(&expectedRootPublicKey);
+    OE_ECPublicKeyFree(&attestationKey);
+    OE_CertFree(&leafCert);
+    OE_CertFree(&rootCert);
+    OE_CertChainFree(&pckCertChain);
 
     return result;
 }

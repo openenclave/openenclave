@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_TRACE_LEVEL 1
+
 #include <dlfcn.h>
+#include <openenclave/bits/trace.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -56,20 +59,24 @@ static void _LoadQuoteProvider()
             if (set_log_fcn != NULL)
             {
                 OE_UNUSED(_QuoteProviderLog);
+
+                OE_TRACE_INFO("sgxquoteprovider: lInstalled log function\n");
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-                printf("Installed log function\n");
+                // If info tracing is enabled, install the logging function.
                 set_log_fcn(_QuoteProviderLog);
 #endif
             }
             else
             {
-                printf("sgx_ql_set_logging_function not found\n");
+                OE_TRACE_INFO("sgxquoteprovider: sgx_ql_set_logging_function "
+                              "not found\n");
             }
             atexit(_UnloadQuoteProvider);
         }
         else
         {
-            printf("libngsa_quoteprov.so not found \n");
+            OE_TRACE_INFO(
+                "sgxquoteprovider: libngsa_quoteprov.so not found \n");
         }
     }
 }

@@ -154,7 +154,7 @@ OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
     // initializing the quote provider here ensures that that we can control its
     // life time rather than Intel's attestation libraries.
     // OE_InitializeQuoteProvider performs initialization only once even if
-    // called many times.    
+    // called many times.
 
     OE_InitializeQuoteProvider();
 
