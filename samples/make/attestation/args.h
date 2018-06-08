@@ -21,14 +21,14 @@ struct GetPublicKeyArgs
 struct StorePublicKeyArgs
 {
     QuotedPublicKey* quotedPublicKey; /* in */
-    bool success;                    /* out */
+    bool success;                     /* out */
 };
 
 struct GenerateEncryptedDataArgs
 {
-    uint8_t* data;    /* out */
-    uint32_t size;    /* out */
-    bool success;     /* out */
+    uint8_t* data; /* out */
+    uint32_t size; /* out */
+    bool success;  /* out */
 };
 
 struct ProcessEncryptedDataArgs

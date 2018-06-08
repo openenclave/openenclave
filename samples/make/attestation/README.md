@@ -3,7 +3,7 @@ samples/make/attestation
 
 This directory contains a sample that demonstrates remote attestation and use of mbedtls within the enclave.
 
-The host creates two enclaves. The enclaves first exchange their public encryption keys. Then they exchange encrypted data.
+The host application creates a pair of enclaves that exchange their public keys using attestation, then exchange data encrypted to those keys with each other.
 
 ## Build
 ```
@@ -25,8 +25,8 @@ $ make OPENENCLAVE_CONFIG=/usr/local/share/openenclave/config.mak run
 * crypto.h/.cpp: Demonstrates use of **mbedtls** for cryptography within the enclave.
 * ecalls.h/.cpp: Demonstrates patterns of writing enclave **ECALL** functions that are called by the host. Demonstrates how to safely copy input and output parameters across the host/enclave memory boundary.
 * init.cpp: Demonstrates how to initialize various modules within the enclave.
-* log.h: Demonstrates use of **OE_HostPrintf** for logging.
-* Makefile: Demonstrates building enclave's that uses mbedtls, and C++ standard library.
+* log.h: Uses printf for logging within the enclave.
+* Makefile: Demonstrates building enclaves that use mbedtls, and C++ standard library.
 
 ### ./host/
 * ecalls.h/.cpp: Demonstrates writing wrappers for **ECALL** functions. Demonstrates how to assemble the arguments for ECALLs and how to test result of an ECALL.

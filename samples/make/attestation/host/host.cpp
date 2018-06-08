@@ -57,6 +57,9 @@ int main(int argc, const char* argv[])
         "quoted public key=====\n");
     StorePublicKey(enclave2, quotedPublicKey);
 
+    // Free host memory allocated by the enclave.
+    free(quotedPublicKey);
+
     printf(
         "\n\n=====Requesting quoted encryption key from second enclave=====\n");
     quotedPublicKey = GetPublicKey(enclave2);
@@ -67,7 +70,8 @@ int main(int argc, const char* argv[])
         "quoted public key=====\n");
     StorePublicKey(enclave1, quotedPublicKey);
 
-    delete quotedPublicKey;
+    // Free host memory allocated by the enclave.
+    free(quotedPublicKey);
 
     uint8_t* encryptedData = NULL;
     uint32_t encryptedDataSize = 0;
@@ -77,12 +81,17 @@ int main(int argc, const char* argv[])
     printf("\n\n=====Sending encrypted data to second enclave=====\n");
     ProcessEncryptedData(enclave2, encryptedData, encryptedDataSize);
 
-    delete encryptedData;
+    // Free host memory allocated by the enclave.
+    free(encryptedData);
+
     printf("\n\n=====Requesting encrypted data from second enclave=====\n");
     GenerateEncryptedData(enclave2, &encryptedData, &encryptedDataSize);
 
     printf("\n\n=====Sending encrypted data to first enclave=====\n");
     ProcessEncryptedData(enclave1, encryptedData, encryptedDataSize);
+
+    // Free host memory allocated by the enclave.
+    free(encryptedData);
 
     printf("\n\n=====Terminating enclaves.=====\n");
     TerminateEnclave(enclave1);
