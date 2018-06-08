@@ -125,3 +125,18 @@ void OE_CallAtExitFunctions(void)
             (*p->func)(p->arg);
     }
 }
+
+/*
+**==============================================================================
+**
+** atexit()
+**
+**     Enclave implementation of the libc atexit function.
+**
+**==============================================================================
+*/
+
+int atexit(void (*function)(void))
+{
+    return OE_AtExit(function);
+}

@@ -14,8 +14,8 @@ struct QuotedPublicKey
 
 struct GetPublicKeyArgs
 {
-    OE_Result result;                 /* out */
     QuotedPublicKey* quotedPublicKey; /* out */
+    OE_Result result;                 /* out */
 };
 
 struct StorePublicKeyArgs
@@ -26,15 +26,15 @@ struct StorePublicKeyArgs
 
 struct GenerateEncryptedDataArgs
 {
-    OE_Result result; /* out */
     uint8_t* data;    /* out */
     uint32_t size;    /* out */
+    OE_Result result; /* out */
 };
 
 struct ProcessEncryptedDataArgs
 {
     const uint8_t* data; /* in */
-    uint32_t size;       /* out */
+    uint32_t size;       /* in */
     OE_Result result;    /* out */
 };
 
