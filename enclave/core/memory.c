@@ -6,62 +6,37 @@
 
 bool OE_IsWithinEnclave(const void* p, size_t n)
 {
-    const uint8_t* start = (const uint8_t*)p;
-    const uint8_t* end = (const uint8_t*)p + n;
-    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
-    uint64_t size = __OE_GetEnclaveSize();
+    const uint8_t* rangeStart = (const uint8_t*)p;
+    const uint8_t* rangeEnd = (const uint8_t*)p + n;
 
-    if (!(start >= base && start < (base + size)))
+    const uint8_t* enclaveBase = (const uint8_t*)__OE_GetEnclaveBase();
+    uint64_t enclaveSize = __OE_GetEnclaveSize();
+    const uint8_t* enclaveEnd = enclaveBase + enclaveSize;
+
+    // Check that arithmetic operations do not wrap
+    if (rangeEnd < rangeStart || enclaveEnd < enclaveBase)
         return false;
 
-    if (n)
-    {
-        end--;
-
-        if (!(end >= base && end < (base + size)))
-            return false;
-    }
-
-    return true;
+    // Block must lie completely within the enclave
+    return (rangeStart >= enclaveBase && rangeEnd <= enclaveEnd);
 }
 
 bool OE_IsOutsideEnclave(const void* p, size_t n)
 {
-    const uint8_t* start = (const uint8_t*)p;
-    const uint8_t* end = (const uint8_t*)p + n;
-    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
-    uint64_t size = __OE_GetEnclaveSize();
+    const uint8_t* rangeStart = (const uint8_t*)p;
+    const uint8_t* rangeEnd = (const uint8_t*)p + n;
 
-    // Postcondition tests to verify that wrapping didn't occur
-    if (end < start)
-    {
-        return false;
-    }
+    const uint8_t* enclaveBase = (const uint8_t*)__OE_GetEnclaveBase();
+    uint64_t enclaveSize = __OE_GetEnclaveSize();
+    const uint8_t* enclaveEnd = enclaveBase + enclaveSize;
 
-    if (base + size < base)
-    {
-        return false;
-    }
-
-    // Case 1 - Start is within the enclave region
-    if (!(start < base || start >= (base + size)))
+    // Check that arithmetic operations do not wrap.
+    if (rangeEnd < rangeStart || enclaveEnd < enclaveBase)
         return false;
 
-    if (n)
-    {
-        end--;
-        // Case 2 - Range end is within the enclave (at base or beyond but
-        // within the enclave)
-        if (!(end < base || end >= (base + size)))
-            return false;
-    }
-
-    // Case 3 - Range starts at/before the enclave starts and ends at/beyond the
-    // enclave
-    if ((start <= base) && end >= (base + size))
-    {
-        return false;
-    }
-
-    return true;
+    // Block must lie completely outside the enclave.
+    // It can lie fully to the left or fully to the right.
+    // ......................|enclaveBase....enclaveEnd|......................
+    //  rangeStart ..rangeEnd|              or         |rangeStart....rangeEnd
+    return (rangeEnd <= enclaveBase || rangeStart >= enclaveEnd);
 }

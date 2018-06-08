@@ -111,7 +111,9 @@ OE_Result OE_CallHost(const char* func, void* args);
  * @param size The size of buffer
  *
  * @retval true The buffer is strictly within the enclave.
- * @retval false At least some part of the buffer is outside the enclave.
+ * @retval false At least some part of the buffer is outside the enclave, or
+ * the arguments are invalid. For example, if **ptr** is null or **size**
+ * causes arithmetic operations to wrap.
  *
  */
 bool OE_IsWithinEnclave(const void* ptr, size_t size);
@@ -127,7 +129,9 @@ bool OE_IsWithinEnclave(const void* ptr, size_t size);
  * @param size The size of buffer.
  *
  * @retval true The buffer is strictly outside the enclave.
- * @retval false At least some part of the buffer is within the enclave.
+ * @retval false At least some part of the buffer is inside the enclave, or
+ * the arguments are invalid. For example, if **ptr** is null or **size**
+ * causes arithmetic operations to wrap.
  *
  */
 bool OE_IsOutsideEnclave(const void* ptr, size_t size);
