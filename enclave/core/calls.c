@@ -19,6 +19,7 @@
 #include "td.h"
 
 uint64_t __oe_enclave_status = OE_OK;
+uint8_t __oe_initialized = 0;
 
 /*
 **==============================================================================
@@ -144,6 +145,7 @@ void _HandleInitEnclave(uint64_t argIn)
             /* DCLP Release barrier. */
             OE_ATOMIC_MEMORY_BARRIER_RELEASE();
             _once = true;
+            __oe_initialized = 1;
         }
 
         OE_SpinUnlock(&_lock);
@@ -282,10 +284,9 @@ static void _HandleECall(
     OE_Memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
 
-    static uint8_t _initialized = 0;
-    // Acquire release semantics are needed for _initialized.
-    OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
-    if (!_initialized)
+    // Acquire release semantics for __oe_initialized are present in
+    // _HandleInitEnclave.
+    if (!__oe_initialized)
     {
         // The first call to the enclave must be to initialize it.
         // Global constructors can throw exceptions/signals and result in signal
@@ -339,8 +340,6 @@ static void _HandleECall(
         case OE_FUNC_INIT_ENCLAVE:
         {
             _HandleInitEnclave(argIn);
-            OE_ATOMIC_MEMORY_BARRIER_RELEASE();
-            _initialized = 1;
             break;
         }
         case OE_FUNC_GET_REPORT:
