@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_ENCLAVE_CONTEXT_H_
-#define _OE_ENCLAVE_CONTEXT_H_
+#ifndef _OE_ENCLAVE_CONTEXT_H
+#define _OE_ENCLAVE_CONTEXT_H
+
 #include <openenclave/bits/sgxtypes.h>
 #include <pthread.h>
 #include <sys/user.h>
@@ -47,11 +48,12 @@ int OE_GetEnclaveThreadXState(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    long xsate_size);
+    int64_t xstate_size);
 
 int OE_SetEnclaveThreadXState(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    long xsate_size);
-#endif
+    int64_t xstate_size);
+
+#endif /* _OE_ENCLAVE_CONTEXT_H */

@@ -193,12 +193,12 @@ static OE_Result _DoEENTER(
         OE_THROW(OE_INVALID_PARAMETER);
 
     OE_TRACE_INFO(
-        "_DoEENTER(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%lx)\n",
+        "_DoEENTER(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%llx)\n",
         tcs,
         aep,
         codeIn,
         funcIn,
-        argIn);
+        OE_LLX(argIn));
 
     /* Call OE_Enter() assembly function (enter.S) */
     {

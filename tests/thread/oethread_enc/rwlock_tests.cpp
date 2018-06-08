@@ -97,7 +97,7 @@ OE_ECALL void ReaderThreadImpl(void* args_)
         OE_RWLockReadUnlock(&rwLock);
     }
 
-    OE_HostPrintf("%ld: Reader Exiting\n", OE_ThreadSelf());
+    OE_HostPrintf("%llu: Reader Exiting\n", OE_LLU(OE_ThreadSelf()));
 }
 
 OE_ECALL void WriterThreadImpl(void* args_)
@@ -142,5 +142,5 @@ OE_ECALL void WriterThreadImpl(void* args_)
         OE_RWLockWriteUnlock(&rwLock);
     }
 
-    OE_HostPrintf("%ld: Writer Exiting\n", OE_ThreadSelf());
+    OE_HostPrintf("%llu: Writer Exiting\n", OE_LLU(OE_ThreadSelf()));
 }

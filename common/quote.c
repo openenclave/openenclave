@@ -79,11 +79,13 @@ done:
 
 static OE_Result _ReadPublicKey(SGX_ECDSA256Key* key, OE_ECPublicKey* publicKey)
 {
-    uint8_t buf[1 + sizeof(*key)] = {0x04};
-    OE_Memcpy(buf + 1, key, sizeof(*key));
-
-    return OE_ECPublicKeyFromBytes(
-        publicKey, OE_EC_TYPE_SECP256R1, buf, sizeof(buf));
+    return OE_ECPublicKeyFromCoordinates(
+        publicKey,
+        OE_EC_TYPE_SECP256R1,
+        key->x,
+        sizeof(key->x),
+        key->y,
+        sizeof(key->y));
 }
 
 OE_Result VerifyQuoteImpl(
@@ -211,7 +213,7 @@ OE_Result VerifyQuoteImpl(
         OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
 
         OE_CHECK(
-            OE_ECSignatureWriteASN1(
+            OE_ECDSASignatureWriteDER(
                 asn1Signature,
                 &asn1SignatureSize,
                 quoteAuthData->signature.r,

@@ -4,10 +4,10 @@
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
 
-int OE_Once(OE_OnceType* once, void (*func)(void))
+OE_Result OE_Once(OE_OnceType* once, void (*func)(void))
 {
     if (!once)
-        return -1;
+        return OE_INVALID_PARAMETER;
 
     /* Double checked locking (DCLP). */
     int o = *once;
@@ -33,5 +33,5 @@ int OE_Once(OE_OnceType* once, void (*func)(void))
         OE_SpinUnlock(&_lock);
     }
 
-    return 0;
+    return OE_OK;
 }

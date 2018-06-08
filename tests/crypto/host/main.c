@@ -14,17 +14,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../ec_tests.h"
+#include "../hash.h"
+#include "../random_tests.h"
+#include "../rsa_tests.h"
+#include "../sha_tests.h"
 
 const char* arg0;
-
-#define TEST_EC_KEY_FROM_BYTES
-#include "../tests.c"
 
 int main(int argc, const char* argv[])
 {
     arg0 = argv[0];
 
-    RunAllTests();
+    /* Run the tests */
+    TestEC();
+    TestRandom();
+    TestRSA();
+    TestSHA();
 
     printf("=== passed all tests (%s)\n", arg0);
 

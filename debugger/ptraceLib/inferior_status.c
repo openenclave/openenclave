@@ -12,7 +12,7 @@ typedef struct _OE_Inferior_Info
 {
     struct _OE_Inferior_Info* next;
     pid_t pid;
-    long flags;
+    int64_t flags;
 } OE_Inferior_Info;
 
 static OE_Inferior_Info* g_inferior_info_head = NULL;
@@ -108,7 +108,7 @@ cleanup:
 **==============================================================================
 */
 
-int _OE_GetInferiorFlags(pid_t pid, long* flags)
+int _OE_GetInferiorFlags(pid_t pid, int64_t* flags)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
@@ -149,7 +149,7 @@ cleanup:
 **==============================================================================
 */
 
-int _OE_SetInferiorFlags(pid_t pid, long flags)
+int _OE_SetInferiorFlags(pid_t pid, int64_t flags)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);

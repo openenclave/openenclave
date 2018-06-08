@@ -416,9 +416,9 @@ static uint32_t TestRecursion(
     EncRecursionArg args = {};
 
     OE_TRACE_INFO(
-        "%s(EnclaveId=%lu, FlowId=%u, Recursions=%u)\n",
+        "%s(EnclaveId=%llu, FlowId=%u, Recursions=%u)\n",
         __FUNCTION__,
-        enclaveId,
+        OE_LLU(enclaveId),
         flowId,
         recursionDepth);
 
@@ -433,10 +433,10 @@ static uint32_t TestRecursion(
     OE_TEST(result == OE_OK);
 
     printf(
-        "%s(EnclaveId=%lu, FlowId=%u, RecursionDepth=%u): Expect CRC %#x, have "
-        "CRC %#x, %s\n",
+        "%s(EnclaveId=%llu, FlowId=%u, RecursionDepth=%u): "
+        "Expect CRC %#x, have CRC %#x, %s\n",
         __FUNCTION__,
-        enclaveId,
+        OE_LLU(enclaveId),
         flowId,
         recursionDepth,
         crc,

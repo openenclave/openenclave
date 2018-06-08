@@ -19,7 +19,7 @@
 // different speculation barriers. Additionally it also allows manual
 // verification of lfences in generated assembly code.
 #define OE_SPECULATION_BARRIER() \
-    asm volatile("lfence #" OE_SOURCE_POS ::: "memory");
+    asm volatile("lfence #" OE_SOURCE_POS::: "memory");
 
 // Check that input data lies outside the enclave and that
 // fits within maxSize. If so, allocate buffer on enclave

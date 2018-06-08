@@ -16,7 +16,7 @@
 #include "inferior_status.h"
 
 // Function pointer definitions.
-typedef long (*OE_PtraceFunc)(
+typedef int64_t (*OE_PtraceFunc)(
     enum __ptrace_request request,
     pid_t pid,
     void* addr,
@@ -37,7 +37,7 @@ __attribute__((constructor)) void init()
     g_system_waitpid = (OE_WaitpidFunc)dlsym(RTLD_NEXT, "waitpid");
 }
 
-static long OE_GetGprHandler(pid_t pid, void* addr, void* data)
+static int64_t OE_GetGprHandler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -64,7 +64,7 @@ static long OE_GetGprHandler(pid_t pid, void* addr, void* data)
     return 0;
 }
 
-static long OE_SetGprHandler(pid_t pid, void* addr, void* data)
+static int64_t OE_SetGprHandler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -96,7 +96,7 @@ static long OE_SetGprHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_SETREGS, pid, addr, data);
 }
 
-static long OE_GetFprHandler(pid_t pid, void* addr, void* data)
+static int64_t OE_GetFprHandler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -128,7 +128,7 @@ static long OE_GetFprHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_GETFPREGS, pid, addr, data);
 }
 
-static long OE_SetFprHandler(pid_t pid, void* addr, void* data)
+static int64_t OE_SetFprHandler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -160,7 +160,7 @@ static long OE_SetFprHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_GETFPREGS, pid, addr, data);
 }
 
-static long OE_GetRegSetHandler(pid_t pid, void* addr, void* data)
+static int64_t OE_GetRegSetHandler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -177,7 +177,7 @@ static long OE_GetRegSetHandler(pid_t pid, void* addr, void* data)
     // Get the XState values from enclave thread if the pc is an AEP.
     if (OE_IsAEP(pid, &regs))
     {
-        unsigned long type = (unsigned long)addr;
+        uint64_t type = (uint64_t)addr;
         if (NT_X86_XSTATE != type)
         {
             return -1;
@@ -201,7 +201,7 @@ static long OE_GetRegSetHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_GETREGSET, pid, addr, data);
 }
 
-static long OE_SetRegSetHandler(pid_t pid, void* addr, void* data)
+static int64_t OE_SetRegSetHandler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -218,7 +218,7 @@ static long OE_SetRegSetHandler(pid_t pid, void* addr, void* data)
     // Set the XState values to enclave thread if the pc is an AEP.
     if (OE_IsAEP(pid, &regs))
     {
-        unsigned long type = (unsigned long)addr;
+        uint64_t type = (uint64_t)addr;
         if (NT_X86_XSTATE != type)
         {
             return -1;
@@ -242,7 +242,7 @@ static long OE_SetRegSetHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_SETREGSET, pid, addr, data);
 }
 
-static long OE_SingleStepHandler(pid_t pid, void* addr, void* data)
+static int64_t OE_SingleStepHandler(pid_t pid, void* addr, void* data)
 {
     _OE_TrackInferior(pid);
     _OE_SetInferiorFlags(pid, OE_INFERIOR_SINGLE_STEP);
@@ -251,7 +251,7 @@ static long OE_SingleStepHandler(pid_t pid, void* addr, void* data)
 }
 
 // Customized ptrace request handler table.
-typedef long (*OE_PtraceRquestHandler)(pid_t, void*, void*);
+typedef int64_t (*OE_PtraceRquestHandler)(pid_t, void*, void*);
 typedef enum __ptrace_request OE_PtraceRequestType;
 
 struct
@@ -291,7 +291,7 @@ struct
 **==============================================================================
 */
 
-long ptrace(OE_PtraceRequestType __request, ...)
+int64_t ptrace(OE_PtraceRequestType __request, ...)
 {
     pid_t pid;
     void* addr;
@@ -348,7 +348,7 @@ pid_t waitpid(pid_t pid, int* status, int options)
     if (WIFSTOPPED(*status) && WSTOPSIG(*status) == SIGTRAP)
     {
         int ret;
-        long flags;
+        int64_t flags;
 
         // Cleanup the single step flag.
         ret = _OE_GetInferiorFlags(ret_pid, &flags);

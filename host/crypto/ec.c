@@ -21,8 +21,6 @@ static int _GetNID(OE_ECType ecType)
 {
     switch (ecType)
     {
-        case OE_EC_TYPE_SECP521R1:
-            return NID_secp521r1;
         case OE_EC_TYPE_SECP256R1:
             return NID_X9_62_prime256v1;
         default:
@@ -184,56 +182,6 @@ done:
     return result;
 }
 
-static OE_Result _PublicKeyGetKeyBytes(
-    const OE_PublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize)
-{
-    OE_Result result = OE_UNEXPECTED;
-    uint8_t* data = NULL;
-    EC_KEY* ec = NULL;
-    int requiredSize;
-
-    /* Check for invalid parameters */
-    if (!publicKey || !bufferSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the EC public key */
-    if (!(ec = EVP_PKEY_get1_EC_KEY(publicKey->pkey)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the required buffer size */
-    if ((requiredSize = i2o_ECPublicKey(ec, NULL)) == 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* If buffer is null or not big enough */
-    if (!buffer || (*bufferSize < requiredSize))
-    {
-        *bufferSize = requiredSize;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
-    }
-
-    /* Get the key bytes */
-    if (!i2o_ECPublicKey(ec, &data))
-        OE_RAISE(OE_FAILURE);
-
-    /* Copy to caller's buffer */
-    memcpy(buffer, data, requiredSize);
-    *bufferSize = requiredSize;
-
-    result = OE_OK;
-
-done:
-
-    if (ec)
-        EC_KEY_free(ec);
-
-    if (data)
-        free(data);
-
-    return result;
-}
-
 static OE_Result _PublicKeyEqual(
     const OE_PublicKey* publicKey1,
     const OE_PublicKey* publicKey2,
@@ -391,14 +339,6 @@ OE_Result OE_ECGenerateKeyPair(
         type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
 }
 
-OE_Result OE_ECPublicKeyToBytes(
-    const OE_ECPublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize)
-{
-    return _PublicKeyGetKeyBytes((OE_PublicKey*)publicKey, buffer, bufferSize);
-}
-
 OE_Result OE_ECPublicKeyEqual(
     const OE_ECPublicKey* publicKey1,
     const OE_ECPublicKey* publicKey2,
@@ -408,11 +348,13 @@ OE_Result OE_ECPublicKeyEqual(
         (OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2, equal);
 }
 
-OE_Result OE_ECPublicKeyFromBytes(
+OE_Result OE_ECPublicKeyFromCoordinates(
     OE_ECPublicKey* publicKey,
     OE_ECType ecType,
-    const uint8_t* buffer,
-    size_t bufferSize)
+    const uint8_t* xData,
+    size_t xSize,
+    const uint8_t* yData,
+    size_t ySize)
 {
     OE_Result result = OE_UNEXPECTED;
     OE_PublicKey* impl = (OE_PublicKey*)publicKey;
@@ -420,6 +362,9 @@ OE_Result OE_ECPublicKeyFromBytes(
     EC_KEY* ec = NULL;
     EVP_PKEY* pkey = NULL;
     EC_GROUP* group = NULL;
+    EC_POINT* point;
+    BIGNUM* x = NULL;
+    BIGNUM* y = NULL;
 
     if (publicKey)
         memset(publicKey, 0, sizeof(OE_ECPublicKey));
@@ -428,7 +373,7 @@ OE_Result OE_ECPublicKeyFromBytes(
     OE_InitializeOpenSSL();
 
     /* Reject invalid parameters */
-    if (!publicKey || !buffer || !bufferSize)
+    if (!publicKey || !xData || !xSize || !yData || !ySize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the NID for this curve type */
@@ -446,8 +391,25 @@ OE_Result OE_ECPublicKeyFromBytes(
         if (!(EC_KEY_set_group(ec, group)))
             OE_RAISE(OE_FAILURE);
 
-        if (!o2i_ECPublicKey(&ec, &buffer, bufferSize))
+        if (!(point = EC_POINT_new(group)))
             OE_RAISE(OE_FAILURE);
+
+        if (!(x = BN_new()) || !(y = BN_new()))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(BN_bin2bn(xData, xSize, x)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(BN_bin2bn(yData, ySize, y)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!EC_POINT_set_affine_coordinates_GFp(group, point, x, y, NULL))
+            OE_RAISE(OE_FAILURE);
+
+        if (!EC_KEY_set_public_key(ec, point))
+            OE_RAISE(OE_FAILURE);
+
+        point = NULL;
     }
 
     /* Create the PKEY public key wrapper */
@@ -483,6 +445,83 @@ done:
 
     if (pkey)
         EVP_PKEY_free(pkey);
+
+    if (x)
+        BN_free(x);
+
+    if (y)
+        BN_free(y);
+
+    if (point)
+        EC_POINT_free(point);
+
+    return result;
+}
+
+OE_Result OE_ECDSASignatureWriteDER(
+    unsigned char* signature,
+    size_t* signatureSize,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize)
+{
+    OE_Result result = OE_UNEXPECTED;
+    ECDSA_SIG* sig = NULL;
+    int sigLen;
+
+    /* Reject invalid parameters */
+    if (!signatureSize || !rData || !rSize || !sData || !sSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If xData is null, then xDataSize should be zero */
+    if (!signature && *signatureSize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Create new signature object */
+    if (!(sig = ECDSA_SIG_new()))
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert R to big number object */
+    if (!(BN_bin2bn(rData, rSize, sig->r)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert S to big number object */
+    if (!(BN_bin2bn(sData, sSize, sig->s)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Determine the size of the binary signature */
+    if ((sigLen = i2d_ECDSA_SIG(sig, NULL)) <= 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Copy binary signature to output buffer */
+    if (signature && sigLen <= *signatureSize)
+    {
+        uint8_t* p = signature;
+
+        if (!i2d_ECDSA_SIG(sig, &p))
+            OE_RAISE(OE_FAILURE);
+
+        if (p - signature != sigLen)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    /* Check whether buffer is too small */
+    if (sigLen > *signatureSize)
+    {
+        *signatureSize = sigLen;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    /* Set the size of the output buffer */
+    *signatureSize = sigLen;
+
+    result = OE_OK;
+
+done:
+
+    if (sig)
+        ECDSA_SIG_free(sig);
 
     return result;
 }
