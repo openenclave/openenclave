@@ -8,6 +8,7 @@ CXXFLAGS = -Wall -Werror -g -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
 INCLUDES += -I$(OE_INCLUDEDIR)
 INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/libcxx
 INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/libc
+INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/oe-mbedtls/
 
 LDFLAGS += -Wl,--no-undefined 
 LDFLAGS += -nostdlib 
@@ -26,8 +27,8 @@ all:
 	$(MAKE) sign
 
 build:
-	g++ -c $(CXXFLAGS) $(INCLUDES) enc.cpp -o enc.o
-	g++ -o attestation_enc.so enc.o $(LDFLAGS) $(LIBRARIES)
+	g++ -g -c $(CXXFLAGS) $(INCLUDES) attestation.cpp crypto.cpp ecalls.cpp init.cpp
+	g++ -o attestation_enc.so attestation.o crypto.o ecalls.o init.o $(LDFLAGS) $(LIBRARIES)
 
 sign:
 	$(OE_BINDIR)/oesign attestation_enc.so enc.conf private.pem

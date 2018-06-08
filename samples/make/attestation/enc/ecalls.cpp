@@ -1,0 +1,191 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#include <openenclave/enclave.h>
+
+#include <string.h>
+#include "attestation.h"
+#include "crypto.h"
+#include "ecalls.h"
+#include "log.h"
+
+/**
+ * Initialize the enclave.
+ */
+OE_ECALL void Initialize(void*)
+{
+    InitializeCrypto();
+}
+
+/**
+ * Return the public key of this enclave along with the enclave's quote.
+ * The enclave that receives the key will use the quote to attest this enclave.
+ */
+OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg)
+{
+    // ECALL parameters must lie outside the enclave.
+    if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
+        return;
+
+    uint8_t pemPublicKey[512];
+    GetPublicKey(pemPublicKey);
+
+    // Generate a quote for the public key so that the enclave that receives the
+    // key can attest this enclave. It is safer to use enclave memory for all
+    // operations within the enclave. A malicious host could tamper with host
+    // memory while enclave is processing it.
+    uint8_t* quote = new uint8_t[OE_MAX_REPORT_SIZE];
+    uint32_t quoteSize = OE_MAX_REPORT_SIZE;
+
+    if (GenerateQuote(pemPublicKey, sizeof(pemPublicKey), quote, &quoteSize))
+    {
+        // Copy the quote to the host memory.
+        uint8_t* hostQuote = (uint8_t*)OE_HostMalloc(quoteSize);
+        memcpy(hostQuote, quote, quoteSize);
+
+        // Create return parameter.
+        QuotedPublicKey* quotedPublicKey =
+            (QuotedPublicKey*)OE_HostMalloc(sizeof(QuotedPublicKey));
+        memcpy(quotedPublicKey->pemKey, pemPublicKey, sizeof(pemPublicKey));
+        quotedPublicKey->quote = hostQuote;
+        quotedPublicKey->quoteSize = quoteSize;
+
+        arg->quotedPublicKey = quotedPublicKey;
+        arg->result = OE_OK;
+
+        ENC_DEBUG_PRINTF("GetPublicKey succeeded.");
+    }
+    else
+    {
+        ENC_DEBUG_PRINTF("GetPublicKey failed.");
+        arg->result = OE_FAILURE;
+    }
+
+    delete quote;
+}
+
+// Public key of another enclave.
+uint8_t g_OtherEnclavePemPublicKey[512];
+
+/**
+ * Attest and store the public key of another enclave.
+ */
+OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
+{
+    // ECALL parameters must lie outside the enclave.
+    if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
+        return;
+
+    arg->result = OE_FAILURE;
+
+    // It is safer to use enclave memory for all operations within the enclave.
+    // A malicious host could tamper with host memory while enclave is
+    // processing it. Perform deep copy of argument.
+    StorePublicKeyArgs encArg = *arg;
+
+    QuotedPublicKey quotedPublicKey = *encArg.quotedPublicKey;
+    if (!quotedPublicKey.quote ||
+        !OE_IsOutsideEnclave(quotedPublicKey.quote, quotedPublicKey.quoteSize))
+        return;
+
+    uint8_t* quote = new uint8_t[quotedPublicKey.quoteSize];
+    memcpy(quote, quotedPublicKey.quote, quotedPublicKey.quoteSize);
+
+    // Attest the quote and accompanying key.
+    if (AttestQuote(
+            quote,
+            quotedPublicKey.quoteSize,
+            quotedPublicKey.pemKey,
+            sizeof(quotedPublicKey.pemKey)))
+    {
+        memcpy(
+            g_OtherEnclavePemPublicKey,
+            quotedPublicKey.pemKey,
+            sizeof(g_OtherEnclavePemPublicKey));
+
+        arg->result = OE_OK;
+        ENC_DEBUG_PRINTF("StorePublicKey succeeded.");
+    }
+    else
+    {
+        ENC_DEBUG_PRINTF("StorePublicKey failed.");
+        arg->result = OE_FAILURE;
+    }
+
+    delete quote;
+}
+
+uint8_t g_Data[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+
+/**
+ * Generate encrypted data using stored public key of other enclave.
+*/
+OE_ECALL void GenerateEncryptedData(GenerateEncryptedDataArgs* arg)
+{
+    // ECALL parameters must lie outside the enclave.
+    if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
+        return;
+
+    uint8_t encryptedDataBuffer[1024];
+    uint32_t encryptedDataSize = sizeof(encryptedDataBuffer);
+    if (Encrypt(
+            g_OtherEnclavePemPublicKey,
+            g_Data,
+            sizeof(g_Data),
+            encryptedDataBuffer,
+            &encryptedDataSize))
+    {
+        uint8_t* hostBuffer = (uint8_t*)OE_HostMalloc(encryptedDataSize);
+        memcpy(hostBuffer, encryptedDataBuffer, encryptedDataSize);
+        arg->data = hostBuffer;
+        arg->size = encryptedDataSize;
+        arg->result = OE_OK;
+    }
+    else
+    {
+        arg->result = OE_FAILURE;
+    }
+}
+
+/**
+ * Process encrypted data.
+*/
+OE_ECALL void ProcessEncryptedData(ProcessEncryptedDataArgs* arg)
+{
+    // ECALL parameters must lie outside the enclave.
+    if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
+        return;
+
+    arg->result = OE_FAILURE;
+
+    // It is safer to use enclave memory for all operations within the enclave.
+    // A malicious host could tamper with host memory while enclave is
+    // processing it. Perform deep copy of argument.
+    ProcessEncryptedDataArgs encArg = *arg;
+
+    if (!encArg.data || !OE_IsOutsideEnclave(encArg.data, encArg.size))
+        return;
+
+    uint8_t* encryptedData = new uint8_t[encArg.size];
+    memcpy(encryptedData, encArg.data, encArg.size);
+
+    uint8_t data[16];
+    uint32_t dataSize = sizeof(data);
+
+    if (Decrypt(encryptedData, encArg.size, data, &dataSize))
+    {
+        ENC_DEBUG_PRINTF("Decrypted data: ");
+        for (uint32_t i = 0; i < dataSize; ++i)
+        {
+            g_Data[sizeof(g_Data) - i - 1] += data[i];
+            ENC_DEBUG_PRINTF("%d", data[i]);
+        }
+
+        arg->result = OE_OK;
+    }
+    else
+    {
+        arg->result = OE_FAILURE;
+    }
+    delete encryptedData;
+}

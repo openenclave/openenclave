@@ -5,61 +5,37 @@
 #include <openenclave/result.h>
 #include <openenclave/types.h>
 
-#include "messages.h"
-
-/**
- * Identifier for an enclave.
- */
-typedef struct _EnclaveId
+struct QuotedPublicKey
 {
-    const uint8_t* bytes;
-    uint32_t length;
-} EnclaveId;
-
-struct InitEnclaveArgs {
-    EnclaveId enclaveId;
+    uint8_t pemKey[512];
+    uint8_t* quote;
+    uint32_t quoteSize;
 };
 
-struct SendTextMessageArgs {
-    EnclaveId toEnclave;
-
-    PlainTextMessage* message;
-    OE_Result result;
+struct GetPublicKeyArgs
+{
+    OE_Result result;                 /* out */
+    QuotedPublicKey* quotedPublicKey; /* out */
 };
 
-struct ReceiveTextMessageArgs {
-    EnclaveId fromEnclave;
-
-    PlainTextMessage* message;
-    OE_Result result;
+struct StorePublicKeyArgs
+{
+    QuotedPublicKey* quotedPublicKey; /* in */
+    OE_Result result;                 /* out */
 };
 
-struct SendPublicKeyMessageArgs {
-    EnclaveId toEnclave;
-
-    PublicKeyMessage* message;
-    OE_Result result;
+struct GenerateEncryptedDataArgs
+{
+    OE_Result result; /* out */
+    uint8_t* data;    /* out */
+    uint32_t size;    /* out */
 };
 
-struct ReceivePublicKeyMessageArgs {
-    EnclaveId fromEnclave;
-
-    PublicKeyMessage* message;
-    OE_Result result;
-};
-
-struct SendEncryptedMessageArgs {
-    EnclaveId toEnclave;
-
-    EncryptedMessage* message;
-    OE_Result result;
-};
-
-struct ReceiveEncryptedMessageArgs {
-    EnclaveId fromEnclave;
-
-    EncryptedMessage* message;
-    OE_Result result;
+struct ProcessEncryptedDataArgs
+{
+    const uint8_t* data; /* in */
+    uint32_t size;       /* out */
+    OE_Result result;    /* out */
 };
 
 #endif // OE_SAMPLES_ATTESTATION_ARGS_H

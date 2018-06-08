@@ -21,8 +21,8 @@ LIBRARIES += -lsgxoeql
 LIBRARIES += -lsgx_urts_ng
 
 build:
-	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp socket.cpp
-	g++ -o attestation_host host.o socket.o $(LDFLAGS) $(LIBRARIES)
+	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp ecalls.cpp
+	g++ -o attestation_host host.o ecalls.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
 	rm -f attestation_host host.o

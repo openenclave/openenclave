@@ -10,7 +10,7 @@
 #include <openenclave/host.h>
 
 #if defined(OE_USE_LIBSGX)
-#include <libsgx/sgx_ql_oe_wrapper.h>
+#include <sgx_ql_oe_wrapper.h>
 #else
 #include <openenclave/bits/aesm.h>
 #endif

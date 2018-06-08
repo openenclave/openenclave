@@ -1,0 +1,42 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#ifndef OE_SAMPLES_ATTESTATION_ENC_ECALLS_H
+#define OE_SAMPLES_ATTESTATION_ENC_ECALLS_H
+
+#include <openenclave/enclave.h>
+#include <openenclave/types.h>
+
+#include "../args.h"
+
+/**
+ * List of ECALLS exposed by this enclave.
+ */
+
+/**
+ * Initialize the enclave.
+ */
+OE_ECALL void Initialize(void*);
+
+/**
+ * Return the public key of this enclave along with the enclave's quote.
+ * The enclave that receives the key will use the quote to attest this enclave.
+ */
+OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg);
+
+/**
+ * Attest and store the public key of another enclave.
+ */
+OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg);
+
+/**
+ * Generate encrypted data using stored public key of other enclave.
+*/
+OE_ECALL void GenerateEncryptedData(GenerateEncryptedDataArgs* arg);
+
+/**
+ * Process encrypted data.
+*/
+OE_ECALL void ProcessEncryptedData(ProcessEncryptedDataArgs* arg);
+
+#endif // OE_SAMPLES_ATTESTATION_ENC_ECALLS_H
