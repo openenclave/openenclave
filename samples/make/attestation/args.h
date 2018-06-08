@@ -8,7 +8,6 @@
 struct QuotedPublicKey
 {
     uint8_t pemKey[512];
-
     uint8_t* quote;
     uint32_t quoteSize;
 };
