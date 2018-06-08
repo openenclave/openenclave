@@ -19,8 +19,9 @@
 OE_ECALL void Initialize(void*);
 
 /**
- * Return the public key of this enclave along with the enclave's quote.
- * The enclave that receives the key will use the quote to attest this enclave.
+ * Return the public key of this enclave along with the enclave's quote. Another
+ * enclave can use the quote to attest the enclave and verify the integrity of
+ * the public key.
  */
 OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg);
 
@@ -30,7 +31,7 @@ OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg);
 OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg);
 
 /**
- * Generate encrypted data using stored public key of other enclave.
+ * Encrypt data for another enclave using the public key stored for it.
 */
 OE_ECALL void GenerateEncryptedData(GenerateEncryptedDataArgs* arg);
 

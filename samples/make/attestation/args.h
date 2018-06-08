@@ -15,27 +15,27 @@ struct QuotedPublicKey
 struct GetPublicKeyArgs
 {
     QuotedPublicKey* quotedPublicKey; /* out */
-    OE_Result result;                 /* out */
+    bool success;                     /* out */
 };
 
 struct StorePublicKeyArgs
 {
     QuotedPublicKey* quotedPublicKey; /* in */
-    OE_Result result;                 /* out */
+    bool success;                    /* out */
 };
 
 struct GenerateEncryptedDataArgs
 {
     uint8_t* data;    /* out */
     uint32_t size;    /* out */
-    OE_Result result; /* out */
+    bool success;     /* out */
 };
 
 struct ProcessEncryptedDataArgs
 {
     const uint8_t* data; /* in */
     uint32_t size;       /* in */
-    OE_Result result;    /* out */
+    bool success;        /* out */
 };
 
 #endif // OE_SAMPLES_ATTESTATION_ARGS_H

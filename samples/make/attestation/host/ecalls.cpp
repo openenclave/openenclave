@@ -26,7 +26,7 @@ QuotedPublicKey* GetPublicKey(OE_Enclave* enclave)
 {
     GetPublicKeyArgs args = {};
     OE_Result result = OE_CallEnclave(enclave, "GetPublicKey", &args);
-    if (result != OE_OK || args.result != OE_OK || args.quotedPublicKey == NULL)
+    if (result != OE_OK || !args.success || args.quotedPublicKey == NULL)
     {
         printf("GetPublicKey failed. %s", OE_ResultStr(result));
         exit(1);
@@ -44,7 +44,7 @@ void StorePublicKey(OE_Enclave* enclave, QuotedPublicKey* quotedPublicKey)
     StorePublicKeyArgs args = {};
     args.quotedPublicKey = quotedPublicKey;
     OE_Result result = OE_CallEnclave(enclave, "StorePublicKey", &args);
-    if (result != OE_OK || args.result != OE_OK)
+    if (result != OE_OK || !args.success)
     {
         printf("StorePublicKey failed. %s", OE_ResultStr(result));
         exit(1);
@@ -60,7 +60,7 @@ void GenerateEncryptedData(OE_Enclave* enclave, uint8_t** data, uint32_t* size)
 {
     GenerateEncryptedDataArgs args = {};
     OE_Result result = OE_CallEnclave(enclave, "GenerateEncryptedData", &args);
-    if (result != OE_OK || args.result != OE_OK || args.data == NULL)
+    if (result != OE_OK || !args.success || args.data == NULL)
     {
         printf("GenerateEncryptedData failed. %s", OE_ResultStr(result));
         exit(1);
@@ -84,7 +84,7 @@ void ProcessEncryptedData(
     args.size = size;
 
     OE_Result result = OE_CallEnclave(enclave, "ProcessEncryptedData", &args);
-    if (result != OE_OK || args.result != OE_OK)
+    if (result != OE_OK || !args.success)
     {
         printf("ProcessEncryptedData failed. %s", OE_ResultStr(result));
         exit(1);

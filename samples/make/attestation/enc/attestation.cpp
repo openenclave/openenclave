@@ -40,17 +40,21 @@ bool GenerateQuote(
     return result == OE_OK;
 }
 
-const uint8_t g_MrSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
+// The SHA-256 hash of the public key in the private.pem file used to sign the
+// enclave. This value is populated in the authorID sub-field of a parsed
+// OE_Report's identity field.
+const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
                               0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
                               0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44, 0x56, 0xB2,
                               0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
 /**
  * Attest the given quote and accompanying data. The quote is first attested
  * using the OE_VerifyReport API. This ensures the authenticity of the enclave
- * that generated the quote. Next the mrsigner and mrenclave values are tested
- * to establish trust of the enclave that generated the quote. Next the validity
- * of accompanying data is ensured by comparing its SHA256 digest against the
- * reportData field.
+ * that generated the quote. Next, to establish trust of the enclave that
+ * generated the quote, the mrsigner, productID, isvsvn values are checked to
+ * see if they are predefined trusted values. Once the enclave's trust has been
+ * established, the validity of accompanying data is ensured by comparing its
+ * SHA256 digest against the reportData field.
  */
 bool AttestQuote(
     const uint8_t* quote,
@@ -79,7 +83,7 @@ bool AttestQuote(
     // enclave.
     // Check that the enclave was signed by an trusted entity.
     if (memcmp(
-            parsedReport.identity.authorID, g_MrSigner, sizeof(g_MrSigner)) !=
+            parsedReport.identity.authorID, g_MRSigner, sizeof(g_MRSigner)) !=
         0)
         return false;
 
@@ -88,7 +92,7 @@ bool AttestQuote(
     if (parsedReport.identity.productID[0] != 1)
         return false;
 
-    if (parsedReport.identity.securityVersion != 1)
+    if (parsedReport.identity.securityVersion < 1)
         return false;
 
     uint8_t sha256[32];

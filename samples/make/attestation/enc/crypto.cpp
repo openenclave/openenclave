@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
-#include <openenclave/bits/atexit.h>
 #include <openenclave/enclave.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,10 +15,10 @@
 #include <mbedtls/sha256.h>
 #include "log.h"
 
-mbedtls_ctr_drbg_context g_CtrDrbg;
-mbedtls_entropy_context g_Entropy;
+mbedtls_ctr_drbg_context g_CtrDrbgContext;
+mbedtls_entropy_context g_EntropyContext;
 
-mbedtls_pk_context g_RSACtx;
+mbedtls_pk_context g_RsaContext;
 uint8_t g_MyPublicKey[512];
 
 bool g_Initialized = false;
@@ -30,9 +28,9 @@ bool g_Initialized = false;
  */
 static void CleanupMbedtls(void)
 {
-    mbedtls_pk_free(&g_RSACtx);
-    mbedtls_entropy_free(&g_Entropy);
-    mbedtls_ctr_drbg_free(&g_CtrDrbg);
+    mbedtls_pk_free(&g_RsaContext);
+    mbedtls_entropy_free(&g_EntropyContext);
+    mbedtls_ctr_drbg_free(&g_CtrDrbgContext);
     ENC_DEBUG_PRINTF("mbedtls cleaned up.");
 }
 
@@ -44,12 +42,12 @@ static void InitializeMbedtls(void)
 {
     int res = -1;
 
-    mbedtls_ctr_drbg_init(&g_CtrDrbg);
-    mbedtls_entropy_init(&g_Entropy);
+    mbedtls_ctr_drbg_init(&g_CtrDrbgContext);
+    mbedtls_entropy_init(&g_EntropyContext);
 
     // Initialize entropy.
     res = mbedtls_ctr_drbg_seed(
-        &g_CtrDrbg, mbedtls_entropy_func, &g_Entropy, NULL, 0);
+        &g_CtrDrbgContext, mbedtls_entropy_func, &g_EntropyContext, NULL, 0);
 
     if (res != 0)
     {
@@ -58,19 +56,20 @@ static void InitializeMbedtls(void)
     }
 
     // Initialize RSA context.
-    res =
-        mbedtls_pk_setup(&g_RSACtx, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+    res = mbedtls_pk_setup(
+        &g_RsaContext, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
     if (res != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_pk_setup failed.");
         return;
     }
 
-    // Generate RSA key-pair for the enclave.
+    // Generate an ephemeral 2048-bit RSA keypair with
+    // exponent 65537 for the enclave.
     res = mbedtls_rsa_gen_key(
-        mbedtls_pk_rsa(g_RSACtx),
+        mbedtls_pk_rsa(g_RsaContext),
         mbedtls_ctr_drbg_random,
-        &g_CtrDrbg,
+        &g_CtrDrbgContext,
         2048,
         65537);
 
@@ -82,17 +81,15 @@ static void InitializeMbedtls(void)
 
     // Write out the public key in PEM format for exchange with other enclaves.
     res = mbedtls_pk_write_pubkey_pem(
-        &g_RSACtx, g_MyPublicKey, sizeof(g_MyPublicKey));
+        &g_RsaContext, g_MyPublicKey, sizeof(g_MyPublicKey));
     if (res != 0)
     {
         ENC_DEBUG_PRINTF("mbedtls_pk_write_pubkey_pem failed.");
         return;
     }
 
-    // schedule cleanup.
-    // atexit(CleanupMbedtls);
-    // TODO: undefined reference to `atexit'
-    OE_AtExit(CleanupMbedtls);
+    // Schedule cleanup.
+    atexit(CleanupMbedtls);
 
     g_Initialized = true;
     ENC_DEBUG_PRINTF("mbedtls initialized.");
@@ -163,7 +160,7 @@ bool Encrypt(
     res = mbedtls_rsa_pkcs1_encrypt(
         mbedtls_pk_rsa(key),
         mbedtls_ctr_drbg_random,
-        &g_CtrDrbg,
+        &g_CtrDrbgContext,
         MBEDTLS_RSA_PUBLIC,
         dataSize,
         data,
@@ -196,13 +193,13 @@ bool Decrypt(
     if (!g_Initialized)
         return false;
 
-    mbedtls_pk_rsa(g_RSACtx)->len = encryptedDataSize;
+    mbedtls_pk_rsa(g_RsaContext)->len = encryptedDataSize;
 
     size_t outputSize = *dataSize;
     int res = mbedtls_rsa_pkcs1_decrypt(
-        mbedtls_pk_rsa(g_RSACtx),
+        mbedtls_pk_rsa(g_RsaContext),
         mbedtls_ctr_drbg_random,
-        &g_CtrDrbg,
+        &g_CtrDrbgContext,
         MBEDTLS_RSA_PRIVATE,
         &outputSize,
         encryptedData,

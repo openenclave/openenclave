@@ -51,14 +51,14 @@ OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg)
         quotedPublicKey->quoteSize = quoteSize;
 
         arg->quotedPublicKey = quotedPublicKey;
-        arg->result = OE_OK;
+        arg->success = true;
 
         ENC_DEBUG_PRINTF("GetPublicKey succeeded.");
     }
     else
     {
         ENC_DEBUG_PRINTF("GetPublicKey failed.");
-        arg->result = OE_FAILURE;
+        arg->success = false;
     }
 
     delete quote;
@@ -76,7 +76,7 @@ OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
     if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
         return;
 
-    arg->result = OE_FAILURE;
+    arg->success = false;
 
     // It is safer to use enclave memory for all operations within the enclave.
     // A malicious host could tamper with host memory while enclave is
@@ -103,19 +103,24 @@ OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
             quotedPublicKey.pemKey,
             sizeof(g_OtherEnclavePemPublicKey));
 
-        arg->result = OE_OK;
+        arg->success = true;
         ENC_DEBUG_PRINTF("StorePublicKey succeeded.");
     }
     else
     {
         ENC_DEBUG_PRINTF("StorePublicKey failed.");
-        arg->result = OE_FAILURE;
+        arg->success = false;
     }
 
     delete quote;
 }
 
-uint8_t g_Data[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+// Arbitrary test data exchanged by the enclaves. The first enclave sends it's
+// g_TestData (encrypted) to the second enclave. The second enclave decrypts the
+// received data and adds it to it's own g_TestData, and sends it back to the
+// first enclave.
+uint8_t g_TestData[16] =
+    {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
 /**
  * Generate encrypted data using stored public key of other enclave.
@@ -130,8 +135,8 @@ OE_ECALL void GenerateEncryptedData(GenerateEncryptedDataArgs* arg)
     uint32_t encryptedDataSize = sizeof(encryptedDataBuffer);
     if (Encrypt(
             g_OtherEnclavePemPublicKey,
-            g_Data,
-            sizeof(g_Data),
+            g_TestData,
+            sizeof(g_TestData),
             encryptedDataBuffer,
             &encryptedDataSize))
     {
@@ -139,11 +144,11 @@ OE_ECALL void GenerateEncryptedData(GenerateEncryptedDataArgs* arg)
         memcpy(hostBuffer, encryptedDataBuffer, encryptedDataSize);
         arg->data = hostBuffer;
         arg->size = encryptedDataSize;
-        arg->result = OE_OK;
+        arg->success = true;
     }
     else
     {
-        arg->result = OE_FAILURE;
+        arg->success = false;
     }
 }
 
@@ -156,7 +161,7 @@ OE_ECALL void ProcessEncryptedData(ProcessEncryptedDataArgs* arg)
     if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
         return;
 
-    arg->result = OE_FAILURE;
+    arg->success = false;
 
     // It is safer to use enclave memory for all operations within the enclave.
     // A malicious host could tamper with host memory while enclave is
@@ -174,18 +179,20 @@ OE_ECALL void ProcessEncryptedData(ProcessEncryptedDataArgs* arg)
 
     if (Decrypt(encryptedData, encArg.size, data, &dataSize))
     {
-        ENC_DEBUG_PRINTF("Decrypted data: ");
+        // Print decrypted values to illustrate arbitrary operations on the
+        // data.
+        printf("Decrypted data: ");
         for (uint32_t i = 0; i < dataSize; ++i)
         {
-            g_Data[sizeof(g_Data) - i - 1] += data[i];
-            ENC_DEBUG_PRINTF("%d", data[i]);
+            g_TestData[i] += data[i];
+            printf("%d ", data[i]);
         }
-
-        arg->result = OE_OK;
+        printf("\n");
+        arg->success = true;
     }
     else
     {
-        arg->result = OE_FAILURE;
+        arg->success = false;
     }
     delete encryptedData;
 }
