@@ -40,6 +40,10 @@ bool GenerateQuote(
     return result == OE_OK;
 }
 
+const uint8_t g_MrSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
+                              0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
+                              0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44, 0x56, 0xB2,
+                              0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
 /**
  * Attest the given quote and accompanying data. The quote is first attested
  * using the OE_VerifyReport API. This ensures the authenticity of the enclave
@@ -71,11 +75,13 @@ bool AttestQuote(
         return false;
     }
 
-    // TODO: mrsigner, mrenclave check.
-    OE_HexDump(
-        parsedReport.identity.authorID, sizeof(parsedReport.identity.authorID));
-    // OE_HexDump(parsedReport.identity.,
-    // sizeof(parsedReport.identity.authorID));
+    // AuthorID is the hash of the public signing key that was used to sign an
+    // enclave.
+    // Check that the enclave was signed by an trusted entity.
+    if (memcmp(
+            parsedReport.identity.authorID, g_MrSigner, sizeof(g_MrSigner)) !=
+        0)
+        return false;
 
     // Check the enclave's product id and security version
     // See enc.conf for values specified when signing the enclave.
