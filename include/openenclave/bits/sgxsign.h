@@ -26,7 +26,7 @@ OE_EXTERNC_BEGIN
 *
 * @return OE_OK success
 */
-oe_result_t oe_sgx_sign_enclave(
+oe_result_t oe_sgx__sign_enclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,

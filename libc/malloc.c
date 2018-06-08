@@ -62,9 +62,9 @@ static int __sched_yield(void)
 
 #if defined(OE_ENABLE_MALLOC_WRAPPERS)
 
-static oe_allocation_failure_callback_t _failureCallback;
+static oe_allocation_failure_callback_t_t _failureCallback;
 
-void oe_set_allocation_failure_callback(oe_allocation_failure_callback_t function)
+void oe_set_allocation_failure_callback(oe_allocation_failure_callback_t_t function)
 {
     _failureCallback = function;
 }

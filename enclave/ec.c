@@ -376,7 +376,7 @@ done:
     return result;
 }
 
-oe_result_t oe_ecdsa_signature_write_der(
+oe_result_t oe_ecdsa__signature_write_der(
     unsigned char* signature,
     size_t* signatureSize,
     const uint8_t* rData,

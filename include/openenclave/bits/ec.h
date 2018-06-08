@@ -269,7 +269,7 @@ OE_EXTERNC_END
  * @return OE_BUFFER_TOO_SMALL **signature** buffer is too small
  *         and **signatureSize** contains the required size.
  */
-oe_result_t oe_ecdsa_signature_write_der(
+oe_result_t oe_ecdsa__signature_write_der(
     unsigned char* signature,
     size_t* signatureSize,
     const uint8_t* rData,

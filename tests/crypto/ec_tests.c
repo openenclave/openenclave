@@ -156,7 +156,7 @@ static void _TestSignAndVerify()
         uint8_t sData[1024];
         size_t sSize = sizeof(sData);
 
-        r = oe_ecdsa_signature_read_der(
+        r = oe_ecdsa__signature_read_der(
             signature, signatureSize, rData, &rSize, sData, &sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(rSize == 32);
@@ -164,7 +164,7 @@ static void _TestSignAndVerify()
 
         uint8_t data[signatureSize];
         size_t size = sizeof(data);
-        r = oe_ecdsa_signature_write_der(data, &size, rData, rSize, sData, sSize);
+        r = oe_ecdsa__signature_write_der(data, &size, rData, rSize, sData, sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(signatureSize == size);
         OE_TEST(memcmp(signature, data, signatureSize) == 0);
@@ -198,7 +198,7 @@ static void _TestSignAndVerify()
         uint8_t sData[1024];
         size_t sSize = sizeof(sData);
 
-        r = oe_ecdsa_signature_read_der(
+        r = oe_ecdsa__signature_read_der(
             SIG, sizeof(SIG), rData, &rSize, sData, &sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(rSize == sizeof(R));
@@ -208,7 +208,7 @@ static void _TestSignAndVerify()
 
         uint8_t data[sizeof(SIG)];
         size_t size = sizeof(data);
-        r = oe_ecdsa_signature_write_der(data, &size, rData, rSize, sData, sSize);
+        r = oe_ecdsa__signature_write_der(data, &size, rData, rSize, sData, sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(sizeof(SIG) == size);
         OE_TEST(memcmp(SIG, data, sizeof(SIG)) == 0);

@@ -105,7 +105,7 @@ oe_result_t VerifyQuoteImpl(
     SGX_QEAuthData qeAuthData = {0};
     SGX_QECertData qeCertData = {0};
     oe_cert_t pckCert = {0};
-    oe_sha256_context_t sha256Ctx = {0};
+    oe_sha256__context_t sha256Ctx = {0};
     OE_SHA256 sha256 = {0};
     oe_ec_public_key_t attestationKey = {0};
     uint8_t asn1Signature[256];
@@ -186,18 +186,18 @@ oe_result_t VerifyQuoteImpl(
         // if (qeCertData.type != OE_SGX_PCK_ID_PCK_CERT_CHAIN)
         //    OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
 
-        OE_CHECK(oe_sha256_init(&sha256Ctx));
+        OE_CHECK(oe_sha256__init(&sha256Ctx));
         OE_CHECK(
-            oe_sha256_update(
+            oe_sha256__update(
                 &sha256Ctx,
                 (const uint8_t*)&quoteAuthData->attestationKey,
                 sizeof(quoteAuthData->attestationKey)));
         if (qeAuthData.size > 0)
         {
             OE_CHECK(
-                oe_sha256_update(&sha256Ctx, qeAuthData.data, qeAuthData.size));
+                oe_sha256__update(&sha256Ctx, qeAuthData.data, qeAuthData.size));
         }
-        OE_CHECK(oe_sha256_final(&sha256Ctx, &sha256));
+        OE_CHECK(oe_sha256__final(&sha256Ctx, &sha256));
 
         if (!oe_constant_time_mem_equal(
                 &sha256,
@@ -208,13 +208,13 @@ oe_result_t VerifyQuoteImpl(
         OE_CHECK(
             _ReadPublicKey(&quoteAuthData->attestationKey, &attestationKey));
 
-        OE_CHECK(oe_sha256_init(&sha256Ctx));
+        OE_CHECK(oe_sha256__init(&sha256Ctx));
         OE_CHECK(
-            oe_sha256_update(&sha256Ctx, sgxQuote, SGX_QUOTE_SIGNED_DATA_SIZE));
-        OE_CHECK(oe_sha256_final(&sha256Ctx, &sha256));
+            oe_sha256__update(&sha256Ctx, sgxQuote, SGX_QUOTE_SIGNED_DATA_SIZE));
+        OE_CHECK(oe_sha256__final(&sha256Ctx, &sha256));
 
         OE_CHECK(
-            oe_ecdsa_signature_write_der(
+            oe_ecdsa__signature_write_der(
                 asn1Signature,
                 &asn1SignatureSize,
                 quoteAuthData->signature.r,

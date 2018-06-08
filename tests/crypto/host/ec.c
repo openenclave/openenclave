@@ -8,7 +8,7 @@
 #include <string.h>
 #include "../../../host/crypto/key.h"
 
-oe_result_t oe_ecdsa_signature_read_der(
+oe_result_t oe_ecdsa__signature_read_der(
     const uint8_t* signature,
     size_t signatureSize,
     uint8_t* rData,

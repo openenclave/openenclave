@@ -11,7 +11,7 @@
 #include "../args.h"
 
 static void _CheckProperties(
-    oe_sgx_enclave_properties_t* props,
+    oe_sgx__enclave_properties_t* props,
     bool isSigned,
     uint16_t productID,
     uint16_t securityVersion,
@@ -21,10 +21,10 @@ static void _CheckProperties(
     uint64_t numTCS)
 {
     const oe_enclave_properties_header_t* header = &props->header;
-    const oe_sgx_enclave_config_t* config = &props->config;
+    const oe_sgx__enclave_config_t* config = &props->config;
 
     /* Check the header */
-    OE_TEST(header->size == sizeof(oe_sgx_enclave_properties_t));
+    OE_TEST(header->size == sizeof(oe_sgx__enclave_properties_t));
     OE_TEST(header->enclaveType == OE_ENCLAVE_TYPE_SGX);
     OE_TEST(header->sizeSettings.numHeapPages == numHeapPages);
     OE_TEST(header->sizeSettings.numStackPages == numStackPages);
@@ -48,13 +48,13 @@ static void _CheckProperties(
 
 static oe_result_t _SGXLoadEnclaveProperties(
     const char* path,
-    oe_sgx_enclave_properties_t* properties)
+    oe_sgx__enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
     Elf64 elf = ELF64_INIT;
 
     if (properties)
-        memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
+        memset(properties, 0, sizeof(oe_sgx__enclave_properties_t));
 
     /* Check parameters */
     if (!path || !properties)
@@ -65,7 +65,7 @@ static oe_result_t _SGXLoadEnclaveProperties(
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
-    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
+    if (oe_sgx__load_properties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
         OE_RAISE(OE_NOT_FOUND);
     }
@@ -85,7 +85,7 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
     bool isSigned = false;
-    oe_sgx_enclave_properties_t properties;
+    oe_sgx__enclave_properties_t properties;
 
     if (argc != 3)
     {
@@ -111,7 +111,7 @@ int main(int argc, const char* argv[])
     /* Load the enclave properties */
     if ((result = _SGXLoadEnclaveProperties(argv[1], &properties)) != OE_OK)
     {
-        oe_puterr("oe_sgx_load_properties(): result=%u", result);
+        oe_puterr("oe_sgx__load_properties(): result=%u", result);
     }
 
     const uint32_t flags = oe_get_create_flags();

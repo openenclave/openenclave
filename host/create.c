@@ -129,7 +129,7 @@ static void _ResolveFlags(
 }
 
 static oe_result_t _AddSegmentPages(
-    oe_sgx_load_context_t* context,
+    oe_sgx__load_context_t* context,
     uint64_t enclaveAddr,
     uint64_t enclaveSize,
     const oe_segment_t segments[],
@@ -173,7 +173,7 @@ static oe_result_t _AddSegmentPages(
         }
 
         OE_CHECK(
-            oe_sgx_load_enclave_data(
+            oe_sgx__load_enclave_data(
                 context, enclaveAddr, addr, src, flags, extend));
 
         (*vaddr) = (addr - enclaveAddr) + OE_PAGE_SIZE;
@@ -186,7 +186,7 @@ done:
 }
 
 static oe_result_t _AddFilledPages(
-    oe_sgx_load_context_t* context,
+    oe_sgx__load_context_t* context,
     uint64_t enclaveAddr,
     uint64_t* vaddr,
     size_t npages,
@@ -221,7 +221,7 @@ static oe_result_t _AddFilledPages(
         uint64_t flags = SGX_SECINFO_REG | SGX_SECINFO_R | SGX_SECINFO_W;
 
         OE_CHECK(
-            oe_sgx_load_enclave_data(
+            oe_sgx__load_enclave_data(
                 context, enclaveAddr, addr, src, flags, extend));
         (*vaddr) += OE_PAGE_SIZE;
     }
@@ -233,7 +233,7 @@ done:
 }
 
 static oe_result_t _AddStackPages(
-    oe_sgx_load_context_t* context,
+    oe_sgx__load_context_t* context,
     uint64_t enclaveAddr,
     uint64_t* vaddr,
     size_t npages)
@@ -244,7 +244,7 @@ static oe_result_t _AddStackPages(
 }
 
 static oe_result_t _AddHeapPages(
-    oe_sgx_load_context_t* context,
+    oe_sgx__load_context_t* context,
     uint64_t enclaveAddr,
     uint64_t* vaddr,
     size_t npages)
@@ -255,7 +255,7 @@ static oe_result_t _AddHeapPages(
 }
 
 static oe_result_t _AddControlPages(
-    oe_sgx_load_context_t* context,
+    oe_sgx__load_context_t* context,
     uint64_t enclaveAddr,
     uint64_t enclaveSize,
     uint64_t entry,
@@ -331,7 +331,7 @@ static oe_result_t _AddControlPages(
             bool extend = true;
 
             OE_CHECK(
-                oe_sgx_load_enclave_data(
+                oe_sgx__load_enclave_data(
                     context, enclaveAddr, addr, src, flags, extend));
         }
 
@@ -409,7 +409,7 @@ done:
 }
 
 static oe_result_t _AddRelocationPages(
-    oe_sgx_load_context_t* context,
+    oe_sgx__load_context_t* context,
     uint64_t enclaveAddr,
     const void* relocData,
     const size_t relocSize,
@@ -433,7 +433,7 @@ static oe_result_t _AddRelocationPages(
             bool extend = true;
 
             OE_CHECK(
-                oe_sgx_load_enclave_data(
+                oe_sgx__load_enclave_data(
                     context, enclaveAddr, addr, src, flags, extend));
             (*vaddr) += sizeof(oe_page);
         }
@@ -446,7 +446,7 @@ done:
 }
 
 static oe_result_t _AddECallPages(
-    oe_sgx_load_context_t* context,
+    oe_sgx__load_context_t* context,
     uint64_t enclaveAddr,
     const void* ecallData,
     const size_t ecallSize,
@@ -469,7 +469,7 @@ static oe_result_t _AddECallPages(
             bool extend = true;
 
             OE_CHECK(
-                oe_sgx_load_enclave_data(
+                oe_sgx__load_enclave_data(
                     context, enclaveAddr, addr, src, flags, extend));
             (*vaddr) += sizeof(oe_page);
         }
@@ -482,7 +482,7 @@ done:
 }
 
 static oe_result_t _AddPages(
-    oe_sgx_load_context_t* context,
+    oe_sgx__load_context_t* context,
     Elf64* elf,
     uint64_t enclaveAddr,
     size_t enclaveEnd,
@@ -956,17 +956,17 @@ done:
     return result;
 }
 
-oe_result_t oe_sgx_load_properties(
+oe_result_t oe_sgx__load_properties(
     const Elf64* elf,
     const char* sectionName,
-    oe_sgx_enclave_properties_t* properties)
+    oe_sgx__enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t* sectionData;
     size_t sectionSize;
 
     if (properties)
-        memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
+        memset(properties, 0, sizeof(oe_sgx__enclave_properties_t));
 
     /* Check for null parameter */
     if (!elf || !sectionName || !properties)
@@ -990,14 +990,14 @@ oe_result_t oe_sgx_load_properties(
                  sectionData,
                  sectionSize,
                  OE_ENCLAVE_TYPE_SGX,
-                 sizeof(oe_sgx_enclave_properties_t),
+                 sizeof(oe_sgx__enclave_properties_t),
                  &header)) != OE_OK)
         {
             result = OE_NOT_FOUND;
             goto done;
         }
 
-        memcpy(properties, header, sizeof(oe_sgx_enclave_properties_t));
+        memcpy(properties, header, sizeof(oe_sgx__enclave_properties_t));
     }
 
     result = OE_OK;
@@ -1006,10 +1006,10 @@ done:
     return result;
 }
 
-oe_result_t oe_sgx_update_enclave_properties(
+oe_result_t oe_sgx__update_enclave_properties(
     const Elf64* elf,
     const char* sectionName,
-    const oe_sgx_enclave_properties_t* properties)
+    const oe_sgx__enclave_properties_t* properties)
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t* sectionData;
@@ -1037,13 +1037,13 @@ oe_result_t oe_sgx_update_enclave_properties(
                  sectionData,
                  sectionSize,
                  OE_ENCLAVE_TYPE_SGX,
-                 sizeof(oe_sgx_enclave_properties_t),
+                 sizeof(oe_sgx__enclave_properties_t),
                  &header)) != OE_OK)
         {
             goto done;
         }
 
-        memcpy(header, properties, sizeof(oe_sgx_enclave_properties_t));
+        memcpy(header, properties, sizeof(oe_sgx__enclave_properties_t));
     }
 
     result = OE_OK;
@@ -1052,8 +1052,8 @@ done:
     return result;
 }
 
-oe_result_t oe_sgx_validate_enclave_properties(
-    const oe_sgx_enclave_properties_t* properties,
+oe_result_t oe_sgx__validate_enclave_properties(
+    const oe_sgx__enclave_properties_t* properties,
     const char** fieldName)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -1068,7 +1068,7 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
-    if (!oe_sgx_valid_attributes(properties->config.attributes))
+    if (!oe_sgx__valid_attributes(properties->config.attributes))
     {
         if (fieldName)
             *fieldName = "config.attributes";
@@ -1076,7 +1076,7 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
-    if (!oe_sgx_valid_num_heap_pages(properties->header.sizeSettings.numHeapPages))
+    if (!oe_sgx__valid_num_heap_pages(properties->header.sizeSettings.numHeapPages))
     {
         if (fieldName)
             *fieldName = "header.sizeSettings.numHeapPages";
@@ -1084,7 +1084,7 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
-    if (!oe_sgx_valid_num_stack_pages(
+    if (!oe_sgx__valid_num_stack_pages(
             properties->header.sizeSettings.numStackPages))
     {
         if (fieldName)
@@ -1093,7 +1093,7 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
-    if (!oe_sgx_valid_num_tcs(properties->header.sizeSettings.numTCS))
+    if (!oe_sgx__valid_num_tcs(properties->header.sizeSettings.numTCS))
     {
         if (fieldName)
             *fieldName = "header.sizeSettings.numTCS";
@@ -1101,7 +1101,7 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
-    if (!oe_sgx_valid_product_id(properties->config.productID))
+    if (!oe_sgx__valid_product_id(properties->config.productID))
     {
         if (fieldName)
             *fieldName = "config.productID";
@@ -1109,7 +1109,7 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
-    if (!oe_sgx_valid_security_version(properties->config.productID))
+    if (!oe_sgx__valid_security_version(properties->config.productID))
     {
         if (fieldName)
             *fieldName = "config.securityVersion";
@@ -1123,10 +1123,10 @@ done:
     return result;
 }
 
-oe_result_t oe_sgx_build_enclave(
-    oe_sgx_load_context_t* context,
+oe_result_t oe_sgx__build_enclave(
+    oe_sgx__load_context_t* context,
     const char* path,
-    const oe_sgx_enclave_properties_t* properties,
+    const oe_sgx__enclave_properties_t* properties,
     oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -1143,7 +1143,7 @@ oe_result_t oe_sgx_build_enclave(
     size_t relocSize;
     void* ecallData = NULL;
     size_t ecallSize;
-    oe_sgx_enclave_properties_t props;
+    oe_sgx__enclave_properties_t props;
 
     memset(&elf, 0, sizeof(Elf64));
 
@@ -1152,8 +1152,8 @@ oe_result_t oe_sgx_build_enclave(
         if (enclave)
             memset(enclave, 0, sizeof(oe_enclave_t));
 
-        enclave->debug = oe_sgx_load_is_debug(context);
-        enclave->simulate = oe_sgx_load_is_simulation(context);
+        enclave->debug = oe_sgx__load_is_debug(context);
+        enclave->simulate = oe_sgx__load_is_simulation(context);
     }
 
     /* Initialize the lock */
@@ -1176,11 +1176,11 @@ oe_result_t oe_sgx_build_enclave(
     }
     else
     {
-        OE_CHECK(oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, &props));
+        OE_CHECK(oe_sgx__load_properties(&elf, OE_INFO_SECTION_NAME, &props));
     }
 
     /* Validate the enclave properties structure */
-    OE_CHECK(oe_sgx_validate_enclave_properties(&props, NULL));
+    OE_CHECK(oe_sgx__validate_enclave_properties(&props, NULL));
 
     /* Consolidate enclave-debug-flag with create-debug-flag */
     if (props.config.attributes & OE_SGX_FLAGS_DEBUG)
@@ -1233,7 +1233,7 @@ oe_result_t oe_sgx_build_enclave(
             &enclaveSize));
 
     /* Perform the ECREATE operation */
-    OE_CHECK(oe_sgx_create_enclave(context, enclaveSize, &enclaveAddr));
+    OE_CHECK(oe_sgx__create_enclave(context, enclaveSize, &enclaveAddr));
 
     /* Save the enclave base address and size */
     enclave->addr = enclaveAddr;
@@ -1276,7 +1276,7 @@ oe_result_t oe_sgx_build_enclave(
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(
-        oe_sgx_initialize_enclave(context, enclaveAddr, &props, &enclave->hash));
+        oe_sgx__initialize_enclave(context, enclaveAddr, &props, &enclave->hash));
 
     /* Save the offset of the .text section */
     OE_CHECK(_SaveTextAddress(enclave, &elf));
@@ -1370,7 +1370,7 @@ oe_result_t oe_create_enclave(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_enclave_t* enclave = NULL;
-    oe_sgx_load_context_t context;
+    oe_sgx__load_context_t context;
 
     _InitializeEnclaveHost();
 
@@ -1412,10 +1412,10 @@ oe_result_t oe_create_enclave(
 
     /* Initialize the context parameter and any driver handles */
     OE_CHECK(
-        oe_sgx_initialize_load_context(&context, OE_SGX_LOAD_TYPE_CREATE, flags));
+        oe_sgx__initialize_load_context(&context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
     /* Build the enclave */
-    OE_CHECK(oe_sgx_build_enclave(&context, enclavePath, NULL, enclave));
+    OE_CHECK(oe_sgx__build_enclave(&context, enclavePath, NULL, enclave));
 
     /* Invoke enclave initialization */
     OE_CHECK(_InitializeEnclave(enclave));
@@ -1440,7 +1440,7 @@ done:
         free(enclave);
     }
 
-    oe_sgx_cleanup_load_context(&context);
+    oe_sgx__cleanup_load_context(&context);
 
     return result;
 }

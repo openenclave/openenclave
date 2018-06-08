@@ -10,13 +10,13 @@
 
 OE_EXTERNC_BEGIN
 
-typedef void (*oe_allocation_failure_callback_t)(
+typedef void (*oe_allocation_failure_callback_t_t)(
     const char* file,
     size_t line,
     const char* func,
     size_t size);
 
-void oe_set_allocation_failure_callback(oe_allocation_failure_callback_t function);
+void oe_set_allocation_failure_callback(oe_allocation_failure_callback_t_t function);
 
 typedef struct _oe_malloc_stats
 {

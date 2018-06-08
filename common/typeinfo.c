@@ -1000,7 +1000,7 @@ static oe_result_t _DestroyStructs(
     const oe_struct_ti_t* sti,
     void* structs,
     size_t count,
-    oe_dealloc_proc_t dealloc)
+    oe_dealloc_proc_t_t dealloc)
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t* p = (uint8_t*)structs;
@@ -1242,7 +1242,7 @@ OE_CATCH:
 
 static void _FreeProc(void* ptr, size_t size, void* procData)
 {
-    oe_dealloc_proc_t proc = (oe_dealloc_proc_t)procData;
+    oe_dealloc_proc_t_t proc = (oe_dealloc_proc_t_t)procData;
 
     if (proc)
         proc(ptr);
@@ -1251,7 +1251,7 @@ static void _FreeProc(void* ptr, size_t size, void* procData)
 oe_result_t oe_destroy_struct(
     const oe_struct_ti_t* ti,
     void* strct,
-    oe_dealloc_proc_t dealloc)
+    oe_dealloc_proc_t_t dealloc)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -1272,7 +1272,7 @@ OE_CATCH:
 oe_result_t oe_free_struct(
     const oe_struct_ti_t* ti,
     void* strct,
-    oe_dealloc_proc_t dealloc)
+    oe_dealloc_proc_t_t dealloc)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -1294,7 +1294,7 @@ oe_result_t oe_clear_arg(
     size_t index,
     bool isPtrPtr,
     void* arg,
-    oe_dealloc_proc_t dealloc)
+    oe_dealloc_proc_t_t dealloc)
 {
     oe_result_t result = OE_UNEXPECTED;
     const oe_field_ti_t* fti;
@@ -1453,7 +1453,7 @@ oe_result_t oe_clear_arg_by_name(
     const char* name,
     bool isPtrPtr,
     void* arg,
-    oe_dealloc_proc_t dealloc)
+    oe_dealloc_proc_t_t dealloc)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t index;

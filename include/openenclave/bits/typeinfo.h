@@ -99,12 +99,12 @@ void oe_print_struct(const oe_struct_ti_t* structTI, const void* structIn);
 oe_result_t oe_destroy_struct(
     const oe_struct_ti_t* structTI,
     void* structPtr,
-    oe_dealloc_proc_t dealloc);
+    oe_dealloc_proc_t_t dealloc);
 
 oe_result_t oe_free_struct(
     const oe_struct_ti_t* structTI,
     void* structPtr,
-    oe_dealloc_proc_t dealloc);
+    oe_dealloc_proc_t_t dealloc);
 
 oe_result_t oe_init_arg(
     const oe_struct_ti_t* sti,
@@ -120,7 +120,7 @@ oe_result_t oe_clear_arg(
     size_t index,
     bool isPtrPtr,
     void* arg,
-    oe_dealloc_proc_t dealloc);
+    oe_dealloc_proc_t_t dealloc);
 
 oe_result_t oe_clear_arg_by_name(
     const oe_struct_ti_t* sti,
@@ -128,7 +128,7 @@ oe_result_t oe_clear_arg_by_name(
     const char* name,
     bool isPtrPtr,
     void* arg,
-    oe_dealloc_proc_t dealloc);
+    oe_dealloc_proc_t_t dealloc);
 
 oe_result_t oe_set_arg(
     const oe_struct_ti_t* sti,

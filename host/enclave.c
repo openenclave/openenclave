@@ -27,8 +27,8 @@ void enc(void)
 
     if (enclave)
     {
-        oe_sha256_str hash;
-        oe_sha256_to_str(&enclave->hash, &hash);
+        oe_sha256__str hash;
+        oe_sha256__to_str(&enclave->hash, &hash);
         printf("Hash: %s\n", hash.buf);
         printf("\n");
         printf("Path: %s\n", enclave->path);

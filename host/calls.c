@@ -237,7 +237,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-static oe_host_func_t _FindHostFunc(const char* name)
+static oe_host_func_t_t _FindHostFunc(const char* name)
 {
 #if defined(__linux__)
 
@@ -245,7 +245,7 @@ static oe_host_func_t _FindHostFunc(const char* name)
     if (!handle)
         return NULL;
 
-    oe_host_func_t func = (oe_host_func_t)dlsym(handle, name);
+    oe_host_func_t_t func = (oe_host_func_t_t)dlsym(handle, name);
     dlclose(handle);
 
     return func;
@@ -257,7 +257,7 @@ static oe_host_func_t _FindHostFunc(const char* name)
     if (!handle)
         return NULL;
 
-    return (oe_host_func_t)GetProcAddress(handle, name);
+    return (oe_host_func_t_t)GetProcAddress(handle, name);
 
 #endif
 }
@@ -275,7 +275,7 @@ static oe_host_func_t _FindHostFunc(const char* name)
 static void _HandleCallHost(uint64_t arg)
 {
     oe_call_host_args_t* args = (oe_call_host_args_t*)arg;
-    oe_host_func_t func;
+    oe_host_func_t_t func;
 
     if (!args)
         return;

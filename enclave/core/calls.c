@@ -192,8 +192,8 @@ static oe_result_t _HandleCallEnclave(uint64_t argIn)
 
     /* Translate function address from virtual to real address */
     {
-        oe_enclave_func_t func =
-            (oe_enclave_func_t)((uint64_t)__oe_get_enclave_base() + vaddr);
+        oe_enclave_func_t_t func =
+            (oe_enclave_func_t_t)((uint64_t)__oe_get_enclave_base() + vaddr);
         func(args.args);
     }
 

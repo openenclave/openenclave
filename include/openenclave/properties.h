@@ -65,7 +65,7 @@ OE_CHECK_SIZE(sizeof(oe_enclave_properties_header_t), 32);
 /*
 **==============================================================================
 **
-** oe_sgx_enclave_properties_t - SGX enclave properties derived type
+** oe_sgx__enclave_properties_t - SGX enclave properties derived type
 **
 **==============================================================================
 */
@@ -74,7 +74,7 @@ OE_CHECK_SIZE(sizeof(oe_enclave_properties_header_t), 32);
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
 
-typedef struct oe_sgx_enclave_config_t
+typedef struct oe_sgx__enclave_config_t
 {
     uint16_t productID;
     uint16_t securityVersion;
@@ -84,30 +84,30 @@ typedef struct oe_sgx_enclave_config_t
 
     /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
     uint64_t attributes;
-} oe_sgx_enclave_config_t;
+} oe_sgx__enclave_config_t;
 
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_config_t), 16);
+OE_CHECK_SIZE(sizeof(oe_sgx__enclave_config_t), 16);
 
 /* Extends oe_enclave_properties_header_t base type */
-typedef struct oe_sgx_enclave_properties_t
+typedef struct oe_sgx__enclave_properties_t
 {
     /* (0) */
     oe_enclave_properties_header_t header;
 
     /* (32) */
-    oe_sgx_enclave_config_t config;
+    oe_sgx__enclave_config_t config;
 
     /* (48) */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
-} oe_sgx_enclave_properties_t;
+} oe_sgx__enclave_properties_t;
 
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
+OE_CHECK_SIZE(sizeof(oe_sgx__enclave_properties_t), 1856);
 
 /*
 **==============================================================================
 **
 ** OE_SET_ENCLAVE_SGX:
-**     This macro initializes and injects an oe_sgx_enclave_properties_t struct
+**     This macro initializes and injects an oe_sgx__enclave_properties_t struct
 **     into the .oeinfo section.
 **
 **==============================================================================
@@ -130,11 +130,11 @@ OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
     _StackPageCount_,                                                   \
     _TcsCount_)                                                         \
     OE_INFO_SECTION_BEGIN                                               \
-    OE_EXPORT const oe_sgx_enclave_properties_t oe_enclavePropertiesSGX =  \
+    OE_EXPORT const oe_sgx__enclave_properties_t oe_enclavePropertiesSGX =  \
     {                                                                   \
         .header =                                                       \
         {                                                               \
-            .size = sizeof(oe_sgx_enclave_properties_t),                   \
+            .size = sizeof(oe_sgx__enclave_properties_t),                   \
             .enclaveType = OE_ENCLAVE_TYPE_SGX,                         \
             .sizeSettings =                                             \
             {                                                           \

@@ -314,13 +314,13 @@ static oe_result_t _InitSigstruct(
 
         {
             OE_SHA256 sha256;
-            oe_sha256_context_t context;
+            oe_sha256__context_t context;
             unsigned char signature[OE_KEY_SIZE];
             unsigned int signatureSize;
 
-            oe_sha256_init(&context);
-            oe_sha256_update(&context, buf, n);
-            oe_sha256_final(&context, &sha256);
+            oe_sha256__init(&context);
+            oe_sha256__update(&context, buf, n);
+            oe_sha256__final(&context, &sha256);
 
             if (!RSA_sign(
                     NID_sha256,
@@ -404,7 +404,7 @@ OE_CATCH:
     return result;
 }
 
-oe_result_t oe_sgx_sign_enclave(
+oe_result_t oe_sgx__sign_enclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,

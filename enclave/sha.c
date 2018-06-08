@@ -7,17 +7,17 @@
 #include <openenclave/bits/sha.h>
 #include <openenclave/types.h>
 
-typedef struct _oe_sha256_context_impl
+typedef struct _oe_sha256__context_impl
 {
     mbedtls_sha256_context ctx;
-} oe_sha256_context_impl_t;
+} oe_sha256__context_impl_t;
 
-OE_STATIC_ASSERT(sizeof(oe_sha256_context_impl_t) <= sizeof(oe_sha256_context_t));
+OE_STATIC_ASSERT(sizeof(oe_sha256__context_impl_t) <= sizeof(oe_sha256__context_t));
 
-oe_result_t oe_sha256_init(oe_sha256_context_t* context)
+oe_result_t oe_sha256__init(oe_sha256__context_t* context)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+    oe_sha256__context_impl_t* impl = (oe_sha256__context_impl_t*)context;
 
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -32,13 +32,13 @@ done:
     return result;
 }
 
-oe_result_t oe_sha256_update(
-    oe_sha256_context_t* context,
+oe_result_t oe_sha256__update(
+    oe_sha256__context_t* context,
     const void* data,
     size_t size)
 {
     oe_result_t result = OE_INVALID_PARAMETER;
-    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+    oe_sha256__context_impl_t* impl = (oe_sha256__context_impl_t*)context;
 
     if (!context || !data)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -51,10 +51,10 @@ done:
     return result;
 }
 
-oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
+oe_result_t oe_sha256__final(oe_sha256__context_t* context, OE_SHA256* sha256)
 {
     oe_result_t result = OE_INVALID_PARAMETER;
-    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
+    oe_sha256__context_impl_t* impl = (oe_sha256__context_impl_t*)context;
 
     if (!context || !sha256)
         OE_RAISE(OE_INVALID_PARAMETER);

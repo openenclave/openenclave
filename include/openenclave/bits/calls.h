@@ -170,7 +170,7 @@ OE_INLINE uint16_t oe_get_flags_from_call_arg1(uint64_t arg)
 **==============================================================================
 */
 
-typedef void (*oe_enclave_func_t)(void* args);
+typedef void (*oe_enclave_func_t_t)(void* args);
 
 typedef struct oe_call_enclave_args_t
 {
@@ -188,7 +188,7 @@ typedef struct oe_call_enclave_args_t
 **==============================================================================
 */
 
-typedef void (*oe_host_func_t)(void* args);
+typedef void (*oe_host_func_t_t)(void* args);
 
 typedef struct oe_call_host_args_t
 {

@@ -191,7 +191,7 @@ typedef enum _oe_enclave_type {
 
 typedef void* (*oe_alloc_proc)(size_t size);
 
-typedef void (*oe_dealloc_proc_t)(void* ptr);
+typedef void (*oe_dealloc_proc_t_t)(void* ptr);
 
 /*
 **==============================================================================

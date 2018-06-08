@@ -49,7 +49,7 @@ oe_result_t oe_ec_public_key_to_coordinates(
  * @return OE_BUFFER_TOO_SMALL either the **rData** or **sData** buffer is too
  *         small; **rSize** and **sSize** contain the required sizes on output.
  */
-oe_result_t oe_ecdsa_signature_read_der(
+oe_result_t oe_ecdsa__signature_read_der(
     const uint8_t* signature,
     size_t signatureSize,
     uint8_t* rData,

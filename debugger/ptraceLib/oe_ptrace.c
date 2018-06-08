@@ -22,11 +22,11 @@ typedef int64_t (*oe_ptrace_func)(
     void* addr,
     void* data);
 
-typedef pid_t (*oe_waitpid_func_t)(pid_t pid, int* status, int options);
+typedef pid_t (*oe_waitpid_func_t_t)(pid_t pid, int* status, int options);
 
 // Original syscall functions.
 static oe_ptrace_func g_system_ptrace = NULL;
-static oe_waitpid_func_t g_system_waitpid = NULL;
+static oe_waitpid_func_t_t g_system_waitpid = NULL;
 
 // Initializer.
 __attribute__((constructor)) void init(void);
@@ -34,7 +34,7 @@ __attribute__((constructor)) void init()
 {
     // Get the ptrace and waitpid syscall function address.
     g_system_ptrace = (oe_ptrace_func)dlsym(RTLD_NEXT, "ptrace");
-    g_system_waitpid = (oe_waitpid_func_t)dlsym(RTLD_NEXT, "waitpid");
+    g_system_waitpid = (oe_waitpid_func_t_t)dlsym(RTLD_NEXT, "waitpid");
 }
 
 static int64_t oe_get_gpr_handler(pid_t pid, void* addr, void* data)

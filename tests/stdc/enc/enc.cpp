@@ -160,7 +160,7 @@ static void _AllocationFailureCallback(
     size_t size)
 {
     printf(
-        "oe_allocation_failure_callback_t(): %s(%zu): %s: %zu\n",
+        "oe_allocation_failure_callback_t_t(): %s(%zu): %s: %zu\n",
         file,
         line,
         func,
