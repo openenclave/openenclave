@@ -79,7 +79,7 @@ void MyAtExit()
 {
     OE_TEST(numConstructions == 6);
     OE_TEST(numDestructions == 0);
-    OE_HostPrintf("MyAtExit()\n");
+    oe_host_printf("MyAtExit()\n");
 }
 
 OE_ECALL void Test(void* args_)
@@ -90,7 +90,7 @@ OE_ECALL void Test(void* args_)
         return;
 
     /* Register at-exit handler */
-    OE_AtExit(MyAtExit);
+    oe_at_exit(MyAtExit);
 
     /* Try strings */
     {
@@ -203,13 +203,13 @@ OE_ECALL void Test(void* args_)
 
 __attribute__((constructor)) void Constructor(void)
 {
-    OE_HostPrintf("Constructor()\n");
+    oe_host_printf("Constructor()\n");
     OE_TEST(numConstructions == 0);
 }
 
 __attribute__((destructor)) void Destructor(void)
 {
-    OE_HostPrintf("Destructor()\n");
+    oe_host_printf("Destructor()\n");
     OE_TEST(numConstructions == 6);
     OE_TEST(numDestructions == 6);
 }

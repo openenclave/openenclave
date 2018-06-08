@@ -10,7 +10,7 @@ bool TestCppException();
 OE_ECALL void Test(void* args_)
 {
     Args* args = (Args*)args_;
-    if (!OE_IsOutsideEnclave(args, sizeof(Args)))
+    if (!oe_is_outside_enclave(args, sizeof(Args)))
     {
         return;
     }
@@ -19,11 +19,11 @@ OE_ECALL void Test(void* args_)
     if (!TestCppException())
     {
         args->ret = -1;
-        OE_HostPrintf("Failed to test cpp exception.\n");
+        oe_host_printf("Failed to test cpp exception.\n");
         return;
     }
 
-    OE_HostPrintf("Cpp exception tests passed!\n");
+    oe_host_printf("Cpp exception tests passed!\n");
 
     args->ret = 0;
     return;
@@ -35,13 +35,13 @@ bool UnhandledException();
 OE_ECALL void TestUnhandledException(void* args_)
 {
     Args* args = (Args*)args_;
-    if (!OE_IsOutsideEnclave(args, sizeof(Args)))
+    if (!oe_is_outside_enclave(args, sizeof(Args)))
     {
         return;
     }
 
     args->ret = -1;
-    OE_HostPrintf("This test will crash the enclave.\n");
+    oe_host_printf("This test will crash the enclave.\n");
     args->ret = 0;
     switch (args->func_num)
     {
@@ -61,7 +61,7 @@ OE_ECALL void TestUnhandledException(void* args_)
             break;
     }
 
-    OE_HostPrintf("Error: unreachable code is reached.\n");
+    oe_host_printf("Error: unreachable code is reached.\n");
     args->ret = -1;
     return;
 }

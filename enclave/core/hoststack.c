@@ -49,10 +49,10 @@ typedef struct ThreadBuckets
     ThreadBucketFlags flags;
 } ThreadBuckets;
 
-// OE_Once() replacement to work around recursion limitation
+// oe_once() replacement to work around recursion limitation
 static struct OnceType
 {
-    OE_Spinlock lock;
+    oe_spinlock_t lock;
     int initialized;
 } _HostStackInitialized = {OE_SPINLOCK_INITIALIZER};
 
@@ -60,22 +60,22 @@ static void _Once(struct OnceType* once, void (*f)(void))
 {
     if (!once->initialized)
     {
-        OE_SpinLock(&once->lock);
+        oe_spin_lock(&once->lock);
         if (!((volatile struct OnceType*)once)->initialized)
             f();
         asm volatile("" ::: "memory");
         once->initialized = 1;
-        OE_SpinUnlock(&once->lock);
+        oe_spin_unlock(&once->lock);
     }
 }
 
-static OE_ThreadKey _HostStackTlsKey;
+static oe_thread_key_t _HostStackTlsKey;
 
 static void _HostStackInit(void)
 {
-    if (OE_ThreadKeyCreate(&_HostStackTlsKey, NULL))
+    if (oe_thread_key_create(&_HostStackTlsKey, NULL))
     {
-        OE_Abort();
+        oe_abort();
     }
 }
 
@@ -85,12 +85,12 @@ static void _FreeThreadBucket(void* arg)
     ThreadBuckets* tb = (ThreadBuckets*)arg;
     if (tb->standbyHost)
     {
-        OE_HostFree((void*)tb->standbyHost);
+        oe_host_free((void*)tb->standbyHost);
         tb->standbyHost = NULL;
     }
     if (tb->activeHost && (tb->cached.baseFree == 0))
     {
-        OE_HostFree((void*)tb->activeHost);
+        oe_host_free((void*)tb->activeHost);
         tb->activeHost = NULL;
     }
 
@@ -102,21 +102,21 @@ static ThreadBuckets* _GetThreadBuckets()
     ThreadBuckets* tb;
 
     _Once(&_HostStackInitialized, _HostStackInit);
-    tb = OE_ThreadGetSpecific(_HostStackTlsKey);
+    tb = oe_thread_get_specific(_HostStackTlsKey);
     if (tb == NULL)
     {
-        if ((tb = (ThreadBuckets*)OE_Sbrk(sizeof(ThreadBuckets))) == (void*)-1)
+        if ((tb = (ThreadBuckets*)oe_sbrk(sizeof(ThreadBuckets))) == (void*)-1)
             return NULL;
 
         *tb = (ThreadBuckets){};
-        OE_ThreadSetSpecific(_HostStackTlsKey, tb);
+        oe_thread_set_specific(_HostStackTlsKey, tb);
         __cxa_atexit(_FreeThreadBucket, tb, NULL);
     }
 
     // Under normal operation, there is no reentrancy. There could be if the
     // host attacked us (by unmapping host memory & forcing a pagefault).
     if (tb->flags & THREAD_BUCKET_FLAG_BUSY)
-        OE_Abort();
+        oe_abort();
 
     tb->flags |= THREAD_BUCKET_FLAG_BUSY;
     return tb;
@@ -124,14 +124,14 @@ static ThreadBuckets* _GetThreadBuckets()
 
 static void _PutThreadBuckets(ThreadBuckets* tb)
 {
-    OE_Assert(tb->flags & THREAD_BUCKET_FLAG_BUSY);
+    oe_assert(tb->flags & THREAD_BUCKET_FLAG_BUSY);
     tb->flags &= ~THREAD_BUCKET_FLAG_BUSY;
 }
 
 // 0 success, error otherwise
 static int _FetchBucketElement(const volatile void* p, BucketElement* contents)
 {
-    if (!OE_IsOutsideEnclave((void*)p, sizeof(BucketElement)))
+    if (!oe_is_outside_enclave((void*)p, sizeof(BucketElement)))
         return -1;
     volatile BucketElement* eHost = (BucketElement*)p;
     contents->bucket = eHost->bucket;
@@ -141,7 +141,7 @@ static int _FetchBucketElement(const volatile void* p, BucketElement* contents)
 // 0 success, error otherwise. <contents> could be modified in error-code.
 static int _FetchBucket(const volatile void* p, Bucket* contents)
 {
-    if (!OE_IsOutsideEnclave((void*)p, sizeof(Bucket)))
+    if (!oe_is_outside_enclave((void*)p, sizeof(Bucket)))
         return -1;
 
     {
@@ -154,7 +154,7 @@ static int _FetchBucket(const volatile void* p, Bucket* contents)
         return -1;
     if (contents->baseFree > contents->size)
         return -1;
-    if (!OE_IsOutsideEnclave((void*)p, sizeof(Bucket) + contents->size))
+    if (!oe_is_outside_enclave((void*)p, sizeof(Bucket) + contents->size))
         return -1;
 
     return 0;
@@ -162,11 +162,11 @@ static int _FetchBucket(const volatile void* p, Bucket* contents)
 
 static size_t _GetBucketAvailableBytes(const Bucket* b)
 {
-    OE_Assert(b->size >= b->baseFree);
+    oe_assert(b->size >= b->baseFree);
     return b->size - b->baseFree;
 }
 
-void* OE_HostAllocForCallHost(size_t size)
+void* oe_host_alloc_for_call_host(size_t size)
 {
     ThreadBuckets* tb; // deliberate non-init
     void* retVal = NULL;
@@ -201,7 +201,7 @@ void* OE_HostAllocForCallHost(size_t size)
         if (tb->standbyHost != NULL)
         {
             if (_FetchBucket(tb->standbyHost, &tb->cached))
-                OE_Abort();
+                oe_abort();
 
             if (_GetBucketAvailableBytes(&tb->cached) >=
                 size + sizeof(BucketElement))
@@ -215,7 +215,7 @@ void* OE_HostAllocForCallHost(size_t size)
         {
             size_t allocSize = MAX(
                 size + sizeof(Bucket) + sizeof(BucketElement), _bucketMinSize);
-            if ((bHost = (Bucket*)OE_HostMalloc(allocSize)) == NULL)
+            if ((bHost = (Bucket*)oe_host_malloc(allocSize)) == NULL)
                 goto Exit;
 
             bHost->size = tb->cached.size = allocSize - sizeof(Bucket);
@@ -233,7 +233,7 @@ Exit:
     return retVal;
 }
 
-void OE_HostFreeForCallHost(void* p)
+void oe_host_free_for_call_host(void* p)
 {
     BucketElement e = {};
     volatile BucketElement* eHost; // deliberate non-init
@@ -244,12 +244,12 @@ void OE_HostFreeForCallHost(void* p)
 
     eHost = (BucketElement*)p - 1;
     if (_FetchBucketElement(eHost, &e))
-        OE_Abort();
+        oe_abort();
 
     tb = _GetThreadBuckets();
-    OE_Assert(tb != NULL);
+    oe_assert(tb != NULL);
 
-    OE_Assert(
+    oe_assert(
         (tb->activeHost != NULL) || (tb->flags & THREAD_BUCKET_FLAG_RUNDOWN));
 
     if (e.bucket != tb->activeHost)
@@ -257,44 +257,44 @@ void OE_HostFreeForCallHost(void* p)
         // underflow - rotate active bucket into standby
         if (tb->activeHost != NULL)
         {
-            OE_Assert(tb->activeHost->baseFree == 0);
-            OE_Assert(tb->cached.baseFree == 0);
+            oe_assert(tb->activeHost->baseFree == 0);
+            oe_assert(tb->cached.baseFree == 0);
         }
 
         // free old buckets
         if (tb->flags & THREAD_BUCKET_FLAG_RUNDOWN)
         {
             // on rundown, do not bother to cache
-            OE_Assert(tb->standbyHost == NULL);
+            oe_assert(tb->standbyHost == NULL);
             if (tb->activeHost)
-                OE_HostFree((void*)tb->activeHost);
+                oe_host_free((void*)tb->activeHost);
         }
         else
         {
             if (tb->standbyHost)
-                OE_HostFree((void*)tb->standbyHost);
+                oe_host_free((void*)tb->standbyHost);
             tb->standbyHost = tb->activeHost;
         }
 
         if (_FetchBucket(e.bucket, &tb->cached))
-            OE_Abort();
+            oe_abort();
 
         tb->activeHost = e.bucket;
     }
 
     // element in bucket?
     if ((size_t)eHost < (size_t)(&tb->activeHost->elements))
-        OE_Abort();
+        oe_abort();
 
     if ((size_t)p >= (size_t)(&tb->activeHost->elements) + tb->cached.size)
-        OE_Abort();
+        oe_abort();
 
     tb->cached.baseFree = (size_t)(eHost) - (size_t)(&tb->activeHost->elements);
 
     if ((tb->flags & THREAD_BUCKET_FLAG_RUNDOWN) && (tb->cached.baseFree == 0))
     {
         // on rundown, do not bother to cache
-        OE_HostFree((void*)tb->activeHost);
+        oe_host_free((void*)tb->activeHost);
         tb->activeHost = NULL;
     }
     else

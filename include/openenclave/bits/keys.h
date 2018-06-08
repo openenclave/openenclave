@@ -32,7 +32,7 @@ OE_EXTERNC_BEGIN
 * @retval OE_UNEXPECTED An unexpected error occurred.
 *
 */
-OE_Result OE_GetKey(const SGX_KeyRequest* sgxKeyRequest, SGX_Key* sgxKey);
+oe_result_t oe_get_key(const SGX_KeyRequest* sgxKeyRequest, SGX_Key* sgxKey);
 
 OE_EXTERNC_END
 

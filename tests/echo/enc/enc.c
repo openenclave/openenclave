@@ -5,14 +5,14 @@
 #include <openenclave/enclave.h>
 #include "../args.h"
 
-char* OE_HostStackStrdup(const char* str)
+char* oe_host_stack_strdup(const char* str)
 {
-    size_t n = OE_Strlen(str);
+    size_t n = oe_strlen(str);
 
-    char* dup = (char*)OE_HostAllocForCallHost(n + 1);
+    char* dup = (char*)oe_host_alloc_for_call_host(n + 1);
 
     if (dup)
-        OE_Memcpy(dup, str, n + 1);
+        oe_memcpy(dup, str, n + 1);
 
     return dup;
 }
@@ -21,33 +21,33 @@ OE_ECALL void Echo(void* args_)
 {
     EchoArgs* args = (EchoArgs*)args_;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(EchoArgs)))
+    if (!oe_is_outside_enclave(args, sizeof(EchoArgs)))
     {
         args->ret = -1;
         return;
     }
 
-    if (OE_Strcmp(args->in, "Hello World") != 0)
+    if (oe_strcmp(args->in, "Hello World") != 0)
     {
         args->ret = -1;
         return;
     }
 
-    args->str1 = OE_HostStackStrdup("OE_HostStackStrdup1");
-    args->str2 = OE_HostStackStrdup("OE_HostStackStrdup2");
-    args->str3 = OE_HostStackStrdup("OE_HostStackStrdup3");
+    args->str1 = oe_host_stack_strdup("oe_host_stack_strdup1");
+    args->str2 = oe_host_stack_strdup("oe_host_stack_strdup2");
+    args->str3 = oe_host_stack_strdup("oe_host_stack_strdup3");
 
-    if (OE_CallHost("Echo", args) != OE_OK)
+    if (oe_call_host("Echo", args) != OE_OK)
     {
         args->ret = -1;
         return;
     }
 
-    OE_HostPrintf("Hello from Echo function!\n");
+    oe_host_printf("Hello from Echo function!\n");
 
-    OE_HostFreeForCallHost(args->str3);
-    OE_HostFreeForCallHost(args->str2);
-    OE_HostFreeForCallHost(args->str1);
+    oe_host_free_for_call_host(args->str3);
+    oe_host_free_for_call_host(args->str2);
+    oe_host_free_for_call_host(args->str1);
 
     args->ret = 0;
 }

@@ -8,23 +8,23 @@
 #include <sys/user.h>
 #include <sys/wait.h>
 
-typedef struct _OE_Inferior_Info
+typedef struct _oe_inferior_info_t
 {
-    struct _OE_Inferior_Info* next;
+    struct _oe_inferior_info_t* next;
     pid_t pid;
     int64_t flags;
-} OE_Inferior_Info;
+} oe_inferior_info_t;
 
-static OE_Inferior_Info* g_inferior_info_head = NULL;
+static oe_inferior_info_t* g_inferior_info_head = NULL;
 static pthread_mutex_t inferior_info_lock;
 
-int _OE_TrackInferior(pid_t pid)
+int _oe_track_inferior(pid_t pid)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
 
     // Check if the inferior is already in the track list.
-    OE_Inferior_Info* inferior_info = g_inferior_info_head;
+    oe_inferior_info_t* inferior_info = g_inferior_info_head;
     while (inferior_info != NULL)
     {
         if (inferior_info->pid == pid)
@@ -36,12 +36,12 @@ int _OE_TrackInferior(pid_t pid)
     }
 
     // Allocate a new node.
-    inferior_info = (OE_Inferior_Info*)malloc(sizeof(OE_Inferior_Info));
+    inferior_info = (oe_inferior_info_t*)malloc(sizeof(oe_inferior_info_t));
     if (inferior_info == NULL)
     {
         goto cleanup;
     }
-    memset(inferior_info, 0, sizeof(OE_Inferior_Info));
+    memset(inferior_info, 0, sizeof(oe_inferior_info_t));
     inferior_info->pid = pid;
 
     // Insert new node at the beginning of the track list.
@@ -54,13 +54,13 @@ cleanup:
     return ret;
 }
 
-int _OE_UntrackInferior(pid_t pid)
+int _oe_untrack_inferior(pid_t pid)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
 
-    OE_Inferior_Info* prev_inferior_info = NULL;
-    OE_Inferior_Info* cur_inferior_info = g_inferior_info_head;
+    oe_inferior_info_t* prev_inferior_info = NULL;
+    oe_inferior_info_t* cur_inferior_info = g_inferior_info_head;
 
     while (cur_inferior_info != NULL)
     {
@@ -93,7 +93,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** _OE_GetInferiorFlags()
+** _oe_get_inferior_flags()
 **
 **     This function is used to get the flags of a tracked inferior.
 **
@@ -108,12 +108,12 @@ cleanup:
 **==============================================================================
 */
 
-int _OE_GetInferiorFlags(pid_t pid, int64_t* flags)
+int _oe_get_inferior_flags(pid_t pid, int64_t* flags)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
 
-    OE_Inferior_Info* inferior_info = g_inferior_info_head;
+    oe_inferior_info_t* inferior_info = g_inferior_info_head;
     while (inferior_info != NULL)
     {
         if (inferior_info->pid == pid)
@@ -134,7 +134,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** _OE_SetInferiorFlags()
+** _oe_set_inferior_flags()
 **
 **     This function is used to set the flags of a tracked inferior.
 **
@@ -149,12 +149,12 @@ cleanup:
 **==============================================================================
 */
 
-int _OE_SetInferiorFlags(pid_t pid, int64_t flags)
+int _oe_set_inferior_flags(pid_t pid, int64_t flags)
 {
     int ret = -1;
     pthread_mutex_lock(&inferior_info_lock);
 
-    OE_Inferior_Info* inferior_info = g_inferior_info_head;
+    oe_inferior_info_t* inferior_info = g_inferior_info_head;
     while (inferior_info != NULL)
     {
         if (inferior_info->pid == pid)

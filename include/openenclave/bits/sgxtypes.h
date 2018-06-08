@@ -455,7 +455,7 @@ typedef struct _SGX_TCS
     union {
         uint8_t reserved[4024];
 
-        /* (72) Enclave's OE_Main() function */
+        /* (72) Enclave's oe_main() function */
         void (*main)(void);
     } u;
 } SGX_TCS;
@@ -478,22 +478,22 @@ OE_CHECK_SIZE(OE_OFFSETOF(SGX_TCS, u.main), 72);
 /*
 **==============================================================================
 **
-** OE_ThreadData
+** oe_thread_data_t
 **
 **     This structure defines information about an enclave thread. Each
 **     instance is associated with one thread control structure (TCS). This
 **     structure resides in the GS segment page (referenced by the GS segment
 **     register). A thread obtains its thread data structure by calling
-**     OE_GetThreadData(), which fetches the address at offset zero in
-**     the GS segment register (%gs:0) which contains OE_ThreadData.self_addr.
+**     oe_get_thread_data(), which fetches the address at offset zero in
+**     the GS segment register (%gs:0) which contains oe_thread_data_t.self_addr.
 **
 **==============================================================================
 */
 
-typedef struct _OE_ThreadData OE_ThreadData;
+typedef struct _oe_thread_data oe_thread_data_t;
 
 /* Note: unused fields have a "__" prefix */
-struct _OE_ThreadData
+struct _oe_thread_data
 {
     /* Points to start of this structure */
     uint64_t self_addr;
@@ -510,7 +510,7 @@ struct _OE_ThreadData
     uint64_t __last_error;
 
     /* The threads implementations uses this to put threads on queues */
-    OE_ThreadData* next;
+    oe_thread_data_t* next;
 
     uint64_t __tls_addr;
     uint64_t __tls_array;
@@ -525,9 +525,9 @@ struct _OE_ThreadData
     uint64_t exception_address;
 };
 
-OE_CHECK_SIZE(sizeof(OE_ThreadData), 168);
+OE_CHECK_SIZE(sizeof(oe_thread_data_t), 168);
 
-OE_ThreadData* OE_GetThreadData(void);
+oe_thread_data_t* oe_get_thread_data(void);
 
 /*
 **==============================================================================
@@ -545,7 +545,7 @@ typedef struct _Callsite Callsite;
 
 typedef struct _TD
 {
-    OE_ThreadData base;
+    oe_thread_data_t base;
 
     /* A "magic number" for sanity checking (TD_MAGIC) */
     uint64_t magic;
@@ -980,7 +980,7 @@ typedef struct _SGX_Nonce
 /*
 **==============================================================================
 **
-** OE_ECallPages
+** oe_ecall_pages_t
 **
 **     The enclave image has ECALL address pages that keep the virtual
 **     addresses of all ECALL functions. When the host performs an OCALL, it
@@ -992,7 +992,7 @@ typedef struct _SGX_Nonce
 
 #define OE_ECALL_PAGES_MAGIC 0x927ccf78a3de9f9d
 
-typedef struct _OE_ECallPages
+typedef struct _oe_ecall_pages
 {
     /* Should be OE_ECALL_PAGES_MAGIC if page is valid */
     uint64_t magic;
@@ -1002,7 +1002,7 @@ typedef struct _OE_ECallPages
 
     /* ECALL virtual addresses (index by function number) */
     OE_ZERO_SIZED_ARRAY uint64_t vaddrs[];
-} OE_ECallPages;
+} oe_ecall_pages_t;
 
 /*
 **==============================================================================
@@ -1012,7 +1012,7 @@ typedef struct _OE_ECallPages
 **==============================================================================
 */
 
-OE_Result SGX_InitQuote(
+oe_result_t SGX_InitQuote(
     SGX_TargetInfo* targetInfo,
     SGX_EPIDGroupID* epidGroupID);
 

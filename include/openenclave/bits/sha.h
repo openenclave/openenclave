@@ -13,11 +13,11 @@ OE_EXTERNC_BEGIN
 #define OE_SHA256_SIZE 32
 
 /* Opaque representation of a SHA-256 context */
-typedef struct _OE_SHA256Context
+typedef struct _oe_sha256_context
 {
     /* Internal private implementation */
     uint64_t impl[16];
-} OE_SHA256Context;
+} oe_sha256_context_t;
 
 typedef struct _OE_SHA256
 {
@@ -33,7 +33,7 @@ typedef struct _OE_SHA256
  *
  * @return OE_OK upon success
  */
-OE_Result OE_SHA256Init(OE_SHA256Context* context);
+oe_result_t oe_sha256_init(oe_sha256_context_t* context);
 
 /**
  * Extends a SHA-256 hash to include additional data
@@ -47,8 +47,8 @@ OE_Result OE_SHA256Init(OE_SHA256Context* context);
  *
  * @return OE_OK upon success
  */
-OE_Result OE_SHA256Update(
-    OE_SHA256Context* context,
+oe_result_t oe_sha256_update(
+    oe_sha256_context_t* context,
     const void* data,
     size_t size);
 
@@ -64,7 +64,7 @@ OE_Result OE_SHA256Update(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256);
+oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256);
 
 OE_EXTERNC_END
 

@@ -27,8 +27,8 @@ OE_OCALL void Hello(void* args_)
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     printf("==== %s\n", argv[0]);
 
@@ -41,13 +41,13 @@ int main(int argc, const char* argv[])
 
     /* Create an enclave from the file given by argv[1] */
     {
-        const uint64_t flags = OE_GetCreateFlags();
+        const uint64_t flags = oe_get_create_flags();
 
-        if ((result = OE_CreateEnclave(
+        if ((result = oe_create_enclave(
                  argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
             OE_OK)
         {
-            fprintf(stderr, "OE_CreateEnclave(): result=%u", result);
+            fprintf(stderr, "oe_create_enclave(): result=%u", result);
             exit(1);
         }
     }
@@ -64,9 +64,9 @@ int main(int argc, const char* argv[])
             exit(1);
         }
 
-        if ((result = OE_CallEnclave(enclave, "Hello", &args)) != OE_OK)
+        if ((result = oe_call_enclave(enclave, "Hello", &args)) != OE_OK)
         {
-            fprintf(stderr, "OE_CallEnclave() failed: result=%u", result);
+            fprintf(stderr, "oe_call_enclave() failed: result=%u", result);
             exit(1);
         }
 
@@ -87,7 +87,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Terminate the enclave */
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     return 0;
 }
