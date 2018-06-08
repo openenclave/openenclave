@@ -66,6 +66,6 @@ This document describes the C++ library functionality supported inside an
 enclave as provided by oelibcxx.
 
 [Open Enclave Support for mbedtls](MbedtlsSupport.md)
----------------------------------_
+----------------------------------
 This document describes the mbedtls library functionality supported inside an
 enclave as provided by 3rdparty/mbedtls.

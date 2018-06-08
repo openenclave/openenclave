@@ -1,6 +1,6 @@
 # Open Enclave Support for mbedtls
 
-Header | Supported? | Comments |
+Header | Supported | Comments |
 :---:|:---:|:---:|
 aes.h | Partial | Unsupported functions: mbedtls_aes_crypt_cfb128(), mbedtls_aes_crypt_cfb8() |
 aesni.h | No | - |
@@ -57,8 +57,8 @@ ssl_ticket.h | Yes | - |
 threading.h | No  | - |
 timing.h | No | - |
 version.h | Yes | - |
-x509_crl.h | Partial | Unsupported function: mbedtls_x509_crl_parse_file() |
-x509_crt.h | Partial | Unsupported functions: mbedtls_x509_crl_parse_file(), mbedtls_x509_crt_parse_path() |
-x509_csr.h | Partial | Unsupported function: mbedtls_x509_csr_parse_file() |
+x509_crl.h | Partial | Expiration checks rely on implicit calls to untrusted host process and not enclave secured time. Unsupported function: mbedtls_x509_crl_parse_file() |
+x509_crt.h | Partial | Expiration checks rely on implicit calls to untrusted host process and not enclave secured time. Unsupported functions: mbedtls_x509_crl_parse_file(), mbedtls_x509_crt_parse_path() |
+x509_csr.h | Partial | Expiration checks rely on implicit calls to untrusted host process and not enclave secured time. Unsupported function: mbedtls_x509_csr_parse_file() |
 x509.h | Yes | - |
 xtea.h | No | - |

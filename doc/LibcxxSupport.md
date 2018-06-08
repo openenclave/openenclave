@@ -1,6 +1,6 @@
 # Open Enclave Support for libcxx
 
-Header | Supported? | Comments |
+Header | Supported | Comments |
 :---:|:---:|:---:|
 algorithm | Partial | Supported functions: find(), find_first_of(), count(), mismatch(), equal(), search(), copy(), move(), transform(), replace(), fill(), generate(), remove(), unique(), reverse(), min(), max(), a(), b(), reset(), param(), sort(), lower_bound() |
 any | Partial | Unsupported function: make_any() |
@@ -21,10 +21,10 @@ csignal | Yes | - |
 cstdarg | Partial | Supported function: va_list() |
 cstddef | Yes | - |
 cstdint | Yes | - |
-cstdio | Partial | Unsupported functions: vscanf(), fputs() |
+cstdio | Partial | All I/O functions implicitly call out to untrusted host. Unsupported functions: vscanf(), fputs() |
 cstdlib | Partial | Unsupported functions: at_quick_exit(), quick_exit(), aligned_alloca() |
 cstring | Partial | Unsupported functions: strcpy(), strcat(), strncat(), strchr(), strcspn(), strpbrk(), strrchr(), strspn() |
-ctime | Yes | - |
+ctime | Yes | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. |
 cwchar | Partial | Unsupported functions: wscanff(), wscanfs(), wscanf(), wprintff(), wprintfs(), wprintf(), fputwcputwc(), fgetwcgetwc() |
 cwctype | Yes | - |
 cuchar | No | - |
@@ -32,7 +32,7 @@ execution | Partial | Unsupported functions: is_execution_policy(), sequenced_po
 exception | Partial | Unsupported functions: throw_with_nested(), rethrow_if_nested() |
 functional | No | - |
 future | Yes | - |
-fstream | Partial | Unsupported functions: is_open(), basic_ifstream(), basic_filebuf() |
+fstream | Partial | All I/O functions implicitly call out to untrusted host. Unsupported functions: is_open(), basic_ifstream(), basic_filebuf() |
 initializer_list | Yes | - |
 ios | Partial | Unsupported functions: nounitbuf(), nouppercase(), noshowpos(), noshowpoint(), noshowbase(), noboolalpha() |
 istream | Yes | - |
@@ -54,13 +54,13 @@ stddef | Yes |  - |
 streambuf | Yes | - |
 syncstream | No | - |
 system error | Yes | - |
-thread | Yes | Unsupported function: sleep_until() |
+thread | Partial | Synchronization primitives are not secure across calls to host. Threads are still scheduled by the untrusted host process and an enclave cannot rely on threads making forward progress. Unsupported function: sleep_until() |
 tuple | Partial | Supported function: pair() |
 typeinfo | No | - |
 type_traits | Partial | Supported functions: decltype(), move(), size_of() |
 unordered_map | Partial | Unsupported functions: unordered_map(), unordered_multimap() |
 unordered_set | Partial | Unsupported functions: unordered_set(), unordered_multiset() |
 utility | Partial | Unsupported function : make_pair() |
-varriant | Partial | Unsupported function: visit(), holds_alternative(), get_if() |
+variant | Partial | C++17 features are untested. Unsupported function: visit(), holds_alternative(), get_if() |
 vector | Yes | - |
 version | No | - |
