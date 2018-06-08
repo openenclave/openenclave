@@ -372,52 +372,27 @@ static OE_Result _VerifyWholeChain(STACK_OF(X509) * chain)
             OE_RAISE(OE_FAILURE);
     }
 
-    /* If root is the first certificate; else it is the last certificate */
-    if (root == sk_X509_value(chain, 0))
-    {
-        /* Verify each certificate in the chain against the subchain */
-        for (int i = 0; i < n; i++)
-        {
-            X509* cert = sk_X509_value(chain, i);
-
-            if (!cert)
-                OE_RAISE(OE_FAILURE);
-
-            OE_CHECK(_VerifyCert(cert, subchain));
-
-            /* Add this certificate to the subchain */
-            {
-                _X509_up_ref(cert);
-
-                if (!sk_X509_push(subchain, cert))
-                    OE_RAISE(OE_FAILURE);
-            }
-        }
-    }
-    else if (root == sk_X509_value(chain, n - 1))
-    {
-        /* Verify each certificate in the chain against the subchain */
-        for (int i = sk_X509_num(chain) - 1; i >= 0; i--)
-        {
-            X509* cert = sk_X509_value(chain, i);
-
-            if (!cert)
-                OE_RAISE(OE_FAILURE);
-
-            OE_CHECK(_VerifyCert(cert, subchain));
-
-            /* Add this certificate to the subchain */
-            {
-                _X509_up_ref(cert);
-
-                if (!sk_X509_push(subchain, cert))
-                    OE_RAISE(OE_FAILURE);
-            }
-        }
-    }
-    else
-    {
+    /* The root must be the last certificate */
+    if (root != sk_X509_value(chain, n - 1))
         OE_RAISE(OE_FAILURE);
+
+    /* Verify each certificate in the chain against the subchain */
+    for (int i = sk_X509_num(chain) - 1; i >= 0; i--)
+    {
+        X509* cert = sk_X509_value(chain, i);
+
+        if (!cert)
+            OE_RAISE(OE_FAILURE);
+
+        OE_CHECK(_VerifyCert(cert, subchain));
+
+        /* Add this certificate to the subchain */
+        {
+            _X509_up_ref(cert);
+
+            if (!sk_X509_push(subchain, cert))
+                OE_RAISE(OE_FAILURE);
+        }
     }
 
     result = OE_OK;
@@ -815,27 +790,11 @@ done:
 
 OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert)
 {
-    const CertChain* impl = (const CertChain*)chain;
     OE_Result result = OE_UNEXPECTED;
-    X509* x509 = NULL;
+    size_t length;
 
-    /* Clear the output certificate for all error pathways */
-    if (cert)
-        memset(cert, 0, sizeof(OE_Cert));
-
-    /* Reject invalid parameters */
-    if (!_CertChainIsValid(impl) || !cert)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the first self-signed certificate in the stack */
-    if (!(x509 = _FindRootCert(impl->sk)))
-    {
-        _X509_up_ref(x509);
-        OE_RAISE(OE_NOT_FOUND);
-    }
-
-    _CertInit((Cert*)cert, x509);
-
+    OE_CHECK(OE_CertChainGetLength(chain, &length));
+    OE_CHECK(OE_CertChainGetCert(chain, length - 1, cert));
     result = OE_OK;
 
 done:
@@ -848,7 +807,7 @@ OE_Result OE_CertChainGetLeafCert(const OE_CertChain* chain, OE_Cert* cert)
     size_t length;
 
     OE_CHECK(OE_CertChainGetLength(chain, &length));
-    OE_CHECK(OE_CertChainGetCert(chain, length - 1, cert));
+    OE_CHECK(OE_CertChainGetCert(chain, 0, cert));
     result = OE_OK;
 
 done:

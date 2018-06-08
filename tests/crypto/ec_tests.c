@@ -472,6 +472,90 @@ static void _TestCertMethods()
         OE_CertFree(&cert);
     }
 
+    /* Test OE_CertChainGetCert() */
+    {
+        OE_CertChain chain;
+
+        /* Load the chain from PEM format */
+        r = OE_CertChainReadPEM(_CHAIN, sizeof(_CHAIN), &chain);
+        OE_TEST(r == OE_OK);
+
+        /* Get the length of the chain */
+        size_t length;
+        r = OE_CertChainGetLength(&chain, &length);
+        OE_TEST(r == OE_OK);
+        OE_TEST(length == 3);
+
+        /* Get each certificate in the chain */
+        for (size_t i = 0; i < length; i++)
+        {
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, i, &cert);
+            OE_TEST(r == OE_OK);
+            OE_CertFree(&cert);
+        }
+
+        /* Test out of bounds */
+        {
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, length + 1, &cert);
+            OE_TEST(r == OE_OUT_OF_BOUNDS);
+            OE_CertFree(&cert);
+        }
+
+        OE_CertChainFree(&chain);
+    }
+
+    /* Test OE_CertChainGetRootCert() and OE_CertChainGetLeafCert() */
+    {
+        OE_CertChain chain;
+        OE_Cert root;
+        OE_Cert leaf;
+
+        /* Load the chain from PEM format */
+        r = OE_CertChainReadPEM(_CHAIN, sizeof(_CHAIN), &chain);
+        OE_TEST(r == OE_OK);
+
+        /* Get the root certificate */
+        r = OE_CertChainGetRootCert(&chain, &root);
+        OE_TEST(r == OE_OK);
+
+        /* Get the leaf certificate */
+        r = OE_CertChainGetLeafCert(&chain, &leaf);
+        OE_TEST(r == OE_OK);
+
+        /* Check that the keys are identical for top and root certificate */
+        {
+            OE_ECPublicKey rootKey;
+            OE_ECPublicKey certKey;
+
+            OE_TEST(OE_CertGetECPublicKey(&root, &rootKey) == OE_OK);
+
+            OE_ECPublicKeyFree(&rootKey);
+            OE_ECPublicKeyFree(&certKey);
+        }
+
+        /* Check that the keys are not identical for leaf and root */
+        {
+            OE_ECPublicKey rootKey;
+            OE_ECPublicKey leafKey;
+            bool equal;
+
+            OE_TEST(OE_CertGetECPublicKey(&root, &rootKey) == OE_OK);
+            OE_TEST(OE_CertGetECPublicKey(&leaf, &leafKey) == OE_OK);
+
+            OE_TEST(OE_ECPublicKeyEqual(&rootKey, &leafKey, &equal) == OE_OK);
+            OE_TEST(equal == false);
+
+            OE_ECPublicKeyFree(&rootKey);
+            OE_ECPublicKeyFree(&leafKey);
+        }
+
+        OE_CertFree(&root);
+        OE_CertFree(&leaf);
+        OE_CertChainFree(&chain);
+    }
+
     printf("=== passed %s()\n", __FUNCTION__);
 }
 

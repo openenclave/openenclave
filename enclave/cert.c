@@ -233,54 +233,24 @@ static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
     if (!(root = _FindRootCert(chain)))
         OE_RAISE(OE_FAILURE);
 
-    /* If the root certificate is first; else it is last */
-    if (root == chain)
+    // Verify each certificate in the chain against the following subchain.
+    // For each i, verify chain[i] against chain[i+1:...].
+    for (mbedtls_x509_crt* p = chain; p && p->next; p = p->next)
     {
-        mbedtls_x509_crt* prev = NULL;
+        /* Pointer to subchain of certificates (predecessors) */
+        mbedtls_x509_crt* subchain = p->next;
 
-        // Verify each certificate against the preceding subchain. For each i,
-        // verify chain[i] against chain[0:i-1].
-        for (mbedtls_x509_crt* p = chain; p; p = p->next)
-        {
-            if (prev)
-                prev->next = NULL;
+        /* Verify the next certificate against its following predecessors */
+        int r = mbedtls_x509_crt_verify(
+            p, subchain, NULL, NULL, &flags, NULL, NULL);
 
-            /* Verify the next certificate against its preceding predecessors */
-            int r = mbedtls_x509_crt_verify(
-                p, chain, NULL, NULL, &flags, NULL, NULL);
+        /* Raise an error if any */
+        if (r != 0)
+            OE_RAISE(OE_FAILURE);
 
-            /* Reinsert this certificate into the chain */
-            if (prev)
-                prev->next = p;
-
-            /* Raise an error if any */
-            if (r != 0)
-                OE_RAISE(OE_FAILURE);
-
-            prev = p;
-        }
-    }
-    else
-    {
-        // Verify each certificate in the chain against the following subchain.
-        // For each i, verify chain[i] against chain[i+1:...].
-        for (mbedtls_x509_crt* p = chain; p && p->next; p = p->next)
-        {
-            /* Pointer to subchain of certificates (predecessors) */
-            mbedtls_x509_crt* subchain = p->next;
-
-            /* Verify the next certificate against its following predecessors */
-            int r = mbedtls_x509_crt_verify(
-                p, subchain, NULL, NULL, &flags, NULL, NULL);
-
-            /* Raise an error if any */
-            if (r != 0)
-                OE_RAISE(OE_FAILURE);
-
-            /* If the final certificate is not the root */
-            if (subchain->next == NULL && root != subchain)
-                OE_RAISE(OE_FAILURE);
-        }
+        /* If the final certificate is not the root */
+        if (subchain->next == NULL && root != subchain)
+            OE_RAISE(OE_FAILURE);
     }
 
     result = OE_OK;
@@ -603,44 +573,12 @@ done:
 
 OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert)
 {
-    const CertChain* impl = (const CertChain*)chain;
-    Cert* certImpl = (Cert*)cert;
     OE_Result result = OE_UNEXPECTED;
-    size_t n;
+    size_t length;
 
-    /* Clear the output certificate for all error pathways */
-    if (cert)
-        OE_Memset(cert, 0, sizeof(OE_Cert));
-
-    /* Reject invalid parameters */
-    if (!_CertChainIsValid(impl) || !cert)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the number of certificates in the chain */
-    n = impl->referent->length;
-
-    /* Iterate from leaf upwards looking for a self-signed certificate */
-    while (n--)
-    {
-        mbedtls_x509_crt* crt;
-
-        if (!(crt = _ReferentGetCert(impl->referent, n)))
-            OE_RAISE(OE_FAILURE);
-
-        const mbedtls_x509_buf* subject = &crt->subject_raw;
-        const mbedtls_x509_buf* issuer = &crt->issuer_raw;
-
-        if (subject->tag == issuer->tag && subject->len == issuer->len &&
-            OE_Memcmp(subject->p, issuer->p, subject->len) == 0)
-        {
-            /* Found self-signed certificate */
-            _CertInit(certImpl, crt, impl->referent);
-            OE_RAISE(OE_OK);
-        }
-    }
-
-    /* No self-signed certificate was found */
-    result = OE_NOT_FOUND;
+    OE_CHECK(OE_CertChainGetLength(chain, &length));
+    OE_CHECK(OE_CertChainGetCert(chain, length - 1, cert));
+    result = OE_OK;
 
 done:
     return result;
@@ -652,7 +590,7 @@ OE_Result OE_CertChainGetLeafCert(const OE_CertChain* chain, OE_Cert* cert)
     size_t length;
 
     OE_CHECK(OE_CertChainGetLength(chain, &length));
-    OE_CHECK(OE_CertChainGetCert(chain, length - 1, cert));
+    OE_CHECK(OE_CertChainGetCert(chain, 0, cert));
     result = OE_OK;
 
 done:
