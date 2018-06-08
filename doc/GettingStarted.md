@@ -400,7 +400,7 @@ function with the same arguments.
 
 ### Enclave build collateral
 
-The samples provides cmake helper includes under samples/cmake/cmake/
+The samples provides cmake helper includes under cmake/
 simplifying Open Enclave application writing. **add_enclave_executable.cmake**
 provides the **add_enclave_executable()** function. It extends CMake's
 **add_executable()** by adding the intrinsic target (oecore) and also
