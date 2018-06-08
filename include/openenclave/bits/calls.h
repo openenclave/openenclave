@@ -4,8 +4,10 @@
 #ifndef _OE_CALLS_H
 #define _OE_CALLS_H
 
-#if defined(__linux__)
+#if defined(_ADD_OE_TIME_CALLS)
+#if defined __linux__
 #include <sys/time.h>
+#endif
 #include <time.h>
 #endif
 
@@ -304,19 +306,15 @@ typedef struct _OE_VerifyReportArgs
 **
 **==============================================================================
 */
-
+#if defined(_ADD_OE_TIME_CALLS)
 typedef struct _OE_StrftimeArgs
 {
     size_t ret;
     char str[256];
     char format[256];
-#if defined(__linux__)
     struct tm tm;
-#elif defined(_WIN32)
-
-#endif
 } OE_StrftimeArgs;
-
+#endif
 /*
 **==============================================================================
 **
@@ -326,20 +324,16 @@ typedef struct _OE_StrftimeArgs
 **
 **==============================================================================
 */
-
+#if defined(_ADD_OE_TIME_CALLS)
 typedef struct _OE_GettimeofdayArgs
 {
     int ret;
-#if defined(__linux__)
     struct timeval* tv;
     struct timeval tvbuf;
     struct timezone* tz;
-#elif defined(_WIN32)
-
-#endif
     uint64_t tzbuf[2];
 } OE_GettimeofdayArgs;
-
+#endif
 /*
 **==============================================================================
 **
@@ -366,22 +360,19 @@ struct timespec_w
 **
 **==============================================================================
 */
-
+#if defined(_ADD_OE_TIME_CALLS)
 typedef struct _OE_ClockgettimeArgs
 {
     int ret;
-#if defined(__linux__)
+#if defined __linux__
     clockid_t clk_id;
+#elif defined _WIN32
+    int clk_id;
+#endif
     struct timespec* tp;
     struct timespec tpbuf;
-#elif defined(_WIN32)
-	int clk_id;
-    struct timespec_w* tp;
-    struct timespec_w tpbuf;
-#endif
-
 } OE_ClockgettimeArgs;
-
+#endif
 /*
 **==============================================================================
 **
@@ -391,23 +382,16 @@ typedef struct _OE_ClockgettimeArgs
 **
 **==============================================================================
 */
-
+#if defined(_ADD_OE_TIME_CALLS)
 typedef struct _OE_NanosleepArgs
 {
     int ret;
-#if defined(__linux__)
     const struct timespec* req;
     struct timespec reqbuf;
     struct timespec* rem;
     struct timespec rembuf;
-#elif defined(_WIN32)
-    const struct timespec_w* req;
-    struct timespec_w reqbuf;
-    struct timespec_w* rem;
-    struct timespec_w rembuf;
-#endif
 } OE_NanosleepArgs;
-
+#endif
 /*
 **==============================================================================
 **

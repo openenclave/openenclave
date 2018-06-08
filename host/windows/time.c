@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
-#ifdef _WIN32
+#define _ADD_OE_TIME_CALLS
 #include <windows.h>
 #include <openenclave/types.h>
 #include <stdio.h>
@@ -9,25 +8,22 @@
 
 void HandleStrftime(uint64_t argIn)
 {
+    OE_UNUSED(argIn);
+    abort();
 }
 
 void HandleGettimeofday(uint64_t argIn)
 {
+    OE_UNUSED(argIn);
+    abort();
 }
 
 void HandleClockgettime(uint64_t argIn)
 {
+#ifdef _ADD_OE_TIME_CALLS
     OE_ClockgettimeArgs* args = (OE_ClockgettimeArgs*)argIn;
-
     if (!args)
         return;
-
-	printf(
-        "\n Size of OE_ClockgettimeArgs_W = %llu", sizeof(OE_ClockgettimeArgs));
-    printf("\n Size of timespec_w = %llu", sizeof(struct timespec_w));
-    printf("\n Size of int64_t = %llu", sizeof(int64_t));
-    printf("\n Size of long = %llu", sizeof(long));
-    printf("\n Size of int = %llu", sizeof(int));
 
     // Ticks from Windows epoch at 1 Jan 1601 to POSIX epoch at 1 Jan 1970
     // This is derived from SystemTimeToFileTime of:
@@ -65,11 +61,11 @@ void HandleClockgettime(uint64_t argIn)
         args->tp->tv_nsec = (long)nsec;
         args->ret = 0;
     }
-
+#endif
 }
 
 void HandleNanosleep(uint64_t argIn)
 {
+    OE_UNUSED(argIn);
+    abort();
 }
-
-#endif //_WIN32
