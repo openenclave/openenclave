@@ -4,7 +4,7 @@
 #include <openenclave/enclave.h>
 
 /**
- * Use OE_HostPrintf function print log messages from the enclave.
+ * Use OE_HostPrintf function to print log messages from the enclave.
  * Turn on logging during development and turn off in production.
  */
 
