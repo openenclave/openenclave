@@ -88,7 +88,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 /* Get thread data from thread-specific data (TSD) */
 ThreadBinding* GetThreadBinding(void);
 
-struct _OE_Enclave
+struct _oe_enclave
 {
     /* A "magic number" to validate structure */
     uint64_t magic;
@@ -125,9 +125,9 @@ struct _OE_Enclave
 };
 
 /* Get the event for the given TCS */
-EnclaveEvent* GetEnclaveEvent(OE_Enclave* enclave, uint64_t tcs);
+EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
 
 /* Initialize the exception processing. */
-void _OE_InitializeHostException(void);
+void _oe_initialize_host_exception(void);
 
 #endif /* _OE_HOST_ENCLAVE_H */

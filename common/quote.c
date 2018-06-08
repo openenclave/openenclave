@@ -23,7 +23,7 @@ OE_INLINE uint32_t ReadUint32(const uint8_t* p)
     return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
 }
 
-static OE_Result _ParseQuote(
+static oe_result_t _ParseQuote(
     const uint8_t* quote,
     uint32_t quoteSize,
     SGX_Quote** sgxQuote,
@@ -31,7 +31,7 @@ static OE_Result _ParseQuote(
     SGX_QEAuthData* qeAuthData,
     SGX_QECertData* qeCertData)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     const uint8_t* p = quote;
     const uint8_t* const quoteEnd = quote + quoteSize;
@@ -78,9 +78,9 @@ done:
     return result;
 }
 
-static OE_Result _ReadPublicKey(SGX_ECDSA256Key* key, OE_ECPublicKey* publicKey)
+static oe_result_t _ReadPublicKey(SGX_ECDSA256Key* key, oe_ec_public_key_t* publicKey)
 {
-    return OE_ECPublicKeyFromCoordinates(
+    return oe_ec_public_key_from_coordinates(
         publicKey,
         OE_EC_TYPE_SECP256R1,
         key->x,
@@ -89,7 +89,7 @@ static OE_Result _ReadPublicKey(SGX_ECDSA256Key* key, OE_ECPublicKey* publicKey)
         sizeof(key->y));
 }
 
-OE_Result VerifyQuoteImpl(
+oe_result_t VerifyQuoteImpl(
     const uint8_t* quote,
     uint32_t quoteSize,
     const uint8_t* pemPckCertificate,
@@ -99,15 +99,15 @@ OE_Result VerifyQuoteImpl(
     const uint8_t* tcbInfoJson,
     uint32_t tcbInfoJsonSize)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     SGX_Quote* sgxQuote = NULL;
     SGX_QuoteAuthData* quoteAuthData = NULL;
     SGX_QEAuthData qeAuthData = {0};
     SGX_QECertData qeCertData = {0};
-    OE_Cert pckCert = {0};
-    OE_SHA256Context sha256Ctx = {0};
+    oe_cert_t pckCert = {0};
+    oe_sha256_context_t sha256Ctx = {0};
     OE_SHA256 sha256 = {0};
-    OE_ECPublicKey attestationKey = {0};
+    oe_ec_public_key_t attestationKey = {0};
     uint8_t asn1Signature[256];
     uint64_t asn1SignatureSize = sizeof(asn1Signature);
 
@@ -153,7 +153,7 @@ OE_Result VerifyQuoteImpl(
     if (pemPckCertificate != NULL)
     {
         OE_CHECK(
-            OE_CertReadPEM(pemPckCertificate, pemPckCertificateSize, &pckCert));
+            oe_cert_read_pem(pemPckCertificate, pemPckCertificateSize, &pckCert));
     }
 
     // 2. If pckCrl is provided. Parse and Validate it.
@@ -186,20 +186,20 @@ OE_Result VerifyQuoteImpl(
         // if (qeCertData.type != OE_SGX_PCK_ID_PCK_CERT_CHAIN)
         //    OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
 
-        OE_CHECK(OE_SHA256Init(&sha256Ctx));
+        OE_CHECK(oe_sha256_init(&sha256Ctx));
         OE_CHECK(
-            OE_SHA256Update(
+            oe_sha256_update(
                 &sha256Ctx,
                 (const uint8_t*)&quoteAuthData->attestationKey,
                 sizeof(quoteAuthData->attestationKey)));
         if (qeAuthData.size > 0)
         {
             OE_CHECK(
-                OE_SHA256Update(&sha256Ctx, qeAuthData.data, qeAuthData.size));
+                oe_sha256_update(&sha256Ctx, qeAuthData.data, qeAuthData.size));
         }
-        OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
+        OE_CHECK(oe_sha256_final(&sha256Ctx, &sha256));
 
-        if (!OE_ConstantTimeMemEqual(
+        if (!oe_constant_time_mem_equal(
                 &sha256,
                 &quoteAuthData->qeReportBody.reportData,
                 sizeof(sha256)))
@@ -208,13 +208,13 @@ OE_Result VerifyQuoteImpl(
         OE_CHECK(
             _ReadPublicKey(&quoteAuthData->attestationKey, &attestationKey));
 
-        OE_CHECK(OE_SHA256Init(&sha256Ctx));
+        OE_CHECK(oe_sha256_init(&sha256Ctx));
         OE_CHECK(
-            OE_SHA256Update(&sha256Ctx, sgxQuote, SGX_QUOTE_SIGNED_DATA_SIZE));
-        OE_CHECK(OE_SHA256Final(&sha256Ctx, &sha256));
+            oe_sha256_update(&sha256Ctx, sgxQuote, SGX_QUOTE_SIGNED_DATA_SIZE));
+        OE_CHECK(oe_sha256_final(&sha256Ctx, &sha256));
 
         OE_CHECK(
-            OE_ECDSASignatureWriteDER(
+            oe_ecdsa_signature_write_der(
                 asn1Signature,
                 &asn1SignatureSize,
                 quoteAuthData->signature.r,
@@ -223,7 +223,7 @@ OE_Result VerifyQuoteImpl(
                 sizeof(quoteAuthData->signature.s)));
 
         OE_CHECK(
-            OE_ECPublicKeyVerify(
+            oe_ec_public_key_verify(
                 &attestationKey,
                 OE_HASH_TYPE_SHA256,
                 (uint8_t*)&sha256,
@@ -241,7 +241,7 @@ done:
 
 #else
 
-OE_Result VerifyQuoteImpl(
+oe_result_t VerifyQuoteImpl(
     const uint8_t* encQuote,
     uint32_t quoteSize,
     const uint8_t* encPemPckCertificate,

@@ -20,7 +20,7 @@ struct VerifyQuoteArgs
     uint8_t* tcbInfoJson;     /* in */
     uint32_t tcbInfoJsonSize; /* in */
 
-    OE_Result result; /* out */
+    oe_result_t result; /* out */
 };
 
 #endif //_ARGS_H_

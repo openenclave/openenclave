@@ -43,13 +43,13 @@ uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD* exception_record)
     return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
-static OE_OnceType _enclave_exception_once;
+static oe_once_t _enclave_exception_once;
 
 static void _InitializeExceptionImp(void)
 {
-    if (OE_AddVectoredExceptionHandler(0, TestDivideByZeroHandler) == NULL)
+    if (oe_add_vectored_exception_handler(0, TestDivideByZeroHandler) == NULL)
     {
-        OE_Abort();
+        oe_abort();
     }
 
     return;
@@ -57,7 +57,7 @@ static void _InitializeExceptionImp(void)
 
 void _RegisterExceptionHandler()
 {
-    OE_Once(&_enclave_exception_once, _InitializeExceptionImp);
+    oe_once(&_enclave_exception_once, _InitializeExceptionImp);
 }
 
 OE_ECALL void EnclaveNestCalls(void* args_)
@@ -65,22 +65,22 @@ OE_ECALL void EnclaveNestCalls(void* args_)
     Args* args = (Args*)args_;
     char str[128];
     int curDepth = args->depth;
-    OE_Snprintf(str, sizeof(str), "Nested call depth [%d].", curDepth);
+    oe_snprintf(str, sizeof(str), "Nested call depth [%d].", curDepth);
 
     // Register exception handler.
     _RegisterExceptionHandler();
 
-    if (!OE_IsOutsideEnclave(args, sizeof(Args)))
+    if (!oe_is_outside_enclave(args, sizeof(Args)))
     {
         args->ret = -1;
         return;
     }
 
-    OE_HostPrintf("Enclave: EnclaveNestCalls depth [%d] started!\n", curDepth);
+    oe_host_printf("Enclave: EnclaveNestCalls depth [%d] started!\n", curDepth);
 
     if (args->depth <= 0)
     {
-        OE_HostPrintf(
+        oe_host_printf(
             "Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
         args->ret = 0;
         return;
@@ -98,27 +98,27 @@ OE_ECALL void EnclaveNestCalls(void* args_)
         }
     }
 
-    if (OE_Strcmp(args->in, str) != 0)
+    if (oe_strcmp(args->in, str) != 0)
     {
         args->ret = -1;
         return;
     }
 
     // Call out to host which will call in again.
-    if (OE_CallHost("HostNestCalls", args) != OE_OK)
+    if (oe_call_host("HostNestCalls", args) != OE_OK)
     {
         args->ret = -1;
         return;
     }
 
     // Check if it get the correct output parameter.
-    if (OE_Strcmp(args->out, str) != 0)
+    if (oe_strcmp(args->out, str) != 0)
     {
         args->ret = -1;
         return;
     }
 
-    OE_HostPrintf("Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
+    oe_host_printf("Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
 
     args->ret = 0;
     return;

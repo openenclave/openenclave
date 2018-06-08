@@ -2,20 +2,20 @@
 // Licensed under the MIT License.
 
 /*
-   Wrapper for OE_HostAllocForCallHost() for whitebox-testing. Wrapped:
+   Wrapper for oe_host_alloc_for_call_host() for whitebox-testing. Wrapped:
 
-   + OE_HostAllocForCallHost
-   + OE_HostFreeForCallHost
+   + oe_host_alloc_for_call_host
+   + oe_host_free_for_call_host
    + __cxa_atexit
-   + OE_HostMalloc
-   + OE_HostFree
+   + oe_host_malloc
+   + oe_host_free
 
  */
 
-#define OE_HostAllocForCallHost MyOE_HostAllocForCallHost
-#define OE_HostFreeForCallHost MyOE_HostFreeForCallHost
+#define oe_host_alloc_for_call_host MyHostAllocForCallHost
+#define oe_host_free_for_call_host MyHostFreeForCallHost
 #define __cxa_atexit My__cxa_atexit
-#define OE_HostMalloc MyOE_HostMalloc
-#define OE_HostFree MyOE_HostFree
+#define oe_host_malloc MyHostMalloc
+#define oe_host_free MyHostFree
 
 #include "../../../enclave/core/hoststack.c"

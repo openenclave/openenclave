@@ -64,7 +64,7 @@ void datafileloc(char* data_file_name, char* path)
     return;
 }
 
-void Test(OE_Enclave* enclave, int selftest, char* data_file_name)
+void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
 {
     char path[1024];
     Args args;
@@ -77,7 +77,7 @@ void Test(OE_Enclave* enclave, int selftest, char* data_file_name)
         args.test = path;
     }
 
-    OE_Result result = OE_CallEnclave(enclave, "Test", &args);
+    oe_result_t result = oe_call_enclave(enclave, "Test", &args);
     OE_TEST(result == OE_OK);
 
     if (args.ret == 0)
@@ -98,11 +98,11 @@ static void _ExitOCall(uint64_t argIn, uint64_t* argOut)
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
+    oe_result_t result;
     char temp[500];
-    OE_Enclave* enclave = NULL;
+    oe_enclave_t* enclave = NULL;
     int selftest = 0;
-    uint32_t flags = OE_GetCreateFlags();
+    uint32_t flags = oe_get_create_flags();
     char* data_file_name;
     // Check argument count:
     if (argc != 2)
@@ -136,19 +136,19 @@ int main(int argc, const char* argv[])
     }
 
     // Create the enclave:
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_puterr("oe_create_enclave(): result=%u", result);
 
     // Register to handle OCALL_EXIT from tests.
-    OE_RegisterOCall(OCALL_EXIT, _ExitOCall);
+    oe_register_ocall(OCALL_EXIT, _ExitOCall);
 
     // Invoke "Test()" in the enclave.
     Test(enclave, selftest, data_file_name);
 
     // Shutdown the enclave.
-    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
-        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
+    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+        oe_puterr("oe_terminate_enclave(): result=%u", result);
 
     printf("\n");
 

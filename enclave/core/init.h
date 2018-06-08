@@ -7,10 +7,10 @@
 #include <openenclave/enclave.h>
 #include "td.h"
 
-void OE_InitializeEnclave();
+void oe_initialize_enclave();
 
-void OE_CallInitFunctions(void);
+void oe_call_init_functions(void);
 
-void OE_CallFiniFunctions(void);
+void oe_call_fini_functions(void);
 
 #endif /* OE_INIT_H */
