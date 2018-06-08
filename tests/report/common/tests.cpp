@@ -3,13 +3,13 @@
 
 #ifdef OE_BUILD_ENCLAVE
 
-#define Memset OE_Memset
-#define Memcpy OE_Memcpy
-#define Memcmp OE_Memcmp
+#define Memset oe_memset
+#define Memcpy oe_memcpy
+#define Memcmp oe_memcmp
 
-#define GetReport OE_GetReport
+#define GetReport oe_get_report
 
-#define VerifyReport OE_VerifyReport
+#define VerifyReport oe_verify_report
 
 #define TEST_FCN OE_ECALL
 
@@ -21,20 +21,20 @@
 
 // The host side API requires the enclave to be passed in.
 
-OE_Enclave* g_Enclave = NULL;
+oe_enclave_t* g_Enclave = NULL;
 
 #define GetReport(opt, rd, rds, op, ops, rb, rbs) \
-    OE_GetReport(g_Enclave, opt, rd, rds, op, ops, rb, rbs)
+    oe_get_report(g_Enclave, opt, rd, rds, op, ops, rb, rbs)
 
 #define VerifyReport(rpt, rptSize, pr) \
-    OE_VerifyReport(g_Enclave, rpt, rptSize, pr)
+    oe_verify_report(g_Enclave, rpt, rptSize, pr)
 
 #define TEST_FCN
 
 #endif
 
 /*
- * g_UniqueID is populated from the first call to OE_ParseReport.
+ * g_UniqueID is populated from the first call to oe_parse_report.
  * The enclave's uniqueID is asserted to not change subsequently.
  */
 uint8_t g_UniqueID[32];
@@ -52,8 +52,8 @@ static bool CheckReportData(
     const uint8_t* reportData,
     uint32_t reportDataSize)
 {
-    OE_Report parsedReport = {0};
-    OE_TEST(OE_ParseReport(reportBuffer, reportSize, &parsedReport) == OE_OK);
+    oe_report_t parsedReport = {0};
+    OE_TEST(oe_parse_report(reportBuffer, reportSize, &parsedReport) == OE_OK);
 
     return (Memcmp(parsedReport.reportData, reportData, reportDataSize) == 0);
 }
@@ -68,11 +68,11 @@ static void ValidateReport(
     SGX_Quote* sgxQuote = NULL;
     SGX_Report* sgxReport = NULL;
 
-    OE_Report parsedReport = {0};
+    oe_report_t parsedReport = {0};
 
     static bool firstTime = true;
 
-    OE_TEST(OE_ParseReport(reportBuffer, reportSize, &parsedReport) == OE_OK);
+    OE_TEST(oe_parse_report(reportBuffer, reportSize, &parsedReport) == OE_OK);
 
     /* Validate header. */
     OE_TEST(parsedReport.type == OE_ENCLAVE_TYPE_SGX);
@@ -179,9 +179,9 @@ TEST_FCN void TestLocalReport(void* args_)
      */
     {
 #ifdef OE_BUILD_ENCLAVE
-        OE_Result expectedResult = OE_OK;
+        oe_result_t expectedResult = OE_OK;
 #else
-        OE_Result expectedResult = OE_INVALID_PARAMETER;
+        oe_result_t expectedResult = OE_INVALID_PARAMETER;
 #endif
 
         reportSize = 1024 * 1024;
@@ -358,9 +358,9 @@ TEST_FCN void TestRemoteReport(void* args_)
      */
     {
 #ifdef OE_BUILD_ENCLAVE
-        OE_Result expectedResult = OE_OK;
+        oe_result_t expectedResult = OE_OK;
 #else
-        OE_Result expectedResult = OE_INVALID_PARAMETER;
+        oe_result_t expectedResult = OE_INVALID_PARAMETER;
 #endif
 
         reportSize = 2048;
@@ -473,25 +473,25 @@ TEST_FCN void TestRemoteReport(void* args_)
 TEST_FCN void TestParseReportNegative(void* args_)
 {
     uint8_t reportBuffer[2048] = {0};
-    OE_Report parsedReport = {0};
+    oe_report_t parsedReport = {0};
 
     // 1. Null report passed in.
-    OE_TEST(OE_ParseReport(NULL, 0, &parsedReport) == OE_INVALID_PARAMETER);
+    OE_TEST(oe_parse_report(NULL, 0, &parsedReport) == OE_INVALID_PARAMETER);
 
     // 2. Report size less than size of SGX_Report.
     OE_TEST(
-        OE_ParseReport(reportBuffer, sizeof(SGX_Report) - 1, &parsedReport) ==
+        oe_parse_report(reportBuffer, sizeof(SGX_Report) - 1, &parsedReport) ==
         OE_INVALID_PARAMETER);
 
     // 3. Report size greater than size of SGX_Report but less than
     // sizeof(SGX_Quote)
     OE_TEST(
-        OE_ParseReport(reportBuffer, sizeof(SGX_Quote) - 1, &parsedReport) ==
+        oe_parse_report(reportBuffer, sizeof(SGX_Quote) - 1, &parsedReport) ==
         OE_INVALID_PARAMETER);
 
     // 4. NULL parsedReport passed in.
     OE_TEST(
-        OE_ParseReport(reportBuffer, sizeof(SGX_Quote), NULL) ==
+        oe_parse_report(reportBuffer, sizeof(SGX_Quote), NULL) ==
         OE_INVALID_PARAMETER);
 }
 

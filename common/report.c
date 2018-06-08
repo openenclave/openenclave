@@ -10,8 +10,8 @@
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
 
-#define Memset OE_Memset
-#define Memcpy OE_Memcpy
+#define Memset oe_memset
+#define Memcpy oe_memcpy
 
 #else
 
@@ -23,14 +23,14 @@
 
 #endif
 
-static void _OE_ParseSGXReportBody(
+static void _oe_parse_sgx_report_body(
     const SGX_ReportBody* reportBody,
     bool remote,
-    OE_Report* parsedReport)
+    oe_report_t* parsedReport)
 {
-    Memset(parsedReport, 0, sizeof(OE_Report));
+    Memset(parsedReport, 0, sizeof(oe_report_t));
 
-    parsedReport->size = sizeof(OE_Report);
+    parsedReport->size = sizeof(oe_report_t);
     parsedReport->type = OE_ENCLAVE_TYPE_SGX;
 
     /*
@@ -73,14 +73,14 @@ static void _OE_ParseSGXReportBody(
     parsedReport->enclaveReportSize = sizeof(SGX_ReportBody);
 }
 
-OE_Result OE_ParseReport(
+oe_result_t oe_parse_report(
     const uint8_t* report,
     uint32_t reportSize,
-    OE_Report* parsedReport)
+    oe_report_t* parsedReport)
 {
     const SGX_Report* sgxReport = NULL;
     const SGX_Quote* sgxQuote = NULL;
-    OE_Result result = OE_OK;
+    oe_result_t result = OE_OK;
 
     if (report == NULL || parsedReport == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -88,12 +88,12 @@ OE_Result OE_ParseReport(
     if (reportSize == sizeof(SGX_Report))
     {
         sgxReport = (const SGX_Report*)report;
-        _OE_ParseSGXReportBody(&sgxReport->body, false, parsedReport);
+        _oe_parse_sgx_report_body(&sgxReport->body, false, parsedReport);
     }
     else if (reportSize >= sizeof(SGX_Quote))
     {
         sgxQuote = (const SGX_Quote*)report;
-        _OE_ParseSGXReportBody(&sgxQuote->report_body, true, parsedReport);
+        _oe_parse_sgx_report_body(&sgxQuote->report_body, true, parsedReport);
     }
     else
     {

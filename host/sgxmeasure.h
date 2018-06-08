@@ -9,18 +9,18 @@
 
 OE_EXTERNC_BEGIN
 
-OE_Result OE_SGXMeasureCreateEnclave(OE_SHA256Context* context, SGX_Secs* secs);
+oe_result_t oe_sgx__measure_create_enclave(oe_sha256__context_t* context, SGX_Secs* secs);
 
-OE_Result OE_SGXMeasureLoadEnclaveData(
-    OE_SHA256Context* context,
+oe_result_t oe_sgx__measure_load_enclave_data(
+    oe_sha256__context_t* context,
     uint64_t base,
     uint64_t addr,
     uint64_t src,
     uint64_t flags,
     bool extend);
 
-OE_Result OE_SGXMeasureInitializeEnclave(
-    OE_SHA256Context* context,
+oe_result_t oe_sgx__measure_initialize_enclave(
+    oe_sha256__context_t* context,
     OE_SHA256* mrenclave);
 
 OE_EXTERNC_END

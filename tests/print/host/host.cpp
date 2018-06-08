@@ -16,22 +16,22 @@
 
 uint64_t prev;
 
-void TestPrint(OE_Enclave* enclave)
+void TestPrint(oe_enclave_t* enclave)
 {
-    OE_Result result;
+    oe_result_t result;
     TestPrintArgs args;
 
     printf("=== %s() \n", __FUNCTION__);
     args.rc = -1;
-    result = OE_CallEnclave(enclave, "TestPrint", &args);
+    result = oe_call_enclave(enclave, "TestPrint", &args);
     OE_TEST(result == OE_OK);
     OE_TEST(args.rc == 0);
 }
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     if (argc != 2)
     {
@@ -39,19 +39,19 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
 
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_puterr("oe_create_enclave(): result=%u", result);
     }
 
     TestPrint(enclave);
 
-    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
+    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {
-        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
+        oe_puterr("oe_terminate_enclave(): result=%u", result);
     }
 
     printf("=== passed all tests (%s)\n", argv[0]);

@@ -22,22 +22,22 @@ OE_OCALL void host_usleep(void* args)
 
 void* ReaderThread(void* args)
 {
-    OE_Enclave* enclave = (OE_Enclave*)args;
-    OE_TEST(OE_CallEnclave(enclave, "ReaderThreadImpl", &_rwArgs) == OE_OK);
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
+    OE_TEST(oe_call_enclave(enclave, "ReaderThreadImpl", &_rwArgs) == OE_OK);
 
     return NULL;
 }
 
 void* WriterThread(void* args)
 {
-    OE_Enclave* enclave = (OE_Enclave*)args;
-    OE_TEST(OE_CallEnclave(enclave, "WriterThreadImpl", &_rwArgs) == OE_OK);
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
+    OE_TEST(oe_call_enclave(enclave, "WriterThreadImpl", &_rwArgs) == OE_OK);
 
     return NULL;
 }
 
 // Launch multiple reader and writer threads and OE_TEST invariants.
-void TestReadersWriterLock(OE_Enclave* enclave)
+void TestReadersWriterLock(oe_enclave_t* enclave)
 {
     pthread_t threads[NUM_RW_TEST_THREADS];
 

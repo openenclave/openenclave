@@ -46,9 +46,9 @@ void DumpEntryPoint(Elf64* elf)
         return;
     }
 
-    if (strcmp(name, "OE_Main") != 0)
+    if (strcmp(name, "oe_main") != 0)
     {
-        err("entry point not called OE_Main: %s", name);
+        err("entry point not called oe_main: %s", name);
         return;
     }
 
@@ -58,7 +58,7 @@ void DumpEntryPoint(Elf64* elf)
     printf("\n");
 }
 
-void DumpEnclaveProperties(const OE_SGXEnclaveProperties* props)
+void DumpEnclaveProperties(const oe_sgx__enclave_properties_t* props)
 {
     const SGX_SigStruct* sigstruct;
 
@@ -83,10 +83,10 @@ void DumpEnclaveProperties(const OE_SGXEnclaveProperties* props)
     sigstruct = (const SGX_SigStruct*)props->sigstruct;
 
     printf("mrenclave=");
-    OE_HexDump(sigstruct->enclavehash, sizeof(sigstruct->enclavehash));
+    oe_hex_dump(sigstruct->enclavehash, sizeof(sigstruct->enclavehash));
 
     printf("signature=");
-    OE_HexDump(sigstruct->signature, sizeof(sigstruct->signature));
+    oe_hex_dump(sigstruct->signature, sizeof(sigstruct->signature));
 
     printf("\n");
 
@@ -98,7 +98,7 @@ typedef struct _VisitSymData
 {
     const Elf64* elf;
     const Elf64_Shdr* shdr;
-    OE_Result result;
+    oe_result_t result;
 } VisitSymData;
 
 static int _VisitSym(const Elf64_Sym* sym, void* data_)
@@ -204,7 +204,7 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
     int ret = 1;
     Elf64 elf;
-    OE_SGXEnclaveProperties props;
+    oe_sgx__enclave_properties_t props;
 
     /* Check arguments */
     if (argc != 2)
@@ -221,7 +221,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the SGX enclave properties */
-    if (OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
+    if (oe_sgx__load_properties(&elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
     {
         err("failed to load SGX enclave properties from %s section",
             OE_INFO_SECTION_NAME);

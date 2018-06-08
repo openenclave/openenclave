@@ -113,7 +113,7 @@ static SGX_Secs* _NewSecs(uint64_t base, uint64_t size, bool debug)
 {
     SGX_Secs* secs = NULL;
 
-    if (!(secs = (SGX_Secs*)OE_Memalign(OE_PAGE_SIZE, sizeof(SGX_Secs))))
+    if (!(secs = (SGX_Secs*)oe_memalign(OE_PAGE_SIZE, sizeof(SGX_Secs))))
         return NULL;
 
     memset(secs, 0, sizeof(SGX_Secs));
@@ -264,12 +264,12 @@ done:
 #endif /* defined(_WIN32) */
 }
 
-static OE_Result _GetSigStruct(
-    const OE_SGXEnclaveProperties* properties,
+static oe_result_t _GetSigStruct(
+    const oe_sgx__enclave_properties_t* properties,
     const OE_SHA256* mrenclave,
     SGX_SigStruct* sigstruct)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     memset(sigstruct, 0, sizeof(SGX_SigStruct));
 
@@ -285,7 +285,7 @@ static OE_Result _GetSigStruct(
 
         /* Perform debug-signing with well-known debug-signing key */
         OE_CHECK(
-            OE_SGXSignEnclave(
+            oe_sgx__sign_enclave(
                 mrenclave,
                 properties->config.attributes,
                 properties->config.productID,
@@ -309,12 +309,12 @@ done:
 
 /* obtaining a launch token is only necessary when not using libsgx */
 #if !defined(OE_USE_LIBSGX)
-static OE_Result _GetLaunchToken(
-    const OE_SGXEnclaveProperties* properties,
+static oe_result_t _GetLaunchToken(
+    const oe_sgx__enclave_properties_t* properties,
     SGX_SigStruct* sigstruct,
     SGX_LaunchToken* launchToken)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     AESM* aesm = NULL;
 
     memset(launchToken, 0, sizeof(SGX_LaunchToken));
@@ -347,15 +347,15 @@ done:
 }
 #endif
 
-OE_Result OE_SGXInitializeLoadContext(
-    OE_SGXLoadContext* context,
-    OE_SGXLoadType type,
+oe_result_t oe_sgx__initialize_load_context(
+    oe_sgx__load_context_t* context,
+    oe_sgx__load_type_t type,
     uint32_t attributes)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (context)
-        memset(context, 0, sizeof(OE_SGXLoadContext));
+        memset(context, 0, sizeof(oe_sgx__load_context_t));
 
     if (!context || type == OE_SGX_LOAD_TYPE_UNDEFINED)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -365,7 +365,7 @@ OE_Result OE_SGXInitializeLoadContext(
     context->attributes = attributes;
     context->dev = OE_SGX_NO_DEVICE_HANDLE;
 #if !defined(OE_USE_LIBSGX) && defined(__linux__)
-    if (type != OE_SGX_LOAD_TYPE_MEASURE && !OE_SGXLoadIsSimulation(context))
+    if (type != OE_SGX_LOAD_TYPE_MEASURE && !oe_sgx__load_is_simulation(context))
     {
         context->dev = open("/dev/isgx", O_RDWR);
         if (context->dev == OE_SGX_NO_DEVICE_HANDLE)
@@ -380,22 +380,22 @@ done:
     return result;
 }
 
-void OE_SGXCleanupLoadContext(OE_SGXLoadContext* context)
+void oe_sgx__cleanup_load_context(oe_sgx__load_context_t* context)
 {
 #if !defined(OE_USE_LIBSGX) && defined(__linux__)
     if (context && context->dev != OE_SGX_NO_DEVICE_HANDLE)
         close(context->dev);
 #endif
     /* Clear all fields, this also sets state to undefined */
-    memset(context, 0, sizeof(OE_SGXLoadContext));
+    memset(context, 0, sizeof(oe_sgx__load_context_t));
 }
 
-OE_Result OE_SGXCreateEnclave(
-    OE_SGXLoadContext* context,
+oe_result_t oe_sgx__create_enclave(
+    oe_sgx__load_context_t* context,
     uint64_t enclaveSize,
     uint64_t* enclaveAddr)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     void* base = NULL;
     SGX_Secs* secs = NULL;
 
@@ -409,11 +409,11 @@ OE_Result OE_SGXCreateEnclave(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* SIZE must be a power of two */
-    if (enclaveSize != OE_RoundU64ToPow2(enclaveSize))
+    if (enclaveSize != oe_round_power2_u64(enclaveSize))
         OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(OE_USE_LIBSGX) || defined(_WIN32)
-    if (OE_SGXLoadIsSimulation(context))
+    if (oe_sgx__load_is_simulation(context))
 #endif
     {
         /* Allocation memory-mapped region */
@@ -423,18 +423,18 @@ OE_Result OE_SGXCreateEnclave(
 
     /* Create SECS structure */
     if (!(secs = _NewSecs(
-              (uint64_t)base, enclaveSize, OE_SGXLoadIsDebug(context))))
+              (uint64_t)base, enclaveSize, oe_sgx__load_is_debug(context))))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Measure this operation */
-    OE_CHECK(OE_SGXMeasureCreateEnclave(&context->hashContext, secs));
+    OE_CHECK(oe_sgx__measure_create_enclave(&context->hashContext, secs));
 
     if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
     {
         /* Create a phony address */
         base = (void*)0xffffffff00000000;
     }
-    else if (OE_SGXLoadIsSimulation(context))
+    else if (oe_sgx__load_is_simulation(context))
     {
         /* Simulate enclave creation */
         context->sim.addr = (void*)secs->base;
@@ -494,20 +494,20 @@ OE_Result OE_SGXCreateEnclave(
 done:
 
     if (secs)
-        OE_MemalignFree(secs);
+        oe_memalign_free(secs);
 
     return result;
 }
 
-OE_Result OE_SGXLoadEnclaveData(
-    OE_SGXLoadContext* context,
+oe_result_t oe_sgx__load_enclave_data(
+    oe_sgx__load_context_t* context,
     uint64_t base,
     uint64_t addr,
     uint64_t src,
     uint64_t flags,
     bool extend)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!context || !base || !addr || !src || !flags)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -521,7 +521,7 @@ OE_Result OE_SGXLoadEnclaveData(
 
     /* Measure this operation */
     OE_CHECK(
-        OE_SGXMeasureLoadEnclaveData(
+        oe_sgx__measure_load_enclave_data(
             &context->hashContext, base, addr, src, flags, extend));
 
     if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
@@ -530,7 +530,7 @@ OE_Result OE_SGXLoadEnclaveData(
         result = OE_OK;
         goto done;
     }
-    else if (OE_SGXLoadIsSimulation(context))
+    else if (oe_sgx__load_is_simulation(context))
     {
         /* Simulate enclave add page */
         /* Verify that page is within enclave boundaries */
@@ -619,13 +619,13 @@ done:
     return result;
 }
 
-OE_Result OE_SGXInitializeEnclave(
-    OE_SGXLoadContext* context,
+oe_result_t oe_sgx__initialize_enclave(
+    oe_sgx__load_context_t* context,
     uint64_t addr,
-    const OE_SGXEnclaveProperties* properties,
+    const oe_sgx__enclave_properties_t* properties,
     OE_SHA256* mrenclave)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (mrenclave)
         memset(mrenclave, 0, sizeof(OE_SHA256));
@@ -637,11 +637,11 @@ OE_Result OE_SGXInitializeEnclave(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    OE_CHECK(OE_SGXMeasureInitializeEnclave(&context->hashContext, mrenclave));
+    OE_CHECK(oe_sgx__measure_initialize_enclave(&context->hashContext, mrenclave));
 
     /* EINIT has no further action in measurement/simulation mode */
     if (context->type == OE_SGX_LOAD_TYPE_CREATE &&
-        !OE_SGXLoadIsSimulation(context))
+        !oe_sgx__load_is_simulation(context))
     {
         /* Get a debug sigstruct for MRENCLAVE if necessary */
         SGX_SigStruct sigstruct;

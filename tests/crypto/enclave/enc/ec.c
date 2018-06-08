@@ -6,15 +6,15 @@
 #include <openenclave/bits/raise.h>
 #include "../../../../enclave/key.h"
 
-OE_Result OE_ECPublicKeyToCoordinates(
-    const OE_ECPublicKey* publicKey,
+oe_result_t oe_ec_public_key_to_coordinates(
+    const oe_ec_public_key_t* publicKey,
     uint8_t* xData,
     size_t* xSize,
     uint8_t* yData,
     size_t* ySize)
 {
-    OE_PublicKey* impl = (OE_PublicKey*)publicKey;
-    OE_Result result = OE_UNEXPECTED;
+    oe_public_key_t* impl = (oe_public_key_t*)publicKey;
+    oe_result_t result = OE_UNEXPECTED;
 
     /* Check for invalid parameters */
     if (!impl || !xSize || !ySize)
@@ -64,7 +64,7 @@ done:
     return result;
 }
 
-OE_Result OE_ECDSASignatureReadDER(
+oe_result_t oe_ecdsa__signature_read_der(
     const uint8_t* signature,
     size_t signatureSize,
     uint8_t* rData,
@@ -72,7 +72,7 @@ OE_Result OE_ECDSASignatureReadDER(
     uint8_t* sData,
     size_t* sSize)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     mbedtls_mpi r;
     mbedtls_mpi s;
     uint8_t* p = (uint8_t*)signature;

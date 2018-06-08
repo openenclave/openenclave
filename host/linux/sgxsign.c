@@ -28,9 +28,9 @@ static void _MemReverse(void* dest_, const void* src_, size_t n)
         *dest++ = *--end;
 }
 
-static OE_Result _GetDate(unsigned int* date)
+static oe_result_t _GetDate(unsigned int* date)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     time_t t;
     struct tm tm;
     size_t i;
@@ -68,9 +68,9 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _GetModulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
+static oe_result_t _GetModulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     uint8_t buf[OE_KEY_SIZE];
 
     if (!rsa || !modulus)
@@ -87,9 +87,9 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
+static oe_result_t _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     // uint8_t buf[OE_EXPONENT_SIZE];
 
     if (!rsa || !exponent)
@@ -112,7 +112,7 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _GetQ1AndQ2(
+static oe_result_t _GetQ1AndQ2(
     const void* signature,
     size_t signatureSize,
     const void* modulus,
@@ -122,7 +122,7 @@ static OE_Result _GetQ1AndQ2(
     void* q2Out,
     size_t q2OutSize)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     BIGNUM* s = NULL;
     BIGNUM* m = NULL;
     BIGNUM* q1 = NULL;
@@ -236,7 +236,7 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _InitSigstruct(
+static oe_result_t _InitSigstruct(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,
@@ -244,7 +244,7 @@ static OE_Result _InitSigstruct(
     RSA* rsa,
     SGX_SigStruct* sigstruct)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!sigstruct)
         OE_THROW(OE_INVALID_PARAMETER);
@@ -314,13 +314,13 @@ static OE_Result _InitSigstruct(
 
         {
             OE_SHA256 sha256;
-            OE_SHA256Context context;
+            oe_sha256__context_t context;
             unsigned char signature[OE_KEY_SIZE];
             unsigned int signatureSize;
 
-            OE_SHA256Init(&context);
-            OE_SHA256Update(&context, buf, n);
-            OE_SHA256Final(&context, &sha256);
+            oe_sha256__init(&context);
+            oe_sha256__update(&context, buf, n);
+            oe_sha256__final(&context, &sha256);
 
             if (!RSA_sign(
                     NID_sha256,
@@ -358,12 +358,12 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _LoadRSAPrivateKey(
+static oe_result_t _LoadRSAPrivateKey(
     const uint8_t* pemData,
     size_t pemSize,
     RSA** key)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     BIO* bio = NULL;
     RSA* rsa = NULL;
 
@@ -404,7 +404,7 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_SGXSignEnclave(
+oe_result_t oe_sgx__sign_enclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,
@@ -413,7 +413,7 @@ OE_Result OE_SGXSignEnclave(
     size_t pemSize,
     SGX_SigStruct* sigstruct)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     RSA* rsa = NULL;
 
     if (sigstruct)

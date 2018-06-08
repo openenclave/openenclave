@@ -21,25 +21,25 @@ using namespace std;
 
 #define THREAD_COUNT 5
 
-void TestAbortStatus(OE_Enclave* enclave, const char* functionName)
+void TestAbortStatus(oe_enclave_t* enclave, const char* functionName)
 {
-    OE_Result result;
+    oe_result_t result;
     AbortStatusArgs args;
     args.divisor = 0;
     args.ret = -1;
 
     printf("=== %s(%s)  \n", __FUNCTION__, functionName);
-    result = OE_CallEnclave(enclave, functionName, &args);
+    result = oe_call_enclave(enclave, functionName, &args);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
     OE_TEST(args.ret == 0);
 }
 
 static void CrashEnclaveThread(
-    OE_Enclave* enclave,
+    oe_enclave_t* enclave,
     uint32_t* thread_ready_count,
     uint32_t* is_enclave_crashed)
 {
-    OE_Result result;
+    oe_result_t result;
     AbortStatusArgs args;
     args.ret = -1;
     args.thread_ready_count = thread_ready_count;
@@ -52,7 +52,7 @@ static void CrashEnclaveThread(
     }
 
     // Crash the enclave to set enclave in abort status.
-    result = OE_CallEnclave(enclave, "RegularAbort", &args);
+    result = oe_call_enclave(enclave, "RegularAbort", &args);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
     OE_TEST(args.ret == 0);
 
@@ -62,11 +62,11 @@ static void CrashEnclaveThread(
 }
 
 static void EcallAfterCrashThread(
-    OE_Enclave* enclave,
+    oe_enclave_t* enclave,
     uint32_t* thread_ready_count,
     uint32_t* is_enclave_crashed)
 {
-    OE_Result result;
+    oe_result_t result;
     AbortStatusArgs args;
     args.ret = -1;
     args.thread_ready_count = thread_ready_count;
@@ -81,24 +81,24 @@ static void EcallAfterCrashThread(
     }
 
     // Try to ECALL into the enclave.
-    result = OE_CallEnclave(enclave, "NormalECall", &args);
+    result = oe_call_enclave(enclave, "NormalECall", &args);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
     OE_TEST(args.ret == -1);
     return;
 }
 
 static void OcallAfterCrashThread(
-    OE_Enclave* enclave,
+    oe_enclave_t* enclave,
     uint32_t* thread_ready_count,
     uint32_t* is_enclave_crashed)
 {
-    OE_Result result;
+    oe_result_t result;
     AbortStatusArgs args;
     args.ret = -1;
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
 
-    result = OE_CallEnclave(enclave, "TestOCallAfterAbort", &args);
+    result = oe_call_enclave(enclave, "TestOCallAfterAbort", &args);
     OE_TEST(result == OE_OK);
     OE_TEST(args.ret == 0);
 
@@ -113,7 +113,7 @@ static uint32_t CalcRecursionHashHost(const AbortStatusEncRecursionArg* args_)
 {
     AbortStatusEncRecursionArg args = *args_;
     AbortStatusEncRecursionArg argsRec;
-    OE_Result result = OE_OK;
+    oe_result_t result = OE_OK;
 
     printf(
         "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
@@ -148,7 +148,7 @@ static uint32_t CalcRecursionHashEnc(const AbortStatusEncRecursionArg* args_)
 {
     AbortStatusEncRecursionArg args = *args_;
     AbortStatusEncRecursionArg argsHost;
-    OE_Result result = OE_OK;
+    oe_result_t result = OE_OK;
 
     printf(
         "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
@@ -177,13 +177,13 @@ static uint32_t CalcRecursionHashEnc(const AbortStatusEncRecursionArg* args_)
 // Actual enclave/host/... recursion test. Trail of execution is gathered via
 // Crc, success determined via comparison with separate, non-enclave version.
 static uint32_t TestRecursion(
-    OE_Enclave* enclave,
+    oe_enclave_t* enclave,
     unsigned flowId,
     unsigned recursionDepth,
     uint32_t* thread_ready_count,
     uint32_t* is_enclave_crashed)
 {
-    OE_Result result;
+    oe_result_t result;
     AbortStatusEncRecursionArg args = {};
 
     printf(
@@ -198,7 +198,7 @@ static uint32_t TestRecursion(
 
     uint32_t crc = CalcRecursionHashEnc(&args);
 
-    result = OE_CallEnclave(enclave, "EncRecursion", &args);
+    result = oe_call_enclave(enclave, "EncRecursion", &args);
     OE_TEST(result == OE_OK);
 
     printf(
@@ -218,7 +218,7 @@ static uint32_t TestRecursion(
 // Ocall for recursion test
 OE_OCALL void RecursionOcall(void* args_)
 {
-    OE_Result result = OE_OK;
+    oe_result_t result = OE_OK;
 
     AbortStatusEncRecursionArg* argsPtr = (AbortStatusEncRecursionArg*)args_;
     AbortStatusEncRecursionArg args = *argsPtr;
@@ -239,8 +239,8 @@ OE_OCALL void RecursionOcall(void* args_)
     if (args.recursionsLeft)
     {
         argsRec.recursionsLeft--;
-        result = OE_CallEnclave(
-            (OE_Enclave*)argsRec.enclave, "EncRecursion", &argsRec);
+        result = oe_call_enclave(
+            (oe_enclave_t*)argsRec.enclave, "EncRecursion", &argsRec);
     }
     else
     {
@@ -254,8 +254,8 @@ OE_OCALL void RecursionOcall(void* args_)
 
         // Verify the ECALL into the enclave will fail after enclave is aborted.
         OE_TEST(
-            OE_CallEnclave(
-                (OE_Enclave*)argsRec.enclave, "EncRecursion", NULL) ==
+            oe_call_enclave(
+                (oe_enclave_t*)argsRec.enclave, "EncRecursion", NULL) ==
             OE_ENCLAVE_ABORTING);
     }
 
@@ -267,20 +267,20 @@ OE_OCALL void RecursionOcall(void* args_)
 // single thread.
 static bool TestBasicAbort(const char* enclaveName)
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
     const char* functionNames[] = {"RegularAbort",
                                    "GenerateUnhandledHardwareException"};
 
     for (uint32_t i = 0; i < OE_COUNTOF(functionNames); i++)
     {
-        if ((result = OE_CreateEnclave(
+        if ((result = oe_create_enclave(
                  enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
             OE_OK)
         {
-            OE_PutErr("OE_CreateEnclave(): result=%u", result);
+            oe_puterr("oe_create_enclave(): result=%u", result);
             return false;
         }
 
@@ -291,9 +291,9 @@ static bool TestBasicAbort(const char* enclaveName)
             TestAbortStatus(enclave, functionNames[i]);
         }
 
-        if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
+        if ((result = oe_terminate_enclave(enclave)) != OE_OK)
         {
-            OE_PutErr("OE_TerminateEnclave(): result=%u", result);
+            oe_puterr("oe_terminate_enclave(): result=%u", result);
             return false;
         }
     }
@@ -315,16 +315,16 @@ static bool TestBasicAbort(const char* enclaveName)
 //  ERET and ORET should return to enclave and host correctly.
 static bool TestMultipleThreadAbort(const char* enclaveName)
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     // Create the enclave.
-    const uint32_t flags = OE_GetCreateFlags();
-    if ((result = OE_CreateEnclave(
+    const uint32_t flags = oe_get_create_flags();
+    if ((result = oe_create_enclave(
              enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
         OE_OK)
     {
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_puterr("oe_create_enclave(): result=%u", result);
         return false;
     }
 
@@ -383,9 +383,9 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
     }
 
     // Enclave should be terminated correctly.
-    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
+    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {
-        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
+        oe_puterr("oe_terminate_enclave(): result=%u", result);
         return false;
     }
 
@@ -408,7 +408,7 @@ int main(int argc, const char* argv[])
     }
     else
     {
-        OE_PutErr("Basic abort status tests failed.\n");
+        oe_puterr("Basic abort status tests failed.\n");
         return 1;
     }
 
@@ -418,7 +418,7 @@ int main(int argc, const char* argv[])
     }
     else
     {
-        OE_PutErr("Multiple threads abort status tests failed.\n");
+        oe_puterr("Multiple threads abort status tests failed.\n");
         return 1;
     }
 

@@ -14,25 +14,25 @@ static int counter;
    will attempt to re-enter via ECalls. Check results.
 
    The argPtr is shared w/ the host on purpose, both for communicating the
-   function-call arguments (in the format OE_OCallFunction() provides them),
+   function-call arguments (in the format oe_ocall_function() provides them),
    as well as for return values.
 
  */
 OE_ECALL void Test(void* argPtr)
 {
-    OE_Result res;
+    oe_result_t res;
     TestORArgs* ta = (TestORArgs*)argPtr;
-    OE_CallHostArgs* cha = &ta->callHost;
+    oe_call_host_args_t* cha = &ta->callHost;
 
     printf("%s(): Called, ta=%p\n", __FUNCTION__, ta);
 
-    /* Perform regular ocall w/ ecall. We mimic OE_OCallFunction() and use
+    /* Perform regular ocall w/ ecall. We mimic oe_ocall_function() and use
      * internal knowledge of it to pass OE_OCALL_FLAG_NOT_REENTRANT later. */
     cha->args = argPtr;
     strcpy(cha->func, "TestEcall");
 
     printf("%s(): OCALL...\n", __FUNCTION__);
-    res = OE_OCall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, 0);
+    res = oe_ocall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, 0);
     printf(
         "%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n",
         __FUNCTION__,
@@ -45,7 +45,7 @@ OE_ECALL void Test(void* argPtr)
 
     /* Perform restricted ocall, expect ecall to fail */
     printf("%s(): OCALL(restricted)...\n", __FUNCTION__);
-    res = OE_OCall(
+    res = oe_ocall(
         OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
     printf(
         "%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n",
@@ -58,7 +58,7 @@ OE_ECALL void Test(void* argPtr)
     OE_TEST(counter == 1);
 
     /* Perform regular ocall w/ ecall */
-    res = OE_OCall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, 0);
+    res = oe_ocall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, 0);
     OE_TEST(res == OE_OK);
     OE_TEST(ta->result == OE_OK);
     OE_TEST(counter == 2);
