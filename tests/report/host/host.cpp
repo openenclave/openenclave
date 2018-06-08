@@ -92,7 +92,6 @@ int main(int argc, const char* argv[])
     TestRemoteReport(NULL);
     TestParseReportNegative(NULL);
     TestLocalVerifyReport(NULL);
-    TestRemoteVerifyReport(NULL);
 
 #ifdef OE_USE_LIBSGX
     TestRemoteVerifyReport(NULL);
