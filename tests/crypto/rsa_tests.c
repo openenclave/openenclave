@@ -605,7 +605,6 @@ static void _TestCertMethods()
     {
         OE_CertChain chain = {0};
         OE_Cert root = {0};
-        OE_Cert cert0 = {0};
         OE_Cert leaf = {0};
 
         /* Load the chain from PEM format */
