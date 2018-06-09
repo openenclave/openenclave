@@ -225,7 +225,7 @@ OE_Result OE_ECPublicKeyEqual(
     bool* equal);
 
 /**
- * Initializes a public key from X and Y corrdinates.
+ * Initializes a public key from X and Y coordinates.
  *
  * This function initializes an EC public key from X and Y coordinates in
  * uncompressed format.
