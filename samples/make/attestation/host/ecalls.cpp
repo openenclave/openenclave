@@ -5,21 +5,6 @@
 #include <stdio.h>
 
 /**
- * Initialize the enclave.
- */
-void Initialize(OE_Enclave* enclave)
-{
-    OE_Result result = OE_CallEnclave(enclave, "Initialize", NULL);
-    if (result != OE_OK)
-    {
-        printf("Initialize failed. %s", OE_ResultStr(result));
-        exit(1);
-    }
-
-    printf("Enclave Initialized.\n");
-}
-
-/**
  * Fetch the quoted public key from the enclave.
  */
 QuotedPublicKey* GetPublicKey(OE_Enclave* enclave)

@@ -10,15 +10,6 @@
 #include "../args.h"
 
 /**
- * List of ECALLS exposed by this enclave.
- */
-
-/**
- * Initialize the enclave.
- */
-OE_ECALL void Initialize(void*);
-
-/**
  * Return the public key of this enclave along with the enclave's quote. Another
  * enclave can use the quote to attest the enclave and verify the integrity of
  * the public key.

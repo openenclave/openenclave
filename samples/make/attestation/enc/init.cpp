@@ -4,6 +4,4 @@
 #include "crypto.h"
 
 // Initialize various modules in well-defined order.
-// TODO: This causes hang.
-// Possibly due to CPUID throwing exception during start.
-// bool g_Initialize = InitializeCrypto();
+bool g_Initialize = InitializeCrypto();

@@ -23,7 +23,6 @@ OE_Enclave* CreateEnclave(const char* enclavePath)
     }
 
     printf("Enclave created.\n");
-    Initialize(enclave);
     return enclave;
 }
 

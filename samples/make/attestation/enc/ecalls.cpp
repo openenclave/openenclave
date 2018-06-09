@@ -10,14 +10,6 @@
 #include "log.h"
 
 /**
- * Initialize the enclave.
- */
-OE_ECALL void Initialize(void*)
-{
-    InitializeCrypto();
-}
-
-/**
  * Return the public key of this enclave along with the enclave's quote.
  * The enclave that receives the key will use the quote to attest this enclave.
  */

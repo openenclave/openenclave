@@ -14,11 +14,6 @@
  */
 
 /**
- * Initialize the enclave.
- */
-void Initialize(OE_Enclave* enclave);
-
-/**
  * Fetch the quoted public key from the enclave.
  */
 QuotedPublicKey* GetPublicKey(OE_Enclave* enclave);
