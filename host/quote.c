@@ -17,9 +17,9 @@
 
 #if !defined(OE_USE_LIBSGX)
 
-static OE_Result _SGX_InitQuoteWithAesm(SGX_TargetInfo* targetInfo)
+static oe_result_t _SGX_InitQuoteWithAesm(SGX_TargetInfo* targetInfo)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     SGX_EPIDGroupID epidGroupID = {0};
 
     AESM* aesm = NULL;
@@ -39,11 +39,11 @@ done:
     return result;
 }
 
-static OE_Result _SGX_GetQuoteSizeFromAesm(
+static oe_result_t _SGX_GetQuoteSizeFromAesm(
     const uint8_t* signatureRevocationList,
     uint32_t* quoteSize)
 {
-    OE_Result result = OE_FAILURE;
+    oe_result_t result = OE_FAILURE;
     uint64_t signatureSize = 0;
     uint32_t n = 0;
     uint64_t quoteSize64 = 0;
@@ -65,7 +65,7 @@ static OE_Result _SGX_GetQuoteSizeFromAesm(
 
         assert(sizeof(sigrl->sigrl.n2) == sizeof(uint32_t));
         const void* tmp = &sigrl->sigrl.n2;
-        n = OE_ByteSwap32(*(uint32_t*)tmp);
+        n = oe_byte_swap32(*(uint32_t*)tmp);
     }
 
     /* Calculate variable size of EPID_Signature with N entries */
@@ -84,7 +84,7 @@ done:
     return result;
 }
 
-static OE_Result _SGX_GetQuoteFromAesm(
+static oe_result_t _SGX_GetQuoteFromAesm(
     const SGX_Report* report,
     SGX_QuoteType quoteType,
     SGX_Quote* quote,
@@ -109,7 +109,7 @@ static OE_Result _SGX_GetQuoteFromAesm(
         0x04,
     }};
 
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     AESM* aesm = NULL;
 
     if (!report || !quote || !quoteSize)
@@ -143,9 +143,9 @@ done:
 
 #endif
 
-OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
+oe_result_t SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     memset(targetInfo, 0, sizeof(*targetInfo));
 
 #if defined(OE_USE_LIBSGX)
@@ -164,9 +164,9 @@ OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
     return result;
 }
 
-OE_Result SGX_GetQuoteSize(uint32_t* quoteSize)
+oe_result_t SGX_GetQuoteSize(uint32_t* quoteSize)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (quoteSize)
         *quoteSize = 0;
@@ -189,12 +189,12 @@ done:
     return result;
 }
 
-OE_Result SGX_GetQuote(
+oe_result_t SGX_GetQuote(
     const SGX_Report* report,
     uint8_t* quote,
     uint32_t* quoteSize)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     /* Reject null parameters */
     if (!report || !quoteSize)

@@ -18,10 +18,10 @@ void TestSHA()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_SHA256 hash;
-    OE_SHA256Context ctx;
-    OE_SHA256Init(&ctx);
-    OE_SHA256Update(&ctx, ALPHABET, strlen(ALPHABET));
-    OE_SHA256Final(&ctx, &hash);
+    oe_sha256_context_t ctx;
+    oe_sha256_init(&ctx);
+    oe_sha256_update(&ctx, ALPHABET, strlen(ALPHABET));
+    oe_sha256_final(&ctx, &hash);
     OE_TEST(memcmp(&hash, &ALPHABET_HASH, sizeof(OE_SHA256)) == 0);
 
     printf("=== passed %s()\n", __FUNCTION__);

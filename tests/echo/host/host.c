@@ -15,11 +15,11 @@ OE_OCALL void Echo(void* args_)
 {
     EchoArgs* args = (EchoArgs*)args_;
 
-    OE_TEST(strcmp(args->str1, "OE_HostStackStrdup1") == 0);
-    OE_TEST(strcmp(args->str2, "OE_HostStackStrdup2") == 0);
-    OE_TEST(strcmp(args->str3, "OE_HostStackStrdup3") == 0);
+    OE_TEST(strcmp(args->str1, "oe_host_stack_strdup1") == 0);
+    OE_TEST(strcmp(args->str2, "oe_host_stack_strdup2") == 0);
+    OE_TEST(strcmp(args->str3, "oe_host_stack_strdup3") == 0);
 
-    if (!(args->out = OE_Strdup(args->in)))
+    if (!(args->out = oe_strdup(args->in)))
     {
         args->ret = -1;
         return;
@@ -30,8 +30,8 @@ OE_OCALL void Echo(void* args_)
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     if (argc != 2)
     {
@@ -39,34 +39,34 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
 
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_puterr("oe_create_enclave(): result=%u", result);
 
     EchoArgs args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
-    if (!(args.in = OE_Strdup("Hello World")))
-        OE_PutErr("Strdup() failed");
+    if (!(args.in = oe_strdup("Hello World")))
+        oe_puterr("Strdup() failed");
 
-    if ((result = OE_CallEnclave(enclave, "Echo", &args)) != OE_OK)
-        OE_PutErr("OE_CallEnclave() failed: result=%u", result);
+    if ((result = oe_call_enclave(enclave, "Echo", &args)) != OE_OK)
+        oe_puterr("oe_call_enclave() failed: result=%u", result);
 
     if (args.ret != 0)
-        OE_PutErr("ECALL failed args.result=%d", args.ret);
+        oe_puterr("ECALL failed args.result=%d", args.ret);
 
     OE_TEST(args.in);
     OE_TEST(args.out);
 
     if (strcmp(args.in, args.out) != 0)
-        OE_PutErr("ecall failed: %s != %s\n", args.in, args.out);
+        oe_puterr("ecall failed: %s != %s\n", args.in, args.out);
 
     free((char*)args.in);
     free((char*)args.out);
 
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (echo)\n");
 

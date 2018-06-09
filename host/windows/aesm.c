@@ -259,14 +259,14 @@ void AESMDisconnect(AESM* aesm)
     }
 }
 
-OE_Result AESMGetLaunchToken(
+oe_result_t AESMGetLaunchToken(
     AESM* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
     const SGX_Attributes* attributes,
     SGX_LaunchToken* launchToken)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 
@@ -307,12 +307,12 @@ done:
     return result;
 }
 
-OE_Result AESMInitQuote(
+oe_result_t AESMInitQuote(
     AESM* aesm,
     SGX_TargetInfo* targetInfo,
     SGX_EPIDGroupID* epidGroupID)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 
@@ -348,7 +348,7 @@ done:
     return result;
 }
 
-OE_Result AESMGetQuote(
+oe_result_t AESMGetQuote(
     AESM* aesm,
     const SGX_Report* report,
     SGX_QuoteType quoteType,
@@ -360,7 +360,7 @@ OE_Result AESMGetQuote(
     SGX_Quote* quote,
     size_t quoteSize)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 

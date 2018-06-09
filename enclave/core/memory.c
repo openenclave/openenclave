@@ -4,12 +4,12 @@
 #include <openenclave/bits/globals.h>
 #include <openenclave/enclave.h>
 
-bool OE_IsWithinEnclave(const void* p, size_t n)
+bool oe_is_within_enclave(const void* p, size_t n)
 {
     const uint8_t* start = (const uint8_t*)p;
     const uint8_t* end = (const uint8_t*)p + n;
-    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
-    uint64_t size = __OE_GetEnclaveSize();
+    const uint8_t* base = (const uint8_t*)__oe_get_enclave_base();
+    uint64_t size = __oe_get_enclave_size();
 
     if (!(start >= base && start < (base + size)))
         return false;
@@ -25,12 +25,12 @@ bool OE_IsWithinEnclave(const void* p, size_t n)
     return true;
 }
 
-bool OE_IsOutsideEnclave(const void* p, size_t n)
+bool oe_is_outside_enclave(const void* p, size_t n)
 {
     const uint8_t* start = (const uint8_t*)p;
     const uint8_t* end = (const uint8_t*)p + n;
-    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
-    uint64_t size = __OE_GetEnclaveSize();
+    const uint8_t* base = (const uint8_t*)__oe_get_enclave_base();
+    uint64_t size = __oe_get_enclave_size();
 
     if (!(start < base || start >= (base + size)))
         return false;

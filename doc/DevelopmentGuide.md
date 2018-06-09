@@ -44,7 +44,7 @@ Naming conventions we use that are not automated include:
 6. Prefix names with `_` to indicate internal and private fields or methods
    (e.g. `_internalField, _InternalMethod()`).
 7. Prefix Open Enclave specific names in the global namespace with `OE_`
-   (e.g. `OE_Result, OE_CallEnclave`).
+   (e.g. `oe_result_t, oe_call_enclave`).
 
 Above all, if a file happens to differ in style from these guidelines (e.g.
 private members are named `m_member` rather than `_member`), the existing style
@@ -66,35 +66,35 @@ For other files (.asm, .S, etc.) our current best guidance is consistency:
 #include <openenclave/enclave.h>
 #include "td.h"
 
-void* OE_HostAllocForCallHost(size_t size, size_t alignment, bool isZeroInit)
+void* oe_host_alloc_for_call_host(size_t size, size_t alignment, bool isZeroInit)
 {
     TD* td = TD_Get();
 
     /* Fail if size is zero or no thread data object */
     if (size == 0 || !td)
     {
-        OE_Abort();
+        oe_abort();
         return NULL;
     }
 
     /* Fail if host stack pointer is not aligned on a word boundary */
-    if (OE_RoundUpToMultiple(td->host_rsp, sizeof(uint64_t)) != td->host_rsp)
+    if (oe_round_up_to_multiple(td->host_rsp, sizeof(uint64_t)) != td->host_rsp)
     {
-        OE_Abort();
+        oe_abort();
         return NULL;
     }
 
     /* Round size request to a multiple of the word size */
-    size = OE_RoundUpToMultiple(size, sizeof(uint64_t));
+    size = oe_round_up_to_multiple(size, sizeof(uint64_t));
 
     /* Set minimum alignment */
     if (alignment == 0)
         alignment = sizeof(uint64_t);
 
     /* Fail if alignment is not a multiple of the word size */
-    if (OE_RoundUpToMultiple(alignment, sizeof(uint64_t)) != alignment)
+    if (oe_round_up_to_multiple(alignment, sizeof(uint64_t)) != alignment)
     {
-        OE_Abort();
+        oe_abort();
         return NULL;
     }
 
@@ -105,11 +105,11 @@ void* OE_HostAllocForCallHost(size_t size, size_t alignment, bool isZeroInit)
     void* ptr = (void*)td->host_rsp;
 
     /* Align the memory */
-    ptr = (void*)OE_AlignPointer(ptr, alignment);
+    ptr = (void*)oe_align_pointer(ptr, alignment);
 
     /* Clear the memory if requested */
     if (ptr && isZeroInit)
-        OE_Memset(ptr, 0, size);
+        oe_memset(ptr, 0, size);
 
     return ptr;
 }

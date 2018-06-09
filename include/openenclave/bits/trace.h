@@ -9,7 +9,7 @@
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
-#define OE_PRINTF OE_HostPrintf
+#define OE_PRINTF oe_host_printf
 #else
 #define OE_PRINTF printf
 #endif
@@ -20,9 +20,9 @@
 
 OE_EXTERNC_BEGIN
 
-OE_INLINE void __OE_TraceResult(
+OE_INLINE void __oe_trace_result(
     const char* op,
-    OE_Result result,
+    oe_result_t result,
     const char* file,
     unsigned int line,
     const char* expr)
@@ -58,15 +58,15 @@ OE_INLINE void __OE_TraceResult(
     do                                                                  \
     {                                                                   \
         result = (RESULT);                                              \
-        __OE_TraceResult("throw", result, __FILE__, __LINE__, #RESULT); \
+        __oe_trace_result("throw", result, __FILE__, __LINE__, #RESULT); \
         goto OE_CATCH;                                                  \
     } while (0)
 
 #define OE_TRY(EXPR)                                                  \
     do                                                                \
     {                                                                 \
-        OE_Result _result_ = (EXPR);                                  \
-        __OE_TraceResult("try", _result_, __FILE__, __LINE__, #EXPR); \
+        oe_result_t _result_ = (EXPR);                                  \
+        __oe_trace_result("try", _result_, __FILE__, __LINE__, #EXPR); \
         if (_result_ != OE_OK)                                        \
         {                                                             \
             result = _result_;                                        \

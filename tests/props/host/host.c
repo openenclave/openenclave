@@ -11,7 +11,7 @@
 #include "../args.h"
 
 static void _CheckProperties(
-    OE_SGXEnclaveProperties* props,
+    oe_sgx_enclave_properties_t* props,
     bool isSigned,
     uint16_t productID,
     uint16_t securityVersion,
@@ -20,11 +20,11 @@ static void _CheckProperties(
     uint64_t numStackPages,
     uint64_t numTCS)
 {
-    const OE_EnclavePropertiesHeader* header = &props->header;
-    const OE_SGXEnclaveConfig* config = &props->config;
+    const oe_enclave_properties_header_t* header = &props->header;
+    const oe_sgx_enclave_config_t* config = &props->config;
 
     /* Check the header */
-    OE_TEST(header->size == sizeof(OE_SGXEnclaveProperties));
+    OE_TEST(header->size == sizeof(oe_sgx_enclave_properties_t));
     OE_TEST(header->enclaveType == OE_ENCLAVE_TYPE_SGX);
     OE_TEST(header->sizeSettings.numHeapPages == numHeapPages);
     OE_TEST(header->sizeSettings.numStackPages == numStackPages);
@@ -46,15 +46,15 @@ static void _CheckProperties(
         OE_TEST(memcmp(props->sigstruct, sigstruct, sizeof(sigstruct)) == 0);
 }
 
-static OE_Result _SGXLoadEnclaveProperties(
+static oe_result_t _SGXLoadEnclaveProperties(
     const char* path,
-    OE_SGXEnclaveProperties* properties)
+    oe_sgx_enclave_properties_t* properties)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     Elf64 elf = ELF64_INIT;
 
     if (properties)
-        memset(properties, 0, sizeof(OE_SGXEnclaveProperties));
+        memset(properties, 0, sizeof(oe_sgx_enclave_properties_t));
 
     /* Check parameters */
     if (!path || !properties)
@@ -65,7 +65,7 @@ static OE_Result _SGXLoadEnclaveProperties(
         OE_RAISE(OE_FAILURE);
 
     /* Load the SGX enclave properties */
-    if (OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
+    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
         OE_RAISE(OE_NOT_FOUND);
     }
@@ -82,10 +82,10 @@ done:
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
     bool isSigned = false;
-    OE_SGXEnclaveProperties properties;
+    oe_sgx_enclave_properties_t properties;
 
     if (argc != 3)
     {
@@ -111,14 +111,14 @@ int main(int argc, const char* argv[])
     /* Load the enclave properties */
     if ((result = _SGXLoadEnclaveProperties(argv[1], &properties)) != OE_OK)
     {
-        OE_PutErr("OE_SGXLoadProperties(): result=%u", result);
+        oe_puterr("oe_sgx_load_properties(): result=%u", result);
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
 
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_puterr("oe_create_enclave(): result=%u", result);
 
     /* Check expected enclave property values */
     if (isSigned)
@@ -150,13 +150,13 @@ int main(int argc, const char* argv[])
     memset(&args, 0, sizeof(args));
     args.ret = -1;
 
-    if ((result = OE_CallEnclave(enclave, "Test", &args)) != OE_OK)
-        OE_PutErr("OE_CallEnclave() failed: result=%u", result);
+    if ((result = oe_call_enclave(enclave, "Test", &args)) != OE_OK)
+        oe_puterr("oe_call_enclave() failed: result=%u", result);
 
     if (args.ret != 0)
-        OE_PutErr("ECALL failed args.result=%d", args.ret);
+        oe_puterr("ECALL failed args.result=%d", args.ret);
 
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (echo)\n");
 
