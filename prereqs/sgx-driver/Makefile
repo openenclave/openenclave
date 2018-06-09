@@ -1,32 +1,26 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-all: getdist build
+all: getdist
 
 getdist:
-	$(MAKE) get-dependencies
-	$(MAKE) clone-sources
+	$(MAKE) -s distclean
+	$(MAKE) get-driver
 
 distclean:
-	- rm -rf sgx-driver
+	- rm -f sgx_linux_x64_driver.bin
 
 build:
-	$(MAKE) -C sgx-driver sign
 
 clean:
-	$(MAKE) -C sgx-driver clean
 
 install:
 	$(MAKE) -s uninstall
-	$(MAKE) copy-module
-	$(MAKE) update-modules
-	$(MAKE) update-devrules
-	$(MAKE) load-module
+	./sgx_linux_x64_driver.bin
 	$(MAKE) check-running
 
 uninstall:
-	$(MAKE) unload-module
-	$(MAKE) remove-module
+	- /opt/intel/sgxdriver/uninstall.sh
 
 ##==============================================================================
 ##
@@ -34,50 +28,15 @@ uninstall:
 ##
 ##==============================================================================
 
-UNAME_R=$(shell uname -r)
-
-LINUX_HEADERS=linux-headers-$(UNAME_R)
-
-MODULE=$(wildcard ./sgx-driver/intel_sgx.ko)
-
-DIR=/lib/modules/$(UNAME_R)/kernel/drivers/intel/sgx
-
 DEV=$(wildcard /dev/sgx)
 
 RUNNING=$(shell lsmod | grep intel_sgx)
 
-get-dependencies:
-	apt-get install $(LINUX_HEADERS) libssl-dev
-
-# Workaround until https://github.com/otcshare/NextGenSGXAttestationLibs.git
-# is made public and can be directly git-cloned
-clone-sources:
-	-@ rm -f sgx-driver.tgz
-	@ wget http://10.224.140.70:8888/sgx-driver.tgz
-	@ tar -zxvf sgx-driver.tgz --overwrite
-	-@ rm -f sgx-driver.tgz
-
-copy-module:
-ifeq ($(MODULE),)
-	@ echo "*** Module not found: $(MODULE)"
-	@ exit 1
-endif
-ifneq ($(DEV),)
-	@ echo "*** Device already exists: {$(DEV)}"
-	@ exit 1
-endif
-	mkdir -p $(DIR)
-	cp $(MODULE) $(DIR)
-
-update-modules:
-	(cat /etc/modules | grep -Fxq intel_sgx || echo intel_sgx >> /etc/modules)
-
-update-devrules:
-	(echo 'SUBSYSTEM=="sgx",KERNEL=="sgx",RUN+="/bin/chmod 666 /dev/$$name"' | sudo tee /etc/udev/rules.d/10-sgx.rules)
-
-load-module:
-	/sbin/depmod
-	/sbin/modprobe intel_sgx
+# Workaround until sgx_linux_x64_driver.bin is available from public endpoint
+get-driver:
+	apt-get -y install wget
+	@ wget http://10.224.140.70:8888/sgx_linux_x64_driver.bin
+	chmod 744 sgx_linux_x64_driver.bin
 
 check-running:
 ifeq ($(RUNNING),)
@@ -88,12 +47,4 @@ ifeq ($(DEV),)
 	@ echo "*** Failed to start driver: /dev/sgx does not exist"
 	@ exit 1
 endif
-
-unload-module:
-	- /sbin/modprobe -r intel_sgx 2> /dev/null > /dev/null
-
-remove-module:
-	- rm -rf $(DIR)
-	- /sbin/depmod
-	- /bin/sed -i '/^intel_sgx$$/d' /etc/modules
-
+	@echo "Verified: intel_sgx driver is installed and running"

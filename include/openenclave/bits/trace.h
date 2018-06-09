@@ -11,6 +11,7 @@
 #include <openenclave/enclave.h>
 #define OE_PRINTF OE_HostPrintf
 #else
+#include <stdio.h>
 #define OE_PRINTF printf
 #endif
 

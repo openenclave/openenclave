@@ -114,7 +114,7 @@ static void _TestSign()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPrivateKey key;
+    OE_RSAPrivateKey key = {0};
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
@@ -157,7 +157,7 @@ static void _TestVerify()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPublicKey key;
+    OE_RSAPublicKey key = {0};
 
     r = OE_RSAPublicKeyReadPEM(
         (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
@@ -321,9 +321,9 @@ static void _TestCertVerifyGood()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_VerifyCertError error;
-    OE_Cert cert;
-    OE_CertChain chain;
+    OE_VerifyCertError error = {0};
+    OE_Cert cert = {0};
+    OE_CertChain chain = {0};
     OE_CRL* crl = NULL;
 
     r = OE_CertReadPEM(_CERT1, sizeof(_CERT1), &cert);
@@ -346,9 +346,9 @@ static void _TestCertVerifyBad()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_VerifyCertError error;
-    OE_Cert cert;
-    OE_CertChain chain;
+    OE_VerifyCertError error = {0};
+    OE_Cert cert = {0};
+    OE_CertChain chain = {0};
     OE_CRL* crl = NULL;
 
     r = OE_CertReadPEM(_CERT1, sizeof(_CERT1), &cert);
@@ -372,8 +372,8 @@ static void _TestMixedChain()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_Cert cert;
-    OE_CertChain chain;
+    OE_Cert cert = {0};
+    OE_CertChain chain = {0};
 
     r = OE_CertReadPEM(_CERT1, sizeof(_CERT1), &cert);
     OE_TEST(r == OE_OK);
@@ -393,8 +393,8 @@ static void _TestGenerate()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPrivateKey privateKey;
-    OE_RSAPublicKey publicKey;
+    OE_RSAPrivateKey privateKey = {0};
+    OE_RSAPublicKey publicKey = {0};
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
@@ -442,7 +442,7 @@ static void _TestWritePrivate()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPrivateKey key;
+    OE_RSAPrivateKey key = {0};
     void* pemData = NULL;
     size_t pemSize = 0;
 
@@ -472,7 +472,7 @@ static void _TestWritePublic()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPublicKey key;
+    OE_RSAPublicKey key = {0};
     void* pemData = NULL;
     size_t pemSize = 0;
 
@@ -505,12 +505,12 @@ static void _TestCertMethods()
 
     /* Test OE_CertGetRSAPublicKey() */
     {
-        OE_Cert cert;
+        OE_Cert cert = {0};
 
         r = OE_CertReadPEM(_CERT1, sizeof(_CERT1), &cert);
         OE_TEST(r == OE_OK);
 
-        OE_RSAPublicKey key;
+        OE_RSAPublicKey key = {0};
         r = OE_CertGetRSAPublicKey(&cert, &key);
         OE_TEST(r == OE_OK);
 
@@ -569,7 +569,7 @@ static void _TestCertMethods()
 
     /* Test OE_CertChainGetCert() */
     {
-        OE_CertChain chain;
+        OE_CertChain chain = {0};
 
         /* Load the chain from PEM format */
         r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
@@ -584,7 +584,7 @@ static void _TestCertMethods()
         /* Get each certificate in the chain */
         for (size_t i = 0; i < length; i++)
         {
-            OE_Cert cert;
+            OE_Cert cert = {0};
             r = OE_CertChainGetCert(&chain, i, &cert);
             OE_TEST(r == OE_OK);
             OE_CertFree(&cert);
@@ -592,7 +592,7 @@ static void _TestCertMethods()
 
         /* Test out of bounds */
         {
-            OE_Cert cert;
+            OE_Cert cert = {0};
             r = OE_CertChainGetCert(&chain, length + 1, &cert);
             OE_TEST(r == OE_OUT_OF_BOUNDS);
             OE_CertFree(&cert);
@@ -603,9 +603,10 @@ static void _TestCertMethods()
 
     /* Test OE_CertChainGetRootCert() and OE_CertChainGetLeafCert() */
     {
-        OE_CertChain chain;
-        OE_Cert root;
-        OE_Cert leaf;
+        OE_CertChain chain = {0};
+        OE_Cert root = {0};
+        OE_Cert cert0 = {0};
+        OE_Cert leaf = {0};
 
         /* Load the chain from PEM format */
         r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
@@ -621,8 +622,8 @@ static void _TestCertMethods()
 
         /* Check that the keys are identical for top and root certificate */
         {
-            OE_RSAPublicKey rootKey;
-            OE_RSAPublicKey certKey;
+            OE_RSAPublicKey rootKey = {0};
+            OE_RSAPublicKey certKey = {0};
 
             OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
 
@@ -632,8 +633,8 @@ static void _TestCertMethods()
 
         /* Check that the keys are not identical for leaf and root */
         {
-            OE_RSAPublicKey rootKey;
-            OE_RSAPublicKey leafKey;
+            OE_RSAPublicKey rootKey = {0};
+            OE_RSAPublicKey leafKey = {0};
             bool equal;
 
             OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
