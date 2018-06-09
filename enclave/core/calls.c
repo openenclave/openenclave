@@ -18,11 +18,8 @@
 #include "report.h"
 #include "td.h"
 
-typedef unsigned long long WORD;
-
-#define WORD_SIZE sizeof(WORD)
-
 uint64_t __oe_enclave_status = OE_OK;
+uint8_t __oe_initialized = 0;
 
 /*
 **==============================================================================
@@ -141,9 +138,14 @@ void _HandleInitEnclave(uint64_t argIn)
             /* Call all enclave state initialization functions */
             OE_InitializeCpuid(argIn);
 
+            /* Call global constructors. Now they can safely use simulated
+             * instructions like CPUID. */
+            OE_CallInitFunctions();
+
             /* DCLP Release barrier. */
             OE_ATOMIC_MEMORY_BARRIER_RELEASE();
             _once = true;
+            __oe_initialized = 1;
         }
 
         OE_SpinUnlock(&_lock);
@@ -217,7 +219,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-static void _HandleExit(OE_Code code, long func, uint64_t arg)
+static void _HandleExit(OE_Code code, int64_t func, uint64_t arg)
 {
     OE_Exit(OE_MakeCallArg1(code, func, 0), arg);
 }
@@ -282,15 +284,27 @@ static void _HandleECall(
     OE_Memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
 
-    /*
-     * Call all global initializer functions on the first call. To support
-     * OCalls from global initializers, this needs to be done after the
-     * callsite has been pushed, otherwise, they could have been invoked as
-     * part of consolidated init-code in __OE_HandleMain().
-     */
+    // Acquire release semantics for __oe_initialized are present in
+    // _HandleInitEnclave.
+    if (!__oe_initialized)
     {
-        static OE_OnceType _once = OE_ONCE_INITIALIZER;
-        OE_Once(&_once, OE_CallInitFunctions);
+        // The first call to the enclave must be to initialize it.
+        // Global constructors can throw exceptions/signals and result in signal
+        // handlers being invoked. Eg. Using CPUID instruction within a global
+        // constructor. We should also allow handling these exceptions.
+        if (func != OE_FUNC_INIT_ENCLAVE &&
+            func != OE_FUNC_VIRTUAL_EXCEPTION_HANDLER)
+        {
+            goto Exit;
+        }
+    }
+    else
+    {
+        // Disallow re-initialization.
+        if (func == OE_FUNC_INIT_ENCLAVE)
+        {
+            goto Exit;
+        }
     }
 
     /* Are ecalls permitted? */
@@ -369,7 +383,7 @@ Exit:
 **==============================================================================
 */
 
-static __inline__ void _HandleORET(TD* td, long func, long arg)
+static __inline__ void _HandleORET(TD* td, int64_t func, int64_t arg)
 {
     Callsite* callsite = td->callsites;
 
@@ -480,7 +494,7 @@ OE_Result OE_CallHost(const char* func, void* argsIn)
     }
 
     /* Call into the host */
-    OE_TRY(OE_OCall(OE_FUNC_CALL_HOST, (long)args, NULL, 0));
+    OE_TRY(OE_OCall(OE_FUNC_CALL_HOST, (int64_t)args, NULL, 0));
 
     /* Check the result */
     OE_TRY(args->result);

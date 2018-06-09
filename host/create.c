@@ -795,7 +795,10 @@ OE_INLINE void _DumpRelocations(const void* data, size_t size)
         if (p->r_offset == 0)
             break;
 
-        printf("offset=%llx addend=%llx\n", p->r_offset, p->r_addend);
+        printf(
+            "offset=%llu addend=%lld\n",
+            OE_LLU(p->r_offset),
+            OE_LLD(p->r_addend));
     }
 }
 
@@ -1414,9 +1417,6 @@ OE_Result OE_CreateEnclave(
     /* Build the enclave */
     OE_CHECK(OE_SGXBuildEnclave(&context, enclavePath, NULL, enclave));
 
-    /* Invoke enclave initialization */
-    OE_CHECK(_InitializeEnclave(enclave));
-
     /* Push the new created enclave to the global list. */
     if (_OE_PushEnclaveInstance(enclave) != 0)
     {
@@ -1426,6 +1426,9 @@ OE_Result OE_CreateEnclave(
     /* Notify GDB that a new enclave is created */
     _OE_NotifyGdbEnclaveCreation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+    /* Invoke enclave initialization. */
+    OE_CHECK(_InitializeEnclave(enclave));
 
     *enclaveOut = enclave;
     result = OE_OK;

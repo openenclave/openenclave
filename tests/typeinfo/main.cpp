@@ -90,7 +90,6 @@ int TestContainer(bool trace)
     c.e.yyy = 5678;
     strcpy(c.e.str, "My char array");
     strcpy(c.e.cstr, "ABCDEFG\r\n\177");
-    wcscpy(c.e.wstr, L"ABCDEFG\r\n\177");
 
     Object objects[2];
     objects[0].id = sizeof(Object);
@@ -197,14 +196,11 @@ int TestAllTypes(bool trace)
     x.by = 0xBB;
     x.b = true;
     x.c = 'C';
-    x.w = 'W';
     x.s = 99;
     x.ss = -99;
     x.str = strdup("str");
     x.strn = 4;
-    x.wcs = wcsdup(L"wcs");
     strcpy(x.stra, "stra");
-    wcscpy(x.wcsa, L"wcsa");
     x.obj1.id = 1;
     x.obj1.name = strdup("Object1");
     x.obj2 = MakeObject(2, "Object2");
@@ -247,10 +243,6 @@ int TestAllTypes(bool trace)
 
         TEST(!OE_ClearArgByName(sti, &y, "str", 1, &z.str, free));
         TEST(z.str == NULL);
-        TEST(!OE_ClearArgByName(sti, &y, "wcs", 1, &z.wcs, free));
-        TEST(z.wcs == NULL);
-        TEST(!OE_ClearArgByName(sti, &y, "wcsa", 0, z.wcsa, free));
-        TEST(wcscmp(z.wcsa, L"") == 0);
         TEST(!OE_ClearArgByName(sti, &y, "s8", 0, &z.s8, free));
         TEST(!OE_ClearArgByName(sti, &y, "u8", 0, &z.u8, free));
         TEST(!OE_ClearArgByName(sti, &y, "s16", 0, &z.s16, free));
@@ -264,7 +256,6 @@ int TestAllTypes(bool trace)
         TEST(!OE_ClearArgByName(sti, &y, "by", 0, &z.by, free));
         TEST(!OE_ClearArgByName(sti, &y, "b", 0, &z.b, free));
         TEST(!OE_ClearArgByName(sti, &y, "c", 0, &z.c, free));
-        TEST(!OE_ClearArgByName(sti, &y, "w", 0, &z.w, free));
         TEST(!OE_ClearArgByName(sti, &y, "s", 0, &z.s, free));
         TEST(!OE_ClearArgByName(sti, &y, "ss", 0, &z.ss, free));
         TEST(!OE_ClearArgByName(sti, &y, "strn", 0, &z.strn, free));
@@ -299,14 +290,11 @@ int TestAllTypes(bool trace)
         TEST(!OE_SetArgByName(sti, &y, "by", 0, &z.by, malloc));
         TEST(!OE_SetArgByName(sti, &y, "b", 0, &z.b, malloc));
         TEST(!OE_SetArgByName(sti, &y, "c", 0, &z.c, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "w", 0, &z.w, malloc));
         TEST(!OE_SetArgByName(sti, &y, "s", 0, &z.s, malloc));
         TEST(!OE_SetArgByName(sti, &y, "ss", 0, &z.ss, malloc));
         TEST(!OE_SetArgByName(sti, &y, "str", 1, &z.str, malloc));
         TEST(!OE_SetArgByName(sti, &y, "strn", 0, &z.strn, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "wcs", 1, &z.wcs, malloc));
         TEST(!OE_SetArgByName(sti, &y, "stra", 0, z.stra, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "wcsa", 0, z.wcsa, malloc));
         TEST(!OE_SetArgByName(sti, &y, "obj1", 0, &z.obj1, malloc));
         TEST(!OE_SetArgByName(sti, &y, "obj2", 1, &z.obj2, malloc));
         TEST(!OE_SetArgByName(sti, &y, "data", 1, &z.data, malloc));

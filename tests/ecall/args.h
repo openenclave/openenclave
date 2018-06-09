@@ -14,12 +14,12 @@ typedef struct _TestArgs
 {
     void* self;
     unsigned int magic;
-    unsigned long long baseHeapPage;
-    unsigned long long numHeapPages;
-    unsigned long long numPages;
+    uint64_t baseHeapPage;
+    uint64_t numHeapPages;
+    uint64_t numPages;
     const void* base;
     OE_ThreadData threadData;
-    unsigned long long threadDataAddr;
+    uint64_t threadDataAddr;
     unsigned int mm;
     unsigned int dd;
     unsigned int yyyy;

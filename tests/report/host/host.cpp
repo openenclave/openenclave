@@ -63,9 +63,9 @@ int main(int argc, const char* argv[])
     TestParseReportNegative(NULL);
     TestLocalVerifyReport(NULL);
 
-#ifdef OE_USE_LIBSGX    
+#ifdef OE_USE_LIBSGX
     TestRemoteVerifyReport(NULL);
-#endif    
+#endif
 
     /*
      * Enclave API tests.
@@ -86,7 +86,7 @@ int main(int argc, const char* argv[])
     OE_TEST(
         OE_CallEnclave(enclave, "TestRemoteVerifyReport", &targetInfo) ==
         OE_OK);
-#endif        
+#endif
 
     /* Terminate the enclave */
     if ((result = OE_TerminateEnclave(enclave)) != OE_OK)

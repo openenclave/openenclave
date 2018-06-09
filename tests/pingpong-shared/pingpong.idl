@@ -11,4 +11,4 @@ function [ocall] void Pong(
 
 function [ocall] void Log(
     [string, in] const char* str,
-    [in] uint64 x);
+    [in] uint64_t x);

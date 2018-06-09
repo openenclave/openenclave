@@ -17,8 +17,8 @@ void TestSHA()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    OE_SHA256 hash;
-    OE_SHA256Context ctx;
+    OE_SHA256 hash = {0};
+    OE_SHA256Context ctx = {0};
     OE_SHA256Init(&ctx);
     OE_SHA256Update(&ctx, ALPHABET, strlen(ALPHABET));
     OE_SHA256Final(&ctx, &hash);

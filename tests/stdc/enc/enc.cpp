@@ -229,10 +229,4 @@ OE_ECALL void Test(void* args_)
     void* p = malloc(1024 * 1024 * 1024);
     OE_TEST(p == NULL);
     OE_TEST(_calledAllocationFailureCallback);
-
-#if 0
-    printf("UINT_MIN=%u UINT_MAX=%u\n", 0, UINT_MAX);
-    printf("INT_MIN=%d INT_MAX=%d\n", INT_MIN, INT_MAX);
-    printf("LONG_MIN=%ld LONG_MAX=%ld\n", LONG_MIN, LONG_MAX);
-#endif
 }

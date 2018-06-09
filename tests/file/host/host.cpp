@@ -15,7 +15,7 @@
 
 void Log(const char* s, uint64_t x)
 {
-    printf("Log(%s, %lu)\n", s, x);
+    printf("Log(%s, %llu)\n", s, OE_LLU(x));
 }
 
 MY_FILE* Fopen(const char* filename, const char* modes)
