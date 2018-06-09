@@ -96,6 +96,10 @@ int main(int argc, const char* argv[])
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
+    OE_TEST(
+        OE_CallEnclave(enclave, "TestCpuidInGlobalConstructors", NULL) ==
+        OE_OK);
+
     TestVectorException(enclave);
     TestSigillHandling(enclave);
 

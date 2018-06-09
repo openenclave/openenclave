@@ -1417,9 +1417,6 @@ OE_Result OE_CreateEnclave(
     /* Build the enclave */
     OE_CHECK(OE_SGXBuildEnclave(&context, enclavePath, NULL, enclave));
 
-    /* Invoke enclave initialization */
-    OE_CHECK(_InitializeEnclave(enclave));
-
     /* Push the new created enclave to the global list. */
     if (_OE_PushEnclaveInstance(enclave) != 0)
     {
@@ -1429,6 +1426,9 @@ OE_Result OE_CreateEnclave(
     /* Notify GDB that a new enclave is created */
     _OE_NotifyGdbEnclaveCreation(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+    /* Invoke enclave initialization. */
+    OE_CHECK(_InitializeEnclave(enclave));
 
     *enclaveOut = enclave;
     result = OE_OK;
