@@ -5,6 +5,7 @@ include(add_enclave_executable)
 add_enclave_executable(VectorException_enc sign.conf private.pem
     enc.c
     sigill_handling.c
+    init.cpp
     )
 
 target_link_libraries(VectorException_enc oecore)

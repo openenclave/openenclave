@@ -19,6 +19,7 @@
 #include "td.h"
 
 uint64_t __oe_enclave_status = OE_OK;
+uint8_t __oe_initialized = 0;
 
 /*
 **==============================================================================
@@ -137,9 +138,14 @@ void _HandleInitEnclave(uint64_t argIn)
             /* Call all enclave state initialization functions */
             OE_InitializeCpuid(argIn);
 
+            /* Call global constructors. Now they can safely use simulated
+             * instructions like CPUID. */
+            OE_CallInitFunctions();
+
             /* DCLP Release barrier. */
             OE_ATOMIC_MEMORY_BARRIER_RELEASE();
             _once = true;
+            __oe_initialized = 1;
         }
 
         OE_SpinUnlock(&_lock);
@@ -278,15 +284,27 @@ static void _HandleECall(
     OE_Memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
 
-    /*
-     * Call all global initializer functions on the first call. To support
-     * OCalls from global initializers, this needs to be done after the
-     * callsite has been pushed, otherwise, they could have been invoked as
-     * part of consolidated init-code in __OE_HandleMain().
-     */
+    // Acquire release semantics for __oe_initialized are present in
+    // _HandleInitEnclave.
+    if (!__oe_initialized)
     {
-        static OE_OnceType _once = OE_ONCE_INITIALIZER;
-        OE_Once(&_once, OE_CallInitFunctions);
+        // The first call to the enclave must be to initialize it.
+        // Global constructors can throw exceptions/signals and result in signal
+        // handlers being invoked. Eg. Using CPUID instruction within a global
+        // constructor. We should also allow handling these exceptions.
+        if (func != OE_FUNC_INIT_ENCLAVE &&
+            func != OE_FUNC_VIRTUAL_EXCEPTION_HANDLER)
+        {
+            goto Exit;
+        }
+    }
+    else
+    {
+        // Disallow re-initialization.
+        if (func == OE_FUNC_INIT_ENCLAVE)
+        {
+            goto Exit;
+        }
     }
 
     /* Are ecalls permitted? */
