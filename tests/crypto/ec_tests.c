@@ -89,7 +89,7 @@ static void _TestSignAndVerify()
     OE_Result r;
 
     {
-        OE_ECPrivateKey key;
+        OE_ECPrivateKey key = {0};
 
         r = OE_ECPrivateKeyReadPEM(
             (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY), &key);
@@ -122,7 +122,7 @@ static void _TestSignAndVerify()
     }
 
     {
-        OE_ECPublicKey key;
+        OE_ECPublicKey key = {0};
 
         r = OE_ECPublicKeyReadPEM(
             (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
@@ -224,8 +224,8 @@ static void _TestGenerate()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_ECPrivateKey privateKey;
-    OE_ECPublicKey publicKey;
+    OE_ECPrivateKey privateKey = {0};
+    OE_ECPublicKey publicKey = {0};
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
@@ -273,9 +273,9 @@ static void _TestWritePrivate()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_ECPublicKey publicKey;
-    OE_ECPrivateKey key1;
-    OE_ECPrivateKey key2;
+    OE_ECPublicKey publicKey = {0};
+    OE_ECPrivateKey key1 = {0};
+    OE_ECPrivateKey key2 = {0};
     uint8_t* pemData1 = NULL;
     size_t pemSize1 = 0;
     uint8_t* pemData2 = NULL;
@@ -328,7 +328,7 @@ static void _TestWritePublic()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_ECPublicKey key;
+    OE_ECPublicKey key = {0};
     void* pemData = NULL;
     size_t pemSize = 0;
 
@@ -363,8 +363,8 @@ static void _TestCertMethods()
 
     /* Test OE_CertGetECPublicKey() */
     {
-        OE_Cert cert;
-        OE_ECPublicKey key;
+        OE_Cert cert = {0};
+        OE_ECPublicKey key = {0};
 
         r = OE_CertReadPEM(_CERT, sizeof(_CERT), &cert);
         OE_TEST(r == OE_OK);
@@ -423,8 +423,8 @@ static void _TestKeyFromBytes()
 
     /* Create a public EC key and get its bytes */
     {
-        OE_ECPrivateKey privateKey;
-        OE_ECPublicKey publicKey;
+        OE_ECPrivateKey privateKey = {0};
+        OE_ECPublicKey publicKey = {0};
         r = OE_ECGenerateKeyPair(ecType, &privateKey, &publicKey);
         OE_TEST(r == OE_OK);
 
@@ -437,7 +437,7 @@ static void _TestKeyFromBytes()
             &publicKey, xData, &xSize, yData, &ySize);
         OE_TEST(r == OE_OK);
 
-        OE_ECPublicKey key;
+        OE_ECPublicKey key = {0};
         r = OE_ECPublicKeyFromCoordinates(
             &key, ecType, xData, xSize, yData, ySize);
         OE_TEST(r == OE_OK);
@@ -449,7 +449,7 @@ static void _TestKeyFromBytes()
 
     /* Test creating an EC key from bytes */
     {
-        OE_ECPublicKey key;
+        OE_ECPublicKey key = {0};
         const uint8_t xBytes[32] = {
             0xB5, 0x5D, 0x06, 0xD6, 0xE5, 0xA2, 0xC7, 0x2D, 0x5D, 0xA0, 0xAE,
             0xD5, 0x83, 0x61, 0x4C, 0x51, 0x60, 0xD6, 0xFE, 0x90, 0x8A, 0xC2,
@@ -481,9 +481,9 @@ static void _TestKeyFromBytes()
 
     /* Test generating a key and then re-creating it from its bytes */
     {
-        OE_ECPrivateKey privateKey;
-        OE_ECPublicKey publicKey;
-        OE_ECPublicKey publicKey2;
+        OE_ECPrivateKey privateKey = {0};
+        OE_ECPublicKey publicKey = {0};
+        OE_ECPublicKey publicKey2 = {0};
         uint8_t signature[1024];
         size_t signatureSize = sizeof(signature);
 

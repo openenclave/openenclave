@@ -7,7 +7,7 @@
 #include <openenclave/bits/sha.h>
 
 /* Upper case alphabet */
-extern const char ALPHABET[26];
+extern const char* ALPHABET;
 
 /* Hash of ALPHABET string above */
 extern OE_SHA256 ALPHABET_HASH;
