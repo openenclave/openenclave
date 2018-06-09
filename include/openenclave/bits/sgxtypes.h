@@ -803,7 +803,7 @@ typedef struct _SGX_QuoteAuthData
     SGX_ReportBody qeReportBody;
 
     /* (512) Quoting Enclave Report Body Signature */
-    SGX_ECDSA256Key qeReportBodySignature;
+    SGX_ECDSA256Signature qeReportBodySignature;
 } SGX_QuoteAuthData;
 
 OE_STATIC_ASSERT(OE_OFFSETOF(SGX_QuoteAuthData, signature) == 0);

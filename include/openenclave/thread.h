@@ -586,7 +586,9 @@ typedef uint32_t OE_ThreadKey;
  * @return OE_OUT_OF_MEMORY insufficient memory exists to create the key
  *
  */
-OE_Result OE_ThreadKeyCreate(OE_ThreadKey* key, void (*destructor)(void* value));
+OE_Result OE_ThreadKeyCreate(
+    OE_ThreadKey* key,
+    void (*destructor)(void* value));
 
 /**
  * Delete a key for accessing thread-specific data.

@@ -51,6 +51,7 @@ add_library(oehost STATIC
     result.c
     sgxload.c
     sgxmeasure.c
+    sgxquoteprovider.c    
     sgxtypes.c
     signkey.c
     strings.c
