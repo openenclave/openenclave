@@ -5,10 +5,10 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <openenclave/bits/cert.h>
-#include <openenclave/bits/ec.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/tests.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/ec.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +37,67 @@ static const char _CERT[] =
     "hkiG+E0BDQEFBAYgkG6hAAAwDwYKKoZIhvhNAQ0BBgoBADAKBggqhkjOPQQDAgNI\n"
     "ADBFAiEAhY2Bdn5aQJH2Fj1YZriJ7DpmQCbqRyVxU65bd8v0O/4CIA2IWOarGysj\n"
     "RvR+bMRtTbhiRXkV9JD2FJA24tP32pw+\n"
+    "-----END CERTIFICATE-----\n";
+
+/* Certificate chain organized from leaf-to-root */
+static const char _CHAIN[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIIEeTCCBB+gAwIBAgIUCLZOGlkHY7MDrT4wyodHxMlDpSowCgYIKoZIzj0EAwIw\n"
+    "cTEjMCEGA1UEAwwaSW50ZWwgU0dYIFBDSyBQcm9jZXNzb3IgQ0ExGjAYBgNVBAoM\n"
+    "EUludGVsIENvcnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UE\n"
+    "CAwCQ0ExCzAJBgNVBAYTAlVTMB4XDTE4MDUzMDExMzMwNVoXDTI1MDUzMDExMzMw\n"
+    "NVowcDEiMCAGA1UEAwwZSW50ZWwgU0dYIFBDSyBDZXJ0aWZpY2F0ZTEaMBgGA1UE\n"
+    "CgwRSW50ZWwgQ29ycG9yYXRpb24xFDASBgNVBAcMC1NhbnRhIENsYXJhMQswCQYD\n"
+    "VQQIDAJDQTELMAkGA1UEBhMCVVMwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATW\n"
+    "xmGk363GUJ+JrxRwGC9lRLyIarJntKUP5lqgQjFSj6u+zK8w+JXLhSmOctWqG29T\n"
+    "3eItOqjX9zeLbIJ1bhbwo4IClDCCApAwHwYDVR0jBBgwFoAU5btSj4D54zOuGaz6\n"
+    "Y0Z4EfNhu6QwWAYDVR0fBFEwTzBNoEugSYZHaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMu\n"
+    "dHJ1c3RlZHNlcnZpY2VzLmludGVsLmNvbS9JbnRlbFNHWFBDS1Byb2Nlc3Nvci5j\n"
+    "cmwwHQYDVR0OBBYEFKGnZhYL+u0LdXb3Q4gVmfhWgirlMA4GA1UdDwEB/wQEAwIG\n"
+    "wDAMBgNVHRMBAf8EAjAAMIIB1AYJKoZIhvhNAQ0BBIIBxTCCAcEwHgYKKoZIhvhN\n"
+    "AQ0BAQQQoOhb4fIWDhGRy2yRyuyGgzCCAWQGCiqGSIb4TQENAQIwggFUMBAGCyqG\n"
+    "SIb4TQENAQIBAgEEMBAGCyqGSIb4TQENAQICAgEEMBAGCyqGSIb4TQENAQIDAgEC\n"
+    "MBAGCyqGSIb4TQENAQIEAgEEMBAGCyqGSIb4TQENAQIFAgEBMBEGCyqGSIb4TQEN\n"
+    "AQIGAgIAgDAQBgsqhkiG+E0BDQECBwIBADAQBgsqhkiG+E0BDQECCAIBADAQBgsq\n"
+    "hkiG+E0BDQECCQIBADAQBgsqhkiG+E0BDQECCgIBADAQBgsqhkiG+E0BDQECCwIB\n"
+    "ADAQBgsqhkiG+E0BDQECDAIBADAQBgsqhkiG+E0BDQECDQIBADAQBgsqhkiG+E0B\n"
+    "DQECDgIBADAQBgsqhkiG+E0BDQECDwIBADAQBgsqhkiG+E0BDQECEAIBADAQBgsq\n"
+    "hkiG+E0BDQECEQIBBTAfBgsqhkiG+E0BDQECEgQQBAQCBAGAAAAAAAAAAAAAADAQ\n"
+    "BgoqhkiG+E0BDQEDBAIAADAUBgoqhkiG+E0BDQEEBAYAkG6hAAAwDwYKKoZIhvhN\n"
+    "AQ0BBQoBADAKBggqhkjOPQQDAgNIADBFAiEA9im3EzMQDdJrWbQoML/pTFuhjUuk\n"
+    "8yainoRd1tJ/tgUCIGgo6SHqeEw0h2lRw4sZGWjEHLosoPIme3t+Gw9QosI5\n"
+    "-----END CERTIFICATE-----\n"
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIICmDCCAj6gAwIBAgIVAOW7Uo+A+eMzrhms+mNGeBHzYbukMAoGCCqGSM49BAMC\n"
+    "MGgxGjAYBgNVBAMMEUludGVsIFNHWCBSb290IENBMRowGAYDVQQKDBFJbnRlbCBD\n"
+    "b3Jwb3JhdGlvbjEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNVBAgMAkNBMQsw\n"
+    "CQYDVQQGEwJVUzAeFw0xODA1MjUxMzQzNDFaFw0zMzA1MjUxMzQzNDFaMHExIzAh\n"
+    "BgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQKDBFJbnRl\n"
+    "bCBDb3Jwb3JhdGlvbjEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNVBAgMAkNB\n"
+    "MQswCQYDVQQGEwJVUzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABMB0yW2PyWpf\n"
+    "6odNPzGnE503t30mxdRm6zKRy86UoBpGMSHUEat/8/V3bIN+QYR21tpLUtzuTx2m\n"
+    "HSLi7MCO6byjgbswgbgwHwYDVR0jBBgwFoAUImUM1lqdNInzg7SVUr9QGzknBqww\n"
+    "UgYDVR0fBEswSTBHoEWgQ4ZBaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMudHJ1c3RlZHNl\n"
+    "cnZpY2VzLmludGVsLmNvbS9JbnRlbFNHWFJvb3RDQS5jcmwwHQYDVR0OBBYEFOW7\n"
+    "Uo+A+eMzrhms+mNGeBHzYbukMA4GA1UdDwEB/wQEAwIBBjASBgNVHRMBAf8ECDAG\n"
+    "AQH/AgEAMAoGCCqGSM49BAMCA0gAMEUCIQDkybHzpTP7oBIm3iBwO28eAlsyJuQn\n"
+    "ayD1LxMurMKCuQIgQkgfZl8ElCe+H2nzmG/pKlcox3jHyJwj8w8CH9w7pIE=\n"
+    "-----END CERTIFICATE-----\n"
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIICjzCCAjSgAwIBAgIUImUM1lqdNInzg7SVUr9QGzknBqwwCgYIKoZIzj0EAwIw\n"
+    "aDEaMBgGA1UEAwwRSW50ZWwgU0dYIFJvb3QgQ0ExGjAYBgNVBAoMEUludGVsIENv\n"
+    "cnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UECAwCQ0ExCzAJ\n"
+    "BgNVBAYTAlVTMB4XDTE4MDUyMTEwNDExMVoXDTMzMDUyMTEwNDExMFowaDEaMBgG\n"
+    "A1UEAwwRSW50ZWwgU0dYIFJvb3QgQ0ExGjAYBgNVBAoMEUludGVsIENvcnBvcmF0\n"
+    "aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UECAwCQ0ExCzAJBgNVBAYT\n"
+    "AlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi7\n"
+    "1OiOSLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlKOB\n"
+    "uzCBuDAfBgNVHSMEGDAWgBQiZQzWWp00ifODtJVSv1AbOScGrDBSBgNVHR8ESzBJ\n"
+    "MEegRaBDhkFodHRwczovL2NlcnRpZmljYXRlcy50cnVzdGVkc2VydmljZXMuaW50\n"
+    "ZWwuY29tL0ludGVsU0dYUm9vdENBLmNybDAdBgNVHQ4EFgQUImUM1lqdNInzg7SV\n"
+    "Ur9QGzknBqwwDgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwCgYI\n"
+    "KoZIzj0EAwIDSQAwRgIhAIpQ/KlO1XE4hH8cw5Ol/E0yzs8PToJe9Pclt+bhfLUg\n"
+    "AiEAss0qf7FlMmAMet+gbpLD97ldYy/wqjjmwN7yHRVr2AM=\n"
     "-----END CERTIFICATE-----\n";
 
 /* X-coordinate of key contained in _CERT */
@@ -411,6 +472,90 @@ static void _TestCertMethods()
         OE_CertFree(&cert);
     }
 
+    /* Test OE_CertChainGetCert() */
+    {
+        OE_CertChain chain;
+
+        /* Load the chain from PEM format */
+        r = OE_CertChainReadPEM(_CHAIN, sizeof(_CHAIN), &chain);
+        OE_TEST(r == OE_OK);
+
+        /* Get the length of the chain */
+        size_t length;
+        r = OE_CertChainGetLength(&chain, &length);
+        OE_TEST(r == OE_OK);
+        OE_TEST(length == 3);
+
+        /* Get each certificate in the chain */
+        for (size_t i = 0; i < length; i++)
+        {
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, i, &cert);
+            OE_TEST(r == OE_OK);
+            OE_CertFree(&cert);
+        }
+
+        /* Test out of bounds */
+        {
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, length + 1, &cert);
+            OE_TEST(r == OE_OUT_OF_BOUNDS);
+            OE_CertFree(&cert);
+        }
+
+        OE_CertChainFree(&chain);
+    }
+
+    /* Test OE_CertChainGetRootCert() and OE_CertChainGetLeafCert() */
+    {
+        OE_CertChain chain;
+        OE_Cert root;
+        OE_Cert leaf;
+
+        /* Load the chain from PEM format */
+        r = OE_CertChainReadPEM(_CHAIN, sizeof(_CHAIN), &chain);
+        OE_TEST(r == OE_OK);
+
+        /* Get the root certificate */
+        r = OE_CertChainGetRootCert(&chain, &root);
+        OE_TEST(r == OE_OK);
+
+        /* Get the leaf certificate */
+        r = OE_CertChainGetLeafCert(&chain, &leaf);
+        OE_TEST(r == OE_OK);
+
+        /* Check that the keys are identical for top and root certificate */
+        {
+            OE_ECPublicKey rootKey;
+            OE_ECPublicKey certKey;
+
+            OE_TEST(OE_CertGetECPublicKey(&root, &rootKey) == OE_OK);
+
+            OE_ECPublicKeyFree(&rootKey);
+            OE_ECPublicKeyFree(&certKey);
+        }
+
+        /* Check that the keys are not identical for leaf and root */
+        {
+            OE_ECPublicKey rootKey;
+            OE_ECPublicKey leafKey;
+            bool equal;
+
+            OE_TEST(OE_CertGetECPublicKey(&root, &rootKey) == OE_OK);
+            OE_TEST(OE_CertGetECPublicKey(&leaf, &leafKey) == OE_OK);
+
+            OE_TEST(OE_ECPublicKeyEqual(&rootKey, &leafKey, &equal) == OE_OK);
+            OE_TEST(equal == false);
+
+            OE_ECPublicKeyFree(&rootKey);
+            OE_ECPublicKeyFree(&leafKey);
+        }
+
+        OE_CertFree(&root);
+        OE_CertFree(&leaf);
+        OE_CertChainFree(&chain);
+    }
+
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
@@ -533,6 +678,21 @@ static void _TestKeyFromBytes()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+static void _TestCertChainRead()
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    OE_Result r;
+    OE_CertChain chain;
+
+    r = OE_CertChainReadPEM(_CHAIN, sizeof(_CHAIN), &chain);
+    OE_TEST(r == OE_OK);
+
+    OE_CertChainFree(&chain);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 void TestEC()
 {
     _TestSignAndVerify();
@@ -541,4 +701,5 @@ void TestEC()
     _TestWritePublic();
     _TestCertMethods();
     _TestKeyFromBytes();
+    _TestCertChainRead();
 }

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/error.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/tests.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <cassert>

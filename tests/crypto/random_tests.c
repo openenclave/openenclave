@@ -5,8 +5,8 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <openenclave/bits/random.h>
-#include <openenclave/bits/tests.h>
+#include <openenclave/internal/random.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>
 #include "random_tests.h"

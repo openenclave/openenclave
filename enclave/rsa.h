@@ -5,7 +5,7 @@
 #define _OE_ENCLAVE_RSA_H
 
 #include <mbedtls/pk.h>
-#include <openenclave/bits/rsa.h>
+#include <openenclave/internal/rsa.h>
 
 OE_INLINE bool OE_IsRSAKey(const mbedtls_pk_context* pk)
 {

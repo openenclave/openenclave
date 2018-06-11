@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/atexit.h>
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/cpuid.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/globals.h>
-#include <openenclave/bits/jump.h>
-#include <openenclave/bits/reloc.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atexit.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/cpuid.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/fault.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/jump.h>
+#include <openenclave/internal/reloc.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/trace.h>
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
@@ -26,20 +26,21 @@ static OE_Spinlock g_exception_lock = OE_SPINLOCK_INITIALIZER;
 uint32_t g_current_exception_handler_count = 0;
 
 // Current registered exception handlers.
-POE_VECTORED_EXCEPTION_HANDLER
-g_exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
+OE_VectoredExceptionHandler
+    g_exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
 
-void* OE_AddVectoredExceptionHandler(
-    uint64_t isFirstHandler,
-    POE_VECTORED_EXCEPTION_HANDLER vectoredHandler)
+OE_Result OE_AddVectoredExceptionHandler(
+    bool isFirstHandler,
+    OE_VectoredExceptionHandler vectoredHandler)
 {
-    void* func_ret = NULL;
+    OE_Result result = OE_UNEXPECTED;
     int lock_ret = -1;
 
     // Sanity check.
     if (vectoredHandler == NULL ||
         !OE_IsWithinEnclave((void*)vectoredHandler, 8))
     {
+        result = OE_INVALID_PARAMETER;
         goto cleanup;
     }
 
@@ -47,6 +48,7 @@ void* OE_AddVectoredExceptionHandler(
     lock_ret = OE_SpinLock(&g_exception_lock);
     if (lock_ret != 0)
     {
+        result = OE_FAILURE;
         goto cleanup;
     }
 
@@ -55,6 +57,7 @@ void* OE_AddVectoredExceptionHandler(
     {
         if (g_exception_handler_arr[i] == vectoredHandler)
         {
+            result = OE_FAILURE;
             goto cleanup;
         }
     }
@@ -62,11 +65,12 @@ void* OE_AddVectoredExceptionHandler(
     // Check if there is space to add a new handler.
     if (g_current_exception_handler_count >= MAX_EXCEPTION_HANDLER_COUNT)
     {
+        result = OE_FAILURE;
         goto cleanup;
     }
 
     // Add the new handler.
-    if (isFirstHandler == 0)
+    if (!isFirstHandler)
     {
         // Append the new handler if it is not the first handler.
         g_exception_handler_arr[g_current_exception_handler_count] =
@@ -83,7 +87,7 @@ void* OE_AddVectoredExceptionHandler(
         g_exception_handler_arr[0] = vectoredHandler;
     }
 
-    func_ret = vectoredHandler;
+    result = OE_OK;
     g_current_exception_handler_count++;
 
 cleanup:
@@ -93,18 +97,20 @@ cleanup:
         OE_SpinUnlock(&g_exception_lock);
     }
 
-    return func_ret;
+    return result;
 }
 
-uint64_t OE_RemoveVectoredExceptionHandler(void* vectoredHandler)
+OE_Result OE_RemoveVectoredExceptionHandler(
+    OE_VectoredExceptionHandler vectoredHandler)
 {
-    uint64_t func_ret = 1;
+    OE_Result result = OE_FAILURE;
     int lock_ret = -1;
 
     // Sanity check.
     if (vectoredHandler == NULL ||
         !OE_IsWithinEnclave((void*)vectoredHandler, 8))
     {
+        result = OE_INVALID_PARAMETER;
         goto cleanup;
     }
 
@@ -130,7 +136,7 @@ uint64_t OE_RemoveVectoredExceptionHandler(void* vectoredHandler)
         }
 
         g_current_exception_handler_count--;
-        func_ret = 0;
+        result = OE_OK;
         goto cleanup;
     }
 
@@ -141,7 +147,7 @@ cleanup:
         OE_SpinUnlock(&g_exception_lock);
     }
 
-    return func_ret;
+    return result;
 }
 
 typedef struct _SSA_Info
@@ -222,10 +228,10 @@ int _EmulateIllegalInstruction(SGX_SsaGpr* ssa_gpr)
 /*
 **==============================================================================
 **
-** _OE_ExceptionDispatcher(OE_CONTEXT *oe_context)
+** _OE_ExceptionDispatcher(OE_Context *oe_context)
 **
 **  The real (second pass) exception dispatcher. It is called by
-**  OE_ExceptionDispatcher. This function composes the valid OE_EXCEPTION_RECORD
+**  OE_ExceptionDispatcher. This function composes the valid OE_ExceptionRecord
 **  and calls the registered exception handlers one by one. If a handler returns
 **  OE_EXCEPTION_CONTINUE_EXECUTION, this function will continue execution on
 **  the context. Otherwise the enclave will be aborted due to an unhandled
@@ -233,18 +239,18 @@ int _EmulateIllegalInstruction(SGX_SsaGpr* ssa_gpr)
 **
 **==============================================================================
 */
-void _OE_ExceptionDispatcher(OE_CONTEXT* oe_context)
+void _OE_ExceptionDispatcher(OE_Context* oe_context)
 {
     TD* td = TD_Get();
 
     // Change the rip of oe_context to the real exception address.
     oe_context->rip = td->base.exception_address;
 
-    // Compose the OE_EXCEPTION_RECORD.
+    // Compose the OE_ExceptionRecord.
     // N.B. In second pass exception handling, the XSTATE is recovered by SGX
     // hardware correctly on ERESUME, so we don't touch the XSTATE.
-    OE_EXCEPTION_RECORD oe_exception_record;
-    OE_Memset(&oe_exception_record, 0, sizeof(OE_EXCEPTION_RECORD));
+    OE_ExceptionRecord oe_exception_record;
+    OE_Memset(&oe_exception_record, 0, sizeof(OE_ExceptionRecord));
     oe_exception_record.code = td->base.exception_code;
     oe_exception_record.flags = td->base.exception_flags;
     oe_exception_record.address = td->base.exception_address;

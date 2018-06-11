@@ -4,8 +4,8 @@
 #ifndef _OE_HOST_SIGNKEY_H
 #define _OE_HOST_SIGNKEY_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 
 extern const uint8_t OE_DEBUG_SIGN_KEY[];
 

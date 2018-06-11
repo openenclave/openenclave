@@ -4,7 +4,7 @@
 #ifndef _OE_SGXIOCTL_H
 #define _OE_SGXIOCTL_H
 
-#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/internal/sgxtypes.h>
 
 int SGX_IoctlEnclaveCreate(int dev, SGX_Secs* secs);
 

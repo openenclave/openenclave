@@ -2,14 +2,14 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
-#include <openenclave/bits/cert.h>
-#include <openenclave/bits/ec.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/random.h>
-#include <openenclave/bits/rsa.h>
-#include <openenclave/bits/sha.h>
-#include <openenclave/bits/tests.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/ec.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/random.h>
+#include <openenclave/internal/rsa.h>
+#include <openenclave/internal/sha.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>

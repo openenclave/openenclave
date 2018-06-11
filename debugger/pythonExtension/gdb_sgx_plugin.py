@@ -30,7 +30,7 @@ THREAD_DATA_HEADER_FORMAT = 'Q'
 # This constant definition must align with the OE enclave layout.
 TD_OFFSET_FROM_TCS =  0X4000
 
-# This constant definition must align with TD structure in bits\sgxtypes.h.
+# This constant definition must align with TD structure in internal\sgxtypes.h.
 TD_CALLSITE_OFFSET = 0XF0
 
 # This constant definition must align with Callsite structure in enclave\td.h.

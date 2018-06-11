@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include "key.h"
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/hash.h>
-#include <openenclave/bits/raise.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/hash.h>
+#include <openenclave/internal/raise.h>
 #include "pem.h"
 
 typedef OE_Result (*OE_CopyKey)(

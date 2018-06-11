@@ -3,8 +3,8 @@
 
 #define OE_TRACE_LEVEL 1
 
-#include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/trace.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

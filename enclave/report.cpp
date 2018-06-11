@@ -1,16 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/cmac.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/keys.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/utils.h>
+#include <openenclave/bits/types.h>
 #include <openenclave/enclave.h>
-#include <openenclave/types.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/cmac.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/keys.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/utils.h>
 #include "../common/quote.h"
+
+#include <stdlib.h>
 
 // This file is .cpp in order to use C++ static initialization.
 

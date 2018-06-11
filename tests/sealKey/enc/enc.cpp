@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/keys.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/keys.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/tests.h>
 #include "../args.h"
 
 // A regular enclave should not have access to SGX_KEYSELECT_EINITTOKEN,

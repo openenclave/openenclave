@@ -4,8 +4,8 @@
 #define __OE_NEED_TIME_CALLS
 #define _GNU_SOURCE
 #include <assert.h>
-#include <openenclave/bits/calls.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/time.h>

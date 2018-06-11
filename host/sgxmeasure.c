@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include "sgxmeasure.h"
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/trace.h>
 
 static void _MeasureZeros(OE_SHA256Context* context, size_t size)
 {

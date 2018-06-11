@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
-#include <openenclave/bits/elf.h>
+#include <openenclave/internal/elf.h>
 #include <stdio.h>
 #include <stdlib.h>
 

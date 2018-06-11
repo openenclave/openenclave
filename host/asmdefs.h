@@ -6,7 +6,7 @@
 
 #ifndef __ASSEMBLER__
 #include <openenclave/bits/context.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 #include <stdint.h>
 #endif
 

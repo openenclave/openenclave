@@ -8,13 +8,13 @@
   to this file. If added, the tests will fail because of
   additional prints in enclave log, which won't be there in
   system generated log. For more details please refer
-  Readme.md file
+  README.md file
 */
 
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/error.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/tests.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>

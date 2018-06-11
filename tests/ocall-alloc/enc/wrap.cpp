@@ -5,9 +5,9 @@
     Wrapper functions for host allocation tracking and atexit handling.
  */
 
-#include <openenclave/bits/atexit.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atexit.h>
+#include <openenclave/internal/tests.h>
 #include <map>
 #include <vector>
 // And local wrap

@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/aesm.h>
-#include <openenclave/bits/error.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/aesm.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/tests.h>
+#include <openenclave/internal/utils.h>
 
 #include <fstream>
 #include <streambuf>
@@ -16,36 +16,6 @@
 #include "../common/tests.cpp"
 
 #define SKIP_RETURN_CODE 2
-
-std::vector<uint8_t> FileToBytes(const char* path)
-{
-    std::ifstream f(path, std::ios::binary);
-    return std::vector<uint8_t>(
-        std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
-}
-void TestVerifyQuote()
-{
-    VerifyQuoteArgs args = {0};
-    std::vector<uint8_t> quote = FileToBytes("./data/quote.dat");
-    std::vector<uint8_t> pckCert = FileToBytes("./data/pckCert.pem");
-    std::vector<uint8_t> pckCrl = FileToBytes("./data/intermediateCaCrl.pem");
-    std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
-
-    if (pckCert.back() != '\0')
-        pckCert.push_back('\0');
-
-    args.quote = &quote[0];
-    args.quoteSize = quote.size();
-    args.pemPckCertificate = &pckCert[0];
-    args.pemPckCertificateSize = pckCert.size();
-    args.pckCrl = &pckCrl[0];
-    args.pckCrlSize = pckCrl.size();
-    args.tcbInfoJson = &tcbInfo[0];
-    args.tcbInfoJsonSize = tcbInfo.size();
-
-    OE_TEST(OE_CallEnclave(g_Enclave, "VerifyQuote", &args) == OE_OK);
-    OE_TEST(args.result == OE_OK);
-}
 
 int main(int argc, const char* argv[])
 {
@@ -116,8 +86,6 @@ int main(int argc, const char* argv[])
     OE_TEST(
         OE_CallEnclave(enclave, "TestRemoteVerifyReport", &targetInfo) ==
         OE_OK);
-
-    TestVerifyQuote();
 #endif
 
     /* Terminate the enclave */

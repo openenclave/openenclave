@@ -14,8 +14,9 @@
 #include <ntstatus.h>
 #endif
 
-#include <openenclave/bits/raise.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sha.h>
 
 typedef struct _OE_SHA256ContextImpl
 {

@@ -11,8 +11,8 @@
 
 */
 
-#include <openenclave/bits/atexit.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atexit.h>
 
 #ifndef MAX
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))

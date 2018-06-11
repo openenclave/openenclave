@@ -7,15 +7,15 @@
 #include <mbedtls/pem.h>
 #include <mbedtls/platform.h>
 #include <mbedtls/x509_crt.h>
-#include <openenclave/bits/atomic.h>
-#include <openenclave/bits/cert.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/pem.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/utils.h>
+#include <openenclave/bits/thread.h>
 #include <openenclave/enclave.h>
-#include <openenclave/thread.h>
+#include <openenclave/internal/atomic.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/pem.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
@@ -189,7 +189,7 @@ OE_INLINE bool _CertChainIsValid(const CertChain* impl)
 /*
 **==============================================================================
 **
-** _SetErr()
+** Location helper functions:
 **
 **==============================================================================
 */
@@ -200,48 +200,57 @@ static void _SetErr(OE_VerifyCertError* error, const char* str)
         OE_Strlcpy(error->buf, str, sizeof(error->buf));
 }
 
-/*
-**==============================================================================
-**
-** _VerifyWholeChain()
-**
-**     Verify each certificate in the chain against its predecessor.
-**
-**==============================================================================
-*/
+/* Find the first self-signed certificate in the chain. */
+static mbedtls_x509_crt* _FindRootCert(mbedtls_x509_crt* chain)
+{
+    for (mbedtls_x509_crt* p = chain; p; p = p->next)
+    {
+        const mbedtls_x509_buf* subject = &p->subject_raw;
+        const mbedtls_x509_buf* issuer = &p->issuer_raw;
 
+        if (subject->tag == issuer->tag && subject->len == issuer->len &&
+            OE_Memcmp(subject->p, issuer->p, subject->len) == 0)
+        {
+            return p;
+        }
+    }
+
+    /* Not found */
+    return NULL;
+}
+
+/* Verify each certificate in the chain against its predecessors. */
 static OE_Result _VerifyWholeChain(mbedtls_x509_crt* chain)
 {
     OE_Result result = OE_UNEXPECTED;
     uint32_t flags = 0;
+    mbedtls_x509_crt* root;
 
     if (!chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Verify each certificate in the chain against its predecessor */
-    for (mbedtls_x509_crt* p = chain; p; p = p->next)
+    /* Find the root certificate in this chain */
+    if (!(root = _FindRootCert(chain)))
+        OE_RAISE(OE_FAILURE);
+
+    // Verify each certificate in the chain against the following subchain.
+    // For each i, verify chain[i] against chain[i+1:...].
+    for (mbedtls_x509_crt* p = chain; p && p->next; p = p->next)
     {
-        if (p->next)
-        {
-            mbedtls_x509_crt* next = p->next;
-            mbedtls_x509_crt* nextNext = next->next;
+        /* Pointer to subchain of certificates (predecessors) */
+        mbedtls_x509_crt* subchain = p->next;
 
-            /* Temporarily remove these from the certificate chain */
-            p->next = NULL;
-            next->next = NULL;
+        /* Verify the next certificate against its following predecessors */
+        int r = mbedtls_x509_crt_verify(
+            p, subchain, NULL, NULL, &flags, NULL, NULL);
 
-            /* Verify the next certificate against its predecessor */
-            int r = mbedtls_x509_crt_verify(
-                next, p, NULL, NULL, &flags, NULL, NULL);
+        /* Raise an error if any */
+        if (r != 0)
+            OE_RAISE(OE_FAILURE);
 
-            /* Reinsert these back into the certificate chain */
-            next->next = nextNext;
-            p->next = next;
-
-            /* Raise an error if any */
-            if (r != 0)
-                OE_RAISE(OE_FAILURE);
-        }
+        /* If the final certificate is not the root */
+        if (subchain->next == NULL && root != subchain)
+            OE_RAISE(OE_FAILURE);
     }
 
     result = OE_OK;
@@ -564,44 +573,12 @@ done:
 
 OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert)
 {
-    const CertChain* impl = (const CertChain*)chain;
-    Cert* certImpl = (Cert*)cert;
     OE_Result result = OE_UNEXPECTED;
-    size_t n;
+    size_t length;
 
-    /* Clear the output certificate for all error pathways */
-    if (cert)
-        OE_Memset(cert, 0, sizeof(OE_Cert));
-
-    /* Reject invalid parameters */
-    if (!_CertChainIsValid(impl) || !cert)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the number of certificates in the chain */
-    n = impl->referent->length;
-
-    /* Iterate from leaf upwards looking for a self-signed certificate */
-    while (n--)
-    {
-        mbedtls_x509_crt* crt;
-
-        if (!(crt = _ReferentGetCert(impl->referent, n)))
-            OE_RAISE(OE_FAILURE);
-
-        const mbedtls_x509_buf* subject = &crt->subject_raw;
-        const mbedtls_x509_buf* issuer = &crt->issuer_raw;
-
-        if (subject->tag == issuer->tag && subject->len == issuer->len &&
-            OE_Memcmp(subject->p, issuer->p, subject->len) == 0)
-        {
-            /* Found self-signed certificate */
-            _CertInit(certImpl, crt, impl->referent);
-            OE_RAISE(OE_OK);
-        }
-    }
-
-    /* No self-signed certificate was found */
-    result = OE_NOT_FOUND;
+    OE_CHECK(OE_CertChainGetLength(chain, &length));
+    OE_CHECK(OE_CertChainGetCert(chain, length - 1, cert));
+    result = OE_OK;
 
 done:
     return result;
@@ -613,7 +590,7 @@ OE_Result OE_CertChainGetLeafCert(const OE_CertChain* chain, OE_Cert* cert)
     size_t length;
 
     OE_CHECK(OE_CertChainGetLength(chain, &length));
-    OE_CHECK(OE_CertChainGetCert(chain, length - 1, cert));
+    OE_CHECK(OE_CertChainGetCert(chain, 0, cert));
     result = OE_OK;
 
 done:

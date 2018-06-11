@@ -5,9 +5,9 @@
 #include <mbedtls/asn1.h>
 #include <mbedtls/asn1write.h>
 #include <mbedtls/ecp.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/raise.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/raise.h>
 #include "key.h"
 #include "pem.h"
 #include "random.h"
@@ -106,7 +106,7 @@ static OE_Result _GenerateKeyPair(
     if (!privateKey || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Resolve the curveName parameter to an EC-curve identifier */
+    /* Get the group id and curve info structure for this EC type */
     {
         const mbedtls_ecp_curve_info* info;
         mbedtls_ecp_group_id groupID;
@@ -399,7 +399,7 @@ OE_Result OE_ECDSASignatureWriteDER(
     if (!signatureSize || !rData || !rSize || !sData || !sSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If xData is null, then xDataSize should be zero */
+    /* If signature is null, then signatureSize must be zero */
     if (!signature && *signatureSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 

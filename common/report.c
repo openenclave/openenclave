@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/defs.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxtypes.h>
 
 #ifdef OE_BUILD_ENCLAVE
 
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
 
 #define Memset OE_Memset
 #define Memcpy OE_Memcpy

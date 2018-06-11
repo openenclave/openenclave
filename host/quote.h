@@ -4,7 +4,7 @@
 #ifndef _OE_HOST_QUOTE_H
 #define _OE_HOST_QUOTE_H
 
-#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/internal/sgxtypes.h>
 
 OE_EXTERNC_BEGIN
 

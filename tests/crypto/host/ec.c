@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "../ec.h"
-#include <openenclave/bits/raise.h>
+#include <openenclave/internal/raise.h>
 #include <openssl/obj_mac.h>
 #include <openssl/pem.h>
 #include <string.h>
@@ -98,11 +98,11 @@ OE_Result OE_ECPublicKeyToCoordinates(
     if (!publicKey || !xSize || !ySize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If xData is null, then xDataSize should be zero */
+    /* If xData is null, then xSize should be zero */
     if (!xData && *xSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If yData is null, then yDataSize should be zero */
+    /* If yData is null, then ySize should be zero */
     if (!yData && *ySize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 

@@ -4,7 +4,7 @@
 #ifndef _TESTS_CRYPTO_EC_H
 #define _TESTS_CRYPTO_EC_H
 
-#include <openenclave/bits/ec.h>
+#include <openenclave/internal/ec.h>
 
 /**
  * Get the key coordinates from an EC public key
