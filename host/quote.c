@@ -10,10 +10,12 @@
 #include <openenclave/internal/utils.h>
 
 #if defined(OE_USE_LIBSGX)
-#include <libsgx/sgx_ql_oe_wrapper.h>
+#include <sgx_ql_oe_wrapper.h>
 #else
 #include <openenclave/internal/aesm.h>
 #endif
+
+#include "sgxquoteprovider.h"
 
 #if !defined(OE_USE_LIBSGX)
 
@@ -147,6 +149,14 @@ OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
 {
     OE_Result result = OE_UNEXPECTED;
     memset(targetInfo, 0, sizeof(*targetInfo));
+
+    // Quote workflow always begins with obtaining the target info. Therefore
+    // initializing the quote provider here ensures that that we can control its
+    // life time rather than Intel's attestation libraries.
+    // OE_InitializeQuoteProvider performs initialization only once even if
+    // called many times.
+
+    OE_InitializeQuoteProvider();
 
 #if defined(OE_USE_LIBSGX)
     {

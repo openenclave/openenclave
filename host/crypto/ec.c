@@ -362,7 +362,7 @@ OE_Result OE_ECPublicKeyFromCoordinates(
     EC_KEY* ec = NULL;
     EVP_PKEY* pkey = NULL;
     EC_GROUP* group = NULL;
-    EC_POINT* point;
+    EC_POINT* point = NULL;
     BIGNUM* x = NULL;
     BIGNUM* y = NULL;
 
@@ -474,7 +474,7 @@ OE_Result OE_ECDSASignatureWriteDER(
     if (!signatureSize || !rData || !rSize || !sData || !sSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If xData is null, then xDataSize should be zero */
+    /* If signature is null, then signatureSize must be zero */
     if (!signature && *signatureSize != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 

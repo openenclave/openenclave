@@ -18,7 +18,7 @@
 // Encode the current source position as a comment to the assembly block. This
 // makes each speculation barrier unique and prevents the compiler from merging
 // different speculation barriers. Additionally it also allows manual
-// verification of lfences in generated assembly code.
+// verification of l-fences in generated assembly code.
 #define OE_SPECULATION_BARRIER() \
     asm volatile("lfence #" OE_SOURCE_POS::: "memory");
 
@@ -44,7 +44,7 @@ OE_Result OE_CopyInput(
 
     OE_Memcpy(dst, (void*)src, size);
 
-    // Fix for Spectre-v1 requires lfence to be inserted after bounds
+    // Fix for Spectre-v1 requires l-fence to be inserted after bounds
     // validation. E.g. the OE_IsOutsideEnclave check above is a bounds check.
     // Without the barrier, even when OE_IsOutsideEnclave is false, the
     // processor can speculatively start executing code as if

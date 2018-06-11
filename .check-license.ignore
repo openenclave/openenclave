@@ -63,3 +63,8 @@ VERSION
 ./prereqs/packages/.packages
 ./doc/refman/md/*.dump
 ./3rdparty/LICENSES
+./tests/report/data/tcbInfo.json
+./tests/report/data/quote.dat
+./tests/pingpong-shared/enc/signconf.xml
+./tests/ecall_ocall/crc32.cpp
+./.cspellignore

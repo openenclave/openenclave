@@ -114,7 +114,7 @@ static void _TestSign()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPrivateKey key;
+    OE_RSAPrivateKey key = {0};
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
@@ -157,7 +157,7 @@ static void _TestVerify()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPublicKey key;
+    OE_RSAPublicKey key = {0};
 
     r = OE_RSAPublicKeyReadPEM(
         (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
@@ -231,26 +231,6 @@ static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
 
 #define CHAIN1                                                           \
     "-----BEGIN CERTIFICATE-----\n"                                      \
-    "MIIDUDCCAjgCCQDNkOt+e8l1aDANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
-    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
-    "Fw0xODAyMTMxNzUyNTJaFw0yMzAyMTMxNzUyNTJaMGoxCzAJBgNVBAYTAlVTMQ4w\n" \
-    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n" \
-    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n" \
-    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlrzZNtYmicG/Z0ZK0qYzmTyur/n4\n" \
-    "94fkDBklgsHb9inbe455MgUsIcrlwE/1qXbcO0SnQmUjmopE2iYJhDVDDnobgDlP\n" \
-    "iO1o8E7tIW/jzxRStDyfrO6uOrc8mUAvnsHc800d2Dt6vAHhdbiBeIi8CkIgy5/h\n" \
-    "XXQphjk9H0jrVFydJ7KYl53KvwZ95NAodPZpiuCD6WXDEvXOLvQaup2nG9+ha5QB\n" \
-    "h0pfdNRhHtsfIcg5ExghoOYXcOhCtEqkVYcllmYr2tf3tn/dRVXO7KYbfqr/mQo+\n" \
-    "oPfhziAyyKHxx7a6bfDngV8ORI7q9b774VgZd3dTDDYechYTIH5V4pX61QIDAQAB\n" \
-    "MA0GCSqGSIb3DQEBCwUAA4IBAQBbCNHoUIVpUnLhrugyooDCygYQeTebVILY1DHG\n" \
-    "Kj7GEpMK70suXQlJ7/hbuL8jTA/kHMtHARy+9DAQDjiWRfRNOpE4eEbUdEiwei4L\n" \
-    "2tPke58FBxkq6GcpldPBin16ux379zM43vYwhEf9yuY6KwBfaABg6Eeftrpcuvt3\n" \
-    "1Ibbn4oM2MZixhZXTkKsB3O1OlaZ/kw6qPt7LklLhij1SmvtrrlkWGWoAg8JWYh+\n" \
-    "+Wd1yIgPZbbio9b4rgQ6j0mpWaRVPm7cKAt3nfhnMgr1QV+RQnPDTlsO+sieCLZm\n" \
-    "Z/7gtSYO0BbJnQu3dXzP0OBD1SQvQOpjWXwC71ioBn1rbqDl\n"                 \
-    "-----END CERTIFICATE-----\n"                                        \
-    "-----BEGIN CERTIFICATE-----\n"                                      \
     "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n" \
     "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n" \
     "FDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMB4XDTE4MDIx\n" \
@@ -269,29 +249,29 @@ static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
     "JN6pIxewAEhYGt8nd5mjRFJnMfb6IWs49TRxvk7SntVrWktW36TxPTTWsusuCd8v\n" \
     "RGTsgD4AIHqFRVi+e+y32K9xxUL4f27s6wSu+f2z2oAQsrfuhHyFMUZT4NLs4KAk\n" \
     "QbVRkhj9vYJrIP8rRJ+XV9j/IvfdjQ==\n"                                 \
+    "-----END CERTIFICATE-----\n"                                        \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
+    "MIIDUDCCAjgCCQDNkOt+e8l1aDANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
+    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
+    "Fw0xODAyMTMxNzUyNTJaFw0yMzAyMTMxNzUyNTJaMGoxCzAJBgNVBAYTAlVTMQ4w\n" \
+    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n" \
+    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n" \
+    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlrzZNtYmicG/Z0ZK0qYzmTyur/n4\n" \
+    "94fkDBklgsHb9inbe455MgUsIcrlwE/1qXbcO0SnQmUjmopE2iYJhDVDDnobgDlP\n" \
+    "iO1o8E7tIW/jzxRStDyfrO6uOrc8mUAvnsHc800d2Dt6vAHhdbiBeIi8CkIgy5/h\n" \
+    "XXQphjk9H0jrVFydJ7KYl53KvwZ95NAodPZpiuCD6WXDEvXOLvQaup2nG9+ha5QB\n" \
+    "h0pfdNRhHtsfIcg5ExghoOYXcOhCtEqkVYcllmYr2tf3tn/dRVXO7KYbfqr/mQo+\n" \
+    "oPfhziAyyKHxx7a6bfDngV8ORI7q9b774VgZd3dTDDYechYTIH5V4pX61QIDAQAB\n" \
+    "MA0GCSqGSIb3DQEBCwUAA4IBAQBbCNHoUIVpUnLhrugyooDCygYQeTebVILY1DHG\n" \
+    "Kj7GEpMK70suXQlJ7/hbuL8jTA/kHMtHARy+9DAQDjiWRfRNOpE4eEbUdEiwei4L\n" \
+    "2tPke58FBxkq6GcpldPBin16ux379zM43vYwhEf9yuY6KwBfaABg6Eeftrpcuvt3\n" \
+    "1Ibbn4oM2MZixhZXTkKsB3O1OlaZ/kw6qPt7LklLhij1SmvtrrlkWGWoAg8JWYh+\n" \
+    "+Wd1yIgPZbbio9b4rgQ6j0mpWaRVPm7cKAt3nfhnMgr1QV+RQnPDTlsO+sieCLZm\n" \
+    "Z/7gtSYO0BbJnQu3dXzP0OBD1SQvQOpjWXwC71ioBn1rbqDl\n"                 \
     "-----END CERTIFICATE-----\n"
 
 #define CHAIN2                                                           \
-    "-----BEGIN CERTIFICATE-----\n"                                      \
-    "MIIDUDCCAjgCCQCCncn7BEtWSzANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
-    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
-    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
-    "Fw0xODAyMTMwMTQwMDhaFw0yMzAyMTMwMTQwMDhaMGoxCzAJBgNVBAYTAlVTMQ4w\n" \
-    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n" \
-    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n" \
-    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwSnztYAKE2Mq5XL2dCZsFGKsMjsr\n" \
-    "pIK37PoBEPJsphL8jrpbRtYklp5HpIpcakT0poL34p90xaW+bIthzbU/MOC/2A/0\n" \
-    "63WS4v4n2h33JaMoGVQ4qt+4sV6sZwG70ifbG6linQQAfhdzt+7hxizLr0sh+gys\n" \
-    "/E5qkik87pwb2NxDc4tO5vybq50AKf+UVBC5/f//YD0LrXYafUVEruwsCj9fAjso\n" \
-    "vAhPqn4nVylOwuNBCjXGkLNF/Rxsi25Cb8rX0rMS1/evjTaTveMRtVYJP4OnDuWL\n" \
-    "SzksoGwC4D4hb2SNB+QEMyGv1SnrrmfEXdN/RKf3pCtFJigskcxy/3jgnwIDAQAB\n" \
-    "MA0GCSqGSIb3DQEBCwUAA4IBAQABen8yc7HPFjqi+xuiwh+3YcVOYOd5R+gVdsPm\n" \
-    "1VLcetXOVx1aRjHF9jwkF3GzQ5UbKex9MSiScjDjLV9ukmJD+HjMwAm3W/Rex+rY\n" \
-    "Y7bM6uvKN5zxs5SeuO7odkYP2jHlSnozMJt7jMENr2sJUscIrn073Z3b0gLcv/Cb\n" \
-    "QKQY5OSmyQYYu7ib14SxcpIjdZi1T/PH8hlKaKsdt+OFTzA3t8VdN69jZSubwP+A\n" \
-    "gBmiW1o/q+r+pN3woaClk5c0/Dh9t/xJcNth4NSKV/YrLHQLZQ76SvICtKexz1RZ\n" \
-    "wZSQ03dKw87xW3t3f5GS3O75zDNeT4TMeYd4RMRiK6wDt2WE\n"                 \
-    "-----END CERTIFICATE-----\n"                                        \
     "-----BEGIN CERTIFICATE-----\n"                                      \
     "MIIDQjCCAioCAhAAMA0GCSqGSIb3DQEBCwUAMGoxCzAJBgNVBAYTAlVTMQ4wDAYD\n" \
     "VQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3NvZnQx\n" \
@@ -311,6 +291,26 @@ static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
     "XJ9PjI7n93Wou0xC4kYOszGPGIZ9X5mEPAKqqCcXsxGfruDrgmulB526hb/lHC/5\n" \
     "1gRic7SCYsyWgxde7R5D+IxxcJNnIWNnt3TUIT8I9fbwonddxA3Qln9tr784dDiB\n" \
     "/c5qUrfE7k0DrKr4OZvt/xbV9oKMyg==\n"                                 \
+    "-----END CERTIFICATE-----\n"                                        \
+    "-----BEGIN CERTIFICATE-----\n"                                      \
+    "MIIDUDCCAjgCCQCCncn7BEtWSzANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
+    "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
+    "cm9zb2Z0MRQwEgYDVQQLDAtPcGVuRW5jbGF2ZTEQMA4GA1UEAwwHVGVzdCBDQTAe\n" \
+    "Fw0xODAyMTMwMTQwMDhaFw0yMzAyMTMwMTQwMDhaMGoxCzAJBgNVBAYTAlVTMQ4w\n" \
+    "DAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGQXVzdGluMRIwEAYDVQQKDAlNaWNyb3Nv\n" \
+    "ZnQxFDASBgNVBAsMC09wZW5FbmNsYXZlMRAwDgYDVQQDDAdUZXN0IENBMIIBIjAN\n" \
+    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwSnztYAKE2Mq5XL2dCZsFGKsMjsr\n" \
+    "pIK37PoBEPJsphL8jrpbRtYklp5HpIpcakT0poL34p90xaW+bIthzbU/MOC/2A/0\n" \
+    "63WS4v4n2h33JaMoGVQ4qt+4sV6sZwG70ifbG6linQQAfhdzt+7hxizLr0sh+gys\n" \
+    "/E5qkik87pwb2NxDc4tO5vybq50AKf+UVBC5/f//YD0LrXYafUVEruwsCj9fAjso\n" \
+    "vAhPqn4nVylOwuNBCjXGkLNF/Rxsi25Cb8rX0rMS1/evjTaTveMRtVYJP4OnDuWL\n" \
+    "SzksoGwC4D4hb2SNB+QEMyGv1SnrrmfEXdN/RKf3pCtFJigskcxy/3jgnwIDAQAB\n" \
+    "MA0GCSqGSIb3DQEBCwUAA4IBAQABen8yc7HPFjqi+xuiwh+3YcVOYOd5R+gVdsPm\n" \
+    "1VLcetXOVx1aRjHF9jwkF3GzQ5UbKex9MSiScjDjLV9ukmJD+HjMwAm3W/Rex+rY\n" \
+    "Y7bM6uvKN5zxs5SeuO7odkYP2jHlSnozMJt7jMENr2sJUscIrn073Z3b0gLcv/Cb\n" \
+    "QKQY5OSmyQYYu7ib14SxcpIjdZi1T/PH8hlKaKsdt+OFTzA3t8VdN69jZSubwP+A\n" \
+    "gBmiW1o/q+r+pN3woaClk5c0/Dh9t/xJcNth4NSKV/YrLHQLZQ76SvICtKexz1RZ\n" \
+    "wZSQ03dKw87xW3t3f5GS3O75zDNeT4TMeYd4RMRiK6wDt2WE\n"                 \
     "-----END CERTIFICATE-----\n"
 
 /* This chain is a concatenation of two unrelated chains: CHAIN1 and CHAIN2 */
@@ -321,9 +321,9 @@ static void _TestCertVerifyGood()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_VerifyCertError error;
-    OE_Cert cert;
-    OE_CertChain chain;
+    OE_VerifyCertError error = {0};
+    OE_Cert cert = {0};
+    OE_CertChain chain = {0};
     OE_CRL* crl = NULL;
 
     r = OE_CertReadPEM(_CERT1, sizeof(_CERT1), &cert);
@@ -346,9 +346,9 @@ static void _TestCertVerifyBad()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_VerifyCertError error;
-    OE_Cert cert;
-    OE_CertChain chain;
+    OE_VerifyCertError error = {0};
+    OE_Cert cert = {0};
+    OE_CertChain chain = {0};
     OE_CRL* crl = NULL;
 
     r = OE_CertReadPEM(_CERT1, sizeof(_CERT1), &cert);
@@ -372,8 +372,8 @@ static void _TestMixedChain()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_Cert cert;
-    OE_CertChain chain;
+    OE_Cert cert = {0};
+    OE_CertChain chain = {0};
 
     r = OE_CertReadPEM(_CERT1, sizeof(_CERT1), &cert);
     OE_TEST(r == OE_OK);
@@ -393,8 +393,8 @@ static void _TestGenerate()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPrivateKey privateKey;
-    OE_RSAPublicKey publicKey;
+    OE_RSAPrivateKey privateKey = {0};
+    OE_RSAPublicKey publicKey = {0};
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
@@ -442,7 +442,7 @@ static void _TestWritePrivate()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPrivateKey key;
+    OE_RSAPrivateKey key = {0};
     void* pemData = NULL;
     size_t pemSize = 0;
 
@@ -472,7 +472,7 @@ static void _TestWritePublic()
     printf("=== begin %s()\n", __FUNCTION__);
 
     OE_Result r;
-    OE_RSAPublicKey key;
+    OE_RSAPublicKey key = {0};
     void* pemData = NULL;
     size_t pemSize = 0;
 
@@ -505,12 +505,12 @@ static void _TestCertMethods()
 
     /* Test OE_CertGetRSAPublicKey() */
     {
-        OE_Cert cert;
+        OE_Cert cert = {0};
 
         r = OE_CertReadPEM(_CERT1, sizeof(_CERT1), &cert);
         OE_TEST(r == OE_OK);
 
-        OE_RSAPublicKey key;
+        OE_RSAPublicKey key = {0};
         r = OE_CertGetRSAPublicKey(&cert, &key);
         OE_TEST(r == OE_OK);
 
@@ -569,7 +569,7 @@ static void _TestCertMethods()
 
     /* Test OE_CertChainGetCert() */
     {
-        OE_CertChain chain;
+        OE_CertChain chain = {0};
 
         /* Load the chain from PEM format */
         r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
@@ -584,7 +584,7 @@ static void _TestCertMethods()
         /* Get each certificate in the chain */
         for (size_t i = 0; i < length; i++)
         {
-            OE_Cert cert;
+            OE_Cert cert = {0};
             r = OE_CertChainGetCert(&chain, i, &cert);
             OE_TEST(r == OE_OK);
             OE_CertFree(&cert);
@@ -592,7 +592,7 @@ static void _TestCertMethods()
 
         /* Test out of bounds */
         {
-            OE_Cert cert;
+            OE_Cert cert = {0};
             r = OE_CertChainGetCert(&chain, length + 1, &cert);
             OE_TEST(r == OE_OUT_OF_BOUNDS);
             OE_CertFree(&cert);
@@ -603,10 +603,9 @@ static void _TestCertMethods()
 
     /* Test OE_CertChainGetRootCert() and OE_CertChainGetLeafCert() */
     {
-        OE_CertChain chain;
-        OE_Cert root;
-        OE_Cert cert0;
-        OE_Cert leaf;
+        OE_CertChain chain = {0};
+        OE_Cert root = {0};
+        OE_Cert leaf = {0};
 
         /* Load the chain from PEM format */
         r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
@@ -616,25 +615,16 @@ static void _TestCertMethods()
         r = OE_CertChainGetRootCert(&chain, &root);
         OE_TEST(r == OE_OK);
 
-        /* Get the first certificate */
-        r = OE_CertChainGetCert(&chain, 0, &cert0);
-        OE_TEST(r == OE_OK);
-
         /* Get the leaf certificate */
         r = OE_CertChainGetLeafCert(&chain, &leaf);
         OE_TEST(r == OE_OK);
 
         /* Check that the keys are identical for top and root certificate */
         {
-            OE_RSAPublicKey rootKey;
-            OE_RSAPublicKey certKey;
-            bool equal;
+            OE_RSAPublicKey rootKey = {0};
+            OE_RSAPublicKey certKey = {0};
 
             OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
-            OE_TEST(OE_CertGetRSAPublicKey(&cert0, &certKey) == OE_OK);
-
-            OE_TEST(OE_RSAPublicKeyEqual(&rootKey, &certKey, &equal) == OE_OK);
-            OE_TEST(equal == true);
 
             OE_RSAPublicKeyFree(&rootKey);
             OE_RSAPublicKeyFree(&certKey);
@@ -642,8 +632,8 @@ static void _TestCertMethods()
 
         /* Check that the keys are not identical for leaf and root */
         {
-            OE_RSAPublicKey rootKey;
-            OE_RSAPublicKey leafKey;
+            OE_RSAPublicKey rootKey = {0};
+            OE_RSAPublicKey leafKey = {0};
             bool equal;
 
             OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
@@ -657,7 +647,6 @@ static void _TestCertMethods()
         }
 
         OE_CertFree(&root);
-        OE_CertFree(&cert0);
         OE_CertFree(&leaf);
         OE_CertChainFree(&chain);
     }

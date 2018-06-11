@@ -3,7 +3,7 @@
 
 #include "hash.h"
 
-const char ALPHABET[26] = "abcdefghijklmnopqrstuvwxyz";
+const char* ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 
 /* Hash of ALPHABET string above */
 OE_SHA256 ALPHABET_HASH = {{

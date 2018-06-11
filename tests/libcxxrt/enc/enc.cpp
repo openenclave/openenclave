@@ -8,7 +8,7 @@
   to this file. If added, the tests will fail because of
   additional prints in enclave log, which won't be there in
   system generated log. For more details please refer
-  Readme.md file
+  README.md file
 */
 
 #include <openenclave/enclave.h>
