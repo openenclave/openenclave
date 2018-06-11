@@ -107,9 +107,9 @@ OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
     delete quote;
 }
 
-// Arbitrary test data exchanged by the enclaves. The first enclave sends it's
+// Arbitrary test data exchanged by the enclaves. The first enclave sends its
 // g_TestData (encrypted) to the second enclave. The second enclave decrypts the
-// received data and adds it to it's own g_TestData, and sends it back to the
+// received data and adds it to its own g_TestData, and sends it back to the
 // first enclave.
 uint8_t g_TestData[16] =
     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
