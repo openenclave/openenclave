@@ -82,7 +82,7 @@ int main(int argc, const char* argv[])
     OE_TEST(
         OE_CallEnclave(enclave, "TestLocalVerifyReport", &targetInfo) == OE_OK);
 
-#ifdef OE_USE_LIBSGX 
+#ifdef OE_USE_LIBSGX
     OE_TEST(
         OE_CallEnclave(enclave, "TestRemoteVerifyReport", &targetInfo) ==
         OE_OK);

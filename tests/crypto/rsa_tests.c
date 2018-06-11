@@ -249,7 +249,7 @@ static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
     "JN6pIxewAEhYGt8nd5mjRFJnMfb6IWs49TRxvk7SntVrWktW36TxPTTWsusuCd8v\n" \
     "RGTsgD4AIHqFRVi+e+y32K9xxUL4f27s6wSu+f2z2oAQsrfuhHyFMUZT4NLs4KAk\n" \
     "QbVRkhj9vYJrIP8rRJ+XV9j/IvfdjQ==\n"                                 \
-    "-----END CERTIFICATE-----\n" \
+    "-----END CERTIFICATE-----\n"                                        \
     "-----BEGIN CERTIFICATE-----\n"                                      \
     "MIIDUDCCAjgCCQDNkOt+e8l1aDANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
     "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \
@@ -291,7 +291,7 @@ static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
     "XJ9PjI7n93Wou0xC4kYOszGPGIZ9X5mEPAKqqCcXsxGfruDrgmulB526hb/lHC/5\n" \
     "1gRic7SCYsyWgxde7R5D+IxxcJNnIWNnt3TUIT8I9fbwonddxA3Qln9tr784dDiB\n" \
     "/c5qUrfE7k0DrKr4OZvt/xbV9oKMyg==\n"                                 \
-    "-----END CERTIFICATE-----\n" \
+    "-----END CERTIFICATE-----\n"                                        \
     "-----BEGIN CERTIFICATE-----\n"                                      \
     "MIIDUDCCAjgCCQCCncn7BEtWSzANBgkqhkiG9w0BAQsFADBqMQswCQYDVQQGEwJV\n" \
     "UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkF1c3RpbjESMBAGA1UECgwJTWlj\n" \

@@ -168,7 +168,6 @@ OE_Result VerifyQuoteImpl(
     OE_SHA256Context sha256Ctx = {0};
     OE_SHA256 sha256 = {0};
     OE_ECPublicKey attestationKey = {0};
-    uint64_t numCerts = 0;
     OE_Cert leafCert = {0};
     OE_Cert rootCert = {0};
     OE_ECPublicKey leafPublicKey = {0};
@@ -214,11 +213,8 @@ OE_Result VerifyQuoteImpl(
                 pemPckCertificate, pemPckCertificateSize, &pckCertChain));
 
         // Fetch leaf and root certificates.
-        // TODO: Use appropriate cert methods when available.
-        OE_CHECK(OE_CertChainGetCert(&pckCertChain, 0, &leafCert));
-
-        OE_CHECK(OE_CertChainGetLength(&pckCertChain, &numCerts));
-        OE_CHECK(OE_CertChainGetCert(&pckCertChain, numCerts - 1, &rootCert));
+        OE_CHECK(OE_CertChainGetLeafCert(&pckCertChain, &leafCert));
+        OE_CHECK(OE_CertChainGetRootCert(&pckCertChain, &rootCert));
 
         OE_CHECK(OE_CertGetECPublicKey(&leafCert, &leafPublicKey));
         OE_CHECK(OE_CertGetECPublicKey(&rootCert, &rootPublicKey));

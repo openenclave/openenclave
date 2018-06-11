@@ -366,7 +366,7 @@ OE_Result OE_CertChainReadPEM(
     }
 
     /* Verify the whole certificate chain */
-    OE_CHECK(_VerifyWholeChain(&referent->crt));    
+    OE_CHECK(_VerifyWholeChain(&referent->crt));
 
     /* Calculate the length of the certificate chain */
     for (mbedtls_x509_crt* p = &referent->crt; p; p = p->next)

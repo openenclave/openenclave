@@ -60,7 +60,7 @@ static void _LoadQuoteProvider()
             {
                 OE_UNUSED(_QuoteProviderLog);
 
-                OE_TRACE_INFO("sgxquoteprovider: lInstalled log function\n");
+                OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
                 // If info tracing is enabled, install the logging function.
                 set_log_fcn(_QuoteProviderLog);
@@ -68,8 +68,9 @@ static void _LoadQuoteProvider()
             }
             else
             {
-                OE_TRACE_INFO("sgxquoteprovider: sgx_ql_set_logging_function "
-                              "not found\n");
+                OE_TRACE_INFO(
+                    "sgxquoteprovider: sgx_ql_set_logging_function "
+                    "not found\n");
             }
             atexit(_UnloadQuoteProvider);
         }
