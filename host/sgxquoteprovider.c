@@ -4,7 +4,7 @@
 #define OE_TRACE_LEVEL 1
 
 #include <dlfcn.h>
-#include <openenclave/bits/trace.h>
+#include <openenclave/internal/trace.h>
 #include <stdio.h>
 #include <stdlib.h>
 
