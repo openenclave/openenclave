@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
-#define __OE_NEED_TIME_CALLS
+#define _ADD_OE_TIME_CALLS
 #define _GNU_SOURCE
 #include <assert.h>
 #include <openenclave/bits/calls.h>
@@ -38,7 +37,6 @@ int gettimeofday(struct timeval* tv, void* tz)
 {
     size_t ret = -1;
     OE_GettimeofdayArgs* args = NULL;
-
     if (!(args = OE_HostCalloc(1, sizeof(OE_GettimeofdayArgs))))
         goto done;
 

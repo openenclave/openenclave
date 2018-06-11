@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if defined(__linux__)
-#define __OE_NEED_TIME_CALLS
-#endif
-
 #include <assert.h>
 #include <stdio.h>
 
@@ -17,6 +13,7 @@
 #include <unistd.h>
 #elif defined(_WIN32)
 #include <Windows.h>
+#include <inttypes.h>
 #endif
 
 #include <openenclave/host.h>
@@ -173,51 +170,3 @@ void HandleGetQETargetInfo(uint64_t argIn)
 
     args->result = SGX_GetQETargetInfo(&args->targetInfo);
 }
-
-#if defined(__OE_NEED_TIME_CALLS)
-void HandleStrftime(uint64_t argIn)
-{
-    OE_StrftimeArgs* args = (OE_StrftimeArgs*)argIn;
-
-    if (!args)
-        return;
-
-    args->ret = strftime(args->str, sizeof(args->str), args->format, &args->tm);
-}
-#endif
-
-#if defined(__OE_NEED_TIME_CALLS)
-void HandleGettimeofday(uint64_t argIn)
-{
-    OE_GettimeofdayArgs* args = (OE_GettimeofdayArgs*)argIn;
-
-    if (!args)
-        return;
-
-    args->ret = gettimeofday(args->tv, args->tz);
-}
-#endif
-
-#if defined(__OE_NEED_TIME_CALLS)
-void HandleClockgettime(uint64_t argIn)
-{
-    OE_ClockgettimeArgs* args = (OE_ClockgettimeArgs*)argIn;
-
-    if (!args)
-        return;
-
-    args->ret = clock_gettime(args->clk_id, args->tp);
-}
-#endif
-
-#if defined(__OE_NEED_TIME_CALLS)
-void HandleNanosleep(uint64_t argIn)
-{
-    OE_NanosleepArgs* args = (OE_NanosleepArgs*)argIn;
-
-    if (!args)
-        return;
-
-    args->ret = nanosleep(args->req, args->rem);
-}
-#endif
