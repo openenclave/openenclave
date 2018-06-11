@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
+#define _ADD_OE_TIME_CALLS
 #include "../ocalls.h"
 #include "../../include/openenclave/bits/calls.h"
 
@@ -36,10 +36,7 @@ void HandleClockgettime(uint64_t argIn)
     if (!args)
         return;
 
-    printf("\n\n\n Linux clock_gettime function called ....\n");
     args->ret = clock_gettime(args->clk_id, args->tp);
-    printf("\n LINUX  Time in seconds %ld", args->tp->tv_sec);
-    printf("\n LINUX  Time in neno seconds %ld", args->tp->tv_nsec);
 #endif
 }
 
