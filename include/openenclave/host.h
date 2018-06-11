@@ -20,11 +20,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bits/sha.h"
-#include "defs.h"
-#include "report.h"
-#include "result.h"
-#include "types.h"
+#include "bits/defs.h"
+#include "bits/report.h"
+#include "bits/result.h"
+#include "bits/types.h"
 
 OE_EXTERNC_BEGIN
 

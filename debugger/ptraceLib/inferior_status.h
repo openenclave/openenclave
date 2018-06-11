@@ -4,7 +4,7 @@
 #ifndef _OE_INFERIOR_STATUS_H_
 #define _OE_INFERIOR_STATUS_H_
 
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 #include <pthread.h>
 
 typedef enum _OE_Inferior_Flags {

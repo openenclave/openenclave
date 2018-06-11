@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/sgxcreate.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/utils.h>
-#include <openenclave/defs.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/internal/elf.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/sgxcreate.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/utils.h>
 #include <stdarg.h>
 #include <string.h>
 

@@ -5,8 +5,8 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include <openenclave/bits/sha.h>
-#include <openenclave/bits/tests.h>
+#include <openenclave/internal/sha.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>
 #include "hash.h"

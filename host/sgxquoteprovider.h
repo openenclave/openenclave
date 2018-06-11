@@ -4,8 +4,8 @@
 #ifndef _OE_SGX_HOST_QUOTE_PROVIDER_H
 #define _OE_SGX_HOST_QUOTE_PROVIDER_H
 
-#include <openenclave/defs.h>
-#include <openenclave/result.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/result.h>
 
 OE_EXTERNC_BEGIN
 

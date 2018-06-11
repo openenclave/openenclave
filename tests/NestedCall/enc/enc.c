@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include "../args.h"
 
 // This function will generate the divide by zero function.
@@ -31,7 +31,7 @@ int DivideByZeroExceptionFunction(void)
     return 0;
 }
 
-uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD* exception_record)
+uint64_t TestDivideByZeroHandler(OE_ExceptionRecord* exception_record)
 {
     if (exception_record->code != OE_EXCEPTION_DIVIDE_BY_ZERO)
     {
@@ -47,7 +47,7 @@ static OE_OnceType _enclave_exception_once;
 
 static void _InitializeExceptionImp(void)
 {
-    if (OE_AddVectoredExceptionHandler(0, TestDivideByZeroHandler) == NULL)
+    if (OE_AddVectoredExceptionHandler(false, TestDivideByZeroHandler) != OE_OK)
     {
         OE_Abort();
     }

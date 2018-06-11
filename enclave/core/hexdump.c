@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/hexdump.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/hexdump.h>
 
 /* Convert a nibble to an ASCII character: Example 0xF => 'F' */
 OE_INLINE char _NibbleToHexChar(uint8_t x)

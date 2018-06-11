@@ -4,10 +4,10 @@
 #include <stdio.h>
 #define OE_TRACE_LEVEL 1
 
-#include <openenclave/bits/globals.h> // for __OE_GetEnclaveBase()
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/globals.h> // for __OE_GetEnclaveBase()
+#include <openenclave/internal/tests.h>
+#include <openenclave/internal/trace.h>
 #include <mutex>
 #include <system_error>
 #include "../args.h"

@@ -5,7 +5,7 @@
 #define _OE_ENCLAVE_EC_H
 
 #include <mbedtls/pk.h>
-#include <openenclave/bits/ec.h>
+#include <openenclave/internal/ec.h>
 
 OE_INLINE bool OE_IsECKey(const mbedtls_pk_context* pk)
 {

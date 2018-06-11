@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/sgxtypes.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/sgxtypes.h>
 #include "asmdefs.h"
 
 /* The EGETKEY wrapper. */

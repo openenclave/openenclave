@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/result.h>
+#include <openenclave/bits/result.h>
 
 // OE abort status depends on the order of these enums to transfer status
 // correctly.

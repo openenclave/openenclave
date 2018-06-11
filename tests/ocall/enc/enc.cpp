@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/globals.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/fault.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/tests.h>
 #include "../args.h"
 
 OE_ECALL void Test2(void* args_)

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/sha.h>
-#include <openenclave/result.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/sha.h>
 
 OE_Result OE_SGXSignEnclave(
     const OE_SHA256* mrenclave,

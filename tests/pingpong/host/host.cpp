@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/tests.h>
 #include "pingpong_u.h"
 
 static bool gotPong = false;

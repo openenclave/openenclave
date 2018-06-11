@@ -3,8 +3,8 @@
 
 #include "enclave.h"
 #include <assert.h>
-#include <openenclave/bits/queue.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/queue.h>
 
 static OE_LIST_HEAD(EnclaveListHead, _EnclaveEntry) g_enclave_list_head;
 static OE_H_Mutex g_enclave_list_lock = OE_H_MUTEX_INITIALIZER;

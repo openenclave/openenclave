@@ -2,15 +2,15 @@
 // Licensed under the MIT License.
 
 #define OE_TRACE_LEVEL 1
-#include <openenclave/bits/aesm.h>
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/error.h>
-#include <openenclave/bits/mem.h>
-#include <openenclave/bits/sgxsign.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/str.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/aesm.h>
+#include <openenclave/internal/elf.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/mem.h>
+#include <openenclave/internal/sgxsign.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/str.h>
+#include <openenclave/internal/trace.h>
 #include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>

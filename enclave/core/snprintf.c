@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
 
 static char _NibbleToChar(uint64_t x)
 {

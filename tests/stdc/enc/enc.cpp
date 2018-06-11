@@ -8,9 +8,9 @@
 #include <inttypes.h>
 #include <iso646.h>
 #include <limits.h>
-#include <openenclave/bits/malloc.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/malloc.h>
+#include <openenclave/internal/tests.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>

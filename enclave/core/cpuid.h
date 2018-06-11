@@ -4,7 +4,7 @@
 #ifndef _OE_CPUID_ENCLAVE_H
 #define _OE_CPUID_ENCLAVE_H
 
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 
 void OE_InitializeCpuid(uint64_t argIn);
 

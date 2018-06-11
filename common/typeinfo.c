@@ -3,8 +3,8 @@
 
 #define OE_TRACE_LEVEL 0
 #include <ctype.h>
-#include <openenclave/bits/trace.h>
-#include <openenclave/bits/typeinfo.h>
+#include <openenclave/internal/trace.h>
+#include <openenclave/internal/typeinfo.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

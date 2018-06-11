@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include "rsa.h"
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/raise.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/raise.h>
 #include "key.h"
 #include "pem.h"
 #include "random.h"

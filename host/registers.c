@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include <openenclave/bits/registers.h>
+#include <openenclave/internal/registers.h>
 
 void OE_SetGSRegisterBase(const void* ptr)
 {

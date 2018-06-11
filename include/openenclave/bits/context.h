@@ -1,21 +1,21 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _CONTEXT_H
-#define _CONTEXT_H
+#ifndef _OE_BITS_CONTEXT_H
+#define _OE_BITS_CONTEXT_H
 
 #ifndef __ASSEMBLER__
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
-#include "sgxtypes.h"
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
+#include "constants_x64.h"
 
 // X87 and SSE data.
-typedef struct _OE_BASIC_XSTATE
+typedef struct _OE_BasicXState
 {
     uint8_t blob[512];
 } OE_ALIGNED(16) OE_BASIC_XSTATE;
 
-typedef struct _OE_CONTEXT
+typedef struct _OE_Context
 {
     // Flags.
     uint64_t flags;
@@ -53,35 +53,35 @@ typedef struct _OE_CONTEXT
     OE_BASIC_XSTATE basic_xstate;
 
     // Don't need to manipulate other XSTATE (AVX etc.).
-} OE_CONTEXT;
+} OE_Context;
 
-OE_CHECK_SIZE(sizeof(OE_CONTEXT), OE_CONTEXT_SIZE);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, flags), OE_CONTEXT_FLAGS);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rax), OE_CONTEXT_RAX);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rbx), OE_CONTEXT_RBX);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rcx), OE_CONTEXT_RCX);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rdx), OE_CONTEXT_RDX);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rbp), OE_CONTEXT_RBP);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rsp), OE_CONTEXT_RSP);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rdi), OE_CONTEXT_RDI);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rsi), OE_CONTEXT_RSI);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, r8), OE_CONTEXT_R8);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, r9), OE_CONTEXT_R9);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, r10), OE_CONTEXT_R10);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, r11), OE_CONTEXT_R11);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, r12), OE_CONTEXT_R12);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, r13), OE_CONTEXT_R13);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, r14), OE_CONTEXT_R14);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, r15), OE_CONTEXT_R15);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, rip), OE_CONTEXT_RIP);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, mxcsr), OE_CONTEXT_MXCSR);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_CONTEXT, basic_xstate), OE_CONTEXT_FLOAT);
+OE_CHECK_SIZE(sizeof(OE_Context), OE_CONTEXT_SIZE);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, flags), OE_CONTEXT_FLAGS);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rax), OE_CONTEXT_RAX);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rbx), OE_CONTEXT_RBX);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rcx), OE_CONTEXT_RCX);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rdx), OE_CONTEXT_RDX);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rbp), OE_CONTEXT_RBP);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rsp), OE_CONTEXT_RSP);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rdi), OE_CONTEXT_RDI);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rsi), OE_CONTEXT_RSI);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r8), OE_CONTEXT_R8);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r9), OE_CONTEXT_R9);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r10), OE_CONTEXT_R10);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r11), OE_CONTEXT_R11);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r12), OE_CONTEXT_R12);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r13), OE_CONTEXT_R13);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r14), OE_CONTEXT_R14);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r15), OE_CONTEXT_R15);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rip), OE_CONTEXT_RIP);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, mxcsr), OE_CONTEXT_MXCSR);
+OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, basic_xstate), OE_CONTEXT_FLOAT);
 
-void OE_SnapCurrentContext(OE_CONTEXT* oe_context);
-void OE_RestorePartialContext(OE_CONTEXT* oe_context);
-void OE_ContinueExecution(OE_CONTEXT* oe_context);
+void OE_SnapCurrentContext(OE_Context* oe_context);
+void OE_RestorePartialContext(OE_Context* oe_context);
+void OE_ContinueExecution(OE_Context* oe_context);
 
-typedef struct _OE_EXCEPTION_RECORD
+typedef struct _OE_ExceptionRecord
 {
     // Exception code.
     uint32_t code;
@@ -93,11 +93,11 @@ typedef struct _OE_EXCEPTION_RECORD
     uint64_t address;
 
     // Context.
-    OE_CONTEXT* context;
-} OE_EXCEPTION_RECORD;
+    OE_Context* context;
+} OE_ExceptionRecord;
 
-typedef uint64_t (*POE_VECTORED_EXCEPTION_HANDLER)(
-    OE_EXCEPTION_RECORD* exceptionContext);
+typedef uint64_t (*OE_VectoredExceptionHandler)(
+    OE_ExceptionRecord* exceptionContext);
 #endif // !__ASSEMBLER__
 
-#endif /* _CONTEXT_H */
+#endif /* _OE_BITS_CONTEXT_H */

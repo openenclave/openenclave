@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_THREAD_H
-#define _OE_THREAD_H
+#ifndef _OE_BITS_THREAD_H
+#define _OE_BITS_THREAD_H
 
 #include <pthread.h>
 
@@ -43,4 +43,4 @@ typedef pthread_rwlock_t OE_RWLock;
 #define OE_RWLockReadUnlock pthread_rwlock_unlock
 #define OE_RWLockWriteUnlock pthread_rwlock_unlock
 
-#endif /* _OE_THREAD_H */
+#endif /* _OE_BITS_THREAD_H */

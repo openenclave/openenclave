@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "key.h"
-#include <openenclave/bits/raise.h>
+#include <openenclave/internal/raise.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>

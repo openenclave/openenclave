@@ -4,15 +4,15 @@
 #include "quote.h"
 #include <assert.h>
 #include <limits.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/utils.h>
 
 #if defined(OE_USE_LIBSGX)
 #include <sgx_ql_oe_wrapper.h>
 #else
-#include <openenclave/bits/aesm.h>
+#include <openenclave/internal/aesm.h>
 #endif
 
 #include "sgxquoteprovider.h"

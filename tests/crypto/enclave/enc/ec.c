@@ -3,7 +3,7 @@
 
 #include "../../ec.h"
 #include <mbedtls/asn1write.h>
-#include <openenclave/bits/raise.h>
+#include <openenclave/internal/raise.h>
 #include "../../../../enclave/key.h"
 
 OE_Result OE_ECPublicKeyToCoordinates(

@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #include <ctype.h>
-#include <openenclave/bits/cert.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/pem.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/result.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/pem.h>
+#include <openenclave/internal/raise.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>

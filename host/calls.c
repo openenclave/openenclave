@@ -22,12 +22,12 @@
 #error "unsupported platform"
 #endif
 
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/registers.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/trace.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/registers.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/trace.h>
+#include <openenclave/internal/utils.h>
 #include "asmdefs.h"
 #include "enclave.h"
 #include "ocalls.h"

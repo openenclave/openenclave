@@ -11,9 +11,9 @@
   README.md file
 */
 
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/tests.h>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>

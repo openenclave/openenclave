@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/globals.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/globals.h>
 
 bool OE_IsWithinEnclave(const void* p, size_t n)
 {

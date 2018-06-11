@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <ctype.h>
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/load.h>
-#include <openenclave/bits/mem.h>
-#include <openenclave/bits/utils.h>
+#include <openenclave/internal/elf.h>
+#include <openenclave/internal/load.h>
+#include <openenclave/internal/mem.h>
+#include <openenclave/internal/utils.h>
 #include <stdio.h>
 #include <string.h>
 #include "fopen.h"

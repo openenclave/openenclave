@@ -3,11 +3,11 @@
 
 #define OE_TRACE_LEVEL 1
 
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/load.h>
-#include <openenclave/bits/trace.h>
-#include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/elf.h>
+#include <openenclave/internal/load.h>
+#include <openenclave/internal/trace.h>
+#include <openenclave/internal/utils.h>
 #include <stdlib.h>
 #include <string.h>
 #include "memalign.h"

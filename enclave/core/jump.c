@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/jump.h>
+#include <openenclave/internal/jump.h>
 
 /*
  * This file must be compiled with optimization enabled because the code

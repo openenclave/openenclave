@@ -3,10 +3,10 @@
 
 #define OE_TRACE_LEVEL 1
 
-#include <openenclave/bits/error.h>
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/tests.h>
+#include <openenclave/internal/trace.h>
 #include <atomic>
 #include <cassert>
 #include <cstdio>

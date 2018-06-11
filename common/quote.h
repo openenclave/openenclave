@@ -4,9 +4,9 @@
 #ifndef _OE_COMMON_QUOTE_H
 #define _OE_COMMON_QUOTE_H
 
-#include <openenclave/defs.h>
-#include <openenclave/result.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 

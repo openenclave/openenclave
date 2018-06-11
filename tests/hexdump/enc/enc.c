@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/hexdump.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/hexdump.h>
 #include "../args.h"
 
 OE_ECALL void Test(void* args_)
