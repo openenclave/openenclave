@@ -652,8 +652,17 @@ OE_Result OE_ECall(
         OE_THROW(OE_OUT_OF_THREADS);
 
     /* Perform ECALL or ORET */
-    OE_TRY(_DoEENTER(
-        enclave, tcs, OE_AEP, code, func, arg, &codeOut, &funcOut, &argOut));
+    OE_TRY(
+        _DoEENTER(
+            enclave,
+            tcs,
+            OE_AEP,
+            code,
+            func,
+            arg,
+            &codeOut,
+            &funcOut,
+            &argOut));
 
     /* Process OCALLS */
     if (codeOut != OE_CODE_ERET)
@@ -752,11 +761,12 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args)
     {
         uint64_t argOut = 0;
 
-        OE_TRY(OE_ECall(
-            enclave,
-            OE_FUNC_CALL_ENCLAVE,
-            (uint64_t)&callEnclaveArgs,
-            &argOut));
+        OE_TRY(
+            OE_ECall(
+                enclave,
+                OE_FUNC_CALL_ENCLAVE,
+                (uint64_t)&callEnclaveArgs,
+                &argOut));
         OE_TRY(argOut);
     }
 

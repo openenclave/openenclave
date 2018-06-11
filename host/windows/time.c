@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #define _ADD_OE_TIME_CALLS
-#include <windows.h>
 #include <openenclave/types.h>
 #include <stdio.h>
+#include <windows.h>
 #include "..\..\include\openenclave\bits\calls.h"
 
 void HandleStrftime(uint64_t argIn)
@@ -32,7 +32,7 @@ void HandleClockgettime(uint64_t argIn)
 
     // Windows ticks once every 100 ns
     const uint32_t WINDOWS_NS_PER_TICK = 100;
-    const uint32_t WINDOWS_SEC_PER_TICK = 1E9/WINDOWS_NS_PER_TICK;
+    const uint32_t WINDOWS_SEC_PER_TICK = 1E9 / WINDOWS_NS_PER_TICK;
 
     // Get the current Windows System time
     FILETIME currentTime;
