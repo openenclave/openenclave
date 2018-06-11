@@ -5,7 +5,6 @@
 #define OE_SAMPLES_ATTESTATION_HOST_ECALLS_H
 
 #include <openenclave/host.h>
-#include <openenclave/types.h>
 
 #include "../args.h"
 

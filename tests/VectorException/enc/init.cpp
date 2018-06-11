@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/tests.h>
 
 static int done = 0;
 static unsigned int c = 0;

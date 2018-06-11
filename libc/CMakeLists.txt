@@ -8,6 +8,7 @@ set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 add_library(oelibc STATIC
     arc4random.c
     assert.c
+    atexit.c
     errno.c
     libcxxrt_stubs.c
     libunwind_stubs.c

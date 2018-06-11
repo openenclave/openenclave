@@ -4,8 +4,7 @@
 #ifndef OE_SAMPLES_ATTESTATION_ENC_CRYPTO_H
 #define OE_SAMPLES_ATTESTATION_ENC_CRYPTO_H
 
-#include <openenclave/defs.h>
-#include <openenclave/types.h>
+#include <openenclave/enclave.h>
 
 /**
  * Crypto demonstrates use of mbedtls within the enclave to generate keys and

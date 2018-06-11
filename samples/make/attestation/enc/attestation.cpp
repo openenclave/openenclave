@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 #include "attestation.h"
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/enclave.h>
 #include <string.h>
 #include "crypto.h"
 #include "log.h"

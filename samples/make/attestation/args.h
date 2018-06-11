@@ -1,9 +1,9 @@
 #ifndef OE_SAMPLES_ATTESTATION_ARGS_H
 #define OE_SAMPLES_ATTESTATION_ARGS_H
 
-#include <openenclave/defs.h>
-#include <openenclave/result.h>
-#include <openenclave/types.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/bits/types.h>
 
 struct QuotedPublicKey
 {

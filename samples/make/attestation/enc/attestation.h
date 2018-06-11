@@ -4,7 +4,7 @@
 #ifndef OE_SAMPLES_ATTESTATION_ENC_ATTESTATION_H
 #define OE_SAMPLES_ATTESTATION_ENC_ATTESTATION_H
 
-#include <openenclave/types.h>
+#include <openenclave/enclave.h>
 
 /**
  * Generate a quote for the given data. The SHA256 digest of the data is stored
