@@ -3,9 +3,9 @@
 
 #define OE_TRACE_LEVEL 0
 #include <ctype.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/typeinfo.h>
-#include <openenclave/internal/print.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
