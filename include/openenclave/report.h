@@ -73,8 +73,7 @@ typedef struct _OE_Report
 {
     uint32_t size; /**< Size of the OE_Report structure. */
 
-    OE_EnclaveType type; /**< @OE_EnclaveType The enclave type. Currently always
-                              OE_ENCLAVE_TYPE_SGX. */
+    OE_EnclaveType type; /**< The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
 
     uint8_t* reportData; /**< Pointer to report data field within the report
                             byte-stream supplied to OE_ParseReport */

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * @file properties.h
+ * \file properties.h
  *
  * This file defines enclave-property structures which are injected into
  * the following sections of the enclave image.
@@ -102,7 +102,11 @@ OE_CHECK_SIZE(sizeof(OE_SGXEnclaveProperties), 1856);
 // into the .oeinfo section.
 
 /**
- * This macro is used to set the enclave.
+ * Defines the SGX properties for an enclave.
+ *
+ * The enclave properties should only be defined once for all compiled into
+ * an enclave binary. These properties can be overwritten at sign time by 
+ * the oesign tool.
  *
  * @param \_ProductID\_ ISV assigned Product ID (ISVPRODID) to use in the
  * enclave signature
