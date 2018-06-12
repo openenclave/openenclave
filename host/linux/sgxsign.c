@@ -293,6 +293,10 @@ static oe_result_t _InitSigstruct(
     sigstruct->attributemask.flags = SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS;
     sigstruct->attributemask.xfrm = SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM;
 
+    /* In debug enclaves, we don't care about the debug bit, so unmask it. */
+    if (attributes & SGX_FLAGS_DEBUG)
+        sigstruct->attributemask.flags &= ~SGX_FLAGS_DEBUG;
+
     /* sgx_sigstruct_t.enclavehash */
     memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
 
