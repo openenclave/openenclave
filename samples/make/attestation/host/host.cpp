@@ -5,10 +5,10 @@
 #include <stdio.h>
 #include "ecalls.h"
 
-OE_Enclave* CreateEnclave(const char* enclavePath)
+oe_enclave_t* CreateEnclave(const char* enclavePath)
 {
-    OE_Enclave* enclave = NULL;
-    OE_Result result = OE_CreateEnclave(
+    oe_enclave_t* enclave = NULL;
+    oe_result_t result = oe_create_enclave(
         enclavePath,
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
@@ -18,7 +18,7 @@ OE_Enclave* CreateEnclave(const char* enclavePath)
 
     if (result != OE_OK)
     {
-        printf("OE_CreateEnclave failed. %s", OE_ResultStr(result));
+        printf("oe_create_enclave failed. %s", oe_result_str(result));
         exit(1);
     }
 
@@ -26,9 +26,9 @@ OE_Enclave* CreateEnclave(const char* enclavePath)
     return enclave;
 }
 
-void TerminateEnclave(OE_Enclave* enclave)
+void TerminateEnclave(oe_enclave_t* enclave)
 {
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
     printf("Enclave terminated.\n");
 }
 
@@ -43,8 +43,8 @@ int main(int argc, const char* argv[])
 
     printf("\n\n=====Creating two enclaves=====\n");
 
-    OE_Enclave* enclave1 = CreateEnclave(argv[1]);
-    OE_Enclave* enclave2 = CreateEnclave(argv[1]);
+    oe_enclave_t* enclave1 = CreateEnclave(argv[1]);
+    oe_enclave_t* enclave2 = CreateEnclave(argv[1]);
 
     printf(
         "\n\n=====Requesting quoted encryption key from first enclave=====\n");

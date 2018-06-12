@@ -27,7 +27,7 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _OE_Enclave OE_Enclave;
+typedef struct _oe_enclave oe_enclave_t;
 
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
@@ -61,19 +61,19 @@ typedef struct _OE_Enclave OE_Enclave;
  * @returns Returns OE_OK on success.
  *
  */
-OE_Result OE_CreateEnclave(
+oe_result_t oe_create_enclave(
     const char* path,
-    OE_EnclaveType type,
+    oe_enclave_type_t type,
     uint32_t flags,
     const void* config,
     uint32_t configSize,
-    OE_Enclave** enclave);
+    oe_enclave_t** enclave);
 
 /**
  * Terminates an enclave and reclaims its resources.
  *
  * This function terminates an enclave and reclaims its resources. This
- * involves unmapping the memory that was mapped by **OE_CreateEnclave()**.
+ * involves unmapping the memory that was mapped by **oe_create_enclave()**.
  * Once this is performed, the enclave can no longer be accessed.
  *
  * @param enclave The instance of the enclave to be terminated.
@@ -81,7 +81,7 @@ OE_Result OE_CreateEnclave(
  * @returns Returns OE_OK on success.
  *
  */
-OE_Result OE_TerminateEnclave(OE_Enclave* enclave);
+oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
 
 /**
  * Perform a high-level enclave function call (ECALL).
@@ -95,7 +95,7 @@ OE_Result OE_TerminateEnclave(OE_Enclave* enclave);
  * The meaning of the **args** parameter is defined by the implementer of the
  * function and may be null.
  *
- * This function is implemented using the low-level OE_OCall() interface
+ * This function is implemented using the low-level oe_ocall() interface
  * where the function number is given by the **OE_FUNC_CALL_ENCLAVE** constant.
  *
  * Note that the return value of this function only indicates the success of
@@ -108,7 +108,10 @@ OE_Result OE_TerminateEnclave(OE_Enclave* enclave);
  * @returns This function return **OE_OK** on success.
  *
  */
-OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
+oe_result_t oe_call_enclave(
+    oe_enclave_t* enclave,
+    const char* func,
+    void* args);
 
 /**
  * Get a report signed by the enclave platform for use in attestation.
@@ -126,7 +129,7 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
  * @param reportData The report data that will be included in the report.
  * @param reportDataSize The size of the **reportData** in bytes.
  * @param optParams Optional additional parameters needed for the current
- * enclave type. For SGX, this can be SGX_TargetInfo for local attestation.
+ * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
  * @param optParamsSize The size of the **optParams** buffer.
  * @param reportBuffer The buffer to where the resulting report will be copied.
  * @param reportBufferSize The size of the **report** buffer. This is set to the
@@ -138,8 +141,8 @@ OE_Result OE_CallEnclave(OE_Enclave* enclave, const char* func, void* args);
  * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
-OE_Result OE_GetReport(
-    OE_Enclave* enclave,
+oe_result_t oe_get_report(
+    oe_enclave_t* enclave,
     uint32_t options,
     const uint8_t* reportData,
     uint32_t reportDataSize,
@@ -153,7 +156,7 @@ OE_Result OE_GetReport(
  *
  * @param report The buffer containing the report to parse.
  * @param reportSize The size of the **report** buffer.
- * @param parsedReport The **OE_Report** structure to populate with the report
+ * @param parsedReport The **oe_report_t** structure to populate with the report
  * properties in a standard format. The *parsedReport* holds pointers to fields
  * within the supplied *report* and must not be used beyond the lifetime of the
  * *report*.
@@ -161,10 +164,10 @@ OE_Result OE_GetReport(
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  */
-OE_Result OE_ParseReport(
+oe_result_t oe_parse_report(
     const uint8_t* report,
     uint32_t reportSize,
-    OE_Report* parsedReport);
+    oe_report_t* parsedReport);
 
 /**
  * Verify the integrity of the report and its signature.
@@ -176,18 +179,18 @@ OE_Result OE_ParseReport(
  *
  * @param report The buffer containing the report to verify.
  * @param reportSize The size of the **report** buffer.
- * @param parsedReport Optional **OE_Report** structure to populate with the
+ * @param parsedReport Optional **oe_report_t** structure to populate with the
  * report properties in a standard format.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  *
  */
-OE_Result OE_VerifyReport(
-    OE_Enclave* enclave,
+oe_result_t oe_verify_report(
+    oe_enclave_t* enclave,
     const uint8_t* report,
     uint32_t reportSize,
-    OE_Report* parsedReport);
+    oe_report_t* parsedReport);
 
 OE_EXTERNC_END
 

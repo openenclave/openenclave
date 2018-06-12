@@ -4,12 +4,12 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 
-bool OE_IsWithinEnclave(const void* p, size_t n)
+bool oe_is_within_enclave(const void* p, size_t n)
 {
     uint64_t rangeStart = (uint64_t)p;
     uint64_t rangeEnd = rangeStart + (n == 0 ? 1 : n);
-    uint64_t enclaveStart = (uint64_t)__OE_GetEnclaveBase();
-    uint64_t enclaveEnd = enclaveStart + __OE_GetEnclaveSize();
+    uint64_t enclaveStart = (uint64_t)__oe_get_enclave_base();
+    uint64_t enclaveEnd = enclaveStart + __oe_get_enclave_size();
 
     // Disallow nullptr and check that arithmetic operations do not wrap
     // Check that block lies completely within the enclave
@@ -23,12 +23,12 @@ bool OE_IsWithinEnclave(const void* p, size_t n)
     return false;
 }
 
-bool OE_IsOutsideEnclave(const void* p, size_t n)
+bool oe_is_outside_enclave(const void* p, size_t n)
 {
     uint64_t rangeStart = (uint64_t)p;
     uint64_t rangeEnd = rangeStart + (n == 0 ? 1 : n);
-    uint64_t enclaveStart = (uint64_t)__OE_GetEnclaveBase();
-    uint64_t enclaveEnd = enclaveStart + __OE_GetEnclaveSize();
+    uint64_t enclaveStart = (uint64_t)__oe_get_enclave_base();
+    uint64_t enclaveEnd = enclaveStart + __oe_get_enclave_size();
 
     // Disallow nullptr and check that arithmetic operations do not wrap
     // Check that block lies completely outside the enclave

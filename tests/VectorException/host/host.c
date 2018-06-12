@@ -12,33 +12,33 @@
 
 #define SKIP_RETURN_CODE 2
 
-void TestVectorException(OE_Enclave* enclave)
+void TestVectorException(oe_enclave_t* enclave)
 {
     TestVectorExceptionArgs args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
-    OE_Result result = OE_CallEnclave(enclave, "TestVectorException", &args);
+    oe_result_t result = oe_call_enclave(enclave, "TestVectorException", &args);
     if (result != OE_OK)
-        OE_PutErr("OE_CallEnclave() failed: result=%u", result);
+        oe_put_err("oe_call_enclave() failed: result=%u", result);
 
     if (args.ret != 0)
-        OE_PutErr("ECALL TestVectorException failed args.result=%d", args.ret);
+        oe_put_err("ECALL TestVectorException failed args.result=%d", args.ret);
 
     OE_TEST(args.ret == 0);
 }
 
-void TestSigillHandling(OE_Enclave* enclave)
+void TestSigillHandling(oe_enclave_t* enclave)
 {
     TestSigillHandlingArgs args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
 
-    OE_Result result = OE_CallEnclave(enclave, "TestSigillHandling", &args);
+    oe_result_t result = oe_call_enclave(enclave, "TestSigillHandling", &args);
     if (result != OE_OK)
-        OE_PutErr("OE_CallEnclave() failed: result=%u", result);
+        oe_put_err("oe_call_enclave() failed: result=%u", result);
 
     if (args.ret != 0)
-        OE_PutErr("ECALL TestSigillHandling failed args.result=%d", args.ret);
+        oe_put_err("ECALL TestSigillHandling failed args.result=%d", args.ret);
 
     OE_TEST(args.ret == 0);
 
@@ -56,7 +56,7 @@ void TestSigillHandling(OE_Enclave* enclave)
             &cpuidInfo[OE_CPUID_RDX]);
 
         if (!supported)
-            OE_PutErr(
+            oe_put_err(
                 "Test machine does not support CPUID leaf %x expected by "
                 "TestSigillHandling.\n",
                 i);
@@ -70,8 +70,8 @@ void TestSigillHandling(OE_Enclave* enclave)
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     if (argc != 2)
     {
@@ -83,7 +83,7 @@ int main(int argc, const char* argv[])
         "=== This program is used to test basic vector exception "
         "functionalities.\n");
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
         printf(
@@ -92,18 +92,18 @@ int main(int argc, const char* argv[])
         return SKIP_RETURN_CODE;
     }
 
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_put_err("oe_create_enclave(): result=%u", result);
 
     OE_TEST(
-        OE_CallEnclave(enclave, "TestCpuidInGlobalConstructors", NULL) ==
+        oe_call_enclave(enclave, "TestCpuidInGlobalConstructors", NULL) ==
         OE_OK);
 
     TestVectorException(enclave);
     TestSigillHandling(enclave);
 
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (VectorException)\n");
 

@@ -16,28 +16,28 @@
 #include "inferior_status.h"
 
 // Function pointer definitions.
-typedef int64_t (*OE_PtraceFunc)(
+typedef int64_t (*oe_ptrace_func_t)(
     enum __ptrace_request request,
     pid_t pid,
     void* addr,
     void* data);
 
-typedef pid_t (*OE_WaitpidFunc)(pid_t pid, int* status, int options);
+typedef pid_t (*oe_waitpid_func_t)(pid_t pid, int* status, int options);
 
 // Original syscall functions.
-static OE_PtraceFunc g_system_ptrace = NULL;
-static OE_WaitpidFunc g_system_waitpid = NULL;
+static oe_ptrace_func_t g_system_ptrace = NULL;
+static oe_waitpid_func_t g_system_waitpid = NULL;
 
 // Initializer.
 __attribute__((constructor)) void init(void);
 __attribute__((constructor)) void init()
 {
     // Get the ptrace and waitpid syscall function address.
-    g_system_ptrace = (OE_PtraceFunc)dlsym(RTLD_NEXT, "ptrace");
-    g_system_waitpid = (OE_WaitpidFunc)dlsym(RTLD_NEXT, "waitpid");
+    g_system_ptrace = (oe_ptrace_func_t)dlsym(RTLD_NEXT, "ptrace");
+    g_system_waitpid = (oe_waitpid_func_t)dlsym(RTLD_NEXT, "waitpid");
 }
 
-static int64_t OE_GetGprHandler(pid_t pid, void* addr, void* data)
+static int64_t oe_get_gpr_handler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -52,10 +52,10 @@ static int64_t OE_GetGprHandler(pid_t pid, void* addr, void* data)
 
     // Get the gpr values from enclave thread if the pc is an AEP.
     struct user_regs_struct* regs = (struct user_regs_struct*)data;
-    if (OE_IsAEP(pid, regs))
+    if (oe_is_aep(pid, regs))
     {
         // rbx has the TCS of enclave thread.
-        if (OE_GetEnclaveThreadGpr(pid, (void*)regs->rbx, regs) != 0)
+        if (oe_get_enclave_thread_gpr(pid, (void*)regs->rbx, regs) != 0)
         {
             return -1;
         }
@@ -64,7 +64,7 @@ static int64_t OE_GetGprHandler(pid_t pid, void* addr, void* data)
     return 0;
 }
 
-static int64_t OE_SetGprHandler(pid_t pid, void* addr, void* data)
+static int64_t oe_set_gpr_handler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -79,11 +79,11 @@ static int64_t OE_SetGprHandler(pid_t pid, void* addr, void* data)
     }
 
     // Set the enclave thread gpr if the pc is an AEP.
-    if (OE_IsAEP(pid, &aep_regs))
+    if (oe_is_aep(pid, &aep_regs))
     {
         // rbx has the TCS of enclave thread.
         struct user_regs_struct* regs = (struct user_regs_struct*)data;
-        if (OE_SetEnclaveThreadGpr(pid, (void*)aep_regs.rbx, regs) != 0)
+        if (oe_set_enclave_thread_gpr(pid, (void*)aep_regs.rbx, regs) != 0)
         {
             return -1;
         }
@@ -96,7 +96,7 @@ static int64_t OE_SetGprHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_SETREGS, pid, addr, data);
 }
 
-static int64_t OE_GetFprHandler(pid_t pid, void* addr, void* data)
+static int64_t oe_get_fpr_handler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -111,10 +111,10 @@ static int64_t OE_GetFprHandler(pid_t pid, void* addr, void* data)
     }
 
     // Get the fpr values from enclave thread if the pc is an AEP.
-    if (OE_IsAEP(pid, &regs))
+    if (oe_is_aep(pid, &regs))
     {
         // rbx has the TCS of enclave thread.
-        if (OE_GetEnclaveThreadFpr(
+        if (oe_get_enclave_thread_fpr(
                 pid, (void*)regs.rbx, (struct user_fpregs_struct*)data) != 0)
         {
             return -1;
@@ -128,7 +128,7 @@ static int64_t OE_GetFprHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_GETFPREGS, pid, addr, data);
 }
 
-static int64_t OE_SetFprHandler(pid_t pid, void* addr, void* data)
+static int64_t oe_set_fpr_handler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -143,10 +143,10 @@ static int64_t OE_SetFprHandler(pid_t pid, void* addr, void* data)
     }
 
     // Set the fpr values to enclave thread if the pc is an AEP.
-    if (OE_IsAEP(pid, &regs))
+    if (oe_is_aep(pid, &regs))
     {
         // rbx has the TCS of enclave thread.
-        if (OE_SetEnclaveThreadFpr(
+        if (oe_set_enclave_thread_fpr(
                 pid, (void*)regs.rbx, (struct user_fpregs_struct*)data) != 0)
         {
             return -1;
@@ -160,7 +160,7 @@ static int64_t OE_SetFprHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_GETFPREGS, pid, addr, data);
 }
 
-static int64_t OE_GetRegSetHandler(pid_t pid, void* addr, void* data)
+static int64_t oe_get_reg_set_handler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -175,7 +175,7 @@ static int64_t OE_GetRegSetHandler(pid_t pid, void* addr, void* data)
     }
 
     // Get the XState values from enclave thread if the pc is an AEP.
-    if (OE_IsAEP(pid, &regs))
+    if (oe_is_aep(pid, &regs))
     {
         uint64_t type = (uint64_t)addr;
         if (NT_X86_XSTATE != type)
@@ -186,7 +186,7 @@ static int64_t OE_GetRegSetHandler(pid_t pid, void* addr, void* data)
         // rbx has the TCS of enclave thread.
         struct iovec* iov = (struct iovec*)data;
         if (iov->iov_base && iov->iov_len &&
-            (OE_GetEnclaveThreadXState(
+            (oe_get_enclave_thread_xstate(
                  pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) ==
              0))
         {
@@ -201,7 +201,7 @@ static int64_t OE_GetRegSetHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_GETREGSET, pid, addr, data);
 }
 
-static int64_t OE_SetRegSetHandler(pid_t pid, void* addr, void* data)
+static int64_t oe_set_reg_set_handler(pid_t pid, void* addr, void* data)
 {
     if (!data)
     {
@@ -216,7 +216,7 @@ static int64_t OE_SetRegSetHandler(pid_t pid, void* addr, void* data)
     }
 
     // Set the XState values to enclave thread if the pc is an AEP.
-    if (OE_IsAEP(pid, &regs))
+    if (oe_is_aep(pid, &regs))
     {
         uint64_t type = (uint64_t)addr;
         if (NT_X86_XSTATE != type)
@@ -227,7 +227,7 @@ static int64_t OE_SetRegSetHandler(pid_t pid, void* addr, void* data)
         // rbx has the TCS of enclave thread.
         struct iovec* iov = (struct iovec*)data;
         if (iov->iov_base && iov->iov_len &&
-            (OE_SetEnclaveThreadXState(
+            (oe_set_enclave_thread_xstate(
                  pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) ==
              0))
         {
@@ -242,42 +242,42 @@ static int64_t OE_SetRegSetHandler(pid_t pid, void* addr, void* data)
     return g_system_ptrace(PTRACE_SETREGSET, pid, addr, data);
 }
 
-static int64_t OE_SingleStepHandler(pid_t pid, void* addr, void* data)
+static int64_t oe_single_step_handler(pid_t pid, void* addr, void* data)
 {
-    _OE_TrackInferior(pid);
-    _OE_SetInferiorFlags(pid, OE_INFERIOR_SINGLE_STEP);
+    _oe_track_inferior(pid);
+    _oe_set_inferior_flags(pid, OE_INFERIOR_SINGLE_STEP);
 
     return g_system_ptrace(PTRACE_SINGLESTEP, pid, addr, data);
 }
 
 // Customized ptrace request handler table.
-typedef int64_t (*OE_PtraceRquestHandler)(pid_t, void*, void*);
-typedef enum __ptrace_request OE_PtraceRequestType;
+typedef int64_t (*oe_ptrace_request_handler)(pid_t, void*, void*);
+typedef enum __ptrace_request oe_ptrace_request_type;
 
 struct
 {
-    OE_PtraceRequestType request_type;
-    OE_PtraceRquestHandler request_handler;
+    oe_ptrace_request_type request_type;
+    oe_ptrace_request_handler request_handler;
 } g_request_handlers[] = {
     // GRP requests.
-    {PTRACE_GETREGS, OE_GetGprHandler},
-    {PTRACE_SETREGS, OE_SetGprHandler},
+    {PTRACE_GETREGS, oe_get_gpr_handler},
+    {PTRACE_SETREGS, oe_set_gpr_handler},
 
     // Floating pointer registers requests.
-    {PTRACE_GETFPREGS, OE_GetFprHandler},
-    {PTRACE_SETFPREGS, OE_SetFprHandler},
+    {PTRACE_GETFPREGS, oe_get_fpr_handler},
+    {PTRACE_SETFPREGS, oe_set_fpr_handler},
 
     // Extended floating pointer registers requests.
-    {PTRACE_GETFPXREGS, OE_GetFprHandler},
-    {PTRACE_SETFPXREGS, OE_SetFprHandler},
+    {PTRACE_GETFPXREGS, oe_get_fpr_handler},
+    {PTRACE_SETFPXREGS, oe_set_fpr_handler},
 
     // Register set request, can be used to get extended processor
     // states(XState).
-    {PTRACE_GETREGSET, OE_GetRegSetHandler},
-    {PTRACE_SETREGSET, OE_SetRegSetHandler},
+    {PTRACE_GETREGSET, oe_get_reg_set_handler},
+    {PTRACE_SETREGSET, oe_set_reg_set_handler},
 
     // Single step request.
-    {PTRACE_SINGLESTEP, OE_SingleStepHandler},
+    {PTRACE_SINGLESTEP, oe_single_step_handler},
 };
 
 /*
@@ -291,7 +291,7 @@ struct
 **==============================================================================
 */
 
-int64_t ptrace(OE_PtraceRequestType __request, ...)
+int64_t ptrace(oe_ptrace_request_type __request, ...)
 {
     pid_t pid;
     void* addr;
@@ -341,7 +341,7 @@ pid_t waitpid(pid_t pid, int* status, int options)
     // Remove the inferior info if it is terminated.
     if (WIFEXITED(*status) || WIFSIGNALED(*status))
     {
-        _OE_UntrackInferior(ret_pid);
+        _oe_untrack_inferior(ret_pid);
     }
 
     // Handle the traps.
@@ -351,27 +351,27 @@ pid_t waitpid(pid_t pid, int* status, int options)
         int64_t flags;
 
         // Cleanup the single step flag.
-        ret = _OE_GetInferiorFlags(ret_pid, &flags);
+        ret = _oe_get_inferior_flags(ret_pid, &flags);
         if ((ret == 0) && (flags & OE_INFERIOR_SINGLE_STEP))
         {
-            _OE_SetInferiorFlags(ret_pid, (flags & ~OE_INFERIOR_SINGLE_STEP));
+            _oe_set_inferior_flags(ret_pid, (flags & ~OE_INFERIOR_SINGLE_STEP));
         }
 
         // Fix the register if it is a breakpoint inside enclave.
         struct user_regs_struct regs;
         ret = g_system_ptrace(PTRACE_GETREGS, ret_pid, 0, &regs);
-        if (ret == 0 && OE_IsAEP(ret_pid, &regs))
+        if (ret == 0 && oe_is_aep(ret_pid, &regs))
         {
             void* tcs = (void*)regs.rbx;
-            if (OE_GetEnclaveThreadGpr(ret_pid, (void*)tcs, &regs) == 0)
+            if (oe_get_enclave_thread_gpr(ret_pid, (void*)tcs, &regs) == 0)
             {
                 uint8_t bp = 0;
-                ret = OE_ReadProcessMemory(
+                ret = oe_read_process_memory(
                     ret_pid, (void*)regs.rip, (void*)&bp, 1, NULL);
                 if ((ret == 0) && (bp == 0xcc))
                 {
                     regs.rip++;
-                    OE_SetEnclaveThreadGpr(ret_pid, (void*)tcs, &regs);
+                    oe_set_enclave_thread_gpr(ret_pid, (void*)tcs, &regs);
                 }
             }
         }

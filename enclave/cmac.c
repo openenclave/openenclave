@@ -10,14 +10,14 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 
-OE_Result OE_AESCMACSign(
+oe_result_t oe_aes_cmac_sign(
     const uint8_t* key,
     uint32_t keySize,
     const uint8_t* message,
     uint32_t messageLength,
     OE_AESCMAC* aesCMAC)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     const mbedtls_cipher_info_t* info = NULL;
     uint32_t keySizeBits = keySize * 8;
 
@@ -31,7 +31,7 @@ OE_Result OE_AESCMACSign(
     if (info == NULL)
         OE_RAISE(OE_FAILURE);
 
-    OE_SecureZeroFill(aesCMAC->impl, sizeof(*aesCMAC));
+    oe_secure_zero_fill(aesCMAC->impl, sizeof(*aesCMAC));
 
     if (mbedtls_cipher_cmac(
             info,

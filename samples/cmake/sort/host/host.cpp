@@ -15,8 +15,8 @@ using namespace std;
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     printf("==== %s\n", argv[0]);
 
@@ -29,13 +29,13 @@ int main(int argc, const char* argv[])
 
     /* Create an enclave from the file given by argv[1] */
     {
-        const uint64_t flags = OE_GetCreateFlags();
+        const uint64_t flags = oe_get_create_flags();
 
-        if ((result = OE_CreateEnclave(
+        if ((result = oe_create_enclave(
                  argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
             OE_OK)
         {
-            cerr << "OE_CreateEnclave(): result=" << result << endl;
+            cerr << "oe_create_enclave(): result=" << result << endl;
             exit(1);
         }
     }
@@ -50,9 +50,9 @@ int main(int argc, const char* argv[])
         args.data = data;
         args.size = size;
 
-        if ((result = OE_CallEnclave(enclave, "Sort", &args)) != OE_OK)
+        if ((result = oe_call_enclave(enclave, "Sort", &args)) != OE_OK)
         {
-            cerr << "OE_CallEnclave(): result=" << result << endl;
+            cerr << "oe_call_enclave(): result=" << result << endl;
             exit(1);
         }
 
@@ -65,7 +65,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Terminate the enclave */
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     return 0;
 }

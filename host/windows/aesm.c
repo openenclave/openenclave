@@ -259,14 +259,14 @@ void AESMDisconnect(AESM* aesm)
     }
 }
 
-OE_Result AESMGetLaunchToken(
+oe_result_t AESMGetLaunchToken(
     AESM* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
-    const SGX_Attributes* attributes,
-    SGX_LaunchToken* launchToken)
+    const sgx_attributes_t* attributes,
+    sgx_launch_token_t* launchToken)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 
@@ -279,17 +279,17 @@ OE_Result AESMGetLaunchToken(
 
     /* Obtain a launch token */
     HRESULT hr = instance->lpVtbl->GetLicenseToken(
-        instance,               /* this */
-        mrenclave,              /* mrenclave */
-        OE_SHA256_SIZE,         /* mrenclave_size */
-        modulus,                /* public_key */
-        OE_KEY_SIZE,            /* public_key_size */
-        (PUINT8)attributes,     /* se_attributes */
-        sizeof(SGX_Attributes), /* se_attributes_size */
-        (PUINT8)launchToken,    /* lictoken */
-        /* MSR-SDK passes sizeof(SGX_EInitToken) */
-        sizeof(SGX_EInitToken), /* lictoken_size */
-        &error);                /* result */
+        instance,                 /* this */
+        mrenclave,                /* mrenclave */
+        OE_SHA256_SIZE,           /* mrenclave_size */
+        modulus,                  /* public_key */
+        OE_KEY_SIZE,              /* public_key_size */
+        (PUINT8)attributes,       /* se_attributes */
+        sizeof(sgx_attributes_t), /* se_attributes_size */
+        (PUINT8)launchToken,      /* lictoken */
+        /* MSR-SDK passes sizeof(sgx_einittoken_t) */
+        sizeof(sgx_einittoken_t), /* lictoken_size */
+        &error);                  /* result */
 
     if (!SUCCEEDED(hr) || error != 0)
     {
@@ -307,12 +307,12 @@ done:
     return result;
 }
 
-OE_Result AESMInitQuote(
+oe_result_t AESMInitQuote(
     AESM* aesm,
-    SGX_TargetInfo* targetInfo,
-    SGX_EPIDGroupID* epidGroupID)
+    sgx_target_info_t* targetInfo,
+    sgx_epid_group_id_t* epidGroupID)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 
@@ -327,9 +327,9 @@ OE_Result AESMInitQuote(
     HRESULT hr = instance->lpVtbl->InitQuote(
         instance,
         (uint8_t*)targetInfo,
-        sizeof(SGX_TargetInfo),
+        sizeof(sgx_target_info_t),
         (uint8_t*)epidGroupID,
-        sizeof(SGX_EPIDGroupID),
+        sizeof(sgx_epid_group_id_t),
         &error);
 
     if (!SUCCEEDED(hr) || error != 0)
@@ -348,19 +348,19 @@ done:
     return result;
 }
 
-OE_Result AESMGetQuote(
+oe_result_t AESMGetQuote(
     AESM* aesm,
-    const SGX_Report* report,
-    SGX_QuoteType quoteType,
-    const SGX_SPID* spid,
-    const SGX_Nonce* nonce,
+    const sgx_report_t* report,
+    sgx_quote_type_t quoteType,
+    const sgx_spid_t* spid,
+    const sgx_nonce_t* nonce,
     const uint8_t* signatureRevocationList,
     uint32_t signatureRevocationListSize,
-    SGX_Report* reportOut, /* ATTN: support this! */
-    SGX_Quote* quote,
+    sgx_report_t* reportOut, /* ATTN: support this! */
+    sgx_quote_t* quote,
     size_t quoteSize)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 
@@ -384,16 +384,16 @@ OE_Result AESMGetQuote(
     HRESULT hr = instance->lpVtbl->GetQuote(
         instance,                          /* this */
         (uint8_t*)report,                  /* report */
-        sizeof(SGX_Report),                /* report_size */
+        sizeof(sgx_report_t),              /* report_size */
         (uint32_t)quoteType,               /* type */
         (uint8_t*)spid,                    /* spid */
-        sizeof(SGX_SPID),                  /* spid_size */
+        sizeof(sgx_spid_t),                /* spid_size */
         (uint8_t*)nonce,                   /* nonce */
-        sizeof(SGX_Nonce),                 /* nonce_size */
+        sizeof(sgx_nonce_t),               /* nonce_size */
         (uint8_t*)signatureRevocationList, /* sigrl */
         signatureRevocationListSize,       /* sigrl_size */
         (uint8_t*)reportOut,               /* qe_report */
-        sizeof(SGX_Report),                /* qe_report_size */
+        sizeof(sgx_report_t),              /* qe_report_size */
         (uint8_t*)quote,                   /* quote */
         (uint32_t)quoteSize,               /* buffer_size */
         &error);

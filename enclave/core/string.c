@@ -6,16 +6,16 @@
 /*
 **==============================================================================
 **
-** OE_Strlen()
-** OE_Strcmp()
-** OE_Strcpy()
-** OE_Strlcpy()
-** OE_Strlcat()
+** oe_strlen()
+** oe_strcmp()
+** oe_strcpy()
+** oe_strlcpy()
+** oe_strlcat()
 **
 **==============================================================================
 */
 
-size_t OE_Strlen(const char* s)
+size_t oe_strlen(const char* s)
 {
     const char* p = s;
 
@@ -39,7 +39,7 @@ size_t OE_Strlen(const char* s)
     return 0;
 }
 
-size_t OE_Strnlen(const char* s, size_t n)
+size_t oe_strnlen(const char* s, size_t n)
 {
     const char* p = s;
 
@@ -49,7 +49,7 @@ size_t OE_Strnlen(const char* s, size_t n)
     return p - s;
 }
 
-int OE_Strcmp(const char* s1, const char* s2)
+int oe_strcmp(const char* s1, const char* s2)
 {
     while ((*s1 && *s2) && (*s1 == *s2))
     {
@@ -60,7 +60,7 @@ int OE_Strcmp(const char* s1, const char* s2)
     return *s1 - *s2;
 }
 
-int OE_Strncmp(const char* s1, const char* s2, size_t n)
+int oe_strncmp(const char* s1, const char* s2, size_t n)
 {
     /* Compare first n characters only */
     while (n && (*s1 && *s2) && (*s1 == *s2))
@@ -78,7 +78,7 @@ int OE_Strncmp(const char* s1, const char* s2, size_t n)
     return *s1 - *s2;
 }
 
-size_t OE_Strlcpy(char* dest, const char* src, size_t size)
+size_t oe_strlcpy(char* dest, const char* src, size_t size)
 {
     const char* start = src;
 
@@ -98,7 +98,7 @@ size_t OE_Strlcpy(char* dest, const char* src, size_t size)
     return src - start;
 }
 
-size_t OE_Strlcat(char* dest, const char* src, size_t size)
+size_t oe_strlcat(char* dest, const char* src, size_t size)
 {
     size_t n = 0;
 
@@ -133,14 +133,14 @@ size_t OE_Strlcat(char* dest, const char* src, size_t size)
 /*
 **==============================================================================
 **
-** OE_Memset()
-** OE_Memcpy()
-** OE_Memcmp()
+** oe_memset()
+** oe_memcpy()
+** oe_memcmp()
 **
 **==============================================================================
 */
 
-void* OE_Memcpy(void* dest, const void* src, size_t n)
+void* oe_memcpy(void* dest, const void* src, size_t n)
 {
     unsigned char* p = (unsigned char*)dest;
     const unsigned char* q = (const unsigned char*)src;
@@ -183,7 +183,7 @@ void* OE_Memcpy(void* dest, const void* src, size_t n)
     return dest;
 }
 
-void* OE_Memset(void* s, int c, size_t n)
+void* oe_memset(void* s, int c, size_t n)
 {
     unsigned char* p = (unsigned char*)s;
 
@@ -221,7 +221,7 @@ void* OE_Memset(void* s, int c, size_t n)
     return s;
 }
 
-int OE_Memcmp(const void* s1, const void* s2, size_t n)
+int oe_memcmp(const void* s1, const void* s2, size_t n)
 {
     const unsigned char* p = (const unsigned char*)s1;
     const unsigned char* q = (const unsigned char*)s2;

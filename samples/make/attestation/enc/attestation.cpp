@@ -26,8 +26,9 @@ bool GenerateQuote(
     // To generate a quote that just needs to be attested by another enclave
     // running on the same platform, pass 0 instead. This uses the EREPORT
     // instruction to generate this enclave's local report.
-    // Both kinds of reports can be verified using the OE_VerifyReport function.
-    OE_Result result = OE_GetReport(
+    // Both kinds of reports can be verified using the oe_verify_report
+    // function.
+    oe_result_t result = oe_get_report(
         OE_REPORT_OPTIONS_REMOTE_ATTESTATION,
         sha256, // Store sha256 in reportData field
         sizeof(sha256),
@@ -38,7 +39,7 @@ bool GenerateQuote(
 
     if (result != OE_OK)
     {
-        ENC_DEBUG_PRINTF("OE_GetReport failed.");
+        ENC_DEBUG_PRINTF("oe_get_report failed.");
         return false;
     }
 
@@ -48,14 +49,14 @@ bool GenerateQuote(
 
 // The SHA-256 hash of the public key in the private.pem file used to sign the
 // enclave. This value is populated in the authorID sub-field of a parsed
-// OE_Report's identity field.
+// oe_report_t's identity field.
 const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
                               0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
                               0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44, 0x56, 0xB2,
                               0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
 /**
  * Attest the given quote and accompanying data. The quote is first attested
- * using the OE_VerifyReport API. This ensures the authenticity of the enclave
+ * using the oe_verify_report API. This ensures the authenticity of the enclave
  * that generated the quote. Next, to establish trust of the enclave that
  * generated the quote, the mrsigner, productID, isvsvn values are checked to
  * see if they are predefined trusted values. Once the enclave's trust has been
@@ -70,18 +71,18 @@ bool AttestQuote(
 {
     // While attesting, the quote being attested must not be tampered with.
     // Ensure that it has been copied over to the enclave.
-    if (!OE_IsWithinEnclave(quote, quoteSize))
+    if (!oe_is_within_enclave(quote, quoteSize))
     {
         ENC_DEBUG_PRINTF("Cannot attest quote in host memory. Unsafe.");
         return false;
     }
 
     // Verify the quote to ensure its authenticity.
-    OE_Report parsedReport = {0};
-    OE_Result result = OE_VerifyReport(quote, quoteSize, &parsedReport);
+    oe_report_t parsedReport = {0};
+    oe_result_t result = oe_verify_report(quote, quoteSize, &parsedReport);
     if (result != OE_OK)
     {
-        ENC_DEBUG_PRINTF("OE_VerifyReport failed.");
+        ENC_DEBUG_PRINTF("oe_verify_report failed.");
         return false;
     }
 

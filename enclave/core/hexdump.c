@@ -22,7 +22,11 @@ OE_INLINE char _LowNibbleToHexChar(uint8_t byte)
     return _NibbleToHexChar(byte & 0x0F);
 }
 
-char* OE_HexString(char* str, size_t strSize, const void* data, size_t dataSize)
+char* oe_hex_string(
+    char* str,
+    size_t strSize,
+    const void* data,
+    size_t dataSize)
 {
     /* Check parameters */
     if (!str || !data || (strSize < (2 * dataSize + 1)))
@@ -46,7 +50,7 @@ char* OE_HexString(char* str, size_t strSize, const void* data, size_t dataSize)
     return str;
 }
 
-void OE_HexDump(const void* data, size_t size)
+void oe_hex_dump(const void* data, size_t size)
 {
     const uint8_t* p = (const uint8_t*)data;
     size_t n = size;
@@ -60,8 +64,8 @@ void OE_HexDump(const void* data, size_t size)
     /* Print N-sized chunks first to reduce OCALLS */
     while (n >= chunkSize)
     {
-        OE_HexString(buf, sizeof(buf), p, chunkSize);
-        OE_HostPrintf("%s", buf);
+        oe_hex_string(buf, sizeof(buf), p, chunkSize);
+        oe_host_printf("%s", buf);
         p += chunkSize;
         n -= chunkSize;
     }
@@ -69,9 +73,9 @@ void OE_HexDump(const void* data, size_t size)
     /* Print any remaining bytes */
     if (n)
     {
-        OE_HexString(buf, sizeof(buf), p, n);
-        OE_HostPrintf("%s", buf);
+        oe_hex_string(buf, sizeof(buf), p, n);
+        oe_host_printf("%s", buf);
     }
 
-    OE_HostPrintf("\n");
+    oe_host_printf("\n");
 }

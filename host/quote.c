@@ -18,10 +18,10 @@
 
 #if !defined(OE_USE_LIBSGX)
 
-static OE_Result _SGX_InitQuoteWithAesm(SGX_TargetInfo* targetInfo)
+static oe_result_t _sgx_init_quote_with_aesm(sgx_target_info_t* targetInfo)
 {
-    OE_Result result = OE_UNEXPECTED;
-    SGX_EPIDGroupID epidGroupID = {0};
+    oe_result_t result = OE_UNEXPECTED;
+    sgx_epid_group_id_t epidGroupID = {0};
 
     AESM* aesm = NULL;
 
@@ -40,15 +40,15 @@ done:
     return result;
 }
 
-static OE_Result _SGX_GetQuoteSizeFromAesm(
+static oe_result_t _sgx_get_quote_size_from_aesm(
     const uint8_t* signatureRevocationList,
     uint32_t* quoteSize)
 {
-    OE_Result result = OE_FAILURE;
+    oe_result_t result = OE_FAILURE;
     uint64_t signatureSize = 0;
     uint32_t n = 0;
     uint64_t quoteSize64 = 0;
-    const SGX_SigRL* sigrl = (const SGX_SigRL*)signatureRevocationList;
+    const sgx_sig_rl_t* sigrl = (const sgx_sig_rl_t*)signatureRevocationList;
 
     if (quoteSize)
         *quoteSize = 0;
@@ -66,14 +66,16 @@ static OE_Result _SGX_GetQuoteSizeFromAesm(
 
         assert(sizeof(sigrl->sigrl.n2) == sizeof(uint32_t));
         const void* tmp = &sigrl->sigrl.n2;
-        n = OE_ByteSwap32(*(uint32_t*)tmp);
+        n = oe_byte_swap32(*(uint32_t*)tmp);
     }
 
     /* Calculate variable size of EPID_Signature with N entries */
-    signatureSize = sizeof(SGX_EPID_Signature) + (n * sizeof(SGX_EPID_NRProof));
+    signatureSize =
+        sizeof(sgx_epid_signature_t) + (n * sizeof(sgx_epid_nr_proof_t));
 
-    quoteSize64 = sizeof(SGX_Quote) + sizeof(SGX_WrapKey) + SGX_QUOTE_IV_SIZE +
-                  sizeof(uint32_t) + signatureSize + SGX_MAC_SIZE;
+    quoteSize64 = sizeof(sgx_quote_t) + sizeof(sgx_wrap_key_t) +
+                  SGX_QUOTE_IV_SIZE + sizeof(uint32_t) + signatureSize +
+                  SGX_MAC_SIZE;
 
     if (quoteSize64 > (uint64_t)UINT_MAX)
         goto done;
@@ -85,13 +87,13 @@ done:
     return result;
 }
 
-static OE_Result _SGX_GetQuoteFromAesm(
-    const SGX_Report* report,
-    SGX_QuoteType quoteType,
-    SGX_Quote* quote,
+static oe_result_t _sgx_get_quote_from_aesm(
+    const sgx_report_t* report,
+    sgx_quote_type_t quoteType,
+    sgx_quote_t* quote,
     size_t quoteSize)
 {
-    static const SGX_SPID spid = {{
+    static const sgx_spid_t spid = {{
         0x21,
         0x68,
         0x79,
@@ -110,7 +112,7 @@ static OE_Result _SGX_GetQuoteFromAesm(
         0x04,
     }};
 
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     AESM* aesm = NULL;
 
     if (!report || !quote || !quoteSize)
@@ -144,37 +146,38 @@ done:
 
 #endif
 
-OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo)
+oe_result_t sgx_get_qetarget_info(sgx_target_info_t* targetInfo)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     memset(targetInfo, 0, sizeof(*targetInfo));
 
 #if defined(OE_USE_LIBSGX)
     // Quote workflow always begins with obtaining the target info. Therefore
     // initializing the quote provider here ensures that that we can control its
     // life time rather than Intel's attestation libraries.
-    // OE_InitializeQuoteProvider performs initialization only once even if
+    // oe_initialize_quote_provider performs initialization only once even if
     // called many times.
 
-    OE_InitializeQuoteProvider();
+    oe_initialize_quote_provider();
     {
-        OE_STATIC_ASSERT(sizeof(SGX_TargetInfo) == sizeof(sgx_target_info_t));
+        OE_STATIC_ASSERT(
+            sizeof(sgx_target_info_t) == sizeof(sgx_target_info_t));
         quote3_error_t err =
             sgx_qe_get_target_info((sgx_target_info_t*)targetInfo);
         result = (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;
     }
 #else
 
-    result = _SGX_InitQuoteWithAesm(targetInfo);
+    result = _sgx_init_quote_with_aesm(targetInfo);
 
 #endif
 
     return result;
 }
 
-OE_Result SGX_GetQuoteSize(uint32_t* quoteSize)
+oe_result_t sgx_get_quote_size(uint32_t* quoteSize)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (quoteSize)
         *quoteSize = 0;
@@ -189,7 +192,7 @@ OE_Result SGX_GetQuoteSize(uint32_t* quoteSize)
     }
 #else
 
-    result = _SGX_GetQuoteSizeFromAesm(NULL, quoteSize);
+    result = _sgx_get_quote_size_from_aesm(NULL, quoteSize);
 
 #endif
 
@@ -197,12 +200,12 @@ done:
     return result;
 }
 
-OE_Result SGX_GetQuote(
-    const SGX_Report* report,
+oe_result_t sgx_get_quote(
+    const sgx_report_t* report,
     uint8_t* quote,
     uint32_t* quoteSize)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     /* Reject null parameters */
     if (!report || !quoteSize)
@@ -211,7 +214,7 @@ OE_Result SGX_GetQuote(
     /* Reject if quote size not big enough even for quote without SigRLs */
     {
         uint32_t size;
-        OE_CHECK(SGX_GetQuoteSize(&size));
+        OE_CHECK(sgx_get_quote_size(&size));
 
         if (*quoteSize < size)
         {
@@ -232,17 +235,17 @@ OE_Result SGX_GetQuote(
 
 #if defined(OE_USE_LIBSGX)
     {
-        OE_STATIC_ASSERT(sizeof(SGX_Report) == sizeof(sgx_report_t));
+        OE_STATIC_ASSERT(sizeof(sgx_report_t) == sizeof(sgx_report_t));
         quote3_error_t err =
             sgx_qe_get_quote((sgx_report_t*)report, *quoteSize, quote);
         result = (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;
     }
 #else
 
-    result = _SGX_GetQuoteFromAesm(
+    result = _sgx_get_quote_from_aesm(
         report,
         SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
-        (SGX_Quote*)quote,
+        (sgx_quote_t*)quote,
         *quoteSize);
 #endif
 

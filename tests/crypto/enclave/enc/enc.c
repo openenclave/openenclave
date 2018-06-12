@@ -24,11 +24,11 @@
 
 OE_ECALL void Test(void* args_)
 {
-    OE_MallocStats stats;
+    oe_malloc_stats_t stats;
 
     /* Save the current malloc'd bytes in use */
     uint64_t inUseBytes;
-    OE_TEST(OE_GetMallocStats(&stats) == OE_OK);
+    OE_TEST(oe_get_malloc_stats(&stats) == OE_OK);
     inUseBytes = stats.inUseBytes;
 
     /* Run the tests */
@@ -38,13 +38,13 @@ OE_ECALL void Test(void* args_)
     TestSHA();
 
     /* Verify that all malloc'd memory has been released */
-    OE_TEST(OE_GetMallocStats(&stats) == OE_OK);
+    OE_TEST(oe_get_malloc_stats(&stats) == OE_OK);
     if (stats.inUseBytes > inUseBytes)
     {
         fprintf(
             stderr,
             "ERROR: memory leaked: %lu bytes\n",
             stats.inUseBytes - inUseBytes);
-        OE_Abort();
+        oe_abort();
     }
 }

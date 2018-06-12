@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /*
-   Testing OE_HostAllocForCallHost()
+   Testing oe_host_alloc_for_call_host()
    - Regular nesting / un-nesting
    - Whitebox-tests w/ tracking of allocation/de-allocation
  */
@@ -206,7 +206,7 @@ static Cmd Commands[] = {
 };
 
 // Command interpreter for above array - actual test driver
-OE_Result TestRun(bool doVerifyAllocation, const Allocator alloc)
+oe_result_t TestRun(bool doVerifyAllocation, const Allocator alloc)
 {
     AllocStack stack;
 
@@ -258,19 +258,20 @@ OE_Result TestRun(bool doVerifyAllocation, const Allocator alloc)
 
 OE_ECALL void TestAllocaDealloc(void* args)
 {
-    if (!OE_IsOutsideEnclave(args, sizeof(OE_Result)))
+    if (!oe_is_outside_enclave(args, sizeof(oe_result_t)))
         return;
 
-    OE_Result* result = (OE_Result*)args;
+    oe_result_t* result = (oe_result_t*)args;
 
     // test with native functions, no backing memory verification
     OE_TEST(
-        TestRun(false, {OE_HostAllocForCallHost, OE_HostFreeForCallHost}) ==
+        TestRun(
+            false, {oe_host_alloc_for_call_host, oe_host_free_for_call_host}) ==
         OE_OK);
 
     // test with wrapped functions tracking backing memory allocation
     OE_TEST(
-        TestRun(true, {MyOE_HostAllocForCallHost, MyOE_HostFreeForCallHost}) ==
+        TestRun(true, {MyHostAllocForCallHost, MyOE_HostFreeForCallHost}) ==
         OE_OK);
 
     *result = OE_OK;

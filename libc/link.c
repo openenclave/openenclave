@@ -14,7 +14,7 @@ int dl_iterate_phdr(
     int (*callback)(struct dl_phdr_info* info, size_t size, void* data),
     void* data)
 {
-    const Elf64_Ehdr* ehdr = (Elf64_Ehdr*)__OE_GetEnclaveBase();
+    const Elf64_Ehdr* ehdr = (Elf64_Ehdr*)__oe_get_enclave_base();
 
     const uint8_t ident[] = {0x7f, 'E', 'L', 'F'};
 

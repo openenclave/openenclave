@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 OE_EXTERNC_BEGIN
-void* MyOE_HostAllocForCallHost(size_t size);
+void* MyHostAllocForCallHost(size_t size);
 void MyOE_HostFreeForCallHost(void* p);
 OE_EXTERNC_END
 

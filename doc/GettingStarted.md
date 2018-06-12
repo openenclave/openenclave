@@ -391,7 +391,7 @@ Here’s the full listing for the echo enclave (enc/enc.c):
 
 OE_ECALL void EnclaveEcho(void* args)
 {
-    OE_CallHost("HostEcho", args);
+    oe_call_host("HostEcho", args);
 }
 ```
 
@@ -462,8 +462,8 @@ OE_OCALL void HostEcho(void* args)
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     if (argc != 2)
     {
@@ -471,7 +471,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    result = OE_CreateEnclave(
+    result = oe_create_enclave(
         argv[1],
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
@@ -481,18 +481,18 @@ int main(int argc, const char* argv[])
 
     if (result != OE_OK)
     {
-        fprintf(stderr, "%s: OE_CreateEnclave(): %u\n", argv[0], result);
+        fprintf(stderr, "%s: oe_create_enclave(): %u\n", argv[0], result);
         return 1;
     }
 
-    result = OE_CallEnclave(enclave, "EnclaveEcho", "Hello");
+    result = oe_call_enclave(enclave, "EnclaveEcho", "Hello");
     if (result != OE_OK)
     {
-        fprintf(stderr, "%s: OE_CallEnclave(): %u\n", argv[0], result);
+        fprintf(stderr, "%s: oe_call_enclave(): %u\n", argv[0], result);
         return 1;
     }
 
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     return 0;
 }
@@ -501,9 +501,9 @@ int main(int argc, const char* argv[])
 This host performs the following tasks:
 
 - Defines an OCALL: HostEcho()
-- Instantiates an enclave: OE_CreateEnclave()
-- Calls into the enclave: OE_CallEnclave()
-- Terminates the enclave: OE_TerminateEnclave()
+- Instantiates an enclave: oe_create_enclave()
+- Calls into the enclave: oe_call_enclave()
+- Terminates the enclave: oe_terminate_enclave()
 
 ### Host build collateral
 
@@ -570,20 +570,20 @@ LDFLAGS=\
     -Wl,-Bsymbolic \
     -Wl,--export-dynamic \
     -Wl,-pie \
-    -Wl,-eOE_Main
+    -Wl,-eoe_main
 ```
 
-The -eOE_Main option requires some explanation (see the ld man page about
+The -eoe_main option requires some explanation (see the ld man page about
 other options). This option specifies the name of the entry point for the
-enclave. The linker stores the virtual address of the OE_Main() function in
+enclave. The linker stores the virtual address of the oe_main() function in
 the ELF header (Elf64_Ehdr.e_entry) of the resulting binary. When the enclave
 is instantiated by the host, this entry point is copied to each TCS (Thread
 Control Structure) in the image. When the host invokes the SGX EENTER
 instruction on a TCS, the hardware fetches the entry point from the TCS and
-jumps to that address and the OE_Main() function begins to execute.
+jumps to that address and the oe_main() function begins to execute.
 
 The necessary enclave library contains the enclave intrinsics, including the
-OE_Main() entry point. Note that the echo sample uses neither a C nor C++
+oe_main() entry point. Note that the echo sample uses neither a C nor C++
 runtime library. Other samples will show how these are used.
 
 ```
@@ -613,7 +613,7 @@ Note: the enclave must be created with debug opt-in flag, otherwise debugger can
 The default sample enclave is created with debug flag, refer to:
 
 ```
-result = OE_CreateEnclave(
+result = oe_create_enclave(
         argv[1],
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
