@@ -6,42 +6,38 @@
 
 bool OE_IsWithinEnclave(const void* p, size_t n)
 {
-    const uint8_t* start = (const uint8_t*)p;
-    const uint8_t* end = (const uint8_t*)p + n;
-    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
-    uint64_t size = __OE_GetEnclaveSize();
+    uint64_t rangeStart = (uint64_t)p;
+    uint64_t rangeEnd = rangeStart + (n == 0 ? 1 : n);
+    uint64_t enclaveStart = (uint64_t)__OE_GetEnclaveBase();
+    uint64_t enclaveEnd = enclaveStart + __OE_GetEnclaveSize();
 
-    if (!(start >= base && start < (base + size)))
-        return false;
-
-    if (n)
+    // Disallow nullptr and check that arithmetic operations do not wrap
+    // Check that block lies completely within the enclave
+    if ((rangeStart > 0) && (rangeEnd > rangeStart) &&
+        (enclaveEnd > enclaveStart) &&
+        ((rangeStart >= enclaveStart) && (rangeEnd <= enclaveEnd)))
     {
-        end--;
-
-        if (!(end >= base && end < (base + size)))
-            return false;
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 bool OE_IsOutsideEnclave(const void* p, size_t n)
 {
-    const uint8_t* start = (const uint8_t*)p;
-    const uint8_t* end = (const uint8_t*)p + n;
-    const uint8_t* base = (const uint8_t*)__OE_GetEnclaveBase();
-    uint64_t size = __OE_GetEnclaveSize();
+    uint64_t rangeStart = (uint64_t)p;
+    uint64_t rangeEnd = rangeStart + (n == 0 ? 1 : n);
+    uint64_t enclaveStart = (uint64_t)__OE_GetEnclaveBase();
+    uint64_t enclaveEnd = enclaveStart + __OE_GetEnclaveSize();
 
-    if (!(start < base || start >= (base + size)))
-        return false;
-
-    if (n)
+    // Disallow nullptr and check that arithmetic operations do not wrap
+    // Check that block lies completely outside the enclave
+    if ((rangeStart > 0) && (rangeEnd > rangeStart) &&
+        (enclaveEnd > enclaveStart) &&
+        ((rangeEnd <= enclaveStart) || (rangeStart >= enclaveEnd)))
     {
-        end--;
-
-        if (!(end < base || end >= (base + size)))
-            return false;
+        return true;
     }
 
-    return true;
+    return false;
 }
