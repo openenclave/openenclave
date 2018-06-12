@@ -3,8 +3,6 @@
 
 #define OE_TRACE_LEVEL 1
 
-#if defined(__linux__)
-
 #include <dlfcn.h>
 #include <openenclave/internal/trace.h>
 #include <stdio.h>
@@ -90,14 +88,3 @@ OE_Result OE_InitializeQuoteProvider()
     OE_H_Once(&once, _LoadQuoteProvider);
     return g_LibHandle ? OE_OK : OE_FAILURE;
 }
-
-#else
-
-#include "sgxquoteprovider.h"
-
-OE_Result OE_InitializeQuoteProvider()
-{
-    return OE_UNIMPLEMENTED;
-}
-
-#endif
