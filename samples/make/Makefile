@@ -15,10 +15,9 @@ endef
 DIRS = sort
 
 # Attestation sample is run only on libsgx platforms.
-LIBSGX_REQUIRED_LIB = /usr/lib/libngsa_quoteprov.so
-
-ifeq ($(wildcard LIBSGX_REQUIRED_LIB), $(LIBSGX_REQUIRED_LIB))
-  DIRS += attestation
+# Libsgx platforms must have azure quote provider.
+ifneq (,$(wildcard /usr/lib/libngsa_quoteprov.so))
+    DIRS += attestation
 endif
 
 build:
