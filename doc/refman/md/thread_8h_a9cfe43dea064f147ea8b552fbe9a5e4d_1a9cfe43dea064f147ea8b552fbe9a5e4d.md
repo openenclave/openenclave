@@ -3,7 +3,7 @@
 ---
 # OE_SpinLock()
 
-Acquire a lock on a spin lock and for use inside an enclave.
+Acquire a lock on a spin lock.
 
 ## Syntax
 

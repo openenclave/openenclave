@@ -3,7 +3,7 @@
 ---
 # OE_RWLockDestroy()
 
-Destroys a readers-writer lock and for use inside an enclave.
+Destroys a readers-writer lock.
 
 ## Syntax
 

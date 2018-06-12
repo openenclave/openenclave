@@ -324,7 +324,7 @@ void _OE_VirtualExceptionDispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 
     // Get the exception address, code, and flags.
     td->base.exception_address = ssa_gpr->rip;
-    td->base.exception_code = OE_EXCEPTION_UNKOWN;
+    td->base.exception_code = OE_EXCEPTION_UNKNOWN;
     for (uint32_t i = 0; i < OE_COUNTOF(g_vector_to_exception_code_mapping);
          i++)
     {

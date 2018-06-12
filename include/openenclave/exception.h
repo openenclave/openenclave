@@ -28,7 +28,7 @@
 #define OE_EXCEPTION_X87_FLOAT_POINT 0x6
 #define OE_EXCEPTION_MISALIGNMENT 0x7
 #define OE_EXCEPTION_SIMD_FLOAT_POINT 0x8
-#define OE_EXCEPTION_UNKOWN 0xFFFFFFFF
+#define OE_EXCEPTION_UNKNOWN 0xFFFFFFFF
 
 /**
  * Exception flags used by the vectored exception handlers

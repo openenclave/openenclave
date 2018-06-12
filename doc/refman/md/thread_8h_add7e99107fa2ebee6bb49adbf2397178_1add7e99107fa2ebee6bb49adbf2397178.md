@@ -3,7 +3,7 @@
 ---
 # OE_RWLockInit()
 
-Initializes a readers-writer lock and for use inside an enclave.
+Initializes a readers-writer lock.
 
 ## Syntax
 
