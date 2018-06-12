@@ -2,10 +2,9 @@
 
 Header | Supported | Comments |
 :---:|:---:|:---:|
-algorithm | Partial | Supported functions: find(), find_first_of(), count(), mismatch(), equal(), search(), copy(), move(), transform(), replace(), fill(), generate(), remove(), unique(), reverse(), min(), max(), a(), b(), reset(), param(), sort(), lower_bound() |
-any | Partial | Unsupported function: make_any() |
+algorithm | Partial | Supported functions: find(), find_first_of(), count(), mismatch(), equal(), search(), copy(), move(), transform(), replace(), fill(), generate(), remove(), unique(), reverse(), min(), max(), sort(), lower_bound() |
 array | Yes | - |
-bitset | Partial | Supported functions: base(), bitset(), set(), reset(), to_string(), test() |
+bitset | Partial | Supported functions: base(), bitset(), reset(), set(), to_string(), test() |
 cassert | Yes | - |
 cctype | Partial | Unsupported functions: isalnum(), isaplha(), iscntrl(), isgraph(), isspace(), isblank(), isprint(), ispunct() |
 cfenv | No | - |
@@ -18,49 +17,44 @@ compare | No | - |
 complex | Yes | - |
 condtion_variable | Yes | - |
 csignal | Yes | - |
-cstdarg | Partial | Supported function: va_list() |
+cstdarg | No | - |
 cstddef | Yes | - |
 cstdint | Yes | - |
 cstdio | Partial | All I/O functions implicitly call out to untrusted host. Unsupported functions: vscanf(), fputs() |
-cstdlib | Partial | Unsupported functions: at_quick_exit(), quick_exit(), aligned_alloca() |
-cstring | Partial | Unsupported functions: strcpy(), strcat(), strncat(), strchr(), strcspn(), strpbrk(), strrchr(), strspn() |
+cstdlib | Partial | Unsupported functions: at_quick_exit(), quick_exit() |
+cstring | Partial | Unsupported functions: strcpy(), strcat(), strncat(), strchr(), strcspn(), strspn() |
 ctime | Yes | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. |
-cwchar | Partial | Unsupported functions: wscanff(), wscanfs(), wscanf(), wprintff(), wprintfs(), wprintf(), fputwcputwc(), fgetwcgetwc() |
+cwchar | Partial | Unsupported functions: wscanf(), wprintf() |
 cwctype | Yes | - |
 cuchar | No | - |
-execution | Partial | Unsupported functions: is_execution_policy(), sequenced_policy(), parallel_policy(), parallel_unsequenced_policy(), par_unseq() |
 exception | Partial | Unsupported functions: throw_with_nested(), rethrow_if_nested() |
 functional | No | - |
 future | Yes | - |
-fstream | Partial | All I/O functions implicitly call out to untrusted host. Unsupported functions: is_open(), basic_ifstream(), basic_filebuf() |
+fstream | Yes | All I/O functions implicitly call out to untrusted host. |
 initializer_list | Yes | - |
 ios | Partial | Unsupported functions: nounitbuf(), nouppercase(), noshowpos(), noshowpoint(), noshowbase(), noboolalpha() |
 istream | Yes | - |
-iterator | Partial | Unsupported functions: make_reverse_iterator(), make_move_iterator(), front_inserter(), back_inserter(), inserter(), begincbegin(),  endcend(), rbegincrbegin(), rendcrend() |
-map | Partial | Unsupported function: multimap() |
-memory_resource | No | - |
-new | Partial | Unsupported function: launder() |
-numeric | Partial | Unsupported functions: accumulate(), transform_reduce(), inner_product(), adjacent_difference(), partial_sum(), inclusive_scan(), exclusive_scan(), transform_inclusive_scan(), transform_exclusive_scan() |
-mutex | Partial | Unsupported function: try_lock_until() |
+iterator | Partial | Unsupported functions: make_reverse_iterator(), make_move_iterator(), front_inserter(), back_inserter(), inserter(), begin(), cbegin(), rbegin(), crbegin() |
+new | Yes | - |
+numeric | Partial | Unsupported functions: accumulate(), inner_product(), adjacent_difference(), partial_sum() |
+mutex | Yes | - |
 optional | Yes | - |
 ostream | Partial | Unsupported function: endl() |
 queue | Yes | - |
-random | Partial | Unsupported functions: probablities(), generate_canonical() |
+random | Partial | Unsupported functions: generate_canonical() |
 ratio | Yes | - |
 regex | No | - |
-set | Partial | Unsupported function: multiset() |
-sstream | Partial | Unsupported functions: basic_ostringstream(), basic_stringstream(), basic_stringbuf() |
+set | Yes | - |
+sstream | Yes | - |
 stddef | Yes |  - |
 streambuf | Yes | - |
-syncstream | No | - |
-system error | Yes | - |
+system_error | Yes | - |
 thread | Partial | Synchronization primitives are not secure across calls to host. Threads are still scheduled by the untrusted host process and an enclave cannot rely on threads making forward progress. Unsupported function: sleep_until() |
-tuple | Partial | Supported function: pair() |
+tuple | Partial | Supported function: tie() |
 typeinfo | No | - |
-type_traits | Partial | Supported functions: decltype(), move(), size_of() |
-unordered_map | Partial | Unsupported functions: unordered_map(), unordered_multimap() |
-unordered_set | Partial | Unsupported functions: unordered_set(), unordered_multiset() |
-utility | Partial | Unsupported function : make_pair() |
-variant | Partial | C++17 features are untested. Unsupported function: visit(), holds_alternative(), get_if() |
+type_traits | No | - |
+unordered_map | Yes | - |
+unordered_set | Yes | - |
+utility | Partial | Unsupported function : make_pair() |  
 vector | Yes | - |
 version | No | - |
