@@ -12,7 +12,7 @@
 #endif
 
 /* Atomically increment **x** and return its new value */
-OE_INLINE uint64_t OE_AtomicIncrement(volatile uint64_t* x)
+OE_INLINE uint64_t oe_atomic_increment(volatile uint64_t* x)
 {
 #if defined(__GNUC__)
     return __sync_add_and_fetch(x, 1);
@@ -24,7 +24,7 @@ OE_INLINE uint64_t OE_AtomicIncrement(volatile uint64_t* x)
 }
 
 /* Atomically decrement **x** and return its new value */
-OE_INLINE uint64_t OE_AtomicDecrement(volatile uint64_t* x)
+OE_INLINE uint64_t oe_atomic_decrement(volatile uint64_t* x)
 {
 #if defined(__GNUC__)
     return __sync_sub_and_fetch(x, 1);

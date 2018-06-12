@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-void OE_SetGSRegisterBase(const void* ptr);
+void oe_set_gs_register_base(const void* ptr);
 
-void* OE_GetGSRegisterBase(void);
+void* oe_get_gs_register_base(void);
 
 OE_EXTERNC_END
 

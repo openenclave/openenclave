@@ -40,7 +40,7 @@ int mbedtls_hardware_poll(
         {
             uint64_t x = _rdrand();
 
-            OE_Memcpy(p, &x, sizeof(uint64_t));
+            oe_memcpy(p, &x, sizeof(uint64_t));
             p += sizeof(uint64_t);
         }
     }

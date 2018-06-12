@@ -15,8 +15,8 @@
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     if (argc != 2)
     {
@@ -24,7 +24,7 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
         printf("=== Skipped unsupported test in simulation mode (sealKey)\n");
@@ -33,22 +33,22 @@ int main(int argc, const char* argv[])
 
     printf("=== This program is used to test enclave seal key functions.\n");
 
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_puterr("oe_create_enclave(): result=%u", result);
         return 1;
     }
 
     SealKeyArgs args;
     args.ret = -1;
-    result = OE_CallEnclave(enclave, "TestSealKey", &args);
+    result = oe_call_enclave(enclave, "TestSealKey", &args);
     OE_TEST(result == OE_OK);
     OE_TEST(args.ret == 0);
 
-    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
+    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {
-        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
+        oe_puterr("oe_terminate_enclave(): result=%u", result);
         return 1;
     }
 

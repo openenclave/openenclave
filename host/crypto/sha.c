@@ -18,21 +18,21 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sha.h>
 
-typedef struct _OE_SHA256ContextImpl
+typedef struct _oe_sha256_context_impl
 {
 #if defined(__linux__)
     SHA256_CTX ctx;
 #elif defined(_WIN32)
     BCRYPT_HASH_HANDLE handle;
 #endif
-} OE_SHA256ContextImpl;
+} oe_sha256_context_impl_t;
 
-OE_STATIC_ASSERT(sizeof(OE_SHA256ContextImpl) <= sizeof(OE_SHA256Context));
+OE_STATIC_ASSERT(sizeof(oe_sha256_context_impl_t) <= sizeof(oe_sha256_context_t));
 
-OE_Result OE_SHA256Init(OE_SHA256Context* context)
+oe_result_t oe_sha256_init(oe_sha256_context_t* context)
 {
-    OE_Result result = OE_UNEXPECTED;
-    OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -55,13 +55,13 @@ done:
     return result;
 }
 
-OE_Result OE_SHA256Update(
-    OE_SHA256Context* context,
+oe_result_t oe_sha256_update(
+    oe_sha256_context_t* context,
     const void* data,
     size_t size)
 {
-    OE_Result result = OE_UNEXPECTED;
-    OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -83,10 +83,10 @@ done:
     return result;
 }
 
-OE_Result OE_SHA256Final(OE_SHA256Context* context, OE_SHA256* sha256)
+oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
 {
-    OE_Result result = OE_UNEXPECTED;
-    OE_SHA256ContextImpl* impl = (OE_SHA256ContextImpl*)context;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_impl_t* impl = (oe_sha256_context_impl_t*)context;
 
     if (!context)
         OE_RAISE(OE_INVALID_PARAMETER);

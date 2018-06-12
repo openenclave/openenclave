@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char* OE_Dupenv(const char* name)
+char* oe_dupenv(const char* name)
 {
 #if defined(__linux__)
 

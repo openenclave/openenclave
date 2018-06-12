@@ -22,12 +22,12 @@
 #include "args.h"
 #include "ocalls.h"
 
-void Test(OE_Enclave* enclave)
+void Test(oe_enclave_t* enclave)
 {
     Args args;
     args.ret = 1;
     args.test = NULL;
-    OE_Result result = OE_CallEnclave(enclave, "Test", &args);
+    oe_result_t result = oe_call_enclave(enclave, "Test", &args);
     OE_TEST(result == OE_OK);
 
     if (args.ret != 0)
@@ -76,15 +76,15 @@ static int _GetOpt(
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
 
     // Check for the --sim option:
     if (_GetOpt(argc, argv, "--simulate") == 1)
         flags |= OE_ENCLAVE_FLAG_SIMULATE;
     else
-        flags = OE_GetCreateFlags();
+        flags = oe_get_create_flags();
 
     // Check argument count:
     if (argc != 2)
@@ -94,19 +94,19 @@ int main(int argc, const char* argv[])
     }
 
     // Create the enclave:
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_puterr("oe_create_enclave(): result=%u", result);
 
     // Register to handle OCALL_EXIT from tests.
-    OE_RegisterOCall(OCALL_EXIT, _ExitOCall);
+    oe_register_ocall(OCALL_EXIT, _ExitOCall);
 
     // Invoke "Test()" in the enclave.
     Test(enclave);
 
     // Shutdown the enclave.
-    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
-        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
+    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+        oe_puterr("oe_terminate_enclave(): result=%u", result);
 
     return 0;
 }

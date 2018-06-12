@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char* OE_Strdup(const char* str)
+char* oe_strdup(const char* str)
 {
 #if defined(__linux__)
     return strdup(str);
@@ -14,7 +14,7 @@ char* OE_Strdup(const char* str)
 #endif
 }
 
-size_t OE_Strlcpy(char* dest, const char* src, size_t size)
+size_t oe_strlcpy(char* dest, const char* src, size_t size)
 {
     const char* start = src;
 
@@ -34,7 +34,7 @@ size_t OE_Strlcpy(char* dest, const char* src, size_t size)
     return src - start;
 }
 
-size_t OE_Strlcat(char* dest, const char* src, size_t size)
+size_t oe_strlcat(char* dest, const char* src, size_t size)
 {
     size_t n = 0;
 

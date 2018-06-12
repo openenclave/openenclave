@@ -12,14 +12,14 @@
 #include <string.h>
 #include "memalign.h"
 
-OE_Result __OE_LoadSegments(
+oe_result_t __oe_load_segments(
     const char* path,
-    OE_Segment segments[OE_MAX_SEGMENTS],
+    oe_segment_t segments[OE_MAX_SEGMENTS],
     size_t* nsegments,
     uint64_t* entryaddr,
     uint64_t* textaddr)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     Elf64 elf = ELF64_INIT;
     size_t i;
     const Elf64_Ehdr* eh;
@@ -84,7 +84,7 @@ OE_Result __OE_LoadSegments(
     for (i = 0; i < eh->e_phnum; i++)
     {
         const Elf64_Phdr* ph = Elf64_GetProgramHeader(&elf, i);
-        OE_Segment seg;
+        oe_segment_t seg;
 
         /* Skip non-loadable program segments */
         if (ph->p_type != PT_LOAD)
@@ -95,21 +95,21 @@ OE_Result __OE_LoadSegments(
             OE_THROW(OE_UNIMPLEMENTED);
 
         /* Clear the segment */
-        memset(&seg, 0, sizeof(OE_Segment));
+        memset(&seg, 0, sizeof(oe_segment_t));
 
-        /* Set OE_Segment.memsz */
+        /* Set oe_segment_t.memsz */
         seg.memsz = ph->p_memsz;
 
-        /* Set OE_Segment.filesz */
+        /* Set oe_segment_t.filesz */
         seg.filesz = ph->p_filesz;
 
-        /* Set OE_Segment.offset */
+        /* Set oe_segment_t.offset */
         seg.offset = ph->p_offset;
 
-        /* Set OE_Segment.vaddr */
+        /* Set oe_segment_t.vaddr */
         seg.vaddr = ph->p_vaddr;
 
-        /* Set OE_Segment.flags */
+        /* Set oe_segment_t.flags */
         {
             if (ph->p_flags & PF_R)
                 seg.flags |= OE_SEGMENT_FLAG_READ;
@@ -152,7 +152,7 @@ OE_CATCH:
         {
             for (i = 0; i < *nsegments; i++)
             {
-                OE_Segment* seg = &segments[i];
+                oe_segment_t* seg = &segments[i];
                 free(seg->filedata);
             }
 
@@ -165,12 +165,12 @@ OE_CATCH:
     return result;
 }
 
-OE_Result __OE_CalculateSegmentsSize(
-    const OE_Segment* segments,
+oe_result_t __oe_calculate_segments_size(
+    const oe_segment_t* segments,
     size_t nsegments,
     size_t* size)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     uint64_t lo = 0xFFFFFFFFFFFFFFFF; /* lowest address of all segments */
     uint64_t hi = 0;                  /* highest address of all segments */
     size_t i;
@@ -185,7 +185,7 @@ OE_Result __OE_CalculateSegmentsSize(
     /* Calculate boundaries (LO and HI) of the image */
     for (i = 0; i < nsegments; i++)
     {
-        const OE_Segment* seg = &segments[i];
+        const oe_segment_t* seg = &segments[i];
 
         if (seg->vaddr < lo)
             lo = seg->vaddr;
@@ -203,7 +203,7 @@ OE_Result __OE_CalculateSegmentsSize(
         OE_THROW(OE_FAILURE);
 
     /* Calculate the full size of the image (rounded up to the page size) */
-    *size = __OE_RoundUpToPageSize(hi - lo);
+    *size = __oe_round_up_to_page_size(hi - lo);
 
     result = OE_OK;
 
@@ -212,13 +212,13 @@ OE_CATCH:
     return result;
 }
 
-OE_Result __OE_CombineSegments(
-    const OE_Segment* segments,
+oe_result_t __oe_combine_segments(
+    const oe_segment_t* segments,
     size_t nsegments,
-    OE_Page** pages,
+    oe_page** pages,
     size_t* npages)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     uint64_t lo = 0xFFFFFFFFFFFFFFFF; /* lowest address of all segments */
     uint64_t hi = 0;                  /* highest address of all segments */
     size_t i;
@@ -239,7 +239,7 @@ OE_Result __OE_CombineSegments(
     {
         for (i = 0; i < nsegments; i++)
         {
-            const OE_Segment* seg = &segments[i];
+            const oe_segment_t* seg = &segments[i];
 
             if (seg->vaddr < lo)
                 lo = seg->vaddr;
@@ -256,10 +256,10 @@ OE_Result __OE_CombineSegments(
     }
 
     /* Calculate the full size of the image (rounded up to the page size) */
-    OE_TRY(__OE_CalculateSegmentsSize(segments, nsegments, &size));
+    OE_TRY(__oe_calculate_segments_size(segments, nsegments, &size));
 
     /* Allocate data on a page boundary */
-    if (!(data = (unsigned char*)OE_Memalign(OE_PAGE_SIZE, size)))
+    if (!(data = (unsigned char*)oe_memalign(OE_PAGE_SIZE, size)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Clear the image memory */
@@ -268,11 +268,11 @@ OE_Result __OE_CombineSegments(
     /* Copy data from ELF file onto image memory */
     for (i = 0; i < nsegments; i++)
     {
-        const OE_Segment* seg = &segments[i];
+        const oe_segment_t* seg = &segments[i];
         memcpy(data + seg->vaddr, seg->filedata, seg->filesz);
     }
 
-    *pages = (OE_Page*)data;
+    *pages = (oe_page*)data;
     *npages = size / OE_PAGE_SIZE;
 
     result = OE_OK;
@@ -280,7 +280,7 @@ OE_Result __OE_CombineSegments(
 OE_CATCH:
 
     if (result != OE_OK)
-        OE_MemalignFree(data);
+        oe_memalign_free(data);
 
     return result;
 }

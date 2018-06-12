@@ -96,12 +96,12 @@ static void InitializeMbedtls(void)
 }
 
 /** InitializeCrypto initializes the crypto module.
- *  Uses OE_Once to ensure that InitializeMbedtls is called only once.
+ *  Uses oe_once to ensure that InitializeMbedtls is called only once.
  */
 bool InitializeCrypto(void)
 {
-    static OE_OnceType s_once = OE_ONCE_INITIALIZER;
-    OE_Once(&s_once, InitializeMbedtls);
+    static oe_once_t s_once = OE_ONCE_INITIALIZER;
+    oe_once(&s_once, InitializeMbedtls);
     return g_Initialized;
 }
 
