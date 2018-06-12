@@ -6,37 +6,38 @@
 
 bool OE_IsWithinEnclave(const void* p, size_t n)
 {
-    const uint8_t* rangeStart = (const uint8_t*)p;
-    const uint8_t* rangeEnd = (const uint8_t*)p + n;
+    uint64_t rangeStart = (uint64_t)p;
+    uint64_t rangeEnd = rangeStart + (n == 0 ? 1 : n);
+    uint64_t enclaveStart = (uint64_t)__OE_GetEnclaveBase();
+    uint64_t enclaveEnd = enclaveStart + __OE_GetEnclaveSize();
 
-    const uint8_t* enclaveBase = (const uint8_t*)__OE_GetEnclaveBase();
-    uint64_t enclaveSize = __OE_GetEnclaveSize();
-    const uint8_t* enclaveEnd = enclaveBase + enclaveSize;
+    // Disallow nullptr and check that arithmetic operations do not wrap
+    // Check that block lies completely within the enclave
+    if ((rangeStart > 0) && (rangeEnd > rangeStart) &&
+        (enclaveEnd > enclaveStart) &&
+        ((rangeStart >= enclaveStart) && (rangeEnd <= enclaveEnd)))
+    {
+        return true;
+    }
 
-    // Check that arithmetic operations do not wrap
-    if (rangeEnd < rangeStart || enclaveEnd < enclaveBase)
-        return false;
-
-    // Block must lie completely within the enclave
-    return (rangeStart >= enclaveBase && rangeEnd <= enclaveEnd);
+    return false;
 }
 
 bool OE_IsOutsideEnclave(const void* p, size_t n)
 {
-    const uint8_t* rangeStart = (const uint8_t*)p;
-    const uint8_t* rangeEnd = (const uint8_t*)p + n;
+    uint64_t rangeStart = (uint64_t)p;
+    uint64_t rangeEnd = rangeStart + (n == 0 ? 1 : n);
+    uint64_t enclaveStart = (uint64_t)__OE_GetEnclaveBase();
+    uint64_t enclaveEnd = enclaveStart + __OE_GetEnclaveSize();
 
-    const uint8_t* enclaveBase = (const uint8_t*)__OE_GetEnclaveBase();
-    uint64_t enclaveSize = __OE_GetEnclaveSize();
-    const uint8_t* enclaveEnd = enclaveBase + enclaveSize;
+    // Disallow nullptr and check that arithmetic operations do not wrap
+    // Check that block lies completely outside the enclave
+    if ((rangeStart > 0) && (rangeEnd > rangeStart) &&
+        (enclaveEnd > enclaveStart) &&
+        ((rangeEnd <= enclaveStart) || (rangeStart >= enclaveEnd)))
+    {
+        return true;
+    }
 
-    // Check that arithmetic operations do not wrap.
-    if (rangeEnd < rangeStart || enclaveEnd < enclaveBase)
-        return false;
-
-    // Block must lie completely outside the enclave.
-    // It can lie fully to the left or fully to the right.
-    // ......................|enclaveBase....enclaveEnd|......................
-    //  rangeStart ..rangeEnd|              or         |rangeStart....rangeEnd
-    return (rangeEnd <= enclaveBase || rangeStart >= enclaveEnd);
+    return false;
 }

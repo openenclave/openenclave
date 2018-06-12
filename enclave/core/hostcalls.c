@@ -56,7 +56,7 @@ void* OE_HostRealloc(void* ptr, size_t size)
         goto done;
     }
 
-    if (!OE_IsOutsideEnclave((void*)argOut, size))
+    if (argOut && !OE_IsOutsideEnclave((void*)argOut, size))
         OE_Abort();
 
 done:
