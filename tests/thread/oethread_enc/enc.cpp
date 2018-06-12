@@ -137,7 +137,8 @@ OE_ECALL void WaitForExclusiveAccess(void* args_)
         oe_cond_wait(&exclusive, &ex_mutex);
     }
 
-    oe_host_printf("%llu: Obtained exclusive access\n", OE_LLU(oe_thread_self()));
+    oe_host_printf(
+        "%llu: Obtained exclusive access\n", OE_LLU(oe_thread_self()));
     nthreads = 1;
     oe_mutex_unlock(&ex_mutex);
 }

@@ -580,7 +580,8 @@ typedef uint32_t oe_thread_key_t;
  * is called when the key is deleted by oe_thread_key_delete().
  *
  * @param key Set this key to refer to the newly allocated TSD entry.
- * @param destructor If non-null, call this function from oe_thread_key_delete().
+ * @param destructor If non-null, call this function from
+ * oe_thread_key_delete().
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid

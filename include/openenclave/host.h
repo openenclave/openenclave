@@ -108,7 +108,10 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
  * @returns This function return **OE_OK** on success.
  *
  */
-oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args);
+oe_result_t oe_call_enclave(
+    oe_enclave_t* enclave,
+    const char* func,
+    void* args);
 
 /**
  * Get a report signed by the enclave platform for use in attestation.

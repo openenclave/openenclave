@@ -25,7 +25,10 @@ void StorePublicKey(oe_enclave_t* enclave, QuotedPublicKey* quotedPublicKey);
 /**
  * Fetch encrypted data from the enclave.
  */
-void GenerateEncryptedData(oe_enclave_t* enclave, uint8_t** data, uint32_t* size);
+void GenerateEncryptedData(
+    oe_enclave_t* enclave,
+    uint8_t** data,
+    uint32_t* size);
 
 /**
  * Send encrypted data to the enclave.

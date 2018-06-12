@@ -55,24 +55,24 @@ OE_INLINE void __oe_trace_result(
 #define OE_CATCH catch
 #endif
 
-#define OE_THROW(RESULT)                                                \
-    do                                                                  \
-    {                                                                   \
-        result = (RESULT);                                              \
+#define OE_THROW(RESULT)                                                 \
+    do                                                                   \
+    {                                                                    \
+        result = (RESULT);                                               \
         __oe_trace_result("throw", result, __FILE__, __LINE__, #RESULT); \
-        goto OE_CATCH;                                                  \
+        goto OE_CATCH;                                                   \
     } while (0)
 
-#define OE_TRY(EXPR)                                                  \
-    do                                                                \
-    {                                                                 \
-        oe_result_t _result_ = (EXPR);                                  \
+#define OE_TRY(EXPR)                                                   \
+    do                                                                 \
+    {                                                                  \
+        oe_result_t _result_ = (EXPR);                                 \
         __oe_trace_result("try", _result_, __FILE__, __LINE__, #EXPR); \
-        if (_result_ != OE_OK)                                        \
-        {                                                             \
-            result = _result_;                                        \
-            goto OE_CATCH;                                            \
-        }                                                             \
+        if (_result_ != OE_OK)                                         \
+        {                                                              \
+            result = _result_;                                         \
+            goto OE_CATCH;                                             \
+        }                                                              \
     } while (0)
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_ERROR)

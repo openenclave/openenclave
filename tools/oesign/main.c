@@ -94,8 +94,8 @@ static int _UpdateAndWriteSharedLib(
     }
 
     // Update or create a new .oeinfo section.
-    if (oe_sgx_update_enclave_properties(&elf, OE_INFO_SECTION_NAME, properties) !=
-        OE_OK)
+    if (oe_sgx_update_enclave_properties(
+            &elf, OE_INFO_SECTION_NAME, properties) != OE_OK)
     {
         if (Elf64_AddSection(
                 &elf,
@@ -598,7 +598,8 @@ int main(int argc, const char* argv[])
     }
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
-    if ((result = oe_sgx_build_enclave(&context, enclave, &props, &enc)) != OE_OK)
+    if ((result = oe_sgx_build_enclave(&context, enclave, &props, &enc)) !=
+        OE_OK)
     {
         Err("oe_sgx_build_enclave(): result=%u", result);
         goto done;

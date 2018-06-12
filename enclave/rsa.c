@@ -173,7 +173,8 @@ static oe_result_t _GenerateKeyPair(
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(oe_private_key_init(privateKey, &pk, _CopyKey, _PRIVATE_KEY_MAGIC));
+    OE_CHECK(
+        oe_private_key_init(privateKey, &pk, _CopyKey, _PRIVATE_KEY_MAGIC));
 
     /* Initialize the public key parameter */
     OE_CHECK(oe_public_key_init(publicKey, &pk, _CopyKey, _PUBLIC_KEY_MAGIC));
@@ -275,7 +276,10 @@ oe_result_t oe_rsa_private_key_write_pem(
     size_t* pemSize)
 {
     return oe_private_key_write_pem(
-        (const oe_private_key_t*)privateKey, pemData, pemSize, _PRIVATE_KEY_MAGIC);
+        (const oe_private_key_t*)privateKey,
+        pemData,
+        pemSize,
+        _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_read_pem(
@@ -297,12 +301,16 @@ oe_result_t oe_rsa_public_key_write_pem(
     size_t* pemSize)
 {
     return oe_public_key_write_pem(
-        (const oe_public_key_t*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
+        (const oe_public_key_t*)privateKey,
+        pemData,
+        pemSize,
+        _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* privateKey)
 {
-    return oe_private_key_free((oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
+    return oe_private_key_free(
+        (oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* publicKey)
@@ -353,7 +361,10 @@ oe_result_t oe_rsa_generate_key_pair(
     oe_rsa_public_key_t* publicKey)
 {
     return _GenerateKeyPair(
-        bits, exponent, (oe_private_key_t*)privateKey, (oe_public_key_t*)publicKey);
+        bits,
+        exponent,
+        (oe_private_key_t*)privateKey,
+        (oe_public_key_t*)publicKey);
 }
 
 oe_result_t oe_rsa_public_key_get_modulus(
@@ -361,7 +372,8 @@ oe_result_t oe_rsa_public_key_get_modulus(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return oe_public_key_get_modulus((oe_public_key_t*)publicKey, buffer, bufferSize);
+    return oe_public_key_get_modulus(
+        (oe_public_key_t*)publicKey, buffer, bufferSize);
 }
 
 oe_result_t oe_rsa_public_key_get_exponent(

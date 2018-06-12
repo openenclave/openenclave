@@ -19,7 +19,10 @@ bool oe_public_key_is_valid(const oe_public_key_t* impl, uint64_t magic)
     return impl && impl->magic == magic && impl->pkey;
 }
 
-void oe_public_key_init(oe_public_key_t* publicKey, EVP_PKEY* pkey, uint64_t magic)
+void oe_public_key_init(
+    oe_public_key_t* publicKey,
+    EVP_PKEY* pkey,
+    uint64_t magic)
 {
     oe_public_key_t* impl = (oe_public_key_t*)publicKey;
     impl->magic = magic;

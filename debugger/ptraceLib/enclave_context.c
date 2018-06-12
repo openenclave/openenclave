@@ -339,7 +339,11 @@ int oe_get_enclave_thread_gpr(
 
     // Read gpr from ssa.
     ret = oe_read_process_memory(
-        pid, gpr_addr, (void*)&ssa_gpr, sizeof(sgx_ssa_gpr_t), &read_byte_length);
+        pid,
+        gpr_addr,
+        (void*)&ssa_gpr,
+        sizeof(sgx_ssa_gpr_t),
+        &read_byte_length);
     if (ret != 0)
     {
         return ret;
@@ -400,7 +404,11 @@ int oe_set_enclave_thread_gpr(
 
     // Read gpr from ssa.
     ret = oe_read_process_memory(
-        pid, gpr_addr, (void*)&ssa_gpr, sizeof(sgx_ssa_gpr_t), &read_byte_length);
+        pid,
+        gpr_addr,
+        (void*)&ssa_gpr,
+        sizeof(sgx_ssa_gpr_t),
+        &read_byte_length);
     if (ret != 0)
     {
         return ret;
@@ -416,7 +424,11 @@ int oe_set_enclave_thread_gpr(
 
     // Write gpr value to ssa.
     ret = oe_write_process_memory(
-        pid, gpr_addr, (void*)&ssa_gpr, sizeof(sgx_ssa_gpr_t), &write_byte_length);
+        pid,
+        gpr_addr,
+        (void*)&ssa_gpr,
+        sizeof(sgx_ssa_gpr_t),
+        &write_byte_length);
     if (ret != 0)
     {
         return ret;
@@ -543,7 +555,7 @@ int oe_set_enclave_thread_fpr(
 /*
 **==============================================================================
 **
-** oe_get_enclave_thread_x_state()
+** oe_get_enclave_thread_xstate()
 **
 **     This function is used get the XState of the enclave thread.
 **
@@ -560,7 +572,7 @@ int oe_set_enclave_thread_fpr(
 **==============================================================================
 */
 
-int oe_get_enclave_thread_x_state(
+int oe_get_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
@@ -606,7 +618,7 @@ int oe_get_enclave_thread_x_state(
 /*
 **==============================================================================
 **
-** oe_set_enclave_thread_x_state()
+** oe_set_enclave_thread_xstate()
 **
 **     This function is used set the XState of the enclave thread.
 **
@@ -623,7 +635,7 @@ int oe_get_enclave_thread_x_state(
 **==============================================================================
 */
 
-int oe_set_enclave_thread_x_state(
+int oe_set_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,

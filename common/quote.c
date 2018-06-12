@@ -96,7 +96,9 @@ done:
     return result;
 }
 
-static oe_result_t _ReadPublicKey(sgx_ecdsa256_key_t* key, oe_ec_public_key_t* publicKey)
+static oe_result_t _ReadPublicKey(
+    sgx_ecdsa256_key_t* key,
+    oe_ec_public_key_t* publicKey)
 {
     return oe_ec_public_key_from_coordinates(
         publicKey,

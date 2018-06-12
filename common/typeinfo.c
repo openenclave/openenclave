@@ -88,7 +88,9 @@ static oe_result_t _StrToSize(const char* str, size_t* size)
     return OE_OK;
 }
 
-static const oe_field_ti_t* _FindFieldTI(const oe_struct_ti_t* ti, const char* name)
+static const oe_field_ti_t* _FindFieldTI(
+    const oe_struct_ti_t* ti,
+    const char* name)
 {
     size_t i;
 
@@ -1803,7 +1805,9 @@ OE_CATCH:
     return result;
 }
 
-oe_result_t oe_check_post_constraints(const oe_struct_ti_t* sti, const void* sin)
+oe_result_t oe_check_post_constraints(
+    const oe_struct_ti_t* sti,
+    const void* sin)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t i;

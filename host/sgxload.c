@@ -365,7 +365,8 @@ oe_result_t oe_sgx_initialize_load_context(
     context->attributes = attributes;
     context->dev = OE_SGX_NO_DEVICE_HANDLE;
 #if !defined(OE_USE_LIBSGX) && defined(__linux__)
-    if (type != OE_SGX_LOAD_TYPE_MEASURE && !oe_sgx_is_simulation_load_context(context))
+    if (type != OE_SGX_LOAD_TYPE_MEASURE &&
+        !oe_sgx_is_simulation_load_context(context))
     {
         context->dev = open("/dev/isgx", O_RDWR);
         if (context->dev == OE_SGX_NO_DEVICE_HANDLE)
@@ -423,7 +424,9 @@ oe_result_t oe_sgx_create_enclave(
 
     /* Create SECS structure */
     if (!(secs = _NewSecs(
-              (uint64_t)base, enclaveSize, oe_sgx_is_debug_load_context(context))))
+              (uint64_t)base,
+              enclaveSize,
+              oe_sgx_is_debug_load_context(context))))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Measure this operation */
@@ -581,8 +584,8 @@ oe_result_t oe_sgx_load_enclave_data(
 #elif defined(__linux__)
 
         /* Ask the Linux SGX driver to add a page to the enclave */
-        if (sgx_ioctl_enclave_add_page(context->dev, addr, src, flags, extend) !=
-            0)
+        if (sgx_ioctl_enclave_add_page(
+                context->dev, addr, src, flags, extend) != 0)
             OE_RAISE(OE_IOCTL_FAILED);
 
 #elif defined(_WIN32)
@@ -637,7 +640,8 @@ oe_result_t oe_sgx_initialize_enclave(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Measure this operation */
-    OE_CHECK(oe_sgx_measure_initialize_enclave(&context->hashContext, mrenclave));
+    OE_CHECK(
+        oe_sgx_measure_initialize_enclave(&context->hashContext, mrenclave));
 
     /* EINIT has no further action in measurement/simulation mode */
     if (context->type == OE_SGX_LOAD_TYPE_CREATE &&

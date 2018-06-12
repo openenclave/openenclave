@@ -16,7 +16,8 @@ typedef void (*oe_allocation_failure_callback_t)(
     const char* func,
     size_t size);
 
-void oe_set_allocation_failure_callback(oe_allocation_failure_callback_t function);
+void oe_set_allocation_failure_callback(
+    oe_allocation_failure_callback_t function);
 
 typedef struct _oe_malloc_stats
 {

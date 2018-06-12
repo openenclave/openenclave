@@ -203,7 +203,9 @@ OE_PACK_END
 OE_CHECK_SIZE(sizeof(sgx_sigstruct_t), 1808);
 OE_CHECK_SIZE(sizeof(sgx_sigstruct_t), OE_SGX_SIGSTRUCT_SIZE);
 
-OE_CHECK_SIZE(sizeof((sgx_sigstruct_t*)NULL)->header, SGX_SIGSTRUCT_HEADER_SIZE);
+OE_CHECK_SIZE(
+    sizeof((sgx_sigstruct_t*)NULL)->header,
+    SGX_SIGSTRUCT_HEADER_SIZE);
 
 OE_CHECK_SIZE(
     sizeof((sgx_sigstruct_t*)NULL)->header2,
@@ -485,7 +487,8 @@ OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, u.main), 72);
 **     structure resides in the GS segment page (referenced by the GS segment
 **     register). A thread obtains its thread data structure by calling
 **     oe_get_thread_data(), which fetches the address at offset zero in
-**     the GS segment register (%gs:0) which contains oe_thread_data_t.self_addr.
+**     the GS segment register (%gs:0) which contains
+*oe_thread_data_t.self_addr.
 **
 **==============================================================================
 */
@@ -809,7 +812,8 @@ typedef struct _sgx_quote_auth_data
 OE_STATIC_ASSERT(OE_OFFSETOF(sgx_quote_auth_data_t, signature) == 0);
 OE_STATIC_ASSERT(OE_OFFSETOF(sgx_quote_auth_data_t, attestationKey) == 64);
 OE_STATIC_ASSERT(OE_OFFSETOF(sgx_quote_auth_data_t, qeReportBody) == 128);
-OE_STATIC_ASSERT(OE_OFFSETOF(sgx_quote_auth_data_t, qeReportBodySignature) == 512);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(sgx_quote_auth_data_t, qeReportBodySignature) == 512);
 OE_STATIC_ASSERT(sizeof(sgx_quote_auth_data_t) == 576);
 
 /*

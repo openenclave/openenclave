@@ -63,10 +63,11 @@ uint64_t TestDivideByZeroHandler(oe_exception_record_t* exception_record)
 
 #define MAX_EXCEPTION_HANDLER_COUNT 64
 
-#define PASSTHROUGH_EXCEPTION_HANDLER(__exception_handler_name_)             \
-    uint64_t __exception_handler_name_(oe_exception_record_t* exception_record) \
-    {                                                                        \
-        return OE_EXCEPTION_CONTINUE_SEARCH;                                 \
+#define PASSTHROUGH_EXCEPTION_HANDLER(__exception_handler_name_) \
+    uint64_t __exception_handler_name_(                          \
+        oe_exception_record_t* exception_record)                 \
+    {                                                            \
+        return OE_EXCEPTION_CONTINUE_SEARCH;                     \
     }
 
 #define TEN_PASSTHROUGH_EXCEPTION_HANDLER(__exception_handler_name_prefix_) \
@@ -234,7 +235,8 @@ int VectorExceptionSetup()
 int VectorExceptionCleanup()
 {
     // Remove all handlers.
-    if (oe_remove_vectored_exception_handler(g_test_div_by_zero_handler) != OE_OK)
+    if (oe_remove_vectored_exception_handler(g_test_div_by_zero_handler) !=
+        OE_OK)
     {
         return -1;
     }

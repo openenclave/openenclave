@@ -285,7 +285,8 @@ bool BasicVerification()
         return false;
     }
 
-    oe_host_printf("user defined class reference type exception test passed.\n");
+    oe_host_printf(
+        "user defined class reference type exception test passed.\n");
 
     // user defined class type exception should not caught by incompatible
     // class, but caught by the base class type.

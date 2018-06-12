@@ -265,7 +265,8 @@ OE_ECALL void TestAllocaDealloc(void* args)
 
     // test with native functions, no backing memory verification
     OE_TEST(
-        TestRun(false, {oe_host_alloc_for_call_host, oe_host_free_for_call_host}) ==
+        TestRun(
+            false, {oe_host_alloc_for_call_host, oe_host_free_for_call_host}) ==
         OE_OK);
 
     // test with wrapped functions tracking backing memory allocation

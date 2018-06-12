@@ -93,7 +93,11 @@ bool TestOEGetSealKey()
 
         // Get the seal key should fail if the buffer is too small.
         ret = oe_get_seal_key_by_policy(
-            (oe_seal_id_policy_t)sealPolicy, keyBuffer, &keyBufferSize, NULL, NULL);
+            (oe_seal_id_policy_t)sealPolicy,
+            keyBuffer,
+            &keyBufferSize,
+            NULL,
+            NULL);
         if (ret != OE_BUFFER_TOO_SMALL)
         {
             return false;
@@ -104,7 +108,11 @@ bool TestOEGetSealKey()
 
         // Get the seal key by policy and without output the key info.
         ret = oe_get_seal_key_by_policy(
-            (oe_seal_id_policy_t)sealPolicy, keyBuffer, &keyBufferSize, NULL, NULL);
+            (oe_seal_id_policy_t)sealPolicy,
+            keyBuffer,
+            &keyBufferSize,
+            NULL,
+            NULL);
         if (ret != OE_OK)
         {
             return false;
@@ -168,7 +176,9 @@ bool TestOEGetSealKey()
         // can't get seal key.
         keyRequest->isv_svn = curIsvSvn;
         oe_memset(
-            keyRequest->cpu_svn, 0XFF, OE_FIELD_SIZE(sgx_key_request_t, cpu_svn));
+            keyRequest->cpu_svn,
+            0XFF,
+            OE_FIELD_SIZE(sgx_key_request_t, cpu_svn));
         ret = oe_get_seal_key(
             keyInfo, keyInfoSize, thirdKeyBuffer, &thirdKeyBufferSize);
         if (ret != OE_INVALID_CPUSVN)

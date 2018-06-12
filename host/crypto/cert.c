@@ -413,7 +413,10 @@ done:
 **==============================================================================
 */
 
-oe_result_t oe_cert_read_pem(const void* pemData, size_t pemSize, oe_cert_t* cert)
+oe_result_t oe_cert_read_pem(
+    const void* pemData,
+    size_t pemSize,
+    oe_cert_t* cert)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
@@ -667,7 +670,9 @@ done:
     return result;
 }
 
-oe_result_t oe_cert_get_ec_public_key(const oe_cert_t* cert, oe_ec_public_key_t* publicKey)
+oe_result_t oe_cert_get_ec_public_key(
+    const oe_cert_t* cert,
+    oe_ec_public_key_t* publicKey)
 {
     oe_result_t result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
@@ -712,7 +717,9 @@ done:
     return result;
 }
 
-oe_result_t oe_cert_chain_get_length(const oe_cert_chain_t* chain, size_t* length)
+oe_result_t oe_cert_chain_get_length(
+    const oe_cert_chain_t* chain,
+    size_t* length)
 {
     oe_result_t result = OE_UNEXPECTED;
     const CertChain* impl = (const CertChain*)chain;
@@ -788,7 +795,9 @@ done:
     return result;
 }
 
-oe_result_t oe_cert_chain_get_root_cert(const oe_cert_chain_t* chain, oe_cert_t* cert)
+oe_result_t oe_cert_chain_get_root_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t length;
@@ -801,7 +810,9 @@ done:
     return result;
 }
 
-oe_result_t oe_cert_chain_get_leaf_cert(const oe_cert_chain_t* chain, oe_cert_t* cert)
+oe_result_t oe_cert_chain_get_leaf_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t length;

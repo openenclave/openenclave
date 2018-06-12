@@ -639,7 +639,8 @@ static void _TestCertMethods()
             OE_TEST(oe_cert_get_rsa_public_key(&root, &rootKey) == OE_OK);
             OE_TEST(oe_cert_get_rsa_public_key(&leaf, &leafKey) == OE_OK);
 
-            OE_TEST(oe_rsa_public_key_equal(&rootKey, &leafKey, &equal) == OE_OK);
+            OE_TEST(
+                oe_rsa_public_key_equal(&rootKey, &leafKey, &equal) == OE_OK);
             OE_TEST(equal == false);
 
             oe_rsa_public_key_free(&rootKey);

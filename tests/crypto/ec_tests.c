@@ -225,7 +225,8 @@ static void _TestSignAndVerify()
 
         uint8_t data[signatureSize];
         size_t size = sizeof(data);
-        r = oe_ecdsa_signature_write_der(data, &size, rData, rSize, sData, sSize);
+        r = oe_ecdsa_signature_write_der(
+            data, &size, rData, rSize, sData, sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(signatureSize == size);
         OE_TEST(memcmp(signature, data, signatureSize) == 0);
@@ -269,7 +270,8 @@ static void _TestSignAndVerify()
 
         uint8_t data[sizeof(SIG)];
         size_t size = sizeof(data);
-        r = oe_ecdsa_signature_write_der(data, &size, rData, rSize, sData, sSize);
+        r = oe_ecdsa_signature_write_der(
+            data, &size, rData, rSize, sData, sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(sizeof(SIG) == size);
         OE_TEST(memcmp(SIG, data, sizeof(SIG)) == 0);
@@ -441,7 +443,8 @@ static void _TestCertMethods()
             size_t ySize = 0;
 
             /* Determine the required size of the buffer */
-            r = oe_ec_public_key_to_coordinates(&key, NULL, &xSize, NULL, &ySize);
+            r = oe_ec_public_key_to_coordinates(
+                &key, NULL, &xSize, NULL, &ySize);
             OE_TEST(r == OE_BUFFER_TOO_SMALL);
             OE_TEST(xSize == sizeof(_CERT_KEY_X));
             OE_TEST(ySize == sizeof(_CERT_KEY_Y));
@@ -449,7 +452,8 @@ static void _TestCertMethods()
             /* Fetch the key bytes */
             OE_TEST(xData = (uint8_t*)calloc(1, xSize));
             OE_TEST(yData = (uint8_t*)calloc(1, ySize));
-            r = oe_ec_public_key_to_coordinates(&key, xData, &xSize, yData, &ySize);
+            r = oe_ec_public_key_to_coordinates(
+                &key, xData, &xSize, yData, &ySize);
             OE_TEST(r == OE_OK);
 
             /* Does it match expected key? */
@@ -544,7 +548,8 @@ static void _TestCertMethods()
             OE_TEST(oe_cert_get_ec_public_key(&root, &rootKey) == OE_OK);
             OE_TEST(oe_cert_get_ec_public_key(&leaf, &leafKey) == OE_OK);
 
-            OE_TEST(oe_ec_public_key_equal(&rootKey, &leafKey, &equal) == OE_OK);
+            OE_TEST(
+                oe_ec_public_key_equal(&rootKey, &leafKey, &equal) == OE_OK);
             OE_TEST(equal == false);
 
             oe_ec_public_key_free(&rootKey);

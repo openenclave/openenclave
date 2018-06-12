@@ -8,6 +8,10 @@
 
 void oe_initialize_cpuid(uint64_t argIn);
 
-int oe_emulate_cpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx);
+int oe_emulate_cpuid(
+    uint64_t* rax,
+    uint64_t* rbx,
+    uint64_t* rcx,
+    uint64_t* rdx);
 
 #endif /* _OE_CPUID_ENCLAVE_H */

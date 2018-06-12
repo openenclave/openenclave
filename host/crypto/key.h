@@ -22,13 +22,17 @@ typedef struct oe_public_key_t
     EVP_PKEY* pkey;
 } oe_public_key_t;
 
-typedef oe_result_t (*oe_private_key_write_pem_callback)(BIO* bio, EVP_PKEY* pkey);
+typedef oe_result_t (
+    *oe_private_key_write_pem_callback)(BIO* bio, EVP_PKEY* pkey);
 
 bool oe_private_key_is_valid(const oe_private_key_t* impl, uint64_t magic);
 
 bool oe_public_key_is_valid(const oe_public_key_t* impl, uint64_t magic);
 
-void oe_public_key_init(oe_public_key_t* publicKey, EVP_PKEY* pkey, uint64_t magic);
+void oe_public_key_init(
+    oe_public_key_t* publicKey,
+    EVP_PKEY* pkey,
+    uint64_t magic);
 
 void oe_private_key_init(
     oe_private_key_t* privateKey,

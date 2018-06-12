@@ -279,17 +279,17 @@ oe_result_t AESMGetLaunchToken(
 
     /* Obtain a launch token */
     HRESULT hr = instance->lpVtbl->GetLicenseToken(
-        instance,               /* this */
-        mrenclave,              /* mrenclave */
-        OE_SHA256_SIZE,         /* mrenclave_size */
-        modulus,                /* public_key */
-        OE_KEY_SIZE,            /* public_key_size */
-        (PUINT8)attributes,     /* se_attributes */
+        instance,                 /* this */
+        mrenclave,                /* mrenclave */
+        OE_SHA256_SIZE,           /* mrenclave_size */
+        modulus,                  /* public_key */
+        OE_KEY_SIZE,              /* public_key_size */
+        (PUINT8)attributes,       /* se_attributes */
         sizeof(sgx_attributes_t), /* se_attributes_size */
-        (PUINT8)launchToken,    /* lictoken */
+        (PUINT8)launchToken,      /* lictoken */
         /* MSR-SDK passes sizeof(sgx_einittoken_t) */
         sizeof(sgx_einittoken_t), /* lictoken_size */
-        &error);                /* result */
+        &error);                  /* result */
 
     if (!SUCCEEDED(hr) || error != 0)
     {
@@ -384,16 +384,16 @@ oe_result_t AESMGetQuote(
     HRESULT hr = instance->lpVtbl->GetQuote(
         instance,                          /* this */
         (uint8_t*)report,                  /* report */
-        sizeof(sgx_report_t),                /* report_size */
+        sizeof(sgx_report_t),              /* report_size */
         (uint32_t)quoteType,               /* type */
         (uint8_t*)spid,                    /* spid */
-        sizeof(sgx_spid_t),                  /* spid_size */
+        sizeof(sgx_spid_t),                /* spid_size */
         (uint8_t*)nonce,                   /* nonce */
-        sizeof(sgx_nonce_t),                 /* nonce_size */
+        sizeof(sgx_nonce_t),               /* nonce_size */
         (uint8_t*)signatureRevocationList, /* sigrl */
         signatureRevocationListSize,       /* sigrl_size */
         (uint8_t*)reportOut,               /* qe_report */
-        sizeof(sgx_report_t),                /* qe_report_size */
+        sizeof(sgx_report_t),              /* qe_report_size */
         (uint8_t*)quote,                   /* quote */
         (uint32_t)quoteSize,               /* buffer_size */
         &error);

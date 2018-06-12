@@ -59,7 +59,8 @@ typedef struct _oe_enclave_properties_header
 OE_STATIC_ASSERT(sizeof(oe_enclave_type_t) == sizeof(uint32_t));
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_properties_header_t, size) == 0);
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_properties_header_t, enclaveType) == 4);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_properties_header_t, sizeSettings) == 8);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(oe_enclave_properties_header_t, sizeSettings) == 8);
 OE_CHECK_SIZE(sizeof(oe_enclave_properties_header_t), 32);
 
 /*

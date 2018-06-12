@@ -80,7 +80,8 @@ int main(int argc, const char* argv[])
         OE_OK);
 
     OE_TEST(
-        oe_call_enclave(enclave, "TestLocalVerifyReport", &targetInfo) == OE_OK);
+        oe_call_enclave(enclave, "TestLocalVerifyReport", &targetInfo) ==
+        OE_OK);
 
 #ifdef OE_USE_LIBSGX
     OE_TEST(

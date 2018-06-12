@@ -35,7 +35,8 @@ uint8_t __oe_initialized = 0;
 **                oe_main function. It also maintains the index of the
 **                current SSA (TCS.cssa) and the number of SSA's (TCS.nssa).
 **
-**     TD       - Thread data. Per thread data as defined by the oe_thread_data_t
+**     TD       - Thread data. Per thread data as defined by the
+*oe_thread_data_t
 **                structure and extended by the TD structure. This structure
 **                records the stack pointer of the last EENTER.
 **
@@ -478,8 +479,8 @@ oe_result_t oe_call_host(const char* func, void* argsIn)
     {
         size_t len = oe_strlen(func);
 
-        if (!(args =
-                  oe_host_alloc_for_call_host(sizeof(oe_call_host_args_t) + len + 1)))
+        if (!(args = oe_host_alloc_for_call_host(
+                  sizeof(oe_call_host_args_t) + len + 1)))
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
              * fail immediately. */
@@ -708,7 +709,9 @@ void __oe_handle_main(
 **
 **==============================================================================
 */
-void _oe_notify_nested_exit_start(uint64_t arg1, oe_ocall_context_t* ocallContext)
+void _oe_notify_nested_exit_start(
+    uint64_t arg1,
+    oe_ocall_context_t* ocallContext)
 {
     // Check if it is an OCALL.
     oe_code_t code = oe_get_code_from_call_arg1(arg1);

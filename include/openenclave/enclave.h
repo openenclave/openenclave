@@ -326,10 +326,10 @@ void __oe_assert_fail(
     const char* func);
 
 #ifndef NDEBUG
-#define oe_assert(EXPR)                                               \
-    do                                                                \
-    {                                                                 \
-        if (!(EXPR))                                                  \
+#define oe_assert(EXPR)                                                \
+    do                                                                 \
+    {                                                                  \
+        if (!(EXPR))                                                   \
             __oe_assert_fail(#EXPR, __FILE__, __LINE__, __FUNCTION__); \
     } while (0)
 #else

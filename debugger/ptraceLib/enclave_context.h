@@ -45,13 +45,13 @@ int oe_set_enclave_thread_fpr(
     void* tcs_addr,
     struct user_fpregs_struct* regs);
 
-int oe_get_enclave_thread_x_state(
+int oe_get_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
     int64_t xstate_size);
 
-int oe_set_enclave_thread_x_state(
+int oe_set_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,

@@ -307,9 +307,11 @@ static oe_result_t _InitSigstruct(
         unsigned char buf[sizeof(sgx_sigstruct_t)];
         size_t n = 0;
 
-        memcpy(buf, sgx_sigstruct_header(sigstruct), sgx_sigstruct_header_size());
+        memcpy(
+            buf, sgx_sigstruct_header(sigstruct), sgx_sigstruct_header_size());
         n += sgx_sigstruct_header_size();
-        memcpy(&buf[n], sgx_sigstruct_body(sigstruct), sgx_sigstruct_body_size());
+        memcpy(
+            &buf[n], sgx_sigstruct_body(sigstruct), sgx_sigstruct_body_size());
         n += sgx_sigstruct_body_size();
 
         {

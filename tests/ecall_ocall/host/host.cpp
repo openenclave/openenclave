@@ -429,7 +429,8 @@ static uint32_t TestRecursion(
 
     uint32_t crc = CalcRecursionHashEnc(&args);
 
-    result = oe_call_enclave(EnclaveWrap::Get(enclaveId), "EncRecursion", &args);
+    result =
+        oe_call_enclave(EnclaveWrap::Get(enclaveId), "EncRecursion", &args);
     OE_TEST(result == OE_OK);
 
     printf(

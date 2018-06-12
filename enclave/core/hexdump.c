@@ -22,7 +22,11 @@ OE_INLINE char _LowNibbleToHexChar(uint8_t byte)
     return _NibbleToHexChar(byte & 0x0F);
 }
 
-char* oe_hex_string(char* str, size_t strSize, const void* data, size_t dataSize)
+char* oe_hex_string(
+    char* str,
+    size_t strSize,
+    const void* data,
+    size_t dataSize)
 {
     /* Check parameters */
     if (!str || !data || (strSize < (2 * dataSize + 1)))

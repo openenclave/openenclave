@@ -186,7 +186,7 @@ static int64_t oe_get_reg_set_handler(pid_t pid, void* addr, void* data)
         // rbx has the TCS of enclave thread.
         struct iovec* iov = (struct iovec*)data;
         if (iov->iov_base && iov->iov_len &&
-            (oe_get_enclave_thread_x_state(
+            (oe_get_enclave_thread_xstate(
                  pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) ==
              0))
         {
@@ -227,7 +227,7 @@ static int64_t oe_set_reg_set_handler(pid_t pid, void* addr, void* data)
         // rbx has the TCS of enclave thread.
         struct iovec* iov = (struct iovec*)data;
         if (iov->iov_base && iov->iov_len &&
-            (oe_set_enclave_thread_x_state(
+            (oe_set_enclave_thread_xstate(
                  pid, (void*)regs.rbx, (void*)iov->iov_base, iov->iov_len) ==
              0))
         {

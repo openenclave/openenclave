@@ -39,8 +39,8 @@ void* oe_host_realloc(void* ptr, size_t size)
     oe_realloc_args_t* argIn = NULL;
     uint64_t argOut = 0;
 
-    if (!(argIn =
-              (oe_realloc_args_t*)oe_host_alloc_for_call_host(sizeof(oe_realloc_args_t))))
+    if (!(argIn = (oe_realloc_args_t*)oe_host_alloc_for_call_host(
+              sizeof(oe_realloc_args_t))))
         goto done;
 
     argIn->ptr = ptr;

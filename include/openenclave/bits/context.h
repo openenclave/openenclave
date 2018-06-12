@@ -10,7 +10,7 @@
 #include "constants_x64.h"
 
 // X87 and SSE data.
-typedef struct _oe_basic_x_state
+typedef struct _oe_basic_xstate
 {
     uint8_t blob[512];
 } OE_ALIGNED(16) OE_BASIC_XSTATE;

@@ -22,7 +22,11 @@ void oe_hex_dump(const void* data_, size_t size)
     printf("\n");
 }
 
-char* oe_hex_string(char* str, size_t strSize, const void* data, size_t dataSize)
+char* oe_hex_string(
+    char* str,
+    size_t strSize,
+    const void* data,
+    size_t dataSize)
 {
     char* s = str;
     const uint8_t* p = (const uint8_t*)data;

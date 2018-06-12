@@ -68,7 +68,9 @@ static oe_result_t _GetKeyImp(
     return ret;
 }
 
-oe_result_t oe_get_key(const sgx_key_request_t* sgxKeyRequest, sgx_key_t* sgxKey)
+oe_result_t oe_get_key(
+    const sgx_key_request_t* sgxKeyRequest,
+    sgx_key_t* sgxKey)
 {
     // Check the input parameters.
     // Key request and key must be inside enclave.
@@ -156,15 +158,16 @@ oe_result_t oe_get_seal_key(
  * Return OE_OK and set attributes of sgxKeyRequest if success.
  * Otherwise return error and sgxKeyRequest is not changed.
  */
-static oe_result_t _GetDefaultKeyRequestAttributes(sgx_key_request_t* sgxKeyRequest)
+static oe_result_t _GetDefaultKeyRequestAttributes(
+    sgx_key_request_t* sgxKeyRequest)
 {
     sgx_report_t sgxReport = {0};
     uint32_t sgxReportSize = sizeof(sgx_report_t);
     oe_result_t ret;
 
     // Get a local report of current enclave.
-    ret =
-        oe_get_report(0, NULL, 0, NULL, 0, (uint8_t*)&sgxReport, &sgxReportSize);
+    ret = oe_get_report(
+        0, NULL, 0, NULL, 0, (uint8_t*)&sgxReport, &sgxReportSize);
 
     if (ret != OE_OK)
     {

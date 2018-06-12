@@ -9,7 +9,9 @@
 
 OE_EXTERNC_BEGIN
 
-oe_result_t oe_sgx_measure_create_enclave(oe_sha256_context_t* context, sgx_secs_t* secs);
+oe_result_t oe_sgx_measure_create_enclave(
+    oe_sha256_context_t* context,
+    sgx_secs_t* secs);
 
 oe_result_t oe_sgx_measure_load_enclave_data(
     oe_sha256_context_t* context,

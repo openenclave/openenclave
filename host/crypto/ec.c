@@ -233,7 +233,8 @@ done:
 
 void oe_ec_public_key_init(oe_ec_public_key_t* publicKey, EVP_PKEY* pkey)
 {
-    return oe_public_key_init((oe_public_key_t*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_init(
+        (oe_public_key_t*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_read_pem(
@@ -281,12 +282,16 @@ oe_result_t oe_ec_public_key_write_pem(
     size_t* pemSize)
 {
     return oe_public_key_write_pem(
-        (const oe_public_key_t*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
+        (const oe_public_key_t*)privateKey,
+        pemData,
+        pemSize,
+        _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* privateKey)
 {
-    return oe_private_key_free((oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
+    return oe_private_key_free(
+        (oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* publicKey)

@@ -160,7 +160,8 @@ static oe_result_t _oe_get_quote(
     // Allocate memory for args structure + quote buffer.
     argSize += *quoteSize;
 
-    oe_get_quote_args_t* args = (oe_get_quote_args_t*)oe_host_calloc(1, argSize);
+    oe_get_quote_args_t* args =
+        (oe_get_quote_args_t*)oe_host_calloc(1, argSize);
     args->sgxReport = *sgxReport;
     args->quoteSize = *quoteSize;
 
@@ -240,7 +241,8 @@ oe_result_t _oe_get_remote_report(
      * Check that the entire report body in the returned quote matches the local
      * report.
      */
-    if (oe_parse_report(reportBuffer, *reportBufferSize, &parsedReport) != OE_OK)
+    if (oe_parse_report(reportBuffer, *reportBufferSize, &parsedReport) !=
+        OE_OK)
         OE_RAISE(OE_UNEXPECTED);
 
     if (oe_memcmp(
@@ -305,7 +307,8 @@ static oe_result_t _SafeCopyGetReportArgs(
 
     // Ensure that output buffer lies outside the enclave.
     if (safeArg->reportBuffer &&
-        !oe_is_outside_enclave(safeArg->reportBuffer, safeArg->reportBufferSize))
+        !oe_is_outside_enclave(
+            safeArg->reportBuffer, safeArg->reportBufferSize))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Use output buffer within enclave.

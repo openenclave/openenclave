@@ -29,7 +29,8 @@ int HostUnsecureStrPatching(const char* src, char* dst, int dstLength)
 {
     SecureStrPatchingARGS* args;
 
-    args = (SecureStrPatchingARGS*)oe_host_malloc(sizeof(SecureStrPatchingARGS));
+    args =
+        (SecureStrPatchingARGS*)oe_host_malloc(sizeof(SecureStrPatchingARGS));
     if (args == NULL)
     {
         __oe_debug_break();

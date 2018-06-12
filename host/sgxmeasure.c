@@ -47,7 +47,9 @@ static void _MeasureEExtend(
     }
 }
 
-oe_result_t oe_sgx_measure_create_enclave(oe_sha256_context_t* context, sgx_secs_t* secs)
+oe_result_t oe_sgx_measure_create_enclave(
+    oe_sha256_context_t* context,
+    sgx_secs_t* secs)
 {
     oe_result_t result = OE_UNEXPECTED;
 

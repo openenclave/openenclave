@@ -51,7 +51,10 @@ typedef struct _oe_verify_cert_error
  *
  * @return OE_OK load was successful
  */
-oe_result_t oe_cert_read_pem(const void* pemData, size_t pemSize, oe_cert_t* cert);
+oe_result_t oe_cert_read_pem(
+    const void* pemData,
+    size_t pemSize,
+    oe_cert_t* cert);
 
 /**
  * Read a certificate chain from PEM format.
@@ -167,7 +170,9 @@ oe_result_t oe_cert_get_rsa_public_key(
  * @return OE_WRONG_TYPE the certificate does not contain an EC public key
  * @return OE_FAILURE general failure
  */
-oe_result_t oe_cert_get_ec_public_key(const oe_cert_t* cert, oe_ec_public_key_t* publicKey);
+oe_result_t oe_cert_get_ec_public_key(
+    const oe_cert_t* cert,
+    oe_ec_public_key_t* publicKey);
 
 /**
  * Get the length of a certificate chain.
@@ -182,7 +187,9 @@ oe_result_t oe_cert_get_ec_public_key(const oe_cert_t* cert, oe_ec_public_key_t*
  * @return OE_INVALID_PARAMETER a parameter is invalid
  * @return OE_FAILURE general failure
  */
-oe_result_t oe_cert_chain_get_length(const oe_cert_chain_t* chain, size_t* length);
+oe_result_t oe_cert_chain_get_length(
+    const oe_cert_chain_t* chain,
+    size_t* length);
 
 /**
  * Fetch the certificate with the given index from a certificate chain.
@@ -226,7 +233,9 @@ oe_result_t oe_cert_chain_get_cert(
  * @return OE_NOT_FOUND no self-signed certificate was found
  * @return OE_FAILURE general failure
  */
-oe_result_t oe_cert_chain_get_root_cert(const oe_cert_chain_t* chain, oe_cert_t* cert);
+oe_result_t oe_cert_chain_get_root_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert);
 
 /**
  * Fetch the leaf certificate from a certificate chain.
@@ -242,7 +251,9 @@ oe_result_t oe_cert_chain_get_root_cert(const oe_cert_chain_t* chain, oe_cert_t*
  * @return OE_INVALID_PARAMETER a parameter is invalid
  * @return OE_FAILURE general failure
  */
-oe_result_t oe_cert_chain_get_leaf_cert(const oe_cert_chain_t* chain, oe_cert_t* cert);
+oe_result_t oe_cert_chain_get_leaf_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert);
 
 OE_EXTERNC_END
 

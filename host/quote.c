@@ -70,10 +70,12 @@ static oe_result_t _sgx_get_quote_size_from_aesm(
     }
 
     /* Calculate variable size of EPID_Signature with N entries */
-    signatureSize = sizeof(sgx_epid_signature_t) + (n * sizeof(sgx_epid_nr_proof_t));
+    signatureSize =
+        sizeof(sgx_epid_signature_t) + (n * sizeof(sgx_epid_nr_proof_t));
 
-    quoteSize64 = sizeof(sgx_quote_t) + sizeof(sgx_wrap_key_t) + SGX_QUOTE_IV_SIZE +
-                  sizeof(uint32_t) + signatureSize + SGX_MAC_SIZE;
+    quoteSize64 = sizeof(sgx_quote_t) + sizeof(sgx_wrap_key_t) +
+                  SGX_QUOTE_IV_SIZE + sizeof(uint32_t) + signatureSize +
+                  SGX_MAC_SIZE;
 
     if (quoteSize64 > (uint64_t)UINT_MAX)
         goto done;
@@ -158,7 +160,8 @@ oe_result_t sgx_get_qetarget_info(sgx_target_info_t* targetInfo)
 
     oe_initialize_quote_provider();
     {
-        OE_STATIC_ASSERT(sizeof(sgx_target_info_t) == sizeof(sgx_target_info_t));
+        OE_STATIC_ASSERT(
+            sizeof(sgx_target_info_t) == sizeof(sgx_target_info_t));
         quote3_error_t err =
             sgx_qe_get_target_info((sgx_target_info_t*)targetInfo);
         result = (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;

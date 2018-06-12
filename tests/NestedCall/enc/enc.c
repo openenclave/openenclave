@@ -47,7 +47,8 @@ static oe_once_t _enclave_exception_once;
 
 static void _InitializeExceptionImp(void)
 {
-    if (oe_add_vectored_exception_handler(false, TestDivideByZeroHandler) != OE_OK)
+    if (oe_add_vectored_exception_handler(false, TestDivideByZeroHandler) !=
+        OE_OK)
     {
         oe_abort();
     }
@@ -118,7 +119,8 @@ OE_ECALL void EnclaveNestCalls(void* args_)
         return;
     }
 
-    oe_host_printf("Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
+    oe_host_printf(
+        "Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
 
     args->ret = 0;
     return;

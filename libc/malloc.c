@@ -64,7 +64,8 @@ static int __sched_yield(void)
 
 static oe_allocation_failure_callback_t _failureCallback;
 
-void oe_set_allocation_failure_callback(oe_allocation_failure_callback_t function)
+void oe_set_allocation_failure_callback(
+    oe_allocation_failure_callback_t function)
 {
     _failureCallback = function;
 }

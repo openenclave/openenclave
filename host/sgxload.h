@@ -12,12 +12,14 @@ OE_EXTERNC_BEGIN
 
 #define OE_SGX_NO_DEVICE_HANDLE -1
 
-OE_INLINE bool oe_sgx_is_simulation_load_context(const oe_sgx_load_context_t* context)
+OE_INLINE bool oe_sgx_is_simulation_load_context(
+    const oe_sgx_load_context_t* context)
 {
     return (context && (context->attributes & OE_ENCLAVE_FLAG_SIMULATE));
 }
 
-OE_INLINE bool oe_sgx_is_debug_load_context(const oe_sgx_load_context_t* context)
+OE_INLINE bool oe_sgx_is_debug_load_context(
+    const oe_sgx_load_context_t* context)
 {
     return (context && (context->attributes & OE_ENCLAVE_FLAG_DEBUG));
 }

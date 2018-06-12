@@ -148,9 +148,13 @@ oe_result_t oe_set_arg_by_name(
 
 size_t oe_struct_find_field(const oe_struct_ti_t* structTI, const char* name);
 
-oe_result_t oe_check_pre_constraints(const oe_struct_ti_t* sti, const void* sin);
+oe_result_t oe_check_pre_constraints(
+    const oe_struct_ti_t* sti,
+    const void* sin);
 
-oe_result_t oe_check_post_constraints(const oe_struct_ti_t* sti, const void* sin);
+oe_result_t oe_check_post_constraints(
+    const oe_struct_ti_t* sti,
+    const void* sin);
 
 oe_result_t oe_test_struct_padding(const oe_struct_ti_t* sti, const void* sin);
 

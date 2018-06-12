@@ -481,7 +481,8 @@ TEST_FCN void TestParseReportNegative(void* args_)
 
     // 2. Report size less than size of sgx_report_t.
     OE_TEST(
-        oe_parse_report(reportBuffer, sizeof(sgx_report_t) - 1, &parsedReport) ==
+        oe_parse_report(
+            reportBuffer, sizeof(sgx_report_t) - 1, &parsedReport) ==
         OE_INVALID_PARAMETER);
 
     // 3. Report size greater than size of sgx_report_t but less than

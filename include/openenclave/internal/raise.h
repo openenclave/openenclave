@@ -78,13 +78,13 @@ OE_EXTERNC_BEGIN
 // This macro checks whether the expression argument evaluates to OE_OK. If not
 // it sets the 'result' to the evaluation of the expression and jumps to the
 // 'done' label.
-#define OE_CHECK(EXPRESSION)               \
-    do                                     \
-    {                                      \
+#define OE_CHECK(EXPRESSION)                 \
+    do                                       \
+    {                                        \
         oe_result_t _result_ = (EXPRESSION); \
-                                           \
-        if (_result_ != OE_OK)             \
-            OE_RAISE(_result_);            \
+                                             \
+        if (_result_ != OE_OK)               \
+            OE_RAISE(_result_);              \
     } while (0)
 
 // This macro is used to trace the OE_RAISE macro. It is empty by default but

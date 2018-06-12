@@ -18,7 +18,9 @@
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
-static oe_result_t _oe_get_report_key(const sgx_report_t* sgxReport, sgx_key_t* sgxKey)
+static oe_result_t _oe_get_report_key(
+    const sgx_report_t* sgxReport,
+    sgx_key_t* sgxKey)
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_key_request_t sgxKeyRequest = {0};
@@ -36,7 +38,8 @@ done:
     return result;
 }
 
-// oe_verify_report needs crypto library's cmac computation. oecore does not have
+// oe_verify_report needs crypto library's cmac computation. oecore does not
+// have
 // crypto functionality. Hence oe_verify report is implemented here instead of
 // in oecore. Also see ECall_HandleVerifyReport below.
 oe_result_t oe_verify_report(

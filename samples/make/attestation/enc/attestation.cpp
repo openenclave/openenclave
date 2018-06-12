@@ -26,7 +26,8 @@ bool GenerateQuote(
     // To generate a quote that just needs to be attested by another enclave
     // running on the same platform, pass 0 instead. This uses the EREPORT
     // instruction to generate this enclave's local report.
-    // Both kinds of reports can be verified using the oe_verify_report function.
+    // Both kinds of reports can be verified using the oe_verify_report
+    // function.
     oe_result_t result = oe_get_report(
         OE_REPORT_OPTIONS_REMOTE_ATTESTATION,
         sha256, // Store sha256 in reportData field

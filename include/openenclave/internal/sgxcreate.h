@@ -67,7 +67,8 @@ oe_result_t oe_sgx_build_enclave(
 /**
  * Find the oe_sgx_enclave_properties_t struct within the given section
  *
- * This function attempts to find the **oe_sgx_enclave_properties_t** struct within
+ * This function attempts to find the **oe_sgx_enclave_properties_t** struct
+ * within
  * the specified section of the ELF binary.
  *
  * @param elf ELF instance

@@ -12,7 +12,8 @@ typedef struct _oe_sha256_context_impl
     mbedtls_sha256_context ctx;
 } oe_sha256_context_impl_t;
 
-OE_STATIC_ASSERT(sizeof(oe_sha256_context_impl_t) <= sizeof(oe_sha256_context_t));
+OE_STATIC_ASSERT(
+    sizeof(oe_sha256_context_impl_t) <= sizeof(oe_sha256_context_t));
 
 oe_result_t oe_sha256_init(oe_sha256_context_t* context)
 {

@@ -41,7 +41,8 @@ static oe_atexit_entry_t* _NewAtExitEntry(void (*func)(void*), void* arg)
 {
     oe_atexit_entry_t* entry;
 
-    if ((entry = (oe_atexit_entry_t*)oe_sbrk(sizeof(oe_atexit_entry_t))) == (void*)-1)
+    if ((entry = (oe_atexit_entry_t*)oe_sbrk(sizeof(oe_atexit_entry_t))) ==
+        (void*)-1)
         return NULL;
 
     entry->func = func;

@@ -48,7 +48,8 @@ static int _ThreadWakeWait(oe_thread_data_t* waiter, oe_thread_data_t* self)
     int ret = -1;
     oe_thread_wake_wait_args_t* args = NULL;
 
-    if (!(args = oe_host_alloc_for_call_host(sizeof(oe_thread_wake_wait_args_t))))
+    if (!(args =
+              oe_host_alloc_for_call_host(sizeof(oe_thread_wake_wait_args_t))))
         goto done;
 
     args->waiter_tcs = TD_ToTCS((TD*)waiter);
@@ -817,7 +818,9 @@ static void** _GetTSDPage(void)
     return (void**)((unsigned char*)td + OE_PAGE_SIZE);
 }
 
-oe_result_t oe_thread_key_create(oe_thread_key_t* key, void (*destructor)(void* value))
+oe_result_t oe_thread_key_create(
+    oe_thread_key_t* key,
+    void (*destructor)(void* value))
 {
     if (!key)
         return OE_INVALID_PARAMETER;

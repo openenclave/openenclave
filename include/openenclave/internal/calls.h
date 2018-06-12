@@ -117,7 +117,8 @@ typedef enum _oe_func {
 **==============================================================================
 */
 
-OE_INLINE uint64_t oe_make_call_arg1(oe_code_t code, oe_func_t func, uint16_t flags)
+OE_INLINE uint64_t
+oe_make_call_arg1(oe_code_t code, oe_func_t func, uint16_t flags)
 {
     /* [ FLAGS:16, CODE:16, FUNC:32 ] */
     return ((uint64_t)code << 48) | ((uint64_t)func << 16) | ((uint64_t)flags);
@@ -269,7 +270,7 @@ typedef struct _oe_get_report_args
     uint32_t options; /* in */
 
     uint8_t optParams[sizeof(sgx_target_info_t)]; /* in */
-    uint32_t optParamsSize;                    /* in */
+    uint32_t optParamsSize;                       /* in */
 
     uint8_t* reportBuffer;     /* ptr to output buffer */
     uint32_t reportBufferSize; /* in-out */

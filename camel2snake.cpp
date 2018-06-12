@@ -1,18 +1,18 @@
 // Licensed under the MIT License.
 
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <cassert>
 #include <cctype>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
-#include <cstdarg>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 using namespace std;
 
@@ -31,8 +31,7 @@ struct Conf
 
 const char* arg0;
 
-__attribute__((format(printf, 1, 2)))
-void err(const char* format, ...)
+__attribute__((format(printf, 1, 2))) void err(const char* format, ...)
 {
     fprintf(stderr, "%s: ", arg0);
 
@@ -259,7 +258,10 @@ int load_config(const char* path, Conf& conf)
         }
         else
         {
-            err("%s: %s:%zu: unknown keyword: %s", arg0, path, line,
+            err("%s: %s:%zu: unknown keyword: %s",
+                arg0,
+                path,
+                line,
                 keyword.c_str());
         }
     }
@@ -402,7 +404,7 @@ int find_typedefs(const char* path, Set& typedefs)
     }
 
     // Parse the file:
-    for (const char* p = &buffer[0]; *p; )
+    for (const char* p = &buffer[0]; *p;)
     {
         const char* start = p;
         p = _parse_c_ident(start);
@@ -435,7 +437,7 @@ int find_typedefs(const char* path, Set& typedefs)
 
                             if (name[0] == '_')
                                 name = name.substr(1);
-                            
+
                             typedefs.insert(name);
                         }
                     }
@@ -473,11 +475,7 @@ void _apply_substitutions(string& snake, const Map& sub)
     }
 }
 
-int camel2snake(
-    const char* path, 
-    const Conf& conf, 
-    Set& typedefs,
-    Map& log)
+int camel2snake(const char* path, const Conf& conf, Set& typedefs, Map& log)
 {
     int ret = -1;
     FILE* os = NULL;
@@ -492,7 +490,7 @@ int camel2snake(
     }
 
     // Parse the file:
-    for (const char* p = &buffer[0]; *p; )
+    for (const char* p = &buffer[0]; *p;)
     {
         const char* start = p;
         p = _parse_c_ident(start);
@@ -555,7 +553,7 @@ int camel2snake(
             {
                 if (typedefs.find(ident) != typedefs.end())
                 {
-                    if (snake.substr(snake.size()-2) != "_t")
+                    if (snake.substr(snake.size() - 2) != "_t")
                         snake += "_t";
                 }
 
@@ -680,8 +678,8 @@ int main(int argc, const char* argv[])
             {
                 const string& camel = (*p).first;
                 const string& snake = (*p).second;
-                fprintf(os, "%-*s => %s\n", width, camel.c_str(), 
-                    snake.c_str());
+                fprintf(
+                    os, "%-*s => %s\n", width, camel.c_str(), snake.c_str());
                 p++;
             }
         }

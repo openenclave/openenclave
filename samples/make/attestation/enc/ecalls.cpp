@@ -77,7 +77,8 @@ OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
 
     QuotedPublicKey quotedPublicKey = *encArg.quotedPublicKey;
     if (!quotedPublicKey.quote ||
-        !oe_is_outside_enclave(quotedPublicKey.quote, quotedPublicKey.quoteSize))
+        !oe_is_outside_enclave(
+            quotedPublicKey.quote, quotedPublicKey.quoteSize))
         return;
 
     uint8_t* quote = new uint8_t[quotedPublicKey.quoteSize];

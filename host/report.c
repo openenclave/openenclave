@@ -140,7 +140,8 @@ static oe_result_t _oe_get_remote_report(
      * Check that the entire report body in the returned quote matches the local
      * report.
      */
-    if (oe_parse_report(reportBuffer, *reportBufferSize, &parsedReport) != OE_OK)
+    if (oe_parse_report(reportBuffer, *reportBufferSize, &parsedReport) !=
+        OE_OK)
         OE_RAISE(OE_UNEXPECTED);
 
     if (memcmp(

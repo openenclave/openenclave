@@ -231,7 +231,8 @@ int _EmulateIllegalInstruction(sgx_ssa_gpr_t* ssa_gpr)
 ** _oe_exception_dispatcher(oe_context_t *oe_context)
 **
 **  The real (second pass) exception dispatcher. It is called by
-**  oe_exception_dispatcher. This function composes the valid oe_exception_record_t
+**  oe_exception_dispatcher. This function composes the valid
+*oe_exception_record_t
 **  and calls the registered exception handlers one by one. If a handler returns
 **  OE_EXCEPTION_CONTINUE_EXECUTION, this function will continue execution on
 **  the context. Otherwise the enclave will be aborted due to an unhandled
@@ -386,7 +387,7 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 /*
 **==============================================================================
 **
-** void _oe_cleanup_x_states(void)
+** void _oe_cleanup_xstates(void)
 **
 **  Cleanup all XSTATE registers that include both legacy registers and extended
 **  registers.
@@ -394,7 +395,7 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 **==============================================================================
 */
 
-void _oe_cleanup_x_states(void)
+void _oe_cleanup_xstates(void)
 {
     // Temporary workaround for #144 xrstor64 fault with optimized builds as
     // reserved guard pages

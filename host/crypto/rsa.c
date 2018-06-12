@@ -264,7 +264,8 @@ done:
 
 void oe_rsa_public_key_init(oe_rsa_public_key_t* publicKey, EVP_PKEY* pkey)
 {
-    return oe_public_key_init((oe_public_key_t*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_init(
+        (oe_public_key_t*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_read_pem(
@@ -312,12 +313,16 @@ oe_result_t oe_rsa_public_key_write_pem(
     size_t* pemSize)
 {
     return oe_public_key_write_pem(
-        (const oe_public_key_t*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
+        (const oe_public_key_t*)privateKey,
+        pemData,
+        pemSize,
+        _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* privateKey)
 {
-    return oe_private_key_free((oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
+    return oe_private_key_free(
+        (oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* publicKey)
@@ -368,7 +373,10 @@ oe_result_t oe_rsa_generate_key_pair(
     oe_rsa_public_key_t* publicKey)
 {
     return _GenerateKeyPair(
-        bits, exponent, (oe_private_key_t*)privateKey, (oe_public_key_t*)publicKey);
+        bits,
+        exponent,
+        (oe_private_key_t*)privateKey,
+        (oe_public_key_t*)publicKey);
 }
 
 oe_result_t oe_rsa_public_key_get_modulus(
@@ -376,7 +384,8 @@ oe_result_t oe_rsa_public_key_get_modulus(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _PublicKeyGetModulus((oe_public_key_t*)publicKey, buffer, bufferSize);
+    return _PublicKeyGetModulus(
+        (oe_public_key_t*)publicKey, buffer, bufferSize);
 }
 
 oe_result_t oe_rsa_public_key_get_exponent(
@@ -384,7 +393,8 @@ oe_result_t oe_rsa_public_key_get_exponent(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _PublicKeyGetExponent((oe_public_key_t*)publicKey, buffer, bufferSize);
+    return _PublicKeyGetExponent(
+        (oe_public_key_t*)publicKey, buffer, bufferSize);
 }
 
 oe_result_t oe_rsa_public_key_equal(

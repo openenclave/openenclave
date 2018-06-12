@@ -19,7 +19,8 @@ OE_EXTERNC_BEGIN
 * @param sgxKeyRequest The parameter points to the KEYREQUEST structure that
 * describes which key and how it should be derived. This parameter must point
 * to a readable memory block inside enclave.
-* @param sgxKey The parameter points to sgx_key_t structure where the key will be
+* @param sgxKey The parameter points to sgx_key_t structure where the key will
+* be
 * returned. This parameter must point to a writable memory block inside
 * enclave. It will not be changed if this function fails.
 *
@@ -32,7 +33,9 @@ OE_EXTERNC_BEGIN
 * @retval OE_UNEXPECTED An unexpected error occurred.
 *
 */
-oe_result_t oe_get_key(const sgx_key_request_t* sgxKeyRequest, sgx_key_t* sgxKey);
+oe_result_t oe_get_key(
+    const sgx_key_request_t* sgxKeyRequest,
+    sgx_key_t* sgxKey);
 
 OE_EXTERNC_END
 

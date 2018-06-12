@@ -921,7 +921,8 @@ static oe_result_t _FindEnclavePropertiesHeader(
     /* While there are more enclave property structures */
     while (bytesRemaining >= structSize)
     {
-        oe_enclave_properties_header_t* h = (oe_enclave_properties_header_t*)ptr;
+        oe_enclave_properties_header_t* h =
+            (oe_enclave_properties_header_t*)ptr;
 
         if (h->enclaveType == enclaveType)
         {
@@ -1076,7 +1077,8 @@ oe_result_t oe_sgx_validate_enclave_properties(
         goto done;
     }
 
-    if (!oe_sgx_is_valid_num_heap_pages(properties->header.sizeSettings.numHeapPages))
+    if (!oe_sgx_is_valid_num_heap_pages(
+            properties->header.sizeSettings.numHeapPages))
     {
         if (fieldName)
             *fieldName = "header.sizeSettings.numHeapPages";
@@ -1276,7 +1278,8 @@ oe_result_t oe_sgx_build_enclave(
 
     /* Ask the platform to initialize the enclave and finalize the hash */
     OE_CHECK(
-        oe_sgx_initialize_enclave(context, enclaveAddr, &props, &enclave->hash));
+        oe_sgx_initialize_enclave(
+            context, enclaveAddr, &props, &enclave->hash));
 
     /* Save the offset of the .text section */
     OE_CHECK(_SaveTextAddress(enclave, &elf));
@@ -1412,7 +1415,8 @@ oe_result_t oe_create_enclave(
 
     /* Initialize the context parameter and any driver handles */
     OE_CHECK(
-        oe_sgx_initialize_load_context(&context, OE_SGX_LOAD_TYPE_CREATE, flags));
+        oe_sgx_initialize_load_context(
+            &context, OE_SGX_LOAD_TYPE_CREATE, flags));
 
     /* Build the enclave */
     OE_CHECK(oe_sgx_build_enclave(&context, enclavePath, NULL, enclave));
