@@ -1,4 +1,1 @@
-_oe_basic_x_state             => _oe_basic_xstate
-_oe_cleanup_x_states          => _oe_cleanup_xstates
-oe_get_enclave_thread_x_state => oe_get_enclave_thread_xstate
-oe_set_enclave_thread_x_state => oe_set_enclave_thread_xstate
+__sgx_dump_einit_token => __sgx_dump_einittoken

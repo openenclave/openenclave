@@ -6,7 +6,7 @@
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
 
-void __sgx_dump_einit_token(const sgx_einittoken_t* p)
+void __sgx_dump_einittoken(const sgx_einittoken_t* p)
 {
     printf("=== sgx_einittoken_t:\n");
     printf("valid=%u\n", p->valid);

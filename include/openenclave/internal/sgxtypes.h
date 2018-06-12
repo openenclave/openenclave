@@ -408,7 +408,7 @@ OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(sgx_einittoken_t), 304);
 
-void __sgx_dump_einit_token(const sgx_einittoken_t* p);
+void __sgx_dump_einittoken(const sgx_einittoken_t* p);
 
 /*
 **==============================================================================
