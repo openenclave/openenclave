@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/cpuid.h>
 #include "../args.h"
 

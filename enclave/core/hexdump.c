@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/print.h>
 
 /* Convert a nibble to an ASCII character: Example 0xF => 'F' */
 OE_INLINE char _NibbleToHexChar(uint8_t x)

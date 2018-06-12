@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
+#include <openenclave/internal/print.h>
 #include "../../ecall_ocall/crc32.h"
 #include "../args.h"
 

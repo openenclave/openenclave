@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
+#include <openenclave/internal/print.h>
 #include "../args.h"
 
 bool TestCppException();

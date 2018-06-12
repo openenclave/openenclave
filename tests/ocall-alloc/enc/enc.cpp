@@ -12,6 +12,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/hostalloc.h>
+#include <openenclave/internal/print.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>

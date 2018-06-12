@@ -4,6 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 #include "../args.h"
 
 // This function will generate the divide by zero function.

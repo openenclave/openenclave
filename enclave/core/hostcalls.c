@@ -5,6 +5,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/hostalloc.h>
 #include "td.h"
 
 void* oe_host_malloc(size_t size)
