@@ -423,6 +423,8 @@ Debug=1
 NumHeapPages=1024
 NumStackPages=1024
 NumTCS=2
+ProductID=1
+SecurityVersion=1
 ```
 
 The **private.pem** argument is a private RSA key used to sign the enclave,
