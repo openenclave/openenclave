@@ -12,7 +12,13 @@ define NEWLINE
 
 endef
 
-DIRS = attestation sort
+DIRS = sort
+
+# Attestation sample is run only on libsgx platforms.
+# Libsgx platforms must have azure quote provider.
+ifneq (,$(wildcard /usr/lib/libngsa_quoteprov.so))
+    DIRS += attestation
+endif
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )
