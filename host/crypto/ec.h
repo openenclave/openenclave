@@ -8,6 +8,6 @@
 #include <openssl/evp.h>
 
 /* Caller is responsible for validating parameters */
-void oe_ec_public_key_init(oe_ec_public_key_t* publicKey, EVP_PKEY* pkey);
+void OE_ECPublicKeyInit(OE_ECPublicKey* publicKey, EVP_PKEY* pkey);
 
 #endif /* _OE_HOST_CRYPTO_EC_H */

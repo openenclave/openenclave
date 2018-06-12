@@ -7,8 +7,8 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #ifdef OE_BUILD_ENCLAVE
-#define OE_PRINT oe_host_fprintf
-#define OE_ABORT oe_abort
+#define OE_PRINT OE_HostFprintf
+#define OE_ABORT OE_Abort
 #define STDERR 1
 #else
 #include <stdio.h>
@@ -37,10 +37,10 @@ OE_EXTERNC_BEGIN
     } while (0)
 
 /*
- * Return flags to pass to oe_create_enclave() based on the OE_SIMULATION
+ * Return flags to pass to OE_CreateEnclave() based on the OE_SIMULATION
  * environment variable.
  */
-uint32_t oe_get_create_flags(void);
+uint32_t OE_GetCreateFlags(void);
 
 OE_EXTERNC_END
 

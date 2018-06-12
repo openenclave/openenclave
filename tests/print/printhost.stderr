@@ -1,3 +1,3 @@
 fwrite(stderr)
-__oe_host_print(stderr)
-__oe_host_print(stderr)
+__OE_HostPrint(stderr)
+__OE_HostPrint(stderr)

@@ -147,16 +147,16 @@ static void _TestSignAndVerify()
 
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
-    oe_result_t r;
+    OE_Result r;
 
     {
-        oe_ec_private_key_t key = {0};
+        OE_ECPrivateKey key = {0};
 
-        r = oe_ec_private_key_read_pem(
+        r = OE_ECPrivateKeyReadPEM(
             (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY), &key);
         OE_TEST(r == OE_OK);
 
-        r = oe_ec_private_key_sign(
+        r = OE_ECPrivateKeySign(
             &key,
             OE_HASH_TYPE_SHA256,
             &ALPHABET_HASH,
@@ -167,7 +167,7 @@ static void _TestSignAndVerify()
 
         OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-        r = oe_ec_private_key_sign(
+        r = OE_ECPrivateKeySign(
             &key,
             OE_HASH_TYPE_SHA256,
             &ALPHABET_HASH,
@@ -179,17 +179,17 @@ static void _TestSignAndVerify()
         OE_TEST(signature != NULL);
         OE_TEST(signatureSize != 0);
 
-        oe_ec_private_key_free(&key);
+        OE_ECPrivateKeyFree(&key);
     }
 
     {
-        oe_ec_public_key_t key = {0};
+        OE_ECPublicKey key = {0};
 
-        r = oe_ec_public_key_read_pem(
+        r = OE_ECPublicKeyReadPEM(
             (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
         OE_TEST(r == OE_OK);
 
-        r = oe_ec_public_key_verify(
+        r = OE_ECPublicKeyVerify(
             &key,
             OE_HASH_TYPE_SHA256,
             &ALPHABET_HASH,
@@ -198,7 +198,7 @@ static void _TestSignAndVerify()
             signatureSize);
         OE_TEST(r == OE_OK);
 
-        r = oe_ec_public_key_verify(
+        r = OE_ECPublicKeyVerify(
             &key,
             OE_HASH_TYPE_SHA256,
             &ALPHABET_HASH,
@@ -207,7 +207,7 @@ static void _TestSignAndVerify()
             _SIGNATURE_SIZE);
         OE_TEST(r == OE_OK);
 
-        oe_ec_public_key_free(&key);
+        OE_ECPublicKeyFree(&key);
     }
 
     /* Convert signature to raw form and then back to ASN.1 */
@@ -217,7 +217,7 @@ static void _TestSignAndVerify()
         uint8_t sData[1024];
         size_t sSize = sizeof(sData);
 
-        r = oe_ecdsa_signature_read_der(
+        r = OE_ECDSASignatureReadDER(
             signature, signatureSize, rData, &rSize, sData, &sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(rSize == 32);
@@ -225,7 +225,7 @@ static void _TestSignAndVerify()
 
         uint8_t data[signatureSize];
         size_t size = sizeof(data);
-        r = oe_ecdsa_signature_write_der(data, &size, rData, rSize, sData, sSize);
+        r = OE_ECDSASignatureWriteDER(data, &size, rData, rSize, sData, sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(signatureSize == size);
         OE_TEST(memcmp(signature, data, signatureSize) == 0);
@@ -259,7 +259,7 @@ static void _TestSignAndVerify()
         uint8_t sData[1024];
         size_t sSize = sizeof(sData);
 
-        r = oe_ecdsa_signature_read_der(
+        r = OE_ECDSASignatureReadDER(
             SIG, sizeof(SIG), rData, &rSize, sData, &sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(rSize == sizeof(R));
@@ -269,7 +269,7 @@ static void _TestSignAndVerify()
 
         uint8_t data[sizeof(SIG)];
         size_t size = sizeof(data);
-        r = oe_ecdsa_signature_write_der(data, &size, rData, rSize, sData, sSize);
+        r = OE_ECDSASignatureWriteDER(data, &size, rData, rSize, sData, sSize);
         OE_TEST(r == OE_OK);
         OE_TEST(sizeof(SIG) == size);
         OE_TEST(memcmp(SIG, data, sizeof(SIG)) == 0);
@@ -284,16 +284,16 @@ static void _TestGenerate()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    oe_result_t r;
-    oe_ec_private_key_t privateKey = {0};
-    oe_ec_public_key_t publicKey = {0};
+    OE_Result r;
+    OE_ECPrivateKey privateKey = {0};
+    OE_ECPublicKey publicKey = {0};
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = oe_ec_generate_key_pair(OE_EC_TYPE_SECP256R1, &privateKey, &publicKey);
+    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP256R1, &privateKey, &publicKey);
     OE_TEST(r == OE_OK);
 
-    r = oe_ec_private_key_sign(
+    r = OE_ECPrivateKeySign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &ALPHABET_HASH,
@@ -304,7 +304,7 @@ static void _TestGenerate()
 
     OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-    r = oe_ec_private_key_sign(
+    r = OE_ECPrivateKeySign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &ALPHABET_HASH,
@@ -313,7 +313,7 @@ static void _TestGenerate()
         &signatureSize);
     OE_TEST(r == OE_OK);
 
-    r = oe_ec_public_key_verify(
+    r = OE_ECPublicKeyVerify(
         &publicKey,
         OE_HASH_TYPE_SHA256,
         &ALPHABET_HASH,
@@ -323,8 +323,8 @@ static void _TestGenerate()
     OE_TEST(r == OE_OK);
 
     free(signature);
-    oe_ec_private_key_free(&privateKey);
-    oe_ec_public_key_free(&publicKey);
+    OE_ECPrivateKeyFree(&privateKey);
+    OE_ECPublicKeyFree(&publicKey);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
@@ -333,25 +333,25 @@ static void _TestWritePrivate()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    oe_result_t r;
-    oe_ec_public_key_t publicKey = {0};
-    oe_ec_private_key_t key1 = {0};
-    oe_ec_private_key_t key2 = {0};
+    OE_Result r;
+    OE_ECPublicKey publicKey = {0};
+    OE_ECPrivateKey key1 = {0};
+    OE_ECPrivateKey key2 = {0};
     uint8_t* pemData1 = NULL;
     size_t pemSize1 = 0;
     uint8_t* pemData2 = NULL;
     size_t pemSize2 = 0;
 
-    r = oe_ec_generate_key_pair(OE_EC_TYPE_SECP256R1, &key1, &publicKey);
+    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP256R1, &key1, &publicKey);
     OE_TEST(r == OE_OK);
 
     {
-        r = oe_ec_private_key_write_pem(&key1, pemData1, &pemSize1);
+        r = OE_ECPrivateKeyWritePEM(&key1, pemData1, &pemSize1);
         OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
         OE_TEST(pemData1 = (uint8_t*)malloc(pemSize1));
 
-        r = oe_ec_private_key_write_pem(&key1, pemData1, &pemSize1);
+        r = OE_ECPrivateKeyWritePEM(&key1, pemData1, &pemSize1);
         OE_TEST(r == OE_OK);
     }
 
@@ -359,16 +359,16 @@ static void _TestWritePrivate()
     OE_TEST(pemData1[pemSize1 - 1] == '\0');
     OE_TEST(strlen((char*)pemData1) == pemSize1 - 1);
 
-    r = oe_ec_private_key_read_pem(pemData1, pemSize1, &key2);
+    r = OE_ECPrivateKeyReadPEM(pemData1, pemSize1, &key2);
     OE_TEST(r == OE_OK);
 
     {
-        r = oe_ec_private_key_write_pem(&key2, pemData2, &pemSize2);
+        r = OE_ECPrivateKeyWritePEM(&key2, pemData2, &pemSize2);
         OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
         OE_TEST(pemData2 = (uint8_t*)malloc(pemSize2));
 
-        r = oe_ec_private_key_write_pem(&key2, pemData2, &pemSize2);
+        r = OE_ECPrivateKeyWritePEM(&key2, pemData2, &pemSize2);
         OE_TEST(r == OE_OK);
     }
 
@@ -377,9 +377,9 @@ static void _TestWritePrivate()
 
     free(pemData1);
     free(pemData2);
-    oe_ec_public_key_free(&publicKey);
-    oe_ec_private_key_free(&key1);
-    oe_ec_private_key_free(&key2);
+    OE_ECPublicKeyFree(&publicKey);
+    OE_ECPrivateKeyFree(&key1);
+    OE_ECPrivateKeyFree(&key2);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
@@ -388,22 +388,22 @@ static void _TestWritePublic()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    oe_result_t r;
-    oe_ec_public_key_t key = {0};
+    OE_Result r;
+    OE_ECPublicKey key = {0};
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = oe_ec_public_key_read_pem(
+    r = OE_ECPublicKeyReadPEM(
         (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
     OE_TEST(r == OE_OK);
 
     {
-        r = oe_ec_public_key_write_pem(&key, pemData, &pemSize);
+        r = OE_ECPublicKeyWritePEM(&key, pemData, &pemSize);
         OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
         OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
-        r = oe_ec_public_key_write_pem(&key, pemData, &pemSize);
+        r = OE_ECPublicKeyWritePEM(&key, pemData, &pemSize);
         OE_TEST(r == OE_OK);
     }
 
@@ -411,7 +411,7 @@ static void _TestWritePublic()
     OE_TEST(memcmp(_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    oe_ec_public_key_free(&key);
+    OE_ECPublicKeyFree(&key);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
@@ -420,20 +420,20 @@ static void _TestCertMethods()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    oe_result_t r;
+    OE_Result r;
 
-    /* Test oe_cert_get_ec_public_key() */
+    /* Test OE_CertGetECPublicKey() */
     {
-        oe_cert_t cert = {0};
-        oe_ec_public_key_t key = {0};
+        OE_Cert cert = {0};
+        OE_ECPublicKey key = {0};
 
-        r = oe_cert_read_pem(_CERT, sizeof(_CERT), &cert);
+        r = OE_CertReadPEM(_CERT, sizeof(_CERT), &cert);
         OE_TEST(r == OE_OK);
 
-        r = oe_cert_get_ec_public_key(&cert, &key);
+        r = OE_CertGetECPublicKey(&cert, &key);
         OE_TEST(r == OE_OK);
 
-        /* Test oe_ec_public_key_to_coordinates() */
+        /* Test OE_ECPublicKeyToCoordinates() */
         {
             uint8_t* xData = NULL;
             size_t xSize = 0;
@@ -441,7 +441,7 @@ static void _TestCertMethods()
             size_t ySize = 0;
 
             /* Determine the required size of the buffer */
-            r = oe_ec_public_key_to_coordinates(&key, NULL, &xSize, NULL, &ySize);
+            r = OE_ECPublicKeyToCoordinates(&key, NULL, &xSize, NULL, &ySize);
             OE_TEST(r == OE_BUFFER_TOO_SMALL);
             OE_TEST(xSize == sizeof(_CERT_KEY_X));
             OE_TEST(ySize == sizeof(_CERT_KEY_Y));
@@ -449,7 +449,7 @@ static void _TestCertMethods()
             /* Fetch the key bytes */
             OE_TEST(xData = (uint8_t*)calloc(1, xSize));
             OE_TEST(yData = (uint8_t*)calloc(1, ySize));
-            r = oe_ec_public_key_to_coordinates(&key, xData, &xSize, yData, &ySize);
+            r = OE_ECPublicKeyToCoordinates(&key, xData, &xSize, yData, &ySize);
             OE_TEST(r == OE_OK);
 
             /* Does it match expected key? */
@@ -461,99 +461,99 @@ static void _TestCertMethods()
             free(yData);
         }
 
-        /* Test oe_ec_public_key_equal() */
+        /* Test OE_ECPublicKeyEqual() */
         {
             bool equal;
-            OE_TEST(oe_ec_public_key_equal(&key, &key, &equal) == OE_OK);
+            OE_TEST(OE_ECPublicKeyEqual(&key, &key, &equal) == OE_OK);
             OE_TEST(equal == true);
         }
 
-        oe_ec_public_key_free(&key);
-        oe_cert_free(&cert);
+        OE_ECPublicKeyFree(&key);
+        OE_CertFree(&cert);
     }
 
-    /* Test oe_cert_chain_get_cert() */
+    /* Test OE_CertChainGetCert() */
     {
-        oe_cert_chain_t chain;
+        OE_CertChain chain;
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
+        r = OE_CertChainReadPEM(_CHAIN, sizeof(_CHAIN), &chain);
         OE_TEST(r == OE_OK);
 
         /* Get the length of the chain */
         size_t length;
-        r = oe_cert_chain_get_length(&chain, &length);
+        r = OE_CertChainGetLength(&chain, &length);
         OE_TEST(r == OE_OK);
         OE_TEST(length == 3);
 
         /* Get each certificate in the chain */
         for (size_t i = 0; i < length; i++)
         {
-            oe_cert_t cert;
-            r = oe_cert_chain_get_cert(&chain, i, &cert);
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, i, &cert);
             OE_TEST(r == OE_OK);
-            oe_cert_free(&cert);
+            OE_CertFree(&cert);
         }
 
         /* Test out of bounds */
         {
-            oe_cert_t cert;
-            r = oe_cert_chain_get_cert(&chain, length + 1, &cert);
+            OE_Cert cert;
+            r = OE_CertChainGetCert(&chain, length + 1, &cert);
             OE_TEST(r == OE_OUT_OF_BOUNDS);
-            oe_cert_free(&cert);
+            OE_CertFree(&cert);
         }
 
-        oe_cert_chain_free(&chain);
+        OE_CertChainFree(&chain);
     }
 
-    /* Test oe_cert_chain_get_root_cert() and oe_cert_chain_get_leaf_cert() */
+    /* Test OE_CertChainGetRootCert() and OE_CertChainGetLeafCert() */
     {
-        oe_cert_chain_t chain;
-        oe_cert_t root;
-        oe_cert_t leaf;
+        OE_CertChain chain;
+        OE_Cert root;
+        OE_Cert leaf;
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
+        r = OE_CertChainReadPEM(_CHAIN, sizeof(_CHAIN), &chain);
         OE_TEST(r == OE_OK);
 
         /* Get the root certificate */
-        r = oe_cert_chain_get_root_cert(&chain, &root);
+        r = OE_CertChainGetRootCert(&chain, &root);
         OE_TEST(r == OE_OK);
 
         /* Get the leaf certificate */
-        r = oe_cert_chain_get_leaf_cert(&chain, &leaf);
+        r = OE_CertChainGetLeafCert(&chain, &leaf);
         OE_TEST(r == OE_OK);
 
         /* Check that the keys are identical for top and root certificate */
         {
-            oe_ec_public_key_t rootKey;
-            oe_ec_public_key_t certKey;
+            OE_ECPublicKey rootKey;
+            OE_ECPublicKey certKey;
 
-            OE_TEST(oe_cert_get_ec_public_key(&root, &rootKey) == OE_OK);
+            OE_TEST(OE_CertGetECPublicKey(&root, &rootKey) == OE_OK);
 
-            oe_ec_public_key_free(&rootKey);
-            oe_ec_public_key_free(&certKey);
+            OE_ECPublicKeyFree(&rootKey);
+            OE_ECPublicKeyFree(&certKey);
         }
 
         /* Check that the keys are not identical for leaf and root */
         {
-            oe_ec_public_key_t rootKey;
-            oe_ec_public_key_t leafKey;
+            OE_ECPublicKey rootKey;
+            OE_ECPublicKey leafKey;
             bool equal;
 
-            OE_TEST(oe_cert_get_ec_public_key(&root, &rootKey) == OE_OK);
-            OE_TEST(oe_cert_get_ec_public_key(&leaf, &leafKey) == OE_OK);
+            OE_TEST(OE_CertGetECPublicKey(&root, &rootKey) == OE_OK);
+            OE_TEST(OE_CertGetECPublicKey(&leaf, &leafKey) == OE_OK);
 
-            OE_TEST(oe_ec_public_key_equal(&rootKey, &leafKey, &equal) == OE_OK);
+            OE_TEST(OE_ECPublicKeyEqual(&rootKey, &leafKey, &equal) == OE_OK);
             OE_TEST(equal == false);
 
-            oe_ec_public_key_free(&rootKey);
-            oe_ec_public_key_free(&leafKey);
+            OE_ECPublicKeyFree(&rootKey);
+            OE_ECPublicKeyFree(&leafKey);
         }
 
-        oe_cert_free(&root);
-        oe_cert_free(&leaf);
-        oe_cert_chain_free(&chain);
+        OE_CertFree(&root);
+        OE_CertFree(&leaf);
+        OE_CertChainFree(&chain);
     }
 
     printf("=== passed %s()\n", __FUNCTION__);
@@ -563,14 +563,14 @@ static void _TestKeyFromBytes()
 {
     printf("=== begin %s()()\n", __FUNCTION__);
 
-    oe_result_t r;
-    oe_ec_type_t ecType = OE_EC_TYPE_SECP256R1;
+    OE_Result r;
+    OE_ECType ecType = OE_EC_TYPE_SECP256R1;
 
     /* Create a public EC key and get its bytes */
     {
-        oe_ec_private_key_t privateKey = {0};
-        oe_ec_public_key_t publicKey = {0};
-        r = oe_ec_generate_key_pair(ecType, &privateKey, &publicKey);
+        OE_ECPrivateKey privateKey = {0};
+        OE_ECPublicKey publicKey = {0};
+        r = OE_ECGenerateKeyPair(ecType, &privateKey, &publicKey);
         OE_TEST(r == OE_OK);
 
         uint8_t xData[1024];
@@ -578,23 +578,23 @@ static void _TestKeyFromBytes()
         uint8_t yData[1024];
         size_t ySize = sizeof(yData);
 
-        r = oe_ec_public_key_to_coordinates(
+        r = OE_ECPublicKeyToCoordinates(
             &publicKey, xData, &xSize, yData, &ySize);
         OE_TEST(r == OE_OK);
 
-        oe_ec_public_key_t key = {0};
-        r = oe_ec_public_key_from_coordinates(
+        OE_ECPublicKey key = {0};
+        r = OE_ECPublicKeyFromCoordinates(
             &key, ecType, xData, xSize, yData, ySize);
         OE_TEST(r == OE_OK);
 
-        oe_ec_private_key_free(&privateKey);
-        oe_ec_public_key_free(&publicKey);
-        oe_ec_public_key_free(&key);
+        OE_ECPrivateKeyFree(&privateKey);
+        OE_ECPublicKeyFree(&publicKey);
+        OE_ECPublicKeyFree(&key);
     }
 
     /* Test creating an EC key from bytes */
     {
-        oe_ec_public_key_t key = {0};
+        OE_ECPublicKey key = {0};
         const uint8_t xBytes[32] = {
             0xB5, 0x5D, 0x06, 0xD6, 0xE5, 0xA2, 0xC7, 0x2D, 0x5D, 0xA0, 0xAE,
             0xD5, 0x83, 0x61, 0x4C, 0x51, 0x60, 0xD6, 0xFE, 0x90, 0x8A, 0xC2,
@@ -606,7 +606,7 @@ static void _TestKeyFromBytes()
             0xC5, 0xED, 0xBB, 0xC2, 0xD6, 0x50, 0xE7, 0x7B, 0x38, 0xDA,
         };
 
-        r = oe_ec_public_key_from_coordinates(
+        r = OE_ECPublicKeyFromCoordinates(
             &key, ecType, xBytes, sizeof(xBytes), yBytes, sizeof(yBytes));
         OE_TEST(r == OE_OK);
 
@@ -614,26 +614,26 @@ static void _TestKeyFromBytes()
         size_t xSize = sizeof(xData);
         uint8_t yData[1024];
         size_t ySize = sizeof(yData);
-        r = oe_ec_public_key_to_coordinates(&key, xData, &xSize, yData, &ySize);
+        r = OE_ECPublicKeyToCoordinates(&key, xData, &xSize, yData, &ySize);
         OE_TEST(r == OE_OK);
 
         OE_TEST(sizeof(xBytes) == xSize);
         OE_TEST(sizeof(yBytes) == ySize);
         OE_TEST(memcmp(xData, xBytes, xSize) == 0);
         OE_TEST(memcmp(yData, yBytes, ySize) == 0);
-        oe_ec_public_key_free(&key);
+        OE_ECPublicKeyFree(&key);
     }
 
     /* Test generating a key and then re-creating it from its bytes */
     {
-        oe_ec_private_key_t privateKey = {0};
-        oe_ec_public_key_t publicKey = {0};
-        oe_ec_public_key_t publicKey2 = {0};
+        OE_ECPrivateKey privateKey = {0};
+        OE_ECPublicKey publicKey = {0};
+        OE_ECPublicKey publicKey2 = {0};
         uint8_t signature[1024];
         size_t signatureSize = sizeof(signature);
 
         /* Generate a key pair */
-        r = oe_ec_generate_key_pair(ecType, &privateKey, &publicKey);
+        r = OE_ECGenerateKeyPair(ecType, &privateKey, &publicKey);
         OE_TEST(r == OE_OK);
 
         /* Get the bytes from the public key */
@@ -641,17 +641,17 @@ static void _TestKeyFromBytes()
         size_t xSize = sizeof(xData);
         uint8_t yData[1024];
         size_t ySize = sizeof(yData);
-        r = oe_ec_public_key_to_coordinates(
+        r = OE_ECPublicKeyToCoordinates(
             &publicKey, xData, &xSize, yData, &ySize);
         OE_TEST(r == OE_OK);
 
         /* Create a second public key from the key bytes */
-        r = oe_ec_public_key_from_coordinates(
+        r = OE_ECPublicKeyFromCoordinates(
             &publicKey2, ecType, xData, xSize, yData, ySize);
         OE_TEST(r == OE_OK);
 
         /* Sign data with private key */
-        r = oe_ec_private_key_sign(
+        r = OE_ECPrivateKeySign(
             &privateKey,
             OE_HASH_TYPE_SHA256,
             &ALPHABET_HASH,
@@ -661,7 +661,7 @@ static void _TestKeyFromBytes()
         OE_TEST(r == OE_OK);
 
         /* Verify data with key created from bytes of original public key */
-        r = oe_ec_public_key_verify(
+        r = OE_ECPublicKeyVerify(
             &publicKey2,
             OE_HASH_TYPE_SHA256,
             &ALPHABET_HASH,
@@ -670,9 +670,9 @@ static void _TestKeyFromBytes()
             signatureSize);
         OE_TEST(r == OE_OK);
 
-        oe_ec_private_key_free(&privateKey);
-        oe_ec_public_key_free(&publicKey);
-        oe_ec_public_key_free(&publicKey2);
+        OE_ECPrivateKeyFree(&privateKey);
+        OE_ECPublicKeyFree(&publicKey);
+        OE_ECPublicKeyFree(&publicKey2);
     }
 
     printf("=== passed %s()\n", __FUNCTION__);
@@ -682,13 +682,13 @@ static void _TestCertChainRead()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    oe_result_t r;
-    oe_cert_chain_t chain;
+    OE_Result r;
+    OE_CertChain chain;
 
-    r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
+    r = OE_CertChainReadPEM(_CHAIN, sizeof(_CHAIN), &chain);
     OE_TEST(r == OE_OK);
 
-    oe_cert_chain_free(&chain);
+    OE_CertChainFree(&chain);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }

@@ -1,13 +1,13 @@
 [Index](index.md)
 
 ---
-# oe_thread_set_specific()
+# OE_ThreadSetSpecific()
 
 Sets the value of a thread-specific data entry.
 
 ## Syntax
 
-    oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void *value)
+    OE_Result OE_ThreadSetSpecific(OE_ThreadKey key, const void *value)
 ## Description 
 
 This function sets the value of a thread-specific data (TSD) entry associated with the given key.

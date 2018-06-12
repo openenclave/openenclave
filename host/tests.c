@@ -7,12 +7,12 @@
 #include <stdlib.h>
 #include "dupenv.h"
 
-uint32_t oe_get_create_flags(void)
+uint32_t OE_GetCreateFlags(void)
 {
     uint32_t result = OE_ENCLAVE_FLAG_DEBUG;
     char* env = NULL;
 
-    if (!(env = oe_dupenv("OE_SIMULATION")))
+    if (!(env = OE_Dupenv("OE_SIMULATION")))
         goto done;
 
     if (strcmp(env, "1") == 0)

@@ -9,7 +9,7 @@
 
 OE_EXTERNC_BEGIN
 
-oe_result_t oe_initialize_quote_provider(void);
+OE_Result OE_InitializeQuoteProvider(void);
 
 OE_EXTERNC_END
 

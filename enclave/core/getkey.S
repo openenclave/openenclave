@@ -6,7 +6,7 @@
 
 //==============================================================================
 //
-// uint64_t oe_egetkey(const SgxKeyRequest* sgxKeyRequest, SgxKey* sgxKey);
+// uint64_t OE_EGetKey(const SgxKeyRequest* sgxKeyRequest, SgxKey* sgxKey);
 //
 //     The EGETKEY instruction wrapper.
 //
@@ -22,9 +22,9 @@
 //             SGX_EGETKEY_INVALID_ISVSVN
 //             SGX_EGETKEY_INVALID_KEYNAME
 //==============================================================================
-.globl oe_egetkey
-.type oe_egetkey, @function
-oe_egetkey:
+.globl OE_EGetKey
+.type OE_EGetKey, @function
+OE_EGetKey:
 .cfi_startproc
     movq %rbx, %rdx
     movq %rdi, %rbx

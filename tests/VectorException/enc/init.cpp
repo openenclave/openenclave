@@ -42,5 +42,5 @@ OE_ECALL void TestCpuidInGlobalConstructors(void*)
     OE_TEST(c != 0);
     OE_TEST(hits1 == 1);
     OE_TEST(hits2 == 3);
-    oe_host_printf("TestCpuidInGlobalConstructors: completed successfully.\n");
+    OE_HostPrintf("TestCpuidInGlobalConstructors: completed successfully.\n");
 }

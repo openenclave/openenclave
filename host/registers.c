@@ -14,7 +14,7 @@
 
 #include <openenclave/internal/registers.h>
 
-void oe_set_gs_register_base(const void* ptr)
+void OE_SetGSRegisterBase(const void* ptr)
 {
 #if defined(__linux__)
     syscall(__NR_arch_prctl, ARCH_SET_GS, ptr);
@@ -23,7 +23,7 @@ void oe_set_gs_register_base(const void* ptr)
 #endif
 }
 
-void* oe_get_gs_register_base()
+void* OE_GetGSRegisterBase()
 {
 #if defined(__linux__)
     void* ptr = NULL;

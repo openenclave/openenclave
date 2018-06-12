@@ -21,9 +21,9 @@
 static mbedtls_ctr_drbg_context _drbg;
 static mbedtls_entropy_context _entropy;
 
-static oe_result_t _SeedEntropySource()
+static OE_Result _SeedEntropySource()
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
 
     mbedtls_ctr_drbg_init(&_drbg);
     mbedtls_entropy_init(&_entropy);
@@ -38,8 +38,8 @@ done:
     return result;
 }
 
-static oe_result_t _seedResult = OE_UNEXPECTED;
-static oe_once_t _seedOnce = OE_ONCE_INITIALIZER;
+static OE_Result _seedResult = OE_UNEXPECTED;
+static OE_OnceType _seedOnce = OE_ONCE_INITIALIZER;
 
 /* Wrapper to set file-scope _seedResult */
 static void _SeedEntropySourceOnce()
@@ -49,7 +49,7 @@ static void _SeedEntropySourceOnce()
 
 mbedtls_ctr_drbg_context* OE_MBEDTLS_GetDrbg()
 {
-    oe_once(&_seedOnce, _SeedEntropySourceOnce);
+    OE_Once(&_seedOnce, _SeedEntropySourceOnce);
     return &_drbg;
 }
 
@@ -61,14 +61,14 @@ mbedtls_ctr_drbg_context* OE_MBEDTLS_GetDrbg()
 **==============================================================================
 */
 
-oe_result_t oe_random(void* data, size_t size)
+OE_Result OE_Random(void* data, size_t size)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     int rc;
 
     /* Seed the entropy source on the first call */
     {
-        oe_once(&_seedOnce, _SeedEntropySourceOnce);
+        OE_Once(&_seedOnce, _SeedEntropySourceOnce);
         OE_CHECK(_seedResult);
     }
 

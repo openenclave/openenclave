@@ -44,7 +44,7 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
         }
 
         // Call-in enclave to handle the exception.
-        oe_enclave_t* enclave = _oe_query_enclave_instance((void*)tcsAddress);
+        OE_Enclave* enclave = _OE_QueryEnclaveInstance((void*)tcsAddress);
         if (enclave == NULL)
         {
             abort();
@@ -55,8 +55,8 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
 
         // Call into enclave first pass exception handler.
         uint64_t argOut = 0;
-        oe_result_t result =
-            oe_ecall(enclave, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0, &argOut);
+        OE_Result result =
+            OE_ECall(enclave, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0, &argOut);
 
         // Reset the flag
         thread_data->flags &= (~_OE_THREAD_HANDLING_EXCEPTION);
@@ -172,7 +172,7 @@ static void _RegisterSignalHandlers(void)
 }
 
 // The exception only need to be initialized once per process.
-void _oe_initialize_host_exception()
+void _OE_InitializeHostException()
 {
     _RegisterSignalHandlers();
 }

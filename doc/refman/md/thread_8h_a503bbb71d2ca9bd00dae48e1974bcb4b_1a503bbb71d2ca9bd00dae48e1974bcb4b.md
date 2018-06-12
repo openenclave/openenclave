@@ -1,16 +1,16 @@
 [Index](index.md)
 
 ---
-# oe_thread_key_delete()
+# OE_ThreadKeyDelete()
 
 Delete a key for accessing thread-specific data.
 
 ## Syntax
 
-    oe_result_t oe_thread_key_delete(oe_thread_key_t key)
+    OE_Result OE_ThreadKeyDelete(OE_ThreadKey key)
 ## Description 
 
-This function deletes the thread-specific data (TSD) entry associated with the given key, calling the function given by the **destructor** parameter initially passed to [oe_thread_key_create()](thread_8h_ab18490c558c8a126e107ce64a7af35cb_1ab18490c558c8a126e107ce64a7af35cb.md).
+This function deletes the thread-specific data (TSD) entry associated with the given key, calling the function given by the **destructor** parameter initially passed to [OE_ThreadKeyCreate()](thread_8h_ab18490c558c8a126e107ce64a7af35cb_1ab18490c558c8a126e107ce64a7af35cb.md).
 
 
 

@@ -11,25 +11,25 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _oe_enclave oe_enclave_t;
+typedef struct _OE_Enclave OE_Enclave;
 
-typedef enum _oe_sgx_load_type {
+typedef enum _OE_SGXLoadType {
     OE_SGX_LOAD_TYPE_UNDEFINED,
     OE_SGX_LOAD_TYPE_CREATE,
     OE_SGX_LOAD_TYPE_MEASURE
-} oe_sgx_load_type_t;
+} OE_SGXLoadType;
 
-typedef enum _oe_sgx_load_state {
+typedef enum _OE_SGXLoadState {
     OE_SGX_LOAD_STATE_UNINITIALIZED,
     OE_SGX_LOAD_STATE_INITIALIZED,
     OE_SGX_LOAD_STATE_ENCLAVE_CREATED,
     OE_SGX_LOAD_STATE_ENCLAVE_INITIALIZED,
-} oe_sgx_load_state_t;
+} OE_SGXLoadState;
 
-typedef struct _oe_sgx_load_context
+typedef struct _OE_SGXLoadContext
 {
-    oe_sgx_load_type_t type;
-    oe_sgx_load_state_t state;
+    OE_SGXLoadType type;
+    OE_SGXLoadState state;
 
     /* OE_FLAG bits to be applied to the enclave such as debug */
     uint32_t attributes;
@@ -48,26 +48,26 @@ typedef struct _oe_sgx_load_context
     int dev;
 
     /* Hash context used to measure enclave as it is loaded */
-    oe_sha256_context_t hashContext;
-} oe_sgx_load_context_t;
+    OE_SHA256Context hashContext;
+} OE_SGXLoadContext;
 
-oe_result_t oe_sgx_initialize_load_context(
-    oe_sgx_load_context_t* context,
-    oe_sgx_load_type_t type,
+OE_Result OE_SGXInitializeLoadContext(
+    OE_SGXLoadContext* context,
+    OE_SGXLoadType type,
     uint32_t attributes);
 
-void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context);
+void OE_SGXCleanupLoadContext(OE_SGXLoadContext* context);
 
-oe_result_t oe_sgx_build_enclave(
-    oe_sgx_load_context_t* context,
+OE_Result OE_SGXBuildEnclave(
+    OE_SGXLoadContext* context,
     const char* path,
-    const oe_sgx_enclave_properties_t* properties,
-    oe_enclave_t* enclave);
+    const OE_SGXEnclaveProperties* properties,
+    OE_Enclave* enclave);
 
 /**
- * Find the oe_sgx_enclave_properties_t struct within the given section
+ * Find the OE_SGXEnclaveProperties struct within the given section
  *
- * This function attempts to find the **oe_sgx_enclave_properties_t** struct within
+ * This function attempts to find the **OE_SGXEnclaveProperties** struct within
  * the specified section of the ELF binary.
  *
  * @param elf ELF instance
@@ -80,15 +80,15 @@ oe_result_t oe_sgx_build_enclave(
  * @returns OE_NOT_FOUND enclave properties struct not found
  *
  */
-oe_result_t oe_sgx_load_properties(
+OE_Result OE_SGXLoadProperties(
     const Elf64* elf,
     const char* sectionName,
-    oe_sgx_enclave_properties_t* properties);
+    OE_SGXEnclaveProperties* properties);
 
 /**
- * Update the oe_sgx_enclave_properties_t struct within the given section
+ * Update the OE_SGXEnclaveProperties struct within the given section
  *
- * This function attempts to update the **oe_sgx_enclave_properties_t** struct
+ * This function attempts to update the **OE_SGXEnclaveProperties** struct
  * within the specified section of the ELF binary. If found, the section is
  * updated with the value of the **properties** parameter.
  *
@@ -102,16 +102,16 @@ oe_result_t oe_sgx_load_properties(
  * @returns OE_NOT_FOUND enclave properties struct not found
  *
  */
-oe_result_t oe_sgx_update_enclave_properties(
+OE_Result OE_SGXUpdateEnclaveProperties(
     const Elf64* elf,
     const char* sectionName,
-    const oe_sgx_enclave_properties_t* properties);
+    const OE_SGXEnclaveProperties* properties);
 
 /**
  * Validate certain fields of an SGX enclave properties structure.
  *
  * This function checks whether the following fields of the
- * **oe_sgx_enclave_properties_t** structure have valid values.
+ * **OE_SGXEnclaveProperties** structure have valid values.
  *
  *     - productID
  *     - securityVersion
@@ -130,8 +130,8 @@ oe_result_t oe_sgx_update_enclave_properties(
  * @returns OE_FAILURE at least one field is invalid
  *
  */
-oe_result_t oe_sgx_validate_enclave_properties(
-    const oe_sgx_enclave_properties_t* properties,
+OE_Result OE_SGXValidateEnclaveProperties(
+    const OE_SGXEnclaveProperties* properties,
     const char** fieldName);
 
 OE_EXTERNC_END

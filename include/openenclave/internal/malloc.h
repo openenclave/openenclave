@@ -10,20 +10,20 @@
 
 OE_EXTERNC_BEGIN
 
-typedef void (*oe_allocation_failure_callback_t)(
+typedef void (*OE_AllocationFailureCallback)(
     const char* file,
     size_t line,
     const char* func,
     size_t size);
 
-void oe_set_allocation_failure_callback(oe_allocation_failure_callback_t function);
+void OE_SetAllocationFailureCallback(OE_AllocationFailureCallback function);
 
-typedef struct _oe_malloc_stats
+typedef struct _OE_MallocStats
 {
     uint64_t peakSystemBytes;
     uint64_t systemBytes;
     uint64_t inUseBytes;
-} oe_malloc_stats_t;
+} OE_MallocStats;
 
 /**
  * Obtains enclave malloc statistics.
@@ -41,7 +41,7 @@ typedef struct _oe_malloc_stats
  * @return 0 success
  * @return -1 failure
  */
-oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats);
+OE_Result OE_GetMallocStats(OE_MallocStats* stats);
 
 OE_EXTERNC_END
 

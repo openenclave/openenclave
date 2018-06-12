@@ -25,20 +25,20 @@ OE_STATIC_ASSERT(OE_OFFSETOF(TD, simulate) == TD_simulate);
 /*
 **==============================================================================
 **
-** oe_get_thread_data()
+** OE_GetThreadData()
 **
 **     Returns a pointer to the thread data structure for the current thread.
 **     This structure resides in the GS segment. Offset zero of this segment
-**     contains the oe_thread_data_t.self_addr field (a back pointer to the
+**     contains the OE_ThreadData.self_addr field (a back pointer to the
 **     structure itself). This field is zero until the structure is initialized
-**     by __oe_handle_main (which happens immediately an EENTER).
+**     by __OE_HandleMain (which happens immediately an EENTER).
 **
 **==============================================================================
 */
 
-oe_thread_data_t* oe_get_thread_data()
+OE_ThreadData* OE_GetThreadData()
 {
-    oe_thread_data_t* td;
+    OE_ThreadData* td;
 
     asm("mov %%gs:0, %0" : "=r"(td));
 
@@ -77,7 +77,7 @@ void TD_PushCallsite(TD* td, Callsite* callsite)
 void TD_PopCallsite(TD* td)
 {
     if (!td->callsites)
-        oe_abort();
+        OE_Abort();
 
     td->callsites = td->callsites->next;
 
@@ -150,7 +150,7 @@ void* TD_ToTCS(const TD* td)
 
 TD* TD_Get()
 {
-    oe_thread_data_t* td = oe_get_thread_data();
+    OE_ThreadData* td = OE_GetThreadData();
     return (TD*)td;
 }
 
@@ -204,7 +204,7 @@ bool TD_Initialized(TD* td)
 **         | GS page (contains TD)   |
 **         +-------------------------+
 **
-**     Note: the host register fields are pre-initialized by oe_main:
+**     Note: the host register fields are pre-initialized by OE_Main:
 **
 **==============================================================================
 */
@@ -214,10 +214,10 @@ void TD_Init(TD* td)
     /* If not already initialized */
     if (!TD_Initialized(td))
     {
-        /* TD.hostsp, TD.hostbp, and TD.retaddr already set by oe_main() */
+        /* TD.hostsp, TD.hostbp, and TD.retaddr already set by OE_Main() */
 
         /* Clear base structure */
-        oe_memset(&td->base, 0, sizeof(td->base));
+        OE_Memset(&td->base, 0, sizeof(td->base));
 
         /* Set pointer to self */
         td->base.self_addr = (uint64_t)td;
@@ -251,10 +251,10 @@ void TD_Clear(TD* td)
 {
     /* Should not be called unless callsite list is empty */
     if (td->depth != 0 || td->callsites)
-        oe_abort();
+        OE_Abort();
 
     /* Clear base structure */
-    oe_memset(&td->base, 0, sizeof(td->base));
+    OE_Memset(&td->base, 0, sizeof(td->base));
 
     /* Clear the magic number */
     td->magic = 0;

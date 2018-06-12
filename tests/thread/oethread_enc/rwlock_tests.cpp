@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include "../args.h"
 
-static oe_rwlock_t rwLock = OE_RWLOCK_INITIALIZER;
-static oe_spinlock_t rwArgsLock = OE_SPINLOCK_INITIALIZER;
+static OE_RWLock rwLock = OE_RWLOCK_INITIALIZER;
+static OE_Spinlock rwArgsLock = OE_SPINLOCK_INITIALIZER;
 
 inline size_t max(size_t a, size_t b)
 {
@@ -18,24 +18,24 @@ inline size_t max(size_t a, size_t b)
 class ScopedSpinLock
 {
   public:
-    ScopedSpinLock(oe_spinlock_t* s) : slock(s)
+    ScopedSpinLock(OE_Spinlock* s) : slock(s)
     {
-        oe_spin_lock(slock);
+        OE_SpinLock(slock);
     }
 
     void Lock()
     {
-        oe_spin_lock(slock);
+        OE_SpinLock(slock);
     }
 
     void Unlock()
     {
-        oe_spin_unlock(slock);
+        OE_SpinUnlock(slock);
     }
 
     ~ScopedSpinLock()
     {
-        oe_spin_unlock(slock);
+        OE_SpinUnlock(slock);
     }
 
   private:
@@ -43,7 +43,7 @@ class ScopedSpinLock
     ScopedSpinLock& operator=(const ScopedSpinLock&);
 
   private:
-    oe_spinlock_t* slock;
+    OE_Spinlock* slock;
 };
 
 OE_ECALL void ReaderThreadImpl(void* args_)
@@ -53,7 +53,7 @@ OE_ECALL void ReaderThreadImpl(void* args_)
     for (size_t i = 0; i < RWLOCK_TEST_ITERS; ++i)
     {
         // Obtain read lock.
-        oe_rwlock_read_lock(&rwLock);
+        OE_RWLockReadLock(&rwLock);
 
         {
             // Update test data.
@@ -69,7 +69,7 @@ OE_ECALL void ReaderThreadImpl(void* args_)
             while (args->maxReaders < NUM_READER_THREADS)
             {
                 lock.Unlock();
-                oe_call_host("host_usleep", (void*)sleep_utime);
+                OE_CallHost("host_usleep", (void*)sleep_utime);
                 lock.Lock();
             }
 
@@ -80,7 +80,7 @@ OE_ECALL void ReaderThreadImpl(void* args_)
 
         // Hold on to the lock for some time to test ownership constraints.
         // Multiple readers should be allowed.
-        oe_call_host("host_usleep", (void*)sleep_utime);
+        OE_CallHost("host_usleep", (void*)sleep_utime);
 
         {
             // Update test data.
@@ -94,10 +94,10 @@ OE_ECALL void ReaderThreadImpl(void* args_)
         }
 
         // Release read lock
-        oe_rwlock_read_unlock(&rwLock);
+        OE_RWLockReadUnlock(&rwLock);
     }
 
-    oe_host_printf("%llu: Reader Exiting\n", OE_LLU(oe_thread_self()));
+    OE_HostPrintf("%llu: Reader Exiting\n", OE_LLU(OE_ThreadSelf()));
 }
 
 OE_ECALL void WriterThreadImpl(void* args_)
@@ -107,7 +107,7 @@ OE_ECALL void WriterThreadImpl(void* args_)
     for (size_t i = 0; i < RWLOCK_TEST_ITERS; ++i)
     {
         // Obtain write lock
-        oe_rwlock_write_lock(&rwLock);
+        OE_RWLockWriteLock(&rwLock);
 
         {
             // Update test data
@@ -125,7 +125,7 @@ OE_ECALL void WriterThreadImpl(void* args_)
 
         // Hold on to the lock for some time to test ownership constraints.
         // Only one writer should be allowed.
-        oe_call_host("host_usleep", (void*)sleep_utime);
+        OE_CallHost("host_usleep", (void*)sleep_utime);
 
         {
             // Update test data
@@ -139,8 +139,8 @@ OE_ECALL void WriterThreadImpl(void* args_)
         }
 
         // Release write lock
-        oe_rwlock_write_unlock(&rwLock);
+        OE_RWLockWriteUnlock(&rwLock);
     }
 
-    oe_host_printf("%llu: Writer Exiting\n", OE_LLU(oe_thread_self()));
+    OE_HostPrintf("%llu: Writer Exiting\n", OE_LLU(OE_ThreadSelf()));
 }

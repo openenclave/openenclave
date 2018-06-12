@@ -6,7 +6,7 @@
 #include <openenclave/internal/utils.h>
 #include <stdio.h>
 
-void oe_hex_dump(const void* data_, size_t size)
+void OE_HexDump(const void* data_, size_t size)
 {
     size_t i;
     const unsigned char* data = (const unsigned char*)data_;
@@ -22,7 +22,7 @@ void oe_hex_dump(const void* data_, size_t size)
     printf("\n");
 }
 
-char* oe_hex_string(char* str, size_t strSize, const void* data, size_t dataSize)
+char* OE_HexString(char* str, size_t strSize, const void* data, size_t dataSize)
 {
     char* s = str;
     const uint8_t* p = (const uint8_t*)data;

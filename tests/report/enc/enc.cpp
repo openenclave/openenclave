@@ -25,30 +25,30 @@
 // Check that input data lies outside the enclave and that
 // fits within maxSize. If so, allocate buffer on enclave
 // stack and copy.
-oe_result_t oe_copy_input(
+OE_Result OE_CopyInput(
     void* dst,
     volatile void* src,
     uint32_t size,
     uint32_t maxSize)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
 
     if (size > maxSize || size == 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!src || !oe_is_outside_enclave((void*)src, size))
+    if (!src || !OE_IsOutsideEnclave((void*)src, size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (dst == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    oe_memcpy(dst, (void*)src, size);
+    OE_Memcpy(dst, (void*)src, size);
 
     // Fix for Spectre-v1 requires l-fence to be inserted after bounds
-    // validation. E.g. the oe_is_outside_enclave check above is a bounds check.
-    // Without the barrier, even when oe_is_outside_enclave is false, the
+    // validation. E.g. the OE_IsOutsideEnclave check above is a bounds check.
+    // Without the barrier, even when OE_IsOutsideEnclave is false, the
     // processor can speculatively start executing code as if
-    // oe_is_outside_enclave is true, leading to side-channel vulnerabilities.
+    // OE_IsOutsideEnclave is true, leading to side-channel vulnerabilities.
     OE_SPECULATION_BARRIER();
 
     result = OE_OK;
@@ -57,7 +57,7 @@ done:
 }
 
 // Buffers are allocated on the stack. Automatically cleaned up.
-#define oe_free_buffer(buffer)
+#define OE_FreeBuffer(buffer)
 
 #define QUOTE_SIZE_MAX (4 * 1024)
 #define PEM_PCK_CERTIFICATE_SIZE_MAX (10 * 1024)
@@ -66,7 +66,7 @@ done:
 
 OE_ECALL void VerifyQuote(void* args_)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     volatile VerifyQuoteArgs* hostArg = (VerifyQuoteArgs*)args_;
 
     VerifyQuoteArgs encArgObj = {0};
@@ -76,13 +76,13 @@ OE_ECALL void VerifyQuote(void* args_)
     static uint8_t encPckCrl[PCK_CRL_SIZE_MAX];
     static uint8_t encTcbInfoJson[TCB_INFO_JSON_SIZE_MAX];
 
-    oe_secure_zero_fill(encQuote, QUOTE_SIZE_MAX);
-    oe_secure_zero_fill(encPemPckCertificate, PEM_PCK_CERTIFICATE_SIZE_MAX);
-    oe_secure_zero_fill(encPckCrl, PCK_CRL_SIZE_MAX);
-    oe_secure_zero_fill(encTcbInfoJson, TCB_INFO_JSON_SIZE_MAX);
+    OE_SecureZeroFill(encQuote, QUOTE_SIZE_MAX);
+    OE_SecureZeroFill(encPemPckCertificate, PEM_PCK_CERTIFICATE_SIZE_MAX);
+    OE_SecureZeroFill(encPckCrl, PCK_CRL_SIZE_MAX);
+    OE_SecureZeroFill(encTcbInfoJson, TCB_INFO_JSON_SIZE_MAX);
 
     // Take snapshot of hostArg to prevent TOCTOU issues.
-    OE_CHECK(oe_copy_input(encArg, hostArg, sizeof(*encArg), sizeof(*encArg)));
+    OE_CHECK(OE_CopyInput(encArg, hostArg, sizeof(*encArg), sizeof(*encArg)));
 
     // TODO: How to manage memory for all these buffers?
     // Max size vs actual size vs where to allocate, function stack
@@ -90,13 +90,13 @@ OE_ECALL void VerifyQuote(void* args_)
 
     // Copy input buffers to enclave memory.
     OE_CHECK(
-        oe_copy_input(
+        OE_CopyInput(
             encQuote, encArg->quote, encArg->quoteSize, QUOTE_SIZE_MAX));
 
     // Copy optional inputs buffers to enclave memory.
     if (encArg->pemPckCertificate)
         OE_CHECK(
-            oe_copy_input(
+            OE_CopyInput(
                 encPemPckCertificate,
                 encArg->pemPckCertificate,
                 encArg->pemPckCertificateSize,
@@ -104,7 +104,7 @@ OE_ECALL void VerifyQuote(void* args_)
 
     if (encArg->pckCrl)
         OE_CHECK(
-            oe_copy_input(
+            OE_CopyInput(
                 encPckCrl,
                 encArg->pckCrl,
                 encArg->pckCrlSize,
@@ -112,7 +112,7 @@ OE_ECALL void VerifyQuote(void* args_)
 
     if (encArg->tcbInfoJson)
         OE_CHECK(
-            oe_copy_input(
+            OE_CopyInput(
                 encTcbInfoJson,
                 encArg->tcbInfoJson,
                 encArg->tcbInfoJsonSize,
@@ -142,10 +142,10 @@ done:
         hostArg->result = result;
 
     // Free enclave buffers.
-    // Make sure to oe_secure_zero_fill any secrets.
+    // Make sure to OE_SecureZeroFill any secrets.
     // Secrets ought not to exist at this level.
-    oe_free_buffer(encQuote);
-    oe_free_buffer(encPemPckCertificate);
-    oe_free_buffer(encPckCrl);
-    oe_free_buffer(encTcbInfoJson);
+    OE_FreeBuffer(encQuote);
+    OE_FreeBuffer(encPemPckCertificate);
+    OE_FreeBuffer(encPckCrl);
+    OE_FreeBuffer(encTcbInfoJson);
 }

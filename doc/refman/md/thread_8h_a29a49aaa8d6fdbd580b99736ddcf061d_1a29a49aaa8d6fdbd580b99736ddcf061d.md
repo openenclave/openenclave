@@ -1,13 +1,13 @@
 [Index](index.md)
 
 ---
-# oe_rwlock_destroy()
+# OE_RWLockDestroy()
 
 Destroys a readers-writer lock.
 
 ## Syntax
 
-    oe_result_t oe_rwlock_destroy(oe_rwlock_t *rwLock)
+    OE_Result OE_RWLockDestroy(OE_RWLock *rwLock)
 ## Description 
 
 This function destroys a readers-writer lock and releases any resources used by the lock. The lock must be in an unlocked state.

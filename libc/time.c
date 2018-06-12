@@ -37,9 +37,9 @@ int gettimeofday(struct timeval* tv, void* tz)
 #endif
 {
     size_t ret = -1;
-    oe_gettimeofday_args_t* args = NULL;
+    OE_GettimeofdayArgs* args = NULL;
 
-    if (!(args = oe_host_calloc(1, sizeof(oe_gettimeofday_args_t))))
+    if (!(args = OE_HostCalloc(1, sizeof(OE_GettimeofdayArgs))))
         goto done;
 
     args->ret = -1;
@@ -50,7 +50,7 @@ int gettimeofday(struct timeval* tv, void* tz)
     if (tz)
         args->tz = NULL;
 
-    if (oe_ocall(
+    if (OE_OCall(
             OE_FUNC_GETTIMEOFDAY,
             (uint64_t)args,
             NULL,
@@ -71,7 +71,7 @@ int gettimeofday(struct timeval* tv, void* tz)
 done:
 
     if (args)
-        oe_host_free(args);
+        OE_HostFree(args);
 
     return ret;
 }
@@ -79,16 +79,16 @@ done:
 int clock_gettime(clockid_t clk_id, struct timespec* tp)
 {
     size_t ret = -1;
-    oe_clock_gettime_args_t* args = NULL;
+    OE_ClockgettimeArgs* args = NULL;
 
-    if (!(args = oe_host_malloc(sizeof(oe_clock_gettime_args_t))))
+    if (!(args = OE_HostMalloc(sizeof(OE_ClockgettimeArgs))))
         goto done;
 
     args->ret = -1;
     args->clk_id = clk_id;
     args->tp = tp ? &args->tpbuf : NULL;
 
-    if (oe_ocall(
+    if (OE_OCall(
             OE_FUNC_CLOCK_GETTIME,
             (uint64_t)args,
             NULL,
@@ -106,7 +106,7 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
 done:
 
     if (args)
-        oe_host_free(args);
+        OE_HostFree(args);
 
     return ret;
 }
@@ -114,12 +114,12 @@ done:
 size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
 {
     size_t ret = 0;
-    oe_strftime_args_t* a = NULL;
+    OE_StrftimeArgs* a = NULL;
 
     if (!str || !format || !tm)
         goto done;
 
-    if (!(a = oe_host_calloc(1, sizeof(oe_strftime_args_t))))
+    if (!(a = OE_HostCalloc(1, sizeof(OE_StrftimeArgs))))
         goto done;
 
     if (strlcpy(a->format, format, sizeof(a->format)) >= sizeof(a->format))
@@ -127,7 +127,7 @@ size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
 
     memcpy(&a->tm, tm, sizeof(struct tm));
 
-    if (oe_ocall(
+    if (OE_OCall(
             OE_FUNC_STRFTIME, (uint64_t)a, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
         OE_OK)
         goto done;
@@ -143,7 +143,7 @@ size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
 done:
 
     if (a)
-        oe_host_free(a);
+        OE_HostFree(a);
 
     return ret;
 }
@@ -161,9 +161,9 @@ size_t strftime_l(
 int nanosleep(const struct timespec* req, struct timespec* rem)
 {
     size_t ret = -1;
-    oe_nanosleep_args_t* args = NULL;
+    OE_NanosleepArgs* args = NULL;
 
-    if (!(args = oe_host_calloc(1, sizeof(oe_nanosleep_args_t))))
+    if (!(args = OE_HostCalloc(1, sizeof(OE_NanosleepArgs))))
         goto done;
 
     args->ret = -1;
@@ -177,7 +177,7 @@ int nanosleep(const struct timespec* req, struct timespec* rem)
     if (rem)
         args->rem = &args->rembuf;
 
-    if (oe_ocall(
+    if (OE_OCall(
             OE_FUNC_NANOSLEEP,
             (uint64_t)args,
             NULL,
@@ -195,7 +195,7 @@ int nanosleep(const struct timespec* req, struct timespec* rem)
 done:
 
     if (args)
-        oe_host_free(args);
+        OE_HostFree(args);
 
     return ret;
 }

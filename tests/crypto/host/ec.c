@@ -8,7 +8,7 @@
 #include <string.h>
 #include "../../../host/crypto/key.h"
 
-oe_result_t oe_ecdsa_signature_read_der(
+OE_Result OE_ECDSASignatureReadDER(
     const uint8_t* signature,
     size_t signatureSize,
     uint8_t* rData,
@@ -16,7 +16,7 @@ oe_result_t oe_ecdsa_signature_read_der(
     uint8_t* sData,
     size_t* sSize)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     const uint8_t* p = (const uint8_t*)signature;
     ECDSA_SIG* sig = NULL;
     int rn;
@@ -77,15 +77,15 @@ done:
     return result;
 }
 
-oe_result_t oe_ec_public_key_to_coordinates(
-    const oe_ec_public_key_t* publicKey,
+OE_Result OE_ECPublicKeyToCoordinates(
+    const OE_ECPublicKey* publicKey,
     uint8_t* xData,
     size_t* xSize,
     uint8_t* yData,
     size_t* ySize)
 {
-    const oe_public_key_t* impl = (const oe_public_key_t*)publicKey;
-    oe_result_t result = OE_UNEXPECTED;
+    const OE_PublicKey* impl = (const OE_PublicKey*)publicKey;
+    OE_Result result = OE_UNEXPECTED;
     uint8_t* data = NULL;
     EC_KEY* ec = NULL;
     int requiredSize;

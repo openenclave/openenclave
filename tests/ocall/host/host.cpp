@@ -33,8 +33,8 @@ OE_OCALL void Func2(void* args)
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
-    oe_enclave_t* enclave = NULL;
+    OE_Result result;
+    OE_Enclave* enclave = NULL;
 
     if (argc != 2)
     {
@@ -42,25 +42,25 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    if ((result = oe_create_enclave(
+    if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        oe_puterr("oe_create_enclave(): result=%u", result);
+        OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
     /* Call Test2() */
     {
         Test2Args args;
         args.in = 123456789;
         args.out = 0;
-        oe_result_t result = oe_call_enclave(enclave, "Test2", &args);
+        OE_Result result = OE_CallEnclave(enclave, "Test2", &args);
         OE_TEST(result == OE_OK);
         OE_TEST(args.out == args.in);
     }
 
     /* Call Test4() */
     {
-        oe_result_t result = oe_call_enclave(enclave, "Test4", NULL);
+        OE_Result result = OE_CallEnclave(enclave, "Test4", NULL);
         OE_TEST(result == OE_OK);
         OE_TEST(_func2Ok);
     }
@@ -69,7 +69,7 @@ int main(int argc, const char* argv[])
     {
         SetTSDArgs args;
         args.value = (void*)0xAAAAAAAABBBBBBBB;
-        oe_result_t result = oe_call_enclave(enclave, "SetTSD", &args);
+        OE_Result result = OE_CallEnclave(enclave, "SetTSD", &args);
         OE_TEST(result == OE_OK);
     }
 
@@ -77,24 +77,24 @@ int main(int argc, const char* argv[])
     {
         GetTSDArgs args;
         args.value = 0;
-        oe_result_t result = oe_call_enclave(enclave, "GetTSD", &args);
+        OE_Result result = OE_CallEnclave(enclave, "GetTSD", &args);
         OE_TEST(result == OE_OK);
         OE_TEST(args.value == (void*)0xAAAAAAAABBBBBBBB);
     }
 
     /* Call TestMyOCall() */
     {
-        oe_result_t result = oe_register_ocall(0, MyOCall);
+        OE_Result result = OE_RegisterOCall(0, MyOCall);
         OE_TEST(result == OE_OK);
 
         TestMyOCallArgs args;
         args.result = 0;
-        result = oe_call_enclave(enclave, "TestMyOCall", &args);
+        result = OE_CallEnclave(enclave, "TestMyOCall", &args);
         OE_TEST(result == OE_OK);
         OE_TEST(args.result == 7000);
     }
 
-    oe_terminate_enclave(enclave);
+    OE_TerminateEnclave(enclave);
 
     printf("=== passed all tests (%s)\n", argv[0]);
 

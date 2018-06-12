@@ -8,7 +8,7 @@
 OE_STATIC_ASSERT(OE_ENCLAVE_ABORTING > OE_OK);
 OE_STATIC_ASSERT(OE_ENCLAVE_ABORTED > OE_ENCLAVE_ABORTING);
 
-const char* oe_result_str(oe_result_t result)
+const char* OE_ResultStr(OE_Result result)
 {
     switch (result)
     {

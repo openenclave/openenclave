@@ -19,7 +19,7 @@ OE_EXTERNC_BEGIN
  *
  * @return OE_OK on success
  */
-oe_result_t oe_random(void* data, size_t size);
+OE_Result OE_Random(void* data, size_t size);
 
 OE_EXTERNC_END
 

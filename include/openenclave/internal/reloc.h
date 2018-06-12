@@ -10,12 +10,12 @@
 OE_EXTERNC_BEGIN
 
 /* Same layout as Elf64_Rela (see elf.h) */
-typedef struct _oe_reloc
+typedef struct _OE_Reloc
 {
     uint64_t offset;
     uint64_t info;
     int64_t addend;
-} oe_reloc_t;
+} OE_Reloc;
 
 OE_EXTERNC_END
 

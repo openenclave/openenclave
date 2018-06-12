@@ -8,7 +8,7 @@
 #endif
 
 /* Set the spinlock value to 1 and return the old value */
-static unsigned int _spin_set_locked(oe_spinlock_t* spinlock)
+static unsigned int _spin_set_locked(OE_Spinlock* spinlock)
 {
     unsigned int value = 1;
 
@@ -22,7 +22,7 @@ static unsigned int _spin_set_locked(oe_spinlock_t* spinlock)
     return value;
 }
 
-oe_result_t oe_spin_init(oe_spinlock_t* spinlock)
+OE_Result OE_SpinInit(OE_Spinlock* spinlock)
 {
     if (!spinlock)
         return OE_INVALID_PARAMETER;
@@ -32,7 +32,7 @@ oe_result_t oe_spin_init(oe_spinlock_t* spinlock)
     return OE_OK;
 }
 
-oe_result_t oe_spin_lock(oe_spinlock_t* spinlock)
+OE_Result OE_SpinLock(OE_Spinlock* spinlock)
 {
     if (!spinlock)
         return OE_INVALID_PARAMETER;
@@ -50,7 +50,7 @@ oe_result_t oe_spin_lock(oe_spinlock_t* spinlock)
     return OE_OK;
 }
 
-oe_result_t oe_spin_unlock(oe_spinlock_t* spinlock)
+OE_Result OE_SpinUnlock(OE_Spinlock* spinlock)
 {
     if (!spinlock)
         return OE_INVALID_PARAMETER;
@@ -64,7 +64,7 @@ oe_result_t oe_spin_unlock(oe_spinlock_t* spinlock)
     return OE_OK;
 }
 
-oe_result_t oe_spin_destroy(oe_spinlock_t* spinlock)
+OE_Result OE_SpinDestroy(OE_Spinlock* spinlock)
 {
     if (!spinlock)
         return OE_INVALID_PARAMETER;

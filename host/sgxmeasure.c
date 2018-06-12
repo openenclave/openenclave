@@ -7,7 +7,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 
-static void _MeasureZeros(oe_sha256_context_t* context, size_t size)
+static void _MeasureZeros(OE_SHA256Context* context, size_t size)
 {
     char zeros[128] = {0};
 
@@ -15,19 +15,19 @@ static void _MeasureZeros(oe_sha256_context_t* context, size_t size)
     {
         if (size < sizeof(zeros))
         {
-            oe_sha256_update(context, zeros, size);
+            OE_SHA256Update(context, zeros, size);
             size -= size;
         }
         else
         {
-            oe_sha256_update(context, zeros, sizeof(zeros));
+            OE_SHA256Update(context, zeros, sizeof(zeros));
             size -= sizeof(zeros);
         }
     }
 }
 
 static void _MeasureEExtend(
-    oe_sha256_context_t* context,
+    OE_SHA256Context* context,
     uint64_t vaddr,
     uint64_t flags,
     const void* page)
@@ -40,27 +40,27 @@ static void _MeasureEExtend(
     {
         const uint64_t moffset = vaddr + pgoff;
 
-        oe_sha256_update(context, "EEXTEND", 8);
-        oe_sha256_update(context, &moffset, sizeof(moffset));
+        OE_SHA256Update(context, "EEXTEND", 8);
+        OE_SHA256Update(context, &moffset, sizeof(moffset));
         _MeasureZeros(context, 48);
-        oe_sha256_update(context, (const uint8_t*)page + pgoff, CHUNK_SIZE);
+        OE_SHA256Update(context, (const uint8_t*)page + pgoff, CHUNK_SIZE);
     }
 }
 
-oe_result_t oe_sgx_measure_create_enclave(oe_sha256_context_t* context, sgx_secs_t* secs)
+OE_Result OE_SGXMeasureCreateEnclave(OE_SHA256Context* context, SGX_Secs* secs)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
 
     if (!context || !secs)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize measurement */
-    oe_sha256_init(context);
+    OE_SHA256Init(context);
 
     /* Measure ECREATE */
-    oe_sha256_update(context, "ECREATE", 8);
-    oe_sha256_update(context, &secs->ssaframesize, sizeof(uint32_t));
-    oe_sha256_update(context, &secs->size, sizeof(uint64_t));
+    OE_SHA256Update(context, "ECREATE", 8);
+    OE_SHA256Update(context, &secs->ssaframesize, sizeof(uint32_t));
+    OE_SHA256Update(context, &secs->size, sizeof(uint64_t));
     _MeasureZeros(context, 44);
 
     result = OE_OK;
@@ -69,24 +69,24 @@ done:
     return result;
 }
 
-oe_result_t oe_sgx_measure_load_enclave_data(
-    oe_sha256_context_t* context,
+OE_Result OE_SGXMeasureLoadEnclaveData(
+    OE_SHA256Context* context,
     uint64_t base,
     uint64_t addr,
     uint64_t src,
     uint64_t flags,
     bool extend)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     uint64_t vaddr = addr - base;
 
     if (!context || !base || !addr || !src || !flags || addr < base)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Measure EADD */
-    oe_sha256_update(context, "EADD\0\0\0", 8);
-    oe_sha256_update(context, &vaddr, sizeof(vaddr));
-    oe_sha256_update(context, &flags, sizeof(flags));
+    OE_SHA256Update(context, "EADD\0\0\0", 8);
+    OE_SHA256Update(context, &vaddr, sizeof(vaddr));
+    OE_SHA256Update(context, &flags, sizeof(flags));
     _MeasureZeros(context, 40);
 
     /* Measure EEXTEND if requested */
@@ -99,17 +99,17 @@ done:
     return result;
 }
 
-oe_result_t oe_sgx_measure_initialize_enclave(
-    oe_sha256_context_t* context,
+OE_Result OE_SGXMeasureInitializeEnclave(
+    OE_SHA256Context* context,
     OE_SHA256* mrenclave)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
 
     if (!context || !mrenclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Finalize measurement like EINIT */
-    oe_sha256_final(context, mrenclave);
+    OE_SHA256Final(context, mrenclave);
 
     result = OE_OK;
 

@@ -101,7 +101,7 @@ static const char* _S64ToStr(char buf[21], int64_t x)
     return p;
 }
 
-int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
+int OE_Vsnprintf(char* str, size_t size, const char* fmt, OE_va_list ap)
 {
     const char* p = fmt;
     bool overflow = false;
@@ -123,69 +123,69 @@ int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
 
             if (p[0] == 's')
             {
-                if (!(s = oe_va_arg(ap, const char*)))
+                if (!(s = OE_va_arg(ap, const char*)))
                     s = "(null)";
 
                 p++;
             }
             else if (p[0] == 'u')
             {
-                s = _U64ToStr(scratch, oe_va_arg(ap, uint32_t));
+                s = _U64ToStr(scratch, OE_va_arg(ap, uint32_t));
                 p++;
             }
             else if (p[0] == 'd')
             {
-                s = _S64ToStr(scratch, oe_va_arg(ap, int32_t));
+                s = _S64ToStr(scratch, OE_va_arg(ap, int32_t));
                 p++;
             }
             else if (p[0] == 'x')
             {
-                s = _U32ToHexStr(scratch, oe_va_arg(ap, uint32_t));
+                s = _U32ToHexStr(scratch, OE_va_arg(ap, uint32_t));
                 p++;
             }
             else if (p[0] == 'l' && p[1] == 'u')
             {
-                s = _U64ToStr(scratch, oe_va_arg(ap, uint64_t));
+                s = _U64ToStr(scratch, OE_va_arg(ap, uint64_t));
                 p += 2;
             }
             else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'u')
             {
-                s = _U64ToStr(scratch, oe_va_arg(ap, uint64_t));
+                s = _U64ToStr(scratch, OE_va_arg(ap, uint64_t));
                 p += 3;
             }
             else if (p[0] == 'l' && p[1] == 'd')
             {
-                s = _S64ToStr(scratch, oe_va_arg(ap, int64_t));
+                s = _S64ToStr(scratch, OE_va_arg(ap, int64_t));
                 p += 2;
             }
             else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'd')
             {
-                s = _S64ToStr(scratch, oe_va_arg(ap, int64_t));
+                s = _S64ToStr(scratch, OE_va_arg(ap, int64_t));
                 p += 3;
             }
             else if (p[0] == 'l' && p[1] == 'x')
             {
-                s = _U64ToHexStr(scratch, oe_va_arg(ap, uint64_t));
+                s = _U64ToHexStr(scratch, OE_va_arg(ap, uint64_t));
                 p += 2;
             }
             else if (p[0] == 'l' && p[1] == 'x' && p[2] == 'x')
             {
-                s = _U64ToHexStr(scratch, oe_va_arg(ap, uint64_t));
+                s = _U64ToHexStr(scratch, OE_va_arg(ap, uint64_t));
                 p += 3;
             }
             else if (p[0] == 'z' && p[1] == 'u')
             {
-                s = _U64ToStr(scratch, oe_va_arg(ap, size_t));
+                s = _U64ToStr(scratch, OE_va_arg(ap, size_t));
                 p += 2;
             }
             else if (p[0] == 'z' && p[1] == 'd')
             {
-                s = _S64ToStr(scratch, oe_va_arg(ap, ssize_t));
+                s = _S64ToStr(scratch, OE_va_arg(ap, ssize_t));
                 p += 2;
             }
             else if (p[0] == 'p')
             {
-                s = _U64ToStr(scratch, (uint64_t)oe_va_arg(ap, void*));
+                s = _U64ToStr(scratch, (uint64_t)OE_va_arg(ap, void*));
                 p += 1;
             }
             else
@@ -202,11 +202,11 @@ int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
 
         if (overflow)
         {
-            n += oe_strlen(s);
+            n += OE_Strlen(s);
         }
         else
         {
-            n = oe_strlcat(str, s, size);
+            n = OE_Strlcat(str, s, size);
 
             if (n >= size)
                 overflow = true;
@@ -216,11 +216,11 @@ int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
     return n;
 }
 
-int oe_snprintf(char* str, size_t size, const char* fmt, ...)
+int OE_Snprintf(char* str, size_t size, const char* fmt, ...)
 {
-    oe_va_list ap;
-    oe_va_start(ap, fmt);
-    int n = oe_vsnprintf(str, size, fmt, ap);
-    oe_va_end(ap);
+    OE_va_list ap;
+    OE_va_start(ap, fmt);
+    int n = OE_Vsnprintf(str, size, fmt, ap);
+    OE_va_end(ap);
     return n;
 }

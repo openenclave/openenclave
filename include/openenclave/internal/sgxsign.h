@@ -26,14 +26,14 @@ OE_EXTERNC_BEGIN
 *
 * @return OE_OK success
 */
-oe_result_t oe_sgx_sign_enclave(
+OE_Result OE_SGXSignEnclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,
     uint16_t securityVersion,
     const uint8_t* pemData,
     size_t pemSize,
-    sgx_sigstruct_t* sigstruct);
+    SGX_SigStruct* sigstruct);
 
 OE_EXTERNC_END
 

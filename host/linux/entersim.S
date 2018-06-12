@@ -6,14 +6,14 @@
 
 //==============================================================================
 //
-// void oe_enter_sim(
+// void OE_EnterSim(
 //     [IN] void* tcs,
 //     [IN] void (*aep)(),
 //     [IN] uint64_t arg1,
 //     [IN] uint64_t arg2,
 //     [OUT] uint64_t* arg3,
 //     [OUT] uint64_t* arg4,
-//     [IN] oe_enclave_t* enclave);
+//     [IN] OE_Enclave* enclave);
 //
 // Registers:
 //     RDI   - tcs: thread control structure (extended)
@@ -39,9 +39,9 @@
 #define HOST_CONTEXT    (-12*OE_WORDSIZE)(%rbp)
 #define PARAMS_SPACE    ((12*OE_WORDSIZE) + OE_CONTEXT_SIZE)
 
-.globl oe_enter_sim
-.type oe_enter_sim, @function
-oe_enter_sim:
+.globl OE_EnterSim
+.type OE_EnterSim, @function
+OE_EnterSim:
 .cfi_startproc
 
     // Setup stack frame:
@@ -70,12 +70,12 @@ oe_enter_sim:
 
     // Save the current context.
     mov HOST_CONTEXT, %rdi
-    call oe_snap_current_context@PLT
+    call OE_SnapCurrentContext@PLT
 
     // Save the stack pointer so enclave can use the stack.
     mov %rsp, RSP
 
-    // Call oe_main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
+    // Call OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
     mov CSSA, %rax
     mov TCS, %rbx
     mov 72(%rbx), %rdx  // RDX=TCS.u.main (72)
@@ -92,7 +92,7 @@ oe_enter_sim:
 
     // Restore the saved host context.
     mov HOST_CONTEXT, %rdi
-    call oe_restore_partial_context@PLT
+    call OE_RestorePartialContext@PLT
 
 .dispatch_ocall_sim:
 
@@ -109,7 +109,7 @@ oe_enter_sim:
     // Push one extra register to keep the stack aligned.
     push %r13
 
-    // RAX = __oe_dispatch_ocall(
+    // RAX = __OE_DispatchOCall(
     //     RDI=arg1
     //     RSI=arg2
     //     RDX=arg1Out
@@ -121,7 +121,7 @@ oe_enter_sim:
     leaq ARG2OUT, %rcx
     mov TCS, %r8
     mov ENCLAVE, %r9
-    call __oe_dispatch_ocall@PLT
+    call __OE_DispatchOCall@PLT
 
     // Restore registers saved above:
     pop %r13

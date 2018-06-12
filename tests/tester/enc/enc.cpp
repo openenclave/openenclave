@@ -114,18 +114,18 @@ OE_EXTERNC char* TestStrdup(const char* s)
 
 OE_EXTERNC int CopyObject(struct Object* dest, const struct Object* src)
 {
-    oe_result_t r;
+    OE_Result r;
 
     if (!dest || !src)
         return -1;
 
-    r = oe_destroy_struct(&Object_ti, dest, free);
+    r = OE_DestroyStruct(&Object_ti, dest, free);
     if (r != OE_OK)
         return -1;
 
     memset(dest, 0, sizeof(Object));
 
-    r = oe_copy_struct(&Object_ti, src, dest, malloc);
+    r = OE_CopyStruct(&Object_ti, src, dest, malloc);
     if (r != OE_OK)
         return -1;
 
@@ -173,14 +173,14 @@ OE_EXTERNC int32_t ECALL_MultipleParams(
         return -1;
 
 #if 0
-    oe_print_struct(&Object_ti, objectIn);
+    OE_PrintStruct(&Object_ti, objectIn);
 #endif
 
     if (objectRefOut)
     {
 #if 0
         if (*objectRefOut)
-            oe_print_struct(&Object_ti, *objectRefOut);
+            OE_PrintStruct(&Object_ti, *objectRefOut);
 #endif
         *objectRefOut = _MakeObject("O10", 10);
     }
@@ -249,10 +249,10 @@ OE_EXTERNC int* ReturnIntPtr(int* p, size_t n)
         return NULL;
 
 #if 0
-    oe_printf("ReturnIntPtr(p=%p, n=%zu)\n", p, n);
+    OE_Printf("ReturnIntPtr(p=%p, n=%zu)\n", p, n);
 
     for (size_t i = 0; i < n; i++)
-        oe_printf("ELEM{%d}\n", p[i]);
+        OE_Printf("ELEM{%d}\n", p[i]);
 #endif
 
     int* ret = (int*)malloc(n * sizeof(int));

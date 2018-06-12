@@ -9,9 +9,9 @@ OE_ECALL void Test(void* args_)
 {
     Args* args = (Args*)args_;
 
-    oe_hex_dump(args->data, sizeof(args->data));
+    OE_HexDump(args->data, sizeof(args->data));
 
-    const char* str = oe_hex_string(
+    const char* str = OE_HexString(
         args->hexstr, sizeof(args->hexstr), args->data, sizeof(args->data));
 
     if (str != args->hexstr)

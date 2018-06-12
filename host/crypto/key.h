@@ -10,74 +10,74 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
-typedef struct oe_private_key_t
+typedef struct OE_PrivateKey
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} oe_private_key_t;
+} OE_PrivateKey;
 
-typedef struct oe_public_key_t
+typedef struct OE_PublicKey
 {
     uint64_t magic;
     EVP_PKEY* pkey;
-} oe_public_key_t;
+} OE_PublicKey;
 
-typedef oe_result_t (*oe_private_key_write_pem_callback)(BIO* bio, EVP_PKEY* pkey);
+typedef OE_Result (*OE_PrivateKeyWritePEMCallback)(BIO* bio, EVP_PKEY* pkey);
 
-bool oe_private_key_is_valid(const oe_private_key_t* impl, uint64_t magic);
+bool OE_PrivateKeyIsValid(const OE_PrivateKey* impl, uint64_t magic);
 
-bool oe_public_key_is_valid(const oe_public_key_t* impl, uint64_t magic);
+bool OE_PublicKeyIsValid(const OE_PublicKey* impl, uint64_t magic);
 
-void oe_public_key_init(oe_public_key_t* publicKey, EVP_PKEY* pkey, uint64_t magic);
+void OE_PublicKeyInit(OE_PublicKey* publicKey, EVP_PKEY* pkey, uint64_t magic);
 
-void oe_private_key_init(
-    oe_private_key_t* privateKey,
+void OE_PrivateKeyInit(
+    OE_PrivateKey* privateKey,
     EVP_PKEY* pkey,
     uint64_t magic);
 
-oe_result_t oe_private_key_read_pem(
+OE_Result OE_PrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    oe_private_key_t* key,
+    OE_PrivateKey* key,
     int keyType,
     uint64_t magic);
 
-oe_result_t oe_public_key_read_pem(
+OE_Result OE_PublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    oe_public_key_t* key,
+    OE_PublicKey* key,
     int keyType,
     uint64_t magic);
 
-oe_result_t oe_private_key_write_pem(
-    const oe_private_key_t* privateKey,
+OE_Result OE_PrivateKeyWritePEM(
+    const OE_PrivateKey* privateKey,
     uint8_t* data,
     size_t* size,
-    oe_private_key_write_pem_callback privateKeyWritePEMCallback,
+    OE_PrivateKeyWritePEMCallback privateKeyWritePEMCallback,
     uint64_t magic);
 
-oe_result_t oe_public_key_write_pem(
-    const oe_public_key_t* key,
+OE_Result OE_PublicKeyWritePEM(
+    const OE_PublicKey* key,
     uint8_t* data,
     size_t* size,
     uint64_t magic);
 
-oe_result_t oe_private_key_free(oe_private_key_t* key, uint64_t magic);
+OE_Result OE_PrivateKeyFree(OE_PrivateKey* key, uint64_t magic);
 
-oe_result_t oe_public_key_free(oe_public_key_t* key, uint64_t magic);
+OE_Result OE_PublicKeyFree(OE_PublicKey* key, uint64_t magic);
 
-oe_result_t oe_private_key_sign(
-    const oe_private_key_t* privateKey,
-    oe_hash_type_t hashType,
+OE_Result OE_PrivateKeySign(
+    const OE_PrivateKey* privateKey,
+    OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
     uint8_t* signature,
     size_t* signatureSize,
     uint64_t magic);
 
-oe_result_t oe_public_key_verify(
-    const oe_public_key_t* publicKey,
-    oe_hash_type_t hashType,
+OE_Result OE_PublicKeyVerify(
+    const OE_PublicKey* publicKey,
+    OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
     const uint8_t* signature,

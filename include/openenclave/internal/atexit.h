@@ -8,9 +8,9 @@
 
 OE_EXTERNC_BEGIN
 
-int oe_atexit(void (*function)(void));
+int OE_AtExit(void (*function)(void));
 
-void oe_call_at_exit_functions(void);
+void OE_CallAtExitFunctions(void);
 
 int __cxa_atexit(void (*func)(void*), void* arg, void* dso_handle);
 

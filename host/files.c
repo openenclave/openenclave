@@ -12,19 +12,19 @@
 #include <sys/types.h>
 #include "fopen.h"
 
-bool __oe_file_exists(const char* path)
+bool __OE_FileExists(const char* path)
 {
     struct stat st;
     return stat(path, &st) == 0 ? true : false;
 }
 
-oe_result_t __oe_load_file(
+OE_Result __OE_LoadFile(
     const char* path,
     size_t extraBytes,
     void** data,
     size_t* size)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     FILE* is = NULL;
 
     if (data)
@@ -52,7 +52,7 @@ oe_result_t __oe_load_file(
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Open the file */
-    if (oe_fopen(&is, path, "rb") != 0)
+    if (OE_Fopen(&is, path, "rb") != 0)
         OE_THROW(OE_NOT_FOUND);
 
     /* Read file into memory */
@@ -85,9 +85,9 @@ OE_CATCH:
     return result;
 }
 
-oe_result_t __oe_load_pages(const char* path, oe_page** pages, size_t* npages)
+OE_Result __OE_LoadPages(const char* path, OE_Page** pages, size_t* npages)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     void* data = NULL;
     size_t size;
 
@@ -96,14 +96,14 @@ oe_result_t __oe_load_pages(const char* path, oe_page** pages, size_t* npages)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Load the file into memory with zero extra bytes */
-    OE_TRY(__oe_load_file(path, 0, &data, &size));
+    OE_TRY(__OE_LoadFile(path, 0, &data, &size));
 
     /* Fail if file size is not a multiple of the page size */
     if (size % OE_PAGE_SIZE)
         OE_THROW(OE_FAILURE);
 
     /* Set the output parameters */
-    *pages = ((oe_page*)data);
+    *pages = ((OE_Page*)data);
     *npages = size / OE_PAGE_SIZE;
 
     result = OE_OK;

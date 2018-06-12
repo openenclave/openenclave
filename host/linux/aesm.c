@@ -160,13 +160,13 @@ static ssize_t _UnpackVariantUint32(mem_t* buf, size_t pos, uint32_t* value)
     return pos + count;
 }
 
-static oe_result_t _PackBytes(
+static OE_Result _PackBytes(
     mem_t* buf,
     uint8_t fieldNum,
     const void* data,
     uint32_t size)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     uint8_t tag;
 
     if (_MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED, &tag) != 0)
@@ -189,7 +189,7 @@ OE_CATCH:
 
 static int _PackVarInt(mem_t* buf, uint8_t fieldNum, uint64_t value)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
 
     if (_PackTag(buf, fieldNum, WIRETYPE_VARINT) != 0)
         OE_THROW(OE_FAILURE);
@@ -203,13 +203,13 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _UnpackVarInt(
+static OE_Result _UnpackVarInt(
     mem_t* buf,
     size_t* pos,
     uint8_t fieldNum,
     uint32_t* value)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     uint8_t tag;
     uint8_t tmpTag;
 
@@ -231,14 +231,14 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _UnpackLengthDelimited(
+static OE_Result _UnpackLengthDelimited(
     mem_t* buf,
     size_t* pos,
     uint8_t fieldNum,
     void* data,
     size_t dataSize)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     uint8_t tag = 0;
     uint8_t tmpTag = 0;
     uint32_t size;
@@ -288,17 +288,17 @@ static int _Write(int sock, const void* data, size_t size)
     return 0;
 }
 
-static oe_result_t _WriteRequest(
+static OE_Result _WriteRequest(
     AESM* aesm,
     MessageType messageType,
     const mem_t* message)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     mem_t envelope = MEM_DYNAMIC_INIT;
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     printf("=== _WriteRequest:\n");
-    oe_hex_dump(mem_ptr(message), mem_size(message));
+    OE_HexDump(mem_ptr(message), mem_size(message));
 #endif
 
     /* Wrap message in envelope */
@@ -328,12 +328,12 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _ReadResponse(
+static OE_Result _ReadResponse(
     AESM* aesm,
     MessageType messageType,
     mem_t* message)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     uint32_t size;
     mem_t envelope = MEM_DYNAMIC_INIT;
 
@@ -385,7 +385,7 @@ static oe_result_t _ReadResponse(
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     printf("=== _ReadResponse():\n");
-    oe_hex_dump(mem_ptr(message), mem_size(message));
+    OE_HexDump(mem_ptr(message), mem_size(message));
 #endif
 
     result = OE_OK;
@@ -443,20 +443,20 @@ void AESMDisconnect(AESM* aesm)
     }
 }
 
-oe_result_t AESMGetLaunchToken(
+OE_Result AESMGetLaunchToken(
     AESM* aesm,
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
-    const sgx_attributes_t* attributes,
-    sgx_launch_token_t* launchToken)
+    const SGX_Attributes* attributes,
+    SGX_LaunchToken* launchToken)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     uint64_t timeout = 15000;
     mem_t request = MEM_DYNAMIC_INIT;
     mem_t response = MEM_DYNAMIC_INIT;
 
     if (launchToken)
-        memset(launchToken, 0, sizeof(sgx_launch_token_t));
+        memset(launchToken, 0, sizeof(SGX_LaunchToken));
 
     /* Reject invalid parameters */
     if (!_AESMValid(aesm) || !mrenclave || !modulus || !attributes)
@@ -471,7 +471,7 @@ oe_result_t AESMGetLaunchToken(
         OE_TRY(_PackBytes(&request, 2, modulus, OE_KEY_SIZE));
 
         /* Pack ATTRIBUTES */
-        OE_TRY(_PackBytes(&request, 3, attributes, sizeof(sgx_attributes_t)));
+        OE_TRY(_PackBytes(&request, 3, attributes, sizeof(SGX_Attributes)));
 
         /* Pack TIMEOUT */
         OE_TRY(_PackVarInt(&request, 9, timeout));
@@ -499,7 +499,7 @@ oe_result_t AESMGetLaunchToken(
         /* Unpack the launch token */
         OE_TRY(
             _UnpackLengthDelimited(
-                &response, &pos, 2, launchToken, sizeof(sgx_launch_token_t)));
+                &response, &pos, 2, launchToken, sizeof(SGX_LaunchToken)));
     }
 
     result = OE_OK;
@@ -512,18 +512,18 @@ OE_CATCH:
     return result;
 }
 
-oe_result_t AESMInitQuote(
+OE_Result AESMInitQuote(
     AESM* aesm,
-    sgx_target_info_t* targetInfo,
-    sgx_epid_group_id_t* epidGroupID)
+    SGX_TargetInfo* targetInfo,
+    SGX_EPIDGroupID* epidGroupID)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     uint64_t timeout = 15000;
     mem_t request = MEM_DYNAMIC_INIT;
     mem_t response = MEM_DYNAMIC_INIT;
 
     if (targetInfo)
-        memset(targetInfo, 0, sizeof(sgx_target_info_t));
+        memset(targetInfo, 0, sizeof(SGX_TargetInfo));
 
     /* Reject invalid parameters */
     if (!_AESMValid(aesm) || !targetInfo || !epidGroupID)
@@ -557,12 +557,12 @@ oe_result_t AESMInitQuote(
         /* Unpack targetInfo */
         OE_TRY(
             _UnpackLengthDelimited(
-                &response, &pos, 2, targetInfo, sizeof(sgx_target_info_t)));
+                &response, &pos, 2, targetInfo, sizeof(SGX_TargetInfo)));
 
         /* Unpack epidGroupID */
         OE_TRY(
             _UnpackLengthDelimited(
-                &response, &pos, 3, epidGroupID, sizeof(sgx_epid_group_id_t)));
+                &response, &pos, 3, epidGroupID, sizeof(SGX_EPIDGroupID)));
     }
 
     result = OE_OK;
@@ -575,22 +575,22 @@ OE_CATCH:
     return result;
 }
 
-oe_result_t AESMGetQuote(
+OE_Result AESMGetQuote(
     AESM* aesm,
-    const sgx_report_t* report,
-    sgx_quote_type_t quoteType,
-    const sgx_spid_t* spid,
-    const sgx_nonce_t* nonce,
+    const SGX_Report* report,
+    SGX_QuoteType quoteType,
+    const SGX_SPID* spid,
+    const SGX_Nonce* nonce,
     const uint8_t* signatureRevocationList,
     uint32_t signatureRevocationListSize,
-    sgx_report_t* reportOut, /* ATTN: support this! */
-    sgx_quote_t* quote,
+    SGX_Report* reportOut, /* ATTN: support this! */
+    SGX_Quote* quote,
     size_t quoteSize)
 {
     uint64_t timeout = 15000;
     mem_t request = MEM_DYNAMIC_INIT;
     mem_t response = MEM_DYNAMIC_INIT;
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
 
     /* Zero initialize the quote */
     if (quote)
@@ -603,17 +603,17 @@ oe_result_t AESMGetQuote(
     /* Build the PAYLOAD */
     {
         /* Pack REPORT */
-        OE_TRY(_PackBytes(&request, 1, report, sizeof(sgx_report_t)));
+        OE_TRY(_PackBytes(&request, 1, report, sizeof(SGX_Report)));
 
         /* Pack QUOTE-TYPE */
         OE_TRY(_PackVarInt(&request, 2, quoteType));
 
         /* Pack SPID */
-        OE_TRY(_PackBytes(&request, 3, spid, sizeof(sgx_spid_t)));
+        OE_TRY(_PackBytes(&request, 3, spid, sizeof(SGX_SPID)));
 
         /* Pack NONCE */
         if (nonce)
-            OE_TRY(_PackBytes(&request, 4, nonce, sizeof(sgx_nonce_t)));
+            OE_TRY(_PackBytes(&request, 4, nonce, sizeof(SGX_Nonce)));
 
         /* Pack SIGNATURE-REVOCATION-LIST */
         if (signatureRevocationListSize)
@@ -664,7 +664,7 @@ oe_result_t AESMGetQuote(
         {
             OE_TRY(
                 _UnpackLengthDelimited(
-                    &response, &pos, 3, reportOut, sizeof(sgx_report_t)));
+                    &response, &pos, 3, reportOut, sizeof(SGX_Report)));
         }
     }
 

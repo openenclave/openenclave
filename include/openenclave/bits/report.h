@@ -31,7 +31,7 @@ OE_EXTERNC_BEGIN
 #define OE_REPORT_ATTRIBUTES_RESERVED \
     (~(OE_REPORT_ATTRIBUTES_DEBUG | OE_REPORT_ATTRIBUTES_REMOTE))
 
-typedef struct _oe_identity
+typedef struct _OE_Identity
 {
     uint32_t idVersion;
     uint32_t securityVersion;
@@ -39,31 +39,31 @@ typedef struct _oe_identity
     uint8_t uniqueID[OE_UNIQUE_ID_SIZE];
     uint8_t authorID[OE_AUTHOR_ID_SIZE];
     uint8_t productID[OE_PRODUCT_ID_SIZE];
-} oe_identity_t;
+} OE_Identity;
 
 /*
- * oe_report_t structure holds the parsed form of a report.
+ * OE_Report structure holds the parsed form of a report.
  */
-typedef struct _oe_report
+typedef struct _OE_Report
 {
-    /* Size of the oe_report_t structure. */
+    /* Size of the OE_Report structure. */
     uint32_t size;
 
     /* The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
-    oe_enclave_type_t type;
+    OE_EnclaveType type;
 
     /* Pointer to report data field within the report byte-stream supplied to
-     * oe_parse_report.*/
+     * OE_ParseReport.*/
     uint8_t* reportData;
     uint32_t reportDataSize;
 
     /* Pointer to report body field within the report byte-stream supplied to
-     * oe_parse_report. */
+     * OE_ParseReport. */
     uint8_t* enclaveReport;
     uint32_t enclaveReportSize;
 
-    oe_identity_t identity;
-} oe_report_t;
+    OE_Identity identity;
+} OE_Report;
 
 OE_EXTERNC_END
 

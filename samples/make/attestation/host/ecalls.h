@@ -15,23 +15,23 @@
 /**
  * Fetch the quoted public key from the enclave.
  */
-QuotedPublicKey* GetPublicKey(oe_enclave_t* enclave);
+QuotedPublicKey* GetPublicKey(OE_Enclave* enclave);
 
 /**
  * Ask the enclave to attest and store the public key of another enclave.
  */
-void StorePublicKey(oe_enclave_t* enclave, QuotedPublicKey* quotedPublicKey);
+void StorePublicKey(OE_Enclave* enclave, QuotedPublicKey* quotedPublicKey);
 
 /**
  * Fetch encrypted data from the enclave.
  */
-void GenerateEncryptedData(oe_enclave_t* enclave, uint8_t** data, uint32_t* size);
+void GenerateEncryptedData(OE_Enclave* enclave, uint8_t** data, uint32_t* size);
 
 /**
  * Send encrypted data to the enclave.
  */
 void ProcessEncryptedData(
-    oe_enclave_t* enclave,
+    OE_Enclave* enclave,
     const uint8_t* data,
     uint32_t size);
 

@@ -16,7 +16,7 @@
 
 int main(int argc, const char* argv[])
 {
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
         printf(

@@ -7,40 +7,40 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/enclavelibc.h>
 
-static uint32_t _oe_cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+static uint32_t _OE_CpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 
 /*
 **==============================================================================
 **
-** oe_initialize_cpuid()
+** OE_InitializeCpuid()
 **
 **     Initialize the enclave view of CPUID information as provided by host
-**     during _InitializeEnclave call as part of oe_create_enclave.
+**     during _InitializeEnclave call as part of OE_CreateEnclave.
 **
 **==============================================================================
 */
-void oe_initialize_cpuid(uint64_t argIn)
+void OE_InitializeCpuid(uint64_t argIn)
 {
-    oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)argIn;
+    OE_InitEnclaveArgs* args = (OE_InitEnclaveArgs*)argIn;
     if (args != NULL)
     {
         // Abort the enclave if AESNI support is not present in the cached
         // CPUID Feature information (cpuid leaf of 1)
         if (!(args->cpuidTable[1][OE_CPUID_RCX] & OE_CPUID_AESNI_FEATURE))
-            oe_abort();
+            OE_Abort();
 
-        oe_memcpy(
-            _oe_cpuid_table,
+        OE_Memcpy(
+            _OE_CpuidTable,
             args->cpuidTable,
             OE_CPUID_LEAF_COUNT * OE_CPUID_REG_COUNT *
-                sizeof(_oe_cpuid_table[0][0]));
+                sizeof(_OE_CpuidTable[0][0]));
     }
 }
 
 /*
 **==============================================================================
 **
-** oe_emulate_cpuid()
+** OE_EmulateCpuid()
 **
 **     Emulate the result of a CPUID call from within the enclave by returning
 **     results initialized by the host during enclave creation.
@@ -61,7 +61,7 @@ void oe_initialize_cpuid(uint64_t argIn)
 **     For CPUID leaf 4, subleaf of 0 is only available as noted above.
 **==============================================================================
 */
-int oe_emulate_cpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx)
+int OE_EmulateCpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx)
 {
     // upper bits zeroed on 64-bit for CPUID
     uint32_t cpuidLeaf = (*rax) & 0xFFFFFFFF;
@@ -73,10 +73,10 @@ int oe_emulate_cpuid(uint64_t* rax, uint64_t* rbx, uint64_t* rcx, uint64_t* rdx)
         if ((cpuidLeaf == 4) && (cpuidSubLeaf != 0))
             return -1;
 
-        *rax = _oe_cpuid_table[cpuidLeaf][OE_CPUID_RAX];
-        *rbx = _oe_cpuid_table[cpuidLeaf][OE_CPUID_RBX];
-        *rcx = _oe_cpuid_table[cpuidLeaf][OE_CPUID_RCX];
-        *rdx = _oe_cpuid_table[cpuidLeaf][OE_CPUID_RDX];
+        *rax = _OE_CpuidTable[cpuidLeaf][OE_CPUID_RAX];
+        *rbx = _OE_CpuidTable[cpuidLeaf][OE_CPUID_RBX];
+        *rcx = _OE_CpuidTable[cpuidLeaf][OE_CPUID_RCX];
+        *rdx = _OE_CpuidTable[cpuidLeaf][OE_CPUID_RDX];
         return 0;
     }
     return -1;

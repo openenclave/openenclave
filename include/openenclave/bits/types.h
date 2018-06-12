@@ -136,12 +136,12 @@ OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 /*
 **==============================================================================
 **
-** oe_type_t
+** OE_Type
 **
 **==============================================================================
 */
 
-typedef enum _oe_type {
+typedef enum _OE_Type {
     OE_NONE_T,
     OE_CHAR_T,
     OE_UCHAR_T,
@@ -167,19 +167,19 @@ typedef enum _oe_type {
     OE_SSIZE_T,
     OE_STRUCT_T,
     OE_VOID_T,
-} oe_type_t;
+} OE_Type;
 
 /*
 **==============================================================================
 **
-** oe_enclave_type_t
+** OE_EnclaveType
 **
 **==============================================================================
 */
-typedef enum _oe_enclave_type {
+typedef enum _OE_EnclaveType {
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
-} oe_enclave_type_t;
+} OE_EnclaveType;
 
 /*
 **==============================================================================
@@ -189,52 +189,52 @@ typedef enum _oe_enclave_type {
 **==============================================================================
 */
 
-typedef void* (*oe_alloc_proc)(size_t size);
+typedef void* (*OE_AllocProc)(size_t size);
 
-typedef void (*oe_dealloc_proc_t)(void* ptr);
+typedef void (*OE_DeallocProc)(void* ptr);
 
 /*
 **==============================================================================
 **
-** oe_page
+** OE_Page
 **
 **==============================================================================
 */
 
-typedef OE_ALIGNED(OE_PAGE_SIZE) struct _oe_page
+typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
 {
     unsigned char data[OE_PAGE_SIZE];
-} oe_page;
+} OE_Page;
 
-OE_STATIC_ASSERT(__alignof(oe_page) == OE_PAGE_SIZE);
-
-/*
-**==============================================================================
-**
-** oe_va_list:
-**
-**==============================================================================
-*/
-
-#define oe_va_list __builtin_va_list
-#define oe_va_start __builtin_va_start
-#define oe_va_arg __builtin_va_arg
-#define oe_va_end __builtin_va_end
-#define oe_va_copy __builtin_va_copy
+OE_STATIC_ASSERT(__alignof(OE_Page) == OE_PAGE_SIZE);
 
 /*
 **==============================================================================
 **
-** oe_ocall_context_t:
+** OE_va_list:
 **
 **==============================================================================
 */
 
-typedef struct _oe_ocall_context
+#define OE_va_list __builtin_va_list
+#define OE_va_start __builtin_va_start
+#define OE_va_arg __builtin_va_arg
+#define OE_va_end __builtin_va_end
+#define OE_va_copy __builtin_va_copy
+
+/*
+**==============================================================================
+**
+** OE_OCallContext:
+**
+**==============================================================================
+*/
+
+typedef struct _OE_OCallContext
 {
     uintptr_t rbp;
     uintptr_t ret;
-} oe_ocall_context_t;
+} OE_OCallContext;
 
 /*
 **==============================================================================
@@ -289,13 +289,13 @@ typedef struct _oe_ocall_context
 
 #elif defined(__GNUC__)
 
-OE_INLINE unsigned long long oe_check_llu(const uint64_t* ptr)
+OE_INLINE unsigned long long OE_CheckLLU(const uint64_t* ptr)
 {
     OE_STATIC_ASSERT(sizeof(unsigned long long) == sizeof(uint64_t));
     return *ptr;
 }
 
-OE_INLINE long long oe_check_lld(const int64_t* ptr)
+OE_INLINE long long OE_CheckLLD(const int64_t* ptr)
 {
     OE_STATIC_ASSERT(sizeof(long long) == sizeof(int64_t));
     return *ptr;
@@ -304,13 +304,13 @@ OE_INLINE long long oe_check_lld(const int64_t* ptr)
 #define OE_LLU(_X_)              \
     ({                           \
         __typeof(_X_) _x_ = _X_; \
-        oe_check_llu(&_x_);       \
+        OE_CheckLLU(&_x_);       \
     })
 
 #define OE_LLD(_X_)              \
     ({                           \
         __typeof(_X_) _x_ = _X_; \
-        oe_check_lld(&_x_);       \
+        OE_CheckLLD(&_x_);       \
     })
 
 #define OE_LLX(_X_) OE_LLU(_X_)

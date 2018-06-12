@@ -27,11 +27,11 @@ int My__cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
     return __cxa_atexit(func, arg, dso_handle);
 }
 
-void* MyHostMalloc(size_t size)
+void* MyOE_HostMalloc(size_t size)
 {
     void* p;
 
-    p = oe_host_malloc(size);
+    p = OE_HostMalloc(size);
     if (p)
     {
         auto ins = stats.allocations.insert(std::pair<void*, size_t>(p, size));
@@ -40,11 +40,11 @@ void* MyHostMalloc(size_t size)
     return p;
 }
 
-void MyHostFree(void* ptr)
+void MyOE_HostFree(void* ptr)
 {
     if (ptr)
         OE_TEST(stats.allocations.erase(ptr) == 1);
-    oe_host_free(ptr);
+    OE_HostFree(ptr);
 }
 
 OE_EXTERNC_END

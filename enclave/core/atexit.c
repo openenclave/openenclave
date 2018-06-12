@@ -7,7 +7,7 @@
 /*
 **==============================================================================
 **
-** oe_atexit_entry_t
+** OE_AtExitEntry
 **
 **     This structure defines fields for an at-exit function and it's argument.
 **     Instances of these are maintained on a list on the heap in reverse order.
@@ -15,33 +15,33 @@
 **==============================================================================
 */
 
-typedef struct _oe_atexit_entry oe_atexit_entry_t;
+typedef struct _OE_AtExitEntry OE_AtExitEntry;
 
-struct _oe_atexit_entry
+struct _OE_AtExitEntry
 {
-    oe_atexit_entry_t* next;
+    OE_AtExitEntry* next;
     void (*func)(void*);
     void* arg;
 };
 
-static oe_atexit_entry_t* _entries;
-static oe_spinlock_t _spin = OE_SPINLOCK_INITIALIZER;
+static OE_AtExitEntry* _entries;
+static OE_Spinlock _spin = OE_SPINLOCK_INITIALIZER;
 
 /*
 **==============================================================================
 **
 ** _NewAtExitEntry()
 **
-**     Allocate an oe_atexit_entry_t structure from the heap using sbrk().
+**     Allocate an OE_AtExitEntry structure from the heap using sbrk().
 **
 **==============================================================================
 */
 
-static oe_atexit_entry_t* _NewAtExitEntry(void (*func)(void*), void* arg)
+static OE_AtExitEntry* _NewAtExitEntry(void (*func)(void*), void* arg)
 {
-    oe_atexit_entry_t* entry;
+    OE_AtExitEntry* entry;
 
-    if ((entry = (oe_atexit_entry_t*)oe_sbrk(sizeof(oe_atexit_entry_t))) == (void*)-1)
+    if ((entry = (OE_AtExitEntry*)OE_Sbrk(sizeof(OE_AtExitEntry))) == (void*)-1)
         return NULL;
 
     entry->func = func;
@@ -57,7 +57,7 @@ static oe_atexit_entry_t* _NewAtExitEntry(void (*func)(void*), void* arg)
 **
 **     Installs a function to be invoked upon exit (enclave termination).
 **
-**     The implementation injects an oe_atexit_entry_t structure onto a list
+**     The implementation injects an OE_AtExitEntry structure onto a list
 **     in reverse order (at the front of the list).
 **
 **==============================================================================
@@ -65,18 +65,18 @@ static oe_atexit_entry_t* _NewAtExitEntry(void (*func)(void*), void* arg)
 
 int __cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
 {
-    oe_atexit_entry_t* entry;
+    OE_AtExitEntry* entry;
 
     if (!(entry = _NewAtExitEntry(func, arg)))
         return -1;
 
     /* Insert entry at the beginning of the list (reverse order) */
-    oe_spin_lock(&_spin);
+    OE_SpinLock(&_spin);
     {
         entry->next = _entries;
         _entries = entry;
     }
-    oe_spin_unlock(&_spin);
+    OE_SpinUnlock(&_spin);
 
     return 0;
 }
@@ -84,15 +84,15 @@ int __cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
 /*
 **==============================================================================
 **
-** oe_atexit()
+** OE_AtExit()
 **
 **     Add a function to the at-exit list. It will be invoked upon enclave
-**     termination by oe_call_at_exit_functions().
+**     termination by OE_CallAtExitFunctions().
 **
 **==============================================================================
 */
 
-int oe_atexit(void (*function)(void))
+int OE_AtExit(void (*function)(void))
 {
     typedef void (*Function)(void*);
 
@@ -107,16 +107,16 @@ int oe_atexit(void (*function)(void))
 /*
 **==============================================================================
 **
-** oe_call_at_exit_functions()
+** OE_CallAtExitFunctions()
 **
 **     This function invokes all at-exit functions.
 **
 **==============================================================================
 */
 
-void oe_call_at_exit_functions(void)
+void OE_CallAtExitFunctions(void)
 {
-    oe_atexit_entry_t* p;
+    OE_AtExitEntry* p;
 
     /* Call at-exit functions in reverse order */
     for (p = _entries; p; p = p->next)

@@ -4,7 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/utils.h>
 
-oe_result_t oe_once(oe_once_t* once, void (*func)(void))
+OE_Result OE_Once(OE_OnceType* once, void (*func)(void))
 {
     if (!once)
         return OE_INVALID_PARAMETER;
@@ -16,9 +16,9 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
     OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
     if (o == 0)
     {
-        static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+        static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
 
-        oe_spin_lock(&_lock);
+        OE_SpinLock(&_lock);
 
         if (*once == 0)
         {
@@ -30,7 +30,7 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void))
             *once = 1;
         }
 
-        oe_spin_unlock(&_lock);
+        OE_SpinUnlock(&_lock);
     }
 
     return OE_OK;

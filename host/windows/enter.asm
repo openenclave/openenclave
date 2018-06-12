@@ -3,18 +3,18 @@
 
 include ksamd64.inc
 
-extern __oe_dispatch_ocall:proc
+extern __OE_DispatchOCall:proc
 
 ;;==============================================================================
 ;;
-;; void oe_enter(
+;; void OE_Enter(
 ;;     [IN] void* tcs,
 ;;     [IN] void (*aep)(),
 ;;     [IN] uint64_t arg1,
 ;;     [IN] uint64_t arg2,
 ;;     [OUT] uint64_t* arg3,
 ;;     [OUT] uint64_t* arg4,
-;;     [OUT] oe_enclave_t* enclave);
+;;     [OUT] OE_Enclave* enclave);
 ;;
 ;; Registers:
 ;;     RCX      - tcs: thread control structure (extended)
@@ -45,7 +45,7 @@ ARG1OUT         EQU [rbp-64]
 ARG2OUT         EQU [rbp-72]
 STACKPTR        EQU [rbp-80]
 
-NESTED_ENTRY oe_enter, _TEXT$00
+NESTED_ENTRY OE_Enter, _TEXT$00
     END_PROLOGUE
 
     ;; Setup stack frame:
@@ -100,7 +100,7 @@ execute_eenter:
 
 dispatch_ocall:
 
-    ;; RAX = __oe_dispatch_ocall(
+    ;; RAX = __OE_DispatchOCall(
     ;;     RCX=arg1
     ;;     RDX=arg2
     ;;     R8=arg1Out
@@ -116,7 +116,7 @@ dispatch_ocall:
     mov qword ptr [rsp+32], rax
     mov rax, qword ptr ENCLAVE
     mov qword ptr [rsp+40], rax
-    call __oe_dispatch_ocall ;; RAX contains return value
+    call __OE_DispatchOCall ;; RAX contains return value
     add rsp, 56
 
     ;; Restore the stack pointer:
@@ -126,7 +126,7 @@ dispatch_ocall:
     cmp rax, 0
     jne return_from_ecall
 
-    ;; Prepare to reenter the enclave, calling oe_main()
+    ;; Prepare to reenter the enclave, calling OE_Main()
     mov rax, ARG1OUT
     mov ARG1, rax
     mov rax, ARG2OUT
@@ -163,6 +163,6 @@ return_from_ecall:
     BEGIN_EPILOGUE
     ret
 
-NESTED_END oe_enter, _TEXT$00
+NESTED_END OE_Enter, _TEXT$00
 
 END

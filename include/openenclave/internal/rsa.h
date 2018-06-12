@@ -12,18 +12,18 @@
 OE_EXTERNC_BEGIN
 
 /* Opaque representation of a private RSA key */
-typedef struct _oe_rsa_private_key
+typedef struct _OE_RSAPrivateKey
 {
     /* Internal implementation */
     uint64_t impl[4];
-} oe_rsa_private_key_t;
+} OE_RSAPrivateKey;
 
 /* Opaque representation of a public RSA key */
-typedef struct _oe_rsa_public_key
+typedef struct _OE_RSAPublicKey
 {
     /* Internal implementation */
     uint64_t impl[4];
-} oe_rsa_public_key_t;
+} OE_RSAPublicKey;
 
 /**
  * Reads a private RSA key from PEM data
@@ -36,7 +36,7 @@ typedef struct _oe_rsa_public_key
  *     -----END RSA PRIVATE KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * oe_rsa_private_key_free().
+ * OE_RSAPrivateKeyFree().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -44,10 +44,10 @@ typedef struct _oe_rsa_public_key
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_rsa_private_key_read_pem(
+OE_Result OE_RSAPrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    oe_rsa_private_key_t* privateKey);
+    OE_RSAPrivateKey* privateKey);
 
 /**
  * Reads a public RSA key from PEM data
@@ -60,7 +60,7 @@ oe_result_t oe_rsa_private_key_read_pem(
  *     -----END PUBLIC KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * oe_rsa_public_key_free().
+ * OE_RSAPublicKeyFree().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -68,10 +68,10 @@ oe_result_t oe_rsa_private_key_read_pem(
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_rsa_public_key_read_pem(
+OE_Result OE_RSAPublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    oe_rsa_public_key_t* publicKey);
+    OE_RSAPublicKey* publicKey);
 
 /**
  * Writes a private RSA key to PEM format
@@ -90,8 +90,8 @@ oe_result_t oe_rsa_public_key_read_pem(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-oe_result_t oe_rsa_private_key_write_pem(
-    const oe_rsa_private_key_t* privateKey,
+OE_Result OE_RSAPrivateKeyWritePEM(
+    const OE_RSAPrivateKey* privateKey,
     uint8_t* pemData,
     size_t* pemSize);
 
@@ -112,8 +112,8 @@ oe_result_t oe_rsa_private_key_write_pem(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-oe_result_t oe_rsa_public_key_write_pem(
-    const oe_rsa_public_key_t* publicKey,
+OE_Result OE_RSAPublicKeyWritePEM(
+    const OE_RSAPublicKey* publicKey,
     uint8_t* pemData,
     size_t* pemSize);
 
@@ -126,7 +126,7 @@ oe_result_t oe_rsa_public_key_write_pem(
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* privateKey);
+OE_Result OE_RSAPrivateKeyFree(OE_RSAPrivateKey* privateKey);
 
 /**
  * Releases an RSA public key
@@ -137,7 +137,7 @@ oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* privateKey);
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* publicKey);
+OE_Result OE_RSAPublicKeyFree(OE_RSAPublicKey* publicKey);
 
 /**
  * Digitally signs a message with a private RSA key
@@ -154,9 +154,9 @@ oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* publicKey);
  * @return OE_OK on success
  * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
-oe_result_t oe_rsa_private_key_sign(
-    const oe_rsa_private_key_t* privateKey,
-    oe_hash_type_t hashType,
+OE_Result OE_RSAPrivateKeySign(
+    const OE_RSAPrivateKey* privateKey,
+    OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
     uint8_t* signature,
@@ -177,9 +177,9 @@ oe_result_t oe_rsa_private_key_sign(
  *
  * @return OE_OK if the message was signed with the given certificate
  */
-oe_result_t oe_rsa_public_key_verify(
-    const oe_rsa_public_key_t* publicKey,
-    oe_hash_type_t hashType,
+OE_Result OE_RSAPublicKeyVerify(
+    const OE_RSAPublicKey* publicKey,
+    OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
     const uint8_t* signature,
@@ -198,11 +198,11 @@ oe_result_t oe_rsa_public_key_verify(
  *
  * @return OE_OK on success
  */
-oe_result_t oe_rsa_generate_key_pair(
+OE_Result OE_RSAGenerateKeyPair(
     uint64_t bits,
     uint64_t exponent,
-    oe_rsa_private_key_t* privateKey,
-    oe_rsa_public_key_t* publicKey);
+    OE_RSAPrivateKey* privateKey,
+    OE_RSAPublicKey* publicKey);
 
 /**
  * Get the modulus from a public RSA key.
@@ -218,8 +218,8 @@ oe_result_t oe_rsa_generate_key_pair(
  * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
  *         the required size.
  */
-oe_result_t oe_rsa_public_key_get_modulus(
-    const oe_rsa_public_key_t* publicKey,
+OE_Result OE_RSAPublicKeyGetModulus(
+    const OE_RSAPublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize);
 
@@ -237,8 +237,8 @@ oe_result_t oe_rsa_public_key_get_modulus(
  * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
  *         the required size.
  */
-oe_result_t oe_rsa_public_key_get_exponent(
-    const oe_rsa_public_key_t* publicKey,
+OE_Result OE_RSAPublicKeyGetExponent(
+    const OE_RSAPublicKey* publicKey,
     uint8_t* buffer,
     size_t* bufferSize);
 
@@ -255,9 +255,9 @@ oe_result_t oe_rsa_public_key_get_exponent(
  * @return OE_INVALID_PARAMETER a parameter was invalid.
  *
  */
-oe_result_t oe_rsa_public_key_equal(
-    const oe_rsa_public_key_t* publicKey1,
-    const oe_rsa_public_key_t* publicKey2,
+OE_Result OE_RSAPublicKeyEqual(
+    const OE_RSAPublicKey* publicKey1,
+    const OE_RSAPublicKey* publicKey2,
     bool* equal);
 
 OE_EXTERNC_END

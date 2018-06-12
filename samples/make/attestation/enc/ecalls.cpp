@@ -16,7 +16,7 @@
 OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg)
 {
     // ECALL parameters must lie outside the enclave.
-    if (!arg || !oe_is_outside_enclave(arg, sizeof(*arg)))
+    if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
         return;
 
     uint8_t pemPublicKey[512];
@@ -32,12 +32,12 @@ OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg)
     if (GenerateQuote(pemPublicKey, sizeof(pemPublicKey), quote, &quoteSize))
     {
         // Copy the quote to the host memory.
-        uint8_t* hostQuote = (uint8_t*)oe_host_malloc(quoteSize);
+        uint8_t* hostQuote = (uint8_t*)OE_HostMalloc(quoteSize);
         memcpy(hostQuote, quote, quoteSize);
 
         // Create return parameter.
         QuotedPublicKey* quotedPublicKey =
-            (QuotedPublicKey*)oe_host_malloc(sizeof(QuotedPublicKey));
+            (QuotedPublicKey*)OE_HostMalloc(sizeof(QuotedPublicKey));
         memcpy(quotedPublicKey->pemKey, pemPublicKey, sizeof(pemPublicKey));
         quotedPublicKey->quote = hostQuote;
         quotedPublicKey->quoteSize = quoteSize;
@@ -65,7 +65,7 @@ uint8_t g_OtherEnclavePemPublicKey[512];
 OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
 {
     // ECALL parameters must lie outside the enclave.
-    if (!arg || !oe_is_outside_enclave(arg, sizeof(*arg)))
+    if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
         return;
 
     arg->success = false;
@@ -77,7 +77,7 @@ OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
 
     QuotedPublicKey quotedPublicKey = *encArg.quotedPublicKey;
     if (!quotedPublicKey.quote ||
-        !oe_is_outside_enclave(quotedPublicKey.quote, quotedPublicKey.quoteSize))
+        !OE_IsOutsideEnclave(quotedPublicKey.quote, quotedPublicKey.quoteSize))
         return;
 
     uint8_t* quote = new uint8_t[quotedPublicKey.quoteSize];
@@ -120,7 +120,7 @@ uint8_t g_TestData[16] =
 OE_ECALL void GenerateEncryptedData(GenerateEncryptedDataArgs* arg)
 {
     // ECALL parameters must lie outside the enclave.
-    if (!arg || !oe_is_outside_enclave(arg, sizeof(*arg)))
+    if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
         return;
 
     uint8_t encryptedDataBuffer[1024];
@@ -132,7 +132,7 @@ OE_ECALL void GenerateEncryptedData(GenerateEncryptedDataArgs* arg)
             encryptedDataBuffer,
             &encryptedDataSize))
     {
-        uint8_t* hostBuffer = (uint8_t*)oe_host_malloc(encryptedDataSize);
+        uint8_t* hostBuffer = (uint8_t*)OE_HostMalloc(encryptedDataSize);
         memcpy(hostBuffer, encryptedDataBuffer, encryptedDataSize);
         arg->data = hostBuffer;
         arg->size = encryptedDataSize;
@@ -150,7 +150,7 @@ OE_ECALL void GenerateEncryptedData(GenerateEncryptedDataArgs* arg)
 OE_ECALL void ProcessEncryptedData(ProcessEncryptedDataArgs* arg)
 {
     // ECALL parameters must lie outside the enclave.
-    if (!arg || !oe_is_outside_enclave(arg, sizeof(*arg)))
+    if (!arg || !OE_IsOutsideEnclave(arg, sizeof(*arg)))
         return;
 
     arg->success = false;
@@ -160,7 +160,7 @@ OE_ECALL void ProcessEncryptedData(ProcessEncryptedDataArgs* arg)
     // processing it. Perform deep copy of argument.
     ProcessEncryptedDataArgs encArg = *arg;
 
-    if (!encArg.data || !oe_is_outside_enclave(encArg.data, encArg.size))
+    if (!encArg.data || !OE_IsOutsideEnclave(encArg.data, encArg.size))
         return;
 
     uint8_t* encryptedData = new uint8_t[encArg.size];

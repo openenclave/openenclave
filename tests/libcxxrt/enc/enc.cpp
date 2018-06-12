@@ -24,7 +24,7 @@ extern "C" int main(int argc, const char* argv[]);
 
 extern "C" void _exit(int status)
 {
-    oe_ocall(OCALL_EXIT, status, NULL, 0);
+    OE_OCall(OCALL_EXIT, status, NULL, 0);
     abort();
 }
 
@@ -64,6 +64,6 @@ OE_ECALL void Test(Args* args)
         };
         static int argc = sizeof(argv) / sizeof(argv[0]);
         args->ret = main(argc, argv);
-        args->test = oe_host_strdup(__TEST__NAME);
+        args->test = OE_HostStrdup(__TEST__NAME);
     }
 }

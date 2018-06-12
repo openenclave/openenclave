@@ -10,11 +10,11 @@
 #include <string.h>
 #include "../args.h"
 
-oe_enclave_t* enclave = NULL;
+OE_Enclave* enclave = NULL;
 
 OE_OCALL void HostNestCalls(void* args_)
 {
-    oe_result_t result;
+    OE_Result result;
     Args* args = (Args*)args_;
 
     printf("host: HostNestCalls depth [%d] started!\n", args->depth);
@@ -47,10 +47,10 @@ OE_OCALL void HostNestCalls(void* args_)
         exit(1);
     }
 
-    if ((result = oe_call_enclave(enclave, "EnclaveNestCalls", &newArgs)) !=
+    if ((result = OE_CallEnclave(enclave, "EnclaveNestCalls", &newArgs)) !=
         OE_OK)
     {
-        fprintf(stderr, "oe_call_enclave() failed: result=%u", result);
+        fprintf(stderr, "OE_CallEnclave() failed: result=%u", result);
         exit(1);
     }
 
@@ -80,7 +80,7 @@ OE_OCALL void HostNestCalls(void* args_)
 
 void TestNestedCalls(int testEh, int depth)
 {
-    // oe_result_t result;
+    // OE_Result result;
     Args args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
@@ -103,7 +103,7 @@ void TestNestedCalls(int testEh, int depth)
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
+    OE_Result result;
 
     if (argc != 2)
     {
@@ -115,11 +115,11 @@ int main(int argc, const char* argv[])
         "=== This program is used to test nest calls and hardware exception "
         "behavior in nest calls.");
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    if ((result = oe_create_enclave(
+    if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        oe_puterr("oe_create_enclave(): result=%u", result);
+        OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
     printf("Regular nest calls test without exception.\n");
     for (int i = 1; i < 17; i++)
@@ -151,7 +151,7 @@ int main(int argc, const char* argv[])
         TestNestedCalls(1, 64);
     }
 
-    oe_terminate_enclave(enclave);
+    OE_TerminateEnclave(enclave);
 
     printf("=== passed all tests (NestedCall)\n");
 

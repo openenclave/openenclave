@@ -38,13 +38,13 @@
 #define TD_callsites (TD_oret_arg + 8)
 #define TD_simulate (TD_callsites + 8)
 
-#define oe_exit __morestack
+#define OE_Exit __morestack
 #ifndef __ASSEMBLER__
-void oe_exit(uint64_t arg1, uint64_t arg2);
+void OE_Exit(uint64_t arg1, uint64_t arg2);
 #endif
 
 #ifndef __ASSEMBLER__
-void __oe_handle_main(
+void __OE_HandleMain(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t cssa,
@@ -52,11 +52,11 @@ void __oe_handle_main(
     uint64_t* outputArg1,
     uint64_t* outputArg2);
 
-void oe_exception_dispatcher(void* context);
+void OE_ExceptionDispatcher(void* context);
 #endif
 
 #ifndef __ASSEMBLER__
-void _oe_notify_nested_exit_start(uint64_t arg1, oe_ocall_context_t* ocallContext);
+void _OE_NotifyNestedExitStart(uint64_t arg1, OE_OCallContext* ocallContext);
 #endif
 
 #endif /* _ASMDEFS_H */

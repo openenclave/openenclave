@@ -18,7 +18,7 @@ typedef struct _TestArgs
     uint64_t numHeapPages;
     uint64_t numPages;
     const void* base;
-    oe_thread_data_t threadData;
+    OE_ThreadData threadData;
     uint64_t threadDataAddr;
     unsigned int mm;
     unsigned int dd;

@@ -11,24 +11,24 @@
 #include <stdlib.h>
 #include "../../host/enclave.h"
 
-static oe_result_t InitializeContext(oe_sgx_load_context_t* context)
+static OE_Result InitializeContext(OE_SGXLoadContext* context)
 {
 #ifdef MEASURE_ONLY
-    const oe_sgx_load_type_t type = OE_SGX_LOAD_TYPE_MEASURE;
+    const OE_SGXLoadType type = OE_SGX_LOAD_TYPE_MEASURE;
 #else
-    const oe_sgx_load_type_t type = OE_SGX_LOAD_TYPE_CREATE;
+    const OE_SGXLoadType type = OE_SGX_LOAD_TYPE_CREATE;
 #endif
-    return oe_sgx_initialize_load_context(context, type, OE_ENCLAVE_FLAG_DEBUG);
+    return OE_SGXInitializeLoadContext(context, type, OE_ENCLAVE_FLAG_DEBUG);
 }
 
-static const oe_sgx_enclave_properties_t* GetEnclaveProperties()
+static const OE_SGXEnclaveProperties* GetEnclaveProperties()
 {
 #ifdef USE_DRIVER
     return NULL;
 #else
-    static oe_sgx_enclave_properties_t properties;
+    static OE_SGXEnclaveProperties properties;
 
-    memset(&properties, 0, sizeof(oe_sgx_enclave_properties_t));
+    memset(&properties, 0, sizeof(OE_SGXEnclaveProperties));
     properties.config.attributes = OE_SGX_FLAGS_DEBUG;
     properties.header.sizeSettings.numHeapPages = 2;
     properties.header.sizeSettings.numStackPages = 1;
@@ -40,9 +40,9 @@ static const oe_sgx_enclave_properties_t* GetEnclaveProperties()
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
-    oe_sgx_load_context_t context;
-    oe_enclave_t enclave;
+    OE_Result result;
+    OE_SGXLoadContext context;
+    OE_Enclave enclave;
 
     if (argc != 2)
     {
@@ -51,16 +51,16 @@ int main(int argc, const char* argv[])
     }
 
     if (InitializeContext(&context) != OE_OK)
-        oe_puterr("InitializeContext() failed");
+        OE_PutErr("InitializeContext() failed");
 
-    if ((result = oe_sgx_build_enclave(
+    if ((result = OE_SGXBuildEnclave(
              &context, argv[1], GetEnclaveProperties(), &enclave)) != OE_OK)
     {
-        oe_puterr("oe_sgx_build_enclave(): result=%u", result);
+        OE_PutErr("OE_SGXBuildEnclave(): result=%u", result);
     }
 
     char buf[2 * OE_SHA256_SIZE + 1];
-    oe_hex_string(buf, sizeof(buf), &enclave.hash, sizeof(enclave.hash));
+    OE_HexString(buf, sizeof(buf), &enclave.hash, sizeof(enclave.hash));
     printf("MRENCLAVE=%s\n", buf);
 
     printf("BASEADDR=%016llx\n", OE_LLX(enclave.addr));

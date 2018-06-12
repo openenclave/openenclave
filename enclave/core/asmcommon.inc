@@ -24,7 +24,7 @@
     mov %rdi, %r14
     mov %rsi, %r15
 
-    call _oe_cleanup_xstates
+    call _OE_CleanupXStates
 
     // Restore the rax, rcx, rdi and rsi.
     mov %r12, %rax

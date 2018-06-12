@@ -11,8 +11,8 @@ see [create.c](create.c)).
 
         +----------------------------------------+
         | Text pages:                            |
-        |     oe_main() - enclave entry point    |
-        |     oe_exit() - enclave entry routine  |
+        |     OE_Main() - enclave entry point    |
+        |     OE_Exit() - enclave entry routine  |
         +----------------------------------------+
         | Relocation pages:                      |
         |     (contains data relocations)        |
@@ -38,7 +38,7 @@ see [create.c](create.c)).
         +----------------------------------------+    |
         | Thread Control Structure (TCS) Page    |    |
         |     state: 0 = available               |    |
-        |     oentry - vaddress of oe_main()     |    |- Thread context
+        |     oentry - vaddress of OE_Main()     |    |- Thread context
         |     fsbase - vaddress of FS segment    |    |  (one per TCS)
         |     gsbase - vaddress of GS segment    |    |
         +----------------------------------------+    |

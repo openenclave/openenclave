@@ -7,16 +7,16 @@
 #include <openenclave/bits/types.h>
 #include <pthread.h>
 
-typedef enum _oe_inferior_flags {
+typedef enum _OE_Inferior_Flags {
     OE_INFERIOR_SINGLE_STEP = 0X1
-} oe_inferior_flags;
+} OE_Inferior_Flags;
 
-int _oe_track_inferior(pid_t pid);
+int _OE_TrackInferior(pid_t pid);
 
-int _oe_untrack_inferior(pid_t pid);
+int _OE_UntrackInferior(pid_t pid);
 
-int _oe_get_inferior_flags(pid_t pid, int64_t* flags);
+int _OE_GetInferiorFlags(pid_t pid, int64_t* flags);
 
-int _oe_set_inferior_flags(pid_t pid, int64_t flags);
+int _OE_SetInferiorFlags(pid_t pid, int64_t flags);
 
 #endif

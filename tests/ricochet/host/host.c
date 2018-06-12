@@ -10,7 +10,7 @@
 #include <string.h>
 #include "../args.h"
 
-static oe_enclave_t* enclave = NULL;
+static OE_Enclave* enclave = NULL;
 
 OE_OCALL void Ricochet(void* args_)
 {
@@ -21,14 +21,14 @@ OE_OCALL void Ricochet(void* args_)
     if (args->i < args->count)
     {
         args->i++;
-        oe_result_t result = oe_call_enclave(enclave, "Ricochet", args);
+        OE_Result result = OE_CallEnclave(enclave, "Ricochet", args);
         OE_TEST(result == OE_OK);
     }
 }
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
+    OE_Result result;
 
     if (argc != 2)
     {
@@ -36,11 +36,11 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    if ((result = oe_create_enclave(
+    if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        oe_puterr("oe_create_enclave(): result=%u", result);
+        OE_PutErr("OE_CreateEnclave(): result=%u", result);
 
     for (size_t i = 0; i < 3; i++)
     {
@@ -48,11 +48,11 @@ int main(int argc, const char* argv[])
         args.i = 0;
         args.count = 16;
 
-        if ((result = oe_call_enclave(enclave, "Ricochet", &args)) != OE_OK)
-            oe_puterr("oe_call_enclave() failed: result=%u", result);
+        if ((result = OE_CallEnclave(enclave, "Ricochet", &args)) != OE_OK)
+            OE_PutErr("OE_CallEnclave() failed: result=%u", result);
     }
 
-    oe_terminate_enclave(enclave);
+    OE_TerminateEnclave(enclave);
 
     printf("=== passed all tests (echo)\n");
 

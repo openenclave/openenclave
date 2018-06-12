@@ -16,5 +16,5 @@
 
 int atexit(void (*function)(void))
 {
-    return oe_atexit(function);
+    return OE_AtExit(function);
 }

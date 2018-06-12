@@ -78,8 +78,8 @@ done:
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
-    oe_enclave_t* enclave = NULL;
+    OE_Result result;
+    OE_Enclave* enclave = NULL;
 
     if (argc != 2)
     {
@@ -87,9 +87,9 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    result = oe_create_enclave(
+    result = OE_CreateEnclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
@@ -133,7 +133,7 @@ int main(int argc, const char* argv[])
 #endif
     }
 
-    oe_terminate_enclave(enclave);
+    OE_TerminateEnclave(enclave);
 
     printf("=== passed all tests (file)\n");
 

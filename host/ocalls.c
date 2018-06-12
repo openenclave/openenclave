@@ -35,7 +35,7 @@ void HandleMalloc(uint64_t argIn, uint64_t* argOut)
 
 void HandleRealloc(uint64_t argIn, uint64_t* argOut)
 {
-    oe_realloc_args_t* args = (oe_realloc_args_t*)argIn;
+    OE_ReallocArgs* args = (OE_ReallocArgs*)argIn;
 
     if (args)
     {
@@ -59,7 +59,7 @@ void HandlePuts(uint64_t argIn)
 
 void HandlePrint(uint64_t argIn)
 {
-    oe_print_args_t* args = (oe_print_args_t*)argIn;
+    OE_PrintArgs* args = (OE_PrintArgs*)argIn;
 
     if (args)
     {
@@ -82,7 +82,7 @@ void HandlePutchar(uint64_t argIn)
     putchar(c);
 }
 
-void HandleThreadWait(oe_enclave_t* enclave, uint64_t argIn)
+void HandleThreadWait(OE_Enclave* enclave, uint64_t argIn)
 {
     const uint64_t tcs = argIn;
     EnclaveEvent* event = GetEnclaveEvent(enclave, tcs);
@@ -116,7 +116,7 @@ void HandleThreadWait(oe_enclave_t* enclave, uint64_t argIn)
 #endif
 }
 
-void HandleThreadWake(oe_enclave_t* enclave, uint64_t argIn)
+void HandleThreadWake(OE_Enclave* enclave, uint64_t argIn)
 {
     const uint64_t tcs = argIn;
     EnclaveEvent* event = GetEnclaveEvent(enclave, tcs);
@@ -135,9 +135,9 @@ void HandleThreadWake(oe_enclave_t* enclave, uint64_t argIn)
 #endif
 }
 
-void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t argIn)
+void HandleThreadWakeWait(OE_Enclave* enclave, uint64_t argIn)
 {
-    oe_thread_wake_wait_args_t* args = (oe_thread_wake_wait_args_t*)argIn;
+    OE_ThreadWakeWaitArgs* args = (OE_ThreadWakeWaitArgs*)argIn;
 
     if (!args)
         return;
@@ -157,27 +157,27 @@ void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t argIn)
 
 void HandleGetQuote(uint64_t argIn)
 {
-    oe_get_quote_args_t* args = (oe_get_quote_args_t*)argIn;
+    OE_GetQuoteArgs* args = (OE_GetQuoteArgs*)argIn;
     if (!args)
         return;
 
     args->result =
-        sgx_get_quote(&args->sgxReport, args->quote, &args->quoteSize);
+        SGX_GetQuote(&args->sgxReport, args->quote, &args->quoteSize);
 }
 
 void HandleGetQETargetInfo(uint64_t argIn)
 {
-    oe_get_qe_target_info_args_t* args = (oe_get_qe_target_info_args_t*)argIn;
+    OE_GetQETargetInfoArgs* args = (OE_GetQETargetInfoArgs*)argIn;
     if (!args)
         return;
 
-    args->result = sgx_get_qetarget_info(&args->targetInfo);
+    args->result = SGX_GetQETargetInfo(&args->targetInfo);
 }
 
 #if defined(__OE_NEED_TIME_CALLS)
 void HandleStrftime(uint64_t argIn)
 {
-    oe_strftime_args_t* args = (oe_strftime_args_t*)argIn;
+    OE_StrftimeArgs* args = (OE_StrftimeArgs*)argIn;
 
     if (!args)
         return;
@@ -189,7 +189,7 @@ void HandleStrftime(uint64_t argIn)
 #if defined(__OE_NEED_TIME_CALLS)
 void HandleGettimeofday(uint64_t argIn)
 {
-    oe_gettimeofday_args_t* args = (oe_gettimeofday_args_t*)argIn;
+    OE_GettimeofdayArgs* args = (OE_GettimeofdayArgs*)argIn;
 
     if (!args)
         return;
@@ -201,7 +201,7 @@ void HandleGettimeofday(uint64_t argIn)
 #if defined(__OE_NEED_TIME_CALLS)
 void HandleClockgettime(uint64_t argIn)
 {
-    oe_clock_gettime_args_t* args = (oe_clock_gettime_args_t*)argIn;
+    OE_ClockgettimeArgs* args = (OE_ClockgettimeArgs*)argIn;
 
     if (!args)
         return;
@@ -213,7 +213,7 @@ void HandleClockgettime(uint64_t argIn)
 #if defined(__OE_NEED_TIME_CALLS)
 void HandleNanosleep(uint64_t argIn)
 {
-    oe_nanosleep_args_t* args = (oe_nanosleep_args_t*)argIn;
+    OE_NanosleepArgs* args = (OE_NanosleepArgs*)argIn;
 
     if (!args)
         return;

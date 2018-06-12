@@ -5,5 +5,5 @@
 
 OE_ECALL void EnclaveEcho(void* args)
 {
-    oe_call_host("HostEcho", args);
+    OE_CallHost("HostEcho", args);
 }

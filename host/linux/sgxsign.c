@@ -28,9 +28,9 @@ static void _MemReverse(void* dest_, const void* src_, size_t n)
         *dest++ = *--end;
 }
 
-static oe_result_t _GetDate(unsigned int* date)
+static OE_Result _GetDate(unsigned int* date)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     time_t t;
     struct tm tm;
     size_t i;
@@ -68,9 +68,9 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _GetModulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
+static OE_Result _GetModulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     uint8_t buf[OE_KEY_SIZE];
 
     if (!rsa || !modulus)
@@ -87,9 +87,9 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
+static OE_Result _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     // uint8_t buf[OE_EXPONENT_SIZE];
 
     if (!rsa || !exponent)
@@ -112,7 +112,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _GetQ1AndQ2(
+static OE_Result _GetQ1AndQ2(
     const void* signature,
     size_t signatureSize,
     const void* modulus,
@@ -122,7 +122,7 @@ static oe_result_t _GetQ1AndQ2(
     void* q2Out,
     size_t q2OutSize)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     BIGNUM* s = NULL;
     BIGNUM* m = NULL;
     BIGNUM* q1 = NULL;
@@ -236,91 +236,91 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _InitSigstruct(
+static OE_Result _InitSigstruct(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,
     uint16_t securityVersion,
     RSA* rsa,
-    sgx_sigstruct_t* sigstruct)
+    SGX_SigStruct* sigstruct)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
 
     if (!sigstruct)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Zero-fill the structure */
-    memset(sigstruct, 0, sizeof(sgx_sigstruct_t));
+    memset(sigstruct, 0, sizeof(SGX_SigStruct));
 
-    /* sgx_sigstruct_t.header */
+    /* SGX_SigStruct.header */
     memcpy(sigstruct->header, SGX_SIGSTRUCT_HEADER, sizeof(sigstruct->header));
 
-    /* sgx_sigstruct_t.type */
+    /* SGX_SigStruct.type */
     sigstruct->type = 0;
 
-    /* sgx_sigstruct_t.vendor */
+    /* SGX_SigStruct.vendor */
     sigstruct->vendor = 0;
 
-    /* sgx_sigstruct_t.date */
+    /* SGX_SigStruct.date */
     OE_TRY(_GetDate(&sigstruct->date));
 
-    /* sgx_sigstruct_t.header2 */
+    /* SGX_SigStruct.header2 */
     memcpy(
         sigstruct->header2, SGX_SIGSTRUCT_HEADER2, sizeof(sigstruct->header2));
 
-    /* sgx_sigstruct_t.swdefined */
+    /* SGX_SigStruct.swdefined */
     sigstruct->swdefined = 0;
 
-    /* sgx_sigstruct_t.modulus */
+    /* SGX_SigStruct.modulus */
     OE_TRY(_GetModulus(rsa, sigstruct->modulus));
 
-    /* sgx_sigstruct_t.date */
+    /* SGX_SigStruct.date */
     OE_TRY(_GetExponent(rsa, sigstruct->exponent));
 
-    /* sgx_sigstruct_t.signature: fill in after other fields */
+    /* SGX_SigStruct.signature: fill in after other fields */
 
-    /* sgx_sigstruct_t.miscselect */
+    /* SGX_SigStruct.miscselect */
     sigstruct->miscselect = SGX_SIGSTRUCT_MISCSELECT;
 
-    /* sgx_sigstruct_t.miscmask */
+    /* SGX_SigStruct.miscmask */
     sigstruct->miscmask = SGX_SIGSTRUCT_MISCMASK;
 
-    /* sgx_sigstruct_t.attributes */
+    /* SGX_SigStruct.attributes */
     sigstruct->attributes.flags = attributes;
     sigstruct->attributes.xfrm = SGX_ATTRIBUTES_DEFAULT_XFRM;
 
-    /* sgx_sigstruct_t.attributemask */
+    /* SGX_SigStruct.attributemask */
     sigstruct->attributemask.flags = SGX_SIGSTRUCT_ATTRIBUTEMASK_FLAGS;
     sigstruct->attributemask.xfrm = SGX_SIGSTRUCT_ATTRIBUTEMASK_XFRM;
 
-    /* sgx_sigstruct_t.enclavehash */
+    /* SGX_SigStruct.enclavehash */
     memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
 
-    /* sgx_sigstruct_t.isvprodid */
+    /* SGX_SigStruct.isvprodid */
     sigstruct->isvprodid = productID;
 
-    /* sgx_sigstruct_t.isvsvn */
+    /* SGX_SigStruct.isvsvn */
     sigstruct->isvsvn = securityVersion;
 
     /* Sign header and body sections of SigStruct */
     {
-        unsigned char buf[sizeof(sgx_sigstruct_t)];
+        unsigned char buf[sizeof(SGX_SigStruct)];
         size_t n = 0;
 
-        memcpy(buf, sgx_sigstruct_header(sigstruct), sgx_sigstruct_header_size());
-        n += sgx_sigstruct_header_size();
-        memcpy(&buf[n], sgx_sigstruct_body(sigstruct), sgx_sigstruct_body_size());
-        n += sgx_sigstruct_body_size();
+        memcpy(buf, SGX_SigStructHeader(sigstruct), SGX_SigStructHeaderSize());
+        n += SGX_SigStructHeaderSize();
+        memcpy(&buf[n], SGX_SigStructBody(sigstruct), SGX_SigStructBodySize());
+        n += SGX_SigStructBodySize();
 
         {
             OE_SHA256 sha256;
-            oe_sha256_context_t context;
+            OE_SHA256Context context;
             unsigned char signature[OE_KEY_SIZE];
             unsigned int signatureSize;
 
-            oe_sha256_init(&context);
-            oe_sha256_update(&context, buf, n);
-            oe_sha256_final(&context, &sha256);
+            OE_SHA256Init(&context);
+            OE_SHA256Update(&context, buf, n);
+            OE_SHA256Final(&context, &sha256);
 
             if (!RSA_sign(
                     NID_sha256,
@@ -358,12 +358,12 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _LoadRSAPrivateKey(
+static OE_Result _LoadRSAPrivateKey(
     const uint8_t* pemData,
     size_t pemSize,
     RSA** key)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     BIO* bio = NULL;
     RSA* rsa = NULL;
 
@@ -404,20 +404,20 @@ OE_CATCH:
     return result;
 }
 
-oe_result_t oe_sgx_sign_enclave(
+OE_Result OE_SGXSignEnclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,
     uint16_t securityVersion,
     const uint8_t* pemData,
     size_t pemSize,
-    sgx_sigstruct_t* sigstruct)
+    SGX_SigStruct* sigstruct)
 {
-    oe_result_t result = OE_UNEXPECTED;
+    OE_Result result = OE_UNEXPECTED;
     RSA* rsa = NULL;
 
     if (sigstruct)
-        memset(sigstruct, 0, sizeof(sgx_sigstruct_t));
+        memset(sigstruct, 0, sizeof(SGX_SigStruct));
 
     /* Check parameters */
     if (!mrenclave || !sigstruct)

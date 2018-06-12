@@ -20,49 +20,49 @@
 #define OE_OCALL_CODE 3
 
 #if defined(__linux__)
-#define oe_enter __morestack
+#define OE_Enter __morestack
 #endif
 
 #ifndef __ASSEMBLER__
-typedef struct _oe_enclave oe_enclave_t;
+typedef struct _OE_Enclave OE_Enclave;
 #endif
 
 #ifndef __ASSEMBLER__
-void oe_enter(
+void OE_Enter(
     void* tcs,
     void (*aep)(void),
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
     uint64_t* arg4,
-    oe_enclave_t* enclave);
+    OE_Enclave* enclave);
 
 void OE_AEP(void);
 #endif
 
 #ifndef __ASSEMBLER__
-void oe_enter_sim(
+void OE_EnterSim(
     void* tcs,
     void (*aep)(void),
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg3,
     uint64_t* arg4,
-    oe_enclave_t* enclave);
+    OE_Enclave* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
-int __oe_dispatch_ocall(
+int __OE_DispatchOCall(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg1Out,
     uint64_t* arg2Out,
     void* tcs,
-    oe_enclave_t* enclave);
+    OE_Enclave* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
-int _oe_host_stack_bridge(
+int _OE_HostStackBridge(
     uint64_t arg1,
     uint64_t arg2,
     uint64_t* arg1Out,
@@ -72,30 +72,30 @@ int _oe_host_stack_bridge(
 #endif
 
 #ifndef __ASSEMBLER__
-typedef struct _oe_host_ocall_frame
+typedef struct __OE_HostOCallFrame
 {
     uint64_t previous_rbp;
     uint64_t return_address;
-} oe_host_ocall_frame;
+} _OE_HostOCallFrame;
 #endif
 
 #ifndef __ASSEMBLER__
-void _oe_notify_ocall_start(oe_host_ocall_frame* frame_pointer, void* tcs);
+void _OE_NotifyOCallStart(_OE_HostOCallFrame* frame_pointer, void* tcs);
 #endif
 
 #ifndef __ASSEMBLER__
-void _oe_notify_ocall_end(oe_host_ocall_frame* frame_pointer, void* tcs);
+void _OE_NotifyOCallEnd(_OE_HostOCallFrame* frame_pointer, void* tcs);
 #endif
 
 #ifndef __ASSEMBLER__
-uint32_t _oe_push_enclave_instance(oe_enclave_t* enclave);
+uint32_t _OE_PushEnclaveInstance(OE_Enclave* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
-uint32_t _oe_remove_enclave_instance(oe_enclave_t* enclave);
+uint32_t _OE_RemoveEnclaveInstance(OE_Enclave* enclave);
 #endif
 
 #ifndef __ASSEMBLER__
-oe_enclave_t* _oe_query_enclave_instance(void* tcs);
+OE_Enclave* _OE_QueryEnclaveInstance(void* tcs);
 #endif
 #endif /* _ASMDEFS_H */

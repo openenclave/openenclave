@@ -55,28 +55,28 @@ OE_EXTERNC_BEGIN
 * must be a function defined in the enclave. The same handler can only be
 * registered once; a 2nd registration will fail. If the function succeeds, the
 * handler may removed later by passing it to
-* oe_remove_vectored_exception_handler().
+* OE_RemoveVectoredExceptionHandler().
 *
 * @returns OE_OK successful
 * @returns OE_INVALID_PARAMETER a parameter is invalid
 * @returns OE_FAILED failed to add handler
 */
-oe_result_t oe_add_vectored_exception_handler(
+OE_Result OE_AddVectoredExceptionHandler(
     bool isFirstHandler,
-    oe_vectored_exception_handler vectoredHandler);
+    OE_VectoredExceptionHandler vectoredHandler);
 
 /**
 * Remove an existing vectored exception handler.
 *
 * @param vectoredHandler The pointer to a registered exception handler returned
-* from a successful oe_add_vectored_exception_handler() call.
+* from a successful OE_AddVectoredExceptionHandler() call.
 *
 * @returns OE_OK success
 * @returns OE_INVALID_PARAMETER a parameter is invalid
 * @returns OE_FAILED failed to remove handler
 */
-oe_result_t oe_remove_vectored_exception_handler(
-    oe_vectored_exception_handler vectoredHandler);
+OE_Result OE_RemoveVectoredExceptionHandler(
+    OE_VectoredExceptionHandler vectoredHandler);
 
 /**
  * Perform a high-level enclave function call (OCALL).
@@ -90,7 +90,7 @@ oe_result_t oe_remove_vectored_exception_handler(
  * The meaning of the **args** parameter is defined by the implementer of the
  * function and may be null.
  *
- * This function is implemented using the low-level oe_ecall() interface
+ * This function is implemented using the low-level OE_ECall() interface
  * where the function number is given by the **OE_FUNC_CALL_HOST** constant.
  *
  * Note that the return value of this function only indicates the success of
@@ -103,7 +103,7 @@ oe_result_t oe_remove_vectored_exception_handler(
  * @returns This function return **OE_OK** on success.
  *
  */
-oe_result_t oe_call_host(const char* func, void* args);
+OE_Result OE_CallHost(const char* func, void* args);
 
 /**
  * Check whether the given buffer is strictly within the enclave.
@@ -116,10 +116,12 @@ oe_result_t oe_call_host(const char* func, void* args);
  * @param size The size of buffer
  *
  * @retval true The buffer is strictly within the enclave.
- * @retval false At least some part of the buffer is outside the enclave.
+ * @retval false At least some part of the buffer is outside the enclave, or
+ * the arguments are invalid. For example, if **ptr** is null or **size**
+ * causes arithmetic operations to wrap.
  *
  */
-bool oe_is_within_enclave(const void* ptr, size_t size);
+bool OE_IsWithinEnclave(const void* ptr, size_t size);
 
 /**
  * Check whether the given buffer is strictly outside the enclave.
@@ -132,16 +134,18 @@ bool oe_is_within_enclave(const void* ptr, size_t size);
  * @param size The size of buffer.
  *
  * @retval true The buffer is strictly outside the enclave.
- * @retval false At least some part of the buffer is within the enclave.
+ * @retval false At least some part of the buffer is inside the enclave, or
+ * the arguments are invalid. For example, if **ptr** is null or **size**
+ * causes arithmetic operations to wrap.
  *
  */
-bool oe_is_outside_enclave(const void* ptr, size_t size);
+bool OE_IsOutsideEnclave(const void* ptr, size_t size);
 
 /**
  * Print formatted characters to the host's console.
  *
  * This function writes formatted characters to the host console. It is based
- * on oe_vsnprintf(), which has limited support for format types.
+ * on OE_Vsnprintf(), which has limited support for format types.
  *
  * @param fmt The limited printf style format.
  *
@@ -149,13 +153,13 @@ bool oe_is_outside_enclave(const void* ptr, size_t size);
  *
  */
 OE_PRINTF_FORMAT(1, 2)
-int oe_host_printf(const char* fmt, ...);
+int OE_HostPrintf(const char* fmt, ...);
 
 /**
  * Print formatted characters to the host's stdout or stderr.
  *
  * This function writes formatted characters to the host's stdout or stderr. It
- * is based on oe_vsnprintf(), which has limited support for format types.
+ * is based on OE_Vsnprintf(), which has limited support for format types.
  *
  * @param fmt The limited printf style format.
  * @param device 0 for stdout and 1 for stderr
@@ -163,34 +167,34 @@ int oe_host_printf(const char* fmt, ...);
  *
  */
 OE_PRINTF_FORMAT(2, 3)
-int oe_host_fprintf(int device, const char* fmt, ...);
+int OE_HostFprintf(int device, const char* fmt, ...);
 
 /**
  * Allocates space from host memory. This function is intended to obtain
- * memory for oe_call_host arguments. For repeated small allocations,
- * performance of oe_host_alloc_for_call_host() will generally be higher than
- * oe_host_malloc().
+ * memory for OE_CallHost arguments. For repeated small allocations,
+ * performance of OE_HostAllocForCallHost() will generally be higher than
+ * OE_HostMalloc().
  *
- * Note: Memory allocated by oe_host_alloc_for_call_host() must be freed by
- * oe_host_free_for_call_host(), in reverse order of allocation.
+ * Note: Memory allocated by OE_HostAllocForCallHost() must be freed by
+ * OE_HostFreeForCallHost(), in reverse order of allocation.
  *
  * @param size The number of bytes to allocate.
  *
  * @returns Returns the address of the allocated space, or NULL in case of
  *          error.
  */
-void* oe_host_alloc_for_call_host(size_t size);
+void* OE_HostAllocForCallHost(size_t size);
 
 /**
- * Frees space allocated w/ oe_host_alloc_for_call_host().
+ * Frees space allocated w/ OE_HostAllocForCallHost().
  *
- * Note: Memory allocated by oe_host_alloc_for_call_host() must be freed by
- * oe_host_free_for_call_host(), in reverse order of allocation.
+ * Note: Memory allocated by OE_HostAllocForCallHost() must be freed by
+ * OE_HostFreeForCallHost(), in reverse order of allocation.
  *
- * @param p Address returned by previous call to oe_host_alloc_for_call_host().
+ * @param p Address returned by previous call to OE_HostAllocForCallHost().
  *      Can be NULL.
  */
-void oe_host_free_for_call_host(void* p);
+void OE_HostFreeForCallHost(void* p);
 
 /**
  * Allocate bytes from the host's heap.
@@ -198,14 +202,14 @@ void oe_host_free_for_call_host(void* p);
  * This function allocates **size** bytes from the host's heap and returns the
  * address of the allocated memory. The implementation performs an OCALL to
  * the host, which calls malloc(). To free the memory, it must be passed to
- * oe_host_free().
+ * OE_HostFree().
  *
  * @param size The number of bytes to be allocated.
  *
  * @returns The allocated memory or NULL if unable to allocate the memory.
  *
  */
-void* oe_host_malloc(size_t size);
+void* OE_HostMalloc(size_t size);
 
 /**
  * Reallocate bytes from the host's heap.
@@ -214,12 +218,12 @@ void* oe_host_malloc(size_t size);
  * on the host's heap to **size** bytes. The memory block may be moved to a
  * new location, which is returned by this function. The implementation
  * performs an OCALL to the host, which calls realloc(). To free the memory,
- * it must be passed to oe_host_free().
+ * it must be passed to OE_HostFree().
  *
  * @param ptr The memory block to change the size of. If NULL, this method
- * allocates **size** bytes as if oe_host_malloc was invoked. If not NULL,
- * it should be a pointer returned by a previous call to oe_host_calloc,
- * oe_host_malloc or oe_host_realloc.
+ * allocates **size** bytes as if OE_HostMalloc was invoked. If not NULL,
+ * it should be a pointer returned by a previous call to OE_HostCalloc,
+ * OE_HostMalloc or OE_HostRealloc.
  * @param size The number of bytes to be allocated. If 0, this method
  * deallocates the memory at **ptr**. If the new size is larger, the value
  * of the memory in the new allocated range is indeterminate.
@@ -230,7 +234,7 @@ void* oe_host_malloc(size_t size);
  * remains valid and its contents are unchanged.
  *
  */
-void* oe_host_realloc(void* ptr, size_t size);
+void* OE_HostRealloc(void* ptr, size_t size);
 
 /**
  * Allocate zero-filled bytes from the host's heap.
@@ -238,25 +242,25 @@ void* oe_host_realloc(void* ptr, size_t size);
  * This function allocates **size** bytes from the host's heap and fills it
  * with zero character. It returns the address of the allocated memory. The
  * implementation performs an OCALL to the host, which calls calloc().
- * To free the memory, it must be passed to oe_host_free().
+ * To free the memory, it must be passed to OE_HostFree().
  *
  * @param size The number of bytes to be allocated and zero-filled.
  *
  * @returns The allocated memory or NULL if unable to allocate the memory.
  *
  */
-void* oe_host_calloc(size_t nmemb, size_t size);
+void* OE_HostCalloc(size_t nmemb, size_t size);
 
 /**
  * Releases allocated memory.
  *
- * This function releases memory allocated with oe_host_malloc() or
- * oe_host_calloc() by performing an OCALL where the host calls free().
+ * This function releases memory allocated with OE_HostMalloc() or
+ * OE_HostCalloc() by performing an OCALL where the host calls free().
  *
  * @param ptr Pointer to memory to be released or null.
  *
  */
-void oe_host_free(void* ptr);
+void OE_HostFree(void* ptr);
 
 /**
  * Make a heap copy of a string.
@@ -270,21 +274,21 @@ void oe_host_free(void* ptr);
  * @returns A pointer to the newly allocated string or NULL if unable to
  * allocate the storage.
  */
-char* oe_host_strdup(const char* str);
+char* OE_HostStrdup(const char* str);
 
 /**
  * Abort execution by causing and illegal instruction exception.
  *
  * This function aborts execution by executing the UD2 instruction.
  */
-void oe_abort(void);
+void OE_Abort(void);
 
 /**
  * Enclave implementation of the standard Unix sbrk() system call.
  *
  * This function provides an enclave equivalent to the sbrk() system call.
  * It increments the current end of the heap by **increment** bytes. Calling
- * oe_sbrk() with an increment of 0, returns the current end of the heap.
+ * OE_Sbrk() with an increment of 0, returns the current end of the heap.
  *
  * @param increment Number of bytes to increment the heap end by.
  *
@@ -292,44 +296,44 @@ void oe_abort(void);
  * there are less than **increment** bytes left on the heap.
  *
  */
-void* oe_sbrk(ptrdiff_t increment);
+void* OE_Sbrk(ptrdiff_t increment);
 
 /**
  * Called whenever an assertion fails.
  *
- * This internal function is called when the expression of the oe_assert()
+ * This internal function is called when the expression of the OE_Assert()
  * macro evaluates to zero. For example:
  *
- *     oe_assert(x > y);
+ *     OE_Assert(x > y);
  *
  * If the expression evaluates to zero, this function is called with the
  * string representation of the expression as well as the file, the line, and
  * the function name where the macro was expanded.
  *
- * The __oe_assert_fail() function performs a host call to print a message
- * and then calls oe_abort().
+ * The __OE_AssertFail() function performs a host call to print a message
+ * and then calls OE_Abort().
  *
- * @param expr The argument of the oe_assert() macro.
- * @param file The name of the file where oe_assert() was invoked.
- * @param line The line number where oe_assert() was invoked.
- * @param func The name of the function that invoked oe_assert().
+ * @param expr The argument of the OE_Assert() macro.
+ * @param file The name of the file where OE_Assert() was invoked.
+ * @param line The line number where OE_Assert() was invoked.
+ * @param func The name of the function that invoked OE_Assert().
  *
  */
-void __oe_assert_fail(
+void __OE_AssertFail(
     const char* expr,
     const char* file,
     int line,
     const char* func);
 
 #ifndef NDEBUG
-#define oe_assert(EXPR)                                               \
+#define OE_Assert(EXPR)                                               \
     do                                                                \
     {                                                                 \
         if (!(EXPR))                                                  \
-            __oe_assert_fail(#EXPR, __FILE__, __LINE__, __FUNCTION__); \
+            __OE_AssertFail(#EXPR, __FILE__, __LINE__, __FUNCTION__); \
     } while (0)
 #else
-#define oe_assert(EXPR)
+#define OE_Assert(EXPR)
 #endif
 
 /**
@@ -347,7 +351,7 @@ void __oe_assert_fail(
  * @param reportData The report data that will be included in the report.
  * @param reportDataSize The size of the **reportData** in bytes.
  * @param optParams Optional additional parameters needed for the current
- * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
+ * enclave type. For SGX, this can be SGX_TargetInfo for local attestation.
  * @param optParamsSize The size of the **optParams** buffer.
  * @param reportBuffer The buffer to where the resulting report will be copied.
  * @param reportBufferSize The size of the **report** buffer. This is set to the
@@ -359,7 +363,7 @@ void __oe_assert_fail(
  * @retval OE_OUT_OF_MEMORY Failed to allocate memory.
  *
  */
-oe_result_t oe_get_report(
+OE_Result OE_GetReport(
     uint32_t options,
     const uint8_t* reportData,
     uint32_t reportDataSize,
@@ -373,7 +377,7 @@ oe_result_t oe_get_report(
  *
  * @param report The buffer containing the report to parse.
  * @param reportSize The size of the **report** buffer.
- * @param parsedReport The **oe_report_t** structure to populate with the report
+ * @param parsedReport The **OE_Report** structure to populate with the report
  * properties in a standard format. The *parsedReport* holds pointers to fields
  * within the supplied *report* and must not be used beyond the lifetime of the
  * *report*.
@@ -382,10 +386,10 @@ oe_result_t oe_get_report(
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  *
  */
-oe_result_t oe_parse_report(
+OE_Result OE_ParseReport(
     const uint8_t* report,
     uint32_t reportSize,
-    oe_report_t* parsedReport);
+    OE_Report* parsedReport);
 
 /**
  * Verify the integrity of the report and its signature.
@@ -397,22 +401,22 @@ oe_result_t oe_parse_report(
  *
  * @param report The buffer containing the report to verify.
  * @param reportSize The size of the **report** buffer.
- * @param parsedReport Optional **oe_report_t** structure to populate with the
+ * @param parsedReport Optional **OE_Report** structure to populate with the
  * report properties in a standard format.
  *
  * @retval OE_OK The report was successfully created.
  * @retval OE_INVALID_PARAMETER At least one parameter is invalid.
  *
  */
-oe_result_t oe_verify_report(
+OE_Result OE_VerifyReport(
     const uint8_t* report,
     uint32_t reportSize,
-    oe_report_t* parsedReport);
+    OE_Report* parsedReport);
 
-typedef enum _oe_seal_id_policy {
+typedef enum _OE_SealIDPolicy {
     OE_SEAL_ID_UNIQUE = 1,
     OE_SEAL_ID_PRODUCT = 2,
-} oe_seal_id_policy_t;
+} OE_SealIDPolicy;
 
 /**
 * Get a symmetric encryption key derived from the specified policy and coupled
@@ -438,8 +442,8 @@ typedef enum _oe_seal_id_policy {
 * small.
 * @retval OE_UNEXPECTED An unexpected error happened.
 */
-oe_result_t oe_get_seal_key_by_policy(
-    oe_seal_id_policy_t sealPolicy,
+OE_Result OE_GetSealKeyByPolicy(
+    OE_SealIDPolicy sealPolicy,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize,
     uint8_t* keyInfo,
@@ -466,7 +470,7 @@ oe_result_t oe_get_seal_key_by_policy(
 * @retval OE_INVALID_ISVSVN **keyInfo** contains an invalid ISVSVN.
 * @retval OE_INVALID_KEYNAME **keyInfo** contains an invalid KEYNAME.
 */
-oe_result_t oe_get_seal_key(
+OE_Result OE_GetSealKey(
     const uint8_t* keyInfo,
     uint32_t keyInfoSize,
     uint8_t* keyBuffer,

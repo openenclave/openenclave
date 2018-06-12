@@ -45,7 +45,7 @@ typedef struct _SGXEInitParam
 } SGXEInitParam;
 OE_PACK_END
 
-int sgx_ioctl_enclave_create(int dev, sgx_secs_t* secs)
+int SGX_IoctlEnclaveCreate(int dev, SGX_Secs* secs)
 {
     SGXECreateParam param;
 
@@ -58,7 +58,7 @@ int sgx_ioctl_enclave_create(int dev, sgx_secs_t* secs)
     return ioctl(dev, SGX_IOC_ENCLAVE_CREATE, &param);
 }
 
-int sgx_ioctl_enclave_add_page(
+int SGX_IoctlEnclaveAddPage(
     int dev,
     uint64_t addr,
     uint64_t src,
@@ -66,12 +66,12 @@ int sgx_ioctl_enclave_add_page(
     bool extend)
 {
     SGXEAddParam param;
-    sgx_secinfo_t secinfo;
+    SGX_SecInfo secinfo;
 
     if (dev == -1 || !addr || !src || !flags)
         return -1;
 
-    memset(&secinfo, 0, sizeof(sgx_secinfo_t));
+    memset(&secinfo, 0, sizeof(SGX_SecInfo));
     secinfo.flags = flags;
 
     memset(&param, 0, sizeof(param));
@@ -86,7 +86,7 @@ int sgx_ioctl_enclave_add_page(
     return ioctl(dev, SGX_IOC_ENCLAVE_ADD_PAGE, &param);
 }
 
-int sgx_ioctl_enclave_init(
+int SGX_IoctlEnclaveInit(
     int dev,
     uint64_t addr,
     uint64_t sigstruct,

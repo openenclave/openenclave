@@ -24,7 +24,7 @@ void TestRandom()
     for (size_t i = 0; i < N; i++)
     {
         /* Generate a random sequence */
-        OE_TEST(oe_random(buf[i], M * sizeof(uint8_t)) == OE_OK);
+        OE_TEST(OE_Random(buf[i], M * sizeof(uint8_t)) == OE_OK);
 
         /* Be sure buffer is not filled with same character */
         {

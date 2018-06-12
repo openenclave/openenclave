@@ -8,22 +8,22 @@
 
 OE_EXTERNC_BEGIN
 
-OE_INLINE void oe_illegal_instruction(void)
+OE_INLINE void OE_IllegalInstruction(void)
 {
     __asm__ volatile("ud2\n\t");
 }
 
-OE_INLINE void oe_segmentation_violation(void)
+OE_INLINE void OE_SegmentationViolation(void)
 {
     *((int*)0) = 0;
 }
 
-OE_INLINE void oe_pause(void)
+OE_INLINE void OE_Pause(void)
 {
     __asm__ volatile("pause\n\t");
 }
 
-OE_INLINE void oe_divide_by_zero(void)
+OE_INLINE void OE_DivideByZero(void)
 {
     __asm__ volatile(
         "mov $0, %eax\n\t"

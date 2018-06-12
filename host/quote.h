@@ -11,32 +11,32 @@ OE_EXTERNC_BEGIN
 /*
 **==============================================================================
 **
-** sgx_get_quote_size()
+** SGX_GetQuoteSize()
 **
 **==============================================================================
 */
 
-oe_result_t sgx_get_quote_size(uint32_t* quoteSize);
+OE_Result SGX_GetQuoteSize(uint32_t* quoteSize);
 
 /*
 **==============================================================================
 **
-** sgx_get_qetarget_info()
+** SGX_GetQETargetInfo()
 **
 **==============================================================================
 */
 
-oe_result_t sgx_get_qetarget_info(sgx_target_info_t* targetInfo);
+OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo);
 
 /*
 **==============================================================================
 **
-** sgx_get_quote()
+** SGX_GetQuote()
 **
 **==============================================================================
 */
-oe_result_t sgx_get_quote(
-    const sgx_report_t* sgxReport,
+OE_Result SGX_GetQuote(
+    const SGX_Report* sgxReport,
     uint8_t* quote,
     uint32_t* quoteSize);
 

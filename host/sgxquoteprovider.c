@@ -82,7 +82,7 @@ static void _LoadQuoteProvider()
     }
 }
 
-oe_result_t oe_initialize_quote_provider()
+OE_Result OE_InitializeQuoteProvider()
 {
     static OE_H_OnceType once = OE_H_ONCE_INITIALIZER;
     OE_H_Once(&once, _LoadQuoteProvider);

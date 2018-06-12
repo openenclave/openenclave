@@ -1,13 +1,13 @@
 [Index](index.md)
 
 ---
-# oe_spin_destroy()
+# OE_SpinDestroy()
 
 Destroy a spin lock.
 
 ## Syntax
 
-    oe_result_t oe_spin_destroy(oe_spinlock_t *spinlock)
+    OE_Result OE_SpinDestroy(OE_Spinlock *spinlock)
 ## Description 
 
 This function destroys a spin lock.

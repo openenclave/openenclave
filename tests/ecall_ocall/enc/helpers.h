@@ -9,21 +9,21 @@ struct TLSWrapper
 {
     TLSWrapper()
     {
-        if (oe_thread_key_create(&m_Key, NULL))
+        if (OE_ThreadKeyCreate(&m_Key, NULL))
         {
-            throw std::logic_error("oe_thread_key_create() failed");
+            throw std::logic_error("OE_ThreadKeyCreate() failed");
         }
     }
     unsigned GetU() const
     {
-        return (unsigned)(uintptr_t)oe_thread_get_specific(m_Key);
+        return (unsigned)(uintptr_t)OE_ThreadGetSpecific(m_Key);
     }
 
     void Set(unsigned Value)
     {
-        oe_thread_set_specific(m_Key, (void*)(uintptr_t)Value);
+        OE_ThreadSetSpecific(m_Key, (void*)(uintptr_t)Value);
     }
 
   private:
-    oe_thread_key_t m_Key;
+    OE_ThreadKey m_Key;
 };

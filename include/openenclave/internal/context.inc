@@ -5,7 +5,7 @@
 
 //==============================================================================
 //
-// void oe_snap_current_context(OE_CONTEXT * oe_context)
+// void OE_SnapCurrentContext(OE_CONTEXT * oe_context)
 //
 // Routine Description:
 //
@@ -21,9 +21,9 @@
 //      None.
 //==============================================================================
 
-.globl oe_snap_current_context
-.type oe_snap_current_context, @function
-oe_snap_current_context:
+.globl OE_SnapCurrentContext
+.type OE_SnapCurrentContext, @function
+OE_SnapCurrentContext:
 .cfi_startproc
     // Save the flags to stack.
     pushfq
@@ -114,7 +114,7 @@ oe_snap_current_context:
 
 //==============================================================================
 //
-// void oe_restore_partial_context(OE_CONTEXT * oe_context)
+// void OE_RestorePartialContext(OE_CONTEXT * oe_context)
 //
 // Routine Description:
 //
@@ -134,9 +134,9 @@ oe_snap_current_context:
 //
 //==============================================================================
 
-.globl oe_restore_partial_context
-.type oe_restore_partial_context, @function
-oe_restore_partial_context:
+.globl OE_RestorePartialContext
+.type OE_RestorePartialContext, @function
+OE_RestorePartialContext:
 .cfi_startproc
     restore_common_registers
 
@@ -155,7 +155,7 @@ oe_restore_partial_context:
 
 //==============================================================================
 //
-// void oe_continue_execution(OE_CONTEXT * oe_context)
+// void OE_ContinueExecution(OE_CONTEXT * oe_context)
 //
 // Routine Description:
 //
@@ -172,9 +172,9 @@ oe_restore_partial_context:
 //
 //==============================================================================
 
-.globl oe_continue_execution
-.type oe_continue_execution, @function
-oe_continue_execution:
+.globl OE_ContinueExecution
+.type OE_ContinueExecution, @function
+OE_ContinueExecution:
 .cfi_startproc
     restore_common_registers
 

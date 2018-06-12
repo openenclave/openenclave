@@ -16,13 +16,13 @@
 
 uint64_t prev;
 
-void TestStdc(oe_enclave_t* enclave)
+void TestStdc(OE_Enclave* enclave)
 {
-    oe_result_t result;
+    OE_Result result;
     TestArgs args;
 
     printf("=== %s() \n", __FUNCTION__);
-    result = oe_call_enclave(enclave, "Test", &args);
+    result = OE_CallEnclave(enclave, "Test", &args);
     OE_TEST(result == OE_OK);
     OE_TEST(strcmp(args.buf1, "AAABBBCCC") == 0);
     OE_TEST(strcmp(args.buf2, "value=100") == 0);
@@ -31,8 +31,8 @@ void TestStdc(oe_enclave_t* enclave)
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
-    oe_enclave_t* enclave = NULL;
+    OE_Result result;
+    OE_Enclave* enclave = NULL;
 
     if (argc != 2)
     {
@@ -40,19 +40,19 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    if ((result = oe_create_enclave(
+    if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        oe_puterr("oe_create_enclave(): result=%u", result);
+        OE_PutErr("OE_CreateEnclave(): result=%u", result);
     }
 
     TestStdc(enclave);
 
-    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
     {
-        oe_puterr("oe_terminate_enclave(): result=%u", result);
+        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
     }
 
     printf("=== passed all tests (%s)\n", argv[0]);

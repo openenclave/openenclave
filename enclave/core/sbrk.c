@@ -4,20 +4,20 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 
-void* oe_sbrk(ptrdiff_t increment)
+void* OE_Sbrk(ptrdiff_t increment)
 {
     static unsigned char* _heapNext;
-    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
     void* ptr = (void*)-1;
 
-    oe_spin_lock(&_lock);
+    OE_SpinLock(&_lock);
     {
         size_t remaining;
 
         if (!_heapNext)
-            _heapNext = (unsigned char*)__oe_get_heap_base();
+            _heapNext = (unsigned char*)__OE_GetHeapBase();
 
-        remaining = (unsigned char*)__oe_get_heap_end() - _heapNext;
+        remaining = (unsigned char*)__OE_GetHeapEnd() - _heapNext;
 
         if (increment <= remaining)
         {
@@ -25,7 +25,7 @@ void* oe_sbrk(ptrdiff_t increment)
             _heapNext += increment;
         }
     }
-    oe_spin_unlock(&_lock);
+    OE_SpinUnlock(&_lock);
 
     return ptr;
 }

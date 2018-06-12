@@ -10,11 +10,11 @@
 #include <cstring>
 #include "../args.h"
 
-static oe_enclave_t* enclave;
+static OE_Enclave* enclave;
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
+    OE_Result result;
 
     if (argc != 2)
     {
@@ -22,25 +22,25 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    if ((result = oe_create_enclave(
+    if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        oe_puterr("oe_create_enclave(): result=%u", result);
+        OE_PutErr("OE_CreateEnclave(): result=%u", result);
         return 1;
     }
 
     /* Invoke tests */
     {
-        oe_result_t res = OE_FAILURE;
+        OE_Result res = OE_FAILURE;
 
-        result = oe_call_enclave(enclave, "TestAllocaDealloc", &res);
+        result = OE_CallEnclave(enclave, "TestAllocaDealloc", &res);
         OE_TEST(result == OE_OK);
         OE_TEST(res == OE_OK);
     }
 
-    oe_terminate_enclave(enclave);
+    OE_TerminateEnclave(enclave);
 
     printf("=== passed all tests (%s)\n", argv[0]);
 

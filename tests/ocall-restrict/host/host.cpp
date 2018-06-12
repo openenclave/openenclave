@@ -10,7 +10,7 @@
 #include <cstring>
 #include "../args.h"
 
-static oe_enclave_t* enclave;
+static OE_Enclave* enclave;
 
 OE_OCALL void TestEcall(void* args)
 {
@@ -18,14 +18,14 @@ OE_OCALL void TestEcall(void* args)
 
     printf("%s(): Called\n", __FUNCTION__);
 
-    ta->result = oe_call_enclave(enclave, "ECallNested", NULL);
+    ta->result = OE_CallEnclave(enclave, "ECallNested", NULL);
 
     printf("%s(): Returning ta->result=%x\n", __FUNCTION__, ta->result);
 }
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
+    OE_Result result;
 
     TestORArgs ta;
 
@@ -35,24 +35,24 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    if ((result = oe_create_enclave(
+    if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        oe_puterr("oe_create_enclave(): result=%u", result);
+        OE_PutErr("OE_CreateEnclave(): result=%u", result);
         return 1;
     }
 
     ta.result = OE_FAILURE;
     /* Invoke tests */
     {
-        oe_result_t result = oe_call_enclave(enclave, "Test", &ta);
+        OE_Result result = OE_CallEnclave(enclave, "Test", &ta);
         OE_TEST(result == OE_OK);
         OE_TEST(ta.result == OE_OK);
     }
 
-    oe_terminate_enclave(enclave);
+    OE_TerminateEnclave(enclave);
 
     printf("=== passed all tests (%s)\n", argv[0]);
 

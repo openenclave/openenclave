@@ -46,9 +46,9 @@ void DumpEntryPoint(Elf64* elf)
         return;
     }
 
-    if (strcmp(name, "oe_main") != 0)
+    if (strcmp(name, "OE_Main") != 0)
     {
-        err("entry point not called oe_main: %s", name);
+        err("entry point not called OE_Main: %s", name);
         return;
     }
 
@@ -58,9 +58,9 @@ void DumpEntryPoint(Elf64* elf)
     printf("\n");
 }
 
-void DumpEnclaveProperties(const oe_sgx_enclave_properties_t* props)
+void DumpEnclaveProperties(const OE_SGXEnclaveProperties* props)
 {
-    const sgx_sigstruct_t* sigstruct;
+    const SGX_SigStruct* sigstruct;
 
     printf("=== SGX Enclave Properties:\n");
 
@@ -80,25 +80,25 @@ void DumpEnclaveProperties(const oe_sgx_enclave_properties_t* props)
 
     printf("numTCS=%llu\n", OE_LLU(props->header.sizeSettings.numTCS));
 
-    sigstruct = (const sgx_sigstruct_t*)props->sigstruct;
+    sigstruct = (const SGX_SigStruct*)props->sigstruct;
 
     printf("mrenclave=");
-    oe_hex_dump(sigstruct->enclavehash, sizeof(sigstruct->enclavehash));
+    OE_HexDump(sigstruct->enclavehash, sizeof(sigstruct->enclavehash));
 
     printf("signature=");
-    oe_hex_dump(sigstruct->signature, sizeof(sigstruct->signature));
+    OE_HexDump(sigstruct->signature, sizeof(sigstruct->signature));
 
     printf("\n");
 
     if (verbose_opt)
-        __sgx_dump_sigstruct(sigstruct);
+        __SGX_DumpSigStruct(sigstruct);
 }
 
 typedef struct _VisitSymData
 {
     const Elf64* elf;
     const Elf64_Shdr* shdr;
-    oe_result_t result;
+    OE_Result result;
 } VisitSymData;
 
 static int _VisitSym(const Elf64_Sym* sym, void* data_)
@@ -204,7 +204,7 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
     int ret = 1;
     Elf64 elf;
-    oe_sgx_enclave_properties_t props;
+    OE_SGXEnclaveProperties props;
 
     /* Check arguments */
     if (argc != 2)
@@ -221,7 +221,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the SGX enclave properties */
-    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
+    if (OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
     {
         err("failed to load SGX enclave properties from %s section",
             OE_INFO_SECTION_NAME);

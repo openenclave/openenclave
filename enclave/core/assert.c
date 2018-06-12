@@ -3,13 +3,13 @@
 
 #include <openenclave/enclave.h>
 
-void __oe_assert_fail(
+void __OE_AssertFail(
     const char* expr,
     const char* file,
     int line,
     const char* function)
 {
-    oe_host_printf(
+    OE_HostPrintf(
         "Assertion failed: %s (%s: %s: %d)\n", expr, file, function, line);
-    oe_abort();
+    OE_Abort();
 }

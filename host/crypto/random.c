@@ -4,7 +4,7 @@
 #include <openenclave/internal/random.h>
 #include <openssl/rand.h>
 
-oe_result_t oe_random(void* data, size_t size)
+OE_Result OE_Random(void* data, size_t size)
 {
     if (!RAND_bytes(data, size))
         return OE_FAILURE;

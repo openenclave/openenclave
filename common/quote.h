@@ -10,7 +10,7 @@
 
 OE_EXTERNC_BEGIN
 
-oe_result_t VerifyQuoteImpl(
+OE_Result VerifyQuoteImpl(
     const uint8_t* encQuote,
     uint32_t quoteSize,
     const uint8_t* encPemPckCertificate,

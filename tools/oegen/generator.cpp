@@ -264,7 +264,7 @@ static void _GenStructDefinition(std::ostream& os, const Struct* s)
     os << "};\n";
     os << endl;
 
-    os << sub("extern const oe_struct_ti_t $0_ti;\n", s->name) << endl;
+    os << sub("extern const OE_StructTI $0_ti;\n", s->name) << endl;
 }
 
 static void _GenFunctionPrototype(std::ostream& os, const Function* f)
@@ -374,7 +374,7 @@ static void _GenSetArg(
     const string& name,   /* name of the argument */
     const string& alloc)  /* name of allocator function (e.g., malloc) */
 {
-    const char text[] = "    __r = oe_set_arg(__ti, __a, $0, $1, $2$3, $4);\n"
+    const char text[] = "    __r = OE_SetArg(__ti, __a, $0, $1, $2$3, $4);\n"
                         "    if (__r != OE_OK)\n"
                         "        goto done;\n\n";
 
@@ -395,7 +395,7 @@ static void _GenClearArg(
     const string& name,
     const string& freeStr)
 {
-    const char text[] = "    __r = oe_clear_arg(__ti, __a, $0, $1, $2$3, $4);\n"
+    const char text[] = "    __r = OE_ClearArg(__ti, __a, $0, $1, $2$3, $4);\n"
                         "    if (__r != OE_OK)\n"
                         "        goto done;\n\n";
 
@@ -413,11 +413,11 @@ static void _GenTrustedICALL(std::ostream& os, const Function* function)
     const Function& f = *function;
     const ReturnType& r = f.returnType;
     bool empty = (r.Empty() && f.params.size() == 0);
-    string mallocStr = "oe_host_malloc";
-    string freeStr = "oe_host_free";
+    string mallocStr = "OE_HostMalloc";
+    string freeStr = "OE_HostFree";
     Ind ind;
 
-    // ATTN: change signature of these functions to return oe_result_t!
+    // ATTN: change signature of these functions to return OE_Result!
 
     os << pf("/* ICALL: %s(%u) */\n", __FILE__, __LINE__);
     os << sub("OE_ECALL void __$0(void* args)\n", f.name);
@@ -425,20 +425,20 @@ static void _GenTrustedICALL(std::ostream& os, const Function* function)
     ind++;
 
     {
-        const char text[] = "    oe_result_t __r = OE_OK;\n"
+        const char text[] = "    OE_Result __r = OE_OK;\n"
                             "\n";
         os << sub(text, f.name);
     }
 
     if (!empty)
     {
-        const char text[] = "    const oe_struct_ti_t* __ti = &$0Args_ti;\n"
+        const char text[] = "    const OE_StructTI* __ti = &$0Args_ti;\n"
                             "    typedef struct $0Args __Args;\n"
                             "    __Args* __args = (__Args*)args;\n"
                             "    __Args __buf;\n"
                             "    __Args* __a = &__buf;\n"
                             "\n"
-                            "    oe_memset(__a, 0, sizeof(__Args));\n"
+                            "    OE_Memset(__a, 0, sizeof(__Args));\n"
                             "\n";
         os << sub(text, f.name);
     }
@@ -446,7 +446,7 @@ static void _GenTrustedICALL(std::ostream& os, const Function* function)
     // Check pre-constraints first:
     if (!empty)
     {
-        const char text[] = "    __r = oe_check_pre_constraints(__ti, args);\n"
+        const char text[] = "    __r = OE_CheckPreConstraints(__ti, args);\n"
                             "    if (__r != OE_OK)\n"
                             "        goto done;\n"
                             "\n";
@@ -472,7 +472,7 @@ static void _GenTrustedICALL(std::ostream& os, const Function* function)
         if (p.flags & FLAG_IN)
         {
             const char text[] =
-                "    __r = oe_set_arg("
+                "    __r = OE_SetArg("
                 "__ti, __args, $0, $1, (void*)$2__a->$3, malloc);\n"
                 "    if (__r != OE_OK)\n"
                 "        goto done;\n\n";
@@ -484,7 +484,7 @@ static void _GenTrustedICALL(std::ostream& os, const Function* function)
         {
             /* Clear output parameter before call dispatch */
             const char text[] =
-                "    __r = oe_init_arg("
+                "    __r = OE_InitArg("
                 "__ti, __args, $0, $1, (void*)$2__a->$3, malloc);\n"
                 "    if (__r != OE_OK)\n"
                 "        goto done;\n\n";
@@ -497,7 +497,7 @@ static void _GenTrustedICALL(std::ostream& os, const Function* function)
     /* Fill structure padding with the 0xDD byte */
     if (!empty)
     {
-        const char text[] = "    __r = oe_pad_struct(__ti, __a);\n"
+        const char text[] = "    __r = OE_PadStruct(__ti, __a);\n"
                             "    if (__r != OE_OK)\n"
                             "        goto done;\n\n";
         os << text;
@@ -551,7 +551,7 @@ static void _GenTrustedICALL(std::ostream& os, const Function* function)
     // Check for heap buffer overruns:
     if (!empty)
     {
-        const char text[] = "    __r = oe_check_struct(__ti, __a);\n"
+        const char text[] = "    __r = OE_CheckStruct(__ti, __a);\n"
                             "    if (__r != OE_OK)\n"
                             "        goto done;\n"
                             "\n";
@@ -601,7 +601,7 @@ static void _GenTrustedICALL(std::ostream& os, const Function* function)
         // Check pre-constraints first:
         {
             const char text[] =
-                "    __r = oe_check_post_constraints(__ti, args);\n"
+                "    __r = OE_CheckPostConstraints(__ti, args);\n"
                 "    if (__r != OE_OK)\n"
                 "        goto done;\n"
                 "\n";
@@ -610,7 +610,7 @@ static void _GenTrustedICALL(std::ostream& os, const Function* function)
 
         /* ATTN: figure out how to preserve the return value */
         const char text[] = "done:\n"
-                            "    oe_destroy_struct(__ti, __a, free);\n"
+                            "    OE_DestroyStruct(__ti, __a, free);\n"
                             "\n"
                             "    (void)__r;\n";
         os << text;
@@ -633,7 +633,7 @@ static void _GenUntrustedICALL(std::ostream& os, const Function* function)
     bool empty = (r.Empty() && f.params.size() == 0);
     Ind ind;
 
-    // ATTN: change signature of these functions to return oe_result_t!
+    // ATTN: change signature of these functions to return OE_Result!
 
     os << pf("/* ICALL: %s(%u) */\n", __FILE__, __LINE__);
     os << sub("OE_OCALL void __$0(void* args)\n", f.name);
@@ -695,7 +695,7 @@ static void _GenCallOutFunctionPrototype(
 
     const ReturnType& rt = f->returnType;
 
-    os << "oe_result_t " << f->name << "(";
+    os << "OE_Result " << f->name << "(";
 
     if (!rt.Empty() || f->params.size() != 0)
         os << "\n";
@@ -703,7 +703,7 @@ static void _GenCallOutFunctionPrototype(
     if (!trusted)
     {
         os << "    ";
-        os << "oe_enclave_t* enclave";
+        os << "OE_Enclave* enclave";
     }
 
     if (!rt.Empty() || f->params.size())
@@ -742,7 +742,7 @@ static void _GenOCALL(std::ostream& os, const Function* f)
 {
     const ReturnType& r = f->returnType;
     const string& fn = f->name;
-    string hostAllocStr = "oe_host_alloc_for_call_host";
+    string hostAllocStr = "OE_HostAllocForCallHost";
     string mallocStr = "_HostAllocForCallHost";
     string freeStr = "_HostFreeForCallHost";
 
@@ -754,8 +754,8 @@ static void _GenOCALL(std::ostream& os, const Function* f)
     ind++;
 
     os << "{" << endl;
-    os << "    oe_result_t __r = OE_UNEXPECTED;\n";
-    os << ind << sub("const oe_struct_ti_t* __ti = &$0Args_ti;\n", fn);
+    os << "    OE_Result __r = OE_UNEXPECTED;\n";
+    os << ind << sub("const OE_StructTI* __ti = &$0Args_ti;\n", fn);
     os << ind << sub("typedef struct $0Args __Args;\n", fn);
     os << ind << "__Args __args;\n";
     os << ind << "__Args* __a = NULL;\n" << endl;
@@ -765,7 +765,7 @@ static void _GenOCALL(std::ostream& os, const Function* f)
     os << "    /**************************/\n";
     os << endl;
 
-    os << "    oe_memset(&__args, 0, sizeof(__Args));\n";
+    os << "    OE_Memset(&__args, 0, sizeof(__Args));\n";
 
     for (size_t i = 0; i < f->params.size(); i++)
     {
@@ -796,7 +796,7 @@ static void _GenOCALL(std::ostream& os, const Function* f)
                             "        __r = OE_OUT_OF_MEMORY;\n"
                             "        goto done;\n"
                             "    }\n"
-                            "    oe_memset(__a, 0, sizeof(__Args));\n"
+                            "    OE_Memset(__a, 0, sizeof(__Args));\n"
                             "\n";
 
         os << sub(text, hostAllocStr);
@@ -821,7 +821,7 @@ static void _GenOCALL(std::ostream& os, const Function* f)
         if (p.flags & FLAG_IN)
         {
             const char text[] =
-                "    __r = oe_set_arg("
+                "    __r = OE_SetArg("
                 "__ti, &__args, $0, $1, (void*)$2__a->$3, $4);\n"
                 "    if (__r != OE_OK)\n"
                 "        goto done;\n\n";
@@ -833,7 +833,7 @@ static void _GenOCALL(std::ostream& os, const Function* f)
         {
             /* Clear output parameter before call dispatch */
             const char text[] =
-                "    __r = oe_init_arg("
+                "    __r = OE_InitArg("
                 "__ti, &__args, $0, $1, (void*)$2__a->$3, $4);\n"
                 "    if (__r != OE_OK)\n"
                 "        goto done;\n\n";
@@ -850,7 +850,7 @@ static void _GenOCALL(std::ostream& os, const Function* f)
 
     {
         os << ind;
-        os << "__r = oe_call_host(\"__" << fn << "\", __a);\n";
+        os << "__r = OE_CallHost(\"__" << fn << "\", __a);\n";
     }
 
     os << ind << "if (__r != OE_OK)\n";
@@ -907,7 +907,7 @@ static void _GenOCALL(std::ostream& os, const Function* f)
         const char text[] = "done:\n"
                             "\n"
                             "    if (__a)\n"
-                            "        oe_free_struct(__ti, __a, $0);\n"
+                            "        OE_FreeStruct(__ti, __a, $0);\n"
                             "\n"
                             "    return __r;\n"
                             "}\n";
@@ -929,7 +929,7 @@ static void _GenECALL(std::ostream& os, const Function* f)
     // Generate function body:
     ind++;
     os << "{" << endl;
-    os << "    oe_result_t __r = OE_UNEXPECTED;\n";
+    os << "    OE_Result __r = OE_UNEXPECTED;\n";
     os << ind << sub("struct $0Args __args;\n", fn);
     os << endl;
 
@@ -970,7 +970,7 @@ static void _GenECALL(std::ostream& os, const Function* f)
     os << endl;
 
     os << ind;
-    os << sub("__r = oe_call_enclave(enclave, \"__$0\", &__args);\n", fn);
+    os << sub("__r = OE_CallEnclave(enclave, \"__$0\", &__args);\n", fn);
 
     os << ind << "if (__r != OE_OK)\n";
     os << ind << "    goto done;\n";
@@ -1104,33 +1104,33 @@ static int _GenFieldTypeInfo(std::ostream& os, const Struct& s, const Field& f)
     os << ind << "{\n";
     ind++;
     {
-        // oe_field_ti_t.flags:
+        // OE_FieldTI.flags:
         os << ind;
         _GenFlags(os, f.flags);
 
-        // oe_field_ti_t.name:
+        // OE_FieldTI.name:
         os << ind << '"' << f.name << "\", /* name */\n";
 
-        // oe_field_ti_t.type:
+        // OE_FieldTI.type:
         os << ind << ttn << ", /* type */\n";
 
-        // oe_field_ti_t.structTI:
+        // OE_FieldTI.structTI:
         if (f.flags & FLAG_STRUCT && !(f.flags & FLAG_UNCHECKED))
             os << ind << sub("&$0_ti, /* structTI */\n", f.type);
         else
             os << ind << "NULL, /* structTI */\n";
 
-        // oe_field_ti_t.countField:
+        // OE_FieldTI.countField:
         if (f.flags & FLAG_COUNT)
             os << ind << '"' << f.qvals.count << "\", /* countField */\n";
         else
             os << ind << "NULL, /* countField */\n";
 
-        // oe_field_ti_t.offset:
+        // OE_FieldTI.offset:
         os << ind << "OE_OFFSETOF(struct " << s.name << ", " << f.name
            << "),\n";
 
-        // oe_field_ti_t.size:
+        // OE_FieldTI.size:
         if (f.flags & FLAG_PTR)
             os << ind << "sizeof(void*), /* size */\n";
         else if (f.flags & FLAG_ARRAY)
@@ -1141,7 +1141,7 @@ static int _GenFieldTypeInfo(std::ostream& os, const Struct& s, const Field& f)
         else
             os << ind << "sizeof(" << tn << "), /* size */\n";
 
-        // oe_field_ti_t.subscript:
+        // OE_FieldTI.subscript:
         os << ind << f.subscript << ", /* subscript */" << endl;
     }
     ind--;
@@ -1158,11 +1158,11 @@ static int _GenStructTypeInfo(std::ostream& os, const Struct& s)
     // Generate fields type-info:
     {
         // Generate forward declaration of struct type info:
-        os << sub("extern const oe_struct_ti_t $0_ti;\n\n", s.name);
+        os << sub("extern const OE_StructTI $0_ti;\n\n", s.name);
 
         {
             os << sub(
-                "static const oe_field_ti_t _$0_fields_ti[] =\n"
+                "static const OE_FieldTI _$0_fields_ti[] =\n"
                 "{\n",
                 s.name);
 
@@ -1182,7 +1182,7 @@ static int _GenStructTypeInfo(std::ostream& os, const Struct& s)
             ind++;
 
             os << sub(
-                "const oe_struct_ti_t $0_ti =\n"
+                "const OE_StructTI $0_ti =\n"
                 "{\n",
                 s.name);
 
@@ -1226,40 +1226,40 @@ static int _GenReturnTypeTypeInfo(
     os << ind << "{\n";
     ind++;
     {
-        // oe_field_ti_t.flags:
+        // OE_FieldTI.flags:
         os << ind;
 
         _GenFlags(os, r.flags);
 
-        // oe_field_ti_t.name:
+        // OE_FieldTI.name:
         os << ind << '"' << r.name << "\", /* name */\n";
 
-        // oe_field_ti_t.type:
+        // OE_FieldTI.type:
         os << ind << ttn << ", /* type */\n";
 
-        // oe_field_ti_t.structTI:
+        // OE_FieldTI.structTI:
         if (r.flags & FLAG_STRUCT && !(r.flags & FLAG_UNCHECKED))
             os << ind << sub("&$0_ti, /* structTI */\n", r.type);
         else
             os << ind << "NULL, /* structTI */\n";
 
-        // oe_field_ti_t.count:
+        // OE_FieldTI.count:
         if (r.flags & FLAG_COUNT)
             os << ind << '"' << r.qvals.count << "\", /* count */\n";
         else
             os << ind << "NULL, /* count */\n";
 
-        // oe_field_ti_t.offset:
+        // OE_FieldTI.offset:
         os << ind << "OE_OFFSETOF(struct " << f.name << "Args, " << r.name
            << "),\n";
 
-        // oe_field_ti_t.size:
+        // OE_FieldTI.size:
         if (r.flags & FLAG_PTR)
             os << ind << "sizeof(void*), /* size */\n";
         else
             os << ind << "sizeof(" << tn << "), /* size */\n";
 
-        // oe_field_ti_t.subscript:
+        // OE_FieldTI.subscript:
         os << ind << "0, /* subscript */" << endl;
     }
     ind--;
@@ -1284,33 +1284,33 @@ static int _GenParamTypeInfo(
     os << ind << "{\n";
     ind++;
     {
-        // oe_field_ti_t.flags:
+        // OE_FieldTI.flags:
         os << ind;
         _GenFlags(os, p.flags);
 
-        // oe_field_ti_t.name:
+        // OE_FieldTI.name:
         os << ind << '"' << p.name << "\", /* name */\n";
 
-        // oe_field_ti_t.type:
+        // OE_FieldTI.type:
         os << ind << ttn << ", /* type */\n";
 
-        // oe_field_ti_t.structTI:
+        // OE_FieldTI.structTI:
         if (p.flags & FLAG_STRUCT && !(p.flags & FLAG_UNCHECKED))
             os << ind << sub("&$0_ti, /* structTI */\n", p.type);
         else
             os << ind << "NULL, /* structName */\n";
 
-        // oe_field_ti_t.count:
+        // OE_FieldTI.count:
         if (p.flags & FLAG_COUNT)
             os << ind << '"' << p.qvals.count << "\", /* count */\n";
         else
             os << ind << "NULL, /* count */\n";
 
-        // oe_field_ti_t.offset:
+        // OE_FieldTI.offset:
         os << ind << "OE_OFFSETOF(struct " << f.name << "Args, " << p.name
            << "),\n";
 
-        // oe_field_ti_t.size:
+        // OE_FieldTI.size:
         if (p.flags & FLAG_PTR)
             os << ind << "sizeof(void*), /* size */\n";
         else if (p.flags & FLAG_ARRAY)
@@ -1321,7 +1321,7 @@ static int _GenParamTypeInfo(
         else
             os << ind << "sizeof(" << tn << "), /* size */\n";
 
-        // oe_field_ti_t.subscript:
+        // OE_FieldTI.subscript:
         os << ind << p.subscript << ", /* subscript */" << endl;
     }
     ind--;
@@ -1338,11 +1338,11 @@ static int _GenFunctionTypeInfo(std::ostream& os, const Function& f)
     // Generate params type-info:
     {
         // Generate forward declaration to function type-information:
-        os << sub("extern const oe_struct_ti_t $0Args_ti;\n\n", f.name);
+        os << sub("extern const OE_StructTI $0Args_ti;\n\n", f.name);
 
         {
             os << sub(
-                "static const oe_field_ti_t _$0Args_fields_ti[] =\n"
+                "static const OE_FieldTI _$0Args_fields_ti[] =\n"
                 "{\n",
                 f.name);
 
@@ -1368,7 +1368,7 @@ static int _GenFunctionTypeInfo(std::ostream& os, const Function& f)
             ind++;
 
             os << sub(
-                "const oe_struct_ti_t $0Args_ti =\n"
+                "const OE_StructTI $0Args_ti =\n"
                 "{\n",
                 f.name);
 
@@ -1447,7 +1447,7 @@ int Generator::GenerateSourceFile(
             _GenVerbatim(os, verbatim);
     }
 
-    const char* MEMCPY = trusted ? "oe_memcpy" : "memcpy";
+    const char* MEMCPY = trusted ? "OE_Memcpy" : "memcpy";
 
     // Inject custom _ConstMemcpy() function:
     {
@@ -1467,14 +1467,14 @@ int Generator::GenerateSourceFile(
         const char mallocText[] =
             "OE_INLINE void* _HostAllocForCallHost(size_t size)\n"
             "{\n"
-            "    return oe_host_alloc_for_call_host(size);\n"
+            "    return OE_HostAllocForCallHost(size);\n"
             "}\n\n";
         os << mallocText << endl;
 
         const char freeText[] =
             "OE_INLINE void _HostFreeForCallHost(void* ptr)\n"
             "{\n"
-            "     oe_host_free_for_call_host(ptr);\n"
+            "     OE_HostFreeForCallHost(ptr);\n"
             "}\n\n";
         os << freeText << endl;
     }

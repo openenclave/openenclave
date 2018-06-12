@@ -12,7 +12,7 @@
  * access.
  */
 
-int oe_setjmp(oe_jmpbuf_t* env)
+int OE_Setjmp(OE_Jmpbuf* env)
 {
     asm volatile(
         /* Save RBX */
@@ -43,7 +43,7 @@ int oe_setjmp(oe_jmpbuf_t* env)
     return 0;
 }
 
-void oe_longjmp(oe_jmpbuf_t* env, int val)
+void OE_Longjmp(OE_Jmpbuf* env, int val)
 {
     if (val == 0)
         val = 1;

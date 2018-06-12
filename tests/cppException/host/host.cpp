@@ -10,35 +10,35 @@
 #include <cstring>
 #include "../args.h"
 
-void TestCppException(oe_enclave_t* enclave)
+void TestCppException(OE_Enclave* enclave)
 {
-    oe_result_t result;
+    OE_Result result;
     Args args;
 
     printf("=== %s() \n", __FUNCTION__);
-    result = oe_call_enclave(enclave, "Test", &args);
+    result = OE_CallEnclave(enclave, "Test", &args);
     OE_TEST(result == OE_OK);
     OE_TEST(args.ret == 0);
 }
 
 void TestUnhandledException(
-    oe_enclave_t* enclave,
+    OE_Enclave* enclave,
     unhandled_exception_func_num func_num)
 {
-    oe_result_t result;
+    OE_Result result;
     Args args;
     args.func_num = func_num;
 
     printf("=== %s(%d)  \n", __FUNCTION__, func_num);
-    result = oe_call_enclave(enclave, "TestUnhandledException", &args);
+    result = OE_CallEnclave(enclave, "TestUnhandledException", &args);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
     OE_TEST(args.ret == 0);
 }
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
-    oe_enclave_t* enclave = NULL;
+    OE_Result result;
+    OE_Enclave* enclave = NULL;
 
     if (argc != 2)
     {
@@ -50,19 +50,19 @@ int main(int argc, const char* argv[])
         "=== This program is used to test basic cpp exception "
         "functionalities.\n");
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    if ((result = oe_create_enclave(
+    if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        oe_puterr("oe_create_enclave(): result=%u", result);
+        OE_PutErr("OE_CreateEnclave(): result=%u", result);
     }
 
     TestCppException(enclave);
 
-    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
     {
-        oe_puterr("oe_terminate_enclave(): result=%u", result);
+        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
     }
 
     printf("=== passed regular cpp exception tests.\n");
@@ -74,18 +74,18 @@ int main(int argc, const char* argv[])
 
     for (uint32_t i = 0; i < OE_COUNTOF(func_nums); i++)
     {
-        if ((result = oe_create_enclave(
+        if ((result = OE_CreateEnclave(
                  argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
             OE_OK)
         {
-            oe_puterr("oe_create_enclave(): result=%u", result);
+            OE_PutErr("OE_CreateEnclave(): result=%u", result);
         }
 
         TestUnhandledException(enclave, func_nums[i]);
 
-        if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+        if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
         {
-            oe_puterr("oe_terminate_enclave(): result=%u", result);
+            OE_PutErr("OE_TerminateEnclave(): result=%u", result);
         }
 
         printf(

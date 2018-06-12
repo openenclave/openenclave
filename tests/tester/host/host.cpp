@@ -43,7 +43,7 @@ OE_EXTERNC int32_t OCALL_MultipleParams(
 void __CheckResult(
     const char* file,
     unsigned int line,
-    oe_result_t result,
+    OE_Result result,
     const char* msg)
 {
     if (result != OE_OK)
@@ -54,7 +54,7 @@ void __CheckResult(
             file,
             line,
             result,
-            oe_result_str(result),
+            OE_ResultStr(result),
             msg);
         exit(1);
     }
@@ -75,8 +75,8 @@ extern "C" void Callback(const char* str)
 int main(int argc, const char* argv[])
 {
     arg0 = argv[0];
-    oe_result_t result;
-    oe_enclave_t* enclave = NULL;
+    OE_Result result;
+    OE_Enclave* enclave = NULL;
 
     if (argc != 2)
     {
@@ -84,12 +84,12 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    result = oe_create_enclave(
+    result = OE_CreateEnclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
-        oe_puterr("cannot create enclave");
+        OE_PutErr("cannot create enclave");
 
     // Test: ReturnVoid()
     {
@@ -137,7 +137,7 @@ int main(int argc, const char* argv[])
         OE_TEST(o.name);
         OE_TEST(strcmp(o.name, "Object") == 0);
         OE_TEST(o.id == 6);
-        oe_destroy_struct(&Object_ti, &o, free);
+        OE_DestroyStruct(&Object_ti, &o, free);
         printf("=== passed ReturnObject()\n");
     }
 
@@ -170,9 +170,9 @@ int main(int argc, const char* argv[])
         OE_TEST(strcmp(p[1].name, "Object1") == 0);
         OE_TEST(p[2].id == 2);
         OE_TEST(strcmp(p[2].name, "Object2") == 0);
-        oe_destroy_struct(&Object_ti, &p[0], free);
-        oe_destroy_struct(&Object_ti, &p[1], free);
-        oe_destroy_struct(&Object_ti, &p[2], free);
+        OE_DestroyStruct(&Object_ti, &p[0], free);
+        OE_DestroyStruct(&Object_ti, &p[1], free);
+        OE_DestroyStruct(&Object_ti, &p[2], free);
         free(p);
         printf("=== passed ReturnObjects()\n");
     }
@@ -200,8 +200,8 @@ int main(int argc, const char* argv[])
         OE_TEST(ret == 0);
         OE_TEST(CheckObject(src, 274, "My Object"));
         OE_TEST(CheckObject(dest, 274, "My Object"));
-        oe_destroy_struct(&Object_ti, &src, free);
-        oe_destroy_struct(&Object_ti, &dest, free);
+        OE_DestroyStruct(&Object_ti, &src, free);
+        OE_DestroyStruct(&Object_ti, &dest, free);
         printf("=== passed CopyObject()\n");
     }
 
@@ -220,10 +220,10 @@ int main(int argc, const char* argv[])
         OE_TEST(ret == 0);
         OE_TEST(CheckObject(dest[0], 0, "O0"));
         OE_TEST(CheckObject(dest[1], 1, "O1"));
-        oe_destroy_struct(&Object_ti, &src[0], free);
-        oe_destroy_struct(&Object_ti, &src[1], free);
-        oe_destroy_struct(&Object_ti, &dest[0], free);
-        oe_destroy_struct(&Object_ti, &dest[1], free);
+        OE_DestroyStruct(&Object_ti, &src[0], free);
+        OE_DestroyStruct(&Object_ti, &src[1], free);
+        OE_DestroyStruct(&Object_ti, &dest[0], free);
+        OE_DestroyStruct(&Object_ti, &dest[1], free);
         printf("=== passed CopyObjects()\n");
     }
 
@@ -252,9 +252,9 @@ int main(int argc, const char* argv[])
         OE_TEST(strcmp(strOut, "strIn") == 0);
         OE_TEST(numOut == 999);
         OE_TEST(CheckObject(objectOut, 111, "0111"));
-        oe_destroy_struct(&Object_ti, &objectIn, free);
-        oe_destroy_struct(&Object_ti, &objectOut, free);
-        oe_free_struct(&Object_ti, objectRefOut, free);
+        OE_DestroyStruct(&Object_ti, &objectIn, free);
+        OE_DestroyStruct(&Object_ti, &objectOut, free);
+        OE_FreeStruct(&Object_ti, objectRefOut, free);
         printf("=== passed ECALL_MultipleParams()\n");
     }
 
@@ -267,7 +267,7 @@ int main(int argc, const char* argv[])
         OE_TEST(ret == 0);
         OE_TEST(object);
         OE_TEST(CheckObject(*object, 12, "GetObjectRef"));
-        oe_free_struct(&Object_ti, object, free);
+        OE_FreeStruct(&Object_ti, object, free);
         printf("=== passed GetObjectRef()\n");
     }
 
@@ -291,7 +291,7 @@ int main(int argc, const char* argv[])
         result = ModifyObject(enclave, &ret, object);
         CheckResult(result, "ModifyObject()");
         OE_TEST(ret == 0);
-        oe_free_struct(&Object_ti, object, free);
+        OE_FreeStruct(&Object_ti, object, free);
         printf("=== passed ModifyObject()\n");
     }
 
@@ -422,7 +422,7 @@ int main(int argc, const char* argv[])
 
     printf("=== passed passed all tests (tester)\n");
 
-    CheckResult(oe_terminate_enclave(enclave), "oe_terminate_enclave");
+    CheckResult(OE_TerminateEnclave(enclave), "OE_TerminateEnclave");
 
     return 0;
 }

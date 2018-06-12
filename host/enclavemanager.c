@@ -12,13 +12,13 @@ static OE_H_Mutex g_enclave_list_lock = OE_H_MUTEX_INITIALIZER;
 typedef struct _EnclaveEntry
 {
     OE_LIST_ENTRY(_EnclaveEntry) next_entry;
-    oe_enclave_t* enclave;
+    OE_Enclave* enclave;
 } EnclaveEntry;
 
 /*
 **==============================================================================
 **
-** _oe_push_enclave_instance()
+** _OE_PushEnclaveInstance()
 **
 **     Push the enclave to the head of the global enclave list.
 **     Return 0 if success.
@@ -26,7 +26,7 @@ typedef struct _EnclaveEntry
 **==============================================================================
 */
 
-uint32_t _oe_push_enclave_instance(oe_enclave_t* enclave)
+uint32_t _OE_PushEnclaveInstance(OE_Enclave* enclave)
 {
     uint32_t ret = 1;
     bool locked = false;
@@ -83,7 +83,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** _oe_remove_enclave_instance()
+** _OE_RemoveEnclaveInstance()
 **
 **     Remove the enclave from the global enclave list.
 **     Return 0 if success.
@@ -91,7 +91,7 @@ cleanup:
 **==============================================================================
 */
 
-uint32_t _oe_remove_enclave_instance(oe_enclave_t* enclave)
+uint32_t _OE_RemoveEnclaveInstance(OE_Enclave* enclave)
 {
     uint32_t ret = 1;
     bool locked = false;
@@ -135,7 +135,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** _oe_query_enclave_instance()
+** _OE_QueryEnclaveInstance()
 **
 **     Query the owner enclave for the given TCS.
 **     Return the owner enclave if success, otherwise return NULL.
@@ -143,9 +143,9 @@ cleanup:
 **==============================================================================
 */
 
-oe_enclave_t* _oe_query_enclave_instance(void* tcs)
+OE_Enclave* _OE_QueryEnclaveInstance(void* tcs)
 {
-    oe_enclave_t* ret = NULL;
+    OE_Enclave* ret = NULL;
     bool locked = false;
 
     // Take the lock.
@@ -161,7 +161,7 @@ oe_enclave_t* _oe_query_enclave_instance(void* tcs)
         EnclaveEntry* tmp;
         OE_LIST_FOREACH(tmp, &g_enclave_list_head, next_entry)
         {
-            oe_enclave_t* enclave = tmp->enclave;
+            OE_Enclave* enclave = tmp->enclave;
             for (uint32_t i = 0; i < OE_COUNTOF(enclave->bindings); i++)
             {
                 if (enclave->bindings[i].tcs == (uint64_t)tcs)

@@ -18,7 +18,7 @@ bool GenerateQuote(
 
 /**
  * Attest the given quote and accompanying data. The quote is first attested
- * using the oe_verify_report API. This ensures the authenticity of the enclave
+ * using the OE_VerifyReport API. This ensures the authenticity of the enclave
  * that generated the quote. Next the mrsigner and mrenclave values are tested
  * to establish trust of the enclave that generated the quote. Next the validity
  * of accompanying data is ensured by comparing its SHA256 digest against the

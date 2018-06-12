@@ -6,7 +6,7 @@
 
 //==============================================================================
 //
-// void _oe_exit(uint64_t arg1, uint64_t arg2)
+// void _OE_Exit(uint64_t arg1, uint64_t arg2)
 //
 // Registers:
 //     RDI - arg1
@@ -33,7 +33,7 @@
 //          thread data structure (TD.last_sp)
 //
 //      (3) If this a clean exit, then store zero in TD.last_sp, forcing
-//          oe_main() to recompute it on next entry.
+//          OE_Main() to recompute it on next entry.
 //
 //      (4) Clear enclave registers to avoid leaking data to the host.
 //
@@ -45,10 +45,10 @@
 //
 //==============================================================================
 
-.globl _oe_exit
-.hidden _oe_exit
-.type _oe_exit, @function
-_oe_exit:
+.globl _OE_Exit
+.hidden _OE_Exit
+.type _OE_Exit, @function
+_OE_Exit:
 .cfi_startproc
 
 .determine_exit_type:
@@ -66,22 +66,22 @@ _oe_exit:
     push %r14
     push %r15
 
-    // Construct the oe_ocall_context_t(rbp, return address).
+    // Construct the OE_OCallContext(rbp, return address).
     mov (4*OE_WORD_SIZE)(%rsp), %r12
     push %r12
     push %rbp
     mov	%rsp, %r12
 
-    // Save the parameters of _oe_exit into stack.
+    // Save the parameters of _OE_Exit into stack.
     push %rdi
     push %rsi
 
     // Notify a nested exit happens.
-    // _oe_notify_nested_exit_start(rdi=arg1, rsi=ocallContext)
+    // _OE_NotifyNestedExitStart(rdi=arg1, rsi=ocallContext)
     mov %r12, %rsi
-    call _oe_notify_nested_exit_start
+    call _OE_NotifyNestedExitStart
 
-    // Restore the parameters of _oe_exit from stack.
+    // Restore the parameters of _OE_Exit from stack.
     pop %rsi
     pop %rdi
 
@@ -91,7 +91,7 @@ _oe_exit:
 
 .clean_exit:
 
-    // Clear the TD.last_sp field (force oe_main to calculate stack pointer)
+    // Clear the TD.last_sp field (force OE_Main to calculate stack pointer)
     movq $0, %gs:TD_last_sp
 
 .clear_enclave_registers:
@@ -132,11 +132,11 @@ _oe_exit:
 
 .cfi_endproc
 
-.size _oe_exit, .-_oe_exit
+.size _OE_Exit, .-_OE_Exit
 
 //==============================================================================
 //
-// This function is wrapper of _oe_exit. It is needed to stitch the host
+// This function is wrapper of _OE_Exit. It is needed to stitch the host
 // stack and enclave stack together.
 //
 // N.B: Don't change the function name, otherwise debugger can't work.
@@ -155,7 +155,7 @@ __morestack:
     mov %rsp, %rbp
 .cfi_def_cfa_register   rbp
 
-    call _oe_exit
+    call _OE_Exit
 
     leave
     ret

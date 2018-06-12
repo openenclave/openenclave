@@ -23,12 +23,12 @@ void enc(void);
 
 void enc(void)
 {
-    oe_enclave_t* enclave = GetEnclave();
+    OE_Enclave* enclave = GetEnclave();
 
     if (enclave)
     {
-        oe_sha256_str hash;
-        oe_sha256_to_str(&enclave->hash, &hash);
+        OE_SHA256Str hash;
+        OE_SHA256ToStr(&enclave->hash, &hash);
         printf("Hash: %s\n", hash.buf);
         printf("\n");
         printf("Path: %s\n", enclave->path);
@@ -56,7 +56,7 @@ void enc(void)
 **==============================================================================
 */
 
-EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs)
+EnclaveEvent* GetEnclaveEvent(OE_Enclave* enclave, uint64_t tcs)
 {
     EnclaveEvent* event = NULL;
 

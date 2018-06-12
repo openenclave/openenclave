@@ -12,21 +12,21 @@
 OE_EXTERNC_BEGIN
 
 /* Opaque representation of a private EC key */
-typedef struct _oe_ec_private_key
+typedef struct _OE_ECPrivateKey
 {
     /* Internal implementation */
     uint64_t impl[4];
-} oe_ec_private_key_t;
+} OE_ECPrivateKey;
 
 /* Opaque representation of a public EC key */
-typedef struct _oe_ec_public_key
+typedef struct _OE_ECPublicKey
 {
     /* Internal implementation */
     uint64_t impl[4];
-} oe_ec_public_key_t;
+} OE_ECPublicKey;
 
 /* Supported CURVE types */
-typedef enum oe_ec_type_t { OE_EC_TYPE_SECP256R1 } oe_ec_type_t;
+typedef enum OE_ECType { OE_EC_TYPE_SECP256R1 } OE_ECType;
 
 /**
  * Reads a private EC key from PEM data
@@ -39,7 +39,7 @@ typedef enum oe_ec_type_t { OE_EC_TYPE_SECP256R1 } oe_ec_type_t;
  *     -----END PRIVATE KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * oe_ec_private_key_free().
+ * OE_ECPrivateKeyFree().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -47,10 +47,10 @@ typedef enum oe_ec_type_t { OE_EC_TYPE_SECP256R1 } oe_ec_type_t;
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_ec_private_key_read_pem(
+OE_Result OE_ECPrivateKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    oe_ec_private_key_t* privateKey);
+    OE_ECPrivateKey* privateKey);
 
 /**
  * Reads a public EC key from PEM data
@@ -63,7 +63,7 @@ oe_result_t oe_ec_private_key_read_pem(
  *     -----END PUBLIC KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * oe_ec_public_key_free().
+ * OE_ECPublicKeyFree().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -71,10 +71,10 @@ oe_result_t oe_ec_private_key_read_pem(
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_ec_public_key_read_pem(
+OE_Result OE_ECPublicKeyReadPEM(
     const uint8_t* pemData,
     size_t pemSize,
-    oe_ec_public_key_t* publicKey);
+    OE_ECPublicKey* publicKey);
 
 /**
  * Writes a private EC key to PEM format
@@ -93,8 +93,8 @@ oe_result_t oe_ec_public_key_read_pem(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-oe_result_t oe_ec_private_key_write_pem(
-    const oe_ec_private_key_t* privateKey,
+OE_Result OE_ECPrivateKeyWritePEM(
+    const OE_ECPrivateKey* privateKey,
     uint8_t* pemData,
     size_t* pemSize);
 
@@ -117,8 +117,8 @@ oe_result_t oe_ec_private_key_write_pem(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-oe_result_t oe_ec_public_key_write_pem(
-    const oe_ec_public_key_t* publicKey,
+OE_Result OE_ECPublicKeyWritePEM(
+    const OE_ECPublicKey* publicKey,
     uint8_t* pemData,
     size_t* pemSize);
 
@@ -131,7 +131,7 @@ oe_result_t oe_ec_public_key_write_pem(
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* privateKey);
+OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey);
 
 /**
  * Releases a public EC key
@@ -142,7 +142,7 @@ oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* privateKey);
  *
  * @return OE_OK upon success
  */
-oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* publicKey);
+OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey);
 
 /**
  * Digitally signs a message with a private EC key
@@ -159,9 +159,9 @@ oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* publicKey);
  * @return OE_OK on success
  * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
-oe_result_t oe_ec_private_key_sign(
-    const oe_ec_private_key_t* privateKey,
-    oe_hash_type_t hashType,
+OE_Result OE_ECPrivateKeySign(
+    const OE_ECPrivateKey* privateKey,
+    OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
     uint8_t* signature,
@@ -182,9 +182,9 @@ oe_result_t oe_ec_private_key_sign(
  *
  * @return OE_OK if the message was signed with the given certificate
  */
-oe_result_t oe_ec_public_key_verify(
-    const oe_ec_public_key_t* publicKey,
-    oe_hash_type_t hashType,
+OE_Result OE_ECPublicKeyVerify(
+    const OE_ECPublicKey* publicKey,
+    OE_HashType hashType,
     const void* hashData,
     size_t hashSize,
     const uint8_t* signature,
@@ -202,10 +202,10 @@ oe_result_t oe_ec_public_key_verify(
  *
  * @return OE_OK on success
  */
-oe_result_t oe_ec_generate_key_pair(
-    oe_ec_type_t ecType,
-    oe_ec_private_key_t* privateKey,
-    oe_ec_public_key_t* publicKey);
+OE_Result OE_ECGenerateKeyPair(
+    OE_ECType ecType,
+    OE_ECPrivateKey* privateKey,
+    OE_ECPublicKey* publicKey);
 
 /**
  * Determine whether two EC public keys are identical.
@@ -219,9 +219,9 @@ oe_result_t oe_ec_generate_key_pair(
  * @return OE_OK successful and **equal** is either true or false.
  * @return OE_INVALID_PARAMETER a parameter was invalid.
  */
-oe_result_t oe_ec_public_key_equal(
-    const oe_ec_public_key_t* publicKey1,
-    const oe_ec_public_key_t* publicKey2,
+OE_Result OE_ECPublicKeyEqual(
+    const OE_ECPublicKey* publicKey1,
+    const OE_ECPublicKey* publicKey2,
     bool* equal);
 
 /**
@@ -240,9 +240,9 @@ oe_result_t oe_ec_public_key_equal(
  * @return OE_OK upon success
  * @return OE_FAILED on failure
  */
-oe_result_t oe_ec_public_key_from_coordinates(
-    oe_ec_public_key_t* publicKey,
-    oe_ec_type_t ecType,
+OE_Result OE_ECPublicKeyFromCoordinates(
+    OE_ECPublicKey* publicKey,
+    OE_ECType ecType,
     const uint8_t* xData,
     size_t xSize,
     const uint8_t* yData,
@@ -255,7 +255,7 @@ OE_EXTERNC_END
  *
  * This function converts ECDSA signature values (r and s) to an
  * DER-encoded signature suitable as an input parameter to the
- * **oe_ec_public_key_verify()** function.
+ * **OE_ECPublicKeyVerify()** function.
  *
  * @param signature the buffer that will contain the signature
  * @param signatureSize[in,out] buffer size (in); signature size (out)
@@ -269,7 +269,7 @@ OE_EXTERNC_END
  * @return OE_BUFFER_TOO_SMALL **signature** buffer is too small
  *         and **signatureSize** contains the required size.
  */
-oe_result_t oe_ecdsa_signature_write_der(
+OE_Result OE_ECDSASignatureWriteDER(
     unsigned char* signature,
     size_t* signatureSize,
     const uint8_t* rData,

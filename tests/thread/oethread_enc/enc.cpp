@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include "../args.h"
 
-static oe_mutex_t mutex1 = OE_MUTEX_INITIALIZER;
-static oe_mutex_t mutex2 = OE_MUTEX_INITIALIZER;
+static OE_Mutex mutex1 = OE_MUTEX_INITIALIZER;
+static OE_Mutex mutex2 = OE_MUTEX_INITIALIZER;
 
 // Force parallel invocation of malloc():
 static void _TestParallelMallocs()
@@ -31,48 +31,48 @@ OE_ECALL void TestMutex(void* args_)
 {
     TestMutexArgs* args = (TestMutexArgs*)args_;
 
-    OE_TEST(oe_mutex_lock(&mutex1) == 0);
-    OE_TEST(oe_mutex_lock(&mutex1) == 0);
+    OE_TEST(OE_MutexLock(&mutex1) == 0);
+    OE_TEST(OE_MutexLock(&mutex1) == 0);
     args->count1++;
-    OE_TEST(oe_mutex_lock(&mutex2) == 0);
-    OE_TEST(oe_mutex_lock(&mutex2) == 0);
+    OE_TEST(OE_MutexLock(&mutex2) == 0);
+    OE_TEST(OE_MutexLock(&mutex2) == 0);
     args->count2++;
-    OE_TEST(oe_mutex_unlock(&mutex1) == 0);
-    OE_TEST(oe_mutex_unlock(&mutex1) == 0);
-    OE_TEST(oe_mutex_unlock(&mutex2) == 0);
-    OE_TEST(oe_mutex_unlock(&mutex2) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex1) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex1) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex2) == 0);
+    OE_TEST(OE_MutexUnlock(&mutex2) == 0);
 
-    oe_host_printf("TestMutex: %lld\n", OE_LLU(oe_thread_self()));
+    OE_HostPrintf("TestMutex: %lld\n", OE_LLU(OE_ThreadSelf()));
 }
 
 static void _TestMutex1(size_t* count)
 {
-    OE_TEST(oe_mutex_lock(&mutex1) == 0);
+    OE_TEST(OE_MutexLock(&mutex1) == 0);
     (*count)++;
-    OE_TEST(oe_mutex_unlock(&mutex1) == 0);
-    oe_host_printf("TestMutex1: %llu\n", OE_LLU(oe_thread_self()));
+    OE_TEST(OE_MutexUnlock(&mutex1) == 0);
+    OE_HostPrintf("TestMutex1: %llu\n", OE_LLU(OE_ThreadSelf()));
 }
 
 static void _TestMutex2(size_t* count)
 {
-    OE_TEST(oe_mutex_lock(&mutex2) == 0);
+    OE_TEST(OE_MutexLock(&mutex2) == 0);
     (*count)++;
-    OE_TEST(oe_mutex_unlock(&mutex2) == 0);
-    oe_host_printf("TestMutex2: %llu\n", OE_LLU(oe_thread_self()));
+    OE_TEST(OE_MutexUnlock(&mutex2) == 0);
+    OE_HostPrintf("TestMutex2: %llu\n", OE_LLU(OE_ThreadSelf()));
 }
 
-static oe_cond_t cond = OE_COND_INITIALIZER;
-static oe_mutex_t cond_mutex = OE_MUTEX_INITIALIZER;
+static OE_Cond cond = OE_COND_INITIALIZER;
+static OE_Mutex cond_mutex = OE_MUTEX_INITIALIZER;
 
 /* Assign a mutex to be used in test below: returns 1 or 2 */
 static size_t AssignMutex()
 {
     static size_t _n = 0;
-    static oe_spinlock_t _lock;
+    static OE_Spinlock _lock;
 
-    oe_spin_lock(&_lock);
+    OE_SpinLock(&_lock);
     _n++;
-    oe_spin_unlock(&_lock);
+    OE_SpinUnlock(&_lock);
 
     /* Return 0 or 1 */
     return (_n % 2) ? 1 : 2;
@@ -96,17 +96,17 @@ OE_ECALL void Wait(void* args_)
     else
         OE_TEST(0);
 
-    oe_host_printf("TestMutex2%zu()\n", n);
+    OE_HostPrintf("TestMutex2%zu()\n", n);
 
     /* Wait on the condition variable */
-    oe_host_printf("Waiting: %llu\n", OE_LLU(oe_thread_self()));
+    OE_HostPrintf("Waiting: %llu\n", OE_LLU(OE_ThreadSelf()));
 
-    oe_mutex_lock(&cond_mutex);
-    oe_cond_wait(&cond, &cond_mutex);
+    OE_MutexLock(&cond_mutex);
+    OE_CondWait(&cond, &cond_mutex);
 
-    oe_host_printf("Done waiting!\n");
+    OE_HostPrintf("Done waiting!\n");
 
-    oe_mutex_unlock(&cond_mutex);
+    OE_MutexUnlock(&cond_mutex);
 
     OE_TEST(_count1 + _count2 == args->numThreads);
 
@@ -115,57 +115,57 @@ OE_ECALL void Wait(void* args_)
 
 OE_ECALL void Signal()
 {
-    oe_cond_signal(&cond);
+    OE_CondSignal(&cond);
 }
 
 static unsigned int nthreads = 0;
 
-static oe_mutex_t ex_mutex = OE_MUTEX_INITIALIZER;
+static OE_Mutex ex_mutex = OE_MUTEX_INITIALIZER;
 
-static oe_cond_t exclusive = OE_COND_INITIALIZER;
+static OE_Cond exclusive = OE_COND_INITIALIZER;
 
 OE_ECALL void WaitForExclusiveAccess(void* args_)
 {
-    oe_mutex_lock(&ex_mutex);
+    OE_MutexLock(&ex_mutex);
 
     // Wait for other threads to finish
     while (nthreads > 0)
     {
         // Release mutex and wait for owning thread to finish
-        oe_host_printf(
-            "%llu: Waiting for exclusive access\n", OE_LLU(oe_thread_self()));
-        oe_cond_wait(&exclusive, &ex_mutex);
+        OE_HostPrintf(
+            "%llu: Waiting for exclusive access\n", OE_LLU(OE_ThreadSelf()));
+        OE_CondWait(&exclusive, &ex_mutex);
     }
 
-    oe_host_printf("%llu: Obtained exclusive access\n", OE_LLU(oe_thread_self()));
+    OE_HostPrintf("%llu: Obtained exclusive access\n", OE_LLU(OE_ThreadSelf()));
     nthreads = 1;
-    oe_mutex_unlock(&ex_mutex);
+    OE_MutexUnlock(&ex_mutex);
 }
 
 OE_ECALL void RelinquishExclusiveAccess(void* args_)
 {
-    oe_mutex_lock(&ex_mutex);
+    OE_MutexLock(&ex_mutex);
 
     // Mark thread as done
     nthreads = 0;
 
     // Signal waiting threads
-    oe_host_printf(
-        "%llu: Signalling waiting threads\n", OE_LLU(oe_thread_self()));
-    oe_cond_signal(&exclusive);
+    OE_HostPrintf(
+        "%llu: Signalling waiting threads\n", OE_LLU(OE_ThreadSelf()));
+    OE_CondSignal(&exclusive);
 
-    oe_host_printf(
-        "%llu: Relinquished exlusive access\n", OE_LLU(oe_thread_self()));
-    oe_mutex_unlock(&ex_mutex);
+    OE_HostPrintf(
+        "%llu: Relinquished exlusive access\n", OE_LLU(OE_ThreadSelf()));
+    OE_MutexUnlock(&ex_mutex);
 }
 
-static oe_mutex_t mutex_a = OE_MUTEX_INITIALIZER;
-static oe_mutex_t mutex_b = OE_MUTEX_INITIALIZER;
-static oe_mutex_t mutex_c = OE_MUTEX_INITIALIZER;
+static OE_Mutex mutex_a = OE_MUTEX_INITIALIZER;
+static OE_Mutex mutex_b = OE_MUTEX_INITIALIZER;
+static OE_Mutex mutex_c = OE_MUTEX_INITIALIZER;
 
-static oe_thread_t a_owner = 0;
-static oe_thread_t b_owner = 0;
-static oe_thread_t c_owner = 0;
+static OE_Thread a_owner = 0;
+static OE_Thread b_owner = 0;
+static OE_Thread c_owner = 0;
 
 static int a_locks = 0;
 static int b_locks = 0;
@@ -176,14 +176,14 @@ static int c_locks = 0;
 OE_ECALL void LockAndUnlockMutexes(void* arg)
 {
     // Spinlock is used to modify the  _locked variables.
-    static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+    static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
 
     char* mutexes = (char*)arg;
     const char m = mutexes[0];
 
-    oe_mutex_t* mutex = NULL;
+    OE_Mutex* mutex = NULL;
     int* locks = NULL;
-    oe_thread_t* owner = NULL;
+    OE_Thread* owner = NULL;
 
     if (m == 'A')
     {
@@ -207,21 +207,21 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
     if (mutex != NULL)
     {
         // Lock mutex
-        oe_mutex_lock(mutex);
+        OE_MutexLock(mutex);
         {
             // Test constraints
-            oe_spin_lock(&_lock);
+            OE_SpinLock(&_lock);
 
             // Recursive lock
             if (*locks > 0)
-                OE_TEST(*owner == oe_thread_self());
+                OE_TEST(*owner == OE_ThreadSelf());
             else
                 OE_TEST(*owner == 0);
 
-            *owner = oe_thread_self();
+            *owner = OE_ThreadSelf();
             ++*locks;
 
-            oe_spin_unlock(&_lock);
+            OE_SpinUnlock(&_lock);
         }
 
         // Lock next specified mutex.
@@ -229,15 +229,15 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
 
         {
             // Test constraints
-            oe_spin_lock(&_lock);
+            OE_SpinLock(&_lock);
 
-            OE_TEST(*owner == oe_thread_self());
+            OE_TEST(*owner == OE_ThreadSelf());
             if (--*locks == 0)
                 *owner = 0;
 
-            oe_spin_unlock(&_lock);
+            OE_SpinUnlock(&_lock);
         }
 
-        oe_mutex_unlock(mutex);
+        OE_MutexUnlock(mutex);
     }
 }

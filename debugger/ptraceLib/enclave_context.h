@@ -9,49 +9,49 @@
 #include <pthread.h>
 #include <sys/user.h>
 
-int oe_read_process_memory(
+int OE_ReadProcessMemory(
     pid_t proc,
     void* base_addr,
     void* buffer,
     size_t buffer_size,
     size_t* read_size);
 
-int oe_write_process_memory(
+int OE_WriteProcessMemory(
     pid_t proc,
     void* base_addr,
     void* buffer,
     size_t buffer_size,
     size_t* write_size);
 
-bool oe_is_aep(pid_t pid, struct user_regs_struct* regs);
+bool OE_IsAEP(pid_t pid, struct user_regs_struct* regs);
 
-int oe_get_enclave_thread_gpr(
+int OE_GetEnclaveThreadGpr(
     pid_t pid,
     void* tcs_addr,
     struct user_regs_struct* regs);
 
-int oe_set_enclave_thread_gpr(
+int OE_SetEnclaveThreadGpr(
     pid_t pid,
     void* tcs_addr,
     struct user_regs_struct* regs);
 
-int oe_get_enclave_thread_fpr(
+int OE_GetEnclaveThreadFpr(
     pid_t pid,
     void* tcs_addr,
     struct user_fpregs_struct* regs);
 
-int oe_set_enclave_thread_fpr(
+int OE_SetEnclaveThreadFpr(
     pid_t pid,
     void* tcs_addr,
     struct user_fpregs_struct* regs);
 
-int oe_get_enclave_thread_xstate(
+int OE_GetEnclaveThreadXState(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
     int64_t xstate_size);
 
-int oe_set_enclave_thread_xstate(
+int OE_SetEnclaveThreadXState(
     pid_t pid,
     void* tcs_addr,
     void* xstate,

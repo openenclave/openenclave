@@ -10,7 +10,7 @@ import load_symbol_cmd
 
 POINTER_SIZE = 8
 
-# These constant definitions must align with _oe_enclave structure defined in host\enclave.h
+# These constant definitions must align with _OE_Enclave structure defined in host\enclave.h
 OE_ENCLAVE_MAGIC_FIELD = 0
 OE_ENCLAVE_ADDR_FIELD = 2
 OE_ENCLAVE_HEADER_LENGTH = 0X28
@@ -182,10 +182,10 @@ def update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple):
 
 class EnlaveCreationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_creation", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="_OE_NotifyGdbEnclaveCreation", internal=1)
 
     def stop(self):
-        # Get oe_enclave_t.
+        # Get OE_Enclave.
         oe_enclave_addr = int(gdb.parse_and_eval("$rdi"))
         # Get enclave path string.
         enclave_path_addr = int(gdb.parse_and_eval("$rsi"));
@@ -200,10 +200,10 @@ class EnlaveCreationBreakpoint(gdb.Breakpoint):
 
 class EnlaveTerminationBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_termination", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="_OE_NotifyGdbEnclaveTermination", internal=1)
 
     def stop(self):
-        # Get oe_enclave_t.
+        # Get OE_Enclave.
         oe_enclave_addr = int(gdb.parse_and_eval("$rdi"))
         enclave_blob = read_from_memory(oe_enclave_addr, OE_ENCLAVE_HEADER_LENGTH)
         enclave_tuple = struct.unpack(OE_ENCLAVE_HEADER_FORMAT, enclave_blob)
@@ -219,7 +219,7 @@ class EnlaveTerminationBreakpoint(gdb.Breakpoint):
 
 class OCallStartBreakpoint(gdb.Breakpoint):
     def __init__(self):
-        gdb.Breakpoint.__init__ (self, spec="_oe_notify_ocall_start", internal=1)
+        gdb.Breakpoint.__init__ (self, spec="_OE_NotifyOCallStart", internal=1)
 
     def stop(self):
         # Get untrusted stack frame pointer and corresponding TCS.
@@ -250,7 +250,7 @@ def oe_debugger_init():
     bps = gdb.breakpoints()
     if bps != None:
         for bp in bps:
-            if bp.location == "_oe_notify_gdb_enclave_creation" and bp.is_valid():
+            if bp.location == "_OE_NotifyGdbEnclaveCreation" and bp.is_valid():
                 return
 
     # Cleanup and set breakpoints.

@@ -9,13 +9,13 @@
 
 OE_EXTERNC_BEGIN
 
-int __oe_host_puts(const char* str);
+int __OE_HostPuts(const char* str);
 
-int __oe_host_print(int device, const char* str, size_t len);
+int __OE_HostPrint(int device, const char* str, size_t len);
 
-int __oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_);
+int __OE_HostVfprintf(int device, const char* fmt, OE_va_list ap_);
 
-int __oe_host_putchar(int c);
+int __OE_HostPutchar(int c);
 
 OE_EXTERNC_END
 

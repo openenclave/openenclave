@@ -18,12 +18,12 @@ FILE* const stderr = ((FILE*)0x30000000);
 
 int puts(const char* str)
 {
-    return __oe_host_puts(str);
+    return __OE_HostPuts(str);
 }
 
 int putchar(int c)
 {
-    return __oe_host_putchar(c);
+    return __OE_HostPutchar(c);
 }
 
 int vprintf(const char* fmt, va_list ap_)
@@ -52,7 +52,7 @@ int vprintf(const char* fmt, va_list ap_)
         va_end(ap);
     }
 
-    __oe_host_print(0, p, (size_t)-1);
+    __OE_HostPrint(0, p, (size_t)-1);
 
     return n;
 }
@@ -100,7 +100,7 @@ int fprintf(FILE* stream, const char* fmt, ...)
     buf[sizeof(buf) - 1] = 0;
     if (n > sizeof(buf))
         n = sizeof(buf);
-    __oe_host_print(device, buf, n);
+    __OE_HostPrint(device, buf, n);
     return n;
 }
 
@@ -144,13 +144,13 @@ size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)
     if (stream == stdout)
     {
         /* Write to standard output device */
-        __oe_host_print(0, ptr, size * nmemb);
+        __OE_HostPrint(0, ptr, size * nmemb);
         return nmemb;
     }
     else if (stream == stderr)
     {
         /* Write to standard error device */
-        __oe_host_print(1, ptr, size * nmemb);
+        __OE_HostPrint(1, ptr, size * nmemb);
         return nmemb;
     }
     else if (size && nmemb)

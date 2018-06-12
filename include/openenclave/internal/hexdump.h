@@ -18,7 +18,7 @@ OE_EXTERNC_BEGIN
  *
  * @return first parameter or NULL if str parameter is too small
  */
-void oe_hex_dump(const void* data, size_t size);
+void OE_HexDump(const void* data, size_t size);
 
 /**
  * Converts data to a hexidecimal string
@@ -30,7 +30,7 @@ void oe_hex_dump(const void* data, size_t size);
  *
  * @return first parameter or NULL if str parameter is too small
  */
-char* oe_hex_string(
+char* OE_HexString(
     char* str,
     size_t strSize,
     const void* data,

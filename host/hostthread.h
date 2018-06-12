@@ -53,7 +53,7 @@ typedef DWORD OE_H_ThreadKey;
  * Returns the identifier of the current thread.
  *
  * This function returns the identifier of the calling thread. Two thread
- * identifiers can be compared for the equality by oe_thread_equal().
+ * identifiers can be compared for the equality by OE_ThreadEqual().
  *
  * @returns Returns the thread identifier of the calling thread.
  */
@@ -63,10 +63,10 @@ OE_H_Thread OE_H_ThreadSelf(void);
  * Checks two thread identifiers for equality.
  *
  * This function checks whether two thread identifiers refer to the same
- * thread. Thread identifiers are obtained by calling oe_thread_self().
+ * thread. Thread identifiers are obtained by calling OE_ThreadSelf().
  *
- * @param thread1 A thread identifier obtained with oe_thread_self().
- * @param thread2 A thread identifier obtained with oe_thread_self().
+ * @param thread1 A thread identifier obtained with OE_ThreadSelf().
+ * @param thread2 A thread identifier obtained with OE_ThreadSelf().
  *
  * @returns Returns non-zero if the thread identifiers are equal.
  */
@@ -77,7 +77,7 @@ int OE_H_ThreadEqual(OE_H_Thread thread1, OE_H_Thread thread2);
  *
  * This function calls the function given by the **func** parameter exactly
  * one time for the given **once** parameter, no matter how many times
- * OE_H_Once() is called. oe_once() may be called safely from different threads
+ * OE_H_Once() is called. OE_Once() may be called safely from different threads
  * and is typically used as a thread-safe mechanism for performing one-time
  * initialization, as in the example below.
  *
@@ -92,7 +92,7 @@ int OE_H_ThreadEqual(OE_H_Thread thread1, OE_H_Thread thread2);
  *
  *     OE_H_Once(&_once, _Initialize);
  *
- * The **_Initialize** function is called by the first thread to call oe_once()
+ * The **_Initialize** function is called by the first thread to call OE_Once()
  * for the *_once* variable.
  *
  * @param once The variable used to synchronize one-time call to **func**.
@@ -130,7 +130,7 @@ int OE_H_MutexLock(OE_H_Mutex* Lock);
  *
  * This function attempts to acquire a lock on the given mutex if it is
  * available. If the mutex is unavailable, the function returns immediately.
- * Unlike oe_mutex_lock(), this function never performs an OCALL.
+ * Unlike OE_MutexLock(), this function never performs an OCALL.
  *
  * @param mutex Acquire a lock on this mutex.
  *
@@ -142,7 +142,7 @@ int OE_H_MutexTryLock(OE_H_Mutex* mutex);
  * Releases a mutex.
  *
  * This function releases the lock on a mutex obtained with either
- * oe_mutex_lock() or oe_mutex_try_lock().
+ * OE_MutexLock() or OE_MutexTryLock().
  *
  * In enclaves, this function performs an OCALL, where it wakes the next
  * thread waiting on a mutex.

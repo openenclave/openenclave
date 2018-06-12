@@ -8,15 +8,15 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _oe_enclave oe_enclave_t;
+typedef struct _OE_Enclave OE_Enclave;
 
-void _oe_notify_gdb_enclave_creation(
-    const oe_enclave_t* enclave,
+void _OE_NotifyGdbEnclaveCreation(
+    const OE_Enclave* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength);
 
-void _oe_notify_gdb_enclave_termination(
-    const oe_enclave_t* enclave,
+void _OE_NotifyGdbEnclaveTermination(
+    const OE_Enclave* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength);
 

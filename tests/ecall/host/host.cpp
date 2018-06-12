@@ -17,14 +17,14 @@
 
 uint64_t prev;
 
-void TestECall(oe_enclave_t* enclave)
+void TestECall(OE_Enclave* enclave)
 {
-    oe_result_t result;
+    OE_Result result;
     TestArgs args;
     memset(&args, 0, sizeof(TestArgs));
 
     {
-        result = oe_call_enclave(enclave, "Test", &args);
+        result = OE_CallEnclave(enclave, "Test", &args);
         OE_TEST(result == OE_OK);
 
         OE_TEST(args.self = &args);
@@ -59,18 +59,18 @@ void TestECall(oe_enclave_t* enclave)
     prev = args.threadData.last_sp;
 }
 
-void TestUserDefinedECall(oe_enclave_t* enclave)
+void TestUserDefinedECall(OE_Enclave* enclave)
 {
     uint64_t argOut = 0;
 
-    oe_ecall(enclave, 0, 1000, &argOut);
+    OE_ECall(enclave, 0, 1000, &argOut);
     OE_TEST(argOut == 3000);
 }
 
 int main(int argc, const char* argv[])
 {
-    oe_result_t result;
-    oe_enclave_t* enclave = NULL;
+    OE_Result result;
+    OE_Enclave* enclave = NULL;
 
     if (argc != 2)
     {
@@ -78,12 +78,12 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = oe_get_create_flags();
+    const uint32_t flags = OE_GetCreateFlags();
 
-    if ((result = oe_create_enclave(
+    if ((result = OE_CreateEnclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        oe_puterr("oe_create_enclave(): result=%u", result);
+        OE_PutErr("OE_CreateEnclave(): result=%u", result);
     }
 
     const size_t N = 10000;
@@ -97,9 +97,9 @@ int main(int argc, const char* argv[])
     printf("=== TestUserDefinedECall()\n");
     TestUserDefinedECall(enclave);
 
-    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
     {
-        oe_puterr("oe_terminate_enclave(): result=%u", result);
+        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
     }
 
     printf("=== passed all tests (%s)\n", argv[0]);

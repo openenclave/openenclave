@@ -7,7 +7,7 @@
 
 typedef struct
 {
-    oe_result_t result;
-    oe_call_host_args_t callHost;
+    OE_Result result;
+    OE_CallHostArgs callHost;
     char _fnNameBuffer[50];
 } TestORArgs;

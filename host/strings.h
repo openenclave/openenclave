@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
-char* oe_strdup(const char* str);
+char* OE_Strdup(const char* str);
 
-size_t oe_strlcpy(char* dest, const char* src, size_t size);
+size_t OE_Strlcpy(char* dest, const char* src, size_t size);
 
-size_t oe_strlcat(char* dest, const char* src, size_t size);
+size_t OE_Strlcat(char* dest, const char* src, size_t size);
 
 #endif /* _OE_HOST_STRINGS_H */

@@ -7,5 +7,5 @@
 
 typedef struct
 {
-    oe_result_t result;
+    OE_Result result;
 } TestOcallAllocArgs;

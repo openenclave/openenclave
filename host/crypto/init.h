@@ -5,6 +5,6 @@
 #define _OE_CRYPTO_HOST_INIT_H
 
 /* Initializes OpenSSL. May be called multiple times */
-void oe_initialize_openssl(void);
+void OE_InitializeOpenSSL(void);
 
 #endif /* _OE_CRYPTO_HOST_INIT_H */

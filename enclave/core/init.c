@@ -26,13 +26,13 @@
 
 static void _ApplyRelocations(void)
 {
-    const oe_reloc_t* relocs = (const oe_reloc_t*)__oe_get_reloc_base();
-    size_t nrelocs = __oe_get_reloc_size() / sizeof(oe_reloc_t);
-    const uint8_t* baseaddr = (const uint8_t*)__oe_get_enclave_base();
+    const OE_Reloc* relocs = (const OE_Reloc*)__OE_GetRelocBase();
+    size_t nrelocs = __OE_GetRelocSize() / sizeof(OE_Reloc);
+    const uint8_t* baseaddr = (const uint8_t*)__OE_GetEnclaveBase();
 
     for (size_t i = 0; i < nrelocs; i++)
     {
-        const oe_reloc_t* p = &relocs[i];
+        const OE_Reloc* p = &relocs[i];
 
         /* If zero-padded bytes reached */
         if (p->offset == 0)
@@ -61,23 +61,23 @@ static void _ApplyRelocations(void)
 static void _CheckMemoryBoundaries(void)
 {
     /* This is a tautology! */
-    if (!oe_is_within_enclave(__oe_get_enclave_base(), __oe_get_enclave_size()))
-        oe_abort();
+    if (!OE_IsWithinEnclave(__OE_GetEnclaveBase(), __OE_GetEnclaveSize()))
+        OE_Abort();
 
-    if (!oe_is_within_enclave(__oe_get_reloc_base(), __oe_get_reloc_size()))
-        oe_abort();
+    if (!OE_IsWithinEnclave(__OE_GetRelocBase(), __OE_GetRelocSize()))
+        OE_Abort();
 
-    if (!oe_is_within_enclave(__oe_get_ecall_base(), __oe_get_ecall_size()))
-        oe_abort();
+    if (!OE_IsWithinEnclave(__OE_GetECallBase(), __OE_GetECallSize()))
+        OE_Abort();
 
-    if (!oe_is_within_enclave(__oe_get_heap_base(), __oe_get_heap_size()))
-        oe_abort();
+    if (!OE_IsWithinEnclave(__OE_GetHeapBase(), __OE_GetHeapSize()))
+        OE_Abort();
 }
 
 /*
 **==============================================================================
 **
-** oe_call_init_functions()
+** OE_CallInitFunctions()
 **
 **     Call all global initialization functions. The compiler generates an
 **     array of initialization functions which it places in one of the dynamic
@@ -106,7 +106,7 @@ static void _CheckMemoryBoundaries(void)
 **         (1) C functions tagged with __attribute__(constructor)
 **         (2) C++ global constructors
 **
-**     oe_call_init_functions() invokes all functions in this array from start
+**     OE_CallInitFunctions() invokes all functions in this array from start
 **     to finish.
 **
 **     Here are some notes on initialization functions that relate to C++
@@ -118,7 +118,7 @@ static void _CheckMemoryBoundaries(void)
 **         (1) Invokes the constructor
 **         (2) Invokes __cxa_atexit() passing it the destructor
 **
-**     Note that the FINI_ARRAY (used by oe_call_fini_functions) does not
+**     Note that the FINI_ARRAY (used by OE_CallFiniFunctions) does not
 **     contain any finalization functions for calling destructors. Instead
 **     the __cxa_atexit() implementation must save the destructor functions
 **     and invoke them on enclave termination.
@@ -126,7 +126,7 @@ static void _CheckMemoryBoundaries(void)
 **==============================================================================
 */
 
-void oe_call_init_functions(void)
+void OE_CallInitFunctions(void)
 {
     void (**fn)(void);
     extern void (*__init_array_start)(void);
@@ -141,7 +141,7 @@ void oe_call_init_functions(void)
 /*
 **==============================================================================
 **
-** oe_call_fini_functions()
+** OE_CallFiniFunctions()
 **
 **     Call all global finalization functions. The compiler generates an array
 **     of finalization functions which it places in one of the dynamic program
@@ -171,9 +171,9 @@ void oe_call_init_functions(void)
 **
 **     Note that global C++ destructors are not referenced by the FINI_ARRAY.
 **     Destructors are passed to __cxa_atexit() by invoking functions in the
-**     INIT_ARRAY (see oe_call_init_functions() for more information).
+**     INIT_ARRAY (see OE_CallInitFunctions() for more information).
 **
-**     oe_call_fini_functions() invokes all functions in this array from finish
+**     OE_CallFiniFunctions() invokes all functions in this array from finish
 **     to start (reverse order).
 **
 **     For more information on C++ destruction invocation, see the
@@ -182,7 +182,7 @@ void oe_call_init_functions(void)
 **==============================================================================
 */
 
-void oe_call_fini_functions(void)
+void OE_CallFiniFunctions(void)
 {
     void (**fn)(void);
     extern void (*__fini_array_start)(void);
@@ -203,7 +203,7 @@ static void _InitializeEnclaveImage()
     _CheckMemoryBoundaries();
 }
 
-static oe_once_t _enclave_initialize_once;
+static OE_OnceType _enclave_initialize_once;
 
 static void _InitializeEnclaveImp(void)
 {
@@ -213,7 +213,7 @@ static void _InitializeEnclaveImp(void)
 /*
 **==============================================================================
 **
-** oe_initialize_enclave()
+** OE_InitializeEnclave()
 **
 **     This function is called the first time the enclave is entered. It
 **     performs any necessary enclave initialization, such as applying
@@ -221,7 +221,7 @@ static void _InitializeEnclaveImp(void)
 **
 **==============================================================================
 */
-void oe_initialize_enclave()
+void OE_InitializeEnclave()
 {
-    oe_once(&_enclave_initialize_once, _InitializeEnclaveImp);
+    OE_Once(&_enclave_initialize_once, _InitializeEnclaveImp);
 }

@@ -9,9 +9,9 @@ OE_ECALL void Ricochet(void* args_)
 {
     RicochetArgs* args = (RicochetArgs*)args_;
 
-    oe_host_printf("Enclave Ricochet()\n");
+    OE_HostPrintf("Enclave Ricochet()\n");
 
-    if (oe_call_host("Ricochet", args) != OE_OK)
+    if (OE_CallHost("Ricochet", args) != OE_OK)
     {
         OE_TEST(0);
         return;

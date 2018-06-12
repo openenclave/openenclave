@@ -5,14 +5,14 @@
 
 struct EncSetEnclaveIdArg
 {
-    oe_result_t result;     // Out
+    OE_Result result;     // Out
     unsigned id;          // In
     const void* baseAddr; // Out
 };
 
 struct EncParallelExecutionArg
 {
-    oe_result_t result;           // Out
+    OE_Result result;           // Out
     unsigned enclaveId;         // In
     unsigned flowId;            // In
     volatile unsigned* counter; // Inout
@@ -35,7 +35,7 @@ struct EncRecursionArg
 
 struct EncTestCallHostFunctionArg
 {
-    oe_result_t result;         // Out
+    OE_Result result;         // Out
     const char* functionName; // In
 };
 
