@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#define _ADD_OE_TIME_CALLS
+#define __OE_NEED_TIME_CALLS
 #include <openenclave/types.h>
 #include <stdio.h>
 #include <windows.h>
@@ -20,7 +20,6 @@ void HandleGettimeofday(uint64_t argIn)
 
 void HandleClockgettime(uint64_t argIn)
 {
-#ifdef _ADD_OE_TIME_CALLS
     OE_ClockgettimeArgs* args = (OE_ClockgettimeArgs*)argIn;
     if (!args)
         return;
@@ -61,7 +60,6 @@ void HandleClockgettime(uint64_t argIn)
         args->tp->tv_nsec = (long)nsec;
         args->ret = 0;
     }
-#endif
 }
 
 void HandleNanosleep(uint64_t argIn)

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#define _ADD_OE_TIME_CALLS
+#define __OE_NEED_TIME_CALLS
 #define _GNU_SOURCE
 #include <assert.h>
 #include <openenclave/bits/calls.h>
@@ -85,6 +85,7 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
     args->ret = -1;
     args->clk_id = clk_id;
     args->tp = tp ? &args->tpbuf : NULL;
+    OE_STATIC_ASSERT(sizeof(clockid_t) == sizeof(int32_t));
 
     if (OE_OCall(
             OE_FUNC_CLOCK_GETTIME,
