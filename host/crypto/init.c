@@ -15,7 +15,7 @@ static void _Initialize(void)
     ERR_load_crypto_strings();
 }
 
-void OE_InitializeOpenSSL(void)
+void oe_initialize_openssl(void)
 {
     pthread_once(&_once, _Initialize);
 }

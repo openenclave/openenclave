@@ -9,10 +9,10 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _OE_FieldTI OE_FieldTI;
-typedef struct _OE_StructTI OE_StructTI;
-typedef struct _OE_ParamTI OE_ParamTI;
-typedef struct _OE_FunctionTI OE_FunctionTI;
+typedef struct _oe_field_ti oe_field_ti_t;
+typedef struct _oe_struct_ti oe_struct_ti_t;
+typedef struct _oe_param_ti oe_param_ti_t;
+typedef struct _oe_function_ti oe_function_ti_t;
 
 // Type flags:
 #define OE_FLAG_STRUCT (1 << 0)
@@ -31,7 +31,7 @@ typedef struct _OE_FunctionTI OE_FunctionTI;
 #define OE_FLAG_STRING (1 << 12)
 #define OE_FLAG_OPT (1 << 13)
 
-struct _OE_FieldTI
+struct _oe_field_ti
 {
     /* flags (OE_FLAG_*) */
     uint32_t flags;
@@ -40,10 +40,10 @@ struct _OE_FieldTI
     const char* name;
 
     /* Type of field (OE_TYPE_*) */
-    OE_Type type;
+    oe_type_t type;
 
     /* Type information for this structure (when type==OE_STRUCT_TYPE) */
-    const OE_StructTI* sti;
+    const oe_struct_ti_t* sti;
 
     /* For pointer types: the field in the struct that holds the array size */
     const char* countField;
@@ -58,7 +58,7 @@ struct _OE_FieldTI
     int32_t subscript;
 };
 
-struct _OE_StructTI
+struct _oe_struct_ti
 {
     /* flags (OE_FLAG_*) */
     uint32_t flags;
@@ -70,93 +70,93 @@ struct _OE_StructTI
     size_t size;
 
     /* Pointer to array of fields */
-    const OE_FieldTI* fields;
+    const oe_field_ti_t* fields;
 
     /* Number of fields in the array */
     uint32_t nfields;
 };
 
-OE_Result OE_StructEq(
-    const OE_StructTI* sti,
+oe_result_t oe_struct_eq(
+    const oe_struct_ti_t* sti,
     const void* s1,
     const void* s2,
     bool* flag);
 
-OE_Result OE_CopyStruct(
-    const OE_StructTI* strucTI,
+oe_result_t oe_copy_struct(
+    const oe_struct_ti_t* strucTI,
     const void* structIn,
     void* structOut,
     void*(alloc)(size_t size));
 
-OE_Result OE_CloneStruct(
-    const OE_StructTI* structTI,
+oe_result_t oe_clone_struct(
+    const oe_struct_ti_t* structTI,
     const void* structIn,
     void** structOut,
     void*(alloc)(size_t size));
 
-void OE_PrintStruct(const OE_StructTI* structTI, const void* structIn);
+void oe_print_struct(const oe_struct_ti_t* structTI, const void* structIn);
 
-OE_Result OE_DestroyStruct(
-    const OE_StructTI* structTI,
+oe_result_t oe_destroy_struct(
+    const oe_struct_ti_t* structTI,
     void* structPtr,
-    OE_DeallocProc dealloc);
+    oe_dealloc_proc_t dealloc);
 
-OE_Result OE_FreeStruct(
-    const OE_StructTI* structTI,
+oe_result_t oe_free_struct(
+    const oe_struct_ti_t* structTI,
     void* structPtr,
-    OE_DeallocProc dealloc);
+    oe_dealloc_proc_t dealloc);
 
-OE_Result OE_InitArg(
-    const OE_StructTI* sti,
+oe_result_t oe_init_arg(
+    const oe_struct_ti_t* sti,
     void* strct,
     size_t index,
     bool isPtrPtr,
     void* arg,
     void*(alloc)(size_t size));
 
-OE_Result OE_ClearArg(
-    const OE_StructTI* sti,
+oe_result_t oe_clear_arg(
+    const oe_struct_ti_t* sti,
     void* strct,
     size_t index,
     bool isPtrPtr,
     void* arg,
-    OE_DeallocProc dealloc);
+    oe_dealloc_proc_t dealloc);
 
-OE_Result OE_ClearArgByName(
-    const OE_StructTI* sti,
+oe_result_t oe_clear_arg_by_name(
+    const oe_struct_ti_t* sti,
     void* strct,
     const char* name,
     bool isPtrPtr,
     void* arg,
-    OE_DeallocProc dealloc);
+    oe_dealloc_proc_t dealloc);
 
-OE_Result OE_SetArg(
-    const OE_StructTI* sti,
+oe_result_t oe_set_arg(
+    const oe_struct_ti_t* sti,
     void* strct,
     size_t index,
     bool isPtrPtr, /* if 'arg' is a pointer to a pointer to an object */
     void* arg,
     void*(alloc)(size_t size));
 
-OE_Result OE_SetArgByName(
-    const OE_StructTI* sti,
+oe_result_t oe_set_arg_by_name(
+    const oe_struct_ti_t* sti,
     void* strct,
     const char* name,
     bool isPtrPtr, /* if 'arg' is a pointer to a pointer to an object */
     void* arg,
     void*(alloc)(size_t size));
 
-size_t OE_StructFindField(const OE_StructTI* structTI, const char* name);
+size_t oe_struct_find_field(const oe_struct_ti_t* structTI, const char* name);
 
-OE_Result OE_CheckPreConstraints(const OE_StructTI* sti, const void* sin);
+oe_result_t oe_check_pre_constraints(const oe_struct_ti_t* sti, const void* sin);
 
-OE_Result OE_CheckPostConstraints(const OE_StructTI* sti, const void* sin);
+oe_result_t oe_check_post_constraints(const oe_struct_ti_t* sti, const void* sin);
 
-OE_Result OE_TestStructPadding(const OE_StructTI* sti, const void* sin);
+oe_result_t oe_test_struct_padding(const oe_struct_ti_t* sti, const void* sin);
 
-OE_Result OE_PadStruct(const OE_StructTI* sti, const void* sin);
+oe_result_t oe_pad_struct(const oe_struct_ti_t* sti, const void* sin);
 
-OE_Result OE_CheckStruct(const OE_StructTI* ti, void* strct);
+oe_result_t oe_check_struct(const oe_struct_ti_t* ti, void* strct);
 
 OE_EXTERNC_END
 

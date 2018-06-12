@@ -21,7 +21,7 @@ $ make OPENENCLAVE_CONFIG=/usr/local/share/openenclave/config.mak run
 * args.h: Defines arguments types of ECALL functions.
 
 ### ./enc/
-* attestation.h/.cpp: Demonstrates use of **OE_GetReport** to generate a report and **OE_VerifyReport** to attest a report. The reportData field of a report is used to store the hash of data accompanying a report.
+* attestation.h/.cpp: Demonstrates use of **oe_get_report** to generate a report and **oe_verify_report** to attest a report. The reportData field of a report is used to store the hash of data accompanying a report.
 * crypto.h/.cpp: Demonstrates use of **mbedtls** for cryptography within the enclave.
 * ecalls.h/.cpp: Demonstrates patterns of writing enclave **ECALL** functions that are called by the host. Demonstrates how to safely copy input and output parameters across the host/enclave memory boundary.
 * init.cpp: Demonstrates how to initialize various modules within the enclave.

@@ -10,7 +10,7 @@
 OE_EXTERNC_BEGIN
 
 /* Round up to the next power of two (or n if already a power of 2) */
-OE_INLINE uint32_t OE_RoundU32Power2(uint32_t n)
+OE_INLINE uint32_t oe_round_u32_power2(uint32_t n)
 {
     uint32_t x = n - 1;
     x |= (x >> 1);
@@ -22,7 +22,7 @@ OE_INLINE uint32_t OE_RoundU32Power2(uint32_t n)
 }
 
 /* Round up to the next power of two (or n if already a power of 2) */
-OE_INLINE uint64_t OE_RoundU64ToPow2(uint64_t n)
+OE_INLINE uint64_t oe_round_u64_to_pow2(uint64_t n)
 {
     uint64_t x = n - 1;
     x |= (x >> 1);
@@ -34,7 +34,7 @@ OE_INLINE uint64_t OE_RoundU64ToPow2(uint64_t n)
     return x + 1;
 }
 
-OE_INLINE unsigned int OE_Checksum(const void* data, size_t size)
+OE_INLINE unsigned int oe_checksum(const void* data, size_t size)
 {
     const unsigned char* p = (const unsigned char*)data;
     unsigned int x = 0;
@@ -45,17 +45,17 @@ OE_INLINE unsigned int OE_Checksum(const void* data, size_t size)
     return x;
 }
 
-OE_INLINE uint64_t OE_RoundUpToMultiple(uint64_t x, uint64_t m)
+OE_INLINE uint64_t oe_round_up_to_multiple(uint64_t x, uint64_t m)
 {
     return (x + m - 1) / m * m;
 }
 
-OE_INLINE const void* OE_AlignPointer(const void* ptr, size_t aligment)
+OE_INLINE const void* oe_align_pointer(const void* ptr, size_t aligment)
 {
-    return (const void*)OE_RoundUpToMultiple((uint64_t)ptr, aligment);
+    return (const void*)oe_round_up_to_multiple((uint64_t)ptr, aligment);
 }
 
-OE_INLINE uint32_t OE_ByteSwap32(uint32_t x)
+OE_INLINE uint32_t oe_byte_swap32(uint32_t x)
 {
     return ((uint32_t)((x & 0x000000FF) << 24)) |
            ((uint32_t)((x & 0x0000FF00) << 8)) |
@@ -118,11 +118,11 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
 #define OE_ATOMIC_MEMORY_BARRIER_RELEASE() asm volatile("" ::: "memory")
 
 /**
- * OE_SecureZeroFill is intended to be used to zero out secrets.
+ * oe_secure_zero_fill is intended to be used to zero out secrets.
  * Plain memset/for-loops can get optimized away be the compiler.
- * Use OE_SecureZeroFill instead.
+ * Use oe_secure_zero_fill instead.
  */
-OE_INLINE void OE_SecureZeroFill(volatile void* ptr, uint32_t size)
+OE_INLINE void oe_secure_zero_fill(volatile void* ptr, uint32_t size)
 {
     volatile uint8_t* p = (volatile uint8_t*)ptr;
     while (size--)
@@ -132,10 +132,10 @@ OE_INLINE void OE_SecureZeroFill(volatile void* ptr, uint32_t size)
 }
 
 /**
- * OE_SecureMemcpy guarantees that the memcpy is not optimized away by the
+ * oe_secure_memcpy guarantees that the memcpy is not optimized away by the
  * compiler.
  */
-OE_INLINE void OE_SecureMemcpy(
+OE_INLINE void oe_secure_memcpy(
     volatile void* dst,
     const void* src,
     uint32_t size)
@@ -149,9 +149,9 @@ OE_INLINE void OE_SecureMemcpy(
 }
 
 /**
- * OE_ConstantTimeMemEqual does a constant time memory compare.
+ * oe_constant_time_mem_equal does a constant time memory compare.
  */
-OE_INLINE int OE_ConstantTimeMemEqual(
+OE_INLINE int oe_constant_time_mem_equal(
     const volatile void* pv1,
     const volatile void* pv2,
     uint32_t len)

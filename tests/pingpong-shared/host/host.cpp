@@ -32,8 +32,8 @@ static char buf[128];
 
 int main_shared(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     if (argc != 2)
     {
@@ -41,9 +41,9 @@ int main_shared(int argc, const char* argv[])
         return 1;
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
 
-    result = OE_CreateEnclave(
+    result = oe_create_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
@@ -59,7 +59,7 @@ int main_shared(int argc, const char* argv[])
         return 1;
     }
 
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     if (!gotPong)
         fprintf(stderr, "%s: never received pong request\n", argv[0]);

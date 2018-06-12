@@ -18,15 +18,15 @@ const size_t NUM_THREADS = 8;
 
 void* Thread(void* args)
 {
-    OE_Enclave* enclave = (OE_Enclave*)args;
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    OE_Result result = OE_CallEnclave(enclave, "TestMutex", &_args);
+    oe_result_t result = oe_call_enclave(enclave, "TestMutex", &_args);
     OE_TEST(result == OE_OK);
 
     return NULL;
 }
 
-void TestMutex(OE_Enclave* enclave)
+void TestMutex(oe_enclave_t* enclave)
 {
     pthread_t threads[NUM_THREADS];
 
@@ -42,16 +42,16 @@ void TestMutex(OE_Enclave* enclave)
 
 void* WaiterThread(void* args)
 {
-    OE_Enclave* enclave = (OE_Enclave*)args;
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
     static WaitArgs _args = {NUM_THREADS};
 
-    OE_Result result = OE_CallEnclave(enclave, "Wait", &_args);
+    oe_result_t result = oe_call_enclave(enclave, "Wait", &_args);
     OE_TEST(result == OE_OK);
 
     return NULL;
 }
 
-void TestCond(OE_Enclave* enclave)
+void TestCond(oe_enclave_t* enclave)
 {
     pthread_t threads[NUM_THREADS];
 
@@ -61,7 +61,7 @@ void TestCond(OE_Enclave* enclave)
     sleep(1);
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-        OE_TEST(OE_CallEnclave(enclave, "Signal", NULL) == OE_OK);
+        OE_TEST(oe_call_enclave(enclave, "Signal", NULL) == OE_OK);
 
     for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
@@ -69,23 +69,23 @@ void TestCond(OE_Enclave* enclave)
 
 void* CBTestWaiterThread(void* args)
 {
-    OE_Enclave* enclave = (OE_Enclave*)args;
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    OE_TEST(OE_CallEnclave(enclave, "CBTestWaiterThreadImpl", NULL) == OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "CBTestWaiterThreadImpl", NULL) == OE_OK);
 
     return NULL;
 }
 
 void* CBTestSignalThread(void* args)
 {
-    OE_Enclave* enclave = (OE_Enclave*)args;
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    OE_TEST(OE_CallEnclave(enclave, "CBTestSignalThreadImpl", NULL) == OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "CBTestSignalThreadImpl", NULL) == OE_OK);
 
     return NULL;
 }
 
-void TestCondBroadcast(OE_Enclave* enclave)
+void TestCondBroadcast(oe_enclave_t* enclave)
 {
     pthread_t threads[NUM_THREADS];
     pthread_t signal_thread;
@@ -110,17 +110,17 @@ void TestCondBroadcast(OE_Enclave* enclave)
 void* ExclusiveAccessThread(void* args)
 {
     const size_t ITERS = 2;
-    OE_Enclave* enclave = (OE_Enclave*)args;
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
 
     printf("Thread Starting\n");
     for (size_t i = 0; i < ITERS; i++)
     {
         OE_TEST(
-            OE_CallEnclave(enclave, "WaitForExclusiveAccess", NULL) == OE_OK);
+            oe_call_enclave(enclave, "WaitForExclusiveAccess", NULL) == OE_OK);
         usleep(20 * 1000);
 
         OE_TEST(
-            OE_CallEnclave(enclave, "RelinquishExclusiveAccess", NULL) ==
+            oe_call_enclave(enclave, "RelinquishExclusiveAccess", NULL) ==
             OE_OK);
         usleep(20 * 1000);
     }
@@ -128,7 +128,7 @@ void* ExclusiveAccessThread(void* args)
     return NULL;
 }
 
-void TestThreadWakeWait(OE_Enclave* enclave)
+void TestThreadWakeWait(oe_enclave_t* enclave)
 {
     pthread_t threads[NUM_THREADS];
 
@@ -139,35 +139,35 @@ void TestThreadWakeWait(OE_Enclave* enclave)
     for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    // The OE_Calls in this test should succeed without any segv/double free.
+    // The oe_calls in this test should succeed without any segv/double free.
     printf("TestThreadWakeWait Complete\n");
 }
 
 void* LockAndUnlockThread1(void* args)
 {
-    OE_Enclave* enclave = (OE_Enclave*)args;
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
 
     const size_t ITERS = 20000;
 
     for (size_t i = 0; i < ITERS; ++i)
     {
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABC") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABC") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"AB") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"AB") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"AC") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"AC") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"BC") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"BC") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABBC") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABBC") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
             OE_OK);
     }
 
@@ -176,32 +176,32 @@ void* LockAndUnlockThread1(void* args)
 
 void* LockAndUnlockThread2(void* args)
 {
-    OE_Enclave* enclave = (OE_Enclave*)args;
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
 
     const size_t ITERS = 20000;
 
     for (size_t i = 0; i < ITERS; ++i)
     {
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"BC") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"BC") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABC") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABC") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"BBCC") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"BBCC") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"BBC") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"BBC") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABAC") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABAC") ==
             OE_OK);
         OE_TEST(
-            OE_CallEnclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
+            oe_call_enclave(enclave, "LockAndUnlockMutexes", (void*)"ABAB") ==
             OE_OK);
     }
 
@@ -210,7 +210,7 @@ void* LockAndUnlockThread2(void* args)
 
 // Launch multiple threads and try out various locking patterns on 3 mutexes.
 // The locking patterns are chosen to not deadlock.
-void TestThreadLockingPatterns(OE_Enclave* enclave)
+void TestThreadLockingPatterns(oe_enclave_t* enclave)
 {
     pthread_t threads[NUM_THREADS];
 
@@ -227,16 +227,16 @@ void TestThreadLockingPatterns(OE_Enclave* enclave)
     for (size_t i = 0; i < NUM_THREADS; i++)
         pthread_join(threads[i], NULL);
 
-    // The OE_Calls in this test should succeed without any OE_TEST() failures.
+    // The oe_calls in this test should succeed without any OE_TEST() failures.
     printf("TestThreadLockingPatterns Complete\n");
 }
 
-void TestReadersWriterLock(OE_Enclave* enclave);
+void TestReadersWriterLock(oe_enclave_t* enclave);
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     if (argc != 2)
     {
@@ -244,12 +244,12 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
 
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_put_err("oe_create_enclave(): result=%u", result);
     }
 
     TestMutex(enclave);
@@ -264,9 +264,9 @@ int main(int argc, const char* argv[])
 
     TestReadersWriterLock(enclave);
 
-    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
+    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {
-        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
+        oe_put_err("oe_terminate_enclave(): result=%u", result);
     }
 
     printf("=== passed all tests (%s)\n", argv[0]);

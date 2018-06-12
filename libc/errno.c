@@ -9,7 +9,7 @@
 
 int* __errno_location()
 {
-    TD* td = (TD*)OE_GetThreadData();
+    TD* td = (TD*)oe_get_thread_data();
     assert(td);
     return &td->linux_errno;
 }

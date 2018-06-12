@@ -24,7 +24,7 @@ typedef struct _FileArgs
 
 } FileArgs;
 
-OE_OCALL void OE_FOpen(void* fileArgs)
+OE_OCALL void mbed_test_fopen(void* fileArgs)
 {
     FILE* fp;
     FileArgs* args = (FileArgs*)fileArgs;
@@ -42,7 +42,7 @@ OE_OCALL void OE_FOpen(void* fileArgs)
     return;
 }
 
-OE_OCALL void OE_FClose(void* fileArgs)
+OE_OCALL void mbed_test_fclose(void* fileArgs)
 {
     int ret;
     FileArgs* args = (FileArgs*)fileArgs;
@@ -54,7 +54,7 @@ OE_OCALL void OE_FClose(void* fileArgs)
     return;
 }
 
-OE_OCALL void OE_FEof(void* fileArgs)
+OE_OCALL void mbed_test_feof(void* fileArgs)
 {
     int ret;
     FileArgs* args = (FileArgs*)fileArgs;
@@ -66,7 +66,7 @@ OE_OCALL void OE_FEof(void* fileArgs)
     return;
 }
 
-OE_OCALL void OE_FGets(void* fileArgs)
+OE_OCALL void mbed_test_fgets(void* fileArgs)
 {
     char* ret;
     FileArgs* args = (FileArgs*)fileArgs;
@@ -78,7 +78,7 @@ OE_OCALL void OE_FGets(void* fileArgs)
     return;
 }
 
-OE_OCALL void OE_FPutc(void* fileArgs)
+OE_OCALL void mbed_test_fputc(void* fileArgs)
 {
     int ret;
     FileArgs* args = (FileArgs*)fileArgs;

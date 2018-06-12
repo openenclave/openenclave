@@ -9,7 +9,7 @@
 #include "CXXObject.h"
 #include "typeinfo_u.h"
 
-#define err(...) OE_PutErr(__VA_ARGS__)
+#define err(...) oe_put_err(__VA_ARGS__)
 
 static void __Test(const char* file, unsigned int line, const char* cond)
 {
@@ -80,7 +80,7 @@ int TestContainer(bool trace)
     c.arrSize = OE_COUNTOF(arr);
 
     if (trace)
-        OE_PrintStruct(&Container_ti, &c);
+        oe_print_struct(&Container_ti, &c);
 
     c.object = &o;
     c.size = 1;
@@ -106,49 +106,49 @@ int TestContainer(bool trace)
     c.sizevarr = 5;
 
     if (trace)
-        OE_PrintStruct(&Container_ti, &c);
+        oe_print_struct(&Container_ti, &c);
 
     Container* s;
-    OE_Result result = OE_CloneStruct(&Container_ti, &c, (void**)&s, malloc);
+    oe_result_t result = oe_clone_struct(&Container_ti, &c, (void**)&s, malloc);
 
     if (result != OE_OK)
     {
-        fprintf(stderr, "error: OE_CloneStruct(): %u\n", result);
+        fprintf(stderr, "error: oe_clone_struct(): %u\n", result);
         exit(1);
     }
 
     if (trace)
-        OE_PrintStruct(&Container_ti, s);
+        oe_print_struct(&Container_ti, s);
 
 #if 0
-    if ((result = OE_ImportStruct(&Container_ti, s)) != OE_OK)
+    if ((result = oe_import_struct(&Container_ti, s)) != OE_OK)
     {
-        fprintf(stderr, "error: OE_ImportStruct(): %u\n", result);
+        fprintf(stderr, "error: oe_import_struct(): %u\n", result);
         exit(1);
     }
 #endif
 
-    OE_FreeStruct(&Container_ti, s, free);
+    oe_free_struct(&Container_ti, s, free);
 
     return 0;
 }
 
 static int TestObject(bool trace)
 {
-    OE_Result result;
+    oe_result_t result;
     Object* object = MakeObject(sizeof(Object), "Object");
 
     if (!object)
         err("MakeObject");
 
-    TEST(!OE_PadStruct(&Object_ti, object));
-    TEST(!OE_TestStructPadding(&Object_ti, object));
+    TEST(!oe_pad_struct(&Object_ti, object));
+    TEST(!oe_test_struct_padding(&Object_ti, object));
 
     if (trace)
-        OE_PrintStruct(&Object_ti, object);
+        oe_print_struct(&Object_ti, object);
 
-    if ((result = OE_FreeStruct(&Object_ti, object, free)))
-        err("OE_FreeStruct");
+    if ((result = oe_free_struct(&Object_ti, object, free)))
+        err("oe_free_struct");
 
     printf("=== passed TestObject()\n");
     return 0;
@@ -165,10 +165,10 @@ int TestCopyOver(bool trace)
     if (!(obj2 = MakeObject(20, "O20")))
         return -1;
 
-    if (OE_FreeStruct(&Object_ti, obj1, free) != OE_OK)
+    if (oe_free_struct(&Object_ti, obj1, free) != OE_OK)
         return -1;
 
-    if (OE_FreeStruct(&Object_ti, obj2, free) != OE_OK)
+    if (oe_free_struct(&Object_ti, obj2, free) != OE_OK)
         return -1;
 
     printf("=== passed TestCopyOver()\n");
@@ -177,7 +177,7 @@ int TestCopyOver(bool trace)
 
 int TestAllTypes(bool trace)
 {
-    const OE_StructTI* sti = &AllTypes_ti;
+    const oe_struct_ti_t* sti = &AllTypes_ti;
     AllTypes x;
     AllTypes y;
     memset(&x, 0, sizeof(x));
@@ -212,103 +212,103 @@ int TestAllTypes(bool trace)
     x.size = 3;
 
     if (trace)
-        OE_PrintStruct(&AllTypes_ti, &x);
+        oe_print_struct(&AllTypes_ti, &x);
 
-    if (OE_CopyStruct(&AllTypes_ti, &x, &y, malloc) != OE_OK)
-        OE_PutErr("OE_CopyStruct()");
+    if (oe_copy_struct(&AllTypes_ti, &x, &y, malloc) != OE_OK)
+        oe_put_err("oe_copy_struct()");
 
     bool flag;
-    if (OE_StructEq(&AllTypes_ti, &x, &y, &flag) != OE_OK || !flag)
-        err("OE_StructEq()");
+    if (oe_struct_eq(&AllTypes_ti, &x, &y, &flag) != OE_OK || !flag)
+        err("oe_struct_eq()");
 
     if (trace)
-        OE_PrintStruct(&AllTypes_ti, &y);
+        oe_print_struct(&AllTypes_ti, &y);
 
 #if 0
-    OE_PrintStruct(&AllTypes_ti, &x);
-    OE_PrintStruct(&AllTypes_ti, &x);
+    oe_print_struct(&AllTypes_ti, &x);
+    oe_print_struct(&AllTypes_ti, &x);
 #endif
 
-    // Test OE_ClearArg():
+    // Test oe_clear_arg():
     {
         AllTypes z;
 
-        if (OE_CopyStruct(sti, &y, &z, malloc) != OE_OK)
-            OE_PutErr("OE_CopyStruct()");
+        if (oe_copy_struct(sti, &y, &z, malloc) != OE_OK)
+            oe_put_err("oe_copy_struct()");
 
-        TEST(!OE_ClearArgByName(sti, &y, "stra", 0, z.stra, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "stra", 0, z.stra, free));
         TEST(strcmp(z.stra, "") == 0);
-        TEST(!OE_ClearArgByName(sti, &y, "str", 0, z.str, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "str", 0, z.str, free));
         TEST(strcmp(z.str, "") == 0);
 
-        TEST(!OE_ClearArgByName(sti, &y, "str", 1, &z.str, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "str", 1, &z.str, free));
         TEST(z.str == NULL);
-        TEST(!OE_ClearArgByName(sti, &y, "s8", 0, &z.s8, free));
-        TEST(!OE_ClearArgByName(sti, &y, "u8", 0, &z.u8, free));
-        TEST(!OE_ClearArgByName(sti, &y, "s16", 0, &z.s16, free));
-        TEST(!OE_ClearArgByName(sti, &y, "u16", 0, &z.u16, free));
-        TEST(!OE_ClearArgByName(sti, &y, "s32", 0, &z.s32, free));
-        TEST(!OE_ClearArgByName(sti, &y, "u32", 0, &z.u32, free));
-        TEST(!OE_ClearArgByName(sti, &y, "s64", 0, &z.s64, free));
-        TEST(!OE_ClearArgByName(sti, &y, "u64", 0, &z.u64, free));
-        TEST(!OE_ClearArgByName(sti, &y, "r32", 0, &z.r32, free));
-        TEST(!OE_ClearArgByName(sti, &y, "r64", 0, &z.r64, free));
-        TEST(!OE_ClearArgByName(sti, &y, "by", 0, &z.by, free));
-        TEST(!OE_ClearArgByName(sti, &y, "b", 0, &z.b, free));
-        TEST(!OE_ClearArgByName(sti, &y, "c", 0, &z.c, free));
-        TEST(!OE_ClearArgByName(sti, &y, "s", 0, &z.s, free));
-        TEST(!OE_ClearArgByName(sti, &y, "ss", 0, &z.ss, free));
-        TEST(!OE_ClearArgByName(sti, &y, "strn", 0, &z.strn, free));
-        TEST(!OE_ClearArgByName(sti, &y, "obj1", 0, &z.obj1, free));
-        TEST(!OE_ClearArgByName(sti, &y, "obj2", 1, &z.obj2, free));
-        TEST(!OE_ClearArgByName(sti, &y, "data", 1, &z.data, free));
-        TEST(!OE_ClearArgByName(sti, &y, "size", 0, &z.size, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "s8", 0, &z.s8, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "u8", 0, &z.u8, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "s16", 0, &z.s16, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "u16", 0, &z.u16, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "s32", 0, &z.s32, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "u32", 0, &z.u32, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "s64", 0, &z.s64, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "u64", 0, &z.u64, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "r32", 0, &z.r32, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "r64", 0, &z.r64, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "by", 0, &z.by, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "b", 0, &z.b, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "c", 0, &z.c, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "s", 0, &z.s, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "ss", 0, &z.ss, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "strn", 0, &z.strn, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "obj1", 0, &z.obj1, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "obj2", 1, &z.obj2, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "data", 1, &z.data, free));
+        TEST(!oe_clear_arg_by_name(sti, &y, "size", 0, &z.size, free));
 
         AllTypes n;
         memset(&n, 0, sizeof(n));
 
         bool flag;
-        TEST(!OE_StructEq(&AllTypes_ti, &z, &n, &flag));
+        TEST(!oe_struct_eq(&AllTypes_ti, &z, &n, &flag));
         TEST(flag);
     }
 
-    // Test OE_SetArg():
+    // Test oe_set_arg():
     {
         AllTypes z;
         memset(&z, 0, sizeof(z));
 
-        TEST(!OE_SetArgByName(sti, &y, "s8", 0, &z.s8, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "u8", 0, &z.u8, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "s16", 0, &z.s16, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "u16", 0, &z.u16, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "s32", 0, &z.s32, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "u32", 0, &z.u32, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "s64", 0, &z.s64, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "u64", 0, &z.u64, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "r32", 0, &z.r32, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "r64", 0, &z.r64, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "by", 0, &z.by, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "b", 0, &z.b, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "c", 0, &z.c, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "s", 0, &z.s, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "ss", 0, &z.ss, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "str", 1, &z.str, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "strn", 0, &z.strn, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "stra", 0, z.stra, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "obj1", 0, &z.obj1, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "obj2", 1, &z.obj2, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "data", 1, &z.data, malloc));
-        TEST(!OE_SetArgByName(sti, &y, "size", 0, &z.size, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "s8", 0, &z.s8, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "u8", 0, &z.u8, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "s16", 0, &z.s16, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "u16", 0, &z.u16, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "s32", 0, &z.s32, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "u32", 0, &z.u32, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "s64", 0, &z.s64, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "u64", 0, &z.u64, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "r32", 0, &z.r32, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "r64", 0, &z.r64, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "by", 0, &z.by, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "b", 0, &z.b, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "c", 0, &z.c, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "s", 0, &z.s, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "ss", 0, &z.ss, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "str", 1, &z.str, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "strn", 0, &z.strn, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "stra", 0, z.stra, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "obj1", 0, &z.obj1, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "obj2", 1, &z.obj2, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "data", 1, &z.data, malloc));
+        TEST(!oe_set_arg_by_name(sti, &y, "size", 0, &z.size, malloc));
 
         bool flag;
-        TEST(!OE_StructEq(&AllTypes_ti, &z, &y, &flag));
+        TEST(!oe_struct_eq(&AllTypes_ti, &z, &y, &flag));
         TEST(flag);
 
-        OE_DestroyStruct(&AllTypes_ti, &z, free);
+        oe_destroy_struct(&AllTypes_ti, &z, free);
     }
 
-    OE_DestroyStruct(&AllTypes_ti, &x, free);
-    OE_DestroyStruct(&AllTypes_ti, &y, free);
+    oe_destroy_struct(&AllTypes_ti, &x, free);
+    oe_destroy_struct(&AllTypes_ti, &y, free);
 
     printf("=== passed TestAllTypes()\n");
     return 0;
@@ -349,7 +349,7 @@ int MyFunction(
     struct Object* objp,
     struct Object** objr)
 {
-    const OE_StructTI* ti = &MyFunctionArgs_ti;
+    const oe_struct_ti_t* ti = &MyFunctionArgs_ti;
     struct MyFunctionArgs args;
     memset(&args, 0, sizeof(args));
     args.cstr = cstr;
@@ -364,30 +364,30 @@ int MyFunction(
         args.objr = *objr;
     struct MyFunctionArgs* a;
 
-    if (OE_CloneStruct(ti, &args, (void**)&a, malloc) != OE_OK)
+    if (oe_clone_struct(ti, &args, (void**)&a, malloc) != OE_OK)
         return -1;
 
     bool flag = false;
-    if (OE_StructEq(ti, &args, a, &flag) != OE_OK || !flag)
-        OE_PutErr("OE_StructEq");
+    if (oe_struct_eq(ti, &args, a, &flag) != OE_OK || !flag)
+        oe_put_err("oe_struct_eq");
 
     if (MyFunctionCall(a) != 0)
-        OE_PutErr("MyFunctionCall()");
+        oe_put_err("MyFunctionCall()");
 
 #if 0
-    OE_PrintStruct(&MyFunctionArgs_ti, a);
+    oe_print_struct(&MyFunctionArgs_ti, a);
 #endif
 
-    TEST(!OE_SetArgByName(ti, a, "str", 0, str, malloc));
-    TEST(!OE_SetArgByName(ti, a, "u32", 0, u32, malloc));
-    TEST(!OE_SetArgByName(ti, a, "u32a", 0, u32a, malloc));
-    TEST(!OE_SetArgByName(ti, a, "stra", 0, stra, malloc));
-    TEST(!OE_ClearArgByName(ti, a, "objp", 0, objp, free));
-    TEST(!OE_SetArgByName(ti, a, "objp", 0, objp, malloc));
-    TEST(!OE_ClearArgByName(ti, a, "objr", 1, objr, free));
-    TEST(!OE_SetArgByName(ti, a, "objr", 1, objr, malloc));
+    TEST(!oe_set_arg_by_name(ti, a, "str", 0, str, malloc));
+    TEST(!oe_set_arg_by_name(ti, a, "u32", 0, u32, malloc));
+    TEST(!oe_set_arg_by_name(ti, a, "u32a", 0, u32a, malloc));
+    TEST(!oe_set_arg_by_name(ti, a, "stra", 0, stra, malloc));
+    TEST(!oe_clear_arg_by_name(ti, a, "objp", 0, objp, free));
+    TEST(!oe_set_arg_by_name(ti, a, "objp", 0, objp, malloc));
+    TEST(!oe_clear_arg_by_name(ti, a, "objr", 1, objr, free));
+    TEST(!oe_set_arg_by_name(ti, a, "objr", 1, objr, malloc));
 
-    OE_FreeStruct(ti, a, free);
+    oe_free_struct(ti, a, free);
 
     return 0;
 }
@@ -417,7 +417,7 @@ static int TestParams(bool trace)
             "cstr", str, nstr, &u32, u32a, stra, obj, objp, (Object**)&objr) !=
         0)
     {
-        OE_PutErr("MyFunction() failed");
+        oe_put_err("MyFunction() failed");
     }
 
     TEST(strcmp(str, "aaaaaaaaaaaaaaaaaaaaaa") == 0);
@@ -436,7 +436,7 @@ static int TestParams(bool trace)
 
 int main(int argc, const char* argv[])
 {
-    OE_SetProgramName(argv[0]);
+    oe_set_program_name(argv[0]);
     bool trace = false;
 
     if (TestObject(trace) != 0)

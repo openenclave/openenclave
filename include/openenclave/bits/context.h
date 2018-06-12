@@ -10,12 +10,12 @@
 #include "constants_x64.h"
 
 // X87 and SSE data.
-typedef struct _OE_BasicXState
+typedef struct _oe_basic_x_state
 {
     uint8_t blob[512];
 } OE_ALIGNED(16) OE_BASIC_XSTATE;
 
-typedef struct _OE_Context
+typedef struct _oe_context
 {
     // Flags.
     uint64_t flags;
@@ -53,35 +53,35 @@ typedef struct _OE_Context
     OE_BASIC_XSTATE basic_xstate;
 
     // Don't need to manipulate other XSTATE (AVX etc.).
-} OE_Context;
+} oe_context_t;
 
-OE_CHECK_SIZE(sizeof(OE_Context), OE_CONTEXT_SIZE);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, flags), OE_CONTEXT_FLAGS);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rax), OE_CONTEXT_RAX);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rbx), OE_CONTEXT_RBX);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rcx), OE_CONTEXT_RCX);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rdx), OE_CONTEXT_RDX);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rbp), OE_CONTEXT_RBP);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rsp), OE_CONTEXT_RSP);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rdi), OE_CONTEXT_RDI);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rsi), OE_CONTEXT_RSI);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r8), OE_CONTEXT_R8);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r9), OE_CONTEXT_R9);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r10), OE_CONTEXT_R10);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r11), OE_CONTEXT_R11);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r12), OE_CONTEXT_R12);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r13), OE_CONTEXT_R13);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r14), OE_CONTEXT_R14);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, r15), OE_CONTEXT_R15);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, rip), OE_CONTEXT_RIP);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, mxcsr), OE_CONTEXT_MXCSR);
-OE_CHECK_SIZE(OE_OFFSETOF(OE_Context, basic_xstate), OE_CONTEXT_FLOAT);
+OE_CHECK_SIZE(sizeof(oe_context_t), OE_CONTEXT_SIZE);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, flags), OE_CONTEXT_FLAGS);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, rax), OE_CONTEXT_RAX);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, rbx), OE_CONTEXT_RBX);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, rcx), OE_CONTEXT_RCX);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, rdx), OE_CONTEXT_RDX);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, rbp), OE_CONTEXT_RBP);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, rsp), OE_CONTEXT_RSP);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, rdi), OE_CONTEXT_RDI);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, rsi), OE_CONTEXT_RSI);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, r8), OE_CONTEXT_R8);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, r9), OE_CONTEXT_R9);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, r10), OE_CONTEXT_R10);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, r11), OE_CONTEXT_R11);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, r12), OE_CONTEXT_R12);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, r13), OE_CONTEXT_R13);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, r14), OE_CONTEXT_R14);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, r15), OE_CONTEXT_R15);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, rip), OE_CONTEXT_RIP);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, mxcsr), OE_CONTEXT_MXCSR);
+OE_CHECK_SIZE(OE_OFFSETOF(oe_context_t, basic_xstate), OE_CONTEXT_FLOAT);
 
-void OE_SnapCurrentContext(OE_Context* oe_context);
-void OE_RestorePartialContext(OE_Context* oe_context);
-void OE_ContinueExecution(OE_Context* oe_context);
+void oe_snap_current_context(oe_context_t* oe_context);
+void oe_restore_partial_context(oe_context_t* oe_context);
+void oe_continue_execution(oe_context_t* oe_context);
 
-typedef struct _OE_ExceptionRecord
+typedef struct _oe_exception_record
 {
     // Exception code.
     uint32_t code;
@@ -93,11 +93,11 @@ typedef struct _OE_ExceptionRecord
     uint64_t address;
 
     // Context.
-    OE_Context* context;
-} OE_ExceptionRecord;
+    oe_context_t* context;
+} oe_exception_record_t;
 
-typedef uint64_t (*OE_VectoredExceptionHandler)(
-    OE_ExceptionRecord* exceptionContext);
+typedef uint64_t (*oe_vectored_exception_handler)(
+    oe_exception_record_t* exceptionContext);
 #endif // !__ASSEMBLER__
 
 #endif /* _OE_BITS_CONTEXT_H */

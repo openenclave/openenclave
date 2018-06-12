@@ -7,28 +7,28 @@
 #include "asmdefs.h"
 
 /* The EGETKEY wrapper. */
-uint64_t OE_EGetKey(const SGX_KeyRequest* sgxKeyRequest, SGX_Key* sgxKey);
+uint64_t oe_egetkey(const sgx_key_request_t* sgxKeyRequest, sgx_key_t* sgxKey);
 
 /*
  * The get key implementation that requests the key from processor and convert
  * the error code.
  */
-static OE_Result _GetKeyImp(
-    const SGX_KeyRequest* sgxKeyRequest,
-    SGX_Key* sgxKey)
+static oe_result_t _GetKeyImp(
+    const sgx_key_request_t* sgxKeyRequest,
+    sgx_key_t* sgxKey)
 {
-    OE_Result ret;
+    oe_result_t ret;
     uint64_t egetkeyResult;
-    OE_ALIGNED(SGX_KEY_REQUEST_ALIGNMENT) SGX_KeyRequest tmpKeyRequest;
-    OE_ALIGNED(SGX_KEY_ALIGNMENT) SGX_Key tmpSgxKey;
+    OE_ALIGNED(SGX_KEY_REQUEST_ALIGNMENT) sgx_key_request_t tmpKeyRequest;
+    OE_ALIGNED(SGX_KEY_ALIGNMENT) sgx_key_t tmpSgxKey;
 
     // Copy input parameter into local aligned buffers.
-    OE_Memcpy(&tmpKeyRequest, sgxKeyRequest, sizeof(SGX_KeyRequest));
+    oe_memcpy(&tmpKeyRequest, sgxKeyRequest, sizeof(sgx_key_request_t));
 
     // Execute EGETKEY instruction.
-    egetkeyResult = OE_EGetKey(&tmpKeyRequest, &tmpSgxKey);
+    egetkeyResult = oe_egetkey(&tmpKeyRequest, &tmpSgxKey);
 
-    // Convert the EGETKEY result to OE_Result.
+    // Convert the EGETKEY result to oe_result_t.
     switch (egetkeyResult)
     {
         case SGX_EGETKEY_SUCCESS:
@@ -61,24 +61,24 @@ static OE_Result _GetKeyImp(
     {
         // The sgx key is the secret, it should not be left on stack. Clean it
         // up to avoid leak by incident.
-        OE_Memcpy(sgxKey, &tmpSgxKey, sizeof(SGX_Key));
-        OE_Memset(&tmpSgxKey, 0, sizeof(SGX_Key));
+        oe_memcpy(sgxKey, &tmpSgxKey, sizeof(sgx_key_t));
+        oe_memset(&tmpSgxKey, 0, sizeof(sgx_key_t));
     }
 
     return ret;
 }
 
-OE_Result OE_GetKey(const SGX_KeyRequest* sgxKeyRequest, SGX_Key* sgxKey)
+oe_result_t oe_get_key(const sgx_key_request_t* sgxKeyRequest, sgx_key_t* sgxKey)
 {
     // Check the input parameters.
     // Key request and key must be inside enclave.
     if ((sgxKeyRequest == NULL) ||
-        !OE_IsWithinEnclave(sgxKeyRequest, sizeof(SGX_KeyRequest)))
+        !oe_is_within_enclave(sgxKeyRequest, sizeof(sgx_key_request_t)))
     {
         return OE_INVALID_PARAMETER;
     }
 
-    if ((sgxKey == NULL) || !OE_IsWithinEnclave(sgxKey, sizeof(SGX_Key)))
+    if ((sgxKey == NULL) || !oe_is_within_enclave(sgxKey, sizeof(sgx_key_t)))
     {
         return OE_INVALID_PARAMETER;
     }
@@ -113,16 +113,16 @@ OE_Result OE_GetKey(const SGX_KeyRequest* sgxKeyRequest, SGX_Key* sgxKey)
     return _GetKeyImp(sgxKeyRequest, sgxKey);
 }
 
-OE_Result OE_GetSealKey(
+oe_result_t oe_get_seal_key(
     const uint8_t* keyInfo,
     uint32_t keyInfoSize,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize)
 {
-    OE_Result ret;
+    oe_result_t ret;
 
     // Check parameters.
-    if ((keyInfo == NULL) || (keyInfoSize != sizeof(SGX_KeyRequest)))
+    if ((keyInfo == NULL) || (keyInfoSize != sizeof(sgx_key_request_t)))
     {
         return OE_INVALID_PARAMETER;
     }
@@ -132,17 +132,17 @@ OE_Result OE_GetSealKey(
         return OE_INVALID_PARAMETER;
     }
 
-    if (*keyBufferSize < sizeof(SGX_Key))
+    if (*keyBufferSize < sizeof(sgx_key_t))
     {
-        *keyBufferSize = sizeof(SGX_Key);
+        *keyBufferSize = sizeof(sgx_key_t);
         return OE_BUFFER_TOO_SMALL;
     }
 
     // Get the key based on input key info.
-    ret = OE_GetKey((SGX_KeyRequest*)keyInfo, (SGX_Key*)keyBuffer);
+    ret = oe_get_key((sgx_key_request_t*)keyInfo, (sgx_key_t*)keyBuffer);
     if (ret == OE_OK)
     {
-        *keyBufferSize = sizeof(SGX_Key);
+        *keyBufferSize = sizeof(sgx_key_t);
     }
 
     return ret;
@@ -156,15 +156,15 @@ OE_Result OE_GetSealKey(
  * Return OE_OK and set attributes of sgxKeyRequest if success.
  * Otherwise return error and sgxKeyRequest is not changed.
  */
-static OE_Result _GetDefaultKeyRequestAttributes(SGX_KeyRequest* sgxKeyRequest)
+static oe_result_t _GetDefaultKeyRequestAttributes(sgx_key_request_t* sgxKeyRequest)
 {
-    SGX_Report sgxReport = {0};
-    uint32_t sgxReportSize = sizeof(SGX_Report);
-    OE_Result ret;
+    sgx_report_t sgxReport = {0};
+    uint32_t sgxReportSize = sizeof(sgx_report_t);
+    oe_result_t ret;
 
     // Get a local report of current enclave.
     ret =
-        OE_GetReport(0, NULL, 0, NULL, 0, (uint8_t*)&sgxReport, &sgxReportSize);
+        oe_get_report(0, NULL, 0, NULL, 0, (uint8_t*)&sgxReport, &sgxReportSize);
 
     if (ret != OE_OK)
     {
@@ -173,25 +173,25 @@ static OE_Result _GetDefaultKeyRequestAttributes(SGX_KeyRequest* sgxKeyRequest)
 
     // Set key request attributes(isv svn, cpu svn, and attribute masks)
     sgxKeyRequest->isv_svn = sgxReport.body.isvsvn;
-    OE_Memcpy(
+    oe_memcpy(
         &sgxKeyRequest->cpu_svn,
         sgxReport.body.cpusvn,
-        OE_FIELD_SIZE(SGX_KeyRequest, cpu_svn));
+        OE_FIELD_SIZE(sgx_key_request_t, cpu_svn));
     sgxKeyRequest->attribute_mask.flags = OE_SEALKEY_DEFAULT_FLAGSMASK;
     sgxKeyRequest->attribute_mask.xfrm = OE_SEALKEY_DEFAULT_XFRMMASK;
     sgxKeyRequest->misc_attribute_mask = OE_SEALKEY_DEFAULT_MISCMASK;
     return OE_OK;
 }
 
-OE_Result OE_GetSealKeyByPolicy(
-    OE_SealIDPolicy sealPolicy,
+oe_result_t oe_get_seal_key_by_policy(
+    oe_seal_id_policy_t sealPolicy,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize,
     uint8_t* keyInfo,
     uint32_t* keyInfoSize)
 {
-    OE_Result ret;
-    SGX_KeyRequest sgxKeyRequest = {0};
+    oe_result_t ret;
+    sgx_key_request_t sgxKeyRequest = {0};
 
     // Check parameters.
     if (keyBuffer == NULL || keyBufferSize == NULL)
@@ -200,16 +200,16 @@ OE_Result OE_GetSealKeyByPolicy(
     }
 
     // Key buffer size must be big enough.
-    if (*keyBufferSize < sizeof(SGX_Key))
+    if (*keyBufferSize < sizeof(sgx_key_t))
     {
-        *keyBufferSize = sizeof(SGX_Key);
+        *keyBufferSize = sizeof(sgx_key_t);
         return OE_BUFFER_TOO_SMALL;
     }
 
     // Key info size must be big enough if request key info.
-    if ((keyInfo != NULL) && (*keyInfoSize < sizeof(SGX_KeyRequest)))
+    if ((keyInfo != NULL) && (*keyInfoSize < sizeof(sgx_key_request_t)))
     {
-        *keyInfoSize = sizeof(SGX_KeyRequest);
+        *keyInfoSize = sizeof(sgx_key_request_t);
         return OE_BUFFER_TOO_SMALL;
     }
 
@@ -237,20 +237,20 @@ OE_Result OE_GetSealKeyByPolicy(
     }
 
     // Get the seal key.
-    ret = OE_GetKey(&sgxKeyRequest, (SGX_Key*)keyBuffer);
+    ret = oe_get_key(&sgxKeyRequest, (sgx_key_t*)keyBuffer);
     if (ret == OE_OK)
     {
-        *keyBufferSize = sizeof(SGX_Key);
+        *keyBufferSize = sizeof(sgx_key_t);
 
         if (keyInfo != NULL)
         {
-            OE_Memcpy(keyInfo, &sgxKeyRequest, sizeof(SGX_KeyRequest));
-            *keyInfoSize = sizeof(SGX_KeyRequest);
+            oe_memcpy(keyInfo, &sgxKeyRequest, sizeof(sgx_key_request_t));
+            *keyInfoSize = sizeof(sgx_key_request_t);
         }
     }
     else
     {
-        // OE_GetKey should not fail unless we set the key request wrong.
+        // oe_get_key should not fail unless we set the key request wrong.
         ret = OE_UNEXPECTED;
     }
 

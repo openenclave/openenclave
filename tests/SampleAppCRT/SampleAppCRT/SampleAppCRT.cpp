@@ -25,12 +25,12 @@ uint32_t threadLocalDynamic = func();
 char asciistring[] = "HelloWorld";
 wchar_t wcstring[] = L"HelloWorld";
 
-OE_ECALL OE_Result Test(void* args)
+OE_ECALL oe_result_t Test(void* args)
 {
     int* returnValuePtr = (int*)args;
 
 #if 1
-    if (!OE_IsOutsideEnclave(returnValuePtr, sizeof(int)))
+    if (!oe_is_outside_enclave(returnValuePtr, sizeof(int)))
     {
         return OE_OCALL_FAILED;
     }

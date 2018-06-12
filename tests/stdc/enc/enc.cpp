@@ -160,7 +160,7 @@ static void _AllocationFailureCallback(
     size_t size)
 {
     printf(
-        "OE_AllocationFailureCallback(): %s(%zu): %s: %zu\n",
+        "oe_allocation_failure_callback_t(): %s(%zu): %s: %zu\n",
         file,
         line,
         func,
@@ -173,7 +173,7 @@ OE_ECALL void Test(void* args_)
 {
     TestArgs* args = (TestArgs*)args_;
 
-    OE_SetAllocationFailureCallback(_AllocationFailureCallback);
+    oe_set_allocation_failure_callback(_AllocationFailureCallback);
 
     strcpy(args->buf1, "AAA");
     strcat(args->buf1, "BBB");

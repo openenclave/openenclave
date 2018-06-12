@@ -17,30 +17,30 @@ static __inline pthread_mutex_t __MutexInitializerRecursive()
     return m;
 }
 
-typedef pthread_t OE_Thread;
-#define OE_ThreadSelf pthread_self
+typedef pthread_t oe_thread_t;
+#define oe_thread_self pthread_self
 
-typedef pthread_mutex_t OE_Mutex;
+typedef pthread_mutex_t oe_mutex_t;
 #define OE_MUTEX_INITIALIZER __MutexInitializerRecursive()
-#define OE_MutexLock pthread_mutex_lock
-#define OE_MutexUnlock pthread_mutex_unlock
+#define oe_mutex_lock pthread_mutex_lock
+#define oe_mutex_unlock pthread_mutex_unlock
 
-typedef pthread_spinlock_t OE_Spinlock;
+typedef pthread_spinlock_t oe_spinlock_t;
 #define OE_SPINLOCK_INITIALIZER 0
-#define OE_SpinLock pthread_spin_lock
-#define OE_SpinUnlock pthread_spin_unlock
+#define oe_spin_lock pthread_spin_lock
+#define oe_spin_unlock pthread_spin_unlock
 
-typedef pthread_cond_t OE_Cond;
+typedef pthread_cond_t oe_cond_t;
 #define OE_COND_INITIALIZER PTHREAD_COND_INITIALIZER
-#define OE_CondWait pthread_cond_wait
-#define OE_CondSignal pthread_cond_signal
-#define OE_CondBroadcast pthread_cond_broadcast
+#define oe_cond_wait pthread_cond_wait
+#define oe_cond_signal pthread_cond_signal
+#define oe_cond_broadcast pthread_cond_broadcast
 
-typedef pthread_rwlock_t OE_RWLock;
+typedef pthread_rwlock_t oe_rwlock_t;
 #define OE_RWLOCK_INITIALIZER PTHREAD_RWLOCK_INITIALIZER
-#define OE_RWLockReadLock pthread_rwlock_rdlock
-#define OE_RWLockWriteLock pthread_rwlock_wrlock
-#define OE_RWLockReadUnlock pthread_rwlock_unlock
-#define OE_RWLockWriteUnlock pthread_rwlock_unlock
+#define oe_rwlock_rdlock pthread_rwlock_rdlock
+#define oe_rwlock_wrlock pthread_rwlock_wrlock
+#define oe_rwlock_rdunlock pthread_rwlock_unlock
+#define oe_rwlock_wrunlock pthread_rwlock_unlock
 
 #endif /* _OE_BITS_THREAD_H */

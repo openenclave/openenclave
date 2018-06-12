@@ -165,7 +165,7 @@ int Elf64_Load(const char* path, Elf64* elf)
         goto done;
 
     /* Open input file */
-    if (OE_Fopen(&is, path, "rb") != 0)
+    if (oe_fopen(&is, path, "rb") != 0)
         goto done;
 
     /* Get the size of this file */
@@ -1362,14 +1362,14 @@ int Elf64_AddSection(
 
         /* Calculate number of bytes to be inserted */
         size_t namesize =
-            OE_RoundUpToMultiple(strlen(name) + 1, sizeof(Elf64_Shdr));
+            oe_round_up_to_multiple(strlen(name) + 1, sizeof(Elf64_Shdr));
 
         /* Insert space for the new name */
         if (mem_insert(&mem, nameoffset, NULL, namesize) != 0)
             GOTO(done);
 
         /* Copy the section name to the .shstrtab section */
-        OE_Strlcat((char*)elf->data + nameoffset, name, namesize);
+        oe_strlcat((char*)elf->data + nameoffset, name, namesize);
 
         /* Reset ELF object based on updated memory */
         if (_ResetBuffer(elf, &mem, nameoffset, namesize) != 0)
@@ -1582,7 +1582,7 @@ int Elf64_LoadRelocations(const Elf64* elf, void** dataOut, size_t* sizeOut)
 
     /* Make a copy of the relocation section (zero-padded to page size) */
     {
-        *sizeOut = __OE_RoundUpToPageSize(size);
+        *sizeOut = __oe_round_up_to_page_size(size);
 
         if (!(*dataOut = malloc(*sizeOut)))
         {

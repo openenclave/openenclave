@@ -29,162 +29,162 @@ OE_EXTERNC_BEGIN
 
 /* 32-bit octet string */
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_OctStr32
+typedef struct _sgx_epid_oct_str32
 {
     uint8_t data[32 / 8];
-} SGX_EPID_OctStr32;
+} sgx_epid_oct_str32_t;
 OE_PACK_END
 
 /* 256-bit octet string */
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_OctStr256
+typedef struct _sgx_epid_oct_str256
 {
     uint8_t data[256 / 8];
-} SGX_EPID_OctStr256;
+} sgx_epid_oct_str256_t;
 OE_PACK_END
 
 /*
 **==============================================================================
 **
-** SGX_EPID_FqElemStr
+** sgx_epid_fq_elem_str_t
 **
 **==============================================================================
 */
 
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_FqElemStr
+typedef struct _sgx_epid_fq_elem_str
 {
-    SGX_EPID_OctStr256 data;
-} SGX_EPID_FqElemStr;
+    sgx_epid_oct_str256_t data;
+} sgx_epid_fq_elem_str_t;
 OE_PACK_END
 
 /*
 **==============================================================================
 **
-** SGX_EPID_FpElemStr
+** sgx_epid_fp_elem_str_t
 **
 **==============================================================================
 */
 
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_FpElemStr
+typedef struct _sgx_epid_fp_elem_str
 {
-    SGX_EPID_OctStr256 data;
-} SGX_EPID_FpElemStr;
+    sgx_epid_oct_str256_t data;
+} sgx_epid_fp_elem_str_t;
 OE_PACK_END
 
 /*
 **==============================================================================
 **
-** SGX_EPID_G1ElemStr
+** sgx_epid_g1_elem_str_t
 **
 **==============================================================================
 */
 
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_G1ElemStr
+typedef struct _sgx_epid_g1_elem_str
 {
-    SGX_EPID_FqElemStr x;
-    SGX_EPID_FqElemStr y;
-} SGX_EPID_G1ElemStr;
+    sgx_epid_fq_elem_str_t x;
+    sgx_epid_fq_elem_str_t y;
+} sgx_epid_g1_elem_str_t;
 OE_PACK_END
 
 /*
 **==============================================================================
 **
-** SGX_EPID_BasicSignature
+** sgx_epid_basic_signature_t
 **
 **==============================================================================
 */
 
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_BasicSignature
+typedef struct _sgx_epid_basic_signature
 {
-    SGX_EPID_G1ElemStr B;
-    SGX_EPID_G1ElemStr K;
-    SGX_EPID_G1ElemStr T;
-    SGX_EPID_FpElemStr c;
-    SGX_EPID_FpElemStr sx;
-    SGX_EPID_FpElemStr sf;
-    SGX_EPID_FpElemStr sa;
-    SGX_EPID_FpElemStr sb;
-} SGX_EPID_BasicSignature;
+    sgx_epid_g1_elem_str_t B;
+    sgx_epid_g1_elem_str_t K;
+    sgx_epid_g1_elem_str_t T;
+    sgx_epid_fp_elem_str_t c;
+    sgx_epid_fp_elem_str_t sx;
+    sgx_epid_fp_elem_str_t sf;
+    sgx_epid_fp_elem_str_t sa;
+    sgx_epid_fp_elem_str_t sb;
+} sgx_epid_basic_signature_t;
 OE_PACK_END
 
 /*
 **==============================================================================
 **
-** SGX_EPID_NRProof
+** sgx_epid_nr_proof_t
 **
 **==============================================================================
 */
 
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_NRProof
+typedef struct _sgx_epid_nr_proof
 {
-    SGX_EPID_G1ElemStr T;
-    SGX_EPID_FpElemStr c;
-    SGX_EPID_FpElemStr smu;
-    SGX_EPID_FpElemStr snu;
+    sgx_epid_g1_elem_str_t T;
+    sgx_epid_fp_elem_str_t c;
+    sgx_epid_fp_elem_str_t smu;
+    sgx_epid_fp_elem_str_t snu;
 
-} SGX_EPID_NRProof;
+} sgx_epid_nr_proof_t;
 OE_PACK_END
 
 /*
 **==============================================================================
 **
-** _SGX_EPID_Signature
+** _sgx_epid_signature
 **
 **==============================================================================
 */
 
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_Signature
+typedef struct _sgx_epid_signature
 {
     /* Basic signature */
-    SGX_EPID_BasicSignature sigma0;
+    sgx_epid_basic_signature_t sigma0;
 
     /* Revocation list version number */
-    SGX_EPID_OctStr32 rl_ver;
+    sgx_epid_oct_str32_t rl_ver;
 
     /* number of entries in SigRL */
-    SGX_EPID_OctStr32 n2;
+    sgx_epid_oct_str32_t n2;
 
     /* array of non-revoked proofs (variable length array) */
-    OE_ZERO_SIZED_ARRAY SGX_EPID_NRProof sigma[0];
+    OE_ZERO_SIZED_ARRAY sgx_epid_nr_proof_t sigma[0];
 
-} SGX_EPID_Signature;
+} sgx_epid_signature_t;
 OE_PACK_END
 
 /*
 **==============================================================================
 **
-** _SGX_EPID_SigRLEntry
+** _sgx_epid_sig_rl_entry
 **
 **==============================================================================
 */
 
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_SigRLEntry
+typedef struct _sgx_epid_sig_rl_entry
 {
-    SGX_EPID_G1ElemStr b;
-    SGX_EPID_G1ElemStr k;
-} SGX_EPID_SigRLEntry;
+    sgx_epid_g1_elem_str_t b;
+    sgx_epid_g1_elem_str_t k;
+} sgx_epid_sig_rl_entry_t;
 OE_PACK_END
 
 /*
 **==============================================================================
 **
-** _SGX_EPID_SigRLEntry
+** _sgx_epid_sig_rl_entry
 **
 **==============================================================================
 */
 
 OE_PACK_BEGIN
-typedef struct _SGX_EPID_SigRL
+typedef struct _sgx_epid_sig_rl
 {
     /* Group identifier */
-    SGX_EPID_OctStr32 gid[4];
+    sgx_epid_oct_str32_t gid[4];
 
     /* Revocation list number */
     uint8_t rlver[4];
@@ -193,8 +193,8 @@ typedef struct _SGX_EPID_SigRL
     uint8_t n2[4];
 
     /* SigRL entries */
-    SGX_EPID_SigRLEntry bk[1];
-} SGX_EPID_SigRL;
+    sgx_epid_sig_rl_entry_t bk[1];
+} sgx_epid_sig_rl_t;
 OE_PACK_END
 
 OE_EXTERNC_END
