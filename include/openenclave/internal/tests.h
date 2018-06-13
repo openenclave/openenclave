@@ -6,8 +6,8 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/print.h>
 #ifdef OE_BUILD_ENCLAVE
+#include <openenclave/internal/print.h>
 #define OE_PRINT oe_host_fprintf
 #define OE_ABORT oe_abort
 #define STDERR 1

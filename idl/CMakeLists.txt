@@ -14,10 +14,11 @@ target_compile_options(oeidl PRIVATE
     -fno-builtin-memset
     -fno-builtin-__vfprintf_chk
     -fno-builtin-__memset_chk
-    )
+    -fPIC
+    -m64)
 
-# this project (and is dependents) require the enclave headers+lib
-target_link_libraries(oeidl oelibc)
+# oeidl and its dependents need the OE includes to compile
+target_link_libraries(oeidl PUBLIC oe_includes)
 
 # assemble lib-archive into proper dir
 set_property(TARGET oeidl PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
