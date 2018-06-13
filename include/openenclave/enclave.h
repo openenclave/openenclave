@@ -142,61 +142,6 @@ bool oe_is_within_enclave(const void* ptr, size_t size);
 bool oe_is_outside_enclave(const void* ptr, size_t size);
 
 /**
- * Print formatted characters to the host's console.
- *
- * This function writes formatted characters to the host console. It is based
- * on oe_vsnprintf(), which has limited support for format types.
- *
- * @param fmt The limited printf style format.
- *
- * @returns The number of characters that were written.
- *
- */
-OE_PRINTF_FORMAT(1, 2)
-int oe_host_printf(const char* fmt, ...);
-
-/**
- * Print formatted characters to the host's stdout or stderr.
- *
- * This function writes formatted characters to the host's stdout or stderr. It
- * is based on oe_vsnprintf(), which has limited support for format types.
- *
- * @param fmt The limited printf style format.
- * @param device 0 for stdout and 1 for stderr
- * @returns The number of characters that were written.
- *
- */
-OE_PRINTF_FORMAT(2, 3)
-int oe_host_fprintf(int device, const char* fmt, ...);
-
-/**
- * Allocates space from host memory. This function is intended to obtain
- * memory for oe_call_host arguments. For repeated small allocations,
- * performance of oe_host_alloc_for_call_host() will generally be higher than
- * oe_host_malloc().
- *
- * Note: Memory allocated by oe_host_alloc_for_call_host() must be freed by
- * oe_host_free_for_call_host(), in reverse order of allocation.
- *
- * @param size The number of bytes to allocate.
- *
- * @returns Returns the address of the allocated space, or NULL in case of
- *          error.
- */
-void* oe_host_alloc_for_call_host(size_t size);
-
-/**
- * Frees space allocated w/ oe_host_alloc_for_call_host().
- *
- * Note: Memory allocated by oe_host_alloc_for_call_host() must be freed by
- * oe_host_free_for_call_host(), in reverse order of allocation.
- *
- * @param p Address returned by previous call to oe_host_alloc_for_call_host().
- *      Can be NULL.
- */
-void oe_host_free_for_call_host(void* p);
-
-/**
  * Allocate bytes from the host's heap.
  *
  * This function allocates **size** bytes from the host's heap and returns the
@@ -282,21 +227,6 @@ char* oe_host_strdup(const char* str);
  * This function aborts execution by executing the UD2 instruction.
  */
 void oe_abort(void);
-
-/**
- * Enclave implementation of the standard Unix sbrk() system call.
- *
- * This function provides an enclave equivalent to the sbrk() system call.
- * It increments the current end of the heap by **increment** bytes. Calling
- * oe_sbrk() with an increment of 0, returns the current end of the heap.
- *
- * @param increment Number of bytes to increment the heap end by.
- *
- * @returns The old end of the heap (before the increment) or (void*)-1 if
- * there are less than **increment** bytes left on the heap.
- *
- */
-void* oe_sbrk(ptrdiff_t increment);
 
 /**
  * Called whenever an assertion fails.

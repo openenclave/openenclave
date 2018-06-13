@@ -3,6 +3,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cpuid.h>
+#include <openenclave/internal/print.h>
 #include "../args.h"
 
 #include "../../../host/linux/cpuid_count.c"

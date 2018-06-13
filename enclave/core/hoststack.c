@@ -13,6 +13,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
+#include <openenclave/internal/enclavelibc.h>
 
 #ifndef MAX
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
