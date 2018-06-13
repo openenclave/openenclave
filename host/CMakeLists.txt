@@ -46,6 +46,7 @@ add_library(oehost STATIC
     load.c
     memalign.c
     ocalls.c
+    oe_sgx_ql.c
     quote.c
     registers.c
     report.c
