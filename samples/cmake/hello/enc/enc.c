@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/print.h>
 #include <stdio.h>
 #include <string.h>
 #include "../args.h"
