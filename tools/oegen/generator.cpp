@@ -742,9 +742,9 @@ static void _GenOCALL(std::ostream& os, const Function* f)
 {
     const ReturnType& r = f->returnType;
     const string& fn = f->name;
-    string hostAllocStr = "oe_host_alloc_for_call_host";
-    string mallocStr = "_HostAllocForCallHost";
-    string freeStr = "_HostFreeForCallHost";
+    string hostAllocStr = "oe_host_malloc";
+    string mallocStr = "_HostAlloc";
+    string freeStr = "_HostFree";
 
     os << pf("/* OCALL: %s(%u) */\n", __FILE__, __LINE__);
     _GenCallOutFunctionPrototype(os, true, f, false);
@@ -1465,16 +1465,16 @@ int Generator::GenerateSourceFile(
     if (trusted)
     {
         const char mallocText[] =
-            "OE_INLINE void* _HostAllocForCallHost(size_t size)\n"
+            "OE_INLINE void* _HostAlloc(size_t size)\n"
             "{\n"
-            "    return oe_host_alloc_for_call_host(size);\n"
+            "    return oe_host_malloc(size);\n"
             "}\n\n";
         os << mallocText << endl;
 
         const char freeText[] =
-            "OE_INLINE void _HostFreeForCallHost(void* ptr)\n"
+            "OE_INLINE void _HostFree(void* ptr)\n"
             "{\n"
-            "     oe_host_free_for_call_host(ptr);\n"
+            "     oe_host_free(ptr);\n"
             "}\n\n";
         os << freeText << endl;
     }
