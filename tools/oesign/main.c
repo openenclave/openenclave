@@ -591,7 +591,7 @@ int main(int argc, const char* argv[])
 
     /* Initialize the context parameters for measurement only */
     if (oe_sgx_initialize_load_context(
-            &context, OE_SGX_LOAD_TYPE_MEASURE, OE_ENCLAVE_FLAG_DEBUG) != OE_OK)
+            &context, OE_SGX_LOAD_TYPE_MEASURE, props.config.attributes) != OE_OK)
     {
         Err("oe_sgx_initialize_load_context() failed");
         goto done;

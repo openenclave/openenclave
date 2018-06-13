@@ -22,6 +22,7 @@ add_subdirectory(mem)
 add_subdirectory(str)
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
+add_subdirectory(debug-mode)
 add_subdirectory(ecall)
 add_subdirectory(ecall_ocall)
 add_subdirectory(echo)
