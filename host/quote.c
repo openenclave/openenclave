@@ -10,7 +10,7 @@
 #include <openenclave/internal/utils.h>
 
 #if defined(OE_USE_LIBSGX)
-#include <sgx_ql_oe_wrapper.h>
+#include "sgxquote.h"
 #include "sgxquoteprovider.h"
 #else
 #include <openenclave/internal/aesm.h>
@@ -159,13 +159,8 @@ oe_result_t sgx_get_qetarget_info(sgx_target_info_t* targetInfo)
     // called many times.
 
     oe_initialize_quote_provider();
-    {
-        OE_STATIC_ASSERT(
-            sizeof(sgx_target_info_t) == sizeof(sgx_target_info_t));
-        quote3_error_t err =
-            sgx_qe_get_target_info((sgx_target_info_t*)targetInfo);
-        result = (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;
-    }
+    result = oe_sgx_qe_get_target_info((uint8_t*)targetInfo);
+
 #else
 
     result = _sgx_init_quote_with_aesm(targetInfo);
@@ -186,10 +181,9 @@ oe_result_t sgx_get_quote_size(uint32_t* quoteSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(OE_USE_LIBSGX)
-    {
-        quote3_error_t err = sgx_qe_get_quote_size(quoteSize);
-        result = (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;
-    }
+
+    result = oe_sgx_qe_get_quote_size(quoteSize);
+
 #else
 
     result = _sgx_get_quote_size_from_aesm(NULL, quoteSize);
@@ -234,12 +228,9 @@ oe_result_t sgx_get_quote(
 /* Get the quote from the AESM service */
 
 #if defined(OE_USE_LIBSGX)
-    {
-        OE_STATIC_ASSERT(sizeof(sgx_report_t) == sizeof(sgx_report_t));
-        quote3_error_t err =
-            sgx_qe_get_quote((sgx_report_t*)report, *quoteSize, quote);
-        result = (err == SGX_QL_SUCCESS) ? OE_OK : OE_PLATFORM_ERROR;
-    }
+
+    result = oe_sgx_qe_get_quote((uint8_t*)report, *quoteSize, quote);
+
 #else
 
     result = _sgx_get_quote_from_aesm(
