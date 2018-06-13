@@ -10,7 +10,7 @@
 #include <openenclave/internal/utils.h>
 
 #if defined(OE_USE_LIBSGX)
-#include "oe_sgx_ql.h"
+#include "sgxquote.h"
 #include "sgxquoteprovider.h"
 #else
 #include <openenclave/internal/aesm.h>
@@ -159,7 +159,7 @@ oe_result_t sgx_get_qetarget_info(sgx_target_info_t* targetInfo)
     // called many times.
 
     oe_initialize_quote_provider();
-    result = oe_sgx_qe_get_target_info( (uint8_t*) targetInfo);
+    result = oe_sgx_qe_get_target_info((uint8_t*)targetInfo);
 
 #else
 
@@ -229,7 +229,7 @@ oe_result_t sgx_get_quote(
 
 #if defined(OE_USE_LIBSGX)
 
-    result = oe_sgx_qe_get_quote( (uint8_t*)report, *quoteSize, quote);
+    result = oe_sgx_qe_get_quote((uint8_t*)report, *quoteSize, quote);
 
 #else
 
