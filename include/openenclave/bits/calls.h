@@ -4,15 +4,6 @@
 #ifndef _OE_CALLS_H
 #define _OE_CALLS_H
 
-#if defined(__OE_NEED_TIME_CALLS)
-#if defined(__linux__)
-#include <sys/time.h>
-#elif defined(_WIN32)
-typedef int32_t clockid_t;
-#endif
-#include <time.h>
-#endif
-
 #include <openenclave/bits/cpuid.h>
 #include <openenclave/defs.h>
 #include <openenclave/types.h>
@@ -295,85 +286,6 @@ typedef struct _OE_VerifyReportArgs
     uint32_t reportSize; /* in */
 } OE_VerifyReportArgs;
 
-/*
-**==============================================================================
-**
-** OE_StrftimeArgs
-**
-**     size_t strftime(
-**         char *str,
-**         size_t max,
-**         const char *format,
-**         const struct tm *tm);
-**
-**==============================================================================
-*/
-#if defined(__OE_NEED_TIME_CALLS)
-typedef struct _OE_StrftimeArgs
-{
-    size_t ret;
-    char str[256];
-    char format[256];
-    struct tm tm;
-} OE_StrftimeArgs;
-#endif
-/*
-**==============================================================================
-**
-** OE_GettimeofdayArgs
-**
-**     int gettimeofday(struct timeval *tv, struct timezone *tz)
-**
-**==============================================================================
-*/
-#if defined(__OE_NEED_TIME_CALLS)
-typedef struct _OE_GettimeofdayArgs
-{
-    int ret;
-    struct timeval* tv;
-    struct timeval tvbuf;
-    struct timezone* tz;
-    uint64_t tzbuf[2];
-} OE_GettimeofdayArgs;
-#endif
-
-/*
-**==============================================================================
-**
-** OE_ClockgettimeArgs
-**
-**     int clock_gettime(clockid_t clk_id, struct timespec *tp);
-**
-**==============================================================================
-*/
-#if defined(__OE_NEED_TIME_CALLS)
-typedef struct _OE_ClockgettimeArgs
-{
-    int ret;
-    clockid_t clk_id;
-    struct timespec* tp;
-    struct timespec tpbuf;
-} OE_ClockgettimeArgs;
-#endif
-/*
-**==============================================================================
-**
-** OE_NanosleepArgs
-**
-**     int nanosleep(const struct timespec *req, struct timespec *rem);
-**
-**==============================================================================
-*/
-#if defined(__OE_NEED_TIME_CALLS)
-typedef struct _OE_NanosleepArgs
-{
-    int ret;
-    const struct timespec* req;
-    struct timespec reqbuf;
-    struct timespec* rem;
-    struct timespec rembuf;
-} OE_NanosleepArgs;
-#endif
 /*
 **==============================================================================
 **

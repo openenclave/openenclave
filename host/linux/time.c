@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#define __OE_NEED_TIME_CALLS
-#include "../../include/openenclave/bits/calls.h"
+
+#include "../../include/openenclave/bits/time.h"
 #include "../ocalls.h"
 
 void HandleStrftime(uint64_t argIn)
