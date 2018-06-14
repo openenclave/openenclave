@@ -12,13 +12,8 @@ define NEWLINE
 
 endef
 
-# Attestation sample is run only on libsgx platforms.
-# Libsgx platforms must have azure quote provider.
-ifneq (,$(wildcard /usr/lib/libngsa_quoteprov.so))
-    DIRS = attestation
-else
-    DIRS = sort
-endif
+# Obtain list of installed samples.
+DIRS = $(wildcard */)
 
 build:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NEWLINE) )
