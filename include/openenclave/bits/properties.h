@@ -2,14 +2,13 @@
 // Licensed under the MIT License.
 
 /**
- * \file properties.h
+ * @file properties.h
  *
- * This file defines enclave-property structures which are injected into
- * the following sections of the enclave image.
+ * This file defines the SGX properties for an enclave.
  *
- *     .oeinfo - injected by OE_SET_ENCLAVE_SGX (contains
- *               enclave properties with empty sigstructs)
- *
+ * The enclave properties should only be defined once for all code compiled
+ * into an enclave binary using the OE_SET_ENCLAVE_SGX macro.
+ * These properties can be overwritten at sign time by the oesign tool.
  */
 
 #ifndef _OE_BITS_PROPERTIES_H
@@ -20,16 +19,11 @@
 
 OE_EXTERNC_BEGIN
 
+/**
+ * @cond DEV
+ */
 /* Injected by OE_SET_ENCLAVE_SGX macro and by the signing tool (oesign) */
 #define OE_INFO_SECTION_NAME ".oeinfo"
-
-/*
-**==============================================================================
-**
-** oe_enclave_properties_header_t - generic enclave properties base type
-**
-**==============================================================================
-*/
 
 /* Max number of threads in an enclave supported */
 #define OE_SGX_MAX_TCS 32
@@ -46,14 +40,11 @@ OE_CHECK_SIZE(sizeof(oe_enclave_size_settings_t), 24);
 /* Base type for enclave properties */
 typedef struct _oe_enclave_properties_header
 {
-    /* (0) Size of the extended structure */
-    uint32_t size;
+    uint32_t size; /**< (0) Size of the extended structure */
 
-    /* (4) Enclave type */
-    oe_enclave_type_t enclaveType;
+    oe_enclave_type_t enclaveType; /**< (4) Enclave type */
 
-    /* (8) Enclave settings */
-    oe_enclave_size_settings_t sizeSettings;
+    oe_enclave_size_settings_t sizeSettings; /**< (8) Enclave settings */
 } oe_enclave_properties_header_t;
 
 OE_STATIC_ASSERT(sizeof(oe_enclave_type_t) == sizeof(uint32_t));
@@ -63,14 +54,7 @@ OE_STATIC_ASSERT(
     OE_OFFSETOF(oe_enclave_properties_header_t, sizeSettings) == 8);
 OE_CHECK_SIZE(sizeof(oe_enclave_properties_header_t), 32);
 
-/*
-**==============================================================================
-**
-** oe_sgx_enclave_properties_t - SGX enclave properties derived type
-**
-**==============================================================================
-*/
-
+// oe_sgx_enclave_properties_t SGX enclave properties derived type
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
 #define OE_SGX_SIGSTRUCT_SIZE 1808
@@ -104,22 +88,37 @@ typedef struct oe_sgx_enclave_properties_t
 
 OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
 
-/*
-**==============================================================================
-**
-** OE_SET_ENCLAVE_SGX:
-**     This macro initializes and injects an oe_sgx_enclave_properties_t struct
-**     into the .oeinfo section.
-**
-**==============================================================================
-*/
-
 #define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo,\"\",@note#")))
 #define OE_INFO_SECTION_END
 
 #define OE_MAKE_ATTRIBUTES(_AllowDebug_) \
     (OE_SGX_FLAGS_MODE64BIT | (_AllowDebug_ ? OE_SGX_FLAGS_DEBUG : 0))
 
+/**
+ * @endcond
+ */
+
+// This macro initializes and injects an oe_sgx_enclave_properties_t struct
+// into the .oeinfo section.
+
+/**
+ * Defines the SGX properties for an enclave.
+ *
+ * The enclave properties should only be defined once for all code compiled into
+ * an enclave binary. These properties can be overwritten at sign time by
+ * the oesign tool.
+ *
+ * @param \_ProductID\_ ISV assigned Product ID (ISVPRODID) to use in the
+ * enclave signature
+ * @param \_SecurityVersion\_ ISV assigned Security Version number (ISVSVN)
+ * to use in the enclave signature
+ * @param \_AllowDebug\_ If true, allows the enclave to be created with
+ * OE_ENCLAVE_FLAG_DEBUG and debugged at runtime
+ * @param \_HeapPageCount\_ Number of heap pages to allocate in the enclave
+ * @param \_StackPageCount\_ Number of stack pages per thread to reserve in
+ * the enclave
+ * @param \_TcsCount\_ Number of concurrent threads in an enclave to support
+ */
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
 

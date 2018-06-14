@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file result.h
+ * @file result.h
  *
  * This file defines Open Enclave return codes (results).
  *
@@ -62,7 +62,7 @@ typedef enum _oe_result {
 } oe_result_t;
 
 /**
- * Retrieves a string for a result code.
+ * Retrieve a string for a result code.
  *
  * This function retrieves a string description for the given **result**
  * parameter.
