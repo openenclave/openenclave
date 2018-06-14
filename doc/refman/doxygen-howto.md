@@ -197,7 +197,7 @@ For example.
 
 ### Disabling doxygen documentation from blocks of code
 
-To disable doxygen documentatation from blocks of code with #defines, #typedefs use
+To disable doxygen documentation from blocks of code with #defines, #typedefs use
 the @cond command. Here is an example.
 
 /**
@@ -207,4 +207,6 @@ the @cond command. Here is an example.
 /**
  * @endcond
  */
-So, unless you define DEV to Doxygen, the code block will be ignored.
+Doxygen will not document the code between @cond and @endcond unless DEV is specified
+in the ENABLED_SECTIONS of the doxygen.conf.
+
