@@ -47,8 +47,8 @@ typedef struct _oe_basic_xstate
 } OE_ALIGNED(16) OE_BASIC_XSTATE;
 
 /**
- * @typedef OE_CONTEXT: typedef to structure _OE_CONTEXT
- * @struct _OE_CONTEXT: Register state to  be saved before an exception and
+ * @typedef oe_context_t: typedef to structure _oe_context
+ * @struct _oe_context: Register state to  be saved before an exception and
  * restored after the exception has been handled in the enclave.
  */
 typedef struct _oe_context
