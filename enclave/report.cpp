@@ -6,6 +6,7 @@
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/keys.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/report.h>
 #include <openenclave/bits/sgxtypes.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>

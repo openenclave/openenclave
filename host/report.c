@@ -4,6 +4,7 @@
 #include "../common/report.c"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/raise.h>
+#include <openenclave/bits/report.h>
 #include <openenclave/bits/utils.h>
 #include <openenclave/host.h>
 #include "quote.h"

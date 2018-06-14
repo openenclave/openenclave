@@ -3,6 +3,7 @@
 
 #include "report.h"
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/report.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/raise.h>
 #include <openenclave/bits/sgxtypes.h>

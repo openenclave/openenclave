@@ -19,6 +19,7 @@
 #include <openenclave/host.h>
 
 #include <openenclave/bits/calls.h>
+#include <openenclave/bits/report.h>
 #include <openenclave/bits/utils.h>
 #include "enclave.h"
 #include "ocalls.h"
