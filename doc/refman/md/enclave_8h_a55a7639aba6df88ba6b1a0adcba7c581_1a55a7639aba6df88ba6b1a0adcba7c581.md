@@ -3,7 +3,7 @@
 ---
 # oe_host_free()
 
-Releases allocated memory.
+Release allocated memory.
 
 ## Syntax
 

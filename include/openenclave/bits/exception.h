@@ -8,8 +8,8 @@
  * enclave.
  *
  */
-#ifndef _OE_EXCEPTION_H
-#define _OE_EXCEPTION_H
+#ifndef _OE_BITS_EXCEPTION_H
+#define _OE_BITS_EXCEPTION_H
 
 #ifndef __ASSEMBLER__
 #include <openenclave/bits/defs.h>
@@ -38,13 +38,13 @@
 #define OE_EXCEPTION_SOFTWARE 0x2
 
 /**
- * @typedef OE_BASIC_XSTATE: typedef to structure _OE_BASIC_XSTATE
+ * @typedef oe_basic_xstate_t: typedef to structure _oe_basic_xstate
  * @struct _oe_basic_xstate: Blob that contains X87 and SSE data
  */
 typedef struct _oe_basic_xstate
 {
     uint8_t blob[512]; /**< Holds XState i.e. X87 and SSE data */
-} OE_ALIGNED(16) OE_BASIC_XSTATE;
+} OE_ALIGNED(16) oe_basic_xstate_t;
 
 /**
  * @typedef oe_context_t: typedef to structure _oe_context
@@ -83,7 +83,7 @@ typedef struct _oe_context
 
     uint32_t mxcsr; /**< SSE control flags */
 
-    OE_BASIC_XSTATE basic_xstate; /**< Basic XState */
+    oe_basic_xstate_t basic_xstate; /**< Basic XState */
 
     // Don't need to manipulate other XSTATE (AVX etc.).
 } oe_context_t;

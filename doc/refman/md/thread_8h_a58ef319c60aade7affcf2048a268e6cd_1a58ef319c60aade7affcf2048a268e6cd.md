@@ -3,7 +3,7 @@
 ---
 # oe_rwlock_try_wrlock()
 
-Tries to acquire a write lock on a readers-writer lock.
+Try to acquire a write lock on a readers-writer lock.
 
 ## Syntax
 

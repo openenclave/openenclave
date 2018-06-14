@@ -3,7 +3,7 @@
 ---
 # oe_spin_init()
 
-Initializes a spin lock.
+Initialize a spin lock.
 
 ## Syntax
 

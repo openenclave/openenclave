@@ -191,7 +191,7 @@ void* oe_host_realloc(void* ptr, size_t size);
 void* oe_host_calloc(size_t nmemb, size_t size);
 
 /**
- * Releases allocated memory.
+ * Release allocated memory.
  *
  * This function releases memory allocated with oe_host_malloc() or
  * oe_host_calloc() by performing an OCALL where the host calls free().

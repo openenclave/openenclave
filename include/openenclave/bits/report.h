@@ -7,8 +7,8 @@
  * This file defines structures and options passed to GetReport functions.
  *
  */
-#ifndef _OE_REPORT_H
-#define _OE_REPORT_H
+#ifndef _OE_BITS_REPORT_H
+#define _OE_BITS_REPORT_H
 
 #include "defs.h"
 #include "types.h"
@@ -49,23 +49,32 @@ OE_EXTERNC_BEGIN
  */
 typedef struct _oe_identity
 {
-    uint32_t idVersion; /**< Version of the oe_identity_t structure */
-    uint32_t
-        securityVersion; /**< Security version of the enclave. For SGX enclaves,
-                              this is the ISVN value */
-    uint64_t attributes; /**< Values of the attributes flags for the enclave
-            OE_REPORT_ATTRIBUTES_DEBUG: The report is for a debug enclave
-            OE_REPORT_ATTRIBUTES_REMOTE: The report can be used for remote
-            attestation */
-    uint8_t
-        uniqueID[OE_UNIQUE_ID_SIZE]; /**< The unique ID for the enclave. For SGX
-                    enclaves, this is the MRENCLAVE value */
-    uint8_t
-        authorID[OE_AUTHOR_ID_SIZE]; /**< The author ID for the enclave. For SGX
-                    enclaves, this is the MRSIGNER value */
-    uint8_t productID[OE_PRODUCT_ID_SIZE]; /**< The Product ID for the enclave.
-                        For SGX
-                        enclaves, this is the ISVPRODIC value. */
+    /** Version of the oe_identity_t structure */
+    uint32_t idVersion;
+
+    /** Security version of the enclave. For SGX enclaves, this is the
+      *  ISVN value */
+    uint32_t securityVersion;
+
+    /** Values of the attributes flags for the enclave -
+     *  OE_REPORT_ATTRIBUTES_DEBUG: The report is for a debug enclave.
+     *  OE_REPORT_ATTRIBUTES_REMOTE: The report can be used for remote
+     *  attestation */
+    uint64_t attributes;
+
+    /** The unique ID for the enclave.
+      * For SGX enclaves, this is the MRENCLAVE value */
+
+    uint8_t uniqueID[OE_UNIQUE_ID_SIZE];
+
+    /** The author ID for the enclave.
+      * For SGX enclaves, this is the MRSIGNER value */
+    uint8_t authorID[OE_AUTHOR_ID_SIZE];
+
+    /** The Product ID for the enclave.
+     * For SGX enclaves, this is the ISVPRODID value. */
+    uint8_t productID[OE_PRODUCT_ID_SIZE];
+
 } oe_identity_t;
 
 /**
@@ -73,23 +82,28 @@ typedef struct _oe_identity
  */
 typedef struct _oe_report
 {
-    uint32_t size; /**< Size of the oe_report_t structure. */
+    /** Size of the oe_report_t structure. */
+    uint32_t size;
 
-    oe_enclave_type_t
-        type; /**< The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
+    /** The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
+    oe_enclave_type_t type;
 
-    uint8_t* reportData; /**< Pointer to report data field within the report
-                            byte-stream supplied to oe_parse_report */
+    /** Pointer to report data field within the report byte-stream supplied to
+     * oe_parse_report */
+    uint8_t* reportData;
 
-    uint32_t reportDataSize; /**< Size of reportData */
+    /** Size of reportData */
+    uint32_t reportDataSize;
 
-    uint8_t* enclaveReport; /**< Pointer to report body field within the report
-                                 byte-stream supplied to oe_parse_report. */
+    /** Pointer to report body field within the report byte-stream supplied to
+     * oe_parse_report. */
+    uint8_t* enclaveReport;
 
-    uint32_t enclaveReportSize; /**< Size of enclaveReport */
+    /** Size of enclaveReport */
+    uint32_t enclaveReportSize;
 
-    oe_identity_t identity; /**< Contains the IDs and attributes that are
-                               part of oe_identity_t */
+    /** Contains the IDs and attributes that are part of oe_identity_t */
+    oe_identity_t identity;
 } oe_report_t;
 
 OE_EXTERNC_END

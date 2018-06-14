@@ -45,7 +45,7 @@ typedef struct _oe_enclave oe_enclave_t;
  */
 
 /**
- * Creates an enclave from an enclave image file.
+ * Create an enclave from an enclave image file.
  *
  * This function creates an enclave from an enclave image file. On successful
  * return, the enclave is fully initialized and ready to use.
@@ -80,7 +80,7 @@ oe_result_t oe_create_enclave(
     oe_enclave_t** enclave);
 
 /**
- * Terminates an enclave and reclaims its resources.
+ * Terminate an enclave and reclaims its resources.
  *
  * This function terminates an enclave and reclaims its resources. This
  * involves unmapping the memory that was mapped by **oe_create_enclave()**.
