@@ -36,21 +36,9 @@ else
     INSTALL_DIR=$(realpath $(dirname $0)/../../..)
 fi || printandexit
 
-TEST_MAKE_DIR="$INSTALL_DIR/share/openenclave/samples/make"
-TEST_CMAKE_DIR="$INSTALL_DIR/share/openenclave/samples/cmake"
+TEST_MAKE_DIR="$INSTALL_DIR/share/openenclave/samples"
 
 # build & run the make samples
 make -C "$TEST_MAKE_DIR" OPENENCLAVE_CONFIG="$INSTALL_DIR/share/openenclave/config.mak" OE_PREFIX=$INSTALL_DIR world || printandexit
-
-# build & run the cmake samples
-(
-    cd "$TEST_CMAKE_DIR" &&
-    rm -rf build &&
-    mkdir build &&
-    cd build &&
-    cmake -DOE_PREFIX="$INSTALL_DIR" .. &&
-    make &&
-    ctest
-) || printandexit
 
 exit 0
