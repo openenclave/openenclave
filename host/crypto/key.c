@@ -2,49 +2,52 @@
 // Licensed under the MIT License.
 
 #include "key.h"
-#include <openenclave/bits/raise.h>
+#include <openenclave/internal/raise.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <string.h>
 #include "init.h"
 
-bool OE_PrivateKeyIsValid(const OE_PrivateKey* impl, uint64_t magic)
+bool oe_private_key_is_valid(const oe_private_key_t* impl, uint64_t magic)
 {
     return impl && impl->magic == magic && impl->pkey;
 }
 
-bool OE_PublicKeyIsValid(const OE_PublicKey* impl, uint64_t magic)
+bool oe_public_key_is_valid(const oe_public_key_t* impl, uint64_t magic)
 {
     return impl && impl->magic == magic && impl->pkey;
 }
 
-void OE_PublicKeyInit(OE_PublicKey* publicKey, EVP_PKEY* pkey, uint64_t magic)
-{
-    OE_PublicKey* impl = (OE_PublicKey*)publicKey;
-    impl->magic = magic;
-    impl->pkey = pkey;
-}
-
-void OE_PrivateKeyInit(
-    OE_PrivateKey* privateKey,
+void oe_public_key_init(
+    oe_public_key_t* publicKey,
     EVP_PKEY* pkey,
     uint64_t magic)
 {
-    OE_PrivateKey* impl = (OE_PrivateKey*)privateKey;
+    oe_public_key_t* impl = (oe_public_key_t*)publicKey;
     impl->magic = magic;
     impl->pkey = pkey;
 }
 
-OE_Result OE_PrivateKeyReadPEM(
+void oe_private_key_init(
+    oe_private_key_t* privateKey,
+    EVP_PKEY* pkey,
+    uint64_t magic)
+{
+    oe_private_key_t* impl = (oe_private_key_t*)privateKey;
+    impl->magic = magic;
+    impl->pkey = pkey;
+}
+
+oe_result_t oe_private_key_read_pem(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_PrivateKey* key,
+    oe_private_key_t* key,
     int keyType,
     uint64_t magic)
 {
-    OE_Result result = OE_UNEXPECTED;
-    OE_PrivateKey* impl = (OE_PrivateKey*)key;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_private_key_t* impl = (oe_private_key_t*)key;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
 
@@ -61,7 +64,7 @@ OE_Result OE_PrivateKeyReadPEM(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
+    oe_initialize_openssl();
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
@@ -93,17 +96,17 @@ done:
     return result;
 }
 
-OE_Result OE_PublicKeyReadPEM(
+oe_result_t oe_public_key_read_pem(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_PublicKey* key,
+    oe_public_key_t* key,
     int keyType,
     uint64_t magic)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     BIO* bio = NULL;
     EVP_PKEY* pkey = NULL;
-    OE_PublicKey* impl = (OE_PublicKey*)key;
+    oe_public_key_t* impl = (oe_public_key_t*)key;
 
     /* Zero-initialize the key */
     if (impl)
@@ -118,7 +121,7 @@ OE_Result OE_PublicKeyReadPEM(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
+    oe_initialize_openssl();
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
@@ -150,20 +153,20 @@ done:
     return result;
 }
 
-OE_Result OE_PrivateKeyWritePEM(
-    const OE_PrivateKey* privateKey,
+oe_result_t oe_private_key_write_pem(
+    const oe_private_key_t* privateKey,
     uint8_t* data,
     size_t* size,
-    OE_PrivateKeyWritePEMCallback privateKeyWritePEMCallback,
+    oe_private_key_write_pem_callback privateKeyWritePEMCallback,
     uint64_t magic)
 {
-    OE_Result result = OE_UNEXPECTED;
-    const OE_PrivateKey* impl = (const OE_PrivateKey*)privateKey;
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_private_key_t* impl = (const oe_private_key_t*)privateKey;
     BIO* bio = NULL;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!OE_PrivateKeyIsValid(impl, magic) || !size)
+    if (!oe_private_key_is_valid(impl, magic) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -210,19 +213,19 @@ done:
     return result;
 }
 
-OE_Result OE_PublicKeyWritePEM(
-    const OE_PublicKey* key,
+oe_result_t oe_public_key_write_pem(
+    const oe_public_key_t* key,
     uint8_t* data,
     size_t* size,
     uint64_t magic)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     BIO* bio = NULL;
-    const OE_PublicKey* impl = (const OE_PublicKey*)key;
+    const oe_public_key_t* impl = (const oe_public_key_t*)key;
     const char nullTerminator = '\0';
 
     /* Check parameters */
-    if (!OE_PublicKeyIsValid(impl, magic) || !size)
+    if (!oe_public_key_is_valid(impl, magic) || !size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If buffer is null, then size must be zero */
@@ -270,16 +273,16 @@ done:
     return result;
 }
 
-OE_Result OE_PrivateKeyFree(OE_PrivateKey* key, uint64_t magic)
+oe_result_t oe_private_key_free(oe_private_key_t* key, uint64_t magic)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (key)
     {
-        OE_PrivateKey* impl = (OE_PrivateKey*)key;
+        oe_private_key_t* impl = (oe_private_key_t*)key;
 
         /* Check parameter */
-        if (!OE_PrivateKeyIsValid(impl, magic))
+        if (!oe_private_key_is_valid(impl, magic))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
@@ -296,16 +299,16 @@ done:
     return result;
 }
 
-OE_Result OE_PublicKeyFree(OE_PublicKey* key, uint64_t magic)
+oe_result_t oe_public_key_free(oe_public_key_t* key, uint64_t magic)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (key)
     {
-        OE_PublicKey* impl = (OE_PublicKey*)key;
+        oe_public_key_t* impl = (oe_public_key_t*)key;
 
         /* Check parameter */
-        if (!OE_PublicKeyIsValid(impl, magic))
+        if (!oe_public_key_is_valid(impl, magic))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         /* Release the key */
@@ -322,21 +325,21 @@ done:
     return result;
 }
 
-OE_Result OE_PrivateKeySign(
-    const OE_PrivateKey* privateKey,
-    OE_HashType hashType,
+oe_result_t oe_private_key_sign(
+    const oe_private_key_t* privateKey,
+    oe_hash_type_t hashType,
     const void* hashData,
     size_t hashSize,
     uint8_t* signature,
     size_t* signatureSize,
     uint64_t magic)
 {
-    OE_Result result = OE_UNEXPECTED;
-    const OE_PrivateKey* impl = (const OE_PrivateKey*)privateKey;
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_private_key_t* impl = (const oe_private_key_t*)privateKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!OE_PrivateKeyIsValid(impl, magic) || !hashData || !hashSize ||
+    if (!oe_private_key_is_valid(impl, magic) || !hashData || !hashSize ||
         !signatureSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
@@ -349,7 +352,7 @@ OE_Result OE_PrivateKeySign(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
+    oe_initialize_openssl();
 
     /* Create signing context */
     if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
@@ -393,21 +396,21 @@ done:
     return result;
 }
 
-OE_Result OE_PublicKeyVerify(
-    const OE_PublicKey* publicKey,
-    OE_HashType hashType,
+oe_result_t oe_public_key_verify(
+    const oe_public_key_t* publicKey,
+    oe_hash_type_t hashType,
     const void* hashData,
     size_t hashSize,
     const uint8_t* signature,
     size_t signatureSize,
     uint64_t magic)
 {
-    OE_Result result = OE_UNEXPECTED;
-    const OE_PublicKey* impl = (const OE_PublicKey*)publicKey;
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_public_key_t* impl = (const oe_public_key_t*)publicKey;
     EVP_PKEY_CTX* ctx = NULL;
 
     /* Check for null parameters */
-    if (!OE_PublicKeyIsValid(impl, magic) || !hashData || !hashSize ||
+    if (!oe_public_key_is_valid(impl, magic) || !hashData || !hashSize ||
         !signature || !signatureSize)
     {
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -418,7 +421,7 @@ OE_Result OE_PublicKeyVerify(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
+    oe_initialize_openssl();
 
     /* Create signing context */
     if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))

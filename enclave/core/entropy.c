@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
 
 uint64_t _rdrand(void)
 {
@@ -40,7 +40,7 @@ int mbedtls_hardware_poll(
         {
             uint64_t x = _rdrand();
 
-            OE_Memcpy(p, &x, sizeof(uint64_t));
+            oe_memcpy(p, &x, sizeof(uint64_t));
             p += sizeof(uint64_t);
         }
     }

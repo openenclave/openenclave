@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 #include "ec.h"
-#include <openenclave/bits/raise.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/raise.h>
+#include <openssl/obj_mac.h>
 #include <openssl/pem.h>
 #include <string.h>
 #include "init.h"
@@ -12,28 +14,23 @@
 static const uint64_t _PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
 static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
 
-OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
-OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
+OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_ec_public_key_t));
+OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_ec_private_key_t));
 
-/* Curve names, indexed by OE_ECType */
-static const char* _curveNames[] = {
-    "secp521r1" /* OE_EC_TYPE_SECP521R1 */
-};
-
-/* Convert ECType to curve name */
-static const char* _ECTypeToString(OE_Type type)
+static int _GetNID(oe_ec_type_t ecType)
 {
-    size_t index = (size_t)type;
-
-    if (index >= OE_COUNTOF(_curveNames))
-        return NULL;
-
-    return _curveNames[index];
+    switch (ecType)
+    {
+        case OE_EC_TYPE_SECP256R1:
+            return NID_X9_62_prime256v1;
+        default:
+            return NID_undef;
+    }
 }
 
-static OE_Result _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
+static oe_result_t _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     EC_KEY* ec = NULL;
 
     if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
@@ -52,18 +49,17 @@ done:
     return result;
 }
 
-static OE_Result _GenerateKeyPair(
-    OE_ECType type,
-    OE_PrivateKey* privateKey,
-    OE_PublicKey* publicKey)
+static oe_result_t _GenerateKeyPair(
+    oe_ec_type_t ecType,
+    oe_private_key_t* privateKey,
+    oe_public_key_t* publicKey)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     int nid;
     EC_KEY* ecPrivate = NULL;
     EC_KEY* ecPublic = NULL;
     EVP_PKEY* pkeyPrivate = NULL;
     EVP_PKEY* pkeyPublic = NULL;
-    const char* curveName;
     EC_POINT* point = NULL;
 
     if (privateKey)
@@ -77,14 +73,10 @@ static OE_Result _GenerateKeyPair(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
+    oe_initialize_openssl();
 
-    /* Get the curve name for this EC key type */
-    if (!(curveName = _ECTypeToString(type)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Resolve the NID for this curve name */
-    if ((nid = OBJ_txt2nid(curveName)) == NID_undef)
+    /* Get the NID for this curve type */
+    if ((nid = _GetNID(ecType)) == NID_undef)
         OE_RAISE(OE_FAILURE);
 
     /* Create the private EC key */
@@ -137,7 +129,7 @@ static OE_Result _GenerateKeyPair(
             OE_RAISE(OE_FAILURE);
 
         /* Initialize the private key */
-        OE_PrivateKeyInit(privateKey, pkeyPrivate, _PRIVATE_KEY_MAGIC);
+        oe_private_key_init(privateKey, pkeyPrivate, _PRIVATE_KEY_MAGIC);
 
         /* Keep these from being freed below */
         ecPrivate = NULL;
@@ -155,7 +147,7 @@ static OE_Result _GenerateKeyPair(
             OE_RAISE(OE_FAILURE);
 
         /* Initialize the public key */
-        OE_PublicKeyInit(publicKey, pkeyPublic, _PUBLIC_KEY_MAGIC);
+        oe_public_key_init(publicKey, pkeyPublic, _PUBLIC_KEY_MAGIC);
 
         /* Keep these from being freed below */
         ecPublic = NULL;
@@ -183,69 +175,19 @@ done:
 
     if (result != OE_OK)
     {
-        OE_PrivateKeyFree(privateKey, _PRIVATE_KEY_MAGIC);
-        OE_PublicKeyFree(publicKey, _PUBLIC_KEY_MAGIC);
+        oe_private_key_free(privateKey, _PRIVATE_KEY_MAGIC);
+        oe_public_key_free(publicKey, _PUBLIC_KEY_MAGIC);
     }
 
     return result;
 }
 
-static OE_Result _PublicKeyGetKeyBytes(
-    const OE_PublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize)
-{
-    OE_Result result = OE_UNEXPECTED;
-    uint8_t* data = NULL;
-    EC_KEY* ec = NULL;
-    int requiredSize;
-
-    /* Check for invalid parameters */
-    if (!publicKey || !bufferSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the EC public key */
-    if (!(ec = EVP_PKEY_get1_EC_KEY(publicKey->pkey)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the required buffer size */
-    if ((requiredSize = i2o_ECPublicKey(ec, NULL)) == 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* If buffer is null or not big enough */
-    if (!buffer || (*bufferSize < requiredSize))
-    {
-        *bufferSize = requiredSize;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
-    }
-
-    /* Get the key bytes */
-    if (!i2o_ECPublicKey(ec, &data))
-        OE_RAISE(OE_FAILURE);
-
-    /* Copy to caller's buffer */
-    memcpy(buffer, data, requiredSize);
-    *bufferSize = requiredSize;
-
-    result = OE_OK;
-
-done:
-
-    if (ec)
-        EC_KEY_free(ec);
-
-    if (data)
-        free(data);
-
-    return result;
-}
-
-static OE_Result _PublicKeyEqual(
-    const OE_PublicKey* publicKey1,
-    const OE_PublicKey* publicKey2,
+static oe_result_t _PublicKeyEqual(
+    const oe_public_key_t* publicKey1,
+    const oe_public_key_t* publicKey2,
     bool* equal)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     EC_KEY* ec1 = NULL;
     EC_KEY* ec2 = NULL;
 
@@ -253,8 +195,8 @@ static OE_Result _PublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!OE_PublicKeyIsValid(publicKey1, _PUBLIC_KEY_MAGIC) ||
-        !OE_PublicKeyIsValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!oe_public_key_is_valid(publicKey1, _PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
@@ -289,79 +231,84 @@ done:
     return result;
 }
 
-void OE_ECPublicKeyInit(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
+void oe_ec_public_key_init(oe_ec_public_key_t* publicKey, EVP_PKEY* pkey)
 {
-    return OE_PublicKeyInit((OE_PublicKey*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_init(
+        (oe_public_key_t*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECPrivateKeyReadPEM(
+oe_result_t oe_ec_private_key_read_pem(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_ECPrivateKey* privateKey)
+    oe_ec_private_key_t* privateKey)
 {
-    return OE_PrivateKeyReadPEM(
+    return oe_private_key_read_pem(
         pemData,
         pemSize,
-        (OE_PrivateKey*)privateKey,
+        (oe_private_key_t*)privateKey,
         EVP_PKEY_EC,
         _PRIVATE_KEY_MAGIC);
 }
 
-OE_Result OE_ECPrivateKeyWritePEM(
-    const OE_ECPrivateKey* privateKey,
+oe_result_t oe_ec_private_key_write_pem(
+    const oe_ec_private_key_t* privateKey,
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return OE_PrivateKeyWritePEM(
-        (const OE_PrivateKey*)privateKey,
+    return oe_private_key_write_pem(
+        (const oe_private_key_t*)privateKey,
         pemData,
         pemSize,
         _privateKeyWritePEMCallback,
         _PRIVATE_KEY_MAGIC);
 }
 
-OE_Result OE_ECPublicKeyReadPEM(
+oe_result_t oe_ec_public_key_read_pem(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_ECPublicKey* publicKey)
+    oe_ec_public_key_t* publicKey)
 {
-    return OE_PublicKeyReadPEM(
+    return oe_public_key_read_pem(
         pemData,
         pemSize,
-        (OE_PublicKey*)publicKey,
+        (oe_public_key_t*)publicKey,
         EVP_PKEY_EC,
         _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECPublicKeyWritePEM(
-    const OE_ECPublicKey* privateKey,
+oe_result_t oe_ec_public_key_write_pem(
+    const oe_ec_public_key_t* privateKey,
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return OE_PublicKeyWritePEM(
-        (const OE_PublicKey*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_write_pem(
+        (const oe_public_key_t*)privateKey,
+        pemData,
+        pemSize,
+        _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey)
+oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* privateKey)
 {
-    return OE_PrivateKeyFree((OE_PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
+    return oe_private_key_free(
+        (oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
-OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey)
+oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* publicKey)
 {
-    return OE_PublicKeyFree((OE_PublicKey*)publicKey, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_free((oe_public_key_t*)publicKey, _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECPrivateKeySign(
-    const OE_ECPrivateKey* privateKey,
-    OE_HashType hashType,
+oe_result_t oe_ec_private_key_sign(
+    const oe_ec_private_key_t* privateKey,
+    oe_hash_type_t hashType,
     const void* hashData,
     size_t hashSize,
     uint8_t* signature,
     size_t* signatureSize)
 {
-    return OE_PrivateKeySign(
-        (OE_PrivateKey*)privateKey,
+    return oe_private_key_sign(
+        (oe_private_key_t*)privateKey,
         hashType,
         hashData,
         hashSize,
@@ -370,16 +317,16 @@ OE_Result OE_ECPrivateKeySign(
         _PRIVATE_KEY_MAGIC);
 }
 
-OE_Result OE_ECPublicKeyVerify(
-    const OE_ECPublicKey* publicKey,
-    OE_HashType hashType,
+oe_result_t oe_ec_public_key_verify(
+    const oe_ec_public_key_t* publicKey,
+    oe_hash_type_t hashType,
     const void* hashData,
     size_t hashSize,
     const uint8_t* signature,
     size_t signatureSize)
 {
-    return OE_PublicKeyVerify(
-        (OE_PublicKey*)publicKey,
+    return oe_public_key_verify(
+        (oe_public_key_t*)publicKey,
         hashType,
         hashData,
         hashSize,
@@ -388,28 +335,198 @@ OE_Result OE_ECPublicKeyVerify(
         _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECGenerateKeyPair(
-    OE_ECType type,
-    OE_ECPrivateKey* privateKey,
-    OE_ECPublicKey* publicKey)
+oe_result_t oe_ec_generate_key_pair(
+    oe_ec_type_t type,
+    oe_ec_private_key_t* privateKey,
+    oe_ec_public_key_t* publicKey)
 {
     return _GenerateKeyPair(
-        type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
+        type, (oe_private_key_t*)privateKey, (oe_public_key_t*)publicKey);
 }
 
-OE_Result OE_ECPublicKeyGetKeyBytes(
-    const OE_ECPublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize)
-{
-    return _PublicKeyGetKeyBytes((OE_PublicKey*)publicKey, buffer, bufferSize);
-}
-
-OE_Result OE_ECPublicKeyEqual(
-    const OE_ECPublicKey* publicKey1,
-    const OE_ECPublicKey* publicKey2,
+oe_result_t oe_ec_public_key_equal(
+    const oe_ec_public_key_t* publicKey1,
+    const oe_ec_public_key_t* publicKey2,
     bool* equal)
 {
     return _PublicKeyEqual(
-        (OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2, equal);
+        (oe_public_key_t*)publicKey1, (oe_public_key_t*)publicKey2, equal);
+}
+
+oe_result_t oe_ec_public_key_from_coordinates(
+    oe_ec_public_key_t* publicKey,
+    oe_ec_type_t ecType,
+    const uint8_t* xData,
+    size_t xSize,
+    const uint8_t* yData,
+    size_t ySize)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_public_key_t* impl = (oe_public_key_t*)publicKey;
+    int nid;
+    EC_KEY* ec = NULL;
+    EVP_PKEY* pkey = NULL;
+    EC_GROUP* group = NULL;
+    EC_POINT* point = NULL;
+    BIGNUM* x = NULL;
+    BIGNUM* y = NULL;
+
+    if (publicKey)
+        memset(publicKey, 0, sizeof(oe_ec_public_key_t));
+
+    /* Initialize OpenSSL */
+    oe_initialize_openssl();
+
+    /* Reject invalid parameters */
+    if (!publicKey || !xData || !xSize || !yData || !ySize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the NID for this curve type */
+    if ((nid = _GetNID(ecType)) == NID_undef)
+        OE_RAISE(OE_FAILURE);
+
+    /* Create the public EC key */
+    {
+        if (!(group = EC_GROUP_new_by_curve_name(nid)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(ec = EC_KEY_new()))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(EC_KEY_set_group(ec, group)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(point = EC_POINT_new(group)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(x = BN_new()) || !(y = BN_new()))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(BN_bin2bn(xData, xSize, x)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(BN_bin2bn(yData, ySize, y)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!EC_POINT_set_affine_coordinates_GFp(group, point, x, y, NULL))
+            OE_RAISE(OE_FAILURE);
+
+        if (!EC_KEY_set_public_key(ec, point))
+            OE_RAISE(OE_FAILURE);
+
+        point = NULL;
+    }
+
+    /* Create the PKEY public key wrapper */
+    {
+        /* Create the public key structure */
+        if (!(pkey = EVP_PKEY_new()))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the public key from the generated key pair */
+        {
+            if (!EVP_PKEY_assign_EC_KEY(pkey, ec))
+                OE_RAISE(OE_FAILURE);
+
+            ec = NULL;
+        }
+
+        /* Initialize the public key */
+        {
+            oe_public_key_init(impl, pkey, _PUBLIC_KEY_MAGIC);
+            pkey = NULL;
+        }
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (ec)
+        EC_KEY_free(ec);
+
+    if (group)
+        EC_GROUP_free(group);
+
+    if (pkey)
+        EVP_PKEY_free(pkey);
+
+    if (x)
+        BN_free(x);
+
+    if (y)
+        BN_free(y);
+
+    if (point)
+        EC_POINT_free(point);
+
+    return result;
+}
+
+oe_result_t oe_ecdsa_signature_write_der(
+    unsigned char* signature,
+    size_t* signatureSize,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    ECDSA_SIG* sig = NULL;
+    int sigLen;
+
+    /* Reject invalid parameters */
+    if (!signatureSize || !rData || !rSize || !sData || !sSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If signature is null, then signatureSize must be zero */
+    if (!signature && *signatureSize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Create new signature object */
+    if (!(sig = ECDSA_SIG_new()))
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert R to big number object */
+    if (!(BN_bin2bn(rData, rSize, sig->r)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert S to big number object */
+    if (!(BN_bin2bn(sData, sSize, sig->s)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Determine the size of the binary signature */
+    if ((sigLen = i2d_ECDSA_SIG(sig, NULL)) <= 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Copy binary signature to output buffer */
+    if (signature && sigLen <= *signatureSize)
+    {
+        uint8_t* p = signature;
+
+        if (!i2d_ECDSA_SIG(sig, &p))
+            OE_RAISE(OE_FAILURE);
+
+        if (p - signature != sigLen)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    /* Check whether buffer is too small */
+    if (sigLen > *signatureSize)
+    {
+        *signatureSize = sigLen;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    /* Set the size of the output buffer */
+    *signatureSize = sigLen;
+
+    result = OE_OK;
+
+done:
+
+    if (sig)
+        ECDSA_SIG_free(sig);
+
+    return result;
 }

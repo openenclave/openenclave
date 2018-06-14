@@ -4,18 +4,18 @@
 #ifndef _OE_SGXIOCTL_H
 #define _OE_SGXIOCTL_H
 
-#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/internal/sgxtypes.h>
 
-int SGX_IoctlEnclaveCreate(int dev, SGX_Secs* secs);
+int sgx_ioctl_enclave_create(int dev, sgx_secs_t* secs);
 
-int SGX_IoctlEnclaveAddPage(
+int sgx_ioctl_enclave_add_page(
     int dev,
     uint64_t addr,
     uint64_t src,
     uint64_t flags,
     bool extend);
 
-int SGX_IoctlEnclaveInit(
+int sgx_ioctl_enclave_init(
     int dev,
     uint64_t addr,
     uint64_t sigstruct,

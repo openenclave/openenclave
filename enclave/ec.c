@@ -2,8 +2,12 @@
 // Licensed under the MIT License.
 
 #include "ec.h"
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/raise.h>
+#include <mbedtls/asn1.h>
+#include <mbedtls/asn1write.h>
+#include <mbedtls/ecp.h>
+#include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/raise.h>
 #include "key.h"
 #include "pem.h"
 #include "random.h"
@@ -11,31 +15,26 @@
 static uint64_t _PRIVATE_KEY_MAGIC = 0xf12c37bb02814eeb;
 static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
 
-OE_STATIC_ASSERT(sizeof(OE_PrivateKey) <= sizeof(OE_ECPrivateKey));
-OE_STATIC_ASSERT(sizeof(OE_PublicKey) <= sizeof(OE_ECPublicKey));
+OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_ec_private_key_t));
+OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_ec_public_key_t));
 
-/* Curve names, indexed by OE_ECType */
-static const char* _curveNames[] = {
-    "secp521r1" /* OE_EC_TYPE_SECP521R1 */
-};
-
-/* Convert ECType to curve name */
-static const char* _ECTypeToString(OE_Type type)
+static mbedtls_ecp_group_id _GetGroupID(oe_ec_type_t ecType)
 {
-    size_t index = (size_t)type;
-
-    if (index >= OE_COUNTOF(_curveNames))
-        return NULL;
-
-    return _curveNames[index];
+    switch (ecType)
+    {
+        case OE_EC_TYPE_SECP256R1:
+            return MBEDTLS_ECP_DP_SECP256R1;
+        default:
+            return MBEDTLS_ECP_DP_NONE;
+    }
 }
 
-static OE_Result _CopyKey(
+static oe_result_t _CopyKey(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
     bool copyPrivateFields)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     const mbedtls_pk_info_t* info;
 
     if (dest)
@@ -84,64 +83,64 @@ done:
     return result;
 }
 
-static OE_Result _GenerateKeyPair(
-    OE_ECType type,
-    OE_PrivateKey* privateKey,
-    OE_PublicKey* publicKey)
+static oe_result_t _GenerateKeyPair(
+    oe_ec_type_t ecType,
+    oe_private_key_t* privateKey,
+    oe_public_key_t* publicKey)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     mbedtls_ctr_drbg_context* drbg;
     mbedtls_pk_context pk;
     int curve;
-    const char* curveName;
 
     /* Initialize structures */
     mbedtls_pk_init(&pk);
 
     if (privateKey)
-        OE_Memset(privateKey, 0, sizeof(*privateKey));
+        oe_memset(privateKey, 0, sizeof(*privateKey));
 
     if (publicKey)
-        OE_Memset(publicKey, 0, sizeof(*publicKey));
+        oe_memset(publicKey, 0, sizeof(*publicKey));
 
     /* Check for invalid parameters */
     if (!privateKey || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Convert curve type to curve name */
-    if (!(curveName = _ECTypeToString(type)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Resolve the curveName parameter to an EC-curve identifier */
+    /* Get the group id and curve info structure for this EC type */
     {
         const mbedtls_ecp_curve_info* info;
+        mbedtls_ecp_group_id groupID;
 
-        if (!(info = mbedtls_ecp_curve_info_from_name(curveName)))
+        if ((groupID = _GetGroupID(ecType)) == MBEDTLS_ECP_DP_NONE)
+            OE_RAISE(OE_FAILURE);
+
+        if (!(info = mbedtls_ecp_curve_info_from_grp_id(groupID)))
             OE_RAISE(OE_INVALID_PARAMETER);
 
         curve = info->grp_id;
     }
 
     /* Get the drbg object */
-    if (!(drbg = OE_MBEDTLS_GetDrbg()))
+    if (!(drbg = oe_mbedtls_get_drbg()))
         OE_RAISE(OE_FAILURE);
 
     /* Create key struct */
     if (mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_FAILURE);
 
     /* Generate the EC key */
     if (mbedtls_ecp_gen_key(
             curve, mbedtls_pk_ec(pk), mbedtls_ctr_drbg_random, drbg) != 0)
     {
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_FAILURE);
     }
 
     /* Initialize the private key parameter */
-    OE_CHECK(OE_PrivateKeyInit(privateKey, &pk, _CopyKey, _PRIVATE_KEY_MAGIC));
+    OE_CHECK(
+        oe_private_key_init(privateKey, &pk, _CopyKey, _PRIVATE_KEY_MAGIC));
 
     /* Initialize the public key parameter */
-    OE_CHECK(OE_PublicKeyInit(publicKey, &pk, _CopyKey, _PUBLIC_KEY_MAGIC));
+    OE_CHECK(oe_public_key_init(publicKey, &pk, _CopyKey, _PUBLIC_KEY_MAGIC));
 
     result = OE_OK;
 
@@ -151,89 +150,26 @@ done:
 
     if (result != OE_OK)
     {
-        OE_PrivateKeyFree(privateKey, _PRIVATE_KEY_MAGIC);
-        OE_PublicKeyFree(publicKey, _PUBLIC_KEY_MAGIC);
+        oe_private_key_free(privateKey, _PRIVATE_KEY_MAGIC);
+        oe_public_key_free(publicKey, _PUBLIC_KEY_MAGIC);
     }
 
     return result;
 }
 
-static OE_Result OE_PublicKeyGetKeyBytes(
-    const OE_PublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize)
-{
-    OE_Result result = OE_UNEXPECTED;
-
-    /* Check for invalid parameters */
-    if (!publicKey || !bufferSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If buffer is null, then bufferSize should be zero */
-    if (!buffer && *bufferSize != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Convert public EC key to binary */
-    {
-        const mbedtls_ecp_keypair* ec = mbedtls_pk_ec(publicKey->pk);
-        uint8_t scratch[1];
-        uint8_t* data;
-        size_t size;
-        size_t requiredSize;
-
-        if (!ec)
-            OE_RAISE(OE_FAILURE);
-
-        if (buffer == NULL || *bufferSize == 0)
-        {
-            // mbedtls_ecp_point_write_binary() needs a non-null buffer longer
-            // than zero to correctly calculate the required buffer size.
-            data = scratch;
-            size = 1;
-        }
-        else
-        {
-            data = buffer;
-            size = *bufferSize;
-        }
-
-        int r = mbedtls_ecp_point_write_binary(
-            &ec->grp,
-            &ec->Q,
-            MBEDTLS_ECP_PF_UNCOMPRESSED,
-            &requiredSize,
-            data,
-            size);
-
-        *bufferSize = requiredSize;
-
-        if (r == MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL)
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-
-        if (r != 0)
-            OE_RAISE(OE_FAILURE);
-    }
-
-    result = OE_OK;
-
-done:
-
-    return result;
-}
-
-static OE_Result OE_PublicKeyEqual(
-    const OE_PublicKey* publicKey1,
-    const OE_PublicKey* publicKey2,
+static oe_result_t oe_public_key_equal(
+    const oe_public_key_t* publicKey1,
+    const oe_public_key_t* publicKey2,
     bool* equal)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (equal)
         *equal = false;
 
     /* Reject bad parameters */
-    if (!OE_PublicKeyIsValid(publicKey1, _PUBLIC_KEY_MAGIC) ||
-        !OE_PublicKeyIsValid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!oe_public_key_is_valid(publicKey1, _PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare the groups and EC points */
@@ -257,78 +193,85 @@ done:
     return result;
 }
 
-OE_Result OE_ECPublicKeyInit(
-    OE_ECPublicKey* publicKey,
+oe_result_t oe_ec_public_key_init(
+    oe_ec_public_key_t* publicKey,
     const mbedtls_pk_context* pk)
 {
-    return OE_PublicKeyInit(
-        (OE_PublicKey*)publicKey, pk, _CopyKey, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_init(
+        (oe_public_key_t*)publicKey, pk, _CopyKey, _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECPrivateKeyReadPEM(
+oe_result_t oe_ec_private_key_read_pem(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_ECPrivateKey* privateKey)
+    oe_ec_private_key_t* privateKey)
 {
-    return OE_PrivateKeyReadPEM(
+    return oe_private_key_read_pem(
         pemData,
         pemSize,
-        (OE_PrivateKey*)privateKey,
+        (oe_private_key_t*)privateKey,
         MBEDTLS_PK_ECKEY,
         _PRIVATE_KEY_MAGIC);
 }
 
-OE_Result OE_ECPrivateKeyWritePEM(
-    const OE_ECPrivateKey* privateKey,
+oe_result_t oe_ec_private_key_write_pem(
+    const oe_ec_private_key_t* privateKey,
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return OE_PrivateKeyWritePEM(
-        (const OE_PrivateKey*)privateKey, pemData, pemSize, _PRIVATE_KEY_MAGIC);
-}
-
-OE_Result OE_ECPublicKeyReadPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_ECPublicKey* privateKey)
-{
-    return OE_PublicKeyReadPEM(
+    return oe_private_key_write_pem(
+        (const oe_private_key_t*)privateKey,
         pemData,
         pemSize,
-        (OE_PublicKey*)privateKey,
+        _PRIVATE_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_public_key_read_pem(
+    const uint8_t* pemData,
+    size_t pemSize,
+    oe_ec_public_key_t* privateKey)
+{
+    return oe_public_key_read_pem(
+        pemData,
+        pemSize,
+        (oe_public_key_t*)privateKey,
         MBEDTLS_PK_ECKEY,
         _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECPublicKeyWritePEM(
-    const OE_ECPublicKey* privateKey,
+oe_result_t oe_ec_public_key_write_pem(
+    const oe_ec_public_key_t* privateKey,
     uint8_t* pemData,
     size_t* pemSize)
 {
-    return OE_PublicKeyWritePEM(
-        (const OE_PublicKey*)privateKey, pemData, pemSize, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_write_pem(
+        (const oe_public_key_t*)privateKey,
+        pemData,
+        pemSize,
+        _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey)
+oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* privateKey)
 {
-    return OE_PrivateKeyFree((OE_PrivateKey*)privateKey, _PRIVATE_KEY_MAGIC);
+    return oe_private_key_free(
+        (oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
 }
 
-OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey)
+oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* publicKey)
 {
-    return OE_PublicKeyFree((OE_PublicKey*)publicKey, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_free((oe_public_key_t*)publicKey, _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECPrivateKeySign(
-    const OE_ECPrivateKey* privateKey,
-    OE_HashType hashType,
+oe_result_t oe_ec_private_key_sign(
+    const oe_ec_private_key_t* privateKey,
+    oe_hash_type_t hashType,
     const void* hashData,
     size_t hashSize,
     uint8_t* signature,
     size_t* signatureSize)
 {
-    return OE_PrivateKeySign(
-        (OE_PrivateKey*)privateKey,
+    return oe_private_key_sign(
+        (oe_private_key_t*)privateKey,
         hashType,
         hashData,
         hashSize,
@@ -337,16 +280,16 @@ OE_Result OE_ECPrivateKeySign(
         _PRIVATE_KEY_MAGIC);
 }
 
-OE_Result OE_ECPublicKeyVerify(
-    const OE_ECPublicKey* publicKey,
-    OE_HashType hashType,
+oe_result_t oe_ec_public_key_verify(
+    const oe_ec_public_key_t* publicKey,
+    oe_hash_type_t hashType,
     const void* hashData,
     size_t hashSize,
     const uint8_t* signature,
     size_t signatureSize)
 {
-    return OE_PublicKeyVerify(
-        (OE_PublicKey*)publicKey,
+    return oe_public_key_verify(
+        (oe_public_key_t*)publicKey,
         hashType,
         hashData,
         hashSize,
@@ -355,29 +298,177 @@ OE_Result OE_ECPublicKeyVerify(
         _PUBLIC_KEY_MAGIC);
 }
 
-OE_Result OE_ECGenerateKeyPair(
-    OE_ECType type,
-    OE_ECPrivateKey* privateKey,
-    OE_ECPublicKey* publicKey)
+oe_result_t oe_ec_generate_key_pair(
+    oe_ec_type_t type,
+    oe_ec_private_key_t* privateKey,
+    oe_ec_public_key_t* publicKey)
 {
     return _GenerateKeyPair(
-        type, (OE_PrivateKey*)privateKey, (OE_PublicKey*)publicKey);
+        type, (oe_private_key_t*)privateKey, (oe_public_key_t*)publicKey);
 }
 
-OE_Result OE_ECPublicKeyGetKeyBytes(
-    const OE_ECPublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize)
-{
-    return OE_PublicKeyGetKeyBytes(
-        (OE_PublicKey*)publicKey, buffer, bufferSize);
-}
-
-OE_Result OE_ECPublicKeyEqual(
-    const OE_ECPublicKey* publicKey1,
-    const OE_ECPublicKey* publicKey2,
+oe_result_t oe_ec_public_key_equal(
+    const oe_ec_public_key_t* publicKey1,
+    const oe_ec_public_key_t* publicKey2,
     bool* equal)
 {
-    return OE_PublicKeyEqual(
-        (OE_PublicKey*)publicKey1, (OE_PublicKey*)publicKey2, equal);
+    return oe_public_key_equal(
+        (oe_public_key_t*)publicKey1, (oe_public_key_t*)publicKey2, equal);
+}
+
+oe_result_t oe_ec_public_key_from_coordinates(
+    oe_ec_public_key_t* publicKey,
+    oe_ec_type_t ecType,
+    const uint8_t* xData,
+    size_t xSize,
+    const uint8_t* yData,
+    size_t ySize)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_public_key_t* impl = (oe_public_key_t*)publicKey;
+    const mbedtls_pk_info_t* info;
+
+    if (publicKey)
+        oe_memset(publicKey, 0, sizeof(oe_ec_public_key_t));
+
+    if (impl)
+        mbedtls_pk_init(&impl->pk);
+
+    /* Reject invalid parameters */
+    if (!publicKey || !xData || !xSize || !yData || !ySize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Lookup the info for this key type */
+    if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)))
+        OE_RAISE(OE_WRONG_TYPE);
+
+    /* Setup the context for this key type */
+    if (mbedtls_pk_setup(&impl->pk, info) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Initialize the key */
+    {
+        mbedtls_ecp_keypair* ecp = mbedtls_pk_ec(impl->pk);
+        mbedtls_ecp_group_id groupID;
+
+        if ((groupID = _GetGroupID(ecType)) == MBEDTLS_ECP_DP_NONE)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_ecp_group_load(&ecp->grp, groupID) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_mpi_read_binary(&ecp->Q.X, xData, xSize) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        if (mbedtls_mpi_read_binary(&ecp->Q.Y, yData, ySize) != 0)
+            OE_RAISE(OE_FAILURE);
+
+        // Used internally by MBEDTLS. Set Z to 1 to indicate that X-Y
+        // represents a standard coordinate point. Zero indicates that the
+        // point is zero or infinite, and values >= 2 have internal meaning
+        // only to MBEDTLS.
+        if (mbedtls_mpi_lset(&ecp->Q.Z, 1) != 0)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    /* Set the magic number */
+    impl->magic = _PUBLIC_KEY_MAGIC;
+
+    result = OE_OK;
+
+done:
+
+    if (result != OE_OK && impl)
+        mbedtls_pk_free(&impl->pk);
+
+    return result;
+}
+
+oe_result_t oe_ecdsa_signature_write_der(
+    unsigned char* signature,
+    size_t* signatureSize,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    mbedtls_mpi r;
+    mbedtls_mpi s;
+    unsigned char buf[MBEDTLS_ECDSA_MAX_LEN];
+    unsigned char* p = buf + sizeof(buf);
+    int n;
+    size_t len = 0;
+
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&s);
+
+    /* Reject invalid parameters */
+    if (!signatureSize || !rData || !rSize || !sData || !sSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If signature is null, then signatureSize must be zero */
+    if (!signature && *signatureSize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Convert raw R data to big number */
+    if (mbedtls_mpi_read_binary(&r, rData, rSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert raw S data to big number */
+    if (mbedtls_mpi_read_binary(&s, sData, sSize) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Write S to ASN.1 */
+    {
+        if ((n = mbedtls_asn1_write_mpi(&p, buf, &s)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
+
+    /* Write R to ASN.1 */
+    {
+        if ((n = mbedtls_asn1_write_mpi(&p, buf, &r)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
+
+    /* Write the length to ASN.1 */
+    {
+        if ((n = mbedtls_asn1_write_len(&p, buf, len)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
+
+    /* Write the tag to ASN.1 */
+    {
+        unsigned char tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
+
+        if ((n = mbedtls_asn1_write_tag(&p, buf, tag)) < 0)
+            OE_RAISE(OE_FAILURE);
+
+        len += n;
+    }
+
+    /* Check that buffer is big enough */
+    if (len > *signatureSize)
+    {
+        *signatureSize = len;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    oe_memcpy(signature, p, len);
+    *signatureSize = len;
+
+    result = OE_OK;
+
+done:
+
+    mbedtls_mpi_free(&r);
+    mbedtls_mpi_free(&s);
+
+    return result;
 }

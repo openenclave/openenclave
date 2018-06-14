@@ -4,9 +4,9 @@
 #ifndef _OE_HOST_ENCLAVE_H
 #define _OE_HOST_ENCLAVE_H
 
-#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/properties.h>
 #include <openenclave/host.h>
-#include <openenclave/properties.h>
+#include <openenclave/internal/sgxtypes.h>
 #include <stdbool.h>
 #include "asmdefs.h"
 #include "hostthread.h"
@@ -65,7 +65,7 @@ typedef struct _ThreadBinding
     uint64_t tcs;
 
     /* The thread this slot is assigned to */
-    OE_H_Thread thread;
+    oe_thread thread;
 
     /* Flags */
     uint64_t flags;
@@ -88,7 +88,7 @@ OE_STATIC_ASSERT(OE_OFFSETOF(ThreadBinding, tcs) == ThreadBinding_tcs);
 /* Get thread data from thread-specific data (TSD) */
 ThreadBinding* GetThreadBinding(void);
 
-struct _OE_Enclave
+struct _oe_enclave
 {
     /* A "magic number" to validate structure */
     uint64_t magic;
@@ -108,7 +108,7 @@ struct _OE_Enclave
     /* Array of thread bindings */
     ThreadBinding bindings[OE_SGX_MAX_TCS];
     size_t num_bindings;
-    OE_H_Mutex lock;
+    oe_mutex lock;
 
     /* Hash of enclave (MRENCLAVE) */
     OE_SHA256 hash;
@@ -125,9 +125,9 @@ struct _OE_Enclave
 };
 
 /* Get the event for the given TCS */
-EnclaveEvent* GetEnclaveEvent(OE_Enclave* enclave, uint64_t tcs);
+EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
 
 /* Initialize the exception processing. */
-void _OE_InitializeHostException(void);
+void _oe_initialize_host_exception(void);
 
 #endif /* _OE_HOST_ENCLAVE_H */

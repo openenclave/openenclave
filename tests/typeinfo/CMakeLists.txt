@@ -10,6 +10,6 @@ add_executable(typeinfo
     )
 
 target_include_directories(typeinfo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(typeinfo oehost)
+target_link_libraries(typeinfo oeidl oehost)
 
 add_test(tests/typeinfo typeinfo)

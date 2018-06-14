@@ -8,12 +8,12 @@
   to this file. If added, the tests will fail because of
   additional prints in enclave log, which won't be there in
   system generated log. For more details please refer
-  Readme.md file
+  README.md file
 */
 
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/tests.h>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
@@ -24,7 +24,7 @@ extern "C" int main(int argc, const char* argv[]);
 
 extern "C" void _exit(int status)
 {
-    OE_OCall(OCALL_EXIT, status, NULL, 0);
+    oe_ocall(OCALL_EXIT, status, NULL, 0);
     abort();
 }
 
@@ -64,6 +64,6 @@ OE_ECALL void Test(Args* args)
         };
         static int argc = sizeof(argv) / sizeof(argv[0]);
         args->ret = main(argc, argv);
-        args->test = OE_HostStrdup(__TEST__NAME);
+        args->test = oe_host_strdup(__TEST__NAME);
     }
 }

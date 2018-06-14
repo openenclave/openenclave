@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/globals.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/fault.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/tests.h>
 #include "../args.h"
 
 OE_ECALL void Test2(void* args_)
@@ -23,22 +23,22 @@ OE_ECALL void Test4(void* args)
     unsigned char buf[32];
 
     /* Call into host with enclave memory */
-    OE_Memset(buf, 0xAA, sizeof(buf));
+    oe_memset(buf, 0xAA, sizeof(buf));
 
-    if (OE_CallHost("Func2", buf) != OE_OK)
+    if (oe_call_host("Func2", buf) != OE_OK)
     {
-        OE_Abort();
+        oe_abort();
         return;
     }
 }
 
-static OE_OnceType _once = OE_ONCE_INITIALIZER;
-static OE_ThreadKey _key = OE_THREADKEY_INITIALIZER;
+static oe_once_t _once = OE_ONCE_INITIALIZER;
+static oe_thread_key_t _key = OE_THREADKEY_INITIALIZER;
 
 static void _init()
 {
-    if (OE_ThreadKeyCreate(&_key, NULL) != 0)
-        OE_Abort();
+    if (oe_thread_key_create(&_key, NULL) != 0)
+        oe_abort();
 }
 
 OE_ECALL void SetTSD(void* args_)
@@ -46,17 +46,17 @@ OE_ECALL void SetTSD(void* args_)
     SetTSDArgs* args = (SetTSDArgs*)args_;
 
     if (!args)
-        OE_Abort();
+        oe_abort();
 
     /* Initialize this the first time */
-    if (OE_Once(&_once, _init) != 0)
+    if (oe_once(&_once, _init) != 0)
     {
         args->ret = -1;
         return;
     }
 
     /* Set the thread-specific data */
-    if (OE_ThreadSetSpecific(_key, args->value) != 0)
+    if (oe_thread_set_specific(_key, args->value) != 0)
     {
         args->ret = -1;
         return;
@@ -70,9 +70,9 @@ OE_ECALL void GetTSD(void* args_)
     GetTSDArgs* args = (GetTSDArgs*)args_;
 
     if (!args)
-        OE_Abort();
+        oe_abort();
 
-    args->value = OE_ThreadGetSpecific(_key);
+    args->value = oe_thread_get_specific(_key);
     args->ret = 0;
 }
 
@@ -82,7 +82,7 @@ OE_ECALL void TestMyOCall(void* args_)
 
     if (args)
     {
-        OE_Result result = OE_OCall(0, 1000, &args->result, 0);
+        oe_result_t result = oe_ocall(0, 1000, &args->result, 0);
         OE_TEST(result == OE_OK);
     }
 }

@@ -5,15 +5,15 @@
 #define _OE_ENCLAVE_RSA_H
 
 #include <mbedtls/pk.h>
-#include <openenclave/bits/rsa.h>
+#include <openenclave/internal/rsa.h>
 
-OE_INLINE bool OE_IsRSAKey(const mbedtls_pk_context* pk)
+OE_INLINE bool oe_is_rsa_key(const mbedtls_pk_context* pk)
 {
     return (pk->pk_info == mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
 }
 
-OE_Result OE_RSAPublicKeyInit(
-    OE_RSAPublicKey* publicKey,
+oe_result_t oe_rsa_public_key_init(
+    oe_rsa_public_key_t* publicKey,
     const mbedtls_pk_context* pk);
 
 #endif /* _OE_ENCLAVE_RSA_H */

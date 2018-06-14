@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/tests.h>
 #include "../args.h"
 
 /* Randomly generated data */
@@ -133,8 +133,8 @@ static const char _hexstr[2 * DATA_SIZE + 1] =
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     /* Check command-line argument count */
     if (argc != 2)
@@ -144,9 +144,9 @@ int main(int argc, const char* argv[])
     }
 
     /* Create the enclave */
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
     OE_TEST(
-        (result = OE_CreateEnclave(
+        (result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) == OE_OK);
 
     /* Check buffer sizes */
@@ -156,31 +156,31 @@ int main(int argc, const char* argv[])
         OE_TEST(sizeof(args.hexstr) == sizeof(_hexstr));
     }
 
-    /* Test enclave version of OE_HexString() */
+    /* Test enclave version of oe_hex_string() */
     {
         Args args;
         memcpy(args.data, _data, sizeof(args.data));
         args.ret = -1;
 
-        OE_TEST((result = OE_CallEnclave(enclave, "Test", &args)) == OE_OK);
+        OE_TEST((result = oe_call_enclave(enclave, "Test", &args)) == OE_OK);
         OE_TEST(args.ret == 0);
         OE_TEST(strcmp(args.hexstr, _hexstr) == 0);
     }
 
-    /* Test host version of OE_HexString() */
+    /* Test host version of oe_hex_string() */
     {
         unsigned char data[DATA_SIZE];
         char hexstr[2 * DATA_SIZE + 1];
         memcpy(data, _data, sizeof(data));
 
-        OE_TEST(OE_HexString(hexstr, sizeof(hexstr), data, sizeof(data)));
+        OE_TEST(oe_hex_string(hexstr, sizeof(hexstr), data, sizeof(data)));
         OE_TEST(strcmp(hexstr, _hexstr) == 0);
 
-        OE_HexDump(_data, DATA_SIZE);
+        oe_hex_dump(_data, DATA_SIZE);
     }
 
     /* Terminate the test enclave */
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (hexdump)\n");
 

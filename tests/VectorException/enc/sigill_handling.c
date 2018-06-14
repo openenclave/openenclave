@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/cpuid.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/cpuid.h>
+#include <openenclave/internal/print.h>
 #include "../args.h"
 
 #include "../../../host/linux/cpuid_count.c"
@@ -22,7 +23,7 @@ static volatile enum {
 } g_handledSigill;
 
 // 2nd-chance exception handler to continue on test triggered exceptions
-uint64_t TestSigillHandler(OE_EXCEPTION_RECORD* exception)
+uint64_t TestSigillHandler(oe_exception_record_t* exception)
 {
     if (exception->code == OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {
@@ -66,27 +67,27 @@ bool TestGetsecInstruction()
     // Verify that unused variables are untouched on continue
     if (r1 != c_r1 || r2 != c_r2)
     {
-        OE_HostPrintf(
+        oe_host_printf(
             "TestGetsecInstruction stack parameters were corrupted.\n");
         return false;
     }
     else
     {
-        OE_HostPrintf("TestGetsecInstruction stack parameters are ok.\n");
+        oe_host_printf("TestGetsecInstruction stack parameters are ok.\n");
     }
 
     // Verify that illegal instruction was handled by test handler, not by
     // default
     if (g_handledSigill != HANDLED_SIGILL_GETSEC)
     {
-        OE_HostPrintf(
+        oe_host_printf(
             "%d Illegal GETSEC did not raise 2nd chance exception.\n",
             g_handledSigill);
         return false;
     }
     else
     {
-        OE_HostPrintf("Success-Illegal GETSEC raised 2nd chance exception.\n");
+        oe_host_printf("Success-Illegal GETSEC raised 2nd chance exception.\n");
         return true;
     }
 }
@@ -112,14 +113,14 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
     {
-        OE_HostPrintf(
+        oe_host_printf(
             "Unsupported CPUID leaf %x did not raise 2nd chance exception.\n",
             leaf);
         return false;
     }
     else
     {
-        OE_HostPrintf(
+        oe_host_printf(
             "Success-Unsupported CPUID leaf %x raised 2nd chance exception.\n",
             leaf);
         return true;
@@ -129,19 +130,21 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 OE_ECALL void TestSigillHandling(void* args_)
 {
     TestSigillHandlingArgs* args = (TestSigillHandlingArgs*)args_;
+    oe_result_t result;
+
     args->ret = -1;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(TestSigillHandlingArgs)))
+    if (!oe_is_outside_enclave(args, sizeof(TestSigillHandlingArgs)))
     {
-        OE_HostPrintf("TestSigillHandlingArgs failed bounds check.\n");
+        oe_host_printf("TestSigillHandlingArgs failed bounds check.\n");
         return;
     }
 
     // Register the sigill handler to catch test triggered exceptions
-    void* handler = OE_AddVectoredExceptionHandler(0, TestSigillHandler);
-    if (handler == NULL)
+    result = oe_add_vectored_exception_handler(false, TestSigillHandler);
+    if (result != OE_OK)
     {
-        OE_HostPrintf("Failed to register TestSigillHandler.\n");
+        oe_host_printf("Failed to register TestSigillHandler.\n");
         return;
     }
 
@@ -175,19 +178,19 @@ OE_ECALL void TestSigillHandling(void* args_)
 
         if (!supported)
         {
-            OE_HostPrintf("Unsupported CPUID leaf %d requested.\n", i);
+            oe_host_printf("Unsupported CPUID leaf %d requested.\n", i);
             return;
         }
     }
 
     // Clean up sigill handler
-    if (OE_RemoveVectoredExceptionHandler(handler) != 0)
+    if (oe_remove_vectored_exception_handler(TestSigillHandler) != OE_OK)
     {
-        OE_HostPrintf("Failed to unregister TestSigillHandler.\n");
+        oe_host_printf("Failed to unregister TestSigillHandler.\n");
         return;
     }
 
-    OE_HostPrintf("TestSigillHandling: completed successfully.\n");
+    oe_host_printf("TestSigillHandling: completed successfully.\n");
     args->ret = 0;
 
     return;

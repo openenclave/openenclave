@@ -9,11 +9,11 @@ int HostUnsecureStrPatching(const char* src, char* dst, int dstLength);
 
 int SecureStrPatching(const char* src, char* dst, int dstLength)
 {
-    if (!OE_IsOutsideEnclave(dst, dstLength))
+    if (!oe_is_outside_enclave(dst, dstLength))
     {
         return -1;
     }
-    if (!OE_IsOutsideEnclave(src, 1))
+    if (!oe_is_outside_enclave(src, 1))
     {
         return -1;
     }
@@ -25,7 +25,7 @@ int SecureStrPatching(const char* src, char* dst, int dstLength)
         runningLength--;
         runningSrc++;
         dst++;
-        if (!OE_IsOutsideEnclave(runningSrc, 1))
+        if (!oe_is_outside_enclave(runningSrc, 1))
         {
             return -1;
         }

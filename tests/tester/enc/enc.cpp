@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/typeinfo.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/typeinfo.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -114,18 +114,18 @@ OE_EXTERNC char* TestStrdup(const char* s)
 
 OE_EXTERNC int CopyObject(struct Object* dest, const struct Object* src)
 {
-    OE_Result r;
+    oe_result_t r;
 
     if (!dest || !src)
         return -1;
 
-    r = OE_DestroyStruct(&Object_ti, dest, free);
+    r = oe_destroy_struct(&Object_ti, dest, free);
     if (r != OE_OK)
         return -1;
 
     memset(dest, 0, sizeof(Object));
 
-    r = OE_CopyStruct(&Object_ti, src, dest, malloc);
+    r = oe_copy_struct(&Object_ti, src, dest, malloc);
     if (r != OE_OK)
         return -1;
 
@@ -173,14 +173,14 @@ OE_EXTERNC int32_t ECALL_MultipleParams(
         return -1;
 
 #if 0
-    OE_PrintStruct(&Object_ti, objectIn);
+    oe_print_struct(&Object_ti, objectIn);
 #endif
 
     if (objectRefOut)
     {
 #if 0
         if (*objectRefOut)
-            OE_PrintStruct(&Object_ti, *objectRefOut);
+            oe_print_struct(&Object_ti, *objectRefOut);
 #endif
         *objectRefOut = _MakeObject("O10", 10);
     }
@@ -249,10 +249,10 @@ OE_EXTERNC int* ReturnIntPtr(int* p, size_t n)
         return NULL;
 
 #if 0
-    OE_Printf("ReturnIntPtr(p=%p, n=%zu)\n", p, n);
+    oe_printf("ReturnIntPtr(p=%p, n=%zu)\n", p, n);
 
     for (size_t i = 0; i < n; i++)
-        OE_Printf("ELEM{%d}\n", p[i]);
+        oe_printf("ELEM{%d}\n", p[i]);
 #endif
 
     int* ret = (int*)malloc(n * sizeof(int));

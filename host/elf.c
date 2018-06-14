@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <ctype.h>
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/load.h>
-#include <openenclave/bits/mem.h>
-#include <openenclave/bits/utils.h>
+#include <openenclave/internal/elf.h>
+#include <openenclave/internal/load.h>
+#include <openenclave/internal/mem.h>
+#include <openenclave/internal/utils.h>
 #include <stdio.h>
 #include <string.h>
 #include "fopen.h"
@@ -69,7 +69,7 @@ void* Elf64_GetSegment(const Elf64* elf, size_t index)
 
 Elf64_Shdr* Elf64_GetSectionHeader(const Elf64* elf, size_t index)
 {
-    if (!_Ok(elf) || index >= _GetHeader(elf)->e_phnum)
+    if (!_Ok(elf) || index >= _GetHeader(elf)->e_shnum)
         return NULL;
 
     return _GetShdr(elf, index);
@@ -77,7 +77,7 @@ Elf64_Shdr* Elf64_GetSectionHeader(const Elf64* elf, size_t index)
 
 Elf64_Phdr* Elf64_GetProgramHeader(const Elf64* elf, size_t index)
 {
-    if (!_Ok(elf) || index >= _GetHeader(elf)->e_shnum)
+    if (!_Ok(elf) || index >= _GetHeader(elf)->e_phnum)
         return NULL;
 
     return _GetPhdr(elf, index);
@@ -165,7 +165,7 @@ int Elf64_Load(const char* path, Elf64* elf)
         goto done;
 
     /* Open input file */
-    if (OE_Fopen(&is, path, "rb") != 0)
+    if (oe_fopen(&is, path, "rb") != 0)
         goto done;
 
     /* Get the size of this file */
@@ -691,9 +691,9 @@ void Elf64_DumpHeader(const Elf64_Ehdr* h)
     }
 
     printf("e_version=%u\n", h->e_version);
-    printf("e_entry=%llx\n", h->e_entry);
-    printf("e_phoff=%llu\n", h->e_phoff);
-    printf("e_shoff=%llu\n", h->e_shoff);
+    printf("e_entry=%llx\n", OE_LLX(h->e_entry));
+    printf("e_phoff=%llu\n", OE_LLU(h->e_phoff));
+    printf("e_shoff=%llu\n", OE_LLU(h->e_shoff));
     printf("e_flags=%u\n", h->e_flags);
     printf("e_ehsize=%u\n", h->e_ehsize);
     printf("e_phentsize=%u\n", h->e_phentsize);
@@ -745,13 +745,13 @@ void Elf64_DumpShdr(const Elf64_Shdr* sh, size_t index)
         printf("\n");
     }
 
-    printf("sh_addr=%llu\n", sh->sh_addr);
-    printf("sh_offset=%llu\n", sh->sh_offset);
-    printf("sh_size=%llu\n", sh->sh_size);
+    printf("sh_addr=%llu\n", OE_LLU(sh->sh_addr));
+    printf("sh_offset=%llu\n", OE_LLU(sh->sh_offset));
+    printf("sh_size=%llu\n", OE_LLU(sh->sh_size));
     printf("sh_link=%u\n", sh->sh_link);
     printf("sh_info=%u\n", sh->sh_info);
-    printf("sh_addralign=%llu\n", sh->sh_addralign);
-    printf("sh_entsize=%llu\n", sh->sh_entsize);
+    printf("sh_addralign=%llu\n", OE_LLU(sh->sh_addralign));
+    printf("sh_entsize=%llu\n", OE_LLU(sh->sh_entsize));
     printf("\n");
 }
 
@@ -798,8 +798,8 @@ int Elf64_DumpSections(const Elf64* elf)
             "[%03zu] %-24s %016llx %016llx ",
             i,
             name,
-            sh->sh_offset,
-            sh->sh_size);
+            OE_LLX(sh->sh_offset),
+            OE_LLX(sh->sh_size));
 
         if (segment == (size_t)-1)
             printf("[???]\n");
@@ -897,12 +897,13 @@ static void _DumpPhdr(const Elf64_Phdr* ph, size_t index)
         printf("\n");
     }
 
-    printf("p_offset=%llu %016llx\n", ph->p_offset, ph->p_offset);
-    printf("p_vaddr=%llu %016llx\n", ph->p_vaddr, ph->p_vaddr);
-    printf("p_paddr=%llu\n", ph->p_paddr);
-    printf("p_filesz=%llu\n", ph->p_filesz);
-    printf("p_memsz=%llu\n", ph->p_memsz);
-    printf("p_align=%llu\n", ph->p_align);
+    printf(
+        "p_offset=%llu %016llx\n", OE_LLU(ph->p_offset), OE_LLX(ph->p_offset));
+    printf("p_vaddr=%llu %016llx\n", OE_LLU(ph->p_vaddr), OE_LLU(ph->p_vaddr));
+    printf("p_paddr=%llu\n", OE_LLU(ph->p_paddr));
+    printf("p_filesz=%llu\n", OE_LLU(ph->p_filesz));
+    printf("p_memsz=%llu\n", OE_LLU(ph->p_memsz));
+    printf("p_align=%llu\n", OE_LLU(ph->p_align));
     printf("\n");
 }
 
@@ -994,8 +995,8 @@ void Elf64_DumpSymbol(const Elf64* elf, const Elf64_Sym* sym)
 
     printf("st_shndx(%u)=%s\n", sym->st_shndx, secname);
 
-    printf("st_value=%016llx\n", sym->st_value);
-    printf("st_size=%llu\n", sym->st_size);
+    printf("st_value=%016llx\n", OE_LLX(sym->st_value));
+    printf("st_size=%llu\n", OE_LLU(sym->st_size));
     printf("\n");
 }
 
@@ -1361,14 +1362,14 @@ int Elf64_AddSection(
 
         /* Calculate number of bytes to be inserted */
         size_t namesize =
-            OE_RoundUpToMultiple(strlen(name) + 1, sizeof(Elf64_Shdr));
+            oe_round_up_to_multiple(strlen(name) + 1, sizeof(Elf64_Shdr));
 
         /* Insert space for the new name */
         if (mem_insert(&mem, nameoffset, NULL, namesize) != 0)
             GOTO(done);
 
         /* Copy the section name to the .shstrtab section */
-        OE_Strlcat((char*)elf->data + nameoffset, name, namesize);
+        oe_strlcat((char*)elf->data + nameoffset, name, namesize);
 
         /* Reset ELF object based on updated memory */
         if (_ResetBuffer(elf, &mem, nameoffset, namesize) != 0)
@@ -1581,7 +1582,7 @@ int Elf64_LoadRelocations(const Elf64* elf, void** dataOut, size_t* sizeOut)
 
     /* Make a copy of the relocation section (zero-padded to page size) */
     {
-        *sizeOut = __OE_RoundUpToPageSize(size);
+        *sizeOut = __oe_round_up_to_page_size(size);
 
         if (!(*dataOut = malloc(*sizeOut)))
         {

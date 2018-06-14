@@ -4,7 +4,7 @@
 #ifndef _RUNTEST_OCALLS_H
 #define _RUNTEST_OCALLS_H
 
-#include <openenclave/types.h>
+#include <openenclave/bits/types.h>
 
 OE_EXTERNC_BEGIN
 

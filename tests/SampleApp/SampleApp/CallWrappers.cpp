@@ -3,7 +3,7 @@
 
 #include <openenclave/enclave.h>
 
-#define __OE_DebugBreak()
+#define __oe_debug_break()
 
 int SecureStrPatching(const char* src, char* dst, int dstLength);
 
@@ -15,9 +15,9 @@ struct SecureStrPatchingARGS
     int ret;
 };
 
-OE_ECALL OE_Result SecureStrPatching(void* data)
+OE_ECALL oe_result_t SecureStrPatching(void* data)
 {
-    if (!OE_IsOutsideEnclave(data, sizeof(SecureStrPatchingARGS)))
+    if (!oe_is_outside_enclave(data, sizeof(SecureStrPatchingARGS)))
         return OE_FAILURE;
 
     SecureStrPatchingARGS* args = (SecureStrPatchingARGS*)data;
@@ -29,18 +29,19 @@ int HostUnsecureStrPatching(const char* src, char* dst, int dstLength)
 {
     SecureStrPatchingARGS* args;
 
-    args = (SecureStrPatchingARGS*)OE_HostMalloc(sizeof(SecureStrPatchingARGS));
+    args =
+        (SecureStrPatchingARGS*)oe_host_malloc(sizeof(SecureStrPatchingARGS));
     if (args == NULL)
     {
-        __OE_DebugBreak();
+        __oe_debug_break();
     }
     args->dst = dst;
     args->src = src;
     args->dstLength = dstLength;
-    if (OE_CallHost("UnsecureStrPatching", args) != OE_OK)
+    if (oe_call_host("UnsecureStrPatching", args) != OE_OK)
     {
-        __OE_DebugBreak();
+        __oe_debug_break();
     }
-    OE_HostFree(args);
+    oe_host_free(args);
     return 0;
 }

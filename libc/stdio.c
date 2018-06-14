@@ -3,10 +3,10 @@
 
 #define _GNU_SOURCE
 #include <assert.h>
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/print.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,12 +18,12 @@ FILE* const stderr = ((FILE*)0x30000000);
 
 int puts(const char* str)
 {
-    return __OE_HostPuts(str);
+    return __oe_host_puts(str);
 }
 
 int putchar(int c)
 {
-    return __OE_HostPutchar(c);
+    return __oe_host_putchar(c);
 }
 
 int vprintf(const char* fmt, va_list ap_)
@@ -52,7 +52,7 @@ int vprintf(const char* fmt, va_list ap_)
         va_end(ap);
     }
 
-    __OE_HostPrint(0, p, (size_t)-1);
+    __oe_host_print(0, p, (size_t)-1);
 
     return n;
 }
@@ -100,7 +100,7 @@ int fprintf(FILE* stream, const char* fmt, ...)
     buf[sizeof(buf) - 1] = 0;
     if (n > sizeof(buf))
         n = sizeof(buf);
-    __OE_HostPrint(device, buf, n);
+    __oe_host_print(device, buf, n);
     return n;
 }
 
@@ -144,13 +144,13 @@ size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)
     if (stream == stdout)
     {
         /* Write to standard output device */
-        __OE_HostPrint(0, ptr, size * nmemb);
+        __oe_host_print(0, ptr, size * nmemb);
         return nmemb;
     }
     else if (stream == stderr)
     {
         /* Write to standard error device */
-        __OE_HostPrint(1, ptr, size * nmemb);
+        __oe_host_print(1, ptr, size * nmemb);
         return nmemb;
     }
     else if (size && nmemb)

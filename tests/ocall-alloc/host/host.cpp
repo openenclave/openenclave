@@ -1,20 +1,20 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/error.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/tests.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include "../args.h"
 
-static OE_Enclave* enclave;
+static oe_enclave_t* enclave;
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
+    oe_result_t result;
 
     if (argc != 2)
     {
@@ -22,25 +22,25 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
 
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_put_err("oe_create_enclave(): result=%u", result);
         return 1;
     }
 
     /* Invoke tests */
     {
-        OE_Result res = OE_FAILURE;
+        oe_result_t res = OE_FAILURE;
 
-        result = OE_CallEnclave(enclave, "TestAllocaDealloc", &res);
+        result = oe_call_enclave(enclave, "TestAllocaDealloc", &res);
         OE_TEST(result == OE_OK);
         OE_TEST(res == OE_OK);
     }
 
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (%s)\n", argv[0]);
 

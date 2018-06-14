@@ -53,8 +53,8 @@ add_subdirectory(stdc)
 add_subdirectory(thread)
 add_subdirectory(VectorException)
 
-# Following five tests are UNIX only, don't try to add it for Windows.
-# They have dependancy on oegen tool.
+# Following five tests are UNIX only because they depend on the oegen tool
+# that is not supported on Windows.
 add_subdirectory(file)
 add_subdirectory(pingpong)
 add_subdirectory(pingpong-shared)

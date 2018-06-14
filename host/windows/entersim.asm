@@ -3,18 +3,18 @@
 
 include ksamd64.inc
 
-extern __OE_DispatchOCall:proc
+extern __oe_dispatch_ocall:proc
 
 ;;==============================================================================
 ;;
-;; void OE_EnterSim(
+;; void oe_enter_sim(
 ;;     [IN] void* tcs,
 ;;     [IN] void (*aep)(),
 ;;     [IN] uint64_t arg1,
 ;;     [IN] uint64_t arg2,
 ;;     [OUT] uint64_t* arg3,
 ;;     [OUT] uint64_t* arg4,
-;;     [OUT] OE_Enclave* enclave);
+;;     [OUT] oe_enclave_t* enclave);
 ;;
 ;; Registers:
 ;;     RCX      - tcs: thread control structure (extended)
@@ -46,7 +46,7 @@ CSSA            EQU [rbp-80]
 STACKPTR        EQU [rbp-88]
 TCS_u_main      EQU 72
 
-NESTED_ENTRY OE_EnterSim, _TEXT$00
+NESTED_ENTRY oe_enter_sim, _TEXT$00
     END_PROLOGUE
 
     ;; Setup stack frame:
@@ -92,7 +92,7 @@ call_oe_main:
     ;; Save the stack pointer so enclave can use the stack.
     mov STACKPTR, rsp
 
-    ;; Call OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2) in enclave
+    ;; Call oe_main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2) in enclave
     mov rax, CSSA
     mov rbx, TCS
     lea rcx, retaddr
@@ -105,7 +105,7 @@ retaddr:
 
 dispatch_ocall_sim:
 
-    ;; RAX = __OE_DispatchOCall(
+    ;; RAX = __oe_dispatch_ocall(
     ;;     RCX=arg1
     ;;     RDX=arg2
     ;;     R8=arg1Out
@@ -121,7 +121,7 @@ dispatch_ocall_sim:
     mov qword ptr [rsp+32], rax
     mov rax, qword ptr ENCLAVE
     mov qword ptr [rsp+40], rax
-    call __OE_DispatchOCall ;; RAX contains return value
+    call __oe_dispatch_ocall ;; RAX contains return value
     add rsp, 56
 
     ;; Restore the stack pointer:
@@ -131,7 +131,7 @@ dispatch_ocall_sim:
     cmp rax, 0
     jne return_from_ecall_sim
 
-    ;; Prepare to reenter the enclave, calling OE_Main()
+    ;; Prepare to reenter the enclave, calling oe_main()
     mov rax, ARG1OUT
     mov ARG1, rax
     mov rax, ARG2OUT
@@ -171,6 +171,6 @@ return_from_ecall_sim:
 forever:
     jmp forever
 
-NESTED_END OE_EnterSim, _TEXT$00
+NESTED_END oe_enter_sim, _TEXT$00
 
 END

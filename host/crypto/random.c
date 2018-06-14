@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/random.h>
+#include <openenclave/internal/random.h>
 #include <openssl/rand.h>
 
-OE_Result OE_Random(void* data, size_t size)
+oe_result_t oe_random(void* data, size_t size)
 {
     if (!RAND_bytes(data, size))
         return OE_FAILURE;

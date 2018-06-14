@@ -18,6 +18,7 @@ set(PLATFORM_SRC
     linux/hostthread.c
     linux/sgxioctl.c
     linux/sgxsign.c
+    sgxquoteprovider.c        
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -51,11 +52,11 @@ add_library(oehost STATIC
     result.c
     sgxload.c
     sgxmeasure.c
+    sgxquote.c
     sgxtypes.c
     signkey.c
     strings.c
     tests.c
-    typeinfo.c
     crypto/sha.c
     ${PLATFORM_SRC}
     )

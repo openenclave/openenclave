@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "sgxioctl.h"
-#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/internal/sgxtypes.h>
 #include <string.h>
 #include <sys/ioctl.h>
 
@@ -45,7 +45,7 @@ typedef struct _SGXEInitParam
 } SGXEInitParam;
 OE_PACK_END
 
-int SGX_IoctlEnclaveCreate(int dev, SGX_Secs* secs)
+int sgx_ioctl_enclave_create(int dev, sgx_secs_t* secs)
 {
     SGXECreateParam param;
 
@@ -53,12 +53,12 @@ int SGX_IoctlEnclaveCreate(int dev, SGX_Secs* secs)
         return -1;
 
     memset(&param, 0, sizeof(param));
-    param.secs = (unsigned long long)secs;
+    param.secs = (uint64_t)secs;
 
     return ioctl(dev, SGX_IOC_ENCLAVE_CREATE, &param);
 }
 
-int SGX_IoctlEnclaveAddPage(
+int sgx_ioctl_enclave_add_page(
     int dev,
     uint64_t addr,
     uint64_t src,
@@ -66,12 +66,12 @@ int SGX_IoctlEnclaveAddPage(
     bool extend)
 {
     SGXEAddParam param;
-    SGX_SecInfo secinfo;
+    sgx_secinfo_t secinfo;
 
     if (dev == -1 || !addr || !src || !flags)
         return -1;
 
-    memset(&secinfo, 0, sizeof(SGX_SecInfo));
+    memset(&secinfo, 0, sizeof(sgx_secinfo_t));
     secinfo.flags = flags;
 
     memset(&param, 0, sizeof(param));
@@ -86,7 +86,7 @@ int SGX_IoctlEnclaveAddPage(
     return ioctl(dev, SGX_IOC_ENCLAVE_ADD_PAGE, &param);
 }
 
-int SGX_IoctlEnclaveInit(
+int sgx_ioctl_enclave_init(
     int dev,
     uint64_t addr,
     uint64_t sigstruct,

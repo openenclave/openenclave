@@ -4,10 +4,10 @@
 #include <stdio.h>
 #define OE_TRACE_LEVEL 1
 
-#include <openenclave/bits/globals.h> // for __OE_GetEnclaveBase()
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/globals.h> // for __oe_get_enclave_base()
+#include <openenclave/internal/tests.h>
+#include <openenclave/internal/trace.h>
 #include <mutex>
 #include <system_error>
 #include "../args.h"
@@ -24,32 +24,32 @@ struct StaticInitOcaller
     StaticInitOcaller() : m_Result(OE_FAILURE)
     {
         m_Result =
-            OE_CallHost("InitOcallHandler", (void*)__OE_GetEnclaveBase());
+            oe_call_host("InitOcallHandler", (void*)__oe_get_enclave_base());
         OE_TEST(m_Result == OE_OK);
     }
-    OE_Result GetOcallResult() const
+    oe_result_t GetOcallResult() const
     {
         return m_Result;
     }
 
   private:
-    OE_Result m_Result;
+    oe_result_t m_Result;
 } StaticInitOcaller_;
 
 // obtain static init ocall result
 OE_ECALL void EncGetInitOcallResult(void* Args_)
 {
-    if (!OE_IsOutsideEnclave(Args_, sizeof(OE_Result)))
+    if (!oe_is_outside_enclave(Args_, sizeof(oe_result_t)))
         return;
 
-    OE_Result* result = (OE_Result*)Args_;
+    oe_result_t* result = (oe_result_t*)Args_;
     *result = StaticInitOcaller_.GetOcallResult();
 }
 
 // Set custom enclave ID for later tracking
 OE_ECALL void EncSetEnclaveId(void* Args_)
 {
-    if (!OE_IsOutsideEnclave(Args_, sizeof(EncSetEnclaveIdArg)))
+    if (!oe_is_outside_enclave(Args_, sizeof(EncSetEnclaveIdArg)))
         return;
 
     EncSetEnclaveIdArg* argsHost = (EncSetEnclaveIdArg*)Args_;
@@ -60,7 +60,7 @@ OE_ECALL void EncSetEnclaveId(void* Args_)
         argsHost->result = OE_INVALID_PARAMETER;
     }
     EnclaveId = args.id;
-    argsHost->baseAddr = __OE_GetEnclaveBase();
+    argsHost->baseAddr = __oe_get_enclave_base();
     argsHost->result = OE_OK;
 }
 
@@ -68,14 +68,14 @@ OE_ECALL void EncSetEnclaveId(void* Args_)
 // spin-wait until all expected threads reach it, w/o performing an ocall.
 OE_ECALL void EncParallelExecution(void* Args_)
 {
-    if (!OE_IsOutsideEnclave(Args_, sizeof(EncParallelExecutionArg)))
+    if (!oe_is_outside_enclave(Args_, sizeof(EncParallelExecutionArg)))
         return;
 
     EncParallelExecutionArg* argsHost = (EncParallelExecutionArg*)Args_;
     EncParallelExecutionArg args = *argsHost;
 
-    if (!OE_IsOutsideEnclave((void*)args.counter, sizeof(unsigned)) ||
-        !OE_IsOutsideEnclave((void*)args.release, sizeof(unsigned)))
+    if (!oe_is_outside_enclave((void*)args.counter, sizeof(unsigned)) ||
+        !oe_is_outside_enclave((void*)args.release, sizeof(unsigned)))
         return;
 
     unsigned oldFlowId = PerThreadFlowId.GetU();
@@ -134,9 +134,9 @@ OE_ECALL void EncParallelExecution(void* Args_)
 */
 OE_ECALL void EncRecursion(void* Args_)
 {
-    OE_Result result = OE_OK;
+    oe_result_t result = OE_OK;
 
-    if (!OE_IsOutsideEnclave(Args_, sizeof(EncRecursionArg)))
+    if (!oe_is_outside_enclave(Args_, sizeof(EncRecursionArg)))
         return;
 
     EncRecursionArg* argsHost = (EncRecursionArg*)Args_;
@@ -179,7 +179,7 @@ OE_ECALL void EncRecursion(void* Args_)
         if (args.initialCount)
             argsHost->initialCount = args.initialCount - 1;
         argsHost->recursionsLeft = args.recursionsLeft - 1;
-        result = OE_CallHost("RecursionOcall", argsHost);
+        result = oe_call_host("RecursionOcall", argsHost);
     }
 
     // double-check FlowId is still intact and clobber it
@@ -226,7 +226,7 @@ extern "C" void EncUnExportedFunction(void*)
 // Reachability test calling the host
 OE_ECALL void EncTestCallHostFunction(void* Args_)
 {
-    if (!OE_IsOutsideEnclave(Args_, sizeof(EncTestCallHostFunctionArg)))
+    if (!oe_is_outside_enclave(Args_, sizeof(EncTestCallHostFunctionArg)))
         return;
 
     EncTestCallHostFunctionArg* argsHost = (EncTestCallHostFunctionArg*)Args_;
@@ -234,11 +234,11 @@ OE_ECALL void EncTestCallHostFunction(void* Args_)
 
     // Testing for a string to be outside the enclave is ugly. We might want
     // to provide a helper.
-    if (!OE_IsOutsideEnclave(args.functionName, 1))
+    if (!oe_is_outside_enclave(args.functionName, 1))
     {
         argsHost->result = OE_INVALID_PARAMETER;
         return;
     }
 
-    argsHost->result = OE_CallHost(args.functionName, NULL);
+    argsHost->result = oe_call_host(args.functionName, NULL);
 }

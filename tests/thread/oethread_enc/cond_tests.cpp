@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../args.h"
 
-static OE_Mutex mutex = OE_MUTEX_INITIALIZER;
-static OE_Cond cond = OE_COND_INITIALIZER;
+static oe_mutex_t mutex = OE_MUTEX_INITIALIZER;
+static oe_cond_t cond = OE_COND_INITIALIZER;
 
 // Number of waiting threads.
 static volatile int num_waiting = 0;
@@ -20,7 +20,7 @@ static volatile bool exit_thread = false;
 
 OE_ECALL void CBTestWaiterThreadImpl(void* args)
 {
-    OE_MutexLock(&mutex);
+    oe_mutex_lock(&mutex);
 
     while (!exit_thread)
     {
@@ -28,7 +28,7 @@ OE_ECALL void CBTestWaiterThreadImpl(void* args)
         ++num_waiting;
 
         // Release mutex and wait.
-        OE_CondWait(&cond, &mutex);
+        oe_cond_wait(&cond, &mutex);
 
         // This thread owns the mutex.
         // After waking up, update counters.
@@ -36,7 +36,7 @@ OE_ECALL void CBTestWaiterThreadImpl(void* args)
         ++num_woken;
     }
 
-    OE_MutexUnlock(&mutex);
+    oe_mutex_unlock(&mutex);
 }
 
 OE_ECALL void CBTestSignalThreadImpl(void* args)
@@ -51,7 +51,7 @@ OE_ECALL void CBTestSignalThreadImpl(void* args)
 
     for (size_t i = 0; i < ITERS; ++i)
     {
-        OE_MutexLock(&mutex);
+        oe_mutex_lock(&mutex);
 
         // No thread should wake up until broadcast.
         OE_TEST(num_woken == 0);
@@ -62,9 +62,9 @@ OE_ECALL void CBTestSignalThreadImpl(void* args)
         // threads. This is by design to allow for testing these various
         // scenarios in a rapid manner.
         int num_expected = num_waiting;
-        OE_CondBroadcast(&cond);
+        oe_cond_broadcast(&cond);
 
-        OE_MutexUnlock(&mutex);
+        oe_mutex_unlock(&mutex);
 
         // There is no guarantee whether the woken up threads
         // are scheduled for execution immediately.
@@ -72,7 +72,7 @@ OE_ECALL void CBTestSignalThreadImpl(void* args)
         bool done = false;
         while (!done)
         {
-            OE_MutexLock(&mutex);
+            oe_mutex_lock(&mutex);
 
             // No more than desired number of threads should be woken up.
             OE_TEST(num_woken <= num_expected);
@@ -84,19 +84,19 @@ OE_ECALL void CBTestSignalThreadImpl(void* args)
                 done = true;
             }
 
-            OE_MutexUnlock(&mutex);
+            oe_mutex_unlock(&mutex);
         }
     }
 
     // Signal waiter threads to exit.
-    OE_MutexLock(&mutex);
+    oe_mutex_lock(&mutex);
 
     exit_thread = true;
-    OE_CondBroadcast(&cond);
+    oe_cond_broadcast(&cond);
 
     // Since the signal thread owns the mutex now, any running waiter thread
-    // would be currently in a OE_CondWait or in a OE_MutexLock.
+    // would be currently in a oe_cond_wait or in a oe_mutex_lock.
     // Once the signal thread releases the mutex, the waiter thread would return
     // from either of the calls and then check the exit_thread flag and quit.
-    OE_MutexUnlock(&mutex);
+    oe_mutex_unlock(&mutex);
 }

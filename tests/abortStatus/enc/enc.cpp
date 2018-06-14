@@ -1,25 +1,26 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/atexit.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atexit.h>
+#include <openenclave/internal/print.h>
 #include "../../ecall_ocall/crc32.h"
 #include "../args.h"
 
-// Explicitly call OE_Abort to abort the enclave.
+// Explicitly call oe_abort to abort the enclave.
 OE_ECALL void RegularAbort(void* args_)
 {
     AbortStatusArgs* args = (AbortStatusArgs*)args_;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(AbortStatusArgs)))
+    if (!oe_is_outside_enclave(args, sizeof(AbortStatusArgs)))
     {
         return;
     }
 
     args->ret = 0;
-    OE_Abort();
+    oe_abort();
 
-    OE_HostPrintf("Error: unreachable code is reached.\n");
+    oe_host_printf("Error: unreachable code is reached.\n");
     args->ret = -1;
     return;
 }
@@ -30,7 +31,7 @@ OE_ECALL void GenerateUnhandledHardwareException(void* args_)
     AbortStatusArgs* args = (AbortStatusArgs*)args_;
     int t = 1;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(AbortStatusArgs)))
+    if (!oe_is_outside_enclave(args, sizeof(AbortStatusArgs)))
     {
         return;
     }
@@ -42,7 +43,7 @@ OE_ECALL void GenerateUnhandledHardwareException(void* args_)
     t = t / args->divisor;
     // We should never get here but this is to trick optimizer
     args->divisor = t;
-    OE_HostPrintf(
+    oe_host_printf(
         "Error: unreachable code is reached. Divisor=%d\n", args->divisor);
     args->ret = -1;
     return;
@@ -53,7 +54,7 @@ OE_ECALL void TestOCallAfterAbort(void* args_)
     AbortStatusArgs* args = (AbortStatusArgs*)args_;
     args->ret = -1;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(AbortStatusArgs)))
+    if (!oe_is_outside_enclave(args, sizeof(AbortStatusArgs)))
     {
         return;
     }
@@ -66,7 +67,7 @@ OE_ECALL void TestOCallAfterAbort(void* args_)
         ;
 
     // OCALL should return OE_ENCLAVE_ABORTING.
-    if (OE_CallHost("RecursionOcall", NULL) == OE_ENCLAVE_ABORTING)
+    if (oe_call_host("RecursionOcall", NULL) == OE_ENCLAVE_ABORTING)
     {
         args->ret = 0;
     }
@@ -79,7 +80,7 @@ OE_ECALL void NormalECall(void* args_)
     AbortStatusArgs* args = (AbortStatusArgs*)args_;
     args->ret = -1;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(AbortStatusArgs)))
+    if (!oe_is_outside_enclave(args, sizeof(AbortStatusArgs)))
     {
         return;
     }
@@ -90,9 +91,9 @@ OE_ECALL void NormalECall(void* args_)
 
 OE_ECALL void EncRecursion(void* Args_)
 {
-    OE_Result result = OE_OK;
+    oe_result_t result = OE_OK;
 
-    if (!OE_IsOutsideEnclave(Args_, sizeof(AbortStatusEncRecursionArg)))
+    if (!oe_is_outside_enclave(Args_, sizeof(AbortStatusEncRecursionArg)))
         return;
 
     AbortStatusEncRecursionArg* argsHost = (AbortStatusEncRecursionArg*)Args_;
@@ -108,7 +109,7 @@ OE_ECALL void EncRecursion(void* Args_)
         if (args.initialCount)
             argsHost->initialCount = args.initialCount - 1;
         argsHost->recursionsLeft = args.recursionsLeft - 1;
-        result = OE_CallHost("RecursionOcall", argsHost);
+        result = oe_call_host("RecursionOcall", argsHost);
     }
     else
     {
@@ -120,7 +121,7 @@ OE_ECALL void EncRecursion(void* Args_)
             ;
 
         // OCALL should return OE_ENCLAVE_ABORTING.
-        if (OE_CallHost("RecursionOcall", NULL) != OE_ENCLAVE_ABORTING)
+        if (oe_call_host("RecursionOcall", NULL) != OE_ENCLAVE_ABORTING)
         {
             argsHost->crc = 0;
             return;

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/utils.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/utils.h>
 
-int OE_Once(OE_OnceType* once, void (*func)(void))
+oe_result_t oe_once(oe_once_t* once, void (*func)(void))
 {
     if (!once)
-        return -1;
+        return OE_INVALID_PARAMETER;
 
     /* Double checked locking (DCLP). */
     int o = *once;
@@ -16,9 +16,9 @@ int OE_Once(OE_OnceType* once, void (*func)(void))
     OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
     if (o == 0)
     {
-        static OE_Spinlock _lock = OE_SPINLOCK_INITIALIZER;
+        static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
 
-        OE_SpinLock(&_lock);
+        oe_spin_lock(&_lock);
 
         if (*once == 0)
         {
@@ -30,8 +30,8 @@ int OE_Once(OE_OnceType* once, void (*func)(void))
             *once = 1;
         }
 
-        OE_SpinUnlock(&_lock);
+        oe_spin_unlock(&_lock);
     }
 
-    return 0;
+    return OE_OK;
 }

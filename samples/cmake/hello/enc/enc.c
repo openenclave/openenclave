@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/print.h>
 #include <stdio.h>
 #include <string.h>
 #include "../args.h"
@@ -10,7 +11,7 @@ OE_ECALL void Hello(void* args_)
 {
     Args* args = (Args*)args_;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(Args)))
+    if (!oe_is_outside_enclave(args, sizeof(Args)))
     {
         args->ret = -1;
         return;
@@ -22,13 +23,13 @@ OE_ECALL void Hello(void* args_)
         return;
     }
 
-    if (OE_CallHost("Hello", args) != OE_OK)
+    if (oe_call_host("Hello", args) != OE_OK)
     {
         args->ret = -1;
         return;
     }
 
-    OE_HostPrintf("enclave: hello!\n");
+    oe_host_printf("enclave: hello!\n");
 
     args->ret = 0;
 }

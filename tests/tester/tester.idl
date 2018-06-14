@@ -3,9 +3,9 @@
 
 struct Date
 {
-    uint32 mm;
-    uint32 dd;
-    uint32 yyyy;
+    uint32_t mm;
+    uint32_t dd;
+    uint32_t yyyy;
 };
 
 struct Object
@@ -16,13 +16,13 @@ struct Object
 
 struct Node
 {
-    uint32 value;
+    uint32_t value;
     [one] struct Node* next;
 };
 
 function [ecall] void ReturnVoid();
 
-function [ecall] uint32 ReturnUint32();
+function [ecall] uint32_t ReturnUint32();
 
 function [ecall, string] char* ReturnStr();
 
@@ -38,36 +38,36 @@ function [ecall, one] struct Node* ReturnLinkedList();
 function [ecall, string] char* TestStrdup(
     [string, in] const char* s);
 
-function [ecall] int32 CopyObject(
+function [ecall] int32_t CopyObject(
     [inout, one] struct Object* dest,
     [in, one] const struct Object* src);
 
-function [ecall] int32 CopyObjects(
+function [ecall] int32_t CopyObjects(
     [out] struct Object dest[2],
     [in] const struct Object src[2]);
 
-function [ecall] int32 ECALL_MultipleParams(
+function [ecall] int32_t ECALL_MultipleParams(
     [in, string] const char* strIn,
-    [in] uint32 numIn,
+    [in] uint32_t numIn,
     [in, one] const struct Object* objectIn,
     [out, string, count=128] char* strOut,
-    [out, one] uint32* numOut,
+    [out, one] uint32_t* numOut,
     [out, one] struct Object* objectOut,
     [out, one, ref] struct Object* objectRefOut);
 
-function [ocall] int32 OCALL_MultipleParams(
+function [ocall] int32_t OCALL_MultipleParams(
     [in, string] const char* strIn,
-    [in] uint32 numIn,
+    [in] uint32_t numIn,
     [in, one] const struct Object* objectIn,
     [out, string, count=128] char* strOut,
-    [out, one] uint32* numOut,
+    [out, one] uint32_t* numOut,
     [out, one] struct Object* objectOut,
     [out, one, ref] struct Object* objectRefOut);
 
-function [ecall] int32 GetObjectRef(
+function [ecall] int32_t GetObjectRef(
     [out, ref, one] struct Object* object);
 
-function [ecall] int32 ModifyObject(
+function [ecall] int32_t ModifyObject(
     [inout, one] struct Object* object);
 
 function [ecall] size_t TestStrlcpy(
@@ -80,15 +80,15 @@ function [ecall] size_t TestOptQualifier(
     [opt, in, string] const char* p2,
     [in] size_t p1size);
 
-function [ecall, opt, count=n] int* ReturnIntPtr(
-    [inout, opt, count=n] int* p,
+function [ecall, opt, count=n] int32_t* ReturnIntPtr(
+    [inout, opt, count=n] int32_t* p,
     [in] size_t n);
 
 function [ecall] void TestCallback(
     [in, unchecked] void* func);
 
 function [ecall] bool TestIntPtrRef(
-    [out, ref, count=n] int* intPtrOut,
+    [out, ref, count=n] int32_t* intPtrOut,
     [in] size_t n);
 
 function [ecall] void TestBufferOverrun(

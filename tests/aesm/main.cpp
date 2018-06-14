@@ -1,22 +1,22 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #if defined(OE_USE_LIBSGX)
-#include <libsgx/sgx_ql_oe_wrapper.h>
+#include <sgx_ql_oe_wrapper.h>
 #else
-#include <openenclave/bits/aesm.h>
+#include <openenclave/internal/aesm.h>
 #endif
 
 #define SKIP_RETURN_CODE 2
 
 int main(int argc, const char* argv[])
 {
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
         printf(

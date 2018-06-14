@@ -18,6 +18,9 @@ all:
 install:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) install $(NL) )
 
+uninstall:
+	$(foreach i, $(DIRS), $(MAKE) -C $(i) uninstall $(NL) )
+
 clean:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) clean $(NL) )
 

@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #include <ctype.h>
-#include <openenclave/bits/cert.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/pem.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/result.h>
+#include <openenclave/bits/result.h>
+#include <openenclave/internal/cert.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/pem.h>
+#include <openenclave/internal/raise.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
@@ -30,10 +30,10 @@
 /* Randomly generated magic number */
 #define OE_CERT_MAGIC 0xbc8e184285de4d2a
 
-static void _SetErr(OE_VerifyCertError* error, const char* str)
+static void _SetErr(oe_verify_cert_error_t* error, const char* str)
 {
     if (error)
-        OE_Strlcpy(error->buf, str, sizeof(error->buf));
+        oe_strlcpy(error->buf, str, sizeof(error->buf));
 }
 
 typedef struct _Cert
@@ -217,9 +217,9 @@ static int _X509_up_ref(X509* x509)
     return 1;
 }
 
-static OE_Result _CertChainGetLength(const CertChain* impl, int* length)
+static oe_result_t _CertChainGetLength(const CertChain* impl, int* length)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     int num;
 
     *length = 0;
@@ -235,21 +235,44 @@ done:
     return result;
 }
 
-/* Verify a certificate against a chain of length 1 */
-static OE_Result _VerifyCert(X509* cert_, X509* chain_)
+static STACK_OF(X509) * _CloneChain(STACK_OF(X509) * chain)
 {
-    OE_Result result = OE_UNEXPECTED;
+    STACK_OF(X509)* sk = NULL;
+    int n = sk_X509_num(chain);
+
+    if (!(sk = sk_X509_new(NULL)))
+        return NULL;
+
+    for (int i = 0; i < n; i++)
+    {
+        X509* x509;
+
+        if (!(x509 = sk_X509_value(chain, (int)i)))
+            return NULL;
+
+        if (!(x509 = _CloneX509(x509)))
+            return NULL;
+
+        if (!sk_X509_push(sk, x509))
+            return NULL;
+    }
+
+    return sk;
+}
+
+static oe_result_t _VerifyCert(X509* cert_, STACK_OF(X509) * chain_)
+{
+    oe_result_t result = OE_UNEXPECTED;
     X509_STORE_CTX* ctx = NULL;
     X509* cert = NULL;
-    X509* chain = NULL;
-    STACK_OF(X509)* sk = NULL;
+    STACK_OF(X509)* chain = NULL;
 
     /* Clone the certificate to clear any cached verification state */
     if (!(cert = _CloneX509(cert_)))
         OE_RAISE(OE_FAILURE);
 
     /* Clone the chain to clear any cached verification state */
-    if (!(chain = _CloneX509(chain_)))
+    if (!(chain = _CloneChain(chain_)))
         OE_RAISE(OE_FAILURE);
 
     /* Create a context for verification */
@@ -263,20 +286,8 @@ static OE_Result _VerifyCert(X509* cert_, X509* chain_)
     /* Inject the certificate into the verification context */
     X509_STORE_CTX_set_cert(ctx, cert);
 
-    /* Build a certificate chain that contains a single certificate */
-    {
-        if (!(sk = sk_X509_new(NULL)))
-            OE_RAISE(OE_FAILURE);
-
-        if (!sk_X509_push(sk, chain))
-            OE_RAISE(OE_FAILURE);
-
-        if (!_X509_up_ref(chain))
-            OE_RAISE(OE_FAILURE);
-    }
-
     /* Set the CA chain into the verification context */
-    X509_STORE_CTX_trusted_stack(ctx, sk);
+    X509_STORE_CTX_trusted_stack(ctx, chain);
 
     /* Finally verify the certificate */
     if (!X509_verify_cert(ctx))
@@ -290,42 +301,107 @@ done:
         X509_free(cert);
 
     if (chain)
-        X509_free(chain);
+        sk_X509_pop_free(chain, X509_free);
 
     if (ctx)
         X509_STORE_CTX_free(ctx);
 
-    if (sk)
-        sk_X509_pop_free(sk, X509_free);
-
     return result;
 }
 
-/* Verify each certificate in the chain against its predecessor. */
-static OE_Result _VerifyWholeChain(STACK_OF(X509) * chain)
+/* Find the first self-signed certificate in the chain. */
+static X509* _FindRootCert(STACK_OF(X509) * chain)
 {
-    OE_Result result = OE_UNEXPECTED;
+    int n = sk_X509_num(chain);
+
+    /* Iterate from leaf upwards looking for a self-signed certificate */
+    while (n--)
+    {
+        X509* x509;
+
+        if (!(x509 = sk_X509_value(chain, (int)n)))
+            return NULL;
+
+        const X509_NAME* subject = X509_get_subject_name(x509);
+        const X509_NAME* issuer = X509_get_issuer_name(x509);
+
+        if (!subject || !issuer)
+            return NULL;
+
+        if (X509_NAME_cmp(subject, issuer) == 0)
+        {
+            return x509;
+        }
+    }
+
+    /* Not found */
+    return NULL;
+}
+
+/* Verify each certificate in the chain against its predecessor. */
+static oe_result_t _VerifyWholeChain(STACK_OF(X509) * chain)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    X509* root;
+    STACK_OF(X509)* subchain = NULL;
+    int n;
 
     if (!chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    for (int i = 0, n = sk_X509_num(chain); i < n; i++)
+    /* Get the root certificate */
+    if (!(root = _FindRootCert(chain)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Get number of certificates in the chain */
+    n = sk_X509_num(chain);
+
+    /* If chain is empty */
+    if (n < 1)
+        OE_RAISE(OE_FAILURE);
+
+    /* Create a subchain that grows to include the whole chain */
+    if (!(subchain = sk_X509_new_null()))
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* Add the root certificate to the subchain */
     {
-        if (i + 1 != n)
+        _X509_up_ref(root);
+
+        if (!sk_X509_push(subchain, root))
+            OE_RAISE(OE_FAILURE);
+    }
+
+    /* The root must be the last certificate */
+    if (root != sk_X509_value(chain, n - 1))
+        OE_RAISE(OE_FAILURE);
+
+    /* Verify each certificate in the chain against the subchain */
+    for (int i = sk_X509_num(chain) - 1; i >= 0; i--)
+    {
+        X509* cert = sk_X509_value(chain, i);
+
+        if (!cert)
+            OE_RAISE(OE_FAILURE);
+
+        OE_CHECK(_VerifyCert(cert, subchain));
+
+        /* Add this certificate to the subchain */
         {
-            X509* cert = sk_X509_value(chain, i);
-            X509* certNext = sk_X509_value(chain, i + 1);
+            _X509_up_ref(cert);
 
-            if (!cert || !certNext)
+            if (!sk_X509_push(subchain, cert))
                 OE_RAISE(OE_FAILURE);
-
-            OE_CHECK(_VerifyCert(certNext, cert));
         }
     }
 
     result = OE_OK;
 
 done:
+
+    if (subchain)
+        sk_X509_pop_free(subchain, X509_free);
+
     return result;
 }
 
@@ -337,9 +413,12 @@ done:
 **==============================================================================
 */
 
-OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
+oe_result_t oe_cert_read_pem(
+    const void* pemData,
+    size_t pemSize,
+    oe_cert_t* cert)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
     BIO* bio = NULL;
     X509* x509 = NULL;
@@ -357,7 +436,7 @@ OE_Result OE_CertReadPEM(const void* pemData, size_t pemSize, OE_Cert* cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL (if not already initialized) */
-    OE_InitializeOpenSSL();
+    oe_initialize_openssl();
 
     /* Create a BIO object for reading the PEM data */
     if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
@@ -383,9 +462,9 @@ done:
     return result;
 }
 
-OE_Result OE_CertFree(OE_Cert* cert)
+oe_result_t oe_cert_free(oe_cert_t* cert)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
 
     /* Check parameters */
@@ -402,12 +481,12 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainReadPEM(
+oe_result_t oe_cert_chain_read_pem(
     const void* pemData,
     size_t pemSize,
-    OE_CertChain* chain)
+    oe_cert_chain_t* chain)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
     STACK_OF(X509)* sk = NULL;
 
@@ -424,7 +503,7 @@ OE_Result OE_CertChainReadPEM(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Initialize OpenSSL (if not already initialized) */
-    OE_InitializeOpenSSL();
+    oe_initialize_openssl();
 
     /* Read the certificate chain into memory */
     if (!(sk = _ReadCertChain((const char*)pemData)))
@@ -442,9 +521,9 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainFree(OE_CertChain* chain)
+oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
 
     /* Check the parameter */
@@ -463,13 +542,13 @@ done:
     return result;
 }
 
-OE_Result OE_CertVerify(
-    OE_Cert* cert,
-    OE_CertChain* chain,
+oe_result_t oe_cert_verify(
+    oe_cert_t* cert,
+    oe_cert_chain_t* chain,
     OE_CRL* crl, /* ATTN: placeholder for future feature work */
-    OE_VerifyCertError* error)
+    oe_verify_cert_error_t* error)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     Cert* certImpl = (Cert*)cert;
     CertChain* chainImpl = (CertChain*)chain;
     X509_STORE_CTX* ctx = NULL;
@@ -505,7 +584,7 @@ OE_Result OE_CertVerify(
     }
 
     /* Initialize OpenSSL (if not already initialized) */
-    OE_InitializeOpenSSL();
+    oe_initialize_openssl();
 
     /* Create a context for verification */
     if (!(ctx = X509_STORE_CTX_new()))
@@ -549,18 +628,18 @@ done:
     return result;
 }
 
-OE_Result OE_CertGetRSAPublicKey(
-    const OE_Cert* cert,
-    OE_RSAPublicKey* publicKey)
+oe_result_t oe_cert_get_rsa_public_key(
+    const oe_cert_t* cert,
+    oe_rsa_public_key_t* publicKey)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
     EVP_PKEY* pkey = NULL;
     RSA* rsa = NULL;
 
     /* Clear public key for all error pathways */
     if (publicKey)
-        memset(publicKey, 0, sizeof(OE_RSAPublicKey));
+        memset(publicKey, 0, sizeof(oe_rsa_public_key_t));
 
     /* Reject invalid parameters */
     if (!_CertIsValid(impl) || !publicKey)
@@ -575,7 +654,7 @@ OE_Result OE_CertGetRSAPublicKey(
         OE_RAISE(OE_WRONG_TYPE);
 
     /* Initialize the RSA public key */
-    OE_RSAPublicKeyInit(publicKey, pkey);
+    oe_rsa_public_key_init(publicKey, pkey);
     pkey = NULL;
 
     result = OE_OK;
@@ -591,15 +670,17 @@ done:
     return result;
 }
 
-OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
+oe_result_t oe_cert_get_ec_public_key(
+    const oe_cert_t* cert,
+    oe_ec_public_key_t* publicKey)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
     EVP_PKEY* pkey = NULL;
 
     /* Clear public key for all error pathways */
     if (publicKey)
-        memset(publicKey, 0, sizeof(OE_ECPublicKey));
+        memset(publicKey, 0, sizeof(oe_ec_public_key_t));
 
     /* Reject invalid parameters */
     if (!_CertIsValid(impl) || !publicKey)
@@ -620,7 +701,7 @@ OE_Result OE_CertGetECPublicKey(const OE_Cert* cert, OE_ECPublicKey* publicKey)
     }
 
     /* Initialize the EC public key */
-    OE_ECPublicKeyInit(publicKey, pkey);
+    oe_ec_public_key_init(publicKey, pkey);
     pkey = NULL;
 
     result = OE_OK;
@@ -636,9 +717,11 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetLength(const OE_CertChain* chain, size_t* length)
+oe_result_t oe_cert_chain_get_length(
+    const oe_cert_chain_t* chain,
+    size_t* length)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     const CertChain* impl = (const CertChain*)chain;
 
     /* Clear the length (for failed return case) */
@@ -663,19 +746,19 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetCert(
-    const OE_CertChain* chain,
+oe_result_t oe_cert_chain_get_cert(
+    const oe_cert_chain_t* chain,
     size_t index,
-    OE_Cert* cert)
+    oe_cert_t* cert)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     const CertChain* impl = (const CertChain*)chain;
     size_t length;
     X509* x509 = NULL;
 
     /* Clear the output certificate for all error pathways */
     if (cert)
-        memset(cert, 0, sizeof(OE_Cert));
+        memset(cert, 0, sizeof(oe_cert_t));
 
     /* Reject invalid parameters */
     if (!_CertChainIsValid(impl) || !cert)
@@ -712,59 +795,30 @@ done:
     return result;
 }
 
-OE_Result OE_CertChainGetRootCert(const OE_CertChain* chain, OE_Cert* cert)
+oe_result_t oe_cert_chain_get_root_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert)
 {
-    const CertChain* impl = (const CertChain*)chain;
-    OE_Result result = OE_UNEXPECTED;
-    int n;
+    oe_result_t result = OE_UNEXPECTED;
+    size_t length;
 
-    /* Clear the output certificate for all error pathways */
-    if (cert)
-        memset(cert, 0, sizeof(OE_Cert));
-
-    /* Reject invalid parameters */
-    if (!_CertChainIsValid(impl) || !cert)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the number of certificates in the chain */
-    OE_CHECK(_CertChainGetLength(impl, &n));
-
-    /* Iterate from leaf upwards looking for a self-signed certificate */
-    while (n--)
-    {
-        X509* x509;
-
-        if (!(x509 = sk_X509_value(impl->sk, (int)n)))
-            OE_RAISE(OE_FAILURE);
-
-        const X509_NAME* subject = X509_get_subject_name(x509);
-        const X509_NAME* issuer = X509_get_issuer_name(x509);
-
-        if (!subject || !issuer)
-            OE_RAISE(OE_UNEXPECTED);
-
-        if (X509_NAME_cmp(subject, issuer) == 0)
-        {
-            _X509_up_ref(x509);
-            _CertInit((Cert*)cert, x509);
-            OE_RAISE(OE_OK);
-        }
-    }
-
-    /* No self-signed certificate was found */
-    result = OE_NOT_FOUND;
+    OE_CHECK(oe_cert_chain_get_length(chain, &length));
+    OE_CHECK(oe_cert_chain_get_cert(chain, length - 1, cert));
+    result = OE_OK;
 
 done:
     return result;
 }
 
-OE_Result OE_CertChainGetLeafCert(const OE_CertChain* chain, OE_Cert* cert)
+oe_result_t oe_cert_chain_get_leaf_cert(
+    const oe_cert_chain_t* chain,
+    oe_cert_t* cert)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t length;
 
-    OE_CHECK(OE_CertChainGetLength(chain, &length));
-    OE_CHECK(OE_CertChainGetCert(chain, length - 1, cert));
+    OE_CHECK(oe_cert_chain_get_length(chain, &length));
+    OE_CHECK(oe_cert_chain_get_cert(chain, 0, cert));
     result = OE_OK;
 
 done:

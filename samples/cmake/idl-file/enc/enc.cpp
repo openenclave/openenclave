@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
 #include "file_t.h"
 
 OE_EXTERNC int TestReadFile(const char* path, unsigned int* checksum)
@@ -11,7 +11,7 @@ OE_EXTERNC int TestReadFile(const char* path, unsigned int* checksum)
     MY_FILE* is = NULL;
     const size_t bufSize = 32;
     unsigned char buf[bufSize];
-    OE_Result r;
+    oe_result_t r;
 
     if (!path || !checksum)
         goto done;

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
-void* OE_Memalign(size_t alignment, size_t size);
+void* oe_memalign(size_t alignment, size_t size);
 
-void OE_MemalignFree(void* ptr);
+void oe_memalign_free(void* ptr);
 
 #endif /* _OE_HOST_MEMALIGN_H */
