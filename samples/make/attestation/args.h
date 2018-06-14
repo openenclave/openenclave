@@ -1,9 +1,11 @@
 #ifndef OE_SAMPLES_ATTESTATION_ARGS_H
 #define OE_SAMPLES_ATTESTATION_ARGS_H
 
-#include <openenclave/bits/defs.h>
-#include <openenclave/bits/result.h>
-#include <openenclave/bits/types.h>
+// args.h is included by both host and enclave. stdint.h is needed for
+// definitions of uint8_t, uint32_t etc. In the host, stdint.h from system
+// includes is picked up. In the enclave,
+// openenclave/libc/stdint.h is picked up.
+#include <stdint.h>
 
 struct QuotedPublicKey
 {
