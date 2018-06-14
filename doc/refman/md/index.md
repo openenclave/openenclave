@@ -76,7 +76,7 @@
 
 ### enclave.h
 
-* [oe_add_vectored_exception_handler()](enclave_8h_a5221f4a759961475304b9b4ff6fb18f3_1a5221f4a759961475304b9b4ff6fb18f3.md)
+* [oe_add_vectored_exception_handler()](enclave_8h_a262d5e0916223b50b32a2599cc881673_1a262d5e0916223b50b32a2599cc881673.md)
 
 * [oe_remove_vectored_exception_handler()](enclave_8h_ad659a9ba04b31fb345dd8e1667d10910_1ad659a9ba04b31fb345dd8e1667d10910.md)
 
