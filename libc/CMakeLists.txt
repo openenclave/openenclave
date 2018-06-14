@@ -17,6 +17,8 @@ add_library(oelibc STATIC
     malloc.c
     pthread.c
     sched.c
+    __printf_chk.c
+    __vfprintf_chk.c
     __stack_chk_fail.c
     stdio.c
     stdlib.c
