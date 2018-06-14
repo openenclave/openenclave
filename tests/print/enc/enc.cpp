@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/print.h>
-#include <openenclave/internal/tests.h>
+#include <openenclave/bits/print.h>
+#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
 #include <stdio.h>
 #include "../args.h"
