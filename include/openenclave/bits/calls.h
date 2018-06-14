@@ -17,16 +17,16 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _OE_Enclave OE_Enclave;
+typedef struct _oe_enclave oe_enclave_t;
 
-typedef void (*OE_ECallFunction)(uint64_t argIn, uint64_t* argOut);
+typedef void (*oe_ecall_function)(uint64_t argIn, uint64_t* argOut);
 
-typedef void (*OE_OCallFunction)(uint64_t argIn, uint64_t* argOut);
+typedef void (*oe_ocall_function)(uint64_t argIn, uint64_t* argOut);
 
 /*
 **==============================================================================
 **
-** The flags parameter for OE_OCall()
+** The flags parameter for oe_ocall()
 **
 ** Flags stack with the ones on the current thread (i.e., are or'd together)
 ** for the duration of the ocall.
@@ -40,34 +40,34 @@ typedef void (*OE_OCallFunction)(uint64_t argIn, uint64_t* argOut);
 /*
 **==============================================================================
 **
-** OE_Code
+** oe_code_t
 **
-**     The code parameter for OE_ECall() and OE_OCall()
+**     The code parameter for oe_ecall() and oe_ocall()
 **
 **==============================================================================
 */
 
-typedef enum _OE_Code {
+typedef enum _oe_code {
     OE_CODE_NONE = 0,
     OE_CODE_ECALL = 1,
     OE_CODE_ERET = 2,
     OE_CODE_OCALL = 3,
     OE_CODE_ORET = 4
-} OE_Code;
+} oe_code_t;
 
 /*
 **==============================================================================
 **
-** OE_Func
+** oe_func_t
 **
-**     The func parameter for OE_ECall() and OE_OCall()
+**     The func parameter for oe_ecall() and oe_ocall()
 **
 **==============================================================================
 */
 
-typedef enum _OE_Func {
+typedef enum _oe_func {
     // Special func used by oeenclave to allow host to call enclave's
-    // OE_VerifyReport. See enclave/report.cpp.
+    // oe_verify_report. See enclave/report.cpp.
     OE_FUNC_VERIFY_REPORT = OE_MAX_ECALLS - 1,
 
     OE_FUNC_DESTRUCTOR = 0x01000000,
@@ -92,7 +92,7 @@ typedef enum _OE_Func {
     OE_FUNC_CLOCK_GETTIME = 0x0F000000,
     OE_FUNC_NANOSLEEP = 0x10000000,
     OE_FUNC_VIRTUAL_EXCEPTION_HANDLER = 0x20000000,
-} OE_Func;
+} oe_func_t;
 
 #define OE_EXCEPTION_CONTINUE_SEARCH 0x0
 #define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
@@ -100,9 +100,9 @@ typedef enum _OE_Func {
 /*
 **==============================================================================
 **
-** OE_MakeCallArg1()
+** oe_make_call_arg1()
 **
-**     Form the 'arg1' parameter to both OE_Enter() and OE_Exit(). This
+**     Form the 'arg1' parameter to both oe_enter() and oe_exit(). This
 **     parameter is a 64-bit integer that contains:
 **
 **         code -- indicating whether ECALL, OCALL, ERET, or ORET
@@ -112,7 +112,7 @@ typedef enum _OE_Func {
 **==============================================================================
 */
 
-OE_INLINE uint64_t OE_MakeCallArg1(OE_Code code, OE_Func func, uint16_t flags)
+OE_INLINE uint64_t oe_make_call_arg1(oe_code_t code, oe_func_t func, uint16_t flags)
 {
     /* [ FLAGS:16, CODE:16, FUNC:32 ] */
     return ((uint64_t)code << 48) | ((uint64_t)func << 16) | ((uint64_t)flags);
@@ -121,38 +121,38 @@ OE_INLINE uint64_t OE_MakeCallArg1(OE_Code code, OE_Func func, uint16_t flags)
 /*
 **==============================================================================
 **
-** OE_GetCodeFromCallArg1()
+** oe_get_code_from_call_arg1()
 **
 **==============================================================================
 */
 
-OE_INLINE OE_Code OE_GetCodeFromCallArg1(uint64_t arg)
+OE_INLINE oe_code_t oe_get_code_from_call_arg1(uint64_t arg)
 {
-    return (OE_Code)((0xFFFF000000000000 & arg) >> 48);
+    return (oe_code_t)((0xFFFF000000000000 & arg) >> 48);
 }
 
 /*
 **==============================================================================
 **
-** OE_GetFuncFromCallArg1()
+** oe_get_func_from_call_arg1()
 **
 **==============================================================================
 */
 
-OE_INLINE OE_Func OE_GetFuncFromCallArg1(uint64_t arg)
+OE_INLINE oe_func_t oe_get_func_from_call_arg1(uint64_t arg)
 {
-    return (OE_Func)((0x0000FFFFFFFF0000 & arg) >> 16);
+    return (oe_func_t)((0x0000FFFFFFFF0000 & arg) >> 16);
 }
 
 /*
 **==============================================================================
 **
-** OE_GetFlagsFromCallArg1()
+** oe_get_flags_from_call_arg1()
 **
 **==============================================================================
 */
 
-OE_INLINE uint16_t OE_GetFlagsFromCallArg1(uint64_t arg)
+OE_INLINE uint16_t oe_get_flags_from_call_arg1(uint64_t arg)
 {
     return (uint16_t)(0x000000000000FFFF & arg);
 }
@@ -160,88 +160,88 @@ OE_INLINE uint16_t OE_GetFlagsFromCallArg1(uint64_t arg)
 /*
 **==============================================================================
 **
-** OE_CallEnclaveArgs
+** oe_call_enclave_args_t
 **
 **==============================================================================
 */
 
-typedef void (*OE_EnclaveFunc)(void* args);
+typedef void (*oe_enclave_func_t)(void* args);
 
-typedef struct OE_CallEnclaveArgs
+typedef struct oe_call_enclave_args_t
 {
     uint64_t func;
     uint64_t vaddr;
     void* args;
-    OE_Result result;
-} OE_CallEnclaveArgs;
+    oe_result_t result;
+} oe_call_enclave_args_t;
 
 /*
 **==============================================================================
 **
-** OE_CallHostArgs
+** oe_call_host_args_t
 **
 **==============================================================================
 */
 
-typedef void (*OE_HostFunc)(void* args);
+typedef void (*oe_host_func_t)(void* args);
 
-typedef struct OE_CallHostArgs
+typedef struct oe_call_host_args_t
 {
     void* args;
-    OE_Result result;
+    oe_result_t result;
     OE_ZERO_SIZED_ARRAY char func[];
-} OE_CallHostArgs;
+} oe_call_host_args_t;
 
 /*
 **==============================================================================
 **
-** OE_ThreadWakeWaitArgs
+** oe_thread_wake_wait_args_t
 **
 **==============================================================================
 */
 
-typedef struct _OE_ThreadWakeWaitArgs
+typedef struct _oe_thread_wake_wait_args
 {
     const void* waiter_tcs;
     const void* self_tcs;
-} OE_ThreadWakeWaitArgs;
+} oe_thread_wake_wait_args_t;
 
 /*
 **==============================================================================
 **
-** OE_PrintArgs
+** oe_print_args_t
 **
 **     Print 'str' to stdout (device == 0) or stderr (device == 1).
 **
 **==============================================================================
 */
 
-typedef struct _OE_PrintArgs
+typedef struct _oe_print_args
 {
     int device;
     char* str;
-} OE_PrintArgs;
+} oe_print_args_t;
 
 /*
 **==============================================================================
 **
-** OE_ReallocArgs
+** oe_realloc_args_t
 **
 **     void* realloc(void* ptr, size_t size)
 **
 **==============================================================================
 */
 
-typedef struct _OE_ReallocArgs
+typedef struct _oe_realloc_args
 {
     void* ptr;
     size_t size;
-} OE_ReallocArgs;
+} oe_realloc_args_t;
 
 /*
 **==============================================================================
 **
-** OE_InitEnclaveArgs
+** oe_init_enclave_args_t
 **
 **     Runtime state to initialize enclave state with, includes
 **     - First 8 leaves of CPUID for enclave emulation
@@ -249,10 +249,10 @@ typedef struct _OE_ReallocArgs
 **==============================================================================
 */
 
-typedef struct _OE_InitEnclaveArgs
+typedef struct _oe_init_enclave_args
 {
     uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
-} OE_InitEnclaveArgs;
+} oe_init_enclave_args_t;
 
 /**
  * Perform a low-level enclave function call (ECALL).
@@ -267,8 +267,8 @@ typedef struct _OE_InitEnclaveArgs
  * implementer of the function and either may be null.
  *
  * Open Enclave uses the low-level ECALL interface to implement internal calls,
- * used by OE_CallEnclave() and OE_TerminateEnclave(). Enclave application
- * developers are encouraged to use OE_CallEnclave() instead.
+ * used by oe_call_enclave() and oe_terminate_enclave(). Enclave application
+ * developers are encouraged to use oe_call_enclave() instead.
  *
  * At the software layer, this function sends an **ECALL** message to the
  * enclave and waits for an **ERET** message. Note that the ECALL implementation
@@ -294,8 +294,8 @@ typedef struct _OE_InitEnclaveArgs
  * @retval OE_UNEXPECTED An unexpected error occurred.
  *
  */
-OE_Result OE_ECall(
-    OE_Enclave* enclave,
+oe_result_t oe_ecall(
+    oe_enclave_t* enclave,
     uint32_t func,
     uint64_t argIn,
     uint64_t* argOut);
@@ -313,7 +313,7 @@ OE_Result OE_ECall(
  * implementer of the function and either may be null.
  *
  * Open Enclave uses this interface to implement internal calls. Enclave
- * application developers are encouraged to use OE_CallHost() instead.
+ * application developers are encouraged to use oe_call_host() instead.
  *
  * At the software layer, this function sends an **OCALL** message to the
  * enclave and waits for an **ORET** message. Note that the OCALL implementation
@@ -341,7 +341,7 @@ OE_Result OE_ECall(
  * @retval OE_UNEXPECTED An unexpected error occurred.
  *
  */
-OE_Result OE_OCall(
+oe_result_t oe_ocall(
     uint32_t func,
     uint64_t argIn,
     uint64_t* argOut,
@@ -350,7 +350,7 @@ OE_Result OE_OCall(
  * Registers a low-level ECALL function.
  *
  * This function registers a low-level ECALL function that may be called
- * from the host by the **OE_ECall()** function. The registered function
+ * from the host by the **oe_ecall()** function. The registered function
  * has the following prototype.
  *
  *     void (*)(uint64_t argIn, uint64_t* argOut);
@@ -366,7 +366,7 @@ OE_Result OE_OCall(
  * @retval OE_ALREADY_IN_USE The function number is already in use.
  *
  */
-OE_Result OE_RegisterECall(uint32_t func, OE_ECallFunction ecall);
+oe_result_t oe_register_ecall(uint32_t func, oe_ecall_function ecall);
 
 /**
  * Registers a low-level OCALL function.
@@ -374,7 +374,7 @@ OE_Result OE_RegisterECall(uint32_t func, OE_ECallFunction ecall);
  * TODO: Redesign this, this needs to be enclave-specific.
  *
  * This function registers a low-level OCALL function that may be called
- * from the enclave by the **OE_OCall()** function. The registered function
+ * from the enclave by the **oe_ocall()** function. The registered function
  * has the following prototype.
  *
  *     void (*)(uint64_t argIn, uint64_t* argOut);
@@ -390,7 +390,7 @@ OE_Result OE_RegisterECall(uint32_t func, OE_ECallFunction ecall);
  * @retval OE_ALREADY_IN_USE The function number is already in use.
  *
  */
-OE_Result OE_RegisterOCall(uint32_t func, OE_OCallFunction ocall);
+oe_result_t oe_register_ocall(uint32_t func, oe_ocall_function ocall);
 
 OE_EXTERNC_END
 

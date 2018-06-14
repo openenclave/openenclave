@@ -6,7 +6,7 @@
 
 void HandleStrftime(uint64_t argIn)
 {
-    OE_StrftimeArgs* args = (OE_StrftimeArgs*)argIn;
+    oe_strftime_args_t* args = (oe_strftime_args_t*)argIn;
 
     if (!args)
         return;
@@ -16,7 +16,7 @@ void HandleStrftime(uint64_t argIn)
 
 void HandleGettimeofday(uint64_t argIn)
 {
-    OE_GettimeofdayArgs* args = (OE_GettimeofdayArgs*)argIn;
+    oe_gettimeofday_args_t* args = (oe_gettimeofday_args_t*)argIn;
 
     if (!args)
         return;
@@ -26,7 +26,7 @@ void HandleGettimeofday(uint64_t argIn)
 
 void HandleClockgettime(uint64_t argIn)
 {
-    OE_ClockgettimeArgs* args = (OE_ClockgettimeArgs*)argIn;
+    oe_clock_gettime_args_t* args = (oe_clock_gettime_args_t*)argIn;
 
     if (!args)
         return;
@@ -36,7 +36,7 @@ void HandleClockgettime(uint64_t argIn)
 
 void HandleNanosleep(uint64_t argIn)
 {
-    OE_NanosleepArgs* args = (OE_NanosleepArgs*)argIn;
+    oe_nanosleep_args_t* args = (oe_nanosleep_args_t*)argIn;
 
     if (!args)
         return;

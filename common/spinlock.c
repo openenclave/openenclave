@@ -8,7 +8,7 @@
 #endif
 
 /* Set the spinlock value to 1 and return the old value */
-static unsigned int _spin_set_locked(OE_Spinlock* spinlock)
+static unsigned int _spin_set_locked(oe_spinlock_t* spinlock)
 {
     unsigned int value = 1;
 
@@ -22,7 +22,7 @@ static unsigned int _spin_set_locked(OE_Spinlock* spinlock)
     return value;
 }
 
-int OE_SpinInit(OE_Spinlock* spinlock)
+int oe_spin_init(oe_spinlock_t* spinlock)
 {
     if (spinlock)
         *spinlock = OE_SPINLOCK_INITIALIZER;
@@ -30,7 +30,7 @@ int OE_SpinInit(OE_Spinlock* spinlock)
     return 0;
 }
 
-int OE_SpinLock(OE_Spinlock* spinlock)
+int oe_spin_lock(oe_spinlock_t* spinlock)
 {
     if (spinlock)
     {
@@ -48,7 +48,7 @@ int OE_SpinLock(OE_Spinlock* spinlock)
     return 0;
 }
 
-int OE_SpinUnlock(OE_Spinlock* spinlock)
+int oe_spin_unlock(oe_spinlock_t* spinlock)
 {
     if (spinlock)
     {
@@ -62,7 +62,7 @@ int OE_SpinUnlock(OE_Spinlock* spinlock)
     return 0;
 }
 
-int OE_SpinDestroy(OE_Spinlock* spinlock)
+int oe_spin_destroy(oe_spinlock_t* spinlock)
 {
     return 0;
 }

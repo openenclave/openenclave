@@ -6,6 +6,6 @@
 
 #include <mbedtls/ctr_drbg.h>
 
-mbedtls_ctr_drbg_context* OE_MBEDTLS_GetDrbg();
+mbedtls_ctr_drbg_context* oe_mbedtls_get_drbg();
 
 #endif /* _CRYPTO_ENCLAVE_RANDOM_H */

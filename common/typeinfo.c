@@ -79,7 +79,7 @@ static size_t _SizeofWcs(const wchar_t* s)
     return (wcslen(s) + 1) * sizeof(wchar_t);
 }
 
-static OE_Result _StrToSize(const char* str, size_t* size)
+static oe_result_t _StrToSize(const char* str, size_t* size)
 {
     size_t r = 1;
     size_t x = 0;
@@ -114,13 +114,13 @@ static OE_Result _StrToSize(const char* str, size_t* size)
     return OE_OK;
 }
 
-static const OE_FieldTI* _FindFieldTI(const OE_StructTI* ti, const char* name)
+static const oe_field_ti_t* _FindFieldTI(const oe_struct_ti_t* ti, const char* name)
 {
     size_t i;
 
     for (i = 0; i < ti->nfields; i++)
     {
-        const OE_FieldTI* fti = &ti->fields[i];
+        const oe_field_ti_t* fti = &ti->fields[i];
 
         if (strcmp(fti->name, name) == 0)
             return fti;
@@ -129,14 +129,14 @@ static const OE_FieldTI* _FindFieldTI(const OE_StructTI* ti, const char* name)
     return NULL;
 }
 
-static OE_Result _GetCount(
-    const OE_StructTI* ti,
+static oe_result_t _GetCount(
+    const oe_struct_ti_t* ti,
     const void* structIn,
-    const OE_FieldTI* fti,
+    const oe_field_ti_t* fti,
     size_t* count)
 {
-    OE_Result result = OE_UNEXPECTED;
-    const OE_FieldTI* cfti;
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_field_ti_t* cfti;
 
     if (count)
         *count = 0;
@@ -175,7 +175,7 @@ OE_CATCH:
 }
 
 /* Get the size of the given type */
-static size_t _GetTypeSizeFromType(OE_Type type)
+static size_t _GetTypeSizeFromType(oe_type_t type)
 {
     switch (type)
     {
@@ -234,7 +234,7 @@ static size_t _GetTypeSizeFromType(OE_Type type)
 }
 
 /* Get type-size of this field (not necessarily the same as field size) */
-static size_t _GetTypeSize(const OE_FieldTI* fti)
+static size_t _GetTypeSize(const oe_field_ti_t* fti)
 {
     if (fti->type == OE_STRUCT_T)
         return fti->sti->size;
@@ -250,7 +250,7 @@ static size_t _GetTypeSize(const OE_FieldTI* fti)
 **==============================================================================
 */
 
-static bool _ScalarEq(OE_Type type, const void* p1, const void* p2)
+static bool _ScalarEq(oe_type_t type, const void* p1, const void* p2)
 {
     switch (type)
     {
@@ -336,7 +336,7 @@ static bool _BytesEq(const void* p1, const void* p2, size_t n)
     return memcmp(p1, p2, n) == 0 ? true : false;
 }
 
-static bool _ArrayEq(OE_Type type, const void* p1, const void* p2, size_t n)
+static bool _ArrayEq(oe_type_t type, const void* p1, const void* p2, size_t n)
 {
     switch (type)
     {
@@ -389,14 +389,14 @@ static bool _ArrayEq(OE_Type type, const void* p1, const void* p2, size_t n)
     return false;
 }
 
-static OE_Result _StructsEq(
-    const OE_StructTI* sti,
+static oe_result_t _StructsEq(
+    const oe_struct_ti_t* sti,
     const void* s1,
     const void* s2,
     size_t count,
     bool* flag)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
     if (flag)
@@ -408,7 +408,7 @@ static OE_Result _StructsEq(
     for (i = 0; i < count; i++)
     {
         bool tmp;
-        OE_TRY(OE_StructEq(sti, s1, s2, &tmp));
+        OE_TRY(oe_struct_eq(sti, s1, s2, &tmp));
         if (!tmp)
             OE_THROW(OE_OK);
     }
@@ -420,15 +420,15 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _FieldEq(
-    const OE_StructTI* sti,
+static oe_result_t _FieldEq(
+    const oe_struct_ti_t* sti,
     const void* s1,
     const void* s2,
     size_t index,
     bool* flag)
 {
-    OE_Result result = OE_UNEXPECTED;
-    const OE_FieldTI* fti;
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_field_ti_t* fti;
     size_t count1 = 0;
     size_t count2 = 0;
     const uint8_t* f1;
@@ -566,13 +566,13 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_StructEq(
-    const OE_StructTI* sti,
+oe_result_t oe_struct_eq(
+    const oe_struct_ti_t* sti,
     const void* s1,
     const void* s2,
     bool* flag)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
     if (flag)
@@ -650,13 +650,13 @@ static void Iprintf(size_t n, const char* format, ...)
 
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _PrintStruct(
-    const OE_StructTI* ti,
+    const oe_struct_ti_t* ti,
     const void* structIn,
     size_t depth);
 #endif
 
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
-static void _PrintScalar(const OE_FieldTI* fti, const void* p, size_t depth)
+static void _PrintScalar(const oe_field_ti_t* fti, const void* p, size_t depth)
 {
     switch (fti->type)
     {
@@ -726,7 +726,7 @@ static void _PrintScalar(const OE_FieldTI* fti, const void* p, size_t depth)
 
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _PrintArray(
-    const OE_FieldTI* fti,
+    const oe_field_ti_t* fti,
     const void* arr,
     size_t elemSize, // elemSize in bytes of one elements:
     size_t arrSize,  // number of total elements:
@@ -789,7 +789,7 @@ static void _PrintArray(
 
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _PrintStruct(
-    const OE_StructTI* ti,
+    const oe_struct_ti_t* ti,
     const void* structIn,
     size_t depth)
 {
@@ -806,7 +806,7 @@ static void _PrintStruct(
     /* Print each field of this structure */
     for (i = 0; i < ti->nfields; i++)
     {
-        const OE_FieldTI* fti = &ti->fields[i];
+        const oe_field_ti_t* fti = &ti->fields[i];
         const uint8_t* p = (const uint8_t*)structIn + fti->offset;
 
         if (fti->flags & OE_FLAG_ARRAY)
@@ -867,7 +867,7 @@ static void _PrintStruct(
 #endif
 
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
-void OE_PrintStruct(const OE_StructTI* ti, const void* structIn)
+void oe_print_struct(const oe_struct_ti_t* ti, const void* structIn)
 {
     _PrintStruct(ti, structIn, 0);
     OE_PRINTF("\n");
@@ -882,8 +882,8 @@ void OE_PrintStruct(const OE_StructTI* ti, const void* structIn)
 **==============================================================================
 */
 
-static OE_Result _CopyStructs(
-    const OE_StructTI* ti,
+static oe_result_t _CopyStructs(
+    const oe_struct_ti_t* ti,
     const void* structIn,
     size_t count,
     void* structOut,
@@ -895,9 +895,9 @@ static OE_Result _CopyStructs(
     /* Copy construct each struct onto array memory */
     for (size_t i = 0; i < count; i++)
     {
-        OE_Result result;
+        oe_result_t result;
 
-        if ((result = OE_CopyStruct(ti, src, dest, alloc)) != OE_OK)
+        if ((result = oe_copy_struct(ti, src, dest, alloc)) != OE_OK)
             return result;
 
         src += ti->size;
@@ -907,15 +907,15 @@ static OE_Result _CopyStructs(
     return OE_OK;
 }
 
-static OE_Result _ClonePtrField(
-    const OE_StructTI* sti,
+static oe_result_t _ClonePtrField(
+    const oe_struct_ti_t* sti,
     const void* sin,
-    const OE_FieldTI* fti,
+    const oe_field_ti_t* fti,
     const void* ptrIn,
     void** ptrOut,
     void*(alloc)(size_t size))
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t count = 0;
 
     if (ptrOut)
@@ -984,15 +984,15 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _CopyField(
-    const OE_StructTI* sti,
+static oe_result_t _CopyField(
+    const oe_struct_ti_t* sti,
     const void* sin,
-    const OE_FieldTI* fti,
+    const oe_field_ti_t* fti,
     const void* fin,
     void* fout,
     void*(alloc)(size_t size))
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     /* Check for null parameters */
     if (!fti || !fin || !fout || (alloc == NULL))
@@ -1028,7 +1028,7 @@ static OE_Result _CopyField(
     else /* scalar */
     {
         if (fti->type == OE_STRUCT_T)
-            OE_TRY(OE_CopyStruct(fti->sti, fin, fout, alloc));
+            OE_TRY(oe_copy_struct(fti->sti, fin, fout, alloc));
         else
             memcpy(fout, fin, fti->size);
     }
@@ -1040,13 +1040,13 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _DestroyStructs(
-    const OE_StructTI* sti,
+static oe_result_t _DestroyStructs(
+    const oe_struct_ti_t* sti,
     void* structs,
     size_t count,
-    OE_DeallocProc dealloc)
+    oe_dealloc_proc_t dealloc)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     uint8_t* p = (uint8_t*)structs;
 
     if (!sti || !structs || !dealloc)
@@ -1054,7 +1054,7 @@ static OE_Result _DestroyStructs(
 
     for (size_t i = 0; i < count; i++)
     {
-        OE_TRY(OE_DestroyStruct(sti, p, dealloc));
+        OE_TRY(oe_destroy_struct(sti, p, dealloc));
         p += sti->size;
     }
 
@@ -1065,13 +1065,13 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_CopyStruct(
-    const OE_StructTI* sti,
+oe_result_t oe_copy_struct(
+    const oe_struct_ti_t* sti,
     const void* sin,
     void* sout,
     void*(alloc)(size_t size))
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
     /* Check for null parameters */
@@ -1084,7 +1084,7 @@ OE_Result OE_CopyStruct(
     /* For each field */
     for (i = 0; i < sti->nfields; i++)
     {
-        const OE_FieldTI* fti = &sti->fields[i];
+        const oe_field_ti_t* fti = &sti->fields[i];
         const void* fin = (const uint8_t*)sin + fti->offset;
         void* fout = (uint8_t*)sout + fti->offset;
         OE_TRY(_CopyField(sti, sin, fti, fin, fout, alloc));
@@ -1097,8 +1097,8 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_CloneStruct(
-    const OE_StructTI* sti,
+oe_result_t oe_clone_struct(
+    const oe_struct_ti_t* sti,
     const void* sin,
     void** sout,
     void*(alloc)(size_t size))
@@ -1114,17 +1114,17 @@ OE_Result OE_CloneStruct(
     if (!(*sout = alloc(sti->size > 0 ? sti->size : 1)))
         return OE_OUT_OF_MEMORY;
 
-    return OE_CopyStruct(sti, sin, *sout, alloc);
+    return oe_copy_struct(sti, sin, *sout, alloc);
 }
 
-static OE_Result _CloneStructs(
-    const OE_StructTI* sti,
+static oe_result_t _CloneStructs(
+    const oe_struct_ti_t* sti,
     const void* sin,
     size_t count,
     void** sout,
     void*(alloc)(size_t size))
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!sti || !sin || !count || !sout || (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
@@ -1140,13 +1140,13 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _CloneBlob(
+static oe_result_t _CloneBlob(
     const void* dataIn,
     size_t size,
     void** dataOut,
     void*(alloc)(size_t size))
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!dataIn || !size || !dataOut || (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
@@ -1162,21 +1162,21 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _ApplyStructPtrProc(
-    const OE_StructTI* ti,
+static oe_result_t _ApplyStructPtrProc(
+    const oe_struct_ti_t* ti,
     void* strct,
     void (*proc)(void* ptr, size_t size, void* procData),
     void* procData);
 
 /* Apply the proc() function to every pointer within the struct array */
-static OE_Result _ApplyStructsPtrProc(
-    const OE_StructTI* ti,
+static oe_result_t _ApplyStructsPtrProc(
+    const oe_struct_ti_t* ti,
     void* structs,
     size_t count,
     void (*proc)(void* ptr, size_t size, void* procData),
     void* procData)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
     for (i = 0; i < count; i++)
@@ -1192,13 +1192,13 @@ OE_CATCH:
 }
 
 /* Apply the proc() function to every pointer within the struct */
-static OE_Result _ApplyStructPtrProc(
-    const OE_StructTI* ti,
+static oe_result_t _ApplyStructPtrProc(
+    const oe_struct_ti_t* ti,
     void* strct,
     void (*proc)(void* ptr, size_t size, void* procData),
     void* procData)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
     if (!ti || !strct)
@@ -1207,7 +1207,7 @@ static OE_Result _ApplyStructPtrProc(
     /* For each field */
     for (i = 0; i < ti->nfields; i++)
     {
-        const OE_FieldTI* fti = &ti->fields[i];
+        const oe_field_ti_t* fti = &ti->fields[i];
         uint8_t* fptr = (uint8_t*)strct + fti->offset;
 
         if (fti->flags & OE_FLAG_UNCHECKED)
@@ -1292,18 +1292,18 @@ OE_CATCH:
 
 static void _FreeProc(void* ptr, size_t size, void* procData)
 {
-    OE_DeallocProc proc = (OE_DeallocProc)procData;
+    oe_dealloc_proc_t proc = (oe_dealloc_proc_t)procData;
 
     if (proc)
         proc(ptr);
 }
 
-OE_Result OE_DestroyStruct(
-    const OE_StructTI* ti,
+oe_result_t oe_destroy_struct(
+    const oe_struct_ti_t* ti,
     void* strct,
-    OE_DeallocProc dealloc)
+    oe_dealloc_proc_t dealloc)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!ti || !strct || !dealloc)
         OE_THROW(OE_INVALID_PARAMETER);
@@ -1319,17 +1319,17 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_FreeStruct(
-    const OE_StructTI* ti,
+oe_result_t oe_free_struct(
+    const oe_struct_ti_t* ti,
     void* strct,
-    OE_DeallocProc dealloc)
+    oe_dealloc_proc_t dealloc)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!ti || !strct || !dealloc)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    OE_TRY(OE_DestroyStruct(ti, strct, dealloc));
+    OE_TRY(oe_destroy_struct(ti, strct, dealloc));
     dealloc(strct);
 
     result = OE_OK;
@@ -1338,16 +1338,16 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_ClearArg(
-    const OE_StructTI* sti,
+oe_result_t oe_clear_arg(
+    const oe_struct_ti_t* sti,
     void* sin,
     size_t index,
     bool isPtrPtr,
     void* arg,
-    OE_DeallocProc dealloc)
+    oe_dealloc_proc_t dealloc)
 {
-    OE_Result result = OE_UNEXPECTED;
-    const OE_FieldTI* fti;
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_field_ti_t* fti;
     size_t count = 0;
 
     if (!sti || !sin || !dealloc)
@@ -1494,7 +1494,7 @@ OE_CATCH:
     return result;
 }
 
-size_t OE_StructFindField(const OE_StructTI* sti, const char* name)
+size_t oe_struct_find_field(const oe_struct_ti_t* sti, const char* name)
 {
     if (!sti || !name)
         return (size_t)-1;
@@ -1508,26 +1508,26 @@ size_t OE_StructFindField(const OE_StructTI* sti, const char* name)
     return (size_t)-1;
 }
 
-OE_Result OE_ClearArgByName(
-    const OE_StructTI* sti,
+oe_result_t oe_clear_arg_by_name(
+    const oe_struct_ti_t* sti,
     void* strct,
     const char* name,
     bool isPtrPtr,
     void* arg,
-    OE_DeallocProc dealloc)
+    oe_dealloc_proc_t dealloc)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t index;
 
     if (!sti || !strct || !name || !arg || !dealloc)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    index = OE_StructFindField(sti, name);
+    index = oe_struct_find_field(sti, name);
 
     if (index == (size_t)-1)
         OE_THROW(OE_NOT_FOUND);
 
-    OE_TRY(OE_ClearArg(sti, strct, index, isPtrPtr, arg, dealloc));
+    OE_TRY(oe_clear_arg(sti, strct, index, isPtrPtr, arg, dealloc));
 
     result = OE_OK;
 
@@ -1535,16 +1535,16 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_SetArg(
-    const OE_StructTI* sti,
+oe_result_t oe_set_arg(
+    const oe_struct_ti_t* sti,
     void* sin,
     size_t index,
     bool isPtrPtr,
     void* arg,
     void*(alloc)(size_t size))
 {
-    OE_Result result = OE_UNEXPECTED;
-    const OE_FieldTI* fti = NULL;
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_field_ti_t* fti = NULL;
     const void* field;
     size_t count = 0;
 
@@ -1687,16 +1687,16 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_InitArg(
-    const OE_StructTI* sti,
+oe_result_t oe_init_arg(
+    const oe_struct_ti_t* sti,
     void* sin,
     size_t index,
     bool isPtrPtr,
     void* arg,
     void*(alloc)(size_t size))
 {
-    OE_Result result = OE_UNEXPECTED;
-    const OE_FieldTI* fti = NULL;
+    oe_result_t result = OE_UNEXPECTED;
+    const oe_field_ti_t* fti = NULL;
     size_t count = 0;
 
     /* Check null parameters */
@@ -1787,26 +1787,26 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_SetArgByName(
-    const OE_StructTI* sti,
+oe_result_t oe_set_arg_by_name(
+    const oe_struct_ti_t* sti,
     void* strct,
     const char* name,
     bool isPtrPtr,
     void* arg,
     void*(alloc)(size_t size))
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t index;
 
     if (!sti || !strct || !name || !arg)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    index = OE_StructFindField(sti, name);
+    index = oe_struct_find_field(sti, name);
 
     if (index == (size_t)-1)
         OE_THROW(OE_NOT_FOUND);
 
-    OE_TRY(OE_SetArg(sti, strct, index, isPtrPtr, arg, alloc));
+    OE_TRY(oe_set_arg(sti, strct, index, isPtrPtr, arg, alloc));
 
     result = OE_OK;
 
@@ -1814,12 +1814,12 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _CheckOptConstraint(
-    const OE_StructTI* sti,
+static oe_result_t _CheckOptConstraint(
+    const oe_struct_ti_t* sti,
     const void* sin,
-    const OE_FieldTI* fti)
+    const oe_field_ti_t* fti)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     const void* fin;
 
     if (!sti || !sin || !fti)
@@ -1850,9 +1850,9 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_CheckPreConstraints(const OE_StructTI* sti, const void* sin)
+oe_result_t oe_check_pre_constraints(const oe_struct_ti_t* sti, const void* sin)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
     if (!sti || !sin)
@@ -1860,7 +1860,7 @@ OE_Result OE_CheckPreConstraints(const OE_StructTI* sti, const void* sin)
 
     for (i = 0; i < sti->nfields; i++)
     {
-        const OE_FieldTI* fti = &sti->fields[i];
+        const oe_field_ti_t* fti = &sti->fields[i];
 
         if (!fti)
             OE_THROW(OE_UNEXPECTED);
@@ -1880,9 +1880,9 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_CheckPostConstraints(const OE_StructTI* sti, const void* sin)
+oe_result_t oe_check_post_constraints(const oe_struct_ti_t* sti, const void* sin)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
     if (!sti || !sin)
@@ -1890,7 +1890,7 @@ OE_Result OE_CheckPostConstraints(const OE_StructTI* sti, const void* sin)
 
     for (i = 0; i < sti->nfields; i++)
     {
-        const OE_FieldTI* fti = &sti->fields[i];
+        const oe_field_ti_t* fti = &sti->fields[i];
 
         if (!fti)
             OE_THROW(OE_UNEXPECTED);
@@ -1908,13 +1908,13 @@ OE_CATCH:
     return result;
 }
 
-static OE_Result _TestOrFillPadding(
-    const OE_StructTI* sti,
+static oe_result_t _TestOrFillPadding(
+    const oe_struct_ti_t* sti,
     const void* sin,
     bool test, /* test if true; fill sif false */
     uint8_t byte)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
     size_t i = 0;
 
     if (!sti || !sin)
@@ -1922,7 +1922,7 @@ static OE_Result _TestOrFillPadding(
 
     for (i = 0; i < sti->nfields; i++)
     {
-        const OE_FieldTI* fti = &sti->fields[i];
+        const oe_field_ti_t* fti = &sti->fields[i];
         void* fin;
         uint8_t* start;
         uint8_t* end;
@@ -1939,7 +1939,7 @@ static OE_Result _TestOrFillPadding(
         /* Set 'end' to next field, else the end of structure */
         if (i + 1 != sti->nfields)
         {
-            const OE_FieldTI* nfti = &sti->fields[i + 1];
+            const oe_field_ti_t* nfti = &sti->fields[i + 1];
 
             if (!nfti)
                 OE_THROW(OE_UNEXPECTED);
@@ -2008,24 +2008,24 @@ OE_CATCH:
     return result;
 }
 
-OE_Result OE_TestStructPadding(const OE_StructTI* sti, const void* sin)
+oe_result_t oe_test_struct_padding(const oe_struct_ti_t* sti, const void* sin)
 {
     return _TestOrFillPadding(sti, sin, true, 0xAA);
 }
 
-OE_Result OE_PadStruct(const OE_StructTI* sti, const void* sin)
+oe_result_t oe_pad_struct(const oe_struct_ti_t* sti, const void* sin)
 {
     return _TestOrFillPadding(sti, sin, false, 0xAA);
 }
 
-OE_Result OE_CheckStruct(const OE_StructTI* ti, void* strct)
+oe_result_t oe_check_struct(const oe_struct_ti_t* ti, void* strct)
 {
-    OE_Result result = OE_UNEXPECTED;
+    oe_result_t result = OE_UNEXPECTED;
 
     if (!ti || !strct)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    OE_TRY(OE_TestStructPadding(ti, strct));
+    OE_TRY(oe_test_struct_padding(ti, strct));
 
     result = OE_OK;
 

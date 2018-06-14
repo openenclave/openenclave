@@ -14,9 +14,9 @@
 
 int main(int argc, const char* argv[])
 {
-    SGX_TargetInfo targetInfo;
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    sgx_target_info_t targetInfo;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     /* Check arguments */
     if (argc != 2)
@@ -25,7 +25,7 @@ int main(int argc, const char* argv[])
         exit(1);
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
     if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
     {
         printf(
@@ -35,17 +35,17 @@ int main(int argc, const char* argv[])
     }
 
     /* Create the enclave */
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_put_err("oe_create_enclave(): result=%u", result);
     }
 
     /* Initialize the target info */
     {
-        if ((result = SGX_GetQETargetInfo(&targetInfo)) != OE_OK)
+        if ((result = sgx_get_qetarget_info(&targetInfo)) != OE_OK)
         {
-            OE_PutErr("SGX_GetQETargetInfo(): result=%u", result);
+            oe_put_err("sgx_get_qetarget_info(): result=%u", result);
         }
     }
 
@@ -62,21 +62,21 @@ int main(int argc, const char* argv[])
      * Enclave API tests.
      */
 
-    OE_TEST(OE_CallEnclave(enclave, "TestLocalReport", &targetInfo) == OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "TestLocalReport", &targetInfo) == OE_OK);
 
-    OE_TEST(OE_CallEnclave(enclave, "TestRemoteReport", &targetInfo) == OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "TestRemoteReport", &targetInfo) == OE_OK);
 
     OE_TEST(
-        OE_CallEnclave(enclave, "TestParseReportNegative", &targetInfo) ==
+        oe_call_enclave(enclave, "TestParseReportNegative", &targetInfo) ==
         OE_OK);
 
     OE_TEST(
-        OE_CallEnclave(enclave, "TestLocalVerifyReport", &targetInfo) == OE_OK);
+        oe_call_enclave(enclave, "TestLocalVerifyReport", &targetInfo) == OE_OK);
 
     /* Terminate the enclave */
-    if ((result = OE_TerminateEnclave(enclave)) != OE_OK)
+    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {
-        OE_PutErr("OE_TerminateEnclave(): result=%u", result);
+        oe_put_err("oe_terminate_enclave(): result=%u", result);
     }
 
     printf("=== passed all tests (%s)\n", argv[0]);

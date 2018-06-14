@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-int OE_Fopen(FILE** fp, const char* path, const char* mode)
+int oe_fopen(FILE** fp, const char* path, const char* mode)
 {
 #if defined(__linux__)
 

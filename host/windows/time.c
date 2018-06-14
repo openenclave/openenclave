@@ -20,7 +20,7 @@ void HandleGettimeofday(uint64_t argIn)
 
 void HandleClockgettime(uint64_t argIn)
 {
-    OE_ClockgettimeArgs* args = (OE_ClockgettimeArgs*)argIn;
+    oe_clock_gettime_args_t* args = (oe_clock_gettime_args_t*)argIn;
     if (!args)
         return;
 

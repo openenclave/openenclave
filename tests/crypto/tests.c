@@ -110,10 +110,10 @@ static void TestSHA256()
     printf("=== begin TestSHA25\n");
 
     OE_SHA256 hash;
-    OE_SHA256Context ctx;
-    OE_SHA256Init(&ctx);
-    OE_SHA256Update(&ctx, ALPHABET, strlen(ALPHABET));
-    OE_SHA256Final(&ctx, &hash);
+    oe_sha256_context_t ctx;
+    oe_sha256_init(&ctx);
+    oe_sha256_update(&ctx, ALPHABET, strlen(ALPHABET));
+    oe_sha256_final(&ctx, &hash);
     OE_TEST(memcmp(&hash, &HASH, sizeof(OE_SHA256)) == 0);
 
     printf("=== passed TestSHA25\n");
@@ -124,16 +124,16 @@ static void TestRSASign()
 {
     printf("=== begin TestRSASign\n");
 
-    OE_Result r;
-    OE_RSAPrivateKey key;
+    oe_result_t r;
+    oe_rsa_private_key_t key;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_RSAPrivateKeyReadPEM(
+    r = oe_rsa_private_key_read_pem(
         (const uint8_t*)RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAPrivateKeySign(
+    r = oe_rsa_private_key_sign(
         &key,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -144,7 +144,7 @@ static void TestRSASign()
 
     OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-    r = OE_RSAPrivateKeySign(
+    r = oe_rsa_private_key_sign(
         &key,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -157,10 +157,10 @@ static void TestRSASign()
     OE_TEST(memcmp(signature, &RSA_SIGNATURE, RSA_SIGNATURE_SIZE) == 0);
 
 #if 0
-    OE_HexDump(signature, signatureSize);
+    oe_hex_dump(signature, signatureSize);
 #endif
 
-    OE_RSAPrivateKeyFree(&key);
+    oe_rsa_private_key_free(&key);
     free(signature);
 
     printf("=== passed TestRSASign\n");
@@ -169,14 +169,14 @@ static void TestRSASign()
 // Test RSA verify operation over an ASCII alphabet string.
 static void TestRSAVerify()
 {
-    OE_Result r;
-    OE_RSAPublicKey key;
+    oe_result_t r;
+    oe_rsa_public_key_t key;
 
-    r = OE_RSAPublicKeyReadPEM(
+    r = oe_rsa_public_key_read_pem(
         (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAPublicKeyVerify(
+    r = oe_rsa_public_key_verify(
         &key,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -185,7 +185,7 @@ static void TestRSAVerify()
         RSA_SIGNATURE_SIZE);
     OE_TEST(r == OE_OK);
 
-    OE_RSAPublicKeyFree(&key);
+    oe_rsa_public_key_free(&key);
 
     printf("=== passed TestRSAVerify\n");
 }
@@ -366,23 +366,23 @@ static void TestCertVerifyGood()
 {
     printf("=== begin TestCertVerifyGood()\n");
 
-    OE_Result r;
-    OE_VerifyCertError error;
-    OE_Cert cert;
-    OE_CertChain chain;
+    oe_result_t r;
+    oe_verify_cert_error_t error;
+    oe_cert_t cert;
+    oe_cert_chain_t chain;
     OE_CRL* crl = NULL;
 
-    r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
+    r = oe_cert_read_pem(CERT1, sizeof(CERT1), &cert);
     OE_TEST(r == OE_OK);
 
-    r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
+    r = oe_cert_chain_read_pem(CHAIN1, sizeof(CHAIN1), &chain);
     OE_TEST(r == OE_OK);
 
-    r = OE_CertVerify(&cert, &chain, crl, &error);
+    r = oe_cert_verify(&cert, &chain, crl, &error);
     OE_TEST(r == OE_OK);
 
-    OE_CertFree(&cert);
-    OE_CertChainFree(&chain);
+    oe_cert_free(&cert);
+    oe_cert_chain_free(&chain);
 
     printf("=== passed TestCertVerifyGood()\n");
 }
@@ -391,24 +391,24 @@ static void TestCertVerifyBad()
 {
     printf("=== begin TestCertVerifyBad()\n");
 
-    OE_Result r;
-    OE_VerifyCertError error;
-    OE_Cert cert;
-    OE_CertChain chain;
+    oe_result_t r;
+    oe_verify_cert_error_t error;
+    oe_cert_t cert;
+    oe_cert_chain_t chain;
     OE_CRL* crl = NULL;
 
-    r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
+    r = oe_cert_read_pem(CERT1, sizeof(CERT1), &cert);
     OE_TEST(r == OE_OK);
 
     /* Chain does not contain a root for this certificate */
-    r = OE_CertChainReadPEM(CHAIN2, sizeof(CHAIN2), &chain);
+    r = oe_cert_chain_read_pem(CHAIN2, sizeof(CHAIN2), &chain);
     OE_TEST(r == OE_OK);
 
-    r = OE_CertVerify(&cert, &chain, crl, &error);
+    r = oe_cert_verify(&cert, &chain, crl, &error);
     OE_TEST(r == OE_VERIFY_FAILED);
 
-    OE_CertFree(&cert);
-    OE_CertChainFree(&chain);
+    oe_cert_free(&cert);
+    oe_cert_chain_free(&chain);
 
     printf("=== passed TestCertVerifyBad()\n");
 }
@@ -417,19 +417,19 @@ static void TestMixedChain()
 {
     printf("=== begin TestMixedChain()\n");
 
-    OE_Result r;
-    OE_Cert cert;
-    OE_CertChain chain;
+    oe_result_t r;
+    oe_cert_t cert;
+    oe_cert_chain_t chain;
 
-    r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
+    r = oe_cert_read_pem(CERT1, sizeof(CERT1), &cert);
     OE_TEST(r == OE_OK);
 
     /* Chain does not contain a root for this certificate */
-    r = OE_CertChainReadPEM(MIXED_CHAIN, sizeof(MIXED_CHAIN), &chain);
+    r = oe_cert_chain_read_pem(MIXED_CHAIN, sizeof(MIXED_CHAIN), &chain);
     OE_TEST(r == OE_FAILURE);
 
-    OE_CertFree(&cert);
-    OE_CertChainFree(&chain);
+    oe_cert_free(&cert);
+    oe_cert_chain_free(&chain);
 
     printf("=== passed TestMixedChain()\n");
 }
@@ -458,10 +458,10 @@ static void TestRandom()
     for (size_t i = 0; i < N; i++)
     {
         /* Generate a random sequence */
-        OE_TEST(OE_Random(buf[i], M * sizeof(uint8_t)) == OE_OK);
+        OE_TEST(oe_random(buf[i], M * sizeof(uint8_t)) == OE_OK);
 
 #if 0
-        OE_HexDump(buf[i], M * sizeof(uint8_t));
+        oe_hex_dump(buf[i], M * sizeof(uint8_t));
 #endif
 
         /* Be sure buffer is not filled with same character */
@@ -519,16 +519,16 @@ static void TestECSignAndVerify()
 
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
-    OE_Result r;
+    oe_result_t r;
 
     {
-        OE_ECPrivateKey key;
+        oe_ec_private_key_t key;
 
-        r = OE_ECPrivateKeyReadPEM(
+        r = oe_ec_private_key_read_pem(
             (const uint8_t*)EC_PRIVATE_KEY, sizeof(EC_PRIVATE_KEY), &key);
         OE_TEST(r == OE_OK);
 
-        r = OE_ECPrivateKeySign(
+        r = oe_ec_private_key_sign(
             &key,
             OE_HASH_TYPE_SHA256,
             &HASH,
@@ -539,7 +539,7 @@ static void TestECSignAndVerify()
 
         OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-        r = OE_ECPrivateKeySign(
+        r = oe_ec_private_key_sign(
             &key,
             OE_HASH_TYPE_SHA256,
             &HASH,
@@ -551,17 +551,17 @@ static void TestECSignAndVerify()
         OE_TEST(signature != NULL);
         OE_TEST(signatureSize != 0);
 
-        OE_ECPrivateKeyFree(&key);
+        oe_ec_private_key_free(&key);
     }
 
     {
-        OE_ECPublicKey key;
+        oe_ec_public_key_t key;
 
-        r = OE_ECPublicKeyReadPEM(
+        r = oe_ec_public_key_read_pem(
             (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
         OE_TEST(r == OE_OK);
 
-        r = OE_ECPublicKeyVerify(
+        r = oe_ec_public_key_verify(
             &key,
             OE_HASH_TYPE_SHA256,
             &HASH,
@@ -570,7 +570,7 @@ static void TestECSignAndVerify()
             signatureSize);
         OE_TEST(r == OE_OK);
 
-        r = OE_ECPublicKeyVerify(
+        r = oe_ec_public_key_verify(
             &key,
             OE_HASH_TYPE_SHA256,
             &HASH,
@@ -579,7 +579,7 @@ static void TestECSignAndVerify()
             EC_SIGNATURE_SIZE);
         OE_TEST(r == OE_OK);
 
-        OE_ECPublicKeyFree(&key);
+        oe_ec_public_key_free(&key);
     }
 
     free(signature);
@@ -591,16 +591,16 @@ static void TestRSAGenerate()
 {
     printf("=== begin TestRSAGenerate()\n");
 
-    OE_Result r;
-    OE_RSAPrivateKey privateKey;
-    OE_RSAPublicKey publicKey;
+    oe_result_t r;
+    oe_rsa_private_key_t privateKey;
+    oe_rsa_public_key_t publicKey;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_RSAGenerateKeyPair(1024, 3, &privateKey, &publicKey);
+    r = oe_rsa_generate_key_pair(1024, 3, &privateKey, &publicKey);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAPrivateKeySign(
+    r = oe_rsa_private_key_sign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -611,7 +611,7 @@ static void TestRSAGenerate()
 
     OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-    r = OE_RSAPrivateKeySign(
+    r = oe_rsa_private_key_sign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -620,7 +620,7 @@ static void TestRSAGenerate()
         &signatureSize);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAPublicKeyVerify(
+    r = oe_rsa_public_key_verify(
         &publicKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -630,8 +630,8 @@ static void TestRSAGenerate()
     OE_TEST(r == OE_OK);
 
     free(signature);
-    OE_RSAPrivateKeyFree(&privateKey);
-    OE_RSAPublicKeyFree(&publicKey);
+    oe_rsa_private_key_free(&privateKey);
+    oe_rsa_public_key_free(&publicKey);
 
     printf("=== passed TestRSAGenerate()\n");
 }
@@ -640,16 +640,16 @@ static void TestECGenerate()
 {
     printf("=== begin TestECGenerate()\n");
 
-    OE_Result r;
-    OE_ECPrivateKey privateKey;
-    OE_ECPublicKey publicKey;
+    oe_result_t r;
+    oe_ec_private_key_t privateKey;
+    oe_ec_public_key_t publicKey;
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP521R1, &privateKey, &publicKey);
+    r = oe_ec_generate_key_pair(OE_EC_TYPE_SECP521R1, &privateKey, &publicKey);
     OE_TEST(r == OE_OK);
 
-    r = OE_ECPrivateKeySign(
+    r = oe_ec_private_key_sign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -660,7 +660,7 @@ static void TestECGenerate()
 
     OE_TEST(signature = (uint8_t*)malloc(signatureSize));
 
-    r = OE_ECPrivateKeySign(
+    r = oe_ec_private_key_sign(
         &privateKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -669,7 +669,7 @@ static void TestECGenerate()
         &signatureSize);
     OE_TEST(r == OE_OK);
 
-    r = OE_ECPublicKeyVerify(
+    r = oe_ec_public_key_verify(
         &publicKey,
         OE_HASH_TYPE_SHA256,
         &HASH,
@@ -679,8 +679,8 @@ static void TestECGenerate()
     OE_TEST(r == OE_OK);
 
     free(signature);
-    OE_ECPrivateKeyFree(&privateKey);
-    OE_ECPublicKeyFree(&publicKey);
+    oe_ec_private_key_free(&privateKey);
+    oe_ec_public_key_free(&publicKey);
 
     printf("=== passed TestECGenerate()\n");
 }
@@ -689,28 +689,28 @@ static void TestRSAWritePrivate()
 {
     printf("=== begin TestRSAWritePrivate()\n");
 
-    OE_Result r;
-    OE_RSAPrivateKey key;
+    oe_result_t r;
+    oe_rsa_private_key_t key;
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = OE_RSAPrivateKeyReadPEM(
+    r = oe_rsa_private_key_read_pem(
         (const uint8_t*)RSA_PRIVATE_KEY, sizeof(RSA_PRIVATE_KEY), &key);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAPrivateKeyWritePEM(&key, pemData, &pemSize);
+    r = oe_rsa_private_key_write_pem(&key, pemData, &pemSize);
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
-    r = OE_RSAPrivateKeyWritePEM(&key, pemData, &pemSize);
+    r = oe_rsa_private_key_write_pem(&key, pemData, &pemSize);
     OE_TEST(r == OE_OK);
 
     OE_TEST(sizeof(RSA_PRIVATE_KEY) == pemSize);
     OE_TEST(memcmp(RSA_PRIVATE_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAPrivateKeyFree(&key);
+    oe_rsa_private_key_free(&key);
 
     printf("=== passed TestRSAWritePrivate()\n");
 }
@@ -719,28 +719,28 @@ static void TestRSAWritePublic()
 {
     printf("=== begin TestRSAWritePublic()\n");
 
-    OE_Result r;
-    OE_RSAPublicKey key;
+    oe_result_t r;
+    oe_rsa_public_key_t key;
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = OE_RSAPublicKeyReadPEM(
+    r = oe_rsa_public_key_read_pem(
         (const uint8_t*)RSA_PUBLIC_KEY, sizeof(RSA_PUBLIC_KEY), &key);
     OE_TEST(r == OE_OK);
 
-    r = OE_RSAPublicKeyWritePEM(&key, pemData, &pemSize);
+    r = oe_rsa_public_key_write_pem(&key, pemData, &pemSize);
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
-    r = OE_RSAPublicKeyWritePEM(&key, pemData, &pemSize);
+    r = oe_rsa_public_key_write_pem(&key, pemData, &pemSize);
     OE_TEST(r == OE_OK);
 
     OE_TEST(sizeof(RSA_PUBLIC_KEY) == pemSize);
     OE_TEST(memcmp(RSA_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_RSAPublicKeyFree(&key);
+    oe_rsa_public_key_free(&key);
 
     printf("=== passed TestRSAWritePublic()\n");
 }
@@ -749,25 +749,25 @@ static void TestECWritePrivate()
 {
     printf("=== begin TestECWritePrivate()\n");
 
-    OE_Result r;
-    OE_ECPublicKey publicKey;
-    OE_ECPrivateKey key1;
-    OE_ECPrivateKey key2;
+    oe_result_t r;
+    oe_ec_public_key_t publicKey;
+    oe_ec_private_key_t key1;
+    oe_ec_private_key_t key2;
     uint8_t* pemData1 = NULL;
     size_t pemSize1 = 0;
     uint8_t* pemData2 = NULL;
     size_t pemSize2 = 0;
 
-    r = OE_ECGenerateKeyPair(OE_EC_TYPE_SECP521R1, &key1, &publicKey);
+    r = oe_ec_generate_key_pair(OE_EC_TYPE_SECP521R1, &key1, &publicKey);
     OE_TEST(r == OE_OK);
 
     {
-        r = OE_ECPrivateKeyWritePEM(&key1, pemData1, &pemSize1);
+        r = oe_ec_private_key_write_pem(&key1, pemData1, &pemSize1);
         OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
         OE_TEST(pemData1 = (uint8_t*)malloc(pemSize1));
 
-        r = OE_ECPrivateKeyWritePEM(&key1, pemData1, &pemSize1);
+        r = oe_ec_private_key_write_pem(&key1, pemData1, &pemSize1);
         OE_TEST(r == OE_OK);
     }
 
@@ -775,16 +775,16 @@ static void TestECWritePrivate()
     OE_TEST(pemData1[pemSize1 - 1] == '\0');
     OE_TEST(strlen((char*)pemData1) == pemSize1 - 1);
 
-    r = OE_ECPrivateKeyReadPEM(pemData1, pemSize1, &key2);
+    r = oe_ec_private_key_read_pem(pemData1, pemSize1, &key2);
     OE_TEST(r == OE_OK);
 
     {
-        r = OE_ECPrivateKeyWritePEM(&key2, pemData2, &pemSize2);
+        r = oe_ec_private_key_write_pem(&key2, pemData2, &pemSize2);
         OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
         OE_TEST(pemData2 = (uint8_t*)malloc(pemSize2));
 
-        r = OE_ECPrivateKeyWritePEM(&key2, pemData2, &pemSize2);
+        r = oe_ec_private_key_write_pem(&key2, pemData2, &pemSize2);
         OE_TEST(r == OE_OK);
     }
 
@@ -793,9 +793,9 @@ static void TestECWritePrivate()
 
     free(pemData1);
     free(pemData2);
-    OE_ECPublicKeyFree(&publicKey);
-    OE_ECPrivateKeyFree(&key1);
-    OE_ECPrivateKeyFree(&key2);
+    oe_ec_public_key_free(&publicKey);
+    oe_ec_private_key_free(&key1);
+    oe_ec_private_key_free(&key2);
 
     printf("=== passed TestECWritePrivate()\n");
 }
@@ -804,22 +804,22 @@ static void TestECWritePublic()
 {
     printf("=== begin TestECWritePublic()\n");
 
-    OE_Result r;
-    OE_ECPublicKey key;
+    oe_result_t r;
+    oe_ec_public_key_t key;
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = OE_ECPublicKeyReadPEM(
+    r = oe_ec_public_key_read_pem(
         (const uint8_t*)EC_PUBLIC_KEY, sizeof(EC_PUBLIC_KEY), &key);
     OE_TEST(r == OE_OK);
 
     {
-        r = OE_ECPublicKeyWritePEM(&key, pemData, &pemSize);
+        r = oe_ec_public_key_write_pem(&key, pemData, &pemSize);
         OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
         OE_TEST(pemData = (uint8_t*)malloc(pemSize));
 
-        r = OE_ECPublicKeyWritePEM(&key, pemData, &pemSize);
+        r = oe_ec_public_key_write_pem(&key, pemData, &pemSize);
         OE_TEST(r == OE_OK);
     }
 
@@ -827,7 +827,7 @@ static void TestECWritePublic()
     OE_TEST(memcmp(EC_PUBLIC_KEY, pemData, pemSize) == 0);
 
     free(pemData);
-    OE_ECPublicKeyFree(&key);
+    oe_ec_public_key_free(&key);
 
     printf("=== passed TestECWritePublic()\n");
 }
@@ -836,32 +836,32 @@ static void TestCertMethods()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    OE_Result r;
+    oe_result_t r;
 
-    /* Test OE_CertGetRSAPublicKey() */
+    /* Test oe_cert_get_rsa_public_key() */
     {
-        OE_Cert cert;
+        oe_cert_t cert;
 
-        r = OE_CertReadPEM(CERT1, sizeof(CERT1), &cert);
+        r = oe_cert_read_pem(CERT1, sizeof(CERT1), &cert);
         OE_TEST(r == OE_OK);
 
-        OE_RSAPublicKey key;
-        r = OE_CertGetRSAPublicKey(&cert, &key);
+        oe_rsa_public_key_t key;
+        r = oe_cert_get_rsa_public_key(&cert, &key);
         OE_TEST(r == OE_OK);
 
-        /* Test OE_RSAPublicKeyGetModulus() */
+        /* Test oe_rsa_public_key_get_modulus() */
         {
             uint8_t* data;
             size_t size = 0;
 
             /* Determine required buffer size */
-            r = OE_RSAPublicKeyGetModulus(&key, NULL, &size);
+            r = oe_rsa_public_key_get_modulus(&key, NULL, &size);
             OE_TEST(r == OE_BUFFER_TOO_SMALL);
             OE_TEST(size == sizeof(CERT1_RSA_MODULUS));
 
             /* Fetch the key bytes */
             OE_TEST(data = (uint8_t*)malloc(size));
-            r = OE_RSAPublicKeyGetModulus(&key, data, &size);
+            r = oe_rsa_public_key_get_modulus(&key, data, &size);
             OE_TEST(r == OE_OK);
 
             /* Does it match expected modulus? */
@@ -870,19 +870,19 @@ static void TestCertMethods()
             free(data);
         }
 
-        /* Test OE_RSAPublicKeyGetExponent() */
+        /* Test oe_rsa_public_key_get_exponent() */
         {
             uint8_t* data;
             size_t size = 0;
 
             /* Determine required buffer size */
-            r = OE_RSAPublicKeyGetExponent(&key, NULL, &size);
+            r = oe_rsa_public_key_get_exponent(&key, NULL, &size);
             OE_TEST(r == OE_BUFFER_TOO_SMALL);
             OE_TEST(size == sizeof(CERT_RSA_EXPONENT));
 
             /* Fetch the key bytes */
             OE_TEST(data = (uint8_t*)malloc(size));
-            r = OE_RSAPublicKeyGetExponent(&key, data, &size);
+            r = oe_rsa_public_key_get_exponent(&key, data, &size);
             OE_TEST(r == OE_OK);
 
             /* Does it match expected exponent */
@@ -891,41 +891,41 @@ static void TestCertMethods()
             free(data);
         }
 
-        /* Test OE_RSAPublicKeyEqual() */
+        /* Test oe_rsa_public_key_equal() */
         {
             bool equal;
-            OE_TEST(OE_RSAPublicKeyEqual(&key, &key, &equal) == OE_OK);
+            OE_TEST(oe_rsa_public_key_equal(&key, &key, &equal) == OE_OK);
             OE_TEST(equal == true);
         }
 
-        OE_RSAPublicKeyFree(&key);
-        OE_CertFree(&cert);
+        oe_rsa_public_key_free(&key);
+        oe_cert_free(&cert);
     }
 
-    /* Test OE_CertGetECPublicKey() */
+    /* Test oe_cert_get_ec_public_key() */
     {
-        OE_Cert cert;
-        OE_ECPublicKey key;
+        oe_cert_t cert;
+        oe_ec_public_key_t key;
 
-        r = OE_CertReadPEM(ECCERT, sizeof(ECCERT), &cert);
+        r = oe_cert_read_pem(ECCERT, sizeof(ECCERT), &cert);
         OE_TEST(r == OE_OK);
 
-        r = OE_CertGetECPublicKey(&cert, &key);
+        r = oe_cert_get_ec_public_key(&cert, &key);
         OE_TEST(r == OE_OK);
 
-        /* Test OE_ECPublicKeyGetKeyBytes() */
+        /* Test oe_ec_public_key_get_key_bytes() */
         {
             uint8_t* data;
             size_t size = 0;
 
             /* Determine the required size of the buffer */
-            r = OE_ECPublicKeyGetKeyBytes(&key, NULL, &size);
+            r = oe_ec_public_key_get_key_bytes(&key, NULL, &size);
             OE_TEST(r == OE_BUFFER_TOO_SMALL);
             OE_TEST(size == sizeof(CERT_EC_KEY));
 
             /* Fetch the key bytes */
             OE_TEST(data = (uint8_t*)malloc(size));
-            r = OE_ECPublicKeyGetKeyBytes(&key, data, &size);
+            r = oe_ec_public_key_get_key_bytes(&key, data, &size);
             OE_TEST(r == OE_OK);
 
             /* Does it match expected key? */
@@ -934,110 +934,110 @@ static void TestCertMethods()
             free(data);
         }
 
-        /* Test OE_ECPublicKeyEqual() */
+        /* Test oe_ec_public_key_equal() */
         {
             bool equal;
-            OE_TEST(OE_ECPublicKeyEqual(&key, &key, &equal) == OE_OK);
+            OE_TEST(oe_ec_public_key_equal(&key, &key, &equal) == OE_OK);
             OE_TEST(equal == true);
         }
 
-        OE_ECPublicKeyFree(&key);
-        OE_CertFree(&cert);
+        oe_ec_public_key_free(&key);
+        oe_cert_free(&cert);
     }
 
-    /* Test OE_CertChainGetCert() */
+    /* Test oe_cert_chain_get_cert() */
     {
-        OE_CertChain chain;
+        oe_cert_chain_t chain;
 
         /* Load the chain from PEM format */
-        r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
+        r = oe_cert_chain_read_pem(CHAIN1, sizeof(CHAIN1), &chain);
         OE_TEST(r == OE_OK);
 
         /* Get the length of the chain */
         size_t length;
-        r = OE_CertChainGetLength(&chain, &length);
+        r = oe_cert_chain_get_length(&chain, &length);
         OE_TEST(r == OE_OK);
         OE_TEST(length == 2);
 
         /* Get each certificate in the chain */
         for (size_t i = 0; i < length; i++)
         {
-            OE_Cert cert;
-            r = OE_CertChainGetCert(&chain, i, &cert);
+            oe_cert_t cert;
+            r = oe_cert_chain_get_cert(&chain, i, &cert);
             OE_TEST(r == OE_OK);
-            OE_CertFree(&cert);
+            oe_cert_free(&cert);
         }
 
         /* Test out of bounds */
         {
-            OE_Cert cert;
-            r = OE_CertChainGetCert(&chain, length + 1, &cert);
+            oe_cert_t cert;
+            r = oe_cert_chain_get_cert(&chain, length + 1, &cert);
             OE_TEST(r == OE_OUT_OF_BOUNDS);
-            OE_CertFree(&cert);
+            oe_cert_free(&cert);
         }
 
-        OE_CertChainFree(&chain);
+        oe_cert_chain_free(&chain);
     }
 
-    /* Test OE_CertChainGetRootCert() and OE_CertChainGetLeafCert() */
+    /* Test oe_cert_chain_get_root_cert() and oe_cert_chain_get_leaf_cert() */
     {
-        OE_CertChain chain;
-        OE_Cert root;
-        OE_Cert cert0;
-        OE_Cert leaf;
+        oe_cert_chain_t chain;
+        oe_cert_t root;
+        oe_cert_t cert0;
+        oe_cert_t leaf;
 
         /* Load the chain from PEM format */
-        r = OE_CertChainReadPEM(CHAIN1, sizeof(CHAIN1), &chain);
+        r = oe_cert_chain_read_pem(CHAIN1, sizeof(CHAIN1), &chain);
         OE_TEST(r == OE_OK);
 
         /* Get the root certificate */
-        r = OE_CertChainGetRootCert(&chain, &root);
+        r = oe_cert_chain_get_root_cert(&chain, &root);
         OE_TEST(r == OE_OK);
 
         /* Get the first certificate */
-        r = OE_CertChainGetCert(&chain, 0, &cert0);
+        r = oe_cert_chain_get_cert(&chain, 0, &cert0);
         OE_TEST(r == OE_OK);
 
         /* Get the leaf certificate */
-        r = OE_CertChainGetLeafCert(&chain, &leaf);
+        r = oe_cert_chain_get_leaf_cert(&chain, &leaf);
         OE_TEST(r == OE_OK);
 
         /* Check that the keys are identical for top and root certificate */
         {
-            OE_RSAPublicKey rootKey;
-            OE_RSAPublicKey certKey;
+            oe_rsa_public_key_t rootKey;
+            oe_rsa_public_key_t certKey;
             bool equal;
 
-            OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
-            OE_TEST(OE_CertGetRSAPublicKey(&cert0, &certKey) == OE_OK);
+            OE_TEST(oe_cert_get_rsa_public_key(&root, &rootKey) == OE_OK);
+            OE_TEST(oe_cert_get_rsa_public_key(&cert0, &certKey) == OE_OK);
 
-            OE_TEST(OE_RSAPublicKeyEqual(&rootKey, &certKey, &equal) == OE_OK);
+            OE_TEST(oe_rsa_public_key_equal(&rootKey, &certKey, &equal) == OE_OK);
             OE_TEST(equal == true);
 
-            OE_RSAPublicKeyFree(&rootKey);
-            OE_RSAPublicKeyFree(&certKey);
+            oe_rsa_public_key_free(&rootKey);
+            oe_rsa_public_key_free(&certKey);
         }
 
         /* Check that the keys are not identical for leaf and root */
         {
-            OE_RSAPublicKey rootKey;
-            OE_RSAPublicKey leafKey;
+            oe_rsa_public_key_t rootKey;
+            oe_rsa_public_key_t leafKey;
             bool equal;
 
-            OE_TEST(OE_CertGetRSAPublicKey(&root, &rootKey) == OE_OK);
-            OE_TEST(OE_CertGetRSAPublicKey(&leaf, &leafKey) == OE_OK);
+            OE_TEST(oe_cert_get_rsa_public_key(&root, &rootKey) == OE_OK);
+            OE_TEST(oe_cert_get_rsa_public_key(&leaf, &leafKey) == OE_OK);
 
-            OE_TEST(OE_RSAPublicKeyEqual(&rootKey, &leafKey, &equal) == OE_OK);
+            OE_TEST(oe_rsa_public_key_equal(&rootKey, &leafKey, &equal) == OE_OK);
             OE_TEST(equal == false);
 
-            OE_RSAPublicKeyFree(&rootKey);
-            OE_RSAPublicKeyFree(&leafKey);
+            oe_rsa_public_key_free(&rootKey);
+            oe_rsa_public_key_free(&leafKey);
         }
 
-        OE_CertFree(&root);
-        OE_CertFree(&cert0);
-        OE_CertFree(&leaf);
-        OE_CertChainFree(&chain);
+        oe_cert_free(&root);
+        oe_cert_free(&cert0);
+        oe_cert_free(&leaf);
+        oe_cert_chain_free(&chain);
     }
 
     printf("=== passed %s()\n", __FUNCTION__);

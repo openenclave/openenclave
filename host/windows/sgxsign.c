@@ -5,14 +5,14 @@
 #include <openenclave/bits/sha.h>
 #include <openenclave/result.h>
 
-OE_Result OE_SGXSignEnclave(
+oe_result_t oe_sgx_sign_enclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,
     uint16_t securityVersion,
     const char* pemData,
     size_t pemSize,
-    SGX_SigStruct* sigstruct)
+    sgx_sigstruct_t* sigstruct)
 {
     /* ATTN: unsupported on Windows */
     return OE_UNSUPPORTED;

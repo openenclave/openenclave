@@ -14,45 +14,45 @@
 
 // This file is .cpp in order to use C++ static initialization.
 
-OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(SGX_ReportData));
+OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
-static OE_Result _OE_GetReportKey(const SGX_Report* sgxReport, SGX_Key* sgxKey)
+static oe_result_t _oe_get_report_key(const sgx_report_t* sgxReport, sgx_key_t* sgxKey)
 {
-    OE_Result result = OE_UNEXPECTED;
-    SGX_KeyRequest sgxKeyRequest = {0};
+    oe_result_t result = OE_UNEXPECTED;
+    sgx_key_request_t sgxKeyRequest = {0};
 
     sgxKeyRequest.key_name = SGX_KEYSELECT_REPORT;
-    OE_Memcpy(sgxKeyRequest.key_id, sgxReport->keyid, sizeof(sgxReport->keyid));
+    oe_memcpy(sgxKeyRequest.key_id, sgxReport->keyid, sizeof(sgxReport->keyid));
 
-    OE_CHECK(OE_GetKey(&sgxKeyRequest, sgxKey));
+    OE_CHECK(oe_get_key(&sgxKeyRequest, sgxKey));
     result = OE_OK;
 
 done:
     // Cleanup secret.
-    OE_SecureZeroFill(&sgxKeyRequest, sizeof(sgxKeyRequest));
+    oe_secure_zero_fill(&sgxKeyRequest, sizeof(sgxKeyRequest));
 
     return result;
 }
 
-// OE_VerifyReport needs crypto library's cmac computation. oecore does not have
-// crypto functionality. Hence OE_Verify report is implemented here instead of
+// oe_verify_report needs crypto library's cmac computation. oecore does not have
+// crypto functionality. Hence oe_verify report is implemented here instead of
 // in oecore. Also see ECall_HandleVerifyReport below.
-OE_Result OE_VerifyReport(
+oe_result_t oe_verify_report(
     const uint8_t* report,
     uint32_t reportSize,
-    OE_Report* parsedReport)
+    oe_report_t* parsedReport)
 {
-    OE_Result result = OE_UNEXPECTED;
-    OE_Report oeReport = {0};
-    SGX_Key sgxKey = {0};
+    oe_result_t result = OE_UNEXPECTED;
+    oe_report_t oeReport = {0};
+    sgx_key_t sgxKey = {0};
 
-    SGX_Report* sgxReport = NULL;
+    sgx_report_t* sgxReport = NULL;
 
     const uint32_t aesCMACLength = sizeof(sgxKey);
     OE_AESCMAC reportAESCMAC = {{0}};
     OE_AESCMAC computedAESCMAC = {{0}};
 
-    OE_CHECK(OE_ParseReport(report, reportSize, &oeReport));
+    OE_CHECK(oe_parse_report(report, reportSize, &oeReport));
 
     if (oeReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
     {
@@ -60,12 +60,12 @@ OE_Result OE_VerifyReport(
     }
     else
     {
-        sgxReport = (SGX_Report*)report;
+        sgxReport = (sgx_report_t*)report;
 
-        OE_CHECK(_OE_GetReportKey(sgxReport, &sgxKey));
+        OE_CHECK(_oe_get_report_key(sgxReport, &sgxKey));
 
         OE_CHECK(
-            OE_AESCMACSign(
+            oe_aes_cmac_sign(
                 (uint8_t*)&sgxKey,
                 sizeof(sgxKey),
                 (uint8_t*)&sgxReport->body,
@@ -74,9 +74,9 @@ OE_Result OE_VerifyReport(
 
         // Fetch cmac from sgxReport.
         // Note: sizeof(sgxReport->mac) <= sizeof(OE_AESCMAC).
-        OE_SecureMemcpy(&reportAESCMAC, sgxReport->mac, aesCMACLength);
+        oe_secure_memcpy(&reportAESCMAC, sgxReport->mac, aesCMACLength);
 
-        if (!OE_SecureAESCMACEqual(&computedAESCMAC, &reportAESCMAC))
+        if (!oe_secure_aes_cmac_equal(&computedAESCMAC, &reportAESCMAC))
             OE_RAISE(OE_VERIFY_FAILED);
     }
 
@@ -88,34 +88,34 @@ OE_Result OE_VerifyReport(
 
 done:
     // Cleanup secret.
-    OE_SecureZeroFill(&sgxKey, sizeof(sgxKey));
+    oe_secure_zero_fill(&sgxKey, sizeof(sgxKey));
 
     return result;
 }
 
-static OE_Result _SafeCopyVerifyReportArgs(
+static oe_result_t _SafeCopyVerifyReportArgs(
     uint64_t argIn,
-    OE_VerifyReportArgs* safeArg,
+    oe_verify_report_args_t* safeArg,
     uint8_t* reportBuffer)
 {
-    OE_Result result = OE_UNEXPECTED;
-    OE_VerifyReportArgs* unsafeArg = (OE_VerifyReportArgs*)argIn;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_verify_report_args_t* unsafeArg = (oe_verify_report_args_t*)argIn;
 
-    if (!unsafeArg || !OE_IsOutsideEnclave(unsafeArg, sizeof(*unsafeArg)))
+    if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Copy arg to prevent TOCTOU issues.
-    OE_SecureMemcpy(safeArg, unsafeArg, sizeof(*safeArg));
+    oe_secure_memcpy(safeArg, unsafeArg, sizeof(*safeArg));
 
     if (!safeArg->report ||
-        !OE_IsOutsideEnclave(safeArg->report, safeArg->reportSize))
+        !oe_is_outside_enclave(safeArg->report, safeArg->reportSize))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (safeArg->reportSize > OE_MAX_REPORT_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Copy report to prevent TOCTOU issues.
-    OE_SecureMemcpy(reportBuffer, safeArg->report, safeArg->reportSize);
+    oe_secure_memcpy(reportBuffer, safeArg->report, safeArg->reportSize);
     safeArg->report = reportBuffer;
 
     result = OE_OK;
@@ -124,14 +124,14 @@ done:
     return result;
 }
 
-static OE_Result _SafeCopyVerifyReportArgsOuput(
-    const OE_VerifyReportArgs* safeArg,
+static oe_result_t _SafeCopyVerifyReportArgsOuput(
+    const oe_verify_report_args_t* safeArg,
     uint64_t argIn)
 {
-    OE_Result result = OE_UNEXPECTED;
-    OE_VerifyReportArgs* unsafeArg = (OE_VerifyReportArgs*)argIn;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_verify_report_args_t* unsafeArg = (oe_verify_report_args_t*)argIn;
 
-    if (!unsafeArg || !OE_IsOutsideEnclave(unsafeArg, sizeof(*unsafeArg)))
+    if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     unsafeArg->result = safeArg->result;
@@ -144,23 +144,23 @@ done:
 static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut);
 
 // Use static initializer to register ECall_HandleVerifyReport.
-static OE_Result g_InitECalls =
-    OE_RegisterECall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);
+static oe_result_t g_InitECalls =
+    oe_register_ecall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);
 
-// The report key is never sent out to the host. The host side OE_VerifyReport
+// The report key is never sent out to the host. The host side oe_verify_report
 // invokes OE_FUNC_VERIFY_REPORT ECall on the enclave. ECalls are handled in
-// oecore; however oecore has no access to enclave's OE_VerifyReport (see
-// above). Therefore, OE_VerifyReport is exposed to oecore as a registered
+// oecore; however oecore has no access to enclave's oe_verify_report (see
+// above). Therefore, oe_verify_report is exposed to oecore as a registered
 // ECall.
 static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
 {
-    OE_Result result = OE_UNEXPECTED;
-    OE_VerifyReportArgs arg;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_verify_report_args_t arg;
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
 
     OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, reportBuffer));
 
-    OE_CHECK(OE_VerifyReport(reportBuffer, arg.reportSize, NULL));
+    OE_CHECK(oe_verify_report(reportBuffer, arg.reportSize, NULL));
 
     // success.
     result = OE_OK;

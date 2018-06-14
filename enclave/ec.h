@@ -7,13 +7,13 @@
 #include <mbedtls/pk.h>
 #include <openenclave/bits/ec.h>
 
-OE_INLINE bool OE_IsECKey(const mbedtls_pk_context* pk)
+OE_INLINE bool oe_is_ec_key(const mbedtls_pk_context* pk)
 {
     return (pk->pk_info == mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
 }
 
-OE_Result OE_ECPublicKeyInit(
-    OE_ECPublicKey* publicKey,
+oe_result_t oe_ec_public_key_init(
+    oe_ec_public_key_t* publicKey,
     const mbedtls_pk_context* pk);
 
 #endif /* _OE_ENCLAVE_EC_H */

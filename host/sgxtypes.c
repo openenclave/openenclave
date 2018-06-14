@@ -6,21 +6,21 @@
 #include <openenclave/bits/utils.h>
 #include <stdio.h>
 
-void __SGX_DumpEinitToken(const SGX_EInitToken* p)
+void __sgx_dump_einit_token(const sgx_einittoken_t* p)
 {
-    printf("=== SGX_EInitToken:\n");
+    printf("=== sgx_einittoken_t:\n");
     printf("valid=%u\n", p->valid);
     printf("attributes.flags=" OE_I64X_F "\n", p->attributes.flags);
     printf("attributes.xfrm=" OE_I64X_F "\n", p->attributes.xfrm);
 
     printf("mrenclave=");
-    OE_HexDump(p->mrenclave, sizeof(p->mrenclave));
+    oe_hex_dump(p->mrenclave, sizeof(p->mrenclave));
 
     printf("mrsigner=");
-    OE_HexDump(p->mrsigner, sizeof(p->mrsigner));
+    oe_hex_dump(p->mrsigner, sizeof(p->mrsigner));
 
     printf("keyid=");
-    OE_HexDump(p->keyid, sizeof(p->keyid));
+    oe_hex_dump(p->keyid, sizeof(p->keyid));
 
     printf("isvprodidle=%u\n", p->isvprodidle);
 
@@ -35,29 +35,29 @@ void __SGX_DumpEinitToken(const SGX_EInitToken* p)
         "maskedattributesle.xfrm=" OE_I64X_F "\n", p->maskedattributesle.xfrm);
 
     printf("keyid=");
-    OE_HexDump(p->keyid, sizeof(p->keyid));
+    oe_hex_dump(p->keyid, sizeof(p->keyid));
 
     printf("mac=");
-    OE_HexDump(p->mac, sizeof(p->mac));
+    oe_hex_dump(p->mac, sizeof(p->mac));
 }
 
-void __SGX_DumpSigStruct(const SGX_SigStruct* p)
+void __sgx_dump_sigstruct(const sgx_sigstruct_t* p)
 {
-    printf("=== SGX_Sigstruct\n");
+    printf("=== sgx_sigstruct\n");
     printf("header=");
-    OE_HexDump(p->header, sizeof(p->header));
+    oe_hex_dump(p->header, sizeof(p->header));
     printf("type=%08x\n", p->type);
     printf("vendor=%08x\n", p->vendor);
     printf("date=%08x\n", p->date);
     printf("header2=");
-    OE_HexDump(p->header2, sizeof(p->header2));
+    oe_hex_dump(p->header2, sizeof(p->header2));
     printf("swdefined=%08x\n", p->swdefined);
     printf("modulus=");
-    OE_HexDump(p->modulus, sizeof(p->modulus));
+    oe_hex_dump(p->modulus, sizeof(p->modulus));
     printf("exponent=");
-    OE_HexDump(p->exponent, sizeof(p->exponent));
+    oe_hex_dump(p->exponent, sizeof(p->exponent));
     printf("signature=");
-    OE_HexDump(p->signature, sizeof(p->signature));
+    oe_hex_dump(p->signature, sizeof(p->signature));
     printf("miscselect=%08x\n", p->miscselect);
     printf("miscmask=%08x\n", p->miscmask);
     printf("attributes.flags=" OE_I64X_F "\n", p->attributes.flags);
@@ -65,11 +65,11 @@ void __SGX_DumpSigStruct(const SGX_SigStruct* p)
     printf("attributemask.flags=" OE_I64X_F "\n", p->attributemask.flags);
     printf("attributemask.xfrm=" OE_I64X_F "\n", p->attributemask.xfrm);
     printf("enclavehash=");
-    OE_HexDump(p->enclavehash, sizeof(p->enclavehash));
+    oe_hex_dump(p->enclavehash, sizeof(p->enclavehash));
     printf("isvprodid=%04x\n", p->isvprodid);
     printf("isvsvn=%04x\n", p->isvsvn);
     printf("q1=");
-    OE_HexDump(p->q1, sizeof(p->q1));
+    oe_hex_dump(p->q1, sizeof(p->q1));
     printf("q2=");
-    OE_HexDump(p->q2, sizeof(p->q2));
+    oe_hex_dump(p->q2, sizeof(p->q2));
 }

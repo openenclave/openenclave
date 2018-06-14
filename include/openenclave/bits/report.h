@@ -9,78 +9,78 @@
 /*
 **==============================================================================
 **
-** OE_InitQuoteArgs
+** oe_init_quote_args_t
 **
 **==============================================================================
 */
-typedef struct _OE_InitQuoteArgs
+typedef struct _oe_init_quote_args
 {
-    OE_Result result;
-    SGX_TargetInfo targetInfo;
-    SGX_EPIDGroupID epidGroupID;
-} OE_InitQuoteArgs;
+    oe_result_t result;
+    sgx_target_info_t targetInfo;
+    sgx_epid_group_id_t epidGroupID;
+} oe_init_quote_args_t;
 
 /*
 **==============================================================================
 **
-** OE_GetQETargetInfoArgs
+** oe_get_qetarget_info_args_t
 **
 **==============================================================================
 */
-typedef struct _OE_GetQETargetInfoArgs
+typedef struct _oe_get_qetarget_info_args
 {
-    OE_Result result;
-    SGX_TargetInfo targetInfo;
-} OE_GetQETargetInfoArgs;
+    oe_result_t result;
+    sgx_target_info_t targetInfo;
+} oe_get_qetarget_info_args_t;
 
 /*
 **==============================================================================
 **
-** _OE_GetQuoteArgs
+** _oe_get_quote_args
 **
 **==============================================================================
 */
-typedef struct _OE_GetQuoteArgs
+typedef struct _oe_get_quote_args
 {
-    OE_Result result;
-    SGX_Report sgxReport;
+    oe_result_t result;
+    sgx_report_t sgxReport;
     uint32_t quoteSize;
     uint8_t quote[1];
-} OE_GetQuoteArgs;
+} oe_get_quote_args_t;
 
 /*
 **==============================================================================
 **
-** OE_GetReportArgs
+** oe_get_report_args_t
 **
 **==============================================================================
 */
-typedef struct _OE_GetReportArgs
+typedef struct _oe_get_report_args
 {
-    OE_Result result; /* out */
+    oe_result_t result; /* out */
 
     uint32_t options; /* in */
 
-    uint8_t optParams[sizeof(SGX_TargetInfo)]; /* in */
+    uint8_t optParams[sizeof(sgx_target_info_t)]; /* in */
     uint32_t optParamsSize;                    /* in */
 
     uint8_t* reportBuffer;     /* ptr to output buffer */
     uint32_t reportBufferSize; /* in-out */
-} OE_GetReportArgs;
+} oe_get_report_args_t;
 
 /*
 **==============================================================================
 **
-** OE_VerifyReportArgs
+** oe_verify_report_args_t
 **
 **==============================================================================
 */
-typedef struct _OE_VerifyReportArgs
+typedef struct _oe_verify_report_args
 {
-    OE_Result result; /* out */
+    oe_result_t result; /* out */
 
     uint8_t* report;     /* in */
     uint32_t reportSize; /* in */
-} OE_VerifyReportArgs;
+} oe_verify_report_args_t;
 
 #endif //_OE_BITS_REPORT_H_

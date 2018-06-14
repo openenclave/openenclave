@@ -11,11 +11,11 @@
 OE_EXTERNC_BEGIN
 
 OE_PRINTF_FORMAT(3, 4)
-void __OE_PutErr(const char* file, unsigned int line, const char* format, ...);
+void __oe_put_err(const char* file, unsigned int line, const char* format, ...);
 
-void OE_SetProgramName(const char* name);
+void oe_set_program_name(const char* name);
 
-#define OE_PutErr(...) __OE_PutErr(__FILE__, __LINE__, __VA_ARGS__)
+#define oe_put_err(...) __oe_put_err(__FILE__, __LINE__, __VA_ARGS__)
 
 OE_EXTERNC_END
 

@@ -17,7 +17,7 @@
 OE_EXPORT unsigned long long __oe_numPages;
 OE_EXPORT unsigned long long __oe_virtualBaseAddr;
 
-const void* __OE_GetEnclaveBase()
+const void* __oe_get_enclave_base()
 {
     /*
      * Note: The reference to &__oe_virtualBaseAddr will be compiled
@@ -27,7 +27,7 @@ const void* __OE_GetEnclaveBase()
     return (uint8_t*)&__oe_virtualBaseAddr - __oe_virtualBaseAddr;
 }
 
-size_t __OE_GetEnclaveSize()
+size_t __oe_get_enclave_size()
 {
     return __oe_numPages * OE_PAGE_SIZE;
 }
@@ -43,19 +43,19 @@ size_t __OE_GetEnclaveSize()
 OE_EXPORT unsigned long long __oe_baseRelocPage;
 OE_EXPORT unsigned long long __oe_numRelocPages;
 
-const void* __OE_GetRelocBase()
+const void* __oe_get_reloc_base()
 {
-    const unsigned char* base = __OE_GetEnclaveBase();
+    const unsigned char* base = __oe_get_enclave_base();
 
     return base + (__oe_baseRelocPage * OE_PAGE_SIZE);
 }
 
-const void* __OE_GetRelocEnd()
+const void* __oe_get_reloc_end()
 {
-    return (const uint8_t*)__OE_GetRelocBase() + __OE_GetRelocSize();
+    return (const uint8_t*)__oe_get_reloc_base() + __oe_get_reloc_size();
 }
 
-const size_t __OE_GetRelocSize()
+const size_t __oe_get_reloc_size()
 {
     return __oe_numRelocPages * OE_PAGE_SIZE;
 }
@@ -71,19 +71,19 @@ const size_t __OE_GetRelocSize()
 OE_EXPORT unsigned long long __oe_baseECallPage;
 OE_EXPORT unsigned long long __oe_numECallPages;
 
-const void* __OE_GetECallBase()
+const void* __oe_get_ecall_base()
 {
-    const unsigned char* base = __OE_GetEnclaveBase();
+    const unsigned char* base = __oe_get_enclave_base();
 
     return base + (__oe_baseECallPage * OE_PAGE_SIZE);
 }
 
-const void* __OE_GetECallEnd()
+const void* __oe_get_ecall_end()
 {
-    return (const uint8_t*)__OE_GetECallBase() + __OE_GetECallSize();
+    return (const uint8_t*)__oe_get_ecall_base() + __oe_get_ecall_size();
 }
 
-const size_t __OE_GetECallSize()
+const size_t __oe_get_ecall_size()
 {
     return __oe_numECallPages * OE_PAGE_SIZE;
 }
@@ -99,19 +99,19 @@ const size_t __OE_GetECallSize()
 OE_EXPORT unsigned long long __oe_baseHeapPage;
 OE_EXPORT unsigned long long __oe_numHeapPages;
 
-const void* __OE_GetHeapBase()
+const void* __oe_get_heap_base()
 {
-    const unsigned char* base = __OE_GetEnclaveBase();
+    const unsigned char* base = __oe_get_enclave_base();
 
     return base + (__oe_baseHeapPage * OE_PAGE_SIZE);
 }
 
-const size_t __OE_GetHeapSize()
+const size_t __oe_get_heap_size()
 {
     return __oe_numHeapPages * OE_PAGE_SIZE;
 }
 
-const void* __OE_GetHeapEnd()
+const void* __oe_get_heap_end()
 {
-    return (const uint8_t*)__OE_GetHeapBase() + __OE_GetHeapSize();
+    return (const uint8_t*)__oe_get_heap_base() + __oe_get_heap_size();
 }

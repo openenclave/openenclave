@@ -8,17 +8,17 @@
 /*
 **==============================================================================
 **
-** OE_H_Thread
+** oe_thread
 **
 **==============================================================================
 */
 
-OE_H_Thread OE_H_ThreadSelf(void)
+oe_thread oe_thread_self(void)
 {
     return GetCurrentThreadId();
 }
 
-int OE_H_ThreadEqual(OE_H_Thread thread1, OE_H_Thread thread2)
+int oe_thread_equal(oe_thread thread1, oe_thread thread2)
 {
     return thread1 == thread2;
 }
@@ -26,7 +26,7 @@ int OE_H_ThreadEqual(OE_H_Thread thread1, OE_H_Thread thread2)
 /*
 **==============================================================================
 **
-** OE_H_OnceType
+** oe_once_type
 **
 **==============================================================================
 */
@@ -40,7 +40,7 @@ static BOOL CALLBACK OnceHelper(
     return TRUE;
 }
 
-int OE_H_Once(OE_H_OnceType* once, void (*func)(void))
+int oe_once(oe_once_type* once, void (*func)(void))
 {
     return InitOnceExecuteOnce(once, OnceHelper, func, NULL);
 }
@@ -48,12 +48,12 @@ int OE_H_Once(OE_H_OnceType* once, void (*func)(void))
 /*
 **==============================================================================
 **
-** OE_H_Mutex
+** oe_mutex
 **
 **==============================================================================
 */
 
-int OE_H_MutexInit(OE_H_Mutex* Lock)
+int oe_mutex_init(oe_mutex* Lock)
 {
     HANDLE h = CreateMutex(NULL, FALSE, NULL);
 
@@ -65,19 +65,19 @@ int OE_H_MutexInit(OE_H_Mutex* Lock)
     return 1;
 }
 
-int OE_H_MutexLock(OE_H_Mutex* Lock)
+int oe_mutex_lock(oe_mutex* Lock)
 {
-    OE_H_Mutex newLock;
+    oe_mutex newLock;
 
     if (*Lock == OE_H_MUTEX_INITIALIZER)
     {
-        if (OE_H_MutexInit(&newLock))
+        if (oe_mutex_init(&newLock))
             return 1;
         if (InterlockedCompareExchangePointer(
                 Lock, newLock, OE_H_MUTEX_INITIALIZER) !=
             OE_H_MUTEX_INITIALIZER)
         {
-            if (OE_H_MutexDestroy(&newLock))
+            if (oe_mutex_destroy(&newLock))
                 return 1;
         }
     }
@@ -85,12 +85,12 @@ int OE_H_MutexLock(OE_H_Mutex* Lock)
     return WaitForSingleObject(*Lock, INFINITE) != WAIT_OBJECT_0;
 }
 
-int OE_H_MutexUnlock(OE_H_Mutex* Lock)
+int oe_mutex_unlock(oe_mutex* Lock)
 {
     return !ReleaseMutex(*Lock);
 }
 
-int OE_H_MutexDestroy(OE_H_Mutex* Lock)
+int oe_mutex_destroy(oe_mutex* Lock)
 {
     return !CloseHandle(*Lock);
 }
@@ -98,14 +98,14 @@ int OE_H_MutexDestroy(OE_H_Mutex* Lock)
 /*
 **==============================================================================
 **
-** OE_H_ThreadKey
+** oe_thread_key
 **
 **==============================================================================
 */
 
-int OE_H_ThreadKeyCreate(OE_H_ThreadKey* key)
+int oe_thread_key_create(oe_thread_key* key)
 {
-    OE_H_ThreadKey k;
+    oe_thread_key k;
     k = TlsAlloc();
     if (k == TLS_OUT_OF_INDEXES)
         return 1;
@@ -114,17 +114,17 @@ int OE_H_ThreadKeyCreate(OE_H_ThreadKey* key)
     return 0;
 }
 
-int OE_H_ThreadKeyDelete(OE_H_ThreadKey key)
+int oe_thread_key_delete(oe_thread_key key)
 {
     return !TlsFree(key);
 }
 
-int OE_H_ThreadSetSpecific(OE_H_ThreadKey key, void* value)
+int oe_thread_set_specific(oe_thread_key key, void* value)
 {
     return !TlsSetValue(key, value);
 }
 
-void* OE_H_ThreadGetSpecific(OE_H_ThreadKey key)
+void* oe_thread_get_specific(oe_thread_key key)
 {
     return TlsGetValue(key);
 }

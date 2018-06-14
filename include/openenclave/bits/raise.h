@@ -4,13 +4,13 @@
 /**
  * \file raise.h
  *
- * This file defines macros to simplify functions that return OE_Result.
+ * This file defines macros to simplify functions that return oe_result_t.
  * For example, consider the following function definition.
  *
- *     OE_Result Func1(const char* param)
+ *     oe_result_t Func1(const char* param)
  *     {
- *         OE_Result result = OE_UNEXPECTED;
- *         OE_Result r;
+ *         oe_result_t result = OE_UNEXPECTED;
+ *         oe_result_t r;
  *
  *         if (!param)
  *         {
@@ -40,9 +40,9 @@
  *
  * These macros can be used to simplify the function as follows.
  *
- *     OE_Result Func1(const char* param)
+ *     oe_result_t Func1(const char* param)
  *     {
- *         OE_Result result = OE_UNEXPECTED;
+ *         oe_result_t result = OE_UNEXPECTED;
  *
  *         if (!param)
  *             OE_RAISE(OE_INVALID_PARAMETER);
@@ -81,7 +81,7 @@ OE_EXTERNC_BEGIN
 #define OE_CHECK(EXPRESSION)               \
     do                                     \
     {                                      \
-        OE_Result _result_ = (EXPRESSION); \
+        oe_result_t _result_ = (EXPRESSION); \
                                            \
         if (_result_ != OE_OK)             \
             OE_RAISE(_result_);            \

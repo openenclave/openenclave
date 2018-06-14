@@ -12,21 +12,21 @@
 OE_EXTERNC_BEGIN
 
 /* Opaque representation of a private EC key */
-typedef struct _OE_ECPrivateKey
+typedef struct _oe_ec_private_key
 {
     /* Internal implementation */
     uint64_t impl[4];
-} OE_ECPrivateKey;
+} oe_ec_private_key_t;
 
 /* Opaque representation of a public EC key */
-typedef struct _OE_ECPublicKey
+typedef struct _oe_ec_public_key
 {
     /* Internal implementation */
     uint64_t impl[4];
-} OE_ECPublicKey;
+} oe_ec_public_key_t;
 
 /* Supported CURVE types */
-typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
+typedef enum oe_ec_type_t { OE_EC_TYPE_SECP521R1 } oe_ec_type_t;
 
 /**
  * Reads a private EC key from PEM data
@@ -39,7 +39,7 @@ typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
  *     -----END PRIVATE KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * OE_ECPrivateKeyFree().
+ * oe_ec_private_key_free().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -47,10 +47,10 @@ typedef enum OE_ECType { OE_EC_TYPE_SECP521R1 } OE_ECType;
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECPrivateKeyReadPEM(
+oe_result_t oe_ec_private_key_read_pem(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_ECPrivateKey* privateKey);
+    oe_ec_private_key_t* privateKey);
 
 /**
  * Reads a public EC key from PEM data
@@ -63,7 +63,7 @@ OE_Result OE_ECPrivateKeyReadPEM(
  *     -----END PUBLIC KEY-----
  *
  * The caller is responsible for releasing the key by passing it to
- * OE_ECPublicKeyFree().
+ * oe_ec_public_key_free().
  *
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
@@ -71,10 +71,10 @@ OE_Result OE_ECPrivateKeyReadPEM(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECPublicKeyReadPEM(
+oe_result_t oe_ec_public_key_read_pem(
     const uint8_t* pemData,
     size_t pemSize,
-    OE_ECPublicKey* publicKey);
+    oe_ec_public_key_t* publicKey);
 
 /**
  * Writes a private EC key to PEM format
@@ -93,8 +93,8 @@ OE_Result OE_ECPublicKeyReadPEM(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_ECPrivateKeyWritePEM(
-    const OE_ECPrivateKey* privateKey,
+oe_result_t oe_ec_private_key_write_pem(
+    const oe_ec_private_key_t* privateKey,
     uint8_t* pemData,
     size_t* pemSize);
 
@@ -117,8 +117,8 @@ OE_Result OE_ECPrivateKeyWritePEM(
  * @return OE_OK upon success
  * @return OE_BUFFER_TOO_SMALL PEM buffer is too small
  */
-OE_Result OE_ECPublicKeyWritePEM(
-    const OE_ECPublicKey* publicKey,
+oe_result_t oe_ec_public_key_write_pem(
+    const oe_ec_public_key_t* publicKey,
     uint8_t* pemData,
     size_t* pemSize);
 
@@ -131,7 +131,7 @@ OE_Result OE_ECPublicKeyWritePEM(
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey);
+oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* privateKey);
 
 /**
  * Releases a public EC key
@@ -142,7 +142,7 @@ OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* privateKey);
  *
  * @return OE_OK upon success
  */
-OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey);
+oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* publicKey);
 
 /**
  * Digitally signs a message with a private EC key
@@ -159,9 +159,9 @@ OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* publicKey);
  * @return OE_OK on success
  * @return OE_BUFFER_TOO_SMALL signature buffer is too small
  */
-OE_Result OE_ECPrivateKeySign(
-    const OE_ECPrivateKey* privateKey,
-    OE_HashType hashType,
+oe_result_t oe_ec_private_key_sign(
+    const oe_ec_private_key_t* privateKey,
+    oe_hash_type_t hashType,
     const void* hashData,
     size_t hashSize,
     uint8_t* signature,
@@ -182,9 +182,9 @@ OE_Result OE_ECPrivateKeySign(
  *
  * @return OE_OK if the message was signed with the given certificate
  */
-OE_Result OE_ECPublicKeyVerify(
-    const OE_ECPublicKey* publicKey,
-    OE_HashType hashType,
+oe_result_t oe_ec_public_key_verify(
+    const oe_ec_public_key_t* publicKey,
+    oe_hash_type_t hashType,
     const void* hashData,
     size_t hashSize,
     const uint8_t* signature,
@@ -202,10 +202,10 @@ OE_Result OE_ECPublicKeyVerify(
  *
  * @return OE_OK on success
  */
-OE_Result OE_ECGenerateKeyPair(
-    OE_ECType ecType,
-    OE_ECPrivateKey* privateKey,
-    OE_ECPublicKey* publicKey);
+oe_result_t oe_ec_generate_key_pair(
+    oe_ec_type_t ecType,
+    oe_ec_private_key_t* privateKey,
+    oe_ec_public_key_t* publicKey);
 
 /**
  * Get the key bytes from an EC public key
@@ -221,8 +221,8 @@ OE_Result OE_ECGenerateKeyPair(
  * @return OE_BUFFER_TOO_SMALL buffer is too small and **bufferSize** contains
  *         the required size.
  */
-OE_Result OE_ECPublicKeyGetKeyBytes(
-    const OE_ECPublicKey* publicKey,
+oe_result_t oe_ec_public_key_get_key_bytes(
+    const oe_ec_public_key_t* publicKey,
     uint8_t* buffer,
     size_t* bufferSize);
 
@@ -239,9 +239,9 @@ OE_Result OE_ECPublicKeyGetKeyBytes(
  * @return OE_INVALID_PARAMETER a parameter was invalid.
  *
  */
-OE_Result OE_ECPublicKeyEqual(
-    const OE_ECPublicKey* publicKey1,
-    const OE_ECPublicKey* publicKey2,
+oe_result_t oe_ec_public_key_equal(
+    const oe_ec_public_key_t* publicKey1,
+    const oe_ec_public_key_t* publicKey2,
     bool* equal);
 
 OE_EXTERNC_END

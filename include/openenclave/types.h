@@ -144,12 +144,12 @@ OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
 /*
 **==============================================================================
 **
-** OE_Type
+** oe_type_t
 **
 **==============================================================================
 */
 
-typedef enum _OE_Type {
+typedef enum _oe_type {
     OE_NONE_T,
     OE_CHAR_T,
     OE_UCHAR_T,
@@ -175,19 +175,19 @@ typedef enum _OE_Type {
     OE_SSIZE_T,
     OE_STRUCT_T,
     OE_VOID_T,
-} OE_Type;
+} oe_type_t;
 
 /*
 **==============================================================================
 **
-** OE_EnclaveType
+** oe_enclave_type_t
 **
 **==============================================================================
 */
-typedef enum _OE_EnclaveType {
+typedef enum _oe_enclave_type {
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
-} OE_EnclaveType;
+} oe_enclave_type_t;
 
 /*
 **==============================================================================
@@ -197,51 +197,51 @@ typedef enum _OE_EnclaveType {
 **==============================================================================
 */
 
-typedef void* (*OE_AllocProc)(size_t size);
+typedef void* (*oe_alloc_proc)(size_t size);
 
-typedef void (*OE_DeallocProc)(void* ptr);
+typedef void (*oe_dealloc_proc_t)(void* ptr);
 
 /*
 **==============================================================================
 **
-** OE_Page
+** oe_page
 **
 **==============================================================================
 */
 
-typedef OE_ALIGNED(OE_PAGE_SIZE) struct _OE_Page
+typedef OE_ALIGNED(OE_PAGE_SIZE) struct _oe_page
 {
     unsigned char data[OE_PAGE_SIZE];
-} OE_Page;
+} oe_page;
 
-OE_STATIC_ASSERT(__alignof(OE_Page) == OE_PAGE_SIZE);
-
-/*
-**==============================================================================
-**
-** OE_va_list:
-**
-**==============================================================================
-*/
-
-#define OE_va_list __builtin_va_list
-#define OE_va_start __builtin_va_start
-#define OE_va_arg __builtin_va_arg
-#define OE_va_end __builtin_va_end
-#define OE_va_copy __builtin_va_copy
+OE_STATIC_ASSERT(__alignof(oe_page) == OE_PAGE_SIZE);
 
 /*
 **==============================================================================
 **
-** OE_OCallContext:
+** oe_va_list:
 **
 **==============================================================================
 */
 
-typedef struct _OE_OCallContext
+#define oe_va_list __builtin_va_list
+#define oe_va_start __builtin_va_start
+#define oe_va_arg __builtin_va_arg
+#define oe_va_end __builtin_va_end
+#define oe_va_copy __builtin_va_copy
+
+/*
+**==============================================================================
+**
+** oe_ocall_context_t:
+**
+**==============================================================================
+*/
+
+typedef struct _oe_ocall_context
 {
     uintptr_t rbp;
     uintptr_t ret;
-} OE_OCallContext;
+} oe_ocall_context_t;
 
 #endif /* _OE_TYPES_H */
