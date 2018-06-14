@@ -4,12 +4,11 @@
 /**
  * @file properties.h
  *
- * This file defines enclave-property structures which are injected into
- * the following sections of the enclave image.
+ * This file defines the SGX properties for an enclave.
  *
- *     .oeinfo - injected by OE_SET_ENCLAVE_SGX (contains
- *               enclave properties with empty sigstructs)
- *
+ * The enclave properties should only be defined once for all code compiled
+ * into an enclave binary using the OE_SET_ENCLAVE_SGX macro.
+ * These properties can be overwritten at sign time by the oesign tool.
  */
 
 #ifndef _OE_BITS_PROPERTIES_H
@@ -105,7 +104,7 @@ OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
 /**
  * Defines the SGX properties for an enclave.
  *
- * The enclave properties should only be defined once for all compiled into
+ * The enclave properties should only be defined once for all code compiled into
  * an enclave binary. These properties can be overwritten at sign time by
  * the oesign tool.
  *

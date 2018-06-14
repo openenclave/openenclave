@@ -1464,18 +1464,16 @@ int Generator::GenerateSourceFile(
     // Inject wrapper functions for OCALL host stack allocations
     if (trusted)
     {
-        const char mallocText[] =
-            "OE_INLINE void* _HostAlloc(size_t size)\n"
-            "{\n"
-            "    return oe_host_malloc(size);\n"
-            "}\n\n";
+        const char mallocText[] = "OE_INLINE void* _HostAlloc(size_t size)\n"
+                                  "{\n"
+                                  "    return oe_host_malloc(size);\n"
+                                  "}\n\n";
         os << mallocText << endl;
 
-        const char freeText[] =
-            "OE_INLINE void _HostFree(void* ptr)\n"
-            "{\n"
-            "     oe_host_free(ptr);\n"
-            "}\n\n";
+        const char freeText[] = "OE_INLINE void _HostFree(void* ptr)\n"
+                                "{\n"
+                                "     oe_host_free(ptr);\n"
+                                "}\n\n";
         os << freeText << endl;
     }
 
