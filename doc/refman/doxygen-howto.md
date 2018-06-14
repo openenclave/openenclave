@@ -203,10 +203,13 @@ the @cond command. Here is an example.
 /**
  * @cond DEV
  */
+ 
 <your code section goes here>
+
 /**
  * @endcond
  */
+ 
 Doxygen will not document the code between @cond and @endcond unless DEV is specified
 in the ENABLED_SECTIONS of the doxygen.conf.
 
