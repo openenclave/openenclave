@@ -24,7 +24,7 @@
 #include "bits/types.h"
 
 /**
- * @cond DEV
+ * @cond IGNORE
  */
 OE_EXTERNC_BEGIN
 
@@ -36,8 +36,7 @@ OE_EXTERNC_BEGIN
  * Register a new vectored exception handler.
  *
  * Call this function to add a new vectored exception handler. If successful,
- * the
- * registered handler will be called when an exception happens inside the
+ * the registered handler will be called when an exception happens inside the
  * enclave.
  *
  * @param isFirstHandler The parameter indicates that the input handler should

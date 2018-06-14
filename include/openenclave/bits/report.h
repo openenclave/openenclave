@@ -64,7 +64,6 @@ typedef struct _oe_identity
 
     /** The unique ID for the enclave.
       * For SGX enclaves, this is the MRENCLAVE value */
-
     uint8_t uniqueID[OE_UNIQUE_ID_SIZE];
 
     /** The author ID for the enclave.
@@ -74,7 +73,6 @@ typedef struct _oe_identity
     /** The Product ID for the enclave.
      * For SGX enclaves, this is the ISVPRODID value. */
     uint8_t productID[OE_PRODUCT_ID_SIZE];
-
 } oe_identity_t;
 
 /**
