@@ -6,9 +6,9 @@ include $(OPENENCLAVE_CONFIG)
 CXXFLAGS = -Wall -Werror -g -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
 
 INCLUDES += -I$(OE_INCLUDEDIR)
+INCLUDES += -I$(OE_INCLUDEDIR)/openenclave
 INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/libcxx
 INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/libc
-INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/oe-mbedtls/
 
 LDFLAGS += -Wl,--no-undefined 
 LDFLAGS += -nostdlib 
