@@ -8,7 +8,7 @@ add_library(oeenclave STATIC
     cmac.c
     key.c
     random.c
-    report.cpp
+    report.c
     rsa.c
     sha.c)
 
@@ -17,6 +17,7 @@ target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
 endif()    
 
 target_link_libraries(oeenclave PUBLIC
+    -Wl,--undefined=__liboeenclave
     mbedcrypto
     oelibc)
 

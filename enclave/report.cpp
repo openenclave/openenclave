@@ -14,6 +14,13 @@
 
 #include <stdlib.h>
 
+// This global function is used to force inclusion of this object when using
+// the following linkage option: --Wl,--undefined=__liboeenclave. Note that
+// this function is never called.
+void __liboeenclave(void)
+{
+}
+
 // This file is .cpp in order to use C++ static initialization.
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
