@@ -6,10 +6,11 @@ include $(OPENENCLAVE_CONFIG)
 
 CXXFLAGS = -Wall -Werror -g -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
 
-# To include openenclave and compatible mbedtls headers.
+# To include Open Enclave SDK headers and
+# Open Enclave compatible mbedtls headers.
 INCLUDES += -I$(OE_INCLUDEDIR)
 
-#  To use openenclave compatible C and C++ standard libraries.
+#  To use Open Enclave compatible C and C++ standard libraries.
 INCLUDES += -I$(OE_INCLUDEDIR)/libcxx
 INCLUDES += -I$(OE_INCLUDEDIR)/libc
 
