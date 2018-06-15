@@ -566,7 +566,7 @@ add_dependencies(oelibc oelibc_includes)
 # time (relative to install prefix)
 target_include_directories(oelibc PUBLIC
     $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/libc>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libc>
     )
 
 # when building this project, we also need a number of internal includes
