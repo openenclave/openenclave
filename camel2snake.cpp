@@ -101,10 +101,22 @@ bool match_camel(
 
     prefix.clear();
 
+    // Look for lower case start followed by at least one upper case.
     if (islower(ident[0]))
     {
-        base = ident;
-        return true;
+        bool upper = false;
+
+        for (size_t i = 1; i < ident.size(); i++)
+        {
+            if (isupper(ident[i]))
+                upper = true;
+        }
+
+        if (upper)
+        {
+            base = ident;
+            return true;
+        }
     }
 
     // Find longest matching prefix.
