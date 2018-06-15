@@ -106,7 +106,7 @@ bool match_camel(
     {
         bool upper = false;
 
-        for (size_t i = 1; i < ident.size(); i++)
+        for (size_t i = 1; i < strlen(ident); i++)
         {
             if (isupper(ident[i]))
                 upper = true;
