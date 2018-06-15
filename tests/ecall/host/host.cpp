@@ -36,35 +36,35 @@ void TestECall(oe_enclave_t* enclave)
     OE_TEST(args.dd == 31);
     OE_TEST(args.yyyy == 1962);
 
-    OE_TEST(args.setjmpResult == 999);
+    OE_TEST(args.setjmp_result == 999);
 
 #ifdef ECHO
-    printf("setjmpResult=%u\n", args.setjmpResult);
+    printf("setjmpResult=%u\n", args.setjmp_result);
     printf("%02u/%02u/%04u\n", args.mm, args.dd, args.yyyy);
 
-    printf("baseHeapPage=%llu\n", OE_LLU(args.baseHeapPage));
-    printf("numHeapPages=%llu\n", OE_LLU(args.numHeapPages));
-    printf("numPages=%llu\n", OE_LLU(args.numPages));
+    printf("baseHeapPage=%llu\n", OE_LLU(args.base_heap_page));
+    printf("numHeapPages=%llu\n", OE_LLU(args.num_heap_pages));
+    printf("numPages=%llu\n", OE_LLU(args.num_pages));
     printf("base=%p\n", args.base);
 
-    void* heap = (unsigned char*)args.base + (args.baseHeapPage * 4096);
+    void* heap = (unsigned char*)args.base + (args.base_heap_page * 4096);
     printf("heap=%p\n", heap);
     printf("diff=%zu\n", (unsigned char*)heap - (unsigned char*)args.base);
 
-    printf("threadDataAddr=%llx\n", OE_LLX(args.threadDataAddr));
+    printf("threadDataAddr=%llx\n", OE_LLX(args.thread_data_addr));
 
-    printf("last_sp=%llx\n", OE_LLX(args.threadData.last_sp));
+    printf("last_sp=%llx\n", OE_LLX(args.thread_data.last_sp));
 #endif
 
-    prev = args.threadData.last_sp;
+    prev = args.thread_data.last_sp;
 }
 
 void TestUserDefinedECall(oe_enclave_t* enclave)
 {
-    uint64_t argOut = 0;
+    uint64_t arg_out = 0;
 
-    oe_ecall(enclave, 0, 1000, &argOut);
-    OE_TEST(argOut == 3000);
+    oe_ecall(enclave, 0, 1000, &arg_out);
+    OE_TEST(arg_out == 3000);
 }
 
 int main(int argc, const char* argv[])

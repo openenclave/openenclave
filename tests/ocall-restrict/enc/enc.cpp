@@ -13,22 +13,22 @@ static int counter;
    Call host via OCalls with different ECall-restrictions. The host
    will attempt to re-enter via ECalls. Check results.
 
-   The argPtr is shared w/ the host on purpose, both for communicating the
+   The arg_ptr is shared w/ the host on purpose, both for communicating the
    function-call arguments (in the format oe_ocall_function() provides them),
    as well as for return values.
 
  */
-OE_ECALL void Test(void* argPtr)
+OE_ECALL void Test(void* arg_ptr)
 {
     oe_result_t res;
-    TestORArgs* ta = (TestORArgs*)argPtr;
-    oe_call_host_args_t* cha = &ta->callHost;
+    TestORArgs* ta = (TestORArgs*)arg_ptr;
+    oe_call_host_args_t* cha = &ta->call_host;
 
     printf("%s(): Called, ta=%p\n", __FUNCTION__, ta);
 
     /* Perform regular ocall w/ ecall. We mimic oe_ocall_function() and use
      * internal knowledge of it to pass OE_OCALL_FLAG_NOT_REENTRANT later. */
-    cha->args = argPtr;
+    cha->args = arg_ptr;
     strcpy(cha->func, "TestEcall");
 
     printf("%s(): OCALL...\n", __FUNCTION__);

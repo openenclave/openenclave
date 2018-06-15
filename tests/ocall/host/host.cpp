@@ -10,25 +10,25 @@
 #include <cstring>
 #include "../args.h"
 
-static bool _func1Called = false;
+static bool _func1_called = false;
 
 OE_OCALL void Func1(void* args)
 {
-    _func1Called = true;
+    _func1_called = true;
 }
 
-void MyOCall(uint64_t argIn, uint64_t* argOut)
+void MyOCall(uint64_t arg_in, uint64_t* arg_out)
 {
-    if (argOut)
-        *argOut = argIn * 7;
+    if (arg_out)
+        *arg_out = arg_in * 7;
 }
 
-static bool _func2Ok;
+static bool _func2_ok;
 
 OE_OCALL void Func2(void* args)
 {
     // unsigned char* buf = (unsigned char*)args;
-    _func2Ok = true;
+    _func2_ok = true;
 }
 
 int main(int argc, const char* argv[])
@@ -62,7 +62,7 @@ int main(int argc, const char* argv[])
     {
         oe_result_t result = oe_call_enclave(enclave, "Test4", NULL);
         OE_TEST(result == OE_OK);
-        OE_TEST(_func2Ok);
+        OE_TEST(_func2_ok);
     }
 
     /* Call SetTSD() */

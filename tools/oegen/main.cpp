@@ -110,7 +110,7 @@ const char HELP[] =
 int main(int argc, const char* argv[])
 {
     arg0 = argv[0];
-    string idlFile;
+    string idl_file;
 
     // Print help message?
     if (GetOpt(argc, argv, "-h") == 1 || GetOpt(argc, argv, "--help") == 1)
@@ -166,15 +166,15 @@ int main(int argc, const char* argv[])
     }
 
     // Collected arguments:
-    idlFile = argv[1];
+    idl_file = argv[1];
 
     // Load the IDL file into memory:
     vector<char> data;
-    if (LoadFile(idlFile.c_str(), 1, data) != 0)
-        ErrExit("failed to load '%s'", idlFile.c_str());
+    if (LoadFile(idl_file.c_str(), 1, data) != 0)
+        ErrExit("failed to load '%s'", idl_file.c_str());
 
     // Create lexer instance:
-    Lexer lexer(idlFile.c_str(), &data[0]);
+    Lexer lexer(idl_file.c_str(), &data[0]);
 
     // Initialize the parser:
     Parser parser;
@@ -182,11 +182,11 @@ int main(int argc, const char* argv[])
         ErrExit("parse failed\n");
 
     // IDL file must have .edl extension:
-    if (!HasExtension(idlFile, ".idl"))
-        ErrExit("%s does not have an '.idl' extension", idlFile.c_str());
+    if (!HasExtension(idl_file, ".idl"))
+        ErrExit("%s does not have an '.idl' extension", idl_file.c_str());
 
     // Get filename without directory and without the '.idl' extension:
-    string filename = StripExtension(StripDirectory(idlFile), ".idl");
+    string filename = StripExtension(StripDirectory(idl_file), ".idl");
 
     // Generate trusted sources:
     if (trusted)

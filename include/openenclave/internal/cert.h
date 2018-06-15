@@ -45,15 +45,15 @@ typedef struct _oe_verify_cert_error
  * The caller is responsible for releasing the certificate by passing it to
  * oe_cert_free().
  *
- * @param pemData zero-terminated PEM data
- * @param pemSize size of the PEM data (including the zero-terminator)
+ * @param pem_data zero-terminated PEM data
+ * @param pem_size size of the PEM data (including the zero-terminator)
  * @param cert initialized certificate handle upon return
  *
  * @return OE_OK load was successful
  */
 oe_result_t oe_cert_read_pem(
-    const void* pemData,
-    size_t pemSize,
+    const void* pem_data,
+    size_t pem_size,
     oe_cert_t* cert);
 
 /**
@@ -77,15 +77,15 @@ oe_result_t oe_cert_read_pem(
  * The caller is responsible for releasing the certificate chain by passing it
  * to oe_cert_chain_free().
  *
- * @param pemData zero-terminated PEM data
- * @param pemSize size of the PEM data (including the zero-terminator)
+ * @param pem_data zero-terminated PEM data
+ * @param pem_size size of the PEM data (including the zero-terminator)
  * @param cert initialized certificate chain handle upon return
  *
  * @return OE_OK load was successful
  */
 oe_result_t oe_cert_chain_read_pem(
-    const void* pemData,
-    size_t pemSize,
+    const void* pem_data,
+    size_t pem_size,
     oe_cert_chain_t* chain);
 
 /**
@@ -140,7 +140,7 @@ oe_result_t oe_cert_verify(
  * OE_WRONG_TYPE.
  *
  * @param cert the certificate whose RSA public key is sought.
- * @param publicKey the handle of an RSA public key upon successful return.
+ * @param public_key the handle of an RSA public key upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
  *     key by passing it to **oe_rsa_public_key_free()**.
  *
@@ -151,7 +151,7 @@ oe_result_t oe_cert_verify(
  */
 oe_result_t oe_cert_get_rsa_public_key(
     const oe_cert_t* cert,
-    oe_rsa_public_key_t* publicKey);
+    oe_rsa_public_key_t* public_key);
 
 /**
  * Get the EC public key from a certificate.
@@ -161,7 +161,7 @@ oe_result_t oe_cert_get_rsa_public_key(
  * OE_WRONG_TYPE.
  *
  * @param cert the certificate whose EC public key is sought.
- * @param publicKey the handle of an EC public key upon successful return.
+ * @param public_key the handle of an EC public key upon successful return.
  *     If successful, the caller is responsible for eventually releasing the
  *     key by passing it to **oe_ec_public_key_free()**.
  *
@@ -172,7 +172,7 @@ oe_result_t oe_cert_get_rsa_public_key(
  */
 oe_result_t oe_cert_get_ec_public_key(
     const oe_cert_t* cert,
-    oe_ec_public_key_t* publicKey);
+    oe_ec_public_key_t* public_key);
 
 /**
  * Get the length of a certificate chain.

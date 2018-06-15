@@ -33,43 +33,43 @@ OE_OCALL void HostNestCalls(void* args_)
     }
 
     /* Call into EnclaveNestCalls() function in the enclave */
-    Args newArgs;
-    memset(&newArgs, 0, sizeof(newArgs));
-    newArgs.ret = -1;
-    newArgs.depth = args->depth - 1;
-    newArgs.testEh = args->testEh;
+    Args new_args;
+    memset(&new_args, 0, sizeof(new_args));
+    new_args.ret = -1;
+    new_args.depth = args->depth - 1;
+    new_args.test_eh = args->test_eh;
     char str[256];
-    sprintf(str, "Nested call depth [%d].", newArgs.depth);
+    sprintf(str, "Nested call depth [%d].", new_args.depth);
 
-    if (!(newArgs.in = strdup(str)))
+    if (!(new_args.in = strdup(str)))
     {
         fprintf(stderr, "strdup() failed");
         exit(1);
     }
 
-    if ((result = oe_call_enclave(enclave, "EnclaveNestCalls", &newArgs)) !=
+    if ((result = oe_call_enclave(enclave, "EnclaveNestCalls", &new_args)) !=
         OE_OK)
     {
         fprintf(stderr, "oe_call_enclave() failed: result=%u", result);
         exit(1);
     }
 
-    if (newArgs.ret != 0)
+    if (new_args.ret != 0)
     {
-        fprintf(stderr, "ECALL failed newArgs.result=%d", newArgs.ret);
+        fprintf(stderr, "ECALL failed newArgs.result=%d", new_args.ret);
         exit(1);
     }
 
-    if (newArgs.in)
+    if (new_args.in)
     {
-        free((char*)newArgs.in);
-        newArgs.in = NULL;
+        free((char*)new_args.in);
+        new_args.in = NULL;
     }
 
-    if (newArgs.out)
+    if (new_args.out)
     {
-        free((char*)newArgs.out);
-        newArgs.out = NULL;
+        free((char*)new_args.out);
+        new_args.out = NULL;
     }
 
     args->ret = 0;
@@ -78,13 +78,13 @@ OE_OCALL void HostNestCalls(void* args_)
     return;
 }
 
-void TestNestedCalls(int testEh, int depth)
+void TestNestedCalls(int test_eh, int depth)
 {
     // oe_result_t result;
     Args args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
-    args.testEh = testEh;
+    args.test_eh = test_eh;
     args.depth = depth;
     args.in = "";
     args.out = "";

@@ -15,7 +15,7 @@
 /*
 **==============================================================================
 **
-** _ApplyRelocations()
+** _apply_relocations()
 **
 **     Apply symbol relocations from the relocation pages, whose content
 **     was copied from the ELF file during loading. These relocations are
@@ -24,7 +24,7 @@
 **==============================================================================
 */
 
-static void _ApplyRelocations(void)
+static void _apply_relocations(void)
 {
     const oe_reloc_t* relocs = (const oe_reloc_t*)__oe_get_reloc_base();
     size_t nrelocs = __oe_get_reloc_size() / sizeof(oe_reloc_t);
@@ -51,14 +51,14 @@ static void _ApplyRelocations(void)
 /*
 **==============================================================================
 **
-** _CheckMemoryBoundaries()
+** _check_memory_boundaries()
 **
 **     Check that the variables in globals.h are actually within the enclave.
 **
 **==============================================================================
 */
 
-static void _CheckMemoryBoundaries(void)
+static void _check_memory_boundaries(void)
 {
     /* This is a tautology! */
     if (!oe_is_within_enclave(__oe_get_enclave_base(), __oe_get_enclave_size()))
@@ -194,20 +194,20 @@ void oe_call_fini_functions(void)
     }
 }
 
-static void _InitializeEnclaveImage()
+static void _initialize_enclave_image()
 {
     /* Relocate symbols */
-    _ApplyRelocations();
+    _apply_relocations();
 
     /* Check that memory boundaries are within enclave */
-    _CheckMemoryBoundaries();
+    _check_memory_boundaries();
 }
 
 static oe_once_t _enclave_initialize_once;
 
-static void _InitializeEnclaveImp(void)
+static void _initialize_enclave_imp(void)
 {
-    _InitializeEnclaveImage();
+    _initialize_enclave_image();
 }
 
 /*
@@ -223,5 +223,5 @@ static void _InitializeEnclaveImp(void)
 */
 void oe_initialize_enclave()
 {
-    oe_once(&_enclave_initialize_once, _InitializeEnclaveImp);
+    oe_once(&_enclave_initialize_once, _initialize_enclave_imp);
 }

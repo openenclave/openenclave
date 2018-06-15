@@ -4,7 +4,7 @@
 #ifndef _ARGS_H
 #define _ARGS_H
 
-typedef struct _Args
+typedef struct _args
 {
     const char* in;
     char* out;

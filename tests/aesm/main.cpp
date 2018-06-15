@@ -27,8 +27,8 @@ int main(int argc, const char* argv[])
 
 #if defined(OE_USE_LIBSGX)
     quote3_error_t err;
-    sgx_target_info_t targetInfo = {};
-    if (SGX_QL_SUCCESS != (err = sgx_qe_get_target_info(&targetInfo)))
+    sgx_target_info_t target_info = {};
+    if (SGX_QL_SUCCESS != (err = sgx_qe_get_target_info(&target_info)))
     {
         printf("FAILED: Call returned %x\n", err);
         return -1;

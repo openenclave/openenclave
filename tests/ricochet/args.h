@@ -4,7 +4,7 @@
 #ifndef _RICOCHETARGS_H
 #define _RICOCHETARGS_H
 
-typedef struct _RicochetArgs
+typedef struct _ricochet_args
 {
     int i;
     int count;

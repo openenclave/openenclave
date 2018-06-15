@@ -9,14 +9,14 @@
 #include <openenclave/internal/tests.h>
 #include "../args.h"
 
-void MyECall(uint64_t argIn, uint64_t* argOut)
+void MyECall(uint64_t arg_in, uint64_t* arg_out)
 {
-    if (argOut)
-        *argOut = argIn * 3;
+    if (arg_out)
+        *arg_out = arg_in * 3;
 }
 
 /* Register custom ECall on load */
-static oe_result_t s_registerResult = oe_register_ecall(0, MyECall);
+static oe_result_t s_register_result = oe_register_ecall(0, MyECall);
 
 int TestSetjmp()
 {
@@ -39,7 +39,7 @@ OE_ECALL void Test(void* args_)
         return;
 
     /* Verify that registration of ECall at initialization succeeded */
-    OE_TEST(s_registerResult == OE_OK);
+    OE_TEST(s_register_result == OE_OK);
 
     /* Set output arguments */
     oe_memset(args, 0xDD, sizeof(TestArgs));
@@ -54,18 +54,18 @@ OE_ECALL void Test(void* args_)
     const oe_thread_data_t* td;
     if ((td = oe_get_thread_data()))
     {
-        args->threadData = *td;
-        args->threadDataAddr = (uint64_t)td;
+        args->thread_data = *td;
+        args->thread_data_addr = (uint64_t)td;
     }
 
     /* Get enclave offsets and bases */
-    args->baseHeapPage = __oe_baseHeapPage;
-    args->numHeapPages = __oe_numHeapPages;
-    args->numPages = __oe_numPages;
+    args->base_heap_page = __oe_base_heap_page;
+    args->num_heap_pages = __oe_num_heap_pages;
+    args->num_pages = __oe_num_pages;
     args->base = __oe_get_enclave_base();
 
     /* Test the oe_setjmp/oe_longjmp functions */
-    args->setjmpResult = TestSetjmp();
+    args->setjmp_result = TestSetjmp();
 
     /* Test snprintf() */
     {

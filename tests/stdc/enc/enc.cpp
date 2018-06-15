@@ -151,9 +151,9 @@ void Test_atox()
     OE_TEST(atof("1.0") == 1.0);
 }
 
-static bool _calledAllocationFailureCallback;
+static bool _called_allocation_failure_callback;
 
-static void _AllocationFailureCallback(
+static void _allocation_failure_callback(
     const char* file,
     size_t line,
     const char* func,
@@ -166,14 +166,14 @@ static void _AllocationFailureCallback(
         func,
         size);
 
-    _calledAllocationFailureCallback = true;
+    _called_allocation_failure_callback = true;
 }
 
 OE_ECALL void Test(void* args_)
 {
     TestArgs* args = (TestArgs*)args_;
 
-    oe_set_allocation_failure_callback(_AllocationFailureCallback);
+    oe_set_allocation_failure_callback(_allocation_failure_callback);
 
     strcpy(args->buf1, "AAA");
     strcat(args->buf1, "BBB");
@@ -185,10 +185,10 @@ OE_ECALL void Test(void* args_)
         if (s && strcmp(s, "strdup") == 0 && strlen(s) == 6)
         {
             if (memcmp(s, "strdup", 6) == 0)
-                args->strdupOk = 1;
+                args->strdup_ok = 1;
         }
         else
-            args->strdupOk = 0;
+            args->strdup_ok = 0;
 
         free(s);
     }
@@ -228,5 +228,5 @@ OE_ECALL void Test(void* args_)
     /* Cause malloc() to fail */
     void* p = malloc(1024 * 1024 * 1024);
     OE_TEST(p == NULL);
-    OE_TEST(_calledAllocationFailureCallback);
+    OE_TEST(_called_allocation_failure_callback);
 }

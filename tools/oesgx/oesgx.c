@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct _Regs
+typedef struct _regs
 {
     unsigned int eax;
     unsigned int ebx;

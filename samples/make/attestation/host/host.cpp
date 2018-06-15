@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include "ecalls.h"
 
-oe_enclave_t* CreateEnclave(const char* enclavePath)
+oe_enclave_t* CreateEnclave(const char* enclave_path)
 {
     oe_enclave_t* enclave = NULL;
     oe_result_t result = oe_create_enclave(
-        enclavePath,
+        enclave_path,
         OE_ENCLAVE_TYPE_SGX,
         OE_ENCLAVE_FLAG_DEBUG,
         NULL,
@@ -48,49 +48,49 @@ int main(int argc, const char* argv[])
 
     printf(
         "\n\n=====Requesting quoted encryption key from first enclave=====\n");
-    QuotedPublicKey* quotedPublicKey = GetPublicKey(enclave1);
-    printf("First enclave's public key: \n%s", quotedPublicKey->pemKey);
+    QuotedPublicKey* quoted_public_key = GetPublicKey(enclave1);
+    printf("First enclave's public key: \n%s", quoted_public_key->pem_key);
 
     printf(
         "\n\n=====Requesting second enclave to attest first enclave's "
         "quoted public key=====\n");
-    StorePublicKey(enclave2, quotedPublicKey);
+    StorePublicKey(enclave2, quoted_public_key);
 
     // Free host memory allocated by the enclave.
-    free(quotedPublicKey);
+    free(quoted_public_key);
 
     printf(
         "\n\n=====Requesting quoted encryption key from second enclave=====\n");
-    quotedPublicKey = GetPublicKey(enclave2);
-    printf("Second enclave's public key: \n%s", quotedPublicKey->pemKey);
+    quoted_public_key = GetPublicKey(enclave2);
+    printf("Second enclave's public key: \n%s", quoted_public_key->pem_key);
 
     printf(
         "\n\n=====Requesting first enclave to attest second enclave's "
         "quoted public key=====\n");
-    StorePublicKey(enclave1, quotedPublicKey);
+    StorePublicKey(enclave1, quoted_public_key);
 
     // Free host memory allocated by the enclave.
-    free(quotedPublicKey);
+    free(quoted_public_key);
 
-    uint8_t* encryptedData = NULL;
-    uint32_t encryptedDataSize = 0;
+    uint8_t* encrypted_data = NULL;
+    uint32_t encrypted_data_size = 0;
     printf("\n\n=====Requesting encrypted data from first enclave=====\n");
-    GenerateEncryptedData(enclave1, &encryptedData, &encryptedDataSize);
+    GenerateEncryptedData(enclave1, &encrypted_data, &encrypted_data_size);
 
     printf("\n\n=====Sending encrypted data to second enclave=====\n");
-    ProcessEncryptedData(enclave2, encryptedData, encryptedDataSize);
+    ProcessEncryptedData(enclave2, encrypted_data, encrypted_data_size);
 
     // Free host memory allocated by the enclave.
-    free(encryptedData);
+    free(encrypted_data);
 
     printf("\n\n=====Requesting encrypted data from second enclave=====\n");
-    GenerateEncryptedData(enclave2, &encryptedData, &encryptedDataSize);
+    GenerateEncryptedData(enclave2, &encrypted_data, &encrypted_data_size);
 
     printf("\n\n=====Sending encrypted data to first enclave=====\n");
-    ProcessEncryptedData(enclave1, encryptedData, encryptedDataSize);
+    ProcessEncryptedData(enclave1, encrypted_data, encrypted_data_size);
 
     // Free host memory allocated by the enclave.
-    free(encryptedData);
+    free(encrypted_data);
 
     printf("\n\n=====Terminating enclaves.=====\n");
     TerminateEnclave(enclave1);

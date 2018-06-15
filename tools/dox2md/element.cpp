@@ -15,11 +15,11 @@ using namespace std;
 
 //==============================================================================
 //
-// _TrimString()
+// _trim_string()
 //
 //==============================================================================
 
-static string _TrimString(const string& s)
+static string _trim_string(const string& s)
 {
     string r = s;
 
@@ -39,11 +39,11 @@ static string _TrimString(const string& s)
 
 //==============================================================================
 //
-// _PrintString()
+// _print_string()
 //
 //==============================================================================
 
-static void _PrintString(ostream& os, const char* s)
+static void _print_string(ostream& os, const char* s)
 {
     os << '"';
 
@@ -282,7 +282,7 @@ std::string& Element::chars()
 
 void Element::chars(const std::string& chars)
 {
-    _chars = _TrimString(chars);
+    _chars = _trim_string(chars);
 }
 
 void Element::append(const Element& elem)
@@ -331,7 +331,7 @@ void Element::dump(std::ostream& os, size_t depth) const
     if (_chars.size())
     {
         os << indent << "chars=";
-        _PrintString(os, _chars.c_str());
+        _print_string(os, _chars.c_str());
         os << endl;
     }
 
@@ -408,16 +408,16 @@ bool Element::contains(const std::string& name) const
     return false;
 }
 
-typedef struct _Context
+typedef struct _context
 {
     Element root;
     std::stack<Element> stack;
 } Context;
 
 static void XMLCALL
-_HandleStart(void* userData_, const XML_Char* name, const XML_Char** attrs)
+_handle_start(void* user_data_, const XML_Char* name, const XML_Char** attrs)
 {
-    Context* context = (Context*)userData_;
+    Context* context = (Context*)user_data_;
 
     Element element;
     element.name(name);
@@ -431,27 +431,27 @@ _HandleStart(void* userData_, const XML_Char* name, const XML_Char** attrs)
     context->stack.push(element);
 }
 
-static void XMLCALL _HandleChars(void* userData_, const XML_Char* s, int len)
+static void XMLCALL _handle_chars(void* user_data_, const XML_Char* s, int len)
 {
-    Context* context = (Context*)userData_;
+    Context* context = (Context*)user_data_;
     Element& element = context->stack.top();
     element.chars() += string(s, len);
 }
 
-static void XMLCALL _HandleEnd(void* userData_, const XML_Char* name)
+static void XMLCALL _handle_end(void* user_data_, const XML_Char* name)
 {
-    Context* context = (Context*)userData_;
+    Context* context = (Context*)user_data_;
 
     if (context->stack.size() == 1)
     {
         context->root = context->stack.top();
-        context->root.chars() = _TrimString(context->root.chars());
+        context->root.chars() = _trim_string(context->root.chars());
         context->stack.pop();
     }
     else
     {
         Element element = context->stack.top();
-        element.chars() = _TrimString(element.chars());
+        element.chars() = _trim_string(element.chars());
         context->stack.pop();
         context->stack.top().append(element);
     }
@@ -476,8 +476,8 @@ bool Element::parse(const std::string& path, Element& root, Error& error)
 
     /* Set handlers */
     XML_SetUserData(parser, &context);
-    XML_SetElementHandler(parser, _HandleStart, _HandleEnd);
-    XML_SetCharacterDataHandler(parser, _HandleChars);
+    XML_SetElementHandler(parser, _handle_start, _handle_end);
+    XML_SetCharacterDataHandler(parser, _handle_chars);
 
     /* Open the input file */
     if (!(is = fopen(path.c_str(), "r")))

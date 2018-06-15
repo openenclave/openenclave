@@ -10,29 +10,29 @@
 #include "../../../host/enclave.h"
 #include "../args.h"
 
-static void _CheckProperties(
+static void _check_properties(
     oe_sgx_enclave_properties_t* props,
-    bool isSigned,
-    uint16_t productID,
-    uint16_t securityVersion,
+    bool is_signed,
+    uint16_t product_id,
+    uint16_t security_version,
     uint64_t attributes,
-    uint64_t numHeapPages,
-    uint64_t numStackPages,
-    uint64_t numTCS)
+    uint64_t num_heap_pages,
+    uint64_t num_stack_pages,
+    uint64_t num_tcs)
 {
     const oe_enclave_properties_header_t* header = &props->header;
     const oe_sgx_enclave_config_t* config = &props->config;
 
     /* Check the header */
     OE_TEST(header->size == sizeof(oe_sgx_enclave_properties_t));
-    OE_TEST(header->enclaveType == OE_ENCLAVE_TYPE_SGX);
-    OE_TEST(header->sizeSettings.numHeapPages == numHeapPages);
-    OE_TEST(header->sizeSettings.numStackPages == numStackPages);
-    OE_TEST(header->sizeSettings.numTCS == numTCS);
+    OE_TEST(header->enclave_type == OE_ENCLAVE_TYPE_SGX);
+    OE_TEST(header->size_settings.num_heap_pages == num_heap_pages);
+    OE_TEST(header->size_settings.num_stack_pages == num_stack_pages);
+    OE_TEST(header->size_settings.num_tcs == num_tcs);
 
     /* Check the SGX config */
-    OE_TEST(config->productID == productID);
-    OE_TEST(config->securityVersion == securityVersion);
+    OE_TEST(config->product_id == product_id);
+    OE_TEST(config->security_version == security_version);
     OE_TEST(config->padding == 0);
     OE_TEST(config->attributes == attributes);
 
@@ -40,13 +40,13 @@ static void _CheckProperties(
     const uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE] = {0};
 
     /* Check for presence or absence of the signature */
-    if (isSigned)
+    if (is_signed)
         OE_TEST(memcmp(props->sigstruct, sigstruct, sizeof(sigstruct)) != 0);
     else
         OE_TEST(memcmp(props->sigstruct, sigstruct, sizeof(sigstruct)) == 0);
 }
 
-static oe_result_t _SGXLoadEnclaveProperties(
+static oe_result_t _sgx_load_enclave_properties(
     const char* path,
     oe_sgx_enclave_properties_t* properties)
 {
@@ -84,7 +84,7 @@ int main(int argc, const char* argv[])
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
-    bool isSigned = false;
+    bool is_signed = false;
     oe_sgx_enclave_properties_t properties;
 
     if (argc != 3)
@@ -96,11 +96,11 @@ int main(int argc, const char* argv[])
     /* Extract "signed" or "unsigned" command-line argument */
     if (strcmp(argv[2], "signed") == 0)
     {
-        isSigned = true;
+        is_signed = true;
     }
     else if (strcmp(argv[2], "unsigned") == 0)
     {
-        isSigned = false;
+        is_signed = false;
     }
     else
     {
@@ -109,7 +109,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the enclave properties */
-    if ((result = _SGXLoadEnclaveProperties(argv[1], &properties)) != OE_OK)
+    if ((result = _sgx_load_enclave_properties(argv[1], &properties)) != OE_OK)
     {
         oe_put_err("oe_sgx_load_properties(): result=%u", result);
     }
@@ -121,29 +121,29 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     /* Check expected enclave property values */
-    if (isSigned)
+    if (is_signed)
     {
-        _CheckProperties(
+        _check_properties(
             &properties,
-            isSigned,
-            1111,                                        /* productID */
-            2222,                                        /* securityVersion */
+            is_signed,
+            1111,                                        /* product_id */
+            2222,                                        /* security_version */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            2048,                                        /* numHeapPages  */
-            1024,                                        /* numStackPages */
-            8);                                          /* numTCS */
+            2048,                                        /* num_heap_pages  */
+            1024,                                        /* num_stack_pages */
+            8);                                          /* num_tcs */
     }
     else
     {
-        _CheckProperties(
+        _check_properties(
             &properties,
-            isSigned,
-            1234,                                        /* productID */
-            5678,                                        /* securityVersion */
+            is_signed,
+            1234,                                        /* product_id */
+            5678,                                        /* security_version */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            1024,                                        /* numHeapPages  */
-            512,                                         /* numStackPages */
-            4);                                          /* numTCS */
+            1024,                                        /* num_heap_pages  */
+            512,                                         /* num_stack_pages */
+            4);                                          /* num_tcs */
     }
 
     Args args;
