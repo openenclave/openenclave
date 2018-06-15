@@ -28,7 +28,7 @@ LDFLAGS += -Wl,-eoe_main
 LDFLAGS += -Wl,--undefined=__liboecore
 
 # Order of libraries below matters.
-LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loelibcxx -loeenclave -lnbedcrypto -lmbedtls -lmbedx509 -loelibc -loecore
+LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loelibcxx -loeenclave -lmbedcrypto -lmbedtls -lmbedx509 -loelibc -loecore
 
 all:
 	$(MAKE) build

@@ -7,10 +7,23 @@ The host application creates a pair of enclaves that exchange their public keys 
 
 ## Build
 ```
-$ make OPENENCLAVE_CONFIG=<openenclave install dir>/share/openenclave/config.mak     
+$ make   
 ```
 
+To refer to a specific Open Enclave installation, do
+
+```
+$ make OPENENCLAVE_CONFIG=<openenclave install dir>/share/openenclave/samples/config.mak     
+```
+
+
 ## Run
+
+```
+$ make run
+```
+
+To refer to a specific Open Enclave installation, do
 ```
 $ make OPENENCLAVE_CONFIG=<openenclave install dir>/share/openenclave/config.mak run
 ```
