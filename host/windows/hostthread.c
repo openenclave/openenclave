@@ -67,17 +67,17 @@ int oe_mutex_init(oe_mutex* Lock)
 
 int oe_mutex_lock(oe_mutex* Lock)
 {
-    oe_mutex newLock;
+    oe_mutex new_lock;
 
     if (*Lock == OE_H_MUTEX_INITIALIZER)
     {
-        if (oe_mutex_init(&newLock))
+        if (oe_mutex_init(&new_lock))
             return 1;
         if (InterlockedCompareExchangePointer(
-                Lock, newLock, OE_H_MUTEX_INITIALIZER) !=
+                Lock, new_lock, OE_H_MUTEX_INITIALIZER) !=
             OE_H_MUTEX_INITIALIZER)
         {
-            if (oe_mutex_destroy(&newLock))
+            if (oe_mutex_destroy(&new_lock))
                 return 1;
         }
     }

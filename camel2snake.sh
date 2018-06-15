@@ -1,3 +1,16 @@
+#!/bin/bash
+
+if [ -d "camel2snake" ]; then
+    cd camel2snake
+fi
+
+g++ -o camel2snake.bin camel2snake.cpp
+if [ "$?" != "0" ];then
+    echo "$0: failed to compile camel2snake.cpp"
+    exit 1
+fi
+
+cat > ./tests/print/enc/enc.cpp <<EOF
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
@@ -38,3 +51,11 @@ OE_ECALL void TestPrint(void* args_)
 
     args->rc = 0;
 }
+EOF
+
+srcs=`find . -name '*.[ch]' -o -name '*.cpp' -o -name '*.py' -o -name '*.S' -o -name '*.inc' -o -name '*.asm' -o -name 'Makefile' | egrep -v "(3rdparty)|(build)|(prereqs)"`
+
+srcs+=" ./tests/print/printhost.stdout "
+srcs+=" ./tests/print/printhost.stderr "
+
+./camel2snake.bin ${srcs}

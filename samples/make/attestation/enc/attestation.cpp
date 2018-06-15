@@ -9,16 +9,16 @@
 
 /**
  * Generate a quote for the given data. The SHA256 digest of the data is stored
- * in the reportData field of the generated quote.
+ * in the report_data field of the generated quote.
  */
 bool GenerateQuote(
     const uint8_t* data,
-    const uint32_t dataSize,
-    uint8_t* quoteBuffer,
-    uint32_t* quoteBufferSize)
+    const uint32_t data_size,
+    uint8_t* quote_buffer,
+    uint32_t* quote_buffer_size)
 {
     uint8_t sha256[32];
-    Sha256(data, dataSize, sha256);
+    Sha256(data, data_size, sha256);
 
     // To generate a quote that can be attested remotely by an enclave running
     // on a different platform, pass the OE_REPORT_OPTIONS_REMOTE_ATTESTATION
@@ -31,12 +31,12 @@ bool GenerateQuote(
     // function.
     oe_result_t result = oe_get_report(
         OE_REPORT_OPTIONS_REMOTE_ATTESTATION,
-        sha256, // Store sha256 in reportData field
+        sha256, // Store sha256 in report_data field
         sizeof(sha256),
-        NULL, // optParams must be null
+        NULL, // opt_params must be null
         0,
-        quoteBuffer,
-        quoteBufferSize);
+        quote_buffer,
+        quote_buffer_size);
 
     if (result != OE_OK)
     {
@@ -49,9 +49,9 @@ bool GenerateQuote(
 }
 
 // The SHA-256 hash of the public key in the private.pem file used to sign the
-// enclave. This value is populated in the authorID sub-field of a parsed
+// enclave. This value is populated in the author_id sub-field of a parsed
 // oe_report_t's identity field.
-const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
+const uint8_t g_mr_signer[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
                               0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
                               0x83, 0x77, 0xF1, 0x79, 0xAB, 0x44, 0x56, 0xB2,
                               0xFE, 0x23, 0x71, 0x93, 0x19, 0x3A, 0x8D, 0x0A};
@@ -59,28 +59,28 @@ const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
  * Attest the given quote and accompanying data. The quote is first attested
  * using the oe_verify_report API. This ensures the authenticity of the enclave
  * that generated the quote. Next, to establish trust of the enclave that
- * generated the quote, the mrsigner, productID, isvsvn values are checked to
+ * generated the quote, the mrsigner, product_id, isvsvn values are checked to
  * see if they are predefined trusted values. Once the enclave's trust has been
  * established, the validity of accompanying data is ensured by comparing its
- * SHA256 digest against the reportData field.
+ * SHA256 digest against the report_data field.
  */
 bool AttestQuote(
     const uint8_t* quote,
-    uint32_t quoteSize,
+    uint32_t quote_size,
     const uint8_t* data,
-    uint32_t dataSize)
+    uint32_t data_size)
 {
     // While attesting, the quote being attested must not be tampered with.
     // Ensure that it has been copied over to the enclave.
-    if (!oe_is_within_enclave(quote, quoteSize))
+    if (!oe_is_within_enclave(quote, quote_size))
     {
         ENC_DEBUG_PRINTF("Cannot attest quote in host memory. Unsafe.");
         return false;
     }
 
     // Verify the quote to ensure its authenticity.
-    oe_report_t parsedReport = {0};
-    oe_result_t result = oe_verify_report(quote, quoteSize, &parsedReport);
+    oe_report_t parsed_report = {0};
+    oe_result_t result = oe_verify_report(quote, quote_size, &parsed_report);
     if (result != OE_OK)
     {
         ENC_DEBUG_PRINTF("oe_verify_report failed.");
@@ -91,22 +91,22 @@ bool AttestQuote(
     // enclave.
     // Check that the enclave was signed by an trusted entity.
     if (memcmp(
-            parsedReport.identity.authorID, g_MRSigner, sizeof(g_MRSigner)) !=
+            parsed_report.identity.author_id, g_mr_signer, sizeof(g_mr_signer)) !=
         0)
         return false;
 
     // Check the enclave's product id and security version
     // See enc.conf for values specified when signing the enclave.
-    if (parsedReport.identity.productID[0] != 1)
+    if (parsed_report.identity.product_id[0] != 1)
         return false;
 
-    if (parsedReport.identity.securityVersion < 1)
+    if (parsed_report.identity.security_version < 1)
         return false;
 
     uint8_t sha256[32];
-    Sha256(data, dataSize, sha256);
+    Sha256(data, data_size, sha256);
 
-    if (memcmp(parsedReport.reportData, sha256, sizeof(sha256)) != 0)
+    if (memcmp(parsed_report.report_data, sha256, sizeof(sha256)) != 0)
     {
         ENC_DEBUG_PRINTF("SHA256 mismatch.");
         return false;

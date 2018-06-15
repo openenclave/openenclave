@@ -191,8 +191,8 @@ class EnlaveCreationBreakpoint(gdb.Breakpoint):
         enclave_path_addr = int(gdb.parse_and_eval("$rsi"));
         enclave_path_length = int(gdb.parse_and_eval("$rdx"));
         enclave_path_blob = read_from_memory(enclave_path_addr, enclave_path_length)
-        dataFormat = str(enclave_path_length) + 's'
-        enclave_path = struct.unpack_from(dataFormat, enclave_path_blob)[0].decode(encoding='UTF-8')
+        data_format = str(enclave_path_length) + 's'
+        enclave_path = struct.unpack_from(data_format, enclave_path_blob)[0].decode(encoding='UTF-8')
         # print ("Enclave path: {}" .format(enclave_path))
         # Enable enclave debug.
         enable_oeencalve_debug(oe_enclave_addr, enclave_path)
@@ -211,8 +211,8 @@ class EnlaveTerminationBreakpoint(gdb.Breakpoint):
         enclave_path_addr = int(gdb.parse_and_eval("$rsi"));
         enclave_path_length = int(gdb.parse_and_eval("$rdx"));
         enclave_path_blob = read_from_memory(enclave_path_addr, enclave_path_length)
-        dataFormat = str(enclave_path_length) + 's'
-        enclave_path = struct.unpack_from(dataFormat, enclave_path_blob)[0].decode(encoding='UTF-8')
+        data_format = str(enclave_path_length) + 's'
+        enclave_path = struct.unpack_from(data_format, enclave_path_blob)[0].decode(encoding='UTF-8')
         # Unload the enclave symbol. Need not to reset the debug flag for TCSs.
         unload_enclave_symbol(enclave_path, enclave_tuple[OE_ENCLAVE_ADDR_FIELD])
         return False

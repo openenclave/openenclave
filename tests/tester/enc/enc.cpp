@@ -9,7 +9,7 @@
 #include <string.h>
 #include "tester_t.h"
 
-static struct Object* _MakeObject(const char* name, size_t id)
+static struct Object* _make_object(const char* name, size_t id)
 {
     struct Object* p;
 
@@ -151,38 +151,38 @@ CopyObjects(struct Object dest[2], const struct Object src[2])
 }
 
 OE_EXTERNC int32_t ECALL_MultipleParams(
-    const char* strIn,
-    uint32_t numIn,
-    const struct Object* objectIn,
-    char* strOut,
-    uint32_t* numOut,
-    struct Object* objectOut,
-    struct Object** objectRefOut)
+    const char* str_in,
+    uint32_t num_in,
+    const struct Object* object_in,
+    char* str_out,
+    uint32_t* num_out,
+    struct Object* object_out,
+    struct Object** object_ref_out)
 {
-    if (!strIn || !objectIn || !strOut || !objectOut)
+    if (!str_in || !object_in || !str_out || !object_out)
         return -1;
 
     /* str */
-    strncpy(strOut, strIn, strlen(strIn));
+    strncpy(str_out, str_in, strlen(str_in));
 
     /* num */
-    *numOut = numIn;
+    *num_out = num_in;
 
     /* object */
-    if (CopyObject(objectOut, objectIn) != 0)
+    if (CopyObject(object_out, object_in) != 0)
         return -1;
 
 #if 0
-    oe_print_struct(&Object_ti, objectIn);
+    oe_print_struct(&Object_ti, object_in);
 #endif
 
-    if (objectRefOut)
+    if (object_ref_out)
     {
 #if 0
-        if (*objectRefOut)
-            oe_print_struct(&Object_ti, *objectRefOut);
+        if (*object_ref_out)
+            oe_print_struct(&Object_ti, *object_ref_out);
 #endif
-        *objectRefOut = _MakeObject("O10", 10);
+        *object_ref_out = _make_object("O10", 10);
     }
 
     return 0;
@@ -193,7 +193,7 @@ OE_EXTERNC int32_t GetObjectRef(struct Object** object)
     if (!object)
         return -1;
 
-    *object = _MakeObject("GetObjectRef", 12);
+    *object = _make_object("GetObjectRef", 12);
     return 0;
 }
 
@@ -206,7 +206,7 @@ OE_EXTERNC int32_t ModifyObject(struct Object* object)
     return 0;
 }
 
-static size_t _Strlcpy(char* dest, const char* src, size_t size)
+static size_t _strlcpy(char* dest, const char* src, size_t size)
 {
     const char* start = src;
 
@@ -231,7 +231,7 @@ OE_EXTERNC size_t TestStrlcpy(char* dest, const char* src, size_t dsize)
     if (!dest || !src)
         return 0;
 
-    return _Strlcpy(dest, src, dsize);
+    return _strlcpy(dest, src, dsize);
 }
 
 OE_EXTERNC size_t TestOptQualifier(char* p1, const char* p2, size_t p1size)
@@ -269,16 +269,16 @@ OE_EXTERNC void TestCallback(void* func)
         f("TestCallback");
 }
 
-OE_EXTERNC bool TestIntPtrRef(int** intPtrOut, size_t n)
+OE_EXTERNC bool TestIntPtrRef(int** int_ptr_out, size_t n)
 {
-    if (!intPtrOut)
+    if (!int_ptr_out)
         return false;
 
-    if (!(*intPtrOut = (int*)malloc(n * sizeof(int))))
+    if (!(*int_ptr_out = (int*)malloc(n * sizeof(int))))
         return false;
 
     for (size_t i = 0; i < n; i++)
-        (*intPtrOut)[i] = i;
+        (*int_ptr_out)[i] = i;
 
     return true;
 }
@@ -298,9 +298,9 @@ OE_EXTERNC void TestBufferCopy(
     void* dest,
     const void* src,
     size_t n,
-    bool forceOverwrite)
+    bool force_overwrite)
 {
-    if (forceOverwrite)
+    if (force_overwrite)
         memcpy(dest, src, n + 1);
     else
         memcpy(dest, src, n);

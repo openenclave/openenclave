@@ -6,12 +6,12 @@
 
 #define TEST_HOSTREALLOC_INIT_VALUE 'X'
 
-typedef struct _TestHostReallocArgs
+typedef struct _test_host_realloc_args
 {
-    void* inPtr;
-    size_t oldSize;
-    size_t newSize;
-    void* outPtr;
+    void* in_ptr;
+    size_t old_size;
+    size_t new_size;
+    void* out_ptr;
 } TestHostReallocArgs;
 
 #endif /* _HOSTCALLS_ARGS_H */

@@ -31,7 +31,7 @@
 #
 
 try:
-    from cStringIO import StringIO
+    from c_string_io import StringIO
 except ImportError:
     from io import StringIO
 

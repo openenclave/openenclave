@@ -20,7 +20,7 @@ QuotedPublicKey* GetPublicKey(oe_enclave_t* enclave);
 /**
  * Ask the enclave to attest and store the public key of another enclave.
  */
-void StorePublicKey(oe_enclave_t* enclave, QuotedPublicKey* quotedPublicKey);
+void StorePublicKey(oe_enclave_t* enclave, QuotedPublicKey* quoted_public_key);
 
 /**
  * Fetch encrypted data from the enclave.

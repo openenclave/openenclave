@@ -21,32 +21,32 @@ bool InitializeCrypto(void);
 /**
  * Get the public key for this enclave.
  */
-void GetPublicKey(uint8_t pemPublicKey[512]);
+void GetPublicKey(uint8_t pem_public_key[512]);
 
 /**
  * Compute the sha256 hash of given data.
  */
-void Sha256(const uint8_t* data, uint32_t dataSize, uint8_t sha256[32]);
+void Sha256(const uint8_t* data, uint32_t data_size, uint8_t sha256[32]);
 
 /**
  * Encrypt encrypts the given data using the given public key.
  * Used to encrypt data using the public key of another enclave.
 */
 bool Encrypt(
-    const uint8_t* pemPublicKey,
+    const uint8_t* pem_public_key,
     const uint8_t* data,
     uint32_t size,
-    uint8_t* encryptedData,
-    uint32_t* encryptedDataSize);
+    uint8_t* encrypted_data,
+    uint32_t* encrypted_data_size);
 
 /**
  * Decrypt decrypts the given data using current enclave's private key.
  * Used to receive encrypted data from another enclave.
  */
 bool Decrypt(
-    const uint8_t* encryptedData,
-    uint32_t encryptedDataSize,
+    const uint8_t* encrypted_data,
+    uint32_t encrypted_data_size,
     uint8_t* data,
-    uint32_t* dataSize);
+    uint32_t* data_size);
 
 #endif // OE_SAMPLES_ATTESTATION_ENC_CRYPTO_H
