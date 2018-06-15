@@ -12,23 +12,23 @@
  * This function gets the key coordinates from an EC public key. The
  * coordinates are in uncompressed format.
  *
- * @param publicKey key whose key bytes are fetched
- * @param xData the buffer where the X-coordinate bytes are written
- * @param xSize[in,out] size of xData buffer (in); size of data (out)
- * @param yData the buffer where Y-coordinate bytes are written
- * @param ySize[in,out] size of yData buffer (in); size of data (out)
+ * @param public_key key whose key bytes are fetched
+ * @param x_data the buffer where the X-coordinate bytes are written
+ * @param x_size[in,out] size of x_data buffer (in); size of data (out)
+ * @param y_data the buffer where Y-coordinate bytes are written
+ * @param y_size[in,out] size of y_data buffer (in); size of data (out)
  *
  * @return OE_OK upon success
- * @return OE_BUFFER_TOO_SMALL either the **xData** or **yData** are too small;
- *         **xSize** and **ySize** contain the required sizes.
+ * @return OE_BUFFER_TOO_SMALL either the **x_data** or **y_data** are too small;
+ *         **x_size** and **y_size** contain the required sizes.
  *
  */
 oe_result_t oe_ec_public_key_to_coordinates(
-    const oe_ec_public_key_t* publicKey,
-    uint8_t* xData,
-    size_t* xSize,
-    uint8_t* yData,
-    size_t* ySize);
+    const oe_ec_public_key_t* public_key,
+    uint8_t* x_data,
+    size_t* x_size,
+    uint8_t* y_data,
+    size_t* y_size);
 
 /**
  * Converts a DER-encoded signature into ECDSA signature values.
@@ -38,23 +38,23 @@ oe_result_t oe_ec_public_key_to_coordinates(
  * **oe_ec_private_key_sign()** function.
  *
  * @param signature the DER-encoded signature
- * @param signatureSize the size of the signature
- * @param rData the buffer that will contain the R coordinate.
- * @param rSize[in,out] size of rData buffer (in); size of coordinate (out)
- * @param sData the buffer that will contain the S coordinate.
- * @param sSize[in,out] size of sData buffer (in); size of coordinate (out)
+ * @param signature_size the size of the signature
+ * @param r_data the buffer that will contain the R coordinate.
+ * @param r_size[in,out] size of r_data buffer (in); size of coordinate (out)
+ * @param s_data the buffer that will contain the S coordinate.
+ * @param s_size[in,out] size of s_data buffer (in); size of coordinate (out)
  *
  * @return OE_OK upon success
  * @return OE_INVALID_PARAMETER a parameter was invalid.
- * @return OE_BUFFER_TOO_SMALL either the **rData** or **sData** buffer is too
- *         small; **rSize** and **sSize** contain the required sizes on output.
+ * @return OE_BUFFER_TOO_SMALL either the **r_data** or **s_data** buffer is too
+ *         small; **r_size** and **s_size** contain the required sizes on output.
  */
 oe_result_t oe_ecdsa_signature_read_der(
     const uint8_t* signature,
-    size_t signatureSize,
-    uint8_t* rData,
-    size_t* rSize,
-    uint8_t* sData,
-    size_t* sSize);
+    size_t signature_size,
+    uint8_t* r_data,
+    size_t* r_size,
+    uint8_t* s_data,
+    size_t* s_size);
 
 #endif /* _TESTS_CRYPTO_EC_H */

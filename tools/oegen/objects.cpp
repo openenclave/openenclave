@@ -191,7 +191,7 @@ void Function::Dump() const
 {
     printf("function ");
 
-    returnType.Dump();
+    return_type.Dump();
 
     printf("%s(\n", name.c_str());
 

@@ -30,15 +30,15 @@ oe_vectored_exception_handler
     g_exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
 
 oe_result_t oe_add_vectored_exception_handler(
-    bool isFirstHandler,
-    oe_vectored_exception_handler vectoredHandler)
+    bool is_first_handler,
+    oe_vectored_exception_handler vectored_handler)
 {
     oe_result_t result = OE_UNEXPECTED;
     int lock_ret = -1;
 
     // Sanity check.
-    if (vectoredHandler == NULL ||
-        !oe_is_within_enclave((void*)vectoredHandler, 8))
+    if (vectored_handler == NULL ||
+        !oe_is_within_enclave((void*)vectored_handler, 8))
     {
         result = OE_INVALID_PARAMETER;
         goto cleanup;
@@ -55,7 +55,7 @@ oe_result_t oe_add_vectored_exception_handler(
     // Check if the input handler is already registered.
     for (uint32_t i = 0; i < g_current_exception_handler_count; i++)
     {
-        if (g_exception_handler_arr[i] == vectoredHandler)
+        if (g_exception_handler_arr[i] == vectored_handler)
         {
             result = OE_FAILURE;
             goto cleanup;
@@ -70,11 +70,11 @@ oe_result_t oe_add_vectored_exception_handler(
     }
 
     // Add the new handler.
-    if (!isFirstHandler)
+    if (!is_first_handler)
     {
         // Append the new handler if it is not the first handler.
         g_exception_handler_arr[g_current_exception_handler_count] =
-            vectoredHandler;
+            vectored_handler;
     }
     else
     {
@@ -84,7 +84,7 @@ oe_result_t oe_add_vectored_exception_handler(
             g_exception_handler_arr[i] = g_exception_handler_arr[i - 1];
         }
 
-        g_exception_handler_arr[0] = vectoredHandler;
+        g_exception_handler_arr[0] = vectored_handler;
     }
 
     result = OE_OK;
@@ -101,14 +101,14 @@ cleanup:
 }
 
 oe_result_t oe_remove_vectored_exception_handler(
-    oe_vectored_exception_handler vectoredHandler)
+    oe_vectored_exception_handler vectored_handler)
 {
     oe_result_t result = OE_FAILURE;
     int lock_ret = -1;
 
     // Sanity check.
-    if (vectoredHandler == NULL ||
-        !oe_is_within_enclave((void*)vectoredHandler, 8))
+    if (vectored_handler == NULL ||
+        !oe_is_within_enclave((void*)vectored_handler, 8))
     {
         result = OE_INVALID_PARAMETER;
         goto cleanup;
@@ -123,7 +123,7 @@ oe_result_t oe_remove_vectored_exception_handler(
 
     for (uint32_t i = 0; i < g_current_exception_handler_count; i++)
     {
-        if (vectoredHandler != (void*)g_exception_handler_arr[i])
+        if (vectored_handler != (void*)g_exception_handler_arr[i])
         {
             continue;
         }
@@ -300,7 +300,7 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 /*
 **==============================================================================
 **
-** _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
+** _oe_virtual_exception_dispatcher(TD* td, uint64_t arg_in, uint64_t* arg_out)
 **
 **  The virtual (first pass) exception dispatcher. It checks whether or not
 **  there is an exception in current enclave thread, and save minimal exception
@@ -308,7 +308,7 @@ void _oe_exception_dispatcher(oe_context_t* oe_context)
 **
 **==============================================================================
 */
-void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
+void _oe_virtual_exception_dispatcher(TD* td, uint64_t arg_in, uint64_t* arg_out)
 {
     SSA_Info ssa_info;
     oe_memset(&ssa_info, 0, sizeof(SSA_Info));
@@ -316,16 +316,16 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
     // Verify if the first SSA has valid exception info.
     if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)
     {
-        *argOut = OE_EXCEPTION_CONTINUE_SEARCH;
+        *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
         return;
     }
 
     sgx_ssa_gpr_t* ssa_gpr =
         (sgx_ssa_gpr_t*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
-    if (!ssa_gpr->exitInfo.asFields.valid)
+    if (!ssa_gpr->exit_info.as_fields.valid)
     {
         // Not a valid/expected enclave exception;
-        *argOut = OE_EXCEPTION_CONTINUE_SEARCH;
+        *arg_out = OE_EXCEPTION_CONTINUE_SEARCH;
         return;
     }
 
@@ -336,7 +336,7 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
          i++)
     {
         if (g_vector_to_exception_code_mapping[i].sgx_vector ==
-            ssa_gpr->exitInfo.asFields.vector)
+            ssa_gpr->exit_info.as_fields.vector)
         {
             td->base.exception_code =
                 g_vector_to_exception_code_mapping[i].exception_code;
@@ -345,11 +345,11 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
     }
 
     td->base.exception_flags = 0;
-    if (ssa_gpr->exitInfo.asFields.exitType == SGX_EXIT_TYPE_HADEWARE)
+    if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_HADEWARE)
     {
         td->base.exception_flags |= OE_EXCEPTION_HARDWARE;
     }
-    else if (ssa_gpr->exitInfo.asFields.exitType == SGX_EXIT_TYPE_SOFTWARE)
+    else if (ssa_gpr->exit_info.as_fields.exit_type == SGX_EXIT_TYPE_SOFTWARE)
     {
         td->base.exception_flags |= OE_EXCEPTION_SOFTWARE;
     }
@@ -373,11 +373,11 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
 
     // Cleanup the exception flag to avoid the exception handler is called
     // again.
-    ssa_gpr->exitInfo.asFields.valid = 0;
+    ssa_gpr->exit_info.as_fields.valid = 0;
 
     // Acknowledge this exception is an enclave exception, host should let keep
     // running, and let enclave handle the exception.
-    *argOut = OE_EXCEPTION_CONTINUE_EXECUTION;
+    *arg_out = OE_EXCEPTION_CONTINUE_EXECUTION;
     return;
 }
 

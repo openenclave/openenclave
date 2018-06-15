@@ -21,19 +21,19 @@ static TLSWrapper PerThreadFlowId;
 // class to verify OCalls in static Initializers
 struct StaticInitOcaller
 {
-    StaticInitOcaller() : m_Result(OE_FAILURE)
+    StaticInitOcaller() : m_result(OE_FAILURE)
     {
-        m_Result =
+        m_result =
             oe_call_host("InitOcallHandler", (void*)__oe_get_enclave_base());
-        OE_TEST(m_Result == OE_OK);
+        OE_TEST(m_result == OE_OK);
     }
     oe_result_t GetOcallResult() const
     {
-        return m_Result;
+        return m_result;
     }
 
   private:
-    oe_result_t m_Result;
+    oe_result_t m_result;
 } StaticInitOcaller_;
 
 // obtain static init ocall result
@@ -52,16 +52,16 @@ OE_ECALL void EncSetEnclaveId(void* Args_)
     if (!oe_is_outside_enclave(Args_, sizeof(EncSetEnclaveIdArg)))
         return;
 
-    EncSetEnclaveIdArg* argsHost = (EncSetEnclaveIdArg*)Args_;
-    EncSetEnclaveIdArg args = *argsHost;
+    EncSetEnclaveIdArg* args_host = (EncSetEnclaveIdArg*)Args_;
+    EncSetEnclaveIdArg args = *args_host;
 
     if (EnclaveId != ~0u)
     {
-        argsHost->result = OE_INVALID_PARAMETER;
+        args_host->result = OE_INVALID_PARAMETER;
     }
     EnclaveId = args.id;
-    argsHost->baseAddr = __oe_get_enclave_base();
-    argsHost->result = OE_OK;
+    args_host->base_addr = __oe_get_enclave_base();
+    args_host->result = OE_OK;
 }
 
 // Parallel execution test. Using a (trivialized) barrier in the host,
@@ -71,42 +71,42 @@ OE_ECALL void EncParallelExecution(void* Args_)
     if (!oe_is_outside_enclave(Args_, sizeof(EncParallelExecutionArg)))
         return;
 
-    EncParallelExecutionArg* argsHost = (EncParallelExecutionArg*)Args_;
-    EncParallelExecutionArg args = *argsHost;
+    EncParallelExecutionArg* args_host = (EncParallelExecutionArg*)Args_;
+    EncParallelExecutionArg args = *args_host;
 
     if (!oe_is_outside_enclave((void*)args.counter, sizeof(unsigned)) ||
         !oe_is_outside_enclave((void*)args.release, sizeof(unsigned)))
         return;
 
-    unsigned oldFlowId = PerThreadFlowId.GetU();
-    if (oldFlowId)
+    unsigned old_flow_id = PerThreadFlowId.GetU();
+    if (old_flow_id)
     {
         printf(
             "%s(): Starting flow=%u, though thread already has %u\n",
             __FUNCTION__,
-            args.flowId,
-            oldFlowId);
+            args.flow_id,
+            old_flow_id);
         return;
     }
-    PerThreadFlowId.Set(args.flowId);
+    PerThreadFlowId.Set(args.flow_id);
 
     __atomic_add_fetch(args.counter, 1, __ATOMIC_SEQ_CST);
     while (!*args.release)
         ;
 
-    oldFlowId = PerThreadFlowId.GetU();
-    if (oldFlowId != args.flowId)
+    old_flow_id = PerThreadFlowId.GetU();
+    if (old_flow_id != args.flow_id)
     {
         printf(
             "%s(): Stopping flow=%u, though overwritten with %u\n",
             __FUNCTION__,
-            args.flowId,
-            oldFlowId);
+            args.flow_id,
+            old_flow_id);
         return;
     }
     PerThreadFlowId.Set(0u);
 
-    argsHost->result = OE_OK;
+    args_host->result = OE_OK;
 }
 
 /*
@@ -139,75 +139,75 @@ OE_ECALL void EncRecursion(void* Args_)
     if (!oe_is_outside_enclave(Args_, sizeof(EncRecursionArg)))
         return;
 
-    EncRecursionArg* argsHost = (EncRecursionArg*)Args_;
-    EncRecursionArg args = *argsHost;
+    EncRecursionArg* args_host = (EncRecursionArg*)Args_;
+    EncRecursionArg args = *args_host;
 
     OE_TRACE_INFO(
         "%s(): EnclaveId=%u/%u, Flow=%u, recLeft=%u, inCrc=%#x\n",
         __FUNCTION__,
         EnclaveId,
-        args.enclaveId,
-        args.flowId,
-        args.recursionsLeft,
+        args.enclave_id,
+        args.flow_id,
+        args.recursions_left,
         args.crc);
 
-    if (args.initialCount)
+    if (args.initial_count)
     {
-        if (unsigned oldFlowId = PerThreadFlowId.GetU())
+        if (unsigned old_flow_id = PerThreadFlowId.GetU())
         {
             printf(
                 "%s(): Starting flow=%u, though thread already has %u\n",
                 __FUNCTION__,
-                args.flowId,
-                oldFlowId);
+                args.flow_id,
+                old_flow_id);
             return;
         }
-        PerThreadFlowId.Set(args.flowId);
+        PerThreadFlowId.Set(args.flow_id);
     }
 
     // catch initial state: Tag, Input-struct, EnclaveId, FlowId
     args.crc = Crc32::Hash(
         TAG_START_ENC,
         args,
-        EnclaveId - args.enclaveId,
-        PerThreadFlowId.GetU() - args.flowId);
-    argsHost->crc = args.crc;
+        EnclaveId - args.enclave_id,
+        PerThreadFlowId.GetU() - args.flow_id);
+    args_host->crc = args.crc;
 
     // recurse as needed, passing initial-state-crc as input
-    if (args.recursionsLeft)
+    if (args.recursions_left)
     {
-        if (args.initialCount)
-            argsHost->initialCount = args.initialCount - 1;
-        argsHost->recursionsLeft = args.recursionsLeft - 1;
-        result = oe_call_host("RecursionOcall", argsHost);
+        if (args.initial_count)
+            args_host->initial_count = args.initial_count - 1;
+        args_host->recursions_left = args.recursions_left - 1;
+        result = oe_call_host("RecursionOcall", args_host);
     }
 
     // double-check FlowId is still intact and clobber it
-    if (args.initialCount)
+    if (args.initial_count)
     {
-        unsigned oldFlowId = PerThreadFlowId.GetU();
-        if (oldFlowId != args.flowId)
+        unsigned old_flow_id = PerThreadFlowId.GetU();
+        if (old_flow_id != args.flow_id)
         {
             printf(
                 "%s(): Stopping flow=%u, though overwritten with %u\n",
                 __FUNCTION__,
-                args.flowId,
-                oldFlowId);
-            args.initialCount = 0;
+                args.flow_id,
+                old_flow_id);
+            args.initial_count = 0;
         }
     }
 
     // catch output state: Tag + result + modified host-struct, original
     // input, and ID-diffs
-    argsHost->crc = Crc32::Hash(
+    args_host->crc = Crc32::Hash(
         TAG_END_ENC,
         result,
-        *argsHost,
+        *args_host,
         args,
-        EnclaveId - args.enclaveId,
-        PerThreadFlowId.GetU() - args.flowId);
+        EnclaveId - args.enclave_id,
+        PerThreadFlowId.GetU() - args.flow_id);
 
-    if (args.initialCount)
+    if (args.initial_count)
     {
         PerThreadFlowId.Set(0u);
     }
@@ -229,16 +229,16 @@ OE_ECALL void EncTestCallHostFunction(void* Args_)
     if (!oe_is_outside_enclave(Args_, sizeof(EncTestCallHostFunctionArg)))
         return;
 
-    EncTestCallHostFunctionArg* argsHost = (EncTestCallHostFunctionArg*)Args_;
-    EncTestCallHostFunctionArg args = *argsHost;
+    EncTestCallHostFunctionArg* args_host = (EncTestCallHostFunctionArg*)Args_;
+    EncTestCallHostFunctionArg args = *args_host;
 
     // Testing for a string to be outside the enclave is ugly. We might want
     // to provide a helper.
-    if (!oe_is_outside_enclave(args.functionName, 1))
+    if (!oe_is_outside_enclave(args.function_name, 1))
     {
-        argsHost->result = OE_INVALID_PARAMETER;
+        args_host->result = OE_INVALID_PARAMETER;
         return;
     }
 
-    argsHost->result = oe_call_host(args.functionName, NULL);
+    args_host->result = oe_call_host(args.function_name, NULL);
 }

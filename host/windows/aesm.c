@@ -24,7 +24,7 @@ typedef struct IAESMInterfaceVtbl
     (IAESMInterface* This,
      /* [in] */ REFIID riid,
      /* [annotation][iid_is][out] */
-     _COM_Outptr_ void** ppvObject);
+     _COM_Outptr_ void** ppv_object);
 
     ULONG(STDMETHODCALLTYPE* AddRef)(IAESMInterface* This);
 
@@ -40,39 +40,39 @@ typedef struct IAESMInterfaceVtbl
      uint32_t se_attributes_size,
      /* [size_is][ref][out] */ uint8_t* lictoken,
      uint32_t lictoken_size,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* InitQuote)
     (IAESMInterface* This,
-     /* [size_is][out] */ uint8_t* pTargetInfo,
-     uint32_t targetInfoSize,
-     /* [size_is][ref][out] */ uint8_t* pGID,
-     uint32_t gidSize,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [size_is][out] */ uint8_t* p_target_info,
+     uint32_t target_info_size,
+     /* [size_is][ref][out] */ uint8_t* p_gid,
+     uint32_t gid_size,
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* GetQuote)
     (IAESMInterface* This,
-     /* [size_is][ref][in] */ uint8_t* pReport,
-     uint32_t reportSize,
+     /* [size_is][ref][in] */ uint8_t* p_report,
+     uint32_t report_size,
      uint32_t type,
-     /* [size_is][ref][in] */ uint8_t* pSPID,
+     /* [size_is][ref][in] */ uint8_t* p_spid,
      uint32_t spid_size,
-     /* [size_is][unique][in] */ uint8_t* pNonce,
+     /* [size_is][unique][in] */ uint8_t* p_nonce,
      uint32_t nonce_size,
-     /* [size_is][unique][in] */ uint8_t* pSigRL,
-     uint32_t sigRLSize,
-     /* [size_is][unique][out][in] */ uint8_t* pQEReport,
+     /* [size_is][unique][in] */ uint8_t* p_sig_rl,
+     uint32_t sig_rl_size,
+     /* [size_is][unique][out][in] */ uint8_t* p_qe_report,
      uint32_t qe_report_size,
-     /* [size_is][ref][out][in] */ uint8_t* pQuote,
-     /* [in] */ uint32_t bufSize,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [size_is][ref][out][in] */ uint8_t* p_quote,
+     /* [in] */ uint32_t buf_size,
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* CreateSession)
     (IAESMInterface* This,
      /* [ref][out] */ uint32_t* session_id,
      /* [size_is][ref][out] */ uint8_t* se_dh_msg1,
      uint32_t se_dh_msg1_size,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* ExchangeReport)
     (IAESMInterface* This,
@@ -81,12 +81,12 @@ typedef struct IAESMInterfaceVtbl
      uint32_t se_dh_msg2_size,
      /* [size_is][ref][out] */ uint8_t* se_dh_msg3,
      uint32_t se_dh_msg3_size,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* CloseSession)
     (IAESMInterface* This,
      uint32_t session_id,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* InvokeService)
     (IAESMInterface* This,
@@ -94,7 +94,7 @@ typedef struct IAESMInterfaceVtbl
      uint32_t pse_message_req_size,
      /* [size_is][ref][out] */ uint8_t* pse_message_resp,
      uint32_t pse_message_resp_size,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* ReportAttestationStatus)
     (IAESMInterface* This,
@@ -103,68 +103,68 @@ typedef struct IAESMInterfaceVtbl
      uint32_t attestation_status,
      /* [size_is][ref][out] */ uint8_t* update_info,
      uint32_t update_info_size,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* GetPSCap)
     (IAESMInterface* This,
      /* [out] */ uint64_t* ps_cap,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* SgxRegister)
     (IAESMInterface* This,
      /* [size_is][ref][in] */ uint8_t* white_list_cert,
      uint32_t white_list_cert_size,
      uint32_t registration_data_type,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* ProxySettingAssist)
     (IAESMInterface* This,
-     /* [size_is][unique][in] */ uint8_t* pProxyInfo,
+     /* [size_is][unique][in] */ uint8_t* p_proxy_info,
      uint32_t proxy_size,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* QuerySgxStatus)
     (IAESMInterface* This,
      /* [ref][out] */ uint32_t* sgx_status,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* GetWhitelistSize)
     (IAESMInterface* This,
-     /* [ref][out] */ uint32_t* pWhitelistSize,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ uint32_t* p_whitelist_size,
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* GetWhitelist)
     (IAESMInterface* This,
-     /* [size_is][ref][out] */ uint8_t* pWhitelist,
-     uint32_t bufSize,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [size_is][ref][out] */ uint8_t* p_whitelist,
+     uint32_t buf_size,
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* GetSecDomainId)
     (IAESMInterface* This,
      /* [ref][out] */ uint32_t* sec_domain_id,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* SwitchSecDomain)
     (IAESMInterface* This,
      uint32_t sec_domain_id,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* GetEPIDProvisionStatus)
     (IAESMInterface* This,
      /* [ref][out] */ uint32_t* epid_pr_status,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     HRESULT(STDMETHODCALLTYPE* GetPlatformServiceStatus)
     (IAESMInterface* This,
      /* [ref][out] */ uint32_t* pse_status,
-     /* [ref][out] */ aesm_error_t* pResult);
+     /* [ref][out] */ aesm_error_t* p_result);
 
     END_INTERFACE
 } IAESMInterfaceVtbl;
 
 struct _iaesm_interface
 {
-    CONST_VTBL struct IAESMInterfaceVtbl* lpVtbl;
+    CONST_VTBL struct IAESMInterfaceVtbl* lp_vtbl;
 };
 
 static IAESMInterface* _create_instance()
@@ -211,7 +211,7 @@ done:
 
 static void _release_instance(IAESMInterface* instance)
 {
-    instance->lpVtbl->Release(instance);
+    instance->lp_vtbl->Release(instance);
     CoUninitialize();
 }
 
@@ -264,7 +264,7 @@ oe_result_t AESMGetLaunchToken(
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
     const sgx_attributes_t* attributes,
-    sgx_launch_token_t* launchToken)
+    sgx_launch_token_t* launch_token)
 {
     oe_result_t result = OE_UNEXPECTED;
     aesm_error_t error;
@@ -278,7 +278,7 @@ oe_result_t AESMGetLaunchToken(
         goto done;
 
     /* Obtain a launch token */
-    HRESULT hr = instance->lpVtbl->GetLicenseToken(
+    HRESULT hr = instance->lp_vtbl->GetLicenseToken(
         instance,                 /* this */
         mrenclave,                /* mrenclave */
         OE_SHA256_SIZE,           /* mrenclave_size */
@@ -286,7 +286,7 @@ oe_result_t AESMGetLaunchToken(
         OE_KEY_SIZE,              /* public_key_size */
         (PUINT8)attributes,       /* se_attributes */
         sizeof(sgx_attributes_t), /* se_attributes_size */
-        (PUINT8)launchToken,      /* lictoken */
+        (PUINT8)launch_token,      /* lictoken */
         /* MSR-SDK passes sizeof(sgx_einittoken_t) */
         sizeof(sgx_einittoken_t), /* lictoken_size */
         &error);                  /* result */
@@ -309,8 +309,8 @@ done:
 
 oe_result_t AESMInitQuote(
     AESM* aesm,
-    sgx_target_info_t* targetInfo,
-    sgx_epid_group_id_t* epidGroupID)
+    sgx_target_info_t* target_info,
+    sgx_epid_group_id_t* epid_group_id)
 {
     oe_result_t result = OE_UNEXPECTED;
     aesm_error_t error;
@@ -324,11 +324,11 @@ oe_result_t AESMInitQuote(
         goto done;
 
     // Get quote for a given report.
-    HRESULT hr = instance->lpVtbl->InitQuote(
+    HRESULT hr = instance->lp_vtbl->InitQuote(
         instance,
-        (uint8_t*)targetInfo,
+        (uint8_t*)target_info,
         sizeof(sgx_target_info_t),
-        (uint8_t*)epidGroupID,
+        (uint8_t*)epid_group_id,
         sizeof(sgx_epid_group_id_t),
         &error);
 
@@ -351,20 +351,20 @@ done:
 oe_result_t AESMGetQuote(
     AESM* aesm,
     const sgx_report_t* report,
-    sgx_quote_type_t quoteType,
+    sgx_quote_type_t quote_type,
     const sgx_spid_t* spid,
     const sgx_nonce_t* nonce,
-    const uint8_t* signatureRevocationList,
-    uint32_t signatureRevocationListSize,
-    sgx_report_t* reportOut, /* ATTN: support this! */
+    const uint8_t* signature_revocation_list,
+    uint32_t signature_revocation_list_size,
+    sgx_report_t* report_out, /* ATTN: support this! */
     sgx_quote_t* quote,
-    size_t quoteSize)
+    size_t quote_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 
-    if (quoteSize > UINT_MAX)
+    if (quote_size > UINT_MAX)
     {
         result = OE_INVALID_PARAMETER;
         goto done;
@@ -381,21 +381,21 @@ oe_result_t AESMGetQuote(
         goto done;
 
     // Get quote for a given report.
-    HRESULT hr = instance->lpVtbl->GetQuote(
+    HRESULT hr = instance->lp_vtbl->GetQuote(
         instance,                          /* this */
         (uint8_t*)report,                  /* report */
         sizeof(sgx_report_t),              /* report_size */
-        (uint32_t)quoteType,               /* type */
+        (uint32_t)quote_type,               /* type */
         (uint8_t*)spid,                    /* spid */
         sizeof(sgx_spid_t),                /* spid_size */
         (uint8_t*)nonce,                   /* nonce */
         sizeof(sgx_nonce_t),               /* nonce_size */
-        (uint8_t*)signatureRevocationList, /* sigrl */
-        signatureRevocationListSize,       /* sigrl_size */
-        (uint8_t*)reportOut,               /* qe_report */
+        (uint8_t*)signature_revocation_list, /* sigrl */
+        signature_revocation_list_size,       /* sigrl_size */
+        (uint8_t*)report_out,               /* qe_report */
         sizeof(sgx_report_t),              /* qe_report_size */
         (uint8_t*)quote,                   /* quote */
-        (uint32_t)quoteSize,               /* buffer_size */
+        (uint32_t)quote_size,               /* buffer_size */
         &error);
 
     if (!SUCCEEDED(hr) || error != 0)

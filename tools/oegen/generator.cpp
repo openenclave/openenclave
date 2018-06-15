@@ -76,8 +76,8 @@ static string TypeName(unsigned int flags, const string& type)
 {
     for (size_t i = 0; i < ntypes; i++)
     {
-        if (types[i].idlName == type)
-            return types[i].genName;
+        if (types[i].idl_name == type)
+            return types[i].gen_name;
     }
 
     if (flags & FLAG_STRUCT)
@@ -90,8 +90,8 @@ static string TypeTypeName(const string& type)
 {
     for (size_t i = 0; i < ntypes; i++)
     {
-        if (types[i].idlName == type)
-            return types[i].genType;
+        if (types[i].idl_name == type)
+            return types[i].gen_type;
     }
 
     return "OE_STRUCT_T";
@@ -271,7 +271,7 @@ static void _gen_function_prototype(std::ostream& os, const Function* f)
 {
     os << "OE_EXTERNC ";
 
-    _gen_return_type(os, f->returnType);
+    _gen_return_type(os, f->return_type);
 
     os << f->name << "(";
 
@@ -300,7 +300,7 @@ static void _gen_function_struct(std::ostream& os, const Function* function)
 
     // Generate return field:
     {
-        const ReturnType& rt = function->returnType;
+        const ReturnType& rt = function->return_type;
 
         if (!rt.Empty())
         {
@@ -393,7 +393,7 @@ static void _gen_clear_arg(
     unsigned int flags,   /* flags from the parameter or return object */
     const string& prefix, /* what comes before the name (e.g., "s.") */
     const string& name,
-    const string& freeStr)
+    const string& free_str)
 {
     const char text[] = "    __r = oe_clear_arg(__ti, __a, $0, $1, $2$3, $4);\n"
                         "    if (__r != OE_OK)\n"
@@ -405,16 +405,16 @@ static void _gen_clear_arg(
     else
         ref = "0";
 
-    os << sub(text, _num_to_str(index), ref, prefix, name, freeStr);
+    os << sub(text, _num_to_str(index), ref, prefix, name, free_str);
 }
 
 static void _gen_trusted_icall(std::ostream& os, const Function* function)
 {
     const Function& f = *function;
-    const ReturnType& r = f.returnType;
+    const ReturnType& r = f.return_type;
     bool empty = (r.Empty() && f.params.size() == 0);
-    string mallocStr = "oe_host_malloc";
-    string freeStr = "oe_host_free";
+    string malloc_str = "oe_host_malloc";
+    string free_str = "oe_host_free";
     Ind ind;
 
     // ATTN: change signature of these functions to return oe_result_t!
@@ -571,7 +571,7 @@ static void _gen_trusted_icall(std::ostream& os, const Function* function)
             if (f & FLAG_PTR)
                 f |= FLAG_REF;
 
-            _gen_set_arg(os, 0, f, "&__args->", r.name, mallocStr);
+            _gen_set_arg(os, 0, f, "&__args->", r.name, malloc_str);
         }
 
         // Copy parameters back to caller's memory:
@@ -592,9 +592,9 @@ static void _gen_trusted_icall(std::ostream& os, const Function* function)
 
                 /* If in-out argument */
                 if (p.flags & FLAG_IN)
-                    _gen_clear_arg(os, index, p.flags, prefix, p.name, freeStr);
+                    _gen_clear_arg(os, index, p.flags, prefix, p.name, free_str);
 
-                _gen_set_arg(os, index, p.flags, prefix, p.name, mallocStr);
+                _gen_set_arg(os, index, p.flags, prefix, p.name, malloc_str);
             }
         }
 
@@ -629,7 +629,7 @@ static void _gen_trusted_icall(std::ostream& os, const Function* function)
 static void _gen_untrusted_icall(std::ostream& os, const Function* function)
 {
     const Function& f = *function;
-    const ReturnType& r = f.returnType;
+    const ReturnType& r = f.return_type;
     bool empty = (r.Empty() && f.params.size() == 0);
     Ind ind;
 
@@ -693,7 +693,7 @@ static void _gen_call_out_function_prototype(
 {
     os << "OE_EXTERNC ";
 
-    const ReturnType& rt = f->returnType;
+    const ReturnType& rt = f->return_type;
 
     os << "oe_result_t " << f->name << "(";
 
@@ -740,11 +740,11 @@ static void _gen_call_out_function_prototype(
 
 static void _gen_ocall(std::ostream& os, const Function* f)
 {
-    const ReturnType& r = f->returnType;
+    const ReturnType& r = f->return_type;
     const string& fn = f->name;
-    string hostAllocStr = "oe_host_malloc";
-    string mallocStr = "_host_alloc";
-    string freeStr = "_host_free";
+    string host_alloc_str = "oe_host_malloc";
+    string malloc_str = "_host_alloc";
+    string free_str = "_host_free";
 
     os << pf("/* OCALL: %s(%u) */\n", __FILE__, __LINE__);
     _gen_call_out_function_prototype(os, true, f, false);
@@ -799,7 +799,7 @@ static void _gen_ocall(std::ostream& os, const Function* f)
                             "    oe_memset(__a, 0, sizeof(__Args));\n"
                             "\n";
 
-        os << sub(text, hostAllocStr);
+        os << sub(text, host_alloc_str);
     }
 
     // Copy parameters into args structure */
@@ -827,7 +827,7 @@ static void _gen_ocall(std::ostream& os, const Function* f)
                 "        goto done;\n\n";
 
             size_t index = r.Empty() ? i : i + 1;
-            os << sub(text, _num_to_str(index), ref, amp, p.name, mallocStr);
+            os << sub(text, _num_to_str(index), ref, amp, p.name, malloc_str);
         }
         else if (p.flags & FLAG_PTR)
         {
@@ -839,7 +839,7 @@ static void _gen_ocall(std::ostream& os, const Function* f)
                 "        goto done;\n\n";
 
             size_t index = r.Empty() ? i : i + 1;
-            os << sub(text, _num_to_str(index), ref, amp, p.name, mallocStr);
+            os << sub(text, _num_to_str(index), ref, amp, p.name, malloc_str);
         }
     }
 
@@ -896,9 +896,9 @@ static void _gen_ocall(std::ostream& os, const Function* f)
 
             /* If in-out argument */
             if (p.flags & FLAG_IN)
-                _gen_clear_arg(os, index, p.flags, prefix, p.name, freeStr);
+                _gen_clear_arg(os, index, p.flags, prefix, p.name, free_str);
 
-            _gen_set_arg(os, index, p.flags, prefix, p.name, mallocStr);
+            _gen_set_arg(os, index, p.flags, prefix, p.name, malloc_str);
         }
     }
 
@@ -911,7 +911,7 @@ static void _gen_ocall(std::ostream& os, const Function* f)
                             "\n"
                             "    return __r;\n"
                             "}\n";
-        os << sub(text, freeStr);
+        os << sub(text, free_str);
     }
 
     os << endl;
@@ -919,7 +919,7 @@ static void _gen_ocall(std::ostream& os, const Function* f)
 
 static void _gen_ecall(std::ostream& os, const Function* f)
 {
-    const ReturnType& r = f->returnType;
+    const ReturnType& r = f->return_type;
     const string& fn = f->name;
     Ind ind;
 
@@ -1114,13 +1114,13 @@ static int _gen_field_type_info(std::ostream& os, const Struct& s, const Field& 
         // oe_field_ti_t.type:
         os << ind << ttn << ", /* type */\n";
 
-        // oe_field_ti_t.structTI:
+        // oe_field_ti_t.struct_ti:
         if (f.flags & FLAG_STRUCT && !(f.flags & FLAG_UNCHECKED))
             os << ind << sub("&$0_ti, /* structTI */\n", f.type);
         else
             os << ind << "NULL, /* structTI */\n";
 
-        // oe_field_ti_t.countField:
+        // oe_field_ti_t.count_field:
         if (f.flags & FLAG_COUNT)
             os << ind << '"' << f.qvals.count << "\", /* countField */\n";
         else
@@ -1237,7 +1237,7 @@ static int _gen_return_type_type_info(
         // oe_field_ti_t.type:
         os << ind << ttn << ", /* type */\n";
 
-        // oe_field_ti_t.structTI:
+        // oe_field_ti_t.struct_ti:
         if (r.flags & FLAG_STRUCT && !(r.flags & FLAG_UNCHECKED))
             os << ind << sub("&$0_ti, /* structTI */\n", r.type);
         else
@@ -1294,7 +1294,7 @@ static int _gen_param_type_info(
         // oe_field_ti_t.type:
         os << ind << ttn << ", /* type */\n";
 
-        // oe_field_ti_t.structTI:
+        // oe_field_ti_t.struct_ti:
         if (p.flags & FLAG_STRUCT && !(p.flags & FLAG_UNCHECKED))
             os << ind << sub("&$0_ti, /* structTI */\n", p.type);
         else
@@ -1346,9 +1346,9 @@ static int _gen_function_type_info(std::ostream& os, const Function& f)
                 "{\n",
                 f.name);
 
-            if (!f.returnType.Empty())
+            if (!f.return_type.Empty())
             {
-                if (_gen_return_type_type_info(os, f, f.returnType) != 0)
+                if (_gen_return_type_type_info(os, f, f.return_type) != 0)
                     goto done;
             }
 
@@ -1464,17 +1464,17 @@ int Generator::GenerateSourceFile(
     // Inject wrapper functions for OCALL host stack allocations
     if (trusted)
     {
-        const char mallocText[] = "OE_INLINE void* _host_alloc(size_t size)\n"
+        const char malloc_text[] = "OE_INLINE void* _host_alloc(size_t size)\n"
                                   "{\n"
                                   "    return oe_host_malloc(size);\n"
                                   "}\n\n";
-        os << mallocText << endl;
+        os << malloc_text << endl;
 
-        const char freeText[] = "OE_INLINE void _host_free(void* ptr)\n"
+        const char free_text[] = "OE_INLINE void _host_free(void* ptr)\n"
                                 "{\n"
                                 "     oe_host_free(ptr);\n"
                                 "}\n\n";
-        os << freeText << endl;
+        os << free_text << endl;
     }
 
     // Generate struct type information:
@@ -1510,7 +1510,7 @@ int Generator::GenerateSourceFile(
 
         if (f)
         {
-            if (f->returnType.flags & flag1)
+            if (f->return_type.flags & flag1)
             {
                 _gen_function_prototype(os, f);
 
@@ -1530,7 +1530,7 @@ int Generator::GenerateSourceFile(
 
         if (f)
         {
-            if (f->returnType.flags & flag2)
+            if (f->return_type.flags & flag2)
             {
                 if (trusted)
                     _gen_ocall(os, f);
@@ -1605,7 +1605,7 @@ int Generator::GenerateHeaderFile(
     {
         const Function* f = dynamic_cast<const Function*>(objects[i]);
 
-        if (f && (f->returnType.flags & flag1))
+        if (f && (f->return_type.flags & flag1))
         {
             _gen_function_prototype(os, f);
         }
@@ -1617,7 +1617,7 @@ int Generator::GenerateHeaderFile(
     {
         const Function* f = dynamic_cast<const Function*>(objects[i]);
 
-        if (f && (f->returnType.flags & flag2))
+        if (f && (f->return_type.flags & flag2))
         {
             _gen_call_out_function_prototype(os, trusted, f, true);
         }

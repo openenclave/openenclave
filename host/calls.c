@@ -171,39 +171,39 @@ static oe_result_t _do_eenter(
     oe_enclave_t* enclave,
     void* tcs,
     void (*aep)(void),
-    oe_code_t codeIn,
-    uint32_t funcIn,
-    uint64_t argIn,
-    oe_code_t* codeOut,
-    uint32_t* funcOut,
-    uint64_t* argOut)
+    oe_code_t code_in,
+    uint32_t func_in,
+    uint64_t arg_in,
+    oe_code_t* code_out,
+    uint32_t* func_out,
+    uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (codeOut)
-        *codeOut = OE_CODE_NONE;
+    if (code_out)
+        *code_out = OE_CODE_NONE;
 
-    if (funcOut)
-        *funcOut = 0;
+    if (func_out)
+        *func_out = 0;
 
-    if (argOut)
-        *argOut = 0;
+    if (arg_out)
+        *arg_out = 0;
 
-    if (!codeOut || !funcOut || !argOut)
+    if (!code_out || !func_out || !arg_out)
         OE_THROW(OE_INVALID_PARAMETER);
 
     OE_TRACE_INFO(
         "_do_eenter(tcs=%p aep=%p codeIn=%d, funcIn=%x argIn=%llx)\n",
         tcs,
         aep,
-        codeIn,
-        funcIn,
-        OE_LLX(argIn));
+        code_in,
+        func_in,
+        OE_LLX(arg_in));
 
     /* Call oe_enter() assembly function (enter.S) */
     {
-        uint64_t arg1 = oe_make_call_arg1(codeIn, funcIn, 0);
-        uint64_t arg2 = (uint64_t)argIn;
+        uint64_t arg1 = oe_make_call_arg1(code_in, func_in, 0);
+        uint64_t arg2 = (uint64_t)arg_in;
         uint64_t arg3 = 0;
         uint64_t arg4 = 0;
 
@@ -216,9 +216,9 @@ static oe_result_t _do_eenter(
             oe_enter(tcs, aep, arg1, arg2, &arg3, &arg4, enclave);
         }
 
-        *codeOut = oe_get_code_from_call_arg1(arg3);
-        *funcOut = oe_get_func_from_call_arg1(arg3);
-        *argOut = arg4;
+        *code_out = oe_get_code_from_call_arg1(arg3);
+        *func_out = oe_get_func_from_call_arg1(arg3);
+        *arg_out = arg4;
     }
 
     result = OE_OK;
@@ -351,83 +351,83 @@ static oe_result_t _handle_ocall(
     oe_enclave_t* enclave,
     void* tcs,
     uint32_t func,
-    uint64_t argIn,
-    uint64_t* argOut)
+    uint64_t arg_in,
+    uint64_t* arg_out)
 {
     oe_result_t result = OE_UNEXPECTED;
 
     if (!enclave || !tcs)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    if (argOut)
-        *argOut = 0;
+    if (arg_out)
+        *arg_out = 0;
 
     switch ((oe_func_t)func)
     {
         case OE_FUNC_CALL_HOST:
-            _handle_call_host(argIn);
+            _handle_call_host(arg_in);
             break;
 
         case OE_FUNC_MALLOC:
-            HandleMalloc(argIn, argOut);
+            HandleMalloc(arg_in, arg_out);
             break;
 
         case OE_FUNC_REALLOC:
-            HandleRealloc(argIn, argOut);
+            HandleRealloc(arg_in, arg_out);
             break;
 
         case OE_FUNC_FREE:
-            HandleFree(argIn);
+            HandleFree(arg_in);
             break;
 
         case OE_FUNC_PUTS:
-            HandlePuts(argIn);
+            HandlePuts(arg_in);
             break;
 
         case OE_FUNC_PRINT:
-            HandlePrint(argIn);
+            HandlePrint(arg_in);
             break;
 
         case OE_FUNC_PUTCHAR:
-            HandlePutchar(argIn);
+            HandlePutchar(arg_in);
             break;
 
         case OE_FUNC_THREAD_WAIT:
-            HandleThreadWait(enclave, argIn);
+            HandleThreadWait(enclave, arg_in);
             break;
 
         case OE_FUNC_THREAD_WAKE:
-            HandleThreadWake(enclave, argIn);
+            HandleThreadWake(enclave, arg_in);
             break;
 
         case OE_FUNC_THREAD_WAKE_WAIT:
-            HandleThreadWakeWait(enclave, argIn);
+            HandleThreadWakeWait(enclave, arg_in);
             break;
 
         case OE_FUNC_GET_QUOTE:
-            HandleGetQuote(argIn);
+            HandleGetQuote(arg_in);
             break;
 
         case OE_FUNC_GET_QE_TARGET_INFO:
-            HandleGetQETargetInfo(argIn);
+            HandleGetQETargetInfo(arg_in);
             break;
 
 #if defined(__OE_NEED_TIME_CALLS)
 
         case OE_FUNC_STRFTIME:
-            HandleStrftime(argIn);
+            HandleStrftime(arg_in);
             break;
 
         case OE_FUNC_GETTIMEOFDAY:
-            HandleGettimeofday(argIn);
+            HandleGettimeofday(arg_in);
             break;
 
         case OE_FUNC_CLOCK_GETTIME:
-            HandleClockgettime(argIn);
+            HandleClockgettime(arg_in);
             break;
 
         case OE_FUNC_NANOSLEEP:
-            HandleNanosleep(argIn);
+            HandleNanosleep(arg_in);
             break;
 
 #endif /* defined(__OE_NEED_TIME_CALLS) */
@@ -447,7 +447,7 @@ static oe_result_t _handle_ocall(
                 oe_mutex_unlock(&_ocalls_lock);
 
                 if (ocall)
-                    ocall(argIn, argOut);
+                    ocall(arg_in, arg_out);
             }
 
             break;
@@ -472,8 +472,8 @@ OE_CATCH:
 ** Parameters:
 **     arg1 - first argument from EENTER return (code + func)
 **     arg2 - second argument from EENTER return (OCALL argument)
-**     arg1Out - first argument to pass to EENTER (code + func)
-**     arg2Out - second argument to pass to EENTER (ORET argument)
+**     arg1_out - first argument to pass to EENTER (code + func)
+**     arg2_out - second argument to pass to EENTER (ORET argument)
 **
 ** Returns:
 **     0 - An OCALL was dispatched
@@ -485,8 +485,8 @@ OE_CATCH:
 int __oe_dispatch_ocall(
     uint64_t arg1,
     uint64_t arg2,
-    uint64_t* arg1Out,
-    uint64_t* arg2Out,
+    uint64_t* arg1_out,
+    uint64_t* arg2_out,
     void* tcs,
     oe_enclave_t* enclave)
 {
@@ -496,15 +496,15 @@ int __oe_dispatch_ocall(
 
     if (code == OE_CODE_OCALL)
     {
-        uint64_t argOut = 0;
+        uint64_t arg_out = 0;
 
-        oe_result_t result = _handle_ocall(enclave, tcs, func, arg, &argOut);
+        oe_result_t result = _handle_ocall(enclave, tcs, func, arg, &arg_out);
 
         /* ATTN: ignored! */
         (void)result;
 
-        *arg1Out = oe_make_call_arg1(OE_CODE_ORET, func, 0);
-        *arg2Out = argOut;
+        *arg1_out = oe_make_call_arg1(OE_CODE_ORET, func, 0);
+        *arg2_out = arg_out;
 
         return 0;
     }
@@ -639,14 +639,14 @@ oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint32_t func,
     uint64_t arg,
-    uint64_t* argOutPtr)
+    uint64_t* arg_out_ptr)
 {
     oe_result_t result = OE_UNEXPECTED;
     void* tcs = NULL;
     oe_code_t code = OE_CODE_ECALL;
-    oe_code_t codeOut = 0;
-    uint32_t funcOut = 0;
-    uint64_t argOut = 0;
+    oe_code_t code_out = 0;
+    uint32_t func_out = 0;
+    uint64_t arg_out = 0;
 
 #if defined(TRACE_ECALLS)
     printf("=== oe_ecall()\n");
@@ -668,16 +668,16 @@ oe_result_t oe_ecall(
             code,
             func,
             arg,
-            &codeOut,
-            &funcOut,
-            &argOut));
+            &code_out,
+            &func_out,
+            &arg_out));
 
     /* Process OCALLS */
-    if (codeOut != OE_CODE_ERET)
+    if (code_out != OE_CODE_ERET)
         OE_THROW(OE_UNEXPECTED);
 
-    if (argOutPtr)
-        *argOutPtr = argOut;
+    if (arg_out_ptr)
+        *arg_out_ptr = arg_out;
 
     result = OE_OK;
 
@@ -752,39 +752,39 @@ static uint64_t _find_enclave_func(
 oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_call_enclave_args_t callEnclaveArgs;
+    oe_call_enclave_args_t call_enclave_args;
 
     /* Reject invalid parameters */
     if (!enclave || !func)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    /* Initialize the callEnclaveArgs structure */
+    /* Initialize the call_enclave_args structure */
     {
-        if (!(callEnclaveArgs.vaddr =
-                  _find_enclave_func(enclave, func, &callEnclaveArgs.func)))
+        if (!(call_enclave_args.vaddr =
+                  _find_enclave_func(enclave, func, &call_enclave_args.func)))
         {
             OE_THROW(OE_NOT_FOUND);
         }
 
-        callEnclaveArgs.args = args;
-        callEnclaveArgs.result = OE_UNEXPECTED;
+        call_enclave_args.args = args;
+        call_enclave_args.result = OE_UNEXPECTED;
     }
 
     /* Perform the ECALL */
     {
-        uint64_t argOut = 0;
+        uint64_t arg_out = 0;
 
         OE_TRY(
             oe_ecall(
                 enclave,
                 OE_FUNC_CALL_ENCLAVE,
-                (uint64_t)&callEnclaveArgs,
-                &argOut));
-        OE_TRY(argOut);
+                (uint64_t)&call_enclave_args,
+                &arg_out));
+        OE_TRY(arg_out);
     }
 
     /* Check the result */
-    OE_TRY(callEnclaveArgs.result);
+    OE_TRY(call_enclave_args.result);
 
     result = OE_OK;
 

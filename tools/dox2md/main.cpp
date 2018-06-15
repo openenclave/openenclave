@@ -457,22 +457,22 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
 
     /* Check usage */
-    bool isValidUsage = false;
+    bool is_valid_usage = false;
     if (argc == 3)
     {
         string opt = argv[2];
         if (opt == "-v" || opt == "-V")
         {
             g_verbose = true;
-            isValidUsage = true;
+            is_valid_usage = true;
         }
     }
     else if (argc == 2)
     {
-        isValidUsage = true;
+        is_valid_usage = true;
     }
 
-    if (!isValidUsage)
+    if (!is_valid_usage)
     {
         fprintf(stderr, "Usage: %s XML-FILE [-v]\n", arg0);
         exit(1);

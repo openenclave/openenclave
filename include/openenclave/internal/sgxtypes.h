@@ -288,11 +288,11 @@ typedef union {
     struct
     {
         uint32_t vector : 8;
-        uint32_t exitType : 3;
+        uint32_t exit_type : 3;
         uint32_t mbz : 20;
         uint32_t valid : 1;
-    } asFields;
-    uint32_t asUINT32;
+    } as_fields;
+    uint32_t as_uint32;
 } sgx_exit_info;
 
 /*
@@ -325,10 +325,10 @@ typedef struct sgx_ssa_gpr_t
     uint64_t rip;
     uint64_t ursp;
     uint64_t urbp;
-    sgx_exit_info exitInfo;
+    sgx_exit_info exit_info;
     uint32_t reserved;
-    uint64_t fSBase;
-    uint64_t gSBase;
+    uint64_t f_s_base;
+    uint64_t g_s_base;
 } sgx_ssa_gpr_t, *PSGX_SsaGpr;
 
 /*
@@ -687,7 +687,7 @@ typedef struct _sgx_report_body
     uint8_t reserved4[60];
 
     /* (320) User report data */
-    sgx_report_data_t reportData;
+    sgx_report_data_t report_data;
 } sgx_report_body_t;
 
 typedef struct _sgx_report
@@ -800,20 +800,20 @@ typedef struct _sgx_quote_auth_data
     sgx_ecdsa256_signature_t signature;
 
     /* (64) Pair of 256 bit ECDSA Key. */
-    sgx_ecdsa256_key_t attestationKey;
+    sgx_ecdsa256_key_t attestation_key;
 
     /* (128) Quoting Enclave Report Body */
-    sgx_report_body_t qeReportBody;
+    sgx_report_body_t qe_report_body;
 
     /* (512) Quoting Enclave Report Body Signature */
-    sgx_ecdsa256_signature_t qeReportBodySignature;
+    sgx_ecdsa256_signature_t qe_report_body_signature;
 } sgx_quote_auth_data_t;
 
 OE_STATIC_ASSERT(OE_OFFSETOF(sgx_quote_auth_data_t, signature) == 0);
-OE_STATIC_ASSERT(OE_OFFSETOF(sgx_quote_auth_data_t, attestationKey) == 64);
-OE_STATIC_ASSERT(OE_OFFSETOF(sgx_quote_auth_data_t, qeReportBody) == 128);
+OE_STATIC_ASSERT(OE_OFFSETOF(sgx_quote_auth_data_t, attestation_key) == 64);
+OE_STATIC_ASSERT(OE_OFFSETOF(sgx_quote_auth_data_t, qe_report_body) == 128);
 OE_STATIC_ASSERT(
-    OE_OFFSETOF(sgx_quote_auth_data_t, qeReportBodySignature) == 512);
+    OE_OFFSETOF(sgx_quote_auth_data_t, qe_report_body_signature) == 512);
 OE_STATIC_ASSERT(sizeof(sgx_quote_auth_data_t) == 576);
 
 /*
@@ -915,10 +915,10 @@ OE_PACK_BEGIN
 typedef struct _sgx_sig_rl
 {
     /* big-endian */
-    uint16_t protocolVersion;
+    uint16_t protocol_version;
 
     /* big-endian (14 for sig_rl) */
-    uint16_t epidIdentifier;
+    uint16_t epid_identifier;
 
     /* Signature revocation list implementation */
     sgx_epid_sig_rl_t sigrl;
@@ -1017,8 +1017,8 @@ typedef struct _oe_ecall_pages
 */
 
 oe_result_t sgx_init_quote(
-    sgx_target_info_t* targetInfo,
-    sgx_epid_group_id_t* epidGroupID);
+    sgx_target_info_t* target_info,
+    sgx_epid_group_id_t* epid_group_id);
 
 /*
 **==============================================================================

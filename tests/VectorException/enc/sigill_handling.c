@@ -13,14 +13,14 @@
 
 // Global to track state of TestSigillHandler execution.
 // Making this volatile to prevent optimization by the compiler
-// as g_handledSigill is being used as a messaging mechanism
+// as g_handled_sigill is being used as a messaging mechanism
 // during signal handling. This is modified in the signal
 // handlers in the enclave and checked in the test functions.
 static volatile enum {
     HANDLED_SIGILL_NONE,
     HANDLED_SIGILL_GETSEC,
     HANDLED_SIGILL_CPUID
-} g_handledSigill;
+} g_handled_sigill;
 
 // 2nd-chance exception handler to continue on test triggered exceptions
 uint64_t TestSigillHandler(oe_exception_record_t* exception)
@@ -31,12 +31,12 @@ uint64_t TestSigillHandler(oe_exception_record_t* exception)
         {
             case OE_CPUID_OPCODE:
                 exception->context->rip += 2;
-                g_handledSigill = HANDLED_SIGILL_CPUID;
+                g_handled_sigill = HANDLED_SIGILL_CPUID;
                 return OE_EXCEPTION_CONTINUE_EXECUTION;
 
             case OE_GETSEC_OPCODE:
                 exception->context->rip += 2;
-                g_handledSigill = HANDLED_SIGILL_GETSEC;
+                g_handled_sigill = HANDLED_SIGILL_GETSEC;
                 return OE_EXCEPTION_CONTINUE_EXECUTION;
         }
     }
@@ -52,7 +52,7 @@ bool TestGetsecInstruction()
     uint32_t r1 = c_r1;
     uint32_t r2 = c_r2;
 
-    g_handledSigill = HANDLED_SIGILL_NONE;
+    g_handled_sigill = HANDLED_SIGILL_NONE;
 
     // Invoke GETSEC instruction (illegal in SGX) on CAPABILITIES leaf
     asm volatile(
@@ -78,11 +78,11 @@ bool TestGetsecInstruction()
 
     // Verify that illegal instruction was handled by test handler, not by
     // default
-    if (g_handledSigill != HANDLED_SIGILL_GETSEC)
+    if (g_handled_sigill != HANDLED_SIGILL_GETSEC)
     {
         oe_host_printf(
             "%d Illegal GETSEC did not raise 2nd chance exception.\n",
-            g_handledSigill);
+            g_handled_sigill);
         return false;
     }
     else
@@ -100,18 +100,18 @@ bool TestGetsecInstruction()
 // cpuid leaves and cause the 2nd chance exception handler to be invoked.
 bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 {
-    g_handledSigill = HANDLED_SIGILL_NONE;
-    uint32_t cpuidRAX;
+    g_handled_sigill = HANDLED_SIGILL_NONE;
+    uint32_t cpuid_rax;
 
     // Invoking cpuid in assembly and making it volatile to prevent cpuid from
     // being optimized out
     asm volatile(
         "cpuid"
-        : "=a"(cpuidRAX) // Return value in cpuidRAX
+        : "=a"(cpuid_rax) // Return value in cpuid_rax
         : "0"(leaf)
         : "ebx", "ecx", "edx", "cc", "memory");
 
-    if (g_handledSigill != HANDLED_SIGILL_CPUID)
+    if (g_handled_sigill != HANDLED_SIGILL_CPUID)
     {
         oe_host_printf(
             "Unsupported CPUID leaf %x did not raise 2nd chance exception.\n",
@@ -171,10 +171,10 @@ OE_ECALL void TestSigillHandling(void* args_)
         int supported = __get_cpuid_count(
             i,
             0,
-            &args->cpuidTable[i][OE_CPUID_RAX],
-            &args->cpuidTable[i][OE_CPUID_RBX],
-            &args->cpuidTable[i][OE_CPUID_RCX],
-            &args->cpuidTable[i][OE_CPUID_RDX]);
+            &args->cpuid_table[i][OE_CPUID_RAX],
+            &args->cpuid_table[i][OE_CPUID_RBX],
+            &args->cpuid_table[i][OE_CPUID_RCX],
+            &args->cpuid_table[i][OE_CPUID_RDX]);
 
         if (!supported)
         {

@@ -25,15 +25,15 @@
 
 static struct sigaction g_previous_sigaction[_NSIG];
 
-static void _host_signal_handler(int sigNum, siginfo_t* sigInfo, void* sigData)
+static void _host_signal_handler(int sig_num, siginfo_t* sig_info, void* sig_data)
 {
-    ucontext_t* context = (ucontext_t*)sigData;
-    uint64_t exitCode = context->uc_mcontext.gregs[REG_RAX];
-    uint64_t tcsAddress = context->uc_mcontext.gregs[REG_RBX];
-    uint64_t exitAddress = context->uc_mcontext.gregs[REG_RIP];
+    ucontext_t* context = (ucontext_t*)sig_data;
+    uint64_t exit_code = context->uc_mcontext.gregs[REG_RAX];
+    uint64_t tcs_address = context->uc_mcontext.gregs[REG_RBX];
+    uint64_t exit_address = context->uc_mcontext.gregs[REG_RIP];
 
     // Check if the signal happens inside the enclave.
-    if ((exitAddress == (uint64_t)OE_AEP) && (exitCode == ENCLU_ERESUME))
+    if ((exit_address == (uint64_t)OE_AEP) && (exit_code == ENCLU_ERESUME))
     {
         // Check if the enclave exception happens inside the first pass
         // exception handler.
@@ -44,7 +44,7 @@ static void _host_signal_handler(int sigNum, siginfo_t* sigInfo, void* sigData)
         }
 
         // Call-in enclave to handle the exception.
-        oe_enclave_t* enclave = _oe_query_enclave_instance((void*)tcsAddress);
+        oe_enclave_t* enclave = _oe_query_enclave_instance((void*)tcs_address);
         if (enclave == NULL)
         {
             abort();
@@ -54,13 +54,13 @@ static void _host_signal_handler(int sigNum, siginfo_t* sigInfo, void* sigData)
         thread_data->flags |= _OE_THREAD_HANDLING_EXCEPTION;
 
         // Call into enclave first pass exception handler.
-        uint64_t argOut = 0;
+        uint64_t arg_out = 0;
         oe_result_t result =
-            oe_ecall(enclave, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0, &argOut);
+            oe_ecall(enclave, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0, &arg_out);
 
         // Reset the flag
         thread_data->flags &= (~_OE_THREAD_HANDLING_EXCEPTION);
-        if (result == OE_OK && argOut == OE_EXCEPTION_CONTINUE_EXECUTION)
+        if (result == OE_OK && arg_out == OE_EXCEPTION_CONTINUE_EXECUTION)
         {
             // This exception has been handled by the enclave. Let's resume.
             return;
@@ -71,44 +71,44 @@ static void _host_signal_handler(int sigNum, siginfo_t* sigInfo, void* sigData)
             abort();
         }
     }
-    else if (g_previous_sigaction[sigNum].sa_handler == SIG_DFL)
+    else if (g_previous_sigaction[sig_num].sa_handler == SIG_DFL)
     {
         // If not an enclave exception, and no valid previous signal handler is
         // set, raise it again, and let the default signal handler handle it.
-        signal(sigNum, SIG_DFL);
-        raise(sigNum);
+        signal(sig_num, SIG_DFL);
+        raise(sig_num);
     }
     else
     {
         // If not an enclave exception, and there is old signal handler, we need
         // to transfer the signal to the old signal handler.
-        if (!(g_previous_sigaction[sigNum].sa_flags & SA_NODEFER))
+        if (!(g_previous_sigaction[sig_num].sa_flags & SA_NODEFER))
         {
-            sigaddset(&g_previous_sigaction[sigNum].sa_mask, sigNum);
+            sigaddset(&g_previous_sigaction[sig_num].sa_mask, sig_num);
         }
 
-        sigset_t currentSet;
+        sigset_t current_set;
         pthread_sigmask(
-            SIG_SETMASK, &g_previous_sigaction[sigNum].sa_mask, &currentSet);
+            SIG_SETMASK, &g_previous_sigaction[sig_num].sa_mask, &current_set);
 
         // Call sa_handler or sa_sigaction based on the flags.
-        if (g_previous_sigaction[sigNum].sa_flags & SA_SIGINFO)
+        if (g_previous_sigaction[sig_num].sa_flags & SA_SIGINFO)
         {
-            g_previous_sigaction[sigNum].sa_sigaction(sigNum, sigInfo, sigData);
+            g_previous_sigaction[sig_num].sa_sigaction(sig_num, sig_info, sig_data);
         }
         else
         {
-            g_previous_sigaction[sigNum].sa_handler(sigNum);
+            g_previous_sigaction[sig_num].sa_handler(sig_num);
         }
 
-        pthread_sigmask(SIG_SETMASK, &currentSet, NULL);
+        pthread_sigmask(SIG_SETMASK, &current_set, NULL);
 
         // If the g_previous_sigaction set SA_RESETHAND, it will break the chain
         // which means g_previous_sigaction->next_old_sigact will not be called.
         // This signal handler is not responsible for that, it just follows what
         // the OS does on SA_RESETHAND.
-        if (g_previous_sigaction[sigNum].sa_flags & SA_RESETHAND)
-            g_previous_sigaction[sigNum].sa_handler = SIG_DFL;
+        if (g_previous_sigaction[sig_num].sa_flags & SA_RESETHAND)
+            g_previous_sigaction[sig_num].sa_handler = SIG_DFL;
     }
 
     return;
@@ -116,54 +116,54 @@ static void _host_signal_handler(int sigNum, siginfo_t* sigInfo, void* sigData)
 
 static void _register_signal_handlers(void)
 {
-    struct sigaction sigAction;
+    struct sigaction sig_action;
 
     // Set the signal handler.
-    memset(&sigAction, 0, sizeof(sigAction));
-    sigAction.sa_sigaction = _host_signal_handler;
+    memset(&sig_action, 0, sizeof(sig_action));
+    sig_action.sa_sigaction = _host_signal_handler;
 
     // Use sa_sigaction instead of sa_handler, allow catching the same signal as
     // the one you're currently handling, and automatically restart the system
     // call that interrupted the signal.
-    sigAction.sa_flags = SA_SIGINFO | SA_NODEFER | SA_RESTART;
+    sig_action.sa_flags = SA_SIGINFO | SA_NODEFER | SA_RESTART;
 
     // Should honor the current signal masks.
-    sigemptyset(&sigAction.sa_mask);
-    if (sigprocmask(SIG_SETMASK, NULL, &sigAction.sa_mask) != 0)
+    sigemptyset(&sig_action.sa_mask);
+    if (sigprocmask(SIG_SETMASK, NULL, &sig_action.sa_mask) != 0)
     {
         abort();
     }
 
     // Unmask the signals we want to receive.
-    sigdelset(&sigAction.sa_mask, SIGSEGV);
-    sigdelset(&sigAction.sa_mask, SIGFPE);
-    sigdelset(&sigAction.sa_mask, SIGILL);
-    sigdelset(&sigAction.sa_mask, SIGBUS);
-    sigdelset(&sigAction.sa_mask, SIGTRAP);
+    sigdelset(&sig_action.sa_mask, SIGSEGV);
+    sigdelset(&sig_action.sa_mask, SIGFPE);
+    sigdelset(&sig_action.sa_mask, SIGILL);
+    sigdelset(&sig_action.sa_mask, SIGBUS);
+    sigdelset(&sig_action.sa_mask, SIGTRAP);
 
     // Set the signal handlers, and store the previous signal action into a
     // global array.
-    if (sigaction(SIGSEGV, &sigAction, &g_previous_sigaction[SIGSEGV]) != 0)
+    if (sigaction(SIGSEGV, &sig_action, &g_previous_sigaction[SIGSEGV]) != 0)
     {
         abort();
     }
 
-    if (sigaction(SIGFPE, &sigAction, &g_previous_sigaction[SIGFPE]) != 0)
+    if (sigaction(SIGFPE, &sig_action, &g_previous_sigaction[SIGFPE]) != 0)
     {
         abort();
     }
 
-    if (sigaction(SIGILL, &sigAction, &g_previous_sigaction[SIGILL]) != 0)
+    if (sigaction(SIGILL, &sig_action, &g_previous_sigaction[SIGILL]) != 0)
     {
         abort();
     }
 
-    if (sigaction(SIGBUS, &sigAction, &g_previous_sigaction[SIGBUS]) != 0)
+    if (sigaction(SIGBUS, &sig_action, &g_previous_sigaction[SIGBUS]) != 0)
     {
         abort();
     }
 
-    if (sigaction(SIGTRAP, &sigAction, &g_previous_sigaction[SIGTRAP]) != 0)
+    if (sigaction(SIGTRAP, &sig_action, &g_previous_sigaction[SIGTRAP]) != 0)
     {
         abort();
     }

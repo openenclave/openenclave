@@ -108,7 +108,7 @@ OE_ECALL void Wait(void* args_)
 
     oe_mutex_unlock(&cond_mutex);
 
-    OE_TEST(_count1 + _count2 == args->numThreads);
+    OE_TEST(_count1 + _count2 == args->num_threads);
 
     _test_parallel_mallocs();
 }

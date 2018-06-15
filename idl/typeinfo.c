@@ -108,7 +108,7 @@ static const oe_field_ti_t* _find_field_ti(
 
 static oe_result_t _get_count(
     const oe_struct_ti_t* ti,
-    const void* structIn,
+    const void* struct_in,
     const oe_field_ti_t* fti,
     size_t* count)
 {
@@ -119,7 +119,7 @@ static oe_result_t _get_count(
         *count = 0;
 
     /* Check for null parameters */
-    if (!ti || !fti || !structIn || !count)
+    if (!ti || !fti || !struct_in || !count)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* If no [count] qualifier */
@@ -127,15 +127,15 @@ static oe_result_t _get_count(
         OE_THROW(OE_OK);
 
     /* If count field is empty */
-    if (!fti->countField)
+    if (!fti->count_field)
         OE_THROW(OE_UNEXPECTED);
 
     /* If count field is already an unsigned integer */
-    if (_str_to_size(fti->countField, count) == OE_OK)
+    if (_str_to_size(fti->count_field, count) == OE_OK)
         OE_THROW(OE_OK);
 
     /* Find the count field */
-    if (!(cfti = _find_field_ti(ti, fti->countField)))
+    if (!(cfti = _find_field_ti(ti, fti->count_field)))
         OE_THROW(OE_NOT_FOUND);
 
     /* Check type of count field (size_t) */
@@ -143,7 +143,7 @@ static oe_result_t _get_count(
         OE_THROW(OE_WRONG_TYPE);
 
     /* Read the count field from the structure */
-    *count = *(const size_t*)((const uint8_t*)structIn + cfti->offset);
+    *count = *(const size_t*)((const uint8_t*)struct_in + cfti->offset);
 
     result = OE_OK;
 
@@ -615,7 +615,7 @@ static void Iprintf(size_t n, const char* format, ...)
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _print_struct(
     const oe_struct_ti_t* ti,
-    const void* structIn,
+    const void* struct_in,
     size_t depth);
 #endif
 
@@ -694,24 +694,24 @@ static void _print_scalar(const oe_field_ti_t* fti, const void* p, size_t depth)
 static void _print_array(
     const oe_field_ti_t* fti,
     const void* arr,
-    size_t elemSize, // elemSize in bytes of one elements:
-    size_t arrSize,  // number of total elements:
+    size_t elem_size, // elem_size in bytes of one elements:
+    size_t arr_size,  // number of total elements:
     size_t depth)
 {
     const unsigned char* p = (const unsigned char*)arr;
-    bool lineSeparated = false;
+    bool line_separated = false;
 
     if (fti->flags & OE_FLAG_STRING)
     {
         if (fti->type == OE_CHAR_T)
-            _print_str((const char*)p, arrSize);
+            _print_str((const char*)p, arr_size);
         return;
     }
 
     if (fti->type == OE_STRUCT_T)
-        lineSeparated = true;
+        line_separated = true;
 
-    if (lineSeparated)
+    if (line_separated)
     {
         OE_PRINTF("\n");
         Iprintf(depth, "{\n");
@@ -721,14 +721,14 @@ static void _print_array(
     else
         OE_PRINTF("{ ");
 
-    for (size_t i = 0; i < arrSize; i++)
+    for (size_t i = 0; i < arr_size; i++)
     {
         _print_scalar(fti, p, depth);
 
-        if (i + 1 != arrSize)
+        if (i + 1 != arr_size)
         {
             OE_PRINTF(", ");
-            if (lineSeparated)
+            if (line_separated)
             {
                 OE_PRINTF("\n");
                 _indent(depth);
@@ -737,10 +737,10 @@ static void _print_array(
         else
             OE_PRINTF(" ");
 
-        p += elemSize;
+        p += elem_size;
     }
 
-    if (lineSeparated)
+    if (line_separated)
     {
         depth--;
         OE_PRINTF("\n");
@@ -754,7 +754,7 @@ static void _print_array(
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
 static void _print_struct(
     const oe_struct_ti_t* ti,
-    const void* structIn,
+    const void* struct_in,
     size_t depth)
 {
     size_t i;
@@ -771,7 +771,7 @@ static void _print_struct(
     for (i = 0; i < ti->nfields; i++)
     {
         const oe_field_ti_t* fti = &ti->fields[i];
-        const uint8_t* p = (const uint8_t*)structIn + fti->offset;
+        const uint8_t* p = (const uint8_t*)struct_in + fti->offset;
 
         if (fti->flags & OE_FLAG_ARRAY)
             Iprintf(depth, "%s[%u] = ", fti->name, fti->subscript);
@@ -787,8 +787,8 @@ static void _print_struct(
         else if (fti->flags & OE_FLAG_PTR)
         {
             const void* ptr = *(const void**)p;
-            size_t elemSize = _get_type_size(fti);
-            size_t arrSize = 0xFFFFFFFF;
+            size_t elem_size = _get_type_size(fti);
+            size_t arr_size = 0xFFFFFFFF;
 
             if (ptr == NULL)
             {
@@ -797,18 +797,18 @@ static void _print_struct(
             }
             else if (fti->flags & OE_FLAG_STRING)
             {
-                _print_array(fti, ptr, elemSize, 0xFFFFFFFF, depth);
+                _print_array(fti, ptr, elem_size, 0xFFFFFFFF, depth);
                 OE_PRINTF("\n");
             }
             else if (fti->flags & OE_FLAG_COUNT)
             {
-                if (_get_count(ti, structIn, fti, &arrSize) != OE_OK)
+                if (_get_count(ti, struct_in, fti, &arr_size) != OE_OK)
                 {
                     OE_PRINTF("\n");
                     continue;
                 }
 
-                _print_array(fti, ptr, elemSize, arrSize, depth);
+                _print_array(fti, ptr, elem_size, arr_size, depth);
                 OE_PRINTF("\n");
             }
         }
@@ -831,9 +831,9 @@ static void _print_struct(
 #endif
 
 #ifndef SUPPRESS_OUTPUT_FUNCTIONS
-void oe_print_struct(const oe_struct_ti_t* ti, const void* structIn)
+void oe_print_struct(const oe_struct_ti_t* ti, const void* struct_in)
 {
-    _print_struct(ti, structIn, 0);
+    _print_struct(ti, struct_in, 0);
     OE_PRINTF("\n");
 }
 #endif
@@ -848,13 +848,13 @@ void oe_print_struct(const oe_struct_ti_t* ti, const void* structIn)
 
 static oe_result_t _copy_structs(
     const oe_struct_ti_t* ti,
-    const void* structIn,
+    const void* struct_in,
     size_t count,
-    void* structOut,
+    void* struct_out,
     void*(alloc)(size_t size))
 {
-    const uint8_t* src = (uint8_t*)structIn;
-    uint8_t* dest = (uint8_t*)structOut;
+    const uint8_t* src = (uint8_t*)struct_in;
+    uint8_t* dest = (uint8_t*)struct_out;
 
     /* Copy construct each struct onto array memory */
     for (size_t i = 0; i < count; i++)
@@ -875,17 +875,17 @@ static oe_result_t _clone_ptr_field(
     const oe_struct_ti_t* sti,
     const void* sin,
     const oe_field_ti_t* fti,
-    const void* ptrIn,
-    void** ptrOut,
+    const void* ptr_in,
+    void** ptr_out,
     void*(alloc)(size_t size))
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t count = 0;
 
-    if (ptrOut)
-        *ptrOut = NULL;
+    if (ptr_out)
+        *ptr_out = NULL;
 
-    if (!sti || !sin || !fti || !ptrIn || !ptrOut || (alloc == NULL))
+    if (!sti || !sin || !fti || !ptr_in || !ptr_out || (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
 
     OE_TRY(_get_count(sti, sin, fti, &count));
@@ -894,7 +894,7 @@ static oe_result_t _clone_ptr_field(
     {
         if (fti->type == OE_CHAR_T)
         {
-            if (!(*ptrOut = _strdup((char*)ptrIn, count, alloc)))
+            if (!(*ptr_out = _strdup((char*)ptr_in, count, alloc)))
                 OE_THROW(OE_OUT_OF_MEMORY);
         }
     }
@@ -906,20 +906,20 @@ static oe_result_t _clone_ptr_field(
         size = _get_type_size(fti);
 
         /* Allocate enough memory to hold object(s) */
-        if (!(*ptrOut = alloc(size * count)))
+        if (!(*ptr_out = alloc(size * count)))
             OE_THROW(OE_OUT_OF_MEMORY);
 
         /* Clear output memory */
-        memset(*ptrOut, 0, size * count);
+        memset(*ptr_out, 0, size * count);
 
         /* Handle struct-pointers with [count] qualifier */
         if (fti->type == OE_STRUCT_T)
         {
-            OE_TRY(_copy_structs(fti->sti, ptrIn, count, *ptrOut, alloc));
+            OE_TRY(_copy_structs(fti->sti, ptr_in, count, *ptr_out, alloc));
         }
         else
         {
-            memcpy(*ptrOut, ptrIn, size * count);
+            memcpy(*ptr_out, ptr_in, size * count);
         }
     }
     else
@@ -934,9 +934,9 @@ OE_CATCH:
 
     if (result != OE_OK)
     {
-        if (ptrOut && *ptrOut)
+        if (ptr_out && *ptr_out)
         {
-            *ptrOut = NULL;
+            *ptr_out = NULL;
         }
     }
 
@@ -1100,20 +1100,20 @@ OE_CATCH:
 }
 
 static oe_result_t _clone_blob(
-    const void* dataIn,
+    const void* data_in,
     size_t size,
-    void** dataOut,
+    void** data_out,
     void*(alloc)(size_t size))
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (!dataIn || !size || !dataOut || (alloc == NULL))
+    if (!data_in || !size || !data_out || (alloc == NULL))
         OE_THROW(OE_INVALID_PARAMETER);
 
-    if (!(*dataOut = alloc(size)))
+    if (!(*data_out = alloc(size)))
         return OE_OUT_OF_MEMORY;
 
-    memcpy(*dataOut, dataIn, size);
+    memcpy(*data_out, data_in, size);
 
     result = OE_OK;
 
@@ -1124,16 +1124,16 @@ OE_CATCH:
 static oe_result_t _apply_struct_ptr_proc(
     const oe_struct_ti_t* ti,
     void* strct,
-    void (*proc)(void* ptr, size_t size, void* procData),
-    void* procData);
+    void (*proc)(void* ptr, size_t size, void* proc_data),
+    void* proc_data);
 
 /* Apply the proc() function to every pointer within the struct array */
 static oe_result_t _apply_structs_ptr_proc(
     const oe_struct_ti_t* ti,
     void* structs,
     size_t count,
-    void (*proc)(void* ptr, size_t size, void* procData),
-    void* procData)
+    void (*proc)(void* ptr, size_t size, void* proc_data),
+    void* proc_data)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t i;
@@ -1141,7 +1141,7 @@ static oe_result_t _apply_structs_ptr_proc(
     for (i = 0; i < count; i++)
     {
         void* s = (uint8_t*)structs + (i * ti->size);
-        OE_TRY(_apply_struct_ptr_proc(ti, s, proc, procData));
+        OE_TRY(_apply_struct_ptr_proc(ti, s, proc, proc_data));
     }
 
     result = OE_OK;
@@ -1154,8 +1154,8 @@ OE_CATCH:
 static oe_result_t _apply_struct_ptr_proc(
     const oe_struct_ti_t* ti,
     void* strct,
-    void (*proc)(void* ptr, size_t size, void* procData),
-    void* procData)
+    void (*proc)(void* ptr, size_t size, void* proc_data),
+    void* proc_data)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t i;
@@ -1192,7 +1192,7 @@ static oe_result_t _apply_struct_ptr_proc(
                 {
                     /* ATTN: how do we get the true size? */
                     size_t bytes = _sizeof_str((const char*)ptr);
-                    proc(ptr, bytes, procData);
+                    proc(ptr, bytes, proc_data);
                 }
             }
             else if (fti->flags & OE_FLAG_COUNT)
@@ -1207,13 +1207,13 @@ static oe_result_t _apply_struct_ptr_proc(
                 {
                     OE_TRY(
                         _apply_structs_ptr_proc(
-                            fti->sti, ptr, count, proc, procData));
-                    proc(ptr, fti->sti->size * count, procData);
+                            fti->sti, ptr, count, proc, proc_data));
+                    proc(ptr, fti->sti->size * count, proc_data);
                 }
                 else
                 {
                     size_t size = _get_type_size(fti);
-                    proc(ptr, size * count, procData);
+                    proc(ptr, size * count, proc_data);
                 }
             }
             else
@@ -1225,14 +1225,14 @@ static oe_result_t _apply_struct_ptr_proc(
             {
                 OE_TRY(
                     _apply_structs_ptr_proc(
-                        fti->sti, fptr, fti->subscript, proc, procData));
+                        fti->sti, fptr, fti->subscript, proc, proc_data));
             }
         }
         else /* scalar */
         {
             if (fti->type == OE_STRUCT_T)
             {
-                OE_TRY(_apply_struct_ptr_proc(fti->sti, fptr, proc, procData));
+                OE_TRY(_apply_struct_ptr_proc(fti->sti, fptr, proc, proc_data));
             }
         }
     }
@@ -1243,9 +1243,9 @@ OE_CATCH:
     return result;
 }
 
-static void _free_proc(void* ptr, size_t size, void* procData)
+static void _free_proc(void* ptr, size_t size, void* proc_data)
 {
-    oe_dealloc_proc_t proc = (oe_dealloc_proc_t)procData;
+    oe_dealloc_proc_t proc = (oe_dealloc_proc_t)proc_data;
 
     if (proc)
         proc(ptr);
@@ -1295,7 +1295,7 @@ oe_result_t oe_clear_arg(
     const oe_struct_ti_t* sti,
     void* sin,
     size_t index,
-    bool isPtrPtr,
+    bool is_ptr_ptr,
     void* arg,
     oe_dealloc_proc_t dealloc)
 {
@@ -1327,7 +1327,7 @@ oe_result_t oe_clear_arg(
     {
         if (fti->flags & OE_FLAG_STRING)
         {
-            if (isPtrPtr)
+            if (is_ptr_ptr)
             {
                 void* ptr = *(void**)arg;
 
@@ -1358,7 +1358,7 @@ oe_result_t oe_clear_arg(
                 if (!count)
                     OE_THROW(OE_UNEXPECTED);
 
-                if (isPtrPtr)
+                if (is_ptr_ptr)
                 {
                     void* ptr = *(void**)arg;
 
@@ -1375,7 +1375,7 @@ oe_result_t oe_clear_arg(
             }
             else
             {
-                if (isPtrPtr)
+                if (is_ptr_ptr)
                 {
                     void* ptr = *(void**)arg;
 
@@ -1454,7 +1454,7 @@ oe_result_t oe_clear_arg_by_name(
     const oe_struct_ti_t* sti,
     void* strct,
     const char* name,
-    bool isPtrPtr,
+    bool is_ptr_ptr,
     void* arg,
     oe_dealloc_proc_t dealloc)
 {
@@ -1469,7 +1469,7 @@ oe_result_t oe_clear_arg_by_name(
     if (index == (size_t)-1)
         OE_THROW(OE_NOT_FOUND);
 
-    OE_TRY(oe_clear_arg(sti, strct, index, isPtrPtr, arg, dealloc));
+    OE_TRY(oe_clear_arg(sti, strct, index, is_ptr_ptr, arg, dealloc));
 
     result = OE_OK;
 
@@ -1481,7 +1481,7 @@ oe_result_t oe_set_arg(
     const oe_struct_ti_t* sti,
     void* sin,
     size_t index,
-    bool isPtrPtr,
+    bool is_ptr_ptr,
     void* arg,
     void*(alloc)(size_t size))
 {
@@ -1531,7 +1531,7 @@ oe_result_t oe_set_arg(
 
         if (fti->flags & OE_FLAG_STRING)
         {
-            if (isPtrPtr)
+            if (is_ptr_ptr)
             {
                 if (fti->type == OE_CHAR_T)
                 {
@@ -1557,7 +1557,7 @@ oe_result_t oe_set_arg(
             if (!count)
                 OE_THROW(OE_UNEXPECTED);
 
-            if (isPtrPtr)
+            if (is_ptr_ptr)
             {
                 if (fti->type == OE_STRUCT_T)
                     OE_TRY(_clone_structs(fti->sti, fp, count, app, alloc));
@@ -1624,7 +1624,7 @@ oe_result_t oe_init_arg(
     const oe_struct_ti_t* sti,
     void* sin,
     size_t index,
-    bool isPtrPtr,
+    bool is_ptr_ptr,
     void* arg,
     void*(alloc)(size_t size))
 {
@@ -1661,7 +1661,7 @@ oe_result_t oe_init_arg(
             if (!count)
                 OE_THROW(OE_UNEXPECTED);
 
-            if (isPtrPtr)
+            if (is_ptr_ptr)
             {
                 if (fti->type == OE_CHAR_T)
                 {
@@ -1682,7 +1682,7 @@ oe_result_t oe_init_arg(
             if (!count)
                 OE_THROW(OE_UNEXPECTED);
 
-            if (isPtrPtr)
+            if (is_ptr_ptr)
             {
                 if (!(*app = _calloc(_get_type_size(fti) * count, alloc)))
                     OE_THROW(OE_OUT_OF_MEMORY);
@@ -1717,7 +1717,7 @@ oe_result_t oe_set_arg_by_name(
     const oe_struct_ti_t* sti,
     void* strct,
     const char* name,
-    bool isPtrPtr,
+    bool is_ptr_ptr,
     void* arg,
     void*(alloc)(size_t size))
 {
@@ -1732,7 +1732,7 @@ oe_result_t oe_set_arg_by_name(
     if (index == (size_t)-1)
         OE_THROW(OE_NOT_FOUND);
 
-    OE_TRY(oe_set_arg(sti, strct, index, isPtrPtr, arg, alloc));
+    OE_TRY(oe_set_arg(sti, strct, index, is_ptr_ptr, arg, alloc));
 
     result = OE_OK;
 

@@ -10,11 +10,11 @@
 
 oe_result_t oe_ecdsa_signature_read_der(
     const uint8_t* signature,
-    size_t signatureSize,
-    uint8_t* rData,
-    size_t* rSize,
-    uint8_t* sData,
-    size_t* sSize)
+    size_t signature_size,
+    uint8_t* r_data,
+    size_t* r_size,
+    uint8_t* s_data,
+    size_t* s_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     const uint8_t* p = (const uint8_t*)signature;
@@ -22,10 +22,10 @@ oe_result_t oe_ecdsa_signature_read_der(
     int rn;
     int sn;
 
-    if (!signature || !signatureSize || !rSize || !sSize)
+    if (!signature || !signature_size || !r_size || !s_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(sig = d2i_ECDSA_SIG(NULL, &p, signatureSize)))
+    if (!(sig = d2_i_ecdsa_sig(NULL, &p, signature_size)))
         OE_RAISE(OE_FAILURE);
 
     if (!sig->r || !sig->s)
@@ -39,8 +39,8 @@ oe_result_t oe_ecdsa_signature_read_der(
         if (!BN_bn2bin(sig->r, buf))
             OE_RAISE(OE_FAILURE);
 
-        if (rn <= *rSize && rData)
-            memcpy(rData, buf, rn);
+        if (rn <= *r_size && r_data)
+            memcpy(r_data, buf, rn);
     }
 
     /* Convert S to binary */
@@ -51,21 +51,21 @@ oe_result_t oe_ecdsa_signature_read_der(
         if (!BN_bn2bin(sig->s, buf))
             OE_RAISE(OE_FAILURE);
 
-        if (sn <= *sSize && sData)
-            memcpy(sData, buf, sn);
+        if (sn <= *s_size && s_data)
+            memcpy(s_data, buf, sn);
     }
 
     /* If buffers are too small */
-    if (rn > *rSize || sn > *sSize)
+    if (rn > *r_size || sn > *s_size)
     {
-        *rSize = rn;
-        *sSize = sn;
+        *r_size = rn;
+        *s_size = sn;
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Set output-buffer sizes */
-    *rSize = rn;
-    *sSize = sn;
+    *r_size = rn;
+    *s_size = sn;
 
     result = OE_OK;
 
@@ -78,32 +78,32 @@ done:
 }
 
 oe_result_t oe_ec_public_key_to_coordinates(
-    const oe_ec_public_key_t* publicKey,
-    uint8_t* xData,
-    size_t* xSize,
-    uint8_t* yData,
-    size_t* ySize)
+    const oe_ec_public_key_t* public_key,
+    uint8_t* x_data,
+    size_t* x_size,
+    uint8_t* y_data,
+    size_t* y_size)
 {
-    const oe_public_key_t* impl = (const oe_public_key_t*)publicKey;
+    const oe_public_key_t* impl = (const oe_public_key_t*)public_key;
     oe_result_t result = OE_UNEXPECTED;
     uint8_t* data = NULL;
     EC_KEY* ec = NULL;
-    int requiredSize;
+    int required_size;
     const EC_GROUP* group;
     const EC_POINT* point;
     BIGNUM* x = NULL;
     BIGNUM* y = NULL;
 
     /* Check for invalid parameters */
-    if (!publicKey || !xSize || !ySize)
+    if (!public_key || !x_size || !y_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If xData is null, then xSize should be zero */
-    if (!xData && *xSize != 0)
+    /* If x_data is null, then x_size should be zero */
+    if (!x_data && *x_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If yData is null, then ySize should be zero */
-    if (!yData && *ySize != 0)
+    /* If y_data is null, then y_size should be zero */
+    if (!y_data && *y_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the EC public key */
@@ -111,7 +111,7 @@ oe_result_t oe_ec_public_key_to_coordinates(
         OE_RAISE(OE_FAILURE);
 
     /* Set the required buffer size */
-    if ((requiredSize = i2o_ECPublicKey(ec, NULL)) == 0)
+    if ((required_size = i2_o_ec_public_key(ec, NULL)) == 0)
         OE_RAISE(OE_FAILURE);
 
     /* Get the group */
@@ -134,20 +134,20 @@ oe_result_t oe_ec_public_key_to_coordinates(
         size_t xn = BN_num_bytes(x);
         size_t yn = BN_num_bytes(y);
 
-        bool bufferTooSmall = (xn > *xSize || yn > *ySize);
-        *xSize = xn;
-        *ySize = yn;
+        bool buffer_too_small = (xn > *x_size || yn > *y_size);
+        *x_size = xn;
+        *y_size = yn;
 
-        if (bufferTooSmall)
+        if (buffer_too_small)
             OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Convert X to big number object */
-    if (xData && !(BN_bn2bin(x, xData)))
+    if (x_data && !(BN_bn2bin(x, x_data)))
         OE_RAISE(OE_FAILURE);
 
     /* Convert Y to big number object */
-    if (yData && !(BN_bn2bin(y, yData)))
+    if (y_data && !(BN_bn2bin(y, y_data)))
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;

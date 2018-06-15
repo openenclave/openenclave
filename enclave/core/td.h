@@ -47,7 +47,7 @@ struct _callsite
     oe_jmpbuf_t jmpbuf;
 
     /* Pointer ot the ocall context */
-    oe_ocall_context_t* ocallContext;
+    oe_ocall_context_t* ocall_context;
 
     /* Pointer to next ECALL context */
     Callsite* next;

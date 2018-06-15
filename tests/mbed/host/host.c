@@ -91,9 +91,9 @@ void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
     }
 }
 
-static void _exit_ocall(uint64_t argIn, uint64_t* argOut)
+static void _exit_ocall(uint64_t arg_in, uint64_t* arg_out)
 {
-    exit(argIn);
+    exit(arg_in);
 }
 
 int main(int argc, const char* argv[])

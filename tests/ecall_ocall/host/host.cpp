@@ -27,23 +27,23 @@
 // custom code in the enclave).
 struct EnclaveWrap
 {
-    EnclaveWrap(const char* enclavePath, uint32_t flags)
+    EnclaveWrap(const char* enclave_path, uint32_t flags)
     {
         EncSetEnclaveIdArg args = {};
         oe_enclave_t* enclave;
         oe_result_t result;
 
         if ((result = oe_create_enclave(
-                 enclavePath, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+                 enclave_path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
             OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
             throw std::runtime_error("oe_create_enclave() failed");
         }
-        m_Id = m_Enclaves.size();
+        m_id = m_enclaves.size();
 
         args.result = OE_FAILURE;
-        args.id = m_Id;
+        args.id = m_id;
         if ((result = oe_call_enclave(enclave, "EncSetEnclaveId", &args)) !=
             OE_OK)
         {
@@ -56,8 +56,8 @@ struct EnclaveWrap
             throw std::runtime_error("EncSetEnclaveId() failed");
         }
 
-        m_EnclaveBase = args.baseAddr;
-        m_Enclaves.push_back(enclave);
+        m_enclave_base = args.base_addr;
+        m_enclaves.push_back(enclave);
     }
 
     ~EnclaveWrap()
@@ -68,33 +68,33 @@ struct EnclaveWrap
             oe_put_err("oe_terminate_enclave(): result=%u", result);
         }
         // simplified cleanup to keep identifiers stable
-        m_Enclaves[m_Id] = NULL;
+        m_enclaves[m_id] = NULL;
     }
 
     unsigned GetId() const
     {
-        return m_Id;
+        return m_id;
     }
     const void* GetBase() const
     {
-        return m_EnclaveBase;
+        return m_enclave_base;
     }
     oe_enclave_t* Get() const
     {
-        return m_Enclaves[m_Id];
+        return m_enclaves[m_id];
     }
 
     static oe_enclave_t* Get(unsigned Id)
     {
-        return m_Enclaves[Id];
+        return m_enclaves[Id];
     }
 
   private:
-    unsigned m_Id;
-    const void* m_EnclaveBase;
-    static std::vector<oe_enclave_t*> m_Enclaves;
+    unsigned m_id;
+    const void* m_enclave_base;
+    static std::vector<oe_enclave_t*> m_enclaves;
 };
-std::vector<oe_enclave_t*> EnclaveWrap::m_Enclaves;
+std::vector<oe_enclave_t*> EnclaveWrap::m_enclaves;
 
 static std::vector<void*> InitOCallValues;
 
@@ -107,15 +107,15 @@ OE_OCALL void InitOcallHandler(void* arg_)
 
 // Initial OCall test helper - Verify that the ocall happened (by asking the
 // enclave), and obtain the result of it.
-static void TestInitOcallResult(unsigned enclaveId)
+static void TestInitOcallResult(unsigned enclave_id)
 {
-    oe_result_t result, resultOcall;
+    oe_result_t result, result_ocall;
 
-    resultOcall = OE_FAILURE;
+    result_ocall = OE_FAILURE;
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncGetInitOcallResult", &resultOcall);
+        EnclaveWrap::Get(enclave_id), "EncGetInitOcallResult", &result_ocall);
     OE_TEST(result == OE_OK);
-    OE_TEST(resultOcall == OE_OK);
+    OE_TEST(result_ocall == OE_OK);
 }
 
 // For ocall-test on not explicitly OE_OCALL-tagged function
@@ -140,30 +140,30 @@ InternalHostFunction(void*)
 
 // Test availability and non-availability of functions, according to their
 // OE_OCALL/OE_ECALL annotations.
-static void TestInvalidFunctions(unsigned enclaveId)
+static void TestInvalidFunctions(unsigned enclave_id)
 {
     oe_result_t result;
     EncTestCallHostFunctionArg args = {};
 
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncDummyEncFunction", NULL);
+        EnclaveWrap::Get(enclave_id), "EncDummyEncFunction", NULL);
     printf("oe_call_enclave(EncDummyEncFunction): %u\n", result);
     OE_TEST(result == OE_OK);
 
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncUnExportedFunction", NULL);
+        EnclaveWrap::Get(enclave_id), "EncUnExportedFunction", NULL);
     printf("oe_call_enclave(EncUnExportedFunction): %u\n", result);
     OE_TEST(result == OE_NOT_FOUND);
 
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "NonExistingFunction", NULL);
+        EnclaveWrap::Get(enclave_id), "NonExistingFunction", NULL);
     printf("oe_call_enclave(NonExistingFunction): %u\n", result);
     OE_TEST(result == OE_NOT_FOUND);
 
     args.result = OE_FAILURE;
-    args.functionName = "InternalHostFunction";
+    args.function_name = "InternalHostFunction";
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
+        EnclaveWrap::Get(enclave_id), "EncTestCallHostFunction", &args);
     printf(
         "oe_call_enclave(EncTestCallHostFunction, InternalHostFunction): "
         "%u/%u\n",
@@ -173,9 +173,9 @@ static void TestInvalidFunctions(unsigned enclaveId)
     OE_TEST(args.result == OE_NOT_FOUND);
 
     args.result = OE_FAILURE;
-    args.functionName = "NonExistingFunction";
+    args.function_name = "NonExistingFunction";
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
+        EnclaveWrap::Get(enclave_id), "EncTestCallHostFunction", &args);
     printf(
         "oe_call_enclave(EncTestCallHostFunction, NonExistingFunction): "
         "%u/%u\n",
@@ -185,9 +185,9 @@ static void TestInvalidFunctions(unsigned enclaveId)
     OE_TEST(args.result == OE_NOT_FOUND);
 
     args.result = OE_FAILURE;
-    args.functionName = "ExportedHostFunction";
+    args.function_name = "ExportedHostFunction";
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncTestCallHostFunction", &args);
+        EnclaveWrap::Get(enclave_id), "EncTestCallHostFunction", &args);
     printf(
         "oe_call_enclave(EncTestCallHostFunction, ExportedHostFunction): "
         "%u/%u\n",
@@ -199,8 +199,8 @@ static void TestInvalidFunctions(unsigned enclaveId)
 
 // Helper function for parallel test
 static void ParallelThread(
-    unsigned enclaveId,
-    unsigned flowId,
+    unsigned enclave_id,
+    unsigned flow_id,
     volatile unsigned* counter,
     volatile unsigned* release)
 {
@@ -208,61 +208,61 @@ static void ParallelThread(
 
     EncParallelExecutionArg args = {};
     args.result = OE_FAILURE;
-    args.enclaveId = enclaveId;
-    args.flowId = flowId;
+    args.enclave_id = enclave_id;
+    args.flow_id = flow_id;
     args.counter = counter;
     args.release = release;
 
     OE_TRACE_INFO(
-        "%s(Enclave=%u, Flow=%u) started\n", __FUNCTION__, enclaveId, flowId);
+        "%s(Enclave=%u, Flow=%u) started\n", __FUNCTION__, enclave_id, flow_id);
     result = oe_call_enclave(
-        EnclaveWrap::Get(enclaveId), "EncParallelExecution", &args);
+        EnclaveWrap::Get(enclave_id), "EncParallelExecution", &args);
     OE_TRACE_INFO(
-        "%s(Enclave=%u, Flow=%u) done.\n", __FUNCTION__, enclaveId, flowId);
+        "%s(Enclave=%u, Flow=%u) done.\n", __FUNCTION__, enclave_id, flow_id);
     OE_TEST(result == OE_OK);
     OE_TEST(args.result == OE_OK);
 }
 
 // Parallel execution test - verify parallel threads are actually executed
 static void TestExecutionParallel(
-    std::vector<unsigned> enclaveIds,
-    unsigned threadCount)
+    std::vector<unsigned> enclave_ids,
+    unsigned thread_count)
 {
     std::vector<std::thread> threads;
     volatile unsigned counter = 0;
     volatile unsigned release = 0;
 
     printf("%s(): Test parallel execution across enclaves {", __FUNCTION__);
-    for (unsigned e : enclaveIds)
+    for (unsigned e : enclave_ids)
         printf("%u ", e);
-    printf("} with %u threads each\n", threadCount);
+    printf("} with %u threads each\n", thread_count);
 
     counter = release = 0;
 
-    for (unsigned enclaveId : enclaveIds)
+    for (unsigned enclave_id : enclave_ids)
     {
-        for (unsigned i = 0; i < threadCount; i++)
+        for (unsigned i = 0; i < thread_count; i++)
         {
             threads.push_back(
                 std::thread(
-                    ParallelThread, enclaveId, i + 1, &counter, &release));
+                    ParallelThread, enclave_id, i + 1, &counter, &release));
         }
     }
 
     // wait for all enclave-threads to have incremented the counter
-    while (counter < enclaveIds.size() * threadCount)
+    while (counter < enclave_ids.size() * thread_count)
     {
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 
-        static unsigned oldVal;
-        if (counter != oldVal)
+        static unsigned old_val;
+        if (counter != old_val)
         {
             printf(
                 "%s(): Looking for counter=%u, have %u.\n",
                 __FUNCTION__,
-                (unsigned)EnclaveIds.size() * threadCount,
+                (unsigned)EnclaveIds.size() * thread_count,
                 counter);
-            oldVal = counter;
+            old_val = counter;
         }
 #endif
     }
@@ -276,50 +276,50 @@ static void TestExecutionParallel(
     }
 }
 
-static std::set<unsigned> g_rotatingEnclaveIds;
+static std::set<unsigned> g_rotating_enclave_ids;
 
 // Ocall for recursion test
 OE_OCALL void RecursionOcall(void* args_)
 {
     oe_result_t result = OE_OK;
 
-    EncRecursionArg* argsPtr = (EncRecursionArg*)args_;
-    EncRecursionArg args = *argsPtr;
-    EncRecursionArg argsRec;
+    EncRecursionArg* args_ptr = (EncRecursionArg*)args_;
+    EncRecursionArg args = *args_ptr;
+    EncRecursionArg args_rec;
 
     OE_TRACE_INFO(
         "%s(): EnclaveId=%u, Flow=%u, recLeft=%u, inCrc=%#x\n",
         __FUNCTION__,
-        args.enclaveId,
-        args.flowId,
-        args.recursionsLeft,
+        args.enclave_id,
+        args.flow_id,
+        args.recursions_left,
         args.crc);
 
     // catch initial state: Tag + Input-struct
     args.crc = Crc32::Hash(TAG_START_HOST, args);
-    argsRec = args;
+    args_rec = args;
 
     // recurse as needed, passing initial-state-crc as input
-    if (args.recursionsLeft)
+    if (args.recursions_left)
     {
-        argsRec.recursionsLeft--;
-        if (argsRec.isRotatingEnclave)
+        args_rec.recursions_left--;
+        if (args_rec.is_rotating_enclave)
         {
             std::set<unsigned>::iterator it =
-                g_rotatingEnclaveIds.find(args.enclaveId);
-            OE_TEST(it != g_rotatingEnclaveIds.end());
-            if (++it == g_rotatingEnclaveIds.end())
+                g_rotating_enclave_ids.find(args.enclave_id);
+            OE_TEST(it != g_rotating_enclave_ids.end());
+            if (++it == g_rotating_enclave_ids.end())
             {
-                it = g_rotatingEnclaveIds.begin();
+                it = g_rotating_enclave_ids.begin();
             }
-            argsRec.enclaveId = *it;
+            args_rec.enclave_id = *it;
         }
         result = oe_call_enclave(
-            EnclaveWrap::Get(argsRec.enclaveId), "EncRecursion", &argsRec);
+            EnclaveWrap::Get(args_rec.enclave_id), "EncRecursion", &args_rec);
     }
 
     // catch output state: Tag + result + output, and again original input
-    argsPtr->crc = Crc32::Hash(TAG_END_HOST, result, argsRec, args);
+    args_ptr->crc = Crc32::Hash(TAG_END_HOST, result, args_rec, args);
 }
 
 static uint32_t CalcRecursionHashHost(const EncRecursionArg* args_);
@@ -329,88 +329,88 @@ static uint32_t CalcRecursionHashEnc(const EncRecursionArg* args_);
 static uint32_t CalcRecursionHashHost(const EncRecursionArg* args_)
 {
     EncRecursionArg args = *args_;
-    EncRecursionArg argsRec;
+    EncRecursionArg args_rec;
     oe_result_t result = OE_OK;
 
     OE_TRACE_INFO(
         "%s(): EnclaveId=%u, Flow=%u, recLeft=%u, inCrc=%#x\n",
         __FUNCTION__,
-        args.enclaveId,
-        args.flowId,
-        args.recursionsLeft,
+        args.enclave_id,
+        args.flow_id,
+        args.recursions_left,
         args.crc);
 
     // catch initial state: Tag + Input-struct
     args.crc = Crc32::Hash(TAG_START_HOST, args);
-    argsRec = args;
+    args_rec = args;
 
     // recurse as needed, passing initial-state-crc as input
-    if (args.recursionsLeft)
+    if (args.recursions_left)
     {
-        argsRec.recursionsLeft--;
-        if (argsRec.isRotatingEnclave)
+        args_rec.recursions_left--;
+        if (args_rec.is_rotating_enclave)
         {
             std::set<unsigned>::iterator it =
-                g_rotatingEnclaveIds.find(args.enclaveId);
-            OE_TEST(it != g_rotatingEnclaveIds.end());
-            if (++it == g_rotatingEnclaveIds.end())
+                g_rotating_enclave_ids.find(args.enclave_id);
+            OE_TEST(it != g_rotating_enclave_ids.end());
+            if (++it == g_rotating_enclave_ids.end())
             {
-                it = g_rotatingEnclaveIds.begin();
+                it = g_rotating_enclave_ids.begin();
             }
-            argsRec.enclaveId = *it;
+            args_rec.enclave_id = *it;
         }
 
-        argsRec.crc = CalcRecursionHashEnc(&argsRec);
-        if (argsRec.recursionsLeft)
+        args_rec.crc = CalcRecursionHashEnc(&args_rec);
+        if (args_rec.recursions_left)
         {
-            if (argsRec.initialCount)
-                argsRec.initialCount--;
-            argsRec.recursionsLeft--;
+            if (args_rec.initial_count)
+                args_rec.initial_count--;
+            args_rec.recursions_left--;
         }
     }
 
     // catch output state: Tag + result + output, and again original input
-    return Crc32::Hash(TAG_END_HOST, result, argsRec, args);
+    return Crc32::Hash(TAG_END_HOST, result, args_rec, args);
 }
 
 // calc recursion hash locally, enc part
 static uint32_t CalcRecursionHashEnc(const EncRecursionArg* args_)
 {
     EncRecursionArg args = *args_;
-    EncRecursionArg argsHost;
+    EncRecursionArg args_host;
     oe_result_t result = OE_OK;
 
     OE_TRACE_INFO(
         "%s(): EnclaveId=%u, Flow=%u, recLeft=%u, inCrc=%#x\n",
         __FUNCTION__,
-        args.enclaveId,
-        args.flowId,
-        args.recursionsLeft,
+        args.enclave_id,
+        args.flow_id,
+        args.recursions_left,
         args.crc);
 
-    // catch initial state: Tag + Input-struct + enclaveId
+    // catch initial state: Tag + Input-struct + enclave_id
     args.crc = Crc32::Hash(TAG_START_ENC, args, 0u, 0u);
-    argsHost = args;
+    args_host = args;
 
-    if (args.recursionsLeft > 0)
+    if (args.recursions_left > 0)
     {
-        if (argsHost.initialCount)
-            argsHost.initialCount--;
-        argsHost.recursionsLeft--;
-        argsHost.crc = CalcRecursionHashHost(&argsHost);
+        if (args_host.initial_count)
+            args_host.initial_count--;
+        args_host.recursions_left--;
+        args_host.crc = CalcRecursionHashHost(&args_host);
     }
 
     // catch output state: Tag + result + modified host-struct, original
     // input, and ID-diffs
-    return Crc32::Hash(TAG_END_ENC, result, argsHost, args, 0u, 0u);
+    return Crc32::Hash(TAG_END_ENC, result, args_host, args, 0u, 0u);
 }
 
 // Actual enclave/host/... recursion test. Trail of execution is gathered via
 // Crc, success determined via comparison with separate, non-enclave version.
 static uint32_t TestRecursion(
-    size_t enclaveId,
-    unsigned flowId,
-    unsigned recursionDepth)
+    size_t enclave_id,
+    unsigned flow_id,
+    unsigned recursion_depth)
 {
     oe_result_t result;
     EncRecursionArg args = {};
@@ -418,28 +418,28 @@ static uint32_t TestRecursion(
     OE_TRACE_INFO(
         "%s(EnclaveId=%llu, FlowId=%u, Recursions=%u)\n",
         __FUNCTION__,
-        OE_LLU(enclaveId),
-        flowId,
-        recursionDepth);
+        OE_LLU(enclave_id),
+        flow_id,
+        recursion_depth);
 
-    args.enclaveId = enclaveId;
-    args.flowId = flowId;
-    args.recursionsLeft = recursionDepth;
-    args.initialCount = 1;
+    args.enclave_id = enclave_id;
+    args.flow_id = flow_id;
+    args.recursions_left = recursion_depth;
+    args.initial_count = 1;
 
     uint32_t crc = CalcRecursionHashEnc(&args);
 
     result =
-        oe_call_enclave(EnclaveWrap::Get(enclaveId), "EncRecursion", &args);
+        oe_call_enclave(EnclaveWrap::Get(enclave_id), "EncRecursion", &args);
     OE_TEST(result == OE_OK);
 
     printf(
         "%s(EnclaveId=%llu, FlowId=%u, RecursionDepth=%u): "
         "Expect CRC %#x, have CRC %#x, %s\n",
         __FUNCTION__,
-        OE_LLU(enclaveId),
-        flowId,
-        recursionDepth,
+        OE_LLU(enclave_id),
+        flow_id,
+        recursion_depth,
         crc,
         args.crc,
         (crc == args.crc) ? "MATCH" : "MISMATCH");
@@ -449,79 +449,79 @@ static uint32_t TestRecursion(
 
 // Thread helper to perform recursion tests in parallel across multiple threads.
 static void RecursionThread(
-    unsigned enclaveId,
-    bool rotateEnclaves,
-    unsigned flowId,
-    unsigned recursionDepth,
-    unsigned loopCount,
-    uint32_t expectedCrc)
+    unsigned enclave_id,
+    bool rotate_enclaves,
+    unsigned flow_id,
+    unsigned recursion_depth,
+    unsigned loop_count,
+    uint32_t expected_crc)
 {
     // a barrier would be nice here, though we have no support in gcc yet.
-    for (unsigned l = 0; l < loopCount; l++)
+    for (unsigned l = 0; l < loop_count; l++)
     {
         oe_result_t result;
         EncRecursionArg args = {};
 
-        args.enclaveId = enclaveId;
-        args.flowId = flowId;
-        args.recursionsLeft = recursionDepth;
-        args.initialCount = rotateEnclaves ? g_rotatingEnclaveIds.size() : 1;
-        args.isRotatingEnclave = !!rotateEnclaves;
+        args.enclave_id = enclave_id;
+        args.flow_id = flow_id;
+        args.recursions_left = recursion_depth;
+        args.initial_count = rotate_enclaves ? g_rotating_enclave_ids.size() : 1;
+        args.is_rotating_enclave = !!rotate_enclaves;
 
         result =
-            oe_call_enclave(EnclaveWrap::Get(enclaveId), "EncRecursion", &args);
+            oe_call_enclave(EnclaveWrap::Get(enclave_id), "EncRecursion", &args);
         OE_TEST(result == OE_OK);
-        OE_TEST(args.crc == expectedCrc);
+        OE_TEST(args.crc == expected_crc);
     }
 }
 
 // Parallel recursion test.
 static void TestRecursionParallel(
-    std::vector<unsigned> enclaveIds,
-    unsigned threadCount,
-    unsigned recursionDepth,
-    unsigned loopCount)
+    std::vector<unsigned> enclave_ids,
+    unsigned thread_count,
+    unsigned recursion_depth,
+    unsigned loop_count)
 {
     std::vector<std::thread> threads;
-    std::map<unsigned, std::vector<uint32_t>> expectedCrcs;
+    std::map<unsigned, std::vector<uint32_t>> expected_crcs;
 
     printf("%s(): Test recursion w/ multiple enclaves {", __FUNCTION__);
-    for (unsigned e : enclaveIds)
+    for (unsigned e : enclave_ids)
         printf("%u ", e);
     printf(
         "} with %u threads each, rec-depth %u, loop-count %u\n",
-        threadCount,
-        recursionDepth,
-        loopCount);
+        thread_count,
+        recursion_depth,
+        loop_count);
 
     // Precalculate CRCs
-    for (unsigned enclaveId : enclaveIds)
+    for (unsigned enclave_id : enclave_ids)
     {
-        for (unsigned i = 0; i < threadCount; i++)
+        for (unsigned i = 0; i < thread_count; i++)
         {
             EncRecursionArg args = {};
-            args.enclaveId = enclaveId;
-            args.flowId = i + 1;
-            args.recursionsLeft = recursionDepth + i;
-            args.initialCount = 1;
+            args.enclave_id = enclave_id;
+            args.flow_id = i + 1;
+            args.recursions_left = recursion_depth + i;
+            args.initial_count = 1;
 
-            expectedCrcs[enclaveId].push_back(CalcRecursionHashEnc(&args));
+            expected_crcs[enclave_id].push_back(CalcRecursionHashEnc(&args));
         }
     }
 
-    for (unsigned enclaveId : enclaveIds)
+    for (unsigned enclave_id : enclave_ids)
     {
-        for (unsigned i = 0; i < threadCount; i++)
+        for (unsigned i = 0; i < thread_count; i++)
         {
             threads.push_back(
                 std::thread(
                     RecursionThread,
-                    enclaveId,
+                    enclave_id,
                     false,
                     i + 1,
-                    recursionDepth + i,
-                    loopCount,
-                    expectedCrcs[enclaveId][i]));
+                    recursion_depth + i,
+                    loop_count,
+                    expected_crcs[enclave_id][i]));
         }
     }
 
@@ -533,51 +533,51 @@ static void TestRecursionParallel(
 
 // Parallel recursion test, across threads
 static void TestRecursionCrossEnclave(
-    std::vector<unsigned> enclaveIds,
-    unsigned threadCount,
-    unsigned recursionDepth,
-    unsigned loopCount)
+    std::vector<unsigned> enclave_ids,
+    unsigned thread_count,
+    unsigned recursion_depth,
+    unsigned loop_count)
 {
     std::vector<std::thread> threads;
-    std::vector<unsigned> expectedCrcs;
+    std::vector<unsigned> expected_crcs;
 
     printf("%s(): Test recursion across enclaves {", __FUNCTION__);
-    for (unsigned e : enclaveIds)
+    for (unsigned e : enclave_ids)
         printf("%u ", e);
     printf(
         "} with %u threads total, rec-depth %u, loop-count %u\n",
-        threadCount,
-        recursionDepth,
-        loopCount);
+        thread_count,
+        recursion_depth,
+        loop_count);
 
-    g_rotatingEnclaveIds.clear();
-    for (unsigned enclaveId : enclaveIds)
-        g_rotatingEnclaveIds.insert(enclaveId);
+    g_rotating_enclave_ids.clear();
+    for (unsigned enclave_id : enclave_ids)
+        g_rotating_enclave_ids.insert(enclave_id);
 
     // Precalculate CRCs
-    for (unsigned i = 0; i < threadCount; i++)
+    for (unsigned i = 0; i < thread_count; i++)
     {
         EncRecursionArg args = {};
-        args.enclaveId = enclaveIds[i % enclaveIds.size()];
-        args.flowId = i + 1;
-        args.recursionsLeft = recursionDepth + i;
-        args.initialCount = enclaveIds.size();
-        args.isRotatingEnclave = 1;
+        args.enclave_id = enclave_ids[i % enclave_ids.size()];
+        args.flow_id = i + 1;
+        args.recursions_left = recursion_depth + i;
+        args.initial_count = enclave_ids.size();
+        args.is_rotating_enclave = 1;
 
-        expectedCrcs.push_back(CalcRecursionHashEnc(&args));
+        expected_crcs.push_back(CalcRecursionHashEnc(&args));
     }
 
-    for (unsigned i = 0; i < threadCount; i++)
+    for (unsigned i = 0; i < thread_count; i++)
     {
         threads.push_back(
             std::thread(
                 RecursionThread,
-                enclaveIds[i % enclaveIds.size()],
+                enclave_ids[i % enclave_ids.size()],
                 true,
                 i + 1,
-                recursionDepth + i,
-                loopCount,
-                expectedCrcs[i]));
+                recursion_depth + i,
+                loop_count,
+                expected_crcs[i]));
     }
 
     for (auto& t : threads)
@@ -585,7 +585,7 @@ static void TestRecursionCrossEnclave(
         t.join();
     }
 
-    g_rotatingEnclaveIds.clear();
+    g_rotating_enclave_ids.clear();
 }
 
 int main(int argc, const char* argv[])

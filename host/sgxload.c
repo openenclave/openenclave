@@ -147,7 +147,7 @@ static sgx_secs_t* _new_secs(uint64_t base, uint64_t size, bool debug)
 **    [BASE...BASE+SIZE]            - used
 **    [BASE+SIZE...MPTR+SIZE*2]     - unused
 */
-static void* _allocate_enclave_memory(uint64_t enclaveSize, int fd)
+static void* _allocate_enclave_memory(uint64_t enclave_size, int fd)
 {
 #if defined(__linux__)
 
@@ -166,7 +166,7 @@ static void* _allocate_enclave_memory(uint64_t enclaveSize, int fd)
             mflags |= MAP_ANONYMOUS;
 
         /* Allocate double so BASE can be aligned on SIZE boundary */
-        mptr = mmap(NULL, enclaveSize * 2, mprot, mflags, fd, 0);
+        mptr = mmap(NULL, enclave_size * 2, mprot, mflags, fd, 0);
 
         if (mptr == MAP_FAILED)
             goto done;
@@ -174,7 +174,7 @@ static void* _allocate_enclave_memory(uint64_t enclaveSize, int fd)
 
     /* Align BASE on a boundary of SIZE */
     {
-        uint64_t n = enclaveSize;
+        uint64_t n = enclave_size;
         uint64_t addr = ((uint64_t)mptr + (n - 1)) / n * n;
         base = (void*)addr;
     }
@@ -190,8 +190,8 @@ static void* _allocate_enclave_memory(uint64_t enclaveSize, int fd)
 
     /* Unmap [BASE+SIZE...MPTR+SIZE*2] */
     {
-        uint8_t* start = (uint8_t*)base + enclaveSize;
-        uint8_t* end = (uint8_t*)mptr + enclaveSize * 2;
+        uint8_t* start = (uint8_t*)base + enclave_size;
+        uint8_t* end = (uint8_t*)mptr + enclave_size * 2;
 
         if (start != end && munmap(start, end - start) != 0)
             goto done;
@@ -204,7 +204,7 @@ done:
     /* On failure, unmap initially allocated region.
      * Linux will handle already unmapped regions within this original range */
     if (!result && mptr != MAP_FAILED)
-        munmap(mptr, enclaveSize * 2);
+        munmap(mptr, enclave_size * 2);
 
     return result;
 
@@ -219,7 +219,7 @@ done:
     /* Allocate virtual memory for this enclave */
     if (!(mptr = VirtualAlloc(
               NULL,
-              enclaveSize * 2,
+              enclave_size * 2,
               MEM_COMMIT | MEM_RESERVE,
               PAGE_EXECUTE_READWRITE)))
     {
@@ -228,7 +228,7 @@ done:
 
     /* Align BASE on a boundary of SIZE */
     {
-        uint64_t n = enclaveSize;
+        uint64_t n = enclave_size;
         uint64_t addr = ((uint64_t)mptr + (n - 1)) / n * n;
         base = (void*)addr;
     }
@@ -244,8 +244,8 @@ done:
 
     /* Release [BASE+SIZE...MPTR+SIZE*2] */
     {
-        uint8_t* start = (uint8_t*)base + enclaveSize;
-        uint8_t* end = (uint8_t*)mptr + enclaveSize * 2;
+        uint8_t* start = (uint8_t*)base + enclave_size;
+        uint8_t* end = (uint8_t*)mptr + enclave_size * 2;
 
         if (start != end && !VirtualFree(start, end - start, MEM_DECOMMIT))
             goto done;
@@ -288,8 +288,8 @@ static oe_result_t _get_sigstruct(
             oe_sgx_sign_enclave(
                 mrenclave,
                 properties->config.attributes,
-                properties->config.productID,
-                properties->config.securityVersion,
+                properties->config.product_id,
+                properties->config.security_version,
                 OE_DEBUG_SIGN_KEY,
                 OE_DEBUG_SIGN_KEY_SIZE,
                 sigstruct));
@@ -312,12 +312,12 @@ done:
 static oe_result_t _get_launch_token(
     const oe_sgx_enclave_properties_t* properties,
     sgx_sigstruct_t* sigstruct,
-    sgx_launch_token_t* launchToken)
+    sgx_launch_token_t* launch_token)
 {
     oe_result_t result = OE_UNEXPECTED;
     AESM* aesm = NULL;
 
-    memset(launchToken, 0, sizeof(sgx_launch_token_t));
+    memset(launch_token, 0, sizeof(sgx_launch_token_t));
 
     /* Initialize the SGX attributes */
     sgx_attributes_t attributes = {0};
@@ -334,7 +334,7 @@ static oe_result_t _get_launch_token(
             sigstruct->enclavehash,
             sigstruct->modulus,
             &attributes,
-            launchToken));
+            launch_token));
 
     result = OE_OK;
 
@@ -393,24 +393,24 @@ void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context)
 
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
-    uint64_t enclaveSize,
-    uint64_t* enclaveAddr)
+    uint64_t enclave_size,
+    uint64_t* enclave_addr)
 {
     oe_result_t result = OE_UNEXPECTED;
     void* base = NULL;
     sgx_secs_t* secs = NULL;
 
-    if (enclaveAddr)
-        *enclaveAddr = 0;
+    if (enclave_addr)
+        *enclave_addr = 0;
 
-    if (!context || !enclaveSize || !enclaveAddr)
+    if (!context || !enclave_size || !enclave_addr)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (context->state != OE_SGX_LOAD_STATE_INITIALIZED)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* SIZE must be a power of two */
-    if (enclaveSize != oe_round_u64_to_pow2(enclaveSize))
+    if (enclave_size != oe_round_u64_to_pow2(enclave_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
 #if defined(OE_USE_LIBSGX) || defined(_WIN32)
@@ -418,19 +418,19 @@ oe_result_t oe_sgx_create_enclave(
 #endif
     {
         /* Allocation memory-mapped region */
-        if (!(base = _allocate_enclave_memory(enclaveSize, context->dev)))
+        if (!(base = _allocate_enclave_memory(enclave_size, context->dev)))
             OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Create SECS structure */
     if (!(secs = _new_secs(
               (uint64_t)base,
-              enclaveSize,
+              enclave_size,
               oe_sgx_is_debug_load_context(context))))
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     /* Measure this operation */
-    OE_CHECK(oe_sgx_measure_create_enclave(&context->hashContext, secs));
+    OE_CHECK(oe_sgx_measure_create_enclave(&context->hash_context, secs));
 
     if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
     {
@@ -447,7 +447,7 @@ oe_result_t oe_sgx_create_enclave(
     {
 #if defined(OE_USE_LIBSGX)
 
-        uint32_t enclaveError;
+        uint32_t enclave_error;
         void* base = enclave_create(
             NULL, /* Let OS choose the enclave base address */
             secs->size,
@@ -455,7 +455,7 @@ oe_result_t oe_sgx_create_enclave(
             ENCLAVE_TYPE_SGX1,
             (const void*)secs,
             sizeof(sgx_secs_t),
-            &enclaveError);
+            &enclave_error);
 
         if (!base)
             OE_RAISE(OE_PLATFORM_ERROR);
@@ -471,7 +471,7 @@ oe_result_t oe_sgx_create_enclave(
 #elif defined(_WIN32)
 
         /* Ask OS to create the enclave */
-        DWORD enclaveError;
+        DWORD enclave_error;
         void* base = CreateEnclave(
             GetCurrentProcess(),
             NULL, /* Let OS choose the enclave base address */
@@ -480,7 +480,7 @@ oe_result_t oe_sgx_create_enclave(
             ENCLAVE_TYPE_SGX,
             (const void*)secs,
             sizeof(ENCLAVE_CREATE_INFO_SGX),
-            &enclaveError);
+            &enclave_error);
 
         if (!base)
             OE_RAISE(OE_PLATFORM_ERROR);
@@ -490,7 +490,7 @@ oe_result_t oe_sgx_create_enclave(
 #endif
     }
 
-    *enclaveAddr = base ? (uint64_t)base : secs->base;
+    *enclave_addr = base ? (uint64_t)base : secs->base;
     context->state = OE_SGX_LOAD_STATE_ENCLAVE_CREATED;
     result = OE_OK;
 
@@ -525,7 +525,7 @@ oe_result_t oe_sgx_load_enclave_data(
     /* Measure this operation */
     OE_CHECK(
         oe_sgx_measure_load_enclave_data(
-            &context->hashContext, base, addr, src, flags, extend));
+            &context->hash_context, base, addr, src, flags, extend));
 
     if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
     {
@@ -570,13 +570,13 @@ oe_result_t oe_sgx_load_enclave_data(
         if (!extend)
             protect |= ENCLAVE_PAGE_UNVALIDATED;
 
-        uint32_t enclaveError;
+        uint32_t enclave_error;
         if (enclave_load_data(
                 (void*)addr,
                 OE_PAGE_SIZE,
                 (const void*)src,
                 protect,
-                &enclaveError) != OE_PAGE_SIZE)
+                &enclave_error) != OE_PAGE_SIZE)
         {
             OE_RAISE(OE_PLATFORM_ERROR);
         }
@@ -592,7 +592,7 @@ oe_result_t oe_sgx_load_enclave_data(
 
         /* Ask the OS to add a page to the enclave */
         SIZE_T num_bytes = 0;
-        DWORD enclaveError;
+        DWORD enclave_error;
 
         DWORD protect = _make_memory_protect_param(flags, false /*not simulate*/);
         if (!extend)
@@ -607,7 +607,7 @@ oe_result_t oe_sgx_load_enclave_data(
                 NULL,
                 0,
                 &num_bytes,
-                &enclaveError))
+                &enclave_error))
         {
             OE_RAISE(OE_PLATFORM_ERROR);
         }
@@ -641,7 +641,7 @@ oe_result_t oe_sgx_initialize_enclave(
 
     /* Measure this operation */
     OE_CHECK(
-        oe_sgx_measure_initialize_enclave(&context->hashContext, mrenclave));
+        oe_sgx_measure_initialize_enclave(&context->hash_context, mrenclave));
 
     /* EINIT has no further action in measurement/simulation mode */
     if (context->type == OE_SGX_LOAD_TYPE_CREATE &&
@@ -653,19 +653,19 @@ oe_result_t oe_sgx_initialize_enclave(
 
 #if defined(OE_USE_LIBSGX)
 
-        uint32_t enclaveError = 0;
+        uint32_t enclave_error = 0;
         if (!enclave_initialize(
                 (void*)addr,
                 (const void*)&sigstruct,
                 sizeof(sgx_sigstruct_t),
-                &enclaveError))
+                &enclave_error))
             OE_RAISE(OE_PLATFORM_ERROR);
-        if (enclaveError != 0)
+        if (enclave_error != 0)
             OE_RAISE(OE_PLATFORM_ERROR);
 #else
         /* If not using libsgx, get a launch token from the AESM service */
-        sgx_launch_token_t launchToken;
-        OE_CHECK(_get_launch_token(properties, &sigstruct, &launchToken));
+        sgx_launch_token_t launch_token;
+        OE_CHECK(_get_launch_token(properties, &sigstruct, &launch_token));
 
 #if defined(__linux__)
 
@@ -674,7 +674,7 @@ oe_result_t oe_sgx_initialize_enclave(
                 context->dev,
                 addr,
                 (uint64_t)&sigstruct,
-                (uint64_t)&launchToken) != 0)
+                (uint64_t)&launch_token) != 0)
             OE_RAISE(OE_IOCTL_FAILED);
 
 #elif defined(_WIN32)
@@ -684,22 +684,22 @@ oe_result_t oe_sgx_initialize_enclave(
             sizeof(sigstruct));
         OE_STATIC_ASSERT(
             OE_FIELD_SIZE(ENCLAVE_INIT_INFO_SGX, EInitToken) <=
-            sizeof(launchToken));
+            sizeof(launch_token));
 
         /* Ask the OS to initialize the enclave */
-        DWORD enclaveError;
+        DWORD enclave_error;
         ENCLAVE_INIT_INFO_SGX info;
 
         memset(&info, 0, sizeof(info));
         memcpy(&info.SigStruct, (void*)&sigstruct, sizeof(info.SigStruct));
-        memcpy(&info.EInitToken, (void*)&launchToken, sizeof(info.EInitToken));
+        memcpy(&info.EInitToken, (void*)&launch_token, sizeof(info.EInitToken));
 
         if (!InitializeEnclave(
                 GetCurrentProcess(),
                 (LPVOID)addr,
                 &info,
                 sizeof(info),
-                &enclaveError))
+                &enclave_error))
         {
             OE_RAISE(OE_PLATFORM_ERROR);
         }

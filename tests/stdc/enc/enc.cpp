@@ -185,10 +185,10 @@ OE_ECALL void Test(void* args_)
         if (s && strcmp(s, "strdup") == 0 && strlen(s) == 6)
         {
             if (memcmp(s, "strdup", 6) == 0)
-                args->strdupOk = 1;
+                args->strdup_ok = 1;
         }
         else
-            args->strdupOk = 0;
+            args->strdup_ok = 0;
 
         free(s);
     }

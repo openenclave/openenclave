@@ -21,23 +21,23 @@
  * Keeping libngsa_quoteprov.so pinned in memory solves the libssl.so crash.
  */
 
-static void* g_LibHandle = 0;
+static void* g_lib_handle = 0;
 
 static void _unload_quote_provider()
 {
-    if (g_LibHandle)
+    if (g_lib_handle)
     {
-        dlclose(g_LibHandle);
-        g_LibHandle = 0;
+        dlclose(g_lib_handle);
+        g_lib_handle = 0;
     }
 }
 
 static void _quote_provider_log(int level, const char* message)
 {
-    const char* levelString = level == 0 ? "ERROR" : "INFO";
+    const char* level_string = level == 0 ? "ERROR" : "INFO";
     char formatted[1024];
 
-    snprintf(formatted, sizeof(formatted), "[%s]: %s\n", levelString, message);
+    snprintf(formatted, sizeof(formatted), "[%s]: %s\n", level_string, message);
 
     formatted[sizeof(formatted) - 1] = 0;
 
@@ -49,13 +49,13 @@ typedef void (*set_logging_fcn_t)(log_fcn_t);
 
 static void _load_quote_provider()
 {
-    if (g_LibHandle == 0)
+    if (g_lib_handle == 0)
     {
-        g_LibHandle = dlopen("libngsa_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
-        if (g_LibHandle != 0)
+        g_lib_handle = dlopen("libngsa_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
+        if (g_lib_handle != 0)
         {
             set_logging_fcn_t set_log_fcn = (set_logging_fcn_t)dlsym(
-                g_LibHandle, "sgx_ql_set_logging_function");
+                g_lib_handle, "sgx_ql_set_logging_function");
             if (set_log_fcn != NULL)
             {
                 OE_UNUSED(_quote_provider_log);
@@ -86,5 +86,5 @@ oe_result_t oe_initialize_quote_provider()
 {
     static oe_once_type once = OE_H_ONCE_INITIALIZER;
     oe_once(&once, _load_quote_provider);
-    return g_LibHandle ? OE_OK : OE_FAILURE;
+    return g_lib_handle ? OE_OK : OE_FAILURE;
 }

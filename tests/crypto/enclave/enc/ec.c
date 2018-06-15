@@ -7,25 +7,25 @@
 #include "../../../../enclave/key.h"
 
 oe_result_t oe_ec_public_key_to_coordinates(
-    const oe_ec_public_key_t* publicKey,
-    uint8_t* xData,
-    size_t* xSize,
-    uint8_t* yData,
-    size_t* ySize)
+    const oe_ec_public_key_t* public_key,
+    uint8_t* x_data,
+    size_t* x_size,
+    uint8_t* y_data,
+    size_t* y_size)
 {
-    oe_public_key_t* impl = (oe_public_key_t*)publicKey;
+    oe_public_key_t* impl = (oe_public_key_t*)public_key;
     oe_result_t result = OE_UNEXPECTED;
 
     /* Check for invalid parameters */
-    if (!impl || !xSize || !ySize)
+    if (!impl || !x_size || !y_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If xData is null, then xSize should be zero */
-    if (!xData && *xSize != 0)
+    /* If x_data is null, then x_size should be zero */
+    if (!x_data && *x_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If yData is null, then ySize should be zero */
-    if (!yData && *ySize != 0)
+    /* If y_data is null, then y_size should be zero */
+    if (!y_data && *y_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Convert public EC key to binary */
@@ -38,22 +38,22 @@ oe_result_t oe_ec_public_key_to_coordinates(
 
         size = mbedtls_mpi_size(&ec->grp.P);
 
-        if (size > *xSize || size > *ySize)
+        if (size > *x_size || size > *y_size)
         {
-            *xSize = size;
-            *ySize = size;
+            *x_size = size;
+            *y_size = size;
             OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
-        *xSize = size;
-        *ySize = size;
+        *x_size = size;
+        *y_size = size;
 
         /* Write the X coordinate */
-        if (mbedtls_mpi_write_binary(&ec->Q.X, xData, *xSize) != 0)
+        if (mbedtls_mpi_write_binary(&ec->Q.X, x_data, *x_size) != 0)
             OE_RAISE(OE_FAILURE);
 
         /* Write the Y coordinate */
-        if (mbedtls_mpi_write_binary(&ec->Q.Y, yData, *ySize) != 0)
+        if (mbedtls_mpi_write_binary(&ec->Q.Y, y_data, *y_size) != 0)
             OE_RAISE(OE_FAILURE);
     }
 
@@ -66,23 +66,23 @@ done:
 
 oe_result_t oe_ecdsa_signature_read_der(
     const uint8_t* signature,
-    size_t signatureSize,
-    uint8_t* rData,
-    size_t* rSize,
-    uint8_t* sData,
-    size_t* sSize)
+    size_t signature_size,
+    uint8_t* r_data,
+    size_t* r_size,
+    uint8_t* s_data,
+    size_t* s_size)
 {
     oe_result_t result = OE_UNEXPECTED;
     mbedtls_mpi r;
     mbedtls_mpi s;
     uint8_t* p = (uint8_t*)signature;
-    const uint8_t* end = signature + signatureSize;
+    const uint8_t* end = signature + signature_size;
     size_t len;
 
     mbedtls_mpi_init(&r);
     mbedtls_mpi_init(&s);
 
-    if (!signature || !signatureSize || !rSize || !sSize)
+    if (!signature || !signature_size || !r_size || !s_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Parse the tag */
@@ -106,27 +106,27 @@ oe_result_t oe_ecdsa_signature_read_der(
 
     /* Check that output buffers are big enough */
     {
-        const size_t rBytes = mbedtls_mpi_size(&r);
-        const size_t sBytes = mbedtls_mpi_size(&s);
+        const size_t r_bytes = mbedtls_mpi_size(&r);
+        const size_t s_bytes = mbedtls_mpi_size(&s);
 
-        bool bufferToSmall = (rBytes > *rSize || sBytes > *sSize);
-        *rSize = rBytes;
-        *sSize = sBytes;
+        bool buffer_to_small = (r_bytes > *r_size || s_bytes > *s_size);
+        *r_size = r_bytes;
+        *s_size = s_bytes;
 
-        if (bufferToSmall)
+        if (buffer_to_small)
             OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     /* Fail if buffers are null */
-    if (!rData || !rSize)
+    if (!r_data || !r_size)
         OE_RAISE(OE_FAILURE);
 
     /* Convert R to binary */
-    if (mbedtls_mpi_write_binary(&r, rData, *rSize) != 0)
+    if (mbedtls_mpi_write_binary(&r, r_data, *r_size) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Convert S to binary */
-    if (mbedtls_mpi_write_binary(&s, sData, *sSize) != 0)
+    if (mbedtls_mpi_write_binary(&s, s_data, *s_size) != 0)
         OE_RAISE(OE_FAILURE);
 
     result = OE_OK;

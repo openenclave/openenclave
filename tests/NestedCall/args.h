@@ -7,7 +7,7 @@
 typedef struct _args
 {
     const char* in;
-    int testEh;
+    int test_eh;
     int depth;
     char* out;
     int ret;

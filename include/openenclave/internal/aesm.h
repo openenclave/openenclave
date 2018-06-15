@@ -23,24 +23,24 @@ oe_result_t AESMGetLaunchToken(
     uint8_t mrenclave[OE_SHA256_SIZE],
     uint8_t modulus[OE_KEY_SIZE],
     const sgx_attributes_t* attributes,
-    sgx_launch_token_t* launchToken);
+    sgx_launch_token_t* launch_token);
 
 oe_result_t AESMInitQuote(
     AESM* aesm,
-    sgx_target_info_t* targetInfo,
-    sgx_epid_group_id_t* epidGroupID);
+    sgx_target_info_t* target_info,
+    sgx_epid_group_id_t* epid_group_id);
 
 oe_result_t AESMGetQuote(
     AESM* aesm,
     const sgx_report_t* report,
-    sgx_quote_type_t quoteType,
+    sgx_quote_type_t quote_type,
     const sgx_spid_t* spid,
     const sgx_nonce_t* nonce,
-    const uint8_t* signatureRevocationList,
-    uint32_t signatureRevocationListSize,
-    sgx_report_t* reportOut,
+    const uint8_t* signature_revocation_list,
+    uint32_t signature_revocation_list_size,
+    sgx_report_t* report_out,
     sgx_quote_t* quote,
-    size_t quoteSize);
+    size_t quote_size);
 
 OE_EXTERNC_END
 

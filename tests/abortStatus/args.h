@@ -32,9 +32,9 @@ struct AbortStatusEncRecursionArg
     void* enclave;
     volatile uint32_t* thread_ready_count;
     volatile uint32_t* is_enclave_crashed;
-    unsigned flowId;         // In
-    unsigned recursionsLeft; // InOut
-    unsigned initialCount;   // InOut
+    unsigned flow_id;         // In
+    unsigned recursions_left; // InOut
+    unsigned initial_count;   // InOut
     uint32_t crc;            // InOut
 };
 

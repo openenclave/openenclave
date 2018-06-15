@@ -5,13 +5,13 @@
 
 #define __oe_debug_break()
 
-int SecureStrPatching(const char* src, char* dst, int dstLength);
+int SecureStrPatching(const char* src, char* dst, int dst_length);
 
 struct SecureStrPatchingARGS
 {
     const char* src;
     char* dst;
-    int dstLength;
+    int dst_length;
     int ret;
 };
 
@@ -21,11 +21,11 @@ OE_ECALL oe_result_t SecureStrPatching(void* data)
         return OE_FAILURE;
 
     SecureStrPatchingARGS* args = (SecureStrPatchingARGS*)data;
-    args->ret = SecureStrPatching(args->src, args->dst, args->dstLength);
+    args->ret = SecureStrPatching(args->src, args->dst, args->dst_length);
     return OE_OK;
 }
 
-int HostUnsecureStrPatching(const char* src, char* dst, int dstLength)
+int HostUnsecureStrPatching(const char* src, char* dst, int dst_length)
 {
     SecureStrPatchingARGS* args;
 
@@ -37,7 +37,7 @@ int HostUnsecureStrPatching(const char* src, char* dst, int dstLength)
     }
     args->dst = dst;
     args->src = src;
-    args->dstLength = dstLength;
+    args->dst_length = dst_length;
     if (oe_call_host("UnsecureStrPatching", args) != OE_OK)
     {
         __oe_debug_break();

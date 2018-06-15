@@ -17,10 +17,10 @@ OE_OCALL void Func1(void* args)
     _func1_called = true;
 }
 
-void MyOCall(uint64_t argIn, uint64_t* argOut)
+void MyOCall(uint64_t arg_in, uint64_t* arg_out)
 {
-    if (argOut)
-        *argOut = argIn * 7;
+    if (arg_out)
+        *arg_out = arg_in * 7;
 }
 
 static bool _func2_ok;

@@ -14,10 +14,10 @@
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 static oe_result_t _sgx_create_report(
-    const void* reportData,
-    uint32_t reportDataSize,
-    const void* targetInfo,
-    uint32_t targetInfoSize,
+    const void* report_data,
+    uint32_t report_data_size,
+    const void* target_info,
+    uint32_t target_info_size,
     sgx_report_t* report)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -28,21 +28,21 @@ static oe_result_t _sgx_create_report(
     sgx_report_t r OE_ALIGNED(512) = {0};
 
     /*
-     * Reject invalid parameters (reportData may be null).
-     * If targetInfo is null, SGX returns the report for the enclave itself.
+     * Reject invalid parameters (report_data may be null).
+     * If target_info is null, SGX returns the report for the enclave itself.
      */
     if (!report)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (targetInfoSize > sizeof(sgx_target_info_t) ||
-        reportDataSize > sizeof(sgx_report_data_t))
+    if (target_info_size > sizeof(sgx_target_info_t) ||
+        report_data_size > sizeof(sgx_report_data_t))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (targetInfo != NULL)
-        oe_memcpy(&ti, targetInfo, targetInfoSize);
+    if (target_info != NULL)
+        oe_memcpy(&ti, target_info, target_info_size);
 
-    if (reportData != NULL)
-        oe_memcpy(&rd, reportData, reportDataSize);
+    if (report_data != NULL)
+        oe_memcpy(&rd, report_data, report_data_size);
 
     oe_memset(&r, 0, sizeof(sgx_report_t));
 
@@ -64,48 +64,48 @@ done:
 }
 
 static oe_result_t _oe_get_sgx_report(
-    const void* reportData,
-    uint32_t reportDataSize,
-    const void* optParams,
-    uint32_t optParamsSize,
-    void* reportBuffer,
-    uint32_t* reportBufferSize)
+    const void* report_data,
+    uint32_t report_data_size,
+    const void* opt_params,
+    uint32_t opt_params_size,
+    void* report_buffer,
+    uint32_t* report_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (reportDataSize > OE_REPORT_DATA_SIZE)
+    if (report_data_size > OE_REPORT_DATA_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    // optParams may be null, in which case SGX returns the report for the
+    // opt_params may be null, in which case SGX returns the report for the
     // enclave itself.
-    if (optParams == NULL && optParamsSize != 0)
+    if (opt_params == NULL && opt_params_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // If supplied, it must be a valid sgx_target_info_t.
-    if (optParams != NULL && optParamsSize != sizeof(sgx_target_info_t))
+    if (opt_params != NULL && opt_params_size != sizeof(sgx_target_info_t))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // An sgx_report_t will be filled into the report buffer.
-    if (reportBufferSize == NULL)
+    if (report_buffer_size == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // When supplied buffer is small, report the expected buffer size so that
     // the user can create correctly sized buffer and call oe_get_report again.
-    if (reportBuffer == NULL || *reportBufferSize < sizeof(sgx_report_t))
+    if (report_buffer == NULL || *report_buffer_size < sizeof(sgx_report_t))
     {
-        *reportBufferSize = sizeof(sgx_report_t);
+        *report_buffer_size = sizeof(sgx_report_t);
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
     OE_CHECK(
         _sgx_create_report(
-            reportData,
-            reportDataSize,
-            optParams,
-            optParamsSize,
-            reportBuffer));
+            report_data,
+            report_data_size,
+            opt_params,
+            opt_params_size,
+            report_buffer));
 
-    *reportBufferSize = sizeof(sgx_report_t);
+    *report_buffer_size = sizeof(sgx_report_t);
     result = OE_OK;
 
 done:
@@ -113,7 +113,7 @@ done:
     return result;
 }
 
-static oe_result_t _oe_get_sgx_target_info(sgx_target_info_t* targetInfo)
+static oe_result_t _oe_get_sgx_target_info(sgx_target_info_t* target_info)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_get_qetarget_info_args_t* args =
@@ -130,7 +130,7 @@ static oe_result_t _oe_get_sgx_target_info(sgx_target_info_t* targetInfo)
 
     result = args->result;
     if (result == OE_OK)
-        *targetInfo = args->targetInfo;
+        *target_info = args->target_info;
 
     result = OE_OK;
 done:
@@ -144,26 +144,26 @@ done:
 }
 
 static oe_result_t _oe_get_quote(
-    const sgx_report_t* sgxReport,
+    const sgx_report_t* sgx_report,
     uint8_t* quote,
-    uint32_t* quoteSize)
+    uint32_t* quote_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint32_t argSize = sizeof(oe_get_qetarget_info_args_t);
+    uint32_t arg_size = sizeof(oe_get_qetarget_info_args_t);
 
-    // If quote buffer is NULL, then ignore passed in quoteSize value.
-    // This treats scenarios where quote == NULL and *quoteSize == large-value
+    // If quote buffer is NULL, then ignore passed in quote_size value.
+    // This treats scenarios where quote == NULL and *quote_size == large-value
     // as OE_BUFFER_TOO_SMALL.
     if (quote == NULL)
-        *quoteSize = 0;
+        *quote_size = 0;
 
     // Allocate memory for args structure + quote buffer.
-    argSize += *quoteSize;
+    arg_size += *quote_size;
 
     oe_get_quote_args_t* args =
-        (oe_get_quote_args_t*)oe_host_calloc(1, argSize);
-    args->sgxReport = *sgxReport;
-    args->quoteSize = *quoteSize;
+        (oe_get_quote_args_t*)oe_host_calloc(1, arg_size);
+    args->sgx_report = *sgx_report;
+    args->quote_size = *quote_size;
 
     if (args == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -177,15 +177,15 @@ static oe_result_t _oe_get_quote(
     result = args->result;
 
     if (result == OE_OK || result == OE_BUFFER_TOO_SMALL)
-        *quoteSize = args->quoteSize;
+        *quote_size = args->quote_size;
 
     if (result == OE_OK)
-        oe_memcpy(quote, args->quote, *quoteSize);
+        oe_memcpy(quote, args->quote, *quote_size);
 
 done:
     if (args)
     {
-        oe_secure_zero_fill(args, argSize);
+        oe_secure_zero_fill(args, arg_size);
         oe_host_free(args);
     }
 
@@ -193,22 +193,22 @@ done:
 }
 
 oe_result_t _oe_get_remote_report(
-    const uint8_t* reportData,
-    uint32_t reportDataSize,
-    const void* optParams,
-    uint32_t optParamsSize,
-    uint8_t* reportBuffer,
-    uint32_t* reportBufferSize)
+    const uint8_t* report_data,
+    uint32_t report_data_size,
+    const void* opt_params,
+    uint32_t opt_params_size,
+    uint8_t* report_buffer,
+    uint32_t* report_buffer_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    sgx_target_info_t sgxTargetInfo = {0};
-    sgx_report_t sgxReport = {0};
-    uint32_t sgxReportSize = sizeof(sgxReport);
-    oe_report_t parsedReport;
+    sgx_target_info_t sgx_target_info = {0};
+    sgx_report_t sgx_report = {0};
+    uint32_t sgx_report_size = sizeof(sgx_report);
+    oe_report_t parsed_report;
 
     // For remote attestation, the Quoting Enclave's target info is used.
-    // optParams must not be supplied.
-    if (optParams != NULL || optParamsSize != 0)
+    // opt_params must not be supplied.
+    if (opt_params != NULL || opt_params_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /*
@@ -218,37 +218,37 @@ oe_result_t _oe_get_remote_report(
      * requires privacy. The trust decision is one of integrity verification
      * on the part of the report recipient.
      */
-    OE_CHECK(_oe_get_sgx_target_info(&sgxTargetInfo));
+    OE_CHECK(_oe_get_sgx_target_info(&sgx_target_info));
 
     /*
      * Get enclave's local report passing in the quoting enclave's target info.
      */
     OE_CHECK(
         _oe_get_sgx_report(
-            reportData,
-            reportDataSize,
-            &sgxTargetInfo,
-            sizeof(sgxTargetInfo),
-            &sgxReport,
-            &sgxReportSize));
+            report_data,
+            report_data_size,
+            &sgx_target_info,
+            sizeof(sgx_target_info),
+            &sgx_report,
+            &sgx_report_size));
 
     /*
      * OCall: Get the quote for the local report.
      */
-    OE_CHECK(_oe_get_quote(&sgxReport, reportBuffer, reportBufferSize));
+    OE_CHECK(_oe_get_quote(&sgx_report, report_buffer, report_buffer_size));
 
     /*
      * Check that the entire report body in the returned quote matches the local
      * report.
      */
-    if (oe_parse_report(reportBuffer, *reportBufferSize, &parsedReport) !=
+    if (oe_parse_report(report_buffer, *report_buffer_size, &parsed_report) !=
         OE_OK)
         OE_RAISE(OE_UNEXPECTED);
 
     if (oe_memcmp(
-            parsedReport.enclaveReport,
-            &sgxReport.body,
-            sizeof(sgxReport.body)) != 0)
+            parsed_report.enclave_report,
+            &sgx_report.body,
+            sizeof(sgx_report.body)) != 0)
         OE_RAISE(OE_UNEXPECTED);
 
     result = OE_OK;
@@ -259,61 +259,61 @@ done:
 
 oe_result_t oe_get_report(
     uint32_t options,
-    const uint8_t* reportData,
-    uint32_t reportDataSize,
-    const void* optParams,
-    uint32_t optParamsSize,
-    uint8_t* reportBuffer,
-    uint32_t* reportBufferSize)
+    const uint8_t* report_data,
+    uint32_t report_data_size,
+    const void* opt_params,
+    uint32_t opt_params_size,
+    uint8_t* report_buffer,
+    uint32_t* report_buffer_size)
 {
     if (options & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
     {
         return _oe_get_remote_report(
-            reportData,
-            reportDataSize,
-            optParams,
-            optParamsSize,
-            reportBuffer,
-            reportBufferSize);
+            report_data,
+            report_data_size,
+            opt_params,
+            opt_params_size,
+            report_buffer,
+            report_buffer_size);
     }
 
     // If no options are specified, default to locally attestable report.
     return _oe_get_sgx_report(
-        reportData,
-        reportDataSize,
-        optParams,
-        optParamsSize,
-        reportBuffer,
-        reportBufferSize);
+        report_data,
+        report_data_size,
+        opt_params,
+        opt_params_size,
+        report_buffer,
+        report_buffer_size);
 }
 
 static oe_result_t _safe_copy_get_report_args(
-    uint64_t argIn,
-    oe_get_report_args_t* safeArg,
-    uint8_t* reportBuffer)
+    uint64_t arg_in,
+    oe_get_report_args_t* safe_arg,
+    uint8_t* report_buffer)
 {
     oe_result_t result = OE_UNEXPECTED;
-    oe_get_report_args_t* unsafeArg = (oe_get_report_args_t*)argIn;
+    oe_get_report_args_t* unsafe_arg = (oe_get_report_args_t*)arg_in;
 
-    if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)))
+    if (!unsafe_arg || !oe_is_outside_enclave(unsafe_arg, sizeof(*unsafe_arg)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Copy arg to prevent TOCTOU issues.
     // All input fields now lie in enclave memory.
-    oe_secure_memcpy(safeArg, unsafeArg, sizeof(*safeArg));
+    oe_secure_memcpy(safe_arg, unsafe_arg, sizeof(*safe_arg));
 
-    if (safeArg->reportBufferSize > OE_MAX_REPORT_SIZE)
-        safeArg->reportBufferSize = OE_MAX_REPORT_SIZE;
+    if (safe_arg->report_buffer_size > OE_MAX_REPORT_SIZE)
+        safe_arg->report_buffer_size = OE_MAX_REPORT_SIZE;
 
     // Ensure that output buffer lies outside the enclave.
-    if (safeArg->reportBuffer &&
+    if (safe_arg->report_buffer &&
         !oe_is_outside_enclave(
-            safeArg->reportBuffer, safeArg->reportBufferSize))
+            safe_arg->report_buffer, safe_arg->report_buffer_size))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Use output buffer within enclave.
-    if (safeArg->reportBuffer)
-        safeArg->reportBuffer = reportBuffer;
+    if (safe_arg->report_buffer)
+        safe_arg->report_buffer = report_buffer;
 
     result = OE_OK;
 done:
@@ -321,43 +321,43 @@ done:
 }
 
 static oe_result_t _safe_copy_get_report_args_ouput(
-    oe_get_report_args_t* safeArg,
-    uint64_t argIn)
+    oe_get_report_args_t* safe_arg,
+    uint64_t arg_in)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    oe_get_report_args_t* unsafeArg = (oe_get_report_args_t*)argIn;
+    oe_get_report_args_t* unsafe_arg = (oe_get_report_args_t*)arg_in;
 
-    if (safeArg->result == OE_OK)
+    if (safe_arg->result == OE_OK)
     {
-        // Perform validation again. The reportBuffer field could have been
+        // Perform validation again. The report_buffer field could have been
         // changed. Use volatile to ensure that the compiler doesn't optimize
         // away the copy.
-        uint8_t* volatile hostReportBuffer = unsafeArg->reportBuffer;
-        if (!oe_is_outside_enclave(hostReportBuffer, safeArg->reportBufferSize))
+        uint8_t* volatile host_report_buffer = unsafe_arg->report_buffer;
+        if (!oe_is_outside_enclave(host_report_buffer, safe_arg->report_buffer_size))
             OE_RAISE(OE_UNEXPECTED);
 
         oe_secure_memcpy(
-            hostReportBuffer, safeArg->reportBuffer, safeArg->reportBufferSize);
+            host_report_buffer, safe_arg->report_buffer, safe_arg->report_buffer_size);
     }
 
-    unsafeArg->reportBufferSize = safeArg->reportBufferSize;
-    unsafeArg->result = safeArg->result;
+    unsafe_arg->report_buffer_size = safe_arg->report_buffer_size;
+    unsafe_arg->result = safe_arg->result;
     result = OE_OK;
 
 done:
     return result;
 }
 
-oe_result_t _handle_get_report(uint64_t argIn)
+oe_result_t _handle_get_report(uint64_t arg_in)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_get_report_args_t arg;
 
-    uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
+    uint8_t report_buffer[OE_MAX_REPORT_SIZE];
 
     // Validate and copy args to prevent TOCTOU issues.
-    OE_CHECK(_safe_copy_get_report_args(argIn, &arg, reportBuffer));
+    OE_CHECK(_safe_copy_get_report_args(arg_in, &arg, report_buffer));
 
     // Host is not allowed to pass report data. Otherwise, the host can use the
     // enclave to put whatever data it wants in a report. The data field is
@@ -368,13 +368,13 @@ oe_result_t _handle_get_report(uint64_t argIn)
         arg.options,
         NULL,
         0,
-        (arg.optParamsSize != 0) ? arg.optParams : NULL,
-        arg.optParamsSize,
-        arg.reportBuffer,
-        &arg.reportBufferSize);
+        (arg.opt_params_size != 0) ? arg.opt_params : NULL,
+        arg.opt_params_size,
+        arg.report_buffer,
+        &arg.report_buffer_size);
 
     // Copy outputs to host memory.
-    OE_CHECK(_safe_copy_get_report_args_ouput(&arg, argIn));
+    OE_CHECK(_safe_copy_get_report_args_ouput(&arg, arg_in));
     result = OE_OK;
 
 done:

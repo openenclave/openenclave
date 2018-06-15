@@ -15,9 +15,9 @@ typedef struct _test1_args
 
     /* --- Input arguments --- */
 
-    int64_t inNum;
+    int64_t in_num;
 
-    const char* inStr;
+    const char* in_str;
 
     /* --- Output arguments --- */
 

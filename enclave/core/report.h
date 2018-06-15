@@ -7,6 +7,6 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/sgxtypes.h>
 
-oe_result_t _handle_get_report(uint64_t argIn);
+oe_result_t _handle_get_report(uint64_t arg_in);
 
 #endif /* _OE_ENCLAVE_REPORT_H */

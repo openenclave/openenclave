@@ -10,7 +10,7 @@ typedef struct _test_args
 {
     char buf1[1024];
     char buf2[1024];
-    int strdupOk;
+    int strdup_ok;
 } TestArgs;
 
 #endif /* _stdc_args_h */

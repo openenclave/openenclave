@@ -11,7 +11,7 @@
 
 typedef struct _file_args
 {
-    FILE* filePtr;
+    FILE* file_ptr;
     char* path;
     char* mode;
     char* buf;
@@ -24,10 +24,10 @@ typedef struct _file_args
 
 } FileArgs;
 
-OE_OCALL void mbed_test_fopen(void* fileArgs)
+OE_OCALL void mbed_test_fopen(void* file_args)
 {
     FILE* fp;
-    FileArgs* args = (FileArgs*)fileArgs;
+    FileArgs* args = (FileArgs*)file_args;
 
     OE_TRACE_INFO("#### %s ###########\n", args->path);
 
@@ -37,53 +37,53 @@ OE_OCALL void mbed_test_fopen(void* fileArgs)
     else
     {
         OE_TRACE_INFO("\n file opened address fp =%p &&&&&&&&&\n", fp);
-        args->filePtr = fp;
+        args->file_ptr = fp;
     }
     return;
 }
 
-OE_OCALL void mbed_test_fclose(void* fileArgs)
+OE_OCALL void mbed_test_fclose(void* file_args)
 {
     int ret;
-    FileArgs* args = (FileArgs*)fileArgs;
+    FileArgs* args = (FileArgs*)file_args;
 
-    ret = fclose(args->filePtr);
+    ret = fclose(args->file_ptr);
 
     OE_TRACE_INFO("\n fclose Ret = %d \n", ret);
     args->ret = ret;
     return;
 }
 
-OE_OCALL void mbed_test_feof(void* fileArgs)
+OE_OCALL void mbed_test_feof(void* file_args)
 {
     int ret;
-    FileArgs* args = (FileArgs*)fileArgs;
+    FileArgs* args = (FileArgs*)file_args;
 
-    ret = feof(args->filePtr);
+    ret = feof(args->file_ptr);
 
     OE_TRACE_INFO("\n feof Ret = %d \n", ret);
     args->ret = ret;
     return;
 }
 
-OE_OCALL void mbed_test_fgets(void* fileArgs)
+OE_OCALL void mbed_test_fgets(void* file_args)
 {
     char* ret;
-    FileArgs* args = (FileArgs*)fileArgs;
+    FileArgs* args = (FileArgs*)file_args;
 
-    ret = fgets(args->buf, args->len, args->filePtr);
+    ret = fgets(args->buf, args->len, args->file_ptr);
 
     OE_TRACE_INFO("\n fgets Ret = %d --- buf: %s \n", ret, args->buf);
     args->ptr = (void*)ret;
     return;
 }
 
-OE_OCALL void mbed_test_fputc(void* fileArgs)
+OE_OCALL void mbed_test_fputc(void* file_args)
 {
     int ret;
-    FileArgs* args = (FileArgs*)fileArgs;
+    FileArgs* args = (FileArgs*)file_args;
 
-    ret = fputc(args->i_var, args->filePtr);
+    ret = fputc(args->i_var, args->file_ptr);
 
     OE_TRACE_INFO("\n fputc Ret = %d \n", ret);
     args->ret = ret;

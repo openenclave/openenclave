@@ -37,9 +37,9 @@ void Test(oe_enclave_t* enclave)
     }
 }
 
-static void _exit_ocall(uint64_t argIn, uint64_t* argOut)
+static void _exit_ocall(uint64_t arg_in, uint64_t* arg_out)
 {
-    exit(argIn);
+    exit(arg_in);
 }
 
 static int _get_opt(

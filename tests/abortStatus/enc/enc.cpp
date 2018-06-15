@@ -96,39 +96,39 @@ OE_ECALL void EncRecursion(void* Args_)
     if (!oe_is_outside_enclave(Args_, sizeof(AbortStatusEncRecursionArg)))
         return;
 
-    AbortStatusEncRecursionArg* argsHost = (AbortStatusEncRecursionArg*)Args_;
-    AbortStatusEncRecursionArg args = *argsHost;
+    AbortStatusEncRecursionArg* args_host = (AbortStatusEncRecursionArg*)Args_;
+    AbortStatusEncRecursionArg args = *args_host;
 
     // catch initial state: Tag, Input-structure.
     args.crc = Crc32::Hash(TAG_START_ENC, args);
-    argsHost->crc = args.crc;
+    args_host->crc = args.crc;
 
     // recurse as needed, passing initial-state-crc as input
-    if (args.recursionsLeft)
+    if (args.recursions_left)
     {
-        if (args.initialCount)
-            argsHost->initialCount = args.initialCount - 1;
-        argsHost->recursionsLeft = args.recursionsLeft - 1;
-        result = oe_call_host("RecursionOcall", argsHost);
+        if (args.initial_count)
+            args_host->initial_count = args.initial_count - 1;
+        args_host->recursions_left = args.recursions_left - 1;
+        result = oe_call_host("RecursionOcall", args_host);
     }
     else
     {
         // Notify control thread that this thread is ready.
-        __sync_fetch_and_add(argsHost->thread_ready_count, 1);
+        __sync_fetch_and_add(args_host->thread_ready_count, 1);
 
         // Wait for the is_enclave_crashed signal.
-        while (*argsHost->is_enclave_crashed == 0)
+        while (*args_host->is_enclave_crashed == 0)
             ;
 
         // OCALL should return OE_ENCLAVE_ABORTING.
         if (oe_call_host("RecursionOcall", NULL) != OE_ENCLAVE_ABORTING)
         {
-            argsHost->crc = 0;
+            args_host->crc = 0;
             return;
         }
     }
 
     // catch output state: Tag + result + modified host-struct, and original
     // input.
-    argsHost->crc = Crc32::Hash(TAG_END_ENC, result, *argsHost, args);
+    args_host->crc = Crc32::Hash(TAG_END_ENC, result, *args_host, args);
 }

@@ -4,7 +4,7 @@
 OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
 
-CXXFLAGS = -Wall -Werror -O2 -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
+CXXFLAGS = -Wall -Werror -O2 -m64 -nostdinc -f_pic -std=c++11 -nostdinc++
 
 INCLUDES += -I$(OE_INCLUDEDIR)
 INCLUDES += -I$(OE_INCLUDEDIR)/libcxx

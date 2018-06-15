@@ -45,7 +45,7 @@ static void _launch_enclave_success(const char* path, const uint32_t flags)
 static void _launch_enclave_fail(
     const char* path,
     const uint32_t flags,
-    oe_result_t expectedResult)
+    oe_result_t expected_result)
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
@@ -56,11 +56,11 @@ static void _launch_enclave_fail(
     if (result == OE_OK)
         oe_terminate_enclave(enclave);
 
-    if (result != expectedResult)
+    if (result != expected_result)
         oe_put_err(
             "oe_create_enclave(): got result=%u, expected=%u",
             result,
-            expectedResult);
+            expected_result);
 }
 
 static void _test_debug_signed(const char* path)
@@ -118,13 +118,13 @@ int main(int argc, const char* argv[])
     }
 
     const bool debug = strcmp(argv[2], "debug") == 0;
-    const bool isSigned = strcmp(argv[3], "signed") == 0;
+    const bool is_signed = strcmp(argv[3], "signed") == 0;
 
-    if (debug && isSigned)
+    if (debug && is_signed)
         _test_debug_signed(argv[1]);
     else if (debug)
         _test_debug_unsigned(argv[1]);
-    else if (isSigned)
+    else if (is_signed)
         _test_non_debug_signed(argv[1]);
     else
         _test_non_debug_unsigned(argv[1]);

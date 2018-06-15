@@ -10,8 +10,8 @@ typedef struct _test_args
 {
     int ret;
     bool caught;
-    bool dynamicCastWorks;
-    size_t numConstructions;
+    bool dynamic_cast_works;
+    size_t num_constructions;
 } TestArgs;
 
 #endif /* _stdc_args_h */

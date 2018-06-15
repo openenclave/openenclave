@@ -24,9 +24,9 @@ OE_EXTERNC_BEGIN
 
 typedef struct _oe_enclave oe_enclave_t;
 
-typedef void (*oe_ecall_function)(uint64_t argIn, uint64_t* argOut);
+typedef void (*oe_ecall_function)(uint64_t arg_in, uint64_t* arg_out);
 
-typedef void (*oe_ocall_function)(uint64_t argIn, uint64_t* argOut);
+typedef void (*oe_ocall_function)(uint64_t arg_in, uint64_t* arg_out);
 
 /*
 **==============================================================================
@@ -223,8 +223,8 @@ typedef struct _oe_thread_wake_wait_args
 typedef struct _oe_init_quote_args
 {
     oe_result_t result;
-    sgx_target_info_t targetInfo;
-    sgx_epid_group_id_t epidGroupID;
+    sgx_target_info_t target_info;
+    sgx_epid_group_id_t epid_group_id;
 } oe_init_quote_args_t;
 
 /*
@@ -237,7 +237,7 @@ typedef struct _oe_init_quote_args
 typedef struct _oe_get_qetarget_info_args
 {
     oe_result_t result;
-    sgx_target_info_t targetInfo;
+    sgx_target_info_t target_info;
 } oe_get_qetarget_info_args_t;
 
 /*
@@ -250,8 +250,8 @@ typedef struct _oe_get_qetarget_info_args
 typedef struct _oe_get_quote_args
 {
     oe_result_t result;
-    sgx_report_t sgxReport;
-    uint32_t quoteSize;
+    sgx_report_t sgx_report;
+    uint32_t quote_size;
     uint8_t quote[1];
 } oe_get_quote_args_t;
 
@@ -269,11 +269,11 @@ typedef struct _oe_get_report_args
 
     uint32_t options; /* in */
 
-    uint8_t optParams[sizeof(sgx_target_info_t)]; /* in */
-    uint32_t optParamsSize;                       /* in */
+    uint8_t opt_params[sizeof(sgx_target_info_t)]; /* in */
+    uint32_t opt_params_size;                       /* in */
 
-    uint8_t* reportBuffer;     /* ptr to output buffer */
-    uint32_t reportBufferSize; /* in-out */
+    uint8_t* report_buffer;     /* ptr to output buffer */
+    uint32_t report_buffer_size; /* in-out */
 } oe_get_report_args_t;
 
 /*
@@ -289,7 +289,7 @@ typedef struct _oe_verify_report_args
     oe_result_t result; /* out */
 
     uint8_t* report;     /* in */
-    uint32_t reportSize; /* in */
+    uint32_t report_size; /* in */
 } oe_verify_report_args_t;
 
 /*
@@ -423,7 +423,7 @@ typedef struct _oe_realloc_args
 
 typedef struct _oe_init_enclave_args
 {
-    uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 } oe_init_enclave_args_t;
 
 /**
@@ -433,9 +433,9 @@ typedef struct _oe_init_enclave_args
  * function indicated by the **func** parameter. The enclave defines and
  * registers a corresponding function with the following signature.
  *
- *     void (*)(uint64_t argIn, uint64_t* argOut);
+ *     void (*)(uint64_t arg_in, uint64_t* arg_out);
  *
- * The meaning of the **argIn** arg **argOut** parameters is defined by the
+ * The meaning of the **arg_in** arg **arg_out** parameters is defined by the
  * implementer of the function and either may be null.
  *
  * Open Enclave uses the low-level ECALL interface to implement internal calls,
@@ -456,8 +456,8 @@ typedef struct _oe_init_enclave_args
  * error reporting scheme based on its parameters.
  *
  * @param func The number of the function to be called.
- * @param argsIn The input argument passed to the function.
- * @param argOut The output argument passed back from the function.
+ * @param args_in The input argument passed to the function.
+ * @param arg_out The output argument passed back from the function.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -469,8 +469,8 @@ typedef struct _oe_init_enclave_args
 oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint32_t func,
-    uint64_t argIn,
-    uint64_t* argOut);
+    uint64_t arg_in,
+    uint64_t* arg_out);
 
 /**
  * Perform a low-level host function call (OCALL).
@@ -479,9 +479,9 @@ oe_result_t oe_ecall(
  * function indicated by the **func** parameter. The host defines and
  * registers a corresponding function with the following signature.
  *
- *     void (*)(uint64_t argIn, uint64_t* argOut);
+ *     void (*)(uint64_t arg_in, uint64_t* arg_out);
  *
- * The meaning of the **argIn** arg **argOut** parameters is defined by the
+ * The meaning of the **arg_in** arg **arg_out** parameters is defined by the
  * implementer of the function and either may be null.
  *
  * Open Enclave uses this interface to implement internal calls. Enclave
@@ -501,8 +501,8 @@ oe_result_t oe_ecall(
  * error reporting scheme based on its parameters.
  *
  * @param func The number of the function to be called.
- * @param argIn The input argument passed to the function.
- * @param argOut The output argument passed back from the function.
+ * @param arg_in The input argument passed to the function.
+ * @param arg_out The output argument passed back from the function.
  * @param ocall_flags Additional flags for the duration of this ocall, such as
  *              OE_OCALL_FLAG_NOT_REENTRANT.
  *
@@ -515,8 +515,8 @@ oe_result_t oe_ecall(
  */
 oe_result_t oe_ocall(
     uint32_t func,
-    uint64_t argIn,
-    uint64_t* argOut,
+    uint64_t arg_in,
+    uint64_t* arg_out,
     uint32_t ocall_flags);
 /**
  * Registers a low-level ECALL function.
@@ -525,7 +525,7 @@ oe_result_t oe_ocall(
  * from the host by the **oe_ecall()** function. The registered function
  * has the following prototype.
  *
- *     void (*)(uint64_t argIn, uint64_t* argOut);
+ *     void (*)(uint64_t arg_in, uint64_t* arg_out);
  *
  * This interface is intended mainly for internal use and developers are
  * encouraged to use the high-level interface instead.
@@ -549,7 +549,7 @@ oe_result_t oe_register_ecall(uint32_t func, oe_ecall_function ecall);
  * from the enclave by the **oe_ocall()** function. The registered function
  * has the following prototype.
  *
- *     void (*)(uint64_t argIn, uint64_t* argOut);
+ *     void (*)(uint64_t arg_in, uint64_t* arg_out);
  *
  * This interface is intended mainly for internal use and developers are
  * encouraged to use the high-level interface instead.

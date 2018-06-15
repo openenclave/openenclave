@@ -1454,7 +1454,7 @@ done:
 int Elf64_RemoveSection(Elf64* elf, const char* name)
 {
     int rc = -1;
-    size_t secIndex;
+    size_t sec_index;
     Elf64_Shdr shdr;
 
     /* Reject invalid parameters */
@@ -1462,11 +1462,11 @@ int Elf64_RemoveSection(Elf64* elf, const char* name)
         goto done;
 
     /* Find index of this section */
-    if ((secIndex = _find_section(elf, name)) == (size_t)-1)
+    if ((sec_index = _find_section(elf, name)) == (size_t)-1)
         goto done;
 
     /* Save section header */
-    shdr = *_get_shdr(elf, secIndex);
+    shdr = *_get_shdr(elf, sec_index);
 
     /* Remove the section from the image */
     {
@@ -1516,7 +1516,7 @@ int Elf64_RemoveSection(Elf64* elf, const char* name)
     /* Remove the section header */
     {
         /* Calculate start-address of section header */
-        Elf64_Shdr* first = _get_shdr(elf, secIndex);
+        Elf64_Shdr* first = _get_shdr(elf, sec_index);
 
         /* Calculate end-address of section header */
         const Elf64_Shdr* last = first + 1;
@@ -1540,7 +1540,7 @@ done:
     return rc;
 }
 
-int Elf64_LoadRelocations(const Elf64* elf, void** dataOut, size_t* sizeOut)
+int Elf64_LoadRelocations(const Elf64* elf, void** data_out, size_t* size_out)
 {
     int rc = -1;
     uint8_t* data;
@@ -1548,20 +1548,20 @@ int Elf64_LoadRelocations(const Elf64* elf, void** dataOut, size_t* sizeOut)
     const Elf64_Rela* p;
     const Elf64_Rela* end;
 
-    if (dataOut)
-        *dataOut = 0;
+    if (data_out)
+        *data_out = 0;
 
-    if (sizeOut)
-        *sizeOut = 0;
+    if (size_out)
+        *size_out = 0;
 
-    if (!_ok(elf) || !dataOut || !sizeOut)
+    if (!_ok(elf) || !data_out || !size_out)
         goto done;
 
     /* Find relocation section */
     if (Elf64_FindSection(elf, ".rela.dyn", &data, &size) != 0)
     {
-        *dataOut = NULL;
-        *sizeOut = 0;
+        *data_out = NULL;
+        *size_out = 0;
         rc = 0;
         goto done;
     }
@@ -1582,16 +1582,16 @@ int Elf64_LoadRelocations(const Elf64* elf, void** dataOut, size_t* sizeOut)
 
     /* Make a copy of the relocation section (zero-padded to page size) */
     {
-        *sizeOut = __oe_round_up_to_page_size(size);
+        *size_out = __oe_round_up_to_page_size(size);
 
-        if (!(*dataOut = malloc(*sizeOut)))
+        if (!(*data_out = malloc(*size_out)))
         {
-            *sizeOut = 0;
+            *size_out = 0;
             goto done;
         }
 
-        memset(*dataOut, 0, *sizeOut);
-        memcpy(*dataOut, data, size);
+        memset(*data_out, 0, *size_out);
+        memcpy(*data_out, data, size);
     }
 
     rc = 0;

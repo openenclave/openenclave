@@ -182,17 +182,17 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
 
     if (strcmp(format, "max system bytes = %10lu\n") == 0)
     {
-        _malloc_stats.peakSystemBytes = va_arg(ap, uint64_t);
+        _malloc_stats.peak_system_bytes = va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
     }
     else if (strcmp(format, "system bytes     = %10lu\n") == 0)
     {
-        _malloc_stats.systemBytes = va_arg(ap, uint64_t);
+        _malloc_stats.system_bytes = va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
     }
     else if (strcmp(format, "in use bytes     = %10lu\n") == 0)
     {
-        _malloc_stats.inUseBytes = va_arg(ap, uint64_t);
+        _malloc_stats.in_use_bytes = va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
         goto done;
     }

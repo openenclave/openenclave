@@ -66,8 +66,8 @@ OE_ECALL void EnclaveNestCalls(void* args_)
 {
     Args* args = (Args*)args_;
     char str[128];
-    int curDepth = args->depth;
-    oe_snprintf(str, sizeof(str), "Nested call depth [%d].", curDepth);
+    int cur_depth = args->depth;
+    oe_snprintf(str, sizeof(str), "Nested call depth [%d].", cur_depth);
 
     // Register exception handler.
     _register_exception_handler();
@@ -78,12 +78,12 @@ OE_ECALL void EnclaveNestCalls(void* args_)
         return;
     }
 
-    oe_host_printf("Enclave: EnclaveNestCalls depth [%d] started!\n", curDepth);
+    oe_host_printf("Enclave: EnclaveNestCalls depth [%d] started!\n", cur_depth);
 
     if (args->depth <= 0)
     {
         oe_host_printf(
-            "Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
+            "Enclave: EnclaveNestCalls depth [%d] returned!\n", cur_depth);
         args->ret = 0;
         return;
     }
@@ -91,7 +91,7 @@ OE_ECALL void EnclaveNestCalls(void* args_)
     args->depth--;
 
     // Generate a exception in nested call in.
-    if (args->testEh > 0)
+    if (args->test_eh > 0)
     {
         if (DivideByZeroExceptionFunction() != 0)
         {
@@ -121,7 +121,7 @@ OE_ECALL void EnclaveNestCalls(void* args_)
     }
 
     oe_host_printf(
-        "Enclave: EnclaveNestCalls depth [%d] returned!\n", curDepth);
+        "Enclave: EnclaveNestCalls depth [%d] returned!\n", cur_depth);
 
     args->ret = 0;
     return;

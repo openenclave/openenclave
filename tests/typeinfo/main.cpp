@@ -76,8 +76,8 @@ int TestContainer(bool trace)
     memset(&c, 0, sizeof(c));
 
     uint32_t arr[] = {100, 200, 300};
-    c.arrData = arr;
-    c.arrSize = OE_COUNTOF(arr);
+    c.arr_data = arr;
+    c.arr_size = OE_COUNTOF(arr);
 
     if (trace)
         oe_print_struct(&Container_ti, &c);

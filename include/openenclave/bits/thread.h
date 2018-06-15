@@ -392,20 +392,20 @@ typedef struct _oe_rwlock
  * oe_rwlock_init initializes the lock to an unlocked state.
  * Readers-writer locks can also be initialized statically as follows.
  *
- *     oe_rwlock_t rwLock = OE_RWLOCK_INITIALIZER;
+ *     oe_rwlock_t rw_lock = OE_RWLOCK_INITIALIZER;
  *
  * Undefined behavior:
  *    1. Results of using an uninitialized r/w lock are undefined.
  *    2. Results of using a copy of a r/w lock are undefined.
  *    3. Results of re-initializing an initialized r/w lock are undefined.
  *
- * @param rwLock Initialize this readers-writer variable.
+ * @param rw_lock Initialize this readers-writer variable.
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-oe_result_t oe_rwlock_init(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_init(oe_rwlock_t* rw_lock);
 
 /**
  * Acquire a read lock on a readers-writer lock.
@@ -428,13 +428,13 @@ oe_result_t oe_rwlock_init(oe_rwlock_t* rwLock);
  * Undefined behavior:
  *    1. Results of using an uninitialized or destroyed r/w lock are undefined.
  *
- * @param rwLock Acquire a read lock on this readers-writer lock.
+ * @param rw_lock Acquire a read lock on this readers-writer lock.
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-oe_result_t oe_rwlock_rdlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_rdlock(oe_rwlock_t* rw_lock);
 
 /**
  * Try to acquire a read lock on a readers-writer lock.
@@ -448,14 +448,14 @@ oe_result_t oe_rwlock_rdlock(oe_rwlock_t* rwLock);
  * Undefined behavior:
  *    1. Results of using an uninitialized or destroyed r/w lock are undefined.
  *
- * @param rwLock Acquire a read lock on this readers-writer lock.
+ * @param rw_lock Acquire a read lock on this readers-writer lock.
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
  * @return OE_BUSY the lock was busy
  *
  */
-oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* rw_lock);
 
 /**
  * Release a read lock on a readers-writer lock.
@@ -476,13 +476,13 @@ oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* rwLock);
  *    1. Results of a oe_rwlock_rdunlock call by a thread that currently does
  *       not have a read-lock on the r/w lock are undefined.
  *
- * @param rwLock Release the read lock on this readers-writer lock.
+ * @param rw_lock Release the read lock on this readers-writer lock.
  *
  * @return OE_OK the operation was successful
  * @return OE_NOT_OWNER the calling thread does not have this object locked.
  *
  */
-oe_result_t oe_rwlock_rdunlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_rdunlock(oe_rwlock_t* rw_lock);
 
 /**
  * Acquire a write lock on a readers-writer lock.
@@ -505,14 +505,14 @@ oe_result_t oe_rwlock_rdunlock(oe_rwlock_t* rwLock);
  *    1. Results of using an uninitialized or destroyed r/w lock are undefined.
  *
  *
- * @param rwLock Acquire a write lock on this readers-writer lock.
+ * @param rw_lock Acquire a write lock on this readers-writer lock.
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
  * @return OE_BUSY object is already locked for writing by this thread
  *
  */
-oe_result_t oe_rwlock_wrlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_wrlock(oe_rwlock_t* rw_lock);
 
 /**
  * Try to acquire a write lock on a readers-writer lock.
@@ -526,14 +526,14 @@ oe_result_t oe_rwlock_wrlock(oe_rwlock_t* rwLock);
  * Undefined behavior:
  *    1. Results of using an uninitialized or destroyed r/w lock are undefined.
  *
- * @param rwLock Acquire a write lock on this readers-writer lock.
+ * @param rw_lock Acquire a write lock on this readers-writer lock.
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
  * @return OE_BUSY the lock was busy
  *
  */
-oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* rw_lock);
 
 /**
  * Release a write lock on a readers-writer lock.
@@ -551,7 +551,7 @@ oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* rwLock);
  *    1. Results of a oe_rwlock_try_wrlock call by a thread that currently does
  *       not have a write-lock on the r/w lock are undefined.
  *
- * @param rwLock Release the write lock on this readers-writer lock.
+ * @param rw_lock Release the write lock on this readers-writer lock.
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
@@ -559,7 +559,7 @@ oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* rwLock);
  * @return OE_BUSY readers still exist
  *
  */
-oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* rw_lock);
 
 /**
  * Destroy a readers-writer lock.
@@ -580,7 +580,7 @@ oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* rwLock);
  * @return OE_BUSY threads are still waiting on this lock
  *
  */
-oe_result_t oe_rwlock_destroy(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_destroy(oe_rwlock_t* rw_lock);
 
 #define OE_THREADKEY_INITIALIZER 0
 

@@ -13,7 +13,7 @@ typedef struct _test_vector_exception_args
 typedef struct _test_sigill_handling_args
 {
     int ret;
-    uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+    uint32_t cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 } TestSigillHandlingArgs;
 
 #endif /* _ARGS_H */

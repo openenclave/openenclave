@@ -269,8 +269,8 @@ done:
 */
 
 oe_result_t oe_cert_read_pem(
-    const void* pemData,
-    size_t pemSize,
+    const void* pem_data,
+    size_t pem_size,
     oe_cert_t* cert)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -282,11 +282,11 @@ oe_result_t oe_cert_read_pem(
         oe_memset(impl, 0, sizeof(Cert));
 
     /* Check parameters */
-    if (!pemData || !pemSize || !cert)
+    if (!pem_data || !pem_size || !cert)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
-    if (oe_strnlen((const char*)pemData, pemSize) != pemSize - 1)
+    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
+    if (oe_strnlen((const char*)pem_data, pem_size) != pem_size - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Allocate memory for the certificate */
@@ -297,7 +297,7 @@ oe_result_t oe_cert_read_pem(
     mbedtls_x509_crt_init(crt);
 
     /* Read the PEM buffer into DER format */
-    if (mbedtls_x509_crt_parse(crt, (const uint8_t*)pemData, pemSize) != 0)
+    if (mbedtls_x509_crt_parse(crt, (const uint8_t*)pem_data, pem_size) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the implementation */
@@ -337,8 +337,8 @@ done:
 }
 
 oe_result_t oe_cert_chain_read_pem(
-    const void* pemData,
-    size_t pemSize,
+    const void* pem_data,
+    size_t pem_size,
     oe_cert_chain_t* chain)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -350,11 +350,11 @@ oe_result_t oe_cert_chain_read_pem(
         oe_memset(impl, 0, sizeof(CertChain));
 
     /* Check parameters */
-    if (!pemData || !pemSize || !chain)
+    if (!pem_data || !pem_size || !chain)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
-    if (oe_strnlen((const char*)pemData, pemSize) != pemSize - 1)
+    /* Must have pem_size-1 non-zero characters followed by zero-terminator */
+    if (oe_strnlen((const char*)pem_data, pem_size) != pem_size - 1)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Create the referent */
@@ -363,7 +363,7 @@ oe_result_t oe_cert_chain_read_pem(
 
     /* Read the PEM buffer into DER format */
     if (mbedtls_x509_crt_parse(
-            &referent->crt, (const uint8_t*)pemData, pemSize) != 0)
+            &referent->crt, (const uint8_t*)pem_data, pem_size) != 0)
     {
         OE_RAISE(OE_FAILURE);
     }
@@ -415,8 +415,8 @@ oe_result_t oe_cert_verify(
     oe_verify_cert_error_t* error)
 {
     oe_result_t result = OE_UNEXPECTED;
-    Cert* certImpl = (Cert*)cert;
-    CertChain* chainImpl = (CertChain*)chain;
+    Cert* cert_impl = (Cert*)cert;
+    CertChain* chain_impl = (CertChain*)chain;
     uint32_t flags = 0;
 
     /* Initialize error */
@@ -424,14 +424,14 @@ oe_result_t oe_cert_verify(
         *error->buf = '\0';
 
     /* Reject invalid certificate */
-    if (!_cert_is_valid(certImpl))
+    if (!_cert_is_valid(cert_impl))
     {
         _set_err(error, "invalid cert parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     /* Reject invalid certificate chain */
-    if (!_cert_chain_is_valid(chainImpl))
+    if (!_cert_chain_is_valid(chain_impl))
     {
         _set_err(error, "invalid chain parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -439,8 +439,8 @@ oe_result_t oe_cert_verify(
 
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
-            certImpl->cert,
-            &chainImpl->referent->crt,
+            cert_impl->cert,
+            &chain_impl->referent->crt,
             NULL,
             NULL,
             &flags,
@@ -465,17 +465,17 @@ done:
 
 oe_result_t oe_cert_get_rsa_public_key(
     const oe_cert_t* cert,
-    oe_rsa_public_key_t* publicKey)
+    oe_rsa_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
 
     /* Clear public key for all error pathways */
-    if (publicKey)
-        oe_memset(publicKey, 0, sizeof(oe_rsa_public_key_t));
+    if (public_key)
+        oe_memset(public_key, 0, sizeof(oe_rsa_public_key_t));
 
     /* Reject invalid parameters */
-    if (!_cert_is_valid(impl) || !publicKey)
+    if (!_cert_is_valid(impl) || !public_key)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If certificate does not contain an RSA key */
@@ -483,7 +483,7 @@ oe_result_t oe_cert_get_rsa_public_key(
         OE_RAISE(OE_FAILURE);
 
     /* Copy the public key from the certificate */
-    OE_CHECK(oe_rsa_public_key_init(publicKey, &impl->cert->pk));
+    OE_CHECK(oe_rsa_public_key_init(public_key, &impl->cert->pk));
 
     result = OE_OK;
 
@@ -494,17 +494,17 @@ done:
 
 oe_result_t oe_cert_get_ec_public_key(
     const oe_cert_t* cert,
-    oe_ec_public_key_t* publicKey)
+    oe_ec_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
     const Cert* impl = (const Cert*)cert;
 
     /* Clear public key for all error pathways */
-    if (publicKey)
-        oe_memset(publicKey, 0, sizeof(oe_ec_public_key_t));
+    if (public_key)
+        oe_memset(public_key, 0, sizeof(oe_ec_public_key_t));
 
     /* Reject invalid parameters */
-    if (!_cert_is_valid(impl) || !publicKey)
+    if (!_cert_is_valid(impl) || !public_key)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* If certificate does not contain an EC key */
@@ -512,7 +512,7 @@ oe_result_t oe_cert_get_ec_public_key(
         OE_RAISE(OE_FAILURE);
 
     /* Copy the public key from the certificate */
-    OE_RAISE(oe_ec_public_key_init(publicKey, &impl->cert->pk));
+    OE_RAISE(oe_ec_public_key_init(public_key, &impl->cert->pk));
 
     result = OE_OK;
 
@@ -553,7 +553,7 @@ oe_result_t oe_cert_chain_get_cert(
 {
     oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
-    Cert* certImpl = (Cert*)cert;
+    Cert* cert_impl = (Cert*)cert;
     mbedtls_x509_crt* crt = NULL;
 
     /* Clear the output certificate for all error pathways */
@@ -569,7 +569,7 @@ oe_result_t oe_cert_chain_get_cert(
         OE_RAISE(OE_OUT_OF_BOUNDS);
 
     /* Initialize the implementation */
-    _cert_init(certImpl, crt, impl->referent);
+    _cert_init(cert_impl, crt, impl->referent);
 
     result = OE_OK;
 

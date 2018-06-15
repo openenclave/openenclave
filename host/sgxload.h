@@ -26,8 +26,8 @@ OE_INLINE bool oe_sgx_is_debug_load_context(
 
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
-    uint64_t enclaveSize,
-    uint64_t* enclaveAddr);
+    uint64_t enclave_size,
+    uint64_t* enclave_addr);
 
 oe_result_t oe_sgx_load_enclave_data(
     oe_sgx_load_context_t* context,

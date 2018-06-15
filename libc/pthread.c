@@ -17,7 +17,7 @@ OE_STATIC_ASSERT(sizeof(pthread_mutex_t) >= sizeof(oe_mutex_t));
 OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(oe_cond_t));
 OE_STATIC_ASSERT(sizeof(pthread_rwlock_t) >= sizeof(oe_rwlock_t));
 
-oe_result_t oe_rwlock_unlock(oe_rwlock_t* readWriteLock);
+oe_result_t oe_rwlock_unlock(oe_rwlock_t* read_write_lock);
 
 /* Map an oe_result_t to a POSIX error number */
 OE_INLINE int _to_errno(oe_result_t result)
