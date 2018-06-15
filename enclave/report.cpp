@@ -14,6 +14,13 @@
 
 #include <stdlib.h>
 
+// This global function is used to force inclusion of this object when using
+// the following linkage option: --Wl,--undefined=__liboeenclave. Note that
+// this function is never called.
+void __liboeenclave(void)
+{
+}
+
 // This file is .cpp in order to use C++ static initialization.
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
@@ -39,9 +46,8 @@ done:
 }
 
 // oe_verify_report needs crypto library's cmac computation. oecore does not
-// have
-// crypto functionality. Hence oe_verify report is implemented here instead of
-// in oecore. Also see ECall_HandleVerifyReport below.
+// have crypto functionality. Hence oe_verify report is implemented here instead
+// of in oecore. Also see _HandleVerifyReport below.
 oe_result_t oe_verify_report(
     const uint8_t* report,
     uint32_t reportSize,
@@ -147,18 +153,12 @@ done:
     return result;
 }
 
-static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut);
-
-// Use static initializer to register ECall_HandleVerifyReport.
-static oe_result_t g_InitECalls =
-    oe_register_ecall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);
-
 // The report key is never sent out to the host. The host side oe_verify_report
 // invokes OE_FUNC_VERIFY_REPORT ECall on the enclave. ECalls are handled in
 // oecore; however oecore has no access to enclave's oe_verify_report (see
 // above). Therefore, oe_verify_report is exposed to oecore as a registered
 // ECall.
-static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
+static void _HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_verify_report_args_t arg;
@@ -170,10 +170,21 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
 
     // success.
     result = OE_OK;
-
-    // Prevent 'defined but not used' warning.
-    OE_UNUSED(g_InitECalls);
 done:
     arg.result = result;
     _SafeCopyVerifyReportArgsOuput(&arg, argIn);
+}
+
+static bool  _RegisterHandlerVerifyReport();
+
+static bool g_Init = _RegisterHandlerVerifyReport();
+
+#include <stdio.h>
+
+bool  _RegisterHandlerVerifyReport()
+{
+    oe_register_ecall(OE_FUNC_VERIFY_REPORT, _HandleVerifyReport);
+    printf("_RegisterHandlerVerifyReport\n");
+    OE_UNUSED(g_Init);
+    return true;
 }

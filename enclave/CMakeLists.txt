@@ -16,7 +16,13 @@ if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
 endif()    
 
+# Linker can optimize out liboeenclave if no symbol from liboeenclave is used
+# by the enclave. Adding --undefined=__liboeenclave ensure that liboeenclave
+# is not optimized out. __liboeenclave is just a function. Host side
+# oe_verify_report relies on oe_verify_report being present in the enclave.
+
 target_link_libraries(oeenclave PUBLIC
+    -Wl,--undefined=__liboeenclave
     mbedcrypto
     oelibc)
 
