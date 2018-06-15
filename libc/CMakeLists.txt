@@ -241,7 +241,8 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/expl.c
     ${MUSLSRC}/math/expm1.c
     ${MUSLSRC}/math/expm1f.c
-    ${MUSLSRC}/math/expm1l.c
+# exp2l defines expm1l function    
+#    ${MUSLSRC}/math/expm1l.c
     ${MUSLSRC}/math/__expo2.c
     ${MUSLSRC}/math/__expo2f.c
     ${MUSLSRC}/math/fabs.c
