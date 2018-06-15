@@ -9,7 +9,7 @@
 #include <string.h>
 #include "tester_t.h"
 
-static struct Object* _MakeObject(const char* name, size_t id)
+static struct Object* _make_object(const char* name, size_t id)
 {
     struct Object* p;
 
@@ -182,7 +182,7 @@ OE_EXTERNC int32_t ECALL_MultipleParams(
         if (*objectRefOut)
             oe_print_struct(&Object_ti, *objectRefOut);
 #endif
-        *objectRefOut = _MakeObject("O10", 10);
+        *objectRefOut = _make_object("O10", 10);
     }
 
     return 0;
@@ -193,7 +193,7 @@ OE_EXTERNC int32_t GetObjectRef(struct Object** object)
     if (!object)
         return -1;
 
-    *object = _MakeObject("GetObjectRef", 12);
+    *object = _make_object("GetObjectRef", 12);
     return 0;
 }
 
@@ -206,7 +206,7 @@ OE_EXTERNC int32_t ModifyObject(struct Object* object)
     return 0;
 }
 
-static size_t _Strlcpy(char* dest, const char* src, size_t size)
+static size_t _strlcpy(char* dest, const char* src, size_t size)
 {
     const char* start = src;
 
@@ -231,7 +231,7 @@ OE_EXTERNC size_t TestStrlcpy(char* dest, const char* src, size_t dsize)
     if (!dest || !src)
         return 0;
 
-    return _Strlcpy(dest, src, dsize);
+    return _strlcpy(dest, src, dsize);
 }
 
 OE_EXTERNC size_t TestOptQualifier(char* p1, const char* p2, size_t p1size)

@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <string.h>
 
-typedef struct _ErrStr
+typedef struct _err_str
 {
     int num;
     const char* str;

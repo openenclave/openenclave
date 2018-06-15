@@ -46,7 +46,7 @@ uint64_t TestDivideByZeroHandler(oe_exception_record_t* exception_record)
 
 static oe_once_t _enclave_exception_once;
 
-static void _InitializeExceptionImp(void)
+static void _initialize_exception_imp(void)
 {
     if (oe_add_vectored_exception_handler(false, TestDivideByZeroHandler) !=
         OE_OK)
@@ -57,9 +57,9 @@ static void _InitializeExceptionImp(void)
     return;
 }
 
-void _RegisterExceptionHandler()
+void _register_exception_handler()
 {
-    oe_once(&_enclave_exception_once, _InitializeExceptionImp);
+    oe_once(&_enclave_exception_once, _initialize_exception_imp);
 }
 
 OE_ECALL void EnclaveNestCalls(void* args_)
@@ -70,7 +70,7 @@ OE_ECALL void EnclaveNestCalls(void* args_)
     oe_snprintf(str, sizeof(str), "Nested call depth [%d].", curDepth);
 
     // Register exception handler.
-    _RegisterExceptionHandler();
+    _register_exception_handler();
 
     if (!oe_is_outside_enclave(args, sizeof(Args)))
     {

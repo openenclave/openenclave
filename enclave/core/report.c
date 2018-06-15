@@ -287,7 +287,7 @@ oe_result_t oe_get_report(
         reportBufferSize);
 }
 
-static oe_result_t _SafeCopyGetReportArgs(
+static oe_result_t _safe_copy_get_report_args(
     uint64_t argIn,
     oe_get_report_args_t* safeArg,
     uint8_t* reportBuffer)
@@ -320,7 +320,7 @@ done:
     return result;
 }
 
-static oe_result_t _SafeCopyGetReportArgsOuput(
+static oe_result_t _safe_copy_get_report_args_ouput(
     oe_get_report_args_t* safeArg,
     uint64_t argIn)
 {
@@ -349,7 +349,7 @@ done:
     return result;
 }
 
-oe_result_t _HandleGetReport(uint64_t argIn)
+oe_result_t _handle_get_report(uint64_t argIn)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_get_report_args_t arg;
@@ -357,7 +357,7 @@ oe_result_t _HandleGetReport(uint64_t argIn)
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
 
     // Validate and copy args to prevent TOCTOU issues.
-    OE_CHECK(_SafeCopyGetReportArgs(argIn, &arg, reportBuffer));
+    OE_CHECK(_safe_copy_get_report_args(argIn, &arg, reportBuffer));
 
     // Host is not allowed to pass report data. Otherwise, the host can use the
     // enclave to put whatever data it wants in a report. The data field is
@@ -374,7 +374,7 @@ oe_result_t _HandleGetReport(uint64_t argIn)
         &arg.reportBufferSize);
 
     // Copy outputs to host memory.
-    OE_CHECK(_SafeCopyGetReportArgsOuput(&arg, argIn));
+    OE_CHECK(_safe_copy_get_report_args_ouput(&arg, argIn));
     result = OE_OK;
 
 done:

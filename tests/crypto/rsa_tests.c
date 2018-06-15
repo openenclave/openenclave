@@ -109,7 +109,7 @@ static const uint8_t _SIGNATURE[] = {
 static const size_t _SIGNATURE_SIZE = sizeof(_SIGNATURE);
 
 // Test RSA signing operation over an ASCII alphabet string.
-static void _TestSign()
+static void _test_sign()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -152,7 +152,7 @@ static void _TestSign()
 }
 
 // Test RSA verify operation over an ASCII alphabet string.
-static void _TestVerify()
+static void _test_verify()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -316,7 +316,7 @@ static const char _CERT_RSA_EXPONENT[] = {0x01, 0x00, 0x01};
 /* This chain is a concatenation of two unrelated chains: CHAIN1 and CHAIN2 */
 #define MIXED_CHAIN CHAIN1 CHAIN2
 
-static void _TestCertVerifyGood()
+static void _test_cert_verify_good()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -341,7 +341,7 @@ static void _TestCertVerifyGood()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestCertVerifyBad()
+static void _test_cert_verify_bad()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -367,7 +367,7 @@ static void _TestCertVerifyBad()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestMixedChain()
+static void _test_mixed_chain()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -388,7 +388,7 @@ static void _TestMixedChain()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestGenerate()
+static void _test_generate()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -437,7 +437,7 @@ static void _TestGenerate()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestWritePrivate()
+static void _test_write_private()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -467,7 +467,7 @@ static void _TestWritePrivate()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestWritePublic()
+static void _test_write_public()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -497,7 +497,7 @@ static void _TestWritePublic()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestCertMethods()
+static void _test_cert_methods()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -657,13 +657,13 @@ static void _TestCertMethods()
 
 void TestRSA()
 {
-    _TestCertMethods();
-    _TestCertVerifyGood();
-    _TestCertVerifyBad();
-    _TestMixedChain();
-    _TestGenerate();
-    _TestSign();
-    _TestVerify();
-    _TestWritePrivate();
-    _TestWritePublic();
+    _test_cert_methods();
+    _test_cert_verify_good();
+    _test_cert_verify_bad();
+    _test_mixed_chain();
+    _test_generate();
+    _test_sign();
+    _test_verify();
+    _test_write_private();
+    _test_write_public();
 }

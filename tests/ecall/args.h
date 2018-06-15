@@ -10,7 +10,7 @@
 
 #define FUNC1 1
 
-typedef struct _TestArgs
+typedef struct _test_args
 {
     void* self;
     unsigned int magic;

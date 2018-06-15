@@ -99,7 +99,7 @@ done:
     return result;
 }
 
-static oe_result_t _SafeCopyVerifyReportArgs(
+static oe_result_t _safe_copy_verify_report_args(
     uint64_t argIn,
     oe_verify_report_args_t* safeArg,
     uint8_t* reportBuffer)
@@ -130,7 +130,7 @@ done:
     return result;
 }
 
-static oe_result_t _SafeCopyVerifyReportArgsOuput(
+static oe_result_t _safe_copy_verify_report_args_ouput(
     const oe_verify_report_args_t* safeArg,
     uint64_t argIn)
 {
@@ -164,7 +164,7 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
     oe_verify_report_args_t arg;
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
 
-    OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, reportBuffer));
+    OE_CHECK(_safe_copy_verify_report_args(argIn, &arg, reportBuffer));
 
     OE_CHECK(oe_verify_report(reportBuffer, arg.reportSize, NULL));
 
@@ -175,5 +175,5 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
     OE_UNUSED(g_InitECalls);
 done:
     arg.result = result;
-    _SafeCopyVerifyReportArgsOuput(&arg, argIn);
+    _safe_copy_verify_report_args_ouput(&arg, argIn);
 }

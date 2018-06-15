@@ -10,7 +10,7 @@ static const uint32_t AESM_MAGIC = 0x4efaa2a3;
 
 typedef UINT32 aesm_error_t;
 
-typedef struct _IAESMInterface IAESMInterface;
+typedef struct _iaesm_interface IAESMInterface;
 
 /* Copied from MSR-SDK. This is the COM interface for calling into Intel's
  * AESM interface. This will eventually be replaced by a different interface
@@ -162,12 +162,12 @@ typedef struct IAESMInterfaceVtbl
     END_INTERFACE
 } IAESMInterfaceVtbl;
 
-struct _IAESMInterface
+struct _iaesm_interface
 {
     CONST_VTBL struct IAESMInterfaceVtbl* lpVtbl;
 };
 
-static IAESMInterface* _CreateInstance()
+static IAESMInterface* _create_instance()
 {
     IAESMInterface* instance = NULL;
     static const CLSID CLSID_AESMInterface = {
@@ -209,7 +209,7 @@ done:
     return instance;
 }
 
-static void _ReleaseInstance(IAESMInterface* instance)
+static void _release_instance(IAESMInterface* instance)
 {
     instance->lpVtbl->Release(instance);
     CoUninitialize();
@@ -220,7 +220,7 @@ struct _AESM
     uint32_t magic;
 };
 
-static int _AESMValid(const AESM* aesm)
+static int _aesm_valid(const AESM* aesm)
 {
     return aesm != NULL && aesm->magic == AESM_MAGIC;
 }
@@ -231,7 +231,7 @@ AESM* AESMConnect()
     IAESMInterface* instance = NULL;
 
     /* Obtain AESM COM object (as a test only) */
-    if (!(instance = _CreateInstance()))
+    if (!(instance = _create_instance()))
         goto done;
 
     /* Allocate and initialize AESM struct */
@@ -245,14 +245,14 @@ AESM* AESMConnect()
 done:
 
     if (instance)
-        _ReleaseInstance(instance);
+        _release_instance(instance);
 
     return aesm;
 }
 
 void AESMDisconnect(AESM* aesm)
 {
-    if (_AESMValid(aesm))
+    if (_aesm_valid(aesm))
     {
         aesm->magic = 0xDDDDDDDD;
         free(aesm);
@@ -270,11 +270,11 @@ oe_result_t AESMGetLaunchToken(
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 
-    if (!_AESMValid(aesm))
+    if (!_aesm_valid(aesm))
         goto done;
 
     /* Obtain AESM COM instance */
-    if (!(instance = _CreateInstance()))
+    if (!(instance = _create_instance()))
         goto done;
 
     /* Obtain a launch token */
@@ -302,7 +302,7 @@ oe_result_t AESMGetLaunchToken(
 done:
 
     if (instance)
-        _ReleaseInstance(instance);
+        _release_instance(instance);
 
     return result;
 }
@@ -316,11 +316,11 @@ oe_result_t AESMInitQuote(
     aesm_error_t error;
     IAESMInterface* instance = NULL;
 
-    if (!_AESMValid(aesm))
+    if (!_aesm_valid(aesm))
         goto done;
 
     /* Obtain AESM COM instance */
-    if (!(instance = _CreateInstance()))
+    if (!(instance = _create_instance()))
         goto done;
 
     // Get quote for a given report.
@@ -343,7 +343,7 @@ oe_result_t AESMInitQuote(
 done:
 
     if (instance)
-        _ReleaseInstance(instance);
+        _release_instance(instance);
 
     return result;
 }
@@ -370,14 +370,14 @@ oe_result_t AESMGetQuote(
         goto done;
     }
 
-    if (!_AESMValid(aesm))
+    if (!_aesm_valid(aesm))
     {
         result = OE_INVALID_PARAMETER;
         goto done;
     }
 
     /* Obtain AESM COM instance */
-    if (!(instance = _CreateInstance()))
+    if (!(instance = _create_instance()))
         goto done;
 
     // Get quote for a given report.
@@ -409,7 +409,7 @@ oe_result_t AESMGetQuote(
 done:
 
     if (instance)
-        _ReleaseInstance(instance);
+        _release_instance(instance);
 
     return result;
 }

@@ -13,7 +13,7 @@ uint64_t oe_egetkey(const sgx_key_request_t* sgxKeyRequest, sgx_key_t* sgxKey);
  * The get key implementation that requests the key from processor and convert
  * the error code.
  */
-static oe_result_t _GetKeyImp(
+static oe_result_t _get_key_imp(
     const sgx_key_request_t* sgxKeyRequest,
     sgx_key_t* sgxKey)
 {
@@ -112,7 +112,7 @@ oe_result_t oe_get_key(
         return OE_INVALID_PARAMETER;
     }
 
-    return _GetKeyImp(sgxKeyRequest, sgxKey);
+    return _get_key_imp(sgxKeyRequest, sgxKey);
 }
 
 oe_result_t oe_get_seal_key(
@@ -158,7 +158,7 @@ oe_result_t oe_get_seal_key(
  * Return OE_OK and set attributes of sgxKeyRequest if success.
  * Otherwise return error and sgxKeyRequest is not changed.
  */
-static oe_result_t _GetDefaultKeyRequestAttributes(
+static oe_result_t _get_default_key_request_attributes(
     sgx_key_request_t* sgxKeyRequest)
 {
     sgx_report_t sgxReport = {0};
@@ -217,7 +217,7 @@ oe_result_t oe_get_seal_key_by_policy(
     }
 
     // Get default key request attributes.
-    ret = _GetDefaultKeyRequestAttributes(&sgxKeyRequest);
+    ret = _get_default_key_request_attributes(&sgxKeyRequest);
     if (ret != OE_OK)
     {
         return OE_UNEXPECTED;

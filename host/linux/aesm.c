@@ -30,14 +30,14 @@
 
 #define AESM_SOCKET "/var/run/aesmd/aesm.socket"
 
-typedef enum _WireType {
+typedef enum _wire_type {
     WIRETYPE_VARINT = 0,
     WIRETYPE_LENGTH_DELIMITED = 2
 } WireType;
 
 #define AESM_MAGIC 0x4efaa2a3
 
-typedef enum _MessageType {
+typedef enum _message_type {
     MESSAGE_TYPE_INIT_QUOTE = 1,
     MESSAGE_TYPE_GET_QUOTE = 2,
     MESSAGE_TYPE_GET_LAUNCH_TOKEN = 3
@@ -49,12 +49,12 @@ struct _AESM
     int sock;
 };
 
-static int _AESMValid(const AESM* aesm)
+static int _aesm_valid(const AESM* aesm)
 {
     return aesm != NULL && aesm->magic == AESM_MAGIC;
 }
 
-static int _MakeTag(uint8_t fieldNum, WireType wireType, uint8_t* tag)
+static int _make_tag(uint8_t fieldNum, WireType wireType, uint8_t* tag)
 {
     int ret = -1;
 
@@ -83,7 +83,7 @@ done:
     return ret;
 }
 
-static int _PackVariantUint32(mem_t* buf, uint32_t x)
+static int _pack_variant_uint32(mem_t* buf, uint32_t x)
 {
     uint8_t data[8];
     uint8_t* p = data;
@@ -106,17 +106,17 @@ static int _PackVariantUint32(mem_t* buf, uint32_t x)
     return mem_cat(buf, data, p - data);
 }
 
-static int _PackTag(mem_t* buf, uint8_t fieldNum, WireType wireType)
+static int _pack_tag(mem_t* buf, uint8_t fieldNum, WireType wireType)
 {
     uint8_t tag;
 
-    if (_MakeTag(fieldNum, wireType, &tag) != 0)
+    if (_make_tag(fieldNum, wireType, &tag) != 0)
         return -1;
 
     return mem_cat(buf, &tag, sizeof(uint8_t));
 }
 
-static ssize_t _UnpackTag(const mem_t* buf, size_t pos, uint8_t* tag)
+static ssize_t _unpack_tag(const mem_t* buf, size_t pos, uint8_t* tag)
 {
     size_t size = sizeof(uint8_t);
 
@@ -127,7 +127,7 @@ static ssize_t _UnpackTag(const mem_t* buf, size_t pos, uint8_t* tag)
     return pos + size;
 }
 
-static ssize_t _UnpackVariantUint32(mem_t* buf, size_t pos, uint32_t* value)
+static ssize_t _unpack_variant_uint32(mem_t* buf, size_t pos, uint32_t* value)
 {
     const uint8_t* p;
     uint32_t result = 0;
@@ -160,7 +160,7 @@ static ssize_t _UnpackVariantUint32(mem_t* buf, size_t pos, uint32_t* value)
     return pos + count;
 }
 
-static oe_result_t _PackBytes(
+static oe_result_t _pack_bytes(
     mem_t* buf,
     uint8_t fieldNum,
     const void* data,
@@ -169,13 +169,13 @@ static oe_result_t _PackBytes(
     oe_result_t result = OE_UNEXPECTED;
     uint8_t tag;
 
-    if (_MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED, &tag) != 0)
+    if (_make_tag(fieldNum, WIRETYPE_LENGTH_DELIMITED, &tag) != 0)
         OE_THROW(OE_FAILURE);
 
     if (mem_cat(buf, &tag, sizeof(tag)) != 0)
         OE_THROW(OE_FAILURE);
 
-    if (_PackVariantUint32(buf, size) != 0)
+    if (_pack_variant_uint32(buf, size) != 0)
         OE_THROW(OE_FAILURE);
 
     if (mem_cat(buf, data, size) != 0)
@@ -187,14 +187,14 @@ OE_CATCH:
     return result;
 }
 
-static int _PackVarInt(mem_t* buf, uint8_t fieldNum, uint64_t value)
+static int _pack_var_int(mem_t* buf, uint8_t fieldNum, uint64_t value)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (_PackTag(buf, fieldNum, WIRETYPE_VARINT) != 0)
+    if (_pack_tag(buf, fieldNum, WIRETYPE_VARINT) != 0)
         OE_THROW(OE_FAILURE);
 
-    if (_PackVariantUint32(buf, value) != 0)
+    if (_pack_variant_uint32(buf, value) != 0)
         OE_THROW(OE_FAILURE);
 
     result = OE_OK;
@@ -203,7 +203,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _UnpackVarInt(
+static oe_result_t _unpack_var_int(
     mem_t* buf,
     size_t* pos,
     uint8_t fieldNum,
@@ -213,16 +213,16 @@ static oe_result_t _UnpackVarInt(
     uint8_t tag;
     uint8_t tmpTag;
 
-    if ((*pos = _UnpackTag(buf, *pos, &tag)) == -1)
+    if ((*pos = _unpack_tag(buf, *pos, &tag)) == -1)
         OE_THROW(OE_FAILURE);
 
-    if (_MakeTag(fieldNum, WIRETYPE_VARINT, &tmpTag) != 0)
+    if (_make_tag(fieldNum, WIRETYPE_VARINT, &tmpTag) != 0)
         OE_THROW(OE_FAILURE);
 
     if (tag != tmpTag)
         OE_THROW(OE_FAILURE);
 
-    if ((*pos = _UnpackVariantUint32(buf, *pos, value)) == -1)
+    if ((*pos = _unpack_variant_uint32(buf, *pos, value)) == -1)
         OE_THROW(OE_FAILURE);
 
     result = OE_OK;
@@ -231,7 +231,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _UnpackLengthDelimited(
+static oe_result_t _unpack_length_delimited(
     mem_t* buf,
     size_t* pos,
     uint8_t fieldNum,
@@ -243,16 +243,16 @@ static oe_result_t _UnpackLengthDelimited(
     uint8_t tmpTag = 0;
     uint32_t size;
 
-    if ((*pos = _UnpackTag(buf, *pos, &tag)) == -1)
+    if ((*pos = _unpack_tag(buf, *pos, &tag)) == -1)
         OE_THROW(OE_FAILURE);
 
-    if (_MakeTag(fieldNum, WIRETYPE_LENGTH_DELIMITED, &tmpTag) != 0)
+    if (_make_tag(fieldNum, WIRETYPE_LENGTH_DELIMITED, &tmpTag) != 0)
         OE_THROW(OE_FAILURE);
 
     if (tag != tmpTag)
         OE_THROW(OE_FAILURE);
 
-    if ((*pos = _UnpackVariantUint32(buf, *pos, &size)) == -1)
+    if ((*pos = _unpack_variant_uint32(buf, *pos, &size)) == -1)
         OE_THROW(OE_FAILURE);
 
     if (size > dataSize)
@@ -268,7 +268,7 @@ OE_CATCH:
     return result;
 }
 
-static int _Read(int sock, void* data, size_t size)
+static int _read(int sock, void* data, size_t size)
 {
     ssize_t n;
 
@@ -278,7 +278,7 @@ static int _Read(int sock, void* data, size_t size)
     return 0;
 }
 
-static int _Write(int sock, const void* data, size_t size)
+static int _write(int sock, const void* data, size_t size)
 {
     ssize_t n;
 
@@ -288,7 +288,7 @@ static int _Write(int sock, const void* data, size_t size)
     return 0;
 }
 
-static oe_result_t _WriteRequest(
+static oe_result_t _write_request(
     AESM* aesm,
     MessageType messageType,
     const mem_t* message)
@@ -297,13 +297,13 @@ static oe_result_t _WriteRequest(
     mem_t envelope = MEM_DYNAMIC_INIT;
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    printf("=== _WriteRequest:\n");
+    printf("=== _write_request:\n");
     oe_hex_dump(mem_ptr(message), mem_size(message));
 #endif
 
     /* Wrap message in envelope */
     OE_TRY(
-        _PackBytes(
+        _pack_bytes(
             &envelope, messageType, mem_ptr(message), mem_size(message)));
 
     /* Send the envelope to the AESM service */
@@ -311,11 +311,11 @@ static oe_result_t _WriteRequest(
         uint32_t size = (uint32_t)mem_size(&envelope);
 
         /* Send message size */
-        if (_Write(aesm->sock, &size, sizeof(uint32_t)) != 0)
+        if (_write(aesm->sock, &size, sizeof(uint32_t)) != 0)
             OE_THROW(OE_FAILURE);
 
         /* Send message data */
-        if (_Write(aesm->sock, mem_ptr(&envelope), mem_size(&envelope)) != 0)
+        if (_write(aesm->sock, mem_ptr(&envelope), mem_size(&envelope)) != 0)
             OE_THROW(OE_FAILURE);
     }
 
@@ -328,7 +328,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _ReadResponse(
+static oe_result_t _read_response(
     AESM* aesm,
     MessageType messageType,
     mem_t* message)
@@ -342,7 +342,7 @@ static oe_result_t _ReadResponse(
     /* Read the ENVELOPE from the AESM service */
     {
         /* Read the envelope size */
-        if (_Read(aesm->sock, &size, sizeof(uint32_t)) != 0)
+        if (_read(aesm->sock, &size, sizeof(uint32_t)) != 0)
             OE_THROW(OE_FAILURE);
 
         /* Expand the buffer */
@@ -350,7 +350,7 @@ static oe_result_t _ReadResponse(
             OE_THROW(OE_FAILURE);
 
         /* Read the message */
-        if (_Read(aesm->sock, mem_mutable_ptr(&envelope), size) != 0)
+        if (_read(aesm->sock, mem_mutable_ptr(&envelope), size) != 0)
             OE_THROW(OE_FAILURE);
     }
 
@@ -362,17 +362,17 @@ static oe_result_t _ReadResponse(
         uint32_t size;
 
         /* Get the tag of this payload */
-        if ((pos = _UnpackTag(&envelope, pos, &tag)) == (size_t)-1)
+        if ((pos = _unpack_tag(&envelope, pos, &tag)) == (size_t)-1)
             OE_THROW(OE_FAILURE);
 
-        if (_MakeTag(messageType, WIRETYPE_LENGTH_DELIMITED, &tmpTag) != 0)
+        if (_make_tag(messageType, WIRETYPE_LENGTH_DELIMITED, &tmpTag) != 0)
             OE_THROW(OE_FAILURE);
 
         if (tag != tmpTag)
             OE_THROW(OE_FAILURE);
 
         /* Get the size of this payload */
-        if ((pos = _UnpackVariantUint32(&envelope, pos, &size)) == (size_t)-1)
+        if ((pos = _unpack_variant_uint32(&envelope, pos, &size)) == (size_t)-1)
             OE_THROW(OE_FAILURE);
 
         /* Check the size (must equal unread bytes in envelope) */
@@ -384,7 +384,7 @@ static oe_result_t _ReadResponse(
     }
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    printf("=== _ReadResponse():\n");
+    printf("=== _read_response():\n");
     oe_hex_dump(mem_ptr(message), mem_size(message));
 #endif
 
@@ -436,7 +436,7 @@ AESM* AESMConnect()
 
 void AESMDisconnect(AESM* aesm)
 {
-    if (_AESMValid(aesm))
+    if (_aesm_valid(aesm))
     {
         close(aesm->sock);
         memset(aesm, 0xDD, sizeof(AESM));
@@ -459,29 +459,29 @@ oe_result_t AESMGetLaunchToken(
         memset(launchToken, 0, sizeof(sgx_launch_token_t));
 
     /* Reject invalid parameters */
-    if (!_AESMValid(aesm) || !mrenclave || !modulus || !attributes)
+    if (!_aesm_valid(aesm) || !mrenclave || !modulus || !attributes)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Build the PAYLOAD */
     {
         /* Pack MRENCLAVE */
-        OE_TRY(_PackBytes(&request, 1, mrenclave, OE_SHA256_SIZE));
+        OE_TRY(_pack_bytes(&request, 1, mrenclave, OE_SHA256_SIZE));
 
         /* Pack MODULUS */
-        OE_TRY(_PackBytes(&request, 2, modulus, OE_KEY_SIZE));
+        OE_TRY(_pack_bytes(&request, 2, modulus, OE_KEY_SIZE));
 
         /* Pack ATTRIBUTES */
-        OE_TRY(_PackBytes(&request, 3, attributes, sizeof(sgx_attributes_t)));
+        OE_TRY(_pack_bytes(&request, 3, attributes, sizeof(sgx_attributes_t)));
 
         /* Pack TIMEOUT */
-        OE_TRY(_PackVarInt(&request, 9, timeout));
+        OE_TRY(_pack_var_int(&request, 9, timeout));
     }
 
     /* Send the request to the AESM service */
-    OE_TRY(_WriteRequest(aesm, MESSAGE_TYPE_GET_LAUNCH_TOKEN, &request));
+    OE_TRY(_write_request(aesm, MESSAGE_TYPE_GET_LAUNCH_TOKEN, &request));
 
     /* Receive the response from AESM service */
-    OE_TRY(_ReadResponse(aesm, MESSAGE_TYPE_GET_LAUNCH_TOKEN, &response));
+    OE_TRY(_read_response(aesm, MESSAGE_TYPE_GET_LAUNCH_TOKEN, &response));
 
     /* Unpack the response */
     {
@@ -490,7 +490,7 @@ oe_result_t AESMGetLaunchToken(
         /* Unpack the error code */
         {
             uint32_t errcode;
-            OE_TRY(_UnpackVarInt(&response, &pos, 1, &errcode));
+            OE_TRY(_unpack_var_int(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
                 OE_THROW(OE_FAILURE);
@@ -498,7 +498,7 @@ oe_result_t AESMGetLaunchToken(
 
         /* Unpack the launch token */
         OE_TRY(
-            _UnpackLengthDelimited(
+            _unpack_length_delimited(
                 &response, &pos, 2, launchToken, sizeof(sgx_launch_token_t)));
     }
 
@@ -526,20 +526,20 @@ oe_result_t AESMInitQuote(
         memset(targetInfo, 0, sizeof(sgx_target_info_t));
 
     /* Reject invalid parameters */
-    if (!_AESMValid(aesm) || !targetInfo || !epidGroupID)
+    if (!_aesm_valid(aesm) || !targetInfo || !epidGroupID)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Build the PAYLOAD */
     {
         /* Pack TIMEOUT */
-        OE_TRY(_PackVarInt(&request, 9, timeout));
+        OE_TRY(_pack_var_int(&request, 9, timeout));
     }
 
     /* Send the request to the AESM service */
-    OE_TRY(_WriteRequest(aesm, MESSAGE_TYPE_INIT_QUOTE, &request));
+    OE_TRY(_write_request(aesm, MESSAGE_TYPE_INIT_QUOTE, &request));
 
     /* Receive the response from AESM service */
-    OE_TRY(_ReadResponse(aesm, MESSAGE_TYPE_INIT_QUOTE, &response));
+    OE_TRY(_read_response(aesm, MESSAGE_TYPE_INIT_QUOTE, &response));
 
     /* Unpack the response */
     {
@@ -548,7 +548,7 @@ oe_result_t AESMInitQuote(
         /* Unpack the error code */
         {
             uint32_t errcode;
-            OE_TRY(_UnpackVarInt(&response, &pos, 1, &errcode));
+            OE_TRY(_unpack_var_int(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
                 OE_THROW(OE_FAILURE);
@@ -556,12 +556,12 @@ oe_result_t AESMInitQuote(
 
         /* Unpack targetInfo */
         OE_TRY(
-            _UnpackLengthDelimited(
+            _unpack_length_delimited(
                 &response, &pos, 2, targetInfo, sizeof(sgx_target_info_t)));
 
         /* Unpack epidGroupID */
         OE_TRY(
-            _UnpackLengthDelimited(
+            _unpack_length_delimited(
                 &response, &pos, 3, epidGroupID, sizeof(sgx_epid_group_id_t)));
     }
 
@@ -597,29 +597,29 @@ oe_result_t AESMGetQuote(
         memset(quote, 0, quoteSize);
 
     /* Check for invalid parameters */
-    if (!_AESMValid(aesm) || !report || !spid || !quote || !quoteSize)
+    if (!_aesm_valid(aesm) || !report || !spid || !quote || !quoteSize)
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Build the PAYLOAD */
     {
         /* Pack REPORT */
-        OE_TRY(_PackBytes(&request, 1, report, sizeof(sgx_report_t)));
+        OE_TRY(_pack_bytes(&request, 1, report, sizeof(sgx_report_t)));
 
         /* Pack QUOTE-TYPE */
-        OE_TRY(_PackVarInt(&request, 2, quoteType));
+        OE_TRY(_pack_var_int(&request, 2, quoteType));
 
         /* Pack SPID */
-        OE_TRY(_PackBytes(&request, 3, spid, sizeof(sgx_spid_t)));
+        OE_TRY(_pack_bytes(&request, 3, spid, sizeof(sgx_spid_t)));
 
         /* Pack NONCE */
         if (nonce)
-            OE_TRY(_PackBytes(&request, 4, nonce, sizeof(sgx_nonce_t)));
+            OE_TRY(_pack_bytes(&request, 4, nonce, sizeof(sgx_nonce_t)));
 
         /* Pack SIGNATURE-REVOCATION-LIST */
         if (signatureRevocationListSize)
         {
             OE_TRY(
-                _PackBytes(
+                _pack_bytes(
                     &request,
                     5,
                     signatureRevocationList,
@@ -627,21 +627,21 @@ oe_result_t AESMGetQuote(
         }
 
         /* Pack QUOTE-SIZE */
-        OE_TRY(_PackVarInt(&request, 6, quoteSize));
+        OE_TRY(_pack_var_int(&request, 6, quoteSize));
 
         /* Pack boolean indicating whether REPORT-OUT is present */
         if (reportOut)
-            OE_TRY(_PackVarInt(&request, 7, 1));
+            OE_TRY(_pack_var_int(&request, 7, 1));
 
         /* Pack TIMEOUT */
-        OE_TRY(_PackVarInt(&request, 9, timeout));
+        OE_TRY(_pack_var_int(&request, 9, timeout));
     }
 
     /* Send the request to the AESM service */
-    OE_TRY(_WriteRequest(aesm, MESSAGE_TYPE_GET_QUOTE, &request));
+    OE_TRY(_write_request(aesm, MESSAGE_TYPE_GET_QUOTE, &request));
 
     /* Receive the response from AESM service */
-    OE_TRY(_ReadResponse(aesm, MESSAGE_TYPE_GET_QUOTE, &response));
+    OE_TRY(_read_response(aesm, MESSAGE_TYPE_GET_QUOTE, &response));
 
     /* Unpack the response */
     {
@@ -650,20 +650,20 @@ oe_result_t AESMGetQuote(
         /* Unpack the error code */
         {
             uint32_t errcode;
-            OE_TRY(_UnpackVarInt(&response, &pos, 1, &errcode));
+            OE_TRY(_unpack_var_int(&response, &pos, 1, &errcode));
 
             if (errcode != 0)
                 OE_THROW(OE_FAILURE);
         }
 
         /* Unpack quote */
-        OE_TRY(_UnpackLengthDelimited(&response, &pos, 2, quote, quoteSize));
+        OE_TRY(_unpack_length_delimited(&response, &pos, 2, quote, quoteSize));
 
         /* Unpack optional reportOut */
         if (reportOut)
         {
             OE_TRY(
-                _UnpackLengthDelimited(
+                _unpack_length_delimited(
                     &response, &pos, 3, reportOut, sizeof(sgx_report_t)));
         }
     }

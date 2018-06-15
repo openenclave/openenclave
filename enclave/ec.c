@@ -18,7 +18,7 @@ static uint64_t _PUBLIC_KEY_MAGIC = 0xd7490a56f6504ee6;
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_ec_private_key_t));
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_ec_public_key_t));
 
-static mbedtls_ecp_group_id _GetGroupID(oe_ec_type_t ecType)
+static mbedtls_ecp_group_id _get_group_id(oe_ec_type_t ecType)
 {
     switch (ecType)
     {
@@ -29,7 +29,7 @@ static mbedtls_ecp_group_id _GetGroupID(oe_ec_type_t ecType)
     }
 }
 
-static oe_result_t _CopyKey(
+static oe_result_t _copy_key(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
     bool copyPrivateFields)
@@ -83,7 +83,7 @@ done:
     return result;
 }
 
-static oe_result_t _GenerateKeyPair(
+static oe_result_t _generate_key_pair(
     oe_ec_type_t ecType,
     oe_private_key_t* privateKey,
     oe_public_key_t* publicKey)
@@ -111,7 +111,7 @@ static oe_result_t _GenerateKeyPair(
         const mbedtls_ecp_curve_info* info;
         mbedtls_ecp_group_id groupID;
 
-        if ((groupID = _GetGroupID(ecType)) == MBEDTLS_ECP_DP_NONE)
+        if ((groupID = _get_group_id(ecType)) == MBEDTLS_ECP_DP_NONE)
             OE_RAISE(OE_FAILURE);
 
         if (!(info = mbedtls_ecp_curve_info_from_grp_id(groupID)))
@@ -137,10 +137,10 @@ static oe_result_t _GenerateKeyPair(
 
     /* Initialize the private key parameter */
     OE_CHECK(
-        oe_private_key_init(privateKey, &pk, _CopyKey, _PRIVATE_KEY_MAGIC));
+        oe_private_key_init(privateKey, &pk, _copy_key, _PRIVATE_KEY_MAGIC));
 
     /* Initialize the public key parameter */
-    OE_CHECK(oe_public_key_init(publicKey, &pk, _CopyKey, _PUBLIC_KEY_MAGIC));
+    OE_CHECK(oe_public_key_init(publicKey, &pk, _copy_key, _PUBLIC_KEY_MAGIC));
 
     result = OE_OK;
 
@@ -198,7 +198,7 @@ oe_result_t oe_ec_public_key_init(
     const mbedtls_pk_context* pk)
 {
     return oe_public_key_init(
-        (oe_public_key_t*)publicKey, pk, _CopyKey, _PUBLIC_KEY_MAGIC);
+        (oe_public_key_t*)publicKey, pk, _copy_key, _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_ec_private_key_read_pem(
@@ -303,7 +303,7 @@ oe_result_t oe_ec_generate_key_pair(
     oe_ec_private_key_t* privateKey,
     oe_ec_public_key_t* publicKey)
 {
-    return _GenerateKeyPair(
+    return _generate_key_pair(
         type, (oe_private_key_t*)privateKey, (oe_public_key_t*)publicKey);
 }
 
@@ -351,7 +351,7 @@ oe_result_t oe_ec_public_key_from_coordinates(
         mbedtls_ecp_keypair* ecp = mbedtls_pk_ec(impl->pk);
         mbedtls_ecp_group_id groupID;
 
-        if ((groupID = _GetGroupID(ecType)) == MBEDTLS_ECP_DP_NONE)
+        if ((groupID = _get_group_id(ecType)) == MBEDTLS_ECP_DP_NONE)
             OE_RAISE(OE_FAILURE);
 
         if (mbedtls_ecp_group_load(&ecp->grp, groupID) != 0)

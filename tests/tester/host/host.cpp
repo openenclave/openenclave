@@ -40,7 +40,7 @@ OE_EXTERNC int32_t OCALL_MultipleParams(
     return -1;
 }
 
-void __CheckResult(
+void __check_result(
     const char* file,
     unsigned int line,
     oe_result_t result,
@@ -60,7 +60,7 @@ void __CheckResult(
     }
 }
 
-#define CheckResult(...) __CheckResult(__FILE__, __LINE__, __VA_ARGS__)
+#define CheckResult(...) __check_result(__FILE__, __LINE__, __VA_ARGS__)
 
 bool CheckObject(const Object& x, size_t id, const char* name)
 {

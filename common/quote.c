@@ -41,7 +41,7 @@ OE_INLINE uint32_t ReadUint32(const uint8_t* p)
     return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
 }
 
-static oe_result_t _ParseQuote(
+static oe_result_t _parse_quote(
     const uint8_t* quote,
     uint32_t quoteSize,
     sgx_quote_t** sgxQuote,
@@ -96,7 +96,7 @@ done:
     return result;
 }
 
-static oe_result_t _ReadPublicKey(
+static oe_result_t _read_public_key(
     sgx_ecdsa256_key_t* key,
     oe_ec_public_key_t* publicKey)
 {
@@ -109,7 +109,7 @@ static oe_result_t _ReadPublicKey(
         sizeof(key->y));
 }
 
-static oe_result_t _ECDSAVerify(
+static oe_result_t _ecdsa_verify(
     oe_ec_public_key_t* publicKey,
     void* data,
     uint32_t dataSize,
@@ -175,7 +175,7 @@ oe_result_t VerifyQuoteImpl(
     bool keyEqual = false;
 
     OE_CHECK(
-        _ParseQuote(
+        _parse_quote(
             quote,
             quoteSize,
             &sgxQuote,
@@ -237,7 +237,7 @@ oe_result_t VerifyQuoteImpl(
         // Verify SHA256 ECDSA (qeReportBodySignature, qeReportBody,
         // PckCertificate.pubKey)
         OE_CHECK(
-            _ECDSAVerify(
+            _ecdsa_verify(
                 &leafPublicKey,
                 &quoteAuthData->qeReportBody,
                 sizeof(quoteAuthData->qeReportBody),
@@ -267,10 +267,10 @@ oe_result_t VerifyQuoteImpl(
         // Verify SHA256 ECDSA (attestationKey, SGX_QUOTE_SIGNED_DATA,
         // signature)
         OE_CHECK(
-            _ReadPublicKey(&quoteAuthData->attestationKey, &attestationKey));
+            _read_public_key(&quoteAuthData->attestationKey, &attestationKey));
 
         OE_CHECK(
-            _ECDSAVerify(
+            _ecdsa_verify(
                 &attestationKey,
                 sgxQuote,
                 SGX_QUOTE_SIGNED_DATA_SIZE,

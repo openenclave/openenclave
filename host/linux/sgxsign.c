@@ -18,7 +18,7 @@
 #include <time.h>
 #include "../host/enclave.h"
 
-static void _MemReverse(void* dest_, const void* src_, size_t n)
+static void _mem_reverse(void* dest_, const void* src_, size_t n)
 {
     unsigned char* dest = (unsigned char*)dest_;
     const unsigned char* src = (const unsigned char*)src_;
@@ -28,7 +28,7 @@ static void _MemReverse(void* dest_, const void* src_, size_t n)
         *dest++ = *--end;
 }
 
-static oe_result_t _GetDate(unsigned int* date)
+static oe_result_t _get_date(unsigned int* date)
 {
     oe_result_t result = OE_UNEXPECTED;
     time_t t;
@@ -68,7 +68,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _GetModulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
+static oe_result_t _get_modulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
 {
     oe_result_t result = OE_UNEXPECTED;
     uint8_t buf[OE_KEY_SIZE];
@@ -79,7 +79,7 @@ static oe_result_t _GetModulus(RSA* rsa, uint8_t modulus[OE_KEY_SIZE])
     if (!BN_bn2bin(rsa->n, buf))
         OE_THROW(OE_FAILURE);
 
-    _MemReverse(modulus, buf, OE_KEY_SIZE);
+    _mem_reverse(modulus, buf, OE_KEY_SIZE);
 
     result = OE_OK;
 
@@ -87,7 +87,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _GetExponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
+static oe_result_t _get_exponent(RSA* rsa, uint8_t exponent[OE_EXPONENT_SIZE])
 {
     oe_result_t result = OE_UNEXPECTED;
     // uint8_t buf[OE_EXPONENT_SIZE];
@@ -112,7 +112,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _GetQ1AndQ2(
+static oe_result_t _get_q1_and_q2(
     const void* signature,
     size_t signatureSize,
     const void* modulus,
@@ -144,8 +144,8 @@ static oe_result_t _GetQ1AndQ2(
     memset(sbuf, 0, sizeof(sbuf));
     memset(mbuf, 0, sizeof(mbuf));
 
-    _MemReverse(sbuf, signature, sizeof(sbuf));
-    _MemReverse(mbuf, modulus, sizeof(mbuf));
+    _mem_reverse(sbuf, signature, sizeof(sbuf));
+    _mem_reverse(mbuf, modulus, sizeof(mbuf));
 
     /* Create new objects */
     {
@@ -197,7 +197,7 @@ static oe_result_t _GetQ1AndQ2(
             n = q1OutSize;
 
         BN_bn2bin(q1, q1buf);
-        _MemReverse(q1Out, q1buf, n);
+        _mem_reverse(q1Out, q1buf, n);
     }
 
     /* Copy Q2 to Q2OUT parameter */
@@ -211,7 +211,7 @@ static oe_result_t _GetQ1AndQ2(
             n = q2OutSize;
 
         BN_bn2bin(q2, q2buf);
-        _MemReverse(q2Out, q2buf, n);
+        _mem_reverse(q2Out, q2buf, n);
     }
 
     result = OE_OK;
@@ -236,7 +236,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _InitSigstruct(
+static oe_result_t _init_sigstruct(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
     uint16_t productID,
@@ -262,7 +262,7 @@ static oe_result_t _InitSigstruct(
     sigstruct->vendor = 0;
 
     /* sgx_sigstruct_t.date */
-    OE_TRY(_GetDate(&sigstruct->date));
+    OE_TRY(_get_date(&sigstruct->date));
 
     /* sgx_sigstruct_t.header2 */
     memcpy(
@@ -272,10 +272,10 @@ static oe_result_t _InitSigstruct(
     sigstruct->swdefined = 0;
 
     /* sgx_sigstruct_t.modulus */
-    OE_TRY(_GetModulus(rsa, sigstruct->modulus));
+    OE_TRY(_get_modulus(rsa, sigstruct->modulus));
 
     /* sgx_sigstruct_t.date */
-    OE_TRY(_GetExponent(rsa, sigstruct->exponent));
+    OE_TRY(_get_exponent(rsa, sigstruct->exponent));
 
     /* sgx_sigstruct_t.signature: fill in after other fields */
 
@@ -343,12 +343,12 @@ static oe_result_t _InitSigstruct(
                 OE_THROW(OE_FAILURE);
 
             /* The signature is backwards and needs to be reversed */
-            _MemReverse(sigstruct->signature, signature, sizeof(signature));
+            _mem_reverse(sigstruct->signature, signature, sizeof(signature));
         }
     }
 
     OE_TRY(
-        _GetQ1AndQ2(
+        _get_q1_and_q2(
             sigstruct->signature,
             sizeof(sigstruct->signature),
             sigstruct->modulus,
@@ -364,7 +364,7 @@ OE_CATCH:
     return result;
 }
 
-static oe_result_t _LoadRSAPrivateKey(
+static oe_result_t _load_rsa_private_key(
     const uint8_t* pemData,
     size_t pemSize,
     RSA** key)
@@ -430,11 +430,11 @@ oe_result_t oe_sgx_sign_enclave(
         OE_THROW(OE_INVALID_PARAMETER);
 
     /* Load the RSA private key from PEM */
-    OE_TRY(_LoadRSAPrivateKey(pemData, pemSize, &rsa));
+    OE_TRY(_load_rsa_private_key(pemData, pemSize, &rsa));
 
     /* Initialize the sigstruct */
     OE_TRY(
-        _InitSigstruct(
+        _init_sigstruct(
             mrenclave, attributes, productID, securityVersion, rsa, sigstruct));
 
     result = OE_OK;

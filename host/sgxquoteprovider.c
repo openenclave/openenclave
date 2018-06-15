@@ -23,7 +23,7 @@
 
 static void* g_LibHandle = 0;
 
-static void _UnloadQuoteProvider()
+static void _unload_quote_provider()
 {
     if (g_LibHandle)
     {
@@ -32,7 +32,7 @@ static void _UnloadQuoteProvider()
     }
 }
 
-static void _QuoteProviderLog(int level, const char* message)
+static void _quote_provider_log(int level, const char* message)
 {
     const char* levelString = level == 0 ? "ERROR" : "INFO";
     char formatted[1024];
@@ -47,7 +47,7 @@ static void _QuoteProviderLog(int level, const char* message)
 typedef void (*log_fcn_t)(int, const char*);
 typedef void (*set_logging_fcn_t)(log_fcn_t);
 
-static void _LoadQuoteProvider()
+static void _load_quote_provider()
 {
     if (g_LibHandle == 0)
     {
@@ -58,12 +58,12 @@ static void _LoadQuoteProvider()
                 g_LibHandle, "sgx_ql_set_logging_function");
             if (set_log_fcn != NULL)
             {
-                OE_UNUSED(_QuoteProviderLog);
+                OE_UNUSED(_quote_provider_log);
 
                 OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
                 // If info tracing is enabled, install the logging function.
-                set_log_fcn(_QuoteProviderLog);
+                set_log_fcn(_quote_provider_log);
 #endif
             }
             else
@@ -72,7 +72,7 @@ static void _LoadQuoteProvider()
                     "sgxquoteprovider: sgx_ql_set_logging_function "
                     "not found\n");
             }
-            atexit(_UnloadQuoteProvider);
+            atexit(_unload_quote_provider);
         }
         else
         {
@@ -85,6 +85,6 @@ static void _LoadQuoteProvider()
 oe_result_t oe_initialize_quote_provider()
 {
     static oe_once_type once = OE_H_ONCE_INITIALIZER;
-    oe_once(&once, _LoadQuoteProvider);
+    oe_once(&once, _load_quote_provider);
     return g_LibHandle ? OE_OK : OE_FAILURE;
 }

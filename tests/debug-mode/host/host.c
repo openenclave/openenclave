@@ -11,7 +11,7 @@
 
 #define SKIP_RETURN_CODE 2
 
-static uint32_t _CreateFlags(bool debug)
+static uint32_t _create_flags(bool debug)
 {
     uint32_t flags = oe_get_create_flags();
 
@@ -23,7 +23,7 @@ static uint32_t _CreateFlags(bool debug)
     return flags;
 }
 
-static void _LaunchEnclaveSuccess(const char* path, const uint32_t flags)
+static void _launch_enclave_success(const char* path, const uint32_t flags)
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
@@ -42,7 +42,7 @@ static void _LaunchEnclaveSuccess(const char* path, const uint32_t flags)
         oe_put_err("oe_terminate_enclave(): result=%u", result);
 }
 
-static void _LaunchEnclaveFail(
+static void _launch_enclave_fail(
     const char* path,
     const uint32_t flags,
     oe_result_t expectedResult)
@@ -63,38 +63,38 @@ static void _LaunchEnclaveFail(
             expectedResult);
 }
 
-static void _TestDebugSigned(const char* path)
+static void _test_debug_signed(const char* path)
 {
     /* Signed debug mode should always pass. */
-    _LaunchEnclaveSuccess(path, _CreateFlags(true));
+    _launch_enclave_success(path, _create_flags(true));
 #ifdef OE_USE_LIBSGX
     /* Only works with the NGSA SDK. */
-    _LaunchEnclaveSuccess(path, _CreateFlags(false));
+    _launch_enclave_success(path, _create_flags(false));
 #endif
 }
 
-static void _TestDebugUnsigned(const char* path)
+static void _test_debug_unsigned(const char* path)
 {
     /* Debug mode should pass. Non-debug should fail. */
-    _LaunchEnclaveSuccess(path, _CreateFlags(true));
-    _LaunchEnclaveFail(path, _CreateFlags(false), OE_FAILURE);
+    _launch_enclave_success(path, _create_flags(true));
+    _launch_enclave_fail(path, _create_flags(false), OE_FAILURE);
 }
 
-static void _TestNonDebugSigned(const char* path)
+static void _test_non_debug_signed(const char* path)
 {
     /* Debug mode should fail. Non-debug mode should pass. */
-    _LaunchEnclaveFail(path, _CreateFlags(true), OE_DEBUG_DOWNGRADE);
+    _launch_enclave_fail(path, _create_flags(true), OE_DEBUG_DOWNGRADE);
 #ifdef OE_USE_LIBSGX
     /* Only works with the NGSA SDK. */
-    _LaunchEnclaveSuccess(path, _CreateFlags(false));
+    _launch_enclave_success(path, _create_flags(false));
 #endif
 }
 
-static void _TestNonDebugUnsigned(const char* path)
+static void _test_non_debug_unsigned(const char* path)
 {
     /* Unsigned non-debug should always fail. */
-    _LaunchEnclaveFail(path, _CreateFlags(true), OE_DEBUG_DOWNGRADE);
-    _LaunchEnclaveFail(path, _CreateFlags(false), OE_FAILURE);
+    _launch_enclave_fail(path, _create_flags(true), OE_DEBUG_DOWNGRADE);
+    _launch_enclave_fail(path, _create_flags(false), OE_FAILURE);
 }
 
 int main(int argc, const char* argv[])
@@ -121,13 +121,13 @@ int main(int argc, const char* argv[])
     const bool isSigned = strcmp(argv[3], "signed") == 0;
 
     if (debug && isSigned)
-        _TestDebugSigned(argv[1]);
+        _test_debug_signed(argv[1]);
     else if (debug)
-        _TestDebugUnsigned(argv[1]);
+        _test_debug_unsigned(argv[1]);
     else if (isSigned)
-        _TestNonDebugSigned(argv[1]);
+        _test_non_debug_signed(argv[1]);
     else
-        _TestNonDebugUnsigned(argv[1]);
+        _test_non_debug_unsigned(argv[1]);
 
     return 0;
 }

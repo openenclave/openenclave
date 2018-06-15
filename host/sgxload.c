@@ -28,7 +28,7 @@
 #include "sgxmeasure.h"
 #include "signkey.h"
 
-static uint32_t _MakeMemoryProtectParam(uint64_t inflags, bool simulate)
+static uint32_t _make_memory_protect_param(uint64_t inflags, bool simulate)
 {
     uint32_t outflags = 0;
 
@@ -109,7 +109,7 @@ static uint32_t _MakeMemoryProtectParam(uint64_t inflags, bool simulate)
     return outflags;
 }
 
-static sgx_secs_t* _NewSecs(uint64_t base, uint64_t size, bool debug)
+static sgx_secs_t* _new_secs(uint64_t base, uint64_t size, bool debug)
 {
     sgx_secs_t* secs = NULL;
 
@@ -147,7 +147,7 @@ static sgx_secs_t* _NewSecs(uint64_t base, uint64_t size, bool debug)
 **    [BASE...BASE+SIZE]            - used
 **    [BASE+SIZE...MPTR+SIZE*2]     - unused
 */
-static void* _AllocateEnclaveMemory(uint64_t enclaveSize, int fd)
+static void* _allocate_enclave_memory(uint64_t enclaveSize, int fd)
 {
 #if defined(__linux__)
 
@@ -264,7 +264,7 @@ done:
 #endif /* defined(_WIN32) */
 }
 
-static oe_result_t _GetSigStruct(
+static oe_result_t _get_sigstruct(
     const oe_sgx_enclave_properties_t* properties,
     const OE_SHA256* mrenclave,
     sgx_sigstruct_t* sigstruct)
@@ -309,7 +309,7 @@ done:
 
 /* obtaining a launch token is only necessary when not using libsgx */
 #if !defined(OE_USE_LIBSGX)
-static oe_result_t _GetLaunchToken(
+static oe_result_t _get_launch_token(
     const oe_sgx_enclave_properties_t* properties,
     sgx_sigstruct_t* sigstruct,
     sgx_launch_token_t* launchToken)
@@ -418,12 +418,12 @@ oe_result_t oe_sgx_create_enclave(
 #endif
     {
         /* Allocation memory-mapped region */
-        if (!(base = _AllocateEnclaveMemory(enclaveSize, context->dev)))
+        if (!(base = _allocate_enclave_memory(enclaveSize, context->dev)))
             OE_RAISE(OE_OUT_OF_MEMORY);
     }
 
     /* Create SECS structure */
-    if (!(secs = _NewSecs(
+    if (!(secs = _new_secs(
               (uint64_t)base,
               enclaveSize,
               oe_sgx_is_debug_load_context(context))))
@@ -549,7 +549,7 @@ oe_result_t oe_sgx_load_enclave_data(
 
         /* Set page access permissions */
         {
-            uint32_t prot = _MakeMemoryProtectParam(flags, true /*simulate*/);
+            uint32_t prot = _make_memory_protect_param(flags, true /*simulate*/);
 
 #if defined(__linux__)
             if (mprotect((void*)addr, OE_PAGE_SIZE, prot) != 0)
@@ -566,7 +566,7 @@ oe_result_t oe_sgx_load_enclave_data(
 #if defined(OE_USE_LIBSGX)
 
         uint32_t protect =
-            _MakeMemoryProtectParam(flags, false /*not simulate*/);
+            _make_memory_protect_param(flags, false /*not simulate*/);
         if (!extend)
             protect |= ENCLAVE_PAGE_UNVALIDATED;
 
@@ -594,7 +594,7 @@ oe_result_t oe_sgx_load_enclave_data(
         SIZE_T num_bytes = 0;
         DWORD enclaveError;
 
-        DWORD protect = _MakeMemoryProtectParam(flags, false /*not simulate*/);
+        DWORD protect = _make_memory_protect_param(flags, false /*not simulate*/);
         if (!extend)
             protect |= PAGE_ENCLAVE_UNVALIDATED;
 
@@ -649,7 +649,7 @@ oe_result_t oe_sgx_initialize_enclave(
     {
         /* Get a debug sigstruct for MRENCLAVE if necessary */
         sgx_sigstruct_t sigstruct;
-        OE_CHECK(_GetSigStruct(properties, mrenclave, &sigstruct));
+        OE_CHECK(_get_sigstruct(properties, mrenclave, &sigstruct));
 
 #if defined(OE_USE_LIBSGX)
 
@@ -665,7 +665,7 @@ oe_result_t oe_sgx_initialize_enclave(
 #else
         /* If not using libsgx, get a launch token from the AESM service */
         sgx_launch_token_t launchToken;
-        OE_CHECK(_GetLaunchToken(properties, &sigstruct, &launchToken));
+        OE_CHECK(_get_launch_token(properties, &sigstruct, &launchToken));
 
 #if defined(__linux__)
 

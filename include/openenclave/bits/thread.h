@@ -102,16 +102,16 @@ typedef uint32_t oe_once_t;
  *
  *     static oe_once_t _once = OE_ONCE_INITIALIZER;
  *
- *     static void _Initialize(void)
+ *     static void _initialize(void)
  *     {
  *         // Perform one time initialization here!
  *     }
  *
  *     ...
  *
- *     oe_once(&_once, _Initialize);
+ *     oe_once(&_once, _initialize);
  *
- * The **_Initialize** function is called by the first thread to call oe_once()
+ * The **_initialize** function is called by the first thread to call oe_once()
  * for the *_once* variable.
  *
  * @param once The variable used to synchronize one-time call to **func**.

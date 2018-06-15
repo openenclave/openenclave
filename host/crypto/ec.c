@@ -17,7 +17,7 @@ static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_ec_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_ec_private_key_t));
 
-static int _GetNID(oe_ec_type_t ecType)
+static int _get_nid(oe_ec_type_t ecType)
 {
     switch (ecType)
     {
@@ -28,7 +28,7 @@ static int _GetNID(oe_ec_type_t ecType)
     }
 }
 
-static oe_result_t _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
+static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
     EC_KEY* ec = NULL;
@@ -49,7 +49,7 @@ done:
     return result;
 }
 
-static oe_result_t _GenerateKeyPair(
+static oe_result_t _generate_key_pair(
     oe_ec_type_t ecType,
     oe_private_key_t* privateKey,
     oe_public_key_t* publicKey)
@@ -76,7 +76,7 @@ static oe_result_t _GenerateKeyPair(
     oe_initialize_openssl();
 
     /* Get the NID for this curve type */
-    if ((nid = _GetNID(ecType)) == NID_undef)
+    if ((nid = _get_nid(ecType)) == NID_undef)
         OE_RAISE(OE_FAILURE);
 
     /* Create the private EC key */
@@ -182,7 +182,7 @@ done:
     return result;
 }
 
-static oe_result_t _PublicKeyEqual(
+static oe_result_t _public_key_equal(
     const oe_public_key_t* publicKey1,
     const oe_public_key_t* publicKey2,
     bool* equal)
@@ -259,7 +259,7 @@ oe_result_t oe_ec_private_key_write_pem(
         (const oe_private_key_t*)privateKey,
         pemData,
         pemSize,
-        _privateKeyWritePEMCallback,
+        _private_key_write_pem_callback,
         _PRIVATE_KEY_MAGIC);
 }
 
@@ -340,7 +340,7 @@ oe_result_t oe_ec_generate_key_pair(
     oe_ec_private_key_t* privateKey,
     oe_ec_public_key_t* publicKey)
 {
-    return _GenerateKeyPair(
+    return _generate_key_pair(
         type, (oe_private_key_t*)privateKey, (oe_public_key_t*)publicKey);
 }
 
@@ -349,7 +349,7 @@ oe_result_t oe_ec_public_key_equal(
     const oe_ec_public_key_t* publicKey2,
     bool* equal)
 {
-    return _PublicKeyEqual(
+    return _public_key_equal(
         (oe_public_key_t*)publicKey1, (oe_public_key_t*)publicKey2, equal);
 }
 
@@ -382,7 +382,7 @@ oe_result_t oe_ec_public_key_from_coordinates(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the NID for this curve type */
-    if ((nid = _GetNID(ecType)) == NID_undef)
+    if ((nid = _get_nid(ecType)) == NID_undef)
         OE_RAISE(OE_FAILURE);
 
     /* Create the public EC key */

@@ -6,19 +6,19 @@
 
 #include <openenclave/bits/types.h>
 
-typedef struct _TestMutexArgs
+typedef struct _test_mutex_args
 {
     size_t count1;
     size_t count2;
 } TestMutexArgs;
 
-typedef struct _WaitArgs
+typedef struct _wait_args
 {
     /* The number of threads that will call wait */
     size_t numThreads;
 } WaitArgs;
 
-typedef struct _TestRWLockArgs
+typedef struct _test_rwlock_args
 {
     // Number of simultaneously active readers
     size_t readers;

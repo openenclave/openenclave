@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-typedef struct _TestArgs
+typedef struct _test_args
 {
     int ret;
     bool caught;

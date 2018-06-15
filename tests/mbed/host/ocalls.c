@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-typedef struct _FileArgs
+typedef struct _file_args
 {
     FILE* filePtr;
     char* path;

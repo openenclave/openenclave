@@ -10,7 +10,7 @@
 #include "../../../host/enclave.h"
 #include "../args.h"
 
-static void _CheckProperties(
+static void _check_properties(
     oe_sgx_enclave_properties_t* props,
     bool isSigned,
     uint16_t productID,
@@ -46,7 +46,7 @@ static void _CheckProperties(
         OE_TEST(memcmp(props->sigstruct, sigstruct, sizeof(sigstruct)) == 0);
 }
 
-static oe_result_t _SGXLoadEnclaveProperties(
+static oe_result_t _sgx_load_enclave_properties(
     const char* path,
     oe_sgx_enclave_properties_t* properties)
 {
@@ -109,7 +109,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the enclave properties */
-    if ((result = _SGXLoadEnclaveProperties(argv[1], &properties)) != OE_OK)
+    if ((result = _sgx_load_enclave_properties(argv[1], &properties)) != OE_OK)
     {
         oe_put_err("oe_sgx_load_properties(): result=%u", result);
     }
@@ -123,7 +123,7 @@ int main(int argc, const char* argv[])
     /* Check expected enclave property values */
     if (isSigned)
     {
-        _CheckProperties(
+        _check_properties(
             &properties,
             isSigned,
             1111,                                        /* productID */
@@ -135,7 +135,7 @@ int main(int argc, const char* argv[])
     }
     else
     {
-        _CheckProperties(
+        _check_properties(
             &properties,
             isSigned,
             1234,                                        /* productID */

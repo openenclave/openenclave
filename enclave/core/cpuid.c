@@ -15,7 +15,7 @@ static uint32_t _oe_cpuid_table[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 ** oe_initialize_cpuid()
 **
 **     Initialize the enclave view of CPUID information as provided by host
-**     during _InitializeEnclave call as part of oe_create_enclave.
+**     during _initialize_enclave call as part of oe_create_enclave.
 **
 **==============================================================================
 */

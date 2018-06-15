@@ -544,7 +544,7 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 #define TD_MAGIC 0xc90afe906c5d19a3
 
-typedef struct _Callsite Callsite;
+typedef struct _callsite Callsite;
 
 typedef struct _TD
 {

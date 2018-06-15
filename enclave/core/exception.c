@@ -150,7 +150,7 @@ cleanup:
     return result;
 }
 
-typedef struct _SSA_Info
+typedef struct _ssa_info
 {
     void* base_address;
     uint64_t frame_byte_size;
@@ -159,14 +159,14 @@ typedef struct _SSA_Info
 /*
 **==============================================================================
 **
-** _GetEnclaveThreadFirstSsaInfo()
+** _get_enclave_thread_first_ssa_info()
 **
 **     Get the enclave thread first SSA information.
 **     Return 0 if success.
 **
 **==============================================================================
 */
-static int _GetEnclaveThreadFirstSsaInfo(TD* td, SSA_Info* ssa_info)
+static int _get_enclave_thread_first_ssa_info(TD* td, SSA_Info* ssa_info)
 {
     sgx_tcs_t* tcs = (sgx_tcs_t*)TD_ToTCS(td);
     uint64_t ssa_frame_size = td->base.__ssa_frame_size;
@@ -206,14 +206,14 @@ static struct
 /*
 **==============================================================================
 **
-** _EmulateIllegalInstruction()
+** _emulate_illegal_instruction()
 **
 ** Handle illegal instruction exceptions such as CPUID as part of the first
 ** chance exception dispatcher.
 **
 **==============================================================================
 */
-int _EmulateIllegalInstruction(sgx_ssa_gpr_t* ssa_gpr)
+int _emulate_illegal_instruction(sgx_ssa_gpr_t* ssa_gpr)
 {
     // Emulate CPUID
     if (*((uint16_t*)ssa_gpr->rip) == OE_CPUID_OPCODE)
@@ -314,7 +314,7 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
     oe_memset(&ssa_info, 0, sizeof(SSA_Info));
 
     // Verify if the first SSA has valid exception info.
-    if (_GetEnclaveThreadFirstSsaInfo(td, &ssa_info) != 0)
+    if (_get_enclave_thread_first_ssa_info(td, &ssa_info) != 0)
     {
         *argOut = OE_EXCEPTION_CONTINUE_SEARCH;
         return;
@@ -355,7 +355,7 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
     }
 
     if (td->base.exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&
-        _EmulateIllegalInstruction(ssa_gpr) == 0)
+        _emulate_illegal_instruction(ssa_gpr) == 0)
     {
         // Restore the RBP & RSP as required by return from EENTER
         td->host_rbp = td->host_previous_rbp;

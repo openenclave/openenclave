@@ -25,7 +25,7 @@
 
 static struct sigaction g_previous_sigaction[_NSIG];
 
-static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
+static void _host_signal_handler(int sigNum, siginfo_t* sigInfo, void* sigData)
 {
     ucontext_t* context = (ucontext_t*)sigData;
     uint64_t exitCode = context->uc_mcontext.gregs[REG_RAX];
@@ -114,13 +114,13 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
     return;
 }
 
-static void _RegisterSignalHandlers(void)
+static void _register_signal_handlers(void)
 {
     struct sigaction sigAction;
 
     // Set the signal handler.
     memset(&sigAction, 0, sizeof(sigAction));
-    sigAction.sa_sigaction = _HostSignalHandler;
+    sigAction.sa_sigaction = _host_signal_handler;
 
     // Use sa_sigaction instead of sa_handler, allow catching the same signal as
     // the one you're currently handling, and automatically restart the system
@@ -174,5 +174,5 @@ static void _RegisterSignalHandlers(void)
 // The exception only need to be initialized once per process.
 void _oe_initialize_host_exception()
 {
-    _RegisterSignalHandlers();
+    _register_signal_handlers();
 }

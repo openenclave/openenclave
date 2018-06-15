@@ -11,7 +11,7 @@
 
 #define err(...) oe_put_err(__VA_ARGS__)
 
-static void __Test(const char* file, unsigned int line, const char* cond)
+static void __test(const char* file, unsigned int line, const char* cond)
 {
     fprintf(stderr, "%s(%u): %s: (test failed)\n", file, line, cond);
 }
@@ -21,7 +21,7 @@ static void __Test(const char* file, unsigned int line, const char* cond)
     {                                          \
         if (!(COND))                           \
         {                                      \
-            __Test(__FILE__, __LINE__, #COND); \
+            __test(__FILE__, __LINE__, #COND); \
             exit(1);                           \
         }                                      \
     } while (0)

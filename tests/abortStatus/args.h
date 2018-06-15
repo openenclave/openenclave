@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-typedef struct _AbortStatusArgs
+typedef struct _abort_status_args
 {
     volatile uint32_t* thread_ready_count;
     volatile uint32_t* is_enclave_crashed;

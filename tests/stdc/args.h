@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-typedef struct _TestArgs
+typedef struct _test_args
 {
     char buf1[1024];
     char buf2[1024];

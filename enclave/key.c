@@ -95,12 +95,12 @@ void oe_public_key_release(oe_public_key_t* publicKey, uint64_t magic)
 /*
 **==============================================================================
 **
-** _MapHashType()
+** _map_hash_type()
 **
 **==============================================================================
 */
 
-static mbedtls_md_type_t _MapHashType(oe_hash_type_t md)
+static mbedtls_md_type_t _map_hash_type(oe_hash_type_t md)
 {
     switch (md)
     {
@@ -336,7 +336,7 @@ oe_result_t oe_private_key_sign(
     oe_result_t result = OE_UNEXPECTED;
     uint8_t buffer[MBEDTLS_MPI_MAX_SIZE];
     size_t bufferSize = 0;
-    mbedtls_md_type_t type = _MapHashType(hashType);
+    mbedtls_md_type_t type = _map_hash_type(hashType);
 
     /* Check parameters */
     if (!oe_private_key_is_valid(privateKey, magic) || !hashData || !hashSize ||
@@ -390,7 +390,7 @@ oe_result_t oe_public_key_verify(
     uint64_t magic)
 {
     oe_result_t result = OE_UNEXPECTED;
-    mbedtls_md_type_t type = _MapHashType(hashType);
+    mbedtls_md_type_t type = _map_hash_type(hashType);
 
     /* Check for null parameters */
     if (!oe_public_key_is_valid(publicKey, magic) || !hashData || !hashSize ||

@@ -18,7 +18,7 @@ static const uint64_t _PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 
-static oe_result_t _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
+static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
     RSA* rsa = NULL;
@@ -39,7 +39,7 @@ done:
     return result;
 }
 
-static oe_result_t _GenerateKeyPair(
+static oe_result_t _generate_key_pair(
     uint64_t bits,
     uint64_t exponent,
     oe_private_key_t* privateKey,
@@ -144,7 +144,7 @@ done:
     return result;
 }
 
-static oe_result_t _GetPublicKeyGetModulusOrExponent(
+static oe_result_t _get_public_key_get_modulus_or_exponent(
     const oe_public_key_t* publicKey,
     uint8_t* buffer,
     size_t* bufferSize,
@@ -204,25 +204,25 @@ done:
     return result;
 }
 
-static oe_result_t _PublicKeyGetModulus(
+static oe_result_t _public_key_get_modulus(
     const oe_public_key_t* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _GetPublicKeyGetModulusOrExponent(
+    return _get_public_key_get_modulus_or_exponent(
         publicKey, buffer, bufferSize, true);
 }
 
-static oe_result_t _PublicKeyGetExponent(
+static oe_result_t _public_key_get_exponent(
     const oe_public_key_t* publicKey,
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _GetPublicKeyGetModulusOrExponent(
+    return _get_public_key_get_modulus_or_exponent(
         publicKey, buffer, bufferSize, false);
 }
 
-static oe_result_t _PublicKeyEqual(
+static oe_result_t _public_key_equal(
     const oe_public_key_t* publicKey1,
     const oe_public_key_t* publicKey2,
     bool* equal)
@@ -290,7 +290,7 @@ oe_result_t oe_rsa_private_key_write_pem(
         (const oe_private_key_t*)privateKey,
         pemData,
         pemSize,
-        _privateKeyWritePEMCallback,
+        _private_key_write_pem_callback,
         _PRIVATE_KEY_MAGIC);
 }
 
@@ -372,7 +372,7 @@ oe_result_t oe_rsa_generate_key_pair(
     oe_rsa_private_key_t* privateKey,
     oe_rsa_public_key_t* publicKey)
 {
-    return _GenerateKeyPair(
+    return _generate_key_pair(
         bits,
         exponent,
         (oe_private_key_t*)privateKey,
@@ -384,7 +384,7 @@ oe_result_t oe_rsa_public_key_get_modulus(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _PublicKeyGetModulus(
+    return _public_key_get_modulus(
         (oe_public_key_t*)publicKey, buffer, bufferSize);
 }
 
@@ -393,7 +393,7 @@ oe_result_t oe_rsa_public_key_get_exponent(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _PublicKeyGetExponent(
+    return _public_key_get_exponent(
         (oe_public_key_t*)publicKey, buffer, bufferSize);
 }
 
@@ -402,6 +402,6 @@ oe_result_t oe_rsa_public_key_equal(
     const oe_rsa_public_key_t* publicKey2,
     bool* equal)
 {
-    return _PublicKeyEqual(
+    return _public_key_equal(
         (oe_public_key_t*)publicKey1, (oe_public_key_t*)publicKey2, equal);
 }

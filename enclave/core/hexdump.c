@@ -6,21 +6,21 @@
 #include <openenclave/internal/print.h>
 
 /* Convert a nibble to an ASCII character: Example 0xF => 'F' */
-OE_INLINE char _NibbleToHexChar(uint8_t x)
+OE_INLINE char _nibble_to_hex_char(uint8_t x)
 {
     return (x < 10) ? ('0' + x) : ('A' + (x - 10));
 }
 
 /* Convert high nibble to a hex character */
-OE_INLINE char _HighNibbleToHexChar(uint8_t byte)
+OE_INLINE char _high_nibble_to_hex_char(uint8_t byte)
 {
-    return _NibbleToHexChar(byte >> 4);
+    return _nibble_to_hex_char(byte >> 4);
 }
 
 /* Convert low nibble to a hex character */
-OE_INLINE char _LowNibbleToHexChar(uint8_t byte)
+OE_INLINE char _low_nibble_to_hex_char(uint8_t byte)
 {
-    return _NibbleToHexChar(byte & 0x0F);
+    return _nibble_to_hex_char(byte & 0x0F);
 }
 
 char* oe_hex_string(
@@ -40,8 +40,8 @@ char* oe_hex_string(
     /* For each byte in data buffer */
     while (n--)
     {
-        *s++ = _HighNibbleToHexChar(*p);
-        *s++ = _LowNibbleToHexChar(*p);
+        *s++ = _high_nibble_to_hex_char(*p);
+        *s++ = _low_nibble_to_hex_char(*p);
         p++;
     }
 

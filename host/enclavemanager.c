@@ -6,12 +6,12 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/queue.h>
 
-static OE_LIST_HEAD(EnclaveListHead, _EnclaveEntry) g_enclave_list_head;
+static OE_LIST_HEAD(EnclaveListHead, _enclave_entry) g_enclave_list_head;
 static oe_mutex g_enclave_list_lock = OE_H_MUTEX_INITIALIZER;
 
-typedef struct _EnclaveEntry
+typedef struct _enclave_entry
 {
-    OE_LIST_ENTRY(_EnclaveEntry) next_entry;
+    OE_LIST_ENTRY(_enclave_entry) next_entry;
     oe_enclave_t* enclave;
 } EnclaveEntry;
 

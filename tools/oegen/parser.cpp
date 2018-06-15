@@ -11,11 +11,11 @@
 using namespace std;
 
 static set<string> _types;
-static bool _initializeTypes;
+static bool _initialize_types;
 
 // #define HAVE_PTR_PTR
 
-static int _AddType(unsigned int flags, const string& type)
+static int _add_type(unsigned int flags, const string& type)
 {
     string fullTypeName;
 
@@ -32,14 +32,14 @@ static int _AddType(unsigned int flags, const string& type)
     return 0;
 }
 
-static int _CheckType(unsigned int flags, const string& type)
+static int _check_type(unsigned int flags, const string& type)
 {
-    if (!_initializeTypes)
+    if (!_initialize_types)
     {
         for (size_t i = 0; i < ntypes; i++)
             _types.insert(types[i].idlName);
 
-        _initializeTypes = true;
+        _initialize_types = true;
     }
 
     string fullTypeName;
@@ -55,7 +55,7 @@ static int _CheckType(unsigned int flags, const string& type)
     return 0;
 }
 
-static bool _IsNumber(const string& s)
+static bool _is_number(const string& s)
 {
     for (size_t i = 0; i < s.size(); i++)
     {
@@ -66,7 +66,7 @@ static bool _IsNumber(const string& s)
     return true;
 }
 
-static int _ParseQualifiers(
+static int _parse_qualifiers(
     Lexer& lexer,
     unsigned int& flags,
     QualifierValues& qvals)
@@ -199,7 +199,7 @@ done:
     return rc;
 }
 
-static int _CheckQualifiers(
+static int _check_qualifiers(
     Lexer& lexer,
     bool isReturnType,
     bool isParam,
@@ -385,7 +385,7 @@ done:
     return rc;
 }
 
-static int _ParseReturnType(Lexer& lexer, ReturnType& x)
+static int _parse_return_type(Lexer& lexer, ReturnType& x)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -417,7 +417,7 @@ static int _ParseReturnType(Lexer& lexer, ReturnType& x)
 
 parseQualifiers:
 
-    if (_ParseQualifiers(lexer, x.flags, x.qvals) != 0)
+    if (_parse_qualifiers(lexer, x.flags, x.qvals) != 0)
         goto done;
 
     switch (tok = lexer.Next())
@@ -554,14 +554,14 @@ parseName:
 
 checkQualifiers:
 
-    if (_CheckQualifiers(lexer, true, false, "return", x.flags, x.type) != 0)
+    if (_check_qualifiers(lexer, true, false, "return", x.flags, x.type) != 0)
         goto done;
 
     goto checkType;
 
 checkType:
 
-    if (_CheckType(x.flags, x.type) != 0 && !(x.flags & FLAG_UNCHECKED))
+    if (_check_type(x.flags, x.type) != 0 && !(x.flags & FLAG_UNCHECKED))
     {
         lexer.SetErr("undefined return type: %s\n", x.type.c_str());
         goto done;
@@ -574,7 +574,7 @@ done:
     return rc;
 }
 
-static int _ParseField(Lexer& lexer, const Struct& s, Field& x, bool& found)
+static int _parse_field(Lexer& lexer, const Struct& s, Field& x, bool& found)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -608,7 +608,7 @@ static int _ParseField(Lexer& lexer, const Struct& s, Field& x, bool& found)
 
 parseQualifiers:
 
-    if (_ParseQualifiers(lexer, x.flags, x.qvals) != 0)
+    if (_parse_qualifiers(lexer, x.flags, x.qvals) != 0)
         goto done;
 
     switch (tok = lexer.Next())
@@ -815,7 +815,7 @@ parseCloseBrace:
 
 checkQualifiers:
 
-    if (_CheckQualifiers(lexer, false, false, x.name, x.flags, x.type) != 0)
+    if (_check_qualifiers(lexer, false, false, x.name, x.flags, x.type) != 0)
     {
         rc = -1;
         goto done;
@@ -825,7 +825,7 @@ checkQualifiers:
 
 checkType:
 
-    if (x.name.size() && _CheckType(x.flags, x.type) != 0 &&
+    if (x.name.size() && _check_type(x.flags, x.type) != 0 &&
         !(x.flags & FLAG_UNCHECKED))
     {
         rc = -1;
@@ -839,7 +839,7 @@ done:
     return rc;
 }
 
-static int _ParseParam(Lexer& lexer, const Function& f, Param& x, bool& found)
+static int _parse_param(Lexer& lexer, const Function& f, Param& x, bool& found)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -873,7 +873,7 @@ static int _ParseParam(Lexer& lexer, const Function& f, Param& x, bool& found)
 
 parseQualifiers:
 
-    if (_ParseQualifiers(lexer, x.flags, x.qvals) != 0)
+    if (_parse_qualifiers(lexer, x.flags, x.qvals) != 0)
         goto done;
 
     switch (tok = lexer.Next())
@@ -1083,7 +1083,7 @@ parseCloseParen:
 
 checkQualifiers:
 
-    if (_CheckQualifiers(lexer, false, true, x.name, x.flags, x.type) != 0)
+    if (_check_qualifiers(lexer, false, true, x.name, x.flags, x.type) != 0)
     {
         rc = -1;
         goto done;
@@ -1093,7 +1093,7 @@ checkQualifiers:
 
 checkType:
 
-    if (x.type.size() && _CheckType(x.flags, x.type) != 0 &&
+    if (x.type.size() && _check_type(x.flags, x.type) != 0 &&
         !(x.flags & FLAG_UNCHECKED))
     {
         lexer.SetErr("undefined parameter type: %s\n", x.type.c_str());
@@ -1106,7 +1106,7 @@ done:
     return rc;
 }
 
-static int _CheckFunctionQualifiers(Lexer& lexer, const vector<Param>& params)
+static int _check_function_qualifiers(Lexer& lexer, const vector<Param>& params)
 {
     int rc = -1;
 
@@ -1117,7 +1117,7 @@ static int _CheckFunctionQualifiers(Lexer& lexer, const vector<Param>& params)
 
         if (p.flags & FLAG_COUNT)
         {
-            if (!_IsNumber(p.qvals.count))
+            if (!_is_number(p.qvals.count))
             {
                 size_t pos = FindParam(params, p.qvals.count);
 
@@ -1149,7 +1149,7 @@ done:
     return rc;
 }
 
-static int _CheckStructQualifiers(Lexer& lexer, Struct& s)
+static int _check_struct_qualifiers(Lexer& lexer, Struct& s)
 {
     int rc = -1;
 
@@ -1160,7 +1160,7 @@ static int _CheckStructQualifiers(Lexer& lexer, Struct& s)
 
         if (f.flags & FLAG_COUNT)
         {
-            if (!_IsNumber(f.qvals.count))
+            if (!_is_number(f.qvals.count))
             {
                 size_t pos = s.FindField(f.qvals.count);
 
@@ -1192,7 +1192,7 @@ done:
     return rc;
 }
 
-static int _ParseFunction(Lexer& lexer, Function& x)
+static int _parse_function(Lexer& lexer, Function& x)
 {
     int rc = -1;
     ReturnType returnType;
@@ -1200,7 +1200,7 @@ static int _ParseFunction(Lexer& lexer, Function& x)
     Tok tok = TOK_ERR;
 
     /* Get return type */
-    if (_ParseReturnType(lexer, x.returnType) != 0)
+    if (_parse_return_type(lexer, x.returnType) != 0)
         goto done;
 
     /* Get function name */
@@ -1225,7 +1225,7 @@ static int _ParseFunction(Lexer& lexer, Function& x)
     {
         bool found = false;
 
-        while ((rc = _ParseParam(lexer, x, param, found)) == 0)
+        while ((rc = _parse_param(lexer, x, param, found)) == 0)
         {
             x.params.push_back(param);
         }
@@ -1246,7 +1246,7 @@ static int _ParseFunction(Lexer& lexer, Function& x)
     }
 
     /* Check cross-parameter qualifiers */
-    if (_CheckFunctionQualifiers(lexer, x.params) != 0)
+    if (_check_function_qualifiers(lexer, x.params) != 0)
         goto done;
 
     rc = 0;
@@ -1256,7 +1256,7 @@ done:
     return rc;
 }
 
-static int _ParseStruct(Lexer& lexer, Struct& x)
+static int _parse_struct(Lexer& lexer, Struct& x)
 {
     int rc = -1;
     ReturnType returnType;
@@ -1275,7 +1275,7 @@ static int _ParseStruct(Lexer& lexer, Struct& x)
     }
 
     /* Add this type to the types list */
-    if (_AddType(FLAG_STRUCT, x.name) != 0)
+    if (_add_type(FLAG_STRUCT, x.name) != 0)
     {
         lexer.SetErr("struct type already defined: %s", x.name.c_str());
         goto done;
@@ -1292,7 +1292,7 @@ static int _ParseStruct(Lexer& lexer, Struct& x)
     {
         bool found = false;
 
-        while ((rc = _ParseField(lexer, x, field, found)) == 0)
+        while ((rc = _parse_field(lexer, x, field, found)) == 0)
         {
             x.fields.push_back(field);
         }
@@ -1310,7 +1310,7 @@ static int _ParseStruct(Lexer& lexer, Struct& x)
     }
 
     /* Check cross-parameter qualifiers */
-    if (_CheckStructQualifiers(lexer, x) != 0)
+    if (_check_struct_qualifiers(lexer, x) != 0)
         goto done;
 
     rc = 0;
@@ -1320,7 +1320,7 @@ done:
     return rc;
 }
 
-static int _ParseVerbatim(Lexer& lexer, Verbatim& x)
+static int _parse_verbatim(Lexer& lexer, Verbatim& x)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -1344,7 +1344,7 @@ done:
     return rc;
 }
 
-static int _ParseInclude(Lexer& lexer, string& filename)
+static int _parse_include(Lexer& lexer, string& filename)
 {
     int rc = -1;
     Tok tok = TOK_ERR;
@@ -1409,7 +1409,7 @@ int Parser::Parse(Lexer& lexer)
         {
             Verbatim verbatim;
 
-            if (_ParseVerbatim(lexer, verbatim) != 0)
+            if (_parse_verbatim(lexer, verbatim) != 0)
             {
                 rc = -1;
                 break;
@@ -1422,7 +1422,7 @@ int Parser::Parse(Lexer& lexer)
             string filename;
 
             // Get the filename:
-            if (_ParseInclude(lexer, filename) != 0)
+            if (_parse_include(lexer, filename) != 0)
             {
                 rc = -1;
                 break;
@@ -1459,7 +1459,7 @@ int Parser::Parse(Lexer& lexer)
         {
             Struct s;
 
-            if (_ParseStruct(lexer, s) != 0)
+            if (_parse_struct(lexer, s) != 0)
             {
                 rc = -1;
                 break;
@@ -1471,7 +1471,7 @@ int Parser::Parse(Lexer& lexer)
         {
             Function function;
 
-            if (_ParseFunction(lexer, function) != 0)
+            if (_parse_function(lexer, function) != 0)
             {
                 rc = -1;
                 break;

@@ -94,14 +94,14 @@ void DumpEnclaveProperties(const oe_sgx_enclave_properties_t* props)
         __sgx_dump_sigstruct(sigstruct);
 }
 
-typedef struct _VisitSymData
+typedef struct _visit_sym_data
 {
     const Elf64* elf;
     const Elf64_Shdr* shdr;
     oe_result_t result;
 } VisitSymData;
 
-static int _VisitSym(const Elf64_Sym* sym, void* data_)
+static int _visit_sym(const Elf64_Sym* sym, void* data_)
 {
     int rc = -1;
     VisitSymData* data = (VisitSymData*)data_;
@@ -160,7 +160,7 @@ void DumpECallSection(Elf64* elf)
         data.elf = elf;
         data.shdr = &shdr;
 
-        if (Elf64_VisitSymbols(elf, _VisitSym, &data) != 0)
+        if (Elf64_VisitSymbols(elf, _visit_sym, &data) != 0)
         {
             err("failed to find ECALLs in .ecall section");
             return;
@@ -187,14 +187,14 @@ void CheckGlobals(Elf64* elf)
 {
     printf("=== Globals:\n");
 
-    CheckGlobal(elf, "__oe_numPages");
-    CheckGlobal(elf, "__oe_virtualBaseAddr");
-    CheckGlobal(elf, "__oe_baseRelocPage");
-    CheckGlobal(elf, "__oe_numRelocPages");
-    CheckGlobal(elf, "__oe_baseECallPage");
-    CheckGlobal(elf, "__oe_numECallPages");
-    CheckGlobal(elf, "__oe_baseHeapPage");
-    CheckGlobal(elf, "__oe_numHeapPages");
+    CheckGlobal(elf, "__oe_num_pages");
+    CheckGlobal(elf, "__oe_virtual_base_addr");
+    CheckGlobal(elf, "__oe_base_reloc_page");
+    CheckGlobal(elf, "__oe_num_reloc_pages");
+    CheckGlobal(elf, "__oe_base_ecall_page");
+    CheckGlobal(elf, "__oe_num_ecall_pages");
+    CheckGlobal(elf, "__oe_base_heap_page");
+    CheckGlobal(elf, "__oe_num_heap_pages");
 
     printf("\n");
 }

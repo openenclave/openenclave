@@ -14,7 +14,7 @@ static uint64_t _PUBLIC_KEY_MAGIC = 0x713600af058c447a;
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 
-static oe_result_t _CopyKey(
+static oe_result_t _copy_key(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
     bool copyPrivateFields)
@@ -76,7 +76,7 @@ done:
     return result;
 }
 
-static oe_result_t _GetPublicKeyModulusOrExponent(
+static oe_result_t _get_public_key_modulus_or_exponent(
     const oe_public_key_t* publicKey,
     uint8_t* buffer,
     size_t* bufferSize,
@@ -126,7 +126,7 @@ done:
     return result;
 }
 
-static oe_result_t _GenerateKeyPair(
+static oe_result_t _generate_key_pair(
     uint64_t bits,
     uint64_t exponent,
     oe_private_key_t* privateKey,
@@ -174,10 +174,10 @@ static oe_result_t _GenerateKeyPair(
 
     /* Initialize the private key parameter */
     OE_CHECK(
-        oe_private_key_init(privateKey, &pk, _CopyKey, _PRIVATE_KEY_MAGIC));
+        oe_private_key_init(privateKey, &pk, _copy_key, _PRIVATE_KEY_MAGIC));
 
     /* Initialize the public key parameter */
-    OE_CHECK(oe_public_key_init(publicKey, &pk, _CopyKey, _PUBLIC_KEY_MAGIC));
+    OE_CHECK(oe_public_key_init(publicKey, &pk, _copy_key, _PUBLIC_KEY_MAGIC));
 
     result = OE_OK;
 
@@ -202,7 +202,7 @@ oe_result_t oe_public_key_get_modulus(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, true);
+    return _get_public_key_modulus_or_exponent(publicKey, buffer, bufferSize, true);
 }
 
 oe_result_t oe_public_key_get_exponent(
@@ -210,7 +210,7 @@ oe_result_t oe_public_key_get_exponent(
     uint8_t* buffer,
     size_t* bufferSize)
 {
-    return _GetPublicKeyModulusOrExponent(publicKey, buffer, bufferSize, false);
+    return _get_public_key_modulus_or_exponent(publicKey, buffer, bufferSize, false);
 }
 
 static oe_result_t oe_public_key_equal(
@@ -254,7 +254,7 @@ oe_result_t oe_rsa_public_key_init(
     const mbedtls_pk_context* pk)
 {
     return oe_public_key_init(
-        (oe_public_key_t*)publicKey, pk, _CopyKey, _PUBLIC_KEY_MAGIC);
+        (oe_public_key_t*)publicKey, pk, _copy_key, _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_read_pem(
@@ -360,7 +360,7 @@ oe_result_t oe_rsa_generate_key_pair(
     oe_rsa_private_key_t* privateKey,
     oe_rsa_public_key_t* publicKey)
 {
-    return _GenerateKeyPair(
+    return _generate_key_pair(
         bits,
         exponent,
         (oe_private_key_t*)privateKey,

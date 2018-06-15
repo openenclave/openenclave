@@ -141,7 +141,7 @@ static size_t _SIGNATURE_SIZE = sizeof(_SIGNATURE);
 // Test EC signing operation over an ASCII alphabet string. Note that two
 // signatures over the same data produce different hex sequences, although
 // signature verification will still succeed.
-static void _TestSignAndVerify()
+static void _test_sign_and_verify()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -282,7 +282,7 @@ static void _TestSignAndVerify()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestGenerate()
+static void _test_generate()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -331,7 +331,7 @@ static void _TestGenerate()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestWritePrivate()
+static void _test_write_private()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -386,7 +386,7 @@ static void _TestWritePrivate()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestWritePublic()
+static void _test_write_public()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -418,7 +418,7 @@ static void _TestWritePublic()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestCertMethods()
+static void _test_cert_methods()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -564,7 +564,7 @@ static void _TestCertMethods()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestKeyFromBytes()
+static void _test_key_from_bytes()
 {
     printf("=== begin %s()()\n", __FUNCTION__);
 
@@ -683,7 +683,7 @@ static void _TestKeyFromBytes()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static void _TestCertChainRead()
+static void _test_cert_chain_read()
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
@@ -700,11 +700,11 @@ static void _TestCertChainRead()
 
 void TestEC()
 {
-    _TestSignAndVerify();
-    _TestGenerate();
-    _TestWritePrivate();
-    _TestWritePublic();
-    _TestCertMethods();
-    _TestKeyFromBytes();
-    _TestCertChainRead();
+    _test_sign_and_verify();
+    _test_generate();
+    _test_write_private();
+    _test_write_public();
+    _test_cert_methods();
+    _test_key_from_bytes();
+    _test_cert_chain_read();
 }

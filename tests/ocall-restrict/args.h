@@ -9,5 +9,5 @@ typedef struct
 {
     oe_result_t result;
     oe_call_host_args_t callHost;
-    char _fnNameBuffer[50];
+    char _fn_name_buffer[50];
 } TestORArgs;

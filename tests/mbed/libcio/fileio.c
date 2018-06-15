@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-typedef struct _FileArgs
+typedef struct _file_args
 {
     FILE* F_ptr;
     char* path;

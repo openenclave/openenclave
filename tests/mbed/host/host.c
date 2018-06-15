@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include "ocalls.h"
 
-typedef struct _Args
+typedef struct _args
 {
     char* test;
     int ret;
@@ -91,7 +91,7 @@ void Test(oe_enclave_t* enclave, int selftest, char* data_file_name)
     }
 }
 
-static void _ExitOCall(uint64_t argIn, uint64_t* argOut)
+static void _exit_ocall(uint64_t argIn, uint64_t* argOut)
 {
     exit(argIn);
 }
@@ -141,7 +141,7 @@ int main(int argc, const char* argv[])
         oe_put_err("oe_create_enclave(): result=%u", result);
 
     // Register to handle OCALL_EXIT from tests.
-    oe_register_ocall(OCALL_EXIT, _ExitOCall);
+    oe_register_ocall(OCALL_EXIT, _exit_ocall);
 
     // Invoke "Test()" in the enclave.
     Test(enclave, selftest, data_file_name);
