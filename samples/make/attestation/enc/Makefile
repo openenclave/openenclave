@@ -25,7 +25,7 @@ LDFLAGS += -Wl,-pie
 LDFLAGS += -Wl,-eoe_main 
 
 # Ensure attestation functionality in enclave.
-LDFLAGS += -Wl,--undefined=__liboecore
+LDFLAGS += -Wl,--undefined=__liboeenclave
 
 # Order of libraries below matters.
 LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loelibcxx -loeenclave -lmbedcrypto -lmbedtls -lmbedx509 -loelibc -loecore
