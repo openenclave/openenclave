@@ -175,8 +175,16 @@ done:
     _SafeCopyVerifyReportArgsOuput(&arg, argIn);
 }
 
-// Use a constructor to register _HandleVerifyReport.
-__attribute__((constructor)) void _RegisterHandlerVerifyReport()
+static bool  _RegisterHandlerVerifyReport();
+
+static bool g_Init = _RegisterHandlerVerifyReport();
+
+#include <stdio.h>
+
+bool  _RegisterHandlerVerifyReport()
 {
     oe_register_ecall(OE_FUNC_VERIFY_REPORT, _HandleVerifyReport);
+    printf("_RegisterHandlerVerifyReport\n");
+    OE_UNUSED(g_Init);
+    return true;
 }
