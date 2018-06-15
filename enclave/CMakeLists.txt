@@ -8,7 +8,7 @@ add_library(oeenclave STATIC
     cmac.c
     key.c
     random.c
-    report.c
+    report.cpp
     rsa.c
     sha.c)
 
