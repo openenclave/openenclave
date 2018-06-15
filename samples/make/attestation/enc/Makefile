@@ -1,14 +1,18 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
 
 CXXFLAGS = -Wall -Werror -g -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
 
+# To include Open Enclave SDK headers and
+# Open Enclave compatible mbedtls headers.
 INCLUDES += -I$(OE_INCLUDEDIR)
-INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/libcxx
-INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/libc
-INCLUDES += -I$(OE_INCLUDEDIR)/openenclave/oe-mbedtls/
+
+#  To use Open Enclave compatible C and C++ standard libraries.
+INCLUDES += -I$(OE_INCLUDEDIR)/libcxx
+INCLUDES += -I$(OE_INCLUDEDIR)/libc
 
 LDFLAGS += -Wl,--no-undefined 
 LDFLAGS += -nostdlib 
@@ -20,7 +24,10 @@ LDFLAGS += -Wl,--export-dynamic
 LDFLAGS += -Wl,-pie
 LDFLAGS += -Wl,-eoe_main 
 
-LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave  -Wl,--start-group -loelibcxx -loeenclave -lmbedcrypto -lmbedtls -lmbedx509 -loelibc -loecore -Wl,--end-group
+OE_LIBS1 =  -Wl,--start-group -Wl,--whole-archive -loeenclave -loecore -Wl,--end-group
+OE_LIBS2 =  -loelibcxx -loelibc -lmbedtls -lmbedx509 -lmbedcrypto
+
+LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave ${OE_LIBS1} ${OE_LIBS2}
 
 all:
 	$(MAKE) build
