@@ -195,20 +195,6 @@ typedef struct oe_call_host_args_t
 /*
 **==============================================================================
 **
-** oe_thread_wake_wait_args_t
-**
-**==============================================================================
-*/
-
-typedef struct _oe_thread_wake_wait_args
-{
-    const void* waiter_tcs;
-    const void* self_tcs;
-} oe_thread_wake_wait_args_t;
-
-/*
-**==============================================================================
-**
 ** oe_print_args_t
 **
 **     Print 'str' to stdout (device == 0) or stderr (device == 1).

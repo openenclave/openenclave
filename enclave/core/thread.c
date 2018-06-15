@@ -4,6 +4,7 @@
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/bits/sgxtypes.h>
+#include <openenclave/bits/thread.h>
 #include <openenclave/enclave.h>
 #include "td.h"
 
