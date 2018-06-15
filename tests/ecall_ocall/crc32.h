@@ -11,14 +11,14 @@ uint32_t calculate_crc32c(
 // Convenience C++ wrapper class
 struct Crc32
 {
-    Crc32(unsigned Value) : m_Crc(Value)
+    Crc32(unsigned Value) : m_crc(Value)
     {
     }
 
     uint32_t Extend(const void* Buffer, unsigned Length)
     {
-        m_Crc = calculate_crc32c(m_Crc, Buffer, Length);
-        return m_Crc;
+        m_crc = calculate_crc32c(m_crc, Buffer, Length);
+        return m_crc;
     }
 
     template <class T>
@@ -36,7 +36,7 @@ struct Crc32
 
     uint32_t operator()() const
     {
-        return m_Crc;
+        return m_crc;
     }
 
     template <class... T1>
@@ -47,5 +47,5 @@ struct Crc32
     }
 
   private:
-    uint32_t m_Crc;
+    uint32_t m_crc;
 };

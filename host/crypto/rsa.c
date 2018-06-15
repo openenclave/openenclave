@@ -18,7 +18,7 @@ static const uint64_t _PUBLIC_KEY_MAGIC = 0x8f8f72170025426d;
 OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_rsa_public_key_t));
 OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_rsa_private_key_t));
 
-static oe_result_t _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
+static oe_result_t _private_key_write_pem_callback(BIO* bio, EVP_PKEY* pkey)
 {
     oe_result_t result = OE_UNEXPECTED;
     RSA* rsa = NULL;
@@ -39,26 +39,26 @@ done:
     return result;
 }
 
-static oe_result_t _GenerateKeyPair(
+static oe_result_t _generate_key_pair(
     uint64_t bits,
     uint64_t exponent,
-    oe_private_key_t* privateKey,
-    oe_public_key_t* publicKey)
+    oe_private_key_t* private_key,
+    oe_public_key_t* public_key)
 {
     oe_result_t result = OE_UNEXPECTED;
-    RSA* rsaPrivate = NULL;
-    RSA* rsaPublic = NULL;
-    EVP_PKEY* pkeyPrivate = NULL;
-    EVP_PKEY* pkeyPublic = NULL;
+    RSA* rsa_private = NULL;
+    RSA* rsa_public = NULL;
+    EVP_PKEY* pkey_private = NULL;
+    EVP_PKEY* pkey_public = NULL;
 
-    if (privateKey)
-        memset(privateKey, 0, sizeof(*privateKey));
+    if (private_key)
+        memset(private_key, 0, sizeof(*private_key));
 
-    if (publicKey)
-        memset(publicKey, 0, sizeof(*publicKey));
+    if (public_key)
+        memset(public_key, 0, sizeof(*public_key));
 
     /* Check parameters */
-    if (!privateKey || !publicKey)
+    if (!private_key || !public_key)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check range of bits parameter */
@@ -75,100 +75,100 @@ static oe_result_t _GenerateKeyPair(
     /* Create the public and private RSA keys */
     {
         /* Create the private key */
-        if (!(rsaPrivate = RSA_generate_key(bits, exponent, 0, 0)))
+        if (!(rsa_private = RSA_generate_key(bits, exponent, 0, 0)))
             OE_RAISE(OE_FAILURE);
 
         /* Create the public key */
-        if (!(rsaPublic = RSAPublicKey_dup(rsaPrivate)))
+        if (!(rsa_public = RSAPublicKey_dup(rsa_private)))
             OE_RAISE(OE_FAILURE);
     }
 
     /* Create the PKEY private key wrapper */
     {
         /* Create the private key structure */
-        if (!(pkeyPrivate = EVP_PKEY_new()))
+        if (!(pkey_private = EVP_PKEY_new()))
             OE_RAISE(OE_FAILURE);
 
         /* Initialize the private key from the generated key pair */
-        if (!EVP_PKEY_assign_RSA(pkeyPrivate, rsaPrivate))
+        if (!EVP_PKEY_assign_RSA(pkey_private, rsa_private))
             OE_RAISE(OE_FAILURE);
 
         /* Initialize the private key */
-        oe_private_key_init(privateKey, pkeyPrivate, _PRIVATE_KEY_MAGIC);
+        oe_private_key_init(private_key, pkey_private, _PRIVATE_KEY_MAGIC);
 
         /* Keep these from being freed below */
-        rsaPrivate = NULL;
-        pkeyPrivate = NULL;
+        rsa_private = NULL;
+        pkey_private = NULL;
     }
 
     /* Create the PKEY public key wrapper */
     {
         /* Create the public key structure */
-        if (!(pkeyPublic = EVP_PKEY_new()))
+        if (!(pkey_public = EVP_PKEY_new()))
             OE_RAISE(OE_FAILURE);
 
         /* Initialize the public key from the generated key pair */
-        if (!EVP_PKEY_assign_RSA(pkeyPublic, rsaPublic))
+        if (!EVP_PKEY_assign_RSA(pkey_public, rsa_public))
             OE_RAISE(OE_FAILURE);
 
         /* Initialize the public key */
-        oe_public_key_init(publicKey, pkeyPublic, _PUBLIC_KEY_MAGIC);
+        oe_public_key_init(public_key, pkey_public, _PUBLIC_KEY_MAGIC);
 
         /* Keep these from being freed below */
-        rsaPublic = NULL;
-        pkeyPublic = NULL;
+        rsa_public = NULL;
+        pkey_public = NULL;
     }
 
     result = OE_OK;
 
 done:
 
-    if (rsaPrivate)
-        RSA_free(rsaPrivate);
+    if (rsa_private)
+        RSA_free(rsa_private);
 
-    if (rsaPublic)
-        RSA_free(rsaPublic);
+    if (rsa_public)
+        RSA_free(rsa_public);
 
-    if (pkeyPrivate)
-        EVP_PKEY_free(pkeyPrivate);
+    if (pkey_private)
+        EVP_PKEY_free(pkey_private);
 
-    if (pkeyPublic)
-        EVP_PKEY_free(pkeyPublic);
+    if (pkey_public)
+        EVP_PKEY_free(pkey_public);
 
     if (result != OE_OK)
     {
-        oe_private_key_free(privateKey, _PRIVATE_KEY_MAGIC);
-        oe_public_key_free(publicKey, _PUBLIC_KEY_MAGIC);
+        oe_private_key_free(private_key, _PRIVATE_KEY_MAGIC);
+        oe_public_key_free(public_key, _PUBLIC_KEY_MAGIC);
     }
 
     return result;
 }
 
-static oe_result_t _GetPublicKeyGetModulusOrExponent(
-    const oe_public_key_t* publicKey,
+static oe_result_t _get_public_key_get_modulus_or_exponent(
+    const oe_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize,
-    bool getModulus)
+    size_t* buffer_size,
+    bool get_modulus)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t requiredSize;
+    size_t required_size;
     const BIGNUM* bn;
     RSA* rsa = NULL;
 
     /* Check for invalid parameters */
-    if (!publicKey || !bufferSize)
+    if (!public_key || !buffer_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* If buffer is null, then bufferSize must be zero */
-    if (!buffer && *bufferSize != 0)
+    /* If buffer is null, then buffer_size must be zero */
+    if (!buffer && *buffer_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get RSA key */
-    if (!(rsa = EVP_PKEY_get1_RSA(publicKey->pkey)))
+    if (!(rsa = EVP_PKEY_get1_RSA(public_key->pkey)))
         OE_RAISE(OE_FAILURE);
 
     /* Select modulus or exponent */
-    bn = getModulus ? rsa->n : rsa->e;
+    bn = get_modulus ? rsa->n : rsa->e;
 
     /* Determine the required size in bytes */
     {
@@ -178,13 +178,13 @@ static oe_result_t _GetPublicKeyGetModulusOrExponent(
             OE_RAISE(OE_FAILURE);
 
         /* Add one leading byte for the leading zero byte */
-        requiredSize = (size_t)n;
+        required_size = (size_t)n;
     }
 
     /* If buffer is null or not big enough */
-    if (!buffer || (*bufferSize < requiredSize))
+    if (!buffer || (*buffer_size < required_size))
     {
-        *bufferSize = requiredSize;
+        *buffer_size = required_size;
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
@@ -192,7 +192,7 @@ static oe_result_t _GetPublicKeyGetModulusOrExponent(
     if (!BN_bn2bin(bn, buffer))
         OE_RAISE(OE_FAILURE);
 
-    *bufferSize = requiredSize;
+    *buffer_size = required_size;
 
     result = OE_OK;
 
@@ -204,27 +204,27 @@ done:
     return result;
 }
 
-static oe_result_t _PublicKeyGetModulus(
-    const oe_public_key_t* publicKey,
+static oe_result_t _public_key_get_modulus(
+    const oe_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffer_size)
 {
-    return _GetPublicKeyGetModulusOrExponent(
-        publicKey, buffer, bufferSize, true);
+    return _get_public_key_get_modulus_or_exponent(
+        public_key, buffer, buffer_size, true);
 }
 
-static oe_result_t _PublicKeyGetExponent(
-    const oe_public_key_t* publicKey,
+static oe_result_t _public_key_get_exponent(
+    const oe_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffer_size)
 {
-    return _GetPublicKeyGetModulusOrExponent(
-        publicKey, buffer, bufferSize, false);
+    return _get_public_key_get_modulus_or_exponent(
+        public_key, buffer, buffer_size, false);
 }
 
-static oe_result_t _PublicKeyEqual(
-    const oe_public_key_t* publicKey1,
-    const oe_public_key_t* publicKey2,
+static oe_result_t _public_key_equal(
+    const oe_public_key_t* public_key1,
+    const oe_public_key_t* public_key2,
     bool* equal)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -235,14 +235,14 @@ static oe_result_t _PublicKeyEqual(
         *equal = false;
 
     /* Reject bad parameters */
-    if (!oe_public_key_is_valid(publicKey1, _PUBLIC_KEY_MAGIC) ||
-        !oe_public_key_is_valid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
+    if (!oe_public_key_is_valid(public_key1, _PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(public_key2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(rsa1 = EVP_PKEY_get1_RSA(publicKey1->pkey)))
+    if (!(rsa1 = EVP_PKEY_get1_RSA(public_key1->pkey)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(rsa2 = EVP_PKEY_get1_RSA(publicKey2->pkey)))
+    if (!(rsa2 = EVP_PKEY_get1_RSA(public_key2->pkey)))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Compare modulus and exponent */
@@ -262,146 +262,146 @@ done:
     return result;
 }
 
-void oe_rsa_public_key_init(oe_rsa_public_key_t* publicKey, EVP_PKEY* pkey)
+void oe_rsa_public_key_init(oe_rsa_public_key_t* public_key, EVP_PKEY* pkey)
 {
     return oe_public_key_init(
-        (oe_public_key_t*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
+        (oe_public_key_t*)public_key, pkey, _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_read_pem(
-    const uint8_t* pemData,
-    size_t pemSize,
-    oe_rsa_private_key_t* privateKey)
+    const uint8_t* pem_data,
+    size_t pem_size,
+    oe_rsa_private_key_t* private_key)
 {
     return oe_private_key_read_pem(
-        pemData,
-        pemSize,
-        (oe_private_key_t*)privateKey,
+        pem_data,
+        pem_size,
+        (oe_private_key_t*)private_key,
         EVP_PKEY_RSA,
         _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_write_pem(
-    const oe_rsa_private_key_t* privateKey,
-    uint8_t* pemData,
-    size_t* pemSize)
+    const oe_rsa_private_key_t* private_key,
+    uint8_t* pem_data,
+    size_t* pem_size)
 {
     return oe_private_key_write_pem(
-        (const oe_private_key_t*)privateKey,
-        pemData,
-        pemSize,
-        _privateKeyWritePEMCallback,
+        (const oe_private_key_t*)private_key,
+        pem_data,
+        pem_size,
+        _private_key_write_pem_callback,
         _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_read_pem(
-    const uint8_t* pemData,
-    size_t pemSize,
-    oe_rsa_public_key_t* publicKey)
+    const uint8_t* pem_data,
+    size_t pem_size,
+    oe_rsa_public_key_t* public_key)
 {
     return oe_public_key_read_pem(
-        pemData,
-        pemSize,
-        (oe_public_key_t*)publicKey,
+        pem_data,
+        pem_size,
+        (oe_public_key_t*)public_key,
         EVP_PKEY_RSA,
         _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_write_pem(
-    const oe_rsa_public_key_t* privateKey,
-    uint8_t* pemData,
-    size_t* pemSize)
+    const oe_rsa_public_key_t* private_key,
+    uint8_t* pem_data,
+    size_t* pem_size)
 {
     return oe_public_key_write_pem(
-        (const oe_public_key_t*)privateKey,
-        pemData,
-        pemSize,
+        (const oe_public_key_t*)private_key,
+        pem_data,
+        pem_size,
         _PUBLIC_KEY_MAGIC);
 }
 
-oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* privateKey)
+oe_result_t oe_rsa_private_key_free(oe_rsa_private_key_t* private_key)
 {
     return oe_private_key_free(
-        (oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
+        (oe_private_key_t*)private_key, _PRIVATE_KEY_MAGIC);
 }
 
-oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* publicKey)
+oe_result_t oe_rsa_public_key_free(oe_rsa_public_key_t* public_key)
 {
-    return oe_public_key_free((oe_public_key_t*)publicKey, _PUBLIC_KEY_MAGIC);
+    return oe_public_key_free((oe_public_key_t*)public_key, _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_private_key_sign(
-    const oe_rsa_private_key_t* privateKey,
-    oe_hash_type_t hashType,
-    const void* hashData,
-    size_t hashSize,
+    const oe_rsa_private_key_t* private_key,
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
     uint8_t* signature,
-    size_t* signatureSize)
+    size_t* signature_size)
 {
     return oe_private_key_sign(
-        (oe_private_key_t*)privateKey,
-        hashType,
-        hashData,
-        hashSize,
+        (oe_private_key_t*)private_key,
+        hash_type,
+        hash_data,
+        hash_size,
         signature,
-        signatureSize,
+        signature_size,
         _PRIVATE_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_public_key_verify(
-    const oe_rsa_public_key_t* publicKey,
-    oe_hash_type_t hashType,
-    const void* hashData,
-    size_t hashSize,
+    const oe_rsa_public_key_t* public_key,
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
     const uint8_t* signature,
-    size_t signatureSize)
+    size_t signature_size)
 {
     return oe_public_key_verify(
-        (oe_public_key_t*)publicKey,
-        hashType,
-        hashData,
-        hashSize,
+        (oe_public_key_t*)public_key,
+        hash_type,
+        hash_data,
+        hash_size,
         signature,
-        signatureSize,
+        signature_size,
         _PUBLIC_KEY_MAGIC);
 }
 
 oe_result_t oe_rsa_generate_key_pair(
     uint64_t bits,
     uint64_t exponent,
-    oe_rsa_private_key_t* privateKey,
-    oe_rsa_public_key_t* publicKey)
+    oe_rsa_private_key_t* private_key,
+    oe_rsa_public_key_t* public_key)
 {
-    return _GenerateKeyPair(
+    return _generate_key_pair(
         bits,
         exponent,
-        (oe_private_key_t*)privateKey,
-        (oe_public_key_t*)publicKey);
+        (oe_private_key_t*)private_key,
+        (oe_public_key_t*)public_key);
 }
 
 oe_result_t oe_rsa_public_key_get_modulus(
-    const oe_rsa_public_key_t* publicKey,
+    const oe_rsa_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffer_size)
 {
-    return _PublicKeyGetModulus(
-        (oe_public_key_t*)publicKey, buffer, bufferSize);
+    return _public_key_get_modulus(
+        (oe_public_key_t*)public_key, buffer, buffer_size);
 }
 
 oe_result_t oe_rsa_public_key_get_exponent(
-    const oe_rsa_public_key_t* publicKey,
+    const oe_rsa_public_key_t* public_key,
     uint8_t* buffer,
-    size_t* bufferSize)
+    size_t* buffer_size)
 {
-    return _PublicKeyGetExponent(
-        (oe_public_key_t*)publicKey, buffer, bufferSize);
+    return _public_key_get_exponent(
+        (oe_public_key_t*)public_key, buffer, buffer_size);
 }
 
 oe_result_t oe_rsa_public_key_equal(
-    const oe_rsa_public_key_t* publicKey1,
-    const oe_rsa_public_key_t* publicKey2,
+    const oe_rsa_public_key_t* public_key1,
+    const oe_rsa_public_key_t* public_key2,
     bool* equal)
 {
-    return _PublicKeyEqual(
-        (oe_public_key_t*)publicKey1, (oe_public_key_t*)publicKey2, equal);
+    return _public_key_equal(
+        (oe_public_key_t*)public_key1, (oe_public_key_t*)public_key2, equal);
 }

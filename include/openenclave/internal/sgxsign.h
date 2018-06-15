@@ -15,13 +15,13 @@ OE_EXTERNC_BEGIN
 * Digitally sign the enclave with the given hash
 *
 * This function digitally signs the enclave whose hash is given by the
-* **mrenclave** parameter. The signing key is given by the **pemData**
+* **mrenclave** parameter. The signing key is given by the **pem_data**
 * parameter. If successful, the function writes the signature into the
 * **sigstruct** parameter (an SGX signature structure).
 *
 * @param mrenclave[in] hash of the enclave being signed
-* @param pemData[in] PEM buffer containing the signing key
-* @param pemSize[in] size of the PEM buffer
+* @param pem_data[in] PEM buffer containing the signing key
+* @param pem_size[in] size of the PEM buffer
 * @param sigstruct[out] the SGX signature
 *
 * @return OE_OK success
@@ -29,10 +29,10 @@ OE_EXTERNC_BEGIN
 oe_result_t oe_sgx_sign_enclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
-    uint16_t productID,
-    uint16_t securityVersion,
-    const uint8_t* pemData,
-    size_t pemSize,
+    uint16_t product_id,
+    uint16_t security_version,
+    const uint8_t* pem_data,
+    size_t pem_size,
     sgx_sigstruct_t* sigstruct);
 
 OE_EXTERNC_END

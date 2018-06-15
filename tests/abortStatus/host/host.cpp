@@ -21,15 +21,15 @@ using namespace std;
 
 #define THREAD_COUNT 5
 
-void TestAbortStatus(oe_enclave_t* enclave, const char* functionName)
+void TestAbortStatus(oe_enclave_t* enclave, const char* function_name)
 {
     oe_result_t result;
     AbortStatusArgs args;
     args.divisor = 0;
     args.ret = -1;
 
-    printf("=== %s(%s)  \n", __FUNCTION__, functionName);
-    result = oe_call_enclave(enclave, functionName, &args);
+    printf("=== %s(%s)  \n", __FUNCTION__, function_name);
+    result = oe_call_enclave(enclave, function_name, &args);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
     OE_TEST(args.ret == 0);
 }
@@ -112,74 +112,74 @@ static uint32_t CalcRecursionHashEnc(const AbortStatusEncRecursionArg* args_);
 static uint32_t CalcRecursionHashHost(const AbortStatusEncRecursionArg* args_)
 {
     AbortStatusEncRecursionArg args = *args_;
-    AbortStatusEncRecursionArg argsRec;
+    AbortStatusEncRecursionArg args_rec;
     oe_result_t result = OE_OK;
 
     printf(
         "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
         __FUNCTION__,
-        args.flowId,
-        args.recursionsLeft,
+        args.flow_id,
+        args.recursions_left,
         args.crc);
 
     // catch initial state: Tag + Input-struct
     args.crc = Crc32::Hash(TAG_START_HOST, args);
-    argsRec = args;
+    args_rec = args;
 
     // recurse as needed, passing initial-state-crc as input
-    if (args.recursionsLeft)
+    if (args.recursions_left)
     {
-        argsRec.recursionsLeft--;
-        argsRec.crc = CalcRecursionHashEnc(&argsRec);
-        if (argsRec.recursionsLeft)
+        args_rec.recursions_left--;
+        args_rec.crc = CalcRecursionHashEnc(&args_rec);
+        if (args_rec.recursions_left)
         {
-            if (argsRec.initialCount)
-                argsRec.initialCount--;
-            argsRec.recursionsLeft--;
+            if (args_rec.initial_count)
+                args_rec.initial_count--;
+            args_rec.recursions_left--;
         }
     }
 
     // catch output state: Tag + result + output, and again original input
-    return Crc32::Hash(TAG_END_HOST, result, argsRec, args);
+    return Crc32::Hash(TAG_END_HOST, result, args_rec, args);
 }
 
 // calc recursion hash locally, enc part
 static uint32_t CalcRecursionHashEnc(const AbortStatusEncRecursionArg* args_)
 {
     AbortStatusEncRecursionArg args = *args_;
-    AbortStatusEncRecursionArg argsHost;
+    AbortStatusEncRecursionArg args_host;
     oe_result_t result = OE_OK;
 
     printf(
         "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
         __FUNCTION__,
-        args.flowId,
-        args.recursionsLeft,
+        args.flow_id,
+        args.recursions_left,
         args.crc);
 
     // catch initial state: Tag + Input-structure.
     args.crc = Crc32::Hash(TAG_START_ENC, args);
-    argsHost = args;
+    args_host = args;
 
-    if (args.recursionsLeft > 0)
+    if (args.recursions_left > 0)
     {
-        if (argsHost.initialCount)
-            argsHost.initialCount--;
-        argsHost.recursionsLeft--;
-        argsHost.crc = CalcRecursionHashHost(&argsHost);
+        if (args_host.initial_count)
+            args_host.initial_count--;
+        args_host.recursions_left--;
+        args_host.crc = CalcRecursionHashHost(&args_host);
     }
 
     // catch output state: Tag + result + modified host-struct, original
     // input.
-    return Crc32::Hash(TAG_END_ENC, result, argsHost, args);
+    return Crc32::Hash(TAG_END_ENC, result, args_host, args);
 }
 
 // Actual enclave/host/... recursion test. Trail of execution is gathered via
 // Crc, success determined via comparison with separate, non-enclave version.
 static uint32_t TestRecursion(
     oe_enclave_t* enclave,
-    unsigned flowId,
-    unsigned recursionDepth,
+    unsigned flow_id,
+    unsigned recursion_depth,
     uint32_t* thread_ready_count,
     uint32_t* is_enclave_crashed)
 {
@@ -187,14 +187,14 @@ static uint32_t TestRecursion(
     AbortStatusEncRecursionArg args = {};
 
     printf(
-        "%s(FlowId=%u, Recursions=%u)\n", __FUNCTION__, flowId, recursionDepth);
+        "%s(FlowId=%u, Recursions=%u)\n", __FUNCTION__, flow_id, recursion_depth);
 
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
     args.enclave = enclave;
-    args.flowId = flowId;
-    args.recursionsLeft = recursionDepth;
-    args.initialCount = 1;
+    args.flow_id = flow_id;
+    args.recursions_left = recursion_depth;
+    args.initial_count = 1;
 
     uint32_t crc = CalcRecursionHashEnc(&args);
 
@@ -205,8 +205,8 @@ static uint32_t TestRecursion(
         "%s(FlowId=%u, RecursionDepth=%u): Expect CRC %#x, have "
         "CRC %#x, %s\n",
         __FUNCTION__,
-        flowId,
-        recursionDepth,
+        flow_id,
+        recursion_depth,
         crc,
         args.crc,
         (crc == args.crc) ? "MATCH" : "MISMATCH");
@@ -220,27 +220,27 @@ OE_OCALL void RecursionOcall(void* args_)
 {
     oe_result_t result = OE_OK;
 
-    AbortStatusEncRecursionArg* argsPtr = (AbortStatusEncRecursionArg*)args_;
-    AbortStatusEncRecursionArg args = *argsPtr;
-    AbortStatusEncRecursionArg argsRec;
+    AbortStatusEncRecursionArg* args_ptr = (AbortStatusEncRecursionArg*)args_;
+    AbortStatusEncRecursionArg args = *args_ptr;
+    AbortStatusEncRecursionArg args_rec;
 
     printf(
         "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
         __FUNCTION__,
-        args.flowId,
-        args.recursionsLeft,
+        args.flow_id,
+        args.recursions_left,
         args.crc);
 
     // catch initial state: Tag + Input-struct
     args.crc = Crc32::Hash(TAG_START_HOST, args);
-    argsRec = args;
+    args_rec = args;
 
     // recurse as needed, passing initial-state-crc as input
-    if (args.recursionsLeft)
+    if (args.recursions_left)
     {
-        argsRec.recursionsLeft--;
+        args_rec.recursions_left--;
         result = oe_call_enclave(
-            (oe_enclave_t*)argsRec.enclave, "EncRecursion", &argsRec);
+            (oe_enclave_t*)args_rec.enclave, "EncRecursion", &args_rec);
     }
     else
     {
@@ -255,29 +255,29 @@ OE_OCALL void RecursionOcall(void* args_)
         // Verify the ECALL into the enclave will fail after enclave is aborted.
         OE_TEST(
             oe_call_enclave(
-                (oe_enclave_t*)argsRec.enclave, "EncRecursion", NULL) ==
+                (oe_enclave_t*)args_rec.enclave, "EncRecursion", NULL) ==
             OE_ENCLAVE_ABORTING);
     }
 
     // catch output state: Tag + result + output, and again original input
-    argsPtr->crc = Crc32::Hash(TAG_END_HOST, result, argsRec, args);
+    args_ptr->crc = Crc32::Hash(TAG_END_HOST, result, args_rec, args);
 }
 
 // Test the regular abort case and un-handled hardware exception case in
 // single thread.
-static bool TestBasicAbort(const char* enclaveName)
+static bool TestBasicAbort(const char* enclave_name)
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
     const uint32_t flags = oe_get_create_flags();
-    const char* functionNames[] = {"RegularAbort",
+    const char* function_names[] = {"RegularAbort",
                                    "GenerateUnhandledHardwareException"};
 
-    for (uint32_t i = 0; i < OE_COUNTOF(functionNames); i++)
+    for (uint32_t i = 0; i < OE_COUNTOF(function_names); i++)
     {
         if ((result = oe_create_enclave(
-                 enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+                 enclave_name, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
             OE_OK)
         {
             oe_put_err("oe_create_enclave(): result=%u", result);
@@ -286,9 +286,9 @@ static bool TestBasicAbort(const char* enclaveName)
 
         // Skip the last test for simulation mode.
         if ((flags & OE_ENCLAVE_FLAG_SIMULATE) == 0 ||
-            (i != OE_COUNTOF(functionNames) - 1))
+            (i != OE_COUNTOF(function_names) - 1))
         {
-            TestAbortStatus(enclave, functionNames[i]);
+            TestAbortStatus(enclave, function_names[i]);
         }
 
         if ((result = oe_terminate_enclave(enclave)) != OE_OK)
@@ -313,7 +313,7 @@ static bool TestBasicAbort(const char* enclaveName)
 // Thread 5 -> do a nested call, wait outside enclave, do an ECALL after thread
 //  1 abort the enclave.The ECALL should fail with abort status, but exiting
 //  ERET and ORET should return to enclave and host correctly.
-static bool TestMultipleThreadAbort(const char* enclaveName)
+static bool TestMultipleThreadAbort(const char* enclave_name)
 {
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
@@ -321,7 +321,7 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
     // Create the enclave.
     const uint32_t flags = oe_get_create_flags();
     if ((result = oe_create_enclave(
-             enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+             enclave_name, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
         OE_OK)
     {
         oe_put_err("oe_create_enclave(): result=%u", result);

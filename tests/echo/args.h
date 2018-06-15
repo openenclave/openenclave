@@ -4,7 +4,7 @@
 #ifndef _ECHOARGS_H
 #define _ECHOARGS_H
 
-typedef struct _EchoArgs
+typedef struct _echo_args
 {
     const char* in;
     char* out;

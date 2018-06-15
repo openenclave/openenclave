@@ -24,76 +24,76 @@ typedef struct _oe_public_key
 typedef oe_result_t (*oe_copy_key)(
     mbedtls_pk_context* dest,
     const mbedtls_pk_context* src,
-    bool copyPrivateFields);
+    bool copy_private_fields);
 
 bool oe_private_key_is_valid(
-    const oe_private_key_t* privateKey,
+    const oe_private_key_t* private_key,
     uint64_t magic);
 
 oe_result_t oe_private_key_init(
-    oe_private_key_t* privateKey,
+    oe_private_key_t* private_key,
     const mbedtls_pk_context* pk,
-    oe_copy_key copyKey,
+    oe_copy_key copy_key,
     uint64_t magic);
 
-void oe_private_key_release(oe_private_key_t* privateKey, uint64_t magic);
+void oe_private_key_release(oe_private_key_t* private_key, uint64_t magic);
 
-bool oe_public_key_is_valid(const oe_public_key_t* publicKey, uint64_t magic);
+bool oe_public_key_is_valid(const oe_public_key_t* public_key, uint64_t magic);
 
 oe_result_t oe_public_key_init(
-    oe_public_key_t* publicKey,
+    oe_public_key_t* public_key,
     const mbedtls_pk_context* pk,
-    oe_copy_key copyKey,
+    oe_copy_key copy_key,
     uint64_t magic);
 
-void oe_public_key_release(oe_public_key_t* publicKey, uint64_t magic);
+void oe_public_key_release(oe_public_key_t* public_key, uint64_t magic);
 
 oe_result_t oe_private_key_read_pem(
-    const uint8_t* pemData,
-    size_t pemSize,
-    oe_private_key_t* privateKey,
-    mbedtls_pk_type_t keyType,
+    const uint8_t* pem_data,
+    size_t pem_size,
+    oe_private_key_t* private_key,
+    mbedtls_pk_type_t key_type,
     uint64_t magic);
 
 oe_result_t oe_private_key_write_pem(
-    const oe_private_key_t* privateKey,
-    uint8_t* pemData,
-    size_t* pemSize,
+    const oe_private_key_t* private_key,
+    uint8_t* pem_data,
+    size_t* pem_size,
     uint64_t magic);
 
 oe_result_t oe_public_key_read_pem(
-    const uint8_t* pemData,
-    size_t pemSize,
-    oe_public_key_t* publicKey,
-    mbedtls_pk_type_t keyType,
+    const uint8_t* pem_data,
+    size_t pem_size,
+    oe_public_key_t* public_key,
+    mbedtls_pk_type_t key_type,
     uint64_t magic);
 
 oe_result_t oe_public_key_write_pem(
-    const oe_public_key_t* publicKey,
-    uint8_t* pemData,
-    size_t* pemSize,
+    const oe_public_key_t* public_key,
+    uint8_t* pem_data,
+    size_t* pem_size,
     uint64_t magic);
 
-oe_result_t oe_private_key_free(oe_private_key_t* privateKey, uint64_t magic);
+oe_result_t oe_private_key_free(oe_private_key_t* private_key, uint64_t magic);
 
-oe_result_t oe_public_key_free(oe_public_key_t* publicKey, uint64_t magic);
+oe_result_t oe_public_key_free(oe_public_key_t* public_key, uint64_t magic);
 
 oe_result_t oe_private_key_sign(
-    const oe_private_key_t* privateKey,
-    oe_hash_type_t hashType,
-    const void* hashData,
-    size_t hashSize,
+    const oe_private_key_t* private_key,
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
     uint8_t* signature,
-    size_t* signatureSize,
+    size_t* signature_size,
     uint64_t magic);
 
 oe_result_t oe_public_key_verify(
-    const oe_public_key_t* publicKey,
-    oe_hash_type_t hashType,
-    const void* hashData,
-    size_t hashSize,
+    const oe_public_key_t* public_key,
+    oe_hash_type_t hash_type,
+    const void* hash_data,
+    size_t hash_size,
     const uint8_t* signature,
-    size_t signatureSize,
+    size_t signature_size,
     uint64_t magic);
 
 #endif /* _ENCLAVE_KEY_H */

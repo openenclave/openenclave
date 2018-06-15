@@ -11,14 +11,14 @@
 OE_EXTERNC_BEGIN
 
 oe_result_t VerifyQuoteImpl(
-    const uint8_t* encQuote,
-    uint32_t quoteSize,
-    const uint8_t* encPemPckCertificate,
-    uint32_t pemPckCertificateSize,
-    const uint8_t* encPckCrl,
-    uint32_t encPckCrlSize,
-    const uint8_t* encTcbInfoJson,
-    uint32_t encTcbInfoJsonSize);
+    const uint8_t* enc_quote,
+    uint32_t quote_size,
+    const uint8_t* enc_pem_pck_certificate,
+    uint32_t pem_pck_certificate_size,
+    const uint8_t* enc_pck_crl,
+    uint32_t enc_pck_crl_size,
+    const uint8_t* enc_tcb_info_json,
+    uint32_t enc_tcb_info_json_size);
 
 OE_EXTERNC_END
 

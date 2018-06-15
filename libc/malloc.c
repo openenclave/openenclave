@@ -62,12 +62,12 @@ static int __sched_yield(void)
 
 #if defined(OE_ENABLE_MALLOC_WRAPPERS)
 
-static oe_allocation_failure_callback_t _failureCallback;
+static oe_allocation_failure_callback_t _failure_callback;
 
 void oe_set_allocation_failure_callback(
     oe_allocation_failure_callback_t function)
 {
-    _failureCallback = function;
+    _failure_callback = function;
 }
 
 void* malloc(size_t size)
@@ -78,8 +78,8 @@ void* malloc(size_t size)
     {
         errno = ENOMEM;
 
-        if (_failureCallback)
-            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+        if (_failure_callback)
+            _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
 
     return p;
@@ -98,8 +98,8 @@ void* calloc(size_t nmemb, size_t size)
     {
         errno = ENOMEM;
 
-        if (_failureCallback)
-            _failureCallback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
+        if (_failure_callback)
+            _failure_callback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
     }
 
     return p;
@@ -113,8 +113,8 @@ void* realloc(void* ptr, size_t size)
     {
         errno = ENOMEM;
 
-        if (_failureCallback)
-            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+        if (_failure_callback)
+            _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
 
     return p;
@@ -128,8 +128,8 @@ int posix_memalign(void** memptr, size_t alignment, size_t size)
     {
         errno = ENOMEM;
 
-        if (_failureCallback)
-            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+        if (_failure_callback)
+            _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
 
     return rc;
@@ -143,8 +143,8 @@ void* memalign(size_t alignment, size_t size)
     {
         errno = ENOMEM;
 
-        if (_failureCallback)
-            _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
+        if (_failure_callback)
+            _failure_callback(__FILE__, __LINE__, __FUNCTION__, size);
     }
 
     return p;
@@ -169,7 +169,7 @@ void* memalign(size_t alignment, size_t size)
 **==============================================================================
 */
 
-static oe_malloc_stats_t _mallocStats;
+static oe_malloc_stats_t _malloc_stats;
 static size_t _dlmalloc_stats_fprintf_calls;
 
 /* Replacement for fprintf in dlmalloc sources below */
@@ -182,17 +182,17 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
 
     if (strcmp(format, "max system bytes = %10lu\n") == 0)
     {
-        _mallocStats.peakSystemBytes = va_arg(ap, uint64_t);
+        _malloc_stats.peak_system_bytes = va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
     }
     else if (strcmp(format, "system bytes     = %10lu\n") == 0)
     {
-        _mallocStats.systemBytes = va_arg(ap, uint64_t);
+        _malloc_stats.system_bytes = va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
     }
     else if (strcmp(format, "in use bytes     = %10lu\n") == 0)
     {
-        _mallocStats.inUseBytes = va_arg(ap, uint64_t);
+        _malloc_stats.in_use_bytes = va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
         goto done;
     }
@@ -222,7 +222,7 @@ oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
         goto done;
 
     // This function indirectly calls _dlmalloc_stats_fprintf(), which sets
-    // fields in the _mallocStats structure.
+    // fields in the _malloc_stats structure.
     _dlmalloc_stats_fprintf_calls = 0;
     dlmalloc_stats();
 
@@ -230,7 +230,7 @@ oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
     if (_dlmalloc_stats_fprintf_calls != 3)
         goto done;
 
-    *stats = _mallocStats;
+    *stats = _malloc_stats;
 
     result = OE_OK;
 

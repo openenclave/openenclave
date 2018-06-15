@@ -29,7 +29,7 @@ void Err(const char* format, ...)
 
 // Replace .so-extension with .signed.so. If there is no .so extension,
 // append .signed.so.
-static char* _MakeSignedLibName(const char* path)
+static char* _make_signed_lib_name(const char* path)
 {
     const char* p;
     mem_t buf = MEM_DYNAMIC_INIT;
@@ -43,7 +43,7 @@ static char* _MakeSignedLibName(const char* path)
     return (char*)mem_steal(&buf);
 }
 
-static int _UpdateAndWriteSharedLib(
+static int _update_and_write_shared_lib(
     const char* path,
     const oe_sgx_enclave_properties_t* properties)
 {
@@ -68,27 +68,27 @@ static int _UpdateAndWriteSharedLib(
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&elf, "__oe_numPages", &sym) != 0)
+        if (Elf64_FindSymbolByName(&elf, "__oe_num_pages", &sym) != 0)
         {
-            Err("__oe_numPages() undefined");
+            Err("__oe_num_pages() undefined");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&elf, "__oe_baseHeapPage", &sym) != 0)
+        if (Elf64_FindSymbolByName(&elf, "__oe_base_heap_page", &sym) != 0)
         {
-            Err("__oe_baseHeapPage() undefined");
+            Err("__oe_base_heap_page() undefined");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&elf, "__oe_numHeapPages", &sym) != 0)
+        if (Elf64_FindSymbolByName(&elf, "__oe_num_heap_pages", &sym) != 0)
         {
-            Err("__oe_numHeapPages() undefined");
+            Err("__oe_num_heap_pages() undefined");
             goto done;
         }
 
-        if (Elf64_FindSymbolByName(&elf, "__oe_virtualBaseAddr", &sym) != 0)
+        if (Elf64_FindSymbolByName(&elf, "__oe_virtual_base_addr", &sym) != 0)
         {
-            Err("__oe_virtualBaseAddr() undefined");
+            Err("__oe_virtual_base_addr() undefined");
             goto done;
         }
     }
@@ -111,7 +111,7 @@ static int _UpdateAndWriteSharedLib(
 
     /* Write new shared shared library */
     {
-        char* p = _MakeSignedLibName(path);
+        char* p = _make_signed_lib_name(path);
 
         if (!p)
         {
@@ -153,53 +153,53 @@ done:
 
 // Options loaded from .conf file. Uninitialized fields contain the maximum
 // integer value for the corresponding type.
-typedef struct _ConfigFileOptions
+typedef struct _config_file_options
 {
     bool debug;
-    uint64_t numHeapPages;
-    uint64_t numStackPages;
-    uint64_t numTCS;
-    uint16_t productID;
-    uint16_t securityVersion;
+    uint64_t num_heap_pages;
+    uint64_t num_stack_pages;
+    uint64_t num_tcs;
+    uint16_t product_id;
+    uint16_t security_version;
 } ConfigFileOptions;
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                               \
     {                                                                 \
-        .debug = false, .numHeapPages = OE_MAX_UINT64,                \
-        .numStackPages = OE_MAX_UINT64, .numTCS = OE_MAX_UINT64,      \
-        .productID = OE_MAX_UINT16, .securityVersion = OE_MAX_UINT16, \
+        .debug = false, .num_heap_pages = OE_MAX_UINT64,                \
+        .num_stack_pages = OE_MAX_UINT64, .num_tcs = OE_MAX_UINT64,      \
+        .product_id = OE_MAX_UINT16, .security_version = OE_MAX_UINT16, \
     }
 
 /* Check whether the .conf file is missing required options */
-static int _CheckForMissingOptions(const ConfigFileOptions* options)
+static int _check_for_missing_options(const ConfigFileOptions* options)
 {
     int ret = 0;
 
-    if (options->numHeapPages == OE_MAX_UINT64)
+    if (options->num_heap_pages == OE_MAX_UINT64)
     {
         Err("%s: missing option: NumHeapPages", arg0);
         ret = -1;
     }
 
-    if (options->numStackPages == OE_MAX_UINT64)
+    if (options->num_stack_pages == OE_MAX_UINT64)
     {
         Err("%s: missing option: NumStackPages", arg0);
         ret = -1;
     }
 
-    if (options->numTCS == OE_MAX_UINT64)
+    if (options->num_tcs == OE_MAX_UINT64)
     {
         Err("%s: missing option: NumTCS", arg0);
         ret = -1;
     }
 
-    if (options->productID == OE_MAX_UINT16)
+    if (options->product_id == OE_MAX_UINT16)
     {
         Err("%s: missing option: ProductID", arg0);
         ret = -1;
     }
 
-    if (options->securityVersion == OE_MAX_UINT16)
+    if (options->security_version == OE_MAX_UINT16)
     {
         Err("%s: missing option: SecurityVersion", arg0);
         ret = -1;
@@ -208,7 +208,7 @@ static int _CheckForMissingOptions(const ConfigFileOptions* options)
     return ret;
 }
 
-static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
+static int _load_config_file(const char* path, ConfigFileOptions* options)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -272,7 +272,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->numHeapPages = n;
+            options->num_heap_pages = n;
         }
         else if (strcmp(str_ptr(&lhs), "NumStackPages") == 0)
         {
@@ -284,7 +284,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->numStackPages = n;
+            options->num_stack_pages = n;
         }
         else if (strcmp(str_ptr(&lhs), "NumTCS") == 0)
         {
@@ -296,7 +296,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->numTCS = n;
+            options->num_tcs = n;
         }
         else if (strcmp(str_ptr(&lhs), "ProductID") == 0)
         {
@@ -308,7 +308,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->productID = n;
+            options->product_id = n;
         }
         else if (strcmp(str_ptr(&lhs), "SecurityVersion") == 0)
         {
@@ -320,7 +320,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->securityVersion = n;
+            options->security_version = n;
         }
         else
         {
@@ -343,7 +343,7 @@ done:
     return rc;
 }
 
-static int _LoadFile(const char* path, void** data, size_t* size)
+static int _load_file(const char* path, void** data, size_t* size)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -403,7 +403,7 @@ done:
 }
 
 // Load the SGX enclave properties from an enclave's .oeinfo section.
-static oe_result_t _SGXLoadEnclaveProperties(
+static oe_result_t _sgx_load_enclave_properties(
     const char* path,
     oe_sgx_enclave_properties_t* properties)
 {
@@ -438,7 +438,7 @@ done:
 }
 
 /* Merge configuration file options into enclave properties */
-void _MergeConfigFileOptions(
+void _merge_config_file_options(
     oe_sgx_enclave_properties_t* properties,
     const char* path,
     const ConfigFileOptions* options)
@@ -453,7 +453,7 @@ void _MergeConfigFileOptions(
     if (!initialized)
     {
         properties->header.size = sizeof(oe_sgx_enclave_properties_t);
-        properties->header.enclaveType = OE_ENCLAVE_TYPE_SGX;
+        properties->header.enclave_type = OE_ENCLAVE_TYPE_SGX;
         properties->config.attributes = SGX_FLAGS_MODE64BIT;
     }
 
@@ -462,24 +462,24 @@ void _MergeConfigFileOptions(
         properties->config.attributes |= SGX_FLAGS_DEBUG;
 
     /* If ProductID option is present */
-    if (options->productID != OE_MAX_UINT16)
-        properties->config.productID = options->productID;
+    if (options->product_id != OE_MAX_UINT16)
+        properties->config.product_id = options->product_id;
 
     /* If SecurityVersion option is present */
-    if (options->securityVersion != OE_MAX_UINT16)
-        properties->config.securityVersion = options->securityVersion;
+    if (options->security_version != OE_MAX_UINT16)
+        properties->config.security_version = options->security_version;
 
     /* If NumHeapPages option is present */
-    if (options->numHeapPages != OE_MAX_UINT64)
-        properties->header.sizeSettings.numHeapPages = options->numHeapPages;
+    if (options->num_heap_pages != OE_MAX_UINT64)
+        properties->header.size_settings.num_heap_pages = options->num_heap_pages;
 
     /* If NumStackPages option is present */
-    if (options->numStackPages != OE_MAX_UINT64)
-        properties->header.sizeSettings.numStackPages = options->numStackPages;
+    if (options->num_stack_pages != OE_MAX_UINT64)
+        properties->header.size_settings.num_stack_pages = options->num_stack_pages;
 
     /* If NumTCS option is present */
-    if (options->numTCS != OE_MAX_UINT64)
-        properties->header.sizeSettings.numTCS = options->numTCS;
+    if (options->num_tcs != OE_MAX_UINT64)
+        properties->header.size_settings.num_tcs = options->num_tcs;
 }
 
 static const char _usage[] =
@@ -532,8 +532,8 @@ int main(int argc, const char* argv[])
     const char* conffile;
     const char* keyfile;
     oe_enclave_t enc;
-    void* pemData = NULL;
-    size_t pemSize;
+    void* pem_data = NULL;
+    size_t pem_size;
     ConfigFileOptions options = CONFIG_FILE_OPTIONS_INITIALIZER;
     oe_sgx_enclave_properties_t props;
     oe_sgx_load_context_t context;
@@ -551,7 +551,7 @@ int main(int argc, const char* argv[])
     keyfile = argv[3];
 
     /* Load the configuration file */
-    if (_LoadConfigFile(conffile, &options) != 0)
+    if (_load_config_file(conffile, &options) != 0)
     {
         Err("failed to load configuration file: %s", conffile);
         goto done;
@@ -559,7 +559,7 @@ int main(int argc, const char* argv[])
 
     /* Load the enclave properties from the enclave */
     {
-        result = _SGXLoadEnclaveProperties(enclave, &props);
+        result = _sgx_load_enclave_properties(enclave, &props);
 
         if (result != OE_OK && result != OE_NOT_FOUND)
         {
@@ -570,21 +570,21 @@ int main(int argc, const char* argv[])
         /* If enclave properties not found, then options must be complete */
         if (result == OE_NOT_FOUND)
         {
-            if (_CheckForMissingOptions(&options) != 0)
+            if (_check_for_missing_options(&options) != 0)
                 goto done;
         }
     }
 
     /* Merge the configuration file options into the enclave properties */
-    _MergeConfigFileOptions(&props, conffile, &options);
+    _merge_config_file_options(&props, conffile, &options);
 
     /* Check whether enclave properties are valid */
     {
-        const char* fieldName;
+        const char* field_name;
 
-        if (oe_sgx_validate_enclave_properties(&props, &fieldName) != OE_OK)
+        if (oe_sgx_validate_enclave_properties(&props, &field_name) != OE_OK)
         {
-            Err("invalid enclave property value: %s", fieldName);
+            Err("invalid enclave property value: %s", field_name);
             goto done;
         }
     }
@@ -607,7 +607,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load private key into memory */
-    if (_LoadFile(keyfile, &pemData, &pemSize) != 0)
+    if (_load_file(keyfile, &pem_data, &pem_size) != 0)
     {
         Err("Failed to load file: %s", keyfile);
         goto done;
@@ -617,10 +617,10 @@ int main(int argc, const char* argv[])
     if ((result = oe_sgx_sign_enclave(
              &enc.hash,
              props.config.attributes,
-             props.config.productID,
-             props.config.securityVersion,
-             pemData,
-             pemSize,
+             props.config.product_id,
+             props.config.security_version,
+             pem_data,
+             pem_size,
              (sgx_sigstruct_t*)props.sigstruct)) != OE_OK)
     {
         Err("oe_sgx_sign_enclave() failed: result=%u", result);
@@ -628,9 +628,9 @@ int main(int argc, const char* argv[])
     }
 
     /* Create signature section and write out new file */
-    if ((result = _UpdateAndWriteSharedLib(enclave, &props)) != OE_OK)
+    if ((result = _update_and_write_shared_lib(enclave, &props)) != OE_OK)
     {
-        Err("_UpdateAndWriteSharedLib(): result=%u", result);
+        Err("_update_and_write_shared_lib(): result=%u", result);
         goto done;
     }
 
@@ -638,8 +638,8 @@ int main(int argc, const char* argv[])
 
 done:
 
-    if (pemData)
-        free(pemData);
+    if (pem_data)
+        free(pem_data);
 
     oe_sgx_cleanup_load_context(&context);
 
