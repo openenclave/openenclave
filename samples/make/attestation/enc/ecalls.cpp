@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/libc/string.h>
+#include <string.h>
 
 #include "attestation.h"
 #include "crypto.h"

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/libc/string.h>
+#include <string.h>
 
 #include "attestation.h"
 #include "crypto.h"
