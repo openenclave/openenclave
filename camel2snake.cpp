@@ -538,6 +538,7 @@ int camel2snake(
     FILE* os = NULL;
     Buffer buffer;
     vector<char> out;
+    bool inside_quotes = false;
 
     // Load the input source file.
     if (load_file(path, buffer) != 0)
@@ -549,6 +550,30 @@ int camel2snake(
     // Parse the file:
     for (const char* p = &buffer[0]; *p; )
     {
+        if (inside_quotes)
+        {
+            if (p[0] == '\\' && p[1] == '"')
+            {
+                out.push_back('\\');
+                out.push_back('"');
+                p += 2;
+                continue;
+            }
+
+            if (p[0] == '"')
+            {
+                inside_quotes = false;
+                out.push_back(*p++);
+                continue;
+            }
+        }
+        else if (p[0] == '"')
+        {
+            inside_quotes = true;
+            out.push_back(*p++);
+            continue;
+        }
+
         const char* start = p;
         p = _parse_c_ident(start);
 
@@ -570,19 +595,23 @@ int camel2snake(
             // Match the longest prefix.
             if (match_camel(conf, ident.c_str(), prefix, base))
             {
-                /* If identifer is not on the ignore list */
-                if (conf.ignore.find(ident) == conf.ignore.end())
+                // Ignore unprefixed identifiers in inside quotes.
+                if (!(prefix.empty() && inside_quotes))
                 {
-                    /* Check first for manual replacement */
-                    Map::const_iterator replace = conf.replace.find(ident);
+                    // If identifer is not on the ignore list:
+                    if (conf.ignore.find(ident) == conf.ignore.end())
+                    {
+                        // Check first for manual replacement.
+                        Map::const_iterator replace = conf.replace.find(ident);
 
-                    if (replace == conf.replace.end())
-                    {
-                        snake = camel_to_snake(prefix, base);
-                    }
-                    else
-                    {
-                        snake = (*replace).second;
+                        if (replace == conf.replace.end())
+                        {
+                            snake = camel_to_snake(prefix, base);
+                        }
+                        else
+                        {
+                            snake = (*replace).second;
+                        }
                     }
                 }
             }
