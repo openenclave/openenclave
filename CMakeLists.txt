@@ -41,7 +41,7 @@ set(OE_LIBDIR ${OE_OUTPUT_DIR}/lib CACHE INTERNAL "Library collector")
 # generate config-file for other projects using Makefile
 include(gen_config_file)
 gen_config_file(${OE_DATADIR}/openenclave/config.mak "${CMAKE_INSTALL_PREFIX}")
-install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
+install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
 # generate & install CMake Export file for other projects using CMAKE
 install(EXPORT openenclave DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)

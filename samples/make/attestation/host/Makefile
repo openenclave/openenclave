@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
 
 all: build

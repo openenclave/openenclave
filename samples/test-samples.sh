@@ -39,6 +39,6 @@ fi || printandexit
 TEST_MAKE_DIR="$INSTALL_DIR/share/openenclave/samples"
 
 # build & run the make samples
-make -C "$TEST_MAKE_DIR" OPENENCLAVE_CONFIG="$INSTALL_DIR/share/openenclave/config.mak" OE_PREFIX=$INSTALL_DIR world || printandexit
+make -C "$TEST_MAKE_DIR" OPENENCLAVE_CONFIG="$INSTALL_DIR/share/openenclave/samples/config.mak" OE_PREFIX=$INSTALL_DIR world || printandexit
 
 exit 0
