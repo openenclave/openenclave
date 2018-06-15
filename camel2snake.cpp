@@ -556,7 +556,7 @@ int camel2snake(
         {
             out.push_back(*p++);
         }
-        if (start != &buffer[0] && isdigit(start[-1]))
+        else if (start != &buffer[0] && isdigit(start[-1]))
         {
             out.insert(out.end(), start, p);
         }
