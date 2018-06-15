@@ -101,6 +101,12 @@ bool match_camel(
 
     prefix.clear();
 
+    if (islower(ident[0]))
+    {
+        base = ident;
+        return true;
+    }
+
     // Find longest matching prefix.
     {
         Set::const_iterator pp = conf.prefix.begin();
