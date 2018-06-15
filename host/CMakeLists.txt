@@ -18,7 +18,7 @@ set(PLATFORM_SRC
     linux/hostthread.c
     linux/sgxioctl.c
     linux/sgxsign.c
-    sgxquoteprovider.c        
+    sgxquoteprovider.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -84,13 +84,15 @@ endif(UNIX)
 target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 
 # Additional compilation and link options when using libsgx
-if(USE_LIBSGX)
-message("USE_LIBSGX is set, building oehost with FLC dependency")
+if(USE_AESM)
+message("USE_AESM is set, building oehost with AESM dependency.")
+target_compile_definitions(oehost PRIVATE OE_USE_AESM)
+else()
+message("Defaulting to building oehost with NGSA dependency.")
 find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
 find_library(LIBSGX_QE NAMES sgxoeql)
 find_library(LIBSGX_URTS NAMES sgx_urts_ng)
 target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS})
-target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
 endif()
 
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
@@ -109,4 +111,3 @@ install(TARGETS oehost EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LI
 
 # provide oehostapp to install-base as well
 install(TARGETS oehostapp EXPORT openenclave)
-

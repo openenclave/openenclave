@@ -12,9 +12,9 @@ add_library(oeenclave STATIC
     rsa.c
     sha.c)
 
-if(USE_LIBSGX)
-target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
-endif()    
+if(USE_AESM)
+target_compile_definitions(oeenclave PUBLIC OE_USE_AESM)
+endif()
 
 target_link_libraries(oeenclave PUBLIC
     mbedcrypto

@@ -5,8 +5,8 @@ add_executable(aesm main.cpp)
 target_link_libraries(aesm oehost)
 
 # Additional compilation options when using libsgx instead of AESM
-if(USE_LIBSGX)
-target_compile_definitions(aesm PRIVATE OE_USE_LIBSGX)
+if(USE_AESM)
+target_compile_definitions(aesm PRIVATE OE_USE_AESM)
 endif()
 
 add_test(NAME tests/aesm COMMAND ./aesm)

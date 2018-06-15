@@ -9,14 +9,14 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 
-#if defined(OE_USE_LIBSGX)
+#if defined(OE_USE_AESM)
+#include <openenclave/internal/aesm.h>
+#else
 #include "sgxquote.h"
 #include "sgxquoteprovider.h"
-#else
-#include <openenclave/internal/aesm.h>
 #endif
 
-#if !defined(OE_USE_LIBSGX)
+#if defined(OE_USE_AESM)
 
 static oe_result_t _sgx_init_quote_with_aesm(sgx_target_info_t* targetInfo)
 {
@@ -144,14 +144,19 @@ done:
     return result;
 }
 
-#endif
+#endif // defined(OE_USE_AESM)
 
 oe_result_t sgx_get_qetarget_info(sgx_target_info_t* targetInfo)
 {
     oe_result_t result = OE_UNEXPECTED;
     memset(targetInfo, 0, sizeof(*targetInfo));
 
-#if defined(OE_USE_LIBSGX)
+#if defined(OE_USE_AESM)
+
+    result = _sgx_init_quote_with_aesm(targetInfo);
+
+#else
+
     // Quote workflow always begins with obtaining the target info. Therefore
     // initializing the quote provider here ensures that that we can control its
     // life time rather than Intel's attestation libraries.
@@ -160,10 +165,6 @@ oe_result_t sgx_get_qetarget_info(sgx_target_info_t* targetInfo)
 
     oe_initialize_quote_provider();
     result = oe_sgx_qe_get_target_info((uint8_t*)targetInfo);
-
-#else
-
-    result = _sgx_init_quote_with_aesm(targetInfo);
 
 #endif
 
@@ -180,13 +181,13 @@ oe_result_t sgx_get_quote_size(uint32_t* quoteSize)
     if (!quoteSize)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if defined(OE_USE_LIBSGX)
+#if defined(OE_USE_AESM)
 
-    result = oe_sgx_qe_get_quote_size(quoteSize);
+    result = _sgx_get_quote_size_from_aesm(NULL, quoteSize);
 
 #else
 
-    result = _sgx_get_quote_size_from_aesm(NULL, quoteSize);
+    result = oe_sgx_qe_get_quote_size(quoteSize);
 
 #endif
 
@@ -227,17 +228,18 @@ oe_result_t sgx_get_quote(
 
 /* Get the quote from the AESM service */
 
-#if defined(OE_USE_LIBSGX)
-
-    result = oe_sgx_qe_get_quote((uint8_t*)report, *quoteSize, quote);
-
-#else
+#if defined(OE_USE_AESM)
 
     result = _sgx_get_quote_from_aesm(
         report,
         SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
         (sgx_quote_t*)quote,
         *quoteSize);
+
+#else
+
+    result = oe_sgx_qe_get_quote((uint8_t*)report, *quoteSize, quote);
+
 #endif
 
 done:

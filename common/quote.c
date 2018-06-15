@@ -10,7 +10,7 @@
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
 
-#ifdef OE_USE_LIBSGX
+#if !defined(OE_USE_AESM)
 
 // Public key of Intel's root certificate.
 static const char* g_ExpectedRootCertificateKey =

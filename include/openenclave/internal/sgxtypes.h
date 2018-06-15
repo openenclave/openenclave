@@ -711,7 +711,7 @@ OE_CHECK_SIZE(sizeof(sgx_report_t), 432);
 **
 **==============================================================================
 */
-#if defined OE_USE_LIBSGX
+#if !defined(OE_USE_AESM)
 
 OE_PACK_BEGIN
 typedef struct _sgx_quote
@@ -899,7 +899,7 @@ OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(sgx_quote_t), 436);
 
-#endif
+#endif // !defined(OE_USE_AESM)
 
 #define OE_SGX_QUOTE_VERSION (3)
 

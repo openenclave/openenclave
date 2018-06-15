@@ -3,8 +3,8 @@
 
 add_executable(debug_host host.c)
 
-if(USE_LIBSGX)
-    target_compile_definitions(debug_host PRIVATE OE_USE_LIBSGX)
+if(USE_AESM)
+    target_compile_definitions(debug_host PRIVATE OE_USE_AESM)
 endif()
 
 target_link_libraries(debug_host oehostapp)

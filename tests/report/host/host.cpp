@@ -63,7 +63,7 @@ int main(int argc, const char* argv[])
     TestParseReportNegative(NULL);
     TestLocalVerifyReport(NULL);
 
-#ifdef OE_USE_LIBSGX
+#if !defined(OE_USE_AESM)
     TestRemoteVerifyReport(NULL);
 #endif
 
@@ -83,7 +83,7 @@ int main(int argc, const char* argv[])
         oe_call_enclave(enclave, "TestLocalVerifyReport", &targetInfo) ==
         OE_OK);
 
-#ifdef OE_USE_LIBSGX
+#if !defined(OE_USE_AESM)
     OE_TEST(
         oe_call_enclave(enclave, "TestRemoteVerifyReport", &targetInfo) ==
         OE_OK);

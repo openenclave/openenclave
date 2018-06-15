@@ -1,21 +1,21 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if(USE_LIBSGX)
-
-# Install the attestation sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/attestation
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
-else()
+if(USE_AESM)
 
 # Install the sort sample.
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/sort
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
-endif()    
+else()
+
+# Install the attestation sample.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/attestation
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
+
+endif()
 
 # Install make file for samples folder.
 install(FILES  ${CMAKE_CURRENT_LIST_DIR}/make/Makefile

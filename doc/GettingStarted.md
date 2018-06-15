@@ -61,17 +61,6 @@ Execute the following commands from the root of the source tree to install the
 prerequisites (required packages, the SGX driver, and the SGX library
 dependencies).
 
-_For Skylake and Kabylake systems (SGX-1):_
-
-- Intel(R) SGX driver
-- Intel(R) AESM service
-
-```
-$ sudo ./scripts/install-prereqs
-$ sudo make -C prereqs
-$ sudo make -C prereqs install
-```
-
 _For Coffeelake systems (SGX-1 with Flexible Launch Control):_
 
 - Intel(R) SGX driver with FLC support
@@ -79,8 +68,19 @@ _For Coffeelake systems (SGX-1 with Flexible Launch Control):_
 
 ```
 $ sudo ./scripts/install-prereqs
-$ sudo make -C prereqs USE_LIBSGX=1
-$ sudo make -C prereqs install USE_LIBSGX=1
+$ sudo make -C prereqs
+$ sudo make -C prereqs install
+```
+
+_For Skylake and Kabylake systems (SGX-1):_
+
+- Intel(R) SGX driver
+- Intel(R) AESM service
+
+```
+$ sudo ./scripts/install-prereqs
+$ sudo make -C prereqs USE_AESM=1
+$ sudo make -C prereqs install USE_AESM=1
 ```
 
 The second and third commands are only necessary if you wish to install the
@@ -96,7 +96,7 @@ Build is generally out-of-tree (in-tree is possible, though not recommended).
 To build, pick a directory to build under ("*build/*" below). Then use cmake to configure
 the build and generate the out-of-tree make files and build.
 
-_For Skylake and Kabylake systems (SGX-1):_
+_For Coffeelake systems (SGX-1 with Flexible Launch Control):_
 ```
 $ mkdir build/
 $ cd build/
@@ -104,11 +104,11 @@ build$ cmake ..
 build$ make
 ```
 
-_For Coffeelake systems (SGX-1 with Flexible Launch Control):_
+_For Skylake and Kabylake systems (SGX-1):_
 ```
 $ mkdir build/
 $ cd build/
-build$ cmake .. -DUSE_LIBSGX=1
+build$ cmake .. -DUSE_AESM=1
 build$ make
 ```
 

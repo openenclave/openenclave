@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#if defined(OE_USE_LIBSGX)
+#if !defined(OE_USE_AESM)
 
 #include "sgxquote.h"
 #include <sgx_ql_oe_wrapper.h>

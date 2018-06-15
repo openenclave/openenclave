@@ -67,7 +67,7 @@ static void _TestDebugSigned(const char* path)
 {
     /* Signed debug mode should always pass. */
     _LaunchEnclaveSuccess(path, _CreateFlags(true));
-#ifdef OE_USE_LIBSGX
+#if !defined(OE_USE_AESM)
     /* Only works with the NGSA SDK. */
     _LaunchEnclaveSuccess(path, _CreateFlags(false));
 #endif
@@ -84,7 +84,7 @@ static void _TestNonDebugSigned(const char* path)
 {
     /* Debug mode should fail. Non-debug mode should pass. */
     _LaunchEnclaveFail(path, _CreateFlags(true), OE_DEBUG_DOWNGRADE);
-#ifdef OE_USE_LIBSGX
+#if !defined(OE_USE_AESM)
     /* Only works with the NGSA SDK. */
     _LaunchEnclaveSuccess(path, _CreateFlags(false));
 #endif

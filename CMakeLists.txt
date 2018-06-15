@@ -57,16 +57,17 @@ set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 include(CPack)
 
 # define build options that affect cmake across multiple subdirectories
-option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
-if (USE_LIBSGX AND WIN32)
-message(FATAL_ERROR "USE_LIBSGX is not supported on Windows. Disable this when calling cmake with -DUSE_LIBSGX=OFF")
+option(USE_AESM "Build oehost using Intel AESM instead of NGSA" OFF)
+if (WIN32)
+set(USE_AESM ON)
+message("NGSA is not currently supported on Windows, set USE_AESM=ON by default.")
 endif()
 
 include(add_enclave_test)
 
 # finally, add all dirs that matter
-add_subdirectory(host)		# convertable to Windows
-add_subdirectory(include)	# convertable to Windows
+add_subdirectory(host)		# convertible to Windows
+add_subdirectory(include)	# convertible to Windows
 add_subdirectory(tests)
 if (UNIX)
 add_subdirectory(3rdparty)

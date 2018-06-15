@@ -6,8 +6,8 @@ add_enclave_executable(report_enc sign.conf private.pem
     enc.cpp
     )
 
-if(USE_LIBSGX)
-    target_compile_definitions(report_enc PRIVATE OE_USE_LIBSGX)
-endif()    
+if(USE_AESM)
+    target_compile_definitions(report_enc PRIVATE OE_USE_AESM)
+endif()
 
 target_link_libraries(report_enc oeenclave)

@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-ifdef USE_LIBSGX
-	DIRS = sgx-driver ngsa
-else
+ifdef USE_AESM
 	DIRS = packages isgx aesm
+else
+	DIRS = sgx-driver ngsa
 endif
 
 define NL
