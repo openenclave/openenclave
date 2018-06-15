@@ -24,10 +24,11 @@ LDFLAGS += -Wl,--export-dynamic
 LDFLAGS += -Wl,-pie
 LDFLAGS += -Wl,-eoe_main 
 
-OE_LIBS1 =  -Wl,--start-group -Wl,--whole-archive -loeenclave -loecore -Wl,--end-group
-OE_LIBS2 =  -loelibcxx -loelibc -lmbedtls -lmbedx509 -lmbedcrypto
+# Ensure attestation functionality in enclave.
+LDFLAGS += -Wl,--undefined=__liboecore
 
-LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave ${OE_LIBS1} ${OE_LIBS2}
+# Order of libraries below matters.
+LIBRARIES = -L${OE_LIBDIR}/openenclave/enclave -loelibcxx -loeenclave -lnbedcrypto -lmbedtls -lmbedx509 -loelibc -loecore
 
 all:
 	$(MAKE) build
