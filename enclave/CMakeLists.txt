@@ -7,8 +7,9 @@ add_library(oeenclave STATIC
     ../common/quote.c
     cmac.c
     key.c
+    init.c
     random.c
-    report.cpp
+    report.c
     rsa.c
     sha.c)
 
@@ -16,13 +17,13 @@ if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
 endif()    
 
-# Linker can optimize out liboeenclave if no symbol from liboeenclave is used
-# by the enclave. Adding --undefined=__liboeenclave ensure that liboeenclave
-# is not optimized out. __liboeenclave is just a function. Host side
-# oe_verify_report relies on oe_verify_report being present in the enclave.
-
+# Enclave applications that link liboenclave must specify the -Wl option
+# as shown below so that liboecore calls the strong version of 
+# __liboeenclave_init() (defined in liboeenclave) rather than the weak 
+# version (defined in liboecore). This public definition propagates this
+# linker option to cmake scripts that reference the 'oeenclave' target.
 target_link_libraries(oeenclave PUBLIC
-    -Wl,--undefined=__liboeenclave
+    -Wl,--require-defined=__liboeenclave_init
     mbedcrypto
     oelibc)
 

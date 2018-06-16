@@ -6,6 +6,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cmac.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/keys.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -13,13 +14,6 @@
 #include "../common/quote.h"
 
 #include <stdlib.h>
-
-// This global function is used to force inclusion of this object when using
-// the following linkage option: --Wl,--undefined=__liboeenclave. Note that
-// this function is never called.
-void __liboeenclave(void)
-{
-}
 
 // This file is .cpp in order to use C++ static initialization.
 
@@ -175,16 +169,8 @@ done:
     _SafeCopyVerifyReportArgsOuput(&arg, argIn);
 }
 
-static bool  _RegisterHandlerVerifyReport();
-
-static bool g_Init = _RegisterHandlerVerifyReport();
-
-#include <stdio.h>
-
-bool  _RegisterHandlerVerifyReport()
+/* __liboeenclave_init() calls this function */
+void oe_register_verify_report(void)
 {
     oe_register_ecall(OE_FUNC_VERIFY_REPORT, _HandleVerifyReport);
-    printf("_RegisterHandlerVerifyReport\n");
-    OE_UNUSED(g_Init);
-    return true;
 }
