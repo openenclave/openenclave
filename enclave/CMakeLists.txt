@@ -6,9 +6,10 @@ add_library(oeenclave STATIC
     ec.c
     ../common/quote.c
     cmac.c
+    init.c
     key.c
     random.c
-    report.cpp
+    report.c
     rsa.c
     sha.c)
 
@@ -16,7 +17,13 @@ if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
 endif()    
 
+# Enclave applications that link liboenclave must specify the -Wl option
+# as shown below so that liboecore calls the strong version of 
+# __liboeenclave_init() (defined in liboeenclave) rather than the weak 
+# version (defined in liboecore). This public definition propagates this
+# linker option to cmake scripts that reference the 'oeenclave' target.
 target_link_libraries(oeenclave PUBLIC
+    -Wl,--require-defined=__liboeenclave_init
     mbedcrypto
     oelibc)
 
