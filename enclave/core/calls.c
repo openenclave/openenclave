@@ -37,9 +37,8 @@ uint8_t __oe_initialized = 0;
 **                current SSA (TCS.cssa) and the number of SSA's (TCS.nssa).
 **
 **     TD       - Thread data. Per thread data as defined by the
-*oe_thread_data_t
-**                structure and extended by the TD structure. This structure
-**                records the stack pointer of the last EENTER.
+**                oe_thread_data_t structure and extended by the TD structure. 
+**                This structure records the stack pointer of the last EENTER.
 **
 **     SP       - Stack pointer. Refers to the enclave's stack pointer.
 **
@@ -114,6 +113,26 @@ uint8_t __oe_initialized = 0;
 /*
 **==============================================================================
 **
+** __liboeenclave_init()
+**
+**     _HandleInitEnclave() calls this function to initialize the 
+**     liboeenclave library. When linked, liboeenclave overrides the weak
+**     definition below. The enclave application must be linked with the 
+**     following option so that the linker finds the strong version.
+**
+**         -Wl,--required-defined=__liboeenclave_init.
+**
+**==============================================================================
+*/
+
+__attribute__((weak))
+void __liboeenclave_init(void)
+{
+}
+
+/*
+**==============================================================================
+**
 ** _HandleInitEnclave()
 **
 **     Handle the OE_FUNC_INIT_ENCLAVE from host and ensures that each state
@@ -152,6 +171,9 @@ void _HandleInitEnclave(uint64_t argIn)
 
         oe_spin_unlock(&_lock);
     }
+
+    /* Initialize the liboeenclave library when linked */
+    __liboeenclave_init();
 }
 
 /*
@@ -740,3 +762,4 @@ void oe_abort(void)
     _HandleExit(OE_CODE_ERET, 0, __oe_enclave_status);
     return;
 }
+
