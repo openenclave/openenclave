@@ -6,7 +6,6 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cmac.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/keys.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
