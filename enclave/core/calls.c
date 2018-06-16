@@ -116,7 +116,7 @@ uint8_t __oe_initialized = 0;
 ** __liboeenclave_init()
 **
 **     _HandleInitEnclave() calls this function to initialize the 
-**     liboeenclave library. When linked, that library it overrides the weak
+**     liboeenclave library. When linked, liboeenclave overrides the weak
 **     definition below. The enclave application must be linked with the 
 **     following option so that the linker finds the strong version.
 **
