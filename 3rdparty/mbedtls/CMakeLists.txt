@@ -3,7 +3,7 @@
 
 # Copy mbedtls sources to replace config.h and build w/ own flags
 
-set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${CMAKE_CURRENT_SOURCE_DIR}/include -fno-builtin -fPIC -fno-builtin-udivti3")
+set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${CMAKE_CURRENT_SOURCE_DIR}/include -fno-builtin -fPIC -fno-builtin-udivti3 -fno-stack-protector")
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 

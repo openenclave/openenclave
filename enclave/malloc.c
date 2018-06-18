@@ -81,7 +81,7 @@ void oe_set_allocation_failure_callback(
     _failureCallback = function;
 }
 
-void* malloc(size_t size)
+void* oe_malloc(size_t size)
 {
     void* p = dlmalloc(size);
 
@@ -98,12 +98,12 @@ void* malloc(size_t size)
     return p;
 }
 
-void free(void* ptr)
+void oe_free(void* ptr)
 {
     dlfree(ptr);
 }
 
-void* calloc(size_t nmemb, size_t size)
+void* oe_calloc(size_t nmemb, size_t size)
 {
     void* p = dlcalloc(nmemb, size);
 
@@ -120,7 +120,7 @@ void* calloc(size_t nmemb, size_t size)
     return p;
 }
 
-void* realloc(void* ptr, size_t size)
+void* oe_realloc(void* ptr, size_t size)
 {
     void* p = dlrealloc(ptr, size);
 
@@ -137,7 +137,7 @@ void* realloc(void* ptr, size_t size)
     return p;
 }
 
-int posix_memalign(void** memptr, size_t alignment, size_t size)
+int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 {
     int rc = dlposix_memalign(memptr, alignment, size);
 
@@ -154,7 +154,7 @@ int posix_memalign(void** memptr, size_t alignment, size_t size)
     return rc;
 }
 
-void* memalign(size_t alignment, size_t size)
+void* oe_memalign(size_t alignment, size_t size)
 {
     void* p = dlmemalign(alignment, size);
 
@@ -273,11 +273,11 @@ done:
 
 #else /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */
 
-OE_WEAK_ALIAS(dlmalloc, malloc);
-OE_WEAK_ALIAS(dlcalloc, calloc);
-OE_WEAK_ALIAS(dlrealloc, realloc);
-OE_WEAK_ALIAS(dlfree, free);
-OE_WEAK_ALIAS(dlmemalign, memalign);
-OE_WEAK_ALIAS(dlposix_memalign, posix_memalign);
+OE_WEAK_ALIAS(dlmalloc, oe_malloc);
+OE_WEAK_ALIAS(dlcalloc, oe_calloc);
+OE_WEAK_ALIAS(dlrealloc, oe_realloc);
+OE_WEAK_ALIAS(dlfree, oe_free);
+OE_WEAK_ALIAS(dlmemalign, oe_memalign);
+OE_WEAK_ALIAS(dlposix_memalign, oe_posix_memalign);
 
 #endif /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */

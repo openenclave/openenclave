@@ -18,6 +18,7 @@
 #include "init.h"
 #include "report.h"
 #include "td.h"
+#include "verify.h"
 
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -347,6 +348,11 @@ static void _HandleECall(
         case OE_FUNC_GET_REPORT:
         {
             argOut = _HandleGetReport(argIn);
+            break;
+        }
+        case OE_FUNC_VERIFY_REPORT:
+        {
+            oe_handle_verify_report_ecall(argIn, &argOut);
             break;
         }
         default:

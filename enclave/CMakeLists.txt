@@ -35,6 +35,7 @@ add_library(oeenclave STATIC
     string.c
     td.c
     thread.c
+    verify.c
     exit.S
     getkey.S
     main.S)

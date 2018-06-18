@@ -44,6 +44,18 @@ typedef struct _oe_malloc_stats
  */
 oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats);
 
+void* oe_malloc(size_t size);
+
+void oe_free(void *ptr);
+
+void* oe_calloc(size_t nmemb, size_t size);
+
+void* oe_realloc(void* ptr, size_t size);
+
+int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
+
+void* oe_memalign(size_t alignment, size_t size);
+
 OE_EXTERNC_END
 
 #endif /* _OE_MALLOC_H */
