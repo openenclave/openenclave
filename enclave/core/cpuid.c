@@ -4,6 +4,7 @@
 #include "cpuid.h"
 #include <openenclave/bits/calls.h>
 #include <openenclave/bits/cpuid.h>
+#include <openenclave/bits/enclave.h>
 #include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
 

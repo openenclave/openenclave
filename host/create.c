@@ -17,6 +17,7 @@
 #include <openenclave/bits/cpuid.h>
 #include <openenclave/bits/debug.h>
 #include <openenclave/bits/elf.h>
+#include <openenclave/bits/enclave.h>
 #include <openenclave/bits/load.h>
 #include <openenclave/bits/mem.h>
 #include <openenclave/bits/properties.h>
