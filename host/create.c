@@ -7,7 +7,6 @@
 #if defined(__linux__)
 #include <errno.h>
 #include <sys/mman.h>
-#include "linux/cpuid_count.h"
 #elif defined(_WIN32)
 #include <windows.h>
 #endif

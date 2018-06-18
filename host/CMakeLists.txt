@@ -24,6 +24,7 @@ elseif (WIN32)
 set(PLATFORM_SRC
     windows/aep.asm
     windows/aesm.c
+    windows/cpuid_count.c
     windows/enter.asm
     windows/entersim.asm
     windows/exception.c

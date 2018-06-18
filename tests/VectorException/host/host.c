@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../../host/linux/cpuid_count.h"
 #include "../args.h"
 
 #define SKIP_RETURN_CODE 2
