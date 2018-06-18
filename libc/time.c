@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define __OE_NEED_TIME_CALLS
 #define _GNU_SOURCE
 #include <assert.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/time.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/time.h>
