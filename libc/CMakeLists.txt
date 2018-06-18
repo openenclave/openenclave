@@ -14,7 +14,6 @@ add_library(oelibc STATIC
     libunwind_stubs.c
     link.c
     locale.c
-    malloc.c
     pthread.c
     sched.c
     __printf_chk.c

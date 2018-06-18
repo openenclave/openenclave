@@ -2,24 +2,73 @@
 # Licensed under the MIT License.
 
 add_library(oeenclave STATIC
-    cert.c
-    ec.c
     ../common/quote.c
+    assert.c
+    atexit.c
+    calls.c
+    cert.c
     cmac.c
+    cpuid.c
+    ec.c
+    entropy.c
+    exception.c
+    globals.c
+    hexdump.c
+    hostcalls.c
+    hoststack.c
+    init.c
+    jump.c
     key.c
+    keys.c
+    malloc.c
+    mbedtls.c
+    memory.c
+    once.c
     random.c
-    report.cpp
+    report.c
+    result.c
     rsa.c
-    sha.c)
+    sbrk.c
+    sha.c
+    snprintf.c
+    spinlock.c
+    string.c
+    td.c
+    thread.c
+    exit.S
+    getkey.S
+    main.S)
+
+target_link_libraries(oeenclave PUBLIC oe_includes)
+
+# we strip the default include containing the compiler-provided intrinsics
+# add it back in
+target_include_directories(oeenclave SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
+
+target_compile_options(oeenclave PUBLIC
+    -m64 -fPIC
+    -nostdinc
+    $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>
+    -fno-stack-protector -fvisibility=hidden)
 
 if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
-endif()    
+endif()
 
-target_link_libraries(oeenclave PUBLIC
-    mbedcrypto
-    oelibc)
+target_compile_definitions(oeenclave PUBLIC OE_BUILD_ENCLAVE)
+
+target_link_libraries(oeenclave INTERFACE
+    -nostdlib -nodefaultlibs -nostartfiles
+    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,-eoe_main)
+
+# jump.s must be optimized for the correct call-frame.
+set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
+
+target_link_libraries(oeenclave PUBLIC oe_includes)
+
+target_link_libraries(oeenclave PUBLIC mbedcrypto)
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
 install(TARGETS oeenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+

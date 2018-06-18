@@ -3,7 +3,7 @@
 
 # Copy mbedtls sources to replace config.h and build w/ own flags
 
-set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-builtin-udivti3")
+set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${CMAKE_CURRENT_SOURCE_DIR}/include -fno-builtin -fPIC -fno-builtin-udivti3")
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 
@@ -16,12 +16,19 @@ endif()
 
 include (ExternalProject)
 ExternalProject_Add(mbedtls-wrap
-    DEPENDS oelibc_includes
-
     DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
     PATCH_COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h <SOURCE_DIR>/include/mbedtls/config.h
+
+    COMMAND ${CMAKE_COMMAND} -E rename 
+        <SOURCE_DIR>/library/platform.c
+        <SOURCE_DIR>/library/platform.c.h
+
+    COMMAND ${CMAKE_COMMAND} -E copy 
+        ${CMAKE_CURRENT_SOURCE_DIR}/platform.c 
+        <SOURCE_DIR>/library/platform.c
+
     # Addl args for compiler
     CMAKE_ARGS
         -DCMAKE_C_FLAGS=${MBEDTLS_WRAP_CFLAGS}
@@ -45,15 +52,13 @@ install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a DESTINATION ${CM
 # Convenience lib for use in target_link_libraries
 add_library(mbedcrypto INTERFACE)
 add_dependencies(mbedcrypto mbedtls-wrap)
-target_include_directories(mbedcrypto INTERFACE ${OE_INCDIR}/openenclave/)
+
+target_include_directories(mbedcrypto INTERFACE
+    ${OE_INCDIR}/openenclave
+    ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 target_link_libraries(mbedcrypto INTERFACE 
     ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a
     ${OE_LIBDIR}/openenclave/enclave/libmbedx509.a
     ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a
 )
-# For the libc dependency, We would just want to use "oelibc". However, we need
-# an actual lib-dependency between crypto an libc, which is not expressable
-# with CMake. If using the target "oelibc", CMake reorders the libs, resulting
-# in undefined LIBC symbols from crypto. Using the explicit lib-name preserves
-# order.
-target_link_libraries(mbedcrypto INTERFACE ${OE_LIBDIR}/openenclave/enclave/liboelibc.a)

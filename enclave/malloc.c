@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <errno.h>
+typedef struct _FILE FILE;
+
+static FILE* stderr = (FILE*)1;
+
+//#include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
@@ -30,15 +34,22 @@
 #define memcpy oe_memcpy
 #define sbrk oe_sbrk
 #define fprintf _dlmalloc_stats_fprintf
+#define MALLOC_FAILURE_ACTION
+#define EINVAL 22
+#define ENOMEM 12
+
+#define LACKS_SCHED_H
 
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
+#if 0
 /* Replacement for sched_yield() in dlmalloc sources below */
 static int __sched_yield(void)
 {
     __asm__ __volatile__("pause");
     return 0;
 }
+#endif
 
 /* Since Dlmalloc provides no way to override the SPIN_LOCK_YIELD macro,
  * redefine sched_yield() directly. Dlmalloc spins for a given number of
@@ -76,7 +87,9 @@ void* malloc(size_t size)
 
     if (!p && size)
     {
+#if 0
         errno = ENOMEM;
+#endif
 
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -96,7 +109,9 @@ void* calloc(size_t nmemb, size_t size)
 
     if (!p && nmemb && size)
     {
+#if 0
         errno = ENOMEM;
+#endif
 
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
@@ -111,7 +126,9 @@ void* realloc(void* ptr, size_t size)
 
     if (!p && size)
     {
+#if 0
         errno = ENOMEM;
+#endif
 
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -126,7 +143,9 @@ int posix_memalign(void** memptr, size_t alignment, size_t size)
 
     if (rc != 0 && size)
     {
+#if 0
         errno = ENOMEM;
+#endif
 
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -141,7 +160,9 @@ void* memalign(size_t alignment, size_t size)
 
     if (!p && size)
     {
+#if 0
         errno = ENOMEM;
+#endif
 
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
@@ -198,8 +219,10 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
     }
     else
     {
+#if 0
         /* Redirect any other fprintf() calls to vfprintf() */
         ret = vfprintf(stream, format, ap);
+#endif
     }
 
     va_end(ap);
