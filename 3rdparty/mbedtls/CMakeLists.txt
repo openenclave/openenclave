@@ -29,6 +29,14 @@ ExternalProject_Add(mbedtls-wrap
         ${CMAKE_CURRENT_SOURCE_DIR}/platform.c 
         <SOURCE_DIR>/library/platform.c
 
+    COMMAND ${CMAKE_COMMAND} -E rename 
+        <SOURCE_DIR>/library/entropy.c
+        <SOURCE_DIR>/library/entropy.c.h
+
+    COMMAND ${CMAKE_COMMAND} -E copy 
+        ${CMAKE_CURRENT_SOURCE_DIR}/entropy.c 
+        <SOURCE_DIR>/library/entropy.c
+
     # Addl args for compiler
     CMAKE_ARGS
         -DCMAKE_C_FLAGS=${MBEDTLS_WRAP_CFLAGS}

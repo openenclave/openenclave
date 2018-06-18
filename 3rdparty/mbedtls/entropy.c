@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include "entropy.c.h"
 
 uint64_t _rdrand(void)
 {
@@ -27,7 +29,7 @@ int mbedtls_hardware_poll(
     int ret = -1;
     unsigned char* p = output;
 
-    OE_UNUSED(data);
+    (void)data;
 
     if (!output)
         goto done;
@@ -40,7 +42,7 @@ int mbedtls_hardware_poll(
         {
             uint64_t x = _rdrand();
 
-            oe_memcpy(p, &x, sizeof(uint64_t));
+            memcpy(p, &x, sizeof(uint64_t));
             p += sizeof(uint64_t);
         }
     }

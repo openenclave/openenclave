@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
@@ -41,8 +40,7 @@ OE_ECALL void Test(void* args_)
     OE_TEST(oe_get_malloc_stats(&stats) == OE_OK);
     if (stats.inUseBytes > inUseBytes)
     {
-        fprintf(
-            stderr,
+        oe_host_printf(
             "ERROR: memory leaked: %lu bytes\n",
             stats.inUseBytes - inUseBytes);
         oe_abort();

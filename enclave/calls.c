@@ -19,6 +19,7 @@
 #include "report.h"
 #include "td.h"
 #include "verify.h"
+#include "mbedtls.h"
 
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -153,6 +154,9 @@ void _HandleInitEnclave(uint64_t argIn)
 
         oe_spin_unlock(&_lock);
     }
+
+    /* Initialize the MBEDTLS library */
+    oe_init_mbedtls();
 }
 
 /*
