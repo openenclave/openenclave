@@ -62,7 +62,8 @@ add_library(mbedcrypto INTERFACE)
 add_dependencies(mbedcrypto mbedtls-wrap)
 
 target_include_directories(mbedcrypto INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${OE_INCDIR}/openenclave)
 
 target_link_libraries(mbedcrypto INTERFACE 
     ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a
