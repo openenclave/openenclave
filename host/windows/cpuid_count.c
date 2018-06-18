@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
-#if defined(__GNUC__)
+#if defined(_MSC_VER)
 
 #include "../cpuid_count.h"
 #include <cpuid.h>
@@ -17,13 +16,15 @@ int __get_cpuid_count(
     unsigned int* __ecx,
     unsigned int* __edx)
 {
-    unsigned int __ext = __leaf & 0x80000000;
-    unsigned int __maxlevel = __get_cpuid_max(__ext, 0);
+    unsigned int __maxlevel, __max_eax, __max_ebx, __max_ecx, __max_edx;
+    cpuid(0, __max_eax, __max_ebx, __max_ecx, __max_edx);
 
-    if (__maxlevel == 0 || __maxlevel < __leaf)
+    if (__max_eax == 0 || __max_eax < __leaf)
         return 0;
 
-    __cpuid_count(__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
+    int registers[] = {*__eax, *__ebx, *__ecx, *__edx};
+    __cpuidex(registers, __leaf, __subleaf);
+
     return 1;
 }
 
