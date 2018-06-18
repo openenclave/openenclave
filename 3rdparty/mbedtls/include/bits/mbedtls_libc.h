@@ -21,10 +21,8 @@ typedef struct _mbedtls_libc
     int (*vsnprintf)(char* str, size_t size, const char* format, va_list ap);
     int (*vprintf)(const char* format, va_list ap);
     int (*rand)(void);
-#if 0
     time_t (*time)(time_t* tloc);
     struct tm* (*gmtime)(const time_t* timep);
-#endif
 }
 mbedtls_libc_t;
 

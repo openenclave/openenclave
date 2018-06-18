@@ -25,5 +25,7 @@ typedef unsigned long size_t;
 typedef long ssize_t;
 typedef long time_t;
 typedef __builtin_va_list va_list;
+typedef long suseconds_t;
+typedef int clockid_t;
 
 #endif /* _OE_MBEDTLS_ALLTYPES_H */

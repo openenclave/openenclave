@@ -16,6 +16,7 @@ add_library(oeenclave STATIC
     hostcalls.c
     hoststack.c
     init.c
+    intstr.c
     jump.c
     key.c
     keys.c
@@ -32,9 +33,12 @@ add_library(oeenclave STATIC
     snprintf.c
     spinlock.c
     string.c
+    strtoul.c
     td.c
     thread.c
     verify.c
+    voprintf.c
+    __secs_to_tm.c
     exit.S
     getkey.S
     main.S)
@@ -69,5 +73,4 @@ set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
 install(TARGETS oeenclave 
-    EXPORT openenclave 
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

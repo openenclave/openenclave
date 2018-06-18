@@ -3,8 +3,7 @@
 
 #include "bits/alltypes.h"
 #include "bits/mbedtls_libc.h"
-
-#if 0
+#include "sys/time.h"
 
 struct tm
 {
@@ -19,6 +18,12 @@ struct tm
     int tm_isdst;
 };
 
+struct timespec 
+{
+    time_t tv_sec;
+    long tv_nsec;
+};
+
 static __inline
 time_t time(time_t* tloc)
 {
@@ -30,7 +35,5 @@ struct tm* gmtime(const time_t* timep)
 {
     return __mbedtls_libc.gmtime(timep);
 }
-
-#endif
 
 #endif /* _OE_MBEDTLS_TIME_H */

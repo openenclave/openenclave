@@ -3,217 +3,59 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+#include "voprintf.h"
 
-static char _NibbleToChar(uint64_t x)
+typedef struct _oe_out_str
 {
-    static char _table[] = {'0',
-                            '1',
-                            '2',
-                            '3',
-                            '4',
-                            '5',
-                            '6',
-                            '7',
-                            '8',
-                            '9',
-                            'A',
-                            'B',
-                            'C',
-                            'D',
-                            'E',
-                            'F'};
-
-    return _table[x & 0x000000000000000f];
+    oe_out_t base;
+    char* str;
+    size_t size;
+    size_t off;
 }
+oe_out_str_t;
 
-static const char* _U32ToHexStr(char buf[9], uint32_t x)
+static ssize_t _write(oe_out_t* out_, const void* buf, size_t count)
 {
-    buf[0] = _NibbleToChar((0xf0000000 & x) >> 28);
-    buf[1] = _NibbleToChar((0x0f000000 & x) >> 24);
-    buf[2] = _NibbleToChar((0x00f00000 & x) >> 20);
-    buf[3] = _NibbleToChar((0x000f0000 & x) >> 16);
-    buf[4] = _NibbleToChar((0x0000f000 & x) >> 12);
-    buf[5] = _NibbleToChar((0x00000f00 & x) >> 8);
-    buf[6] = _NibbleToChar((0x000000f0 & x) >> 4);
-    buf[7] = _NibbleToChar((0x0000000f & x));
-    buf[8] = '\0';
-    return buf;
-}
+    oe_out_str_t* out = (oe_out_str_t*)out_;
 
-static const char* _U64ToHexStr(char buf[17], uint64_t x)
-{
-    uint64_t hi = (0xffffffff00000000 & x) >> 32;
-    uint64_t lo = (0x00000000ffffffff & x);
-
-    _U32ToHexStr(buf, hi);
-    _U32ToHexStr(buf + 8, lo);
-
-    return buf;
-}
-
-static const char* _U64ToStr(char buf[21], uint64_t x)
-{
-    char* end = &buf[21];
-
-    *--end = '\0';
-
-    if (x == 0)
+    if (out->off < out->size)
     {
-        *--end = '0';
-        return end;
+        /* Leave an extra byte for the zero-terminator */
+        size_t rem = out->size - out->off - 1;
+        size_t n;
+
+        if (rem < count)
+            n = rem;
+        else
+            n = count;
+
+        oe_memcpy(&out->str[out->off], buf, n);
+        out->str[out->off + n] = '\0';
     }
 
-    while (x)
-    {
-        uint64_t m = x % 10;
-        *--end = m + '0';
-        x = x / 10;
-    }
+    out->off += count;
 
-    return end;
+    return count;
 }
 
-static const char* _S64ToStr(char buf[21], int64_t x)
+static void _oe_out_str_init(oe_out_str_t* out, char* str, size_t size)
 {
-    char* p;
-    int neg = 0;
-
-    if (x == (-9223372036854775807 - 1))
-        return "-9223372036854775808";
-
-    if (x < 0)
-    {
-        neg = 1;
-        x = -x;
-    }
-
-    p = &buf[63];
-    *p = '\0';
-
-    do
-    {
-        *--p = '0' + x % 10;
-    } while (x /= 10);
-
-    if (neg)
-        *--p = '-';
-
-    return p;
+    out->base.write = _write;
+    out->str = str;
+    out->size = size;
+    out->off = 0;
 }
 
 int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
 {
-    const char* p = fmt;
-    bool overflow = false;
-    size_t n = 0;
+    oe_out_str_t out;
 
-    if (str)
-        *str = '\0';
-    else
-        overflow = true;
+    if (!str && size != 0)
+        return -1;
 
-    while (*p)
-    {
-        char scratch[64];
-        const char* s;
+    _oe_out_str_init(&out, str, size);
 
-        if (*p == '%')
-        {
-            p++;
-
-            if (p[0] == 's')
-            {
-                if (!(s = oe_va_arg(ap, const char*)))
-                    s = "(null)";
-
-                p++;
-            }
-            else if (p[0] == 'u')
-            {
-                s = _U64ToStr(scratch, oe_va_arg(ap, uint32_t));
-                p++;
-            }
-            else if (p[0] == 'd')
-            {
-                s = _S64ToStr(scratch, oe_va_arg(ap, int32_t));
-                p++;
-            }
-            else if (p[0] == 'x')
-            {
-                s = _U32ToHexStr(scratch, oe_va_arg(ap, uint32_t));
-                p++;
-            }
-            else if (p[0] == 'l' && p[1] == 'u')
-            {
-                s = _U64ToStr(scratch, oe_va_arg(ap, uint64_t));
-                p += 2;
-            }
-            else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'u')
-            {
-                s = _U64ToStr(scratch, oe_va_arg(ap, uint64_t));
-                p += 3;
-            }
-            else if (p[0] == 'l' && p[1] == 'd')
-            {
-                s = _S64ToStr(scratch, oe_va_arg(ap, int64_t));
-                p += 2;
-            }
-            else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'd')
-            {
-                s = _S64ToStr(scratch, oe_va_arg(ap, int64_t));
-                p += 3;
-            }
-            else if (p[0] == 'l' && p[1] == 'x')
-            {
-                s = _U64ToHexStr(scratch, oe_va_arg(ap, uint64_t));
-                p += 2;
-            }
-            else if (p[0] == 'l' && p[1] == 'x' && p[2] == 'x')
-            {
-                s = _U64ToHexStr(scratch, oe_va_arg(ap, uint64_t));
-                p += 3;
-            }
-            else if (p[0] == 'z' && p[1] == 'u')
-            {
-                s = _U64ToStr(scratch, oe_va_arg(ap, size_t));
-                p += 2;
-            }
-            else if (p[0] == 'z' && p[1] == 'd')
-            {
-                s = _S64ToStr(scratch, oe_va_arg(ap, ssize_t));
-                p += 2;
-            }
-            else if (p[0] == 'p')
-            {
-                s = _U64ToStr(scratch, (uint64_t)oe_va_arg(ap, void*));
-                p += 1;
-            }
-            else
-            {
-                return -1;
-            }
-        }
-        else
-        {
-            scratch[0] = *p++;
-            scratch[1] = '\0';
-            s = scratch;
-        }
-
-        if (overflow)
-        {
-            n += oe_strlen(s);
-        }
-        else
-        {
-            n = oe_strlcat(str, s, size);
-
-            if (n >= size)
-                overflow = true;
-        }
-    }
-
-    return n;
+    return oe_voprintf(&out.base, fmt, ap);
 }
 
 int oe_snprintf(char* str, size_t size, const char* fmt, ...)

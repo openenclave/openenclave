@@ -163,5 +163,23 @@ OE_ECALL void Test(void* args_)
             OE_TEST(oe_strcmp(buf, "LONG_MIN=-9") == 0);
             OE_TEST(n == 29);
         }
+        {
+            char buf[64];
+            int n = oe_snprintf( buf, sizeof(buf), "HEX=%05x", 0xabcd);
+            OE_TEST(oe_strcmp(buf, "HEX=0abcd") == 0);
+            OE_TEST(n == 9);
+        }
+        {
+            char buf[64];
+            int n = oe_snprintf( buf, sizeof(buf), "HEX=%05X", 0xabcd);
+            OE_TEST(oe_strcmp(buf, "HEX=0ABCD") == 0);
+            OE_TEST(n == 9);
+        }
+        {
+            char buf[64];
+            int n = oe_snprintf( buf, sizeof(buf), "HEX=%#X", 0xABCD);
+            OE_TEST(oe_strcmp(buf, "HEX=0XABCD") == 0);
+            OE_TEST(n == 10);
+        }
     }
 }

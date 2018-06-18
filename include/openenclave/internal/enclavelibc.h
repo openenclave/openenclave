@@ -156,6 +156,8 @@ OE_ALWAYS_INLINE OE_INLINE void* oe_stack_alloc(size_t size, size_t alignment)
  */
 void* oe_sbrk(ptrdiff_t increment);
 
+unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVELIBC_H */
