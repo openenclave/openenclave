@@ -5,6 +5,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/report.h>
 #include <openenclave/internal/utils.h>
 #include "quote.h"
 
