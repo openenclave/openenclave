@@ -19,6 +19,7 @@
 
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/report.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "enclave.h"
 #include "ocalls.h"
