@@ -224,7 +224,6 @@ typedef struct _oe_realloc_args
     size_t size;
 } oe_realloc_args_t;
 
-
 /**
  * Perform a low-level enclave function call (ECALL).
  *

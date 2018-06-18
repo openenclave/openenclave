@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/time.h>
 #include <stdio.h>
 #include <windows.h>
-#include <openenclave/internal/time.h>
 
 void HandleStrftime(uint64_t argIn)
 {

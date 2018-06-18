@@ -20,4 +20,5 @@ typedef struct _oe_init_enclave_args
     uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 } oe_init_enclave_args_t;
 
-#endif//_OE_INCLUDE_ENCLAVE_H
+#endif //_OE_INCLUDE_ENCLAVE_H
+
