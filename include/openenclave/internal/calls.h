@@ -6,7 +6,6 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/cpuid.h>
 #include "sgxtypes.h"
 
 #define __OE_ECALL_BASE ((int)0x00FFFFFF)
@@ -225,21 +224,6 @@ typedef struct _oe_realloc_args
     size_t size;
 } oe_realloc_args_t;
 
-/*
-**==============================================================================
-**
-** oe_init_enclave_args_t
-**
-**     Runtime state to initialize enclave state with, includes
-**     - First 8 leaves of CPUID for enclave emulation
-**
-**==============================================================================
-*/
-
-typedef struct _oe_init_enclave_args
-{
-    uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
-} oe_init_enclave_args_t;
 
 /**
  * Perform a low-level enclave function call (ECALL).
