@@ -881,7 +881,6 @@ static oe_result_t _InitializeEnclave(oe_enclave_t* enclave)
     // Initialize enclave cache of CPUID info for emulation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-#if defined(__linux__)
         int supported = __get_cpuid_count(
             i,
             0, // pass sub-leaf of 0 - needed for leaf 4
@@ -891,9 +890,6 @@ static oe_result_t _InitializeEnclave(oe_enclave_t* enclave)
             &args.cpuidTable[i][OE_CPUID_RDX]);
         if (!supported)
             OE_RAISE(OE_UNSUPPORTED);
-#elif defined(_WIN32)
-        __cpuid(args.cpuidTable[i], i);
-#endif
     }
 
     OE_CHECK(oe_ecall(enclave, OE_FUNC_INIT_ENCLAVE, (uint64_t)&args, NULL));

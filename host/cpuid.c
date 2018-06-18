@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if defined(__linux__)
-#include "cpuid_count.h"
-#endif
+#include "openenclave/internal/cpuid.h"
 #include <cpuid.h>
 
 oe_result_t oe_get_cpuid(
