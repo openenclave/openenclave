@@ -10,4 +10,4 @@ if(USE_LIBSGX)
     target_compile_definitions(report_enc PRIVATE OE_USE_LIBSGX)
 endif()    
 
-target_link_libraries(report_enc oeenclave)
+target_link_libraries(report_enc oelibc oeenclave)
