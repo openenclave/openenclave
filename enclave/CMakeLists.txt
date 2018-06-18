@@ -39,7 +39,7 @@ add_library(oeenclave STATIC
     getkey.S
     main.S)
 
-target_link_libraries(oeenclave PUBLIC oe_includes)
+target_link_libraries(oeenclave PUBLIC oe_includes mbedcrypto)
 
 # we strip the default include containing the compiler-provided intrinsics
 # add it back in
@@ -64,9 +64,8 @@ target_link_libraries(oeenclave INTERFACE
 # jump.s must be optimized for the correct call-frame.
 set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 
-target_link_libraries(oeenclave PUBLIC oe_includes mbedcrypto)
-
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
-install(TARGETS oeenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
-
+install(TARGETS oeenclave 
+    EXPORT openenclave 
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
