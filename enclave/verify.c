@@ -38,10 +38,6 @@ done:
     return result;
 }
 
-// oe_verify_report needs crypto library's cmac computation. oecore does not
-// have
-// crypto functionality. Hence oe_verify report is implemented here instead of
-// in oecore. Also see ECall_HandleVerifyReport below.
 oe_result_t oe_verify_report(
     const uint8_t* report,
     uint32_t reportSize,
