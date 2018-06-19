@@ -51,7 +51,12 @@ target_link_libraries(oeenclave PUBLIC
 
 # we strip the default include containing the compiler-provided intrinsics
 # add it back in
-target_include_directories(oeenclave SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
+target_include_directories(oeenclave PRIVATE ${OE_C_COMPILER_INCDIR})
+
+set(ENCLAVELIBC_INCDIR
+    "${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
+
+target_include_directories(oeenclave SYSTEM PRIVATE ${ENCLAVELIBC_INCDIR})
 
 target_compile_options(oeenclave PUBLIC
     -m64 -fPIC

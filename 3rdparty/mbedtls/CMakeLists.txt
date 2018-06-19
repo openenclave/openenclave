@@ -126,7 +126,6 @@ add_library(oembedtls INTERFACE)
 add_dependencies(oembedtls oembedtls-wrap)
 
 target_include_directories(oembedtls INTERFACE
-    ${ENCLAVELIBC_INCDIR}
     ${OE_INCDIR}/openenclave)
 
 target_link_libraries(oembedtls INTERFACE

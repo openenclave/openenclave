@@ -14,4 +14,8 @@ add_enclave_executable(cryptoenc
     ../../rsa_tests.c
     ../../sha_tests.c)
 
+target_include_directories(cryptoenc PRIVATE
+    "${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
+
 target_link_libraries(cryptoenc oeenclave)
+
