@@ -29,19 +29,19 @@ struct timespec
 OE_INLINE
 time_t time(time_t* tloc)
 {
-    return __enclavelibc.time(tloc);
+    return oe_time(tloc);
 }
 
 OE_INLINE
 struct tm* gmtime(const time_t* timep)
 {
-    return __enclavelibc.gmtime(timep);
+    return (struct tm*)oe_gmtime(timep);
 }
 
 OE_INLINE
 struct tm* gmtime_r(const time_t* timep, struct tm* result)
 {
-    return __enclavelibc.gmtime_r(timep, result);
+    return (struct tm*)oe_gmtime_r(timep, (struct oe_tm*)result);
 }
 
 #endif /* _ENCLAVELIBC_TIME_H */

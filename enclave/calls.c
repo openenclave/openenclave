@@ -117,49 +117,6 @@ uint8_t __oe_initialized = 0;
 /*
 **==============================================================================
 **
-** _init_mbedtls()
-**
-**     Instantiate the MBEDTLS library with libc back pointers.
-**
-**==============================================================================
-*/
-
-static void _init_mbedtls(void)
-{
-    static enclavelibc_t _libc =
-    {
-        .strlen = oe_strlen,
-        .strnlen = oe_strnlen,
-        .strcmp = oe_strcmp,
-        .strncmp = oe_strncmp,
-        .strncpy = oe_strncpy,
-        .strstr = oe_strstr,
-        .strlcpy = oe_strlcpy,
-        .strlcat = oe_strlcat,
-        .memcpy = oe_memcpy,
-        .memset = oe_memset,
-        .memcmp = oe_memcmp,
-        .memmove = oe_memmove,
-        .vsnprintf = oe_vsnprintf,
-        .vprintf = oe_vprintf,
-        .time = oe_time,
-        .gmtime = (struct tm* (*)(const time_t*))oe_gmtime,
-        .gmtime_r = (struct tm* (*)(const time_t*, struct tm*))oe_gmtime_r,
-        .rand = oe_rand,
-        .malloc = oe_malloc,
-        .free = oe_free,
-        .calloc = oe_calloc,
-        .realloc = oe_realloc,
-        .memalign = oe_memalign,
-        .posix_memalign = oe_posix_memalign,
-    };
-
-    __enclavelibc = _libc;
-}
-
-/*
-**==============================================================================
-**
 ** _HandleInitEnclave()
 **
 **     Handle the OE_FUNC_INIT_ENCLAVE from host and ensures that each state
@@ -200,8 +157,8 @@ void _HandleInitEnclave(uint64_t argIn)
         oe_spin_unlock(&_lock);
     }
 
-    /* Initialize the MBEDTLS library */
-    _init_mbedtls();
+    /* Force linkage references to all enclavelibc functions */
+    oe_link_enclavelibc();
 }
 
 /*

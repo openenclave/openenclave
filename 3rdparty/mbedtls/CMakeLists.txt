@@ -25,14 +25,6 @@ ExternalProject_Add(mbedtls-wrap
         ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h <SOURCE_DIR>/include/mbedtls/config.h
 
     COMMAND ${CMAKE_COMMAND} -E rename 
-        <SOURCE_DIR>/library/platform.c
-        <SOURCE_DIR>/library/platform.c.h
-
-    COMMAND ${CMAKE_COMMAND} -E copy 
-        ${CMAKE_CURRENT_SOURCE_DIR}/platform.c 
-        <SOURCE_DIR>/library/platform.c
-
-    COMMAND ${CMAKE_COMMAND} -E rename 
         <SOURCE_DIR>/library/entropy.c
         <SOURCE_DIR>/library/entropy.c.h
 

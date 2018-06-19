@@ -266,6 +266,9 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
  */
 void* oe_memalign(size_t alignment, size_t size);
 
+/* Force linkage of all enclave-libc functions */
+const void* oe_link_enclavelibc(void);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVELIBC_H */

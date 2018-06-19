@@ -10,6 +10,7 @@ add_library(oeenclave STATIC
     cmac.c
     cpuid.c
     ec.c
+    enclavelibc/enclavelibc.c
     enclavelibc/gmtime.c
     enclavelibc/printf.c
     enclavelibc/rand.c

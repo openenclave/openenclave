@@ -10,7 +10,7 @@
 OE_INLINE
 int vsnprintf(char* str, size_t size, const char* format, va_list ap)
 {
-    return __enclavelibc.vsnprintf(str, size, format, ap);
+    return oe_vsnprintf(str, size, format, ap);
 }
 
 OE_INLINE
@@ -18,14 +18,14 @@ int snprintf(char* str, size_t size, const char* format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    return __enclavelibc.vsnprintf(str, size, format, ap);
+    return oe_vsnprintf(str, size, format, ap);
     va_end(ap);
 }
 
 OE_INLINE
 int vprintf(const char* format, va_list ap)
 {
-    return __enclavelibc.vprintf(format, ap);
+    return oe_vprintf(format, ap);
 }
 
 OE_INLINE
@@ -33,7 +33,7 @@ int printf(const char* format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    return __enclavelibc.vprintf(format, ap);
+    return oe_vprintf(format, ap);
     va_end(ap);
 }
 
