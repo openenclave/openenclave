@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../args.h"
+#include "../../../host/cpuid_count.h"
 
 #define SKIP_RETURN_CODE 2
 

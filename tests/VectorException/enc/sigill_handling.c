@@ -7,6 +7,7 @@
 #include "../args.h"
 
 #include "../../../host/linux/cpuid_count.c"
+#include "../../../host/cpuid_count.h"
 
 #define OE_GETSEC_OPCODE 0x370F
 #define OE_GETSEC_CAPABILITIES 0x00
