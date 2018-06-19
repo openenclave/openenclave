@@ -125,12 +125,12 @@ install(FILES
 
 add_library(mbedcrypto INTERFACE)
 
-add_dependencies(mbedcrypto build)
+add_dependencies(mbedcrypto mbedtls)
 
 target_include_directories(mbedcrypto INTERFACE
     ${ENCLAVELIBC_INCDIR}
     ${OE_INCDIR}/openenclave)
 
-target_link_libraries(mbedcrypto INTERFACE 
+target_link_libraries(mbedcrypto INTERFACE
     ${OE_LIBDIR}/openenclave/enclave/liboembedtls.a)
 
