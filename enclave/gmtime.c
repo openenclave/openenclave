@@ -107,6 +107,12 @@ static int _secs_to_tm(long long t, struct oe_tm *tm)
 	return 0;
 }
 
+struct oe_tm* oe_gmtime(const oe_time_t* timep)
+{
+    static struct oe_tm _tm;
+    return oe_gmtime_r(timep, &_tm);
+}
+
 struct oe_tm* oe_gmtime_r(const oe_time_t* timep, struct oe_tm* result)
 {
     if (!timep || !result || _secs_to_tm(*timep, result) != 0)

@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <openenclave/internal/malloc.h>
+#include <openenclave/internal/enclavelibc.h>
 
 void* malloc(size_t size)
 {

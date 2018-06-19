@@ -60,6 +60,13 @@ int oe_strncmp(const char* s1, const char* s2, size_t n);
 char* oe_strncpy(char* dest, const char* src, size_t n);
 
 /**
+ * Enclave implementation of the standard strstr() function.
+ *
+ * Refer to documentation for strstr() function.
+ */
+char* oe_strstr(const char* haystack, const char* needle);
+
+/**
  * Enclave implementation of the standard strlcpy() function.
  *
  * Refer to documentation for strlcpy() function.
@@ -72,13 +79,6 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size);
  * Refer to documentation for strlcat() function.
  */
 size_t oe_strlcat(char* dest, const char* src, size_t size);
-
-/**
- * Enclave implementation of the standard strstr() function.
- *
- * Refer to documentation for strstr() function.
- */
-char* oe_strstr(const char* haystack, const char* needle);
 
 /**
  * Enclave implementation of the standard memcpy() function.
@@ -112,17 +112,7 @@ void* oe_memmove(void* dest, const void* src, size_t n);
  * Produce output according to a given format string.
  *
  * This function is similar to vsnprintf() but has limited support for format
- * types. It only supports the following without width specifiers.
- *     - "%s"
- *     - "%u"
- *     - "%d"
- *     - "%x"
- *     - "%lu"
- *     - "%ld"
- *     - "%lx"
- *     - "%zu"
- *     - "%zd"
- *     - "%p"
+ * types. It does not support format specifiers for floating-point types.
  *
  * @param str Write output to this string
  * @param size The size of **str** parameter.
@@ -218,6 +208,13 @@ oe_time_t oe_time(oe_time_t* tloc);
  *
  * Refer to documentation for gmtime_t() function.
  */
+struct oe_tm* oe_gmtime(const oe_time_t* timep);
+
+/**
+ * Enclave implementation of the standard gmtime_t() function.
+ *
+ * Refer to documentation for gmtime_t() function.
+ */
 struct oe_tm* oe_gmtime_r(const oe_time_t* timep, struct oe_tm* result);
 
 /**
@@ -226,6 +223,48 @@ struct oe_tm* oe_gmtime_r(const oe_time_t* timep, struct oe_tm* result);
  * Refer to documentation for rand() function.
  */
 int oe_rand(void);
+
+/**
+ * Enclave implementation of the standard malloc() function.
+ *
+ * Refer to documentation for malloc() function.
+ */
+void* oe_malloc(size_t size);
+
+/**
+ * Enclave implementation of the standard free() function.
+ *
+ * Refer to documentation for free() function.
+ */
+void oe_free(void *ptr);
+
+/**
+ * Enclave implementation of the standard calloc() function.
+ *
+ * Refer to documentation for calloc() function.
+ */
+void* oe_calloc(size_t nmemb, size_t size);
+
+/**
+ * Enclave implementation of the standard realloc() function.
+ *
+ * Refer to documentation for realloc() function.
+ */
+void* oe_realloc(void* ptr, size_t size);
+
+/**
+ * Enclave implementation of the standard posix_memalign() function.
+ *
+ * Refer to documentation for posix_memalign() function.
+ */
+int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
+
+/**
+ * Enclave implementation of the standard memalign() function.
+ *
+ * Refer to documentation for memalign() function.
+ */
+void* oe_memalign(size_t alignment, size_t size);
 
 OE_EXTERNC_END
 

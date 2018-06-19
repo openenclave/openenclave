@@ -10,10 +10,8 @@
 
 #define CHAR_BIT 8
 
-#define ENCLAVELIBC_INLINE static __inline
-
-typedef oe_time_t time_t;
-typedef oe_va_list va_list;
+typedef long time_t;
+typedef __builtin_va_list va_list;
 typedef long suseconds_t;
 typedef int clockid_t;
 
@@ -31,24 +29,37 @@ struct timezone
 
 typedef struct _enclavelibc
 {
+    /* <string.h> */
     size_t (*strlen)(const char* s);
+    size_t (*strnlen)(const char* s, size_t n);
     int (*strcmp)(const char* s1, const char* s2);
     int (*strncmp)(const char* s1, const char* s2, size_t n);
     char* (*strncpy)(char* dest, const char* src, size_t n);
     char* (*strstr)(const char* haystack, const char* needle);
-    void* (*memset)(void* s, int c, size_t n);
+    size_t (*strlcpy)(char* dest, const char* src, size_t size);
+    size_t (*strlcat)(char* dest, const char* src, size_t size);
     void* (*memcpy)(void* dest, const void* src, size_t n);
+    void* (*memset)(void* s, int c, size_t n);
     int (*memcmp)(const void* s1, const void* s2, size_t n);
     void* (*memmove)(void* dest, const void* src, size_t n);
+
+    /* <stdio.h> */
+    int (*vsnprintf)(char* str, size_t size, const char* format, va_list ap);
+    int (*vprintf)(const char* format, va_list ap);
+
+    /* <time.h> */
+    time_t (*time)(time_t* tloc);
+    struct tm* (*gmtime)(const time_t* timep);
+    struct tm* (*gmtime_r)(const time_t* timep, struct tm* result);
+
+    /* <stdlib.h> */
+    int (*rand)(void);
     void* (*malloc)(size_t size);
     void (*free)(void* ptr);
     void* (*calloc)(size_t nmemb, size_t size);
     void* (*realloc)(void* ptr, size_t size);
-    int (*vsnprintf)(char* str, size_t size, const char* format, va_list ap);
-    int (*vprintf)(const char* format, va_list ap);
-    int (*rand)(void);
-    time_t (*time)(time_t* tloc);
-    struct tm* (*gmtime)(const time_t* timep);
+    void* (*memalign)(size_t alignment, size_t size);
+    int (*posix_memalign)(void** memptr, size_t alignment, size_t size);
 }
 enclavelibc_t;
 

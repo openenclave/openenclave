@@ -26,16 +26,22 @@ struct timespec
     long tv_nsec;
 };
 
-ENCLAVELIBC_INLINE
+OE_INLINE
 time_t time(time_t* tloc)
 {
     return __enclavelibc.time(tloc);
 }
 
-ENCLAVELIBC_INLINE
+OE_INLINE
 struct tm* gmtime(const time_t* timep)
 {
     return __enclavelibc.gmtime(timep);
+}
+
+OE_INLINE
+struct tm* gmtime_r(const time_t* timep, struct tm* result)
+{
+    return __enclavelibc.gmtime_r(timep, result);
 }
 
 #endif /* _ENCLAVELIBC_TIME_H */

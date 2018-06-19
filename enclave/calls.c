@@ -124,35 +124,34 @@ uint8_t __oe_initialized = 0;
 **==============================================================================
 */
 
-/* OE does not implement this thread-unsafe form */
-static struct tm* _gmtime(const time_t* timep)
-{
-    static struct oe_tm _tm;
-    return (struct tm*)oe_gmtime_r(timep, &_tm);
-}
-
 static void _init_mbedtls(void)
 {
     static enclavelibc_t _libc =
     {
         .strlen = oe_strlen,
+        .strnlen = oe_strnlen,
         .strcmp = oe_strcmp,
         .strncmp = oe_strncmp,
         .strncpy = oe_strncpy,
         .strstr = oe_strstr,
-        .memset = oe_memset,
+        .strlcpy = oe_strlcpy,
+        .strlcat = oe_strlcat,
         .memcpy = oe_memcpy,
+        .memset = oe_memset,
         .memcmp = oe_memcmp,
         .memmove = oe_memmove,
+        .vsnprintf = oe_vsnprintf,
+        .vprintf = oe_vprintf,
+        .time = oe_time,
+        .gmtime = (struct tm* (*)(const time_t*))oe_gmtime,
+        .gmtime_r = (struct tm* (*)(const time_t*, struct tm*))oe_gmtime_r,
+        .rand = oe_rand,
         .malloc = oe_malloc,
         .free = oe_free,
         .calloc = oe_calloc,
         .realloc = oe_realloc,
-        .vsnprintf = oe_vsnprintf,
-        .vprintf = oe_vprintf,
-        .rand = oe_rand,
-        .time = oe_time,
-        .gmtime = _gmtime,
+        .memalign = oe_memalign,
+        .posix_memalign = oe_posix_memalign,
     };
 
     __enclavelibc = _libc;
