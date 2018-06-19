@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../args.h"
-#include "../../../host/cpuid_count.h"
 
 #define SKIP_RETURN_CODE 2
 
@@ -47,7 +46,7 @@ void TestSigillHandling(oe_enclave_t* enclave)
     {
         uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
         memset(cpuidInfo, 0, sizeof(cpuidInfo));
-        int supported = __get_cpuid_count(
+        oe_result_t result = oe_get_cpuid(
             i,
             0,
             &cpuidInfo[OE_CPUID_RAX],
@@ -55,7 +54,7 @@ void TestSigillHandling(oe_enclave_t* enclave)
             &cpuidInfo[OE_CPUID_RCX],
             &cpuidInfo[OE_CPUID_RDX]);
 
-        if (!supported)
+        if (result == OE_UNSUPPORTED)
             oe_put_err(
                 "Test machine does not support CPUID leaf %x expected by "
                 "TestSigillHandling.\n",
