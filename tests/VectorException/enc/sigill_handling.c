@@ -7,7 +7,7 @@
 #include "../args.h"
 
 #include "../../../host/cpuid_count.h"
-#include "../../../host/cpuid.c"
+#include "../../../host/linux/cpuid_count.c"
 
 #define OE_GETSEC_OPCODE 0x370F
 #define OE_GETSEC_CAPABILITIES 0x00
@@ -169,7 +169,7 @@ OE_ECALL void TestSigillHandling(void* args_)
     // Return enclave-cached CPUID leaves to host for further validation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        result = oe_get_cpuid(
+        int supported = __get_cpuid_count(
             i,
             0,
             &args->cpuidTable[i][OE_CPUID_RAX],
@@ -177,7 +177,7 @@ OE_ECALL void TestSigillHandling(void* args_)
             &args->cpuidTable[i][OE_CPUID_RCX],
             &args->cpuidTable[i][OE_CPUID_RDX]);
 
-        if (result == OE_UNSUPPORTED)
+        if (!supported)
         {
             oe_host_printf("Unsupported CPUID leaf %d requested.\n", i);
             return;
