@@ -1,16 +1,14 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Copy mbedtls sources to replace config.h and build w/ own flags
-
 ##==============================================================================
 ##
 ## config.h:
 ##
 ## Modify and copy ./config.h to a temporary location within the binary 
-## directory. The 'mbedtls' target below copies it into the MBEDTLS source
-## tree. Occurences of ${CMAKE_BUILD_TYPE} are expanded to either "DEBUG"
-## or "RELEASE"
+## directory. The 'oembedtls-wrap' target below copies it into the MBEDTLS 
+## source tree. Occurences of ${CMAKE_BUILD_TYPE} are expanded to either 
+## "DEBUG" or "RELEASE"
 ##
 ##==============================================================================
 
@@ -22,7 +20,7 @@ configure_file(
 
 ##==============================================================================
 ##
-## mbedtls:
+## oembedtls-wrap:
 ##
 ## Builds MBEDTLS by performing the following steps.
 ##
@@ -66,7 +64,7 @@ set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${ENCLAVELIBC_INCDIR} -fno-builtin 
 
 include(ExternalProject)
 
-ExternalProject_Add(mbedtls
+ExternalProject_Add(oembedtls-wrap
 
     # Copy the MBEDTLS source distribution to the build directory.
     DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -125,7 +123,7 @@ install(FILES
 
 add_library(mbedcrypto INTERFACE)
 
-add_dependencies(mbedcrypto mbedtls)
+add_dependencies(mbedcrypto oembedtls-wrap)
 
 target_include_directories(mbedcrypto INTERFACE
     ${ENCLAVELIBC_INCDIR}
