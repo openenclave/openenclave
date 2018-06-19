@@ -24,9 +24,7 @@ LIBRARIES += -L${OE_LIBDIR}/openenclave/enclave
 LIBRARIES += -loelibcxx 
 LIBRARIES += -loelibc 
 LIBRARIES += -loeenclave 
-LIBRARIES += -lmbedtls 
-LIBRARIES += -lmbedx509 
-LIBRARIES += -lmbedcrypto
+LIBRARIES += -loembedtls
 
 all:
 	$(MAKE) build
