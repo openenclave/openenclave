@@ -3,31 +3,22 @@
 
 # Copy mbedtls sources to replace config.h and build w/ own flags
 
-set(ENCLAVELIBC_INCDIR 
-    "${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
-
-set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${ENCLAVELIBC_INCDIR} -fno-builtin -fPIC -fno-builtin-udivti3 -fno-stack-protector")
+##==============================================================================
+##
+## config.h:
+##
+## Modify and copy ./config.h to a temporary location within the binary 
+## directory. The 'mbedtls' target below copies it into the MBEDTLS source
+## tree. Occurences of ${CMAKE_BUILD_TYPE} are expanded to either "DEBUG"
+## or "RELEASE"
+##
+##==============================================================================
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 
-##==============================================================================
-##
-## config_final.h:
-##
-##==============================================================================
-
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
-    configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/config.h 
-        ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h COPYONLY)
-    file(APPEND 
-        ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h 
-        "\#define\ MBEDTLS_CERTS_C\n\n\#define\ MBEDTLS_DEBUG_C\n")
-else()
-    configure_file( 
-        ${CMAKE_CURRENT_SOURCE_DIR}/config.h 
-        ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h COPYONLY)
-endif()
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h
+    ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config.h)
 
 ##==============================================================================
 ##
@@ -40,7 +31,7 @@ endif()
 ##
 ##     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-prefix/src/mbedtls
 ##
-## (2) Replace the MBEDTLS config.h file with config_final.h (created above).
+## (2) Copies the config.h (created above) into the MBEDTLS source tree.
 ##
 ## (3) Set the C compiler flags used to compile MBEDTLS.
 ##
@@ -52,7 +43,26 @@ endif()
 ##     libmbedx509.a
 ##     libmbedcrypto.a
 ##
+## MBEDTLS is compiled with these options:
+##
+##     -nostdinc
+##     -I${ENCLAVELIBC_INCDIR}
+##
+## This forces MBEDTLS to look for the standard headers in the following
+## location in the source tree:
+##
+##     openenclave/enclave/enclavelibc
+##
+## This directory contains header files with standard names like <stdlib.h>
+## and <stdio.h>. These headers define their functions as inlines that invoke
+## forms that have the 'oe_' prefix.
+##
 ##==============================================================================
+
+set(ENCLAVELIBC_INCDIR 
+    "${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
+
+set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${ENCLAVELIBC_INCDIR} -fno-builtin -fPIC -fno-builtin-udivti3 -fno-stack-protector")
 
 include(ExternalProject)
 
@@ -64,7 +74,7 @@ ExternalProject_Add(mbedtls
 
     # Copy MBEDTLS config file into source tree under build directory.
     PATCH_COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h 
+        ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config.h
         <SOURCE_DIR>/include/mbedtls/config.h
 
     # Define C compiler flags.
@@ -88,6 +98,14 @@ ExternalProject_Add(mbedtls
             ${OE_LIBDIR}/openenclave/enclave
 )
 
+##==============================================================================
+##
+## install:
+##
+## Install the MBEDTLS headers and binaries.
+##
+##==============================================================================
+
 install(DIRECTORY 
     ${OE_INCDIR}/openenclave/mbedtls 
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
@@ -95,6 +113,15 @@ install(DIRECTORY
 install(FILES 
     ${OE_LIBDIR}/openenclave/enclave/liboembedtls.a
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+##==============================================================================
+##
+## mbedcrypto:
+##
+## Define the mbedcrypto interface so that other cmake files can find the
+## MBEDTLS headers and library.
+##
+##==============================================================================
 
 add_library(mbedcrypto INTERFACE)
 

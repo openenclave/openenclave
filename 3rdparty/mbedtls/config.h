@@ -2761,4 +2761,13 @@
 
 #include "check_config.h"
 
+// The cmake configure_file() command expands ${CMAKE_BUILD_TYPE} to either
+// "DEBUG" or "RELEASE".
+#define CMAKE_BUILD_TYPE_${CMAKE_BUILD_TYPE}
+
+#ifdef CMAKE_BUILD_TYPE_DEBUG
+#define MBEDTLS_CERTS_C
+#define MBEDTLS_DEBUG_C
+#endif
+
 #endif /* MBEDTLS_CONFIG_H */
