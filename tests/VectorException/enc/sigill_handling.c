@@ -6,6 +6,8 @@
 #include <openenclave/internal/print.h>
 #include "../args.h"
 
+#include "../../../host/cpuid.c"
+
 #define OE_GETSEC_OPCODE 0x370F
 #define OE_GETSEC_CAPABILITIES 0x00
 
