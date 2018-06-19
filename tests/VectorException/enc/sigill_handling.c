@@ -113,7 +113,7 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
         : "0"(leaf)
         : "ebx", "ecx", "edx", "cc", "memory");*/
     
-    oe_result_t result = oe_get_cpuid(leaf, 0, cpuidRax, ebx, ecx, edx);
+    oe_result_t result = oe_get_cpuid(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
     if (result != OE_UNSUPPORTED)
     {
         oe_host_printf(
