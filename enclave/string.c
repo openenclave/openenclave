@@ -2,18 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-
-/*
-**==============================================================================
-**
-** oe_strlen()
-** oe_strcmp()
-** oe_strcpy()
-** oe_strlcpy()
-** oe_strlcat()
-**
-**==============================================================================
-*/
+#include <openenclave/internal/enclavelibc.h>
 
 size_t oe_strlen(const char* s)
 {
@@ -78,6 +67,19 @@ int oe_strncmp(const char* s1, const char* s2, size_t n)
     return *s1 - *s2;
 }
 
+char* oe_strncpy(char* dest, const char* src, size_t n)
+{
+    char* p = dest;
+
+    while (n-- && *src)
+        *p++ = *src++;
+
+    while (n--)
+        *p++ = '\0';
+
+    return dest;
+}
+
 size_t oe_strlcpy(char* dest, const char* src, size_t size)
 {
     const char* start = src;
@@ -130,15 +132,22 @@ size_t oe_strlcat(char* dest, const char* src, size_t size)
     return n;
 }
 
-/*
-**==============================================================================
-**
-** oe_memset()
-** oe_memcpy()
-** oe_memcmp()
-**
-**==============================================================================
-*/
+char* oe_strstr(const char* haystack, const char* needle)
+{
+    size_t hlen = oe_strlen(haystack);
+    size_t nlen = oe_strlen(needle);
+
+    if (nlen > hlen)
+        return NULL;
+
+    for (size_t i = 0; i < hlen - nlen + 1; i++)
+    {
+        if (oe_memcmp(haystack + i, needle, nlen) == 0)
+            return (char*)haystack + i;
+    }
+
+    return NULL;
+}
 
 void* oe_memcpy(void* dest, const void* src, size_t n)
 {
@@ -235,4 +244,25 @@ int oe_memcmp(const void* s1, const void* s2, size_t n)
     }
 
     return 0;
+}
+
+void* oe_memmove(void* dest, const void* src, size_t n)
+{
+    char *p = (char*)dest;
+    const char *q = (const char*)src;
+
+    if (p != q && n > 0)
+    {
+        if (p <= q)
+        {
+            oe_memcpy(p, q, n);
+        }
+        else
+        {
+            for (q += n, p += n; n--; p--, q--)
+                p[-1] = q[-1];
+        }
+    }
+
+    return p;
 }

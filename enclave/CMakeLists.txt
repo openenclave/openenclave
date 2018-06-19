@@ -21,21 +21,21 @@ add_library(oeenclave STATIC
     key.c
     keys.c
     malloc.c
-    mbedtls.c
     memory.c
     once.c
+    printf.c
     random.c
     report.c
     result.c
     rsa.c
     sbrk.c
     sha.c
-    snprintf.c
     spinlock.c
     string.c
     strtoul.c
     td.c
     thread.c
+    time.c
     verify.c
     voprintf.c
     __secs_to_tm.c

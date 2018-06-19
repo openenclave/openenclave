@@ -9,6 +9,21 @@
 
 OE_EXTERNC_BEGIN
 
+typedef long oe_time_t;
+
+struct oe_tm
+{
+    int tm_sec;
+    int tm_min;
+    int tm_hour;
+    int tm_mday;
+    int tm_mon;
+    int tm_year;
+    int tm_wday;
+    int tm_yday;
+    int tm_isdst;
+};
+
 /**
  * Enclave implementation of the standard strlen() function.
  *
@@ -38,6 +53,13 @@ int oe_strcmp(const char* s1, const char* s2);
 int oe_strncmp(const char* s1, const char* s2, size_t n);
 
 /**
+ * Enclave implementation of the standard strncpy() function.
+ *
+ * Refer to documentation for strncpy() function.
+ */
+char* oe_strncpy(char* dest, const char* src, size_t n);
+
+/**
  * Enclave implementation of the standard strlcpy() function.
  *
  * Refer to documentation for strlcpy() function.
@@ -50,6 +72,13 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size);
  * Refer to documentation for strlcat() function.
  */
 size_t oe_strlcat(char* dest, const char* src, size_t size);
+
+/**
+ * Enclave implementation of the standard strstr() function.
+ *
+ * Refer to documentation for strstr() function.
+ */
+char* oe_strstr(const char* haystack, const char* needle);
 
 /**
  * Enclave implementation of the standard memcpy() function.
@@ -71,6 +100,13 @@ void* oe_memset(void* s, int c, size_t n);
  * Refer to documentation for memcmp() function.
  */
 int oe_memcmp(const void* s1, const void* s2, size_t n);
+
+/**
+ * Enclave implementation of the standard memmove() function.
+ *
+ * Refer to documentation for memmove() function.
+ */
+void* oe_memmove(void* dest, const void* src, size_t n);
 
 /**
  * Produce output according to a given format string.
@@ -118,6 +154,13 @@ OE_PRINTF_FORMAT(3, 4)
 int oe_snprintf(char* str, size_t size, const char* fmt, ...);
 
 /**
+ * Enclave implementation of the standard vprintf() function.
+ *
+ * Refer to documentation for vprintf() function.
+ */
+int oe_vprintf(const char* fmt, oe_va_list ap);
+
+/**
  * Allocates space on the stack frame of the caller.
  *
  * This function allocates **size** bytes of space on the stack frame of the
@@ -156,7 +199,33 @@ OE_ALWAYS_INLINE OE_INLINE void* oe_stack_alloc(size_t size, size_t alignment)
  */
 void* oe_sbrk(ptrdiff_t increment);
 
+/**
+ * Enclave implementation of the standard strtoul() function.
+ *
+ * Refer to documentation for strtoul() function.
+ */
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
+
+/**
+ * Enclave implementation of the standard time() function.
+ *
+ * Refer to documentation for time() function.
+ */
+oe_time_t oe_time(oe_time_t* tloc);
+
+/**
+ * Enclave implementation of the standard gmtime() function.
+ *
+ * Refer to documentation for gmtime() function.
+ */
+struct oe_tm* oe_gmtime(const oe_time_t* timep);
+
+/**
+ * Enclave implementation of the standard rand() function.
+ *
+ * Refer to documentation for rand() function.
+ */
+int oe_rand(void);
 
 OE_EXTERNC_END
 

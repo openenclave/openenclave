@@ -84,3 +84,10 @@ done:
 
     return result;
 }
+
+int oe_rand(void)
+{
+    int x = 0;
+    oe_random(&x, sizeof(x));
+    return x;
+}

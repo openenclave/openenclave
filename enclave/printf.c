@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 #include "voprintf.h"
 
 typedef struct _oe_out_str
@@ -64,5 +65,42 @@ int oe_snprintf(char* str, size_t size, const char* fmt, ...)
     oe_va_start(ap, fmt);
     int n = oe_vsnprintf(str, size, fmt, ap);
     oe_va_end(ap);
+    return n;
+}
+
+int oe_vprintf(const char* fmt, oe_va_list ap_)
+{
+    char buf[256];
+    char* p = buf;
+    int n;
+
+    /* Try first with a fixed-length scratch buffer */
+    {
+        oe_va_list ap;
+        oe_va_copy(ap, ap_);
+        n = oe_vsnprintf(buf, sizeof(buf), fmt, ap);
+        oe_va_end(ap);
+
+        if (n < sizeof(buf))
+        {
+            __oe_host_print(0, p, (size_t)-1);
+            goto done;
+        }
+    }
+
+    /* If string was truncated, retry with correctly sized buffer */
+    {
+        char new_buf[n + 1];
+        p = new_buf;
+
+        oe_va_list ap;
+        oe_va_copy(ap, ap_);
+        n = oe_vsnprintf(p, n + 1, fmt, ap);
+        oe_va_end(ap);
+
+        __oe_host_print(0, p, (size_t)-1);
+    }
+
+done:
     return n;
 }

@@ -13,13 +13,14 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/malloc.h>
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
 #include "report.h"
 #include "td.h"
 #include "verify.h"
-#include "mbedtls.h"
+#include "../3rdparty/mbedtls/include/bits/mbedtls_libc.h"
 
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -116,6 +117,43 @@ uint8_t __oe_initialized = 0;
 /*
 **==============================================================================
 **
+** _init_mbedtls()
+**
+**     Instantiate the MBEDTLS library with libc back pointers.
+**
+**==============================================================================
+*/
+
+static void _init_mbedtls(void)
+{
+    static mbedtls_libc_t _libc =
+    {
+        .strlen = oe_strlen,
+        .strcmp = oe_strcmp,
+        .strncmp = oe_strncmp,
+        .strncpy = oe_strncpy,
+        .strstr = oe_strstr,
+        .memset = oe_memset,
+        .memcpy = oe_memcpy,
+        .memcmp = oe_memcmp,
+        .memmove = oe_memmove,
+        .malloc = oe_malloc,
+        .free = oe_free,
+        .calloc = oe_calloc,
+        .realloc = oe_realloc,
+        .vsnprintf = oe_vsnprintf,
+        .vprintf = oe_vprintf,
+        .rand = oe_rand,
+        .time = oe_time,
+        .gmtime = (gmtime_proc_t)oe_gmtime,
+    };
+
+    __mbedtls_libc = _libc;
+}
+
+/*
+**==============================================================================
+**
 ** _HandleInitEnclave()
 **
 **     Handle the OE_FUNC_INIT_ENCLAVE from host and ensures that each state
@@ -123,6 +161,7 @@ uint8_t __oe_initialized = 0;
 **
 **==============================================================================
 */
+
 void _HandleInitEnclave(uint64_t argIn)
 {
     static bool _once = false;
@@ -156,7 +195,7 @@ void _HandleInitEnclave(uint64_t argIn)
     }
 
     /* Initialize the MBEDTLS library */
-    oe_init_mbedtls();
+    _init_mbedtls();
 }
 
 /*
