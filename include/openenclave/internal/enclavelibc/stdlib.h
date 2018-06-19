@@ -8,6 +8,8 @@
 
 #define RAND_MAX (0x7fffffff)
 
+OE_EXTERNC_BEGIN
+
 OE_INLINE
 int rand(void)
 {
@@ -55,5 +57,7 @@ unsigned long int strtoul(const char* nptr, char** endptr, int base)
 {
     return oe_strtoul(nptr, endptr, base);
 }
+
+OE_EXTERNC_END
 
 #endif /* _ENCLAVELIBC_STDLIB_H */

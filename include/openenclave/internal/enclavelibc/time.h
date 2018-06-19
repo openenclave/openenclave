@@ -7,6 +7,8 @@
 #include "bits/common.h"
 #include "sys/time.h"
 
+OE_EXTERNC_BEGIN
+
 struct tm
 {
     int tm_sec;
@@ -43,5 +45,7 @@ struct tm* gmtime_r(const time_t* timep, struct tm* result)
 {
     return (struct tm*)oe_gmtime_r(timep, (struct oe_tm*)result);
 }
+
+OE_EXTERNC_END
 
 #endif /* _ENCLAVELIBC_TIME_H */

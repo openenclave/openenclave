@@ -6,6 +6,8 @@
 
 #include "bits/common.h"
 
+OE_EXTERNC_BEGIN
+
 OE_INLINE
 size_t strlen(const char* s)
 {
@@ -77,5 +79,7 @@ size_t strlcat(char* dest, const char* src, size_t size)
 {
     return oe_strlcat(dest, src, size);
 }
+
+OE_EXTERNC_END
 
 #endif /* _ENCLAVELIBC_STRING_H */

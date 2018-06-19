@@ -10,21 +10,11 @@
 
 #define CHAR_BIT 8
 
+OE_EXTERNC_BEGIN
+
 typedef long time_t;
 typedef __builtin_va_list va_list;
-typedef long suseconds_t;
-typedef int clockid_t;
 
-struct timeval
-{
-    time_t tv_sec;
-    suseconds_t tv_usec;
-};
-
-struct timezone
-{
-    int tz_minuteswest;
-    int tz_dsttime;
-};
+OE_EXTERNC_END
 
 #endif /* _ENCLAVELIBC_COMMON_H */
