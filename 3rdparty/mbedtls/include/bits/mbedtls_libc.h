@@ -3,8 +3,6 @@
 
 #include "alltypes.h"
 
-typedef struct tm* (*gmtime_proc_t)(const time_t* timep);
-
 typedef struct _mbedtls_libc
 {
     size_t (*strlen)(const char* s);

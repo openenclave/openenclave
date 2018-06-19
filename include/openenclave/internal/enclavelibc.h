@@ -214,11 +214,11 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 oe_time_t oe_time(oe_time_t* tloc);
 
 /**
- * Enclave implementation of the standard gmtime() function.
+ * Enclave implementation of the standard gmtime_t() function.
  *
- * Refer to documentation for gmtime() function.
+ * Refer to documentation for gmtime_t() function.
  */
-struct oe_tm* oe_gmtime(const oe_time_t* timep);
+struct oe_tm* oe_gmtime_r(const oe_time_t* timep, struct oe_tm* result);
 
 /**
  * Enclave implementation of the standard rand() function.

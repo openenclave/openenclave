@@ -44,17 +44,3 @@ done:
 
     return ret;
 }
-
-struct oe_tm* oe_gmtime(const oe_time_t* timep)
-{
-    extern int __secs_to_tm(long long t, struct tm *tm);
-    static struct tm _tm;
-
-    if (!timep || __secs_to_tm(*timep, &_tm) != 0)
-    {
-        oe_assert("panic" == NULL);
-        return NULL;
-    }
-
-    return (struct oe_tm*)&_tm;
-}

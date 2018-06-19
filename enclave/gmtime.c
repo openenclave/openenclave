@@ -26,7 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <openenclave/enclave.h>
-#include <time.h>
+#include <openenclave/internal/enclavelibc.h>
 
 /* 2000-03-01 (mod 400 year, immediately after feb29 */
 #define LEAPOCH (946684800LL + 86400*(31+29))
@@ -35,7 +35,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define DAYS_PER_100Y (365*100 + 24)
 #define DAYS_PER_4Y   (365*4   + 1)
 
-int __secs_to_tm(long long t, struct tm *tm)
+static int _secs_to_tm(long long t, struct oe_tm *tm)
 {
 	long long days, secs;
 	int remdays, remsecs, remyears;
@@ -105,4 +105,14 @@ int __secs_to_tm(long long t, struct tm *tm)
 	tm->tm_sec = remsecs % 60;
 
 	return 0;
+}
+
+struct oe_tm* oe_gmtime_r(const oe_time_t* timep, struct oe_tm* result)
+{
+    if (!timep || !result || _secs_to_tm(*timep, result) != 0)
+        return NULL;
+
+    result->tm_isdst = 0;
+
+    return result;
 }

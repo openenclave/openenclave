@@ -124,6 +124,13 @@ uint8_t __oe_initialized = 0;
 **==============================================================================
 */
 
+/* OE does not implement this thread-unsafe form */
+static struct tm* _gmtime(const time_t* timep)
+{
+    static struct oe_tm _tm;
+    return (struct tm*)oe_gmtime_r(timep, &_tm);
+}
+
 static void _init_mbedtls(void)
 {
     static mbedtls_libc_t _libc =
@@ -145,7 +152,7 @@ static void _init_mbedtls(void)
         .vprintf = oe_vprintf,
         .rand = oe_rand,
         .time = oe_time,
-        .gmtime = (gmtime_proc_t)oe_gmtime,
+        .gmtime = _gmtime,
     };
 
     __mbedtls_libc = _libc;

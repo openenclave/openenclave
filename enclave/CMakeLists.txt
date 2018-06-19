@@ -11,6 +11,7 @@ add_library(oeenclave STATIC
     cpuid.c
     ec.c
     exception.c
+    gmtime.c
     globals.c
     hexdump.c
     hostcalls.c
@@ -37,7 +38,6 @@ add_library(oeenclave STATIC
     thread.c
     time.c
     verify.c
-    __secs_to_tm.c
     exit.S
     getkey.S
     main.S)
