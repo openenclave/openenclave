@@ -6,6 +6,8 @@
 
 #include "../bits/common.h"
 
+OE_EXTERNC_BEGIN
+
 typedef long suseconds_t;
 typedef int clockid_t;
 
@@ -20,5 +22,7 @@ struct timezone
     int tz_minuteswest;
     int tz_dsttime;
 };
+
+OE_EXTERNC_END
 
 #endif /* _ENCLAVELIBC_SYS_TIME_H */
