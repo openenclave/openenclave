@@ -15,7 +15,6 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/debug.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/load.h>
@@ -27,6 +26,7 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
+#include "cpuid_count.h"
 #include "enclave.h"
 #include "memalign.h"
 #include "sgxload.h"
