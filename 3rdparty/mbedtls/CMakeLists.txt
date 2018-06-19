@@ -114,21 +114,21 @@ install(FILES
 
 ##==============================================================================
 ##
-## mbedcrypto:
+## oembedtls:
 ##
-## Define the mbedcrypto interface so that other cmake files can find the
+## Define the oembedtls interface so that other cmake files can find the
 ## MBEDTLS headers and library.
 ##
 ##==============================================================================
 
-add_library(mbedcrypto INTERFACE)
+add_library(oembedtls INTERFACE)
 
-add_dependencies(mbedcrypto oembedtls-wrap)
+add_dependencies(oembedtls oembedtls-wrap)
 
-target_include_directories(mbedcrypto INTERFACE
+target_include_directories(oembedtls INTERFACE
     ${ENCLAVELIBC_INCDIR}
     ${OE_INCDIR}/openenclave)
 
-target_link_libraries(mbedcrypto INTERFACE
+target_link_libraries(oembedtls INTERFACE
     ${OE_LIBDIR}/openenclave/enclave/liboembedtls.a)
 

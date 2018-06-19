@@ -47,7 +47,7 @@ add_library(oeenclave STATIC
 
 target_link_libraries(oeenclave PUBLIC 
     oe_includes 
-    mbedcrypto)
+    oembedtls)
 
 # we strip the default include containing the compiler-provided intrinsics
 # add it back in
