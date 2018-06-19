@@ -38,18 +38,14 @@ static FILE* stderr = (FILE*)1;
 #define EINVAL 22
 #define ENOMEM 12
 
-#define LACKS_SCHED_H
-
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
-#if 0
 /* Replacement for sched_yield() in dlmalloc sources below */
 static int __sched_yield(void)
 {
     __asm__ __volatile__("pause");
     return 0;
 }
-#endif
 
 /* Since Dlmalloc provides no way to override the SPIN_LOCK_YIELD macro,
  * redefine sched_yield() directly. Dlmalloc spins for a given number of
@@ -60,7 +56,7 @@ static int __sched_yield(void)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#include "../3rdparty/dlmalloc/dlmalloc/malloc.c"
+#include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
 /*
 **==============================================================================
@@ -87,10 +83,6 @@ void* oe_malloc(size_t size)
 
     if (!p && size)
     {
-#if 0
-        errno = ENOMEM;
-#endif
-
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
     }
@@ -109,10 +101,6 @@ void* oe_calloc(size_t nmemb, size_t size)
 
     if (!p && nmemb && size)
     {
-#if 0
-        errno = ENOMEM;
-#endif
-
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, nmemb * size);
     }
@@ -126,10 +114,6 @@ void* oe_realloc(void* ptr, size_t size)
 
     if (!p && size)
     {
-#if 0
-        errno = ENOMEM;
-#endif
-
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
     }
@@ -143,10 +127,6 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size)
 
     if (rc != 0 && size)
     {
-#if 0
-        errno = ENOMEM;
-#endif
-
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
     }
@@ -160,10 +140,6 @@ void* oe_memalign(size_t alignment, size_t size)
 
     if (!p && size)
     {
-#if 0
-        errno = ENOMEM;
-#endif
-
         if (_failureCallback)
             _failureCallback(__FILE__, __LINE__, __FUNCTION__, size);
     }

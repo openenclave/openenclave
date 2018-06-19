@@ -42,12 +42,7 @@ void* realloc(void* ptr, size_t size)
 
 int posix_memalign(void** memptr, size_t alignment, size_t size)
 {
-    int rc = oe_posix_memalign(memptr, alignment, size);
-
-    if (rc != 0 && size)
-        errno = ENOMEM;
-
-    return rc;
+    return oe_posix_memalign(memptr, alignment, size);
 }
 
 void* memalign(size_t alignment, size_t size)
