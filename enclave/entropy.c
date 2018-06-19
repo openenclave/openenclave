@@ -26,7 +26,7 @@ int mbedtls_hardware_poll(
     int ret = -1;
     unsigned char* p = output;
 
-    (void)data;
+    OE_UNUSED(data);
 
     if (!output)
         goto done;
