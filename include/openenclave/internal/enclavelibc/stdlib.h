@@ -6,6 +6,8 @@
 
 #include "bits/common.h"
 
+#define RAND_MAX (0x7fffffff)
+
 OE_INLINE 
 int rand(void)
 {

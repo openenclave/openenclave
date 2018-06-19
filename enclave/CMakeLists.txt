@@ -3,6 +3,9 @@
 
 add_library(oeenclave STATIC
     ../common/quote.c
+    enclavelibc/rand.c
+    enclavelibc/string.c
+    enclavelibc/printf.c
     assert.c
     atexit.c
     calls.c
@@ -24,7 +27,6 @@ add_library(oeenclave STATIC
     malloc.c
     memory.c
     once.c
-    printf.c
     random.c
     report.c
     result.c
@@ -32,7 +34,6 @@ add_library(oeenclave STATIC
     sbrk.c
     sha.c
     spinlock.c
-    string.c
     strtoul.c
     td.c
     thread.c
