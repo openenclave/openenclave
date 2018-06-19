@@ -10,8 +10,4 @@ ecjpake
 gcm.camellia
 memory_buffer_alloc
 xtea
-ctr_drbg
-hmac_drbg.misc
-hmac_drbg.no_reseed
-hmac_drbg.nopr
-hmac_drbg.pr
+
