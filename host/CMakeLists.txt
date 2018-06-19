@@ -35,6 +35,7 @@ endif()
 
 add_library(oehost STATIC
     calls.c
+    cpuid.c
     create.c
     dupenv.c
     elf.c
