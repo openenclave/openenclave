@@ -15,6 +15,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/debug.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/load.h>
@@ -26,7 +27,6 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
-#include "cpuid_count.h"
 #include "enclave.h"
 #include "memalign.h"
 #include "sgxload.h"
@@ -880,14 +880,14 @@ static oe_result_t _InitializeEnclave(oe_enclave_t* enclave)
     // Initialize enclave cache of CPUID info for emulation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        int supported = __get_cpuid_count(
+        result = oe_get_cpuid(
             i,
             0, // pass sub-leaf of 0 - needed for leaf 4
             &args.cpuidTable[i][OE_CPUID_RAX],
             &args.cpuidTable[i][OE_CPUID_RBX],
             &args.cpuidTable[i][OE_CPUID_RCX],
             &args.cpuidTable[i][OE_CPUID_RDX]);
-        if (!supported)
+        if (result == OE_UNSUPPORTED)
             OE_RAISE(OE_UNSUPPORTED);
     }
 
