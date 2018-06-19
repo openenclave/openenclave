@@ -15,16 +15,16 @@ typedef __builtin_va_list va_list;
 typedef long suseconds_t;
 typedef int clockid_t;
 
-struct timeval 
+struct timeval
 {
-   time_t tv_sec;
-   suseconds_t tv_usec;
+    time_t tv_sec;
+    suseconds_t tv_usec;
 };
 
-struct timezone 
+struct timezone
 {
-   int tz_minuteswest;
-   int tz_dsttime;
+    int tz_minuteswest;
+    int tz_dsttime;
 };
 
 #endif /* _ENCLAVELIBC_COMMON_H */

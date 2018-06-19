@@ -41,8 +41,7 @@ OE_ECALL void Test(void* args_)
     if (stats.inUseBytes > inUseBytes)
     {
         oe_host_printf(
-            "ERROR: memory leaked: %lu bytes\n",
-            stats.inUseBytes - inUseBytes);
+            "ERROR: memory leaked: %lu bytes\n", stats.inUseBytes - inUseBytes);
         oe_abort();
     }
 }

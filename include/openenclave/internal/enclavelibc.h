@@ -236,7 +236,7 @@ void* oe_malloc(size_t size);
  *
  * Refer to documentation for free() function.
  */
-void oe_free(void *ptr);
+void oe_free(void* ptr);
 
 /**
  * Enclave implementation of the standard calloc() function.

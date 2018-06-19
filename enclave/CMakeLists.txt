@@ -14,8 +14,9 @@ add_library(oeenclave STATIC
     enclavelibc/gmtime.c
     enclavelibc/printf.c
     enclavelibc/rand.c
-    enclavelibc/string.c
     enclavelibc/malloc.c
+    enclavelibc/string.c
+    enclavelibc/strtoul.c
     entropy.c
     exception.c
     globals.c
@@ -36,7 +37,6 @@ add_library(oeenclave STATIC
     sbrk.c
     sha.c
     spinlock.c
-    strtoul.c
     td.c
     thread.c
     time.c

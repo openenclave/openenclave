@@ -3,10 +3,10 @@
 
 #define __OE_NEED_TIME_CALLS
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/malloc.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/random.h>
 
 time_t oe_time(time_t* tloc)

@@ -8,7 +8,7 @@
 
 #define RAND_MAX (0x7fffffff)
 
-OE_INLINE 
+OE_INLINE
 int rand(void)
 {
     return oe_rand();
@@ -48,6 +48,12 @@ OE_INLINE
 int posix_memalign(void** memptr, size_t alignment, size_t size)
 {
     return oe_posix_memalign(memptr, alignment, size);
+}
+
+OE_INLINE
+unsigned long int strtoul(const char* nptr, char** endptr, int base)
+{
+    return oe_strtoul(nptr, endptr, base);
 }
 
 #endif /* _ENCLAVELIBC_STDLIB_H */

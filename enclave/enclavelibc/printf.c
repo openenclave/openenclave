@@ -3,8 +3,8 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/intstr.h>
+#include <openenclave/internal/print.h>
 
 /*
 **==============================================================================
@@ -14,14 +14,14 @@
 **==============================================================================
 */
 
-#define FLAG_NONE  (1 << 0)
+#define FLAG_NONE (1 << 0)
 #define FLAG_MINUS (1 << 1)
-#define FLAG_PLUS  (1 << 2)
+#define FLAG_PLUS (1 << 2)
 #define FLAG_SPACE (1 << 3)
 #define FLAG_POUND (1 << 4)
-#define FLAG_ZERO  (1 << 5)
+#define FLAG_ZERO (1 << 5)
 
-#define OE_STRLEN(STR) (sizeof(STR)-1)
+#define OE_STRLEN(STR) (sizeof(STR) - 1)
 #define OE_STRLIT(STR) STR, OE_STRLEN(STR)
 
 typedef struct _oe_out oe_out_t;
@@ -72,7 +72,7 @@ OE_INLINE bool _isdigit(char c)
 
 /* Syntax: %flags width [ . precision ] type conversion */
 static const char* _parse_placeholder(
-    const char* p, 
+    const char* p,
     struct placeholder* ph,
     oe_va_list ap)
 {
@@ -85,7 +85,7 @@ static const char* _parse_placeholder(
         return NULL;
 
     /* Parse the flags if any */
-    for (bool more = true; more; )
+    for (bool more = true; more;)
     {
         switch (*p)
         {
@@ -360,7 +360,7 @@ static size_t _format(
 
     if (ph->precision != OE_MAX_INT && ph->precision > len)
         nprecision = ph->precision - len;
-    
+
     if (nprecision > nwidth)
         nwidth = 0;
     else
@@ -557,8 +557,7 @@ typedef struct _oe_out_str
     char* str;
     size_t size;
     size_t off;
-}
-oe_out_str_t;
+} oe_out_str_t;
 
 static ssize_t _write(oe_out_t* out_, const void* buf, size_t count)
 {

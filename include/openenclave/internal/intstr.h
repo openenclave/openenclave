@@ -12,8 +12,7 @@ OE_EXTERNC_BEGIN
 typedef struct _oe_intstr_buf
 {
     char data[32];
-}
-oe_intstr_buf_t;
+} oe_intstr_buf_t;
 
 const char* oe_uint64_to_hexstr(oe_intstr_buf_t* buf, uint64_t x, size_t* size);
 

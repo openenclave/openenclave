@@ -248,8 +248,8 @@ int oe_memcmp(const void* s1, const void* s2, size_t n)
 
 void* oe_memmove(void* dest, const void* src, size_t n)
 {
-    char *p = (char*)dest;
-    const char *q = (const char*)src;
+    char* p = (char*)dest;
+    const char* q = (const char*)src;
 
     if (p != q && n > 0)
     {

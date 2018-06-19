@@ -29,12 +29,12 @@ struct enclavelibc
     void* (*realloc)(void* ptr, size_t size);
     void* (*memalign)(size_t alignment, size_t size);
     int (*posix_memalign)(void** memptr, size_t alignment, size_t size);
+    unsigned long int (*strtoul)(const char* nptr, char** endptr, int base);
 };
 
 const void* oe_link_enclavelibc(void)
 {
-    static const struct enclavelibc _enclavelibc =
-    {
+    static const struct enclavelibc _enclavelibc = {
         .strlen = oe_strlen,
         .strnlen = oe_strnlen,
         .strcmp = oe_strcmp,
@@ -59,6 +59,7 @@ const void* oe_link_enclavelibc(void)
         .realloc = oe_realloc,
         .memalign = oe_memalign,
         .posix_memalign = oe_posix_memalign,
+        .strtoul = oe_strtoul,
     };
 
     return &_enclavelibc;

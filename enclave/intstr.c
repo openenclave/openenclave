@@ -11,11 +11,22 @@ OE_INLINE char _get_hex_char(uint64_t x, size_t i)
     uint64_t nbits = (uint64_t)i * 4;
     uint64_t nibble = (x & (0x000000000000000fUL << nbits)) >> nbits;
 
-    static char _table[] =
-    {
-        '0', '1', '2', '3', '4', '5', '6', '7',
-        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-    };
+    static char _table[] = {'0',
+                            '1',
+                            '2',
+                            '3',
+                            '4',
+                            '5',
+                            '6',
+                            '7',
+                            '8',
+                            '9',
+                            'a',
+                            'b',
+                            'c',
+                            'd',
+                            'e',
+                            'f'};
 
     return _table[nibble];
 }
@@ -23,7 +34,7 @@ OE_INLINE char _get_hex_char(uint64_t x, size_t i)
 const char* oe_uint64_to_hexstr(oe_intstr_buf_t* buf, uint64_t x, size_t* size)
 {
     for (size_t i = 0; i < 16; i++)
-        buf->data[15-i]  = _get_hex_char(x, i);
+        buf->data[15 - i] = _get_hex_char(x, i);
 
     buf->data[16] = '\0';
 
@@ -50,8 +61,7 @@ const char* oe_uint64_to_octstr(oe_intstr_buf_t* buf, uint64_t x, size_t* size)
     do
     {
         *--p = '0' + x % 8;
-    }
-    while (x /= 8);
+    } while (x /= 8);
 
     if (size)
         *size = end - p;
@@ -70,8 +80,7 @@ const char* oe_uint64_to_decstr(oe_intstr_buf_t* buf, uint64_t x, size_t* size)
     do
     {
         *--p = '0' + x % 10;
-    }
-    while (x /= 10);
+    } while (x /= 10);
 
     if (size)
         *size = end - p;

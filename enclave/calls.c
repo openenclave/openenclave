@@ -5,24 +5,24 @@
 #include <openenclave/internal/atexit.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/enclavelibc/bits/common.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/jump.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/malloc.h>
-#include <openenclave/internal/enclavelibc/bits/common.h>
 #include "asmdefs.h"
 #include "cpuid.h"
+#include "enclavelibc/enclavelibc.h"
+#include "entropy.h"
 #include "init.h"
 #include "report.h"
 #include "td.h"
 #include "verify.h"
-#include "enclavelibc/enclavelibc.h"
-#include "entropy.h"
 
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
