@@ -10,6 +10,12 @@ set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${ENCLAVELIBC_INCDIR} -fno-builtin 
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 
+##==============================================================================
+##
+## config_final.h:
+##
+##==============================================================================
+
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/config.h 
@@ -23,15 +29,34 @@ else()
         ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h COPYONLY)
 endif()
 
+##==============================================================================
+##
+## mbedtls:
+##
+## Builds MBEDTLS by performing the following steps.
+##
+## (1) Copy the ./mbedtls source tree to the following location in the binary 
+##     directory.
+##
+##     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-prefix/src/mbedtls
+##
+## (2) Replace the MBEDTLS config.h file with config_final.h (created above).
+##
+## (3) Set the C compiler flags used to compile MBEDTLS.
+##
+## (4) Build MBEDTLS using the implicit default BUILD_COMMAND.
+##
+## (5) Create liboembedtls.a by combining the following archives.
+##
+##     libmbedtls.a
+##     libmbedx509.a
+##     libmbedcrypto.a
+##
+##==============================================================================
+
 include(ExternalProject)
 
-##==============================================================================
-##
-## ExternalProject_Add(mbedtls-wrap...)
-##
-##==============================================================================
-
-ExternalProject_Add(mbedtls-wrap
+ExternalProject_Add(mbedtls
 
     # Copy the MBEDTLS source distribution to the build directory.
     DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -73,7 +98,7 @@ install(FILES
 
 add_library(mbedcrypto INTERFACE)
 
-add_dependencies(mbedcrypto mbedtls-wrap)
+add_dependencies(mbedcrypto build)
 
 target_include_directories(mbedcrypto INTERFACE
     ${ENCLAVELIBC_INCDIR}
