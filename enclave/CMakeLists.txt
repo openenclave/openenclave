@@ -37,7 +37,6 @@ add_library(oeenclave STATIC
     thread.c
     time.c
     verify.c
-    voprintf.c
     __secs_to_tm.c
     exit.S
     getkey.S
