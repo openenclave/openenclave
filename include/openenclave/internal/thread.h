@@ -19,4 +19,3 @@ typedef struct _oe_thread_wake_wait_args
 } oe_thread_wake_wait_args_t;
 
 #endif //_OE_INCLUDE_THREAD_H
-

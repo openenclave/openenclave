@@ -19,7 +19,6 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/debug.h>
 #include <openenclave/internal/elf.h>
-#include <openenclave/internal/enclave.h>
 #include <openenclave/internal/load.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>

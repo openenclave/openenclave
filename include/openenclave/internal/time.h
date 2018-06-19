@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_TIME_H
-#define _OE_TIME_H
+#ifndef _OE_INCLUDE_TIME_H
+#define _OE_INCLUDE_TIME_H
 
 #include <openenclave/bits/types.h>
 
@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #elif defined(_WIN32)
 typedef int32_t clockid_t;
+#include <Windows.h>
 #endif
 #include <time.h>
 
@@ -87,4 +88,4 @@ typedef struct _oe_nanosleep_args
     struct timespec rembuf;
 } oe_nanosleep_args_t;
 
-#endif /* _OE_TIME_H */
+#endif /* _OE_INCLUDE_TIME_H */
