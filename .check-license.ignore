@@ -68,3 +68,5 @@ VERSION
 ./tests/pingpong-shared/enc/signconf.xml
 ./tests/ecall_ocall/crc32.cpp
 ./.cspellignore
+./enclave/enclavelibc/gmtime.c
+./include/openenclave/internal/queue.h
