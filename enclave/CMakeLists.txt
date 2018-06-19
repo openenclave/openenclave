@@ -3,9 +3,11 @@
 
 add_library(oeenclave STATIC
     ../common/quote.c
+    enclavelibc/gmtime.c
+    enclavelibc/printf.c
     enclavelibc/rand.c
     enclavelibc/string.c
-    enclavelibc/printf.c
+    enclavelibc/malloc.c
     assert.c
     atexit.c
     calls.c
@@ -14,7 +16,6 @@ add_library(oeenclave STATIC
     cpuid.c
     ec.c
     exception.c
-    gmtime.c
     globals.c
     hexdump.c
     hostcalls.c
@@ -24,7 +25,6 @@ add_library(oeenclave STATIC
     jump.c
     key.c
     keys.c
-    malloc.c
     memory.c
     once.c
     random.c
