@@ -4,8 +4,8 @@
 #ifndef _OE_ENCLAVELIBC_H
 #define _OE_ENCLAVELIBC_H
 
-#include <openenclave/bits/defs.h>
-#include <openenclave/bits/types.h>
+#include "../bits/defs.h"
+#include "../bits/types.h"
 
 OE_EXTERNC_BEGIN
 

@@ -14,13 +14,13 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <openenclave/internal/malloc.h>
+#include <openenclave/internal/enclavelibc/bits/common.h>
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
 #include "report.h"
 #include "td.h"
 #include "verify.h"
-#include "../3rdparty/mbedtls/include/bits/mbedtls_libc.h"
 
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -133,7 +133,7 @@ static struct tm* _gmtime(const time_t* timep)
 
 static void _init_mbedtls(void)
 {
-    static mbedtls_libc_t _libc =
+    static enclavelibc_t _libc =
     {
         .strlen = oe_strlen,
         .strcmp = oe_strcmp,
@@ -155,7 +155,7 @@ static void _init_mbedtls(void)
         .gmtime = _gmtime,
     };
 
-    __mbedtls_libc = _libc;
+    __enclavelibc = _libc;
 }
 
 /*

@@ -5,7 +5,6 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/random.h>
-#include "../3rdparty/mbedtls/include/bits/mbedtls_libc.h"
 
 time_t oe_time(time_t* tloc)
 {

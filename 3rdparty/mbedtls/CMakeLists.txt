@@ -3,7 +3,10 @@
 
 # Copy mbedtls sources to replace config.h and build w/ own flags
 
-set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${CMAKE_CURRENT_SOURCE_DIR}/include -fno-builtin -fPIC -fno-builtin-udivti3 -fno-stack-protector")
+set(ENCLAVELIBC_INCDIR 
+    "${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
+
+set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${ENCLAVELIBC_INCDIR} -fno-builtin -fPIC -fno-builtin-udivti3 -fno-stack-protector")
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 
@@ -62,7 +65,7 @@ add_library(mbedcrypto INTERFACE)
 add_dependencies(mbedcrypto mbedtls-wrap)
 
 target_include_directories(mbedcrypto INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${ENCLAVELIBC_INCDIR}
     ${OE_INCDIR}/openenclave)
 
 target_link_libraries(mbedcrypto INTERFACE 
