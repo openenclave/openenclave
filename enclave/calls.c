@@ -21,6 +21,8 @@
 #include "report.h"
 #include "td.h"
 #include "verify.h"
+#include "enclavelibc/enclavelibc.h"
+#include "entropy.h"
 
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -157,8 +159,9 @@ void _HandleInitEnclave(uint64_t argIn)
         oe_spin_unlock(&_lock);
     }
 
-    /* Force linkage references to all enclavelibc functions */
+    /* Force linkage of functions needed by mbedtls */
     oe_link_enclavelibc();
+    oe_link_entropy();
 }
 
 /*

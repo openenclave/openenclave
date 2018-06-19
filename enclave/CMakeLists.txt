@@ -16,6 +16,7 @@ add_library(oeenclave STATIC
     enclavelibc/rand.c
     enclavelibc/string.c
     enclavelibc/malloc.c
+    entropy.c
     exception.c
     globals.c
     hexdump.c

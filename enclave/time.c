@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #define __OE_NEED_TIME_CALLS
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
