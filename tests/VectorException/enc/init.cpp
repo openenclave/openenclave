@@ -20,6 +20,7 @@ int test_cpuid_instruction(unsigned int what)
 {
     if (!done)
     {
+        asm("movl  $1, %%eax");
         unsigned int a,b,d;
         oe_get_cpuid(0, 0, &a, &b, &c, &d);
         // This should be executed only once.
