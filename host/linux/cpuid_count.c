@@ -17,11 +17,11 @@ int __get_cpuid_count(
     unsigned int* __ecx,
     unsigned int* __edx)
 {
-    /*unsigned int __ext = __leaf & 0x80000000;
+    unsigned int __ext = __leaf & 0x80000000;
     unsigned int __maxlevel = __get_cpuid_max(__ext, 0);
 
     if (__maxlevel == 0 || __maxlevel < __leaf)
-        return 0;*/
+        return 0;
 
     __cpuid_count(__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
     return 1;

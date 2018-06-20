@@ -114,7 +114,7 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
         : "cc", "memory");
     
     cpuidRAX=0, ebx=0, ecx=0, edx=0;
-    __get_cpuid_count(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
+    oe_get_cpuid(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
 
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
     {
