@@ -13,13 +13,14 @@ typedef struct _Regs
     unsigned int edx;
 } Regs;
 
-static void _CPUID(Regs* regs)
+static oe_result_t _CPUID(Regs* regs)
 {
-    oe_get_cpuid(regs->eax, regs->ecx, &regs->eax, &regs->ebx, &regs->ecx, &regs->edx);
-    /*asm volatile(
-        "cpuid"
-        : "=a"(regs->eax), "=b"(regs->ebx), "=c"(regs->ecx), "=d"(regs->edx)
-        : "0"(regs->eax), "2"(regs->ecx));*/
+    return oe_get_cpuid(regs->eax, 
+                        regs->ecx, 
+                        &regs->eax, 
+                        &regs->ebx, 
+                        &regs->ecx, 
+                        &regs->edx);
 }
 
 #define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)
@@ -30,6 +31,8 @@ static void _CPUID(Regs* regs)
 
 int main(int argc, const char* argv[])
 {
+    oe_result_t result = OE_UNEXPECTED;
+
     if (argc != 1)
     {
         fprintf(stderr, "Usage: %s\n", argv[0]);
@@ -40,7 +43,12 @@ int main(int argc, const char* argv[])
     {
         Regs regs = {0x7, 0, 0x0, 0};
 
-        _CPUID(&regs);
+        result = _CPUID(&regs);
+        if (result != OE_OK)
+        {
+            printf("Error getting CPUID: %d", result);
+            return result;
+        }
 
         if (!HAVE_SGX(regs))
         {
@@ -53,7 +61,12 @@ int main(int argc, const char* argv[])
     {
         Regs regs = {0x12, 0, 0x0, 0};
 
-        _CPUID(&regs);
+        result = _CPUID(&regs);
+        if (result != OE_OK)
+        {
+            printf("Error getting CPUID: %d", result);
+            return result;
+        }
 
         if (HAVE_SGX2(regs))
         {
