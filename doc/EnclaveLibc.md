@@ -11,8 +11,9 @@ size_t oe_strlen(const char* s);
 ```
 
 **EnclaveLibc** is used within the **oeenclave** library itself but is also
-used as a vehicle for porting third-party libraries. For an example of the
-latter, please see the section entitled **"Porting third-party libraries"**.
+used as a vehicle for porting third-party libraries such as **"mbed TLS"**. 
+For an example of the latter, please see the section entitled **"Porting mbed 
+TLS"**.
 
 enclavelibc.h
 -------------
@@ -78,10 +79,42 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 ```
 
-All function definitions are located here in the source tree.
+Sources containing the corresponding function definitions are located in the 
+following directory.
 
 ```
 ./enclave/enclavelibc
 ```
 
+Porting mbed TLS
+----------------
+
+This section describes the general approach used to port **mbed TLS**.
+
+### The standard C headers
+
+**EnclaveLibc** provides a sparse subset of standard C headers located under
+the following directory in the source tree.
+
+```
+../include/openenclave/internal/enclavelibc
+```
+
+This directory contains the following standard C headers.
+
+```
+stdlib.h
+limits.h
+stdarg.h
+stddef.h
+stdio.h
+sched.h
+stdint.h
+time.h
+string.h
+bits/common.h
+sys/time.h
+```
+
+Each header defines a sparse subset of the standard C functions.
 
