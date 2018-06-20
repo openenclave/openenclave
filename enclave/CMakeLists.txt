@@ -17,6 +17,7 @@ add_library(oeenclave STATIC
     enclavelibc/malloc.c
     enclavelibc/string.c
     enclavelibc/strtoul.c
+    enclavelibc/time.c
     entropy.c
     exception.c
     globals.c
@@ -39,7 +40,6 @@ add_library(oeenclave STATIC
     spinlock.c
     td.c
     thread.c
-    time.c
     verify.c
     exit.S
     getkey.S
