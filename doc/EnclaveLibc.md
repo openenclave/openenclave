@@ -2,8 +2,8 @@ EnclaveLibc
 ===========
 
 __EnclaveLibc__ is a tiny subset of the standard C library that resides within
-the **oeenclave** library. It provides a set of functions with standard C
-signature but whose names are prefixed with '**oe_**'. For example, **strlen**
+the **oeenclave** library. It defines functions with standard C signatures 
+whose names are prefixed with 'oe_'. For example, **strlen**
 is defined as follows.
 
 ```
