@@ -20,7 +20,7 @@ The <enclavelibc.h> header
 The **<enclavelibc.h>** header file declares all **EnclaveLibc** functions and
 is located here in the source tree.
 
-[```include/openenclave/internal/enclavelibc.h```](../include/openenclave/internal/enclavelibc.h)
+[**include/openenclave/internal/enclavelibc.h**](../include/openenclave/internal/enclavelibc.h)
 
 This header declares the following functions.
 
@@ -78,7 +78,7 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
 These functions are defined by sources in the following directory.
 
-[```./enclave/enclavelibc```](../enclave/enclavelibc)
+[**enclave/enclavelibc**](../enclave/enclavelibc)
 
 The standard C headers
 ----------------------
@@ -88,9 +88,7 @@ are intended to ease porting of **mbed TLS** (and possibly other third-party
 libraries in the future). These headers are located under the following 
 directory in the source tree.
 
-```
-include/openenclave/internal/enclavelibc
-```
+[**include/openenclave/internal/enclavelibc**](../include/openenclave/internal/enclavelibc)
 
 This directory contains the following headers.
 
