@@ -11,7 +11,8 @@ size_t oe_strlen(const char* s);
 ```
 
 **EnclaveLibc** is used within the **oeenclave** library itself but is also
-used as a vehicle for porting **mbed TLS** (see **"Porting mbed TLS"**).
+used as a vehicle for porting **mbed TLS** (see **"Porting mbed TLS"** for 
+details).
 
 The <enclavelibc.h> header
 --------------------------
@@ -186,7 +187,7 @@ library provides the following function.
 oe_link_enclavelibc();
 ```
 
-This function is called (indirectly) from the **oeenclave** library's entry
-point (**oe\_main**). This function simply returns a vector of pointers to
-all functions in EnclaveLibc (which ensures they are statically referenced).
+This function is called indirectly from the **oeenclave** library's entry
+point (**oe\_main**). It simply returns a vector of pointers to all functions 
+in **EnclaveLibc**, ensuring they are statically referenced.
 
