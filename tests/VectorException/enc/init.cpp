@@ -20,12 +20,6 @@ int test_cpuid_instruction(unsigned int what)
 {
     if (!done)
     {
-        /*asm("movl  $1, %%eax   \n\t"
-            "cpuid             \n\t"
-            : "=c"(c)
-            :
-            : "eax", "ebx", "edx");*/
-        
         unsigned int a,b,d;
         oe_get_cpuid(1, 0, &a, &b, &c, &d);
         // This should be executed only once.
