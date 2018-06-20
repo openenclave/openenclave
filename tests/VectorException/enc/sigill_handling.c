@@ -109,11 +109,8 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
     // being optimized out
     asm volatile(
         "cpuid"
-        : "=a"(cpuidRAX) // Return value in cpuidRAX
+        : "=a"(cpuidRAX), "=b" (ebx), "=c" (ecx), "=d" (edx) // Return value in cpuidRAX
         : "0"(leaf)
-        : "ebx"(ebx)
-        : "ecx"(ecx) 
-        : "edx"(edx)
         : "cc", "memory");
     
     cpuidRAX=0, ebx=0, ecx=0, edx=0;
