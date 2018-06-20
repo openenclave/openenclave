@@ -10,26 +10,18 @@ follows.
 size_t oe_strlen(const char* s);
 ```
 
-**EnclaveLibc** is used in several ways.
+**EnclaveLibc** is used within the **oeenclave** library itself but can also
+be used to port third-party libraries such as **mbed TLS** or **OpenSSL**. See
+the section entitled **Porting mbed TLS** for more details.
 
-- The **oeenclave** library itself uses it.
-- Enclave developers use it in lieu of the **oelibc** library.
-- As a vehicle for porting third party applications, such as:
-    - **mbed TLS** 
-    - **OpenSSL**
-    - **dlmalloc**
+enclavelibc.h
+-------------
 
-within the **oeenclave** library itself and by enclave
-developers who prefer not to take a depe**oelibc** library.
-
-- To implement parts of the **oeenclave** library
-- To provide enclave developers standard C functions without the use of **oelibc**.
-  to use oelibc.
-
-All **EnclaveLibc** functions are declared in the following header file.
+The **enclavelibc.h** header file declares all **EnclaveLibc** functions and
+is located here in the source tree.
 
 ```
-${OE_SOURCE_DIRECTORY}/include/openenclave/internal/enclavelibc.h
+./include/openenclave/internal/enclavelibc.h
 ```
 
 This header declares the following functions.
@@ -62,17 +54,8 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 ```
 
-
-
+All function definitions are located in the following directory.
 
 ```
 ${OE_SOURCE_DIRECTORY}/include/openenclave/internal/enclavelibc
 ```
-
-The implementation sources are located here.
-
-```
-${OE_SOURCE_DIRECTORY}/enclave/enclavelibc
-```
-
-
