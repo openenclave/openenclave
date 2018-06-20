@@ -3,7 +3,7 @@ EnclaveLibc
 
 **EnclaveLibc** is a tiny subset of the standard C library that resides within
 the **oeenclave** library. It defines functions with standard C signatures but 
-whose names are prefixed with **"oe"**. For example, **strlen** is defined as 
+whose names are prefixed with **"oe\_"**. For example, **strlen** is defined as 
 follows.
 
 ```
@@ -11,13 +11,12 @@ size_t oe_strlen(const char* s);
 ```
 
 **EnclaveLibc** is used within the **oeenclave** library itself but is also
-used as a vehicle for porting **mbed TLS**. For more information on
-the latter, read the section entitled **"Porting mbed TLS"**.
+used as a vehicle for porting **mbed TLS** (see **"Porting mbed TLS"**).
 
-The enclavelibc.h header
-------------------------
+The <enclavelibc.h> header
+--------------------------
 
-The **enclavelibc.h** header file declares all **EnclaveLibc** functions and
+The **<enclavelibc.h>** header file declares all **EnclaveLibc** functions and
 is located here in the source tree.
 
 ```
@@ -78,8 +77,7 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 ```
 
-Sources containing the corresponding function definitions are located in the 
-following directory.
+These functions are defined by sources in the following directory.
 
 ```
 ./enclave/enclavelibc
@@ -89,13 +87,12 @@ The standard C headers
 ----------------------
 
 **EnclaveLibc** provides a sparse subset of standard C headers. These headers
-are intended to ease porting of **mbed TLS**, which expects to find headers 
-such as **<stdio.h>** and **<string.h>**.
-
-These headers are located under the following directory in the source tree.
+are intended to ease porting of **mbed TLS** (and possibly other third-party
+libraries in the future). These headers are located under the following 
+directory in the source tree.
 
 ```
-../include/openenclave/internal/enclavelibc
+include/openenclave/internal/enclavelibc
 ```
 
 This directory contains the following headers.
@@ -129,7 +126,7 @@ void* memcpy(void* dest, const void* src, size_t n)
 ```
 
 The caller of **memcpy** is redirected to **oe\_memcpy** so that the caller's
-object file contains a reference the following symbol: **oe\_memcpy**.
+object file contains a reference to **oe\_memcpy** rather than **memcpy**.
 
 Porting mbed TLS
 ----------------
@@ -139,9 +136,9 @@ This section describes the general procedure for porting **mbed TLS** to use
 
 ### Including the EnclaveLibc standard C headers
 
-First **mbed TLS** must be recompiled against the **EnclaveLibc** standard C 
-headers. Assuming that **${OE\_SOURCE\_DIR}** refers to source of the Open
-Enclave source tree, add the following compiler options.
+The **mbed TLS** sources must be recompiled against the **EnclaveLibc** 
+standard C headers. Assuming that **${OE\_SOURCE\_DIR}** refers to the source 
+of the Open Enclave source tree, use the following compiler options.
 
 ```
 -nostdc -I${OE_SOURCE_DIR}/include/openenclave/internal/enclavelibc
@@ -158,7 +155,7 @@ libmbedx509.a
 libmbedcrypto.a
 ```
 
-These three libraries are merged into the following library.
+These three libraries are merged into a single library.
 
 ```
 liboembedtls.a
@@ -166,15 +163,15 @@ liboembedtls.a
 
 ### Linking **oeenclave** with the **oembedtls** library
 
-The correct linking order is put **oeenclave** first and **oembedtls** second.
-Use the following linker options on Linux systems.
+The correct linking order is place **oeenclave** before **oembedtls**. Use the 
+following linker options on Linux systems.
 
 ```
 -loeenclave -loembedtls
 ```
 
-But how can this work since **oembedtls** depends on the standard C functions
-defined in **oeenclave**?
+The reader might wonder how can this work since **oembedtls** depends on the 
+standard C functions defined in **oeenclave**.
 
 The GCC linker is a single-pass linker. It builds a working set of symbols as 
 it passes through the library list. If a symbol defined in an earlier library
@@ -191,3 +188,4 @@ oe_link_enclavelibc();
 
 This function is called (indirectly) from the **oeenclave** library's entry
 point (**oe\_main**).
+
