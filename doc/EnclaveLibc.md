@@ -15,8 +15,8 @@ used as a vehicle for porting third-party libraries such as **"mbed TLS"**.
 For an example of the latter, please see the section entitled **"Porting mbed 
 TLS"**.
 
-enclavelibc.h
--------------
+The enclavelibc.h header
+------------------------
 
 The **enclavelibc.h** header file declares all **EnclaveLibc** functions and
 is located here in the source tree.
@@ -86,15 +86,14 @@ following directory.
 ./enclave/enclavelibc
 ```
 
-Porting mbed TLS
-----------------
+The standard C headers
+----------------------
 
-This section describes the general approach used to port **mbed TLS**.
+**EnclaveLibc** provides a sparse subset of standard C headers. These headers
+are intended to ease porting of third-party libraries, which expect to find
+headers such as **<stdio.h>** and **<string.h>**.
 
-### The standard C headers
-
-**EnclaveLibc** provides a sparse subset of standard C headers located under
-the following directory in the source tree.
+These headers are located under the following directory in the source tree.
 
 ```
 ../include/openenclave/internal/enclavelibc
@@ -117,4 +116,9 @@ sys/time.h
 ```
 
 Each header defines a sparse subset of the standard C functions.
+
+Porting mbed TLS
+----------------
+
+This section describes the general approach used to port **mbed TLS**.
 
