@@ -36,7 +36,11 @@ FILE* fopen(const char* Path, const char* Mode)
 {
     Args* args;
     FILE* fp;
-    if (strstr(Path, "/dev"))
+
+    // If file path begins with /dev directory,
+    // then return.
+    char* p_substr = strstr(Path, "/dev");
+    if (p_substr == Path)
         return stdout;
 
     args = (Args*)oe_host_malloc(sizeof(Args));
