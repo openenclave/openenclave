@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <openenclave/internal/cpuid.h>
 
 typedef struct _Regs
 {
@@ -14,10 +15,11 @@ typedef struct _Regs
 
 static void _CPUID(Regs* regs)
 {
-    asm volatile(
+    oe_get_cpuid(regs->eax, regs->ecx, &regs->eax, &regs->ebx, &regs->ecx, &regs->edx);
+    /*asm volatile(
         "cpuid"
         : "=a"(regs->eax), "=b"(regs->ebx), "=c"(regs->ecx), "=d"(regs->edx)
-        : "0"(regs->eax), "2"(regs->ecx));
+        : "0"(regs->eax), "2"(regs->ecx));*/
 }
 
 #define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)
