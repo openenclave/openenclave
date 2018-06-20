@@ -2,7 +2,12 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/tests.h>
+
+#include "../../../host/cpuid_count.h"
+#include "../../../host/cpuid.c"
+#include "../../../host/linux/cpuid_count.c"
 
 static int done = 0;
 static unsigned int c = 0;
