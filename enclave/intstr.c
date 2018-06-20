@@ -10,23 +10,7 @@ OE_INLINE char _get_hex_char(uint64_t x, size_t i)
 {
     uint64_t nbits = (uint64_t)i * 4;
     uint64_t nibble = (x & (0x000000000000000fUL << nbits)) >> nbits;
-
-    static char _table[] = {'0',
-                            '1',
-                            '2',
-                            '3',
-                            '4',
-                            '5',
-                            '6',
-                            '7',
-                            '8',
-                            '9',
-                            'a',
-                            'b',
-                            'c',
-                            'd',
-                            'e',
-                            'f'};
+    static char _table[] = "0123456789abcdef";
 
     return _table[nibble];
 }
