@@ -1,17 +1,38 @@
 EnclaveLibc
 ===========
 
-__EnclaveLibc__ is a tiny subset of the standard C library that resides within
-the **oeenclave** library. It defines functions with standard C signatures 
-whose names are prefixed with **"oe"**. For example, **strlen**
-is defined as follows.
+**EnclaveLibc** is a tiny subset of the standard C library that resides within
+the **oeenclave** library. It defines functions with standard C signatures but 
+whose names are prefixed with **"oe"**. For example, **strlen** is defined as 
+follows.
 
 ```
-size_t oe_strlen(const char*);
+size_t oe_strlen(const char* s);
 ```
 
-signatures 
-that may be used within 
+**EnclaveLibc** is used in several ways.
+
+- The **oeenclave** library itself uses it.
+- Enclave developers use it in lieu of the **oelibc** library.
+- As a vehicle for porting third party applications, such as:
+    - **mbed TLS** 
+    - **OpenSSL**
+    - **dlmalloc**
+
+within the **oeenclave** library itself and by enclave
+developers who prefer not to take a depe**oelibc** library.
+
+- To implement parts of the **oeenclave** library
+- To provide enclave developers standard C functions without the use of **oelibc**.
+  to use oelibc.
+
+All **EnclaveLibc** functions are declared in the following header file.
+
+```
+${OE_SOURCE_DIRECTORY}/include/openenclave/internal/enclavelibc.h
+```
+
+This header declares the following functions.
 
 ```
 size_t oe_strlen(const char* s);
@@ -40,6 +61,8 @@ void* oe_memalign(size_t alignment, size_t size);
 int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 ```
+
+
 
 
 ```
