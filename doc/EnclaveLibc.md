@@ -11,9 +11,8 @@ size_t oe_strlen(const char* s);
 ```
 
 **EnclaveLibc** is used within the **oeenclave** library itself but is also
-used as a vehicle for porting third-party libraries such as **"mbed TLS"**. 
-For an example of the latter, please see the section entitled **"Porting mbed 
-TLS"**.
+used as a vehicle for porting **mbed TLS**. For more information on
+the latter, read the section entitled **"Porting mbed TLS"**.
 
 The enclavelibc.h header
 ------------------------
@@ -90,8 +89,8 @@ The standard C headers
 ----------------------
 
 **EnclaveLibc** provides a sparse subset of standard C headers. These headers
-are intended to ease porting of third-party libraries, which expect to find
-headers such as **<stdio.h>** and **<string.h>**.
+are intended to ease porting of **mbed TLS**, which expects to find headers 
+such as **<stdio.h>** and **<string.h>**.
 
 These headers are located under the following directory in the source tree.
 
@@ -99,7 +98,7 @@ These headers are located under the following directory in the source tree.
 ../include/openenclave/internal/enclavelibc
 ```
 
-This directory contains the headers.
+This directory contains the following headers.
 
 ```
 stdlib.h
@@ -115,9 +114,10 @@ bits/common.h
 sys/time.h
 ```
 
-Each header defines various standard C functions. Each function is an inline
-wrapper around the corresponding oe-prefixed function defined in 
-**<enclavelibc.h>**. Consider this example from **<string.h>**.
+Each header defines various standard C functions. Each function is an 
+inline wrapper around the corresponding oe-prefixed function defined in 
+**<enclavelibc.h>**. For example, consider the definition of **memcpy** from
+the **<string.h>** header.
 
 ```
 OE_INLINE
@@ -128,12 +128,66 @@ void* memcpy(void* dest, const void* src, size_t n)
 
 ```
 
-The caller of **memcpy** is redirected to **oe\_memcpy**
-
-
+The caller of **memcpy** is redirected to **oe\_memcpy** so that the caller's
+object file contains a reference the following symbol: **oe\_memcpy**.
 
 Porting mbed TLS
 ----------------
 
-This section describes the general approach used to port **mbed TLS**.
+This section describes the general procedure for porting **mbed TLS** to use
+**EnclaveLibc**.
 
+### Including the EnclaveLibc standard C headers
+
+First **mbed TLS** must be recompiled against the **EnclaveLibc** standard C 
+headers. Assuming that **${OE\_SOURCE\_DIR}** refers to source of the Open
+Enclave source tree, add the following compiler options.
+
+```
+-nostdc -I${OE_SOURCE_DIR}/include/openenclave/internal/enclavelibc
+```
+
+These options force the compiler to use the standard C headers provided by
+**EnclaveLibc** rather than the system.
+
+Building **mbed TLS** produces the following libraries.
+
+```
+libmbedtls.a
+libmbedx509.a
+libmbedcrypto.a
+```
+
+These three libraries are merged into the following library.
+
+```
+liboembedtls.a
+```
+
+### Linking **oeenclave** with the **oembedtls** library
+
+The correct linking order is put **oeenclave** first and **oembedtls** second.
+Use the following linker options on Linux systems.
+
+```
+-loeenclave -loembedtls
+```
+
+But how can this work since **oembedtls** depends on the standard C functions
+defined in **oeenclave**?
+
+The GCC linker is a single-pass linker. It builds a working set of symbols as 
+it passes through the library list. If a symbol defined in an earlier library
+is referenced by that ealier library (so that it is placed in the working set)
+then a later library may reference that same symbol without failure (finding 
+it in the working set). Therefore **oeenclave** intentionally references all 
+symbols in **EnclaveLibc** so that they will be in the working set before 
+**oembedtls** is processed.  To enforce this behavior, the **oeenclave** 
+library provides the following function.
+
+```
+oe_link_enclavelibc();
+```
+
+This function is called (indirectly) from the **oeenclave** library's entry
+point (**oe\_main**).
