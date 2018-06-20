@@ -21,7 +21,7 @@ The **<enclavelibc.h>** header file declares all **EnclaveLibc** functions and
 is located here in the source tree.
 
 ```
-./include/openenclave/internal/enclavelibc.h
+[include/openenclave/internal/enclavelibc.h](../include/openenclave/internal/enclavelibc.h)
 ```
 
 This header declares the following functions.
