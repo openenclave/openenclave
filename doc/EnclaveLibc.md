@@ -163,7 +163,7 @@ liboembedtls.a
 
 ### Linking **oeenclave** with the **oembedtls** library
 
-The correct linking order is place **oeenclave** before **oembedtls**. Use the 
+The correct linking order places **oeenclave** before **oembedtls**. Use the 
 following linker options on Linux systems.
 
 ```
