@@ -10,9 +10,9 @@ follows.
 size_t oe_strlen(const char* s);
 ```
 
-**EnclaveLibc** is used within the **oeenclave** library itself but can also
-be used to port third-party libraries such as **mbed TLS** or **OpenSSL**. See
-the section entitled **"Porting mbed TLS"** for more details.
+**EnclaveLibc** is used within the **oeenclave** library itself but is also
+used as a vehicle for porting third-party libraries. For an example of the
+latter, please see the section entitled **"Porting third-party libraries"**.
 
 enclavelibc.h
 -------------
@@ -76,13 +76,12 @@ void* oe_memalign(size_t alignment, size_t size);
 int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
+```
 
+All function definitions are located here in the source tree.
+
+```
+./enclave/enclavelibc
 ```
 
 
-
-All function definitions are located in the following directory.
-
-```
-${OE_SOURCE_DIRECTORY}/include/openenclave/internal/enclavelibc
-```
