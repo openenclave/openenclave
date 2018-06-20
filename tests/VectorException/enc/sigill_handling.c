@@ -105,15 +105,6 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
     g_handledSigill = HANDLED_SIGILL_NONE;
     uint32_t cpuidRAX=0, ebx=0, ecx=0, edx=0;
 
-    // Invoking cpuid in assembly and making it volatile to prevent cpuid from
-    // being optimized out
-    asm volatile(
-        "cpuid"
-        : "=a"(cpuidRAX), "=b" (ebx), "=c" (ecx), "=d" (edx) // Return value in cpuidRAX
-        : "0"(leaf)
-        : "cc", "memory");
-    
-    cpuidRAX=0, ebx=0, ecx=0, edx=0;
     oe_get_cpuid(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
 
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
