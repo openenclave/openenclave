@@ -78,9 +78,7 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
 These functions are defined by sources in the following directory.
 
-```
-./enclave/enclavelibc
-```
+[```./enclave/enclavelibc```](../enclave/enclavelibc)
 
 The standard C headers
 ----------------------
