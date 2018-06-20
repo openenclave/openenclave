@@ -111,17 +111,13 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
         "cpuid"
         : "=a"(cpuidRAX) // Return value in cpuidRAX
         : "0"(leaf)
-        : "ebx", "ecx", "edx", "cc", "memory");
+        : "ebx"(ebx)
+        : "ecx"(ecx) 
+        : "edx"(edx)
+        : "cc", "memory");
     
     cpuidRAX=0, ebx=0, ecx=0, edx=0;
-    int supported = __get_cpuid_count(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
-    if (supported)
-    {
-        oe_host_printf(
-            "CPUID leaf %x was unexpectedly supported. Expected an unsupported leaf.\n",
-            leaf);
-        return false;
-    }
+    __get_cpuid_count(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
 
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
     {
