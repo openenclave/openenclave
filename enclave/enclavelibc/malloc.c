@@ -28,8 +28,6 @@ static FILE* stderr = (FILE*)1;
 #define LACKS_STRING_H
 #define LACKS_ERRNO_H
 #define USE_LOCKS 1
-#define size_t size_t
-#define ptrdiff_t ptrdiff_t
 #define memset oe_memset
 #define memcpy oe_memcpy
 #define sbrk oe_sbrk
@@ -193,13 +191,6 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
         _dlmalloc_stats_fprintf_calls++;
         goto done;
     }
-    else
-    {
-#if 0
-        /* Redirect any other fprintf() calls to vfprintf() */
-        ret = vfprintf(stream, format, ap);
-#endif
-    }
 
     va_end(ap);
 
@@ -241,7 +232,7 @@ done:
 /*
 **==============================================================================
 **
-** Alias dlmalloc functions to standard function names if
+** Alias dlmalloc functions to oe-prefixed function names if
 ** OE_ENABLE_MALLOC_WRAPPERS is not defined.
 **
 **==============================================================================
