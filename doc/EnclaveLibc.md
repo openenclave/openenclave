@@ -170,12 +170,12 @@ following linker options on Linux systems.
 -loeenclave -loembedtls
 ```
 
-The reader might wonder how can this work since **oembedtls** depends on the 
+The reader might wonder how this can work since **oembedtls** depends on the 
 standard C functions defined in **oeenclave**.
 
 The GCC linker is a single-pass linker. It builds a working set of symbols as 
 it passes through the library list. If a symbol defined in an earlier library
-is referenced by that ealier library (so that it is placed in the working set)
+is referenced by that earlier library (so that it is placed in the working set)
 then a later library may reference that same symbol without failure (finding 
 it in the working set). Therefore **oeenclave** intentionally references all 
 symbols in **EnclaveLibc** so that they will be in the working set before 
@@ -187,5 +187,6 @@ oe_link_enclavelibc();
 ```
 
 This function is called (indirectly) from the **oeenclave** library's entry
-point (**oe\_main**).
+point (**oe\_main**). This function simply returns a vector of pointers to
+all functions in EnclaveLibc (which ensures they are statically referenced).
 
