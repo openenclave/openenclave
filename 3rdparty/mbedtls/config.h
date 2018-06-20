@@ -2761,7 +2761,7 @@
 
 #include "check_config.h"
 
-// The cmake configure_file() command expands ${CMAKE_BUILD_TYPE} to either
+// The cmake configure_file() command expands CMAKE_BUILD_TYPE to either
 // "DEBUG" or "RELEASE".
 #define CMAKE_BUILD_TYPE_${CMAKE_BUILD_TYPE}
 

@@ -149,10 +149,23 @@ char* oe_strstr(const char* haystack, const char* needle)
     return NULL;
 }
 
+static void* _memcpy(void* dest, const void* src, size_t n)
+{
+    unsigned char* p = (unsigned char*)dest;
+    const unsigned char* q = (const unsigned char*)src;
+
+    while (n--)
+        *p++ = *q++;
+
+    return dest;
+}
+
 void* oe_memcpy(void* dest, const void* src, size_t n)
 {
     unsigned char* p = (unsigned char*)dest;
     const unsigned char* q = (const unsigned char*)src;
+
+#if defined(__GNUC__)
 
     while (n >= 1024)
     {
@@ -186,15 +199,28 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
         q += 16;
     }
 
-    while (n--)
-        *p++ = *q++;
+#endif
+
+    _memcpy(p, q, n);
 
     return dest;
+}
+
+static void* _memset(void* s, int c, size_t n)
+{
+    unsigned char* p = (unsigned char*)s;
+
+    while (n--)
+        *p++ = c;
+
+    return s;
 }
 
 void* oe_memset(void* s, int c, size_t n)
 {
     unsigned char* p = (unsigned char*)s;
+
+#if defined(__GNUC__)
 
     while (n >= 1024)
     {
@@ -224,13 +250,14 @@ void* oe_memset(void* s, int c, size_t n)
         p += 16;
     }
 
-    while (n--)
-        *p++ = c;
+#endif
+
+    _memset(p, c, n);
 
     return s;
 }
 
-int oe_memcmp(const void* s1, const void* s2, size_t n)
+static int _memcmp(const void* s1, const void* s2, size_t n)
 {
     const unsigned char* p = (const unsigned char*)s1;
     const unsigned char* q = (const unsigned char*)s2;
@@ -246,7 +273,12 @@ int oe_memcmp(const void* s1, const void* s2, size_t n)
     return 0;
 }
 
-void* oe_memmove(void* dest, const void* src, size_t n)
+int oe_memcmp(const void* s1, const void* s2, size_t n)
+{
+    return _memcmp(s1, s2, n);
+}
+
+static void* _memmove(void* dest, const void* src, size_t n)
 {
     char* p = (char*)dest;
     const char* q = (const char*)src;
@@ -266,3 +298,15 @@ void* oe_memmove(void* dest, const void* src, size_t n)
 
     return p;
 }
+
+void* oe_memmove(void* dest, const void* src, size_t n)
+{
+    return _memmove(dest, src, n);
+}
+
+// The optimizer may generate calls to memcmp, memset, memcpy, and memmove.
+// Provide weak forms here in case these cannot be found elsewhere.
+OE_WEAK_ALIAS(_memcmp, memcmp);
+OE_WEAK_ALIAS(_memset, memset);
+OE_WEAK_ALIAS(_memcpy, memcpy);
+OE_WEAK_ALIAS(_memmove, memmove);
