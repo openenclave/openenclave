@@ -99,7 +99,7 @@ These headers are located under the following directory in the source tree.
 ../include/openenclave/internal/enclavelibc
 ```
 
-This directory contains the following standard C headers.
+This directory contains the headers.
 
 ```
 stdlib.h
@@ -115,7 +115,22 @@ bits/common.h
 sys/time.h
 ```
 
-Each header defines a sparse subset of the standard C functions.
+Each header defines various standard C functions. Each function is an inline
+wrapper around the corresponding oe-prefixed function defined in 
+**<enclavelibc.h>**. Consider this example from **<string.h>**.
+
+```
+OE_INLINE
+void* memcpy(void* dest, const void* src, size_t n)
+{
+    return oe_memcpy(dest, src, n);
+}
+
+```
+
+The caller of **memcpy** is redirected to **oe\_memcpy**
+
+
 
 Porting mbed TLS
 ----------------
