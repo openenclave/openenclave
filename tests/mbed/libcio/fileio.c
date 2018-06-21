@@ -37,10 +37,10 @@ FILE* fopen(const char* Path, const char* Mode)
     Args* args;
     FILE* fp;
 
-    // If file path begins with /dev directory,
-    // then return.
-    char* p_substr = strstr(Path, "/dev");
-    if (p_substr == Path)
+    // Assume that all file paths starting with "/dev/*" can be redirected to
+    // stdout.
+    // This includes devices that may not be /dev/tty* or /dev/console.
+    if (strstr(Path, "/dev/") == Path)
         return stdout;
 
     args = (Args*)oe_host_malloc(sizeof(Args));
