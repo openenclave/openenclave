@@ -22,6 +22,13 @@
 #define USE_DL_PREFIX
 #define USE_LOCKS 1
 #define fprintf _dlmalloc_stats_fprintf
+#define sched_yield _sched_yield
+
+static int _sched_yield(void)
+{
+    __asm__ __volatile__("pause");
+    return 0;
+}
 
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 

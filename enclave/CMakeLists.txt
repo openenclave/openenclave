@@ -16,7 +16,6 @@ add_library(oeenclave STATIC
     enclavelibc/printf.c
     enclavelibc/rand.c
     enclavelibc/malloc.c
-    enclavelibc/sched.c
     enclavelibc/string.c
     enclavelibc/strtoul.c
     enclavelibc/time.c

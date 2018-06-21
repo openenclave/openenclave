@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <sched.h>
 #include <stdio.h>
 
