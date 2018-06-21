@@ -1,8 +1,100 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+
+typedef struct _error_string
+{
+    int num;
+    const char* str;
+}
+error_string_t;
+
+static const error_string_t _error_strings[] = {
+    {E2BIG, "Argument list too long"},
+    {EACCES, "Permission denied"},
+    {EADDRINUSE, "Address in use"},
+    {EADDRNOTAVAIL, "Address not available"},
+    {EAFNOSUPPORT, "Address family not supported"},
+    {EAGAIN, "Resource unavailable, try again"},
+    {EALREADY, "Connection already in progress"},
+    {EBADF, "Bad file descriptor"},
+    {EBADMSG, "Bad message"},
+    {EBUSY, "Device or resource busy"},
+    {ECANCELED, "Operation canceled"},
+    {ECHILD, "No child processes"},
+    {ECONNABORTED, "Connection aborted"},
+    {ECONNREFUSED, "Connection refused"},
+    {ECONNRESET, "Connection reset"},
+    {EDEADLK, "Resource deadlock would occur"},
+    {EDESTADDRREQ, "Destination address required"},
+    {EDOM, "Math argument out of domain of function"},
+    {EDQUOT, "Reserved"},
+    {EEXIST, "File exists"},
+    {EFAULT, "Bad address"},
+    {EFBIG, "File too large"},
+    {EHOSTUNREACH, "Host is unreachable"},
+    {EIDRM, "Identifier removed"},
+    {EILSEQ, "Illegal byte sequence"},
+    {EINPROGRESS, "Operation in progress"},
+    {EINTR, "Interrupted function"},
+    {EINVAL, "Invalid argument"},
+    {EIO, "I/O error"},
+    {EISCONN, "Socket is connected"},
+    {EISDIR, "Is a directory"},
+    {ELOOP, "Too many levels of symbolic links"},
+    {EMFILE, "Too many open files"},
+    {EMLINK, "Too many links"},
+    {EMSGSIZE, "Message too large"},
+    {EMULTIHOP, "Reserved"},
+    {ENAMETOOLONG, "Filename too long"},
+    {ENETDOWN, "Network is down"},
+    {ENETRESET, "Connection aborted by network"},
+    {ENETUNREACH, "Network unreachable"},
+    {ENFILE, "Too many files open in system"},
+    {ENOBUFS, "No buffer space available"},
+    {ENODATA, "No message available on STREAM queue"},
+    {ENODEV, "No such device"},
+    {ENOENT, "No such file or directory"},
+    {ENOEXEC, "Executable file format error"},
+    {ENOLCK, "No locks available"},
+    {ENOLINK, "Reserved"},
+    {ENOMEM, "Not enough space"},
+    {ENOMSG, "No message of the desired type"},
+    {ENOPROTOOPT, "Protocol not available"},
+    {ENOSPC, "No space left on device"},
+    {ENOSR, "No STREAM resources"},
+    {ENOSTR, "Not a STREAM"},
+    {ENOSYS, "Function not supported"},
+    {ENOTCONN, "The socket is not connected"},
+    {ENOTDIR, "Not a directory"},
+    {ENOTEMPTY, "Directory not empty"},
+    {ENOTSOCK, "Not a socket"},
+    {ENOTSUP, "Not supported"},
+    {ENOTTY, "Inappropriate I/O control operation"},
+    {ENXIO, "No such device or address"},
+    {EOPNOTSUPP, "Operation not supported on socket"},
+    {EOVERFLOW, "Value too large to be stored in data type"},
+    {EPERM, "Operation not permitted"},
+    {EPIPE, "Broken pipe"},
+    {EPROTO, "Protocol error"},
+    {EPROTONOSUPPORT, "Protocol not supported"},
+    {EPROTOTYPE, "Protocol wrong type for socket"},
+    {ERANGE, "Result too large"},
+    {EROFS, "Read-only file system"},
+    {ESPIPE, "Invalid seek"},
+    {ESRCH, "No such process"},
+    {ESTALE, "Reserved"},
+    {ETIME, "Stream ioctl() timeout"},
+    {ETIMEDOUT, "Connection timed out"},
+    {ETXTBSY, "Text file busy"},
+    {EWOULDBLOCK, "Operation would block"},
+    {EXDEV, "Cross-device link"},
+};
+
+static const char _unknown_error_string[] = "Unknown error";
 
 size_t oe_strlen(const char* s)
 {
@@ -147,6 +239,36 @@ char* oe_strstr(const char* haystack, const char* needle)
     }
 
     return NULL;
+}
+
+char* oe_strerror(int errnum)
+{
+    for (size_t i = 0; i < OE_COUNTOF(_error_strings); i++)
+    {
+        if (_error_strings[i].num == errnum)
+            return (char*)_error_strings[i].str;
+    }
+
+    return (char*)_unknown_error_string;
+}
+
+int oe_strerror_r(int errnum, char* buf, size_t buflen)
+{
+    const char* str = NULL;
+
+    for (size_t i = 0; i < OE_COUNTOF(_error_strings); i++)
+    {
+        if (_error_strings[i].num == errnum)
+        {
+            str = _error_strings[i].str;
+            break;
+        }
+    }
+
+    if (!str)
+        str = _unknown_error_string;
+
+    return oe_strlcpy(buf, str, buflen) >= buflen ? ERANGE : 0;
 }
 
 static void* _memcpy(void* dest, const void* src, size_t n)

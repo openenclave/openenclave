@@ -83,6 +83,20 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size);
 size_t oe_strlcat(char* dest, const char* src, size_t size);
 
 /**
+ * Enclave implementation of the standard strerror() function.
+ *
+ * Refer to documentation for strerror() function.
+ */
+char* oe_strerror(int errnum);
+
+/**
+ * Enclave implementation of the standard strerror_r() function.
+ *
+ * Refer to documentation for strerror_r() function.
+ */
+int oe_strerror_r(int errnum, char* buf, size_t buflen);
+
+/**
  * Enclave implementation of the standard memcpy() function.
  *
  * Refer to documentation for memcpy() function.
@@ -272,13 +286,6 @@ void* oe_memalign(size_t alignment, size_t size);
  * Returns the location of errno for this thread.
  */
 int* __oe_errno_location(void);
-
-/**
- * Enclave implementation of the standard sched_yield() function.
- *
- * Refer to documentation for sched_yield() function.
- */
-int oe_sched_yield(void);
 
 OE_EXTERNC_END
 

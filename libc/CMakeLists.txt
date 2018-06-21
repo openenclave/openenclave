@@ -53,7 +53,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/string/strcpy.c
     ${MUSLSRC}/string/strcspn.c
     ${MUSLSRC}/string/strdup.c
-    ${MUSLSRC}/string/strerror_r.c
     ${MUSLSRC}/string/strlcat.c
     ${MUSLSRC}/string/strlcpy.c
     ${MUSLSRC}/string/strlen.c
