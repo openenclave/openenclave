@@ -26,8 +26,7 @@ PACKAGES=build-essential \
 	cloc \
 	libexpat1 \
 	libexpat1-dev \
-	ccache \
-	graphviz
+	ccache
 
 all: .packages
 
