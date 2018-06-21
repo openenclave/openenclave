@@ -29,7 +29,6 @@ void TestCpuidAgainstAssembly(unsigned int* leaf, unsigned int* subleaf)
 
     if (subleaf == NULL)
     {
-        unsigned int sl = 0;
         oe_get_cpuid(*leaf, 0, &a, &b, &c, &d);
     }
     else
@@ -37,7 +36,7 @@ void TestCpuidAgainstAssembly(unsigned int* leaf, unsigned int* subleaf)
         oe_get_cpuid(*leaf, *subleaf, &a, &b, &c, &d);
     }
 
-    asm_cpuid(*leaf, *subleaf, &eax, &ebx, &ecx, &edx);
+    asm_cpuid(*leaf, *subleaf, &a_asm, &b_asm, &c_asm, &d_asm);
 
     OE_TEST(a == a_asm);
     OE_TEST(b == b_asm);
@@ -57,7 +56,7 @@ int main()
     TestCpuidAgainstAssembly(&leaf, &subleaf);
 
     leaf = 0x80000001;
-    TestCpuidAgainstAssembly(&lead, &subleaf);
+    TestCpuidAgainstAssembly(&leaf, &subleaf);
 
     return 0;
 }
