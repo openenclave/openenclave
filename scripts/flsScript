@@ -6,7 +6,7 @@
 ##====================================================================================
 ##
 ## This script tests OE build and test (in Simulator mode) with SGX1-FLS configuration
-## Run this from the root of the source tree.
+## Run this from the root of the source tree as sudo.
 ##
 ##====================================================================================
 sudo ./scripts/install-prereqs
@@ -15,6 +15,13 @@ mkdir build
 cd build
 
 cmake .. -DUSE_LIBSGX=1
+if [ "$?" != "0" ]; then
+    echo ""
+    echo "cmake failed for SGX1-FLS"
+    echo ""
+    exit 1
+fi
+
 make
 if [ "$?" != "0" ]; then
     echo ""
