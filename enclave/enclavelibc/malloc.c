@@ -3,8 +3,6 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/fault.h>
-#include <openenclave/internal/globals.h>
 #include <openenclave/internal/malloc.h>
 #include <stdarg.h>
 #include <stdio.h>
