@@ -1,18 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <errno.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <stdlib.h>
 
 void* malloc(size_t size)
 {
-    void* p = oe_malloc(size);
-
-    if (!p && size)
-        errno = ENOMEM;
-
-    return p;
+    return oe_malloc(size);
 }
 
 void free(void* ptr)
@@ -22,22 +15,12 @@ void free(void* ptr)
 
 void* calloc(size_t nmemb, size_t size)
 {
-    void* p = oe_calloc(nmemb, size);
-
-    if (!p && nmemb && size)
-        errno = ENOMEM;
-
-    return p;
+    return oe_calloc(nmemb, size);
 }
 
 void* realloc(void* ptr, size_t size)
 {
-    void* p = oe_realloc(ptr, size);
-
-    if (!p && size)
-        errno = ENOMEM;
-
-    return p;
+    return oe_realloc(ptr, size);
 }
 
 int posix_memalign(void** memptr, size_t alignment, size_t size)
@@ -47,10 +30,5 @@ int posix_memalign(void** memptr, size_t alignment, size_t size)
 
 void* memalign(size_t alignment, size_t size)
 {
-    void* p = oe_memalign(alignment, size);
-
-    if (!p && size)
-        errno = ENOMEM;
-
-    return p;
+    return oe_memalign(alignment, size);
 }

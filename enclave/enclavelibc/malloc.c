@@ -21,7 +21,7 @@
 #define ABORT oe_abort()
 #define USE_DL_PREFIX
 #define USE_LOCKS 1
-#define fprintf _dlmalloc_stats_fprintf
+#define fprintf _fprintf
 #define sched_yield _sched_yield
 
 static int _sched_yield(void)
@@ -30,23 +30,12 @@ static int _sched_yield(void)
     return 0;
 }
 
-static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
+static int _fprintf(FILE* stream, const char* format, ...);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 #include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
-
-/*
-**==============================================================================
-**
-** Use malloc wrappers to support oe_set_allocation_failure_callback() if
-** OE_ENABLE_MALLOC_WRAPPERS is defined.
-**
-**==============================================================================
-*/
-
-#if defined(OE_ENABLE_MALLOC_WRAPPERS)
 
 static oe_allocation_failure_callback_t _failureCallback;
 
@@ -146,10 +135,10 @@ void* oe_memalign(size_t alignment, size_t size)
 */
 
 static oe_malloc_stats_t _mallocStats;
-static size_t _dlmalloc_stats_fprintf_calls;
+static size_t _fprintf_calls;
 
 /* Replacement for fprintf in dlmalloc sources below */
-static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
+static int _fprintf(FILE* stream, const char* format, ...)
 {
     int ret = 0;
     va_list ap;
@@ -159,17 +148,17 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
     if (strcmp(format, "max system bytes = %10lu\n") == 0)
     {
         _mallocStats.peakSystemBytes = va_arg(ap, uint64_t);
-        _dlmalloc_stats_fprintf_calls++;
+        _fprintf_calls++;
     }
     else if (strcmp(format, "system bytes     = %10lu\n") == 0)
     {
         _mallocStats.systemBytes = va_arg(ap, uint64_t);
-        _dlmalloc_stats_fprintf_calls++;
+        _fprintf_calls++;
     }
     else if (strcmp(format, "in use bytes     = %10lu\n") == 0)
     {
         _mallocStats.inUseBytes = va_arg(ap, uint64_t);
-        _dlmalloc_stats_fprintf_calls++;
+        _fprintf_calls++;
         goto done;
     }
 
@@ -192,13 +181,13 @@ oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats)
     if (!stats)
         goto done;
 
-    // This function indirectly calls _dlmalloc_stats_fprintf(), which sets
+    // This function indirectly calls _fprintf(), which sets
     // fields in the _mallocStats structure.
-    _dlmalloc_stats_fprintf_calls = 0;
+    _fprintf_calls = 0;
     dlmalloc_stats();
 
     /* This function should have been called three times */
-    if (_dlmalloc_stats_fprintf_calls != 3)
+    if (_fprintf_calls != 3)
         goto done;
 
     *stats = _mallocStats;
@@ -209,23 +198,3 @@ done:
     oe_mutex_unlock(&_mutex);
     return result;
 }
-
-/*
-**==============================================================================
-**
-** Alias dlmalloc functions to oe-prefixed function names if
-** OE_ENABLE_MALLOC_WRAPPERS is not defined.
-**
-**==============================================================================
-*/
-
-#else /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */
-
-OE_WEAK_ALIAS(dlmalloc, oe_malloc);
-OE_WEAK_ALIAS(dlcalloc, oe_calloc);
-OE_WEAK_ALIAS(dlrealloc, oe_realloc);
-OE_WEAK_ALIAS(dlfree, oe_free);
-OE_WEAK_ALIAS(dlmemalign, oe_memalign);
-OE_WEAK_ALIAS(dlposix_memalign, oe_posix_memalign);
-
-#endif /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */
