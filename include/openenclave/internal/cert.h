@@ -45,7 +45,7 @@ typedef struct _oe_verify_cert_error
  *     ```
  *
  * This may be called unsafely as follows.
- * 
+ *
  *     ```
  *     char oid[16];
  *     GetTheOID(oid);
@@ -306,7 +306,7 @@ oe_result_t oe_cert_extension_count(const oe_cert_t* cert, size_t* count);
 /**
  * Gets information about the X.509 certificate extension with the given index.
  *
- * This function gets information about the X.509 certificate extension with 
+ * This function gets information about the X.509 certificate extension with
  * the given index, obtaining the OID, data, and data size of the extension.
  *
  * @param cert[in] the certificate.
@@ -318,7 +318,7 @@ oe_result_t oe_cert_extension_count(const oe_cert_t* cert, size_t* count);
  * @return OE_OK success.
  * @return OE_INVALID_PARAMETER a parameter is invalid.
  * @return OE_OUT_OF_BOUNDS the index parameter is out of bounds.
- * @return OE_BUFFER_TOO_SMALL the data buffer is too small and the **size** 
+ * @return OE_BUFFER_TOO_SMALL the data buffer is too small and the **size**
  *         parameter contains the required size.
  * @return OE_FAILURE general failure.
  */
@@ -332,7 +332,7 @@ oe_result_t oe_cert_get_extension(
 /**
  * Gets information about the X.509 certificate extension with the given OID.
  *
- * This function gets information about the X.509 certificate extension with 
+ * This function gets information about the X.509 certificate extension with
  * the given OID, obtaining the data and data size of the extension.
  *
  * @param cert[in] the certificate.
@@ -343,7 +343,7 @@ oe_result_t oe_cert_get_extension(
  * @return OE_OK success.
  * @return OE_INVALID_PARAMETER a parameter is invalid.
  * @return OE_NOT_FOUND an extension with the given OID was not found.
- * @return OE_BUFFER_TOO_SMALL the data buffer is too small and the **size** 
+ * @return OE_BUFFER_TOO_SMALL the data buffer is too small and the **size**
  *         parameter contains the required size.
  * @return OE_FAILURE general failure.
  */
