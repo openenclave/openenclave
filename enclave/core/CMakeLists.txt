@@ -43,12 +43,16 @@ target_compile_options(oecore PUBLIC
     -fno-stack-protector -fvisibility=hidden
     )
 
+if(USE_LIBSGX)
+target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
+endif()
+
 target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
 
 # addl link-options for enclave apps
 target_link_libraries(oecore INTERFACE
     -nostdlib -nodefaultlibs -nostartfiles
-    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,-eOE_Main
+    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,-eoe_main
     )
 
 # jump.s must be optimized for the correct call-frame.

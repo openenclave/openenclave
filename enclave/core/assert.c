@@ -2,14 +2,15 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/print.h>
 
-void __OE_AssertFail(
+void __oe_assert_fail(
     const char* expr,
     const char* file,
     int line,
     const char* function)
 {
-    OE_HostPrintf(
+    oe_host_printf(
         "Assertion failed: %s (%s: %s: %d)\n", expr, file, function, line);
-    OE_Abort();
+    oe_abort();
 }

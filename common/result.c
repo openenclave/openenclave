@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/result.h>
+#include <openenclave/bits/result.h>
 
 // OE abort status depends on the order of these enums to transfer status
 // correctly.
 OE_STATIC_ASSERT(OE_ENCLAVE_ABORTING > OE_OK);
 OE_STATIC_ASSERT(OE_ENCLAVE_ABORTED > OE_ENCLAVE_ABORTING);
 
-const char* OE_ResultStr(OE_Result result)
+const char* oe_result_str(oe_result_t result)
 {
     switch (result)
     {
@@ -86,6 +86,14 @@ const char* OE_ResultStr(OE_Result result)
             return "OE_INVALID_KEYNAME";
         case OE_DEBUG_DOWNGRADE:
             return "OE_DEBUG_DOWNGRADE";
+        case OE_QUOTE_PARSE_ERROR:
+            return "OE_QUOTE_PARSE_ERROR";
+        case OE_UNSUPPORTED_QE_CERTIFICATION:
+            return "OE_UNSUPPORTED_QE_CERTIFICATION";
+        case OE_BUSY:
+            return "OE_BUSY";
+        case OE_NOT_OWNER:
+            return "OE_NOT_OWNER";
     }
 
     return "UNKNOWN";

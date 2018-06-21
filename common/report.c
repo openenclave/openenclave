@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/defs.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxtypes.h>
 
 #ifdef OE_BUILD_ENCLAVE
 
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
 
-#define Memset OE_Memset
-#define Memcpy OE_Memcpy
+#define Memset oe_memset
+#define Memcpy oe_memcpy
 
 #else
 
@@ -23,14 +23,14 @@
 
 #endif
 
-static void _OE_ParseSGXReportBody(
-    const SGX_ReportBody* reportBody,
+static void _oe_parse_sgx_report_body(
+    const sgx_report_body_t* reportBody,
     bool remote,
-    OE_Report* parsedReport)
+    oe_report_t* parsedReport)
 {
-    Memset(parsedReport, 0, sizeof(OE_Report));
+    Memset(parsedReport, 0, sizeof(oe_report_t));
 
-    parsedReport->size = sizeof(OE_Report);
+    parsedReport->size = sizeof(oe_report_t);
     parsedReport->type = OE_ENCLAVE_TYPE_SGX;
 
     /*
@@ -68,32 +68,32 @@ static void _OE_ParseSGXReportBody(
      * Set pointer fields.
      */
     parsedReport->reportData = (uint8_t*)&reportBody->reportData;
-    parsedReport->reportDataSize = sizeof(SGX_ReportData);
+    parsedReport->reportDataSize = sizeof(sgx_report_data_t);
     parsedReport->enclaveReport = (uint8_t*)reportBody;
-    parsedReport->enclaveReportSize = sizeof(SGX_ReportBody);
+    parsedReport->enclaveReportSize = sizeof(sgx_report_body_t);
 }
 
-OE_Result OE_ParseReport(
+oe_result_t oe_parse_report(
     const uint8_t* report,
     uint32_t reportSize,
-    OE_Report* parsedReport)
+    oe_report_t* parsedReport)
 {
-    const SGX_Report* sgxReport = NULL;
-    const SGX_Quote* sgxQuote = NULL;
-    OE_Result result = OE_OK;
+    const sgx_report_t* sgxReport = NULL;
+    const sgx_quote_t* sgxQuote = NULL;
+    oe_result_t result = OE_OK;
 
     if (report == NULL || parsedReport == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (reportSize == sizeof(SGX_Report))
+    if (reportSize == sizeof(sgx_report_t))
     {
-        sgxReport = (const SGX_Report*)report;
-        _OE_ParseSGXReportBody(&sgxReport->body, false, parsedReport);
+        sgxReport = (const sgx_report_t*)report;
+        _oe_parse_sgx_report_body(&sgxReport->body, false, parsedReport);
     }
-    else if (reportSize >= sizeof(SGX_Quote))
+    else if (reportSize >= sizeof(sgx_quote_t))
     {
-        sgxQuote = (const SGX_Quote*)report;
-        _OE_ParseSGXReportBody(&sgxQuote->report_body, true, parsedReport);
+        sgxQuote = (const sgx_quote_t*)report;
+        _oe_parse_sgx_report_body(&sgxQuote->report_body, true, parsedReport);
     }
     else
     {

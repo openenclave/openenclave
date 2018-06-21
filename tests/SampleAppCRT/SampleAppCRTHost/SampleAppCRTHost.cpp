@@ -2,13 +2,13 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/tests.h>
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     if (argc != 2)
     {
@@ -16,9 +16,9 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
 
-    result = OE_CreateEnclave(
+    result = oe_create_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
@@ -27,7 +27,7 @@ int main(int argc, const char* argv[])
     }
 
     int returnValue = INT_MIN;
-    if ((result = OE_CallEnclave(enclave, "Test", &returnValue)) != OE_OK)
+    if ((result = oe_call_enclave(enclave, "Test", &returnValue)) != OE_OK)
     {
         fprintf(stderr, "%s: ecall failed: result=%u\n", argv[0], result);
         return 1;
@@ -39,7 +39,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (SampleAppCRTHost)\n");
 

@@ -3,7 +3,7 @@
 
 #ifndef _ARGS_H
 #define _ARGS_H
-#include <openenclave/bits/cpuid.h>
+#include <openenclave/internal/cpuid.h>
 
 typedef struct _TestVectorExceptionArgs
 {

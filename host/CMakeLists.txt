@@ -6,16 +6,20 @@ set(PLATFORM_SRC
     crypto/cert.c
     crypto/ec.c
     crypto/init.c
+    crypto/key.c
     crypto/random.c
     crypto/rsa.c
     linux/aep.S
     linux/aesm.c
+    linux/cpuid_count.c
     linux/enter.S
     linux/entersim.S
     linux/exception.c
     linux/hostthread.c
     linux/sgxioctl.c
     linux/sgxsign.c
+    linux/time.c
+    sgxquoteprovider.c        
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -26,6 +30,7 @@ set(PLATFORM_SRC
     windows/exception.c
     windows/hostthread.c
     windows/sgxsign.c
+    windows/time.c
     )
 endif()
 
@@ -49,17 +54,17 @@ add_library(oehost STATIC
     result.c
     sgxload.c
     sgxmeasure.c
+    sgxquote.c
     sgxtypes.c
     signkey.c
     strings.c
     tests.c
-    typeinfo.c
     crypto/sha.c
     ${PLATFORM_SRC}
     )
 
 # we and dependents need the OE includes to compile
-target_link_libraries(oehost oe_includes)
+target_link_libraries(oehost PUBLIC oe_includes)
 
 if(UNIX)
 find_library(CRYPTO_LIB NAMES crypto)
@@ -69,16 +74,26 @@ find_package(Threads REQUIRED)
 
 # linking also requires a number of libs on the host
 if(UNIX)
-target_link_libraries(oehost ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
+target_link_libraries(oehost PRIVATE ${CRYPTO_LIB} ${DL_LIB} Threads::Threads)
 elseif(WIN32)
-target_link_libraries(oehost bcrypt)
+target_link_libraries(oehost PRIVATE bcrypt)
 endif()
 
 if(UNIX)
-target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -m64)
+target_compile_options(oehost PRIVATE -Wno-attributes -Wmissing-prototypes -fPIC -m64)
 target_compile_definitions(oehost PRIVATE _GNU_SOURCE)
 endif(UNIX)
 target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
+
+# Additional compilation and link options when using libsgx
+if(USE_LIBSGX)
+message("USE_LIBSGX is set, building oehost with FLC dependency")
+find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
+find_library(LIBSGX_QE NAMES sgxoeql)
+find_library(LIBSGX_URTS NAMES sgx_urts_ng)
+target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS})
+target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
+endif()
 
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)

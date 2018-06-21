@@ -5,31 +5,15 @@
 #define _OE_ENCLAVE_RSA_H
 
 #include <mbedtls/pk.h>
-#include <openenclave/bits/rsa.h>
-#include <openenclave/types.h>
+#include <openenclave/internal/rsa.h>
 
-/* Randomly generated magic number */
-#define OE_RSA_PUBLIC_KEY_MAGIC 0x713600af058c447a
-
-typedef struct _OE_RSAPublicKeyImpl
+OE_INLINE bool oe_is_rsa_key(const mbedtls_pk_context* pk)
 {
-    uint64_t magic;
-    mbedtls_pk_context pk;
-} OE_RSAPublicKeyImpl;
-
-OE_STATIC_ASSERT(sizeof(OE_RSAPublicKeyImpl) <= sizeof(OE_RSAPublicKey));
-
-int OE_RSACopyKey(
-    mbedtls_pk_context* dest,
-    const mbedtls_pk_context* src,
-    bool clearPrivateFields);
-
-OE_INLINE bool OE_IsRSAKey(const mbedtls_pk_context* pk)
-{
-    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_RSA))
-        return false;
-
-    return true;
+    return (pk->pk_info == mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
 }
+
+oe_result_t oe_rsa_public_key_init(
+    oe_rsa_public_key_t* publicKey,
+    const mbedtls_pk_context* pk);
 
 #endif /* _OE_ENCLAVE_RSA_H */

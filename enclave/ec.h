@@ -5,31 +5,15 @@
 #define _OE_ENCLAVE_EC_H
 
 #include <mbedtls/pk.h>
-#include <openenclave/bits/ec.h>
-#include <openenclave/types.h>
+#include <openenclave/internal/ec.h>
 
-/* Randomly generated magic number */
-#define OE_EC_PUBLIC_KEY_MAGIC 0xd7490a56f6504ee6
-
-typedef struct _OE_ECPublicKeyImpl
+OE_INLINE bool oe_is_ec_key(const mbedtls_pk_context* pk)
 {
-    uint64_t magic;
-    mbedtls_pk_context pk;
-} OE_ECPublicKeyImpl;
-
-OE_STATIC_ASSERT(sizeof(OE_ECPublicKeyImpl) <= sizeof(OE_ECPublicKey));
-
-int OE_ECCopyKey(
-    mbedtls_pk_context* dest,
-    const mbedtls_pk_context* src,
-    bool copyPrivateFields);
-
-OE_INLINE bool OE_IsECKey(const mbedtls_pk_context* pk)
-{
-    if (pk->pk_info != mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY))
-        return false;
-
-    return true;
+    return (pk->pk_info == mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
 }
+
+oe_result_t oe_ec_public_key_init(
+    oe_ec_public_key_t* publicKey,
+    const mbedtls_pk_context* pk);
 
 #endif /* _OE_ENCLAVE_EC_H */

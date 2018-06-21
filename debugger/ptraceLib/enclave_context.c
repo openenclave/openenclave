@@ -17,13 +17,13 @@
 typedef struct _SSA_Info
 {
     void* base_address;
-    long frame_byte_size;
+    int64_t frame_byte_size;
 } SSA_Info;
 
 /*
 **==============================================================================
 **
-** OE_ReadProcessMemory()
+** oe_read_process_memory()
 **
 **     This function is used to read process memory.
 **
@@ -42,7 +42,7 @@ typedef struct _SSA_Info
 **==============================================================================
 */
 
-int OE_ReadProcessMemory(
+int oe_read_process_memory(
     pid_t proc,
     void* base_addr,
     void* buffer,
@@ -93,7 +93,7 @@ cleanup:
 /*
 **==============================================================================
 **
-** OE_WriteProcessMemory()
+** oe_write_process_memory()
 **
 **     This function is used to write process memory.
 **
@@ -112,7 +112,7 @@ cleanup:
 **==============================================================================
 */
 
-int OE_WriteProcessMemory(
+int oe_write_process_memory(
     pid_t proc,
     void* base_addr,
     void* buffer,
@@ -163,27 +163,27 @@ cleanup:
 static int _GetEnclaveSsaFrameSize(
     pid_t pid,
     void* tcs_addr,
-    long* ssa_frame_size)
+    int64_t* ssa_frame_size)
 {
     int ret;
-    OE_ThreadData oe_thread_data;
+    oe_thread_data_t oe_thread_data;
     size_t read_byte_length = 0;
 
     // TD is in OE_TD_FROM_TCS_BYTE_OFFSET from tcs.
     // It is defined by enclave layout in td.c.
     TD* td = (TD*)(((unsigned char*)tcs_addr) + OE_TD_FROM_TCS_BYTE_OFFSET);
-    ret = OE_ReadProcessMemory(
+    ret = oe_read_process_memory(
         pid,
         (void*)td,
         (void*)&oe_thread_data,
-        sizeof(OE_ThreadData),
+        sizeof(oe_thread_data_t),
         &read_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (read_byte_length != sizeof(OE_ThreadData))
+    if (read_byte_length != sizeof(oe_thread_data_t))
     {
         return -1;
     }
@@ -204,11 +204,11 @@ static int _GetEnclaveThreadCurrentSsaInfo(
 {
     int ret;
     size_t read_byte_length;
-    long ssa_frame_size = 0;
-    SGX_TCS tcs;
+    int64_t ssa_frame_size = 0;
+    sgx_tcs_t tcs;
 
     // Read TCS header.
-    ret = OE_ReadProcessMemory(
+    ret = oe_read_process_memory(
         pid,
         tcs_addr,
         (void*)&tcs,
@@ -239,7 +239,7 @@ static int _GetEnclaveThreadCurrentSsaInfo(
 }
 
 static inline void _SsaGprToUserRegs(
-    const SGX_SsaGpr* ssa_gpr,
+    const sgx_ssa_gpr_t* ssa_gpr,
     struct user_regs_struct* regs)
 {
     regs->rax = ssa_gpr->rax;
@@ -269,7 +269,7 @@ static inline void _SsaGprToUserRegs(
 
 static inline void _UserRegsToSsaGpr(
     const struct user_regs_struct* regs,
-    SGX_SsaGpr* ssa_gpr)
+    sgx_ssa_gpr_t* ssa_gpr)
 {
     ssa_gpr->rax = regs->rax;
     ssa_gpr->rbx = regs->rbx;
@@ -299,7 +299,7 @@ static inline void _UserRegsToSsaGpr(
 /*
 **==============================================================================
 **
-** OE_GetEnclaveThreadGpr()
+** oe_get_enclave_thread_gpr()
 **
 **     This function is used get the GPR registers of the enclave thread.
 **
@@ -315,7 +315,7 @@ static inline void _UserRegsToSsaGpr(
 **==============================================================================
 */
 
-int OE_GetEnclaveThreadGpr(
+int oe_get_enclave_thread_gpr(
     pid_t pid,
     void* tcs_addr,
     struct user_regs_struct* regs)
@@ -323,7 +323,7 @@ int OE_GetEnclaveThreadGpr(
     int ret;
     size_t read_byte_length;
     SSA_Info ssa_info;
-    SGX_SsaGpr ssa_gpr;
+    sgx_ssa_gpr_t ssa_gpr;
     void* gpr_addr;
 
     // Get current ssa info.
@@ -338,14 +338,18 @@ int OE_GetEnclaveThreadGpr(
         (void*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
 
     // Read gpr from ssa.
-    ret = OE_ReadProcessMemory(
-        pid, gpr_addr, (void*)&ssa_gpr, sizeof(SGX_SsaGpr), &read_byte_length);
+    ret = oe_read_process_memory(
+        pid,
+        gpr_addr,
+        (void*)&ssa_gpr,
+        sizeof(sgx_ssa_gpr_t),
+        &read_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (read_byte_length != sizeof(SGX_SsaGpr))
+    if (read_byte_length != sizeof(sgx_ssa_gpr_t))
     {
         return -1;
     }
@@ -359,7 +363,7 @@ int OE_GetEnclaveThreadGpr(
 /*
 **==============================================================================
 **
-** OE_SetEnclaveThreadGpr()
+** oe_set_enclave_thread_gpr()
 **
 **     This function is used get the GPR registers of the enclave thread.
 **
@@ -375,7 +379,7 @@ int OE_GetEnclaveThreadGpr(
 **==============================================================================
 */
 
-int OE_SetEnclaveThreadGpr(
+int oe_set_enclave_thread_gpr(
     pid_t pid,
     void* tcs_addr,
     struct user_regs_struct* regs)
@@ -384,7 +388,7 @@ int OE_SetEnclaveThreadGpr(
     size_t read_byte_length;
     size_t write_byte_length;
     SSA_Info ssa_info;
-    SGX_SsaGpr ssa_gpr;
+    sgx_ssa_gpr_t ssa_gpr;
     void* gpr_addr;
 
     // Get current ssa frame info.
@@ -399,14 +403,18 @@ int OE_SetEnclaveThreadGpr(
         (void*)(((uint8_t*)ssa_info.base_address) + ssa_info.frame_byte_size - OE_SGX_GPR_BYTE_SIZE);
 
     // Read gpr from ssa.
-    ret = OE_ReadProcessMemory(
-        pid, gpr_addr, (void*)&ssa_gpr, sizeof(SGX_SsaGpr), &read_byte_length);
+    ret = oe_read_process_memory(
+        pid,
+        gpr_addr,
+        (void*)&ssa_gpr,
+        sizeof(sgx_ssa_gpr_t),
+        &read_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (read_byte_length != sizeof(SGX_SsaGpr))
+    if (read_byte_length != sizeof(sgx_ssa_gpr_t))
     {
         return -1;
     }
@@ -415,14 +423,18 @@ int OE_SetEnclaveThreadGpr(
     _UserRegsToSsaGpr(regs, &ssa_gpr);
 
     // Write gpr value to ssa.
-    ret = OE_WriteProcessMemory(
-        pid, gpr_addr, (void*)&ssa_gpr, sizeof(SGX_SsaGpr), &write_byte_length);
+    ret = oe_write_process_memory(
+        pid,
+        gpr_addr,
+        (void*)&ssa_gpr,
+        sizeof(sgx_ssa_gpr_t),
+        &write_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (write_byte_length != sizeof(SGX_SsaGpr))
+    if (write_byte_length != sizeof(sgx_ssa_gpr_t))
     {
         return -1;
     }
@@ -433,7 +445,7 @@ int OE_SetEnclaveThreadGpr(
 /*
 **==============================================================================
 **
-** OE_GetEnclaveThreadFpr()
+** oe_get_enclave_thread_fpr()
 **
 **     This function is used get the FPR registers of the enclave thread.
 **
@@ -449,7 +461,7 @@ int OE_SetEnclaveThreadGpr(
 **==============================================================================
 */
 
-int OE_GetEnclaveThreadFpr(
+int oe_get_enclave_thread_fpr(
     pid_t pid,
     void* tcs_addr,
     struct user_fpregs_struct* regs)
@@ -466,7 +478,7 @@ int OE_GetEnclaveThreadFpr(
     }
 
     // Read fpr values from ssa.
-    ret = OE_ReadProcessMemory(
+    ret = oe_read_process_memory(
         pid,
         ssa_info.base_address,
         (void*)regs,
@@ -488,7 +500,7 @@ int OE_GetEnclaveThreadFpr(
 /*
 **==============================================================================
 **
-** OE_SetEnclaveThreadFpr()
+** oe_set_enclave_thread_fpr()
 **
 **     This function is used get the FPR registers of the enclave thread.
 **
@@ -504,7 +516,7 @@ int OE_GetEnclaveThreadFpr(
 **==============================================================================
 */
 
-int OE_SetEnclaveThreadFpr(
+int oe_set_enclave_thread_fpr(
     pid_t pid,
     void* tcs_addr,
     struct user_fpregs_struct* regs)
@@ -521,7 +533,7 @@ int OE_SetEnclaveThreadFpr(
     }
 
     // Write fpr values to ssa.
-    ret = OE_WriteProcessMemory(
+    ret = oe_write_process_memory(
         pid,
         ssa_info.base_address,
         (void*)regs,
@@ -543,7 +555,7 @@ int OE_SetEnclaveThreadFpr(
 /*
 **==============================================================================
 **
-** OE_GetEnclaveThreadXState()
+** oe_get_enclave_thread_xstate()
 **
 **     This function is used get the XState of the enclave thread.
 **
@@ -551,7 +563,7 @@ int OE_SetEnclaveThreadFpr(
 **     pid - The process id.
 **     tcs_addr - The enclave thread tcs address.
 **     xstate - A pointer to a buffer to receive the xstate content.
-**     xsate_size - The number of byte size of the xstate buffer.
+**     xstate_size - The number of byte size of the xstate buffer.
 **
 ** Returns:
 **     0 - Success.
@@ -560,11 +572,11 @@ int OE_SetEnclaveThreadFpr(
 **==============================================================================
 */
 
-int OE_GetEnclaveThreadXState(
+int oe_get_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    long xsate_size)
+    int64_t xstate_size)
 {
     int ret;
     size_t read_byte_length;
@@ -577,25 +589,25 @@ int OE_GetEnclaveThreadXState(
         return ret;
     }
 
-    if (xsate_size >
+    if (xstate_size >
         (ssa_info.frame_byte_size - sizeof(struct user_regs_struct)))
     {
         return -1;
     }
 
     // Read xstate from ssa.
-    ret = OE_ReadProcessMemory(
+    ret = oe_read_process_memory(
         pid,
         ssa_info.base_address,
         (void*)xstate,
-        xsate_size,
+        xstate_size,
         &read_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (read_byte_length != xsate_size)
+    if (read_byte_length != xstate_size)
     {
         return -1;
     }
@@ -606,7 +618,7 @@ int OE_GetEnclaveThreadXState(
 /*
 **==============================================================================
 **
-** OE_SetEnclaveThreadXState()
+** oe_set_enclave_thread_xstate()
 **
 **     This function is used set the XState of the enclave thread.
 **
@@ -614,7 +626,7 @@ int OE_GetEnclaveThreadXState(
 **     pid - The process id.
 **     tcs_addr - The enclave thread tcs address.
 **     xstate - A pointer to a buffer contains the xstate content.
-**     xsate_size - The number of byte size of the xstate buffer.
+**     xstate_size - The number of byte size of the xstate buffer.
 **
 ** Returns:
 **     0 - Success.
@@ -623,11 +635,11 @@ int OE_GetEnclaveThreadXState(
 **==============================================================================
 */
 
-int OE_SetEnclaveThreadXState(
+int oe_set_enclave_thread_xstate(
     pid_t pid,
     void* tcs_addr,
     void* xstate,
-    long xsate_size)
+    int64_t xstate_size)
 {
     int ret;
     size_t write_byte_length;
@@ -640,25 +652,25 @@ int OE_SetEnclaveThreadXState(
         return ret;
     }
 
-    if (xsate_size >
+    if (xstate_size >
         (ssa_info.frame_byte_size - sizeof(struct user_regs_struct)))
     {
         return -1;
     }
 
     // Write xstate values to ssa.
-    ret = OE_WriteProcessMemory(
+    ret = oe_write_process_memory(
         pid,
         ssa_info.base_address,
         (void*)xstate,
-        xsate_size,
+        xstate_size,
         &write_byte_length);
     if (ret != 0)
     {
         return ret;
     }
 
-    if (write_byte_length != xsate_size)
+    if (write_byte_length != xstate_size)
     {
         return -1;
     }
@@ -669,7 +681,7 @@ int OE_SetEnclaveThreadXState(
 /*
 **==============================================================================
 **
-** OE_IsAEP()
+** oe_is_aep()
 **
 **     This function is used to check if the input thread is on a OE AEP.
 **
@@ -684,7 +696,7 @@ int OE_SetEnclaveThreadXState(
 **==============================================================================
 */
 
-bool OE_IsAEP(pid_t pid, struct user_regs_struct* regs)
+bool oe_is_aep(pid_t pid, struct user_regs_struct* regs)
 {
     uint32_t op_code;
 
@@ -694,7 +706,7 @@ bool OE_IsAEP(pid_t pid, struct user_regs_struct* regs)
         return false;
     }
 
-    if (OE_ReadProcessMemory(
+    if (oe_read_process_memory(
             pid, (void*)regs->rip, (char*)&op_code, sizeof(op_code), NULL) != 0)
     {
         return false;

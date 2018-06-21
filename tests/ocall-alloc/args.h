@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include <openenclave/bits/calls.h>
+#include <openenclave/internal/calls.h>
 
 typedef struct
 {
-    OE_Result result;
+    oe_result_t result;
 } TestOcallAllocArgs;

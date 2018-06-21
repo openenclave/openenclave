@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_subdirectory(enc)
 add_subdirectory(host)
 
-add_test(tests/pingpong host/pingponghost ./enc/pingpongenc.signed.so)
+if (UNIX)
+	add_subdirectory(enc)
+endif()
+
+add_enclave_test(tests/pingpong ./host pingpong_host ./enc pingpong_enc.signed.so)

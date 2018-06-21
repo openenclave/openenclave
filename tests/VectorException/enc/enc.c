@@ -1,16 +1,17 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/atexit.h>
-#include <openenclave/bits/calls.h>
-#include <openenclave/bits/enclavelibc.h>
-#include <openenclave/bits/fault.h>
-#include <openenclave/bits/globals.h>
-#include <openenclave/bits/jump.h>
-#include <openenclave/bits/reloc.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atexit.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/fault.h>
+#include <openenclave/internal/globals.h>
+#include <openenclave/internal/jump.h>
+#include <openenclave/internal/print.h>
+#include <openenclave/internal/reloc.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/trace.h>
 #include "../args.h"
 
 // This function will generate the divide by zero function.
@@ -18,44 +19,56 @@
 // It will return 0 if success.
 int DivideByZeroExceptionFunction(void)
 {
-    int ret = 1;
-    int s = 0;
-    float f = 0;
-    double d = 0;
+    // Making ret, f and d volatile to prevent optimization
+    volatile int ret = 1;
+    volatile float f = 0;
+    volatile double d = 0;
 
     f = 0.31;
     d = 0.32;
 
-    ret = ret / s;
+    // Using inline assembly for idiv to prevent it being optimized out
+    // completely
+    asm volatile(
+        "idiv %3"
+        : "=a"(ret)
+        : "a"(0), "d"(0), "r"(0) // Divisor of 0 is hard-coded
+        : "%2", "cc"); // cc indicates that flags will be clobbered by ASM
 
     // Check if the float registers are recovered correctly after the exception
     // is handled.
+    // Please note that this register integrity testing is prone to be skipped
+    // with a different compiler/build. This will require that this entire
+    // function be written in assembly.
     if (f < 0.309 || f > 0.321 || d < 0.319 || d > 0.321)
     {
-        return ret;
+        return -1;
     }
 
     return 0;
 }
 
-uint64_t TestDivideByZeroHandler(OE_EXCEPTION_RECORD* exception_record)
+uint64_t TestDivideByZeroHandler(oe_exception_record_t* exception_record)
 {
     if (exception_record->code != OE_EXCEPTION_DIVIDE_BY_ZERO)
     {
         return OE_EXCEPTION_CONTINUE_SEARCH;
     }
 
-    // Skip the idiv instruction.
-    exception_record->context->rip += 3;
+    // Skip the idiv instruction - 2 is tied to the size of the idiv instruction
+    // and can change with a different compiler/build. Minimizing this with the
+    // use of the inline assembly for integer division
+    exception_record->context->rip += 2;
     return OE_EXCEPTION_CONTINUE_EXECUTION;
 }
 
 #define MAX_EXCEPTION_HANDLER_COUNT 64
 
-#define PASSTHROUGH_EXCEPTION_HANDLER(__exception_handler_name_)              \
-    uint64_t __exception_handler_name_(OE_EXCEPTION_RECORD* exception_record) \
-    {                                                                         \
-        return OE_EXCEPTION_CONTINUE_SEARCH;                                  \
+#define PASSTHROUGH_EXCEPTION_HANDLER(__exception_handler_name_) \
+    uint64_t __exception_handler_name_(                          \
+        oe_exception_record_t* exception_record)                 \
+    {                                                            \
+        return OE_EXCEPTION_CONTINUE_SEARCH;                     \
     }
 
 #define TEN_PASSTHROUGH_EXCEPTION_HANDLER(__exception_handler_name_prefix_) \
@@ -94,7 +107,7 @@ PASSTHROUGH_EXCEPTION_HANDLER(TestPassThroughHandler6_3)
         __exception_handler_name_prefix_##_8,                            \
         __exception_handler_name_prefix_##_9,
 
-static POE_VECTORED_EXCEPTION_HANDLER
+static oe_vectored_exception_handler
     g_test_pass_through_handlers[MAX_EXCEPTION_HANDLER_COUNT] = {
         TEN_EXCEPTION_HANDLER_POINTERS(TestPassThroughHandler0)
             TEN_EXCEPTION_HANDLER_POINTERS(TestPassThroughHandler1)
@@ -108,55 +121,53 @@ static POE_VECTORED_EXCEPTION_HANDLER
         TestPassThroughHandler6_2,
         TestPassThroughHandler6_3};
 
-static POE_VECTORED_EXCEPTION_HANDLER g_test_div_by_zero_handler;
+static oe_vectored_exception_handler g_test_div_by_zero_handler;
 
 int VectorExceptionSetup()
 {
-    void* handler;
     uint64_t ret = -1;
+    oe_result_t result;
 
     // Add one exception handler.
-    handler = OE_AddVectoredExceptionHandler(0, TestDivideByZeroHandler);
-    if (handler == NULL)
+    result = oe_add_vectored_exception_handler(false, TestDivideByZeroHandler);
+    if (result != OE_OK)
     {
         return ret;
     }
 
     // Remove the exception handler.
-    ret = OE_RemoveVectoredExceptionHandler(handler);
-    if (ret != 0)
+    if (oe_remove_vectored_exception_handler(TestDivideByZeroHandler) != OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     // Insert the exception handler to the front.
-    handler = OE_AddVectoredExceptionHandler(1, TestDivideByZeroHandler);
-    if (handler == NULL)
+    result = oe_add_vectored_exception_handler(true, TestDivideByZeroHandler);
+    if (result != OE_OK)
     {
         return ret;
     }
 
     // Remove the exception handler.
-    ret = OE_RemoveVectoredExceptionHandler(handler);
-    if (ret != 0)
+    if (oe_remove_vectored_exception_handler(TestDivideByZeroHandler) != OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     // Append one by one till reach the max.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers); i++)
     {
-        handler =
-            OE_AddVectoredExceptionHandler(0, g_test_pass_through_handlers[i]);
-        if (handler == NULL)
+        result = oe_add_vectored_exception_handler(
+            false, g_test_pass_through_handlers[i]);
+        if (result != OE_OK)
         {
             return ret;
         }
     }
 
     // Can't add one more.
-    handler = OE_AddVectoredExceptionHandler(0, TestDivideByZeroHandler);
-    if (handler != NULL)
+    result = oe_add_vectored_exception_handler(false, TestDivideByZeroHandler);
+    if (result == OE_OK)
     {
         return ret;
     }
@@ -164,28 +175,27 @@ int VectorExceptionSetup()
     // Remove all registered handlers.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers); i++)
     {
-        ret =
-            OE_RemoveVectoredExceptionHandler(g_test_pass_through_handlers[i]);
-        if (ret != 0)
+        if (oe_remove_vectored_exception_handler(
+                g_test_pass_through_handlers[i]) != OE_OK)
         {
-            return ret;
+            return -1;
         }
     }
 
     // Add handles to the front one by one till reach the max.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers); i++)
     {
-        handler =
-            OE_AddVectoredExceptionHandler(1, g_test_pass_through_handlers[i]);
-        if (handler == NULL)
+        result = oe_add_vectored_exception_handler(
+            true, g_test_pass_through_handlers[i]);
+        if (result != OE_OK)
         {
             return ret;
         }
     }
 
     // Can't add one more.
-    handler = OE_AddVectoredExceptionHandler(1, TestDivideByZeroHandler);
-    if (handler != NULL)
+    result = oe_add_vectored_exception_handler(true, TestDivideByZeroHandler);
+    if (result == OE_OK)
     {
         return ret;
     }
@@ -193,29 +203,28 @@ int VectorExceptionSetup()
     // Remove all registered handlers.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers); i++)
     {
-        ret =
-            OE_RemoveVectoredExceptionHandler(g_test_pass_through_handlers[i]);
-        if (ret != 0)
+        if (oe_remove_vectored_exception_handler(
+                g_test_pass_through_handlers[i]) != OE_OK)
         {
-            return ret;
+            return -1;
         }
     }
 
     // Add the test pass through handlers.
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers) - 1; i++)
     {
-        handler =
-            OE_AddVectoredExceptionHandler(0, g_test_pass_through_handlers[i]);
-        if (handler == NULL)
+        result = oe_add_vectored_exception_handler(
+            false, g_test_pass_through_handlers[i]);
+        if (result != OE_OK)
         {
             return ret;
         }
     }
 
     // Add the real handler to the end.
-    g_test_div_by_zero_handler =
-        OE_AddVectoredExceptionHandler(0, TestDivideByZeroHandler);
-    if (g_test_div_by_zero_handler == NULL)
+    g_test_div_by_zero_handler = TestDivideByZeroHandler;
+    result = oe_add_vectored_exception_handler(false, TestDivideByZeroHandler);
+    if (result != OE_OK)
     {
         return ret;
     }
@@ -227,23 +236,22 @@ int VectorExceptionSetup()
 int VectorExceptionCleanup()
 {
     // Remove all handlers.
-    int ret = OE_RemoveVectoredExceptionHandler(g_test_div_by_zero_handler);
-    if (ret != 0)
+    if (oe_remove_vectored_exception_handler(g_test_div_by_zero_handler) !=
+        OE_OK)
     {
-        return ret;
+        return -1;
     }
 
     for (uint32_t i = 0; i < OE_COUNTOF(g_test_pass_through_handlers) - 1; i++)
     {
-        ret =
-            OE_RemoveVectoredExceptionHandler(g_test_pass_through_handlers[i]);
-        if (ret != 0)
+        if (oe_remove_vectored_exception_handler(
+                g_test_pass_through_handlers[i]) != OE_OK)
         {
-            return ret;
+            return -1;
         }
     }
 
-    return ret;
+    return 0;
 }
 
 OE_ECALL void TestVectorException(void* args_)
@@ -251,7 +259,7 @@ OE_ECALL void TestVectorException(void* args_)
     TestVectorExceptionArgs* args = (TestVectorExceptionArgs*)args_;
     args->ret = -1;
 
-    if (!OE_IsOutsideEnclave(args, sizeof(TestVectorExceptionArgs)))
+    if (!oe_is_outside_enclave(args, sizeof(TestVectorExceptionArgs)))
     {
         return;
     }
@@ -261,7 +269,7 @@ OE_ECALL void TestVectorException(void* args_)
         return;
     }
 
-    OE_HostPrintf(
+    oe_host_printf(
         "TestVectorException: will generate a hardware exception "
         "inside enclave!\n");
     if (DivideByZeroExceptionFunction() != 0)
@@ -270,7 +278,7 @@ OE_ECALL void TestVectorException(void* args_)
         return;
     }
 
-    OE_HostPrintf(
+    oe_host_printf(
         "TestVectorException: hardware exception is handled correctly!\n");
 
     if (VectorExceptionCleanup() != 0)

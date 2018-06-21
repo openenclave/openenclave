@@ -2,293 +2,46 @@
 // Licensed under the MIT License.
 
 #include "ec.h"
-#include <openenclave/bits/ec.h>
-#include <openenclave/bits/pem.h>
-#include <openenclave/bits/raise.h>
-#include <openenclave/bits/sha.h>
-#include <openenclave/types.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/raise.h>
+#include <openssl/obj_mac.h>
 #include <openssl/pem.h>
-#include <openssl/rsa.h>
 #include <string.h>
 #include "init.h"
+#include "key.h"
 
-/*
-**==============================================================================
-**
-** Local defintions:
-**
-**==============================================================================
-*/
+/* Magic numbers for the EC key implementation structures */
+static const uint64_t _PRIVATE_KEY_MAGIC = 0x19a751419ae04bbc;
+static const uint64_t _PUBLIC_KEY_MAGIC = 0xb1d39580c1f14c02;
 
-/* Randomly generated magic number */
-#define OE_EC_PRIVATE_KEY_MAGIC 0x19a751419ae04bbc
+OE_STATIC_ASSERT(sizeof(oe_public_key_t) <= sizeof(oe_ec_public_key_t));
+OE_STATIC_ASSERT(sizeof(oe_private_key_t) <= sizeof(oe_ec_private_key_t));
 
-typedef struct _OE_ECPrivateKeyImpl
+static int _GetNID(oe_ec_type_t ecType)
 {
-    uint64_t magic;
-    EVP_PKEY* pkey;
-} OE_ECPrivateKeyImpl;
-
-OE_STATIC_ASSERT(sizeof(OE_ECPrivateKeyImpl) <= sizeof(OE_ECPrivateKey));
-
-OE_INLINE void _ClearPrivateKeyImpl(OE_ECPrivateKeyImpl* impl)
-{
-    if (impl)
+    switch (ecType)
     {
-        impl->magic = 0;
-        impl->pkey = NULL;
+        case OE_EC_TYPE_SECP256R1:
+            return NID_X9_62_prime256v1;
+        default:
+            return NID_undef;
     }
 }
 
-OE_INLINE bool _ValidPrivateKeyImpl(const OE_ECPrivateKeyImpl* impl)
+static oe_result_t _privateKeyWritePEMCallback(BIO* bio, EVP_PKEY* pkey)
 {
-    return impl && impl->magic == OE_EC_PRIVATE_KEY_MAGIC && impl->pkey;
-}
-
-/* Randomly generated magic number */
-#define OE_EC_PUBLIC_KEY_MAGIC 0xb1d39580c1f14c02
-
-typedef struct _OE_ECPublicKeyImpl
-{
-    uint64_t magic;
-    EVP_PKEY* pkey;
-} OE_ECPublicKeyImpl;
-
-OE_STATIC_ASSERT(sizeof(OE_ECPublicKeyImpl) <= sizeof(OE_ECPublicKey));
-
-OE_INLINE void _ClearPublicKeyImpl(OE_ECPublicKeyImpl* impl)
-{
-    if (impl)
-    {
-        impl->magic = 0;
-        impl->pkey = NULL;
-    }
-}
-
-OE_INLINE bool _ValidPublicKeyImpl(const OE_ECPublicKeyImpl* impl)
-{
-    return impl && impl->magic == OE_EC_PUBLIC_KEY_MAGIC && impl->pkey;
-}
-
-/* Curve names, indexed by OE_ECType */
-static const char* _curveNames[] = {
-    "secp521r1" /* OE_EC_TYPE_SECP521R1 */
-};
-
-/* Convert ECType to curve name */
-static const char* _ECTypeToString(OE_Type type)
-{
-    size_t index = (size_t)type;
-
-    if (index >= OE_COUNTOF(_curveNames))
-        return NULL;
-
-    return _curveNames[index];
-}
-
-/* Get the EC key without incrementing the reference count */
-static EC_KEY* _GetECKey(EVP_PKEY* pkey)
-{
-    EC_KEY* ec;
+    oe_result_t result = OE_UNEXPECTED;
+    EC_KEY* ec = NULL;
 
     if (!(ec = EVP_PKEY_get1_EC_KEY(pkey)))
-        return NULL;
-
-    EC_KEY_free(ec);
-    return ec;
-}
-
-/*
-**==============================================================================
-**
-** Shared definitions (shared within this directory)
-**
-**==============================================================================
-*/
-
-void OE_ECInitPublicKey(OE_ECPublicKey* publicKey, EVP_PKEY* pkey)
-{
-    OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)publicKey;
-    impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
-    impl->pkey = pkey;
-}
-
-/*
-**==============================================================================
-**
-** Public functions:
-**
-**==============================================================================
-*/
-
-OE_Result OE_ECPrivateKeyReadPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_ECPrivateKey* key)
-{
-    OE_Result result = OE_UNEXPECTED;
-    OE_ECPrivateKeyImpl* impl = (OE_ECPrivateKeyImpl*)key;
-    BIO* bio = NULL;
-    EVP_PKEY* pkey = NULL;
-
-    /* Initialize the key output parameter */
-    _ClearPrivateKeyImpl(impl);
-
-    /* Check parameters */
-    if (!pemData || pemSize == 0 || !impl)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
-
-    /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
         OE_RAISE(OE_FAILURE);
 
-    /* Read the key object */
-    if (!(pkey = PEM_read_bio_PrivateKey(bio, &pkey, NULL, NULL)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Verify that it is an EC key */
-    if (!_GetECKey(pkey))
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the key */
-    impl->magic = OE_EC_PRIVATE_KEY_MAGIC;
-    impl->pkey = pkey;
-    pkey = NULL;
-
-    result = OE_OK;
-
-done:
-
-    if (pkey)
-        EVP_PKEY_free(pkey);
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}
-
-OE_Result OE_ECPublicKeyReadPEM(
-    const uint8_t* pemData,
-    size_t pemSize,
-    OE_ECPublicKey* key)
-{
-    OE_Result result = OE_UNEXPECTED;
-    BIO* bio = NULL;
-    EVP_PKEY* pkey = NULL;
-    OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)key;
-
-    /* Zero-initialize the key */
-    _ClearPublicKeyImpl(impl);
-
-    /* Check parameters */
-    if (!pemData || pemSize == 0 || !impl)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Must have pemSize-1 non-zero characters followed by zero-terminator */
-    if (strnlen((const char*)pemData, pemSize) != pemSize - 1)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
-
-    /* Create a BIO object for reading the PEM data */
-    if (!(bio = BIO_new_mem_buf(pemData, pemSize)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Read the key object */
-    if (!(pkey = PEM_read_bio_PUBKEY(bio, &pkey, NULL, NULL)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Verify that it is an EC key */
-    if (!_GetECKey(pkey))
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the key */
-    impl->magic = OE_EC_PUBLIC_KEY_MAGIC;
-    impl->pkey = pkey;
-    pkey = NULL;
-
-    result = OE_OK;
-
-done:
-
-    if (pkey)
-        EVP_PKEY_free(pkey);
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}
-
-OE_Result OE_ECPrivateKeyWritePEM(
-    const OE_ECPrivateKey* key,
-    uint8_t* data,
-    size_t* size)
-{
-    OE_Result result = OE_UNEXPECTED;
-    const OE_ECPrivateKeyImpl* impl = (const OE_ECPrivateKeyImpl*)key;
-    BIO* bio = NULL;
-    EC_KEY* ec = NULL;
-    const char nullTerminator = '\0';
-
-    /* Check parameters */
-    if (!_ValidPrivateKeyImpl(impl) || !size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If buffer is null, then size must be zero */
-    if (!data && *size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Create memory BIO object to write key to */
-    if (!(bio = BIO_new(BIO_s_mem())))
-        OE_RAISE(OE_FAILURE);
-
-    /* Get EC key from public key (increasing reference count) */
-    if (!(ec = EVP_PKEY_get1_EC_KEY(impl->pkey)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Write key to BIO */
     if (!PEM_write_bio_ECPrivateKey(bio, ec, NULL, NULL, 0, 0, NULL))
         OE_RAISE(OE_FAILURE);
 
-    /* Write a NULL terminator onto BIO */
-    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Copy the BIO onto caller's memory */
-    {
-        BUF_MEM* mem;
-
-        if (!BIO_get_mem_ptr(bio, &mem))
-            OE_RAISE(OE_FAILURE);
-
-        /* If buffer is too small */
-        if (*size < mem->length)
-        {
-            *size = mem->length;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-
-        /* Copy result to output buffer */
-        memcpy(data, mem->data, mem->length);
-        *size = mem->length;
-    }
-
     result = OE_OK;
 
 done:
-
-    if (bio)
-        BIO_free(bio);
 
     if (ec)
         EC_KEY_free(ec);
@@ -296,407 +49,484 @@ done:
     return result;
 }
 
-OE_Result OE_ECPublicKeyWritePEM(
-    const OE_ECPublicKey* key,
-    uint8_t* data,
-    size_t* size)
+static oe_result_t _GenerateKeyPair(
+    oe_ec_type_t ecType,
+    oe_private_key_t* privateKey,
+    oe_public_key_t* publicKey)
 {
-    OE_Result result = OE_UNEXPECTED;
-    BIO* bio = NULL;
-    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)key;
-    const char nullTerminator = '\0';
-
-    /* Check parameters */
-    if (!_ValidPublicKeyImpl(impl) || !size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If buffer is null, then size must be zero */
-    if (!data && *size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Create memory BIO object to write key to */
-    if (!(bio = BIO_new(BIO_s_mem())))
-        OE_RAISE(OE_FAILURE);
-
-    /* Write key to BIO */
-    if (!PEM_write_bio_PUBKEY(bio, impl->pkey))
-        OE_RAISE(OE_FAILURE);
-
-    /* Write a NULL terminator onto BIO */
-    if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Copy the BIO onto caller's memory */
-    {
-        BUF_MEM* mem;
-
-        if (!BIO_get_mem_ptr(bio, &mem))
-            OE_RAISE(OE_FAILURE);
-
-        /* If buffer is too small */
-        if (*size < mem->length)
-        {
-            *size = mem->length;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-
-        /* Copy result to output buffer */
-        memcpy(data, mem->data, mem->length);
-        *size = mem->length;
-    }
-
-    result = OE_OK;
-
-done:
-
-    if (bio)
-        BIO_free(bio);
-
-    return result;
-}
-
-OE_Result OE_ECPrivateKeyFree(OE_ECPrivateKey* key)
-{
-    OE_Result result = OE_UNEXPECTED;
-
-    if (key)
-    {
-        OE_ECPrivateKeyImpl* impl = (OE_ECPrivateKeyImpl*)key;
-
-        /* Check parameter */
-        if (!_ValidPrivateKeyImpl(impl))
-            OE_RAISE(OE_INVALID_PARAMETER);
-
-        /* Release the key */
-        EVP_PKEY_free(impl->pkey);
-
-        /* Clear the fields of the implementation */
-        _ClearPrivateKeyImpl(impl);
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-OE_Result OE_ECPublicKeyFree(OE_ECPublicKey* key)
-{
-    OE_Result result = OE_UNEXPECTED;
-
-    if (key)
-    {
-        OE_ECPublicKeyImpl* impl = (OE_ECPublicKeyImpl*)key;
-
-        /* Check parameter */
-        if (!_ValidPublicKeyImpl(impl))
-            OE_RAISE(OE_INVALID_PARAMETER);
-
-        /* Release the key */
-        EVP_PKEY_free(impl->pkey);
-
-        /* Clear the fields of the implementation */
-        _ClearPublicKeyImpl(impl);
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-OE_Result OE_ECPrivateKeySign(
-    const OE_ECPrivateKey* privateKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    uint8_t* signature,
-    size_t* signatureSize)
-{
-    OE_Result result = OE_UNEXPECTED;
-    const OE_ECPrivateKeyImpl* impl = (const OE_ECPrivateKeyImpl*)privateKey;
-    EVP_PKEY_CTX* ctx = NULL;
-
-    /* Check for null parameters */
-    if (!_ValidPrivateKeyImpl(impl) || !hashData || !hashSize || !signatureSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Check that hash buffer is big enough (hashType is size of that hash) */
-    if (hashType > hashSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If signature buffer is null, then signature size must be zero */
-    if (!signature && *signatureSize != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
-
-    /* Create signing context */
-    if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the signing context */
-    if (EVP_PKEY_sign_init(ctx) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the MD type for the signing operation */
-    if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Determine the size of the signature; fail if buffer is too small */
-    {
-        size_t size;
-
-        if (EVP_PKEY_sign(ctx, NULL, &size, hashData, hashSize) <= 0)
-            OE_RAISE(OE_FAILURE);
-
-        if (size > *signatureSize)
-        {
-            *signatureSize = size;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
-
-        *signatureSize = size;
-    }
-
-    /* Compute the signature */
-    if (EVP_PKEY_sign(ctx, signature, signatureSize, hashData, hashSize) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    result = OE_OK;
-
-done:
-
-    if (ctx)
-        EVP_PKEY_CTX_free(ctx);
-
-    return result;
-}
-
-OE_Result OE_ECPublicKeyVerify(
-    const OE_ECPublicKey* publicKey,
-    OE_HashType hashType,
-    const void* hashData,
-    size_t hashSize,
-    const uint8_t* signature,
-    size_t signatureSize)
-{
-    OE_Result result = OE_UNEXPECTED;
-    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)publicKey;
-    EVP_PKEY_CTX* ctx = NULL;
-
-    /* Check for null parameters */
-    if (!_ValidPublicKeyImpl(impl) || !hashData || !hashSize || !signature ||
-        !signatureSize)
-    {
-        OE_RAISE(OE_INVALID_PARAMETER);
-    }
-
-    /* Check that hash buffer is big enough (hashType is size of that hash) */
-    if (hashType > hashSize)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
-
-    /* Create signing context */
-    if (!(ctx = EVP_PKEY_CTX_new(impl->pkey, NULL)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the signing context */
-    if (EVP_PKEY_verify_init(ctx) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the MD type for the signing operation */
-    if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* Compute the signature */
-    if (EVP_PKEY_verify(ctx, signature, signatureSize, hashData, hashSize) <= 0)
-        OE_RAISE(OE_VERIFY_FAILED);
-
-    result = OE_OK;
-
-done:
-
-    if (ctx)
-        EVP_PKEY_CTX_free(ctx);
-
-    return result;
-}
-
-OE_Result OE_ECGenerateKeyPair(
-    OE_ECType type,
-    OE_ECPrivateKey* privateKey,
-    OE_ECPublicKey* publicKey)
-{
-    OE_Result result = OE_UNEXPECTED;
-    OE_ECPrivateKeyImpl* privateImpl = (OE_ECPrivateKeyImpl*)privateKey;
-    OE_ECPublicKeyImpl* publicImpl = (OE_ECPublicKeyImpl*)publicKey;
+    oe_result_t result = OE_UNEXPECTED;
     int nid;
-    EC_KEY* key = NULL;
-    EVP_PKEY* pkey = NULL;
-    BIO* bio = NULL;
-    const char nullTerminator = '\0';
-    const char* curveName;
+    EC_KEY* ecPrivate = NULL;
+    EC_KEY* ecPublic = NULL;
+    EVP_PKEY* pkeyPrivate = NULL;
+    EVP_PKEY* pkeyPublic = NULL;
+    EC_POINT* point = NULL;
 
-    _ClearPrivateKeyImpl(privateImpl);
-    _ClearPublicKeyImpl(publicImpl);
+    if (privateKey)
+        memset(privateKey, 0, sizeof(*privateKey));
+
+    if (publicKey)
+        memset(publicKey, 0, sizeof(*publicKey));
 
     /* Check parameters */
     if (!privateKey || !publicKey)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!(curveName = _ECTypeToString(type)))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     /* Initialize OpenSSL */
-    OE_InitializeOpenSSL();
+    oe_initialize_openssl();
 
-    /* Resolve the NID for this curve name */
-    if ((nid = OBJ_txt2nid(curveName)) == NID_undef)
+    /* Get the NID for this curve type */
+    if ((nid = _GetNID(ecType)) == NID_undef)
         OE_RAISE(OE_FAILURE);
 
-    /* Create the key */
-    if (!(key = EC_KEY_new_by_curve_name(nid)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the EC named-curve flag */
-    EC_KEY_set_asn1_flag(key, OPENSSL_EC_NAMED_CURVE);
-
-    /* Generate the public/private key pair */
-    if (!EC_KEY_generate_key(key))
-        OE_RAISE(OE_FAILURE);
-
-    /* Create the private key structure */
-    if (!(pkey = EVP_PKEY_new()))
-        OE_RAISE(OE_FAILURE);
-
-    /* Initialize the private key from the generated key pair */
-    if (!EVP_PKEY_assign_EC_KEY(pkey, key))
-        OE_RAISE(OE_FAILURE);
-
-    /* Key will be released when pkey is released */
-    key = NULL;
-
-    /* Create private key object */
+    /* Create the private EC key */
     {
-        BUF_MEM* mem;
-
-        if (!(bio = BIO_new(BIO_s_mem())))
+        /* Create the private key */
+        if (!(ecPrivate = EC_KEY_new_by_curve_name(nid)))
             OE_RAISE(OE_FAILURE);
 
-        if (!PEM_write_bio_PrivateKey(bio, pkey, NULL, NULL, 0, 0, NULL))
-            OE_RAISE(OE_FAILURE);
+        /* Set the EC named-curve flag */
+        EC_KEY_set_asn1_flag(ecPrivate, OPENSSL_EC_NAMED_CURVE);
 
-        if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
+        /* Generate the public/private key pair */
+        if (!EC_KEY_generate_key(ecPrivate))
             OE_RAISE(OE_FAILURE);
-
-        if (!BIO_get_mem_ptr(bio, &mem))
-            OE_RAISE(OE_FAILURE);
-
-        if (OE_ECPrivateKeyReadPEM(
-                (uint8_t*)mem->data, mem->length, privateKey) != OE_OK)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
-
-        BIO_free(bio);
-        bio = NULL;
     }
 
-    /* Create public key object */
+    /* Create the public EC key */
     {
-        BUF_MEM* mem;
-
-        if (!(bio = BIO_new(BIO_s_mem())))
+        /* Create the public key */
+        if (!(ecPublic = EC_KEY_new_by_curve_name(nid)))
             OE_RAISE(OE_FAILURE);
 
-        if (!PEM_write_bio_PUBKEY(bio, pkey))
-            OE_RAISE(OE_FAILURE);
+        /* Set the EC named-curve flag */
+        EC_KEY_set_asn1_flag(ecPublic, OPENSSL_EC_NAMED_CURVE);
 
-        if (BIO_write(bio, &nullTerminator, sizeof(nullTerminator)) <= 0)
-            OE_RAISE(OE_FAILURE);
-
-        BIO_get_mem_ptr(bio, &mem);
-
-        if (OE_ECPublicKeyReadPEM(
-                (uint8_t*)mem->data, mem->length, publicKey) != OE_OK)
+        /* Duplicate public key point from the private key */
+        if (!(point = EC_POINT_dup(
+                  EC_KEY_get0_public_key(ecPrivate),
+                  EC_KEY_get0_group(ecPublic))))
         {
             OE_RAISE(OE_FAILURE);
         }
 
-        BIO_free(bio);
-        bio = NULL;
+        /* Set the public key */
+        if (!EC_KEY_set_public_key(ecPublic, point))
+            OE_RAISE(OE_FAILURE);
+
+        /* Keep from being freed below */
+        point = NULL;
+    }
+
+    /* Create the PKEY private key wrapper */
+    {
+        /* Create the private key structure */
+        if (!(pkeyPrivate = EVP_PKEY_new()))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the private key from the generated key pair */
+        if (!EVP_PKEY_assign_EC_KEY(pkeyPrivate, ecPrivate))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the private key */
+        oe_private_key_init(privateKey, pkeyPrivate, _PRIVATE_KEY_MAGIC);
+
+        /* Keep these from being freed below */
+        ecPrivate = NULL;
+        pkeyPrivate = NULL;
+    }
+
+    /* Create the PKEY public key wrapper */
+    {
+        /* Create the public key structure */
+        if (!(pkeyPublic = EVP_PKEY_new()))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the public key from the generated key pair */
+        if (!EVP_PKEY_assign_EC_KEY(pkeyPublic, ecPublic))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the public key */
+        oe_public_key_init(publicKey, pkeyPublic, _PUBLIC_KEY_MAGIC);
+
+        /* Keep these from being freed below */
+        ecPublic = NULL;
+        pkeyPublic = NULL;
     }
 
     result = OE_OK;
 
 done:
 
-    if (key)
-        EC_KEY_free(key);
+    if (ecPrivate)
+        EC_KEY_free(ecPrivate);
 
-    if (pkey)
-        EVP_PKEY_free(pkey);
+    if (ecPublic)
+        EC_KEY_free(ecPublic);
 
-    if (bio)
-        BIO_free(bio);
+    if (pkeyPrivate)
+        EVP_PKEY_free(pkeyPrivate);
+
+    if (pkeyPublic)
+        EVP_PKEY_free(pkeyPublic);
+
+    if (point)
+        EC_POINT_free(point);
 
     if (result != OE_OK)
     {
-        OE_ECPrivateKeyFree(privateKey);
-        OE_ECPublicKeyFree(publicKey);
+        oe_private_key_free(privateKey, _PRIVATE_KEY_MAGIC);
+        oe_public_key_free(publicKey, _PUBLIC_KEY_MAGIC);
     }
 
     return result;
 }
 
-OE_Result OE_ECPublicKeyGetKeyBytes(
-    const OE_ECPublicKey* publicKey,
-    uint8_t* buffer,
-    size_t* bufferSize)
+static oe_result_t _PublicKeyEqual(
+    const oe_public_key_t* publicKey1,
+    const oe_public_key_t* publicKey2,
+    bool* equal)
 {
-    const OE_ECPublicKeyImpl* impl = (const OE_ECPublicKeyImpl*)publicKey;
-    OE_Result result = OE_UNEXPECTED;
-    uint8_t* data = NULL;
-    EC_KEY* ec;
-    int requiredSize;
+    oe_result_t result = OE_UNEXPECTED;
+    EC_KEY* ec1 = NULL;
+    EC_KEY* ec2 = NULL;
 
-    /* Check for invalid parameters */
-    if (!publicKey || !bufferSize)
+    if (equal)
+        *equal = false;
+
+    /* Reject bad parameters */
+    if (!oe_public_key_is_valid(publicKey1, _PUBLIC_KEY_MAGIC) ||
+        !oe_public_key_is_valid(publicKey2, _PUBLIC_KEY_MAGIC) || !equal)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get the EC public key */
-    if (!(ec = _GetECKey(impl->pkey)))
-        OE_RAISE(OE_FAILURE);
-
-    /* Set the required buffer size */
-    if ((requiredSize = i2o_ECPublicKey(ec, NULL)) == 0)
-        OE_RAISE(OE_FAILURE);
-
-    /* If buffer is null or not big enough */
-    if (!buffer || (*bufferSize < requiredSize))
     {
-        *bufferSize = requiredSize;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
+        ec1 = EVP_PKEY_get1_EC_KEY(publicKey1->pkey);
+        ec2 = EVP_PKEY_get1_EC_KEY(publicKey2->pkey);
+        const EC_GROUP* group1 = EC_KEY_get0_group(ec1);
+        const EC_GROUP* group2 = EC_KEY_get0_group(ec2);
+        const EC_POINT* point1 = EC_KEY_get0_public_key(ec1);
+        const EC_POINT* point2 = EC_KEY_get0_public_key(ec2);
+
+        if (!ec1 || !ec2 || !group1 || !group2 || !point1 || !point2)
+            OE_RAISE(OE_FAILURE);
+
+        /* Compare group and public key point */
+        if (EC_GROUP_cmp(group1, group2, NULL) == 0 &&
+            EC_POINT_cmp(group1, point1, point2, NULL) == 0)
+        {
+            *equal = true;
+        }
     }
-
-    /* Get the key bytes */
-    if (!i2o_ECPublicKey(ec, &data))
-        OE_RAISE(OE_FAILURE);
-
-    /* Copy to caller's buffer */
-    memcpy(buffer, data, requiredSize);
-    *bufferSize = requiredSize;
 
     result = OE_OK;
 
 done:
 
-    if (data)
-        free(data);
+    if (ec1)
+        EC_KEY_free(ec1);
+
+    if (ec2)
+        EC_KEY_free(ec2);
+
+    return result;
+}
+
+void oe_ec_public_key_init(oe_ec_public_key_t* publicKey, EVP_PKEY* pkey)
+{
+    return oe_public_key_init(
+        (oe_public_key_t*)publicKey, pkey, _PUBLIC_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_private_key_read_pem(
+    const uint8_t* pemData,
+    size_t pemSize,
+    oe_ec_private_key_t* privateKey)
+{
+    return oe_private_key_read_pem(
+        pemData,
+        pemSize,
+        (oe_private_key_t*)privateKey,
+        EVP_PKEY_EC,
+        _PRIVATE_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_private_key_write_pem(
+    const oe_ec_private_key_t* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return oe_private_key_write_pem(
+        (const oe_private_key_t*)privateKey,
+        pemData,
+        pemSize,
+        _privateKeyWritePEMCallback,
+        _PRIVATE_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_public_key_read_pem(
+    const uint8_t* pemData,
+    size_t pemSize,
+    oe_ec_public_key_t* publicKey)
+{
+    return oe_public_key_read_pem(
+        pemData,
+        pemSize,
+        (oe_public_key_t*)publicKey,
+        EVP_PKEY_EC,
+        _PUBLIC_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_public_key_write_pem(
+    const oe_ec_public_key_t* privateKey,
+    uint8_t* pemData,
+    size_t* pemSize)
+{
+    return oe_public_key_write_pem(
+        (const oe_public_key_t*)privateKey,
+        pemData,
+        pemSize,
+        _PUBLIC_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_private_key_free(oe_ec_private_key_t* privateKey)
+{
+    return oe_private_key_free(
+        (oe_private_key_t*)privateKey, _PRIVATE_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_public_key_free(oe_ec_public_key_t* publicKey)
+{
+    return oe_public_key_free((oe_public_key_t*)publicKey, _PUBLIC_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_private_key_sign(
+    const oe_ec_private_key_t* privateKey,
+    oe_hash_type_t hashType,
+    const void* hashData,
+    size_t hashSize,
+    uint8_t* signature,
+    size_t* signatureSize)
+{
+    return oe_private_key_sign(
+        (oe_private_key_t*)privateKey,
+        hashType,
+        hashData,
+        hashSize,
+        signature,
+        signatureSize,
+        _PRIVATE_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_public_key_verify(
+    const oe_ec_public_key_t* publicKey,
+    oe_hash_type_t hashType,
+    const void* hashData,
+    size_t hashSize,
+    const uint8_t* signature,
+    size_t signatureSize)
+{
+    return oe_public_key_verify(
+        (oe_public_key_t*)publicKey,
+        hashType,
+        hashData,
+        hashSize,
+        signature,
+        signatureSize,
+        _PUBLIC_KEY_MAGIC);
+}
+
+oe_result_t oe_ec_generate_key_pair(
+    oe_ec_type_t type,
+    oe_ec_private_key_t* privateKey,
+    oe_ec_public_key_t* publicKey)
+{
+    return _GenerateKeyPair(
+        type, (oe_private_key_t*)privateKey, (oe_public_key_t*)publicKey);
+}
+
+oe_result_t oe_ec_public_key_equal(
+    const oe_ec_public_key_t* publicKey1,
+    const oe_ec_public_key_t* publicKey2,
+    bool* equal)
+{
+    return _PublicKeyEqual(
+        (oe_public_key_t*)publicKey1, (oe_public_key_t*)publicKey2, equal);
+}
+
+oe_result_t oe_ec_public_key_from_coordinates(
+    oe_ec_public_key_t* publicKey,
+    oe_ec_type_t ecType,
+    const uint8_t* xData,
+    size_t xSize,
+    const uint8_t* yData,
+    size_t ySize)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_public_key_t* impl = (oe_public_key_t*)publicKey;
+    int nid;
+    EC_KEY* ec = NULL;
+    EVP_PKEY* pkey = NULL;
+    EC_GROUP* group = NULL;
+    EC_POINT* point = NULL;
+    BIGNUM* x = NULL;
+    BIGNUM* y = NULL;
+
+    if (publicKey)
+        memset(publicKey, 0, sizeof(oe_ec_public_key_t));
+
+    /* Initialize OpenSSL */
+    oe_initialize_openssl();
+
+    /* Reject invalid parameters */
+    if (!publicKey || !xData || !xSize || !yData || !ySize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the NID for this curve type */
+    if ((nid = _GetNID(ecType)) == NID_undef)
+        OE_RAISE(OE_FAILURE);
+
+    /* Create the public EC key */
+    {
+        if (!(group = EC_GROUP_new_by_curve_name(nid)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(ec = EC_KEY_new()))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(EC_KEY_set_group(ec, group)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(point = EC_POINT_new(group)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(x = BN_new()) || !(y = BN_new()))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(BN_bin2bn(xData, xSize, x)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(BN_bin2bn(yData, ySize, y)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!EC_POINT_set_affine_coordinates_GFp(group, point, x, y, NULL))
+            OE_RAISE(OE_FAILURE);
+
+        if (!EC_KEY_set_public_key(ec, point))
+            OE_RAISE(OE_FAILURE);
+
+        point = NULL;
+    }
+
+    /* Create the PKEY public key wrapper */
+    {
+        /* Create the public key structure */
+        if (!(pkey = EVP_PKEY_new()))
+            OE_RAISE(OE_FAILURE);
+
+        /* Initialize the public key from the generated key pair */
+        {
+            if (!EVP_PKEY_assign_EC_KEY(pkey, ec))
+                OE_RAISE(OE_FAILURE);
+
+            ec = NULL;
+        }
+
+        /* Initialize the public key */
+        {
+            oe_public_key_init(impl, pkey, _PUBLIC_KEY_MAGIC);
+            pkey = NULL;
+        }
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (ec)
+        EC_KEY_free(ec);
+
+    if (group)
+        EC_GROUP_free(group);
+
+    if (pkey)
+        EVP_PKEY_free(pkey);
+
+    if (x)
+        BN_free(x);
+
+    if (y)
+        BN_free(y);
+
+    if (point)
+        EC_POINT_free(point);
+
+    return result;
+}
+
+oe_result_t oe_ecdsa_signature_write_der(
+    unsigned char* signature,
+    size_t* signatureSize,
+    const uint8_t* rData,
+    size_t rSize,
+    const uint8_t* sData,
+    size_t sSize)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    ECDSA_SIG* sig = NULL;
+    int sigLen;
+
+    /* Reject invalid parameters */
+    if (!signatureSize || !rData || !rSize || !sData || !sSize)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If signature is null, then signatureSize must be zero */
+    if (!signature && *signatureSize != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Create new signature object */
+    if (!(sig = ECDSA_SIG_new()))
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert R to big number object */
+    if (!(BN_bin2bn(rData, rSize, sig->r)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Convert S to big number object */
+    if (!(BN_bin2bn(sData, sSize, sig->s)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Determine the size of the binary signature */
+    if ((sigLen = i2d_ECDSA_SIG(sig, NULL)) <= 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Copy binary signature to output buffer */
+    if (signature && sigLen <= *signatureSize)
+    {
+        uint8_t* p = signature;
+
+        if (!i2d_ECDSA_SIG(sig, &p))
+            OE_RAISE(OE_FAILURE);
+
+        if (p - signature != sigLen)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    /* Check whether buffer is too small */
+    if (sigLen > *signatureSize)
+    {
+        *signatureSize = sigLen;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    /* Set the size of the output buffer */
+    *signatureSize = sigLen;
+
+    result = OE_OK;
+
+done:
+
+    if (sig)
+        ECDSA_SIG_free(sig);
 
     return result;
 }

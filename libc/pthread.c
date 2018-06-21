@@ -2,12 +2,42 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <errno.h>
 #include <openenclave/enclave.h>
 #include <pthread.h>
 
 #ifdef pthread_equal
 #undef pthread_equal
 #endif
+
+OE_STATIC_ASSERT(sizeof(pthread_once_t) == sizeof(oe_once_t));
+OE_STATIC_ASSERT(sizeof(pthread_spinlock_t) == sizeof(oe_spinlock_t));
+
+OE_STATIC_ASSERT(sizeof(pthread_mutex_t) >= sizeof(oe_mutex_t));
+OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(oe_cond_t));
+OE_STATIC_ASSERT(sizeof(pthread_rwlock_t) >= sizeof(oe_rwlock_t));
+
+oe_result_t oe_rwlock_unlock(oe_rwlock_t* readWriteLock);
+
+/* Map an oe_result_t to a POSIX error number */
+OE_INLINE int _ToErrno(oe_result_t result)
+{
+    switch (result)
+    {
+        case OE_OK:
+            return 0;
+        case OE_INVALID_PARAMETER:
+            return EINVAL;
+        case OE_BUSY:
+            return EBUSY;
+        case OE_NOT_OWNER:
+            return EPERM;
+        case OE_OUT_OF_MEMORY:
+            return ENOMEM;
+        default:
+            return EINVAL; /* unreachable */
+    }
+}
 
 /*
 **==============================================================================
@@ -19,12 +49,12 @@
 
 pthread_t pthread_self()
 {
-    return (pthread_t)OE_ThreadSelf();
+    return (pthread_t)oe_thread_self();
 }
 
 int pthread_equal(pthread_t thread1, pthread_t thread2)
 {
-    return OE_ThreadEqual((OE_Thread)thread1, (OE_Thread)thread2);
+    return (int)oe_thread_equal((oe_thread_t)thread1, (oe_thread_t)thread2);
 }
 
 int pthread_create(
@@ -33,7 +63,7 @@ int pthread_create(
     void* (*start_routine)(void*),
     void* arg)
 {
-    OE_Assert("pthread_create(): panic" == NULL);
+    oe_assert("pthread_create(): panic" == NULL);
     return -1;
 }
 
@@ -59,7 +89,7 @@ int pthread_detach(pthread_t thread)
 
 int pthread_once(pthread_once_t* once, void (*func)(void))
 {
-    return OE_Once((OE_OnceType*)once, func);
+    return _ToErrno(oe_once((oe_once_t*)once, func));
 }
 
 /*
@@ -72,22 +102,22 @@ int pthread_once(pthread_once_t* once, void (*func)(void))
 
 int pthread_spin_init(pthread_spinlock_t* spinlock, int pshared)
 {
-    return OE_SpinInit((OE_Spinlock*)spinlock);
+    return _ToErrno(oe_spin_init((oe_spinlock_t*)spinlock));
 }
 
 int pthread_spin_lock(pthread_spinlock_t* spinlock)
 {
-    return OE_SpinLock((OE_Spinlock*)spinlock);
+    return _ToErrno(oe_spin_lock((oe_spinlock_t*)spinlock));
 }
 
 int pthread_spin_unlock(pthread_spinlock_t* spinlock)
 {
-    return OE_SpinUnlock((OE_Spinlock*)spinlock);
+    return _ToErrno(oe_spin_unlock((oe_spinlock_t*)spinlock));
 }
 
 int pthread_spin_destroy(pthread_spinlock_t* spinlock)
 {
-    return OE_SpinDestroy((OE_Spinlock*)spinlock);
+    return _ToErrno(oe_spin_destroy((oe_spinlock_t*)spinlock));
 }
 
 /*
@@ -115,27 +145,27 @@ int pthread_mutexattr_destroy(pthread_mutexattr_t* attr)
 
 int pthread_mutex_init(pthread_mutex_t* m, const pthread_mutexattr_t* attr)
 {
-    return OE_MutexInit((OE_Mutex*)m);
+    return _ToErrno(oe_mutex_init((oe_mutex_t*)m));
 }
 
 int pthread_mutex_lock(pthread_mutex_t* m)
 {
-    return OE_MutexLock((OE_Mutex*)m);
+    return _ToErrno(oe_mutex_lock((oe_mutex_t*)m));
 }
 
 int pthread_mutex_trylock(pthread_mutex_t* m)
 {
-    return OE_MutexTryLock((OE_Mutex*)m);
+    return _ToErrno(oe_mutex_try_lock((oe_mutex_t*)m));
 }
 
 int pthread_mutex_unlock(pthread_mutex_t* m)
 {
-    return OE_MutexUnlock((OE_Mutex*)m);
+    return _ToErrno(oe_mutex_unlock((oe_mutex_t*)m));
 }
 
 int pthread_mutex_destroy(pthread_mutex_t* m)
 {
-    return OE_MutexDestroy((OE_Mutex*)m);
+    return _ToErrno(oe_mutex_destroy((oe_mutex_t*)m));
 }
 
 /*
@@ -150,42 +180,27 @@ int pthread_rwlock_init(
     pthread_rwlock_t* rwlock,
     const pthread_rwlockattr_t* attr)
 {
-    if (rwlock)
-        return pthread_mutex_init((pthread_mutex_t*)rwlock, NULL);
-
-    return -1;
+    return _ToErrno(oe_rwlock_init((oe_rwlock_t*)rwlock));
 }
 
 int pthread_rwlock_rdlock(pthread_rwlock_t* rwlock)
 {
-    if (rwlock)
-        return pthread_mutex_lock((pthread_mutex_t*)rwlock);
-
-    return -1;
+    return _ToErrno(oe_rwlock_rdlock((oe_rwlock_t*)rwlock));
 }
 
 int pthread_rwlock_wrlock(pthread_rwlock_t* rwlock)
 {
-    if (rwlock)
-        return pthread_mutex_lock((pthread_mutex_t*)rwlock);
-
-    return -1;
+    return _ToErrno(oe_rwlock_wrlock((oe_rwlock_t*)rwlock));
 }
 
 int pthread_rwlock_unlock(pthread_rwlock_t* rwlock)
 {
-    if (rwlock)
-        return pthread_mutex_unlock((pthread_mutex_t*)rwlock);
-
-    return -1;
+    return _ToErrno(oe_rwlock_unlock((oe_rwlock_t*)rwlock));
 }
 
 int pthread_rwlock_destroy(pthread_rwlock_t* rwlock)
 {
-    if (rwlock)
-        return pthread_mutex_destroy((pthread_mutex_t*)rwlock);
-
-    return -1;
+    return _ToErrno(oe_rwlock_destroy((oe_rwlock_t*)rwlock));
 }
 
 /*
@@ -198,12 +213,12 @@ int pthread_rwlock_destroy(pthread_rwlock_t* rwlock)
 
 int pthread_cond_init(pthread_cond_t* cond, const pthread_condattr_t* attr)
 {
-    return OE_CondInit((OE_Cond*)cond);
+    return _ToErrno(oe_cond_init((oe_cond_t*)cond));
 }
 
 int pthread_cond_wait(pthread_cond_t* cond, pthread_mutex_t* mutex)
 {
-    return OE_CondWait((OE_Cond*)cond, (OE_Mutex*)mutex);
+    return _ToErrno(oe_cond_wait((oe_cond_t*)cond, (oe_mutex_t*)mutex));
 }
 
 int pthread_cond_timedwait(
@@ -217,17 +232,17 @@ int pthread_cond_timedwait(
 
 int pthread_cond_signal(pthread_cond_t* cond)
 {
-    return OE_CondSignal((OE_Cond*)cond);
+    return _ToErrno(oe_cond_signal((oe_cond_t*)cond));
 }
 
 int pthread_cond_broadcast(pthread_cond_t* cond)
 {
-    return OE_CondBroadcast((OE_Cond*)cond);
+    return _ToErrno(oe_cond_broadcast((oe_cond_t*)cond));
 }
 
 int pthread_cond_destroy(pthread_cond_t* cond)
 {
-    return OE_CondDestroy((OE_Cond*)cond);
+    return _ToErrno(oe_cond_destroy((oe_cond_t*)cond));
 }
 
 /*
@@ -240,20 +255,20 @@ int pthread_cond_destroy(pthread_cond_t* cond)
 
 int pthread_key_create(pthread_key_t* key, void (*destructor)(void* value))
 {
-    return OE_ThreadKeyCreate((OE_ThreadKey*)key, destructor);
+    return _ToErrno(oe_thread_key_create((oe_thread_key_t*)key, destructor));
 }
 
 int pthread_key_delete(pthread_key_t key)
 {
-    return OE_ThreadKeyDelete(key);
+    return _ToErrno(oe_thread_key_delete(key));
 }
 
 int pthread_setspecific(pthread_key_t key, const void* value)
 {
-    return OE_ThreadSetSpecific(key, value);
+    return _ToErrno(oe_thread_set_specific(key, value));
 }
 
 void* pthread_getspecific(pthread_key_t key)
 {
-    return OE_ThreadGetSpecific(key);
+    return oe_thread_get_specific(key);
 }

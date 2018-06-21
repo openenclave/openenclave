@@ -6,7 +6,7 @@
 abort:
 .cfi_startproc
 
-    call OE_Abort
+    call oe_abort
     ud2
 
 .cfi_endproc

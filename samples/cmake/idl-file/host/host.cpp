@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/tests.h>
 #include <wchar.h>
 #include "file_u.h"
 
@@ -15,7 +15,7 @@
 
 void Log(const char* s, uint64_t x)
 {
-    printf("Log(%s, %lu)\n", s, x);
+    printf("Log(%s, %llu)\n", s, OE_LLU(x));
 }
 
 MY_FILE* Fopen(const char* filename, const char* modes)
@@ -78,8 +78,8 @@ done:
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
-    OE_Enclave* enclave = NULL;
+    oe_result_t result;
+    oe_enclave_t* enclave = NULL;
 
     if (argc != 2)
     {
@@ -87,11 +87,11 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
 
     printf("FLAGS=%08X\n", flags);
 
-    result = OE_CreateEnclave(
+    result = oe_create_enclave(
         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
     if (result != OE_OK)
     {
@@ -135,7 +135,7 @@ int main(int argc, const char* argv[])
 #endif
     }
 
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (file)\n");
 

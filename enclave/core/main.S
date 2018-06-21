@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 
 #include "asmdefs.h"
-#include <openenclave/bits/context.inc>
+#include <openenclave/internal/context.inc>
 #include "asmcommon.inc"
 
 //==============================================================================
 //
-// OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
+// oe_main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
 //
 //     The EENTER instruction (executed by the host) calls this function to
 //     enter the enclave.
@@ -26,16 +26,16 @@
 //         (1) Saves the host registers
 //         (2) Calculates the enclave stack base
 //         (3) Sets up the enclave stack frame
-//         (4) Calls __OE_HandleMain()
+//         (4) Calls __oe_handle_main()
 //
-//     Note: __OE_HandleMain does not return. Instead it eventually
-//     calls OE_Exit (see exit.S)
+//     Note: __oe_handle_main does not return. Instead it eventually
+//     calls oe_exit (see exit.S)
 //
 //==============================================================================
 
-.globl OE_Main
-.type OE_Main, @function
-OE_Main:
+.globl oe_main
+.type oe_main, @function
+oe_main:
 .cfi_startproc
 
 .save_host_registers:
@@ -138,12 +138,12 @@ OE_Main:
     mov %gs:TD_host_rcx, %r8
     mov %r8, OM_HOST_RETURN_ADDR
 
-    // Call __OE_HandleMain(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
+    // Call __oe_handle_main(ARG1=RDI, ARG2=RSI, CSSA=RDX, TCS=RCX, OUTPUTARG1=R8, OUTPUTARG2=R9)
     mov %rax, %rdx
     mov %rbx, %rcx
     lea OM_HOST_OUTPUT_ARG1, %r8
     lea OM_HOST_OUTPUT_ARG2, %r9
-    call __OE_HandleMain
+    call __oe_handle_main
 
     // Get the output parameters.
     mov OM_HOST_OUTPUT_ARG1, %rdi
@@ -158,22 +158,22 @@ OE_Main:
 
 .nested_exit:
 
-    // Construct the OE_OCallContext(rbp, return address).
+    // Construct the oe_ocall_context_t(rbp, return address).
     mov (4*OE_WORD_SIZE)(%rsp), %r12
     push %r12
     push %rbp
     mov %rsp, %r12
 
-    // Save the parameters of _OE_Exit into stack.
+    // Save the parameters of _oe_exit into stack.
     push %rdi
     push %rsi
 
     // Notify a nested exit happens.
-    // _OE_NotifyNestedExitStart(rdi=arg1, rsi=ocallContext)
+    // _oe_notify_nested_exit_start(rdi=arg1, rsi=ocallContext)
     mov %r12, %rsi
-    call _OE_NotifyNestedExitStart
+    call _oe_notify_nested_exit_start
 
-    // Restore the parameters of _OE_Exit from stack.
+    // Restore the parameters of _oe_exit from stack.
     pop %rsi
     pop %rdi
 
@@ -187,7 +187,7 @@ OE_Main:
 
 .clean_exit:
 
-    // Clear the TD.last_sp field (force OE_Main to calculate stack pointer)
+    // Clear the TD.last_sp field (force oe_main to calculate stack pointer)
     movq $0, %gs:TD_last_sp
 
 .clear_enclave_registers:
@@ -229,11 +229,11 @@ OE_Main:
 
 .cfi_endproc
 
-.size OE_Main, .-OE_Main
+.size oe_main, .-oe_main
 
 //==============================================================================
 //
-// void OE_ExceptionDispatcher(void)
+// void oe_exception_dispatcher(void)
 //
 // Routine Description:
 //
@@ -253,9 +253,9 @@ OE_Main:
 #define ED_SAVED_RBP         (1*8)(%rbp)
 #define ED_SAVED_RSP         (2*8)(%rbp)
 
-.globl OE_ExceptionDispatcher
-.type OE_ExceptionDispatcher, @function
-OE_ExceptionDispatcher:
+.globl oe_exception_dispatcher
+.type oe_exception_dispatcher, @function
+oe_exception_dispatcher:
 .cfi_startproc
     // Start the new stack under the red zone.
     sub $ABI_REDZONE_BYTE_SIZE, %rsp
@@ -275,7 +275,7 @@ OE_ExceptionDispatcher:
     // Recapture the context of exception. The output context is all correct except:
     // rbp, rsp, rdi, and rip.
     lea ED_OE_CONTEXT, %rdi
-    call OE_SnapCurrentContext
+    call oe_snap_current_context
 
     // Restore the previous rbp to rbp of OE_CONTEXT.
     lea ED_OE_CONTEXT, %rdi
@@ -291,12 +291,12 @@ OE_ExceptionDispatcher:
     movq ED_SAVED_RDI, %rax
     movq %rax, OE_CONTEXT_RDI(%rdi)
 
-    call _OE_ExceptionDispatcher
+    call _oe_exception_dispatcher
 
-    // Should never reach here since _OE_ExceptionDispatcher will not return.
+    // Should never reach here since _oe_exception_dispatcher will not return.
 
 .foreverLoop:
     jmp .foreverLoop
 .cfi_endproc
 
-.size OE_ExceptionDispatcher, .-OE_ExceptionDispatcher
+.size oe_exception_dispatcher, .-oe_exception_dispatcher

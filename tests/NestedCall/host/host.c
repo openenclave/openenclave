@@ -2,19 +2,19 @@
 // Licensed under the MIT License.
 
 #include <limits.h>
-#include <openenclave/bits/error.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/host.h>
+#include <openenclave/internal/error.h>
+#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../args.h"
 
-OE_Enclave* enclave = NULL;
+oe_enclave_t* enclave = NULL;
 
 OE_OCALL void HostNestCalls(void* args_)
 {
-    OE_Result result;
+    oe_result_t result;
     Args* args = (Args*)args_;
 
     printf("host: HostNestCalls depth [%d] started!\n", args->depth);
@@ -47,10 +47,10 @@ OE_OCALL void HostNestCalls(void* args_)
         exit(1);
     }
 
-    if ((result = OE_CallEnclave(enclave, "EnclaveNestCalls", &newArgs)) !=
+    if ((result = oe_call_enclave(enclave, "EnclaveNestCalls", &newArgs)) !=
         OE_OK)
     {
-        fprintf(stderr, "OE_CallEnclave() failed: result=%u", result);
+        fprintf(stderr, "oe_call_enclave() failed: result=%u", result);
         exit(1);
     }
 
@@ -80,7 +80,7 @@ OE_OCALL void HostNestCalls(void* args_)
 
 void TestNestedCalls(int testEh, int depth)
 {
-    // OE_Result result;
+    // oe_result_t result;
     Args args;
     memset(&args, 0, sizeof(args));
     args.ret = -1;
@@ -103,7 +103,7 @@ void TestNestedCalls(int testEh, int depth)
 
 int main(int argc, const char* argv[])
 {
-    OE_Result result;
+    oe_result_t result;
 
     if (argc != 2)
     {
@@ -115,11 +115,11 @@ int main(int argc, const char* argv[])
         "=== This program is used to test nest calls and hardware exception "
         "behavior in nest calls.");
 
-    const uint32_t flags = OE_GetCreateFlags();
+    const uint32_t flags = oe_get_create_flags();
 
-    if ((result = OE_CreateEnclave(
+    if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
-        OE_PutErr("OE_CreateEnclave(): result=%u", result);
+        oe_put_err("oe_create_enclave(): result=%u", result);
 
     printf("Regular nest calls test without exception.\n");
     for (int i = 1; i < 17; i++)
@@ -151,7 +151,7 @@ int main(int argc, const char* argv[])
         TestNestedCalls(1, 64);
     }
 
-    OE_TerminateEnclave(enclave);
+    oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (NestedCall)\n");
 

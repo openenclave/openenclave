@@ -2,18 +2,18 @@
 // Licensed under the MIT License.
 
 #include "../asmdefs.h"
-#include <openenclave/bits/constants_x64.inc>
+#include <openenclave/bits/constants_x64.h>
 
 //==============================================================================
 //
-// void OE_EnterSim(
+// void oe_enter_sim(
 //     [IN] void* tcs,
 //     [IN] void (*aep)(),
 //     [IN] uint64_t arg1,
 //     [IN] uint64_t arg2,
 //     [OUT] uint64_t* arg3,
 //     [OUT] uint64_t* arg4,
-//     [IN] OE_Enclave* enclave);
+//     [IN] oe_enclave_t* enclave);
 //
 // Registers:
 //     RDI   - tcs: thread control structure (extended)
@@ -39,9 +39,9 @@
 #define HOST_CONTEXT    (-12*OE_WORDSIZE)(%rbp)
 #define PARAMS_SPACE    ((12*OE_WORDSIZE) + OE_CONTEXT_SIZE)
 
-.globl OE_EnterSim
-.type OE_EnterSim, @function
-OE_EnterSim:
+.globl oe_enter_sim
+.type oe_enter_sim, @function
+oe_enter_sim:
 .cfi_startproc
 
     // Setup stack frame:
@@ -70,12 +70,12 @@ OE_EnterSim:
 
     // Save the current context.
     mov HOST_CONTEXT, %rdi
-    call OE_SnapCurrentContext
+    call oe_snap_current_context@PLT
 
     // Save the stack pointer so enclave can use the stack.
     mov %rsp, RSP
 
-    // Call OE_Main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
+    // Call oe_main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
     mov CSSA, %rax
     mov TCS, %rbx
     mov 72(%rbx), %rdx  // RDX=TCS.u.main (72)
@@ -92,7 +92,7 @@ OE_EnterSim:
 
     // Restore the saved host context.
     mov HOST_CONTEXT, %rdi
-    call OE_RestorePartialContext
+    call oe_restore_partial_context@PLT
 
 .dispatch_ocall_sim:
 
@@ -109,7 +109,7 @@ OE_EnterSim:
     // Push one extra register to keep the stack aligned.
     push %r13
 
-    // RAX = __OE_DispatchOCall(
+    // RAX = __oe_dispatch_ocall(
     //     RDI=arg1
     //     RSI=arg2
     //     RDX=arg1Out
@@ -121,7 +121,7 @@ OE_EnterSim:
     leaq ARG2OUT, %rcx
     mov TCS, %r8
     mov ENCLAVE, %r9
-    call __OE_DispatchOCall
+    call __oe_dispatch_ocall@PLT
 
     // Restore registers saved above:
     pop %r13

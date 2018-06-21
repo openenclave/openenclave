@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
-#include <openenclave/bits/calls.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/calls.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -16,7 +16,7 @@ int main(int argc, const char* argv[]);
 
 void _exit(int status)
 {
-    OE_OCall(OCALL_EXIT, status, NULL, 0);
+    oe_ocall(OCALL_EXIT, status, NULL, 0);
     abort();
 }
 
@@ -48,7 +48,7 @@ int t_printf(const char* s, ...)
     return n;
 }
 
-int t_setrlim(int r, long lim)
+int t_setrlim(int r, int64_t lim)
 {
     return 0;
 }
@@ -70,6 +70,6 @@ OE_ECALL void Test(Args* args)
             "test", NULL,
         };
         args->ret = main(1, argv);
-        args->test = OE_HostStrdup(__TEST__);
+        args->test = oe_host_strdup(__TEST__);
     }
 }

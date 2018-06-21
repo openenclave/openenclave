@@ -102,10 +102,6 @@ Tok Lexer::_Next()
             tok = this->tok = TOK_UNSIGNED;
         else if (strcmp(this->text, "signed") == 0)
             tok = this->tok = TOK_SIGNED;
-#if 0
-        else if (strcmp(this->text, "long") == 0)
-            tok = this->tok = TOK_LONG;
-#endif
         else
             tok = this->tok = TOK_IDENTIFIER;
 

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/jump.h>
+#include <openenclave/internal/jump.h>
 
 /*
  * This file must be compiled with optimization enabled because the code
@@ -12,7 +12,7 @@
  * access.
  */
 
-int OE_Setjmp(OE_Jmpbuf* env)
+int oe_setjmp(oe_jmpbuf_t* env)
 {
     asm volatile(
         /* Save RBX */
@@ -43,7 +43,7 @@ int OE_Setjmp(OE_Jmpbuf* env)
     return 0;
 }
 
-void OE_Longjmp(OE_Jmpbuf* env, int val)
+void oe_longjmp(oe_jmpbuf_t* env, int val)
 {
     if (val == 0)
         val = 1;

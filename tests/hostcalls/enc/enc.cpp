@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/enclavelibc.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
 #include "../args.h"
 
 OE_ECALL void TestHostRealloc(void* _args)
@@ -12,26 +12,26 @@ OE_ECALL void TestHostRealloc(void* _args)
     /* Check that pointers passed in are not enclave pointers */
     if (args.inPtr && args.oldSize > 0)
     {
-        if (!OE_IsOutsideEnclave(args.inPtr, args.oldSize))
+        if (!oe_is_outside_enclave(args.inPtr, args.oldSize))
         {
-            OE_Abort();
+            oe_abort();
             return;
         }
     }
 
-    args.outPtr = OE_HostRealloc(args.inPtr, args.newSize);
+    args.outPtr = oe_host_realloc(args.inPtr, args.newSize);
 
     /* Initialize only newly allocated bytes for verification by host */
     if (args.outPtr)
     {
         if (!args.inPtr)
         {
-            OE_Memset(args.outPtr, TEST_HOSTREALLOC_INIT_VALUE, args.newSize);
+            oe_memset(args.outPtr, TEST_HOSTREALLOC_INIT_VALUE, args.newSize);
         }
         else if (args.oldSize < args.newSize)
         {
             void* extPtr = (void*)((uint64_t)args.outPtr + args.oldSize);
-            OE_Memset(
+            oe_memset(
                 extPtr,
                 TEST_HOSTREALLOC_INIT_VALUE,
                 args.newSize - args.oldSize);

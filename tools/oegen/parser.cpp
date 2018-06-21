@@ -294,7 +294,7 @@ static int _CheckQualifiers(
         if (flags & FLAG_STRING)
         {
             bool isPtr = (flags & FLAG_PTR);
-            bool isChar = type == "char" || type == "wchar";
+            bool isChar = type == "char" || type == "wchar_t";
             bool isArr = (flags & FLAG_ARRAY);
 
             if (!isChar || (!isPtr && !isArr))
@@ -307,7 +307,7 @@ static int _CheckQualifiers(
             if (isChar && isPtr && (flags & FLAG_OUT) && !(flags & FLAG_COUNT))
             {
                 lexer.SetErr(
-                    "[count] qalifier required here: '%s'", name.c_str());
+                    "[count] qualifier required here: '%s'", name.c_str());
                 goto done;
             }
         }
@@ -326,7 +326,7 @@ static int _CheckQualifiers(
             if (!(flags & FLAG_UNCHECKED) && !(flags & FLAG_COUNT) &&
                 !(flags & FLAG_STRING))
             {
-                if (type == "char" || type == "wchar")
+                if (type == "char" || type == "wchar_t")
                 {
                     lexer.SetErr(
                         "need [unchecked], [count] or [string]: '%s'",
@@ -1121,7 +1121,7 @@ static int _CheckFunctionQualifiers(Lexer& lexer, const vector<Param>& params)
             {
                 size_t pos = FindParam(params, p.qvals.count);
 
-                // If qalifier parameter argument not found:
+                // If qualifier parameter argument not found:
                 if (pos == (size_t)-1)
                 {
                     lexer.SetErr(
@@ -1130,7 +1130,7 @@ static int _CheckFunctionQualifiers(Lexer& lexer, const vector<Param>& params)
                     goto done;
                 }
 
-                // If qalifier parameter argument is not a counter:
+                // If qualifier parameter argument is not a counter:
                 if (!params[pos].IsCounter())
                 {
                     lexer.SetErr(
@@ -1164,7 +1164,7 @@ static int _CheckStructQualifiers(Lexer& lexer, Struct& s)
             {
                 size_t pos = s.FindField(f.qvals.count);
 
-                // If qalifier parameter argument not found:
+                // If qualifier parameter argument not found:
                 if (pos == (size_t)-1)
                 {
                     lexer.SetErr(
@@ -1173,7 +1173,7 @@ static int _CheckStructQualifiers(Lexer& lexer, Struct& s)
                     goto done;
                 }
 
-                // If qalifier parameter argument is not a counter:
+                // If qualifier parameter argument is not a counter:
                 if (!s.fields[pos].IsCounter())
                 {
                     lexer.SetErr(

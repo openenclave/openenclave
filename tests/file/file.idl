@@ -5,7 +5,7 @@ verbatim "../types.h"
 
 function [ecall] int TestReadFile(
     [in, string] const char *path,
-    [in, out, count=1] uint32 *checksum);
+    [in, out, count=1] uint32_t *checksum);
 
 function [ocall, unchecked] MY_FILE *Fopen(
     [in, string] const char *filename,

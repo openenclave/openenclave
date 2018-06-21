@@ -2,16 +2,18 @@
 // Licensed under the MIT License.
 
 /*
-   Testing OE_HostAllocForCallHost()
+   Testing oe_host_alloc_for_call_host()
    - Regular nesting / un-nesting
    - Whitebox-tests w/ tracking of allocation/de-allocation
  */
 
 #define OE_TRACE_LEVEL 1
 
-#include <openenclave/bits/tests.h>
-#include <openenclave/bits/trace.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/hostalloc.h>
+#include <openenclave/internal/print.h>
+#include <openenclave/internal/tests.h>
+#include <openenclave/internal/trace.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -19,13 +21,13 @@
 #include "../args.h"
 #include "wrap.h"
 
-// simple xorshift generator
+// simple xor-shift generator
 struct XorShift
 {
     XorShift(uint32_t seed) : Seed(seed){};
     uint32_t operator()()
     {
-        /* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
+        /* Algorithm "xor" from p. 4 of Marsaglia, "xor-shift RNGs" */
         uint32_t x = Seed;
         x ^= x << 13;
         x ^= x >> 17;
@@ -206,7 +208,7 @@ static Cmd Commands[] = {
 };
 
 // Command interpreter for above array - actual test driver
-OE_Result TestRun(bool doVerifyAllocation, const Allocator alloc)
+oe_result_t TestRun(bool doVerifyAllocation, const Allocator alloc)
 {
     AllocStack stack;
 
@@ -234,11 +236,11 @@ OE_Result TestRun(bool doVerifyAllocation, const Allocator alloc)
                 {
                     printf(
                         "Expected %#x bytes allocated in %u chunks, have %#lx "
-                        "bytes in %lu chunks.\n",
+                        "bytes in %llu chunks.\n",
                         cmd.val1,
                         cmd.val2,
                         MyGetAllocationBytes(),
-                        MyGetAllocationCount());
+                        OE_LLU(MyGetAllocationCount()));
                     return OE_FAILURE;
                 }
                 break;
@@ -258,19 +260,20 @@ OE_Result TestRun(bool doVerifyAllocation, const Allocator alloc)
 
 OE_ECALL void TestAllocaDealloc(void* args)
 {
-    if (!OE_IsOutsideEnclave(args, sizeof(OE_Result)))
+    if (!oe_is_outside_enclave(args, sizeof(oe_result_t)))
         return;
 
-    OE_Result* result = (OE_Result*)args;
+    oe_result_t* result = (oe_result_t*)args;
 
     // test with native functions, no backing memory verification
     OE_TEST(
-        TestRun(false, {OE_HostAllocForCallHost, OE_HostFreeForCallHost}) ==
+        TestRun(
+            false, {oe_host_alloc_for_call_host, oe_host_free_for_call_host}) ==
         OE_OK);
 
     // test with wrapped functions tracking backing memory allocation
     OE_TEST(
-        TestRun(true, {MyOE_HostAllocForCallHost, MyOE_HostFreeForCallHost}) ==
+        TestRun(true, {MyHostAllocForCallHost, MyOE_HostFreeForCallHost}) ==
         OE_OK);
 
     *result = OE_OK;

@@ -15,6 +15,7 @@ const char* arg0;
 using namespace std;
 
 const string prefix = ".";
+static bool g_verbose = false;
 
 #define TRACE 1
 
@@ -334,6 +335,7 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
         }
 
         // Dump the XML file easier to read form for debugging:
+        if (g_verbose)
         {
             string dumpfile = prefix + '/' + refid + ".xml.dump";
             ofstream tmpos(dumpfile.c_str());
@@ -361,7 +363,7 @@ bool GenerateFile(const Element& elem, const string& path, ostream& os)
 #endif
     }
 
-    // Genereate functions:
+    // Generate functions:
     for (size_t i = 0; i < elem.size(); i++)
     {
         const Element& e = elem[i];
@@ -455,9 +457,24 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
 
     /* Check usage */
-    if (argc != 2)
+    bool isValidUsage = false;
+    if (argc == 3)
     {
-        fprintf(stderr, "Usage: %s XML-FILE\n", arg0);
+        string opt = argv[2];
+        if (opt == "-v" || opt == "-V")
+        {
+            g_verbose = true;
+            isValidUsage = true;
+        }
+    }
+    else if (argc == 2)
+    {
+        isValidUsage = true;
+    }
+
+    if (!isValidUsage)
+    {
+        fprintf(stderr, "Usage: %s XML-FILE [-v]\n", arg0);
         exit(1);
     }
 
@@ -473,6 +490,7 @@ int main(int argc, const char* argv[])
         }
 
         /* Dump the index file to easier to read tree format for debugging */
+        if (g_verbose)
         {
             string dumpfile = prefix + '/' + basename(argv[1]) + ".dump";
             ofstream tmpos(dumpfile.c_str());

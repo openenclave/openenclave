@@ -4,41 +4,39 @@
 #ifndef _OE_HOST_QUOTE_H
 #define _OE_HOST_QUOTE_H
 
-#include <openenclave/bits/sgxtypes.h>
+#include <openenclave/internal/sgxtypes.h>
 
 OE_EXTERNC_BEGIN
 
 /*
 **==============================================================================
 **
-** SGX_GetQuoteSize()
+** sgx_get_quote_size()
 **
 **==============================================================================
 */
 
-OE_Result SGX_GetQuoteSize(
-    const uint8_t* signatureRevocationList,
-    uint32_t* quoteSize);
+oe_result_t sgx_get_quote_size(uint32_t* quoteSize);
 
 /*
 **==============================================================================
 **
-** SGX_GetQETargetInfo()
+** sgx_get_qetarget_info()
 **
 **==============================================================================
 */
 
-OE_Result SGX_GetQETargetInfo(SGX_TargetInfo* targetInfo);
+oe_result_t sgx_get_qetarget_info(sgx_target_info_t* targetInfo);
 
 /*
 **==============================================================================
 **
-** SGX_GetQuote()
+** sgx_get_quote()
 **
 **==============================================================================
 */
-OE_Result SGX_GetQuote(
-    const SGX_Report* sgxReport,
+oe_result_t sgx_get_quote(
+    const sgx_report_t* sgxReport,
     uint8_t* quote,
     uint32_t* quoteSize);
 

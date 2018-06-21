@@ -15,11 +15,10 @@ void HandleMalloc(uint64_t argIn, uint64_t* argOut);
 void HandleRealloc(uint64_t argIn, uint64_t* argOut);
 void HandleFree(uint64_t arg);
 
-void HandleThreadWait(OE_Enclave* enclave, uint64_t arg);
-void HandleThreadWake(OE_Enclave* enclave, uint64_t arg);
-void HandleThreadWakeWait(OE_Enclave* enclave, uint64_t argIn);
+void HandleThreadWait(oe_enclave_t* enclave, uint64_t arg);
+void HandleThreadWake(oe_enclave_t* enclave, uint64_t arg);
+void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t argIn);
 
-void HandleInitQuote(uint64_t argIn);
 void HandleGetQuote(uint64_t argIn);
 void HandleGetQETargetInfo(uint64_t argIn);
 

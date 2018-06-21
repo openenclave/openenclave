@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(ocall-restrict-enc sign.conf private.pem
+add_enclave_executable(ocall-restrict_enc sign.conf private.pem
     enc.cpp
     )
-target_link_libraries(ocall-restrict-enc oelibc)
+target_link_libraries(ocall-restrict_enc oelibc)

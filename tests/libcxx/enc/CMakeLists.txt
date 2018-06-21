@@ -27,20 +27,20 @@ target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
     #message("libcxx-test NAME=${NAME} CXXFILE=${CXXFILE}")
-    add_enclave_executable(libcxxtest-${NAME} sign.conf private.pem
+    add_enclave_executable(libcxxtest-${NAME}_enc sign.conf private.pem
         main.cpp
         )
 
-    target_include_directories(libcxxtest-${NAME} PRIVATE
+    target_include_directories(libcxxtest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/test/support
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/fuzzing
         )
 
-    target_compile_options(libcxxtest-${NAME} PRIVATE -Wno-error --std=c++14)
-    target_compile_definitions(libcxxtest-${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
-    target_link_libraries(libcxxtest-${NAME} libcxxtest-support)
+    target_compile_options(libcxxtest-${NAME}_enc PRIVATE -Wno-error --std=c++14)
+    target_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
+    target_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support)
 endfunction(add_libcxx_test_enc)
 
 # iterate over the supported tests and create a binary for each.

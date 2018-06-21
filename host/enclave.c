@@ -8,7 +8,7 @@
 /*
 **==============================================================================
 **
-** GetText()
+** enc()
 **
 **     Print the address where to load enclave symbols in GDB (add-symbol-file)
 **
@@ -23,12 +23,12 @@ void enc(void);
 
 void enc(void)
 {
-    OE_Enclave* enclave = GetEnclave();
+    oe_enclave_t* enclave = GetEnclave();
 
     if (enclave)
     {
-        OE_SHA256Str hash;
-        OE_SHA256ToStr(&enclave->hash, &hash);
+        oe_sha256_str hash;
+        oe_sha256_to_str(&enclave->hash, &hash);
         printf("Hash: %s\n", hash.buf);
         printf("\n");
         printf("Path: %s\n", enclave->path);
@@ -56,14 +56,14 @@ void enc(void)
 **==============================================================================
 */
 
-EnclaveEvent* GetEnclaveEvent(OE_Enclave* enclave, uint64_t tcs)
+EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs)
 {
     EnclaveEvent* event = NULL;
 
     if (!enclave)
         return NULL;
 
-    OE_H_MutexLock(&enclave->lock);
+    oe_mutex_lock(&enclave->lock);
     {
         size_t i;
 
@@ -78,7 +78,7 @@ EnclaveEvent* GetEnclaveEvent(OE_Enclave* enclave, uint64_t tcs)
             }
         }
     }
-    OE_H_MutexUnlock(&enclave->lock);
+    oe_mutex_unlock(&enclave->lock);
 
     return event;
 }

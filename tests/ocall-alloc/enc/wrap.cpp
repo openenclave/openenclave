@@ -5,9 +5,9 @@
     Wrapper functions for host allocation tracking and atexit handling.
  */
 
-#include <openenclave/bits/atexit.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/atexit.h>
+#include <openenclave/internal/tests.h>
 #include <map>
 #include <vector>
 // And local wrap
@@ -27,11 +27,11 @@ int My__cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
     return __cxa_atexit(func, arg, dso_handle);
 }
 
-void* MyOE_HostMalloc(size_t size)
+void* MyHostMalloc(size_t size)
 {
     void* p;
 
-    p = OE_HostMalloc(size);
+    p = oe_host_malloc(size);
     if (p)
     {
         auto ins = stats.allocations.insert(std::pair<void*, size_t>(p, size));
@@ -40,11 +40,11 @@ void* MyOE_HostMalloc(size_t size)
     return p;
 }
 
-void MyOE_HostFree(void* ptr)
+void MyHostFree(void* ptr)
 {
     if (ptr)
         OE_TEST(stats.allocations.erase(ptr) == 1);
-    OE_HostFree(ptr);
+    oe_host_free(ptr);
 }
 
 OE_EXTERNC_END

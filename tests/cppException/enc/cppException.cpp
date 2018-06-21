@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/print.h>
 #include <exception>
 #include <string>
 
@@ -66,7 +67,7 @@ bool BasicVerification()
         return false;
     }
 
-    OE_HostPrintf("char type exception tests passed.\n");
+    oe_host_printf("char type exception tests passed.\n");
 
     // integer type exception.
     try
@@ -90,7 +91,7 @@ bool BasicVerification()
         return false;
     }
 
-    OE_HostPrintf("integer type exception tests passed.\n");
+    oe_host_printf("integer type exception tests passed.\n");
 
     // string type exception.
     try
@@ -118,7 +119,7 @@ bool BasicVerification()
         return false;
     }
 
-    OE_HostPrintf("string type exception tests passed.\n");
+    oe_host_printf("string type exception tests passed.\n");
 
     // string type exception caught by reference.
     try
@@ -146,7 +147,7 @@ bool BasicVerification()
         return false;
     }
 
-    OE_HostPrintf("string reference type exception tests passed.\n");
+    oe_host_printf("string reference type exception tests passed.\n");
 
     // user defined class type exception.
     try
@@ -178,7 +179,7 @@ bool BasicVerification()
         return false;
     }
 
-    OE_HostPrintf("user defined class type exception tests passed.\n");
+    oe_host_printf("user defined class type exception tests passed.\n");
 
     // user defined class type exception caught by reference.
     try
@@ -210,7 +211,7 @@ bool BasicVerification()
         return false;
     }
 
-    OE_HostPrintf(
+    oe_host_printf(
         "user defined class reference type exception tests passed.\n");
 
     // user defined class type exception should not caught by incompatible
@@ -248,7 +249,7 @@ bool BasicVerification()
         return false;
     }
 
-    OE_HostPrintf("user defined class type exception test passed.\n");
+    oe_host_printf("user defined class type exception test passed.\n");
 
     // user defined class type exception should not caught by incompatible
     // class, but caught by the same reference class type.
@@ -285,7 +286,8 @@ bool BasicVerification()
         return false;
     }
 
-    OE_HostPrintf("user defined class reference type exception test passed.\n");
+    oe_host_printf(
+        "user defined class reference type exception test passed.\n");
 
     // user defined class type exception should not caught by incompatible
     // class, but caught by the base class type.
@@ -322,7 +324,7 @@ bool BasicVerification()
         return false;
     }
 
-    OE_HostPrintf("user defined class type exception test passed.\n");
+    oe_host_printf("user defined class type exception test passed.\n");
     return true;
 }
 
@@ -386,7 +388,7 @@ bool EllipsisCatch()
         ex_count++;
     }
 
-    OE_HostPrintf("Ellipsis exception catch tests passed.\n");
+    oe_host_printf("Ellipsis exception catch tests passed.\n");
     return true;
 }
 
@@ -457,7 +459,7 @@ bool NestedException()
         }
     }
 
-    OE_HostPrintf(
+    oe_host_printf(
         "Re-throw and throw new exception in the catch clause tests passed.\n");
 
     // Find the matching catch clause in the outermost block.
@@ -488,7 +490,7 @@ bool NestedException()
         }
     }
 
-    OE_HostPrintf("catch clause in the outermost block tests passed.\n");
+    oe_host_printf("catch clause in the outermost block tests passed.\n");
 
     // Find the matching catch clause through call stack.
     try
@@ -504,7 +506,7 @@ bool NestedException()
         }
     }
 
-    OE_HostPrintf(
+    oe_host_printf(
         "Find the matching catch clause through call stack tests passed.\n");
     return true;
 }
@@ -688,7 +690,7 @@ bool StackUnwind()
         }
     }
 
-    OE_HostPrintf("StackUnwind local unwind test passed.\n");
+    oe_host_printf("StackUnwind local unwind test passed.\n");
 
     // class, its member, and base class should be destroyed in global unwind.
     try
@@ -705,7 +707,7 @@ bool StackUnwind()
         }
     }
 
-    OE_HostPrintf("StackUnwind global unwind test passed.\n");
+    oe_host_printf("StackUnwind global unwind test passed.\n");
 
     // array of class, its member, and base class should be destroyed in local
     // unwind.
@@ -735,7 +737,7 @@ bool StackUnwind()
         }
     }
 
-    OE_HostPrintf("StackUnwind local unwind second test passed.\n");
+    oe_host_printf("StackUnwind local unwind second test passed.\n");
 
     // array of class, its member, and base class should be destroyed in global
     // unwind.
@@ -753,7 +755,7 @@ bool StackUnwind()
         }
     }
 
-    OE_HostPrintf("StackUnwind global unwind second test passed.\n");
+    oe_host_printf("StackUnwind global unwind second test passed.\n");
 
     // Exception happens in the constructor, the destructor of base class will
     // be called, and the destructor of itself will not be called.
@@ -770,7 +772,7 @@ bool StackUnwind()
         }
     }
 
-    OE_HostPrintf("StackUnwind unwind test passed.\n");
+    oe_host_printf("StackUnwind unwind test passed.\n");
     return true;
 }
 
@@ -901,7 +903,7 @@ bool FunctionTryBlock()
         }
     }
 
-    OE_HostPrintf("FunctionTryBlock exception test passed.\n");
+    oe_host_printf("FunctionTryBlock exception test passed.\n");
 
     return true;
 }

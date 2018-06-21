@@ -8,9 +8,9 @@
 #include <inttypes.h>
 #include <iso646.h>
 #include <limits.h>
-#include <openenclave/bits/malloc.h>
-#include <openenclave/bits/tests.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/malloc.h>
+#include <openenclave/internal/tests.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -160,7 +160,7 @@ static void _AllocationFailureCallback(
     size_t size)
 {
     printf(
-        "OE_AllocationFailureCallback(): %s(%zu): %s: %zu\n",
+        "oe_allocation_failure_callback_t(): %s(%zu): %s: %zu\n",
         file,
         line,
         func,
@@ -173,7 +173,7 @@ OE_ECALL void Test(void* args_)
 {
     TestArgs* args = (TestArgs*)args_;
 
-    OE_SetAllocationFailureCallback(_AllocationFailureCallback);
+    oe_set_allocation_failure_callback(_AllocationFailureCallback);
 
     strcpy(args->buf1, "AAA");
     strcat(args->buf1, "BBB");
@@ -229,10 +229,4 @@ OE_ECALL void Test(void* args_)
     void* p = malloc(1024 * 1024 * 1024);
     OE_TEST(p == NULL);
     OE_TEST(_calledAllocationFailureCallback);
-
-#if 0
-    printf("UINT_MIN=%u UINT_MAX=%u\n", 0, UINT_MAX);
-    printf("INT_MIN=%d INT_MAX=%d\n", INT_MIN, INT_MAX);
-    printf("LONG_MIN=%ld LONG_MAX=%ld\n", LONG_MIN, LONG_MAX);
-#endif
 }

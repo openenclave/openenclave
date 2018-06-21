@@ -6,7 +6,7 @@
 
 //==============================================================================
 //
-// uint64_t OE_EGetKey(const SgxKeyRequest* sgxKeyRequest, SgxKey* sgxKey);
+// uint64_t oe_egetkey(const SgxKeyRequest* sgxKeyRequest, SgxKey* sgxKey);
 //
 //     The EGETKEY instruction wrapper.
 //
@@ -15,16 +15,16 @@
 //         RSI - sgxKey
 //
 //     return:
-//         Return values in RAX 
-//             SGX_SUCCESS
-//             SGX_INVALID_ATTRIBUTE
-//             SGX_INVALID_CPUSVN
-//             SGX_INVALID_ISVSVN
-//             SGX_INVALID_KEYNAME
+//         Return values in RAX
+//             SGX_EGETKEY_SUCCESS
+//             SGX_EGETKEY_INVALID_ATTRIBUTE
+//             SGX_EGETKEY_INVALID_CPUSVN
+//             SGX_EGETKEY_INVALID_ISVSVN
+//             SGX_EGETKEY_INVALID_KEYNAME
 //==============================================================================
-.globl OE_EGetKey
-.type OE_EGetKey, @function
-OE_EGetKey:
+.globl oe_egetkey
+.type oe_egetkey, @function
+oe_egetkey:
 .cfi_startproc
     movq %rbx, %rdx
     movq %rdi, %rbx
@@ -35,6 +35,6 @@ OE_EGetKey:
     ENCLU
 
     movq %rdx, %rbx
-    // EGETKEY return value is put in RAX by the instruction. 
+    // EGETKEY return value is put in RAX by the instruction.
     ret
 .cfi_endproc

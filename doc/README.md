@@ -20,7 +20,7 @@ such as style guides and development processes.
 
 This document explains how to build and use the Open Enclave SDK.
 
-[Getting Started on Windows](GettingStarted.windows.md)
+[Getting Started on Windows](GettingStarted.Windows.md)
 -----------------------------------
 
 This document explains how to use the experimental support for building host
@@ -54,3 +54,18 @@ $ sudo apt install python-pip
 $ pip install grip
 $ grip GettingStarted.md --export GettingStarted.html
 ```
+
+[Open Enclave Support for libc](LibcSupport.md)
+-------------------------------
+This document describes the C library functionality supported inside an enclave
+as provided by oelibc.
+
+[Open Enclave Support for libcxx](LibcxxSupport.md)
+---------------------------------
+This document describes the C++ library functionality supported inside an
+enclave as provided by oelibcxx.
+
+[Open Enclave Support for mbedtls](MbedtlsSupport.md)
+----------------------------------
+This document describes the mbedtls library functionality supported inside an
+enclave as provided by 3rdparty/mbedtls.

@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/elf.h>
-#include <openenclave/bits/hexdump.h>
-#include <openenclave/bits/sgxcreate.h>
-#include <openenclave/bits/sgxtypes.h>
-#include <openenclave/bits/utils.h>
-#include <openenclave/defs.h>
+#include <openenclave/bits/defs.h>
+#include <openenclave/internal/elf.h>
+#include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/sgxcreate.h>
+#include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/utils.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -46,21 +46,21 @@ void DumpEntryPoint(Elf64* elf)
         return;
     }
 
-    if (strcmp(name, "OE_Main") != 0)
+    if (strcmp(name, "oe_main") != 0)
     {
-        err("entry point not called OE_Main: %s", name);
+        err("entry point not called oe_main: %s", name);
         return;
     }
 
     printf("=== Entry point: \n");
     printf("name=%s\n", name);
-    printf("address=%016llx\n", sym.st_value);
+    printf("address=%016llx\n", OE_LLX(sym.st_value));
     printf("\n");
 }
 
-void DumpEnclaveProperties(const OE_SGXEnclaveProperties* props)
+void DumpEnclaveProperties(const oe_sgx_enclave_properties_t* props)
 {
-    const SGX_SigStruct* sigstruct;
+    const sgx_sigstruct_t* sigstruct;
 
     printf("=== SGX Enclave Properties:\n");
 
@@ -71,31 +71,34 @@ void DumpEnclaveProperties(const OE_SGXEnclaveProperties* props)
     bool debug = props->config.attributes & OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
-    printf("numHeapPages=%lu\n", props->header.sizeSettings.numHeapPages);
+    printf(
+        "numHeapPages=%llu\n", OE_LLU(props->header.sizeSettings.numHeapPages));
 
-    printf("numStackPages=%lu\n", props->header.sizeSettings.numStackPages);
+    printf(
+        "numStackPages=%llu\n",
+        OE_LLU(props->header.sizeSettings.numStackPages));
 
-    printf("numTCS=%lu\n", props->header.sizeSettings.numTCS);
+    printf("numTCS=%llu\n", OE_LLU(props->header.sizeSettings.numTCS));
 
-    sigstruct = (const SGX_SigStruct*)props->sigstruct;
+    sigstruct = (const sgx_sigstruct_t*)props->sigstruct;
 
     printf("mrenclave=");
-    OE_HexDump(sigstruct->enclavehash, sizeof(sigstruct->enclavehash));
+    oe_hex_dump(sigstruct->enclavehash, sizeof(sigstruct->enclavehash));
 
     printf("signature=");
-    OE_HexDump(sigstruct->signature, sizeof(sigstruct->signature));
+    oe_hex_dump(sigstruct->signature, sizeof(sigstruct->signature));
 
     printf("\n");
 
     if (verbose_opt)
-        __SGX_DumpSigStruct(sigstruct);
+        __sgx_dump_sigstruct(sigstruct);
 }
 
 typedef struct _VisitSymData
 {
     const Elf64* elf;
     const Elf64_Shdr* shdr;
-    OE_Result result;
+    oe_result_t result;
 } VisitSymData;
 
 static int _VisitSym(const Elf64_Sym* sym, void* data_)
@@ -130,7 +133,7 @@ static int _VisitSym(const Elf64_Sym* sym, void* data_)
     }
 
     /* Dump the ECALL name */
-    printf("%s (%016llx)\n", name, sym->st_value);
+    printf("%s (%016llx)\n", name, OE_LLX(sym->st_value));
 
     rc = 0;
 
@@ -151,7 +154,7 @@ void DumpECallSection(Elf64* elf)
         return;
     }
 
-    /* Dump all the ECALs */
+    /* Dump all the ECALLs */
     {
         VisitSymData data;
         data.elf = elf;
@@ -177,7 +180,7 @@ void CheckGlobal(Elf64* elf, const char* name)
         return;
     }
 
-    printf("%s (%016llx)\n", name, sym.st_value);
+    printf("%s (%016llx)\n", name, OE_LLX(sym.st_value));
 }
 
 void CheckGlobals(Elf64* elf)
@@ -201,7 +204,7 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
     int ret = 1;
     Elf64 elf;
-    OE_SGXEnclaveProperties props;
+    oe_sgx_enclave_properties_t props;
 
     /* Check arguments */
     if (argc != 2)
@@ -218,7 +221,7 @@ int main(int argc, const char* argv[])
     }
 
     /* Load the SGX enclave properties */
-    if (OE_SGXLoadProperties(&elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
+    if (oe_sgx_load_properties(&elf, OE_INFO_SECTION_NAME, &props) != OE_OK)
     {
         err("failed to load SGX enclave properties from %s section",
             OE_INFO_SECTION_NAME);
