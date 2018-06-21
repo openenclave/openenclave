@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-typedef struct _FILE FILE;
-
-static FILE* stderr = (FILE*)1;
-
-//#include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
@@ -14,6 +9,7 @@ static FILE* stderr = (FILE*)1;
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #define OE_ENABLE_MALLOC_WRAPPERS
 #define HAVE_MMAP 0
@@ -21,35 +17,13 @@ static FILE* stderr = (FILE*)1;
 #define LACKS_SYS_PARAM_H
 #define LACKS_SYS_TYPES_H
 #define LACKS_TIME_H
-#define MORECORE sbrk
+#define MORECORE oe_sbrk
 #define ABORT oe_abort()
 #define USE_DL_PREFIX
-#define LACKS_STDLIB_H
-#define LACKS_STRING_H
-#define LACKS_ERRNO_H
 #define USE_LOCKS 1
-#define memset oe_memset
-#define memcpy oe_memcpy
-#define sbrk oe_sbrk
 #define fprintf _dlmalloc_stats_fprintf
-#define MALLOC_FAILURE_ACTION
-#define EINVAL 22
-#define ENOMEM 12
 
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
-
-/* Replacement for sched_yield() in dlmalloc sources below */
-static int __sched_yield(void)
-{
-    __asm__ __volatile__("pause");
-    return 0;
-}
-
-/* Since Dlmalloc provides no way to override the SPIN_LOCK_YIELD macro,
- * redefine sched_yield() directly. Dlmalloc spins for a given number of
- * times and then calls sched_yield(), attempting to yield to other threads.
- */
-#define sched_yield __sched_yield
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"

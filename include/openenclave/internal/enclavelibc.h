@@ -11,6 +11,8 @@ OE_EXTERNC_BEGIN
 
 typedef long oe_time_t;
 
+typedef struct _OE_FILE OE_FILE;
+
 struct oe_tm
 {
     int tm_sec;
@@ -265,6 +267,18 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
  * Refer to documentation for memalign() function.
  */
 void* oe_memalign(size_t alignment, size_t size);
+
+/**
+ * Returns the location of errno for this thread.
+ */
+int* __oe_errno_location(void);
+
+/**
+ * Enclave implementation of the standard sched_yield() function.
+ *
+ * Refer to documentation for sched_yield() function.
+ */
+int oe_sched_yield(void);
 
 OE_EXTERNC_END
 

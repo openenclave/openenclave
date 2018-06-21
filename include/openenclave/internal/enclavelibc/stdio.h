@@ -9,6 +9,12 @@
 
 OE_EXTERNC_BEGIN
 
+typedef OE_FILE FILE;
+
+#define stdin  ((FILE*)0x1000000000000001)
+#define stdout ((FILE*)0x1000000000000002)
+#define stderr ((FILE*)0x1000000000000003)
+
 OE_INLINE
 int vsnprintf(char* str, size_t size, const char* format, va_list ap)
 {

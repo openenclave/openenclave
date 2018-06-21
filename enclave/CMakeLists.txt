@@ -11,10 +11,12 @@ add_library(oeenclave STATIC
     cpuid.c
     ec.c
     enclavelibc/enclavelibc.c
+    enclavelibc/errno.c
     enclavelibc/gmtime.c
     enclavelibc/printf.c
     enclavelibc/rand.c
     enclavelibc/malloc.c
+    enclavelibc/sched.c
     enclavelibc/string.c
     enclavelibc/strtoul.c
     enclavelibc/time.c

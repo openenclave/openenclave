@@ -49,7 +49,21 @@ OE_INLINE bool _isdigit(char c, int base)
 
 OE_INLINE bool _isspace(char c)
 {
-    return c == ' ' || c == '\t' || c == '\n';
+    switch (c)
+    {
+        /* The space characters in "C" and "POSIX" locales */
+        case '\f':
+        case '\n':
+        case '\r':
+        case '\t':
+        case '\v':
+            return true;
+        default:
+            return false;
+    }
+
+    /* Unreachable */
+    return false;
 }
 
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base)

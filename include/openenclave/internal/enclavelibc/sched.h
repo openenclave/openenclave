@@ -6,4 +6,10 @@
 
 #include "bits/common.h"
 
+OE_INLINE
+int sched_yield(void)
+{
+    return oe_sched_yield();
+}
+
 #endif /* _ENCLAVELIBC_SCHED_H */
