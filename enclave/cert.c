@@ -18,6 +18,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include <openenclave/internal/string.h>
+#include <openenclave/internal/print.h>
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
@@ -933,7 +934,6 @@ oe_result_t oe_cert_get_subject(
 {
     const Cert* impl = (const Cert*)cert;
     oe_result_t result = OE_UNEXPECTED;
-    char* oneline = NULL;
 
     /* Reject invalid parameters */
     if (!_CertIsValid(impl) || !subject_size)
@@ -943,50 +943,39 @@ oe_result_t oe_cert_get_subject(
     if (!subject && *subject_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    /* Get the subject name */
+    /* Iterate until the local buffer is big enough to hold the subject name */
+    for (size_t buf_size = 256; true; buf_size *= 2)
     {
-        int n;
-        int required_size;
+        char buf[buf_size];
+        int n = mbedtls_x509_dn_gets(buf, buf_size, &impl->cert->subject);
 
-        n = mbedtls_x509_dn_gets(subject, *subject_size, &impl->cert->subject);
+        if (n > 0)
+        {
+            // Convert subject to OpenSSL format with slash delimiters:
+            // "CN=Name1, O=Name2, L=Name3" => "/CN=Name1/O=Name2/L=Name3"
+            oe_string_substitute(buf, buf_size, ", ", "/");
+            const size_t size = oe_string_insert(buf, buf_size, 0, "/");
 
-        if (n <= 0)
+            if (size > *subject_size)
+            {
+                *subject_size = size;
+                OE_RAISE(OE_BUFFER_TOO_SMALL);
+            }
+
+            if (subject)
+                oe_memcpy(subject, buf, *subject_size);
+
+            break;
+        }
+        else if (n != MBEDTLS_ERR_X509_BUFFER_TOO_SMALL)
+        {
             OE_RAISE(OE_FAILURE);
-
-        // Add one for the null terminator and one for possible expansion
-        // when converted to OpenSSL format below. This calculation could
-        // be a slight overestimate.
-        required_size = n + 2;
-
-        if (required_size > *subject_size)
-        {
-            *subject_size = required_size;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
-
-        // Convert subject to OpenSSL format with slash delimiters.
-        // "CN=Name1, O=Name2, L=Name3" => "/CN=Name1/O=Name2/L=Name3"
-        if (subject)
-        {
-            required_size = oe_strnsub(subject, *subject_size, ", ", "/");
-
-            if (required_size == (size_t)-1)
-                OE_RAISE(OE_FAILURE);
-
-            /* Inject leading slash */
-            oe_memmove(subject + 1, subject, required_size - 1);
-            *subject = '/';
-        }
-
-        *subject_size = required_size;
     }
 
     result = OE_OK;
 
 done:
-
-    if (oneline)
-        free(oneline);
 
     return result;
 }

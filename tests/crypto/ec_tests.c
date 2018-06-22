@@ -990,6 +990,8 @@ const char _SUBJECT[] =
 
 void _TestCertSubject()
 {
+    printf("=== begin %s()\n", __FUNCTION__);
+
     oe_result_t r;
     oe_cert_t cert = { 0 };
     char subject[1024];
@@ -998,6 +1000,13 @@ void _TestCertSubject()
     r = oe_cert_read_pem(_CERT, sizeof(_CERT), &cert);
     OE_TEST(r == OE_OK);
 
+    subject_size = 0;
+    r = oe_cert_get_subject(&cert, NULL, &subject_size);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
+
+    OE_TEST(subject_size = sizeof(_SUBJECT));
+
+    subject_size = sizeof(subject);
     r = oe_cert_get_subject(&cert, subject, &subject_size);
     OE_TEST(r == OE_OK);
 
@@ -1008,6 +1017,8 @@ void _TestCertSubject()
     OE_TEST(subject_size = sizeof(_SUBJECT));
 
     oe_cert_free(&cert);
+
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 void TestEC()

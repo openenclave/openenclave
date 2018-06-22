@@ -28,10 +28,16 @@
  *     to **size**, then either a parameter is invalid (-1) or the string 
  *     buffer is too small to hold the result.
  */
-size_t oe_strnsub(
+size_t oe_string_substitute(
     char* str,
     size_t size,
     const char* pattern,
     const char* replacement);
+
+size_t oe_string_insert(
+    char* str,
+    size_t size,
+    size_t pos,
+    const char* insert);
 
 #endif /* _OE_STRING_H */

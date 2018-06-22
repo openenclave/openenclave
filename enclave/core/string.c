@@ -259,7 +259,7 @@ void* oe_memmove(void* dest, const void* src, size_t n)
     return p;
 }
 
-size_t oe_strnsub(
+size_t oe_string_substitute(
     char* str,
     size_t size,
     const char* pattern,
@@ -325,4 +325,40 @@ size_t oe_strnsub(
     }
 
     return str_len + 1;
+}
+
+size_t oe_string_insert(
+    char* str,
+    size_t size,
+    size_t pos,
+    const char* insert)
+{
+    size_t str_len;
+    size_t insert_len;
+
+    if (!str || !size || !insert)
+        return (size_t)-1;
+
+    if ((str_len = oe_strlen(str)) >= size)
+        return (size_t)-1;
+
+    if (pos == (size_t)-1)
+        pos = str_len;
+
+    if (pos > str_len)
+        return (size_t)-1;
+
+    insert_len = oe_strlen(insert);
+
+    if (str_len + insert_len < size)
+    {
+        size_t remaining = str_len - pos + 1;
+
+        if (remaining)
+            oe_memmove(str + pos + insert_len, str + pos, remaining);
+
+        oe_memcpy(str + pos, insert, insert_len);
+    }
+
+    return str_len + insert_len + 1;
 }
