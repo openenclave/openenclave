@@ -1,307 +1,116 @@
 version: 2.0
 jobs:
 
-  #=======prebuild========# 
-  #  Clone code from git hub, Running format-code, license, spelling check
-  prebuild:
+  #========Build-Test-Install==========# 
+
+  # SGX1 | Debug 
+  build-test-install-sgx1-debug:
     docker:
-      - image: <account>/<image>:<tag>
+      - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
       # Build, Test and Install
       - run:
-          name: Prebuild
-          command: |
-             echo "prebuild..." &&
-             pwd &&
-             ls -al &&
-             echo "Prebuild Done!" 
-      - save_cache:
-           key: openenclave-sourceCode-cache
-           paths:
-             - ./../Microsoft-OE        
-
-  #========Build-Test-Install==========# 
-  # Simulate-mode | Debug
-  build-test-install-simulate-debug:
-    docker:
-      - image: <account>/<image>:<tag>
-    working_directory: ~/Microsoft-OE
-    steps:
-      - restore_cache:
-          keys:
-            - openenclave-sourceCode-cache
-      # Build, Test and Install
-      - run: 
-          name: BuildSimuateDebug
-          command: |
-            echo "Building..." &&
-            echo "Buildig Done!" 
-      - run: 
-          name: TestSimuateDebug
-          command: |          
-            echo "Testing..." &&
-            echo "Testing Done!"
-      - run: 
-          name: InstallSimuateDebug
-          command: |
-            echo "Installing..." &&
-            echo "Installation Done!"
-             
-  # Simulate-mode | RelWithDebug
-  build-test-install-simulate-relwithdebug:
-    docker:
-      - image: <account>/<image>:<tag>
-    working_directory: ~/Microsoft-OE
-    steps:
-      - restore_cache:
-          keys:
-            - openenclave-sourceCode-cache
-      # Build, Test and Install
-      - run: 
-          name: BuildSimuateRelWithDebug
-          command: |
-            echo "Building..." &&
-            echo "Buildig Done!" 
-      - run: 
-          name: TestSimuateRelWithDebug
-          command: |          
-            echo "Testing..." &&
-            echo "Testing Done!"
-      - run: 
-          name: InstallSimuateRelWithDebug
-          command: |
-            echo "Installing..." &&
-            echo "Installation Done!"
-  
-  # Simulate-mode | Release
-  build-test-install-simulate-release:
-    docker:
-      - image: <account>/<image>:<tag>
-    working_directory: ~/Microsoft-OE
-    steps:
-      - restore_cache:
-          keys:
-            - openenclave-sourceCode-cache
-      # Build, Test and Install
-      - run: 
-          name: BuildSimuateRelease
-          command: |
-            echo "Building..." &&
-            echo "Buildig Done!" 
-      - run: 
-          name: TestSimuateRelease
-          command: |          
-            echo "Testing..." &&
-            echo "Testing Done!"
-      - run: 
-          name: InstallSimuateRelease
-          command: |
-            echo "Installing..." &&
-            echo "Installation Done!"
-  # SGX1 | Debug 
-  build-test-install-sgx1-debug:
-    docker:
-      - image: <account>/<image>:<tag>
-    working_directory: ~/Microsoft-OE
-    steps:
-      - restore_cache:
-          keys:
-            - openenclave-sourceCode-cache
-      # Build, Test and Install
-      - run: 
-          name: BuildSgx1Debug
-          command: |
-            echo "Building..." &&
-            echo "Buildig Done!" 
-      - run: 
-          name: TestSgx1Debug
-          command: |          
-            echo "Testing..." &&
-            echo "Testing Done!"
-      - run: 
-          name: InstallSgx1Debug
-          command: |
-            echo "Installing..." &&
-            echo "Installation Done!"
+          name: SGX1-Debug
+          command:  |
+             apt-get install -y sudo &&
+          # Add options later after fls-script is ready, like execute type etc.
+             sudo sh ./scripts/fls-script     
   
   # SGX1 | RelWithDebug
   build-test-install-sgx1-relwithdebug:
     docker:
-      - image: <account>/<image>:<tag>
+      - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
-      - restore_cache:
-          keys:
-            - openenclave-sourceCode-cache
+      - checkout
       # Build, Test and Install
       - run: 
-          name: BuildSgx1RelWithDebug
-          command: |
-            echo "Building..." &&
-            echo "Buildig Done!" 
-      - run: 
-          name: TestSgx1RelWithDebug
-          command: |          
-            echo "Testing..." &&
-            echo "Testing Done!"
-      - run: 
-          name: InstallSgx1RelWithDebug
-          command: |
-            echo "Installing..." &&
-            echo "Installation Done!"
+          name: SGX1-RelWithDebInfo
+          command:  |
+             apt-get install -y sudo &&
+          # Add options later after fls-script is ready, like execute type etc.
+             sudo sh ./scripts/fls-script 
 
   # SGX1 | Release
   build-test-install-sgx1-release:
     docker:
-      - image: <account>/<image>:<tag>
+      - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
-      - restore_cache:
-          keys:
-            - openenclave-sourceCode-cache
+      - checkout
       # Build, Test and Install
       - run: 
-          name: BuildSgx1Release
-          command: |
-            echo "Building..." &&
-            echo "Buildig Done!" 
-      - run: 
-          name: TestSgx1Release
-          command: |          
-            echo "Testing..." &&
-            echo "Testing Done!"
-      - run: 
-          name: InstallSgx1Release
-          command: |
-            echo "Installing..." &&
-            echo "Installation Done!" 
-  
+          name: SGX1-Release
+          command:  |
+             apt-get install -y sudo &&
+         # Add options later after fls-script is ready, like execute type etc.
+             sudo sh ./scripts/fls-script 
+             
   # SGX1-FLS | Debug 
   build-test-install-sgx1-fls-debug:
     docker:
-      - image: <account>/<image>:<tag>
+      - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
-      - restore_cache:
-          keys:
-            - openenclave-sourceCode-cache
+      - checkout
       # Build, Test and Install
       - run: 
-          name: BuildSgx1FlsDebug
-          command: |
-            echo "Building..." &&
-            echo "Buildig Done!" 
-      - run: 
-          name: TestSgx1FlsDebug
-          command: |          
-            echo "Testing..." &&
-            echo "Testing Done!"
-      - run: 
-          name: InstallSgx1FlsDebug
-          command: |
-            echo "Installing..." &&
-            echo "Installation Done!" 
+          name: SGX1-FLS-Debug
+          command:  |
+             apt-get install -y sudo &&
+          # Add options later after fls-script is ready, like execute type etc.
+             sudo sh ./scripts/fls-script 
 
   # SGX1-FLS | RelWithDebug
   build-test-install-sgx1-fls-relwithdebug:
     docker:
-      - image: <account>/<image>:<tag>
+      - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
-      - restore_cache:
-          keys:
-            - openenclave-sourceCode-cache
+      - checkout
       # Build, Test and Install
       - run: 
-          name: BuildSgx1RelWithDebug
-          command: |
-            echo "Building..." &&
-            echo "Buildig Done!" 
-      - run: 
-          name: TestSgx1FlsRelWithDebug
-          command: |          
-            echo "Testing..." &&
-            echo "Testing Done!"
-      - run: 
-          name: InstallSgx1RelWithDebug
-          command: |
-            echo "Installing..." &&
-            echo "Installation Done!"
-
+          name: SGX1--FLS-RelWithDebInfo
+          command:  |
+             apt-get install -y sudo &&
+          # Add options later after fls-script is ready, like execute type etc.
+             sudo sh ./scripts/fls-script 
+             
   # SGX1-FLS | Release
   build-test-install-sgx1-fls-release:
     docker:
-      - image: <account>/<image>:<tag>
+      - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
-      - restore_cache:
-          keys:
-            - openenclave-sourceCode-cache
+      - checkout
       # Build, Test and Install
-      - run: 
-          name: BuildRelease
-          command: |
-            echo "Building..." &&
-            echo "Buildig Done!" 
-      - run: 
-          name: TestRelease
-          command: |          
-            echo "Testing..." &&
-            echo "Testing Done!"
-      - run: 
-          name: InstallRelease
-          command: |
-            echo "Installing..." &&
-            echo "Installation Done!"     
-
+      - run:   
+          name: SGX1-FLS-Release
+          command:  |
+             apt-get install -y sudo &&
+          # Add options later after fls-script is ready, like execute type etc.
+             sudo sh ./scripts/fls-script 
+             
 workflows:
   version: 2
   build-test-install:
-    jobs:
-      - prebuild
-      # 1. simulate-debug(build-test-install)
-      - build-test-install-simulate-debug:
-          requires:
-            - prebuild
-      
-      # 2. simulate-relwithdebug(build-test-install)    
-      - build-test-install-simulate-relwithdebug:
-          requires:
-            - prebuild
+    jobs:      
+      #  1. sgx1-debug((build-test-install))
+      - build-test-install-sgx1-debug
             
-      # 3. simulate-release(build-test-install)
-      - build-test-install-simulate-release:
-          requires:
-            - prebuild
+      # 2.  sgx1-relwithdeb(build-test-install)     
+      - build-test-install-sgx1-relwithdebug
             
-      #  4. sgx1-debug((build-test-install))
-      - build-test-install-sgx1-debug:
-          requires:
-            - prebuild
+      # 3.  sgx1-release(build-test-install)    
+      - build-test-install-sgx1-release
             
-      # 5.  sgx1-relwithdeb(build-test-install)     
-      - build-test-install-sgx1-relwithdebug:
-          requires:
-            - prebuild
+      # 4.  sgx1-fls-debug(build-test-install)
+      - build-test-install-sgx1-fls-debug
             
-      # 6.  sgx1-release(build-test-install)    
-      - build-test-install-sgx1-release:
-          requires:
-            - prebuild
+      # 5.  sgx1-fls-relwithdebug(build-test-install)  
+      - build-test-install-sgx1-fls-relwithdebug
             
-      # 7.  sgx1-fls-debug(build-test-install)
-      - build-test-install-sgx1-fls-debug:
-          requires:
-            - prebuild
-            
-      # 8.  sgx1-fls-relwithdebug(build-test-install)  
-      - build-test-install-sgx1-fls-relwithdebug:
-          requires:
-            - prebuild
-            
-      # 9.  sgx1-fls-release(build-test-install)    
-      - build-test-install-sgx1-fls-release:
-          requires:
-            - prebuild
+      # 6.  sgx1-fls-release(build-test-install)    
+      - build-test-install-sgx1-fls-release
