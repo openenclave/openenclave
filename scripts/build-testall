@@ -5,16 +5,24 @@
 
 ##====================================================================================
 ##
-## This script fires OE build and test with SGX1-FLC configuration
+## This script fires OE build and test for specified build-type, platform and
+## simulator/hardware mode.
+## Default run with no parameters builds with Debug build-type and for SGX1
+## platform and will test in Simulator mode.
 ## Run this from the root of the source tree as sudo.
 ##
 ##====================================================================================
-if [ $1 == "-h" ]; then
+if [ "$1" == "-h" ]; then
    echo "Script to fire OE build and test with specified platform/build-type/test mode" 
-   echo "$0: Usage:"
+   echo "$0: "
+   echo "Script to fire OE build and test for specified build-type, platform & test mode"
+   echo " Usage:  sudo ./scripts/build-testall [-d]|[-p <platform-type>]|-b [build-type]"
    echo "           -d or --disable_sim to Disable Simulator Test Mode"
-   echo "           -p SGX1-FLC or -p=SGX1-FLC to build with SGX1-FLC platform configuration"
-   echo "            Default is to build with SGX1 platform configuration"
+   echo "           -p SGX1-FLC or -p=SGX1-FLC to build for SGX1-FLC platform"
+   echo "           -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
+   echo "           -h Display usage and exit"
+   echo " Default is to build for SGX1 platform, Debug Build type & test in simulator mode"
+   echo ""
    exit 0
 fi
 
