@@ -956,7 +956,7 @@ oe_result_t oe_cert_get_subject(
             OE_RAISE(OE_BUFFER_TOO_SMALL);
         }
 
-        // Convert to OpenSSL format with slash delimiters.
+        // Convert subject to OpenSSL format with slash delimiters.
         // "CN=Name1, O=Name2, L=Name3" => "/CN=Name1/O=Name2/L=Name3"
         {
             char* dest = subject;
@@ -988,7 +988,7 @@ oe_result_t oe_cert_get_subject(
             }
 
             /* Inject leading slash */
-            oe_memmove(subject + 1, subject, required_size);
+            oe_memmove(subject + 1, subject, required_size - 1);
             *subject = '/';
         }
 
