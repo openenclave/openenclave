@@ -27,7 +27,8 @@ int main(int argc, const char* argv[])
 {
     oe_result_t result;
 
-    TestORArgs ta;
+    char testORArgsBuffer[64];
+    TestORArgs* ta = (TestORArgs*)testORArgsBuffer;
 
     if (argc != 2)
     {
@@ -44,12 +45,12 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    ta.result = OE_FAILURE;
+    ta->result = OE_FAILURE;
     /* Invoke tests */
     {
-        oe_result_t result = oe_call_enclave(enclave, "Test", &ta);
+        oe_result_t result = oe_call_enclave(enclave, "Test", ta);
         OE_TEST(result == OE_OK);
-        OE_TEST(ta.result == OE_OK);
+        OE_TEST(ta->result == OE_OK);
     }
 
     oe_terminate_enclave(enclave);
