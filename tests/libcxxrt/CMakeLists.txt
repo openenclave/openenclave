@@ -1,6 +1,14 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# add a test-case for each file listed in tests.supported
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
+
+add_subdirectory(host)
+
+if(UNIX)
+add_subdirectory(enc)
+
 if(NOT EXISTS ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build)
     file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build)
 endif()
@@ -17,9 +25,6 @@ ExternalProject_Add(libcxxrt-test
         COMMAND ${CMAKE_COMMAND} -E copy
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test/run_test.sh ${PROJECT_BINARY_DIR}/tests/libcxxrt/
 )
-
-# add a test-case for each file listed in tests.supported
-include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
 
 # read tests.supported, sanitize the cpp-file, and create the test-case
 file(STRINGS "tests.supported" alltests)
@@ -50,5 +55,17 @@ foreach(testcase ${alltests})
         add_test(tests/libcxxrt/${name} run_test.sh "./host/libcxxrt_host ./enc/libcxxrttest-${name}_enc.signed.so" exp_${name}_output.log ${name}_output.log)
     endif()
 endforeach(testcase)
-add_subdirectory(enc)
-add_subdirectory(host)
+
+elseif (ADD_WINDOWS_ENCLAVE_TESTS)
+
+# read tests.supported, sanitize the cpp-file, and create the test-case
+file(STRINGS "tests.supported" alltests)
+foreach(testcase ${alltests})
+    get_testcase_name(${testcase} name "")
+
+    if("${name}" STREQUAL "test_foreign_exceptions")
+        add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc.signed.so)
+    endif()
+endforeach(testcase)
+
+endif()
