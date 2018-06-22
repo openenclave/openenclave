@@ -24,9 +24,9 @@
  * @param replacement the replacement string.
  *
  * @returns the size of the resulting string including the zero terminator or 
- *     (size_t)-1 if a parameter is invalid. If this value is greater or equal 
- *     to **size**, then either a parameter is invalid (-1) or the string 
- *     buffer is too small to hold the result.
+ *     (size_t)-1 on error. A value greater or equal to **size** indicates
+ *     either a failure ((size_t)-1) or that the string buffer is too small 
+ *     to hold the result.
  */
 size_t oe_string_substitute(
     char* str,
@@ -34,10 +34,24 @@ size_t oe_string_substitute(
     const char* pattern,
     const char* replacement);
 
+/**
+ * Inserts a string (**insert**) into another string (**str**) at the given 
+ * offset.
+ *
+ * @param str the string buffer.
+ * @param size the size of the string buffer.
+ * @param offset the offset at which to insert the string.
+ * @param insert the string to be inserted.
+ *
+ * @returns the size of the resulting string including the zero terminator or 
+ *     (size_t)-1 on error. A value greater or equal to **size** indicates
+ *     either a failure ((size_t)-1) or that the string buffer is too small 
+ *     to hold the result.
+ */
 size_t oe_string_insert(
     char* str,
     size_t size,
-    size_t pos,
+    size_t offset,
     const char* insert);
 
 #endif /* _OE_STRING_H */
