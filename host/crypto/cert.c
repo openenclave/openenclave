@@ -998,3 +998,51 @@ oe_result_t oe_cert_find_extension(
 done:
     return result;
 }
+
+oe_result_t oe_cert_get_subject(
+    const oe_cert_t* cert,
+    char* subject,
+    size_t* subject_size)
+{
+    const Cert* impl = (const Cert*)cert;
+    oe_result_t result = OE_UNEXPECTED;
+    char* oneline = NULL;
+
+    /* Reject invalid parameters */
+    if (!_CertIsValid(impl) || !subject_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the subject name */
+    {
+        X509_NAME* name;
+        size_t required_size;
+
+        if (!(name = X509_get_subject_name(impl->x509)))
+            OE_RAISE(OE_FAILURE);
+
+        if (!(oneline = X509_NAME_oneline(name, NULL, 0)))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        required_size = strlen(oneline) + 1;
+
+        if (required_size > *subject_size)
+        {
+            *subject_size = required_size;
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        }
+
+        if (subject)
+            memcpy(subject, oneline, required_size);
+
+        *subject_size = required_size;
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (oneline)
+        free(oneline);
+
+    return result;
+}

@@ -984,6 +984,32 @@ static void _TestCertWithoutExtensions()
         "2.5.29.35");
 }
 
+const char _SUBJECT[] =
+    "/CN=Intel SGX PCK Certificate/O=Intel Corporation/L=Santa Clara/ST=CA"
+    "/C=US";
+
+void _TestCertSubject()
+{
+    oe_result_t r;
+    oe_cert_t cert = { 0 };
+    char subject[1024];
+    size_t subject_size = sizeof(subject);
+
+    r = oe_cert_read_pem(_CERT, sizeof(_CERT), &cert);
+    OE_TEST(r == OE_OK);
+
+    r = oe_cert_get_subject(&cert, subject, &subject_size);
+    OE_TEST(r == OE_OK);
+
+    printf("subject{%s}\n", subject);
+    printf("SUBJECT{%s}\n", _SUBJECT);
+
+    OE_TEST(strcmp(subject, _SUBJECT) == 0);
+    OE_TEST(subject_size = sizeof(_SUBJECT));
+
+    oe_cert_free(&cert);
+}
+
 void TestEC()
 {
     _TestCertWithExtensions();
@@ -995,4 +1021,5 @@ void TestEC()
     _TestCertMethods();
     _TestKeyFromBytes();
     _TestCertChainRead();
+    _TestCertSubject();
 }

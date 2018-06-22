@@ -924,3 +924,83 @@ oe_result_t oe_cert_chain_get_leaf_cert(
 done:
     return result;
 }
+
+oe_result_t oe_cert_get_subject(
+    const oe_cert_t* cert,
+    char* subject,
+    size_t* subject_size)
+{
+    const Cert* impl = (const Cert*)cert;
+    oe_result_t result = OE_UNEXPECTED;
+    char* oneline = NULL;
+
+    /* Reject invalid parameters */
+    if (!_CertIsValid(impl) || !subject_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the subject name */
+    {
+        int n;
+        int required_size;
+
+        n = mbedtls_x509_dn_gets(subject, *subject_size, &impl->cert->subject);
+
+        if (n <= 0)
+            OE_RAISE(OE_FAILURE);
+
+        required_size = n + 1;
+
+        if (required_size > *subject_size)
+        {
+            *subject_size = required_size;
+            OE_RAISE(OE_BUFFER_TOO_SMALL);
+        }
+
+        // Convert to OpenSSL format with slash delimiters.
+        // "CN=Name1, O=Name2, L=Name3" => "/CN=Name1/O=Name2/L=Name3"
+        {
+            char* dest = subject;
+            char* src = subject;
+
+            /* Convert occurences of ", " to "/" */
+            while (*src)
+            {
+                if (src[0] == ',' && src[1] == ' ')
+                {
+                    *dest++ = '/';
+                    src += 2;
+                }
+                else
+                    *dest++ = *src++;
+            }
+
+            /* Append null terminator */
+            *dest++ = '\0';
+
+            /* Reset required size (add one for leading slash) */
+            required_size = (dest - subject) + 1;
+
+            /* If not enough room to insert leading slash */
+            if (required_size > *subject_size)
+            {
+                *subject_size = required_size;
+                OE_RAISE(OE_BUFFER_TOO_SMALL);
+            }
+
+            /* Inject leading slash */
+            oe_memmove(subject + 1, subject, required_size);
+            *subject = '/';
+        }
+
+        *subject_size = required_size;
+    }
+
+    result = OE_OK;
+
+done:
+
+    if (oneline)
+        free(oneline);
+
+    return result;
+}

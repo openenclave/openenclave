@@ -66,6 +66,13 @@ void* oe_memcpy(void* dest, const void* src, size_t n);
 void* oe_memset(void* s, int c, size_t n);
 
 /**
+ * Enclave implementation of the standard memmove() function.
+ *
+ * Refer to documentation for memmove() function.
+ */
+void* oe_memmove(void* dest, const void* src, size_t n);
+
+/**
  * Enclave implementation of the standard memcmp() function.
  *
  * Refer to documentation for memcmp() function.

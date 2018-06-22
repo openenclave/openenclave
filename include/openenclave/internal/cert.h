@@ -353,6 +353,11 @@ oe_result_t oe_cert_find_extension(
     uint8_t* data,
     size_t* size);
 
+oe_result_t oe_cert_get_subject(
+    const oe_cert_t* cert,
+    char* subject,
+    size_t* subject_size);
+
 OE_EXTERNC_END
 
 #endif /* _OE_CERT_H */
