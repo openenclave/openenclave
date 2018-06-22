@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 version: 2.0
 jobs:
 
@@ -14,7 +17,9 @@ jobs:
       - run:
           name: SGX1-Debug
           command:  |
+             apt-get update -y sudo &&
              apt-get install -y sudo &&
+             sudo sh ./scripts/pre-commit &&
           # Add options later after fls-script is ready, like execute type etc.
              sudo sh ./scripts/fls-script     
   
@@ -29,9 +34,11 @@ jobs:
       - run: 
           name: SGX1-RelWithDebInfo
           command:  |
+             apt-get update -y sudo &&
              apt-get install -y sudo &&
-          # Add options later after fls-script is ready, like execute type etc.
-             sudo sh ./scripts/fls-script 
+             sudo sh ./scripts/pre-commit &&
+          # Add options later after flc-script is ready, like execute type etc.
+             sudo sh ./scripts/flc-script 
 
   # SGX1 | Release
   build-test-install-sgx1-release:
@@ -44,12 +51,14 @@ jobs:
       - run: 
           name: SGX1-Release
           command:  |
+             apt-get update -y sudo &&
              apt-get install -y sudo &&
-         # Add options later after fls-script is ready, like execute type etc.
-             sudo sh ./scripts/fls-script 
+             sudo sh ./scripts/pre-commit &&
+         # Add options later after flc-script is ready, like execute type etc.
+             sudo sh ./scripts/flc-script 
              
-  # SGX1-FLS | Debug 
-  build-test-install-sgx1-fls-debug:
+  # SGX1-FLC | Debug 
+  build-test-install-sgx1-flc-debug:
     docker:
       - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
@@ -57,14 +66,16 @@ jobs:
       - checkout
       # Build, Test and Install
       - run: 
-          name: SGX1-FLS-Debug
+          name: SGX1-FLC-Debug
           command:  |
+             apt-get update -y sudo &&
              apt-get install -y sudo &&
-          # Add options later after fls-script is ready, like execute type etc.
-             sudo sh ./scripts/fls-script 
+             sudo sh ./scripts/pre-commit &&
+          # Add options later after flc-script is ready, like execute type etc.
+             sudo sh ./scripts/flc-script 
 
-  # SGX1-FLS | RelWithDebug
-  build-test-install-sgx1-fls-relwithdebug:
+  # SGX1-FLC | RelWithDebug
+  build-test-install-sgx1-flc-relwithdebug:
     docker:
       - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
@@ -72,14 +83,16 @@ jobs:
       - checkout
       # Build, Test and Install
       - run: 
-          name: SGX1--FLS-RelWithDebInfo
+          name: SGX1--FLC-RelWithDebInfo
           command:  |
+             apt-get update -y sudo &&
              apt-get install -y sudo &&
-          # Add options later after fls-script is ready, like execute type etc.
-             sudo sh ./scripts/fls-script 
+             sudo sh ./scripts/pre-commit &&
+          # Add options later after flc-script is ready, like execute type etc.
+             sudo sh ./scripts/flc-script 
              
-  # SGX1-FLS | Release
-  build-test-install-sgx1-fls-release:
+  # SGX1-FLC | Release
+  build-test-install-sgx1-flc-release:
     docker:
       - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
@@ -87,11 +100,13 @@ jobs:
       - checkout
       # Build, Test and Install
       - run:   
-          name: SGX1-FLS-Release
+          name: SGX1-FLC-Release
           command:  |
+             apt-get update -y sudo &&
              apt-get install -y sudo &&
-          # Add options later after fls-script is ready, like execute type etc.
-             sudo sh ./scripts/fls-script 
+             sudo sh ./scripts/pre-commit &&
+          # Add options later after flc-script is ready, like execute type etc.
+             sudo sh ./scripts/flc-script 
              
 workflows:
   version: 2
@@ -106,11 +121,11 @@ workflows:
       # 3.  sgx1-release(build-test-install)    
       - build-test-install-sgx1-release
             
-      # 4.  sgx1-fls-debug(build-test-install)
-      - build-test-install-sgx1-fls-debug
+      # 4.  sgx1-flc-debug(build-test-install)
+      - build-test-install-sgx1-flc-debug
             
-      # 5.  sgx1-fls-relwithdebug(build-test-install)  
-      - build-test-install-sgx1-fls-relwithdebug
+      # 5.  sgx1-flc-relwithdebug(build-test-install)  
+      - build-test-install-sgx1-flc-relwithdebug
             
-      # 6.  sgx1-fls-release(build-test-install)    
-      - build-test-install-sgx1-fls-release
+      # 6.  sgx1-flc-release(build-test-install)    
+      - build-test-install-sgx1-flc-release
