@@ -984,7 +984,7 @@ static void _TestCertWithoutExtensions()
         "2.5.29.35");
 }
 
-const char _SUBJECT[] =
+static const char _SUBJECT[] =
     "/CN=Intel SGX PCK Certificate/O=Intel Corporation/L=Santa Clara/ST=CA"
     "/C=US";
 
@@ -1021,6 +1021,42 @@ void _TestCertSubject()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+static const char _ISSUER[] =
+    "/CN=Intel SGX PCK Processor CA/O=Intel Corporation/L=Santa Clara/ST=CA"
+    "/C=US";
+
+void _TestCertIssuer()
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    oe_result_t r;
+    oe_cert_t cert = { 0 };
+    char issuer[1024];
+    size_t issuer_size = sizeof(issuer);
+
+    r = oe_cert_read_pem(_CERT, sizeof(_CERT), &cert);
+    OE_TEST(r == OE_OK);
+
+    issuer_size = 0;
+    r = oe_cert_get_issuer(&cert, NULL, &issuer_size);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
+    OE_TEST(issuer_size = sizeof(_ISSUER));
+
+    issuer_size = sizeof(issuer);
+    r = oe_cert_get_issuer(&cert, issuer, &issuer_size);
+    OE_TEST(r == OE_OK);
+
+    printf("issuer{%s}\n", issuer);
+    printf("ISSUER{%s}\n", _ISSUER);
+
+    OE_TEST(strcmp(issuer, _ISSUER) == 0);
+    OE_TEST(issuer_size = sizeof(_ISSUER));
+
+    oe_cert_free(&cert);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 void TestEC()
 {
     _TestCertWithExtensions();
@@ -1033,4 +1069,5 @@ void TestEC()
     _TestKeyFromBytes();
     _TestCertChainRead();
     _TestCertSubject();
+    _TestCertIssuer();
 }

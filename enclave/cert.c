@@ -927,6 +927,50 @@ done:
     return result;
 }
 
+// Convert an X509 name to a string in this format: "/CN=Name1/O=Name2/L=Name3"
+static oe_result_t _x509_name_to_string(
+    mbedtls_x509_name* name,
+    char* str,
+    size_t* str_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    /* Iterate until the local buffer is big enough to hold the issuer name */
+    for (size_t buf_size = 256; true; buf_size *= 2)
+    {
+        char buf[buf_size];
+        int n = mbedtls_x509_dn_gets(buf, buf_size, name);
+
+        if (n > 0)
+        {
+            // Convert subject to OpenSSL format with slash delimiters:
+            // "CN=Name1, O=Name2, L=Name3" => "/CN=Name1/O=Name2/L=Name3"
+            oe_string_substitute(buf, buf_size, ", ", "/");
+            const size_t size = oe_string_insert(buf, buf_size, 0, "/");
+
+            if (size > *str_size)
+            {
+                *str_size = size;
+                OE_RAISE(OE_BUFFER_TOO_SMALL);
+            }
+
+            if (str)
+                oe_memcpy(str, buf, *str_size);
+
+            break;
+        }
+        else if (n != MBEDTLS_ERR_X509_BUFFER_TOO_SMALL)
+        {
+            OE_RAISE(OE_FAILURE);
+        }
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 oe_result_t oe_cert_get_subject(
     const oe_cert_t* cert,
     char* subject,
@@ -944,34 +988,33 @@ oe_result_t oe_cert_get_subject(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Iterate until the local buffer is big enough to hold the subject name */
-    for (size_t buf_size = 256; true; buf_size *= 2)
-    {
-        char buf[buf_size];
-        int n = mbedtls_x509_dn_gets(buf, buf_size, &impl->cert->subject);
+    OE_CHECK(_x509_name_to_string(&impl->cert->subject, subject, subject_size));
 
-        if (n > 0)
-        {
-            // Convert subject to OpenSSL format with slash delimiters:
-            // "CN=Name1, O=Name2, L=Name3" => "/CN=Name1/O=Name2/L=Name3"
-            oe_string_substitute(buf, buf_size, ", ", "/");
-            const size_t size = oe_string_insert(buf, buf_size, 0, "/");
+    result = OE_OK;
 
-            if (size > *subject_size)
-            {
-                *subject_size = size;
-                OE_RAISE(OE_BUFFER_TOO_SMALL);
-            }
+done:
 
-            if (subject)
-                oe_memcpy(subject, buf, *subject_size);
+    return result;
+}
 
-            break;
-        }
-        else if (n != MBEDTLS_ERR_X509_BUFFER_TOO_SMALL)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
-    }
+oe_result_t oe_cert_get_issuer(
+    const oe_cert_t* cert,
+    char* issuer,
+    size_t* issuer_size)
+{
+    const Cert* impl = (const Cert*)cert;
+    oe_result_t result = OE_UNEXPECTED;
+
+    /* Reject invalid parameters */
+    if (!_CertIsValid(impl) || !issuer_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If the issuer buffer is null, then the size must be zero */
+    if (!issuer && *issuer_size != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Convert the X509 name to string format */
+    OE_CHECK(_x509_name_to_string(&impl->cert->issuer, issuer, issuer_size));
 
     result = OE_OK;
 

@@ -358,6 +358,11 @@ oe_result_t oe_cert_get_subject(
     char* subject,
     size_t* subject_size);
 
+oe_result_t oe_cert_get_issuer(
+    const oe_cert_t* cert,
+    char* issuer,
+    size_t* issuer_size);
+
 OE_EXTERNC_END
 
 #endif /* _OE_CERT_H */

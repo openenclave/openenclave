@@ -999,6 +999,42 @@ done:
     return result;
 }
 
+/* Convert an X509 name to a one-line string */
+static oe_result_t _x509_name_to_string(
+    X509_NAME* name,
+    char* str,
+    size_t* str_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    char* oneline = NULL;
+    size_t size;
+
+    if (!(oneline = X509_NAME_oneline(name, NULL, 0)))
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    size = strlen(oneline) + 1;
+
+    if (size > *str_size)
+    {
+        *str_size = size;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
+
+    if (str)
+        memcpy(str, oneline, size);
+
+    *str_size = size;
+
+    result = OE_OK;
+
+done:
+
+    if (oneline)
+        free(oneline);
+
+    return result;
+}
+
 oe_result_t oe_cert_get_subject(
     const oe_cert_t* cert,
     char* subject,
@@ -1019,26 +1055,48 @@ oe_result_t oe_cert_get_subject(
     /* Get the subject name */
     {
         X509_NAME* name;
-        size_t required_size;
 
         if (!(name = X509_get_subject_name(impl->x509)))
             OE_RAISE(OE_FAILURE);
 
-        if (!(oneline = X509_NAME_oneline(name, NULL, 0)))
-            OE_RAISE(OE_OUT_OF_MEMORY);
+        OE_CHECK(_x509_name_to_string(name, subject, subject_size));
+    }
 
-        required_size = strlen(oneline) + 1;
+    result = OE_OK;
 
-        if (required_size > *subject_size)
-        {
-            *subject_size = required_size;
-            OE_RAISE(OE_BUFFER_TOO_SMALL);
-        }
+done:
 
-        if (subject)
-            memcpy(subject, oneline, required_size);
+    if (oneline)
+        free(oneline);
 
-        *subject_size = required_size;
+    return result;
+}
+
+oe_result_t oe_cert_get_issuer(
+    const oe_cert_t* cert,
+    char* issuer,
+    size_t* issuer_size)
+{
+    const Cert* impl = (const Cert*)cert;
+    oe_result_t result = OE_UNEXPECTED;
+    char* oneline = NULL;
+
+    /* Reject invalid parameters */
+    if (!_CertIsValid(impl) || !issuer_size)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If the issuer buffer is null, then the size must be zero */
+    if (!issuer && *issuer_size != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* Get the issuer name */
+    {
+        X509_NAME* name;
+
+        if (!(name = X509_get_issuer_name(impl->x509)))
+            OE_RAISE(OE_FAILURE);
+
+        OE_CHECK(_x509_name_to_string(name, issuer, issuer_size));
     }
 
     result = OE_OK;
