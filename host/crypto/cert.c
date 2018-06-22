@@ -1012,6 +1012,10 @@ oe_result_t oe_cert_get_subject(
     if (!_CertIsValid(impl) || !subject_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* If the subject buffer is null, then the size must be zero */
+    if (!subject && *subject_size != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     /* Get the subject name */
     {
         X509_NAME* name;

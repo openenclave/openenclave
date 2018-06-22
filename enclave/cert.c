@@ -17,6 +17,7 @@
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/string.h>
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
@@ -938,6 +939,10 @@ oe_result_t oe_cert_get_subject(
     if (!_CertIsValid(impl) || !subject_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    /* If the subject buffer is null, then the size must be zero */
+    if (!subject && *subject_size != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
     /* Get the subject name */
     {
         int n;
@@ -948,7 +953,10 @@ oe_result_t oe_cert_get_subject(
         if (n <= 0)
             OE_RAISE(OE_FAILURE);
 
-        required_size = n + 1;
+        // Add one for the null terminator and one for possible expansion
+        // when converted to OpenSSL format below. This calculation could
+        // be a slight overestimate.
+        required_size = n + 2;
 
         if (required_size > *subject_size)
         {
@@ -958,34 +966,12 @@ oe_result_t oe_cert_get_subject(
 
         // Convert subject to OpenSSL format with slash delimiters.
         // "CN=Name1, O=Name2, L=Name3" => "/CN=Name1/O=Name2/L=Name3"
+        if (subject)
         {
-            char* dest = subject;
-            char* src = subject;
+            required_size = oe_strnsub(subject, *subject_size, ", ", "/");
 
-            /* Convert occurences of ", " to "/" */
-            while (*src)
-            {
-                if (src[0] == ',' && src[1] == ' ')
-                {
-                    *dest++ = '/';
-                    src += 2;
-                }
-                else
-                    *dest++ = *src++;
-            }
-
-            /* Append null terminator */
-            *dest++ = '\0';
-
-            /* Reset required size (add one for leading slash) */
-            required_size = (dest - subject) + 1;
-
-            /* If not enough room to insert leading slash */
-            if (required_size > *subject_size)
-            {
-                *subject_size = required_size;
-                OE_RAISE(OE_BUFFER_TOO_SMALL);
-            }
+            if (required_size == (size_t)-1)
+                OE_RAISE(OE_FAILURE);
 
             /* Inject leading slash */
             oe_memmove(subject + 1, subject, required_size - 1);
