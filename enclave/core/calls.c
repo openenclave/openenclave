@@ -13,6 +13,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include "../report.h"
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
@@ -347,6 +348,11 @@ static void _HandleECall(
         case OE_FUNC_GET_REPORT:
         {
             argOut = _HandleGetReport(argIn);
+            break;
+        }
+        case OE_FUNC_VERIFY_REPORT:
+        {
+            oe_handle_verify_report(argIn, &argOut);
             break;
         }
         default:

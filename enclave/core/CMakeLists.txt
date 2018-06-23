@@ -25,9 +25,9 @@ add_library(oecore STATIC
     string.c
     td.c
     thread.c
+    enter.S
     exit.S
     getkey.S
-    main.S
     )
 
 target_link_libraries(oecore PUBLIC oe_includes)

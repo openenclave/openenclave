@@ -7,7 +7,7 @@
 
 //==============================================================================
 //
-// oe_main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
+// oe_enter(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
 //
 //     The EENTER instruction (executed by the host) calls this function to
 //     enter the enclave.
@@ -33,9 +33,9 @@
 //
 //==============================================================================
 
-.globl oe_main
-.type oe_main, @function
-oe_main:
+.globl oe_enter
+.type oe_enter, @function
+oe_enter:
 .cfi_startproc
 
 .save_host_registers:
@@ -187,7 +187,7 @@ oe_main:
 
 .clean_exit:
 
-    // Clear the TD.last_sp field (force oe_main to calculate stack pointer)
+    // Clear the TD.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, %gs:TD_last_sp
 
 .clear_enclave_registers:
@@ -229,7 +229,7 @@ oe_main:
 
 .cfi_endproc
 
-.size oe_main, .-oe_main
+.size oe_enter, .-oe_enter
 
 //==============================================================================
 //

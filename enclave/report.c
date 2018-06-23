@@ -12,6 +12,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "../common/quote.h"
+#include "report.h"
 
 #include <stdlib.h>
 
@@ -148,18 +149,10 @@ done:
     return result;
 }
 
-static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut);
-
-// Use static initializer to register ECall_HandleVerifyReport.
-static oe_result_t g_InitECalls =
-    oe_register_ecall(OE_FUNC_VERIFY_REPORT, ECall_HandleVerifyReport);
-
 // The report key is never sent out to the host. The host side oe_verify_report
-// invokes OE_FUNC_VERIFY_REPORT ECall on the enclave. ECalls are handled in
-// oecore; however oecore has no access to enclave's oe_verify_report (see
-// above). Therefore, oe_verify_report is exposed to oecore as a registered
-// ECall.
-static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
+// invokes OE_FUNC_VERIFY_REPORT ECALL in the enclave. This function is called
+// directory from liboecore.
+void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_verify_report_args_t arg;
@@ -172,8 +165,6 @@ static void ECall_HandleVerifyReport(uint64_t argIn, uint64_t* argOut)
     // success.
     result = OE_OK;
 
-    // Prevent 'defined but not used' warning.
-    OE_UNUSED(g_InitECalls);
 done:
     arg.result = result;
     _SafeCopyVerifyReportArgsOuput(&arg, argIn);

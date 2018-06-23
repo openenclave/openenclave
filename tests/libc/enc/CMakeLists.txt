@@ -18,7 +18,7 @@ add_library(libctest-support
 target_compile_options(libctest-support PRIVATE
     -Wno-error
     )
-target_link_libraries(libctest-support PUBLIC oelibc)
+target_link_libraries(libctest-support PUBLIC oeenclave oelibc oecore)
 
 function(add_libc_test_enc NAME CFILE)
     add_enclave_executable(libctest-${NAME}_enc sign.conf private.pem
