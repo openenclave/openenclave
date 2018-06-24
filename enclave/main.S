@@ -26,8 +26,8 @@ oe_main:
 //
 // _start(): 
 //
-//     This is the default entry point for the enclave when no -Wl,-e option 
-//     is given.
+//     This is the default entry point for the enclave when the -Wl,-e option 
+//     is not used.
 //
 //==============================================================================
 
