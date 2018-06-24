@@ -5,8 +5,10 @@
 //
 // oe_main(): 
 //
-//     This function is the main entry point for the enclave. It simply jumps
-//     to oe_enter() to avoid disrupting the register assignments.
+//     This function is the main entry point for the enclave when the enclave
+//     is linked with the following option.
+//
+//         -Wl,-eoe_main
 //
 //==============================================================================
 
@@ -14,6 +16,7 @@
 .type oe_main, @function
 oe_main:
 .cfi_startproc
+    // Jump to oe_enter() in liboecore.
     jmp oe_enter
 .cfi_endproc
 
@@ -21,13 +24,32 @@ oe_main:
 
 //==============================================================================
 //
+// _start(): 
+//
+//     This is the default entry point for the enclave when no -Wl,-e option 
+//     is given.
+//
+//==============================================================================
+
+.globl _start
+.type _start, @function
+_start:
+.cfi_startproc
+    // Jump to oe_main() above
+    jmp oe_main
+.cfi_endproc
+
+.size _start, .-_start
+
+//==============================================================================
+//
 // oe_call_link_enclave()
 //
 //     This function is placed in the same compilation unit as the entry point
-//     (oe_main) so that it will be included in the image. It forces a linkage 
-//     reference to oe_link_enclave(), which references functions so they will
-//     be included in the image. These functions will be available to 
-//     subsequently linked libraries.
+//     so that it will be included in the image. It forces a linkage reference 
+//     to oe_link_enclave(), which references functions so they will be 
+//     included in the image. These functions will be available to subsequently
+//     linked libraries.
 //
 //==============================================================================
 
