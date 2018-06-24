@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "report.h"
 #include <openenclave/bits/types.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -12,7 +13,6 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/utils.h>
 #include "../common/quote.h"
-#include "report.h"
 
 #include <stdlib.h>
 
