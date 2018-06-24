@@ -1,7 +1,12 @@
 #include <openenclave/enclave.h>
 #include "report.h"
 
-void* oe_link_enclave(void)
+const void* oe_link_enclave(void)
 {
-    return oe_handle_verify_report;
+    static const void* symbols[] =
+    {
+        oe_handle_verify_report,
+    };
+
+    return symbols;
 }

@@ -151,7 +151,7 @@ done:
 
 // The report key is never sent out to the host. The host side oe_verify_report
 // invokes OE_FUNC_VERIFY_REPORT ECALL in the enclave. This function is called
-// directory from liboecore.
+// from liboecore.
 void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
