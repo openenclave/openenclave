@@ -18,6 +18,7 @@ LDFLAGS += -Wl,-Bstatic
 LDFLAGS += -Wl,-Bsymbolic 
 LDFLAGS += -Wl,--export-dynamic 
 LDFLAGS += -Wl,-pie
+LDFLAGS += -Wl,-eoe_main
 
 LIBRARIES += -L${OE_LIBDIR}/openenclave/enclave 
 LIBRARIES += -loeenclave

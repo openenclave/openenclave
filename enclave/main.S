@@ -5,8 +5,8 @@
 //
 // oe_main(): 
 //
-//     This function is the main entry point for the enclave when the enclave
-//     is linked with the following option.
+//     This function is the main entry point for the enclave as specified
+//     by the following linker option.
 //
 //         -Wl,-eoe_main
 //
@@ -24,31 +24,12 @@ oe_main:
 
 //==============================================================================
 //
-// _start(): 
-//
-//     This is the default entry point for the enclave when the -Wl,-e option 
-//     is not used.
-//
-//==============================================================================
-
-.globl _start
-.type _start, @function
-_start:
-.cfi_startproc
-    // Jump to oe_main() above
-    jmp oe_main
-.cfi_endproc
-
-.size _start, .-_start
-
-//==============================================================================
-//
 // oe_call_link_enclave()
 //
 //     This function is placed in the same compilation unit as the entry point
 //     so that it will be included in the image. It forces a linkage reference 
-//     to oe_link_enclave(), which references functions so they will be 
-//     included in the image. These functions will be available to subsequently
+//     to oe_link_enclave(), which forces various symbols to be included in the
+//     enclave image. All these symbols will be available to subsequently
 //     linked libraries.
 //
 //==============================================================================
