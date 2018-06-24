@@ -5,8 +5,8 @@
 //
 // oe_main(): 
 //
-//     This function is the main entry point for the executable. This function 
-//     simply jump to oe_enter(), which is located in liboecore.
+//     This function is the main entry point for the enclave. It simply jumps
+//     to oe_enter() to avoid disrupting the register assignments.
 //
 //==============================================================================
 
@@ -24,9 +24,10 @@ oe_main:
 // oe_call_link_enclave()
 //
 //     This function is placed in the same compilation unit as the entry point
-//     (oe_main) so that it will not be removed. It forces a linkage reference
-//     to oe_link_enclave(), which references functions needed by lower level
-//     libraries.
+//     (oe_main) so that it will be included in the image. It forces a linkage 
+//     reference to oe_link_enclave(), which references functions so they will
+//     be included in the image. These functions will be available to 
+//     subsequently linked libraries.
 //
 //==============================================================================
 
