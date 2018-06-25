@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 add_library(oeenclave STATIC
+    asn1.c
     cert.c
     ec.c
     ../common/quote.c

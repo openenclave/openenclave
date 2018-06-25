@@ -5,6 +5,7 @@
 #include <openenclave/enclave.h>
 #endif
 
+#include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/hexdump.h>
@@ -1085,6 +1086,62 @@ static const char _CERT_WITH_SGX_EXTENSION[] =
     "sdbXaGu2gpAEqy8CIQCvie4k/cstz6V5A4T4Ks6fkDn22tWDTxtV+wepBReC2g==\n"
     "-----END CERTIFICATE-----\n";
 
+#if defined(OE_BUILD_ENCLAVE)
+static void _parse_asn1(oe_asn1_t* asn1, size_t depth)
+{
+    oe_result_t r;
+
+    while (oe_asn1_remaining(asn1) > 0)
+    {
+        uint8_t tag;
+        r = oe_asn1_peek_tag(asn1, &tag);
+        OE_TEST(r == OE_OK);
+
+        switch (tag)
+        {
+            case OE_ASN1_TAG_CONSTRUCTED|OE_ASN1_TAG_SEQUENCE:
+            {
+                oe_asn1_t sequence;
+                r = oe_asn1_get_sequence(asn1, &sequence);
+                OE_TEST(r == OE_OK);
+
+                printf("=== %zu: SEQUENCE: size=%zu\n", 
+                    depth, oe_asn1_length(&sequence));
+
+                _parse_asn1(&sequence, depth + 1);
+                break;
+            }
+            case OE_ASN1_TAG_INTEGER:
+            {
+                int value;
+                r = oe_asn1_get_integer(asn1, &value);
+                OE_TEST(r == OE_OK);
+
+                printf("=== %zu: INTEGER: value=%d\n", depth, value);
+                break;
+            }
+            default:
+            {
+                uint8_t tag;
+                size_t length;
+                const uint8_t* data;
+
+                r = oe_asn1_get(asn1, &tag, &data, &length);
+                OE_TEST(r == OE_OK);
+
+                printf("=== %zu: UNKNOWN: tag=0x%02x length=%zu\n", 
+                    depth, tag, length);
+
+                break;
+            }
+        }
+    }
+
+    OE_TEST(oe_asn1_remaining(asn1) == 0);
+}
+#endif
+
+#if defined(OE_BUILD_ENCLAVE)
 static void _TestCertWithSGXExtensions()
 {
     oe_cert_t cert;
@@ -1108,14 +1165,25 @@ static void _TestCertWithSGXExtensions()
 
     oe_cert_free(&cert);
 
+    oe_asn1_t asn1;
+    r = oe_asn1_init(&asn1, data, size);
+    OE_TEST(r == OE_OK);
+    OE_TEST(oe_asn1_data(&asn1) == data);
+    OE_TEST(oe_asn1_length(&asn1) == size);
+
+    _parse_asn1(&asn1, 0);
+
     printf("=== passed %s()\n", __FUNCTION__);
 }
+#endif /* defined(OE_BUILD_ENCLAVE) */
 
 void TestEC()
 {
     _TestCertWithExtensions();
     _TestCertWithoutExtensions();
+#if defined(OE_BUILD_ENCLAVE)
     _TestCertWithSGXExtensions();
+#endif
     _TestSignAndVerify();
     _TestGenerate();
     _TestWritePrivate();
