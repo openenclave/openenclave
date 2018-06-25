@@ -20,8 +20,7 @@ jobs:
              apt-get update -y sudo &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
-          # Add options later after fls-script is ready, like execute type etc.
-             sudo sh ./scripts/fls-script     
+             sudo sh ./scripts/build-testall -d -p SGX1-FLC -b Debug    
   
   # SGX1 | RelWithDebug
   build-test-install-sgx1-relwithdebug:
@@ -37,8 +36,7 @@ jobs:
              apt-get update -y sudo &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
-          # Add options later after flc-script is ready, like execute type etc.
-             sudo sh ./scripts/flc-script 
+             sudo sh ./scripts/build-testall  -d -p SGX1 -b RelWithDebInfo
 
   # SGX1 | Release
   build-test-install-sgx1-release:
@@ -54,8 +52,7 @@ jobs:
              apt-get update -y sudo &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
-         # Add options later after flc-script is ready, like execute type etc.
-             sudo sh ./scripts/flc-script 
+             sudo sh ./scripts/build-testall -d -p SGX1 -b Release
              
   # SGX1-FLC | Debug 
   build-test-install-sgx1-flc-debug:
@@ -71,8 +68,7 @@ jobs:
              apt-get update -y sudo &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
-          # Add options later after flc-script is ready, like execute type etc.
-             sudo sh ./scripts/flc-script 
+             sudo sh ./scripts/build-testall -d -p SGX1-FLC -b Debug
 
   # SGX1-FLC | RelWithDebug
   build-test-install-sgx1-flc-relwithdebug:
@@ -88,8 +84,7 @@ jobs:
              apt-get update -y sudo &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
-          # Add options later after flc-script is ready, like execute type etc.
-             sudo sh ./scripts/flc-script 
+             sudo sh ./scripts/build-testall -d -p SGX1-FLC -b RelWithDebInfo
              
   # SGX1-FLC | Release
   build-test-install-sgx1-flc-release:
@@ -105,8 +100,7 @@ jobs:
              apt-get update -y sudo &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
-          # Add options later after flc-script is ready, like execute type etc.
-             sudo sh ./scripts/flc-script 
+             sudo sh ./scripts/build-testall -d -p SGX1-FLC -b Release
              
 workflows:
   version: 2
