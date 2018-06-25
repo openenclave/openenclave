@@ -43,6 +43,6 @@ int main(int argc, const char* argv[])
 #endif
 
     printf("=== passed all tests (%s)\n", argv[0]);
-
+    AESMDisconnect(aesm);
     return 0;
 }

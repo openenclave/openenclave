@@ -440,6 +440,7 @@ void AESMDisconnect(AESM* aesm)
     {
         close(aesm->sock);
         memset(aesm, 0xDD, sizeof(AESM));
+	free(aesm);
     }
 }
 
