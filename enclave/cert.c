@@ -345,7 +345,7 @@ typedef struct _GetExtensionArgs
 {
     oe_result_t result;
     size_t index;
-    OE_OIDString* oid;
+    oe_oid_string_t* oid;
     uint8_t* data;
     size_t* size;
 } GetExtensionArgs;
@@ -371,7 +371,7 @@ static bool _GetExtension(
         }
 
         /* Copy the OID to caller's buffer */
-        oe_strlcpy(args->oid->buf, oid, sizeof(OE_OIDString));
+        oe_strlcpy(args->oid->buf, oid, sizeof(oe_oid_string_t));
 
         /* Copy to caller's buffer */
         if (args->data)
@@ -414,7 +414,7 @@ static int _ParseExtensions(
     /* Parse each extension of the form: [OID | CRITICAL | OCTETS] */
     while (end - p > 1)
     {
-        OE_OIDString oidstr;
+        oe_oid_string_t oidstr;
         int isCritical = 0;
         const uint8_t* octets;
         size_t octetsSize;
@@ -849,7 +849,7 @@ done:
 oe_result_t oe_cert_get_extension(
     const oe_cert_t* cert,
     size_t index,
-    OE_OIDString* oid,
+    oe_oid_string_t* oid,
     uint8_t* data,
     size_t* size)
 {

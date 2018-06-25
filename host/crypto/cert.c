@@ -855,7 +855,7 @@ done:
 oe_result_t oe_cert_get_extension(
     const oe_cert_t* cert,
     size_t index,
-    OE_OIDString* oid,
+    oe_oid_string_t* oid,
     uint8_t* data,
     size_t* size)
 {
@@ -882,7 +882,7 @@ oe_result_t oe_cert_get_extension(
     {
         X509_EXTENSION* ext;
         ASN1_OBJECT* obj;
-        OE_OIDString extOid;
+        oe_oid_string_t extOid;
         ASN1_OCTET_STRING* str;
 
         /* Get the i-th extension from the stack */
@@ -910,7 +910,7 @@ oe_result_t oe_cert_get_extension(
 
         /* Copy the OID to the caller's buffer */
         *oid->buf = '\0';
-        strncat(oid->buf, extOid.buf, sizeof(OE_OIDString));
+        strncat(oid->buf, extOid.buf, sizeof(oe_oid_string_t));
 
         /* Copy the data to the caller's buffer */
         if (data)
@@ -953,7 +953,7 @@ oe_result_t oe_cert_find_extension(
     {
         X509_EXTENSION* ext;
         ASN1_OBJECT* obj;
-        OE_OIDString extOid;
+        oe_oid_string_t extOid;
 
         /* Get the i-th extension from the stack */
         if (!(ext = sk_X509_EXTENSION_value(extensions, i)))

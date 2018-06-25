@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "ec.h"
 #include "ec_tests.h"
 #include "hash.h"
@@ -740,7 +741,7 @@ oe_result_t DumpExtensions(const char* certData, size_t certSize)
     /* Find the extension with this OID */
     for (size_t i = 0; i < count; i++)
     {
-        OE_OIDString extOid;
+        oe_oid_string_t extOid;
         size_t tmpSize = size;
         OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
 
@@ -761,7 +762,7 @@ oe_result_t DumpExtensions(const char* certData, size_t certSize)
     /* Find the extension with this OID */
     for (size_t i = 0; i < count; i++)
     {
-        OE_OIDString extOid;
+        oe_oid_string_t extOid;
         size_t tmpSize = size;
         OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
 
@@ -892,7 +893,7 @@ static void _TestCertExtensions(
         for (size_t i = 0; i < extensionsCount; i++)
         {
             const Extension* ext = &extensions[i];
-            OE_OIDString oid;
+            oe_oid_string_t oid;
             uint8_t data[4096];
             size_t size = sizeof(data);
 
@@ -950,7 +951,7 @@ static void _TestCertExtensions(
     /* Test for out of bounds */
     {
         oe_result_t r;
-        OE_OIDString oid;
+        oe_oid_string_t oid;
         uint8_t data[4096];
         size_t size = sizeof(data);
 
@@ -1087,11 +1088,151 @@ static const char _CERT_WITH_SGX_EXTENSION[] =
     "-----END CERTIFICATE-----\n";
 
 #if defined(OE_BUILD_ENCLAVE)
-static void _parse_asn1(oe_asn1_t* asn1, size_t depth)
+int _printf(char** str, const char* format, ...)
+{
+    char buf[1024];
+
+    if (!str)
+        return -1;
+
+    va_list ap;
+    va_start(ap, format);
+    int n = vsnprintf(buf, sizeof(buf), format, ap);
+    va_end(ap);
+
+    if (n >= sizeof(buf))
+        return -1;
+
+    size_t size = n + 1;
+
+    if (*str)
+    {
+        size += strlen(*str);
+
+        if (!(*str = realloc(*str, size)))
+            return -1;
+
+        strcat(*str, buf);
+    }
+    else
+    {
+        if (!(*str = malloc(size)))
+            return -1;
+
+        strcpy(*str, buf);
+    }
+
+    return 0;
+}
+#endif
+
+#if defined(OE_BUILD_ENCLAVE)
+static void _indent(char** str, size_t depth)
+{
+    for (size_t i = 0; i < depth; i++)
+        _printf(str, "    ");
+}
+#endif
+
+#if defined(OE_BUILD_ENCLAVE)
+static void _hex_dump(char** str, const uint8_t* data, size_t size)
+{
+    for (size_t i = 0; i < size; i++)
+        _printf(str, "%02x", data[i]);
+}
+#endif
+
+#if defined(OE_BUILD_ENCLAVE)
+static const char _PARSE_OUTPUT[] =
+    "SEQUENCE: length=1c1\n"
+    "    SEQUENCE: length=1e\n"
+    "        OID: 1.2.840.113741.1.13.1.1\n"
+    "        OCTET_STRING:\n"
+    "            length=10\n"
+    "            data=1f8c1e7ba6bd107d8424dd35649dcd72\n"
+    "    SEQUENCE: length=164\n"
+    "        OID: 1.2.840.113741.1.13.1.2\n"
+    "        SEQUENCE: length=154\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.1\n"
+    "                INTEGER: value=4\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.2\n"
+    "                INTEGER: value=4\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.3\n"
+    "                INTEGER: value=2\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.4\n"
+    "                INTEGER: value=4\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.5\n"
+    "                INTEGER: value=1\n"
+    "            SEQUENCE: length=11\n"
+    "                OID: 1.2.840.113741.1.13.1.2.6\n"
+    "                INTEGER: value=128\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.7\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.8\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.9\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.10\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.11\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.12\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.13\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.14\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.15\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.16\n"
+    "                INTEGER: value=0\n"
+    "            SEQUENCE: length=10\n"
+    "                OID: 1.2.840.113741.1.13.1.2.17\n"
+    "                INTEGER: value=5\n"
+    "            SEQUENCE: length=1f\n"
+    "                OID: 1.2.840.113741.1.13.1.2.18\n"
+    "                OCTET_STRING:\n"
+    "                    length=10\n"
+    "                    data=04040204018000000000000000000000\n"
+    "    SEQUENCE: length=10\n"
+    "        OID: 1.2.840.113741.1.13.1.3\n"
+    "        OCTET_STRING:\n"
+    "            length=2\n"
+    "            data=0000\n"
+    "    SEQUENCE: length=14\n"
+    "        OID: 1.2.840.113741.1.13.1.4\n"
+    "        OCTET_STRING:\n"
+    "            length=6\n"
+    "            data=00906ea10000\n"
+    "    SEQUENCE: length=f\n"
+    "        OID: 1.2.840.113741.1.13.1.5\n"
+    "        UNKNOWN:\n"
+    "            tag=0a\n"
+    "            length=1\n"
+    "            data=00\n";
+#endif
+
+#if defined(OE_BUILD_ENCLAVE)
+static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
 {
     oe_result_t r;
 
-    while (oe_asn1_remaining(asn1) > 0)
+    while (oe_asn1_offset(asn1) < oe_asn1_length(asn1))
     {
         uint8_t tag;
         r = oe_asn1_peek_tag(asn1, &tag);
@@ -1104,11 +1245,12 @@ static void _parse_asn1(oe_asn1_t* asn1, size_t depth)
                 oe_asn1_t sequence;
                 r = oe_asn1_get_sequence(asn1, &sequence);
                 OE_TEST(r == OE_OK);
+                size_t length = oe_asn1_length(&sequence);
 
-                printf("=== %zu: SEQUENCE: size=%zu\n", 
-                    depth, oe_asn1_length(&sequence));
+                _indent(str, depth);
+                _printf(str, "SEQUENCE: length=%zx\n", length);
 
-                _parse_asn1(&sequence, depth + 1);
+                _parse_asn1(&sequence, str, depth + 1);
                 break;
             }
             case OE_ASN1_TAG_INTEGER:
@@ -1117,7 +1259,35 @@ static void _parse_asn1(oe_asn1_t* asn1, size_t depth)
                 r = oe_asn1_get_integer(asn1, &value);
                 OE_TEST(r == OE_OK);
 
-                printf("=== %zu: INTEGER: value=%d\n", depth, value);
+                _indent(str, depth);
+                _printf(str, "INTEGER: value=%d\n", value);
+                break;
+            }
+            case OE_ASN1_TAG_OID:
+            {
+                oe_oid_string_t oid;
+                r = oe_asn1_get_oid(asn1, &oid);
+                OE_TEST(r == OE_OK);
+
+                _indent(str, depth);
+                _printf(str, "OID: %s\n", oid.buf);
+                break;
+            }
+            case OE_ASN1_TAG_OCTET_STRING:
+            {
+                const uint8_t* data;
+                size_t length;
+                r = oe_asn1_get_octet_string(asn1, &data, &length);
+                OE_TEST(r == OE_OK);
+
+                _indent(str, depth);
+                _printf(str, "OCTET_STRING:\n");
+                _indent(str, depth + 1);
+                _printf(str, "length=%zx\n", length);
+                _indent(str, depth + 1);
+                _printf(str, "data=");
+                _hex_dump(str, data, length);
+                _printf(str, "\n");
                 break;
             }
             default:
@@ -1129,15 +1299,23 @@ static void _parse_asn1(oe_asn1_t* asn1, size_t depth)
                 r = oe_asn1_get(asn1, &tag, &data, &length);
                 OE_TEST(r == OE_OK);
 
-                printf("=== %zu: UNKNOWN: tag=0x%02x length=%zu\n", 
-                    depth, tag, length);
+                _indent(str, depth);
+                _printf(str, "UNKNOWN:\n");
+                _indent(str, depth + 1);
+                _printf(str, "tag=%02x\n", tag);
+                _indent(str, depth + 1);
+                _printf(str, "length=%zu\n", length);
+                _indent(str, depth + 1);
+                _printf(str, "data=");
+                _hex_dump(str, data, length);
+                _printf(str, "\n");
 
                 break;
             }
         }
     }
 
-    OE_TEST(oe_asn1_remaining(asn1) == 0);
+    OE_TEST(oe_asn1_offset(asn1) == oe_asn1_length(asn1));
 }
 #endif
 
@@ -1171,7 +1349,15 @@ static void _TestCertWithSGXExtensions()
     OE_TEST(oe_asn1_data(&asn1) == data);
     OE_TEST(oe_asn1_length(&asn1) == size);
 
-    _parse_asn1(&asn1, 0);
+    char* str = NULL;
+    _parse_asn1(&asn1, &str, 0);
+
+    printf("str=%s\n", str);
+
+    OE_TEST(str != NULL);
+    OE_TEST(strcmp(str, _PARSE_OUTPUT) == 0);
+
+    free(str);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }

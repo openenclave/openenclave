@@ -54,16 +54,16 @@ typedef struct _oe_verify_cert_error
  * Instead, the following definition prevents this coding error.
  *
  *     ```
- *     void GetTheOID(OE_OIDString* oid);
+ *     void GetTheOID(oe_oid_string_t* oid);
  *     ```
  */
-typedef struct _OE_OIDString
+typedef struct _oe_oid_string
 {
     // Strictly speaking there is no limit on the length of an OID but we chose
     // 128 (the maximum OID length in the SNMP specification). Also, this value
     // is hardcoded to 64 in many implementations.
     char buf[128];
-} OE_OIDString;
+} oe_oid_string_t;
 
 /**
  * Read a certificate from PEM format
@@ -325,7 +325,7 @@ oe_result_t oe_cert_extension_count(const oe_cert_t* cert, size_t* count);
 oe_result_t oe_cert_get_extension(
     const oe_cert_t* cert,
     size_t index,
-    OE_OIDString* oid,
+    oe_oid_string_t* oid,
     uint8_t* data,
     size_t* size);
 

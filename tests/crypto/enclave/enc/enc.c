@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "../../ec_tests.h"
 #include "../../hash.h"
 #include "../../random_tests.h"
