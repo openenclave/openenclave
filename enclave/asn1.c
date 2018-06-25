@@ -5,6 +5,12 @@
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
 
+OE_STATIC_ASSERT(MBEDTLS_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
+OE_STATIC_ASSERT(MBEDTLS_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);
+OE_STATIC_ASSERT(MBEDTLS_ASN1_INTEGER == OE_ASN1_TAG_INTEGER);
+OE_STATIC_ASSERT(MBEDTLS_ASN1_OID == OE_ASN1_TAG_OID);
+OE_STATIC_ASSERT(MBEDTLS_ASN1_OCTET_STRING == OE_ASN1_TAG_OCTET_STRING);
+
 typedef struct _oe_asn1_impl_t
 {
     const uint8_t* data;
@@ -170,8 +176,6 @@ oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1_, oe_asn1_t* sequence_)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_CHECK(_get_tag(asn1, &tag));
-    OE_STATIC_ASSERT(OE_ASN1_TAG_CONSTRUCTED == MBEDTLS_ASN1_CONSTRUCTED);
-    OE_STATIC_ASSERT(OE_ASN1_TAG_SEQUENCE == MBEDTLS_ASN1_SEQUENCE);
 
     if (tag != (OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE))
         OE_RAISE(OE_FAILURE);
@@ -192,6 +196,9 @@ oe_result_t oe_asn1_get_integer(oe_asn1_t* asn1_, int* value)
 {
     oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
     oe_result_t result = OE_UNEXPECTED;
+
+    if (value)
+        *value = 0;
 
     if (!_is_valid(asn1) || !value)
         OE_RAISE(OE_INVALID_PARAMETER);

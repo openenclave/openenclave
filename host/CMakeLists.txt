@@ -3,6 +3,7 @@
 
 if (UNIX)
 set(PLATFORM_SRC
+    crypto/asn1.c
     crypto/cert.c
     crypto/ec.c
     crypto/init.c

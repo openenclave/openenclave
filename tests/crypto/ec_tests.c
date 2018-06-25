@@ -1087,7 +1087,6 @@ static const char _CERT_WITH_SGX_EXTENSION[] =
     "sdbXaGu2gpAEqy8CIQCvie4k/cstz6V5A4T4Ks6fkDn22tWDTxtV+wepBReC2g==\n"
     "-----END CERTIFICATE-----\n";
 
-#if defined(OE_BUILD_ENCLAVE)
 int _printf(char** str, const char* format, ...)
 {
     char buf[1024];
@@ -1124,25 +1123,19 @@ int _printf(char** str, const char* format, ...)
 
     return 0;
 }
-#endif
 
-#if defined(OE_BUILD_ENCLAVE)
 static void _indent(char** str, size_t depth)
 {
     for (size_t i = 0; i < depth; i++)
         _printf(str, "    ");
 }
-#endif
 
-#if defined(OE_BUILD_ENCLAVE)
 static void _hex_dump(char** str, const uint8_t* data, size_t size)
 {
     for (size_t i = 0; i < size; i++)
         _printf(str, "%02x", data[i]);
 }
-#endif
 
-#if defined(OE_BUILD_ENCLAVE)
 static const char _PARSE_OUTPUT[] =
     "SEQUENCE: length=1c1\n"
     "    SEQUENCE: length=1e\n"
@@ -1225,9 +1218,7 @@ static const char _PARSE_OUTPUT[] =
     "            tag=0a\n"
     "            length=1\n"
     "            data=00\n";
-#endif
 
-#if defined(OE_BUILD_ENCLAVE)
 static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
 {
     oe_result_t r;
@@ -1317,9 +1308,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
 
     OE_TEST(oe_asn1_offset(asn1) == oe_asn1_length(asn1));
 }
-#endif
 
-#if defined(OE_BUILD_ENCLAVE)
 static void _TestCertWithSGXExtensions()
 {
     oe_cert_t cert;
@@ -1361,15 +1350,12 @@ static void _TestCertWithSGXExtensions()
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
-#endif /* defined(OE_BUILD_ENCLAVE) */
 
 void TestEC()
 {
     _TestCertWithExtensions();
     _TestCertWithoutExtensions();
-#if defined(OE_BUILD_ENCLAVE)
     _TestCertWithSGXExtensions();
-#endif
     _TestSignAndVerify();
     _TestGenerate();
     _TestWritePrivate();
