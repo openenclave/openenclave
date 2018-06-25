@@ -8,6 +8,7 @@
 #include <openenclave/bits/types.h>
 #include "ec.h"
 #include "rsa.h"
+#include "oid.h"
 
 OE_EXTERNC_BEGIN
 
@@ -31,39 +32,6 @@ typedef struct _oe_verify_cert_error
     /* Zero-terminated string error message */
     char buf[1024];
 } oe_verify_cert_error_t;
-
-/**
- * OID string representation.
- *
- * OID string representation (e.g., "1.2.3.4"). This strucure represents an
- * OID output parameter to prevent buffer length mismatches that the compiler
- * would be unable to detect. For example, consider the following function
- * declaration.
- *
- *     ```
- *     void GetTheOID(char oid[OE_MAX_OID_STRING_SIZE]);
- *     ```
- *
- * This may be called unsafely as follows.
- *
- *     ```
- *     char oid[16];
- *     GetTheOID(oid);
- *     ```
- *
- * Instead, the following definition prevents this coding error.
- *
- *     ```
- *     void GetTheOID(oe_oid_string_t* oid);
- *     ```
- */
-typedef struct _oe_oid_string
-{
-    // Strictly speaking there is no limit on the length of an OID but we chose
-    // 128 (the maximum OID length in the SNMP specification). Also, this value
-    // is hardcoded to 64 in many implementations.
-    char buf[128];
-} oe_oid_string_t;
 
 /**
  * Read a certificate from PEM format
