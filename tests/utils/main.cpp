@@ -33,21 +33,21 @@ void asm_cpuid(unsigned int leaf, unsigned int* subleaf, unsigned int* eax, unsi
     }
 }
 
-void TestCpuidAgainstAssembly(unsigned int* leaf, unsigned int* subleaf)
+void TestCpuidAgainstAssembly(unsigned int leaf, unsigned int* subleaf)
 {
     unsigned int a_asm = 0, b_asm = 0, c_asm = 0, d_asm = 0;
     unsigned int a = 0, b = 0, c = 0, d = 0;
 
     if (subleaf == NULL)
     {
-        oe_get_cpuid(*leaf, 0, &a, &b, &c, &d);
+        oe_get_cpuid(leaf, 0, &a, &b, &c, &d);
     }
     else
     {
-        oe_get_cpuid(*leaf, *subleaf, &a, &b, &c, &d);
+        oe_get_cpuid(leaf, *subleaf, &a, &b, &c, &d);
     }
 
-    asm_cpuid(*leaf, subleaf, &a_asm, &b_asm, &c_asm, &d_asm);
+    asm_cpuid(leaf, subleaf, &a_asm, &b_asm, &c_asm, &d_asm);
 
     OE_TEST(a == a_asm);
     OE_TEST(b == b_asm);
@@ -55,13 +55,13 @@ void TestCpuidAgainstAssembly(unsigned int* leaf, unsigned int* subleaf)
     OE_TEST(d == d_asm);
 }
 
-void TestUnequalSubleaves()
+void TestUnequalLeaves()
 {
     unsigned int a_asm = 0, b_asm = 0, c_asm = 0, d_asm = 0;
     unsigned int a = 0, b = 0, c = 0, d = 0;
 
-    oe_get_cpuid(0, 1, &a, &b, &c, &d);
-    asm_cpuid(0, 0, &a_asm, &b_asm, &c_asm, &d_asm);
+    oe_get_cpuid(0, 0, &a, &b, &c, &d);
+    asm_cpuid(1, 0, &a_asm, &b_asm, &c_asm, &d_asm);
 
     OE_TEST(a != a_asm);
 }
@@ -71,21 +71,23 @@ int main()
     unsigned int leaf = 0, subleaf = 0;
     
     fprintf(stdout, "Test: assembly call and function call give the same result.\n");
-    TestCpuidAgainstAssembly(&leaf, &subleaf);
+    TestCpuidAgainstAssembly(leaf, &subleaf);
 
     // Since the subleaf is always required by our api, test out if 0 and not giving the field yield the same values.
-    fprintf(stdout, "Test: result when subleaf is not provided to assembly call and function is given 0.\n");
-    TestCpuidAgainstAssembly(&leaf, NULL);
+    fprintf(stdout, "Test: result when subleaf is not provided to assembly call.\n");
+    TestCpuidAgainstAssembly(leaf, NULL);
+    TestCpuidAgainstAssembly(1, NULL);
+    TestCpuidAgainstAssembly(2, NULL);
 
     leaf = 0x80000000;
     fprintf(stdout, "Test: Highest leaf.\n");
-    TestCpuidAgainstAssembly(&leaf, &subleaf);
+    TestCpuidAgainstAssembly(leaf, &subleaf);
 
     leaf = 0x80000001;
     fprintf(stdout, "Test: Out of bounds leaf.\n");
-    TestCpuidAgainstAssembly(&leaf, &subleaf);
+    TestCpuidAgainstAssembly(leaf, &subleaf);
 
-    TestUnequalSubleaves();
+    TestUnequalLeaves();
 
     return 0;
 }
