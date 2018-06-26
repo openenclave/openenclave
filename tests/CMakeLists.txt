@@ -20,7 +20,7 @@ add_subdirectory(aesm)
 add_subdirectory(load)
 add_subdirectory(mem)
 add_subdirectory(str)
-# add_subdirectory(utils)
+add_subdirectory(utils)
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
 add_subdirectory(debug-mode)
