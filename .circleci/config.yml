@@ -25,6 +25,7 @@ jobs:
              mkdir build &&
              cd build &&
              cmake .. &&
+             make &&
              OE_SIMULATOR=1 ctest 
               
 workflows:
