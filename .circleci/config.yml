@@ -7,7 +7,7 @@ jobs:
   #========Build-Test==========# 
 
   # SGX1 | Debug 
-  build-test-sgx1-debug:
+  build-test-sgx1-flc-debug:
     docker:
       - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
