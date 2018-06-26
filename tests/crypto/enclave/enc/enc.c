@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include "../../asn1_tests.h"
 #include "../../ec_tests.h"
 #include "../../hash.h"
 #include "../../random_tests.h"
@@ -33,6 +34,7 @@ OE_ECALL void Test(void* args_)
     inUseBytes = stats.inUseBytes;
 
     /* Run the tests */
+    TestASN1();
     TestEC();
     TestRandom();
     TestRSA();

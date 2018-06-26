@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../asn1_tests.h"
 #include "../ec_tests.h"
 #include "../hash.h"
 #include "../random_tests.h"
@@ -27,6 +28,7 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
 
     /* Run the tests */
+    TestASN1();
     TestEC();
     TestRandom();
     TestRSA();

@@ -8,6 +8,7 @@ add_enclave_executable(cryptoenc
     private.pem 
     ec.c
     enc.c
+    ../../asn1_tests.c
     ../../ec_tests.c
     ../../hash.c
     ../../random_tests.c

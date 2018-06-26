@@ -4,6 +4,7 @@
 add_executable(hostcrypto 
     main.c
     ec.c
+    ../asn1_tests.c
     ../ec_tests.c
     ../hash.c
     ../random_tests.c
