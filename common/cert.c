@@ -5,6 +5,7 @@
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/outbuf.h>
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/internal/enclavelibc.h>
