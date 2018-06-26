@@ -363,6 +363,30 @@ oe_result_t oe_cert_get_issuer(
     char* issuer,
     size_t* issuer_size);
 
+/**
+ * Gets the URLs from the CRL distribution points extension.
+ *
+ * The extension whose OID is "2.5.29.31" contains the CRL distribution points.
+ * This function obtains an array of URLs from this extension.
+ *
+ * @param cert[in] the certificate.
+ * @param urls[out] the array of URLs upon return. This array and its entries
+ *        overlay the space given by the **buffer** parameter.
+ * @param num_urls the number of URLs found in the extension.
+ * @param buffer the buffer that holds the URL array and its entries.
+ *        This parameter may be null when **buffer_size** is zero. This 
+ *        buffer must be aligned on an 8-byte boundary since it contains the
+ *        array of pointers to URLs.
+ * @param buffer_size[in,out] the size of the buffer (in); the required size
+ *        of the buffer (out).
+ *
+ * @return OE_OK success.
+ * @return OE_INVALID_PARAMETER a parameter is invalid.
+ * @return OE_BUFFER_TOO_SMALL the buffer is too small and the **buffer_size** 
+ *         parameter contains the required size.
+ * @return OE_BAD_ALIGNMENT the buffer is not aligned on an 8-byte boundary.
+ * @return OE_FAILURE general failure.
+ */
 oe_result_t oe_get_crl_distribution_points(
     const oe_cert_t* cert,
     const char*** urls,

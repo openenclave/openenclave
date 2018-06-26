@@ -41,7 +41,7 @@ static oe_result_t _find_url(
 
             /* Fail if length excedes bytes remaining in the buffer */
             if (len > r)
-                OE_RAISE(OE_OUT_OF_BOUNDS);
+                OE_RAISE(OE_FAILURE);
 
             /* Search URL for bad characters */
             for (size_t i = 0; i < len; i++)
@@ -60,7 +60,7 @@ static oe_result_t _find_url(
         p++;
     }
 
-    result = OE_NOT_FOUND;
+    result = OE_FAILURE;
 
 done:
     return result;
@@ -120,6 +120,10 @@ oe_result_t oe_get_crl_distribution_points(
                 (*num_urls)++;
             }
         }
+
+        /* If zero entries */
+        if (*num_urls == 0)
+            OE_RAISE(OE_FAILURE);
 
         /* Leave space for urls[] array */
         offset += sizeof(char*) * (*num_urls);
