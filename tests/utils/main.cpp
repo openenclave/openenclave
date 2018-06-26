@@ -5,8 +5,16 @@
 // This file contains tests for various utility functions in openenclave
 //
 
-#include <openenclave/internal/cpuid.h>
+#include <openenclave/bits/result.h>
 #include <openenclave/internal/tests.h>
+
+OE_EXTERNC oe_result_t oe_get_cpuid(
+    unsigned int __leaf,
+    unsigned int __subleaf,
+    unsigned int* __eax,
+    unsigned int* __ebx,
+    unsigned int* __ecx,
+    unsigned int* __edx);
 
 void asm_cpuid(unsigned int leaf, unsigned int* subleaf, unsigned int* eax, unsigned int* ebx, unsigned int* ecx, unsigned int* edx)
 {
