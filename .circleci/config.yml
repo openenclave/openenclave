@@ -4,18 +4,18 @@
 version: 2.0
 jobs:
 
-  #========Build-Test-Install==========# 
+  #========Build-Test==========# 
 
   # SGX1 | Debug 
-  build-test-install-sgx1-debug:
+  build-test-sgx1-debug:
     docker:
       - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
-      # Build, Test and Install
+      # Build and Test
       - run:
-          name: SGX1-Debug
+          name: SGX1-FLC-Debug
           command:  |
              apt-get update &&
              apt-get install -y sudo &&
@@ -23,13 +23,13 @@ jobs:
              sudo ./scripts/install-prereqs &&
              apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall
-                         
+             sudo ./scripts/build-testall -p SGX1-FLC -b Debug
+            
 workflows:
   version: 2
   build-test:
     jobs:      
-      #  1. sgx1-debug((build-test-install))
-      - build-test-install-sgx1-debug
+      #  1. sgx1-flc-debug((build-test))
+      - build-test-install-sgx1-flc-debug
             
       
