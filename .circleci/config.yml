@@ -17,6 +17,7 @@ jobs:
       - run:
           name: SGX1-Debug
           command:  |
+             apt-get install -y sudo &&
              ./scripts/pre-commit &&
              sudo ./scripts/build-testall
  
