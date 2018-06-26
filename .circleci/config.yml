@@ -21,6 +21,7 @@ jobs:
              apt-get install -y sudo &&
              apt-get install -y git &&
              sudo ./scripts/install-prereqs &&
+             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
              mkdir build &&
              cd build &&
