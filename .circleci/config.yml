@@ -23,7 +23,7 @@ jobs:
              apt-get install -y sudo &&
              apt-get install -y git &&
              sudo ./scripts/pre-commit &&
-             sudo ./scripts/build-testall
+             /bin/bash sudo ./scripts/build-testall
               
 workflows:
   version: 2
