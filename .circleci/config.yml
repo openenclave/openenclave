@@ -17,11 +17,13 @@ jobs:
       - run:
           name: SGX1-Debug
           command:  |
+             export SHELL=/bin/bash &&
+             export shell=/bin/bash &&
              apt-get update &&
              apt-get install -y sudo &&
              apt-get install -y git &&
-             sudo sh ./scripts/pre-commit &&
-             sudo sh ./scripts/build-testall
+             sudo ./scripts/pre-commit &&
+             sudo ./scripts/build-testall
               
 workflows:
   version: 2
