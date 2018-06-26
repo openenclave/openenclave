@@ -22,7 +22,7 @@ jobs:
              apt-get update &&
              apt-get install -y sudo &&
              apt-get install -y git &&
-             sudo ./scripts/pre-commit &&
+             /bin/bash sudo ./scripts/pre-commit &&
              /bin/bash sudo ./scripts/build-testall
               
 workflows:
