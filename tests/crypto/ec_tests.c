@@ -1059,7 +1059,7 @@ void _TestCertIssuer()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static const char _CERT_WITH_SGX_EXTENSION[] = 
+static const char _SGX_CERT[] = 
     "-----BEGIN CERTIFICATE-----\n"
     "MIIEejCCBCCgAwIBAgIVAIRhkz/I2bp4OHxNAneNMrWoyuVBMAoGCCqGSM49BAMC\n"
     "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
@@ -1087,10 +1087,61 @@ static const char _CERT_WITH_SGX_EXTENSION[] =
     "sdbXaGu2gpAEqy8CIQCvie4k/cstz6V5A4T4Ks6fkDn22tWDTxtV+wepBReC2g==\n"
     "-----END CERTIFICATE-----\n";
 
+static const char _URL[] =
+    "https://certificates.trustedservices.intel.com/IntelSGXPCKProcessor.crl";
+
+static void _test_crl_distribution_points(void)
+{
+    oe_result_t r;
+    oe_cert_t cert;
+    const char** urls = NULL;
+    size_t num_urls;
+    size_t buffer_size = 0;
+
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    r = oe_cert_read_pem(_SGX_CERT, sizeof(_SGX_CERT), &cert);
+    OE_TEST(r == OE_OK);
+
+    r = oe_get_crl_distribution_points(
+        &cert, 
+        &urls, 
+        &num_urls, 
+        NULL, 
+        &buffer_size);
+    OE_TEST(r == OE_OK);
+
+    {
+        OE_ALIGNED(8) uint8_t buffer[buffer_size];
+
+        r = oe_get_crl_distribution_points(
+            &cert, 
+            &urls, 
+            &num_urls, 
+            buffer, 
+            &buffer_size);
+
+        OE_TEST(num_urls == 1);
+        OE_TEST(urls != NULL);
+        OE_TEST(urls[0] != NULL);
+        OE_TEST(strcmp(urls[0], _URL) == 0);
+
+        printf("URL{%s}\n", urls[0]);
+
+        OE_TEST(r == OE_OK);
+    }
+
+    r = oe_cert_free(&cert);
+    OE_TEST(r == OE_OK);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 void TestEC()
 {
     _TestCertWithExtensions();
     _TestCertWithoutExtensions();
+    _test_crl_distribution_points();
     _TestSignAndVerify();
     _TestGenerate();
     _TestWritePrivate();

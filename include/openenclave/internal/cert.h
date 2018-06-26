@@ -363,6 +363,13 @@ oe_result_t oe_cert_get_issuer(
     char* issuer,
     size_t* issuer_size);
 
+oe_result_t oe_get_crl_distribution_points(
+    const oe_cert_t* cert,
+    const char*** urls,
+    size_t* num_urls,
+    uint8_t* buffer,
+    size_t* buffer_size);
+
 OE_EXTERNC_END
 
 #endif /* _OE_CERT_H */
