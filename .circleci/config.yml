@@ -23,43 +23,13 @@ jobs:
              sudo ./scripts/install-prereqs &&
              apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             mkdir build &&
-             cd build &&
-             cmake .. &&
-             make &&
-             OE_SIMULATION=1 ctest 
-             
-  # SGX1 | RelWithDebug
-  build-test-install-sgx1-relwithdebug:
-    docker:
-      - image: ubuntu:16.04
-    working_directory: ~/Microsoft-OE
-    steps:
-      - checkout
-      # Build, Test and Install
-      - run: 
-          name: SGX1-RelWithDebInfo
-          command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
-             ./scripts/pre-commit &&
-             mkdir build &&
-             cd build &&
-             cmake .. -DCMAKE_BUILD_TYPE=relwithdebinfo &&
-             make &&
-             OE_SIMULATION=1 ctest 
-             
-              
+             sudo ./scripts/build-testall
+                         
 workflows:
   version: 2
-  build-test-install:
+  build-test:
     jobs:      
       #  1. sgx1-debug((build-test-install))
       - build-test-install-sgx1-debug
             
-      # 2.  sgx1-relwithdeb(build-test-install)     
-      - build-test-install-sgx1-relwithdebug
       
