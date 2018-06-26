@@ -25,9 +25,12 @@ void asm_cpuid(unsigned int leaf, unsigned int* subleaf, unsigned int* eax, unsi
 	       : "0" (leaf));
     }
 
-    asm("cpuid\n\t"					
-	   : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)	
-	   : "0" (leaf), "2" (*subleaf));
+    else 
+    {
+        asm("cpuid\n\t"					
+	       : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)	
+	       : "0" (leaf), "2" (*subleaf));
+    }
 }
 
 void TestCpuidAgainstAssembly(unsigned int* leaf, unsigned int* subleaf)
