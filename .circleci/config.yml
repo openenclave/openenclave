@@ -9,7 +9,7 @@ jobs:
   # SGX1 | Debug 
   build-test-sgx1-debug:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -17,19 +17,13 @@ jobs:
       - run:
           name: SGX1-Debug
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
-             ./scripts/pre-commit &&
-             sudo ./scripts/build-testall
+            ./scripts/pre-commit &&
+            sudo /bin/bash ./scripts/build-testall
  
-
   # SGX1 | RelWithDebInfo
   build-test-sgx1-relwithdebinfo:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -37,18 +31,13 @@ jobs:
       - run: 
           name: SGX1-RelWithDebInfo
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1 -b RelWithDebInfo
+             sudo  /bin/bash ./scripts/build-testall -p SGX1 -b RelWithDebInfo
   
-    # SGX1 | Release
-  build-test-sgx1-relwithdebinfo:
+  # SGX1 | Release
+  build-test-sgx1-release:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -56,18 +45,13 @@ jobs:
       - run: 
           name: SGX1-Release
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1 -b Release
+             sudo /bin/bash ./scripts/build-testall -p SGX1 -b Release
              
   # SGX1-FLC | Debug 
   build-test-sgx1-flc-debug:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -75,18 +59,13 @@ jobs:
       - run:
           name: SGX1-FLC-Debug
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1-FLC -b Debug
+             sudo /bin/bash ./scripts/build-testall -p SGX1-FLC -b Debug
 
   # SGX1-FLC | RelWithDebInfo
   build-test-sgx1-flc-relwithdebinfo:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -94,18 +73,13 @@ jobs:
       - run:
           name: SGX1-FLC-RelWithDebInfo
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1-FLC -b RelWithDebInfo
+             sudo /bin/bash ./scripts/build-testall -p SGX1-FLC -b RelWithDebInfo
 
   # SGX1-FLC | Release 
   build-test-sgx1-flc-release:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -113,13 +87,8 @@ jobs:
       - run:
           name: SGX1-FLC-Release
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1-FLC -b Release
+             sudo /bin/bash ./scripts/build-testall -p SGX1-FLC -b Release
              
 workflows:
   version: 2
