@@ -17,7 +17,7 @@ jobs:
       - run:
           name: SGX1-Debug
           command:  |
-             apt-get update -y sudo &&
+             apt-get update &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
              sudo sh ./scripts/build-testall -d -p SGX1-FLC -b Debug    
@@ -33,7 +33,7 @@ jobs:
       - run: 
           name: SGX1-RelWithDebInfo
           command:  |
-             apt-get update -y sudo &&
+             apt-get update &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
              sudo sh ./scripts/build-testall  -d -p SGX1 -b RelWithDebInfo
@@ -49,7 +49,7 @@ jobs:
       - run: 
           name: SGX1-Release
           command:  |
-             apt-get update -y sudo &&
+             apt-get update &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
              sudo sh ./scripts/build-testall -d -p SGX1 -b Release
@@ -65,7 +65,7 @@ jobs:
       - run: 
           name: SGX1-FLC-Debug
           command:  |
-             apt-get update -y sudo &&
+             apt-get update &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
              sudo sh ./scripts/build-testall -d -p SGX1-FLC -b Debug
@@ -81,7 +81,7 @@ jobs:
       - run: 
           name: SGX1--FLC-RelWithDebInfo
           command:  |
-             apt-get update -y sudo &&
+             apt-get update &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
              sudo sh ./scripts/build-testall -d -p SGX1-FLC -b RelWithDebInfo
@@ -97,7 +97,7 @@ jobs:
       - run:   
           name: SGX1-FLC-Release
           command:  |
-             apt-get update -y sudo &&
+             apt-get update &&
              apt-get install -y sudo &&
              sudo sh ./scripts/pre-commit &&
              sudo sh ./scripts/build-testall -d -p SGX1-FLC -b Release
