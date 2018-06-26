@@ -66,15 +66,20 @@ void TestUnequalSubleaves()
 int main()
 {
     unsigned int leaf = 0, subleaf = 0;
+    
+    fprintf(stdout, "Test: assembly call and function call give the same result.\n");
     TestCpuidAgainstAssembly(&leaf, &subleaf);
 
     // Since the subleaf is always required by our api, test out if 0 and not giving the field yield the same values.
+    fprintf(stdout, "Test: result when subleaf is not provided to assembly call and function is given 0.\n");
     TestCpuidAgainstAssembly(&leaf, NULL);
 
     leaf = 0x80000000;
+    fprintf(stdout, "Test: Highest leaf.\n");
     TestCpuidAgainstAssembly(&leaf, &subleaf);
 
     leaf = 0x80000001;
+    fprintf(stdout, "Test: Out of bounds leaf.\n");
     TestCpuidAgainstAssembly(&leaf, &subleaf);
 
     TestUnequalSubleaves();
