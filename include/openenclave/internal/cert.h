@@ -364,7 +364,7 @@ oe_result_t oe_cert_get_issuer(
     size_t* issuer_size);
 
 /**
- * Gets the URLs from the CRL distribution points extension.
+ * Gets the URLs from the CRL-distribution-points extension.
  *
  * The extension whose OID is "2.5.29.31" contains the CRL distribution points.
  * This function obtains an array of URLs from this extension.
@@ -373,10 +373,10 @@ oe_result_t oe_cert_get_issuer(
  * @param urls[out] the array of URLs upon return. This array and its entries
  *        overlay the space given by the **buffer** parameter.
  * @param num_urls the number of URLs found in the extension.
- * @param buffer the buffer that holds the URL array and its entries.
- *        This parameter may be null when **buffer_size** is zero. This 
- *        buffer must be aligned on an 8-byte boundary since it contains the
- *        array of pointers to URLs.
+ * @param buffer the buffer that holds the URL array and its entries. This
+ *        parameter may be null when **buffer_size** is zero. This buffer must 
+ *        be aligned on an 8-byte boundary since it contains the array of 
+ *        pointers to URLs.
  * @param buffer_size[in,out] the size of the buffer (in); the required size
  *        of the buffer (out).
  *
