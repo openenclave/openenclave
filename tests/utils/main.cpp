@@ -52,6 +52,17 @@ void TestCpuidAgainstAssembly(unsigned int* leaf, unsigned int* subleaf)
     OE_TEST(d == d_asm);
 }
 
+void TestUnequalSubleaves()
+{
+    unsigned int a_asm = 0, b_asm = 0, c_asm = 0, d_asm = 0;
+    unsigned int a = 0, b = 0, c = 0, d = 0;
+
+    oe_get_cpuid(0, 1, &a, &b, &c, &d);
+    asm_cpuid(0, 0, &a_asm, &b_asm, &c_asm, &d_asm);
+
+    OE_TEST(a != a_asm);
+}
+
 int main()
 {
     unsigned int leaf = 0, subleaf = 0;
@@ -65,6 +76,8 @@ int main()
 
     leaf = 0x80000001;
     TestCpuidAgainstAssembly(&leaf, &subleaf);
+
+    TestUnequalSubleaves();
 
     return 0;
 }
