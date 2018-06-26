@@ -18,7 +18,19 @@ typedef struct _oe_outbuf
 }
 oe_outbuf_t;
 
-oe_result_t oe_outbuf_start(oe_outbuf_t* buf, void* buffer, size_t* size);
+oe_result_t oe_outbuf_start(
+    oe_outbuf_t* buf, 
+    void* buffer, 
+    size_t* size, 
+    size_t alignment);
+
+OE_INLINE void* oe_outbuf_end(oe_outbuf_t* buf)
+{
+    if (!buf->buffer)
+        return NULL;
+
+    return buf->buffer + buf->offset;
+}
 
 void oe_outbuf_append(oe_outbuf_t* buf, const void* s, size_t n);
 

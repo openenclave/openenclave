@@ -14,6 +14,7 @@
 #define memcpy oe_memcpy
 #else
 #include <string.h>
+#include <stdio.h>
 #endif
 
 static oe_result_t _find_url(
@@ -77,7 +78,7 @@ oe_result_t oe_get_crl_distribution_points(
     oe_result_t result = OE_UNEXPECTED;
     size_t size = 0;
     const char OID[] = "2.5.29.31";
-    size_t offset = 0;
+    oe_outbuf_t outbuf;
 
     if (urls)
         *urls = NULL;
@@ -88,12 +89,7 @@ oe_result_t oe_get_crl_distribution_points(
     if (!cert || !urls || !num_urls || !buffer_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (!buffer && *buffer_size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* The buffer must be aligned on an 8-byte boundary */
-    if (buffer != (uint8_t*)oe_round_up_to_multiple((uint64_t)buffer, 8))
-        OE_RAISE(OE_BAD_ALIGNMENT);
+    OE_CHECK(oe_outbuf_start(&outbuf, buffer, buffer_size, sizeof(void*)));
 
     /* Determine the size of the extension */
     if (oe_cert_find_extension(cert, OID, NULL, &size) != OE_BUFFER_TOO_SMALL)
@@ -122,15 +118,11 @@ oe_result_t oe_get_crl_distribution_points(
             }
         }
 
-        /* If zero entries */
-        if (*num_urls == 0)
-            OE_RAISE(OE_FAILURE);
-
         /* Leave space for urls[] array */
-        offset += sizeof(char*) * (*num_urls);
+        oe_outbuf_append(&outbuf, NULL, sizeof(char*) * (*num_urls));
 
         /* Only set if buffer is big enough for urls[] array */
-        if (offset <= *buffer_size)
+        if (outbuf.offset <= outbuf.size)
             *urls = (const char**)buffer;
 
         /* Process all the CRL distribution points */
@@ -156,29 +148,18 @@ oe_result_t oe_get_crl_distribution_points(
                         &url,
                         &url_len));
 
-                if (buffer && (offset + url_len + 1) <= (*buffer_size))
                 {
-                    uint8_t* ptr = buffer + offset;
-
-                    memcpy(ptr, url, url_len);
-                    ptr[url_len] = '\0';
-
                     if (*urls)
-                        (*urls)[index++] = (char*)ptr;
-                }
+                        (*urls)[index++] = (char*)oe_outbuf_end(&outbuf);
 
-                offset += url_len + 1;
+                    oe_outbuf_append(&outbuf, url, url_len);
+                    oe_outbuf_append(&outbuf, "", 1);
+                }
             }
         }
     }
 
-    if (offset < *buffer_size)
-    {
-        *buffer_size = offset;
-        OE_RAISE(OE_BUFFER_TOO_SMALL);
-    }
-
-    *buffer_size = offset;
+    OE_CHECK(oe_outbuf_finish(&outbuf, buffer_size));
 
     result = OE_OK;
 

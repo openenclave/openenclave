@@ -1105,7 +1105,7 @@ static void _test_crl_distribution_points(void)
 
     r = oe_get_crl_distribution_points(
         &cert, &urls, &num_urls, NULL, &buffer_size);
-    OE_TEST(r == OE_OK);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     {
         OE_ALIGNED(8) uint8_t buffer[buffer_size];
