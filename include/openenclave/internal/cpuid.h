@@ -7,6 +7,8 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/bits/result.h>
 
+OE_EXTERNC_BEGIN
+
 #define OE_CPUID_OPCODE 0xA20F
 #define OE_CPUID_LEAF_COUNT 8
 #define OE_CPUID_EXTENDED_CPUID_LEAF 0x80000000
@@ -26,5 +28,7 @@ oe_result_t oe_get_cpuid(
     unsigned int* __ebx,
     unsigned int* __ecx,
     unsigned int* __edx);
+
+OE_EXTERNC_END
 
 #endif /* _OE_CPUID_H */
