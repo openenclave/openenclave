@@ -30,6 +30,6 @@ workflows:
   build-test:
     jobs:      
       #  1. sgx1-flc-debug((build-test))
-      - build-test-install-sgx1-flc-debug
+      - build-test-sgx1-flc-debug
             
       
