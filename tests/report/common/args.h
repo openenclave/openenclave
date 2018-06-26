@@ -23,4 +23,11 @@ struct VerifyQuoteArgs
     oe_result_t result; /* out */
 };
 
+struct VerifyTCBInfoArgs
+{
+    uint8_t* tcbInfo;     /* in */
+    uint32_t tcbInfoSize; /* in */
+    oe_result_t result;   /* out */
+};
+
 #endif //_ARGS_H_

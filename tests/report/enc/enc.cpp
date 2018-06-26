@@ -7,6 +7,7 @@
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
 #include "../../../common/quote.h"
+#include "../../../common/tcbinfo.h"
 #include "../common/args.h"
 #include "../common/tests.cpp"
 
@@ -148,4 +149,15 @@ done:
     oe_free_buffer(encPemPckCertificate);
     oe_free_buffer(encPckCrl);
     oe_free_buffer(encTcbInfoJson);
+}
+
+oe_result_t OE_VerifyTCBInfo(
+    const TCBInfo* info,
+    const uint8_t* tcbInfoJson,
+    uint32_t tcbInfoJsonSize);
+
+OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
+{
+    TCBInfo info = {0};
+    args->result = OE_VerifyTCBInfo(&info, args->tcbInfo, args->tcbInfoSize);
 }

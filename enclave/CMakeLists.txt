@@ -5,6 +5,8 @@ add_library(oeenclave STATIC
     cert.c
     ec.c
     ../common/quote.c
+    ../common/json.c
+    ../common/tcbinfo.c
     cmac.c
     key.c
     random.c
