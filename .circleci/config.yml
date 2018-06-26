@@ -20,7 +20,11 @@ jobs:
              apt-get update &&
              apt-get install -y sudo &&
              apt-get install -y git &&
-             ./scripts/pre-commit 
+             ./scripts/pre-commit &&
+             mkdir build &&
+             cd build &&
+             cmake .. &&
+             OE_SIMULATOR=1 ctest 
               
 workflows:
   version: 2
