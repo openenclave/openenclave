@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/internal/cpuid.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <openenclave/internal/cpuid.h>
 
 typedef struct _Regs
 {
@@ -15,12 +15,8 @@ typedef struct _Regs
 
 static oe_result_t _CPUID(Regs* regs)
 {
-    return oe_get_cpuid(regs->eax, 
-                        regs->ecx, 
-                        &regs->eax, 
-                        &regs->ebx, 
-                        &regs->ecx, 
-                        &regs->edx);
+    return oe_get_cpuid(
+        regs->eax, regs->ecx, &regs->eax, &regs->ebx, &regs->ecx, &regs->edx);
 }
 
 #define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)

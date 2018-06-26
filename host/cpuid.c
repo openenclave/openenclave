@@ -15,7 +15,8 @@ oe_result_t oe_get_cpuid(
     oe_result_t result = OE_UNEXPECTED;
     int supported = 0;
 
-    supported = __get_cpuid_count(__leaf, __subleaf, __eax, __ebx, __ecx, __edx);
+    supported =
+        __get_cpuid_count(__leaf, __subleaf, __eax, __ebx, __ecx, __edx);
     if (!supported)
     {
         result = OE_UNSUPPORTED;

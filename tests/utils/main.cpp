@@ -16,20 +16,26 @@ OE_EXTERNC oe_result_t oe_get_cpuid(
     unsigned int* __ecx,
     unsigned int* __edx);
 
-void asm_cpuid(unsigned int leaf, unsigned int* subleaf, unsigned int* eax, unsigned int* ebx, unsigned int* ecx, unsigned int* edx)
+void asm_cpuid(
+    unsigned int leaf,
+    unsigned int* subleaf,
+    unsigned int* eax,
+    unsigned int* ebx,
+    unsigned int* ecx,
+    unsigned int* edx)
 {
     if (subleaf == NULL)
     {
-        asm("cpuid\n\t"					
-	       : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)	
-	       : "0" (leaf));
+        asm("cpuid\n\t"
+            : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
+            : "0"(leaf));
     }
 
-    else 
+    else
     {
-        asm("cpuid\n\t"					
-	       : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)	
-	       : "0" (leaf), "2" (*subleaf));
+        asm("cpuid\n\t"
+            : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
+            : "0"(leaf), "2"(*subleaf));
     }
 }
 
@@ -69,12 +75,17 @@ void TestUnequalLeaves()
 int main()
 {
     unsigned int leaf = 0, subleaf = 0;
-    
-    fprintf(stdout, "Test: assembly call and function call give the same result.\n");
+
+    fprintf(
+        stdout,
+        "Test: assembly call and function call give the same result.\n");
     TestCpuidAgainstAssembly(leaf, &subleaf);
 
-    // Since the subleaf is always required by our api, test out if 0 and not giving the field yield the same values.
-    fprintf(stdout, "Test: result when subleaf is not provided to assembly call.\n");
+    // Since the subleaf is always required by our api, test out if 0 and not
+    // giving the field yield the same values.
+    fprintf(
+        stdout,
+        "Test: result when subleaf is not provided to assembly call.\n");
     TestCpuidAgainstAssembly(leaf, NULL);
     TestCpuidAgainstAssembly(1, NULL);
     TestCpuidAgainstAssembly(2, NULL);

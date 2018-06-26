@@ -5,8 +5,8 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/tests.h>
 
-#include "../../../host/cpuid_count.h"
 #include "../../../host/cpuid.c"
+#include "../../../host/cpuid_count.h"
 #include "../../../host/linux/cpuid_count.c"
 
 static int done = 0;
@@ -20,7 +20,7 @@ int test_cpuid_instruction(unsigned int what)
 {
     if (!done)
     {
-        unsigned int a,b,d;
+        unsigned int a, b, d;
         oe_get_cpuid(1, 0, &a, &b, &c, &d);
         // This should be executed only once.
         ++hits1;
