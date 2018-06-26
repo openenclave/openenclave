@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef OE_SAMPLES_ATTESTATION_ENC_LOG_H
 #define OE_SAMPLES_ATTESTATION_ENC_LOG_H
 
