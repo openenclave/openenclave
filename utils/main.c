@@ -8,7 +8,7 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/tests.h>
 
-void asm_cpuid(unsigned int leaf, unsigned int subleaf, unsigned int* eax, unsigned int* ebx, unsigned int* ecx, unsigned int* edx)
+void asm_cpuid(unsigned int leaf, unsigned int* subleaf, unsigned int* eax, unsigned int* ebx, unsigned int* ecx, unsigned int* edx)
 {
     if (subleaf == NULL)
     {
@@ -36,7 +36,7 @@ void TestCpuidAgainstAssembly(unsigned int* leaf, unsigned int* subleaf)
         oe_get_cpuid(*leaf, *subleaf, &a, &b, &c, &d);
     }
 
-    asm_cpuid(*leaf, *subleaf, &a_asm, &b_asm, &c_asm, &d_asm);
+    asm_cpuid(*leaf, subleaf, &a_asm, &b_asm, &c_asm, &d_asm);
 
     OE_TEST(a == a_asm);
     OE_TEST(b == b_asm);
