@@ -22,8 +22,8 @@ jobs:
              sudo sh ./scripts/pre-commit &&
              sudo sh ./scripts/build-testall -d -p SGX1-FLC -b Debug    
   
-  # SGX1 | RelWithDebug
-  build-test-install-sgx1-relwithdebug:
+  # SGX1 | RelWithDebInfo
+  build-test-install-sgx1-relwithdebinfo:
     docker:
       - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
@@ -70,8 +70,8 @@ jobs:
              sudo sh ./scripts/pre-commit &&
              sudo sh ./scripts/build-testall -d -p SGX1-FLC -b Debug
 
-  # SGX1-FLC | RelWithDebug
-  build-test-install-sgx1-flc-relwithdebug:
+  # SGX1-FLC | RelWithDebInfo
+  build-test-install-sgx1-flc-relwithdebinfo:
     docker:
       - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
@@ -110,7 +110,7 @@ workflows:
       - build-test-install-sgx1-debug
             
       # 2.  sgx1-relwithdeb(build-test-install)     
-      - build-test-install-sgx1-relwithdebug
+      - build-test-install-sgx1-relwithdebinfo
             
       # 3.  sgx1-release(build-test-install)    
       - build-test-install-sgx1-release
@@ -118,8 +118,8 @@ workflows:
       # 4.  sgx1-flc-debug(build-test-install)
       - build-test-install-sgx1-flc-debug
             
-      # 5.  sgx1-flc-relwithdebug(build-test-install)  
-      - build-test-install-sgx1-flc-relwithdebug
+      # 5.  sgx1-flc-relwithdebinfo(build-test-install)  
+      - build-test-install-sgx1-flc-relwithdebinfo
             
       # 6.  sgx1-flc-release(build-test-install)    
       - build-test-install-sgx1-flc-release
