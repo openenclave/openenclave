@@ -30,7 +30,7 @@ typedef struct _Schema
 
 #define NUM_LEVELS (4)
 
-const Schema g_Schema[NUM_LEVELS] = {
+static const Schema g_Schema[NUM_LEVELS] = {
     {2, {{"tcbInfo", OBJECT}, {"signature", STRING}}},
     {4,
      {{"version", NUMBER},
@@ -80,7 +80,7 @@ typedef struct _CallbackData
     const char* errorMessage;
 } CallbackData;
 
-bool _IsExpectingType(CallbackData* data, uint32_t type)
+static bool _IsExpectingType(CallbackData* data, uint32_t type)
 {
     if (data->level >= 0 && data->level <= 3)
     {
@@ -139,13 +139,13 @@ static oe_result_t _endObject(void* vdata)
     return OE_FAILURE;
 }
 
-oe_result_t _beginArray(void* vdata)
+static oe_result_t _beginArray(void* vdata)
 {
     OE_UNUSED(vdata);
     return OE_OK;
 }
 
-oe_result_t _endArray(void* vdata)
+static oe_result_t _endArray(void* vdata)
 {
     OE_UNUSED(vdata);
     return OE_OK;
@@ -162,7 +162,10 @@ static bool _json_strcmp(
     return (len1 == len2) && (oe_strncmp(s1, s2, len1) == 0);
 }
 
-oe_result_t _propertyName(void* vdata, const uint8_t* name, uint32_t nameLength)
+static oe_result_t _propertyName(
+    void* vdata,
+    const uint8_t* name,
+    uint32_t nameLength)
 {
     CallbackData* data = (CallbackData*)vdata;
 
@@ -218,12 +221,15 @@ oe_result_t _propertyName(void* vdata, const uint8_t* name, uint32_t nameLength)
     return OE_FAILURE;
 }
 
-oe_result_t _number(void* data, const uint8_t* value, uint32_t valueLength)
+static oe_result_t _number(
+    void* data,
+    const uint8_t* value,
+    uint32_t valueLength)
 {
     return _IsExpectingType(data, NUMBER) ? OE_OK : OE_FAILURE;
 }
 
-oe_result_t _string(void* data, const uint8_t* str, uint32_t strLength)
+static oe_result_t _string(void* data, const uint8_t* str, uint32_t strLength)
 {
     return _IsExpectingType(data, STRING) ? OE_OK : OE_FAILURE;
 }
