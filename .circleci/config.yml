@@ -27,7 +27,7 @@ jobs:
              cd build &&
              cmake .. &&
              make &&
-             OE_SIMULATOR=1 ctest 
+             OE_SIMULATION=1 ctest 
               
 workflows:
   version: 2
