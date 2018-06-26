@@ -5,17 +5,17 @@
 #include <openenclave/enclave.h>
 #endif
 
-#include "asn1_tests.h"
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
+#include "asn1_tests.h"
 
-static const char _CERT[] = 
+static const char _CERT[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIEejCCBCCgAwIBAgIVAIRhkz/I2bp4OHxNAneNMrWoyuVBMAoGCCqGSM49BAMC\n"
     "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
@@ -187,7 +187,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
 
         switch (tag)
         {
-            case OE_ASN1_TAG_CONSTRUCTED|OE_ASN1_TAG_SEQUENCE:
+            case OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE:
             {
                 oe_asn1_t sequence;
                 r = oe_asn1_get_sequence(asn1, &sequence);

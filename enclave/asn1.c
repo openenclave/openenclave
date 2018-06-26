@@ -1,9 +1,9 @@
-#include <openenclave/internal/asn1.h>
-#include <openenclave/internal/raise.h>
-#include <openenclave/internal/print.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
+#include <openenclave/internal/asn1.h>
+#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
+#include <openenclave/internal/raise.h>
 
 OE_STATIC_ASSERT(MBEDTLS_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
 OE_STATIC_ASSERT(MBEDTLS_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);
@@ -16,8 +16,7 @@ typedef struct _oe_asn1_impl_t
     const uint8_t* data;
     const uint8_t* end;
     uint8_t* ptr;
-}
-oe_asn1_impl_t;
+} oe_asn1_impl_t;
 
 OE_INLINE bool _is_valid(const oe_asn1_impl_t* asn1)
 {
@@ -252,7 +251,7 @@ done:
 }
 
 oe_result_t oe_asn1_get_octet_string(
-    oe_asn1_t* asn1_, 
+    oe_asn1_t* asn1_,
     const uint8_t** data,
     size_t* length)
 {

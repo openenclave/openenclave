@@ -15,10 +15,10 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/pem.h>
-#include <openenclave/internal/raise.h>
-#include <openenclave/internal/utils.h>
-#include <openenclave/internal/string.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/string.h>
+#include <openenclave/internal/utils.h>
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"

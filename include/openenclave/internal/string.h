@@ -23,9 +23,9 @@
  * @param pattern the pattern string to be replaced.
  * @param replacement the replacement string.
  *
- * @returns the size of the resulting string including the zero terminator or 
+ * @returns the size of the resulting string including the zero terminator or
  *     (size_t)-1 on error. A value greater or equal to **size** indicates
- *     either a failure ((size_t)-1) or that the string buffer is too small 
+ *     either a failure ((size_t)-1) or that the string buffer is too small
  *     to hold the result.
  */
 size_t oe_string_substitute(
@@ -35,7 +35,7 @@ size_t oe_string_substitute(
     const char* replacement);
 
 /**
- * Inserts a string (**insert**) into another string (**str**) at the given 
+ * Inserts a string (**insert**) into another string (**str**) at the given
  * offset.
  *
  * @param str the string buffer.
@@ -43,9 +43,9 @@ size_t oe_string_substitute(
  * @param offset the offset at which to insert the string.
  * @param insert the string to be inserted.
  *
- * @returns the size of the resulting string including the zero terminator or 
+ * @returns the size of the resulting string including the zero terminator or
  *     (size_t)-1 on error. A value greater or equal to **size** indicates
- *     either a failure ((size_t)-1) or that the string buffer is too small 
+ *     either a failure ((size_t)-1) or that the string buffer is too small
  *     to hold the result.
  */
 size_t oe_string_insert(

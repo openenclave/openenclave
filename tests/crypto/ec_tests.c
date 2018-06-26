@@ -11,10 +11,10 @@
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include "ec.h"
 #include "ec_tests.h"
 #include "hash.h"
@@ -995,7 +995,7 @@ void _TestCertSubject()
     printf("=== begin %s()\n", __FUNCTION__);
 
     oe_result_t r;
-    oe_cert_t cert = { 0 };
+    oe_cert_t cert = {0};
     char subject[1024];
     size_t subject_size = sizeof(subject);
 
@@ -1032,7 +1032,7 @@ void _TestCertIssuer()
     printf("=== begin %s()\n", __FUNCTION__);
 
     oe_result_t r;
-    oe_cert_t cert = { 0 };
+    oe_cert_t cert = {0};
     char issuer[1024];
     size_t issuer_size = sizeof(issuer);
 
@@ -1059,7 +1059,7 @@ void _TestCertIssuer()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-static const char _SGX_CERT[] = 
+static const char _SGX_CERT[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIEejCCBCCgAwIBAgIVAIRhkz/I2bp4OHxNAneNMrWoyuVBMAoGCCqGSM49BAMC\n"
     "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
@@ -1104,22 +1104,14 @@ static void _test_crl_distribution_points(void)
     OE_TEST(r == OE_OK);
 
     r = oe_get_crl_distribution_points(
-        &cert, 
-        &urls, 
-        &num_urls, 
-        NULL, 
-        &buffer_size);
+        &cert, &urls, &num_urls, NULL, &buffer_size);
     OE_TEST(r == OE_OK);
 
     {
         OE_ALIGNED(8) uint8_t buffer[buffer_size];
 
         r = oe_get_crl_distribution_points(
-            &cert, 
-            &urls, 
-            &num_urls, 
-            buffer, 
-            &buffer_size);
+            &cert, &urls, &num_urls, buffer, &buffer_size);
 
         OE_TEST(num_urls == 1);
         OE_TEST(urls != NULL);

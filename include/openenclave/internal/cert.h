@@ -7,8 +7,8 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include "ec.h"
-#include "rsa.h"
 #include "oid.h"
+#include "rsa.h"
 
 OE_EXTERNC_BEGIN
 
@@ -328,12 +328,12 @@ oe_result_t oe_cert_find_extension(
  * @param subject[in] the subject. Passing null for this parameter is a way
  *        to determine the required subject size, although the **subject_size**
  *        must point to an integer whose value is zero.
- * @param subject_size[in,out] the size of the subject buffer (in) or the size 
+ * @param subject_size[in,out] the size of the subject buffer (in) or the size
  *        of the actual subject including the zero-terminator (out).
  *
  * @return OE_OK success.
  * @return OE_INVALID_PARAMETER a parameter is invalid.
- * @return OE_BUFFER_TOO_SMALL the subject buffer is too small and the 
+ * @return OE_BUFFER_TOO_SMALL the subject buffer is too small and the
  *         **subject_size** parameter contains the required size.
  * @return OE_FAILURE general failure.
  */
@@ -349,12 +349,12 @@ oe_result_t oe_cert_get_subject(
  * @param issuer[in] the issuer. Passing null for this parameter is a way
  *        to determine the required issuer size, although the **issuer_size**
  *        must point to an integer whose value is zero.
- * @param issuer_size[in,out] the size of the issuer buffer (in) or the size 
+ * @param issuer_size[in,out] the size of the issuer buffer (in) or the size
  *        of the actual issuer including the zero-terminator (out).
  *
  * @return OE_OK success.
  * @return OE_INVALID_PARAMETER a parameter is invalid.
- * @return OE_BUFFER_TOO_SMALL the issuer buffer is too small and the 
+ * @return OE_BUFFER_TOO_SMALL the issuer buffer is too small and the
  *         **issuer_size** parameter contains the required size.
  * @return OE_FAILURE general failure.
  */
@@ -374,15 +374,15 @@ oe_result_t oe_cert_get_issuer(
  *        overlay the space given by the **buffer** parameter.
  * @param num_urls the number of URLs found in the extension.
  * @param buffer the buffer that holds the URL array and its entries. This
- *        parameter may be null when **buffer_size** is zero. This buffer must 
- *        be aligned on an 8-byte boundary since it contains the array of 
+ *        parameter may be null when **buffer_size** is zero. This buffer must
+ *        be aligned on an 8-byte boundary since it contains the array of
  *        pointers to URLs.
  * @param buffer_size[in,out] the size of the buffer (in); the required size
  *        of the buffer (out).
  *
  * @return OE_OK success.
  * @return OE_INVALID_PARAMETER a parameter is invalid.
- * @return OE_BUFFER_TOO_SMALL the buffer is too small and the **buffer_size** 
+ * @return OE_BUFFER_TOO_SMALL the buffer is too small and the **buffer_size**
  *         parameter contains the required size.
  * @return OE_BAD_ALIGNMENT the buffer is not aligned on an 8-byte boundary.
  * @return OE_FAILURE general failure.

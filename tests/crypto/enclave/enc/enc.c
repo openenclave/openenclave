@@ -13,10 +13,10 @@
 #include <openenclave/internal/rsa.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/tests.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include "../../asn1_tests.h"
 #include "../../ec_tests.h"
 #include "../../hash.h"

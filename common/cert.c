@@ -1,24 +1,24 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/cert.h>
 #include <openenclave/internal/asn1.h>
+#include <openenclave/internal/cert.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 
 #ifdef OE_BUILD_ENCLAVE
-# include <openenclave/internal/enclavelibc.h>
-# define memset oe_memset
-# define memcmp oe_memcmp
-# define memcpy oe_memcpy
+#include <openenclave/internal/enclavelibc.h>
+#define memset oe_memset
+#define memcmp oe_memcmp
+#define memcpy oe_memcpy
 #else
-# include <string.h>
+#include <string.h>
 #endif
 
 static oe_result_t _find_url(
-    const uint8_t* data, 
+    const uint8_t* data,
     size_t size,
-    const char** url, 
+    const char** url,
     size_t* url_len)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -30,7 +30,7 @@ static oe_result_t _find_url(
     {
         const char PATTERN[] = "https:";
 
-        if (memcmp(p, PATTERN, sizeof(PATTERN)-1) == 0)
+        if (memcmp(p, PATTERN, sizeof(PATTERN) - 1) == 0)
         {
             /* Fail if string begins with the pattern */
             if (p == data)
@@ -148,11 +148,12 @@ oe_result_t oe_get_crl_distribution_points(
 
                 OE_CHECK(oe_asn1_get_sequence(&seq, &crldp));
 
-                OE_CHECK(_find_url(
-                    oe_asn1_data(&crldp), 
-                    oe_asn1_length(&crldp),
-                    &url,
-                    &url_len));
+                OE_CHECK(
+                    _find_url(
+                        oe_asn1_data(&crldp),
+                        oe_asn1_length(&crldp),
+                        &url,
+                        &url_len));
 
                 if (buffer && (offset + url_len + 1) <= (*buffer_size))
                 {

@@ -7,16 +7,16 @@
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/utils.h>
-#include <openenclave/internal/pem.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
-#include <openssl/x509v3.h>
 #include <openssl/x509_vfy.h>
+#include <openssl/x509v3.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -413,9 +413,9 @@ done:
 /* Free with sk_DIST_POINT_pop_free(crldp, DIST_POINT_free) */
 /* ATTN: implement */
 /* OID: 2.5.29.31 */
-OE_INLINE STACK_OF(DIST_POINT)* _get_crl_distribution_points(X509* x509)
+OE_INLINE STACK_OF(DIST_POINT) * _get_crl_distribution_points(X509* x509)
 {
-    STACK_OF(DIST_POINT)* crldp;
+    STACK_OF(DIST_POINT) * crldp;
 
     crldp = X509_get_ext_d2i(x509, NID_crl_distribution_points, NULL, NULL);
 

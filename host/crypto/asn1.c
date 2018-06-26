@@ -1,10 +1,10 @@
 #include <openenclave/internal/asn1.h>
-#include <openenclave/internal/raise.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
+#include <openenclave/internal/raise.h>
 #include <openssl/asn1.h>
-#include <string.h>
 #include <openssl/pem.h>
+#include <string.h>
 
 OE_STATIC_ASSERT(V_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
 OE_STATIC_ASSERT(V_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);
@@ -17,8 +17,7 @@ typedef struct _oe_asn1_impl_t
     const uint8_t* data;
     const uint8_t* end;
     const uint8_t* ptr;
-}
-oe_asn1_impl_t;
+} oe_asn1_impl_t;
 
 OE_INLINE bool _is_valid(const oe_asn1_impl_t* asn1)
 {
@@ -126,8 +125,8 @@ oe_result_t oe_asn1_get(
         int tmp_tag = 0;
         int tmp_class = 0;
 
-        int rc = ASN1_get_object(&asn1->ptr, &tmp_length, &tmp_tag, 
-            &tmp_class, _remaining(asn1));
+        int rc = ASN1_get_object(
+            &asn1->ptr, &tmp_length, &tmp_tag, &tmp_class, _remaining(asn1));
 
         if (rc != V_ASN1_CONSTRUCTED && rc != 0)
             OE_RAISE(OE_FAILURE);
@@ -240,7 +239,7 @@ done:
 }
 
 oe_result_t oe_asn1_get_octet_string(
-    oe_asn1_t* asn1_, 
+    oe_asn1_t* asn1_,
     const uint8_t** data,
     size_t* length)
 {

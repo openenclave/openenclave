@@ -281,7 +281,7 @@ size_t oe_string_substitute(
 
     replacement_len = oe_strlen(replacement);
 
-    for (pos = 0; pos < str_len; )
+    for (pos = 0; pos < str_len;)
     {
         if (oe_strncmp(str + pos, pattern, pattern_len) == 0)
         {
@@ -327,11 +327,7 @@ size_t oe_string_substitute(
     return str_len + 1;
 }
 
-size_t oe_string_insert(
-    char* str,
-    size_t size,
-    size_t pos,
-    const char* insert)
+size_t oe_string_insert(char* str, size_t size, size_t pos, const char* insert)
 {
     size_t str_len;
     size_t insert_len;
