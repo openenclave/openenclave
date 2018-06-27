@@ -107,6 +107,13 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 
     oe_get_cpuid(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
 
+    // Do something with the out param to prevent call from getting optimized 
+    // out
+    if (cpuidRAX != 0)
+    {
+        oe_host_printf("The value of cpuidRAX is now: %d\n.", cpuidRAX);
+    }
+
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
     {
         oe_host_printf(
