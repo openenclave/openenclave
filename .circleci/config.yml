@@ -7,7 +7,7 @@ jobs:
   #========Build-Test==========# 
 
   # SGX1 | Debug 
-  build-test-sgx1-debug:
+  sgx1-build-test:
     docker:
       - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
@@ -15,7 +15,7 @@ jobs:
       - checkout
       # Build and Test
       - run:
-          name: SGX1-Debug
+          name: SGX1-Debug-RelWithDebInfo
           command:  |
              apt-get update &&
              apt-get install -y sudo &&
@@ -23,45 +23,23 @@ jobs:
              sudo ./scripts/install-prereqs &&
              apt-get install -y libssl-dev && 
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall
- 
-  # SGX1 | RelWithDebInfo
-  build-test-sgx1-relwithdebinfo:
-    docker:
-      - image: ubuntu:16.04
-    working_directory: ~/Microsoft-OE
-    steps:
-      - checkout
-      # Build and Test
-      - run: 
-          name: SGX1-RelWithDebInfo
-          command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
-             ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1 -b RelWithDebInfo
-  
-    # SGX1 | Release
-  build-test-sgx1-release:
-    docker:
-      - image: ubuntu:16.04
-    working_directory: ~/Microsoft-OE
-    steps:
-      - checkout
-      # Build and Test
-      - run: 
-          name: SGX1-Release
-          command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
-             ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1 -b Release
+             mkdir build &&
+             cd build &&
+             echo Starting SGX1-Debug Build and Test Configuration -------------------------
+             echo Starting SGX1-Debug Building ...
+             cmake .. &&
+             make &&
+             echo Starting SGX1-Debug Testing ...
+             OE_SIMULATION=1 ctest 
+             echo Completed SGX1-Debug Test -------------------------
+             echo Starting SGX1-RelWithDebInfo Build and Test Configuration -------------------------
+             make clean
+             echo Starting SGX1-RelWithDebInfo Building ...
+             cmake .. -DCMAKE_BUILD_TYPE=relwithdebinfo &&
+             make
+             echo Starting SGX1-Debug Testing ...
+             OE_SIMULATION=1 ctest 
+             echo Completed SGX1-Debug Test -------------------------
              
   # SGX1-FLC | Debug 
   build-test-sgx1-flc-debug:
@@ -81,63 +59,15 @@ jobs:
              apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
              sudo ./scripts/build-testall -p SGX1-FLC -b Debug
-
-  # SGX1-FLC | RelWithDebInfo
-  build-test-sgx1-flc-relwithdebinfo:
-    docker:
-      - image: ubuntu:16.04
-    working_directory: ~/Microsoft-OE
-    steps:
-      - checkout
-      # Build and Test
-      - run:
-          name: SGX1-FLC-RelWithDebInfo
-          command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
-             ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1-FLC -b RelWithDebInfo
-
-  # SGX1-FLC | Release 
-  build-test-sgx1-flc-release:
-    docker:
-      - image: ubuntu:16.04
-    working_directory: ~/Microsoft-OE
-    steps:
-      - checkout
-      # Build and Test
-      - run:
-          name: SGX1-FLC-Release
-          command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
-             ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1-FLC -b Release
              
 workflows:
   version: 2
   build-test:
     jobs:                
-      #  1. sgx1-debug((build-test))
-       #- build-test-sgx1-debug
+      #  1. sgx1((build-test))
+       - sgx1-build-test
+         
             
-      # 2.  sgx1-relwithdebinfo(build-test)     
-       #- build-test-sgx1-relwithdebinfo
-            
-      # 3.  sgx1-release(build-test)    
-       #- build-test-sgx1-release
-            
-      # 4.  sgx1-flc-debug(build-test)
-       - build-test-sgx1-flc-debug
-            
-      # 5.  sgx1-flc-relwithdebinfo(build-test)  
-       #- build-test-sgx1-flc-relwithdebinfo
-            
-      # 6.  sgx1-flc-release(build-test)    
-       #- build-test-sgx1-flc-release
+      # 2.  sgx1-flc(build-test)
+       #- build-test-sgx1-flc-debug
+           
