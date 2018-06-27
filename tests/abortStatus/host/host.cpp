@@ -5,9 +5,9 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <unistd.h>
 #include <cassert>
 #include <cassert>
+#include <chrono>
 #include <cstdio>
 #include <cstdio>
 #include <cstdlib>
@@ -16,6 +16,14 @@
 #include <vector>
 #include "../../ecall_ocall/crc32.h"
 #include "../args.h"
+
+#if defined(__linux__)
+#include<unistd.h>
+#define atomic_inc(ptr) __sync_fetch_and_add((ptr), 1)
+#elif defined(_WIN32)
+#include<Windows.h>
+#define atomic_inc(ptr) InterlockedIncrement((ptr))
+#endif
 
 using namespace std;
 
@@ -48,7 +56,7 @@ static void CrashEnclaveThread(
     // Wait all worker threads ready.
     while (*args.thread_ready_count != THREAD_COUNT - 1)
     {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     // Crash the enclave to set enclave in abort status.
@@ -72,12 +80,12 @@ static void EcallAfterCrashThread(
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
 
-    __sync_fetch_and_add(args.thread_ready_count, 1);
+    atomic_inc(args.thread_ready_count);
 
     // Wait the enclave is aborted.
     while (*args.is_enclave_crashed == 0)
     {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     // Try to ECALL into the enclave.
@@ -244,12 +252,12 @@ OE_OCALL void RecursionOcall(void* args_)
     }
     else
     {
-        __sync_fetch_and_add(args.thread_ready_count, 1);
+        atomic_inc(args.thread_ready_count);
 
         // Wait the enclave is aborted.
         while (*args.is_enclave_crashed == 0)
         {
-            sleep(1);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
         // Verify the ECALL into the enclave will fail after enclave is aborted.
@@ -394,15 +402,16 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
 
 int main(int argc, const char* argv[])
 {
-    if (argc != 2)
+    /*if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
         exit(1);
     }
 
     printf("=== This program is used to test enclave abort status.\n");
-
-    if (TestBasicAbort(argv[1]))
+	*/
+    const char* enc_path = "e:\\abortStatus_enc.signed.so";
+    if (TestBasicAbort(enc_path/*argv[1]*/))
     {
         printf("Basic abort status tests passed.\n");
     }
@@ -412,7 +421,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    if (TestMultipleThreadAbort(argv[1]))
+    if (TestMultipleThreadAbort(enc_path /*argv[1]*/))
     {
         printf("Multiple threads abort status tests passed.\n");
     }
