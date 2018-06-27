@@ -24,10 +24,11 @@ void asm_get_cpuid(
     unsigned int* ecx,
     unsigned int* edx)
 {
-    #if defined(__GNUC__)
+#if defined(__GNUC__)
     if (subleaf == NULL)
     {
-        asm volatile("cpuid\n\t"
+        asm volatile(
+            "cpuid\n\t"
             : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
             : "0"(leaf)
             : "cc", "memory");
@@ -35,12 +36,13 @@ void asm_get_cpuid(
 
     else
     {
-        asm volatile("cpuid\n\t"
+        asm volatile(
+            "cpuid\n\t"
             : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
             : "0"(leaf), "2"(*subleaf)
             : "cc", "memory");
     }
-    #endif
+#endif
 }
 
 void TestCpuidAgainstAssembly(unsigned int leaf, unsigned int* subleaf)
