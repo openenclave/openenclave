@@ -17,6 +17,6 @@ if (UNIX)
 endif()
 
 foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name "../../3rdparty/libunwind/libunwind/tests/")
+    get_testcase_name(${testcase} name "3rdparty/libunwind/libunwind/tests/")
 	add_test(tests/libunwind/${name} ./host/libunwind_host ./enc/libunwindtest-${name}_enc.signed.so)
 endforeach(testcase)
