@@ -20,7 +20,7 @@ uint8_t isAlnum(uint8_t c)
 
 OE_INLINE uint8_t isSpace(uint8_t c)
 {
-    return c == ' ' || (unsigned)c - '\t' < 5;
+    return ((c == ' ') || ((unsigned)c - '\t' < 5));
 }
 
 // Skip white space
