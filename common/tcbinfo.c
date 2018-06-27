@@ -128,9 +128,9 @@ static oe_result_t _beginObject(void* vdata)
 static oe_result_t _endObject(void* vdata)
 {
     CallbackData* data = (CallbackData*)vdata;
-    // Check that all expected properties have been read.
     int level = data->level--;
 
+    // Check that all expected properties have been read.
     if (level < NUM_LEVELS &&
         data->numPropertiesSeen[level] == g_Schema[level].numProperties)
         return OE_OK;
@@ -157,7 +157,7 @@ static bool _json_strcmp(
     const char* s2,
     uint32_t len2)
 {
-    // String in json stream are not zero terminated.
+    // Strings in json stream are not zero terminated.
     // Hence the special comparison function.
     return (len1 == len2) && (oe_strncmp(s1, s2, len1) == 0);
 }
@@ -176,7 +176,7 @@ static oe_result_t _propertyName(
 
     if (data->level <= 3)
     {
-        // First find a matching property.
+        // First, find a matching property.
         schema = &g_Schema[data->level];
         for (uint32_t i = 0; i < schema->numProperties; ++i)
         {
