@@ -4,127 +4,123 @@
 
 ## Files
 
+### exception.h
+
+### properties.h
+
+### report.h
+
 ### result.h
 
-* [oe_result_str()](result_8h_ad6af4f3a22dd8979ba8d33e5f87121be_1ad6af4f3a22dd8979ba8d33e5f87121be.md)
+* [oe_result_str()](result_8h_a9bd668f10c3d509e6668363cd51dfad1_1a9bd668f10c3d509e6668363cd51dfad1.md)
 
 ### thread.h
 
-* [oe_thread_self()](thread_8h_a6bff3d1b325e3770da54e4ec6444ea71_1a6bff3d1b325e3770da54e4ec6444ea71.md)
+* [oe_thread_self()](thread_8h_a7f0347e48226889854f2edb7f007e532_1a7f0347e48226889854f2edb7f007e532.md)
 
-* [oe_thread_equal()](thread_8h_a5acc8c8a942c0345b6a3646e92d71cab_1a5acc8c8a942c0345b6a3646e92d71cab.md)
+* [oe_thread_equal()](thread_8h_a25377db9e25d5d9dbf382692462b6519_1a25377db9e25d5d9dbf382692462b6519.md)
 
-* [oe_once()](thread_8h_a0b69da4d6a9167fbb16176128dc9662e_1a0b69da4d6a9167fbb16176128dc9662e.md)
+* [oe_once()](thread_8h_aa27d2487f7f696b4f837149c2ec28bf6_1aa27d2487f7f696b4f837149c2ec28bf6.md)
 
-* [oe_spin_init()](thread_8h_a0ba37c5844d8a366bde6357d3a33cca4_1a0ba37c5844d8a366bde6357d3a33cca4.md)
+* [oe_spin_init()](thread_8h_a602eaad5be359cdac77f2054b41dbdd6_1a602eaad5be359cdac77f2054b41dbdd6.md)
 
-* [oe_spin_lock()](thread_8h_a1fb244a95a4533ef27952232823e5f6f_1a1fb244a95a4533ef27952232823e5f6f.md)
+* [oe_spin_lock()](thread_8h_aae5e20184eceaab7f098965c736822a9_1aae5e20184eceaab7f098965c736822a9.md)
 
-* [oe_spin_unlock()](thread_8h_acb22714370fdf7b849b438a4f7f66a38_1acb22714370fdf7b849b438a4f7f66a38.md)
+* [oe_spin_unlock()](thread_8h_a0adcf530f702c9fb7b2e4e4a2fc61ccb_1a0adcf530f702c9fb7b2e4e4a2fc61ccb.md)
 
-* [oe_spin_destroy()](thread_8h_a08fae8ebdffaf24f73d81cc908af7b82_1a08fae8ebdffaf24f73d81cc908af7b82.md)
+* [oe_spin_destroy()](thread_8h_afe41ea1c6788e10a381b5250cafa64fa_1afe41ea1c6788e10a381b5250cafa64fa.md)
 
-* [oe_mutex_init()](thread_8h_a63d9a85466e5b2eb5cac7e6bd345a825_1a63d9a85466e5b2eb5cac7e6bd345a825.md)
+* [oe_mutex_init()](thread_8h_a9eeea0ba1af9e6010c2bb23cbe3b6863_1a9eeea0ba1af9e6010c2bb23cbe3b6863.md)
 
-* [oe_mutex_lock()](thread_8h_a07d567be587f3c096e270a44cb4c95de_1a07d567be587f3c096e270a44cb4c95de.md)
+* [oe_mutex_lock()](thread_8h_a704737666b1716f0dd65dd0a02582ec1_1a704737666b1716f0dd65dd0a02582ec1.md)
 
-* [oe_mutex_try_lock()](thread_8h_a5587d5910046ba2416098dc22947fe46_1a5587d5910046ba2416098dc22947fe46.md)
+* [oe_mutex_try_lock()](thread_8h_a1b60feef4e9782d2b9d41eb821759cd6_1a1b60feef4e9782d2b9d41eb821759cd6.md)
 
-* [oe_mutex_unlock()](thread_8h_a583e01c9edfd636ee4a1a0e290d32161_1a583e01c9edfd636ee4a1a0e290d32161.md)
+* [oe_mutex_unlock()](thread_8h_a2c71ea40c4b81758c620f85ff8c0d648_1a2c71ea40c4b81758c620f85ff8c0d648.md)
 
-* [oe_mutex_destroy()](thread_8h_ad34bc9539c4033154a0029492702acce_1ad34bc9539c4033154a0029492702acce.md)
+* [oe_mutex_destroy()](thread_8h_a6dd7a987817656584151caa3b7158f03_1a6dd7a987817656584151caa3b7158f03.md)
 
-* [oe_cond_init()](thread_8h_a47164ea7ce271deba31f2088e6947e4c_1a47164ea7ce271deba31f2088e6947e4c.md)
+* [oe_cond_init()](thread_8h_a6d6269dea7be432e889197ba19ce5949_1a6d6269dea7be432e889197ba19ce5949.md)
 
-* [oe_cond_wait()](thread_8h_ad797958c67eb617187c17b09d35e810b_1ad797958c67eb617187c17b09d35e810b.md)
+* [oe_cond_wait()](thread_8h_ad86b163dd32d191627af64d163ce32dc_1ad86b163dd32d191627af64d163ce32dc.md)
 
-* [oe_cond_signal()](thread_8h_afff2d55f19c819921002a093c6dacd6a_1afff2d55f19c819921002a093c6dacd6a.md)
+* [oe_cond_signal()](thread_8h_a26f8a20cdc329cb8241ac7d0ce215663_1a26f8a20cdc329cb8241ac7d0ce215663.md)
 
-* [oe_cond_broadcast()](thread_8h_ae6ebe849cf744f3f43b37359aafd0f86_1ae6ebe849cf744f3f43b37359aafd0f86.md)
+* [oe_cond_broadcast()](thread_8h_a00df32da91d0002298e22279cf2401d0_1a00df32da91d0002298e22279cf2401d0.md)
 
-* [oe_cond_destroy()](thread_8h_acbf85cd84bf35a72cc82bd97b450709e_1acbf85cd84bf35a72cc82bd97b450709e.md)
+* [oe_cond_destroy()](thread_8h_a2f400477c1476d7f4f56df58547e042f_1a2f400477c1476d7f4f56df58547e042f.md)
 
-* [oe_rwlock_init()](thread_8h_a237557c136d002f9051759b412ce39f4_1a237557c136d002f9051759b412ce39f4.md)
+* [oe_rwlock_init()](thread_8h_aed0de2e9bf36bc1923e9623a02f5f02d_1aed0de2e9bf36bc1923e9623a02f5f02d.md)
 
-* [oe_rwlock_rdlock()](thread_8h_a6cdb440032960d4b8c5e7d6fe1b22ea8_1a6cdb440032960d4b8c5e7d6fe1b22ea8.md)
+* [oe_rwlock_rdlock()](thread_8h_a3cbefb95278426a3c424bd84782e7f8f_1a3cbefb95278426a3c424bd84782e7f8f.md)
 
-* [oe_rwlock_try_rdlock()](thread_8h_a5ba8fd07e67f368feb6f3127b647aa8d_1a5ba8fd07e67f368feb6f3127b647aa8d.md)
+* [oe_rwlock_try_rdlock()](thread_8h_a72ebfc6c036b0366cdf05b180569f80f_1a72ebfc6c036b0366cdf05b180569f80f.md)
 
-* [oe_rwlock_rdunlock()](thread_8h_a8291a144766e03b77d364a2db449ec09_1a8291a144766e03b77d364a2db449ec09.md)
+* [oe_rwlock_rdunlock()](thread_8h_ae035d60f2535e5f912eaffa35c68607f_1ae035d60f2535e5f912eaffa35c68607f.md)
 
-* [oe_rwlock_wrlock()](thread_8h_aecb0a676a26b8eb7351c10c223e8be43_1aecb0a676a26b8eb7351c10c223e8be43.md)
+* [oe_rwlock_wrlock()](thread_8h_a94ddcc0d6186a76891c2fc88f281c0d5_1a94ddcc0d6186a76891c2fc88f281c0d5.md)
 
-* [oe_rwlock_try_wrlock()](thread_8h_ad2cbb723db10c98037261f600b2973ad_1ad2cbb723db10c98037261f600b2973ad.md)
+* [oe_rwlock_try_wrlock()](thread_8h_a58ef319c60aade7affcf2048a268e6cd_1a58ef319c60aade7affcf2048a268e6cd.md)
 
-* [oe_rwlock_wrunlock()](thread_8h_a435db335bf050c495d53ee288da71ff1_1a435db335bf050c495d53ee288da71ff1.md)
+* [oe_rwlock_wrunlock()](thread_8h_a375a247a9230c59206938c04b665b8e1_1a375a247a9230c59206938c04b665b8e1.md)
 
-* [oe_rwlock_destroy()](thread_8h_a29a49aaa8d6fdbd580b99736ddcf061d_1a29a49aaa8d6fdbd580b99736ddcf061d.md)
+* [oe_rwlock_destroy()](thread_8h_ad95e5de80f345050fb723d6250dc203e_1ad95e5de80f345050fb723d6250dc203e.md)
 
-* [oe_thread_key_create()](thread_8h_ab18490c558c8a126e107ce64a7af35cb_1ab18490c558c8a126e107ce64a7af35cb.md)
+* [oe_thread_key_create()](thread_8h_a2c89dee097cdb5c4edf00c1b7096a910_1a2c89dee097cdb5c4edf00c1b7096a910.md)
 
-* [oe_thread_key_delete()](thread_8h_a503bbb71d2ca9bd00dae48e1974bcb4b_1a503bbb71d2ca9bd00dae48e1974bcb4b.md)
+* [oe_thread_key_delete()](thread_8h_a8854a58dd1abafe1b561b4d2290006b4_1a8854a58dd1abafe1b561b4d2290006b4.md)
 
-* [oe_thread_set_specific()](thread_8h_ab3337bfac84b36cb0ccddc4f9819cec1_1ab3337bfac84b36cb0ccddc4f9819cec1.md)
+* [oe_thread_set_specific()](thread_8h_ad03b492ecffc4281918e0fe3575360c1_1ad03b492ecffc4281918e0fe3575360c1.md)
 
-* [oe_thread_get_specific()](thread_8h_af39a5975141e08c467f807f3800410c1_1af39a5975141e08c467f807f3800410c1.md)
+* [oe_thread_get_specific()](thread_8h_a4f623c6002b6d7c3f9752994e93639d7_1a4f623c6002b6d7c3f9752994e93639d7.md)
 
 ### enclave.h
 
-* [oe_add_vectored_exception_handler()](enclave_8h_a7e557ef7d25235c8dc52123c4b32d467_1a7e557ef7d25235c8dc52123c4b32d467.md)
+* [oe_add_vectored_exception_handler()](enclave_8h_a262d5e0916223b50b32a2599cc881673_1a262d5e0916223b50b32a2599cc881673.md)
 
-* [oe_remove_vectored_exception_handler()](enclave_8h_a75f6d6d398fec83bbee02151806f4e43_1a75f6d6d398fec83bbee02151806f4e43.md)
+* [oe_remove_vectored_exception_handler()](enclave_8h_ad659a9ba04b31fb345dd8e1667d10910_1ad659a9ba04b31fb345dd8e1667d10910.md)
 
-* [oe_call_host()](enclave_8h_a3f4d990cf1e916d65a82481a55aafbf4_1a3f4d990cf1e916d65a82481a55aafbf4.md)
+* [oe_call_host()](enclave_8h_aa9a01301f36e483bb4fb9ba1a35dad5a_1aa9a01301f36e483bb4fb9ba1a35dad5a.md)
 
-* [oe_is_within_enclave()](enclave_8h_a02ef8b20b64a998bb97dfbdddb0c6ba5_1a02ef8b20b64a998bb97dfbdddb0c6ba5.md)
+* [oe_is_within_enclave()](enclave_8h_ab9468d8c3221f1c015d238e233010ef7_1ab9468d8c3221f1c015d238e233010ef7.md)
 
-* [oe_is_outside_enclave()](enclave_8h_a33b395779e9fe73102bfe728261917a6_1a33b395779e9fe73102bfe728261917a6.md)
+* [oe_is_outside_enclave()](enclave_8h_a2816745c2f67233b6b95ef69155cc378_1a2816745c2f67233b6b95ef69155cc378.md)
 
-* [oe_host_printf()](enclave_8h_a3593f7245e4dfc759435d3815eeccf51_1a3593f7245e4dfc759435d3815eeccf51.md)
+* [oe_host_malloc()](enclave_8h_a10b3ff4164db3852c41fa431950bebb3_1a10b3ff4164db3852c41fa431950bebb3.md)
 
-* [oe_host_fprintf()](enclave_8h_a80cb9ebf7d589e9ee1970531d386448b_1a80cb9ebf7d589e9ee1970531d386448b.md)
+* [oe_host_realloc()](enclave_8h_ade4a447c9926233f38c961fa8fc9c831_1ade4a447c9926233f38c961fa8fc9c831.md)
 
-* [oe_host_alloc_for_call_host()](enclave_8h_ab07f6c74bc260e823b14c90af0e9e29a_1ab07f6c74bc260e823b14c90af0e9e29a.md)
+* [oe_host_calloc()](enclave_8h_a4a6f218a37d256fdda8e5912f40c9dd9_1a4a6f218a37d256fdda8e5912f40c9dd9.md)
 
-* [oe_host_free_for_call_host()](enclave_8h_a216dc9b2dc633bc3f59f5ddd956378b8_1a216dc9b2dc633bc3f59f5ddd956378b8.md)
+* [oe_host_free()](enclave_8h_a55a7639aba6df88ba6b1a0adcba7c581_1a55a7639aba6df88ba6b1a0adcba7c581.md)
 
-* [oe_host_malloc()](enclave_8h_aba7207f5f5dd14d9e740548dd8b6b3fd_1aba7207f5f5dd14d9e740548dd8b6b3fd.md)
+* [oe_host_strdup()](enclave_8h_ac9f7cab95b52a8310e0f2dfe077416fc_1ac9f7cab95b52a8310e0f2dfe077416fc.md)
 
-* [oe_host_realloc()](enclave_8h_a9710b76344a56ca798b6b794e6400702_1a9710b76344a56ca798b6b794e6400702.md)
+* [oe_abort()](enclave_8h_af63afd5fd3b39bdd610f467e93b67f21_1af63afd5fd3b39bdd610f467e93b67f21.md)
 
-* [oe_host_calloc()](enclave_8h_a135af92bdf694591e1de1f8a61054511_1a135af92bdf694591e1de1f8a61054511.md)
+* [__oe_assert_fail()](enclave_8h_a682a11d6ff6534266fb9eb1a76bcfe26_1a682a11d6ff6534266fb9eb1a76bcfe26.md)
 
-* [oe_host_free()](enclave_8h_af7ed072613e44809e1991f4f64c63b23_1af7ed072613e44809e1991f4f64c63b23.md)
+* [oe_get_report()](enclave_8h_a54cefee8d716f91ad728662c0984880d_1a54cefee8d716f91ad728662c0984880d.md)
 
-* [oe_host_strdup()](enclave_8h_ad209d33cb2de70ea70aee5a167a02d03_1ad209d33cb2de70ea70aee5a167a02d03.md)
+* [oe_parse_report()](enclave_8h_a21d688325fdb8399b588db6652605843_1a21d688325fdb8399b588db6652605843.md)
 
-* [oe_abort()](enclave_8h_a8e55d0688551186025aae154d22249b5_1a8e55d0688551186025aae154d22249b5.md)
+* [oe_verify_report()](enclave_8h_a8acaf0fc459ee3c01f39c356b35e596b_1a8acaf0fc459ee3c01f39c356b35e596b.md)
 
-* [oe_sbrk()](enclave_8h_ae655f9a81dc40863b43a681793b277f9_1ae655f9a81dc40863b43a681793b277f9.md)
+* [oe_get_seal_key_by_policy()](enclave_8h_a95d180f7a91d8d329848e4f0087d7365_1a95d180f7a91d8d329848e4f0087d7365.md)
 
-* [__oe_assert_fail()](enclave_8h_afb7d4049a4bc01b8e5ba49741e447a16_1afb7d4049a4bc01b8e5ba49741e447a16.md)
-
-* [oe_get_report()](enclave_8h_ad3edd387629cedd8b3ef903696d0a17a_1ad3edd387629cedd8b3ef903696d0a17a.md)
-
-* [oe_parse_report()](enclave_8h_a0f5d325c55abddf48b21471c53d42420_1a0f5d325c55abddf48b21471c53d42420.md)
-
-* [oe_verify_report()](enclave_8h_ac05fd319b55155fd8c2ca8aaef6c28ec_1ac05fd319b55155fd8c2ca8aaef6c28ec.md)
-
-* [oe_get_seal_key_by_policy()](enclave_8h_a435729c5dfab90e87a990543a2002d3c_1a435729c5dfab90e87a990543a2002d3c.md)
-
-* [oe_get_seal_key()](enclave_8h_aeb2e4976ff556e62b8ff8dc67bd5107f_1aeb2e4976ff556e62b8ff8dc67bd5107f.md)
+* [oe_get_seal_key()](enclave_8h_ae976ec009d32605b4cd5b78602cc6aee_1ae976ec009d32605b4cd5b78602cc6aee.md)
 
 ### host.h
 
-* [oe_create_enclave()](host_8h_a37e6c31e49055d9fb7fae5be50d88022_1a37e6c31e49055d9fb7fae5be50d88022.md)
+* [oe_create_enclave()](host_8h_a62aca214d0b3998e2889b443604b002d_1a62aca214d0b3998e2889b443604b002d.md)
 
-* [oe_terminate_enclave()](host_8h_a20654d7b450c042ac7b256893b287cbe_1a20654d7b450c042ac7b256893b287cbe.md)
+* [oe_terminate_enclave()](host_8h_a373a94cb9d2152c453a8c71e3d607e3f_1a373a94cb9d2152c453a8c71e3d607e3f.md)
 
-* [oe_call_enclave()](host_8h_a5a1d79498b0488d2aea62b0596bcdd4d_1a5a1d79498b0488d2aea62b0596bcdd4d.md)
+* [oe_call_enclave()](host_8h_a83caababc844437859b957090b06d174_1a83caababc844437859b957090b06d174.md)
 
-* [oe_get_report()](host_8h_aec6c97585e37bb37961a1cb0410cfe1d_1aec6c97585e37bb37961a1cb0410cfe1d.md)
+* [oe_get_report()](host_8h_af74be47e553b882473a17dc13728269b_1af74be47e553b882473a17dc13728269b.md)
 
-* [oe_parse_report()](host_8h_a0f5d325c55abddf48b21471c53d42420_1a0f5d325c55abddf48b21471c53d42420.md)
+* [oe_parse_report()](host_8h_a21d688325fdb8399b588db6652605843_1a21d688325fdb8399b588db6652605843.md)
 
-* [oe_verify_report()](host_8h_a850db238bbabb981072ae33640d3b117_1a850db238bbabb981072ae33640d3b117.md)
+* [oe_verify_report()](host_8h_ac12ad2e6de441a2f4e052c6a24ba8bc1_1ac12ad2e6de441a2f4e052c6a24ba8bc1.md)
 

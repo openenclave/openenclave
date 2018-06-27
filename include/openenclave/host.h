@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file host.h
+ * @file host.h
  *
  * This file defines the programming interface for developing host applications.
  *
@@ -27,15 +27,25 @@
 
 OE_EXTERNC_BEGIN
 
-typedef struct _oe_enclave oe_enclave_t;
-
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
-#define OE_ENCLAVE_FLAG_RESERVED \
-    (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SIMULATE))
 
 /**
- * Creates an enclave from an enclave image file.
+ * This is an opaque handle to an enclave returned by OE_CreateEnclave()
+ */
+typedef struct _oe_enclave oe_enclave_t;
+
+/**
+ * @cond DEV
+ */
+#define OE_ENCLAVE_FLAG_RESERVED \
+    (~(OE_ENCLAVE_FLAG_DEBUG | OE_ENCLAVE_FLAG_SIMULATE))
+/**
+ * @endcond
+ */
+
+/**
+ * Create an enclave from an enclave image file.
  *
  * This function creates an enclave from an enclave image file. On successful
  * return, the enclave is fully initialized and ready to use.
@@ -70,7 +80,7 @@ oe_result_t oe_create_enclave(
     oe_enclave_t** enclave);
 
 /**
- * Terminates an enclave and reclaims its resources.
+ * Terminate an enclave and reclaims its resources.
  *
  * This function terminates an enclave and reclaims its resources. This
  * involves unmapping the memory that was mapped by **oe_create_enclave()**.
@@ -102,7 +112,10 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
  * the call and not of the underlying function. The ECALL implementation must
  * define its own error reporting scheme based on **args**.
  *
+ * @param enclave The instance of the enclave to be called.
+ *
  * @param func The name of the enclave function that will be called.
+ *
  * @param args The arguments to be passed to the enclave function.
  *
  * @returns This function return **OE_OK** on success.
@@ -122,7 +135,7 @@ oe_result_t oe_call_enclave(
  * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
  * this function returns OE_BUFFER_TOO_SMALL.
  *
- * @param enclave The handle to the enclave that will generate the report.
+ * @param enclave The instance of the enclave that will generate the report.
  * @param options Specifying default value (0) generates a report for local
  * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
  * report for remote attestation.

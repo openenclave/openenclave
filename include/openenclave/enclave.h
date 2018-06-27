@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 /**
- * \file enclave.h
+ * @file enclave.h
  *
  * This file defines the programming interface for developing enclaves.
  *
@@ -16,50 +16,43 @@
 
 #include "bits/context.h"
 #include "bits/defs.h"
+#include "bits/exception.h"
 #include "bits/properties.h"
 #include "bits/report.h"
 #include "bits/result.h"
 #include "bits/thread.h"
 #include "bits/types.h"
 
+/**
+ * @cond IGNORE
+ */
 OE_EXTERNC_BEGIN
 
-// Exception codes.
-#define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
-#define OE_EXCEPTION_BREAKPOINT 0x1
-#define OE_EXCEPTION_BOUND_OUT_OF_RANGE 0x2
-#define OE_EXCEPTION_ILLEGAL_INSTRUCTION 0x3
-#define OE_EXCEPTION_ACCESS_VIOLATION 0x4
-#define OE_EXCEPTION_PAGE_FAULT 0x5
-#define OE_EXCEPTION_X87_FLOAT_POINT 0x6
-#define OE_EXCEPTION_MISALIGNMENT 0x7
-#define OE_EXCEPTION_SIMD_FLOAT_POINT 0x8
-#define OE_EXCEPTION_UNKOWN 0xFFFFFFFF
-
-// Exception flags.
-#define OE_EXCEPTION_HARDWARE 0x1
-#define OE_EXCEPTION_SOFTWARE 0x2
+/**
+ * @endcond
+ */
 
 /**
-* Register a new vectored exception handler.
-*
-* Call this function to add a new vectored exception handler. If successful, the
-* registered handler will be called when an exception happens inside the
-* enclave.
-*
-* @param isFirstHandler The parameter indicates that the input handler should be
-* the first exception handler to be called. If it is false, the input handler
-* will be appended to the end of exception handler chain, otherwise it will be
-* added as the first handler in the exception handler chain.
-* @param vectoredHandler The input vectored exception handler to register. It
-* must be a function defined in the enclave. The same handler can only be
-* registered once; a 2nd registration will fail. If the function succeeds, the
-* handler may removed later by passing it to
-* oe_remove_vectored_exception_handler().
-*
-* @returns OE_OK successful
-* @returns OE_INVALID_PARAMETER a parameter is invalid
-* @returns OE_FAILED failed to add handler
+ * Register a new vectored exception handler.
+ *
+ * Call this function to add a new vectored exception handler. If successful,
+ * the registered handler will be called when an exception happens inside the
+ * enclave.
+ *
+ * @param isFirstHandler The parameter indicates that the input handler should
+ * be
+ * the first exception handler to be called. If it is false, the input handler
+ * will be appended to the end of exception handler chain, otherwise it will be
+ * added as the first handler in the exception handler chain.
+ * @param vectoredHandler The input vectored exception handler to register. It
+ * must be a function defined in the enclave. The same handler can only be
+ * registered once; a 2nd registration will fail. If the function succeeds, the
+ * handler may be removed later by passing it to
+ * oe_remove_vectored_exception_handler().
+ *
+ * @returns OE_OK successful
+ * @returns OE_INVALID_PARAMETER a parameter is invalid
+ * @returns OE_FAILED failed to add handler
 */
 oe_result_t oe_add_vectored_exception_handler(
     bool isFirstHandler,
@@ -197,7 +190,7 @@ void* oe_host_realloc(void* ptr, size_t size);
 void* oe_host_calloc(size_t nmemb, size_t size);
 
 /**
- * Releases allocated memory.
+ * Release allocated memory.
  *
  * This function releases memory allocated with oe_host_malloc() or
  * oe_host_calloc() by performing an OCALL where the host calls free().
