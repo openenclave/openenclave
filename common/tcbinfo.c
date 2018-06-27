@@ -204,16 +204,16 @@ static oe_result_t _propertyName(
                     break;
                 }
             }
-        }
 
-        if (!duplicate)
-        {
-            data->currentPropertyIdx[data->level] = propertyIdx;
-            OE_TRACE_INFO(
-                "TCB Reader: Seen property: %s\n",
-                schema->properties[propertyIdx].name);
-            data->numPropertiesSeen[data->level]++;
-            return OE_OK;
+            if (!duplicate)
+            {
+                data->currentPropertyIdx[data->level] = propertyIdx;
+                OE_TRACE_INFO(
+                    "TCB Reader: Seen property: %s\n",
+                    schema->properties[propertyIdx].name);
+                data->numPropertiesSeen[data->level]++;
+                return OE_OK;
+            }
         }
     }
 

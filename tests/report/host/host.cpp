@@ -29,10 +29,35 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
     VerifyTCBInfoArgs args = {&tcbInfo[0], (uint32_t)tcbInfo.size()};
 
-    printf("Verifying TCB Info:\n%s\n", (char*)&tcbInfo[0]);
     OE_TEST(
         oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK &&
         args.result == OE_OK);
+    printf("TestVerifyTCBInfo: Positive Test passed\n");
+
+    const char* negativeFiles[] = {
+        // In the following files, a property in corresponding level starts with
+        // capital letter. JSON is case sensitive and therefore schema
+        // validation should fail.
+        "./data/tcbInfoNegativePropertyMissingLevel0.json",
+        "./data/tcbInfoNegativePropertyMissingLevel1.json",
+        "./data/tcbInfoNegativePropertyMissingLevel2.json",
+        "./data/tcbInfoNegativePropertyMissingLevel3.json",
+        // In the following files, a property in corresponding level has wrong
+        // type.
+        "./data/tcbInfoNegativePropertyWrongTypeLevel0.json",
+        "./data/tcbInfoNegativePropertyWrongTypeLevel1.json",
+        "./data/tcbInfoNegativePropertyWrongTypeLevel2.json",
+        "./data/tcbInfoNegativePropertyWrongTypeLevel3.json",
+    };
+
+    for (size_t i = 0; i < sizeof(negativeFiles) / sizeof(negativeFiles[0]);
+         ++i)
+    {
+        std::vector<uint8_t> tcbInfo = FileToBytes(negativeFiles[i]);
+        VerifyTCBInfoArgs args = {&tcbInfo[0], (uint32_t)tcbInfo.size()};
+        OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK);
+        printf("TestVerifyTCBInfo: Negative Test %lu passed\n", i);
+    }
 }
 
 int main(int argc, const char* argv[])
