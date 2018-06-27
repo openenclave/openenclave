@@ -26,14 +26,14 @@ void asm_cpuid(
 {
     if (subleaf == NULL)
     {
-        asm("cpuid\n\t"
+        volatile asm("cpuid\n\t"
             : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
             : "0"(leaf));
     }
 
     else
     {
-        asm("cpuid\n\t"
+        volatile asm("cpuid\n\t"
             : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
             : "0"(leaf), "2"(*subleaf));
     }

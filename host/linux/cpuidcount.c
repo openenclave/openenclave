@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#if defined(_MSC_VER)
 
-#include "../cpuid_count.h"
+#if defined(__GNUC__)
+
+#include "../cpuidcount.h"
 #include <cpuid.h>
 
 /* Same as __get_cpuid, but sub-leaf can be specified.
@@ -16,15 +17,13 @@ int __get_cpuid_count(
     unsigned int* __ecx,
     unsigned int* __edx)
 {
-    unsigned int __maxlevel, __max_eax, __max_ebx, __max_ecx, __max_edx;
-    cpuid(0, __max_eax, __max_ebx, __max_ecx, __max_edx);
+    unsigned int __ext = __leaf & 0x80000000;
+    unsigned int __maxlevel = __get_cpuid_max(__ext, 0);
 
-    if (__max_eax == 0 || __max_eax < __leaf)
+    if (__maxlevel == 0 || __maxlevel < __leaf)
         return 0;
 
-    int registers[] = {*__eax, *__ebx, *__ecx, *__edx};
-    __cpuidex(registers, __leaf, __subleaf);
-
+    __cpuid_count(__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
     return 1;
 }
 

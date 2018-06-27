@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "openenclave/internal/cpuid.h"
-#include "cpuid_count.h"
+#include "cpuidcount.h"
 
 oe_result_t oe_get_cpuid(
     unsigned int __leaf,
