@@ -55,7 +55,9 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     {
         std::vector<uint8_t> tcbInfo = FileToBytes(negativeFiles[i]);
         VerifyTCBInfoArgs args = {&tcbInfo[0], (uint32_t)tcbInfo.size()};
-        OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK &&
+            args.result == OE_FAILURE);
         printf("TestVerifyTCBInfo: Negative Test %lu passed\n", i);
     }
 }
