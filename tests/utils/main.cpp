@@ -16,7 +16,7 @@ OE_EXTERNC oe_result_t oe_get_cpuid(
     unsigned int* __ecx,
     unsigned int* __edx);
 
-void asm_cpuid(
+void asm_get_cpuid(
     unsigned int leaf,
     unsigned int* subleaf,
     unsigned int* eax,
@@ -24,19 +24,23 @@ void asm_cpuid(
     unsigned int* ecx,
     unsigned int* edx)
 {
+    #if defined(__GNUC__)
     if (subleaf == NULL)
     {
         volatile asm("cpuid\n\t"
             : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
-            : "0"(leaf));
+            : "0"(leaf)
+            : "ebx", "ecx", "edx", "cc", "memory");
     }
 
     else
     {
         volatile asm("cpuid\n\t"
             : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
-            : "0"(leaf), "2"(*subleaf));
+            : "0"(leaf), "2"(*subleaf)
+            : "ebx", "ecx", "edx", "cc", "memory");
     }
+    #endif
 }
 
 void TestCpuidAgainstAssembly(unsigned int leaf, unsigned int* subleaf)
@@ -53,7 +57,7 @@ void TestCpuidAgainstAssembly(unsigned int leaf, unsigned int* subleaf)
         oe_get_cpuid(leaf, *subleaf, &a, &b, &c, &d);
     }
 
-    asm_cpuid(leaf, subleaf, &a_asm, &b_asm, &c_asm, &d_asm);
+    asm_get_cpuid(leaf, subleaf, &a_asm, &b_asm, &c_asm, &d_asm);
 
     OE_TEST(a == a_asm);
     OE_TEST(b == b_asm);
@@ -67,7 +71,7 @@ void TestUnequalLeaves()
     unsigned int a = 0, b = 0, c = 0, d = 0;
 
     oe_get_cpuid(0, 0, &a, &b, &c, &d);
-    asm_cpuid(1, 0, &a_asm, &b_asm, &c_asm, &d_asm);
+    asm_get_cpuid(1, 0, &a_asm, &b_asm, &c_asm, &d_asm);
 
     OE_TEST(a != a_asm);
 }
