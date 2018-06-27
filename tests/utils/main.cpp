@@ -30,7 +30,7 @@ void asm_get_cpuid(
         asm volatile("cpuid\n\t"
             : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
             : "0"(leaf)
-            : "ebx", "ecx", "edx", "cc", "memory");
+            : "cc", "memory");
     }
 
     else
@@ -38,7 +38,7 @@ void asm_get_cpuid(
         asm volatile("cpuid\n\t"
             : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
             : "0"(leaf), "2"(*subleaf)
-            : "ebx", "ecx", "edx", "cc", "memory");
+            : "cc", "memory");
     }
     #endif
 }
