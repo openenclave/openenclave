@@ -11,15 +11,17 @@
 #include <cstring>
 #include "args.h"
 #include "ocalls.h"
+#include <sys/types.h>
+#include <unistd.h>
 
-void Test(oe_enclave_t* enclave)
+void Test(oe_enclave_t* enclave,uint32_t pid)
 {
     Args args;
     args.ret = 1;
     args.test = NULL;
-    oe_result_t result = oe_call_enclave(enclave, "Test", &args);
+    args.pid= pid;
+    oe_result_t result = oe_call_enclave(enclave, "Test", &args);    
     OE_TEST(result == OE_OK);
-
     if (args.ret == 0)
     {
         printf("PASSED: %s\n", args.test);
@@ -93,12 +95,12 @@ int main(int argc, const char* argv[])
     if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
-
+	uint32_t pid = getpid();
     // Register to handle OCALL_EXIT from tests.
     oe_register_ocall(OCALL_EXIT, _ExitOCall);
 
     // Invoke "Test()" in the enclave.
-    Test(enclave);
+    Test(enclave,pid);
 
     // Shutdown the enclave.
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)

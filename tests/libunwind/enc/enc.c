@@ -12,6 +12,7 @@
 #include "../host/args.h"
 #include "../host/ocalls.h"
 
+uint32_t process_id;
 int main(int argc, const char* argv[]);
 
 void _exit(int status)
@@ -56,13 +57,12 @@ int t_setrlim(int r, int64_t lim)
 extern char** __environ;
 
 extern const char* __test__;
-
 OE_ECALL void Test(Args* args)
 {
+    process_id=args->pid;
     if (args)
     {
         printf("RUNNING: %s\n", __TEST__);
-
         if (!(__environ = (char**)calloc(1, sizeof(char**))))
             args->ret = 1;
 

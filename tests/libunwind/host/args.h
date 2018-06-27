@@ -8,6 +8,8 @@ typedef struct _Args
 {
     const char* test;
     int ret;
+    uint32_t pid;
+
 } Args;
 
 #endif /* _RUNTEST_ARGS_H */

@@ -12,7 +12,6 @@ else()
 endif()
 
 add_subdirectory(host)
-
 if (UNIX)
 	add_subdirectory(enc)
 endif()
