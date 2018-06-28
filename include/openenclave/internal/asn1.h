@@ -55,8 +55,6 @@ typedef struct _oe_asn1_t
 
 oe_result_t oe_asn1_init(oe_asn1_t* asn1, const uint8_t* data, size_t length);
 
-size_t oe_asn1_offset(const oe_asn1_t* asn1);
-
 oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag);
 
 oe_result_t oe_asn1_get(

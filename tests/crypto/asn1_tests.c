@@ -179,7 +179,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
 {
     oe_result_t r;
 
-    while (oe_asn1_offset(asn1) < asn1->length)
+    while (asn1->ptr < asn1->data + asn1->length)
     {
         uint8_t tag;
         r = oe_asn1_peek_tag(asn1, &tag);
@@ -262,7 +262,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
         }
     }
 
-    OE_TEST(oe_asn1_offset(asn1) == asn1->length);
+    OE_TEST(asn1->ptr == asn1->data + asn1->length);
 }
 
 static void _test_asn1_parsing(void)

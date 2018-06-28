@@ -58,14 +58,6 @@ done:
     return result;
 }
 
-size_t oe_asn1_offset(const oe_asn1_t* asn1)
-{
-    if (!_is_valid(asn1))
-        return 0;
-
-    return asn1->ptr - asn1->data;
-}
-
 oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag)
 {
     oe_result_t result = OE_UNEXPECTED;
