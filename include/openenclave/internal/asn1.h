@@ -1,6 +1,113 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+/**
+ * @file asn1.h
+ *
+ * This file defines a minimal set of primitives for parsing ASN.1. These
+ * primitives are implemented by an underlying crypto library (such as
+ * mbed TLS or OpenSSL). A typical parser has the following skeleton.
+ *
+ *     ```
+ *     oe_result_t parse(oe_asn1_t* asn1)
+ *     {
+ *         oe_result_t result;
+ *     
+ *         while (oe_asn1_more(asn1))
+ *         {
+ *             uint8_t tag;
+ *     
+ *             result = oe_asn1_peek_tag(asn1, &tag);
+ *     
+ *             if (result != OE_OK)
+ *                 goto done;
+ *     
+ *             switch (tag)
+ *             {
+ *                 case OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE:
+ *                 {
+ *                     oe_asn1_t sequence;
+ *     
+ *                     result = oe_asn1_get_sequence(asn1, &sequence);
+ *     
+ *                     if (result != OE_OK)
+ *                         goto done;
+ *     
+ *                     result = _parse(&sequence);
+ *     
+ *                     break;
+ *                 }
+ *                 case OE_ASN1_TAG_INTEGER:
+ *                 {
+ *                     int value;
+ *     
+ *                     result = oe_asn1_get_integer(asn1, &value);
+ *     
+ *                     if (result != OE_OK)
+ *                         goto done;
+ *     
+ *                     break;
+ *                 }
+ *                 case OE_ASN1_TAG_OID:
+ *                 {
+ *                     oe_oid_string_t oid;
+ *     
+ *                     result = oe_asn1_get_oid(asn1, &oid);
+ *     
+ *                     if (result != OE_OK)
+ *                         goto done;
+ *     
+ *                     break;
+ *                 }
+ *                 case OE_ASN1_TAG_OCTET_STRING:
+ *                 {
+ *                     const uint8_t* data;
+ *                     size_t length;
+ *     
+ *                     result = oe_asn1_get_octet_string(asn1, &data, &length);
+ *     
+ *                     if (result != OE_OK)
+ *                         goto done;
+ *     
+ *                     break;
+ *                 }
+ *                 default:
+ *                 {
+ *                     uint8_t tag;
+ *                     size_t length;
+ *                     const uint8_t* data;
+ *     
+ *                     result = oe_asn1_get_raw(asn1, &tag, &data, &length);
+ *     
+ *                     if (result != OE_OK)
+ *                         goto done;
+ *     
+ *                     break;
+ *                 }
+ *             }
+ *         }
+ *     
+ *         result = OE_OK;
+ *     
+ *     done:
+ *         return result;
+ *     }
+ *     ```
+ *
+ * The functions below support:
+ *
+ *     - Initializing an ASN.1 input stream.
+ *     - Peeking at the next ASN.1 tag in the stream.
+ *     - Getting an ASN.1 elements from the stream.
+ *
+ * The following snippet initializes an ASN.1 input context.
+ *
+ *     ```
+ *     oe_asn1_t asn1;
+ *     oe_asn1_init(&asn1, data, length);
+ *     ```
+ */
+
 #ifndef _OE_ASN1_H
 #define _OE_ASN1_H
 
@@ -53,6 +160,21 @@ typedef struct _oe_asn1_t
     const uint8_t* ptr;
 } oe_asn1_t;
 
+/**
+ * Initializes an ASN.1 input stream.
+ *
+ * An ASN.1 input stream consists of three fields.
+ *     - **data** - a pointer to the ASN.1 data.
+ *     - **length** - the length of the ASN.1 data.
+ *     - **ptr** - a pointer to the current byte in the stream.
+ *
+ * The parsing functions below advance the **ptr** field until all data is
+ * exhausted (when **ptr** == **data** + **length**).
+ *
+ * @param asn1 the ASN.1 input stream.
+ * @param data pointer to the start of the ASN.1 data.
+ * @param length the length of the ASN.1 data.
+ */
 OE_INLINE void oe_asn1_init(oe_asn1_t* asn1, const uint8_t* data, size_t length)
 {
     asn1->data = data;
@@ -60,20 +182,117 @@ OE_INLINE void oe_asn1_init(oe_asn1_t* asn1, const uint8_t* data, size_t length)
     asn1->ptr = asn1->data;
 }
 
+/**
+ * Returns true if there is more data in the ASN.1 input stream.
+ *
+ * @param asn1 the ASN.1 input stream.
+ *
+ * @return true if there is more data in the ASN.1 input stream.
+ */
+OE_INLINE bool oe_asn1_more(const oe_asn1_t* asn1)
+{
+    return asn1->ptr < asn1->data + asn1->length;
+}
+
+/**
+ * Gets the tag at the current position of the ASN.1 input stream without
+ * changing the current position.
+ *
+ * @param asn1[in] the ASN.1 input stream.
+ * @param tag[out] the tag at the current position in the input stream.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
 oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag);
 
+/**
+ * Gets the next ASN.1 element from the ASN.1 input stream.
+ *
+ * This function gets the next ASN.1 element from the ASN.1 input stream and
+ * advances the current position just beyond that element. All elements have
+ * the following format.
+ * 
+ *     ```
+ *     [TAG] [LENGTH] [BYTES]
+ *     ```
+ *
+ * @param asn1[in,out] the ASN.1 input stream.
+ * @param tag[out] the element's tag 
+ * @param data[out] the element's data
+ * @param length[out] the element's length
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
 oe_result_t oe_asn1_get_raw(
     oe_asn1_t* asn1,
     uint8_t* tag,
     const uint8_t** data,
     size_t* length);
 
+/**
+ * Gets a sequence element from the ASN.1 input stream.
+ *
+ * This function gets a sequence element from the ASN.1 input stream and
+ * advances the current position just beyond that element.
+ * 
+ * @param asn1[in,out] the ASN.1 input stream.
+ * @param sequence[out] a newly initialized ASN.1 input stream containing the 
+ *        sequence.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
 oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence);
 
+/**
+ * Gets an integer element from the ASN.1 input stream.
+ *
+ * This function gets an integer element from the ASN.1 input stream and
+ * advances the current position just beyond that element.
+ * 
+ * @param asn1[in,out] the ASN.1 input stream.
+ * @param value[out] the value of the integer element.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
 oe_result_t oe_asn1_get_integer(oe_asn1_t* asn1, int* value);
 
+/**
+ * Gets an OID element from the ASN.1 input stream.
+ *
+ * This function gets an OID element from the ASN.1 input stream and
+ * advances the current position just beyond that element.
+ * 
+ * @param asn1[in,out] the ASN.1 input stream.
+ * @param oid[out] the value of that element as an OID string.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
 oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid);
 
+/**
+ * Gets an octet string element from the ASN.1 input stream.
+ *
+ * This function gets an octet string element from the ASN.1 input stream and
+ * advances the current position just beyond that element.
+ * 
+ * @param asn1[in,out] the ASN.1 input stream.
+ * @param data[out] a pointer to the octet string.
+ * @param length[out] the length of the octet string.
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid
+ * @return OE_FAILURE general failure
+ */
 oe_result_t oe_asn1_get_octet_string(
     oe_asn1_t* asn1,
     const uint8_t** data,

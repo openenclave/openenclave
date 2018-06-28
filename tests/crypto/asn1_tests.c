@@ -179,7 +179,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
 {
     oe_result_t r;
 
-    while (asn1->ptr < asn1->data + asn1->length)
+    while (oe_asn1_more(asn1))
     {
         uint8_t tag;
         r = oe_asn1_peek_tag(asn1, &tag);
@@ -265,6 +265,90 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
     OE_TEST(asn1->ptr == asn1->data + asn1->length);
 }
 
+static oe_result_t _parse(oe_asn1_t* asn1)
+{
+    oe_result_t result;
+
+    while (oe_asn1_more(asn1))
+    {
+        uint8_t tag;
+
+        result = oe_asn1_peek_tag(asn1, &tag);
+
+        if (result != OE_OK)
+            goto done;
+
+        switch (tag)
+        {
+            case OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE:
+            {
+                oe_asn1_t sequence;
+
+                result = oe_asn1_get_sequence(asn1, &sequence);
+
+                if (result != OE_OK)
+                    goto done;
+
+                result = _parse(&sequence);
+
+                break;
+            }
+            case OE_ASN1_TAG_INTEGER:
+            {
+                int value;
+
+                result = oe_asn1_get_integer(asn1, &value);
+
+                if (result != OE_OK)
+                    goto done;
+
+                break;
+            }
+            case OE_ASN1_TAG_OID:
+            {
+                oe_oid_string_t oid;
+
+                result = oe_asn1_get_oid(asn1, &oid);
+
+                if (result != OE_OK)
+                    goto done;
+
+                break;
+            }
+            case OE_ASN1_TAG_OCTET_STRING:
+            {
+                const uint8_t* data;
+                size_t length;
+
+                result = oe_asn1_get_octet_string(asn1, &data, &length);
+
+                if (result != OE_OK)
+                    goto done;
+
+                break;
+            }
+            default:
+            {
+                uint8_t tag;
+                size_t length;
+                const uint8_t* data;
+
+                result = oe_asn1_get_raw(asn1, &tag, &data, &length);
+
+                if (result != OE_OK)
+                    goto done;
+
+                break;
+            }
+        }
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 static void _test_asn1_parsing(void)
 {
     oe_cert_t cert;
@@ -290,6 +374,9 @@ static void _test_asn1_parsing(void)
 
     char* str = NULL;
     _parse_asn1(&asn1, &str, 0);
+
+    asn1.ptr = asn1.data;
+    OE_TEST(_parse(&asn1) == OE_OK);
 
     printf("str=%s\n", str);
 
