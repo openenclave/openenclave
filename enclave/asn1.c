@@ -41,24 +41,6 @@ OE_INLINE size_t _remaining(const oe_asn1_t* asn1)
     return _end(asn1) - asn1->ptr;
 }
 
-oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    if (!_is_valid(asn1))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (_remaining(asn1) < sizeof(uint8_t))
-        OE_RAISE(OE_FAILURE);
-
-    *tag = asn1->ptr[0];
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 static oe_result_t _get_tag(oe_asn1_t* asn1, uint8_t* tag)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -79,6 +61,24 @@ static oe_result_t _get_length(oe_asn1_t* asn1, size_t* length)
 
     if (mbedtls_asn1_get_len(_pptr(asn1), _end(asn1), length) != 0)
         OE_RAISE(OE_FAILURE);
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!_is_valid(asn1))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (_remaining(asn1) < sizeof(uint8_t))
+        OE_RAISE(OE_FAILURE);
+
+    *tag = asn1->ptr[0];
 
     result = OE_OK;
 
