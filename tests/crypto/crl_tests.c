@@ -113,30 +113,32 @@ static void _test_verify(const oe_crl_t* crl)
     oe_cert_chain_t chain;
     oe_verify_cert_error_t error = {0};
 
-    printf("=== begin %s()\n", __FUNCTION__);
-
     OE_TEST(oe_cert_read_pem(_CERT, sizeof(_CERT), &cert) == OE_OK);
     OE_TEST(oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain));
     OE_TEST(oe_cert_verify(&cert, &chain, crl, &error));
 
     oe_cert_free(&cert);
     oe_cert_chain_free(&chain);
-
-    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _test_verify_with_crl(void)
 {
+    printf("=== begin %s()\n", __FUNCTION__);
+
     oe_crl_t crl;
 
     OE_TEST(oe_crl_read_der(&crl, _CRL, sizeof(_CRL)) == OE_OK);
     _test_verify(&crl);
     OE_TEST(oe_crl_free(&crl) == OE_OK);
+
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 static void _test_verify_without_crl(void)
 {
+    printf("=== begin %s()\n", __FUNCTION__);
     _test_verify(NULL);
+    printf("=== passed %s()\n", __FUNCTION__);
 }
 
 void TestCRL(void)
