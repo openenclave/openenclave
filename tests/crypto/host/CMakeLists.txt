@@ -10,7 +10,8 @@ add_executable(hostcrypto
     ../hash.c
     ../random_tests.c
     ../rsa_tests.c
-    ../sha_tests.c)
+    ../sha_tests.c
+    ../tests.c)
 
 target_link_libraries(hostcrypto oehost)
 

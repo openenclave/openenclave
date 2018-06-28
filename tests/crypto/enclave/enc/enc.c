@@ -29,12 +29,7 @@ OE_ECALL void Test(void* args_)
     inUseBytes = stats.inUseBytes;
 
     /* Run the tests */
-    TestASN1();
-    TestCRL();
-    TestEC();
-    TestRandom();
-    TestRSA();
-    TestSHA();
+    TestAll();
 
     /* Verify that all malloc'd memory has been released */
     OE_TEST(oe_get_malloc_stats(&stats) == OE_OK);

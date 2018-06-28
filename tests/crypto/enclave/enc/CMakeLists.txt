@@ -14,6 +14,7 @@ add_enclave_executable(cryptoenc
     ../../hash.c
     ../../random_tests.c
     ../../rsa_tests.c
-    ../../sha_tests.c)
+    ../../sha_tests.c
+    ../../tests.c)
 
 target_link_libraries(cryptoenc oeenclave)

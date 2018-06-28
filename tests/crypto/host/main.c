@@ -23,12 +23,7 @@ int main(int argc, const char* argv[])
     arg0 = argv[0];
 
     /* Run the tests */
-    TestASN1();
-    TestCRL();
-    TestEC();
-    TestRandom();
-    TestRSA();
-    TestSHA();
+    TestAll();
 
     printf("=== passed all tests (%s)\n", arg0);
 
