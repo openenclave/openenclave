@@ -110,7 +110,7 @@ oe_result_t oe_get_crl_distribution_points(
             OE_CHECK(oe_asn1_init(&asn1, data, size));
             OE_CHECK(oe_asn1_get_sequence(&asn1, &seq));
 
-            while (oe_asn1_offset(&seq) < oe_asn1_length(&seq))
+            while (oe_asn1_offset(&seq) < seq.length)
             {
                 oe_asn1_t crldp;
                 OE_CHECK(oe_asn1_get_sequence(&seq, &crldp));
@@ -133,7 +133,7 @@ oe_result_t oe_get_crl_distribution_points(
             OE_CHECK(oe_asn1_get_sequence(&asn1, &seq));
 
             /* While there are more CRL distribution points */
-            while (oe_asn1_offset(&seq) < oe_asn1_length(&seq))
+            while (oe_asn1_offset(&seq) < seq.length)
             {
                 oe_asn1_t crldp;
                 const char* url;
@@ -143,8 +143,8 @@ oe_result_t oe_get_crl_distribution_points(
 
                 OE_CHECK(
                     _find_url(
-                        oe_asn1_data(&crldp),
-                        oe_asn1_length(&crldp),
+                        crldp.data,
+                        crldp.length,
                         &url,
                         &url_len));
 

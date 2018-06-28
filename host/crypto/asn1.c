@@ -12,43 +12,40 @@ OE_STATIC_ASSERT(V_ASN1_INTEGER == OE_ASN1_TAG_INTEGER);
 OE_STATIC_ASSERT(V_ASN1_OBJECT == OE_ASN1_TAG_OID);
 OE_STATIC_ASSERT(V_ASN1_OCTET_STRING == OE_ASN1_TAG_OCTET_STRING);
 
-typedef struct _oe_asn1_impl_t
+OE_INLINE const uint8_t* _end(const oe_asn1_t* asn1)
 {
-    const uint8_t* data;
-    const uint8_t* end;
-    const uint8_t* ptr;
-} oe_asn1_impl_t;
+    return asn1->data + asn1->length;
+}
 
-OE_INLINE bool _is_valid(const oe_asn1_impl_t* asn1)
+OE_INLINE bool _is_valid(const oe_asn1_t* asn1)
 {
-    if (!asn1 || !asn1->data || !asn1->end || !asn1->ptr)
+    if (!asn1 || !asn1->data || !asn1->length || !asn1->ptr)
         return false;
 
-    if (!(asn1->data <= asn1->end))
+    if (!(asn1->data <= _end(asn1)))
         return false;
 
-    if (!(asn1->ptr >= asn1->data && asn1->ptr <= asn1->end))
+    if (!(asn1->ptr >= asn1->data && asn1->ptr <= _end(asn1)))
         return false;
 
     return true;
 }
 
-OE_INLINE size_t _remaining(const oe_asn1_impl_t* asn1)
+OE_INLINE size_t _remaining(const oe_asn1_t* asn1)
 {
-    return asn1->end - asn1->ptr;
+    return _end(asn1) - asn1->ptr;
 }
 
-oe_result_t oe_asn1_init(oe_asn1_t* asn1_, const uint8_t* data, size_t length)
+oe_result_t oe_asn1_init(oe_asn1_t* asn1, const uint8_t* data, size_t length)
 {
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
     oe_result_t result = OE_UNEXPECTED;
 
     if (!asn1 || !data || !length)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     asn1->data = data;
-    asn1->end = data + length;
-    asn1->ptr = (uint8_t*)data;
+    asn1->length = length;
+    asn1->ptr = data;
 
     result = OE_OK;
 
@@ -56,39 +53,16 @@ done:
     return result;
 }
 
-const uint8_t* oe_asn1_data(const oe_asn1_t* asn1_)
+size_t oe_asn1_offset(const oe_asn1_t* asn1)
 {
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
-
-    if (!_is_valid(asn1))
-        return NULL;
-
-    return asn1->data;
-}
-
-size_t oe_asn1_length(const oe_asn1_t* asn1_)
-{
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
-
-    if (!_is_valid(asn1))
-        return 0;
-
-    return asn1->end - asn1->data;
-}
-
-size_t oe_asn1_offset(const oe_asn1_t* asn1_)
-{
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
-
     if (!_is_valid(asn1))
         return 0;
 
     return asn1->ptr - asn1->data;
 }
 
-oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1_, uint8_t* tag)
+oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag)
 {
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
     oe_result_t result = OE_UNEXPECTED;
 
     if (!_is_valid(asn1))
@@ -106,12 +80,11 @@ done:
 }
 
 oe_result_t oe_asn1_get(
-    oe_asn1_t* asn1_,
+    oe_asn1_t* asn1,
     uint8_t* tag,
     const uint8_t** data,
     size_t* length)
 {
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
     oe_result_t result = OE_UNEXPECTED;
 
     if (length)
@@ -144,10 +117,8 @@ done:
     return result;
 }
 
-oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1_, oe_asn1_t* sequence_)
+oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence)
 {
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
-    oe_asn1_impl_t* sequence = (oe_asn1_impl_t*)sequence_;
     oe_result_t result = OE_UNEXPECTED;
     uint8_t tag;
     const uint8_t* data;
@@ -159,12 +130,12 @@ oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1_, oe_asn1_t* sequence_)
     if (!_is_valid(asn1) || !sequence)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(oe_asn1_get(asn1_, &tag, &data, &length));
+    OE_CHECK(oe_asn1_get(asn1, &tag, &data, &length));
 
     if (tag != (OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE))
         OE_RAISE(OE_FAILURE);
 
-    OE_CHECK(oe_asn1_init(sequence_, data, length));
+    OE_CHECK(oe_asn1_init(sequence, data, length));
 
     result = OE_OK;
 
@@ -172,9 +143,8 @@ done:
     return result;
 }
 
-oe_result_t oe_asn1_get_integer(oe_asn1_t* asn1_, int* value)
+oe_result_t oe_asn1_get_integer(oe_asn1_t* asn1, int* value)
 {
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
     oe_result_t result = OE_UNEXPECTED;
     uint8_t tag;
     const uint8_t* data;
@@ -186,7 +156,7 @@ oe_result_t oe_asn1_get_integer(oe_asn1_t* asn1_, int* value)
     if (!_is_valid(asn1) || !value)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(oe_asn1_get(asn1_, &tag, &data, &length));
+    OE_CHECK(oe_asn1_get(asn1, &tag, &data, &length));
 
     if (tag != OE_ASN1_TAG_INTEGER)
         OE_RAISE(OE_FAILURE);
@@ -201,9 +171,8 @@ done:
     return result;
 }
 
-oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1_, oe_oid_string_t* oid)
+oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
 {
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
     oe_result_t result = OE_UNEXPECTED;
     ASN1_OBJECT* obj = NULL;
 
@@ -239,11 +208,10 @@ done:
 }
 
 oe_result_t oe_asn1_get_octet_string(
-    oe_asn1_t* asn1_,
+    oe_asn1_t* asn1,
     const uint8_t** data,
     size_t* length)
 {
-    oe_asn1_impl_t* asn1 = (oe_asn1_impl_t*)asn1_;
     oe_result_t result = OE_UNEXPECTED;
     uint8_t tag;
 
@@ -253,7 +221,7 @@ oe_result_t oe_asn1_get_octet_string(
     if (!_is_valid(asn1) || !data || !length)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(oe_asn1_get(asn1_, &tag, data, length));
+    OE_CHECK(oe_asn1_get(asn1, &tag, data, length));
 
     if (tag != OE_ASN1_TAG_OCTET_STRING)
         OE_RAISE(OE_FAILURE);

@@ -179,7 +179,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
 {
     oe_result_t r;
 
-    while (oe_asn1_offset(asn1) < oe_asn1_length(asn1))
+    while (oe_asn1_offset(asn1) < asn1->length)
     {
         uint8_t tag;
         r = oe_asn1_peek_tag(asn1, &tag);
@@ -192,7 +192,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
                 oe_asn1_t sequence;
                 r = oe_asn1_get_sequence(asn1, &sequence);
                 OE_TEST(r == OE_OK);
-                size_t length = oe_asn1_length(&sequence);
+                size_t length = sequence.length;
 
                 _indent(str, depth);
                 _printf(str, "SEQUENCE: length=%zx\n", length);
@@ -262,7 +262,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
         }
     }
 
-    OE_TEST(oe_asn1_offset(asn1) == oe_asn1_length(asn1));
+    OE_TEST(oe_asn1_offset(asn1) == asn1->length);
 }
 
 static void _test_asn1_parsing(void)
@@ -288,8 +288,8 @@ static void _test_asn1_parsing(void)
     oe_asn1_t asn1;
     r = oe_asn1_init(&asn1, data, size);
     OE_TEST(r == OE_OK);
-    OE_TEST(oe_asn1_data(&asn1) == data);
-    OE_TEST(oe_asn1_length(&asn1) == size);
+    OE_TEST(asn1.data == data);
+    OE_TEST(asn1.length == size);
 
     char* str = NULL;
     _parse_asn1(&asn1, &str, 0);

@@ -45,17 +45,15 @@ OE_EXTERNC_BEGIN
 #define OE_ASN1_TAG_PRIMITIVE 0x00
 #define OE_ASN1_TAG_CONSTRUCTED 0x20
 
-/* Opaque input stream for ASN.1 functions below */
+/* Input stream for ASN.1 functions below */
 typedef struct _oe_asn1_t
 {
-    const uint64_t __private[3];
+    const uint8_t* data;
+    size_t length;
+    const uint8_t* ptr;
 } oe_asn1_t;
 
 oe_result_t oe_asn1_init(oe_asn1_t* asn1, const uint8_t* data, size_t length);
-
-const uint8_t* oe_asn1_data(const oe_asn1_t* asn1);
-
-size_t oe_asn1_length(const oe_asn1_t* asn1);
 
 size_t oe_asn1_offset(const oe_asn1_t* asn1);
 
