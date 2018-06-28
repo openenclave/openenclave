@@ -118,10 +118,10 @@ workflows:
        #- build-test-sgx1-release
             
       # 4.  sgx1-flc-debug(build-test)
-       #- build-test-sgx1-flc-debug
+       - build-test-sgx1-flc-debug
             
       # 5.  sgx1-flc-relwithdebinfo(build-test)  
-       - build-test-sgx1-flc-relwithdebinfo
+       #- build-test-sgx1-flc-relwithdebinfo
             
       # 6.  sgx1-flc-release(build-test)    
        #- build-test-sgx1-flc-release
