@@ -60,7 +60,7 @@ jobs:
   # SGX1-FLC | Debug 
   build-test-sgx1-flc-debug:
     docker:
-      - image: oeciteam/oetools:1.0.0
+      - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -68,12 +68,13 @@ jobs:
       - run:
           name: SGX1-FLC-Debug
           command:  |
-            sudo make -C prereqs USE_LIBSGX=1
-            mkdir build &&
-            cd build &&
-            cmake .. -DUSE_LIBSGX=1 &&
-            make &&
-            OE_SIMULATION=1 ctest
+             apt-get update &&
+             apt-get install -y sudo &&
+             apt-get install -y git &&
+             sudo ./scripts/install-prereqs &&
+             apt-get install -y libssl-dev &&
+             ./scripts/pre-commit &&
+             sudo ./scripts/build-testall -p SGX1-FLC -b Release
             
   # SGX1-FLC | RelWithDebInfo
   build-test-sgx1-flc-relwithdebinfo:
