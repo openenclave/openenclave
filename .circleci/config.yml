@@ -54,11 +54,6 @@ jobs:
           command:  |
              export SHELL=/bin/bash &&
              export shell=/bin/bash &&
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
              sudo ./scripts/build-testall -p SGX1-FLC -b Debug
              
