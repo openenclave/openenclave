@@ -495,9 +495,9 @@ done:
 */
 
 oe_result_t oe_cert_read_pem(
+    oe_cert_t* cert,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_t* cert)
+    size_t pemSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
@@ -563,9 +563,9 @@ done:
 }
 
 oe_result_t oe_cert_chain_read_pem(
+    oe_cert_chain_t* chain,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_chain_t* chain)
+    size_t pemSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;

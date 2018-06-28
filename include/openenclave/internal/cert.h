@@ -45,16 +45,16 @@ typedef struct _oe_verify_cert_error
  * The caller is responsible for releasing the certificate by passing it to
  * oe_cert_free().
  *
+ * @param cert initialized certificate handle upon return
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
- * @param cert initialized certificate handle upon return
  *
  * @return OE_OK load was successful
  */
 oe_result_t oe_cert_read_pem(
+    oe_cert_t* cert,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_t* cert);
+    size_t pemSize);
 
 /**
  * Read a certificate chain from PEM format.
@@ -77,16 +77,16 @@ oe_result_t oe_cert_read_pem(
  * The caller is responsible for releasing the certificate chain by passing it
  * to oe_cert_chain_free().
  *
+ * @param chain initialized certificate chain handle upon return
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
- * @param cert initialized certificate chain handle upon return
  *
  * @return OE_OK load was successful
  */
 oe_result_t oe_cert_chain_read_pem(
+    oe_cert_chain_t* chain,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_chain_t* chain);
+    size_t pemSize);
 
 /**
  * Releases a certificate

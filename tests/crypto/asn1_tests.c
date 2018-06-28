@@ -359,7 +359,7 @@ static void _test_asn1_parsing(void)
 
     printf("=== begin %s()\n", __FUNCTION__);
 
-    OE_TEST(oe_cert_read_pem(_CERT, sizeof(_CERT), &cert) == OE_OK);
+    OE_TEST(oe_cert_read_pem(&cert, _CERT, sizeof(_CERT)) == OE_OK);
 
     /* Find the SGX_EXTENSION */
     r = oe_cert_find_extension(&cert, OID, data, &size);

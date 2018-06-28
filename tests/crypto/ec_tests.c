@@ -178,8 +178,8 @@ static void _TestSignAndVerify()
     {
         oe_ec_private_key_t key = {0};
 
-        r = oe_ec_private_key_read_pem(
-            (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY), &key);
+        r = oe_ec_private_key_read_pem(&key,
+            (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
         OE_TEST(r == OE_OK);
 
         r = oe_ec_private_key_sign(
@@ -211,8 +211,8 @@ static void _TestSignAndVerify()
     {
         oe_ec_public_key_t key = {0};
 
-        r = oe_ec_public_key_read_pem(
-            (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
+        r = oe_ec_public_key_read_pem(&key,
+            (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
         OE_TEST(r == OE_OK);
 
         r = oe_ec_public_key_verify(
@@ -387,7 +387,7 @@ static void _TestWritePrivate()
     OE_TEST(pemData1[pemSize1 - 1] == '\0');
     OE_TEST(strlen((char*)pemData1) == pemSize1 - 1);
 
-    r = oe_ec_private_key_read_pem(pemData1, pemSize1, &key2);
+    r = oe_ec_private_key_read_pem(&key2, pemData1, pemSize1);
     OE_TEST(r == OE_OK);
 
     {
@@ -421,8 +421,8 @@ static void _TestWritePublic()
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = oe_ec_public_key_read_pem(
-        (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
+    r = oe_ec_public_key_read_pem(&key,
+        (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
     OE_TEST(r == OE_OK);
 
     {
@@ -455,7 +455,7 @@ static void _TestCertMethods()
         oe_cert_t cert = {0};
         oe_ec_public_key_t key = {0};
 
-        r = oe_cert_read_pem(_CERT, sizeof(_CERT), &cert);
+        r = oe_cert_read_pem(&cert, _CERT, sizeof(_CERT));
         OE_TEST(r == OE_OK);
 
         r = oe_cert_get_ec_public_key(&cert, &key);
@@ -507,7 +507,7 @@ static void _TestCertMethods()
         oe_cert_chain_t chain;
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
+        r = oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN));
         OE_TEST(r == OE_OK);
 
         /* Get the length of the chain */
@@ -543,7 +543,7 @@ static void _TestCertMethods()
         oe_cert_t leaf;
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
+        r = oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN));
         OE_TEST(r == OE_OK);
 
         /* Get the root certificate */
@@ -716,7 +716,7 @@ static void _TestCertChainRead()
     oe_result_t r;
     oe_cert_chain_t chain;
 
-    r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
+    r = oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN));
     OE_TEST(r == OE_OK);
 
     oe_cert_chain_free(&chain);
@@ -733,7 +733,7 @@ oe_result_t DumpExtensions(const char* certData, size_t certSize)
     uint8_t data[4096];
     size_t size = sizeof(data);
 
-    OE_CHECK(oe_cert_read_pem(certData, certSize, &cert));
+    OE_CHECK(oe_cert_read_pem(&cert, certData, certSize));
 
     /* Get the number of extensions */
     OE_CHECK(oe_cert_extension_count(&cert, &count));
@@ -881,7 +881,7 @@ static void _TestCertExtensions(
 
     printf("=== begin %s()\n", __FUNCTION__);
 
-    OE_TEST(oe_cert_read_pem(certData, certSize, &cert) == OE_OK);
+    OE_TEST(oe_cert_read_pem(&cert, certData, certSize) == OE_OK);
 
     /* Test getting extensions by index */
     {
@@ -999,7 +999,7 @@ void _TestCertSubject()
     char subject[1024];
     size_t subject_size = sizeof(subject);
 
-    r = oe_cert_read_pem(_CERT, sizeof(_CERT), &cert);
+    r = oe_cert_read_pem(&cert, _CERT, sizeof(_CERT));
     OE_TEST(r == OE_OK);
 
     subject_size = 0;
@@ -1036,7 +1036,7 @@ void _TestCertIssuer()
     char issuer[1024];
     size_t issuer_size = sizeof(issuer);
 
-    r = oe_cert_read_pem(_CERT, sizeof(_CERT), &cert);
+    r = oe_cert_read_pem(&cert, _CERT, sizeof(_CERT));
     OE_TEST(r == OE_OK);
 
     issuer_size = 0;
@@ -1100,7 +1100,7 @@ static void _test_crl_distribution_points(void)
 
     printf("=== begin %s()\n", __FUNCTION__);
 
-    r = oe_cert_read_pem(_SGX_CERT, sizeof(_SGX_CERT), &cert);
+    r = oe_cert_read_pem(&cert, _SGX_CERT, sizeof(_SGX_CERT));
     OE_TEST(r == OE_OK);
 
     r = oe_get_crl_distribution_points(

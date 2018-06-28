@@ -113,8 +113,8 @@ static void _test_verify(const oe_crl_t* crl)
     oe_cert_chain_t chain;
     oe_verify_cert_error_t error = {0};
 
-    OE_TEST(oe_cert_read_pem(_CERT, sizeof(_CERT), &cert) == OE_OK);
-    OE_TEST(oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain));
+    OE_TEST(oe_cert_read_pem(&cert, _CERT, sizeof(_CERT)) == OE_OK);
+    OE_TEST(oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN)));
     OE_TEST(oe_cert_verify(&cert, &chain, crl, &error));
 
     oe_cert_free(&cert);
