@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "asn1_tests.h"
+#include "tests.h"
 
 static const char _CERT[] =
     "-----BEGIN CERTIFICATE-----\n"

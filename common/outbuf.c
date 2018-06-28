@@ -1,7 +1,7 @@
-#include <openenclave/internal/outbuf.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/utils.h>
+#include <openenclave/internal/outbuf.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/internal/enclavelibc.h>
@@ -12,9 +12,9 @@
 #endif
 
 oe_result_t oe_outbuf_start(
-    oe_outbuf_t* buf, 
-    void* buffer, 
-    size_t* size, 
+    oe_outbuf_t* buf,
+    void* buffer,
+    size_t* size,
     size_t alignment)
 {
     oe_result_t result = OE_UNEXPECTED;

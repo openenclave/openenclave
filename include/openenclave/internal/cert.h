@@ -6,10 +6,10 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include "crl.h"
 #include "ec.h"
 #include "oid.h"
 #include "rsa.h"
-#include "crl.h"
 
 OE_EXTERNC_BEGIN
 

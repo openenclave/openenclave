@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hash.h"
-#include "rsa_tests.h"
+#include "tests.h"
 
 /* Generated with: openssl genrsa -out private.pem -3 3072 */
 static const char _PRIVATE_KEY[] =
@@ -655,7 +655,7 @@ static void _TestCertMethods()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void TestRSA()
+void TestRSA(void)
 {
     _TestCertMethods();
     _TestCertVerifyGood();

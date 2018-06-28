@@ -3,9 +3,9 @@
 
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
+#include <openenclave/internal/outbuf.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/outbuf.h>
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/internal/enclavelibc.h>
@@ -13,8 +13,8 @@
 #define memcmp oe_memcmp
 #define memcpy oe_memcpy
 #else
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 #endif
 
 static oe_result_t _find_url(

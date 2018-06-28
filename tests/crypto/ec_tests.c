@@ -16,8 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ec.h"
-#include "ec_tests.h"
 #include "hash.h"
+#include "tests.h"
 
 /* Certificate with an EC key */
 static const char _CERT[] =

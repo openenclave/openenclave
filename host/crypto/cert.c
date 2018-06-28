@@ -20,10 +20,10 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include "crl.h"
 #include "ec.h"
 #include "init.h"
 #include "rsa.h"
-#include "crl.h"
 
 /*
 **==============================================================================
@@ -223,7 +223,7 @@ static int _X509_up_ref(X509* x509)
     return 1;
 }
 
-/* Needed because some versions of OpenSSL do not support X509_up_ref() */
+/* Needed because some versions of OpenSSL do not support X509_CRL_up_ref() */
 static int _X509_CRL_up_ref(X509_CRL* x509_crl)
 {
     if (!x509_crl)
@@ -508,7 +508,7 @@ oe_result_t oe_cert_chain_read_pem(
 
     /* Zero-initialize the implementation */
     if (impl)
-        impl->magic = 0;
+        memset(impl, 0, sizeof(CertChain));
 
     /* Check parameters */
     if (!pemData || !pemSize || !chain)
@@ -637,7 +637,8 @@ oe_result_t oe_cert_verify(
         if (!(crls = sk_X509_CRL_new_null()))
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        _X509_CRL_up_ref(crl_impl->crl);
+        if (!_X509_CRL_up_ref(crl_impl->crl))
+            OE_RAISE(OE_FAILURE);
 
         if (!sk_X509_CRL_push(crls, crl_impl))
             OE_RAISE(OE_FAILURE);

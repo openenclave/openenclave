@@ -19,10 +19,10 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/string.h>
 #include <openenclave/internal/utils.h>
+#include "crl.h"
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
-#include "crl.h"
 
 /*
 **==============================================================================

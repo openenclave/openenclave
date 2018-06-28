@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "crl.h"
 #include <openenclave/internal/crl.h>
-#include <openenclave/internal/raise.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/raise.h>
 #include <openssl/x509.h>
 #include <string.h>
-#include "crl.h"
 
 /* Randomly generated magic number */
 #define OE_CRL_MAGIC 0xe8c993b1cca24906
