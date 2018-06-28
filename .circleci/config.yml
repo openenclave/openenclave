@@ -17,12 +17,9 @@ jobs:
       - run:
           name: SGX1-Debug
           command:  |
-            mkdir build &&
-            cd build &&
-            cmake .. &&
-            make &&
-            OE_SIMULATION=1 ctest
-             
+            ./scripts/pre-commit &&
+            ./scripts/build-testall 
+
   # SGX1 | RelWithDebInfo
   build-test-sgx1-relwithdebinfo:
     docker:
@@ -34,13 +31,10 @@ jobs:
       - run: 
           name: SGX1-RelWithDebInfo
           command:  |
-            mkdir build &&
-            cd build &&
-            cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo &&
-            make &&
-            OE_SIMULATION=1 ctest
-            
-    # SGX1 | Release
+             ./scripts/pre-commit &&
+             ./scripts/build-testall -p SGX1 -b RelWithDebInfo
+  
+  # SGX1 | Release
   build-test-sgx1-release:
     docker:
       - image: oeciteam/oetools:1.0.0
@@ -51,16 +45,13 @@ jobs:
       - run: 
           name: SGX1-Release
           command:  |
-            mkdir build &&
-            cd build &&
-            cmake .. -DCMAKE_BUILD_TYPE=Release &&
-            make &&
-            OE_SIMULATION=1 ctest
+             ./scripts/pre-commit &&
+             ./scripts/build-testall -p SGX1 -b Release
              
   # SGX1-FLC | Debug 
   build-test-sgx1-flc-debug:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -68,18 +59,13 @@ jobs:
       - run:
           name: SGX1-FLC-Debug
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1-FLC -b Release
-            
+             ./scripts/build-testall -p SGX1-FLC -b Debug
+
   # SGX1-FLC | RelWithDebInfo
   build-test-sgx1-flc-relwithdebinfo:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -87,18 +73,13 @@ jobs:
       - run:
           name: SGX1-FLC-RelWithDebInfo
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1-FLC -b RelWithDebInfo
+             ./scripts/build-testall -p SGX1-FLC -b RelWithDebInfo
 
   # SGX1-FLC | Release 
   build-test-sgx1-flc-release:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -106,32 +87,27 @@ jobs:
       - run:
           name: SGX1-FLC-Release
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1-FLC -b Release
+             ./scripts/build-testall -p SGX1-FLC -b Release
              
 workflows:
   version: 2
   build-test:
     jobs:                
       #  1. sgx1-debug((build-test))
-       # - build-test-sgx1-debug
+      - build-test-sgx1-debug
             
       # 2.  sgx1-relwithdebinfo(build-test)     
-       # - build-test-sgx1-relwithdebinfo
+      # - build-test-sgx1-relwithdebinfo
             
       # 3.  sgx1-release(build-test)    
-       #- build-test-sgx1-release
+      # - build-test-sgx1-release
             
       # 4.  sgx1-flc-debug(build-test)
-       - build-test-sgx1-flc-debug
+      - build-test-sgx1-flc-debug
             
       # 5.  sgx1-flc-relwithdebinfo(build-test)  
-       #- build-test-sgx1-flc-relwithdebinfo
+      # - build-test-sgx1-flc-relwithdebinfo
             
       # 6.  sgx1-flc-release(build-test)    
-       #- build-test-sgx1-flc-release
+      # - build-test-sgx1-flc-release

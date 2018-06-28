@@ -112,7 +112,7 @@ echo "CMAKE_FLAGS are ${CMAKE_FLAGS}"
 cmake .. ${CMAKE_FLAGS}
 if [ "$?" != "0" ]; then
     echo ""
-    echo "cmake failed for SGX1-FLC"
+    echo "cmake failed for ${PLATFORM_MODE}"
     echo ""
     exit 1
 fi
@@ -120,7 +120,7 @@ fi
 make
 if [ "$?" != "0" ]; then
     echo ""
-    echo "Build failed for SGX1-FLC"
+    echo "Build failed for ${PLATFORM_MODE}"
     echo ""
     exit 1
 fi
@@ -134,7 +134,7 @@ fi
 
 if [ "$?" != "0" ]; then
     echo ""
-    echo "Test failed for SGX1-FLC in simulation mode"
+    echo "Test failed for ${PLATFORM_MODE} in simulation mode"
     echo ""
     exit 1
 fi
