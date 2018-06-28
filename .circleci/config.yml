@@ -44,7 +44,7 @@ jobs:
   # SGX1-FLC | Debug 
   build-test-sgx1-flc-debug:
     docker:
-      - image: anitagov/ubuntu-tools:1.3
+      - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
