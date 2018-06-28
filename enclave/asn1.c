@@ -77,9 +77,6 @@ static oe_result_t _get_length(oe_asn1_t* asn1, size_t* length)
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (!_is_valid(asn1))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
     if (mbedtls_asn1_get_len(_pptr(asn1), _end(asn1), length) != 0)
         OE_RAISE(OE_FAILURE);
 
