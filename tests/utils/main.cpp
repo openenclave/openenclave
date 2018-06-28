@@ -61,6 +61,11 @@ void TestCpuidAgainstAssembly(unsigned int leaf, unsigned int* subleaf)
 
     asm_get_cpuid(leaf, subleaf, &a_asm, &b_asm, &c_asm, &d_asm);
 
+    if (a_asm == 0)
+    {
+        fprintf(stdout, "a_asm is EQUAL TO 0");
+    }
+
     OE_TEST(a == a_asm);
     OE_TEST(b == b_asm);
     OE_TEST(c == c_asm);
@@ -69,6 +74,7 @@ void TestCpuidAgainstAssembly(unsigned int leaf, unsigned int* subleaf)
 
 void TestUnequalLeaves()
 {
+    // Verify: different leaf values return different answers.
     unsigned int a_asm = 0, b_asm = 0, c_asm = 0, d_asm = 0;
     unsigned int a = 0, b = 0, c = 0, d = 0;
 
@@ -76,6 +82,16 @@ void TestUnequalLeaves()
     asm_get_cpuid(1, 0, &a_asm, &b_asm, &c_asm, &d_asm);
 
     OE_TEST(a != a_asm);
+
+    // Verify: same oe and asm agree on those values.
+    unsigned int a_asm_2 = 0, b_asm_2 = 0, c_asm_2 = 0, d_asm_2 = 0;
+    unsigned int a_2 = 0, b_2 = 0, c_2 = 0, d_2 = 0;
+
+    oe_get_cpuid(1, 0, &a_2, &b_2, &c_2, &d_2);
+    asm_get_cpuid(0, 0, &a_asm_2, &b_asm_2, &c_asm_2, &d_asm_2);
+
+    OE_TEST(a == a_asm_2);
+    OE_TEST(a_2 == a_asm);
 }
 
 int main()
