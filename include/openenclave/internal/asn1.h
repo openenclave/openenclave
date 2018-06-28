@@ -10,7 +10,7 @@
 
 OE_EXTERNC_BEGIN
 
-/* ASN.1 tag numbers */
+/* Standard ASN.1 tag numbers */
 #define OE_ASN1_TAG_EOC 0x00
 #define OE_ASN1_TAG_BOOLEAN 0x01
 #define OE_ASN1_TAG_INTEGER 0x02
@@ -41,7 +41,7 @@ OE_EXTERNC_BEGIN
 #define OE_ASN1_TAG_CHARACTER_STRING 0x1d
 #define OE_ASN1_TAG_BMP_STRING 0x1e
 
-/* Value encodings */
+/* Standard ASN.1 value encodings */
 #define OE_ASN1_TAG_PRIMITIVE 0x00
 #define OE_ASN1_TAG_CONSTRUCTED 0x20
 
@@ -57,7 +57,7 @@ oe_result_t oe_asn1_init(oe_asn1_t* asn1, const uint8_t* data, size_t length);
 
 oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag);
 
-oe_result_t oe_asn1_get(
+oe_result_t oe_asn1_get_raw(
     oe_asn1_t* asn1,
     uint8_t* tag,
     const uint8_t** data,

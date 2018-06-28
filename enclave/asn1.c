@@ -106,7 +106,7 @@ done:
     return result;
 }
 
-oe_result_t oe_asn1_get(
+oe_result_t oe_asn1_get_raw(
     oe_asn1_t* asn1,
     uint8_t* tag,
     const uint8_t** data,

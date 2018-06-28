@@ -243,7 +243,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
                 size_t length;
                 const uint8_t* data;
 
-                r = oe_asn1_get(asn1, &tag, &data, &length);
+                r = oe_asn1_get_raw(asn1, &tag, &data, &length);
                 OE_TEST(r == OE_OK);
 
                 _indent(str, depth);

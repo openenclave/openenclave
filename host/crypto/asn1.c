@@ -71,7 +71,7 @@ done:
     return result;
 }
 
-oe_result_t oe_asn1_get(
+oe_result_t oe_asn1_get_raw(
     oe_asn1_t* asn1,
     uint8_t* tag,
     const uint8_t** data,
@@ -122,7 +122,7 @@ oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence)
     if (!_is_valid(asn1) || !sequence)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(oe_asn1_get(asn1, &tag, &data, &length));
+    OE_CHECK(oe_asn1_get_raw(asn1, &tag, &data, &length));
 
     if (tag != (OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE))
         OE_RAISE(OE_FAILURE);
@@ -148,7 +148,7 @@ oe_result_t oe_asn1_get_integer(oe_asn1_t* asn1, int* value)
     if (!_is_valid(asn1) || !value)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(oe_asn1_get(asn1, &tag, &data, &length));
+    OE_CHECK(oe_asn1_get_raw(asn1, &tag, &data, &length));
 
     if (tag != OE_ASN1_TAG_INTEGER)
         OE_RAISE(OE_FAILURE);
@@ -213,7 +213,7 @@ oe_result_t oe_asn1_get_octet_string(
     if (!_is_valid(asn1) || !data || !length)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(oe_asn1_get(asn1, &tag, data, length));
+    OE_CHECK(oe_asn1_get_raw(asn1, &tag, data, length));
 
     if (tag != OE_ASN1_TAG_OCTET_STRING)
         OE_RAISE(OE_FAILURE);
