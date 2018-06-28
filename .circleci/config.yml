@@ -18,7 +18,7 @@ jobs:
           name: SGX1-Debug
           command:  |
             ./scripts/pre-commit &&
-            sudo /bin/bash ./scripts/build-testall
+            ./scripts/build-testall
  
   # SGX1 | RelWithDebInfo
   build-test-sgx1-relwithdebinfo:
@@ -32,7 +32,7 @@ jobs:
           name: SGX1-RelWithDebInfo
           command:  |
              ./scripts/pre-commit &&
-             sudo  /bin/bash ./scripts/build-testall -p SGX1 -b RelWithDebInfo
+             ./scripts/build-testall -p SGX1 -b RelWithDebInfo
   
   # SGX1 | Release
   build-test-sgx1-release:
@@ -46,7 +46,7 @@ jobs:
           name: SGX1-Release
           command:  |
              ./scripts/pre-commit &&
-             sudo /bin/bash ./scripts/build-testall -p SGX1 -b Release
+             ./scripts/build-testall -p SGX1 -b Release
              
   # SGX1-FLC | Debug 
   build-test-sgx1-flc-debug:
@@ -60,7 +60,7 @@ jobs:
           name: SGX1-FLC-Debug
           command:  |
              ./scripts/pre-commit &&
-             sudo /bin/bash ./scripts/build-testall -p SGX1-FLC -b Debug
+             ./scripts/build-testall -p SGX1-FLC -b Debug
 
   # SGX1-FLC | RelWithDebInfo
   build-test-sgx1-flc-relwithdebinfo:
@@ -74,7 +74,7 @@ jobs:
           name: SGX1-FLC-RelWithDebInfo
           command:  |
              ./scripts/pre-commit &&
-             sudo /bin/bash ./scripts/build-testall -p SGX1-FLC -b RelWithDebInfo
+             ./scripts/build-testall -p SGX1-FLC -b RelWithDebInfo
 
   # SGX1-FLC | Release 
   build-test-sgx1-flc-release:
@@ -88,7 +88,7 @@ jobs:
           name: SGX1-FLC-Release
           command:  |
              ./scripts/pre-commit &&
-             sudo /bin/bash ./scripts/build-testall -p SGX1-FLC -b Release
+             ./scripts/build-testall -p SGX1-FLC -b Release
              
 workflows:
   version: 2
