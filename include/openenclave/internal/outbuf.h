@@ -55,7 +55,7 @@
  *         if (r != OE_OK)
  *             return r;
  *
- *         // Append without regard to null buffers or buffer overflows.
+ *         // Append without regard for null buffers or buffer overflows.
  *         oe_outbuf_append(&outbuf, "red", 3);
  *         oe_outbuf_append(&outbuf, "green", 5);
  *         oe_outbuf_append(&outbuf, "blue", 4);
