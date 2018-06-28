@@ -324,7 +324,7 @@ static void _TestCertVerifyGood()
     oe_verify_cert_error_t error = {0};
     oe_cert_t cert = {0};
     oe_cert_chain_t chain = {0};
-    OE_CRL* crl = NULL;
+    oe_crl_t* crl = NULL;
 
     r = oe_cert_read_pem(_CERT1, sizeof(_CERT1), &cert);
     OE_TEST(r == OE_OK);
@@ -349,7 +349,7 @@ static void _TestCertVerifyBad()
     oe_verify_cert_error_t error = {0};
     oe_cert_t cert = {0};
     oe_cert_chain_t chain = {0};
-    OE_CRL* crl = NULL;
+    oe_crl_t* crl = NULL;
 
     r = oe_cert_read_pem(_CERT1, sizeof(_CERT1), &cert);
     OE_TEST(r == OE_OK);

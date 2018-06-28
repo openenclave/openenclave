@@ -9,6 +9,7 @@
 #include "ec.h"
 #include "oid.h"
 #include "rsa.h"
+#include "crl.h"
 
 OE_EXTERNC_BEGIN
 
@@ -23,8 +24,6 @@ typedef struct _oe_cert_chain
     /* Internal private implementation */
     uint64_t impl[4];
 } oe_cert_chain_t;
-
-typedef struct _OE_CRL OE_CRL;
 
 /* Error message type for oe_verify_cert_error_t() function */
 typedef struct _oe_verify_cert_error
@@ -130,7 +129,7 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain);
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    OE_CRL* crl, /* ATTN: placeholder for future capability */
+    const oe_crl_t* crl,
     oe_verify_cert_error_t* error);
 
 /**

@@ -9,6 +9,7 @@ add_enclave_executable(cryptoenc
     ec.c
     enc.c
     ../../asn1_tests.c
+    ../../crl_tests.c
     ../../ec_tests.c
     ../../hash.c
     ../../random_tests.c

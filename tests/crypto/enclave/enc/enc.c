@@ -23,6 +23,7 @@
 #include "../../random_tests.h"
 #include "../../rsa_tests.h"
 #include "../../sha_tests.h"
+#include "../../crl_tests.h"
 
 OE_ECALL void Test(void* args_)
 {
@@ -39,6 +40,7 @@ OE_ECALL void Test(void* args_)
     TestRandom();
     TestRSA();
     TestSHA();
+    TestCRL();
 
     /* Verify that all malloc'd memory has been released */
     OE_TEST(oe_get_malloc_stats(&stats) == OE_OK);

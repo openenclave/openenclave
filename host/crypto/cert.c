@@ -23,6 +23,7 @@
 #include "ec.h"
 #include "init.h"
 #include "rsa.h"
+#include "crl.h"
 
 /*
 **==============================================================================
@@ -222,6 +223,16 @@ static int _X509_up_ref(X509* x509)
     return 1;
 }
 
+/* Needed because some versions of OpenSSL do not support X509_up_ref() */
+static int _X509_CRL_up_ref(X509_CRL* x509_crl)
+{
+    if (!x509_crl)
+        return 0;
+
+    CRYPTO_add(&x509_crl->references, 1, CRYPTO_LOCK_X509_CRL);
+    return 1;
+}
+
 static oe_result_t _CertChainGetLength(const CertChain* impl, int* length)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -410,18 +421,6 @@ done:
     return result;
 }
 
-/* Free with sk_DIST_POINT_pop_free(crldp, DIST_POINT_free) */
-/* ATTN: implement */
-/* OID: 2.5.29.31 */
-OE_INLINE STACK_OF(DIST_POINT) * _get_crl_distribution_points(X509* x509)
-{
-    STACK_OF(DIST_POINT) * crldp;
-
-    crldp = X509_get_ext_d2i(x509, NID_crl_distribution_points, NULL, NULL);
-
-    return crldp;
-}
-
 /*
 **==============================================================================
 **
@@ -562,14 +561,16 @@ done:
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    OE_CRL* crl, /* ATTN: placeholder for future feature work */
+    const oe_crl_t* crl,
     oe_verify_cert_error_t* error)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* certImpl = (Cert*)cert;
     CertChain* chainImpl = (CertChain*)chain;
+    crl_t* crl_impl = (crl_t*)crl;
     X509_STORE_CTX* ctx = NULL;
     X509* x509 = NULL;
+    STACK_OF(X509_CRL)* crls = NULL;
 
     /* Initialize error to NULL for now */
     if (error)
@@ -586,6 +587,13 @@ oe_result_t oe_cert_verify(
     if (!_CertChainIsValid(chainImpl))
     {
         _SetErr(error, "invalid chain parameter");
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* Reject invalid CRL */
+    if (crl_impl && !crl_is_valid(crl_impl))
+    {
+        _SetErr(error, "invalid crl parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
@@ -623,6 +631,20 @@ oe_result_t oe_cert_verify(
     /* Set the CA chain into the verification context */
     X509_STORE_CTX_trusted_stack(ctx, chainImpl->sk);
 
+    /* Set the CRLs if any */
+    if (crl_impl)
+    {
+        if (!(crls = sk_X509_CRL_new_null()))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        _X509_CRL_up_ref(crl_impl->crl);
+
+        if (!sk_X509_CRL_push(crls, crl_impl))
+            OE_RAISE(OE_FAILURE);
+
+        X509_STORE_CTX_set0_crls(ctx, crls);
+    }
+
     /* Finally verify the certificate */
     if (!X509_verify_cert(ctx))
     {
@@ -641,6 +663,9 @@ done:
 
     if (x509)
         X509_free(x509);
+
+    if (crls)
+        sk_X509_CRL_pop_free(crls, X509_CRL_free);
 
     return result;
 }

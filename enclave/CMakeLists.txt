@@ -4,6 +4,7 @@
 add_library(oeenclave STATIC
     asn1.c
     cert.c
+    crl.c
     ec.c
     ../common/quote.c
     cmac.c

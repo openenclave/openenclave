@@ -22,6 +22,7 @@
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
+#include "crl.h"
 
 /*
 **==============================================================================
@@ -636,12 +637,13 @@ done:
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    OE_CRL* crl, /* ATTN: placeholder (future feature work) */
+    const oe_crl_t* crl,
     oe_verify_cert_error_t* error)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* certImpl = (Cert*)cert;
     CertChain* chainImpl = (CertChain*)chain;
+    crl_t* crl_impl = (crl_t*)crl;
     uint32_t flags = 0;
 
     /* Initialize error */
@@ -662,11 +664,18 @@ oe_result_t oe_cert_verify(
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
+    /* Reject invalid CRL */
+    if (crl_impl && !crl_is_valid(crl_impl))
+    {
+        _SetErr(error, "invalid crl parameter");
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
             certImpl->cert,
             &chainImpl->referent->crt,
-            NULL,
+            crl_impl ? crl_impl->crl : NULL,
             NULL,
             &flags,
             NULL,
