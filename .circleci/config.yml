@@ -9,7 +9,7 @@ jobs:
   # SGX1 | Debug 
   build-test-sgx1-debug:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -17,18 +17,16 @@ jobs:
       - run:
           name: SGX1-Debug
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev && 
-             ./scripts/pre-commit &&
-             sudo ./scripts/build-testall
- 
+            mkdir build &&
+            cd build &&
+            cmake .. &&
+            make &&
+            OE_SIMULATION=1 ctest
+             
   # SGX1 | RelWithDebInfo
   build-test-sgx1-relwithdebinfo:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -36,18 +34,16 @@ jobs:
       - run: 
           name: SGX1-RelWithDebInfo
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
-             ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1 -b RelWithDebInfo
-  
+            mkdir build &&
+            cd build &&
+            cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo &&
+            make &&
+            OE_SIMULATION=1 ctest
+            
     # SGX1 | Release
   build-test-sgx1-release:
     docker:
-      - image: ubuntu:16.04
+      - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -55,13 +51,11 @@ jobs:
       - run: 
           name: SGX1-Release
           command:  |
-             apt-get update &&
-             apt-get install -y sudo &&
-             apt-get install -y git &&
-             sudo ./scripts/install-prereqs &&
-             apt-get install -y libssl-dev &&
-             ./scripts/pre-commit &&
-             sudo ./scripts/build-testall -p SGX1 -b Release
+            mkdir build &&
+            cd build &&
+            cmake .. -DCMAKE_BUILD_TYPE=Release &&
+            make &&
+            OE_SIMULATION=1 ctest
              
   # SGX1-FLC | Debug 
   build-test-sgx1-flc-debug:
@@ -125,16 +119,16 @@ workflows:
   build-test:
     jobs:                
       #  1. sgx1-debug((build-test))
-       # - build-test-sgx1-debug
+       - build-test-sgx1-debug
             
       # 2.  sgx1-relwithdebinfo(build-test)     
-       #- build-test-sgx1-relwithdebinfo
+       - build-test-sgx1-relwithdebinfo
             
       # 3.  sgx1-release(build-test)    
-       #- build-test-sgx1-release
+       - build-test-sgx1-release
             
       # 4.  sgx1-flc-debug(build-test)
-       - build-test-sgx1-flc-debug
+       # - build-test-sgx1-flc-debug
             
       # 5.  sgx1-flc-relwithdebinfo(build-test)  
        #- build-test-sgx1-flc-relwithdebinfo
