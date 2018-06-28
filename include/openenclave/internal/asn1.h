@@ -98,7 +98,7 @@
  *
  *     - Initializing an ASN.1 input stream.
  *     - Peeking at the next ASN.1 tag in the stream.
- *     - Getting an ASN.1 elements from the stream.
+ *     - Getting ASN.1 elements from the stream.
  *
  * The following snippet initializes an ASN.1 input context.
  *
