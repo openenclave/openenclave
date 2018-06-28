@@ -70,6 +70,7 @@ jobs:
           command:  |
             mkdir build &&
             cd build &&
+            sudo make -C prereqs USE_LIBSGX=1
             cmake .. -DUSE_LIBSGX=1 &&
             make &&
             OE_SIMULATION=1 ctest
