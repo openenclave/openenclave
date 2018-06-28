@@ -286,10 +286,7 @@ static void _test_asn1_parsing(void)
     oe_cert_free(&cert);
 
     oe_asn1_t asn1;
-    r = oe_asn1_init(&asn1, data, size);
-    OE_TEST(r == OE_OK);
-    OE_TEST(asn1.data == data);
-    OE_TEST(asn1.length == size);
+    oe_asn1_init(&asn1, data, size);
 
     char* str = NULL;
     _parse_asn1(&asn1, &str, 0);

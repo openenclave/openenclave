@@ -36,23 +36,6 @@ OE_INLINE size_t _remaining(const oe_asn1_t* asn1)
     return _end(asn1) - asn1->ptr;
 }
 
-oe_result_t oe_asn1_init(oe_asn1_t* asn1, const uint8_t* data, size_t length)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    if (!asn1 || !data || !length)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    asn1->data = data;
-    asn1->length = length;
-    asn1->ptr = data;
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -127,7 +110,7 @@ oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence)
     if (tag != (OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE))
         OE_RAISE(OE_FAILURE);
 
-    OE_CHECK(oe_asn1_init(sequence, data, length));
+    oe_asn1_init(sequence, data, length);
 
     result = OE_OK;
 

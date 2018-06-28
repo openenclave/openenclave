@@ -107,7 +107,7 @@ oe_result_t oe_get_crl_distribution_points(
 
         /* Determine the number of URLs */
         {
-            OE_CHECK(oe_asn1_init(&asn1, data, size));
+            oe_asn1_init(&asn1, data, size);
             OE_CHECK(oe_asn1_get_sequence(&asn1, &seq));
 
             while (seq.ptr < seq.data + seq.length)
@@ -129,7 +129,7 @@ oe_result_t oe_get_crl_distribution_points(
         {
             size_t index = 0;
 
-            OE_CHECK(oe_asn1_init(&asn1, data, size));
+            oe_asn1_init(&asn1, data, size);
             OE_CHECK(oe_asn1_get_sequence(&asn1, &seq));
 
             /* While there are more CRL distribution points */

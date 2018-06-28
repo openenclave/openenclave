@@ -53,7 +53,12 @@ typedef struct _oe_asn1_t
     const uint8_t* ptr;
 } oe_asn1_t;
 
-oe_result_t oe_asn1_init(oe_asn1_t* asn1, const uint8_t* data, size_t length);
+OE_INLINE void oe_asn1_init(oe_asn1_t* asn1, const uint8_t* data, size_t length)
+{
+    asn1->data = data;
+    asn1->length = length;
+    asn1->ptr = asn1->data;
+}
 
 oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag);
 
