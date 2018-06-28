@@ -98,13 +98,13 @@ workflows:
       - build-test-sgx1-debug
             
       # 2.  sgx1-relwithdebinfo(build-test)     
-      # - build-test-sgx1-relwithdebinfo
+       - build-test-sgx1-relwithdebinfo
             
       # 3.  sgx1-release(build-test)    
-      # - build-test-sgx1-release
+       - build-test-sgx1-release
             
       # 4.  sgx1-flc-debug(build-test)
-      - build-test-sgx1-flc-debug
+      # - build-test-sgx1-flc-debug
             
       # 5.  sgx1-flc-relwithdebinfo(build-test)  
       # - build-test-sgx1-flc-relwithdebinfo
