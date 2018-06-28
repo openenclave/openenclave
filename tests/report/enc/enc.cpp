@@ -151,13 +151,10 @@ done:
     oe_free_buffer(encTcbInfoJson);
 }
 
-oe_result_t OE_VerifyTCBInfo(
-    const TCBInfo* info,
-    const uint8_t* tcbInfoJson,
-    uint32_t tcbInfoJsonSize);
-
 OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
 {
-    TCBInfo info = {0};
-    args->result = OE_VerifyTCBInfo(&info, args->tcbInfo, args->tcbInfoSize);
+    args->result = OE_ParseTCBInfo(
+        args->tcbInfo,
+        args->tcbInfoSize,
+        (OE_ParsedTcbInfo*)args->parsedTcbInfo);
 }
