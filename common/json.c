@@ -249,9 +249,10 @@ static const uint8_t* read(
     }
     else if (*itr == '"' || *itr == '\'')
     {
+        start = itr + 1;
         itr = readQuotedString(p, itr, end);
         if (!p->parseFailed && p->interface.string)
-            if (p->interface.string(p->data, start, itr - start) != OE_OK)
+            if (p->interface.string(p->data, start, itr - start - 1) != OE_OK)
                 return end;
     }
     else if (*itr == '[')
