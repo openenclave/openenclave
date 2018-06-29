@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
 #include <openenclave/internal/asn1.h>

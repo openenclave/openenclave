@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>

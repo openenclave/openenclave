@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <stdio.h>
 
 // GCC sometimes replaces vfprintf() calls with __vfprintf_chk() calls. In
