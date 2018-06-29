@@ -218,7 +218,6 @@ oe_result_t oe_asn1_get_octet_string(
         OE_RAISE(OE_FAILURE);
 
     *data = asn1->ptr;
-
     asn1->ptr += *length;
 
     result = OE_OK;
