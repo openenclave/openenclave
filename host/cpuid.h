@@ -4,11 +4,12 @@
 #ifndef _OE_CPUIDCOUNT_H
 #define _OE_CPUIDCOUNT_H
 
-#include <openenclave/bits/types.h>
+//#include <openenclave/bits/types.h>
+#include <openenclave/bits/result.h>
 
 oe_result_t oe_get_cpuid(
     unsigned int __leaf,
-    unsigned int __subleaf,
+    unsigned int* __subleaf,
     unsigned int* __eax,
     unsigned int* __ebx,
     unsigned int* __ecx,

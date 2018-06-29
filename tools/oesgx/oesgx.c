@@ -16,7 +16,7 @@ typedef struct _Regs
 static oe_result_t _CPUID(Regs* regs)
 {
     return oe_get_cpuid(
-        regs->eax, regs->ecx, &regs->eax, &regs->ebx, &regs->ecx, &regs->edx);
+        regs->eax, &regs->ecx, &regs->eax, &regs->ebx, &regs->ecx, &regs->edx);
 }
 
 #define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)

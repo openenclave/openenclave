@@ -107,7 +107,7 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
     uint32_t ecx = 0;
     uint32_t edx = 0;
 
-    oe_get_cpuid(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
+    oe_get_cpuid(leaf, NULL, &cpuidRAX, &ebx, &ecx, &edx);
 
     // Do something with the out param to prevent call from getting optimized 
     // out

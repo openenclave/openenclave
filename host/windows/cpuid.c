@@ -11,7 +11,7 @@
 */
 oe_result_t oe_get_cpuid(
     unsigned int __leaf,
-    unsigned int __subleaf,
+    unsigned int* __subleaf,
     unsigned int* __eax,
     unsigned int* __ebx,
     unsigned int* __ecx,
@@ -30,7 +30,7 @@ oe_result_t oe_get_cpuid(
     }
     else
     {
-        __cpuidex(registers, __leaf, __subleaf);
+        __cpuidex(registers, __leaf, *__subleaf);
     }
 
     return OE_OK;

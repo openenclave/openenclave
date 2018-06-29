@@ -20,7 +20,7 @@ int test_cpuid_instruction(unsigned int what)
     if (!done)
     {
         unsigned int a, b, d;
-        oe_get_cpuid(1, 0, &a, &b, &c, &d);
+        oe_get_cpuid(1, NULL, &a, &b, &c, &d);
         // This should be executed only once.
         ++hits1;
         done = 1;
