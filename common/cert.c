@@ -92,7 +92,6 @@ oe_result_t oe_get_crl_distribution_points(
     {
         uint8_t data[size];
         oe_asn1_t asn1;
-        oe_asn1_t seq;
 
         /* Find the extension */
         size = sizeof(data);
@@ -100,6 +99,8 @@ oe_result_t oe_get_crl_distribution_points(
 
         /* Determine the number of URLs */
         {
+            oe_asn1_t seq;
+
             oe_asn1_init(&asn1, data, size);
             OE_CHECK(oe_asn1_get_sequence(&asn1, &seq));
 
@@ -120,6 +121,7 @@ oe_result_t oe_get_crl_distribution_points(
 
         /* Process all the CRL distribution points */
         {
+            oe_asn1_t seq;
             size_t index = 0;
 
             oe_asn1_init(&asn1, data, size);
