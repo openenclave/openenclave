@@ -25,10 +25,10 @@ static oe_result_t _find_url(
 {
     oe_result_t result = OE_UNEXPECTED;
     const uint8_t* p = data;
-    size_t r = size;
+    size_t remaining = size;
 
     /* Search for "https:" preceded by the length of the URL */
-    while (r)
+    while (remaining)
     {
         const char PATTERN[] = "https:";
 
@@ -42,15 +42,8 @@ static oe_result_t _find_url(
             uint8_t len = p[-1];
 
             /* Fail if length excedes bytes remaining in the buffer */
-            if (len > r)
+            if (len > remaining)
                 OE_RAISE(OE_FAILURE);
-
-            /* Search URL for bad characters */
-            for (size_t i = 0; i < len; i++)
-            {
-                if (!(p[i] >= ' ' && p[i] <= '~'))
-                    OE_RAISE(OE_FAILURE);
-            }
 
             *url = (char*)p;
             *url_len = len;
@@ -58,7 +51,7 @@ static oe_result_t _find_url(
             goto done;
         }
 
-        r--;
+        remaining--;
         p++;
     }
 
