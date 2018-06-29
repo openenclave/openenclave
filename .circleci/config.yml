@@ -63,7 +63,7 @@ jobs:
              apt-get install -y sudo &&
              sudo ./scripts/install-prereqs &&
              ./scripts/pre-commit &&
-             sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD
+             sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
              mkdir build &&
              cd build &&
              cmake .. -DUSE_LIBSGX=1 &&
