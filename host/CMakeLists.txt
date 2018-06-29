@@ -11,7 +11,7 @@ set(PLATFORM_SRC
     crypto/rsa.c
     linux/aep.S
     linux/aesm.c
-    linux/cpuidcount.c
+    linux/cpuid.c
     linux/enter.S
     linux/entersim.S
     linux/exception.c
@@ -24,7 +24,7 @@ elseif (WIN32)
 set(PLATFORM_SRC
     windows/aep.asm
     windows/aesm.c
-    windows/cpuidcount.c
+    windows/cpuid.c
     windows/enter.asm
     windows/entersim.asm
     windows/exception.c
@@ -35,7 +35,6 @@ endif()
 
 add_library(oehost STATIC
     calls.c
-    cpuid.c
     create.c
     dupenv.c
     elf.c
