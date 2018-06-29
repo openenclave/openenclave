@@ -34,8 +34,13 @@ RUNNING=$(shell lsmod | grep intel_sgx)
 
 # Workaround until sgx_linux_x64_driver.bin is available from public endpoint
 get-driver:
+ifdef NODOWNLOAD
+	@ cp ../../libsgxdownload/sgx_linux_x64_driver.bin .
+	@ echo "*** Copied sgx-driver binary"
+else
 	apt-get -y install wget
 	@ wget http://10.224.140.70:8888/sgx_linux_x64_driver.bin
+endif
 	chmod 744 sgx_linux_x64_driver.bin
 
 check-running:
