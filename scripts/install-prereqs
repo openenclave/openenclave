@@ -10,7 +10,7 @@
 # and add it to the list.
 #
 
-# Needed for Open Enclve build and scripts
+# Needed for Open Enclave build and scripts
 PACKAGES="clang-format cmake gcc g++ make"
 
 # Needed for using oedbg
@@ -20,7 +20,7 @@ PACKAGES="$PACKAGES gdb"
 PACKAGES="$PACKAGES autoconf libtool"
 
 # Needed to generate documentation during make
-PACKAGES="$PACKAGES doxygen"
+PACKAGES="$PACKAGES doxygen graphviz"
 
 # Needed for cmake/get_c_compiler_dir.sh
 PACKAGES="$PACKAGES gawk"

@@ -40,10 +40,9 @@ OE_EXTERNC_BEGIN
  * enclave.
  *
  * @param isFirstHandler The parameter indicates that the input handler should
- * be
- * the first exception handler to be called. If it is false, the input handler
- * will be appended to the end of exception handler chain, otherwise it will be
- * added as the first handler in the exception handler chain.
+ * be the first exception handler to be called. If it is false, the input
+ * handler will be appended to the end of exception handler chain, otherwise
+ * it will be added as the first handler in the exception handler chain.
  * @param vectoredHandler The input vectored exception handler to register. It
  * must be a function defined in the enclave. The same handler can only be
  * registered once; a 2nd registration will fail. If the function succeeds, the
