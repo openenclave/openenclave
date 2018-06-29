@@ -104,7 +104,7 @@ oe_result_t oe_get_crl_distribution_points(
             oe_asn1_init(&asn1, data, size);
             OE_CHECK(oe_asn1_get_sequence(&asn1, &seq));
 
-            while (seq.ptr < seq.data + seq.length)
+            while (oe_asn1_more(&seq))
             {
                 oe_asn1_t crldp;
                 OE_CHECK(oe_asn1_get_sequence(&seq, &crldp));
