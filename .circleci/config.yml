@@ -59,14 +59,17 @@ jobs:
       - run:
           name: SGX1-FLC-Debug
           command:  |
-            ./scripts/pre-commit &&
-            sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD
-            mkdir build &&
-            cd build &&
-            cmake .. -DUSE_LIBSGX=1 &&
-            make &&
-            OE_SIMULATION=1 ctest
-            #./scripts/build-testall -p SGX1-FLC -b Debug
+             apt-get update &&
+             apt-get install -y sudo &&
+             sudo ./scripts/install-prereqs &&
+             ./scripts/pre-commit &&
+             sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD
+             mkdir build &&
+             cd build &&
+             cmake .. -DUSE_LIBSGX=1 &&
+             make &&
+             OE_SIMULATION=1 ctest
+             #./scripts/build-testall -p SGX1-FLC -b Debug
 
   # SGX1-FLC | RelWithDebInfo
   build-test-sgx1-flc-relwithdebinfo:
