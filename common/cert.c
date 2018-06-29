@@ -140,10 +140,16 @@ oe_result_t oe_get_crl_distribution_points(
                 OE_CHECK(_find_url(crldp.data, crldp.length, &url, &url_len));
 
                 if ((addr = (const char*)oe_outbuf_end(&outbuf)))
+                {
+                    /* Append the next urls[i] address */
                     oe_outbuf_set(&outbuf, i * addr_size, &addr, addr_size);
+                }
 
+                /* Append the URL */
                 oe_outbuf_append(&outbuf, url, url_len);
-                oe_outbuf_append(&outbuf, "", 1);
+
+                /* Append null terminator */
+                oe_outbuf_append(&outbuf, NULL, 1);
             }
         }
     }
