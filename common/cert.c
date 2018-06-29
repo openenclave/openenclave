@@ -123,7 +123,7 @@ oe_result_t oe_get_crl_distribution_points(
         /* Process all the CRL distribution points */
         {
             oe_asn1_t seq;
-            size_t index = 0;
+            size_t i = 0;
 
             oe_asn1_init(&asn1, data, size);
             OE_CHECK(oe_asn1_get_sequence(&asn1, &seq));
@@ -141,9 +141,9 @@ oe_result_t oe_get_crl_distribution_points(
                 OE_CHECK(_find_url(crldp.data, crldp.length, &url, &url_len));
 
                 if ((addr = (const char*)oe_outbuf_end(&outbuf)))
-                    oe_outbuf_set(&outbuf, index * addr_size, &addr, addr_size);
+                    oe_outbuf_set(&outbuf, i * addr_size, &addr, addr_size);
 
-                index++;
+                i++;
                 oe_outbuf_append(&outbuf, url, url_len);
                 oe_outbuf_append(&outbuf, "", 1);
             }
