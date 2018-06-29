@@ -102,6 +102,8 @@ OE_INLINE void* oe_outbuf_end(oe_outbuf_t* buf)
 
 void oe_outbuf_append(oe_outbuf_t* buf, const void* s, size_t n);
 
+void oe_outbuf_set(oe_outbuf_t* buf, size_t offset, const void* s, size_t n);
+
 oe_result_t oe_outbuf_finish(oe_outbuf_t* buf, size_t* size);
 
 OE_EXTERNC_END

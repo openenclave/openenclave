@@ -41,20 +41,25 @@ done:
     return result;
 }
 
-void oe_outbuf_append(oe_outbuf_t* buf, const void* s, size_t n)
+void oe_outbuf_set(oe_outbuf_t* buf, size_t offset, const void* s, size_t n)
 {
     /* If any space remaining in the buffer */
-    if (buf->offset < buf->size)
+    if (offset < buf->size)
     {
-        const size_t remaining = buf->size - buf->offset;
+        const size_t remaining = buf->size - offset;
         const size_t m = (remaining < n) ? remaining : n;
 
         if (s)
-            memcpy((uint8_t*)buf->buffer + buf->offset, s, m);
+            memcpy((uint8_t*)buf->buffer + offset, s, m);
         else
-            memset((uint8_t*)buf->buffer + buf->offset, 0, m);
+            memset((uint8_t*)buf->buffer + offset, 0, m);
     }
+}
 
+void oe_outbuf_append(oe_outbuf_t* buf, const void* s, size_t n)
+{
+    /* Append bytes at the end */
+    oe_outbuf_set(buf, buf->offset, s, n);
     buf->offset += n;
 }
 

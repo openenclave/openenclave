@@ -6,10 +6,12 @@
 #include <openenclave/internal/outbuf.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/print.h>
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/internal/enclavelibc.h>
 #define memset oe_memset
+#define printf oe_host_printf
 #define memcmp oe_memcmp
 #define memcpy oe_memcpy
 #else
@@ -115,9 +117,8 @@ oe_result_t oe_get_crl_distribution_points(
         /* Leave space for urls[] array */
         oe_outbuf_append(&outbuf, NULL, sizeof(char*) * (*num_urls));
 
-        /* Only set if buffer is big enough for urls[] array */
-        if (outbuf.offset <= outbuf.size)
-            *urls = (const char**)buffer;
+        /* Set the pointer to the urls[] array */
+        *urls = (const char**)buffer;
 
         /* Process all the CRL distribution points */
         {
@@ -133,18 +134,18 @@ oe_result_t oe_get_crl_distribution_points(
                 oe_asn1_t crldp;
                 const char* url;
                 size_t url_len;
+                const char* addr;
+                const size_t addr_size = sizeof(addr);
 
                 OE_CHECK(oe_asn1_get_sequence(&seq, &crldp));
-
                 OE_CHECK(_find_url(crldp.data, crldp.length, &url, &url_len));
 
-                {
-                    if (*urls)
-                        (*urls)[index++] = (char*)oe_outbuf_end(&outbuf);
+                if ((addr = (const char*)oe_outbuf_end(&outbuf)))
+                    oe_outbuf_set(&outbuf, index * addr_size, &addr, addr_size);
 
-                    oe_outbuf_append(&outbuf, url, url_len);
-                    oe_outbuf_append(&outbuf, "", 1);
-                }
+                index++;
+                oe_outbuf_append(&outbuf, url, url_len);
+                oe_outbuf_append(&outbuf, "", 1);
             }
         }
     }
