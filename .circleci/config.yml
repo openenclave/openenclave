@@ -51,7 +51,7 @@ jobs:
   # SGX1-FLC | Debug 
   build-test-sgx1-flc-debug:
     docker:
-      - image: oeciteam/oetools:1.0.0
+      - image: ubuntu:16.04
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -59,8 +59,14 @@ jobs:
       - run:
           name: SGX1-FLC-Debug
           command:  |
-             ./scripts/pre-commit &&
-             ./scripts/build-testall -p SGX1-FLC -b Debug
+            ./scripts/pre-commit &&
+            sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD
+            mkdir build &&
+            cd build &&
+            cmake .. -DUSE_LIBSGX=1 &&
+            make &&
+            OE_SIMULATION=1 ctest
+            #./scripts/build-testall -p SGX1-FLC -b Debug
 
   # SGX1-FLC | RelWithDebInfo
   build-test-sgx1-flc-relwithdebinfo:
@@ -95,7 +101,7 @@ workflows:
   build-test:
     jobs:                
       #  1. sgx1-debug((build-test))
-      - build-test-sgx1-debug
+      #- build-test-sgx1-debug
             
       # 2.  sgx1-relwithdebinfo(build-test)     
       # - build-test-sgx1-relwithdebinfo
