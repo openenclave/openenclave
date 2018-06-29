@@ -62,8 +62,11 @@ jobs:
              apt-get update &&
              apt-get install -y sudo &&
              sudo ./scripts/install-prereqs &&
+             apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
              sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
+             ls -la  ~/Microsoft-OE/openenclave/prereqs/ngsa
+             ls -la  ~/Microsoft-OE/openenclave/prereqs/sgx-driver
              mkdir build &&
              cd build &&
              cmake .. -DUSE_LIBSGX=1 &&
