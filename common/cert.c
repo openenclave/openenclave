@@ -141,12 +141,7 @@ oe_result_t oe_get_crl_distribution_points(
 
                 OE_CHECK(oe_asn1_get_sequence(&seq, &crldp));
 
-                OE_CHECK(
-                    _find_url(
-                        crldp.data,
-                        crldp.length,
-                        &url,
-                        &url_len));
+                OE_CHECK(_find_url(crldp.data, crldp.length, &url, &url_len));
 
                 {
                     if (*urls)

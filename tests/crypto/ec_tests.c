@@ -178,8 +178,8 @@ static void _TestSignAndVerify()
     {
         oe_ec_private_key_t key = {0};
 
-        r = oe_ec_private_key_read_pem(&key,
-            (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
+        r = oe_ec_private_key_read_pem(
+            &key, (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
         OE_TEST(r == OE_OK);
 
         r = oe_ec_private_key_sign(
@@ -211,8 +211,8 @@ static void _TestSignAndVerify()
     {
         oe_ec_public_key_t key = {0};
 
-        r = oe_ec_public_key_read_pem(&key,
-            (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
+        r = oe_ec_public_key_read_pem(
+            &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
         OE_TEST(r == OE_OK);
 
         r = oe_ec_public_key_verify(
@@ -421,8 +421,8 @@ static void _TestWritePublic()
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = oe_ec_public_key_read_pem(&key,
-        (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
+    r = oe_ec_public_key_read_pem(
+        &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
     OE_TEST(r == OE_OK);
 
     {

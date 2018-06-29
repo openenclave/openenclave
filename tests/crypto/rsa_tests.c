@@ -118,8 +118,8 @@ static void _TestSign()
     uint8_t* signature = NULL;
     size_t signatureSize = 0;
 
-    r = oe_rsa_private_key_read_pem(&key,
-        (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
+    r = oe_rsa_private_key_read_pem(
+        &key, (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
     OE_TEST(r == OE_OK);
 
     r = oe_rsa_private_key_sign(
@@ -159,8 +159,8 @@ static void _TestVerify()
     oe_result_t r;
     oe_rsa_public_key_t key = {0};
 
-    r = oe_rsa_public_key_read_pem(&key,
-        (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
+    r = oe_rsa_public_key_read_pem(
+        &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
     OE_TEST(r == OE_OK);
 
     r = oe_rsa_public_key_verify(
@@ -446,8 +446,8 @@ static void _TestWritePrivate()
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = oe_rsa_private_key_read_pem(&key,
-        (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
+    r = oe_rsa_private_key_read_pem(
+        &key, (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
     OE_TEST(r == OE_OK);
 
     r = oe_rsa_private_key_write_pem(&key, pemData, &pemSize);
@@ -476,8 +476,8 @@ static void _TestWritePublic()
     void* pemData = NULL;
     size_t pemSize = 0;
 
-    r = oe_rsa_public_key_read_pem(&key,
-        (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
+    r = oe_rsa_public_key_read_pem(
+        &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
     OE_TEST(r == OE_OK);
 
     r = oe_rsa_public_key_write_pem(&key, pemData, &pemSize);

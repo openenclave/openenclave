@@ -12,63 +12,63 @@
  *     oe_result_t parse(oe_asn1_t* asn1)
  *     {
  *         oe_result_t result;
- *     
+ *
  *         while (oe_asn1_more(asn1))
  *         {
  *             uint8_t tag;
- *     
+ *
  *             result = oe_asn1_peek_tag(asn1, &tag);
- *     
+ *
  *             if (result != OE_OK)
  *                 goto done;
- *     
+ *
  *             switch (tag)
  *             {
  *                 case OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE:
  *                 {
  *                     oe_asn1_t sequence;
- *     
+ *
  *                     result = oe_asn1_get_sequence(asn1, &sequence);
- *     
+ *
  *                     if (result != OE_OK)
  *                         goto done;
- *     
+ *
  *                     result = _parse(&sequence);
- *     
+ *
  *                     break;
  *                 }
  *                 case OE_ASN1_TAG_INTEGER:
  *                 {
  *                     int value;
- *     
+ *
  *                     result = oe_asn1_get_integer(asn1, &value);
- *     
+ *
  *                     if (result != OE_OK)
  *                         goto done;
- *     
+ *
  *                     break;
  *                 }
  *                 case OE_ASN1_TAG_OID:
  *                 {
  *                     oe_oid_string_t oid;
- *     
+ *
  *                     result = oe_asn1_get_oid(asn1, &oid);
- *     
+ *
  *                     if (result != OE_OK)
  *                         goto done;
- *     
+ *
  *                     break;
  *                 }
  *                 case OE_ASN1_TAG_OCTET_STRING:
  *                 {
  *                     const uint8_t* data;
  *                     size_t length;
- *     
+ *
  *                     result = oe_asn1_get_octet_string(asn1, &data, &length);
- *     
+ *
  *                     if (result != OE_OK)
  *                         goto done;
- *     
+ *
  *                     break;
  *                 }
  *                 default:
@@ -76,19 +76,19 @@
  *                     uint8_t tag;
  *                     size_t length;
  *                     const uint8_t* data;
- *     
+ *
  *                     result = oe_asn1_get_raw(asn1, &tag, &data, &length);
- *     
+ *
  *                     if (result != OE_OK)
  *                         goto done;
- *     
+ *
  *                     break;
  *                 }
  *             }
  *         }
- *     
+ *
  *         result = OE_OK;
- *     
+ *
  *     done:
  *         return result;
  *     }
@@ -213,13 +213,13 @@ oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag);
  * This function gets the next ASN.1 element from the ASN.1 input stream and
  * advances the current position just beyond that element. All elements have
  * the following format.
- * 
+ *
  *     ```
  *     [TAG] [LENGTH] [BYTES]
  *     ```
  *
  * @param asn1[in,out] the ASN.1 input stream.
- * @param tag[out] the element's tag 
+ * @param tag[out] the element's tag
  * @param data[out] the element's data
  * @param length[out] the element's length
  *
@@ -238,9 +238,9 @@ oe_result_t oe_asn1_get_raw(
  *
  * This function gets a sequence element from the ASN.1 input stream and
  * advances the current position just beyond that element.
- * 
+ *
  * @param asn1[in,out] the ASN.1 input stream.
- * @param sequence[out] a newly initialized ASN.1 input stream containing the 
+ * @param sequence[out] a newly initialized ASN.1 input stream containing the
  *        sequence.
  *
  * @return OE_OK success
@@ -254,7 +254,7 @@ oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence);
  *
  * This function gets an integer element from the ASN.1 input stream and
  * advances the current position just beyond that element.
- * 
+ *
  * @param asn1[in,out] the ASN.1 input stream.
  * @param value[out] the value of the integer element.
  *
@@ -269,7 +269,7 @@ oe_result_t oe_asn1_get_integer(oe_asn1_t* asn1, int* value);
  *
  * This function gets an OID element from the ASN.1 input stream and
  * advances the current position just beyond that element.
- * 
+ *
  * @param asn1[in,out] the ASN.1 input stream.
  * @param oid[out] the value of that element as an OID string.
  *
@@ -284,7 +284,7 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid);
  *
  * This function gets an octet string element from the ASN.1 input stream and
  * advances the current position just beyond that element.
- * 
+ *
  * @param asn1[in,out] the ASN.1 input stream.
  * @param data[out] a pointer to the octet string.
  * @param length[out] the length of the octet string.
