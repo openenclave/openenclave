@@ -20,7 +20,6 @@ add_subdirectory(aesm)
 add_subdirectory(load)
 add_subdirectory(mem)
 add_subdirectory(str)
-add_subdirectory(utils)
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
 add_subdirectory(debug-mode)
@@ -53,6 +52,7 @@ add_subdirectory(props)
 add_subdirectory(ricochet)
 add_subdirectory(stdc)
 add_subdirectory(thread)
+add_subdirectory(utils)
 add_subdirectory(VectorException)
 
 # Following five tests are UNIX only because they depend on the oegen tool

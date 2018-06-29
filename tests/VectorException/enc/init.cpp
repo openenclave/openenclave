@@ -5,9 +5,8 @@
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/tests.h>
 
-#include "../../../host/cpuid.c"
-#include "../../../host/cpuidcount.h"
-#include "../../../host/linux/cpuidcount.c"
+#include "../../../host/cpuid.h"
+#include "../../../host/linux/cpuid.c"
 
 static int done = 0;
 static unsigned int c = 0;

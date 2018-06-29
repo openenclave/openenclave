@@ -3,13 +3,14 @@
 
 #if defined(__GNUC__)
 
-#include "../cpuidcount.h"
+#include "../host/cpuid.h"
+#include <openenclave/bits/result.h>
 #include <cpuid.h>
 
 /* Same as __get_cpuid, but sub-leaf can be specified.
    Need this function as cpuid level 4 needs the sub-leaf to be specified in ECX
 */
-int __get_cpuid_count(
+oe_result_t oe_get_cpuid(
     unsigned int __leaf,
     unsigned int __subleaf,
     unsigned int* __eax,
@@ -21,10 +22,17 @@ int __get_cpuid_count(
     unsigned int __maxlevel = __get_cpuid_max(__ext, 0);
 
     if (__maxlevel == 0 || __maxlevel < __leaf)
-        return 0;
+        return OE_UNSUPPORTED;
 
-    __cpuid_count(__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
-    return 1;
+    if (__subleaf == NULL)
+    {
+        __cpuid(__leaf, *__eax, *__ebx, *__ecx, *__edx);
+    }
+    else
+    {
+        __cpuid_count(__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
+    }
+    return OE_OK;
 }
 
 #endif

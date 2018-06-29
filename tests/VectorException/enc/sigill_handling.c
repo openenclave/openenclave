@@ -6,9 +6,8 @@
 #include <openenclave/internal/print.h>
 #include "../args.h"
 
-#include "../../../host/cpuid.c"
-#include "../../../host/cpuidcount.h"
-#include "../../../host/linux/cpuidcount.c"
+#include "../../../host/cpuid.h"
+#include "../../../host/linux/cpuid.c"
 
 #define OE_GETSEC_OPCODE 0x370F
 #define OE_GETSEC_CAPABILITIES 0x00
@@ -103,7 +102,10 @@ bool TestGetsecInstruction()
 bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 {
     g_handledSigill = HANDLED_SIGILL_NONE;
-    uint32_t cpuidRAX = 0, ebx = 0, ecx = 0, edx = 0;
+    uint32_t cpuidRAX = 0;
+    uint32_t ebx = 0;
+    uint32_t ecx = 0;
+    uint32_t edx = 0;
 
     oe_get_cpuid(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
 
@@ -179,7 +181,7 @@ OE_ECALL void TestSigillHandling(void* args_)
             &args->cpuidTable[i][OE_CPUID_RCX],
             &args->cpuidTable[i][OE_CPUID_RDX]);
 
-        if (result == OE_UNSUPPORTED)
+        if (result != OE_OK)
         {
             oe_host_printf("Unsupported CPUID leaf %d requested.\n", i);
             return;

@@ -47,8 +47,14 @@ void asm_get_cpuid(
 
 void TestCpuidAgainstAssembly(unsigned int leaf, unsigned int* subleaf)
 {
-    unsigned int a_asm = 0, b_asm = 0, c_asm = 0, d_asm = 0;
-    unsigned int a = 0, b = 0, c = 0, d = 0;
+    unsigned int a_asm = 0;
+    unsigned int b_asm = 0;
+    unsigned int c_asm = 0;
+    unsigned int d_asm = 0;
+    unsigned int a = 0;
+    unsigned int b = 0;
+    unsigned int c = 0;
+    unsigned int d = 0;
 
     if (subleaf == NULL)
     {
@@ -69,18 +75,98 @@ void TestCpuidAgainstAssembly(unsigned int leaf, unsigned int* subleaf)
 
 void TestUnequalLeaves()
 {
-    unsigned int a_asm = 0, b_asm = 0, c_asm = 0, d_asm = 0;
-    unsigned int a = 0, b = 0, c = 0, d = 0;
+    // Verify: different leaf values return different answers.
+    unsigned int a_asm = 0;
+    unsigned int b_asm = 0;
+    unsigned int c_asm = 0;
+    unsigned int d_asm = 0;
+    unsigned int a = 0;
+    unsigned int b = 0;
+    unsigned int c = 0;
+    unsigned int d = 0;
 
     oe_get_cpuid(0, 0, &a, &b, &c, &d);
     asm_get_cpuid(1, 0, &a_asm, &b_asm, &c_asm, &d_asm);
 
     OE_TEST(a != a_asm);
+
+    // Verify: same oe and asm agree on those values.
+    unsigned int a_asm_2 = 0;
+    unsigned int b_asm_2 = 0;
+    unsigned int c_asm_2 = 0;
+    unsigned int d_asm_2 = 0;
+    unsigned int a_2 = 0;
+    unsigned int b_2 = 0;
+    unsigned int c_2 = 0;
+    unsigned int d_2 = 0;
+
+    oe_get_cpuid(1, 0, &a_2, &b_2, &c_2, &d_2);
+    asm_get_cpuid(0, 0, &a_asm_2, &b_asm_2, &c_asm_2, &d_asm_2);
+
+    OE_TEST(a == a_asm_2);
+    OE_TEST(a_2 == a_asm);
+}
+
+unsigned int GetHighestLeaf()
+{
+    unsigned int highest_normal = 0;
+    unsigned int b = 0;
+    unsigned int c = 0;
+    unsigned int d = 0;
+
+    OE_TEST(oe_get_cpuid(0, 0, &highest_normal, &b, &c, &d) == OE_OK);
+
+    return highest_normal;
+}
+
+unsigned int GetHighestExtendedLeaf()
+{
+    unsigned int highest_extended = 0;
+    unsigned int b = 0;
+    unsigned int c = 0;
+    unsigned int d = 0;
+    
+    OE_TEST(oe_get_cpuid(0x8000000, 0, &highest_extended, &b, &c, &d) == OE_OK);
+
+    return highest_extended;
+}
+
+unsigned int GetUnsupportedLeaf(unsigned int leaf, unsigned int padding)
+{
+    unsigned int result = leaf + padding;
+    OE_TEST(result >= leaf);
+    return result;
+}
+
+void TestUnsupportedLeaves()
+{
+    unsigned int highest_normal = GetHighestLeaf();
+    TestCpuidAgainstAssembly(highest_normal, NULL);
+
+    unsigned int highest_extended = GetHighestExtendedLeaf();
+    TestCpuidAgainstAssembly(highest_extended, NULL);
+
+    unsigned int unsupported_leaf = GetUnsupportedLeaf(highest_normal, 1);
+    unsigned int u_a = 0;
+    unsigned int u_b = 0;
+    unsigned int u_c = 0;
+    unsigned int u_d = 0;
+
+    OE_TEST(oe_get_cpuid(unsupported_leaf, 0, &u_a, &u_b, &u_c, &u_d) == OE_UNSUPPORTED);
+    // Make sure that 31st bit is clear as per Intel spec
+    OE_TEST(u_a & (1 << 31) == 0);
+
+    unsupported_leaf = GetUnsupportedLeaf(highest_extended, 1);
+    u_a = 0;
+    OE_TEST(oe_get_cpuid(unsupported_leaf, 0, &u_a, &u_b, &u_c, &u_d) == OE_UNSUPPORTED);
+    OE_TEST(u_a & (1 << 31) == 0);
+
 }
 
 int main()
 {
-    unsigned int leaf = 0, subleaf = 0;
+    unsigned int leaf = 0;
+    unsigned int subleaf = 0;
 
     fprintf(
         stdout,
@@ -96,13 +182,7 @@ int main()
     TestCpuidAgainstAssembly(1, NULL);
     TestCpuidAgainstAssembly(2, NULL);
 
-    leaf = 0x80000000;
-    fprintf(stdout, "Test: Highest leaf.\n");
-    TestCpuidAgainstAssembly(leaf, &subleaf);
-
-    leaf = 0x80000001;
-    fprintf(stdout, "Test: Out of bounds leaf.\n");
-    TestCpuidAgainstAssembly(leaf, &subleaf);
+    TestUnsupportedLeaves();
 
     TestUnequalLeaves();
 

@@ -4,7 +4,9 @@
 #ifndef _OE_CPUIDCOUNT_H
 #define _OE_CPUIDCOUNT_H
 
-int __get_cpuid_count(
+#include <openenclave/bits/types.h>
+
+oe_result_t oe_get_cpuid(
     unsigned int __leaf,
     unsigned int __subleaf,
     unsigned int* __eax,
