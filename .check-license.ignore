@@ -15,6 +15,7 @@
 ./debugger/pythonExtension/readelf.py
 ./doc/DesignOverview.docx
 ./doc/DesignOverview.pdf
+./libsgxdownload
 .exrc
 gdb.commands
 ./.git
