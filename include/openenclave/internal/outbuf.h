@@ -86,12 +86,14 @@ typedef struct _oe_outbuf
     size_t offset;
 } oe_outbuf_t;
 
+/* Begin the sequence by initializing the buffer; possibly returning an error */
 oe_result_t oe_outbuf_start(
     oe_outbuf_t* buf,
     void* buffer,
     size_t* size,
     size_t alignment);
 
+/* Get pointer to end of buffer or null if buffer is null */
 OE_INLINE void* oe_outbuf_end(oe_outbuf_t* buf)
 {
     if (!buf->buffer)
@@ -100,10 +102,13 @@ OE_INLINE void* oe_outbuf_end(oe_outbuf_t* buf)
     return buf->buffer + buf->offset;
 }
 
+/* Append to buffer, discarding bytes that extend beyond the buffer */
 void oe_outbuf_append(oe_outbuf_t* buf, const void* s, size_t n);
 
+/* Set the given bytes within the buffer */
 void oe_outbuf_set(oe_outbuf_t* buf, size_t offset, const void* s, size_t n);
 
+/* Finish the sequence, setting size and checking for OE_BUFFER_TOO_SMALL */
 oe_result_t oe_outbuf_finish(oe_outbuf_t* buf, size_t* size);
 
 OE_EXTERNC_END
