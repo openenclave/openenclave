@@ -67,6 +67,11 @@ void TestCpuidAgainstAssembly(unsigned int leaf, unsigned int* subleaf)
 
     asm_get_cpuid(leaf, subleaf, &a_asm, &b_asm, &c_asm, &d_asm);
 
+    if (a_asm == 0)
+    {
+        fprintf(stdout, "a_asm is EQUAL TO 0");
+    }
+
     OE_TEST(a == a_asm);
     OE_TEST(b == b_asm);
     OE_TEST(c == c_asm);
