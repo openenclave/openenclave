@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/internal/corelibc/string.h>
 #include "ec.h"
 #include <mbedtls/asn1.h>
 #include <mbedtls/asn1write.h>
 #include <mbedtls/ecp.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include "key.h"
 #include "pem.h"

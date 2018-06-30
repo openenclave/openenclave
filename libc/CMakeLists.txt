@@ -557,6 +557,7 @@ target_compile_options(oelibc PRIVATE
     )
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
+target_compile_definitions(oelibc PRIVATE -DOE_CORELIBC_HIDE_STDC_NAMES)
 
 # this project (and is dependents) require the enclave headers+lib
 target_link_libraries(oelibc oecore)

@@ -8,7 +8,7 @@
 #ifdef OE_BUILD_ENCLAVE
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/corelibc/string.h>
 
 #define Memset oe_memset
 #define Memcpy oe_memcpy

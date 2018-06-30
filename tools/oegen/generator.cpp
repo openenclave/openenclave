@@ -1418,7 +1418,9 @@ int Generator::GenerateSourceFile(
     if (trusted)
     {
         os << "#include <openenclave/enclave.h>" << endl;
-        os << "#include <openenclave/internal/enclavelibc.h>" << endl;
+        os << "#include <openenclave/internal/corelibc/string.h>" << endl;
+        os << "#include <openenclave/internal/corelibc/stdio.h>" << endl;
+        os << "#include <openenclave/internal/corelibc/stdlib.h>" << endl;
     }
     else
         os << "#include <openenclave/host.h>" << endl;

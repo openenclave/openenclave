@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <stdarg.h>
 #include <stdio.h>

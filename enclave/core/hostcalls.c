@@ -3,7 +3,8 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/corelibc/stdio.h>
+#include <openenclave/internal/corelibc/string.h>
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/print.h>
 #include "td.h"
@@ -186,8 +187,8 @@ int __oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     /* If string was truncated, retry with correctly sized buffer */
     if (n >= sizeof(buf))
     {
-        if (!(p = oe_stack_alloc(n + 1, 0)))
-            return -1;
+        char stack_buf[n + 1];
+        p = stack_buf;
 
         oe_va_list ap;
         oe_va_copy(ap, ap_);

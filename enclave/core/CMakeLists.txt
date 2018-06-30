@@ -2,6 +2,16 @@
 # Licensed under the MIT License.
 
 add_library(oecore STATIC
+    corelibc/errno.c
+    corelibc/gmtime.c
+    corelibc/malloc.c
+    corelibc/printf.c
+    corelibc/rand.c
+    corelibc/sbrk.c
+    corelibc/stdio.c
+    corelibc/string.c
+    corelibc/strtoul.c
+    corelibc/time.c
     assert.c
     atexit.c
     calls.c
@@ -13,22 +23,22 @@ add_library(oecore STATIC
     hoststack.c
     hexdump.c
     init.c
+    intstr.c
     jump.c
     keys.c
     memory.c
     once.c
     result.c
     report.c
-    sbrk.c
-    snprintf.c
     spinlock.c
-    string.c
     td.c
     thread.c
     exit.S
     getkey.S
-    main.S
-    )
+    main.S)
+
+set_source_files_properties(corelibc/malloc.c corelibc/time.c PROPERTIES COMPILE_FLAGS
+    -I"${PROJECT_SOURCE_DIR}/include/openenclave/internal/corelibc")
 
 target_link_libraries(oecore PUBLIC oe_includes)
 

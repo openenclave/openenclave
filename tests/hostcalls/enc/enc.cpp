@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/corelibc/string.h>
 #include "../args.h"
 
 OE_ECALL void TestHostRealloc(void* _args)

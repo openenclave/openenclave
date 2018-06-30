@@ -2,7 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/corelibc/string.h>
+#include <openenclave/internal/corelibc/stdio.h>
 #include <openenclave/internal/print.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -110,7 +111,8 @@ int fputc(int c, FILE* stream)
     if (stream == stdout)
     {
         /* Write to standard output device */
-        __oe_host_print(0, &c, 1);
+        char tmp = (char)c;
+        __oe_host_print(0, &tmp, 1);
         return c;
     }
     else if (stream == stderr)

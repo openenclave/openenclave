@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hostalloc.h>
+#include <openenclave/internal/corelibc/string.h>
 #include <openenclave/internal/print.h>
 #include "../args.h"
 
