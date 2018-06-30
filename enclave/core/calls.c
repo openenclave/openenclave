@@ -8,7 +8,7 @@
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/hostalloc.h>
-#include <openenclave/internal/jump.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
@@ -395,7 +395,7 @@ static __inline__ void _HandleORET(TD* td, int64_t func, int64_t arg)
     td->oret_func = func;
     td->oret_arg = arg;
 
-    oe_longjmp(&callsite->jmpbuf, 1);
+    oe_longjmp(callsite->jmpbuf, 1);
 }
 
 /*
@@ -435,7 +435,7 @@ oe_result_t oe_ocall(
     td->ocall_flags |= ocall_flags;
 
     /* Save call site where execution will resume after OCALL */
-    if (oe_setjmp(&callsite->jmpbuf) == 0)
+    if (oe_setjmp(callsite->jmpbuf) == 0)
     {
         /* Exit, giving control back to the host so it can handle OCALL */
         _HandleExit(OE_CODE_OCALL, func, argIn);

@@ -9,6 +9,7 @@
 #include "enclavelibc/limits.h"
 #include "enclavelibc/pthread.h"
 #include "enclavelibc/sched.h"
+#include "enclavelibc/setjmp.h"
 #include "enclavelibc/stdarg.h"
 #include "enclavelibc/stddef.h"
 #include "enclavelibc/stdint.h"
