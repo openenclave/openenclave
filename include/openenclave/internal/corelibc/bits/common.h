@@ -21,11 +21,11 @@
 #define OE_CORELIBC_INLINE static __inline
 
 #ifndef NULL
-# ifdef __cplusplus
-#   define NULL 0L
+#ifdef __cplusplus
+#define NULL 0L
 #else
-#   define NULL ((void*)0)
-# endif
+#define NULL ((void*)0)
+#endif
 #endif
 
 OE_CORELIBC_EXTERNC_BEGIN

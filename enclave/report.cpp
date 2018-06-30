@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/corelibc/string.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cmac.h>
+#include <openenclave/internal/corelibc/string.h>
 #include <openenclave/internal/keys.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>

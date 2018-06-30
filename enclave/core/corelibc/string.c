@@ -9,8 +9,7 @@ typedef struct _error_string
 {
     int num;
     const char* str;
-}
-error_string_t;
+} error_string_t;
 
 static const error_string_t _error_strings[] = {
     {E2BIG, "Argument list too long"},

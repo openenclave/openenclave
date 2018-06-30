@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/corelibc/string.h>
-#include <openenclave/internal/corelibc/stdlib.h>
 #include <mbedtls/asn1.h>
 #include <mbedtls/config.h>
 #include <mbedtls/oid.h>
@@ -13,6 +11,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atomic.h>
 #include <openenclave/internal/cert.h>
+#include <openenclave/internal/corelibc/stdlib.h>
+#include <openenclave/internal/corelibc/string.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>

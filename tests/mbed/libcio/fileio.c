@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/corelibc/string.h>
 #include <openenclave/internal/corelibc/stdio.h>
+#include <openenclave/internal/corelibc/string.h>
 #include <openenclave/internal/print.h>
 #include <stdio.h>
 #include <unistd.h>

@@ -34,73 +34,73 @@ size_t oe_strlcat(char* dest, const char* src, size_t size);
 
 #if !defined(OE_CORELIBC_HIDE_STDC_NAMES)
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 size_t strlen(const char* s)
 {
     return oe_strlen(s);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 size_t strnlen(const char* s, size_t n)
 {
     return oe_strnlen(s, n);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 int strcmp(const char* s1, const char* s2)
 {
     return oe_strcmp(s1, s2);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 int strncmp(const char* s1, const char* s2, size_t n)
 {
     return oe_strncmp(s1, s2, n);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 char* strncpy(char* dest, const char* src, size_t n)
 {
     return oe_strncpy(dest, src, n);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 char* strstr(const char* haystack, const char* needle)
 {
     return oe_strstr(haystack, needle);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 void* memset(void* s, int c, size_t n)
 {
     return oe_memset(s, c, n);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 void* memcpy(void* dest, const void* src, size_t n)
 {
     return oe_memcpy(dest, src, n);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 int memcmp(const void* s1, const void* s2, size_t n)
 {
     return oe_memcmp(s1, s2, n);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 void* memmove(void* dest, const void* src, size_t n)
 {
     return oe_memmove(dest, src, n);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 size_t strlcpy(char* dest, const char* src, size_t size)
 {
     return oe_strlcpy(dest, src, size);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 size_t strlcat(char* dest, const char* src, size_t size)
 {
     return oe_strlcat(dest, src, size);

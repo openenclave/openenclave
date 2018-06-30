@@ -27,14 +27,14 @@ extern FILE* const stdin;
 extern FILE* const stdout;
 extern FILE* const stderr;
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 int vsnprintf(char* str, size_t size, const char* format, va_list ap)
 {
     return oe_vsnprintf(str, size, format, ap);
 }
 
 OE_CORELIBC_PRINTF_FORMAT(3, 4)
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 int snprintf(char* str, size_t size, const char* format, ...)
 {
     va_list ap;
@@ -43,14 +43,14 @@ int snprintf(char* str, size_t size, const char* format, ...)
     va_end(ap);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 int vprintf(const char* format, va_list ap)
 {
     return oe_vprintf(format, ap);
 }
 
 OE_CORELIBC_PRINTF_FORMAT(1, 2)
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 int printf(const char* format, ...)
 {
     va_list ap;

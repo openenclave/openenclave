@@ -9,7 +9,7 @@ void* oe_sbrk(intptr_t increment);
 
 #if !defined(OE_CORELIBC_HIDE_STDC_NAMES)
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 void* sbrk(intptr_t increment)
 {
     return oe_sbrk(increment);

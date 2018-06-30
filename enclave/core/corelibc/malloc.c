@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <unistd.h>
-#include <stdarg.h>
 
 #define OE_ENABLE_MALLOC_WRAPPERS
 #define HAVE_MMAP 0

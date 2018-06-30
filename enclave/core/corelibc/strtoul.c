@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/internal/corelibc/stdlib.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/corelibc/stdlib.h>
 
 //
 // If c is a digit character:
@@ -11,7 +11,7 @@
 //
 // Digit characters fall within these ranges: ['0'-'9'] and ['A'-'Z'].
 //
-// Examples: 
+// Examples:
 //     _digit['9'] => 9
 //     _digit['A'] => 10
 //     _digit['Z'] => 35

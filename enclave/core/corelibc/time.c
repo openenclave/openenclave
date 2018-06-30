@@ -2,13 +2,13 @@
 // Licensed under the MIT License.
 
 #define __OE_NEED_TIME_CALLS
-#include <openenclave/internal/corelibc/time.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/time.h>
+#include <openenclave/internal/corelibc/time.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/random.h>
+#include <openenclave/internal/time.h>
 
 time_t oe_time(time_t* tloc)
 {

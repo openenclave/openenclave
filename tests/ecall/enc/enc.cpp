@@ -3,8 +3,8 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/corelibc/string.h>
 #include <openenclave/internal/corelibc/stdio.h>
+#include <openenclave/internal/corelibc/string.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/tests.h>

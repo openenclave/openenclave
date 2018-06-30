@@ -55,19 +55,19 @@ struct timespec
     long tv_nsec;
 };
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 time_t time(time_t* tloc)
 {
     return oe_time(tloc);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 struct tm* gmtime(const time_t* timep)
 {
     return (struct tm*)oe_gmtime(timep);
 }
 
-OE_CORELIBC_INLINE 
+OE_CORELIBC_INLINE
 struct tm* gmtime_r(const time_t* timep, struct tm* result)
 {
     return (struct tm*)oe_gmtime_r(timep, (struct oe_tm*)result);
