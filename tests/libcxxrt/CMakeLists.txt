@@ -38,8 +38,7 @@ foreach(testcase ${alltests})
         )
         target_include_directories(${name} PRIVATE
             ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src
-            ${PROJECT_BINARY_DIR}/output/include/openenclave/libcxx
-            ${PROJECT_BINARY_DIR}/output/include/openenclave/libc
+            ${PROJECT_SOURCE_DIR}/3rdparty/libcxx/libcxx/include/
         )
         target_link_libraries(${name} ${PROJECT_BINARY_DIR}/tests/libcxxrt/libcxxrt-test.a gcc_s dl c)
 # Generating expected output with system-test
