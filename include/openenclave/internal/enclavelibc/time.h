@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_CORELIBC_TIME_H
-#define _OE_CORELIBC_TIME_H
+#ifndef _OE_ENCLAVELIBC_TIME_H
+#define _OE_ENCLAVELIBC_TIME_H
 
 #include "bits/common.h"
 #include "sys/time.h"
 
-OE_CORELIBC_EXTERNC_BEGIN
+OE_ENCLAVELIBC_EXTERNC_BEGIN
 
 struct oe_tm
 {
@@ -34,7 +34,7 @@ struct oe_tm* oe_gmtime(const time_t* timep);
 
 struct oe_tm* oe_gmtime_r(const time_t* timep, struct oe_tm* result);
 
-#if defined(OE_CORELIBC_NEED_STDC_NAMES)
+#if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
 
 struct tm
 {
@@ -55,26 +55,26 @@ struct timespec
     long tv_nsec;
 };
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 time_t time(time_t* tloc)
 {
     return oe_time(tloc);
 }
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 struct tm* gmtime(const time_t* timep)
 {
     return (struct tm*)oe_gmtime(timep);
 }
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 struct tm* gmtime_r(const time_t* timep, struct tm* result)
 {
     return (struct tm*)oe_gmtime_r(timep, (struct oe_tm*)result);
 }
 
-#endif /* defined(OE_CORELIBC_NEED_STDC_NAMES) */
+#endif /* defined(OE_ENCLAVELIBC_NEED_STDC_NAMES) */
 
-OE_CORELIBC_EXTERNC_END
+OE_ENCLAVELIBC_EXTERNC_END
 
-#endif /* _OE_CORELIBC_TIME_H */
+#endif /* _OE_ENCLAVELIBC_TIME_H */

@@ -1,5 +1,5 @@
-#ifndef _OE_CORELIBC_ERRNO_H
-#define _OE_CORELIBC_ERRNO_H
+#ifndef _OE_ENCLAVELIBC_ERRNO_H
+#define _OE_ENCLAVELIBC_ERRNO_H
 
 #include "bits/common.h"
 
@@ -142,4 +142,4 @@ extern int* __oe_errno_location(void);
 
 #define errno *__oe_errno_location()
 
-#endif /* _OE_CORELIBC_ERRNO_H */
+#endif /* _OE_ENCLAVELIBC_ERRNO_H */

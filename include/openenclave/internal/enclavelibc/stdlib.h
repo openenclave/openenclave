@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_CORELIBC_STDLIB_H
-#define _OE_CORELIBC_STDLIB_H
+#ifndef _OE_ENCLAVELIBC_STDLIB_H
+#define _OE_ENCLAVELIBC_STDLIB_H
 
 #include "bits/common.h"
 
-OE_CORELIBC_EXTERNC_BEGIN
+OE_ENCLAVELIBC_EXTERNC_BEGIN
 
 #define RAND_MAX (0x7fffffff)
 
@@ -26,58 +26,58 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
-#if defined(OE_CORELIBC_NEED_STDC_NAMES)
+#if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 int rand(void)
 {
     return oe_rand();
 }
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 void* malloc(size_t size)
 {
     return oe_malloc(size);
 }
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 void free(void* ptr)
 {
     return oe_free(ptr);
 }
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 void* calloc(size_t nmemb, size_t size)
 {
     return oe_calloc(nmemb, size);
 }
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 void* realloc(void* ptr, size_t size)
 {
     return oe_realloc(ptr, size);
 }
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 void* memalign(size_t alignment, size_t size)
 {
     return oe_memalign(alignment, size);
 }
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 int posix_memalign(void** memptr, size_t alignment, size_t size)
 {
     return oe_posix_memalign(memptr, alignment, size);
 }
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 unsigned long int strtoul(const char* nptr, char** endptr, int base)
 {
     return oe_strtoul(nptr, endptr, base);
 }
 
-#endif /* defined(OE_CORELIBC_NEED_STDC_NAMES) */
+#endif /* defined(OE_ENCLAVELIBC_NEED_STDC_NAMES) */
 
-OE_CORELIBC_EXTERNC_END
+OE_ENCLAVELIBC_EXTERNC_END
 
-#endif /* _OE_CORELIBC_STDLIB_H */
+#endif /* _OE_ENCLAVELIBC_STDLIB_H */

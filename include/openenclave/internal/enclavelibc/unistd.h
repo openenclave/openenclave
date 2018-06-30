@@ -1,9 +1,9 @@
-#ifndef _OE_CORELIBC_UNISTD_H
-#define _OE_CORELIBC_UNISTD_H
+#ifndef _OE_ENCLAVELIBC_UNISTD_H
+#define _OE_ENCLAVELIBC_UNISTD_H
 
 #include "bits/common.h"
 
-OE_CORELIBC_EXTERNC_BEGIN
+OE_ENCLAVELIBC_EXTERNC_BEGIN
 
 #define STDIN_FILENO  0
 #define STDOUT_FILENO 1
@@ -11,16 +11,16 @@ OE_CORELIBC_EXTERNC_BEGIN
 
 void* oe_sbrk(intptr_t increment);
 
-#if defined(OE_CORELIBC_NEED_STDC_NAMES)
+#if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
 
-OE_CORELIBC_INLINE
+OE_ENCLAVELIBC_INLINE
 void* sbrk(intptr_t increment)
 {
     return oe_sbrk(increment);
 }
 
-#endif /* defined(OE_CORELIBC_NEED_STDC_NAMES) */
+#endif /* defined(OE_ENCLAVELIBC_NEED_STDC_NAMES) */
 
-OE_CORELIBC_EXTERNC_END
+OE_ENCLAVELIBC_EXTERNC_END
 
-#endif /* _OE_CORELIBC_UNISTD_H */
+#endif /* _OE_ENCLAVELIBC_UNISTD_H */
