@@ -266,13 +266,13 @@ done:
 /*
 **==============================================================================
 **
-** _ParseExtensions()
+** _parse_extensions()
 **
 **==============================================================================
 */
 
 /* Returns true when done */
-typedef bool (*ParseExtensions)(
+typedef bool (*parse_extensions_callback_t)(
     size_t index,
     const char* oid,
     bool critical,
@@ -387,9 +387,9 @@ static bool _GetExtension(
 }
 
 /* Parse the extensions on an MBEDTLS X509 certificate */
-static int _ParseExtensions(
+static int _parse_extensions(
     const mbedtls_x509_crt* crt,
-    ParseExtensions callback,
+    parse_extensions_callback_t callback,
     void* args)
 {
     int ret = -1;
@@ -828,7 +828,7 @@ oe_result_t oe_cert_extension_count(const oe_cert_t* cert, size_t* count)
         GetExtensionCountArgs args;
         args.count = count;
 
-        if (_ParseExtensions(impl->cert, _GetExtensionCount, &args) != 0)
+        if (_parse_extensions(impl->cert, _GetExtensionCount, &args) != 0)
             OE_RAISE(OE_FAILURE);
     }
 
@@ -877,7 +877,7 @@ oe_result_t oe_cert_get_extension(
         args.data = data;
         args.size = size;
 
-        if (_ParseExtensions(impl->cert, _GetExtension, &args) != 0)
+        if (_parse_extensions(impl->cert, _GetExtension, &args) != 0)
             OE_RAISE(OE_FAILURE);
 
         result = args.result;
@@ -909,7 +909,7 @@ oe_result_t oe_cert_find_extension(
         args.data = data;
         args.size = size;
 
-        if (_ParseExtensions(impl->cert, _FindExtension, &args) != 0)
+        if (_parse_extensions(impl->cert, _FindExtension, &args) != 0)
             OE_RAISE(OE_FAILURE);
 
         result = args.result;
