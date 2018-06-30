@@ -63,8 +63,9 @@ jobs:
              apt-get install -y sudo &&
              sudo ./scripts/install-prereqs &&
              apt-get install -y libssl-dev &&
-             #wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz &&
-             #tar xf cmake-3.11.4-Linux-x86_64.tar.gz &&
+             apt-get install -y wget &&
+             wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz &&
+             tar xf cmake-3.11.4-Linux-x86_64.tar.gz &&
              ./scripts/pre-commit &&
              sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
              ls -la  ~/Microsoft-OE/prereqs/ngsa
@@ -86,8 +87,21 @@ jobs:
       - run:
           name: SGX1-FLC-RelWithDebInfo
           command:  |
+             apt-get update &&
+             apt-get install -y sudo &&
+             sudo ./scripts/install-prereqs &&
+             apt-get install -y libssl-dev &&
+             apt-get install -y wget &&
+             wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz &&
+             tar xf cmake-3.11.4-Linux-x86_64.tar.gz &&
              ./scripts/pre-commit &&
-             ./scripts/build-testall -p SGX1-FLC -b RelWithDebInfo
+             sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
+             ls -la  ~/Microsoft-OE/prereqs/ngsa
+             mkdir build &&
+             cd build &&
+             cmake .. -DUSE_LIBSGX=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo &&
+             make &&
+             OE_SIMULATION=1 ctest
 
   # SGX1-FLC | Release 
   build-test-sgx1-flc-release:
@@ -117,10 +131,10 @@ workflows:
       # - build-test-sgx1-release
             
       # 4.  sgx1-flc-debug(build-test)
-      - build-test-sgx1-flc-debug
+      #- build-test-sgx1-flc-debug
             
       # 5.  sgx1-flc-relwithdebinfo(build-test)  
-      # - build-test-sgx1-flc-relwithdebinfo
+      - build-test-sgx1-flc-relwithdebinfo
             
       # 6.  sgx1-flc-release(build-test)    
       # - build-test-sgx1-flc-release
