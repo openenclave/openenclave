@@ -122,8 +122,8 @@ unsigned int GetHighestExtendedLeaf()
     unsigned int b = 0;
     unsigned int c = 0;
     unsigned int d = 0;
-    
-    OE_TEST(oe_get_cpuid(0x8000000, NULL, &highest_extended, &b, &c, &d) == OE_OK);
+
+    OE_TEST(oe_get_cpuid(0x80000000, NULL, &highest_extended, &b, &c, &d) == OE_OK);
 
     return highest_extended;
 }
@@ -151,12 +151,12 @@ void TestUnsupportedLeaves()
 
     OE_TEST(oe_get_cpuid(unsupported_leaf, NULL, &u_a, &u_b, &u_c, &u_d) == OE_UNSUPPORTED);
     // Make sure that 31st bit is clear as per Intel spec
-    OE_TEST(u_a & (1 << 31) == 0);
+    OE_TEST((u_a & (1 << 31)) == 0);
 
     unsupported_leaf = GetUnsupportedLeaf(highest_extended, 1);
     u_a = 0;
     OE_TEST(oe_get_cpuid(unsupported_leaf, NULL, &u_a, &u_b, &u_c, &u_d) == OE_UNSUPPORTED);
-    OE_TEST(u_a & (1 << 31) == 0);
+    OE_TEST((u_a & (1 << 31)) == 0);
 
 }
 

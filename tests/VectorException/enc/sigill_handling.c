@@ -171,11 +171,12 @@ OE_ECALL void TestSigillHandling(void* args_)
     }
 
     // Return enclave-cached CPUID leaves to host for further validation
+    unsigned int subleaf = 0;
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         result = oe_get_cpuid(
             i,
-            0,
+            &subleaf,
             &args->cpuidTable[i][OE_CPUID_RAX],
             &args->cpuidTable[i][OE_CPUID_RBX],
             &args->cpuidTable[i][OE_CPUID_RCX],

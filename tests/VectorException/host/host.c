@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../args.h"
+#include "../host/cpuid.h"
 
 #define SKIP_RETURN_CODE 2
 
@@ -42,13 +43,14 @@ void TestSigillHandling(oe_enclave_t* enclave)
     OE_TEST(args.ret == 0);
 
     // Verify that the enclave cached CPUID values match host's
+    unsigned int subleaf = 0;
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
         memset(cpuidInfo, 0, sizeof(cpuidInfo));
         oe_result_t result = oe_get_cpuid(
             i,
-            0,
+            &subleaf,
             &cpuidInfo[OE_CPUID_RAX],
             &cpuidInfo[OE_CPUID_RBX],
             &cpuidInfo[OE_CPUID_RCX],
