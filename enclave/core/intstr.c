@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/corelibc/string.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/intstr.h>
 
 /* Get hex character of i-th nibble, where 0 is the least significant nibble */

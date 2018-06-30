@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/corelibc/string.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/keys.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>

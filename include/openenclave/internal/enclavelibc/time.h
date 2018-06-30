@@ -34,7 +34,7 @@ struct oe_tm* oe_gmtime(const time_t* timep);
 
 struct oe_tm* oe_gmtime_r(const time_t* timep, struct oe_tm* result);
 
-#if !defined(OE_CORELIBC_HIDE_STDC_NAMES)
+#if defined(OE_CORELIBC_NEED_STDC_NAMES)
 
 struct tm
 {
@@ -73,7 +73,7 @@ struct tm* gmtime_r(const time_t* timep, struct tm* result)
     return (struct tm*)oe_gmtime_r(timep, (struct oe_tm*)result);
 }
 
-#endif /* !defined(OE_CORELIBC_HIDE_STDC_NAMES) */
+#endif /* defined(OE_CORELIBC_NEED_STDC_NAMES) */
 
 OE_CORELIBC_EXTERNC_END
 

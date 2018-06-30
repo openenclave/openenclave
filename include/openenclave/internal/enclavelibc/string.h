@@ -32,7 +32,7 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size);
 
 size_t oe_strlcat(char* dest, const char* src, size_t size);
 
-#if !defined(OE_CORELIBC_HIDE_STDC_NAMES)
+#if defined(OE_CORELIBC_NEED_STDC_NAMES)
 
 OE_CORELIBC_INLINE
 size_t strlen(const char* s)
@@ -106,7 +106,7 @@ size_t strlcat(char* dest, const char* src, size_t size)
     return oe_strlcat(dest, src, size);
 }
 
-#endif /* !defined(OE_CORELIBC_HIDE_STDC_NAMES) */
+#endif /* defined(OE_CORELIBC_NEED_STDC_NAMES) */
 
 OE_CORELIBC_EXTERNC_END
 

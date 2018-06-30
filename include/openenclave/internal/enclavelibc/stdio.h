@@ -9,6 +9,12 @@
 
 OE_CORELIBC_EXTERNC_BEGIN
 
+typedef struct _IO_FILE FILE;
+
+extern FILE* const stdin;
+extern FILE* const stdout;
+extern FILE* const stderr;
+
 int oe_vsnprintf(char* str, size_t size, const char* format, oe_va_list ap);
 
 OE_CORELIBC_PRINTF_FORMAT(3, 4)
@@ -19,13 +25,7 @@ int oe_vprintf(const char* format, oe_va_list ap);
 OE_CORELIBC_PRINTF_FORMAT(1, 2)
 int oe_printf(const char* format, ...);
 
-#if !defined(OE_CORELIBC_HIDE_STDC_NAMES)
-
-typedef struct _IO_FILE FILE;
-
-extern FILE* const stdin;
-extern FILE* const stdout;
-extern FILE* const stderr;
+#if defined(OE_CORELIBC_NEED_STDC_NAMES)
 
 OE_CORELIBC_INLINE
 int vsnprintf(char* str, size_t size, const char* format, va_list ap)
@@ -59,7 +59,7 @@ int printf(const char* format, ...)
     va_end(ap);
 }
 
-#endif /* !defined(OE_CORELIBC_HIDE_STDC_NAMES) */
+#endif /* defined(OE_CORELIBC_NEED_STDC_NAMES) */
 
 OE_CORELIBC_EXTERNC_END
 

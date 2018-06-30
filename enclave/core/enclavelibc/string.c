@@ -2,8 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/corelibc/errno.h>
-#include <openenclave/internal/corelibc/string.h>
+#include <openenclave/internal/enclavelibc.h>
 
 typedef struct _error_string
 {

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/corelibc/stdlib.h>
+#include <openenclave/internal/enclavelibc.h>
 
 //
 // If c is a digit character:

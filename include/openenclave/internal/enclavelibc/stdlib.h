@@ -26,7 +26,7 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
-#if !defined(OE_CORELIBC_HIDE_STDC_NAMES)
+#if defined(OE_CORELIBC_NEED_STDC_NAMES)
 
 OE_CORELIBC_INLINE
 int rand(void)
@@ -76,7 +76,7 @@ unsigned long int strtoul(const char* nptr, char** endptr, int base)
     return oe_strtoul(nptr, endptr, base);
 }
 
-#endif /* !defined(OE_CORELIBC_HIDE_STDC_NAMES) */
+#endif /* defined(OE_CORELIBC_NEED_STDC_NAMES) */
 
 OE_CORELIBC_EXTERNC_END
 

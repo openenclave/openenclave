@@ -26,7 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/corelibc/time.h>
+#include <openenclave/internal/enclavelibc.h>
 
 /* 2000-03-01 (mod 400 year, immediately after feb29 */
 #define LEAPOCH (946684800LL + 86400 * (31 + 29))

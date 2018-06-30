@@ -2,16 +2,16 @@
 # Licensed under the MIT License.
 
 add_library(oecore STATIC
-    corelibc/errno.c
-    corelibc/gmtime.c
-    corelibc/malloc.c
-    corelibc/printf.c
-    corelibc/rand.c
-    corelibc/sbrk.c
-    corelibc/stdio.c
-    corelibc/string.c
-    corelibc/strtoul.c
-    corelibc/time.c
+    enclavelibc/errno.c
+    enclavelibc/gmtime.c
+    enclavelibc/malloc.c
+    enclavelibc/printf.c
+    enclavelibc/rand.c
+    enclavelibc/sbrk.c
+    enclavelibc/stdio.c
+    enclavelibc/string.c
+    enclavelibc/strtoul.c
+    enclavelibc/time.c
     assert.c
     atexit.c
     calls.c
@@ -37,8 +37,15 @@ add_library(oecore STATIC
     getkey.S
     main.S)
 
-set_source_files_properties(corelibc/malloc.c corelibc/time.c PROPERTIES COMPILE_FLAGS
-    -I"${PROJECT_SOURCE_DIR}/include/openenclave/internal/corelibc")
+set(CORELIBC_INCDIR 
+    "${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
+
+set_source_files_properties(
+    enclavelibc/malloc.c 
+    enclavelibc/time.c 
+    PROPERTIES 
+    COMPILE_FLAGS
+    "-DOE_CORELIBC_NEED_STDC_NAMES -I${CORELIBC_INCDIR}")
 
 target_link_libraries(oecore PUBLIC oe_includes)
 

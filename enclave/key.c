@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "key.h"
-#include <openenclave/internal/corelibc/string.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hash.h>
 #include <openenclave/internal/raise.h>
 #include "pem.h"

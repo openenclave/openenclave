@@ -20,7 +20,7 @@ struct oe_timezone
     int tz_dsttime;
 };
 
-#if !defined(OE_CORELIBC_HIDE_STDC_NAMES)
+#if defined(OE_CORELIBC_NEED_STDC_NAMES)
 
 struct timeval
 {
@@ -34,7 +34,7 @@ struct timezone
     int tz_dsttime;
 };
 
-#endif /* !defined(OE_CORELIBC_HIDE_STDC_NAMES) */
+#endif /* defined(OE_CORELIBC_NEED_STDC_NAMES) */
 
 OE_CORELIBC_EXTERNC_END
 

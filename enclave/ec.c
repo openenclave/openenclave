@@ -6,7 +6,7 @@
 #include <mbedtls/asn1write.h>
 #include <mbedtls/ecp.h>
 #include <openenclave/enclave.h>
-#include <openenclave/internal/corelibc/string.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include "key.h"
 #include "pem.h"

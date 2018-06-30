@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "rsa.h"
-#include <openenclave/internal/corelibc/string.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include "key.h"
 #include "pem.h"

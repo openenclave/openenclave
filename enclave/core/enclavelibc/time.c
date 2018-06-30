@@ -4,7 +4,7 @@
 #define __OE_NEED_TIME_CALLS
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/corelibc/time.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/random.h>
