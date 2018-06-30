@@ -4,6 +4,7 @@
 #ifndef _OE_ENCLAVELIBC_H
 #define _OE_ENCLAVELIBC_H
 
+#include "enclavelibc/assert.h"
 #include "enclavelibc/errno.h"
 #include "enclavelibc/limits.h"
 #include "enclavelibc/pthread.h"

@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 add_library(oecore STATIC
+    enclavelibc/assert.c
     enclavelibc/errno.c
     enclavelibc/gmtime.c
     enclavelibc/malloc.c
@@ -12,7 +13,6 @@ add_library(oecore STATIC
     enclavelibc/string.c
     enclavelibc/strtoul.c
     enclavelibc/time.c
-    assert.c
     atexit.c
     calls.c
     cpuid.c
