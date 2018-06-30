@@ -51,6 +51,8 @@ ifdef NODOWNLOAD
 	@ cp ../../libsgxdownload/libsgx*.deb .
 	@ echo "*** Copied $(LIBSGX_COMMON) package"
 	@ echo "*** Copied $(LIBSGX_QL) package"
+	dpkg -i $(LIBSGX_COMMON_PKG)
+	dpkg -i $(LIBSGX_QL_PKG)
 else
 	apt-get -y install wget
 	@ wget http://10.224.140.70:8888/libsgx-enclave-common_2.1.100.0-1.0_amd64.deb
