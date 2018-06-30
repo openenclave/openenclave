@@ -11,10 +11,9 @@ OE_EXTERNC_BEGIN
 /**
  * OID string representation.
  *
- * OID string representation (e.g., "1.2.3.4"). This structure represents an
- * OID output parameter to prevent buffer length mismatches that the compiler
- * would be unable to detect. For example, consider the following function
- * declaration.
+ * This structure represents an OID output parameter to prevent buffer length 
+ * mismatches that the compiler would be unable to detect. For example, 
+ * consider the following function declaration.
  *
  *     ```
  *     void get_the_oid(char oid[OE_MAX_OID_STRING_SIZE]);
