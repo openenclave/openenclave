@@ -63,6 +63,8 @@ jobs:
              apt-get install -y sudo &&
              sudo ./scripts/install-prereqs &&
              apt-get install -y libssl-dev &&
+             wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz &&
+             tar xf cmake-3.11.4-Linux-x86_64.tar.gz &&
              ./scripts/pre-commit &&
              sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
              ls -la  ~/Microsoft-OE/prereqs/ngsa
