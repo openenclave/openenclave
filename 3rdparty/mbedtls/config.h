@@ -1413,6 +1413,7 @@
  *
  * Uncomment this to enable pthread mutexes.
  */
+// Open Enclave: Default to thread-safe versions of mbedtls context objects.
 #define MBEDTLS_THREADING_PTHREAD
 
 /**
@@ -2462,7 +2463,7 @@
  *
  * Enable this layer to allow use of mutexes within mbed TLS
  */
-//Open Enclave TODO: enable and test threading in enclave context
+// Open Enclave: Enable use of threading in enclave context.
 #define MBEDTLS_THREADING_C
 
 /**
