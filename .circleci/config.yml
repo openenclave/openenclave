@@ -65,7 +65,6 @@ jobs:
              apt-get install -y libssl-dev &&
              ./scripts/pre-commit &&
              sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
-             sudo make -C prereqs USE_LIBSGX=1 install
              ls -la  ~/Microsoft-OE/prereqs/ngsa
              ls -la  ~/Microsoft-OE/prereqs/sgx-driver
              mkdir build &&
