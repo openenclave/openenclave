@@ -37,7 +37,7 @@
  *     oe_result_t r = foo(buffer, &size);
  *     ```
  *
- * If the function returns OE_OK, then **size** contains the extact size
+ * If the function returns OE_OK, then **size** contains the exact size
  * of the buffer (which could be smaller than the original value of the
  * **size** parameter).
  *

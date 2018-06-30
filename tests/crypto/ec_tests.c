@@ -42,7 +42,7 @@ static const char _CERT[] =
     "RvR+bMRtTbhiRXkV9JD2FJA24tP32pw+\n"
     "-----END CERTIFICATE-----\n";
 
-/* A certficiate without any extensions */
+/* A certificate without any extensions */
 static const char _CERT_WITHOUT_EXTENSIONS[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDMzCCAhsCAhABMA0GCSqGSIb3DQEBCwUAMGMxGjAYBgNVBAMMEVRlc3QgSW50\n"

@@ -43,7 +43,7 @@ static oe_result_t _find_url(
             /* Get the length which immediately precedes the pattern */
             uint8_t len = p[-1];
 
-            /* Fail if length excedes bytes remaining in the buffer */
+            /* Fail if length exceeds bytes remaining in the buffer */
             if (len > remaining)
                 OE_RAISE(OE_FAILURE);
 

@@ -47,7 +47,7 @@ static void _test_string_substitute()
         OE_TEST(size == (size_t)-1);
     }
 
-    /* Test full-string resplacement */
+    /* Test full-string replacement */
     {
         char str[16] = "Full";
         size_t size = oe_string_substitute(str, sizeof(str), "Full", "Empty");

@@ -16,7 +16,7 @@
 #include <openenclave/bits/types.h>
 
 /**
- * Substitutes occurences of **pattern** with **replacement**.
+ * Substitutes occurrences of **pattern** with **replacement**.
  *
  * @param str the string buffer.
  * @param size the size of the string buffer.
