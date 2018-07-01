@@ -8,6 +8,7 @@ add_library(oecore STATIC
     enclavelibc/gmtime.c
     enclavelibc/malloc.c
     enclavelibc/printf.c
+    enclavelibc/pthread.c
     enclavelibc/rand.c
     enclavelibc/sbrk.c
     enclavelibc/stdio.c

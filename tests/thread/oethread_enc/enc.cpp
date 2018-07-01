@@ -2,9 +2,18 @@
 // Licensed under the MIT License.
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../args.h"
+
+OE_STATIC_ASSERT(sizeof(oe_thread_t) == sizeof(pthread_t));
+OE_STATIC_ASSERT(sizeof(oe_once_t) == sizeof(pthread_once_t));
+OE_STATIC_ASSERT(sizeof(oe_spinlock_t) == sizeof(pthread_spinlock_t));
+OE_STATIC_ASSERT(sizeof(oe_thread_attr_t) <= sizeof(pthread_attr_t));
+OE_STATIC_ASSERT(sizeof(oe_mutex_t) <= sizeof(pthread_mutex_t));
+OE_STATIC_ASSERT(sizeof(oe_cond_t) <= sizeof(pthread_cond_t));
+OE_STATIC_ASSERT(sizeof(oe_rwlock_t) <= sizeof(pthread_rwlock_t));
 
 static oe_mutex_t mutex1 = OE_MUTEX_INITIALIZER;
 static oe_mutex_t mutex2 = OE_MUTEX_INITIALIZER;
