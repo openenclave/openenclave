@@ -28,4 +28,3 @@ oe_setjmp:
     xor %rax, %rax
     ret
 .cfi_endproc
-.size oe_setjmp, .-oe_setjmp

@@ -3,6 +3,7 @@
 
 add_library(oecore STATIC
     enclavelibc/assert.c
+    enclavelibc/atexit.c
     enclavelibc/errno.c
     enclavelibc/gmtime.c
     enclavelibc/malloc.c
@@ -16,7 +17,6 @@ add_library(oecore STATIC
     enclavelibc/time.c
     enclavelibc/setjmp.S
     enclavelibc/longjmp.S
-    atexit.c
     calls.c
     cpuid.c
     entropy.c

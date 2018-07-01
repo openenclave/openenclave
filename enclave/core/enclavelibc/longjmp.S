@@ -32,6 +32,4 @@ val_is_nonzero:
     mov %rdx, %rsp
     mov 56(%rdi), %rdx
     jmp *%rdx
-
 .cfi_endproc
-.size oe_longjmp, .-oe_longjmp

@@ -26,6 +26,8 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
+int oe_atexit(void (*function)(void));
+
 #if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
 
 #define RAND_MAX OE_RAND_MAX
@@ -76,6 +78,12 @@ OE_ENCLAVELIBC_INLINE
 unsigned long int strtoul(const char* nptr, char** endptr, int base)
 {
     return oe_strtoul(nptr, endptr, base);
+}
+
+OE_ENCLAVELIBC_INLINE
+int atexit(void (*function)(void))
+{
+    return oe_atexit(function);
 }
 
 #endif /* defined(OE_ENCLAVELIBC_NEED_STDC_NAMES) */

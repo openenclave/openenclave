@@ -5,10 +5,9 @@
 #define _OE_ATEXIT_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/internal/enclavelibc.h>
 
 OE_EXTERNC_BEGIN
-
-int oe_atexit(void (*function)(void));
 
 void oe_call_at_exit_functions(void);
 
