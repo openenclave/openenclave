@@ -10,6 +10,7 @@ add_library(oecore STATIC
     enclavelibc/rand.c
     enclavelibc/sbrk.c
     enclavelibc/stdio.c
+    enclavelibc/strerror.c
     enclavelibc/string.c
     enclavelibc/strtoul.c
     enclavelibc/time.c

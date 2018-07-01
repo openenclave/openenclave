@@ -7,6 +7,8 @@
 //
 //     Implementation of standard setjmp() function.
 //
+//     %rdi := env
+//
 //==============================================================================
 
 .globl oe_setjmp

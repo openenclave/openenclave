@@ -7,20 +7,21 @@
 //
 //     Implementation of standard longjmp() function.
 //
+//     %rdi := env
+//     %rsi := val
+//
 //==============================================================================
 
 .globl oe_longjmp
 .type oe_longjmp, @function
 oe_longjmp:
 .cfi_startproc
-    // if (val == 0) then set val to 1.
     mov %rsi, %rax
-if:
+    // if (val == 0) then set val to 1.
     cmp $0, %rax
-    jne else
-then:
+    jne val_is_nonzero
     mov $1, %rax
-else:
+val_is_nonzero:
     mov (%rdi), %rbx
     mov 8(%rdi), %rbp
     mov 16(%rdi), %r12

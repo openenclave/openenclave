@@ -5,13 +5,17 @@
 
 OE_ENCLAVELIBC_EXTERNC_BEGIN
 
-#define STDIN_FILENO 0
-#define STDOUT_FILENO 1
-#define STDERR_FILENO 2
+#define OE_STDIN_FILENO 0
+#define OE_STDOUT_FILENO 1
+#define OE_STDERR_FILENO 2
 
 void* oe_sbrk(intptr_t increment);
 
 #if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
+
+#define STDIN_FILENO OE_STDIN_FILENO
+#define STDOUT_FILENO OE_STDOUT_FILENO
+#define STDERR_FILENO OE_STDERR_FILENO
 
 OE_ENCLAVELIBC_INLINE
 void* sbrk(intptr_t increment)

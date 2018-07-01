@@ -30,6 +30,8 @@
 
 OE_ENCLAVELIBC_EXTERNC_BEGIN
 
+typedef __builtin_va_list oe_va_list;
+
 typedef long ssize_t;
 typedef unsigned long size_t;
 typedef long intptr_t;
@@ -45,10 +47,14 @@ typedef unsigned long uint64_t;
 typedef unsigned long uintptr_t;
 typedef long ptrdiff_t;
 typedef long time_t;
-typedef __builtin_va_list oe_va_list;
-typedef oe_va_list va_list;
 typedef long suseconds_t;
 typedef int clockid_t;
+
+#if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
+
+typedef oe_va_list va_list;
+
+#endif /* defined(OE_ENCLAVELIBC_NEED_STDC_NAMES) */
 
 OE_ENCLAVELIBC_EXTERNC_END
 

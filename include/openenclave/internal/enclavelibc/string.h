@@ -32,6 +32,10 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size);
 
 size_t oe_strlcat(char* dest, const char* src, size_t size);
 
+char* oe_strerror(int errnum);
+
+int oe_strerror_r(int errnum, char* buf, size_t buflen);
+
 #if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
 
 OE_ENCLAVELIBC_INLINE
@@ -104,6 +108,18 @@ OE_ENCLAVELIBC_INLINE
 size_t strlcat(char* dest, const char* src, size_t size)
 {
     return oe_strlcat(dest, src, size);
+}
+
+OE_ENCLAVELIBC_INLINE
+char* strerror(int errnum)
+{
+    return oe_strerror(errnum);
+}
+
+OE_ENCLAVELIBC_INLINE
+int strerror_r(int errnum, char* buf, size_t buflen)
+{
+    return oe_strerror_r(errnum, buf, buflen);
 }
 
 #endif /* defined(OE_ENCLAVELIBC_NEED_STDC_NAMES) */

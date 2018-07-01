@@ -8,7 +8,7 @@
 
 OE_ENCLAVELIBC_EXTERNC_BEGIN
 
-#define RAND_MAX (0x7fffffff)
+#define OE_RAND_MAX (0x7fffffff)
 
 int oe_rand(void);
 
@@ -27,6 +27,8 @@ int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base);
 
 #if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
+
+#define RAND_MAX OE_RAND_MAX
 
 OE_ENCLAVELIBC_INLINE
 int rand(void)

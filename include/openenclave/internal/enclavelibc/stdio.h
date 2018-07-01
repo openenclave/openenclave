@@ -9,11 +9,10 @@
 
 OE_ENCLAVELIBC_EXTERNC_BEGIN
 
-typedef struct _IO_FILE FILE;
-
-extern FILE* const stdin;
-extern FILE* const stdout;
-extern FILE* const stderr;
+typedef struct _OE_IO_FILE OE_FILE;
+extern OE_FILE* const oe_stdin;
+extern OE_FILE* const oe_stdout;
+extern OE_FILE* const oe_stderr;
 
 int oe_vsnprintf(char* str, size_t size, const char* format, oe_va_list ap);
 
@@ -26,6 +25,11 @@ OE_ENCLAVELIBC_PRINTF_FORMAT(1, 2)
 int oe_printf(const char* format, ...);
 
 #if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
+
+typedef OE_FILE FILE;
+#define stdin oe_stdin
+#define stdout oe_stdout
+#define stderr oe_stderr
 
 OE_ENCLAVELIBC_INLINE
 int vsnprintf(char* str, size_t size, const char* format, va_list ap)
