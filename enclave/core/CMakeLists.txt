@@ -40,15 +40,12 @@ add_library(oecore STATIC
     getkey.S
     main.S)
 
-set(ENCLAVELIBC_INCDIR
-    ${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc)
-
 set_source_files_properties(
     enclavelibc/malloc.c
     enclavelibc/time.c
     PROPERTIES
     COMPILE_FLAGS
-    "-DOE_ENCLAVELIBC_NEED_STDC_NAMES -I${ENCLAVELIBC_INCDIR}")
+    "-I${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
 
 target_link_libraries(oecore PUBLIC oe_includes)
 
