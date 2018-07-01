@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 
 void __oe_assert_fail(
     const char* expr,

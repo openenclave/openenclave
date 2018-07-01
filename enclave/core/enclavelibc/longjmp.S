@@ -1,0 +1,36 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+//==============================================================================
+//
+// void oe_longjmp(oe_jmp_buf env, int val)
+//
+//     Implementation of standard longjmp() function.
+//
+//==============================================================================
+
+.globl oe_longjmp
+.type oe_longjmp, @function
+oe_longjmp:
+.cfi_startproc
+    // if (val == 0) then set val to 1.
+    mov %rsi, %rax
+if:
+    cmp $0, %rax
+    jne else
+then:
+    mov $1, %rax
+else:
+    mov (%rdi), %rbx
+    mov 8(%rdi), %rbp
+    mov 16(%rdi), %r12
+    mov 24(%rdi), %r13
+    mov 32(%rdi), %r14
+    mov 40(%rdi), %r15
+    mov 48(%rdi), %rdx
+    mov %rdx, %rsp
+    mov 56(%rdi), %rdx
+    jmp *%rdx
+
+.cfi_endproc
+.size oe_longjmp, .-oe_longjmp

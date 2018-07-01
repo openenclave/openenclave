@@ -5,9 +5,9 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
 #include <stdarg.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #define OE_ENABLE_MALLOC_WRAPPERS

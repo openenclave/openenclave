@@ -13,6 +13,8 @@ add_library(oecore STATIC
     enclavelibc/string.c
     enclavelibc/strtoul.c
     enclavelibc/time.c
+    enclavelibc/setjmp.S
+    enclavelibc/longjmp.S
     atexit.c
     calls.c
     cpuid.c
@@ -24,7 +26,6 @@ add_library(oecore STATIC
     hexdump.c
     init.c
     intstr.c
-    jump.c
     keys.c
     memory.c
     once.c
