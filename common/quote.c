@@ -5,6 +5,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
