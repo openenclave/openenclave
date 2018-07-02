@@ -543,14 +543,6 @@ static int _vprintf(oe_out_t* out, const char* fmt, oe_va_list ap)
     return n;
 }
 
-/*
-**==============================================================================
-**
-** Public definitions:
-**
-**==============================================================================
-*/
-
 typedef struct _oe_out_str
 {
     oe_out_t base;
@@ -591,6 +583,29 @@ static void _oe_out_str_init(oe_out_str_t* out, char* str, size_t size)
     out->off = 0;
 }
 
+/*
+**==============================================================================
+**
+** Public definitions:
+**
+**==============================================================================
+*/
+
+//
+// Produce output according to a given format string.
+//
+// This function is similar to vsnprintf() but has no support for floating
+// point types.
+//
+// @param str Write output to this string
+// @param size The size of **str** parameter.
+// @param fmt The limited printf style format.
+//
+// @returns The number of characters that would be written excluding the
+// zero-terminator. If this value is greater or equal to **size**, then the
+// string was truncated.
+//
+//
 int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
 {
     oe_out_str_t out;
@@ -603,6 +618,20 @@ int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
     return _vprintf(&out.base, fmt, ap);
 }
 
+//
+// Produce output according to a given format string.
+//
+// This function is similar to snprintf() but has limited support for format
+// types. See oe_vsnprintf() for details on these limits.
+//
+// @param str Write output to this string.
+// @param size The size of **str** parameter.
+// @param fmt The limited printf style format.
+//
+// @returns The number of characters that would be written excluding the
+// zero-terminator. If this value is greater or equal to **size**, then the
+// string was truncated.
+//
 int oe_snprintf(char* str, size_t size, const char* fmt, ...)
 {
     oe_va_list ap;

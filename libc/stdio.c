@@ -5,12 +5,12 @@
 #include <assert.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include "../3rdparty/musl/musl/src/internal/stdio_impl.h"
-#include <openenclave/internal/enclavelibc.h>
 
 FILE* const stdin = ((FILE*)0x1000000000000001);
 FILE* const stdout = ((FILE*)0x1000000000000002);

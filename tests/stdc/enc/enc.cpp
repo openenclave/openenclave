@@ -173,15 +173,14 @@ void test_strftime(void)
 {
     char buf[128];
 
-    const struct tm tm =
-    {
-        10, // tm_sec
-        30, // tm_min
-        12, // tm_hour
-        31, // tm_mday
-        11, // tm_mon
-        86, // tm_year
-        0, // tm_wday
+    const struct tm tm = {
+        10,  // tm_sec
+        30,  // tm_min
+        12,  // tm_hour
+        31,  // tm_mday
+        11,  // tm_mon
+        86,  // tm_year
+        0,   // tm_wday
         365, // tm_yday
         0,
     };

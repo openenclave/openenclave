@@ -4,6 +4,18 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
 
+//
+// Enclave implementation of the standard Unix sbrk() system call.
+//
+// This function provides an enclave equivalent to the sbrk() system call.
+// It increments the current end of the heap by **increment** bytes. Calling
+// oe_sbrk() with an increment of 0, returns the current end of the heap.
+//
+// @param increment Number of bytes to increment the heap end by.
+//
+// @returns The old end of the heap (before the increment) or (void*)-1 if
+// there are less than **increment** bytes left on the heap.
+//
 void* oe_sbrk(ptrdiff_t increment)
 {
     static unsigned char* _heapNext;

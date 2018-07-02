@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/internal/enclavelibc.h>
 
 OE_FILE* const oe_stdin = ((OE_FILE*)0x1000000000000001);

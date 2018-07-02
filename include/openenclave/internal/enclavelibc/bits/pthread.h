@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 typedef oe_pthread_t pthread_t;
 
 typedef oe_pthread_once_t pthread_once_t;
@@ -110,8 +113,7 @@ OE_ENCLAVELIBC_INLINE
 int pthread_mutex_init(pthread_mutex_t* m, const pthread_mutexattr_t* attr)
 {
     return oe_pthread_mutex_init(
-        (oe_pthread_mutex_t*)m, 
-        (const oe_pthread_mutexattr_t*)attr);
+        (oe_pthread_mutex_t*)m, (const oe_pthread_mutexattr_t*)attr);
 }
 
 OE_ENCLAVELIBC_INLINE
@@ -144,8 +146,7 @@ int pthread_rwlock_init(
     const pthread_rwlockattr_t* attr)
 {
     return oe_pthread_rwlock_init(
-        (oe_pthread_rwlock_t*)rwlock,
-        (oe_pthread_rwlockattr_t*)attr);
+        (oe_pthread_rwlock_t*)rwlock, (oe_pthread_rwlockattr_t*)attr);
 }
 
 OE_ENCLAVELIBC_INLINE
@@ -176,16 +177,14 @@ OE_ENCLAVELIBC_INLINE
 int pthread_cond_init(pthread_cond_t* cond, const pthread_condattr_t* attr)
 {
     return oe_pthread_cond_init(
-        (oe_pthread_cond_t*)cond,
-        (const oe_pthread_condattr_t*)attr);
+        (oe_pthread_cond_t*)cond, (const oe_pthread_condattr_t*)attr);
 }
 
 OE_ENCLAVELIBC_INLINE
 int pthread_cond_wait(pthread_cond_t* cond, pthread_mutex_t* mutex)
 {
     return oe_pthread_cond_wait(
-        (oe_pthread_cond_t*)cond, 
-        (oe_pthread_mutex_t*)mutex);
+        (oe_pthread_cond_t*)cond, (oe_pthread_mutex_t*)mutex);
 }
 
 OE_ENCLAVELIBC_INLINE

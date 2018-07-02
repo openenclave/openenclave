@@ -191,7 +191,7 @@ int oe_pthread_rwlock_wrlock(oe_pthread_rwlock_t* rwlock)
 
 int oe_pthread_rwlock_unlock(oe_pthread_rwlock_t* rwlock)
 {
-    extern oe_result_t oe_rwlock_unlock(oe_rwlock_t* readWriteLock);
+    extern oe_result_t oe_rwlock_unlock(oe_rwlock_t * readWriteLock);
     return _to_errno(oe_rwlock_unlock((oe_rwlock_t*)rwlock));
 }
 
