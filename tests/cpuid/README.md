@@ -1,4 +1,4 @@
-Utils Tests
+Cpuid Tests
 =============
 
 This directory contains unit tests for various utility functions in OpenEnclave.

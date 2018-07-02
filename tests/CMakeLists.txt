@@ -40,6 +40,7 @@ endif()
 
 if (UNIX)
 add_subdirectory(abortStatus)
+add_subdirectory(cpuid)
 add_subdirectory(crypto)
 add_subdirectory(libc)
 add_subdirectory(libcxx)
@@ -52,7 +53,6 @@ add_subdirectory(props)
 add_subdirectory(ricochet)
 add_subdirectory(stdc)
 add_subdirectory(thread)
-add_subdirectory(utils)
 add_subdirectory(VectorException)
 
 # Following five tests are UNIX only because they depend on the oegen tool
