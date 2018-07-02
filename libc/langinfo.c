@@ -5,6 +5,8 @@
 #include <locale.h>
 #include <string.h>
 
-#include "__pthread_self.h"
+// clang-format off
 #define _PTHREAD_IMPL_H
+#include "__pthread_self.h"
 #include "../3rdparty/musl/musl/src/locale/langinfo.c"
+// clang-format on
