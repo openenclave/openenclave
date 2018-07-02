@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_executable(report_host host.cpp)
+add_executable(report_host host.cpp tcbinfo.cpp)
 
 if(USE_LIBSGX)
     target_compile_definitions(report_host PRIVATE OE_USE_LIBSGX)

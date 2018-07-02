@@ -2,10 +2,12 @@
 // Licensed under the MIT License.
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/json.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
+#include <stdio.h>
 #include "../../../common/quote.h"
 #include "../../../common/tcbinfo.h"
 #include "../common/args.h"
@@ -157,4 +159,16 @@ OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
         args->tcbInfo,
         args->tcbInfoSize,
         (oe_parsed_tcb_info_t*)args->parsedTcbInfo);
+}
+
+void PrintError(void* obj, const char* msg)
+{
+    printf("Json Parse Error: %s\n", msg);
+}
+
+OE_ECALL void TestParseJson(ParseJsonArgs* args)
+{
+    OE_JsonParserCallbackInterface callback = {0};
+    callback.handleError = PrintError;
+    args->result = OE_ParseJson(args->json, args->jsonSize, NULL, &callback);
 }
