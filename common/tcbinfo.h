@@ -30,7 +30,9 @@ typedef struct _OE_ParsedTcbInfo
     uint32_t issueDateSize;
     const uint8_t* fmspc;
     uint32_t fmspcSize;
-    OE_Tcb tcbLevels[3];
+    OE_Tcb aggregatedUpToDateTcb;
+    OE_Tcb aggregatedOutOfDateTcb;
+    OE_Tcb aggregatedRevokedTcb;
     const uint8_t* signature;
     uint32_t signatureSize;
 } OE_ParsedTcbInfo;

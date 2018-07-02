@@ -30,6 +30,7 @@ typedef struct _Schema
 
 #define NUM_LEVELS (4)
 #define NUM_TCB_LEVELS (3)
+#define MAX_NUM_PROPERTIES (17)
 
 static const Schema g_Schema[NUM_LEVELS] = {
     {2, {{"tcbInfo", OBJECT}, {"signature", STRING}}},
@@ -73,8 +74,9 @@ typedef struct _CallbackData
     uint32_t currentPropertyIdx[4];
 
     // The set of properties read in each level.
-    uint32_t propertiesSeen[4][20];
-    uint32_t numPropertiesSeen[4];
+    uint32_t propertiesSeen[NUM_LEVELS][MAX_NUM_PROPERTIES];
+    uint32_t numPropertiesSeen[NUM_LEVELS];
+    OE_Tcb currentTcb;
 
     oe_result_t schemaValidationResult;
 
@@ -149,10 +151,41 @@ static oe_result_t _beginObject(void* vdata)
     }
 }
 
+static void _AggregateTCBInfo(OE_Tcb* tcb, OE_Tcb* aggregatedTcb)
+{
+    // Aggregate only if the statuses match.
+    if (tcb->status != aggregatedTcb->status)
+        return;
+    // Choose the maximum value for each property.
+    for (uint32_t i = 0;
+         i < sizeof(tcb->sgxTCBCompSvn) / sizeof(tcb->sgxTCBCompSvn[0]);
+         ++i)
+    {
+        if (tcb->sgxTCBCompSvn[i] > aggregatedTcb->sgxTCBCompSvn[i])
+            aggregatedTcb->sgxTCBCompSvn[i] = tcb->sgxTCBCompSvn[i];
+    }
+    if (tcb->pceSvn > aggregatedTcb->pceSvn)
+        aggregatedTcb->pceSvn = tcb->pceSvn;
+}
+
 static oe_result_t _endObject(void* vdata)
 {
     CallbackData* data = (CallbackData*)vdata;
     int level = data->level--;
+
+    if (oe_strcmp(_GetCurrentPropertyName(data), "tcbLevels") == 0)
+    {
+        // Aggregate the TCB info.
+        _AggregateTCBInfo(
+            &data->currentTcb, &data->parsedTcbInfo->aggregatedUpToDateTcb);
+        _AggregateTCBInfo(
+            &data->currentTcb, &data->parsedTcbInfo->aggregatedOutOfDateTcb);
+        _AggregateTCBInfo(
+            &data->currentTcb, &data->parsedTcbInfo->aggregatedRevokedTcb);
+
+        // Clear current TCB.
+        oe_memset(&data->currentTcb, 0, sizeof(data->currentTcb));
+    }
 
     // Check that all expected properties have been read.
     if (level < NUM_LEVELS &&
@@ -249,7 +282,7 @@ static oe_result_t _number(
 {
     CallbackData* data = (CallbackData*)vdata;
     const char* propertyName = _GetCurrentPropertyName(data);
-    OE_Tcb* tcb = &data->parsedTcbInfo->tcbLevels[data->tcbLevelIndex];
+    OE_Tcb* tcb = &data->currentTcb;
 
     // Read decimal property value.
     uint64_t propertyValue = 0;
@@ -338,7 +371,7 @@ static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t strLength)
         {
             if (oe_strcmp(propertyName, "status") == 0)
             {
-                tcb = &data->parsedTcbInfo->tcbLevels[data->tcbLevelIndex];
+                tcb = &data->currentTcb;
 
                 if (_JsonStrEqual((const char*)str, strLength, "Revoked", 7))
                 {
@@ -395,8 +428,12 @@ oe_result_t OE_ParseTCBInfo(
     if (parsedInfo == NULL || tcbInfoJson == NULL || tcbInfoJsonSize == 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    oe_memset(parsedInfo, 0, sizeof(*parsedInfo));
     data.parsedTcbInfo = parsedInfo;
     data.tcbLevelIndex = -1;
+    parsedInfo->aggregatedUpToDateTcb.status = OE_TCB_STATUS_UP_TO_DATE;
+    parsedInfo->aggregatedOutOfDateTcb.status = OE_TCB_STATUS_OUT_OF_DATE;
+    parsedInfo->aggregatedRevokedTcb.status = OE_TCB_STATUS_REVOKED;
 
     // Not yet in root which is level 0.
     data.level = -1;
