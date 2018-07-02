@@ -13,14 +13,41 @@ typedef struct _OE_JsonParser
     const char* errorMsg;
 } OE_JsonParser;
 
-uint8_t isAlnum(uint8_t c)
+// Character classification primitives implemented here to avoid dependency nf
+// libc.
+
+// Based on:
+//   3rdparty/musl/musl/src/ctype/isalpha.c
+OE_INLINE uint8_t isAlpha(uint8_t c)
 {
-    return (((unsigned)c | 32) - 'a' < 26) || ((unsigned)c - '0' < 10);
+    // Use unsigned arithmetic to avoid checking lower bound.
+    // Convert to lower case and check.
+    uint32_t lower = (uint32_t)c | 32;
+    return (lower - 'a') < 26;
 }
 
+// Based on:
+//   3rdparty/musl/musl/src/ctype/isdigit.c
+OE_INLINE uint8_t isDigit(uint8_t c)
+{
+    // Use unsigned arithmetic to avoid checking lower bound.
+    uint32_t uc = c;
+    return (uc - '0') < 10;
+}
+
+// Based on:
+//   3rdparty/musl/musl/src/ctype/isalnum.c
+OE_INLINE uint8_t isAlnum(uint8_t c)
+{
+    return isAlpha(c) || isDigit(c);
+}
+
+// Based on:
+//   3rdparty/musl/musl/src/ctype/isspace.c
 OE_INLINE uint8_t isSpace(uint8_t c)
 {
-    return ((c == ' ') || ((unsigned)c - '\t' < 5));
+    // Use unsigned arithmetic to avoid checking lower bound.
+    return ((c == ' ') || ((uint32_t)c - '\t' < 5));
 }
 
 // Skip white space
@@ -127,12 +154,12 @@ static const uint8_t* readArray(
         if (p->interface.beginArray(p->data) != OE_OK)
             return end;
 
-    // read properties of the object.
+    // read each item.
     while (itr != end && *itr != ']')
     {
         itr = read(p, itr, end);
 
-        // each property is separated by a comma
+        // each item is separated by a comma.
         if (itr != end && *itr == ',')
             ++itr;
     }
@@ -153,9 +180,8 @@ static const uint8_t* readObject(
 
 // Read a property.
 // Each property is expressed as:
-// [white-space] "property-name"  [white-space]  :   [white-space]
-// property-value [white-space]
-///    (1)          (2)               (3)       (4)     (5)          (6) (7)
+// [ws] "property-name"  [ws]  :   [ws] property-value [ws]
+// (1)       (2)         (3)  (4)  (5)       (6)       (7)
 static const uint8_t* readProperty(
     OE_JsonParser* p,
     const uint8_t* itr,
@@ -259,7 +285,7 @@ static const uint8_t* read(
     {
         itr = readArray(p, itr, end);
     }
-    else // if (*itr == '{')
+    else
     {
         itr = readObject(p, itr, end);
     }
