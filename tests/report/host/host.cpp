@@ -89,6 +89,7 @@ int main(int argc, const char* argv[])
         OE_OK);
 
     TestVerifyTCBInfo(enclave);
+    TestJsonParser(enclave);
 #endif
 
     /* Terminate the enclave */
