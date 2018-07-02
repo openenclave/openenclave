@@ -77,8 +77,8 @@ static const char* _parse_placeholder(
     oe_va_list ap)
 {
     ph->flags = FLAG_NONE;
-    ph->width = OE_MAX_INT;
-    ph->precision = OE_MAX_INT;
+    ph->width = OE_INT_MAX;
+    ph->precision = OE_INT_MAX;
     ph->type = TYPE_none;
 
     if (*p++ != '%')
@@ -167,7 +167,7 @@ static const char* _parse_placeholder(
         ph->type = TYPE_c;
         ph->conversion = 'c';
         /* Ignore precision on %c */
-        ph->precision = OE_MAX_INT;
+        ph->precision = OE_INT_MAX;
         ph->flags &= ~FLAG_ZERO;
         p++;
     }
@@ -355,10 +355,10 @@ static size_t _format(
     char pad = ' ';
     size_t n = 0;
 
-    if (ph->width != OE_MAX_INT && ph->width > len)
+    if (ph->width != OE_INT_MAX && ph->width > len)
         nwidth = ph->width - len;
 
-    if (ph->precision != OE_MAX_INT && ph->precision > len)
+    if (ph->precision != OE_INT_MAX && ph->precision > len)
         nprecision = ph->precision - len;
 
     if (nprecision > nwidth)

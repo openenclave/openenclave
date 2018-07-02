@@ -165,9 +165,9 @@ typedef struct _ConfigFileOptions
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                               \
     {                                                                 \
-        .debug = false, .numHeapPages = OE_MAX_UINT64,                \
-        .numStackPages = OE_MAX_UINT64, .numTCS = OE_MAX_UINT64,      \
-        .productID = OE_MAX_UINT16, .securityVersion = OE_MAX_UINT16, \
+        .debug = false, .numHeapPages = OE_UINT64_MAX,                \
+        .numStackPages = OE_UINT64_MAX, .numTCS = OE_UINT64_MAX,      \
+        .productID = OE_UINT16_MAX, .securityVersion = OE_UINT16_MAX, \
     }
 
 /* Check whether the .conf file is missing required options */
@@ -175,31 +175,31 @@ static int _CheckForMissingOptions(const ConfigFileOptions* options)
 {
     int ret = 0;
 
-    if (options->numHeapPages == OE_MAX_UINT64)
+    if (options->numHeapPages == OE_UINT64_MAX)
     {
         Err("%s: missing option: NumHeapPages", arg0);
         ret = -1;
     }
 
-    if (options->numStackPages == OE_MAX_UINT64)
+    if (options->numStackPages == OE_UINT64_MAX)
     {
         Err("%s: missing option: NumStackPages", arg0);
         ret = -1;
     }
 
-    if (options->numTCS == OE_MAX_UINT64)
+    if (options->numTCS == OE_UINT64_MAX)
     {
         Err("%s: missing option: NumTCS", arg0);
         ret = -1;
     }
 
-    if (options->productID == OE_MAX_UINT16)
+    if (options->productID == OE_UINT16_MAX)
     {
         Err("%s: missing option: ProductID", arg0);
         ret = -1;
     }
 
-    if (options->securityVersion == OE_MAX_UINT16)
+    if (options->securityVersion == OE_UINT16_MAX)
     {
         Err("%s: missing option: SecurityVersion", arg0);
         ret = -1;
@@ -462,23 +462,23 @@ void _MergeConfigFileOptions(
         properties->config.attributes |= SGX_FLAGS_DEBUG;
 
     /* If ProductID option is present */
-    if (options->productID != OE_MAX_UINT16)
+    if (options->productID != OE_UINT16_MAX)
         properties->config.productID = options->productID;
 
     /* If SecurityVersion option is present */
-    if (options->securityVersion != OE_MAX_UINT16)
+    if (options->securityVersion != OE_UINT16_MAX)
         properties->config.securityVersion = options->securityVersion;
 
     /* If NumHeapPages option is present */
-    if (options->numHeapPages != OE_MAX_UINT64)
+    if (options->numHeapPages != OE_UINT64_MAX)
         properties->header.sizeSettings.numHeapPages = options->numHeapPages;
 
     /* If NumStackPages option is present */
-    if (options->numStackPages != OE_MAX_UINT64)
+    if (options->numStackPages != OE_UINT64_MAX)
         properties->header.sizeSettings.numStackPages = options->numStackPages;
 
     /* If NumTCS option is present */
-    if (options->numTCS != OE_MAX_UINT64)
+    if (options->numTCS != OE_UINT64_MAX)
         properties->header.sizeSettings.numTCS = options->numTCS;
 }
 

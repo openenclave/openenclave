@@ -121,12 +121,12 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base)
         /* Multiply by base */
         {
             /* Check for overflow */
-            if (x > OE_MAX_UINT64 / base)
+            if (x > OE_UINT64_MAX / base)
             {
                 if (endptr)
                     *endptr = (char*)p;
 
-                return OE_MAX_UINT64;
+                return OE_UINT64_MAX;
             }
 
             x = x * base;
@@ -137,12 +137,12 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base)
             const uint64_t digit = _digit[(unsigned char)*p];
 
             /* Check for overflow */
-            if (digit > OE_MAX_UINT64 - x)
+            if (digit > OE_UINT64_MAX - x)
             {
                 if (endptr)
                     *endptr = (char*)p;
 
-                return OE_MAX_UINT64;
+                return OE_UINT64_MAX;
             }
 
             x += digit;

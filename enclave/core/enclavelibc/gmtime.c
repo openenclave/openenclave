@@ -46,7 +46,7 @@ static int _secs_to_tm(long long t, struct oe_tm* tm)
         31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29};
 
     /* Reject time_t values whose year would overflow int */
-    if (t < OE_MIN_INT * 31622400LL || t > OE_MAX_INT * 31622400LL)
+    if (t < OE_INT_MIN * 31622400LL || t > OE_INT_MAX * 31622400LL)
         return -1;
 
     secs = t - LEAPOCH;
@@ -95,7 +95,7 @@ static int _secs_to_tm(long long t, struct oe_tm* tm)
     for (months = 0; days_in_month[months] <= remdays; months++)
         remdays -= days_in_month[months];
 
-    if (years + 100 > OE_MAX_INT || years + 100 < OE_MIN_INT)
+    if (years + 100 > OE_INT_MAX || years + 100 < OE_INT_MIN)
         return -1;
 
     tm->tm_year = years + 100;

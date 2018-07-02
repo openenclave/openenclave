@@ -79,7 +79,7 @@ const char* oe_int64_to_decstr(oe_intstr_buf_t* buf, int64_t x, size_t* size)
     static const char _str[] = "-9223372036854775808";
     char* end = buf->data + sizeof(buf->data) - 1;
 
-    if (x == OE_MIN_SINT64)
+    if (x == OE_INT64_MIN)
     {
         *size = sizeof(_str) - 1;
         return _str;

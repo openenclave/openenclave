@@ -9,7 +9,7 @@
 /*
 **==============================================================================
 **
-** EAFI_MAX_PATH
+** OE_MAX_PATH
 **
 **==============================================================================
 */
@@ -21,14 +21,6 @@
 #else
 #define OE_MAX_PATH 1024
 #endif
-
-/*
-**==============================================================================
-**
-** Printf format specifiers
-**
-**==============================================================================
-*/
 
 /*
 **==============================================================================
@@ -90,48 +82,6 @@ OE_STATIC_ASSERT(sizeof(int64_t) == 8);
 OE_STATIC_ASSERT(sizeof(uint64_t) == 8);
 OE_STATIC_ASSERT(sizeof(uintptr_t) == sizeof(void*));
 OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
-
-/*
-**==============================================================================
-**
-** Integer limits:
-**
-**==============================================================================
-*/
-
-#define OE_MIN_SINT8 (-128)
-#define OE_MAX_SINT8 127
-#define OE_MAX_UINT8 255
-
-#define OE_MIN_SINT16 (-32768)
-#define OE_MAX_SINT16 32767
-#define OE_MAX_UINT16 65535
-
-#define OE_MIN_SINT32 (-2147483647 - 1)
-#define OE_MAX_SINT32 2147483647
-#define OE_MAX_UINT32 4294967295U
-
-#define OE_MIN_SINT64 (-9223372036854775807L - 1L)
-#define OE_MAX_SINT64 9223372036854775807L
-#define OE_MAX_UINT64 18446744073709551615UL
-
-#define OE_MIN_CHAR OE_MIN_SINT8
-#define OE_MAX_CHAR OE_MAX_SINT8
-#define OE_MAX_UCHAR OE_MAX_UINT8
-
-#define OE_MIN_SHORT OE_MIN_SINT16
-#define OE_MAX_SHORT OE_MAX_SINT16
-#define OE_MAX_USHORT OE_MAX_SINT16
-
-#define OE_MIN_INT OE_MIN_SINT32
-#define OE_MAX_INT OE_MAX_SINT32
-#define OE_MAX_UINT OE_MAX_UINT32
-
-#define OE_MIN_LLONG OE_MIN_SINT64
-#define OE_MAX_LLONG OE_MAX_SINT64
-#define OE_MAX_ULLONG OE_MAX_UINT64
-
-#define OE_MAX_SIZE_T OE_MAX_UINT64
 
 /*
 **==============================================================================
