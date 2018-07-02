@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define PTHREAD_MUTEX_INITIALIZER OE_PTHREAD_MUTEX_INITIALIZER
+
 typedef oe_pthread_t pthread_t;
 
 typedef oe_pthread_once_t pthread_once_t;

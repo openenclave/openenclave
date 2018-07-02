@@ -6,7 +6,7 @@
 
 // Includes for mbedtls shipped with oe.
 // Also add the following libraries to your linker command line:
-// -loeenclave -lmbedcrypto -lmbedtls -lmbedx509
+// -loeenclave -loecrypto
 #include <mbedtls/config.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
