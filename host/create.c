@@ -876,13 +876,14 @@ static oe_result_t _InitializeEnclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_init_enclave_args_t args;
+    unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
 
     // Initialize enclave cache of CPUID info for emulation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         result = oe_get_cpuid(
             i,
-            0, // pass sub-leaf of 0 - needed for leaf 4
+            &subleaf,
             &args.cpuidTable[i][OE_CPUID_RAX],
             &args.cpuidTable[i][OE_CPUID_RBX],
             &args.cpuidTable[i][OE_CPUID_RCX],
