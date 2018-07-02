@@ -131,9 +131,9 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     printf("TestVerifyTCBInfo: Positive Test passed\n");
 
     const char* negativeFiles[] = {
-        // In the following files, a property in corresponding level starts with
-        // capital letter. JSON is case sensitive and therefore schema
-        // validation should fail.
+        // In the following files, a property in corresponding level has been
+        // capitalized. JSON is case sensitive and therefore schema validation
+        // should fail.
         "./data/tcbInfoNegativePropertyMissingLevel0.json",
         "./data/tcbInfoNegativePropertyMissingLevel1.json",
         "./data/tcbInfoNegativePropertyMissingLevel2.json",
@@ -187,7 +187,7 @@ int main(int argc, const char* argv[])
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
     {
         oe_put_err("oe_create_enclave(): result=%u", result);
-    }
+    }  
 
     /* Initialize the target info */
     {

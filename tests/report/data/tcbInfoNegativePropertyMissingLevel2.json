@@ -5,7 +5,7 @@
     "fmspc": "00906EA10000",
     "tcbLevels": [
       {
-        "Tcb": {
+        "TCB": {
           "sgxtcbcomp01svn": 4,
           "sgxtcbcomp02svn": 4,
           "sgxtcbcomp03svn": 2,
