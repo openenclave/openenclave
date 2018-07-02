@@ -233,6 +233,9 @@ static const uint8_t* readObject(
         if (p->interface.beginObject(p->data) != OE_OK)
             return end;
 
+    // Skip whitespace before first property.
+    itr = skipWS(itr, end);
+
     // read properties of the object.
     while (itr != end && *itr != '}')
     {
