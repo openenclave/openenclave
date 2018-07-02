@@ -5,6 +5,7 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/tests.h>
 #include "../args.h"
 
 char* oe_host_stack_strdup(const char* str)
@@ -17,6 +18,37 @@ char* oe_host_stack_strdup(const char* str)
         oe_memcpy(dup, str, n + 1);
 
     return dup;
+}
+
+static void _test_strdup(void)
+{
+    {
+        char* s = oe_strdup("hello");
+        OE_TEST(s != NULL);
+        OE_TEST(oe_strcmp(s, "hello") == 0);
+        oe_free(s);
+    }
+
+    {
+        char* s = oe_strdup("");
+        OE_TEST(s != NULL);
+        OE_TEST(oe_strcmp(s, "") == 0);
+        oe_free(s);
+    }
+
+    {
+        char* s = oe_strndup("hello world", 5);
+        OE_TEST(s != NULL);
+        OE_TEST(oe_strcmp(s, "hello") == 0);
+        oe_free(s);
+    }
+
+    {
+        char* s = oe_strndup("hello world", 0);
+        OE_TEST(s != NULL);
+        OE_TEST(oe_strcmp(s, "") == 0);
+        oe_free(s);
+    }
 }
 
 OE_ECALL void Echo(void* args_)
@@ -50,6 +82,8 @@ OE_ECALL void Echo(void* args_)
     oe_host_free_for_call_host(args->str3);
     oe_host_free_for_call_host(args->str2);
     oe_host_free_for_call_host(args->str1);
+
+    _test_strdup();
 
     args->ret = 0;
 }

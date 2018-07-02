@@ -402,7 +402,8 @@ char* oe_strndup(const char* s, size_t n)
         if (!(p = (char*)oe_malloc(len + 1)))
             return NULL;
 
-        oe_memcpy(p, s, len + 1);
+        oe_memcpy(p, s, len);
+        p[len] = '\0';
     }
 
     return p;
