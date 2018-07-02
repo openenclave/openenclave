@@ -648,3 +648,11 @@ int oe_vprintf(const char* fmt, oe_va_list ap_)
 done:
     return n;
 }
+
+int oe_printf(const char* format, ...)
+{
+    oe_va_list ap;
+    oe_va_start(ap, format);
+    return oe_vprintf(format, ap);
+    oe_va_end(ap);
+}
