@@ -40,12 +40,15 @@ add_library(oecore STATIC
     getkey.S
     main.S)
 
+set(ENCLAVELIBC_INCDIR
+    "${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
+
 set_source_files_properties(
     enclavelibc/malloc.c
     enclavelibc/time.c
     PROPERTIES
     COMPILE_FLAGS
-    "-I${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
+    "-I${ENCLAVELIBC_INCDIR}")
 
 target_link_libraries(oecore PUBLIC oe_includes)
 
@@ -77,3 +80,10 @@ set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oecore EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+# Target to get enclavelibc includes and definitions.
+add_library(enclavelibc INTERFACE)
+add_dependencies(enclavelibc oe_includes)
+target_include_directories(enclavelibc INTERFACE ${ENCLAVELIBC_INCDIR})
+target_compile_definitions(enclavelibc INTERFACE OE_BUILD_ENCLAVE)
+target_compile_definitions(enclavelibc INTERFACE OE_ENCLAVELIBC_NEED_STDC_NAMES)

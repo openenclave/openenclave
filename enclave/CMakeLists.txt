@@ -9,9 +9,7 @@ if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
 endif()    
 
-target_link_libraries(oeenclave PUBLIC
-    oecrypto
-    oelibc)
+target_link_libraries(oeenclave PUBLIC oecrypto)
 
 set_property(TARGET oeenclave PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
