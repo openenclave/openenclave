@@ -5,6 +5,6 @@
 #include <locale.h>
 #include <string.h>
 
+#include "__pthread_self.h"
 #define _PTHREAD_IMPL_H
 #include "../3rdparty/musl/musl/src/locale/__lctrans.c"
-#include "__pthread_self.h"

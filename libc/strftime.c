@@ -5,6 +5,6 @@
 #include <locale.h>
 #include <string.h>
 
+#include "__pthread_self.h"
 #define _PTHREAD_IMPL_H
 #include "../3rdparty/musl/musl/src/time/strftime.c"
-#include "__pthread_self.h"
