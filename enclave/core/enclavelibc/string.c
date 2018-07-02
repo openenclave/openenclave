@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 
 size_t oe_strlen(const char* s)
@@ -66,6 +67,44 @@ int oe_strncmp(const char* s1, const char* s2, size_t n)
     return *s1 - *s2;
 }
 
+OE_ENCLAVELIBC_INLINE
+char _toupper(char c)
+{
+    return (c >= 'a' || c <= 'z') ? (c - 32) : c;
+}
+
+int oe_strcasecmp(const char* s1, const char* s2)
+{
+    while ((*s1 && *s2) && (_toupper(*s1) == _toupper(*s2)))
+    {
+        s1++;
+        s2++;
+    }
+
+    return _toupper(*s1) - _toupper(*s2);
+}
+
+int oe_strncasecmp(const char* s1, const char* s2, size_t n)
+{
+    while (n && *s1 && *s2 && _toupper(*s1) == _toupper(*s2))
+    {
+        n--;
+        s1++;
+        s2++;
+    }
+
+    if (n == 0)
+        return 0;
+
+    if (!*s1)
+        return -1;
+
+    if (!*s2)
+        return 1;
+
+    return _toupper(*s1) - _toupper(*s2);
+}
+
 char* oe_strncpy(char* dest, const char* src, size_t n)
 {
     char* p = dest;
@@ -75,6 +114,42 @@ char* oe_strncpy(char* dest, const char* src, size_t n)
 
     while (n--)
         *p++ = '\0';
+
+    return dest;
+}
+
+char* oe_strcpy(char* dest, const char* src)
+{
+    char* p = dest;
+
+    while (*src)
+        *p++ = *src++;
+
+    *p = '\0';
+
+    return dest;
+}
+
+char* oe_strcat(char* dest, const char* src)
+{
+    char* p = dest + oe_strlen(dest);
+
+    while (*src)
+        *p++ += *src++;
+
+    *p = '\0';
+
+    return dest;
+}
+
+char* oe_strncat(char* dest, const char* src, size_t n)
+{
+    char* p = dest + oe_strlen(dest);
+
+    while (n-- && *src)
+        *p++ = *src++;
+
+    *p = '\0';
 
     return dest;
 }
@@ -131,6 +206,43 @@ size_t oe_strlcat(char* dest, const char* src, size_t size)
     return n;
 }
 
+char* oe_strchr(const char* s, int c)
+{
+    while (*s && *s != c)
+        s++;
+
+    if (*s == c)
+        return (char*)s;
+
+    return NULL;
+}
+
+char* oe_index(const char* s, int c)
+{
+    return oe_strchr(s, c);
+}
+
+char* oe_strrchr(const char* s, int c)
+{
+    char* p = (char*)s + oe_strlen(s);
+
+    if (c == '\0')
+        return p;
+
+    while (p != s)
+    {
+        if (*--p == c)
+            return p;
+    }
+
+    return NULL;
+}
+
+char* oe_rindex(const char* s, int c)
+{
+    return oe_strrchr(s, c);
+}
+
 char* oe_strstr(const char* haystack, const char* needle)
 {
     size_t hlen = oe_strlen(haystack);
@@ -146,17 +258,6 @@ char* oe_strstr(const char* haystack, const char* needle)
     }
 
     return NULL;
-}
-
-static void* _memcpy(void* dest, const void* src, size_t n)
-{
-    unsigned char* p = (unsigned char*)dest;
-    const unsigned char* q = (const unsigned char*)src;
-
-    while (n--)
-        *p++ = *q++;
-
-    return dest;
 }
 
 void* oe_memcpy(void* dest, const void* src, size_t n)
@@ -200,19 +301,10 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
 
 #endif
 
-    _memcpy(p, q, n);
+    while (n--)
+        *p++ = *q++;
 
     return dest;
-}
-
-static void* _memset(void* s, int c, size_t n)
-{
-    unsigned char* p = (unsigned char*)s;
-
-    while (n--)
-        *p++ = c;
-
-    return s;
 }
 
 void* oe_memset(void* s, int c, size_t n)
@@ -251,12 +343,13 @@ void* oe_memset(void* s, int c, size_t n)
 
 #endif
 
-    _memset(p, c, n);
+    while (n--)
+        *p++ = c;
 
     return s;
 }
 
-static int _memcmp(const void* s1, const void* s2, size_t n)
+int oe_memcmp(const void* s1, const void* s2, size_t n)
 {
     const unsigned char* p = (const unsigned char*)s1;
     const unsigned char* q = (const unsigned char*)s2;
@@ -272,12 +365,7 @@ static int _memcmp(const void* s1, const void* s2, size_t n)
     return 0;
 }
 
-int oe_memcmp(const void* s1, const void* s2, size_t n)
-{
-    return _memcmp(s1, s2, n);
-}
-
-static void* _memmove(void* dest, const void* src, size_t n)
+void* oe_memmove(void* dest, const void* src, size_t n)
 {
     char* p = (char*)dest;
     const char* q = (const char*)src;
@@ -296,9 +384,4 @@ static void* _memmove(void* dest, const void* src, size_t n)
     }
 
     return p;
-}
-
-void* oe_memmove(void* dest, const void* src, size_t n)
-{
-    return _memmove(dest, src, n);
 }

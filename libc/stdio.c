@@ -10,10 +10,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "../3rdparty/musl/musl/src/internal/stdio_impl.h"
+#include <openenclave/internal/enclavelibc.h>
 
-FILE* const stdin = ((FILE*)0x10000000);
-FILE* const stdout = ((FILE*)0x20000000);
-FILE* const stderr = ((FILE*)0x30000000);
+FILE* const stdin = ((FILE*)0x1000000000000001);
+FILE* const stdout = ((FILE*)0x1000000000000002);
+FILE* const stderr = ((FILE*)0x1000000000000003);
 
 int puts(const char* str)
 {
