@@ -18,7 +18,7 @@
 #define OE_INT64_MIN (-1 - 0x7fffffffffffffff)
 #define OE_INT64_MAX (0x7fffffffffffffff)
 #define OE_UINT64_MAX (0xffffffffffffffffu)
-#define OE_SIZE_MAX UINT64_MAX
+#define OE_SIZE_MAX OE_UINT64_MAX
 
 #if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
 

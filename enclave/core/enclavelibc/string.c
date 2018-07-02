@@ -388,7 +388,7 @@ void* oe_memmove(void* dest, const void* src, size_t n)
 
 char* oe_strdup(const char* s)
 {
-    return oe_strndup(s, OE_MAX_SIZE_T);
+    return oe_strndup(s, OE_SIZE_MAX);
 }
 
 char* oe_strndup(const char* s, size_t n)
