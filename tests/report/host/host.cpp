@@ -43,7 +43,7 @@ bool CheckParsedString(
 void TestVerifyTCBInfo(oe_enclave_t* enclave)
 {
     std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
-    OE_ParsedTcbInfo parsedInfo = {0};
+    oe_parsed_tcb_info_t parsedInfo = {0};
     VerifyTCBInfoArgs args = {
         &tcbInfo[0], (uint32_t)tcbInfo.size(), &parsedInfo};
 
@@ -54,74 +54,77 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     OE_TEST(parsedInfo.version == 1);
     OE_TEST(
         CheckParsedString(
-            parsedInfo.issueDate,
-            parsedInfo.issueDateSize,
+            parsedInfo.issue_date,
+            parsedInfo.issue_date_size,
             "2018-06-06T10:12:17.085Z"));
     OE_TEST(
         CheckParsedString(
-            parsedInfo.fmspc, parsedInfo.fmspcSize, "00906EA10000"));
+            parsedInfo.fmspc, parsedInfo.fmspc_size, "00906EA10000"));
 
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[0] == 4);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[1] == 4);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[2] == 2);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[3] == 4);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[4] == 1);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[5] == 128);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[6] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[7] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[8] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[9] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[10] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[11] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[12] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[13] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[14] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.sgxTCBCompSvn[15] == 0);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.pceSvn == 5);
-    OE_TEST(parsedInfo.aggregatedUpToDateTcb.status == OE_TCB_STATUS_UP_TO_DATE);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[0] == 4);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[1] == 4);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[2] == 2);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[3] == 4);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[4] == 1);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[5] == 128);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[6] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[7] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[8] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[9] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[10] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[11] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[12] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[13] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[14] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[15] == 0);
+    OE_TEST(parsedInfo.aggregated_uptodate_tcb.pce_svn == 5);
+    OE_TEST(
+        parsedInfo.aggregated_uptodate_tcb.status == OE_TCB_STATUS_UP_TO_DATE);
 
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[0] == 2);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[1] == 2);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[2] == 2);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[3] == 4);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[4] == 1);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[5] == 128);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[6] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[7] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[8] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[9] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[10] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[11] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[12] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[13] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[14] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.sgxTCBCompSvn[15] == 0);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.pceSvn == 4);
-    OE_TEST(parsedInfo.aggregatedOutOfDateTcb.status == OE_TCB_STATUS_OUT_OF_DATE);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[0] == 2);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[1] == 2);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[2] == 2);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[3] == 4);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[4] == 1);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[5] == 128);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[6] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[7] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[8] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[9] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[10] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[11] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[12] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[13] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[14] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[15] == 0);
+    OE_TEST(parsedInfo.aggregated_outofdate_tcb.pce_svn == 4);
+    OE_TEST(
+        parsedInfo.aggregated_outofdate_tcb.status ==
+        OE_TCB_STATUS_OUT_OF_DATE);
 
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[0] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[1] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[2] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[3] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[4] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[5] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[6] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[7] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[8] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[9] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[10] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[11] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[12] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[13] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[14] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.sgxTCBCompSvn[15] == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.pceSvn == 0);
-    OE_TEST(parsedInfo.aggregatedRevokedTcb.status == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[0] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[1] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[2] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[3] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[4] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[5] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[6] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[7] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[8] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[9] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[10] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[11] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[12] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[13] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[14] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[15] == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.pce_svn == 0);
+    OE_TEST(parsedInfo.aggregated_revoked_tcb.status == OE_TCB_STATUS_REVOKED);
 
     OE_TEST(
         CheckParsedString(
             parsedInfo.signature,
-            parsedInfo.signatureSize,
+            parsedInfo.signature_size,
             "62d181c4ba863213b825d1c0b66b92a3dbdb27b8ff7c7250cb2b2ab87a8f90d5e5"
             "a1416914369d8f82c56cd3d875caa54ae4b917caf4af7a93dec52067cbfd7b"));
 
@@ -147,7 +150,7 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
          ++i)
     {
         std::vector<uint8_t> tcbInfo = FileToBytes(negativeFiles[i]);
-        OE_ParsedTcbInfo parsedInfo = {0};
+        oe_parsed_tcb_info_t parsedInfo = {0};
         VerifyTCBInfoArgs args = {
             &tcbInfo[0], (uint32_t)tcbInfo.size(), &parsedInfo};
         OE_TEST(

@@ -16,23 +16,23 @@ enum
     OBJECT_ARRAY = 4
 };
 
-typedef struct _Property
+typedef struct _property
 {
     const char* name;
     uint32_t type;
-} Property;
+} property_t;
 
-typedef struct _Schema
+typedef struct _schema
 {
-    uint32_t numProperties;
-    Property properties[17];
-} Schema;
+    uint32_t num_properties;
+    property_t properties[17];
+} schema_t;
 
 #define NUM_LEVELS (4)
 #define NUM_TCB_LEVELS (3)
 #define MAX_NUM_PROPERTIES (17)
 
-static const Schema g_Schema[NUM_LEVELS] = {
+static const schema_t _schema[NUM_LEVELS] = {
     {2, {{"tcbInfo", OBJECT}, {"signature", STRING}}},
     {4,
      {{"version", NUMBER},
@@ -59,156 +59,146 @@ static const Schema g_Schema[NUM_LEVELS] = {
       {"sgxtcbcomp16svn", NUMBER},
       {"pcesvn", NUMBER}}}};
 
-typedef struct _CallbackData
+typedef struct _callback_data
 {
     // The TCB info to be validated against the JSON
-    OE_ParsedTcbInfo* parsedTcbInfo;
+    oe_parsed_tcb_info_t* parsed_tcb_info;
 
     // Current level of object
     uint32_t level;
 
     // Maximum levels seen
-    int32_t maxLevel;
+    int32_t max_level;
 
     // Current property that is being parsed in each level.
-    uint32_t currentPropertyIdx[4];
+    uint32_t current_property_idx[4];
 
     // The set of properties read in each level.
-    uint32_t propertiesSeen[NUM_LEVELS][MAX_NUM_PROPERTIES];
-    uint32_t numPropertiesSeen[NUM_LEVELS];
-    OE_Tcb currentTcb;
+    uint32_t properties_seen[NUM_LEVELS][MAX_NUM_PROPERTIES];
+    uint32_t numproperties_seen[NUM_LEVELS];
+    oe_tcb_t current_tcb;
 
-    oe_result_t schemaValidationResult;
+    oe_result_t schema_validation_result;
 
     // Index of current TCB Level. o), 1, or 2.
-    uint32_t tcbLevelIndex;
+    uint32_t tcb_level_idx;
 
-    const char* errorMessage;
-} CallbackData;
+    const char* error_message;
+} callback_data_t;
 
-static bool _IsExpectingType(CallbackData* data, uint32_t type)
+static bool _is_expecting_type(callback_data_t* data, uint32_t type)
 {
     if (data->level >= 0 && data->level <= 3)
     {
-        return g_Schema[data->level]
-                   .properties[data->currentPropertyIdx[data->level]]
+        return _schema[data->level]
+                   .properties[data->current_property_idx[data->level]]
                    .type == type;
     }
 
     return false;
 }
 
-const char* _GetCurrentPropertyName(CallbackData* data)
+const char* _get_current_property_name(callback_data_t* data)
 {
     if (data->level >= 0 && data->level <= 3)
     {
-        return g_Schema[data->level]
-            .properties[data->currentPropertyIdx[data->level]]
+        return _schema[data->level]
+            .properties[data->current_property_idx[data->level]]
             .name;
     }
 
     return "";
 }
 
-static oe_result_t _beginObject(void* vdata)
+static oe_result_t _begin_object(void* vdata)
 {
-    CallbackData* data = (CallbackData*)vdata;
+    callback_data_t* data = (callback_data_t*)vdata;
     int32_t curLevel = data->level;
 
     if (curLevel == -1)
     {
         // Processing root object
         data->level = 0;
-        data->maxLevel = 0;
+        data->max_level = 0;
         return OE_OK;
     }
     else
     {
         // Apply schema checks.
-        if (_IsExpectingType(data, OBJECT) ||
-            _IsExpectingType(data, OBJECT_ARRAY))
+        if (_is_expecting_type(data, OBJECT) ||
+            _is_expecting_type(data, OBJECT_ARRAY))
         {
-            if (oe_strcmp(_GetCurrentPropertyName(data), "tcbLevels") == 0)
+            if (oe_strcmp(_get_current_property_name(data), "tcbLevels") == 0)
             {
                 // There can at at most 3 Levels of TCB.
-                ++data->tcbLevelIndex;
-                if (data->tcbLevelIndex >= NUM_TCB_LEVELS)
+                ++data->tcb_level_idx;
+                if (data->tcb_level_idx >= NUM_TCB_LEVELS)
                     return OE_FAILURE;
             }
 
             ++data->level;
-            if (data->level > data->maxLevel)
+            if (data->level > data->max_level)
             {
-                data->maxLevel = data->level;
+                data->max_level = data->level;
             }
 
-            data->numPropertiesSeen[data->level] = 0;
+            data->numproperties_seen[data->level] = 0;
             return OE_OK;
         }
 
-        data->schemaValidationResult = OE_FAILURE;
+        data->schema_validation_result = OE_FAILURE;
         return OE_FAILURE;
     }
 }
 
-static void _AggregateTCBInfo(OE_Tcb* tcb, OE_Tcb* aggregatedTcb)
+static void _aggregate_tcb_info(oe_tcb_t* tcb, oe_tcb_t* aggregated_tcb)
 {
     // Aggregate only if the statuses match.
-    if (tcb->status != aggregatedTcb->status)
+    if (tcb->status != aggregated_tcb->status)
         return;
     // Choose the maximum value for each property.
     for (uint32_t i = 0;
-         i < sizeof(tcb->sgxTCBCompSvn) / sizeof(tcb->sgxTCBCompSvn[0]);
+         i < sizeof(tcb->sgx_tcb_comp_svn) / sizeof(tcb->sgx_tcb_comp_svn[0]);
          ++i)
     {
-        if (tcb->sgxTCBCompSvn[i] > aggregatedTcb->sgxTCBCompSvn[i])
-            aggregatedTcb->sgxTCBCompSvn[i] = tcb->sgxTCBCompSvn[i];
+        if (tcb->sgx_tcb_comp_svn[i] > aggregated_tcb->sgx_tcb_comp_svn[i])
+            aggregated_tcb->sgx_tcb_comp_svn[i] = tcb->sgx_tcb_comp_svn[i];
     }
-    if (tcb->pceSvn > aggregatedTcb->pceSvn)
-        aggregatedTcb->pceSvn = tcb->pceSvn;
+    if (tcb->pce_svn > aggregated_tcb->pce_svn)
+        aggregated_tcb->pce_svn = tcb->pce_svn;
 }
 
-static oe_result_t _endObject(void* vdata)
+static oe_result_t _end_object(void* vdata)
 {
-    CallbackData* data = (CallbackData*)vdata;
+    callback_data_t* data = (callback_data_t*)vdata;
     int level = data->level--;
 
-    if (oe_strcmp(_GetCurrentPropertyName(data), "tcbLevels") == 0)
+    if (oe_strcmp(_get_current_property_name(data), "tcbLevels") == 0)
     {
         // Aggregate the TCB info.
-        _AggregateTCBInfo(
-            &data->currentTcb, &data->parsedTcbInfo->aggregatedUpToDateTcb);
-        _AggregateTCBInfo(
-            &data->currentTcb, &data->parsedTcbInfo->aggregatedOutOfDateTcb);
-        _AggregateTCBInfo(
-            &data->currentTcb, &data->parsedTcbInfo->aggregatedRevokedTcb);
+        _aggregate_tcb_info(
+            &data->current_tcb,
+            &data->parsed_tcb_info->aggregated_uptodate_tcb);
+        _aggregate_tcb_info(
+            &data->current_tcb,
+            &data->parsed_tcb_info->aggregated_outofdate_tcb);
+        _aggregate_tcb_info(
+            &data->current_tcb, &data->parsed_tcb_info->aggregated_revoked_tcb);
 
         // Clear current TCB.
-        oe_memset(&data->currentTcb, 0, sizeof(data->currentTcb));
+        oe_memset(&data->current_tcb, 0, sizeof(data->current_tcb));
     }
 
     // Check that all expected properties have been read.
     if (level < NUM_LEVELS &&
-        data->numPropertiesSeen[level] == g_Schema[level].numProperties)
+        data->numproperties_seen[level] == _schema[level].num_properties)
         return OE_OK;
 
-    data->schemaValidationResult = OE_FAILURE;
+    data->schema_validation_result = OE_FAILURE;
     return OE_FAILURE;
 }
 
-static oe_result_t _beginArray(void* vdata)
-{
-    OE_UNUSED(vdata);
-    return OE_OK;
-}
-
-static oe_result_t _endArray(void* vdata)
-{
-    OE_UNUSED(vdata);
-    return OE_OK;
-}
-
-static bool _JsonStrEqual(
+static bool _json_str_equal(
     const char* s1,
     uint32_t len1,
     const char* s2,
@@ -219,43 +209,43 @@ static bool _JsonStrEqual(
     return (len1 == len2) && (oe_strncmp(s1, s2, len1) == 0);
 }
 
-static oe_result_t _propertyName(
+static oe_result_t _property_name(
     void* vdata,
     const uint8_t* name,
-    uint32_t nameLength)
+    uint32_t name_length)
 {
-    CallbackData* data = (CallbackData*)vdata;
+    callback_data_t* data = (callback_data_t*)vdata;
 
     // Check if it is a valid property in currently level.
-    int32_t propertyIdx = -1;
+    int32_t property_idx = -1;
     uint8_t duplicate = 0;
-    const Schema* schema = NULL;
+    const schema_t* schema = NULL;
 
     if (data->level <= 3)
     {
         // First, find a matching property.
-        schema = &g_Schema[data->level];
-        for (uint32_t i = 0; i < schema->numProperties; ++i)
+        schema = &_schema[data->level];
+        for (uint32_t i = 0; i < schema->num_properties; ++i)
         {
-            if (_JsonStrEqual(
+            if (_json_str_equal(
                     (const char*)name,
-                    nameLength,
+                    name_length,
                     schema->properties[i].name,
                     oe_strlen(schema->properties[i].name)))
             {
-                propertyIdx = i;
+                property_idx = i;
                 break;
             }
         }
 
         // Avoid duplicates.
-        if (propertyIdx != -1)
+        if (property_idx != -1)
         {
             // Since match refers to strings from the static schema, pointer
             // comparison can be used for equality.
-            for (uint32_t i = 0; i < data->numPropertiesSeen[data->level]; ++i)
+            for (uint32_t i = 0; i < data->numproperties_seen[data->level]; ++i)
             {
-                if (data->propertiesSeen[data->level][i] == propertyIdx)
+                if (data->properties_seen[data->level][i] == property_idx)
                 {
                     duplicate = 1;
                     break;
@@ -264,128 +254,130 @@ static oe_result_t _propertyName(
 
             if (!duplicate)
             {
-                data->currentPropertyIdx[data->level] = propertyIdx;
-                data->numPropertiesSeen[data->level]++;
+                data->current_property_idx[data->level] = property_idx;
+                data->numproperties_seen[data->level]++;
                 return OE_OK;
             }
         }
     }
 
-    data->schemaValidationResult = OE_FAILURE;
+    data->schema_validation_result = OE_FAILURE;
     return OE_FAILURE;
 }
 
 static oe_result_t _number(
     void* vdata,
     const uint8_t* value,
-    uint32_t valueLength)
+    uint32_t value_length)
 {
-    CallbackData* data = (CallbackData*)vdata;
-    const char* propertyName = _GetCurrentPropertyName(data);
-    OE_Tcb* tcb = &data->currentTcb;
+    callback_data_t* data = (callback_data_t*)vdata;
+    const char* property_name = _get_current_property_name(data);
+    oe_tcb_t* tcb = &data->current_tcb;
 
     // Read decimal property value.
-    uint64_t propertyValue = 0;
-    for (uint32_t i = 0; i < valueLength; ++i)
+    uint64_t property_value = 0;
+    for (uint32_t i = 0; i < value_length; ++i)
     {
-        propertyValue = (propertyValue * 10) + value[i] - '0';
+        property_value = (property_value * 10) + value[i] - '0';
     }
 
-    if (_IsExpectingType(data, NUMBER))
+    if (_is_expecting_type(data, NUMBER))
     {
         if (data->level == 1)
         {
-            if (oe_strcmp(propertyName, "version") == 0)
+            if (oe_strcmp(property_name, "version") == 0)
             {
-                OE_TRACE_INFO("TCB: version = %ld\n", propertyValue);
-                data->parsedTcbInfo->version = propertyValue;
+                OE_TRACE_INFO("TCB: version = %ld\n", property_value);
+                data->parsed_tcb_info->version = property_value;
                 return OE_OK;
             }
         }
         else if (data->level == 3)
         {
-            if (oe_strcmp(propertyName, "pcesvn") == 0)
+            if (oe_strcmp(property_name, "pcesvn") == 0)
             {
-                OE_TRACE_INFO("TCB: pcesvn = %ld\n", propertyValue);
-                tcb->pceSvn = propertyValue;
+                OE_TRACE_INFO("TCB: pcesvn = %ld\n", property_value);
+                tcb->pce_svn = property_value;
                 return OE_OK;
             }
             else
             {
                 OE_TRACE_INFO(
                     "TCB: sgxtcbcomp%dsvn = %ld\n",
-                    data->currentPropertyIdx[data->level] + 1,
-                    propertyValue);
-                tcb->sgxTCBCompSvn[data->currentPropertyIdx[data->level]] =
-                    propertyValue;
+                    data->current_property_idx[data->level] + 1,
+                    property_value);
+                tcb->sgx_tcb_comp_svn[data->current_property_idx[data->level]] =
+                    property_value;
                 return OE_OK;
             }
         }
     }
 
-    OE_TRACE_INFO("Unhandled number property: %s\n", propertyName);
+    OE_TRACE_INFO("Unhandled number property: %s\n", property_name);
     return OE_FAILURE;
 }
 
-static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t strLength)
+static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t str_length)
 {
-    CallbackData* data = (CallbackData*)vdata;
-    const char* propertyName = _GetCurrentPropertyName(data);
-    OE_Tcb* tcb = 0;
-    if (_IsExpectingType(data, STRING))
+    callback_data_t* data = (callback_data_t*)vdata;
+    const char* property_name = _get_current_property_name(data);
+    oe_tcb_t* tcb = 0;
+    if (_is_expecting_type(data, STRING))
     {
         if (data->level == 0)
         {
-            if (oe_strcmp(propertyName, "signature") == 0)
+            if (oe_strcmp(property_name, "signature") == 0)
             {
-                OE_TRACE_INFO("signature: length = %d\n", strLength);
-                // OE_TRACE_INFO("TCB: signature = %*.*s\n", strLength,
-                // strLength, str);
-                data->parsedTcbInfo->signature = str;
-                data->parsedTcbInfo->signatureSize = strLength;
+                OE_TRACE_INFO("signature: length = %d\n", str_length);
+                // OE_TRACE_INFO("TCB: signature = %*.*s\n", str_length,
+                // str_length, str);
+                data->parsed_tcb_info->signature = str;
+                data->parsed_tcb_info->signature_size = str_length;
                 return OE_OK;
             }
         }
         if (data->level == 1)
         {
-            if (oe_strcmp(propertyName, "issueDate") == 0)
+            if (oe_strcmp(property_name, "issueDate") == 0)
             {
-                OE_TRACE_INFO("issueDate: length = %d\n", strLength);
-                // OE_TRACE_INFO("TCB: date = %*.*s\n", strLength, strLength,
+                OE_TRACE_INFO("issue_date: length = %d\n", str_length);
+                // OE_TRACE_INFO("TCB: date = %*.*s\n", str_length, str_length,
                 // str);
-                data->parsedTcbInfo->issueDate = str;
-                data->parsedTcbInfo->issueDateSize = strLength;
+                data->parsed_tcb_info->issue_date = str;
+                data->parsed_tcb_info->issue_date_size = str_length;
                 return OE_OK;
             }
-            if (oe_strcmp(propertyName, "fmspc") == 0)
+            if (oe_strcmp(property_name, "fmspc") == 0)
             {
-                OE_TRACE_INFO("fmspc: length = %d\n", strLength);
-                // OE_TRACE_INFO("TCB: fmspc = %*.*s\n", strLength, strLength,
+                OE_TRACE_INFO("fmspc: length = %d\n", str_length);
+                // OE_TRACE_INFO("TCB: fmspc = %*.*s\n", str_length, str_length,
                 // str);
-                data->parsedTcbInfo->fmspc = str;
-                data->parsedTcbInfo->fmspcSize = strLength;
+                data->parsed_tcb_info->fmspc = str;
+                data->parsed_tcb_info->fmspc_size = str_length;
                 return OE_OK;
             }
         }
         if (data->level == 2)
         {
-            if (oe_strcmp(propertyName, "status") == 0)
+            if (oe_strcmp(property_name, "status") == 0)
             {
-                tcb = &data->currentTcb;
+                tcb = &data->current_tcb;
 
-                if (_JsonStrEqual((const char*)str, strLength, "Revoked", 7))
+                if (_json_str_equal((const char*)str, str_length, "Revoked", 7))
                 {
                     OE_TRACE_INFO("TCB: status = Revoked\n");
                     tcb->status = OE_TCB_STATUS_REVOKED;
                     return OE_OK;
                 }
-                if (_JsonStrEqual((const char*)str, strLength, "OutOfDate", 9))
+                if (_json_str_equal(
+                        (const char*)str, str_length, "OutOfDate", 9))
                 {
                     OE_TRACE_INFO("TCB: status = OutOfDate\n");
                     tcb->status = OE_TCB_STATUS_OUT_OF_DATE;
                     return OE_OK;
                 }
-                if (_JsonStrEqual((const char*)str, strLength, "UpToDate", 8))
+                if (_json_str_equal(
+                        (const char*)str, str_length, "UpToDate", 8))
                 {
                     OE_TRACE_INFO("TCB: status = UpToDate\n");
                     tcb->status = OE_TCB_STATUS_UP_TO_DATE;
@@ -394,59 +386,60 @@ static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t strLength)
             }
         }
     }
-    OE_TRACE_INFO("Unhandled string property: %s\n", propertyName);
+    OE_TRACE_INFO("Unhandled string property: %s\n", property_name);
     return OE_FAILURE;
 }
 
-static void _handleError(void* vdata, const char* msg)
+static void _handle_error(void* vdata, const char* msg)
 {
-    CallbackData* data = (CallbackData*)vdata;
-    data->errorMessage = msg;
+    callback_data_t* data = (callback_data_t*)vdata;
+    data->error_message = msg;
 
     OE_TRACE_ERROR("JSON parse error : %s\n", msg);
 }
 
-oe_result_t OE_ParseTCBInfo(
-    const uint8_t* tcbInfoJson,
-    uint32_t tcbInfoJsonSize,
-    OE_ParsedTcbInfo* parsedInfo)
+oe_result_t oe_parse_tcb_info_json(
+    const uint8_t* tcb_info_json,
+    uint32_t tcb_info_json_size,
+    oe_parsed_tcb_info_t* parsed_info)
 {
     oe_result_t result = OE_FAILURE;
-    CallbackData data = {0};
+    callback_data_t data = {0};
 
     OE_JsonParserCallbackInterface intf = {
-        _beginObject,
-        _endObject,
-        _beginArray,
-        _endArray,
+        _begin_object,
+        _end_object,
+        NULL, // No special validation required for arrays
+        NULL,
         _number,
         _string,
-        _propertyName,
-        _handleError,
+        _property_name,
+        _handle_error,
     };
 
-    if (parsedInfo == NULL || tcbInfoJson == NULL || tcbInfoJsonSize == 0)
+    if (parsed_info == NULL || tcb_info_json == NULL || tcb_info_json_size == 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    oe_memset(parsedInfo, 0, sizeof(*parsedInfo));
-    data.parsedTcbInfo = parsedInfo;
-    data.tcbLevelIndex = -1;
-    parsedInfo->aggregatedUpToDateTcb.status = OE_TCB_STATUS_UP_TO_DATE;
-    parsedInfo->aggregatedOutOfDateTcb.status = OE_TCB_STATUS_OUT_OF_DATE;
-    parsedInfo->aggregatedRevokedTcb.status = OE_TCB_STATUS_REVOKED;
+    oe_memset(parsed_info, 0, sizeof(*parsed_info));
+    data.parsed_tcb_info = parsed_info;
+    data.tcb_level_idx = -1;
+    parsed_info->aggregated_uptodate_tcb.status = OE_TCB_STATUS_UP_TO_DATE;
+    parsed_info->aggregated_outofdate_tcb.status = OE_TCB_STATUS_OUT_OF_DATE;
+    parsed_info->aggregated_revoked_tcb.status = OE_TCB_STATUS_REVOKED;
 
     // Not yet in root which is level 0.
     data.level = -1;
 
     // If any schema errors are detected, this
     // will be set to OE_FAILURE
-    data.schemaValidationResult = OE_OK;
+    data.schema_validation_result = OE_OK;
 
-    OE_CHECK(OE_ParseJson(tcbInfoJson, tcbInfoJsonSize, &data, &intf));
+    OE_CHECK(OE_ParseJson(tcb_info_json, tcb_info_json_size, &data, &intf));
 
     // Check that all expected levels are there and
     // no schema validation errors were found.
-    if (data.maxLevel + 1 == NUM_LEVELS && data.schemaValidationResult == OE_OK)
+    if (data.max_level + 1 == NUM_LEVELS &&
+        data.schema_validation_result == OE_OK)
     {
         result = OE_OK;
     }

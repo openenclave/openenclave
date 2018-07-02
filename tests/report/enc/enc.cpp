@@ -153,8 +153,8 @@ done:
 
 OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
 {
-    args->result = OE_ParseTCBInfo(
+    args->result = oe_parse_tcb_info_json(
         args->tcbInfo,
         args->tcbInfoSize,
-        (OE_ParsedTcbInfo*)args->parsedTcbInfo);
+        (oe_parsed_tcb_info_t*)args->parsedTcbInfo);
 }
