@@ -169,6 +169,39 @@ static void _AllocationFailureCallback(
     _calledAllocationFailureCallback = true;
 }
 
+void test_strftime(void)
+{
+    char buf[128];
+
+    const struct tm tm =
+    {
+        10, // tm_sec
+        30, // tm_min
+        12, // tm_hour
+        31, // tm_mday
+        11, // tm_mon
+        86, // tm_year
+        0, // tm_wday
+        365, // tm_yday
+        0,
+    };
+
+    size_t n = strftime(buf, sizeof(buf), "%Y", &tm);
+    OE_TEST(n == 4);
+    OE_TEST(strcmp(buf, "1986") == 0);
+
+    n = strftime(buf, sizeof(buf), "%m/%d/%Y", &tm);
+    OE_TEST(n == 10);
+    OE_TEST(strcmp(buf, "12/31/1986") == 0);
+
+    n = strftime(buf, sizeof(buf), "%H:%M:%S", &tm);
+    OE_TEST(n == 8);
+    OE_TEST(strcmp(buf, "12:30:10") == 0);
+
+    n = strftime(buf, sizeof(buf), "%A", &tm);
+    OE_TEST(strcmp(buf, "Sunday") == 0);
+}
+
 OE_ECALL void Test(void* args_)
 {
     TestArgs* args = (TestArgs*)args_;
@@ -229,4 +262,6 @@ OE_ECALL void Test(void* args_)
     void* p = malloc(1024 * 1024 * 1024);
     OE_TEST(p == NULL);
     OE_TEST(_calledAllocationFailureCallback);
+
+    test_strftime();
 }
