@@ -385,3 +385,25 @@ void* oe_memmove(void* dest, const void* src, size_t n)
 
     return p;
 }
+
+char* oe_strdup(const char* s)
+{
+    return oe_strndup(s, OE_MAX_SIZE_T);
+}
+
+char* oe_strndup(const char* s, size_t n)
+{
+    char* p = NULL;
+
+    if (s)
+    {
+        size_t len = oe_strnlen(s, n);
+
+        if (!(p = (char*)oe_malloc(len + 1)))
+            return NULL;
+
+        oe_memcpy(p, s, len + 1);
+    }
+
+    return p;
+}

@@ -50,6 +50,10 @@ size_t oe_strlcpy(char* dest, const char* src, size_t size);
 
 size_t oe_strlcat(char* dest, const char* src, size_t size);
 
+char* oe_strdup(const char* s);
+
+char* oe_strndup(const char* s, size_t n);
+
 char* oe_strerror(int errnum);
 
 int oe_strerror_r(int errnum, char* buf, size_t buflen);
@@ -180,6 +184,18 @@ OE_ENCLAVELIBC_INLINE
 size_t strlcat(char* dest, const char* src, size_t size)
 {
     return oe_strlcat(dest, src, size);
+}
+
+OE_ENCLAVELIBC_INLINE
+char* strdup(const char* s)
+{
+    return oe_strdup(s);
+}
+
+OE_ENCLAVELIBC_INLINE
+char* strndup(const char* s, size_t n)
+{
+    return oe_strndup(s, n);
 }
 
 OE_ENCLAVELIBC_INLINE
