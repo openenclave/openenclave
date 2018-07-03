@@ -402,16 +402,16 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
 
 int main(int argc, const char* argv[])
 {
-    /*if (argc != 2)
+    if (argc != 2)
     {
         fprintf(stderr, "Usage: %s ENCLAVE\n", argv[0]);
         exit(1);
     }
 
     printf("=== This program is used to test enclave abort status.\n");
-	*/
+	
     const char* enc_path = "e:\\abortStatus_enc.signed.so";
-    if (TestBasicAbort(enc_path/*argv[1]*/))
+    if (TestBasicAbort(argv[1]))
     {
         printf("Basic abort status tests passed.\n");
     }
@@ -421,7 +421,7 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-    if (TestMultipleThreadAbort(enc_path /*argv[1]*/))
+    if (TestMultipleThreadAbort(argv[1]))
     {
         printf("Multiple threads abort status tests passed.\n");
     }
