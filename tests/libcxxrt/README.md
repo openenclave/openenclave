@@ -66,3 +66,36 @@ version. With compilers that support this, such as Clang 3.8, or gcc version 6
 and above, the comparison version of the test can be compiled directly against
 system dependent libraries instead of **libcxxrt and standard library
 dependencies**.
+
+
+To test, test.cc on Windows, perform following steps in given order...
+===============================================================================
+1. Compile libcxxrt on WSL first, if openenclave folder is cloned in path
+	"${env.WSL_ROOTFS}/home/username/openenclave" then this will generate
+	libcxxrt log files in path
+	"${env.WSL_ROOTFS}/home/username/openenclave/build/tests/libcxxrt".
+
+2. Open openenclave project in Visual Studio and select Linux-Debug
+	configuration and build libcxxrt and it will generate second set
+	of libcxx log file on path
+	"${env.WSL_ROOTFS}/var/tmp/build/${workspaceHash}/build/Linux-Debug/tests/libcxxrt".
+
+3. Select x64-Debug-tests configuration and build and run libcxxrt tests...
+
+	3.1. This project will check if log files using WSL build is generated or
+	not and for that libcxxrt log files path on WSL machine should be passed
+	as cmake arguments in CMakeSettngs.js file, for ex.
+	"-DLINUX_LIBCXXRT_LOG_DIR=${env.WSL_ROOTFS}/home/username/openenclave/build/tests/libcxxrt".
+
+	3.2 After 3.1 is successful, Direct WSL build libcxxrt log files will be
+	copied to windows project binary folder and then will be compared with
+	log files generated from Visual studio Linux-Debug build, if both log files
+	are equal then test will be marked as passed, otherwise test will be
+	marked as failed.
+
+Note : Above mechanism will compare following three log files.
+	1. exp_test_exception_output.log
+	2. exp_test_guard_output.log
+	3. exp_test_typeinfo_output.log
+
+	test_foreign_exceptions.cc is tested same as Linux.

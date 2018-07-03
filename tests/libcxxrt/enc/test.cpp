@@ -20,12 +20,12 @@ void log_test(bool predicate, const char* file, int line, const char* message)
 {
     if (predicate)
     {
-        printf("Test passed: %s:%d: %s\n", file, line, message);
+        printf("Test passed: %d: %s\n", line, message);
         succeeded++;
         return;
     }
     failed++;
-    printf("Test failed: %s:%d: %s\n", file, line, message);
+    printf("Test failed: %d: %s\n", line, message);
 }
 
 static void log_totals(void)

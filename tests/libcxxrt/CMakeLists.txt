@@ -65,7 +65,30 @@ foreach(testcase ${alltests})
 
     if("${name}" STREQUAL "test_foreign_exceptions")
         add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc.signed.so)
+	else()
+
+		file(TO_NATIVE_PATH ${LINUX_LIBCXXRT_LOG_DIR}/exp_${name}_output.log linux_log_file)
+		file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/exp_${name}_output.log linux_log_file_on_windows)
+		file(TO_NATIVE_PATH ${LINUX_BIN_DIR}/libcxxrt/exp_${name}_output.log wnd_log_file)
+
+		# Check if libcxxrt log files are generated on Linux machine at
+		# given path and then copy log file from Linux machine directory to
+		# Windows project binary directory.
+		add_custom_command(OUTPUT ${name}_linux_logs
+			COMMAND ${CMAKE_COMMAND} -E copy ${linux_log_file} ${linux_log_file_on_windows}
+			DEPENDS ${linux_log_file}
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		)
+
+		# add a custom target to ALL so that this step always needs to be run if
+		# this function is invoked
+		add_custom_target(${name}.linux ALL
+			DEPENDS ${name}_linux_logs
+			)
+		add_test(tests/libcxxrt/${name}
+			${CMAKE_COMMAND} -E compare_files ${wnd_log_file} ${linux_log_file_on_windows})
+
     endif()
 endforeach(testcase)
 
-endif()
+endif()#ADD_WINDOWS_ENCLAVE_TESTS
