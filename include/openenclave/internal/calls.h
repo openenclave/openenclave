@@ -65,11 +65,11 @@ typedef enum _oe_code {
 **==============================================================================
 */
 
-/* ECALL function numbers are less than 65536 (0x10000) */
+/* ECALL function numbers are less than 32,768 */
 #define OE_ECALL_BASE 0
 
-/* OCALL function numbers are greater than 65536 (0x10000) */
-#define OE_OCALL_BASE 0x10000
+/* OCALL function numbers are greater than 32,768 */
+#define OE_OCALL_BASE 0x8000
 
 typedef enum _oe_func {
     OE_ECALL_DESTRUCTOR = OE_ECALL_BASE,
@@ -250,8 +250,8 @@ typedef struct _oe_init_enclave_args
  * Perform a low-level enclave function call (ECALL).
  *
  * This function performs a low-level enclave function call by invoking the
- * function indicated by the **func** parameter. The enclave defines and
- * registers a corresponding function with the following signature.
+ * function indicated by the **func** parameter. The enclave defines a
+ * corresponding function with the following signature.
  *
  *     void (*)(uint64_t argIn, uint64_t* argOut);
  *
@@ -296,8 +296,8 @@ oe_result_t oe_ecall(
  * Perform a low-level host function call (OCALL).
  *
  * This function performs a low-level host function call by invoking the
- * function indicated by the **func** parameter. The host defines and
- * registers a corresponding function with the following signature.
+ * function indicated by the **func** parameter. The host defines a
+ * corresponding function with the following signature.
  *
  *     void (*)(uint64_t argIn, uint64_t* argOut);
  *
