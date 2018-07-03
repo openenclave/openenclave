@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/internal/enclavelibc.h>
 
 static const unsigned short _ctype_b[384] = {
@@ -196,7 +199,7 @@ const unsigned int* __oe_ctype_tolower_loc = &_ctype_tolower[128];
 
 #if defined(OE_NEED_CTYPE_GENERATORS)
 
-void __oe_gen_ctype_b()
+void __oe_gen_ctype_b(void)
 {
     oe_printf("static const unsigned short __oe_ctype_b[384] =\n");
     oe_printf("{\n");
@@ -234,7 +237,7 @@ void __oe_gen_ctype_b()
     oe_printf("};\n");
 }
 
-void __oe_gen_ctype_toupper()
+void __oe_gen_ctype_toupper(void)
 {
     oe_printf("const unsigned int __oe_ctype_toupper[384] =\n");
     oe_printf("{\n");
@@ -247,7 +250,7 @@ void __oe_gen_ctype_toupper()
     oe_printf("};\n");
 }
 
-void __oe_gen_ctype_tolower()
+void __oe_gen_ctype_tolower(void)
 {
     oe_printf("const unsigned int __oe_ctype_tolower[384] =\n");
     oe_printf("{\n");

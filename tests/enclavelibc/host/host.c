@@ -12,7 +12,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test isalnum() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_isalnum", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)isalnum(c));
@@ -21,7 +21,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test isalpha() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_isalpha", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)isalpha(c));
@@ -30,7 +30,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test iscntrl() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_iscntrl", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)iscntrl(c));
@@ -39,7 +39,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test isdigit() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_isdigit", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)isdigit(c));
@@ -48,7 +48,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test isgraph() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_isgraph", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)isgraph(c));
@@ -57,7 +57,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test islower() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_islower", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)islower(c));
@@ -66,7 +66,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test isprint() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_isprint", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)isprint(c));
@@ -75,7 +75,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test ispunct() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_ispunct", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)ispunct(c));
@@ -84,7 +84,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test isspace() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_isspace", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)isspace(c));
@@ -93,7 +93,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test isupper() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_isupper", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)isupper(c));
@@ -102,7 +102,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test isxdigit() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_isxdigit", &args);
         OE_TEST(r == OE_OK);
         OE_TEST((bool)args.ret == (bool)isxdigit(c));
@@ -111,7 +111,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test tolower() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_tolower", &args);
         OE_TEST(r == OE_OK);
         OE_TEST(args.ret == tolower(c));
@@ -120,7 +120,7 @@ static void _test_ctype(oe_enclave_t* enclave)
     /* Test toupper() */
     for (int c = -128; c <= 255; c++)
     {
-        ctype_args_t args = { c };
+        ctype_args_t args = {c};
         oe_result_t r = oe_call_enclave(enclave, "test_toupper", &args);
         OE_TEST(r == OE_OK);
         OE_TEST(args.ret == toupper(c));

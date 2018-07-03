@@ -145,3 +145,38 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base)
 
     return x;
 }
+
+/*
+**==============================================================================
+**
+** Use the following functions to generate the _digit[] table above.
+**
+**==============================================================================
+*/
+
+#if defined(OE_NEED_STRTOUL_GENERATOR)
+
+void __oe_gen_strtoul_table(void)
+{
+    for (int i = 0; i < 256; i++)
+    {
+        if (i >= '0' && i <= '9')
+        {
+            oe_printf("0x%02x,\n", i - '0');
+        }
+        else if (i >= 'A' && i <= 'Z')
+        {
+            oe_printf("0x%02x,\n", i - 'A' + 10);
+        }
+        else if (i >= 'a' && i <= 'z')
+        {
+            oe_printf("0x%02x,\n", i - 'a' + 10);
+        }
+        else
+        {
+            oe_printf("0xFF,\n");
+        }
+    }
+}
+
+#endif /* defined(OE_NEED_STRTOUL_GENERATOR) */
