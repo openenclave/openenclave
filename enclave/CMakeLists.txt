@@ -12,7 +12,7 @@ add_library(oeenclave STATIC
     report.c
     rsa.c
     sha.c
-    main.S)
+    start.S)
 
 if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)

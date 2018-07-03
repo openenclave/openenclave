@@ -29,12 +29,12 @@ uint8_t __oe_initialized = 0;
 ** Glossary:
 **
 **     TCS      - Thread control structure. The TCS is an address passed to
-**                EENTER and passed onto the entry point (oe_main). The TCS
+**                EENTER and passed onto the entry point (_start). The TCS
 **                is the address of a TCS page in the enclave memory. This page
 **                is not accessible to the enclave itself. The enclave stores
 **                state about the execution of a thread in this structure,
 **                such as the entry point (TCS.oentry), which refers to the
-**                oe_main function. It also maintains the index of the
+**                _start function. It also maintains the index of the
 **                current SSA (TCS.cssa) and the number of SSA's (TCS.nssa).
 **
 **     TD       - Thread data. Per thread data as defined by the
@@ -87,7 +87,7 @@ uint8_t __oe_initialized = 0;
 **                EENTER.
 **
 **     CSSA     - The current SSA slot index (as given by TCS.cssa). EENTER
-**                passes a CSSA parameter (RAX) to oe_main(). A CSSA of zero
+**                passes a CSSA parameter (RAX) to _start(). A CSSA of zero
 **                indicates a normal entry. A non-zero CSSA indicates an
 **                exception entry (an AEX has occurred).
 **
@@ -446,7 +446,7 @@ oe_result_t oe_ocall(
         /* Exit, giving control back to the host so it can handle OCALL */
         _HandleExit(OE_CODE_OCALL, func, argIn);
 
-        /* Unreachable! Host will transfer control back to oe_main() */
+        /* Unreachable! Host will transfer control back to oe_enter() */
         oe_abort();
     }
     else
@@ -519,7 +519,7 @@ OE_CATCH:
 **
 ** __oe_handle_main()
 **
-**     This function is called by oe_main(), which is called by the EENTER
+**     This function is called by oe_enter(), which is called by the EENTER
 **     instruction (executed by the host). The host passes the following
 **     parameters to EENTER:
 **
@@ -528,7 +528,7 @@ OE_CATCH:
 **         RDI - ARGS1 (holds the CODE and FUNC parameters)
 **         RSI - ARGS2 (holds the pointer to the args structure)
 **
-**     EENTER then calls oe_main() with the following registers:
+**     EENTER then calls oe_enter() with the following registers:
 **
 **         RAX - CSSA - index of current SSA
 **         RBX - TCS - address of TCS
@@ -536,7 +536,7 @@ OE_CATCH:
 **         RDI - ARGS1 (holds the code and func parameters)
 **         RSI - ARGS2 (holds the pointer to the args structure)
 **
-**     Finally oe_main() calls this function with the following parameters:
+**     Finally oe_enter() calls this function with the following parameters:
 **
 **         ARGS1 (holds the code and func parameters)
 **         ARGS2 (holds the pointer to the args structure)

@@ -3,24 +3,20 @@
 
 //==============================================================================
 //
-// oe_main(): 
+// _start(): 
 //
-//     This function is the main entry point for the enclave as specified
-//     by the following linker option.
-//
-//         -Wl,-eoe_main
+//     The default entry point for the enclave image.
 //
 //==============================================================================
 
-.globl oe_main
-.type oe_main, @function
-oe_main:
+.globl _start
+.type _start, @function
+_start:
 .cfi_startproc
-    // Jump to oe_enter() in liboecore.
     jmp oe_enter
 .cfi_endproc
 
-.size oe_main, .-oe_main
+.size _start, .-_start
 
 //==============================================================================
 //

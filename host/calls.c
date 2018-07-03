@@ -114,9 +114,9 @@ static oe_result_t _EnterSim(
     if (!enclave || !enclave->addr || !tcs || !tcs->oentry || !tcs->gsbase)
         OE_THROW(OE_INVALID_PARAMETER);
 
-    tcs->u.main = (void (*)(void))(enclave->addr + tcs->oentry);
+    tcs->u.entry = (void (*)(void))(enclave->addr + tcs->oentry);
 
-    if (!tcs->u.main)
+    if (!tcs->u.entry)
         OE_THROW(OE_NOT_FOUND);
 
     /* Save old GS register base, and set new one */

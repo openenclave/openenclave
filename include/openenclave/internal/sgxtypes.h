@@ -457,8 +457,8 @@ typedef struct _sgx_tcs
     union {
         uint8_t reserved[4024];
 
-        /* (72) Enclave's oe_main() function */
-        void (*main)(void);
+        /* (72) Enclave's entry point (defaults to _start) */
+        void (*entry)(void);
     } u;
 } sgx_tcs_t;
 
@@ -475,7 +475,7 @@ OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, gsbase), 56);
 OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, fslimit), 64);
 OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, gslimit), 68);
 OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, u.reserved), 72);
-OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, u.main), 72);
+OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, u.entry), 72);
 
 /*
 **==============================================================================
