@@ -22,7 +22,6 @@ LDFLAGS += -Wl,-pie
 LIBRARIES += -L${OE_LIBDIR}/openenclave/enclave 
 LIBRARIES += -loeenclave
 LIBRARIES += -loelibcxx
-LIBRARIES += -lmbedtls
 LIBRARIES += -lmbedx509 
 LIBRARIES += -lmbedcrypto 
 LIBRARIES += -loelibc

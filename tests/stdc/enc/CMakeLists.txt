@@ -13,4 +13,4 @@ target_compile_options(stdc_enc PRIVATE
     -fno-builtin-memset
     )
 
-target_link_libraries(stdc_enc oeenclave oelibc)
+target_link_libraries(stdc_enc oelibc oeenclave)

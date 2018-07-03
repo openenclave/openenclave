@@ -37,10 +37,9 @@ uint8_t __oe_initialized = 0;
 **                _start function. It also maintains the index of the
 **                current SSA (TCS.cssa) and the number of SSA's (TCS.nssa).
 **
-**     TD       - Thread data. Per thread data as defined by the
-*oe_thread_data_t
-**                structure and extended by the TD structure. This structure
-**                records the stack pointer of the last EENTER.
+**     TD       - Thread data. Per thread data as defined by the 
+**                oe_thread_data_t structure and extended by the TD structure. 
+**                This structure records the stack pointer of the last EENTER.
 **
 **     SP       - Stack pointer. Refers to the enclave's stack pointer.
 **
