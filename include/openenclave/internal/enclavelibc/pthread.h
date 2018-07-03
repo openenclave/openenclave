@@ -7,12 +7,12 @@
 #include "bits/common.h"
 #include "time.h"
 
-#define OE_PTHREAD_MUTEX_INITIALIZER \
-    {                                \
-        {                            \
-            0                        \
-        }                            \
-    }
+// clang-format off
+#define OE_PTHREAD_MUTEX_INITIALIZER {{0}}
+#define OE_PTHREAD_RWLOCK_INITIALIZER {{0}}
+#define OE_PTHREAD_COND_INITIALIZER {{0}}
+#define OE_ONCE_INIT 0
+// clang-format on
 
 typedef uint64_t oe_pthread_t;
 
