@@ -1,0 +1,641 @@
+/*
+ * Copyright (C) 2011-2018 Intel Corporation. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of Intel Corporation nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+ 
+ /*
+ * Types: struct, enum, union 
+ * 
+ * Combination: [in], [out], [int, out], [user_check], [size], [count]
+ *              [readonly], [isptr], [isary], [string], [wstring], const
+ * 
+ */
+
+enclave {
+    struct Foo {
+        unsigned int a;
+    };
+    struct MyStruct {
+        int       a1;
+        short int a2;
+        long int  a3;
+
+        unsigned int       b1;
+        unsigned short int b2;
+        unsigned long  int b3;
+
+        unsigned       c1;
+        unsigned short c2;
+        unsigned long  c3;
+
+        short d1;
+        long  d2;
+
+        long long          e1;
+        unsigned long long e2;
+
+        char          f1;
+        unsigned char f2;
+
+        long double   g;
+        float f[8];
+
+        char *s;
+        struct Foo foo;
+    };
+    enum MyEnum {
+        ONE=1,
+        TWO=2
+    };
+    union MyUnion {
+        int    x;
+        char   y;
+        double z;
+    };
+
+    trusted {
+        public MyStruct* ecall_struct(struct MyStruct s1,
+                                      [user_check] const MyStruct* p1,
+                                      [out, size=len2] MyStruct* p2, size_t len2,
+                                      [in, count=cnt3] const MyStruct** p3, size_t cnt3,
+                                      [in, out, string] char* p4,
+                                      [in, out] MyStruct s2[8][5],
+                                      [in] MyStruct* p5,
+                                      MyEnum s3,
+                                      [out, size=len6] MyUnion* p6, size_t len6);
+
+        /* struct */
+        public struct MyStruct ecall_struct_0(struct MyStruct s);
+        public struct MyStruct ecall_struct_1(MyStruct s);
+
+        /* struct pointers */
+        public struct MyStruct ecall_struct_2([user_check]    MyStruct* p);
+        public struct MyStruct ecall_struct_3([in]            MyStruct* p);
+        public struct MyStruct ecall_struct_4([out]           MyStruct* p);
+        public struct MyStruct ecall_struct_5([in, out]       MyStruct* p);
+        public struct MyStruct ecall_struct_6([out, size=len] MyStruct* p, size_t len);
+        public struct MyStruct ecall_struct_7([in, count=cnt] MyStruct* p, size_t cnt);
+        public struct MyStruct ecall_struct_8([in, out, size=len, count=cnt] MyStruct* p, size_t len, size_t cnt);
+        public struct MyStruct ecall_struct_9([in]      const MyStruct* p);
+
+        /* struct pointer pointer */
+        public struct MyStruct ecall_struct_21([user_check]    MyStruct** p);
+        public struct MyStruct ecall_struct_22([in]            MyStruct** p);
+        public struct MyStruct ecall_struct_23([out]           MyStruct** p);
+        public struct MyStruct ecall_struct_24([in, out]       MyStruct** p);
+        public struct MyStruct ecall_struct_25([out, size=len] MyStruct** p, size_t len);
+        public struct MyStruct ecall_struct_26([in, count=cnt] MyStruct** p, size_t cnt);
+        public struct MyStruct ecall_struct_27([in, out, size=len, count=cnt] MyStruct** p, size_t len, size_t cnt);
+        public struct MyStruct ecall_struct_28([in]      const MyStruct** p);
+
+        /* struct arrays */
+        public struct MyStruct ecall_struct_38([in, out]                        MyStruct s[8]);
+        public struct MyStruct ecall_struct_39([in, out]                        MyStruct s[8][5]);
+
+        /* struct with [isary][isptr] */
+        /* edger8r can generate the code, but build error */
+        /*
+         * public struct MyStruct ecall_struct_72([in, isary]          MyStruct s);
+         * public struct MyStruct ecall_struct_73([in, isptr]          MyStruct s);
+         * public struct MyStruct ecall_struct_74([in,  isptr, size=3] MyStruct s);
+         * public struct MyStruct ecall_struct_75([out, isptr, count=4]MyStruct s);
+         */
+
+        /* enum */
+        public enum MyEnum ecall_enum_0(enum MyEnum s);
+        public enum MyEnum ecall_enum_1(MyEnum s);
+        public enum MyEnum ecall_enum_2([user_check]    MyEnum* p);
+        public enum MyEnum ecall_enum_3([in]            MyEnum* p);
+        public enum MyEnum ecall_enum_4([out]           MyEnum* p);
+        public enum MyEnum ecall_enum_5([in, out]       MyEnum* p);
+        public enum MyEnum ecall_enum_6([out, size=len] MyEnum* p, size_t len);
+        public enum MyEnum ecall_enum_7([in, count=cnt] MyEnum* p, size_t cnt);
+        public enum MyEnum ecall_enum_8([in, out, size=len, count=cnt] MyEnum* p, size_t len, size_t cnt);
+        public enum MyEnum ecall_enum_9([in]      const MyEnum* p);
+
+        /* union */
+        public union MyUnion ecall_union_0(union MyUnion s);
+        public union MyUnion ecall_union_1(MyUnion s);
+        public union MyUnion ecall_union_2([user_check]    MyUnion* p);
+        public union MyUnion ecall_union_3([in]            MyUnion* p);
+        public union MyUnion ecall_union_4([out]           MyUnion* p);
+        public union MyUnion ecall_union_5([in, out]       MyUnion* p);
+        public union MyUnion ecall_union_6([out, size=len] MyUnion* p, size_t len);
+        public union MyUnion ecall_union_7([in, count=cnt] MyUnion* p, size_t cnt);
+        public union MyUnion ecall_union_8([in, out, size=len, count=cnt] MyUnion* p, size_t len, size_t cnt);
+        public union MyUnion ecall_union_9([in]      const MyUnion* p);
+
+        /* invalid syntax */
+
+        /* ---------------------------- */
+        /* Pointer array is not allowed */
+        /* ---------------------------- */
+        // public struct MyStruct ecall_struct_43([isptr, in, out] MyStruct s[8]);
+        // Edger8r: error: `ecall_struct_43': Pointer array not allowed - `s' is a pointer array.
+
+        // public struct MyStruct ecall_struct_44([isptr, in, out] MyStruct s[8][5]);
+        // Edger8r: error: `ecall_struct_44': Pointer array not allowed - `s' is a pointer array.
+
+        // public struct MyStruct ecall_struct_55([in, out] MyStruct* p[8]);
+        // Edger8r: error: `ecall_struct_55': Pointer array not allowed - `p' is a pointer array.
+
+        // public struct MyStruct ecall_struct_56([in, out] MyStruct* p[8][5]);
+        // Edger8r: error: `ecall_struct_56': Pointer array not allowed - `p' is a pointer array.
+
+        /* ------------------------------------------------------------------ */
+        /* [isptr][isary] cannot be used for exlicitly declared pointer/array */
+        /* ------------------------------------------------------------------ */
+        // public struct MyStruct ecall_struct_11([in, isptr] MyStruct* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_12([in, isary] MyStruct* p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_13([in, isary] MyStruct**p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyStruct**'.
+
+        // public struct MyStruct ecall_struct_15([isptr, in, count=3] MyStruct* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_16([isptr, in, out, size=12] MyStruct* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_17([isptr, out, size=12, count=3] MyStruct* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_30([in, isptr] MyStruct** p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct**'.
+
+        // public struct MyStruct ecall_struct_32([isptr, in, count=3] MyStruct** p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct**'.
+
+        // public struct MyStruct ecall_struct_33([isptr, in, out, size=12] MyStruct** p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct**'.
+
+        // public struct MyStruct ecall_struct_34([isptr, out, size=12, count=3] MyStruct** p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct**'.
+
+        // public struct MyStruct ecall_struct_48([isary, in, out] MyStruct s[8]);
+        // Edger8r: error: `ecall_struct_48': invalid 'isary' attribute - `s' is explicitly declared array.
+
+        // public struct MyStruct ecall_struct_49([isary, in, out] MyStruct s[8][5]);
+        // Edger8r: error: `ecall_struct_49': invalid 'isary' attribute - `s' is explicitly declared array.
+
+        // public struct MyStruct ecall_struct_60([isptr, in, out] MyStruct* p[8]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_61([isptr, in, out] MyStruct* p[8][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_65([isary, in, out] MyStruct* p[8]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_66([isary, in, out] MyStruct* p[8][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public enum MyEnum ecall_enum_11([in, isptr] MyEnum* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyEnum*'.
+
+        // public enum MyEnum ecall_enum_12([in, isary] MyEnum* p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyEnum*'.
+
+        // public enum MyEnum ecall_enum_13([in, isary] MyEnum**p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyEnum**'.
+
+        // public union MyUnion ecall_union_11([in, isptr] MyUnion* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyUnion*'.
+
+        // public union MyUnion ecall_union_12([in, isary] MyUnion* p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyUnion*'.
+
+        // public union MyUnion ecall_union_13([in, isary] MyUnion**p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyUnion**'.
+
+        /* -----------------------------------------*/
+        /* [readonly] can only be used with [isptr] */
+        /* 'const' can be used for pointer type     */
+        /* -----------------------------------------*/
+        // public struct MyStruct ecall_struct_10([in, readonly] MyStruct* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_18([readonly, in, count=3] MyStruct* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_19([readonly, in, size=12] MyStruct* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_20([readonly, in, size=12, count=3] MyStruct* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_29([in, readonly] MyStruct** p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_35([readonly, in, count=3] MyStruct** p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_36([readonly, in, size=12] MyStruct** p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_37([readonly, in, size=12, count=3] MyStruct** p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_50([readonly, in] MyStruct s[8]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_51([readonly, in] MyStruct s[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_67([readonly, in] MyStruct* p[8]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_68([readonly, in] MyStruct* p[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public enum MyEnum ecall_enum_10([in, readonly] MyEnum* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public union MyUnion ecall_union_10([in, readonly] MyUnion* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        /* -------------------------------------------------------*/
+        /* [string] [wstring] attribute cannot be used for struct */
+        /* -------------------------------------------------------*/
+
+        // public struct MyStruct ecall_struct_14([in, string] MyStruct* p, [in, wstring] MyStruct *q);
+        // Edger8r: error: `ecall_struct_14': invalid 'string' attribute - `p' is not char pointer.
+
+        // public struct MyStruct ecall_struct_31([in, string] MyStruct** p, [in, wstring] MyStruct **q);
+        // Edger8r: error: `ecall_struct_31': invalid 'string' attribute - `p' is not char pointer.
+
+        // public enum MyEnum ecall_enum_14([in, string] MyEnum* p, [in, wstring] MyEnum *q);
+        // Edger8r: error: `ecall_enum_14': invalid 'string' attribute - `p' is not char pointer.
+
+        // public union MyUnion ecall_union_14([in, string] MyUnion* p, [in, wstring] MyUnion *q);
+        // Edger8r: error: `ecall_union_14': invalid 'string' attribute - `p' is not char pointer.
+
+        /* --------------------------------------------------*/
+        /* [size] [count] attribute cannot be used for array */
+        /* --------------------------------------------------*/
+
+        // public struct MyStruct ecall_struct_40([in, count=3] MyStruct s[8]);
+        // Edger8r: error: `ecall_struct_40': invalid 'count' attribute - `s' is explicitly declared array.
+
+        // public struct MyStruct ecall_struct_41([out, size=12] MyStruct s[8][5]);
+        // Edger8r: error: `ecall_struct_41': invalid 'size' attribute - `s' is explicitly declared array.
+
+        // public struct MyStruct ecall_struct_42([out, size=12, count=3] MyStruct s[8][5]);
+        // Edger8r: error: `ecall_struct_42': invalid 'size' attribute - `s' is explicitly declared array.
+
+        // public struct MyStruct ecall_struct_45([isptr, in, count=3] MyStruct s[8]);
+        // Edger8r: error: `ecall_struct_45': Pointer array not allowed - `s' is a pointer array.
+
+        // public struct MyStruct ecall_struct_46([isptr, out, size=12] MyStruct s[8][5]);
+        // Edger8r: error: `ecall_struct_46': Pointer array not allowed - `s' is a pointer array.
+
+        // public struct MyStruct ecall_struct_47([isptr, out, size=12, count=3] MyStruct s[8][5]);
+        // Edger8r: error: `ecall_struct_47': Pointer array not allowed - `s' is a pointer array.
+
+        // public struct MyStruct ecall_struct_52([readonly, in, count=3] MyStruct s[8]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_53([readonly, in, size=12] MyStruct s[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_54([readonly, in, size=12, count=3] MyStruct s[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_57([in, count=3] MyStruct* p[8]);
+        // Edger8r: error: `ecall_struct_57': Pointer array not allowed - `p' is a pointer array.
+
+        // public struct MyStruct ecall_struct_58([out, size=12] MyStruct* p[8][5]);
+        // Edger8r: error: `ecall_struct_58': Pointer array not allowed - `p' is a pointer array.
+
+        // public struct MyStruct ecall_struct_59([out, size=12, count=3] MyStruct* p[8][5]);
+        // Edger8r: error: `ecall_struct_59': Pointer array not allowed - `p' is a pointer array.
+
+        // public struct MyStruct ecall_struct_62([isptr, in, count=3] MyStruct* p[8]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_63([isptr, out, size=12] MyStruct* p[8][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_64([isptr, out, size=12, count=3] MyStruct* p[8][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // public struct MyStruct ecall_struct_69([readonly, in, count=3] MyStruct* p[8]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_70([readonly, in, size=12] MyStruct* p[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // public struct MyStruct ecall_struct_71([readonly, in, size=12, count=3] MyStruct* p[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+    };
+
+    untrusted {
+        MyStruct* ocall_struct(struct MyStruct s1,
+                               [user_check] const MyStruct* p1,
+                               [out, size=len2] MyStruct* p2, size_t len2,
+                               [in, count=cnt3] const MyStruct** p3, size_t cnt3,
+                               [in, out, string] char* p4,
+                               [in, out] MyStruct s2[8][5],
+                               [in] MyStruct* p5,
+                               MyEnum s3,
+                               [out, size=len6] MyUnion* p6, size_t len6);
+
+        /* struct */
+        MyStruct  ocall_struct_0(struct MyStruct s);
+        MyStruct  ocall_struct_1(MyStruct s);
+        MyStruct  ocall_struct_2([user_check]    MyStruct* p);
+        MyStruct  ocall_struct_3([in]            MyStruct* p);
+        MyStruct  ocall_struct_4([out]           MyStruct* p);
+        MyStruct  ocall_struct_5([in, out]       MyStruct* p);
+        MyStruct  ocall_struct_6([out, size=len] MyStruct* p, size_t len);
+        MyStruct  ocall_struct_7([in, count=cnt] MyStruct* p, size_t cnt);
+        MyStruct  ocall_struct_8([in, out, size=len, count=cnt] MyStruct* p, size_t len, size_t cnt);
+        MyStruct  ocall_struct_9([in]      const MyStruct* p);
+
+        /* struct pointer pointer */
+        struct MyStruct ocall_struct_21([user_check]    MyStruct** p);
+        struct MyStruct ocall_struct_22([in]            MyStruct** p);
+        struct MyStruct ocall_struct_23([out]           MyStruct** p);
+        struct MyStruct ocall_struct_24([in, out]       MyStruct** p);
+        struct MyStruct ocall_struct_25([out, size=len] MyStruct** p, size_t len);
+        struct MyStruct ocall_struct_26([in, count=cnt] MyStruct** p, size_t cnt);
+        struct MyStruct ocall_struct_27([in, out, size=len, count=cnt] MyStruct** p, size_t len, size_t cnt);
+        struct MyStruct ocall_struct_28([in]      const MyStruct** p);
+
+        /* struct arrays */
+        struct MyStruct ocall_struct_38([in, out]                        MyStruct s[8]);
+        struct MyStruct ocall_struct_39([in, out]                        MyStruct s[8][5]);
+
+        /* struct with [isary][isptr] */
+        /* edger8r can generate the code, but build error */
+        /*
+         * struct MyStruct ocall_struct_72([in, isary]          MyStruct s);
+         * struct MyStruct ocall_struct_73([in, isptr]          MyStruct s);
+         * struct MyStruct ocall_struct_74([in,  isptr, size=3] MyStruct s);
+         * struct MyStruct ocall_struct_75([out, isptr, count=4]MyStruct s);
+         */
+
+        /* enum */
+        MyEnum ocall_enum_0(enum MyEnum s);
+        MyEnum ocall_enum_1(MyEnum s);
+        MyEnum ocall_enum_2([user_check]    MyEnum* p);
+        MyEnum ocall_enum_3([in]            MyEnum* p);
+        MyEnum ocall_enum_4([out]           MyEnum* p);
+        MyEnum ocall_enum_5([in, out]       MyEnum* p);
+
+        MyEnum ocall_enum_6([out, size=len] MyEnum* p, size_t len);
+        MyEnum ocall_enum_7([in, count=cnt] MyEnum* p, size_t cnt);
+        MyEnum ocall_enum_8([in, out, size=len, count=cnt] MyEnum* p, size_t len, size_t cnt);
+        MyEnum ocall_enum_9([in]      const MyEnum* p);
+
+        /* union */
+        MyUnion ocall_union_0(union MyUnion s);
+        MyUnion ocall_union_1(MyUnion s);
+        MyUnion ocall_union_2([user_check]    MyUnion* p);
+        MyUnion ocall_union_3([in]            MyUnion* p);
+        MyUnion ocall_union_4([out]           MyUnion* p);
+        MyUnion ocall_union_5([in, out]       MyUnion* p);
+        MyUnion ocall_union_6([out, size=len] MyUnion* p, size_t len);
+        MyUnion ocall_union_7([in, count=cnt] MyUnion* p, size_t cnt);
+        MyUnion ocall_union_8([in, out, size=len, count=cnt] MyUnion* p, size_t len, size_t cnt);
+        MyUnion ocall_union_9([in]      const MyUnion* p);
+
+        /* invalid syntax */
+
+        /* ---------------------------- */
+        /* Pointer array is not allowed */
+        /* ---------------------------- */
+        // struct MyStruct ocall_struct_43([isptr, in, out] MyStruct s[8]);
+        // Edger8r: error: `ocall_struct_43': Pointer array not allowed - `s' is a pointer array.
+
+        // struct MyStruct ocall_struct_44([isptr, in, out] MyStruct s[8][5]);
+        // Edger8r: error: `ocall_struct_44': Pointer array not allowed - `s' is a pointer array.
+
+        // struct MyStruct ocall_struct_55([in, out] MyStruct* p[8]);
+        // Edger8r: error: `ocall_struct_55': Pointer array not allowed - `p' is a pointer array.
+
+        // struct MyStruct ocall_struct_56([in, out] MyStruct* p[8][5]);
+        // Edger8r: error: `ocall_struct_56': Pointer array not allowed - `p' is a pointer array.
+
+        /* ------------------------------------------------------------------ */
+        /* [isptr][isary] cannot be used for exlicitly declared pointer/array */
+        /* ------------------------------------------------------------------ */
+        // struct MyStruct ocall_struct_11([in, isptr] MyStruct* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_12([in, isary] MyStruct* p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_13([in, isary] MyStruct**p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyStruct**'.
+
+        // struct MyStruct ocall_struct_15([isptr, in, count=3] MyStruct* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_16([isptr, in, out, size=12] MyStruct* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_17([isptr, out, size=12, count=3] MyStruct* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_30([in, isptr] MyStruct** p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct**'.
+
+        // struct MyStruct ocall_struct_32([isptr, in, count=3] MyStruct** p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct**'.
+
+        // struct MyStruct ocall_struct_33([isptr, in, out, size=12] MyStruct** p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct**'.
+
+        // struct MyStruct ocall_struct_34([isptr, out, size=12, count=3] MyStruct** p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct**'.
+
+        // struct MyStruct ocall_struct_48([isary, in, out] MyStruct s[8]);
+        // Edger8r: error: `ocall_struct_48': invalid 'isary' attribute - `s' is explicitly declared array.
+
+        // struct MyStruct ocall_struct_49([isary, in, out] MyStruct s[8][5]);
+        // Edger8r: error: `ocall_struct_49': invalid 'isary' attribute - `s' is explicitly declared array.
+
+        // struct MyStruct ocall_struct_60([isptr, in, out] MyStruct* p[8]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_61([isptr, in, out] MyStruct* p[8][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_65([isary, in, out] MyStruct* p[8]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_66([isary, in, out] MyStruct* p[8][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyStruct*'.
+
+        // enum MyEnum ocall_enum_11([in, isptr] MyEnum* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyEnum*'.
+
+        // enum MyEnum ocall_enum_12([in, isary] MyEnum* p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyEnum*'.
+
+        // enum MyEnum ocall_enum_13([in, isary] MyEnum**p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyEnum**'.
+
+        // union MyUnion ocall_union_11([in, isptr] MyUnion* p);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyUnion*'.
+
+        // union MyUnion ocall_union_12([in, isary] MyUnion* p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyUnion*'.
+
+        // union MyUnion ocall_union_13([in, isary] MyUnion**p);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `MyUnion**'.
+
+        /* -----------------------------------------*/
+        /* [readonly] can only be used with [isptr] */
+        /* 'const' can be used for pointer type     */
+        /* -----------------------------------------*/
+        // struct MyStruct ocall_struct_10([in, readonly] MyStruct* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_18([readonly, in, count=3] MyStruct* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_19([readonly, in, size=12] MyStruct* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_20([readonly, in, size=12, count=3] MyStruct* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_29([in, readonly] MyStruct** p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_35([readonly, in, count=3] MyStruct** p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_36([readonly, in, size=12] MyStruct** p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_37([readonly, in, size=12, count=3] MyStruct** p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_50([readonly, in] MyStruct s[8]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_51([readonly, in] MyStruct s[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_67([readonly, in] MyStruct* p[8]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_68([readonly, in] MyStruct* p[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // enum MyEnum ocall_enum_10([in, readonly] MyEnum* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // union MyUnion ocall_union_10([in, readonly] MyUnion* p);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        /* -------------------------------------------------------*/
+        /* [string] [wstring] attribute cannot be used for struct */
+        /* -------------------------------------------------------*/
+
+        // struct MyStruct ocall_struct_14([in, string] MyStruct* p, [in, wstring] MyStruct *q);
+        // Edger8r: error: `ocall_struct_14': invalid 'string' attribute - `p' is not char pointer.
+
+        // struct MyStruct ocall_struct_31([in, string] MyStruct** p, [in, wstring] MyStruct **q);
+        // Edger8r: error: `ocall_struct_31': invalid 'string' attribute - `p' is not char pointer.
+
+        // enum MyEnum ocall_enum_14([in, string] MyEnum* p, [in, wstring] MyEnum *q);
+        // Edger8r: error: `ocall_enum_14': invalid 'string' attribute - `p' is not char pointer.
+
+        // union MyUnion ocall_union_14([in, string] MyUnion* p, [in, wstring] MyUnion *q);
+        // Edger8r: error: `ocall_union_14': invalid 'string' attribute - `p' is not char pointer.
+
+        /* --------------------------------------------------*/
+        /* [size] [count] attribute cannot be used for array */
+        /* --------------------------------------------------*/
+
+        // struct MyStruct ocall_struct_40([in, count=3] MyStruct s[8]);
+        // Edger8r: error: `ocall_struct_40': invalid 'count' attribute - `s' is explicitly declared array.
+
+        // struct MyStruct ocall_struct_41([out, size=12] MyStruct s[8][5]);
+        // Edger8r: error: `ocall_struct_41': invalid 'size' attribute - `s' is explicitly declared array.
+
+        // struct MyStruct ocall_struct_42([out, size=12, count=3] MyStruct s[8][5]);
+        // Edger8r: error: `ocall_struct_42': invalid 'size' attribute - `s' is explicitly declared array.
+
+        // struct MyStruct ocall_struct_45([isptr, in, count=3] MyStruct s[8]);
+        // Edger8r: error: `ocall_struct_45': Pointer array not allowed - `s' is a pointer array.
+
+        // struct MyStruct ocall_struct_46([isptr, out, size=12] MyStruct s[8][5]);
+        // Edger8r: error: `ocall_struct_46': Pointer array not allowed - `s' is a pointer array.
+
+        // struct MyStruct ocall_struct_47([isptr, out, size=12, count=3] MyStruct s[8][5]);
+        // Edger8r: error: `ocall_struct_47': Pointer array not allowed - `s' is a pointer array.
+
+        // struct MyStruct ocall_struct_52([readonly, in, count=3] MyStruct s[8]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_53([readonly, in, size=12] MyStruct s[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_54([readonly, in, size=12, count=3] MyStruct s[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_57([in, count=3] MyStruct* p[8]);
+        // Edger8r: error: `ocall_struct_57': Pointer array not allowed - `p' is a pointer array.
+
+        // struct MyStruct ocall_struct_58([out, size=12] MyStruct* p[8][5]);
+        // Edger8r: error: `ocall_struct_58': Pointer array not allowed - `p' is a pointer array.
+
+        // struct MyStruct ocall_struct_59([out, size=12, count=3] MyStruct* p[8][5]);
+        // Edger8r: error: `ocall_struct_59': Pointer array not allowed - `p' is a pointer array.
+
+        // struct MyStruct ocall_struct_62([isptr, in, count=3] MyStruct* p[8]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_63([isptr, out, size=12] MyStruct* p[8][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_64([isptr, out, size=12, count=3] MyStruct* p[8][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `MyStruct*'.
+
+        // struct MyStruct ocall_struct_69([readonly, in, count=3] MyStruct* p[8]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_70([readonly, in, size=12] MyStruct* p[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+        // struct MyStruct ocall_struct_71([readonly, in, size=12, count=3] MyStruct* p[8][5]);
+        // Edger8r: error: 'readonly' attribute is only used with 'isptr' attribute.
+
+    };
+
+};

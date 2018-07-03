@@ -1,0 +1,157 @@
+/*
+ * Copyright (C) 2011-2018 Intel Corporation. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of Intel Corporation nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+ 
+ /*
+ * Keywords: [string],[wstring]
+ * 
+ * Combination: [in],[int,out],const,[readonly],[isptr]
+ *
+ * Conflicts: [out],[user_check],[count],[size],[isary]
+ * 
+ */
+enclave {
+    trusted {
+        public int ecall_string([string, in] const char* s1,
+                                [wstring, in, out] wchar_t *s2,
+                                [out, size=len] char* s3, size_t len);
+
+        public int ecall_string_1([string, in]            char* s);
+        public int ecall_string_2([string, in, out]       char* s);
+        public int ecall_string_3([string, in]      const char* s);
+
+        public int ecall_wstring_1([wstring, in]            wchar_t* s);
+        public int ecall_wstring_2([wstring, in, out]       wchar_t* s);
+        public int ecall_wstring_3([wstring, in]      const wchar_t* s);
+
+        /* invalid syntax */
+
+        /* ------------------------------------------------------------------*/
+        /* [string]  attribute can only be used for 'char *' type            */
+        /* [wstring] attribute can only be used for 'wchar_t *' type         */
+        /* ------------------------------------------------------------------*/
+        // public int ecall_string_6([string, in, out] wchar_t* s);
+        // Edger8r: error: `ecall_string_6': invalid 'string' attribute - `s' is not char pointer.
+
+        // public int ecall_wstring_6([wstring, in, out] char* s);
+        // Edger8r: error: `ecall_wstring_6': invalid 'wstring' attribute - `s' is not wchar_t pointer.
+
+        /* --------------------------------------------------------------- */
+        /* [string], [wstring] conflicts with                              */
+        /*    [out],[user_check],[count],[size],[isary],[isptr],[readonly] */
+        /* --------------------------------------------------------------- */
+        // public int ecall_string_invalid_1([string, out] char *s);
+        // Edger8r: error: string/wstring should be used with an `in' attribute
+
+        // public int ecall_string_invalid_2([string, user_check] char *s);
+        // Edger8r: error: size/string attributes must be used with pointer direction
+
+        // public int ecall_string_invalid_3([string, in, count=10] char *s);
+        // Edger8r: error: size attributes are mutual exclusive with (w)string attribute
+
+        // public int ecall_string_invalid_3([string, in, size=10] char *s);
+        // Edger8r: error: size attributes are mutual exclusive with (w)string attribute
+
+        // public int ecall_string_invalid_3([string, in, isary] char *s);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `char*'.
+
+        // public int ecall_string_5([string, in, out, isptr]char* s);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `char*'.
+
+        // public int ecall_wstring_5([wstring, in, out, isptr]wchar_t* s);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `wchar_t*'.
+
+        // public int ecall_string_4([string, in, readonly] char* s);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `char*'.
+
+        // public int ecall_wstring_4([wstring, in, readonly] wchar_t* s);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `wchar_t*'.
+
+    };
+    untrusted {
+        int ocall_string([string, in] const char* s1,
+                         [wstring, in, out] wchar_t *s2,
+                         [out, size=len] char* s3, size_t len);
+
+        int ocall_string_1([string, in]            char* s);
+        int ocall_string_2([string, in, out]       char* s);
+        int ocall_string_3([string, in]      const char* s);
+
+        int ocall_wstring_1([wstring, in]            wchar_t* s);
+        int ocall_wstring_2([wstring, in, out]       wchar_t* s);
+        int ocall_wstring_3([wstring, in]      const wchar_t* s);
+
+        /* invalid syntax */
+
+        /* ------------------------------------------------------------------*/
+        /* [string]  attribute can only be used for 'char *' type            */
+        /* [wstring] attribute can only be used for 'wchar_t *' type         */
+        /* ------------------------------------------------------------------*/
+        // int ocall_string_6([string, in, out] wchar_t* s);
+        // Edger8r: error: `ocall_string_6': invalid 'string' attribute - `s' is not char pointer.
+
+        // int ocall_wstring_6([wstring, in, out] char* s);
+        // Edger8r: error: `ocall_wstring_6': invalid 'wstring' attribute - `s' is not wchar_t pointer.
+
+        /* --------------------------------------------------------------- */
+        /* [string], [wstring] conflicts with                              */
+        /*    [out],[user_check],[count],[size],[isary],[isptr],[readonly] */
+        /* --------------------------------------------------------------- */
+        // int ocall_string_invalid_1([string, out] char *s);
+        // Edger8r: error: string/wstring should be used with an `in' attribute
+
+        // int ocall_string_invalid_2([string, user_check] char *s);
+        // Edger8r: error: size/string attributes must be used with pointer direction
+
+        // int ocall_string_invalid_3([string, in, count=10] char *s);
+        // Edger8r: error: size attributes are mutual exclusive with (w)string attribute
+
+        // int ocall_string_invalid_3([string, in, size=10] char *s);
+        // Edger8r: error: size attributes are mutual exclusive with (w)string attribute
+
+        // int ocall_string_invalid_3([string, in, isary] char *s);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `char*'.
+
+        // int ocall_string_5([string, in, out, isptr]char* s);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `char*'.
+
+        // int ocall_wstring_5([wstring, in, out, isptr] wchar_t* s);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `wchar_t*'.
+
+        // int ocall_string_4([string, in, readonly] char* s);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `char*'.
+
+        // int ocall_wstring_4([wstring, in, readonly] wchar_t* s);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `wchar_t*'.
+
+    };
+
+};
+

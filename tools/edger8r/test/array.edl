@@ -1,0 +1,406 @@
+/*
+ * Copyright (C) 2011-2018 Intel Corporation. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of Intel Corporation nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+ 
+ /*
+ * Type: array
+ *
+ * Combination: [in], [out], [int, out], [user_check], const, [readonly]
+ * 
+ * Conflict: [size], [count], [isptr], [isary], [string], [wstring]
+ *
+ */
+enclave {
+    trusted {
+        long long ecall_array([in, out]              int p1[24],
+                              [out]                  float p2[25][2],
+                              [in, count=cnt]  const double *p3, size_t cnt,
+                              [in, count=8, size=len]long long *p4, size_t len,
+                              [in, wstring]    const wchar_t *p5);
+
+        /* 1-D array */
+        public int ecall_array_1_1([in]                     int ptr[4]);
+        public int ecall_array_1_2([out]                    int ptr[4]);
+        public int ecall_array_1_3([in, out]                int ptr[4]);
+        public int ecall_array_1_4([user_check]             int ptr[4]);
+
+        /* 2-D array */
+        public int ecall_array_2_1([in]                     int ptr[4][5]);
+        public int ecall_array_2_2([out]                    int ptr[4][5]);
+        public int ecall_array_2_3([in, out]                int ptr[4][5]);
+        public int ecall_array_2_4([user_check]             int ptr[4][5]);
+
+        /* invalid syntax */
+
+        /* ---------------------------- */
+        /* Pointer array is not allowed */
+        /* ---------------------------- */
+        // public int ecall_array_1p_1([in] int *ptr[4]);
+        // Edger8r: error: `ecall_array_1p_1': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_1p_2([out] int *ptr[4]);
+        // Edger8r: error: `ecall_array_1p_2': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_1p_3([in, out] int *ptr[4]);
+        // Edger8r: error: `ecall_array_1p_3': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_1p_4([user_check] int *ptr[4]);
+        // Edger8r: error: `ecall_array_1p_4': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_1p_12([in] const int *ptr[4]);
+        // Edger8r: error: `ecall_array_1p_12': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_2p_1([in] int *ptr[4][5]);
+        // Edger8r: error: `ecall_array_2p_1': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_2p_2([out] int *ptr[4][5]);
+        // Edger8r: error: `ecall_array_2p_2': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_2p_3([in, out] int *ptr[4][5]);
+        // Edger8r: error: `ecall_array_2p_3': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_2p_4([user_check] int *ptr[4][5]);
+        // Edger8r: error: `ecall_array_2p_4': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_2p_12([in] const int *ptr[4][5]);
+        // Edger8r: error: `ecall_array_2p_12': Pointer array not allowed - `ptr' is a pointer array.
+
+
+        /* -----------------------------------------*/
+        /* [readonly] can only be used with [isptr] */
+        /* 'const' can be used for pointer type     */
+        /* -----------------------------------------*/
+
+        // public int ecall_array_1_5([in, readonly] int ptr[4]);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_2_5([in, readonly] int ptr[4][5]);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_1p_5([in, readonly] int *ptr[4]);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `int*'.
+
+        // public int ecall_array_2p_5([in, readonly] int *ptr[4][5]);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `int*'.
+
+        /* --------------------------------------------------*/
+        /* [size] [count] attribute cannot be used for array */
+        /* --------------------------------------------------*/
+
+        // public int ecall_array_1_9([in, size=len] int ptr[4], size_t len);
+        // Edger8r: error: `ecall_array_1_9': invalid 'size' attribute - `ptr' is explicitly declared array.
+
+        // public int ecall_array_1_10([in, count=8] int ptr[4]);
+        // Edger8r: error: `ecall_array_1_10': invalid 'count' attribute - `ptr' is explicitly declared array.
+
+        // public int ecall_array_1_11([in, count=8, size=len] int ptr[4], size_t len);
+        // Edger8r: error: `ecall_array_1_11': invalid 'size' attribute - `ptr' is explicitly declared array.
+
+        // public int ecall_array_2_9([in, size=len] int ptr[4][5], size_t len);
+        // Edger8r: error: `ecall_array_2_9': invalid 'size' attribute - `ptr' is explicitly declared array.
+
+        // public int ecall_array_2_10([in, count=8] int ptr[4][5]);
+        // Edger8r: error: `ecall_array_2_10': invalid 'count' attribute - `ptr' is explicitly declared array.
+
+        // public int ecall_array_2_11([in, count=8, size=len] int ptr[4][5], size_t len);
+        // Edger8r: error: `ecall_array_2_11': invalid 'size' attribute - `ptr' is explicitly declared array.
+
+        // public int ecall_array_1p_9([in, size=len] int *ptr[4], size_t len);
+        // Edger8r: error: `ecall_array_1p_9': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_1p_10([in, count=8] int *ptr[4]);
+        // Edger8r: error: `ecall_array_1p_10': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_1p_11([in, count=8, size=len] int *ptr[4], size_t len);
+        // Edger8r: error: `ecall_array_1p_11': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_2p_9([in, size=len] int *ptr[4][5], size_t len);
+        // Edger8r: error: `ecall_array_2p_9': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_2p_10([in, count=8] int *ptr[4][5]);
+        // Edger8r: error: `ecall_array_2p_10': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_2p_11([in, count=8, size=len] int *ptr[4][5], size_t len);
+        // Edger8r: error: `ecall_array_2p_11': Pointer array not allowed - `ptr' is a pointer array.
+
+        /* ----------------------------------------------------------*/
+        /* [string] [wstring] attribute cannot be used for int array */
+        /* ----------------------------------------------------------*/
+
+        // public int ecall_array_1_8([in, string] int ptr[4]);
+        // Edger8r: error: `ecall_array_1_8': invalid 'string' attribute - `ptr' is not char pointer.
+
+        // public int ecall_array_2_8([in, string] int ptr[4][5]);
+        // Edger8r: error: `ecall_array_2_8': invalid 'string' attribute - `ptr' is not char pointer.
+
+        // public int ecall_array_1p_8([in, wstring] int *ptr[4]);
+        // Edger8r: error: `ecall_array_1p_8': Pointer array not allowed - `ptr' is a pointer array.
+
+        // public int ecall_array_2p_8([in, wstring] int *ptr[4][5]);
+        // Edger8r: error: `ecall_array_2p_8': Pointer array not allowed - `ptr' is a pointer array.
+
+        /* ------------------------------------------------------*/
+        /* [isary][isptr] attribute cannot be used for int array */
+        /* ------------------------------------------------------*/
+
+        // public int ecall_array_1_6([in, isary] int ptr[4]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_1_7([in, isptr] int ptr[4]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_2_6([in, isary] int ptr[4][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_2_7([in, isptr] int ptr[4][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_1p_6([in, isary] int *ptr[4]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int*'.
+
+        // public int ecall_array_1p_7([in, isptr] int *ptr[4]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int*'.
+
+        // public int ecall_array_2p_6([in, isary] int *ptr[4][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int*'.
+
+        // public int ecall_array_2p_7([in, isptr] int *ptr[4][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int*'.
+
+        // public int ecall_array_1_12([user_check, isptr] int ptr[4]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_1_13([user_check, isary] int ptr[4]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_2_12([user_check, isptr] int ptr[4][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_2_13([user_check, isary] int ptr[4][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int'.
+
+        // public int ecall_array_1p_13([user_check, isptr] int *ptr[4]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int*'.
+
+        // public int ecall_array_1p_14([user_check, isary] int *ptr[4]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int*'.
+
+        // public int ecall_array_2p_13([user_check, isptr] int *ptr[4][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int*'.
+
+        // public int ecall_array_2p_14([user_check, isary] int *ptr[4][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int*'.
+
+    };
+
+    untrusted {
+        long long ocall_array([in, out]              int p1[24],
+                              [out]                  float p2[25][2],
+                              [in, count=cnt]  const double *p3, size_t cnt,
+                              [in, count=8, size=len]long long *p4, size_t len,
+                              [in, wstring]    const wchar_t *p5)
+                              allow(ecall_array);
+
+        /* 1-D array */
+        int ocall_array_1_1([in]                     int ptr[4]);
+        int ocall_array_1_2([out]                    int ptr[4]);
+        int ocall_array_1_3([in, out]                int ptr[4]);
+        int ocall_array_1_4([user_check]             int ptr[4]);
+
+        /* 2-D array */
+        int ocall_array_2_1([in]                     int ptr[4][5]);
+        int ocall_array_2_2([out]                    int ptr[4][5]);
+        int ocall_array_2_3([in, out]                int ptr[4][5]);
+        int ocall_array_2_4([user_check]             int ptr[4][5]);
+
+        /* invalid syntax */
+
+        /* ---------------------------- */
+        /* Pointer array is not allowed */
+        /* ---------------------------- */
+        // int ocall_array_1p_1([in] int *ptr[4]);
+        // Edger8r: error: `ocall_array_1p_1': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_1p_2([out] int *ptr[4]);
+        // Edger8r: error: `ocall_array_1p_2': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_1p_3([in, out] int *ptr[4]);
+        // Edger8r: error: `ocall_array_1p_3': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_1p_4([user_check] int *ptr[4]);
+        // Edger8r: error: `ocall_array_1p_4': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_1p_12([in] const int *ptr[4]);
+        // Edger8r: error: `ocall_array_1p_12': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_2p_1([in] int *ptr[4][5]);
+        // Edger8r: error: `ocall_array_2p_1': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_2p_2([out] int *ptr[4][5]);
+        // Edger8r: error: `ocall_array_2p_2': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_2p_3([in, out] int *ptr[4][5]);
+        // Edger8r: error: `ocall_array_2p_3': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_2p_4([user_check] int *ptr[4][5]);
+        // Edger8r: error: `ocall_array_2p_4': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_2p_12([in] const int *ptr[4][5]);
+        // Edger8r: error: `ocall_array_2p_12': Pointer array not allowed - `ptr' is a pointer array.
+
+
+        /* -----------------------------------------*/
+        /* [readonly] can only be used with [isptr] */
+        /* 'const' can be used for pointer type     */
+        /* -----------------------------------------*/
+
+        // int ocall_array_1_5([in, readonly] int ptr[4]);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_2_5([in, readonly] int ptr[4][5]);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_1p_5([in, readonly] int *ptr[4]);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `int*'.
+
+        // int ocall_array_2p_5([in, readonly] int *ptr[4][5]);
+        // Edger8r: error: 'readonly', attributes are only for user defined type, not for `int*'.
+
+        /* --------------------------------------------------*/
+        /* [size] [count] attribute cannot be used for array */
+        /* --------------------------------------------------*/
+
+        // int ocall_array_1_9([in, size=len] int ptr[4], size_t len);
+        // Edger8r: error: `ocall_array_1_9': invalid 'size' attribute - `ptr' is explicitly declared array.
+
+        // int ocall_array_1_10([in, count=8] int ptr[4]);
+        // Edger8r: error: `ocall_array_1_10': invalid 'count' attribute - `ptr' is explicitly declared array.
+
+        // int ocall_array_1_11([in, count=8, size=len] int ptr[4], size_t len);
+        // Edger8r: error: `ocall_array_1_11': invalid 'size' attribute - `ptr' is explicitly declared array.
+
+        // int ocall_array_2_9([in, size=len] int ptr[4][5], size_t len);
+        // Edger8r: error: `ocall_array_2_9': invalid 'size' attribute - `ptr' is explicitly declared array.
+
+        // int ocall_array_2_10([in, count=8] int ptr[4][5]);
+        // Edger8r: error: `ocall_array_2_10': invalid 'count' attribute - `ptr' is explicitly declared array.
+
+        // int ocall_array_2_11([in, count=8, size=len] int ptr[4][5], size_t len);
+        // Edger8r: error: `ocall_array_2_11': invalid 'size' attribute - `ptr' is explicitly declared array.
+
+        // int ocall_array_1p_9([in, size=len] int *ptr[4], size_t len);
+        // Edger8r: error: `ocall_array_1p_9': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_1p_10([in, count=8] int *ptr[4]);
+        // Edger8r: error: `ocall_array_1p_10': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_1p_11([in, count=8, size=len] int *ptr[4], size_t len);
+        // Edger8r: error: `ocall_array_1p_11': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_2p_9([in, size=len] int *ptr[4][5], size_t len);
+        // Edger8r: error: `ocall_array_2p_9': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_2p_10([in, count=8] int *ptr[4][5]);
+        // Edger8r: error: `ocall_array_2p_10': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_2p_11([in, count=8, size=len] int *ptr[4][5], size_t len);
+        // Edger8r: error: `ocall_array_2p_11': Pointer array not allowed - `ptr' is a pointer array.
+
+        /* ----------------------------------------------------------*/
+        /* [string] [wstring] attribute cannot be used for int array */
+        /* ----------------------------------------------------------*/
+
+        // int ocall_array_1_8([in, string] int ptr[4]);
+        // Edger8r: error: `ocall_array_1_8': invalid 'string' attribute - `ptr' is not char pointer.
+
+        // int ocall_array_2_8([in, string] int ptr[4][5]);
+        // Edger8r: error: `ocall_array_2_8': invalid 'string' attribute - `ptr' is not char pointer.
+
+        // int ocall_array_1p_8([in, wstring] int *ptr[4]);
+        // Edger8r: error: `ocall_array_1p_8': Pointer array not allowed - `ptr' is a pointer array.
+
+        // int ocall_array_2p_8([in, wstring] int *ptr[4][5]);
+        // Edger8r: error: `ocall_array_2p_8': Pointer array not allowed - `ptr' is a pointer array.
+
+        /* ------------------------------------------------------*/
+        /* [isary][isptr] attribute cannot be used for int array */
+        /* ------------------------------------------------------*/
+
+        // int ocall_array_1_6([in, isary] int ptr[4]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_1_7([in, isptr] int ptr[4]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_2_6([in, isary] int ptr[4][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_2_7([in, isptr] int ptr[4][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_1p_6([in, isary] int *ptr[4]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int*'.
+
+        // int ocall_array_1p_7([in, isptr] int *ptr[4]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int*'.
+
+        // int ocall_array_2p_6([in, isary] int *ptr[4][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int*'.
+
+        // int ocall_array_2p_7([in, isptr] int *ptr[4][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int*'.
+
+        // int ocall_array_1_12([user_check, isptr] int ptr[4]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_1_13([user_check, isary] int ptr[4]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_2_12([user_check, isptr] int ptr[4][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_2_13([user_check, isary] int ptr[4][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int'.
+
+        // int ocall_array_1p_13([user_check, isptr] int *ptr[4]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int*'.
+
+        // int ocall_array_1p_14([user_check, isary] int *ptr[4]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int*'.
+
+        // int ocall_array_2p_13([user_check, isptr] int *ptr[4][5]);
+        // Edger8r: error: 'isptr', attributes are only for user defined type, not for `int*'.
+
+        // int ocall_array_2p_14([user_check, isary] int *ptr[4][5]);
+        // Edger8r: error: 'isary', attributes are only for user defined type, not for `int*'.
+
+    };
+
+};
