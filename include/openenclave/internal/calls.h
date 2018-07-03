@@ -65,33 +65,38 @@ typedef enum _oe_code {
 **==============================================================================
 */
 
-/* The first 65535 (0xffff) numbers are reserved for user defined calls */
-#define OE_FUNC_BASE ((uint32_t)0x00010000)
+/* ECALL function numbers are less than 65536 (0x10000) */
+#define OE_ECALL_BASE 0
+
+/* OCALL function numbers are greater than 65536 (0x10000) */
+#define OE_OCALL_BASE 0x10000
 
 typedef enum _oe_func {
-    OE_FUNC_DESTRUCTOR = OE_FUNC_BASE + 0,
-    OE_FUNC_INIT_ENCLAVE = OE_FUNC_BASE + 1,
-    OE_FUNC_CALL_ENCLAVE = OE_FUNC_BASE + 2,
-    OE_FUNC_CALL_HOST = OE_FUNC_BASE + 3,
-    OE_FUNC_GET_REPORT = OE_FUNC_BASE + 5,
-    OE_FUNC_GET_QE_TARGET_INFO = OE_FUNC_BASE + 6,
-    OE_FUNC_GET_QUOTE = OE_FUNC_BASE + 7,
-    OE_FUNC_THREAD_WAKE = OE_FUNC_BASE + 8,
-    OE_FUNC_THREAD_WAIT = OE_FUNC_BASE + 9,
-    OE_FUNC_THREAD_WAKE_WAIT = OE_FUNC_BASE + 10,
-    OE_FUNC_MALLOC = OE_FUNC_BASE + 11,
-    OE_FUNC_REALLOC = OE_FUNC_BASE + 12,
-    OE_FUNC_FREE = OE_FUNC_BASE + 13,
-    OE_FUNC_PUTS = OE_FUNC_BASE + 14,
-    OE_FUNC_PUTCHAR = OE_FUNC_BASE + 15,
-    OE_FUNC_PRINT = OE_FUNC_BASE + 16,
-    OE_FUNC_STRFTIME = OE_FUNC_BASE + 17,
-    OE_FUNC_GETTIMEOFDAY = OE_FUNC_BASE + 18,
-    OE_FUNC_CLOCK_GETTIME = OE_FUNC_BASE + 19,
-    OE_FUNC_NANOSLEEP = OE_FUNC_BASE + 20,
-    OE_FUNC_VIRTUAL_EXCEPTION_HANDLER = OE_FUNC_BASE + 21,
-    OE_FUNC_VERIFY_REPORT = OE_FUNC_BASE + 22,
-    /* Caution: always add new function numbers immediately before this line */
+    OE_ECALL_DESTRUCTOR = OE_ECALL_BASE,
+    OE_ECALL_INIT_ENCLAVE,
+    OE_ECALL_CALL_ENCLAVE,
+    OE_ECALL_VERIFY_REPORT,
+    OE_ECALL_GET_REPORT,
+    /* Caution: always add new ECALL function numbers here */
+
+    OE_OCALL_CALL_HOST,
+    OE_OCALL_GET_QE_TARGET_INFO,
+    OE_OCALL_GET_QUOTE,
+    OE_OCALL_THREAD_WAKE,
+    OE_OCALL_THREAD_WAIT,
+    OE_OCALL_THREAD_WAKE_WAIT,
+    OE_OCALL_MALLOC,
+    OE_OCALL_REALLOC,
+    OE_OCALL_FREE,
+    OE_OCALL_PUTS,
+    OE_OCALL_PUTCHAR,
+    OE_OCALL_PRINT,
+    OE_OCALL_STRFTIME,
+    OE_OCALL_GETTIMEOFDAY,
+    OE_OCALL_CLOCK_GETTIME,
+    OE_OCALL_NANOSLEEP,
+    OE_OCALL_VIRTUAL_EXCEPTION_HANDLER,
+    /* Caution: always add new OCALL function numbers here */
 } oe_func_t;
 
 #define OE_EXCEPTION_CONTINUE_SEARCH 0x0
@@ -333,6 +338,8 @@ oe_result_t oe_ocall(
     uint64_t argIn,
     uint64_t* argOut,
     uint32_t ocall_flags);
+
+#if 0
 /**
  * Registers a low-level ECALL function.
  *
@@ -378,6 +385,7 @@ oe_result_t oe_register_ecall(uint32_t func, oe_ecall_function ecall);
  *
  */
 oe_result_t oe_register_ocall(uint32_t func, oe_ocall_function ocall);
+#endif
 
 OE_EXTERNC_END
 

@@ -56,7 +56,7 @@ static void _HostSignalHandler(int sigNum, siginfo_t* sigInfo, void* sigData)
         // Call into enclave first pass exception handler.
         uint64_t argOut = 0;
         oe_result_t result =
-            oe_ecall(enclave, OE_FUNC_VIRTUAL_EXCEPTION_HANDLER, 0, &argOut);
+            oe_ecall(enclave, OE_OCALL_VIRTUAL_EXCEPTION_HANDLER, 0, &argOut);
 
         // Reset the flag
         thread_data->flags &= (~_OE_THREAD_HANDLING_EXCEPTION);

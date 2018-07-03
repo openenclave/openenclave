@@ -51,7 +51,7 @@ int gettimeofday(struct timeval* tv, void* tz)
         args->tz = NULL;
 
     if (oe_ocall(
-            OE_FUNC_GETTIMEOFDAY,
+            OE_OCALL_GETTIMEOFDAY,
             (uint64_t)args,
             NULL,
             OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
@@ -92,7 +92,7 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
     OE_STATIC_ASSERT(sizeof(clockid_t) == sizeof(int32_t));
 
     if (oe_ocall(
-            OE_FUNC_CLOCK_GETTIME,
+            OE_OCALL_CLOCK_GETTIME,
             (uint64_t)args,
             NULL,
             OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
@@ -131,7 +131,7 @@ size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
     memcpy(&a->tm, tm, sizeof(struct tm));
 
     if (oe_ocall(
-            OE_FUNC_STRFTIME, (uint64_t)a, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
+            OE_OCALL_STRFTIME, (uint64_t)a, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
         OE_OK)
         goto done;
 
@@ -181,7 +181,7 @@ int nanosleep(const struct timespec* req, struct timespec* rem)
         args->rem = &args->rembuf;
 
     if (oe_ocall(
-            OE_FUNC_NANOSLEEP,
+            OE_OCALL_NANOSLEEP,
             (uint64_t)args,
             NULL,
             OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)

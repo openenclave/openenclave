@@ -116,7 +116,7 @@ uint8_t __oe_initialized = 0;
 **
 ** _HandleInitEnclave()
 **
-**     Handle the OE_FUNC_INIT_ENCLAVE from host and ensures that each state
+**     Handle the OE_ECALL_INIT_ENCLAVE from host and ensures that each state
 **     initialization function in the enclave only runs once.
 **
 **==============================================================================
@@ -294,8 +294,8 @@ static void _HandleECall(
         // Global constructors can throw exceptions/signals and result in signal
         // handlers being invoked. Eg. Using CPUID instruction within a global
         // constructor. We should also allow handling these exceptions.
-        if (func != OE_FUNC_INIT_ENCLAVE &&
-            func != OE_FUNC_VIRTUAL_EXCEPTION_HANDLER)
+        if (func != OE_ECALL_INIT_ENCLAVE &&
+            func != OE_OCALL_VIRTUAL_EXCEPTION_HANDLER)
         {
             goto Exit;
         }
@@ -303,7 +303,7 @@ static void _HandleECall(
     else
     {
         // Disallow re-initialization.
-        if (func == OE_FUNC_INIT_ENCLAVE)
+        if (func == OE_ECALL_INIT_ENCLAVE)
         {
             goto Exit;
         }
@@ -320,12 +320,12 @@ static void _HandleECall(
     /* Dispatch the ECALL */
     switch (func)
     {
-        case OE_FUNC_CALL_ENCLAVE:
+        case OE_ECALL_CALL_ENCLAVE:
         {
             argOut = _HandleCallEnclave(argIn);
             break;
         }
-        case OE_FUNC_DESTRUCTOR:
+        case OE_ECALL_DESTRUCTOR:
         {
             /* Call functions installed by __cxa_atexit() and oe_atexit() */
             oe_call_at_exit_functions();
@@ -334,22 +334,22 @@ static void _HandleECall(
             oe_call_fini_functions();
             break;
         }
-        case OE_FUNC_VIRTUAL_EXCEPTION_HANDLER:
+        case OE_OCALL_VIRTUAL_EXCEPTION_HANDLER:
         {
             _oe_virtual_exception_dispatcher(td, argIn, &argOut);
             break;
         }
-        case OE_FUNC_INIT_ENCLAVE:
+        case OE_ECALL_INIT_ENCLAVE:
         {
             _HandleInitEnclave(argIn);
             break;
         }
-        case OE_FUNC_GET_REPORT:
+        case OE_ECALL_GET_REPORT:
         {
             argOut = _HandleGetReport(argIn);
             break;
         }
-        case OE_FUNC_VERIFY_REPORT:
+        case OE_ECALL_VERIFY_REPORT:
         {
             oe_handle_verify_report(argIn, &argOut);
             break;
@@ -501,7 +501,7 @@ oe_result_t oe_call_host(const char* func, void* argsIn)
     }
 
     /* Call into the host */
-    OE_TRY(oe_ocall(OE_FUNC_CALL_HOST, (int64_t)args, NULL, 0));
+    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST, (int64_t)args, NULL, 0));
 
     /* Check the result */
     OE_TRY(args->result);
@@ -622,11 +622,11 @@ void __oe_handle_main(
             break;
 
         case OE_ENCLAVE_ABORTING:
-            // Block any ECALL except first time OE_FUNC_DESTRUCTOR call.
+            // Block any ECALL except first time OE_ECALL_DESTRUCTOR call.
             // Don't block ORET here.
             if (code == OE_CODE_ECALL)
             {
-                if (func == OE_FUNC_DESTRUCTOR)
+                if (func == OE_ECALL_DESTRUCTOR)
                 {
                     // Termination function should be only called once.
                     __oe_enclave_status = OE_ENCLAVE_ABORTED;
@@ -682,7 +682,7 @@ void __oe_handle_main(
     else /* cssa > 0 */
     {
         if ((code == OE_CODE_ECALL) &&
-            (func == OE_FUNC_VIRTUAL_EXCEPTION_HANDLER))
+            (func == OE_OCALL_VIRTUAL_EXCEPTION_HANDLER))
         {
             _HandleECall(td, func, argIn, outputArg1, outputArg2);
             return;

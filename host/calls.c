@@ -310,6 +310,7 @@ static void _HandleCallHost(uint64_t arg)
 **==============================================================================
 */
 
+#if 0
 static oe_ocall_function _ocalls[OE_MAX_OCALLS];
 static oe_mutex _ocalls_lock = OE_H_MUTEX_INITIALIZER;
 
@@ -332,6 +333,7 @@ OE_CATCH:
     oe_mutex_unlock(&_ocalls_lock);
     return result;
 }
+#endif
 
 /*
 **==============================================================================
@@ -360,72 +362,72 @@ static oe_result_t _HandleOCALL(
 
     switch ((oe_func_t)func)
     {
-        case OE_FUNC_CALL_HOST:
+        case OE_OCALL_CALL_HOST:
             _HandleCallHost(argIn);
             break;
 
-        case OE_FUNC_MALLOC:
+        case OE_OCALL_MALLOC:
             HandleMalloc(argIn, argOut);
             break;
 
-        case OE_FUNC_REALLOC:
+        case OE_OCALL_REALLOC:
             HandleRealloc(argIn, argOut);
             break;
 
-        case OE_FUNC_FREE:
+        case OE_OCALL_FREE:
             HandleFree(argIn);
             break;
 
-        case OE_FUNC_PUTS:
+        case OE_OCALL_PUTS:
             HandlePuts(argIn);
             break;
 
-        case OE_FUNC_PRINT:
+        case OE_OCALL_PRINT:
             HandlePrint(argIn);
             break;
 
-        case OE_FUNC_PUTCHAR:
+        case OE_OCALL_PUTCHAR:
             HandlePutchar(argIn);
             break;
 
-        case OE_FUNC_THREAD_WAIT:
+        case OE_OCALL_THREAD_WAIT:
             HandleThreadWait(enclave, argIn);
             break;
 
-        case OE_FUNC_THREAD_WAKE:
+        case OE_OCALL_THREAD_WAKE:
             HandleThreadWake(enclave, argIn);
             break;
 
-        case OE_FUNC_THREAD_WAKE_WAIT:
+        case OE_OCALL_THREAD_WAKE_WAIT:
             HandleThreadWakeWait(enclave, argIn);
             break;
 
-        case OE_FUNC_GET_QUOTE:
+        case OE_OCALL_GET_QUOTE:
             HandleGetQuote(argIn);
             break;
 
-        case OE_FUNC_GET_QE_TARGET_INFO:
+        case OE_OCALL_GET_QE_TARGET_INFO:
             HandleGetQETargetInfo(argIn);
             break;
 
-        case OE_FUNC_STRFTIME:
+        case OE_OCALL_STRFTIME:
             HandleStrftime(argIn);
             break;
 
-        case OE_FUNC_GETTIMEOFDAY:
+        case OE_OCALL_GETTIMEOFDAY:
             HandleGettimeofday(argIn);
             break;
 
-        case OE_FUNC_CLOCK_GETTIME:
+        case OE_OCALL_CLOCK_GETTIME:
             HandleClockgettime(argIn);
             break;
 
-        case OE_FUNC_NANOSLEEP:
+        case OE_OCALL_NANOSLEEP:
             HandleNanosleep(argIn);
             break;
 
-        case OE_FUNC_DESTRUCTOR:
-        case OE_FUNC_CALL_ENCLAVE:
+        case OE_ECALL_DESTRUCTOR:
+        case OE_ECALL_CALL_ENCLAVE:
             assert("Invalid OCALL" == NULL);
             break;
 
@@ -769,7 +771,7 @@ oe_result_t oe_call_enclave(oe_enclave_t* enclave, const char* func, void* args)
         OE_TRY(
             oe_ecall(
                 enclave,
-                OE_FUNC_CALL_ENCLAVE,
+                OE_ECALL_CALL_ENCLAVE,
                 (uint64_t)&callEnclaveArgs,
                 &argOut));
         OE_TRY(argOut);
