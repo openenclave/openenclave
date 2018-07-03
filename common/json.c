@@ -13,52 +13,40 @@ typedef struct _OE_JsonParser
     const char* errorMsg;
 } OE_JsonParser;
 
-// Character classification primitives implemented here to avoid dependency nf
-// libc.
+// Character classification primitives implemented here
+// to avoid dependency on libc.
 
-// Based on:
-//   3rdparty/musl/musl/src/ctype/isalpha.c
-OE_INLINE uint8_t isAlpha(uint8_t c)
+OE_INLINE uint8_t _IsAlpha(uint8_t c)
 {
-    // Use unsigned arithmetic to avoid checking lower bound.
-    // Convert to lower case and check.
-    uint32_t lower = (uint32_t)c | 32;
-    return (lower - 'a') < 26;
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-// Based on:
-//   3rdparty/musl/musl/src/ctype/isdigit.c
-OE_INLINE uint8_t isDigit(uint8_t c)
+OE_INLINE uint8_t _IsDigit(uint8_t c)
 {
-    // Use unsigned arithmetic to avoid checking lower bound.
-    uint32_t uc = c;
-    return (uc - '0') < 10;
+    return (c >= '0' && c <= '9');
 }
 
-// Based on:
-//   3rdparty/musl/musl/src/ctype/isalnum.c
-OE_INLINE uint8_t isAlnum(uint8_t c)
+OE_INLINE uint8_t _IsAlnum(uint8_t c)
 {
-    return isAlpha(c) || isDigit(c);
+    return _IsAlpha(c) || _IsDigit(c);
 }
 
-// Based on:
-//   3rdparty/musl/musl/src/ctype/isspace.c
-OE_INLINE uint8_t isSpace(uint8_t c)
+OE_INLINE uint8_t _IsSpace(uint8_t c)
 {
-    // Use unsigned arithmetic to avoid checking lower bound.
-    return ((c == ' ') || ((uint32_t)c - '\t' < 5));
+    return (
+        c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' ||
+        c == '\r');
 }
 
 // Skip white space
-static const uint8_t* skipWS(const uint8_t* itr, const uint8_t* end)
+static const uint8_t* _SkipWS(const uint8_t* itr, const uint8_t* end)
 {
-    while (itr != end && isSpace(*itr))
+    while (itr != end && _IsSpace(*itr))
         ++itr;
     return itr;
 }
 
-static const uint8_t* reportError(
+static const uint8_t* _ReportError(
     OE_JsonParser* p,
     const char* msg,
     const uint8_t* end)
@@ -74,33 +62,33 @@ static const uint8_t* reportError(
 }
 
 // Expect a given character
-static const uint8_t* expect(
+static const uint8_t* _Expect(
     OE_JsonParser* p,
     uint8_t ch,
     const uint8_t* itr,
     const uint8_t* end)
 {
-    itr = skipWS(itr, end);
+    itr = _SkipWS(itr, end);
 
     if (itr == end)
-        return reportError(p, "Unexpected end of input.", end);
+        return _ReportError(p, "Unexpected end of input.", end);
 
     if (*itr != ch)
-        return reportError(p, "Expected char not found.", end);
+        return _ReportError(p, "Expected char not found.", end);
 
     // skip character and any whitespace trailing it
-    skipWS(++itr, end);
+    _SkipWS(++itr, end);
     return itr;
 }
 
-static const uint8_t* readQuotedString(
+static const uint8_t* _ReadQuotedString(
     OE_JsonParser* p,
     const uint8_t* itr,
     const uint8_t* end)
 {
     if (itr == end || (*itr != '"' && *itr != '\''))
     {
-        return reportError(p, "Expecting a '\"'.", end);
+        return _ReportError(p, "Expecting a '\"'.", end);
     }
 
     uint8_t quote = *itr++;
@@ -110,29 +98,29 @@ static const uint8_t* readQuotedString(
         if (*itr == '\\')
         {
             if (++itr + 1 == end)
-                return reportError(p, "Unclosed string", end);
+                return _ReportError(p, "Unclosed string", end);
         }
         ++itr;
     }
 
-    return expect(p, quote, itr, end);
+    return _Expect(p, quote, itr, end);
 }
 
-static const uint8_t* readNumber(
+static const uint8_t* _ReadNumber(
     OE_JsonParser* p,
     const uint8_t* itr,
     const uint8_t* end)
 {
     while (itr != end &&
-           (isAlnum(*itr) || *itr == '+' || *itr == '-' || *itr == '.'))
+           (_IsAlnum(*itr) || *itr == '+' || *itr == '-' || *itr == '.'))
     {
         ++itr;
     }
 
-    return itr;
+    return _SkipWS(itr, end);
 }
 
-static const uint8_t* read(
+static const uint8_t* _Read(
     OE_JsonParser* v,
     const uint8_t* itr,
     const uint8_t* end);
@@ -143,12 +131,12 @@ static const uint8_t* read(
 //     elem ','
 //      ...
 // ']'
-static const uint8_t* readArray(
+static const uint8_t* _ReadArray(
     OE_JsonParser* p,
     const uint8_t* itr,
     const uint8_t* end)
 {
-    itr = expect(p, '[', itr, end);
+    itr = _Expect(p, '[', itr, end);
 
     if (!p->parseFailed && p->interface.beginArray)
         if (p->interface.beginArray(p->data) != OE_OK)
@@ -157,14 +145,14 @@ static const uint8_t* readArray(
     // read each item.
     while (itr != end && *itr != ']')
     {
-        itr = read(p, itr, end);
+        itr = _Read(p, itr, end);
 
         // each item is separated by a comma.
         if (itr != end && *itr == ',')
             ++itr;
     }
 
-    itr = expect(p, ']', itr, end);
+    itr = _Expect(p, ']', itr, end);
 
     if (!p->parseFailed && p->interface.endArray)
         if (p->interface.endArray(p->data) != OE_OK)
@@ -173,7 +161,7 @@ static const uint8_t* readArray(
     return itr;
 }
 
-static const uint8_t* readObject(
+static const uint8_t* _ReadObject(
     OE_JsonParser* p,
     const uint8_t* itr,
     const uint8_t* end);
@@ -182,18 +170,18 @@ static const uint8_t* readObject(
 // Each property is expressed as:
 // [ws] "property-name"  [ws]  :   [ws] property-value [ws]
 // (1)       (2)         (3)  (4)  (5)       (6)       (7)
-static const uint8_t* readProperty(
+static const uint8_t* _ReadProperty(
     OE_JsonParser* p,
     const uint8_t* itr,
     const uint8_t* end)
 {
     const uint8_t* prop_name = NULL;
     // (1) =>
-    itr = skipWS(itr, end);
+    itr = _SkipWS(itr, end);
 
     // (2) =>
     prop_name = itr + 1; // skip starting quote
-    itr = readQuotedString(p, itr, end);
+    itr = _ReadQuotedString(p, itr, end);
 
     if (!p->parseFailed && p->interface.propertyName)
         if (p->interface.propertyName(
@@ -201,19 +189,19 @@ static const uint8_t* readProperty(
             return end;
 
     // (3) =>
-    itr = skipWS(itr, end);
+    itr = _SkipWS(itr, end);
 
     // (4) =>
-    itr = expect(p, ':', itr, end);
+    itr = _Expect(p, ':', itr, end);
 
     // (5) =>
-    itr = skipWS(itr, end);
+    itr = _SkipWS(itr, end);
 
     // (6) =>
-    itr = read(p, itr, end);
+    itr = _Read(p, itr, end);
 
     // (7) =>
-    return skipWS(itr, end);
+    return _SkipWS(itr, end);
 }
 
 // Read a record object.
@@ -222,31 +210,31 @@ static const uint8_t* readProperty(
 //      property ','
 //      ...
 // '}'
-static const uint8_t* readObject(
+static const uint8_t* _ReadObject(
     OE_JsonParser* p,
     const uint8_t* itr,
     const uint8_t* end)
 {
-    itr = expect(p, '{', itr, end);
+    itr = _Expect(p, '{', itr, end);
 
     if (!p->parseFailed && p->interface.beginObject)
         if (p->interface.beginObject(p->data) != OE_OK)
             return end;
 
     // Skip whitespace before first property.
-    itr = skipWS(itr, end);
+    itr = _SkipWS(itr, end);
 
     // read properties of the object.
     while (itr != end && *itr != '}')
     {
-        itr = readProperty(p, itr, end);
+        itr = _ReadProperty(p, itr, end);
 
         // each property is separated by a comma
         if (itr != end && *itr == ',')
             ++itr;
     }
 
-    itr = expect(p, '}', itr, end);
+    itr = _Expect(p, '}', itr, end);
 
     if (!p->parseFailed && p->interface.endObject)
         if (p->interface.endObject(p->data) != OE_OK)
@@ -255,7 +243,7 @@ static const uint8_t* readObject(
     return itr;
 }
 
-static const uint8_t* read(
+static const uint8_t* _Read(
     OE_JsonParser* p,
     const uint8_t* itr,
     const uint8_t* end)
@@ -263,15 +251,15 @@ static const uint8_t* read(
     const uint8_t* start = NULL;
 
     // skip leading whitespace
-    itr = skipWS(itr, end);
+    itr = _SkipWS(itr, end);
     start = itr;
 
     if (itr == end)
-        return reportError(p, "Unexpected end of input.", end);
+        return _ReportError(p, "Unexpected end of input.", end);
 
-    if (isAlnum(*itr))
+    if (_IsDigit(*itr))
     {
-        itr = readNumber(p, itr, end);
+        itr = _ReadNumber(p, itr, end);
         if (!p->parseFailed && p->interface.number)
             if (p->interface.number(p->data, start, itr - start) != OE_OK)
                 return end;
@@ -279,21 +267,21 @@ static const uint8_t* read(
     else if (*itr == '"' || *itr == '\'')
     {
         start = itr + 1;
-        itr = readQuotedString(p, itr, end);
+        itr = _ReadQuotedString(p, itr, end);
         if (!p->parseFailed && p->interface.string)
             if (p->interface.string(p->data, start, itr - start - 1) != OE_OK)
                 return end;
     }
     else if (*itr == '[')
     {
-        itr = readArray(p, itr, end);
+        itr = _ReadArray(p, itr, end);
     }
     else
     {
-        itr = readObject(p, itr, end);
+        itr = _ReadObject(p, itr, end);
     }
 
-    return skipWS(itr, end);
+    return _SkipWS(itr, end);
 }
 
 oe_result_t OE_ParseJson(
@@ -312,7 +300,7 @@ oe_result_t OE_ParseJson(
     if (interface)
         p.interface = *interface;
 
-    itr = read(&p, itr, end);
+    itr = _Read(&p, itr, end);
     if (itr == end && !p.parseFailed)
         return OE_OK;
     return OE_FAILURE;
