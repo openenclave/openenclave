@@ -249,10 +249,22 @@ static const char* _parse_placeholder(
         ph->conversion = 'x';
         p += 2;
     }
+    else if (p[0] == 'l' && p[1] == 'X')
+    {
+        ph->type = TYPE_lx;
+        ph->conversion = 'X';
+        p += 2;
+    }
     else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'x')
     {
         ph->type = TYPE_llx;
         ph->conversion = 'x';
+        p += 3;
+    }
+    else if (p[0] == 'l' && p[1] == 'l' && p[2] == 'X')
+    {
+        ph->type = TYPE_llx;
+        ph->conversion = 'X';
         p += 3;
     }
     else if (p[0] == 'z' && p[1] == 'u')
@@ -504,12 +516,16 @@ static int _vprintf(oe_out_t* out, const char* fmt, oe_va_list ap)
                 {
                     const uint64_t x = oe_va_arg(ap, uint64_t);
                     s = oe_uint64_to_hexstr(&is, x, &sn);
+
+                    if (ph.conversion == 'X')
+                        _str_toupper((char*)s);
+
                     break;
                 }
                 case TYPE_zu:
                 {
                     const size_t x = oe_va_arg(ap, size_t);
-                    s = oe_int64_to_decstr(&is, x, &sn);
+                    s = oe_uint64_to_decstr(&is, x, &sn);
                     break;
                 }
                 case TYPE_zd:

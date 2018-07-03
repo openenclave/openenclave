@@ -19,11 +19,11 @@
 #define OE_INT_MAX 0x7fffffff
 #define OE_UINT_MAX 0xffffffffU
 #define OE_LONG_MAX 0x7fffffffffffffffL
-#define OE_LONG_MIN (-LONG_MAX - 1)
-#define OE_ULONG_MAX (2UL * LONG_MAX + 1)
+#define OE_LONG_MIN (-OE_LONG_MAX - 1)
+#define OE_ULONG_MAX (2UL * OE_LONG_MAX + 1)
 #define OE_LLONG_MAX 0x7fffffffffffffffLL
-#define OE_LLONG_MIN (-LLONG_MAX - 1)
-#define OE_ULLONG_MAX (2ULL * LLONG_MAX + 1)
+#define OE_LLONG_MIN (-OE_LLONG_MAX - 1)
+#define OE_ULLONG_MAX (2ULL * OE_LLONG_MAX + 1)
 
 #if defined(OE_ENCLAVELIBC_NEED_STDC_NAMES)
 

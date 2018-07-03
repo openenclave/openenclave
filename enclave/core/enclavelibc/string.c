@@ -70,7 +70,7 @@ int oe_strncmp(const char* s1, const char* s2, size_t n)
 OE_ENCLAVELIBC_INLINE
 char _toupper(char c)
 {
-    return (c >= 'a' || c <= 'z') ? (c - 32) : c;
+    return (c >= 'a' && c <= 'z') ? (c - 32) : c;
 }
 
 int oe_strcasecmp(const char* s1, const char* s2)
