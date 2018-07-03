@@ -67,26 +67,20 @@ int oe_strncmp(const char* s1, const char* s2, size_t n)
     return *s1 - *s2;
 }
 
-OE_ENCLAVELIBC_INLINE
-char _toupper(char c)
-{
-    return (c >= 'a' && c <= 'z') ? (c - 32) : c;
-}
-
 int oe_strcasecmp(const char* s1, const char* s2)
 {
-    while ((*s1 && *s2) && (_toupper(*s1) == _toupper(*s2)))
+    while ((*s1 && *s2) && (oe_toupper(*s1) == oe_toupper(*s2)))
     {
         s1++;
         s2++;
     }
 
-    return _toupper(*s1) - _toupper(*s2);
+    return oe_toupper(*s1) - oe_toupper(*s2);
 }
 
 int oe_strncasecmp(const char* s1, const char* s2, size_t n)
 {
-    while (n && *s1 && *s2 && _toupper(*s1) == _toupper(*s2))
+    while (n && *s1 && *s2 && oe_toupper(*s1) == oe_toupper(*s2))
     {
         n--;
         s1++;
@@ -102,7 +96,7 @@ int oe_strncasecmp(const char* s1, const char* s2, size_t n)
     if (!*s2)
         return 1;
 
-    return _toupper(*s1) - _toupper(*s2);
+    return oe_toupper(*s1) - oe_toupper(*s2);
 }
 
 char* oe_strncpy(char* dest, const char* src, size_t n)

@@ -4,6 +4,7 @@
 add_library(oecore STATIC
     enclavelibc/assert.c
     enclavelibc/atexit.c
+    enclavelibc/ctype.c
     enclavelibc/errno.c
     enclavelibc/gmtime.c
     enclavelibc/malloc.c

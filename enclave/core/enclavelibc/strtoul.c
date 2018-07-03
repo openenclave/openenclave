@@ -48,25 +48,6 @@ OE_INLINE bool _isdigit(char c, int base)
     return _digit[(unsigned char)c] < base;
 }
 
-OE_INLINE bool _isspace(char c)
-{
-    switch (c)
-    {
-        /* The space characters in "C" and "POSIX" locales */
-        case '\f':
-        case '\n':
-        case '\r':
-        case '\t':
-        case '\v':
-            return true;
-        default:
-            return false;
-    }
-
-    /* Unreachable */
-    return false;
-}
-
 unsigned long int oe_strtoul(const char* nptr, char** endptr, int base)
 {
     const char* p;
@@ -83,7 +64,7 @@ unsigned long int oe_strtoul(const char* nptr, char** endptr, int base)
     p = nptr;
 
     /* Skip any leading whitespace */
-    while (_isspace(*p))
+    while (oe_isspace(*p))
         p++;
 
     /* Handle '+' and '-' */

@@ -163,7 +163,7 @@ static void _test_strtoul()
 
     char* end;
     uint64_t x;
-    
+
     x = oe_strtoul("123456789abcdefg", &end, 10);
     OE_TEST(oe_strcmp(end, "abcdefg") == 0);
     OE_TEST(x == 123456789UL);
@@ -414,7 +414,7 @@ static void _test_strerror(void)
     oe_printf("=== start %s()\n", __FUNCTION__);
 
     const char* s;
-    
+
     OE_TEST((s = oe_strerror(OE_ENOMEM)));
     OE_TEST(oe_strcmp(s, "Cannot allocate memory") == 0);
 
@@ -422,6 +422,84 @@ static void _test_strerror(void)
     OE_TEST(oe_strcmp(s, "Unknown error") == 0);
 
     oe_printf("=== passed %s()\n", __FUNCTION__);
+}
+
+OE_ECALL void test_isalnum(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_isalnum(args->c);
+}
+
+OE_ECALL void test_isalpha(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_isalpha(args->c);
+}
+
+OE_ECALL void test_iscntrl(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_iscntrl(args->c);
+}
+
+OE_ECALL void test_isdigit(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_isdigit(args->c);
+}
+
+OE_ECALL void test_isgraph(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_isgraph(args->c);
+}
+
+OE_ECALL void test_islower(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_islower(args->c);
+}
+
+OE_ECALL void test_isprint(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_isprint(args->c);
+}
+
+OE_ECALL void test_ispunct(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_ispunct(args->c);
+}
+
+OE_ECALL void test_isspace(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_isspace(args->c);
+}
+
+OE_ECALL void test_isupper(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_isupper(args->c);
+}
+
+OE_ECALL void test_isxdigit(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_isxdigit(args->c);
+}
+
+OE_ECALL void test_tolower(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_tolower(args->c);
+}
+
+OE_ECALL void test_toupper(void* arg)
+{
+    ctype_args_t* args = (ctype_args_t*)arg;
+    args->ret = oe_toupper(args->c);
 }
 
 OE_ECALL void test_enclave(void* args_)

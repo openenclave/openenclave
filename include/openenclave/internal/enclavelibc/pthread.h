@@ -7,7 +7,12 @@
 #include "bits/common.h"
 #include "time.h"
 
-#define OE_PTHREAD_MUTEX_INITIALIZER { { 0 } }
+#define OE_PTHREAD_MUTEX_INITIALIZER \
+    {                                \
+        {                            \
+            0                        \
+        }                            \
+    }
 
 typedef uint64_t oe_pthread_t;
 

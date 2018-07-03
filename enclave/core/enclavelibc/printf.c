@@ -65,11 +65,6 @@ struct placeholder
     char conversion;
 };
 
-OE_INLINE bool _isdigit(char c)
-{
-    return (c >= '0' && c <= '9');
-}
-
 /* Syntax: %flags width [ . precision ] type conversion */
 static const char* _parse_placeholder(
     const char* p,
@@ -116,7 +111,7 @@ static const char* _parse_placeholder(
     }
 
     /* Parse the width */
-    if (_isdigit(*p))
+    if (oe_isdigit(*p))
     {
         char* end = NULL;
         ph->width = oe_strtoul(p, &end, 10);
@@ -138,7 +133,7 @@ static const char* _parse_placeholder(
         p++;
 
         /* Parse the precision */
-        if (_isdigit(*p))
+        if (oe_isdigit(*p))
         {
             char* end = NULL;
             ph->precision = oe_strtoul(p, &end, 10);
@@ -299,19 +294,11 @@ static const char* _parse_placeholder(
     return p;
 }
 
-OE_INLINE int _toupper(int c)
-{
-    if (c >= 'a' && c <= 'z')
-        return c - ' ';
-
-    return c;
-}
-
 static void _str_toupper(char* s)
 {
     while (*s)
     {
-        *s = _toupper(*s);
+        *s = oe_toupper(*s);
         s++;
     }
 }

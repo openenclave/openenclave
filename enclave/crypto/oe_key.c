@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "key.h"
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hash.h>
 #include <openenclave/internal/raise.h>
+#include "key.h"
 #include "pem.h"
 
 typedef oe_result_t (*oe_copy_key)(
