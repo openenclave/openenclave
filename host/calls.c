@@ -300,44 +300,6 @@ static void _HandleCallHost(uint64_t arg)
 /*
 **==============================================================================
 **
-** oe_register_ocall()
-**
-**     Register the given OCALL function, associate it with the given function
-**     number.
-**
-**  TODO: Redesign this, this needs to be per-enclave.
-**
-**==============================================================================
-*/
-
-#if 0
-static oe_ocall_function _ocalls[OE_MAX_OCALLS];
-static oe_mutex _ocalls_lock = OE_H_MUTEX_INITIALIZER;
-
-oe_result_t oe_register_ocall(uint32_t func, oe_ocall_function ocall)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_mutex_lock(&_ocalls_lock);
-
-    if (func >= OE_MAX_OCALLS)
-        OE_THROW(OE_OUT_OF_RANGE);
-
-    if (_ocalls[func])
-        OE_THROW(OE_ALREADY_IN_USE);
-
-    _ocalls[func] = ocall;
-
-    result = OE_OK;
-
-OE_CATCH:
-    oe_mutex_unlock(&_ocalls_lock);
-    return result;
-}
-#endif
-
-/*
-**==============================================================================
-**
 ** _HandleOCALL()
 **
 **     Handle calls from the enclave (OCALL)
@@ -433,17 +395,6 @@ static oe_result_t _HandleOCALL(
 
         default:
         {
-            /* Dispatch user-registered OCALLs */
-            if (func < OE_MAX_OCALLS)
-            {
-                oe_mutex_lock(&_ocalls_lock);
-                oe_ocall_function ocall = _ocalls[func];
-                oe_mutex_unlock(&_ocalls_lock);
-
-                if (ocall)
-                    ocall(argIn, argOut);
-            }
-
             break;
         }
     }

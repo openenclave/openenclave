@@ -339,54 +339,6 @@ oe_result_t oe_ocall(
     uint64_t* argOut,
     uint32_t ocall_flags);
 
-#if 0
-/**
- * Registers a low-level ECALL function.
- *
- * This function registers a low-level ECALL function that may be called
- * from the host by the **oe_ecall()** function. The registered function
- * has the following prototype.
- *
- *     void (*)(uint64_t argIn, uint64_t* argOut);
- *
- * This interface is intended mainly for internal use and developers are
- * encouraged to use the high-level interface instead.
- *
- * @param func The number of the function to be called.
- * @param ecall The address of the function to be called.
- *
- * @retval OE_OK The function was successful.
- * @retval OE_OUT_OF_RANGE The function number was greater than OE_MAX_ECALLS.
- * @retval OE_ALREADY_IN_USE The function number is already in use.
- *
- */
-oe_result_t oe_register_ecall(uint32_t func, oe_ecall_function ecall);
-
-/**
- * Registers a low-level OCALL function.
- *
- * TODO: Redesign this, this needs to be enclave-specific.
- *
- * This function registers a low-level OCALL function that may be called
- * from the enclave by the **oe_ocall()** function. The registered function
- * has the following prototype.
- *
- *     void (*)(uint64_t argIn, uint64_t* argOut);
- *
- * This interface is intended mainly for internal use and developers are
- * encouraged to use the high-level interface instead.
- *
- * @param func The number of the function to be called.
- * @param ocall The address of the function to be called.
- *
- * @retval OE_OK The function was successful.
- * @retval OE_OUT_OF_RANGE The function number was greater than OE_MAX_OCALLS.
- * @retval OE_ALREADY_IN_USE The function number is already in use.
- *
- */
-oe_result_t oe_register_ocall(uint32_t func, oe_ocall_function ocall);
-#endif
-
 OE_EXTERNC_END
 
 #endif /* _OE_CALLS_H */

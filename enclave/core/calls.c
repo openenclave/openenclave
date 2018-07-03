@@ -226,40 +226,6 @@ static void _HandleExit(oe_code_t code, int64_t func, uint64_t arg)
     oe_exit(oe_make_call_arg1(code, func, 0), arg);
 }
 
-/*
-**==============================================================================
-**
-** oe_register_ecall()
-**
-**     Register the given ECALL function, associate it with the given function
-**     number.
-**
-**==============================================================================
-*/
-
-static oe_ecall_function _ecalls[OE_MAX_ECALLS];
-static oe_spinlock_t _ecalls_spinlock = OE_SPINLOCK_INITIALIZER;
-
-oe_result_t oe_register_ecall(uint32_t func, oe_ecall_function ecall)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_spin_lock(&_ecalls_spinlock);
-
-    if (func >= OE_MAX_ECALLS)
-        OE_THROW(OE_OUT_OF_RANGE);
-
-    if (_ecalls[func])
-        OE_THROW(OE_ALREADY_IN_USE);
-
-    _ecalls[func] = ecall;
-
-    result = OE_OK;
-
-OE_CATCH:
-    oe_spin_unlock(&_ecalls_spinlock);
-    return result;
-}
-
 void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
 
 /*
@@ -356,16 +322,6 @@ static void _HandleECall(
         }
         default:
         {
-            /* Dispatch user-registered ECALLs */
-            if (func < OE_MAX_ECALLS)
-            {
-                oe_spin_lock(&_ecalls_spinlock);
-                oe_ecall_function ecall = _ecalls[func];
-                oe_spin_unlock(&_ecalls_spinlock);
-
-                if (ecall)
-                    ecall(argIn, &argOut);
-            }
             break;
         }
     }
