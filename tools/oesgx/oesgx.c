@@ -19,11 +19,11 @@ static int _CPUID(Regs* regs)
     int result = 0;
 
     oe_get_cpuid(leaf_requested, 
-        &regs->ecx, &regs->eax, &regs->ebx, &regs->ecx, &regs->edx);
-    
+        regs->ecx, &regs->eax, &regs->ebx, &regs->ecx, &regs->edx);
+
     // Check if results indicate unsupported leaf.
-    if (leaf_requested > regs->eax || 
-        regs->eax == 0 && regs->ebx == 0 && regs->ecx == 0 && regs->edx == 0)
+    if ((leaf_requested > regs->eax) || 
+        (regs->eax == 0 && regs->ebx == 0 && regs->ecx == 0 && regs->edx == 0))
     {
         printf("Error getting CPUID. Returned: %d", regs->eax);
         result = 1;

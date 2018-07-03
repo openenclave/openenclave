@@ -56,11 +56,11 @@ void TestSigillHandling(oe_enclave_t* enclave)
             &cpuidInfo[OE_CPUID_RDX]);
 
         // Check if i is an unsupported leaf.
-        if (i > &cpuidInfo[OE_CPUID_RAX] || 
-            cpuidInfo[OE_CPUID_RAX] == 0 &&
+        if ((i > cpuidInfo[OE_CPUID_RAX]) || 
+            (cpuidInfo[OE_CPUID_RAX] == 0 &&
             cpuidInfo[OE_CPUID_RBX] == 0 &&
             cpuidInfo[OE_CPUID_RCX] == 0 &&
-            cpuidInfo[OE_CPUID_RDX] == 0)
+            cpuidInfo[OE_CPUID_RDX] == 0))
 
             oe_put_err(
                 "Test machine does not support CPUID leaf %x expected by "
