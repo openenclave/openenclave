@@ -45,8 +45,7 @@ int main(int argc, const char* argv[])
     {
         oe_put_err("oe_create_enclave(): result=%u", result);
     }
-    TestJsonParser(enclave);
-    return 0;
+
     /* Initialize the target info */
     {
         if ((result = sgx_get_qetarget_info(&targetInfo)) != OE_OK)

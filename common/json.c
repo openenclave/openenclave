@@ -7,6 +7,7 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_JsonParser
 {
+    const uint8_t* jsonString;
     uint8_t parseFailed;
     void* data;
     OE_JsonParserCallbackInterface interface;
@@ -35,7 +36,7 @@ OE_INLINE uint8_t _IsSpace(uint8_t c)
 {
     return (
         c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' ||
-        c == '\r');
+        c == '\r' || c == '\0');
 }
 
 // Skip white space
@@ -49,13 +50,14 @@ static const uint8_t* _SkipWS(const uint8_t* itr, const uint8_t* end)
 static const uint8_t* _ReportError(
     OE_JsonParser* p,
     const char* msg,
+    const uint8_t* itr,
     const uint8_t* end)
 {
     if (!p->parseFailed)
     {
         p->errorMsg = msg;
         if (p->interface.handleError)
-            p->interface.handleError(p->data, msg);
+            p->interface.handleError(p->data, itr - p->jsonString, msg);
         p->parseFailed = 1;
     }
     return end;
@@ -68,17 +70,17 @@ static const uint8_t* _Expect(
     const uint8_t* itr,
     const uint8_t* end)
 {
+    // Skip leading white space.
     itr = _SkipWS(itr, end);
 
     if (itr == end)
-        return _ReportError(p, "Unexpected end of input.", end);
+        return _ReportError(p, "Unexpected end of input.", itr, end);
 
     if (*itr != ch)
-        return _ReportError(p, "Expected char not found.", end);
+        return _ReportError(p, "Expected char not found.", itr, end);
 
-    // skip character and any whitespace trailing it
-    _SkipWS(++itr, end);
-    return itr;
+    // Skip character and trailing white space.
+    return _SkipWS(++itr, end);
 }
 
 static const uint8_t* _ReadQuotedString(
@@ -86,9 +88,9 @@ static const uint8_t* _ReadQuotedString(
     const uint8_t* itr,
     const uint8_t* end)
 {
-    if (itr == end || (*itr != '"' && *itr != '\''))
+    if (itr == end || *itr != '"')
     {
-        return _ReportError(p, "Expecting a '\"'.", end);
+        return _ReportError(p, "Expecting a '\"'.", itr, end);
     }
 
     uint8_t quote = *itr++;
@@ -97,13 +99,20 @@ static const uint8_t* _ReadQuotedString(
     {
         if (*itr == '\\')
         {
-            if (++itr + 1 == end)
-                return _ReportError(p, "Unclosed string", end);
+            // Skip \.
+            ++itr;
+            if (itr == end)
+                return _ReportError(p, "Unclosed string", itr, end);
+            // Fall through to skip the character following \.
         }
         ++itr;
     }
 
-    return _Expect(p, quote, itr, end);
+    if (itr == end)
+        return _ReportError(p, "Unclosed string", itr, end);
+
+    // Skip ending quote.
+    return itr + 1;
 }
 
 static const uint8_t* _ReadNumber(
@@ -117,7 +126,58 @@ static const uint8_t* _ReadNumber(
         ++itr;
     }
 
-    return _SkipWS(itr, end);
+    return itr;
+}
+
+static const uint8_t* _ReadNull(
+    OE_JsonParser* p,
+    const uint8_t* itr,
+    const uint8_t* end)
+{
+    if (end - itr >= 4)
+    {
+        if (itr[0] == 'n' && itr[1] == 'u' && itr[2] == 'l' && itr[3] == 'l' &&
+            (itr + 4 == end || !_IsAlnum(itr[4])))
+        {
+            if (p->interface.null)
+                if (p->interface.null(p->data) != OE_OK)
+                    return end;
+            return itr + 4;
+        }
+    }
+
+    return _ReportError(p, "Unexpected character", itr, end);
+}
+
+static const uint8_t* _ReadBoolean(
+    OE_JsonParser* p,
+    const uint8_t* itr,
+    const uint8_t* end)
+{
+    if ((end - itr) >= 4 && itr[0] == 't')
+    {
+        if (itr[1] == 'r' && itr[2] == 'u' && itr[3] == 'e' &&
+            (itr + 4 == end || !_IsAlnum(itr[4])))
+        {
+            if (p->interface.boolean)
+                if (p->interface.boolean(p->data, 1) != OE_OK)
+                    return end;
+            return itr + 4;
+        }
+    }
+    if ((end - itr) >= 5 && itr[0] == 'f')
+    {
+        if (itr[1] == 'a' && itr[2] == 'l' && itr[3] == 's' && itr[4] == 'e' &&
+            (itr + 5 == end || !_IsAlnum(itr[5])))
+        {
+            if (p->interface.boolean)
+                if (p->interface.boolean(p->data, 0) != OE_OK)
+                    return end;
+            return itr + 5;
+        }
+    }
+
+    return _ReportError(p, "Unexpected character", itr, end);
 }
 
 static const uint8_t* _Read(
@@ -142,14 +202,22 @@ static const uint8_t* _ReadArray(
         if (p->interface.beginArray(p->data) != OE_OK)
             return end;
 
-    // read each item.
-    while (itr != end && *itr != ']')
+    if (itr != end && *itr != ']')
     {
-        itr = _Read(p, itr, end);
+        // Non empty array.
+        // Read each item.
+        while (itr != end)
+        {
+            itr = _SkipWS(_Read(p, itr, end), end);
+            if (itr != end)
+            {
+                if (*itr == ']')
+                    break;
 
-        // each item is separated by a comma.
-        if (itr != end && *itr == ',')
-            ++itr;
+                // Items must be separated by comma.
+                itr = _Expect(p, ',', itr, end);
+            }
+        }
     }
 
     itr = _Expect(p, ']', itr, end);
@@ -221,17 +289,20 @@ static const uint8_t* _ReadObject(
         if (p->interface.beginObject(p->data) != OE_OK)
             return end;
 
-    // Skip whitespace before first property.
-    itr = _SkipWS(itr, end);
-
-    // read properties of the object.
-    while (itr != end && *itr != '}')
+    if (itr != end && *itr != '}')
     {
-        itr = _ReadProperty(p, itr, end);
-
-        // each property is separated by a comma
-        if (itr != end && *itr == ',')
-            ++itr;
+        // Non empty object.
+        while (itr != end)
+        {
+            itr = _SkipWS(_ReadProperty(p, itr, end), end);
+            if (itr != end)
+            {
+                if (*itr == '}')
+                    break;
+                // Properties are separated by comma.
+                itr = _Expect(p, ',', itr, end);
+            }
+        }
     }
 
     itr = _Expect(p, '}', itr, end);
@@ -255,7 +326,7 @@ static const uint8_t* _Read(
     start = itr;
 
     if (itr == end)
-        return _ReportError(p, "Unexpected end of input.", end);
+        return _ReportError(p, "Unexpected end of input.", itr, end);
 
     if (_IsDigit(*itr))
     {
@@ -264,7 +335,7 @@ static const uint8_t* _Read(
             if (p->interface.number(p->data, start, itr - start) != OE_OK)
                 return end;
     }
-    else if (*itr == '"' || *itr == '\'')
+    else if (*itr == '"')
     {
         start = itr + 1;
         itr = _ReadQuotedString(p, itr, end);
@@ -275,6 +346,14 @@ static const uint8_t* _Read(
     else if (*itr == '[')
     {
         itr = _ReadArray(p, itr, end);
+    }
+    else if (*itr == 'n')
+    {
+        itr = _ReadNull(p, itr, end);
+    }
+    else if (*itr == 't' || *itr == 'f')
+    {
+        itr = _ReadBoolean(p, itr, end);
     }
     else
     {
@@ -292,6 +371,7 @@ oe_result_t OE_ParseJson(
     const OE_JsonParserCallbackInterface* interface)
 {
     OE_JsonParser p = {0};
+    p.jsonString = json;
     const uint8_t* itr = json;
     const uint8_t* end = json + jsonLength;
 

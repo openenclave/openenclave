@@ -161,14 +161,17 @@ OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
         (oe_parsed_tcb_info_t*)args->parsedTcbInfo);
 }
 
-void PrintError(void* obj, const char* msg)
+uint8_t* _jsonString = NULL;
+void PrintError(void* obj, uint32_t pos, const char* msg)
 {
-    printf("Json Parse Error: %s\n", msg);
+    printf("Json Parse Error: pos = %d : %s\n", pos, msg);
+    printf("%s\n", (const char*)_jsonString + pos);
 }
 
 OE_ECALL void TestParseJson(ParseJsonArgs* args)
 {
     OE_JsonParserCallbackInterface callback = {0};
     callback.handleError = PrintError;
+    _jsonString = args->json;
     args->result = OE_ParseJson(args->json, args->jsonSize, NULL, &callback);
 }

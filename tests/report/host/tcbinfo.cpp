@@ -20,8 +20,12 @@
 std::vector<uint8_t> FileToBytes(const char* path)
 {
     std::ifstream f(path, std::ios::binary);
-    return std::vector<uint8_t>(
+    std::vector<uint8_t> bytes = std::vector<uint8_t>(
         std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
+    // Explicitly add null character so that the bytes can be printed out
+    // safely as a string if needed.
+    bytes.push_back('\0');
+    return bytes;
 }
 
 bool CheckParsedString(
@@ -49,20 +53,18 @@ oe_result_t ParseJson(oe_enclave_t* enclave, const char* path)
 
 void TestJsonParser(oe_enclave_t* enclave)
 {
-    const char* passfiles[] = {
-        "./data/json/pass1.json",
-        // Json constructs that the parser expects
-        // the callbacks to validate:
-        //      string content
-        //      number parsing
-        // Note: The parser is lenient in regards to missing commas.
-        "./data/json/pass2.json"};
+    const char* passfiles[] = {"./data/json/pass1.json",
+                               // Json constructs that the parser expects
+                               // the callbacks to validate:
+                               //      string content
+                               //      number parsing
+                               "./data/json/pass2.json"};
 
-    for (size_t i = 0; i < sizeof(passfiles) / sizeof(passfiles[0]); ++i)
+    for (size_t i = 0; i < OE_COUNTOF(passfiles); ++i)
     {
         OE_TEST(ParseJson(enclave, passfiles[i]) == OE_OK);
     }
-    return;
+
     const char* negfiles[] = {
         "./data/json/neg1.json",
         "./data/json/neg2.json",
@@ -76,7 +78,7 @@ void TestJsonParser(oe_enclave_t* enclave)
         "./data/json/neg6.json", // null
     };
 
-    for (size_t i = 0; i < sizeof(negfiles) / sizeof(negfiles[0]); ++i)
+    for (size_t i = 0; i < OE_COUNTOF(negfiles); ++i)
     {
         OE_TEST(ParseJson(enclave, negfiles[i]) == OE_FAILURE);
     }

@@ -61,6 +61,8 @@ static const schema_t _schema[NUM_LEVELS] = {
 
 typedef struct _callback_data
 {
+    const uint8_t* json;
+
     // The TCB info to be validated against the JSON
     oe_parsed_tcb_info_t* parsed_tcb_info;
 
@@ -390,12 +392,13 @@ static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t str_length)
     return OE_FAILURE;
 }
 
-static void _handle_error(void* vdata, const char* msg)
+static void _handle_error(void* vdata, uint32_t pos, const char* msg)
 {
     callback_data_t* data = (callback_data_t*)vdata;
     data->error_message = msg;
 
-    OE_TRACE_ERROR("JSON parse error : %s\n", msg);
+    OE_TRACE_ERROR("JSON parse error : pos %d: %s\n", pos, msg);
+    OE_TRACE_ERROR("%s\n", (const char*)data->json + pos - 10);
 }
 
 oe_result_t oe_parse_tcb_info_json(
@@ -405,12 +408,15 @@ oe_result_t oe_parse_tcb_info_json(
 {
     oe_result_t result = OE_FAILURE;
     callback_data_t data = {0};
+    data.json = tcb_info_json;
 
     OE_JsonParserCallbackInterface intf = {
         _begin_object,
         _end_object,
-        NULL, // No special validation required for arrays
-        NULL,
+        NULL, // Callback for beginArray
+        NULL, // Callback for endArray
+        NULL, // Callback for null
+        NULL, // Callback for boolean
         _number,
         _string,
         _property_name,

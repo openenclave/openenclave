@@ -10,9 +10,11 @@
 OE_EXTERNC_BEGIN
 
 /**
- * Parser for a subset of JSON.
- * Supported: Objects, arrays, strings, numbers.
- * Not Supported: null, true, false.
+ * Simple Parser for JSON. Closely matches the JSON standard except for
+ * allowing a superset of JSON strings and numbers. That is, strings that
+ * contain invalid escape sequences will be parsed without errors.
+ * It is up to the string and number parser callbacks to validate the parsed
+ * string and number.
  *
  * When a string is parsed:
  *      'string' callback is invoked, passing the start position and
@@ -23,11 +25,17 @@ OE_EXTERNC_BEGIN
  * When a number is parsed:
  *      'number' callback is invoked, passing the start position and
  *      the length of the set of characters that makeup the number.
- *      Any sequence of characters consisting of alnums, +, - and . following
+ *      Any sequence of characters consisting of alnums, +, - and .,
  *      starting with a digit is considered a number.
- *      The callback must parse the number token into the appropriate number
- * representation
- *      and raise errors if it is not a valid number.
+ *      The callback must parse the number token into the
+ *      appropriate number representation and raise errors if it is not a
+ *      valid number.
+ *
+ * When a null is parsed,
+ *      'null' callback is invoked.
+ *
+ * When a boolean is parsed,
+ *      'boolean' callback is invoked with 1 or 0.
  *
  * When an object is parsed:
  *      'beginObject' callback is invoked upon encountering a {.
@@ -54,13 +62,16 @@ typedef struct _OE_JsonParserCallbackInterface
     oe_result_t (*beginArray)(void* data);
     oe_result_t (*endArray)(void* data);
 
+    oe_result_t (*null)(void* data);
+    oe_result_t (*boolean)(void* data, uint8_t value);
+
     oe_result_t (
         *number)(void* data, const uint8_t* value, uint32_t valueLength);
     oe_result_t (*string)(void* data, const uint8_t* str, uint32_t strLength);
     oe_result_t (
         *propertyName)(void* obj, const uint8_t* name, uint32_t nameLength);
 
-    void (*handleError)(void* obj, const char* msg);
+    void (*handleError)(void* obj, uint32_t charPos, const char* msg);
 } OE_JsonParserCallbackInterface;
 
 oe_result_t OE_ParseJson(
