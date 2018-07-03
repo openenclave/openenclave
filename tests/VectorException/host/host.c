@@ -43,20 +43,25 @@ void TestSigillHandling(oe_enclave_t* enclave)
     OE_TEST(args.ret == 0);
 
     // Verify that the enclave cached CPUID values match host's
-    unsigned int subleaf = 0;
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
         memset(cpuidInfo, 0, sizeof(cpuidInfo));
-        oe_result_t result = oe_get_cpuid(
+        oe_get_cpuid(
             i,
-            &subleaf,
+            0,
             &cpuidInfo[OE_CPUID_RAX],
             &cpuidInfo[OE_CPUID_RBX],
             &cpuidInfo[OE_CPUID_RCX],
             &cpuidInfo[OE_CPUID_RDX]);
 
-        if (result == OE_UNSUPPORTED)
+        // Check if i is an unsupported leaf.
+        if (i > &cpuidInfo[OE_CPUID_RAX] || 
+            cpuidInfo[OE_CPUID_RAX] == 0 &&
+            cpuidInfo[OE_CPUID_RBX] == 0 &&
+            cpuidInfo[OE_CPUID_RCX] == 0 &&
+            cpuidInfo[OE_CPUID_RDX] == 0)
+
             oe_put_err(
                 "Test machine does not support CPUID leaf %x expected by "
                 "TestSigillHandling.\n",

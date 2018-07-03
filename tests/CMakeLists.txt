@@ -40,7 +40,6 @@ endif()
 
 if (UNIX)
 add_subdirectory(abortStatus)
-add_subdirectory(cpuid)
 add_subdirectory(crypto)
 add_subdirectory(libc)
 add_subdirectory(libcxx)

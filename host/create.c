@@ -881,15 +881,12 @@ static oe_result_t _InitializeEnclave(oe_enclave_t* enclave)
     // Initialize enclave cache of CPUID info for emulation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        result = oe_get_cpuid(
-            i,
-            &subleaf,
-            &args.cpuidTable[i][OE_CPUID_RAX],
-            &args.cpuidTable[i][OE_CPUID_RBX],
-            &args.cpuidTable[i][OE_CPUID_RCX],
-            &args.cpuidTable[i][OE_CPUID_RDX]);
-        if (result == OE_UNSUPPORTED)
-            OE_RAISE(OE_UNSUPPORTED);
+        oe_get_cpuid(i,
+                     subleaf,
+                     &args.cpuidTable[i][OE_CPUID_RAX],
+                     &args.cpuidTable[i][OE_CPUID_RBX],
+                     &args.cpuidTable[i][OE_CPUID_RCX],
+                     &args.cpuidTable[i][OE_CPUID_RDX]);
     }
 
     OE_CHECK(oe_ecall(enclave, OE_FUNC_INIT_ENCLAVE, (uint64_t)&args, NULL));
