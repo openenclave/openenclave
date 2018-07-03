@@ -6,6 +6,24 @@
 #include <openenclave/internal/tests.h>
 #include "../args.h"
 
+static int _test_setjmp_aux(void)
+{
+    oe_jmp_buf buf;
+
+    int rc = oe_setjmp(buf);
+
+    if (rc == 999)
+        return rc;
+
+    oe_longjmp(buf, 999);
+    return 0;
+}
+
+static void _test_setjmp(void)
+{
+    OE_TEST(_test_setjmp_aux() == 999);
+}
+
 static void _test_strdup(void)
 {
     oe_printf("=== start %s()\n", __FUNCTION__);
@@ -410,6 +428,7 @@ OE_ECALL void test_enclave(void* args_)
 {
     args_t* args = (args_t*)args_;
 
+    _test_setjmp();
     _test_strdup();
     _test_strcasecmp();
     _test_oe_snprintf();
