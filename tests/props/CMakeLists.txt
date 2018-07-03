@@ -5,10 +5,10 @@ add_subdirectory(host)
 
 if (UNIX)
 	add_subdirectory(enc)
+
+	# Test unsigned enclave:
+	add_enclave_test(tests/props_unsigned ./host props_host ./enc props_enc unsigned)
 endif()
 
 # Test a signed enclave:
 add_enclave_test(tests/props ./host props_host ./enc props_enc.signed.so signed)
-
-# Test unsigned enclave:
-add_enclave_test(tests/props_unsigned ./host props_host ./enc props_enc unsigned)
