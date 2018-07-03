@@ -410,7 +410,6 @@ int main(int argc, const char* argv[])
 
     printf("=== This program is used to test enclave abort status.\n");
 	
-    const char* enc_path = "e:\\abortStatus_enc.signed.so";
     if (TestBasicAbort(argv[1]))
     {
         printf("Basic abort status tests passed.\n");
