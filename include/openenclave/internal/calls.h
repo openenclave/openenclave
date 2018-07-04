@@ -77,6 +77,7 @@ typedef enum _oe_func {
     OE_ECALL_CALL_ENCLAVE,
     OE_ECALL_VERIFY_REPORT,
     OE_ECALL_GET_REPORT,
+    OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
     /* Caution: always add new ECALL function numbers here */
 
     OE_OCALL_CALL_HOST,
@@ -95,7 +96,6 @@ typedef enum _oe_func {
     OE_OCALL_GETTIMEOFDAY,
     OE_OCALL_CLOCK_GETTIME,
     OE_OCALL_NANOSLEEP,
-    OE_OCALL_VIRTUAL_EXCEPTION_HANDLER,
     /* Caution: always add new OCALL function numbers here */
 } oe_func_t;
 

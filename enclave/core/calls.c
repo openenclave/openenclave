@@ -261,7 +261,7 @@ static void _HandleECall(
         // handlers being invoked. Eg. Using CPUID instruction within a global
         // constructor. We should also allow handling these exceptions.
         if (func != OE_ECALL_INIT_ENCLAVE &&
-            func != OE_OCALL_VIRTUAL_EXCEPTION_HANDLER)
+            func != OE_ECALL_VIRTUAL_EXCEPTION_HANDLER)
         {
             goto Exit;
         }
@@ -300,7 +300,7 @@ static void _HandleECall(
             oe_call_fini_functions();
             break;
         }
-        case OE_OCALL_VIRTUAL_EXCEPTION_HANDLER:
+        case OE_ECALL_VIRTUAL_EXCEPTION_HANDLER:
         {
             _oe_virtual_exception_dispatcher(td, argIn, &argOut);
             break;
@@ -638,7 +638,7 @@ void __oe_handle_main(
     else /* cssa > 0 */
     {
         if ((code == OE_CODE_ECALL) &&
-            (func == OE_OCALL_VIRTUAL_EXCEPTION_HANDLER))
+            (func == OE_ECALL_VIRTUAL_EXCEPTION_HANDLER))
         {
             _HandleECall(td, func, argIn, outputArg1, outputArg2);
             return;
