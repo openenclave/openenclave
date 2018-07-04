@@ -39,6 +39,11 @@ OE_INLINE uint8_t _IsSpace(uint8_t c)
         c == '\r' || c == '\0');
 }
 
+OE_INLINE uint8_t _IsHex(uint8_t c)
+{
+    return _IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
 // Skip white space
 static const uint8_t* _SkipWS(const uint8_t* itr, const uint8_t* end)
 {
@@ -99,13 +104,39 @@ static const uint8_t* _ReadQuotedString(
     {
         if (*itr == '\\')
         {
-            // Skip \.
-            ++itr;
-            if (itr == end)
-                return _ReportError(p, "Unclosed string", itr, end);
-            // Fall through to skip the character following \.
+            // Parse escape sequence.
+            if (++itr == end)
+                return _ReportError(p, "Illegal escape sequence", itr, end);
+
+            switch (*itr)
+            {
+                case '"':
+                case '\\':
+                case '/':
+                case 'b':
+                case 'f':
+                case 'n':
+                case 'r':
+                case 't':
+                    ++itr;
+                    continue;
+                case 'u':
+                    // Expect 4 hexadecimal digits.
+                    ++itr;
+                    if (end - itr >= 4 && _IsHex(itr[0]) && _IsHex(itr[1]) &&
+                        _IsHex(itr[2]) && _IsHex(itr[3]))
+                    {
+                        itr += 4;
+                        continue;
+                    }
+                default:
+                    _ReportError(p, "Illegal escape sequence", itr, end);
+            }
         }
-        ++itr;
+        else
+        {
+            ++itr;
+        }
     }
 
     if (itr == end)
@@ -127,7 +158,7 @@ static const uint8_t* _ReadNumber(
     //    number = {-} decimal_part {fractional_part} {exponent_part}
     //    decimal_part = 0 | ([1..9] [0..9]*)
     //    fractional_part = . [0..9]+
-    //    exponent_part {[eE]{[+-]}[0..9]+}
+    //    exponent_part  = [eE]{[+-]}[0..9]+
     //    where {x} means x is optional
     //          * means zero or more
     //          + means one or more

@@ -10,49 +10,27 @@
 OE_EXTERNC_BEGIN
 
 /**
- * Simple Parser for JSON. Closely matches the JSON standard except for
- * allowing a superset of JSON strings and numbers. That is, strings that
- * contain invalid escape sequences will be parsed without errors.
- * It is up to the string and number parser callbacks to validate the parsed
- * string and number.
+ * Standards compliant parser for JSON.
+ * The parser allocates no memory and performs no schema validation.
  *
- * When a string is parsed:
- *      'string' callback is invoked, passing the start position and
- *      the length of the string, omitting the quote character.
- *      The callback must make sense of the string, performing un-escaping,
- *      handling utf encoding etc as needed.
+ * The parser can be supplied with a set of callbacks in
+ * a _OE_JsonParserCallbackInterface struct instance.
+ * Additional a void pointer to some data can be passed in.
+ * This data pointer will be supplied back to each callback function.
  *
- * When a number is parsed:
- *      'number' callback is invoked, passing the start position and
- *      the length of the set of characters that makeup the number.
- *      Any sequence of characters consisting of alnums, +, - and .,
- *      starting with a digit is considered a number.
- *      The callback must parse the number token into the
- *      appropriate number representation and raise errors if it is not a
- *      valid number.
+ * For each JSON primitive entity (string, number, boolean, null),
+ * the corresponding  callback method is invoked.
  *
- * When a null is parsed,
- *      'null' callback is invoked.
+ * For arrays and objects, a 'begin' callback and an 'end' callback
+ * are invoked.
  *
- * When a boolean is parsed,
- *      'boolean' callback is invoked with 1 or 0.
- *
- * When an object is parsed:
- *      'beginObject' callback is invoked upon encountering a {.
- *      'endObject' callback is invoked upon encountering the corresponding }.
- *
- * When a property is parsed:
- *      'propertyName' is invoked upon parsing the property name.
- *      The value of the property can be a string, an object or an array.
- *      The appropriate callback will be called for the property value.
- *      The comma character is optional between the properties.
- *
- * When an array is parsed:
- *      'beginArray' callback is invoked upon encountering a [.
- *      'end' array callback is invoked upon encountering the corresponding ].
- *      The value of an array element can be a string, an object or an array.
- *      The appropriate callback will be called for the array element.
- *      The comma character is optional between the array elements.
+ * The parser does not convert numbers to numeric types (int, float etc).
+ * Instead it passes the pointer to the token and the length.
+ * This allows clients to interpret the number appropriately without any
+ * loss in precision.
+ * Similarly for string values, the pointer to the string and its length
+ * (excluding the quotes) is supplied to the callback.
+ * The client needs to perform any un-escaping as needed.
  */
 
 typedef struct _OE_JsonParserCallbackInterface

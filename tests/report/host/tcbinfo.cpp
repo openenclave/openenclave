@@ -88,7 +88,13 @@ void TestJsonParser(oe_enclave_t* enclave)
                                "./data/json/failnum3.json",
                                "./data/json/failnum4.json",
                                "./data/json/failnum5.json",
-                               "./data/json/failnum6.json"};
+                               "./data/json/failnum6.json",
+                               "./data/json/failstring1.json",
+                               "./data/json/failstring2.json",
+                               "./data/json/failstring3.json",
+                               "./data/json/failstring4.json",
+                               "./data/json/failstring5.json",
+                               "./data/json/failstring6.json"};
 
     for (size_t i = 0; i < OE_COUNTOF(failFiles); ++i)
     {

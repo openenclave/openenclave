@@ -1,12 +1,6 @@
 {
-    "description" : "The JSON Parser expects the callbacks to validate strings.",
-    "description" : "The value 'string\x\p\q'  is parsed as string. The callback needs to unescape the string correctly.",
-    "a" : 1,
-    "b" : [
-        1,
-        2,
-        3,
-        4
-    ],   
-    "c" : "string with incorrect escape \x\p\q" 
+    "empty" : "",
+    "simple" : "abc",
+    "all escapes" : "\"\\\/\b\f\n\r\t\uabcf\u1234\u5678\u9abc\udeff",
+    "long" : "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf"
 }
