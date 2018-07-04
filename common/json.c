@@ -120,10 +120,63 @@ static const uint8_t* _ReadNumber(
     const uint8_t* itr,
     const uint8_t* end)
 {
-    while (itr != end &&
-           (_IsAlnum(*itr) || *itr == '+' || *itr == '-' || *itr == '.'))
+    if (itr == end)
+        return _ReportError(p, "Unexpected eof", itr, end);
+
+    // Grammer:
+    //    number = {-} decimal_part {fractional_part} {exponent_part}
+    //    decimal_part = 0 | ([1..9] [0..9]*)
+    //    fractional_part = . [0..9]+
+    //    exponent_part {[eE]{[+-]}[0..9]+}
+    //    where {x} means x is optional
+    //          * means zero or more
+    //          + means one or more
+    //          [values] means one of the items in values.
+    // Number can start with a minus.
+    if (*itr == '-')
+        ++itr;
+
+    if (itr == end || !_IsDigit(*itr))
+        return _ReportError(p, "Ill formed number", itr, end);
+
+    // Read decimal part
+    if (*itr == '0')
     {
         ++itr;
+    }
+    else
+    {
+        // *itr >= 1 && *itr <= '9'
+        ++itr;
+        while (itr != end && _IsDigit(*itr))
+            ++itr;
+    }
+
+    // Read optional fractional part.
+    if (itr != end && *itr == '.')
+    {
+        ++itr;
+        if (itr == end || !_IsDigit(*itr))
+            return _ReportError(p, "Expecting digit to follow .", itr, end);
+
+        while (itr != end && _IsDigit(*itr))
+            ++itr;
+    }
+
+    // Read optional exponent part.
+    if (itr != end && (*itr == 'e' || *itr == 'E'))
+    {
+        ++itr;
+        // Read optional exponent sign.
+        if (itr != end && (*itr == '+' || *itr == '-'))
+            ++itr;
+
+        if (itr == end || !_IsDigit(*itr))
+            return _ReportError(p, "Ill formed exponent", itr, end);
+
+        // Read exponent digits.
+        while (itr != end && _IsDigit(*itr))
+            ++itr;
     }
 
     return itr;
@@ -328,7 +381,7 @@ static const uint8_t* _Read(
     if (itr == end)
         return _ReportError(p, "Unexpected end of input.", itr, end);
 
-    if (_IsDigit(*itr))
+    if (_IsDigit(*itr) || *itr == '-')
     {
         itr = _ReadNumber(p, itr, end);
         if (!p->parseFailed && p->interface.number)

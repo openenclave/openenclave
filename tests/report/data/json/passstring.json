@@ -1,8 +1,7 @@
 {
-    "description" : "The JSON Parser expects the callbacks to validate numbers and string.",
-    "description" : "The value 1abcdefgh is parsed as a number. The callback needs to try parsing it as a number.",
+    "description" : "The JSON Parser expects the callbacks to validate strings.",
     "description" : "The value 'string\x\p\q'  is parsed as string. The callback needs to unescape the string correctly.",
-    "a" : 1abcdefgh,
+    "a" : 1,
     "b" : [
         1,
         2,

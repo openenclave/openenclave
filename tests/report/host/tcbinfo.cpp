@@ -22,6 +22,13 @@ std::vector<uint8_t> FileToBytes(const char* path)
     std::ifstream f(path, std::ios::binary);
     std::vector<uint8_t> bytes = std::vector<uint8_t>(
         std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
+
+    if (bytes.empty())
+    {
+        printf("File %s not found\n", path);
+        exit(1);
+    }
+
     // Explicitly add null character so that the bytes can be printed out
     // safely as a string if needed.
     bytes.push_back('\0');
@@ -53,34 +60,40 @@ oe_result_t ParseJson(oe_enclave_t* enclave, const char* path)
 
 void TestJsonParser(oe_enclave_t* enclave)
 {
-    const char* passfiles[] = {"./data/json/pass1.json",
-                               // Json constructs that the parser expects
-                               // the callbacks to validate:
-                               //      string content
-                               //      number parsing
-                               "./data/json/pass2.json"};
+    const char* passFiles[] = {
+        "./data/json/pass.json",
+        "./data/json/passnumber.json",
+        // A super set of legal json strings are allowed by the parser.
+        // Strings are expected to be validated by the callbacks.
+        "./data/json/passstring.json"};
 
-    for (size_t i = 0; i < OE_COUNTOF(passfiles); ++i)
+    for (size_t i = 0; i < OE_COUNTOF(passFiles); ++i)
     {
-        OE_TEST(ParseJson(enclave, passfiles[i]) == OE_OK);
+        OE_TEST(ParseJson(enclave, passFiles[i]) == OE_OK);
+        printf("%s parse success.\n", passFiles[i]);
     }
 
-    const char* negfiles[] = {
-        "./data/json/neg1.json",
-        "./data/json/neg2.json",
-        "./data/json/neg3.json",
-        "./data/json/neg4.json",
-        "./data/json/neg5.json",
-        "./data/json/neg6.json",
-        /* Json types not supported */
-        "./data/json/neg7.json", // true
-        "./data/json/neg6.json", // false
-        "./data/json/neg6.json", // null
-    };
+    const char* failFiles[] = {"./data/json/fail1.json",
+                               "./data/json/fail2.json",
+                               "./data/json/fail3.json",
+                               "./data/json/fail4.json",
+                               "./data/json/fail5.json",
+                               "./data/json/fail6.json",
+                               /* Json types not supported */
+                               "./data/json/fail7.json", // true
+                               "./data/json/fail8.json", // false
+                               "./data/json/fail9.json", // null
+                               "./data/json/failnum1.json",
+                               "./data/json/failnum2.json",
+                               "./data/json/failnum3.json",
+                               "./data/json/failnum4.json",
+                               "./data/json/failnum5.json",
+                               "./data/json/failnum6.json"};
 
-    for (size_t i = 0; i < OE_COUNTOF(negfiles); ++i)
+    for (size_t i = 0; i < OE_COUNTOF(failFiles); ++i)
     {
-        OE_TEST(ParseJson(enclave, negfiles[i]) == OE_FAILURE);
+        OE_TEST(ParseJson(enclave, failFiles[i]) == OE_FAILURE);
+        printf("%s parse failed as expected.\n", failFiles[i]);
     }
 }
 
