@@ -40,6 +40,7 @@ add_subdirectory(SampleApp)
 add_subdirectory(SampleAppCRT)
 add_subdirectory(sealKey)
 add_subdirectory(stdcxx)
+add_subdirectory(thread)
 endif()
 
 if (UNIX)
@@ -51,7 +52,6 @@ add_subdirectory(mbed)
 add_subdirectory(NestedCall)
 add_subdirectory(ricochet)
 add_subdirectory(stdc)
-add_subdirectory(thread)
 add_subdirectory(VectorException)
 
 # Following five tests are UNIX only because they depend on the oegen tool
