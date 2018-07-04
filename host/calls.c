@@ -168,10 +168,11 @@ static oe_result_t _DoEENTER(
     void* tcs,
     void (*aep)(void),
     oe_code_t codeIn,
-    uint32_t funcIn,
+    uint16_t funcIn,
     uint64_t argIn,
     oe_code_t* codeOut,
-    uint32_t* funcOut,
+    uint16_t* funcOut,
+    uint16_t* resultOut,
     uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -182,10 +183,13 @@ static oe_result_t _DoEENTER(
     if (funcOut)
         *funcOut = 0;
 
+    if (resultOut)
+        *funcOut = 0;
+
     if (argOut)
         *argOut = 0;
 
-    if (!codeOut || !funcOut || !argOut)
+    if (!codeOut || !funcOut || !resultOut || !argOut)
         OE_THROW(OE_INVALID_PARAMETER);
 
     OE_TRACE_INFO(
@@ -198,7 +202,7 @@ static oe_result_t _DoEENTER(
 
     /* Call oe_enter() assembly function (enter.S) */
     {
-        uint64_t arg1 = oe_make_call_arg1(codeIn, funcIn, 0);
+        uint64_t arg1 = oe_make_call_arg1(codeIn, funcIn, 0, 0);
         uint64_t arg2 = (uint64_t)argIn;
         uint64_t arg3 = 0;
         uint64_t arg4 = 0;
@@ -214,6 +218,7 @@ static oe_result_t _DoEENTER(
 
         *codeOut = oe_get_code_from_call_arg1(arg3);
         *funcOut = oe_get_func_from_call_arg1(arg3);
+        *resultOut = oe_get_result_from_call_arg1(arg3);
         *argOut = arg4;
     }
 
@@ -310,7 +315,7 @@ static void _HandleCallHost(uint64_t arg)
 static oe_result_t _HandleOCALL(
     oe_enclave_t* enclave,
     void* tcs,
-    uint32_t func,
+    uint16_t func,
     uint64_t argIn,
     uint64_t* argOut)
 {
@@ -395,7 +400,8 @@ static oe_result_t _HandleOCALL(
 
         default:
         {
-            break;
+            /* No function found with the number */
+            OE_THROW(OE_NOT_FOUND);
         }
     }
 
@@ -444,11 +450,7 @@ int __oe_dispatch_ocall(
         uint64_t argOut = 0;
 
         oe_result_t result = _HandleOCALL(enclave, tcs, func, arg, &argOut);
-
-        /* ATTN: ignored! */
-        (void)result;
-
-        *arg1Out = oe_make_call_arg1(OE_CODE_ORET, func, 0);
+        *arg1Out = oe_make_call_arg1(OE_CODE_ORET, func, 0, result);
         *arg2Out = argOut;
 
         return 0;
@@ -582,7 +584,7 @@ static void _ReleaseTCS(oe_enclave_t* enclave, void* tcs)
 
 oe_result_t oe_ecall(
     oe_enclave_t* enclave,
-    uint32_t func,
+    uint16_t func,
     uint64_t arg,
     uint64_t* argOutPtr)
 {
@@ -590,7 +592,8 @@ oe_result_t oe_ecall(
     void* tcs = NULL;
     oe_code_t code = OE_CODE_ECALL;
     oe_code_t codeOut = 0;
-    uint32_t funcOut = 0;
+    uint16_t funcOut = 0;
+    uint16_t resultOut = 0;
     uint64_t argOut = 0;
 
 #if defined(TRACE_ECALLS)
@@ -615,6 +618,7 @@ oe_result_t oe_ecall(
             arg,
             &codeOut,
             &funcOut,
+            &resultOut,
             &argOut));
 
     /* Process OCALLS */
@@ -624,7 +628,7 @@ oe_result_t oe_ecall(
     if (argOutPtr)
         *argOutPtr = argOut;
 
-    result = OE_OK;
+    result = (oe_result_t)resultOut;
 
 OE_CATCH:
 

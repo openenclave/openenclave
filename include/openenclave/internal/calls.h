@@ -9,12 +9,6 @@
 #include <openenclave/internal/cpuid.h>
 #include "sgxtypes.h"
 
-#define __OE_ECALL_BASE ((int)0x00FFFFFF)
-#define __OE_OCALL_BASE ((int)0x00FFFFFF)
-
-#define OE_MAX_ECALLS 1024
-#define OE_MAX_OCALLS 1024
-
 OE_EXTERNC_BEGIN
 
 typedef struct _oe_enclave oe_enclave_t;
@@ -65,12 +59,13 @@ typedef enum _oe_code {
 **==============================================================================
 */
 
-/* ECALL function numbers are less than 32,768 */
+/* ECALL function numbers are in the range: [0:32765] */
 #define OE_ECALL_BASE 0
 
-/* OCALL function numbers are greater than 32,768 */
+/* OCALL function numbers are in the range: [32768:65535] */
 #define OE_OCALL_BASE 0x8000
 
+/* Function numbers are 16 bit integers */
 typedef enum _oe_func {
     OE_ECALL_DESTRUCTOR = OE_ECALL_BASE,
     OE_ECALL_INIT_ENCLAVE,
@@ -113,15 +108,24 @@ typedef enum _oe_func {
 **         code -- indicating whether ECALL, OCALL, ERET, or ORET
 **         func -- the number of the function being called
 **         flags -- any bit flags
+**         result -- the result of the transport (not the function)
 **
 **==============================================================================
 */
 
 OE_INLINE uint64_t
-oe_make_call_arg1(oe_code_t code, oe_func_t func, uint16_t flags)
+oe_make_call_arg1(
+    oe_code_t code, 
+    oe_func_t func, 
+    uint16_t flags, 
+    oe_result_t result)
 {
-    /* [ FLAGS:16, CODE:16, FUNC:32 ] */
-    return ((uint64_t)code << 48) | ((uint64_t)func << 16) | ((uint64_t)flags);
+    /* [ CODE:16 | FUNC:16 | FLAGS:16 | RESULT:16 ] */
+    return 
+        ((uint64_t)code << 48) | 
+        ((uint64_t)func << 32) | 
+        ((uint64_t)flags << 16) |
+        ((uint64_t)result);
 }
 
 /*
@@ -134,7 +138,7 @@ oe_make_call_arg1(oe_code_t code, oe_func_t func, uint16_t flags)
 
 OE_INLINE oe_code_t oe_get_code_from_call_arg1(uint64_t arg)
 {
-    return (oe_code_t)((0xFFFF000000000000 & arg) >> 48);
+    return (oe_code_t)((0xffff000000000000 & arg) >> 48);
 }
 
 /*
@@ -145,9 +149,9 @@ OE_INLINE oe_code_t oe_get_code_from_call_arg1(uint64_t arg)
 **==============================================================================
 */
 
-OE_INLINE oe_func_t oe_get_func_from_call_arg1(uint64_t arg)
+OE_INLINE uint16_t oe_get_func_from_call_arg1(uint64_t arg)
 {
-    return (oe_func_t)((0x0000FFFFFFFF0000 & arg) >> 16);
+    return (oe_func_t)((0x0000ffff00000000 & arg) >> 32);
 }
 
 /*
@@ -160,7 +164,20 @@ OE_INLINE oe_func_t oe_get_func_from_call_arg1(uint64_t arg)
 
 OE_INLINE uint16_t oe_get_flags_from_call_arg1(uint64_t arg)
 {
-    return (uint16_t)(0x000000000000FFFF & arg);
+    return (uint16_t)((0x00000000ffff0000 & arg) >> 16);
+}
+
+/*
+**==============================================================================
+**
+** oe_get_result_from_call_arg1()
+**
+**==============================================================================
+*/
+
+OE_INLINE uint16_t oe_get_result_from_call_arg1(uint64_t arg)
+{
+    return (uint16_t)(0x000000000000ffff & arg);
 }
 
 /*
@@ -288,7 +305,7 @@ typedef struct _oe_init_enclave_args
  */
 oe_result_t oe_ecall(
     oe_enclave_t* enclave,
-    uint32_t func,
+    uint16_t func,
     uint64_t argIn,
     uint64_t* argOut);
 
@@ -334,10 +351,10 @@ oe_result_t oe_ecall(
  *
  */
 oe_result_t oe_ocall(
-    uint32_t func,
+    uint16_t func,
     uint64_t argIn,
     uint64_t* argOut,
-    uint32_t ocall_flags);
+    uint16_t ocall_flags);
 
 OE_EXTERNC_END
 

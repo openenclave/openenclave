@@ -93,6 +93,12 @@ int main(int argc, const char* argv[])
         OE_TEST(args.result == 7000);
     }
 
+    /* Test low-level ECALL of illegal function number */
+    {
+        result = oe_ecall(enclave, 0xffff, 0, 0);
+        OE_TEST(result == OE_NOT_FOUND);
+    }
+
     oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (%s)\n", argv[0]);

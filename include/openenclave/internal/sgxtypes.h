@@ -564,8 +564,10 @@ typedef struct _TD
     uint64_t host_previous_rbp;
 
     /* Return arguments from OCALL */
-    int64_t oret_func;
-    int64_t oret_arg;
+    uint16_t oret_func;
+    uint16_t oret_result;
+    uint16_t padding[2];
+    uint64_t oret_arg;
 
     /* List of Callsite structures (most recent call is first) */
     Callsite* callsites;
@@ -577,7 +579,7 @@ typedef struct _TD
     int linux_errno;
 
     /* Currently active ocall flags */
-    uint32_t ocall_flags;
+    uint16_t ocall_flags;
 
     /* Reserved */
     uint8_t reserved[3832];
