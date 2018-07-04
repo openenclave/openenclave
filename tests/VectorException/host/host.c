@@ -43,6 +43,24 @@ void TestSigillHandling(oe_enclave_t* enclave)
     OE_TEST(args.ret == 0);
 
     // Verify that the enclave cached CPUID values match host's
+    // First, verify values being tested do not reach above max supported leaf.
+    uint32_t cpuidMaxlevel[OE_CPUID_REG_COUNT];
+    memset(cpuidMaxlevel, 0, sizeof(cpuidMaxlevel));
+    oe_get_cpuid(
+        0,
+        0,
+        &cpuidMaxlevel[OE_CPUID_RAX],
+        &cpuidMaxlevel[OE_CPUID_RBX],
+        &cpuidMaxlevel[OE_CPUID_RCX],
+        &cpuidMaxlevel[OE_CPUID_RDX]);
+        
+    if (OE_CPUID_LEAF_COUNT-1 > cpuidMaxlevel[OE_CPUID_RAX])
+        oe_put_err(
+            "Test machine does not support CPUID leaf %x expected by "
+            "TestSigillHandling.\n",
+            (OE_CPUID_LEAF_COUNT-1);
+
+    // Check all values.
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
@@ -54,14 +72,6 @@ void TestSigillHandling(oe_enclave_t* enclave)
             &cpuidInfo[OE_CPUID_RBX],
             &cpuidInfo[OE_CPUID_RCX],
             &cpuidInfo[OE_CPUID_RDX]);
-
-        // Check if this is an unsupported basic leaf 
-        // (i.e. it's smaller than max supported basic leaf)
-        if (i > cpuidInfo[OE_CPUID_RAX])
-            oe_put_err(
-                "Test machine does not support CPUID leaf %x expected by "
-                "TestSigillHandling.\n",
-                i);
 
         for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
         {
