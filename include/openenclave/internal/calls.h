@@ -80,7 +80,7 @@ typedef enum _oe_func {
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
     /* Caution: always add new ECALL function numbers here */
 
-    OE_OCALL_CALL_HOST,
+    OE_OCALL_CALL_HOST = OE_OCALL_BASE,
     OE_OCALL_GET_QE_TARGET_INFO,
     OE_OCALL_GET_QUOTE,
     OE_OCALL_THREAD_WAKE,
