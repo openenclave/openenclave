@@ -58,7 +58,7 @@ void TestSigillHandling(oe_enclave_t* enclave)
         oe_put_err(
             "Test machine does not support CPUID leaf %x expected by "
             "TestSigillHandling.\n",
-            (OE_CPUID_LEAF_COUNT-1);
+            (OE_CPUID_LEAF_COUNT-1));
 
     // Check all values.
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
