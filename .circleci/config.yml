@@ -136,10 +136,12 @@ workflows:
       #  1. sgx1-debug((build-test))
       - build-test-sgx1-debug:
           requires:
-              - pre-commit-test
+             - pre-commit-test
             
       # 2.  sgx1-relwithdebinfo(build-test)     
-      #- build-test-sgx1-relwithdebinfo
+      - build-test-sgx1-relwithdebinfo:
+          requires:
+             - pre-commit-test
             
       # 3.  sgx1-release(build-test)    
       #- build-test-sgx1-release
