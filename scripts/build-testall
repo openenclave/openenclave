@@ -93,9 +93,8 @@ if [[ ${BUILD_TYPE} != "DEBUG" && ${BUILD_TYPE} != "RELEASE" && ${BUILD_TYPE} !=
    exit 1
 fi
 
-#sudo ./scripts/install-prereqs -- Commenting this out as basic setup is done outside this script
 if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
-   sudo make -C prereqs USE_LIBSGX=1
+   sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
 elif [ ${DISABLE_SIM} == 0 ]; then
    sudo make -C prereqs
 fi
