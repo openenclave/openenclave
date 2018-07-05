@@ -133,7 +133,7 @@ fi
 
 if [ "$?" != "0" ]; then
     echo ""
-    echo "Test failed for ${PLATFORM_MODE} in simulation mode"
+    echo "Test failed for ${PLATFORM_MODE} ${BUILD_TYPE} in simulation mode"
     echo ""
     exit 1
 fi
