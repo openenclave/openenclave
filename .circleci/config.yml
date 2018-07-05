@@ -3,6 +3,10 @@
 
 version: 2.0
 jobs:
+  filters:
+    branches:
+      only:
+        - ci-work
 
   #========Build-Test==========# 
 
@@ -11,10 +15,6 @@ jobs:
     docker:
       - image: oeciteam/oetools:1.0.0
     working_directory: ~/Microsoft-OE
-    filters:
-      branches:
-        only:
-          - ci-work
     steps:
       - checkout
       # Build and Test
@@ -22,7 +22,7 @@ jobs:
           name: SGX1-Debug
           command:  |
             ./scripts/pre-commit &&
-            ./scripts/build-testall 
+            #./scripts/build-testall 
 
   # SGX1 | RelWithDebInfo
   build-test-sgx1-relwithdebinfo:
