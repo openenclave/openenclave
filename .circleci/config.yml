@@ -128,6 +128,11 @@ workflows:
       # 0. Pre-Commit test
       - pre-commit-test
       
+      - hold:
+         type: approval
+         requires: 
+           - pre-commit-test
+      
       #  1. sgx1-debug((build-test))
       - build-test-sgx1-debug:
           requires:
