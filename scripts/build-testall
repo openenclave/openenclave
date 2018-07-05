@@ -18,7 +18,7 @@ if [ "$1" == "-h" ]; then
    echo "Script to fire OE build and test for specified build-type, platform & test mode"
    echo " Usage:  sudo ./scripts/build-testall [-d]|[-p <platform-type>]|-b [build-type]"
    echo "           -d or --disable_sim to Disable Simulator Test Mode"
-   echo "           -p SGX1-FLC or -p=SGX1-FLC to build for SGX1-FLC platform"
+   echo "           -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
    echo "           -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
    echo "           -h Display usage and exit"
    echo " Default is to build for SGX1 platform, Debug Build type & test in simulator mode"
@@ -30,7 +30,7 @@ fi
 #Disable Simulator test mode to run on SGX hardware. 
 #Default test mode is Simulator, disable Simulator test mode with -d or --disable_sim 
 DISABLE_SIM=0
-#Valid PLATFORM_MODE values are SGX1 or SGX1-FLC
+#Valid PLATFORM_MODE values are SGX1 or SGX1FLC
 PLATFORM_MODE="SGX1"
 #Valid BUILDTYPE values are Debug|Release|RelWithDebInfo
 BUILD_TYPE="DEBUG"
@@ -83,7 +83,7 @@ BUILD_TYPE=`echo $BUILD_TYPE|tr '[a-z]' '[A-Z]'`
 echo "BUILD_TYPE  = ${BUILD_TYPE}"
 
 #Check if the parameter values are correct
-if [[ ${PLATFORM_MODE} != "SGX1" && ${PLATFORM_MODE} != "SGX1-FLC" ]]; then
+if [[ ${PLATFORM_MODE} != "SGX1" && ${PLATFORM_MODE} != "SGX1FLC" ]]; then
    echo "Invalid value for ${PLATFORM_MODE} "
    exit 1
 fi
@@ -94,7 +94,7 @@ if [[ ${BUILD_TYPE} != "DEBUG" && ${BUILD_TYPE} != "RELEASE" && ${BUILD_TYPE} !=
 fi
 
 #sudo ./scripts/install-prereqs -- Commenting this out as basic setup is done outside this script
-if [ ${PLATFORM_MODE} == "SGX1-FLC" ]; then
+if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
    sudo make -C prereqs USE_LIBSGX=1
 elif [ ${DISABLE_SIM} == 0 ]; then
    sudo make -C prereqs
@@ -104,7 +104,7 @@ mkdir build
 cd build
 
 CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
-if [ ${PLATFORM_MODE} == "SGX1-FLC" ]; then
+if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
    CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_LIBSGX=1"
 fi
 echo "CMAKE_FLAGS are ${CMAKE_FLAGS}"
