@@ -139,21 +139,21 @@ workflows:
              - pre-commit-test
             
       # 3.  sgx1-release(build-test)    
-      - build-test-sgx1-release
+      - build-test-sgx1-release:
           requires:
              - pre-commit-test
             
       # 4.  sgx1-flc-debug(build-test)
-      - build-test-sgx1-flc-debug
+      - build-test-sgx1-flc-debug:
           requires:
               - pre-commit-test
             
       # 5.  sgx1-flc-relwithdebinfo(build-test)  
-      - build-test-sgx1-flc-relwithdebinfo
+      - build-test-sgx1-flc-relwithdebinfo:
           requires:
              - pre-commit-test
             
       # 6.  sgx1-flc-release(build-test)    
-      - build-test-sgx1-flc-release
+      - build-test-sgx1-flc-release:
           requires:
              - pre-commit-test
