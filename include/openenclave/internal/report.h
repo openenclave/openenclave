@@ -83,4 +83,29 @@ typedef struct _oe_verify_report_args
     uint32_t reportSize; /* in */
 } oe_verify_report_args_t;
 
+/*
+**==============================================================================
+**
+** _oe_get_revocation_info_args
+**
+**==============================================================================
+*/
+typedef struct _oe_get_revocation_info_args
+{
+    oe_result_t result;             /* out */
+    uint8_t* fmspc;                 /* in */
+    uint32_t fmspcSize;             /* in */
+    const char* crlUrls[3];         /* in */
+    uint32_t numCrlUrls;            /* in */
+    uint8_t* tcbInfo;               /* out */
+    uint32_t tcbInfoSize;           /* out */
+    uint8_t* tcbIssuerChain;        /* out */
+    uint32_t tcbIssuerChainSize;    /* out */
+    uint8_t* crl[3];                /* out */
+    uint32_t crlSize[3];            /* out */
+    uint8_t* crlIssuerChain[3];     /* out */
+    uint32_t crlIssuerChainSize[3]; /* out */
+    uint8_t* hostOutBuffer;         /* out */
+} oe_get_revocation_info_args_t;
+
 #endif //_OE_INCLUDE_REPORT_H_
