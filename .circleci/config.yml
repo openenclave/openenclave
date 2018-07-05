@@ -89,13 +89,7 @@ jobs:
       - run:
           name: SGX1-FLC-RelWithDebInfo
           command:  |
-             sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
-             ls -la  ~/Microsoft-OE/prereqs/ngsa
-             mkdir build &&
-             cd build &&
-             cmake .. -DUSE_LIBSGX=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo &&
-             make &&
-             OE_SIMULATION=1 ctest
+             ./scripts/build-testall -p SGX1FLC -b RelWithDebInfo
 
   # SGX1-FLC | Release 
   build-test-sgx1-flc-release:
@@ -108,13 +102,7 @@ jobs:
       - run:
           name: SGX1-FLC-Release
           command:  |
-             sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
-             ls -la  ~/Microsoft-OE/prereqs/ngsa
-             mkdir build &&
-             cd build &&
-             cmake .. -DUSE_LIBSGX=1 -DCMAKE_BUILD_TYPE=Release &&
-             make &&
-             OE_SIMULATION=1 ctest
+             ./scripts/build-testall -p SGX1FLC -b Release
              
 workflows:
   version: 2
@@ -139,16 +127,16 @@ workflows:
         #     - pre-commit-test
             
       # 4.  sgx1-flc-debug(build-test)
-      - build-test-sgx1-flc-debug:
-          requires:
-              - pre-commit-test
+      #- build-test-sgx1-flc-debug:
+      #    requires:
+      #        - pre-commit-test
             
       # 5.  sgx1-flc-relwithdebinfo(build-test)  
-      #- build-test-sgx1-flc-relwithdebinfo:
-       #   requires:
-        #     - pre-commit-test
+      - build-test-sgx1-flc-relwithdebinfo:
+          requires:
+            - pre-commit-test
             
       # 6.  sgx1-flc-release(build-test)    
-      #- build-test-sgx1-flc-release:
-       #   requires:
-        #     - pre-commit-test
+      - build-test-sgx1-flc-release:
+         requires:
+            - pre-commit-test
