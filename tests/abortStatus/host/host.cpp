@@ -18,10 +18,10 @@
 #include "../args.h"
 
 #if defined(__linux__)
-#include<unistd.h>
+#include <unistd.h>
 #define atomic_inc(ptr) __sync_fetch_and_add((ptr), 1)
 #elif defined(_WIN32)
-#include<Windows.h>
+#include <Windows.h>
 #define atomic_inc(ptr) InterlockedIncrement((ptr))
 #endif
 
@@ -409,7 +409,7 @@ int main(int argc, const char* argv[])
     }
 
     printf("=== This program is used to test enclave abort status.\n");
-	
+
     if (TestBasicAbort(argv[1]))
     {
         printf("Basic abort status tests passed.\n");
