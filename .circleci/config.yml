@@ -3,6 +3,7 @@
 
 version: 2.0
 jobs:
+  # Pre-commit test
   pre-commit-test:
     docker:
       - image: oeciteam/oetools:1.0.0
@@ -133,7 +134,7 @@ workflows:
   build-test:
     jobs:
       # 0. Pre-Commit test
-      pre-commit-test
+      - pre-commit-test
       
       #  1. sgx1-debug((build-test))
       - build-test-sgx1-debug
