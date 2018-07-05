@@ -442,7 +442,7 @@ int __oe_dispatch_ocall(
     oe_enclave_t* enclave)
 {
     const oe_code_t code = oe_get_code_from_call_arg1(arg1);
-    const uint32_t func = oe_get_func_from_call_arg1(arg1);
+    const uint16_t func = oe_get_func_from_call_arg1(arg1);
     const uint64_t arg = arg2;
 
     if (code == OE_CODE_OCALL)

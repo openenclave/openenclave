@@ -222,7 +222,7 @@ OE_CATCH:
 **==============================================================================
 */
 
-static void _HandleExit(oe_code_t code, int64_t func, uint64_t arg)
+static void _HandleExit(oe_code_t code, uint16_t func, uint64_t arg)
 {
     oe_exit(oe_make_call_arg1(code, func, 0, 0), arg);
 }
