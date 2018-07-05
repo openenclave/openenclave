@@ -76,7 +76,7 @@ jobs:
       - run:
           name: SGX1-FLC-Debug
           command:  |
-	     ./scripts/build-testall -p SGX1FLC -b Debug
+              ./scripts/build-testall -p SGX1FLC -b Debug
             
   # SGX1-FLC | RelWithDebInfo
   build-test-sgx1-flc-relwithdebinfo:
