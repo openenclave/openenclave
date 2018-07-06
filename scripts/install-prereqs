@@ -31,6 +31,9 @@ PACKAGES="$PACKAGES libexpat1-dev"
 # Needed for oesign
 PACKAGES="$PACKAGES openssl"
 
+# Needed for oehost
+PACKAGES="$PACKAGES libssl-dev"
+
 # Needed for 3rdparty/libcxx/update.make
 PACKAGES="$PACKAGES subversion"
 
