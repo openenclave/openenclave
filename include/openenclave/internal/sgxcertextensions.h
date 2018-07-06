@@ -13,24 +13,15 @@ OE_EXTERNC_BEGIN
 
 typedef struct _ParsedExtensionInfo
 {
-    uint8_t* ppid;
-    uint32_t ppidLength;
-    uint8_t* tcb;
-    uint32_t tcbSize;
-    uint8_t* tcbCompSvn[17];
-    uint32_t tcbCompSvnSize[17];
-    uint8_t* pceSvn;
-    uint32_t pceSvnSize;
-    uint8_t* cpuSvn;
-    uint32_t cpuSvnSize;
-    uint8_t* pceId;
-    uint32_t pceIdSize;
-    uint8_t* fmspc;
-    uint32_t fmspcSize;
-    uint8_t* sgxType;
-    uint32_t sgxTypeSize;
-    uint16_t success;
-    uint16_t errors;
+    uint8_t ppid[16];
+    uint64_t compSvn[16];
+    uint8_t pceSvn;
+    uint8_t cpuSvn[16];
+    uint8_t pceId[2];
+    uint8_t fmspc[6];
+    uint8_t sgxType;
+    uint8_t optDynamicPlatform;
+    uint8_t optCachedKeys;
 } ParsedExtensionInfo;
 
 oe_result_t ParseSGXExtensions(
