@@ -1,0 +1,142 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+version: 2.0
+jobs:
+  # Pre-commit test
+  pre-commit-test:
+    docker:
+      - image: oeciteam/oetools:1.1
+    working_directory: ~/Microsoft-OE
+    filters:
+      branches:
+       only:
+         - ci-work
+    steps:
+      - checkout
+      # Build and Test
+      - run:
+          name: Pre-Commit Test
+          command:  |
+            ./scripts/pre-commit 
+
+  #========Build-Test==========# 
+
+  # SGX1 | Debug 
+  ci-test-sgx1-debug:
+    docker:
+      - image: oeciteam/oetools:1.1
+    working_directory: ~/Microsoft-OE
+    filters:
+      branches:
+       only:
+         - ci-work
+    steps:
+      - checkout
+      # Build and Test
+      - run:
+          name: SGX1-Debug
+          command:  |
+            ./scripts/build-testall 
+
+  # SGX1 | RelWithDebInfo
+  ci-test-sgx1-relwithdebinfo:
+    docker:
+      - image: oeciteam/oetools:1.1
+    working_directory: ~/Microsoft-OE
+    steps:
+      - checkout
+      # Build and Test
+      - run: 
+          name: SGX1-RelWithDebInfo
+          command:  |
+             ./scripts/build-testall -p SGX1 -b RelWithDebInfo
+  
+  # SGX1 | Release
+  ci-test-sgx1-release:
+    docker:
+      - image: oeciteam/oetools:1.1
+    working_directory: ~/Microsoft-OE
+    steps:
+      - checkout
+      # Build and Test
+      - run: 
+          name: SGX1-Release
+          command:  |
+             ./scripts/build-testall -p SGX1 -b Release
+             
+  # SGX1-FLC | Debug 
+  ci-test-sgx1-flc-debug:
+    docker:
+      - image: oeciteam/oetools:1.1
+    working_directory: ~/Microsoft-OE
+    steps:
+      - checkout
+      # Build and Test
+      - run:
+          name: SGX1-FLC-Debug
+          command:  |
+              ./scripts/build-testall -p SGX1FLC -b Debug
+            
+  # SGX1-FLC | RelWithDebInfo
+  ci-test-sgx1-flc-relwithdebinfo:
+    docker:
+      - image: oeciteam/oetools:1.1
+    working_directory: ~/Microsoft-OE
+    steps:
+      - checkout
+      # Build and Test
+      - run:
+          name: SGX1-FLC-RelWithDebInfo
+          command:  |
+             ./scripts/build-testall -p SGX1FLC -b RelWithDebInfo
+
+  # SGX1-FLC | Release 
+  ci-test-sgx1-flc-release:
+    docker:
+      - image: oeciteam/oetools:1.1
+    working_directory: ~/Microsoft-OE
+    steps:
+      - checkout
+      # Build and Test
+      - run:
+          name: SGX1-FLC-Release
+          command:  |
+             ./scripts/build-testall -p SGX1FLC -b Release
+             
+workflows:
+  version: 2
+  ci-test:
+    jobs:
+      # 0. Pre-Commit test
+      - pre-commit-test
+      
+      #  1. sgx1-debug((ci-test))
+      - ci-test-sgx1-debug:
+          requires:
+             - pre-commit-test
+            
+      # 2.  sgx1-relwithdebinfo(ci-test)     
+      #- ci-test-sgx1-relwithdebinfo:
+       #   requires:
+        #     - pre-commit-test
+            
+      # 3.  sgx1-release(ci-test)    
+      #- ci-test-sgx1-release:
+       #   requires:
+        #     - pre-commit-test
+            
+      # 4.  sgx1-flc-debug(ci-test)
+      #- ci-test-sgx1-flc-debug:
+      #    requires:
+      #        - pre-commit-test
+            
+      # 5.  sgx1-flc-relwithdebinfo(ci-test)  
+      #- ci-test-sgx1-flc-relwithdebinfo:
+      #    requires:
+      #      - pre-commit-test
+            
+      # 6.  sgx1-flc-release(ci-test)    
+      #- ci-test-sgx1-flc-release:
+      #   requires:
+      #      - pre-commit-test
