@@ -24,5 +24,4 @@ workflows:
     jobs:
       # 1. Pre-Commit test
       - pre-commit-test
-      
-      
+
