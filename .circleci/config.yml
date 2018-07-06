@@ -76,6 +76,9 @@ jobs:
       - run:
           name: SGX1-FLC-Debug
           command:  |
+              apt-get update &&
+              apt-get install -y autoconf &&
+              apt-get install -y libtool &&
               ./scripts/build-testall -p SGX1FLC -b Debug
             
   # SGX1-FLC | RelWithDebInfo
