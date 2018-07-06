@@ -139,4 +139,4 @@ workflows:
       # 6.  sgx1-flc-release(build-test)    
       #- build-test-sgx1-flc-release:
       #   requires:
-      3      - pre-commit-test
+      #      - pre-commit-test
