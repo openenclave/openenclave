@@ -112,9 +112,9 @@ workflows:
       - pre-commit-test
       
       #  1. sgx1-debug((ci-test))
-      - ci-test-sgx1-debug:
-          requires:
-             - pre-commit-test
+      #- ci-test-sgx1-debug:
+       #   requires:
+        #     - pre-commit-test
             
       # 2.  sgx1-relwithdebinfo(ci-test)     
       #- ci-test-sgx1-relwithdebinfo:
@@ -127,9 +127,9 @@ workflows:
         #     - pre-commit-test
             
       # 4.  sgx1-flc-debug(ci-test)
-      #- ci-test-sgx1-flc-debug:
-      #    requires:
-      #        - pre-commit-test
+      - ci-test-sgx1-flc-debug:
+          requires:
+              - pre-commit-test
             
       # 5.  sgx1-flc-relwithdebinfo(ci-test)  
       #- ci-test-sgx1-flc-relwithdebinfo:
