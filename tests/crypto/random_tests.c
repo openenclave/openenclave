@@ -9,9 +9,9 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>
-#include "random_tests.h"
+#include "tests.h"
 
-void TestRandom()
+void TestRandom(void)
 {
     printf("=== begin %s()\n", __FUNCTION__);
 

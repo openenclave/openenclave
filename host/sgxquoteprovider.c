@@ -96,8 +96,7 @@ oe_result_t oe_initialize_quote_provider()
 }
 
 oe_result_t oe_get_revocation_info(
-    uint8_t* fmspc,                 /* in */
-    uint32_t fmspcSize,             /* in */
+    uint8_t fmspc[6],               /* in */
     const char* crlUrls[3],         /* in */
     uint32_t numCrlUrls,            /* in */
     uint8_t** tcbInfo,              /* out */
@@ -117,12 +116,13 @@ oe_result_t oe_get_revocation_info(
     uint32_t hostBufferSize = 0;
     uint8_t* p = 0;
 
+    printf("herex\n");
     if (!g_GetRevocationInfo || !g_FreeRevocationInfo)
         OE_RAISE(OE_FAILURE);
 
     params.version = SGX_QL_REVOCATION_INFO_VERSION_1;
     params.fmspc = fmspc;
-    params.fmspc_size = fmspcSize;
+    params.fmspc_size = 6;
     params.crl_urls = crlUrls;
     params.crl_url_count = numCrlUrls;
 

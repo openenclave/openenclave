@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
+#define OE_TRACE_LEVEL 2
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
@@ -450,6 +450,7 @@ oe_result_t ParseSGXExtensions(
     if (dataLength != 1)
         OE_RAISE(OE_FAILURE);
     parsedInfo->pceSvn = *data;
+    OE_TRACE_INFO("tcb-pce-svn = %d\n", parsedInfo->pceSvn);
 
     OE_CHECK(
         _ReadOctetExtension(

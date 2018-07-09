@@ -172,7 +172,6 @@ void HandleGetQuoteRevocationInfo(uint64_t argIn)
 
     args->result = oe_get_revocation_info(
         args->fmspc,
-        args->fmspcSize,
         args->crlUrls,
         args->numCrlUrls,
         &args->tcbInfo,

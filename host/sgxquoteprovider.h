@@ -11,8 +11,7 @@ OE_EXTERNC_BEGIN
 
 oe_result_t oe_initialize_quote_provider(void);
 oe_result_t oe_get_revocation_info(
-    uint8_t* fmspc,                 /* in */
-    uint32_t fmspcSize,             /* in */
+    uint8_t fmspc[6],               /* in */
     const char* crlUrls[3],         /* in */
     uint32_t numCrlUrls,            /* in */
     uint8_t** tcbInfo,              /* out */

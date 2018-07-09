@@ -6,16 +6,20 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
+#include <openssl/x509v3.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include "crl.h"
 #include "ec.h"
 #include "init.h"
 #include "rsa.h"
@@ -218,6 +222,16 @@ static int _X509_up_ref(X509* x509)
     return 1;
 }
 
+/* Needed because some versions of OpenSSL do not support X509_CRL_up_ref() */
+static int _X509_CRL_up_ref(X509_CRL* x509_crl)
+{
+    if (!x509_crl)
+        return 0;
+
+    CRYPTO_add(&x509_crl->references, 1, CRYPTO_LOCK_X509_CRL);
+    return 1;
+}
+
 static oe_result_t _CertChainGetLength(const CertChain* impl, int* length)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -415,9 +429,9 @@ done:
 */
 
 oe_result_t oe_cert_read_pem(
+    oe_cert_t* cert,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_t* cert)
+    size_t pemSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
@@ -483,9 +497,9 @@ done:
 }
 
 oe_result_t oe_cert_chain_read_pem(
+    oe_cert_chain_t* chain,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_chain_t* chain)
+    size_t pemSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
@@ -493,7 +507,7 @@ oe_result_t oe_cert_chain_read_pem(
 
     /* Zero-initialize the implementation */
     if (impl)
-        impl->magic = 0;
+        memset(impl, 0, sizeof(CertChain));
 
     /* Check parameters */
     if (!pemData || !pemSize || !chain)
@@ -546,14 +560,16 @@ done:
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    OE_CRL* crl, /* ATTN: placeholder for future feature work */
+    const oe_crl_t* crl,
     oe_verify_cert_error_t* error)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* certImpl = (Cert*)cert;
     CertChain* chainImpl = (CertChain*)chain;
+    crl_t* crl_impl = (crl_t*)crl;
     X509_STORE_CTX* ctx = NULL;
     X509* x509 = NULL;
+    STACK_OF(X509_CRL)* crls = NULL;
 
     /* Initialize error to NULL for now */
     if (error)
@@ -570,6 +586,13 @@ oe_result_t oe_cert_verify(
     if (!_CertChainIsValid(chainImpl))
     {
         _SetErr(error, "invalid chain parameter");
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
+    /* Reject invalid CRL */
+    if (crl_impl && !crl_is_valid(crl_impl))
+    {
+        _SetErr(error, "invalid crl parameter");
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
@@ -607,6 +630,21 @@ oe_result_t oe_cert_verify(
     /* Set the CA chain into the verification context */
     X509_STORE_CTX_trusted_stack(ctx, chainImpl->sk);
 
+    /* Set the CRLs if any */
+    if (crl_impl)
+    {
+        if (!(crls = sk_X509_CRL_new_null()))
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        if (!_X509_CRL_up_ref(crl_impl->crl))
+            OE_RAISE(OE_FAILURE);
+
+        if (!sk_X509_CRL_push(crls, crl_impl))
+            OE_RAISE(OE_FAILURE);
+
+        X509_STORE_CTX_set0_crls(ctx, crls);
+    }
+
     /* Finally verify the certificate */
     if (!X509_verify_cert(ctx))
     {
@@ -625,6 +663,9 @@ done:
 
     if (x509)
         X509_free(x509);
+
+    if (crls)
+        sk_X509_CRL_pop_free(crls, X509_CRL_free);
 
     return result;
 }
@@ -855,7 +896,7 @@ done:
 oe_result_t oe_cert_get_extension(
     const oe_cert_t* cert,
     size_t index,
-    OE_OIDString* oid,
+    oe_oid_string_t* oid,
     uint8_t* data,
     size_t* size)
 {
@@ -882,7 +923,7 @@ oe_result_t oe_cert_get_extension(
     {
         X509_EXTENSION* ext;
         ASN1_OBJECT* obj;
-        OE_OIDString extOid;
+        oe_oid_string_t extOid;
         ASN1_OCTET_STRING* str;
 
         /* Get the i-th extension from the stack */
@@ -910,7 +951,7 @@ oe_result_t oe_cert_get_extension(
 
         /* Copy the OID to the caller's buffer */
         *oid->buf = '\0';
-        strncat(oid->buf, extOid.buf, sizeof(OE_OIDString));
+        strncat(oid->buf, extOid.buf, sizeof(oe_oid_string_t));
 
         /* Copy the data to the caller's buffer */
         if (data)
@@ -953,7 +994,7 @@ oe_result_t oe_cert_find_extension(
     {
         X509_EXTENSION* ext;
         ASN1_OBJECT* obj;
-        OE_OIDString extOid;
+        oe_oid_string_t extOid;
 
         /* Get the i-th extension from the stack */
         if (!(ext = sk_X509_EXTENSION_value(extensions, i)))

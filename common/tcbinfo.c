@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#define OE_TRACE_LEVEL 2
 #include "tcbinfo.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -158,6 +159,9 @@ static void _aggregate_tcb_info(oe_tcb_t* tcb, oe_tcb_t* aggregated_tcb)
     // Aggregate only if the statuses match.
     if (tcb->status != aggregated_tcb->status)
         return;
+
+    aggregated_tcb->is_specified = true;
+
     // Choose the maximum value for each property.
     for (uint32_t i = 0;
          i < sizeof(tcb->sgx_tcb_comp_svn) / sizeof(tcb->sgx_tcb_comp_svn[0]);
@@ -319,6 +323,17 @@ static oe_result_t _number(
     return OE_FAILURE;
 }
 
+static uint32_t _HexToDec(uint8_t hex)
+{
+    if (hex >= '0' && hex <= '9')
+        return hex - '0';
+    if (hex >= 'a' && hex <= 'f')
+        return (hex - 'a') + 10;
+    if (hex >= 'A' && hex <= 'F')
+        return (hex - 'A') + 10;
+    return 0;
+}
+
 static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t str_length)
 {
     callback_data_t* data = (callback_data_t*)vdata;
@@ -343,8 +358,7 @@ static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t str_length)
             if (oe_strcmp(property_name, "issueDate") == 0)
             {
                 OE_TRACE_INFO("issue_date: length = %d\n", str_length);
-                // OE_TRACE_INFO("TCB: date = %*.*s\n", str_length, str_length,
-                // str);
+
                 data->parsed_tcb_info->issue_date = str;
                 data->parsed_tcb_info->issue_date_size = str_length;
                 return OE_OK;
@@ -352,11 +366,18 @@ static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t str_length)
             if (oe_strcmp(property_name, "fmspc") == 0)
             {
                 OE_TRACE_INFO("fmspc: length = %d\n", str_length);
-                // OE_TRACE_INFO("TCB: fmspc = %*.*s\n", str_length, str_length,
-                // str);
-                data->parsed_tcb_info->fmspc = str;
-                data->parsed_tcb_info->fmspc_size = str_length;
-                return OE_OK;
+                if (str_length == 2 * sizeof(data->parsed_tcb_info->fmspc))
+                {
+                    for (uint32_t i = 0;
+                         i < OE_COUNTOF(data->parsed_tcb_info->fmspc);
+                         i++)
+                    {
+                        data->parsed_tcb_info->fmspc[i] =
+                            (_HexToDec(str[2 * i]) << 4) |
+                            _HexToDec(str[2 * i + 1]);
+                    }
+                    return OE_OK;
+                }
             }
         }
         if (data->level == 2)
@@ -442,6 +463,12 @@ oe_result_t oe_parse_tcb_info_json(
 
     OE_CHECK(OE_ParseJson(tcb_info_json, tcb_info_json_size, &data, &intf));
 
+    // Revoked is optional.
+    // There must atleast be one of UpToDate or OutOfDate.
+    if (!parsed_info->aggregated_uptodate_tcb.is_specified &&
+        !parsed_info->aggregated_outofdate_tcb.is_specified)
+        OE_RAISE(OE_FAILURE);
+
     // Check that all expected levels are there and
     // no schema validation errors were found.
     if (data.max_level + 1 == NUM_LEVELS &&
@@ -451,5 +478,90 @@ oe_result_t oe_parse_tcb_info_json(
     }
 
 done:
+    return result;
+}
+
+oe_result_t oe_enforce_tcb_info(
+    const uint8_t* tcb_info_json,
+    uint32_t tcb_info_json_size,
+    ParsedExtensionInfo* parsed_extension_info,
+    bool require_uptodate)
+{
+    oe_result_t result = OE_FAILURE;
+    oe_parsed_tcb_info_t parsed_tcb_info = {0};
+    bool is_uptodate = false;
+
+    OE_CHECK(
+        oe_parse_tcb_info_json(
+            tcb_info_json, tcb_info_json_size, &parsed_tcb_info));
+
+    if (oe_memcmp(
+            parsed_tcb_info.fmspc,
+            parsed_extension_info->fmspc,
+            sizeof(parsed_tcb_info.fmspc)) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    // Check whether the components in the extensions have been revoked.
+    // TCB info may not contain any revoked information at all.
+    if (parsed_tcb_info.aggregated_revoked_tcb.is_specified)
+    {
+        if (parsed_extension_info->pceSvn <=
+            parsed_tcb_info.aggregated_revoked_tcb.pce_svn)
+            OE_RAISE(OE_FAILURE);
+
+        for (uint32_t i = 0; i < OE_COUNTOF(parsed_extension_info->compSvn);
+             ++i)
+        {
+            if (parsed_extension_info->compSvn[i] <=
+                parsed_tcb_info.aggregated_revoked_tcb.sgx_tcb_comp_svn[i])
+                OE_RAISE(OE_FAILURE);
+        }
+    }
+
+    // Check whether the components in the extensions are upto date.
+    if (parsed_tcb_info.aggregated_uptodate_tcb.is_specified)
+    {
+        if (parsed_extension_info->pceSvn <
+            parsed_tcb_info.aggregated_uptodate_tcb.pce_svn)
+            OE_RAISE(OE_FAILURE);
+
+        for (uint32_t i = 0; i < OE_COUNTOF(parsed_extension_info->compSvn);
+             ++i)
+        {
+            if (parsed_extension_info->compSvn[i] <
+                parsed_tcb_info.aggregated_uptodate_tcb.sgx_tcb_comp_svn[i])
+                OE_RAISE(OE_FAILURE);
+        }
+        is_uptodate = true;
+    }
+
+    // If being uptodate is required, assert that components are indeed
+    // uptodate. Otherwise, they can be outofdate.
+    if (!is_uptodate && require_uptodate)
+        OE_RAISE(OE_FAILURE);
+
+    if (!is_uptodate)
+    {
+        // Check whether the components are out of date.
+        // Being out of date is OK.
+        if (!parsed_tcb_info.aggregated_outofdate_tcb.is_specified)
+            OE_RAISE(OE_FAILURE);
+
+        if (parsed_extension_info->pceSvn <
+            parsed_tcb_info.aggregated_outofdate_tcb.pce_svn)
+            OE_RAISE(OE_FAILURE);
+
+        for (uint32_t i = 0; i < OE_COUNTOF(parsed_extension_info->compSvn);
+             ++i)
+        {
+            if (parsed_extension_info->compSvn[i] <
+                parsed_tcb_info.aggregated_outofdate_tcb.sgx_tcb_comp_svn[i])
+                OE_RAISE(OE_FAILURE);
+        }
+    }
+
+    result = OE_OK;
+done:
+
     return result;
 }

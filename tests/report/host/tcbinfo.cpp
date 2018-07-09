@@ -120,9 +120,10 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
             parsedInfo.issue_date,
             parsedInfo.issue_date_size,
             "2018-06-06T10:12:17.085Z"));
+
+    uint8_t expectedFmSpc[6] = {0x00, 0x90, 0x6E, 0xA1, 0x00, 0x00};
     OE_TEST(
-        CheckParsedString(
-            parsedInfo.fmspc, parsedInfo.fmspc_size, "00906EA10000"));
+        memcmp(parsedInfo.fmspc, expectedFmSpc, sizeof(expectedFmSpc)) == 0);
 
     OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[0] == 4);
     OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[1] == 4);

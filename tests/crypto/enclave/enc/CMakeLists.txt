@@ -8,10 +8,13 @@ add_enclave_executable(cryptoenc
     private.pem 
     ec.c
     enc.c
+    ../../asn1_tests.c
+    ../../crl_tests.c
     ../../ec_tests.c
     ../../hash.c
     ../../random_tests.c
     ../../rsa_tests.c
-    ../../sha_tests.c)
+    ../../sha_tests.c
+    ../../tests.c)
 
 target_link_libraries(cryptoenc oeenclave)

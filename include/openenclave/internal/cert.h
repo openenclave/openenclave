@@ -6,7 +6,9 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include "crl.h"
 #include "ec.h"
+#include "oid.h"
 #include "rsa.h"
 
 OE_EXTERNC_BEGIN
@@ -23,47 +25,12 @@ typedef struct _oe_cert_chain
     uint64_t impl[4];
 } oe_cert_chain_t;
 
-typedef struct _OE_CRL OE_CRL;
-
 /* Error message type for oe_verify_cert_error_t() function */
 typedef struct _oe_verify_cert_error
 {
     /* Zero-terminated string error message */
     char buf[1024];
 } oe_verify_cert_error_t;
-
-/**
- * OID string representation.
- *
- * OID string representation (e.g., "1.2.3.4"). This strucure represents an
- * OID output parameter to prevent buffer length mismatches that the compiler
- * would be unable to detect. For example, consider the following function
- * declaration.
- *
- *     ```
- *     void GetTheOID(char oid[OE_MAX_OID_STRING_SIZE]);
- *     ```
- *
- * This may be called unsafely as follows.
- *
- *     ```
- *     char oid[16];
- *     GetTheOID(oid);
- *     ```
- *
- * Instead, the following definition prevents this coding error.
- *
- *     ```
- *     void GetTheOID(OE_OIDString* oid);
- *     ```
- */
-typedef struct _OE_OIDString
-{
-    // Strictly speaking there is no limit on the length of an OID but we chose
-    // 128 (the maximum OID length in the SNMP specification). Also, this value
-    // is hardcoded to 64 in many implementations.
-    char buf[128];
-} OE_OIDString;
 
 /**
  * Read a certificate from PEM format
@@ -78,16 +45,16 @@ typedef struct _OE_OIDString
  * The caller is responsible for releasing the certificate by passing it to
  * oe_cert_free().
  *
+ * @param cert initialized certificate handle upon return
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
- * @param cert initialized certificate handle upon return
  *
  * @return OE_OK load was successful
  */
 oe_result_t oe_cert_read_pem(
+    oe_cert_t* cert,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_t* cert);
+    size_t pemSize);
 
 /**
  * Read a certificate chain from PEM format.
@@ -110,16 +77,16 @@ oe_result_t oe_cert_read_pem(
  * The caller is responsible for releasing the certificate chain by passing it
  * to oe_cert_chain_free().
  *
+ * @param chain initialized certificate chain handle upon return
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
- * @param cert initialized certificate chain handle upon return
  *
  * @return OE_OK load was successful
  */
 oe_result_t oe_cert_chain_read_pem(
+    oe_cert_chain_t* chain,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_chain_t* chain);
+    size_t pemSize);
 
 /**
  * Releases a certificate
@@ -162,7 +129,7 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain);
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    OE_CRL* crl, /* ATTN: placeholder for future capability */
+    const oe_crl_t* crl,
     oe_verify_cert_error_t* error);
 
 /**
@@ -325,7 +292,7 @@ oe_result_t oe_cert_extension_count(const oe_cert_t* cert, size_t* count);
 oe_result_t oe_cert_get_extension(
     const oe_cert_t* cert,
     size_t index,
-    OE_OIDString* oid,
+    oe_oid_string_t* oid,
     uint8_t* data,
     size_t* size);
 
@@ -352,6 +319,37 @@ oe_result_t oe_cert_find_extension(
     const char* oid,
     uint8_t* data,
     size_t* size);
+
+/**
+ * Gets the URLs from the CRL-distribution-points extension.
+ *
+ * The extension whose OID is "2.5.29.31" contains the CRL distribution points.
+ * This function obtains an array of URLs from this extension.
+ *
+ * @param cert[in] the certificate.
+ * @param urls[out] the array of URLs upon return. This array and its entries
+ *        overlay the space given by the **buffer** parameter.
+ * @param num_urls the number of URLs found in the extension.
+ * @param buffer the buffer that holds the URL array and its entries. This
+ *        parameter may be null when **buffer_size** is zero. This buffer must
+ *        be aligned on an 8-byte boundary since it contains the array of
+ *        pointers to URLs.
+ * @param buffer_size[in,out] the size of the buffer (in); the required size
+ *        of the buffer (out).
+ *
+ * @return OE_OK success.
+ * @return OE_INVALID_PARAMETER a parameter is invalid.
+ * @return OE_BUFFER_TOO_SMALL the buffer is too small and the **buffer_size**
+ *         parameter contains the required size.
+ * @return OE_BAD_ALIGNMENT the buffer is not aligned on an 8-byte boundary.
+ * @return OE_FAILURE general failure.
+ */
+oe_result_t oe_get_crl_distribution_points(
+    const oe_cert_t* cert,
+    const char*** urls,
+    size_t* num_urls,
+    uint8_t* buffer,
+    size_t* buffer_size);
 
 OE_EXTERNC_END
 

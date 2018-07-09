@@ -93,8 +93,7 @@ typedef struct _oe_verify_report_args
 typedef struct _oe_get_revocation_info_args
 {
     oe_result_t result;             /* out */
-    uint8_t* fmspc;                 /* in */
-    uint32_t fmspcSize;             /* in */
+    uint8_t fmspc[6];               /* in */
     const char* crlUrls[3];         /* in */
     uint32_t numCrlUrls;            /* in */
     uint8_t* tcbInfo;               /* out */

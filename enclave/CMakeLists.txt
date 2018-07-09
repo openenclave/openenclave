@@ -3,6 +3,7 @@
 
 add_library(oeenclave STATIC
     cert.c
+    crl.c
     ec.c
     ../common/json.c
     ../common/quote.c

@@ -5,17 +5,19 @@
 #include <openenclave/enclave.h>
 #endif
 
+#include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ec.h"
-#include "ec_tests.h"
 #include "hash.h"
+#include "tests.h"
 
 /* Certificate with an EC key */
 static const char _CERT[] =
@@ -40,7 +42,7 @@ static const char _CERT[] =
     "RvR+bMRtTbhiRXkV9JD2FJA24tP32pw+\n"
     "-----END CERTIFICATE-----\n";
 
-/* A certficiate without any extensions */
+/* A certificate without any extensions */
 static const char _CERT_WITHOUT_EXTENSIONS[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDMzCCAhsCAhABMA0GCSqGSIb3DQEBCwUAMGMxGjAYBgNVBAMMEVRlc3QgSW50\n"
@@ -177,7 +179,7 @@ static void _TestSignAndVerify()
         oe_ec_private_key_t key = {0};
 
         r = oe_ec_private_key_read_pem(
-            (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY), &key);
+            &key, (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
         OE_TEST(r == OE_OK);
 
         r = oe_ec_private_key_sign(
@@ -210,7 +212,7 @@ static void _TestSignAndVerify()
         oe_ec_public_key_t key = {0};
 
         r = oe_ec_public_key_read_pem(
-            (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
+            &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
         OE_TEST(r == OE_OK);
 
         r = oe_ec_public_key_verify(
@@ -385,7 +387,7 @@ static void _TestWritePrivate()
     OE_TEST(pemData1[pemSize1 - 1] == '\0');
     OE_TEST(strlen((char*)pemData1) == pemSize1 - 1);
 
-    r = oe_ec_private_key_read_pem(pemData1, pemSize1, &key2);
+    r = oe_ec_private_key_read_pem(&key2, pemData1, pemSize1);
     OE_TEST(r == OE_OK);
 
     {
@@ -420,7 +422,7 @@ static void _TestWritePublic()
     size_t pemSize = 0;
 
     r = oe_ec_public_key_read_pem(
-        (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
+        &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
     OE_TEST(r == OE_OK);
 
     {
@@ -453,7 +455,7 @@ static void _TestCertMethods()
         oe_cert_t cert = {0};
         oe_ec_public_key_t key = {0};
 
-        r = oe_cert_read_pem(_CERT, sizeof(_CERT), &cert);
+        r = oe_cert_read_pem(&cert, _CERT, sizeof(_CERT));
         OE_TEST(r == OE_OK);
 
         r = oe_cert_get_ec_public_key(&cert, &key);
@@ -505,7 +507,7 @@ static void _TestCertMethods()
         oe_cert_chain_t chain;
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
+        r = oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN));
         OE_TEST(r == OE_OK);
 
         /* Get the length of the chain */
@@ -541,7 +543,7 @@ static void _TestCertMethods()
         oe_cert_t leaf;
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
+        r = oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN));
         OE_TEST(r == OE_OK);
 
         /* Get the root certificate */
@@ -714,7 +716,7 @@ static void _TestCertChainRead()
     oe_result_t r;
     oe_cert_chain_t chain;
 
-    r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
+    r = oe_cert_chain_read_pem(&chain, _CHAIN, sizeof(_CHAIN));
     OE_TEST(r == OE_OK);
 
     oe_cert_chain_free(&chain);
@@ -731,7 +733,7 @@ oe_result_t DumpExtensions(const char* certData, size_t certSize)
     uint8_t data[4096];
     size_t size = sizeof(data);
 
-    OE_CHECK(oe_cert_read_pem(certData, certSize, &cert));
+    OE_CHECK(oe_cert_read_pem(&cert, certData, certSize));
 
     /* Get the number of extensions */
     OE_CHECK(oe_cert_extension_count(&cert, &count));
@@ -739,7 +741,7 @@ oe_result_t DumpExtensions(const char* certData, size_t certSize)
     /* Find the extension with this OID */
     for (size_t i = 0; i < count; i++)
     {
-        OE_OIDString extOid;
+        oe_oid_string_t extOid;
         size_t tmpSize = size;
         OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
 
@@ -760,7 +762,7 @@ oe_result_t DumpExtensions(const char* certData, size_t certSize)
     /* Find the extension with this OID */
     for (size_t i = 0; i < count; i++)
     {
-        OE_OIDString extOid;
+        oe_oid_string_t extOid;
         size_t tmpSize = size;
         OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
 
@@ -879,7 +881,7 @@ static void _TestCertExtensions(
 
     printf("=== begin %s()\n", __FUNCTION__);
 
-    OE_TEST(oe_cert_read_pem(certData, certSize, &cert) == OE_OK);
+    OE_TEST(oe_cert_read_pem(&cert, certData, certSize) == OE_OK);
 
     /* Test getting extensions by index */
     {
@@ -891,7 +893,7 @@ static void _TestCertExtensions(
         for (size_t i = 0; i < extensionsCount; i++)
         {
             const Extension* ext = &extensions[i];
-            OE_OIDString oid;
+            oe_oid_string_t oid;
             uint8_t data[4096];
             size_t size = sizeof(data);
 
@@ -949,7 +951,7 @@ static void _TestCertExtensions(
     /* Test for out of bounds */
     {
         oe_result_t r;
-        OE_OIDString oid;
+        oe_oid_string_t oid;
         uint8_t data[4096];
         size_t size = sizeof(data);
 
@@ -984,7 +986,80 @@ static void _TestCertWithoutExtensions()
         "2.5.29.35");
 }
 
-static const char _CERT_WITH_SGX_EXTENSION[] =
+static const char _SUBJECT[] =
+    "/CN=Intel SGX PCK Certificate/O=Intel Corporation/L=Santa Clara/ST=CA"
+    "/C=US";
+
+void _TestCertSubject()
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    oe_result_t r;
+    oe_cert_t cert = {0};
+    char subject[1024];
+    size_t subject_size = sizeof(subject);
+
+    r = oe_cert_read_pem(&cert, _CERT, sizeof(_CERT));
+    OE_TEST(r == OE_OK);
+
+    subject_size = 0;
+    r = oe_cert_get_subject(&cert, NULL, &subject_size);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
+
+    OE_TEST(subject_size = sizeof(_SUBJECT));
+
+    subject_size = sizeof(subject);
+    r = oe_cert_get_subject(&cert, subject, &subject_size);
+    OE_TEST(r == OE_OK);
+
+    printf("subject{%s}\n", subject);
+    printf("SUBJECT{%s}\n", _SUBJECT);
+
+    OE_TEST(strcmp(subject, _SUBJECT) == 0);
+    OE_TEST(subject_size = sizeof(_SUBJECT));
+
+    oe_cert_free(&cert);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
+static const char _ISSUER[] =
+    "/CN=Intel SGX PCK Processor CA/O=Intel Corporation/L=Santa Clara/ST=CA"
+    "/C=US";
+
+void _TestCertIssuer()
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    oe_result_t r;
+    oe_cert_t cert = {0};
+    char issuer[1024];
+    size_t issuer_size = sizeof(issuer);
+
+    r = oe_cert_read_pem(&cert, _CERT, sizeof(_CERT));
+    OE_TEST(r == OE_OK);
+
+    issuer_size = 0;
+    r = oe_cert_get_issuer(&cert, NULL, &issuer_size);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
+    OE_TEST(issuer_size = sizeof(_ISSUER));
+
+    issuer_size = sizeof(issuer);
+    r = oe_cert_get_issuer(&cert, issuer, &issuer_size);
+    OE_TEST(r == OE_OK);
+
+    printf("issuer{%s}\n", issuer);
+    printf("ISSUER{%s}\n", _ISSUER);
+
+    OE_TEST(strcmp(issuer, _ISSUER) == 0);
+    OE_TEST(issuer_size = sizeof(_ISSUER));
+
+    oe_cert_free(&cert);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
+static const char _SGX_CERT[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIEejCCBCCgAwIBAgIVAIRhkz/I2bp4OHxNAneNMrWoyuVBMAoGCCqGSM49BAMC\n"
     "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
@@ -1012,29 +1087,44 @@ static const char _CERT_WITH_SGX_EXTENSION[] =
     "sdbXaGu2gpAEqy8CIQCvie4k/cstz6V5A4T4Ks6fkDn22tWDTxtV+wepBReC2g==\n"
     "-----END CERTIFICATE-----\n";
 
-static void _TestCertWithSGXExtensions()
+static const char _URL[] =
+    "https://certificates.trustedservices.intel.com/IntelSGXPCKProcessor.crl";
+
+static void _test_crl_distribution_points(void)
 {
-    oe_cert_t cert;
-    uint8_t data[4096];
-    size_t size = sizeof(data);
-    const char OID[] = "1.2.840.113741.1.13.1";
     oe_result_t r;
+    oe_cert_t cert;
+    const char** urls = NULL;
+    size_t num_urls;
+    size_t buffer_size = 0;
 
     printf("=== begin %s()\n", __FUNCTION__);
 
-    OE_TEST(
-        oe_cert_read_pem(
-            _CERT_WITH_SGX_EXTENSION,
-            sizeof(_CERT_WITH_SGX_EXTENSION),
-            &cert) == OE_OK);
-
-    /* Find the SGX_EXTENSION */
-    r = oe_cert_find_extension(&cert, OID, data, &size);
+    r = oe_cert_read_pem(&cert, _SGX_CERT, sizeof(_SGX_CERT));
     OE_TEST(r == OE_OK);
 
-    oe_hex_dump(data, size);
+    r = oe_get_crl_distribution_points(
+        &cert, &urls, &num_urls, NULL, &buffer_size);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-    oe_cert_free(&cert);
+    {
+        OE_ALIGNED(8) uint8_t buffer[buffer_size];
+
+        r = oe_get_crl_distribution_points(
+            &cert, &urls, &num_urls, buffer, &buffer_size);
+
+        OE_TEST(num_urls == 1);
+        OE_TEST(urls != NULL);
+        OE_TEST(urls[0] != NULL);
+        OE_TEST(strcmp(urls[0], _URL) == 0);
+
+        printf("URL{%s}\n", urls[0]);
+
+        OE_TEST(r == OE_OK);
+    }
+
+    r = oe_cert_free(&cert);
+    OE_TEST(r == OE_OK);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
@@ -1043,7 +1133,7 @@ void TestEC()
 {
     _TestCertWithExtensions();
     _TestCertWithoutExtensions();
-    _TestCertWithSGXExtensions();
+    _test_crl_distribution_points();
     _TestSignAndVerify();
     _TestGenerate();
     _TestWritePrivate();
@@ -1051,4 +1141,6 @@ void TestEC()
     _TestCertMethods();
     _TestKeyFromBytes();
     _TestCertChainRead();
+    _TestCertSubject();
+    _TestCertIssuer();
 }
