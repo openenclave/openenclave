@@ -59,6 +59,7 @@ add_subdirectory(VectorException)
 add_subdirectory(file)
 add_subdirectory(pingpong)
 add_subdirectory(pingpong-shared)
+add_subdirectory(string)
 add_subdirectory(tester)
 add_subdirectory(typeinfo)
 

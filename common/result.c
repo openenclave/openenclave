@@ -94,6 +94,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_BUSY";
         case OE_NOT_OWNER:
             return "OE_NOT_OWNER";
+        case OE_BAD_ALIGNMENT:
+            return "OE_BAD_ALIGNMENT";
     }
 
     return "UNKNOWN";
