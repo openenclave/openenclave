@@ -7,6 +7,7 @@
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
 
@@ -173,6 +174,9 @@ oe_result_t VerifyQuoteImpl(
     oe_ec_public_key_t rootPublicKey = {0};
     oe_ec_public_key_t expectedRootPublicKey = {0};
     bool keyEqual = false;
+    static uint8_t data[16 * 1024];
+    uint32_t dataSize = sizeof(data);
+    ParsedExtensionInfo parsedInfo = {0};
 
     OE_CHECK(
         _ParseQuote(
@@ -230,6 +234,8 @@ oe_result_t VerifyQuoteImpl(
                 &rootPublicKey, &expectedRootPublicKey, &keyEqual));
         if (!keyEqual)
             OE_RAISE(OE_VERIFY_FAILED);
+
+        OE_CHECK(ParseSGXExtensions(&leafCert, data, &dataSize, &parsedInfo));
     }
 
     // Quote validations.

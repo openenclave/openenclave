@@ -8,6 +8,7 @@
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,6 +38,29 @@ static const char _CERT[] =
     "hkiG+E0BDQEFBAYgkG6hAAAwDwYKKoZIhvhNAQ0BBgoBADAKBggqhkjOPQQDAgNI\n"
     "ADBFAiEAhY2Bdn5aQJH2Fj1YZriJ7DpmQCbqRyVxU65bd8v0O/4CIA2IWOarGysj\n"
     "RvR+bMRtTbhiRXkV9JD2FJA24tP32pw+\n"
+    "-----END CERTIFICATE-----\n";
+
+/* A certficiate without any extensions */
+static const char _CERT_WITHOUT_EXTENSIONS[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIIDMzCCAhsCAhABMA0GCSqGSIb3DQEBCwUAMGMxGjAYBgNVBAMMEVRlc3QgSW50\n"
+    "ZXJtZWRpYXRlMQ4wDAYDVQQIDAVUZXhhczELMAkGA1UEBhMCVVMxEjAQBgNVBAoM\n"
+    "CU1pY3Jvc29mdDEUMBIGA1UECwwLT3BlbkVuY2xhdmUwHhcNMTgwMjEzMTc1MjUz\n"
+    "WhcNMTkwMjEzMTc1MjUzWjBbMRIwEAYDVQQDDAlUZXN0IExlYWYxDjAMBgNVBAgM\n"
+    "BVRleGFzMQswCQYDVQQGEwJVUzESMBAGA1UECgwJTWljcm9zb2Z0MRQwEgYDVQQL\n"
+    "DAtPcGVuRW5jbGF2ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOjL\n"
+    "A0tUP/Sw+L9KowKL94PJe2Bk9u0YeeRa0z1PyIoLVE3KCeOLQueo7gQwah0s/ZA1\n"
+    "53lggkyt3VjMOUC5FBS5hy79VcoInrrS9DG8PtZBk3AobDcUBNipWIJ5lofijppi\n"
+    "uRFfr4HtMN9TYJhfWnau7puep5X/HeW0k3/Hox8+R6Gdu74QkTILVrDh6EcXzLUv\n"
+    "XXFu0bi/pDhoBeW+HGxK8ot+wjKt/NjnYc3KlrNQVDzBDEpXx5enWFbow37O6Rab\n"
+    "+iHCkvOYvJe1tgJTpI65Qi688Xc3/NFzZ3lA3PET+xKjjzBS1wHrumCu9L3ugJJ3\n"
+    "ZVHwHlDQ9u9qTRHlGYcCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAlP9O97ydoazt\n"
+    "w4oGluwo3Wef9O2Nx6OhNqY+lrCx/KkdBHVqGLaveo6UDlkRQLydyx55ekrMdatG\n"
+    "UyzFm6JTAh29R7ocTWdERmNLQNR1yQFCr0JJ1yPHucikY7ubD0iIxlAliPKPsH/S\n"
+    "t4pff8GRRrv5+jCON6zT2lX+ZVOCwyolu5oZWFI6iWy6JldYdaHhmiy3gP/F2abr\n"
+    "NASwM79RRO+JGskwgswboXp8Tg83jzdbSe6DL6LfK0UgpeEr3QtNhDMkw7KY1oXs\n"
+    "7WxpjlnJCyCkAW0c5+Hh2WgZLwYXcfRXer6WuugAz6WPayLDsHf0ZqiuiVjkbS1l\n"
+    "ln6O0i8HeQ==\n"
     "-----END CERTIFICATE-----\n";
 
 /* Certificate chain organized from leaf-to-root */
@@ -698,8 +722,328 @@ static void _TestCertChainRead()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+/* This utility function generates extension definitions for testing */
+oe_result_t DumpExtensions(const char* certData, size_t certSize)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_cert_t cert;
+    size_t count;
+    uint8_t data[4096];
+    size_t size = sizeof(data);
+
+    OE_CHECK(oe_cert_read_pem(certData, certSize, &cert));
+
+    /* Get the number of extensions */
+    OE_CHECK(oe_cert_extension_count(&cert, &count));
+
+    /* Find the extension with this OID */
+    for (size_t i = 0; i < count; i++)
+    {
+        OE_OIDString extOid;
+        size_t tmpSize = size;
+        OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
+
+        printf("static const uint8_t _extensions_data%zu[] =\n", i);
+        printf("{\n");
+
+        for (size_t i = 0; i < tmpSize; i++)
+        {
+            printf("    0x%02x,\n", data[i]);
+        }
+
+        printf("};\n\n");
+    }
+
+    printf("static const Extension _extensions[] =\n");
+    printf("{\n");
+
+    /* Find the extension with this OID */
+    for (size_t i = 0; i < count; i++)
+    {
+        OE_OIDString extOid;
+        size_t tmpSize = size;
+        OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
+
+        printf("    {\n");
+        printf("        .oid = \"%s\",\n", extOid.buf);
+        printf("        .size = %zu,\n", tmpSize);
+        printf("        .data = _extensions_data%zu,\n", i);
+        printf("    },\n");
+    }
+
+    printf("};\n");
+
+    OE_CHECK(oe_cert_free(&cert));
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+typedef struct _Extension
+{
+    const char* oid;
+    size_t size;
+    const uint8_t* data;
+} Extension;
+
+static const uint8_t _eccert_extensions_data0[] = {
+    0x30, 0x16, 0x80, 0x14, 0x9f, 0x06, 0x97, 0xef, 0x53, 0x21, 0x44, 0xd4,
+    0xfa, 0x4c, 0x7e, 0xe8, 0xba, 0x8d, 0xb3, 0xd3, 0x25, 0xe4, 0x92, 0x90,
+};
+
+static const uint8_t _eccert_extensions_data1[] = {
+    0x30, 0x4f, 0x30, 0x4d, 0xa0, 0x4b, 0xa0, 0x49, 0x86, 0x47, 0x68, 0x74,
+    0x74, 0x70, 0x73, 0x3a, 0x2f, 0x2f, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66,
+    0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x2e, 0x74, 0x72, 0x75, 0x73, 0x74,
+    0x65, 0x64, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x2e, 0x69,
+    0x6e, 0x74, 0x65, 0x6c, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x49, 0x6e, 0x74,
+    0x65, 0x6c, 0x53, 0x47, 0x58, 0x50, 0x43, 0x4b, 0x50, 0x72, 0x6f, 0x63,
+    0x65, 0x73, 0x73, 0x6f, 0x72, 0x2e, 0x63, 0x72, 0x6c,
+};
+
+static const uint8_t _eccert_extensions_data2[] = {
+    0x04, 0x14, 0x14, 0x74, 0x27, 0xc7, 0x67, 0x31, 0xe9, 0x88, 0x4b,
+    0xab, 0x03, 0xee, 0x39, 0x77, 0x29, 0x58, 0x5e, 0x95, 0x6f, 0x0e,
+};
+
+static const uint8_t _eccert_extensions_data3[] = {
+    0x03,
+    0x02,
+    0x06,
+    0xc0,
+};
+
+static const uint8_t _eccert_extensions_data4[] = {
+    0x30,
+    0x00,
+};
+
+static const uint8_t _eccert_extensions_data5[] = {
+    0x30, 0x81, 0x8b, 0x30, 0x1e, 0x06, 0x0a, 0x2a, 0x86, 0x48, 0x86, 0xf8,
+    0x4d, 0x01, 0x0d, 0x01, 0x01, 0x04, 0x10, 0x0b, 0xac, 0x07, 0x24, 0x3c,
+    0x17, 0xfd, 0x98, 0x6d, 0x15, 0x4b, 0x55, 0x09, 0x43, 0x3f, 0x15, 0x30,
+    0x1e, 0x06, 0x0a, 0x2a, 0x86, 0x48, 0x86, 0xf8, 0x4d, 0x01, 0x0d, 0x01,
+    0x02, 0x04, 0x10, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x10, 0x06, 0x0a, 0x2a,
+    0x86, 0x48, 0x86, 0xf8, 0x4d, 0x01, 0x0d, 0x01, 0x03, 0x04, 0x02, 0x00,
+    0x00, 0x30, 0x10, 0x06, 0x0a, 0x2a, 0x86, 0x48, 0x86, 0xf8, 0x4d, 0x01,
+    0x0d, 0x01, 0x04, 0x04, 0x02, 0x00, 0x00, 0x30, 0x14, 0x06, 0x0a, 0x2a,
+    0x86, 0x48, 0x86, 0xf8, 0x4d, 0x01, 0x0d, 0x01, 0x05, 0x04, 0x06, 0x20,
+    0x90, 0x6e, 0xa1, 0x00, 0x00, 0x30, 0x0f, 0x06, 0x0a, 0x2a, 0x86, 0x48,
+    0x86, 0xf8, 0x4d, 0x01, 0x0d, 0x01, 0x06, 0x0a, 0x01, 0x00,
+};
+
+static const Extension _eccert_extensions[] = {
+    {
+        .oid = "2.5.29.35",
+        .size = 24,
+        .data = _eccert_extensions_data0,
+    },
+    {
+        .oid = "2.5.29.31",
+        .size = 81,
+        .data = _eccert_extensions_data1,
+    },
+    {
+        .oid = "2.5.29.14",
+        .size = 22,
+        .data = _eccert_extensions_data2,
+    },
+    {
+        .oid = "2.5.29.15",
+        .size = 4,
+        .data = _eccert_extensions_data3,
+    },
+    {
+        .oid = "2.5.29.19",
+        .size = 2,
+        .data = _eccert_extensions_data4,
+    },
+    {
+        .oid = "1.2.840.113741.1.13.1",
+        .size = 142,
+        .data = _eccert_extensions_data5,
+    },
+};
+
+static void _TestCertExtensions(
+    const char* certData,
+    size_t certSize,
+    const Extension* extensions,
+    size_t extensionsCount,
+    const char* testOid)
+{
+    oe_cert_t cert;
+
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    OE_TEST(oe_cert_read_pem(certData, certSize, &cert) == OE_OK);
+
+    /* Test getting extensions by index */
+    {
+        size_t count;
+
+        OE_TEST(oe_cert_extension_count(&cert, &count) == OE_OK);
+        OE_TEST(count == extensionsCount);
+
+        for (size_t i = 0; i < extensionsCount; i++)
+        {
+            const Extension* ext = &extensions[i];
+            OE_OIDString oid;
+            uint8_t data[4096];
+            size_t size = sizeof(data);
+
+            OE_TEST(
+                oe_cert_get_extension(&cert, i, &oid, data, &size) == OE_OK);
+
+            OE_TEST(strcmp(oid.buf, ext->oid) == 0);
+            OE_TEST(size == ext->size);
+            OE_TEST(memcmp(data, ext->data, size) == 0);
+        }
+    }
+
+    /* Test finding extensions by OID */
+    {
+        for (size_t i = 0; i < extensionsCount; i++)
+        {
+            const Extension* ext = &extensions[i];
+            const char* oid = ext->oid;
+            uint8_t data[4096];
+            size_t size = sizeof(data);
+
+            OE_TEST(oe_cert_find_extension(&cert, oid, data, &size) == OE_OK);
+            OE_TEST(strcmp(oid, ext->oid) == 0);
+            OE_TEST(size == ext->size);
+            OE_TEST(memcmp(data, ext->data, size) == 0);
+        }
+    }
+
+    /* Check for an unknown OID */
+    if (!extensions)
+    {
+        oe_result_t r;
+        uint8_t data[4096];
+        size_t size = sizeof(data);
+
+        r = oe_cert_find_extension(&cert, "1.2.3.4", data, &size);
+        OE_TEST(r == OE_NOT_FOUND);
+    }
+
+    /* Find the extension with the given OID and check for OE_NOT_FOUND */
+    if (!extensions)
+    {
+        oe_result_t r;
+        uint8_t data[4096];
+        size_t size = sizeof(data);
+
+        r = oe_cert_find_extension(&cert, testOid, data, &size);
+
+        if (extensions)
+            OE_TEST(r == OE_OK);
+        else
+            OE_TEST(r == OE_NOT_FOUND);
+    }
+
+    /* Test for out of bounds */
+    {
+        oe_result_t r;
+        OE_OIDString oid;
+        uint8_t data[4096];
+        size_t size = sizeof(data);
+
+        r = oe_cert_get_extension(&cert, extensionsCount, &oid, data, &size);
+        OE_TEST(r == OE_OUT_OF_BOUNDS);
+    }
+
+    oe_cert_free(&cert);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
+static void _TestCertWithExtensions()
+{
+    /* Test a certificate with extensions */
+    _TestCertExtensions(
+        _CERT,
+        sizeof(_CERT),
+        _eccert_extensions,
+        OE_COUNTOF(_eccert_extensions),
+        "1.2.840.113741.1.13.1");
+}
+
+static void _TestCertWithoutExtensions()
+{
+    /* Test a certificate without extensions */
+    _TestCertExtensions(
+        _CERT_WITHOUT_EXTENSIONS,
+        sizeof(_CERT_WITHOUT_EXTENSIONS),
+        NULL,
+        0,
+        "2.5.29.35");
+}
+
+static const char _CERT_WITH_SGX_EXTENSION[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIIEejCCBCCgAwIBAgIVAIRhkz/I2bp4OHxNAneNMrWoyuVBMAoGCCqGSM49BAMC\n"
+    "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
+    "DBFJbnRlbCBDb3Jwb3JhdGlvbjEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNV\n"
+    "BAgMAkNBMQswCQYDVQQGEwJVUzAeFw0xODA1MzAxMTMzMDVaFw0yNTA1MzAxMTMz\n"
+    "MDVaMHAxIjAgBgNVBAMMGUludGVsIFNHWCBQQ0sgQ2VydGlmaWNhdGUxGjAYBgNV\n"
+    "BAoMEUludGVsIENvcnBvcmF0aW9uMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkG\n"
+    "A1UECAwCQ0ExCzAJBgNVBAYTAlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\n"
+    "Ej9Bl3EbeGMpTB8k4jeXrzNXWR7lT1PcpBOX6GQx49jmsqSGGPcUxPm91wU/RlMR\n"
+    "rv5GyfrrZ908wDaXTtfezKOCApQwggKQMB8GA1UdIwQYMBaAFOW7Uo+A+eMzrhms\n"
+    "+mNGeBHzYbukMFgGA1UdHwRRME8wTaBLoEmGR2h0dHBzOi8vY2VydGlmaWNhdGVz\n"
+    "LnRydXN0ZWRzZXJ2aWNlcy5pbnRlbC5jb20vSW50ZWxTR1hQQ0tQcm9jZXNzb3Iu\n"
+    "Y3JsMB0GA1UdDgQWBBQcmM3b/dX0Stal0ynHbWpCzwvs8TAOBgNVHQ8BAf8EBAMC\n"
+    "BsAwDAYDVR0TAQH/BAIwADCCAdQGCSqGSIb4TQENAQSCAcUwggHBMB4GCiqGSIb4\n"
+    "TQENAQEEEB+MHnumvRB9hCTdNWSdzXIwggFkBgoqhkiG+E0BDQECMIIBVDAQBgsq\n"
+    "hkiG+E0BDQECAQIBBDAQBgsqhkiG+E0BDQECAgIBBDAQBgsqhkiG+E0BDQECAwIB\n"
+    "AjAQBgsqhkiG+E0BDQECBAIBBDAQBgsqhkiG+E0BDQECBQIBATARBgsqhkiG+E0B\n"
+    "DQECBgICAIAwEAYLKoZIhvhNAQ0BAgcCAQAwEAYLKoZIhvhNAQ0BAggCAQAwEAYL\n"
+    "KoZIhvhNAQ0BAgkCAQAwEAYLKoZIhvhNAQ0BAgoCAQAwEAYLKoZIhvhNAQ0BAgsC\n"
+    "AQAwEAYLKoZIhvhNAQ0BAgwCAQAwEAYLKoZIhvhNAQ0BAg0CAQAwEAYLKoZIhvhN\n"
+    "AQ0BAg4CAQAwEAYLKoZIhvhNAQ0BAg8CAQAwEAYLKoZIhvhNAQ0BAhACAQAwEAYL\n"
+    "KoZIhvhNAQ0BAhECAQUwHwYLKoZIhvhNAQ0BAhIEEAQEAgQBgAAAAAAAAAAAAAAw\n"
+    "EAYKKoZIhvhNAQ0BAwQCAAAwFAYKKoZIhvhNAQ0BBAQGAJBuoQAAMA8GCiqGSIb4\n"
+    "TQENAQUKAQAwCgYIKoZIzj0EAwIDSAAwRQIgPAfNJa59vmzOLdW5yWPo+OShrN7A\n"
+    "sdbXaGu2gpAEqy8CIQCvie4k/cstz6V5A4T4Ks6fkDn22tWDTxtV+wepBReC2g==\n"
+    "-----END CERTIFICATE-----\n";
+
+static void _TestCertWithSGXExtensions()
+{
+    oe_cert_t cert;
+    uint8_t data[4096];
+    size_t size = sizeof(data);
+    const char OID[] = "1.2.840.113741.1.13.1";
+    oe_result_t r;
+
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    OE_TEST(
+        oe_cert_read_pem(
+            _CERT_WITH_SGX_EXTENSION,
+            sizeof(_CERT_WITH_SGX_EXTENSION),
+            &cert) == OE_OK);
+
+    /* Find the SGX_EXTENSION */
+    r = oe_cert_find_extension(&cert, OID, data, &size);
+    OE_TEST(r == OE_OK);
+
+    oe_hex_dump(data, size);
+
+    oe_cert_free(&cert);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 void TestEC()
 {
+    _TestCertWithExtensions();
+    _TestCertWithoutExtensions();
+    _TestCertWithSGXExtensions();
     _TestSignAndVerify();
     _TestGenerate();
     _TestWritePrivate();

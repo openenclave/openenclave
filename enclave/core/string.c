@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
 
 /*
 **==============================================================================
@@ -235,4 +236,125 @@ int oe_memcmp(const void* s1, const void* s2, size_t n)
     }
 
     return 0;
+}
+
+void* oe_memmove(void* dest, const void* src, size_t n)
+{
+    char* p = (char*)dest;
+    const char* q = (const char*)src;
+
+    if (p != q && n > 0)
+    {
+        if (p <= q)
+        {
+            oe_memcpy(p, q, n);
+        }
+        else
+        {
+            for (q += n, p += n; n--; p--, q--)
+                p[-1] = q[-1];
+        }
+    }
+
+    return p;
+}
+
+size_t oe_string_substitute(
+    char* str,
+    size_t size,
+    const char* pattern,
+    const char* replacement)
+{
+    size_t pos;
+    size_t str_len;
+    size_t pattern_len;
+    size_t replacement_len;
+
+    if (!str || !size || !pattern || !replacement)
+        return (size_t)-1;
+
+    if ((str_len = oe_strlen(str)) >= size)
+        return (size_t)-1;
+
+    if ((pattern_len = oe_strlen(pattern)) == 0)
+        return (size_t)-1;
+
+    replacement_len = oe_strlen(replacement);
+
+    for (pos = 0; pos < str_len;)
+    {
+        if (oe_strncmp(str + pos, pattern, pattern_len) == 0)
+        {
+            if (replacement_len > pattern_len)
+            {
+                size_t diff = replacement_len - pattern_len;
+
+                /* String is expanding so check for string overflow */
+                if (str_len + diff <= size)
+                {
+                    oe_memmove(
+                        str + pos + replacement_len,
+                        str + pos + pattern_len,
+                        str_len + 1 - pos - pattern_len);
+
+                    oe_memcpy(str + pos, replacement, replacement_len);
+                }
+
+                str_len += diff;
+            }
+            else
+            {
+                size_t diff = pattern_len - replacement_len;
+
+                oe_memmove(
+                    str + pos + replacement_len,
+                    str + pos + pattern_len,
+                    str_len + 1 - pos - replacement_len);
+
+                oe_memcpy(str + pos, replacement, replacement_len);
+
+                str_len -= diff;
+            }
+
+            pos += replacement_len;
+        }
+        else
+        {
+            pos++;
+        }
+    }
+
+    return str_len + 1;
+}
+
+size_t oe_string_insert(char* str, size_t size, size_t pos, const char* insert)
+{
+    size_t str_len;
+    size_t insert_len;
+
+    if (!str || !size || !insert)
+        return (size_t)-1;
+
+    if ((str_len = oe_strlen(str)) >= size)
+        return (size_t)-1;
+
+    if (pos == (size_t)-1)
+        pos = str_len;
+
+    if (pos > str_len)
+        return (size_t)-1;
+
+    insert_len = oe_strlen(insert);
+
+    if (str_len + insert_len < size)
+    {
+        size_t remaining = str_len - pos + 1;
+
+        if (remaining)
+            oe_memmove(str + pos + insert_len, str + pos, remaining);
+
+        oe_memcpy(str + pos, insert, insert_len);
+    }
+
+    return str_len + insert_len + 1;
 }

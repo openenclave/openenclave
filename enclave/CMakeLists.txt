@@ -5,6 +5,7 @@ add_library(oeenclave STATIC
     cert.c
     ec.c
     ../common/quote.c
+    ../common/sgxcertextensions.c
     cmac.c
     key.c
     random.c
