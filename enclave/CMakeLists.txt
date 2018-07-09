@@ -4,8 +4,10 @@
 add_library(oeenclave STATIC
     cert.c
     ec.c
+    ../common/json.c
     ../common/quote.c
-    ../common/sgxcertextensions.c
+    ../common/sgxcertextensions.c    
+    ../common/tcbinfo.c
     cmac.c
     key.c
     random.c

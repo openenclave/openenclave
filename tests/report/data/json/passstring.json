@@ -1,0 +1,6 @@
+{
+    "empty" : "",
+    "simple" : "abc",
+    "all escapes" : "\"\\\/\b\f\n\r\t\uabcf\u1234\u5678\u9abc\udeff",
+    "long" : "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf\"\\\/\b\f\n\r\t\uabcf"
+}

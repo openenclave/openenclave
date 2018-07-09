@@ -2,11 +2,14 @@
 // Licensed under the MIT License.
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/json.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
+#include <stdio.h>
 #include "../../../common/quote.h"
+#include "../../../common/tcbinfo.h"
 #include "../common/args.h"
 #include "../common/tests.cpp"
 
@@ -148,4 +151,27 @@ done:
     oe_free_buffer(encPemPckCertificate);
     oe_free_buffer(encPckCrl);
     oe_free_buffer(encTcbInfoJson);
+}
+
+OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
+{
+    args->result = oe_parse_tcb_info_json(
+        args->tcbInfo,
+        args->tcbInfoSize,
+        (oe_parsed_tcb_info_t*)args->parsedTcbInfo);
+}
+
+uint8_t* _jsonString = NULL;
+void PrintError(void* obj, uint32_t pos, const char* msg)
+{
+    printf("Json Parse Error: pos = %d : %s\n", pos, msg);
+    printf("%s\n", (const char*)_jsonString + pos);
+}
+
+OE_ECALL void TestParseJson(ParseJsonArgs* args)
+{
+    OE_JsonParserCallbackInterface callback = {0};
+    callback.handleError = PrintError;
+    _jsonString = args->json;
+    args->result = OE_ParseJson(args->json, args->jsonSize, NULL, &callback);
 }
