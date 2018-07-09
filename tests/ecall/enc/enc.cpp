@@ -165,3 +165,12 @@ OE_ECALL void Test(void* args_)
         }
     }
 }
+
+OE_ECALL void A(void* args_)
+{
+    if (args_)
+    {
+        int* args = (int*)args_;
+        *args = *args * 2;
+    }
+}

@@ -8,13 +8,9 @@ jobs:
     docker:
       - image: oeciteam/oetools:1.1
     working_directory: ~/Microsoft-OE
-    filters:
-      branches:
-       only:
-         - ci-work
     steps:
       - checkout
-      # Build and Test
+      # Pre-commit test - check license and formatting in
       - run:
           name: Pre-Commit Test
           command:  |
@@ -143,3 +139,4 @@ workflows:
       #- ci-test-sgx1-flc-release:
       #   requires:
       #      - pre-commit-test
+
