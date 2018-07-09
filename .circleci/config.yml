@@ -101,7 +101,7 @@ jobs:
              ./scripts/build-testall -p SGX1FLC -b Release
              
 workflows:
-  version: 2.0
+  version: 2
   ci-test:
     jobs:
       # 1. Pre-Commit test
