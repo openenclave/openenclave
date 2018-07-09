@@ -67,6 +67,32 @@ void TestUserDefinedECall(oe_enclave_t* enclave)
     OE_TEST(argOut == 3000);
 }
 
+void TestECallEdgeCases(oe_enclave_t* enclave)
+{
+    oe_result_t result;
+
+    /* Null ecall. */
+    int args = 1;
+    result = oe_call_enclave(enclave, NULL, &args);
+    OE_TEST(result == OE_INVALID_PARAMETER);
+
+    /* Empty ecall. */
+    args = 1;
+    result = oe_call_enclave(enclave, "", &args);
+    OE_TEST(result == OE_NOT_FOUND);
+
+    /* Single letter ECALL. */
+    args = 1;
+    result = oe_call_enclave(enclave, "A", &args);
+    OE_TEST(result == OE_OK);
+    OE_TEST(args == 2);
+
+    /* ECALL doesn't exist. */
+    args = 1;
+    result = oe_call_enclave(enclave, "B", &args);
+    OE_TEST(result == OE_NOT_FOUND);
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -96,6 +122,9 @@ int main(int argc, const char* argv[])
 
     printf("=== TestUserDefinedECall()\n");
     TestUserDefinedECall(enclave);
+
+    printf("=== TestECallEdgeCases\n");
+    TestECallEdgeCases(enclave);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {
