@@ -64,7 +64,7 @@ jobs:
   # SGX1-FLC | Debug 
   ci-test-sgx1-flc-debug:
     docker:
-      - image: oeciteam/oetools:1.1
+      - image: oeciteam/oetools:1.2
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
@@ -73,14 +73,12 @@ jobs:
           name: SGX1-FLC-Debug
           command:  |
               apt-get update &&
-              apt-get install -y autoconf &&
-              apt-get install -y libtool &&
               ./scripts/build-testall -p SGX1FLC -b Debug
             
   # SGX1-FLC | RelWithDebInfo
   ci-test-sgx1-flc-relwithdebinfo:
     docker:
-      - image: oeciteam/oetools:1.1
+      - image: oeciteam/oetools:1.2
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
