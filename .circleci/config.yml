@@ -19,7 +19,7 @@ jobs:
   #========Build-Test==========# 
 
   # SGX1 | Debug 
-  ci-test-sgx1-debug:
+  sgx1-debug-ci-test-ci-test:
     docker:
       - image: oeciteam/oetools:1.2
     working_directory: ~/Microsoft-OE
@@ -36,7 +36,7 @@ jobs:
             ./scripts/build-testall 
 
   # SGX1 | Optimized
-  ci-test-sgx1-optimized:
+  sgx1-optimized-ci-test:
     docker:
       - image: oeciteam/oetools:1.2
     working_directory: ~/Microsoft-OE
@@ -51,7 +51,7 @@ jobs:
              ./scripts/build-testall -p SGX1 -b Release
                          
   # SGX1-FLC | Debug 
-  ci-test-sgx1-flc-debug:
+  sgx1-flc-debug-ci-test-:
     docker:
       - image: oeciteam/oetools:1.2
     working_directory: ~/Microsoft-OE
@@ -65,7 +65,7 @@ jobs:
               ./scripts/build-testall -p SGX1FLC -b Debug
             
   # SGX1-FLC | Optimized
-  ci-test-sgx1-flc-optimized:
+  sgx1-flc-optimized-ci-test:
     docker:
       - image: oeciteam/oetools:1.2
     working_directory: ~/Microsoft-OE
@@ -87,22 +87,22 @@ workflows:
       - pre-commit-test
       
       # 2. sgx1-debug(ci-test)
-      - ci-test-sgx1-debug:
+      - sgx1-debug-ci-test:
           requires:
             - pre-commit-test
             
       # 3. sgx1-optimized(ci-test)     
-      - ci-test-sgx1-optimized:
-          requires:
-            - pre-commit-test
+      #- sgx1-optimized-ci-test:
+       #   requires:
+        #    - pre-commit-test
             
       # 4.  sgx1-flc-debug(ci-test)
-      - ci-test-sgx1-flc-debug:
-          requires:
-            - pre-commit-test
+      #- sgx1-flc-debug--ci-test:
+       #   requires:
+        #    - pre-commit-test
             
       # 5.  sgx1-flc-optimized(ci-test)  
-      - ci-test-sgx1-flc-optimized:
-          requires:
-            - pre-commit-test
+      #- sgx1-flc-optimized--ci-test:
+       #   requires:
+       #     - pre-commit-test
 
