@@ -92,7 +92,7 @@ workflows:
             - pre-commit-test
             
       # 3. sgx1-optimized(ci-test)     
-      - ci-test-optimized:
+      - ci-test-sgx1-optimized:
           requires:
             - pre-commit-test
             
