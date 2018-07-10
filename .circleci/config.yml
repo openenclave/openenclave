@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
+# Optimized version using 4 main jobs: 2 for debug and 2 for optimized builds
 
 version: 2.0
 jobs:
@@ -34,8 +35,8 @@ jobs:
           command:  |
             ./scripts/build-testall 
 
-  # SGX1 | RelWithDebInfo
-  ci-test-sgx1-relwithdebinfo:
+  # SGX1 | Optimized
+  ci-test-sgx1-optimized:
     docker:
       - image: oeciteam/oetools:1.2
     working_directory: ~/Microsoft-OE
@@ -43,23 +44,12 @@ jobs:
       - checkout
       # Build and Test
       - run: 
-          name: SGX1-RelWithDebInfo
+          name: SGX1-Optimized
           command:  |
-             ./scripts/build-testall -p SGX1 -b RelWithDebInfo
-  
-  # SGX1 | Release
-  ci-test-sgx1-release:
-    docker:
-      - image: oeciteam/oetools:1.2
-    working_directory: ~/Microsoft-OE
-    steps:
-      - checkout
-      # Build and Test
-      - run: 
-          name: SGX1-Release
-          command:  |
+             ./scripts/build-testall -p SGX1 -b RelWithDebInfo &&
+             rm -rf ./build  &&
              ./scripts/build-testall -p SGX1 -b Release
-             
+                         
   # SGX1-FLC | Debug 
   ci-test-sgx1-flc-debug:
     docker:
@@ -74,8 +64,8 @@ jobs:
               apt-get update &&
               ./scripts/build-testall -p SGX1FLC -b Debug
             
-  # SGX1-FLC | RelWithDebInfo
-  ci-test-sgx1-flc-relwithdebinfo:
+  # SGX1-FLC | Optimized
+  ci-test-sgx1-flc-optimized:
     docker:
       - image: oeciteam/oetools:1.2
     working_directory: ~/Microsoft-OE
@@ -83,21 +73,10 @@ jobs:
       - checkout
       # Build and Test
       - run:
-          name: SGX1-FLC-RelWithDebInfo
+          name: SGX1-FLC-Optimized
           command:  |
-             ./scripts/build-testall -p SGX1FLC -b RelWithDebInfo
-
-  # SGX1-FLC | Release 
-  ci-test-sgx1-flc-release:
-    docker:
-      - image: oeciteam/oetools:1.2
-    working_directory: ~/Microsoft-OE
-    steps:
-      - checkout
-      # Build and Test
-      - run:
-          name: SGX1-FLC-Release
-          command:  |
+             ./scripts/build-testall -p SGX1FLC -b RelWithDebInfo &&
+             rm -rf ./build &&
              ./scripts/build-testall -p SGX1FLC -b Release
              
 workflows:
@@ -107,33 +86,23 @@ workflows:
       # 1. Pre-Commit test
       - pre-commit-test
       
-      # 2. sgx1-debug((ci-test))
+      # 2. sgx1-debug(ci-test)
       - ci-test-sgx1-debug:
           requires:
             - pre-commit-test
             
-      # 3. sgx1-relwithdebinfo(ci-test)     
-      - ci-test-sgx1-relwithdebinfo:
+      # 3. sgx1-optimized(ci-test)     
+      - ci-test-optimized:
           requires:
             - pre-commit-test
             
-      # 4.  sgx1-release(ci-test)    
-      - ci-test-sgx1-release:
-          requires:
-             - pre-commit-test
-            
-      # 5.  sgx1-flc-debug(ci-test)
+      # 4.  sgx1-flc-debug(ci-test)
       - ci-test-sgx1-flc-debug:
           requires:
             - pre-commit-test
             
-      # 6.  sgx1-flc-relwithdebinfo(ci-test)  
-      - ci-test-sgx1-flc-relwithdebinfo:
+      # 5.  sgx1-flc-optimized(ci-test)  
+      - ci-test-sgx1-flc-optimized:
           requires:
-            - pre-commit-test
-            
-      # 7.  sgx1-flc-release(ci-test)    
-      - ci-test-sgx1-flc-release:
-         requires:
             - pre-commit-test
 
