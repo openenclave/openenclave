@@ -2,18 +2,15 @@
 // Licensed under the MIT License.
 #include "quote.h"
 #include <openenclave/enclave.h>
-#include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
-#include <openenclave/internal/sgxcertextensions.h>
+#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
-#include "tcbinfo.h"
+#include "revocation.h"
 
 #ifdef OE_USE_LIBSGX
 
@@ -153,67 +150,6 @@ done:
     return result;
 }
 
-static oe_result_t _GetRevocationInfo(oe_get_revocation_info_args_t* args)
-{
-    oe_result_t result = OE_FAILURE;
-    uint32_t hostArgsBufferSize = sizeof(*args);
-    uint8_t* hostArgsBuffer = NULL;
-    oe_get_revocation_info_args_t* hostArgs = NULL;
-    uint8_t* p = 0;
-    uint32_t crlUrlSizes[2] = {0};
-
-    if (args == NULL || args->numCrlUrls != 2 || args->crlUrls[0] == NULL ||
-        args->crlUrls[1] == NULL)
-        OE_RAISE(OE_FAILURE);
-
-    if (args->numCrlUrls != 2)
-        OE_RAISE(OE_FAILURE);
-
-    for (uint32_t i = 0; i < args->numCrlUrls; ++i)
-    {
-        crlUrlSizes[i] = oe_strlen(args->crlUrls[i]) + 1;
-        hostArgsBufferSize += crlUrlSizes[i];
-    }
-
-    hostArgsBuffer = oe_host_malloc(hostArgsBufferSize);
-    if (hostArgsBuffer == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    // Copy args struct.
-    p = hostArgsBuffer;
-    hostArgs = (oe_get_revocation_info_args_t*)p;
-    *hostArgs = *args;
-    p += sizeof(*hostArgs);
-
-    // Copy input buffers.
-    for (uint32_t i = 0; i < args->numCrlUrls; ++i)
-    {
-        hostArgs->crlUrls[i] = (const char*)p;
-        oe_memcpy(p, args->crlUrls[i], crlUrlSizes[i]);
-        p += crlUrlSizes[i];
-    }
-
-    OE_CHECK(
-        oe_ocall(
-            OE_FUNC_GET_REVOCATION_INFO,
-            (uint64_t)hostArgs,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT));
-    *args = *hostArgs;
-    if (args->result != OE_OK)
-        OE_RAISE(OE_FAILURE);
-
-    result = OE_OK;
-done:
-    if (hostArgsBuffer)
-        oe_host_free(hostArgsBuffer);
-
-    // if (args && args->hostOutBuffer)
-    //     oe_host_free(args->hostOutBuffer);
-
-    return result;
-}
-
 oe_result_t VerifyQuoteImpl(
     const uint8_t* quote,
     uint32_t quoteSize,
@@ -235,14 +171,11 @@ oe_result_t VerifyQuoteImpl(
     oe_ec_public_key_t attestationKey = {0};
     oe_cert_t leafCert = {0};
     oe_cert_t rootCert = {0};
+    oe_cert_t intermediateCert = {0};
     oe_ec_public_key_t leafPublicKey = {0};
     oe_ec_public_key_t rootPublicKey = {0};
     oe_ec_public_key_t expectedRootPublicKey = {0};
     bool keyEqual = false;
-    static uint8_t data[16 * 1024];
-    uint32_t dataSize = sizeof(data);
-    ParsedExtensionInfo parsedInfo = {0};
-    oe_get_revocation_info_args_t revocationArgs = {0};
 
     OE_CHECK(
         _ParseQuote(
@@ -278,12 +211,13 @@ oe_result_t VerifyQuoteImpl(
     {
         // Read and validate the chain.
         OE_CHECK(
-            oe_cert_chain_read_pem(&pckCertChain,
-                pemPckCertificate, pemPckCertificateSize));
+            oe_cert_chain_read_pem(
+                &pckCertChain, pemPckCertificate, pemPckCertificateSize));
 
         // Fetch leaf and root certificates.
         OE_CHECK(oe_cert_chain_get_leaf_cert(&pckCertChain, &leafCert));
         OE_CHECK(oe_cert_chain_get_root_cert(&pckCertChain, &rootCert));
+        OE_CHECK(oe_cert_chain_get_cert(&pckCertChain, 1, &intermediateCert));
 
         OE_CHECK(oe_cert_get_ec_public_key(&leafCert, &leafPublicKey));
         OE_CHECK(oe_cert_get_ec_public_key(&rootCert, &rootPublicKey));
@@ -293,8 +227,7 @@ oe_result_t VerifyQuoteImpl(
             oe_ec_public_key_read_pem(
                 &expectedRootPublicKey,
                 (const uint8_t*)g_ExpectedRootCertificateKey,
-                oe_strlen(g_ExpectedRootCertificateKey) + 1
-                ));
+                oe_strlen(g_ExpectedRootCertificateKey) + 1));
 
         OE_CHECK(
             oe_ec_public_key_equal(
@@ -302,25 +235,7 @@ oe_result_t VerifyQuoteImpl(
         if (!keyEqual)
             OE_RAISE(OE_VERIFY_FAILED);
 
-        OE_CHECK(ParseSGXExtensions(&leafCert, data, &dataSize, &parsedInfo));
-
-        oe_memcpy(
-            revocationArgs.fmspc, parsedInfo.fmspc, sizeof(parsedInfo.fmspc));
-        revocationArgs.crlUrls[0] = "https://"
-                                    "certificates.trustedservices.intel.com/"
-                                    "IntelSGXPCKProcessor.crl";
-        revocationArgs.crlUrls[1] = "https://"
-                                    "certificates.trustedservices.intel.com/"
-                                    "IntelSGXPCKProcessor.crl";
-        revocationArgs.numCrlUrls = 2;
-        OE_CHECK(_GetRevocationInfo(&revocationArgs));
-
-        OE_CHECK(
-            oe_enforce_tcb_info(
-                revocationArgs.tcbInfo,
-                revocationArgs.tcbInfoSize,
-                &parsedInfo,
-                true /* require components to be uptodate. */));
+        OE_CHECK(OE_EnforceRevocation(&intermediateCert, &leafCert));
     }
 
     // Quote validations.

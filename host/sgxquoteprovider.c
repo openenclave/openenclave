@@ -156,7 +156,10 @@ oe_result_t oe_get_revocation_info(
         OE_TRACE_INFO("tcb_issuer_chain is NULL.\n");
         OE_RAISE(OE_FAILURE);
     }
-    hostBufferSize += revocationInfo->tcb_issuer_chain_size;
+    hostBufferSize += revocationInfo->tcb_issuer_chain_size + 1;
+    // printf("tcb issuer chain = %s !!!\n", revocationInfo->tcb_issuer_chain);
+    // printf("end-char = %d\n",
+    // revocationInfo->tcb_issuer_chain[revocationInfo->tcb_issuer_chain_size]);
 
     if (revocationInfo->crl_count != numCrlUrls)
     {
@@ -183,12 +186,12 @@ oe_result_t oe_get_revocation_info(
             OE_TRACE_INFO("crl[%d].crl_issuer_chain is NULL.\n", i);
             OE_RAISE(OE_FAILURE);
         }
-        hostBufferSize += revocationInfo->crls[i].crl_issuer_chain_size;
+        hostBufferSize += revocationInfo->crls[i].crl_issuer_chain_size + 1;
     }
 
     OE_TRACE_INFO("sgx_ql_get_revocation_info succeeded.\n");
 
-    p = (uint8_t*)malloc(hostBufferSize + 1024);
+    p = (uint8_t*)calloc(1, hostBufferSize);
     if (p == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 

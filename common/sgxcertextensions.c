@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#define OE_TRACE_LEVEL 2
+//#define OE_TRACE_LEVEL 2
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>

@@ -11,8 +11,8 @@ OE_EXTERNC_BEGIN
 /**
  * OID string representation.
  *
- * This structure represents an OID output parameter to prevent buffer length 
- * mismatches that the compiler would be unable to detect. For example, 
+ * This structure represents an OID output parameter to prevent buffer length
+ * mismatches that the compiler would be unable to detect. For example,
  * consider the following function declaration.
  *
  *     ```

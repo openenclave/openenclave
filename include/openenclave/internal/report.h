@@ -5,6 +5,7 @@
 #define _OE_INCLUDE_REPORT_H_
 
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/sgxtypes.h>
 
 /*
 **==============================================================================

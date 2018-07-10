@@ -2,8 +2,6 @@
 # Licensed under the MIT License.
 
 add_library(oecore STATIC
-    ../../common/cert.c
-    ../../common/outbuf.c
     assert.c
     atexit.c
     calls.c
