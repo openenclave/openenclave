@@ -47,6 +47,7 @@ void TestSigillHandling(oe_enclave_t* enclave)
     {
         uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
         memset(cpuidInfo, 0, sizeof(cpuidInfo));
+#if defined(__linux__)
         int supported = __get_cpuid_count(
             i,
             0,
@@ -60,6 +61,9 @@ void TestSigillHandling(oe_enclave_t* enclave)
                 "Test machine does not support CPUID leaf %x expected by "
                 "TestSigillHandling.\n",
                 i);
+#elif defined(_WIN32)
+        __cpuid(cpuidInfo[i], i);
+#endif
 
         for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
         {
