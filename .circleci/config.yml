@@ -96,12 +96,12 @@ workflows:
           requires:
             - pre-commit-test
             
-       #4.  sgx1-flc-debug(ci-test)
+       # 4.  sgx1-flc-debug(ci-test)
        - sgx1-flc-debug--ci-test:
           requires:
             - pre-commit-test
             
-       #5.  sgx1-flc-optimized(ci-test)  
+       # 5.  sgx1-flc-optimized(ci-test)  
        - sgx1-flc-optimized--ci-test:
           requires:
             - pre-commit-test
