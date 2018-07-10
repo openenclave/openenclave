@@ -10,7 +10,6 @@ add_library(oelibc STATIC
     assert.c
     atexit.c
     errno.c
-    dummy.c
     libcxxrt_stubs.c
     libunwind_stubs.c
     link.c

@@ -40,7 +40,7 @@ function(add_libunwind_test_enc NAME TESTFILE)
         ${PROJECT_BINARY_DIR}/3rdparty/libunwind/libunwind/include
         ${PROJECT_BINARY_DIR}/3rdparty/libunwind/libunwind/tests
         )
-    target_compile_options(libunwindtest-${NAME}_enc PRIVATE -Wno-error)
+    target_compile_options(libunwindtest-${NAME}_enc PRIVATE -Wno-error -fno-inline-functions)
     target_compile_definitions(libunwindtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${TESTFILE}")
     target_link_libraries(libunwindtest-${NAME}_enc libunwindtest-support)
     target_link_libraries(libunwindtest-${NAME}_enc ${LIBUNWIND_LIB_DIR}/libunwind-x86_64.a ${LIBUNWIND_LIB_DIR}/libunwind.a ${LIBUNWIND_LIB_DIR}/libunwind-coredump.a ${LIBUNWIND_LIB_DIR}/libunwind-ptrace.a)
