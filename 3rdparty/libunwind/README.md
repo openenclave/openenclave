@@ -11,10 +11,10 @@ https://github.com/pathscale/libunwind
 
 The general porting approach is described as follows.
 
-- Stub out functions unsupported for enclaves (see [stubs.h](stubs.h));
+- Stub out functions unsupported for enclaves (see [stubs.h](stubs.h))
 
 - Wrap **unw_step()** to verify that the cursor falls within enclave memory
-  (see [libunwind-common.h](*) and [Gstep.c]()).
+  (see [libunwind-common.h](libunwind-common.h) and [Gstep.c](Gstep.c)).
 
 - Provide a definition of **_Ux86_64_setcontext** that does not perform a
-  system call (see [setcontext.S]())
+  system call (see [setcontext.S](setcontext.S))
