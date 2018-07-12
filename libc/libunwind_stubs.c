@@ -4,6 +4,7 @@
 #define _GNU_SOURCE
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -62,4 +63,8 @@ int __libunwind_mincore(void* addr, size_t length, unsigned char* vec)
     memset(vec, 1, n);
 
     return 0;
+}
+
+void __libunwind_setbuf(FILE *stream, char *buf)
+{
 }

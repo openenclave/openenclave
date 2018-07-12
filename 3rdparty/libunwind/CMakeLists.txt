@@ -10,7 +10,7 @@ set (OELIBCXX_UNWIND_OPTS
     )
 
 set (OELIBCXX_UNWIND_CFLAGS
-    "-DUNW_LOCAL_ONLY -DWSIZE=8 -fno-builtin -fPIC -DOPEN_ENCLAVE -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h"
+    "-DUNW_LOCAL_ONLY -DWSIZE=8 -fno-builtin -fPIC -DOPEN_ENCLAVE -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h -I${PROJECT_SOURCE_DIR}/include"
     )
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
@@ -30,6 +30,22 @@ ExternalProject_Add(oelibcxx_unwind
             ./autogen.sh
         COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/libunwind &&
             ./configure "${OELIBCXX_UNWIND_OPTS}" "CFLAGS=${OELIBCXX_UNWIND_CFLAGS}"
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.h
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.h.h
+
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_LIST_DIR}/libunwind-common.h
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.h
+
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c.h
+
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_LIST_DIR}/Gstep.c
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c
+
     BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src
     INSTALL_COMMAND ""
     )
