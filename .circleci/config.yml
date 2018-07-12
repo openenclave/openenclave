@@ -32,8 +32,7 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-Debug
-          command:  |
-            ./scripts/test-build-config 
+          command: ./scripts/test-build-config 
 
   # SGX1 | RelWithDebInfo
   ci-sgx1-relwithdebinfo:
@@ -48,8 +47,7 @@ jobs:
       # Build and Test
       - run: 
           name: SGX1-RelWithDebInfo
-          command:  |
-             ./scripts/test-build-config -p SGX1 -b RelWithDebInfo
+          command: ./scripts/test-build-config -p SGX1 -b RelWithDebInfo
   
   # SGX1 | Release
   ci-sgx1-release:
@@ -64,8 +62,7 @@ jobs:
       # Build and Test
       - run: 
           name: SGX1-Release
-          command:  |
-             ./scripts/test-build-config -p SGX1 -b Release
+          command: ./scripts/test-build-config -p SGX1 -b Release
              
   # SGX1-FLC | Debug 
   ci-sgx1-flc-debug:
@@ -80,8 +77,7 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-FLC-Debug
-          command:  |
-              ./scripts/test-build-config -p SGX1FLC -b Debug
+          command: ./scripts/test-build-config -p SGX1FLC -b Debug
             
   # SGX1-FLC | RelWithDebInfo
   ci-sgx1-flc-relwithdebinfo:
@@ -96,8 +92,7 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-FLC-RelWithDebInfo
-          command:  |
-             ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo
+          command: ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo
 
   # SGX1-FLC | Release 
   ci-sgx1-flc-release:
@@ -112,8 +107,7 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-FLC-Release
-          command:  |
-             ./scripts/test-build-config -p SGX1FLC -b Release
+          command: ./scripts/test-build-config -p SGX1FLC -b Release
              
 workflows:
   version: 2
