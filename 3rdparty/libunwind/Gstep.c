@@ -7,15 +7,15 @@
 // function checks whether the cursor is within the enclave image.
 int __libunwind_unw_step(unw_cursor_t* cursor)
 {
-    struct cursor* c = (struct cursor*)cursor;
+    struct dwarf_cursor* c = (struct dwarf_cursor*)cursor;
 
-    // Check whether the [IP, IP+16) is inside enclave, and
-    // check whether [cfa, cfa+1024) is inside enclave.
-    if (!oe_is_within_enclave((void*)c->dwarf.ip, 16) ||
-        !oe_is_within_enclave((void*)c->dwarf.cfa, 1024))
-    {
+    // Check whether the [IP, IP+16) is within the enclave image.
+    if (!oe_is_within_enclave((void*)c->ip, 16))
         return 0;
-    }
+
+    // Check whether [cfa, cfa+1024) is within the enclave image.
+    if (!oe_is_within_enclave((void*)c->cfa, 1024))
+        return 0;
 
     return unw_step(cursor);
 }
