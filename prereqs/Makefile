@@ -3,7 +3,7 @@
 
 ifdef USE_LIBSGX
 	DIRS = sgx-driver ngsa
-	ifdef NODOWNLOAD
+	ifdef NO_DOWNLOAD
 		DIRS = ngsa
 	endif
 else

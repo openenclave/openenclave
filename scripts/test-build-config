@@ -94,7 +94,7 @@ if [[ ${BUILD_TYPE} != "DEBUG" && ${BUILD_TYPE} != "RELEASE" && ${BUILD_TYPE} !=
 fi
 
 if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
-   sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
+   sudo make -C prereqs USE_LIBSGX=1 NO_DOWNLOAD=1
 elif [ ${DISABLE_SIM} == 0 ]; then
    sudo make -C prereqs
 fi
