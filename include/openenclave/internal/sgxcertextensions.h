@@ -15,7 +15,7 @@ typedef struct _ParsedExtensionInfo
 {
     uint8_t ppid[16];
     uint8_t compSvn[16];
-    uint8_t pceSvn;
+    uint16_t pceSvn;
     uint8_t cpuSvn[16];
     uint8_t pceId[2];
     uint8_t fmspc[6];

@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#define OE_TRACE_LEVEL 2
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
@@ -81,7 +80,7 @@ static oe_result_t _ReadASN1Length(
     uint8_t* end,
     uint64_t* length)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* p = NULL;
     uint8_t bytes = 0;
 
@@ -98,7 +97,6 @@ static oe_result_t _ReadASN1Length(
             // Length is *p.
             *length = *p++;
             *itr = p;
-            result = OE_OK;
         }
         else if (*p > 0x80)
         {
@@ -113,10 +111,14 @@ static oe_result_t _ReadASN1Length(
             if (bytes == 0)
             {
                 *itr = p;
-                result = OE_OK;
             }
         }
     }
+
+    // Ensure that the read length is valid.
+    if (*length && (*itr + *length <= end))
+        result = OE_OK;
+
 done:
 
     return result;
@@ -152,7 +154,7 @@ static oe_result_t _ReadExtension(
     uint8_t** data,
     uint64_t* dataLength)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* p = NULL;
     uint64_t length = 0;
     uint64_t oidLength = 0;
@@ -160,11 +162,13 @@ static oe_result_t _ReadExtension(
 
     if (itr == NULL || *itr == NULL || end == NULL || expectedOid == NULL ||
         data == NULL || dataLength == NULL)
-        return false;
+    {
+        OE_RAISE(OE_FAILURE);
+    }
 
     p = *itr;
     if (p >= end)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
 
     if (*p++ == SGX_SEQUENCE_TAG && p < end)
     {
@@ -215,7 +219,7 @@ static oe_result_t _ReadOctetExtension(
     uint8_t* buffer,
     uint32_t length)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* data = NULL;
     uint64_t dataLength = 0;
 
@@ -233,6 +237,54 @@ done:
 }
 
 /**
+ * Read an Integer extension with given oid and check that the value fits in
+ * the specified number of bytes. The specified number
+ */
+static oe_result_t _ReadIntegerExtension(
+    const char* tag,
+    const char* oid,
+    uint8_t** itr,
+    uint8_t* end,
+    uint32_t numBytes,
+    uint64_t* value)
+{
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    uint8_t* data = NULL;
+    uint64_t dataLength = 0;
+
+    OE_CHECK(
+        _ReadExtension(itr, end, oid, SGX_INTEGER_TAG, &data, &dataLength));
+
+    *value = 0;
+    for (uint32_t i = 0; i < dataLength; ++i)
+    {
+        *value = (*value << 8) | (data[i]);
+    }
+
+    // If the leftmost bit of the integer is 1, then it is prefixed with a zero
+    // byte to indicate that it is a positive number, rather than a negative
+    // number. Negative numbers in two's complement form have the leftmost bit
+    // set. Thus, dataLength can be numBytes + 1, in which case the first byte
+    // must be zero.
+    if (dataLength == numBytes + 1)
+    {
+        if (data[0] != 0)
+            OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+    }
+    else
+    {
+        if (dataLength > numBytes)
+            OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+    }
+
+    OE_TRACE_INFO("%s = %lu\n", tag, *value);
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+/**
  * Read an Integer extension with given oid and check that the value fits in a
  * byte.
  */
@@ -243,30 +295,35 @@ static oe_result_t _ReadIntegerExtensionAsUint8(
     uint8_t* end,
     uint8_t* value)
 {
-    oe_result_t result = OE_FAILURE;
-    uint8_t* data = NULL;
-    uint64_t dataLength = 0;
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    uint64_t value64 = 0;
 
-    OE_CHECK(
-        _ReadExtension(itr, end, oid, SGX_INTEGER_TAG, &data, &dataLength));
+    OE_CHECK(_ReadIntegerExtension(tag, oid, itr, end, 1, &value64));
 
-    // uint8_t value should fit in 1 byte. However if the most significant
-    // byte of an integer is greater than 0x80, then it is prefixed with a 0 to
-    // indicate that it is a positive value. Therefore the dataLength can
-    // sometimes be two bytes, with the first byte being zero.
-    if (dataLength == 2)
-    {
-        if (data[0] != 0)
-            OE_RAISE(OE_FAILURE);
-        *value = data[1];
-    }
-    else
-    {
-        if (dataLength > 1)
-            OE_RAISE(OE_FAILURE);
-        *value = data[0];
-    }
+    *value = (uint8_t)value64;
+    result = OE_OK;
 
+done:
+    return result;
+}
+
+/**
+ * Read an Integer extension with given oid and check that the value fits in a
+ * uint16_t.
+ */
+static oe_result_t _ReadIntegerExtensionAsUint16(
+    const char* tag,
+    const char* oid,
+    uint8_t** itr,
+    uint8_t* end,
+    uint16_t* value)
+{
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    uint64_t value64 = 0;
+
+    OE_CHECK(_ReadIntegerExtension(tag, oid, itr, end, 2, &value64));
+
+    *value = (uint16_t)value64;
     result = OE_OK;
 
 done:
@@ -283,7 +340,7 @@ static oe_result_t _ReadEnumerationExtension(
     uint8_t* end,
     uint8_t* value)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* data = NULL;
     uint64_t dataLength = 0;
 
@@ -291,7 +348,7 @@ static oe_result_t _ReadEnumerationExtension(
         _ReadExtension(itr, end, oid, SGX_ENUMERATION_TAG, &data, &dataLength));
 
     if (dataLength != 1)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
 
     OE_TRACE_INFO("%s = %d\n", tag, *value);
 
@@ -311,7 +368,7 @@ static oe_result_t _ReadBooleanExtension(
     uint8_t* end,
     bool* value)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* data = NULL;
     uint64_t dataLength = 0;
 
@@ -338,9 +395,10 @@ static oe_result_t _GetSGXExtension(
     uint8_t* data,
     uint32_t* dataSize)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint64_t size = *dataSize;
     OE_CHECK(oe_cert_find_extension(cert, SGX_EXTENSION_OID_STR, data, &size));
+
     result = OE_OK;
 done:
     *dataSize = size;
@@ -353,7 +411,7 @@ oe_result_t ParseSGXExtensions(
     uint32_t* bufferSize,
     ParsedExtensionInfo* parsedInfo)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* itr = NULL;
     uint8_t* end = NULL;
     uint64_t dataLength = 0;
@@ -369,15 +427,17 @@ oe_result_t ParseSGXExtensions(
 
     itr = buffer;
     end = itr + *bufferSize;
+    if (end <= itr)
+        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
 
     // All the extensions are housed within a top-level sequence.
     if (*itr++ != SGX_SEQUENCE_TAG)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
 
     // Assert that the sequence end lines up with length.
     OE_CHECK(_ReadASN1Length(&itr, end, &dataLength));
     if (itr + dataLength != end)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
 
     // Read first extension.
     OE_CHECK(
@@ -389,7 +449,7 @@ oe_result_t ParseSGXExtensions(
             parsedInfo->ppid,
             sizeof(parsedInfo->ppid)));
 
-    // Read TCB Extenstion and nested component extensions.
+    // Read TCB extension and nested component extensions.
     OE_CHECK(
         _ReadExtension(
             &itr, end, TCB_OID, SGX_SEQUENCE_TAG, &tcbItr, &tcbLength));
@@ -407,7 +467,7 @@ oe_result_t ParseSGXExtensions(
     }
 
     OE_CHECK(
-        _ReadIntegerExtensionAsUint8(
+        _ReadIntegerExtensionAsUint16(
             "pce-svn", TCB_PCESVN_OID, &tcbItr, tcbEnd, &parsedInfo->pceSvn));
 
     OE_CHECK(
@@ -466,7 +526,7 @@ oe_result_t ParseSGXExtensions(
 
     // Assert that all content has been read.
     if (itr != end)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
 
     result = OE_OK;
 done:
