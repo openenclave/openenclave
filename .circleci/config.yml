@@ -7,6 +7,9 @@ jobs:
   pre-commit-test:
     docker:
       - image: oeciteam/oetools:1.1
+        auth:
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_PASSWORD
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
