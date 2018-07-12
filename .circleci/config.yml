@@ -103,7 +103,7 @@ jobs:
   ci-sgx1-flc-release:
     docker:
       - image: oeciteam/oetools:1.3
-          auth:
+        auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
     working_directory: ~/Microsoft-OE
