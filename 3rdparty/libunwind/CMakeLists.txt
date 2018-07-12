@@ -46,6 +46,10 @@ ExternalProject_Add(oelibcxx_unwind
         ${CMAKE_CURRENT_LIST_DIR}/Gstep.c
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c
 
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_LIST_DIR}/setcontext.S
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/setcontext.S
+
     BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src
     INSTALL_COMMAND ""
     )
