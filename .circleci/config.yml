@@ -8,8 +8,8 @@ jobs:
     docker:
       - image: oeciteam/oetools:1.2
         auth:
-	  username: $DOCKERHUB_USER
-	  password: $DOCKERHUB_PASSWORD
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_PASSWORD
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
