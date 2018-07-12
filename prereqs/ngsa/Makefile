@@ -47,14 +47,9 @@ pkg-name = $(1)_$(2).deb
 # https://github.com/otcshare/NextGenSGXAttestationLibs.git are available as
 # packages for apt-get
 get-package:
-ifdef NO_DOWNLOAD
-	@ echo "Skipping download/installation of $(LIBSGX_COMMON_PKG) package"
-	@ echo "Skipping download/installation of $(LIBSGX_QL_PKG) package"
-else
 	apt-get -y install wget
 	@ wget http://10.224.140.70:8888/libsgx-enclave-common_2.1.100.0-1.0_amd64.deb
 	@ wget http://10.224.140.70:8888/libsgx-ngsa-ql_2.1.100.0-1.0_amd64.deb
-endif
 
 check-installed:
 ifeq ($(LIBSGX_COMMON_INSTALLED)),)

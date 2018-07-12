@@ -10,6 +10,9 @@
 ## Default run with no parameters builds with Debug build-type and for SGX1
 ## platform and will test in Simulator mode.
 ## Run this from the root of the source tree as sudo.
+## Please note that this script does not install any packages needed for the test.
+## Please install all packages necessary for your test before invoking this script.
+## For CI runs, the Docker image will contain the necessary packages.
 ##
 ##====================================================================================
 if [ "$1" == "-h" ]; then
@@ -93,15 +96,15 @@ if [[ ${BUILD_TYPE} != "DEBUG" && ${BUILD_TYPE} != "RELEASE" && ${BUILD_TYPE} !=
    exit 1
 fi
 
-#Removing prereqs entirely for all platforms
-#if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
-#   sudo make -C prereqs USE_LIBSGX=1 NO_DOWNLOAD=1
-#elif [ ${DISABLE_SIM} == 0 ]; then
-#   sudo make -C prereqs
-#fi
-
-mkdir build
-cd build
+#Clean the build directory if it exists. This allows calling this script iteratively for
+#multiple configurations without cleaning or deleting the build directory
+if [ ! -d "./build" ]; then
+  mkdir build
+  cd build
+else 
+  cd build
+  make clean
+fi
 
 CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
