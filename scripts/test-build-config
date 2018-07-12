@@ -93,11 +93,12 @@ if [[ ${BUILD_TYPE} != "DEBUG" && ${BUILD_TYPE} != "RELEASE" && ${BUILD_TYPE} !=
    exit 1
 fi
 
-if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
-   sudo make -C prereqs USE_LIBSGX=1 NO_DOWNLOAD=1
-elif [ ${DISABLE_SIM} == 0 ]; then
-   sudo make -C prereqs
-fi
+#Removing prereqs entirely for all platforms
+#if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
+#   sudo make -C prereqs USE_LIBSGX=1 NO_DOWNLOAD=1
+#elif [ ${DISABLE_SIM} == 0 ]; then
+#   sudo make -C prereqs
+#fi
 
 mkdir build
 cd build
