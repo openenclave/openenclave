@@ -1,9 +1,9 @@
 libunwind
 =========
 
-This directory contains a port of libunwind for enclaves. No libunwind sources
-were changed. The **./libunwind** directory was copied intact from the following
-location.
+This directory contains a port of **libunwind** for enclaves. No **libunwind**
+sources were changed. The **./libunwind** directory was copied intact from the 
+following location.
 
 ```
 https://github.com/pathscale/libunwind
