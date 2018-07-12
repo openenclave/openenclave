@@ -8,20 +8,17 @@
 
 include(add_enclave_executable)
 include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_name.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/../../../cmake/get_testcase_ext.cmake)
 
 set(LIBUNWIND_LIB_DIR ${PROJECT_BINARY_DIR}/3rdparty/libunwind/libunwind/src/.libs)
-set(LIBUNWIND_DIR ${PROJECT_SOURCE_DIR}/3rdparty/libunwind/libunwind/tests)
-set(LIBUNWIND_TEST_DIR ${PROJECT_SOURCE_DIR}/tests/libunwind/)
-set(LIB_DIR ${PROJECT_SOURCE_DIR}/tests/libunwind/enc)
+set(LIBUNWIND_TEST_DIR ${PROJECT_SOURCE_DIR}/3rdparty/libunwind/libunwind/tests)
 
 # helper lib to contain file needed by some tests
 add_library(libunwindtest-support
-        ${LIBUNWIND_DIR}/ident.c
-        ${LIBUNWIND_DIR}/flush-cache.S
-        ${LIBUNWIND_DIR}/test-static-link-gen.c
-        ${LIBUNWIND_DIR}/flush-cache.h
-	${LIB_DIR}/test_support.c
+        ${LIBUNWIND_TEST_DIR}/ident.c
+        ${LIBUNWIND_TEST_DIR}/flush-cache.S
+        ${LIBUNWIND_TEST_DIR}/test-static-link-gen.c
+        ${LIBUNWIND_TEST_DIR}/flush-cache.h
+	test_support.c
     )
 target_compile_options(libunwindtest-support PRIVATE -Wno-error)
 target_include_directories(libunwindtest-support PRIVATE

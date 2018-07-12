@@ -1,6 +1,4 @@
-3rdparty/libunwind/libunwind/tests/Gtest-exc.c
 3rdparty/libunwind/libunwind/tests/Gtest-init.cxx
-3rdparty/libunwind/libunwind/tests/Ltest-exc.c
 3rdparty/libunwind/libunwind/tests/Ltest-init.cxx
 3rdparty/libunwind/libunwind/tests/Ltest-varargs.c
 3rdparty/libunwind/libunwind/tests/test-flush-cache.c

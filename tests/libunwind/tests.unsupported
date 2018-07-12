@@ -13,6 +13,10 @@
 3rdparty/libunwind/libunwind/tests/Ltest-resume-sig.c
 3rdparty/libunwind/libunwind/tests/Ltest-resume-sig-rt.c
 3rdparty/libunwind/libunwind/tests/Ltest-trace.c
+3rdparty/libunwind/libunwind/tests/run-check-namespace
+3rdparty/libunwind/libunwind/tests/run-coredump-unwind
+3rdparty/libunwind/libunwind/tests/run-ptrace-mapper
+3rdparty/libunwind/libunwind/tests/run-ptrace-misc
 3rdparty/libunwind/libunwind/tests/test-async-sig.c
 3rdparty/libunwind/libunwind/tests/test-ptrace.c
 3rdparty/libunwind/libunwind/tests/test-setjmp.c
