@@ -5,7 +5,7 @@
 
 // Wrapper for calling unw_step() throughout libunwind source. This 
 // function checks whether the cursor is within the enclave image.
-int __unw_step(unw_cursor_t* cursor)
+int __libunwind_unw_step(unw_cursor_t* cursor)
 {
     struct cursor* c = (struct cursor*)cursor;
 
