@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/thread.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
@@ -11,6 +12,16 @@
 #include <cstring>
 #include <thread>
 #include "../args.h"
+
+OE_STATIC_ASSERT(sizeof(oe_thread_t) == sizeof(pthread_t));
+OE_STATIC_ASSERT(sizeof(oe_once_t) == sizeof(pthread_once_t));
+OE_STATIC_ASSERT(sizeof(oe_spinlock_t) == sizeof(pthread_spinlock_t));
+OE_STATIC_ASSERT(sizeof(oe_spinlock_t) == sizeof(pthread_spinlock_t));
+OE_STATIC_ASSERT(sizeof(oe_thread_attr_t) <= sizeof(pthread_attr_t));
+
+OE_STATIC_ASSERT(sizeof(oe_mutex_t) <= sizeof(pthread_mutex_t));
+OE_STATIC_ASSERT(sizeof(oe_cond_t) <= sizeof(pthread_cond_t));
+OE_STATIC_ASSERT(sizeof(oe_rwlock_t) <= sizeof(pthread_rwlock_t));
 
 static TestMutexArgs _args;
 

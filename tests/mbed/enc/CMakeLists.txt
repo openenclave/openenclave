@@ -26,7 +26,7 @@ function(add_libmbed_test_enc NAME )
     add_custom_command(
         OUTPUT test_suite_${data_name}
         COMMAND ${PERL_EXECUTABLE} ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/scripts/generate_code.pl ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites test_suite_${suite_name} test_suite_${data_name}
-        DEPENDS ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/scripts/generate_code.pl mbedcrypto ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/helpers.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/main_test.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_${suite_name}.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_${data_name}.data
+        DEPENDS ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/scripts/generate_code.pl oembedtls ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/helpers.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/main_test.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_${suite_name}.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_${data_name}.data
    )
 
     add_enclave_executable(libmbedtest_suite_${NAME} sign.conf private.pem test_suite_${NAME} 
@@ -43,7 +43,7 @@ function(add_libmbed_test_enc NAME )
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
         )
     target_compile_definitions(libmbedtest_suite_${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c")
-    target_link_libraries(libmbedtest_suite_${NAME} mbedcrypto oelibc libcio)
+    target_link_libraries(libmbedtest_suite_${NAME} oembedtls oelibc libcio)
 endfunction(add_libmbed_test_enc)
 
 function(add_libmbed_selftest_enc NAME SOURCE )
@@ -58,7 +58,7 @@ function(add_libmbed_selftest_enc NAME SOURCE )
         )
 
     target_compile_definitions(libmbedtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${SOURCE}")
-    target_link_libraries(libmbedtest-${NAME}_enc mbedcrypto oelibc )
+    target_link_libraries(libmbedtest-${NAME}_enc oembedtls oelibc )
 
 endfunction(add_libmbed_selftest_enc)
 

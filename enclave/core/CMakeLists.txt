@@ -2,8 +2,23 @@
 # Licensed under the MIT License.
 
 add_library(oecore STATIC
-    assert.c
-    atexit.c
+    enclavelibc/assert.c
+    enclavelibc/atexit.c
+    enclavelibc/ctype.c
+    enclavelibc/errno.c
+    enclavelibc/gmtime.c
+    enclavelibc/malloc.c
+    enclavelibc/printf.c
+    enclavelibc/pthread.c
+    enclavelibc/rand.c
+    enclavelibc/sbrk.c
+    enclavelibc/stdio.c
+    enclavelibc/strerror.c
+    enclavelibc/string.c
+    enclavelibc/strtoul.c
+    enclavelibc/time.c
+    enclavelibc/setjmp.S
+    enclavelibc/longjmp.S
     calls.c
     cpuid.c
     entropy.c
@@ -13,22 +28,28 @@ add_library(oecore STATIC
     hoststack.c
     hexdump.c
     init.c
-    jump.c
+    intstr.c
     keys.c
     memory.c
     once.c
     result.c
     report.c
-    sbrk.c
-    snprintf.c
     spinlock.c
-    string.c
     td.c
     thread.c
     exit.S
     getkey.S
-    main.S
-    )
+    main.S)
+
+set(ENCLAVELIBC_INCDIR
+    "${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
+
+set_source_files_properties(
+    enclavelibc/malloc.c
+    enclavelibc/time.c
+    PROPERTIES
+    COMPILE_FLAGS
+    "-I${ENCLAVELIBC_INCDIR}")
 
 target_link_libraries(oecore PUBLIC oe_includes)
 
@@ -60,3 +81,10 @@ set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 install (TARGETS oecore EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+# Target to get enclavelibc includes and definitions.
+add_library(enclavelibc INTERFACE)
+add_dependencies(enclavelibc oe_includes)
+target_include_directories(enclavelibc INTERFACE ${ENCLAVELIBC_INCDIR})
+target_compile_definitions(enclavelibc INTERFACE OE_BUILD_ENCLAVE)
+target_compile_definitions(enclavelibc INTERFACE OE_ENCLAVELIBC_NEED_STDC_NAMES)

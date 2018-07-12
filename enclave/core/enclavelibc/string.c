@@ -2,18 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
-
-/*
-**==============================================================================
-**
-** oe_strlen()
-** oe_strcmp()
-** oe_strcpy()
-** oe_strlcpy()
-** oe_strlcat()
-**
-**==============================================================================
-*/
+#include <openenclave/internal/enclavelibc.h>
 
 size_t oe_strlen(const char* s)
 {
@@ -78,6 +67,87 @@ int oe_strncmp(const char* s1, const char* s2, size_t n)
     return *s1 - *s2;
 }
 
+int oe_strcasecmp(const char* s1, const char* s2)
+{
+    while ((*s1 && *s2) && (oe_toupper(*s1) == oe_toupper(*s2)))
+    {
+        s1++;
+        s2++;
+    }
+
+    return oe_toupper(*s1) - oe_toupper(*s2);
+}
+
+int oe_strncasecmp(const char* s1, const char* s2, size_t n)
+{
+    while (n && *s1 && *s2 && oe_toupper(*s1) == oe_toupper(*s2))
+    {
+        n--;
+        s1++;
+        s2++;
+    }
+
+    if (n == 0)
+        return 0;
+
+    if (!*s1)
+        return -1;
+
+    if (!*s2)
+        return 1;
+
+    return oe_toupper(*s1) - oe_toupper(*s2);
+}
+
+char* oe_strncpy(char* dest, const char* src, size_t n)
+{
+    char* p = dest;
+
+    while (n-- && *src)
+        *p++ = *src++;
+
+    while (n--)
+        *p++ = '\0';
+
+    return dest;
+}
+
+char* oe_strcpy(char* dest, const char* src)
+{
+    char* p = dest;
+
+    while (*src)
+        *p++ = *src++;
+
+    *p = '\0';
+
+    return dest;
+}
+
+char* oe_strcat(char* dest, const char* src)
+{
+    char* p = dest + oe_strlen(dest);
+
+    while (*src)
+        *p++ += *src++;
+
+    *p = '\0';
+
+    return dest;
+}
+
+char* oe_strncat(char* dest, const char* src, size_t n)
+{
+    char* p = dest + oe_strlen(dest);
+
+    while (n-- && *src)
+        *p++ = *src++;
+
+    *p = '\0';
+
+    return dest;
+}
+
 size_t oe_strlcpy(char* dest, const char* src, size_t size)
 {
     const char* start = src;
@@ -130,20 +200,66 @@ size_t oe_strlcat(char* dest, const char* src, size_t size)
     return n;
 }
 
-/*
-**==============================================================================
-**
-** oe_memset()
-** oe_memcpy()
-** oe_memcmp()
-**
-**==============================================================================
-*/
+char* oe_strchr(const char* s, int c)
+{
+    while (*s && *s != c)
+        s++;
+
+    if (*s == c)
+        return (char*)s;
+
+    return NULL;
+}
+
+char* oe_index(const char* s, int c)
+{
+    return oe_strchr(s, c);
+}
+
+char* oe_strrchr(const char* s, int c)
+{
+    char* p = (char*)s + oe_strlen(s);
+
+    if (c == '\0')
+        return p;
+
+    while (p != s)
+    {
+        if (*--p == c)
+            return p;
+    }
+
+    return NULL;
+}
+
+char* oe_rindex(const char* s, int c)
+{
+    return oe_strrchr(s, c);
+}
+
+char* oe_strstr(const char* haystack, const char* needle)
+{
+    size_t hlen = oe_strlen(haystack);
+    size_t nlen = oe_strlen(needle);
+
+    if (nlen > hlen)
+        return NULL;
+
+    for (size_t i = 0; i < hlen - nlen + 1; i++)
+    {
+        if (oe_memcmp(haystack + i, needle, nlen) == 0)
+            return (char*)haystack + i;
+    }
+
+    return NULL;
+}
 
 void* oe_memcpy(void* dest, const void* src, size_t n)
 {
     unsigned char* p = (unsigned char*)dest;
     const unsigned char* q = (const unsigned char*)src;
+
+#if defined(__GNUC__)
 
     while (n >= 1024)
     {
@@ -177,6 +293,8 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
         q += 16;
     }
 
+#endif
+
     while (n--)
         *p++ = *q++;
 
@@ -186,6 +304,8 @@ void* oe_memcpy(void* dest, const void* src, size_t n)
 void* oe_memset(void* s, int c, size_t n)
 {
     unsigned char* p = (unsigned char*)s;
+
+#if defined(__GNUC__)
 
     while (n >= 1024)
     {
@@ -215,6 +335,8 @@ void* oe_memset(void* s, int c, size_t n)
         p += 16;
     }
 
+#endif
+
     while (n--)
         *p++ = c;
 
@@ -235,4 +357,48 @@ int oe_memcmp(const void* s1, const void* s2, size_t n)
     }
 
     return 0;
+}
+
+void* oe_memmove(void* dest, const void* src, size_t n)
+{
+    char* p = (char*)dest;
+    const char* q = (const char*)src;
+
+    if (p != q && n > 0)
+    {
+        if (p <= q)
+        {
+            oe_memcpy(p, q, n);
+        }
+        else
+        {
+            for (q += n, p += n; n--; p--, q--)
+                p[-1] = q[-1];
+        }
+    }
+
+    return p;
+}
+
+char* oe_strdup(const char* s)
+{
+    return oe_strndup(s, OE_SIZE_MAX);
+}
+
+char* oe_strndup(const char* s, size_t n)
+{
+    char* p = NULL;
+
+    if (s)
+    {
+        size_t len = oe_strnlen(s, n);
+
+        if (!(p = (char*)oe_malloc(len + 1)))
+            return NULL;
+
+        oe_memcpy(p, s, len);
+        p[len] = '\0';
+    }
+
+    return p;
 }

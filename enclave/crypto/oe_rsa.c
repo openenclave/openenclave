@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "rsa.h"
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include "key.h"
 #include "pem.h"
 #include "random.h"
+#include "rsa.h"
 
 static uint64_t _PRIVATE_KEY_MAGIC = 0xd48de5bae3994b41;
 static uint64_t _PUBLIC_KEY_MAGIC = 0x713600af058c447a;
@@ -150,7 +150,7 @@ static oe_result_t _GenerateKeyPair(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check range of bits and exponent parameters */
-    if (bits > OE_MAX_UINT || exponent > OE_MAX_INT)
+    if (bits > OE_UINT_MAX || exponent > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the random number generator */

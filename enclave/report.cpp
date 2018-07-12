@@ -13,8 +13,6 @@
 #include <openenclave/internal/utils.h>
 #include "../common/quote.h"
 
-#include <stdlib.h>
-
 // This file is .cpp in order to use C++ static initialization.
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));

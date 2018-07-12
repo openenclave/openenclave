@@ -151,7 +151,7 @@ static int _FetchBucket(const volatile void* p, Bucket* contents)
         contents->baseFree = bHost->baseFree;
     }
 
-    if (contents->size >= OE_MAX_SINT32)
+    if (contents->size >= OE_INT32_MAX)
         return -1;
     if (contents->baseFree > contents->size)
         return -1;
@@ -172,7 +172,7 @@ void* oe_host_alloc_for_call_host(size_t size)
     ThreadBuckets* tb; // deliberate non-init
     void* retVal = NULL;
 
-    if (!size || (size > OE_MAX_SINT32))
+    if (!size || (size > OE_INT32_MAX))
         return NULL;
 
     if ((tb = _GetThreadBuckets()) == NULL)

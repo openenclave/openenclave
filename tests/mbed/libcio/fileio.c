@@ -40,7 +40,7 @@ FILE* fopen(const char* Path, const char* Mode)
     // Assume that all file paths starting with "/dev/*" can be redirected to
     // stdout.
     // This includes devices that may not be /dev/tty* or /dev/console.
-    if (strstr(Path, "/dev/") == Path)
+    if (oe_strstr(Path, "/dev/") == Path)
         return stdout;
 
     args = (Args*)oe_host_malloc(sizeof(Args));
@@ -110,7 +110,8 @@ int fputc(int c, FILE* stream)
     if (stream == stdout)
     {
         /* Write to standard output device */
-        __oe_host_print(0, &c, 1);
+        char tmp = (char)c;
+        __oe_host_print(0, &tmp, 1);
         return c;
     }
     else if (stream == stderr)
@@ -135,28 +136,28 @@ int fputc(int c, FILE* stream)
 int fileno(FILE* stream)
 {
     if (stream == stdout)
-        return (int)stdout;
+        return STDOUT_FILENO;
     else if (stream == stderr)
-        return (int)stderr;
+        return STDERR_FILENO;
     else
-        return 0;
+        return -1;
 }
 
 int dup(int oldfd)
 {
-    if ((FILE*)oldfd == stdout)
-        return (int)stdout;
-    else if ((FILE*)oldfd == stderr)
-        return (int)stderr;
+    if (oldfd == STDOUT_FILENO)
+        return STDOUT_FILENO;
+    else if (oldfd == STDERR_FILENO)
+        return STDERR_FILENO;
     else
-        return 0;
+        return -1;
 }
 
 FILE* fdopen(int fd, const char* mode)
 {
-    if ((FILE*)fd == stdout)
+    if (fd == STDOUT_FILENO)
         return stdout;
-    else if ((FILE*)fd == stderr)
+    else if (fd == STDERR_FILENO)
         return stderr;
     else
         return NULL;

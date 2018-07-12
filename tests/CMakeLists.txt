@@ -61,5 +61,6 @@ add_subdirectory(pingpong)
 add_subdirectory(pingpong-shared)
 add_subdirectory(tester)
 add_subdirectory(typeinfo)
+add_subdirectory(enclavelibc)
 
 endif()

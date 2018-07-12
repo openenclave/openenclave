@@ -4,7 +4,7 @@
 #ifndef _TD_H
 #define _TD_H
 
-#include <openenclave/internal/jump.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include "asmdefs.h"
 
@@ -44,7 +44,7 @@ typedef struct _Callsite Callsite;
 struct _Callsite
 {
     /* Enclave callsite stored here when exiting to make an OCALL */
-    oe_jmpbuf_t jmpbuf;
+    oe_jmp_buf jmpbuf;
 
     /* Pointer ot the ocall context */
     oe_ocall_context_t* ocallContext;

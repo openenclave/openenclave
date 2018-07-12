@@ -17,27 +17,6 @@ typedef int32_t clockid_t;
 /*
 **==============================================================================
 **
-** oe_strftime_args_t
-**
-**     size_t strftime(
-**         char *str,
-**         size_t max,
-**         const char *format,
-**         const struct tm *tm);
-**
-**==============================================================================
-*/
-typedef struct _oe_strftime_args
-{
-    size_t ret;
-    char str[256];
-    char format[256];
-    struct tm tm;
-} oe_strftime_args_t;
-
-/*
-**==============================================================================
-**
 ** oe_gettimeofday_args_t
 **
 **     int gettimeofday(struct timeval *tv, struct timezone *tz)

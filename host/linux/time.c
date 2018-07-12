@@ -4,16 +4,6 @@
 #include <openenclave/internal/time.h>
 #include "../ocalls.h"
 
-void HandleStrftime(uint64_t argIn)
-{
-    oe_strftime_args_t* args = (oe_strftime_args_t*)argIn;
-
-    if (!args)
-        return;
-
-    args->ret = strftime(args->str, sizeof(args->str), args->format, &args->tm);
-}
-
 void HandleGettimeofday(uint64_t argIn)
 {
     oe_gettimeofday_args_t* args = (oe_gettimeofday_args_t*)argIn;

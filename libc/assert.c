@@ -2,9 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <openenclave/internal/enclavelibc.h>
 
 void __assert_fail(
     const char* expr,
@@ -12,16 +10,5 @@ void __assert_fail(
     int line,
     const char* function)
 {
-    char buf[1024];
-
-    snprintf(
-        buf,
-        sizeof(buf),
-        "Assertion failed: %s (%s: %s: %d)\n",
-        expr,
-        file,
-        function,
-        line);
-    puts(buf);
-    abort();
+    return __oe_assert_fail(expr, file, line, function);
 }

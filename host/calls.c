@@ -408,10 +408,6 @@ static oe_result_t _HandleOCALL(
             HandleGetQETargetInfo(argIn);
             break;
 
-        case OE_FUNC_STRFTIME:
-            HandleStrftime(argIn);
-            break;
-
         case OE_FUNC_GETTIMEOFDAY:
             HandleGettimeofday(argIn);
             break;

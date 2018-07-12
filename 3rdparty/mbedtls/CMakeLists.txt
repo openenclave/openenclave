@@ -1,59 +1,145 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Copy mbedtls sources to replace config.h and build w/ own flags
-
-set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-builtin-udivti3")
+##==============================================================================
+##
+## config.h:
+##
+## Modify and copy ./config.h to a temporary location within the binary 
+## directory. The 'oembedtls-wrap' target below copies it into the MBEDTLS 
+## source tree. Occurences of ${CMAKE_BUILD_TYPE} are expanded to either 
+## "DEBUG" or "RELEASE"
+##
+##==============================================================================
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
-	configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/config.h ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h COPYONLY)
-	file(APPEND ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h "\#define\ MBEDTLS_CERTS_C\n\n\#define\ MBEDTLS_DEBUG_C\n")
-else()
-	configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/config.h ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h COPYONLY)
-endif()
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h
+    ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config.h)
 
-include (ExternalProject)
-ExternalProject_Add(mbedtls-wrap
-    DEPENDS oelibc_includes
+##==============================================================================
+##
+## oembedtls-wrap:
+##
+## Builds MBEDTLS by performing the following steps.
+##
+## (1) Copy the ./mbedtls source tree to the following location in the binary 
+##     directory.
+##
+##     ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/mbedtls-prefix/src/mbedtls
+##
+## (2) Copies the config.h (created above) into the MBEDTLS source tree.
+##
+## (3) Set the C compiler flags used to compile MBEDTLS.
+##
+## (4) Build MBEDTLS using the implicit default BUILD_COMMAND.
+##
+## (5) Create the following libraries:
+##
+##     libmbedtls.a
+##     libmbedx509.a
+##     libmbedcrypto.a
+##
+## MBEDTLS is compiled with these options:
+##
+##     -nostdinc
+##     -I${ENCLAVELIBC_INCDIR}
+##
+## This forces MBEDTLS to look for the standard headers in the following
+## location in the source tree:
+##
+##     openenclave/enclave/enclavelibc
+##
+## This directory contains header files with standard names like <stdlib.h>
+## and <stdio.h>. These headers define their functions as inlines that invoke
+## forms that have the 'oe_' prefix.
+##
+##==============================================================================
 
+set(ENCLAVELIBC_INCDIR 
+    "${PROJECT_SOURCE_DIR}/include/openenclave/internal/enclavelibc")
+
+set(MBEDTLS_WRAP_CFLAGS "-Werror -nostdinc -I${ENCLAVELIBC_INCDIR} -fno-builtin -fPIC -fno-builtin-udivti3 -fno-stack-protector -DOE_ENCLAVELIBC_NEED_STDC_NAMES -DOE_BUILD_MBEDTLS")
+
+include(ExternalProject)
+
+ExternalProject_Add(oembedtls-wrap
+
+    # Copy the MBEDTLS source distribution to the build directory.
     DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_LIST_DIR}/mbedtls <SOURCE_DIR>
+
+    # Copy MBEDTLS config file into source tree under build directory.
     PATCH_COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h <SOURCE_DIR>/include/mbedtls/config.h
-    # Addl args for compiler
+        ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config.h
+        <SOURCE_DIR>/include/mbedtls/config.h
+
+    # Define C compiler flags.
     CMAKE_ARGS
         -DCMAKE_C_FLAGS=${MBEDTLS_WRAP_CFLAGS}
         -DENABLE_PROGRAMS=OFF
         -DENABLE_TESTING=OFF
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
-    # copy headers/libs
-    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory
-        <SOURCE_DIR>/include/mbedtls ${OE_INCDIR}/openenclave/mbedtls
+    # Intall MBEDTLS header directory and libraries.
+    INSTALL_COMMAND 
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            <SOURCE_DIR>/include/mbedtls 
+            ${OE_INCDIR}/openenclave/mbedtls
         COMMAND ${CMAKE_COMMAND} -E copy
-        <BINARY_DIR>/library/libmbedx509.a ${OE_LIBDIR}/openenclave/enclave/
-        <BINARY_DIR>/library/libmbedtls.a ${OE_LIBDIR}/openenclave/enclave/
-        <BINARY_DIR>/library/libmbedcrypto.a ${OE_LIBDIR}/openenclave/enclave/
-    )
-install (DIRECTORY ${OE_INCDIR}/openenclave/mbedtls DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
-install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedx509.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
-install (FILES ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+            <BINARY_DIR>/library/libmbedx509.a 
+            ${OE_LIBDIR}/openenclave/enclave
+        COMMAND ${CMAKE_COMMAND} -E copy
+            <BINARY_DIR>/library/libmbedtls.a 
+            ${OE_LIBDIR}/openenclave/enclave
+        COMMAND ${CMAKE_COMMAND} -E copy
+            <BINARY_DIR>/library/libmbedcrypto.a 
+            ${OE_LIBDIR}/openenclave/enclave
+)
 
-# Convenience lib for use in target_link_libraries
-add_library(mbedcrypto INTERFACE)
-add_dependencies(mbedcrypto mbedtls-wrap)
-target_include_directories(mbedcrypto INTERFACE ${OE_INCDIR}/openenclave/)
-target_link_libraries(mbedcrypto INTERFACE 
+##==============================================================================
+##
+## install:
+##
+## Install the MBEDTLS headers and binaries.
+##
+##==============================================================================
+
+install(DIRECTORY 
+    ${OE_INCDIR}/openenclave/mbedtls 
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(FILES 
+    ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+install(FILES 
+    ${OE_LIBDIR}/openenclave/enclave/libmbedx509.a
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+install(FILES 
+    ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+
+##==============================================================================
+##
+## oembedtls:
+##
+## Define the oembedtls interface so that other cmake files can find the
+## MBEDTLS headers and library.
+##
+##==============================================================================
+
+add_library(oembedtls INTERFACE)
+
+add_dependencies(oembedtls oembedtls-wrap)
+
+target_include_directories(oembedtls INTERFACE
+    ${OE_INCDIR}/openenclave)
+
+target_link_libraries(oembedtls INTERFACE
     ${OE_LIBDIR}/openenclave/enclave/libmbedtls.a
     ${OE_LIBDIR}/openenclave/enclave/libmbedx509.a
-    ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a
-)
-# For the libc dependency, We would just want to use "oelibc". However, we need
-# an actual lib-dependency between crypto an libc, which is not expressable
-# with CMake. If using the target "oelibc", CMake reorders the libs, resulting
-# in undefined LIBC symbols from crypto. Using the explicit lib-name preserves
-# order.
-target_link_libraries(mbedcrypto INTERFACE ${OE_LIBDIR}/openenclave/enclave/liboelibc.a)
+    ${OE_LIBDIR}/openenclave/enclave/libmbedcrypto.a)
+

@@ -5,7 +5,6 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/globals.h>
-#include <openenclave/internal/jump.h>
 #include <openenclave/internal/tests.h>
 #include "../args.h"
 
@@ -20,14 +19,14 @@ static oe_result_t s_registerResult = oe_register_ecall(0, MyECall);
 
 int TestSetjmp()
 {
-    oe_jmpbuf_t buf;
+    oe_jmp_buf buf;
 
-    int rc = oe_setjmp(&buf);
+    int rc = oe_setjmp(buf);
 
     if (rc == 999)
         return rc;
 
-    oe_longjmp(&buf, 999);
+    oe_longjmp(buf, 999);
     return 0;
 }
 

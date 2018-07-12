@@ -2760,6 +2760,19 @@
 #include MBEDTLS_USER_CONFIG_FILE
 #endif
 
+// The cmake configure_file() command expands CMAKE_BUILD_TYPE to either
+// "DEBUG" or "RELEASE".
+#define CMAKE_BUILD_TYPE_${CMAKE_BUILD_TYPE}
+
+#ifdef CMAKE_BUILD_TYPE_DEBUG
+#define MBEDTLS_CERTS_C
+#define MBEDTLS_DEBUG_C
+#endif
+
 #include "check_config.h"
+
+#ifdef OE_BUILD_MBEDTLS
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#endif
 
 #endif /* MBEDTLS_CONFIG_H */

@@ -5,6 +5,7 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/tests.h>
 #include "../args.h"
 
 char* oe_host_stack_strdup(const char* str)

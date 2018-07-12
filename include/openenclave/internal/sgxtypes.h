@@ -9,7 +9,6 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include "epid.h"
-#include "jump.h"
 #include "load.h"
 #include "sha.h"
 

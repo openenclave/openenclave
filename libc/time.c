@@ -114,53 +114,6 @@ done:
     return ret;
 }
 
-size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
-{
-    size_t ret = 0;
-    oe_strftime_args_t* a = NULL;
-
-    if (!str || !format || !tm)
-        goto done;
-
-    if (!(a = oe_host_calloc(1, sizeof(oe_strftime_args_t))))
-        goto done;
-
-    if (strlcpy(a->format, format, sizeof(a->format)) >= sizeof(a->format))
-        goto done;
-
-    memcpy(&a->tm, tm, sizeof(struct tm));
-
-    if (oe_ocall(
-            OE_FUNC_STRFTIME, (uint64_t)a, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
-        OE_OK)
-        goto done;
-
-    if (strlcpy(str, a->str, max) >= max)
-    {
-        *str = '\0';
-        goto done;
-    }
-
-    ret = a->ret;
-
-done:
-
-    if (a)
-        oe_host_free(a);
-
-    return ret;
-}
-
-size_t strftime_l(
-    char* s,
-    size_t max,
-    const char* format,
-    const struct tm* tm,
-    locale_t loc)
-{
-    return strftime(s, max, format, tm);
-}
-
 int nanosleep(const struct timespec* req, struct timespec* rem)
 {
     size_t ret = -1;

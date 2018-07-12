@@ -247,6 +247,7 @@ void __oe_assert_fail(
     int line,
     const char* func);
 
+#if !defined(oe_assert)
 #ifndef NDEBUG
 #define oe_assert(EXPR)                                                \
     do                                                                 \
@@ -257,6 +258,7 @@ void __oe_assert_fail(
 #else
 #define oe_assert(EXPR)
 #endif
+#endif /* !defined(oe_assert) */
 
 /**
  * Get a report signed by the enclave platform for use in attestation.
