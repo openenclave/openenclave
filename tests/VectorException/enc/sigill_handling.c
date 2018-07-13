@@ -109,7 +109,7 @@ bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 
     oe_get_cpuid(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
 
-    // Do something with the out param to prevent call from getting optimized 
+    // Do something with the out param to prevent call from getting optimized
     // out
     if (cpuidRAX != 0)
     {
@@ -173,19 +173,21 @@ OE_ECALL void TestSigillHandling(void* args_)
     // Return enclave-cached CPUID leaves to host for further validation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        oe_get_cpuid(i,
-                     0,
-                     &args->cpuidTable[i][OE_CPUID_RAX],
-                     &args->cpuidTable[i][OE_CPUID_RBX],
-                     &args->cpuidTable[i][OE_CPUID_RCX],
-                     &args->cpuidTable[i][OE_CPUID_RDX]);
-        
-        // Do something with the out param to prevent call from getting 
+        oe_get_cpuid(
+            i,
+            0,
+            &args->cpuidTable[i][OE_CPUID_RAX],
+            &args->cpuidTable[i][OE_CPUID_RBX],
+            &args->cpuidTable[i][OE_CPUID_RCX],
+            &args->cpuidTable[i][OE_CPUID_RDX]);
+
+        // Do something with the out param to prevent call from getting
         // optimized out
         if (args->cpuidTable[i][OE_CPUID_RAX] != 0)
         {
-            oe_host_printf("The value of cpuidRAX is now: %d\n.", 
-                           args->cpuidTable[i][OE_CPUID_RAX]);
+            oe_host_printf(
+                "The value of cpuidRAX is now: %d\n.",
+                args->cpuidTable[i][OE_CPUID_RAX]);
         }
     }
 

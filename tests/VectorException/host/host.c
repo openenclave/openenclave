@@ -53,12 +53,12 @@ void TestSigillHandling(oe_enclave_t* enclave)
         &cpuidMaxlevel[OE_CPUID_RBX],
         &cpuidMaxlevel[OE_CPUID_RCX],
         &cpuidMaxlevel[OE_CPUID_RDX]);
-        
-    if (OE_CPUID_LEAF_COUNT-1 > cpuidMaxlevel[OE_CPUID_RAX])
+
+    if (OE_CPUID_LEAF_COUNT - 1 > cpuidMaxlevel[OE_CPUID_RAX])
         oe_put_err(
             "Test machine does not support CPUID leaf %x expected by "
             "TestSigillHandling.\n",
-            (OE_CPUID_LEAF_COUNT-1));
+            (OE_CPUID_LEAF_COUNT - 1));
 
     // Check all values.
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)

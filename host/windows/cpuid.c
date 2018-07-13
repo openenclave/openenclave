@@ -18,7 +18,7 @@ void oe_get_cpuid(
     unsigned int* __edx)
 {
     int registers[] = {*__eax, *__ebx, *__ecx, *__edx};
-     __cpuidex(registers, __leaf, __subleaf);
+    __cpuidex(registers, __leaf, __subleaf);
 }
 
 #endif

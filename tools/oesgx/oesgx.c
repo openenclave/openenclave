@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "../host/cpuid.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "../host/cpuid.h"
 
 typedef struct _Regs
 {
@@ -18,11 +18,16 @@ static int _CPUID(Regs* regs)
     unsigned int leaf_requested = regs->eax;
     int result = 0;
 
-    oe_get_cpuid(leaf_requested, 
-        regs->ecx, &regs->eax, &regs->ebx, &regs->ecx, &regs->edx);
+    oe_get_cpuid(
+        leaf_requested,
+        regs->ecx,
+        &regs->eax,
+        &regs->ebx,
+        &regs->ecx,
+        &regs->edx);
 
     // Check if results indicate unsupported leaf.
-    if ((leaf_requested > regs->eax) || 
+    if ((leaf_requested > regs->eax) ||
         (regs->eax == 0 && regs->ebx == 0 && regs->ecx == 0 && regs->edx == 0))
     {
         printf("Error getting CPUID. Returned: %d", regs->eax);
