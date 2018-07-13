@@ -350,7 +350,7 @@ done:
 **==============================================================================
 */
 
-static __inline__ void _HandleORET(
+OE_INLINE void _HandleORET(
     TD* td,
     uint16_t func,
     uint16_t result,

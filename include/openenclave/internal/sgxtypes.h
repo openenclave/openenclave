@@ -546,6 +546,7 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 typedef struct _Callsite Callsite;
 
+OE_PACK_BEGIN
 typedef struct _TD
 {
     oe_thread_data_t base;
@@ -582,8 +583,9 @@ typedef struct _TD
     uint16_t ocall_flags;
 
     /* Reserved */
-    uint8_t reserved[3832];
+    uint8_t reserved[3834];
 } TD;
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(TD), 4096);
 
