@@ -890,7 +890,7 @@ static oe_result_t _InitializeEnclave(oe_enclave_t* enclave)
             &args.cpuidTable[i][OE_CPUID_RDX]);
     }
 
-    OE_CHECK(oe_ecall(enclave, OE_FUNC_INIT_ENCLAVE, (uint64_t)&args, NULL));
+    OE_CHECK(oe_ecall(enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, NULL));
 
     result = OE_OK;
 
@@ -1453,7 +1453,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Call the enclave destructor */
-    OE_CHECK(oe_ecall(enclave, OE_FUNC_DESTRUCTOR, 0, NULL));
+    OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, NULL));
 
     /* Notify GDB that this enclave is terminated */
     _oe_notify_gdb_enclave_termination(

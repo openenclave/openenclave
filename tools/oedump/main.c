@@ -46,9 +46,9 @@ void DumpEntryPoint(Elf64* elf)
         return;
     }
 
-    if (strcmp(name, "oe_main") != 0)
+    if (strcmp(name, "_start") != 0)
     {
-        err("entry point not called oe_main: %s", name);
+        err("invalid entry point name: %s", name);
         return;
     }
 

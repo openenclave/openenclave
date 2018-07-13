@@ -7,4 +7,4 @@ add_enclave_executable(oethread_enc sign.conf private.pem
     cond_tests.cpp
     rwlock_tests.cpp)
 
-target_link_libraries(oethread_enc oelibcxx)
+target_link_libraries(oethread_enc oelibcxx oeenclave)
