@@ -667,6 +667,7 @@ static uint64_t _FindEnclaveFunc(
     if (index)
         *index = 0;
 
+    /* Reject null parameters and empty string funcs (checked by !*func). */
     if (!enclave || !func || !*func || !index)
         return 0;
 
@@ -677,7 +678,7 @@ static uint64_t _FindEnclaveFunc(
     {
         const ECallNameAddr* p = &enclave->ecalls[i];
 
-        if (p->code == code && memcmp(&p->name[1], &func[1], len - 2) == 0)
+        if (p->code == code && memcmp(p->name, func, len) == 0)
         {
             *index = i;
             return enclave->ecalls[i].vaddr;

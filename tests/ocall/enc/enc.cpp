@@ -98,3 +98,24 @@ OE_ECALL void TestMyOCall(void* args_)
         OE_TEST(result == OE_NOT_FOUND);
     }
 }
+
+OE_ECALL void TestOCallEdgeCases(void* args_)
+{
+    oe_result_t result;
+
+    /* Null OCALL. */
+    result = oe_call_host(NULL, NULL);
+    OE_TEST(result == OE_INVALID_PARAMETER);
+
+    /* Empty OCALL. */
+    result = oe_call_host("", NULL);
+    OE_TEST(result == OE_NOT_FOUND);
+
+    /* Single letter OCALL. */
+    result = oe_call_host("A", NULL);
+    OE_TEST(result == OE_OK);
+
+    /* OCALL doesn't exist. */
+    result = oe_call_host("B", NULL);
+    OE_TEST(result == OE_NOT_FOUND);
+}
