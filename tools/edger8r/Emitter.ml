@@ -127,10 +127,7 @@ let oe_gen_marshal_struct_impl (fd: Ast.func_decl) (errno: string) (isecall: boo
           acc ^ mk_ms_member_decl pt declr isecall) "" new_param_list in
 let struct_name = oe_mk_ms_struct_name fd.Ast.fname in
   match fd.Ast.rtype with
-      (* A function w/o return value and parameters doesn't need
-         a marshaling struct. *)
-      Ast.Void -> if fd.Ast.plist = [] && errno = "" then ""
-                  else oe_mk_struct_decl member_list_str struct_name
+      Ast.Void -> oe_mk_struct_decl member_list_str struct_name
     | _ -> let rv_str = mk_ms_member_decl (Ast.PTVal fd.Ast.rtype) retval_declr isecall
            in oe_mk_struct_decl (rv_str ^ member_list_str) struct_name
 
@@ -185,15 +182,24 @@ let oe_gen_prototype (fd: Ast.func_decl) =
   sprintf "%s %s(%s)" (get_ret_tystr fd) fd.Ast.fname (get_plist_str fd)
 
 let oe_gen_wrapper_prototype (fd: Ast.func_decl) (is_ecall:bool) =
-  let plist_str = get_plist_str fd in
-  let ret_param_str = 
+  let plist_str = get_plist_str fd in  
+  let retval_str = 
     if fd.Ast.rtype = Ast.Void then ""
-    else sprintf "%s* _retval, " (get_ret_tystr fd) in
+    else sprintf "%s* _retval" (get_ret_tystr fd) in  
+  let args = 
+    if is_ecall then
+      ["oe_enclave_t* enclave"; retval_str; plist_str]
+    else
+      [retval_str; plist_str] in 
+  let args = List.filter (fun s-> s <> "") args
+  in 
+    sprintf "oe_result_t %s(%s)" fd.Ast.fname (String.concat ", " args)
+  (* [retval_str, plist_str] in
   if is_ecall then
-    sprintf "oe_result_t %s(oe_enclave_t* enclave, %s%s)" fd.Ast.fname ret_param_str plist_str
+    let newargs = []
+    sprintf "oe_result_t %s(oe_enclave_t* enclave%s)" fd.Ast.fname (with_comma args_str)
   else
-    sprintf "oe_result_t %s(%s%s)" fd.Ast.fname ret_param_str plist_str
-
+    sprintf "oe_result_t %s(%s)" fd.Ast.fname (with_comma args_str) *)
 
 (*
   Emit struct or union
@@ -254,6 +260,32 @@ let oe_gen_args_header (ec: enclave_content) =
     fprintf os "\n#endif // %s\n" guard_macro;
     close_out os
   
+(* 
+  Generate a cast expression for a pointer argument.
+  Pointer arguments need to be cast to their root type, since the
+  marshalling struct has the root pointer.
+  For example, int a[10][20] needs to be cast to int *.
+*)
+let get_cast_to_mem_expr (ptype, decl)= 
+  match ptype with
+  | Ast.PTVal _ -> ""
+  | Ast.PTPtr (t, _) ->
+      if Ast.is_array decl then
+        sprintf "(%s*) " (get_tystr t)
+      else sprintf "(%s) " (get_tystr t)
+
+(* 
+  Generate a cast expression to a specific pointer type.  
+  For example, int* needs to be cast to  * (int ( *  )[5][6]).
+*)
+let get_cast_from_mem_expr (ptype, decl)= 
+  match ptype with
+  | Ast.PTVal _ -> ""
+  | Ast.PTPtr (t, _) ->
+      if Ast.is_array decl then
+        sprintf "*(%s (*)%s) " (get_tystr t) (get_array_dims decl.Ast.array_dims)
+      else "" (* for ptrs, only constness is removed; don't need to be added back *)
+
 
 (* oe: Generate arg check macro*)
 let oe_gen_arg_check_macro(os : out_channel) =  
@@ -341,7 +373,9 @@ let oe_gen_copy_outputs (os:out_channel) (fd: Ast.func_decl) =
   fprintf os "\n"  
   
 let oe_gen_call_enclave_function (os:out_channel) (fd: Ast.func_decl) =  
-  let params = List.map (fun (pt, decl) -> "enc_args." ^ decl.Ast.identifier) fd.Ast.plist in
+  let params = List.map (fun (pt, decl) -> 
+    sprintf "%senc_args.%s" (get_cast_from_mem_expr (pt, decl))decl.Ast.identifier) fd.Ast.plist 
+  in
   let params_str = "(" ^ (String.concat ", " params ) ^ ")" in
   let ret_str = match fd.Ast.rtype with
     | Ast.Void -> ""
@@ -381,11 +415,12 @@ let oe_gen_ecall_functions (os:out_channel) (ec: enclave_content)  =
     (fun f -> oe_gen_ecall_function os f.Ast.tf_fdecl)
     ec.tfunc_decls
 
+
 let gen_fill_marshal_struct (os:out_channel) (fd:Ast.func_decl)  (args:string) =
   (* Generate assignment argument to corresponding field in args *)
   List.iter (fun (ptype, decl)->
     let varname = decl.Ast.identifier in 
-    fprintf os "    %s.%s = %s;\n" args varname varname; 
+    fprintf os "    %s.%s = %s%s;\n" args varname (get_cast_to_mem_expr (ptype, decl)) varname; 
     (* for string parameter fill the len field *)
     match ptype with
         | Ast.PTPtr(_, attr) -> 
@@ -488,9 +523,12 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "    if ((__result = __host_args._result) != OE_OK)\n        goto done;\n\n";
   fprintf os "    /* Copy buffer outputs to enclave memory. */\n";
   iter_ptr_params (fun (ptype, decl, attr) ->
-    let varname = decl.Ast.identifier in
-    let size = oe_get_param_size (ptype, decl, "__args.") in
-    fprintf os "    OE_COPY_FROM_HOST(%s, __host_args.%s, %s);\n" varname varname size
+    match attr.Ast.pa_direction with
+      | Ast.PtrOut | Ast.PtrInOut ->
+          let varname = decl.Ast.identifier in
+          let size = oe_get_param_size (ptype, decl, "__args.") in
+          fprintf os "    OE_COPY_FROM_HOST(%s, __host_args.%s, %s);\n" varname varname size
+      | _ -> ()
   ) fd.Ast.plist;
   fprintf os "\n    /* successful ocall */\n";
   if fd.Ast.rtype <> Ast.Void then fprintf os "    *_retval = __args._retval;\n";  
@@ -504,7 +542,9 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
 let oe_gen_ocall_host_wrapper (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "OE_OCALL void ocall_%s(%s_args_t* args)\n{\n" fd.Ast.fname fd.Ast.fname;
   fprintf os "    /* Forward the call */ \n";
-  let params = List.map (fun (pt, decl) -> "args->" ^ decl.Ast.identifier) fd.Ast.plist in
+  let params = List.map (fun (pt, decl) -> 
+    sprintf "%sargs->%s" (get_cast_from_mem_expr (pt,decl)) decl.Ast.identifier) fd.Ast.plist 
+  in
   let call_expr = sprintf "%s(%s)" fd.Ast.fname (String.concat ", " params) in
   if fd.Ast.rtype = Ast.Void then
     fprintf os "    %s;\n" call_expr
