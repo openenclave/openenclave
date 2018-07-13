@@ -10,7 +10,7 @@
 ## Default run with no parameters builds with Debug build-type and for SGX1
 ## platform and will test in Simulator mode.
 ## Run this from the root of the source tree as sudo.
-## Please note that this script does not install any packages needed for the test.
+## Please note that this script does not install any packages needed for build/test.
 ## Please install all packages necessary for your test before invoking this script.
 ## For CI runs, the Docker image will contain the necessary packages.
 ##
@@ -96,15 +96,14 @@ if [[ ${BUILD_TYPE} != "DEBUG" && ${BUILD_TYPE} != "RELEASE" && ${BUILD_TYPE} !=
    exit 1
 fi
 
-#Clean the build directory if it exists. This allows calling this script iteratively for
-#multiple configurations without cleaning or deleting the build directory
+#Delete the build directory if it exists. This allows calling this script iteratively
+#for multiple configurations for a platform.
 if [ ! -d "./build" ]; then
-  mkdir build
-  cd build
-else 
-  cd build
-  make clean
+  rm -rf ./build
 fi
+
+mkdir build
+cd build
 
 CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
