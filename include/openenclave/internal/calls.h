@@ -113,19 +113,15 @@ typedef enum _oe_func {
 **==============================================================================
 */
 
-OE_INLINE uint64_t
-oe_make_call_arg1(
-    oe_code_t code, 
-    oe_func_t func, 
-    uint16_t flags, 
+OE_INLINE uint64_t oe_make_call_arg1(
+    oe_code_t code,
+    oe_func_t func,
+    uint16_t flags,
     oe_result_t result)
 {
     /* [ CODE:16 | FUNC:16 | FLAGS:16 | RESULT:16 ] */
-    return 
-        ((uint64_t)code << 48) | 
-        ((uint64_t)func << 32) | 
-        ((uint64_t)flags << 16) |
-        ((uint64_t)result);
+    return ((uint64_t)code << 48) | ((uint64_t)func << 32) |
+           ((uint64_t)flags << 16) | ((uint64_t)result);
 }
 
 /*

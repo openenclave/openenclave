@@ -202,7 +202,7 @@ static oe_result_t _DoEENTER(
 
     /* Call oe_enter() assembly function (enter.S) */
     {
-        uint64_t arg1 = oe_make_call_arg1(codeIn, funcIn, 0, 0);
+        uint64_t arg1 = oe_make_call_arg1(codeIn, funcIn, 0, OE_OK);
         uint64_t arg2 = (uint64_t)argIn;
         uint64_t arg3 = 0;
         uint64_t arg4 = 0;

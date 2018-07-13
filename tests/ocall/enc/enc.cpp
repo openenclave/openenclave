@@ -82,8 +82,8 @@ OE_ECALL void TestMyOCall(void* args_)
 
     if (args)
     {
-        my_ocall_args_t* a = (my_ocall_args_t*)oe_host_calloc(
-            1, sizeof(my_ocall_args_t));
+        my_ocall_args_t* a =
+            (my_ocall_args_t*)oe_host_calloc(1, sizeof(my_ocall_args_t));
         a->in = 1000;
         a->out = 0;
         oe_result_t result = oe_call_host("my_ocall", a);

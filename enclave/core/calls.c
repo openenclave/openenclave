@@ -8,8 +8,8 @@
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/hostalloc.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/jump.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
@@ -38,8 +38,8 @@ uint8_t __oe_initialized = 0;
 **                _start function. It also maintains the index of the
 **                current SSA (TCS.cssa) and the number of SSA's (TCS.nssa).
 **
-**     TD       - Thread data. Per thread data as defined by the 
-**                oe_thread_data_t structure and extended by the TD structure. 
+**     TD       - Thread data. Per thread data as defined by the
+**                oe_thread_data_t structure and extended by the TD structure.
 **                This structure records the stack pointer of the last EENTER.
 **
 **     SP       - Stack pointer. Refers to the enclave's stack pointer.
@@ -224,7 +224,7 @@ OE_CATCH:
 
 static void _HandleExit(oe_code_t code, uint16_t func, uint64_t arg)
 {
-    oe_exit(oe_make_call_arg1(code, func, 0, 0), arg);
+    oe_exit(oe_make_call_arg1(code, func, 0, OE_OK), arg);
 }
 
 void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
@@ -351,7 +351,10 @@ done:
 */
 
 static __inline__ void _HandleORET(
-    TD* td, uint16_t func, uint16_t result, int64_t arg)
+    TD* td,
+    uint16_t func,
+    uint16_t result,
+    int64_t arg)
 {
     Callsite* callsite = td->callsites;
 
@@ -599,7 +602,8 @@ void __oe_handle_main(
                 else
                 {
                     // Return crashing status.
-                    *outputArg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, 0);
+                    *outputArg1 =
+                        oe_make_call_arg1(OE_CODE_ERET, func, 0, OE_OK);
                     *outputArg2 = __oe_enclave_status;
                     return;
                 }
@@ -609,7 +613,7 @@ void __oe_handle_main(
 
         default:
             // Return crashed status.
-            *outputArg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, 0);
+            *outputArg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, OE_OK);
             *outputArg2 = OE_ENCLAVE_ABORTED;
             return;
     }

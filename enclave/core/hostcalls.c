@@ -13,7 +13,8 @@ void* oe_host_malloc(size_t size)
     uint64_t argIn = size;
     uint64_t argOut = 0;
 
-    if (oe_ocall(OE_OCALL_MALLOC, argIn, &argOut, OE_OCALL_FLAG_NOT_REENTRANT) !=
+    if (oe_ocall(
+            OE_OCALL_MALLOC, argIn, &argOut, OE_OCALL_FLAG_NOT_REENTRANT) !=
         OE_OK)
     {
         return NULL;
@@ -158,8 +159,10 @@ int __oe_host_print(int device, const char* str, size_t len)
 
     /* Perform OCALL */
     if (oe_ocall(
-            OE_OCALL_PRINT, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
-        OE_OK)
+            OE_OCALL_PRINT,
+            (uint64_t)args,
+            NULL,
+            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         goto done;
 
     ret = 0;

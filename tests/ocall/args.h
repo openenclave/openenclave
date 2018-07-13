@@ -74,7 +74,6 @@ typedef struct _my_ocall_args
 {
     uint64_t in;
     uint64_t out;
-}
-my_ocall_args_t;
+} my_ocall_args_t;
 
 #endif /* _ocall_args_h */

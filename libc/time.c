@@ -131,8 +131,10 @@ size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
     memcpy(&a->tm, tm, sizeof(struct tm));
 
     if (oe_ocall(
-            OE_OCALL_STRFTIME, (uint64_t)a, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
-        OE_OK)
+            OE_OCALL_STRFTIME,
+            (uint64_t)a,
+            NULL,
+            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         goto done;
 
     if (strlcpy(str, a->str, max) >= max)
