@@ -17,14 +17,6 @@
 #include "../../ecall_ocall/crc32.h"
 #include "../args.h"
 
-#if defined(__linux__)
-#include <unistd.h>
-#define atomic_inc(ptr) __sync_fetch_and_add((ptr), 1)
-#elif defined(_WIN32)
-#include <Windows.h>
-#define atomic_inc(ptr) InterlockedIncrement((ptr))
-#endif
-
 using namespace std;
 
 #define THREAD_COUNT 5
@@ -80,7 +72,7 @@ static void EcallAfterCrashThread(
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
 
-    atomic_inc(args.thread_ready_count);
+    ++args.thread_ready_count;
 
     // Wait the enclave is aborted.
     while (*args.is_enclave_crashed == 0)
@@ -252,7 +244,7 @@ OE_OCALL void RecursionOcall(void* args_)
     }
     else
     {
-        atomic_inc(args.thread_ready_count);
+        ++args.thread_ready_count;
 
         // Wait the enclave is aborted.
         while (*args.is_enclave_crashed == 0)

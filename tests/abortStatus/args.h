@@ -5,10 +5,11 @@
 #define _cpp_exception_args_h
 
 #include <stddef.h>
+#include <atomic>
 
 typedef struct _AbortStatusArgs
 {
-    volatile uint32_t* thread_ready_count;
+    volatile std::atomic<uint32_t*> thread_ready_count;
     volatile uint32_t* is_enclave_crashed;
     int divisor;
 
