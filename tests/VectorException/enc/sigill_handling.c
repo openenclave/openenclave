@@ -6,7 +6,8 @@
 #include <openenclave/internal/print.h>
 #include "../args.h"
 
-#include "../../../host/linux/cpuid_count.c"
+#include "../../../host/cpuid.h"
+#include "../../../host/linux/cpuid.c"
 
 #define OE_GETSEC_OPCODE 0x370F
 #define OE_GETSEC_CAPABILITIES 0x00
@@ -101,15 +102,19 @@ bool TestGetsecInstruction()
 bool TestUnsupportedCpuidLeaf(uint32_t leaf)
 {
     g_handledSigill = HANDLED_SIGILL_NONE;
-    uint32_t cpuidRAX;
+    uint32_t cpuidRAX = 0;
+    uint32_t ebx = 0;
+    uint32_t ecx = 0;
+    uint32_t edx = 0;
 
-    // Invoking cpuid in assembly and making it volatile to prevent cpuid from
-    // being optimized out
-    asm volatile(
-        "cpuid"
-        : "=a"(cpuidRAX) // Return value in cpuidRAX
-        : "0"(leaf)
-        : "ebx", "ecx", "edx", "cc", "memory");
+    oe_get_cpuid(leaf, 0, &cpuidRAX, &ebx, &ecx, &edx);
+
+    // Do something with the out param to prevent call from getting optimized
+    // out
+    if (cpuidRAX != 0)
+    {
+        oe_host_printf("The value of cpuidRAX is now: %d\n.", cpuidRAX);
+    }
 
     if (g_handledSigill != HANDLED_SIGILL_CPUID)
     {
@@ -168,7 +173,7 @@ OE_ECALL void TestSigillHandling(void* args_)
     // Return enclave-cached CPUID leaves to host for further validation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-        int supported = __get_cpuid_count(
+        oe_get_cpuid(
             i,
             0,
             &args->cpuidTable[i][OE_CPUID_RAX],
@@ -176,10 +181,13 @@ OE_ECALL void TestSigillHandling(void* args_)
             &args->cpuidTable[i][OE_CPUID_RCX],
             &args->cpuidTable[i][OE_CPUID_RDX]);
 
-        if (!supported)
+        // Do something with the out param to prevent call from getting
+        // optimized out
+        if (args->cpuidTable[i][OE_CPUID_RAX] != 0)
         {
-            oe_host_printf("Unsupported CPUID leaf %d requested.\n", i);
-            return;
+            oe_host_printf(
+                "The value of cpuidRAX is now: %d\n.",
+                args->cpuidTable[i][OE_CPUID_RAX]);
         }
     }
 
