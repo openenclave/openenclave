@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/globals.h>
@@ -20,7 +23,7 @@ int oe_backtrace(void** buffer, int size)
     int n = 0;
     int i;
 
-    // It isn't possible to use iteration here since __builtin_return_address() 
+    // It isn't possible to use iteration here since __builtin_return_address()
     // must take a constant argument. Also, the depth is limited to
     // MAX_ADDRESSES.
     do
@@ -72,8 +75,7 @@ int oe_backtrace(void** buffer, int size)
 
         if (!(addrs[++n] = _check_address(__builtin_return_address(15))))
             break;
-    }
-    while (0);
+    } while (0);
 
     /* If the caller's buffer is too small */
     if (n > size)
@@ -87,14 +89,4 @@ int oe_backtrace(void** buffer, int size)
     }
 
     return n;
-}
-
-const void* oe_get_virtual_address(const void* address)
-{
-    const uint8_t* base = (const uint8_t*)__oe_get_enclave_base();
-
-    if (!oe_is_within_enclave(address, sizeof(uint64_t)))
-        return NULL;
-
-    return (const void*)((const uint8_t*)address - base);
 }

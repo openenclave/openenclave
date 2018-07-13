@@ -10,10 +10,13 @@ OE_EXTERNC_BEGIN
 
 /**
  * This function behaves like the GNU **backtrace_symbols** function, except
- * it requires an enclave parameter. See the **backtrace_symbols** manpage for 
+ * it requires an enclave parameter. See the **backtrace_symbols** manpage for
  * more information.
  */
-char** backtrace_symbols(oe_enclave_t* enclave, void* const* buffer, int size);
+char** oe_backtrace_symbols(
+    oe_enclave_t* enclave,
+    void* const* buffer,
+    int size);
 
 OE_EXTERNC_END
 

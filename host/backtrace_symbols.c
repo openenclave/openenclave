@@ -1,10 +1,16 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/host.h>
-#include <openenclave/internal/elf.h>
 #include <openenclave/internal/backtrace_symbols.h>
+#include <openenclave/internal/elf.h>
 #include <openenclave/internal/raise.h>
 #include "enclave.h"
 
-char** backtrace_symbols(oe_enclave_t* enclave, void* const* buffer, int size)
+char** oe_backtrace_symbols(
+    oe_enclave_t* enclave,
+    void* const* buffer,
+    int size)
 {
     char** ret = NULL;
     Elf64 elf = ELF64_INIT;

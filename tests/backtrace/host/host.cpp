@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
+#include <openenclave/internal/backtrace_symbols.h>
+#include <openenclave/internal/elf.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <openenclave/internal/elf.h>
-#include <openenclave/internal/backtrace_symbols.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
@@ -14,8 +14,7 @@
 
 const char* arg0;
 
-static const char* _symbols[] =
-{
+static const char* _symbols[] = {
     "GetBacktrace",
     "Test",
     "_HandleCallEnclave",

@@ -3,8 +3,8 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
-#include <openenclave/internal/tests.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/tests.h>
 #include "../args.h"
 
 OE_NEVER_INLINE void GetBacktrace(Args* args)

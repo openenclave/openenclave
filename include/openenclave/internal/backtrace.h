@@ -11,7 +11,7 @@
 OE_EXTERNC_BEGIN
 
 /**
- * This function behaves like the GNU **backtrace** function. See the 
+ * This function behaves like the GNU **backtrace** function. See the
  * **backtrace** manpage for more information.
  */
 int oe_backtrace(void** buffer, int size);
