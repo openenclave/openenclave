@@ -350,11 +350,7 @@ done:
 **==============================================================================
 */
 
-OE_INLINE void _HandleORET(
-    TD* td,
-    uint16_t func,
-    uint16_t result,
-    int64_t arg)
+OE_INLINE void _HandleORET(TD* td, uint16_t func, uint16_t result, int64_t arg)
 {
     Callsite* callsite = td->callsites;
 
