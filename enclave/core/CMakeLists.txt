@@ -4,6 +4,7 @@
 add_library(oecore STATIC
     assert.c
     atexit.c
+    backtrace.c
     calls.c
     cpuid.c
     entropy.c

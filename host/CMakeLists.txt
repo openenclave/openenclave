@@ -20,6 +20,7 @@ set(PLATFORM_SRC
     linux/sgxsign.c
     linux/time.c
     sgxquoteprovider.c        
+    backtrace_symbols.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
