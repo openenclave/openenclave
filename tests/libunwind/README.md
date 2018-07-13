@@ -17,11 +17,6 @@ To run all the tests, type the following command:
 # make tests
 ```
 
-As tests are fixed, they should be moved from tests.broken to tests.supported.
-
-As tests are determined to be unsupportable, they should be moved from
-tests.broken to tests.unsupported.
-
 Note
 ====
 libunwind basically contains 33 tests which are listed in the tests.all file.
@@ -29,12 +24,12 @@ Out Of this 33 tests, 11 tests can be compiled and run properly and are listed
 in the test.supported file. The rest 22 test are moved to the test.unsupported 
 file.
 
-All the tests in  test.supported can be compiled and run proprely in debug 
-mode("-O2").In release mode("-O3") a couple of tests (Gtest-exc and Ltest-exc)
-were failing.Those tests were also failing in system dependent side when
-compiled with -O3. By adding GCC flag "fno-inline-function" with -O3 
-("-O3 -fno-inline-function") both test were able to run in release mode
-without any change in test behaviour.
+All the tests in test.supported can be compiled and run proprely in debug 
+mode("-O2"). In release mode("-O3"), a couple of tests (Gtest-exc and Ltest-exc)
+were failing. Those tests were also failing in system dependent side when
+compiled with -O3. By adding GCC flag "fno-inline-function" with -O3 flag
+("-O3 -fno-inline-function") both system dependent tests as well as enclave 
+tests were able to run sucessfully in release mode.
 
 The tests listed in tests.unsupported file uses the features that enclave 
 don't support like signals, pthreads, timers, dynamic loading etc.
@@ -47,7 +42,7 @@ Out of the 22 unsupproted tests, 4 of them are bash scripts. They are
 * run-ptrace-misc
 
 The detailed list of the unsupported tests with their features that are not
-supported are given below 
+supported are given below :
 
 SL.No | Tests_Name  | Compile? | Run? | Comments |
 :---:|:---:|:---:|:---:|:---:|
@@ -74,7 +69,7 @@ SL.No | Tests_Name  | Compile? | Run? | Comments |
 21 | test-ptrace | No | No | undefined reference to 'kill', 'fork', 'open', 'dup2', 'ptrace', 'execve', 'wait4' |
 22 | test-setjmp | No | No | undefined reference to 'sigsetjmp', 'sigaddset', 'sigprocmask', 'siglongjmp' 'sigemptyset', 'kill', 'sigaction' |
 
-run-coredump-unwind doesnot have support for execinfo.h which declares the functions backtrace, backtrace_symbols, backtrace_symbols_fd.
-In enc/CMakeLists.txt we have given support only for the tests in tests.supported.
+run-coredump-unwind does not have support for execinfo.h which declares the functions backtrace, backtrace_symbols, backtrace_symbols_fd.
+Currently enc/CMakeLists.txt have  support  for the tests in tests.supported.
 To compile any of the test from test.unsupported you have to add the corresponding support libraries in the enc/CMakeLists.txt.
 

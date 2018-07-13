@@ -18,7 +18,7 @@ add_library(libunwindtest-support
         ${LIBUNWIND_TEST_DIR}/flush-cache.S
         ${LIBUNWIND_TEST_DIR}/test-static-link-gen.c
         ${LIBUNWIND_TEST_DIR}/flush-cache.h
-	test_support.c
+        test_support.c
     )
 target_compile_options(libunwindtest-support PRIVATE -Wno-error)
 target_include_directories(libunwindtest-support PRIVATE
@@ -29,7 +29,7 @@ target_link_libraries(libunwindtest-support PUBLIC oelibc oelibcxx)
 function(add_libunwind_test_enc NAME TESTFILE)
     add_enclave_executable(libunwindtest-${NAME}_enc sign.conf private.pem
         enc.c
-	${PROJECT_SOURCE_DIR}/${TESTFILE}
+        ${PROJECT_SOURCE_DIR}/${TESTFILE}
         )
     add_dependencies(libunwindtest-${NAME}_enc oelibcxx_unwind)
     target_include_directories(libunwindtest-${NAME}_enc PRIVATE
@@ -40,7 +40,7 @@ function(add_libunwind_test_enc NAME TESTFILE)
     target_compile_options(libunwindtest-${NAME}_enc PRIVATE -Wno-error -fno-inline-functions)
     target_compile_definitions(libunwindtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${TESTFILE}")
     target_link_libraries(libunwindtest-${NAME}_enc libunwindtest-support)
-    target_link_libraries(libunwindtest-${NAME}_enc ${LIBUNWIND_LIB_DIR}/libunwind-x86_64.a ${LIBUNWIND_LIB_DIR}/libunwind.a )
+    target_link_libraries(libunwindtest-${NAME}_enc ${LIBUNWIND_LIB_DIR}/libunwind-x86_64.a ${LIBUNWIND_LIB_DIR}/libunwind.a)
     target_link_libraries(libunwindtest-${NAME}_enc oelibc oelibcxx)
     target_link_libraries(libunwindtest-${NAME}_enc -Wl,--require-defined=pthread_mutex_lock)
     target_link_libraries(libunwindtest-${NAME}_enc -Wl,--require-defined=_U_dyn_info_list_addr)
