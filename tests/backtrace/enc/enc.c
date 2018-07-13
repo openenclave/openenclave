@@ -9,8 +9,10 @@
 
 OE_NEVER_INLINE void GetBacktrace(Args* args)
 {
-    args->size = OE_COUNTOF(args->buffer);
-    args->size = oe_backtrace(args->buffer, args->size);
+    args->size = oe_backtrace(args->buffer, OE_COUNTOF(args->buffer));
+
+    /* Check for truncation */
+    OE_TEST(args->size < OE_COUNTOF(args->buffer));
 }
 
 OE_ECALL void Test(void* args_)

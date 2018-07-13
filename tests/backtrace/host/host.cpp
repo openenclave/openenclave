@@ -30,7 +30,7 @@ static void _print_backtrace(
     void* const* buffer,
     int size)
 {
-    char** symbols = backtrace_symbols(enclave, buffer, size);
+    char** symbols = oe_backtrace_symbols(enclave, buffer, size);
     OE_TEST(symbols != NULL);
 
     printf("=== backtrace:\n");
