@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <openenclave/internal/malloc.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
@@ -30,7 +31,7 @@ void* __libunwind_mmap(
     if (flags != (MAP_PRIVATE | MAP_ANONYMOUS))
         goto done;
 
-    result = memalign(4096, length);
+    result = __oe_memalign(4096, length);
 
 done:
 
@@ -43,7 +44,7 @@ int __libunwind_munmap(void* addr, size_t length)
         return -1;
 
     if (length)
-        free(addr);
+        __oe_free(addr);
 
     return 0;
 }

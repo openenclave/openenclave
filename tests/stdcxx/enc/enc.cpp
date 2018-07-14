@@ -4,6 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/malloc.h>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -168,6 +169,7 @@ OE_ECALL void Test(void* args_)
     }
 
     /* Test exceptions */
+    for (size_t i = 0; i < 10; i++)
     {
         struct E
         {
@@ -194,6 +196,8 @@ OE_ECALL void Test(void* args_)
 
         if (y)
             args->dynamicCastWorks = true;
+
+        delete x;
     }
 
     args->numConstructions = numConstructions;
@@ -213,3 +217,9 @@ __attribute__((destructor)) void Destructor(void)
     OE_TEST(numConstructions == 6);
     OE_TEST(numDestructions == 6);
 }
+
+__attribute__((destructor)) void malloc_dump(void)
+{
+    oe_malloc_dump();
+}
+

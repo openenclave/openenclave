@@ -84,38 +84,6 @@ struct info
 
 static info_t* _head;
 
-static void _malloc_dump_ocall(uint64_t size, void* addrs[], int num_addrs)
-{
-    oe_malloc_dump_args_t* args = NULL;
-    const uint32_t flags = OE_OCALL_FLAG_NOT_REENTRANT;
-    
-    if (!(args = oe_host_malloc(sizeof(oe_malloc_dump_args_t))))
-        goto done;
-
-    args->size = size;
-    memcpy(args->addrs, addrs, sizeof(void*) * OE_COUNTOF(args->addrs));
-    args->num_addrs = num_addrs;
-
-    if (oe_ocall(OE_FUNC_MALLOC_DUMP, (uint64_t)args, NULL, flags) != OE_OK)
-        goto done;
-
-done:
-
-    if (args)
-        oe_host_free(args);
-}
-
-void oe_malloc_dump(void)
-{
-    printf("*** oe_malloc_dump()\n");
-
-    for (info_t* p = _head; p; p = p->next)
-    {
-        for (size_t i = 0; i < p->num_addrs; i++)
-            _malloc_dump_ocall(p->size, p->addrs, p->num_addrs);
-    }
-}
-
 static void _insert(info_t* info)
 {
     info->next = _head;
@@ -157,6 +125,49 @@ static info_t* _find(void* data)
     }
 
     return NULL;
+}
+
+static size_t _size()
+{
+    size_t size = 0;
+
+    for (info_t* p = _head; p; p = p->next)
+    {
+        size++;
+    }
+
+    return size;
+}
+
+static void _malloc_dump_ocall(uint64_t size, void* addrs[], int num_addrs)
+{
+    oe_malloc_dump_args_t* args = NULL;
+    const uint32_t flags = OE_OCALL_FLAG_NOT_REENTRANT;
+    
+    if (!(args = oe_host_malloc(sizeof(oe_malloc_dump_args_t))))
+        goto done;
+
+    args->size = size;
+    memcpy(args->addrs, addrs, sizeof(void*) * OE_COUNTOF(args->addrs));
+    args->num_addrs = num_addrs;
+
+    if (oe_ocall(OE_FUNC_MALLOC_DUMP, (uint64_t)args, NULL, flags) != OE_OK)
+        goto done;
+
+done:
+
+    if (args)
+        oe_host_free(args);
+}
+
+void oe_malloc_dump(void)
+{
+    printf("=== oe_malloc_dump(): %zu chunks\n", _size());
+
+    for (info_t* p = _head; p; p = p->next)
+    {
+        _malloc_dump_ocall(p->size, p->addrs, p->num_addrs);
+    }
 }
 
 OE_ALWAYS_INLINE void* _malloc(size_t size)
@@ -379,6 +390,14 @@ void* memalign(size_t alignment, size_t size)
 
     return p;
 }
+
+/* Raw forms of allocator functions */
+OE_WEAK_ALIAS(dlmalloc, __oe_malloc);
+OE_WEAK_ALIAS(dlcalloc, __oe_calloc);
+OE_WEAK_ALIAS(dlrealloc, __oe_realloc);
+OE_WEAK_ALIAS(dlfree, __oe_free);
+OE_WEAK_ALIAS(dlmemalign, __oe_memalign);
+OE_WEAK_ALIAS(dlposix_memalign, __oe_posix_memalign);
 
 /*
 **==============================================================================
