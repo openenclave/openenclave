@@ -89,7 +89,11 @@ let conv_array_to_ptr (pd: Ast.pdecl): Ast.pdecl =
 *)
 let mk_ms_member_decl (pt: Ast.parameter_type) (declr: Ast.declarator) (isecall: bool) =
   let aty = Ast.get_param_atype pt in
-  let tystr = Ast.get_tystr aty in
+  let tystr =  
+    if is_foreign_array pt then 
+      sprintf "/* foreign array of type %s */ void" (Ast.get_tystr aty)
+    else Ast.get_tystr aty 
+  in
   let ptr = if is_foreign_array pt then "* " else "" in
   let field = declr.Ast.identifier in
   (* String attribute is available for in/inout both ecall and ocall.
@@ -206,7 +210,7 @@ let oe_gen_wrapper_prototype (fd: Ast.func_decl) (is_ecall:bool) =
 *)
 
 let emit_struct_or_union  (os:out_channel) (s:Ast.struct_def) (union:bool) =
-  fprintf os "typedef %s _%s {\n" (if union then "union" else "struct") s.Ast.sname;
+  fprintf os "typedef %s %s {\n" (if union then "union" else "struct") s.Ast.sname;
   List.iter (fun (atype, decl) -> 
     let dims = List.map (fun d-> sprintf "[%d]" d) decl.Ast.array_dims in
     let dims_str = String.concat "" dims in
@@ -216,7 +220,7 @@ let emit_struct_or_union  (os:out_channel) (s:Ast.struct_def) (union:bool) =
 
 let emit_enum (os:out_channel) (e:Ast.enum_def) = 
   let n = List.length e.Ast.enbody in
-  fprintf os "typedef enum _%s {\n" e.Ast.enname;
+  fprintf os "typedef enum %s {\n" e.Ast.enname;
   List.iteri (fun idx (name, value) ->
     fprintf os "    %s%s" name
     (match value with
@@ -254,6 +258,7 @@ let oe_gen_args_header (ec: enclave_content) =
     fprintf os "#include <openenclave/bits/result.h>\n\n";
     List.iter (fun inc -> fprintf os "#include \"%s\"\n" inc) ec.include_list;    
     if ec.include_list <> [] then fprintf os "\n";
+    if ec.comp_defs <> [] then fprintf os "/* User types specified in edl */";
     List.iter (emit_composite_type os) ec.comp_defs;
     if ec.comp_defs <> [] then fprintf os "\n";
     fprintf os "%s" (String.concat "\n" structs);
@@ -272,7 +277,10 @@ let get_cast_to_mem_expr (ptype, decl)=
   | Ast.PTPtr (t, _) ->
       if Ast.is_array decl then
         sprintf "(%s*) " (get_tystr t)
-      else sprintf "(%s) " (get_tystr t)
+      else if is_foreign_array ptype then
+        sprintf "/* foreign array of type %s */ " (get_tystr t)
+      else 
+        sprintf "(%s) " (get_tystr t)
 
 (* 
   Generate a cast expression to a specific pointer type.  
@@ -281,11 +289,16 @@ let get_cast_to_mem_expr (ptype, decl)=
 let get_cast_from_mem_expr (ptype, decl)= 
   match ptype with
   | Ast.PTVal _ -> ""
-  | Ast.PTPtr (t, _) ->
+  | Ast.PTPtr (t, attr) ->
       if Ast.is_array decl then
         sprintf "*(%s (*)%s) " (get_tystr t) (get_array_dims decl.Ast.array_dims)
-      else "" (* for ptrs, only constness is removed; don't need to be added back *)
-
+      else if is_foreign_array ptype then
+        sprintf "/*foreign array*/ *(%s *) " (get_tystr t)
+      else
+        if attr.Ast.pa_rdonly then
+           (* for ptrs, only constness is removed; add it back *)
+           sprintf "(const %s) " (get_tystr t)
+        else ""
 
 (* oe: Generate arg check macro*)
 let oe_gen_arg_check_macro(os : out_channel) =  
@@ -330,9 +343,9 @@ let oe_gen_allocate_buffers (os:out_channel) (fd: Ast.func_decl) =
                 | _ -> "OE_CHECKED_COPY_INPUT"
             in 
             fprintf os "    %s(enc_args.%s, args.%s, %s); \n" 
-              macro decl.Ast.identifier 
-              decl.Ast.identifier
-              size            
+                macro decl.Ast.identifier 
+                decl.Ast.identifier
+                size            
           else ()
       | _ -> () (* Non pointer arguments *)    
   in 
