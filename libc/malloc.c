@@ -7,9 +7,12 @@
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/malloc.h>
+#include <openenclave/internal/backtrace.h>
+#include <openenclave/internal/calls.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define OE_ENABLE_MALLOC_WRAPPERS
 #define HAVE_MMAP 0
@@ -54,6 +57,231 @@ static int __sched_yield(void)
 /*
 **==============================================================================
 **
+** Debug allocator for tracking unfreed memory.
+**
+**==============================================================================
+*/
+
+#define MAX_ADDRESSES OE_MALLOC_DUMP_ARGS_MAX_ADDRESSES
+
+typedef struct info info_t;
+
+struct info
+{
+    /* Maintained on singly linked list */
+    info_t* next;
+
+    /* Obtained from oe_backtrace() */
+    void* addrs[MAX_ADDRESSES];
+    int num_addrs;
+
+    /* User address */
+    void* data;
+
+    /* User memory size */
+    uint64_t size;
+};
+
+static info_t* _head;
+
+static void _malloc_dump_ocall(uint64_t size, void* addrs[], int num_addrs)
+{
+    oe_malloc_dump_args_t* args = NULL;
+    const uint32_t flags = OE_OCALL_FLAG_NOT_REENTRANT;
+    
+    if (!(args = oe_host_malloc(sizeof(oe_malloc_dump_args_t))))
+        goto done;
+
+    args->size = size;
+    memcpy(args->addrs, addrs, sizeof(void*) * OE_COUNTOF(args->addrs));
+    args->num_addrs = num_addrs;
+
+    if (oe_ocall(OE_FUNC_MALLOC_DUMP, (uint64_t)args, NULL, flags) != OE_OK)
+        goto done;
+
+done:
+
+    if (args)
+        oe_host_free(args);
+}
+
+void oe_malloc_dump(void)
+{
+    for (info_t* p = _head; p; p = p->next)
+    {
+        for (size_t i = 0; i < p->num_addrs; i++)
+            _malloc_dump_ocall(p->size, p->addrs, p->num_addrs);
+    }
+}
+
+static void _insert(info_t* info)
+{
+    info->next = _head;
+    _head = info;
+}
+
+static info_t* _remove(void* data)
+{
+    info_t* prev = NULL;
+
+    for (info_t* p = _head; p; p = p->next)
+    {
+        if (p->data == data)
+        {
+            if (prev)
+            {
+                prev->next = p->next;
+            }
+            else
+            {
+                _head = p->next;
+            }
+
+            return p;
+        }
+
+        prev = p;
+    }
+
+    return NULL;
+}
+
+static info_t* _find(void* data)
+{
+    for (info_t* p = _head; p; p = p->next)
+    {
+        if (p->data == data)
+            return p;
+    }
+
+    return NULL;
+}
+
+OE_ALWAYS_INLINE void* _malloc(size_t size)
+{
+    void* ptr;
+    info_t* info;
+
+    if (!(ptr = dlmalloc(size)))
+        return NULL;
+
+    if (!(info = dlmalloc(sizeof(info_t))))
+    {
+        dlfree(ptr);
+        return NULL;
+    }
+
+    info->num_addrs = oe_backtrace(info->addrs, MAX_ADDRESSES);
+    info->data = ptr;
+    info->size = size;
+    _insert(info);
+
+    return ptr;
+}
+
+OE_ALWAYS_INLINE void _free(void* ptr)
+{
+    if (ptr)
+    {
+        info_t* info = _remove(ptr);
+        assert(info);
+        dlfree(ptr);
+        dlfree(info);
+    }
+}
+
+OE_ALWAYS_INLINE void* _calloc(size_t nmemb, size_t size)
+{
+    void* ptr;
+    info_t* info;
+
+    if (!(ptr = dlcalloc(nmemb, size)))
+        return NULL;
+
+    if (!(info = dlmalloc(sizeof(info_t))))
+    {
+        dlfree(ptr);
+        return NULL;
+    }
+
+    info->num_addrs = oe_backtrace(info->addrs, MAX_ADDRESSES);
+    info->data = ptr;
+    info->size = nmemb * size;
+    _insert(info);
+
+    return ptr;
+}
+
+OE_ALWAYS_INLINE void* _realloc(void* ptr, size_t size)
+{
+    if (ptr)
+    {
+        void* new_ptr;
+        info_t* info = _find(ptr);
+        assert(info);
+
+        if (!(new_ptr = dlrealloc(ptr, size)))
+            return NULL;
+
+        info->data = new_ptr;
+        info->size = size;
+
+        return new_ptr;
+    }
+    else
+    {
+        return _malloc(size);
+    }
+}
+
+OE_ALWAYS_INLINE int _posix_memalign(void** memptr, size_t alignment, size_t size)
+{
+    int rc;
+    void* ptr;
+    info_t* info;
+
+    if ((rc = dlposix_memalign(&ptr, alignment, size)) != 0)
+        return rc;
+
+    if (!(info = dlmalloc(sizeof(info_t))))
+    {
+        dlfree(ptr);
+        return ENOMEM;
+    }
+
+    info->num_addrs = oe_backtrace(info->addrs, MAX_ADDRESSES);
+    info->data = ptr;
+    info->size = size;
+    _insert(info);
+
+    return rc;
+}
+
+OE_ALWAYS_INLINE void* _memalign(size_t alignment, size_t size)
+{
+    void* ptr;
+    info_t* info;
+
+    if (!(ptr = dlmemalign(alignment, size)))
+        return NULL;
+
+    if (!(info = dlmalloc(sizeof(info_t))))
+    {
+        dlfree(ptr);
+        return NULL;
+    }
+
+    info->num_addrs = oe_backtrace(info->addrs, MAX_ADDRESSES);
+    info->data = ptr;
+    info->size = size;
+    _insert(info);
+
+    return ptr;
+}
+
+/*
+**==============================================================================
+**
 ** Use malloc wrappers to support oe_set_allocation_failure_callback() if
 ** OE_ENABLE_MALLOC_WRAPPERS is defined.
 **
@@ -72,7 +300,7 @@ void oe_set_allocation_failure_callback(
 
 void* malloc(size_t size)
 {
-    void* p = dlmalloc(size);
+    void* p = _malloc(size);
 
     if (!p && size)
     {
@@ -87,12 +315,12 @@ void* malloc(size_t size)
 
 void free(void* ptr)
 {
-    dlfree(ptr);
+    _free(ptr);
 }
 
 void* calloc(size_t nmemb, size_t size)
 {
-    void* p = dlcalloc(nmemb, size);
+    void* p = _calloc(nmemb, size);
 
     if (!p && nmemb && size)
     {
@@ -107,7 +335,7 @@ void* calloc(size_t nmemb, size_t size)
 
 void* realloc(void* ptr, size_t size)
 {
-    void* p = dlrealloc(ptr, size);
+    void* p = _realloc(ptr, size);
 
     if (!p && size)
     {
@@ -122,7 +350,7 @@ void* realloc(void* ptr, size_t size)
 
 int posix_memalign(void** memptr, size_t alignment, size_t size)
 {
-    int rc = dlposix_memalign(memptr, alignment, size);
+    int rc = _posix_memalign(memptr, alignment, size);
 
     if (rc != 0 && size)
     {
@@ -137,7 +365,7 @@ int posix_memalign(void** memptr, size_t alignment, size_t size)
 
 void* memalign(size_t alignment, size_t size)
 {
-    void* p = dlmemalign(alignment, size);
+    void* p = _memalign(alignment, size);
 
     if (!p && size)
     {

@@ -13,6 +13,7 @@
 #include <openenclave/internal/rsa.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,6 +37,9 @@ OE_ECALL void Test(void* args_)
     TestRandom();
     TestRSA();
     TestSHA();
+
+    /* Dump memory still allocated */
+    oe_malloc_dump();
 
     /* Verify that all malloc'd memory has been released */
     OE_TEST(oe_get_malloc_stats(&stats) == OE_OK);

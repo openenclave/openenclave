@@ -21,6 +21,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/backtrace_symbols.h>
 #include "enclave.h"
 #include "ocalls.h"
 #include "quote.h"
@@ -170,4 +171,30 @@ void HandleGetQETargetInfo(uint64_t argIn)
         return;
 
     args->result = sgx_get_qetarget_info(&args->targetInfo);
+}
+
+void handle_malloc_dump(oe_enclave_t* enclave, uint64_t arg)
+{
+    oe_malloc_dump_args_t* args = (oe_malloc_dump_args_t*)arg;
+    char** syms = NULL;
+
+    if (!args)
+        goto done;
+
+    if (!(syms = oe_backtrace_symbols(enclave, args->addrs, args->num_addrs)))
+        goto done;
+
+    printf("=== oe_malloc_dump()\n");
+
+    printf("%llx bytes\n", OE_LLX(args->size));
+
+    for (size_t i = 0; i < args->num_addrs; i++)
+        printf("%s(): %p\n", syms[i], args->addrs[i]);
+
+    printf("\n");
+
+done:
+
+    if (syms)
+        free(syms);
 }

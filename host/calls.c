@@ -424,6 +424,10 @@ static oe_result_t _HandleOCALL(
             HandleNanosleep(argIn);
             break;
 
+        case OE_FUNC_MALLOC_DUMP:
+            handle_malloc_dump(enclave, argIn);
+            break;
+
         case OE_FUNC_DESTRUCTOR:
         case OE_FUNC_CALL_ENCLAVE:
             assert("Invalid OCALL" == NULL);

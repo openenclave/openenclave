@@ -92,6 +92,7 @@ typedef enum _oe_func {
     OE_FUNC_CLOCK_GETTIME = 0x0F000000,
     OE_FUNC_NANOSLEEP = 0x10000000,
     OE_FUNC_VIRTUAL_EXCEPTION_HANDLER = 0x20000000,
+    OE_FUNC_MALLOC_DUMP = 0x30000000,
 } oe_func_t;
 
 #define OE_EXCEPTION_CONTINUE_SEARCH 0x0
@@ -240,6 +241,23 @@ typedef struct _oe_init_enclave_args
 {
     uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 } oe_init_enclave_args_t;
+
+/*
+**==============================================================================
+**
+** oe_malloc_dump_args_t
+**
+**==============================================================================
+*/
+
+#define OE_MALLOC_DUMP_ARGS_MAX_ADDRESSES 16
+
+typedef struct _oe_malloc_dump_args
+{
+    uint64_t size;
+    void* addrs[OE_MALLOC_DUMP_ARGS_MAX_ADDRESSES];
+    int num_addrs;
+} oe_malloc_dump_args_t;
 
 /**
  * Perform a low-level enclave function call (ECALL).
