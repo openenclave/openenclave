@@ -9,7 +9,7 @@
 
 /**
  * Gets a command line option, removing that option and its optional argument
- * from argc-argv. A pointer to the option argument (if any) is stored in the
+ * from argc-argv. A pointer to the optional argument (if any) is stored in the
  * **arg** output parameter.
  *
  * @param argc[in,out] number of arguments.
