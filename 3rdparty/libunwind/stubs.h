@@ -37,6 +37,8 @@
 #define munmap __libunwind_munmap
 #define msync __libunwind_msync
 #define mincore __libunwind_mincore
+#define pipe2 __libunwind_pipe2
+#define syscall __libunwind_syscall
 
 static __inline void __libunwind_setbuf(FILE* stream, char* buf)
 {
@@ -127,6 +129,16 @@ static __inline int __libunwind_mincore(
     size_t n = (length + getpagesize() - 1) / getpagesize();
     memset(vec, 1, n);
 
+    return 0;
+}
+
+static __inline int __libunwind_pipe2(int pipefd[2], int flags)
+{
+    return -1;
+}
+
+static __inline long __libunwind_syscall(long number, ...)
+{
     return 0;
 }
 

@@ -32,3 +32,6 @@ int __libunwind_unw_step(unw_cursor_t* cursor)
 }
 
 #include "Gstep.c.h"
+
+/* Added when porting to libunwind 1.3 to suppress unresolved symbol */
+void* __gcc_personality_v0;
