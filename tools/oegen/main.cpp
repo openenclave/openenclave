@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/internal/getopt.h>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -65,38 +66,6 @@ static string StripExtension(const string& path, const string& ext)
     return path.substr(0, npos);
 }
 
-int GetOpt(
-    int& argc,
-    const char* argv[],
-    const char* name,
-    const char** arg = NULL)
-{
-    for (int i = 0; i < argc; i++)
-    {
-        if (strcmp(argv[i], name) == 0)
-        {
-            if (!arg)
-            {
-                memmove(
-                    (void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
-                argc--;
-                return 1;
-            }
-
-            if (i + 1 == argc)
-                return -1;
-
-            *arg = argv[i + 1];
-            memmove(
-                (char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
-            argc -= 2;
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 const char HELP[] =
     "Usage: %s OPTIONS IDL-FILENAME\n"
     "\n"
@@ -113,7 +82,8 @@ int main(int argc, const char* argv[])
     string idlFile;
 
     // Print help message?
-    if (GetOpt(argc, argv, "-h") == 1 || GetOpt(argc, argv, "--help") == 1)
+    if (oe_getopt(&argc, argv, "-h") == 1 ||
+        oe_getopt(&argc, argv, "--help") == 1)
     {
         fprintf(stderr, HELP, arg0);
         return 1;
@@ -121,21 +91,27 @@ int main(int argc, const char* argv[])
 
     // Get trusted option:
     bool trusted = false;
-    if (GetOpt(argc, argv, "-t") == 1 || GetOpt(argc, argv, "--trusted") == 1)
+    if (oe_getopt(&argc, argv, "-t") == 1 ||
+        oe_getopt(&argc, argv, "--trusted") == 1)
+    {
         trusted = true;
+    }
 
     // Get untrusted option:
     bool untrusted = false;
-    if (GetOpt(argc, argv, "-u") == 1 || GetOpt(argc, argv, "--untrusted") == 1)
+    if (oe_getopt(&argc, argv, "-u") == 1 ||
+        oe_getopt(&argc, argv, "--untrusted") == 1)
+    {
         untrusted = true;
+    }
 
     // Get the directory:
     string dirname;
     {
         const char* arg = NULL;
 
-        if (GetOpt(argc, argv, "-d", &arg) == 1 ||
-            GetOpt(argc, argv, "--dir", &arg) == 1)
+        if (oe_getopt(&argc, argv, "-d", &arg) == 1 ||
+            oe_getopt(&argc, argv, "--dir", &arg) == 1)
         {
             dirname = arg;
 
