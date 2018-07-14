@@ -2,11 +2,12 @@
 # Licensed under the MIT License.
 
 add_library(oeenclave STATIC
+    ../common/cert.c
+    ../common/quote.c
     asn1.c
     cert.c
     crl.c
     ec.c
-    ../common/quote.c
     cmac.c
     key.c
     random.c

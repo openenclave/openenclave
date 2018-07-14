@@ -30,9 +30,6 @@ OE_INLINE bool _is_valid(const oe_asn1_t* asn1)
     if (!asn1 || !asn1->data || !asn1->length || !asn1->ptr)
         return false;
 
-    if (!(asn1->data <= _end(asn1)))
-        return false;
-
     if (!(asn1->ptr >= asn1->data && asn1->ptr <= _end(asn1)))
         return false;
 
