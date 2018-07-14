@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include "../../common/getopt.h"
 #include "args.h"
 #include "ocalls.h"
 
@@ -42,38 +43,6 @@ OE_OCALL void ocall_exit(uint64_t arg)
     exit(arg);
 }
 
-static int _GetOpt(
-    int& argc,
-    const char* argv[],
-    const char* name,
-    const char** arg = NULL)
-{
-    for (int i = 0; i < argc; i++)
-    {
-        if (strcmp(argv[i], name) == 0)
-        {
-            if (!arg)
-            {
-                memmove(
-                    (void*)&argv[i], &argv[i + 1], (argc - i) * sizeof(char*));
-                argc--;
-                return 1;
-            }
-
-            if (i + 1 == argc)
-                return -1;
-
-            *arg = argv[i + 1];
-            memmove(
-                (char**)&argv[i], &argv[i + 2], (argc - i - 1) * sizeof(char*));
-            argc -= 2;
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -81,7 +50,7 @@ int main(int argc, const char* argv[])
     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
 
     // Check for the --sim option:
-    if (_GetOpt(argc, argv, "--simulate") == 1)
+    if (oe_getopt(&argc, argv, "--simulate") == 1)
         flags |= OE_ENCLAVE_FLAG_SIMULATE;
     else
         flags = oe_get_create_flags();
