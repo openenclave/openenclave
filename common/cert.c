@@ -64,8 +64,8 @@ done:
 
 // Append up to 'n' bytes of string 's' to the buffer at the given offset. If 
 // less than 'n' bytes remain, then ignore the excess bytes of string 's'. 
-// Update the offset, which may legally exceed the buffer size. The offset
-// indicates how many bytes would be required.
+// Update the offset, which may legally exceed the buffer size. Upon return,
+// the offset indicates how many bytes would be required to hold the data.
 static void _append(
     void* buffer, 
     size_t size, 
