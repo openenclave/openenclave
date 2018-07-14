@@ -15,8 +15,8 @@ int __libunwind_unw_step(unw_cursor_t* cursor)
 {
     struct dwarf_cursor* c = (struct dwarf_cursor*)cursor;
 
-    // Only enforce this check for local address spaces (which enclaves use);
-    // otherwise the remote libunwind tests fail.
+    // Only enforce this check for local address spaces (which enclaves use).
+    // Otherwise the remote libunwind tests fail.
     if (c->as == unw_local_addr_space)
     {
         // Check whether the [IP, IP+16) is within the enclave image.
