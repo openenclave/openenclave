@@ -986,79 +986,6 @@ static void _TestCertWithoutExtensions()
         "2.5.29.35");
 }
 
-static const char _SUBJECT[] =
-    "/CN=Intel SGX PCK Certificate/O=Intel Corporation/L=Santa Clara/ST=CA"
-    "/C=US";
-
-void _TestCertSubject()
-{
-    printf("=== begin %s()\n", __FUNCTION__);
-
-    oe_result_t r;
-    oe_cert_t cert = {0};
-    char subject[1024];
-    size_t subject_size = sizeof(subject);
-
-    r = oe_cert_read_pem(&cert, _CERT, sizeof(_CERT));
-    OE_TEST(r == OE_OK);
-
-    subject_size = 0;
-    r = oe_cert_get_subject(&cert, NULL, &subject_size);
-    OE_TEST(r == OE_BUFFER_TOO_SMALL);
-
-    OE_TEST(subject_size = sizeof(_SUBJECT));
-
-    subject_size = sizeof(subject);
-    r = oe_cert_get_subject(&cert, subject, &subject_size);
-    OE_TEST(r == OE_OK);
-
-    printf("subject{%s}\n", subject);
-    printf("SUBJECT{%s}\n", _SUBJECT);
-
-    OE_TEST(strcmp(subject, _SUBJECT) == 0);
-    OE_TEST(subject_size = sizeof(_SUBJECT));
-
-    oe_cert_free(&cert);
-
-    printf("=== passed %s()\n", __FUNCTION__);
-}
-
-static const char _ISSUER[] =
-    "/CN=Intel SGX PCK Processor CA/O=Intel Corporation/L=Santa Clara/ST=CA"
-    "/C=US";
-
-void _TestCertIssuer()
-{
-    printf("=== begin %s()\n", __FUNCTION__);
-
-    oe_result_t r;
-    oe_cert_t cert = {0};
-    char issuer[1024];
-    size_t issuer_size = sizeof(issuer);
-
-    r = oe_cert_read_pem(&cert, _CERT, sizeof(_CERT));
-    OE_TEST(r == OE_OK);
-
-    issuer_size = 0;
-    r = oe_cert_get_issuer(&cert, NULL, &issuer_size);
-    OE_TEST(r == OE_BUFFER_TOO_SMALL);
-    OE_TEST(issuer_size = sizeof(_ISSUER));
-
-    issuer_size = sizeof(issuer);
-    r = oe_cert_get_issuer(&cert, issuer, &issuer_size);
-    OE_TEST(r == OE_OK);
-
-    printf("issuer{%s}\n", issuer);
-    printf("ISSUER{%s}\n", _ISSUER);
-
-    OE_TEST(strcmp(issuer, _ISSUER) == 0);
-    OE_TEST(issuer_size = sizeof(_ISSUER));
-
-    oe_cert_free(&cert);
-
-    printf("=== passed %s()\n", __FUNCTION__);
-}
-
 static const char _SGX_CERT[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIEejCCBCCgAwIBAgIVAIRhkz/I2bp4OHxNAneNMrWoyuVBMAoGCCqGSM49BAMC\n"
@@ -1141,6 +1068,4 @@ void TestEC()
     _TestCertMethods();
     _TestKeyFromBytes();
     _TestCertChainRead();
-    _TestCertSubject();
-    _TestCertIssuer();
 }
