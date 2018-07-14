@@ -37,11 +37,13 @@ void TestAbortStatus(oe_enclave_t* enclave, const char* functionName)
 static void CrashEnclaveThread(
     oe_enclave_t* enclave,
     uint32_t* thread_ready_count,
-    uint32_t* is_enclave_crashed)
+    uint32_t* is_enclave_crashed,
+    const char* ecall_function)
 {
     oe_result_t result;
     AbortStatusArgs args;
     args.ret = -1;
+    args.divisor = 0;
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
 
@@ -52,7 +54,7 @@ static void CrashEnclaveThread(
     }
 
     // Crash the enclave to set enclave in abort status.
-    result = oe_call_enclave(enclave, "RegularAbort", &args);
+    result = oe_call_enclave(enclave, ecall_function, &args);
     OE_TEST(result == OE_ENCLAVE_ABORTING);
     OE_TEST(args.ret == 0);
 
@@ -320,73 +322,85 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
 
     // Create the enclave.
     const uint32_t flags = oe_get_create_flags();
-    if ((result = oe_create_enclave(
-             enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
-        OE_OK)
+    vector<string> functionNames{"RegularAbort"};
+
+    // Only run hardware exception test on non-simulated mode.
+    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) == 0)
     {
-        oe_put_err("oe_create_enclave(): result=%u", result);
-        return false;
+        functionNames.push_back("GenerateUnhandledHardwareException");
     }
 
-    // Create threads.
-    std::vector<std::thread> threads;
-    uint32_t thread_ready_count = 0;
-    uint32_t is_enclave_crashed = 0;
-
-    threads.push_back(
-        std::thread(
-            CrashEnclaveThread,
-            enclave,
-            &thread_ready_count,
-            &is_enclave_crashed));
-
-    threads.push_back(
-        std::thread(
-            EcallAfterCrashThread,
-            enclave,
-            &thread_ready_count,
-            &is_enclave_crashed));
-
-    threads.push_back(
-        std::thread(
-            OcallAfterCrashThread,
-            enclave,
-            &thread_ready_count,
-            &is_enclave_crashed));
-
-    // Even recursion count will make the call end inside enclave, used to test
-    // OCALL behavior.
-    threads.push_back(
-        std::thread(
-            TestRecursion,
-            enclave,
-            1,
-            32,
-            &thread_ready_count,
-            &is_enclave_crashed));
-
-    // Even recursion count will make the call end in host side, used to test
-    // ECALL behavior.
-    threads.push_back(
-        std::thread(
-            TestRecursion,
-            enclave,
-            2,
-            33,
-            &thread_ready_count,
-            &is_enclave_crashed));
-
-    // All threads must exit gracefully.
-    for (auto& t : threads)
+    for (uint32_t i = 0; i < functionNames.size(); i++)
     {
-        t.join();
-    }
+        if ((result = oe_create_enclave(
+                 enclaveName, OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) !=
+            OE_OK)
+        {
+            oe_put_err("oe_create_enclave(): result=%u", result);
+            return false;
+        }
 
-    // Enclave should be terminated correctly.
-    if ((result = oe_terminate_enclave(enclave)) != OE_OK)
-    {
-        oe_put_err("oe_terminate_enclave(): result=%u", result);
-        return false;
+        // Create threads.
+        std::vector<std::thread> threads;
+        uint32_t thread_ready_count = 0;
+        uint32_t is_enclave_crashed = 0;
+
+        threads.push_back(
+            std::thread(
+                CrashEnclaveThread,
+                enclave,
+                &thread_ready_count,
+                &is_enclave_crashed,
+                functionNames[i].c_str()));
+
+        threads.push_back(
+            std::thread(
+                EcallAfterCrashThread,
+                enclave,
+                &thread_ready_count,
+                &is_enclave_crashed));
+
+        threads.push_back(
+            std::thread(
+                OcallAfterCrashThread,
+                enclave,
+                &thread_ready_count,
+                &is_enclave_crashed));
+
+        // Even recursion count will make the call end inside enclave, used to
+        // test OCALL behavior.
+        threads.push_back(
+            std::thread(
+                TestRecursion,
+                enclave,
+                1,
+                32,
+                &thread_ready_count,
+                &is_enclave_crashed));
+
+        // Even recursion count will make the call end in host side, used to
+        // test ECALL behavior.
+        threads.push_back(
+            std::thread(
+                TestRecursion,
+                enclave,
+                2,
+                33,
+                &thread_ready_count,
+                &is_enclave_crashed));
+
+        // All threads must exit gracefully.
+        for (auto& t : threads)
+        {
+            t.join();
+        }
+
+        // Enclave should be terminated correctly.
+        if ((result = oe_terminate_enclave(enclave)) != OE_OK)
+        {
+            oe_put_err("oe_terminate_enclave(): result=%u", result);
+            return false;
+        }
     }
 
     return true;
