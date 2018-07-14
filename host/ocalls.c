@@ -186,7 +186,7 @@ void handle_malloc_dump(oe_enclave_t* enclave, uint64_t arg)
 
     printf("=== oe_malloc_dump()\n");
 
-    printf("%llx bytes\n", OE_LLX(args->size));
+    printf("%llu bytes\n", OE_LLX(args->size));
 
     for (size_t i = 0; i < args->num_addrs; i++)
         printf("%s(): %p\n", syms[i], args->addrs[i]);

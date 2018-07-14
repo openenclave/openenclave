@@ -693,9 +693,7 @@ static void _TestCertChainRead()
     r = oe_cert_chain_read_pem(_CHAIN, sizeof(_CHAIN), &chain);
     OE_TEST(r == OE_OK);
 
-#if 0
     oe_cert_chain_free(&chain);
-#endif
 
     printf("=== passed %s()\n", __FUNCTION__);
 }

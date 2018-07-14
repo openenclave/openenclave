@@ -107,6 +107,8 @@ done:
 
 void oe_malloc_dump(void)
 {
+    printf("*** oe_malloc_dump()\n");
+
     for (info_t* p = _head; p; p = p->next)
     {
         for (size_t i = 0; i < p->num_addrs; i++)
