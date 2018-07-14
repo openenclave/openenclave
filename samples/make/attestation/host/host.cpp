@@ -52,7 +52,7 @@ int main(int argc, const char* argv[])
             "(samples attestation)\n");
         return SKIP_RETURN_CODE;
     }
-    
+
     printf("\n\n=====Creating two enclaves=====\n");
 
     oe_enclave_t* enclave1 = CreateEnclave(argv[1]);
