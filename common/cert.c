@@ -3,7 +3,6 @@
 
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
-#include <openenclave/internal/outbuf.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
@@ -63,6 +62,39 @@ done:
     return result;
 }
 
+// Append up to 'n' bytes of string 's' to the buffer at the given offset. If 
+// less than 'n' bytes remain, then ignore the excess bytes of string 's'. 
+// Update the offset, which may legally exceed the buffer size. The offset
+// indicates how many bytes would be required.
+static void _append(
+    void* buffer, 
+    size_t size, 
+    size_t* offset,
+    const void* s,
+    size_t n)
+{
+    /* If any space remaining in the buffer: */
+    if (*offset < size)
+    {
+        const size_t remaining = size - *offset;
+        const size_t m = (remaining < n) ? remaining : n;
+        void* ptr = (uint8_t*)buffer + *offset;
+
+        if (s)
+        {
+            // Copy 'm' bytes from string 's'.
+            memcpy(ptr, s, m);
+        }
+        else
+        {
+            // Fill with 'm' zero bytes.
+            memset(ptr, 0, m);
+        }
+    }
+
+    *offset += n;
+}
+
 oe_result_t oe_get_crl_distribution_points(
     const oe_cert_t* cert,
     const char*** urls,
@@ -72,8 +104,8 @@ oe_result_t oe_get_crl_distribution_points(
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t size = 0;
+    size_t offset = 0;
     static const char _OID[] = "2.5.29.31";
-    oe_outbuf_t outbuf;
 
     if (urls)
         *urls = NULL;
@@ -84,7 +116,12 @@ oe_result_t oe_get_crl_distribution_points(
     if (!cert || !urls || !num_urls || !buffer_size)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(oe_outbuf_start(&outbuf, buffer, buffer_size, sizeof(void*)));
+    if (!buffer && *buffer_size != 0)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    /* If buffer is not aligned properly to hold an array of pointers */
+    if (oe_align_pointer(buffer, sizeof(void*)) != buffer)
+        OE_RAISE(OE_BAD_ALIGNMENT);
 
     /* Determine the size of the extension */
     if (oe_cert_find_extension(cert, _OID, NULL, &size) != OE_BUFFER_TOO_SMALL)
@@ -94,6 +131,7 @@ oe_result_t oe_get_crl_distribution_points(
     {
         uint8_t data[size];
         oe_asn1_t asn1;
+        size_t urls_bytes;
 
         /* Find the extension */
         size = sizeof(data);
@@ -114,11 +152,15 @@ oe_result_t oe_get_crl_distribution_points(
             }
         }
 
-        /* Leave space for urls[] array */
-        oe_outbuf_append(&outbuf, NULL, sizeof(char*) * (*num_urls));
+        /* Determine the number of bytes needed by the urls[] array */
+        urls_bytes = sizeof(char*) * (*num_urls);
 
-        /* Set the pointer to the urls[] array */
-        *urls = (const char**)buffer;
+        /* Leave space for urls[] array */
+        _append(buffer, *buffer_size, &offset, NULL, urls_bytes);
+
+        /* Set the pointer to the urls[] array if enough space */
+        if (buffer && urls_bytes <= *buffer_size)
+            *urls = (const char**)buffer;
 
         /* Process all the CRL distribution points */
         {
@@ -133,29 +175,34 @@ oe_result_t oe_get_crl_distribution_points(
                 oe_asn1_t crldp;
                 const char* url;
                 size_t url_len;
-                const char* addr;
-                const size_t addr_size = sizeof(addr);
 
                 OE_CHECK(oe_asn1_get_sequence(&seq, &crldp));
                 OE_CHECK(_find_url(crldp.data, crldp.length, &url, &url_len));
 
-                if ((addr = (const char*)oe_outbuf_end(&outbuf)))
+                /* Append current buffer position to the urls[] array */
+                if (*urls)
                 {
-                    /* Append the next urls[i] address */
-                    oe_outbuf_set(&outbuf, i * addr_size, &addr, addr_size);
+                    // The address could point beyond end of buffer, but that is
+                    // fine since an OE_BUFFER_TOO_SMALL error is raised below.
+                    (*urls)[i] = (const char*)(buffer + offset);
                 }
 
                 /* Append the URL */
-                oe_outbuf_append(&outbuf, url, url_len);
+                _append(buffer, *buffer_size, &offset, url, url_len);
 
                 /* Append null terminator */
-                oe_outbuf_append(&outbuf, NULL, 1);
+                _append(buffer, *buffer_size, &offset, NULL, sizeof(char));
             }
         }
     }
 
-    OE_CHECK(oe_outbuf_finish(&outbuf, buffer_size));
+    if (offset > *buffer_size)
+    {
+        *buffer_size = offset;
+        OE_RAISE(OE_BUFFER_TOO_SMALL);
+    }
 
+    *buffer_size = offset;
     result = OE_OK;
 
 done:
