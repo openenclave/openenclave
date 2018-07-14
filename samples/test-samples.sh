@@ -19,11 +19,16 @@
 # run the cmake-variant in separate cmake instance
 
 printandexit(){
-    echo An error occured
-    exit 1
+    if [ $? -eq 2 ]; then
+	echo Possible skip
+	exit 2
+    else
+	echo An error occured
+	exit 1
+    fi
 }
 
-# Collect arguments and to temporary install if so requested
+# Collect arguments and do temporary install if requested
 if test "$1" = "-i" ; then
     # inside build tree. install using DESTDIR mechanism.
     BIN_DIR=$(realpath $2)
