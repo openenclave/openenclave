@@ -4,8 +4,13 @@
 # Copy libunwind sources and build out-of-tree
 
 string(CONCAT CFLAGS 
-    "-DUNW_LOCAL_ONLY "
-    "-DWSIZE=8 "
+    "-Werror "
+    "-Wno-pointer-to-int-cast "
+    "-Wno-unused-function "
+    "-Wno-unused-variable "
+    "-Wno-unused-but-set-variable "
+    "-Wno-maybe-uninitialized "
+    "-Wno-cpp "
     "-fno-builtin "
     "-fPIC "
     "-include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h "
@@ -61,6 +66,16 @@ ExternalProject_Add(oelibcxx_unwind
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_LIST_DIR}/Gstep.c
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c
+
+    # Copy Gtrace.c to Gtrace.c.h
+    COMMAND grep -v "^static __thread"
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.c >
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.c.h
+
+    # Copy Gtrace.c to the the build directory.
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_LIST_DIR}/Gtrace.c
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.c
 
     # Copy setcontext.S over the one in the build directory.
     COMMAND ${CMAKE_COMMAND} -E copy
