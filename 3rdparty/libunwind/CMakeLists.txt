@@ -4,13 +4,8 @@
 # Copy libunwind sources and build out-of-tree
 
 string(CONCAT CFLAGS 
-    "-Werror "
-    "-Wno-pointer-to-int-cast "
-    "-Wno-unused-function "
-    "-Wno-unused-variable "
-    "-Wno-unused-but-set-variable "
-    "-Wno-maybe-uninitialized "
-    "-Wno-cpp "
+    "-DUNW_LOCAL_ONLY "
+    "-DWSIZE=8 "
     "-fno-builtin "
     "-fPIC "
     "-include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h "
