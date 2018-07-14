@@ -5,18 +5,17 @@
 #define _OE_GETOPT_H
 
 #include <openenclave/host.h>
-#include <stdio.h>
 #include <string.h>
 
 /**
  * Gets a command line option, removing that option and its optional argument
- * from argc-argv. A pointer to the string argument if any is stored in the
- * arg output parameter.
+ * from argc-argv. A pointer to the option argument (if any) is stored in the
+ * **arg** output parameter.
  *
- * @param argc pointer to the number of arguments.
- * @param argv array of arguments.
- * @param name name of the argument (e.g., "--someopt").
- * @param arg pointer to output argument if any (may be null).
+ * @param argc[in,out] number of arguments.
+ * @param argv[in,out] array of arguments.
+ * @param name[in] name of the argument (e.g., "--someopt").
+ * @param arg[out] pointer to the optional output argument if any (may be null).
  *
  * @return  1 the option was found.
  * @return  0 the option was not found.

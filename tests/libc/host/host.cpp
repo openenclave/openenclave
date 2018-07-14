@@ -4,12 +4,12 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/error.h>
+#include <openenclave/internal/getopt.h>
 #include <openenclave/internal/tests.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "../../common/getopt.h"
 #include "args.h"
 #include "ocalls.h"
 
