@@ -27,15 +27,15 @@ static oe_result_t _find_url(
     oe_result_t result = OE_UNEXPECTED;
     const uint8_t* p = data;
     size_t remaining = size;
+    const char pattern[] = "http";
+    const size_t pattern_length = sizeof(pattern) - 1;
 
-    /* Search for "https:" preceded by the length of the URL */
-    while (remaining)
+    /* Search for "http" preceded by the length of the URL */
+    while (remaining >= pattern_length)
     {
-        const char PATTERN[] = "https:";
-
-        if (memcmp(p, PATTERN, sizeof(PATTERN) - 1) == 0)
+        if (memcmp(p, pattern, pattern_length) == 0)
         {
-            /* Fail if string begins with the pattern */
+            /* Fail if data begins with the pattern */
             if (p == data)
                 OE_RAISE(OE_FAILURE);
 
@@ -62,13 +62,13 @@ done:
     return result;
 }
 
-// Append up to 'n' bytes of string 's' to the buffer at the given offset. If 
-// less than 'n' bytes remain, then ignore the excess bytes of string 's'. 
+// Append up to 'n' bytes of string 's' to the buffer at the given offset. If
+// less than 'n' bytes remain, then ignore the excess bytes of string 's'.
 // Update the offset, which may legally exceed the buffer size. Upon return,
 // the offset indicates how many bytes would be required to hold the data.
 static void _append(
-    void* buffer, 
-    size_t size, 
+    void* buffer,
+    size_t size,
     size_t* offset,
     const void* s,
     size_t n)
