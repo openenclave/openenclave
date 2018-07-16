@@ -14,13 +14,18 @@ char** oe_backtrace_symbols(
 {
     char** ret = NULL;
     Elf64 elf = ELF64_INIT;
+    bool elf_loaded = false;
 
     if (!enclave || enclave->magic != ENCLAVE_MAGIC || !buffer || !size)
         goto done;
 
     /* Open the enclave ELF64 image */
-    if (Elf64_Load(enclave->path, &elf) != 0)
-        goto done;
+    {
+        if (Elf64_Load(enclave->path, &elf) != 0)
+            goto done;
+
+        elf_loaded = true;
+    }
 
     if (!(ret = (char**)calloc(size, sizeof(char*))))
         goto done;
@@ -37,8 +42,10 @@ char** oe_backtrace_symbols(
             ret[i] = "<unknown>";
     }
 
-    Elf64_Unload(&elf);
-
 done:
+
+    if (elf_loaded)
+        Elf64_Unload(&elf);
+
     return ret;
 }
