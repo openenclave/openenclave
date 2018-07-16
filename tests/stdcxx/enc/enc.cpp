@@ -3,7 +3,6 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
-#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/tests.h>
 #include <iostream>
 #include <map>
@@ -169,7 +168,6 @@ OE_ECALL void Test(void* args_)
     }
 
     /* Test exceptions */
-    for (size_t i = 0; i < 10; i++)
     {
         struct E
         {
@@ -216,9 +214,4 @@ __attribute__((destructor)) void Destructor(void)
     oe_host_printf("Destructor()\n");
     OE_TEST(numConstructions == 6);
     OE_TEST(numDestructions == 6);
-}
-
-__attribute__((destructor)) void malloc_dump(void)
-{
-    oe_malloc_dump();
 }

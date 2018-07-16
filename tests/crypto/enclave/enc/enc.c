@@ -8,7 +8,6 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/malloc.h>
-#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/random.h>
 #include <openenclave/internal/rsa.h>
