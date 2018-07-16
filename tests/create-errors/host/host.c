@@ -25,8 +25,8 @@ static void _TestInvalidParam(const char* path, uint32_t flags)
     OE_TEST(result == OE_INVALID_PARAMETER);
 
     /* Invalid flags. */
-    result =
-        oe_create_enclave(path, OE_ENCLAVE_TYPE_SGX, ~0, NULL, 0, &enclave);
+    result = oe_create_enclave(
+        path, OE_ENCLAVE_TYPE_SGX, OE_ENCLAVE_FLAG_RESERVED, NULL, 0, &enclave);
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
@@ -36,7 +36,7 @@ static void _TestInvalidParam(const char* path, uint32_t flags)
 
     OE_TEST(result == OE_INVALID_PARAMETER);
 
-    /* Content size non zero. */
+    /* Content size non-zero. */
     result =
         oe_create_enclave(path, OE_ENCLAVE_TYPE_SGX, flags, NULL, 1, &enclave);
 
