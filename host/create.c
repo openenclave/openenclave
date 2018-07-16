@@ -1441,7 +1441,7 @@ done:
 
     if (result != OE_OK && enclave)
     {
-        for (int i = 0; i < enclave->num_ecalls; i++)
+        for (size_t i = 0; i < enclave->num_ecalls; i++)
             free(enclave->ecalls[i].name);
 
         free(enclave->ecalls);
