@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "asn1.h"
+#include <limits.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/raise.h>
-#include <limits.h>
-#include "asn1.h"
 
 oe_result_t oe_asn1_get_tag(
-    oe_asn1_t* asn1, 
+    oe_asn1_t* asn1,
     bool* constructed,
     oe_asn1_tag_t* tag)
 {
@@ -36,7 +36,7 @@ oe_result_t oe_asn1_get_tag(
             if (oe_asn1_remaining(asn1) < 1)
                 OE_RAISE(OE_FAILURE);
 
-            while (*asn1->ptr & 0x80) 
+            while (*asn1->ptr & 0x80)
             {
                 long_tag <<= 7L;
                 long_tag |= *asn1->ptr & 0x7f;
@@ -54,7 +54,7 @@ oe_result_t oe_asn1_get_tag(
 
             *tag = (oe_asn1_tag_t)long_tag;
         }
-        else 
+        else
         {
             *tag = short_tag;
             asn1->ptr++;

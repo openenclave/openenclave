@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "../common/asn1.h"
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include "../common/asn1.h"
 
 OE_STATIC_ASSERT(MBEDTLS_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
 OE_STATIC_ASSERT(MBEDTLS_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);

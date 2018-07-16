@@ -381,9 +381,6 @@ static void _test_asn1_parsing(void)
     printf("str=%s\n", str);
 
     OE_TEST(str != NULL);
-printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
-printf("str{%s}\n", str);
-printf("_PARSE_OUTPUT{%s}\n", _PARSE_OUTPUT);
     OE_TEST(strcmp(str, _PARSE_OUTPUT) == 0);
 
     free(str);

@@ -34,7 +34,7 @@ OE_INLINE size_t oe_asn1_remaining(const oe_asn1_t* asn1)
 }
 
 oe_result_t oe_asn1_get_tag(
-    oe_asn1_t* asn1, 
+    oe_asn1_t* asn1,
     bool* constructed,
     oe_asn1_tag_t* tag);
 

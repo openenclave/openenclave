@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "../common/asn1.h"
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
@@ -8,7 +9,6 @@
 #include <openssl/asn1.h>
 #include <openssl/pem.h>
 #include <string.h>
-#include "../common/asn1.h"
 
 OE_STATIC_ASSERT(V_ASN1_CONSTRUCTED == OE_ASN1_TAG_CONSTRUCTED);
 OE_STATIC_ASSERT(V_ASN1_SEQUENCE == OE_ASN1_TAG_SEQUENCE);
@@ -36,12 +36,16 @@ oe_result_t oe_asn1_get_raw(
         int tmp_class = 0;
 
         int rc = ASN1_get_object(
-            &asn1->ptr, &tmp_length, &tmp_tag, &tmp_class, oe_asn1_remaining(asn1));
+            &asn1->ptr,
+            &tmp_length,
+            &tmp_tag,
+            &tmp_class,
+            oe_asn1_remaining(asn1));
 
         if (rc != V_ASN1_CONSTRUCTED && rc != 0)
             OE_RAISE(OE_FAILURE);
 
-        *tag = rc | tmp_tag;
+        *tag = tmp_tag;
         *data = asn1->ptr;
         *length = (size_t)tmp_length;
 
@@ -69,7 +73,7 @@ oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence)
 
     OE_CHECK(oe_asn1_get_raw(asn1, &tag, &data, &length));
 
-    if (tag != (OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE))
+    if (tag != OE_ASN1_TAG_SEQUENCE)
         OE_RAISE(OE_FAILURE);
 
     oe_asn1_init(sequence, data, length);
