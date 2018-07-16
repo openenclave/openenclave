@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #define USE_DL_PREFIX
 #include "debug_malloc.h"
 #include <errno.h>
@@ -130,10 +133,9 @@ typedef struct _list
     header_t* head;
     header_t* tail;
     oe_spinlock_t spin;
-}
-list_t;
+} list_t;
 
-static list_t _list = { NULL, NULL, OE_SPINLOCK_INITIALIZER };
+static list_t _list = {NULL, NULL, OE_SPINLOCK_INITIALIZER};
 
 static void _list_insert(list_t* list, header_t* header)
 {
