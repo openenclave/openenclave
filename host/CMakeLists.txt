@@ -19,7 +19,7 @@ set(PLATFORM_SRC
     linux/sgxioctl.c
     linux/sgxsign.c
     linux/time.c
-    sgxquoteprovider.c        
+    sgxquoteprovider.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -90,7 +90,7 @@ target_compile_definitions(oehost PRIVATE OE_BUILD_UNTRUSTED)
 if(USE_LIBSGX)
 message("USE_LIBSGX is set, building oehost with FLC dependency")
 find_library(LIBSGX_COMMON NAMES sgx_enclave_common)
-find_library(LIBSGX_QE NAMES sgxoeql)
+find_library(LIBSGX_QE NAMES sgx_ngsa_ql)
 find_library(LIBSGX_URTS NAMES sgx_urts_ng)
 target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS})
 target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)

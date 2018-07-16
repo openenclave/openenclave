@@ -1,15 +1,17 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-LIBSGX_COMMON=libsgx-enclave-common
-LIBSGX_QL=libsgx-ngsa-ql
-PACKAGE_VER=2.1.100.0-1.0_amd64
+PACKAGE_VER=1.0.100.45332-1.0_amd64
 
-LIBSGX_COMMON_PKG=$(call pkg-name,$(LIBSGX_COMMON),$(PACKAGE_VER))
-LIBSGX_QL_PKG=$(call pkg-name,$(LIBSGX_QL),$(PACKAGE_VER))
+PACKAGE_NAMES=\
+	libsgx-enclave-common\
+	libsgx-enclave-common-dev\
+	libsgx-ngsa-ql\
+	libsgx-ngsa-ql-dev\
 
-LIBSGX_COMMON_INSTALLED = $(call is-pkg-installed,$(LIBSGX_COMMON))
-LIBSGX_QL_INSTALLED = $(call is-pkg-installed,$(LIBSGX_QL))
+PACKAGES=$(foreach NAME,$(PACKAGE_NAMES),$(call pkg-name,$(NAME),$(PACKAGE_VER)))
+
+UNINSTALL_NAMES=$(call reverse-list,$(PACKAGE_NAMES))
 
 all: getdist
 
@@ -18,21 +20,24 @@ getdist:
 	$(MAKE) get-package
 
 distclean:
-	- rm -f $(LIBSGX_COMMON_PKG)
-	- rm -f $(LIBSGX_QL_PKG)
+	-@ for PKG in $(PACKAGES); do \
+		rm -f $$PKG; \
+	done
 
 build:
 
 clean:
 
 install:
-	dpkg -i $(LIBSGX_COMMON_PKG)
-	dpkg -i $(LIBSGX_QL_PKG)
+	@ for PKG in $(PACKAGES); do \
+		dpkg -i $$PKG; \
+	done
 	$(MAKE) check-installed
 
 uninstall:
-	- dpkg -P $(LIBSGX_QL)
-	- dpkg -P $(LIBSGX_COMMON)
+	@ for PKG in $(UNINSTALL_NAMES); do \
+		dpkg -P $$PKG 2>/dev/null; \
+	done
 
 ##==============================================================================
 ##
@@ -40,27 +45,31 @@ uninstall:
 ##
 ##==============================================================================
 
-is-pkg-installed = $(shell dpkg-query -s $(1) | grep "Status: .* installed")
+is-pkg-installed = $(shell dpkg-query -s $(1) 2>/dev/null | grep "Status: .* installed")
 pkg-name = $(1)_$(2).deb
+reverse-list = $(if $(wordlist 2,2,$(1)),\
+	$(call reverse-list,$(wordlist 2,$(words $(1)),$(1))) $(firstword $(1)),$(1))
+
+PACKAGES_INSTALLED=\
+	$(foreach PKG,$(PACKAGE_NAMES),\
+		$(if $(call is-pkg-installed,$(PKG)),\
+			"Verified: $(PKG) package installed",\
+			"*** Failed to install $(PKG) package"))
 
 # Workaround until Intel-signed binary drops of libraries and enclaves from
 # https://github.com/otcshare/NextGenSGXAttestationLibs.git are available as
 # packages for apt-get
 get-package:
 	apt-get -y install wget
-	@ wget http://10.224.140.70:8888/libsgx-enclave-common_2.1.100.0-1.0_amd64.deb
-	@ wget http://10.224.140.70:8888/libsgx-ngsa-ql_2.1.100.0-1.0_amd64.deb
+	@ for PKG in $(PACKAGES); do \
+		wget http://10.224.140.70:8888/$$PKG; \
+	done
 
 check-installed:
-ifeq ($(LIBSGX_COMMON_INSTALLED)),)
-	@ echo "*** Failed to install $(LIBSGX_COMMON) package"
+	@ for PKG in $(PACKAGES_INSTALLED); do \
+		echo $$PKG; \
+	done
+
+ifneq ($(findstring Failed,$(PACKAGES_INSTALLED)),)
 	@ exit 1
-else
-	@ echo "Verified: $(LIBSGX_COMMON) package installed"
-endif
-ifeq ($(LIBSGX_QL_INSTALLED),)
-	@ echo "*** Failed to install $(LIBSGX_QL) package"
-	@ exit 1
-else
-	@ echo "Verified: $(LIBSGX_QL) package installed"
 endif
