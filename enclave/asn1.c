@@ -145,6 +145,9 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
     if (mbedtls_asn1_get_tag(_pptr(asn1), _end(asn1), &length, tag) != 0)
         OE_RAISE(OE_FAILURE);
 
+    if (tag != MBEDTLS_ASN1_OID)
+        OE_RAISE(OE_FAILURE);
+
     /* Convert OID to string */
     {
         mbedtls_x509_buf buf;
