@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "../host/cpuid.h"
 
 typedef struct _Regs
 {
@@ -12,12 +13,27 @@ typedef struct _Regs
     unsigned int edx;
 } Regs;
 
-static void _CPUID(Regs* regs)
+static int _CPUID(Regs* regs)
 {
-    asm volatile(
-        "cpuid"
-        : "=a"(regs->eax), "=b"(regs->ebx), "=c"(regs->ecx), "=d"(regs->edx)
-        : "0"(regs->eax), "2"(regs->ecx));
+    unsigned int leaf_requested = regs->eax;
+    int result = 0;
+
+    oe_get_cpuid(
+        leaf_requested,
+        regs->ecx,
+        &regs->eax,
+        &regs->ebx,
+        &regs->ecx,
+        &regs->edx);
+
+    // Check if results indicate unsupported leaf.
+    if ((leaf_requested > regs->eax) ||
+        (regs->eax == 0 && regs->ebx == 0 && regs->ecx == 0 && regs->edx == 0))
+    {
+        printf("Error getting CPUID. Returned: %d", regs->eax);
+        result = 1;
+    }
+    return result;
 }
 
 #define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)
@@ -28,6 +44,8 @@ static void _CPUID(Regs* regs)
 
 int main(int argc, const char* argv[])
 {
+    int result = 0;
+
     if (argc != 1)
     {
         fprintf(stderr, "Usage: %s\n", argv[0]);
@@ -38,7 +56,11 @@ int main(int argc, const char* argv[])
     {
         Regs regs = {0x7, 0, 0x0, 0};
 
-        _CPUID(&regs);
+        result = _CPUID(&regs);
+        if (result)
+        {
+            return result;
+        }
 
         if (!HAVE_SGX(regs))
         {
@@ -51,7 +73,11 @@ int main(int argc, const char* argv[])
     {
         Regs regs = {0x12, 0, 0x0, 0};
 
-        _CPUID(&regs);
+        result = _CPUID(&regs);
+        if (result)
+        {
+            return result;
+        }
 
         if (HAVE_SGX2(regs))
         {

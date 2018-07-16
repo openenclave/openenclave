@@ -83,7 +83,7 @@ oe_result_t oe_remove_vectored_exception_handler(
  * function and may be null.
  *
  * This function is implemented using the low-level oe_ecall() interface
- * where the function number is given by the **OE_FUNC_CALL_HOST** constant.
+ * where the function number is given by the **OE_OCALL_CALL_HOST** constant.
  *
  * Note that the return value of this function only indicates the success of
  * the call and not of the underlying function. The OCALL implementation must
