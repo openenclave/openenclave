@@ -3,8 +3,8 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
-#include <openenclave/internal/tests.h>
 #include <openenclave/internal/malloc.h>
+#include <openenclave/internal/tests.h>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -222,4 +222,3 @@ __attribute__((destructor)) void malloc_dump(void)
 {
     oe_malloc_dump();
 }
-
