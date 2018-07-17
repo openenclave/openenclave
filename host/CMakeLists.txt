@@ -11,7 +11,7 @@ set(PLATFORM_SRC
     crypto/rsa.c
     linux/aep.S
     linux/aesm.c
-    linux/cpuid_count.c
+    linux/cpuid.c
     linux/enter.S
     linux/entersim.S
     linux/exception.c
@@ -26,6 +26,7 @@ elseif (WIN32)
 set(PLATFORM_SRC
     windows/aep.asm
     windows/aesm.c
+    windows/cpuid.c
     windows/enter.asm
     windows/entersim.asm
     windows/exception.c

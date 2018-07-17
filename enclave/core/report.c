@@ -124,7 +124,7 @@ static oe_result_t _oe_get_sgx_target_info(sgx_target_info_t* targetInfo)
 
     OE_CHECK(
         oe_ocall(
-            OE_FUNC_GET_QE_TARGET_INFO,
+            OE_OCALL_GET_QE_TARGET_INFO,
             (uint64_t)args,
             NULL,
             OE_OCALL_FLAG_NOT_REENTRANT));
@@ -171,7 +171,7 @@ static oe_result_t _oe_get_quote(
 
     OE_CHECK(
         oe_ocall(
-            OE_FUNC_GET_QUOTE,
+            OE_OCALL_GET_QUOTE,
             (uint64_t)args,
             NULL,
             OE_OCALL_FLAG_NOT_REENTRANT));

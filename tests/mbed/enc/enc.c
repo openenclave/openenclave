@@ -17,7 +17,7 @@ int main(int argc, const char* argv[]);
 
 void _exit(int status)
 {
-    oe_ocall(OCALL_EXIT, status, NULL, 0);
+    oe_call_host("ocall_exit", (void*)(long)status);
     abort();
 }
 

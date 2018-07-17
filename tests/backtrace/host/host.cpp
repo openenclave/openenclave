@@ -20,7 +20,7 @@ static const char* _symbols[] = {
     "_HandleCallEnclave",
     "_HandleECall",
     "__oe_handle_main",
-    "oe_main",
+    "oe_enter",
 };
 
 int _num_symbols = OE_COUNTOF(_symbols);

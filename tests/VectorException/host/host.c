@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../../host/linux/cpuid_count.h"
 #include "../args.h"
+#include "../host/cpuid.h"
 
 #define SKIP_RETURN_CODE 2
 
@@ -43,23 +43,35 @@ void TestSigillHandling(oe_enclave_t* enclave)
     OE_TEST(args.ret == 0);
 
     // Verify that the enclave cached CPUID values match host's
+    // First, verify values being tested do not reach above max supported leaf.
+    uint32_t cpuidMaxlevel[OE_CPUID_REG_COUNT];
+    memset(cpuidMaxlevel, 0, sizeof(cpuidMaxlevel));
+    oe_get_cpuid(
+        0,
+        0,
+        &cpuidMaxlevel[OE_CPUID_RAX],
+        &cpuidMaxlevel[OE_CPUID_RBX],
+        &cpuidMaxlevel[OE_CPUID_RCX],
+        &cpuidMaxlevel[OE_CPUID_RDX]);
+
+    if (OE_CPUID_LEAF_COUNT - 1 > cpuidMaxlevel[OE_CPUID_RAX])
+        oe_put_err(
+            "Test machine does not support CPUID leaf %x expected by "
+            "TestSigillHandling.\n",
+            (OE_CPUID_LEAF_COUNT - 1));
+
+    // Check all values.
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
         uint32_t cpuidInfo[OE_CPUID_REG_COUNT];
         memset(cpuidInfo, 0, sizeof(cpuidInfo));
-        int supported = __get_cpuid_count(
+        oe_get_cpuid(
             i,
             0,
             &cpuidInfo[OE_CPUID_RAX],
             &cpuidInfo[OE_CPUID_RBX],
             &cpuidInfo[OE_CPUID_RCX],
             &cpuidInfo[OE_CPUID_RDX]);
-
-        if (!supported)
-            oe_put_err(
-                "Test machine does not support CPUID leaf %x expected by "
-                "TestSigillHandling.\n",
-                i);
 
         for (int j = 0; j < OE_CPUID_REG_COUNT; j++)
         {

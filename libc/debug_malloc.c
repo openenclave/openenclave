@@ -251,7 +251,7 @@ static void _malloc_dump_ocall(uint64_t size, void* addrs[], int num_addrs)
     oe_memcpy(args->addrs, addrs, sizeof(void*) * OE_COUNTOF(args->addrs));
     args->num_addrs = num_addrs;
 
-    if (oe_ocall(OE_FUNC_MALLOC_DUMP, (uint64_t)args, NULL, flags) != OE_OK)
+    if (oe_ocall(OE_OCALL_MALLOC_DUMP, (uint64_t)args, NULL, flags) != OE_OK)
         goto done;
 
 done:

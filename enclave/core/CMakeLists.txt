@@ -26,9 +26,9 @@ add_library(oecore STATIC
     string.c
     td.c
     thread.c
+    enter.S
     exit.S
     getkey.S
-    main.S
     )
 
 target_link_libraries(oecore PUBLIC oe_includes)
@@ -53,8 +53,7 @@ target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
 # addl link-options for enclave apps
 target_link_libraries(oecore INTERFACE
     -nostdlib -nodefaultlibs -nostartfiles
-    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,-eoe_main
-    )
+    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie)
 
 # jump.s must be optimized for the correct call-frame.
 set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
