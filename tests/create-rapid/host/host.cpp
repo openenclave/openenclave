@@ -90,6 +90,8 @@ static void _TestSimultaneous(
                 goto Cleanup;
             }
 
+            // This is an arbitrary test validation that the enclave
+            // call behaves this way
             OE_TEST(args == 2 * i);
         }
     }
