@@ -10,18 +10,22 @@
 ## Default run with no parameters builds with Debug build-type and for SGX1
 ## platform and will test in Simulator mode.
 ## Run this from the root of the source tree as sudo.
+## Please note that this script does not install any packages needed for build/test.
+## Please install all packages necessary for your test before invoking this script.
+## For CI runs, the Docker image will contain the necessary packages.
 ##
 ##====================================================================================
 if [ "$1" == "-h" ]; then
    echo "Script to fire OE build and test with specified platform/build-type/test mode" 
    echo "$0: "
-   echo "Script to fire OE build and test for specified build-type, platform & test mode"
-   echo " Usage:  sudo ./scripts/build-testall [-d]|[-p <platform-type>]|-b [build-type]"
-   echo "           -d or --disable_sim to Disable Simulator Test Mode"
-   echo "           -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
-   echo "           -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
-   echo "           -h Display usage and exit"
-   echo " Default is to build for SGX1 platform, Debug Build type & test in simulator mode"
+   echo " Usage: "
+   echo " ./scripts/test-build-config [-d]|[-p <platform-type>]|-b [build-type]"
+   echo "        -d or --disable_sim to Disable Simulator Test Mode"
+   echo "        -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
+   echo "        -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
+   echo "        -h Display usage and exit"
+   echo " Default is to build for SGX1 platform, Debug Build type & test in"
+   echo " simulator mode"
    echo ""
    exit 0
 fi
@@ -93,10 +97,10 @@ if [[ ${BUILD_TYPE} != "DEBUG" && ${BUILD_TYPE} != "RELEASE" && ${BUILD_TYPE} !=
    exit 1
 fi
 
-if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
-   sudo make -C prereqs USE_LIBSGX=1 NODOWNLOAD=1
-elif [ ${DISABLE_SIM} == 0 ]; then
-   sudo make -C prereqs
+#Delete the build directory if it exists. This allows calling this script iteratively
+#for multiple configurations for a platform.
+if [ ! -d "./build" ]; then
+  rm -rf ./build
 fi
 
 mkdir build

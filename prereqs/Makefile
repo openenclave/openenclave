@@ -3,9 +3,6 @@
 
 ifdef USE_LIBSGX
 	DIRS = sgx-driver ngsa
-	ifdef NODOWNLOAD
-		DIRS = ngsa
-	endif
 else
 	DIRS = packages isgx aesm
 endif
