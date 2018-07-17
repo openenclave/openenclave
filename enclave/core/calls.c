@@ -9,12 +9,12 @@
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/hostalloc.h>
+#include <openenclave/internal/malloc.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
-#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/print.h>
 
 #include "asmdefs.h"
 #include "cpuid.h"
@@ -287,7 +287,7 @@ static void _HandleECall(
     /* Insert ECALL context onto front of TD.ecalls list */
     Callsite callsite;
     uint64_t argOut = 0;
-    uint64_t LeakBytes=0;
+    uint64_t LeakBytes = 0;
 
     oe_memset(&callsite, 0, sizeof(callsite));
     TD_PushCallsite(td, &callsite);
@@ -333,10 +333,10 @@ static void _HandleECall(
         }
         case OE_FUNC_DESTRUCTOR:
         {
-	    LeakBytes=oe_print_malloc_stats();
+            LeakBytes = oe_print_malloc_stats();
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-	    if(LeakBytes)
-		oe_host_printf("\nLeak of %ld bytes detected \n",LeakBytes);
+            if (LeakBytes)
+                oe_host_printf("\nLeak of %ld bytes detected \n", LeakBytes);
 #endif
             /* Call functions installed by __cxa_atexit() and oe_atexit() */
             oe_call_at_exit_functions();

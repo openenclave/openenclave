@@ -167,7 +167,7 @@ done:
     return ret;
 }
 
-uint64_t oe_print_malloc_stats ( )
+uint64_t oe_print_malloc_stats()
 {
     oe_malloc_stats_t Stats;
     oe_get_malloc_stats(&Stats);
