@@ -16,7 +16,7 @@ extern "C" int main(int argc, const char* argv[]);
 
 extern "C" void _exit(int status)
 {
-    oe_ocall(OCALL_EXIT, status, NULL, 0);
+    oe_call_host("ocall_exit", (void*)(long)status);
     abort();
 }
 

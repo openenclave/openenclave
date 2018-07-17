@@ -1,0 +1,30 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+version: 2.0
+jobs:
+  # Pre-commit test
+  pre-commit-test:
+    docker:
+      - image: oeciteam/oetools:1.1
+        auth:
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_PASSWORD
+    working_directory: ~/Microsoft-OE
+    steps:
+      - checkout
+      # Pre-commit test - check license and formatting info
+      - run:
+          name: Pre-Commit Test
+          command:  |
+            ./scripts/pre-commit 
+
+  #========CI-Test==========# 
+          
+workflows:
+  version: 2
+  ci-test:
+    jobs:
+      # 1. Pre-Commit test
+      - pre-commit-test
+

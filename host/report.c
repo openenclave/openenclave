@@ -5,6 +5,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/report.h>
 #include <openenclave/internal/utils.h>
 #include "quote.h"
 
@@ -57,7 +58,7 @@ static oe_result_t _oe_get_local_report(
     arg->reportBuffer = reportBuffer;
     arg->reportBufferSize = reportBufferSize ? *reportBufferSize : 0;
 
-    OE_CHECK(oe_ecall(enclave, OE_FUNC_GET_REPORT, (uint64_t)arg, NULL));
+    OE_CHECK(oe_ecall(enclave, OE_ECALL_GET_REPORT, (uint64_t)arg, NULL));
     result = arg->result;
 
     if (reportBufferSize)
@@ -223,7 +224,7 @@ oe_result_t oe_verify_report(
     // parsed report since the parsed report will then contain pointers to
     // enclave memory. Instead, pass NULL as the optional parsedReport out
     // parameter and parse the report below if requested.
-    OE_CHECK(oe_ecall(enclave, OE_FUNC_VERIFY_REPORT, (uint64_t)&arg, NULL));
+    OE_CHECK(oe_ecall(enclave, OE_ECALL_VERIFY_REPORT, (uint64_t)&arg, NULL));
     OE_CHECK(arg.result);
 
     // Optionally return parsed report.

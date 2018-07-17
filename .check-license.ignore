@@ -19,7 +19,7 @@
 gdb.commands
 ./.git
 .gitignore
-./include/openenclave/bits/queue.h
+./include/openenclave/internal/queue.h
 LICENSE
 *.md
 ./.openenclaveroot

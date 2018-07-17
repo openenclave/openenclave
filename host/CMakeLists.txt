@@ -11,24 +11,27 @@ set(PLATFORM_SRC
     crypto/rsa.c
     linux/aep.S
     linux/aesm.c
-    linux/cpuid_count.c
+    linux/cpuid.c
     linux/enter.S
     linux/entersim.S
     linux/exception.c
     linux/hostthread.c
     linux/sgxioctl.c
     linux/sgxsign.c
+    linux/time.c
     sgxquoteprovider.c        
     )
 elseif (WIN32)
 set(PLATFORM_SRC
     windows/aep.asm
     windows/aesm.c
+    windows/cpuid.c
     windows/enter.asm
     windows/entersim.asm
     windows/exception.c
     windows/hostthread.c
     windows/sgxsign.c
+    windows/time.c
     )
 endif()
 
