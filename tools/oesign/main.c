@@ -62,9 +62,9 @@ static int _UpdateAndWriteSharedLib(
     {
         Elf64_Sym sym;
 
-        if (Elf64_FindSymbolByName(&elf, "oe_main", &sym) != 0)
+        if (Elf64_FindSymbolByName(&elf, "_start", &sym) != 0)
         {
-            Err("oe_main() undefined");
+            Err("entry point not found: _start()");
             goto done;
         }
 
