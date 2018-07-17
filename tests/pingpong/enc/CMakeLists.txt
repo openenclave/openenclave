@@ -11,4 +11,4 @@ add_enclave_executable(pingpong_enc sign.conf private.pem
     )
 
 target_include_directories(pingpong_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(pingpong_enc oeidl oelibc)
+target_link_libraries(pingpong_enc oeidl oeenclave)

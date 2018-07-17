@@ -204,7 +204,7 @@ bool TD_Initialized(TD* td)
 **         | GS page (contains TD)   |
 **         +-------------------------+
 **
-**     Note: the host register fields are pre-initialized by oe_main:
+**     Note: the host register fields are pre-initialized by oe_enter:
 **
 **==============================================================================
 */
@@ -214,7 +214,7 @@ void TD_Init(TD* td)
     /* If not already initialized */
     if (!TD_Initialized(td))
     {
-        /* TD.hostsp, TD.hostbp, and TD.retaddr already set by oe_main() */
+        /* TD.hostsp, TD.hostbp, and TD.retaddr already set by oe_enter() */
 
         /* Clear base structure */
         oe_memset(&td->base, 0, sizeof(td->base));

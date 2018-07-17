@@ -7,4 +7,4 @@ add_enclave_executable(sealKey_enc sign.conf private.pem
     )
 
 target_compile_features(sealKey_enc PRIVATE cxx_generalized_initializers)
-target_link_libraries(sealKey_enc oeenclave oelibcxx)
+target_link_libraries(sealKey_enc oelibcxx oeenclave)
