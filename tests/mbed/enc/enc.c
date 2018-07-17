@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <assert.h>
+#include <assert.h>
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -10,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include "../host/args.h"
 #include "../host/ocalls.h"
 
@@ -61,7 +61,7 @@ OE_ECALL void Test(Args* args)
 **
 ** oe_handle_verify_report():
 **
-**     Since liboeenclave is not linked, we must define a version of this 
+**     Since liboeenclave is not linked, we must define a version of this
 **     function here (since liboecore depends on it). This version asserts
 **     and aborts().
 **
