@@ -44,7 +44,11 @@ typedef struct _oe_malloc_stats
  */
 oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats);
 
-void oe_malloc_dump(void);
+/* Dump the list of in-use allocations */
+void oe_debug_malloc_dump(void);
+
+/* Check whether any memory is still in use (print and abort if so) */
+void oe_debug_malloc_check(void);
 
 OE_EXTERNC_END
 

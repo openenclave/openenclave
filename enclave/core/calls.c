@@ -13,6 +13,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/malloc.h>
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"
@@ -332,6 +333,11 @@ static void _HandleECall(
 
             /* Call all finalization functions */
             oe_call_fini_functions();
+
+#if !defined(NDEBUG)
+            /* If memory is still allocated, print a trace and abort */
+            oe_debug_malloc_check();
+#endif
             break;
         }
         case OE_FUNC_VIRTUAL_EXCEPTION_HANDLER:

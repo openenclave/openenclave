@@ -31,8 +31,8 @@
 **     or posix_memalign(). The padding ensures that the user data will have
 **     the desired alignmnent (in spite of the preceding header).
 **
-**     The oe_malloc_dump() function below prints a backtrace for each in-use
-**     memory block.
+**     The oe_debug_malloc_dump() function below prints a backtrace for each
+**     in-use memory block.
 **
 **==============================================================================
 */
@@ -378,7 +378,7 @@ int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
     return 0;
 }
 
-void oe_malloc_dump(void)
+void oe_debug_malloc_dump(void)
 {
     list_t* list = &_list;
 
@@ -394,13 +394,32 @@ void oe_malloc_dump(void)
             bytes += p->size;
         }
 
-        oe_host_printf(
-            "=== oe_malloc_dump(): %zu bytes in %zu blocks\n", bytes, blocks);
+        oe_host_printf("=== %s(): %zu bytes in %zu blocks\n",
+            __FUNCTION__, bytes, blocks);
 
         for (header_t* p = list->head; p; p = p->next)
             _malloc_dump_ocall(p->size, p->addrs, p->num_addrs);
 
-        oe_host_printf("\n\n");
+        oe_host_printf("\n");
     }
     oe_spin_unlock(&list->spin);
+}
+
+void oe_debug_malloc_check(void)
+{
+    list_t* list = &_list;
+    bool in_use = false;
+
+    oe_spin_lock(&list->spin);
+    {
+        if (list->head)
+            in_use = true;
+    }
+    oe_spin_unlock(&list->spin);
+
+    if (in_use)
+    {
+        oe_debug_malloc_dump();
+        oe_abort();
+    }
 }
