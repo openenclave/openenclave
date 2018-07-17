@@ -69,7 +69,9 @@ OE_ECALL void Test(Args* args)
         static const char* argv[] = {
             "test", NULL,
         };
+
         args->ret = main(1, argv);
         args->test = oe_host_strdup(__TEST__);
+        free(__environ);
     }
 }

@@ -52,9 +52,7 @@ int main(int argc, const char* argv[])
     TestStdcxx(enclave);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
-    {
         oe_put_err("oe_terminate_enclave(): result=%u", result);
-    }
 
     printf("=== passed all tests (%s)\n", argv[0]);
 

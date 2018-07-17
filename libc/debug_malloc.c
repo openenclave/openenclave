@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#if !defined(NDEBUG)
+
 #define USE_DL_PREFIX
 #include "debug_malloc.h"
 #include <errno.h>
@@ -25,7 +27,7 @@
 **
 **     Each block has the following layout.
 **
-**         [padding] [header] [user-data]
+**         [padding] [header] [user-data] [footer]
 **
 **     The padding is only used when a non-zero alignment is passed to memaign()
 **     or posix_memalign(). The padding ensures that the user data will have
@@ -181,14 +183,14 @@ typedef struct _list
 {
     header_t* head;
     header_t* tail;
-    oe_spinlock_t spin;
 } list_t;
 
-static list_t _list = {NULL, NULL, OE_SPINLOCK_INITIALIZER};
+static list_t _list = {NULL, NULL};
+static oe_spinlock_t _spin = OE_SPINLOCK_INITIALIZER;
 
 static void _list_insert(list_t* list, header_t* header)
 {
-    oe_spin_lock(&list->spin);
+    oe_spin_lock(&_spin);
     {
         if (list->head)
         {
@@ -205,12 +207,12 @@ static void _list_insert(list_t* list, header_t* header)
             list->tail = header;
         }
     }
-    oe_spin_unlock(&list->spin);
+    oe_spin_unlock(&_spin);
 }
 
 static void _list_remove(list_t* list, header_t* header)
 {
-    oe_spin_lock(&list->spin);
+    oe_spin_lock(&_spin);
     {
         if (header->next)
             header->next->prev = header->prev;
@@ -223,7 +225,7 @@ static void _list_remove(list_t* list, header_t* header)
         else if (header == list->tail)
             list->tail = header->prev;
     }
-    oe_spin_unlock(&list->spin);
+    oe_spin_unlock(&_spin);
 }
 
 OE_INLINE bool _check_multiply_overflow(size_t x, size_t y)
@@ -378,11 +380,13 @@ int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
     return 0;
 }
 
-void oe_debug_malloc_dump(void)
+static void _dump(bool need_lock)
 {
     list_t* list = &_list;
 
-    oe_spin_lock(&list->spin);
+    if (need_lock)
+        oe_spin_lock(&_spin);
+
     {
         size_t blocks = 0;
         size_t bytes = 0;
@@ -402,24 +406,37 @@ void oe_debug_malloc_dump(void)
 
         oe_host_printf("\n");
     }
-    oe_spin_unlock(&list->spin);
+
+    if (need_lock)
+        oe_spin_unlock(&_spin);
 }
 
-void oe_debug_malloc_check(void)
+void oe_debug_malloc_dump(void)
+{
+    _dump(true);
+}
+
+size_t oe_debug_malloc_check(void)
 {
     list_t* list = &_list;
-    bool in_use = false;
+    size_t count = 0;
 
-    oe_spin_lock(&list->spin);
+    oe_spin_lock(&_spin);
     {
-        if (list->head)
-            in_use = true;
-    }
-    oe_spin_unlock(&list->spin);
+        for (header_t* p = list->head; p; p = p->next)
+            count++;
 
-    if (in_use)
-    {
-        oe_debug_malloc_dump();
-        oe_abort();
+        if (count)
+        {
+            _dump(false);
+
+            for (header_t* p = list->head; p; p = p->next)
+                _check_block(p);
+        }
     }
+    oe_spin_unlock(&_spin);
+
+    return count;
 }
+
+#endif /* !defined(NDEBUG) */

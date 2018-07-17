@@ -929,3 +929,4 @@ bool TestCppException()
         BasicVerification() && EllipsisCatch() && NestedException() &&
         StackUnwind() && FunctionTryBlock());
 }
+

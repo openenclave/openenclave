@@ -304,8 +304,9 @@ static void _HandleECall(
             oe_call_fini_functions();
 
 #if !defined(NDEBUG)
-            /* If memory is still allocated, print a trace and abort */
-            oe_debug_malloc_check();
+            /* If memory still allocated, print a trace and return an error */
+            if (oe_debug_malloc_check() != 0)
+                result = OE_MEMORY_LEAK;
 #endif
             break;
         }
