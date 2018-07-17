@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(create_errors_enc sign.conf private.pem
-    enc.c
+add_enclave_executable(create_rapid_enc sign.conf private.pem
+    enc.cpp
     )
-target_link_libraries(create_errors_enc oeenclave)
+target_link_libraries(create_rapid_enc oeenclave)
