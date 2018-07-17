@@ -43,7 +43,7 @@ typedef struct _oe_malloc_stats
  * @return -1 failure
  */
 oe_result_t oe_get_malloc_stats(oe_malloc_stats_t* stats);
-
+uint64_t oe_print_malloc_stats(void);
 OE_EXTERNC_END
 
 #endif /* _OE_MALLOC_H */
