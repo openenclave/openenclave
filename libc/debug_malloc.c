@@ -46,14 +46,16 @@
 */
 
 #define MAX_ADDRESSES OE_MALLOC_DUMP_ARGS_MAX_ADDRESSES
-#define HEADER_MAGIC 0x185f0447c6f5440f
+#define HEADER_MAGIC1 0x185f0447c6f5440f
+#define HEADER_MAGIC2 0x56cfbed5df804061
+#define FOOTER_MAGIC 0x8bb6dcd8f4724bc7
 
 typedef struct header header_t;
 
 struct header
 {
-    /* Contains HEADER_MAGIC */
-    uint64_t magic;
+    /* Contains HEADER_MAGIC1 */
+    uint64_t magic1;
 
     /* Headers are kept on a doubly-linked list */
     header_t* next;
@@ -69,28 +71,75 @@ struct header
     void* addrs[MAX_ADDRESSES];
     uint64_t num_addrs;
 
+    /* Contains HEADER_MAGIC1 */
+    uint64_t magic2;
+
     /* User data */
     uint8_t data[];
 };
 
-OE_STATIC_ASSERT(sizeof(header_t) == 48 + (MAX_ADDRESSES * sizeof(uint64_t)));
+OE_STATIC_ASSERT(sizeof(header_t) == 56 + (MAX_ADDRESSES * sizeof(uint64_t)));
 
-OE_ALWAYS_INLINE
-void _init_header(header_t* header, size_t alignment, size_t size)
+typedef struct footer footer_t;
+
+struct footer
 {
-    /* Initialize the header */
-    header->magic = HEADER_MAGIC;
-    header->next = NULL;
-    header->prev = NULL;
-    header->alignment = alignment;
-    header->size = size;
-    header->num_addrs = oe_backtrace(header->addrs, MAX_ADDRESSES);
-}
+    /* Contains FOOTER_MAGIC */
+    uint64_t magic;
+};
+
+OE_STATIC_ASSERT(sizeof(footer_t) == sizeof(uint64_t));
 
 /* Get a pointer to the header from the user data */
 OE_INLINE header_t* _get_header(void* ptr)
 {
     return (header_t*)((uint8_t*)ptr - sizeof(header_t));
+}
+
+/* Get a pointer to the footer from the user data */
+OE_INLINE footer_t* _get_footer(void* ptr)
+{
+    header_t* header = _get_header(ptr);
+    size_t rsize = oe_round_up_to_multiple(header->size, sizeof(uint64_t));
+    return (footer_t*)((uint8_t*)ptr + rsize);
+}
+
+OE_ALWAYS_INLINE
+void _init_block(header_t* header, size_t alignment, size_t size)
+{
+    /* Initialize the header */
+    header->magic1 = HEADER_MAGIC1;
+    header->next = NULL;
+    header->prev = NULL;
+    header->alignment = alignment;
+    header->size = size;
+    header->num_addrs = oe_backtrace(header->addrs, MAX_ADDRESSES);
+    header->magic2 = HEADER_MAGIC2;
+
+    /* Initialize the footer */
+    _get_footer(header->data)->magic = FOOTER_MAGIC;
+}
+
+/* Assert and abort if magic numbers are wrong */
+static void _check_block(header_t* header)
+{
+    if (header->magic1 != HEADER_MAGIC1)
+    {
+        oe_assert("_check_block() panic" == NULL);
+        oe_abort();
+    }
+
+    if (header->magic2 != HEADER_MAGIC2)
+    {
+        oe_assert("_check_block() panic" == NULL);
+        oe_abort();
+    }
+
+    if (_get_footer(header->data)->magic != FOOTER_MAGIC)
+    {
+        oe_assert("_check_block() panic" == NULL);
+        oe_abort();
+    }
 }
 
 /* Calculate the padding size for a block with this aligment */
@@ -110,21 +159,21 @@ OE_INLINE void* _get_block_address(void* ptr)
     return (uint8_t*)ptr - sizeof(header_t) - padding_size;
 }
 
-OE_INLINE size_t _get_block_size(void* ptr)
+OE_INLINE size_t _calculate_block_size(size_t alignment, size_t size)
 {
-    header_t* header = _get_header(ptr);
-    const size_t padding_size = _get_padding_size(header->alignment);
-    return padding_size + sizeof(header_t) + header->size;
+    size_t r = 0;
+    r += _get_padding_size(alignment);
+    r += sizeof(header_t);
+    r += oe_round_up_to_multiple(size, sizeof(uint64_t));
+    r += sizeof(footer_t);
+
+    return r;
 }
 
-/* Assert and abort header's magic number is wrong */
-OE_INLINE void _check_header(header_t* header)
+OE_INLINE size_t _get_block_size(void* ptr)
 {
-    if (header->magic != HEADER_MAGIC)
-    {
-        oe_assert("_check_header() panic" == NULL);
-        oe_abort();
-    }
+    const header_t* header = _get_header(ptr);
+    return _calculate_block_size(header->alignment, header->size);
 }
 
 /* Doubly-linked list of headers */
@@ -222,7 +271,7 @@ done:
 void* oe_debug_malloc(size_t size)
 {
     void* block;
-    const size_t block_size = sizeof(header_t) + size;
+    const size_t block_size = _calculate_block_size(0, size);
 
     if (!(block = dlmalloc(block_size)))
         return NULL;
@@ -231,8 +280,8 @@ void* oe_debug_malloc(size_t size)
     oe_memset(block, 0xAA, block_size);
 
     header_t* header = (header_t*)block;
-    _init_header(header, 0, size);
-    _check_header(header);
+    _init_block(header, 0, size);
+    _check_block(header);
     _list_insert(&_list, header);
 
     return header->data;
@@ -243,7 +292,7 @@ void oe_debug_free(void* ptr)
     if (ptr)
     {
         header_t* header = _get_header(ptr);
-        _check_header(header);
+        _check_block(header);
         _list_remove(&_list, header);
 
         /* Fill the whole block with 0xDD (Deallocated) bytes */
@@ -279,7 +328,7 @@ void* oe_debug_realloc(void* ptr, size_t size)
         header_t* header = _get_header(ptr);
         void* new_ptr;
 
-        _check_header(header);
+        _check_block(header);
 
         if (!(new_ptr = oe_debug_malloc(size)))
             return NULL;
@@ -302,7 +351,7 @@ void* oe_debug_realloc(void* ptr, size_t size)
 void* oe_debug_memalign(size_t alignment, size_t size)
 {
     const size_t padding_size = _get_padding_size(alignment);
-    const size_t block_size = padding_size + sizeof(header_t) + size;
+    const size_t block_size = _calculate_block_size(alignment, size);
     void* block;
     header_t* header;
 
@@ -311,8 +360,8 @@ void* oe_debug_memalign(size_t alignment, size_t size)
 
     header = (header_t*)((uint8_t*)block + padding_size);
 
-    _init_header(header, alignment, size);
-    _check_header(header);
+    _init_block(header, alignment, size);
+    _check_block(header);
     _list_insert(&_list, header);
 
     return header->data;
