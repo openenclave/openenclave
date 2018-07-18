@@ -15,8 +15,6 @@
 #include <openenclave/internal/utils.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
 
-#define printf oe_host_printf
-
 /*
 **==============================================================================
 **
