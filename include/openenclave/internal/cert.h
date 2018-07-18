@@ -256,47 +256,6 @@ oe_result_t oe_cert_chain_get_leaf_cert(
     oe_cert_t* cert);
 
 /**
- * Gets the number of certificate extensions.
- *
- * This function gets the number of X.509 certificate extensions, possibly
- * zero.
- *
- * @param cert[in] the certificate.
- * @param count[out] the number of extensions.
- *
- * @return OE_OK success.
- * @return OE_INVALID_PARAMETER a parameter is invalid.
- * @return OE_FAILURE general failure.
- */
-oe_result_t oe_cert_extension_count(const oe_cert_t* cert, size_t* count);
-
-/**
- * Gets information about the X.509 certificate extension with the given index.
- *
- * This function gets information about the X.509 certificate extension with
- * the given index, obtaining the OID, data, and data size of the extension.
- *
- * @param cert[in] the certificate.
- * @param index[in] the index of the extension.
- * @param oid[out] the OID of the extension.
- * @param data[out] the data of the extension.
- * @param size[in,out] the data buffer size (in) or the actual data size (out).
- *
- * @return OE_OK success.
- * @return OE_INVALID_PARAMETER a parameter is invalid.
- * @return OE_OUT_OF_BOUNDS the index parameter is out of bounds.
- * @return OE_BUFFER_TOO_SMALL the data buffer is too small and the **size**
- *         parameter contains the required size.
- * @return OE_FAILURE general failure.
- */
-oe_result_t oe_cert_get_extension(
-    const oe_cert_t* cert,
-    size_t index,
-    oe_oid_string_t* oid,
-    uint8_t* data,
-    size_t* size);
-
-/**
  * Gets information about the X.509 certificate extension with the given OID.
  *
  * This function gets information about the X.509 certificate extension with

@@ -325,21 +325,6 @@ typedef struct _GetExtensionCountArgs
     size_t* count;
 } GetExtensionCountArgs;
 
-static bool _GetExtensionCount(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args_)
-{
-    GetExtensionCountArgs* args = (GetExtensionCountArgs*)args_;
-
-    (*args->count)++;
-
-    return false;
-}
-
 typedef struct _GetExtensionArgs
 {
     oe_result_t result;
@@ -348,42 +333,6 @@ typedef struct _GetExtensionArgs
     uint8_t* data;
     size_t* size;
 } GetExtensionArgs;
-
-static bool _GetExtension(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args_)
-{
-    GetExtensionArgs* args = (GetExtensionArgs*)args_;
-
-    if (args->index == index)
-    {
-        /* If buffer is too small */
-        if (size > *args->size)
-        {
-            *args->size = size;
-            args->result = OE_BUFFER_TOO_SMALL;
-            return true;
-        }
-
-        /* Copy the OID to caller's buffer */
-        oe_strlcpy(args->oid->buf, oid, sizeof(oe_oid_string_t));
-
-        /* Copy to caller's buffer */
-        if (args->data)
-            oe_memcpy(args->data, data, *args->size);
-
-        *args->size = size;
-        args->result = OE_OK;
-        return true;
-    }
-
-    /* Keep parsing */
-    return false;
-}
 
 /* Parse the extensions on an MBEDTLS X509 certificate */
 static int _parse_extensions(
@@ -810,33 +759,6 @@ done:
     return result;
 }
 
-oe_result_t oe_cert_extension_count(const oe_cert_t* cert, size_t* count)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    const Cert* impl = (const Cert*)cert;
-
-    if (count)
-        *count = 0;
-
-    /* Reject invalid parameters */
-    if (!_CertIsValid(impl) || !count)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the extension count using a callback */
-    {
-        GetExtensionCountArgs args;
-        args.count = count;
-
-        if (_parse_extensions(impl->cert, _GetExtensionCount, &args) != 0)
-            OE_RAISE(OE_FAILURE);
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 oe_result_t oe_cert_chain_get_root_cert(
     const oe_cert_chain_t* chain,
     oe_cert_t* cert)
@@ -848,40 +770,6 @@ oe_result_t oe_cert_chain_get_root_cert(
     OE_CHECK(oe_cert_chain_get_cert(chain, length - 1, cert));
 
     result = OE_OK;
-
-done:
-    return result;
-}
-
-oe_result_t oe_cert_get_extension(
-    const oe_cert_t* cert,
-    size_t index,
-    oe_oid_string_t* oid,
-    uint8_t* data,
-    size_t* size)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    const Cert* impl = (const Cert*)cert;
-
-    /* Reject invalid parameters */
-    if (!_CertIsValid(impl) || !oid || !size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Find the extension with the given OID using a callback */
-    {
-        GetExtensionArgs args;
-        args.result = OE_OUT_OF_BOUNDS;
-        args.index = index;
-        args.oid = oid;
-        args.data = data;
-        args.size = size;
-
-        if (_parse_extensions(impl->cert, _GetExtension, &args) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        result = args.result;
-        goto done;
-    }
 
 done:
     return result;

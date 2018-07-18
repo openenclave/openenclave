@@ -653,65 +653,6 @@ static void _TestCertChainRead()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-/* This utility function generates extension definitions for testing */
-oe_result_t DumpExtensions(const char* certData, size_t certSize)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_cert_t cert;
-    size_t count;
-    uint8_t data[4096];
-    size_t size = sizeof(data);
-
-    OE_CHECK(oe_cert_read_pem(&cert, certData, certSize));
-
-    /* Get the number of extensions */
-    OE_CHECK(oe_cert_extension_count(&cert, &count));
-
-    /* Find the extension with this OID */
-    for (size_t i = 0; i < count; i++)
-    {
-        oe_oid_string_t extOid;
-        size_t tmpSize = size;
-        OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
-
-        printf("static const uint8_t _extensions_data%zu[] =\n", i);
-        printf("{\n");
-
-        for (size_t i = 0; i < tmpSize; i++)
-        {
-            printf("    0x%02x,\n", data[i]);
-        }
-
-        printf("};\n\n");
-    }
-
-    printf("static const Extension _extensions[] =\n");
-    printf("{\n");
-
-    /* Find the extension with this OID */
-    for (size_t i = 0; i < count; i++)
-    {
-        oe_oid_string_t extOid;
-        size_t tmpSize = size;
-        OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
-
-        printf("    {\n");
-        printf("        .oid = \"%s\",\n", extOid.buf);
-        printf("        .size = %zu,\n", tmpSize);
-        printf("        .data = _extensions_data%zu,\n", i);
-        printf("    },\n");
-    }
-
-    printf("};\n");
-
-    OE_CHECK(oe_cert_free(&cert));
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 typedef struct _Extension
 {
     const char* oid;
@@ -812,29 +753,6 @@ static void _TestCertExtensions(
 
     OE_TEST(oe_cert_read_pem(&cert, certData, certSize) == OE_OK);
 
-    /* Test getting extensions by index */
-    {
-        size_t count;
-
-        OE_TEST(oe_cert_extension_count(&cert, &count) == OE_OK);
-        OE_TEST(count == extensionsCount);
-
-        for (size_t i = 0; i < extensionsCount; i++)
-        {
-            const Extension* ext = &extensions[i];
-            oe_oid_string_t oid;
-            uint8_t data[4096];
-            size_t size = sizeof(data);
-
-            OE_TEST(
-                oe_cert_get_extension(&cert, i, &oid, data, &size) == OE_OK);
-
-            OE_TEST(strcmp(oid.buf, ext->oid) == 0);
-            OE_TEST(size == ext->size);
-            OE_TEST(memcmp(data, ext->data, size) == 0);
-        }
-    }
-
     /* Test finding extensions by OID */
     {
         for (size_t i = 0; i < extensionsCount; i++)
@@ -875,17 +793,6 @@ static void _TestCertExtensions(
             OE_TEST(r == OE_OK);
         else
             OE_TEST(r == OE_NOT_FOUND);
-    }
-
-    /* Test for out of bounds */
-    {
-        oe_result_t r;
-        oe_oid_string_t oid;
-        uint8_t data[4096];
-        size_t size = sizeof(data);
-
-        r = oe_cert_get_extension(&cert, extensionsCount, &oid, data, &size);
-        OE_TEST(r == OE_OUT_OF_BOUNDS);
     }
 
     oe_cert_free(&cert);
