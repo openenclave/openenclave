@@ -28,7 +28,7 @@
 **         (3) Assuming blocks are zero filled (fills new blocks with 0xAA).
 **         (3) Use of free memory (fills freed blocks with 0xDD).
 **
-**     This allocator keeps in-use blocks on a linked list. Each block has the 
+**     This allocator keeps in-use blocks on a linked list. Each block has the
 **     following layout.
 **
 **         [padding] [header] [user-data] [footer]
