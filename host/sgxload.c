@@ -714,3 +714,38 @@ done:
 
     return result;
 }
+
+oe_result_t oe_sgx_delete_enclave(uint64_t enclaveAddr, uint64_t enclaveSize)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    /* enclaveSize is optional and may be zero */
+    if (!enclaveAddr)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+#if defined(OE_USE_LIBSGX)
+    {
+        OE_UNUSED(enclaveSize);
+        uint32_t enclaveError = 0;
+        if (!enclave_delete((void*)enclaveAddr, &enclaveError))
+            OE_RAISE(OE_PLATFORM_ERROR);
+        if (enclaveError != 0)
+            OE_RAISE(OE_PLATFORM_ERROR);
+    }
+#elif defined(__linux__)
+
+    munmap((void*)enclaveAddr, enclaveSize);
+
+#elif defined(_WIN32)
+
+    OE_UNUSED(enclaveSize);
+    VirtualFree((void*)enclaveAddr, 0, MEM_RELEASE);
+
+#endif
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}

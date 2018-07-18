@@ -1446,7 +1446,6 @@ done:
 oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t i;
 
     /* Check parameters */
     if (!enclave || enclave->magic != ENCLAVE_MAGIC)
@@ -1459,48 +1458,52 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     _oe_notify_gdb_enclave_termination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
+    /* Once the enclave destructor has been invoked, the enclave memory
+     * and data structures are freed on a best effort basis from here on */
+
     /* Remove this enclave from the global list. */
     _oe_remove_enclave_instance(enclave);
 
     /* Clear the magic number */
     enclave->magic = 0;
 
-/* Unmap the enclave memory */
-#if defined(__linux__)
-    munmap((void*)enclave->addr, enclave->size);
-#elif defined(_WIN32)
-    VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
-#endif
-
-    /* Release the enclave->ecalls[] array */
+    oe_mutex_unlock(&enclave->lock);
     {
-        for (i = 0; i < enclave->num_ecalls; i++)
-            free(enclave->ecalls[i].name);
+        /* Unmap the enclave memory region.
+         * Track failures reported by the platform, but do not exit early */
+        result = oe_sgx_delete_enclave(enclave->addr, enclave->size);
 
-        free(enclave->ecalls);
-    }
+        /* Release the enclave->ecalls[] array */
+        {
+            for (size_t i = 0; i < enclave->num_ecalls; i++)
+                free(enclave->ecalls[i].name);
+
+            free(enclave->ecalls);
+        }
 
 #if defined(_WIN32)
 
-    /* Release Windows events created during enclave creation */
-    for (size_t i = 0; i < enclave->num_bindings; i++)
-    {
-        ThreadBinding* binding = &enclave->bindings[i];
-        CloseHandle(binding->event.handle);
-    }
+        /* Release Windows events created during enclave creation */
+        for (size_t i = 0; i < enclave->num_bindings; i++)
+        {
+            ThreadBinding* binding = &enclave->bindings[i];
+            CloseHandle(binding->event.handle);
+        }
 
 #endif
 
-    /* Free the path name of the enclave image file */
-    free(enclave->path);
+        /* Free the path name of the enclave image file */
+        free(enclave->path);
+    }
+    /* Release and destroy the mutex object */
+    oe_mutex_unlock(&enclave->lock);
+    oe_mutex_destroy(&enclave->lock);
 
     /* Clear the contents of the enclave structure */
     memset(enclave, 0x00, sizeof(oe_enclave_t));
 
     /* Free the enclave structure */
     free(enclave);
-
-    result = OE_OK;
 
 done:
 
