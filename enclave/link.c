@@ -18,8 +18,7 @@
 const void* oe_link_enclave(void)
 {
     static const void* symbols[] = {
-        oe_handle_verify_report,
-        oe_debug_malloc_check,
+        oe_handle_verify_report, oe_debug_malloc_check,
     };
 
     return symbols;

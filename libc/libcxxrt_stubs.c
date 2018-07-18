@@ -22,22 +22,22 @@ int __libcxxrt_sched_yield(void)
     return -1;
 }
 
-void *__libcxxrt_malloc(size_t size)
+void* __libcxxrt_malloc(size_t size)
 {
     return dlmalloc(size);
 }
 
-void __libcxxrt_free(void *ptr)
+void __libcxxrt_free(void* ptr)
 {
     return dlfree(ptr);
 }
 
-void *__libcxxrt_calloc(size_t nmemb, size_t size)
+void* __libcxxrt_calloc(size_t nmemb, size_t size)
 {
     return dlcalloc(nmemb, size);
 }
 
-void *__libcxxrt_realloc(void *ptr, size_t size)
+void* __libcxxrt_realloc(void* ptr, size_t size)
 {
     return dlrealloc(ptr, size);
 }

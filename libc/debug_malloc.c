@@ -398,8 +398,8 @@ static void _dump(bool need_lock)
             bytes += p->size;
         }
 
-        oe_host_printf("=== %s(): %zu bytes in %zu blocks\n",
-            __FUNCTION__, bytes, blocks);
+        oe_host_printf(
+            "=== %s(): %zu bytes in %zu blocks\n", __FUNCTION__, bytes, blocks);
 
         for (header_t* p = list->head; p; p = p->next)
             _malloc_dump_ocall(p->size, p->addrs, p->num_addrs);

@@ -9,12 +9,12 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/jump.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/malloc.h>
 #include "../report.h"
 #include "asmdefs.h"
 #include "cpuid.h"
