@@ -393,9 +393,11 @@ static oe_result_t _HandleOCALL(
             HandleNanosleep(argIn);
             break;
 
+#if defined(OE_USE_DEBUG_MALLOC)
         case OE_OCALL_MALLOC_DUMP:
             handle_malloc_dump(enclave, argIn);
             break;
+#endif
 
         case OE_ECALL_DESTRUCTOR:
         case OE_ECALL_CALL_ENCLAVE:

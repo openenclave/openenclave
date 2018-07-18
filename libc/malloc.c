@@ -64,20 +64,20 @@ static int __sched_yield(void)
 #if defined(OE_ENABLE_MALLOC_WRAPPERS)
 
 /* Choose release mode or debug mode allocation functions */
-#ifdef NDEBUG
-#define MALLOC dlmalloc
-#define CALLOC dlcalloc
-#define REALLOC dlrealloc
-#define MEMALIGN dlmemalign
-#define POSIX_MEMALIGN dlposix_memalign
-#define FREE dlfree
-#else
+#if defined(OE_USE_DEBUG_MALLOC)
 #define MALLOC oe_debug_malloc
 #define CALLOC oe_debug_calloc
 #define REALLOC oe_debug_realloc
 #define MEMALIGN oe_debug_memalign
 #define POSIX_MEMALIGN oe_debug_posix_memalign
 #define FREE oe_debug_free
+#else
+#define MALLOC dlmalloc
+#define CALLOC dlcalloc
+#define REALLOC dlrealloc
+#define MEMALIGN dlmemalign
+#define POSIX_MEMALIGN dlposix_memalign
+#define FREE dlfree
 #endif
 
 static oe_allocation_failure_callback_t _failureCallback;

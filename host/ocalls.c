@@ -173,6 +173,7 @@ void HandleGetQETargetInfo(uint64_t argIn)
     args->result = sgx_get_qetarget_info(&args->targetInfo);
 }
 
+#if defined(OE_USE_DEBUG_MALLOC)
 void handle_malloc_dump(oe_enclave_t* enclave, uint64_t arg)
 {
     oe_malloc_dump_args_t* args = (oe_malloc_dump_args_t*)arg;
@@ -196,3 +197,4 @@ done:
     if (syms)
         free(syms);
 }
+#endif

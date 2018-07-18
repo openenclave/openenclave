@@ -559,6 +559,10 @@ target_compile_options(oelibc PRIVATE
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
 
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
+
 # this project (and is dependents) require the enclave headers+lib
 target_link_libraries(oelibc oecore)
 

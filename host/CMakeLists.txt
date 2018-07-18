@@ -97,6 +97,10 @@ target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS}
 target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
 endif()
 
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
+
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)
 if(UNIX)

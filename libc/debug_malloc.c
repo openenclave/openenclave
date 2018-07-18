@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if !defined(NDEBUG)
+#if defined(OE_USE_DEBUG_MALLOC)
 
 #define USE_DL_PREFIX
 #include "debug_malloc.h"
@@ -437,4 +437,4 @@ size_t oe_debug_malloc_check(void)
     return count;
 }
 
-#endif /* !defined(NDEBUG) */
+#endif /* defined(OE_USE_DEBUG_MALLOC) */
