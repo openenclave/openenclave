@@ -14,21 +14,12 @@
 
 const char* arg0;
 
-static const char* _symbols[] = {
-    "GetBacktrace",
-    "Test",
-    "_HandleCallEnclave",
-    "_HandleECall",
-    "__oe_handle_main",
-    "oe_enter",
-};
-
-int _num_symbols = OE_COUNTOF(_symbols);
-
 static void _print_backtrace(
     oe_enclave_t* enclave,
     void* const* buffer,
-    int size)
+    int size,
+    int num_expected_symbols,
+    const char* expected_symbols[])
 {
     char** symbols = oe_backtrace_symbols(enclave, buffer, size);
     OE_TEST(symbols != NULL);
@@ -38,10 +29,10 @@ static void _print_backtrace(
     for (int i = 0; i < size; i++)
         printf("%s(): (%p)\n", symbols[i], buffer[i]);
 
-    OE_TEST(size == _num_symbols);
+    OE_TEST(size == num_expected_symbols);
 
     for (int i = 0; i < size; i++)
-        OE_TEST(strcmp(_symbols[i], symbols[i]) == 0);
+        OE_TEST(strcmp(expected_symbols[i], symbols[i]) == 0);
 
     free(symbols);
 }
@@ -63,17 +54,57 @@ int main(int argc, const char* argv[])
     r = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave);
     OE_TEST(r == OE_OK);
 
-    Args args;
-    args.size = 0;
-    r = oe_call_enclave(enclave, "Test", &args);
-    OE_TEST(r == OE_OK);
-
-    _print_backtrace(enclave, args.buffer, args.size);
-
-    if (args.size <= 0)
+    /* Test() */
     {
-        fprintf(stderr, "%s: backtrace failed\n", argv[0]);
-        exit(1);
+        static const char* syms[] = {
+            "GetBacktrace",
+            "Test",
+            "_HandleCallEnclave",
+            "_HandleECall",
+            "__oe_handle_main",
+            "oe_enter",
+        };
+        int nsyms = OE_COUNTOF(syms);
+        Args args;
+        args.size = 0;
+        r = oe_call_enclave(enclave, "Test", &args);
+        OE_TEST(r == OE_OK);
+
+        _print_backtrace(enclave, args.buffer, args.size, nsyms, syms);
+
+        if (args.size <= 0)
+        {
+            fprintf(stderr, "%s: backtrace failed\n", argv[0]);
+            exit(1);
+        }
+    }
+
+    /* TestUnwind() */
+    {
+        static const char* syms[] = {
+            "func4",
+            "func3",
+            "func2",
+            "func1",
+            "TestUnwind",
+            "_HandleCallEnclave",
+            "_HandleECall",
+            "__oe_handle_main",
+            "oe_enter",
+        };
+        int nsyms = OE_COUNTOF(syms);
+        Args args;
+        args.size = 0;
+        r = oe_call_enclave(enclave, "TestUnwind", &args);
+        OE_TEST(r == OE_OK);
+
+        _print_backtrace(enclave, args.buffer, args.size, nsyms, syms);
+
+        if (args.size <= 0)
+        {
+            fprintf(stderr, "%s: backtrace failed\n", argv[0]);
+            exit(1);
+        }
     }
 
     r = oe_terminate_enclave(enclave);

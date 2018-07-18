@@ -32,8 +32,10 @@ char** oe_backtrace_symbols(
 
     /* Determine total memory requirements */
     {
+        /* Calculate space for the array of string pointers */
         malloc_size = size * sizeof(char*);
 
+        /* Calculate space for each string */
         for (int i = 0; i < size; i++)
         {
             const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
@@ -46,7 +48,7 @@ char** oe_backtrace_symbols(
         }
     }
 
-    /* Allocate the array point sting pointer followed by the strings */
+    /* Allocate the array of string pointers, followed by the strings */
     if (!(ptr = (char*)malloc(malloc_size)))
         goto done;
 

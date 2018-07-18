@@ -3,6 +3,6 @@
 
 include(add_enclave_executable)
 
-add_enclave_executable(backtrace_enc sign.conf private.pem enc.c)
+add_enclave_executable(backtrace_enc sign.conf private.pem enc.cpp)
 
-target_link_libraries(backtrace_enc oeenclave)
+target_link_libraries(backtrace_enc oelibcxx oeenclave)

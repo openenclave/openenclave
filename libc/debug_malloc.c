@@ -105,6 +105,7 @@ OE_INLINE footer_t* _get_footer(void* ptr)
     return (footer_t*)((uint8_t*)ptr + rsize);
 }
 
+/* Inline so the function name will not appear in the backtrace */
 OE_ALWAYS_INLINE
 void _init_block(header_t* header, size_t alignment, size_t size)
 {
