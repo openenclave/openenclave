@@ -21,19 +21,19 @@
 **
 ** Debug allocator:
 **
-**     This allocator keeps in-use blocks on a linked list, so that memory
-**     leaks can be detected by dumping this list before program exit.
+**     This allocator checks for the following memory errors.
 **
-**     Each block has the following layout.
+**         (1) Leaked blocks on program exit.
+**         (2) Memory overwrites just before/after the block.
+**         (3) Assuming blocks are zero filled (fills new blocks with 0xAA).
+**         (3) Use of free memory (fills freed blocks with 0xDD).
+**
+**     This allocator keeps in-use blocks on a linked list. Each block has the 
+**     following layout.
 **
 **         [padding] [header] [user-data] [footer]
 **
-**     The padding is only used when a non-zero alignment is passed to memaign()
-**     or posix_memalign(). The padding ensures that the user data will have
-**     the desired alignmnent (in spite of the preceding header).
-**
-**     The oe_debug_malloc_dump() function below prints a backtrace for each
-**     in-use memory block.
+**     The padding is applied by memalign() when the aligment is non-zero.
 **
 **==============================================================================
 */
@@ -262,6 +262,37 @@ done:
         oe_host_free(args);
 }
 
+static void _dump(bool need_lock)
+{
+    list_t* list = &_list;
+
+    if (need_lock)
+        oe_spin_lock(&_spin);
+
+    {
+        size_t blocks = 0;
+        size_t bytes = 0;
+
+        /* Count bytes allocated and blocks still in use */
+        for (header_t* p = list->head; p; p = p->next)
+        {
+            blocks++;
+            bytes += p->size;
+        }
+
+        oe_host_printf(
+            "=== %s(): %zu bytes in %zu blocks\n", __FUNCTION__, bytes, blocks);
+
+        for (header_t* p = list->head; p; p = p->next)
+            _malloc_dump_ocall(p->size, p->addrs, p->num_addrs);
+
+        oe_host_printf("\n");
+    }
+
+    if (need_lock)
+        oe_spin_unlock(&_spin);
+}
+
 /*
 **==============================================================================
 **
@@ -382,37 +413,6 @@ int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
         return ENOMEM;
 
     return 0;
-}
-
-static void _dump(bool need_lock)
-{
-    list_t* list = &_list;
-
-    if (need_lock)
-        oe_spin_lock(&_spin);
-
-    {
-        size_t blocks = 0;
-        size_t bytes = 0;
-
-        /* Count bytes allocated and blocks still in use */
-        for (header_t* p = list->head; p; p = p->next)
-        {
-            blocks++;
-            bytes += p->size;
-        }
-
-        oe_host_printf(
-            "=== %s(): %zu bytes in %zu blocks\n", __FUNCTION__, bytes, blocks);
-
-        for (header_t* p = list->head; p; p = p->next)
-            _malloc_dump_ocall(p->size, p->addrs, p->num_addrs);
-
-        oe_host_printf("\n");
-    }
-
-    if (need_lock)
-        oe_spin_unlock(&_spin);
 }
 
 void oe_debug_malloc_dump(void)
