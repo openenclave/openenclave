@@ -330,6 +330,10 @@ void* oe_debug_realloc(void* ptr, size_t size)
 
         _check_block(header);
 
+        /* If the size is the same, just return the pointer */
+        if (header->size == size)
+            return ptr;
+
         if (!(new_ptr = oe_debug_malloc(size)))
             return NULL;
 
