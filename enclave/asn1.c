@@ -134,7 +134,7 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t length;
-    oe_asn1_tag_t tag = {MBEDTLS_ASN1_OID};
+    oe_asn1_tag_t tag = MBEDTLS_ASN1_OID;
 
     if (oid)
         oe_memset(oid, 0, sizeof(oe_oid_string_t));
@@ -177,7 +177,7 @@ oe_result_t oe_asn1_get_octet_string(
     size_t* length)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const uint8_t tag = MBEDTLS_ASN1_OCTET_STRING;
+    const oe_asn1_tag_t tag = MBEDTLS_ASN1_OCTET_STRING;
 
     if (length)
         *length = 0;
