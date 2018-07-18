@@ -15,6 +15,9 @@ char** oe_backtrace_symbols(
     char** ret = NULL;
     Elf64 elf = ELF64_INIT;
     bool elf_loaded = false;
+    size_t malloc_size = 0;
+    const char unknown[] = "<unknown>";
+    char* ptr = NULL;
 
     if (!enclave || enclave->magic != ENCLAVE_MAGIC || !buffer || !size)
         goto done;
@@ -27,19 +30,45 @@ char** oe_backtrace_symbols(
         elf_loaded = true;
     }
 
-    if (!(ret = (char**)calloc(size, sizeof(char*))))
+    /* Determine total memory requirements */
+    {
+        malloc_size = size * sizeof(char*);
+
+        for (int i = 0; i < size; i++)
+        {
+            const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
+            const char* name = Elf64_GetFunctionName(&elf, vaddr);
+
+            if (!name)
+                name = unknown;
+
+            malloc_size += strlen(name) + sizeof(char);
+        }
+    }
+
+    /* Allocate the array point sting pointer followed by the strings */
+    if (!(ptr = (char*)malloc(malloc_size)))
         goto done;
 
+    /* Set pointer to array of strings */
+    ret = (char**)ptr;
+
+    /* Skip over array of strings */
+    ptr += size * sizeof(char*);
+
+    /* Copy strings into return buffer */
     for (int i = 0; i < size; i++)
     {
-        /* Convert to virtual address */
-        const uint64_t addr = (uint64_t)buffer[i] - enclave->addr;
-        const char* name = Elf64_GetFunctionName(&elf, addr);
+        const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
+        const char* name = Elf64_GetFunctionName(&elf, vaddr);
 
-        if (name)
-            ret[i] = (char*)name;
-        else
-            ret[i] = "<unknown>";
+        if (!name)
+            name = unknown;
+
+        size_t name_size = strlen(name) + sizeof(char);
+        memcpy(ptr, name, name_size);
+        ret[i] = ptr;
+        ptr += name_size;
     }
 
 done:
