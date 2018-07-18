@@ -5,8 +5,11 @@
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/calls.h>
 
-#define MAX_ADDRESSES 16
+#if defined(__INTEL_COMPILER)
+# error "optimized __builtin_return_address() not supported by Intel compiler"
+#endif
 
 /* Return null if address is outside of the enclave; else return ptr. */
 const void* _check_address(const void* ptr)
@@ -19,13 +22,13 @@ const void* _check_address(const void* ptr)
 
 int oe_backtrace(void** buffer, int size)
 {
-    const void* addrs[MAX_ADDRESSES];
+    const void* addrs[OE_BACKTRACE_MAX];
     int n = 0;
     int i;
 
     // It isn't possible to use iteration here since __builtin_return_address()
     // must take a constant argument. Also, the depth is limited to
-    // MAX_ADDRESSES.
+    // OE_BACKTRACE_MAX.
     do
     {
         if (!(addrs[n] = _check_address(__builtin_return_address(0))))
@@ -75,6 +78,57 @@ int oe_backtrace(void** buffer, int size)
 
         if (!(addrs[++n] = _check_address(__builtin_return_address(15))))
             break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(16))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(17))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(18))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(19))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(20))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(21))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(22))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(23))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(24))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(25))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(26))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(27))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(28))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(29))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(30))))
+            break;
+
+        if (!(addrs[++n] = _check_address(__builtin_return_address(31))))
+            break;
+
+        OE_STATIC_ASSERT(OE_BACKTRACE_MAX == 32);
+
     } while (0);
 
     /* If the caller's buffer is too small */

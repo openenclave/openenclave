@@ -8,6 +8,7 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/cpuid.h>
 #include "sgxtypes.h"
+#include "backtrace.h"
 
 OE_EXTERNC_BEGIN
 
@@ -268,12 +269,10 @@ typedef struct _oe_init_enclave_args
 **==============================================================================
 */
 
-#define OE_MALLOC_DUMP_ARGS_MAX_ADDRESSES 16
-
 typedef struct _oe_malloc_dump_args
 {
     uint64_t size;
-    void* addrs[OE_MALLOC_DUMP_ARGS_MAX_ADDRESSES];
+    void* addrs[OE_BACKTRACE_MAX];
     int num_addrs;
 } oe_malloc_dump_args_t;
 

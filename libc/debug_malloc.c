@@ -13,6 +13,7 @@
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/utils.h>
+#include <openenclave/internal/backtrace.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
 
 /*
@@ -45,7 +46,6 @@
 **==============================================================================
 */
 
-#define MAX_ADDRESSES OE_MALLOC_DUMP_ARGS_MAX_ADDRESSES
 #define HEADER_MAGIC1 0x185f0447c6f5440f
 #define HEADER_MAGIC2 0x56cfbed5df804061
 #define FOOTER_MAGIC 0x8bb6dcd8f4724bc7
@@ -68,7 +68,7 @@ struct header
     uint64_t size;
 
     /* Return addresses obtained by oe_backtrace() */
-    void* addrs[MAX_ADDRESSES];
+    void* addrs[OE_BACKTRACE_MAX];
     uint64_t num_addrs;
 
     /* Contains HEADER_MAGIC1 */
@@ -78,7 +78,7 @@ struct header
     uint8_t data[];
 };
 
-OE_STATIC_ASSERT(sizeof(header_t) == 56 + (MAX_ADDRESSES * sizeof(uint64_t)));
+OE_STATIC_ASSERT(sizeof(header_t) == 56 + (OE_BACKTRACE_MAX * sizeof(uint64_t)));
 
 typedef struct footer footer_t;
 
@@ -113,7 +113,7 @@ void _init_block(header_t* header, size_t alignment, size_t size)
     header->prev = NULL;
     header->alignment = alignment;
     header->size = size;
-    header->num_addrs = oe_backtrace(header->addrs, MAX_ADDRESSES);
+    header->num_addrs = oe_backtrace(header->addrs, OE_BACKTRACE_MAX);
     header->magic2 = HEADER_MAGIC2;
 
     /* Initialize the footer */

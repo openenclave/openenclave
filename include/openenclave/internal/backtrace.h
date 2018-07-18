@@ -10,6 +10,9 @@
 
 OE_EXTERNC_BEGIN
 
+/* Maximum backtrace size */
+#define OE_BACKTRACE_MAX 32
+
 /**
  * This function behaves like the GNU **backtrace** function. See the
  * **backtrace** manpage for more information.
