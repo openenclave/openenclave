@@ -10,7 +10,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include "debug_malloc.h"
+#include "debugmalloc.h"
 
 #define OE_ENABLE_MALLOC_WRAPPERS
 #define HAVE_MMAP 0

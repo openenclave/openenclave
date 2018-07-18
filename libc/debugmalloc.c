@@ -4,7 +4,7 @@
 #if defined(OE_USE_DEBUG_MALLOC)
 
 #define USE_DL_PREFIX
-#include "debug_malloc.h"
+#include "debugmalloc.h"
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
@@ -71,15 +71,12 @@ struct header
     void* addrs[OE_BACKTRACE_MAX];
     uint64_t num_addrs;
 
-    /* Contains HEADER_MAGIC1 */
+    /* Contains HEADER_MAGIC2 */
     uint64_t magic2;
 
     /* User data */
     uint8_t data[];
 };
-
-OE_STATIC_ASSERT(
-    sizeof(header_t) == 56 + (OE_BACKTRACE_MAX * sizeof(uint64_t)));
 
 typedef struct footer footer_t;
 
