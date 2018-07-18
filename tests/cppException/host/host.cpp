@@ -85,7 +85,8 @@ int main(int argc, const char* argv[])
 
         if ((result = oe_terminate_enclave(enclave)) != OE_OK)
         {
-            oe_put_err("oe_terminate_enclave(): result=%u", result);
+            if (result != OE_MEMORY_LEAK)
+                oe_put_err("oe_terminate_enclave(): result=%u", result);
         }
 
         printf(

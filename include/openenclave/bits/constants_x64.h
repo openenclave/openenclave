@@ -15,7 +15,7 @@
 #define SGX_SSA_RSP_OFFSET 0XF68
 
 //
-// Openenclave layout constant definitions.
+// Open Enclave layout constant definitions.
 //
 
 #define OE_PAGE_SIZE 0x1000
@@ -67,7 +67,7 @@
 //  AMD64 ABI related constants.
 //
 
-//  AMD64 ABI needs a 128 bytes redzone.
+//  AMD64 ABI needs a 128 bytes red zone.
 #define ABI_REDZONE_BYTE_SIZE 0x80
 
 #endif /* _OE_BITS_CONSTANTS_X64_H */

@@ -58,6 +58,7 @@ OE_ECALL oe_result_t Test(void* args)
     }
 
     wcstombs((char*)tempRegion, wcstring, wcslen(wcstring));
+    ((char*)tempRegion)[wcslen(wcstring)] = '\0';
     if (strcmp(asciistring, (char*)tempRegion) != 0)
     {
         *returnValuePtr = -4;
@@ -80,6 +81,7 @@ OE_ECALL oe_result_t Test(void* args)
     }
 
     mbstowcs((wchar_t*)tempRegion, asciistring, strlen(asciistring));
+    ((wchar_t*)tempRegion)[strlen(asciistring)] = '\0';
 
 #ifndef OE_SIM
     /* Broken in MUSL library */

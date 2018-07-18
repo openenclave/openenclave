@@ -250,6 +250,6 @@ int main(int argc, const char* argv[])
     ret = 0;
 
 done:
-
+    Elf64_Unload(&elf);
     return ret;
 }
