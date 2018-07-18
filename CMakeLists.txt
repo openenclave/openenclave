@@ -62,6 +62,11 @@ if (USE_LIBSGX AND WIN32)
 message(FATAL_ERROR "USE_LIBSGX is not supported on Windows. Disable this when calling cmake with -DUSE_LIBSGX=OFF")
 endif()
 
+option(USE_DEBUG_MALLOC "Build oehost using SGX library requiring FLC" OFF)
+if (USE_DEBUG_MALLOC AND WIN32)
+message(FATAL_ERROR "USE_DEBUG_MALLOC is not supported on Windows. Disable this when calling cmake with -DUSE_DEBUG_MALLOC=OFF")
+endif()
+
 include(add_enclave_test)
 
 # finally, add all dirs that matter

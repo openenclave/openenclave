@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/tests.h>
 #include <iostream>
 #include <map>
@@ -194,6 +195,8 @@ OE_ECALL void Test(void* args_)
 
         if (y)
             args->dynamicCastWorks = true;
+
+        delete x;
     }
 
     args->numConstructions = numConstructions;

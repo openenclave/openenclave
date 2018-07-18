@@ -9,6 +9,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/jump.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -301,6 +302,15 @@ static void _HandleECall(
 
             /* Call all finalization functions */
             oe_call_fini_functions();
+
+#if defined(OE_USE_DEBUG_MALLOC)
+
+            /* If memory still allocated, print a trace and return an error */
+            if (oe_debug_malloc_check() != 0)
+                result = OE_MEMORY_LEAK;
+
+#endif /* defined(OE_USE_DEBUG_MALLOC) */
+
             break;
         }
         case OE_ECALL_VIRTUAL_EXCEPTION_HANDLER:

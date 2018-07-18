@@ -47,6 +47,7 @@ endif()
 
 if (UNIX)
 add_subdirectory(abortStatus)
+add_subdirectory(backtrace)
 add_subdirectory(crypto)
 add_subdirectory(libcxx)
 add_subdirectory(libcxxrt)

@@ -24,6 +24,7 @@ set(PLATFORM_SRC
     linux/sgxsign.c
     linux/time.c
     sgxquoteprovider.c        
+    backtrace.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
@@ -98,6 +99,10 @@ find_library(LIBSGX_QE NAMES sgxoeql)
 find_library(LIBSGX_URTS NAMES sgx_urts_ng)
 target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS})
 target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
+endif()
+
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
 endif()
 
 # convenience library for creating a host-app (that needs the -rdynamic link flag)

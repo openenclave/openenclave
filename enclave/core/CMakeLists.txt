@@ -4,6 +4,7 @@
 add_library(oecore STATIC
     assert.c
     atexit.c
+    backtrace.c
     calls.c
     cpuid.c
     entropy.c
@@ -45,6 +46,10 @@ target_compile_options(oecore PUBLIC
 
 if(USE_LIBSGX)
 target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
+endif()
+
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
 endif()
 
 target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
