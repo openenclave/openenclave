@@ -8,12 +8,12 @@
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
+#include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/backtrace.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
 
 /*
@@ -78,7 +78,8 @@ struct header
     uint8_t data[];
 };
 
-OE_STATIC_ASSERT(sizeof(header_t) == 56 + (OE_BACKTRACE_MAX * sizeof(uint64_t)));
+OE_STATIC_ASSERT(
+    sizeof(header_t) == 56 + (OE_BACKTRACE_MAX * sizeof(uint64_t)));
 
 typedef struct footer footer_t;
 

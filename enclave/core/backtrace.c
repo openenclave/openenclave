@@ -3,12 +3,12 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
+#include <openenclave/internal/calls.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/calls.h>
 
 #if defined(__INTEL_COMPILER)
-# error "optimized __builtin_return_address() not supported by Intel compiler"
+#error "optimized __builtin_return_address() not supported by Intel compiler"
 #endif
 
 /* Return null if address is outside of the enclave; else return ptr. */

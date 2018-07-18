@@ -7,8 +7,8 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/cpuid.h>
-#include "sgxtypes.h"
 #include "backtrace.h"
+#include "sgxtypes.h"
 
 OE_EXTERNC_BEGIN
 
