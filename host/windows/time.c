@@ -29,7 +29,7 @@ void HandleClockgettime(uint64_t argIn)
     // const SYSTEMTIME POSIX_EPOCH = { 1970, 1, 4, 1 };
     static const uint64_t POSIX_TO_WINDOWS_EPOCH_TICKS = 116444736000000000;
 
-    // Windows ticks once every 100 ns
+    // Windows ticks once every 100 nanoseconds.
     const uint32_t WINDOWS_NS_PER_TICK = 100;
     const uint32_t WINDOWS_SEC_PER_TICK = 1E9 / WINDOWS_NS_PER_TICK;
 

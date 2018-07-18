@@ -96,6 +96,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_NOT_OWNER";
         case OE_MEMORY_LEAK:
             return "OE_MEMORY_LEAK";
+        case OE_BAD_ALIGNMENT:
+            return "OE_BAD_ALIGNMENT";
     }
 
     return "UNKNOWN";

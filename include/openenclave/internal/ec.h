@@ -41,16 +41,16 @@ typedef enum oe_ec_type_t { OE_EC_TYPE_SECP256R1 } oe_ec_type_t;
  * The caller is responsible for releasing the key by passing it to
  * oe_ec_private_key_free().
  *
+ * @param privateKey initialized key handle upon return
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
- * @param privateKey initialized key handle upon return
  *
  * @return OE_OK upon success
  */
 oe_result_t oe_ec_private_key_read_pem(
+    oe_ec_private_key_t* privateKey,
     const uint8_t* pemData,
-    size_t pemSize,
-    oe_ec_private_key_t* privateKey);
+    size_t pemSize);
 
 /**
  * Reads a public EC key from PEM data
@@ -65,16 +65,16 @@ oe_result_t oe_ec_private_key_read_pem(
  * The caller is responsible for releasing the key by passing it to
  * oe_ec_public_key_free().
  *
+ * @param publicKey initialized key handle upon return
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
- * @param publicKey initialized key handle upon return
  *
  * @return OE_OK upon success
  */
 oe_result_t oe_ec_public_key_read_pem(
+    oe_ec_public_key_t* publicKey,
     const uint8_t* pemData,
-    size_t pemSize,
-    oe_ec_public_key_t* publicKey);
+    size_t pemSize);
 
 /**
  * Writes a private EC key to PEM format
