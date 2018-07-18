@@ -14,7 +14,7 @@
 /**
  * This file manages the libngsa_quoteprov.so shared library.
  * It loads the .so during program startup and keeps it loaded till application
- * exit. Intel's quoting library repeatedly loads and unlods
+ * exit. Intel's quoting library repeatedly loads and unloads
  * libngsa_quoteprov.so.
  * This causes a crash in libssl.so. (See
  * https://rt.openssl.org/Ticket/Display.html?user=guest&pass=guest&id=2325).

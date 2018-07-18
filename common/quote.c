@@ -279,7 +279,7 @@ oe_result_t VerifyQuoteImpl(
 
     // Quoting Enclave validations.
     {
-        // Assert that the qe report's mr signer matches Intel's quoting
+        // Assert that the qe report's MRSIGNER matches Intel's quoting
         // enclave's mrsigner.
         if (!oe_constant_time_mem_equal(
                 quoteAuthData->qeReportBody.mrsigner,
