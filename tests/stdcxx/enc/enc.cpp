@@ -90,11 +90,6 @@ OE_ECALL void Test(void* args_)
     if (!args)
         return;
 
-#if 0
-    /* Ignore the three legtimate leaks from libunwind */
-    oe_debug_malloc_ignore(3);
-#endif
-
     /* Register at-exit handler */
     oe_atexit(MyAtExit);
 
