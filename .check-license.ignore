@@ -16,7 +16,6 @@
 ./doc/DesignOverview.docx
 ./doc/DesignOverview.pdf
 .exrc
-gdb.commands
 ./.git
 .gitignore
 ./include/openenclave/internal/queue.h
