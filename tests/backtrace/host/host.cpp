@@ -21,6 +21,9 @@ static void _print_backtrace(
     int num_expected_symbols,
     const char* expected_symbols[])
 {
+    /* Backtrace does not work in release mode */
+#ifndef NDEBUG
+
     char** symbols = oe_backtrace_symbols(enclave, buffer, size);
     OE_TEST(symbols != NULL);
 
@@ -35,6 +38,8 @@ static void _print_backtrace(
         OE_TEST(strcmp(expected_symbols[i], symbols[i]) == 0);
 
     free(symbols);
+
+#endif
 }
 
 int main(int argc, const char* argv[])
