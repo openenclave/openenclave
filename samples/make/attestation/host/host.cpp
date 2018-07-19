@@ -2,11 +2,8 @@
 // Licensed under the MIT License.
 
 #include <openenclave/host.h>
-#include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include "ecalls.h"
-
-#define SKIP_RETURN_CODE 2
 
 oe_enclave_t* CreateEnclave(const char* enclavePath)
 {
@@ -42,15 +39,6 @@ int main(int argc, const char* argv[])
     {
         printf("Usage: %s ENCLAVE_PATH\n", argv[0]);
         return 1;
-    }
-
-    const uint32_t flags = oe_get_create_flags();
-    if ((flags & OE_ENCLAVE_FLAG_SIMULATE) != 0)
-    {
-        printf(
-            "=== Skipped unsupported test in simulation mode "
-            "(samples attestation)\n");
-        return SKIP_RETURN_CODE;
     }
 
     printf("\n\n=====Creating two enclaves=====\n");
