@@ -59,6 +59,8 @@ typedef enum _oe_result {
     OE_UNSUPPORTED_QE_CERTIFICATION,
     OE_BUSY,
     OE_NOT_OWNER,
+    OE_MEMORY_LEAK,
+    OE_BAD_ALIGNMENT,
 } oe_result_t;
 
 /**

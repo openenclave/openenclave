@@ -44,7 +44,10 @@ gen_config_file(${OE_DATADIR}/openenclave/config.mak "${CMAKE_INSTALL_PREFIX}")
 install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
 
 # generate & install CMake Export file for other projects using CMAKE
-install(EXPORT openenclave DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
+install(
+  EXPORT      openenclave-config
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave
+)
 
 # cpack package handling
 include(InstallRequiredSystemLibraries)
@@ -60,6 +63,11 @@ include(CPack)
 option(USE_LIBSGX "Build oehost using SGX library requiring FLC" OFF)
 if (USE_LIBSGX AND WIN32)
 message(FATAL_ERROR "USE_LIBSGX is not supported on Windows. Disable this when calling cmake with -DUSE_LIBSGX=OFF")
+endif()
+
+option(USE_DEBUG_MALLOC "Build oehost using SGX library requiring FLC" OFF)
+if (USE_DEBUG_MALLOC AND WIN32)
+message(FATAL_ERROR "USE_DEBUG_MALLOC is not supported on Windows. Disable this when calling cmake with -DUSE_DEBUG_MALLOC=OFF")
 endif()
 
 include(add_enclave_test)

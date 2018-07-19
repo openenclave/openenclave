@@ -7,6 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/cpuid.h>
+#include "backtrace.h"
 #include "sgxtypes.h"
 
 OE_EXTERNC_BEGIN
@@ -91,6 +92,7 @@ typedef enum _oe_func {
     OE_OCALL_GETTIMEOFDAY,
     OE_OCALL_CLOCK_GETTIME,
     OE_OCALL_NANOSLEEP,
+    OE_OCALL_MALLOC_DUMP,
     /* Caution: always add new OCALL function numbers here */
 } oe_func_t;
 
@@ -258,6 +260,21 @@ typedef struct _oe_init_enclave_args
 {
     uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 } oe_init_enclave_args_t;
+
+/*
+**==============================================================================
+**
+** oe_malloc_dump_args_t
+**
+**==============================================================================
+*/
+
+typedef struct _oe_malloc_dump_args
+{
+    uint64_t size;
+    void* addrs[OE_BACKTRACE_MAX];
+    int num_addrs;
+} oe_malloc_dump_args_t;
 
 /**
  * Perform a low-level enclave function call (ECALL).
