@@ -40,9 +40,9 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "%s: failed to connect\n", argv[0]);
         exit(1);
     }
+    AESMDisconnect(aesm);
 #endif
 
     printf("=== passed all tests (%s)\n", argv[0]);
-    AESMDisconnect(aesm);
     return 0;
 }
