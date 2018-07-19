@@ -14,4 +14,4 @@ target_compile_options(print_enc PRIVATE
     -fno-builtin-memset
     )
 
-target_link_libraries(print_enc oelibc oeenclave)
+target_link_libraries(print_enc oeenclave)

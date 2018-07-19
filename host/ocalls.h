@@ -30,4 +30,6 @@ void HandleClockgettime(uint64_t argIn);
 
 void HandleNanosleep(uint64_t argIn);
 
+void handle_malloc_dump(oe_enclave_t* enclave, uint64_t arg);
+
 #endif /* _OE_HOST_OCALLS_H */

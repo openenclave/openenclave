@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/malloc.h>
 #include "report.h"
 
 //
@@ -18,6 +19,9 @@ const void* oe_link_enclave(void)
 {
     static const void* symbols[] = {
         oe_handle_verify_report,
+#if defined(OE_USE_DEBUG_MALLOC)
+        oe_debug_malloc_check,
+#endif /* defined(OE_USE_DEBUG_MALLOC) */
     };
 
     return symbols;

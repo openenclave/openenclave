@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/enclavelibc.h>
 
 /*
 **==============================================================================
@@ -235,4 +236,25 @@ int oe_memcmp(const void* s1, const void* s2, size_t n)
     }
 
     return 0;
+}
+
+void* oe_memmove(void* dest, const void* src, size_t n)
+{
+    char* p = (char*)dest;
+    const char* q = (const char*)src;
+
+    if (p != q && n > 0)
+    {
+        if (p <= q)
+        {
+            oe_memcpy(p, q, n);
+        }
+        else
+        {
+            for (q += n, p += n; n--; p--, q--)
+                p[-1] = q[-1];
+        }
+    }
+
+    return p;
 }
