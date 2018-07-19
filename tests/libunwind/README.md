@@ -1,7 +1,7 @@
 Libunwind tests
 =============
 
-This directory run libunwind tests in an enclave enviornment. It does
+This directory runs the libunwind tests in an enclave enviornment. It does
 this by repeatedly building and running the enclave located under the 'enc' 
 directory for each unit test found in tests.supported.
 
@@ -20,9 +20,9 @@ To run all the tests, type the following command:
 Note
 ====
 libunwind basically contains 33 tests which are listed in the tests.all file.
-Out Of this 33 tests, 11 tests can be compiled and run properly and are listed 
-in the test.supported file. The rest 22 test are moved to the test.unsupported 
-file.
+Out of these 33 tests, 11 tests can be compiled and run properly and are listed
+in the test.supported file. The remaining 22 tests were moved to the
+test.unsupported file.
 
 All the tests in test.supported can be compiled and run proprely in debug 
 mode("-O2"). In release mode("-O3"), a couple of tests (Gtest-exc and Ltest-exc)

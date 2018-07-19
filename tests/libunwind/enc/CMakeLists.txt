@@ -24,7 +24,7 @@ target_compile_options(libunwindtest-support PRIVATE -Wno-error)
 target_include_directories(libunwindtest-support PRIVATE
         ${PROJECT_BINARY_DIR}/3rdparty/libunwind/libunwind/include
     )
-target_link_libraries(libunwindtest-support PUBLIC oelibc oelibcxx)
+target_link_libraries(libunwindtest-support PUBLIC oelibc oelibcxx oeenclave)
 
 function(add_libunwind_test_enc NAME TESTFILE)
     add_enclave_executable(libunwindtest-${NAME}_enc sign.conf private.pem
@@ -41,7 +41,7 @@ function(add_libunwind_test_enc NAME TESTFILE)
     target_compile_definitions(libunwindtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${TESTFILE}")
     target_link_libraries(libunwindtest-${NAME}_enc libunwindtest-support)
     target_link_libraries(libunwindtest-${NAME}_enc ${LIBUNWIND_LIB_DIR}/libunwind-x86_64.a ${LIBUNWIND_LIB_DIR}/libunwind.a)
-    target_link_libraries(libunwindtest-${NAME}_enc oelibc oelibcxx)
+    target_link_libraries(libunwindtest-${NAME}_enc oelibc oelibcxx oeenclave)
     target_link_libraries(libunwindtest-${NAME}_enc -Wl,--require-defined=pthread_mutex_lock)
     target_link_libraries(libunwindtest-${NAME}_enc -Wl,--require-defined=_U_dyn_info_list_addr)
 endfunction(add_libunwind_test_enc)

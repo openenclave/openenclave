@@ -10,14 +10,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../host/args.h"
-#include "../host/ocalls.h"
+#include "pid.h"
 
-uint32_t process_id;
+uint32_t g_pid;
+
 int main(int argc, const char* argv[]);
 
 void _exit(int status)
 {
-    oe_ocall(OCALL_EXIT, status, NULL, 0);
+    oe_call_host("ExitOCall", (void*)(uint64_t)status);
     abort();
 }
 
@@ -59,7 +60,7 @@ extern char** __environ;
 extern const char* __test__;
 OE_ECALL void Test(Args* args)
 {
-    process_id=args->pid;
+    g_pid = args->pid;
     if (args)
     {
         printf("RUNNING: %s\n", __TEST__);
@@ -71,5 +72,7 @@ OE_ECALL void Test(Args* args)
         };
         args->ret = main(1, argv);
         args->test = oe_host_strdup(__TEST__);
+
+        free(__environ);
     }
 }
