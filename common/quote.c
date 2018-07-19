@@ -221,7 +221,7 @@ oe_result_t VerifyQuoteImpl(
         // Ensure that the root certificate matches root of trust.
         OE_CHECK(
             oe_ec_public_key_read_pem(
-		&expectedRootPublicKey,
+                &expectedRootPublicKey,
                 (const uint8_t*)g_ExpectedRootCertificateKey,
                 oe_strlen(g_ExpectedRootCertificateKey) + 1));
 
