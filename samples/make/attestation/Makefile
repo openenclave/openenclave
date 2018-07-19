@@ -13,9 +13,8 @@ clean:
 
 run:
 ifeq ($(SKIPPED),2)
-	@ echo "----------------------- Skipping samples attestation run"
+	@ echo "Skipping samples attestation run"
 else
-	@ echo "--------------------------------Will run samples attestation"
 	host/attestation_host ./enc/attestation_enc.signed.so
 endif
 

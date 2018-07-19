@@ -24,9 +24,7 @@ printandexit(){
     exit 1
 }
 
-echo "Fifth argument is $5"
-
-# Collect arguments and to temporary install if so requested
+# Collect arguments and do temporary install if so requested
 if test "$1" = "-i" ; then
     # inside build tree. install using DESTDIR mechanism.
     BIN_DIR=$(realpath $2)
