@@ -14,6 +14,7 @@
 #    <bin_dir> - PROJECT_BINARY_DIR from cmake
 #    <install_prefix> - the CMAKE_INSTALL_PREFIX prefix configured w/ cmake
 #    <tmp_prefix> - absolute path to put the tmp install under
+#    <USE_LIBSGX=1> - Indicates that USE_LIBSGX is set for this run
 #
 # run the make-variant with make
 # run the cmake-variant in separate cmake instance
@@ -22,6 +23,8 @@ printandexit(){
     echo An error occured
     exit 1
 }
+
+echo "Fifth argument is $5"
 
 # Collect arguments and to temporary install if so requested
 if test "$1" = "-i" ; then
@@ -39,6 +42,6 @@ fi || printandexit
 TEST_MAKE_DIR="$INSTALL_DIR/share/openenclave/samples"
 
 # build & run the make samples
-make -C "$TEST_MAKE_DIR" OPENENCLAVE_CONFIG="$INSTALL_DIR/share/openenclave/samples/config.mak" OE_PREFIX=$INSTALL_DIR world || printandexit
+make -C "$TEST_MAKE_DIR" OPENENCLAVE_CONFIG="$INSTALL_DIR/share/openenclave/samples/config.mak" OE_PREFIX=$INSTALL_DIR world "USE_LIBSGX=$5" || printandexit
 
 exit 0
