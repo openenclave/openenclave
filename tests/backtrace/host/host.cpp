@@ -21,7 +21,7 @@ static void _print_backtrace(
     int num_expected_symbols,
     const char* expected_symbols[])
 {
-    /* Backtrace does not work in release mode */
+/* Backtrace does not work in release mode */
 #ifndef NDEBUG
 
     char** symbols = oe_backtrace_symbols(enclave, buffer, size);
