@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-PACKAGE_VER=1.0.100.45332-1.0_amd64
+PACKAGE_VER=1.0.101.45575-1.0_amd64
 
 PACKAGE_NAMES=\
 	libsgx-enclave-common\
