@@ -299,11 +299,15 @@ oe_result_t OE_EnforceRevocation(
     oe_get_revocation_info_args_t revocationArgs = {0};
     oe_cert_chain_t tcbIssuerChain = {0};
     oe_cert_chain_t crlIssuerChain[3] = {0};
+    oe_parsed_tcb_info_t parsed_tcb_info = {0};
 
     uint8_t* intermediateCertUrlsBuffer = NULL;
     uint64_t intermediateCertUrlsBufferSize = 0;
     uint8_t* leafCertUrlsBuffer = NULL;
     uint64_t leafCertUrlsBufferSize = 0;
+
+    uint8_t* trimmedTcbInfoBuffer = NULL;
+
     OE_STATIC_ASSERT(
         OE_COUNTOF(crlIssuerChain) ==
         OE_COUNTOF(revocationArgs.crlIssuerChain));
@@ -345,12 +349,28 @@ oe_result_t OE_EnforceRevocation(
             revocationArgs.tcbInfo,
             revocationArgs.tcbInfoSize,
             &parsedInfo,
-            true /* require components to be uptodate. */));
+            true, /* require components to be uptodate. */
+            &parsed_tcb_info));
+
+    trimmedTcbInfoBuffer = _Malloc(revocationArgs.tcbInfoSize);
+    if (trimmedTcbInfoBuffer == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    OE_CHECK(
+        oe_verify_tcb_signature(
+            revocationArgs.tcbInfo,
+            revocationArgs.tcbInfoSize,
+            &parsed_tcb_info,
+            trimmedTcbInfoBuffer,
+            revocationArgs.tcbInfoSize,
+            &tcbIssuerChain));
 
     result = OE_OK;
 
 done:
     // Memory from the pool must be freed in reverse order.
+    _Free(trimmedTcbInfoBuffer, revocationArgs.tcbInfoSize);
+
     for (int32_t i = revocationArgs.numCrlUrls - 1; i >= 0; --i)
     {
         _Free(

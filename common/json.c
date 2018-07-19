@@ -280,11 +280,16 @@ static const uint8_t* _ReadArray(
     const uint8_t* itr,
     const uint8_t* end)
 {
-    itr = _Expect(p, '[', itr, end);
+    itr = _SkipWS(itr, end);
+    if (itr == end || *itr != '[')
+        return _ReportError(p, "Expecting '['", itr, end);
 
     if (!p->parseFailed && p->interface.beginArray)
-        if (p->interface.beginArray(p->data) != OE_OK)
+        if (p->interface.beginArray(p->data, itr) != OE_OK)
             return end;
+
+    // Skip '[' and trailing spaces.
+    itr = _SkipWS(++itr, end);
 
     if (itr != end && *itr != ']')
     {
@@ -304,13 +309,15 @@ static const uint8_t* _ReadArray(
         }
     }
 
-    itr = _Expect(p, ']', itr, end);
+    if (itr == end || *itr != ']')
+        return _ReportError(p, "Expecting ']'", itr, end);
 
     if (!p->parseFailed && p->interface.endArray)
-        if (p->interface.endArray(p->data) != OE_OK)
+        if (p->interface.endArray(p->data, itr) != OE_OK)
             return end;
 
-    return itr;
+    // Skip ']' and trailing spaces.
+    return _SkipWS(++itr, end);
 }
 
 static const uint8_t* _ReadObject(
@@ -367,11 +374,17 @@ static const uint8_t* _ReadObject(
     const uint8_t* itr,
     const uint8_t* end)
 {
-    itr = _Expect(p, '{', itr, end);
+    itr = _SkipWS(itr, end);
+
+    if (itr == end || *itr != '{')
+        return _ReportError(p, "Expecting '{'", itr, end);
 
     if (!p->parseFailed && p->interface.beginObject)
-        if (p->interface.beginObject(p->data) != OE_OK)
+        if (p->interface.beginObject(p->data, itr) != OE_OK)
             return end;
+
+    // Skip '{' and trailing spaces.
+    itr = _SkipWS(++itr, end);
 
     if (itr != end && *itr != '}')
     {
@@ -389,13 +402,15 @@ static const uint8_t* _ReadObject(
         }
     }
 
-    itr = _Expect(p, '}', itr, end);
+    if (itr == end || *itr != '}')
+        return _ReportError(p, "Expecting '}'", itr, end);
 
     if (!p->parseFailed && p->interface.endObject)
-        if (p->interface.endObject(p->data) != OE_OK)
+        if (p->interface.endObject(p->data, itr) != OE_OK)
             return end;
 
-    return itr;
+    // Skip '}' and trailing spaces.
+    return _SkipWS(++itr, end);
 }
 
 static const uint8_t* _Read(

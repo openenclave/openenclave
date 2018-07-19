@@ -35,10 +35,10 @@ OE_EXTERNC_BEGIN
 
 typedef struct _OE_JsonParserCallbackInterface
 {
-    oe_result_t (*beginObject)(void* data);
-    oe_result_t (*endObject)(void* data);
-    oe_result_t (*beginArray)(void* data);
-    oe_result_t (*endArray)(void* data);
+    oe_result_t (*beginObject)(void* data, const uint8_t* itr);
+    oe_result_t (*endObject)(void* data, const uint8_t* itr);
+    oe_result_t (*beginArray)(void* data, const uint8_t* itr);
+    oe_result_t (*endArray)(void* data, const uint8_t* itr);
 
     oe_result_t (*null)(void* data);
     oe_result_t (*boolean)(void* data, uint8_t value);

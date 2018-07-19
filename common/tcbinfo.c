@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-//#define OE_TRACE_LEVEL 2
+#define OE_TRACE_LEVEL 2
 #include "tcbinfo.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/json.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
+#include <mbedtls/sha512.h>
 
 enum
 {
@@ -113,7 +116,7 @@ const char* _get_current_property_name(callback_data_t* data)
     return "";
 }
 
-static oe_result_t _begin_object(void* vdata)
+static oe_result_t _begin_object(void* vdata, const uint8_t* lbrace)
 {
     callback_data_t* data = (callback_data_t*)vdata;
     int32_t curLevel = data->level;
@@ -138,6 +141,8 @@ static oe_result_t _begin_object(void* vdata)
                 if (data->tcb_level_idx >= NUM_TCB_LEVELS)
                     return OE_FAILURE;
             }
+            if (oe_strcmp(_get_current_property_name(data), "tcbInfo") == 0)
+                data->parsed_tcb_info->tcb_info_start = lbrace;
 
             ++data->level;
             if (data->level > data->max_level)
@@ -174,7 +179,7 @@ static void _aggregate_tcb_info(oe_tcb_t* tcb, oe_tcb_t* aggregated_tcb)
         aggregated_tcb->pce_svn = tcb->pce_svn;
 }
 
-static oe_result_t _end_object(void* vdata)
+static oe_result_t _end_object(void* vdata, const uint8_t* rbrace)
 {
     callback_data_t* data = (callback_data_t*)vdata;
     int level = data->level--;
@@ -194,6 +199,9 @@ static oe_result_t _end_object(void* vdata)
         // Clear current TCB.
         oe_memset(&data->current_tcb, 0, sizeof(data->current_tcb));
     }
+
+    if (oe_strcmp(_get_current_property_name(data), "tcbInfo") == 0)
+        data->parsed_tcb_info->tcb_info_end = rbrace;
 
     // Check that all expected properties have been read.
     if (level < NUM_LEVELS &&
@@ -345,12 +353,19 @@ static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t str_length)
         {
             if (oe_strcmp(property_name, "signature") == 0)
             {
-                OE_TRACE_INFO("signature: length = %d\n", str_length);
-                // OE_TRACE_INFO("TCB: signature = %*.*s\n", str_length,
-                // str_length, str);
-                data->parsed_tcb_info->signature = str;
-                data->parsed_tcb_info->signature_size = str_length;
-                return OE_OK;
+                if (str_length == 2*sizeof(data->parsed_tcb_info->signature))
+                {
+                    for(uint32_t i=0; i < OE_COUNTOF(data->parsed_tcb_info->signature); ++i)
+                    {
+                        data->parsed_tcb_info->signature[i] = (_HexToDec(str[i*2]) << 4) | _HexToDec(str[i*2+1]);
+                    }
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
+                    OE_TRACE_INFO("signature-length: %d\n", str_length);
+                    oe_hex_dump(data->parsed_tcb_info->signature, sizeof(data->parsed_tcb_info->signature));
+#endif                        
+                    return OE_OK;
+                }
+                                
             }
         }
         if (data->level == 1)
@@ -485,51 +500,55 @@ oe_result_t oe_enforce_tcb_info(
     const uint8_t* tcb_info_json,
     uint32_t tcb_info_json_size,
     ParsedExtensionInfo* parsed_extension_info,
-    bool require_uptodate)
+    bool require_uptodate,
+    oe_parsed_tcb_info_t* parsed_tcb_info)
 {
     oe_result_t result = OE_FAILURE;
-    oe_parsed_tcb_info_t parsed_tcb_info = {0};
     bool is_uptodate = false;
+
+    if (tcb_info_json == NULL || tcb_info_json_size == 0 ||
+        parsed_extension_info == NULL || parsed_tcb_info == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_CHECK(
         oe_parse_tcb_info_json(
-            tcb_info_json, tcb_info_json_size, &parsed_tcb_info));
+            tcb_info_json, tcb_info_json_size, parsed_tcb_info));
 
     if (oe_memcmp(
-            parsed_tcb_info.fmspc,
+            parsed_tcb_info->fmspc,
             parsed_extension_info->fmspc,
-            sizeof(parsed_tcb_info.fmspc)) != 0)
+            sizeof(parsed_tcb_info->fmspc)) != 0)
         OE_RAISE(OE_FAILURE);
 
     // Check whether the components in the extensions have been revoked.
     // TCB info may not contain any revoked information at all.
-    if (parsed_tcb_info.aggregated_revoked_tcb.is_specified)
+    if (parsed_tcb_info->aggregated_revoked_tcb.is_specified)
     {
         if (parsed_extension_info->pceSvn <=
-            parsed_tcb_info.aggregated_revoked_tcb.pce_svn)
+            parsed_tcb_info->aggregated_revoked_tcb.pce_svn)
             OE_RAISE(OE_FAILURE);
 
         for (uint32_t i = 0; i < OE_COUNTOF(parsed_extension_info->compSvn);
              ++i)
         {
             if (parsed_extension_info->compSvn[i] <=
-                parsed_tcb_info.aggregated_revoked_tcb.sgx_tcb_comp_svn[i])
+                parsed_tcb_info->aggregated_revoked_tcb.sgx_tcb_comp_svn[i])
                 OE_RAISE(OE_FAILURE);
         }
     }
 
     // Check whether the components in the extensions are upto date.
-    if (parsed_tcb_info.aggregated_uptodate_tcb.is_specified)
+    if (parsed_tcb_info->aggregated_uptodate_tcb.is_specified)
     {
         if (parsed_extension_info->pceSvn <
-            parsed_tcb_info.aggregated_uptodate_tcb.pce_svn)
+            parsed_tcb_info->aggregated_uptodate_tcb.pce_svn)
             OE_RAISE(OE_FAILURE);
 
         for (uint32_t i = 0; i < OE_COUNTOF(parsed_extension_info->compSvn);
              ++i)
         {
             if (parsed_extension_info->compSvn[i] <
-                parsed_tcb_info.aggregated_uptodate_tcb.sgx_tcb_comp_svn[i])
+                parsed_tcb_info->aggregated_uptodate_tcb.sgx_tcb_comp_svn[i])
                 OE_RAISE(OE_FAILURE);
         }
         is_uptodate = true;
@@ -544,18 +563,18 @@ oe_result_t oe_enforce_tcb_info(
     {
         // Check whether the components are out of date.
         // Being out of date is OK.
-        if (!parsed_tcb_info.aggregated_outofdate_tcb.is_specified)
+        if (!parsed_tcb_info->aggregated_outofdate_tcb.is_specified)
             OE_RAISE(OE_FAILURE);
 
         if (parsed_extension_info->pceSvn <
-            parsed_tcb_info.aggregated_outofdate_tcb.pce_svn)
+            parsed_tcb_info->aggregated_outofdate_tcb.pce_svn)
             OE_RAISE(OE_FAILURE);
 
         for (uint32_t i = 0; i < OE_COUNTOF(parsed_extension_info->compSvn);
              ++i)
         {
             if (parsed_extension_info->compSvn[i] <
-                parsed_tcb_info.aggregated_outofdate_tcb.sgx_tcb_comp_svn[i])
+                parsed_tcb_info->aggregated_outofdate_tcb.sgx_tcb_comp_svn[i])
                 OE_RAISE(OE_FAILURE);
         }
     }
@@ -563,5 +582,122 @@ oe_result_t oe_enforce_tcb_info(
     result = OE_OK;
 done:
 
+    return result;
+}
+
+static uint8_t* _remove_ws(const uint8_t* itr, const uint8_t* end, uint8_t* out)
+{
+    uint8_t c = 0;
+    while (itr != end)
+    {
+        c = *itr++;
+        switch (c)
+        {
+            case ' ':
+            case '\b':
+            case '\f':
+            case '\n':
+            case '\r':
+            case '\t':
+                break;
+
+            default:
+                *out++ = c;
+        }
+    }
+    *out = '\0';
+    return out;
+}
+
+
+static oe_result_t _ECDSAVerify(
+    oe_ec_public_key_t* publicKey,
+    const void* data,
+    uint32_t dataSize,
+    sgx_ecdsa256_signature_t* signature)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sha256_context_t sha256Ctx = {0};
+    OE_SHA256 sha256 = {0};
+    uint8_t asn1Signature[256];
+    uint64_t asn1SignatureSize = sizeof(asn1Signature);
+
+    OE_CHECK(oe_sha256_init(&sha256Ctx));
+    OE_CHECK(oe_sha256_update(&sha256Ctx, data, dataSize));
+    OE_CHECK(oe_sha256_final(&sha256Ctx, &sha256));
+
+    OE_CHECK(
+        oe_ecdsa_signature_write_der(
+            asn1Signature,
+            &asn1SignatureSize,
+            signature->r,
+            sizeof(signature->r),
+            signature->s,
+            sizeof(signature->s)));
+
+    OE_CHECK(
+        oe_ec_public_key_verify(
+            publicKey,
+            OE_HASH_TYPE_SHA256,
+            (uint8_t*)&sha256,
+            sizeof(sha256),
+            asn1Signature,
+            asn1SignatureSize));
+
+    result = OE_OK;
+done:
+    return result;
+}
+
+
+oe_result_t oe_verify_tcb_signature(
+    const uint8_t* tcb_info_json,
+    uint32_t tcb_info_json_size,
+    oe_parsed_tcb_info_t* parsed_tcb_info,
+    uint8_t* buffer,
+    uint32_t bufferSize,
+    oe_cert_chain_t* tcb_cert_chain)
+{
+    oe_result_t result = OE_FAILURE;
+    const uint8_t* tcb_info_json_end = tcb_info_json + tcb_info_json_size;
+    const uint8_t* itr = NULL;
+    oe_cert_t leaf_cert = {0};
+    oe_ec_public_key_t tcb_signing_key = {0};
+    
+    if (tcb_info_json == NULL || tcb_info_json_size == 0 ||
+        parsed_tcb_info == NULL || buffer == NULL ||
+        bufferSize < tcb_info_json_size || tcb_cert_chain == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (parsed_tcb_info->tcb_info_start < tcb_info_json ||
+        parsed_tcb_info->tcb_info_start >= tcb_info_json_end)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (parsed_tcb_info->tcb_info_end < tcb_info_json ||
+        parsed_tcb_info->tcb_info_end >= tcb_info_json_end)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (parsed_tcb_info->tcb_info_start >= parsed_tcb_info->tcb_info_end)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (*parsed_tcb_info->tcb_info_start != '{' ||
+        *parsed_tcb_info->tcb_info_end != '}')
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // The signature is calculated over tcbInfo body without whitespaces using the TCB signing key.
+    itr = _remove_ws(
+        parsed_tcb_info->tcb_info_start, parsed_tcb_info->tcb_info_end+1, buffer);
+    OE_UNUSED(itr);
+    
+    OE_CHECK(oe_cert_chain_get_leaf_cert(tcb_cert_chain, &leaf_cert));
+    OE_CHECK(oe_cert_get_ec_public_key(&leaf_cert, &tcb_signing_key));
+
+    OE_CHECK(_ECDSAVerify(&tcb_signing_key, parsed_tcb_info->tcb_info_start, 1 + parsed_tcb_info->tcb_info_end - parsed_tcb_info->tcb_info_start, (sgx_ecdsa256_signature_t*) parsed_tcb_info->signature));
+    OE_TRACE_INFO("tcb info ecdsa attestation succeeded\n");
+    
+    result = OE_OK;
+done:
+    oe_ec_public_key_free(&tcb_signing_key);
+    
     return result;
 }

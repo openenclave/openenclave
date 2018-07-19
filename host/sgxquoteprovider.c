@@ -148,7 +148,7 @@ oe_result_t oe_get_revocation_info(
         OE_TRACE_INFO("tcb_info is NULL.\n");
         OE_RAISE(OE_FAILURE);
     }
-    hostBufferSize += revocationInfo->tcb_info_size;
+    hostBufferSize += revocationInfo->tcb_info_size + 1;
 
     if (revocationInfo->tcb_issuer_chain == NULL ||
         revocationInfo->tcb_issuer_chain_size == 0)
@@ -157,9 +157,6 @@ oe_result_t oe_get_revocation_info(
         OE_RAISE(OE_FAILURE);
     }
     hostBufferSize += revocationInfo->tcb_issuer_chain_size + 1;
-    // printf("tcb issuer chain = %s !!!\n", revocationInfo->tcb_issuer_chain);
-    // printf("end-char = %d\n",
-    // revocationInfo->tcb_issuer_chain[revocationInfo->tcb_issuer_chain_size]);
 
     if (revocationInfo->crl_count != numCrlUrls)
     {
@@ -202,8 +199,9 @@ oe_result_t oe_get_revocation_info(
         *tcbInfo = p;
         *tcbInfoSize = revocationInfo->tcb_info_size;
         memcpy(*tcbInfo, revocationInfo->tcb_info, *tcbInfoSize);
-        p += *tcbInfoSize;
+        p += *tcbInfoSize + 1;
         OE_TRACE_INFO("tcb_info_size = %d\n", revocationInfo->tcb_info_size);
+        OE_TRACE_INFO("tcb_info json = \n%s\n", *tcbInfo);
     }
 
     if (revocationInfo->tcb_issuer_chain != NULL)
@@ -214,10 +212,14 @@ oe_result_t oe_get_revocation_info(
             *tcbIssuerChain,
             revocationInfo->tcb_issuer_chain,
             *tcbIssuerChainSize);
-        p += *tcbIssuerChainSize;
+        p += *tcbIssuerChainSize + 1;
         OE_TRACE_INFO(
             "tcb_issuer_chain_size = %d\n",
             revocationInfo->tcb_issuer_chain_size);
+
+        FILE* f = fopen("/home/anakrish/work/openenclave/tcbissuer.cer", "wb");
+        fwrite(*tcbIssuerChain, *tcbIssuerChainSize, 1, f);
+        fclose(f);
     }
 
     for (uint32_t i = 0; i < revocationInfo->crl_count; ++i)
@@ -242,11 +244,19 @@ oe_result_t oe_get_revocation_info(
                 crlIssuerChain[i],
                 revocationInfo->crls[i].crl_issuer_chain,
                 crlIssuerChainSize[i]);
-            p += crlIssuerChainSize[i];
+            p += crlIssuerChainSize[i] + 1;
             OE_TRACE_INFO(
                 "crls[%d].crl_issuer_chain_size = %d\n",
                 i,
                 revocationInfo->crls[i].crl_issuer_chain_size);
+
+            FILE* f = 0;
+            if (i == 0)
+                f = fopen("/home/anakrish/work/openenclave/crl_issuer0.cer", "wb");
+            else
+                f = fopen("/home/anakrish/work/openenclave/crl_issuer1.cer", "wb");                
+            fwrite(crlIssuerChain[i], crlIssuerChainSize[i], 1, f);
+            fclose(f);                
         }
     }
 

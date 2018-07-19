@@ -7,6 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/cert.h>
 #include <openenclave/internal/sgxcertextensions.h>
 
 OE_EXTERNC_BEGIN
@@ -34,8 +35,9 @@ typedef struct _oe_parsed_tcb_info
     oe_tcb_t aggregated_uptodate_tcb;
     oe_tcb_t aggregated_outofdate_tcb;
     oe_tcb_t aggregated_revoked_tcb;
-    const uint8_t* signature;
-    uint32_t signature_size;
+    uint8_t signature[64];
+    const uint8_t* tcb_info_start;
+    const uint8_t* tcb_info_end;
 } oe_parsed_tcb_info_t;
 
 oe_result_t oe_parse_tcb_info_json(
@@ -47,7 +49,16 @@ oe_result_t oe_enforce_tcb_info(
     const uint8_t* tcb_info_json,
     uint32_t tcb_info_json_size,
     ParsedExtensionInfo* parsed_extention_info,
-    bool require_uptodate);
+    bool require_uptodate,
+    oe_parsed_tcb_info_t* parsed_tcb_info);
+
+oe_result_t oe_verify_tcb_signature(
+    const uint8_t* tcb_info_json,
+    uint32_t tcb_info_json_size,
+    oe_parsed_tcb_info_t* parsed_tcb_info,
+    uint8_t* buffer,
+    uint32_t bufferSize,
+    oe_cert_chain_t* tcb_cert_chain);
 
 OE_EXTERNC_END
 
