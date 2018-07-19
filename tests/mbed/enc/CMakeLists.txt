@@ -32,6 +32,7 @@ function(add_libmbed_test_enc NAME )
     add_enclave_executable(libmbedtest_suite_${NAME} sign.conf private.pem test_suite_${NAME} 
      enc.c
      main.c
+     start.S
     )
     target_compile_options(libmbedtest_suite_${NAME} PRIVATE
       -Wno-error
@@ -43,13 +44,14 @@ function(add_libmbed_test_enc NAME )
         ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests
         )
     target_compile_definitions(libmbedtest_suite_${NAME} PRIVATE -DWITH_MAIN -D__TEST__="${CMAKE_CURRENT_BINARY_DIR}/test_suite_${NAME}.c")
-    target_link_libraries(libmbedtest_suite_${NAME} mbedcrypto oelibc libcio)
+    target_link_libraries(libmbedtest_suite_${NAME} mbedcrypto oelibc libcio oecore)
 endfunction(add_libmbed_test_enc)
 
 function(add_libmbed_selftest_enc NAME SOURCE )
     add_enclave_executable(libmbedtest-${NAME}_enc sign.conf private.pem
 	enc.c
         main.c
+        start.S
         )
 
     target_include_directories(libmbedtest-${NAME}_enc PUBLIC
@@ -58,7 +60,7 @@ function(add_libmbed_selftest_enc NAME SOURCE )
         )
 
     target_compile_definitions(libmbedtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${SOURCE}")
-    target_link_libraries(libmbedtest-${NAME}_enc mbedcrypto oelibc )
+    target_link_libraries(libmbedtest-${NAME}_enc mbedcrypto oelibc oecore)
 
 endfunction(add_libmbed_selftest_enc)
 

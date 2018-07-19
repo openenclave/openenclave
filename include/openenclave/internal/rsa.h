@@ -38,16 +38,16 @@ typedef struct _oe_rsa_public_key
  * The caller is responsible for releasing the key by passing it to
  * oe_rsa_private_key_free().
  *
+ * @param privateKey initialized key handle upon return
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
- * @param privateKey initialized key handle upon return
  *
  * @return OE_OK upon success
  */
 oe_result_t oe_rsa_private_key_read_pem(
+    oe_rsa_private_key_t* privateKey,
     const uint8_t* pemData,
-    size_t pemSize,
-    oe_rsa_private_key_t* privateKey);
+    size_t pemSize);
 
 /**
  * Reads a public RSA key from PEM data
@@ -62,16 +62,16 @@ oe_result_t oe_rsa_private_key_read_pem(
  * The caller is responsible for releasing the key by passing it to
  * oe_rsa_public_key_free().
  *
+ * @param publicKey initialized key handle upon return
  * @param pemData zero-terminated PEM data
  * @param pemSize size of the PEM data (including the zero-terminator)
- * @param publicKey initialized key handle upon return
  *
  * @return OE_OK upon success
  */
 oe_result_t oe_rsa_public_key_read_pem(
+    oe_rsa_public_key_t* publicKey,
     const uint8_t* pemData,
-    size_t pemSize,
-    oe_rsa_public_key_t* publicKey);
+    size_t pemSize);
 
 /**
  * Writes a private RSA key to PEM format

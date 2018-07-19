@@ -209,7 +209,7 @@ oe_result_t VerifyQuoteImpl(
         // Read and validate the chain.
         OE_CHECK(
             oe_cert_chain_read_pem(
-                pemPckCertificate, pemPckCertificateSize, &pckCertChain));
+                &pckCertChain, pemPckCertificate, pemPckCertificateSize));
 
         // Fetch leaf and root certificates.
         OE_CHECK(oe_cert_chain_get_leaf_cert(&pckCertChain, &leafCert));
@@ -221,9 +221,9 @@ oe_result_t VerifyQuoteImpl(
         // Ensure that the root certificate matches root of trust.
         OE_CHECK(
             oe_ec_public_key_read_pem(
+                &expectedRootPublicKey,
                 (const uint8_t*)g_ExpectedRootCertificateKey,
-                oe_strlen(g_ExpectedRootCertificateKey) + 1,
-                &expectedRootPublicKey));
+                oe_strlen(g_ExpectedRootCertificateKey) + 1));
 
         OE_CHECK(
             oe_ec_public_key_equal(
@@ -279,7 +279,7 @@ oe_result_t VerifyQuoteImpl(
 
     // Quoting Enclave validations.
     {
-        // Assert that the qe report's mr signer matches Intel's quoting
+        // Assert that the qe report's MRSIGNER matches Intel's quoting
         // enclave's mrsigner.
         if (!oe_constant_time_mem_equal(
                 quoteAuthData->qeReportBody.mrsigner,

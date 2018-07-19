@@ -3,6 +3,8 @@
 
 # Compile CXXRT
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-compare")
+
 # build cxxrt sources passing additional options
 add_subdirectory(libcxxrt/src)
 target_compile_options(cxxrt-static PRIVATE
