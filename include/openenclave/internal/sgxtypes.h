@@ -864,7 +864,8 @@ typedef enum _oe_sgx_pckid {
     OE_SGX_PCK_ID_ENCRYPTED_PPID_2048 = 2,
     OE_SGX_PCK_ID_ENCRYPTED_PPID_3072 = 3,
     OE_SGX_PCK_ID_PCK_CERTIFICATE = 4,
-    OE_SGX_PCK_ID_PCK_CERT_CHAIN = 5 __OE_SGX_PCKID_MAX = OE_MAX_UINT
+    OE_SGX_PCK_ID_PCK_CERT_CHAIN = 5,
+    __OE_SGX_PCKID_MAX = OE_MAX_UINT
 } oe_sgx_pckid_t;
 
 OE_STATIC_ASSERT(sizeof(oe_sgx_pckid_t) == sizeof(unsigned int));
