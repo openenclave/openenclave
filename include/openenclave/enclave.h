@@ -335,10 +335,13 @@ oe_result_t oe_verify_report(
     uint32_t reportSize,
     oe_report_t* parsedReport);
 
-typedef enum _oe_seal_id_policy {
-    OE_SEAL_ID_UNIQUE = 1,
-    OE_SEAL_ID_PRODUCT = 2,
-} oe_seal_id_policy_t;
+typedef enum _oe_seal_policy {
+    OE_SEAL_POLICY_UNIQUE = 1,
+    OE_SEAL_POLICY_PRODUCT = 2,
+    __OE_SEAL_POLICY_MAX = OE_MAX_UINT,
+} oe_seal_policy_t;
+
+OE_STATIC_ASSERT(sizeof(oe_seal_policy_t) == sizeof(unsigned int));
 
 /**
 * Get a symmetric encryption key derived from the specified policy and coupled
@@ -365,7 +368,7 @@ typedef enum _oe_seal_id_policy {
 * @retval OE_UNEXPECTED An unexpected error happened.
 */
 oe_result_t oe_get_seal_key_by_policy(
-    oe_seal_id_policy_t sealPolicy,
+    oe_seal_policy_t sealPolicy,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize,
     uint8_t* keyInfo,

@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include <openenclave/bits/defs.h>
 
 #ifdef __cplusplus
 #define MEM_INLINE inline
@@ -41,9 +43,12 @@
 /* mem_t.__type */
 typedef enum _mem_type_t {
     MEM_TYPE_NONE = 1,
-    MEM_TYPE_DYNAMIC = 1,
-    MEM_TYPE_STATIC = 4
+    MEM_TYPE_DYNAMIC = 2,
+    MEM_TYPE_STATIC = 4,
+    __MEM_TYPE_MAX = UINT_MAX,
 } mem_type_t;
+
+OE_STATIC_ASSERT(sizeof(mem_type_t) == sizeof(unsigned int));
 
 typedef struct _mem_t
 {
