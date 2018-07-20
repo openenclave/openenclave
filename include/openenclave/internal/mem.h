@@ -4,11 +4,11 @@
 #ifndef _MEM_H
 #define _MEM_H
 
+#include <limits.h>
+#include <openenclave/bits/defs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
-#include <openenclave/bits/defs.h>
 
 #ifdef __cplusplus
 #define MEM_INLINE inline
