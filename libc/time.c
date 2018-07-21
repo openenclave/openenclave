@@ -22,7 +22,7 @@ time_t time(time_t* tloc)
 {
     uint64_t usec;
     
-    if ((usec = oe_untrusted_time_ocall()) == 0)
+    if ((usec = oe_time_ocall()) == 0)
         return 0;
 
     return (time_t)(usec / 1000000UL);
@@ -42,7 +42,7 @@ int gettimeofday(struct timeval* tv, void* tz)
     if (!tv)
         goto done;
 
-    if ((usec = oe_untrusted_time_ocall()) == 0)
+    if ((usec = oe_time_ocall()) == 0)
         goto done;
 
     tv->tv_sec = usec / 1000000UL;
@@ -69,7 +69,7 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
         goto done;
     }
 
-    if ((usec = oe_untrusted_time_ocall()) == 0)
+    if ((usec = oe_time_ocall()) == 0)
         return -1;
 
     tp->tv_sec = usec / 1000000UL;

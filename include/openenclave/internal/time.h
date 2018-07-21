@@ -24,7 +24,7 @@ int oe_sleep_ocall(uint64_t milliseconds);
 /*
 **==============================================================================
 **
-** oe_untrusted_time_ocall()
+** oe_time_ocall()
 **
 **     Return microseconds elapsed since the Epoch or 0 on error.
 **
@@ -33,7 +33,7 @@ int oe_sleep_ocall(uint64_t milliseconds);
 **==============================================================================
 */
 
-uint64_t oe_untrusted_time_ocall(void);
+uint64_t oe_time_ocall(void);
 
 OE_EXTERNC_END
 
