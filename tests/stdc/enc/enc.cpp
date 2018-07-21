@@ -224,8 +224,8 @@ static void _test_time_functions(void)
         const uint64_t diff = after - before;
 
         /* Check for accuracy within 1/4 second */
-        OE_TEST(diff >= (SEC * USEC) - USEC/4);
-        OE_TEST(diff <= (SEC * USEC) + USEC/4);
+        OE_TEST(diff >= (SEC * USEC) - USEC / 4);
+        OE_TEST(diff <= (SEC * USEC) + USEC / 4);
     }
 }
 

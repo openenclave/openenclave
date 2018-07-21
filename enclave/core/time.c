@@ -1,6 +1,9 @@
-#include <openenclave/internal/time.h>
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/hostalloc.h>
+#include <openenclave/internal/time.h>
 
 int oe_sleep_ocall(uint64_t milliseconds)
 {

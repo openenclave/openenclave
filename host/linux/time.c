@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
-#include <openenclave/internal/time.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/time.h>
 #include "../ocalls.h"
 
 /* Return the microseconds elapsed since the Epoch. */
@@ -21,7 +21,7 @@ static void _sleep(uint64_t milliseconds)
 {
     struct timespec ts;
     const struct timespec* req = &ts;
-    struct timespec rem = { 0, 0 };
+    struct timespec rem = {0, 0};
 
     ts.tv_sec = (time_t)(milliseconds / 1000UL);
     ts.tv_nsec = (long)((milliseconds % 1000UL) * 1000000UL);

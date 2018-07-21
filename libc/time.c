@@ -5,8 +5,8 @@
 #include <assert.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/time.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/time.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/time.h>
@@ -21,7 +21,7 @@ const char __gmt[] = "GMT";
 time_t time(time_t* tloc)
 {
     uint64_t usec;
-    
+
     if ((usec = oe_time_ocall()) == 0)
         return 0;
 
@@ -100,7 +100,7 @@ int nanosleep(const struct timespec* req, struct timespec* rem)
     /* Perform OCALL */
     ret = oe_sleep_ocall(milliseconds);
 
-    /* ATTN: handle remainders */
+/* ATTN: handle remainders */
 
 done:
 

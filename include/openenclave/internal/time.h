@@ -13,7 +13,7 @@ OE_EXTERNC_BEGIN
 **
 ** oe_sleep_ocall()
 **
-**     Sleep for milliseconds. Return 0 on success and -1 if thread 
+**     Sleep for milliseconds. Return 0 on success and -1 if thread
 **     interrupted.
 **
 **==============================================================================
