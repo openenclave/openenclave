@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/time.h>
-#include <openenclave/internal/timedate.h>
 #include "../ocalls.h"
 
 void oe_handle_sleep_ocall(uint64_t arg_in)

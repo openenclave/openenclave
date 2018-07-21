@@ -6,7 +6,6 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/time.h>
-#include <openenclave/internal/timedate.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <stdint.h>
 #include <string.h>

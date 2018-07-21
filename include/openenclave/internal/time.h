@@ -6,68 +6,41 @@
 
 #include <openenclave/bits/types.h>
 
-#if defined(__linux__)
-#include <sys/time.h>
-#elif defined(_WIN32)
-typedef int32_t clockid_t;
-#include <Windows.h>
-#endif
-#include <time.h>
+OE_EXTERNC_BEGIN
 
 /*
 **==============================================================================
 **
-** oe_strftime_args_t
+** oe_sleep_ocall()
 **
-**     size_t strftime(
-**         char *str,
-**         size_t max,
-**         const char *format,
-**         const struct tm *tm);
+**     Sleep for milliseconds. Return 0 on success and -1 if thread 
+**     interrupted.
 **
 **==============================================================================
 */
-typedef struct _oe_strftime_args
-{
-    size_t ret;
-    char str[256];
-    char format[256];
-    struct tm tm;
-} oe_strftime_args_t;
 
-/*
-**==============================================================================
-**
-** oe_gettimeofday_args_t
-**
-**     int gettimeofday(struct timeval *tv, struct timezone *tz)
-**
-**==============================================================================
-*/
-typedef struct _oe_gettimeofday_args
+typedef struct _oe_sleep_ocall_args
 {
     int ret;
-    struct timeval* tv;
-    struct timeval tvbuf;
-    struct timezone* tz;
-    uint64_t tzbuf[2];
-} oe_gettimeofday_args_t;
+    uint64_t milliseconds;
+} oe_sleep_ocall_args_t;
+
+int oe_sleep_ocall(uint64_t milliseconds);
 
 /*
 **==============================================================================
 **
-** oe_clock_gettime_args_t
+** oe_untrusted_time_ocall()
 **
-**     int clock_gettime(clockid_t clk_id, struct timespec *tp);
+**     Return microseconds elapsed since the Epoch or 0 on error.
+**
+**     The Epoch is defined as: 1970-01-01 00:00:00 +0000 (UTC)
 **
 **==============================================================================
 */
-typedef struct _oe_clockgettime_args
-{
-    int ret;
-    clockid_t clk_id;
-    struct timespec* tp;
-    struct timespec tpbuf;
-} oe_clock_gettime_args_t;
+
+uint64_t oe_untrusted_time_ocall(void);
+
+OE_EXTERNC_END
 
 #endif /* _OE_INCLUDE_TIME_H */

@@ -11,7 +11,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/tests.h>
-#include <openenclave/internal/timedate.h>
+#include <openenclave/internal/time.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>

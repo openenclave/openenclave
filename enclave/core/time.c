@@ -1,4 +1,4 @@
-#include <openenclave/internal/timedate.h>
+#include <openenclave/internal/time.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/hostalloc.h>
 
