@@ -19,12 +19,6 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-typedef struct _oe_sleep_ocall_args
-{
-    int ret;
-    uint64_t milliseconds;
-} oe_sleep_ocall_args_t;
-
 int oe_sleep_ocall(uint64_t milliseconds);
 
 /*
