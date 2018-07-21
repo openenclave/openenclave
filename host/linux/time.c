@@ -5,16 +5,6 @@
 #include <openenclave/internal/timedate.h>
 #include "../ocalls.h"
 
-void HandleStrftime(uint64_t argIn)
-{
-    oe_strftime_args_t* args = (oe_strftime_args_t*)argIn;
-
-    if (!args)
-        return;
-
-    args->ret = strftime(args->str, sizeof(args->str), args->format, &args->tm);
-}
-
 void oe_handle_sleep_ocall(uint64_t arg_in)
 {
     oe_sleep_ocall_args_t* args = (oe_sleep_ocall_args_t*)arg_in;
