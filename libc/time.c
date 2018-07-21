@@ -21,97 +21,64 @@ const char __gmt[] = "GMT";
 
 time_t time(time_t* tloc)
 {
-    struct timeval tv;
+    uint64_t usec;
+    
+    if ((usec = oe_untrusted_time_ocall()) == 0)
+        return 0;
 
-    if (gettimeofday(&tv, NULL) != 0)
-        return (time_t)-1;
-
-    if (tloc)
-        *tloc = tv.tv_sec;
-
-    return tv.tv_sec;
+    return (time_t)(usec / 1000000UL);
 }
 
-#if 0
-int gettimeofday(struct timeval* tv, struct timezone* tz)
-#else
 int gettimeofday(struct timeval* tv, void* tz)
-#endif
 {
-    size_t ret = -1;
-    oe_gettimeofday_args_t* args = NULL;
-
-    if (!(args = oe_host_calloc(1, sizeof(oe_gettimeofday_args_t))))
-        goto done;
-
-    args->ret = -1;
+    int ret = -1;
+    uint64_t usec;
 
     if (tv)
-        args->tv = &args->tvbuf;
+        oe_memset(tv, 0, sizeof(struct timeval));
 
     if (tz)
-        args->tz = NULL;
+        oe_memset(tz, 0, sizeof(struct timezone));
 
-    if (oe_ocall(
-            OE_OCALL_GETTIMEOFDAY,
-            (uint64_t)args,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (!tv)
         goto done;
 
-    if (args->ret == 0)
-    {
-        if (tv)
-            memcpy(tv, &args->tvbuf, sizeof(args->tvbuf));
+    if ((usec = oe_untrusted_time_ocall()) == 0)
+        goto done;
 
-        if (tz)
-            memcpy(tz, &args->tzbuf, sizeof(args->tzbuf));
-    }
+    tv->tv_sec = usec / 1000000UL;
+    tv->tv_usec = usec % 1000000UL;
 
-    ret = args->ret;
+    ret = 0;
 
 done:
-
-    if (args)
-        oe_host_free(args);
-
-    return ret;
+    return 0;
 }
 
 int clock_gettime(clockid_t clk_id, struct timespec* tp)
 {
-    size_t ret = -1;
-    oe_clock_gettime_args_t* args = NULL;
+    int ret = -1;
+    uint64_t usec;
 
-    if (!(args = oe_host_malloc(sizeof(oe_clock_gettime_args_t))))
+    if (!tp)
         goto done;
 
-    args->ret = -1;
-    args->clk_id = clk_id;
-    args->tp = tp ? &args->tpbuf : NULL;
-    // clockid_t is not available for Windows,
-    // So on Windows int32_t is typedef to clockid_t.
-    OE_STATIC_ASSERT(sizeof(clockid_t) == sizeof(int32_t));
-
-    if (oe_ocall(
-            OE_OCALL_CLOCK_GETTIME,
-            (uint64_t)args,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
-        goto done;
-
-    if (args->ret == 0)
+    if (clk_id != CLOCK_REALTIME)
     {
-        if (tp)
-            memcpy(tp, &args->tpbuf, sizeof(args->tpbuf));
+        /* Only supporting CLOCK_REALTIME */
+        oe_assert("clock_gettime(): panic" == NULL);
+        goto done;
     }
 
-    ret = args->ret;
+    if ((usec = oe_untrusted_time_ocall()) == 0)
+        return -1;
+
+    tp->tv_sec = usec / 1000000UL;
+    tp->tv_nsec = (usec % 1000000UL) * 1000UL;
+
+    ret = 0;
 
 done:
-
-    if (args)
-        oe_host_free(args);
 
     return ret;
 }

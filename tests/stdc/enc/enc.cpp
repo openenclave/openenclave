@@ -219,7 +219,7 @@ OE_ECALL void Test(void* args_)
     clock_gettime(0, &ts);
 
     /* Sleep for a second */
-    timespec req = {1, 0};
+    timespec req = {10, 0};
     timespec rem;
     nanosleep(&req, &rem);
 
