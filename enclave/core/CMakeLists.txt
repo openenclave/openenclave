@@ -26,6 +26,7 @@ add_library(oecore STATIC
     string.c
     td.c
     thread.c
+    time.c
     enter.S
     exit.S
     getkey.S

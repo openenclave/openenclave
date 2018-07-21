@@ -62,7 +62,7 @@ void HandleClockgettime(uint64_t argIn)
     }
 }
 
-void HandleNanosleep(uint64_t argIn)
+void oe_handle_sleep_ocall(uint64_t argIn)
 {
     OE_UNUSED(argIn);
     abort();

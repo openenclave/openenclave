@@ -28,7 +28,9 @@ void HandleGettimeofday(uint64_t argIn);
 
 void HandleClockgettime(uint64_t argIn);
 
-void HandleNanosleep(uint64_t argIn);
+void oe_handle_sleep_ocall(uint64_t argIn);
+
+void oe_handle_untrusted_time_ocall(uint64_t arg_in, uint64_t* arg_out);
 
 void handle_malloc_dump(oe_enclave_t* enclave, uint64_t arg);
 

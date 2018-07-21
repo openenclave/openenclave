@@ -91,7 +91,8 @@ typedef enum _oe_func {
     OE_OCALL_STRFTIME,
     OE_OCALL_GETTIMEOFDAY,
     OE_OCALL_CLOCK_GETTIME,
-    OE_OCALL_NANOSLEEP,
+    OE_OCALL_SLEEP,
+    OE_OCALL_UNTRUSTED_TIME,
     OE_OCALL_MALLOC_DUMP,
     /* Caution: always add new OCALL function numbers here */
 } oe_func_t;

@@ -389,8 +389,12 @@ static oe_result_t _HandleOCALL(
             HandleClockgettime(argIn);
             break;
 
-        case OE_OCALL_NANOSLEEP:
-            HandleNanosleep(argIn);
+        case OE_OCALL_SLEEP:
+            oe_handle_sleep_ocall(argIn);
+            break;
+
+        case OE_OCALL_UNTRUSTED_TIME:
+            oe_handle_untrusted_time_ocall(argIn, argOut);
             break;
 
 #if defined(OE_USE_DEBUG_MALLOC)

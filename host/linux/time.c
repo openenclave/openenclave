@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/time.h>
+#include <openenclave/internal/timedate.h>
 #include "../ocalls.h"
 
 void HandleStrftime(uint64_t argIn)
@@ -34,12 +35,43 @@ void HandleClockgettime(uint64_t argIn)
     args->ret = clock_gettime(args->clk_id, args->tp);
 }
 
-void HandleNanosleep(uint64_t argIn)
+void oe_handle_sleep_ocall(uint64_t arg_in)
 {
-    oe_nanosleep_args_t* args = (oe_nanosleep_args_t*)argIn;
+    oe_sleep_ocall_args_t* args = (oe_sleep_ocall_args_t*)arg_in;
+    struct timespec ts;
 
     if (!args)
         return;
 
-    args->ret = nanosleep(args->req, args->rem);
+    ts.tv_sec = (time_t)(args->milliseconds / 1000UL);
+    ts.tv_nsec = (long)((args->milliseconds % 1000UL) * 1000000UL);
+
+    args->ret = nanosleep(&ts, NULL);
+}
+
+void oe_handle_untrusted_time_ocall(uint64_t arg_in, uint64_t* arg_out)
+{
+    uint64_t ret = 0;
+
+    OE_UNUSED(arg_in);
+
+    /* Get the microseconds elapsed since the Epoch. */
+    if (arg_out)
+    {
+        struct timespec ts;
+        uint64_t sec;
+        uint64_t usec;
+
+        if (clock_gettime(CLOCK_REALTIME, &ts) != 0)
+            goto done;
+
+        sec = ((uint64_t)ts.tv_sec * 1000000UL);
+        usec = ((uint64_t)ts.tv_nsec / 1000UL);
+        ret = sec + usec;
+    }
+
+done:
+
+    if (arg_out)
+        *arg_out = ret;
 }

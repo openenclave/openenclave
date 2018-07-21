@@ -6,6 +6,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/time.h>
+#include <openenclave/internal/timedate.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/time.h>
@@ -166,41 +168,24 @@ size_t strftime_l(
 int nanosleep(const struct timespec* req, struct timespec* rem)
 {
     size_t ret = -1;
-    oe_nanosleep_args_t* args = NULL;
-
-    if (!(args = oe_host_calloc(1, sizeof(oe_nanosleep_args_t))))
-        goto done;
-
-    args->ret = -1;
-
-    if (req)
-    {
-        memcpy(&args->reqbuf, req, sizeof(args->reqbuf));
-        args->req = &args->reqbuf;
-    }
+    uint64_t milliseconds = 0;
 
     if (rem)
-        args->rem = &args->rembuf;
+        oe_memset(rem, 0, sizeof(*rem));
 
-    if (oe_ocall(
-            OE_OCALL_NANOSLEEP,
-            (uint64_t)args,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (!req)
         goto done;
 
-    if (args->ret == 0)
-    {
-        if (rem)
-            memcpy(rem, &args->rembuf, sizeof(args->rembuf));
-    }
+    /* Convert timespec to milliseconds */
+    milliseconds += req->tv_sec * 1000UL;
+    milliseconds += req->tv_nsec / 1000000UL;
 
-    ret = args->ret;
+    /* Perform OCALL */
+    ret = oe_sleep_ocall(milliseconds);
+
+    /* ATTN: handle remainders */
 
 done:
-
-    if (args)
-        oe_host_free(args);
 
     return ret;
 }

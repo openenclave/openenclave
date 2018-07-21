@@ -70,22 +70,4 @@ typedef struct _oe_clockgettime_args
     struct timespec tpbuf;
 } oe_clock_gettime_args_t;
 
-/*
-**==============================================================================
-**
-** oe_nanosleep_args_t
-**
-**     int nanosleep(const struct timespec *req, struct timespec *rem);
-**
-**==============================================================================
-*/
-typedef struct _oe_nanosleep_args
-{
-    int ret;
-    const struct timespec* req;
-    struct timespec reqbuf;
-    struct timespec* rem;
-    struct timespec rembuf;
-} oe_nanosleep_args_t;
-
 #endif /* _OE_INCLUDE_TIME_H */
