@@ -21,6 +21,7 @@
 #include "init.h"
 #include "report.h"
 #include "td.h"
+#include "thread.h"
 
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -218,7 +219,8 @@ OE_CATCH:
 **
 ** _HandleExit()
 **
-**     Initiate call to EEXIT.
+**     Initiate a call to EEXIT so the host can handle an ERET or OCALL.
+**     This is the only exit point for the enclave.
 **
 **==============================================================================
 */
@@ -342,6 +344,10 @@ static void _HandleECall(
     }
 
 done:
+
+    /* Release any thread-specific-data for this thread */
+    oe_thread_destruct_specific();
+
     /* Remove ECALL context from front of TD.ecalls list */
     TD_PopCallsite(td);
 
@@ -618,6 +624,7 @@ void __oe_handle_main(
             break;
 
         default:
+
             // Return crashed status.
             *outputArg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, OE_OK);
             *outputArg2 = OE_ENCLAVE_ABORTED;

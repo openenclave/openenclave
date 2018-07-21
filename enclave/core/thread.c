@@ -7,7 +7,9 @@
 #include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/print.h>
 #include "td.h"
+#include "thread.h"
 
 /*
 **==============================================================================
@@ -866,10 +868,6 @@ oe_result_t oe_thread_key_delete(oe_thread_key_t key)
     {
         oe_spin_lock(&_lock);
 
-        /* Call destructor */
-        if (_slots[key].destructor)
-            _slots[key].destructor(oe_thread_get_specific(key));
-
         /* Clear this slot */
         _slots[key].used = false;
         _slots[key].destructor = NULL;
@@ -907,4 +905,34 @@ void* oe_thread_get_specific(oe_thread_key_t key)
         return NULL;
 
     return tsd_page[key];
+}
+
+void oe_thread_destruct_specific(void)
+{
+    void** tsd_page;
+
+    /* Get the thread-specific-data page for the current thread. */
+    if ((tsd_page = _GetTSDPage()))
+    {
+        oe_spin_lock(&_lock);
+        {
+            /* For each thread-specific-data key */
+            for (oe_thread_key_t key = 1; key < MAX_KEYS; key++)
+            {
+                /* If this key is in use: */
+                if (_slots[key].used)
+                {
+                    /* Call the destructor if any. */
+                    if (_slots[key].destructor && tsd_page[key])
+                        (_slots[key].destructor)(tsd_page[key]);
+
+#if 0
+                    /* Clear the value. */
+                    tsd_page[key] = NULL;
+#endif
+                }
+            }
+        }
+        oe_spin_unlock(&_lock);
+    }
 }

@@ -139,9 +139,9 @@ _oe_exit:
 // This function is wrapper of _oe_exit. It is needed to stitch the host
 // stack and enclave stack together.
 //
-// N.B: Don't change the function name, otherwise debugger can't work.
-//	GDB depends on this hardcode function name when does stack walking for split
-//	stack.
+// N.B: Don't change the function name, otherwise debugger can't work. GDB 
+// depends on this hardcode function name when does stack walking for split
+// stack.
 //==============================================================================
 
 .globl __morestack
