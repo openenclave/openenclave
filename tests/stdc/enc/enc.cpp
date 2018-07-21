@@ -11,6 +11,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/timedate.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -169,6 +170,65 @@ static void _AllocationFailureCallback(
     _calledAllocationFailureCallback = true;
 }
 
+static void _test_time_functions(void)
+{
+    const uint64_t USEC = 1000000UL;
+    const uint64_t JAN_1_2018 = 1514786400UL * USEC;
+    const uint64_t JAN_1_2050 = 2524629600UL * USEC;
+    uint64_t now;
+
+    /* Test time(): this test will fail if run after Jan 1, 2050 */
+    {
+        now = time(NULL) * USEC;
+        OE_TEST(now != 0);
+        OE_TEST(now >= JAN_1_2018 && now <= JAN_1_2050);
+    }
+
+    /* Test gettimeofday() */
+    {
+        struct timeval tv = {0, 0};
+        OE_TEST(gettimeofday(&tv, NULL) == 0);
+
+        const uint64_t tmp = tv.tv_sec * USEC;
+
+        /* Check for accuracy within a second */
+        OE_TEST(now >= tmp - USEC);
+        OE_TEST(now <= tmp + USEC);
+    }
+
+    /* Test clock_gettime() */
+    {
+        struct timespec ts;
+        OE_TEST(clock_gettime(0, &ts) == 0);
+
+        const uint64_t tmp = ts.tv_sec * USEC;
+
+        /* Check for accuracy within a second */
+        OE_TEST(tmp >= now - USEC);
+        OE_TEST(tmp <= now + USEC);
+    }
+
+    /* Test nanosleep() */
+    {
+        const uint64_t before = oe_untrusted_time_ocall();
+        const uint64_t SEC = 3;
+
+        /* Sleep for SEC seconds */
+        {
+            timespec req = {SEC, 0};
+            timespec rem;
+            OE_TEST(nanosleep(&req, &rem) == 0);
+        }
+
+        const uint64_t after = oe_untrusted_time_ocall();
+        const uint64_t diff = after - before;
+
+        /* Check for accuracy within 1/4 second */
+        OE_TEST(diff >= (SEC * USEC) - USEC/4);
+        OE_TEST(diff <= (SEC * USEC) + USEC/4);
+    }
+}
+
 OE_ECALL void Test(void* args_)
 {
     TestArgs* args = (TestArgs*)args_;
@@ -212,16 +272,7 @@ OE_ECALL void Test(void* args_)
 #endif
     Test_atox();
 
-    struct timeval tv = {0, 0};
-    OE_TEST(gettimeofday(&tv, NULL) == 0);
-
-    struct timespec ts;
-    clock_gettime(0, &ts);
-
-    /* Sleep for a second */
-    timespec req = {10, 0};
-    timespec rem;
-    nanosleep(&req, &rem);
+    _test_time_functions();
 
     OE_TEST(TestSetjmp() == 999);
 

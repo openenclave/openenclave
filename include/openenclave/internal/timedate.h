@@ -6,6 +6,8 @@
 
 #include <openenclave/bits/types.h>
 
+OE_EXTERNC_BEGIN
+
 /*
 **==============================================================================
 **
@@ -30,12 +32,15 @@ int oe_sleep_ocall(uint64_t milliseconds);
 **
 ** oe_untrusted_time_ocall()
 **
-**     Return microseconds elapsed since the Epoch (12:00 AM on 1970/01/01)
-**     or return 0 on error.
+**     Return microseconds elapsed since the Epoch or 0 on error.
+**
+**     The Epoch is defined as: 1970-01-01 00:00:00 +0000 (UTC)
 **
 **==============================================================================
 */
 
 uint64_t oe_untrusted_time_ocall(void);
+
+OE_EXTERNC_END
 
 #endif /* _OE_INCLUDE_TIMEDATE_H */

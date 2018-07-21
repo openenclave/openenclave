@@ -381,14 +381,6 @@ static oe_result_t _HandleOCALL(
             HandleStrftime(argIn);
             break;
 
-        case OE_OCALL_GETTIMEOFDAY:
-            HandleGettimeofday(argIn);
-            break;
-
-        case OE_OCALL_CLOCK_GETTIME:
-            HandleClockgettime(argIn);
-            break;
-
         case OE_OCALL_SLEEP:
             oe_handle_sleep_ocall(argIn);
             break;

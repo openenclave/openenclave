@@ -15,26 +15,6 @@ void HandleStrftime(uint64_t argIn)
     args->ret = strftime(args->str, sizeof(args->str), args->format, &args->tm);
 }
 
-void HandleGettimeofday(uint64_t argIn)
-{
-    oe_gettimeofday_args_t* args = (oe_gettimeofday_args_t*)argIn;
-
-    if (!args)
-        return;
-
-    args->ret = gettimeofday(args->tv, args->tz);
-}
-
-void HandleClockgettime(uint64_t argIn)
-{
-    oe_clock_gettime_args_t* args = (oe_clock_gettime_args_t*)argIn;
-
-    if (!args)
-        return;
-
-    args->ret = clock_gettime(args->clk_id, args->tp);
-}
-
 void oe_handle_sleep_ocall(uint64_t arg_in)
 {
     oe_sleep_ocall_args_t* args = (oe_sleep_ocall_args_t*)arg_in;
