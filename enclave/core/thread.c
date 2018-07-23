@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "thread.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hostalloc.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
-#include <openenclave/internal/print.h>
 #include "td.h"
-#include "thread.h"
 
 /*
 **==============================================================================

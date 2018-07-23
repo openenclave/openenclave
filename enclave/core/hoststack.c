@@ -120,7 +120,7 @@ static ThreadBuckets* _GetThreadBuckets()
         *tb = (ThreadBuckets){};
         oe_thread_set_specific(_HostStackTlsKey, tb);
 #if defined(OE_BUILD_OCALL_ALLOC_TEST)
-	__cxa_atexit(_FreeThreadBucket, tb, NULL);
+        __cxa_atexit(_FreeThreadBucket, tb, NULL);
 #endif
     }
 

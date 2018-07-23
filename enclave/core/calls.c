@@ -219,8 +219,7 @@ OE_CATCH:
 **
 ** _HandleExit()
 **
-**     Initiate a call to EEXIT so the host can handle an ERET or OCALL.
-**     This is the only exit point for the enclave.
+**     Initiate call to EEXIT.
 **
 **==============================================================================
 */
@@ -601,9 +600,11 @@ void __oe_handle_main(
     switch (__oe_enclave_status)
     {
         case OE_OK:
+        {
             break;
-
+        }
         case OE_ENCLAVE_ABORTING:
+        {
             // Block any ECALL except first time OE_ECALL_DESTRUCTOR call.
             // Don't block ORET here.
             if (code == OE_CODE_ECALL)
@@ -624,13 +625,14 @@ void __oe_handle_main(
             }
 
             break;
-
+        }
         default:
-
+        {
             // Return crashed status.
             *outputArg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, OE_OK);
             *outputArg2 = OE_ENCLAVE_ABORTED;
             return;
+        }
     }
 
     /* Initialize the enclave the first time it is ever entered */

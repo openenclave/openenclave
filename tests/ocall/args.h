@@ -79,7 +79,6 @@ typedef struct _my_ocall_args
 typedef struct _was_destructor_called_args
 {
     bool called;
-}
-was_destructor_called_args_t;
+} was_destructor_called_args_t;
 
 #endif /* _ocall_args_h */
