@@ -24,6 +24,7 @@ jobs:
                git config --global user.name "OE CI Team"
                echo "Merging master to branch"
                git pull origin master
+               git commit -m "Merging master to branch ${CIRCLE_BRANCH}"
                git status
             fi
             ./scripts/check-precommit-reqs 
