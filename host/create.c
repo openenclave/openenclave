@@ -1471,7 +1471,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     /* Clear the magic number */
     enclave->magic = 0;
 
-    oe_mutex_unlock(&enclave->lock);
+    oe_mutex_lock(&enclave->lock);
     {
         /* Unmap the enclave memory region.
          * Track failures reported by the platform, but do not exit early */
