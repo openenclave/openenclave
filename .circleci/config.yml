@@ -17,10 +17,10 @@ jobs:
       - run : 
           name: Check-Precommit-Reqs Test
           command: | 
-            branch-name=$(git symbolic-ref --short HEAD)
-            echo "Branch name is ${branch-name}"
-            if [ ${branch-name} != "master" ]; then
-               echo "Branch name is not master"
+            #branch-name=$(git symbolic-ref --short HEAD)
+            echo "Branch name is ${CIRCLE_BRANCH}"
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               echo "Not on master"
             fi
             ./scripts/check-precommit-reqs 
 
