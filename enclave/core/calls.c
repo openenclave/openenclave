@@ -345,8 +345,10 @@ static void _HandleECall(
 
 done:
 
-    /* Release any thread-specific-data for this thread */
-    oe_thread_destruct_specific();
+    // Release any thread-specific-data for this thread if returning from
+    // a non-nested ECALL.
+    if (td->depth == 1)
+        oe_thread_destruct_specific();
 
     /* Remove ECALL context from front of TD.ecalls list */
     TD_PopCallsite(td);

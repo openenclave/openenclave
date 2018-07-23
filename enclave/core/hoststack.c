@@ -72,9 +72,17 @@ static void _Once(struct OnceType* once, void (*f)(void))
 
 static oe_thread_key_t _HostStackTlsKey;
 
+static void _FreeThreadBucket(void* arg);
+
 static void _HostStackInit(void)
 {
-    if (oe_thread_key_create(&_HostStackTlsKey, NULL))
+    void (*destructor)(void*) = _FreeThreadBucket;
+
+#if defined(OE_BUILD_OCALL_ALLOC_TEST)
+    destructor = NULL;
+#endif
+
+    if (oe_thread_key_create(&_HostStackTlsKey, destructor))
     {
         oe_abort();
     }
@@ -111,7 +119,9 @@ static ThreadBuckets* _GetThreadBuckets()
 
         *tb = (ThreadBuckets){};
         oe_thread_set_specific(_HostStackTlsKey, tb);
-        __cxa_atexit(_FreeThreadBucket, tb, NULL);
+#if defined(OE_BUILD_OCALL_ALLOC_TEST)
+	__cxa_atexit(_FreeThreadBucket, tb, NULL);
+#endif
     }
 
     // Under normal operation, there is no reentrancy. There could be if the

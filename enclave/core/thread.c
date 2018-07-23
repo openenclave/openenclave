@@ -926,10 +926,8 @@ void oe_thread_destruct_specific(void)
                     if (_slots[key].destructor && tsd_page[key])
                         (_slots[key].destructor)(tsd_page[key]);
 
-#if 0
                     /* Clear the value. */
                     tsd_page[key] = NULL;
-#endif
                 }
             }
         }
