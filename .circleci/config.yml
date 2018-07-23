@@ -12,11 +12,16 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     working_directory: ~/Microsoft-OE
     steps:
-    # Testing git checkout over HTTPS instead of SSH
-      - run:
+      - checkout
+      # Merge master to your branch; check if not master
+      - run : |
+          branch-name = git symoblic-ref --short HEAD
+          echo "Branch name is $branch-name"
+          if $branch-name != "master"
+             echo "Branch name is not master"
+     - run:
           name: Check-Precommit-Reqs Test
-          command: git clone https://github.com/Microsoft/openenclave &&
-                   ./scripts/check-precommit-reqs 
+          command: ./scripts/check-precommit-reqs 
 
   #========Build-Test==========# 
 
