@@ -12,7 +12,7 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     working_directory: ~/Microsoft-OE
     steps:
-      - checkout
+      - git clone https://github.com/Microsoft/openenclave
       - run:
           name: Check-Precommit-Reqs Test
           command: ./scripts/check-precommit-reqs 
