@@ -20,6 +20,8 @@ jobs:
             #branch-name=$(git symbolic-ref --short HEAD)
             echo "Branch name is ${CIRCLE_BRANCH}"
             if [ ${CIRCLE_BRANCH} != "master" ]; then
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
                echo "Merging master to branch"
                git pull origin master
                git status
