@@ -13,10 +13,10 @@ jobs:
     working_directory: ~/Microsoft-OE
     steps:
     # Testing git checkout over HTTPS instead of SSH
-      - git clone https://github.com/Microsoft/openenclave
       - run:
           name: Check-Precommit-Reqs Test
-          command: ./scripts/check-precommit-reqs 
+          command: git clone https://github.com/Microsoft/openenclave &&
+                   ./scripts/check-precommit-reqs 
 
   #========Build-Test==========# 
 
