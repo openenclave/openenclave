@@ -20,7 +20,9 @@ jobs:
             #branch-name=$(git symbolic-ref --short HEAD)
             echo "Branch name is ${CIRCLE_BRANCH}"
             if [ ${CIRCLE_BRANCH} != "master" ]; then
-               echo "Not on master"
+               echo "Merging master to branch"
+               git pull origin master
+               git status
             fi
             ./scripts/check-precommit-reqs 
 
