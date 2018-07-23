@@ -17,9 +17,9 @@ jobs:
       - run : 
           name: Check-Precommit-Reqs Test
           command: | 
-            branch-name = git symoblic-ref --short HEAD
-            echo "Branch name is $branch-name"
-            if [$branch-name != "master"]; then
+            branch-name=$(git symoblic-ref --short HEAD)
+            echo "Branch name is ${branch-name}"
+            if [ ${branch-name} != "master" ]; then
                echo "Branch name is not master"
             fi
             ./scripts/check-precommit-reqs 
