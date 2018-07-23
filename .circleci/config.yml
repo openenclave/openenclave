@@ -12,6 +12,7 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     working_directory: ~/Microsoft-OE
     steps:
+    # Testing git checkout over HTTPS instead of SSH
       - git clone https://github.com/Microsoft/openenclave
       - run:
           name: Check-Precommit-Reqs Test
