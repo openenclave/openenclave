@@ -6,7 +6,6 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hostalloc.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include "td.h"
