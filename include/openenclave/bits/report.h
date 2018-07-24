@@ -54,7 +54,7 @@ typedef struct _oe_identity
 
     /** Security version of the enclave. For SGX enclaves, this is the
       *  ISVN value */
-    uint32_t securityVersion;
+    uint32_t security_version;
 
     /** Values of the attributes flags for the enclave -
      *  OE_REPORT_ATTRIBUTES_DEBUG: The report is for a debug enclave.
@@ -72,7 +72,7 @@ typedef struct _oe_identity
 
     /** The Product ID for the enclave.
      * For SGX enclaves, this is the ISVPRODID value. */
-    uint8_t productID[OE_PRODUCT_ID_SIZE];
+    uint8_t product_id[OE_PRODUCT_ID_SIZE];
 } oe_identity_t;
 
 /**

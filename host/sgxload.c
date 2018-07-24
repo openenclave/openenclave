@@ -288,8 +288,8 @@ static oe_result_t _GetSigStruct(
             oe_sgx_sign_enclave(
                 mrenclave,
                 properties->config.attributes,
-                properties->config.productID,
-                properties->config.securityVersion,
+                properties->config.product_id,
+                properties->config.security_version,
                 OE_DEBUG_SIGN_KEY,
                 OE_DEBUG_SIGN_KEY_SIZE,
                 sigstruct));

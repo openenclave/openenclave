@@ -37,7 +37,7 @@ static void _oe_parse_sgx_report_body(
      * Parse identity.
      */
     parsedReport->identity.idVersion = 0x0;
-    parsedReport->identity.securityVersion = reportBody->isvsvn;
+    parsedReport->identity.security_version = reportBody->isvsvn;
 
     if (reportBody->attributes.flags & SGX_FLAGS_DEBUG)
         parsedReport->identity.attributes |= OE_REPORT_ATTRIBUTES_DEBUG;
@@ -61,8 +61,8 @@ static void _oe_parse_sgx_report_body(
         reportBody->mrsigner,
         sizeof(reportBody->mrsigner));
 
-    parsedReport->identity.productID[0] = reportBody->isvprodid & 0xFF;
-    parsedReport->identity.productID[1] = (reportBody->isvprodid >> 8) & 0xFF;
+    parsedReport->identity.product_id[0] = reportBody->isvprodid & 0xFF;
+    parsedReport->identity.product_id[1] = (reportBody->isvprodid >> 8) & 0xFF;
 
     /*
      * Set pointer fields.

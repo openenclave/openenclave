@@ -13,12 +13,12 @@
 static void _CheckProperties(
     oe_sgx_enclave_properties_t* props,
     bool isSigned,
-    uint16_t productID,
-    uint16_t securityVersion,
+    uint16_t product_id,
+    uint16_t security_version,
     uint64_t attributes,
-    uint64_t numHeapPages,
-    uint64_t numStackPages,
-    uint64_t numTCS)
+    uint64_t num_heap_pages,
+    uint64_t num_stack_pages,
+    uint64_t num_tcs)
 {
     const oe_enclave_properties_header_t* header = &props->header;
     const oe_sgx_enclave_config_t* config = &props->config;
@@ -26,13 +26,13 @@ static void _CheckProperties(
     /* Check the header */
     OE_TEST(header->size == sizeof(oe_sgx_enclave_properties_t));
     OE_TEST(header->enclaveType == OE_ENCLAVE_TYPE_SGX);
-    OE_TEST(header->sizeSettings.numHeapPages == numHeapPages);
-    OE_TEST(header->sizeSettings.numStackPages == numStackPages);
-    OE_TEST(header->sizeSettings.numTCS == numTCS);
+    OE_TEST(header->sizeSettings.num_heap_pages == num_heap_pages);
+    OE_TEST(header->sizeSettings.num_stack_pages == num_stack_pages);
+    OE_TEST(header->sizeSettings.num_tcs == num_tcs);
 
     /* Check the SGX config */
-    OE_TEST(config->productID == productID);
-    OE_TEST(config->securityVersion == securityVersion);
+    OE_TEST(config->product_id == product_id);
+    OE_TEST(config->security_version == security_version);
     OE_TEST(config->padding == 0);
     OE_TEST(config->attributes == attributes);
 
@@ -126,24 +126,24 @@ int main(int argc, const char* argv[])
         _CheckProperties(
             &properties,
             isSigned,
-            1111,                                        /* productID */
-            2222,                                        /* securityVersion */
+            1111,                                        /* product_id */
+            2222,                                        /* security_version */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            2048,                                        /* numHeapPages  */
-            1024,                                        /* numStackPages */
-            8);                                          /* numTCS */
+            2048,                                        /* num_heap_pages  */
+            1024,                                        /* num_stack_pages */
+            8);                                          /* num_tcs */
     }
     else
     {
         _CheckProperties(
             &properties,
             isSigned,
-            1234,                                        /* productID */
-            5678,                                        /* securityVersion */
+            1234,                                        /* product_id */
+            5678,                                        /* security_version */
             OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT, /* attributes */
-            1024,                                        /* numHeapPages  */
-            512,                                         /* numStackPages */
-            4);                                          /* numTCS */
+            1024,                                        /* num_heap_pages  */
+            512,                                         /* num_stack_pages */
+            4);                                          /* num_tcs */
     }
 
     Args args;

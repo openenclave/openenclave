@@ -103,7 +103,7 @@ static void ValidateReport(
 
     /* Validate identity. */
     OE_TEST(parsedReport.identity.idVersion == 0x0);
-    OE_TEST(parsedReport.identity.securityVersion == 0x0);
+    OE_TEST(parsedReport.identity.security_version == 0x0);
 
     OE_TEST(parsedReport.identity.attributes & OE_REPORT_ATTRIBUTES_DEBUG);
 
@@ -138,9 +138,9 @@ static void ValidateReport(
 
     OE_TEST(
         Memcmp(
-            parsedReport.identity.productID,
+            parsedReport.identity.product_id,
             g_ProductID,
-            sizeof(parsedReport.identity.productID)) == 0);
+            sizeof(parsedReport.identity.product_id)) == 0);
 }
 
 TEST_FCN void TestLocalReport(void* args_)

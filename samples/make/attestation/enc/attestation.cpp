@@ -59,7 +59,7 @@ const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
  * Attest the given quote and accompanying data. The quote is first attested
  * using the oe_verify_report API. This ensures the authenticity of the enclave
  * that generated the quote. Next, to establish trust of the enclave that
- * generated the quote, the mrsigner, productID, isvsvn values are checked to
+ * generated the quote, the mrsigner, product_id, isvsvn values are checked to
  * see if they are predefined trusted values. Once the enclave's trust has been
  * established, the validity of accompanying data is ensured by comparing its
  * SHA256 digest against the reportData field.
@@ -97,10 +97,10 @@ bool AttestQuote(
 
     // Check the enclave's product id and security version
     // See enc.conf for values specified when signing the enclave.
-    if (parsedReport.identity.productID[0] != 1)
+    if (parsedReport.identity.product_id[0] != 1)
         return false;
 
-    if (parsedReport.identity.securityVersion < 1)
+    if (parsedReport.identity.security_version < 1)
         return false;
 
     uint8_t sha256[32];

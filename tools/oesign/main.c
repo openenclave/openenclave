@@ -156,18 +156,18 @@ done:
 typedef struct _ConfigFileOptions
 {
     bool debug;
-    uint64_t numHeapPages;
-    uint64_t numStackPages;
-    uint64_t numTCS;
-    uint16_t productID;
-    uint16_t securityVersion;
+    uint64_t num_heap_pages;
+    uint64_t num_stack_pages;
+    uint64_t num_tcs;
+    uint16_t product_id;
+    uint16_t security_version;
 } ConfigFileOptions;
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                               \
     {                                                                 \
-        .debug = false, .numHeapPages = OE_UINT64_MAX,                \
-        .numStackPages = OE_UINT64_MAX, .numTCS = OE_UINT64_MAX,      \
-        .productID = OE_UINT16_MAX, .securityVersion = OE_UINT16_MAX, \
+        .debug = false, .num_heap_pages = OE_UINT64_MAX,                \
+        .num_stack_pages = OE_UINT64_MAX, .num_tcs = OE_UINT64_MAX,      \
+        .product_id = OE_UINT16_MAX, .security_version = OE_UINT16_MAX, \
     }
 
 /* Check whether the .conf file is missing required options */
@@ -175,31 +175,31 @@ static int _CheckForMissingOptions(const ConfigFileOptions* options)
 {
     int ret = 0;
 
-    if (options->numHeapPages == OE_UINT64_MAX)
+    if (options->num_heap_pages == OE_UINT64_MAX)
     {
         Err("%s: missing option: NumHeapPages", arg0);
         ret = -1;
     }
 
-    if (options->numStackPages == OE_UINT64_MAX)
+    if (options->num_stack_pages == OE_UINT64_MAX)
     {
         Err("%s: missing option: NumStackPages", arg0);
         ret = -1;
     }
 
-    if (options->numTCS == OE_UINT64_MAX)
+    if (options->num_tcs == OE_UINT64_MAX)
     {
         Err("%s: missing option: NumTCS", arg0);
         ret = -1;
     }
 
-    if (options->productID == OE_UINT16_MAX)
+    if (options->product_id == OE_UINT16_MAX)
     {
         Err("%s: missing option: ProductID", arg0);
         ret = -1;
     }
 
-    if (options->securityVersion == OE_UINT16_MAX)
+    if (options->security_version == OE_UINT16_MAX)
     {
         Err("%s: missing option: SecurityVersion", arg0);
         ret = -1;
@@ -272,7 +272,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->numHeapPages = n;
+            options->num_heap_pages = n;
         }
         else if (strcmp(str_ptr(&lhs), "NumStackPages") == 0)
         {
@@ -284,7 +284,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->numStackPages = n;
+            options->num_stack_pages = n;
         }
         else if (strcmp(str_ptr(&lhs), "NumTCS") == 0)
         {
@@ -296,7 +296,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->numTCS = n;
+            options->num_tcs = n;
         }
         else if (strcmp(str_ptr(&lhs), "ProductID") == 0)
         {
@@ -308,7 +308,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->productID = n;
+            options->product_id = n;
         }
         else if (strcmp(str_ptr(&lhs), "SecurityVersion") == 0)
         {
@@ -320,7 +320,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
                 goto done;
             }
 
-            options->securityVersion = n;
+            options->security_version = n;
         }
         else
         {
@@ -462,24 +462,24 @@ void _MergeConfigFileOptions(
         properties->config.attributes |= SGX_FLAGS_DEBUG;
 
     /* If ProductID option is present */
-    if (options->productID != OE_UINT16_MAX)
-        properties->config.productID = options->productID;
+    if (options->product_id != OE_UINT16_MAX)
+        properties->config.product_id = options->product_id;
 
     /* If SecurityVersion option is present */
-    if (options->securityVersion != OE_UINT16_MAX)
-        properties->config.securityVersion = options->securityVersion;
+    if (options->security_version != OE_UINT16_MAX)
+        properties->config.security_version = options->security_version;
 
     /* If NumHeapPages option is present */
-    if (options->numHeapPages != OE_UINT64_MAX)
-        properties->header.sizeSettings.numHeapPages = options->numHeapPages;
+    if (options->num_heap_pages != OE_UINT64_MAX)
+        properties->header.sizeSettings.num_heap_pages = options->num_heap_pages;
 
     /* If NumStackPages option is present */
-    if (options->numStackPages != OE_UINT64_MAX)
-        properties->header.sizeSettings.numStackPages = options->numStackPages;
+    if (options->num_stack_pages != OE_UINT64_MAX)
+        properties->header.sizeSettings.num_stack_pages = options->num_stack_pages;
 
     /* If NumTCS option is present */
-    if (options->numTCS != OE_UINT64_MAX)
-        properties->header.sizeSettings.numTCS = options->numTCS;
+    if (options->num_tcs != OE_UINT64_MAX)
+        properties->header.sizeSettings.num_tcs = options->num_tcs;
 }
 
 static const char _usage[] =
@@ -617,8 +617,8 @@ int main(int argc, const char* argv[])
     if ((result = oe_sgx_sign_enclave(
              &enc.hash,
              props.config.attributes,
-             props.config.productID,
-             props.config.securityVersion,
+             props.config.product_id,
+             props.config.security_version,
              pemData,
              pemSize,
              (sgx_sigstruct_t*)props.sigstruct)) != OE_OK)

@@ -114,11 +114,11 @@ oe_result_t oe_sgx_update_enclave_properties(
  * This function checks whether the following fields of the
  * **oe_sgx_enclave_properties_t** structure have valid values.
  *
- *     - productID
- *     - securityVersion
- *     - numStackPages
- *     - numHeapPages
- *     - numTCS
+ *     - product_id
+ *     - security_version
+ *     - num_stack_pages
+ *     - num_heap_pages
+ *     - num_tcs
  *
  * If not the **fieldName** output parameter points to the name of the first
  * field with an invalid value.

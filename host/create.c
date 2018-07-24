@@ -1072,43 +1072,43 @@ oe_result_t oe_sgx_validate_enclave_properties(
     }
 
     if (!oe_sgx_is_valid_num_heap_pages(
-            properties->header.sizeSettings.numHeapPages))
+            properties->header.sizeSettings.num_heap_pages))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.numHeapPages";
+            *fieldName = "header.sizeSettings.num_heap_pages";
         result = OE_FAILURE;
         goto done;
     }
 
     if (!oe_sgx_is_valid_num_stack_pages(
-            properties->header.sizeSettings.numStackPages))
+            properties->header.sizeSettings.num_stack_pages))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.numStackPages";
+            *fieldName = "header.sizeSettings.num_stack_pages";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_num_tcs(properties->header.sizeSettings.numTCS))
+    if (!oe_sgx_is_valid_num_tcs(properties->header.sizeSettings.num_tcs))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.numTCS";
+            *fieldName = "header.sizeSettings.num_tcs";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_product_id(properties->config.productID))
+    if (!oe_sgx_is_valid_product_id(properties->config.product_id))
     {
         if (fieldName)
-            *fieldName = "config.productID";
+            *fieldName = "config.product_id";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_security_version(properties->config.productID))
+    if (!oe_sgx_is_valid_security_version(properties->config.product_id))
     {
         if (fieldName)
-            *fieldName = "config.securityVersion";
+            *fieldName = "config.security_version";
         result = OE_FAILURE;
         goto done;
     }
@@ -1222,9 +1222,9 @@ oe_result_t oe_sgx_build_enclave(
             numSegments,
             relocSize,
             ecallSize,
-            props.header.sizeSettings.numHeapPages,
-            props.header.sizeSettings.numStackPages,
-            props.header.sizeSettings.numTCS,
+            props.header.sizeSettings.num_heap_pages,
+            props.header.sizeSettings.num_stack_pages,
+            props.header.sizeSettings.num_tcs,
             &enclaveEnd,
             &enclaveSize));
 
@@ -1265,9 +1265,9 @@ oe_result_t oe_sgx_build_enclave(
             ecallData,
             ecallSize,
             entryAddr,
-            props.header.sizeSettings.numHeapPages,
-            props.header.sizeSettings.numStackPages,
-            props.header.sizeSettings.numTCS,
+            props.header.sizeSettings.num_heap_pages,
+            props.header.sizeSettings.num_stack_pages,
+            props.header.sizeSettings.num_tcs,
             enclave));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
