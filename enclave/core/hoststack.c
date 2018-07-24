@@ -72,8 +72,8 @@ static void _Once(struct OnceType* once, void (*f)(void))
 
 static oe_thread_key_t _HostStackTlsKey;
 
-// cleanup handler for regular exit
-static void _FreeThreadBucket(void* arg)
+// cleanup handler for regular exit (must be visible to ocall-alloc test)
+void oe_free_thread_buckets(void* arg)
 {
     ThreadBuckets* tb = (ThreadBuckets*)arg;
     if (tb->standbyHost)
@@ -90,18 +90,9 @@ static void _FreeThreadBucket(void* arg)
     tb->flags |= THREAD_BUCKET_FLAG_RUNDOWN;
 }
 
-// The tests/ocall-alloc test defines OE_BUILD_OCALL_ALLOC_TEST and directly
-// directly includes this source file. That test stubs out several functions
-// invoked by this module.
-#if defined(OE_BUILD_OCALL_ALLOC_TEST)
-#define DESTRUCTOR NULL
-#else
-#define DESTRUCTOR _FreeThreadBucket
-#endif
-
 static void _HostStackInit(void)
 {
-    if (oe_thread_key_create(&_HostStackTlsKey, DESTRUCTOR))
+    if (oe_thread_key_create(&_HostStackTlsKey, oe_free_thread_buckets))
     {
         oe_abort();
     }
@@ -120,9 +111,6 @@ static ThreadBuckets* _GetThreadBuckets()
 
         *tb = (ThreadBuckets){};
         oe_thread_set_specific(_HostStackTlsKey, tb);
-#if defined(OE_BUILD_OCALL_ALLOC_TEST)
-        __cxa_atexit(_FreeThreadBucket, tb, NULL);
-#endif
     }
 
     // Under normal operation, there is no reentrancy. There could be if the
