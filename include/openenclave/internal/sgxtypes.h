@@ -691,7 +691,7 @@ typedef struct _sgx_report_body
     uint8_t reserved4[60];
 
     /* (320) User report data */
-    sgx_report_data_t reportData;
+    sgx_report_data_t report_data;
 } sgx_report_body_t;
 
 typedef struct _sgx_report

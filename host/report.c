@@ -13,8 +13,8 @@ OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 static oe_result_t _oe_get_local_report(
     oe_enclave_t* enclave,
-    const void* reportData,
-    uint32_t reportDataSize,
+    const void* report_data,
+    uint32_t report_data_size,
     const void* optParams,
     uint32_t optParamsSize,
     void* reportBuffer,
@@ -28,8 +28,8 @@ static oe_result_t _oe_get_local_report(
      * validation will be done in the enclave side.
      */
 
-    // reportData on the host side must be null.
-    if (reportData != NULL || reportDataSize != 0)
+    // report_data on the host side must be null.
+    if (report_data != NULL || report_data_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // optParams, if specified, must be a sgx_target_info_t. When optParams is
@@ -76,8 +76,8 @@ done:
 
 static oe_result_t _oe_get_remote_report(
     oe_enclave_t* enclave,
-    const uint8_t* reportData,
-    uint32_t reportDataSize,
+    const uint8_t* report_data,
+    uint32_t report_data_size,
     const void* optParams,
     uint32_t optParamsSize,
     uint8_t* reportBuffer,
@@ -89,8 +89,8 @@ static oe_result_t _oe_get_remote_report(
     uint32_t sgxReportSize = sizeof(sgx_report_t);
     oe_report_t parsedReport;
 
-    // reportData on the host side must be null.
-    if (reportData != NULL || reportDataSize != 0)
+    // report_data on the host side must be null.
+    if (report_data != NULL || report_data_size != 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // For remote attestation, the Quoting Enclave's target info is used.
@@ -125,8 +125,8 @@ static oe_result_t _oe_get_remote_report(
     OE_CHECK(
         _oe_get_local_report(
             enclave,
-            reportData,
-            reportDataSize,
+            report_data,
+            report_data_size,
             sgxTargetInfo,
             sizeof(*sgxTargetInfo),
             sgxReport,
@@ -146,7 +146,7 @@ static oe_result_t _oe_get_remote_report(
         OE_RAISE(OE_UNEXPECTED);
 
     if (memcmp(
-            parsedReport.enclaveReport,
+            parsedReport.enclave_report,
             &sgxReport->body,
             sizeof(sgxReport->body)) != 0)
         OE_RAISE(OE_UNEXPECTED);
@@ -173,8 +173,8 @@ done:
 oe_result_t oe_get_report(
     oe_enclave_t* enclave,
     uint32_t options,
-    const uint8_t* reportData,
-    uint32_t reportDataSize,
+    const uint8_t* report_data,
+    uint32_t report_data_size,
     const void* optParams,
     uint32_t optParamsSize,
     uint8_t* reportBuffer,
@@ -183,8 +183,8 @@ oe_result_t oe_get_report(
     if (options & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
         return _oe_get_remote_report(
             enclave,
-            reportData,
-            reportDataSize,
+            report_data,
+            report_data_size,
             optParams,
             optParamsSize,
             reportBuffer,
@@ -193,8 +193,8 @@ oe_result_t oe_get_report(
     // If no options are specified, default to local report.
     return _oe_get_local_report(
         enclave,
-        reportData,
-        reportDataSize,
+        report_data,
+        report_data_size,
         optParams,
         optParamsSize,
         reportBuffer,

@@ -25,10 +25,10 @@ static void _CheckProperties(
 
     /* Check the header */
     OE_TEST(header->size == sizeof(oe_sgx_enclave_properties_t));
-    OE_TEST(header->enclaveType == OE_ENCLAVE_TYPE_SGX);
-    OE_TEST(header->sizeSettings.num_heap_pages == num_heap_pages);
-    OE_TEST(header->sizeSettings.num_stack_pages == num_stack_pages);
-    OE_TEST(header->sizeSettings.num_tcs == num_tcs);
+    OE_TEST(header->enclave_type == OE_ENCLAVE_TYPE_SGX);
+    OE_TEST(header->size_settings.num_heap_pages == num_heap_pages);
+    OE_TEST(header->size_settings.num_stack_pages == num_stack_pages);
+    OE_TEST(header->size_settings.num_tcs == num_tcs);
 
     /* Check the SGX config */
     OE_TEST(config->product_id == product_id);

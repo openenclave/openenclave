@@ -42,16 +42,16 @@ typedef struct _oe_enclave_properties_header
 {
     uint32_t size; /**< (0) Size of the extended structure */
 
-    oe_enclave_type_t enclaveType; /**< (4) Enclave type */
+    oe_enclave_type_t enclave_type; /**< (4) Enclave type */
 
-    oe_enclave_size_settings_t sizeSettings; /**< (8) Enclave settings */
+    oe_enclave_size_settings_t size_settings; /**< (8) Enclave settings */
 } oe_enclave_properties_header_t;
 
 OE_STATIC_ASSERT(sizeof(oe_enclave_type_t) == sizeof(uint32_t));
 OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_properties_header_t, size) == 0);
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_properties_header_t, enclaveType) == 4);
+OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_properties_header_t, enclave_type) == 4);
 OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_enclave_properties_header_t, sizeSettings) == 8);
+    OE_OFFSETOF(oe_enclave_properties_header_t, size_settings) == 8);
 OE_CHECK_SIZE(sizeof(oe_enclave_properties_header_t), 32);
 
 // oe_sgx_enclave_properties_t SGX enclave properties derived type
@@ -122,39 +122,39 @@ OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
 // Note: disable clang-format since it badly misformats this macro
 // clang-format off
 
-#define OE_SET_ENCLAVE_SGX(                                                \
-    _ProductID_,                                                           \
-    _SecurityVersion_,                                                     \
-    _AllowDebug_,                                                          \
-    _HeapPageCount_,                                                       \
-    _StackPageCount_,                                                      \
-    _TcsCount_)                                                            \
-    OE_INFO_SECTION_BEGIN                                                  \
-    OE_EXPORT const oe_sgx_enclave_properties_t oe_enclavePropertiesSGX =  \
-    {                                                                      \
-        .header =                                                          \
-        {                                                                  \
-            .size = sizeof(oe_sgx_enclave_properties_t),                   \
-            .enclaveType = OE_ENCLAVE_TYPE_SGX,                            \
-            .sizeSettings =                                                \
-            {                                                              \
-                .num_heap_pages = _HeapPageCount_,                         \
-                .num_stack_pages = _StackPageCount_,                       \
-                .num_tcs = _TcsCount_                                      \
-            }                                                              \
-        },                                                                 \
-        .config =                                                          \
-        {                                                                  \
-            .product_id = _ProductID_,                                     \
-            .security_version = _SecurityVersion_,                         \
-            .padding = 0,                                                  \
-            .attributes = OE_MAKE_ATTRIBUTES(_AllowDebug_)                 \
-        },                                                                 \
-        .sigstruct =                                                       \
-        {                                                                  \
-            0                                                              \
-        }                                                                  \
-    };                                                                     \
+#define OE_SET_ENCLAVE_SGX(                                               \
+    _ProductID_,                                                          \
+    _SecurityVersion_,                                                    \
+    _AllowDebug_,                                                         \
+    _HeapPageCount_,                                                      \
+    _StackPageCount_,                                                     \
+    _TcsCount_)                                                           \
+    OE_INFO_SECTION_BEGIN                                                 \
+    OE_EXPORT const oe_sgx_enclave_properties_t oe_enclavePropertiesSGX = \
+    {                                                                     \
+        .header =                                                         \
+        {                                                                 \
+            .size = sizeof(oe_sgx_enclave_properties_t),                  \
+            .enclave_type = OE_ENCLAVE_TYPE_SGX,                          \
+            .size_settings =                                              \
+            {                                                             \
+                .num_heap_pages = _HeapPageCount_,                        \
+                .num_stack_pages = _StackPageCount_,                      \
+                .num_tcs = _TcsCount_                                     \
+            }                                                             \
+        },                                                                \
+        .config =                                                         \
+        {                                                                 \
+            .product_id = _ProductID_,                                    \
+            .security_version = _SecurityVersion_,                        \
+            .padding = 0,                                                 \
+            .attributes = OE_MAKE_ATTRIBUTES(_AllowDebug_)                \
+        },                                                                \
+        .sigstruct =                                                      \
+        {                                                                 \
+            0                                                             \
+        }                                                                 \
+    };                                                                    \
     OE_INFO_SECTION_END
 
 // clang-format on

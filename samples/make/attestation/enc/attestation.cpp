@@ -9,7 +9,7 @@
 
 /**
  * Generate a quote for the given data. The SHA256 digest of the data is stored
- * in the reportData field of the generated quote.
+ * in the report_data field of the generated quote.
  */
 bool GenerateQuote(
     const uint8_t* data,
@@ -31,7 +31,7 @@ bool GenerateQuote(
     // function.
     oe_result_t result = oe_get_report(
         OE_REPORT_OPTIONS_REMOTE_ATTESTATION,
-        sha256, // Store sha256 in reportData field
+        sha256, // Store sha256 in report_data field
         sizeof(sha256),
         NULL, // optParams must be null
         0,
@@ -49,7 +49,7 @@ bool GenerateQuote(
 }
 
 // The SHA-256 hash of the public key in the private.pem file used to sign the
-// enclave. This value is populated in the authorID sub-field of a parsed
+// enclave. This value is populated in the author_id sub-field of a parsed
 // oe_report_t's identity field.
 const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
                               0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
@@ -62,7 +62,7 @@ const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
  * generated the quote, the mrsigner, product_id, isvsvn values are checked to
  * see if they are predefined trusted values. Once the enclave's trust has been
  * established, the validity of accompanying data is ensured by comparing its
- * SHA256 digest against the reportData field.
+ * SHA256 digest against the report_data field.
  */
 bool AttestQuote(
     const uint8_t* quote,
@@ -91,7 +91,7 @@ bool AttestQuote(
     // enclave.
     // Check that the enclave was signed by an trusted entity.
     if (memcmp(
-            parsedReport.identity.authorID, g_MRSigner, sizeof(g_MRSigner)) !=
+            parsedReport.identity.author_id, g_MRSigner, sizeof(g_MRSigner)) !=
         0)
         return false;
 
@@ -106,7 +106,7 @@ bool AttestQuote(
     uint8_t sha256[32];
     Sha256(data, dataSize, sha256);
 
-    if (memcmp(parsedReport.reportData, sha256, sizeof(sha256)) != 0)
+    if (memcmp(parsedReport.report_data, sha256, sizeof(sha256)) != 0)
     {
         ENC_DEBUG_PRINTF("SHA256 mismatch.");
         return false;

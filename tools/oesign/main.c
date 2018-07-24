@@ -453,7 +453,7 @@ void _MergeConfigFileOptions(
     if (!initialized)
     {
         properties->header.size = sizeof(oe_sgx_enclave_properties_t);
-        properties->header.enclaveType = OE_ENCLAVE_TYPE_SGX;
+        properties->header.enclave_type = OE_ENCLAVE_TYPE_SGX;
         properties->config.attributes = SGX_FLAGS_MODE64BIT;
     }
 
@@ -471,15 +471,15 @@ void _MergeConfigFileOptions(
 
     /* If NumHeapPages option is present */
     if (options->num_heap_pages != OE_UINT64_MAX)
-        properties->header.sizeSettings.num_heap_pages = options->num_heap_pages;
+        properties->header.size_settings.num_heap_pages = options->num_heap_pages;
 
     /* If NumStackPages option is present */
     if (options->num_stack_pages != OE_UINT64_MAX)
-        properties->header.sizeSettings.num_stack_pages = options->num_stack_pages;
+        properties->header.size_settings.num_stack_pages = options->num_stack_pages;
 
     /* If NumTCS option is present */
     if (options->num_tcs != OE_UINT64_MAX)
-        properties->header.sizeSettings.num_tcs = options->num_tcs;
+        properties->header.size_settings.num_tcs = options->num_tcs;
 }
 
 static const char _usage[] =

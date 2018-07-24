@@ -902,7 +902,7 @@ done:
 static oe_result_t _FindEnclavePropertiesHeader(
     uint8_t* sectionData,
     size_t sectionSize,
-    oe_enclave_type_t enclaveType,
+    oe_enclave_type_t enclave_type,
     size_t structSize,
     oe_enclave_properties_header_t** header)
 {
@@ -918,7 +918,7 @@ static oe_result_t _FindEnclavePropertiesHeader(
         oe_enclave_properties_header_t* h =
             (oe_enclave_properties_header_t*)ptr;
 
-        if (h->enclaveType == enclaveType)
+        if (h->enclave_type == enclave_type)
         {
             if (h->size != structSize)
             {
@@ -1072,27 +1072,27 @@ oe_result_t oe_sgx_validate_enclave_properties(
     }
 
     if (!oe_sgx_is_valid_num_heap_pages(
-            properties->header.sizeSettings.num_heap_pages))
+            properties->header.size_settings.num_heap_pages))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.num_heap_pages";
+            *fieldName = "header.size_settings.num_heap_pages";
         result = OE_FAILURE;
         goto done;
     }
 
     if (!oe_sgx_is_valid_num_stack_pages(
-            properties->header.sizeSettings.num_stack_pages))
+            properties->header.size_settings.num_stack_pages))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.num_stack_pages";
+            *fieldName = "header.size_settings.num_stack_pages";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_num_tcs(properties->header.sizeSettings.num_tcs))
+    if (!oe_sgx_is_valid_num_tcs(properties->header.size_settings.num_tcs))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.num_tcs";
+            *fieldName = "header.size_settings.num_tcs";
         result = OE_FAILURE;
         goto done;
     }
@@ -1222,9 +1222,9 @@ oe_result_t oe_sgx_build_enclave(
             numSegments,
             relocSize,
             ecallSize,
-            props.header.sizeSettings.num_heap_pages,
-            props.header.sizeSettings.num_stack_pages,
-            props.header.sizeSettings.num_tcs,
+            props.header.size_settings.num_heap_pages,
+            props.header.size_settings.num_stack_pages,
+            props.header.size_settings.num_tcs,
             &enclaveEnd,
             &enclaveSize));
 
@@ -1265,9 +1265,9 @@ oe_result_t oe_sgx_build_enclave(
             ecallData,
             ecallSize,
             entryAddr,
-            props.header.sizeSettings.num_heap_pages,
-            props.header.sizeSettings.num_stack_pages,
-            props.header.sizeSettings.num_tcs,
+            props.header.size_settings.num_heap_pages,
+            props.header.size_settings.num_stack_pages,
+            props.header.size_settings.num_tcs,
             enclave));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
@@ -1359,7 +1359,7 @@ void _oe_notify_gdb_enclave_creation(
 */
 oe_result_t oe_create_enclave(
     const char* enclavePath,
-    oe_enclave_type_t enclaveType,
+    oe_enclave_type_t enclave_type,
     uint32_t flags,
     const void* config,
     uint32_t configSize,
@@ -1375,7 +1375,7 @@ oe_result_t oe_create_enclave(
         *enclaveOut = NULL;
 
     /* Check parameters */
-    if (!enclavePath || !enclaveOut || enclaveType != OE_ENCLAVE_TYPE_SGX ||
+    if (!enclavePath || !enclaveOut || enclave_type != OE_ENCLAVE_TYPE_SGX ||
         (flags & OE_ENCLAVE_FLAG_RESERVED) || config || configSize > 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 

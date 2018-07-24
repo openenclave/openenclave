@@ -130,7 +130,7 @@ oe_result_t oe_call_enclave(
  * Get a report signed by the enclave platform for use in attestation.
  *
  * This function creates a report to be used in local or remote attestation. The
- * report shall contain the data given by the **reportData** parameter.
+ * report shall contain the data given by the **report_data** parameter.
  *
  * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
  * this function returns OE_BUFFER_TOO_SMALL.
@@ -139,8 +139,8 @@ oe_result_t oe_call_enclave(
  * @param options Specifying default value (0) generates a report for local
  * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
  * report for remote attestation.
- * @param reportData The report data that will be included in the report.
- * @param reportDataSize The size of the **reportData** in bytes.
+ * @param report_data The report data that will be included in the report.
+ * @param report_data_size The size of the **report_data** in bytes.
  * @param optParams Optional additional parameters needed for the current
  * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
  * @param optParamsSize The size of the **optParams** buffer.
@@ -157,8 +157,8 @@ oe_result_t oe_call_enclave(
 oe_result_t oe_get_report(
     oe_enclave_t* enclave,
     uint32_t options,
-    const uint8_t* reportData,
-    uint32_t reportDataSize,
+    const uint8_t* report_data,
+    uint32_t report_data_size,
     const void* optParams,
     uint32_t optParamsSize,
     uint8_t* reportBuffer,
