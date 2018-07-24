@@ -8,6 +8,7 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 #include <stdio.h>
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 
