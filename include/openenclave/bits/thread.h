@@ -582,8 +582,6 @@ oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* rwLock);
  */
 oe_result_t oe_rwlock_destroy(oe_rwlock_t* rwLock);
 
-#define OE_THREADKEY_INITIALIZER 0
-
 typedef uint32_t oe_thread_key_t;
 
 /**
