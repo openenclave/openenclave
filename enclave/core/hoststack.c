@@ -90,6 +90,9 @@ static void _FreeThreadBucket(void* arg)
     tb->flags |= THREAD_BUCKET_FLAG_RUNDOWN;
 }
 
+// The tests/ocall-alloc test defines OE_BUILD_OCALL_ALLOC_TEST and directly
+// directly includes this source file. That test stubs out several functions
+// invoked by this module.
 #if defined(OE_BUILD_OCALL_ALLOC_TEST)
 #define DESTRUCTOR NULL
 #else
