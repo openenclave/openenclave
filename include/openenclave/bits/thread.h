@@ -417,7 +417,7 @@ oe_result_t oe_rwlock_init(oe_rwlock_t* rwLock);
  *    3. Multiple reader threads can concurrently lock a r/w lock.
  *    4. Recursive locking. The same thread can lock a r/w lock multiple times.
  *       To release the lock, the thread must make same number of
- *       oe_rwlock_rdunlock calls.
+ *       oe_rwlock_unlock calls.
  *    5. A deadlock will occur if the writer thread that currently owns the lock
  *       makes a oe_rwlock_rdlock call.
  *    6. There is no limit to the number of readers that can acquire
@@ -460,44 +460,51 @@ oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* rwLock);
 /**
  * Release a read lock on a readers-writer lock.
  *
- * This function releases the read lock on a readers-writer lock obtained with
- * either oe_rwlock_rdlock() or oe_rwlock_try_rdlock().
+ * This function releases the lock on a readers-writer lock obtained with
+ * one of these: 
+ *     - oe_rwlock_rdlock()
+ *     - oe_rwlock_try_rdlock()
+ *     - oe_rwlock_try_wrlock()
+ *     - or oe_rwlock_try_rdlock()
  *
  * Behavior:
- *    1. To release a lock, a reader thread must make the same number of
- *       oe_rwlock_rdunlock as the number of
- *       oe_rwlock_rdlock/oe_rwlock_try_rdlock calls.
- *    2. When all the readers have released the lock, the r/w lock goes into
+ *    1. To release a lock, a thread must make the same number of unlock
+ *       calls as the number of lock calls.
+ *    2. When all the readers have released the lock, the r/w lock goes into an
  *       unlocked state and can then be acquired by writer or reader threads.
- *    3. No guarantee is provided in regards to whether a waiting writer thread
+ *    3. When the writer releases the lock, the r/w lock is once again available
+ *       to be locked for write.
+ *    4. No guarantee is provided in regards to whether a waiting writer thread
  *       or reader threads will (re)acquire the lock.
  *
  * Undefined behavior:
- *    1. Results of a oe_rwlock_rdunlock call by a thread that currently does
- *       not have a read-lock on the r/w lock are undefined.
+ *    1. Results of a oe_rwlock_unlock call by a thread that currently does
+ *       not have a lock on the r/w lock are undefined.
  *
- * @param rwLock Release the read lock on this readers-writer lock.
+ * @param rwLock Release the lock on this readers-writer lock.
  *
- * @return OE_OK the operation was successful
+ * @return OE_OK the operation was successful.
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid.
  * @return OE_NOT_OWNER the calling thread does not have this object locked.
+ * @return OE_NOT_BUSY readers still exist.
  *
  */
-oe_result_t oe_rwlock_rdunlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_unlock(oe_rwlock_t* rwLock);
 
 /**
  * Acquire a write lock on a readers-writer lock.
  *
  * Behavior:
- *    1. If the r/w lock is in an unlocked state, the oe_rwlock_rdunlock
+ *    1. If the r/w lock is in an unlocked state, the oe_rwlock_unlock
  *       is successful and returns OE_OK.
  *    2. If the r/w lock is currently held by reader threads or by another
- *       writer thread, the oe_rwlock_rdunlock call blocks until the lock is
+ *       writer thread, the oe_rwlock_unlock call blocks until the lock is
  *       available for locking.
  *    3. No guarantee is provided in regards to whether a waiting writer thread
  *       or reader threads will (re)acquire the lock.
- *    4. oe_rwlock_rdunlock will deadlock if called by a thread that currently
+ *    4. oe_rwlock_unlock will deadlock if called by a thread that currently
  *       owns the lock for reading.
- *    5. oe_rwlock_rdunlock will deadlock if called by a thread that currently
+ *    5. oe_rwlock_unlock will deadlock if called by a thread that currently
  *       owns the lock for writing. That is, recursive-locking by writers will
  *       cause deadlocks.
  *
@@ -534,32 +541,6 @@ oe_result_t oe_rwlock_wrlock(oe_rwlock_t* rwLock);
  *
  */
 oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* rwLock);
-
-/**
- * Release a write lock on a readers-writer lock.
- *
- * This function releases the write lock on a readers-writer lock obtained with
- * either oe_rwlock_wrlock() or oe_rwlock_try_wrlock().
- *
- * Behavior:
- *    1. To lock goes into unlocked state and can then be acquired by
- *       reader or writer threads.
- *    2. No guarantee is provided in regards to whether a waiting reader threads
- *       or writer thread will (re)acquire the lock.
- *
- * Undefined behavior:
- *    1. Results of a oe_rwlock_try_wrlock call by a thread that currently does
- *       not have a write-lock on the r/w lock are undefined.
- *
- * @param rwLock Release the write lock on this readers-writer lock.
- *
- * @return OE_OK the operation was successful
- * @return OE_INVALID_PARAMETER one or more parameters is invalid
- * @return OE_NOT_OWNER the calling thread does not have the mutex locked
- * @return OE_BUSY readers still exist
- *
- */
-oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* rwLock);
 
 /**
  * Destroy a readers-writer lock.

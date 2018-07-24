@@ -631,7 +631,7 @@ static oe_result_t _WakeWaiters(oe_rwlock_impl_t* rwLock)
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_rdunlock(oe_rwlock_t* readWriteLock)
+static oe_result_t _rwlock_rdunlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
@@ -720,7 +720,7 @@ oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* readWriteLock)
     return result;
 }
 
-oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* readWriteLock)
+static oe_result_t _rwlock_wrunlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
@@ -786,9 +786,9 @@ oe_result_t oe_rwlock_unlock(oe_rwlock_t* readWriteLock)
     // necessary here since the condition is expected to be true only when the
     // current thread is the writer thread.
     if (rwLock->writer == self)
-        return oe_rwlock_wrunlock(readWriteLock);
+        return _rwlock_wrunlock(readWriteLock);
     else
-        return oe_rwlock_rdunlock(readWriteLock);
+        return _rwlock_rdunlock(readWriteLock);
 }
 
 /*
