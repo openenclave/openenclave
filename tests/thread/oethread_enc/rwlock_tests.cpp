@@ -4,6 +4,7 @@
 #include "../rwlock_tests.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../args.h"

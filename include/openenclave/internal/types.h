@@ -5,6 +5,13 @@
 #define _OE_INTERNAL_TYPES_H
 
 #include <openenclave/bits/defs.h>
+/*
+**==============================================================================
+**
+** oe_page
+**
+**==============================================================================
+*/
 
 typedef OE_ALIGNED(OE_PAGE_SIZE) struct _oe_page
 {
@@ -41,7 +48,7 @@ typedef enum _oe_type {
     OE_VOID_T,
 } oe_type_t;
 
-typedef void* (*oe_alloc_proc)(size_t size);
+typedef void* (*oe_alloc_proc_t)(size_t size);
 
 typedef void (*oe_dealloc_proc_t)(void* ptr);
 
@@ -50,5 +57,86 @@ typedef struct _oe_ocall_context
     uintptr_t rbp;
     uintptr_t ret;
 } oe_ocall_context_t;
+
+/*
+**==============================================================================
+**
+** OE_LLU()
+** OE_LLD()
+** OE_LLX()
+**
+** These macros work around printf-format specifier incompatibilities across
+** platforms. To illustrate the problem, consider the following snippet.
+**
+**     uint64_t x = 0;
+**     printf("%lu\n", x);
+**
+** GCC compiles the above without warning, whereas MSVC warns that 'x' and
+** '%lu' are incompatible. Now consider the following snippet.
+**
+**     uint64_t x = 0;
+**     printf("%llu\n", x);
+**
+** GCC warns that 'x' and '%llu' are incompatible, whereas MSVC compiles
+** without warning. To work around this, the OE_LLU() macro is applied as
+** follows.
+**
+**     uint64_t x = 0;
+**     printf("%llu\n", OE_LLU(x));
+**
+** It is important to note that the OE_LLU() macro neither casts nor promotes
+** its argument, rather it converts the type of its argument from 'uint64_t'
+** to 'unsigned long long', without changing the size of the integer. Note that
+** the following assumption holds on all supported platforms.
+**
+**     sizeof(unsigned long long) == sizeof(uint64_t)
+**
+** Also the OE_LLU() macro fails to compile when its argument is not
+** 'uint64_t' For example, the following snippet results in a compiler error.
+**
+**     uint32_t x = 0;
+**     printf("%llu\n", OE_LLU(x)); // compiler error!
+**
+** To implement this macro, GCC requires a type conversion whereas MSVC does not
+** (since the type of the argument already matches '%llu').
+**
+**==============================================================================
+*/
+
+#if defined(_MSC_VER)
+
+#define OE_LLU(_X_) _X_
+#define OE_LLD(_X_) _X_
+#define OE_LLX(_X_) _X_
+
+#elif defined(__GNUC__)
+
+OE_INLINE unsigned long long oe_check_llu(const uint64_t* ptr)
+{
+    OE_STATIC_ASSERT(sizeof(unsigned long long) == sizeof(uint64_t));
+    return *ptr;
+}
+
+OE_INLINE long long oe_check_lld(const int64_t* ptr)
+{
+    OE_STATIC_ASSERT(sizeof(long long) == sizeof(int64_t));
+    return *ptr;
+}
+
+#define OE_LLU(_X_)              \
+    ({                           \
+        __typeof(_X_) _x_ = _X_; \
+        oe_check_llu(&_x_);      \
+    })
+
+#define OE_LLD(_X_)              \
+    ({                           \
+        __typeof(_X_) _x_ = _X_; \
+        oe_check_lld(&_x_);      \
+    })
+
+#define OE_LLX(_X_) OE_LLU(_X_)
+
+#endif /* defined(__GNUC__) */
 
 #endif /* _OE_INTERNAL_TYPES_H */
