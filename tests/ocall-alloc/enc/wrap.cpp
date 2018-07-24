@@ -21,13 +21,13 @@ static struct
 
 OE_EXTERNC_BEGIN
 
-int My__cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
+int test_cxa_atexit(void (*func)(void*), void* arg, void* dso_handle)
 {
     stats.exits.push_back({func, arg});
     return __cxa_atexit(func, arg, dso_handle);
 }
 
-void* MyHostMalloc(size_t size)
+void* test_host_malloc(size_t size)
 {
     void* p;
 
@@ -40,21 +40,41 @@ void* MyHostMalloc(size_t size)
     return p;
 }
 
-void MyHostFree(void* ptr)
+void test_host_free(void* ptr)
 {
     if (ptr)
         OE_TEST(stats.allocations.erase(ptr) == 1);
     oe_host_free(ptr);
 }
 
+oe_result_t test_thread_key_create(
+    oe_thread_key_t* key,
+    void (*destructor)(void* value))
+{
+    // Ignore the destrutor.
+    return oe_thread_key_create(key, NULL);
+}
+
+void test_free_thread_buckets(void* arg);
+
+oe_result_t test_thread_set_specific(oe_thread_key_t key, const void* value)
+{
+    oe_result_t result;
+    
+    if ((result = oe_thread_set_specific(key, value)) == OE_OK)
+        test_cxa_atexit(test_free_thread_buckets, (void*)value, NULL);
+
+    return OE_OK;
+}
+
 OE_EXTERNC_END
 
-size_t MyGetAllocationCount()
+size_t GetAllocationCount()
 {
     return stats.allocations.size();
 }
 
-size_t MyGetAllocationBytes()
+size_t GetAllocationBytes()
 {
     size_t s = 0;
     for (auto e : stats.allocations)
@@ -62,7 +82,7 @@ size_t MyGetAllocationBytes()
     return s;
 }
 
-void MyExit()
+void Exit()
 {
     for (auto e : stats.exits)
         e.first(e.second);
