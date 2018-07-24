@@ -72,22 +72,6 @@ static void _Once(struct OnceType* once, void (*f)(void))
 
 static oe_thread_key_t _HostStackTlsKey;
 
-static void _FreeThreadBucket(void* arg);
-
-static void _HostStackInit(void)
-{
-    void (*destructor)(void*) = _FreeThreadBucket;
-
-#if defined(OE_BUILD_OCALL_ALLOC_TEST)
-    destructor = NULL;
-#endif
-
-    if (oe_thread_key_create(&_HostStackTlsKey, destructor))
-    {
-        oe_abort();
-    }
-}
-
 // cleanup handler for regular exit
 static void _FreeThreadBucket(void* arg)
 {
@@ -104,6 +88,20 @@ static void _FreeThreadBucket(void* arg)
     }
 
     tb->flags |= THREAD_BUCKET_FLAG_RUNDOWN;
+}
+
+#if defined(OE_BUILD_OCALL_ALLOC_TEST)
+#define DESTRUCTOR NULL
+#else
+#define DESTRUCTOR _FreeThreadBucket
+#endif
+
+static void _HostStackInit(void)
+{
+    if (oe_thread_key_create(&_HostStackTlsKey, DESTRUCTOR))
+    {
+        oe_abort();
+    }
 }
 
 static ThreadBuckets* _GetThreadBuckets()
