@@ -55,7 +55,7 @@ OE_EXTERNC_BEGIN
 */
 oe_result_t oe_add_vectored_exception_handler(
     bool isFirstHandler,
-    oe_vectored_exception_handler vectoredHandler);
+    oe_vectored_exception_handler_t vectoredHandler);
 
 /**
 * Remove an existing vectored exception handler.
@@ -68,7 +68,7 @@ oe_result_t oe_add_vectored_exception_handler(
 * @returns OE_FAILED failed to remove handler
 */
 oe_result_t oe_remove_vectored_exception_handler(
-    oe_vectored_exception_handler vectoredHandler);
+    oe_vectored_exception_handler_t vectoredHandler);
 
 /**
  * Perform a high-level enclave function call (OCALL).
@@ -215,9 +215,9 @@ void oe_host_free(void* ptr);
 char* oe_host_strndup(const char* str, size_t n);
 
 /**
- * Abort execution by causing and illegal instruction exception.
+ * Abort execution of the enclave.
  *
- * This function aborts execution by executing the UD2 instruction.
+ * This function aborts execution and terminates the enclave.
  */
 void oe_abort(void);
 

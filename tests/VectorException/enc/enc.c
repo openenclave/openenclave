@@ -107,7 +107,7 @@ PASSTHROUGH_EXCEPTION_HANDLER(TestPassThroughHandler6_3)
         __exception_handler_name_prefix_##_8,                            \
         __exception_handler_name_prefix_##_9,
 
-static oe_vectored_exception_handler
+static oe_vectored_exception_handler_t
     g_test_pass_through_handlers[MAX_EXCEPTION_HANDLER_COUNT] = {
         TEN_EXCEPTION_HANDLER_POINTERS(TestPassThroughHandler0)
             TEN_EXCEPTION_HANDLER_POINTERS(TestPassThroughHandler1)
@@ -121,7 +121,7 @@ static oe_vectored_exception_handler
         TestPassThroughHandler6_2,
         TestPassThroughHandler6_3};
 
-static oe_vectored_exception_handler g_test_div_by_zero_handler;
+static oe_vectored_exception_handler_t g_test_div_by_zero_handler;
 
 int VectorExceptionSetup()
 {
