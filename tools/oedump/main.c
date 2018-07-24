@@ -72,7 +72,8 @@ void DumpEnclaveProperties(const oe_sgx_enclave_properties_t* props)
     printf("debug=%u\n", debug);
 
     printf(
-        "num_heap_pages=%llu\n", OE_LLU(props->header.size_settings.num_heap_pages));
+        "num_heap_pages=%llu\n",
+        OE_LLU(props->header.size_settings.num_heap_pages));
 
     printf(
         "num_stack_pages=%llu\n",

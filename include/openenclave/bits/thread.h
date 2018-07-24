@@ -461,7 +461,7 @@ oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* rwLock);
  * Release a read lock on a readers-writer lock.
  *
  * This function releases the lock on a readers-writer lock obtained with
- * one of these: 
+ * one of these:
  *     - oe_rwlock_rdlock()
  *     - oe_rwlock_try_rdlock()
  *     - oe_rwlock_try_wrlock()

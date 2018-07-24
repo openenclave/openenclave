@@ -163,10 +163,10 @@ typedef struct _ConfigFileOptions
     uint16_t security_version;
 } ConfigFileOptions;
 
-#define CONFIG_FILE_OPTIONS_INITIALIZER                               \
-    {                                                                 \
+#define CONFIG_FILE_OPTIONS_INITIALIZER                                 \
+    {                                                                   \
         .debug = false, .num_heap_pages = OE_UINT64_MAX,                \
-        .num_stack_pages = OE_UINT64_MAX, .num_tcs = OE_UINT64_MAX,      \
+        .num_stack_pages = OE_UINT64_MAX, .num_tcs = OE_UINT64_MAX,     \
         .product_id = OE_UINT16_MAX, .security_version = OE_UINT16_MAX, \
     }
 
@@ -471,11 +471,13 @@ void _MergeConfigFileOptions(
 
     /* If NumHeapPages option is present */
     if (options->num_heap_pages != OE_UINT64_MAX)
-        properties->header.size_settings.num_heap_pages = options->num_heap_pages;
+        properties->header.size_settings.num_heap_pages =
+            options->num_heap_pages;
 
     /* If NumStackPages option is present */
     if (options->num_stack_pages != OE_UINT64_MAX)
-        properties->header.size_settings.num_stack_pages = options->num_stack_pages;
+        properties->header.size_settings.num_stack_pages =
+            options->num_stack_pages;
 
     /* If NumTCS option is present */
     if (options->num_tcs != OE_UINT64_MAX)

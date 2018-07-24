@@ -20,7 +20,10 @@ oe_result_t __oe_load_file(
     void** data,
     size_t* size);
 
-oe_result_t __oe_load_pages(const char* path, oe_page** pages, size_t* npages);
+oe_result_t __oe_load_pages(
+    const char* path,
+    oe_page_t** pages,
+    size_t* npages);
 
 OE_EXTERNC_END
 

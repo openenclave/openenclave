@@ -5,10 +5,11 @@
 #define _OE_INTERNAL_TYPES_H
 
 #include <openenclave/bits/defs.h>
+
 /*
 **==============================================================================
 **
-** oe_page
+** oe_page_t
 **
 **==============================================================================
 */
@@ -16,9 +17,17 @@
 typedef OE_ALIGNED(OE_PAGE_SIZE) struct _oe_page
 {
     unsigned char data[OE_PAGE_SIZE];
-} oe_page;
+} oe_page_t;
 
-OE_STATIC_ASSERT(__alignof(oe_page) == OE_PAGE_SIZE);
+OE_STATIC_ASSERT(__alignof(oe_page_t) == OE_PAGE_SIZE);
+
+/*
+**==============================================================================
+**
+** oe_type
+**
+**==============================================================================
+*/
 
 typedef enum _oe_type {
     OE_NONE_T,
@@ -48,9 +57,26 @@ typedef enum _oe_type {
     OE_VOID_T,
 } oe_type_t;
 
+/*
+**==============================================================================
+**
+** oe_alloc_proc_t
+** oe_dealloc_proc_t
+**
+**==============================================================================
+*/
+
 typedef void* (*oe_alloc_proc_t)(size_t size);
 
 typedef void (*oe_dealloc_proc_t)(void* ptr);
+
+/*
+**==============================================================================
+**
+** oe_ocall_context_t
+**
+**==============================================================================
+*/
 
 typedef struct _oe_ocall_context
 {

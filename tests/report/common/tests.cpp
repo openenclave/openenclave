@@ -55,7 +55,8 @@ static bool CheckReportData(
     oe_report_t parsedReport = {0};
     OE_TEST(oe_parse_report(reportBuffer, reportSize, &parsedReport) == OE_OK);
 
-    return (Memcmp(parsedReport.report_data, report_data, report_data_size) == 0);
+    return (
+        Memcmp(parsedReport.report_data, report_data, report_data_size) == 0);
 }
 
 static void ValidateReport(
@@ -76,7 +77,8 @@ static void ValidateReport(
 
     /* Validate header. */
     OE_TEST(parsedReport.type == OE_ENCLAVE_TYPE_SGX);
-    OE_TEST(Memcmp(parsedReport.report_data, report_data, report_data_size) == 0);
+    OE_TEST(
+        Memcmp(parsedReport.report_data, report_data, report_data_size) == 0);
 
     /* Validate pointer fields. */
     if (remote)
@@ -85,9 +87,11 @@ static void ValidateReport(
         OE_TEST(reportSize >= sizeof(sgx_quote_t));
 
         OE_TEST(
-            parsedReport.report_data == sgxQuote->report_body.report_data.field);
+            parsedReport.report_data ==
+            sgxQuote->report_body.report_data.field);
         OE_TEST(parsedReport.report_data_size == sizeof(sgx_report_data_t));
-        OE_TEST(parsedReport.enclave_report == (uint8_t*)&sgxQuote->report_body);
+        OE_TEST(
+            parsedReport.enclave_report == (uint8_t*)&sgxQuote->report_body);
         OE_TEST(parsedReport.enclave_report_size == sizeof(sgx_report_body_t));
     }
     else
@@ -212,8 +216,10 @@ TEST_FCN void TestLocalReport(void* args_)
 
             OE_TEST(
                 CheckReportData(
-                    reportBuffer, reportSize, report_data, report_data_size + 1) ==
-                false);
+                    reportBuffer,
+                    reportSize,
+                    report_data,
+                    report_data_size + 1) == false);
         }
 
         reportSize = 1024 * 1024;
@@ -387,8 +393,10 @@ TEST_FCN void TestRemoteReport(void* args_)
                 reportBuffer, reportSize, true, report_data, report_data_size);
             OE_TEST(
                 CheckReportData(
-                    reportBuffer, reportSize, report_data, report_data_size + 1) ==
-                false);
+                    reportBuffer,
+                    reportSize,
+                    report_data,
+                    report_data_size + 1) == false);
         }
 
         reportSize = sizeof(reportBuffer);

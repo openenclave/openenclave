@@ -3,8 +3,8 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/tests.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/tests.h>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>

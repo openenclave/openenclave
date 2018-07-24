@@ -202,7 +202,7 @@ void oe_host_free(void* ptr);
  * Make a heap copy of a string.
  *
  * This function allocates memory on the host's heap, copies no more than
- * *n* bytes from the **str** parameter to that memory, and returns a pointer 
+ * *n* bytes from the **str** parameter to that memory, and returns a pointer
  * to the newly allocated memory.
  *
  * @param str The string to be copied.

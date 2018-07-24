@@ -133,7 +133,7 @@ static oe_result_t _AddSegmentPages(
     uint64_t enclaveSize,
     const oe_segment_t segments[],
     size_t nsegments,
-    const oe_page* pages,
+    const oe_page_t* pages,
     size_t npages,
     uint64_t* vaddr)
 {
@@ -149,7 +149,7 @@ static oe_result_t _AddSegmentPages(
     /* Add each page to the enclave */
     for (i = 0; i < npages; i++)
     {
-        const oe_page* page = &pages[i];
+        const oe_page_t* page = &pages[i];
         uint64_t addr = enclaveAddr + (i * OE_PAGE_SIZE);
         uint64_t src = (uint64_t)page;
         uint64_t flags;
@@ -192,7 +192,7 @@ static oe_result_t _AddFilledPages(
     uint32_t filler,
     bool extend)
 {
-    oe_page page;
+    oe_page_t page;
     oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
@@ -286,7 +286,7 @@ static oe_result_t _AddControlPages(
 
     /* Add the TCS page */
     {
-        oe_page page;
+        oe_page_t page;
         sgx_tcs_t* tcs;
 
         /* Zero-fill the TCS page */
@@ -421,8 +421,8 @@ static oe_result_t _AddRelocationPages(
 
     if (relocData && relocSize)
     {
-        const oe_page* pages = (const oe_page*)relocData;
-        size_t npages = relocSize / sizeof(oe_page);
+        const oe_page_t* pages = (const oe_page_t*)relocData;
+        size_t npages = relocSize / sizeof(oe_page_t);
 
         for (size_t i = 0; i < npages; i++)
         {
@@ -434,7 +434,7 @@ static oe_result_t _AddRelocationPages(
             OE_CHECK(
                 oe_sgx_load_enclave_data(
                     context, enclaveAddr, addr, src, flags, extend));
-            (*vaddr) += sizeof(oe_page);
+            (*vaddr) += sizeof(oe_page_t);
         }
     }
 
@@ -457,8 +457,8 @@ static oe_result_t _AddECallPages(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
-        const oe_page* pages = (const oe_page*)ecallData;
-        size_t npages = ecallSize / sizeof(oe_page);
+        const oe_page_t* pages = (const oe_page_t*)ecallData;
+        size_t npages = ecallSize / sizeof(oe_page_t);
 
         for (size_t i = 0; i < npages; i++)
         {
@@ -470,7 +470,7 @@ static oe_result_t _AddECallPages(
             OE_CHECK(
                 oe_sgx_load_enclave_data(
                     context, enclaveAddr, addr, src, flags, extend));
-            (*vaddr) += sizeof(oe_page);
+            (*vaddr) += sizeof(oe_page_t);
         }
     }
 
@@ -501,7 +501,7 @@ static oe_result_t _AddPages(
     oe_result_t result = OE_UNEXPECTED;
     uint64_t vaddr = 0;
     size_t i;
-    oe_page* segpages = NULL;
+    oe_page_t* segpages = NULL;
     size_t nsegpages;
     size_t baseRelocPage;
     size_t baseECallPage;
