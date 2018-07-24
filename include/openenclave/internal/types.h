@@ -45,4 +45,10 @@ typedef void* (*oe_alloc_proc)(size_t size);
 
 typedef void (*oe_dealloc_proc_t)(void* ptr);
 
+typedef struct _oe_ocall_context
+{
+    uintptr_t rbp;
+    uintptr_t ret;
+} oe_ocall_context_t;
+
 #endif /* _OE_INTERNAL_TYPES_H */
