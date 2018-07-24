@@ -60,7 +60,7 @@ PACKAGES_INSTALLED=\
 # https://github.com/otcshare/NextGenSGXAttestationLibs.git are available as
 # packages for apt-get
 get-package:
-	apt-get -y install wget
+	apt-get -y install wget dpkg-dev
 	@ for PKG in $(PACKAGES); do \
 		wget http://10.224.140.70:8888/$$PKG; \
 	done
