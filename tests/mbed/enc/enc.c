@@ -52,7 +52,7 @@ OE_ECALL void Test(Args* args)
         argv[2] = args->test;
         args->ret = main(argc, argv);
         printf("\n in main\n");
-        args->test = oe_host_strdup(__TEST__);
+        args->test = oe_host_strndup(__TEST__, OE_MAX_SIZE_T);
     }
 }
 

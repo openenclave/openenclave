@@ -202,16 +202,17 @@ void oe_host_free(void* ptr);
 /**
  * Make a heap copy of a string.
  *
- * This function allocates memory on the host's heap, copies the **str**
- * parameter to that memory, and returns a pointer to the newly allocated
- * memory.
+ * This function allocates memory on the host's heap, copies no more than
+ * *n* bytes from the **str** parameter to that memory, and returns a pointer 
+ * to the newly allocated memory.
  *
  * @param str The string to be copied.
+ * @param n The number of characters to be copied.
  *
  * @returns A pointer to the newly allocated string or NULL if unable to
  * allocate the storage.
  */
-char* oe_host_strdup(const char* str);
+char* oe_host_strndup(const char* str, size_t n);
 
 /**
  * Abort execution by causing and illegal instruction exception.

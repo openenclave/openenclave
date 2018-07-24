@@ -71,7 +71,7 @@ OE_ECALL void Test(Args* args)
             "test", NULL,
         };
         args->ret = main(1, argv);
-        args->test = oe_host_strdup(__TEST__);
+        args->test = oe_host_strndup(__TEST__, OE_MAX_SIZE_T);
 
         free(__environ);
     }

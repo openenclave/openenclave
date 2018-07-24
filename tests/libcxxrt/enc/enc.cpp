@@ -64,6 +64,6 @@ OE_ECALL void Test(Args* args)
         };
         static int argc = sizeof(argv) / sizeof(argv[0]);
         args->ret = main(argc, argv);
-        args->test = oe_host_strdup(__TEST__NAME);
+        args->test = oe_host_strndup(__TEST__NAME, OE_MAX_SIZE_T);
     }
 }
