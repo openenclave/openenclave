@@ -818,7 +818,7 @@ oe_result_t oe_cert_chain_get_cert(
         OE_RAISE(OE_OUT_OF_BOUNDS);
 
     /* Check for overflow when converting to int */
-    if (index >= OE_MAX_INT)
+    if (index >= OE_INT_MAX)
         OE_RAISE(OE_INTEGER_OVERFLOW);
 
     /* Get the certificate with the given index */

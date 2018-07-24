@@ -117,7 +117,7 @@ int __oe_host_puts(const char* str)
     if (!str)
         goto done;
 
-    if (!(hstr = oe_host_strndup(str, OE_MAX_SIZE_T)))
+    if (!(hstr = oe_host_strndup(str, OE_SIZE_MAX)))
         goto done;
 
     if (oe_ocall(
