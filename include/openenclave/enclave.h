@@ -14,7 +14,6 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
-#include "bits/context.h"
 #include "bits/defs.h"
 #include "bits/exception.h"
 #include "bits/properties.h"

@@ -5,7 +5,7 @@
 #define _ASMDEFS_H
 
 #ifndef __ASSEMBLER__
-#include <openenclave/bits/context.h>
+#include <openenclave/internal/context.h>
 #include <openenclave/bits/types.h>
 #include <stdint.h>
 #endif

@@ -12,6 +12,8 @@
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/constants_x64.h>
+#include <openenclave/internal/context.h>
 #include "asmdefs.h"
 #include "cpuid.h"
 #include "init.h"

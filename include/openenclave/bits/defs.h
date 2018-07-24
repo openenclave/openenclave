@@ -4,8 +4,6 @@
 #ifndef _OE_BITS_DEFS_H
 #define _OE_BITS_DEFS_H
 
-#include "constants_x64.h"
-
 #if !defined(_MSC_VER) && !defined(__GNUC__)
 #error "Unsupported platform"
 #endif
@@ -145,5 +143,7 @@
 #define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
 
 #define OE_OCALL OE_EXTERNC OE_EXPORT
+
+#define OE_PAGE_SIZE 0x1000
 
 #endif /* _OE_BITS_DEFS_H */

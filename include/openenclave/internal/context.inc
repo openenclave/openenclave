@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <openenclave/bits/constants_x64.h>
+#include <openenclave/internal/constants_x64.h>
 
 //==============================================================================
 //
@@ -9,16 +9,16 @@
 //
 // Routine Description:
 //
-//   This function captures the context of the caller. All register values except
-//   the rip are exactly same as the values before this function call instruction
-//   is executed, the rip in the output context will be set the return address of
-//   this function.
+// This function captures the context of the caller. All register values except
+// the rip are exactly same as the values before this function call instruction
+// is executed, the rip in the output context will be set the return address of
+// this function.
 //
-//  Arguments:
-//      oe_context(rdi): The output context.
+// Arguments:
+//     oe_context(rdi): The output context.
 //
-//  Return value:
-//      None.
+// Return value:
+//     None.
 //==============================================================================
 
 .globl oe_snap_current_context

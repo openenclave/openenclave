@@ -4,6 +4,8 @@
 #ifndef _OE_BITS_CONSTANTS_X64_H
 #define _OE_BITS_CONSTANTS_X64_H
 
+#include <openenclave/bits/defs.h>
+
 //
 // Contains AMD64 architecture constants.
 //
@@ -18,7 +20,6 @@
 // Open Enclave layout constant definitions.
 //
 
-#define OE_PAGE_SIZE 0x1000
 #define OE_SSA_FROM_TCS_BYTE_OFFSET OE_PAGE_SIZE
 #define OE_TD_FROM_TCS_BYTE_OFFSET (4 * OE_PAGE_SIZE)
 #define OE_DEFAULT_SSA_FRAME_SIZE 0x1
