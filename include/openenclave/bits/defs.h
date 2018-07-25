@@ -113,41 +113,6 @@
 #error OE_OFFSETOF not implemented
 #endif
 
-/* OE_UNUSED_ATTRIBUTE */
-#ifdef __GNUC__
-#define OE_UNUSED_ATTRIBUTE __attribute__((unused))
-#elif _MSC_VER
-#define OE_UNUSED_ATTRIBUTE
-#else
-#error OE_UNUSED_ATTRIBUTE not implemented
-#endif
-
-/* OE_CONCAT */
-#define __OE_CONCAT(X, Y) X##Y
-#define OE_CONCAT(X, Y) __OE_CONCAT(X, Y)
-
-/* OE_STATIC_ASSERT */
-#define OE_STATIC_ASSERT(COND)       \
-    typedef unsigned char OE_CONCAT( \
-        __OE_STATIC_ASSERT, __LINE__)[(COND) ? 1 : -1] OE_UNUSED_ATTRIBUTE
-
-/* OE_FIELD_SIZE */
-#define OE_FIELD_SIZE(TYPE, FIELD) (sizeof(((TYPE*)0)->FIELD))
-
-/* OE_CONCAT */
-#define __OE_CONCAT(X, Y) X##Y
-#define OE_CONCAT(X, Y) __OE_CONCAT(X, Y)
-
-/* OE_CHECK_SIZE */
-#define OE_CHECK_SIZE(N, M)          \
-    typedef unsigned char OE_CONCAT( \
-        __OE_CHECK_SIZE, __LINE__)[((N) == (M)) ? 1 : -1] OE_UNUSED_ATTRIBUTE
-
-/* OE_STATIC_ASSERT */
-#define OE_STATIC_ASSERT(COND)       \
-    typedef unsigned char OE_CONCAT( \
-        __OE_STATIC_ASSERT, __LINE__)[(COND) ? 1 : -1] OE_UNUSED_ATTRIBUTE
-
 /* OE_TRACE */
 #define OE_TRACE \
     printf("OE_TRACE: %s(%u): %s()\n", __FILE__, __LINE__, __FUNCTION__)

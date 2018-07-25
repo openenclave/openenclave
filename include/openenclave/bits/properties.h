@@ -35,8 +35,6 @@ typedef struct _oe_enclave_size_settings
     uint64_t num_tcs;
 } oe_enclave_size_settings_t;
 
-OE_CHECK_SIZE(sizeof(oe_enclave_size_settings_t), 24);
-
 /* Base type for enclave properties */
 typedef struct _oe_enclave_properties_header
 {
@@ -46,14 +44,6 @@ typedef struct _oe_enclave_properties_header
 
     oe_enclave_size_settings_t size_settings; /**< (8) Enclave settings */
 } oe_enclave_properties_header_t;
-
-OE_STATIC_ASSERT(sizeof(oe_enclave_type_t) == sizeof(uint32_t));
-OE_STATIC_ASSERT(OE_OFFSETOF(oe_enclave_properties_header_t, size) == 0);
-OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_enclave_properties_header_t, enclave_type) == 4);
-OE_STATIC_ASSERT(
-    OE_OFFSETOF(oe_enclave_properties_header_t, size_settings) == 8);
-OE_CHECK_SIZE(sizeof(oe_enclave_properties_header_t), 32);
 
 // oe_sgx_enclave_properties_t SGX enclave properties derived type
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
@@ -72,8 +62,6 @@ typedef struct oe_sgx_enclave_config_t
     uint64_t attributes;
 } oe_sgx_enclave_config_t;
 
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_config_t), 16);
-
 /* Extends oe_enclave_properties_header_t base type */
 typedef struct oe_sgx_enclave_properties_t
 {
@@ -86,8 +74,6 @@ typedef struct oe_sgx_enclave_properties_t
     /* (48) */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
 } oe_sgx_enclave_properties_t;
-
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
 
 #define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo,\"\",@note#")))
 #define OE_INFO_SECTION_END

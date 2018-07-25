@@ -17,6 +17,7 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sha.h>
+#include <openenclave/internal/defs.h>
 
 typedef struct _oe_sha256_context_impl
 {

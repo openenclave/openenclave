@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/result.h>
+#include <openenclave/internal/defs.h>
 
 // OE abort status depends on the order of these enums to transfer status
 // correctly.

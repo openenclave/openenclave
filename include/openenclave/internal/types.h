@@ -10,6 +10,27 @@
 /*
 **==============================================================================
 **
+** Verify sizes of basic types.
+**
+**==============================================================================
+*/
+
+OE_STATIC_ASSERT(sizeof(void*) == 8);
+OE_STATIC_ASSERT(sizeof(ssize_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(size_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(int16_t) == 2);
+OE_STATIC_ASSERT(sizeof(uint16_t) == 2);
+OE_STATIC_ASSERT(sizeof(int32_t) == 4);
+OE_STATIC_ASSERT(sizeof(uint32_t) == 4);
+OE_STATIC_ASSERT(sizeof(int64_t) == 8);
+OE_STATIC_ASSERT(sizeof(uint64_t) == 8);
+OE_STATIC_ASSERT(sizeof(uintptr_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(ptrdiff_t) == sizeof(void*));
+OE_STATIC_ASSERT(sizeof(bool) == 1);
+
+/*
+**==============================================================================
+**
 ** oe_page_t
 **
 **==============================================================================

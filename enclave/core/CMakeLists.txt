@@ -18,6 +18,7 @@ add_library(oecore STATIC
     keys.c
     memory.c
     once.c
+    properties.c
     result.c
     report.c
     sbrk.c

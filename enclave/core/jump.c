@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/jump.h>
+#include <openenclave/internal/defs.h>
+
+OE_CHECK_SIZE(sizeof(oe_jmpbuf_t), 64);
 
 /*
  * This file must be compiled with optimization enabled because the code

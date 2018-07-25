@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <openenclave/enclave.h>
+#include <openenclave/internal/defs.h>
 #include <pthread.h>
 
 #ifdef pthread_equal
