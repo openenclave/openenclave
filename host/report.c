@@ -42,7 +42,7 @@ static oe_result_t _oe_get_local_report(
         OE_RAISE(OE_OUT_OF_MEMORY);
 
     // Request local report.
-    arg->options = 0;
+    arg->flags = 0;
 
     if (optParams != NULL)
         memcpy(arg->optParams, optParams, optParamsSize);
