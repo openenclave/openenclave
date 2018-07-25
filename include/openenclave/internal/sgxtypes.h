@@ -65,7 +65,7 @@ typedef enum _sgx_enclu_leaf {
     ENCLU_EACCEPT = 0x05,
     ENCLU_EMODPE = 0x06,
     ENCLU_EACCEPTCOPY = 0x07,
-    __SGX_ENCLU_LEAF_MAX = OE_MAX_UINT,
+    ENCLU_UNDEFINED = OE_MAX_UINT,
 } sgx_enclu_leaf_t;
 
 OE_STATIC_ASSERT(sizeof(sgx_enclu_leaf_t) == sizeof(unsigned int));

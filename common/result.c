@@ -99,7 +99,7 @@ const char* oe_result_str(oe_result_t result)
         case OE_BAD_ALIGNMENT:
             return "OE_BAD_ALIGNMENT";
         case __OE_RESULT_MAX:
-            return "__OE_RESULT_MAX";
+            break;
     }
 
     return "UNKNOWN";
