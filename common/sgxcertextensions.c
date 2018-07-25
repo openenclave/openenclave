@@ -163,7 +163,7 @@ static oe_result_t _ReadExtension(
     if (itr == NULL || *itr == NULL || end == NULL || expectedOid == NULL ||
         data == NULL || dataLength == NULL)
     {
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     p = *itr;
@@ -238,7 +238,7 @@ done:
 
 /**
  * Read an Integer extension with given oid and check that the value fits in
- * the specified number of bytes. The specified number
+ * the specified number of bytes.
  */
 static oe_result_t _ReadIntegerExtension(
     const char* tag,
@@ -298,7 +298,8 @@ static oe_result_t _ReadIntegerExtensionAsUint8(
     oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint64_t value64 = 0;
 
-    OE_CHECK(_ReadIntegerExtension(tag, oid, itr, end, 1, &value64));
+    OE_CHECK(
+        _ReadIntegerExtension(tag, oid, itr, end, sizeof(uint8_t), &value64));
 
     *value = (uint8_t)value64;
     result = OE_OK;
@@ -331,7 +332,7 @@ done:
 }
 
 /**
- * Read an enumberation extension.
+ * Read an enumeration extension.
  */
 static oe_result_t _ReadEnumerationExtension(
     const char* tag,
@@ -509,24 +510,28 @@ oe_result_t ParseSGXExtensions(
     if (parsedInfo->sgxType >= 2)
         OE_RAISE(OE_FAILURE);
 
-    // Read optional extensions.
-    _ReadBooleanExtension(
-        "opt-dynamic-platform",
-        OPT_DYNAMIC_PLATFORM_OID,
-        &itr,
-        end,
-        &parsedInfo->optDynamicPlatform);
-
-    _ReadBooleanExtension(
-        "opt-cached-keys",
-        OPT_CACHED_KEYS_OID,
-        &itr,
-        end,
-        &parsedInfo->optCachedKeys);
-
-    // Assert that all content has been read.
     if (itr != end)
-        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+    {
+        // There are two possible optional extensions. They are expected to be
+        // in increasing order of OIDs. Their values are ignored.
+        _ReadBooleanExtension(
+            "opt-dynamic-platform",
+            OPT_DYNAMIC_PLATFORM_OID,
+            &itr,
+            end,
+            &parsedInfo->optDynamicPlatform);
+
+        _ReadBooleanExtension(
+            "opt-cached-keys",
+            OPT_CACHED_KEYS_OID,
+            &itr,
+            end,
+            &parsedInfo->optCachedKeys);
+
+        // Assert that the optional extensions have been read.
+        if (itr != end)
+            OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+    }
 
     result = OE_OK;
 done:
