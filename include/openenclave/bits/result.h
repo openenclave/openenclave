@@ -7,8 +7,8 @@
  * This file defines Open Enclave return codes (results).
  *
  */
-#ifndef _OE_BITS_RESULT
-#define _OE_BITS_RESULT
+#ifndef _OE_BITS_RESULT_H
+#define _OE_BITS_RESULT_H
 
 #include "defs.h"
 
@@ -78,4 +78,4 @@ const char* oe_result_str(oe_result_t result);
 
 OE_EXTERNC_END
 
-#endif /* _OE_BITS_RESULT */
+#endif /* _OE_BITS_RESULT_H */
