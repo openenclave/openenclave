@@ -113,10 +113,6 @@
 #error OE_OFFSETOF not implemented
 #endif
 
-/* OE_TRACE */
-#define OE_TRACE \
-    printf("OE_TRACE: %s(%u): %s()\n", __FILE__, __LINE__, __FUNCTION__)
-
 /* NULL */
 #ifndef NULL
 #ifdef __cplusplus
