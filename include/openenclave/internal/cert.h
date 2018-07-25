@@ -33,39 +33,6 @@ typedef struct _oe_verify_cert_error
 } oe_verify_cert_error_t;
 
 /**
- * OID string representation.
- *
- * OID string representation (e.g., "1.2.3.4"). This strucure represents an
- * OID output parameter to prevent buffer length mismatches that the compiler
- * would be unable to detect. For example, consider the following function
- * declaration.
- *
- *     ```
- *     void GetTheOID(char oid[OE_MAX_OID_STRING_SIZE]);
- *     ```
- *
- * This may be called unsafely as follows.
- *
- *     ```
- *     char oid[16];
- *     GetTheOID(oid);
- *     ```
- *
- * Instead, the following definition prevents this coding error.
- *
- *     ```
- *     void GetTheOID(OE_OIDString* oid);
- *     ```
- */
-typedef struct _OE_OIDString
-{
-    // Strictly speaking there is no limit on the length of an OID but we chose
-    // 128 (the maximum OID length in the SNMP specification). Also, this value
-    // is hardcoded to 64 in many implementations.
-    char buf[128];
-} OE_OIDString;
-
-/**
  * Read a certificate from PEM format
  *
  * This function reads a certificate from PEM data with the following PEM

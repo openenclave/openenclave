@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <assert.h>
 #include <mbedtls/asn1.h>
 #include <mbedtls/config.h>
 #include <mbedtls/oid.h>
@@ -17,7 +16,6 @@
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/string.h>
 #include <openenclave/internal/utils.h>
 #include "crl.h"
 #include "ec.h"
@@ -758,33 +756,6 @@ oe_result_t oe_cert_chain_get_cert(
 
 done:
 
-    return result;
-}
-
-oe_result_t oe_cert_extension_count(const oe_cert_t* cert, size_t* count)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    const Cert* impl = (const Cert*)cert;
-
-    if (count)
-        *count = 0;
-
-    /* Reject invalid parameters */
-    if (!_CertIsValid(impl) || !count)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the extension count using a callback */
-    {
-        GetExtensionCountArgs args;
-        args.count = count;
-
-        if (_ParseExtensions(impl->cert, _GetExtensionCount, &args) != 0)
-            OE_RAISE(OE_FAILURE);
-    }
-
-    result = OE_OK;
-
-done:
     return result;
 }
 

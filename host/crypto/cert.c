@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define __GLIBC__
 #include <ctype.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/asn1.h>
