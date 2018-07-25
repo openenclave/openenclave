@@ -465,7 +465,7 @@ oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* rwLock);
  *     - oe_rwlock_rdlock()
  *     - oe_rwlock_try_rdlock()
  *     - oe_rwlock_try_wrlock()
- *     - or oe_rwlock_try_rdlock()
+ *     - or oe_rwlock_try_wrlock()
  *
  * Behavior:
  *    1. To release a lock, a thread must make the same number of unlock
