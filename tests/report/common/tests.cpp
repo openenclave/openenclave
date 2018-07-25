@@ -591,10 +591,10 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 
 TEST_FCN void TestRemoteVerifyReport(void* args_)
 {
-#if OE_BUILD_ENCLAVE
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE] = {0};
     uint32_t reportSize = sizeof(reportBuffer);
 
+#if OE_BUILD_ENCLAVE
     uint8_t reportData[sizeof(sgx_report_data_t)];
     uint32_t reportDataSize = sizeof(reportData);
 
@@ -602,10 +602,10 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
     {
         reportData[i] = i;
     }
+#endif
 
     uint32_t flags = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
 
-    OE_UNUSED(reportDataSize);
     /*
      * Report data parameters scenarios on enclave side:
      *      a. Report data can be NULL.
@@ -620,6 +620,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
             OE_OK);
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
 
+#if OE_BUILD_ENCLAVE
         reportSize = sizeof(reportBuffer);
         reportDataSize = 16;
         OE_TEST(
@@ -645,6 +646,6 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
                 reportBuffer,
                 &reportSize) == OE_OK);
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
-    }
 #endif
+    }
 }

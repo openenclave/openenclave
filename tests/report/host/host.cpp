@@ -63,11 +63,9 @@ int main(int argc, const char* argv[])
     TestParseReportNegative(NULL);
     TestLocalVerifyReport(NULL);
 
-    /*: Not a valid host API anymore
 #ifdef OE_USE_LIBSGX
     TestRemoteVerifyReport(NULL);
 #endif
-    */
 
     /*
      * Enclave API tests.
