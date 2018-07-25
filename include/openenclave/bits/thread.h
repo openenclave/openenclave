@@ -573,8 +573,9 @@ typedef uint32_t oe_thread_key_t;
  * is called when the key is deleted by oe_thread_key_delete().
  *
  * @param key Set this key to refer to the newly allocated TSD entry.
- * @param destructor If non-null, call this function from
- * oe_thread_key_delete().
+ * @param destructor If non-null, this function is called for each exiting
+ *        thread that has a non-null thread-specific data value. An enclave
+ *        thread exits when returning from the outermost ECALL.
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
@@ -589,8 +590,7 @@ oe_result_t oe_thread_key_create(
  * Delete a key for accessing thread-specific data.
  *
  * This function deletes the thread-specific data (TSD) entry associated with
- * the given key, calling the function given by the **destructor** parameter
- * initially passed to oe_thread_key_create().
+ * the given key.
  *
  * @param key Delete the TSD entry associated with this key.
  *

@@ -397,6 +397,7 @@ oe_result_t oe_get_seal_key(
     uint32_t keyInfoSize,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */
