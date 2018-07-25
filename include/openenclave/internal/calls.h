@@ -47,8 +47,11 @@ typedef enum _oe_code {
     OE_CODE_ECALL = 1,
     OE_CODE_ERET = 2,
     OE_CODE_OCALL = 3,
-    OE_CODE_ORET = 4
+    OE_CODE_ORET = 4,
+    __OE_CODE_MAX = OE_MAX_UINT,
 } oe_code_t;
+
+OE_STATIC_ASSERT(sizeof(oe_code_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================
@@ -94,7 +97,11 @@ typedef enum _oe_func {
     OE_OCALL_NANOSLEEP,
     OE_OCALL_MALLOC_DUMP,
     /* Caution: always add new OCALL function numbers here */
+
+    __OE_FUNC_MAX = OE_MAX_UINT,
 } oe_func_t;
+
+OE_STATIC_ASSERT(sizeof(oe_func_t) == sizeof(unsigned int));
 
 #define OE_EXCEPTION_CONTINUE_SEARCH 0x0
 #define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
