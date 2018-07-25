@@ -24,3 +24,4 @@ install(FILES  ${CMAKE_CURRENT_LIST_DIR}/make/Makefile
 
 # for testing the samples, do an install to a local dir to build&run
 add_test(samples sh ${CMAKE_CURRENT_SOURCE_DIR}/test-samples.sh -i ${PROJECT_BINARY_DIR} ${CMAKE_INSTALL_PREFIX} ${PROJECT_BINARY_DIR}/samples/samples-test)
+set_property(TEST samples PROPERTY ENVIRONMENT "USE_LIBSGX=${USE_LIBSGX}")

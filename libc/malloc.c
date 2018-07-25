@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include "debugmalloc.h"
 
 #define OE_ENABLE_MALLOC_WRAPPERS
 #define HAVE_MMAP 0
@@ -62,6 +63,23 @@ static int __sched_yield(void)
 
 #if defined(OE_ENABLE_MALLOC_WRAPPERS)
 
+/* Choose release mode or debug mode allocation functions */
+#if defined(OE_USE_DEBUG_MALLOC)
+#define MALLOC oe_debug_malloc
+#define CALLOC oe_debug_calloc
+#define REALLOC oe_debug_realloc
+#define MEMALIGN oe_debug_memalign
+#define POSIX_MEMALIGN oe_debug_posix_memalign
+#define FREE oe_debug_free
+#else
+#define MALLOC dlmalloc
+#define CALLOC dlcalloc
+#define REALLOC dlrealloc
+#define MEMALIGN dlmemalign
+#define POSIX_MEMALIGN dlposix_memalign
+#define FREE dlfree
+#endif
+
 static oe_allocation_failure_callback_t _failureCallback;
 
 void oe_set_allocation_failure_callback(
@@ -72,7 +90,7 @@ void oe_set_allocation_failure_callback(
 
 void* malloc(size_t size)
 {
-    void* p = dlmalloc(size);
+    void* p = MALLOC(size);
 
     if (!p && size)
     {
@@ -87,12 +105,12 @@ void* malloc(size_t size)
 
 void free(void* ptr)
 {
-    dlfree(ptr);
+    FREE(ptr);
 }
 
 void* calloc(size_t nmemb, size_t size)
 {
-    void* p = dlcalloc(nmemb, size);
+    void* p = CALLOC(nmemb, size);
 
     if (!p && nmemb && size)
     {
@@ -107,7 +125,7 @@ void* calloc(size_t nmemb, size_t size)
 
 void* realloc(void* ptr, size_t size)
 {
-    void* p = dlrealloc(ptr, size);
+    void* p = REALLOC(ptr, size);
 
     if (!p && size)
     {
@@ -122,7 +140,7 @@ void* realloc(void* ptr, size_t size)
 
 int posix_memalign(void** memptr, size_t alignment, size_t size)
 {
-    int rc = dlposix_memalign(memptr, alignment, size);
+    int rc = POSIX_MEMALIGN(memptr, alignment, size);
 
     if (rc != 0 && size)
     {
@@ -137,7 +155,7 @@ int posix_memalign(void** memptr, size_t alignment, size_t size)
 
 void* memalign(size_t alignment, size_t size)
 {
-    void* p = dlmemalign(alignment, size);
+    void* p = MEMALIGN(alignment, size);
 
     if (!p && size)
     {
