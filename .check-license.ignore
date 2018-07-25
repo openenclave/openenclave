@@ -16,7 +16,6 @@
 ./doc/DesignOverview.docx
 ./doc/DesignOverview.pdf
 .exrc
-gdb.commands
 ./.git
 .gitignore
 ./include/openenclave/internal/queue.h
@@ -69,3 +68,6 @@ VERSION
 ./tests/ecall_ocall/crc32.cpp
 ./.cspellignore
 ./3rdparty/libunwind/setcontext.S
+./tests/libunwind/tests.all
+./tests/libunwind/tests.supported
+./tests/libunwind/tests.unsupported

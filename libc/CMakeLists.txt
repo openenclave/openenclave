@@ -9,6 +9,7 @@ add_library(oelibc STATIC
     arc4random.c
     assert.c
     atexit.c
+    debugmalloc.c
     errno.c
     libcxxrt_stubs.c
     link.c
@@ -557,6 +558,10 @@ target_compile_options(oelibc PRIVATE
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
 
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
+
 # this project (and is dependents) require the enclave headers+lib
 target_link_libraries(oelibc oecore)
 
@@ -581,4 +586,4 @@ target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
 # install lib-archive upon install-time
-install (TARGETS oelibc EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install (TARGETS oelibc EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

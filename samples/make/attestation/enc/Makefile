@@ -22,7 +22,6 @@ LDFLAGS += -Wl,-Bstatic
 LDFLAGS += -Wl,-Bsymbolic 
 LDFLAGS += -Wl,--export-dynamic 
 LDFLAGS += -Wl,-pie
-LDFLAGS += -Wl,-eoe_main 
 
 OE_LIBS1 =  -Wl,--start-group -Wl,--whole-archive -loeenclave -loecore -Wl,--end-group
 OE_LIBS2 =  -loelibcxx -loelibc -lmbedtls -lmbedx509 -lmbedcrypto
