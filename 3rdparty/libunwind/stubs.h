@@ -82,7 +82,7 @@ static __inline void* __libunwind_mmap(
     int fd,
     off_t offset)
 {
-    void *memalign(size_t alignment, size_t size);
+    void* dlmemalign(size_t alignment, size_t size);
     void* result = MAP_FAILED;
 
     if (addr || fd != -1 || offset)
@@ -94,7 +94,7 @@ static __inline void* __libunwind_mmap(
     if (flags != (MAP_PRIVATE | MAP_ANONYMOUS))
         goto done;
 
-    result = memalign(4096, length);
+    result = dlmemalign(4096, length);
 
 done:
 
@@ -104,11 +104,13 @@ done:
 
 static __inline int __libunwind_munmap(void* addr, size_t length)
 {
+    extern void dlfree(void *ptr);
+
     if (!addr)
         return -1;
 
     if (length)
-        free(addr);
+        dlfree(addr);
 
     return 0;
 }
