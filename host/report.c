@@ -166,19 +166,11 @@ oe_result_t oe_get_report(
 {
     if (flags & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
         return _oe_get_remote_report(
-            enclave,
-            optParams,
-            optParamsSize,
-            reportBuffer,
-            reportBufferSize);
+            enclave, optParams, optParamsSize, reportBuffer, reportBufferSize);
 
     // If no flags are specified, default to local report.
     return _oe_get_local_report(
-        enclave,
-        optParams,
-        optParamsSize,
-        reportBuffer,
-        reportBufferSize);
+        enclave, optParams, optParamsSize, reportBuffer, reportBufferSize);
 }
 
 oe_result_t oe_verify_report(

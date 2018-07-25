@@ -129,7 +129,7 @@ oe_result_t oe_call_enclave(
 /**
  * Get a report signed by the enclave platform for use in attestation.
  *
- * This function creates a report to be used in local or remote attestation. 
+ * This function creates a report to be used in local or remote attestation.
  *
  * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
  * this function returns OE_BUFFER_TOO_SMALL.

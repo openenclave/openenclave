@@ -61,7 +61,7 @@ int main(int argc, const char* argv[])
     TestLocalReport(&targetInfo);
     TestRemoteReport(NULL);
     TestParseReportNegative(NULL);
-    TestLocalVerifyReport(NULL); 
+    TestLocalVerifyReport(NULL);
 
     /*: Not a valid host API anymore
 #ifdef OE_USE_LIBSGX
@@ -88,7 +88,7 @@ int main(int argc, const char* argv[])
 #ifdef OE_USE_LIBSGX
     OE_TEST(
         oe_call_enclave(enclave, "TestRemoteVerifyReport", &targetInfo) ==
-        OE_OK); 
+        OE_OK);
 #endif
 
     /* Terminate the enclave */
