@@ -87,15 +87,6 @@
 #error OE_ALIGNED not implemented
 #endif
 
-/* OE_UNUSED_ATTRIBUTE */
-#ifdef __GNUC__
-#define OE_UNUSED_ATTRIBUTE __attribute__((unused))
-#elif _MSC_VER
-#define OE_UNUSED_ATTRIBUTE
-#else
-#error OE_UNUSED_ATTRIBUTE not implemented
-#endif
-
 /* OE_COUNTOF */
 #define OE_COUNTOF(ARR) (sizeof(ARR) / sizeof((ARR)[0]))
 
