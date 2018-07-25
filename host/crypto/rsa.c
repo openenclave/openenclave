@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 #include "rsa.h"
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
 #include <openenclave/internal/utils.h>
-#include <openenclave/internal/defs.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <string.h>
