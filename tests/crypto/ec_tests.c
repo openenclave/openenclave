@@ -41,11 +41,7 @@ static const char _CERT[] =
     "RvR+bMRtTbhiRXkV9JD2FJA24tP32pw+\n"
     "-----END CERTIFICATE-----\n";
 
-<<<<<<< HEAD
-/* A certficiate without any extensions */
-=======
 /* A certificate without any extensions */
->>>>>>> master
 static const char _CERT_WITHOUT_EXTENSIONS[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDMzCCAhsCAhABMA0GCSqGSIb3DQEBCwUAMGMxGjAYBgNVBAMMEVRlc3QgSW50\n"
@@ -657,68 +653,6 @@ static void _TestCertChainRead()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-<<<<<<< HEAD
-/* This utility function generates extension definitions for testing */
-oe_result_t DumpExtensions(const char* certData, size_t certSize)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    oe_cert_t cert;
-    size_t count;
-    uint8_t data[4096];
-    size_t size = sizeof(data);
-
-    OE_CHECK(oe_cert_read_pem(certData, certSize, &cert));
-
-    /* Get the number of extensions */
-    OE_CHECK(oe_cert_extension_count(&cert, &count));
-
-    /* Find the extension with this OID */
-    for (size_t i = 0; i < count; i++)
-    {
-        OE_OIDString extOid;
-        size_t tmpSize = size;
-        OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
-
-        printf("static const uint8_t _extensions_data%zu[] =\n", i);
-        printf("{\n");
-
-        for (size_t i = 0; i < tmpSize; i++)
-        {
-            printf("    0x%02x,\n", data[i]);
-        }
-
-        printf("};\n\n");
-    }
-
-    printf("static const Extension _extensions[] =\n");
-    printf("{\n");
-
-    /* Find the extension with this OID */
-    for (size_t i = 0; i < count; i++)
-    {
-        OE_OIDString extOid;
-        size_t tmpSize = size;
-        OE_CHECK(oe_cert_get_extension(&cert, i, &extOid, data, &tmpSize));
-
-        printf("    {\n");
-        printf("        .oid = \"%s\",\n", extOid.buf);
-        printf("        .size = %zu,\n", tmpSize);
-        printf("        .data = _extensions_data%zu,\n", i);
-        printf("    },\n");
-    }
-
-    printf("};\n");
-
-    OE_CHECK(oe_cert_free(&cert));
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-=======
->>>>>>> master
 typedef struct _Extension
 {
     const char* oid;
@@ -817,34 +751,7 @@ static void _TestCertExtensions(
 
     printf("=== begin %s()\n", __FUNCTION__);
 
-<<<<<<< HEAD
-    OE_TEST(oe_cert_read_pem(certData, certSize, &cert) == OE_OK);
-
-    /* Test getting extensions by index */
-    {
-        size_t count;
-
-        OE_TEST(oe_cert_extension_count(&cert, &count) == OE_OK);
-        OE_TEST(count == extensionsCount);
-
-        for (size_t i = 0; i < extensionsCount; i++)
-        {
-            const Extension* ext = &extensions[i];
-            OE_OIDString oid;
-            uint8_t data[4096];
-            size_t size = sizeof(data);
-
-            OE_TEST(
-                oe_cert_get_extension(&cert, i, &oid, data, &size) == OE_OK);
-
-            OE_TEST(strcmp(oid.buf, ext->oid) == 0);
-            OE_TEST(size == ext->size);
-            OE_TEST(memcmp(data, ext->data, size) == 0);
-        }
-    }
-=======
     OE_TEST(oe_cert_read_pem(&cert, certData, certSize) == OE_OK);
->>>>>>> master
 
     /* Test finding extensions by OID */
     {
@@ -888,20 +795,6 @@ static void _TestCertExtensions(
             OE_TEST(r == OE_NOT_FOUND);
     }
 
-<<<<<<< HEAD
-    /* Test for out of bounds */
-    {
-        oe_result_t r;
-        OE_OIDString oid;
-        uint8_t data[4096];
-        size_t size = sizeof(data);
-
-        r = oe_cert_get_extension(&cert, extensionsCount, &oid, data, &size);
-        OE_TEST(r == OE_OUT_OF_BOUNDS);
-    }
-
-=======
->>>>>>> master
     oe_cert_free(&cert);
 
     printf("=== passed %s()\n", __FUNCTION__);
@@ -929,11 +822,7 @@ static void _TestCertWithoutExtensions()
         "2.5.29.35");
 }
 
-<<<<<<< HEAD
-static const char _CERT_WITH_SGX_EXTENSION[] =
-=======
 static const char _SGX_CERT[] =
->>>>>>> master
     "-----BEGIN CERTIFICATE-----\n"
     "MIIEejCCBCCgAwIBAgIVAIRhkz/I2bp4OHxNAneNMrWoyuVBMAoGCCqGSM49BAMC\n"
     "MHExIzAhBgNVBAMMGkludGVsIFNHWCBQQ0sgUHJvY2Vzc29yIENBMRowGAYDVQQK\n"
@@ -961,31 +850,6 @@ static const char _SGX_CERT[] =
     "sdbXaGu2gpAEqy8CIQCvie4k/cstz6V5A4T4Ks6fkDn22tWDTxtV+wepBReC2g==\n"
     "-----END CERTIFICATE-----\n";
 
-<<<<<<< HEAD
-static void _TestCertWithSGXExtensions()
-{
-    oe_cert_t cert;
-    uint8_t data[4096];
-    size_t size = sizeof(data);
-    const char OID[] = "1.2.840.113741.1.13.1";
-    oe_result_t r;
-
-    printf("=== begin %s()\n", __FUNCTION__);
-
-    OE_TEST(
-        oe_cert_read_pem(
-            _CERT_WITH_SGX_EXTENSION,
-            sizeof(_CERT_WITH_SGX_EXTENSION),
-            &cert) == OE_OK);
-
-    /* Find the SGX_EXTENSION */
-    r = oe_cert_find_extension(&cert, OID, data, &size);
-    OE_TEST(r == OE_OK);
-
-    oe_hex_dump(data, size);
-
-    oe_cert_free(&cert);
-=======
 static const char _URL[] =
     "https://certificates.trustedservices.intel.com/IntelSGXPCKProcessor.crl";
 
@@ -1024,7 +888,6 @@ static void _test_crl_distribution_points(void)
 
     r = oe_cert_free(&cert);
     OE_TEST(r == OE_OK);
->>>>>>> master
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
@@ -1033,11 +896,7 @@ void TestEC()
 {
     _TestCertWithExtensions();
     _TestCertWithoutExtensions();
-<<<<<<< HEAD
-    _TestCertWithSGXExtensions();
-=======
     _test_crl_distribution_points();
->>>>>>> master
     _TestSignAndVerify();
     _TestGenerate();
     _TestWritePrivate();
