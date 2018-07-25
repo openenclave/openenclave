@@ -23,6 +23,9 @@ int main(int argc, const char* argv[])
     oe_result_t result;
     oe_enclave_t* enclave = NULL;
 
+printf("SIZE=%zu\n", sizeof(oe_identity_t));
+printf("SIZE=%zu\n", sizeof(oe_report_t));
+
     /* Check arguments */
     if (argc != 2)
     {

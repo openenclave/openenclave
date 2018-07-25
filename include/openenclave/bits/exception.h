@@ -11,9 +11,10 @@
 #ifndef _OE_BITS_EXCEPTION_H
 #define _OE_BITS_EXCEPTION_H
 
-#ifndef __ASSEMBLER__
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+
+OE_EXTERNC_BEGIN
 
 /**
  * Exception codes used by the vectored exception handlers
@@ -115,6 +116,7 @@ typedef struct _oe_exception_record
  */
 typedef uint64_t (*oe_vectored_exception_handler_t)(
     oe_exception_record_t* exceptionContext);
-#endif // !__ASSEMBLER__
+
+OE_EXTERNC_END
 
 #endif /* _OE_BITS_EXCEPTION_H */

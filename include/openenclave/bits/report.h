@@ -86,19 +86,19 @@ typedef struct _oe_report
     /** The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
     oe_enclave_type_t type;
 
+    /** Size of report_data */
+    uint32_t report_data_size;
+
+    /** Size of enclave_report */
+    uint32_t enclave_report_size;
+
     /** Pointer to report data field within the report byte-stream supplied to
      * oe_parse_report */
     uint8_t* report_data;
 
-    /** Size of report_data */
-    uint32_t report_data_size;
-
     /** Pointer to report body field within the report byte-stream supplied to
      * oe_parse_report. */
     uint8_t* enclave_report;
-
-    /** Size of enclave_report */
-    uint32_t enclave_report_size;
 
     /** Contains the IDs and attributes that are part of oe_identity_t */
     oe_identity_t identity;
