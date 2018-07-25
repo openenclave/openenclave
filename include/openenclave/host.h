@@ -31,7 +31,7 @@ OE_EXTERNC_BEGIN
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
 
 /**
- * This is an opaque handle to an enclave returned by OE_CreateEnclave()
+ * This is an opaque handle to an enclave returned by oe_create_enclave()
  */
 typedef struct _oe_enclave oe_enclave_t;
 
@@ -106,7 +106,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
  * function and may be null.
  *
  * This function is implemented using the low-level oe_ocall() interface
- * where the function number is given by the **OE_FUNC_CALL_ENCLAVE** constant.
+ * where the function number is given by the **OE_ECALL_CALL_ENCLAVE** constant.
  *
  * Note that the return value of this function only indicates the success of
  * the call and not of the underlying function. The ECALL implementation must

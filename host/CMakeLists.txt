@@ -3,7 +3,11 @@
 
 if (UNIX)
 set(PLATFORM_SRC
+    ../common/asn1.c
+    ../common/cert.c
+    crypto/asn1.c
     crypto/cert.c
+    crypto/crl.c
     crypto/ec.c
     crypto/init.c
     crypto/key.c
@@ -11,7 +15,7 @@ set(PLATFORM_SRC
     crypto/rsa.c
     linux/aep.S
     linux/aesm.c
-    linux/cpuid_count.c
+    linux/cpuid.c
     linux/enter.S
     linux/entersim.S
     linux/exception.c
@@ -20,11 +24,13 @@ set(PLATFORM_SRC
     linux/sgxsign.c
     linux/time.c
     sgxquoteprovider.c        
+    backtrace.c
     )
 elseif (WIN32)
 set(PLATFORM_SRC
     windows/aep.asm
     windows/aesm.c
+    windows/cpuid.c
     windows/enter.asm
     windows/entersim.asm
     windows/exception.c
@@ -95,6 +101,10 @@ target_link_libraries(oehost PUBLIC ${LIBSGX_COMMON} ${LIBSGX_QE} ${LIBSGX_URTS}
 target_compile_definitions(oehost PRIVATE OE_USE_LIBSGX)
 endif()
 
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oehost PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
+
 # convenience library for creating a host-app (that needs the -rdynamic link flag)
 add_library(oehostapp INTERFACE)
 if(UNIX)
@@ -107,8 +117,7 @@ endif()
 set_property(TARGET oehost PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/host)
 
 # install lib-archive upon install-time
-install(TARGETS oehost EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
+install(TARGETS oehost EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/host)
 
 # provide oehostapp to install-base as well
-install(TARGETS oehostapp EXPORT openenclave)
-
+install(TARGETS oehostapp EXPORT openenclave-config)

@@ -9,7 +9,7 @@
 /**
  * Crypto demonstrates use of mbedtls within the enclave to generate keys and
  * perform encryption. In this sample, each enclave instance generates an
- * ephemeral 2048-bit RSA keypair and shares the public key with the other
+ * ephemeral 2048-bit RSA key pair and shares the public key with the other
  * instance. The other enclave instance then replies with data encrypted to the
  * provided public key.
  */

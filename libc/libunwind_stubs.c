@@ -2,11 +2,13 @@
 // Licensed under the MIT License.
 
 #define _GNU_SOURCE
+#define USE_DL_PREFIX
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
@@ -30,7 +32,7 @@ void* __libunwind_mmap(
     if (flags != (MAP_PRIVATE | MAP_ANONYMOUS))
         goto done;
 
-    result = memalign(4096, length);
+    result = dlmemalign(4096, length);
 
 done:
 
@@ -43,7 +45,7 @@ int __libunwind_munmap(void* addr, size_t length)
         return -1;
 
     if (length)
-        free(addr);
+        dlfree(addr);
 
     return 0;
 }

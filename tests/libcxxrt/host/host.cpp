@@ -37,9 +37,9 @@ void Test(oe_enclave_t* enclave)
     }
 }
 
-static void _ExitOCall(uint64_t argIn, uint64_t* argOut)
+OE_OCALL void ocall_exit(uint64_t arg)
 {
-    exit(argIn);
+    exit(arg);
 }
 
 static int _GetOpt(
@@ -97,9 +97,6 @@ int main(int argc, const char* argv[])
     if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
-
-    // Register to handle OCALL_EXIT from tests.
-    oe_register_ocall(OCALL_EXIT, _ExitOCall);
 
     // Invoke "Test()" in the enclave.
     Test(enclave);

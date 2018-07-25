@@ -66,7 +66,7 @@ oe_enter_sim:
     // Save registers:
     push %rbx
 
-.call_oe_main:
+.call_start:
 
     // Save the current context.
     mov HOST_CONTEXT, %rdi
@@ -75,7 +75,7 @@ oe_enter_sim:
     // Save the stack pointer so enclave can use the stack.
     mov %rsp, RSP
 
-    // Call oe_main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
+    // Call start(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2)
     mov CSSA, %rax
     mov TCS, %rbx
     mov 72(%rbx), %rdx  // RDX=TCS.u.main (72)
@@ -147,7 +147,7 @@ oe_enter_sim:
     mov %rax, ARG1
     mov ARG2OUT, %rax
     mov %rax, ARG2
-    jmp .call_oe_main
+    jmp .call_start
 
 .return_from_ecall_sim:
 

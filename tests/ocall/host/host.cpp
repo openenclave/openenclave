@@ -17,18 +17,27 @@ OE_OCALL void Func1(void* args)
     _func1Called = true;
 }
 
-void MyOCall(uint64_t argIn, uint64_t* argOut)
+OE_OCALL void my_ocall(void* arg)
 {
-    if (argOut)
-        *argOut = argIn * 7;
+    my_ocall_args_t* args = (my_ocall_args_t*)arg;
+
+    if (args)
+        args->out = args->in * 7;
 }
 
-static bool _func2Ok;
+static bool _func2Ok = false;
 
 OE_OCALL void Func2(void* args)
 {
     // unsigned char* buf = (unsigned char*)args;
     _func2Ok = true;
+}
+
+static bool _funcACalled = false;
+
+OE_OCALL void A(void* args)
+{
+    _funcACalled = true;
 }
 
 int main(int argc, const char* argv[])
@@ -84,14 +93,20 @@ int main(int argc, const char* argv[])
 
     /* Call TestMyOCall() */
     {
-        oe_result_t result = oe_register_ocall(0, MyOCall);
-        OE_TEST(result == OE_OK);
-
         TestMyOCallArgs args;
         args.result = 0;
         result = oe_call_enclave(enclave, "TestMyOCall", &args);
         OE_TEST(result == OE_OK);
         OE_TEST(args.result == 7000);
+    }
+
+    /* Call TestOCallEdgeCases() */
+    {
+        oe_result_t result =
+            oe_call_enclave(enclave, "TestOCallEdgeCases", NULL);
+
+        OE_TEST(result == OE_OK);
+        OE_TEST(_funcACalled);
     }
 
     oe_terminate_enclave(enclave);

@@ -19,6 +19,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/string.h>
 #include <openenclave/internal/utils.h>
+#include "crl.h"
 #include "ec.h"
 #include "pem.h"
 #include "rsa.h"
@@ -266,13 +267,13 @@ done:
 /*
 **==============================================================================
 **
-** _ParseExtensions()
+** _parse_extensions()
 **
 **==============================================================================
 */
 
 /* Returns true when done */
-typedef bool (*ParseExtensions)(
+typedef bool (*parse_extensions_callback_t)(
     size_t index,
     const char* oid,
     bool critical,
@@ -326,70 +327,19 @@ typedef struct _GetExtensionCountArgs
     size_t* count;
 } GetExtensionCountArgs;
 
-static bool _GetExtensionCount(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args_)
-{
-    GetExtensionCountArgs* args = (GetExtensionCountArgs*)args_;
-
-    (*args->count)++;
-
-    return false;
-}
-
 typedef struct _GetExtensionArgs
 {
     oe_result_t result;
     size_t index;
-    OE_OIDString* oid;
+    oe_oid_string_t* oid;
     uint8_t* data;
     size_t* size;
 } GetExtensionArgs;
 
-static bool _GetExtension(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args_)
-{
-    GetExtensionArgs* args = (GetExtensionArgs*)args_;
-
-    if (args->index == index)
-    {
-        /* If buffer is too small */
-        if (size > *args->size)
-        {
-            *args->size = size;
-            args->result = OE_BUFFER_TOO_SMALL;
-            return true;
-        }
-
-        /* Copy the OID to caller's buffer */
-        oe_strlcpy(args->oid->buf, oid, sizeof(OE_OIDString));
-
-        /* Copy to caller's buffer */
-        if (args->data)
-            oe_memcpy(args->data, data, *args->size);
-
-        *args->size = size;
-        args->result = OE_OK;
-        return true;
-    }
-
-    /* Keep parsing */
-    return false;
-}
-
 /* Parse the extensions on an MBEDTLS X509 certificate */
-static int _ParseExtensions(
+static int _parse_extensions(
     const mbedtls_x509_crt* crt,
-    ParseExtensions callback,
+    parse_extensions_callback_t callback,
     void* args)
 {
     int ret = -1;
@@ -414,7 +364,7 @@ static int _ParseExtensions(
     /* Parse each extension of the form: [OID | CRITICAL | OCTETS] */
     while (end - p > 1)
     {
-        OE_OIDString oidstr;
+        oe_oid_string_t oidstr;
         int isCritical = 0;
         const uint8_t* octets;
         size_t octetsSize;
@@ -423,7 +373,7 @@ static int _ParseExtensions(
         {
             mbedtls_x509_buf oid;
 
-            /* Prase the OID tag */
+            /* Parse the OID tag */
             {
                 int tag = MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE;
 
@@ -494,9 +444,9 @@ done:
 */
 
 oe_result_t oe_cert_read_pem(
+    oe_cert_t* cert,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_t* cert)
+    size_t pemSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* impl = (Cert*)cert;
@@ -562,9 +512,9 @@ done:
 }
 
 oe_result_t oe_cert_chain_read_pem(
+    oe_cert_chain_t* chain,
     const void* pemData,
-    size_t pemSize,
-    oe_cert_chain_t* chain)
+    size_t pemSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     CertChain* impl = (CertChain*)chain;
@@ -636,12 +586,13 @@ done:
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    OE_CRL* crl, /* ATTN: placeholder (future feature work) */
+    const oe_crl_t* crl,
     oe_verify_cert_error_t* error)
 {
     oe_result_t result = OE_UNEXPECTED;
     Cert* certImpl = (Cert*)cert;
     CertChain* chainImpl = (CertChain*)chain;
+    crl_t* crl_impl = (crl_t*)crl;
     uint32_t flags = 0;
 
     /* Initialize error */
@@ -662,11 +613,18 @@ oe_result_t oe_cert_verify(
         OE_RAISE(OE_INVALID_PARAMETER);
     }
 
+    /* Reject invalid CRL */
+    if (crl_impl && !crl_is_valid(crl_impl))
+    {
+        _SetErr(error, "invalid crl parameter");
+        OE_RAISE(OE_INVALID_PARAMETER);
+    }
+
     /* Verify the certificate */
     if (mbedtls_x509_crt_verify(
             certImpl->cert,
             &chainImpl->referent->crt,
-            NULL,
+            crl_impl ? crl_impl->crl : NULL,
             NULL,
             &flags,
             NULL,
@@ -839,41 +797,8 @@ oe_result_t oe_cert_chain_get_root_cert(
 
     OE_CHECK(oe_cert_chain_get_length(chain, &length));
     OE_CHECK(oe_cert_chain_get_cert(chain, length - 1, cert));
+
     result = OE_OK;
-
-done:
-    return result;
-}
-
-oe_result_t oe_cert_get_extension(
-    const oe_cert_t* cert,
-    size_t index,
-    OE_OIDString* oid,
-    uint8_t* data,
-    size_t* size)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    const Cert* impl = (const Cert*)cert;
-
-    /* Reject invalid parameters */
-    if (!_CertIsValid(impl) || !oid || !size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Find the extension with the given OID using a callback */
-    {
-        GetExtensionArgs args;
-        args.result = OE_OUT_OF_BOUNDS;
-        args.index = index;
-        args.oid = oid;
-        args.data = data;
-        args.size = size;
-
-        if (_ParseExtensions(impl->cert, _GetExtension, &args) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        result = args.result;
-        goto done;
-    }
 
 done:
     return result;
@@ -900,7 +825,7 @@ oe_result_t oe_cert_find_extension(
         args.data = data;
         args.size = size;
 
-        if (_ParseExtensions(impl->cert, _FindExtension, &args) != 0)
+        if (_parse_extensions(impl->cert, _FindExtension, &args) != 0)
             OE_RAISE(OE_FAILURE);
 
         result = args.result;

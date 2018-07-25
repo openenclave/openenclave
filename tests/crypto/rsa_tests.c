@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hash.h"
-#include "rsa_tests.h"
+#include "tests.h"
 
 /* Generated with: openssl genrsa -out private.pem -3 3072 */
 static const char _PRIVATE_KEY[] =
@@ -119,7 +119,7 @@ static void _TestSign()
     size_t signatureSize = 0;
 
     r = oe_rsa_private_key_read_pem(
-        (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY), &key);
+        &key, (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
     OE_TEST(r == OE_OK);
 
     r = oe_rsa_private_key_sign(
@@ -160,7 +160,7 @@ static void _TestVerify()
     oe_rsa_public_key_t key = {0};
 
     r = oe_rsa_public_key_read_pem(
-        (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
+        &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
     OE_TEST(r == OE_OK);
 
     r = oe_rsa_public_key_verify(
@@ -324,12 +324,12 @@ static void _TestCertVerifyGood()
     oe_verify_cert_error_t error = {0};
     oe_cert_t cert = {0};
     oe_cert_chain_t chain = {0};
-    OE_CRL* crl = NULL;
+    oe_crl_t* crl = NULL;
 
-    r = oe_cert_read_pem(_CERT1, sizeof(_CERT1), &cert);
+    r = oe_cert_read_pem(&cert, _CERT1, sizeof(_CERT1));
     OE_TEST(r == OE_OK);
 
-    r = oe_cert_chain_read_pem(CHAIN1, sizeof(CHAIN1), &chain);
+    r = oe_cert_chain_read_pem(&chain, CHAIN1, sizeof(CHAIN1));
     OE_TEST(r == OE_OK);
 
     r = oe_cert_verify(&cert, &chain, crl, &error);
@@ -349,13 +349,13 @@ static void _TestCertVerifyBad()
     oe_verify_cert_error_t error = {0};
     oe_cert_t cert = {0};
     oe_cert_chain_t chain = {0};
-    OE_CRL* crl = NULL;
+    oe_crl_t* crl = NULL;
 
-    r = oe_cert_read_pem(_CERT1, sizeof(_CERT1), &cert);
+    r = oe_cert_read_pem(&cert, _CERT1, sizeof(_CERT1));
     OE_TEST(r == OE_OK);
 
     /* Chain does not contain a root for this certificate */
-    r = oe_cert_chain_read_pem(CHAIN2, sizeof(CHAIN2), &chain);
+    r = oe_cert_chain_read_pem(&chain, CHAIN2, sizeof(CHAIN2));
     OE_TEST(r == OE_OK);
 
     r = oe_cert_verify(&cert, &chain, crl, &error);
@@ -375,11 +375,11 @@ static void _TestMixedChain()
     oe_cert_t cert = {0};
     oe_cert_chain_t chain = {0};
 
-    r = oe_cert_read_pem(_CERT1, sizeof(_CERT1), &cert);
+    r = oe_cert_read_pem(&cert, _CERT1, sizeof(_CERT1));
     OE_TEST(r == OE_OK);
 
     /* Chain does not contain a root for this certificate */
-    r = oe_cert_chain_read_pem(MIXED_CHAIN, sizeof(MIXED_CHAIN), &chain);
+    r = oe_cert_chain_read_pem(&chain, MIXED_CHAIN, sizeof(MIXED_CHAIN));
     OE_TEST(r == OE_FAILURE);
 
     oe_cert_free(&cert);
@@ -447,7 +447,7 @@ static void _TestWritePrivate()
     size_t pemSize = 0;
 
     r = oe_rsa_private_key_read_pem(
-        (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY), &key);
+        &key, (const uint8_t*)_PRIVATE_KEY, sizeof(_PRIVATE_KEY));
     OE_TEST(r == OE_OK);
 
     r = oe_rsa_private_key_write_pem(&key, pemData, &pemSize);
@@ -477,7 +477,7 @@ static void _TestWritePublic()
     size_t pemSize = 0;
 
     r = oe_rsa_public_key_read_pem(
-        (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY), &key);
+        &key, (const uint8_t*)_PUBLIC_KEY, sizeof(_PUBLIC_KEY));
     OE_TEST(r == OE_OK);
 
     r = oe_rsa_public_key_write_pem(&key, pemData, &pemSize);
@@ -507,7 +507,7 @@ static void _TestCertMethods()
     {
         oe_cert_t cert = {0};
 
-        r = oe_cert_read_pem(_CERT1, sizeof(_CERT1), &cert);
+        r = oe_cert_read_pem(&cert, _CERT1, sizeof(_CERT1));
         OE_TEST(r == OE_OK);
 
         oe_rsa_public_key_t key = {0};
@@ -572,7 +572,7 @@ static void _TestCertMethods()
         oe_cert_chain_t chain = {0};
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(CHAIN1, sizeof(CHAIN1), &chain);
+        r = oe_cert_chain_read_pem(&chain, CHAIN1, sizeof(CHAIN1));
         OE_TEST(r == OE_OK);
 
         /* Get the length of the chain */
@@ -608,7 +608,7 @@ static void _TestCertMethods()
         oe_cert_t leaf = {0};
 
         /* Load the chain from PEM format */
-        r = oe_cert_chain_read_pem(CHAIN1, sizeof(CHAIN1), &chain);
+        r = oe_cert_chain_read_pem(&chain, CHAIN1, sizeof(CHAIN1));
         OE_TEST(r == OE_OK);
 
         /* Get the root certificate */
@@ -655,7 +655,7 @@ static void _TestCertMethods()
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
-void TestRSA()
+void TestRSA(void)
 {
     _TestCertMethods();
     _TestCertVerifyGood();

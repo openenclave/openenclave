@@ -96,6 +96,12 @@ const char* oe_result_str(oe_result_t result)
             return "OE_NOT_OWNER";
         case OE_INVALID_SGX_CERT_EXTENSIONS:
             return "OE_INVALID_SGX_CERT_EXTENSIONS";
+        case OE_MEMORY_LEAK:
+            return "OE_MEMORY_LEAK";
+        case OE_BAD_ALIGNMENT:
+            return "OE_BAD_ALIGNMENT";
+        case __OE_RESULT_MAX:
+            break;
     }
 
     return "UNKNOWN";

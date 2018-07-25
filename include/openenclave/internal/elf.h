@@ -325,6 +325,9 @@ Elf64_Phdr* Elf64_GetProgramHeader(const Elf64* elf, size_t index);
 /* Get pointer to the Elf64_Ehdr */
 Elf64_Ehdr* Elf64_GetHeader(const Elf64* elf);
 
+/* Return the name of the function that contains this address */
+const char* Elf64_GetFunctionName(const Elf64* elf, Elf64_Addr addr);
+
 ELF_EXTERNC_END
 
 #endif /* _OE_ELF_H */

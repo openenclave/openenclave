@@ -2,16 +2,22 @@
 # Licensed under the MIT License.
 
 add_library(oeenclave STATIC
-    cert.c
-    ec.c
+    ../common/asn1.c
+    ../common/cert.c
     ../common/quote.c
     ../common/sgxcertextensions.c
+    asn1.c
+    cert.c
+    crl.c
+    ec.c
     cmac.c
     key.c
+    link.c
     random.c
-    report.cpp
+    report.c
     rsa.c
-    sha.c)
+    sha.c
+    start.S)
 
 if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)

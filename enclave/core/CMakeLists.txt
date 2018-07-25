@@ -4,6 +4,7 @@
 add_library(oecore STATIC
     assert.c
     atexit.c
+    backtrace.c
     calls.c
     cpuid.c
     entropy.c
@@ -25,9 +26,9 @@ add_library(oecore STATIC
     string.c
     td.c
     thread.c
+    enter.S
     exit.S
     getkey.S
-    main.S
     )
 
 target_link_libraries(oecore PUBLIC oe_includes)
@@ -47,16 +48,19 @@ if(USE_LIBSGX)
 target_compile_definitions(oecore PUBLIC OE_USE_LIBSGX)
 endif()
 
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oecore PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
+
 target_compile_definitions(oecore PUBLIC OE_BUILD_ENCLAVE)
 
 # addl link-options for enclave apps
 target_link_libraries(oecore INTERFACE
     -nostdlib -nodefaultlibs -nostartfiles
-    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie,-eoe_main
-    )
+    -Wl,--no-undefined,-Bstatic,-Bsymbolic,--export-dynamic,-pie)
 
 # jump.s must be optimized for the correct call-frame.
 set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
-install (TARGETS oecore EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install (TARGETS oecore EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
