@@ -410,7 +410,7 @@ oe_result_t oe_parse_tcb_info_json(
     callback_data_t data = {0};
     data.json = tcb_info_json;
 
-    OE_JsonParserCallbackInterface intf = {
+    oe_json_parser_callback_interface intf = {
         _begin_object,
         _end_object,
         NULL, // Callback for beginArray
@@ -440,7 +440,7 @@ oe_result_t oe_parse_tcb_info_json(
     // will be set to OE_FAILURE
     data.schema_validation_result = OE_OK;
 
-    OE_CHECK(OE_ParseJson(tcb_info_json, tcb_info_json_size, &data, &intf));
+    OE_CHECK(oe_parse_json(tcb_info_json, tcb_info_json_size, &data, &intf));
 
     // Check that all expected levels are there and
     // no schema validation errors were found.

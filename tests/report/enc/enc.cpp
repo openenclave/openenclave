@@ -170,8 +170,8 @@ void PrintError(void* obj, uint32_t pos, const char* msg)
 
 OE_ECALL void TestParseJson(ParseJsonArgs* args)
 {
-    OE_JsonParserCallbackInterface callback = {0};
-    callback.handleError = PrintError;
+    oe_json_parser_callback_interface callback = {0};
+    callback.handle_error = PrintError;
     _jsonString = args->json;
-    args->result = OE_ParseJson(args->json, args->jsonSize, NULL, &callback);
+    args->result = oe_parse_json(args->json, args->jsonSize, NULL, &callback);
 }

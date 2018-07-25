@@ -14,7 +14,7 @@ OE_EXTERNC_BEGIN
  * The parser allocates no memory and performs no schema validation.
  *
  * The parser can be supplied with a set of callbacks in
- * a _OE_JsonParserCallbackInterface struct instance.
+ * a oe_json_parser_callback_interface struct instance.
  * Additional a void pointer to some data can be passed in.
  * This data pointer will be supplied back to each callback function.
  *
@@ -33,12 +33,12 @@ OE_EXTERNC_BEGIN
  * The client needs to perform any un-escaping as needed.
  */
 
-typedef struct _OE_JsonParserCallbackInterface
+typedef struct _oe_json_parser_callback_interface
 {
-    oe_result_t (*beginObject)(void* data);
-    oe_result_t (*endObject)(void* data);
-    oe_result_t (*beginArray)(void* data);
-    oe_result_t (*endArray)(void* data);
+    oe_result_t (*begin_object)(void* data);
+    oe_result_t (*end_object)(void* data);
+    oe_result_t (*begin_array)(void* data);
+    oe_result_t (*end_array)(void* data);
 
     oe_result_t (*null)(void* data);
     oe_result_t (*boolean)(void* data, uint8_t value);
@@ -47,17 +47,16 @@ typedef struct _OE_JsonParserCallbackInterface
         *number)(void* data, const uint8_t* value, uint32_t valueLength);
     oe_result_t (*string)(void* data, const uint8_t* str, uint32_t strLength);
     oe_result_t (
-        *propertyName)(void* obj, const uint8_t* name, uint32_t nameLength);
+        *property_name)(void* obj, const uint8_t* name, uint32_t nameLength);
 
-    void (*handleError)(void* obj, uint32_t charPos, const char* msg);
-} OE_JsonParserCallbackInterface;
+    void (*handle_error)(void* obj, uint32_t charPos, const char* msg);
+} oe_json_parser_callback_interface;
 
-oe_result_t OE_ParseJson(
+oe_result_t oe_parse_json(
     const uint8_t* json,
-    uint32_t jsonLength,
-
-    void* callbackData,
-    const OE_JsonParserCallbackInterface* interface);
+    uint32_t json_length,
+    void* callback_data,
+    const oe_json_parser_callback_interface* interface);
 
 OE_EXTERNC_END
 
