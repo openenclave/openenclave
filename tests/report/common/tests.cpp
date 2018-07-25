@@ -23,8 +23,14 @@
 
 oe_enclave_t* g_Enclave = NULL;
 
-#define GetReport(opt, rd, rds, op, ops, rb, rbs) \
-    oe_get_report(g_Enclave, opt, rd, rds, op, ops, rb, rbs)
+#ifdef OE_BUILD_ENCLAVE
+#define GetReport(flags, rd, rds, op, ops, rb, rbs)		\
+  oe_get_report(g_Enclave, flags, rd, rds, op, ops, rb, rbs)
+#else
+//Host side API does not have reportData and reportDataSize
+#define GetReport(flags, rd, rds, op, ops, rb, rbs)		\
+  oe_get_report(g_Enclave, flags, op, ops, rb, rbs)
+#endif
 
 #define VerifyReport(rpt, rptSize, pr) \
     oe_verify_report(g_Enclave, rpt, rptSize, pr)
@@ -46,6 +52,7 @@ uint8_t g_AuthorID[32] = {0xca, 0x9a, 0xd7, 0x33, 0x14, 0x48, 0x98, 0x0a,
 
 uint8_t g_ProductID[16] = {0};
 
+#ifdef OE_BUILD_ENCLAVE
 static bool CheckReportData(
     uint8_t* reportBuffer,
     uint32_t reportSize,
@@ -57,6 +64,7 @@ static bool CheckReportData(
 
     return (Memcmp(parsedReport.reportData, reportData, reportDataSize) == 0);
 }
+#endif
 
 static void ValidateReport(
     uint8_t* reportBuffer,
@@ -146,11 +154,12 @@ static void ValidateReport(
 TEST_FCN void TestLocalReport(void* args_)
 {
     sgx_target_info_t* targetInfo = (sgx_target_info_t*)args_;
-
+#ifdef OE_BUILD_ENCLAVE
     uint32_t reportDataSize = 0;
     uint8_t reportData[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
         reportData[i] = i;
+#endif
 
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 
@@ -175,18 +184,14 @@ TEST_FCN void TestLocalReport(void* args_)
      *      3. Report data can be OE_REPORT_DATA_SIZE
      *      4. Report data cannot exceed OE_REPORT_DATA_SIZE
      *
-     * Report data must always be null on host side.
+     * Report data tests are not needed for host side.
      */
-    {
 #ifdef OE_BUILD_ENCLAVE
+    {
         oe_result_t expectedResult = OE_OK;
-#else
-        oe_result_t expectedResult = OE_INVALID_PARAMETER;
-#endif
-
         reportSize = 1024 * 1024;
         OE_TEST(
-            GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) == OE_OK);
+		GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) == OE_OK);
 
         if (expectedResult == OE_OK)
         {
@@ -199,7 +204,7 @@ TEST_FCN void TestLocalReport(void* args_)
         OE_TEST(
             GetReport(
                 0,
-                reportData,
+		reportData,
                 reportDataSize,
                 NULL,
                 0,
@@ -246,7 +251,8 @@ TEST_FCN void TestLocalReport(void* args_)
                 reportBuffer,
                 &reportSize) == OE_INVALID_PARAMETER);
     }
-
+#endif // End of reportData scenarios
+    
     /*
      * optParams scenarios:
      *     1. If optParams is not null, optParamsSize must be
@@ -327,12 +333,13 @@ TEST_FCN void TestLocalReport(void* args_)
 
 TEST_FCN void TestRemoteReport(void* args_)
 {
+#ifdef OE_BUILD_ENCLAVE
     uint32_t reportDataSize = 0;
     uint8_t reportData[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
-        reportData[i] = i;
-
+        reportData[i] = i;    
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
+#endif
 
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
     uint32_t reportSize = sizeof(reportBuffer);
@@ -341,7 +348,7 @@ TEST_FCN void TestRemoteReport(void* args_)
     for (uint32_t i = 0; i < sizeof(optParams); ++i)
         optParams[i] = 0;
 
-    uint32_t options = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
+    uint32_t flags = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
     /*
      * Post conditions:
      *     1. Report must contain specified report data or zeros as report data.
@@ -354,18 +361,14 @@ TEST_FCN void TestRemoteReport(void* args_)
      *      c. Report data can be OE_REPORT_DATA_SIZE
      *      d. Report data cannot exceed OE_REPORT_DATA_SIZE
      *
-     * Report data must always be null on host side.
+     * Report data is not a parameter on the host side.
      */
-    {
 #ifdef OE_BUILD_ENCLAVE
+     {
         oe_result_t expectedResult = OE_OK;
-#else
-        oe_result_t expectedResult = OE_INVALID_PARAMETER;
-#endif
-
         reportSize = sizeof(reportBuffer);
         OE_TEST(
-            GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
+            GetReport(flags, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
         ValidateReport(
             reportBuffer, reportSize, true, zeros, OE_REPORT_DATA_SIZE);
@@ -374,7 +377,7 @@ TEST_FCN void TestRemoteReport(void* args_)
         reportDataSize = 16;
         OE_TEST(
             GetReport(
-                options,
+                flags,
                 reportData,
                 reportDataSize,
                 NULL,
@@ -395,7 +398,7 @@ TEST_FCN void TestRemoteReport(void* args_)
         reportDataSize = OE_REPORT_DATA_SIZE;
         OE_TEST(
             GetReport(
-                options,
+                flags,
                 reportData,
                 reportDataSize,
                 NULL,
@@ -412,7 +415,7 @@ TEST_FCN void TestRemoteReport(void* args_)
         reportDataSize = OE_REPORT_DATA_SIZE + 1;
         OE_TEST(
             GetReport(
-                options,
+                flags,
                 reportData,
                 reportDataSize,
                 NULL,
@@ -420,7 +423,8 @@ TEST_FCN void TestRemoteReport(void* args_)
                 reportBuffer,
                 &reportSize) == OE_INVALID_PARAMETER);
     }
-
+#endif
+    
     /*
      * optParams scenarios:
      *     1. Both optParams and optParamsSize must be NULL/0.
@@ -429,7 +433,7 @@ TEST_FCN void TestRemoteReport(void* args_)
         reportSize = sizeof(reportBuffer);
         OE_TEST(
             GetReport(
-                options,
+                flags,
                 NULL,
                 0,
                 NULL,
@@ -438,7 +442,7 @@ TEST_FCN void TestRemoteReport(void* args_)
                 &reportSize) == OE_INVALID_PARAMETER);
         OE_TEST(
             GetReport(
-                options, NULL, 0, optParams, 5, reportBuffer, &reportSize) ==
+                flags, NULL, 0, optParams, 5, reportBuffer, &reportSize) ==
             OE_INVALID_PARAMETER);
     }
 
@@ -451,22 +455,22 @@ TEST_FCN void TestRemoteReport(void* args_)
         reportSize = sizeof(reportBuffer);
 
         OE_TEST(
-            GetReport(options, NULL, 0, NULL, 0, NULL, &reportSize) ==
+	    GetReport(flags, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
 
         // Assert that with the returned reportSize buffer can be created.
         OE_TEST(
-            GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
+            GetReport(flags, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
 
         reportSize = 1;
         OE_TEST(
-            GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
+            GetReport(flags, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
 
         // Assert that with the returned reportSize buffer can be created.
         OE_TEST(
-            GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
+            GetReport(flags, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
     }
 }
@@ -587,6 +591,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 
 TEST_FCN void TestRemoteVerifyReport(void* args_)
 {
+#if OE_BUILD_ENCLAVE
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE] = {0};
     uint32_t reportSize = sizeof(reportBuffer);
 
@@ -598,7 +603,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
         reportData[i] = i;
     }
 
-    uint32_t options = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
+    uint32_t flags = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
 
     OE_UNUSED(reportDataSize);
     /*
@@ -606,21 +611,20 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
      *      a. Report data can be NULL.
      *      b. Report data can be < OE_REPORT_DATA_SIZE
      *      c. Report data can be OE_REPORT_DATA_SIZE
-     * On host side, report data must be null.
+     * On host side, report data is not a valid parameter
      */
     {
         reportSize = sizeof(reportBuffer);
         OE_TEST(
-            GetReport(options, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
+            GetReport(flags, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
 
-#if OE_BUILD_ENCLAVE
         reportSize = sizeof(reportBuffer);
         reportDataSize = 16;
         OE_TEST(
             GetReport(
-                options,
+                flags,
                 reportData,
                 reportDataSize,
                 NULL,
@@ -633,7 +637,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
         reportDataSize = OE_REPORT_DATA_SIZE;
         OE_TEST(
             GetReport(
-                options,
+                flags,
                 reportData,
                 reportDataSize,
                 NULL,
@@ -641,6 +645,6 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
                 reportBuffer,
                 &reportSize) == OE_OK);
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
-#endif
     }
+#endif
 }
