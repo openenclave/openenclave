@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/cpuid.h>
 #include "backtrace.h"
 #include "sgxtypes.h"

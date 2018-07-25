@@ -4,7 +4,7 @@
 #ifndef _OE_BITS_CONSTANTS_X64_H
 #define _OE_BITS_CONSTANTS_X64_H
 
-#include <openenclave/bits/defs.h>
+#include <openenclave/internal/defs.h>
 
 //
 // Contains AMD64 architecture constants.

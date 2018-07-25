@@ -5,6 +5,7 @@
 #define _OE_INTERNAL_TYPES_H
 
 #include <openenclave/bits/defs.h>
+#include <openenclave/internal/defs.h>
 
 /*
 **==============================================================================
@@ -130,6 +131,8 @@ typedef struct _oe_ocall_context
 */
 
 #if defined(_MSC_VER)
+
+#include <openenclave/bits/types.h>
 
 #define OE_LLU(_X_) _X_
 #define OE_LLD(_X_) _X_

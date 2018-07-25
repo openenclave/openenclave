@@ -4,7 +4,48 @@
 #ifndef _OE_INTERNAL_DEFS_H
 #define _OE_INTERNAL_DEFS_H
 
+#include <openenclave/bits/defs.h>
+
+/* OE_WEAK_ALIAS */
 #define OE_WEAK_ALIAS(OLD, NEW) \
     extern __typeof(OLD) NEW __attribute__((weak, alias(#OLD)))
+
+/* OE_ZERO_SIZED_ARRAY */
+#ifdef _WIN32
+/* nonstandard extension used: zero-sized array in struct/union */
+#define OE_ZERO_SIZED_ARRAY __pragma(warning(suppress : 4200))
+#else
+#define OE_ZERO_SIZED_ARRAY /* empty */
+#endif
+
+/* OE_DEPRECATED */
+#define OE_DEPRECATED(MSG) __attribute__((deprecated(MSG)))
+
+/*
+ * Define packed types, such as:
+ *     OE_PACK_BEGIN
+ *     struct foo {int a,b};
+ *     OE_PACK_END
+ */
+#if defined(__GNUC__)
+#define OE_PACK_BEGIN _Pragma("pack(push, 1)")
+#define OE_PACK_END _Pragma("pack(pop)")
+#elif _MSC_VER
+#define OE_PACK_BEGIN __pragma(pack(push, 1))
+#define OE_PACK_END __pragma(pack(pop))
+#else
+#error "OE_PACK_BEGIN and OE_PACK_END not implemented"
+#endif
+
+/* OE_CHECK_SIZE */
+#define OE_CHECK_SIZE(N, M)          \
+    typedef unsigned char OE_CONCAT( \
+        __OE_CHECK_SIZE, __LINE__)[((N) == (M)) ? 1 : -1] OE_UNUSED_ATTRIBUTE
+
+/* OE_FIELD_SIZE */
+#define OE_FIELD_SIZE(TYPE, FIELD) (sizeof(((TYPE*)0)->FIELD))
+
+/* OE_PAGE_SIZE */
+#define OE_PAGE_SIZE 0x1000
 
 #endif /* _OE_INTERNAL_DEFS_H */

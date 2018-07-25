@@ -8,6 +8,8 @@
 #include <openenclave/bits/properties.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/defs.h>
+#include <openenclave/internal/types.h>
 #include "epid.h"
 #include "jump.h"
 #include "load.h"
