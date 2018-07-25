@@ -4,6 +4,8 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/defs.h>
 
+OE_STATIC_ASSERT(sizeof(oe_result_t) == sizeof(unsigned int));
+
 // OE abort status depends on the order of these enums to transfer status
 // correctly.
 OE_STATIC_ASSERT(OE_ENCLAVE_ABORTING > OE_OK);

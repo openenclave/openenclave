@@ -77,6 +77,7 @@ typedef enum _oe_type {
     OE_SSIZE_T,
     OE_STRUCT_T,
     OE_VOID_T,
+    __OE_TYPE_MAX = OE_ENUM_MAX,
 } oe_type_t;
 
 /*

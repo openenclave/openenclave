@@ -67,7 +67,7 @@ typedef enum _sgx_enclu_leaf {
     ENCLU_EACCEPT = 0x05,
     ENCLU_EMODPE = 0x06,
     ENCLU_EACCEPTCOPY = 0x07,
-    ENCLU_UNDEFINED = OE_MAX_UINT,
+    ENCLU_UNDEFINED = OE_ENUM_MAX,
 } sgx_enclu_leaf_t;
 
 OE_STATIC_ASSERT(sizeof(sgx_enclu_leaf_t) == sizeof(unsigned int));
@@ -965,7 +965,7 @@ OE_PACK_END
 typedef enum _sgx_quote_type {
     SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
     SGX_QUOTE_TYPE_LINKABLE_SIGNATURE,
-    __SGX_QUOTE_TYPE_MAX = OE_MAX_UINT,
+    __SGX_QUOTE_TYPE_MAX = OE_ENUM_MAX,
 } sgx_quote_type_t;
 
 OE_STATIC_ASSERT(sizeof(sgx_quote_type_t) == sizeof(unsigned int));

@@ -6,6 +6,8 @@
 #include <openenclave/internal/sgxtypes.h>
 #include "asmdefs.h"
 
+OE_STATIC_ASSERT(sizeof(oe_seal_policy_t) == sizeof(unsigned int));
+
 /* The EGETKEY wrapper. */
 uint64_t oe_egetkey(const sgx_key_request_t* sgxKeyRequest, sgx_key_t* sgxKey);
 

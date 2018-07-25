@@ -17,7 +17,7 @@ typedef enum _oe_sgx_load_type {
     OE_SGX_LOAD_TYPE_UNDEFINED,
     OE_SGX_LOAD_TYPE_CREATE,
     OE_SGX_LOAD_TYPE_MEASURE,
-    __OE_SGX_LOAD_TYPE_MAX = OE_MAX_UINT,
+    __OE_SGX_LOAD_TYPE_MAX = OE_ENUM_MAX,
 } oe_sgx_load_type_t;
 
 OE_STATIC_ASSERT(sizeof(oe_sgx_load_type_t) == sizeof(unsigned int));
@@ -27,7 +27,7 @@ typedef enum _oe_sgx_load_state {
     OE_SGX_LOAD_STATE_INITIALIZED,
     OE_SGX_LOAD_STATE_ENCLAVE_CREATED,
     OE_SGX_LOAD_STATE_ENCLAVE_INITIALIZED,
-    __OE_SGX_LOAD_STATE_MAX = OE_MAX_UINT,
+    __OE_SGX_LOAD_STATE_MAX = OE_ENUM_MAX,
 } oe_sgx_load_state_t;
 
 OE_STATIC_ASSERT(sizeof(oe_sgx_load_state_t) == sizeof(unsigned int));

@@ -119,4 +119,7 @@
 /* OE_OCALL */
 #define OE_OCALL OE_EXTERNC OE_EXPORT
 
+/* OE_ENUM_MAX - the max value for an enumerated tag */
+#define OE_ENUM_MAX 0xffffffff
+
 #endif /* _OE_BITS_DEFS_H */

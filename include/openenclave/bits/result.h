@@ -62,10 +62,8 @@ typedef enum _oe_result {
     OE_NOT_OWNER,
     OE_MEMORY_LEAK,
     OE_BAD_ALIGNMENT,
-    __OE_RESULT_MAX = OE_MAX_UINT,
+    __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
-
-OE_STATIC_ASSERT(sizeof(oe_result_t) == sizeof(unsigned int));
 
 /**
  * Retrieve a string for a result code.
