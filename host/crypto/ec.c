@@ -3,9 +3,9 @@
 
 #include "ec.h"
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/defs.h>
 #include <openssl/obj_mac.h>
 #include <openssl/pem.h>
 #include <string.h>
