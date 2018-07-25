@@ -868,7 +868,7 @@ oe_result_t oe_thread_key_delete(oe_thread_key_t key)
 
         /* Call destructor */
         if (_slots[key].destructor)
-            _slots[key].destructor(oe_thread_get_specific(key));
+            _slots[key].destructor(oe_thread_getspecific(key));
 
         /* Clear this slot */
         _slots[key].used = false;
@@ -880,7 +880,7 @@ oe_result_t oe_thread_key_delete(oe_thread_key_t key)
     return OE_OK;
 }
 
-oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value)
+oe_result_t oe_thread_setspecific(oe_thread_key_t key, const void* value)
 {
     void** tsd_page;
 
@@ -896,7 +896,7 @@ oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value)
     return OE_OK;
 }
 
-void* oe_thread_get_specific(oe_thread_key_t key)
+void* oe_thread_getspecific(oe_thread_key_t key)
 {
     void** tsd_page;
 

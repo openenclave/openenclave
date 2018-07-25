@@ -61,7 +61,7 @@ static void _SetThreadBinding(ThreadBinding* binding)
 {
 #if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_threadBindingOnce, _CreateThreadBindingKey);
-    oe_thread_set_specific(_threadBindingKey, binding);
+    oe_thread_setspecific(_threadBindingKey, binding);
 #else
     return (ThreadBinding*)oe_get_gs_register_base();
 #endif
@@ -81,7 +81,7 @@ ThreadBinding* GetThreadBinding()
 {
 #if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_threadBindingOnce, _CreateThreadBindingKey);
-    return (ThreadBinding*)oe_thread_get_specific(_threadBindingKey);
+    return (ThreadBinding*)oe_thread_getspecific(_threadBindingKey);
 #else
     return (ThreadBinding*)oe_get_gs_register_base();
 #endif

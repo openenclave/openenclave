@@ -265,10 +265,10 @@ int pthread_key_delete(pthread_key_t key)
 
 int pthread_setspecific(pthread_key_t key, const void* value)
 {
-    return _ToErrno(oe_thread_set_specific(key, value));
+    return _ToErrno(oe_thread_setspecific(key, value));
 }
 
 void* pthread_getspecific(pthread_key_t key)
 {
-    return oe_thread_get_specific(key);
+    return oe_thread_getspecific(key);
 }

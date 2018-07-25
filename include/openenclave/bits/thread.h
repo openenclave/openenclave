@@ -62,7 +62,7 @@ typedef uint32_t oe_once_t;
 /**
  * @cond DEV
  */
-#define OE_ONCE_INITIALIZER 0
+#define OE_ONCE_INIT 0
 #define OE_SPINLOCK_INITIALIZER 0
 #define OE_MUTEX_INITIALIZER \
     {                        \
@@ -100,7 +100,7 @@ typedef uint32_t oe_once_t;
  * and is typically used as a thread-safe mechanism for performing one-time
  * initialization, as in the example below.
  *
- *     static oe_once_t _once = OE_ONCE_INITIALIZER;
+ *     static oe_once_t _once = OE_ONCE_INIT;
  *
  *     static void _Initialize(void)
  *     {
@@ -613,7 +613,7 @@ oe_result_t oe_thread_key_delete(oe_thread_key_t key);
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value);
+oe_result_t oe_thread_setspecific(oe_thread_key_t key, const void* value);
 
 /**
  * Get the value of a thread-specific data entry.
@@ -626,7 +626,7 @@ oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value);
  * @return Returns the TSD value or null if none.
  *
  */
-void* oe_thread_get_specific(oe_thread_key_t key);
+void* oe_thread_getspecific(oe_thread_key_t key);
 
 OE_EXTERNC_END
 

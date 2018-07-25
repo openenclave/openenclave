@@ -199,7 +199,7 @@ int oe_thread_key_delete(oe_thread_key key);
  *
  * @return Returns zero on success.
  */
-int oe_thread_set_specific(oe_thread_key key, void* value);
+int oe_thread_setspecific(oe_thread_key key, void* value);
 
 /**
  * Gets the value of a thread-specific data entry.
@@ -211,7 +211,7 @@ int oe_thread_set_specific(oe_thread_key key, void* value);
  *
  * @return Returns the TSD value.
  */
-void* oe_thread_get_specific(oe_thread_key key);
+void* oe_thread_getspecific(oe_thread_key key);
 
 OE_EXTERNC_END
 

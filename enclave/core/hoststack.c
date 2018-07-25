@@ -103,14 +103,14 @@ static ThreadBuckets* _GetThreadBuckets()
     ThreadBuckets* tb;
 
     _Once(&_HostStackInitialized, _HostStackInit);
-    tb = oe_thread_get_specific(_HostStackTlsKey);
+    tb = oe_thread_getspecific(_HostStackTlsKey);
     if (tb == NULL)
     {
         if ((tb = (ThreadBuckets*)oe_sbrk(sizeof(ThreadBuckets))) == (void*)-1)
             return NULL;
 
         *tb = (ThreadBuckets){};
-        oe_thread_set_specific(_HostStackTlsKey, tb);
+        oe_thread_setspecific(_HostStackTlsKey, tb);
         __cxa_atexit(_FreeThreadBucket, tb, NULL);
     }
 
