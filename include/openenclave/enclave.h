@@ -338,6 +338,7 @@ oe_result_t oe_verify_report(
 typedef enum _oe_seal_policy {
     OE_SEAL_POLICY_UNIQUE = 1,
     OE_SEAL_POLICY_PRODUCT = 2,
+    __OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
 } oe_seal_policy_t;
 
 /**

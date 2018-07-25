@@ -26,7 +26,12 @@ typedef struct _oe_ec_public_key
 } oe_ec_public_key_t;
 
 /* Supported CURVE types */
-typedef enum oe_ec_type_t { OE_EC_TYPE_SECP256R1 } oe_ec_type_t;
+typedef enum oe_ec_type_t {
+    OE_EC_TYPE_SECP256R1,
+    __OE_EC_TYPE_MAX = OE_MAX_UINT,
+} oe_ec_type_t;
+
+OE_STATIC_ASSERT(sizeof(oe_ec_type_t) == sizeof(unsigned int));
 
 /**
  * Reads a private EC key from PEM data

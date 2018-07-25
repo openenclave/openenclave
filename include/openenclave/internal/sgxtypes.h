@@ -67,7 +67,10 @@ typedef enum _sgx_enclu_leaf {
     ENCLU_EACCEPT = 0x05,
     ENCLU_EMODPE = 0x06,
     ENCLU_EACCEPTCOPY = 0x07,
+    ENCLU_UNDEFINED = OE_MAX_UINT,
 } sgx_enclu_leaf_t;
+
+OE_STATIC_ASSERT(sizeof(sgx_enclu_leaf_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================
@@ -854,17 +857,20 @@ typedef struct _sgx_qe_cert_data
 /*
 **==============================================================================
 **
-** OE_SGX_PCKID
+** oe_sgx_pckid_t
 **
 **==============================================================================
 */
-typedef enum _OE_SGX_PCKID {
+typedef enum _oe_sgx_pckid {
     OE_SGX_PCK_ID_PLAIN_PPID = 1,
     OE_SGX_PCK_ID_ENCRYPTED_PPID_2048 = 2,
     OE_SGX_PCK_ID_ENCRYPTED_PPID_3072 = 3,
     OE_SGX_PCK_ID_PCK_CERTIFICATE = 4,
-    OE_SGX_PCK_ID_PCK_CERT_CHAIN = 5
-} OE_SGX_PCKID;
+    OE_SGX_PCK_ID_PCK_CERT_CHAIN = 5,
+    __OE_SGX_PCKID_MAX = OE_MAX_UINT
+} oe_sgx_pckid_t;
+
+OE_STATIC_ASSERT(sizeof(oe_sgx_pckid_t) == sizeof(unsigned int));
 
 #else
 
@@ -959,7 +965,10 @@ OE_PACK_END
 typedef enum _sgx_quote_type {
     SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
     SGX_QUOTE_TYPE_LINKABLE_SIGNATURE,
+    __SGX_QUOTE_TYPE_MAX = OE_MAX_UINT,
 } sgx_quote_type_t;
+
+OE_STATIC_ASSERT(sizeof(sgx_quote_type_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================
