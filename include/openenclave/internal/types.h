@@ -4,7 +4,7 @@
 #ifndef _OE_INTERNAL_TYPES_H
 #define _OE_INTERNAL_TYPES_H
 
-#include <openenclave/bits/defs.h>
+#include <openenclave/bits/types.h>
 #include <openenclave/internal/defs.h>
 
 /*
@@ -84,6 +84,20 @@ typedef struct _oe_ocall_context
     uintptr_t rbp;
     uintptr_t ret;
 } oe_ocall_context_t;
+
+/*
+**==============================================================================
+**
+** oe_va_list:
+**
+**==============================================================================
+*/
+
+#define oe_va_list __builtin_va_list
+#define oe_va_start __builtin_va_start
+#define oe_va_arg __builtin_va_arg
+#define oe_va_end __builtin_va_end
+#define oe_va_copy __builtin_va_copy
 
 /*
 **==============================================================================
