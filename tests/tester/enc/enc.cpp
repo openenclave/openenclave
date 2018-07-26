@@ -291,7 +291,8 @@ OE_EXTERNC void TestBufferOverrun(char str[8])
 
 OE_EXTERNC void* ReturnEnclaveMemory()
 {
-    return malloc(16);
+    static uint8_t _memory[1024];
+    return _memory;
 }
 
 OE_EXTERNC void TestBufferCopy(

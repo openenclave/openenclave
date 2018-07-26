@@ -10,7 +10,7 @@ set (OELIBCXX_UNWIND_OPTS
     )
 
 set (OELIBCXX_UNWIND_CFLAGS
-    "-DUNW_LOCAL_ONLY -DWSIZE=8 -fno-builtin -fPIC -DOPEN_ENCLAVE -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h"
+    "-DWSIZE=8 -fno-builtin -fPIC -DOPEN_ENCLAVE -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h"
     )
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
