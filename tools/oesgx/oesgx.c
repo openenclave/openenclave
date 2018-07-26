@@ -5,6 +5,13 @@
 #include <stdlib.h>
 #include "../host/cpuid.h"
 
+#define EXTENDED_FEATURE_FLAGS_FUNCTION 0x7
+#define SGX_CAPABILITY_ENUMERATION 0x12
+
+#define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)
+#define HAVE_SGX1(regs) (((regs.eax) & 1))
+#define HAVE_SGX2(regs) (((regs.eax) >> 1) & 1)
+
 typedef struct _Regs
 {
     unsigned int eax;
@@ -13,10 +20,35 @@ typedef struct _Regs
     unsigned int edx;
 } Regs;
 
+void dumpRegs(Regs* regs)
+{
+    printf("eax = 0x%x\n", regs->eax);
+    printf("ebx = 0x%x\n", regs->ebx);
+    printf("ecx = 0x%x\n", regs->ecx);
+    printf("edx = 0x%x\n", regs->edx);
+}
+
+static unsigned int get_max_leaf()
+{
+    Regs regs = {0, 0, 0, 0};
+    oe_get_cpuid(0, 0, &regs.eax, &regs.ebx, &regs.ecx, &regs.edx);
+    return regs.eax;
+}
+
 static int _CPUID(Regs* regs)
 {
     unsigned int leaf_requested = regs->eax;
+    unsigned int max_leaf = get_max_leaf();
     int result = 0;
+
+    if (leaf_requested > max_leaf)
+    {
+        printf(
+            "Error: requested leaf %d  (> max_leaf(%d)) is not supported.\n",
+            leaf_requested,
+            max_leaf);
+        return 1;
+    }
 
     oe_get_cpuid(
         leaf_requested,
@@ -26,21 +58,14 @@ static int _CPUID(Regs* regs)
         &regs->ecx,
         &regs->edx);
 
-    // Check if results indicate unsupported leaf.
-    if ((leaf_requested > regs->eax) ||
-        (regs->eax == 0 && regs->ebx == 0 && regs->ecx == 0 && regs->edx == 0))
+    // Check if no sub-leaves are supported
+    if (regs->eax == 0 && regs->ebx == 0 && regs->ecx == 0 && regs->edx == 0)
     {
         printf("Error getting CPUID. Returned: %d", regs->eax);
         result = 1;
     }
     return result;
 }
-
-#define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)
-
-#define HAVE_SGX1(regs) (((regs.eax) & 1))
-
-#define HAVE_SGX2(regs) (((regs.eax) >> 1) & 1)
 
 int main(int argc, const char* argv[])
 {
@@ -54,44 +79,46 @@ int main(int argc, const char* argv[])
 
     /* Figure out whether CPU supports SGX */
     {
-        Regs regs = {0x7, 0, 0x0, 0};
+        Regs regs = {EXTENDED_FEATURE_FLAGS_FUNCTION, 0, 0x0, 0};
 
         result = _CPUID(&regs);
         if (result)
         {
+            dumpRegs(&regs);
             return result;
         }
 
         if (!HAVE_SGX(regs))
         {
-            printf("0\n");
+            printf("SGX is not supported\n");
             return 0;
         }
     }
 
-    /* Figure out whether CPU supports SGX-1 or SGX-2 */
+    /* Enumeration of Intel SGX Capabilities: figure out whether CPU
+       supports SGX-1 or SGX-2 */
     {
-        Regs regs = {0x12, 0, 0x0, 0};
+        Regs regs = {SGX_CAPABILITY_ENUMERATION, 0, 0x0, 0};
 
         result = _CPUID(&regs);
         if (result)
         {
+            printf("Read SGX_CAPABILITY_ENUMERATION failed:\n");
+            dumpRegs(&regs);
             return result;
         }
 
+        printf("Software Guard Extensions supported: ");
+
         if (HAVE_SGX2(regs))
         {
-            printf("2\n");
-            return 0;
+            printf("SGX2\n");
         }
         if (HAVE_SGX1(regs))
         {
-            printf("1\n");
-            return 0;
+            printf("SGX1\n");
         }
+        printf("MaxEnclaveSize_64: 2^(%d)\n", (regs.edx >> 8) & 0xFF);
     }
-
-    printf("0\n");
-
     return 0;
 }
