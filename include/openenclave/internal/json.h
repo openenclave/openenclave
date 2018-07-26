@@ -10,7 +10,9 @@
 OE_EXTERNC_BEGIN
 
 /**
- * Standards compliant parser for JSON.
+ * Parser for JSON that supports all standard JSON syntax as
+ * described at www.json.org.
+ *
  * The parser allocates no memory and performs no schema validation.
  *
  * The parser can be supplied with a set of callbacks in
@@ -19,7 +21,7 @@ OE_EXTERNC_BEGIN
  * This data pointer will be supplied back to each callback function.
  *
  * For each JSON primitive entity (string, number, boolean, null),
- * the corresponding  callback method is invoked.
+ * the corresponding callback method is invoked.
  *
  * For arrays and objects, a 'begin' callback and an 'end' callback
  * are invoked.
