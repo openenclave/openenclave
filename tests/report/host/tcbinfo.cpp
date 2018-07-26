@@ -60,12 +60,13 @@ oe_result_t ParseJson(oe_enclave_t* enclave, const char* path)
 
 void TestJsonParser(oe_enclave_t* enclave)
 {
-    const char* passFiles[] = {
-        "./data/json/pass.json",
-        "./data/json/passnumber.json",
-        // A super set of legal json strings are allowed by the parser.
-        // Strings are expected to be validated by the callbacks.
-        "./data/json/passstring.json"};
+    const char* passFiles[] = {"./data/json/pass.json",
+                               "./data/json/passnumber.json",
+                               // Test set of strings allowed by the parser.
+                               // JSON strings must be double quoted. The parser
+                               // validates the escape sequences, but does not
+                               // unescape them.
+                               "./data/json/passstring.json"};
 
     for (size_t i = 0; i < OE_COUNTOF(passFiles); ++i)
     {
@@ -73,28 +74,30 @@ void TestJsonParser(oe_enclave_t* enclave)
         printf("%s parse success.\n", passFiles[i]);
     }
 
-    const char* failFiles[] = {"./data/json/fail1.json",
-                               "./data/json/fail2.json",
-                               "./data/json/fail3.json",
-                               "./data/json/fail4.json",
-                               "./data/json/fail5.json",
-                               "./data/json/fail6.json",
-                               /* Json types not supported */
-                               "./data/json/fail7.json", // true
-                               "./data/json/fail8.json", // false
-                               "./data/json/fail9.json", // null
-                               "./data/json/failnum1.json",
-                               "./data/json/failnum2.json",
-                               "./data/json/failnum3.json",
-                               "./data/json/failnum4.json",
-                               "./data/json/failnum5.json",
-                               "./data/json/failnum6.json",
-                               "./data/json/failstring1.json",
-                               "./data/json/failstring2.json",
-                               "./data/json/failstring3.json",
-                               "./data/json/failstring4.json",
-                               "./data/json/failstring5.json",
-                               "./data/json/failstring6.json"};
+    const char* failFiles[] = {
+        "./data/json/fail1.json",       // Unclosed property name.
+        "./data/json/fail2.json",       // Illegal object syntax.
+        "./data/json/fail3.json",       // Property name without end quote.
+        "./data/json/fail4.json",       // Property name without start quote.
+        "./data/json/fail5.json",       // Illegal object syntax.
+        "./data/json/fail6.json",       // Unclosed array.
+        "./data/json/fail7.json",       // Typo true1.
+        "./data/json/fail8.json",       // Typo false1.
+        "./data/json/fail9.json",       // Typo null.
+        "./data/json/failnum1.json",    // Unlike C, 00 is invalid.
+        "./data/json/failnum2.json",    // Unlike C, +number is invalid.
+        "./data/json/failnum3.json",    // Unlike C, .number is invalid.
+        "./data/json/failnum4.json",    // Unlike C, number. is invalid.
+        "./data/json/failnum5.json",    // Missing fractional digit after '.'.
+        "./data/json/failnum6.json",    // Missing exponent after sign.
+        "./data/json/failstring1.json", // Missing end quote.
+        "./data/json/failstring2.json", // Single quoted string.
+        "./data/json/failstring3.json", // Illegal escape character.
+        "./data/json/failstring4.json", // Illegal \U instead of \u.
+        "./data/json/failstring5.json", // Missing digit in unicode escape
+                                        // sequence.
+        "./data/json/failstring6.json"  // Unexpected eof.
+    };
 
     for (size_t i = 0; i < OE_COUNTOF(failFiles); ++i)
     {
