@@ -43,7 +43,7 @@ oe_result_t oe_sgx_initialize_enclave(
     const oe_sgx_enclave_properties_t* properties,
     OE_SHA256* mrenclave);
 
-oe_result_t oe_sgx_delete_enclave(uint64_t enclaveAddr, uint64_t enclaveSize);
+oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave);
 
 OE_EXTERNC_END
 

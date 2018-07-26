@@ -1475,7 +1475,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     {
         /* Unmap the enclave memory region.
          * Track failures reported by the platform, but do not exit early */
-        result = oe_sgx_delete_enclave(enclave->addr, enclave->size);
+        result = oe_sgx_delete_enclave(enclave);
 
         /* Release the enclave->ecalls[] array */
         {
