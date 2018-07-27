@@ -25,7 +25,7 @@ jobs:
                git config --global core.editor vi
                echo "Merging master to branch"
                git pull origin master
-               #git commit -m "Merging master to branch ${CIRCLE_BRANCH}"
+               #git commit --no-edit -m "Merging master to branch ${CIRCLE_BRANCH}"
                git status
             fi
             ./scripts/check-precommit-reqs 
