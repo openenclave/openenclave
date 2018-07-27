@@ -22,7 +22,7 @@ jobs:
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                git config --global user.email "oeciteam@microsoft.com"
                git config --global user.name "OE CI Team"
-               git config --global core.editor /usr/bin/vi
+               #git config --global core.editor /usr/bin/vi
                echo "Merging master to branch"
                git pull origin master
                git commit --no-edit -m "Merging master to branch ${CIRCLE_BRANCH}"
