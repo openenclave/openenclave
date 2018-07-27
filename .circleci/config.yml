@@ -18,11 +18,12 @@ jobs:
           name: Check-Precommit-Reqs Test
           command: | 
             #branch-name=$(git symbolic-ref --short HEAD)
+            apt-get install vim
             echo "Branch name is ${CIRCLE_BRANCH}"
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                git config --global user.email "oeciteam@microsoft.com"
                git config --global user.name "OE CI Team"
-               git config --global core.editor /usr/bin/vi
+               git config --global core.editor /usr/bin/vim
                echo "Merging master to branch"
                git pull origin master
                git commit --no-edit -m "Merging master to branch ${CIRCLE_BRANCH}"
