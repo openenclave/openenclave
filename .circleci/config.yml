@@ -22,10 +22,10 @@ jobs:
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                git config --global user.email "oeciteam@microsoft.com"
                git config --global user.name "OE CI Team"
-               git config --global core.editor vim
+               #git config --global core.editor vim
                echo "Merging master to branch"
                git pull origin master
-               git commit -m "Merging master to branch ${CIRCLE_BRANCH}"
+               #git commit -m "Merging master to branch ${CIRCLE_BRANCH}"
                git status
             fi
             ./scripts/check-precommit-reqs 
