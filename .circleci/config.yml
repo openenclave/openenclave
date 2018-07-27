@@ -35,15 +35,21 @@ jobs:
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
-    test:
-      parallelism: 4	
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
       # Build and Test
       - run:
           name: SGX1-Debug
-          command: ./scripts/test-build-config 
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+               git status
+            fi
+            ./scripts/test-build-config 
 
   # SGX1 | RelWithDebInfo
   ci-sgx1-relwithdebinfo:
