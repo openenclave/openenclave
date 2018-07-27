@@ -18,7 +18,7 @@ jobs:
           name: Check-Precommit-Reqs Test
           command: | 
             #branch-name=$(git symbolic-ref --short HEAD)
-            apt-get install vim
+            apt-get -y install vim
             echo "Branch name is ${CIRCLE_BRANCH}"
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                git config --global user.email "oeciteam@microsoft.com"
