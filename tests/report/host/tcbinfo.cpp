@@ -50,68 +50,12 @@ bool CheckParsedString(
     return false;
 }
 
-oe_result_t ParseJson(oe_enclave_t* enclave, const char* path)
-{
-    std::vector<uint8_t> json = FileToBytes(path);
-    ParseJsonArgs args = {&json[0], (uint32_t)json.size(), OE_FAILURE};
-    OE_TEST(oe_call_enclave(enclave, "TestParseJson", &args) == OE_OK);
-    return args.result;
-}
-
-void TestJsonParser(oe_enclave_t* enclave)
-{
-    const char* passFiles[] = {"./data/json/pass.json",
-                               "./data/json/passnumber.json",
-                               // Test set of strings allowed by the parser.
-                               // JSON strings must be double quoted. The parser
-                               // validates the escape sequences, but does not
-                               // unescape them.
-                               "./data/json/passstring.json"};
-
-    for (size_t i = 0; i < OE_COUNTOF(passFiles); ++i)
-    {
-        OE_TEST(ParseJson(enclave, passFiles[i]) == OE_OK);
-        printf("%s parse success.\n", passFiles[i]);
-    }
-
-    const char* failFiles[] = {
-        "./data/json/fail1.json",       // Unclosed property name.
-        "./data/json/fail2.json",       // Illegal object syntax.
-        "./data/json/fail3.json",       // Property name without end quote.
-        "./data/json/fail4.json",       // Property name without start quote.
-        "./data/json/fail5.json",       // Illegal object syntax.
-        "./data/json/fail6.json",       // Unclosed array.
-        "./data/json/fail7.json",       // Typo true1.
-        "./data/json/fail8.json",       // Typo false1.
-        "./data/json/fail9.json",       // Typo null.
-        "./data/json/failnum1.json",    // Unlike C, 00 is invalid.
-        "./data/json/failnum2.json",    // Unlike C, +number is invalid.
-        "./data/json/failnum3.json",    // Unlike C, .number is invalid.
-        "./data/json/failnum4.json",    // Unlike C, number. is invalid.
-        "./data/json/failnum5.json",    // Missing fractional digit after '.'.
-        "./data/json/failnum6.json",    // Missing exponent after sign.
-        "./data/json/failstring1.json", // Missing end quote.
-        "./data/json/failstring2.json", // Single quoted string.
-        "./data/json/failstring3.json", // Illegal escape character.
-        "./data/json/failstring4.json", // Illegal \U instead of \u.
-        "./data/json/failstring5.json", // Missing digit in unicode escape
-                                        // sequence.
-        "./data/json/failstring6.json"  // Unexpected eof.
-    };
-
-    for (size_t i = 0; i < OE_COUNTOF(failFiles); ++i)
-    {
-        OE_TEST(ParseJson(enclave, failFiles[i]) == OE_FAILURE);
-        printf("%s parse failed as expected.\n", failFiles[i]);
-    }
-}
-
-void TestVerifyTCBInfo(oe_enclave_t* enclave)
+void TestVerifyTCBInfo(oe_enclave_t* enclave, oe_tcb_level_t* platformTcbLevel)
 {
     std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
     oe_parsed_tcb_info_t parsedInfo = {0};
     VerifyTCBInfoArgs args = {
-        &tcbInfo[0], (uint32_t)tcbInfo.size(), &parsedInfo};
+        &tcbInfo[0], (uint32_t)tcbInfo.size(), platformTcbLevel, &parsedInfo};
 
     OE_TEST(
         oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK &&
@@ -128,66 +72,6 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     OE_TEST(
         memcmp(parsedInfo.fmspc, expectedFmSpc, sizeof(expectedFmSpc)) == 0);
 
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[0] == 4);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[1] == 4);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[2] == 2);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[3] == 4);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[4] == 1);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[5] == 128);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[6] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[7] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[8] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[9] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[10] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[11] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[12] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[13] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[14] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.sgx_tcb_comp_svn[15] == 0);
-    OE_TEST(parsedInfo.aggregated_uptodate_tcb.pce_svn == 5);
-    OE_TEST(
-        parsedInfo.aggregated_uptodate_tcb.status == OE_TCB_STATUS_UP_TO_DATE);
-
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[0] == 2);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[1] == 2);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[2] == 2);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[3] == 4);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[4] == 1);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[5] == 128);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[6] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[7] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[8] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[9] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[10] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[11] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[12] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[13] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[14] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.sgx_tcb_comp_svn[15] == 0);
-    OE_TEST(parsedInfo.aggregated_outofdate_tcb.pce_svn == 4);
-    OE_TEST(
-        parsedInfo.aggregated_outofdate_tcb.status ==
-        OE_TCB_STATUS_OUT_OF_DATE);
-
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[0] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[1] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[2] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[3] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[4] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[5] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[6] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[7] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[8] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[9] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[10] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[11] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[12] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[13] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[14] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.sgx_tcb_comp_svn[15] == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.pce_svn == 0);
-    OE_TEST(parsedInfo.aggregated_revoked_tcb.status == OE_TCB_STATUS_REVOKED);
-
     const uint8_t expectedSignature[] = {
         0x62, 0xd1, 0x81, 0xc4, 0xba, 0x86, 0x32, 0x13, 0xb8, 0x25, 0xd1,
         0xc0, 0xb6, 0x6b, 0x92, 0xa3, 0xdb, 0xdb, 0x27, 0xb8, 0xff, 0x7c,
@@ -201,8 +85,34 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
             parsedInfo.signature,
             expectedSignature,
             sizeof(expectedSignature)) == 0);
+}
 
-    printf("TestVerifyTCBInfo: Positive Test passed\n");
+void TestVerifyTCBInfo(oe_enclave_t* enclave)
+{
+    oe_tcb_level_t platformTcbLevel = {
+        {4, 4, 2, 4, 1, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        8,
+        OE_TCB_LEVEL_STATUS_UNKNOWN};
+
+    // ./data/tcbInfo.json contains two tcb levels.
+    // The first level with pce svn = 5 is up to date.
+    // The second level with pce svn = 4 is out of date.
+
+    // Set platform tcb level to 8 and assert that
+    // the determined status is up to date.
+    platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platformTcbLevel.pce_svn = 8;
+    TestVerifyTCBInfo(enclave, &platformTcbLevel);
+    OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_UP_TO_DATE);
+
+    // Set platform tcb level to 4 and assert that
+    // the determined status is up to date.
+    platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platformTcbLevel.pce_svn = 4;
+    TestVerifyTCBInfo(enclave, &platformTcbLevel);
+    OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_OUT_OF_DATE);
+
+    printf("TestVerifyTCBInfo: Positive Tests passed\n");
 
     const char* negativeFiles[] = {
         // In the following files, a property in corresponding level has been
@@ -225,8 +135,11 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     {
         std::vector<uint8_t> tcbInfo = FileToBytes(negativeFiles[i]);
         oe_parsed_tcb_info_t parsedInfo = {0};
-        VerifyTCBInfoArgs args = {
-            &tcbInfo[0], (uint32_t)tcbInfo.size(), &parsedInfo};
+        oe_tcb_level_t platformTcbLevel = {0};
+        VerifyTCBInfoArgs args = {&tcbInfo[0],
+                                  (uint32_t)tcbInfo.size(),
+                                  &platformTcbLevel,
+                                  &parsedInfo};
         OE_TEST(
             oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK &&
             args.result == OE_FAILURE);
