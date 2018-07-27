@@ -26,7 +26,7 @@ jobs:
                #git config --global core.editor /usr/bin/vim
                echo "Merging master to branch"
                git pull origin master --no-edit
-               git commit -m "Merging master to branch ${CIRCLE_BRANCH}" --no-edit
+               #git commit -m "Merging master to branch ${CIRCLE_BRANCH}" --no-edit
                git status
             fi
             ./scripts/check-precommit-reqs 
