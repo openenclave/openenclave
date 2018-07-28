@@ -64,7 +64,15 @@ jobs:
       # Build and Test
       - run: 
           name: SGX1-RelWithDebInfo
-          command: ./scripts/test-build-config -p SGX1 -b RelWithDebInfo
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+               git status
+            fi
+            ./scripts/test-build-config -p SGX1 -b RelWithDebInfo
   
   # SGX1 | Release
   ci-sgx1-release:
@@ -79,7 +87,15 @@ jobs:
       # Build and Test
       - run: 
           name: SGX1-Release
-          command: ./scripts/test-build-config -p SGX1 -b Release
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+               git status
+            fi
+            ./scripts/test-build-config -p SGX1 -b Release
              
   # SGX1-FLC | Debug 
   ci-sgx1-flc-debug:
@@ -94,7 +110,15 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-FLC-Debug
-          command: ./scripts/test-build-config -p SGX1FLC -b Debug
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+               git status
+            fi
+            ./scripts/test-build-config -p SGX1FLC -b Debug 
             
   # SGX1-FLC | RelWithDebInfo
   ci-sgx1-flc-relwithdebinfo:
@@ -109,7 +133,15 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-FLC-RelWithDebInfo
-          command: ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+               git status
+            fi
+            ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo 
 
   # SGX1-FLC | Release 
   ci-sgx1-flc-release:
@@ -124,7 +156,15 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-FLC-Release
-          command: ./scripts/test-build-config -p SGX1FLC -b Release
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+               git status
+            fi
+            ./scripts/test-build-config -p SGX1FLC -b Release
              
 workflows:
   version: 2
