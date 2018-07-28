@@ -259,7 +259,7 @@ done:
 }
 
 oe_result_t oe_get_report(
-    uint32_t options,
+    uint32_t flags,
     const uint8_t* reportData,
     uint32_t reportDataSize,
     const void* optParams,
@@ -267,7 +267,7 @@ oe_result_t oe_get_report(
     uint8_t* reportBuffer,
     uint32_t* reportBufferSize)
 {
-    if (options & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
+    if (flags & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
     {
         return _oe_get_remote_report(
             reportData,
@@ -278,7 +278,7 @@ oe_result_t oe_get_report(
             reportBufferSize);
     }
 
-    // If no options are specified, default to locally attestable report.
+    // If no flags are specified, default to locally attestable report.
     return _oe_get_sgx_report(
         reportData,
         reportDataSize,
@@ -366,7 +366,7 @@ oe_result_t _HandleGetReport(uint64_t argIn)
     // tampered with by the host.
 
     arg.result = oe_get_report(
-        arg.options,
+        arg.flags,
         NULL,
         0,
         (arg.optParamsSize != 0) ? arg.optParams : NULL,
