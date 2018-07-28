@@ -18,8 +18,6 @@ jobs:
           name: Check-Precommit-Reqs Test
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
-               #git config --global user.email "oeciteam@microsoft.com"
-               #git config --global user.name "OE CI Team"
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
                git status
@@ -43,8 +41,6 @@ jobs:
           name: SGX1-Debug
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
                git status
@@ -66,8 +62,6 @@ jobs:
           name: SGX1-RelWithDebInfo
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
                git status
@@ -89,8 +83,6 @@ jobs:
           name: SGX1-Release
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
                git status
@@ -112,8 +104,6 @@ jobs:
           name: SGX1-FLC-Debug
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
                git status
@@ -135,8 +125,6 @@ jobs:
           name: SGX1-FLC-RelWithDebInfo
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
                git status
@@ -158,8 +146,6 @@ jobs:
           name: SGX1-FLC-Release
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
                git status
