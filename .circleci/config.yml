@@ -20,7 +20,6 @@ jobs:
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
-               git status
             fi
             ./scripts/check-precommit-reqs 
 
@@ -43,7 +42,6 @@ jobs:
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
-               git status
             fi
             ./scripts/test-build-config 
 
@@ -64,7 +62,6 @@ jobs:
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
-               git status
             fi
             ./scripts/test-build-config -p SGX1 -b RelWithDebInfo
   
@@ -85,7 +82,6 @@ jobs:
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
-               git status
             fi
             ./scripts/test-build-config -p SGX1 -b Release
              
@@ -106,7 +102,6 @@ jobs:
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
-               git status
             fi
             ./scripts/test-build-config -p SGX1FLC -b Debug 
             
@@ -127,7 +122,6 @@ jobs:
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
-               git status
             fi
             ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo 
 
@@ -148,7 +142,6 @@ jobs:
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
                git pull origin master --no-edit
-               git status
             fi
             ./scripts/test-build-config -p SGX1FLC -b Release
              
