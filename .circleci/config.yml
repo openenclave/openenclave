@@ -13,9 +13,15 @@ jobs:
     working_directory: ~/Microsoft-OE
     steps:
       - checkout
-      - run:
+      # Merge master to your branch; check if not master
+      - run: 
           name: Check-Precommit-Reqs Test
-          command: ./scripts/check-precommit-reqs 
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+            fi
+            ./scripts/check-precommit-reqs 
 
   #========Build-Test==========# 
 
@@ -32,7 +38,12 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-Debug
-          command: ./scripts/test-build-config 
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+            fi
+            ./scripts/test-build-config 
 
   # SGX1 | RelWithDebInfo
   ci-sgx1-relwithdebinfo:
@@ -47,7 +58,12 @@ jobs:
       # Build and Test
       - run: 
           name: SGX1-RelWithDebInfo
-          command: ./scripts/test-build-config -p SGX1 -b RelWithDebInfo
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+            fi
+            ./scripts/test-build-config -p SGX1 -b RelWithDebInfo
   
   # SGX1 | Release
   ci-sgx1-release:
@@ -62,7 +78,12 @@ jobs:
       # Build and Test
       - run: 
           name: SGX1-Release
-          command: ./scripts/test-build-config -p SGX1 -b Release
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+            fi
+            ./scripts/test-build-config -p SGX1 -b Release
              
   # SGX1-FLC | Debug 
   ci-sgx1-flc-debug:
@@ -77,7 +98,12 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-FLC-Debug
-          command: ./scripts/test-build-config -p SGX1FLC -b Debug
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+            fi
+            ./scripts/test-build-config -p SGX1FLC -b Debug 
             
   # SGX1-FLC | RelWithDebInfo
   ci-sgx1-flc-relwithdebinfo:
@@ -92,7 +118,12 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-FLC-RelWithDebInfo
-          command: ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+            fi
+            ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo 
 
   # SGX1-FLC | Release 
   ci-sgx1-flc-release:
@@ -107,7 +138,12 @@ jobs:
       # Build and Test
       - run:
           name: SGX1-FLC-Release
-          command: ./scripts/test-build-config -p SGX1FLC -b Release
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git pull origin master --no-edit
+            fi
+            ./scripts/test-build-config -p SGX1FLC -b Release
              
 workflows:
   version: 2
