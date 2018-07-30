@@ -61,9 +61,15 @@ PACKAGES_INSTALLED=\
 # packages for apt-get
 get-package:
 	apt-get -y install wget dpkg-dev
+ifdef USE_PKGS_IN
+	@ for PKG in $(PACKAGES); do \
+		cp $(USE_PKGS_IN)/$$PKG .; \
+	done
+else
 	@ for PKG in $(PACKAGES); do \
 		wget http://10.224.140.70:8888/$$PKG; \
 	done
+endif
 
 check-installed:
 	@ for PKG in $(PACKAGES_INSTALLED); do \
