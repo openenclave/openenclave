@@ -142,7 +142,7 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
                                   &parsedInfo};
         OE_TEST(
             oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK &&
-            args.result == OE_FAILURE);
+            args.result == OE_TCB_INFO_PARSE_ERROR);
         printf("TestVerifyTCBInfo: Negative Test %lu passed\n", i);
     }
 }

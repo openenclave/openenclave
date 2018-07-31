@@ -6,7 +6,6 @@
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 
 #ifdef OE_USE_LIBSGX
@@ -35,7 +34,7 @@ OE_INLINE uint8_t _is_digit(uint8_t c)
 // Consume and skip trailing whitespace.
 static oe_result_t _read(char ch, const uint8_t** itr, const uint8_t* end)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* p = *itr;
     if (p < end && *p == ch)
     {
@@ -46,12 +45,16 @@ static oe_result_t _read(char ch, const uint8_t** itr, const uint8_t* end)
 }
 
 // Read an integer literal in current position.
+// Only the necessary subset of json numbers are supported.
+// Integers must be a sequence of digits.
+// Negative and floating point json numbers are not supported.
+// Value must fit within an uint64_t.
 static oe_result_t _read_integer(
     const uint8_t** itr,
     const uint8_t* end,
     uint64_t* value)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* p = *itr;
     *value = 0;
 
@@ -61,6 +64,10 @@ static oe_result_t _read_integer(
         ++p;
         while (p < end && _is_digit(*p))
         {
+            // Detect overflows.
+            if (*value >= OE_MAX_UINT64 / 10)
+                OE_RAISE(OE_FAILURE);
+
             *value = *value * 10 + (*p - '0');
             ++p;
         }
@@ -68,18 +75,20 @@ static oe_result_t _read_integer(
         *itr = _skip_ws(p, end);
         result = OE_OK;
     }
-
+done:
     return result;
 }
 
-// Read a string literal in current position
+// Read a string literal in current position.
+// Only the necessary subset of json strings are supported.
+// JSON escape sequences are not supported.
 static oe_result_t _read_string(
     const uint8_t** itr,
     const uint8_t* end,
     const uint8_t** str,
     uint32_t* length)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* p = *itr;
 
     p = _skip_ws(p, end);
@@ -87,7 +96,12 @@ static oe_result_t _read_string(
     {
         *str = ++p;
         while (p < end && *p != '"')
+        {
+            if (*p == '\\')
+                OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+
             ++p;
+        }
 
         if (p < end && *p == '"')
         {
@@ -96,7 +110,7 @@ static oe_result_t _read_string(
             result = OE_OK;
         }
     }
-
+done:
     return result;
 }
 
@@ -118,7 +132,7 @@ static oe_result_t _read_hex_string(
     uint8_t* bytes,
     uint32_t length)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* str = NULL;
     uint32_t str_length = 0;
     uint16_t value = 0;
@@ -132,7 +146,7 @@ static oe_result_t _read_hex_string(
             value =
                 (_hex_to_dec(str[i * 2]) << 4) | _hex_to_dec(str[i * 2 + 1]);
             if (value > OE_MAX_UCHAR)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
             bytes[i] = (uint8_t)value;
         }
 
@@ -147,7 +161,7 @@ static oe_result_t _read_property_name_and_colon(
     const uint8_t** itr,
     const uint8_t* end)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* name = NULL;
     uint32_t name_length = 0;
 
@@ -201,7 +215,7 @@ oe_result_t _read_tcb(
     const uint8_t* end,
     oe_tcb_level_t* tcb_level)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     uint64_t value = 0;
 
     static const char* _comp_names[] = {"sgxtcbcomp01svn",
@@ -294,13 +308,13 @@ static void _determine_platform_tcb_level(
  *    "status": one of "UpToDate" or "OutOfDate" or "Revoked"
  * }
  */
-oe_result_t _read_tcb_level(
+static oe_result_t _read_tcb_level(
     const uint8_t** itr,
     const uint8_t* end,
     oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     oe_tcb_level_t tcb_level = {0};
     const uint8_t* status = NULL;
     uint32_t status_length = 0;
@@ -346,13 +360,13 @@ done:
  *    "tcbLevels" : [ objects of type tcbLevel ]
  * }
  */
-oe_result_t _read_tcb_info(
+static oe_result_t _read_tcb_info(
     const uint8_t** itr,
     const uint8_t* end,
     oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     uint64_t value = 0;
 
     parsed_info->tcb_info_start = *itr;
@@ -392,7 +406,10 @@ oe_result_t _read_tcb_info(
     }
     OE_CHECK(_read(']', itr, end));
 
-    parsed_info->tcb_info_end = *itr;
+    // itr is expected to point to the '}' that denotes the end of the tcb
+    // object. The signature is generated over the entire object including the
+    // '}'.
+    parsed_info->tcb_info_size = *itr - parsed_info->tcb_info_start + 1;
     OE_CHECK(_read('}', itr, end));
 
     result = OE_OK;
@@ -413,7 +430,7 @@ oe_result_t oe_parse_tcb_info_json(
     oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info)
 {
-    oe_result_t result = OE_FAILURE;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* itr = tcb_info_json;
     const uint8_t* end = tcb_info_json + tcb_info_json_size;
 
@@ -446,6 +463,10 @@ oe_result_t oe_parse_tcb_info_json(
 
     if (itr == end)
     {
+        if (platform_tcb_level->status == OE_TCB_LEVEL_STATUS_UNKNOWN ||
+            platform_tcb_level->status == OE_TCB_LEVEL_STATUS_REVOKED)
+            OE_RAISE(OE_TCB_LEVEL_UNKNOWN_OR_REVOKED);
+
         OE_TRACE_INFO("TCB Info json parsing successful.\n");
         result = OE_OK;
     }
@@ -493,36 +514,17 @@ done:
 }
 
 oe_result_t oe_verify_tcb_signature(
-    const uint8_t* tcb_info_json,
-    uint32_t tcb_info_json_size,
-    oe_parsed_tcb_info_t* parsed_tcb_info,
-    uint8_t* buffer,
-    uint32_t bufferSize,
+    const uint8_t* tcb_info_start,
+    uint32_t tcb_info_size,
+    sgx_ecdsa256_signature_t* signature,
     oe_cert_chain_t* tcb_cert_chain)
 {
     oe_result_t result = OE_FAILURE;
-    const uint8_t* tcb_info_json_end = tcb_info_json + tcb_info_json_size;
     oe_cert_t leaf_cert = {0};
     oe_ec_public_key_t tcb_signing_key = {0};
 
-    if (tcb_info_json == NULL || tcb_info_json_size == 0 ||
-        parsed_tcb_info == NULL || buffer == NULL ||
-        bufferSize < tcb_info_json_size || tcb_cert_chain == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (parsed_tcb_info->tcb_info_start < tcb_info_json ||
-        parsed_tcb_info->tcb_info_start >= tcb_info_json_end)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (parsed_tcb_info->tcb_info_end < tcb_info_json ||
-        parsed_tcb_info->tcb_info_end >= tcb_info_json_end)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (parsed_tcb_info->tcb_info_start >= parsed_tcb_info->tcb_info_end)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (*parsed_tcb_info->tcb_info_start != '{' ||
-        *parsed_tcb_info->tcb_info_end != '}')
+    if (tcb_info_start == NULL || tcb_info_size == 0 || signature == NULL ||
+        tcb_cert_chain == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_CHECK(oe_cert_chain_get_leaf_cert(tcb_cert_chain, &leaf_cert));
@@ -530,10 +532,7 @@ oe_result_t oe_verify_tcb_signature(
 
     OE_CHECK(
         _ECDSAVerify(
-            &tcb_signing_key,
-            parsed_tcb_info->tcb_info_start,
-            1 + parsed_tcb_info->tcb_info_end - parsed_tcb_info->tcb_info_start,
-            (sgx_ecdsa256_signature_t*)parsed_tcb_info->signature));
+            &tcb_signing_key, tcb_info_start, tcb_info_size, signature));
     OE_TRACE_INFO("tcb info ecdsa attestation succeeded\n");
 
     result = OE_OK;
