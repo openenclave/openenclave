@@ -50,16 +50,17 @@ bool CheckParsedString(
     return false;
 }
 
-void TestVerifyTCBInfo(oe_enclave_t* enclave, oe_tcb_level_t* platformTcbLevel)
+void TestVerifyTCBInfo(
+    oe_enclave_t* enclave,
+    oe_tcb_level_t* platformTcbLevel,
+    oe_result_t expected)
 {
     std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
     oe_parsed_tcb_info_t parsedInfo = {0};
     VerifyTCBInfoArgs args = {
         &tcbInfo[0], (uint32_t)tcbInfo.size(), platformTcbLevel, &parsedInfo};
 
-    OE_TEST(
-        oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK &&
-        args.result == OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK);
 
     OE_TEST(parsedInfo.version == 1);
     OE_TEST(
@@ -79,7 +80,6 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave, oe_tcb_level_t* platformTcbLevel)
         0xa1, 0x41, 0x69, 0x14, 0x36, 0x9d, 0x8f, 0x82, 0xc5, 0x6c, 0xd3,
         0xd8, 0x75, 0xca, 0xa5, 0x4a, 0xe4, 0xb9, 0x17, 0xca, 0xf4, 0xaf,
         0x7a, 0x93, 0xde, 0xc5, 0x20, 0x67, 0xcb, 0xfd, 0x7b};
-    oe_hex_dump(parsedInfo.signature, sizeof(parsedInfo.signature));
     OE_TEST(
         memcmp(
             parsedInfo.signature,
@@ -90,27 +90,51 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave, oe_tcb_level_t* platformTcbLevel)
 void TestVerifyTCBInfo(oe_enclave_t* enclave)
 {
     oe_tcb_level_t platformTcbLevel = {
-        {4, 4, 2, 4, 1, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {4, 4, 2, 4, 1, 128, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
         8,
         OE_TCB_LEVEL_STATUS_UNKNOWN};
 
-    // ./data/tcbInfo.json contains two tcb levels.
+    // ./data/tcbInfo.json contains three tcb levels.
     // The first level with pce svn = 5 is up to date.
     // The second level with pce svn = 4 is out of date.
+    // The second level with pce svn = 3 is revoked.
 
-    // Set platform tcb level to 8 and assert that
+    // Set platform pce svn to 8 and assert that
     // the determined status is up to date.
     platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platformTcbLevel.pce_svn = 8;
-    TestVerifyTCBInfo(enclave, &platformTcbLevel);
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_OK);
     OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_UP_TO_DATE);
+    printf("UptoDate TCB Level determination test passed.\n");
 
-    // Set platform tcb level to 4 and assert that
-    // the determined status is up to date.
+    // Set platform pce svn to 4 and assert that
+    // the determined status is out of date.
     platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platformTcbLevel.pce_svn = 4;
-    TestVerifyTCBInfo(enclave, &platformTcbLevel);
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_OK);
     OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_OUT_OF_DATE);
+    printf("OutOfDate TCB Level determination test passed.\n");
+
+    // Set platform pce svn to 3 and assert that
+    // the determined status is revoked.
+    platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platformTcbLevel.pce_svn = 3;
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_UNKNOWN_OR_REVOKED);
+    OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_REVOKED);
+    printf("OutOfDate TCB Level determination test passed.\n");
+
+    // Set each of the fields to a value not listed in the json and
+    // test that the determined status is OE_TCB_LEVEL_UNKNOWN_OR_REVOKED
+    for (uint32_t i = 0; i < OE_COUNTOF(platformTcbLevel.sgx_tcb_comp_svn); ++i)
+    {
+        platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+        platformTcbLevel.sgx_tcb_comp_svn[i] = 0;
+        TestVerifyTCBInfo(
+            enclave, &platformTcbLevel, OE_TCB_LEVEL_UNKNOWN_OR_REVOKED);
+        OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_UNKNOWN);
+        platformTcbLevel.sgx_tcb_comp_svn[i] = 1;
+    }
+    printf("Unknown TCB Level determination test passed.\n");
 
     printf("TestVerifyTCBInfo: Positive Tests passed\n");
 

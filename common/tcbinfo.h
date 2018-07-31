@@ -38,6 +38,28 @@ typedef struct _oe_parsed_tcb_info
     uint32_t tcb_info_size;
 } oe_parsed_tcb_info_t;
 
+/**
+ * oe_parse_tcb_info_json parses the given tcb info json string
+ * and populates the parsed_info structure.
+ * Additionally, the status field of the platform_tcb_level parameter is
+ * populated.
+ *
+ * The TCB info is expected to confirm to the TCB Info Json schema published by
+ * Intel. For the given platform_tcb_level, the correct status is determined
+ * using the following algorithm:
+ *
+ *    1. Go over the sorted collection of TCB levels in the JSON.
+ *    2. Choose the first tcb level for which  all of the platform's comp svn
+ *       values and pcesvn values are greater than or equal to corresponding
+ *       values of the tcb level.
+ *    3. The status of the platform's tcb level is the status of the chosen tcb
+ *       level.
+ *    4. If no tcb level was chosen, then the status of the platform is unknown.
+ *
+ * If the plaform's tcb level status was determined to be unknown or revoked,
+ * then OE_TCB_LEVEL_UNKNOWN_OR_REVOKED is returned.
+ *
+ */
 oe_result_t oe_parse_tcb_info_json(
     const uint8_t* tcb_info_json,
     uint32_t tcb_info_json_size,
