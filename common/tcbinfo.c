@@ -260,7 +260,7 @@ done:
 // 3. The status of the platform's tcb level is the status of the chosen tcb
 // level.
 // 4. If no tcb level was chosen, then the status of the platform is unknown.
-void determine_platform_tcb_level(
+static void _determine_platform_tcb_level(
     oe_tcb_level_t* platform_tcb_level,
     oe_tcb_level_t* tcb_level)
 {
@@ -328,7 +328,7 @@ oe_result_t _read_tcb_level(
 
     if (tcb_level.status != OE_TCB_LEVEL_STATUS_UNKNOWN)
     {
-        determine_platform_tcb_level(platform_tcb_level, &tcb_level);
+        _determine_platform_tcb_level(platform_tcb_level, &tcb_level);
         result = OE_OK;
     }
 
