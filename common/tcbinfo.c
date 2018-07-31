@@ -9,6 +9,8 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 
+#ifdef OE_USE_LIBSGX
+
 OE_INLINE uint8_t _is_space(uint8_t c)
 {
     return (
@@ -540,3 +542,5 @@ done:
 
     return result;
 }
+
+#endif

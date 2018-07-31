@@ -152,6 +152,8 @@ done:
     oe_free_buffer(encTcbInfoJson);
 }
 
+#ifdef OE_USE_LIBSGX
+
 OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
 {
     args->result = oe_parse_tcb_info_json(
@@ -160,3 +162,5 @@ OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
         (oe_tcb_level_t*)args->platformTcbLevel,
         (oe_parsed_tcb_info_t*)args->parsedTcbInfo);
 }
+
+#endif
