@@ -119,7 +119,8 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     // the determined status is revoked.
     platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platformTcbLevel.pce_svn = 3;
-    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_UNKNOWN_OR_REVOKED);
+    TestVerifyTCBInfo(
+        enclave, &platformTcbLevel, OE_TCB_LEVEL_UNKNOWN_OR_REVOKED);
     OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_REVOKED);
     printf("OutOfDate TCB Level determination test passed.\n");
 
@@ -152,6 +153,15 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         "./data/tcbInfoNegativePropertyWrongTypeLevel1.json",
         "./data/tcbInfoNegativePropertyWrongTypeLevel2.json",
         "./data/tcbInfoNegativePropertyWrongTypeLevel3.json",
+
+        // Comp Svn greater than uint8_t
+        "./data/tcbInfoNegativeCompSvn.json",
+
+        // Comp Svn greater than uint16_t
+        "./data/tcbInfoNegativePceSvn.json",
+
+        // Comp Signature != 64 bytes
+        "./data/tcbInfoNegativeSignature.json",
 
         // Unsupported JSON constructs
         "./data/tcbInfoNegativeIntegerOverflow.json",

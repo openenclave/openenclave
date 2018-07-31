@@ -248,7 +248,7 @@ oe_result_t _read_tcb(
         OE_CHECK(_read(',', itr, end));
 
         if (value > OE_MAX_UCHAR)
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
         tcb_level->sgx_tcb_comp_svn[i] = (uint8_t)value;
     }
     OE_TRACE_INFO("Reading pcesvn\n");
@@ -258,7 +258,7 @@ oe_result_t _read_tcb(
     OE_CHECK(_read('}', itr, end));
 
     if (value > OE_MAX_USHORT)
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
 
     tcb_level->pce_svn = (uint16_t)value;
     result = OE_OK;
@@ -282,7 +282,7 @@ static void _determine_platform_tcb_level(
     if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UNKNOWN)
         return;
 
-    // Compare all  of the platform's comp svn values with the corresponding
+    // Compare all of the platform's comp svn values with the corresponding
     // values in the current tcb level.
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level->sgx_tcb_comp_svn);
          ++i)
