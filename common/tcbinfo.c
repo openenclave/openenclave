@@ -66,7 +66,7 @@ static oe_result_t _read_integer(
         {
             // Detect overflows.
             if (*value >= OE_MAX_UINT64 / 10)
-                OE_RAISE(OE_FAILURE);
+                OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
 
             *value = *value * 10 + (*p - '0');
             ++p;

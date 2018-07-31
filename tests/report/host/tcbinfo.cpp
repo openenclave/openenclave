@@ -152,6 +152,11 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         "./data/tcbInfoNegativePropertyWrongTypeLevel1.json",
         "./data/tcbInfoNegativePropertyWrongTypeLevel2.json",
         "./data/tcbInfoNegativePropertyWrongTypeLevel3.json",
+
+        // Unsupported JSON constructs
+        "./data/tcbInfoNegativeIntegerOverflow.json",
+        "./data/tcbInfoNegativeIntegerWithSign.json",
+        "./data/tcbInfoNegativeFloat.json",
     };
 
     for (size_t i = 0; i < sizeof(negativeFiles) / sizeof(negativeFiles[0]);
