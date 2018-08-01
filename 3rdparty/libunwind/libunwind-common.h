@@ -4,7 +4,7 @@
 #ifndef _OE_LIBUNWIND_COMMON_H
 #define _OE_LIBUNWIND_COMMON_H
 
-#include "libunwind-common.h.h"
+#include "libunwind-common.inc"
 
 #undef unw_step
 #define unw_step __libunwind_unw_step

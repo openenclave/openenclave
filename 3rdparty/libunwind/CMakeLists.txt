@@ -47,30 +47,31 @@ ExternalProject_Add(oelibcxx_unwind
     COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/libunwind &&
         ./configure "${OPTS}" "CFLAGS=${CFLAGS}"
 
-    # Copy libunwind-common.h to libunwind-commond.h.h
+    # Copy libunwind-common.h to libunwind-common.inc.
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.h
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.h.h
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.inc
 
-    # Copy libunwind-common.h to the the build directory.
+    # Copy libunwind-common.h to the build directory (this file includes
+    # libunwind-common.inc).
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_LIST_DIR}/libunwind-common.h
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/include/libunwind-common.h
 
-    # Copy Gstep.c to Gstep.c.h
+    # Copy Gstep.c to Gstep.inc.
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c.h
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.inc
 
     # Copy Gstep.c to the the build directory.
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_LIST_DIR}/Gstep.c
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c
 
-    # Copy Gtrace.c to Gtrace.c.h
+    # Copy Gtrace.c to Gtrace.inc
     COMMAND grep -v "^static __thread"
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.c >
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.c.h
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.inc
 
     # Copy Gtrace.c to the the build directory.
     COMMAND ${CMAKE_COMMAND} -E copy

@@ -5,7 +5,7 @@
 #include <openenclave/internal/sgxtypes.h>
 
 //
-// The cmake script copies Gtrace.c to Gtrace.c.h, while deleting the following
+// The cmake script copies Gtrace.c to Gtrace.inc, while deleting the following
 // lines.
 //
 //     static __thread  unw_trace_cache_t *tls_cache;
@@ -70,4 +70,4 @@ static entry_t* _get_entry(void)
 #define tls_cache (*((unw_trace_cache_t**)(&(_get_entry()->tls_cache))))
 #define tls_cache_destroyed _get_entry()->tls_cache_destroyed
 
-#include "Gtrace.c.h"
+#include "Gtrace.inc"
