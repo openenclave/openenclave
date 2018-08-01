@@ -123,10 +123,10 @@ uint8_t __oe_initialized = 0;
 **
 **==============================================================================
 */
-void _HandleInitEnclave(uint64_t argIn)
+static oe_result_t _HandleInitEnclave(uint64_t argIn)
 {
     static bool _once = false;
-
+    oe_result_t result = OE_OK;
     /* Double checked locking (DCLP). */
     bool o = _once;
 
@@ -134,6 +134,13 @@ void _HandleInitEnclave(uint64_t argIn)
     OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
     if (o == false)
     {
+        if (!oe_is_outside_enclave(
+                (void*)argIn, sizeof(oe_init_enclave_args_t)))
+
+        {
+            OE_THROW(OE_INVALID_PARAMETER);
+        }
+
         static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
         oe_spin_lock(&_lock);
 
@@ -154,6 +161,8 @@ void _HandleInitEnclave(uint64_t argIn)
 
         oe_spin_unlock(&_lock);
     }
+OE_CATCH:
+    return result;
 }
 
 /*
@@ -320,7 +329,7 @@ static void _HandleECall(
         }
         case OE_ECALL_INIT_ENCLAVE:
         {
-            _HandleInitEnclave(argIn);
+            argOut = _HandleInitEnclave(argIn);
             break;
         }
         case OE_ECALL_GET_REPORT:
