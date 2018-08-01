@@ -60,9 +60,8 @@ the enclave version compares the log of the test built against **libcxxrt
 using OE dependencies** (e.g. OE version of libunwind) with the log of the
 one built against **libcxxrt and standard library dependencies**.
 
-Note that test_exception.cc requires std::uncaught_exceptions(), which is not
-supported by gcc version 5 that Open Enclave targets as the standard compiler
-version. With compilers that support this, such as Clang 3.8, or gcc version 6
-and above, the comparison version of the test can be compiled directly against
-system dependent libraries instead of **libcxxrt and standard library
-dependencies**.
+Note that test_exception.cc requires std::uncaught_exceptions(), which requires
+cpp standard **stdc++17** (or above) with compiler version **GCC version 6 or
+Clang 3.8** (or above). But Open Enclave currently support only **GCC version
+5 with cpp standard stdc++14** (at the most). Hence, test_exception.cc is not
+currently supported in Open Enclave.

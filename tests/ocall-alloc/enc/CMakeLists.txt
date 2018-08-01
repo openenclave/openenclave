@@ -7,7 +7,7 @@ add_enclave_executable(ocall-alloc_enc sign.conf private.pem
     wrap.cpp
     wrap-hoststack.c
     )
-target_link_libraries(ocall-alloc_enc oelibcxx)
+target_link_libraries(ocall-alloc_enc oelibcxx oeenclave)
 
 target_compile_features(ocall-alloc_enc PRIVATE cxx_auto_type)
 

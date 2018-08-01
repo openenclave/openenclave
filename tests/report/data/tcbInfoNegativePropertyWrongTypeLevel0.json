@@ -1,0 +1,54 @@
+{
+  "tcbInfo": {
+    "version": 1,
+    "issueDate": "2018-06-06T10:12:17.085Z",
+    "fmspc": "00906EA10000",
+    "tcbLevels": [
+      {
+        "tcb": {
+          "sgxtcbcomp01svn": 4,
+          "sgxtcbcomp02svn": 4,
+          "sgxtcbcomp03svn": 2,
+          "sgxtcbcomp04svn": 4,
+          "sgxtcbcomp05svn": 1,
+          "sgxtcbcomp06svn": 128,
+          "sgxtcbcomp07svn": 0,
+          "sgxtcbcomp08svn": 0,
+          "sgxtcbcomp09svn": 0,
+          "sgxtcbcomp10svn": 0,
+          "sgxtcbcomp11svn": 0,
+          "sgxtcbcomp12svn": 0,
+          "sgxtcbcomp13svn": 0,
+          "sgxtcbcomp14svn": 0,
+          "sgxtcbcomp15svn": 0,
+          "sgxtcbcomp16svn": 0,
+          "pcesvn": 5
+        },
+        "status": "UpToDate"
+      },
+      {
+        "tcb": {
+          "sgxtcbcomp01svn": 2,
+          "sgxtcbcomp02svn": 2,
+          "sgxtcbcomp03svn": 2,
+          "sgxtcbcomp04svn": 4,
+          "sgxtcbcomp05svn": 1,
+          "sgxtcbcomp06svn": 128,
+          "sgxtcbcomp07svn": 0,
+          "sgxtcbcomp08svn": 0,
+          "sgxtcbcomp09svn": 0,
+          "sgxtcbcomp10svn": 0,
+          "sgxtcbcomp11svn": 0,
+          "sgxtcbcomp12svn": 0,
+          "sgxtcbcomp13svn": 0,
+          "sgxtcbcomp14svn": 0,
+          "sgxtcbcomp15svn": 0,
+          "sgxtcbcomp16svn": 0,
+          "pcesvn": 4
+        },
+        "status": "OutOfDate"
+      }
+    ]
+  },
+  "signature": 123456
+}

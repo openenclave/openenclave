@@ -15,6 +15,16 @@
 #include "platformquoteprovider.h"
 #include "sgxquoteprovider.h"
 
+/**
+ * This file manages the libngsa_quoteprov.so shared library.
+ * It loads the .so during program startup and keeps it loaded till application
+ * exit. Intel's quoting library repeatedly loads and unloads
+ * libngsa_quoteprov.so.
+ * This causes a crash in libssl.so. (See
+ * https://rt.openssl.org/Ticket/Display.html?user=guest&pass=guest&id=2325).
+ * Keeping libngsa_quoteprov.so pinned in memory solves the libssl.so crash.
+ */
+
 static void* g_LibHandle = 0;
 static sgx_ql_get_revocation_info_t g_GetRevocationInfo = 0;
 static sgx_ql_free_revocation_info_t g_FreeRevocationInfo = 0;

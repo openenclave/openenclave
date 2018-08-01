@@ -32,7 +32,7 @@ OE_ECALL void Test(void* argPtr)
     strcpy(cha->func, "TestEcall");
 
     printf("%s(): OCALL...\n", __FUNCTION__);
-    res = oe_ocall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, 0);
+    res = oe_ocall(OE_OCALL_CALL_HOST, (uint64_t)cha, NULL, 0);
     printf(
         "%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n",
         __FUNCTION__,
@@ -46,7 +46,7 @@ OE_ECALL void Test(void* argPtr)
     /* Perform restricted ocall, expect ecall to fail */
     printf("%s(): OCALL(restricted)...\n", __FUNCTION__);
     res = oe_ocall(
-        OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
+        OE_OCALL_CALL_HOST, (uint64_t)cha, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
     printf(
         "%s(): OCALL returned. res=%x, ta->result=%x, counter=%x\n",
         __FUNCTION__,
@@ -58,7 +58,7 @@ OE_ECALL void Test(void* argPtr)
     OE_TEST(counter == 1);
 
     /* Perform regular ocall w/ ecall */
-    res = oe_ocall(OE_FUNC_CALL_HOST, (uint64_t)cha, NULL, 0);
+    res = oe_ocall(OE_OCALL_CALL_HOST, (uint64_t)cha, NULL, 0);
     OE_TEST(res == OE_OK);
     OE_TEST(ta->result == OE_OK);
     OE_TEST(counter == 2);
