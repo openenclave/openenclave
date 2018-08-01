@@ -107,8 +107,9 @@ OE_ECALL void EncRecursion(void* Args_)
     if (args.recursionsLeft)
     {
         if (args.initialCount)
-            argsHost->initialCount = args.initialCount - 1;
-        argsHost->recursionsLeft = args.recursionsLeft - 1;
+            --argsHost->initialCount;        
+        --argsHost->recursionsLeft;
+
         result = oe_call_host("RecursionOcall", argsHost);
     }
     else
