@@ -114,8 +114,8 @@ OE_ECALL void EncRecursion(void* Args_)
     else
     {
         // Notify control thread that this thread is ready.
-        __sync_fetch_and_add(argsHost->thread_ready_count, 1);
-
+        ++argsHost->thread_ready_count;
+       
         // Wait for the is_enclave_crashed signal.
         while (*argsHost->is_enclave_crashed == 0)
             ;
