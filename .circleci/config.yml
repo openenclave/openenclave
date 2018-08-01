@@ -43,6 +43,8 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config 
@@ -63,6 +65,8 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1 -b RelWithDebInfo
@@ -83,6 +87,8 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1 -b Release
@@ -103,6 +109,8 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1FLC -b Debug 
@@ -123,6 +131,8 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo 
@@ -143,6 +153,8 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1FLC -b Release
