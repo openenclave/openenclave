@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#ifdef OE_USE_LIBSGX
 
 #include <openenclave/host.h>
 #include <openenclave/internal/aesm.h>
@@ -184,3 +185,5 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         printf("TestVerifyTCBInfo: Negative Test %lu passed\n", i);
     }
 }
+
+#endif
