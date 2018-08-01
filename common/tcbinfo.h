@@ -12,6 +12,8 @@
 
 OE_EXTERNC_BEGIN
 
+#ifdef OE_USE_LIBSGX
+
 typedef enum _oe_tcb_level_status {
     OE_TCB_LEVEL_STATUS_UNKNOWN,
     OE_TCB_LEVEL_STATUS_REVOKED,
@@ -71,6 +73,8 @@ oe_result_t oe_verify_tcb_signature(
     uint32_t tcb_info_size,
     sgx_ecdsa256_signature_t* signature,
     oe_cert_chain_t* tcb_cert_chain);
+
+#endif
 
 OE_EXTERNC_END
 
