@@ -64,7 +64,7 @@ typedef enum _oe_result {
     OE_MEMORY_LEAK,
     OE_BAD_ALIGNMENT,
     OE_TCB_INFO_PARSE_ERROR,
-    OE_TCB_LEVEL_UNKNOWN_OR_REVOKED,
+    OE_TCB_LEVEL_INVALID,
     __OE_RESULT_MAX = OE_MAX_UINT,
 } oe_result_t;
 

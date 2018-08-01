@@ -111,7 +111,7 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     // the determined status is out of date.
     platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platformTcbLevel.pce_svn = 4;
-    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_OK);
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
     OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_OUT_OF_DATE);
     printf("OutOfDate TCB Level determination test passed.\n");
 
@@ -119,19 +119,17 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     // the determined status is revoked.
     platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platformTcbLevel.pce_svn = 3;
-    TestVerifyTCBInfo(
-        enclave, &platformTcbLevel, OE_TCB_LEVEL_UNKNOWN_OR_REVOKED);
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
     OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_REVOKED);
     printf("OutOfDate TCB Level determination test passed.\n");
 
     // Set each of the fields to a value not listed in the json and
-    // test that the determined status is OE_TCB_LEVEL_UNKNOWN_OR_REVOKED
+    // test that the determined status is OE_TCB_LEVEL_INVALID
     for (uint32_t i = 0; i < OE_COUNTOF(platformTcbLevel.sgx_tcb_comp_svn); ++i)
     {
         platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
         platformTcbLevel.sgx_tcb_comp_svn[i] = 0;
-        TestVerifyTCBInfo(
-            enclave, &platformTcbLevel, OE_TCB_LEVEL_UNKNOWN_OR_REVOKED);
+        TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
         OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_UNKNOWN);
         platformTcbLevel.sgx_tcb_comp_svn[i] = 1;
     }
@@ -157,13 +155,14 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         // Comp Svn greater than uint8_t
         "./data/tcbInfoNegativeCompSvn.json",
 
-        // Comp Svn greater than uint16_t
+        // pce Svn greater than uint16_t
         "./data/tcbInfoNegativePceSvn.json",
 
-        // Comp Signature != 64 bytes
+        // Signature != 64 bytes
         "./data/tcbInfoNegativeSignature.json",
 
         // Unsupported JSON constructs
+        "./data/tcbInfoNegativeStringEscape.json",
         "./data/tcbInfoNegativeIntegerOverflow.json",
         "./data/tcbInfoNegativeIntegerWithSign.json",
         "./data/tcbInfoNegativeFloat.json",

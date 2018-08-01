@@ -58,8 +58,8 @@ typedef struct _oe_parsed_tcb_info
  *       level.
  *    4. If no tcb level was chosen, then the status of the platform is unknown.
  *
- * If the plaform's tcb level status was determined to be unknown or revoked,
- * then OE_TCB_LEVEL_UNKNOWN_OR_REVOKED is returned.
+ * If the plaform's tcb level status was determined to be not uptodate,
+ * then OE_TCB_LEVEL_INVALID is returned.
  *
  */
 oe_result_t oe_parse_tcb_info_json(

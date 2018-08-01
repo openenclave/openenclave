@@ -102,8 +102,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_BAD_ALIGNMENT";
         case OE_TCB_INFO_PARSE_ERROR:
             return "OE_TCB_INFO_PARSE_ERROR";
-        case OE_TCB_LEVEL_UNKNOWN_OR_REVOKED:
-            return "OE_TCB_LEVEL_UNKNOWN_OR_REVOKED";
+        case OE_TCB_LEVEL_INVALID:
+            return "OE_TCB_LEVEL_INVALID";
         case __OE_RESULT_MAX:
             break;
     }

@@ -90,6 +90,7 @@ static oe_result_t _read_string(
 {
     oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* p = *itr;
+    *length = 0;
 
     p = _skip_ws(p, end);
     if (p < end && *p == '"')
@@ -463,9 +464,8 @@ oe_result_t oe_parse_tcb_info_json(
 
     if (itr == end)
     {
-        if (platform_tcb_level->status == OE_TCB_LEVEL_STATUS_UNKNOWN ||
-            platform_tcb_level->status == OE_TCB_LEVEL_STATUS_REVOKED)
-            OE_RAISE(OE_TCB_LEVEL_UNKNOWN_OR_REVOKED);
+        if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UP_TO_DATE)
+            OE_RAISE(OE_TCB_LEVEL_INVALID);
 
         OE_TRACE_INFO("TCB Info json parsing successful.\n");
         result = OE_OK;
