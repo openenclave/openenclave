@@ -9,8 +9,8 @@
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/cert.h>
 
-oe_result_t OE_EnforceRevocation(
-    oe_cert_t* intermediateCert,
-    oe_cert_t* leafCert);
+oe_result_t oe_enforce_revocation(
+    oe_cert_t* intermediate_cert,
+    oe_cert_t* leaf_cert);
 
 #endif // _OE_COMMON_REVOCATION_H

@@ -235,7 +235,7 @@ oe_result_t VerifyQuoteImpl(
         if (!keyEqual)
             OE_RAISE(OE_VERIFY_FAILED);
 
-        OE_CHECK(OE_EnforceRevocation(&intermediateCert, &leafCert));
+        OE_CHECK(oe_enforce_revocation(&intermediateCert, &leafCert));
     }
 
     // Quote validations.

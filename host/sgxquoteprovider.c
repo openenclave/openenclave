@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 2
+//#define OE_TRACE_LEVEL 2
 
 #include <dlfcn.h>
 #include <openenclave/internal/hexdump.h>
@@ -116,7 +116,6 @@ oe_result_t oe_get_revocation_info(
     uint32_t hostBufferSize = 0;
     uint8_t* p = 0;
 
-    printf("herex\n");
     if (!g_GetRevocationInfo || !g_FreeRevocationInfo)
         OE_RAISE(OE_FAILURE);
 
@@ -252,11 +251,13 @@ oe_result_t oe_get_revocation_info(
 
             FILE* f = 0;
             if (i == 0)
-                f = fopen("/home/anakrish/work/openenclave/crl_issuer0.cer", "wb");
+                f = fopen(
+                    "/home/anakrish/work/openenclave/crl_issuer0.cer", "wb");
             else
-                f = fopen("/home/anakrish/work/openenclave/crl_issuer1.cer", "wb");                
+                f = fopen(
+                    "/home/anakrish/work/openenclave/crl_issuer1.cer", "wb");
             fwrite(crlIssuerChain[i], crlIssuerChainSize[i], 1, f);
-            fclose(f);                
+            fclose(f);
         }
     }
 
