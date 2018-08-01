@@ -4,6 +4,9 @@ pipeline {
     stage('test') {
       steps {
         echo 'test'
+        sh '''pwd
+ls -l
+'''
       }
     }
   }
