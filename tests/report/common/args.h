@@ -25,10 +25,11 @@ struct VerifyQuoteArgs
 
 struct VerifyTCBInfoArgs
 {
-    uint8_t* tcbInfo;     /* in */
-    uint32_t tcbInfoSize; /* in */
-    void* parsedTcbInfo;  /* out */
-    oe_result_t result;   /* out */
+    uint8_t* tcbInfo;       /* in */
+    uint32_t tcbInfoSize;   /* in */
+    void* platformTcbLevel; /* in */
+    void* parsedTcbInfo;    /* out */
+    oe_result_t result;     /* out */
 };
 
 struct ParseJsonArgs

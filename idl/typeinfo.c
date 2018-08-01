@@ -202,6 +202,7 @@ static size_t _GetTypeSizeFromType(oe_type_t type)
         case OE_LONG_T:
         case OE_ULONG_T:
         case OE_WCHAR_T:
+        case __OE_TYPE_MAX:
         {
             /* Unsupported types */
             return 0;
@@ -278,6 +279,7 @@ static bool _ScalarEq(oe_type_t type, const void* p1, const void* p2)
         case OE_LONG_T:
         case OE_ULONG_T:
         case OE_WCHAR_T:
+        case __OE_TYPE_MAX:
         {
             /* Unsupported types */
             return false;
@@ -361,6 +363,7 @@ static bool _ArrayEq(oe_type_t type, const void* p1, const void* p2, size_t n)
         case OE_LONG_T:
         case OE_ULONG_T:
         case OE_WCHAR_T:
+        case __OE_TYPE_MAX:
         {
             /* Unsupported types */
             return false;
@@ -682,6 +685,7 @@ static void _PrintScalar(const oe_field_ti_t* fti, const void* p, size_t depth)
         case OE_LONG_T:
         case OE_ULONG_T:
         case OE_WCHAR_T:
+        case __OE_TYPE_MAX:
         {
             /* Unsupported types */
             break;

@@ -167,7 +167,10 @@ typedef enum _oe_type {
     OE_SSIZE_T,
     OE_STRUCT_T,
     OE_VOID_T,
+    __OE_TYPE_MAX = OE_MAX_UINT,
 } oe_type_t;
+
+OE_STATIC_ASSERT(sizeof(oe_type_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================
@@ -179,7 +182,10 @@ typedef enum _oe_type {
 typedef enum _oe_enclave_type {
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,
+    __OE_ENCLAVE_TYPE_MAX = OE_MAX_UINT,
 } oe_enclave_type_t;
+
+OE_STATIC_ASSERT(sizeof(oe_enclave_type_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================

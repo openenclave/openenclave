@@ -4,12 +4,12 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <pthread.h>
-#include <unistd.h>
 #include <cassert>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <thread>
 #include "../args.h"
 #include "../rwlock_tests.h"
 
@@ -17,7 +17,7 @@ static TestRWLockArgs _rwArgs;
 
 OE_OCALL void host_usleep(void* args)
 {
-    usleep((size_t)args);
+    std::this_thread::sleep_for(std::chrono::microseconds((size_t)args));
 }
 
 void* ReaderThread(void* args)
@@ -39,18 +39,18 @@ void* WriterThread(void* args)
 // Launch multiple reader and writer threads and OE_TEST invariants.
 void TestReadersWriterLock(oe_enclave_t* enclave)
 {
-    pthread_t threads[NUM_RW_TEST_THREADS];
+    std::thread threads[NUM_RW_TEST_THREADS];
 
     memset(&_rwArgs, 0, sizeof(_rwArgs));
 
     for (size_t i = 0; i < NUM_RW_TEST_THREADS; i++)
     {
-        pthread_create(
-            &threads[i], NULL, (i & 1) ? WriterThread : ReaderThread, enclave);
+        threads[i] =
+            std::thread((i & 1) ? WriterThread : ReaderThread, enclave);
     }
 
     for (size_t i = 0; i < NUM_RW_TEST_THREADS; i++)
-        pthread_join(threads[i], NULL);
+        threads[i].join();
 
     // There can be at most 1 writer thread active.
     OE_TEST(_rwArgs.maxWriters == 1);

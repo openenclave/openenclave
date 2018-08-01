@@ -1,337 +1,121 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#define OE_TRACE_LEVEL 2
 #include "tcbinfo.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/json.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
-#include <mbedtls/sha512.h>
 
-enum
+#ifdef OE_USE_LIBSGX
+
+OE_INLINE uint8_t _is_space(uint8_t c)
 {
-    NUMBER = 1,
-    STRING = 2,
-    OBJECT = 3,
-    OBJECT_ARRAY = 4
-};
-
-typedef struct _property
-{
-    const char* name;
-    uint32_t type;
-} property_t;
-
-typedef struct _schema
-{
-    uint32_t num_properties;
-    property_t properties[17];
-} schema_t;
-
-#define NUM_LEVELS (4)
-#define NUM_TCB_LEVELS (3)
-#define MAX_NUM_PROPERTIES (17)
-
-static const schema_t _schema[NUM_LEVELS] = {
-    {2, {{"tcbInfo", OBJECT}, {"signature", STRING}}},
-    {4,
-     {{"version", NUMBER},
-      {"issueDate", STRING},
-      {"fmspc", STRING},
-      {"tcbLevels", OBJECT_ARRAY}}},
-    {2, {{"tcb", OBJECT}, {"status", STRING}}},
-    {17,
-     {{"sgxtcbcomp01svn", NUMBER},
-      {"sgxtcbcomp02svn", NUMBER},
-      {"sgxtcbcomp03svn", NUMBER},
-      {"sgxtcbcomp04svn", NUMBER},
-      {"sgxtcbcomp05svn", NUMBER},
-      {"sgxtcbcomp06svn", NUMBER},
-      {"sgxtcbcomp07svn", NUMBER},
-      {"sgxtcbcomp08svn", NUMBER},
-      {"sgxtcbcomp09svn", NUMBER},
-      {"sgxtcbcomp10svn", NUMBER},
-      {"sgxtcbcomp11svn", NUMBER},
-      {"sgxtcbcomp12svn", NUMBER},
-      {"sgxtcbcomp13svn", NUMBER},
-      {"sgxtcbcomp14svn", NUMBER},
-      {"sgxtcbcomp15svn", NUMBER},
-      {"sgxtcbcomp16svn", NUMBER},
-      {"pcesvn", NUMBER}}}};
-
-typedef struct _callback_data
-{
-    const uint8_t* json;
-
-    // The TCB info to be validated against the JSON
-    oe_parsed_tcb_info_t* parsed_tcb_info;
-
-    // Current level of object
-    uint32_t level;
-
-    // Maximum levels seen
-    int32_t max_level;
-
-    // Current property that is being parsed in each level.
-    uint32_t current_property_idx[4];
-
-    // The set of properties read in each level.
-    uint32_t properties_seen[NUM_LEVELS][MAX_NUM_PROPERTIES];
-    uint32_t numproperties_seen[NUM_LEVELS];
-    oe_tcb_t current_tcb;
-
-    oe_result_t schema_validation_result;
-
-    // Index of current TCB Level. o), 1, or 2.
-    uint32_t tcb_level_idx;
-
-    const char* error_message;
-} callback_data_t;
-
-static bool _is_expecting_type(callback_data_t* data, uint32_t type)
-{
-    if (data->level >= 0 && data->level <= 3)
-    {
-        return _schema[data->level]
-                   .properties[data->current_property_idx[data->level]]
-                   .type == type;
-    }
-
-    return false;
+    return (
+        c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' ||
+        c == '\r' || c == '\0');
 }
 
-const char* _get_current_property_name(callback_data_t* data)
+// Skip white space.
+static const uint8_t* _skip_ws(const uint8_t* itr, const uint8_t* end)
 {
-    if (data->level >= 0 && data->level <= 3)
-    {
-        return _schema[data->level]
-            .properties[data->current_property_idx[data->level]]
-            .name;
-    }
-
-    return "";
+    while (itr < end && _is_space(*itr))
+        ++itr;
+    return itr;
 }
 
-static oe_result_t _begin_object(void* vdata, const uint8_t* lbrace)
+OE_INLINE uint8_t _is_digit(uint8_t c)
 {
-    callback_data_t* data = (callback_data_t*)vdata;
-    int32_t curLevel = data->level;
+    return (c >= '0' && c <= '9');
+}
 
-    if (curLevel == -1)
+// Read a specific character at current position.
+// Consume and skip trailing whitespace.
+static oe_result_t _read(char ch, const uint8_t** itr, const uint8_t* end)
+{
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    const uint8_t* p = *itr;
+    if (p < end && *p == ch)
     {
-        // Processing root object
-        data->level = 0;
-        data->max_level = 0;
-        return OE_OK;
+        *itr = _skip_ws(++p, end);
+        result = OE_OK;
     }
-    else
+    return result;
+}
+
+// Read an integer literal in current position.
+// Only the necessary subset of json numbers are supported.
+// Integers must be a sequence of digits.
+// Negative and floating point json numbers are not supported.
+// Value must fit within an uint64_t.
+static oe_result_t _read_integer(
+    const uint8_t** itr,
+    const uint8_t* end,
+    uint64_t* value)
+{
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    const uint8_t* p = *itr;
+    *value = 0;
+
+    if (p < end && _is_digit(*p))
     {
-        // Apply schema checks.
-        if (_is_expecting_type(data, OBJECT) ||
-            _is_expecting_type(data, OBJECT_ARRAY))
+        *value = *p - '0';
+        ++p;
+        while (p < end && _is_digit(*p))
         {
-            if (oe_strcmp(_get_current_property_name(data), "tcbLevels") == 0)
-            {
-                // There can at at most 3 Levels of TCB.
-                ++data->tcb_level_idx;
-                if (data->tcb_level_idx >= NUM_TCB_LEVELS)
-                    return OE_FAILURE;
-            }
-            if (oe_strcmp(_get_current_property_name(data), "tcbInfo") == 0)
-                data->parsed_tcb_info->tcb_info_start = lbrace;
+            // Detect overflows.
+            if (*value >= OE_MAX_UINT64 / 10)
+                OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
 
-            ++data->level;
-            if (data->level > data->max_level)
-            {
-                data->max_level = data->level;
-            }
-
-            data->numproperties_seen[data->level] = 0;
-            return OE_OK;
+            *value = *value * 10 + (*p - '0');
+            ++p;
         }
 
-        data->schema_validation_result = OE_FAILURE;
-        return OE_FAILURE;
+        *itr = _skip_ws(p, end);
+        result = OE_OK;
     }
+done:
+    return result;
 }
 
-static void _aggregate_tcb_info(oe_tcb_t* tcb, oe_tcb_t* aggregated_tcb)
+// Read a string literal in current position.
+// Only the necessary subset of json strings are supported.
+// JSON escape sequences are not supported.
+static oe_result_t _read_string(
+    const uint8_t** itr,
+    const uint8_t* end,
+    const uint8_t** str,
+    uint32_t* length)
 {
-    // Aggregate only if the statuses match.
-    if (tcb->status != aggregated_tcb->status)
-        return;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    const uint8_t* p = *itr;
+    *length = 0;
 
-    aggregated_tcb->is_specified = true;
-
-    // Choose the maximum value for each property.
-    for (uint32_t i = 0;
-         i < sizeof(tcb->sgx_tcb_comp_svn) / sizeof(tcb->sgx_tcb_comp_svn[0]);
-         ++i)
+    p = _skip_ws(p, end);
+    if (p < end && *p == '"')
     {
-        if (tcb->sgx_tcb_comp_svn[i] > aggregated_tcb->sgx_tcb_comp_svn[i])
-            aggregated_tcb->sgx_tcb_comp_svn[i] = tcb->sgx_tcb_comp_svn[i];
-    }
-    if (tcb->pce_svn > aggregated_tcb->pce_svn)
-        aggregated_tcb->pce_svn = tcb->pce_svn;
-}
-
-static oe_result_t _end_object(void* vdata, const uint8_t* rbrace)
-{
-    callback_data_t* data = (callback_data_t*)vdata;
-    int level = data->level--;
-
-    if (oe_strcmp(_get_current_property_name(data), "tcbLevels") == 0)
-    {
-        // Aggregate the TCB info.
-        _aggregate_tcb_info(
-            &data->current_tcb,
-            &data->parsed_tcb_info->aggregated_uptodate_tcb);
-        _aggregate_tcb_info(
-            &data->current_tcb,
-            &data->parsed_tcb_info->aggregated_outofdate_tcb);
-        _aggregate_tcb_info(
-            &data->current_tcb, &data->parsed_tcb_info->aggregated_revoked_tcb);
-
-        // Clear current TCB.
-        oe_memset(&data->current_tcb, 0, sizeof(data->current_tcb));
-    }
-
-    if (oe_strcmp(_get_current_property_name(data), "tcbInfo") == 0)
-        data->parsed_tcb_info->tcb_info_end = rbrace;
-
-    // Check that all expected properties have been read.
-    if (level < NUM_LEVELS &&
-        data->numproperties_seen[level] == _schema[level].num_properties)
-        return OE_OK;
-
-    data->schema_validation_result = OE_FAILURE;
-    return OE_FAILURE;
-}
-
-static bool _json_str_equal(
-    const char* s1,
-    uint32_t len1,
-    const char* s2,
-    uint32_t len2)
-{
-    // Strings in json stream are not zero terminated.
-    // Hence the special comparison function.
-    return (len1 == len2) && (oe_strncmp(s1, s2, len1) == 0);
-}
-
-static oe_result_t _property_name(
-    void* vdata,
-    const uint8_t* name,
-    uint32_t name_length)
-{
-    callback_data_t* data = (callback_data_t*)vdata;
-
-    // Check if it is a valid property in currently level.
-    int32_t property_idx = -1;
-    uint8_t duplicate = 0;
-    const schema_t* schema = NULL;
-
-    if (data->level <= 3)
-    {
-        // First, find a matching property.
-        schema = &_schema[data->level];
-        for (uint32_t i = 0; i < schema->num_properties; ++i)
+        *str = ++p;
+        while (p < end && *p != '"')
         {
-            if (_json_str_equal(
-                    (const char*)name,
-                    name_length,
-                    schema->properties[i].name,
-                    oe_strlen(schema->properties[i].name)))
-            {
-                property_idx = i;
-                break;
-            }
+            if (*p == '\\')
+                OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+
+            ++p;
         }
 
-        // Avoid duplicates.
-        if (property_idx != -1)
+        if (p < end && *p == '"')
         {
-            // Since match refers to strings from the static schema, pointer
-            // comparison can be used for equality.
-            for (uint32_t i = 0; i < data->numproperties_seen[data->level]; ++i)
-            {
-                if (data->properties_seen[data->level][i] == property_idx)
-                {
-                    duplicate = 1;
-                    break;
-                }
-            }
-
-            if (!duplicate)
-            {
-                data->current_property_idx[data->level] = property_idx;
-                data->numproperties_seen[data->level]++;
-                return OE_OK;
-            }
+            *length = p - *str;
+            *itr = _skip_ws(++p, end);
+            result = OE_OK;
         }
     }
-
-    data->schema_validation_result = OE_FAILURE;
-    return OE_FAILURE;
+done:
+    return result;
 }
 
-static oe_result_t _number(
-    void* vdata,
-    const uint8_t* value,
-    uint32_t value_length)
-{
-    callback_data_t* data = (callback_data_t*)vdata;
-    const char* property_name = _get_current_property_name(data);
-    oe_tcb_t* tcb = &data->current_tcb;
-
-    // Read decimal property value.
-    uint64_t property_value = 0;
-    for (uint32_t i = 0; i < value_length; ++i)
-    {
-        property_value = (property_value * 10) + value[i] - '0';
-    }
-
-    if (_is_expecting_type(data, NUMBER))
-    {
-        if (data->level == 1)
-        {
-            if (oe_strcmp(property_name, "version") == 0)
-            {
-                OE_TRACE_INFO("TCB: version = %ld\n", property_value);
-                data->parsed_tcb_info->version = property_value;
-                return OE_OK;
-            }
-        }
-        else if (data->level == 3)
-        {
-            if (oe_strcmp(property_name, "pcesvn") == 0)
-            {
-                OE_TRACE_INFO("TCB: pcesvn = %ld\n", property_value);
-                tcb->pce_svn = property_value;
-                return OE_OK;
-            }
-            else
-            {
-                OE_TRACE_INFO(
-                    "TCB: sgxtcbcomp%dsvn = %ld\n",
-                    data->current_property_idx[data->level] + 1,
-                    property_value);
-                tcb->sgx_tcb_comp_svn[data->current_property_idx[data->level]] =
-                    property_value;
-                return OE_OK;
-            }
-        }
-    }
-
-    OE_TRACE_INFO("Unhandled number property: %s\n", property_name);
-    return OE_FAILURE;
-}
-
-static uint32_t _HexToDec(uint8_t hex)
+static uint32_t _hex_to_dec(uint8_t hex)
 {
     if (hex >= '0' && hex <= '9')
         return hex - '0';
@@ -339,156 +123,227 @@ static uint32_t _HexToDec(uint8_t hex)
         return (hex - 'a') + 10;
     if (hex >= 'A' && hex <= 'F')
         return (hex - 'A') + 10;
-    return 0;
+    return 16;
 }
 
-static oe_result_t _string(void* vdata, const uint8_t* str, uint32_t str_length)
+// Read a hex string in current position
+static oe_result_t _read_hex_string(
+    const uint8_t** itr,
+    const uint8_t* end,
+    uint8_t* bytes,
+    uint32_t length)
 {
-    callback_data_t* data = (callback_data_t*)vdata;
-    const char* property_name = _get_current_property_name(data);
-    oe_tcb_t* tcb = 0;
-    if (_is_expecting_type(data, STRING))
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    const uint8_t* str = NULL;
+    uint32_t str_length = 0;
+    uint16_t value = 0;
+
+    OE_CHECK(_read_string(itr, end, &str, &str_length));
+    // Each byte takes up two hex digits.
+    if (str_length == length * 2)
     {
-        if (data->level == 0)
+        for (uint32_t i = 0; i < length; ++i)
         {
-            if (oe_strcmp(property_name, "signature") == 0)
-            {
-                if (str_length == 2*sizeof(data->parsed_tcb_info->signature))
-                {
-                    for(uint32_t i=0; i < OE_COUNTOF(data->parsed_tcb_info->signature); ++i)
-                    {
-                        data->parsed_tcb_info->signature[i] = (_HexToDec(str[i*2]) << 4) | _HexToDec(str[i*2+1]);
-                    }
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-                    OE_TRACE_INFO("signature-length: %d\n", str_length);
-                    oe_hex_dump(data->parsed_tcb_info->signature, sizeof(data->parsed_tcb_info->signature));
-#endif                        
-                    return OE_OK;
-                }
-                                
-            }
+            value =
+                (_hex_to_dec(str[i * 2]) << 4) | _hex_to_dec(str[i * 2 + 1]);
+            if (value > OE_MAX_UCHAR)
+                OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+            bytes[i] = (uint8_t)value;
         }
-        if (data->level == 1)
-        {
-            if (oe_strcmp(property_name, "issueDate") == 0)
-            {
-                OE_TRACE_INFO("issue_date: length = %d\n", str_length);
 
-                data->parsed_tcb_info->issue_date = str;
-                data->parsed_tcb_info->issue_date_size = str_length;
-                return OE_OK;
-            }
-            if (oe_strcmp(property_name, "fmspc") == 0)
-            {
-                OE_TRACE_INFO("fmspc: length = %d\n", str_length);
-                if (str_length == 2 * sizeof(data->parsed_tcb_info->fmspc))
-                {
-                    for (uint32_t i = 0;
-                         i < OE_COUNTOF(data->parsed_tcb_info->fmspc);
-                         i++)
-                    {
-                        data->parsed_tcb_info->fmspc[i] =
-                            (_HexToDec(str[2 * i]) << 4) |
-                            _HexToDec(str[2 * i + 1]);
-                    }
-                    return OE_OK;
-                }
-            }
-        }
-        if (data->level == 2)
-        {
-            if (oe_strcmp(property_name, "status") == 0)
-            {
-                tcb = &data->current_tcb;
-
-                if (_json_str_equal((const char*)str, str_length, "Revoked", 7))
-                {
-                    OE_TRACE_INFO("TCB: status = Revoked\n");
-                    tcb->status = OE_TCB_STATUS_REVOKED;
-                    return OE_OK;
-                }
-                if (_json_str_equal(
-                        (const char*)str, str_length, "OutOfDate", 9))
-                {
-                    OE_TRACE_INFO("TCB: status = OutOfDate\n");
-                    tcb->status = OE_TCB_STATUS_OUT_OF_DATE;
-                    return OE_OK;
-                }
-                if (_json_str_equal(
-                        (const char*)str, str_length, "UpToDate", 8))
-                {
-                    OE_TRACE_INFO("TCB: status = UpToDate\n");
-                    tcb->status = OE_TCB_STATUS_UP_TO_DATE;
-                    return OE_OK;
-                }
-            }
-        }
+        result = OE_OK;
     }
-    OE_TRACE_INFO("Unhandled string property: %s\n", property_name);
-    return OE_FAILURE;
+done:
+    return result;
 }
 
-static void _handle_error(void* vdata, uint32_t pos, const char* msg)
+static oe_result_t _read_property_name_and_colon(
+    const char* property_name,
+    const uint8_t** itr,
+    const uint8_t* end)
 {
-    callback_data_t* data = (callback_data_t*)vdata;
-    data->error_message = msg;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    const uint8_t* name = NULL;
+    uint32_t name_length = 0;
 
-    OE_TRACE_ERROR("JSON parse error : pos %d: %s\n", pos, msg);
-    OE_TRACE_ERROR("%s\n", (const char*)data->json + pos - 10);
+    OE_CHECK(_read_string(itr, end, &name, &name_length));
+    if (name_length == oe_strlen(property_name) &&
+        oe_memcmp(property_name, name, name_length) == 0)
+    {
+        OE_CHECK(_read(':', itr, end));
+        result = OE_OK;
+    }
+done:
+    return result;
 }
 
-oe_result_t oe_parse_tcb_info_json(
-    const uint8_t* tcb_info_json,
-    uint32_t tcb_info_json_size,
+static bool _json_str_equal(
+    const uint8_t* str1,
+    uint32_t str1_length,
+    const char* str2)
+{
+    uint32_t str2_length = (uint32_t)oe_strlen(str2);
+
+    // Strings in json stream are not zero terminated.
+    // Hence the special comparison function.
+    return (str1_length == str2_length) &&
+           (oe_memcmp(str1, str2, str2_length) == 0);
+}
+
+static void _trace_json_string(const uint8_t* str, uint32_t str_length)
+{
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
+    char buffer[str_length + 1];
+    oe_memcpy(buffer, str, str_length);
+    buffer[str_length] = 0;
+    OE_TRACE_INFO("value = %s\n", buffer);
+#endif
+}
+
+/**
+ * Type: tcb
+ * Schema:
+ * {
+ *    "sgxtcbcomp01svn": uint8_t,
+ *    "sgxtcbcomp02svn": uint8_t,
+ *    ...
+ *    "sgxtcbcomp16svn": uint8_t,
+ *    "pcesvn": uint16_t
+ * }
+ */
+oe_result_t _read_tcb(
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_tcb_level_t* tcb_level)
+{
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    uint64_t value = 0;
+
+    static const char* _comp_names[] = {"sgxtcbcomp01svn",
+                                        "sgxtcbcomp02svn",
+                                        "sgxtcbcomp03svn",
+                                        "sgxtcbcomp04svn",
+                                        "sgxtcbcomp05svn",
+                                        "sgxtcbcomp06svn",
+                                        "sgxtcbcomp07svn",
+                                        "sgxtcbcomp08svn",
+                                        "sgxtcbcomp09svn",
+                                        "sgxtcbcomp10svn",
+                                        "sgxtcbcomp11svn",
+                                        "sgxtcbcomp12svn",
+                                        "sgxtcbcomp13svn",
+                                        "sgxtcbcomp14svn",
+                                        "sgxtcbcomp15svn",
+                                        "sgxtcbcomp16svn"};
+    OE_STATIC_ASSERT(
+        OE_COUNTOF(_comp_names) == OE_COUNTOF(tcb_level->sgx_tcb_comp_svn));
+
+    OE_CHECK(_read('{', itr, end));
+
+    for (uint32_t i = 0; i < OE_COUNTOF(_comp_names); ++i)
+    {
+        OE_TRACE_INFO("Reading %s\n", _comp_names[i]);
+        OE_CHECK(_read_property_name_and_colon(_comp_names[i], itr, end));
+        OE_CHECK(_read_integer(itr, end, &value));
+        OE_TRACE_INFO("value = %lu\n", value);
+        OE_CHECK(_read(',', itr, end));
+
+        if (value > OE_MAX_UCHAR)
+            OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+        tcb_level->sgx_tcb_comp_svn[i] = (uint8_t)value;
+    }
+    OE_TRACE_INFO("Reading pcesvn\n");
+    OE_CHECK(_read_property_name_and_colon("pcesvn", itr, end));
+    OE_CHECK(_read_integer(itr, end, &value));
+    OE_TRACE_INFO("value = %lu\n", value);
+    OE_CHECK(_read('}', itr, end));
+
+    if (value > OE_MAX_USHORT)
+        OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+
+    tcb_level->pce_svn = (uint16_t)value;
+    result = OE_OK;
+done:
+    return result;
+}
+
+// Algorithm specified by Intel, reworded:
+// 1. Go over the sorted collection of TCB levels in the JSON.
+// 2. Choose the first tcb level for which  all of the platform's comp svn
+// values and pcesvn values are greater than or equal to corresponding values of
+// the tcb level.
+// 3. The status of the platform's tcb level is the status of the chosen tcb
+// level.
+// 4. If no tcb level was chosen, then the status of the platform is unknown.
+static void _determine_platform_tcb_level(
+    oe_tcb_level_t* platform_tcb_level,
+    oe_tcb_level_t* tcb_level)
+{
+    // If the platform's status has already been determined, return.
+    if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UNKNOWN)
+        return;
+
+    // Compare all of the platform's comp svn values with the corresponding
+    // values in the current tcb level.
+    for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level->sgx_tcb_comp_svn);
+         ++i)
+    {
+        if (platform_tcb_level->sgx_tcb_comp_svn[i] <
+            tcb_level->sgx_tcb_comp_svn[i])
+            return;
+    }
+    if (platform_tcb_level->pce_svn < tcb_level->pce_svn)
+        return;
+
+    // If all the values of the tcb level are less than corresponding values of
+    // the platform, then the platform's status is the status of the current tcb
+    // level.
+    platform_tcb_level->status = tcb_level->status;
+}
+
+/**
+ * Type: tcbLevel
+ * Schema:
+ * {
+ *    "tcb" : object of type tcb
+ *    "status": one of "UpToDate" or "OutOfDate" or "Revoked"
+ * }
+ */
+static oe_result_t _read_tcb_level(
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info)
 {
-    oe_result_t result = OE_FAILURE;
-    callback_data_t data = {0};
-    data.json = tcb_info_json;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    oe_tcb_level_t tcb_level = {0};
+    const uint8_t* status = NULL;
+    uint32_t status_length = 0;
 
-    OE_JsonParserCallbackInterface intf = {
-        _begin_object,
-        _end_object,
-        NULL, // Callback for beginArray
-        NULL, // Callback for endArray
-        NULL, // Callback for null
-        NULL, // Callback for boolean
-        _number,
-        _string,
-        _property_name,
-        _handle_error,
-    };
+    OE_CHECK(_read('{', itr, end));
 
-    if (parsed_info == NULL || tcb_info_json == NULL || tcb_info_json_size == 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
+    OE_TRACE_INFO("Reading tcb\n");
+    OE_CHECK(_read_property_name_and_colon("tcb", itr, end));
+    OE_CHECK(_read_tcb(itr, end, &tcb_level));
+    OE_CHECK(_read(',', itr, end));
 
-    oe_memset(parsed_info, 0, sizeof(*parsed_info));
-    data.parsed_tcb_info = parsed_info;
-    data.tcb_level_idx = -1;
-    parsed_info->aggregated_uptodate_tcb.status = OE_TCB_STATUS_UP_TO_DATE;
-    parsed_info->aggregated_outofdate_tcb.status = OE_TCB_STATUS_OUT_OF_DATE;
-    parsed_info->aggregated_revoked_tcb.status = OE_TCB_STATUS_REVOKED;
+    OE_TRACE_INFO("Reading status\n");
+    OE_CHECK(_read_property_name_and_colon("status", itr, end));
+    OE_CHECK(_read_string(itr, end, &status, &status_length));
+    _trace_json_string(status, status_length);
 
-    // Not yet in root which is level 0.
-    data.level = -1;
+    OE_CHECK(_read('}', itr, end));
 
-    // If any schema errors are detected, this
-    // will be set to OE_FAILURE
-    data.schema_validation_result = OE_OK;
+    if (_json_str_equal(status, status_length, "UpToDate"))
+        tcb_level.status = OE_TCB_LEVEL_STATUS_UP_TO_DATE;
+    else if (_json_str_equal(status, status_length, "OutOfDate"))
+        tcb_level.status = OE_TCB_LEVEL_STATUS_OUT_OF_DATE;
+    else if (_json_str_equal(status, status_length, "Revoked"))
+        tcb_level.status = OE_TCB_LEVEL_STATUS_REVOKED;
 
-    OE_CHECK(OE_ParseJson(tcb_info_json, tcb_info_json_size, &data, &intf));
-
-    // Revoked is optional.
-    // There must atleast be one of UpToDate or OutOfDate.
-    if (!parsed_info->aggregated_uptodate_tcb.is_specified &&
-        !parsed_info->aggregated_outofdate_tcb.is_specified)
-        OE_RAISE(OE_FAILURE);
-
-    // Check that all expected levels are there and
-    // no schema validation errors were found.
-    if (data.max_level + 1 == NUM_LEVELS &&
-        data.schema_validation_result == OE_OK)
+    if (tcb_level.status != OE_TCB_LEVEL_STATUS_UNKNOWN)
     {
+        _determine_platform_tcb_level(platform_tcb_level, &tcb_level);
         result = OE_OK;
     }
 
@@ -496,119 +351,128 @@ done:
     return result;
 }
 
-oe_result_t oe_enforce_tcb_info(
-    const uint8_t* tcb_info_json,
-    uint32_t tcb_info_json_size,
-    ParsedExtensionInfo* parsed_extension_info,
-    bool require_uptodate,
-    oe_parsed_tcb_info_t* parsed_tcb_info)
+/**
+ * type = tcbInfo
+ * Schema:
+ * {
+ *    "version" : integer,
+ *    "issueDate" : string,
+ *    "fmspc" : "hex string"
+ *    "tcbLevels" : [ objects of type tcbLevel ]
+ * }
+ */
+static oe_result_t _read_tcb_info(
+    const uint8_t** itr,
+    const uint8_t* end,
+    oe_tcb_level_t* platform_tcb_level,
+    oe_parsed_tcb_info_t* parsed_info)
 {
-    oe_result_t result = OE_FAILURE;
-    bool is_uptodate = false;
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    uint64_t value = 0;
 
-    if (tcb_info_json == NULL || tcb_info_json_size == 0 ||
-        parsed_extension_info == NULL || parsed_tcb_info == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
+    parsed_info->tcb_info_start = *itr;
+    OE_CHECK(_read('{', itr, end));
 
+    OE_TRACE_INFO("Reading version\n");
+    OE_CHECK(_read_property_name_and_colon("version", itr, end));
+    OE_CHECK(_read_integer(itr, end, &value));
+    parsed_info->version = (uint32_t)value;
+    OE_CHECK(_read(',', itr, end));
+
+    OE_TRACE_INFO("Reading issueDate\n");
+    OE_CHECK(_read_property_name_and_colon("issueDate", itr, end));
     OE_CHECK(
-        oe_parse_tcb_info_json(
-            tcb_info_json, tcb_info_json_size, parsed_tcb_info));
+        _read_string(
+            itr, end, &parsed_info->issue_date, &parsed_info->issue_date_size));
+    OE_CHECK(_read(',', itr, end));
 
-    if (oe_memcmp(
-            parsed_tcb_info->fmspc,
-            parsed_extension_info->fmspc,
-            sizeof(parsed_tcb_info->fmspc)) != 0)
-        OE_RAISE(OE_FAILURE);
+    OE_TRACE_INFO("Reading fmspc\n");
+    OE_CHECK(_read_property_name_and_colon("fmspc", itr, end));
+    OE_CHECK(
+        _read_hex_string(
+            itr, end, parsed_info->fmspc, sizeof(parsed_info->fmspc)));
+    OE_CHECK(_read(',', itr, end));
 
-    // Check whether the components in the extensions have been revoked.
-    // TCB info may not contain any revoked information at all.
-    if (parsed_tcb_info->aggregated_revoked_tcb.is_specified)
+    OE_TRACE_INFO("Reading tcbLevels\n");
+    OE_CHECK(_read_property_name_and_colon("tcbLevels", itr, end));
+    OE_CHECK(_read('[', itr, end));
+    while (*itr < end)
     {
-        if (parsed_extension_info->pceSvn <=
-            parsed_tcb_info->aggregated_revoked_tcb.pce_svn)
-            OE_RAISE(OE_FAILURE);
+        OE_CHECK(_read_tcb_level(itr, end, platform_tcb_level, parsed_info));
+        // Read end of array or comma separator.
+        if (*itr < end && **itr == ']')
+            break;
 
-        for (uint32_t i = 0; i < OE_COUNTOF(parsed_extension_info->compSvn);
-             ++i)
-        {
-            if (parsed_extension_info->compSvn[i] <=
-                parsed_tcb_info->aggregated_revoked_tcb.sgx_tcb_comp_svn[i])
-                OE_RAISE(OE_FAILURE);
-        }
+        OE_CHECK(_read(',', itr, end));
     }
+    OE_CHECK(_read(']', itr, end));
 
-    // Check whether the components in the extensions are upto date.
-    if (parsed_tcb_info->aggregated_uptodate_tcb.is_specified)
-    {
-        if (parsed_extension_info->pceSvn <
-            parsed_tcb_info->aggregated_uptodate_tcb.pce_svn)
-            OE_RAISE(OE_FAILURE);
-
-        for (uint32_t i = 0; i < OE_COUNTOF(parsed_extension_info->compSvn);
-             ++i)
-        {
-            if (parsed_extension_info->compSvn[i] <
-                parsed_tcb_info->aggregated_uptodate_tcb.sgx_tcb_comp_svn[i])
-                OE_RAISE(OE_FAILURE);
-        }
-        is_uptodate = true;
-    }
-
-    // If being uptodate is required, assert that components are indeed
-    // uptodate. Otherwise, they can be outofdate.
-    if (!is_uptodate && require_uptodate)
-        OE_RAISE(OE_FAILURE);
-
-    if (!is_uptodate)
-    {
-        // Check whether the components are out of date.
-        // Being out of date is OK.
-        if (!parsed_tcb_info->aggregated_outofdate_tcb.is_specified)
-            OE_RAISE(OE_FAILURE);
-
-        if (parsed_extension_info->pceSvn <
-            parsed_tcb_info->aggregated_outofdate_tcb.pce_svn)
-            OE_RAISE(OE_FAILURE);
-
-        for (uint32_t i = 0; i < OE_COUNTOF(parsed_extension_info->compSvn);
-             ++i)
-        {
-            if (parsed_extension_info->compSvn[i] <
-                parsed_tcb_info->aggregated_outofdate_tcb.sgx_tcb_comp_svn[i])
-                OE_RAISE(OE_FAILURE);
-        }
-    }
+    // itr is expected to point to the '}' that denotes the end of the tcb
+    // object. The signature is generated over the entire object including the
+    // '}'.
+    parsed_info->tcb_info_size = *itr - parsed_info->tcb_info_start + 1;
+    OE_CHECK(_read('}', itr, end));
 
     result = OE_OK;
 done:
-
     return result;
 }
 
-static uint8_t* _remove_ws(const uint8_t* itr, const uint8_t* end, uint8_t* out)
+/**
+ * Schema:
+ * {
+ *    "tcbInfo" : object of type tcbInfo,
+ *    "signature" : "hex string"
+ * }
+ */
+oe_result_t oe_parse_tcb_info_json(
+    const uint8_t* tcb_info_json,
+    uint32_t tcb_info_json_size,
+    oe_tcb_level_t* platform_tcb_level,
+    oe_parsed_tcb_info_t* parsed_info)
 {
-    uint8_t c = 0;
-    while (itr != end)
+    oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
+    const uint8_t* itr = tcb_info_json;
+    const uint8_t* end = tcb_info_json + tcb_info_json_size;
+
+    if (tcb_info_json == NULL || tcb_info_json_size == 0 ||
+        platform_tcb_level == NULL || parsed_info == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Pointer wrapping.
+    if (end <= itr)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UNKNOWN)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    itr = _skip_ws(itr, end);
+    OE_CHECK(_read('{', &itr, end));
+
+    OE_TRACE_INFO("Reading tcbInfo\n");
+    OE_CHECK(_read_property_name_and_colon("tcbInfo", &itr, end));
+    OE_CHECK(_read_tcb_info(&itr, end, platform_tcb_level, parsed_info));
+    OE_CHECK(_read(',', &itr, end));
+
+    OE_TRACE_INFO("Reading signature\n");
+    OE_CHECK(_read_property_name_and_colon("signature", &itr, end));
+    OE_CHECK(
+        _read_hex_string(
+            &itr, end, parsed_info->signature, sizeof(parsed_info->signature)));
+
+    OE_CHECK(_read('}', &itr, end));
+
+    if (itr == end)
     {
-        c = *itr++;
-        switch (c)
-        {
-            case ' ':
-            case '\b':
-            case '\f':
-            case '\n':
-            case '\r':
-            case '\t':
-                break;
+        if (platform_tcb_level->status != OE_TCB_LEVEL_STATUS_UP_TO_DATE)
+            OE_RAISE(OE_TCB_LEVEL_INVALID);
 
-            default:
-                *out++ = c;
-        }
+        OE_TRACE_INFO("TCB Info json parsing successful.\n");
+        result = OE_OK;
     }
-    *out = '\0';
-    return out;
+done:
+    return result;
 }
-
 
 static oe_result_t _ECDSAVerify(
     oe_ec_public_key_t* publicKey,
@@ -649,55 +513,33 @@ done:
     return result;
 }
 
-
 oe_result_t oe_verify_tcb_signature(
-    const uint8_t* tcb_info_json,
-    uint32_t tcb_info_json_size,
-    oe_parsed_tcb_info_t* parsed_tcb_info,
-    uint8_t* buffer,
-    uint32_t bufferSize,
+    const uint8_t* tcb_info_start,
+    uint32_t tcb_info_size,
+    sgx_ecdsa256_signature_t* signature,
     oe_cert_chain_t* tcb_cert_chain)
 {
     oe_result_t result = OE_FAILURE;
-    const uint8_t* tcb_info_json_end = tcb_info_json + tcb_info_json_size;
-    const uint8_t* itr = NULL;
     oe_cert_t leaf_cert = {0};
     oe_ec_public_key_t tcb_signing_key = {0};
-    
-    if (tcb_info_json == NULL || tcb_info_json_size == 0 ||
-        parsed_tcb_info == NULL || buffer == NULL ||
-        bufferSize < tcb_info_json_size || tcb_cert_chain == NULL)
+
+    if (tcb_info_start == NULL || tcb_info_size == 0 || signature == NULL ||
+        tcb_cert_chain == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (parsed_tcb_info->tcb_info_start < tcb_info_json ||
-        parsed_tcb_info->tcb_info_start >= tcb_info_json_end)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (parsed_tcb_info->tcb_info_end < tcb_info_json ||
-        parsed_tcb_info->tcb_info_end >= tcb_info_json_end)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (parsed_tcb_info->tcb_info_start >= parsed_tcb_info->tcb_info_end)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (*parsed_tcb_info->tcb_info_start != '{' ||
-        *parsed_tcb_info->tcb_info_end != '}')
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    // The signature is calculated over tcbInfo body without whitespaces using the TCB signing key.
-    itr = _remove_ws(
-        parsed_tcb_info->tcb_info_start, parsed_tcb_info->tcb_info_end+1, buffer);
-    OE_UNUSED(itr);
-    
     OE_CHECK(oe_cert_chain_get_leaf_cert(tcb_cert_chain, &leaf_cert));
     OE_CHECK(oe_cert_get_ec_public_key(&leaf_cert, &tcb_signing_key));
 
-    OE_CHECK(_ECDSAVerify(&tcb_signing_key, parsed_tcb_info->tcb_info_start, 1 + parsed_tcb_info->tcb_info_end - parsed_tcb_info->tcb_info_start, (sgx_ecdsa256_signature_t*) parsed_tcb_info->signature));
+    OE_CHECK(
+        _ECDSAVerify(
+            &tcb_signing_key, tcb_info_start, tcb_info_size, signature));
     OE_TRACE_INFO("tcb info ecdsa attestation succeeded\n");
-    
+
     result = OE_OK;
 done:
     oe_ec_public_key_free(&tcb_signing_key);
-    
+
     return result;
 }
+
+#endif

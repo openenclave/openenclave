@@ -100,7 +100,7 @@
 
 * [__oe_assert_fail()](enclave_8h_a682a11d6ff6534266fb9eb1a76bcfe26_1a682a11d6ff6534266fb9eb1a76bcfe26.md)
 
-* [oe_get_report()](enclave_8h_a54cefee8d716f91ad728662c0984880d_1a54cefee8d716f91ad728662c0984880d.md)
+* [oe_get_report()](enclave_8h_a462afe878b40bf01052d9100b1ed132c_1a462afe878b40bf01052d9100b1ed132c.md)
 
 * [oe_parse_report()](enclave_8h_a21d688325fdb8399b588db6652605843_1a21d688325fdb8399b588db6652605843.md)
 
@@ -118,7 +118,7 @@
 
 * [oe_call_enclave()](host_8h_a83caababc844437859b957090b06d174_1a83caababc844437859b957090b06d174.md)
 
-* [oe_get_report()](host_8h_af74be47e553b882473a17dc13728269b_1af74be47e553b882473a17dc13728269b.md)
+* [oe_get_report()](host_8h_abd2fcabbb225b3faabf249e5b68427b1_1abd2fcabbb225b3faabf249e5b68427b1.md)
 
 * [oe_parse_report()](host_8h_a21d688325fdb8399b588db6652605843_1a21d688325fdb8399b588db6652605843.md)
 

@@ -21,7 +21,7 @@ target_compile_options(libcxxtest-support PRIVATE
     -Wno-error=unused-local-typedefs
     -Wno-error=unused-variable
     )
-target_link_libraries(libcxxtest-support PUBLIC oelibcxx)
+target_link_libraries(libcxxtest-support PUBLIC oelibcxx oeenclave)
 target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 
 # helper function to create enclave binary
@@ -40,7 +40,7 @@ function(add_libcxx_test_enc NAME CXXFILE)
 
     target_compile_options(libcxxtest-${NAME}_enc PRIVATE -Wno-error --std=c++14)
     target_compile_definitions(libcxxtest-${NAME}_enc PRIVATE -DWITH_MAIN -D__TEST__="${CXXFILE}")
-    target_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support)
+    target_link_libraries(libcxxtest-${NAME}_enc libcxxtest-support oeenclave)
 endfunction(add_libcxx_test_enc)
 
 # iterate over the supported tests and create a binary for each.

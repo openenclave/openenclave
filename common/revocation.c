@@ -67,7 +67,7 @@ static void _Free(uint8_t* ptr, uint32_t size)
 
 oe_result_t _ParseSGXExtensions(
     oe_cert_t* leafCert,
-    ParsedExtensionInfo* parsedInfo)
+    ParsedExtensionInfo* parsedExtensionInfo)
 {
     oe_result_t result = OE_FAILURE;
     uint8_t* extensionsBuffer = NULL;
@@ -82,7 +82,7 @@ oe_result_t _ParseSGXExtensions(
 
         previousSize = extensionsBufferSize;
         result = ParseSGXExtensions(
-            leafCert, extensionsBuffer, &extensionsBufferSize, parsedInfo);
+            leafCert, extensionsBuffer, &extensionsBufferSize, parsedExtensionInfo);
         // All the information has been parsed.
         _Free(extensionsBuffer, extensionsBufferSize);
 
@@ -250,7 +250,7 @@ static oe_result_t _GetRevocationInfo(oe_get_revocation_info_args_t* args)
 
     OE_CHECK(
         oe_ocall(
-            OE_FUNC_GET_REVOCATION_INFO,
+            OE_OCALL_GET_REVOCATION_INFO,
             (uint64_t)hostArgs,
             NULL,
             OE_OCALL_FLAG_NOT_REENTRANT));
@@ -295,18 +295,18 @@ oe_result_t OE_EnforceRevocation(
     oe_cert_t* leafCert)
 {
     oe_result_t result = OE_FAILURE;
-    ParsedExtensionInfo parsedInfo = {0};
+    ParsedExtensionInfo parsedExtensionInfo = {0};
     oe_get_revocation_info_args_t revocationArgs = {0};
     oe_cert_chain_t tcbIssuerChain = {0};
     oe_cert_chain_t crlIssuerChain[3] = {0};
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
+    oe_tcb_level_t platform_tcb_level = {0};
 
     uint8_t* intermediateCertUrlsBuffer = NULL;
     uint64_t intermediateCertUrlsBufferSize = 0;
     uint8_t* leafCertUrlsBuffer = NULL;
     uint64_t leafCertUrlsBufferSize = 0;
-
-    uint8_t* trimmedTcbInfoBuffer = NULL;
+    
 
     OE_STATIC_ASSERT(
         OE_COUNTOF(crlIssuerChain) ==
@@ -314,8 +314,8 @@ oe_result_t OE_EnforceRevocation(
 
     oe_spin_lock(&_QuoteProcessingLock);
 
-    OE_CHECK(_ParseSGXExtensions(leafCert, &parsedInfo));
-    oe_memcpy(revocationArgs.fmspc, parsedInfo.fmspc, sizeof(parsedInfo.fmspc));
+    OE_CHECK(_ParseSGXExtensions(leafCert, &parsedExtensionInfo));
+    oe_memcpy(revocationArgs.fmspc, parsedExtensionInfo.fmspc, sizeof(parsedExtensionInfo.fmspc));
     OE_CHECK(
         _GetCrlUrls(
             intermediateCert,
@@ -344,33 +344,28 @@ oe_result_t OE_EnforceRevocation(
                 revocationArgs.crlIssuerChainSize[i] + 1));
     }
 
-    OE_CHECK(
-        oe_enforce_tcb_info(
-            revocationArgs.tcbInfo,
-            revocationArgs.tcbInfoSize,
-            &parsedInfo,
-            true, /* require components to be uptodate. */
-            &parsed_tcb_info));
+    for (uint32_t i=0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn); ++i)
+    {
+        platform_tcb_level.sgx_tcb_comp_svn[i] = parsedExtensionInfo.compSvn[i];
+    }
+    platform_tcb_level.pce_svn = parsedExtensionInfo.pceSvn;
+    platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
 
-    trimmedTcbInfoBuffer = _Malloc(revocationArgs.tcbInfoSize);
-    if (trimmedTcbInfoBuffer == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
+    OE_CHECK(oe_parse_tcb_info_json(revocationArgs.tcbInfo, revocationArgs.tcbInfoSize, 
+    &platform_tcb_level, &parsed_tcb_info));
+
 
     OE_CHECK(
         oe_verify_tcb_signature(
-            revocationArgs.tcbInfo,
-            revocationArgs.tcbInfoSize,
-            &parsed_tcb_info,
-            trimmedTcbInfoBuffer,
-            revocationArgs.tcbInfoSize,
+            parsed_tcb_info.tcb_info_start,
+            parsed_tcb_info.tcb_info_size,
+            (sgx_ecdsa256_signature_t*)parsed_tcb_info.signature,
             &tcbIssuerChain));
 
     result = OE_OK;
 
 done:
     // Memory from the pool must be freed in reverse order.
-    _Free(trimmedTcbInfoBuffer, revocationArgs.tcbInfoSize);
-
     for (int32_t i = revocationArgs.numCrlUrls - 1; i >= 0; --i)
     {
         _Free(
@@ -392,6 +387,6 @@ done:
     _FreePtr = _QuoteProcessingBuffer;
     oe_spin_unlock(&_QuoteProcessingLock);
 
-    oe_host_printf("result = %s\n", oe_result_str(result));
+    oe_host_printf("OE_EnforceRevocation result = %s\n", oe_result_str(result));
     return result;
 }

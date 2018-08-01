@@ -16,7 +16,6 @@
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/string.h>
 #include <openenclave/internal/utils.h>
 #include "crl.h"
 #include "ec.h"
@@ -326,21 +325,6 @@ typedef struct _GetExtensionCountArgs
     size_t* count;
 } GetExtensionCountArgs;
 
-static bool _GetExtensionCount(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args_)
-{
-    GetExtensionCountArgs* args = (GetExtensionCountArgs*)args_;
-
-    (*args->count)++;
-
-    return false;
-}
-
 typedef struct _GetExtensionArgs
 {
     oe_result_t result;
@@ -349,42 +333,6 @@ typedef struct _GetExtensionArgs
     uint8_t* data;
     size_t* size;
 } GetExtensionArgs;
-
-static bool _GetExtension(
-    size_t index,
-    const char* oid,
-    bool critical,
-    const uint8_t* data,
-    size_t size,
-    void* args_)
-{
-    GetExtensionArgs* args = (GetExtensionArgs*)args_;
-
-    if (args->index == index)
-    {
-        /* If buffer is too small */
-        if (size > *args->size)
-        {
-            *args->size = size;
-            args->result = OE_BUFFER_TOO_SMALL;
-            return true;
-        }
-
-        /* Copy the OID to caller's buffer */
-        oe_strlcpy(args->oid->buf, oid, sizeof(oe_oid_string_t));
-
-        /* Copy to caller's buffer */
-        if (args->data)
-            oe_memcpy(args->data, data, *args->size);
-
-        *args->size = size;
-        args->result = OE_OK;
-        return true;
-    }
-
-    /* Keep parsing */
-    return false;
-}
 
 /* Parse the extensions on an MBEDTLS X509 certificate */
 static int _parse_extensions(
@@ -811,33 +759,6 @@ done:
     return result;
 }
 
-oe_result_t oe_cert_extension_count(const oe_cert_t* cert, size_t* count)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    const Cert* impl = (const Cert*)cert;
-
-    if (count)
-        *count = 0;
-
-    /* Reject invalid parameters */
-    if (!_CertIsValid(impl) || !count)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Get the extension count using a callback */
-    {
-        GetExtensionCountArgs args;
-        args.count = count;
-
-        if (_parse_extensions(impl->cert, _GetExtensionCount, &args) != 0)
-            OE_RAISE(OE_FAILURE);
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 oe_result_t oe_cert_chain_get_root_cert(
     const oe_cert_chain_t* chain,
     oe_cert_t* cert)
@@ -849,40 +770,6 @@ oe_result_t oe_cert_chain_get_root_cert(
     OE_CHECK(oe_cert_chain_get_cert(chain, length - 1, cert));
 
     result = OE_OK;
-
-done:
-    return result;
-}
-
-oe_result_t oe_cert_get_extension(
-    const oe_cert_t* cert,
-    size_t index,
-    oe_oid_string_t* oid,
-    uint8_t* data,
-    size_t* size)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    const Cert* impl = (const Cert*)cert;
-
-    /* Reject invalid parameters */
-    if (!_CertIsValid(impl) || !oid || !size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Find the extension with the given OID using a callback */
-    {
-        GetExtensionArgs args;
-        args.result = OE_OUT_OF_BOUNDS;
-        args.index = index;
-        args.oid = oid;
-        args.data = data;
-        args.size = size;
-
-        if (_parse_extensions(impl->cert, _GetExtension, &args) != 0)
-            OE_RAISE(OE_FAILURE);
-
-        result = args.result;
-        goto done;
-    }
 
 done:
     return result;
@@ -932,101 +819,5 @@ oe_result_t oe_cert_chain_get_leaf_cert(
     result = OE_OK;
 
 done:
-    return result;
-}
-
-// Convert an X509 name to a string in this format: "/CN=Name1/O=Name2/L=Name3"
-static oe_result_t _x509_name_to_string(
-    mbedtls_x509_name* name,
-    char* str,
-    size_t* str_size)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    /* Iterate until the local buffer is big enough to hold the issuer name */
-    for (size_t buf_size = 256; true; buf_size *= 2)
-    {
-        char buf[buf_size];
-        int n = mbedtls_x509_dn_gets(buf, buf_size, name);
-
-        if (n > 0)
-        {
-            // Convert subject to OpenSSL format with slash delimiters:
-            // "CN=Name1, O=Name2, L=Name3" => "/CN=Name1/O=Name2/L=Name3"
-            oe_string_substitute(buf, buf_size, ", ", "/");
-            const size_t size = oe_string_insert(buf, buf_size, 0, "/");
-
-            if (size > *str_size)
-            {
-                *str_size = size;
-                OE_RAISE(OE_BUFFER_TOO_SMALL);
-            }
-
-            if (str)
-                oe_memcpy(str, buf, *str_size);
-
-            break;
-        }
-        else if (n != MBEDTLS_ERR_X509_BUFFER_TOO_SMALL)
-        {
-            OE_RAISE(OE_FAILURE);
-        }
-    }
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-oe_result_t oe_cert_get_subject(
-    const oe_cert_t* cert,
-    char* subject,
-    size_t* subject_size)
-{
-    const Cert* impl = (const Cert*)cert;
-    oe_result_t result = OE_UNEXPECTED;
-
-    /* Reject invalid parameters */
-    if (!_CertIsValid(impl) || !subject_size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If the subject buffer is null, then the size must be zero */
-    if (!subject && *subject_size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Iterate until the local buffer is big enough to hold the subject name */
-    OE_CHECK(_x509_name_to_string(&impl->cert->subject, subject, subject_size));
-
-    result = OE_OK;
-
-done:
-
-    return result;
-}
-
-oe_result_t oe_cert_get_issuer(
-    const oe_cert_t* cert,
-    char* issuer,
-    size_t* issuer_size)
-{
-    const Cert* impl = (const Cert*)cert;
-    oe_result_t result = OE_UNEXPECTED;
-
-    /* Reject invalid parameters */
-    if (!_CertIsValid(impl) || !issuer_size)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* If the issuer buffer is null, then the size must be zero */
-    if (!issuer && *issuer_size != 0)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    /* Convert the X509 name to string format */
-    OE_CHECK(_x509_name_to_string(&impl->cert->issuer, issuer, issuer_size));
-
-    result = OE_OK;
-
-done:
-
     return result;
 }

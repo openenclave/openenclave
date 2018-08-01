@@ -126,7 +126,7 @@ dispatch_ocall:
     cmp rax, 0
     jne return_from_ecall
 
-    ;; Prepare to reenter the enclave, calling oe_main()
+    ;; Prepare to reenter the enclave, calling the entry point.
     mov rax, ARG1OUT
     mov ARG1, rax
     mov rax, ARG2OUT

@@ -15,7 +15,7 @@
  *
  *         while (oe_asn1_more(asn1))
  *         {
- *             uint8_t tag;
+ *             oe_asn1_tag_t tag;
  *
  *             result = oe_asn1_peek_tag(asn1, &tag);
  *
@@ -24,7 +24,7 @@
  *
  *             switch (tag)
  *             {
- *                 case OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE:
+ *                 case OE_ASN1_TAG_SEQUENCE:
  *                 {
  *                     oe_asn1_t sequence;
  *
@@ -73,7 +73,7 @@
  *                 }
  *                 default:
  *                 {
- *                     uint8_t tag;
+ *                     oe_asn1_tag_t tag;
  *                     size_t length;
  *                     const uint8_t* data;
  *
@@ -160,6 +160,8 @@ typedef struct _oe_asn1_t
     const uint8_t* ptr;
 } oe_asn1_t;
 
+typedef int oe_asn1_tag_t;
+
 /**
  * Initializes an ASN.1 input stream.
  *
@@ -205,7 +207,7 @@ OE_INLINE bool oe_asn1_more(const oe_asn1_t* asn1)
  * @return OE_INVALID_PARAMETER a parameter is invalid
  * @return OE_FAILURE general failure
  */
-oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag);
+oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, oe_asn1_tag_t* tag);
 
 /**
  * Gets the next ASN.1 element from the ASN.1 input stream.
@@ -229,7 +231,7 @@ oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag);
  */
 oe_result_t oe_asn1_get_raw(
     oe_asn1_t* asn1,
-    uint8_t* tag,
+    oe_asn1_tag_t* tag,
     const uint8_t** data,
     size_t* length);
 

@@ -181,13 +181,13 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
 
     while (oe_asn1_more(asn1))
     {
-        uint8_t tag;
+        oe_asn1_tag_t tag;
         r = oe_asn1_peek_tag(asn1, &tag);
         OE_TEST(r == OE_OK);
 
         switch (tag)
         {
-            case OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE:
+            case OE_ASN1_TAG_SEQUENCE:
             {
                 oe_asn1_t sequence;
                 r = oe_asn1_get_sequence(asn1, &sequence);
@@ -239,7 +239,7 @@ static void _parse_asn1(oe_asn1_t* asn1, char** str, size_t depth)
             }
             default:
             {
-                uint8_t tag;
+                oe_asn1_tag_t tag;
                 size_t length;
                 const uint8_t* data;
 
@@ -271,7 +271,7 @@ static oe_result_t _parse(oe_asn1_t* asn1)
 
     while (oe_asn1_more(asn1))
     {
-        uint8_t tag;
+        oe_asn1_tag_t tag;
 
         result = oe_asn1_peek_tag(asn1, &tag);
 
@@ -280,7 +280,7 @@ static oe_result_t _parse(oe_asn1_t* asn1)
 
         switch (tag)
         {
-            case OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE:
+            case OE_ASN1_TAG_SEQUENCE:
             {
                 oe_asn1_t sequence;
 
@@ -329,7 +329,7 @@ static oe_result_t _parse(oe_asn1_t* asn1)
             }
             default:
             {
-                uint8_t tag;
+                oe_asn1_tag_t tag;
                 size_t length;
                 const uint8_t* data;
 

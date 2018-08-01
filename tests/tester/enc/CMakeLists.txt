@@ -11,4 +11,4 @@ add_enclave_executable(tester_enc sign.conf private.pem
     )
 
 target_include_directories(tester_enc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(tester_enc oeidl oelibc)
+target_link_libraries(tester_enc oeidl oelibc oeenclave)

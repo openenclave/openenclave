@@ -60,7 +60,7 @@ typedef struct _oe_get_report_args
 {
     oe_result_t result; /* out */
 
-    uint32_t options; /* in */
+    uint32_t flags; /* in */
 
     uint8_t optParams[sizeof(sgx_target_info_t)]; /* in */
     uint32_t optParamsSize;                       /* in */

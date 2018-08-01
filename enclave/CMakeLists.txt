@@ -2,23 +2,24 @@
 # Licensed under the MIT License.
 
 add_library(oeenclave STATIC
+    ../common/asn1.c
+    ../common/cert.c
+    ../common/quote.c
+    ../common/revocation.c
+    ../common/sgxcertextensions.c
+    ../common/tcbinfo.c
     asn1.c
     cert.c
     crl.c
     ec.c
-    ../../common/cert.c
-    ../../common/outbuf.c    
-    ../common/json.c
-    ../common/quote.c
-    ../common/revocation.c
-    ../common/sgxcertextensions.c    
-    ../common/tcbinfo.c
     cmac.c
     key.c
+    link.c
     random.c
-    report.cpp
+    report.c
     rsa.c
-    sha.c)
+    sha.c
+    start.S)
 
 if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)

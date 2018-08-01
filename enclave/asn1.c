@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "../common/asn1.h"
 #include <mbedtls/asn1.h>
 #include <mbedtls/oid.h>
 #include <openenclave/internal/asn1.h>
@@ -30,9 +31,6 @@ OE_INLINE bool _is_valid(const oe_asn1_t* asn1)
     if (!asn1 || !asn1->data || !asn1->length || !asn1->ptr)
         return false;
 
-    if (!(asn1->data <= _end(asn1)))
-        return false;
-
     if (!(asn1->ptr >= asn1->data && asn1->ptr <= _end(asn1)))
         return false;
 
@@ -42,20 +40,6 @@ OE_INLINE bool _is_valid(const oe_asn1_t* asn1)
 OE_INLINE size_t _remaining(const oe_asn1_t* asn1)
 {
     return _end(asn1) - asn1->ptr;
-}
-
-static oe_result_t _get_tag(oe_asn1_t* asn1, uint8_t* tag)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    OE_CHECK(oe_asn1_peek_tag((oe_asn1_t*)asn1, tag));
-
-    asn1->ptr += sizeof(uint8_t);
-
-    result = OE_OK;
-
-done:
-    return result;
 }
 
 static oe_result_t _get_length(oe_asn1_t* asn1, size_t* length)
@@ -71,31 +55,14 @@ done:
     return result;
 }
 
-oe_result_t oe_asn1_peek_tag(const oe_asn1_t* asn1, uint8_t* tag)
-{
-    oe_result_t result = OE_UNEXPECTED;
-
-    if (!_is_valid(asn1))
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    if (_remaining(asn1) < sizeof(uint8_t))
-        OE_RAISE(OE_FAILURE);
-
-    *tag = asn1->ptr[0];
-
-    result = OE_OK;
-
-done:
-    return result;
-}
-
 oe_result_t oe_asn1_get_raw(
     oe_asn1_t* asn1,
-    uint8_t* tag,
+    oe_asn1_tag_t* tag,
     const uint8_t** data,
     size_t* length)
 {
     oe_result_t result = OE_UNEXPECTED;
+    bool constructed;
 
     if (length)
         *length = 0;
@@ -103,7 +70,7 @@ oe_result_t oe_asn1_get_raw(
     if (!_is_valid(asn1) || !tag || !data || !length)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(_get_tag(asn1, tag));
+    OE_CHECK(oe_asn1_get_tag(asn1, &constructed, tag));
     OE_CHECK(_get_length(asn1, length));
     *data = asn1->ptr;
     asn1->ptr += *length;
@@ -117,7 +84,8 @@ done:
 oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint8_t tag;
+    bool constructed;
+    oe_asn1_tag_t tag;
     size_t length;
 
     if (sequence)
@@ -126,9 +94,9 @@ oe_result_t oe_asn1_get_sequence(oe_asn1_t* asn1, oe_asn1_t* sequence)
     if (!_is_valid(asn1) || !sequence)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(_get_tag(asn1, &tag));
+    OE_CHECK(oe_asn1_get_tag(asn1, &constructed, &tag));
 
-    if (tag != (OE_ASN1_TAG_CONSTRUCTED | OE_ASN1_TAG_SEQUENCE))
+    if (!constructed || tag != OE_ASN1_TAG_SEQUENCE)
         OE_RAISE(OE_FAILURE);
 
     OE_CHECK(_get_length(asn1, &length));
@@ -166,7 +134,7 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
 {
     oe_result_t result = OE_UNEXPECTED;
     size_t length;
-    const uint8_t tag = MBEDTLS_ASN1_OID;
+    oe_asn1_tag_t tag = MBEDTLS_ASN1_OID;
 
     if (oid)
         oe_memset(oid, 0, sizeof(oe_oid_string_t));
@@ -175,6 +143,9 @@ oe_result_t oe_asn1_get_oid(oe_asn1_t* asn1, oe_oid_string_t* oid)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (mbedtls_asn1_get_tag(_pptr(asn1), _end(asn1), &length, tag) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    if (tag != MBEDTLS_ASN1_OID)
         OE_RAISE(OE_FAILURE);
 
     /* Convert OID to string */
@@ -206,7 +177,7 @@ oe_result_t oe_asn1_get_octet_string(
     size_t* length)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const uint8_t tag = MBEDTLS_ASN1_OCTET_STRING;
+    const oe_asn1_tag_t tag = MBEDTLS_ASN1_OCTET_STRING;
 
     if (length)
         *length = 0;

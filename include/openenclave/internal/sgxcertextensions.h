@@ -14,14 +14,14 @@ OE_EXTERNC_BEGIN
 typedef struct _ParsedExtensionInfo
 {
     uint8_t ppid[16];
-    uint64_t compSvn[16];
-    uint8_t pceSvn;
+    uint8_t compSvn[16];
+    uint16_t pceSvn;
     uint8_t cpuSvn[16];
     uint8_t pceId[2];
     uint8_t fmspc[6];
     uint8_t sgxType;
-    uint8_t optDynamicPlatform;
-    uint8_t optCachedKeys;
+    bool optDynamicPlatform;
+    bool optCachedKeys;
 } ParsedExtensionInfo;
 
 oe_result_t ParseSGXExtensions(

@@ -14,7 +14,6 @@
 
 #define SKIP_RETURN_CODE 2
 
-extern void TestJsonParser(oe_enclave_t* enclave);
 extern void TestVerifyTCBInfo(oe_enclave_t* enclave);
 
 int main(int argc, const char* argv[])
@@ -89,7 +88,6 @@ int main(int argc, const char* argv[])
         OE_OK);
 
     TestVerifyTCBInfo(enclave);
-    TestJsonParser(enclave);
 #endif
 
     /* Terminate the enclave */
