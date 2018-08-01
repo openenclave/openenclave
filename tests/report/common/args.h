@@ -23,4 +23,20 @@ struct VerifyQuoteArgs
     oe_result_t result; /* out */
 };
 
+struct VerifyTCBInfoArgs
+{
+    uint8_t* tcbInfo;       /* in */
+    uint32_t tcbInfoSize;   /* in */
+    void* platformTcbLevel; /* in */
+    void* parsedTcbInfo;    /* out */
+    oe_result_t result;     /* out */
+};
+
+struct ParseJsonArgs
+{
+    uint8_t* json;      /* in */
+    uint32_t jsonSize;  /* in */
+    oe_result_t result; /* out */
+};
+
 #endif //_ARGS_H_
