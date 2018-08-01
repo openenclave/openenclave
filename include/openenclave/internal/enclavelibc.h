@@ -127,30 +127,17 @@ int oe_snprintf(char* str, size_t size, const char* fmt, ...);
 /**
  * Allocates space on the stack frame of the caller.
  *
- * This returns a pointer to **SIZE** bytes of space on the stack frame of the
- * caller. If **ALIGNMENT** is non-zero and a power of two, the return value
- * will be a multiple of **alignment**. If **ALIGNMENT** is non-zero and not
- * a power of two, result is undefined.
- * All allocated space (potentially more than **SIZE**) is automatically freed
- * when the calling function returns. If the stack overflows, the behavior is undefined.
+ * This function allocates **SIZE** bytes of space on the stack frame of the
+ * caller. The allocated space is automatically freed when the calling
+ * function returns. If the stack overflows, the behavior is undefined.
  *
  * @param SIZE The number of bytes to allocate.
- * @param ALIGN The alignment requirement (see above).
  *
  * @returns Returns the address of the allocated space.
+ *
  */
 // __builtin_alloca is appropriate for both gcc and clang. For MSVC, probably want _malloca from <malloc.h>.
-#define oe_stack_alloc(SIZE, ALIGN) ({          \
-    size_t __s = SIZE;                          \
-    size_t __a = ALIGN;                         \
-    if (__a) __a--;                             \
-    void *__r = __builtin_alloca(__s + __a);    \
-    if (__a) __r = (void*)                      \
-        (~__a & ((uintptr_t)__r + __a));        \
-    __r;                                        \
-})
-// Note that we don't actually use the case ALIGN != 0. So we could drop the ALIGN parameter altogether and just do:
-// #define oe_stack_alloc __builtin_alloca
+#define oe_stack_alloc(SIZE) __builtin_alloca(SIZE)
 
 /**
  * Enclave implementation of the standard Unix sbrk() system call.
