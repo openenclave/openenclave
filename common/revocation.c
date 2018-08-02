@@ -17,6 +17,8 @@
 #include <openenclave/internal/utils.h>
 #include "tcbinfo.h"
 
+#ifdef OE_USE_LIBSGX
+
 /**
  * Quote validation involves many variable length objects (quotes, crls, tcb
  * info etc). Since malloc is not yet available in liboeenclave, a fixed size
@@ -411,3 +413,5 @@ done:
 
     return result;
 }
+
+#endif
