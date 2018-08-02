@@ -146,7 +146,7 @@
 
 #define OE_OCALL OE_EXTERNC OE_EXPORT
 
-/* Define OE_USE_DEBUG_MALLOC for debug builds */
+/* Enable debug-malloc for debug builds */
 #if !defined(NDEBUG) && !defined(OE_USE_DEBUG_MALLOC)
 # define OE_USE_DEBUG_MALLOC
 #endif
