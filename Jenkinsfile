@@ -6,14 +6,20 @@ pipeline {
 
   }
   stages {
-    stage('test') {
+    stage('Clone and Setup') {
       steps {
-        echo 'test'
+        echo 'Performing pre-commit checking'
         sh '''pwd
 
 ls -l
 
 whoami'''
+      }
+    }
+    stage('Precommit-checking') {
+      steps {
+        echo 'Precommit-checking'
+        sh './scripts/check-precommit-reqs'
       }
     }
   }
