@@ -6,7 +6,7 @@ jobs:
   # check-precommit-reqs test - check license and formatting info
   check-precommit-reqs-test:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -15,8 +15,15 @@ jobs:
       - checkout
       - run:
           name: Check-Precommit-Reqs Test
-          command: ./scripts/check-precommit-reqs 
-
+          command: | 
+            if [ ${CIRCLE_BRANCH} != "master" ]; then
+               echo "Merging master to your branch ${CIRCLE_BRANCH}"
+               git config --global user.email "oeciteam@microsoft.com"
+               git config --global user.name "OE CI Team"
+               git pull origin master --no-edit
+            fi
+            ./scripts/check-precommit-reqs 
+   
   #========Build-Test==========# 
 
   # SGX1 | Debug 
