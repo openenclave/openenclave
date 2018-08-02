@@ -18,8 +18,8 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
+               #git config --global user.email "oeciteam@microsoft.com"
+               #git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/check-precommit-reqs 
