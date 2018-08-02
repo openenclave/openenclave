@@ -18,7 +18,7 @@ ls -l
         sh '''
 echo "Merging master to your branch .."
 
-git pull origin master --no-edit'''
+# git pull origin master --no-edit'''
       }
     }
     stage('Precommit-checking') {
