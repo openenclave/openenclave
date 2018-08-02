@@ -1,5 +1,10 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'hello-world'
+    }
+
+  }
   stages {
     stage('test') {
       steps {
