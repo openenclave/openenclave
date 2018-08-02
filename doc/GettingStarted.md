@@ -195,6 +195,8 @@ E.g., to generate an optimized release-build with debug info, use
 
 The following build types cause the C **NDEBUG** macro to be defined.
 
+xxxx
+
 - **CMAKE_BUILD_TYPE="Release"**
 - **CMAKE_BUILD_TYPE="RelWithDebInfo"**
 
