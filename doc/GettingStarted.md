@@ -205,7 +205,7 @@ Whereas **CMAKE_BUILD_TYPE="Debug"** causes it to be undefined. Defining the
 
     - The **oe_assert()** and **assert()** macros become no-ops.
     - The **oe_backtrace()** function returns an empty backtrace.
-    - Use of the debug allocator is suppressed.
+    - The debug allocator is disabled.
 
 Multiple variables can be defined at the call with multiple "-D*Var*=*Value*" arguments.
 
