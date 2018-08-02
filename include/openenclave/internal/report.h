@@ -106,8 +106,9 @@ typedef struct _oe_get_revocation_info_args
     uint8_t* crl_issuer_chain[3];      /* out */
     uint32_t crl_issuer_chain_size[3]; /* out */
 
-    // Memory allocated by host to pass outputs back to the enclave. Enclave must free this memory via oe_host_free.
-    uint8_t* host_out_buffer;          /* out */
+    // Memory allocated by host to pass outputs back to the enclave. Enclave
+    // must free this memory via oe_host_free.
+    uint8_t* host_out_buffer; /* out */
 } oe_get_revocation_info_args_t;
 
 #endif //_OE_INCLUDE_REPORT_H_

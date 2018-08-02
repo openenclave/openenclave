@@ -171,19 +171,7 @@ void HandleGetQuoteRevocationInfo(uint64_t argIn)
     if (!args)
         return;
 
-    args->result = oe_get_revocation_info(
-        args->fmspc,
-        args->crl_urls,
-        args->num_crl_urls,
-        &args->tcb_info,
-        &args->tcb_info_size,
-        &args->tcb_issuer_chain,
-        &args->tcb_issuer_chain_size,
-        args->crl,
-        args->crl_size,
-        args->crl_issuer_chain,
-        args->crl_issuer_chain_size,
-        &args->host_out_buffer);
+    args->result = oe_get_revocation_info(args);
 }
 
 void HandleGetQETargetInfo(uint64_t argIn)

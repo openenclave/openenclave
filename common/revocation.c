@@ -22,13 +22,15 @@
  * info etc). Since malloc is not yet available in liboeenclave, a fixed size
  * thread-safe static buffer is used as storage for these variable length
  * objects during quote attestation.
- * When malloc and free become available, the _static_malloc and _static_free functions can be 
+ * When malloc and free become available, the _static_malloc and _static_free
+ * functions can be
  * removed.
  */
 
 /**
  * A chunk_t represents an allocated object. The objects are expected to be
- * deallocated in the reverse order of allocation. This keeps the allocater very simple.
+ * deallocated in the reverse order of allocation. This keeps the allocater very
+ * simple.
  */
 typedef struct _chunk
 {
@@ -61,9 +63,9 @@ static void* _static_malloc(uint32_t size)
         // Allocate new chunk
         chunk = (chunk_t*)_free_ptr;
         _free_ptr += aligned_size;
-         p = chunk->data;
-        
-        // Update linked list.       
+        p = chunk->data;
+
+        // Update linked list.
         chunk->next = _chunk_list;
         _chunk_list = chunk;
     }
@@ -93,8 +95,8 @@ static oe_result_t _parse_sgx_extensions(
     ParsedExtensionInfo* parsed_extension_info)
 {
     oe_result_t result = OE_FAILURE;
-    
-    // The size of buffer required to parse extensions is not known beforehand.     
+
+    // The size of buffer required to parse extensions is not known beforehand.
     uint32_t buffer_size = 1024;
     uint32_t previous_buffer_size = buffer_size;
     uint8_t* buffer = NULL;
@@ -105,30 +107,26 @@ static oe_result_t _parse_sgx_extensions(
 
     // Try parsing the extensions.
     result = ParseSGXExtensions(
-            leaf_cert,
-            buffer,
-            &buffer_size,
-            parsed_extension_info);
+        leaf_cert, buffer, &buffer_size, parsed_extension_info);
 
     if (result == OE_BUFFER_TOO_SMALL)
     {
-        // Allocate larger buffer. extensions_buffer_size contains required size of buffer.
+        // Allocate larger buffer. extensions_buffer_size contains required size
+        // of buffer.
         _static_free(buffer, previous_buffer_size);
         buffer = (uint8_t*)_static_malloc(buffer_size);
 
         result = ParseSGXExtensions(
-                leaf_cert,
-                buffer,
-                &buffer_size,
-                parsed_extension_info);        
+            leaf_cert, buffer, &buffer_size, parsed_extension_info);
     }
 
 done:
-   _static_free(buffer, buffer_size);
+    _static_free(buffer, buffer_size);
     return result;
 }
 
-typedef struct _url {
+typedef struct _url
+{
     char str[256];
 } url_t;
 
@@ -136,9 +134,7 @@ typedef struct _url {
  * Get CRL distribution points from given cert.
  */
 
-static oe_result_t _get_crl_distribution_point(
-    oe_cert_t* cert,
-    url_t* url)
+static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, url_t* url)
 {
     oe_result_t result = OE_FAILURE;
     uint64_t buffer_size = 512;
@@ -149,19 +145,19 @@ static oe_result_t _get_crl_distribution_point(
 
     if (buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
-    
+
     result = oe_get_crl_distribution_points(
-        cert, &urls, &num_urls, buffer, &buffer_size);     
+        cert, &urls, &num_urls, buffer, &buffer_size);
 
     if (result == OE_BUFFER_TOO_SMALL)
     {
         _static_free(buffer, previous_buffer_size);
         buffer = _static_malloc(buffer_size);
         if (buffer == NULL)
-            OE_RAISE(OE_OUT_OF_MEMORY);      
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
         result = oe_get_crl_distribution_points(
-                    cert, &urls, &num_urls, buffer, &buffer_size);        
+            cert, &urls, &num_urls, buffer, &buffer_size);
     }
 
     if (result == OE_OK)
@@ -174,7 +170,7 @@ static oe_result_t _get_crl_distribution_point(
     }
 
 done:
-     _static_free(buffer, previous_buffer_size);
+    _static_free(buffer, previous_buffer_size);
     return result;
 }
 
@@ -188,19 +184,13 @@ static oe_result_t _get_crl_distribution_points(
     url_t urls[2])
 {
     oe_result_t result = OE_FAILURE;
-    
+
     if (!intermediate_cert || !leaf_cert || !revocation_args || !urls)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    OE_CHECK(
-        _get_crl_distribution_point(
-            intermediate_cert,
-            &urls[0]));
+    OE_CHECK(_get_crl_distribution_point(intermediate_cert, &urls[0]));
 
-    OE_CHECK(
-        _get_crl_distribution_point(
-            leaf_cert,
-            &urls[1]));
+    OE_CHECK(_get_crl_distribution_point(leaf_cert, &urls[1]));
 
     revocation_args->crl_urls[0] = urls[0].str;
     revocation_args->crl_urls[1] = urls[1].str;
@@ -248,7 +238,8 @@ static oe_result_t _get_revocation_info(oe_get_revocation_info_args_t* args)
     if (args->num_crl_urls != 2)
         OE_RAISE(OE_FAILURE);
 
-    // Compute size of buffer to allocate in host memory to marshal the arguments.
+    // Compute size of buffer to allocate in host memory to marshal the
+    // arguments.
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
         crlUrlSizes[i] = oe_strlen(args->crl_urls[i]) + 1;
@@ -288,7 +279,10 @@ static oe_result_t _get_revocation_info(oe_get_revocation_info_args_t* args)
 
     // Ensure that all required outputs exist.
     COPY_TO_ENCLAVE(
-        args->tcb_info, args->tcb_info_size, tmp_args.tcb_info, tmp_args.tcb_info_size);
+        args->tcb_info,
+        args->tcb_info_size,
+        tmp_args.tcb_info,
+        tmp_args.tcb_info_size);
     COPY_TO_ENCLAVE(
         args->tcb_issuer_chain,
         args->tcb_issuer_chain_size,
@@ -298,7 +292,10 @@ static oe_result_t _get_revocation_info(oe_get_revocation_info_args_t* args)
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
         COPY_TO_ENCLAVE(
-            args->crl[i], args->crl_size[i], tmp_args.crl[i], tmp_args.crl_size[i]);
+            args->crl[i],
+            args->crl_size[i],
+            tmp_args.crl[i],
+            tmp_args.crl_size[i]);
         COPY_TO_ENCLAVE(
             args->crl_issuer_chain[i],
             args->crl_issuer_chain_size[i],
@@ -331,7 +328,6 @@ oe_result_t oe_enforce_revocation(
     oe_tcb_level_t platform_tcb_level = {0};
     url_t urls[2] = {0};
 
-
     OE_STATIC_ASSERT(
         OE_COUNTOF(crl_issuer_chain) ==
         OE_COUNTOF(revocation_args.crl_issuer_chain));
@@ -345,10 +341,7 @@ oe_result_t oe_enforce_revocation(
         sizeof(parsed_extension_info.fmspc));
     OE_CHECK(
         _get_crl_distribution_points(
-            intermediate_cert,
-            leaf_cert,
-            &revocation_args,
-            urls));
+            intermediate_cert, leaf_cert, &revocation_args, urls));
 
     OE_CHECK(_get_revocation_info(&revocation_args));
 
@@ -371,7 +364,8 @@ oe_result_t oe_enforce_revocation(
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
          ++i)
     {
-        platform_tcb_level.sgx_tcb_comp_svn[i] = parsed_extension_info.compSvn[i];
+        platform_tcb_level.sgx_tcb_comp_svn[i] =
+            parsed_extension_info.compSvn[i];
     }
     platform_tcb_level.pce_svn = parsed_extension_info.pceSvn;
     platform_tcb_level.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
@@ -401,7 +395,9 @@ done:
             revocation_args.crl_issuer_chain_size[i]);
         _static_free(revocation_args.crl[i], revocation_args.crl_size[i]);
     }
-    _static_free(revocation_args.tcb_issuer_chain, revocation_args.tcb_issuer_chain_size);
+    _static_free(
+        revocation_args.tcb_issuer_chain,
+        revocation_args.tcb_issuer_chain_size);
     _static_free(revocation_args.tcb_info, revocation_args.tcb_info_size);
 
     for (uint32_t i = 0; i < revocation_args.num_crl_urls; ++i)
