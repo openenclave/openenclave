@@ -65,6 +65,13 @@ echo "Merging master to your branch .."
             sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo'
           }
         }
+        stage('Test for Rad') {
+          steps {
+            sh '''which sh
+
+ls -l  /bin/sh'''
+          }
+        }
       }
     }
   }
