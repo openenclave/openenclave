@@ -18,10 +18,6 @@ ls -l
         sh '''
 echo "Merging master to your branch .."
 
-sudo git config --global user.email "oeciteam@microsoft.com"
-sudo git config --global user.name "OE CI Team"
-
-
 git pull origin master --no-edit'''
       }
     }
