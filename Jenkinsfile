@@ -29,9 +29,9 @@ echo "Merging master to your branch .."
     }
     stage('sgx1-debug') {
       parallel {
-        stage('ci-sgx1-debug') {
+        stage('sgx1-debug') {
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b Debug '
+            sh './scripts/test-build-config -p SGX1FLC -b Debug'
             echo 'sgx1-debug'
           }
         }
@@ -50,7 +50,7 @@ echo "Merging master to your branch .."
         stage('sgx1-flc-debug') {
           steps {
             echo 'sgx1-flc-debug'
-            sh './scripts/test-build-config -p SGX1FLC -b Debug '
+            sh './scripts/test-build-config -p SGX1FLC -b Debug'
           }
         }
         stage('sgx1-flc-release') {
@@ -62,7 +62,7 @@ echo "Merging master to your branch .."
         stage('sgx1-flc-relwithdebinfo') {
           steps {
             echo 'sgx1-flc-relwithdebinfo'
-            sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo '
+            sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo'
           }
         }
       }
