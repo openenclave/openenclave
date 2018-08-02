@@ -136,7 +136,8 @@ int oe_snprintf(char* str, size_t size, const char* fmt, ...);
  * @returns Returns the address of the allocated space.
  *
  */
-// __builtin_alloca is appropriate for both gcc and clang. For MSVC, probably want _malloca from <malloc.h>.
+// __builtin_alloca is appropriate for both gcc and clang.
+// For MSVC, we will probably want _malloca from <malloc.h>.
 #define oe_stack_alloc(SIZE) __builtin_alloca(SIZE)
 
 /**
