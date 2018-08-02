@@ -191,14 +191,12 @@ E.g., to generate an optimized release-build with debug info, use
 
 ```
  build$ cmake .. -DCMAKE_BUILD_TYPE=relwithdebinfo
-````
+```
 
 The following build types cause the C **NDEBUG** macro to be defined.
 
-```
-CMAKE_BUILD_TYPE="Release"
-CMAKE_BUILD_TYPE="RelWithDebInfo"
-```
+- **CMAKE_BUILD_TYPE="Release"**
+- **CMAKE_BUILD_TYPE="RelWithDebInfo"**
 
 Whereas **CMAKE_BUILD_TYPE="Debug"** causes it to be undefined. Defining the 
 **NDEBUG** macro affects the behavior of Open Enclave in the following ways.
