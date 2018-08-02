@@ -13,7 +13,13 @@ pipeline {
 
 ls -l
 
-whoami'''
+
+'''
+        sh '''
+echo "Merging master to your branch .."
+git config --global user.email "oeciteam@microsoft.com"
+git config --global user.name "OE CI Team"
+git pull origin master --no-edit'''
       }
     }
     stage('Precommit-checking') {
