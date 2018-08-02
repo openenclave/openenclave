@@ -15,12 +15,21 @@ add_library(libcxxtest-support
 target_compile_options(libcxxtest-support PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     -Wno-error=attributes
-    -Wno-error=maybe-uninitialized
     -Wno-error=strict-overflow
-    -Wno-error=unused-but-set-variable
     -Wno-error=unused-local-typedefs
     -Wno-error=unused-variable
     )
+
+check_cxx_compiler_flag(-Wno-error=unused-but-set-variable SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
+if (SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
+    target_compile_options(libcxxtest-support PRIVATE -Wno-error=unused-but-set-variable)
+endif()
+
+check_cxx_compiler_flag(-Wno-error=maybe-uninitialized SUPPORTS_W_NO_MAYBE_UNINITIALIZED_FLAG)
+if (SUPPORTS_W_NO_MAYBE_UNINITIALIZED_FLAG)
+    target_compile_options(libcxxtest-support PRIVATE -Wno-error=maybe-uninitialized)
+endif()
+
 target_link_libraries(libcxxtest-support PUBLIC oelibcxx oeenclave)
 target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 

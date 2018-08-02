@@ -1451,7 +1451,7 @@ int Generator::GenerateSourceFile(
 
     // Inject custom _ConstMemcpy() function:
     {
-        const char text[] = "OE_INLINE void* _ConstMemcpy(\n"
+        const char text[] = "OE_UNUSED_ATTRIBUTE OE_INLINE void* _ConstMemcpy(\n"
                             "    const void* dest, \n"
                             "    const void* src,\n"
                             "    size_t n)\n"
