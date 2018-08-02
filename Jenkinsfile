@@ -31,7 +31,7 @@ echo "Merging master to your branch .."
       parallel {
         stage('sgx1-debug') {
           steps {
-            sh './scripts/test-build-config -p SGX1FLC -b Debug'
+            sh './scripts/test-build-config'
             echo 'sgx1-debug'
           }
         }
