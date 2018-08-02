@@ -148,7 +148,7 @@
 
 /* Enable debug-malloc for debug builds */
 #if !defined(NDEBUG) && !defined(OE_USE_DEBUG_MALLOC)
-# define OE_USE_DEBUG_MALLOC
+#define OE_USE_DEBUG_MALLOC
 #endif
 
 #endif /* _OE_BITS_DEFS_H */
