@@ -21,6 +21,7 @@
 #include "init.h"
 #include "report.h"
 #include "td.h"
+#include "thread.h"
 
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -342,6 +343,12 @@ static void _HandleECall(
     }
 
 done:
+
+    // Release any thread-specific-data for this thread if returning from
+    // a non-nested ECALL.
+    if (td->depth == 1)
+        oe_thread_destruct_specific();
+
     /* Remove ECALL context from front of TD.ecalls list */
     TD_PopCallsite(td);
 
@@ -593,9 +600,11 @@ void __oe_handle_main(
     switch (__oe_enclave_status)
     {
         case OE_OK:
+        {
             break;
-
+        }
         case OE_ENCLAVE_ABORTING:
+        {
             // Block any ECALL except first time OE_ECALL_DESTRUCTOR call.
             // Don't block ORET here.
             if (code == OE_CODE_ECALL)
@@ -616,12 +625,14 @@ void __oe_handle_main(
             }
 
             break;
-
+        }
         default:
+        {
             // Return crashed status.
             *outputArg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, OE_OK);
             *outputArg2 = OE_ENCLAVE_ABORTED;
             return;
+        }
     }
 
     /* Initialize the enclave the first time it is ever entered */
