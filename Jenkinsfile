@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'oetools-jenkins/0.1'
+      image 'hello-world'
     }
 
   }
