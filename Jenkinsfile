@@ -38,7 +38,7 @@ echo "Merging master to your branch .."
         stage('sgx1-release') {
           steps {
             echo 'sgx1-release'
-            sh './scripts/test-build-config'
+            sh './scripts/test-build-config -p SGX1 -b Release'
           }
         }
         stage('sgx1-relwithdebinfo') {
