@@ -24,7 +24,7 @@ echo "Merging master to your branch .."
     stage('Precommit-checking') {
       steps {
         echo 'Precommit-checking'
-        sh '#./scripts/check-precommit-reqs'
+        sh './scripts/check-precommit-reqs'
       }
     }
     stage('sgx1-debug') {
