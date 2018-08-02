@@ -1,5 +1,10 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'oetools-jenkins/0.1'
+    }
+
+  }
   stages {
     stage('test') {
       steps {
