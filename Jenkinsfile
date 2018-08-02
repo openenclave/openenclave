@@ -5,6 +5,7 @@ pipeline {
       steps {
         echo 'test'
         sh '''pwd
+
 ls -l
 
 sh \'whoami\''''
