@@ -1,17 +1,13 @@
 pipeline {
-  agent {
-    docker {
-      image 'hello-world'
-    }
-
-  }
+  agent any
   stages {
     stage('test') {
       steps {
         echo 'test'
         sh '''pwd
 ls -l
-'''
+
+sh \'whoami\''''
       }
     }
   }
