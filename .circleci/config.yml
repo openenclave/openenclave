@@ -30,7 +30,7 @@ jobs:
   # SGX1 | Debug 
   ci-sgx1-debug:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -52,7 +52,7 @@ jobs:
   # SGX1 | RelWithDebInfo
   ci-sgx1-relwithdebinfo:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -74,7 +74,7 @@ jobs:
   # SGX1 | Release
   ci-sgx1-release:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -96,7 +96,7 @@ jobs:
   # SGX1-FLC | Debug 
   ci-sgx1-flc-debug:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -118,7 +118,7 @@ jobs:
   # SGX1-FLC | RelWithDebInfo
   ci-sgx1-flc-relwithdebinfo:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -140,7 +140,7 @@ jobs:
   # SGX1-FLC | Release 
   ci-sgx1-flc-release:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
