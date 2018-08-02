@@ -24,7 +24,7 @@ echo "Merging master to your branch .."
     stage('Precommit-checking') {
       steps {
         echo 'Precommit-checking'
-        sh './scripts/check-precommit-reqs'
+        sh 'bash ./scripts/check-precommit-reqs'
       }
     }
     stage('sgx1-debug') {
@@ -32,37 +32,37 @@ echo "Merging master to your branch .."
         stage('sgx1-debug') {
           steps {
             echo 'sgx1-debug'
-            sh './scripts/test-build-config'
+            sh 'bash ./scripts/test-build-config'
           }
         }
         stage('sgx1-release') {
           steps {
             echo 'sgx1-release'
-            sh './scripts/test-build-config -p SGX1 -b Release'
+            sh 'bash ./scripts/test-build-config -p SGX1 -b Release'
           }
         }
         stage('sgx1-relwithdebinfo') {
           steps {
             echo 'sgx1-relwithdebinfo'
-            sh './scripts/test-build-config -p SGX1 -b RelWithDebInfo'
+            sh 'bash ./scripts/test-build-config -p SGX1 -b RelWithDebInfo'
           }
         }
         stage('sgx1-flc-debug') {
           steps {
             echo 'sgx1-flc-debug'
-            sh './scripts/test-build-config -p SGX1FLC -b Debug'
+            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug'
           }
         }
         stage('sgx1-flc-release') {
           steps {
             echo 'sgx1-flc-release'
-            sh './scripts/test-build-config -p SGX1FLC -b Release'
+            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release'
           }
         }
         stage('sgx1-flc-relwithdebinfo') {
           steps {
             echo 'sgx1-flc-relwithdebinfo'
-            sh './scripts/test-build-config -p SGX1FLC -b RelWithDebInfo'
+            sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo'
           }
         }
         stage('Test for Rad') {
