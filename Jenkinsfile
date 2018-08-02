@@ -24,7 +24,13 @@ echo "Merging master to your branch .."
     stage('Precommit-checking') {
       steps {
         echo 'Precommit-checking'
-        sh './scripts/check-precommit-reqs'
+        sh '#./scripts/check-precommit-reqs'
+      }
+    }
+    stage('ci-sgx1-debug') {
+      steps {
+        sh './scripts/test-build-config -p SGX1FLC -b Debug '
+        echo 'ci-sgx1-debug'
       }
     }
   }
