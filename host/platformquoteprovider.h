@@ -1,8 +1,6 @@
-//----------------------------------------------------------------------------
-// <copyright file="PlatformQuoteProvider.h" company="Microsoft Corporation">
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef PLATFORM_QUOTE_PROVIDER_H
 #define PLATFORM_QUOTE_PROVIDER_H
 

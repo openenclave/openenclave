@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#define OE_TRACE_LEVEL 2
+// Uncomment this line to enable tracing.
+//#define OE_TRACE_LEVEL 2
 
 #include <dlfcn.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/report.h>
 #include <openenclave/internal/trace.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,61 +27,61 @@
  * Keeping libngsa_quoteprov.so pinned in memory solves the libssl.so crash.
  */
 
-static void* g_LibHandle = 0;
-static sgx_ql_get_revocation_info_t g_GetRevocationInfo = 0;
-static sgx_ql_free_revocation_info_t g_FreeRevocationInfo = 0;
+static void* _lib_handle = 0;
+static sgx_ql_get_revocation_info_t _get_revocation_info = 0;
+static sgx_ql_free_revocation_info_t _free_revocation_info = 0;
 
-static void _UnloadQuoteProvider()
+static void _unload_quote_provider()
 {
-    if (g_LibHandle)
+    if (_lib_handle)
     {
-        dlclose(g_LibHandle);
-        g_LibHandle = 0;
+        dlclose(_lib_handle);
+        _lib_handle = 0;
     }
 }
 
-static void _QuoteProviderLog(sgx_ql_log_level_t level, const char* message)
+static void _quote_provider_log(sgx_ql_log_level_t level, const char* message)
 {
-    const char* levelString = level == 0 ? "ERROR" : "INFO";
+    const char* level_string = level == 0 ? "ERROR" : "INFO";
     char formatted[1024];
 
-    snprintf(formatted, sizeof(formatted), "[%s]: %s\n", levelString, message);
+    snprintf(formatted, sizeof(formatted), "[%s]: %s\n", level_string, message);
 
     formatted[sizeof(formatted) - 1] = 0;
 
     printf("%s", formatted);
 }
 
-static void _LoadQuoteProvider()
+static void _load_quote_provider()
 {
-    if (g_LibHandle == 0)
+    if (_lib_handle == 0)
     {
-        g_LibHandle = dlopen("libngsa_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
-        if (g_LibHandle != 0)
+        _lib_handle = dlopen("libngsa_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
+        if (_lib_handle != 0)
         {
-            g_GetRevocationInfo =
-                dlsym(g_LibHandle, "sgx_ql_get_revocation_info");
-            g_FreeRevocationInfo =
-                dlsym(g_LibHandle, "sgx_ql_free_revocation_info");
+            _get_revocation_info =
+                dlsym(_lib_handle, "sgx_ql_get_revocation_info");
+            _free_revocation_info =
+                dlsym(_lib_handle, "sgx_ql_free_revocation_info");
 
             OE_TRACE_INFO(
-                "sgxquoteprovider: g_GetRevocationInfo = 0x%lx\n",
-                (uint64_t)g_GetRevocationInfo);
+                "sgxquoteprovider: _get_revocation_info = 0x%lx\n",
+                (uint64_t)_get_revocation_info);
             OE_TRACE_INFO(
-                "sgxquoteprovider: g_FreeRevocationInfo = 0x%lx\n",
-                (uint64_t)g_FreeRevocationInfo);
+                "sgxquoteprovider: _free_revocation_info = 0x%lx\n",
+                (uint64_t)_free_revocation_info);
 
             sgx_ql_set_logging_function_t set_log_fcn =
                 (sgx_ql_set_logging_function_t)dlsym(
-                    g_LibHandle, "sgx_ql_set_logging_function");
+                    _lib_handle, "sgx_ql_set_logging_function");
             if (set_log_fcn != NULL)
             {
-                OE_UNUSED(_QuoteProviderLog);
+                OE_UNUSED(_quote_provider_log);
 
                 OE_TRACE_INFO("sgxquoteprovider: Installed log function\n");
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
                 // If info tracing is enabled, install the logging function.
-                set_log_fcn(_QuoteProviderLog);
+                set_log_fcn(_quote_provider_log);
 #endif
             }
             else
@@ -88,7 +90,7 @@ static void _LoadQuoteProvider()
                     "sgxquoteprovider: sgx_ql_set_logging_function "
                     "not found\n");
             }
-            atexit(_UnloadQuoteProvider);
+            atexit(_unload_quote_provider);
         }
         else
         {
@@ -101,24 +103,11 @@ static void _LoadQuoteProvider()
 oe_result_t oe_initialize_quote_provider()
 {
     static oe_once_type once = OE_H_ONCE_INITIALIZER;
-    oe_once(&once, _LoadQuoteProvider);
-    return g_LibHandle ? OE_OK : OE_FAILURE;
+    oe_once(&once, _load_quote_provider);
+    return _lib_handle ? OE_OK : OE_FAILURE;
 }
 
-oe_result_t oe_get_revocation_info(
-    uint8_t* fmspc,                 /* in */
-    uint32_t fmspcSize,             /* in */
-    const char* crlUrls[3],         /* in */
-    uint32_t numCrlUrls,            /* in */
-    uint8_t** tcbInfo,              /* out */
-    uint32_t* tcbInfoSize,          /* out */
-    uint8_t** tcbIssuerChain,       /* out */
-    uint32_t* tcbIssuerChainSize,   /* out */
-    uint8_t* crl[3],                /* out */
-    uint32_t crlSize[3],            /* out */
-    uint8_t* crlIssuerChain[3],     /* out */
-    uint32_t crlIssuerChainSize[3], /* out */
-    uint8_t** hostOutBuffer)
+oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
 {
     oe_result_t result = OE_FAILURE;
     sgx_ql_get_revocation_info_params_t params = {0};
@@ -127,14 +116,14 @@ oe_result_t oe_get_revocation_info(
     uint32_t hostBufferSize = 0;
     uint8_t* p = 0;
 
-    if (!g_GetRevocationInfo || !g_FreeRevocationInfo)
-        OE_RAISE(OE_FAILURE);
+    if (!_get_revocation_info || !_free_revocation_info)
+        OE_RAISE(OE_QUOTE_PROVIDER_LOAD_ERROR);
 
     params.version = SGX_QL_REVOCATION_INFO_VERSION_1;
-    params.fmspc = fmspc;
-    params.fmspc_size = fmspcSize;
-    params.crl_urls = crlUrls;
-    params.crl_url_count = numCrlUrls;
+    params.fmspc = args->fmspc;
+    params.fmspc_size = sizeof(args->fmspc);
+    params.crl_urls = args->crl_urls;
+    params.crl_url_count = args->num_crl_urls;
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     // If info tracing is enabled, install the logging function.
@@ -146,35 +135,35 @@ oe_result_t oe_get_revocation_info(
     }
 #endif
 
-    r = g_GetRevocationInfo(&params, &revocationInfo);
+    r = _get_revocation_info(&params, &revocationInfo);
 
     if (r != SGX_PLAT_ERROR_OK || revocationInfo == NULL)
     {
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_QUOTE_PROVIDER_CALL_ERROR);
     }
 
     if (revocationInfo->tcb_info == NULL || revocationInfo->tcb_info_size == 0)
     {
         OE_TRACE_INFO("tcb_info is NULL.\n");
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
-    hostBufferSize += revocationInfo->tcb_info_size;
+    hostBufferSize += revocationInfo->tcb_info_size + 1;
 
     if (revocationInfo->tcb_issuer_chain == NULL ||
         revocationInfo->tcb_issuer_chain_size == 0)
     {
         OE_TRACE_INFO("tcb_issuer_chain is NULL.\n");
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
-    hostBufferSize += revocationInfo->tcb_issuer_chain_size;
+    hostBufferSize += revocationInfo->tcb_issuer_chain_size + 1;
 
-    if (revocationInfo->crl_count != numCrlUrls)
+    if (revocationInfo->crl_count != args->num_crl_urls)
     {
         OE_TRACE_INFO(
             "crl_count mismatch: %d != %d.\n",
             revocationInfo->crl_count,
             numCrlUrls);
-        OE_RAISE(OE_FAILURE);
+        OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
 
     for (uint32_t i = 0; i < revocationInfo->crl_count; ++i)
@@ -183,45 +172,46 @@ oe_result_t oe_get_revocation_info(
             revocationInfo->crls[i].crl_data_size == 0)
         {
             OE_TRACE_INFO("crl[%d].crl_data is NULL.\n", i);
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_INVALID_REVOCATION_INFO);
         }
-        hostBufferSize += revocationInfo->crls[i].crl_data_size;
+        hostBufferSize += revocationInfo->crls[i].crl_data_size + 1;
 
         if (revocationInfo->crls[i].crl_issuer_chain == NULL ||
             revocationInfo->crls[i].crl_issuer_chain_size == 0)
         {
             OE_TRACE_INFO("crl[%d].crl_issuer_chain is NULL.\n", i);
-            OE_RAISE(OE_FAILURE);
+            OE_RAISE(OE_INVALID_REVOCATION_INFO);
         }
-        hostBufferSize += revocationInfo->crls[i].crl_issuer_chain_size;
+        hostBufferSize += revocationInfo->crls[i].crl_issuer_chain_size + 1;
     }
 
     OE_TRACE_INFO("sgx_ql_get_revocation_info succeeded.\n");
 
-    p = (uint8_t*)malloc(hostBufferSize + 1024);
+    p = (uint8_t*)calloc(1, hostBufferSize);
     if (p == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
-    *hostOutBuffer = p;
+    args->host_out_buffer = p;
 
     if (revocationInfo->tcb_info != NULL)
     {
-        *tcbInfo = p;
-        *tcbInfoSize = revocationInfo->tcb_info_size;
-        memcpy(*tcbInfo, revocationInfo->tcb_info, *tcbInfoSize);
-        p += *tcbInfoSize;
+        args->tcb_info = p;
+        args->tcb_info_size = revocationInfo->tcb_info_size;
+        memcpy(args->tcb_info, revocationInfo->tcb_info, args->tcb_info_size);
+        p += args->tcb_info_size + 1;
         OE_TRACE_INFO("tcb_info_size = %d\n", revocationInfo->tcb_info_size);
+        OE_TRACE_INFO("tcb_info json = \n%s\n", *tcbInfo);
     }
 
     if (revocationInfo->tcb_issuer_chain != NULL)
     {
-        *tcbIssuerChain = p;
-        *tcbIssuerChainSize = revocationInfo->tcb_issuer_chain_size;
+        args->tcb_issuer_chain = p;
+        args->tcb_issuer_chain_size = revocationInfo->tcb_issuer_chain_size;
         memcpy(
-            *tcbIssuerChain,
+            args->tcb_issuer_chain,
             revocationInfo->tcb_issuer_chain,
-            *tcbIssuerChainSize);
-        p += *tcbIssuerChainSize;
+            args->tcb_issuer_chain_size);
+        p += args->tcb_issuer_chain_size + 1;
         OE_TRACE_INFO(
             "tcb_issuer_chain_size = %d\n",
             revocationInfo->tcb_issuer_chain_size);
@@ -231,10 +221,13 @@ oe_result_t oe_get_revocation_info(
     {
         if (revocationInfo->crls[i].crl_data != NULL)
         {
-            crl[i] = p;
-            crlSize[i] = revocationInfo->crls[i].crl_data_size;
-            memcpy(crl[i], revocationInfo->crls[i].crl_data, crlSize[i]);
-            p += crlSize[i];
+            args->crl[i] = p;
+            args->crl_size[i] = revocationInfo->crls[i].crl_data_size;
+            memcpy(
+                args->crl[i],
+                revocationInfo->crls[i].crl_data,
+                args->crl_size[i]);
+            p += args->crl_size[i] + 1;
             OE_TRACE_INFO(
                 "crls[%d].crl_data_size = %d\n",
                 i,
@@ -242,14 +235,14 @@ oe_result_t oe_get_revocation_info(
         }
         if (revocationInfo->crls[i].crl_issuer_chain != NULL)
         {
-            crlIssuerChain[i] = p;
-            crlIssuerChainSize[i] =
+            args->crl_issuer_chain[i] = p;
+            args->crl_issuer_chain_size[i] =
                 revocationInfo->crls[i].crl_issuer_chain_size;
             memcpy(
-                crlIssuerChain[i],
+                args->crl_issuer_chain[i],
                 revocationInfo->crls[i].crl_issuer_chain,
-                crlIssuerChainSize[i]);
-            p += crlIssuerChainSize[i];
+                args->crl_issuer_chain_size[i]);
+            p += args->crl_issuer_chain_size[i] + 1;
             OE_TRACE_INFO(
                 "crls[%d].crl_issuer_chain_size = %d\n",
                 i,
@@ -262,7 +255,7 @@ done:
     if (revocationInfo != NULL)
     {
         OE_TRACE_INFO("Freeing revocation info. \n");
-        g_FreeRevocationInfo(revocationInfo);
+        _free_revocation_info(revocationInfo);
         OE_TRACE_INFO("Freed revocation info.\n");
     }
 
