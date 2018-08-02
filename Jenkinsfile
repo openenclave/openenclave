@@ -32,7 +32,7 @@ echo "Merging master to your branch .."
         stage('sgx1-debug') {
           steps {
             echo 'sgx1-debug'
-            sh './scripts/test-build-config -p SGX1FLC -b Debug'
+            sh './scripts/test-build-config'
           }
         }
         stage('sgx1-release') {
