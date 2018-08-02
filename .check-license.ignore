@@ -23,6 +23,7 @@ LICENSE
 *.md
 *.json
 ./.openenclaveroot
+./Jenkinsfile
 *.pem
 ./prereqs/aesm/.build
 ./prereqs/aesm/dynamic-application-loader-host-interface
