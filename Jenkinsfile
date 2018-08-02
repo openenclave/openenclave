@@ -8,7 +8,7 @@ pipeline {
 
 ls -l
 
-sh \'whoami\''''
+whoami'''
       }
     }
   }
