@@ -176,7 +176,7 @@ oe_result_t VerifyQuoteImpl(
     bool keyEqual = false;
     static uint8_t data[16 * 1024];
     uint32_t dataSize = sizeof(data);
-    ParsedExtensionInfo parsedInfo = {0};
+    ParsedExtensionInfo parsedInfo = {{0}};
 
     OE_CHECK(
         _ParseQuote(

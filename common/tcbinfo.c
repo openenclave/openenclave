@@ -316,7 +316,7 @@ static oe_result_t _read_tcb_level(
     oe_parsed_tcb_info_t* parsed_info)
 {
     oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
-    oe_tcb_level_t tcb_level = {0};
+    oe_tcb_level_t tcb_level = {{0}};
     const uint8_t* status = NULL;
     uint32_t status_length = 0;
 
