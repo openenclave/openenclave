@@ -1304,17 +1304,14 @@ done:
     return result;
 }
 
-#if defined(__linux__)
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
-
 /*
 ** These functions are needed to notify the debugger. They should not be
-** optimized out even they don't do anything in here.
+** optimized out even though they don't do anything in here.
 */
 
-void _oe_notify_gdb_enclave_termination(
+OE_NO_OPTIMIZE_BEGIN
+
+OE_NEVER_INLINE void _oe_notify_gdb_enclave_termination(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -1326,7 +1323,7 @@ void _oe_notify_gdb_enclave_termination(
     return;
 }
 
-void _oe_notify_gdb_enclave_creation(
+OE_NEVER_INLINE void _oe_notify_gdb_enclave_creation(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -1338,9 +1335,7 @@ void _oe_notify_gdb_enclave_creation(
     return;
 }
 
-#if defined(__linux__)
-#pragma GCC pop_options
-#endif
+OE_NO_OPTIMIZE_END
 
 /*
 ** This method encapsulates all steps of the enclave creation process:
