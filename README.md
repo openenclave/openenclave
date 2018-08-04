@@ -16,18 +16,39 @@ Extensions (SGX), although Open Enclave may support other memory protection
 architectures in the future, such as Microsoft Virtualization Based Security
 (VBS).
 
+
+Getting Started
+-------------
+- [Getting Started with Open Enclave](doc/GettingStarted.md)
+
+
 Documentation
 -------------
 
 The Open Enclave project provides the following documents.
 
-- [Getting Started with Open Enclave](doc/GettingStarted.md)
-
+- [Open Enclave Design Overview](doc/DesignOverview.pdf)
 - [Open Enclave Function Reference](doc/refman/md/index.md)
 
-- [Open Enclave Design Overview](doc/DesignOverview.pdf)
-
 The first document explains how to build and use Open Enclave.
+
+
+Contributing
+------------
+See [Contributing to Open Enclave](doc/Contributing.md) for information about
+contributing to the Open Enclave project.
+
+See the [Development Guide](doc/DevelopmentGuide.md) for details about developing
+code in this repo, such as coding style and development processes.
+
+Code of Conduct
+---------------
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+
 
 Installing
 ----------
@@ -185,17 +206,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 ```
 
-Contributing
-------------
-See [Contributing to Open Enclave](doc/Contributing.md) for information about
-contributing to the Open Enclave project.
-
-See the [Development Guide](doc/DevelopmentGuide.md) for details about developing
-code in this repo, such as coding style and development processes.
-
-Code of Conduct
----------------
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
