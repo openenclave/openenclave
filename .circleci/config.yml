@@ -6,7 +6,7 @@ jobs:
   # check-precommit-reqs test - check license and formatting info
   check-precommit-reqs-test:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -19,8 +19,6 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/check-precommit-reqs 
@@ -30,7 +28,7 @@ jobs:
   # SGX1 | Debug 
   ci-sgx1-debug:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -43,8 +41,6 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config 
@@ -52,7 +48,7 @@ jobs:
   # SGX1 | RelWithDebInfo
   ci-sgx1-relwithdebinfo:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -65,8 +61,6 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1 -b RelWithDebInfo
@@ -74,7 +68,7 @@ jobs:
   # SGX1 | Release
   ci-sgx1-release:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -87,8 +81,6 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1 -b Release
@@ -96,7 +88,7 @@ jobs:
   # SGX1-FLC | Debug 
   ci-sgx1-flc-debug:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -109,8 +101,6 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1FLC -b Debug 
@@ -118,7 +108,7 @@ jobs:
   # SGX1-FLC | RelWithDebInfo
   ci-sgx1-flc-relwithdebinfo:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -131,8 +121,6 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo 
@@ -140,7 +128,7 @@ jobs:
   # SGX1-FLC | Release 
   ci-sgx1-flc-release:
     docker:
-      - image: oeciteam/oetools:1.4
+      - image: oeciteam/oetools:1.5
         auth:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
@@ -153,8 +141,6 @@ jobs:
           command: | 
             if [ ${CIRCLE_BRANCH} != "master" ]; then
                echo "Merging master to your branch ${CIRCLE_BRANCH}"
-               git config --global user.email "oeciteam@microsoft.com"
-               git config --global user.name "OE CI Team"
                git pull origin master --no-edit
             fi
             ./scripts/test-build-config -p SGX1FLC -b Release
