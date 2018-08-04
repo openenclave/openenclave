@@ -25,7 +25,7 @@ Design Overview
 Getting Started
 -------------
 
-1. Determine the SGX configuration type of your development system
+### Determine the SGX configuration type of your development system
 
    The SDK setup/build process requirments depend on the trarget configuration. 
    There are three supported configurations. 
@@ -35,7 +35,7 @@ Getting Started
     
     An oesgx utility (**add a link to linux version of this tool here**) could be use to determine thr SGX support on your target system.  
 
-2. Build and Run
+### Build and Run
    - [Software SGX Simulation](doc/SwSimulationGettingStarted.md)
    - [SGX 1](doc/SGX1GettingStarted.md)
    - [SGX 1  + FLC](doc/SGX1FLCGettingStarted.md)
