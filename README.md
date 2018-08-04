@@ -26,16 +26,9 @@ Getting Started
 -------------
 - [Getting Started with Open Enclave](doc/GettingStarted.md)
 
-
-Documentation
--------------
-
-The Open Enclave project provides the following documents.
-
+Open Enclave SDK Function Reference
+-------------------------------
 - [Open Enclave Function Reference](doc/refman/md/index.md)
-
-The first document explains how to build and use Open Enclave.
-
 
 Contributing
 ------------
