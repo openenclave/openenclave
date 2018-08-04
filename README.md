@@ -16,7 +16,7 @@ Extensions (SGX), although Open Enclave may support other memory protection
 architectures in the future, such as Microsoft Virtualization Based Security
 (VBS).
 
-Open Enclave Design Overview
+Design Overview
 -------------
 
 - [Open Enclave Design Overview](doc/DesignOverview.pdf)
