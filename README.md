@@ -25,9 +25,9 @@ Design Overview
 Getting Started
 -------------
 
-### Determine the SGX configuration type of your development system
+1. Determine the SGX configuration type of your development system
 
-   The SDK setup/build process requirments depend on the trarget configuration. 
+   The SDK setup/build process depends on the trarget configuration. 
    There are three supported configurations. 
     - SGX 1: This is the orginal Intel SGX hardware platform
     - SGX 1+FLC: SGX with Flexible Launch Control support
@@ -35,7 +35,7 @@ Getting Started
     
     An oesgx utility (**add a link to linux version of this tool here**) could be use to determine thr SGX support on your target system.  
 
-### Build and Run
+2. Build and Run
    - [Software SGX Simulation](doc/SwSimulationGettingStarted.md)
    - [SGX 1](doc/SGX1GettingStarted.md)
    - [SGX 1  + FLC](doc/SGX1FLCGettingStarted.md)
