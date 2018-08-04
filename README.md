@@ -11,8 +11,8 @@ container whose memory is protected from entities outside the enclave. These
 protections allow enclaves to perform secure computations with assurances that
 secrets will not be compromised.
 
-The current implementation of Open Enclave is built on the Intel Software Guard
-Extensions (SGX), although Open Enclave may support other memory protection
+The current implementation of Open Enclave is built on the [Intel Software Guard
+Extensions (SGX)](https://software.intel.com/en-us/sgx), although Open Enclave may support other memory protection
 architectures in the future, such as Microsoft Virtualization Based Security
 (VBS).
 
@@ -31,7 +31,7 @@ Getting Started
    There are three supported configurations. 
     - SGX 1: This is the orginal Intel SGX hardware platform
     - SGX 1+FLC: SGX with Flexible Launch Control support
-    - Software SGX Simulation: supported by a pure software SGX emulator
+    - Software SGX Simulation: Openenclave SDK could be run in simulation mode
     
     An oesgx utility (**add a link to linux version of this tool here**) could be use to determine thr SGX support on your target system.  
 
