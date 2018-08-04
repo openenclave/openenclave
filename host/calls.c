@@ -748,15 +748,12 @@ OE_CATCH:
     return result;
 }
 
-#if defined(__linux__)
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
-
 /*
 ** These two functions are needed to notify the debugger. They should not be
-** optimized out even they don't do anything in here.
+** optimized out even though they don't do anything in here.
 */
+
+OE_NO_OPTIMIZE_BEGIN
 
 OE_NEVER_INLINE void _oe_notify_ocall_start(
     oe_host_ocall_frame_t* frame_pointer,
@@ -778,6 +775,4 @@ OE_NEVER_INLINE void _oe_notify_ocall_end(
     return;
 }
 
-#if defined(__linux__)
-#pragma GCC pop_options
-#endif
+OE_NO_OPTIMIZE_END

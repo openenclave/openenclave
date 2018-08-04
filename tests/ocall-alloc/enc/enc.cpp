@@ -225,22 +225,22 @@ oe_result_t TestRun(bool doVerifyAllocation, const Allocator alloc)
             case 't':
                 if (!doVerifyAllocation)
                     break;
-                MyExit();
+                Exit();
                 break;
             case 'v':
                 if (!doVerifyAllocation)
                     break;
 
-                if ((MyGetAllocationBytes() != cmd.val1 ||
-                     MyGetAllocationCount() != cmd.val2))
+                if ((GetAllocationBytes() != cmd.val1 ||
+                     GetAllocationCount() != cmd.val2))
                 {
                     printf(
                         "Expected %#x bytes allocated in %u chunks, have %#lx "
                         "bytes in %llu chunks.\n",
                         cmd.val1,
                         cmd.val2,
-                        MyGetAllocationBytes(),
-                        OE_LLU(MyGetAllocationCount()));
+                        GetAllocationBytes(),
+                        OE_LLU(GetAllocationCount()));
                     return OE_FAILURE;
                 }
                 break;
@@ -273,7 +273,9 @@ OE_ECALL void TestAllocaDealloc(void* args)
 
     // test with wrapped functions tracking backing memory allocation
     OE_TEST(
-        TestRun(true, {MyHostAllocForCallHost, MyOE_HostFreeForCallHost}) ==
+        TestRun(
+            true,
+            {test_host_alloc_for_call_host, test_host_free_for_call_host}) ==
         OE_OK);
 
     *result = OE_OK;
