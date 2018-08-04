@@ -40,11 +40,6 @@ Prerequisites
 =============
 Execute the following commands from the root of the source tree to install the prerequisites
 
-    $ sudo ./scripts/install-prereqs
-    
-**Simulation mode** has package dependencies that may be installed from
-the root of the source distribution as follows.
-
 ```
 $ sudo ./scripts/install-prereqs
 ```
