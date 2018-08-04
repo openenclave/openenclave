@@ -100,6 +100,10 @@ const char* oe_result_str(oe_result_t result)
             return "OE_MEMORY_LEAK";
         case OE_BAD_ALIGNMENT:
             return "OE_BAD_ALIGNMENT";
+        case OE_TCB_INFO_PARSE_ERROR:
+            return "OE_TCB_INFO_PARSE_ERROR";
+        case OE_TCB_LEVEL_INVALID:
+            return "OE_TCB_LEVEL_INVALID";
         case __OE_RESULT_MAX:
             break;
     }

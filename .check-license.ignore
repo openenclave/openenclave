@@ -21,6 +21,7 @@
 ./include/openenclave/internal/queue.h
 LICENSE
 *.md
+*.json
 ./.openenclaveroot
 *.pem
 ./prereqs/aesm/.build

@@ -1,7 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# This Dockerfile script builds an image for tag oetools:1.4
+#
+# IMPORTANT- Please update the version number in the next sentence
+# when you create a new docker image.
+#
+# This Dockerfile script builds an image for tag oetools:1.5
 
 # To use this Dockerfile, you will need to install docker-ce.
 # Instructions for installing it on Ubuntu 16.04 LTS are at:
@@ -63,6 +67,9 @@ RUN dpkg -i libsgx-enclave-common_1.0.101.45575-1.0_amd64.deb
 RUN dpkg -i libsgx-enclave-common-dev_1.0.101.45575-1.0_amd64.deb
 RUN dpkg -i libsgx-ngsa-ql_1.0.101.45575-1.0_amd64.deb
 RUN dpkg -i libsgx-ngsa-ql-dev_1.0.101.45575-1.0_amd64.deb
+
+RUN git config --global user.email "oeciteam@microsoft.com"
+RUN git config --global user.email "OE CI Team"
 
 # Cleanup after we are done
 RUN rm -f cmake-3.11.4-Linux-x86_64.tar.gz

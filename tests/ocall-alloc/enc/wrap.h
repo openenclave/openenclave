@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 OE_EXTERNC_BEGIN
-void* MyHostAllocForCallHost(size_t size);
-void MyOE_HostFreeForCallHost(void* p);
+void* test_host_alloc_for_call_host(size_t size);
+void test_host_free_for_call_host(void* p);
 OE_EXTERNC_END
 
-size_t MyGetAllocationCount();
-size_t MyGetAllocationBytes();
-void MyExit();
+size_t GetAllocationCount();
+size_t GetAllocationBytes();
+void Exit();
