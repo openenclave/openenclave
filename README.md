@@ -36,12 +36,9 @@ Getting Started
     An oesgx utility (**add a link to linux version of this tool here**) could be use to determine thr SGX support on your target system.  
 
 2. Build and Run
-  
    - [Software SGX Simulation](doc/SwSimulationGettingStarted.md)
    - [SGX 1](doc/SGX1GettingStarted.md)
    - [SGX 1  + FLC](doc/SGX1FLCGettingStarted.md)
-
-- [Getting Started with Open Enclave](doc/GettingStarted.md)
 
 Open Enclave SDK Function Reference
 -------------------------------
