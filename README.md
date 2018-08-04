@@ -31,7 +31,7 @@ Getting Started
    There are three supported configurations. 
     - SGX 1: This is the orginal Intel SGX hardware platform
     - SGX 1+FLC: SGX with Flexible Launch Control support
-    - Software SGX Simulation: Openenclave SDK could be run in simulation mode
+    - Software SGX Simulation: Openenclave SDK could be run in simulation mode on any system
     
     An oesgx utility (**add a link to linux version of this tool here**) could be use to determine thr SGX support on your target system.  
 
