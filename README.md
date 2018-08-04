@@ -52,9 +52,6 @@ contributing to the Open Enclave project.
 See the [Development Guide](doc/DevelopmentGuide.md) for details about developing
 code in this repo, such as coding style and development processes.
 
-Code of Conduct
----------------
-
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
