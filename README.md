@@ -27,14 +27,13 @@ Getting Started
 
 1. Determine the type of your development system
 
-    There are three supported configurations. 
+   The SDK setup/build process requirments depends on the trarget configuration. 
+   There are three supported configurations. 
     - Simulation: supported by a pure software SGX emulator
     - SGX 1: This is the orginal Intel SGX hardware platform
     - SGX 1+FLC: SGX with Flexible Launch Control support
   
-  An oesgx utility (this) could be use to determine thr SGX support on your target system.  
-
-  How to get started depending on the configuration of your target environmet. 
+    An oesgx utility (this **add a link to linux version of this tool here) could be use to determine thr SGX support on your target system.  
 
 2. Get started
   
