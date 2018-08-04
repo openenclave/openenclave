@@ -24,6 +24,11 @@ Design Overview
 
 Getting Started
 -------------
+- Types of configurations
+- How to install
+- How to build
+- How to run
+
 - [Getting Started with Open Enclave](doc/GettingStarted.md)
 
 Open Enclave SDK Function Reference
