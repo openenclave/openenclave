@@ -1,3 +1,10 @@
+
+Getting Started with Open Enclave in simulation mode 
+=====================================================
+
+Introduction
+This document provides a step-by-step tutorial to begin using the Open Enclave SDK. It explains how to obtain, build, and install the SDK. It also describes how to develop and build a few simple enclave applications.
+
 Installing
 ----------
 
