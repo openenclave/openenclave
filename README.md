@@ -25,6 +25,10 @@ Design Overview
 Getting Started
 -------------
 - Types of configurations
+  - Simulator
+  - SGX 1
+  - SGX 1 with Flexible Launch Control
+  
 - How to install
 - How to build
 - How to run
