@@ -37,9 +37,9 @@ Getting Started
 
 2. Build and Run
   
-   - Software SGX Simulation
-   - SGX 1
-   - SGX 1  + FLC
+   - [Software SGX Simulation](doc/SwSimulationGettingStarted.md)
+   - [SGX 1](doc/SGX1GettingStarted.md)
+   - [SGX 1  + FLC](doc/SGX1FLCGettingStarted.md)
 
 - [Getting Started with Open Enclave](doc/GettingStarted.md)
 
