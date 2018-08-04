@@ -24,10 +24,22 @@ Design Overview
 
 Getting Started
 -------------
+
+Determine the type of your development system
+
+-1  There are three supported configurations. 
+
 - Types of configurations
-  - Simulator
-  - SGX 1
-  - SGX 1 with Flexible Launch Control
+  - Simulation: supported by a pure software SGX emulator
+  - SGX 1: This is the orginal Intel SGX hardware platform
+  - SGX 1 with Flexible Launch Control support
+  
+  An oesgx utility (this) could be use to determine thr SGX support on your target system.  
+
+  
+How to get started depending on the configuration of your target environmet. 
+
+
   
 - How to install
 - How to build
