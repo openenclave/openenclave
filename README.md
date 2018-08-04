@@ -27,7 +27,7 @@ Getting Started
 
 1. Determine the SGX configuration type of your development system
 
-   The SDK setup/build process requirments depends on the trarget configuration. 
+   The SDK setup/build process requirments depend on the trarget configuration. 
    There are three supported configurations. 
     - SGX 1: This is the orginal Intel SGX hardware platform
     - SGX 1+FLC: SGX with Flexible Launch Control support
