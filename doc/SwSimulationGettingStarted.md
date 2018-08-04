@@ -9,7 +9,7 @@ Obtaining the source distribution
 =================================
 Open Enclave is available from GitHub. Use the following command to download the source distribution.
 
-# git clone https://github.com/Microsoft/openenclave
+    # git clone https://github.com/Microsoft/openenclave
 This creates a source tree under the directory called openenclave.
 
     Source tree layout
