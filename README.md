@@ -27,12 +27,10 @@ Getting Started
 
 1. Determine the type of your development system
 
-  There are three supported configurations. 
-
-- Types of configurations
-  - Simulation: supported by a pure software SGX emulator
-  - SGX 1: This is the orginal Intel SGX hardware platform
-  - SGX 1+FLC: SGX with Flexible Launch Control support
+    There are three supported configurations. 
+    - Simulation: supported by a pure software SGX emulator
+    - SGX 1: This is the orginal Intel SGX hardware platform
+    - SGX 1+FLC: SGX with Flexible Launch Control support
   
   An oesgx utility (this) could be use to determine thr SGX support on your target system.  
 
