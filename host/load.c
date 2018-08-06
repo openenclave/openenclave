@@ -136,11 +136,14 @@ oe_result_t __oe_load_segments(
             memcpy(seg.filedata, Elf64_GetSegment(&elf, i), seg.filesz);
 
             // If the .oeinfo section falls within this segment...
-            if (oeinfo_size && oeinfo_offset >= seg.offset
-                && (oeinfo_offset + oeinfo_size) <= (seg.offset + seg.filesz))
+            if (oeinfo_size && oeinfo_offset >= seg.offset &&
+                (oeinfo_offset + oeinfo_size) <= (seg.offset + seg.filesz))
             {
                 // Zero out the corresponding part, doing calculations in bytes.
-                memset(((char*)seg.filedata) + (oeinfo_offset - seg.offset), 0, oeinfo_size);
+                memset(
+                    ((char*)seg.filedata) + (oeinfo_offset - seg.offset),
+                    0,
+                    oeinfo_size);
             }
         }
 
