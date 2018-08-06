@@ -136,7 +136,6 @@ static oe_result_t _HandleInitEnclave(uint64_t argIn)
     {
         if (!oe_is_outside_enclave(
                 (void*)argIn, sizeof(oe_init_enclave_args_t)))
-
         {
             OE_THROW(OE_INVALID_PARAMETER);
         }
