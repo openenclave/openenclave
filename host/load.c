@@ -23,6 +23,8 @@ oe_result_t __oe_load_segments(
     Elf64 elf = ELF64_INIT;
     size_t i;
     const Elf64_Ehdr* eh;
+    Elf64_Off oeinfo_offset = 0;
+    Elf64_Xword oeinfo_size = 0;
 
     if (nsegments)
         *nsegments = 0;
@@ -71,12 +73,16 @@ oe_result_t __oe_load_segments(
             if (name && strcmp(name, ".text") == 0)
             {
                 *textaddr = sh->sh_offset;
-                break;
+            }
+            else if (name && strcmp(name, ".oeinfo") == 0)
+            {
+                oeinfo_offset = sh->sh_offset;
+                oeinfo_size = sh->sh_size;
             }
         }
 
         /* If text section not found */
-        if (i == eh->e_shnum)
+        if (*textaddr == 0)
             OE_THROW(OE_FAILURE);
     }
 
@@ -128,6 +134,12 @@ oe_result_t __oe_load_segments(
                 OE_THROW(OE_OUT_OF_MEMORY);
 
             memcpy(seg.filedata, Elf64_GetSegment(&elf, i), seg.filesz);
+
+            if (oeinfo_size && oeinfo_offset >= seg.offset
+                && (oeinfo_offset + oeinfo_size) <= (seg.offset + seg.filesz))
+            {
+                memset(((char*)seg.filedata) + (oeinfo_offset - seg.offset), 0, oeinfo_size);
+            }
         }
 
         /* Check for array overflow */
