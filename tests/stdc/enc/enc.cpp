@@ -210,7 +210,7 @@ static void _test_time_functions(void)
 
     /* Test nanosleep() */
     {
-        const uint64_t before = oe_time_ocall();
+        const uint64_t before = oe_get_time();
         const uint64_t SEC = 3;
 
         /* Sleep for SEC seconds */
@@ -220,7 +220,7 @@ static void _test_time_functions(void)
             OE_TEST(nanosleep(&req, &rem) == 0);
         }
 
-        const uint64_t after = oe_time_ocall();
+        const uint64_t after = oe_get_time();
         const uint64_t diff = after - before;
 
         /* Check for accuracy within 1/4 second */

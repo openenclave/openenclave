@@ -381,7 +381,7 @@ static oe_result_t _HandleOCALL(
             oe_handle_sleep_ocall(argIn);
             break;
 
-        case OE_OCALL_TIME:
+        case OE_OCALL_GET_TIME:
             oe_handle_untrusted_time_ocall(argIn, argOut);
             break;
 

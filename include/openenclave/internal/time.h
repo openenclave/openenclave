@@ -11,7 +11,7 @@ OE_EXTERNC_BEGIN
 /*
 **==============================================================================
 **
-** oe_sleep_ocall()
+** oe_sleep()
 **
 **     Sleep for milliseconds. Return 0 on success and -1 if thread
 **     interrupted.
@@ -19,12 +19,12 @@ OE_EXTERNC_BEGIN
 **==============================================================================
 */
 
-int oe_sleep_ocall(uint64_t milliseconds);
+int oe_sleep(uint64_t milliseconds);
 
 /*
 **==============================================================================
 **
-** oe_time_ocall()
+** oe_get_time()
 **
 **     Return microseconds elapsed since the Epoch or 0 on error.
 **
@@ -33,7 +33,7 @@ int oe_sleep_ocall(uint64_t milliseconds);
 **==============================================================================
 */
 
-uint64_t oe_time_ocall(void);
+uint64_t oe_get_time(void);
 
 OE_EXTERNC_END
 

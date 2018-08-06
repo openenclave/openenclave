@@ -22,7 +22,7 @@ time_t time(time_t* tloc)
 {
     uint64_t usec;
 
-    if ((usec = oe_time_ocall()) == 0)
+    if ((usec = oe_get_time()) == 0)
         return 0;
 
     return (time_t)(usec / 1000000UL);
@@ -42,7 +42,7 @@ int gettimeofday(struct timeval* tv, void* tz)
     if (!tv)
         goto done;
 
-    if ((usec = oe_time_ocall()) == 0)
+    if ((usec = oe_get_time()) == 0)
         goto done;
 
     tv->tv_sec = usec / 1000000UL;
@@ -69,7 +69,7 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
         goto done;
     }
 
-    if ((usec = oe_time_ocall()) == 0)
+    if ((usec = oe_get_time()) == 0)
         return -1;
 
     tp->tv_sec = usec / 1000000UL;
@@ -98,7 +98,7 @@ int nanosleep(const struct timespec* req, struct timespec* rem)
     milliseconds += req->tv_nsec / 1000000UL;
 
     /* Perform OCALL */
-    ret = oe_sleep_ocall(milliseconds);
+    ret = oe_sleep(milliseconds);
 
 /* ATTN: handle remainders */
 

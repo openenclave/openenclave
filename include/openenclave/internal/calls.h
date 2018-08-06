@@ -89,7 +89,7 @@ typedef enum _oe_func {
     OE_OCALL_PUTCHAR,
     OE_OCALL_PRINT,
     OE_OCALL_SLEEP,
-    OE_OCALL_TIME,
+    OE_OCALL_GET_TIME,
     OE_OCALL_MALLOC_DUMP,
     /* Caution: always add new OCALL function numbers here */
 } oe_func_t;
