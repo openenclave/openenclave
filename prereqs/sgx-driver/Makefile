@@ -35,7 +35,11 @@ RUNNING=$(shell lsmod | grep intel_sgx)
 # Workaround until sgx_linux_x64_driver.bin is available from public endpoint
 get-driver:
 	apt-get -y install wget
+ifdef USE_PKGS_IN
+	cp $(USE_PKGS_IN)/sgx_linux_x64_driver.bin .
+else
 	@ wget http://10.224.140.70:8888/sgx_linux_x64_driver.bin
+endif
 	chmod 744 sgx_linux_x64_driver.bin
 
 check-running:

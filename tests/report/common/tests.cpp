@@ -504,7 +504,7 @@ TEST_FCN void TestParseReportNegative(void* args_)
 // Use the current enclave itself as the target enclave.
 static void GetSGXTargetInfo(sgx_target_info_t* sgxTargetInfo)
 {
-    sgx_report_t report = {0};
+    sgx_report_t report = {{{0}}};
     uint32_t reportSize = sizeof(sgx_report_t);
 
     OE_TEST(

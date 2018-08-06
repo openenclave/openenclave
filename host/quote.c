@@ -21,7 +21,7 @@
 static oe_result_t _sgx_init_quote_with_aesm(sgx_target_info_t* targetInfo)
 {
     oe_result_t result = OE_UNEXPECTED;
-    sgx_epid_group_id_t epidGroupID = {0};
+    sgx_epid_group_id_t epidGroupID = {{0}};
 
     AESM* aesm = NULL;
 

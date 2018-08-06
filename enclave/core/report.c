@@ -24,9 +24,9 @@ static oe_result_t _sgx_create_report(
     oe_result_t result = OE_UNEXPECTED;
 
     // Allocate aligned objects as required by EREPORT instruction.
-    sgx_target_info_t ti OE_ALIGNED(512) = {0};
-    sgx_report_data_t rd OE_ALIGNED(128) = {0};
-    sgx_report_t r OE_ALIGNED(512) = {0};
+    sgx_target_info_t ti OE_ALIGNED(512) = {{0}};
+    sgx_report_data_t rd OE_ALIGNED(128) = {{0}};
+    sgx_report_t r OE_ALIGNED(512) = {{{0}}};
 
     /*
      * Reject invalid parameters (reportData may be null).
@@ -202,8 +202,8 @@ oe_result_t _oe_get_remote_report(
     uint32_t* reportBufferSize)
 {
     oe_result_t result = OE_UNEXPECTED;
-    sgx_target_info_t sgxTargetInfo = {0};
-    sgx_report_t sgxReport = {0};
+    sgx_target_info_t sgxTargetInfo = {{0}};
+    sgx_report_t sgxReport = {{{0}}};
     uint32_t sgxReportSize = sizeof(sgxReport);
     oe_report_t parsedReport;
 
