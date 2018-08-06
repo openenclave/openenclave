@@ -154,7 +154,7 @@ OE_ECALL void TestSigillHandling(void* args_)
     }
 
     // Test illegal SGX instruction that is not emulated (GETSEC)
-    if (!TestGetsecInstruction(args))
+    if (!TestGetsecInstruction())
     {
         return;
     }

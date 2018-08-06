@@ -9,6 +9,7 @@
 #define SGX_CAPABILITY_ENUMERATION 0x12
 
 #define HAVE_SGX(regs) (((regs.ebx) >> 2) & 1)
+#define HAVE_FLC(regs) (((regs.ecx) >> 30) & 1)
 #define HAVE_SGX1(regs) (((regs.eax) & 1))
 #define HAVE_SGX2(regs) (((regs.eax) >> 1) & 1)
 
@@ -90,8 +91,15 @@ int main(int argc, const char* argv[])
 
         if (!HAVE_SGX(regs))
         {
-            printf("SGX is not supported\n");
+            printf("CPU does not support SGX\n");
             return 0;
+        }
+
+        // Flexible Launch Control is available (bit 30 of the ECX return value
+        // on leaf 0x7, subleaf 0x0)
+        if (HAVE_FLC(regs))
+        {
+            printf("CPU supports SGX_LC:Flexible Launch Control\n");
         }
     }
 
@@ -108,7 +116,7 @@ int main(int argc, const char* argv[])
             return result;
         }
 
-        printf("Software Guard Extensions supported: ");
+        printf("CPU supports Software Guard Extensions:");
 
         if (HAVE_SGX2(regs))
         {

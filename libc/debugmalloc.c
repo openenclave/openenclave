@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if defined(OE_USE_DEBUG_MALLOC)
-
 #define USE_DL_PREFIX
 #include "debugmalloc.h"
 #include <errno.h>
@@ -15,6 +13,8 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/utils.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
+
+#if defined(OE_USE_DEBUG_MALLOC)
 
 /*
 **==============================================================================
