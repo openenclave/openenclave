@@ -10,11 +10,14 @@ static uint64_t _time()
 {
     FILETIME ft;
     ULARGE_INTEGER x;
+    const LONGLONG POSIX_TO_WINDOWS_EPOCH_TICKS = 0X19DB1DED53E8000;
 
     GetSystemTimeAsFileTime(&ft);
     x.u.LowPart = ft.dwLowDateTime;
     x.u.HighPart = ft.dwHighDateTime;
-    x.QuadPart -= 0X19DB1DED53E8000;
+
+    /* Subtract ticks since epoch: 1970-01-01 00:00 (UTC) */
+    x.QuadPart -= POSIX_TO_WINDOWS_EPOCH_TICKS;
 
     return = x.QuadPart / 10UL;
 }
