@@ -31,10 +31,12 @@ typedef struct _FILE FILE;
 
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
+/* Use pragmas to suppress warnings in dlmalloc implementation */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 #include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
+#pragma GCC diagnostic pop
 
 /*
 **==============================================================================
