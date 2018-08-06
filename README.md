@@ -78,9 +78,19 @@ the source distribution.
 
 ```
 $ sudo ./scripts/install-prereqs
-$ sudo make -C prereqs USE_LIBSGX=1
+$ sudo make -C prereqs USE_LIBSGX=1 #Maybe USE_PKGS_IN=/path/to/.deb's and .bin
 $ sudo make -C prereqs install USE_LIBSGX=1
 ```
+
+You may then wish to:
+```
+$ cd /usr/lib/x86_64-linux-gnu
+$ for x in enclave_common ngsa_ql urts_ng; do
+     sudo ln -s libsgx_${x}.so.1 libsgx_${x}.so
+  done
+```
+or else you may need to pass explicit paths via -DLIBSGX_COMMON=... etc. when
+running cmake below.
 
 ### Building
 
@@ -100,7 +110,8 @@ _For Coffeelake systems (SGX-1 with Flexible Launch Control):_
 ```
 $ mkdir build/
 $ cd build/
-build$ cmake .. -DUSE_LIBSGX=1
+build$ cmake .. -DUSE_LIBSGX=1 #Maybe -DLIBSGX_COMMON=...so.1
+   #And -DLIBSGX_QE=...so.1 -DLIBSGX_URTS=...so.1
 build$ make
 ```
 
