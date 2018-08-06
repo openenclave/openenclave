@@ -8,7 +8,6 @@
 #include <openenclave/internal/malloc.h>
 #include "debugmalloc.h"
 
-#define OE_ENABLE_MALLOC_WRAPPERS
 #define HAVE_MMAP 0
 #define LACKS_UNISTD_H
 #define LACKS_SYS_PARAM_H
@@ -32,22 +31,16 @@ typedef struct _FILE FILE;
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
 /* Use pragmas to suppress warnings in dlmalloc implementation */
+#if 0
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 #pragma GCC diagnostic pop
+#endif
+#endif
 
-/*
-**==============================================================================
-**
-** Use malloc wrappers to support oe_set_allocation_failure_callback() if
-** OE_ENABLE_MALLOC_WRAPPERS is defined.
-**
-**==============================================================================
-*/
-
-#if defined(OE_ENABLE_MALLOC_WRAPPERS)
+#include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
 /* Choose release mode or debug mode allocation functions */
 #if defined(OE_USE_DEBUG_MALLOC)
@@ -237,23 +230,3 @@ done:
     oe_mutex_unlock(&_mutex);
     return result;
 }
-
-/*
-**==============================================================================
-**
-** Alias dlmalloc functions to standard function names if
-** OE_ENABLE_MALLOC_WRAPPERS is not defined.
-**
-**==============================================================================
-*/
-
-#else /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */
-
-OE_WEAK_ALIAS(dlmalloc, oe_malloc);
-OE_WEAK_ALIAS(dlcalloc, oe_calloc);
-OE_WEAK_ALIAS(dlrealloc, oe_realloc);
-OE_WEAK_ALIAS(dlfree, oe_free);
-OE_WEAK_ALIAS(dlmemalign, oe_memalign);
-OE_WEAK_ALIAS(dlposix_memalign, oe_posix_memalign);
-
-#endif /* !defined(OE_ENABLE_MALLOC_WRAPPERS) */
