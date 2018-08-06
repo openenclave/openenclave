@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #ifndef _OE_CORE_STDIO_H
 #define _OE_CORE_STDIO_H
 
