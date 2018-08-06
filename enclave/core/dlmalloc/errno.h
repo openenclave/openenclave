@@ -7,8 +7,8 @@
 #define EINVAL 22
 #define ENOMEM 12
 
-int* __oe_errno_location(void);
+int* oe_dlmalloc_errno_location(void);
 
-#define errno *__oe_errno_location()
+#define errno *oe_dlmalloc_errno_location()
 
 #endif /* _OE_DLMALLOC_ERRNO_H */
