@@ -4,11 +4,19 @@
 #ifndef _OE_DLMALLOC_ERRNO_H
 #define _OE_DLMALLOC_ERRNO_H
 
+#include <openenclave/enclave.h>
+#include <openenclave/internal/sgxtypes.h>
+
 #define EINVAL 22
 #define ENOMEM 12
 
-int* oe_dlmalloc_errno_location(void);
+#define errno *__errno_location()
 
-#define errno *oe_dlmalloc_errno_location()
+OE_INLINE int* __errno_location(void)
+{
+    TD* td = (TD*)oe_get_thread_data();
+    oe_assert(td);
+    return &td->linux_errno;
+}
 
 #endif /* _OE_DLMALLOC_ERRNO_H */
