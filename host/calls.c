@@ -281,12 +281,6 @@ static void _HandleCallHost(uint64_t arg)
     if (!args)
         return;
 
-    if (!args->func)
-    {
-        args->result = OE_INVALID_PARAMETER;
-        return;
-    }
-
     args->result = OE_UNEXPECTED;
 
     /* Find the host function with this name */
