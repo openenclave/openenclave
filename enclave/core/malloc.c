@@ -3,7 +3,6 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/malloc.h>
@@ -36,14 +35,6 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 #pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 #include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
-
-/* The errno macro expands to *oe_dlmalloc_errno_location() */
-int* oe_dlmalloc_errno_location(void)
-{
-    TD* td = (TD*)oe_get_thread_data();
-    oe_assert(td);
-    return &td->linux_errno;
-}
 
 /*
 **==============================================================================
