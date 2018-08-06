@@ -11,7 +11,6 @@ add_library(oelibc STATIC
     atexit.c
     debugmalloc.c
     errno.c
-    langinfo.c
     libcxxrt_stubs.c
     libunwind_stubs.c
     link.c
@@ -19,8 +18,6 @@ add_library(oelibc STATIC
     malloc.c
     pthread.c
     sched.c
-    strftime.c
-    __lctrans.c
     __printf_chk.c
     __vfprintf_chk.c
     __stack_chk_fail.c

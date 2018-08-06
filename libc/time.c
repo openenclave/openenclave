@@ -106,3 +106,20 @@ done:
 
     return ret;
 }
+
+size_t strftime(char* s, size_t max, const char* format, const struct tm* tm)
+{
+    oe_assert("strftime(): panic" == NULL);
+    return 0;
+}
+
+size_t strftime_l(
+    char* s,
+    size_t max,
+    const char* format,
+    const struct tm* tm,
+    locale_t loc)
+{
+    oe_assert("strftime_l(): panic" == NULL);
+    return 0;
+}
