@@ -5,18 +5,41 @@
 #include <openenclave/internal/time.h>
 #include <windows.h>
 
+
+/*
+**==============================================================================
+**
+** POSIX_TO_WINDOWS_EPOCH_TICKS:
+**
+** The ticks elapsed since 1970-01-01 00:00 (UTC). This value was derived with 
+** the following function.
+**
+**     LONGLONG get_posix_to_windows_epoch_ticks()
+**     {
+**         SYSTEMTIME st = { .wYear = 1970, .wMonth = 1, .wDay = 1 };
+**         FILETIME ft;
+**         ULARGE_INTEGER x;
+**
+**         SystemTimeToFileTime(&st, &ft);
+**         x.u.LowPart = ft.dwLowDateTime;
+**         x.u.HighPart = ft.dwHighDateTime;
+**
+**         return x.QuadPart;
+**     }
+**
+**==============================================================================
+*/
+const LONGLONG POSIX_TO_WINDOWS_EPOCH_TICKS = 0X19DB1DED53E8000;
+
 /* Return the microseconds elapsed since the Epoch. */
 static uint64_t _time()
 {
     FILETIME ft;
     ULARGE_INTEGER x;
-    const LONGLONG POSIX_TO_WINDOWS_EPOCH_TICKS = 0X19DB1DED53E8000;
 
     GetSystemTimeAsFileTime(&ft);
     x.u.LowPart = ft.dwLowDateTime;
     x.u.HighPart = ft.dwHighDateTime;
-
-    /* Subtract ticks since epoch: 1970-01-01 00:00 (UTC) */
     x.QuadPart -= POSIX_TO_WINDOWS_EPOCH_TICKS;
 
     return = x.QuadPart / 10UL;
