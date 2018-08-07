@@ -346,21 +346,18 @@ oe_result_t oe_enforce_revocation(
             intermediate_cert, leaf_cert, &revocation_args, urls));
 
     OE_CHECK(_get_revocation_info(&revocation_args));
-
-    // Add +1 to size to include \0 as expected by oe_cert_chain_read_pem.
     OE_CHECK(
         oe_cert_chain_read_pem(
             &tcb_issuer_chain,
             revocation_args.tcb_issuer_chain,
-            revocation_args.tcb_issuer_chain_size + 1));
+            revocation_args.tcb_issuer_chain_size));
     for (uint32_t i = 0; i < revocation_args.num_crl_urls; ++i)
     {
-        // Add +1 to size to include \0 as expected by oe_cert_chain_read_pem.
-        OE_CHECK(
+        result = (
             oe_cert_chain_read_pem(
                 &crl_issuer_chain[i],
                 revocation_args.crl_issuer_chain[i],
-                revocation_args.crl_issuer_chain_size[i] + 1));
+                revocation_args.crl_issuer_chain_size[i]));
     }
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
