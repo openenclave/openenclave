@@ -36,7 +36,7 @@ void TestAbortStatus(oe_enclave_t* enclave, const char* functionName)
 
 static void CrashEnclaveThread(
     oe_enclave_t* enclave,
-    uint32_t* thread_ready_count,
+    std::atomic<uint32_t>* thread_ready_count,
     uint32_t* is_enclave_crashed)
 {
     oe_result_t result;
@@ -63,7 +63,7 @@ static void CrashEnclaveThread(
 
 static void EcallAfterCrashThread(
     oe_enclave_t* enclave,
-    uint32_t* thread_ready_count,
+    std::atomic<uint32_t>* thread_ready_count,
     uint32_t* is_enclave_crashed)
 {
     oe_result_t result;
@@ -72,7 +72,7 @@ static void EcallAfterCrashThread(
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
 
-    ++args.thread_ready_count;
+    ++*args.thread_ready_count;
 
     // Wait the enclave is aborted.
     while (*args.is_enclave_crashed == 0)
@@ -89,7 +89,7 @@ static void EcallAfterCrashThread(
 
 static void OcallAfterCrashThread(
     oe_enclave_t* enclave,
-    uint32_t* thread_ready_count,
+    std::atomic<uint32_t>* thread_ready_count,
     uint32_t* is_enclave_crashed)
 {
     oe_result_t result;
@@ -180,7 +180,7 @@ static uint32_t TestRecursion(
     oe_enclave_t* enclave,
     unsigned flowId,
     unsigned recursionDepth,
-    uint32_t* thread_ready_count,
+    std::atomic<uint32_t>* thread_ready_count,
     uint32_t* is_enclave_crashed)
 {
     oe_result_t result;
@@ -244,7 +244,7 @@ OE_OCALL void RecursionOcall(void* args_)
     }
     else
     {
-        ++args.thread_ready_count;
+        ++*args.thread_ready_count;
 
         // Wait the enclave is aborted.
         while (*args.is_enclave_crashed == 0)
@@ -330,7 +330,7 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
 
     // Create threads.
     std::vector<std::thread> threads;
-    uint32_t thread_ready_count = 0;
+    std::atomic<uint32_t> thread_ready_count(0);
     uint32_t is_enclave_crashed = 0;
 
     threads.push_back(

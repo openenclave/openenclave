@@ -9,8 +9,9 @@
 
 typedef struct _AbortStatusArgs
 {
-    volatile std::atomic<uint32_t*> thread_ready_count;
+    std::atomic<uint32_t>* thread_ready_count;
     volatile uint32_t* is_enclave_crashed;
+
     int divisor;
 
     int ret;
@@ -31,7 +32,7 @@ enum
 struct AbortStatusEncRecursionArg
 {
     void* enclave;
-    volatile uint32_t* thread_ready_count;
+    std::atomic<uint32_t>* thread_ready_count;
     volatile uint32_t* is_enclave_crashed;
     unsigned flowId;         // In
     unsigned recursionsLeft; // InOut

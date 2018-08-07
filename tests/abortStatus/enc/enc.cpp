@@ -60,7 +60,7 @@ OE_ECALL void TestOCallAfterAbort(void* args_)
     }
 
     // Notify control thread that this thread is ready.
-    ++args->thread_ready_count;
+    ++*args->thread_ready_count;
 
     // Wait for the is_enclave_crashed signal.
     while (*args->is_enclave_crashed == 0)
@@ -115,7 +115,7 @@ OE_ECALL void EncRecursion(void* Args_)
     else
     {
         // Notify control thread that this thread is ready.
-        ++argsHost->thread_ready_count;
+        ++*argsHost->thread_ready_count;
        
         // Wait for the is_enclave_crashed signal.
         while (*argsHost->is_enclave_crashed == 0)
