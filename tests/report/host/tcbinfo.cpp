@@ -174,7 +174,7 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     {
         std::vector<uint8_t> tcbInfo = FileToBytes(negativeFiles[i]);
         oe_parsed_tcb_info_t parsedInfo = {0};
-        oe_tcb_level_t platformTcbLevel = {0};
+        oe_tcb_level_t platformTcbLevel = {{0}};
         VerifyTCBInfoArgs args = {&tcbInfo[0],
                                   (uint32_t)tcbInfo.size(),
                                   &platformTcbLevel,

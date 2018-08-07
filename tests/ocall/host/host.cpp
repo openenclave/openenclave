@@ -74,12 +74,34 @@ int main(int argc, const char* argv[])
         OE_TEST(_func2Ok);
     }
 
+    /* Call was_destructor_called() */
+    {
+        oe_result_t result;
+
+        was_destructor_called_args_t args;
+        args.called = true;
+        result = oe_call_enclave(enclave, "was_destructor_called", &args);
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.called == false);
+    }
+
     /* Call SetTSD() */
     {
         SetTSDArgs args;
-        args.value = (void*)0xAAAAAAAABBBBBBBB;
+        args.value = strdup("TSD-DATA");
         oe_result_t result = oe_call_enclave(enclave, "SetTSD", &args);
         OE_TEST(result == OE_OK);
+    }
+
+    /* Call was_destructor_called() */
+    {
+        oe_result_t result;
+
+        was_destructor_called_args_t args;
+        args.called = false;
+        result = oe_call_enclave(enclave, "was_destructor_called", &args);
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.called == true);
     }
 
     /* Call GetTSD() */
@@ -88,7 +110,8 @@ int main(int argc, const char* argv[])
         args.value = 0;
         oe_result_t result = oe_call_enclave(enclave, "GetTSD", &args);
         OE_TEST(result == OE_OK);
-        OE_TEST(args.value == (void*)0xAAAAAAAABBBBBBBB);
+        /* Returning from SetTSD() cleared this TSD slot */
+        OE_TEST(args.value == NULL);
     }
 
     /* Call TestMyOCall() */
