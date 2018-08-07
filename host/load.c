@@ -78,6 +78,12 @@ oe_result_t __oe_load_segments(
             {
                 oeinfo_offset = sh->sh_offset;
                 oeinfo_size = sh->sh_size;
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
+                OE_TRACE_INFO(
+                    "Found properties block offset %lx size %lx",
+                    oeinfo_offset,
+                    oeinfo_size);
+#endif
             }
         }
 
@@ -136,14 +142,19 @@ oe_result_t __oe_load_segments(
             memcpy(seg.filedata, Elf64_GetSegment(&elf, i), seg.filesz);
 
             // If the .oeinfo section falls within this segment...
-            if (oeinfo_size && oeinfo_offset >= seg.offset &&
-                (oeinfo_offset + oeinfo_size) <= (seg.offset + seg.filesz))
+            if (oeinfo_size && (oeinfo_offset >= seg.offset) &&
+                (oeinfo_offset <= seg.offset + seg.filesz))
             {
+                if ((oeinfo_offset + oeinfo_size) > (seg.offset + seg.filesz))
+                    OE_THROW(OE_FAILURE); // Section overlaps end of secment?!
                 // Zero out the corresponding part, doing calculations in bytes.
                 memset(
-                    ((char*)seg.filedata) + (oeinfo_offset - seg.offset),
+                    ((char*)seg.filedata) + oeinfo_offset - seg.offset,
                     0,
                     oeinfo_size);
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
+                OE_TRACE_INFO("Zeroed out properties block in segment %lu", i);
+#endif
             }
         }
 
