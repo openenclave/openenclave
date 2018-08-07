@@ -5,6 +5,7 @@
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -235,7 +236,7 @@ oe_result_t VerifyQuoteImpl(
         if (!keyEqual)
             OE_RAISE(OE_VERIFY_FAILED);
 
-        OE_CHECK(oe_enforce_revocation(&intermediateCert, &leafCert));
+        //OE_CHECK(oe_enforce_revocation(&intermediateCert, &leafCert));
     }
 
     // Quote validations.
@@ -312,6 +313,7 @@ done:
     oe_ec_public_key_free(&attestationKey);
     oe_cert_free(&leafCert);
     oe_cert_free(&rootCert);
+    oe_cert_free(&intermediateCert);
     oe_cert_chain_free(&pckCertChain);
 
     return result;
