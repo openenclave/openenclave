@@ -155,6 +155,48 @@ int oe_snprintf(char* str, size_t size, const char* fmt, ...);
  */
 void* oe_sbrk(ptrdiff_t increment);
 
+/**
+ * Enclave implementation of the standard malloc() function.
+ *
+ * Refer to documentation for malloc() function.
+ */
+void* oe_malloc(size_t size);
+
+/**
+ * Enclave implementation of the standard free() function.
+ *
+ * Refer to documentation for free() function.
+ */
+void oe_free(void* ptr);
+
+/**
+ * Enclave implementation of the standard calloc() function.
+ *
+ * Refer to documentation for calloc() function.
+ */
+void* oe_calloc(size_t nmemb, size_t size);
+
+/**
+ * Enclave implementation of the standard realloc() function.
+ *
+ * Refer to documentation for realloc() function.
+ */
+void* oe_realloc(void* ptr, size_t size);
+
+/**
+ * Enclave implementation of the standard posix_memalign() function.
+ *
+ * Refer to documentation for posix_memalign() function.
+ */
+int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
+
+/**
+ * Enclave implementation of the standard memalign() function.
+ *
+ * Refer to documentation for memalign() function.
+ */
+void* oe_memalign(size_t alignment, size_t size);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVELIBC_H */
