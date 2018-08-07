@@ -30,16 +30,6 @@ typedef struct _FILE FILE;
 
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
-/* Use pragmas to suppress warnings in dlmalloc implementation */
-#if 0
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-prototypes"
-#pragma GCC diagnostic ignored "-Wmissing-prototypes"
-#pragma GCC diagnostic pop
-#endif
-#endif
-
 #include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
 /* Choose release mode or debug mode allocation functions */
@@ -192,6 +182,10 @@ static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...)
         _mallocStats.inUseBytes = oe_va_arg(ap, uint64_t);
         _dlmalloc_stats_fprintf_calls++;
         goto done;
+    }
+    else
+    {
+        oe_assert("_dlmalloc_stats_fprintf(): panic" == NULL);
     }
 
     oe_va_end(ap);
