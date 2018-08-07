@@ -538,6 +538,7 @@ oe_result_t oe_verify_tcb_signature(
     result = OE_OK;
 done:
     oe_ec_public_key_free(&tcb_signing_key);
+    oe_cert_free(&leaf_cert);
 
     return result;
 }
