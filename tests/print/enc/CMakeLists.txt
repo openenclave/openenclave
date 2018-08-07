@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(CheckCXXCompilerFlag)
+include(add_compile_flags_if_supported)
 
 include(add_enclave_executable)
 add_enclave_executable(print_enc sign.conf private.pem
@@ -15,9 +15,8 @@ target_compile_options(print_enc PRIVATE
     -fno-builtin-memset
     )
 
-check_cxx_compiler_flag(-Wno-error=unused-but-set-variable SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
-if (SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
-    target_compile_options(print_enc PRIVATE -Wno-error=unused-but-set-variable)
-endif()
+add_target_cxx_compile_flags_if_supported(print_enc
+    -Wno-error=unused-but-set-variable
+    )
 
 target_link_libraries(print_enc oeenclave)

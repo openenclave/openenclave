@@ -3,6 +3,8 @@
 
 # Build the C library, using local sources and sources from MUSL
 
+include(add_compile_flags_if_supported)
+
 set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_library(oelibc STATIC
@@ -539,26 +541,47 @@ add_library(oelibc STATIC
     )
 
 target_compile_options(oelibc PRIVATE
-    -Wno-attributes
-    -Wno-parentheses
-    -Wno-pointer-sign
-    -Wno-unknown-pragmas
-    -Wno-maybe-uninitialized
-    -Wno-format
-    -Wno-missing-braces
-
     -std=c99
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
-    -fexcess-precision=standard
-    -frounding-math
     -mrdrnd
     )
 
-check_cxx_compiler_flag(-Wno-error=unused-but-set-variable SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
-if (SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
-    target_compile_options(oelibc PRIVATE -Wno-error=unused-but-set-variable)
+if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+    target_compile_options(oelibc PRIVATE
+        -fexcess-precision=standard
+        -frounding-math
+        )
+endif()
+
+if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+    # -Wno-* (except -Wno-error=*) flags that are unsupported are silently ignored
+    # by the compiler for backwards compatibility. This also means their support
+    # cannot be detected with CMake's usual test compilations.
+    target_compile_options(oelibc PRIVATE
+        -Wno-attributes
+        -Wno-parentheses
+        -Wno-pointer-sign
+        -Wno-unknown-pragmas
+        -Wno-format
+        -Wno-missing-braces
+        -Wno-maybe-uninitialized
+        )
+    
+    add_target_c_compile_flags_if_supported(oelibc
+        -Wno-error=unused-but-set-variable
+    )
+endif()
+
+if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+    # Not having these in the shared GNU/Clang block above avoids errors about
+    # unrecognized command line options.
+    target_compile_options(oelibc PRIVATE
+        -Wno-typedef-redefinition
+        -Wno-shift-negative-value
+        -Wno-string-plus-int
+    )
 endif()
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
