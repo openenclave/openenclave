@@ -542,7 +542,6 @@ target_compile_options(oelibc PRIVATE
     -Wno-attributes
     -Wno-parentheses
     -Wno-pointer-sign
-    -Wno-unused-but-set-variable
     -Wno-unknown-pragmas
     -Wno-maybe-uninitialized
     -Wno-format
@@ -556,6 +555,11 @@ target_compile_options(oelibc PRIVATE
     -frounding-math
     -mrdrnd
     )
+
+check_cxx_compiler_flag(-Wno-error=unused-but-set-variable SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
+if (SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
+    target_compile_options(oelibc PRIVATE -Wno-error=unused-but-set-variable)
+endif()
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
 
