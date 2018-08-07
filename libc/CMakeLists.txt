@@ -9,7 +9,6 @@ add_library(oelibc STATIC
     arc4random.c
     assert.c
     atexit.c
-    debugmalloc.c
     errno.c
     libcxxrt_stubs.c
     libunwind_stubs.c
