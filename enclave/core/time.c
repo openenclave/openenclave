@@ -21,12 +21,12 @@ done:
 
 uint64_t oe_get_time(void)
 {
-    uint64_t ret = 0;
+    uint64_t ret = (uint64_t)-1;
     const uint32_t flags = OE_OCALL_FLAG_NOT_REENTRANT;
 
     if (oe_ocall(OE_OCALL_GET_TIME, 0, &ret, flags) != OE_OK)
     {
-        ret = 0;
+        ret = (uint32_t)-1;
         goto done;
     }
 

@@ -26,7 +26,7 @@ int oe_sleep(uint64_t milliseconds);
 **
 ** oe_get_time()
 **
-**     Return microseconds elapsed since the Epoch or 0 on error.
+**     Return milliseconds elapsed since the Epoch or (uint64_t)-1 on error.
 **
 **     The Epoch is defined as: 1970-01-01 00:00:00 +0000 (UTC)
 **

@@ -382,7 +382,7 @@ static oe_result_t _HandleOCALL(
             break;
 
         case OE_OCALL_GET_TIME:
-            oe_handle_untrusted_time_ocall(argIn, argOut);
+            oe_handle_get_time_ocall(argIn, argOut);
             break;
 
 #if defined(OE_USE_DEBUG_MALLOC)

@@ -18,20 +18,24 @@
 // of extern variable in gmtime_r.c.
 const char __gmt[] = "GMT";
 
+static const uint64_t _SEC_TO_MSEC = 1000UL;
+static const uint64_t _MSEC_TO_USEC = 1000UL;
+static const uint64_t _MSEC_TO_NSEC = 1000000UL;
+
 time_t time(time_t* tloc)
 {
-    uint64_t usec;
+    uint64_t msec;
 
-    if ((usec = oe_get_time()) == 0)
+    if ((msec = oe_get_time()) == (uint64_t)-1)
         return 0;
 
-    return (time_t)(usec / 1000000UL);
+    return (time_t)(msec / _SEC_TO_MSEC);
 }
 
 int gettimeofday(struct timeval* tv, void* tz)
 {
     int ret = -1;
-    uint64_t usec;
+    uint64_t msec;
 
     if (tv)
         oe_memset(tv, 0, sizeof(struct timeval));
@@ -42,11 +46,11 @@ int gettimeofday(struct timeval* tv, void* tz)
     if (!tv)
         goto done;
 
-    if ((usec = oe_get_time()) == 0)
+    if ((msec = oe_get_time()) == (uint64_t)-1)
         goto done;
 
-    tv->tv_sec = usec / 1000000UL;
-    tv->tv_usec = usec % 1000000UL;
+    tv->tv_sec = msec / _SEC_TO_MSEC;
+    tv->tv_usec = msec % _MSEC_TO_USEC;
 
     ret = 0;
 
@@ -57,7 +61,7 @@ done:
 int clock_gettime(clockid_t clk_id, struct timespec* tp)
 {
     int ret = -1;
-    uint64_t usec;
+    uint64_t msec;
 
     if (!tp)
         goto done;
@@ -69,11 +73,11 @@ int clock_gettime(clockid_t clk_id, struct timespec* tp)
         goto done;
     }
 
-    if ((usec = oe_get_time()) == 0)
-        return -1;
+    if ((msec = oe_get_time()) == (uint64_t)-1)
+        goto done;
 
-    tp->tv_sec = usec / 1000000UL;
-    tp->tv_nsec = (usec % 1000000UL) * 1000UL;
+    tp->tv_sec = msec / _SEC_TO_MSEC;
+    tp->tv_nsec = (msec % _SEC_TO_MSEC) * _MSEC_TO_NSEC;
 
     ret = 0;
 

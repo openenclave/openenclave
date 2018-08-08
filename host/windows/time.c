@@ -5,13 +5,12 @@
 #include <openenclave/internal/time.h>
 #include <windows.h>
 
-
 /*
 **==============================================================================
 **
 ** POSIX_TO_WINDOWS_EPOCH_TICKS:
 **
-** The ticks elapsed since 1970-01-01 00:00 (UTC). This value was derived with 
+** The ticks elapsed since 1970-01-01 00:00 (UTC). This value was derived with
 ** the following function.
 **
 **     LONGLONG get_posix_to_windows_epoch_ticks()
@@ -31,18 +30,19 @@
 */
 const LONGLONG POSIX_TO_WINDOWS_EPOCH_TICKS = 0X19DB1DED53E8000;
 
-/* Return the microseconds elapsed since the Epoch. */
+/* Return milliseconds elapsed since the Epoch. */
 static uint64_t _time()
 {
     FILETIME ft;
     ULARGE_INTEGER x;
+    const LONGLONG TICKS_PER_MILLISECOND = 10000UL;
 
     GetSystemTimeAsFileTime(&ft);
     x.u.LowPart = ft.dwLowDateTime;
     x.u.HighPart = ft.dwHighDateTime;
     x.QuadPart -= POSIX_TO_WINDOWS_EPOCH_TICKS;
 
-    return = x.QuadPart / 10UL;
+    return = x.QuadPart / TICKS_PER_MILLISECOND;
 }
 
 void oe_handle_sleep_ocall(uint64_t arg_in)
@@ -51,7 +51,7 @@ void oe_handle_sleep_ocall(uint64_t arg_in)
     Sleep(milliseconds);
 }
 
-void oe_handle_untrusted_time_ocall(uint64_t arg_in, uint64_t* arg_out)
+void oe_handle_get_time_ocall(uint64_t arg_in, uint64_t* arg_out)
 {
     OE_UNUSED(arg_in);
 
