@@ -8,6 +8,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/thread.h>
 #include <map>
 #include <vector>
 // And local wrap

@@ -6,6 +6,7 @@
 #include <openenclave/internal/fault.h>
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/malloc.h>
+#include <openenclave/internal/thread.h>
 #include "debugmalloc.h"
 
 #define HAVE_MMAP 0

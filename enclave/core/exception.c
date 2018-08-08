@@ -11,6 +11,7 @@
 #include <openenclave/internal/jump.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include "asmdefs.h"
 #include "cpuid.h"
