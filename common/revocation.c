@@ -6,6 +6,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
+#include <openenclave/internal/crl.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
@@ -112,21 +113,8 @@ done:
 }
 
 /**
- * Macro to validate and copy buffer from host to enclave memory.
+ * Validate and copy buffer to enclave memory.
  */
-
-#define COPY_TO_ENCLAVE(dst, dst_size, src, src_size)                       \
-    do                                                                      \
-    {                                                                       \
-        if (!src || src_size == 0 || !oe_is_outside_enclave(src, src_size)) \
-            OE_RAISE(OE_FAILURE);                                           \
-        dst = (uint8_t*)oe_malloc(src_size);                                \
-        if (dst == NULL)                                                    \
-            OE_RAISE(OE_OUT_OF_MEMORY);                                     \
-        oe_memcpy(dst, src, src_size);                                      \
-        dst_size = src_size;                                                \
-    } while (0)
-
 static oe_result_t _copy_buffer_to_enclave(
     uint8_t** dst,
     uint32_t* dst_size,
@@ -245,8 +233,7 @@ static oe_result_t _get_revocation_info(oe_get_revocation_info_args_t* args)
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
-        if (args->crl[i][args->crl_size[i] - 1] != 0 ||
-            args->crl_issuer_chain[i][args->crl_issuer_chain_size[i] - 1] != 0)
+        if (args->crl_issuer_chain[i][args->crl_issuer_chain_size[i] - 1] != 0)
             OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
 
@@ -264,7 +251,8 @@ done:
 
 oe_result_t oe_enforce_revocation(
     oe_cert_t* intermediate_cert,
-    oe_cert_t* leaf_cert)
+    oe_cert_t* leaf_cert,
+    oe_cert_chain_t* pck_cert_chain)
 {
     oe_result_t result = OE_FAILURE;
     ParsedExtensionInfo parsed_extension_info = {0};
@@ -273,8 +261,10 @@ oe_result_t oe_enforce_revocation(
     oe_cert_chain_t crl_issuer_chain[3] = {0};
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
     oe_tcb_level_t platform_tcb_level = {0};
+    oe_verify_cert_error_t cert_verify_error = {0};
     char* intermediate_crl_url = NULL;
     char* leaf_crl_url = NULL;
+    oe_crl_t crls[2] = {0};
 
     if (intermediate_cert == NULL || leaf_cert == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -307,14 +297,24 @@ oe_result_t oe_enforce_revocation(
             &tcb_issuer_chain,
             revocation_args.tcb_issuer_chain,
             revocation_args.tcb_issuer_chain_size));
+
     for (uint32_t i = 0; i < revocation_args.num_crl_urls; ++i)
     {
-        result =
-            (oe_cert_chain_read_pem(
+        OE_CHECK(
+            oe_crl_read_der(
+                &crls[0], revocation_args.crl[i], revocation_args.crl_size[i]));
+        OE_UNUSED(crls);
+        OE_CHECK(
+            oe_cert_chain_read_pem(
                 &crl_issuer_chain[i],
                 revocation_args.crl_issuer_chain[i],
                 revocation_args.crl_issuer_chain_size[i]));
     }
+
+    // Verify intermediate and leaf certs againt the CRL.
+    OE_CHECK(
+        oe_cert_verify(
+            intermediate_cert, pck_cert_chain, &crls[0], &cert_verify_error));
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
          ++i)
@@ -344,6 +344,7 @@ oe_result_t oe_enforce_revocation(
 done:
     for (int32_t i = revocation_args.num_crl_urls - 1; i >= 0; --i)
     {
+        oe_crl_free(&crls[i]);
         oe_free(revocation_args.crl_issuer_chain[i]);
         oe_free(revocation_args.crl[i]);
     }

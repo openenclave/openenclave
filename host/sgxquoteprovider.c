@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 // Uncomment this line to enable tracing.
-#define OE_TRACE_LEVEL 2
+// #define OE_TRACE_LEVEL 2
 
 #include <dlfcn.h>
 #include <openenclave/internal/hexdump.h>
@@ -175,7 +175,8 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
             OE_TRACE_INFO("crl[%d].crl_data is NULL.\n", i);
             OE_RAISE(OE_INVALID_REVOCATION_INFO);
         }
-        hostBufferSize += revocationInfo->crls[i].crl_data_size + 1;
+        // CRL is in DER format. Null not added.
+        hostBufferSize += revocationInfo->crls[i].crl_data_size;
 
         if (revocationInfo->crls[i].crl_issuer_chain == NULL ||
             revocationInfo->crls[i].crl_issuer_chain_size == 0)
@@ -233,8 +234,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
                 args->crl[i],
                 revocationInfo->crls[i].crl_data,
                 args->crl_size[i]);
-            // Add null terminator
-            args->crl[args->crl_size[i]++] = 0;
+            // CRL is in DER format. Null not added.
             p += args->crl_size[i];
             OE_TRACE_INFO(
                 "crls[%d].crl_data_size = %d\n",
