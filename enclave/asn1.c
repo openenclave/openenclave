@@ -59,6 +59,9 @@ oe_result_t oe_asn1_get_raw(
     oe_result_t result = OE_UNEXPECTED;
     bool constructed;
 
+    if (data)
+        *data = NULL;
+
     if (length)
         *length = 0;
 
@@ -173,6 +176,9 @@ oe_result_t oe_asn1_get_octet_string(
 {
     oe_result_t result = OE_UNEXPECTED;
     const oe_asn1_tag_t tag = MBEDTLS_ASN1_OCTET_STRING;
+
+    if (data)
+        *data = NULL;
 
     if (length)
         *length = 0;
