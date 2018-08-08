@@ -15,11 +15,28 @@ function(_mangle_name str output)
   set(${output} "${upperStr}" PARENT_SCOPE)
 endfunction()
 
+function(_get_proxy_flag_if_needed flag proxy_flag)
+  # GCC does not output a warning for unsupported -Wno-* (except -Wno-error=*)
+  # flags, but it does when another warning occurs. This then leads to an error
+  # when using -Werror as well. Clang always outputs warnings and allows
+  # to control this behaviour with its -Wno-unknown-warning-option flag.
+  # CMake's check_*_compiler_flag macros lead to a false positive for GCC.
+  # To work around this, for GCC, we simply check the non-negated form to detect
+  # supported flags reliably.
+  if (CMAKE_C_COMPILER_ID MATCHES "GNU" AND flag MATCHES "-Wno-" AND NOT flag MATCHES "-Wno-error=")
+    string(REPLACE "-Wno-" "-W" positive_flag ${flag})
+    set(${proxy_flag} ${positive_flag} PARENT_SCOPE)
+  else()
+    set(${proxy_flag} ${flag} PARENT_SCOPE)
+  endif()
+endfunction()
+
 function(_check_c_compile_flag_supported flag supported)
   _mangle_name("${flag}" flagname)
   if (NOT DEFINED SUPPORTS_C_${flagname}_FLAG)
     message(STATUS "Checking if C compiler supports ${flag}")
   endif()
+  _get_proxy_flag_if_needed(${flag} flag)
   check_c_compiler_flag("${flag}" "SUPPORTS_C_${flagname}_FLAG")
   set(${supported} ${SUPPORTS_C_${flagname}_FLAG} PARENT_SCOPE)
 endfunction()
@@ -29,6 +46,7 @@ function(_check_cxx_compile_flag_supported flag supported)
   if (NOT DEFINED SUPPORTS_CXX_${flagname}_FLAG)
     message(STATUS "Checking if C++ compiler supports ${flag}")
   endif()
+  _get_proxy_flag_if_needed(${flag} flag)
   check_cxx_compiler_flag("${flag}" "SUPPORTS_CXX_${flagname}_FLAG")
   set(${supported} ${SUPPORTS_CXX_${flagname}_FLAG} PARENT_SCOPE)
 endfunction()
@@ -38,6 +56,9 @@ function(_check_c_and_cxx_compile_flag_supported flag supported)
   _check_cxx_compile_flag_supported(${flag} supported_cxx)
   if (supported_c AND supported_cxx)
     set(${supported} TRUE PARENT_SCOPE)
+  elseif((supported_c AND NOT supported_cxx) OR (NOT supported_c AND supported_cxx))
+    message(FATAL_ERROR "Programming error: ${flag} not supported by both C and C++ compiler,\
+      use language-specific add_*_compile_flags_if_supported functions")
   else()
     set(${supported} FALSE PARENT_SCOPE)
   endif()

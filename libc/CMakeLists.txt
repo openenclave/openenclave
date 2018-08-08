@@ -556,10 +556,7 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU")
 endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    # -Wno-* (except -Wno-error=*) flags that are unsupported are silently ignored
-    # by the compiler for backwards compatibility. This also means their support
-    # cannot be detected with CMake's usual test compilations.
-    target_compile_options(oelibc PRIVATE
+    add_target_c_compile_flags_if_supported(oelibc
         -Wno-attributes
         -Wno-parentheses
         -Wno-pointer-sign
@@ -567,21 +564,11 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         -Wno-format
         -Wno-missing-braces
         -Wno-maybe-uninitialized
-        )
-    
-    add_target_c_compile_flags_if_supported(oelibc
         -Wno-error=unused-but-set-variable
-    )
-endif()
-
-if (CMAKE_C_COMPILER_ID MATCHES "Clang")
-    # Not having these in the shared GNU/Clang block above avoids errors about
-    # unrecognized command line options.
-    target_compile_options(oelibc PRIVATE
         -Wno-typedef-redefinition
         -Wno-shift-negative-value
         -Wno-string-plus-int
-    )
+        )
 endif()
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
