@@ -20,76 +20,6 @@
 #ifdef OE_USE_LIBSGX
 
 /**
- * Quote validation involves many variable length objects (quotes, crls, tcb
- * info etc). Since malloc is not yet available in liboeenclave, a fixed size
- * thread-safe static buffer is used as storage for these variable length
- * objects during quote attestation.
- * When malloc and free become available, the _static_malloc and _static_free
- * functions can be
- * removed.
- */
-
-/**
- * A chunk_t represents an allocated object. The objects are expected to be
- * deallocated in the reverse order of allocation. This keeps the allocater very
- * simple.
- */
-typedef struct _chunk
-{
-    struct _chunk* next;
-    uint8_t data[];
-} chunk_t;
-
-static uint8_t _static_buffer[16 * 1024];
-static oe_spinlock_t _buffer_lock = OE_SPINLOCK_INITIALIZER;
-static chunk_t* _chunk_list = NULL;
-static uint8_t* _free_ptr = NULL;
-
-/**
- * _static_malloc allocates object of given size on the static buffer.
- * The object is aligned to void* boundary.
- */
-static void* _static_malloc(uint32_t size)
-{
-    uint32_t aligned_size =
-        oe_round_up_to_multiple(size + sizeof(chunk_t), sizeof(void*));
-    chunk_t* chunk = NULL;
-    uint8_t* p = NULL;
-
-    // First allocation.
-    if (_free_ptr == NULL)
-        _free_ptr = _static_buffer;
-
-    if (_free_ptr + aligned_size <= _static_buffer + sizeof(_static_buffer))
-    {
-        // Allocate new chunk
-        chunk = (chunk_t*)_free_ptr;
-        _free_ptr += aligned_size;
-        p = chunk->data;
-
-        // Update linked list.
-        chunk->next = _chunk_list;
-        _chunk_list = chunk;
-    }
-    return p;
-}
-
-/**
- * Free the last allocated object from the static buffer.
- */
-static void _static_free(uint8_t* ptr, uint32_t size)
-{
-    chunk_t* chunk = (chunk_t*)(ptr - sizeof(chunk_t));
-    if (ptr == NULL || chunk != _chunk_list)
-        return;
-
-    oe_memset(ptr, 0, size);
-
-    _free_ptr = (uint8_t*)_chunk_list;
-    _chunk_list = _chunk_list->next;
-}
-
-/**
  * Parse sgx extensions from given cert.
  */
 static oe_result_t _parse_sgx_extensions(
@@ -100,10 +30,9 @@ static oe_result_t _parse_sgx_extensions(
 
     // The size of buffer required to parse extensions is not known beforehand.
     uint32_t buffer_size = 1024;
-    uint32_t previous_buffer_size = buffer_size;
     uint8_t* buffer = NULL;
 
-    buffer = (uint8_t*)_static_malloc(buffer_size);
+    buffer = (uint8_t*)oe_malloc(buffer_size);
     if (buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -115,15 +44,15 @@ static oe_result_t _parse_sgx_extensions(
     {
         // Allocate larger buffer. extensions_buffer_size contains required size
         // of buffer.
-        _static_free(buffer, previous_buffer_size);
-        buffer = (uint8_t*)_static_malloc(buffer_size);
+        oe_free(buffer);
+        buffer = (uint8_t*)oe_malloc(buffer_size);
 
         result = ParseSGXExtensions(
             leaf_cert, buffer, &buffer_size, parsed_extension_info);
     }
 
 done:
-    _static_free(buffer, buffer_size);
+    oe_free(buffer);
     return result;
 }
 
@@ -140,8 +69,7 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, url_t* url)
 {
     oe_result_t result = OE_FAILURE;
     uint64_t buffer_size = 512;
-    uint8_t* buffer = _static_malloc(buffer_size);
-    uint64_t previous_buffer_size = buffer_size;
+    uint8_t* buffer = oe_malloc(buffer_size);
     const char** urls = NULL;
     uint64_t num_urls = 0;
 
@@ -153,8 +81,8 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, url_t* url)
 
     if (result == OE_BUFFER_TOO_SMALL)
     {
-        _static_free(buffer, previous_buffer_size);
-        buffer = _static_malloc(buffer_size);
+        oe_free(buffer);
+        buffer = oe_malloc(buffer_size);
         if (buffer == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -172,7 +100,7 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, url_t* url)
     }
 
 done:
-    _static_free(buffer, previous_buffer_size);
+    oe_free(buffer);
     return result;
 }
 
@@ -213,7 +141,7 @@ done:
     {                                                                       \
         if (!src || src_size == 0 || !oe_is_outside_enclave(src, src_size)) \
             OE_RAISE(OE_FAILURE);                                           \
-        dst = (uint8_t*)_static_malloc(src_size);                           \
+        dst = (uint8_t*)oe_malloc(src_size);                                \
         if (dst == NULL)                                                    \
             OE_RAISE(OE_OUT_OF_MEMORY);                                     \
         oe_memcpy(dst, src, src_size);                                      \
@@ -345,8 +273,6 @@ oe_result_t oe_enforce_revocation(
         OE_COUNTOF(crl_issuer_chain) ==
         OE_COUNTOF(revocation_args.crl_issuer_chain));
 
-    oe_spin_lock(&_buffer_lock);
-
     OE_CHECK(_parse_sgx_extensions(leaf_cert, &parsed_extension_info));
     oe_memcpy(
         revocation_args.fmspc,
@@ -400,24 +326,15 @@ done:
     // Memory from the pool must be freed in reverse order.
     for (int32_t i = revocation_args.num_crl_urls - 1; i >= 0; --i)
     {
-        _static_free(
-            revocation_args.crl_issuer_chain[i],
-            revocation_args.crl_issuer_chain_size[i]);
-        _static_free(revocation_args.crl[i], revocation_args.crl_size[i]);
+        oe_free(revocation_args.crl_issuer_chain[i]);
+        oe_free(revocation_args.crl[i]);
     }
-    _static_free(
-        revocation_args.tcb_issuer_chain,
-        revocation_args.tcb_issuer_chain_size);
-    _static_free(revocation_args.tcb_info, revocation_args.tcb_info_size);
+    oe_free(revocation_args.tcb_issuer_chain);
+    oe_free(revocation_args.tcb_info);
 
     for (uint32_t i = 0; i < revocation_args.num_crl_urls; ++i)
         oe_cert_chain_free(&crl_issuer_chain[i]);
     oe_cert_chain_free(&tcb_issuer_chain);
-
-    if (_free_ptr != _static_buffer)
-        result = OE_FAILURE;
-    _free_ptr = _static_buffer;
-    oe_spin_unlock(&_buffer_lock);
 
     return result;
 }
