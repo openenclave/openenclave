@@ -17,7 +17,7 @@ target_compile_options(libcxxtest-support PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     )
 
-add_target_cxx_compile_flags_if_supported(libcxxtest-support
+add_target_cxx_compile_flags_if_supported(libcxxtest-support PRIVATE
     -Wno-error=attributes
     -Wno-error=strict-overflow
     -Wno-error=unused-local-typedefs

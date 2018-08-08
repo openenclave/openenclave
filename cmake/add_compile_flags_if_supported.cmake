@@ -88,11 +88,11 @@ function(_add_compile_flag lang flag)
   endif()
 endfunction()
 
-function(_add_target_compile_flag lang target flag)
+function(_add_target_compile_flag lang target scope flag)
   if (lang STREQUAL "ALL")
-    target_compile_options(${target} PRIVATE ${flag})
+    target_compile_options(${target} ${scope} ${flag})
   else()
-    target_compile_options(${target} PRIVATE $<$<COMPILE_LANGUAGE:${lang}>:${flag}>)
+    target_compile_options(${target} ${scope} $<$<COMPILE_LANGUAGE:${lang}>:${flag}>)
   endif()
 endfunction()
 
@@ -107,11 +107,11 @@ endfunction()
 
 # Note that two underscores are required to work around a bug in CMake
 # where it otherwise ends up in an infinite recursive loop calling the wrong function.
-function(__add_target_compile_flags_if_supported lang target)
+function(__add_target_compile_flags_if_supported lang target scope)
   foreach(flag ${ARGN})
     _check_compile_flag_supported(${lang} ${flag} supported)
     if (supported)
-      _add_target_compile_flag(${lang} ${target} ${flag})
+      _add_target_compile_flag(${lang} ${target} ${scope} ${flag})
     endif()
   endforeach()
 endfunction()

@@ -15,7 +15,7 @@ target_compile_options(print_enc PRIVATE
     -fno-builtin-memset
     )
 
-add_target_cxx_compile_flags_if_supported(print_enc
+add_target_cxx_compile_flags_if_supported(print_enc PRIVATE
     -Wno-error=unused-but-set-variable
     )
 
