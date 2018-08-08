@@ -63,7 +63,7 @@ oe_result_t __oe_load_segments(
     /* Save entry point address */
     *entryaddr = eh->e_entry;
 
-    /* Find the address of the ".text" section */
+    /* Find the addresses of the ".text" and ".oeinfo" sections */
     {
         for (i = 0; i < eh->e_shnum; i++)
         {
@@ -139,13 +139,13 @@ oe_result_t __oe_load_segments(
 
             memcpy(seg.filedata, Elf64_GetSegment(&elf, i), seg.filesz);
 
-            // If the .oeinfo section falls within this segment...
+            /* Zero out the .oeinfo section if within this segment */
             if (oeinfo_size && (oeinfo_offset >= seg.offset) &&
                 (oeinfo_offset <= seg.offset + seg.filesz))
             {
                 if ((oeinfo_offset + oeinfo_size) > (seg.offset + seg.filesz))
-                    OE_THROW(OE_FAILURE); // Section overlaps end of secment?!
-                // Zero out the corresponding part, doing calculations in bytes.
+                    OE_THROW(OE_FAILURE); // Section overlaps end of segment?!
+                /* All sizes/address calculations in bytes */
                 memset(
                     ((char*)seg.filedata) + oeinfo_offset - seg.offset,
                     0,
