@@ -782,6 +782,7 @@ done:
     return result;
 }
 
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 OE_INLINE void _DumpRelocations(const void* data, size_t size)
 {
     const Elf64_Rela* p = (const Elf64_Rela*)data;
@@ -800,6 +801,7 @@ OE_INLINE void _DumpRelocations(const void* data, size_t size)
             OE_LLD(p->r_addend));
     }
 }
+#endif
 
 /*
 **==============================================================================
