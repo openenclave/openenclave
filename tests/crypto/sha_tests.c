@@ -10,10 +10,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "hash.h"
-#include "sha_tests.h"
+#include "tests.h"
 
 // Test computation of SHA-256 hash over an ASCII alphabet string.
-void TestSHA()
+void TestSHA(void)
 {
     printf("=== begin %s()\n", __FUNCTION__);
 

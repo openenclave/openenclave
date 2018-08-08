@@ -9,15 +9,6 @@
 #include <openenclave/internal/tests.h>
 #include "../args.h"
 
-void MyECall(uint64_t argIn, uint64_t* argOut)
-{
-    if (argOut)
-        *argOut = argIn * 3;
-}
-
-/* Register custom ECall on load */
-static oe_result_t s_registerResult = oe_register_ecall(0, MyECall);
-
 int TestSetjmp()
 {
     oe_jmpbuf_t buf;
@@ -37,9 +28,6 @@ OE_ECALL void Test(void* args_)
 
     if (!args_)
         return;
-
-    /* Verify that registration of ECall at initialization succeeded */
-    OE_TEST(s_registerResult == OE_OK);
 
     /* Set output arguments */
     oe_memset(args, 0xDD, sizeof(TestArgs));
@@ -163,5 +151,14 @@ OE_ECALL void Test(void* args_)
             OE_TEST(oe_strcmp(buf, "LONG_MIN=-9") == 0);
             OE_TEST(n == 29);
         }
+    }
+}
+
+OE_ECALL void A(void* args_)
+{
+    if (args_)
+    {
+        int* args = (int*)args_;
+        *args = *args * 2;
     }
 }

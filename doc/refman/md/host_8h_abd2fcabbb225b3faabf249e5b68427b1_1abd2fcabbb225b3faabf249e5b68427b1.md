@@ -1,0 +1,65 @@
+[Index](index.md)
+
+---
+# oe_get_report()
+
+Get a report signed by the enclave platform for use in attestation.
+
+## Syntax
+
+    oe_result_t oe_get_report(oe_enclave_t *enclave, uint32_t flags, const void *optParams, uint32_t optParamsSize, uint8_t *reportBuffer, uint32_t *reportBufferSize)
+## Description 
+
+This function creates a report to be used in local or remote attestation.
+
+If the *reportBuffer* is NULL or *reportSize* parameter is too small, this function returns OE_BUFFER_TOO_SMALL.
+
+
+
+## Parameters
+
+#### enclave
+
+The instance of the enclave that will generate the report.
+
+#### flags
+
+Specifying default value (0) generates a report for local attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a report for remote attestation.
+
+#### optParams
+
+Optional additional parameters needed for the current enclave type. For SGX, this can be sgx_target_info_t for local attestation.
+
+#### optParamsSize
+
+The size of the **optParams** buffer.
+
+#### reportBuffer
+
+The buffer to where the resulting report will be copied.
+
+#### reportBufferSize
+
+The size of the **report** buffer. This is set to the required size of the report buffer on return.
+
+## Return value
+
+#### OE_OK
+
+The report was successfully created.
+
+#### OE_INVALID_PARAMETER
+
+At least one parameter is invalid.
+
+#### OE_BUFFER_TOO_SMALL
+
+The **reportBuffer** buffer is NULL or too small.
+
+#### OE_OUT_OF_MEMORY
+
+Failed to allocate memory.
+
+---
+[Index](index.md)
+

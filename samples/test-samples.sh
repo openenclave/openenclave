@@ -23,7 +23,7 @@ printandexit(){
     exit 1
 }
 
-# Collect arguments and to temporary install if so requested
+# Collect arguments and do a temporary install if requested
 if test "$1" = "-i" ; then
     # inside build tree. install using DESTDIR mechanism.
     BIN_DIR=$(realpath $2)
@@ -38,7 +38,14 @@ fi || printandexit
 
 TEST_MAKE_DIR="$INSTALL_DIR/share/openenclave/samples"
 
-# build & run the make samples
-make -C "$TEST_MAKE_DIR" OPENENCLAVE_CONFIG="$INSTALL_DIR/share/openenclave/samples/config.mak" OE_PREFIX=$INSTALL_DIR world || printandexit
+# build and run the make samples
+# The only exception is to not run them in simulation mode on SGX1-FLC platforms
+if [ $OE_SIMULATION ] && [ $USE_LIBSGX ]; then
+    MAKE_TASKS="clean build"
+    echo "Skip running NGSA samples in simulation mode."
+else
+    MAKE_TASKS="world"
+fi
+make -C "$TEST_MAKE_DIR" OPENENCLAVE_CONFIG="$INSTALL_DIR/share/openenclave/samples/config.mak" OE_PREFIX=$INSTALL_DIR $MAKE_TASKS || printandexit
 
 exit 0

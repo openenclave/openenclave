@@ -38,6 +38,20 @@
 #define OE_INLINE static __inline__
 #endif
 
+#ifdef _MSC_VER
+#define OE_NO_OPTIMIZE_BEGIN __pragma(optimize("", off))
+#define OE_NO_OPTIMIZE_END __pragma(optimize("", on))
+#elif __clang__
+#define OE_NO_OPTIMIZE_BEGIN _Pragma("clang optimize off")
+#define OE_NO_OPTIMIZE_END _Pragma("clang optimize on")
+#elif __GNUC__
+#define OE_NO_OPTIMIZE_BEGIN \
+    _Pragma("GCC push_options") _Pragma("GCC optimize(\"O0\")")
+#define OE_NO_OPTIMIZE_END _Pragma("GCC pop_options")
+#else
+#error "OE_NO_OPTIMIZE_BEGIN and OE_NO_OPTIMIZE_END not implemented"
+#endif
+
 #if defined(__cplusplus)
 #define OE_EXTERNC extern "C"
 #define OE_EXTERNC_BEGIN extern "C" {
@@ -145,5 +159,15 @@
 #define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
 
 #define OE_OCALL OE_EXTERNC OE_EXPORT
+
+// Enable debug-malloc for debug builds, where CMAKE_BUILD_TYPE="Debug". For
+// the following build types, NDEBUG is defined.
+//
+//     CMAKE_BUILD_TYPE="Release"
+//     CMAKE_BUILD_TYPE="RelWithDebugInfo"
+//
+#if !defined(NDEBUG) && !defined(OE_USE_DEBUG_MALLOC)
+#define OE_USE_DEBUG_MALLOC
+#endif
 
 #endif /* _OE_BITS_DEFS_H */

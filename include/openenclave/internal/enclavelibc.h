@@ -66,6 +66,13 @@ void* oe_memcpy(void* dest, const void* src, size_t n);
 void* oe_memset(void* s, int c, size_t n);
 
 /**
+ * Enclave implementation of the standard memmove() function.
+ *
+ * Refer to documentation for memmove() function.
+ */
+void* oe_memmove(void* dest, const void* src, size_t n);
+
+/**
  * Enclave implementation of the standard memcmp() function.
  *
  * Refer to documentation for memcmp() function.
@@ -120,26 +127,18 @@ int oe_snprintf(char* str, size_t size, const char* fmt, ...);
 /**
  * Allocates space on the stack frame of the caller.
  *
- * This function allocates **size** bytes of space on the stack frame of the
- * caller. The returned address will be a multiple of **alignment** (if
- * non-zero). The allocated space is automatically freed when the calling
+ * This function allocates **SIZE** bytes of space on the stack frame of the
+ * caller. The allocated space is automatically freed when the calling
  * function returns. If the stack overflows, the behavior is undefined.
  *
- * @param size The number of bytes to allocate.
- * @param alignment The alignment requirement (see above).
+ * @param SIZE The number of bytes to allocate.
  *
  * @returns Returns the address of the allocated space.
  *
  */
-OE_ALWAYS_INLINE OE_INLINE void* oe_stack_alloc(size_t size, size_t alignment)
-{
-    void* ptr = __builtin_alloca(size + alignment);
-
-    if (alignment)
-        ptr = (void*)(((uint64_t)ptr + alignment - 1) / alignment * alignment);
-
-    return ptr;
-}
+// __builtin_alloca is appropriate for both gcc and clang.
+// For MSVC, we will probably want _malloca from <malloc.h>.
+#define oe_stack_alloc(SIZE) __builtin_alloca(SIZE)
 
 /**
  * Enclave implementation of the standard Unix sbrk() system call.
@@ -155,6 +154,48 @@ OE_ALWAYS_INLINE OE_INLINE void* oe_stack_alloc(size_t size, size_t alignment)
  *
  */
 void* oe_sbrk(ptrdiff_t increment);
+
+/**
+ * Enclave implementation of the standard malloc() function.
+ *
+ * Refer to documentation for malloc() function.
+ */
+void* oe_malloc(size_t size);
+
+/**
+ * Enclave implementation of the standard free() function.
+ *
+ * Refer to documentation for free() function.
+ */
+void oe_free(void* ptr);
+
+/**
+ * Enclave implementation of the standard calloc() function.
+ *
+ * Refer to documentation for calloc() function.
+ */
+void* oe_calloc(size_t nmemb, size_t size);
+
+/**
+ * Enclave implementation of the standard realloc() function.
+ *
+ * Refer to documentation for realloc() function.
+ */
+void* oe_realloc(void* ptr, size_t size);
+
+/**
+ * Enclave implementation of the standard posix_memalign() function.
+ *
+ * Refer to documentation for posix_memalign() function.
+ */
+int oe_posix_memalign(void** memptr, size_t alignment, size_t size);
+
+/**
+ * Enclave implementation of the standard memalign() function.
+ *
+ * Refer to documentation for memalign() function.
+ */
+void* oe_memalign(size_t alignment, size_t size);
 
 OE_EXTERNC_END
 
