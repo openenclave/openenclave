@@ -305,6 +305,17 @@ static oe_result_t _get_revocation_info(oe_get_revocation_info_args_t* args)
             tmp_args.crl_issuer_chain_size[i]);
     }
 
+    // Check for null terminators.
+    if (args->tcb_info[args->tcb_info_size - 1] != 0 ||
+        args->tcb_issuer_chain[args->tcb_issuer_chain_size - 1] != 0)
+        OE_RAISE(OE_INVALID_REVOCATION_INFO);
+    for (uint32_t i = 0; i < args->num_crl_urls; ++i)
+    {
+        if (args->crl[i][args->crl_size[i] - 1] != 0 ||
+            args->crl_issuer_chain[i][args->crl_issuer_chain_size[i] - 1] != 0)
+            OE_RAISE(OE_INVALID_REVOCATION_INFO);
+    }
+
     result = OE_OK;
 done:
     // Free args buffer and buffer allocated by host.
@@ -353,8 +364,8 @@ oe_result_t oe_enforce_revocation(
             revocation_args.tcb_issuer_chain_size));
     for (uint32_t i = 0; i < revocation_args.num_crl_urls; ++i)
     {
-        result = (
-            oe_cert_chain_read_pem(
+        result =
+            (oe_cert_chain_read_pem(
                 &crl_issuer_chain[i],
                 revocation_args.crl_issuer_chain[i],
                 revocation_args.crl_issuer_chain_size[i]));
