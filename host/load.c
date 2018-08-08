@@ -78,12 +78,10 @@ oe_result_t __oe_load_segments(
             {
                 oeinfo_offset = sh->sh_offset;
                 oeinfo_size = sh->sh_size;
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
                 OE_TRACE_INFO(
                     "Found properties block offset %lx size %lx",
                     oeinfo_offset,
                     oeinfo_size);
-#endif
             }
         }
 
@@ -152,9 +150,7 @@ oe_result_t __oe_load_segments(
                     ((char*)seg.filedata) + oeinfo_offset - seg.offset,
                     0,
                     oeinfo_size);
-#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
                 OE_TRACE_INFO("Zeroed out properties block in segment %lu", i);
-#endif
             }
         }
 
