@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 // Uncomment this line to enable tracing.
-//#define OE_TRACE_LEVEL 2
+// #define OE_TRACE_LEVEL 2
 
 #include <dlfcn.h>
 #include <openenclave/internal/hexdump.h>
@@ -115,6 +115,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     sgx_ql_revocation_info_t* revocationInfo = NULL;
     uint32_t hostBufferSize = 0;
     uint8_t* p = 0;
+    uint8_t* p_end = 0;
 
     if (!_get_revocation_info || !_free_revocation_info)
         OE_RAISE(OE_QUOTE_PROVIDER_LOAD_ERROR);
@@ -162,7 +163,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         OE_TRACE_INFO(
             "crl_count mismatch: %d != %d.\n",
             revocationInfo->crl_count,
-            numCrlUrls);
+            args->num_crl_urls);
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
     }
 
@@ -188,6 +189,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
     OE_TRACE_INFO("sgx_ql_get_revocation_info succeeded.\n");
 
     p = (uint8_t*)calloc(1, hostBufferSize);
+    p_end = p + hostBufferSize;
     if (p == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -198,9 +200,11 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
         args->tcb_info = p;
         args->tcb_info_size = revocationInfo->tcb_info_size;
         memcpy(args->tcb_info, revocationInfo->tcb_info, args->tcb_info_size);
-        p += args->tcb_info_size + 1;
+        // Add null terminator
+        args->tcb_info[args->tcb_info_size++] = 0;
+        p += args->tcb_info_size;
         OE_TRACE_INFO("tcb_info_size = %d\n", revocationInfo->tcb_info_size);
-        OE_TRACE_INFO("tcb_info json = \n%s\n", *tcbInfo);
+        OE_TRACE_INFO("tcb_info json = \n%s\n", args->tcb_info);
     }
 
     if (revocationInfo->tcb_issuer_chain != NULL)
@@ -211,7 +215,9 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
             args->tcb_issuer_chain,
             revocationInfo->tcb_issuer_chain,
             args->tcb_issuer_chain_size);
-        p += args->tcb_issuer_chain_size + 1;
+        // Add null terminator
+        args->tcb_issuer_chain[args->tcb_issuer_chain_size++] = 0;
+        p += args->tcb_issuer_chain_size;
         OE_TRACE_INFO(
             "tcb_issuer_chain_size = %d\n",
             revocationInfo->tcb_issuer_chain_size);
@@ -227,7 +233,9 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
                 args->crl[i],
                 revocationInfo->crls[i].crl_data,
                 args->crl_size[i]);
-            p += args->crl_size[i] + 1;
+            // Add null terminator
+            args->crl[args->crl_size[i]++] = 0;
+            p += args->crl_size[i];
             OE_TRACE_INFO(
                 "crls[%d].crl_data_size = %d\n",
                 i,
@@ -242,13 +250,24 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
                 args->crl_issuer_chain[i],
                 revocationInfo->crls[i].crl_issuer_chain,
                 args->crl_issuer_chain_size[i]);
-            p += args->crl_issuer_chain_size[i] + 1;
+            // Add null terminator
+            args->crl_issuer_chain[args->crl_issuer_chain_size[i]++] = 0;
+            p += args->crl_issuer_chain_size[i];
             OE_TRACE_INFO(
                 "crls[%d].crl_issuer_chain_size = %d\n",
                 i,
                 revocationInfo->crls[i].crl_issuer_chain_size);
+            OE_TRACE_INFO(
+                "crls[%d].crl_issuer_chain = \n%*.*s\n",
+                i,
+                revocationInfo->crls[i].crl_issuer_chain_size,
+                revocationInfo->crls[i].crl_issuer_chain_size,
+                revocationInfo->crls[i].crl_issuer_chain);
         }
     }
+
+    if (p != p_end)
+        OE_RAISE(OE_UNEXPECTED);
 
     result = OE_OK;
 done:
