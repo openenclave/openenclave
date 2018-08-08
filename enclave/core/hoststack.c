@@ -72,16 +72,8 @@ static void _Once(struct OnceType* once, void (*f)(void))
 
 static oe_thread_key_t _HostStackTlsKey;
 
-static void _HostStackInit(void)
-{
-    if (oe_thread_key_create(&_HostStackTlsKey, NULL))
-    {
-        oe_abort();
-    }
-}
-
-// cleanup handler for regular exit
-static void _FreeThreadBucket(void* arg)
+// cleanup handler for regular exit (must be visible to ocall-alloc test)
+void oe_free_thread_buckets(void* arg)
 {
     ThreadBuckets* tb = (ThreadBuckets*)arg;
     if (tb->standbyHost)
@@ -98,6 +90,14 @@ static void _FreeThreadBucket(void* arg)
     tb->flags |= THREAD_BUCKET_FLAG_RUNDOWN;
 }
 
+static void _HostStackInit(void)
+{
+    if (oe_thread_key_create(&_HostStackTlsKey, oe_free_thread_buckets))
+    {
+        oe_abort();
+    }
+}
+
 static ThreadBuckets* _GetThreadBuckets()
 {
     ThreadBuckets* tb;
@@ -111,7 +111,6 @@ static ThreadBuckets* _GetThreadBuckets()
 
         *tb = (ThreadBuckets){};
         oe_thread_set_specific(_HostStackTlsKey, tb);
-        __cxa_atexit(_FreeThreadBucket, tb, NULL);
     }
 
     // Under normal operation, there is no reentrancy. There could be if the

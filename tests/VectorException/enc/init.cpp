@@ -2,7 +2,11 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/tests.h>
+
+#include "../../../host/cpuid.h"
+#include "../../../host/linux/cpuid.c"
 
 static int done = 0;
 static unsigned int c = 0;
@@ -15,11 +19,14 @@ int test_cpuid_instruction(unsigned int what)
 {
     if (!done)
     {
-        asm("movl  $1, %%eax   \n\t"
-            "cpuid             \n\t"
-            : "=c"(c)
-            :
-            : "eax", "ebx", "edx");
+        unsigned int a, b, d;
+        oe_get_cpuid(1, 0, &a, &b, &c, &d);
+        // Do something with out param so call to cpuid is not optimized out.
+        if (a == 0)
+        {
+            oe_host_printf("This is the value of a: %d", a);
+        }
+
         // This should be executed only once.
         ++hits1;
         done = 1;

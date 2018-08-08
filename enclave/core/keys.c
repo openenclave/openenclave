@@ -161,7 +161,7 @@ oe_result_t oe_get_seal_key(
 static oe_result_t _GetDefaultKeyRequestAttributes(
     sgx_key_request_t* sgxKeyRequest)
 {
-    sgx_report_t sgxReport = {0};
+    sgx_report_t sgxReport = {{{0}}};
     uint32_t sgxReportSize = sizeof(sgx_report_t);
     oe_result_t ret;
 
@@ -187,7 +187,7 @@ static oe_result_t _GetDefaultKeyRequestAttributes(
 }
 
 oe_result_t oe_get_seal_key_by_policy(
-    oe_seal_id_policy_t sealPolicy,
+    oe_seal_policy_t sealPolicy,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize,
     uint8_t* keyInfo,
@@ -227,11 +227,11 @@ oe_result_t oe_get_seal_key_by_policy(
     sgxKeyRequest.key_name = SGX_KEYSELECT_SEAL;
     switch (sealPolicy)
     {
-        case OE_SEAL_ID_UNIQUE:
+        case OE_SEAL_POLICY_UNIQUE:
             sgxKeyRequest.key_policy = SGX_KEYPOLICY_MRENCLAVE;
             break;
 
-        case OE_SEAL_ID_PRODUCT:
+        case OE_SEAL_POLICY_PRODUCT:
             sgxKeyRequest.key_policy = SGX_KEYPOLICY_MRSIGNER;
             break;
 

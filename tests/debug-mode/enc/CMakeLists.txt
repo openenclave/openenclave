@@ -11,5 +11,5 @@ add_enclave_executable(debug_enc sign-debug.conf private.pem
     enc.c
     props-debug.c)
 
-target_link_libraries(no_debug_enc oecore)
-target_link_libraries(debug_enc oecore)
+target_link_libraries(no_debug_enc oeenclave)
+target_link_libraries(debug_enc oeenclave)

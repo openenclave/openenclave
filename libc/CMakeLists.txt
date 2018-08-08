@@ -541,7 +541,6 @@ target_compile_options(oelibc PRIVATE
     -Wno-attributes
     -Wno-parentheses
     -Wno-pointer-sign
-    -Wno-unused-but-set-variable
     -Wno-unknown-pragmas
     -Wno-maybe-uninitialized
     -Wno-format
@@ -556,7 +555,16 @@ target_compile_options(oelibc PRIVATE
     -mrdrnd
     )
 
+check_cxx_compiler_flag(-Wno-error=unused-but-set-variable SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
+if (SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
+    target_compile_options(oelibc PRIVATE -Wno-error=unused-but-set-variable)
+endif()
+
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
+
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
 
 # this project (and is dependents) require the enclave headers+lib
 target_link_libraries(oelibc oecore)
@@ -582,4 +590,4 @@ target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
 # install lib-archive upon install-time
-install (TARGETS oelibc EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install (TARGETS oelibc EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

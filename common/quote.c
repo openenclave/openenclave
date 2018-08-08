@@ -7,6 +7,7 @@
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
 
@@ -173,6 +174,9 @@ oe_result_t VerifyQuoteImpl(
     oe_ec_public_key_t rootPublicKey = {0};
     oe_ec_public_key_t expectedRootPublicKey = {0};
     bool keyEqual = false;
+    static uint8_t data[16 * 1024];
+    uint32_t dataSize = sizeof(data);
+    ParsedExtensionInfo parsedInfo = {{0}};
 
     OE_CHECK(
         _ParseQuote(
@@ -209,7 +213,7 @@ oe_result_t VerifyQuoteImpl(
         // Read and validate the chain.
         OE_CHECK(
             oe_cert_chain_read_pem(
-                pemPckCertificate, pemPckCertificateSize, &pckCertChain));
+                &pckCertChain, pemPckCertificate, pemPckCertificateSize));
 
         // Fetch leaf and root certificates.
         OE_CHECK(oe_cert_chain_get_leaf_cert(&pckCertChain, &leafCert));
@@ -221,15 +225,17 @@ oe_result_t VerifyQuoteImpl(
         // Ensure that the root certificate matches root of trust.
         OE_CHECK(
             oe_ec_public_key_read_pem(
+                &expectedRootPublicKey,
                 (const uint8_t*)g_ExpectedRootCertificateKey,
-                oe_strlen(g_ExpectedRootCertificateKey) + 1,
-                &expectedRootPublicKey));
+                oe_strlen(g_ExpectedRootCertificateKey) + 1));
 
         OE_CHECK(
             oe_ec_public_key_equal(
                 &rootPublicKey, &expectedRootPublicKey, &keyEqual));
         if (!keyEqual)
             OE_RAISE(OE_VERIFY_FAILED);
+
+        OE_CHECK(ParseSGXExtensions(&leafCert, data, &dataSize, &parsedInfo));
     }
 
     // Quote validations.
@@ -279,7 +285,7 @@ oe_result_t VerifyQuoteImpl(
 
     // Quoting Enclave validations.
     {
-        // Assert that the qe report's mr signer matches Intel's quoting
+        // Assert that the qe report's MRSIGNER matches Intel's quoting
         // enclave's mrsigner.
         if (!oe_constant_time_mem_equal(
                 quoteAuthData->qeReportBody.mrsigner,

@@ -191,7 +191,20 @@ E.g., to generate an optimized release-build with debug info, use
 
 ```
  build$ cmake .. -DCMAKE_BUILD_TYPE=relwithdebinfo
-````
+```
+
+The following build types cause the **C** **NDEBUG** macro to be defined.
+
+- **CMAKE_BUILD_TYPE="Release"**
+- **CMAKE_BUILD_TYPE="RelWithDebInfo"**
+
+Whereas **CMAKE_BUILD_TYPE="Debug"** causes it to be undefined. Defining the 
+**NDEBUG** macro affects the behavior of **Open Enclave** in three ways.
+
+- The **oe_assert()** and **assert()** macros become no-ops.
+- The **oe_backtrace()** function returns an empty backtrace.
+- The debug allocator is disabled. The debug allocator checks for memory errors
+  during enclave termination.
 
 Multiple variables can be defined at the call with multiple "-D*Var*=*Value*" arguments.
 
@@ -570,20 +583,18 @@ LDFLAGS=\
     -Wl,-Bsymbolic \
     -Wl,--export-dynamic \
     -Wl,-pie \
-    -Wl,-eoe_main
 ```
 
-The -eoe_main option requires some explanation (see the ld man page about
-other options). This option specifies the name of the entry point for the
-enclave. The linker stores the virtual address of the oe_main() function in
-the ELF header (Elf64_Ehdr.e_entry) of the resulting binary. When the enclave
-is instantiated by the host, this entry point is copied to each TCS (Thread
-Control Structure) in the image. When the host invokes the SGX EENTER
-instruction on a TCS, the hardware fetches the entry point from the TCS and
-jumps to that address and the oe_main() function begins to execute.
+The entry point for the enclave image is **_start()**. The linker stores 
+the virtual address of the **_start()** function in the ELF header 
+(Elf64_Ehdr.e_entry) of the resulting image. When the enclave is instantiated 
+by the host, this entry point is copied to each TCS (Thread Control Structure) 
+in the image. When the host invokes the SGX EENTER instruction on a TCS, the 
+hardware fetches the entry point from the TCS and jumps to that address and 
+the **_start()** function begins to execute.
 
 The necessary enclave library contains the enclave intrinsics, including the
-oe_main() entry point. Note that the echo sample uses neither a C nor C++
+_start() entry point. Note that the echo sample uses neither a C nor C++
 runtime library. Other samples will show how these are used.
 
 ```
