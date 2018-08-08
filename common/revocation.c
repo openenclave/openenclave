@@ -205,6 +205,10 @@ static oe_result_t _get_revocation_info(oe_get_revocation_info_args_t* args)
 
     OE_CHECK(tmp_args.result);
 
+    if (tmp_args.host_out_buffer == NULL ||
+        !oe_is_outside_enclave(tmp_args.host_out_buffer, sizeof(uint8_t)))
+        OE_RAISE(OE_UNEXPECTED);
+
     // Ensure that all required outputs exist.
     OE_CHECK(
         _copy_buffer_to_enclave(
