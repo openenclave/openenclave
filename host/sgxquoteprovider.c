@@ -251,7 +251,7 @@ oe_result_t oe_get_revocation_info(oe_get_revocation_info_args_t* args)
                 revocationInfo->crls[i].crl_issuer_chain,
                 args->crl_issuer_chain_size[i]);
             // Add null terminator
-            args->crl_issuer_chain[args->crl_issuer_chain_size[i]++] = 0;
+            args->crl_issuer_chain[i][args->crl_issuer_chain_size[i]++] = 0;
             p += args->crl_issuer_chain_size[i];
             OE_TRACE_INFO(
                 "crls[%d].crl_issuer_chain_size = %d\n",
