@@ -65,13 +65,14 @@ typedef struct _url
  * Get CRL distribution points from given cert.
  */
 
-static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, url_t* url)
+static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
 {
     oe_result_t result = OE_FAILURE;
     uint64_t buffer_size = 512;
     uint8_t* buffer = oe_malloc(buffer_size);
     const char** urls = NULL;
     uint64_t num_urls = 0;
+    uint32_t url_length = 0;
 
     if (buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -95,40 +96,18 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, url_t* url)
         // At most 1 distrubtion point is expected.
         if (num_urls != 1)
             OE_RAISE(OE_FAILURE);
-        oe_memcpy(url->str, urls[0], oe_strlen(urls[0]) + 1);
+        // Include null character in length.
+        url_length = oe_strlen(urls[0]) + 1;
+        *url = (char*)oe_malloc(url_length);
+        if (*url == NULL)
+            OE_RAISE(OE_OUT_OF_MEMORY);
+
+        oe_memcpy(*url, urls[0], url_length);
         result = OE_OK;
     }
 
 done:
     oe_free(buffer);
-    return result;
-}
-
-/**
- * Get distribution points of intermediate and leaf certs.
- */
-static oe_result_t _get_crl_distribution_points(
-    oe_cert_t* intermediate_cert,
-    oe_cert_t* leaf_cert,
-    oe_get_revocation_info_args_t* revocation_args,
-    url_t urls[2])
-{
-    oe_result_t result = OE_FAILURE;
-
-    if (!intermediate_cert || !leaf_cert || !revocation_args || !urls)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    OE_CHECK(_get_crl_distribution_point(intermediate_cert, &urls[0]));
-
-    OE_CHECK(_get_crl_distribution_point(leaf_cert, &urls[1]));
-
-    revocation_args->crl_urls[0] = urls[0].str;
-    revocation_args->crl_urls[1] = urls[1].str;
-    revocation_args->num_crl_urls = 2;
-
-    result = OE_OK;
-done:
-
     return result;
 }
 
@@ -148,6 +127,29 @@ done:
         dst_size = src_size;                                                \
     } while (0)
 
+static oe_result_t _copy_buffer_to_enclave(
+    uint8_t** dst,
+    uint32_t* dst_size,
+    const uint8_t* src,
+    uint32_t src_size)
+{
+    oe_result_t result = OE_FAILURE;
+    if (!src || src_size == 0 || !oe_is_outside_enclave(src, src_size) ||
+        dst == NULL || dst_size == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    *dst = oe_malloc(src_size);
+    if (*dst == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    oe_memcpy(*dst, src, src_size);
+    *dst_size = src_size;
+    result = OE_OK;
+
+done:
+    return result;
+}
+
 /**
  * Call into host to fetch revocation information.
  */
@@ -163,9 +165,6 @@ static oe_result_t _get_revocation_info(oe_get_revocation_info_args_t* args)
 
     if (args == NULL || args->num_crl_urls != 2 || args->crl_urls[0] == NULL ||
         args->crl_urls[1] == NULL)
-        OE_RAISE(OE_FAILURE);
-
-    if (args->num_crl_urls != 2)
         OE_RAISE(OE_FAILURE);
 
     // Compute size of buffer to allocate in host memory to marshal the
@@ -204,33 +203,36 @@ static oe_result_t _get_revocation_info(oe_get_revocation_info_args_t* args)
     // Copy args to prevent TOCTOU issues.
     tmp_args = *host_args;
 
-    if (tmp_args.result != OE_OK)
-        OE_RAISE(OE_FAILURE);
+    OE_CHECK(tmp_args.result);
 
     // Ensure that all required outputs exist.
-    COPY_TO_ENCLAVE(
-        args->tcb_info,
-        args->tcb_info_size,
-        tmp_args.tcb_info,
-        tmp_args.tcb_info_size);
-    COPY_TO_ENCLAVE(
-        args->tcb_issuer_chain,
-        args->tcb_issuer_chain_size,
-        tmp_args.tcb_issuer_chain,
-        tmp_args.tcb_issuer_chain_size);
+    OE_CHECK(
+        _copy_buffer_to_enclave(
+            &args->tcb_info,
+            &args->tcb_info_size,
+            tmp_args.tcb_info,
+            tmp_args.tcb_info_size));
+    OE_CHECK(
+        _copy_buffer_to_enclave(
+            &args->tcb_issuer_chain,
+            &args->tcb_issuer_chain_size,
+            tmp_args.tcb_issuer_chain,
+            tmp_args.tcb_issuer_chain_size));
 
     for (uint32_t i = 0; i < args->num_crl_urls; ++i)
     {
-        COPY_TO_ENCLAVE(
-            args->crl[i],
-            args->crl_size[i],
-            tmp_args.crl[i],
-            tmp_args.crl_size[i]);
-        COPY_TO_ENCLAVE(
-            args->crl_issuer_chain[i],
-            args->crl_issuer_chain_size[i],
-            tmp_args.crl_issuer_chain[i],
-            tmp_args.crl_issuer_chain_size[i]);
+        OE_CHECK(
+            _copy_buffer_to_enclave(
+                &args->crl[i],
+                &args->crl_size[i],
+                tmp_args.crl[i],
+                tmp_args.crl_size[i]));
+        OE_CHECK(
+            _copy_buffer_to_enclave(
+                &args->crl_issuer_chain[i],
+                &args->crl_issuer_chain_size[i],
+                tmp_args.crl_issuer_chain[i],
+                tmp_args.crl_issuer_chain_size[i]));
     }
 
     // Check for null terminators.
@@ -267,22 +269,35 @@ oe_result_t oe_enforce_revocation(
     oe_cert_chain_t crl_issuer_chain[3] = {0};
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
     oe_tcb_level_t platform_tcb_level = {0};
-    url_t urls[2] = {0};
+    char* intermediate_crl_url = NULL;
+    char* leaf_crl_url = NULL;
+
+    if (intermediate_cert == NULL || leaf_cert == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     OE_STATIC_ASSERT(
         OE_COUNTOF(crl_issuer_chain) ==
         OE_COUNTOF(revocation_args.crl_issuer_chain));
 
+    // Gather fmspc.
     OE_CHECK(_parse_sgx_extensions(leaf_cert, &parsed_extension_info));
     oe_memcpy(
         revocation_args.fmspc,
         parsed_extension_info.fmspc,
         sizeof(parsed_extension_info.fmspc));
+
+    // Gather CRL distribution point URLs from certs.
     OE_CHECK(
-        _get_crl_distribution_points(
-            intermediate_cert, leaf_cert, &revocation_args, urls));
+        _get_crl_distribution_point(intermediate_cert, &intermediate_crl_url));
+    OE_CHECK(_get_crl_distribution_point(leaf_cert, &leaf_crl_url));
+
+    revocation_args.crl_urls[0] = intermediate_crl_url;
+    revocation_args.crl_urls[1] = leaf_crl_url;
+    revocation_args.num_crl_urls = 2;
 
     OE_CHECK(_get_revocation_info(&revocation_args));
+
+    // Apply revocation info.
     OE_CHECK(
         oe_cert_chain_read_pem(
             &tcb_issuer_chain,
@@ -323,7 +338,6 @@ oe_result_t oe_enforce_revocation(
     result = OE_OK;
 
 done:
-    // Memory from the pool must be freed in reverse order.
     for (int32_t i = revocation_args.num_crl_urls - 1; i >= 0; --i)
     {
         oe_free(revocation_args.crl_issuer_chain[i]);
@@ -335,6 +349,9 @@ done:
     for (uint32_t i = 0; i < revocation_args.num_crl_urls; ++i)
         oe_cert_chain_free(&crl_issuer_chain[i]);
     oe_cert_chain_free(&tcb_issuer_chain);
+
+    oe_free(leaf_crl_url);
+    oe_free(intermediate_crl_url);
 
     return result;
 }
