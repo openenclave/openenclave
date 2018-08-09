@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #ifdef OE_USE_LIBSGX
-
+#if 0
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <string.h>
@@ -163,5 +163,5 @@ OE_ECALL void TestIso861TimeNegative(void*)
 
     oe_host_printf("TestIso861TimeNegative passed\n");
 }
-
+#endif
 #endif

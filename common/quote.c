@@ -112,125 +112,6 @@ static oe_result_t _ReadPublicKey(
         sizeof(key->y));
 }
 
-static bool _isLeapYear(uint32_t year)
-{
-    // Year must be divisible by 4.
-    // If also divisible by 100, not a leap year unless divisible by 400.
-    if ((year % 4) == 0)
-    {
-        if ((year % 100) == 0)
-            return ((year % 400) == 0);
-        return true;
-    }
-
-    return false;
-}
-
-oe_result_t convertToISO861(
-    const oe_utc_date_time_t* dateTime,
-    char* iso861String)
-{
-    oe_result_t result = OE_FAILURE;
-    bool valid_day = false;
-    uint32_t day;
-    char* p = iso861String;
-    char* end = p + ISO_861_DATE_LENGTH;
-
-    if (dateTime == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    // Validate the dateTime.
-    // Check against unix epoch time (Jan 1, 1970)
-    if (dateTime->year < 1970)
-        OE_RAISE(OE_INVALID_UTC_DATE_TIME);
-
-    // Check month and day validity
-    day = dateTime->day;
-    switch (dateTime->month)
-    {
-        case 1:
-            valid_day = (day >= 1 && day <= 31);
-            break;
-        case 2:
-            valid_day =
-                (day >= 1 && day <= (_isLeapYear(dateTime->year) ? 29 : 28));
-            break;
-        case 3:
-            valid_day = (day >= 1 && day <= 31);
-            break;
-        case 4:
-            valid_day = (day >= 1 && day <= 30);
-            break;
-        case 5:
-            valid_day = (day >= 1 && day <= 31);
-            break;
-        case 6:
-            valid_day = (day >= 1 && day <= 30);
-            break;
-        case 7:
-            valid_day = (day >= 1 && day <= 31);
-            break;
-        case 8:
-            valid_day = (day >= 1 && day <= 31);
-            break;
-        case 9:
-            valid_day = (day >= 1 && day <= 30);
-            break;
-        case 10:
-            valid_day = (day >= 1 && day <= 31);
-            break;
-        case 11:
-            valid_day = (day >= 1 && day <= 30);
-            break;
-        case 12:
-            valid_day = (day >= 1 && day <= 31);
-            break;
-        default:
-            OE_RAISE(OE_INVALID_UTC_DATE_TIME);
-    }
-
-    if (!valid_day)
-        OE_RAISE(OE_INVALID_UTC_DATE_TIME);
-
-    // Check hour, minutes, seconts
-    if (dateTime->hours >= 24 || dateTime->minutes >= 60 ||
-        dateTime->seconds >= 60)
-        OE_RAISE(OE_INVALID_UTC_DATE_TIME);
-
-    // oe_snprintf does not support the following format:
-    //      "%04d-%02d-%02dT%02d:%02d:%02dZ"
-    // Hence print fields individually.
-    p += oe_snprintf(p, end - p, "%d-", dateTime->year);
-
-    if (dateTime->month < 10)
-        *p++ = '0';
-    p += oe_snprintf(p, end - p, "%d-", dateTime->month);
-
-    if (dateTime->day < 10)
-        *p++ = '0';
-    p += oe_snprintf(p, end - p, "%dT", dateTime->day);
-
-    if (dateTime->hours < 10)
-        *p++ = '0';
-    p += oe_snprintf(p, end - p, "%d:", dateTime->hours);
-
-    if (dateTime->minutes < 10)
-        *p++ = '0';
-    p += oe_snprintf(p, end - p, "%d:", dateTime->minutes);
-
-    if (dateTime->seconds < 10)
-        *p++ = '0';
-    p += oe_snprintf(p, end - p, "%dZ", dateTime->seconds);
-
-    // Null terminator.
-    *p++ = 0;
-
-    if (p == end)
-        result = OE_OK;
-done:
-    return result;
-}
-
 static oe_result_t _ECDSAVerify(
     oe_ec_public_key_t* publicKey,
     void* data,
@@ -278,8 +159,7 @@ oe_result_t VerifyQuoteImpl(
     const uint8_t* pckCrl,
     uint32_t pckCrlSize,
     const uint8_t* tcbInfoJson,
-    uint32_t tcbInfoJsonSize,
-    const oe_utc_date_time_t* minCrlTcbIssueDate)
+    uint32_t tcbInfoJsonSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_quote_t* sgxQuote = NULL;
@@ -297,12 +177,6 @@ oe_result_t VerifyQuoteImpl(
     oe_ec_public_key_t rootPublicKey = {0};
     oe_ec_public_key_t expectedRootPublicKey = {0};
     bool keyEqual = false;
-    char iso861String[ISO_861_DATE_LENGTH];
-
-    if (minCrlTcbIssueDate == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    OE_CHECK(convertToISO861(minCrlTcbIssueDate, iso861String));
 
     OE_CHECK(
         _ParseQuote(

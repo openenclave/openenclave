@@ -4,7 +4,7 @@
 include(add_enclave_executable)
 add_enclave_executable(report_enc sign.conf private.pem
     enc.cpp
-    iso861.cpp
+    issuedate.cpp
     )
 
 target_compile_options(report_enc PRIVATE

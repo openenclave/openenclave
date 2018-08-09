@@ -81,9 +81,8 @@ typedef struct _oe_verify_report_args
 {
     oe_result_t result; /* out */
 
-    uint8_t* report;                              /* in */
-    uint32_t reportSize;                          /* in */
-    const oe_utc_date_time_t* minCrlTcbIssueDate; /*in */
+    uint8_t* report;     /* in */
+    uint32_t reportSize; /* in */
 } oe_verify_report_args_t;
 
 /*

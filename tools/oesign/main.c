@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/elf.h>
+#include <openenclave/internal/issuedate.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
@@ -161,6 +162,7 @@ typedef struct _ConfigFileOptions
     uint64_t numTCS;
     uint16_t productID;
     uint16_t securityVersion;
+    char minIssueDateTime[21];
 } ConfigFileOptions;
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                               \
@@ -322,6 +324,59 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
 
             options->securityVersion = n;
         }
+        else if (strcmp(str_ptr(&lhs), "CrlTcbValidAfter") == 0)
+        {
+            const char* fmt = "%04d-%02d-%02dT%02d:%02d:%02dZ";
+            const char* names[] = {
+                "year", "month", "day", "hours", "minutes", "seconds"};
+            uint32_t year = 0;
+            uint32_t month = 0;
+            uint32_t day = 0;
+            uint32_t hours = 0;
+            uint32_t minutes = 0;
+            uint32_t seconds = 0;
+
+            int numRead = sscanf(
+                str_ptr(&rhs),
+                fmt,
+                &year,
+                &month,
+                &day,
+                &hours,
+                &minutes,
+                &seconds);
+
+            if (numRead != 6)
+            {
+                if (numRead < 6)
+                {
+                    Err("%s(%zu): Parse Error in field %s for "
+                        "'CrlTcbValidAfter'. Must be ISO 861 string.",
+                        path,
+                        line,
+                        names[numRead]);
+                }
+                else
+                {
+                    Err("%s(%zu): Parse Error in 'CrlTcbValidAfter'. Must be "
+                        "ISO 861 string.",
+                        path,
+                        line);
+                }
+
+                goto done;
+            }
+
+            sprintf(
+                options->minIssueDateTime,
+                fmt,
+                year,
+                month,
+                day,
+                hours,
+                minutes,
+                seconds);
+        }
         else
         {
             Err("%s(%zu): unknown setting: %s", path, line, str_ptr(&rhs));
@@ -480,6 +535,11 @@ void _MergeConfigFileOptions(
     /* If NumTCS option is present */
     if (options->numTCS != OE_MAX_UINT64)
         properties->header.sizeSettings.numTCS = options->numTCS;
+
+    /* If minIssueDateTime is present */
+    if (strlen(options->minIssueDateTime) > 0)
+    {
+    }
 }
 
 static const char _usage[] =

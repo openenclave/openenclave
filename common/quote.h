@@ -19,19 +19,7 @@ oe_result_t VerifyQuoteImpl(
     const uint8_t* encPckCrl,
     uint32_t encPckCrlSize,
     const uint8_t* encTcbInfoJson,
-    uint32_t encTcbInfoJsonSize,
-    const oe_utc_date_time_t* minCrlTcbIssueDate);
-
-// 21 characters including null terminator.
-#define ISO_861_DATE_LENGTH (21)
-
-/**
- * Validate and convert dateTime to ISO 861 format:
- * YYYY-MM-DDThh:mm:ssZ
- */
-oe_result_t convertToISO861(
-    const oe_utc_date_time_t* dateTime,
-    char* iso861String);
+    uint32_t encTcbInfoJsonSize);
 
 OE_EXTERNC_END
 

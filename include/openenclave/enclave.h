@@ -323,11 +323,6 @@ oe_result_t oe_parse_report(
  *
  * @param report The buffer containing the report to verify.
  * @param reportSize The size of the **report** buffer.
- * @param minIssueDate For remote attestation, the earliest valid issue date for
- *                     CRL and TCB information. TCB and CRL issued before this
- * date
- *                     are considered invalid.
- *                     Must be NULL for local attestation.
  * @param parsedReport Optional **oe_report_t** structure to populate with the
  * report properties in a standard format.
  *
@@ -338,7 +333,6 @@ oe_result_t oe_parse_report(
 oe_result_t oe_verify_report(
     const uint8_t* report,
     uint32_t reportSize,
-    const oe_utc_date_time_t* minCrlTcbIssueDate,
     oe_report_t* parsedReport);
 
 typedef enum _oe_seal_policy {

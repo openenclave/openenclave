@@ -32,8 +32,8 @@ oe_enclave_t* g_Enclave = NULL;
     oe_get_report(g_Enclave, flags, op, ops, rb, rbs)
 #endif
 
-#define VerifyReport(rpt, rptSize, minTime, pr) \
-    oe_verify_report(g_Enclave, rpt, rptSize, minTime, pr)
+#define VerifyReport(rpt, rptSize, pr) \
+    oe_verify_report(g_Enclave, rpt, rptSize, pr)
 
 #define TEST_FCN
 
@@ -548,7 +548,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
         GetReport(
             0, NULL, 0, targetInfo, targetInfoSize, report, &reportSize) ==
         OE_OK);
-    OE_TEST(VerifyReport(report, reportSize, NULL, NULL) == OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
 
 // 2. Report with full custom report data.
 #ifdef OE_BUILD_ENCLAVE
@@ -561,7 +561,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
             targetInfoSize,
             report,
             &reportSize) == OE_OK);
-    OE_TEST(VerifyReport(report, reportSize, NULL, NULL) == OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
 
     // 3. Report with partial custom report data.
     OE_TEST(
@@ -573,7 +573,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
             targetInfoSize,
             report,
             &reportSize) == OE_OK);
-    OE_TEST(VerifyReport(report, reportSize, NULL, NULL) == OE_OK);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_OK);
 #endif
 
     // 4. Negative case.
@@ -586,23 +586,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
         GetReport(
             0, NULL, 0, targetInfo, targetInfoSize, report, &reportSize) ==
         OE_OK);
-    OE_TEST(VerifyReport(report, reportSize, NULL, NULL) == OE_VERIFY_FAILED);
-
-    // 5. minCrlTcbIssueDate must be NULL.
-    OE_TEST(
-        GetReport(
-            0,
-            reportData,
-            sizeof(reportData),
-            targetInfo,
-            targetInfoSize,
-            report,
-            &reportSize) == OE_OK);
-
-    oe_utc_date_time_t minCrlTcbIssueDate = {0};
-    OE_TEST(
-        VerifyReport(report, reportSize, &minCrlTcbIssueDate, NULL) ==
-        OE_INVALID_PARAMETER);
+    OE_TEST(VerifyReport(report, reportSize, NULL) == OE_VERIFY_FAILED);
 }
 
 TEST_FCN void TestRemoteVerifyReport(void* args_)
@@ -622,8 +606,6 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
 
     uint32_t flags = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
 
-    oe_utc_date_time_t minCrlTcbIssueDate = {2015, 01, 01, 00, 00, 00};
-
     /*
      * Report data parameters scenarios on enclave side:
      *      a. Report data can be NULL.
@@ -636,9 +618,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
         OE_TEST(
             GetReport(flags, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_OK);
-        OE_TEST(
-            VerifyReport(reportBuffer, reportSize, &minCrlTcbIssueDate, NULL) ==
-            OE_OK);
+        OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
 
 #if OE_BUILD_ENCLAVE
         reportSize = sizeof(reportBuffer);
@@ -652,9 +632,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
                 0,
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_TEST(
-            VerifyReport(reportBuffer, reportSize, &minCrlTcbIssueDate, NULL) ==
-            OE_OK);
+        OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
 
         reportSize = sizeof(reportBuffer);
         reportDataSize = OE_REPORT_DATA_SIZE;
@@ -667,9 +645,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
                 0,
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_TEST(
-            VerifyReport(reportBuffer, reportSize, &minCrlTcbIssueDate, NULL) ==
-            OE_OK);
+        OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
 #endif
     }
 }

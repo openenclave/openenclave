@@ -69,9 +69,11 @@ typedef struct oe_sgx_enclave_config_t
 
     /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
     uint64_t attributes;
+
+    uint8_t minimumCrlTcbIssueDate[24];
 } oe_sgx_enclave_config_t;
 
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_config_t), 16);
+OE_CHECK_SIZE(sizeof(oe_sgx_enclave_config_t), 40);
 
 /* Extends oe_enclave_properties_header_t base type */
 typedef struct oe_sgx_enclave_properties_t
@@ -84,9 +86,10 @@ typedef struct oe_sgx_enclave_properties_t
 
     /* (48) */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
+
 } oe_sgx_enclave_properties_t;
 
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
+OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1880);
 
 #define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo,\"\",@note#")))
 #define OE_INFO_SECTION_END

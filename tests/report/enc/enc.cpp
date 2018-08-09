@@ -78,8 +78,6 @@ OE_ECALL void VerifyQuote(void* args_)
     static uint8_t encPckCrl[PCK_CRL_SIZE_MAX];
     static uint8_t encTcbInfoJson[TCB_INFO_JSON_SIZE_MAX];
 
-    oe_utc_date_time_t minCrlTcbIssueDate = {2015, 01, 01, 00, 00, 00};
-
     oe_secure_zero_fill(encQuote, QUOTE_SIZE_MAX);
     oe_secure_zero_fill(encPemPckCertificate, PEM_PCK_CERTIFICATE_SIZE_MAX);
     oe_secure_zero_fill(encPckCrl, PCK_CRL_SIZE_MAX);
@@ -137,8 +135,7 @@ OE_ECALL void VerifyQuote(void* args_)
             encArg->pckCrlSize ? encPckCrl : NULL,
             encArg->pckCrlSize,
             encArg->tcbInfoJsonSize ? encTcbInfoJson : NULL,
-            encArg->tcbInfoJsonSize,
-            &minCrlTcbIssueDate));
+            encArg->tcbInfoJsonSize));
 
     result = OE_OK;
 
