@@ -526,7 +526,7 @@ oe_result_t oe_call_host_by_address(void (*func)(void*), void* argsIn)
     {
         if (!(args = oe_host_alloc_for_call_host(sizeof(*args))))
         {
-            // Fail if the enclave is in crashing/crashed status.
+            // Fail if the enclave is crashing.
             OE_TRY(__oe_enclave_status);
             OE_THROW(OE_OUT_OF_MEMORY);
         }
