@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+include(add_compile_flags_if_supported)
+
 # set default build type and sanitize
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
@@ -33,7 +35,9 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
     # Enables all the warnings about constructions that some users consider questionable,
     # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
     # to fix warnings as they arise, so they don't accumulate "to be fixed later".
-    add_compile_options(-Wall -Werror $<$<COMPILE_LANGUAGE:C>:-Wjump-misses-init> --no-strict-aliasing)
+    add_compile_options(-Wall -Werror -fno-strict-aliasing)
+
+    add_c_compile_flags_if_supported(-Wjump-misses-init)
 
     # Enables XSAVE intrinsics.
     add_compile_options(-mxsave)
