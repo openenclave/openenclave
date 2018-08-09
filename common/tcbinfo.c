@@ -10,6 +10,13 @@
 
 #ifdef OE_USE_LIBSGX
 
+// Public key of Intel's root certificate.
+static const char* _trusted_root_key_pem =
+    "-----BEGIN PUBLIC KEY-----\n"
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC6nEwMDIYZOj/iPWsCzaEKi71OiO\n"
+    "SLRFhWGjbnBVJfVnkY4u3IjkDYYL0MxO4mqsyYjlBalTVYxFP2sJBK5zlA==\n"
+    "-----END PUBLIC KEY-----\n";
+
 OE_INLINE uint8_t _is_space(uint8_t c)
 {
     return (
@@ -520,24 +527,53 @@ oe_result_t oe_verify_tcb_signature(
     oe_cert_chain_t* tcb_cert_chain)
 {
     oe_result_t result = OE_FAILURE;
+    oe_cert_t root_cert = {0};
     oe_cert_t leaf_cert = {0};
+    oe_ec_public_key_t tcb_root_key = {0};
     oe_ec_public_key_t tcb_signing_key = {0};
+    oe_ec_public_key_t trusted_root_key = {0};
+    bool root_of_trust_match = false;
 
     if (tcb_info_start == NULL || tcb_info_size == 0 || signature == NULL ||
         tcb_cert_chain == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    OE_CHECK(oe_cert_chain_get_root_cert(tcb_cert_chain, &root_cert));
     OE_CHECK(oe_cert_chain_get_leaf_cert(tcb_cert_chain, &leaf_cert));
+
+    OE_CHECK(oe_cert_get_ec_public_key(&root_cert, &tcb_root_key));
     OE_CHECK(oe_cert_get_ec_public_key(&leaf_cert, &tcb_signing_key));
 
     OE_CHECK(
         _ECDSAVerify(
             &tcb_signing_key, tcb_info_start, tcb_info_size, signature));
+
+    // Ensure that the root certificate matches root of trust.
+    OE_CHECK(
+        oe_ec_public_key_read_pem(
+            &trusted_root_key,
+            (const uint8_t*)_trusted_root_key_pem,
+            oe_strlen(_trusted_root_key_pem) + 1));
+
+    OE_CHECK(
+        oe_ec_public_key_equal(
+            &trusted_root_key, &tcb_root_key, &root_of_trust_match));
+
+    if (!root_of_trust_match)
+    {
+        OE_RAISE(OE_INVALID_REVOCATION_INFO);
+    }
+
     OE_TRACE_INFO("tcb info ecdsa attestation succeeded\n");
 
     result = OE_OK;
 done:
+    oe_ec_public_key_free(&trusted_root_key);
     oe_ec_public_key_free(&tcb_signing_key);
+    oe_ec_public_key_free(&tcb_root_key);
+
+    oe_cert_free(&leaf_cert);
+    oe_cert_free(&root_cert);
 
     return result;
 }

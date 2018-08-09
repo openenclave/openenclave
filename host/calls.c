@@ -367,6 +367,10 @@ static oe_result_t _HandleOCALL(
             HandleGetQuote(argIn);
             break;
 
+        case OE_OCALL_GET_REVOCATION_INFO:
+            HandleGetQuoteRevocationInfo(argIn);
+            break;
+
         case OE_OCALL_GET_QE_TARGET_INFO:
             HandleGetQETargetInfo(argIn);
             break;
