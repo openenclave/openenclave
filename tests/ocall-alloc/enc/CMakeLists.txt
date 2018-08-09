@@ -10,4 +10,3 @@ add_enclave_executable(ocall-alloc_enc sign.conf private.pem
 target_link_libraries(ocall-alloc_enc oelibcxx oeenclave)
 
 target_compile_features(ocall-alloc_enc PRIVATE cxx_auto_type)
-

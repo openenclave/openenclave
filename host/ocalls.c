@@ -25,6 +25,7 @@
 #include "enclave.h"
 #include "ocalls.h"
 #include "quote.h"
+#include "sgxquoteprovider.h"
 
 void HandleMalloc(uint64_t argIn, uint64_t* argOut)
 {
@@ -162,6 +163,15 @@ void HandleGetQuote(uint64_t argIn)
 
     args->result =
         sgx_get_quote(&args->sgxReport, args->quote, &args->quoteSize);
+}
+
+void HandleGetQuoteRevocationInfo(uint64_t argIn)
+{
+    oe_get_revocation_info_args_t* args = (oe_get_revocation_info_args_t*)argIn;
+    if (!args)
+        return;
+
+    args->result = oe_get_revocation_info(args);
 }
 
 void HandleGetQETargetInfo(uint64_t argIn)

@@ -37,11 +37,6 @@ OE_INLINE bool _is_valid(const oe_asn1_t* asn1)
     return true;
 }
 
-OE_INLINE size_t _remaining(const oe_asn1_t* asn1)
-{
-    return _end(asn1) - asn1->ptr;
-}
-
 static oe_result_t _get_length(oe_asn1_t* asn1, size_t* length)
 {
     oe_result_t result = OE_UNEXPECTED;

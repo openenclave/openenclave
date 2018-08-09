@@ -383,9 +383,6 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
     return;
 }
 
-#pragma GCC push_options
-#pragma GCC target("xsave")
-
 /*
 **==============================================================================
 **
@@ -415,4 +412,3 @@ void _oe_cleanup_xstates(void)
 
     return;
 }
-#pragma GCC pop_options

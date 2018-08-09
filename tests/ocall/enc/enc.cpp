@@ -35,9 +35,23 @@ OE_ECALL void Test4(void* args)
 static oe_once_t _once = OE_ONCE_INIT;
 static oe_thread_key_t _key = OE_THREADKEY_INITIALIZER;
 
+static bool _destructor_called = false;
+
+static void _destructor(void* data)
+{
+    char* str = (char*)data;
+
+    if (oe_strcmp(str, "TSD-DATA") == 0)
+    {
+        oe_host_free(str);
+        _destructor_called = true;
+        OE_TEST(oe_thread_set_specific(_key, NULL) == 0);
+    }
+}
+
 static void _init()
 {
-    if (oe_thread_key_create(&_key, NULL) != 0)
+    if (oe_thread_key_create(&_key, _destructor) != 0)
         oe_abort();
 }
 
@@ -74,6 +88,16 @@ OE_ECALL void GetTSD(void* args_)
 
     args->value = oe_thread_getspecific(_key);
     args->ret = 0;
+}
+
+OE_ECALL void was_destructor_called(void* args_)
+{
+    was_destructor_called_args_t* args = (was_destructor_called_args_t*)args_;
+
+    if (!args)
+        oe_abort();
+
+    args->called = _destructor_called;
 }
 
 OE_ECALL void TestMyOCall(void* args_)

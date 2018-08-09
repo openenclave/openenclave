@@ -3,8 +3,7 @@
 #if defined(OE_USE_LIBSGX)
 
 #include "sgxquote.h"
-#include <openenclave/internal/defs.h>
-#include <sgx_ql_oe_wrapper.h>
+#include <sgx_ngsa_ql_wrapper.h>
 
 // Check consistency with OE definition.
 OE_STATIC_ASSERT(sizeof(sgx_target_info_t) == 512);

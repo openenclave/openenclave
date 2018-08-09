@@ -15,7 +15,7 @@ OE_INLINE void oe_illegal_instruction(void)
 
 OE_INLINE void oe_segmentation_violation(void)
 {
-    *((int*)0) = 0;
+    *((volatile int*)0) = 0;
 }
 
 OE_INLINE void oe_pause(void)
