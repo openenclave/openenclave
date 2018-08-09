@@ -24,6 +24,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include "enclave.h"
 #include "memalign.h"
 #include "sgxmeasure.h"
 #include "signkey.h"
@@ -708,6 +709,43 @@ oe_result_t oe_sgx_initialize_enclave(
     }
 
     context->state = OE_SGX_LOAD_STATE_ENCLAVE_INITIALIZED;
+    result = OE_OK;
+
+done:
+
+    return result;
+}
+
+oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
+{
+    oe_result_t result = OE_UNEXPECTED;
+
+    if (!enclave)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+#if defined(OE_USE_LIBSGX)
+
+    if (!enclave->simulate)
+    {
+        uint32_t enclaveError = 0;
+        if (!enclave_delete((void*)enclave->addr, &enclaveError))
+            OE_RAISE(OE_PLATFORM_ERROR);
+        if (enclaveError != 0)
+            OE_RAISE(OE_PLATFORM_ERROR);
+    }
+
+#elif defined(__linux__)
+
+    /* Non-FLC Linux allocates memory in both simulation & SGX */
+    munmap((void*)enclave->addr, enclave->size);
+
+#elif defined(_WIN32)
+
+    if (!enclave->simulate)
+        VirtualFree((void*)enclave->addr, 0, MEM_RELEASE);
+
+#endif
+
     result = OE_OK;
 
 done:

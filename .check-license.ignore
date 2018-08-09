@@ -21,6 +21,7 @@
 ./include/openenclave/internal/queue.h
 LICENSE
 *.md
+*.json
 ./.openenclaveroot
 *.pem
 ./prereqs/aesm/.build
@@ -70,3 +71,4 @@ VERSION
 ./tests/libunwind/tests.all
 ./tests/libunwind/tests.supported
 ./tests/libunwind/tests.unsupported
+Jenkinsfile

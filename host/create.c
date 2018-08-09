@@ -782,6 +782,7 @@ done:
     return result;
 }
 
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 OE_INLINE void _DumpRelocations(const void* data, size_t size)
 {
     const Elf64_Rela* p = (const Elf64_Rela*)data;
@@ -800,6 +801,7 @@ OE_INLINE void _DumpRelocations(const void* data, size_t size)
             OE_LLD(p->r_addend));
     }
 }
+#endif
 
 /*
 **==============================================================================
@@ -1304,17 +1306,14 @@ done:
     return result;
 }
 
-#if defined(__linux__)
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
-
 /*
 ** These functions are needed to notify the debugger. They should not be
-** optimized out even they don't do anything in here.
+** optimized out even though they don't do anything in here.
 */
 
-void _oe_notify_gdb_enclave_termination(
+OE_NO_OPTIMIZE_BEGIN
+
+OE_NEVER_INLINE void _oe_notify_gdb_enclave_termination(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -1326,7 +1325,7 @@ void _oe_notify_gdb_enclave_termination(
     return;
 }
 
-void _oe_notify_gdb_enclave_creation(
+OE_NEVER_INLINE void _oe_notify_gdb_enclave_creation(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -1338,9 +1337,7 @@ void _oe_notify_gdb_enclave_creation(
     return;
 }
 
-#if defined(__linux__)
-#pragma GCC pop_options
-#endif
+OE_NO_OPTIMIZE_END
 
 /*
 ** This method encapsulates all steps of the enclave creation process:
@@ -1450,7 +1447,6 @@ done:
 oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t i;
 
     /* Check parameters */
     if (!enclave || enclave->magic != ENCLAVE_MAGIC)
@@ -1463,48 +1459,52 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     _oe_notify_gdb_enclave_termination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
 
+    /* Once the enclave destructor has been invoked, the enclave memory
+     * and data structures are freed on a best effort basis from here on */
+
     /* Remove this enclave from the global list. */
     _oe_remove_enclave_instance(enclave);
 
     /* Clear the magic number */
     enclave->magic = 0;
 
-/* Unmap the enclave memory */
-#if defined(__linux__)
-    munmap((void*)enclave->addr, enclave->size);
-#elif defined(_WIN32)
-    VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
-#endif
-
-    /* Release the enclave->ecalls[] array */
+    oe_mutex_lock(&enclave->lock);
     {
-        for (i = 0; i < enclave->num_ecalls; i++)
-            free(enclave->ecalls[i].name);
+        /* Unmap the enclave memory region.
+         * Track failures reported by the platform, but do not exit early */
+        result = oe_sgx_delete_enclave(enclave);
 
-        free(enclave->ecalls);
-    }
+        /* Release the enclave->ecalls[] array */
+        {
+            for (size_t i = 0; i < enclave->num_ecalls; i++)
+                free(enclave->ecalls[i].name);
+
+            free(enclave->ecalls);
+        }
 
 #if defined(_WIN32)
 
-    /* Release Windows events created during enclave creation */
-    for (size_t i = 0; i < enclave->num_bindings; i++)
-    {
-        ThreadBinding* binding = &enclave->bindings[i];
-        CloseHandle(binding->event.handle);
-    }
+        /* Release Windows events created during enclave creation */
+        for (size_t i = 0; i < enclave->num_bindings; i++)
+        {
+            ThreadBinding* binding = &enclave->bindings[i];
+            CloseHandle(binding->event.handle);
+        }
 
 #endif
 
-    /* Free the path name of the enclave image file */
-    free(enclave->path);
+        /* Free the path name of the enclave image file */
+        free(enclave->path);
+    }
+    /* Release and destroy the mutex object */
+    oe_mutex_unlock(&enclave->lock);
+    oe_mutex_destroy(&enclave->lock);
 
     /* Clear the contents of the enclave structure */
     memset(enclave, 0x00, sizeof(oe_enclave_t));
 
     /* Free the enclave structure */
     free(enclave);
-
-    result = OE_OK;
 
 done:
 

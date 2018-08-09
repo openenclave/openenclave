@@ -281,12 +281,6 @@ static void _HandleCallHost(uint64_t arg)
     if (!args)
         return;
 
-    if (!args->func)
-    {
-        args->result = OE_INVALID_PARAMETER;
-        return;
-    }
-
     args->result = OE_UNEXPECTED;
 
     /* Find the host function with this name */
@@ -371,6 +365,10 @@ static oe_result_t _HandleOCALL(
 
         case OE_OCALL_GET_QUOTE:
             HandleGetQuote(argIn);
+            break;
+
+        case OE_OCALL_GET_REVOCATION_INFO:
+            HandleGetQuoteRevocationInfo(argIn);
             break;
 
         case OE_OCALL_GET_QE_TARGET_INFO:
@@ -748,15 +746,12 @@ OE_CATCH:
     return result;
 }
 
-#if defined(__linux__)
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
-
 /*
 ** These two functions are needed to notify the debugger. They should not be
-** optimized out even they don't do anything in here.
+** optimized out even though they don't do anything in here.
 */
+
+OE_NO_OPTIMIZE_BEGIN
 
 OE_NEVER_INLINE void _oe_notify_ocall_start(
     oe_host_ocall_frame_t* frame_pointer,
@@ -778,6 +773,4 @@ OE_NEVER_INLINE void _oe_notify_ocall_end(
     return;
 }
 
-#if defined(__linux__)
-#pragma GCC pop_options
-#endif
+OE_NO_OPTIMIZE_END

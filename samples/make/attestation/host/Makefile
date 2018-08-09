@@ -18,7 +18,7 @@ LIBRARIES += -lcrypto
 LIBRARIES += -lpthread
 LIBRARIES += -ldl
 LIBRARIES += -lsgx_enclave_common
-LIBRARIES += -lsgxoeql
+LIBRARIES += -lsgx_ngsa_ql
 LIBRARIES += -lsgx_urts_ng
 
 build:

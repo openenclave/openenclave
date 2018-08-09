@@ -267,7 +267,7 @@ void __oe_assert_fail(
  * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
  * this function returns OE_BUFFER_TOO_SMALL.
  *
- * @param options Specifying default value (0) generates a report for local
+ * @param flags Specifying default value (0) generates a report for local
  * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
  * report for remote attestation.
  * @param report_data The report data that will be included in the report.
@@ -286,9 +286,9 @@ void __oe_assert_fail(
  *
  */
 oe_result_t oe_get_report(
-    uint32_t options,
-    const uint8_t* report_data,
-    uint32_t report_data_size,
+    uint32_t flags,
+    const uint8_t* reportData,
+    uint32_t reportDataSize,
     const void* optParams,
     uint32_t optParamsSize,
     uint8_t* reportBuffer,
