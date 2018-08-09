@@ -130,9 +130,9 @@ fi
 
 #Finally run the tests in Simulator mode or on Hardware
 if [ ${DISABLE_SIM} != 1 ]; then
-   OE_SIMULATION=1 ctest
+   OE_SIMULATION=1 ctest --output-on-failure
 else
-   ctest
+   ctest --output-on-failure
 fi
 
 if [ "$?" != "0" ]; then
