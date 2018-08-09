@@ -143,10 +143,11 @@ oe_result_t __oe_load_segments(
             if (oeinfo_size && (oeinfo_offset >= seg.offset) &&
                 (oeinfo_offset <= seg.offset + seg.filesz))
             {
+                /* Check the section doesn't cross the end of the segment */
                 if ((oeinfo_offset + oeinfo_size) > (seg.offset + seg.filesz))
-                    OE_THROW(OE_FAILURE); // Section overlaps end of segment?!
-                /* All sizes/address calculations in bytes */
-                memset(
+                    OE_THROW(OE_OUT_OF_BOUNDS);
+
+                memset( // All sizes/address calculations in bytes
                     ((char*)seg.filedata) + oeinfo_offset - seg.offset,
                     0,
                     oeinfo_size);
