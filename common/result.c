@@ -104,6 +104,12 @@ const char* oe_result_str(oe_result_t result)
             return "OE_TCB_INFO_PARSE_ERROR";
         case OE_TCB_LEVEL_INVALID:
             return "OE_TCB_LEVEL_INVALID";
+        case OE_QUOTE_PROVIDER_LOAD_ERROR:
+            return "OE_QUOTE_PROVIDER_LOAD_ERROR";
+        case OE_QUOTE_PROVIDER_CALL_ERROR:
+            return "OE_QUOTE_PROVIDER_ERROR";
+        case OE_INVALID_REVOCATION_INFO:
+            return "OE_INVALID_REVOCATION_INFO";
         case __OE_RESULT_MAX:
             break;
     }
