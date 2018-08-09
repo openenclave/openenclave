@@ -159,7 +159,6 @@ done:
 oe_result_t oe_get_report(
     oe_enclave_t* enclave,
     uint32_t flags,
-    uint32_t flags,
     const void* optParams,
     uint32_t optParamsSize,
     uint8_t* reportBuffer,

@@ -45,7 +45,7 @@ static void _destructor(void* data)
     {
         oe_host_free(str);
         _destructor_called = true;
-        OE_TEST(oe_thread_set_specific(_key, NULL) == 0);
+        OE_TEST(oe_thread_setspecific(_key, NULL) == 0);
     }
 }
 

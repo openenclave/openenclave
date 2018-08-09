@@ -111,7 +111,6 @@ static ThreadBuckets* _GetThreadBuckets()
 
         *tb = (ThreadBuckets){};
         oe_thread_setspecific(_HostStackTlsKey, tb);
-        __cxa_atexit(oe_free_thread_buckets, tb, NULL);
     }
 
     // Under normal operation, there is no reentrancy. There could be if the
