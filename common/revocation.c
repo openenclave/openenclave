@@ -94,7 +94,7 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
 
     if (result == OE_OK)
     {
-        // At most 1 distrubtion point is expected.
+        // At most 1 distribution point is expected.
         if (num_urls != 1)
             OE_RAISE(OE_FAILURE);
         // Include null character in length.
@@ -250,8 +250,8 @@ done:
 }
 
 oe_result_t oe_enforce_revocation(
-    oe_cert_t* intermediate_cert,
     oe_cert_t* leaf_cert,
+    oe_cert_t* intermediate_cert,
     oe_cert_chain_t* pck_cert_chain)
 {
     oe_result_t result = OE_FAILURE;
@@ -285,8 +285,8 @@ oe_result_t oe_enforce_revocation(
         _get_crl_distribution_point(intermediate_cert, &intermediate_crl_url));
     OE_CHECK(_get_crl_distribution_point(leaf_cert, &leaf_crl_url));
 
-    revocation_args.crl_urls[0] = intermediate_crl_url;
-    revocation_args.crl_urls[1] = leaf_crl_url;
+    revocation_args.crl_urls[0] = leaf_crl_url;
+    revocation_args.crl_urls[1] = intermediate_crl_url;
     revocation_args.num_crl_urls = 2;
 
     OE_CHECK(_get_revocation_info(&revocation_args));
@@ -311,17 +311,17 @@ oe_result_t oe_enforce_revocation(
                 revocation_args.crl_issuer_chain_size[i]));
     }
 
-    // Verify intermediate and leaf certs againt the CRL.
+    // Verify leaf and intermediate certs againt the CRL.
     OE_CHECK(
         oe_cert_verify(
-            intermediate_cert,
-            &crl_issuer_chain[0],
-            &crls[0],
-            &cert_verify_error));
+            leaf_cert, &crl_issuer_chain[0], &crls[0], &cert_verify_error));
 
     OE_CHECK(
         oe_cert_verify(
-            leaf_cert, &crl_issuer_chain[1], &crls[1], &cert_verify_error));
+            intermediate_cert,
+            &crl_issuer_chain[1],
+            &crls[1],
+            &cert_verify_error));
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
          ++i)

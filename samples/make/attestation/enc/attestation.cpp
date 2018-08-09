@@ -78,9 +78,14 @@ bool AttestQuote(
         return false;
     }
 
+    // Only accept CRL and Revocation information issued
+    // on or after Jan 1, 2017
+    oe_utc_date_time_t minValidIssueDate = {2017, 1, 1};
+
     // Verify the quote to ensure its authenticity.
     oe_report_t parsedReport = {0};
-    oe_result_t result = oe_verify_report(quote, quoteSize, &parsedReport);
+    oe_result_t result =
+        oe_verify_report(quote, quoteSize, &minValidIssueDate, &parsedReport);
     if (result != OE_OK)
     {
         ENC_DEBUG_PRINTF("oe_verify_report failed.");
