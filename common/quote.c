@@ -2,14 +2,16 @@
 // Licensed under the MIT License.
 #include "quote.h"
 #include <openenclave/enclave.h>
-#include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/sgxcertextensions.h>
+#include <openenclave/internal/report.h>
+#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
+#include "revocation.h"
 
 #ifdef OE_USE_LIBSGX
 
@@ -170,13 +172,11 @@ oe_result_t VerifyQuoteImpl(
     oe_ec_public_key_t attestationKey = {0};
     oe_cert_t leafCert = {0};
     oe_cert_t rootCert = {0};
+    oe_cert_t intermediateCert = {0};
     oe_ec_public_key_t leafPublicKey = {0};
     oe_ec_public_key_t rootPublicKey = {0};
     oe_ec_public_key_t expectedRootPublicKey = {0};
     bool keyEqual = false;
-    static uint8_t data[16 * 1024];
-    uint32_t dataSize = sizeof(data);
-    ParsedExtensionInfo parsedInfo = {{0}};
 
     OE_CHECK(
         _ParseQuote(
@@ -218,6 +218,7 @@ oe_result_t VerifyQuoteImpl(
         // Fetch leaf and root certificates.
         OE_CHECK(oe_cert_chain_get_leaf_cert(&pckCertChain, &leafCert));
         OE_CHECK(oe_cert_chain_get_root_cert(&pckCertChain, &rootCert));
+        OE_CHECK(oe_cert_chain_get_cert(&pckCertChain, 1, &intermediateCert));
 
         OE_CHECK(oe_cert_get_ec_public_key(&leafCert, &leafPublicKey));
         OE_CHECK(oe_cert_get_ec_public_key(&rootCert, &rootPublicKey));
@@ -235,7 +236,8 @@ oe_result_t VerifyQuoteImpl(
         if (!keyEqual)
             OE_RAISE(OE_VERIFY_FAILED);
 
-        OE_CHECK(ParseSGXExtensions(&leafCert, data, &dataSize, &parsedInfo));
+        OE_CHECK(
+            oe_enforce_revocation(&leafCert, &intermediateCert, &pckCertChain));
     }
 
     // Quote validations.
@@ -312,8 +314,8 @@ done:
     oe_ec_public_key_free(&attestationKey);
     oe_cert_free(&leafCert);
     oe_cert_free(&rootCert);
+    oe_cert_free(&intermediateCert);
     oe_cert_chain_free(&pckCertChain);
-
     return result;
 }
 
