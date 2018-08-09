@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 // Uncomment this line to enable tracing.
-// #define OE_TRACE_LEVEL 2
+#define OE_TRACE_LEVEL 2
 
 #include <dlfcn.h>
 #include <openenclave/internal/hexdump.h>
