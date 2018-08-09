@@ -8,7 +8,6 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 
-
 /*
 **==============================================================================
 **
