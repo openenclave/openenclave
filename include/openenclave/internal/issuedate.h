@@ -32,7 +32,7 @@ OE_CHECK_SIZE(sizeof(oe_issue_date_t), 24);
 /**
  * Checked whether the given issue date is a valid date time.
  */
-OE_INLINE bool oe_issue_date_is_valid(const oe_issue_date_t* issue_date)
+OE_INLINE oe_result_t oe_issue_date_is_valid(const oe_issue_date_t* issue_date)
 {
     oe_result_t result = OE_FAILURE;
     bool is_leap_year = false;
@@ -47,16 +47,6 @@ OE_INLINE bool oe_issue_date_is_valid(const oe_issue_date_t* issue_date)
     if (issue_date->year < 1970)
         OE_RAISE(OE_INVALID_UTC_DATE_TIME);
 
-    // Year must be divisible by 4.
-    // If also divisible by 100, not a leap year unless divisible by 400.
-    if ((issue_date->year % 4) == 0)
-    {
-        if ((issue_date->year % 100) == 0)
-            is_leap_year = ((issue_date->year % 400) == 0);
-        else
-            is_leap_year = true;
-    }
-
     // Check month and day validity
     day = issue_date->day;
     switch (issue_date->month)
@@ -65,6 +55,17 @@ OE_INLINE bool oe_issue_date_is_valid(const oe_issue_date_t* issue_date)
             valid_day = (day >= 1 && day <= 31);
             break;
         case 2:
+            // Check for leap year.
+            // Year must be divisible by 4.
+            if ((issue_date->year % 4) == 0)
+            {
+                // If also divisible by 100, not a leap year 
+                // unless divisible by 400.            
+                if ((issue_date->year % 100) == 0)
+                    is_leap_year = ((issue_date->year % 400) == 0);
+                else
+                    is_leap_year = true;
+            }        
             valid_day = (day >= 1 && day <= (is_leap_year ? 29 : 28));
             break;
         case 3:
@@ -155,8 +156,7 @@ oe_result_t oe_issue_date_to_string(
         OE_RAISE(OE_BUFFER_TOO_SMALL);
     }
 
-    if (!oe_issue_date_is_valid(issue_date))
-        OE_RAISE(OE_INVALID_UTC_DATE_TIME);
+    OE_CHECK(oe_issue_date_is_valid(issue_date));
 
     p += oe_num_to_str(issue_date->year, 4, p);
     *p++ = '-';
@@ -221,8 +221,7 @@ oe_result_t oe_issue_date_from_string(
     if (*p++ != 'Z')
         OE_RAISE(OE_INVALID_UTC_DATE_TIME);
 
-    if (!oe_issue_date_is_valid(issue_date))
-        OE_RAISE(OE_INVALID_UTC_DATE_TIME);
+    OE_CHECK(oe_issue_date_is_valid(issue_date));
 
     result = OE_OK;
 done:
