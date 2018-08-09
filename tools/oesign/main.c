@@ -234,7 +234,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
     {
         /* Remove leading and trailing whitespace */
         str_ltrim(&str, " \t");
-        str_rtrim(&str, " \t\n");
+        str_rtrim(&str, " \t\n\r");
 
         /* Skip comments and empty lines */
         if (str_ptr(&str)[0] == '#' || str_len(&str) == 0)
