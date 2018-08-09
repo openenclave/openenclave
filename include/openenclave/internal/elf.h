@@ -97,7 +97,7 @@ ELF_EXTERNC_BEGIN
 #define PT_LOAD 1          /* Loadable segment */
 #define PT_DYNAMIC 2       /* Dynamic linking tables */
 #define PT_INTERP 3        /* Program interpreter path name */
-#define PT_NOTE 4          /* Note sections */
+#define PT_NOTE 4          /* Note segment */
 #define PT_SHLIB 5         /* Reserved */
 #define PT_PHDR 6          /* Program header table */
 #define PT_TLS 7           /* Thread local storage segment */
