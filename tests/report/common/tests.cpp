@@ -27,7 +27,7 @@ oe_enclave_t* g_Enclave = NULL;
 #define GetReport(flags, rd, rds, op, ops, rb, rbs) \
     oe_get_report(g_Enclave, flags, rd, rds, op, ops, rb, rbs)
 #else
-// Host side API does not have reportData and reportDataSize
+// Host side API does not have report_data and report_data_size
 #define GetReport(flags, rd, rds, op, ops, rb, rbs) \
     oe_get_report(g_Enclave, flags, op, ops, rb, rbs)
 #endif
@@ -160,10 +160,10 @@ TEST_FCN void TestLocalReport(void* args_)
     sgx_target_info_t* targetInfo = (sgx_target_info_t*)args_;
 
 #ifdef OE_BUILD_ENCLAVE
-    uint32_t reportDataSize = 0;
-    uint8_t reportData[OE_REPORT_DATA_SIZE];
+    uint32_t report_data_size = 0;
+    uint8_t report_data[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
-        reportData[i] = i;
+        report_data[i] = i;
 #endif
 
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
@@ -258,7 +258,7 @@ TEST_FCN void TestLocalReport(void* args_)
                 reportBuffer,
                 &reportSize) == OE_INVALID_PARAMETER);
     }
-#endif // End of reportData scenarios
+#endif // End of report_data scenarios
 
     /*
      * optParams scenarios:
@@ -341,10 +341,10 @@ TEST_FCN void TestLocalReport(void* args_)
 TEST_FCN void TestRemoteReport(void* args_)
 {
 #ifdef OE_BUILD_ENCLAVE
-    uint32_t reportDataSize = 0;
-    uint8_t reportData[OE_REPORT_DATA_SIZE];
+    uint32_t report_data_size = 0;
+    uint8_t report_data[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
-        reportData[i] = i;
+        report_data[i] = i;
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 #endif
 
@@ -385,8 +385,8 @@ TEST_FCN void TestRemoteReport(void* args_)
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -408,8 +408,8 @@ TEST_FCN void TestRemoteReport(void* args_)
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -425,8 +425,8 @@ TEST_FCN void TestRemoteReport(void* args_)
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -604,8 +604,8 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
     uint32_t reportSize = sizeof(reportBuffer);
 
 #if OE_BUILD_ENCLAVE
-    uint8_t reportData[sizeof(sgx_report_data_t)];
-    uint32_t reportDataSize = sizeof(reportData);
+    uint8_t report_data[sizeof(sgx_report_data_t)];
+    uint32_t report_data_size = sizeof(report_data);
 
     for (uint32_t i = 0; i < sizeof(report_data); ++i)
     {
@@ -635,8 +635,8 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -648,8 +648,8 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,

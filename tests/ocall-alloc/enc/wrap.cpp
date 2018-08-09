@@ -57,11 +57,11 @@ oe_result_t test_thread_key_create(
 
 void test_free_thread_buckets(void* arg);
 
-oe_result_t test_thread_set_specific(oe_thread_key_t key, const void* value)
+oe_result_t test_thread_setspecific(oe_thread_key_t key, const void* value)
 {
     oe_result_t result;
 
-    if ((result = oe_thread_set_specific(key, value)) == OE_OK)
+    if ((result = oe_thread_setspecific(key, value)) == OE_OK)
         test_cxa_atexit(test_free_thread_buckets, (void*)value, NULL);
 
     return OE_OK;

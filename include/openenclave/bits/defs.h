@@ -142,4 +142,7 @@
 #define OE_USE_DEBUG_MALLOC
 #endif
 
+/* The maxiumum value for a four-byte enum tag */
+#define OE_ENUM_MAX 0xffffffff
+
 #endif /* _OE_BITS_DEFS_H */
