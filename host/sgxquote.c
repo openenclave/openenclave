@@ -4,6 +4,7 @@
 
 #include "sgxquote.h"
 #include <sgx_ngsa_ql_wrapper.h>
+#include <openenclave/internal/defs.h>
 
 // Check consistency with OE definition.
 OE_STATIC_ASSERT(sizeof(sgx_target_info_t) == 512);
