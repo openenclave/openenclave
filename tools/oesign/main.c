@@ -100,7 +100,7 @@ static int _UpdateAndWriteSharedLib(
         if (Elf64_AddSection(
                 &elf,
                 OE_INFO_SECTION_NAME,
-                SHT_NOTE,
+                SHT_PROGBITS,
                 properties,
                 sizeof(oe_sgx_enclave_properties_t)) != 0)
         {
