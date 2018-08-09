@@ -177,6 +177,7 @@ oe_result_t oe_verify_report(
     oe_enclave_t* enclave,
     const uint8_t* report,
     uint32_t reportSize,
+    const oe_utc_date_time_t* minCrlTcbIssueDate,
     oe_report_t* parsedReport)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -190,6 +191,7 @@ oe_result_t oe_verify_report(
 
     arg.report = (uint8_t*)report;
     arg.reportSize = reportSize;
+    arg.minCrlTcbIssueDate = minCrlTcbIssueDate;
     arg.result = OE_FAILURE;
 
     // Call enclave to verify the report. Do not ask the enclave to return a

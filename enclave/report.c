@@ -41,12 +41,12 @@ done:
 }
 
 // oe_verify_report needs crypto library's cmac computation. oecore does not
-// have
-// crypto functionality. Hence oe_verify report is implemented here instead of
-// in oecore. Also see ECall_HandleVerifyReport below.
+// have crypto functionality. Hence oe_verify report is implemented here instead
+// of in oecore. Also see ECall_HandleVerifyReport below.
 oe_result_t oe_verify_report(
     const uint8_t* report,
     uint32_t reportSize,
+    const oe_utc_date_time_t* minCrlTcbIssueDate,
     oe_report_t* parsedReport)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -63,11 +63,28 @@ oe_result_t oe_verify_report(
 
     if (oeReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
     {
+        // Date must be specified for remote attestation.
+        if (minCrlTcbIssueDate == NULL)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
         OE_CHECK(
-            VerifyQuoteImpl(report, reportSize, NULL, 0, NULL, 0, NULL, 0));
+            VerifyQuoteImpl(
+                report,
+                reportSize,
+                NULL,
+                0,
+                NULL,
+                0,
+                NULL,
+                0,
+                minCrlTcbIssueDate));
     }
     else
     {
+        // Date is not used for local attestation. Hence must be NULL.
+        if (minCrlTcbIssueDate != NULL)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
         sgxReport = (sgx_report_t*)report;
 
         OE_CHECK(_oe_get_report_key(sgxReport, &sgxKey));
@@ -104,12 +121,15 @@ done:
 static oe_result_t _SafeCopyVerifyReportArgs(
     uint64_t argIn,
     oe_verify_report_args_t* safeArg,
-    uint8_t* reportBuffer)
+    uint8_t** buffer)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_verify_report_args_t* unsafeArg = (oe_verify_report_args_t*)argIn;
+    uint32_t bufferSize = 0;
+    uint8_t* p = NULL;
 
-    if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)))
+    if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)) ||
+        buffer == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // Copy arg to prevent TOCTOU issues.
@@ -122,9 +142,29 @@ static oe_result_t _SafeCopyVerifyReportArgs(
     if (safeArg->reportSize > OE_MAX_REPORT_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    bufferSize = sizeof(oe_utc_date_time_t) + safeArg->reportSize;
+
+    *buffer = oe_calloc(1, bufferSize);
+    if (*buffer == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    p = *buffer;
+
+    if (safeArg->minCrlTcbIssueDate)
+    {
+        if (!oe_is_outside_enclave(
+                safeArg->minCrlTcbIssueDate, sizeof(oe_utc_date_time_t)))
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        oe_secure_memcpy(
+            p, safeArg->minCrlTcbIssueDate, sizeof(oe_utc_date_time_t));
+        safeArg->minCrlTcbIssueDate = (oe_utc_date_time_t*)p;
+        p += sizeof(oe_utc_date_time_t);
+    }
+
     // Copy report to prevent TOCTOU issues.
-    oe_secure_memcpy(reportBuffer, safeArg->report, safeArg->reportSize);
-    safeArg->report = reportBuffer;
+    oe_secure_memcpy(p, safeArg->report, safeArg->reportSize);
+    safeArg->report = p;
 
     result = OE_OK;
 
@@ -156,16 +196,18 @@ void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_verify_report_args_t arg;
-    uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
+    uint8_t* buffer = NULL;
 
-    OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, reportBuffer));
+    OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, &buffer));
 
-    OE_CHECK(oe_verify_report(reportBuffer, arg.reportSize, NULL));
+    OE_CHECK(
+        oe_verify_report(
+            arg.report, arg.reportSize, arg.minCrlTcbIssueDate, NULL));
 
     // success.
     result = OE_OK;
-
 done:
     arg.result = result;
     _SafeCopyVerifyReportArgsOuput(&arg, argIn);
+    oe_free(buffer);
 }

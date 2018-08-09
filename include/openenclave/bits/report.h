@@ -104,6 +104,20 @@ typedef struct _oe_report
     oe_identity_t identity;
 } oe_report_t;
 
+/**
+ * oe_utc_date_time_t structure holds a UTC time value used as argument to
+ * oe_verify_report.
+ */
+typedef struct _oe_utc_date_time
+{
+    uint32_t year;
+    uint32_t month;
+    uint32_t day;
+    uint32_t hours;
+    uint32_t minutes;
+    uint32_t seconds;
+} oe_utc_date_time_t;
+
 OE_EXTERNC_END
 
 #endif /* _OE_BITS_REPORT_H */
