@@ -80,6 +80,7 @@ typedef enum _oe_func {
     /* Caution: always add new ECALL function numbers here */
 
     OE_OCALL_CALL_HOST = OE_OCALL_BASE,
+    OE_OCALL_CALL_HOST_BY_ADDRESS,
     OE_OCALL_GET_QE_TARGET_INFO,
     OE_OCALL_GET_QUOTE,
     OE_OCALL_GET_REVOCATION_INFO,
@@ -196,7 +197,7 @@ OE_INLINE uint16_t oe_get_result_from_call_arg1(uint64_t arg)
 
 typedef void (*oe_enclave_func_t)(void* args);
 
-typedef struct oe_call_enclave_args_t
+typedef struct _oe_call_enclave_args
 {
     uint64_t func;
     uint64_t vaddr;
@@ -212,14 +213,29 @@ typedef struct oe_call_enclave_args_t
 **==============================================================================
 */
 
-typedef void (*oe_host_func_t)(void* args);
-
-typedef struct oe_call_host_args_t
+typedef struct _oe_call_host_args
 {
     void* args;
     oe_result_t result;
     OE_ZERO_SIZED_ARRAY char func[];
 } oe_call_host_args_t;
+
+/*
+**==============================================================================
+**
+** oe_call_host_by_address_args_t
+**
+**==============================================================================
+*/
+
+typedef void (*oe_host_func_t)(void* args);
+
+typedef struct _oe_call_host_by_address_args
+{
+    void* args;
+    oe_host_func_t func;
+    oe_result_t result;
+} oe_call_host_by_address_args_t;
 
 /*
 **==============================================================================

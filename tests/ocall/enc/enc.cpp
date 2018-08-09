@@ -143,3 +143,15 @@ OE_ECALL void TestOCallEdgeCases(void* args_)
     result = oe_call_host("B", NULL);
     OE_TEST(result == OE_NOT_FOUND);
 }
+
+OE_ECALL void test_callback(void* arg)
+{
+    test_callback_args_t* args = (test_callback_args_t*)arg;
+
+    if (args && args->callback)
+    {
+        /* Invoke the host function at the given address */
+        oe_result_t result = oe_call_host_by_address(args->callback, args);
+        OE_TEST(result == OE_OK);
+    }
+}

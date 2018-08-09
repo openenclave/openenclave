@@ -40,6 +40,15 @@ OE_OCALL void A(void* args)
     _funcACalled = true;
 }
 
+/* This function called by test_callback() ECALL */
+OE_OCALL void callback(void* arg)
+{
+    test_callback_args_t* args = (test_callback_args_t*)arg;
+
+    if (args)
+        args->out = args->in;
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -130,6 +139,19 @@ int main(int argc, const char* argv[])
 
         OE_TEST(result == OE_OK);
         OE_TEST(_funcACalled);
+    }
+
+    /* Test oe_call_host_by_address() by having enclave invoke host callback */
+    {
+        const uint64_t VALUE = 0xec39cae11f9b4e26;
+        test_callback_args_t args;
+
+        args.callback = callback;
+        args.in = VALUE;
+        args.out = 0;
+        OE_TEST(oe_call_enclave(enclave, "test_callback", &args) == OE_OK);
+        OE_TEST(args.in == VALUE);
+        OE_TEST(args.out == VALUE);
     }
 
     oe_terminate_enclave(enclave);
