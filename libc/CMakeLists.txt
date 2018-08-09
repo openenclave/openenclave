@@ -558,16 +558,16 @@ endif()
 if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_target_c_compile_flags_if_supported(oelibc PRIVATE
         -Wno-attributes
-        -Wno-parentheses
-        -Wno-pointer-sign
-        -Wno-unknown-pragmas
         -Wno-format
         -Wno-missing-braces
         -Wno-maybe-uninitialized
-        -Wno-error=unused-but-set-variable
-        -Wno-typedef-redefinition
+        -Wno-parentheses
+        -Wno-pointer-sign
         -Wno-shift-negative-value
         -Wno-string-plus-int
+        -Wno-typedef-redefinition
+        -Wno-unknown-pragmas
+        -Wno-error=unused-but-set-variable
         )
 endif()
 

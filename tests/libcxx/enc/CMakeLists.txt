@@ -19,11 +19,11 @@ target_compile_options(libcxxtest-support PRIVATE
 
 add_target_cxx_compile_flags_if_supported(libcxxtest-support PRIVATE
     -Wno-error=attributes
+    -Wno-error=maybe-uninitialized
     -Wno-error=strict-overflow
+    -Wno-error=unused-but-set-variable
     -Wno-error=unused-local-typedefs
     -Wno-error=unused-variable
-    -Wno-error=maybe-uninitialized
-    -Wno-error=unused-but-set-variable
     )
 
 target_link_libraries(libcxxtest-support PUBLIC oelibcxx oeenclave)
