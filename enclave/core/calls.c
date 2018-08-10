@@ -295,7 +295,7 @@ static void _HandleECall(
     if (td->ocall_flags & OE_OCALL_FLAG_NOT_REENTRANT)
     {
         /* ecalls not permitted. */
-        result = OE_UNEXPECTED;
+        result = OE_INVALID_REENTRANT_CALL;
         goto done;
     }
 
@@ -412,6 +412,15 @@ oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
     /*
         All calls to host happen via oe_ocall.
         Make all calls into host non re-entrant.
+
+        The current host thread is not allowed to call back into
+        the enclave. However, other host threads can.
+        To completely disable all callbacks into the enclave, this
+        flag must be made global rather than thread specific.
+
+        However, some primitives like thread wake wait where one
+        enclave thread wakes up another enclave thread via the host
+        needs to be carefully implemented.
     */
     uint16_t ocall_flags = OE_OCALL_FLAG_NOT_REENTRANT;
 

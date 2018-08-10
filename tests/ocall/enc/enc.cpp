@@ -143,3 +143,11 @@ OE_ECALL void TestOCallEdgeCases(void* args_)
     result = oe_call_host("B", NULL);
     OE_TEST(result == OE_NOT_FOUND);
 }
+
+OE_ECALL void TestReentrancy(void* args)
+{
+    oe_result_t result;
+
+    result = oe_call_host("TestReentrancy", NULL);
+    OE_TEST(result == OE_OK);
+}

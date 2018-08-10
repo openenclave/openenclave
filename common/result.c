@@ -20,6 +20,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_BUFFER_TOO_SMALL";
         case OE_INVALID_PARAMETER:
             return "OE_INVALID_PARAMETER";
+        case OE_INVALID_REENTRANT_CALL:
+            return "OE_INVALID_REENTRANT_CALL";
         case OE_OUT_OF_MEMORY:
             return "OE_OUT_OF_MEMORY";
         case OE_OUT_OF_STACK:
