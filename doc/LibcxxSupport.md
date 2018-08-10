@@ -20,7 +20,7 @@ csignal | Yes | - |
 cstdarg | No | - |
 cstddef | Yes | - |
 cstdint | Yes | - |
-cstdio | Partial | All I/O functions implicitly call out to untrusted host. Unsupported functions: vscanf(), fputs() |
+cstdio | Partial | All I/O functions implicitly call out to untrusted host. Unsupported functions: vscanf() |
 cstdlib | Partial | Unsupported functions: at_quick_exit(), quick_exit() |
 cstring | Partial | Unsupported functions: strcpy(), strcat(), strncat(), strchr(), strcspn(), strspn() |
 ctime | Yes | All time functions implicitly call out to untrusted host for time values. The resulting time values should not be used for security purposes. |

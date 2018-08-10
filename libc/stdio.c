@@ -162,6 +162,13 @@ size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)
     return 0;
 }
 
+int fputs(const char *s, FILE *f)
+{
+    size_t res = fwrite(s, strlen(s), 1, f);
+    assert (res == 1);
+    return 0;
+}
+
 int fflush(FILE* stream)
 {
     return 0;
