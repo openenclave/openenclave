@@ -102,7 +102,7 @@ oe_result_t __oe_load_segments(
 
         /* ATTN: handle PT_TLS (thread local storage) segments */
         if (ph->p_type == PT_TLS)
-            OE_THROW(OE_UNIMPLEMENTED);
+            OE_THROW(OE_UNSUPPORTED);
 
         /* Clear the segment */
         memset(&seg, 0, sizeof(oe_segment_t));
