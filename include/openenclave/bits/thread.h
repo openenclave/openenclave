@@ -240,13 +240,13 @@ oe_result_t oe_mutex_lock(oe_mutex_t* mutex);
  * @return OE_BUSY the lock was busy
  *
  */
-oe_result_t oe_mutex_try_lock(oe_mutex_t* mutex);
+oe_result_t oe_mutex_trylock(oe_mutex_t* mutex);
 
 /**
  * Release a mutex.
  *
  * This function releases the lock on a mutex obtained with either
- * oe_mutex_lock() or oe_mutex_try_lock().
+ * oe_mutex_lock() or oe_mutex_trylock().
  *
  * In enclaves, this function performs an OCALL, where it wakes the next
  * thread waiting on a mutex.
@@ -455,7 +455,7 @@ oe_result_t oe_rwlock_rdlock(oe_rwlock_t* rwLock);
  * @return OE_BUSY the lock was busy
  *
  */
-oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_tryrdlock(oe_rwlock_t* rwLock);
 
 /**
  * Release a read lock on a readers-writer lock.
@@ -463,9 +463,9 @@ oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* rwLock);
  * This function releases the lock on a readers-writer lock obtained with
  * one of these:
  *     - oe_rwlock_rdlock()
- *     - oe_rwlock_try_rdlock()
- *     - oe_rwlock_try_wrlock()
- *     - or oe_rwlock_try_wrlock()
+ *     - oe_rwlock_tryrdlock()
+ *     - oe_rwlock_trywrlock()
+ *     - or oe_rwlock_trywrlock()
  *
  * Behavior:
  *    1. To release a lock, a thread must make the same number of unlock
@@ -540,7 +540,7 @@ oe_result_t oe_rwlock_wrlock(oe_rwlock_t* rwLock);
  * @return OE_BUSY the lock was busy
  *
  */
-oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_trywrlock(oe_rwlock_t* rwLock);
 
 /**
  * Destroy a readers-writer lock.

@@ -136,13 +136,13 @@ int oe_mutex_lock(oe_mutex* Lock);
  *
  * @return Returns zero if the lock was obtained and non-zero if not.
  */
-int oe_mutex_try_lock(oe_mutex* mutex);
+int oe_mutex_trylock(oe_mutex* mutex);
 
 /**
  * Releases a mutex.
  *
  * This function releases the lock on a mutex obtained with either
- * oe_mutex_lock() or oe_mutex_try_lock().
+ * oe_mutex_lock() or oe_mutex_trylock().
  *
  * In enclaves, this function performs an OCALL, where it wakes the next
  * thread waiting on a mutex.
