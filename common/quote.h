@@ -5,7 +5,6 @@
 #define _OE_COMMON_QUOTE_H
 
 #include <openenclave/bits/defs.h>
-#include <openenclave/bits/report.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
 

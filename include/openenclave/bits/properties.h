@@ -85,7 +85,6 @@ typedef struct oe_sgx_enclave_properties_t
 
     /* (48) */
     uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
-
 } oe_sgx_enclave_properties_t;
 
 OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);

@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <openenclave/internal/elf.h>
-#include <openenclave/internal/issuedate.h>
 #include <openenclave/internal/mem.h>
 #include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
