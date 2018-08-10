@@ -22,11 +22,7 @@ static int _ThreadWait(oe_thread_data_t* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (oe_ocall(
-            OE_OCALL_THREAD_WAIT,
-            (uint64_t)tcs,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (oe_ocall(OE_OCALL_THREAD_WAIT, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
 
     return 0;
@@ -36,11 +32,7 @@ static int _ThreadWake(oe_thread_data_t* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (oe_ocall(
-            OE_OCALL_THREAD_WAKE,
-            (uint64_t)tcs,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (oe_ocall(OE_OCALL_THREAD_WAKE, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
 
     return 0;
@@ -58,11 +50,7 @@ static int _ThreadWakeWait(oe_thread_data_t* waiter, oe_thread_data_t* self)
     args->waiter_tcs = TD_ToTCS((TD*)waiter);
     args->self_tcs = TD_ToTCS((TD*)self);
 
-    if (oe_ocall(
-            OE_OCALL_THREAD_WAKE_WAIT,
-            (uint64_t)args,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (oe_ocall(OE_OCALL_THREAD_WAKE_WAIT, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     ret = 0;

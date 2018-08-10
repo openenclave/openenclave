@@ -89,6 +89,8 @@ oe_result_t oe_remove_vectored_exception_handler(
  * the call and not of the underlying function. The OCALL implementation must
  * define its own error reporting scheme based on **args**.
  *
+ * The host is not allowed to call back into the enclave in the same thread.
+ *
  * @param func The name of the enclave function that will be called.
  * @param args The arguments to be passed to the enclave function.
  *

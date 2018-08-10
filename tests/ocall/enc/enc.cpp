@@ -118,7 +118,7 @@ OE_ECALL void TestMyOCall(void* args_)
 
     /* Test low-level OCALL of illegal function number */
     {
-        oe_result_t result = oe_ocall(0xffff, 0, NULL, 0);
+        oe_result_t result = oe_ocall(0xffff, 0, NULL);
         OE_TEST(result == OE_NOT_FOUND);
     }
 }

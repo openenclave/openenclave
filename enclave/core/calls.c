@@ -239,6 +239,9 @@ static void _HandleExit(oe_code_t code, uint16_t func, uint64_t arg)
 
 void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
 
+/* Disallow OCALLs to call back into enclave with an ECALL */
+#define OE_OCALL_FLAG_NOT_REENTRANT (1u << 0)
+
 /*
 **==============================================================================
 **
@@ -399,11 +402,7 @@ OE_INLINE void _HandleORET(TD* td, uint16_t func, uint16_t result, int64_t arg)
 **==============================================================================
 */
 
-oe_result_t oe_ocall(
-    uint16_t func,
-    uint64_t argIn,
-    uint64_t* argOut,
-    uint16_t ocall_flags)
+oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
     TD* td = TD_Get();
@@ -414,7 +413,7 @@ oe_result_t oe_ocall(
         All calls to host happen via oe_ocall.
         Make all calls into host non re-entrant.
     */
-    ocall_flags |= OE_OCALL_FLAG_NOT_REENTRANT;
+    uint16_t ocall_flags = OE_OCALL_FLAG_NOT_REENTRANT;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
@@ -495,7 +494,7 @@ oe_result_t oe_call_host(const char* func, void* argsIn)
     }
 
     /* Call into the host */
-    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST, (int64_t)args, NULL, 0));
+    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST, (int64_t)args, NULL));
 
     /* Check the result */
     OE_TRY(args->result);
