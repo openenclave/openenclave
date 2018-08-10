@@ -63,6 +63,7 @@ typedef uint32_t oe_once_t;
  * @cond DEV
  */
 #define OE_ONCE_INIT 0
+#define OE_ONCE_INITIALIZER 0
 #define OE_SPINLOCK_INITIALIZER 0
 #define OE_MUTEX_INITIALIZER \
     {                        \

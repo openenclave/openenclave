@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_BITS_CONSTANTS_X64_H
-#define _OE_BITS_CONSTANTS_X64_H
+#ifndef _OE_INTERNAL_CONSTANTS_X64_H
+#define _OE_INTERNAL_CONSTANTS_X64_H
 
 #include <openenclave/internal/defs.h>
 
@@ -71,4 +71,4 @@
 //  AMD64 ABI needs a 128 bytes red zone.
 #define ABI_REDZONE_BYTE_SIZE 0x80
 
-#endif /* _OE_BITS_CONSTANTS_X64_H */
+#endif /* _OE_INTERNAL_CONSTANTS_X64_H */
