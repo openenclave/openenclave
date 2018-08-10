@@ -410,6 +410,12 @@ oe_result_t oe_ocall(
     Callsite* callsite = td->callsites;
     uint16_t old_ocall_flags = td->ocall_flags;
 
+    /*
+        All calls to host happen via oe_ocall.
+        Make all calls into host non re-entrant.
+    */
+    ocall_flags |= OE_OCALL_FLAG_NOT_REENTRANT;
+
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
     if (__oe_enclave_status != OE_OK)
