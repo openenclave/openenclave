@@ -10,10 +10,8 @@
 typedef struct _AbortStatusArgs
 {
     std::atomic<uint32_t>* thread_ready_count;
-    volatile uint32_t* is_enclave_crashed;
-
+    std::atomic<bool>* is_enclave_crashed;
     int divisor;
-
     int ret;
 } AbortStatusArgs;
 
@@ -33,7 +31,7 @@ struct AbortStatusEncRecursionArg
 {
     void* enclave;
     std::atomic<uint32_t>* thread_ready_count;
-    volatile uint32_t* is_enclave_crashed;
+    std::atomic<bool>* is_enclave_crashed;
     unsigned flowId;         // In
     unsigned recursionsLeft; // InOut
     unsigned initialCount;   // InOut
