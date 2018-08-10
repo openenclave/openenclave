@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-//#define OE_TRACE_LEVEL 2
+// #define OE_TRACE_LEVEL 2
 
 #include "revocation.h"
 #include <openenclave/bits/thread.h>
@@ -17,6 +17,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/sha.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "tcbinfo.h"
 
@@ -283,6 +284,18 @@ done:
     return result;
 }
 
+static void _trace_issue_date(const char* msg, const oe_issue_date_t* date)
+{
+    char str[21];
+    size_t size = sizeof(str);
+#if (OE_TRACE_LEVEL == OE_TRACE_LEVEL_INFO)
+    oe_issue_date_to_string(date, str, &size);
+    OE_TRACE_INFO("%s%s\n", msg, str);
+#else
+    OE_UNUSED(size);    
+#endif
+}
+
 oe_result_t oe_enforce_revocation(
     oe_cert_t* leaf_cert,
     oe_cert_t* intermediate_cert,
@@ -300,6 +313,7 @@ oe_result_t oe_enforce_revocation(
     char* leaf_crl_url = NULL;
     oe_crl_t crls[2] = {0};
     oe_issue_date_t tcb_info_issue_date = {0};
+    oe_issue_date_t crl_next_update_date = {0};
 
     oe_spin_lock(&_lock);
 
@@ -393,6 +407,19 @@ oe_result_t oe_enforce_revocation(
     if (oe_issue_date_compare(
             &tcb_info_issue_date, &_minimim_crl_tcb_issue_date) != 1)
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
+
+    // Check that the CRLs have not expired.
+    // The next update of the CRL must be after the earliest date that
+    // the enclave accepts.
+    for (uint32_t i = 0; i < OE_COUNTOF(crls); ++i)
+    {
+        OE_CHECK(oe_crl_get_next_update_date(&crls[0], &crl_next_update_date));
+
+        _trace_issue_date("crl next update date ", &crl_next_update_date);
+        if (oe_issue_date_compare(
+                &crl_next_update_date, &_minimim_crl_tcb_issue_date) != 1)
+            OE_RAISE(OE_INVALID_REVOCATION_INFO);
+    }
 
     result = OE_OK;
 

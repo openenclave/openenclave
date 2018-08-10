@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/issuedate.h>
 
 OE_EXTERNC_BEGIN
 
@@ -33,6 +34,14 @@ oe_result_t oe_crl_read_der(
     oe_crl_t* crl,
     const uint8_t* der_data,
     size_t der_size);
+
+/**
+ * Get the date on which a CRL expires. This is the
+ * next_update date of a CRL.
+ */
+oe_result_t oe_crl_get_next_update_date(
+    const oe_crl_t* crl,
+    oe_issue_date_t* issue_date);
 
 /**
  * Releases a certificate revocation list (CRL)
