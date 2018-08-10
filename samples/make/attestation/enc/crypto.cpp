@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <openenclave/enclave.h>
-#include <openenclave/internal/thread.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -101,8 +100,8 @@ static void InitializeMbedtls(void)
  */
 bool InitializeCrypto(void)
 {
-    static oe_once_t s_once = OE_ONCE_INITIALIZER;
-    oe_once(&s_once, InitializeMbedtls);
+  /* Since samples is single-threaded, okay to not use synch primitives */
+    InitializeMbedtls();
     return g_Initialized;
 }
 
