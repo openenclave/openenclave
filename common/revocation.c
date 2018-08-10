@@ -292,7 +292,7 @@ static void _trace_issue_date(const char* msg, const oe_issue_date_t* date)
     oe_issue_date_to_string(date, str, &size);
     OE_TRACE_INFO("%s%s\n", msg, str);
 #else
-    OE_UNUSED(size);    
+    OE_UNUSED(size);
 #endif
 }
 
