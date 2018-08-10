@@ -9,39 +9,6 @@
 
 OE_EXTERNC_BEGIN
 
-#define OE_SCHAR_MIN (-128)
-#define OE_SCHAR_MAX 127
-#define OE_UCHAR_MAX 255
-#define OE_CHAR_MIN (-128)
-#define OE_CHAR_MAX 127
-#define OE_CHAR_BIT 8
-#define OE_SHRT_MIN (-1 - 0x7fff)
-#define OE_SHRT_MAX 0x7fff
-#define OE_USHRT_MAX 0xffff
-#define OE_INT_MIN (-1 - 0x7fffffff)
-#define OE_INT_MAX 0x7fffffff
-#define OE_UINT_MAX 0xffffffffU
-#define OE_LONG_MAX 0x7fffffffffffffffL
-#define OE_LONG_MIN (-OE_LONG_MAX - 1)
-#define OE_ULONG_MAX (2UL * OE_LONG_MAX + 1)
-#define OE_LLONG_MAX 0x7fffffffffffffffLL
-#define OE_LLONG_MIN (-OE_LLONG_MAX - 1)
-#define OE_ULLONG_MAX (2ULL * OE_LLONG_MAX + 1)
-
-#define OE_INT8_MIN (-1 - 0x7f)
-#define OE_INT8_MAX (0x7f)
-#define OE_UINT8_MAX (0xff)
-#define OE_INT16_MIN (-1 - 0x7fff)
-#define OE_INT16_MAX (0x7fff)
-#define OE_UINT16_MAX (0xffff)
-#define OE_INT32_MIN (-1 - 0x7fffffff)
-#define OE_INT32_MAX (0x7fffffff)
-#define OE_UINT32_MAX (0xffffffffu)
-#define OE_INT64_MIN (-1 - 0x7fffffffffffffff)
-#define OE_INT64_MAX (0x7fffffffffffffff)
-#define OE_UINT64_MAX (0xffffffffffffffffu)
-#define OE_SIZE_MAX OE_UINT64_MAX
-
 /**
  * Enclave implementation of the standard strlen() function.
  *
