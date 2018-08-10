@@ -156,7 +156,7 @@ int pthread_mutex_lock(pthread_mutex_t* m)
 
 int pthread_mutex_trylock(pthread_mutex_t* m)
 {
-    return _ToErrno(oe_mutex_try_lock((oe_mutex_t*)m));
+    return _ToErrno(oe_mutex_trylock((oe_mutex_t*)m));
 }
 
 int pthread_mutex_unlock(pthread_mutex_t* m)

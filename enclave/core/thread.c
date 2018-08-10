@@ -263,7 +263,7 @@ oe_result_t oe_mutex_lock(oe_mutex_t* mutex)
     /* Unreachable! */
 }
 
-oe_result_t oe_mutex_try_lock(oe_mutex_t* mutex)
+oe_result_t oe_mutex_trylock(oe_mutex_t* mutex)
 {
     oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
     oe_thread_data_t* self = oe_get_thread_data();
@@ -585,7 +585,7 @@ oe_result_t oe_rwlock_rdlock(oe_rwlock_t* readWriteLock)
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* readWriteLock)
+oe_result_t oe_rwlock_tryrdlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
@@ -698,7 +698,7 @@ oe_result_t oe_rwlock_wrlock(oe_rwlock_t* readWriteLock)
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* readWriteLock)
+oe_result_t oe_rwlock_trywrlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
