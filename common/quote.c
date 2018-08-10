@@ -6,7 +6,6 @@
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
-#include <openenclave/internal/properties.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
@@ -330,8 +329,7 @@ oe_result_t VerifyQuoteImpl(
     const uint8_t* encPckCrl,
     uint32_t encPckCrlSize,
     const uint8_t* encTcbInfoJson,
-    uint32_t encTcbInfoJsonSize,
-    const oe_utc_date_time_t* minCrlTcbIssueDate)
+    uint32_t encTcbInfoJsonSize)
 {
     OE_UNUSED(encQuote);
     OE_UNUSED(quoteSize);
@@ -341,7 +339,6 @@ oe_result_t VerifyQuoteImpl(
     OE_UNUSED(encPckCrlSize);
     OE_UNUSED(encTcbInfoJson);
     OE_UNUSED(encTcbInfoJsonSize);
-    OE_UNUSED(minCrlTcbIssueDate);
 
     return OE_UNIMPLEMENTED;
 }
