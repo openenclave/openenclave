@@ -11,7 +11,7 @@
 OE_EXTERNC_BEGIN
 
 // ISO 861 format: YYYY-MM-DDThh:mm:ssZ
-#define OE_ISSUE_DATE_FORMAT ("%04d-%02d-%02dT%02d:%02d:%02dZ")
+#define OE_ISSUE_DATE_FORMAT ("YYYY-MM-DDThh:mm:ssZ")
 
 /**
  * oe_issue_date_t structure holds a UTC time value used as argument to
@@ -59,13 +59,13 @@ OE_INLINE oe_result_t oe_issue_date_is_valid(const oe_issue_date_t* issue_date)
             // Year must be divisible by 4.
             if ((issue_date->year % 4) == 0)
             {
-                // If also divisible by 100, not a leap year 
-                // unless divisible by 400.            
+                // If also divisible by 100, not a leap year
+                // unless divisible by 400.
                 if ((issue_date->year % 100) == 0)
                     is_leap_year = ((issue_date->year % 400) == 0);
                 else
                     is_leap_year = true;
-            }        
+            }
             valid_day = (day >= 1 && day <= (is_leap_year ? 29 : 28));
             break;
         case 3:
@@ -140,7 +140,7 @@ OE_INLINE uint8_t oe_str_to_num(const char* p, uint8_t digits, uint32_t* num)
 /**
  * Convert an issue date to string using ISSUE_DATE_FORMAT.
  */
-oe_result_t oe_issue_date_to_string(
+OE_INLINE oe_result_t oe_issue_date_to_string(
     const oe_issue_date_t* issue_date,
     char* str,
     size_t* str_length)
@@ -187,14 +187,14 @@ done:
 /**
  * Convert an issue date to string using ISSUE_DATE_FORMAT.
  */
-oe_result_t oe_issue_date_from_string(
+OE_INLINE oe_result_t oe_issue_date_from_string(
     const char* str,
     size_t str_length,
     oe_issue_date_t* issue_date)
 {
     const char* p = str;
     oe_result_t result = OE_FAILURE;
-    if (str == NULL || str_length != 21 || issue_date == NULL)
+    if (str == NULL || str_length < 20 || issue_date == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     p += oe_str_to_num(p, 4, &issue_date->year);
@@ -218,14 +218,39 @@ oe_result_t oe_issue_date_from_string(
         OE_RAISE(OE_INVALID_UTC_DATE_TIME);
 
     p += oe_str_to_num(p, 2, &issue_date->seconds);
-    if (*p++ != 'Z')
-        OE_RAISE(OE_INVALID_UTC_DATE_TIME);
 
-    OE_CHECK(oe_issue_date_is_valid(issue_date));
+    // Commented out since tcb info issue date still has milli seconds.
+    // if (*p++ != 'Z')
+    //     OE_RAISE(OE_INVALID_UTC_DATE_TIME);
 
     result = OE_OK;
 done:
     return result;
+}
+
+OE_INLINE int32_t oe_issue_date_compare(
+    const oe_issue_date_t* date1,
+    const oe_issue_date_t* date2)
+{
+    if (date1->year != date2->year)
+        return (date1->year < date2->year) ? -1 : 1;
+
+    if (date1->month != date2->month)
+        return (date1->month < date2->month) ? -1 : 1;
+
+    if (date1->day != date2->day)
+        return (date1->day < date2->day) ? -1 : 1;
+
+    if (date1->hours != date2->hours)
+        return (date1->hours < date2->hours) ? -1 : 1;
+
+    if (date1->minutes != date2->minutes)
+        return (date1->minutes < date2->minutes) ? -1 : 1;
+
+    if (date1->seconds != date2->seconds)
+        return (date1->seconds < date2->seconds) ? -1 : 1;
+
+    return 0;
 }
 
 OE_EXTERNC_END

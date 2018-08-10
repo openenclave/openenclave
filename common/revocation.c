@@ -3,6 +3,7 @@
 //#define OE_TRACE_LEVEL 2
 
 #include "revocation.h"
+#include <openenclave/bits/thread.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
@@ -10,6 +11,7 @@
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/issuedate.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
@@ -19,6 +21,38 @@
 #include "tcbinfo.h"
 
 #ifdef OE_USE_LIBSGX
+
+// Defaults to Unix epoch.
+static oe_issue_date_t _minimim_crl_tcb_issue_date = {1970, 1, 1};
+
+static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
+static bool _date_set;
+
+// For sgx support specifying a static.
+oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(const char* date)
+{
+    oe_result_t result = OE_OK;
+
+    oe_spin_lock(&_lock);
+
+    if (_date_set)
+        OE_RAISE(OE_FAILURE);
+
+    // Set flag early so that only one call is successful.
+    _date_set = true;
+
+    if (date == NULL)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    OE_CHECK(
+        oe_issue_date_from_string(
+            date, oe_strlen(date), &_minimim_crl_tcb_issue_date));
+
+    result = OE_OK;
+done:
+    oe_spin_unlock(&_lock);
+    return result;
+}
 
 /**
  * Parse sgx extensions from given cert.
@@ -265,6 +299,9 @@ oe_result_t oe_enforce_revocation(
     char* intermediate_crl_url = NULL;
     char* leaf_crl_url = NULL;
     oe_crl_t crls[2] = {0};
+    oe_issue_date_t tcb_info_issue_date = {0};
+
+    oe_spin_lock(&_lock);
 
     if (intermediate_cert == NULL || leaf_cert == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -346,6 +383,17 @@ oe_result_t oe_enforce_revocation(
             (sgx_ecdsa256_signature_t*)parsed_tcb_info.signature,
             &tcb_issuer_chain));
 
+    // Check that the tcb has been issued after the earliest date that the
+    // enclave accepts.
+    OE_CHECK(
+        oe_issue_date_from_string(
+            (char*)parsed_tcb_info.issue_date,
+            parsed_tcb_info.issue_date_size,
+            &tcb_info_issue_date));
+    if (oe_issue_date_compare(
+            &tcb_info_issue_date, &_minimim_crl_tcb_issue_date) != 1)
+        OE_RAISE(OE_INVALID_REVOCATION_INFO);
+
     result = OE_OK;
 
 done:
@@ -366,6 +414,8 @@ done:
 
     oe_free(leaf_crl_url);
     oe_free(intermediate_crl_url);
+
+    oe_spin_unlock(&_lock);
 
     return result;
 }

@@ -15,6 +15,7 @@
 #define _OE_BITS_PROPERTIES_H
 
 #include "defs.h"
+#include "result.h"
 #include "types.h"
 
 OE_EXTERNC_BEGIN
@@ -69,11 +70,9 @@ typedef struct oe_sgx_enclave_config_t
 
     /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
     uint64_t attributes;
-
-    uint8_t minimumCrlTcbIssueDate[24];
 } oe_sgx_enclave_config_t;
 
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_config_t), 40);
+OE_CHECK_SIZE(sizeof(oe_sgx_enclave_config_t), 16);
 
 /* Extends oe_enclave_properties_header_t base type */
 typedef struct oe_sgx_enclave_properties_t
@@ -89,7 +88,7 @@ typedef struct oe_sgx_enclave_properties_t
 
 } oe_sgx_enclave_properties_t;
 
-OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1880);
+OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
 
 #define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo,\"\",@note#")))
 #define OE_INFO_SECTION_END
@@ -161,6 +160,19 @@ OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1880);
     OE_INFO_SECTION_END
 
 // clang-format on
+
+oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(const char*);
+
+/**
+ * This macro sets the minimum value of issue dates of CRL and TCB info
+ * accepted by the enclave. CRL and TCB info issued before this date
+ * are rejected for attestation. The date must be in the ISO 8601 format:
+ *     YYYY-MM-DDThh:mm:ssZ
+ * This macro must not be called more than once within an enclave.
+ */
+
+#define OE_SGX_SET_MINIMUM_CRL_TCB_ISSUE_DATE(date) \
+    __oe_sgx_set_minimum_crl_tcb_issue_date(date)
 
 OE_EXTERNC_END
 
