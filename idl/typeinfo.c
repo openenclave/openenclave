@@ -430,9 +430,8 @@ static oe_result_t _FieldEq(
 
     fti = &sti->fields[index];
 
-#if (OE_TRACE_LEVEL >= 2)
-    OE_PRINTF("_FieldEq(): %s.%s\n", sti->name, fti->name);
-#endif
+    OE_TRACE_INFO("_FieldEq(): %s.%s\n", sti->name, fti->name);
+
 
     if (fti->flags & OE_FLAG_COUNT)
     {
