@@ -7,6 +7,8 @@ set (OELIBCXX_UNWIND_OPTS
     --enable-shared=no
     --disable-block-signals
     --enable-cxx-exceptions
+    # Note that the C compiler is used for ASM as well.
+    CC=${CMAKE_C_COMPILER}
     )
 
 set (OELIBCXX_UNWIND_CFLAGS

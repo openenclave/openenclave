@@ -39,6 +39,18 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
 
     add_c_compile_flags_if_supported(-Wjump-misses-init)
 
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # Apply Spectre mitigations if available.
+        add_compile_flags_if_supported("-mllvm -x86-speculative-load-hardening")
+
+        # When using Clang for ASM compilation it warns about unused C/C++ compile flags
+        # and/or preprocessor definitions not relevant to ASM compilation for some libraries.
+        # Preprocessor definitions are not needed for .s files, only for .S files. 
+        # Ideally, libraries with mixed C/C++/ASM should apply flags selectively,
+        # but for now, let's ignore the warning.
+        add_compile_options($<$<COMPILE_LANGUAGE:ASM>:-Wno-unused-command-line-argument>)
+    endif()
+
     # Enables XSAVE intrinsics.
     add_compile_options(-mxsave)
 
