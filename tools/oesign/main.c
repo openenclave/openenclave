@@ -509,8 +509,6 @@ static const char _usage[] =
     "        NumStackPages - the number of stack pages for this enclave\n"
     "        NumTCS - the number of thread control structures for this "
     "enclave\n"
-    "        MinimumRevocationIssueDate - CRLs and TCB info issused prior\n"
-    "to this date are considered invalid for attestation\n"
     "\n"
     "    The configuration file contains simple NAME=VALUE entries. For "
     "example:\n"
