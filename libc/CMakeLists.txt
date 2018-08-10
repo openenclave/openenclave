@@ -3,6 +3,8 @@
 
 # Build the C library, using local sources and sources from MUSL
 
+include(add_compile_flags_if_supported)
+
 set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_library(oelibc STATIC
@@ -538,26 +540,34 @@ add_library(oelibc STATIC
     )
 
 target_compile_options(oelibc PRIVATE
-    -Wno-attributes
-    -Wno-parentheses
-    -Wno-pointer-sign
-    -Wno-unknown-pragmas
-    -Wno-maybe-uninitialized
-    -Wno-format
-    -Wno-missing-braces
-
     -std=c99
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
-    -fexcess-precision=standard
-    -frounding-math
     -mrdrnd
     )
 
-check_cxx_compiler_flag(-Wno-error=unused-but-set-variable SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
-if (SUPPORTS_W_NO_UNUSED_BUT_SET_VAR_FLAG)
-    target_compile_options(oelibc PRIVATE -Wno-error=unused-but-set-variable)
+if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+    target_compile_options(oelibc PRIVATE
+        -fexcess-precision=standard
+        -frounding-math
+        )
+endif()
+
+if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+    add_target_c_compile_flags_if_supported(oelibc PRIVATE
+        -Wno-attributes
+        -Wno-format
+        -Wno-missing-braces
+        -Wno-maybe-uninitialized
+        -Wno-parentheses
+        -Wno-pointer-sign
+        -Wno-shift-negative-value
+        -Wno-string-plus-int
+        -Wno-typedef-redefinition
+        -Wno-unknown-pragmas
+        -Wno-error=unused-but-set-variable
+        )
 endif()
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)

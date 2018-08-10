@@ -89,7 +89,7 @@ typedef struct oe_sgx_enclave_properties_t
 
 OE_CHECK_SIZE(sizeof(oe_sgx_enclave_properties_t), 1856);
 
-#define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo,\"\",@note#")))
+#define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo")))
 #define OE_INFO_SECTION_END
 
 #define OE_MAKE_ATTRIBUTES(_AllowDebug_) \

@@ -130,14 +130,16 @@ fi
 
 #Finally run the tests in Simulator mode or on Hardware
 if [ ${DISABLE_SIM} != 1 ]; then
-   OE_SIMULATION=1 ctest
+   SIMULATION_MODE_TEXT="simulation"
+   OE_SIMULATION=1 ctest --output-on-failure
 else
-   ctest
+   SIMULATION_MODE_TEXT="hardware"
+   ctest --output-on-failure
 fi
 
 if [ "$?" != "0" ]; then
     echo ""
-    echo "Test failed for ${PLATFORM_MODE} ${BUILD_TYPE} in simulation mode"
+    echo "Test failed for ${PLATFORM_MODE} ${BUILD_TYPE} in ${SIMULATION_MODE_TEXT} mode"
     echo ""
     exit 1
 fi

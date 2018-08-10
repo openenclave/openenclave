@@ -302,16 +302,16 @@ oe_result_t oe_enforce_revocation(
     oe_cert_chain_t* pck_cert_chain)
 {
     oe_result_t result = OE_FAILURE;
-    ParsedExtensionInfo parsed_extension_info = {0};
+    ParsedExtensionInfo parsed_extension_info = {{0}};
     oe_get_revocation_info_args_t revocation_args = {0};
     oe_cert_chain_t tcb_issuer_chain = {0};
-    oe_cert_chain_t crl_issuer_chain[3] = {0};
+    oe_cert_chain_t crl_issuer_chain[3] = {{{0}}};
     oe_parsed_tcb_info_t parsed_tcb_info = {0};
-    oe_tcb_level_t platform_tcb_level = {0};
+    oe_tcb_level_t platform_tcb_level = {{0}};
     oe_verify_cert_error_t cert_verify_error = {0};
     char* intermediate_crl_url = NULL;
     char* leaf_crl_url = NULL;
-    oe_crl_t crls[2] = {0};
+    oe_crl_t crls[2] = {{{0}}};
     oe_issue_date_t tcb_info_issue_date = {0};
     oe_issue_date_t crl_next_update_date = {0};
 
