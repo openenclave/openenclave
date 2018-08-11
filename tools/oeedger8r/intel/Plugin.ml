@@ -1,4 +1,10 @@
-(* Dependency injection plugin *)
+(* 
+    Dependency injection plugin to allow custom code generation
+    from EDL. CodeGen.ml calls into Plugin.available to check 
+    if a plugin available. If a plugin is available, then it calls 
+    Plugin.gen_edge_routines to generate custom code. 
+    Otherwise, it generates code for Intel(R) SGX  SDK.
+*)
 
 type plugin = {
     mutable available: bool;
@@ -14,4 +20,3 @@ let instance = {
 
 let available () = instance.available
 let gen_edge_routines ec ep = instance.gen_edge_routines ec ep
-

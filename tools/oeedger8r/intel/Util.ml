@@ -69,7 +69,6 @@ let usage (progname: string) =
 --trusted             Generate trusted proxy and bridge\n\
 --untrusted-dir <dir> Specify the directory for saving untrusted code\n\
 --trusted-dir   <dir> Specify the directory for saving trusted code\n\
---export-ast          Export the AST\n\
 --help                Print this help message\n";
   eprintf "\n\
 If neither `--untrusted' nor `--trusted' is specified, generate both.\n";

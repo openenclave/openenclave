@@ -29,7 +29,7 @@
 #
 #
 
-# include ../../../buildenv.mk
+include ../../../buildenv.mk
 
 OCAML_VERSION_MAJOR=$(shell ocamlopt -version | head -n  1 | cut -d . -f 1)
 OCAML_VERSION_MINOR=$(shell ocamlopt -version | head -n  1 | cut -d . -f 2)

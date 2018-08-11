@@ -157,6 +157,7 @@ type func_decl = {
 type trusted_func = {
   tf_fdecl   : func_decl;
   tf_is_priv : bool;
+  tf_is_switchless : bool;
 }
 
 type untrusted_func = {
@@ -164,6 +165,7 @@ type untrusted_func = {
   uf_fattr      : func_attr;
   uf_allow_list : string list;
   uf_propagate_errno : bool;
+  uf_is_switchless    : bool;
 }
 
 type enclave_func =
@@ -189,13 +191,14 @@ type enclave = {
   eexpr : expr list;        (* expressions inside enclave. *)
 }
 
-(* 
-  enclave_content is defined here so that Plugin.ml can use it.
-  The definition of enclave_content is defined to be equivalent to
-  this (AST's) enclave_content.
-  If enclave_content is only defined in CodeGen.ml, it would lead to
-  a cyclic dependency since CodeGen.ml references Plugin.ml and 
-  Plugin.ml would reference CodeGen.ml for accessing enclave_content.
+(*
+  Plugin.ml operates on an enclave_content instance.
+  CodeGen.ml calls Plugin.ml if a plugin is installed and hence
+  depends on Plugin.ml.
+  To prevent cyclic dependency between Plugin.ml and Codegen.ml,
+  enclave_content is defined here. Additionally, the enclave_content 
+  type in CodeGen.ml is defined to be equivalent to the enclave_content 
+  type defined here.
 *)
 type enclave_content = {
   file_shortnm : string; (* the short name of original EDL file *)

@@ -30,7 +30,7 @@
  *)
 
 
-let _ =  
+let _ =
   let progname = Sys.argv.(0) in
   let argc = Array.length Sys.argv in
   let args = if argc = 1 then [||] else Array.sub Sys.argv 1 (argc-1) in
