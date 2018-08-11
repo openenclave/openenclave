@@ -21,6 +21,7 @@ void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t argIn);
 
 void HandleGetQuote(uint64_t argIn);
 void HandleGetQETargetInfo(uint64_t argIn);
+void HandleGetQuoteRevocationInfo(uint64_t argIn);
 
 void HandleStrftime(uint64_t argIn);
 
@@ -29,5 +30,7 @@ void HandleGettimeofday(uint64_t argIn);
 void HandleClockgettime(uint64_t argIn);
 
 void HandleNanosleep(uint64_t argIn);
+
+void handle_malloc_dump(oe_enclave_t* enclave, uint64_t arg);
 
 #endif /* _OE_HOST_OCALLS_H */

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "thread.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -22,7 +23,7 @@ static int _ThreadWait(oe_thread_data_t* self)
     const void* tcs = TD_ToTCS((TD*)self);
 
     if (oe_ocall(
-            OE_FUNC_THREAD_WAIT,
+            OE_OCALL_THREAD_WAIT,
             (uint64_t)tcs,
             NULL,
             OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
@@ -36,7 +37,7 @@ static int _ThreadWake(oe_thread_data_t* self)
     const void* tcs = TD_ToTCS((TD*)self);
 
     if (oe_ocall(
-            OE_FUNC_THREAD_WAKE,
+            OE_OCALL_THREAD_WAKE,
             (uint64_t)tcs,
             NULL,
             OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
@@ -58,7 +59,7 @@ static int _ThreadWakeWait(oe_thread_data_t* waiter, oe_thread_data_t* self)
     args->self_tcs = TD_ToTCS((TD*)self);
 
     if (oe_ocall(
-            OE_FUNC_THREAD_WAKE_WAIT,
+            OE_OCALL_THREAD_WAKE_WAIT,
             (uint64_t)args,
             NULL,
             OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
@@ -866,10 +867,6 @@ oe_result_t oe_thread_key_delete(oe_thread_key_t key)
     {
         oe_spin_lock(&_lock);
 
-        /* Call destructor */
-        if (_slots[key].destructor)
-            _slots[key].destructor(oe_thread_get_specific(key));
-
         /* Clear this slot */
         _slots[key].used = false;
         _slots[key].destructor = NULL;
@@ -907,4 +904,32 @@ void* oe_thread_get_specific(oe_thread_key_t key)
         return NULL;
 
     return tsd_page[key];
+}
+
+void oe_thread_destruct_specific(void)
+{
+    void** tsd_page;
+
+    /* Get the thread-specific-data page for the current thread. */
+    if ((tsd_page = _GetTSDPage()))
+    {
+        oe_spin_lock(&_lock);
+        {
+            /* For each thread-specific-data key */
+            for (oe_thread_key_t key = 1; key < MAX_KEYS; key++)
+            {
+                /* If this key is in use: */
+                if (_slots[key].used)
+                {
+                    /* Call the destructor if any. */
+                    if (_slots[key].destructor && tsd_page[key])
+                        (_slots[key].destructor)(tsd_page[key]);
+
+                    /* Clear the value. */
+                    tsd_page[key] = NULL;
+                }
+            }
+        }
+        oe_spin_unlock(&_lock);
+    }
 }

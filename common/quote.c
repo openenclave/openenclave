@@ -2,13 +2,16 @@
 // Licensed under the MIT License.
 #include "quote.h"
 #include <openenclave/enclave.h>
-#include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/report.h>
+#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
+#include "revocation.h"
 
 #ifdef OE_USE_LIBSGX
 
@@ -169,6 +172,7 @@ oe_result_t VerifyQuoteImpl(
     oe_ec_public_key_t attestationKey = {0};
     oe_cert_t leafCert = {0};
     oe_cert_t rootCert = {0};
+    oe_cert_t intermediateCert = {0};
     oe_ec_public_key_t leafPublicKey = {0};
     oe_ec_public_key_t rootPublicKey = {0};
     oe_ec_public_key_t expectedRootPublicKey = {0};
@@ -209,11 +213,12 @@ oe_result_t VerifyQuoteImpl(
         // Read and validate the chain.
         OE_CHECK(
             oe_cert_chain_read_pem(
-                pemPckCertificate, pemPckCertificateSize, &pckCertChain));
+                &pckCertChain, pemPckCertificate, pemPckCertificateSize));
 
         // Fetch leaf and root certificates.
         OE_CHECK(oe_cert_chain_get_leaf_cert(&pckCertChain, &leafCert));
         OE_CHECK(oe_cert_chain_get_root_cert(&pckCertChain, &rootCert));
+        OE_CHECK(oe_cert_chain_get_cert(&pckCertChain, 1, &intermediateCert));
 
         OE_CHECK(oe_cert_get_ec_public_key(&leafCert, &leafPublicKey));
         OE_CHECK(oe_cert_get_ec_public_key(&rootCert, &rootPublicKey));
@@ -221,15 +226,18 @@ oe_result_t VerifyQuoteImpl(
         // Ensure that the root certificate matches root of trust.
         OE_CHECK(
             oe_ec_public_key_read_pem(
+                &expectedRootPublicKey,
                 (const uint8_t*)g_ExpectedRootCertificateKey,
-                oe_strlen(g_ExpectedRootCertificateKey) + 1,
-                &expectedRootPublicKey));
+                oe_strlen(g_ExpectedRootCertificateKey) + 1));
 
         OE_CHECK(
             oe_ec_public_key_equal(
                 &rootPublicKey, &expectedRootPublicKey, &keyEqual));
         if (!keyEqual)
             OE_RAISE(OE_VERIFY_FAILED);
+
+        OE_CHECK(
+            oe_enforce_revocation(&leafCert, &intermediateCert, &pckCertChain));
     }
 
     // Quote validations.
@@ -279,7 +287,7 @@ oe_result_t VerifyQuoteImpl(
 
     // Quoting Enclave validations.
     {
-        // Assert that the qe report's mr signer matches Intel's quoting
+        // Assert that the qe report's MRSIGNER matches Intel's quoting
         // enclave's mrsigner.
         if (!oe_constant_time_mem_equal(
                 quoteAuthData->qeReportBody.mrsigner,
@@ -306,8 +314,8 @@ done:
     oe_ec_public_key_free(&attestationKey);
     oe_cert_free(&leafCert);
     oe_cert_free(&rootCert);
+    oe_cert_free(&intermediateCert);
     oe_cert_chain_free(&pckCertChain);
-
     return result;
 }
 

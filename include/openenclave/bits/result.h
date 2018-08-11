@@ -11,6 +11,7 @@
 #define _OE_BITS_RESULT
 
 #include "defs.h"
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 
@@ -59,7 +60,18 @@ typedef enum _oe_result {
     OE_UNSUPPORTED_QE_CERTIFICATION,
     OE_BUSY,
     OE_NOT_OWNER,
+    OE_INVALID_SGX_CERT_EXTENSIONS,
+    OE_MEMORY_LEAK,
+    OE_BAD_ALIGNMENT,
+    OE_TCB_INFO_PARSE_ERROR,
+    OE_TCB_LEVEL_INVALID,
+    OE_QUOTE_PROVIDER_LOAD_ERROR,
+    OE_QUOTE_PROVIDER_CALL_ERROR,
+    OE_INVALID_REVOCATION_INFO,
+    __OE_RESULT_MAX = OE_MAX_UINT,
 } oe_result_t;
+
+OE_STATIC_ASSERT(sizeof(oe_result_t) == sizeof(unsigned int));
 
 /**
  * Retrieve a string for a result code.

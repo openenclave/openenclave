@@ -3,6 +3,8 @@
 
 # Build the C library, using local sources and sources from MUSL
 
+include(add_compile_flags_if_supported)
+
 set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_library(oelibc STATIC
@@ -538,25 +540,41 @@ add_library(oelibc STATIC
     )
 
 target_compile_options(oelibc PRIVATE
-    -Wno-attributes
-    -Wno-parentheses
-    -Wno-pointer-sign
-    -Wno-unused-but-set-variable
-    -Wno-unknown-pragmas
-    -Wno-maybe-uninitialized
-    -Wno-format
-    -Wno-missing-braces
-
     -std=c99
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
-    -fexcess-precision=standard
-    -frounding-math
     -mrdrnd
     )
 
+if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+    target_compile_options(oelibc PRIVATE
+        -fexcess-precision=standard
+        -frounding-math
+        )
+endif()
+
+if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+    add_target_c_compile_flags_if_supported(oelibc PRIVATE
+        -Wno-attributes
+        -Wno-format
+        -Wno-missing-braces
+        -Wno-maybe-uninitialized
+        -Wno-parentheses
+        -Wno-pointer-sign
+        -Wno-shift-negative-value
+        -Wno-string-plus-int
+        -Wno-typedef-redefinition
+        -Wno-unknown-pragmas
+        -Wno-error=unused-but-set-variable
+        )
+endif()
+
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
+
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
 
 # this project (and is dependents) require the enclave headers+lib
 target_link_libraries(oelibc oecore)
@@ -582,4 +600,4 @@ target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
 # install lib-archive upon install-time
-install (TARGETS oelibc EXPORT openenclave ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install (TARGETS oelibc EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

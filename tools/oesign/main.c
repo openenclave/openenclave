@@ -62,9 +62,9 @@ static int _UpdateAndWriteSharedLib(
     {
         Elf64_Sym sym;
 
-        if (Elf64_FindSymbolByName(&elf, "oe_main", &sym) != 0)
+        if (Elf64_FindSymbolByName(&elf, "_start", &sym) != 0)
         {
-            Err("oe_main() undefined");
+            Err("entry point not found: _start()");
             goto done;
         }
 
@@ -100,7 +100,7 @@ static int _UpdateAndWriteSharedLib(
         if (Elf64_AddSection(
                 &elf,
                 OE_INFO_SECTION_NAME,
-                SHT_NOTE,
+                SHT_PROGBITS,
                 properties,
                 sizeof(oe_sgx_enclave_properties_t)) != 0)
         {
@@ -234,7 +234,7 @@ static int _LoadConfigFile(const char* path, ConfigFileOptions* options)
     {
         /* Remove leading and trailing whitespace */
         str_ltrim(&str, " \t");
-        str_rtrim(&str, " \t\n");
+        str_rtrim(&str, " \t\n\r");
 
         /* Skip comments and empty lines */
         if (str_ptr(&str)[0] == '#' || str_len(&str) == 0)

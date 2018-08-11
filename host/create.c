@@ -7,7 +7,6 @@
 #if defined(__linux__)
 #include <errno.h>
 #include <sys/mman.h>
-#include "linux/cpuid_count.h"
 #elif defined(_WIN32)
 #include <windows.h>
 #endif
@@ -16,7 +15,6 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/debug.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/load.h>
@@ -28,6 +26,7 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
+#include "cpuid.h"
 #include "enclave.h"
 #include "memalign.h"
 #include "sgxload.h"
@@ -783,6 +782,7 @@ done:
     return result;
 }
 
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 OE_INLINE void _DumpRelocations(const void* data, size_t size)
 {
     const Elf64_Rela* p = (const Elf64_Rela*)data;
@@ -801,6 +801,7 @@ OE_INLINE void _DumpRelocations(const void* data, size_t size)
             OE_LLD(p->r_addend));
     }
 }
+#endif
 
 /*
 **==============================================================================
@@ -877,26 +878,21 @@ static oe_result_t _InitializeEnclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_init_enclave_args_t args;
+    unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
 
     // Initialize enclave cache of CPUID info for emulation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-#if defined(__linux__)
-        int supported = __get_cpuid_count(
+        oe_get_cpuid(
             i,
-            0, // pass sub-leaf of 0 - needed for leaf 4
+            subleaf,
             &args.cpuidTable[i][OE_CPUID_RAX],
             &args.cpuidTable[i][OE_CPUID_RBX],
             &args.cpuidTable[i][OE_CPUID_RCX],
             &args.cpuidTable[i][OE_CPUID_RDX]);
-        if (!supported)
-            OE_RAISE(OE_UNSUPPORTED);
-#elif defined(_WIN32)
-        __cpuid(args.cpuidTable[i], i);
-#endif
     }
 
-    OE_CHECK(oe_ecall(enclave, OE_FUNC_INIT_ENCLAVE, (uint64_t)&args, NULL));
+    OE_CHECK(oe_ecall(enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, NULL));
 
     result = OE_OK;
 
@@ -1310,17 +1306,14 @@ done:
     return result;
 }
 
-#if defined(__linux__)
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
-
 /*
 ** These functions are needed to notify the debugger. They should not be
-** optimized out even they don't do anything in here.
+** optimized out even though they don't do anything in here.
 */
 
-void _oe_notify_gdb_enclave_termination(
+OE_NO_OPTIMIZE_BEGIN
+
+OE_NEVER_INLINE void _oe_notify_gdb_enclave_termination(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -1332,7 +1325,7 @@ void _oe_notify_gdb_enclave_termination(
     return;
 }
 
-void _oe_notify_gdb_enclave_creation(
+OE_NEVER_INLINE void _oe_notify_gdb_enclave_creation(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -1344,9 +1337,7 @@ void _oe_notify_gdb_enclave_creation(
     return;
 }
 
-#if defined(__linux__)
-#pragma GCC pop_options
-#endif
+OE_NO_OPTIMIZE_END
 
 /*
 ** This method encapsulates all steps of the enclave creation process:
@@ -1441,6 +1432,10 @@ done:
 
     if (result != OE_OK && enclave)
     {
+        for (size_t i = 0; i < enclave->num_ecalls; i++)
+            free(enclave->ecalls[i].name);
+
+        free(enclave->ecalls);
         free(enclave);
     }
 
@@ -1452,18 +1447,20 @@ done:
 oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t i;
 
     /* Check parameters */
     if (!enclave || enclave->magic != ENCLAVE_MAGIC)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Call the enclave destructor */
-    OE_CHECK(oe_ecall(enclave, OE_FUNC_DESTRUCTOR, 0, NULL));
+    OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, NULL));
 
     /* Notify GDB that this enclave is terminated */
     _oe_notify_gdb_enclave_termination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+    /* Once the enclave destructor has been invoked, the enclave memory
+     * and data structures are freed on a best effort basis from here on */
 
     /* Remove this enclave from the global list. */
     _oe_remove_enclave_instance(enclave);
@@ -1471,42 +1468,43 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     /* Clear the magic number */
     enclave->magic = 0;
 
-/* Unmap the enclave memory */
-#if defined(__linux__)
-    munmap((void*)enclave->addr, enclave->size);
-#elif defined(_WIN32)
-    VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
-#endif
-
-    /* Release the enclave->ecalls[] array */
+    oe_mutex_lock(&enclave->lock);
     {
-        for (i = 0; i < enclave->num_ecalls; i++)
-            free(enclave->ecalls[i].name);
+        /* Unmap the enclave memory region.
+         * Track failures reported by the platform, but do not exit early */
+        result = oe_sgx_delete_enclave(enclave);
 
-        free(enclave->ecalls);
-    }
+        /* Release the enclave->ecalls[] array */
+        {
+            for (size_t i = 0; i < enclave->num_ecalls; i++)
+                free(enclave->ecalls[i].name);
+
+            free(enclave->ecalls);
+        }
 
 #if defined(_WIN32)
 
-    /* Release Windows events created during enclave creation */
-    for (size_t i = 0; i < enclave->num_bindings; i++)
-    {
-        ThreadBinding* binding = &enclave->bindings[i];
-        CloseHandle(binding->event.handle);
-    }
+        /* Release Windows events created during enclave creation */
+        for (size_t i = 0; i < enclave->num_bindings; i++)
+        {
+            ThreadBinding* binding = &enclave->bindings[i];
+            CloseHandle(binding->event.handle);
+        }
 
 #endif
 
-    /* Free the path name of the enclave image file */
-    free(enclave->path);
+        /* Free the path name of the enclave image file */
+        free(enclave->path);
+    }
+    /* Release and destroy the mutex object */
+    oe_mutex_unlock(&enclave->lock);
+    oe_mutex_destroy(&enclave->lock);
 
     /* Clear the contents of the enclave structure */
     memset(enclave, 0x00, sizeof(oe_enclave_t));
 
     /* Free the enclave structure */
     free(enclave);
-
-    result = OE_OK;
 
 done:
 

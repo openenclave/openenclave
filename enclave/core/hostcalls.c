@@ -13,7 +13,8 @@ void* oe_host_malloc(size_t size)
     uint64_t argIn = size;
     uint64_t argOut = 0;
 
-    if (oe_ocall(OE_FUNC_MALLOC, argIn, &argOut, OE_OCALL_FLAG_NOT_REENTRANT) !=
+    if (oe_ocall(
+            OE_OCALL_MALLOC, argIn, &argOut, OE_OCALL_FLAG_NOT_REENTRANT) !=
         OE_OK)
     {
         return NULL;
@@ -48,7 +49,7 @@ void* oe_host_realloc(void* ptr, size_t size)
     argIn->size = size;
 
     if (oe_ocall(
-            OE_FUNC_REALLOC,
+            OE_OCALL_REALLOC,
             (uint64_t)argIn,
             &argOut,
             OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
@@ -67,7 +68,7 @@ done:
 
 void oe_host_free(void* ptr)
 {
-    oe_ocall(OE_FUNC_FREE, (uint64_t)ptr, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
+    oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
 }
 
 char* oe_host_strdup(const char* str)
@@ -93,7 +94,7 @@ int __oe_host_putchar(int c)
     int ret = -1;
 
     if (oe_ocall(
-            OE_FUNC_PUTCHAR, (uint64_t)c, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
+            OE_OCALL_PUTCHAR, (uint64_t)c, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
         OE_OK)
         goto done;
 
@@ -116,7 +117,7 @@ int __oe_host_puts(const char* str)
         goto done;
 
     if (oe_ocall(
-            OE_FUNC_PUTS, (uint64_t)hstr, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
+            OE_OCALL_PUTS, (uint64_t)hstr, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
         OE_OK)
         goto done;
 
@@ -158,8 +159,10 @@ int __oe_host_print(int device, const char* str, size_t len)
 
     /* Perform OCALL */
     if (oe_ocall(
-            OE_FUNC_PRINT, (uint64_t)args, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
-        OE_OK)
+            OE_OCALL_PRINT,
+            (uint64_t)args,
+            NULL,
+            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
         goto done;
 
     ret = 0;
@@ -186,7 +189,7 @@ int __oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     /* If string was truncated, retry with correctly sized buffer */
     if (n >= sizeof(buf))
     {
-        if (!(p = oe_stack_alloc(n + 1, 0)))
+        if (!(p = oe_stack_alloc(n + 1)))
             return -1;
 
         oe_va_list ap;
