@@ -42,7 +42,7 @@ MKDIR=mkdir
 
 .PHONY: all
 all: build | $(BUILD_DIR)
-	@$(CP) $(CUR_DIR)/_build/main.native $(BUILD_DIR)/oe_edger8r
+	@$(CP) $(CUR_DIR)/_build/main.native $(BUILD_DIR)/oeedger8r
 
 .PHONY: build
 build:
@@ -59,4 +59,4 @@ $(BUILD_DIR):
 .PHONY:
 clean:
 	@ocamlbuild Edger8rOE.native -clean
-	@$(RM) $(BUILD_DIR)/oe_edger8r
+	@$(RM) $(BUILD_DIR)/oeedger8r
