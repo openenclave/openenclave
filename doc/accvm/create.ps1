@@ -1,0 +1,1 @@
+.\New-AccCreateVm.ps1 -Subscription "EOSG Dev and Test" -ResourceGroupName soccerl-openenclave -AccImage acc-ubuntu-16 -VMName oe-ci -VmUserName azuseruser -VmPassword "replacepassword1234$" -VmSize Standard_DC2s
