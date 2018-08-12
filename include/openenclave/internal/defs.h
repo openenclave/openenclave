@@ -69,18 +69,4 @@
 /* OE_FIELD_SIZE */
 #define OE_FIELD_SIZE(TYPE, FIELD) (sizeof(((TYPE*)0)->FIELD))
 
-/* OE_CONCAT */
-#define __OE_CONCAT(X, Y) X##Y
-#define OE_CONCAT(X, Y) __OE_CONCAT(X, Y)
-
-/* OE_CHECK_SIZE */
-#define OE_CHECK_SIZE(N, M)          \
-    typedef unsigned char OE_CONCAT( \
-        __OE_CHECK_SIZE, __LINE__)[((N) == (M)) ? 1 : -1] OE_UNUSED_ATTRIBUTE
-
-/* OE_STATIC_ASSERT */
-#define OE_STATIC_ASSERT(COND)       \
-    typedef unsigned char OE_CONCAT( \
-        __OE_STATIC_ASSERT, __LINE__)[(COND) ? 1 : -1] OE_UNUSED_ATTRIBUTE
-
 #endif /* _OE_INTERNAL_DEFS_H */
