@@ -1356,7 +1356,7 @@ OE_NO_OPTIMIZE_END
 */
 oe_result_t oe_create_enclave(
     const char* enclavePath,
-    oe_enclave_type_t enclave_type,
+    oe_enclave_type_t enclaveType,
     uint32_t flags,
     const void* config,
     uint32_t configSize,
@@ -1372,7 +1372,7 @@ oe_result_t oe_create_enclave(
         *enclaveOut = NULL;
 
     /* Check parameters */
-    if (!enclavePath || !enclaveOut || enclave_type != OE_ENCLAVE_TYPE_SGX ||
+    if (!enclavePath || !enclaveOut || enclaveType != OE_ENCLAVE_TYPE_SGX ||
         (flags & OE_ENCLAVE_FLAG_RESERVED) || config || configSize > 0)
         OE_RAISE(OE_INVALID_PARAMETER);
 
