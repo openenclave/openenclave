@@ -544,7 +544,7 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
       | _ -> ()
   ) fd.Ast.plist;
   fprintf os "\n    /* successful ocall */\n";
-  if fd.Ast.rtype <> Ast.Void then fprintf os "    *_retval = __args._retval;\n";  
+  if fd.Ast.rtype <> Ast.Void then fprintf os "    *_retval = __host_args._retval;\n";  
   fprintf os "    __result = OE_OK;\n";
   fprintf os "done:\n";  
   fprintf os "    oe_host_free(__host_buffer);\n";

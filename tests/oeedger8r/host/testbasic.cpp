@@ -1,17 +1,18 @@
+
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 #include "../edltestutils.h"
 
-#include <openenclave/enclave.h>
+#include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
-#include "basic_t.c"
-#include <stdio.h>
+#include "basic_u.c"
 
-OE_ECALL void test_basic_edl_ocalls(void*)
+
+void test_basic_edl_ecalls(oe_enclave_t* enclave)
 {
-   OE_TEST(
-        ocall_basic_types(
+    OE_TEST(
+        ecall_basic_types(enclave,
             '?',
             // '\x3b1',
             3,
@@ -33,104 +34,104 @@ OE_ECALL void test_basic_edl_ocalls(void*)
 
     {
         char ret = 0;
-        OE_TEST(ocall_ret_char(&ret) == OE_OK);
+        OE_TEST(ecall_ret_char(enclave, &ret) == OE_OK);
         OE_TEST(ret == '?');
     }
 
     {
         short ret = 0;
-        OE_TEST(ocall_ret_short(&ret) == OE_OK);
+        OE_TEST(ecall_ret_short(enclave, &ret) == OE_OK);
         OE_TEST(ret == 444);
     }
 
     {
         int ret = 0;
-        OE_TEST(ocall_ret_int(&ret) == OE_OK);
+        OE_TEST(ecall_ret_int(enclave, &ret) == OE_OK);
         OE_TEST(ret == 555);
     }
 
     {
         float ret = 0;
-        OE_TEST(ocall_ret_float(&ret) == OE_OK);
+        OE_TEST(ecall_ret_float(enclave, &ret) == OE_OK);
         OE_TEST(ret == 0.333f);
     }
 
     {
         double ret = 0;
-        OE_TEST(ocall_ret_double(&ret) == OE_OK);
+        OE_TEST(ecall_ret_double(enclave, &ret) == OE_OK);
         OE_TEST(ret == 0.444);
     }
 
     {
         long ret = 0;
-        OE_TEST(ocall_ret_long(&ret) == OE_OK);
+        OE_TEST(ecall_ret_long(enclave, &ret) == OE_OK);
         OE_TEST(ret == 777);
     }
 
     {
         size_t ret = 0;
-        OE_TEST(ocall_ret_size_t(&ret) == OE_OK);
+        OE_TEST(ecall_ret_size_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 888);
     }
 
     {
         unsigned ret = 0;
-        OE_TEST(ocall_ret_unsigned(&ret) == OE_OK);
+        OE_TEST(ecall_ret_unsigned(enclave, &ret) == OE_OK);
         OE_TEST(ret == 999);
     }
 
     {
         int8_t ret = 0;
-        OE_TEST(ocall_ret_int8_t(&ret) == OE_OK);
+        OE_TEST(ecall_ret_int8_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 101);
     }
 
     {
         int16_t ret = 0;
-        OE_TEST(ocall_ret_int16_t(&ret) == OE_OK);
+        OE_TEST(ecall_ret_int16_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 1111);
     }
 
     {
         int32_t ret = 0;
-        OE_TEST(ocall_ret_int32_t(&ret) == OE_OK);
+        OE_TEST(ecall_ret_int32_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 121212);
     }
 
     {
         int64_t ret = 0;
-        OE_TEST(ocall_ret_int64_t(&ret) == OE_OK);
+        OE_TEST(ecall_ret_int64_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 131313);
     }
 
     {
         uint8_t ret = 0;
-        OE_TEST(ocall_ret_uint8_t(&ret) == OE_OK);
+        OE_TEST(ecall_ret_uint8_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 141);
     }
 
     {
         uint16_t ret = 0;
-        OE_TEST(ocall_ret_uint16_t(&ret) == OE_OK);
+        OE_TEST(ecall_ret_uint16_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 1515);
     }
 
     {
         uint32_t ret = 0;
-        OE_TEST(ocall_ret_uint32_t(&ret) == OE_OK);
+        OE_TEST(ecall_ret_uint32_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 161616);
     }
 
     {
         uint64_t ret = 0;
-        OE_TEST(ocall_ret_uint64_t(&ret) == OE_OK);
+        OE_TEST(ecall_ret_uint64_t(enclave, &ret) == OE_OK);
         OE_TEST(ret == 171717);
     }
-    printf("=== test_basic_edl_ocalls passed\n");
+    printf("=== test_basic_edl_ecalls passed\n");
 }
 
 
-void ecall_basic_types(
+void ocall_basic_types(
     char arg1,
     //wchar_t arg2,
     short arg3,
@@ -190,99 +191,99 @@ void ecall_basic_types(
     OE_TEST(arg17 = 17);
 }
 
-char ecall_ret_char()
+char ocall_ret_char()
 {
-    check_return_type<ecall_ret_char_args_t, char>();
+    check_return_type<ocall_ret_char_args_t, char>();
     return '?';    
 }
 
-short ecall_ret_short()
+short ocall_ret_short()
 {
-    check_return_type<ecall_ret_short_args_t, short>();
+    check_return_type<ocall_ret_short_args_t, short>();
     return 444;
 }
 
-int ecall_ret_int()
+int ocall_ret_int()
 {
-    check_return_type<ecall_ret_int_args_t, int>();
+    check_return_type<ocall_ret_int_args_t, int>();
     return 555;
 }
 
-float ecall_ret_float()
+float ocall_ret_float()
 {
-    check_return_type<ecall_ret_float_args_t, float>();
+    check_return_type<ocall_ret_float_args_t, float>();
     return .333f;
 }
 
-double ecall_ret_double()
+double ocall_ret_double()
 {
-    check_return_type<ecall_ret_int_args_t, int>();    
+    check_return_type<ocall_ret_int_args_t, int>();    
     return .444;
 }
 
-long ecall_ret_long()
+long ocall_ret_long()
 {
-    check_return_type<ecall_ret_int_args_t, int>();    
+    check_return_type<ocall_ret_int_args_t, int>();    
     return 777;
 }
 
-size_t ecall_ret_size_t()
+size_t ocall_ret_size_t()
 {
-    check_return_type<ecall_ret_size_t_args_t, size_t>();
+    check_return_type<ocall_ret_size_t_args_t, size_t>();
     return 888;
 }
 
-unsigned ecall_ret_unsigned()
+unsigned ocall_ret_unsigned()
 {
-    check_return_type<ecall_ret_unsigned_args_t, unsigned>();
+    check_return_type<ocall_ret_unsigned_args_t, unsigned>();
     return 999;
 }
 
-int8_t ecall_ret_int8_t()
+int8_t ocall_ret_int8_t()
 {
-    check_return_type<ecall_ret_int8_t_args_t, int8_t>();
+    check_return_type<ocall_ret_int8_t_args_t, int8_t>();
     return 101;
 }
 
-int16_t ecall_ret_int16_t()
+int16_t ocall_ret_int16_t()
 {
-    check_return_type<ecall_ret_int16_t_args_t, int16_t>();
+    check_return_type<ocall_ret_int16_t_args_t, int16_t>();
     return 1111;
 }
 
-int32_t ecall_ret_int32_t()
+int32_t ocall_ret_int32_t()
 {
-    check_return_type<ecall_ret_int32_t_args_t, int32_t>();
+    check_return_type<ocall_ret_int32_t_args_t, int32_t>();
     return 121212;
 }
 
-int64_t ecall_ret_int64_t()
+int64_t ocall_ret_int64_t()
 {
-    check_return_type<ecall_ret_int64_t_args_t, int64_t>();
+    check_return_type<ocall_ret_int64_t_args_t, int64_t>();
     return 131313;
 }
 
-uint8_t ecall_ret_uint8_t()
+uint8_t ocall_ret_uint8_t()
 {
-    check_return_type<ecall_ret_uint8_t_args_t, uint8_t>();
+    check_return_type<ocall_ret_uint8_t_args_t, uint8_t>();
     return 141;
 }
 
-uint16_t ecall_ret_uint16_t()
+uint16_t ocall_ret_uint16_t()
 {
-    check_return_type<ecall_ret_uint16_t_args_t, uint16_t>();
+    check_return_type<ocall_ret_uint16_t_args_t, uint16_t>();
     return 1515;
 }
 
-uint32_t ecall_ret_uint32_t()
+uint32_t ocall_ret_uint32_t()
 {
-    check_return_type<ecall_ret_uint32_t_args_t, uint32_t>();
+    check_return_type<ocall_ret_uint32_t_args_t, uint32_t>();
     return 161616;
 }
 
-uint64_t ecall_ret_uint64_t()
+uint64_t ocall_ret_uint64_t()
 {
-    check_return_type<ecall_ret_uint64_t_args_t, uint64_t>();
+    check_return_type<ocall_ret_uint64_t_args_t, uint64_t>();
     return 171717;
 }
 

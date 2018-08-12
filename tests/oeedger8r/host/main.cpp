@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
 #include <wchar.h>
+
+void test_basic_edl_ecalls(oe_enclave_t* enclave);
 
 int main(int argc, const char* argv[])
 {
@@ -26,6 +27,10 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "%s: cannot create enclave: %u\n", argv[0], result);
         return 1;
     }
+
+
+    test_basic_edl_ecalls(enclave);
+    OE_TEST(oe_call_enclave(enclave, "test_basic_edl_ocalls", NULL) == OE_OK);
 
     oe_terminate_enclave(enclave);
 
