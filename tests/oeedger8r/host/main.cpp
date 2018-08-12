@@ -6,7 +6,6 @@
 #include <openenclave/internal/tests.h>
 #include <wchar.h>
 
-
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -27,7 +26,6 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "%s: cannot create enclave: %u\n", argv[0], result);
         return 1;
     }
-
 
     oe_terminate_enclave(enclave);
 

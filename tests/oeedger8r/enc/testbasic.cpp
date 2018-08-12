@@ -7,25 +7,24 @@
 #include "basic_t.c"
 
 void ecall_basic_types(
-    char arg1, 
-    wchar_t arg2, 
-    short arg3, 
-    int arg4, 
-    float arg5, 
-    double arg6, 
-    long arg7, 
-    size_t arg8, 
+    char arg1,
+    wchar_t arg2,
+    short arg3,
+    int arg4,
+    float arg5,
+    double arg6,
+    long arg7,
+    size_t arg8,
     unsigned arg9,
-    int8_t arg10, 
-    int16_t arg11, 
-    int32_t arg12, 
+    int8_t arg10,
+    int16_t arg11,
+    int32_t arg12,
     int64_t arg13,
-    uint8_t arg14, 
-    uint16_t arg15, 
-    uint32_t arg16, 
-    uint64_t arg17
-)
-{    
+    uint8_t arg14,
+    uint16_t arg15,
+    uint32_t arg16,
+    uint64_t arg17)
+{
     ecall_basic_types_args_t args;
 
     // Assert types of fields of the marshaling struct.
@@ -47,4 +46,4 @@ void ecall_basic_types(
     check_type<uint16_t>(args.arg15);
     check_type<uint32_t>(args.arg16);
     check_type<uint64_t>(args.arg17);
-} 
+}

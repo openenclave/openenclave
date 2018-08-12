@@ -1,22 +1,22 @@
 #ifndef USER_DATA_H
 #define USER_DATA_H
 
-typedef struct _MyStruct {
+typedef struct _MyStruct
+{
     int value[10];
 } MyStruct;
 
 typedef struct MyStruct* pMyStruct;
 
-typedef int (MyArray)[10];
+typedef int(MyArray)[10];
 
-struct ZMyStruct {};
+struct ZMyStruct
+{
+};
 
 typedef struct ZMyStruct* pZMyStruct;
 
-typedef enum {
-    Enum_A,
-    Enum_B
-} MyEnum;
+typedef enum { Enum_A, Enum_B } MyEnum;
 
 typedef int* pMyBuf;
 

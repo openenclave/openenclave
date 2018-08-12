@@ -3,7 +3,8 @@
 
 #pragma once
 
-
 // Assert that given arguments are of specified types.
-template<typename... Args>
-void check_type(Args& ...) {}
+template <typename... Args>
+void check_type(Args&...)
+{
+}
