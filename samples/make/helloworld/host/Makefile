@@ -28,8 +28,8 @@ LIBRARIES += -lsgx_urts_ng
 
 build:
 	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp
-	g++ -o sorthost host.o $(LDFLAGS) $(LIBRARIES)
+	g++ -o helloworldhost host.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
-	rm -f sorthost host.o
+	rm -f helloworldhost host.o
 
