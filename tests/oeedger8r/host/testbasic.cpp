@@ -8,17 +8,17 @@
 #include <openenclave/internal/tests.h>
 #include "basic_u.c"
 
-
 void test_basic_edl_ecalls(oe_enclave_t* enclave)
 {
     OE_TEST(
-        ecall_basic_types(enclave,
+        ecall_basic_types(
+            enclave,
             '?',
             // '\x3b1',
             3,
             4,
             3.1415f,
-            1.0/3.0,
+            1.0 / 3.0,
             7,
             8,
             9,
@@ -29,8 +29,7 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
             14,
             15,
             16,
-            17        
-        ) == OE_OK);
+            17) == OE_OK);
 
     {
         char ret = 0;
@@ -130,10 +129,9 @@ void test_basic_edl_ecalls(oe_enclave_t* enclave)
     printf("=== test_basic_edl_ecalls passed\n");
 }
 
-
 void ocall_basic_types(
     char arg1,
-    //wchar_t arg2,
+    // wchar_t arg2,
     short arg3,
     int arg4,
     float arg5,
@@ -154,7 +152,7 @@ void ocall_basic_types(
 
     // Assert types of fields of the marshaling struct.
     check_type<char>(args.arg1);
-    //check_type<wchar_t>(args.arg2);
+    // check_type<wchar_t>(args.arg2);
     check_type<short>(args.arg3);
     check_type<int>(args.arg4);
     check_type<int>(args.arg4);
@@ -173,11 +171,11 @@ void ocall_basic_types(
     check_type<uint64_t>(args.arg17);
 
     OE_TEST(arg1 == '?');
-    //OE_TEST(arg2 == '\x3b1');
+    // OE_TEST(arg2 == '\x3b1');
     OE_TEST(arg3 = 3);
     OE_TEST(arg4 = 4);
     OE_TEST(arg5 = 3.1415f);
-    OE_TEST(arg6 = 1.0/3.0);
+    OE_TEST(arg6 = 1.0 / 3.0);
     OE_TEST(arg7 = 7);
     OE_TEST(arg8 = 8);
     OE_TEST(arg9 = 9);
@@ -194,7 +192,7 @@ void ocall_basic_types(
 char ocall_ret_char()
 {
     check_return_type<ocall_ret_char_args_t, char>();
-    return '?';    
+    return '?';
 }
 
 short ocall_ret_short()
@@ -217,13 +215,13 @@ float ocall_ret_float()
 
 double ocall_ret_double()
 {
-    check_return_type<ocall_ret_int_args_t, int>();    
+    check_return_type<ocall_ret_int_args_t, int>();
     return .444;
 }
 
 long ocall_ret_long()
 {
-    check_return_type<ocall_ret_int_args_t, int>();    
+    check_return_type<ocall_ret_int_args_t, int>();
     return 777;
 }
 
@@ -286,5 +284,3 @@ uint64_t ocall_ret_uint64_t()
     check_return_type<ocall_ret_uint64_t_args_t, uint64_t>();
     return 171717;
 }
-
-

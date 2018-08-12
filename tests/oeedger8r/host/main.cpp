@@ -28,7 +28,6 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-
     test_basic_edl_ecalls(enclave);
     OE_TEST(oe_call_enclave(enclave, "test_basic_edl_ocalls", NULL) == OE_OK);
 
