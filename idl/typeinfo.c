@@ -432,7 +432,6 @@ static oe_result_t _FieldEq(
 
     OE_TRACE_INFO("_FieldEq(): %s.%s\n", sti->name, fti->name);
 
-
     if (fti->flags & OE_FLAG_COUNT)
     {
         OE_TRY(_GetCount(sti, s1, fti, &count1));
