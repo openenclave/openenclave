@@ -340,7 +340,7 @@ oe_result_t VerifyQuoteImpl(
     OE_UNUSED(encTcbInfoJson);
     OE_UNUSED(encTcbInfoJsonSize);
 
-    return OE_UNIMPLEMENTED;
+    return OE_UNSUPPORTED;
 }
 
 #endif
