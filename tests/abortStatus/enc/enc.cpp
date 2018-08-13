@@ -60,7 +60,7 @@ OE_ECALL void TestOCallAfterAbort(void* args_)
     }
 
     // Notify control thread that this thread is ready.
-    __sync_fetch_and_add(args->thread_ready_count, 1);
+    ++*args->thread_ready_count;
 
     // Wait for the is_enclave_crashed signal.
     while (*args->is_enclave_crashed == 0)
@@ -107,14 +107,15 @@ OE_ECALL void EncRecursion(void* Args_)
     if (args.recursionsLeft)
     {
         if (args.initialCount)
-            argsHost->initialCount = args.initialCount - 1;
-        argsHost->recursionsLeft = args.recursionsLeft - 1;
+            --argsHost->initialCount;
+        --argsHost->recursionsLeft;
+
         result = oe_call_host("RecursionOcall", argsHost);
     }
     else
     {
         // Notify control thread that this thread is ready.
-        __sync_fetch_and_add(argsHost->thread_ready_count, 1);
+        ++*argsHost->thread_ready_count;
 
         // Wait for the is_enclave_crashed signal.
         while (*argsHost->is_enclave_crashed == 0)
