@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-
 # Custom command to copy edl files to binary enc folder
 # and run oeedger8r on the edl files.
 # Dependency is specified on the edl files in the source tree.
@@ -10,9 +9,9 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/*_t.c
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/*_t.h    
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../*.edl ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${OE_BINDIR}/oeedger8r basic.edl
+    COMMAND ${OE_BINDIR}/oeedger8r basic.edl string.edl
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.edl
-    DEPENDS ${OE_BINDIR}/oeedger8r
+    DEPENDS {{OE_BINDIR}/oeedger8r
 )
  
 # Custom noop target that depends on edl files (and hence the
@@ -29,6 +28,7 @@ include(add_enclave_executable)
 
 add_enclave_executable(edl_enc sign.conf private.pem
     testbasic.cpp  
+    teststring.cpp
     )
 
 # Make edl_enc depend on edl files and outputs using 

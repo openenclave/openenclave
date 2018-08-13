@@ -9,9 +9,9 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/*_t.c
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/*_t.h    
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../*.edl ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${OE_BINDIR}/oeedger8r basic.edl
+    COMMAND ${OE_BINDIR}/oeedger8r basic.edl string.edl
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.edl
-    DEPENDS ${OE_BINDIR}/oeedger8r
+    DEPENDS oeedger8r
 )
  
 # Custom noop target that depends on edl files (and hence the
@@ -27,6 +27,7 @@ add_custom_target(
 add_executable(edl_host 
     main.cpp
     testbasic.cpp
+    teststring.cpp
 )
 
 # Make edl_enc depend on edl files and outputs using 
