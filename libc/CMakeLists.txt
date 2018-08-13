@@ -599,5 +599,10 @@ target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 # assemble lib-archive into proper dir
 set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
+add_custom_command(TARGET oelibc
+    POST_BUILD
+    COMMAND objdump -t $<TARGET_FILE:oelibc> | grep fputs
+    COMMENT checking oelibc provides fputs)
+
 # install lib-archive upon install-time
 install (TARGETS oelibc EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
