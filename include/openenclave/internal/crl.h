@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/date.h>
 
 OE_EXTERNC_BEGIN
 
@@ -42,6 +43,11 @@ oe_result_t oe_crl_read_der(
  * @return OE_OK the CRL was successfully released
  */
 oe_result_t oe_crl_free(oe_crl_t* crl);
+
+oe_result_t oe_crl_get_update_dates(
+    const oe_crl_t* crl,
+    oe_date_t* last,
+    oe_date_t* next);
 
 OE_EXTERNC_END
 
