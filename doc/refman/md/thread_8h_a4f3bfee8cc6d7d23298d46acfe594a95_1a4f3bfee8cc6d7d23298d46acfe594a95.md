@@ -14,11 +14,11 @@ This function releases the lock on a readers-writer lock obtained with one of th
 
 -  [oe_rwlock_rdlock()](thread_8h_a3cbefb95278426a3c424bd84782e7f8f_1a3cbefb95278426a3c424bd84782e7f8f.md)
 
--  [oe_rwlock_try_rdlock()](thread_8h_a72ebfc6c036b0366cdf05b180569f80f_1a72ebfc6c036b0366cdf05b180569f80f.md)
+-  [oe_rwlock_tryrdlock()](thread_8h_a92b5c9cca43cd1a83eb095b78813e26c_1a92b5c9cca43cd1a83eb095b78813e26c.md)
 
--  [oe_rwlock_try_wrlock()](thread_8h_a58ef319c60aade7affcf2048a268e6cd_1a58ef319c60aade7affcf2048a268e6cd.md)
+-  [oe_rwlock_trywrlock()](thread_8h_a9dd482e6d9447f2bbcf911a09726c85e_1a9dd482e6d9447f2bbcf911a09726c85e.md)
 
-- or [oe_rwlock_try_wrlock()](thread_8h_a58ef319c60aade7affcf2048a268e6cd_1a58ef319c60aade7affcf2048a268e6cd.md)
+- or [oe_rwlock_trywrlock()](thread_8h_a9dd482e6d9447f2bbcf911a09726c85e_1a9dd482e6d9447f2bbcf911a09726c85e.md)
 
 Behavior:
 
