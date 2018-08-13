@@ -118,7 +118,7 @@ static oe_result_t _string_to_date(const char* str, oe_date_t* date)
         {
             if (strncmp(p, _month[i], 3) == 0)
             {
-                date->month = i;
+                date->month = i + 1;
                 p += 3;
             }
         }

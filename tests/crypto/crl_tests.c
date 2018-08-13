@@ -154,14 +154,14 @@ static void _test_get_dates(void)
     OE_TEST(oe_crl_get_update_dates(&crl, &last, &next) == OE_OK);
 
     OE_TEST(last.year == 2018);
-    OE_TEST(last.month == 4);
+    OE_TEST(last.month == 5);
     OE_TEST(last.day == 30);
     OE_TEST(last.hours == 10);
     OE_TEST(last.minutes == 23);
     OE_TEST(last.seconds == 42);
 
     OE_TEST(next.year == 2019);
-    OE_TEST(next.month == 4);
+    OE_TEST(next.month == 5);
     OE_TEST(next.day == 30);
     OE_TEST(next.hours == 10);
     OE_TEST(next.minutes == 23);
