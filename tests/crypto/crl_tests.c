@@ -153,7 +153,7 @@ static void _test_get_dates(void)
     oe_date_t next;
     OE_TEST(oe_crl_get_update_dates(&crl, &last, &next) == OE_OK);
 
-#if 0
+#if 1
     printf("last.year=%u\n", last.year);
     printf("last.month=%u\n", last.month);
     printf("last.day=%u\n", last.day);
@@ -162,7 +162,7 @@ static void _test_get_dates(void)
     printf("last.seconds=%u\n", last.seconds);
 #endif
 
-#if 0
+#if 2
     printf("next.year=%u\n", next.year);
     printf("next.month=%u\n", next.month);
     printf("next.day=%u\n", next.day);

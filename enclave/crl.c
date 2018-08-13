@@ -117,7 +117,7 @@ oe_result_t oe_crl_get_update_dates(
     if (last)
     {
         last->year = impl->crl->this_update.year;
-        last->month = impl->crl->this_update.mon;
+        last->month = impl->crl->this_update.mon - 1;
         last->day = impl->crl->this_update.day;
         last->hours = impl->crl->this_update.hour;
         last->minutes = impl->crl->this_update.min;
@@ -127,7 +127,7 @@ oe_result_t oe_crl_get_update_dates(
     if (next)
     {
         next->year = impl->crl->next_update.year;
-        next->month = impl->crl->next_update.mon;
+        next->month = impl->crl->next_update.mon - 1;
         next->day = impl->crl->next_update.day;
         next->hours = impl->crl->next_update.hour;
         next->minutes = impl->crl->next_update.min;
