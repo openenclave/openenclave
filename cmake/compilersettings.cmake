@@ -48,7 +48,8 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # Apply Spectre mitigations if available.
-        add_compile_flag_if_supported("C;CXX" "-mllvm -x86-speculative-load-hardening" spectre1_mitigation_applied)
+        add_compile_flag_if_supported("C;CXX" "-mllvm -x86-speculative-load-hardening" flag_supported)
+        set(spectre1_mitigation_applied ${flag_supported})
 
         # When using Clang for ASM compilation it warns about unused C/C++ compile flags
         # and/or preprocessor definitions not relevant to ASM compilation for some libraries.
