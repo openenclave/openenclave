@@ -23,6 +23,8 @@ oe_result_t __oe_load_segments(
     Elf64 elf = ELF64_INIT;
     size_t i;
     const Elf64_Ehdr* eh;
+    Elf64_Off oeinfo_offset = 0;
+    Elf64_Xword oeinfo_size = 0;
 
     if (nsegments)
         *nsegments = 0;
@@ -61,7 +63,7 @@ oe_result_t __oe_load_segments(
     /* Save entry point address */
     *entryaddr = eh->e_entry;
 
-    /* Find the address of the ".text" section */
+    /* Find the addresses of the ".text" and ".oeinfo" sections */
     {
         for (i = 0; i < eh->e_shnum; i++)
         {
@@ -71,12 +73,20 @@ oe_result_t __oe_load_segments(
             if (name && strcmp(name, ".text") == 0)
             {
                 *textaddr = sh->sh_offset;
-                break;
+            }
+            else if (name && strcmp(name, ".oeinfo") == 0)
+            {
+                oeinfo_offset = sh->sh_offset;
+                oeinfo_size = sh->sh_size;
+                OE_TRACE_INFO(
+                    "Found properties block offset %lx size %lx",
+                    oeinfo_offset,
+                    oeinfo_size);
             }
         }
 
         /* If text section not found */
-        if (i == eh->e_shnum)
+        if (*textaddr == 0)
             OE_THROW(OE_FAILURE);
     }
 
@@ -92,7 +102,7 @@ oe_result_t __oe_load_segments(
 
         /* ATTN: handle PT_TLS (thread local storage) segments */
         if (ph->p_type == PT_TLS)
-            OE_THROW(OE_UNIMPLEMENTED);
+            OE_THROW(OE_UNSUPPORTED);
 
         /* Clear the segment */
         memset(&seg, 0, sizeof(oe_segment_t));
@@ -128,6 +138,21 @@ oe_result_t __oe_load_segments(
                 OE_THROW(OE_OUT_OF_MEMORY);
 
             memcpy(seg.filedata, Elf64_GetSegment(&elf, i), seg.filesz);
+
+            /* Zero out the .oeinfo section if within this segment */
+            if (oeinfo_size && (oeinfo_offset >= seg.offset) &&
+                (oeinfo_offset <= seg.offset + seg.filesz))
+            {
+                /* Check the section doesn't cross the end of the segment */
+                if ((oeinfo_offset + oeinfo_size) > (seg.offset + seg.filesz))
+                    OE_THROW(OE_OUT_OF_BOUNDS);
+
+                memset( // All sizes/address calculations in bytes
+                    ((char*)seg.filedata) + oeinfo_offset - seg.offset,
+                    0,
+                    oeinfo_size);
+                OE_TRACE_INFO("Zeroed out properties block in segment %lu", i);
+            }
         }
 
         /* Check for array overflow */

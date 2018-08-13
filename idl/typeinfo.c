@@ -1179,7 +1179,7 @@ static oe_result_t _ApplyStructPtrProc(
         }
         else if (fti->flags & OE_FLAG_PTR && fti->flags & OE_FLAG_ARRAY)
         {
-            OE_THROW(OE_UNIMPLEMENTED);
+            OE_THROW(OE_UNSUPPORTED);
         }
         else if (fti->flags & OE_FLAG_PTR)
         {
@@ -1889,7 +1889,7 @@ static oe_result_t _TestOrFillPadding(
             if (test)
             {
                 if (*start++ != byte)
-                    OE_THROW(OE_BUFFER_OVERRUN);
+                    OE_THROW(OE_OUT_OF_BOUNDS);
             }
             else
                 *start++ = byte;
