@@ -1,3 +1,4 @@
 fwrite(stderr)
+fputs(stderr)
 __oe_host_print(stderr)
 __oe_host_print(stderr)

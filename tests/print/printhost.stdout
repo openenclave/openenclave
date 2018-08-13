@@ -2,6 +2,7 @@
 oe_host_printf(stdout)
 printf(stdout)
 fwrite(stdout)
+fputs(stdout)
 __oe_host_print(stdout)
 __oe_host_print(stdout)
 === passed all tests (host/print_host)
