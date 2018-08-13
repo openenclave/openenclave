@@ -36,8 +36,8 @@ static void _oe_parse_sgx_report_body(
     /*
      * Parse identity.
      */
-    parsedReport->identity.idVersion = 0x0;
-    parsedReport->identity.securityVersion = reportBody->isvsvn;
+    parsedReport->identity.id_version = 0x0;
+    parsedReport->identity.security_version = reportBody->isvsvn;
 
     if (reportBody->attributes.flags & SGX_FLAGS_DEBUG)
         parsedReport->identity.attributes |= OE_REPORT_ATTRIBUTES_DEBUG;
@@ -46,31 +46,31 @@ static void _oe_parse_sgx_report_body(
         parsedReport->identity.attributes |= OE_REPORT_ATTRIBUTES_REMOTE;
 
     OE_STATIC_ASSERT(
-        sizeof(parsedReport->identity.uniqueID) >=
+        sizeof(parsedReport->identity.unique_id) >=
         sizeof(reportBody->mrenclave));
     Memcpy(
-        parsedReport->identity.uniqueID,
+        parsedReport->identity.unique_id,
         reportBody->mrenclave,
         sizeof(reportBody->mrenclave));
 
     OE_STATIC_ASSERT(
-        sizeof(parsedReport->identity.authorID) >=
+        sizeof(parsedReport->identity.author_id) >=
         sizeof(reportBody->mrsigner));
     Memcpy(
-        parsedReport->identity.authorID,
+        parsedReport->identity.author_id,
         reportBody->mrsigner,
         sizeof(reportBody->mrsigner));
 
-    parsedReport->identity.productID[0] = reportBody->isvprodid & 0xFF;
-    parsedReport->identity.productID[1] = (reportBody->isvprodid >> 8) & 0xFF;
+    parsedReport->identity.product_id[0] = reportBody->isvprodid & 0xFF;
+    parsedReport->identity.product_id[1] = (reportBody->isvprodid >> 8) & 0xFF;
 
     /*
      * Set pointer fields.
      */
-    parsedReport->reportData = (uint8_t*)&reportBody->reportData;
-    parsedReport->reportDataSize = sizeof(sgx_report_data_t);
-    parsedReport->enclaveReport = (uint8_t*)reportBody;
-    parsedReport->enclaveReportSize = sizeof(sgx_report_body_t);
+    parsedReport->report_data = (uint8_t*)&reportBody->report_data;
+    parsedReport->report_data_size = sizeof(sgx_report_data_t);
+    parsedReport->enclave_report = (uint8_t*)reportBody;
+    parsedReport->enclave_report_size = sizeof(sgx_report_body_t);
 }
 
 oe_result_t oe_parse_report(

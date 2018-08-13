@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -52,7 +53,7 @@ OE_ECALL void Test(Args* args)
         argv[2] = args->test;
         args->ret = main(argc, argv);
         printf("\n in main\n");
-        args->test = oe_host_strdup(__TEST__);
+        args->test = oe_host_strndup(__TEST__, OE_SIZE_MAX);
     }
 }
 

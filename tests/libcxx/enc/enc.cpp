@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/tests.h>
 #include <csignal>
 #include <cstdio>
@@ -57,6 +58,6 @@ OE_ECALL void Test(Args* args)
         };
         static int argc = sizeof(argv) / sizeof(argv[0]);
         args->ret = main(argc, argv);
-        args->test = oe_host_strdup(__TEST__NAME);
+        args->test = oe_host_strndup(__TEST__NAME, OE_SIZE_MAX);
     }
 }
