@@ -132,7 +132,7 @@ static oe_result_t _oe_get_remote_report(
         OE_RAISE(OE_UNEXPECTED);
 
     if (memcmp(
-            parsedReport.enclaveReport,
+            parsedReport.enclave_report,
             &sgxReport->body,
             sizeof(sgxReport->body)) != 0)
         OE_RAISE(OE_UNEXPECTED);

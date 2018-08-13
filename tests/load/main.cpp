@@ -30,9 +30,9 @@ static const oe_sgx_enclave_properties_t* GetEnclaveProperties()
 
     memset(&properties, 0, sizeof(oe_sgx_enclave_properties_t));
     properties.config.attributes = OE_SGX_FLAGS_DEBUG;
-    properties.header.sizeSettings.numHeapPages = 2;
-    properties.header.sizeSettings.numStackPages = 1;
-    properties.header.sizeSettings.numTCS = 2;
+    properties.header.size_settings.num_heap_pages = 2;
+    properties.header.size_settings.num_stack_pages = 1;
+    properties.header.size_settings.num_tcs = 2;
 
     return &properties;
 #endif

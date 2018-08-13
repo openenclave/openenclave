@@ -15,6 +15,7 @@
 #endif
 
 #include <openenclave/host.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sha.h>
 

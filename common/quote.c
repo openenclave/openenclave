@@ -252,7 +252,7 @@ oe_result_t VerifyQuoteImpl(
                 &quoteAuthData->qeReportBodySignature));
 
         // Assert SHA256 (attestationKey + qeAuthData.data) ==
-        // qeReportBody.reportData[0..32]
+        // qeReportBody.report_data[0..32]
         OE_CHECK(oe_sha256_init(&sha256Ctx));
         OE_CHECK(
             oe_sha256_update(
@@ -268,7 +268,7 @@ oe_result_t VerifyQuoteImpl(
 
         if (!oe_constant_time_mem_equal(
                 &sha256,
-                &quoteAuthData->qeReportBody.reportData,
+                &quoteAuthData->qeReportBody.report_data,
                 sizeof(sha256)))
             OE_RAISE(OE_VERIFY_FAILED);
 

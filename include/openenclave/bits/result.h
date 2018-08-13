@@ -7,8 +7,8 @@
  * This file defines Open Enclave return codes (results).
  *
  */
-#ifndef _OE_BITS_RESULT
-#define _OE_BITS_RESULT
+#ifndef _OE_BITS_RESULT_H
+#define _OE_BITS_RESULT_H
 
 #include "defs.h"
 #include "types.h"
@@ -56,10 +56,8 @@ typedef enum _oe_result {
     OE_QUOTE_PROVIDER_LOAD_ERROR,
     OE_QUOTE_PROVIDER_CALL_ERROR,
     OE_INVALID_REVOCATION_INFO,
-    __OE_RESULT_MAX = OE_MAX_UINT,
+    __OE_RESULT_MAX = OE_ENUM_MAX,
 } oe_result_t;
-
-OE_STATIC_ASSERT(sizeof(oe_result_t) == sizeof(unsigned int));
 
 /**
  * Retrieve a string for a result code.
@@ -76,4 +74,4 @@ const char* oe_result_str(oe_result_t result);
 
 OE_EXTERNC_END
 
-#endif /* _OE_BITS_RESULT */
+#endif /* _OE_BITS_RESULT_H */

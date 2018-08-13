@@ -240,7 +240,7 @@ OE_CATCH:
 oe_result_t __oe_combine_segments(
     const oe_segment_t* segments,
     size_t nsegments,
-    oe_page** pages,
+    oe_page_t** pages,
     size_t* npages)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -297,7 +297,7 @@ oe_result_t __oe_combine_segments(
         memcpy(data + seg->vaddr, seg->filedata, seg->filesz);
     }
 
-    *pages = (oe_page*)data;
+    *pages = (oe_page_t*)data;
     *npages = size / OE_PAGE_SIZE;
 
     result = OE_OK;
