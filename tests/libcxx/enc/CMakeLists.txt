@@ -17,7 +17,7 @@ target_compile_options(libcxxtest-support PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>
     )
 
-add_target_cxx_compile_flags_if_supported(libcxxtest-support PRIVATE
+add_target_compile_flags_if_supported(libcxxtest-support PRIVATE CXX
     -Wno-error=attributes
     -Wno-error=maybe-uninitialized
     -Wno-error=strict-overflow

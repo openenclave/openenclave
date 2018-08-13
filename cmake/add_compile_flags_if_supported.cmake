@@ -55,286 +55,127 @@ function(_check_cxx_compile_flag_supported flag supported)
   set(${supported} ${SUPPORTS_CXX_${flagname}_FLAG} PARENT_SCOPE)
 endfunction()
 
-function(_check_c_and_cxx_compile_flag_supported flag supported)
-  _check_c_compile_flag_supported(${flag} supported_c)
-  _check_cxx_compile_flag_supported(${flag} supported_cxx)
-  if (supported_c AND supported_cxx)
-    set(${supported} TRUE PARENT_SCOPE)
-  elseif((supported_c AND NOT supported_cxx) OR (NOT supported_c AND supported_cxx))
-    message(FATAL_ERROR "Programming error: ${flag} not supported by both C and C++ compiler,\
-      use language-specific add_*_compile_flags_if_supported functions")
-  else()
-    set(${supported} FALSE PARENT_SCOPE)
-  endif()
-endfunction()
-
 function(_check_compile_flag_supported lang flag supported)
-  if (lang STREQUAL "C")
-    _check_c_compile_flag_supported(${flag} _supported)
-  elseif (lang STREQUAL "CXX")
-    _check_cxx_compile_flag_supported(${flag} _supported)
-  elseif (lang STREQUAL "ALL")
-    _check_c_and_cxx_compile_flag_supported(${flag} _supported)
-  else()
-    message(FATAL_ERROR "Unsupported language: ${lang}")
-  endif()
-  set(${supported} ${_supported} PARENT_SCOPE)
+  set(result "null")
+  foreach (_lang IN LISTS lang)
+    if (_lang STREQUAL "C")
+      _check_c_compile_flag_supported(${flag} _supported)
+    elseif (_lang STREQUAL "CXX")
+      _check_cxx_compile_flag_supported(${flag} _supported)
+    else()
+      message(FATAL_ERROR "Unsupported language: ${_lang}")
+    endif()
+    if (NOT result STREQUAL "null")
+      if ((result AND NOT _supported) OR (NOT result AND _supported))
+        message(FATAL_ERROR "Programming error: ${flag} not supported by all compilers \
+          for languages ${lang}. Split flags into separate function calls.")
+      endif()
+    endif()
+    set(result ${_supported})
+  endforeach()
+  set(${supported} ${result} PARENT_SCOPE)
 endfunction()
 
 function(_add_compile_flag lang flag)
   separate_arguments(flag) # for flag pairs like -mllvm -...
-  foreach (flag_ IN LISTS flag)
-    if (lang STREQUAL "ALL")
-      add_compile_options($<$<COMPILE_LANGUAGE:C>:${flag_}> $<$<COMPILE_LANGUAGE:CXX>:${flag_}>)
-    else()
-      add_compile_options($<$<COMPILE_LANGUAGE:${lang}>:${flag_}>)
-    endif()
+  foreach (_flag IN LISTS flag)
+    foreach (_lang IN LISTS lang)
+      add_compile_options($<$<COMPILE_LANGUAGE:${_lang}>:${_flag}>)
+    endforeach()
   endforeach()
 endfunction()
 
 function(_add_target_compile_flag lang target scope flag)
   separate_arguments(flag)
-  foreach (flag_ IN LISTS flag)
-    if (lang STREQUAL "ALL")
-      target_compile_options(${target} ${scope}
-        $<$<COMPILE_LANGUAGE:C>:${flag_}> $<$<COMPILE_LANGUAGE:CXX>:${flag_}>)
-    else()
-      target_compile_options(${target} ${scope} $<$<COMPILE_LANGUAGE:${lang}>:${flag_}>)
-    endif()
+  foreach (_flag IN LISTS flag)
+    foreach (_lang IN LISTS lang)
+      target_compile_options(${target} ${scope} $<$<COMPILE_LANGUAGE:${_lang}>:${_flag}>)
+    endforeach()
   endforeach()
 endfunction()
 
-function(_add_compile_flag_if_supported lang flag supported)
-  _check_compile_flag_supported(${lang} ${flag} _supported)
+# Check whether the compiler(s) for the given language(s) support a given flag
+# and, if supported, add the flag to the compilation of source files.
+#
+# Usage:
+#
+#	  add_compile_flag_if_supported(
+#       <lang> <flag> <supportedvar>)
+#
+# Arguments:
+# 
+#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
+#  <flag> - Flag to be added.
+#  <supportedvar> - Name of the boolean result variable indicating compiler support.
+
+function(add_compile_flag_if_supported lang flag supported)
+  _check_compile_flag_supported("${lang}" ${flag} _supported)
   if (_supported)
-    _add_compile_flag(${lang} ${flag})
+    _add_compile_flag("${lang}" ${flag})
   endif()
   set(${supported} ${_supported} PARENT_SCOPE)
 endfunction()
 
-function(_add_compile_flags_if_supported lang)
-  foreach(flag ${ARGN})
-    _add_compile_flag_if_supported(${lang} ${flag} _)
-  endforeach()
-endfunction()
-
-# Note that two underscores are required to work around a bug in CMake
-# where it otherwise ends up in an infinite recursive loop calling the wrong function.
-function(__add_target_compile_flag_if_supported lang target scope flag supported)
-  _check_compile_flag_supported(${lang} ${flag} _supported)
-  if (_supported)
-    _add_target_compile_flag(${lang} ${target} ${scope} ${flag})
-  endif()
-  set(${supported} ${_supported} PARENT_SCOPE)
-endfunction()
-
-function(__add_target_compile_flags_if_supported lang target scope)
-  foreach(flag ${ARGN})
-    __add_target_compile_flag_if_supported(${lang} ${target} ${scope} ${flag} _)
-  endforeach()
-endfunction()
-
-# Check whether the C compiler supports a given flag and, if supported,
-# add the flag to the compilation of C source files.
-#
-# Usage:
-#
-#	  add_c_compile_flag_if_supported(<flag> <supportedvar>)
-#
-# Arguments:
-# 
-#  <flag> - Flag to be added.
-#  <supportedvar> - Name of the boolean result variable indicating compiler support.
-
-# Macros are used here to easily fill the 'supported' output variable.
-macro(add_c_compile_flag_if_supported)
-  _add_compile_flag_if_supported(C ${ARGN})
-endmacro()
-
-# Check whether the C++ compiler supports a given flag and, if supported,
-# add the flag to the compilation of C++ source files.
-#
-# Usage:
-#
-#	  add_cxx_compile_flag_if_supported(<flag> <supportedvar>)
-#
-# Arguments:
-# 
-#  <flag> - Flag to be added.
-#  <supportedvar> - Name of the boolean result variable indicating compiler support.
-
-macro(add_cxx_compile_flag_if_supported)
-  _add_compile_flag_if_supported(CXX ${ARGN})
-endmacro()
-
-# Check whether both the C and C++ compilers support a given flag and, if supported,
-# add the flag to the compilation of C and C++ source files.
-#
-# Usage:
-#
-#	  add_compile_flag_if_supported(<flag> <supportedvar>)
-#
-# Arguments:
-# 
-#  <flag> - Flag to be added.
-#  <supportedvar> - Name of the boolean result variable indicating compiler support.
-
-macro(add_compile_flag_if_supported)
-  _add_compile_flag_if_supported(ALL ${ARGN})
-endmacro()
-
-# Check whether the C compiler supports a given flag and, if supported,
-# add the flag to the compilation of C source files for the given target.
-#
-# Usage:
-#
-#	  add_target_c_compile_flag_if_supported(
-#     <target> <scope> <flag> <supportedvar>)
-#
-# Arguments:
-# 
-#  <target> - Name of the target.
-#  <scope> - Scope of the flag: INTERFACE|PUBLIC|PRIVATE.
-#  <flag> - Flag to be added.
-#  <supportedvar> - Name of the boolean result variable indicating compiler support.
-
-macro(add_target_c_compile_flag_if_supported)
-  __add_target_compile_flag_if_supported(C ${ARGN})
-endmacro()
-
-# Check whether the C++ compiler supports a given flag and, if supported,
-# add the flag to the compilation of C++ source files for the given target.
-#
-# Usage:
-#
-#	  add_target_cxx_compile_flag_if_supported(
-#     <target> <scope> <flag> <supportedvar>)
-#
-# Arguments:
-# 
-#  <target> - Name of the target.
-#  <scope> - Scope of the flag: INTERFACE|PUBLIC|PRIVATE.
-#  <flag> - Flag to be added.
-#  <supportedvar> - Name of the boolean result variable indicating compiler support.
-
-macro(add_target_cxx_compile_flag_if_supported)
-  __add_target_compile_flag_if_supported(CXX ${ARGN})
-endmacro()
-
-# Check whether both the C and C++ compilers support a given flag and, if supported,
-# add the flag to the compilation of C and C++ source files for the given target.
+# Check whether the compiler(s) for the given language(s) support a given flag and, if supported,
+# add the flag to the compilation of source files for the given target.
 #
 # Usage:
 #
 #	  add_target_compile_flag_if_supported(
-#     <target> <scope> <flag> <supportedvar>)
+#       <target> <scope> <lang> <flag> <supportedvar>)
 #
 # Arguments:
 # 
 #  <target> - Name of the target.
 #  <scope> - Scope of the flag: INTERFACE|PUBLIC|PRIVATE.
+#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
 #  <flag> - Flag to be added.
 #  <supportedvar> - Name of the boolean result variable indicating compiler support.
 
-macro(add_target_compile_flag_if_supported)
-  __add_target_compile_flag_if_supported(ALL ${ARGN})
-endmacro()
+function(add_target_compile_flag_if_supported target scope lang flag supported)
+  _check_compile_flag_supported("${lang}" ${flag} _supported)
+  if (_supported)
+    _add_target_compile_flag("${lang}" ${target} ${scope} ${flag})
+  endif()
+  set(${supported} ${_supported} PARENT_SCOPE)
+endfunction()
 
-# Check for each given flag whether the C compiler supports it and, if supported,
-# add the flag to the compilation of C source files.
+# Check for each given flag whether the compiler(s) for the given language(s) support it
+# and, if supported, add the flag to the compilation of source files.
 #
 # Usage:
 #
-#	  add_c_compile_flags_if_supported(<flag1> [<flag2>] ...)
+#	  add_compile_flags_if_supported(
+#       <lang> <flag1> [<flag2>] ...)
 #
 # Arguments:
-# 
+#
+#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
 #  <flagn> - Flags to be added.
 
-function(add_c_compile_flags_if_supported)
-  _add_compile_flags_if_supported(C ${ARGN})
+function(add_compile_flags_if_supported lang)
+  foreach(flag ${ARGN})
+    add_compile_flag_if_supported("${lang}" ${flag} _)
+  endforeach()
 endfunction()
 
-# Check for each given flag whether the C++ compiler supports it and, if supported,
-# add the flag to the compilation of C++ source files.
-#
-# Usage:
-#
-#	  add_cxx_compile_flags_if_supported(<flag1> [<flag2>] ...)
-#
-# Arguments:
-# 
-#  <flagn> - Flags to be added.
-
-function(add_cxx_compile_flags_if_supported)
-  _add_compile_flags_if_supported(CXX ${ARGN})
-endfunction()
-
-# Check for each given flag whether both the C and C++ compilers support it and, if supported,
-# add the flag to the compilation of C and C++ source files.
-#
-# Usage:
-#
-#	  add_compile_flags_if_supported(<flag1> [<flag2>] ...)
-#
-# Arguments:
-# 
-#  <flagn> - Flags to be added.
-
-function(add_compile_flags_if_supported)
-  _add_compile_flags_if_supported(ALL ${ARGN})
-endfunction()
-
-# Check for each given flag whether the C compiler supports it and, if supported,
-# add the flag to the compilation of C source files for the given target.
-#
-# Usage:
-#
-#	  add_target_c_compile_flags_if_supported(
-#     <target> <scope> <flag1> [<flag2>] ...)
-#
-# Arguments:
-# 
-#  <target> - Name of the target.
-#  <scope> - Scope of the flags: INTERFACE|PUBLIC|PRIVATE.
-#  <flagn> - Flags to be added.
-
-function(add_target_c_compile_flags_if_supported)
-  __add_target_compile_flags_if_supported(C ${ARGN})
-endfunction()
-
-# Check for each given flag whether the C++ compiler supports it and, if supported,
-# add the flag to the compilation of C++xx source files for the given target.
-#
-# Usage:
-#
-#	  add_target_cxx_compile_flags_if_supported(
-#     <target> <scope> <flag1> [<flag2>] ...)
-#
-# Arguments:
-# 
-#  <target> - Name of the target.
-#  <scope> - Scope of the flags: INTERFACE|PUBLIC|PRIVATE.
-#  <flagn> - Flags to be added.
-
-function(add_target_cxx_compile_flags_if_supported)
-  __add_target_compile_flags_if_supported(CXX ${ARGN})
-endfunction()
-
-# Check for each given flag whether both the C and C++ compilers support it and, if supported,
-# add the flag to the compilation of C and C++ source files for the given target.
+# Check for each given flag whether the compiler(s) for the given language(s) support it
+# and, if supported, add the flag to the compilation of source files for the given target.
 #
 # Usage:
 #
 #	  add_target_compile_flags_if_supported(
-#     <target> <scope> <flag1> [<flag2>] ...)
+#       <target> <scope> <lang> <flag1> [<flag2>] ...)
 #
 # Arguments:
 # 
 #  <target> - Name of the target.
 #  <scope> - Scope of the flags: INTERFACE|PUBLIC|PRIVATE.
+#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
 #  <flagn> - Flags to be added.
 
-function(add_target_compile_flags_if_supported)
-  __add_target_compile_flags_if_supported(ALL ${ARGN})
+function(add_target_compile_flags_if_supported target scope lang)
+  foreach(flag ${ARGN})
+    add_target_compile_flag_if_supported(${target} ${scope} "${lang}" ${flag} _)
+  endforeach()
 endfunction()
