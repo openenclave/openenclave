@@ -104,45 +104,236 @@ function(_add_target_compile_flag lang target scope flag)
   endforeach()
 endfunction()
 
+function(_add_compile_flag_if_supported lang flag supported)
+  _check_compile_flag_supported(${lang} ${flag} _supported)
+  if (_supported)
+    _add_compile_flag(${lang} ${flag})
+  endif()
+  set(${supported} ${_supported} PARENT_SCOPE)
+endfunction()
+
 function(_add_compile_flags_if_supported lang)
   foreach(flag ${ARGN})
-    _check_compile_flag_supported(${lang} ${flag} supported)
-    if (supported)
-      _add_compile_flag(${lang} ${flag})
-    endif()
+    _add_compile_flag_if_supported(${lang} ${flag} _)
   endforeach()
 endfunction()
 
 # Note that two underscores are required to work around a bug in CMake
 # where it otherwise ends up in an infinite recursive loop calling the wrong function.
+function(__add_target_compile_flag_if_supported lang target scope flag supported)
+  _check_compile_flag_supported(${lang} ${flag} _supported)
+  if (_supported)
+    _add_target_compile_flag(${lang} ${target} ${scope} ${flag})
+  endif()
+  set(${supported} ${_supported} PARENT_SCOPE)
+endfunction()
+
 function(__add_target_compile_flags_if_supported lang target scope)
   foreach(flag ${ARGN})
-    _check_compile_flag_supported(${lang} ${flag} supported)
-    if (supported)
-      _add_target_compile_flag(${lang} ${target} ${scope} ${flag})
-    endif()
+    __add_target_compile_flag_if_supported(${lang} ${target} ${scope} ${flag} _)
   endforeach()
 endfunction()
+
+# Check whether the C compiler supports a given flag and, if supported,
+# add the flag to the compilation of C source files.
+#
+# Usage:
+#
+#	  add_c_compile_flag_if_supported(<flag> <supportedvar>)
+#
+# Arguments:
+# 
+#  <flag> - Flag to be added.
+#  <supportedvar> - Name of the boolean result variable indicating compiler support.
+
+# Macros are used here to easily fill the 'supported' output variable.
+macro(add_c_compile_flag_if_supported)
+  _add_compile_flag_if_supported(C ${ARGN})
+endmacro()
+
+# Check whether the C++ compiler supports a given flag and, if supported,
+# add the flag to the compilation of C++ source files.
+#
+# Usage:
+#
+#	  add_cxx_compile_flag_if_supported(<flag> <supportedvar>)
+#
+# Arguments:
+# 
+#  <flag> - Flag to be added.
+#  <supportedvar> - Name of the boolean result variable indicating compiler support.
+
+macro(add_cxx_compile_flag_if_supported)
+  _add_compile_flag_if_supported(CXX ${ARGN})
+endmacro()
+
+# Check whether both the C and C++ compilers support a given flag and, if supported,
+# add the flag to the compilation of C and C++ source files.
+#
+# Usage:
+#
+#	  add_compile_flag_if_supported(<flag> <supportedvar>)
+#
+# Arguments:
+# 
+#  <flag> - Flag to be added.
+#  <supportedvar> - Name of the boolean result variable indicating compiler support.
+
+macro(add_compile_flag_if_supported)
+  _add_compile_flag_if_supported(ALL ${ARGN})
+endmacro()
+
+# Check whether the C compiler supports a given flag and, if supported,
+# add the flag to the compilation of C source files for the given target.
+#
+# Usage:
+#
+#	  add_target_c_compile_flag_if_supported(
+#     <target> <scope> <flag> <supportedvar>)
+#
+# Arguments:
+# 
+#  <target> - Name of the target.
+#  <scope> - Scope of the flag: INTERFACE|PUBLIC|PRIVATE.
+#  <flag> - Flag to be added.
+#  <supportedvar> - Name of the boolean result variable indicating compiler support.
+
+macro(add_target_c_compile_flag_if_supported)
+  __add_target_compile_flag_if_supported(C ${ARGN})
+endmacro()
+
+# Check whether the C++ compiler supports a given flag and, if supported,
+# add the flag to the compilation of C++ source files for the given target.
+#
+# Usage:
+#
+#	  add_target_cxx_compile_flag_if_supported(
+#     <target> <scope> <flag> <supportedvar>)
+#
+# Arguments:
+# 
+#  <target> - Name of the target.
+#  <scope> - Scope of the flag: INTERFACE|PUBLIC|PRIVATE.
+#  <flag> - Flag to be added.
+#  <supportedvar> - Name of the boolean result variable indicating compiler support.
+
+macro(add_target_cxx_compile_flag_if_supported)
+  __add_target_compile_flag_if_supported(CXX ${ARGN})
+endmacro()
+
+# Check whether both the C and C++ compilers support a given flag and, if supported,
+# add the flag to the compilation of C and C++ source files for the given target.
+#
+# Usage:
+#
+#	  add_target_compile_flag_if_supported(
+#     <target> <scope> <flag> <supportedvar>)
+#
+# Arguments:
+# 
+#  <target> - Name of the target.
+#  <scope> - Scope of the flag: INTERFACE|PUBLIC|PRIVATE.
+#  <flag> - Flag to be added.
+#  <supportedvar> - Name of the boolean result variable indicating compiler support.
+
+macro(add_target_compile_flag_if_supported)
+  __add_target_compile_flag_if_supported(ALL ${ARGN})
+endmacro()
+
+# Check for each given flag whether the C compiler supports it and, if supported,
+# add the flag to the compilation of C source files.
+#
+# Usage:
+#
+#	  add_c_compile_flags_if_supported(<flag1> [<flag2>] ...)
+#
+# Arguments:
+# 
+#  <flagn> - Flags to be added.
 
 function(add_c_compile_flags_if_supported)
   _add_compile_flags_if_supported(C ${ARGN})
 endfunction()
 
+# Check for each given flag whether the C++ compiler supports it and, if supported,
+# add the flag to the compilation of C++ source files.
+#
+# Usage:
+#
+#	  add_cxx_compile_flags_if_supported(<flag1> [<flag2>] ...)
+#
+# Arguments:
+# 
+#  <flagn> - Flags to be added.
+
 function(add_cxx_compile_flags_if_supported)
   _add_compile_flags_if_supported(CXX ${ARGN})
 endfunction()
+
+# Check for each given flag whether both the C and C++ compilers support it and, if supported,
+# add the flag to the compilation of C and C++ source files.
+#
+# Usage:
+#
+#	  add_compile_flags_if_supported(<flag1> [<flag2>] ...)
+#
+# Arguments:
+# 
+#  <flagn> - Flags to be added.
 
 function(add_compile_flags_if_supported)
   _add_compile_flags_if_supported(ALL ${ARGN})
 endfunction()
 
+# Check for each given flag whether the C compiler supports it and, if supported,
+# add the flag to the compilation of C source files for the given target.
+#
+# Usage:
+#
+#	  add_target_c_compile_flags_if_supported(
+#     <target> <scope> <flag1> [<flag2>] ...)
+#
+# Arguments:
+# 
+#  <target> - Name of the target.
+#  <scope> - Scope of the flags: INTERFACE|PUBLIC|PRIVATE.
+#  <flagn> - Flags to be added.
+
 function(add_target_c_compile_flags_if_supported)
   __add_target_compile_flags_if_supported(C ${ARGN})
 endfunction()
 
+# Check for each given flag whether the C++ compiler supports it and, if supported,
+# add the flag to the compilation of C++xx source files for the given target.
+#
+# Usage:
+#
+#	  add_target_cxx_compile_flags_if_supported(
+#     <target> <scope> <flag1> [<flag2>] ...)
+#
+# Arguments:
+# 
+#  <target> - Name of the target.
+#  <scope> - Scope of the flags: INTERFACE|PUBLIC|PRIVATE.
+#  <flagn> - Flags to be added.
+
 function(add_target_cxx_compile_flags_if_supported)
   __add_target_compile_flags_if_supported(CXX ${ARGN})
 endfunction()
+
+# Check for each given flag whether both the C and C++ compilers support it and, if supported,
+# add the flag to the compilation of C and C++ source files for the given target.
+#
+# Usage:
+#
+#	  add_target_compile_flags_if_supported(
+#     <target> <scope> <flag1> [<flag2>] ...)
+#
+# Arguments:
+# 
+#  <target> - Name of the target.
+#  <scope> - Scope of the flags: INTERFACE|PUBLIC|PRIVATE.
+#  <flagn> - Flags to be added.
 
 function(add_target_compile_flags_if_supported)
   __add_target_compile_flags_if_supported(ALL ${ARGN})
