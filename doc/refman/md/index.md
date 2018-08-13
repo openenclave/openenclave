@@ -106,7 +106,7 @@
 
 * [oe_verify_report()](enclave_8h_a8acaf0fc459ee3c01f39c356b35e596b_1a8acaf0fc459ee3c01f39c356b35e596b.md)
 
-* [oe_get_seal_key_by_policy()](enclave_8h_a95d180f7a91d8d329848e4f0087d7365_1a95d180f7a91d8d329848e4f0087d7365.md)
+* [oe_get_seal_key_by_policy()](enclave_8h_a4c5542147f4ed8453ea0dac91ef7ffdf_1a4c5542147f4ed8453ea0dac91ef7ffdf.md)
 
 * [oe_get_seal_key()](enclave_8h_ae976ec009d32605b4cd5b78602cc6aee_1ae976ec009d32605b4cd5b78602cc6aee.md)
 
