@@ -30,9 +30,6 @@ static oe_result_t _find_url(
     const char pattern[] = "http";
     const size_t pattern_length = sizeof(pattern) - 1;
 
-    if (url)
-        *url = NULL;
-
     /* Search for "http" preceded by the length of the URL */
     while (remaining >= pattern_length)
     {
