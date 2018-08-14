@@ -2,6 +2,7 @@
 oe_host_printf(stdout)
 printf(stdout)
 fwrite(stdout)
+o
 fputs(stdout)
 __oe_host_print(stdout)
 __oe_host_print(stdout)
