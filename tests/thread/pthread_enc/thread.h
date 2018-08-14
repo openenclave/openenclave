@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-//Intentionally using the same guard as this is to be included only if
-//include/openenclave/internal/thread.h wasn't already included
+// Intentionally using the same guard as this is to be included only if
+// include/openenclave/internal/thread.h wasn't already included
 #ifndef _OE_INCLUDE_THREAD_H
 #define _OE_INCLUDE_THREAD_H
 
