@@ -9,7 +9,7 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/*_t.c
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/*_t.h    
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../*.edl ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${OE_BINDIR}/oeedger8r basic.edl string.edl
+    COMMAND ${OE_BINDIR}/oeedger8r --untrusted basic.edl string.edl
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.edl
     DEPENDS oeedger8r
 )

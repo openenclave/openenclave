@@ -587,7 +587,7 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   if ep.trusted_dir <> "." then failwithf "--trusted_dir option is not supported with --open-enclave";
   List.iter (fun f -> if f.Ast.tf_is_priv then 
     (* failwithf "private functions are not supported with --open-enclave" *)
-    Printf.printf "warning: 'private' annotation ignored on function %s.\n" f.Ast.tf_fdecl.fname
+    failwithf "warning: 'private' annotation ignored on function %s.\n" f.Ast.tf_fdecl.fname
   ) ec.tfunc_decls  
   (*
     Includes are emitted in args.h.
@@ -678,8 +678,10 @@ let gen_u_c (ec: enclave_content) (ep: edger8r_params) =
 let gen_enclave_code (ec: enclave_content) (ep: edger8r_params) =
   validate_oe_support ec ep;
   oe_gen_args_header ec;
-  gen_t_h ec ep;
-  gen_t_c ec ep;
+  if ep.gen_trusted then(
+    gen_t_h ec ep;
+    gen_t_c ec ep;
+  );
   if ep.gen_untrusted then (
     gen_u_h ec ep;
     gen_u_c ec ep;
