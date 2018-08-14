@@ -101,8 +101,7 @@ static oe_result_t _string_to_date(const char* str, oe_date_t* date)
     oe_result_t result = OE_UNEXPECTED;
     char month[4];
 
-    if (date)
-        memset(date, 0, sizeof(oe_date_t));
+    memset(date, 0, sizeof(oe_date_t));
 
     /* Convert the string to oe_date_t struct */
     if (sscanf(
