@@ -106,7 +106,7 @@ static oe_result_t _string_to_date(const char* str, oe_date_t* date)
     /* Convert the string to oe_date_t struct */
     if (sscanf(
             str,
-            "%3s %02u %02u:%02u:%02u %04u GMT",
+            "%3s %02u %02u:%02u:%02u %04u",
             month,
             &date->day,
             &date->hours,
@@ -117,7 +117,7 @@ static oe_result_t _string_to_date(const char* str, oe_date_t* date)
         OE_RAISE(OE_FAILURE);
     }
 
-    /* Convertthe month string to integer */
+    /* Convert the month string to integer */
     {
         static const char* _month[] = {"Jan",
                                        "Feb",
