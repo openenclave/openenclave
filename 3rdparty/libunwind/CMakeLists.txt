@@ -68,7 +68,8 @@ ExternalProject_Add(oelibcxx_unwind
         ${CMAKE_CURRENT_LIST_DIR}/Gstep.c
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c
 
-    # Copy Gtrace.c to Gtrace.inc
+    # Copy Gtrace.c to Gtrace.inc while removing the line containing
+    # "static __thread".
     COMMAND grep -v "^static __thread"
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.c >
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.inc

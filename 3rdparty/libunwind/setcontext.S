@@ -46,7 +46,11 @@
 _Ux86_64_setcontext:
 
     /* restore fp state */
-    leaq UC_MCONTEXT_FPREGS_MEM(%rdi), %r8
+#ifdef UC_MCONTEXT_FPREGS_PTR
+    mov UC_MCONTEXT_FPREGS_PTR(%rdi),%r8
+#else
+    leaq UC_MCONTEXT_FPREGS_MEM(%rdi),%r8
+#endif
     fldenv (%r8)
     ldmxcsr FPREGS_OFFSET_MXCSR(%r8)
 
