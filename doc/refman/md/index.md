@@ -14,67 +14,6 @@
 
 * [oe_result_str()](result_8h_a9bd668f10c3d509e6668363cd51dfad1_1a9bd668f10c3d509e6668363cd51dfad1.md)
 
-<<<<<<< HEAD
-=======
-### thread.h
-
-* [oe_thread_self()](thread_8h_a7f0347e48226889854f2edb7f007e532_1a7f0347e48226889854f2edb7f007e532.md)
-
-* [oe_thread_equal()](thread_8h_a25377db9e25d5d9dbf382692462b6519_1a25377db9e25d5d9dbf382692462b6519.md)
-
-* [oe_once()](thread_8h_aa27d2487f7f696b4f837149c2ec28bf6_1aa27d2487f7f696b4f837149c2ec28bf6.md)
-
-* [oe_spin_init()](thread_8h_a602eaad5be359cdac77f2054b41dbdd6_1a602eaad5be359cdac77f2054b41dbdd6.md)
-
-* [oe_spin_lock()](thread_8h_aae5e20184eceaab7f098965c736822a9_1aae5e20184eceaab7f098965c736822a9.md)
-
-* [oe_spin_unlock()](thread_8h_a0adcf530f702c9fb7b2e4e4a2fc61ccb_1a0adcf530f702c9fb7b2e4e4a2fc61ccb.md)
-
-* [oe_spin_destroy()](thread_8h_afe41ea1c6788e10a381b5250cafa64fa_1afe41ea1c6788e10a381b5250cafa64fa.md)
-
-* [oe_mutex_init()](thread_8h_a9eeea0ba1af9e6010c2bb23cbe3b6863_1a9eeea0ba1af9e6010c2bb23cbe3b6863.md)
-
-* [oe_mutex_lock()](thread_8h_a704737666b1716f0dd65dd0a02582ec1_1a704737666b1716f0dd65dd0a02582ec1.md)
-
-* [oe_mutex_trylock()](thread_8h_abbaddc299198bab7fab0a4f4a8ed04d8_1abbaddc299198bab7fab0a4f4a8ed04d8.md)
-
-* [oe_mutex_unlock()](thread_8h_a2c71ea40c4b81758c620f85ff8c0d648_1a2c71ea40c4b81758c620f85ff8c0d648.md)
-
-* [oe_mutex_destroy()](thread_8h_a6dd7a987817656584151caa3b7158f03_1a6dd7a987817656584151caa3b7158f03.md)
-
-* [oe_cond_init()](thread_8h_a6d6269dea7be432e889197ba19ce5949_1a6d6269dea7be432e889197ba19ce5949.md)
-
-* [oe_cond_wait()](thread_8h_ad86b163dd32d191627af64d163ce32dc_1ad86b163dd32d191627af64d163ce32dc.md)
-
-* [oe_cond_signal()](thread_8h_a26f8a20cdc329cb8241ac7d0ce215663_1a26f8a20cdc329cb8241ac7d0ce215663.md)
-
-* [oe_cond_broadcast()](thread_8h_a00df32da91d0002298e22279cf2401d0_1a00df32da91d0002298e22279cf2401d0.md)
-
-* [oe_cond_destroy()](thread_8h_a2f400477c1476d7f4f56df58547e042f_1a2f400477c1476d7f4f56df58547e042f.md)
-
-* [oe_rwlock_init()](thread_8h_aed0de2e9bf36bc1923e9623a02f5f02d_1aed0de2e9bf36bc1923e9623a02f5f02d.md)
-
-* [oe_rwlock_rdlock()](thread_8h_a3cbefb95278426a3c424bd84782e7f8f_1a3cbefb95278426a3c424bd84782e7f8f.md)
-
-* [oe_rwlock_tryrdlock()](thread_8h_a92b5c9cca43cd1a83eb095b78813e26c_1a92b5c9cca43cd1a83eb095b78813e26c.md)
-
-* [oe_rwlock_unlock()](thread_8h_a4f3bfee8cc6d7d23298d46acfe594a95_1a4f3bfee8cc6d7d23298d46acfe594a95.md)
-
-* [oe_rwlock_wrlock()](thread_8h_a94ddcc0d6186a76891c2fc88f281c0d5_1a94ddcc0d6186a76891c2fc88f281c0d5.md)
-
-* [oe_rwlock_trywrlock()](thread_8h_a9dd482e6d9447f2bbcf911a09726c85e_1a9dd482e6d9447f2bbcf911a09726c85e.md)
-
-* [oe_rwlock_destroy()](thread_8h_ad95e5de80f345050fb723d6250dc203e_1ad95e5de80f345050fb723d6250dc203e.md)
-
-* [oe_thread_key_create()](thread_8h_a2c89dee097cdb5c4edf00c1b7096a910_1a2c89dee097cdb5c4edf00c1b7096a910.md)
-
-* [oe_thread_key_delete()](thread_8h_a8854a58dd1abafe1b561b4d2290006b4_1a8854a58dd1abafe1b561b4d2290006b4.md)
-
-* [oe_thread_setspecific()](thread_8h_a97471548436baefac4bcd10272cb24c1_1a97471548436baefac4bcd10272cb24c1.md)
-
-* [oe_thread_getspecific()](thread_8h_a5cf056a98fe683e7b8044fb3e8700108_1a5cf056a98fe683e7b8044fb3e8700108.md)
-
->>>>>>> 64009bf21315b9c6d2c938d74ebe0500a4152e87
 ### enclave.h
 
 * [oe_add_vectored_exception_handler()](enclave_8h_a3ee9827bf9e87ebb63095823f21e48e8_1a3ee9827bf9e87ebb63095823f21e48e8.md)
