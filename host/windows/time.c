@@ -47,7 +47,7 @@ void HandleClockgettime(uint64_t argIn)
     UINT64 sec = currentTimePosix.QuadPart / WINDOWS_SEC_PER_TICK;
     UINT64 nsec = (currentTimePosix.QuadPart % WINDOWS_SEC_PER_TICK) *
                   WINDOWS_NS_PER_TICK;
-    if (sec > OE_MAX_UINT32 || nsec > OE_MAX_UINT32)
+    if (sec > OE_UINT32_MAX || nsec > OE_UINT32_MAX)
     {
         // Unexpected, current time exceeds POSIX timespec range
         args->tp->tv_sec = (time_t)-1;

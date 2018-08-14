@@ -15,7 +15,7 @@ typedef struct _TestArgs
     void* self;
     unsigned int magic;
     uint64_t baseHeapPage;
-    uint64_t numHeapPages;
+    uint64_t num_heap_pages;
     uint64_t numPages;
     const void* base;
     oe_thread_data_t threadData;

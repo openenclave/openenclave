@@ -72,7 +72,7 @@ static oe_result_t _read_integer(
         while (p < end && _is_digit(*p))
         {
             // Detect overflows.
-            if (*value >= OE_MAX_UINT64 / 10)
+            if (*value >= OE_UINT64_MAX / 10)
                 OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
 
             *value = *value * 10 + (*p - '0');
@@ -153,7 +153,7 @@ static oe_result_t _read_hex_string(
         {
             value =
                 (_hex_to_dec(str[i * 2]) << 4) | _hex_to_dec(str[i * 2 + 1]);
-            if (value > OE_MAX_UCHAR)
+            if (value > OE_UCHAR_MAX)
                 OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
             bytes[i] = (uint8_t)value;
         }
@@ -255,7 +255,7 @@ oe_result_t _read_tcb(
         OE_TRACE_INFO("value = %lu\n", value);
         OE_CHECK(_read(',', itr, end));
 
-        if (value > OE_MAX_UCHAR)
+        if (value > OE_UCHAR_MAX)
             OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
         tcb_level->sgx_tcb_comp_svn[i] = (uint8_t)value;
     }
@@ -265,7 +265,7 @@ oe_result_t _read_tcb(
     OE_TRACE_INFO("value = %lu\n", value);
     OE_CHECK(_read('}', itr, end));
 
-    if (value > OE_MAX_USHORT)
+    if (value > OE_USHRT_MAX)
         OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
 
     tcb_level->pce_svn = (uint16_t)value;

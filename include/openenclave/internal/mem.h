@@ -5,7 +5,7 @@
 #define _MEM_H
 
 #include <limits.h>
-#include <openenclave/bits/defs.h>
+#include <openenclave/internal/defs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -50,11 +50,11 @@ OE_EXTERNC_BEGIN
 typedef struct _oe_identity
 {
     /** Version of the oe_identity_t structure */
-    uint32_t idVersion;
+    uint32_t id_version;
 
     /** Security version of the enclave. For SGX enclaves, this is the
       *  ISVN value */
-    uint32_t securityVersion;
+    uint32_t security_version;
 
     /** Values of the attributes flags for the enclave -
      *  OE_REPORT_ATTRIBUTES_DEBUG: The report is for a debug enclave.
@@ -64,15 +64,15 @@ typedef struct _oe_identity
 
     /** The unique ID for the enclave.
       * For SGX enclaves, this is the MRENCLAVE value */
-    uint8_t uniqueID[OE_UNIQUE_ID_SIZE];
+    uint8_t unique_id[OE_UNIQUE_ID_SIZE];
 
     /** The author ID for the enclave.
       * For SGX enclaves, this is the MRSIGNER value */
-    uint8_t authorID[OE_AUTHOR_ID_SIZE];
+    uint8_t author_id[OE_AUTHOR_ID_SIZE];
 
     /** The Product ID for the enclave.
      * For SGX enclaves, this is the ISVPRODID value. */
-    uint8_t productID[OE_PRODUCT_ID_SIZE];
+    uint8_t product_id[OE_PRODUCT_ID_SIZE];
 } oe_identity_t;
 
 /**
@@ -86,19 +86,19 @@ typedef struct _oe_report
     /** The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
     oe_enclave_type_t type;
 
+    /** Size of report_data */
+    uint32_t report_data_size;
+
+    /** Size of enclave_report */
+    uint32_t enclave_report_size;
+
     /** Pointer to report data field within the report byte-stream supplied to
      * oe_parse_report */
-    uint8_t* reportData;
-
-    /** Size of reportData */
-    uint32_t reportDataSize;
+    uint8_t* report_data;
 
     /** Pointer to report body field within the report byte-stream supplied to
      * oe_parse_report. */
-    uint8_t* enclaveReport;
-
-    /** Size of enclaveReport */
-    uint32_t enclaveReportSize;
+    uint8_t* enclave_report;
 
     /** Contains the IDs and attributes that are part of oe_identity_t */
     oe_identity_t identity;
