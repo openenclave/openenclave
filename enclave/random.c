@@ -4,11 +4,11 @@
 #include "random.h"
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
-#include <openenclave/bits/thread.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/random.h>
+#include <openenclave/internal/thread.h>
 
 /*
 **==============================================================================
