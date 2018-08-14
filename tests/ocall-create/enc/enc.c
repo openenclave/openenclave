@@ -82,7 +82,7 @@ static void _CallEnclave(oe_enclave_t* enclave, const char* func)
     /* Fill struct values. */
     callArgs->enclave = enclave;
 
-    callArgs->func = oe_host_strdup(func);
+    callArgs->func = oe_host_strndup(func, OE_SIZE_MAX);
     OE_TEST(callArgs->func != NULL);
 
     callArgs->args = oe_host_malloc(sizeof(int));
