@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-// Intentionally using the same guard as this is to be included only if
-// include/openenclave/internal/thread.h wasn't already included
+// Intentionally using the same guard as the internal thread.h as we
+// want the pthread_enc test to be routed to the pthread* libc calls.
+// Include this first to ensure that the internal/thread.h will not be
+// included.
 #ifndef _OE_INCLUDE_THREAD_H
 #define _OE_INCLUDE_THREAD_H
 
@@ -44,4 +46,4 @@ typedef pthread_rwlock_t oe_rwlock_t;
 #define oe_rwlock_wrlock pthread_rwlock_wrlock
 #define oe_rwlock_unlock pthread_rwlock_unlock
 
-#endif /* _OE_INCLIDE_THREAD_H */
+#endif /* _OE_INCLUDE_THREAD_H */

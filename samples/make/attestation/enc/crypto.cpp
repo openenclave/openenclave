@@ -100,7 +100,6 @@ static void InitializeMbedtls(void)
  */
 bool InitializeCrypto(void)
 {
-    /* Since samples is single-threaded, okay to not use synch primitives */
     InitializeMbedtls();
     return g_Initialized;
 }
