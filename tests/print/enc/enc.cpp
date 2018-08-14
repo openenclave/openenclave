@@ -20,6 +20,8 @@ OE_ECALL void TestPrint(void* args_)
 
         n = fwrite("fwrite(stdout)\n", 1, 15, stdout);
         OE_TEST(n == 15);
+        /* Note that gcc seems to optimize fputs to fwrite iff
+           we ignore the retult. */
         int r = fputs("fputs(stdout)\n", stdout);
         OE_TEST(r >= 0);
 
@@ -32,6 +34,8 @@ OE_ECALL void TestPrint(void* args_)
     {
         n = fwrite("fwrite(stderr)\n", 1, 15, stderr);
         OE_TEST(n == 15);
+        /* Note that gcc seems to optimize fputs to fwrite iff
+           we ignore the retult. */
         int r = fputs("fputs(stderr)\n", stderr);
         OE_TEST(r >= 0);
         const char str[] = "__oe_host_print(stderr)\n";
