@@ -32,7 +32,7 @@ OE_ECALL void Test4(void* args)
     }
 }
 
-static oe_once_t _once = OE_ONCE_INITIALIZER;
+static oe_once_t _once = OE_ONCE_INIT;
 static oe_thread_key_t _key = OE_THREADKEY_INITIALIZER;
 
 static bool _destructor_called = false;
@@ -45,7 +45,7 @@ static void _destructor(void* data)
     {
         oe_host_free(str);
         _destructor_called = true;
-        OE_TEST(oe_thread_set_specific(_key, NULL) == 0);
+        OE_TEST(oe_thread_setspecific(_key, NULL) == 0);
     }
 }
 
@@ -70,7 +70,7 @@ OE_ECALL void SetTSD(void* args_)
     }
 
     /* Set the thread-specific data */
-    if (oe_thread_set_specific(_key, args->value) != 0)
+    if (oe_thread_setspecific(_key, args->value) != 0)
     {
         args->ret = -1;
         return;
@@ -86,7 +86,7 @@ OE_ECALL void GetTSD(void* args_)
     if (!args)
         oe_abort();
 
-    args->value = oe_thread_get_specific(_key);
+    args->value = oe_thread_getspecific(_key);
     args->ret = 0;
 }
 

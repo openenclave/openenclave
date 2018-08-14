@@ -3,6 +3,7 @@
 #if defined(OE_USE_LIBSGX)
 
 #include "sgxquote.h"
+#include <openenclave/internal/defs.h>
 #include <sgx_ngsa_ql_wrapper.h>
 
 // Check consistency with OE definition.
