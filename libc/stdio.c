@@ -166,6 +166,7 @@ size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)
 int fputs(const char* s, FILE* f)
 {
     size_t res = fwrite(s, strlen(s), 1, f);
+    (void)res;
     assert(res == 1);
     return 0;
 }
