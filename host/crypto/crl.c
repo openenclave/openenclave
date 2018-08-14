@@ -2,15 +2,15 @@
 // Licensed under the MIT License.
 
 #include "crl.h"
+#include <limits.h>
 #include <openenclave/internal/crl.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openssl/x509.h>
 #include <openssl/asn1.h>
+#include <openssl/x509.h>
 #include <string.h>
 #include <time.h>
-#include <limits.h>
 
 /* Randomly generated magic number */
 #define OE_CRL_MAGIC 0xe8c993b1cca24906
@@ -99,97 +99,54 @@ done:
 static oe_result_t _string_to_date(const char* str, oe_date_t* date)
 {
     oe_result_t result = OE_UNEXPECTED;
-    static const char* _month[] = 
-    {
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    };
-
-    const char* p = str;
+    char month[4];
 
     if (date)
         memset(date, 0, sizeof(oe_date_t));
 
-    /* Parse the month */
+    /* Convert the string to oe_date_t struct */
+    if (sscanf(
+            str,
+            "%3s %02u %02u:%02u:%02u %04u GMT",
+            month,
+            &date->day,
+            &date->hours,
+            &date->minutes,
+            &date->seconds,
+            &date->year) != 6)
     {
+        OE_RAISE(OE_FAILURE);
+    }
+
+    /* Convertthe month string to integer */
+    {
+        static const char* _month[] = {"Jan",
+                                       "Feb",
+                                       "Mar",
+                                       "Apr",
+                                       "May",
+                                       "Jun",
+                                       "Jul",
+                                       "Aug",
+                                       "Sep",
+                                       "Oct",
+                                       "Nov",
+                                       "Dec"};
+
         date->month = UINT_MAX;
 
         for (uint32_t i = 0; i < OE_COUNTOF(_month); i++)
         {
-            if (strncmp(p, _month[i], 3) == 0)
+            if (strncmp(month, _month[i], 3) == 0)
             {
                 date->month = i + 1;
-                p += 3;
+                break;
             }
         }
 
-        if (date->month == UINT_MAX || *p++ != ' ')
+        if (date->month == UINT_MAX)
             OE_RAISE(OE_FAILURE);
     }
-
-    /* Parse the day of the month */
-    {
-        char* end;
-        unsigned long day = strtoul(p, &end, 10);
-
-        if (p == end || *end != ' ' || day < 1 || day > 31)
-            OE_RAISE(OE_FAILURE);
-
-        date->day = (uint32_t)day;
-        p = end + 1;
-    }
-
-    /* Parse the hours */
-    {
-        char* end;
-        unsigned long hours = strtoul(p, &end, 10);
-
-        if (p == end || *end != ':' || hours > 23)
-            OE_RAISE(OE_FAILURE);
-
-        date->hours = (uint32_t)hours;
-        p = end + 1;
-    }
-
-    /* Parse the minutes */
-    {
-        char* end;
-        unsigned long minutes = strtoul(p, &end, 10);
-
-        if (p == end || *end != ':' || minutes > 59)
-            OE_RAISE(OE_FAILURE);
-
-        date->minutes = (uint32_t)minutes;
-        p = end + 1;
-    }
-
-    /* Parse the seconds */
-    {
-        char* end;
-        unsigned long seconds = strtoul(p, &end, 10);
-
-        if (p == end || *end != ' ' || seconds > 59)
-            OE_RAISE(OE_FAILURE);
-
-        date->seconds = (uint32_t)seconds;
-        p = end + 1;
-    }
-
-    /* Parse the year */
-    {
-        char* end;
-        unsigned long year = strtoul(p, &end, 10);
-
-        if (p == end || *end != ' ')
-            OE_RAISE(OE_FAILURE);
-
-        date->year = (uint32_t)year;
-        p = end + 1;
-    }
-
-    /* Check for "GMT" string at the end */
-    if (strcmp(p, "GMT") != 0)
-        OE_RAISE(OE_FAILURE);
 
     result = OE_OK;
 
