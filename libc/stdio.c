@@ -167,6 +167,7 @@ int fputc(int c, FILE* f)
 {
     unsigned char ch = c;
     size_t written = fwrite(&ch, 1, 1, f);
+    (void)written;
     assert (written == 1);
     return c;
 }

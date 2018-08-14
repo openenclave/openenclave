@@ -14,7 +14,7 @@ math.h | Partial | Unsupported functions: acosh(), asinh(), fmal(), lgamma(), lg
 setjmp.h | Yes | - |
 signal.h | No | - |
 stdatomic.h | No | - |
-stdio.h | Partial | All I/O functions implicitly call out to untrusted host. Supported functions: snprintf(), sscanf(),  _vfscanf()*_, vsnprintf(), vsscanf(), sprintf(), vsprintf(), puts(), putchar(), vprintf(), printf(), _fprintf()*_, _getc()*_, _ungetc()*_, _fwrite()*_, _fflush()*_, _fputs()*_ |
+stdio.h | Partial | All I/O functions implicitly call out to untrusted host. Supported functions: snprintf(), sscanf(),  _vfscanf()*_, vsnprintf(), vsscanf(), sprintf(), vsprintf(), puts(), putchar(), vprintf(), printf(), _fprintf()*_, _getc()*_, _ungetc()*_, _fwrite()*_, _fflush()*_, _fputs()*_, _fputc()*_ |
 stdlib.h | Partial | Unsupported functions: div(), imaxabs(), imaxdiv(), ldiv(), lldiv() |
 string.h | Partial | Unsupported functions: strerror(), strsignal() |
 tgmath.h | Partial | Unsupported functions: acosh(), asinh(), fmal(), lgamma(), lgamma_r(), scalbn(), scalbnf(), scalbnl(), sinh(), sinhl(), tgamma() |
