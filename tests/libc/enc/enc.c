@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -16,7 +17,7 @@ int main(int argc, const char* argv[]);
 
 void _exit(int status)
 {
-    oe_call_host("ocall_exit", status);
+    oe_call_host("ocall_exit", (void*)(uint64_t)status);
     abort();
 }
 
@@ -71,7 +72,7 @@ OE_ECALL void Test(Args* args)
         };
 
         args->ret = main(1, argv);
-        args->test = oe_host_strdup(__TEST__);
+        args->test = oe_host_strndup(__TEST__, OE_SIZE_MAX);
         free(__environ);
     }
 }

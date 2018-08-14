@@ -7,6 +7,7 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/trace.h>
+#include <openenclave/internal/types.h>
 #include <atomic>
 #include <cassert>
 #include <cstdio>

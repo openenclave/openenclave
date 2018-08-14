@@ -65,7 +65,7 @@ void oe_host_free(void* ptr)
     oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL);
 }
 
-char* oe_host_strdup(const char* str)
+char* oe_host_strndup(const char* str, size_t n)
 {
     char* p;
     size_t len;
@@ -75,10 +75,14 @@ char* oe_host_strdup(const char* str)
 
     len = oe_strlen(str);
 
+    if (n < len)
+        len = n;
+
     if (!(p = oe_host_malloc(len + 1)))
         return NULL;
 
-    oe_memcpy(p, str, len + 1);
+    oe_memcpy(p, str, len);
+    p[len] = '\0';
 
     return p;
 }
@@ -105,7 +109,7 @@ int __oe_host_puts(const char* str)
     if (!str)
         goto done;
 
-    if (!(hstr = oe_host_strdup(str)))
+    if (!(hstr = oe_host_strndup(str, OE_SIZE_MAX)))
         goto done;
 
     if (oe_ocall(OE_OCALL_PUTS, (uint64_t)hstr, NULL) != OE_OK)

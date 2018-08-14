@@ -59,7 +59,7 @@ OE_ECALL void TestOCallAfterAbort(void* args_)
     }
 
     // Notify control thread that this thread is ready.
-    __sync_fetch_and_add(args->thread_ready_count, 1);
+    ++*args->thread_ready_count;
 
     // Wait for the is_enclave_crashed signal.
     while (*args->is_enclave_crashed == 0)

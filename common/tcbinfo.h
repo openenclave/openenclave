@@ -19,7 +19,7 @@ typedef enum _oe_tcb_level_status {
     OE_TCB_LEVEL_STATUS_REVOKED,
     OE_TCB_LEVEL_STATUS_OUT_OF_DATE,
     OE_TCB_LEVEL_STATUS_UP_TO_DATE,
-    __OE_TCB_LEVEL_MAX = OE_MAX_UINT,
+    __OE_TCB_LEVEL_MAX = OE_ENUM_MAX,
 } oe_tcb_level_status_t;
 
 typedef struct _oe_tcb_level

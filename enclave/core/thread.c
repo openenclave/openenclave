@@ -251,7 +251,7 @@ oe_result_t oe_mutex_lock(oe_mutex_t* mutex)
     /* Unreachable! */
 }
 
-oe_result_t oe_mutex_try_lock(oe_mutex_t* mutex)
+oe_result_t oe_mutex_trylock(oe_mutex_t* mutex)
 {
     oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
     oe_thread_data_t* self = oe_get_thread_data();
@@ -573,7 +573,7 @@ oe_result_t oe_rwlock_rdlock(oe_rwlock_t* readWriteLock)
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* readWriteLock)
+oe_result_t oe_rwlock_tryrdlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
@@ -620,7 +620,7 @@ static oe_result_t _WakeWaiters(oe_rwlock_impl_t* rwLock)
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_rdunlock(oe_rwlock_t* readWriteLock)
+static oe_result_t _rwlock_rdunlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
@@ -686,7 +686,7 @@ oe_result_t oe_rwlock_wrlock(oe_rwlock_t* readWriteLock)
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* readWriteLock)
+oe_result_t oe_rwlock_trywrlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
@@ -709,7 +709,7 @@ oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* readWriteLock)
     return result;
 }
 
-oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* readWriteLock)
+static oe_result_t _rwlock_wrunlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
@@ -775,9 +775,9 @@ oe_result_t oe_rwlock_unlock(oe_rwlock_t* readWriteLock)
     // necessary here since the condition is expected to be true only when the
     // current thread is the writer thread.
     if (rwLock->writer == self)
-        return oe_rwlock_wrunlock(readWriteLock);
+        return _rwlock_wrunlock(readWriteLock);
     else
-        return oe_rwlock_rdunlock(readWriteLock);
+        return _rwlock_rdunlock(readWriteLock);
 }
 
 /*
@@ -865,7 +865,7 @@ oe_result_t oe_thread_key_delete(oe_thread_key_t key)
     return OE_OK;
 }
 
-oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value)
+oe_result_t oe_thread_setspecific(oe_thread_key_t key, const void* value)
 {
     void** tsd_page;
 
@@ -881,7 +881,7 @@ oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value)
     return OE_OK;
 }
 
-void* oe_thread_get_specific(oe_thread_key_t key)
+void* oe_thread_getspecific(oe_thread_key_t key)
 {
     void** tsd_page;
 
