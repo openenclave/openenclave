@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/types.h>
 #include <wchar.h>
 #include "file_u.h"
 

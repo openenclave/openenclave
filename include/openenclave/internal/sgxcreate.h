@@ -17,7 +17,7 @@ typedef enum _oe_sgx_load_type {
     OE_SGX_LOAD_TYPE_UNDEFINED,
     OE_SGX_LOAD_TYPE_CREATE,
     OE_SGX_LOAD_TYPE_MEASURE,
-    __OE_SGX_LOAD_TYPE_MAX = OE_MAX_UINT,
+    __OE_SGX_LOAD_TYPE_MAX = OE_ENUM_MAX,
 } oe_sgx_load_type_t;
 
 OE_STATIC_ASSERT(sizeof(oe_sgx_load_type_t) == sizeof(unsigned int));
@@ -27,7 +27,7 @@ typedef enum _oe_sgx_load_state {
     OE_SGX_LOAD_STATE_INITIALIZED,
     OE_SGX_LOAD_STATE_ENCLAVE_CREATED,
     OE_SGX_LOAD_STATE_ENCLAVE_INITIALIZED,
-    __OE_SGX_LOAD_STATE_MAX = OE_MAX_UINT,
+    __OE_SGX_LOAD_STATE_MAX = OE_ENUM_MAX,
 } oe_sgx_load_state_t;
 
 OE_STATIC_ASSERT(sizeof(oe_sgx_load_state_t) == sizeof(unsigned int));
@@ -120,11 +120,11 @@ oe_result_t oe_sgx_update_enclave_properties(
  * This function checks whether the following fields of the
  * **oe_sgx_enclave_properties_t** structure have valid values.
  *
- *     - productID
- *     - securityVersion
- *     - numStackPages
- *     - numHeapPages
- *     - numTCS
+ *     - product_id
+ *     - security_version
+ *     - num_stack_pages
+ *     - num_heap_pages
+ *     - num_tcs
  *
  * If not the **fieldName** output parameter points to the name of the first
  * field with an invalid value.

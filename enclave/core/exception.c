@@ -4,6 +4,8 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/constants_x64.h>
+#include <openenclave/internal/context.h>
 #include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/fault.h>
@@ -27,12 +29,12 @@ static oe_spinlock_t g_exception_lock = OE_SPINLOCK_INITIALIZER;
 uint32_t g_current_exception_handler_count = 0;
 
 // Current registered exception handlers.
-oe_vectored_exception_handler
+oe_vectored_exception_handler_t
     g_exception_handler_arr[MAX_EXCEPTION_HANDLER_COUNT];
 
 oe_result_t oe_add_vectored_exception_handler(
     bool isFirstHandler,
-    oe_vectored_exception_handler vectoredHandler)
+    oe_vectored_exception_handler_t vectoredHandler)
 {
     oe_result_t result = OE_UNEXPECTED;
     int lock_ret = -1;
@@ -102,7 +104,7 @@ cleanup:
 }
 
 oe_result_t oe_remove_vectored_exception_handler(
-    oe_vectored_exception_handler vectoredHandler)
+    oe_vectored_exception_handler_t vectoredHandler)
 {
     oe_result_t result = OE_FAILURE;
     int lock_ret = -1;

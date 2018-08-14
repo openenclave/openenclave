@@ -39,7 +39,7 @@ done:
 }
 
 static oe_result_t _seedResult = OE_UNEXPECTED;
-static oe_once_t _seedOnce = OE_ONCE_INITIALIZER;
+static oe_once_t _seedOnce = OE_ONCE_INIT;
 
 /* Wrapper to set file-scope _seedResult */
 static void _SeedEntropySourceOnce()

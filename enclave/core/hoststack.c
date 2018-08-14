@@ -104,14 +104,14 @@ static ThreadBuckets* _GetThreadBuckets()
     ThreadBuckets* tb;
 
     _Once(&_HostStackInitialized, _HostStackInit);
-    tb = oe_thread_get_specific(_HostStackTlsKey);
+    tb = oe_thread_getspecific(_HostStackTlsKey);
     if (tb == NULL)
     {
         if ((tb = (ThreadBuckets*)oe_sbrk(sizeof(ThreadBuckets))) == (void*)-1)
             return NULL;
 
         *tb = (ThreadBuckets){};
-        oe_thread_set_specific(_HostStackTlsKey, tb);
+        oe_thread_setspecific(_HostStackTlsKey, tb);
     }
 
     // Under normal operation, there is no reentrancy. There could be if the
@@ -151,7 +151,7 @@ static int _FetchBucket(const volatile void* p, Bucket* contents)
         contents->baseFree = bHost->baseFree;
     }
 
-    if (contents->size >= OE_MAX_SINT32)
+    if (contents->size >= OE_INT32_MAX)
         return -1;
     if (contents->baseFree > contents->size)
         return -1;
@@ -172,7 +172,7 @@ void* oe_host_alloc_for_call_host(size_t size)
     ThreadBuckets* tb; // deliberate non-init
     void* retVal = NULL;
 
-    if (!size || (size > OE_MAX_SINT32))
+    if (!size || (size > OE_INT32_MAX))
         return NULL;
 
     if ((tb = _GetThreadBuckets()) == NULL)

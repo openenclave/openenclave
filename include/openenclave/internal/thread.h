@@ -33,15 +33,15 @@ typedef uint64_t oe_thread_t;
  * possible future expansion by evolving implementations.
  */
 
-/*
+/**
  * Thread Attribute
  */
 typedef struct _oe_thread_attr
 {
-    uint64_t __impl[7]; /* Internal private implementation */
+    uint64_t __impl[7]; /**< Internal private implementation */
 } oe_thread_attr_t;
 
-/*
+/**
  * Return the identifier of the current thread.
  *
  * This function returns the identifier of the calling thread. Two thread
@@ -52,7 +52,7 @@ typedef struct _oe_thread_attr
  */
 oe_thread_t oe_thread_self(void);
 
-/*
+/**
  * Check two thread identifiers for equality.
  *
  * This function checks whether two thread identifiers refer to the same
@@ -68,6 +68,10 @@ bool oe_thread_equal(oe_thread_t thread1, oe_thread_t thread2);
 
 typedef uint32_t oe_once_t;
 
+/**
+ * @cond DEV
+ */
+#define OE_ONCE_INIT 0
 #define OE_ONCE_INITIALIZER 0
 #define OE_SPINLOCK_INITIALIZER 0
 #define OE_MUTEX_INITIALIZER \
@@ -93,7 +97,11 @@ typedef uint32_t oe_once_t;
 
 #define OE_THREADKEY_INITIALIZER 0
 
-/*
+/**
+ * @endcond
+ */
+
+/**
  * Call the given function exactly once.
  *
  * This function calls the function given by the **func** parameter exactly
@@ -102,7 +110,7 @@ typedef uint32_t oe_once_t;
  * and is typically used as a thread-safe mechanism for performing one-time
  * initialization, as in the example below.
  *
- *     static oe_once_t _once = OE_ONCE_INITIALIZER;
+ *     static oe_once_t _once = OE_ONCE_INIT;
  *
  *     static void _Initialize(void)
  *     {
@@ -128,7 +136,7 @@ oe_result_t oe_once(oe_once_t* once, void (*func)(void));
 
 typedef volatile uint32_t oe_spinlock_t;
 
-/*
+/**
  * Initialize a spin lock.
  *
  * This function initializes a spin lock. Spin locks can also be initialized
@@ -147,7 +155,7 @@ typedef volatile uint32_t oe_spinlock_t;
  */
 oe_result_t oe_spin_init(oe_spinlock_t* spinlock);
 
-/*
+/**
  * Acquire a lock on a spin lock.
  *
  * A thread calls this function to acquire a lock on a spin lock. If
@@ -163,7 +171,7 @@ oe_result_t oe_spin_init(oe_spinlock_t* spinlock);
  */
 oe_result_t oe_spin_lock(oe_spinlock_t* spinlock);
 
-/*
+/**
  * Release the lock on a spin lock.
  *
  * A thread calls this function to release a lock on a spin lock.
@@ -176,7 +184,7 @@ oe_result_t oe_spin_lock(oe_spinlock_t* spinlock);
  */
 oe_result_t oe_spin_unlock(oe_spinlock_t* spinlock);
 
-/*
+/**
  * Destroy a spin lock.
  *
  * This function destroys a spin lock.
@@ -189,7 +197,7 @@ oe_result_t oe_spin_unlock(oe_spinlock_t* spinlock);
  */
 oe_result_t oe_spin_destroy(oe_spinlock_t* spinlock);
 
-/*
+/**
  * Definition of a mutex.
  */
 typedef struct _oe_mutex
@@ -197,7 +205,7 @@ typedef struct _oe_mutex
     uint64_t __impl[4]; /**< Internal private implementation */
 } oe_mutex_t;
 
-/*
+/**
  * Initialize a mutex.
  *
  * This function initializes a mutex. All mutexes are recursive. Once
@@ -212,7 +220,7 @@ typedef struct _oe_mutex
  */
 oe_result_t oe_mutex_init(oe_mutex_t* mutex);
 
-/*
+/**
  * Acquire a lock on a mutex.
  *
  * This function acquires a lock on a mutex.
@@ -228,7 +236,7 @@ oe_result_t oe_mutex_init(oe_mutex_t* mutex);
  */
 oe_result_t oe_mutex_lock(oe_mutex_t* mutex);
 
-/*
+/**
  * Try to acquire a lock on a mutex.
  *
  * This function attempts to acquire a lock on the given mutex if it is
@@ -242,13 +250,13 @@ oe_result_t oe_mutex_lock(oe_mutex_t* mutex);
  * @return OE_BUSY the lock was busy
  *
  */
-oe_result_t oe_mutex_try_lock(oe_mutex_t* mutex);
+oe_result_t oe_mutex_trylock(oe_mutex_t* mutex);
 
-/*
+/**
  * Release a mutex.
  *
  * This function releases the lock on a mutex obtained with either
- * oe_mutex_lock() or oe_mutex_try_lock().
+ * oe_mutex_lock() or oe_mutex_trylock().
  *
  * In enclaves, this function performs an OCALL, where it wakes the next
  * thread waiting on a mutex.
@@ -262,7 +270,7 @@ oe_result_t oe_mutex_try_lock(oe_mutex_t* mutex);
  */
 oe_result_t oe_mutex_unlock(oe_mutex_t* mutex);
 
-/*
+/**
  * Destroy a mutex.
  *
  * This function destroys a mutex that was initialized with oe_mutex_init().
@@ -276,15 +284,15 @@ oe_result_t oe_mutex_unlock(oe_mutex_t* mutex);
  */
 oe_result_t oe_mutex_destroy(oe_mutex_t* mutex);
 
-/*
+/**
  * Condition variable representation
 */
 typedef struct _oe_cond
 {
-    uint64_t __impl[4]; /* Internal private implementation */
+    uint64_t __impl[4]; /**< Internal private implementation */
 } oe_cond_t;
 
-/*
+/**
  * Initialize a condition variable
  *
  * This function initializes a condition variable. Condition variables can
@@ -303,7 +311,7 @@ typedef struct _oe_cond
  */
 oe_result_t oe_cond_init(oe_cond_t* cond);
 
-/*
+/**
  * Wait on a condition variable.
  *
  * A thread calls this function to wait on a condition variable. If the
@@ -328,7 +336,7 @@ oe_result_t oe_cond_init(oe_cond_t* cond);
  */
 oe_result_t oe_cond_wait(oe_cond_t* cond, oe_mutex_t* mutex);
 
-/*
+/**
  * Signal a thread waiting on a condition variable.
  *
  * A thread calls this function to signal the next thread waiting on the
@@ -348,7 +356,7 @@ oe_result_t oe_cond_wait(oe_cond_t* cond, oe_mutex_t* mutex);
  */
 oe_result_t oe_cond_signal(oe_cond_t* cond);
 
-/*
+/**
  * Signal all threads waiting on a condition variable.
  *
  * A thread calls this function to signal all threads waiting on the
@@ -366,7 +374,7 @@ oe_result_t oe_cond_signal(oe_cond_t* cond);
  */
 oe_result_t oe_cond_broadcast(oe_cond_t* cond);
 
-/*
+/**
  * Destroy a condition variable.
  *
  * This function destroys the given condition variable.
@@ -388,7 +396,7 @@ typedef struct _oe_rwlock
     uint64_t __impl[5]; /**< Internal private implementation */
 } oe_rwlock_t;
 
-/*
+/**
  * Initialize a readers-writer lock.
  *
  * oe_rwlock_init initializes the lock to an unlocked state.
@@ -409,7 +417,7 @@ typedef struct _oe_rwlock
  */
 oe_result_t oe_rwlock_init(oe_rwlock_t* rwLock);
 
-/*
+/**
  * Acquire a read lock on a readers-writer lock.
  *
  * Behavior:
@@ -419,7 +427,7 @@ oe_result_t oe_rwlock_init(oe_rwlock_t* rwLock);
  *    3. Multiple reader threads can concurrently lock a r/w lock.
  *    4. Recursive locking. The same thread can lock a r/w lock multiple times.
  *       To release the lock, the thread must make same number of
- *       oe_rwlock_rdunlock calls.
+ *       oe_rwlock_unlock calls.
  *    5. A deadlock will occur if the writer thread that currently owns the lock
  *       makes a oe_rwlock_rdlock call.
  *    6. There is no limit to the number of readers that can acquire
@@ -438,7 +446,7 @@ oe_result_t oe_rwlock_init(oe_rwlock_t* rwLock);
  */
 oe_result_t oe_rwlock_rdlock(oe_rwlock_t* rwLock);
 
-/*
+/**
  * Try to acquire a read lock on a readers-writer lock.
  *
  * Behavior:
@@ -457,49 +465,56 @@ oe_result_t oe_rwlock_rdlock(oe_rwlock_t* rwLock);
  * @return OE_BUSY the lock was busy
  *
  */
-oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_tryrdlock(oe_rwlock_t* rwLock);
 
-/*
+/**
  * Release a read lock on a readers-writer lock.
  *
- * This function releases the read lock on a readers-writer lock obtained with
- * either oe_rwlock_rdlock() or oe_rwlock_try_rdlock().
+ * This function releases the lock on a readers-writer lock obtained with
+ * one of these:
+ *     - oe_rwlock_rdlock()
+ *     - oe_rwlock_tryrdlock()
+ *     - oe_rwlock_trywrlock()
+ *     - or oe_rwlock_trywrlock()
  *
  * Behavior:
- *    1. To release a lock, a reader thread must make the same number of
- *       oe_rwlock_rdunlock as the number of
- *       oe_rwlock_rdlock/oe_rwlock_try_rdlock calls.
- *    2. When all the readers have released the lock, the r/w lock goes into
+ *    1. To release a lock, a thread must make the same number of unlock
+ *       calls as the number of lock calls.
+ *    2. When all the readers have released the lock, the r/w lock goes into an
  *       unlocked state and can then be acquired by writer or reader threads.
- *    3. No guarantee is provided in regards to whether a waiting writer thread
+ *    3. When the writer releases the lock, the r/w lock is once again available
+ *       to be locked for write.
+ *    4. No guarantee is provided in regards to whether a waiting writer thread
  *       or reader threads will (re)acquire the lock.
  *
  * Undefined behavior:
- *    1. Results of a oe_rwlock_rdunlock call by a thread that currently does
- *       not have a read-lock on the r/w lock are undefined.
+ *    1. Results of a oe_rwlock_unlock call by a thread that currently does
+ *       not have a lock on the r/w lock are undefined.
  *
- * @param rwLock Release the read lock on this readers-writer lock.
+ * @param rwLock Release the lock on this readers-writer lock.
  *
- * @return OE_OK the operation was successful
+ * @return OE_OK the operation was successful.
+ * @return OE_INVALID_PARAMETER one or more parameters is invalid.
  * @return OE_NOT_OWNER the calling thread does not have this object locked.
+ * @return OE_NOT_BUSY readers still exist.
  *
  */
-oe_result_t oe_rwlock_rdunlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_unlock(oe_rwlock_t* rwLock);
 
-/*
+/**
  * Acquire a write lock on a readers-writer lock.
  *
  * Behavior:
- *    1. If the r/w lock is in an unlocked state, the oe_rwlock_rdunlock
+ *    1. If the r/w lock is in an unlocked state, the oe_rwlock_unlock
  *       is successful and returns OE_OK.
  *    2. If the r/w lock is currently held by reader threads or by another
- *       writer thread, the oe_rwlock_rdunlock call blocks until the lock is
+ *       writer thread, the oe_rwlock_unlock call blocks until the lock is
  *       available for locking.
  *    3. No guarantee is provided in regards to whether a waiting writer thread
  *       or reader threads will (re)acquire the lock.
- *    4. oe_rwlock_rdunlock will deadlock if called by a thread that currently
+ *    4. oe_rwlock_unlock will deadlock if called by a thread that currently
  *       owns the lock for reading.
- *    5. oe_rwlock_rdunlock will deadlock if called by a thread that currently
+ *    5. oe_rwlock_unlock will deadlock if called by a thread that currently
  *       owns the lock for writing. That is, recursive-locking by writers will
  *       cause deadlocks.
  *
@@ -516,7 +531,7 @@ oe_result_t oe_rwlock_rdunlock(oe_rwlock_t* rwLock);
  */
 oe_result_t oe_rwlock_wrlock(oe_rwlock_t* rwLock);
 
-/*
+/**
  * Try to acquire a write lock on a readers-writer lock.
  *
  * Behavior:
@@ -535,35 +550,9 @@ oe_result_t oe_rwlock_wrlock(oe_rwlock_t* rwLock);
  * @return OE_BUSY the lock was busy
  *
  */
-oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* rwLock);
+oe_result_t oe_rwlock_trywrlock(oe_rwlock_t* rwLock);
 
-/*
- * Release a write lock on a readers-writer lock.
- *
- * This function releases the write lock on a readers-writer lock obtained with
- * either oe_rwlock_wrlock() or oe_rwlock_try_wrlock().
- *
- * Behavior:
- *    1. To lock goes into unlocked state and can then be acquired by
- *       reader or writer threads.
- *    2. No guarantee is provided in regards to whether a waiting reader threads
- *       or writer thread will (re)acquire the lock.
- *
- * Undefined behavior:
- *    1. Results of a oe_rwlock_try_wrlock call by a thread that currently does
- *       not have a write-lock on the r/w lock are undefined.
- *
- * @param rwLock Release the write lock on this readers-writer lock.
- *
- * @return OE_OK the operation was successful
- * @return OE_INVALID_PARAMETER one or more parameters is invalid
- * @return OE_NOT_OWNER the calling thread does not have the mutex locked
- * @return OE_BUSY readers still exist
- *
- */
-oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* rwLock);
-
-/*
+/**
  * Destroy a readers-writer lock.
  *
  * This function destroys a readers-writer lock and releases any resources used
@@ -584,11 +573,9 @@ oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* rwLock);
  */
 oe_result_t oe_rwlock_destroy(oe_rwlock_t* rwLock);
 
-#define OE_THREADKEY_INITIALIZER 0
-
 typedef uint32_t oe_thread_key_t;
 
-/*
+/**
  * Create a key for accessing thread-specific data.
  *
  * This function allocates a thread-specific data (TSD) entry and initializes
@@ -596,8 +583,9 @@ typedef uint32_t oe_thread_key_t;
  * is called when the key is deleted by oe_thread_key_delete().
  *
  * @param key Set this key to refer to the newly allocated TSD entry.
- * @param destructor If non-null, call this function from
- * oe_thread_key_delete().
+ * @param destructor If non-null, this function is called for each exiting
+ *        thread that has a non-null thread-specific data value. An enclave
+ *        thread exits when returning from the outermost ECALL.
  *
  * @return OE_OK the operation was successful
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
@@ -608,12 +596,11 @@ oe_result_t oe_thread_key_create(
     oe_thread_key_t* key,
     void (*destructor)(void* value));
 
-/*
+/**
  * Delete a key for accessing thread-specific data.
  *
  * This function deletes the thread-specific data (TSD) entry associated with
- * the given key, calling the function given by the **destructor** parameter
- * initially passed to oe_thread_key_create().
+ * the given key.
  *
  * @param key Delete the TSD entry associated with this key.
  *
@@ -623,7 +610,7 @@ oe_result_t oe_thread_key_create(
  */
 oe_result_t oe_thread_key_delete(oe_thread_key_t key);
 
-/*
+/**
  * Set the value of a thread-specific data entry.
  *
  * This function sets the value of a thread-specific data (TSD) entry
@@ -636,9 +623,9 @@ oe_result_t oe_thread_key_delete(oe_thread_key_t key);
  * @return OE_INVALID_PARAMETER one or more parameters is invalid
  *
  */
-oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value);
+oe_result_t oe_thread_setspecific(oe_thread_key_t key, const void* value);
 
-/*
+/**
  * Get the value of a thread-specific data entry.
  *
  * This function retrieves the value of a thread-specific data (TSD) entry
@@ -649,7 +636,7 @@ oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value);
  * @return Returns the TSD value or null if none.
  *
  */
-void* oe_thread_get_specific(oe_thread_key_t key);
+void* oe_thread_getspecific(oe_thread_key_t key);
 
 OE_EXTERNC_END
 

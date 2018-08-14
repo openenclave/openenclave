@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 #include <openenclave/bits/result.h>
+#include <openenclave/internal/defs.h>
+
+OE_STATIC_ASSERT(sizeof(oe_result_t) == sizeof(unsigned int));
 
 // OE abort status depends on the order of these enums to transfer status
 // correctly.

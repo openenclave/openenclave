@@ -40,7 +40,6 @@ typedef pthread_rwlock_t oe_rwlock_t;
 #define OE_RWLOCK_INITIALIZER PTHREAD_RWLOCK_INITIALIZER
 #define oe_rwlock_rdlock pthread_rwlock_rdlock
 #define oe_rwlock_wrlock pthread_rwlock_wrlock
-#define oe_rwlock_rdunlock pthread_rwlock_unlock
-#define oe_rwlock_wrunlock pthread_rwlock_unlock
+#define oe_rwlock_unlock pthread_rwlock_unlock
 
-#endif /* _OE_INCLUDE_THREAD_H */
+#endif /* _OE_INCLIDE_THREAD_H */
