@@ -101,25 +101,22 @@ form_filelist()
         fi
     done
 
-    filelist=`cat ${files}`
-
-    rm -f ${files}
     rm -f ${tmpfile}
 
-    # Sanity check: make sure all files in list exist:
-    for i in ${filelist}
-    do 
-        if [ ! -f "${i}" ]; then
-            echo "$0: file not found: ${i}"
-            exit 1
-        fi
-    done
-
-    echo ${filelist}
+    echo ${files}
 }
 
 filelist=`form_filelist ${ignorefile}`
 rm -rf ${ignorefile}
+
+# Sanity check: make sure all files in list exist:
+while read -u 99 i; do
+    if [ ! -f "${i}" ]; then
+        echo "Iterating through ${filelist}: file not found: ${i}"
+        rm -f ${filelist}
+        exit 1
+    fi
+done 99<${filelist}
 
 ##==============================================================================
 ##
@@ -149,12 +146,11 @@ function check_for_missing_license_headers()
     local tmpfile=`/bin/mktemp`
     local ret=0
 
-    for i in ${filelist}
-    do
+    while read -u 99 i; do
         # Grep for first 'Copyright' line (-m1)
         # Print the following line too (-A1)
         # Use SED to strip leading '//' or leading '#':
-        grep -m1 -A1 "Copyright (c) Microsoft Corporation" ${i} | \
+        grep -m1 -A1 "Copyright (c) Microsoft Corporation" "${i}" | \
         sed 's~// ~~g' | \
         sed 's~;; ~~g' | \
         sed 's~^# ~~g' \
@@ -166,9 +162,10 @@ function check_for_missing_license_headers()
             echo ${i}
             ret=1
         fi
-    done
+    done 99<${filelist}
 
     rm -rf ${tmpfile}
+    rm -f ${filelist}
 
     return ${ret}
 }
