@@ -1,6 +1,27 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# Install the helloworld sample.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/helloworld
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
+
+# Install the echo sample.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/echo
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
+
+# Install the file-encryption sample.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/file-encryption
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
+
+
+# Install the sort sample.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/sort
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
+
 if(USE_LIBSGX)
 
 # Install the attestation sample.
@@ -8,14 +29,7 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/attestation
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
-else()
-
-# Install the sort sample.
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/sort
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
-    )
-
-endif()    
+endif()
 
 # Install make file for samples folder.
 install(FILES  ${CMAKE_CURRENT_LIST_DIR}/make/Makefile
