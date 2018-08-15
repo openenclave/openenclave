@@ -109,7 +109,7 @@ form_filelist()
 filelist=`form_filelist ${ignorefile}`
 rm -rf ${ignorefile}
 
-# Sanity check: make sure all files in list exist:
+# Sanity check: make sure all files that require licenses exist
 while read -u 99 i; do
     if [ ! -f "${i}" ]; then
         echo "Iterating through ${filelist}: file not found: ${i}"
