@@ -71,7 +71,7 @@ void oe_host_free(void* ptr)
     oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
 }
 
-char* oe_host_strdup(const char* str)
+char* oe_host_strndup(const char* str, size_t n)
 {
     char* p;
     size_t len;
@@ -81,10 +81,14 @@ char* oe_host_strdup(const char* str)
 
     len = oe_strlen(str);
 
+    if (n < len)
+        len = n;
+
     if (!(p = oe_host_malloc(len + 1)))
         return NULL;
 
-    oe_memcpy(p, str, len + 1);
+    oe_memcpy(p, str, len);
+    p[len] = '\0';
 
     return p;
 }
@@ -113,7 +117,7 @@ int __oe_host_puts(const char* str)
     if (!str)
         goto done;
 
-    if (!(hstr = oe_host_strdup(str)))
+    if (!(hstr = oe_host_strndup(str, OE_SIZE_MAX)))
         goto done;
 
     if (oe_ocall(
@@ -189,7 +193,7 @@ int __oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
     /* If string was truncated, retry with correctly sized buffer */
     if (n >= sizeof(buf))
     {
-        if (!(p = oe_stack_alloc(n + 1, 0)))
+        if (!(p = oe_stack_alloc(n + 1)))
             return -1;
 
         oe_va_list ap;

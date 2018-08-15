@@ -29,8 +29,8 @@ OE_EXTERNC_BEGIN
 oe_result_t oe_sgx_sign_enclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
-    uint16_t productID,
-    uint16_t securityVersion,
+    uint16_t product_id,
+    uint16_t security_version,
     const uint8_t* pemData,
     size_t pemSize,
     sgx_sigstruct_t* sigstruct);

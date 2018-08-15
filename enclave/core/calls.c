@@ -13,6 +13,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../report.h"
@@ -21,6 +22,7 @@
 #include "init.h"
 #include "report.h"
 #include "td.h"
+#include "thread.h"
 
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
@@ -123,10 +125,10 @@ uint8_t __oe_initialized = 0;
 **
 **==============================================================================
 */
-void _HandleInitEnclave(uint64_t argIn)
+static oe_result_t _HandleInitEnclave(uint64_t argIn)
 {
     static bool _once = false;
-
+    oe_result_t result = OE_OK;
     /* Double checked locking (DCLP). */
     bool o = _once;
 
@@ -134,6 +136,12 @@ void _HandleInitEnclave(uint64_t argIn)
     OE_ATOMIC_MEMORY_BARRIER_ACQUIRE();
     if (o == false)
     {
+        if (!oe_is_outside_enclave(
+                (void*)argIn, sizeof(oe_init_enclave_args_t)))
+        {
+            OE_THROW(OE_INVALID_PARAMETER);
+        }
+
         static oe_spinlock_t _lock = OE_SPINLOCK_INITIALIZER;
         oe_spin_lock(&_lock);
 
@@ -154,6 +162,8 @@ void _HandleInitEnclave(uint64_t argIn)
 
         oe_spin_unlock(&_lock);
     }
+OE_CATCH:
+    return result;
 }
 
 /*
@@ -320,7 +330,7 @@ static void _HandleECall(
         }
         case OE_ECALL_INIT_ENCLAVE:
         {
-            _HandleInitEnclave(argIn);
+            argOut = _HandleInitEnclave(argIn);
             break;
         }
         case OE_ECALL_GET_REPORT:
@@ -342,6 +352,12 @@ static void _HandleECall(
     }
 
 done:
+
+    // Release any thread-specific-data for this thread if returning from
+    // a non-nested ECALL.
+    if (td->depth == 1)
+        oe_thread_destruct_specific();
+
     /* Remove ECALL context from front of TD.ecalls list */
     TD_PopCallsite(td);
 
@@ -593,9 +609,11 @@ void __oe_handle_main(
     switch (__oe_enclave_status)
     {
         case OE_OK:
+        {
             break;
-
+        }
         case OE_ENCLAVE_ABORTING:
+        {
             // Block any ECALL except first time OE_ECALL_DESTRUCTOR call.
             // Don't block ORET here.
             if (code == OE_CODE_ECALL)
@@ -616,12 +634,14 @@ void __oe_handle_main(
             }
 
             break;
-
+        }
         default:
+        {
             // Return crashed status.
             *outputArg1 = oe_make_call_arg1(OE_CODE_ERET, func, 0, OE_OK);
             *outputArg2 = OE_ENCLAVE_ABORTED;
             return;
+        }
     }
 
     /* Initialize the enclave the first time it is ever entered */

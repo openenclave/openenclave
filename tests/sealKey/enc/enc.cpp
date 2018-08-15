@@ -75,8 +75,8 @@ bool TestOEGetRegularKeys()
 // The high level seal key API should be able to get sealing keys.
 bool TestOEGetSealKey()
 {
-    for (uint32_t sealPolicy = OE_SEAL_ID_UNIQUE;
-         sealPolicy <= OE_SEAL_ID_PRODUCT;
+    for (uint32_t sealPolicy = OE_SEAL_POLICY_UNIQUE;
+         sealPolicy <= OE_SEAL_POLICY_PRODUCT;
          sealPolicy++)
     {
         uint8_t keyBuffer[sizeof(sgx_key_t)] = {0};
@@ -85,7 +85,7 @@ bool TestOEGetSealKey()
 
         // Get the seal key should fail if the keyBuffer is NULL.
         ret = oe_get_seal_key_by_policy(
-            (oe_seal_id_policy_t)sealPolicy, NULL, NULL, NULL, NULL);
+            (oe_seal_policy_t)sealPolicy, NULL, NULL, NULL, NULL);
         if (ret != OE_INVALID_PARAMETER)
         {
             return false;
@@ -93,7 +93,7 @@ bool TestOEGetSealKey()
 
         // Get the seal key should fail if the buffer is too small.
         ret = oe_get_seal_key_by_policy(
-            (oe_seal_id_policy_t)sealPolicy,
+            (oe_seal_policy_t)sealPolicy,
             keyBuffer,
             &keyBufferSize,
             NULL,
@@ -108,7 +108,7 @@ bool TestOEGetSealKey()
 
         // Get the seal key by policy and without output the key info.
         ret = oe_get_seal_key_by_policy(
-            (oe_seal_id_policy_t)sealPolicy,
+            (oe_seal_policy_t)sealPolicy,
             keyBuffer,
             &keyBufferSize,
             NULL,
@@ -127,7 +127,7 @@ bool TestOEGetSealKey()
 
         // Get the seal key by policy and output the key info.
         ret = oe_get_seal_key_by_policy(
-            (oe_seal_id_policy_t)sealPolicy,
+            (oe_seal_policy_t)sealPolicy,
             secondKeyBuffer,
             &secondKeyBufferSize,
             keyInfo,

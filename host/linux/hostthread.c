@@ -92,12 +92,12 @@ int oe_thread_key_delete(oe_thread_key key)
     return pthread_key_delete(key);
 }
 
-int oe_thread_set_specific(oe_thread_key key, void* value)
+int oe_thread_setspecific(oe_thread_key key, void* value)
 {
     return pthread_setspecific(key, value);
 }
 
-void* oe_thread_get_specific(oe_thread_key key)
+void* oe_thread_getspecific(oe_thread_key key)
 {
     return pthread_getspecific(key);
 }

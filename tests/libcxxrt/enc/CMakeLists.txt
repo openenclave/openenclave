@@ -31,6 +31,14 @@ function(add_libcxxrt_test_enc NAME CXXFILE)
     target_link_libraries(libcxxrttest-${NAME}_enc libcxxrttest-support oelibcxx oelibc cxxrt-static)
     if("${NAME}" STREQUAL "test_foreign_exceptions")
         target_link_libraries(libcxxrttest-${NAME}_enc -Wl,--wrap,_Unwind_RaiseException)
+
+        # Temporary work-around until https://github.com/Microsoft/openenclave/issues/494
+        # is solved. This forces clang to optimize out fputs (unsupported currently) and
+        # instead use fwrite.
+        # TODO remove once fputs is supported
+        if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+            target_compile_options(libcxxrttest-${NAME}_enc PRIVATE -O)
+        endif()
     endif()
 endfunction(add_libcxxrt_test_enc)
 

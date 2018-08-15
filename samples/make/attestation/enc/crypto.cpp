@@ -100,8 +100,7 @@ static void InitializeMbedtls(void)
  */
 bool InitializeCrypto(void)
 {
-    static oe_once_t s_once = OE_ONCE_INITIALIZER;
-    oe_once(&s_once, InitializeMbedtls);
+    InitializeMbedtls();
     return g_Initialized;
 }
 

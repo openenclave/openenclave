@@ -7,6 +7,7 @@ add_library(oecore STATIC
     backtrace.c
     calls.c
     cpuid.c
+    debugmalloc.c
     entropy.c
     exception.c
     globals.c
@@ -16,8 +17,10 @@ add_library(oecore STATIC
     init.c
     jump.c
     keys.c
+    malloc.c
     memory.c
     once.c
+    properties.c
     result.c
     report.c
     sbrk.c
@@ -37,6 +40,9 @@ target_link_libraries(oecore PUBLIC oe_includes)
 # we strip the default include containing the compiler-provided intrinsics
 # add it back in
 target_include_directories(oecore SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
+
+# This directory contains dummy C headers needed by dlmalloc:
+target_include_directories(oecore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dlmalloc)
 
 target_compile_options(oecore PUBLIC
     -m64 -fPIC

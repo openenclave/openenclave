@@ -24,7 +24,7 @@ static string _str;
 class X
 {
   public:
-    X() : _x(0)
+    X()
     {
     }
 
@@ -35,9 +35,6 @@ class X
     virtual void foo()
     {
     }
-
-  private:
-    int _x;
 };
 
 class Y : public X
@@ -172,6 +169,7 @@ OE_ECALL void Test(void* args_)
     {
         struct E
         {
+            int x;
         };
 
         try

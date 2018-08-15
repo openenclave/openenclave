@@ -21,6 +21,7 @@ void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t argIn);
 
 void HandleGetQuote(uint64_t argIn);
 void HandleGetQETargetInfo(uint64_t argIn);
+void HandleGetQuoteRevocationInfo(uint64_t argIn);
 
 void oe_handle_sleep(uint64_t argIn);
 
