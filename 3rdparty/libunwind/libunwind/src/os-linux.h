@@ -65,9 +65,6 @@ ltoa (char *buf, long val)
 static inline int
 maps_init (struct map_iterator *mi, pid_t pid)
 {
-#ifdef OPEN_ENCLAVE
-  return -1;
-#else
   char path[sizeof ("/proc/0123456789/maps")], *cp;
 
   memcpy (path, "/proc/", 6);
@@ -95,9 +92,7 @@ maps_init (struct map_iterator *mi, pid_t pid)
           return 0;
         }
     }
-
   return -1;
-#endif /* !OPEN_ENCLAVE */
 }
 
 static inline char *
@@ -288,7 +283,6 @@ maps_next (struct map_iterator *mi,
 static inline void
 maps_close (struct map_iterator *mi)
 {
-#ifndef OPEN_ENCLAVE
   if (mi->fd < 0)
     return;
   close (mi->fd);
@@ -298,7 +292,6 @@ maps_close (struct map_iterator *mi)
       munmap (mi->buf_end - mi->buf_size, mi->buf_size);
       mi->buf = mi->buf_end = NULL;
     }
-#endif /* !OPEN_ENCLAVE */
 }
 
 #endif /* os_linux_h */

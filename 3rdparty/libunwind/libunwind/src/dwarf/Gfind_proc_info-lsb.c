@@ -254,7 +254,7 @@ file_error:
 static int
 find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
 {
-#if defined(__linux) && (!UNW_REMOTE_ONLY) && !defined(OPEN_ENCLAVE)
+#if defined(__linux) && (!UNW_REMOTE_ONLY)
   struct map_iterator mi;
   int found = 0;
   int pid = getpid ();

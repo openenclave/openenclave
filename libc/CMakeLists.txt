@@ -13,7 +13,6 @@ add_library(oelibc STATIC
     atexit.c
     errno.c
     libcxxrt_stubs.c
-    libunwind_stubs.c
     link.c
     locale.c
     malloc.c
