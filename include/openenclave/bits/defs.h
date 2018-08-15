@@ -4,38 +4,53 @@
 #ifndef _OE_BITS_DEFS_H
 #define _OE_BITS_DEFS_H
 
-#include "constants_x64.h"
-
 #if !defined(_MSC_VER) && !defined(__GNUC__)
 #error "Unsupported platform"
 #endif
 
+/* OE_PRINTF_FORMAT */
 #if defined(__GNUC__) && (__GNUC__ >= 4)
 #define OE_PRINTF_FORMAT(N, M) __attribute__((format(printf, N, M)))
 #else
 #define OE_PRINTF_FORMAT(N, M) /* empty */
 #endif
 
-#define OE_DEPRECATED(MSG) __attribute__((deprecated(MSG)))
-
+/* OE_UNUSED */
 #define OE_UNUSED(P) (void)(P)
 
+/* OE_ALWAYS_INLINE */
 #if defined(__linux__)
 #define OE_ALWAYS_INLINE __attribute__((always_inline))
 #elif defined(_WIN32)
 #define OE_ALWAYS_INLINE __forceinline
 #endif
 
+/* OE_NEVER_INLINE */
 #ifdef _MSC_VER
 #define OE_NEVER_INLINE __declspec(noinline)
 #elif __GNUC__
 #define OE_NEVER_INLINE __attribute__((noinline))
 #endif
 
+/* OE_INLINE */
 #ifdef _MSC_VER
 #define OE_INLINE static __inline
 #elif __GNUC__
 #define OE_INLINE static __inline__
+#endif
+
+#ifdef _MSC_VER
+#define OE_NO_OPTIMIZE_BEGIN __pragma(optimize("", off))
+#define OE_NO_OPTIMIZE_END __pragma(optimize("", on))
+#elif __clang__
+#define OE_NO_OPTIMIZE_BEGIN _Pragma("clang optimize off")
+#define OE_NO_OPTIMIZE_END _Pragma("clang optimize on")
+#elif __GNUC__
+#define OE_NO_OPTIMIZE_BEGIN \
+    _Pragma("GCC push_options") _Pragma("GCC optimize(\"O0\")")
+#define OE_NO_OPTIMIZE_END _Pragma("GCC pop_options")
+#else
+#error "OE_NO_OPTIMIZE_BEGIN and OE_NO_OPTIMIZE_END not implemented"
 #endif
 
 #if defined(__cplusplus)
@@ -55,28 +70,12 @@
 #ifdef __GNUC__
 #define OE_EXPORT __attribute__((visibility("default")))
 #elif _MSC_VER
-#define OE_EXPORT \
-    __declspec(dllexport) /* TODO #54: Find the right mechanism here */
+#define OE_EXPORT __declspec(dllexport)
 #else
 #error "OE_EXPORT unimplemented"
 #endif
 
-/*
- * Define packed types, such as:
- *     OE_PACK_BEGIN
- *     struct foo {int a,b};
- *     OE_PACK_END
- */
-#if defined(__GNUC__)
-#define OE_PACK_BEGIN _Pragma("pack(push, 1)")
-#define OE_PACK_END _Pragma("pack(pop)")
-#elif _MSC_VER
-#define OE_PACK_BEGIN __pragma(pack(push, 1))
-#define OE_PACK_END __pragma(pack(pop))
-#else
-#error "OE_PACK_BEGIN and OE_PACK_END not implemented"
-#endif
-
+/* OE_ALIGNED */
 #ifdef __GNUC__
 #define OE_ALIGNED(BYTES) __attribute__((aligned(BYTES)))
 #elif _MSC_VER
@@ -85,16 +84,10 @@
 #error OE_ALIGNED not implemented
 #endif
 
-#ifdef __GNUC__
-#define OE_UNUSED_ATTRIBUTE __attribute__((unused))
-#elif _MSC_VER
-#define OE_UNUSED_ATTRIBUTE
-#else
-#error OE_UNUSED_ATTRIBUTE not implemented
-#endif
-
+/* OE_COUNTOF */
 #define OE_COUNTOF(ARR) (sizeof(ARR) / sizeof((ARR)[0]))
 
+/* OE_OFFSETOF */
 #ifdef __GNUC__
 #define OE_OFFSETOF(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
 #elif _MSC_VER
@@ -108,22 +101,7 @@
 #error OE_OFFSETOF not implemented
 #endif
 
-#define OE_FIELD_SIZE(TYPE, FIELD) (sizeof(((TYPE*)0)->FIELD))
-
-#define __OE_CONCAT(X, Y) X##Y
-#define OE_CONCAT(X, Y) __OE_CONCAT(X, Y)
-
-#define OE_CHECK_SIZE(N, M)          \
-    typedef unsigned char OE_CONCAT( \
-        __OE_CHECK_SIZE, __LINE__)[((N) == (M)) ? 1 : -1] OE_UNUSED_ATTRIBUTE
-
-#define OE_STATIC_ASSERT(COND)       \
-    typedef unsigned char OE_CONCAT( \
-        __OE_STATIC_ASSERT, __LINE__)[(COND) ? 1 : -1] OE_UNUSED_ATTRIBUTE
-
-#define OE_TRACE \
-    printf("OE_TRACE: %s(%u): %s()\n", __FILE__, __LINE__, __FUNCTION__)
-
+/* NULL */
 #ifndef NULL
 #ifdef __cplusplus
 #define NULL 0L
@@ -132,18 +110,23 @@
 #endif
 #endif
 
-#define OE_WEAK_ALIAS(OLD, NEW) \
-    extern __typeof(OLD) NEW __attribute__((weak, alias(#OLD)))
-
-#ifdef _WIN32
-/* nonstandard extension used: zero-sized array in struct/union */
-#define OE_ZERO_SIZED_ARRAY __pragma(warning(suppress : 4200))
-#else
-#define OE_ZERO_SIZED_ARRAY /* empty */
-#endif
-
+/* OE_ECALL */
 #define OE_ECALL OE_EXTERNC OE_EXPORT __attribute__((section(".ecall")))
 
+/* OE_OCALL */
 #define OE_OCALL OE_EXTERNC OE_EXPORT
+
+// Enable debug-malloc for debug builds, where CMAKE_BUILD_TYPE="Debug". For
+// the following build types, NDEBUG is defined.
+//
+//     CMAKE_BUILD_TYPE="Release"
+//     CMAKE_BUILD_TYPE="RelWithDebugInfo"
+//
+#if !defined(NDEBUG) && !defined(OE_USE_DEBUG_MALLOC)
+#define OE_USE_DEBUG_MALLOC
+#endif
+
+/* The maxiumum value for a four-byte enum tag */
+#define OE_ENUM_MAX 0xffffffff
 
 #endif /* _OE_BITS_DEFS_H */

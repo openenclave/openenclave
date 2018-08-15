@@ -639,7 +639,7 @@ oe_result_t oe_cert_verify(
         if (!_X509_CRL_up_ref(crl_impl->crl))
             OE_RAISE(OE_FAILURE);
 
-        if (!sk_X509_CRL_push(crls, crl_impl))
+        if (!sk_X509_CRL_push(crls, crl_impl->crl))
             OE_RAISE(OE_FAILURE);
 
         X509_STORE_CTX_set0_crls(ctx, crls);
@@ -818,7 +818,7 @@ oe_result_t oe_cert_chain_get_cert(
         OE_RAISE(OE_OUT_OF_BOUNDS);
 
     /* Check for overflow when converting to int */
-    if (index >= OE_MAX_INT)
+    if (index >= OE_INT_MAX)
         OE_RAISE(OE_INTEGER_OVERFLOW);
 
     /* Get the certificate with the given index */

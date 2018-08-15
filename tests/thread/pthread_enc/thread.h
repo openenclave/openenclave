@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_BITS_THREAD_H
-#define _OE_BITS_THREAD_H
+// Intentionally using the same guard as the internal thread.h as we
+// want the pthread_enc test to be routed to the pthread* libc calls.
+// Include this first to ensure that the internal/thread.h will not be
+// included.
+#ifndef _OE_INCLUDE_THREAD_H
+#define _OE_INCLUDE_THREAD_H
 
 #include <pthread.h>
 
@@ -40,7 +44,6 @@ typedef pthread_rwlock_t oe_rwlock_t;
 #define OE_RWLOCK_INITIALIZER PTHREAD_RWLOCK_INITIALIZER
 #define oe_rwlock_rdlock pthread_rwlock_rdlock
 #define oe_rwlock_wrlock pthread_rwlock_wrlock
-#define oe_rwlock_rdunlock pthread_rwlock_unlock
-#define oe_rwlock_wrunlock pthread_rwlock_unlock
+#define oe_rwlock_unlock pthread_rwlock_unlock
 
-#endif /* _OE_BITS_THREAD_H */
+#endif /* _OE_INCLUDE_THREAD_H */

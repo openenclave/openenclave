@@ -37,11 +37,6 @@ OE_INLINE bool _is_valid(const oe_asn1_t* asn1)
     return true;
 }
 
-OE_INLINE size_t _remaining(const oe_asn1_t* asn1)
-{
-    return _end(asn1) - asn1->ptr;
-}
-
 static oe_result_t _get_length(oe_asn1_t* asn1, size_t* length)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -63,6 +58,9 @@ oe_result_t oe_asn1_get_raw(
 {
     oe_result_t result = OE_UNEXPECTED;
     bool constructed;
+
+    if (data)
+        *data = NULL;
 
     if (length)
         *length = 0;
@@ -178,6 +176,9 @@ oe_result_t oe_asn1_get_octet_string(
 {
     oe_result_t result = OE_UNEXPECTED;
     const oe_asn1_tag_t tag = MBEDTLS_ASN1_OCTET_STRING;
+
+    if (data)
+        *data = NULL;
 
     if (length)
         *length = 0;

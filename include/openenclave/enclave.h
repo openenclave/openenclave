@@ -14,13 +14,11 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
-#include "bits/context.h"
 #include "bits/defs.h"
 #include "bits/exception.h"
 #include "bits/properties.h"
 #include "bits/report.h"
 #include "bits/result.h"
-#include "bits/thread.h"
 #include "bits/types.h"
 
 /**
@@ -55,7 +53,7 @@ OE_EXTERNC_BEGIN
 */
 oe_result_t oe_add_vectored_exception_handler(
     bool isFirstHandler,
-    oe_vectored_exception_handler vectoredHandler);
+    oe_vectored_exception_handler_t vectoredHandler);
 
 /**
 * Remove an existing vectored exception handler.
@@ -68,7 +66,7 @@ oe_result_t oe_add_vectored_exception_handler(
 * @returns OE_FAILED failed to remove handler
 */
 oe_result_t oe_remove_vectored_exception_handler(
-    oe_vectored_exception_handler vectoredHandler);
+    oe_vectored_exception_handler_t vectoredHandler);
 
 /**
  * Perform a high-level enclave function call (OCALL).
@@ -202,21 +200,23 @@ void oe_host_free(void* ptr);
 /**
  * Make a heap copy of a string.
  *
- * This function allocates memory on the host's heap, copies the **str**
- * parameter to that memory, and returns a pointer to the newly allocated
- * memory.
+ * This function allocates memory on the host's heap, copies no more than
+ * *n* bytes from the **str** parameter to that memory, and returns a pointer
+ * to the newly allocated memory.
  *
  * @param str The string to be copied.
+ * @param n The number of characters to be copied.
  *
  * @returns A pointer to the newly allocated string or NULL if unable to
  * allocate the storage.
  */
-char* oe_host_strdup(const char* str);
+char* oe_host_strndup(const char* str, size_t n);
 
 /**
- * Abort execution by causing and illegal instruction exception.
+ * Abort execution of the enclave.
  *
- * This function aborts execution by executing the UD2 instruction.
+ * Mark the enclave as aborting. This blocks future enclave entry calls. The
+ * enclave continues to execute until all threads exit the enclave.
  */
 void oe_abort(void);
 
@@ -267,7 +267,7 @@ void __oe_assert_fail(
  * If the *reportBuffer* is NULL or *reportSize* parameter is too small,
  * this function returns OE_BUFFER_TOO_SMALL.
  *
- * @param options Specifying default value (0) generates a report for local
+ * @param flags Specifying default value (0) generates a report for local
  * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
  * report for remote attestation.
  * @param reportData The report data that will be included in the report.
@@ -286,7 +286,7 @@ void __oe_assert_fail(
  *
  */
 oe_result_t oe_get_report(
-    uint32_t options,
+    uint32_t flags,
     const uint8_t* reportData,
     uint32_t reportDataSize,
     const void* optParams,
@@ -335,10 +335,11 @@ oe_result_t oe_verify_report(
     uint32_t reportSize,
     oe_report_t* parsedReport);
 
-typedef enum _oe_seal_id_policy {
-    OE_SEAL_ID_UNIQUE = 1,
-    OE_SEAL_ID_PRODUCT = 2,
-} oe_seal_id_policy_t;
+typedef enum _oe_seal_policy {
+    OE_SEAL_POLICY_UNIQUE = 1,
+    OE_SEAL_POLICY_PRODUCT = 2,
+    __OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
+} oe_seal_policy_t;
 
 /**
 * Get a symmetric encryption key derived from the specified policy and coupled
@@ -365,7 +366,7 @@ typedef enum _oe_seal_id_policy {
 * @retval OE_UNEXPECTED An unexpected error happened.
 */
 oe_result_t oe_get_seal_key_by_policy(
-    oe_seal_id_policy_t sealPolicy,
+    oe_seal_policy_t sealPolicy,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize,
     uint8_t* keyInfo,
@@ -397,6 +398,7 @@ oe_result_t oe_get_seal_key(
     uint32_t keyInfoSize,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */

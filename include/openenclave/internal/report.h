@@ -5,6 +5,7 @@
 #define _OE_INCLUDE_REPORT_H_
 
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/sgxtypes.h>
 
 /*
 **==============================================================================
@@ -59,7 +60,7 @@ typedef struct _oe_get_report_args
 {
     oe_result_t result; /* out */
 
-    uint32_t options; /* in */
+    uint32_t flags; /* in */
 
     uint8_t optParams[sizeof(sgx_target_info_t)]; /* in */
     uint32_t optParamsSize;                       /* in */
@@ -82,5 +83,32 @@ typedef struct _oe_verify_report_args
     uint8_t* report;     /* in */
     uint32_t reportSize; /* in */
 } oe_verify_report_args_t;
+
+/*
+**==============================================================================
+**
+** _oe_get_revocation_info_args
+**
+**==============================================================================
+*/
+typedef struct _oe_get_revocation_info_args
+{
+    oe_result_t result;                /* out */
+    uint8_t fmspc[6];                  /* in */
+    const char* crl_urls[3];           /* in */
+    uint32_t num_crl_urls;             /* in */
+    uint8_t* tcb_info;                 /* out */
+    uint32_t tcb_info_size;            /* out */
+    uint8_t* tcb_issuer_chain;         /* out */
+    uint32_t tcb_issuer_chain_size;    /* out */
+    uint8_t* crl[3];                   /* out */
+    uint32_t crl_size[3];              /* out */
+    uint8_t* crl_issuer_chain[3];      /* out */
+    uint32_t crl_issuer_chain_size[3]; /* out */
+
+    // Memory allocated by host to pass outputs back to the enclave. Enclave
+    // must free this memory via oe_host_free.
+    uint8_t* host_out_buffer; /* out */
+} oe_get_revocation_info_args_t;
 
 #endif //_OE_INCLUDE_REPORT_H_

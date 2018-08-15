@@ -108,6 +108,8 @@ static mbedtls_md_type_t _MapHashType(oe_hash_type_t md)
             return MBEDTLS_MD_SHA256;
         case OE_HASH_TYPE_SHA512:
             return MBEDTLS_MD_SHA512;
+        case __OE_HASH_TYPE_MAX:
+            return MBEDTLS_MD_NONE;
     }
 
     /* Unreachable */
@@ -337,6 +339,9 @@ oe_result_t oe_private_key_sign(
     uint8_t buffer[MBEDTLS_MPI_MAX_SIZE];
     size_t bufferSize = 0;
     mbedtls_md_type_t type = _MapHashType(hashType);
+
+    if (type == MBEDTLS_MD_NONE)
+        OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check parameters */
     if (!oe_private_key_is_valid(privateKey, magic) || !hashData || !hashSize ||

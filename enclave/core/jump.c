@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/jump.h>
+
+OE_CHECK_SIZE(sizeof(oe_jmpbuf_t), 64);
 
 /*
  * This file must be compiled with optimization enabled because the code

@@ -8,6 +8,8 @@
 #include <openenclave/bits/properties.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/defs.h>
+#include <openenclave/internal/types.h>
 #include "epid.h"
 #include "jump.h"
 #include "load.h"
@@ -65,7 +67,10 @@ typedef enum _sgx_enclu_leaf {
     ENCLU_EACCEPT = 0x05,
     ENCLU_EMODPE = 0x06,
     ENCLU_EACCEPTCOPY = 0x07,
+    ENCLU_UNDEFINED = OE_ENUM_MAX,
 } sgx_enclu_leaf_t;
+
+OE_STATIC_ASSERT(sizeof(sgx_enclu_leaf_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================
@@ -691,7 +696,7 @@ typedef struct _sgx_report_body
     uint8_t reserved4[60];
 
     /* (320) User report data */
-    sgx_report_data_t reportData;
+    sgx_report_data_t report_data;
 } sgx_report_body_t;
 
 typedef struct _sgx_report
@@ -852,17 +857,20 @@ typedef struct _sgx_qe_cert_data
 /*
 **==============================================================================
 **
-** OE_SGX_PCKID
+** oe_sgx_pckid_t
 **
 **==============================================================================
 */
-typedef enum _OE_SGX_PCKID {
+typedef enum _oe_sgx_pckid {
     OE_SGX_PCK_ID_PLAIN_PPID = 1,
     OE_SGX_PCK_ID_ENCRYPTED_PPID_2048 = 2,
     OE_SGX_PCK_ID_ENCRYPTED_PPID_3072 = 3,
     OE_SGX_PCK_ID_PCK_CERTIFICATE = 4,
-    OE_SGX_PCK_ID_PCK_CERT_CHAIN = 5
-} OE_SGX_PCKID;
+    OE_SGX_PCK_ID_PCK_CERT_CHAIN = 5,
+    __OE_SGX_PCKID_MAX = OE_ENUM_MAX
+} oe_sgx_pckid_t;
+
+OE_STATIC_ASSERT(sizeof(oe_sgx_pckid_t) == sizeof(unsigned int));
 
 #else
 
@@ -957,7 +965,10 @@ OE_PACK_END
 typedef enum _sgx_quote_type {
     SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
     SGX_QUOTE_TYPE_LINKABLE_SIGNATURE,
+    __SGX_QUOTE_TYPE_MAX = OE_ENUM_MAX,
 } sgx_quote_type_t;
+
+OE_STATIC_ASSERT(sizeof(sgx_quote_type_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================
