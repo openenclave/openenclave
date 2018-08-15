@@ -375,20 +375,12 @@ static oe_result_t _HandleOCALL(
             HandleGetQETargetInfo(argIn);
             break;
 
-        case OE_OCALL_STRFTIME:
-            HandleStrftime(argIn);
+        case OE_OCALL_SLEEP:
+            oe_handle_sleep(argIn);
             break;
 
-        case OE_OCALL_GETTIMEOFDAY:
-            HandleGettimeofday(argIn);
-            break;
-
-        case OE_OCALL_CLOCK_GETTIME:
-            HandleClockgettime(argIn);
-            break;
-
-        case OE_OCALL_NANOSLEEP:
-            HandleNanosleep(argIn);
+        case OE_OCALL_GET_TIME:
+            oe_handle_get_time(argIn, argOut);
             break;
 
 #if defined(OE_USE_DEBUG_MALLOC)
