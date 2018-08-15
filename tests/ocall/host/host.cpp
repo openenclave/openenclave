@@ -54,7 +54,7 @@ OE_OCALL void TestReentrancy(void*)
     // Valid function; but reentrant call.
     result = oe_call_enclave(_enclave, "TestReentrancy", NULL);
     printf("result ==== %s\n", oe_result_str(result));
-    OE_TEST(result == OE_INVALID_REENTRANT_CALL);
+    OE_TEST(result == OE_INVALID_REENTRANT_ECALL);
 
     _reentrancyTested = true;
 }

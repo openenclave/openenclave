@@ -239,9 +239,6 @@ static void _HandleExit(oe_code_t code, uint16_t func, uint64_t arg)
 
 void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut);
 
-/* Disallow OCALLs to call back into enclave with an ECALL */
-#define OE_OCALL_FLAG_NOT_REENTRANT (1u << 0)
-
 /*
 **==============================================================================
 **
@@ -291,11 +288,14 @@ static void _HandleECall(
         }
     }
 
-    /* Are ecalls permitted? */
-    if (td->ocall_flags & OE_OCALL_FLAG_NOT_REENTRANT)
+    // TD_PushCallsite increments the depth. depth > 1 indicates a reentrant
+    // call. Reentrancy is allowed to handle exceptions and to terminate the
+    // enclave.
+    if (td->depth > 1 && (func != OE_ECALL_VIRTUAL_EXCEPTION_HANDLER &&
+                          func != OE_ECALL_DESTRUCTOR))
     {
-        /* ecalls not permitted. */
-        result = OE_INVALID_REENTRANT_CALL;
+        /* reentrancy not permitted. */
+        result = OE_INVALID_REENTRANT_ECALL;
         goto done;
     }
 
@@ -407,22 +407,6 @@ oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
     oe_result_t result = OE_UNEXPECTED;
     TD* td = TD_Get();
     Callsite* callsite = td->callsites;
-    uint16_t old_ocall_flags = td->ocall_flags;
-
-    /*
-        All calls to host happen via oe_ocall.
-        Make all calls into host non re-entrant.
-
-        The current host thread is not allowed to call back into
-        the enclave. However, other host threads can.
-        To completely disable all callbacks into the enclave, this
-        flag must be made global rather than thread specific.
-
-        However, some primitives like thread wake wait where one
-        enclave thread wakes up another enclave thread via the host
-        needs to be carefully implemented.
-    */
-    uint16_t ocall_flags = OE_OCALL_FLAG_NOT_REENTRANT;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
@@ -436,8 +420,6 @@ oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
     /* Check for unexpected failures */
     if (!TD_Initialized(td))
         OE_THROW(OE_FAILURE);
-
-    td->ocall_flags |= ocall_flags;
 
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)
@@ -457,8 +439,6 @@ oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
 
         /* ORET here */
     }
-
-    td->ocall_flags = old_ocall_flags;
 
     result = OE_OK;
 
