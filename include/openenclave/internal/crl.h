@@ -6,6 +6,7 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/date.h>
 
 OE_EXTERNC_BEGIN
 
@@ -23,9 +24,9 @@ typedef struct _oe_crl oe_crl_t;
  * The caller is responsible for releasing the certificate by passing it to
  * oe_crl_free().
  *
+ * @param crl initialized certificate handle upon return
  * @param derData zero-terminated DER data.
  * @param derSize size of the DER data
- * @param crl initialized certificate handle upon return
  *
  * @return OE_OK load was successful
  */
@@ -42,6 +43,23 @@ oe_result_t oe_crl_read_der(
  * @return OE_OK the CRL was successfully released
  */
 oe_result_t oe_crl_free(oe_crl_t* crl);
+
+/**
+ * Obtains the **last** and **next** update dates for the given CRL.
+ *
+ * This function obtains the **last** and the **next** update dates for the
+ * given CRL. The **last** date specifies when this CRL was last updated. The
+ * **next** date specifies when a newer version of the CRL will be available
+ * (after which this CRL should be considered invalid).
+ *
+ * @param crl the handle of a CRL.
+ * @param last the date when the CRL was last updated.
+ * @param next the date at which this CRL should be considered invalid.
+ */
+oe_result_t oe_crl_get_update_dates(
+    const oe_crl_t* crl,
+    oe_date_t* last,
+    oe_date_t* next);
 
 OE_EXTERNC_END
 
