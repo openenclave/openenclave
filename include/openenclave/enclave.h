@@ -19,7 +19,6 @@
 #include "bits/properties.h"
 #include "bits/report.h"
 #include "bits/result.h"
-#include "bits/thread.h"
 #include "bits/types.h"
 
 /**

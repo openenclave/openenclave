@@ -25,30 +25,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind-internal.h"
 
-#ifdef OPEN_ENCLAVE
-#include <stdbool.h>
-extern bool oe_is_within_enclave(const void* ptr, size_t size);
-
-//
-// Check if the current cursor points to something inside the enclave.
-// Return 1 if it is, otherwise return 0.
-//
-int _is_cursor_inside_enclave(unw_cursor_t *cursor)
-{
-    struct cursor *c = (struct cursor *) cursor;
-
-    // Check if the [IP, IP+16) is inside enclave, and
-    // check if [cfa, cfa+1024) is inside enclave.
-    if (oe_is_within_enclave(c->dwarf.ip, 16) && 
-	oe_is_within_enclave(c->dwarf.cfa, 1024))
-    {
-        return 1;
-    }
-
-    return 0;
-}
-#endif // OPEN_ENCLAVE
-
 PROTECTED _Unwind_Reason_Code
 _Unwind_RaiseException (struct _Unwind_Exception *exception_object)
 {
@@ -80,15 +56,6 @@ _Unwind_RaiseException (struct _Unwind_Exception *exception_object)
           else
             return _URC_FATAL_PHASE1_ERROR;
         }
-
-#ifdef OPEN_ENCLAVE
-      // Stop search if the cursor points something outside enclave.
-      // Non-enclave personality should not be called.
-      if (_is_cursor_inside_enclave(&context.cursor) <= 0)
-      {
-          return _URC_END_OF_STACK;
-      }
-#endif // OPEN_ENCLAVE
 
       if (unw_get_proc_info (&context.cursor, &pi) < 0)
         return _URC_FATAL_PHASE1_ERROR;

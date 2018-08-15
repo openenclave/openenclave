@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
+#include <openenclave/internal/thread.h>
 #include <pthread.h>
 
 #ifdef pthread_equal

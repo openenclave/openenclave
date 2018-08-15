@@ -7,6 +7,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/thread.h>
 #include "../args.h"
 
 OE_ECALL void Test2(void* args_)
