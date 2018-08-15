@@ -150,7 +150,7 @@ static oe_result_t _GenerateKeyPair(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check range of bits and exponent parameters */
-    if (bits > OE_MAX_UINT || exponent > OE_MAX_INT)
+    if (bits > OE_UINT_MAX || exponent > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the random number generator */

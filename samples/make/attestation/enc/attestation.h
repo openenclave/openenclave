@@ -8,7 +8,7 @@
 
 /**
  * Generate a quote for the given data. The SHA256 digest of the data is stored
- * in the reportData field of the generated quote.
+ * in the report_data field of the generated quote.
  */
 bool GenerateQuote(
     const uint8_t* data,
@@ -22,7 +22,7 @@ bool GenerateQuote(
  * that generated the quote. Next the mrsigner and mrenclave values are tested
  * to establish trust of the enclave that generated the quote. Next the validity
  * of accompanying data is ensured by comparing its SHA256 digest against the
- * reportData field.
+ * report_data field.
  */
 bool AttestQuote(
     const uint8_t* quote,

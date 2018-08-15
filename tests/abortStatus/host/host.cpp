@@ -5,9 +5,9 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <unistd.h>
 #include <cassert>
 #include <cassert>
+#include <chrono>
 #include <cstdio>
 #include <cstdio>
 #include <cstdlib>
@@ -36,8 +36,8 @@ void TestAbortStatus(oe_enclave_t* enclave, const char* functionName)
 
 static void CrashEnclaveThread(
     oe_enclave_t* enclave,
-    uint32_t* thread_ready_count,
-    uint32_t* is_enclave_crashed,
+    std::atomic<uint32_t>* thread_ready_count,
+    std::atomic<bool>* is_enclave_crashed,
     const char* ecall_function)
 {
     oe_result_t result;
@@ -50,7 +50,7 @@ static void CrashEnclaveThread(
     // Wait all worker threads ready.
     while (*args.thread_ready_count != THREAD_COUNT - 1)
     {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     // Crash the enclave to set enclave in abort status.
@@ -65,8 +65,8 @@ static void CrashEnclaveThread(
 
 static void EcallAfterCrashThread(
     oe_enclave_t* enclave,
-    uint32_t* thread_ready_count,
-    uint32_t* is_enclave_crashed)
+    std::atomic<uint32_t>* thread_ready_count,
+    std::atomic<bool>* is_enclave_crashed)
 {
     oe_result_t result;
     AbortStatusArgs args;
@@ -74,12 +74,12 @@ static void EcallAfterCrashThread(
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
 
-    __sync_fetch_and_add(args.thread_ready_count, 1);
+    ++*args.thread_ready_count;
 
     // Wait the enclave is aborted.
     while (*args.is_enclave_crashed == 0)
     {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     // Try to ECALL into the enclave.
@@ -91,8 +91,8 @@ static void EcallAfterCrashThread(
 
 static void OcallAfterCrashThread(
     oe_enclave_t* enclave,
-    uint32_t* thread_ready_count,
-    uint32_t* is_enclave_crashed)
+    std::atomic<uint32_t>* thread_ready_count,
+    std::atomic<bool>* is_enclave_crashed)
 {
     oe_result_t result;
     AbortStatusArgs args;
@@ -182,8 +182,8 @@ static uint32_t TestRecursion(
     oe_enclave_t* enclave,
     unsigned flowId,
     unsigned recursionDepth,
-    uint32_t* thread_ready_count,
-    uint32_t* is_enclave_crashed)
+    std::atomic<uint32_t>* thread_ready_count,
+    std::atomic<bool>* is_enclave_crashed)
 {
     oe_result_t result;
     AbortStatusEncRecursionArg args = {};
@@ -246,12 +246,12 @@ OE_OCALL void RecursionOcall(void* args_)
     }
     else
     {
-        __sync_fetch_and_add(args.thread_ready_count, 1);
+        ++*args.thread_ready_count;
 
         // Wait the enclave is aborted.
         while (*args.is_enclave_crashed == 0)
         {
-            sleep(1);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
         // Verify the ECALL into the enclave will fail after enclave is aborted.
@@ -342,8 +342,8 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
 
         // Create threads.
         std::vector<std::thread> threads;
-        uint32_t thread_ready_count = 0;
-        uint32_t is_enclave_crashed = 0;
+        std::atomic<uint32_t> thread_ready_count(0);
+        std::atomic<bool> is_enclave_crashed(0);
 
         threads.push_back(
             std::thread(

@@ -13,7 +13,6 @@ add_library(oelibc STATIC
     atexit.c
     errno.c
     libcxxrt_stubs.c
-    libunwind_stubs.c
     link.c
     locale.c
     malloc.c
@@ -22,6 +21,7 @@ add_library(oelibc STATIC
     __printf_chk.c
     __vfprintf_chk.c
     __stack_chk_fail.c
+    __tz.c
     stdio.c
     stdlib.c
     strerror.c
@@ -520,9 +520,9 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/gmtime.c
     ${MUSLSRC}/time/gmtime_r.c
     ${MUSLSRC}/time/__secs_to_tm.c
-#   ${MUSLSRC}/time/__tm_to_secs.c
-#   ${MUSLSRC}/time/__year_to_secs.c
-#   ${MUSLSRC}/time/__month_to_secs.c
+    ${MUSLSRC}/time/__tm_to_secs.c
+    ${MUSLSRC}/time/__year_to_secs.c
+    ${MUSLSRC}/time/__month_to_secs.c
 #   ${MUSLSRC}/time/__tz.c
 
     ${MUSLSRC}/crypt/crypt.c

@@ -4,11 +4,11 @@
 #include "random.h"
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
-#include <openenclave/bits/thread.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/random.h>
+#include <openenclave/internal/thread.h>
 
 /*
 **==============================================================================
@@ -39,7 +39,7 @@ done:
 }
 
 static oe_result_t _seedResult = OE_UNEXPECTED;
-static oe_once_t _seedOnce = OE_ONCE_INITIALIZER;
+static oe_once_t _seedOnce = OE_ONCE_INIT;
 
 /* Wrapper to set file-scope _seedResult */
 static void _SeedEntropySourceOnce()

@@ -297,7 +297,7 @@ static oe_result_t _WriteRequest(
     mem_t envelope = MEM_DYNAMIC_INIT;
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    printf("=== _WriteRequest:\n");
+    OE_TRACE_INFO("=== _WriteRequest:\n");
     oe_hex_dump(mem_ptr(message), mem_size(message));
 #endif
 
@@ -384,7 +384,7 @@ static oe_result_t _ReadResponse(
     }
 
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
-    printf("=== _ReadResponse():\n");
+    OE_TRACE_INFO("=== _ReadResponse():\n");
     oe_hex_dump(mem_ptr(message), mem_size(message));
 #endif
 

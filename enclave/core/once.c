@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <openenclave/enclave.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 
 oe_result_t oe_once(oe_once_t* once, void (*func)(void))

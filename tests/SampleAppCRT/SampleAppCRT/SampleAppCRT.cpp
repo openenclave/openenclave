@@ -8,6 +8,8 @@
 #include <string.h>
 #include <wchar.h>
 
+#define OE_OCALL_FAILED -1
+
 static uint32_t func()
 {
     static int state = 0;
@@ -25,7 +27,7 @@ uint32_t threadLocalDynamic = func();
 char asciistring[] = "HelloWorld";
 wchar_t wcstring[] = L"HelloWorld";
 
-OE_ECALL oe_result_t Test(void* args)
+OE_ECALL int Test(void* args)
 {
     int* returnValuePtr = (int*)args;
 
