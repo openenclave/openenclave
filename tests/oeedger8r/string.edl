@@ -38,3 +38,4 @@ enclave {
         void ocall_string_fun7([string, in] char* s1, [string, in] char* s2);
     };
 };
+

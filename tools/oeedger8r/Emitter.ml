@@ -116,6 +116,13 @@ let mk_ms_member_decl (pt: Ast.parameter_type) (declr: Ast.declarator) (isecall:
 
 (**************************** END Code borrowed and tweaked from CodeGen.ml *******************************************************)      
 
+(* Open a file for writing in the specified directory *)
+let open_file (filename:string) (dir:string) = 
+    if dir = "." then
+      open_out filename
+    else
+      open_out (dir ^ separator_str ^ filename) 
+
 (* oe: util functions *)
 let oe_mk_ms_struct_name (fname: string) = fname ^ "_args_t"
 
@@ -241,7 +248,7 @@ let emit_composite_type (os:out_channel) = function
   
 
 (* oe: Generate args.h which contains structs for ecalls and ocalls *)
-let oe_gen_args_header (ec: enclave_content) =  
+let oe_gen_args_header (ec: enclave_content) (dir:string)=  
   let structs = List.append
     (* For each ecall, generate its marshalling struct *)
     (List.map (fun d -> oe_gen_marshal_struct_impl d.Ast.tf_fdecl "" true) ec.tfunc_decls)
@@ -250,7 +257,7 @@ let oe_gen_args_header (ec: enclave_content) =
   in  
   let header_fname = sprintf "%s_args.h" ec.file_shortnm in
   let guard_macro = sprintf "%s_ARGS_H" (String.uppercase ec.enclave_name) in
-  let os = open_out header_fname in  
+  let os = open_file header_fname dir in  
     fprintf os "#ifndef %s\n" guard_macro;
     fprintf os "#define %s\n\n" guard_macro;
     fprintf os "#include <stdint.h>\n";
@@ -581,23 +588,21 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (fd:Ast.func_decl) =
 (* Valid oe support *)
 let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   (* check supported options *)
-  if ep.use_prefix then failwithf "--use_prefix option is not supported with --open-enclave";
-  if ep.header_only then failwithf "--header_only option is not supported with --open-enclave";
-  if ep.untrusted_dir <> "." then failwithf "--untrusted_dir option is not supported with --open-enclave";
-  if ep.trusted_dir <> "." then failwithf "--trusted_dir option is not supported with --open-enclave";
+  if ep.use_prefix then failwithf "--use_prefix option is not supported by oeedger8r.";
+  if ep.header_only then failwithf "--header_only option is not supported by oeedger8r.";
   List.iter (fun f -> if f.Ast.tf_is_priv then 
     (* failwithf "private functions are not supported with --open-enclave" *)
-    failwithf "warning: 'private' annotation ignored on function %s.\n" f.Ast.tf_fdecl.fname
+    failwithf "'private' specifier is not supported  by oeedger8r"
   ) ec.tfunc_decls  
   (*
     Includes are emitted in args.h.
     Imported functions have already been brought into function lists.
-  *)
+  *)  
 
 let gen_t_h (ec: enclave_content) (ep: edger8r_params) =
   let fname = ec.file_shortnm ^ "_t.h" in
   let guard = sprintf "EDGER8R_%s_T_H" (String.uppercase ec.file_shortnm) in
-  let os = open_out fname in  
+  let os = open_file fname ep.trusted_dir in  
   fprintf os "#ifndef %s\n" guard;
   fprintf os "#define %s\n\n" guard;
   fprintf os "#include <openenclave/enclave.h>\n";  
@@ -617,7 +622,7 @@ let gen_t_h (ec: enclave_content) (ep: edger8r_params) =
 
 let gen_t_c (ec: enclave_content) (ep: edger8r_params) =
   let ecalls_fname = ec.file_shortnm ^ "_t.c" in
-  let os = open_out ecalls_fname in
+  let os = open_file ecalls_fname ep.trusted_dir in
   fprintf os "#include \"%s_t.h\"\n" ec.file_shortnm;  
   fprintf os "#include <stdlib.h>\n";
   fprintf os "#include <string.h>\n";
@@ -637,7 +642,7 @@ let gen_t_c (ec: enclave_content) (ep: edger8r_params) =
 let gen_u_h (ec: enclave_content) (ep: edger8r_params) =
   let fname = ec.file_shortnm ^ "_u.h" in
   let guard = sprintf "EDGER8R_%s_U_H" (String.uppercase ec.file_shortnm) in
-  let os = open_out fname in  
+  let os = open_file fname ep.untrusted_dir in  
   fprintf os "#ifndef %s\n" guard;
   fprintf os "#define %s\n\n" guard;
   fprintf os "#include <openenclave/host.h>\n";  
@@ -658,7 +663,7 @@ let gen_u_h (ec: enclave_content) (ep: edger8r_params) =
 
 let gen_u_c (ec: enclave_content) (ep: edger8r_params) =
   let ecalls_fname = ec.file_shortnm ^ "_u.c" in
-  let os = open_out ecalls_fname in
+  let os = open_file ecalls_fname ep.untrusted_dir in
   fprintf os "#include \"%s_u.h\"\n" ec.file_shortnm;  
   fprintf os "#include <stdlib.h>\n";
   fprintf os "#include <string.h>\n";
@@ -677,12 +682,14 @@ let gen_u_c (ec: enclave_content) (ep: edger8r_params) =
 (* Generate the Enclave code. *)
 let gen_enclave_code (ec: enclave_content) (ep: edger8r_params) =
   validate_oe_support ec ep;
-  oe_gen_args_header ec;
+  
   if ep.gen_trusted then(
+    oe_gen_args_header ec ep.trusted_dir;
     gen_t_h ec ep;
     gen_t_c ec ep;
   );
   if ep.gen_untrusted then (
+    oe_gen_args_header ec ep.untrusted_dir;
     gen_u_h ec ep;
     gen_u_c ec ep;
   );
