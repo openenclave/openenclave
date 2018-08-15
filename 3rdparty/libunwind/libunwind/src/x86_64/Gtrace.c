@@ -396,9 +396,6 @@ trace_lookup (unw_cursor_t *cursor,
 HIDDEN int
 tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
 {
-#ifdef OPEN_ENCLAVE
-  return (-UNW_ENOINFO);
-#else
   struct cursor *c = (struct cursor *) cursor;
   struct dwarf_cursor *d = &c->dwarf;
   unw_trace_cache_t *cache;
@@ -533,5 +530,4 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
 #endif
   *size = depth;
   return ret;
-#endif
 }

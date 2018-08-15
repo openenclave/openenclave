@@ -3,16 +3,16 @@
 
 # Build the C library, using local sources and sources from MUSL
 
+include(add_compile_flags_if_supported)
+
 set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_library(oelibc STATIC
     arc4random.c
     assert.c
     atexit.c
-    debugmalloc.c
     errno.c
     libcxxrt_stubs.c
-    libunwind_stubs.c
     link.c
     locale.c
     malloc.c
@@ -21,6 +21,7 @@ add_library(oelibc STATIC
     __printf_chk.c
     __vfprintf_chk.c
     __stack_chk_fail.c
+    __tz.c
     stdio.c
     stdlib.c
     strerror.c
@@ -519,9 +520,9 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/gmtime.c
     ${MUSLSRC}/time/gmtime_r.c
     ${MUSLSRC}/time/__secs_to_tm.c
-#   ${MUSLSRC}/time/__tm_to_secs.c
-#   ${MUSLSRC}/time/__year_to_secs.c
-#   ${MUSLSRC}/time/__month_to_secs.c
+    ${MUSLSRC}/time/__tm_to_secs.c
+    ${MUSLSRC}/time/__year_to_secs.c
+    ${MUSLSRC}/time/__month_to_secs.c
 #   ${MUSLSRC}/time/__tz.c
 
     ${MUSLSRC}/crypt/crypt.c
@@ -539,23 +540,35 @@ add_library(oelibc STATIC
     )
 
 target_compile_options(oelibc PRIVATE
-    -Wno-attributes
-    -Wno-parentheses
-    -Wno-pointer-sign
-    -Wno-unused-but-set-variable
-    -Wno-unknown-pragmas
-    -Wno-maybe-uninitialized
-    -Wno-format
-    -Wno-missing-braces
-
     -std=c99
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
-    -fexcess-precision=standard
-    -frounding-math
     -mrdrnd
     )
+
+if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+    target_compile_options(oelibc PRIVATE
+        -fexcess-precision=standard
+        -frounding-math
+        )
+endif()
+
+if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+    add_target_c_compile_flags_if_supported(oelibc PRIVATE
+        -Wno-attributes
+        -Wno-format
+        -Wno-missing-braces
+        -Wno-maybe-uninitialized
+        -Wno-parentheses
+        -Wno-pointer-sign
+        -Wno-shift-negative-value
+        -Wno-string-plus-int
+        -Wno-typedef-redefinition
+        -Wno-unknown-pragmas
+        -Wno-error=unused-but-set-variable
+        )
+endif()
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
 

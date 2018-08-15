@@ -3,7 +3,6 @@
 
 #define USE_DL_PREFIX
 #include "debugmalloc.h"
-#include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/backtrace.h>
 #include <openenclave/internal/backtrace.h>
@@ -11,8 +10,10 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
+#include "dlmalloc/errno.h"
 
 #if defined(OE_USE_DEBUG_MALLOC)
 
@@ -102,22 +103,19 @@ OE_INLINE footer_t* _get_footer(void* ptr)
     return (footer_t*)((uint8_t*)ptr + rsize);
 }
 
-/* Inline so the function name will not appear in the backtrace */
-OE_ALWAYS_INLINE
-void _init_block(header_t* header, size_t alignment, size_t size)
-{
-    /* Initialize the header */
-    header->magic1 = HEADER_MAGIC1;
-    header->next = NULL;
-    header->prev = NULL;
-    header->alignment = alignment;
-    header->size = size;
-    header->num_addrs = oe_backtrace(header->addrs, OE_BACKTRACE_MAX);
-    header->magic2 = HEADER_MAGIC2;
-
-    /* Initialize the footer */
-    _get_footer(header->data)->magic = FOOTER_MAGIC;
-}
+/* Use a macro so the function name will not appear in the backtrace */
+#define INIT_BLOCK(HEADER, ALIGNMENT, SIZE)                                \
+    do                                                                     \
+    {                                                                      \
+        HEADER->magic1 = HEADER_MAGIC1;                                    \
+        HEADER->next = NULL;                                               \
+        HEADER->prev = NULL;                                               \
+        HEADER->alignment = ALIGNMENT;                                     \
+        HEADER->size = SIZE;                                               \
+        HEADER->num_addrs = oe_backtrace(HEADER->addrs, OE_BACKTRACE_MAX); \
+        HEADER->magic2 = HEADER_MAGIC2;                                    \
+        _get_footer(HEADER->data)->magic = FOOTER_MAGIC;                   \
+    } while (0)
 
 /* Assert and abort if magic numbers are wrong */
 static void _check_block(header_t* header)
@@ -310,7 +308,7 @@ void* oe_debug_malloc(size_t size)
     oe_memset(block, 0xAA, block_size);
 
     header_t* header = (header_t*)block;
-    _init_block(header, 0, size);
+    INIT_BLOCK(header, 0, size);
     _check_block(header);
     _list_insert(&_list, header);
 
@@ -394,7 +392,7 @@ void* oe_debug_memalign(size_t alignment, size_t size)
 
     header = (header_t*)((uint8_t*)block + padding_size);
 
-    _init_block(header, alignment, size);
+    INIT_BLOCK(header, alignment, size);
     _check_block(header);
     _list_insert(&_list, header);
 

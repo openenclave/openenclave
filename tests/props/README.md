@@ -6,7 +6,7 @@ in one of two ways:
 - Using the OESIGN tool (for signed enclaves)
 
 In both cases, the enclave properties are written to a special enclave
-properties notes section (.oeinfo) within the enclave image.
+properties section (.oeinfo) within the enclave image.
 
 The enclave loader is able to load unsigned debug images, by use of the
 OE_SET_ENCLAVE_SGX macro.

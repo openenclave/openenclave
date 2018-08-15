@@ -133,7 +133,7 @@ static oe_result_t _AddSegmentPages(
     uint64_t enclaveSize,
     const oe_segment_t segments[],
     size_t nsegments,
-    const oe_page* pages,
+    const oe_page_t* pages,
     size_t npages,
     uint64_t* vaddr)
 {
@@ -149,7 +149,7 @@ static oe_result_t _AddSegmentPages(
     /* Add each page to the enclave */
     for (i = 0; i < npages; i++)
     {
-        const oe_page* page = &pages[i];
+        const oe_page_t* page = &pages[i];
         uint64_t addr = enclaveAddr + (i * OE_PAGE_SIZE);
         uint64_t src = (uint64_t)page;
         uint64_t flags;
@@ -192,7 +192,7 @@ static oe_result_t _AddFilledPages(
     uint32_t filler,
     bool extend)
 {
-    oe_page page;
+    oe_page_t page;
     oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
@@ -286,7 +286,7 @@ static oe_result_t _AddControlPages(
 
     /* Add the TCS page */
     {
-        oe_page page;
+        oe_page_t page;
         sgx_tcs_t* tcs;
 
         /* Zero-fill the TCS page */
@@ -421,8 +421,8 @@ static oe_result_t _AddRelocationPages(
 
     if (relocData && relocSize)
     {
-        const oe_page* pages = (const oe_page*)relocData;
-        size_t npages = relocSize / sizeof(oe_page);
+        const oe_page_t* pages = (const oe_page_t*)relocData;
+        size_t npages = relocSize / sizeof(oe_page_t);
 
         for (size_t i = 0; i < npages; i++)
         {
@@ -434,7 +434,7 @@ static oe_result_t _AddRelocationPages(
             OE_CHECK(
                 oe_sgx_load_enclave_data(
                     context, enclaveAddr, addr, src, flags, extend));
-            (*vaddr) += sizeof(oe_page);
+            (*vaddr) += sizeof(oe_page_t);
         }
     }
 
@@ -457,8 +457,8 @@ static oe_result_t _AddECallPages(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
-        const oe_page* pages = (const oe_page*)ecallData;
-        size_t npages = ecallSize / sizeof(oe_page);
+        const oe_page_t* pages = (const oe_page_t*)ecallData;
+        size_t npages = ecallSize / sizeof(oe_page_t);
 
         for (size_t i = 0; i < npages; i++)
         {
@@ -470,7 +470,7 @@ static oe_result_t _AddECallPages(
             OE_CHECK(
                 oe_sgx_load_enclave_data(
                     context, enclaveAddr, addr, src, flags, extend));
-            (*vaddr) += sizeof(oe_page);
+            (*vaddr) += sizeof(oe_page_t);
         }
     }
 
@@ -501,7 +501,7 @@ static oe_result_t _AddPages(
     oe_result_t result = OE_UNEXPECTED;
     uint64_t vaddr = 0;
     size_t i;
-    oe_page* segpages = NULL;
+    oe_page_t* segpages = NULL;
     size_t nsegpages;
     size_t baseRelocPage;
     size_t baseECallPage;
@@ -782,6 +782,7 @@ done:
     return result;
 }
 
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 OE_INLINE void _DumpRelocations(const void* data, size_t size)
 {
     const Elf64_Rela* p = (const Elf64_Rela*)data;
@@ -800,6 +801,7 @@ OE_INLINE void _DumpRelocations(const void* data, size_t size)
             OE_LLD(p->r_addend));
     }
 }
+#endif
 
 /*
 **==============================================================================
@@ -902,7 +904,7 @@ done:
 static oe_result_t _FindEnclavePropertiesHeader(
     uint8_t* sectionData,
     size_t sectionSize,
-    oe_enclave_type_t enclaveType,
+    oe_enclave_type_t enclave_type,
     size_t structSize,
     oe_enclave_properties_header_t** header)
 {
@@ -918,7 +920,7 @@ static oe_result_t _FindEnclavePropertiesHeader(
         oe_enclave_properties_header_t* h =
             (oe_enclave_properties_header_t*)ptr;
 
-        if (h->enclaveType == enclaveType)
+        if (h->enclave_type == enclave_type)
         {
             if (h->size != structSize)
             {
@@ -1072,43 +1074,43 @@ oe_result_t oe_sgx_validate_enclave_properties(
     }
 
     if (!oe_sgx_is_valid_num_heap_pages(
-            properties->header.sizeSettings.numHeapPages))
+            properties->header.size_settings.num_heap_pages))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.numHeapPages";
+            *fieldName = "header.size_settings.num_heap_pages";
         result = OE_FAILURE;
         goto done;
     }
 
     if (!oe_sgx_is_valid_num_stack_pages(
-            properties->header.sizeSettings.numStackPages))
+            properties->header.size_settings.num_stack_pages))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.numStackPages";
+            *fieldName = "header.size_settings.num_stack_pages";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_num_tcs(properties->header.sizeSettings.numTCS))
+    if (!oe_sgx_is_valid_num_tcs(properties->header.size_settings.num_tcs))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.numTCS";
+            *fieldName = "header.size_settings.num_tcs";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_product_id(properties->config.productID))
+    if (!oe_sgx_is_valid_product_id(properties->config.product_id))
     {
         if (fieldName)
-            *fieldName = "config.productID";
+            *fieldName = "config.product_id";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_security_version(properties->config.productID))
+    if (!oe_sgx_is_valid_security_version(properties->config.product_id))
     {
         if (fieldName)
-            *fieldName = "config.securityVersion";
+            *fieldName = "config.security_version";
         result = OE_FAILURE;
         goto done;
     }
@@ -1222,9 +1224,9 @@ oe_result_t oe_sgx_build_enclave(
             numSegments,
             relocSize,
             ecallSize,
-            props.header.sizeSettings.numHeapPages,
-            props.header.sizeSettings.numStackPages,
-            props.header.sizeSettings.numTCS,
+            props.header.size_settings.num_heap_pages,
+            props.header.size_settings.num_stack_pages,
+            props.header.size_settings.num_tcs,
             &enclaveEnd,
             &enclaveSize));
 
@@ -1265,9 +1267,9 @@ oe_result_t oe_sgx_build_enclave(
             ecallData,
             ecallSize,
             entryAddr,
-            props.header.sizeSettings.numHeapPages,
-            props.header.sizeSettings.numStackPages,
-            props.header.sizeSettings.numTCS,
+            props.header.size_settings.num_heap_pages,
+            props.header.size_settings.num_stack_pages,
+            props.header.size_settings.num_tcs,
             enclave));
 
     /* Ask the platform to initialize the enclave and finalize the hash */

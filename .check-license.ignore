@@ -68,6 +68,8 @@ VERSION
 ./tests/pingpong-shared/enc/signconf.xml
 ./tests/ecall_ocall/crc32.cpp
 ./.cspellignore
+./3rdparty/libunwind/setcontext.S
 ./tests/libunwind/tests.all
 ./tests/libunwind/tests.supported
 ./tests/libunwind/tests.unsupported
+Jenkinsfile

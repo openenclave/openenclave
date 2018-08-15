@@ -43,7 +43,7 @@ void TestECall(oe_enclave_t* enclave)
     printf("%02u/%02u/%04u\n", args.mm, args.dd, args.yyyy);
 
     printf("baseHeapPage=%llu\n", OE_LLU(args.baseHeapPage));
-    printf("numHeapPages=%llu\n", OE_LLU(args.numHeapPages));
+    printf("num_heap_pages=%llu\n", OE_LLU(args.num_heap_pages));
     printf("numPages=%llu\n", OE_LLU(args.numPages));
     printf("base=%p\n", args.base);
 

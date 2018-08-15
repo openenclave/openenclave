@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _OE_BITS_CONTEXT_H
-#define _OE_BITS_CONTEXT_H
+#ifndef _OE_INTERNAL_CONTEXT_H
+#define _OE_INTERNAL_CONTEXT_H
 
 #ifndef __ASSEMBLER__
 #include <openenclave/bits/defs.h>
@@ -38,4 +38,4 @@ void oe_continue_execution(oe_context_t* oe_context);
 
 #endif // !__ASSEMBLER__
 
-#endif /* _OE_BITS_CONTEXT_H */
+#endif /* _OE_INTERNAL_CONTEXT_H */
