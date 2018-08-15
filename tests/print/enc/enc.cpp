@@ -23,7 +23,7 @@ OE_ECALL void TestPrint(void* args_)
         int r = fputc('o', stdout);
         OE_TEST(r == 'o');
         /* Note that gcc seems to optimize fputs to fwrite, and fprintf to
-           fputc, iff we ignore the retult. */
+           fputc, iff we ignore the result. */
         fprintf(stdout, "\n");
         r = fputs("fputs(stdout)\n", stdout);
         OE_TEST(r >= 0);
@@ -40,7 +40,7 @@ OE_ECALL void TestPrint(void* args_)
         int r = fputc('e', stderr);
         OE_TEST(r == 'e');
         /* Note that gcc seems to optimize fputs to fwrite, and fprintf to
-           fputc, iff we ignore the retult. */
+           fputc, iff we ignore the result. */
         fprintf(stderr, "\n");
         r = fputs("fputs(stderr)\n", stderr);
         OE_TEST(r >= 0);
