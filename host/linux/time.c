@@ -35,13 +35,13 @@ static void _sleep(uint64_t milliseconds)
     }
 }
 
-void oe_handle_sleep_ocall(uint64_t arg_in)
+void oe_handle_sleep(uint64_t arg_in)
 {
     const uint64_t milliseconds = arg_in;
     _sleep(milliseconds);
 }
 
-void oe_handle_get_time_ocall(uint64_t arg_in, uint64_t* arg_out)
+void oe_handle_get_time(uint64_t arg_in, uint64_t* arg_out)
 {
     OE_UNUSED(arg_in);
 
