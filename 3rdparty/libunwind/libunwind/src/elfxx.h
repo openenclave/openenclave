@@ -69,9 +69,6 @@ elf_w (valid_object) (struct elf_image *ei)
 static inline int
 elf_map_image (struct elf_image *ei, const char *path)
 {
-#ifdef OPEN_ENCLAVE
-  return -1;
-#else
   struct stat stat;
   int fd;
 
@@ -98,5 +95,4 @@ elf_map_image (struct elf_image *ei, const char *path)
   }
 
   return 0;
-#endif
 }
