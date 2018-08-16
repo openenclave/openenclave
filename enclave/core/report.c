@@ -14,9 +14,13 @@
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
+OE_STATIC_ASSERT(sizeof(oe_identity_t) == 96);
+
+OE_STATIC_ASSERT(sizeof(oe_report_t) == 128);
+
 static oe_result_t _sgx_create_report(
-    const void* reportData,
-    uint32_t reportDataSize,
+    const void* report_data,
+    uint32_t report_data_size,
     const void* targetInfo,
     uint32_t targetInfoSize,
     sgx_report_t* report)
@@ -29,21 +33,21 @@ static oe_result_t _sgx_create_report(
     sgx_report_t r OE_ALIGNED(512) = {{{0}}};
 
     /*
-     * Reject invalid parameters (reportData may be null).
+     * Reject invalid parameters (report_data may be null).
      * If targetInfo is null, SGX returns the report for the enclave itself.
      */
     if (!report)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (targetInfoSize > sizeof(sgx_target_info_t) ||
-        reportDataSize > sizeof(sgx_report_data_t))
+        report_data_size > sizeof(sgx_report_data_t))
         OE_RAISE(OE_INVALID_PARAMETER);
 
     if (targetInfo != NULL)
         oe_memcpy(&ti, targetInfo, targetInfoSize);
 
-    if (reportData != NULL)
-        oe_memcpy(&rd, reportData, reportDataSize);
+    if (report_data != NULL)
+        oe_memcpy(&rd, report_data, report_data_size);
 
     oe_memset(&r, 0, sizeof(sgx_report_t));
 
@@ -65,8 +69,8 @@ done:
 }
 
 static oe_result_t _oe_get_sgx_report(
-    const void* reportData,
-    uint32_t reportDataSize,
+    const void* report_data,
+    uint32_t report_data_size,
     const void* optParams,
     uint32_t optParamsSize,
     void* reportBuffer,
@@ -74,7 +78,7 @@ static oe_result_t _oe_get_sgx_report(
 {
     oe_result_t result = OE_UNEXPECTED;
 
-    if (reportDataSize > OE_REPORT_DATA_SIZE)
+    if (report_data_size > OE_REPORT_DATA_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     // optParams may be null, in which case SGX returns the report for the
@@ -100,8 +104,8 @@ static oe_result_t _oe_get_sgx_report(
 
     OE_CHECK(
         _sgx_create_report(
-            reportData,
-            reportDataSize,
+            report_data,
+            report_data_size,
             optParams,
             optParamsSize,
             reportBuffer));
@@ -194,8 +198,8 @@ done:
 }
 
 oe_result_t _oe_get_remote_report(
-    const uint8_t* reportData,
-    uint32_t reportDataSize,
+    const uint8_t* report_data,
+    uint32_t report_data_size,
     const void* optParams,
     uint32_t optParamsSize,
     uint8_t* reportBuffer,
@@ -226,8 +230,8 @@ oe_result_t _oe_get_remote_report(
      */
     OE_CHECK(
         _oe_get_sgx_report(
-            reportData,
-            reportDataSize,
+            report_data,
+            report_data_size,
             &sgxTargetInfo,
             sizeof(sgxTargetInfo),
             &sgxReport,
@@ -247,7 +251,7 @@ oe_result_t _oe_get_remote_report(
         OE_RAISE(OE_UNEXPECTED);
 
     if (oe_memcmp(
-            parsedReport.enclaveReport,
+            parsedReport.enclave_report,
             &sgxReport.body,
             sizeof(sgxReport.body)) != 0)
         OE_RAISE(OE_UNEXPECTED);
@@ -260,8 +264,8 @@ done:
 
 oe_result_t oe_get_report(
     uint32_t flags,
-    const uint8_t* reportData,
-    uint32_t reportDataSize,
+    const uint8_t* report_data,
+    uint32_t report_data_size,
     const void* optParams,
     uint32_t optParamsSize,
     uint8_t* reportBuffer,
@@ -270,8 +274,8 @@ oe_result_t oe_get_report(
     if (flags & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
     {
         return _oe_get_remote_report(
-            reportData,
-            reportDataSize,
+            report_data,
+            report_data_size,
             optParams,
             optParamsSize,
             reportBuffer,
@@ -280,8 +284,8 @@ oe_result_t oe_get_report(
 
     // If no flags are specified, default to locally attestable report.
     return _oe_get_sgx_report(
-        reportData,
-        reportDataSize,
+        report_data,
+        report_data_size,
         optParams,
         optParamsSize,
         reportBuffer,

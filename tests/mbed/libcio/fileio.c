@@ -5,6 +5,7 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 typedef struct _FileArgs

@@ -64,21 +64,22 @@ void DumpEnclaveProperties(const oe_sgx_enclave_properties_t* props)
 
     printf("=== SGX Enclave Properties:\n");
 
-    printf("productID=%u\n", props->config.productID);
+    printf("product_id=%u\n", props->config.product_id);
 
-    printf("securityVersion=%u\n", props->config.securityVersion);
+    printf("security_version=%u\n", props->config.security_version);
 
     bool debug = props->config.attributes & OE_SGX_FLAGS_DEBUG;
     printf("debug=%u\n", debug);
 
     printf(
-        "numHeapPages=%llu\n", OE_LLU(props->header.sizeSettings.numHeapPages));
+        "num_heap_pages=%llu\n",
+        OE_LLU(props->header.size_settings.num_heap_pages));
 
     printf(
-        "numStackPages=%llu\n",
-        OE_LLU(props->header.sizeSettings.numStackPages));
+        "num_stack_pages=%llu\n",
+        OE_LLU(props->header.size_settings.num_stack_pages));
 
-    printf("numTCS=%llu\n", OE_LLU(props->header.sizeSettings.numTCS));
+    printf("num_tcs=%llu\n", OE_LLU(props->header.size_settings.num_tcs));
 
     sigstruct = (const sgx_sigstruct_t*)props->sigstruct;
 

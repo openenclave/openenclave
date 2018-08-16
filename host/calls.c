@@ -61,7 +61,7 @@ static void _SetThreadBinding(ThreadBinding* binding)
 {
 #if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_threadBindingOnce, _CreateThreadBindingKey);
-    oe_thread_set_specific(_threadBindingKey, binding);
+    oe_thread_setspecific(_threadBindingKey, binding);
 #else
     return (ThreadBinding*)oe_get_gs_register_base();
 #endif
@@ -81,7 +81,7 @@ ThreadBinding* GetThreadBinding()
 {
 #if defined(USE_TLS_FOR_THREADING_BINDING)
     oe_once(&_threadBindingOnce, _CreateThreadBindingKey);
-    return (ThreadBinding*)oe_thread_get_specific(_threadBindingKey);
+    return (ThreadBinding*)oe_thread_getspecific(_threadBindingKey);
 #else
     return (ThreadBinding*)oe_get_gs_register_base();
 #endif
@@ -375,20 +375,12 @@ static oe_result_t _HandleOCALL(
             HandleGetQETargetInfo(argIn);
             break;
 
-        case OE_OCALL_STRFTIME:
-            HandleStrftime(argIn);
+        case OE_OCALL_SLEEP:
+            oe_handle_sleep(argIn);
             break;
 
-        case OE_OCALL_GETTIMEOFDAY:
-            HandleGettimeofday(argIn);
-            break;
-
-        case OE_OCALL_CLOCK_GETTIME:
-            HandleClockgettime(argIn);
-            break;
-
-        case OE_OCALL_NANOSLEEP:
-            HandleNanosleep(argIn);
+        case OE_OCALL_GET_TIME:
+            oe_handle_get_time(argIn, argOut);
             break;
 
 #if defined(OE_USE_DEBUG_MALLOC)

@@ -27,7 +27,7 @@ oe_enclave_t* g_Enclave = NULL;
 #define GetReport(flags, rd, rds, op, ops, rb, rbs) \
     oe_get_report(g_Enclave, flags, rd, rds, op, ops, rb, rbs)
 #else
-// Host side API does not have reportData and reportDataSize
+// Host side API does not have report_data and report_data_size
 #define GetReport(flags, rd, rds, op, ops, rb, rbs) \
     oe_get_report(g_Enclave, flags, op, ops, rb, rbs)
 #endif
@@ -41,7 +41,7 @@ oe_enclave_t* g_Enclave = NULL;
 
 /*
  * g_UniqueID is populated from the first call to oe_parse_report.
- * The enclave's uniqueID is asserted to not change subsequently.
+ * The enclave's unique_id is asserted to not change subsequently.
  */
 uint8_t g_UniqueID[32];
 
@@ -56,13 +56,14 @@ uint8_t g_ProductID[16] = {0};
 static bool CheckReportData(
     uint8_t* reportBuffer,
     uint32_t reportSize,
-    const uint8_t* reportData,
-    uint32_t reportDataSize)
+    const uint8_t* report_data,
+    uint32_t report_data_size)
 {
     oe_report_t parsedReport = {0};
     OE_TEST(oe_parse_report(reportBuffer, reportSize, &parsedReport) == OE_OK);
 
-    return (Memcmp(parsedReport.reportData, reportData, reportDataSize) == 0);
+    return (
+        Memcmp(parsedReport.report_data, report_data, report_data_size) == 0);
 }
 #endif
 
@@ -70,8 +71,8 @@ static void ValidateReport(
     uint8_t* reportBuffer,
     uint32_t reportSize,
     bool remote,
-    const uint8_t* reportData,
-    uint32_t reportDataSize)
+    const uint8_t* report_data,
+    uint32_t report_data_size)
 {
     sgx_quote_t* sgxQuote = NULL;
     sgx_report_t* sgxReport = NULL;
@@ -84,7 +85,8 @@ static void ValidateReport(
 
     /* Validate header. */
     OE_TEST(parsedReport.type == OE_ENCLAVE_TYPE_SGX);
-    OE_TEST(Memcmp(parsedReport.reportData, reportData, reportDataSize) == 0);
+    OE_TEST(
+        Memcmp(parsedReport.report_data, report_data, report_data_size) == 0);
 
     /* Validate pointer fields. */
     if (remote)
@@ -93,25 +95,27 @@ static void ValidateReport(
         OE_TEST(reportSize >= sizeof(sgx_quote_t));
 
         OE_TEST(
-            parsedReport.reportData == sgxQuote->report_body.reportData.field);
-        OE_TEST(parsedReport.reportDataSize == sizeof(sgx_report_data_t));
-        OE_TEST(parsedReport.enclaveReport == (uint8_t*)&sgxQuote->report_body);
-        OE_TEST(parsedReport.enclaveReportSize == sizeof(sgx_report_body_t));
+            parsedReport.report_data ==
+            sgxQuote->report_body.report_data.field);
+        OE_TEST(parsedReport.report_data_size == sizeof(sgx_report_data_t));
+        OE_TEST(
+            parsedReport.enclave_report == (uint8_t*)&sgxQuote->report_body);
+        OE_TEST(parsedReport.enclave_report_size == sizeof(sgx_report_body_t));
     }
     else
     {
         OE_TEST(reportSize == sizeof(sgx_report_t));
         sgxReport = (sgx_report_t*)reportBuffer;
 
-        OE_TEST(parsedReport.reportData == sgxReport->body.reportData.field);
-        OE_TEST(parsedReport.reportDataSize == sizeof(sgx_report_data_t));
-        OE_TEST(parsedReport.enclaveReport == (uint8_t*)&sgxReport->body);
-        OE_TEST(parsedReport.enclaveReportSize == sizeof(sgx_report_body_t));
+        OE_TEST(parsedReport.report_data == sgxReport->body.report_data.field);
+        OE_TEST(parsedReport.report_data_size == sizeof(sgx_report_data_t));
+        OE_TEST(parsedReport.enclave_report == (uint8_t*)&sgxReport->body);
+        OE_TEST(parsedReport.enclave_report_size == sizeof(sgx_report_body_t));
     }
 
     /* Validate identity. */
-    OE_TEST(parsedReport.identity.idVersion == 0x0);
-    OE_TEST(parsedReport.identity.securityVersion == 0x0);
+    OE_TEST(parsedReport.identity.id_version == 0x0);
+    OE_TEST(parsedReport.identity.security_version == 0x0);
 
     OE_TEST(parsedReport.identity.attributes & OE_REPORT_ATTRIBUTES_DEBUG);
 
@@ -126,39 +130,40 @@ static void ValidateReport(
     {
         Memcpy(
             g_UniqueID,
-            parsedReport.identity.uniqueID,
-            sizeof(parsedReport.identity.uniqueID));
+            parsedReport.identity.unique_id,
+            sizeof(parsedReport.identity.unique_id));
 
         firstTime = false;
     }
 
     OE_TEST(
         Memcmp(
-            parsedReport.identity.uniqueID,
+            parsedReport.identity.unique_id,
             g_UniqueID,
-            sizeof(parsedReport.identity.uniqueID)) == 0);
+            sizeof(parsedReport.identity.unique_id)) == 0);
 
     OE_TEST(
         Memcmp(
-            parsedReport.identity.authorID,
+            parsedReport.identity.author_id,
             g_AuthorID,
-            sizeof(parsedReport.identity.authorID)) == 0);
+            sizeof(parsedReport.identity.author_id)) == 0);
 
     OE_TEST(
         Memcmp(
-            parsedReport.identity.productID,
+            parsedReport.identity.product_id,
             g_ProductID,
-            sizeof(parsedReport.identity.productID)) == 0);
+            sizeof(parsedReport.identity.product_id)) == 0);
 }
 
 TEST_FCN void TestLocalReport(void* args_)
 {
     sgx_target_info_t* targetInfo = (sgx_target_info_t*)args_;
+
 #ifdef OE_BUILD_ENCLAVE
-    uint32_t reportDataSize = 0;
-    uint8_t reportData[OE_REPORT_DATA_SIZE];
+    uint32_t report_data_size = 0;
+    uint8_t report_data[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
-        reportData[i] = i;
+        report_data[i] = i;
 #endif
 
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
@@ -200,12 +205,12 @@ TEST_FCN void TestLocalReport(void* args_)
         }
 
         reportSize = 1024 * 1024;
-        reportDataSize = 16;
+        report_data_size = 16;
         OE_TEST(
             GetReport(
                 0,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -213,21 +218,23 @@ TEST_FCN void TestLocalReport(void* args_)
         if (expectedResult == OE_OK)
         {
             ValidateReport(
-                reportBuffer, reportSize, false, reportData, reportDataSize);
+                reportBuffer, reportSize, false, report_data, report_data_size);
 
             OE_TEST(
                 CheckReportData(
-                    reportBuffer, reportSize, reportData, reportDataSize + 1) ==
-                false);
+                    reportBuffer,
+                    reportSize,
+                    report_data,
+                    report_data_size + 1) == false);
         }
 
         reportSize = 1024 * 1024;
-        reportDataSize = OE_REPORT_DATA_SIZE;
+        report_data_size = OE_REPORT_DATA_SIZE;
         OE_TEST(
             GetReport(
                 0,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -236,22 +243,22 @@ TEST_FCN void TestLocalReport(void* args_)
         if (expectedResult == OE_OK)
         {
             ValidateReport(
-                reportBuffer, reportSize, false, reportData, reportDataSize);
+                reportBuffer, reportSize, false, report_data, report_data_size);
         }
 
         reportSize = 1024 * 1024;
-        reportDataSize = OE_REPORT_DATA_SIZE + 1;
+        report_data_size = OE_REPORT_DATA_SIZE + 1;
         OE_TEST(
             GetReport(
                 0,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
                 &reportSize) == OE_INVALID_PARAMETER);
     }
-#endif // End of reportData scenarios
+#endif // End of report_data scenarios
 
     /*
      * optParams scenarios:
@@ -334,10 +341,10 @@ TEST_FCN void TestLocalReport(void* args_)
 TEST_FCN void TestRemoteReport(void* args_)
 {
 #ifdef OE_BUILD_ENCLAVE
-    uint32_t reportDataSize = 0;
-    uint8_t reportData[OE_REPORT_DATA_SIZE];
+    uint32_t report_data_size = 0;
+    uint8_t report_data[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
-        reportData[i] = i;
+        report_data[i] = i;
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 #endif
 
@@ -374,12 +381,12 @@ TEST_FCN void TestRemoteReport(void* args_)
             reportBuffer, reportSize, true, zeros, OE_REPORT_DATA_SIZE);
 
         reportSize = sizeof(reportBuffer);
-        reportDataSize = 16;
+        report_data_size = 16;
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -387,20 +394,22 @@ TEST_FCN void TestRemoteReport(void* args_)
         if (expectedResult == OE_OK)
         {
             ValidateReport(
-                reportBuffer, reportSize, true, reportData, reportDataSize);
+                reportBuffer, reportSize, true, report_data, report_data_size);
             OE_TEST(
                 CheckReportData(
-                    reportBuffer, reportSize, reportData, reportDataSize + 1) ==
-                false);
+                    reportBuffer,
+                    reportSize,
+                    report_data,
+                    report_data_size + 1) == false);
         }
 
         reportSize = sizeof(reportBuffer);
-        reportDataSize = OE_REPORT_DATA_SIZE;
+        report_data_size = OE_REPORT_DATA_SIZE;
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -408,16 +417,16 @@ TEST_FCN void TestRemoteReport(void* args_)
         if (expectedResult == OE_OK)
         {
             ValidateReport(
-                reportBuffer, reportSize, true, reportData, reportDataSize);
+                reportBuffer, reportSize, true, report_data, report_data_size);
         }
 
         reportSize = sizeof(reportBuffer);
-        reportDataSize = OE_REPORT_DATA_SIZE + 1;
+        report_data_size = OE_REPORT_DATA_SIZE + 1;
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -535,10 +544,10 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
     uint32_t reportSize = sizeof(report);
     sgx_target_info_t* tamperedTargetInfo = NULL;
 
-    uint8_t reportData[sizeof(sgx_report_data_t)];
-    for (uint32_t i = 0; i < sizeof(reportData); ++i)
+    uint8_t report_data[sizeof(sgx_report_data_t)];
+    for (uint32_t i = 0; i < sizeof(report_data); ++i)
     {
-        reportData[i] = i;
+        report_data[i] = i;
     }
 
     GetSGXTargetInfo((sgx_target_info_t*)targetInfo);
@@ -555,8 +564,8 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
     OE_TEST(
         GetReport(
             0,
-            reportData,
-            sizeof(reportData),
+            report_data,
+            sizeof(report_data),
             targetInfo,
             targetInfoSize,
             report,
@@ -567,8 +576,8 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
     OE_TEST(
         GetReport(
             0,
-            reportData,
-            sizeof(reportData) / 2,
+            report_data,
+            sizeof(report_data) / 2,
             targetInfo,
             targetInfoSize,
             report,
@@ -595,12 +604,12 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
     uint32_t reportSize = sizeof(reportBuffer);
 
 #if OE_BUILD_ENCLAVE
-    uint8_t reportData[sizeof(sgx_report_data_t)];
-    uint32_t reportDataSize = sizeof(reportData);
+    uint8_t report_data[sizeof(sgx_report_data_t)];
+    uint32_t report_data_size = sizeof(report_data);
 
-    for (uint32_t i = 0; i < sizeof(reportData); ++i)
+    for (uint32_t i = 0; i < sizeof(report_data); ++i)
     {
-        reportData[i] = i;
+        report_data[i] = i;
     }
 #endif
 
@@ -622,12 +631,12 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
 
 #if OE_BUILD_ENCLAVE
         reportSize = sizeof(reportBuffer);
-        reportDataSize = 16;
+        report_data_size = 16;
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,
@@ -635,12 +644,12 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
         OE_TEST(VerifyReport(reportBuffer, reportSize, NULL) == OE_OK);
 
         reportSize = sizeof(reportBuffer);
-        reportDataSize = OE_REPORT_DATA_SIZE;
+        report_data_size = OE_REPORT_DATA_SIZE;
         OE_TEST(
             GetReport(
                 flags,
-                reportData,
-                reportDataSize,
+                report_data,
+                report_data_size,
                 NULL,
                 0,
                 reportBuffer,

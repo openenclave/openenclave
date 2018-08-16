@@ -20,6 +20,7 @@ add_library(oecore STATIC
     malloc.c
     memory.c
     once.c
+    properties.c
     result.c
     report.c
     sbrk.c
@@ -28,6 +29,7 @@ add_library(oecore STATIC
     string.c
     td.c
     thread.c
+    time.c
     enter.S
     exit.S
     getkey.S

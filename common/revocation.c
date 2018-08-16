@@ -3,7 +3,6 @@
 // #define OE_TRACE_LEVEL 2
 
 #include "revocation.h"
-#include <openenclave/bits/thread.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
@@ -17,6 +16,7 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/sha.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "tcbinfo.h"

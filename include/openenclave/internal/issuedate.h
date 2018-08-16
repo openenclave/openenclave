@@ -27,8 +27,6 @@ typedef struct _oe_issue_date
     uint32_t seconds;
 } oe_issue_date_t;
 
-OE_CHECK_SIZE(sizeof(oe_issue_date_t), 24);
-
 /**
  * Checked whether the given issue date is a valid date time.
  */
