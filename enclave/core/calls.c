@@ -296,7 +296,7 @@ static void _HandleECall(
                           func != OE_ECALL_DESTRUCTOR))
     {
         /* reentrancy not permitted. */
-        result = OE_INVALID_REENTRANT_ECALL;
+        result = OE_REENTRANT_ECALL;
         goto done;
     }
 

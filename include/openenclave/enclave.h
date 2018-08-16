@@ -80,14 +80,15 @@ oe_result_t oe_remove_vectored_exception_handler(
  * The meaning of the **args** parameter is defined by the implementer of the
  * function and may be null.
  *
- * This function is implemented using the low-level oe_ecall() interface
+ * This function is implemented using the low-level oe_ocall() interface
  * where the function number is given by the **OE_OCALL_CALL_HOST** constant.
  *
  * Note that the return value of this function only indicates the success of
  * the call and not of the underlying function. The OCALL implementation must
  * define its own error reporting scheme based on **args**.
  *
- * The host is not allowed to call back into the enclave in the same thread.
+ * While handling the OCALL, the host is not allowed to make an ECALL back into
+ * the enclave. A re-entrant ECALL will fail and return OE_REENTRANT_ECALL.
  *
  * @param func The name of the enclave function that will be called.
  * @param args The arguments to be passed to the enclave function.

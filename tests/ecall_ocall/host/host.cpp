@@ -89,6 +89,11 @@ struct EnclaveWrap
         return m_Enclaves[Id];
     }
 
+    static size_t Count()
+    {
+        return m_Enclaves.size();
+    }
+
   private:
     unsigned m_Id;
     const void* m_EnclaveBase;
@@ -276,6 +281,64 @@ static void TestExecutionParallel(
     }
 }
 
+OE_OCALL void CrossEnclaveCall(CrossEnclaveCallArg* arg)
+{
+    if (arg->enclaveId < EnclaveWrap::Count())
+    {
+        // Forward the call to the next enclave.
+        OE_TEST(
+            oe_call_enclave(
+                EnclaveWrap::Get(arg->enclaveId), "EncCrossEnclaveCall", arg) ==
+            OE_OK);
+    }
+    else
+    {
+        // Launch threads to set factor for each enclave.
+        for (size_t i = 0; i < EnclaveWrap::Count(); ++i)
+        {
+            std::thread t([i]() {
+                OE_TEST(
+                    oe_call_enclave(
+                        EnclaveWrap::Get(i), "EncSetFactor", (void*)(i + 1)) ==
+                    OE_OK);
+            });
+            t.join();
+        }
+    }
+}
+
+// Test scenarios where ocall from one enclave calls into another
+// enclave. Each enclave computes its result by multiplying
+// the input value by a factor. Each enclave calls the next enclave
+// (via host) with incremented input value and adds its own result to
+// the result computed by the next enclave.
+// All the factors are initially zero.
+// When all the enclaves are executing ocalls, separate threads are
+// launched that set the factors in each of the enclaves.
+// This tests the scenario that when one enclave thread is blocked in
+// an ocall, other enclave threads can process ecalls.
+static void TestCrossEnclaveCalls()
+{
+    CrossEnclaveCallArg arg = {
+        0, // start with first enclave
+        8, // input value
+        0, // output value.
+    };
+
+    uint32_t expected_output = 0;
+    for (size_t i = 0; i < EnclaveWrap::Count(); ++i)
+    {
+        expected_output += (arg.input + i) * (i + 1);
+    }
+
+    OE_TEST(
+        oe_call_enclave(EnclaveWrap::Get(0), "EncCrossEnclaveCall", &arg) ==
+        OE_OK);
+    OE_TEST(arg.output == expected_output);
+
+    printf("=== TestCrossEnclaveCalls passed\n");
+}
+
 int main(int argc, const char* argv[])
 {
     if (argc != 2)
@@ -312,9 +375,12 @@ int main(int argc, const char* argv[])
     // verify threads execute in parallel across enclaves
     TestExecutionParallel({enc1.GetId(), enc2.GetId()}, THREAD_COUNT);
 
-    // Parallel across enclaves. Leave one thread unused to stir things, add
-    // yet another enclave.
+    // Verify enclaves calling each other via the host.
+    // Creat 5 enclaves.
     EnclaveWrap enc3(argv[1], flags);
+    EnclaveWrap enc4(argv[1], flags);
+    EnclaveWrap enc5(argv[1], flags);
+    TestCrossEnclaveCalls();
 
     return 0;
 }

@@ -138,3 +138,23 @@ OE_ECALL void EncTestCallHostFunction(void* Args_)
 
     argsHost->result = oe_call_host(args.functionName, NULL);
 }
+
+size_t Factor = 0;
+
+OE_ECALL void EncCrossEnclaveCall(CrossEnclaveCallArg* arg)
+{
+    uint32_t myInput = arg->input;
+
+    // Call next enclave via host.
+    ++arg->input;
+    ++arg->enclaveId;
+    OE_TEST(oe_call_host("CrossEnclaveCall", arg) == OE_OK);
+
+    // augment result with my result.
+    arg->output += myInput * Factor;
+}
+
+OE_ECALL void EncSetFactor(void* arg)
+{
+    Factor = (size_t)arg;
+}
