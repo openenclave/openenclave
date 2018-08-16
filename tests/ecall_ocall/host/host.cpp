@@ -293,9 +293,17 @@ OE_OCALL void CrossEnclaveCall(CrossEnclaveCallArg* arg)
     }
     else
     {
-        // Launch threads to set factor for each enclave.
+        // All enclaves are currently blocked on OCALLs
+        // in the main thread (this thread).
+        // Ecalls from current thread should faile.
+        // But Ecalls from another thread should succeed.
         for (size_t i = 0; i < EnclaveWrap::Count(); ++i)
         {
+            OE_TEST(
+                oe_call_enclave(
+                    EnclaveWrap::Get(i), "EncSetFactor", (void*)(i + 1)) ==
+                OE_REENTRANT_ECALL);
+
             std::thread t([i]() {
                 OE_TEST(
                     oe_call_enclave(
