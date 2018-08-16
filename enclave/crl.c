@@ -79,30 +79,6 @@ done:
     return result;
 }
 
-oe_result_t oe_crl_get_next_update_date(
-    const oe_crl_t* crl,
-    oe_issue_date_t* issue_date)
-{
-    oe_result_t result = OE_UNEXPECTED;
-    crl_t* impl = (crl_t*)crl;
-
-    /* Check the parameter */
-    if (!crl_is_valid(impl) || issue_date == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    issue_date->year = impl->crl->next_update.year;
-    issue_date->month = impl->crl->next_update.mon;
-    issue_date->day = impl->crl->next_update.day;
-
-    issue_date->hours = impl->crl->next_update.hour;
-    issue_date->minutes = impl->crl->next_update.min;
-    issue_date->seconds = impl->crl->next_update.sec;
-
-    result = OE_OK;
-done:
-    return result;
-}
-
 oe_result_t oe_crl_free(oe_crl_t* crl)
 {
     oe_result_t result = OE_UNEXPECTED;

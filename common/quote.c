@@ -3,9 +3,9 @@
 #include "quote.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
+#include <openenclave/internal/datetime.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/issuedate.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
