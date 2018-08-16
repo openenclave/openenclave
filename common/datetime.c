@@ -4,6 +4,8 @@
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/raise.h>
 
+#define UNIX_EPOCH_YEAR (1970)
+
 oe_result_t oe_datetime_is_valid(const oe_datetime_t* datetime)
 {
     oe_result_t result = OE_FAILURE;
@@ -16,7 +18,7 @@ oe_result_t oe_datetime_is_valid(const oe_datetime_t* datetime)
 
     // Validate the datetime.
     // Check against unix epoch time (Jan 1, 1970)
-    if (datetime->year < 1970)
+    if (datetime->year < UNIX_EPOCH_YEAR)
         OE_RAISE(OE_INVALID_UTC_DATE_TIME);
 
     // Check month and day validity
@@ -77,7 +79,7 @@ oe_result_t oe_datetime_is_valid(const oe_datetime_t* datetime)
     if (!valid_day)
         OE_RAISE(OE_INVALID_UTC_DATE_TIME);
 
-    // Check hour, minutes, seconts
+    // Check hour, minutes, seconds
     if (datetime->hours >= 24 || datetime->minutes >= 60 ||
         datetime->seconds >= 60)
         OE_RAISE(OE_INVALID_UTC_DATE_TIME);

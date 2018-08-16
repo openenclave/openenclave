@@ -88,17 +88,22 @@ OE_ECALL void TestIso861Time(void*)
     // Unless divisible by 400.
     TestPositive(oe_datetime_t{2000, 2, 29, 0, 0, 0}, "2000-02-29T00:00:00Z");
 
+    // hours, minutes and seconds are zero based.
+    // Maximum possible value of hours, minutes and seconds.
+    TestPositive(
+        oe_datetime_t{2000, 2, 29, 23, 59, 59}, "2000-02-29T23:59:59Z");
+
     oe_host_printf("TestIso861Time passed\n");
 }
 
 OE_ECALL void TestIso861TimeNegative(void*)
 {
-    // Year before unix epoh 1970.
+    // Year before unix epoch 1970.
     TestNegative(oe_datetime_t{1969, 8, 8, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
 
     // Zero and 13 months
     TestNegative(oe_datetime_t{2018, 0, 8, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
-    TestNegative(oe_datetime_t{2018, 0, 13, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
+    TestNegative(oe_datetime_t{2018, 13, 8, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
 
     // Invalid hour, minutes, seconds.
     TestNegative(oe_datetime_t{2018, 8, 8, 24, 0, 0}, OE_INVALID_UTC_DATE_TIME);
@@ -124,11 +129,22 @@ OE_ECALL void TestIso861TimeNegative(void*)
     // Normally Feb has max 28 days.
     TestNegative(oe_datetime_t{2018, 2, 29, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
 
-    // An year divisible by 4 and 100 is not a leap year.
+    // Zero day test.
+    TestNegative(oe_datetime_t{2018, 2, 0, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
+
+    // A year divisible by 4 and 100 is not a leap year.
     TestNegative(oe_datetime_t{2100, 2, 29, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
 
     // Unless divisible by 400
     TestNegative(oe_datetime_t{2000, 2, 30, 0, 0, 0}, OE_INVALID_UTC_DATE_TIME);
+
+    // Invalid hours, minutes, seconds.
+    TestNegative(
+        oe_datetime_t{2000, 2, 29, 24, 0, 0}, OE_INVALID_UTC_DATE_TIME);
+    TestNegative(
+        oe_datetime_t{2000, 2, 29, 0, 60, 0}, OE_INVALID_UTC_DATE_TIME);
+    TestNegative(
+        oe_datetime_t{2000, 2, 29, 0, 0, 60}, OE_INVALID_UTC_DATE_TIME);
 
     oe_host_printf("TestIso861TimeNegative passed\n");
 }
