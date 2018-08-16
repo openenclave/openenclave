@@ -43,6 +43,9 @@ BUILD_TYPE="DEBUG"
 ENABLE_LIBC_TESTS="OFF"
 #Enable full Libcxx tests. Default is disabled, enable with setting to "On" or "0"
 ENABLE_LIBCXX_TESTS="OFF"
+#Build a package. Default is disabled
+BUILD_PACKAGE=0
+OE_INSTALL_DIR="/opt/openenclave"
 
 #Parse the command line - keep looping as long as there is at least one more argument
 while [[ $# -gt 0 ]]; do
@@ -51,6 +54,10 @@ while [[ $# -gt 0 ]]; do
         # This is a flag type option. Will catch either -d or --disable_sim
         -d|--disable_sim)
         DISABLE_SIM=1
+        ;;
+        # This is a flag type option. Will catch either -d or --disable_sim
+        --build_package)
+        BUILD_PACKAGE=1
         ;;
         # This is an arg value type option. Will catch -p value or --platform_mode value
         -p|--platform_mode)
@@ -108,7 +115,10 @@ cd build
 
 CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
-   CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_LIBSGX=1"
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_LIBSGX=1"
+fi
+if [ ${BUILD_PACKAGE} = 1 ]; then
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX:PATH=${OE_INSTALL_DIR} -DCPACK_GENERATOR=DEB"
 fi
 echo "CMAKE_FLAGS are ${CMAKE_FLAGS}"
 
@@ -144,7 +154,8 @@ if [ "$?" != "0" ]; then
     exit 1
 fi
 
-
-
-
-
+if [ ${BUILD_PACKAGE} = 1 ]; then
+    echo "Building package"
+    echo ""
+    make package
+fi
