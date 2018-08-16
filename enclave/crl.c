@@ -99,17 +99,17 @@ done:
 
 oe_result_t oe_crl_get_update_dates(
     const oe_crl_t* crl,
-    oe_date_t* last,
-    oe_date_t* next)
+    oe_datetime_t* last,
+    oe_datetime_t* next)
 {
     oe_result_t result = OE_UNEXPECTED;
     const crl_t* impl = (const crl_t*)crl;
 
     if (last)
-        oe_memset(last, 0, sizeof(oe_date_t));
+        oe_memset(last, 0, sizeof(oe_datetime_t));
 
     if (next)
-        oe_memset(next, 0, sizeof(oe_date_t));
+        oe_memset(next, 0, sizeof(oe_datetime_t));
 
     if (!crl_is_valid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);

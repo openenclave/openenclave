@@ -95,15 +95,16 @@ done:
     return result;
 }
 
-/* Parse a string into a oe_date_t: example: "May 30 10:23:42 2018 GMT" */
-static oe_result_t _string_to_date(const char* str, oe_date_t* date)
+// Parse a string into a oe_datetime_t: example: "May 30 10:23:42 2018 GMT".
+// This format is specific to OpenSSL: produced by ASN1_TIME_print().
+static oe_result_t _string_to_date(const char* str, oe_datetime_t* date)
 {
     oe_result_t result = OE_UNEXPECTED;
     char month[4];
 
-    memset(date, 0, sizeof(oe_date_t));
+    memset(date, 0, sizeof(oe_datetime_t));
 
-    /* Convert the string to oe_date_t struct */
+    /* Convert the string to oe_datetime_t struct */
     if (sscanf(
             str,
             "%3s %02u %02u:%02u:%02u %04u",
@@ -153,7 +154,9 @@ done:
     return result;
 }
 
-static oe_result_t _asn1_time_to_date(const ASN1_TIME* time, oe_date_t* date)
+static oe_result_t _asn1_time_to_date(
+    const ASN1_TIME* time,
+    oe_datetime_t* date)
 {
     oe_result_t result = OE_UNEXPECTED;
     struct tm;
@@ -187,17 +190,17 @@ done:
 
 oe_result_t oe_crl_get_update_dates(
     const oe_crl_t* crl,
-    oe_date_t* last,
-    oe_date_t* next)
+    oe_datetime_t* last,
+    oe_datetime_t* next)
 {
     oe_result_t result = OE_UNEXPECTED;
     const crl_t* impl = (const crl_t*)crl;
 
     if (last)
-        memset(last, 0, sizeof(oe_date_t));
+        memset(last, 0, sizeof(oe_datetime_t));
 
     if (next)
-        memset(next, 0, sizeof(oe_date_t));
+        memset(next, 0, sizeof(oe_datetime_t));
 
     if (!crl_is_valid(impl))
         OE_RAISE(OE_INVALID_PARAMETER);
