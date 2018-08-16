@@ -50,6 +50,9 @@ void oe_debug_malloc_dump(void);
 /* Print trace of memory still in use. Return number of blocks allocated. */
 size_t oe_debug_malloc_check(void);
 
+/* If true, oe_debug_malloc_check() is not called on enclave termination. */
+extern bool oe_disable_debug_malloc_check;
+
 OE_EXTERNC_END
 
 #endif /* _OE_MALLOC_H */

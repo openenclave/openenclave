@@ -316,7 +316,7 @@ static void _HandleECall(
 #if defined(OE_USE_DEBUG_MALLOC)
 
             /* If memory still allocated, print a trace and return an error */
-            if (oe_debug_malloc_check() != 0)
+            if (!oe_disable_debug_malloc_check && oe_debug_malloc_check() != 0)
                 result = OE_MEMORY_LEAK;
 
 #endif /* defined(OE_USE_DEBUG_MALLOC) */
