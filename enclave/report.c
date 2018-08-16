@@ -109,8 +109,11 @@ static oe_result_t _SafeCopyVerifyReportArgs(
     oe_verify_report_args_t* unsafeArg = (oe_verify_report_args_t*)argIn;
 
     if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)) ||
-        buffer == NULL)
+        !buffer)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Always set output.
+    *buffer = NULL;
 
     // Copy arg to prevent TOCTOU issues.
     oe_secure_memcpy(safeArg, unsafeArg, sizeof(*safeArg));
@@ -122,6 +125,7 @@ static oe_result_t _SafeCopyVerifyReportArgs(
     if (safeArg->reportSize > OE_MAX_REPORT_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    // Caller is expected to free the allocated buffer.
     *buffer = oe_calloc(1, safeArg->reportSize);
     if (*buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);

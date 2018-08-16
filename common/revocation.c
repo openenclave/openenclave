@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-// #define OE_TRACE_LEVEL 2
 
 #include "revocation.h"
 #include <openenclave/enclave.h>
@@ -25,6 +24,25 @@
 
 // Defaults to Intel SGX 1.8 Release Date.
 oe_datetime_t _sgx_minimim_crl_tcb_issue_date = {2017, 3, 17};
+
+oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(
+    uint32_t year,
+    uint32_t month,
+    uint32_t day,
+    uint32_t hours,
+    uint32_t minutes,
+    uint32_t seconds)
+{
+    oe_result_t result = OE_FAILURE;
+    oe_datetime_t tmp = {year, month, day, hours, minutes, seconds};
+
+    OE_CHECK(oe_datetime_is_valid(&tmp));
+    _sgx_minimim_crl_tcb_issue_date = tmp;
+
+    result = OE_OK;
+done:
+    return result;
+}
 
 /**
  * Parse sgx extensions from given cert.
