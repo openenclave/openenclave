@@ -6,7 +6,7 @@
 
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
-#include <openenclave/internal/date.h>
+#include <openenclave/internal/datetime.h>
 
 OE_EXTERNC_BEGIN
 
@@ -53,13 +53,14 @@ oe_result_t oe_crl_free(oe_crl_t* crl);
  * (after which this CRL should be considered invalid).
  *
  * @param crl the handle of a CRL.
- * @param last the date when the CRL was last updated.
- * @param next the date at which this CRL should be considered invalid.
+ * @param last the date when the CRL was last updated (may be null).
+ * @param next the date at which this CRL should be considered invalid
+ *        (may be null).
  */
 oe_result_t oe_crl_get_update_dates(
     const oe_crl_t* crl,
-    oe_date_t* last,
-    oe_date_t* next);
+    oe_datetime_t* last,
+    oe_datetime_t* next);
 
 OE_EXTERNC_END
 

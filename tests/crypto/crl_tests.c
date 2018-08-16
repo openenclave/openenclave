@@ -149,8 +149,8 @@ static void _test_get_dates(void)
 
     OE_TEST(oe_crl_read_der(&crl, _CRL, sizeof(_CRL)) == OE_OK);
 
-    oe_date_t last;
-    oe_date_t next;
+    oe_datetime_t last;
+    oe_datetime_t next;
     OE_TEST(oe_crl_get_update_dates(&crl, &last, &next) == OE_OK);
 
     OE_TEST(last.year == 2018);
