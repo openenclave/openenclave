@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 add_executable(ecall_ocall_host
-    ../crc32.cpp
     host.cpp
     )
 target_compile_options(ecall_ocall_host PRIVATE
