@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-//#define OE_TRACE_LEVEL 2
 
 #include "revocation.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/crl.h>
+#include <openenclave/internal/datetime.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
@@ -15,10 +15,34 @@
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/sha.h>
+#include <openenclave/internal/thread.h>
+#include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "tcbinfo.h"
 
 #ifdef OE_USE_LIBSGX
+
+// Defaults to Intel SGX 1.8 Release Date.
+oe_datetime_t _sgx_minimim_crl_tcb_issue_date = {2017, 3, 17};
+
+oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(
+    uint32_t year,
+    uint32_t month,
+    uint32_t day,
+    uint32_t hours,
+    uint32_t minutes,
+    uint32_t seconds)
+{
+    oe_result_t result = OE_FAILURE;
+    oe_datetime_t tmp = {year, month, day, hours, minutes, seconds};
+
+    OE_CHECK(oe_datetime_is_valid(&tmp));
+    _sgx_minimim_crl_tcb_issue_date = tmp;
+
+    result = OE_OK;
+done:
+    return result;
+}
 
 /**
  * Parse sgx extensions from given cert.
@@ -249,6 +273,16 @@ done:
     return result;
 }
 
+static void _datetime_trace(const char* msg, const oe_datetime_t* date)
+{
+#if (OE_TRACE_LEVEL == OE_TRACE_LEVEL_INFO)
+    char str[21];
+    size_t size = sizeof(str);
+    oe_datetime_to_string(date, str, &size);
+    OE_TRACE_INFO("%s%s\n", msg, str);
+#endif
+}
+
 oe_result_t oe_enforce_revocation(
     oe_cert_t* leaf_cert,
     oe_cert_t* intermediate_cert,
@@ -265,6 +299,9 @@ oe_result_t oe_enforce_revocation(
     char* intermediate_crl_url = NULL;
     char* leaf_crl_url = NULL;
     oe_crl_t crls[2] = {{{0}}};
+    oe_datetime_t tcb_info_issue_date = {0};
+    oe_datetime_t crl_this_update_date = {0};
+    oe_datetime_t crl_next_update_date = {0};
 
     if (intermediate_cert == NULL || leaf_cert == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
@@ -345,6 +382,40 @@ oe_result_t oe_enforce_revocation(
             parsed_tcb_info.tcb_info_size,
             (sgx_ecdsa256_signature_t*)parsed_tcb_info.signature,
             &tcb_issuer_chain));
+
+    // Check that the tcb has been issued after the earliest date that the
+    // enclave accepts.
+    OE_CHECK(
+        oe_datetime_from_string(
+            (char*)parsed_tcb_info.issue_date,
+            parsed_tcb_info.issue_date_size,
+            &tcb_info_issue_date));
+    if (oe_datetime_compare(
+            &tcb_info_issue_date, &_sgx_minimim_crl_tcb_issue_date) != 1)
+        OE_RAISE(OE_INVALID_REVOCATION_INFO);
+
+    // Check that the CRLs have not expired.
+    // The next update of the CRL must be after the earliest date that
+    // the enclave accepts.
+    for (uint32_t i = 0; i < OE_COUNTOF(crls); ++i)
+    {
+        OE_CHECK(
+            oe_crl_get_update_dates(
+                &crls[0], &crl_this_update_date, &crl_next_update_date));
+
+        _datetime_trace("crl this update date ", &crl_this_update_date);
+        _datetime_trace("crl next update date ", &crl_next_update_date);
+
+        // CRL must be issued after minimum date.
+        if (oe_datetime_compare(
+                &crl_this_update_date, &_sgx_minimim_crl_tcb_issue_date) != 1)
+            OE_RAISE(OE_INVALID_REVOCATION_INFO);
+
+        // Also check that next update date is after minimum date.
+        if (oe_datetime_compare(
+                &crl_next_update_date, &_sgx_minimim_crl_tcb_issue_date) != 1)
+            OE_RAISE(OE_INVALID_REVOCATION_INFO);
+    }
 
     result = OE_OK;
 

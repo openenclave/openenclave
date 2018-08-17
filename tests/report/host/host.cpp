@@ -64,6 +64,11 @@ int main(int argc, const char* argv[])
 
 #ifdef OE_USE_LIBSGX
     TestRemoteVerifyReport(NULL);
+
+    OE_TEST(oe_call_enclave(enclave, "TestIso861Time", NULL) == OE_OK);
+
+    OE_TEST(oe_call_enclave(enclave, "TestIso861TimeNegative", NULL) == OE_OK);
+
 #endif
 
     /*

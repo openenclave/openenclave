@@ -89,6 +89,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_QUOTE_PROVIDER_ERROR";
         case OE_INVALID_REVOCATION_INFO:
             return "OE_INVALID_REVOCATION_INFO";
+        case OE_INVALID_UTC_DATE_TIME:
+            return "OE_INVALID_UTC_DATE_TIME";
         case __OE_RESULT_MAX:
             break;
     }

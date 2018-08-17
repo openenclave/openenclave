@@ -41,9 +41,8 @@ done:
 }
 
 // oe_verify_report needs crypto library's cmac computation. oecore does not
-// have
-// crypto functionality. Hence oe_verify report is implemented here instead of
-// in oecore. Also see ECall_HandleVerifyReport below.
+// have crypto functionality. Hence oe_verify report is implemented here instead
+// of in oecore. Also see ECall_HandleVerifyReport below.
 oe_result_t oe_verify_report(
     const uint8_t* report,
     uint32_t reportSize,
@@ -104,13 +103,17 @@ done:
 static oe_result_t _SafeCopyVerifyReportArgs(
     uint64_t argIn,
     oe_verify_report_args_t* safeArg,
-    uint8_t* reportBuffer)
+    uint8_t** buffer)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_verify_report_args_t* unsafeArg = (oe_verify_report_args_t*)argIn;
 
-    if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)))
+    if (!unsafeArg || !oe_is_outside_enclave(unsafeArg, sizeof(*unsafeArg)) ||
+        !buffer)
         OE_RAISE(OE_INVALID_PARAMETER);
+
+    // Always set output.
+    *buffer = NULL;
 
     // Copy arg to prevent TOCTOU issues.
     oe_secure_memcpy(safeArg, unsafeArg, sizeof(*safeArg));
@@ -122,12 +125,16 @@ static oe_result_t _SafeCopyVerifyReportArgs(
     if (safeArg->reportSize > OE_MAX_REPORT_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
 
+    // Caller is expected to free the allocated buffer.
+    *buffer = oe_calloc(1, safeArg->reportSize);
+    if (*buffer == NULL)
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
     // Copy report to prevent TOCTOU issues.
-    oe_secure_memcpy(reportBuffer, safeArg->report, safeArg->reportSize);
-    safeArg->report = reportBuffer;
+    oe_secure_memcpy(*buffer, safeArg->report, safeArg->reportSize);
+    safeArg->report = *buffer;
 
     result = OE_OK;
-
 done:
     return result;
 }
@@ -156,16 +163,16 @@ void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_verify_report_args_t arg;
-    uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
+    uint8_t* buffer = NULL;
 
-    OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, reportBuffer));
+    OE_CHECK(_SafeCopyVerifyReportArgs(argIn, &arg, &buffer));
 
-    OE_CHECK(oe_verify_report(reportBuffer, arg.reportSize, NULL));
+    OE_CHECK(oe_verify_report(arg.report, arg.reportSize, NULL));
 
     // success.
     result = OE_OK;
-
 done:
     arg.result = result;
     _SafeCopyVerifyReportArgsOuput(&arg, argIn);
+    oe_free(buffer);
 }
