@@ -56,7 +56,7 @@ while [[ $# -gt 0 ]]; do
         -d|--disable_sim)
         DISABLE_SIM=1
         ;;
-        # This is a flag type option. Will catch either -d or --disable_sim
+        # This is a flag type option. Will catch --build_package
         --build_package)
         BUILD_PACKAGE=1
         ;;
