@@ -96,3 +96,47 @@ oe_result_t oe_crl_free(oe_crl_t* crl)
 done:
     return result;
 }
+
+oe_result_t oe_crl_get_update_dates(
+    const oe_crl_t* crl,
+    oe_datetime_t* last,
+    oe_datetime_t* next)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    const crl_t* impl = (const crl_t*)crl;
+
+    if (last)
+        oe_memset(last, 0, sizeof(oe_datetime_t));
+
+    if (next)
+        oe_memset(next, 0, sizeof(oe_datetime_t));
+
+    if (!crl_is_valid(impl))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (last)
+    {
+        last->year = impl->crl->this_update.year;
+        last->month = impl->crl->this_update.mon;
+        last->day = impl->crl->this_update.day;
+        last->hours = impl->crl->this_update.hour;
+        last->minutes = impl->crl->this_update.min;
+        last->seconds = impl->crl->this_update.sec;
+    }
+
+    if (next)
+    {
+        next->year = impl->crl->next_update.year;
+        next->month = impl->crl->next_update.mon;
+        next->day = impl->crl->next_update.day;
+        next->hours = impl->crl->next_update.hour;
+        next->minutes = impl->crl->next_update.min;
+        next->seconds = impl->crl->next_update.sec;
+    }
+
+    result = OE_OK;
+
+done:
+
+    return result;
+}
