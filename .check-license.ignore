@@ -72,4 +72,4 @@ VERSION
 ./tests/libunwind/tests.all
 ./tests/libunwind/tests.supported
 ./tests/libunwind/tests.unsupported
-Jenkinsfile
+*Jenkinsfile
