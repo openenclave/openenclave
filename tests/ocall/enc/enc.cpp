@@ -7,6 +7,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/thread.h>
 #include "../args.h"
 
 OE_ECALL void Test2(void* args_)
@@ -118,7 +119,7 @@ OE_ECALL void TestMyOCall(void* args_)
 
     /* Test low-level OCALL of illegal function number */
     {
-        oe_result_t result = oe_ocall(0xffff, 0, NULL, 0);
+        oe_result_t result = oe_ocall(0xffff, 0, NULL);
         OE_TEST(result == OE_NOT_FOUND);
     }
 }
@@ -142,4 +143,12 @@ OE_ECALL void TestOCallEdgeCases(void* args_)
     /* OCALL doesn't exist. */
     result = oe_call_host("B", NULL);
     OE_TEST(result == OE_NOT_FOUND);
+}
+
+OE_ECALL void TestReentrancy(void* args)
+{
+    oe_result_t result;
+
+    result = oe_call_host("TestReentrancy", NULL);
+    OE_TEST(result == OE_OK);
 }

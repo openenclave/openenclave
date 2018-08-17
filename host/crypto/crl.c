@@ -2,12 +2,15 @@
 // Licensed under the MIT License.
 
 #include "crl.h"
+#include <limits.h>
 #include <openenclave/internal/crl.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openssl/asn1.h>
 #include <openssl/x509.h>
 #include <string.h>
+#include <time.h>
 
 /* Randomly generated magic number */
 #define OE_CRL_MAGIC 0xe8c993b1cca24906
@@ -89,5 +92,142 @@ oe_result_t oe_crl_free(oe_crl_t* crl)
     result = OE_OK;
 
 done:
+    return result;
+}
+
+// Parse a string into a oe_datetime_t: example: "May 30 10:23:42 2018 GMT".
+// This format is specific to OpenSSL: produced by ASN1_TIME_print().
+static oe_result_t _string_to_date(const char* str, oe_datetime_t* date)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    char month[4];
+
+    memset(date, 0, sizeof(oe_datetime_t));
+
+    /* Convert the string to oe_datetime_t struct */
+    if (sscanf(
+            str,
+            "%3s %02u %02u:%02u:%02u %04u",
+            month,
+            &date->day,
+            &date->hours,
+            &date->minutes,
+            &date->seconds,
+            &date->year) != 6)
+    {
+        OE_RAISE(OE_FAILURE);
+    }
+
+    /* Convert the month string to integer */
+    {
+        static const char* _month[] = {"Jan",
+                                       "Feb",
+                                       "Mar",
+                                       "Apr",
+                                       "May",
+                                       "Jun",
+                                       "Jul",
+                                       "Aug",
+                                       "Sep",
+                                       "Oct",
+                                       "Nov",
+                                       "Dec"};
+
+        date->month = UINT_MAX;
+
+        for (uint32_t i = 0; i < OE_COUNTOF(_month); i++)
+        {
+            if (strncmp(month, _month[i], 3) == 0)
+            {
+                date->month = i + 1;
+                break;
+            }
+        }
+
+        if (date->month == UINT_MAX)
+            OE_RAISE(OE_FAILURE);
+    }
+
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+static oe_result_t _asn1_time_to_date(
+    const ASN1_TIME* time,
+    oe_datetime_t* date)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    struct tm;
+    BIO* bio = NULL;
+    BUF_MEM* mem;
+    const char null_terminator = '\0';
+
+    if (!(bio = BIO_new(BIO_s_mem())))
+        OE_RAISE(OE_FAILURE);
+
+    if (!ASN1_TIME_print(bio, time))
+        OE_RAISE(OE_FAILURE);
+
+    if (!BIO_get_mem_ptr(bio, &mem))
+        OE_RAISE(OE_FAILURE);
+
+    if (BIO_write(bio, &null_terminator, sizeof(null_terminator)) <= 0)
+        OE_RAISE(OE_FAILURE);
+
+    OE_CHECK(_string_to_date(mem->data, date));
+
+    result = OE_OK;
+
+done:
+
+    if (bio)
+        BIO_free(bio);
+
+    return result;
+}
+
+oe_result_t oe_crl_get_update_dates(
+    const oe_crl_t* crl,
+    oe_datetime_t* last,
+    oe_datetime_t* next)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    const crl_t* impl = (const crl_t*)crl;
+
+    if (last)
+        memset(last, 0, sizeof(oe_datetime_t));
+
+    if (next)
+        memset(next, 0, sizeof(oe_datetime_t));
+
+    if (!crl_is_valid(impl))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (last)
+    {
+        ASN1_TIME* time;
+
+        if (!(time = X509_CRL_get_lastUpdate(impl->crl)))
+            OE_RAISE(OE_FAILURE);
+
+        OE_CHECK(_asn1_time_to_date(time, last));
+    }
+
+    if (next)
+    {
+        ASN1_TIME* time;
+
+        if (!(time = X509_CRL_get_nextUpdate(impl->crl)))
+            OE_RAISE(OE_FAILURE);
+
+        OE_CHECK(_asn1_time_to_date(time, next));
+    }
+
+    result = OE_OK;
+
+done:
+
     return result;
 }

@@ -34,9 +34,6 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
                     unsigned long *segbase, unsigned long *mapoff,
                     char *path, size_t pathlen)
 {
-#ifdef OPEN_ENCLAVE
-  return -1;
-#else
   struct map_iterator mi;
   int found = 0, rc;
   unsigned long hi;
@@ -63,5 +60,4 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   rc = elf_map_image (ei, mi.path);
   maps_close (&mi);
   return rc;
-#endif
 }

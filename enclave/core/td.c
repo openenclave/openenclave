@@ -230,9 +230,6 @@ void TD_Init(TD* td)
 
         /* List of callsites is initially empty */
         td->callsites = NULL;
-
-        /* by default, ECalls are not restricted. */
-        td->ocall_flags = 0;
     }
 }
 

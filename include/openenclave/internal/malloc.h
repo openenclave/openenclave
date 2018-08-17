@@ -50,6 +50,21 @@ void oe_debug_malloc_dump(void);
 /* Print trace of memory still in use. Return number of blocks allocated. */
 size_t oe_debug_malloc_check(void);
 
+//
+// If true, oe_debug_malloc_check() is not called on enclave termination.
+// To use this mechanism in an enclave:
+//
+//     #include <openenclave/internal/malloc.h>
+//     .
+//     .
+//     .
+//     oe_disable_debug_malloc_check = true;
+//
+// The variable must be set prior to enclave termination so it is best to
+// set it as soon as the enclave is entered.
+//
+extern bool oe_disable_debug_malloc_check;
+
 OE_EXTERNC_END
 
 #endif /* _OE_MALLOC_H */
