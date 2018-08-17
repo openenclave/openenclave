@@ -3,7 +3,6 @@
 
 include(add_enclave_executable)
 add_enclave_executable(ecall_ocall_enc sign.conf private.pem
-    ../crc32.cpp
     enc.cpp
     )
 

@@ -30,9 +30,6 @@ typedef void (*oe_ocall_function)(uint64_t argIn, uint64_t* argOut);
 **==============================================================================
 */
 
-/* Disallow OCALLs to call back into enclave with an ECALL */
-#define OE_OCALL_FLAG_NOT_REENTRANT (1u << 0)
-
 /*
 **==============================================================================
 **
@@ -360,8 +357,6 @@ oe_result_t oe_ecall(
  * @param func The number of the function to be called.
  * @param argIn The input argument passed to the function.
  * @param argOut The output argument passed back from the function.
- * @param ocall_flags Additional flags for the duration of this ocall, such as
- *              OE_OCALL_FLAG_NOT_REENTRANT.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -370,11 +365,7 @@ oe_result_t oe_ecall(
  * @retval OE_UNEXPECTED An unexpected error occurred.
  *
  */
-oe_result_t oe_ocall(
-    uint16_t func,
-    uint64_t argIn,
-    uint64_t* argOut,
-    uint16_t ocall_flags);
+oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut);
 
 OE_EXTERNC_END
 

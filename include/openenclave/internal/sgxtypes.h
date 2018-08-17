@@ -584,11 +584,8 @@ typedef struct _TD
     /* Linux error number: from <errno.h> */
     int linux_errno;
 
-    /* Currently active ocall flags */
-    uint16_t ocall_flags;
-
     /* Reserved */
-    uint8_t reserved[3834];
+    uint8_t reserved[3836];
 } TD;
 OE_PACK_END
 
