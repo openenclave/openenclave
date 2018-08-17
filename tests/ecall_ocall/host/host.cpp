@@ -295,7 +295,7 @@ OE_OCALL void CrossEnclaveCall(CrossEnclaveCallArg* arg)
     {
         // All enclaves are currently blocked on OCALLs
         // in the main thread (this thread).
-        // Ecalls from current thread should faile.
+        // Ecalls from current thread should fail.
         // But Ecalls from another thread should succeed.
         for (size_t i = 0; i < EnclaveWrap::Count(); ++i)
         {
@@ -342,6 +342,7 @@ static void TestCrossEnclaveCalls()
     OE_TEST(
         oe_call_enclave(EnclaveWrap::Get(0), "EncCrossEnclaveCall", &arg) ==
         OE_OK);
+    printf("arg.output=%u, expected_output=%u\n", arg.output, expected_output);
     OE_TEST(arg.output == expected_output);
 
     printf("=== TestCrossEnclaveCalls passed\n");
@@ -384,7 +385,7 @@ int main(int argc, const char* argv[])
     TestExecutionParallel({enc1.GetId(), enc2.GetId()}, THREAD_COUNT);
 
     // Verify enclaves calling each other via the host.
-    // Creat 5 enclaves.
+    // Create 5 enclaves.
     EnclaveWrap enc3(argv[1], flags);
     EnclaveWrap enc4(argv[1], flags);
     EnclaveWrap enc5(argv[1], flags);
