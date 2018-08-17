@@ -24,6 +24,7 @@ if [ "$1" == "-h" ]; then
    echo "        -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
    echo "        -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
    echo "        -h Display usage and exit"
+   echo "        --build_package Build a .deb package after testing"
    echo " Default is to build for SGX1 platform, Debug Build type & test in"
    echo " simulator mode"
    echo ""
