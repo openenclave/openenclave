@@ -12,7 +12,7 @@ pipeline {
           }
           steps {
             sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --build_package'
-            azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: '${BUILD_NUMBER}/SGX1FLC/', containerName: 'oejenkins')
+            azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/SGX1FLC/', containerName: 'oejenkins')
           }
         }
         stage('SGX1 Package') {
@@ -24,7 +24,7 @@ pipeline {
           }
           steps {
             sh 'bash ./scripts/test-build-config -p SGX1 -b Debug --build_package'
-            azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: '${BUILD_NUMBER}/SGX1/', containerName: 'oejenkins')
+            azureUpload(storageCredentialId: 'oejenkinsciartifacts_storageaccount', filesPath: 'build/*.deb', storageType: 'blobstorage', virtualPath: 'master/${BUILD_NUMBER}/SGX1/', containerName: 'oejenkins')
           }
         }
       }
