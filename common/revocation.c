@@ -268,7 +268,7 @@ done:
     return result;
 }
 
-static void _datetime_trace(const char* msg, const oe_datetime_t* date)
+static void _trace_datetime(const char* msg, const oe_datetime_t* date)
 {
 #if (OE_TRACE_LEVEL == OE_TRACE_LEVEL_INFO)
     char str[21];
@@ -398,8 +398,8 @@ oe_result_t oe_enforce_revocation(
             oe_crl_get_update_dates(
                 &crls[0], &crl_this_update_date, &crl_next_update_date));
 
-        _datetime_trace("crl this update date ", &crl_this_update_date);
-        _datetime_trace("crl next update date ", &crl_next_update_date);
+        _trace_datetime("crl this update date ", &crl_this_update_date);
+        _trace_datetime("crl next update date ", &crl_next_update_date);
 
         // CRL must be issued after minimum date.
         if (oe_datetime_compare(
