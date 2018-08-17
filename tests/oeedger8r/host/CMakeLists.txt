@@ -7,6 +7,7 @@
 add_custom_command(
     OUTPUT edge_function_implementations
 
+    COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../array.edl
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../basic.edl
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../string.edl
     COMMAND touch edge_function_implementations
@@ -25,6 +26,7 @@ add_custom_target(
 
 add_executable(edl_host 
     main.cpp
+    testarray.cpp
     testbasic.cpp
     teststring.cpp
 )

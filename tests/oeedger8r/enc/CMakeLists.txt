@@ -7,6 +7,7 @@
 add_custom_command(
     OUTPUT edge_function_implementations
 
+    COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../array.edl
     COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../basic.edl
     COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../string.edl
     COMMAND touch edge_function_implementations
@@ -26,6 +27,7 @@ add_custom_target(
 include(add_enclave_executable)
 
 add_enclave_executable(edl_enc sign.conf private.pem
+    testarray.cpp
     testbasic.cpp  
     teststring.cpp
     )
@@ -37,4 +39,4 @@ add_dependencies(edl_enc run_oeedger8r_trusted)
 target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(edl_enc PRIVATE -std=c++11)
 
-target_link_libraries(edl_enc oeenclave)
+target_link_libraries(edl_enc oelibcxx oeenclave)

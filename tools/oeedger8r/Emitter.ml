@@ -316,10 +316,6 @@ let oe_gen_arg_check_macro(os : out_channel) =
   fprintf os "         __result = OE_INVALID_PARAMETER;              \\\n";
   fprintf os "         goto done;                                    \\\n";
   fprintf os "     }                                                 \\\n";
-  fprintf os "     if (host_ptr == NULL && size != 0) {              \\\n";
-  fprintf os "         __result = OE_INVALID_PARAMETER;              \\\n";
-  fprintf os "         goto done;                                    \\\n";
-  fprintf os "     }                                                 \\\n"; 
   fprintf os "     enc_ptr = NULL;                                   \\\n"; 
   fprintf os "     if (host_ptr) {                                   \\\n";
   fprintf os "         *(void**)&enc_ptr = malloc(size);             \\\n";
@@ -375,7 +371,8 @@ let oe_gen_free_buffers (os:out_channel) (fd: Ast.func_decl) =
     match ptype with
       | Ast.PTPtr (atype, ptr_attr) ->
           if ptr_attr.Ast.pa_chkptr then
-            fprintf os "    free (enc_args.%s); \n" decl.Ast.identifier            
+            (fprintf os "    if (enc_args.%s)\n" decl.Ast.identifier;
+             fprintf os "        free (enc_args.%s); \n" decl.Ast.identifier)            
           else ()
       | _ -> () (* Non pointer arguments *)    
   in 
@@ -390,7 +387,8 @@ let oe_gen_copy_outputs (os:out_channel) (fd: Ast.func_decl) =
           if ptr_attr.Ast.pa_chkptr then
             match ptr_attr.Ast.pa_direction with
             Ast.PtrOut | Ast.PtrInOut -> 
-              fprintf os "    memcpy(args.%s, enc_args.%s, %s);\n"
+              fprintf os "    if (args.%s)\n" decl.Ast.identifier;
+              fprintf os "        memcpy(args.%s, enc_args.%s, %s);\n"
                 decl.Ast.identifier
                 decl.Ast.identifier
                 (oe_get_param_size (ptype, decl, "enc_args."))              
