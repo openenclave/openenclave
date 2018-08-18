@@ -273,7 +273,7 @@ static oe_host_func_t _FindHostFunc(const char* name)
 **==============================================================================
 */
 
-static void _HandleCallHost(uint64_t arg)
+static void _HandleCallHost(oe_enclave_t* enclave, uint64_t arg)
 {
     oe_call_host_args_t* args = (oe_call_host_args_t*)arg;
     oe_host_func_t func;
@@ -291,7 +291,7 @@ static void _HandleCallHost(uint64_t arg)
     }
 
     /* Invoke the function */
-    func(args->args);
+    func(args->args, enclave);
 
     args->result = OE_OK;
 }
@@ -314,6 +314,7 @@ static oe_result_t _HandleOCALL(
     uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
+    bool pushed_enclave = false;
 
     if (!enclave || !tcs)
         OE_THROW(OE_INVALID_PARAMETER);
@@ -321,10 +322,14 @@ static oe_result_t _HandleOCALL(
     if (argOut)
         *argOut = 0;
 
+    /* Push onto enclave instance stack for this thread */
+    OE_TRY(oe_push_enclave(enclave));
+    pushed_enclave = true;
+
     switch ((oe_func_t)func)
     {
         case OE_OCALL_CALL_HOST:
-            _HandleCallHost(argIn);
+            _HandleCallHost(enclave, argIn);
             break;
 
         case OE_OCALL_MALLOC:
@@ -404,6 +409,10 @@ static oe_result_t _HandleOCALL(
     result = OE_OK;
 
 OE_CATCH:
+
+    if (pushed_enclave)
+        oe_pop_enclave(NULL);
+
     return result;
 }
 

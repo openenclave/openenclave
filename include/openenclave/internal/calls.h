@@ -203,12 +203,43 @@ typedef struct oe_call_enclave_args_t
 /*
 **==============================================================================
 **
-** oe_call_host_args_t
+** oe_host_func_t:
+**
+**     The oe_call_host() enclave function is dispatched to a host function
+**     with the following prototype. 
+**
+**         OE_OCALL void (*)(void* args, oe_enclave_t* enclave);
+**
+**     Host-application developers may legally omit one or more parameters, and 
+**     therefore define functions with the following prototypes (where the last
+**     is the maximal form).
+**
+**         OE_OCALL void (*)(void);
+**         OE_OCALL void (*)(void* args);
+**         OE_OCALL void (*)(void* args, oe_enclave_t* enclave);
+**
+**     This pattern is common in the C language where the following forms of 
+**     main() are prevalent.
+**
+**         int main(void);
+**         int main(int argc, char* argv[]);
+**         int main(int argc, char* argv[], char* envp[]);
+**
+**     In this case the _start() function passes all parameters but the main()
+**     prototype may omit parameters from right to left.
 **
 **==============================================================================
 */
 
-typedef void (*oe_host_func_t)(void* args);
+typedef void (*oe_host_func_t)(void* args, oe_enclave_t* enclave);
+
+/*
+**==============================================================================
+**
+** oe_call_host_args_t
+**
+**==============================================================================
+*/
 
 typedef struct oe_call_host_args_t
 {

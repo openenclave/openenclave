@@ -32,9 +32,8 @@ int EnclaveSecureStrPatching(
 
 int UnsecureStrPatching(const char* src, char* dst, int dstLength);
 
-OE_OCALL oe_result_t UnsecureStrPatching(void* data)
+OE_OCALL void UnsecureStrPatching(void* data)
 {
     SecureStrPatchingARGS* args = (SecureStrPatchingARGS*)data;
     args->ret = UnsecureStrPatching(args->src, args->dst, args->dstLength);
-    return OE_OK;
 }
