@@ -86,6 +86,7 @@ int main(int argc, const char* argv[])
 
     oe_terminate_enclave(enclave_1);
     oe_terminate_enclave(enclave_2);
+    oe_terminate_enclave(enclave_3);
 
     OE_TEST(called_callback_1 == 1);
     OE_TEST(called_callback_2 == 1);

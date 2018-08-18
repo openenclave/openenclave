@@ -11,13 +11,10 @@
 #include "../../../host/strings.h"
 #include "../args.h"
 
-static oe_enclave_t* _enclave;
-
-OE_OCALL void Echo(void* args_, oe_enclave_t* enclave)
+OE_OCALL void Echo(void* args_)
 {
     EchoArgs* args = (EchoArgs*)args_;
 
-    OE_TEST(enclave == _enclave);
     OE_TEST(strcmp(args->str1, "oe_host_stack_strdup1") == 0);
     OE_TEST(strcmp(args->str2, "oe_host_stack_strdup2") == 0);
     OE_TEST(strcmp(args->str3, "oe_host_stack_strdup3") == 0);
@@ -47,9 +44,6 @@ int main(int argc, const char* argv[])
     if ((result = oe_create_enclave(
              argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave)) != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
-
-    /* Save so that Echo() can access this pointer */
-    _enclave = enclave;
 
     EchoArgs args;
     memset(&args, 0, sizeof(args));
