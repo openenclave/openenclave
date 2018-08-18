@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
 
 /* Stubs needed to compile the libcxxrt library */
@@ -24,20 +25,20 @@ int __libcxxrt_sched_yield(void)
 
 void* __libcxxrt_malloc(size_t size)
 {
-    return dlmalloc(size);
+    return malloc(size);
 }
 
 void __libcxxrt_free(void* ptr)
 {
-    return dlfree(ptr);
+    return free(ptr);
 }
 
 void* __libcxxrt_calloc(size_t nmemb, size_t size)
 {
-    return dlcalloc(nmemb, size);
+    return calloc(nmemb, size);
 }
 
 void* __libcxxrt_realloc(void* ptr, size_t size)
 {
-    return dlrealloc(ptr, size);
+    return realloc(ptr, size);
 }
