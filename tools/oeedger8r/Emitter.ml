@@ -520,8 +520,9 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
   gen_fill_marshal_struct os fd "__args";
   
   fprintf os "    /* Update size of buffer to allocate in host. */\n";
-  iter_ptr_params (fun (ptype, decl, _) ->
-    fprintf os "    __host_buffer_size += %s; \n" (oe_get_param_size (ptype, decl, "__args."))
+  iter_ptr_params (fun (ptype, decl, attr) ->
+    if attr.Ast.pa_chkptr then
+      fprintf os "    __host_buffer_size += %s; \n" (oe_get_param_size (ptype, decl, "__args."))
   ) fd.Ast.plist;
 
   fprintf os "\n    /* Allocate host buffer and copy inputs to host. */\n";
@@ -533,11 +534,11 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "    /* Copy buffer fields to host. */\n";
   iter_ptr_params ( fun (ptype, decl, attr) -> 
     let varname = decl.Ast.identifier in 
-    if attr.Ast.pa_isstr then 
+    if attr.Ast.pa_isstr && attr.Ast.pa_chkptr then 
       fprintf os "    OE_COPY_TO_HOST(__args.%s, %s, __args.%s_len*sizeof(char));\n" varname varname varname
-    else if attr.Ast.pa_iswstr then
+    else if attr.Ast.pa_iswstr && attr.Ast.pa_chkptr then
       fprintf os "    OE_COPY_TO_HOST(__args.%s, %s, __args.%s_len*sizeof(wchar_t));\n" varname varname varname
-    else
+    else if attr.Ast.pa_chkptr then
       fprintf os "    OE_COPY_TO_HOST(__args.%s, %s, %s);\n" varname varname (oe_get_param_size (ptype, decl, "__args.") )
   ) fd.Ast.plist;
 
@@ -558,7 +559,9 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
       | Ast.PtrOut | Ast.PtrInOut ->
           let varname = decl.Ast.identifier in
           let size = oe_get_param_size (ptype, decl, "__args.") in
-          fprintf os "    OE_COPY_FROM_HOST(%s, __host_args.%s, %s);\n" varname varname size
+          if attr.Ast.pa_chkptr then
+            fprintf os "    OE_COPY_FROM_HOST(%s, __host_args.%s, %s);\n" varname varname size
+          else ();
       | _ -> ()
   ) fd.Ast.plist;
   fprintf os "\n    /* successful ocall */\n";

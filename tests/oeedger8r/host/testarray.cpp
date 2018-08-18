@@ -48,7 +48,7 @@ void test_ecall_array_fun(oe_enclave_t* enclave, F ecall_array_fun)
         OE_TEST(memcmp(exp, a4, sizeof(a4)) == 0);
     }
 
-    init_arrays(a1, a2, a3, a4);
+    // Call with nulls.
     OE_TEST(ecall_array_fun(enclave, NULL, NULL, NULL, NULL) == OE_OK);
 }
 

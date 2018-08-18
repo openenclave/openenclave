@@ -7,13 +7,14 @@
 add_custom_command(
     OUTPUT edge_function_implementations
 
-    COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../array.edl
-    COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../basic.edl
-    COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../string.edl
+    COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/array.edl
+    COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/basic.edl
+    COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/pointer.edl
+    COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/string.edl
     COMMAND touch edge_function_implementations
     
     # Rerun if any edl file changes or the oeedger8r binary changes.
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.edl
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../edl/*.edl
     DEPENDS ${OE_BINDIR}/oeedger8r
 )
  
@@ -30,6 +31,7 @@ add_enclave_executable(edl_enc sign.conf private.pem
     testarray.cpp
     testbasic.cpp  
     teststring.cpp
+    testpointer.cpp
     )
 
 # Make edl_enc depend on edl files and outputs using 

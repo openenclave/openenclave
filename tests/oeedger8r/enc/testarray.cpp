@@ -10,7 +10,7 @@
 #include "array_t.c"
 
 template <typename T>
-void init_arrays(T (&a1)[2], T (&a2)[2][2], T (&a3)[3][3], T (&a4)[4][4])
+static void init_arrays(T (&a1)[2], T (&a2)[2][2], T (&a3)[3][3], T (&a4)[4][4])
 {
     for (size_t i = 0; i < 2; ++i)
         ((T*)a1)[i] = i + 1;
@@ -26,7 +26,7 @@ void init_arrays(T (&a1)[2], T (&a2)[2][2], T (&a3)[3][3], T (&a4)[4][4])
 }
 
 template <typename T, typename F>
-void test_ocall_array_fun(F ocall_array_fun)
+static void test_ocall_array_fun(F ocall_array_fun)
 {
     T a1[2];
     T a2[2][2];
@@ -51,7 +51,7 @@ void test_ocall_array_fun(F ocall_array_fun)
         OE_TEST(memcmp(exp, a4, sizeof(a4)) == 0);
     }
 
-    init_arrays(a1, a2, a3, a4);
+    // Call with nulls.
     OE_TEST(ocall_array_fun(NULL, NULL, NULL, NULL) == OE_OK);
 }
 
@@ -59,27 +59,27 @@ OE_ECALL void test_array_edl_ocalls(void*)
 {
     test_ocall_array_fun<char>(ocall_array_char);
     test_ocall_array_fun<short>(ocall_array_short);
-    // test_ocall_array_fun<int>(ocall_array_int);
-    // test_ocall_array_fun<float>(ocall_array_float);
-    // test_ocall_array_fun<double>(ocall_array_double);
-    // test_ocall_array_fun<long>(ocall_array_long);
-    // test_ocall_array_fun<size_t>(ocall_array_size_t);
-    // test_ocall_array_fun<unsigned>(ocall_array_unsigned);
-    // test_ocall_array_fun<int8_t>(ocall_array_int8_t);
-    // test_ocall_array_fun<int16_t>(ocall_array_int16_t);
-    // test_ocall_array_fun<int32_t>(ocall_array_int32_t);
-    // test_ocall_array_fun<int64_t>(ocall_array_int64_t);
-    // test_ocall_array_fun<uint8_t>(ocall_array_uint8_t);
-    // test_ocall_array_fun<uint16_t>(ocall_array_uint16_t);
-    // test_ocall_array_fun<uint32_t>(ocall_array_uint32_t);
-    // test_ocall_array_fun<uint64_t>(ocall_array_uint64_t);
+    test_ocall_array_fun<int>(ocall_array_int);
+    test_ocall_array_fun<float>(ocall_array_float);
+    test_ocall_array_fun<double>(ocall_array_double);
+    test_ocall_array_fun<long>(ocall_array_long);
+    test_ocall_array_fun<size_t>(ocall_array_size_t);
+    test_ocall_array_fun<unsigned>(ocall_array_unsigned);
+    test_ocall_array_fun<int8_t>(ocall_array_int8_t);
+    test_ocall_array_fun<int16_t>(ocall_array_int16_t);
+    test_ocall_array_fun<int32_t>(ocall_array_int32_t);
+    test_ocall_array_fun<int64_t>(ocall_array_int64_t);
+    test_ocall_array_fun<uint8_t>(ocall_array_uint8_t);
+    test_ocall_array_fun<uint16_t>(ocall_array_uint16_t);
+    test_ocall_array_fun<uint32_t>(ocall_array_uint32_t);
+    test_ocall_array_fun<uint64_t>(ocall_array_uint64_t);
 
-    // OE_TEST(oe_call_enclave("ocall_array_assert_all_called", NULL) == OE_OK);
+    OE_TEST(oe_call_host("ocall_array_assert_all_called", NULL) == OE_OK);
     printf("=== test_array_edl_ocalls passed\n");
 }
 
 template <typename T>
-void reverse(T* arr, size_t len)
+static void reverse(T* arr, size_t len)
 {
     for (size_t i = 0; i < len / 2; ++i)
         std::swap(arr[i], arr[len - 1 - i]);
@@ -88,7 +88,7 @@ void reverse(T* arr, size_t len)
 static int num_ecalls = 0;
 
 template <typename T>
-void ecall_array_fun_impl(T a1[2], T a2[2][2], T a3[3][3], T a4[4][4])
+static void ecall_array_fun_impl(T a1[2], T a2[2][2], T a3[3][3], T a4[4][4])
 {
     ++num_ecalls;
 

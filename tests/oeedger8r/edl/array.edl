@@ -2,9 +2,10 @@
 // Licensed under the MIT License.
 
 enclave  {
-    trusted {
+    trusted {        
         // Test in, in-out, out, user_check attributes.
         // Also check ability to pass NULL.
+        // Note: const keyword cannot be applied to arrays.
         public void ecall_array_char(
             [in] char a1[2],
             [in,out] char a2[2][2],

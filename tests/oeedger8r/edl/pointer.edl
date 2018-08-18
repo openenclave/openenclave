@@ -1,0 +1,650 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    trusted {
+
+        public char* ecall_pointer_char(
+            // No count or size, defaults to 1.
+            [in] char* p1,
+            [in,out] char* p2,
+            [out] char* p3,            
+
+            // count specified number of elements.
+            [in, count=16] char* p4,
+            [in,out, count=16] char* p5,
+            [out, count=16] char* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] char* p7,
+            [in, out, size=80] char* p8,
+            [in, size=80] char* p9,
+
+            // user handled.
+            [user_check] char* p10
+        );
+
+        public short* ecall_pointer_short(
+            // No count or size, defaults to 1.
+            [in] short* p1,
+            [in,out] short* p2,
+            [out] short* p3,            
+
+            // count specified number of elements.
+            [in, count=16] short* p4,
+            [in,out, count=16] short* p5,
+            [out, count=16] short* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] short* p7,
+            [in, out, size=80] short* p8,
+            [in, size=80] short* p9,
+
+            // user handled.
+            [user_check] short* p10
+        );
+
+        public int* ecall_pointer_int(
+            // No count or size, defaults to 1.
+            [in] int* p1,
+            [in,out] int* p2,
+            [out] int* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int* p4,
+            [in,out, count=16] int* p5,
+            [out, count=16] int* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int* p7,
+            [in, out, size=80] int* p8,
+            [in, size=80] int* p9,
+
+            // user handled.
+            [user_check] int* p10
+        );
+
+        public float* ecall_pointer_float(
+            // No count or size, defaults to 1.
+            [in] float* p1,
+            [in,out] float* p2,
+            [out] float* p3,            
+
+            // count specified number of elements.
+            [in, count=16] float* p4,
+            [in,out, count=16] float* p5,
+            [out, count=16] float* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] float* p7,
+            [in, out, size=80] float* p8,
+            [in, size=80] float* p9,
+
+            // user handled.
+            [user_check] float* p10
+        );
+
+        public double* ecall_pointer_double(
+            // No count or size, defaults to 1.
+            [in] double* p1,
+            [in,out] double* p2,
+            [out] double* p3,            
+
+            // count specified number of elements.
+            [in, count=16] double* p4,
+            [in,out, count=16] double* p5,
+            [out, count=16] double* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] double* p7,
+            [in, out, size=80] double* p8,
+            [in, size=80] double* p9,
+
+            // user handled.
+            [user_check] double* p10
+        );
+
+        public long* ecall_pointer_long(
+            // No count or size, defaults to 1.
+            [in] long* p1,
+            [in,out] long* p2,
+            [out] long* p3,            
+
+            // count specified number of elements.
+            [in, count=16] long* p4,
+            [in,out, count=16] long* p5,
+            [out, count=16] long* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] long* p7,
+            [in, out, size=80] long* p8,
+            [in, size=80] long* p9,
+
+            // user handled.
+            [user_check] long* p10
+        );
+
+        public size_t* ecall_pointer_size_t(
+            // No count or size, defaults to 1.
+            [in] size_t* p1,
+            [in,out] size_t* p2,
+            [out] size_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] size_t* p4,
+            [in,out, count=16] size_t* p5,
+            [out, count=16] size_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] size_t* p7,
+            [in, out, size=80] size_t* p8,
+            [in, size=80] size_t* p9,
+
+            // user handled.
+            [user_check] size_t* p10
+        );
+
+        public unsigned* ecall_pointer_unsigned(
+            // No count or size, defaults to 1.
+            [in] unsigned* p1,
+            [in,out] unsigned* p2,
+            [out] unsigned* p3,            
+
+            // count specified number of elements.
+            [in, count=16] unsigned* p4,
+            [in,out, count=16] unsigned* p5,
+            [out, count=16] unsigned* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned* p7,
+            [in, out, size=80] unsigned* p8,
+            [in, size=80] unsigned* p9,
+
+            // user handled.
+            [user_check] unsigned* p10
+        );
+
+        public int8_t* ecall_pointer_int8_t(
+            // No count or size, defaults to 1.
+            [in] int8_t* p1,
+            [in,out] int8_t* p2,
+            [out] int8_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int8_t* p4,
+            [in,out, count=16] int8_t* p5,
+            [out, count=16] int8_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int8_t* p7,
+            [in, out, size=80] int8_t* p8,
+            [in, size=80] int8_t* p9,
+
+            // user handled.
+            [user_check] int8_t* p10
+        );
+
+        public int16_t* ecall_pointer_int16_t(
+            // No count or size, defaults to 1.
+            [in] int16_t* p1,
+            [in,out] int16_t* p2,
+            [out] int16_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int16_t* p4,
+            [in,out, count=16] int16_t* p5,
+            [out, count=16] int16_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int16_t* p7,
+            [in, out, size=80] int16_t* p8,
+            [in, size=80] int16_t* p9,
+
+            // user handled.
+            [user_check] int16_t* p10
+        );
+
+        public int32_t* ecall_pointer_int32_t(
+            // No count or size, defaults to 1.
+            [in] int32_t* p1,
+            [in,out] int32_t* p2,
+            [out] int32_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int32_t* p4,
+            [in,out, count=16] int32_t* p5,
+            [out, count=16] int32_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int32_t* p7,
+            [in, out, size=80] int32_t* p8,
+            [in, size=80] int32_t* p9,
+
+            // user handled.
+            [user_check] int32_t* p10
+        );
+
+        public int64_t* ecall_pointer_int64_t(
+            // No count or size, defaults to 1.
+            [in] int64_t* p1,
+            [in,out] int64_t* p2,
+            [out] int64_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int64_t* p4,
+            [in,out, count=16] int64_t* p5,
+            [out, count=16] int64_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int64_t* p7,
+            [in, out, size=80] int64_t* p8,
+            [in, size=80] int64_t* p9,
+
+            // user handled.
+            [user_check] int64_t* p10
+        );
+
+        public uint8_t* ecall_pointer_uint8_t(
+            // No count or size, defaults to 1.
+            [in] uint8_t* p1,
+            [in,out] uint8_t* p2,
+            [out] uint8_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] uint8_t* p4,
+            [in,out, count=16] uint8_t* p5,
+            [out, count=16] uint8_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint8_t* p7,
+            [in, out, size=80] uint8_t* p8,
+            [in, size=80] uint8_t* p9,
+
+            // user handled.
+            [user_check] uint8_t* p10
+        );
+
+        public uint16_t* ecall_pointer_uint16_t(
+            // No count or size, defaults to 1.
+            [in] uint16_t* p1,
+            [in,out] uint16_t* p2,
+            [out] uint16_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] uint16_t* p4,
+            [in,out, count=16] uint16_t* p5,
+            [out, count=16] uint16_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint16_t* p7,
+            [in, out, size=80] uint16_t* p8,
+            [in, size=80] uint16_t* p9,
+
+            // user handled.
+            [user_check] uint16_t* p10
+        );
+
+        public uint32_t* ecall_pointer_uint32_t(
+            // No count or size, defaults to 1.
+            [in] uint32_t* p1,
+            [in,out] uint32_t* p2,
+            [out] uint32_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] uint32_t* p4,
+            [in,out, count=16] uint32_t* p5,
+            [out, count=16] uint32_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint32_t* p7,
+            [in, out, size=80] uint32_t* p8,
+            [in, size=80] uint32_t* p9,
+
+            // user handled.
+            [user_check] uint32_t* p10
+        );
+
+        public uint64_t* ecall_pointer_uint64_t(
+            // No count or size, defaults to 1.
+            [in] uint64_t* p1,
+            [in,out] uint64_t* p2,
+            [out] uint64_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] uint64_t* p4,
+            [in,out, count=16] uint64_t* p5,
+            [out, count=16] uint64_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint64_t* p7,
+            [in, out, size=80] uint64_t* p8,
+            [in, size=80] uint64_t* p9,
+
+            // user handled.
+            [user_check] uint64_t* p10
+        );                                                                                                                       
+    };
+
+    untrusted {
+
+        char* ocall_pointer_char(
+            // No count or size, defaults to 1.
+            [in] char* p1,
+            [in,out] char* p2,
+            [out] char* p3,            
+
+            // count specified number of elements.
+            [in, count=16] char* p4,
+            [in,out, count=16] char* p5,
+            [out, count=16] char* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] char* p7,
+            [in, out, size=80] char* p8,
+            [in, size=80] char* p9,
+
+            // user handled.
+            [user_check] char* p10
+        );
+
+        short* ocall_pointer_short(
+            // No count or size, defaults to 1.
+            [in] short* p1,
+            [in,out] short* p2,
+            [out] short* p3,            
+
+            // count specified number of elements.
+            [in, count=16] short* p4,
+            [in,out, count=16] short* p5,
+            [out, count=16] short* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] short* p7,
+            [in, out, size=80] short* p8,
+            [in, size=80] short* p9,
+
+            // user handled.
+            [user_check] short* p10
+        );
+
+        int* ocall_pointer_int(
+            // No count or size, defaults to 1.
+            [in] int* p1,
+            [in,out] int* p2,
+            [out] int* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int* p4,
+            [in,out, count=16] int* p5,
+            [out, count=16] int* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int* p7,
+            [in, out, size=80] int* p8,
+            [in, size=80] int* p9,
+
+            // user handled.
+            [user_check] int* p10
+        );
+
+        float* ocall_pointer_float(
+            // No count or size, defaults to 1.
+            [in] float* p1,
+            [in,out] float* p2,
+            [out] float* p3,            
+
+            // count specified number of elements.
+            [in, count=16] float* p4,
+            [in,out, count=16] float* p5,
+            [out, count=16] float* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] float* p7,
+            [in, out, size=80] float* p8,
+            [in, size=80] float* p9,
+
+            // user handled.
+            [user_check] float* p10
+        );
+
+        double* ocall_pointer_double(
+            // No count or size, defaults to 1.
+            [in] double* p1,
+            [in,out] double* p2,
+            [out] double* p3,            
+
+            // count specified number of elements.
+            [in, count=16] double* p4,
+            [in,out, count=16] double* p5,
+            [out, count=16] double* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] double* p7,
+            [in, out, size=80] double* p8,
+            [in, size=80] double* p9,
+
+            // user handled.
+            [user_check] double* p10
+        );
+
+        long* ocall_pointer_long(
+            // No count or size, defaults to 1.
+            [in] long* p1,
+            [in,out] long* p2,
+            [out] long* p3,            
+
+            // count specified number of elements.
+            [in, count=16] long* p4,
+            [in,out, count=16] long* p5,
+            [out, count=16] long* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] long* p7,
+            [in, out, size=80] long* p8,
+            [in, size=80] long* p9,
+
+            // user handled.
+            [user_check] long* p10
+        );
+
+        size_t* ocall_pointer_size_t(
+            // No count or size, defaults to 1.
+            [in] size_t* p1,
+            [in,out] size_t* p2,
+            [out] size_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] size_t* p4,
+            [in,out, count=16] size_t* p5,
+            [out, count=16] size_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] size_t* p7,
+            [in, out, size=80] size_t* p8,
+            [in, size=80] size_t* p9,
+
+            // user handled.
+            [user_check] size_t* p10
+        );
+
+        unsigned* ocall_pointer_unsigned(
+            // No count or size, defaults to 1.
+            [in] unsigned* p1,
+            [in,out] unsigned* p2,
+            [out] unsigned* p3,            
+
+            // count specified number of elements.
+            [in, count=16] unsigned* p4,
+            [in,out, count=16] unsigned* p5,
+            [out, count=16] unsigned* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] unsigned* p7,
+            [in, out, size=80] unsigned* p8,
+            [in, size=80] unsigned* p9,
+
+            // user handled.
+            [user_check] unsigned* p10
+        );
+
+        int8_t* ocall_pointer_int8_t(
+            // No count or size, defaults to 1.
+            [in] int8_t* p1,
+            [in,out] int8_t* p2,
+            [out] int8_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int8_t* p4,
+            [in,out, count=16] int8_t* p5,
+            [out, count=16] int8_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int8_t* p7,
+            [in, out, size=80] int8_t* p8,
+            [in, size=80] int8_t* p9,
+
+            // user handled.
+            [user_check] int8_t* p10
+        );
+
+        int16_t* ocall_pointer_int16_t(
+            // No count or size, defaults to 1.
+            [in] int16_t* p1,
+            [in,out] int16_t* p2,
+            [out] int16_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int16_t* p4,
+            [in,out, count=16] int16_t* p5,
+            [out, count=16] int16_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int16_t* p7,
+            [in, out, size=80] int16_t* p8,
+            [in, size=80] int16_t* p9,
+
+            // user handled.
+            [user_check] int16_t* p10
+        );
+
+        int32_t* ocall_pointer_int32_t(
+            // No count or size, defaults to 1.
+            [in] int32_t* p1,
+            [in,out] int32_t* p2,
+            [out] int32_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int32_t* p4,
+            [in,out, count=16] int32_t* p5,
+            [out, count=16] int32_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int32_t* p7,
+            [in, out, size=80] int32_t* p8,
+            [in, size=80] int32_t* p9,
+
+            // user handled.
+            [user_check] int32_t* p10
+        );
+
+        int64_t* ocall_pointer_int64_t(
+            // No count or size, defaults to 1.
+            [in] int64_t* p1,
+            [in,out] int64_t* p2,
+            [out] int64_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] int64_t* p4,
+            [in,out, count=16] int64_t* p5,
+            [out, count=16] int64_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] int64_t* p7,
+            [in, out, size=80] int64_t* p8,
+            [in, size=80] int64_t* p9,
+
+            // user handled.
+            [user_check] int64_t* p10
+        );
+
+        uint8_t* ocall_pointer_uint8_t(
+            // No count or size, defaults to 1.
+            [in] uint8_t* p1,
+            [in,out] uint8_t* p2,
+            [out] uint8_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] uint8_t* p4,
+            [in,out, count=16] uint8_t* p5,
+            [out, count=16] uint8_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint8_t* p7,
+            [in, out, size=80] uint8_t* p8,
+            [in, size=80] uint8_t* p9,
+
+            // user handled.
+            [user_check] uint8_t* p10
+        );
+
+        uint16_t* ocall_pointer_uint16_t(
+            // No count or size, defaults to 1.
+            [in] uint16_t* p1,
+            [in,out] uint16_t* p2,
+            [out] uint16_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] uint16_t* p4,
+            [in,out, count=16] uint16_t* p5,
+            [out, count=16] uint16_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint16_t* p7,
+            [in, out, size=80] uint16_t* p8,
+            [in, size=80] uint16_t* p9,
+
+            // user handled.
+            [user_check] uint16_t* p10
+        );
+
+        uint32_t* ocall_pointer_uint32_t(
+            // No count or size, defaults to 1.
+            [in] uint32_t* p1,
+            [in,out] uint32_t* p2,
+            [out] uint32_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] uint32_t* p4,
+            [in,out, count=16] uint32_t* p5,
+            [out, count=16] uint32_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint32_t* p7,
+            [in, out, size=80] uint32_t* p8,
+            [in, size=80] uint32_t* p9,
+
+            // user handled.
+            [user_check] uint32_t* p10
+        );
+
+        uint64_t* ocall_pointer_uint64_t(
+            // No count or size, defaults to 1.
+            [in] uint64_t* p1,
+            [in,out] uint64_t* p2,
+            [out] uint64_t* p3,            
+
+            // count specified number of elements.
+            [in, count=16] uint64_t* p4,
+            [in,out, count=16] uint64_t* p5,
+            [out, count=16] uint64_t* p6,
+
+            // size specifies size in bytes.
+            [in, size=80] uint64_t* p7,
+            [in, out, size=80] uint64_t* p8,
+            [in, size=80] uint64_t* p9,
+
+            // user handled.
+            [user_check] uint64_t* p10
+        );                                                                                                                       
+    };    
+};
