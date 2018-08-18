@@ -4,7 +4,8 @@
 add_subdirectory(host)
 
 if (UNIX)
-	add_subdirectory(enc)
+    add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/gethostenclave ./host gethostenclave_host ./enc gethostenclave_enc.signed.so)
+add_enclave_test(tests/gethostenclave 
+    ./host gethostenclave_host ./enc gethostenclave_enc.signed.so)

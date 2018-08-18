@@ -199,7 +199,7 @@ oe_result_t oe_verify_report(
     const uint8_t* report,
     uint32_t reportSize,
     oe_report_t* parsedReport);
-    
+
 /**
  * Gets the instance of the enclave that invoked the current OCALL.
  *
