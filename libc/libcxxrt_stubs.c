@@ -6,7 +6,6 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
 
 /* Stubs needed to compile the libcxxrt library */
