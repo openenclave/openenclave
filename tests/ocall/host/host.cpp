@@ -160,7 +160,6 @@ int main(int argc, const char* argv[])
         OE_TEST(_funcACalled);
     }
 
-<<<<<<< HEAD
     /* Test oe_call_host_by_address() by having enclave invoke host callback */
     {
         const uint64_t VALUE = 0xec39cae11f9b4e26;
@@ -174,7 +173,6 @@ int main(int argc, const char* argv[])
         OE_TEST(args.out == VALUE);
     }
 
-=======
     /* Call TestReentrancy() */
     {
         _enclave = enclave;
@@ -183,7 +181,7 @@ int main(int argc, const char* argv[])
         OE_TEST(result == OE_OK);
         OE_TEST(_reentrancyTested);
     }
->>>>>>> origin/master
+
     oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (%s)\n", argv[0]);
