@@ -95,7 +95,7 @@ oe_result_t oe_remove_vectored_exception_handler(
 oe_result_t oe_call_host(const char* func, void* args);
 
 /**
- * Perform a high-level enclave function call (OCALL).
+ * Perform a high-level host function call (OCALL).
  *
  * Call the host function whose address is given by the **func** parameter,
  * which is the address of a function defined in the host with the following
@@ -110,8 +110,8 @@ oe_result_t oe_call_host(const char* func, void* args);
  * the call and not of the underlying function. The OCALL implementation must
  * define its own error reporting scheme based on **args**.
  *
- * @param func The address of the enclave function that will be called.
- * @param args The arguments to be passed to the enclave function.
+ * @param func The address of the host function that will be called.
+ * @param args The arguments to be passed to the host function.
  *
  * @return OE_OK the call was successful.
  * @return OE_INVALID_PARAMETER a parameter is invalid.
