@@ -49,6 +49,25 @@ OE_OCALL void callback(void* arg)
         args->out = args->in;
 }
 
+static oe_enclave_t* _enclave = NULL;
+static bool _reentrancyTested = false;
+
+OE_OCALL void TestReentrancy(void*)
+{
+    oe_result_t result;
+
+    // misspelt functions are caught by the host.
+    result = oe_call_enclave(_enclave, "foobar", NULL);
+    OE_TEST(result == OE_NOT_FOUND);
+
+    // Valid function; but reentrant call.
+    result = oe_call_enclave(_enclave, "TestReentrancy", NULL);
+    printf("result ==== %s\n", oe_result_str(result));
+    OE_TEST(result == OE_REENTRANT_ECALL);
+
+    _reentrancyTested = true;
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -141,6 +160,7 @@ int main(int argc, const char* argv[])
         OE_TEST(_funcACalled);
     }
 
+<<<<<<< HEAD
     /* Test oe_call_host_by_address() by having enclave invoke host callback */
     {
         const uint64_t VALUE = 0xec39cae11f9b4e26;
@@ -154,6 +174,16 @@ int main(int argc, const char* argv[])
         OE_TEST(args.out == VALUE);
     }
 
+=======
+    /* Call TestReentrancy() */
+    {
+        _enclave = enclave;
+        oe_result_t result = oe_call_enclave(enclave, "TestReentrancy", NULL);
+
+        OE_TEST(result == OE_OK);
+        OE_TEST(_reentrancyTested);
+    }
+>>>>>>> origin/master
     oe_terminate_enclave(enclave);
 
     printf("=== passed all tests (%s)\n", argv[0]);

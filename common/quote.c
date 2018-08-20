@@ -3,11 +3,11 @@
 #include "quote.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
+#include <openenclave/internal/datetime.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
-#include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
@@ -252,7 +252,7 @@ oe_result_t VerifyQuoteImpl(
                 &quoteAuthData->qeReportBodySignature));
 
         // Assert SHA256 (attestationKey + qeAuthData.data) ==
-        // qeReportBody.reportData[0..32]
+        // qeReportBody.report_data[0..32]
         OE_CHECK(oe_sha256_init(&sha256Ctx));
         OE_CHECK(
             oe_sha256_update(
@@ -268,7 +268,7 @@ oe_result_t VerifyQuoteImpl(
 
         if (!oe_constant_time_mem_equal(
                 &sha256,
-                &quoteAuthData->qeReportBody.reportData,
+                &quoteAuthData->qeReportBody.report_data,
                 sizeof(sha256)))
             OE_RAISE(OE_VERIFY_FAILED);
 
@@ -340,7 +340,7 @@ oe_result_t VerifyQuoteImpl(
     OE_UNUSED(encTcbInfoJson);
     OE_UNUSED(encTcbInfoJsonSize);
 
-    return OE_UNIMPLEMENTED;
+    return OE_UNSUPPORTED;
 }
 
 #endif

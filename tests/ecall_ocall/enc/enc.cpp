@@ -7,11 +7,11 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h> // for __oe_get_enclave_base()
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <mutex>
 #include <system_error>
 #include "../args.h"
-#include "../crc32.h"
 #include "helpers.h"
 
 unsigned EnclaveId = ~0u;
@@ -109,110 +109,6 @@ OE_ECALL void EncParallelExecution(void* Args_)
     argsHost->result = OE_OK;
 }
 
-/*
-  Recursion across boundary:
-
-  Non-branched downwards recursion is simple, though want to avoid
-  tail-recursion. So force post-OCall-work. Verify local state is preserved,
-  across different recursion depths, and different degrees of parallelism.
-
-  Rough concept:
-  - hold some local (unique) state on the stack
-  - perform OCall/ECall, massaging passed data
-  - combine local state and returned data
-
-  Using a hash-function and a unique flow/thread-id:
-  - Outer function setting thread ID and start-value at host
-  - Obtain local data by hashing a tag (start/end/host/enclave), flow-ID,
-    recursion-level, and the current hash-value
-  - Recurse, extending the hash-state
-  - Then extend by local data and return the result
-
-  This can also be done in parallel and with deterministic results.
-
-  CRC32 as hash should suffice and has a simple-enough interface.
-*/
-OE_ECALL void EncRecursion(void* Args_)
-{
-    oe_result_t result = OE_OK;
-
-    if (!oe_is_outside_enclave(Args_, sizeof(EncRecursionArg)))
-        return;
-
-    EncRecursionArg* argsHost = (EncRecursionArg*)Args_;
-    EncRecursionArg args = *argsHost;
-
-    OE_TRACE_INFO(
-        "%s(): EnclaveId=%u/%u, Flow=%u, recLeft=%u, inCrc=%#x\n",
-        __FUNCTION__,
-        EnclaveId,
-        args.enclaveId,
-        args.flowId,
-        args.recursionsLeft,
-        args.crc);
-
-    if (args.initialCount)
-    {
-        if (unsigned oldFlowId = PerThreadFlowId.GetU())
-        {
-            printf(
-                "%s(): Starting flow=%u, though thread already has %u\n",
-                __FUNCTION__,
-                args.flowId,
-                oldFlowId);
-            return;
-        }
-        PerThreadFlowId.Set(args.flowId);
-    }
-
-    // catch initial state: Tag, Input-struct, EnclaveId, FlowId
-    args.crc = Crc32::Hash(
-        TAG_START_ENC,
-        args,
-        EnclaveId - args.enclaveId,
-        PerThreadFlowId.GetU() - args.flowId);
-    argsHost->crc = args.crc;
-
-    // recurse as needed, passing initial-state-crc as input
-    if (args.recursionsLeft)
-    {
-        if (args.initialCount)
-            argsHost->initialCount = args.initialCount - 1;
-        argsHost->recursionsLeft = args.recursionsLeft - 1;
-        result = oe_call_host("RecursionOcall", argsHost);
-    }
-
-    // double-check FlowId is still intact and clobber it
-    if (args.initialCount)
-    {
-        unsigned oldFlowId = PerThreadFlowId.GetU();
-        if (oldFlowId != args.flowId)
-        {
-            printf(
-                "%s(): Stopping flow=%u, though overwritten with %u\n",
-                __FUNCTION__,
-                args.flowId,
-                oldFlowId);
-            args.initialCount = 0;
-        }
-    }
-
-    // catch output state: Tag + result + modified host-struct, original
-    // input, and ID-diffs
-    argsHost->crc = Crc32::Hash(
-        TAG_END_ENC,
-        result,
-        *argsHost,
-        args,
-        EnclaveId - args.enclaveId,
-        PerThreadFlowId.GetU() - args.flowId);
-
-    if (args.initialCount)
-    {
-        PerThreadFlowId.Set(0u);
-    }
-}
-
 // Exported helper function for reachability test
 OE_ECALL void EncDummyEncFunction(void*)
 {
@@ -241,4 +137,32 @@ OE_ECALL void EncTestCallHostFunction(void* Args_)
     }
 
     argsHost->result = oe_call_host(args.functionName, NULL);
+}
+
+size_t Factor = 0;
+
+OE_ECALL void EncCrossEnclaveCall(CrossEnclaveCallArg* arg)
+{
+    uint32_t myInput = arg->input;
+    uint32_t myEnclaveId = arg->enclaveId;
+
+    // Call next enclave via host.
+    ++arg->input;
+    ++arg->enclaveId;
+    OE_TEST(oe_call_host("CrossEnclaveCall", arg) == OE_OK);
+
+    // augment result with my result.
+    uint32_t myResult = myInput * Factor;
+    arg->output += myResult;
+    printf(
+        "enclave %u: Factor=%lu, myResult = %u, arg.output=%u\n",
+        myEnclaveId,
+        Factor,
+        myResult,
+        arg->output);
+}
+
+OE_ECALL void EncSetFactor(void* arg)
+{
+    Factor = (size_t)arg;
 }

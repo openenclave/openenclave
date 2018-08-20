@@ -48,7 +48,7 @@ OE_ECALL void Test(void* args_)
 
     /* Get enclave offsets and bases */
     args->baseHeapPage = __oe_baseHeapPage;
-    args->numHeapPages = __oe_numHeapPages;
+    args->num_heap_pages = __oe_numHeapPages;
     args->numPages = __oe_numPages;
     args->base = __oe_get_enclave_base();
 

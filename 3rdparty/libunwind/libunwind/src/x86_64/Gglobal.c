@@ -78,9 +78,7 @@ tdep_init (void)
 {
   intrmask_t saved_mask;
 
-#ifndef OPEN_ENCLAVE
   sigfillset (&unwi_full_mask);
-#endif
 
   lock_acquire (&x86_64_lock, saved_mask);
   {

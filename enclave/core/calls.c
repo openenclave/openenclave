@@ -13,6 +13,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/reloc.h>
 #include <openenclave/internal/sgxtypes.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include "../report.h"
@@ -288,11 +289,14 @@ static void _HandleECall(
         }
     }
 
-    /* Are ecalls permitted? */
-    if (td->ocall_flags & OE_OCALL_FLAG_NOT_REENTRANT)
+    // TD_PushCallsite increments the depth. depth > 1 indicates a reentrant
+    // call. Reentrancy is allowed to handle exceptions and to terminate the
+    // enclave.
+    if (td->depth > 1 && (func != OE_ECALL_VIRTUAL_EXCEPTION_HANDLER &&
+                          func != OE_ECALL_DESTRUCTOR))
     {
-        /* ecalls not permitted. */
-        result = OE_UNEXPECTED;
+        /* reentrancy not permitted. */
+        result = OE_REENTRANT_ECALL;
         goto done;
     }
 
@@ -315,7 +319,7 @@ static void _HandleECall(
 #if defined(OE_USE_DEBUG_MALLOC)
 
             /* If memory still allocated, print a trace and return an error */
-            if (oe_debug_malloc_check() != 0)
+            if (!oe_disable_debug_malloc_check && oe_debug_malloc_check() != 0)
                 result = OE_MEMORY_LEAK;
 
 #endif /* defined(OE_USE_DEBUG_MALLOC) */
@@ -399,16 +403,11 @@ OE_INLINE void _HandleORET(TD* td, uint16_t func, uint16_t result, int64_t arg)
 **==============================================================================
 */
 
-oe_result_t oe_ocall(
-    uint16_t func,
-    uint64_t argIn,
-    uint64_t* argOut,
-    uint16_t ocall_flags)
+oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
     TD* td = TD_Get();
     Callsite* callsite = td->callsites;
-    uint16_t old_ocall_flags = td->ocall_flags;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
@@ -422,8 +421,6 @@ oe_result_t oe_ocall(
     /* Check for unexpected failures */
     if (!TD_Initialized(td))
         OE_THROW(OE_FAILURE);
-
-    td->ocall_flags |= ocall_flags;
 
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)
@@ -443,8 +440,6 @@ oe_result_t oe_ocall(
 
         /* ORET here */
     }
-
-    td->ocall_flags = old_ocall_flags;
 
     result = OE_OK;
 
@@ -489,7 +484,7 @@ oe_result_t oe_call_host(const char* func, void* argsIn)
     }
 
     /* Call into the host */
-    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST, (int64_t)args, NULL, 0));
+    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST, (int64_t)args, NULL));
 
     /* Check the result */
     OE_TRY(args->result);

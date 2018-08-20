@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <stdarg.h>
@@ -157,9 +158,34 @@ size_t fwrite(const void* ptr, size_t size, size_t nmemb, FILE* stream)
     {
         /* Only panic if size and nmemb are both non-zero */
         assert("fwrite() panic" == NULL);
+        /* Really should set ferror for stream, but not supported in enclave */
     }
 
     return 0;
+}
+
+int fputc(int c, FILE* f)
+{
+    unsigned char ch = c;
+    if (fwrite(&ch, 1, 1, f) == 1)
+        return c; // Success
+
+    /* Failure case, should have already been caught in fwrite */
+    assert("fputc() panic" == NULL);
+    /* Really should set ferror for stream, but not supported in enclave */
+    return EOF;
+}
+
+int fputs(const char* s, FILE* f)
+{
+    size_t len = strlen(s);
+    if ((len == 0) || (fwrite(s, len, 1, f) == 1))
+        return 0; // Success
+
+    /* Failure case, should have already been caught in fwrite */
+    assert("fputs() panic" == NULL);
+    /* Really should set ferror for stream, but not supported in enclave */
+    return EOF;
 }
 
 int fflush(FILE* stream)

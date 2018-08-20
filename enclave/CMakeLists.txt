@@ -4,6 +4,7 @@
 add_library(oeenclave STATIC
     ../common/asn1.c
     ../common/cert.c
+    ../common/datetime.c
     ../common/quote.c
     ../common/revocation.c
     ../common/sgxcertextensions.c

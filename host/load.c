@@ -102,7 +102,7 @@ oe_result_t __oe_load_segments(
 
         /* ATTN: handle PT_TLS (thread local storage) segments */
         if (ph->p_type == PT_TLS)
-            OE_THROW(OE_UNIMPLEMENTED);
+            OE_THROW(OE_UNSUPPORTED);
 
         /* Clear the segment */
         memset(&seg, 0, sizeof(oe_segment_t));
@@ -240,7 +240,7 @@ OE_CATCH:
 oe_result_t __oe_combine_segments(
     const oe_segment_t* segments,
     size_t nsegments,
-    oe_page** pages,
+    oe_page_t** pages,
     size_t* npages)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -297,7 +297,7 @@ oe_result_t __oe_combine_segments(
         memcpy(data + seg->vaddr, seg->filedata, seg->filesz);
     }
 
-    *pages = (oe_page*)data;
+    *pages = (oe_page_t*)data;
     *npages = size / OE_PAGE_SIZE;
 
     result = OE_OK;

@@ -13,9 +13,7 @@ void* oe_host_malloc(size_t size)
     uint64_t argIn = size;
     uint64_t argOut = 0;
 
-    if (oe_ocall(
-            OE_OCALL_MALLOC, argIn, &argOut, OE_OCALL_FLAG_NOT_REENTRANT) !=
-        OE_OK)
+    if (oe_ocall(OE_OCALL_MALLOC, argIn, &argOut) != OE_OK)
     {
         return NULL;
     }
@@ -48,11 +46,7 @@ void* oe_host_realloc(void* ptr, size_t size)
     argIn->ptr = ptr;
     argIn->size = size;
 
-    if (oe_ocall(
-            OE_OCALL_REALLOC,
-            (uint64_t)argIn,
-            &argOut,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (oe_ocall(OE_OCALL_REALLOC, (uint64_t)argIn, &argOut) != OE_OK)
     {
         argOut = 0;
         goto done;
@@ -68,10 +62,10 @@ done:
 
 void oe_host_free(void* ptr)
 {
-    oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL, OE_OCALL_FLAG_NOT_REENTRANT);
+    oe_ocall(OE_OCALL_FREE, (uint64_t)ptr, NULL);
 }
 
-char* oe_host_strdup(const char* str)
+char* oe_host_strndup(const char* str, size_t n)
 {
     char* p;
     size_t len;
@@ -81,10 +75,14 @@ char* oe_host_strdup(const char* str)
 
     len = oe_strlen(str);
 
+    if (n < len)
+        len = n;
+
     if (!(p = oe_host_malloc(len + 1)))
         return NULL;
 
-    oe_memcpy(p, str, len + 1);
+    oe_memcpy(p, str, len);
+    p[len] = '\0';
 
     return p;
 }
@@ -93,9 +91,7 @@ int __oe_host_putchar(int c)
 {
     int ret = -1;
 
-    if (oe_ocall(
-            OE_OCALL_PUTCHAR, (uint64_t)c, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
-        OE_OK)
+    if (oe_ocall(OE_OCALL_PUTCHAR, (uint64_t)c, NULL) != OE_OK)
         goto done;
 
     ret = 0;
@@ -113,12 +109,10 @@ int __oe_host_puts(const char* str)
     if (!str)
         goto done;
 
-    if (!(hstr = oe_host_strdup(str)))
+    if (!(hstr = oe_host_strndup(str, OE_SIZE_MAX)))
         goto done;
 
-    if (oe_ocall(
-            OE_OCALL_PUTS, (uint64_t)hstr, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
-        OE_OK)
+    if (oe_ocall(OE_OCALL_PUTS, (uint64_t)hstr, NULL) != OE_OK)
         goto done;
 
     ret = 0;
@@ -158,11 +152,7 @@ int __oe_host_print(int device, const char* str, size_t len)
     args->str[len] = '\0';
 
     /* Perform OCALL */
-    if (oe_ocall(
-            OE_OCALL_PRINT,
-            (uint64_t)args,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (oe_ocall(OE_OCALL_PRINT, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     ret = 0;

@@ -6,86 +6,35 @@
 
 #include <openenclave/bits/types.h>
 
-#if defined(__linux__)
-#include <sys/time.h>
-#elif defined(_WIN32)
-typedef int32_t clockid_t;
-#include <Windows.h>
-#endif
-#include <time.h>
+OE_EXTERNC_BEGIN
 
 /*
 **==============================================================================
 **
-** oe_strftime_args_t
+** oe_sleep()
 **
-**     size_t strftime(
-**         char *str,
-**         size_t max,
-**         const char *format,
-**         const struct tm *tm);
+**     Sleep for milliseconds. Return 0 on success and -1 if thread
+**     interrupted.
 **
 **==============================================================================
 */
-typedef struct _oe_strftime_args
-{
-    size_t ret;
-    char str[256];
-    char format[256];
-    struct tm tm;
-} oe_strftime_args_t;
+
+int oe_sleep(uint64_t milliseconds);
 
 /*
 **==============================================================================
 **
-** oe_gettimeofday_args_t
+** oe_get_time()
 **
-**     int gettimeofday(struct timeval *tv, struct timezone *tz)
+**     Return milliseconds elapsed since the Epoch or (uint64_t)-1 on error.
+**
+**     The Epoch is defined as: 1970-01-01 00:00:00 +0000 (UTC)
 **
 **==============================================================================
 */
-typedef struct _oe_gettimeofday_args
-{
-    int ret;
-    struct timeval* tv;
-    struct timeval tvbuf;
-    struct timezone* tz;
-    uint64_t tzbuf[2];
-} oe_gettimeofday_args_t;
 
-/*
-**==============================================================================
-**
-** oe_clock_gettime_args_t
-**
-**     int clock_gettime(clockid_t clk_id, struct timespec *tp);
-**
-**==============================================================================
-*/
-typedef struct _oe_clockgettime_args
-{
-    int ret;
-    clockid_t clk_id;
-    struct timespec* tp;
-    struct timespec tpbuf;
-} oe_clock_gettime_args_t;
+uint64_t oe_get_time(void);
 
-/*
-**==============================================================================
-**
-** oe_nanosleep_args_t
-**
-**     int nanosleep(const struct timespec *req, struct timespec *rem);
-**
-**==============================================================================
-*/
-typedef struct _oe_nanosleep_args
-{
-    int ret;
-    const struct timespec* req;
-    struct timespec reqbuf;
-    struct timespec* rem;
-    struct timespec rembuf;
-} oe_nanosleep_args_t;
+OE_EXTERNC_END
 
 #endif /* _OE_INCLUDE_TIME_H */

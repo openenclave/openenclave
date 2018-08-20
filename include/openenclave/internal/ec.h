@@ -28,7 +28,7 @@ typedef struct _oe_ec_public_key
 /* Supported CURVE types */
 typedef enum oe_ec_type_t {
     OE_EC_TYPE_SECP256R1,
-    __OE_EC_TYPE_MAX = OE_MAX_UINT,
+    __OE_EC_TYPE_MAX = OE_ENUM_MAX,
 } oe_ec_type_t;
 
 OE_STATIC_ASSERT(sizeof(oe_ec_type_t) == sizeof(unsigned int));

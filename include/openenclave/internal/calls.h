@@ -7,6 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/cpuid.h>
+#include <openenclave/internal/defs.h>
 #include "backtrace.h"
 #include "sgxtypes.h"
 
@@ -29,9 +30,6 @@ typedef void (*oe_ocall_function)(uint64_t argIn, uint64_t* argOut);
 **==============================================================================
 */
 
-/* Disallow OCALLs to call back into enclave with an ECALL */
-#define OE_OCALL_FLAG_NOT_REENTRANT (1u << 0)
-
 /*
 **==============================================================================
 **
@@ -48,7 +46,7 @@ typedef enum _oe_code {
     OE_CODE_ERET = 2,
     OE_CODE_OCALL = 3,
     OE_CODE_ORET = 4,
-    __OE_CODE_MAX = OE_MAX_UINT,
+    __OE_CODE_MAX = OE_ENUM_MAX,
 } oe_code_t;
 
 OE_STATIC_ASSERT(sizeof(oe_code_t) == sizeof(unsigned int));
@@ -93,14 +91,12 @@ typedef enum _oe_func {
     OE_OCALL_PUTS,
     OE_OCALL_PUTCHAR,
     OE_OCALL_PRINT,
-    OE_OCALL_STRFTIME,
-    OE_OCALL_GETTIMEOFDAY,
-    OE_OCALL_CLOCK_GETTIME,
-    OE_OCALL_NANOSLEEP,
+    OE_OCALL_SLEEP,
+    OE_OCALL_GET_TIME,
     OE_OCALL_MALLOC_DUMP,
     /* Caution: always add new OCALL function numbers here */
 
-    __OE_FUNC_MAX = OE_MAX_UINT,
+    __OE_FUNC_MAX = OE_ENUM_MAX,
 } oe_func_t;
 
 OE_STATIC_ASSERT(sizeof(oe_func_t) == sizeof(unsigned int));
@@ -377,8 +373,6 @@ oe_result_t oe_ecall(
  * @param func The number of the function to be called.
  * @param argIn The input argument passed to the function.
  * @param argOut The output argument passed back from the function.
- * @param ocall_flags Additional flags for the duration of this ocall, such as
- *              OE_OCALL_FLAG_NOT_REENTRANT.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -387,11 +381,7 @@ oe_result_t oe_ecall(
  * @retval OE_UNEXPECTED An unexpected error occurred.
  *
  */
-oe_result_t oe_ocall(
-    uint16_t func,
-    uint64_t argIn,
-    uint64_t* argOut,
-    uint16_t ocall_flags);
+oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut);
 
 OE_EXTERNC_END
 

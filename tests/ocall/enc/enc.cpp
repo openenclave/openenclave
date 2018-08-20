@@ -7,6 +7,7 @@
 #include <openenclave/internal/globals.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/thread.h>
 #include "../args.h"
 
 OE_ECALL void Test2(void* args_)
@@ -32,7 +33,7 @@ OE_ECALL void Test4(void* args)
     }
 }
 
-static oe_once_t _once = OE_ONCE_INITIALIZER;
+static oe_once_t _once = OE_ONCE_INIT;
 static oe_thread_key_t _key = OE_THREADKEY_INITIALIZER;
 
 static bool _destructor_called = false;
@@ -45,7 +46,7 @@ static void _destructor(void* data)
     {
         oe_host_free(str);
         _destructor_called = true;
-        OE_TEST(oe_thread_set_specific(_key, NULL) == 0);
+        OE_TEST(oe_thread_setspecific(_key, NULL) == 0);
     }
 }
 
@@ -70,7 +71,7 @@ OE_ECALL void SetTSD(void* args_)
     }
 
     /* Set the thread-specific data */
-    if (oe_thread_set_specific(_key, args->value) != 0)
+    if (oe_thread_setspecific(_key, args->value) != 0)
     {
         args->ret = -1;
         return;
@@ -86,7 +87,7 @@ OE_ECALL void GetTSD(void* args_)
     if (!args)
         oe_abort();
 
-    args->value = oe_thread_get_specific(_key);
+    args->value = oe_thread_getspecific(_key);
     args->ret = 0;
 }
 
@@ -118,7 +119,7 @@ OE_ECALL void TestMyOCall(void* args_)
 
     /* Test low-level OCALL of illegal function number */
     {
-        oe_result_t result = oe_ocall(0xffff, 0, NULL, 0);
+        oe_result_t result = oe_ocall(0xffff, 0, NULL);
         OE_TEST(result == OE_NOT_FOUND);
     }
 }
@@ -154,4 +155,12 @@ OE_ECALL void test_callback(void* arg)
         oe_result_t result = oe_call_host_by_address(args->callback, args);
         OE_TEST(result == OE_OK);
     }
+}
+
+OE_ECALL void TestReentrancy(void* args)
+{
+    oe_result_t result;
+
+    result = oe_call_host("TestReentrancy", NULL);
+    OE_TEST(result == OE_OK);
 }

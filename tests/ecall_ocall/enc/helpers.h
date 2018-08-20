@@ -16,12 +16,12 @@ struct TLSWrapper
     }
     unsigned GetU() const
     {
-        return (unsigned)(uintptr_t)oe_thread_get_specific(m_Key);
+        return (unsigned)(uintptr_t)oe_thread_getspecific(m_Key);
     }
 
     void Set(unsigned Value)
     {
-        oe_thread_set_specific(m_Key, (void*)(uintptr_t)Value);
+        oe_thread_setspecific(m_Key, (void*)(uintptr_t)Value);
     }
 
   private:

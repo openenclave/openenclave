@@ -14,13 +14,11 @@
 #error "enclave.h and host.h must not be included in the same compilation unit."
 #endif
 
-#include "bits/context.h"
 #include "bits/defs.h"
 #include "bits/exception.h"
 #include "bits/properties.h"
 #include "bits/report.h"
 #include "bits/result.h"
-#include "bits/thread.h"
 #include "bits/types.h"
 
 /**
@@ -55,7 +53,7 @@ OE_EXTERNC_BEGIN
 */
 oe_result_t oe_add_vectored_exception_handler(
     bool isFirstHandler,
-    oe_vectored_exception_handler vectoredHandler);
+    oe_vectored_exception_handler_t vectoredHandler);
 
 /**
 * Remove an existing vectored exception handler.
@@ -68,7 +66,7 @@ oe_result_t oe_add_vectored_exception_handler(
 * @returns OE_FAILED failed to remove handler
 */
 oe_result_t oe_remove_vectored_exception_handler(
-    oe_vectored_exception_handler vectoredHandler);
+    oe_vectored_exception_handler_t vectoredHandler);
 
 /**
  * Perform a high-level enclave function call (OCALL).
@@ -85,6 +83,9 @@ oe_result_t oe_remove_vectored_exception_handler(
  * Note that the return value of this function only indicates the success of
  * the call and not of the underlying function. The OCALL implementation must
  * define its own error reporting scheme based on **args**.
+ *
+ * While handling the OCALL, the host is not allowed to make an ECALL back into
+ * the enclave. A re-entrant ECALL will fail and return OE_REENTRANT_ECALL.
  *
  * @param func The name of the enclave function that will be called.
  * @param args The arguments to be passed to the enclave function.
@@ -224,21 +225,23 @@ void oe_host_free(void* ptr);
 /**
  * Make a heap copy of a string.
  *
- * This function allocates memory on the host's heap, copies the **str**
- * parameter to that memory, and returns a pointer to the newly allocated
- * memory.
+ * This function allocates memory on the host's heap, copies no more than
+ * *n* bytes from the **str** parameter to that memory, and returns a pointer
+ * to the newly allocated memory.
  *
  * @param str The string to be copied.
+ * @param n The number of characters to be copied.
  *
  * @returns A pointer to the newly allocated string or NULL if unable to
  * allocate the storage.
  */
-char* oe_host_strdup(const char* str);
+char* oe_host_strndup(const char* str, size_t n);
 
 /**
- * Abort execution by causing and illegal instruction exception.
+ * Abort execution of the enclave.
  *
- * This function aborts execution by executing the UD2 instruction.
+ * Mark the enclave as aborting. This blocks future enclave entry calls. The
+ * enclave continues to execute until all threads exit the enclave.
  */
 void oe_abort(void);
 
@@ -360,10 +363,8 @@ oe_result_t oe_verify_report(
 typedef enum _oe_seal_policy {
     OE_SEAL_POLICY_UNIQUE = 1,
     OE_SEAL_POLICY_PRODUCT = 2,
-    __OE_SEAL_POLICY_MAX = OE_MAX_UINT,
+    __OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
 } oe_seal_policy_t;
-
-OE_STATIC_ASSERT(sizeof(oe_seal_policy_t) == sizeof(unsigned int));
 
 /**
 * Get a symmetric encryption key derived from the specified policy and coupled
@@ -422,6 +423,7 @@ oe_result_t oe_get_seal_key(
     uint32_t keyInfoSize,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */

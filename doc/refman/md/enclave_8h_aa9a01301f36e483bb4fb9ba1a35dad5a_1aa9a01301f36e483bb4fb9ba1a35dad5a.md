@@ -24,6 +24,8 @@ This function is implemented using the low-level oe_ecall() interface where the 
 
 Note that the return value of this function only indicates the success of the call and not of the underlying function. The OCALL implementation must define its own error reporting scheme based on **args**.
 
+The host is not allowed to call back into the enclave in the same thread.
+
 
 
 ## Parameters
