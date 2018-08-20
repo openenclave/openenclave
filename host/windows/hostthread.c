@@ -119,12 +119,12 @@ int oe_thread_key_delete(oe_thread_key key)
     return !TlsFree(key);
 }
 
-int oe_thread_set_specific(oe_thread_key key, void* value)
+int oe_thread_setspecific(oe_thread_key key, void* value)
 {
     return !TlsSetValue(key, value);
 }
 
-void* oe_thread_get_specific(oe_thread_key key)
+void* oe_thread_getspecific(oe_thread_key key)
 {
     return TlsGetValue(key);
 }

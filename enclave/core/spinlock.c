@@ -3,6 +3,7 @@
 
 #ifdef OE_BUILD_ENCLAVE
 #include <openenclave/enclave.h>
+#include <openenclave/internal/thread.h>
 #else
 #include <openenclave/host.h>
 #endif

@@ -10,6 +10,7 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/malloc.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
 #include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
 #include "dlmalloc/errno.h"
@@ -238,7 +239,6 @@ OE_INLINE bool _check_multiply_overflow(size_t x, size_t y)
 static void _malloc_dump_ocall(uint64_t size, void* addrs[], int num_addrs)
 {
     oe_malloc_dump_args_t* args = NULL;
-    const uint32_t flags = OE_OCALL_FLAG_NOT_REENTRANT;
 
     if (!(args = oe_host_malloc(sizeof(oe_malloc_dump_args_t))))
         goto done;
@@ -247,7 +247,7 @@ static void _malloc_dump_ocall(uint64_t size, void* addrs[], int num_addrs)
     oe_memcpy(args->addrs, addrs, sizeof(void*) * OE_COUNTOF(args->addrs));
     args->num_addrs = num_addrs;
 
-    if (oe_ocall(OE_OCALL_MALLOC_DUMP, (uint64_t)args, NULL, flags) != OE_OK)
+    if (oe_ocall(OE_OCALL_MALLOC_DUMP, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
 done:
@@ -294,6 +294,8 @@ static void _dump(bool need_lock)
 **
 **==============================================================================
 */
+
+bool oe_disable_debug_malloc_check;
 
 void* oe_debug_malloc(size_t size)
 {

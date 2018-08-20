@@ -24,6 +24,9 @@ oe_result_t oe_asn1_get_raw(
 {
     oe_result_t result = OE_UNEXPECTED;
 
+    if (data)
+        *data = NULL;
+
     if (length)
         *length = 0;
 
@@ -155,6 +158,9 @@ oe_result_t oe_asn1_get_octet_string(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_asn1_tag_t tag;
+
+    if (data)
+        *data = NULL;
 
     if (length)
         *length = 0;

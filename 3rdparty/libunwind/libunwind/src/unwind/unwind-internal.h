@@ -54,10 +54,6 @@ struct _Unwind_Context {
    ((unw_getcontext (uc) < 0 || unw_init_local (&(context)->cursor, uc) < 0) \
     ? -1 : 0))
 
-#ifdef  OPEN_ENCLAVE
-int _is_cursor_inside_enclave(unw_cursor_t *cursor);
-#endif // OPEN_ENCLAVE
-
 static _Unwind_Reason_Code ALWAYS_INLINE
 _Unwind_Phase2 (struct _Unwind_Exception *exception_object,
                 struct _Unwind_Context *context)
@@ -89,15 +85,6 @@ _Unwind_Phase2 (struct _Unwind_Exception *exception_object,
           else
             return _URC_FATAL_PHASE2_ERROR;
         }
-
-#ifdef OPEN_ENCLAVE
-      // Return error if the cursor points something outside enclave.
-      // Non-enclave personality should not be called.
-      if (_is_cursor_inside_enclave(&context->cursor) <= 0)
-      {
-          return _URC_FATAL_PHASE2_ERROR;
-      }
-#endif // OPEN_ENCLAVE
 
       if (stop)
         {

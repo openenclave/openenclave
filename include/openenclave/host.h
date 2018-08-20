@@ -105,7 +105,7 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave);
  * The meaning of the **args** parameter is defined by the implementer of the
  * function and may be null.
  *
- * This function is implemented using the low-level oe_ocall() interface
+ * This function is implemented using the low-level oe_ecall() interface
  * where the function number is given by the **OE_ECALL_CALL_ENCLAVE** constant.
  *
  * Note that the return value of this function only indicates the success of

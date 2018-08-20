@@ -41,6 +41,7 @@ set(PLATFORM_SRC
 endif()
 
 add_library(oehost STATIC
+    ../common/datetime.c
     calls.c
     create.c
     dupenv.c

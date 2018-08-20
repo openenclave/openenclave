@@ -1,71 +1,44 @@
-doc
-===
+Open Enclave SDK
+================
 
-This directory contains all documentation for the Open Enclave SDK.
+Introduction
+------------
 
-[Contributing to Open Enclave](Contributing.md)
-------------------------------
+Open Enclave (OE) is an SDK for building enclave applications in C and C++. An
+enclave application partitions itself into two components (1) An untrusted component (called the
+host) and (2) A trusted component (called the enclave). An enclave is a secure
+container whose memory is protected from entities outside the enclave. These
+protections allow enclaves to perform secure computations with assurances that
+secrets will not be compromised.
 
-This document discusses the guidelines and expectations for contributing to the
-Open Enclave SDK.
+This SDK is a fully open-source and transparent project, which plans to generalize enclave application models across 
+enclave implementations from different hardware vendors. It's a non-vendor specific solution that supports enclave applications both on
+Linux and Windows platforms.
 
-[Development Guide](DevelopmentGuide.md)
--------------------
+The current implementation of Open Enclave is built on [Intel Software Guard Extensions (SGX)](https://software.intel.com/en-us/sgx), other enclave architectures (such as solutions from AMD or ARM) will be added in the future. This public preview focuses on the Linux platform.
 
-This document provides guidelines for developing code in the Open Enclave repo,
-such as style guides and development processes.
+Design Overview
+-------------
 
-[Getting Started with Open Enclave](GettingStarted.md)
------------------------------------
+The [Design Overview](doc/DesignOverview.pdf) document provides a brief design overview of the Open Enclave SDK. It describes the parts of the SDK and how they work together to create, invoke, and terminate enclaves. 
 
-This document explains how to build and use the Open Enclave SDK.
+Getting Started
+---------------
+To build and experience enclaves with the Open Enclave SDK, start [here](doc/GettingStartedDocs/GettingStarted.md)
 
-[Getting Started on Windows](GettingStarted.Windows.md)
------------------------------------
+Contributing
+------------
 
-This document explains how to use the experimental support for building host
-applications on Windows that can use enclaves created with the Open Enclave
-SDK.
+This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, see [Contributing to Open Enclave](doc/Contributing.md).
 
-[Open Enclave Design Overview](DesignOverview.pdf)
-------------------------------
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-This document describes the architecture and design of the Open Enclave SDK.
-It is maintained as a Word document [DesignOverview.docx](DesignOverview.docx).
-The PDF version is generated after updates to the DOCX using the Microsoft
-Print to PDF option in Word. Both the PDF and DOCX should be committed when the
-design overview is updated.
+See the [Development Guide](doc/DevelopmentGuide.md) for details about developing code in this repo, such as coding style and development processes.
 
-[Open Enclave Function Reference](refman/md/index.md)
----------------------------------
 
-The API reference for the Open Enclave SDK is generated using Doxygen in the
-`refman` subfolder. For more details on how to update the API reference using
-Doxygen, refer to [Using Doxygen in Open Enclave](refman/doxygen-howto.md).
+Licensing
+=========
 
-### Converting MD to HMTL
-
-While we maintain most documents in as Markdown for ease of updating,
-developers who wish to read them in HTML format can convert them easily.
-For example, to convert GettingStarted.md into HTML:
-
-```
-$ sudo apt install python-pip
-$ pip install grip
-$ grip GettingStarted.md --export GettingStarted.html
-```
-
-[Open Enclave Support for libc](LibcSupport.md)
--------------------------------
-This document describes the C library functionality supported inside an enclave
-as provided by oelibc.
-
-[Open Enclave Support for libcxx](LibcxxSupport.md)
----------------------------------
-This document describes the C++ library functionality supported inside an
-enclave as provided by oelibcxx.
-
-[Open Enclave Support for mbedtls](MbedtlsSupport.md)
-----------------------------------
-This document describes the mbedtls library functionality supported inside an
-enclave as provided by 3rdparty/mbedtls.
+Microsoft plans to release the [Open Enclave SDK under the MIT license](https://github.com/Microsoft/openenclave/blob/master/LICENSE)

@@ -24,6 +24,7 @@ if [ "$1" == "-h" ]; then
    echo "        -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
    echo "        -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
    echo "        -h Display usage and exit"
+   echo "        --build_package Build a .deb package after testing"
    echo " Default is to build for SGX1 platform, Debug Build type & test in"
    echo " simulator mode"
    echo ""
@@ -43,6 +44,9 @@ BUILD_TYPE="DEBUG"
 ENABLE_LIBC_TESTS="OFF"
 #Enable full Libcxx tests. Default is disabled, enable with setting to "On" or "0"
 ENABLE_LIBCXX_TESTS="OFF"
+#Build a package. Default is disabled
+BUILD_PACKAGE=0
+OE_INSTALL_DIR="/opt/openenclave"
 
 #Parse the command line - keep looping as long as there is at least one more argument
 while [[ $# -gt 0 ]]; do
@@ -51,6 +55,10 @@ while [[ $# -gt 0 ]]; do
         # This is a flag type option. Will catch either -d or --disable_sim
         -d|--disable_sim)
         DISABLE_SIM=1
+        ;;
+        # This is a flag type option. Will catch --build_package
+        --build_package)
+        BUILD_PACKAGE=1
         ;;
         # This is an arg value type option. Will catch -p value or --platform_mode value
         -p|--platform_mode)
@@ -108,7 +116,10 @@ cd build
 
 CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
-   CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_LIBSGX=1"
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_LIBSGX=1"
+fi
+if [ ${BUILD_PACKAGE} = 1 ]; then
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX:PATH=${OE_INSTALL_DIR} -DCPACK_GENERATOR=DEB"
 fi
 echo "CMAKE_FLAGS are ${CMAKE_FLAGS}"
 
@@ -130,19 +141,22 @@ fi
 
 #Finally run the tests in Simulator mode or on Hardware
 if [ ${DISABLE_SIM} != 1 ]; then
-   OE_SIMULATION=1 ctest
+   SIMULATION_MODE_TEXT="simulation"
+   OE_SIMULATION=1 ctest --output-on-failure
 else
-   ctest
+   SIMULATION_MODE_TEXT="hardware"
+   ctest --output-on-failure
 fi
 
 if [ "$?" != "0" ]; then
     echo ""
-    echo "Test failed for ${PLATFORM_MODE} ${BUILD_TYPE} in simulation mode"
+    echo "Test failed for ${PLATFORM_MODE} ${BUILD_TYPE} in ${SIMULATION_MODE_TEXT} mode"
     echo ""
     exit 1
 fi
 
-
-
-
-
+if [ ${BUILD_PACKAGE} = 1 ]; then
+    echo "Building package"
+    echo ""
+    make package
+fi

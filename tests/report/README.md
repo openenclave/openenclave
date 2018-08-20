@@ -18,4 +18,5 @@ Test behavior of oe_get_report, oe_parse_report, oe_verify_report APIs:
 
 **Other tests**
   1. *TestVerifyTCBInfo*: Tests tcbInfo JSON processing. Positive and negative tests. Schema validation.
+  2. *TestIso861Time*, *TestIso861TimeNegative*: Positive and negative tests oe_datetime_t.
   

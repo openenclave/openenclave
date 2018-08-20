@@ -5,21 +5,20 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <unistd.h>
 #include <cassert>
 #include <cassert>
+#include <chrono>
 #include <cstdio>
 #include <cstdio>
 #include <cstdlib>
 #include <cstdlib>
 #include <thread>
 #include <vector>
-#include "../../ecall_ocall/crc32.h"
 #include "../args.h"
 
 using namespace std;
 
-#define THREAD_COUNT 5
+#define THREAD_COUNT 3
 
 void TestAbortStatus(oe_enclave_t* enclave, const char* functionName)
 {
@@ -36,8 +35,8 @@ void TestAbortStatus(oe_enclave_t* enclave, const char* functionName)
 
 static void CrashEnclaveThread(
     oe_enclave_t* enclave,
-    uint32_t* thread_ready_count,
-    uint32_t* is_enclave_crashed,
+    std::atomic<uint32_t>* thread_ready_count,
+    std::atomic<bool>* is_enclave_crashed,
     const char* ecall_function)
 {
     oe_result_t result;
@@ -50,7 +49,7 @@ static void CrashEnclaveThread(
     // Wait all worker threads ready.
     while (*args.thread_ready_count != THREAD_COUNT - 1)
     {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     // Crash the enclave to set enclave in abort status.
@@ -65,8 +64,8 @@ static void CrashEnclaveThread(
 
 static void EcallAfterCrashThread(
     oe_enclave_t* enclave,
-    uint32_t* thread_ready_count,
-    uint32_t* is_enclave_crashed)
+    std::atomic<uint32_t>* thread_ready_count,
+    std::atomic<bool>* is_enclave_crashed)
 {
     oe_result_t result;
     AbortStatusArgs args;
@@ -74,12 +73,12 @@ static void EcallAfterCrashThread(
     args.thread_ready_count = thread_ready_count;
     args.is_enclave_crashed = is_enclave_crashed;
 
-    __sync_fetch_and_add(args.thread_ready_count, 1);
+    ++*args.thread_ready_count;
 
     // Wait the enclave is aborted.
     while (*args.is_enclave_crashed == 0)
     {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     // Try to ECALL into the enclave.
@@ -91,8 +90,8 @@ static void EcallAfterCrashThread(
 
 static void OcallAfterCrashThread(
     oe_enclave_t* enclave,
-    uint32_t* thread_ready_count,
-    uint32_t* is_enclave_crashed)
+    std::atomic<uint32_t>* thread_ready_count,
+    std::atomic<bool>* is_enclave_crashed)
 {
     oe_result_t result;
     AbortStatusArgs args;
@@ -106,165 +105,6 @@ static void OcallAfterCrashThread(
 
     return;
 }
-
-static uint32_t CalcRecursionHashHost(const AbortStatusEncRecursionArg* args_);
-static uint32_t CalcRecursionHashEnc(const AbortStatusEncRecursionArg* args_);
-
-// calc recursion hash locally, host part
-static uint32_t CalcRecursionHashHost(const AbortStatusEncRecursionArg* args_)
-{
-    AbortStatusEncRecursionArg args = *args_;
-    AbortStatusEncRecursionArg argsRec;
-    oe_result_t result = OE_OK;
-
-    printf(
-        "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
-        __FUNCTION__,
-        args.flowId,
-        args.recursionsLeft,
-        args.crc);
-
-    // catch initial state: Tag + Input-struct
-    args.crc = Crc32::Hash(TAG_START_HOST, args);
-    argsRec = args;
-
-    // recurse as needed, passing initial-state-crc as input
-    if (args.recursionsLeft)
-    {
-        argsRec.recursionsLeft--;
-        argsRec.crc = CalcRecursionHashEnc(&argsRec);
-        if (argsRec.recursionsLeft)
-        {
-            if (argsRec.initialCount)
-                argsRec.initialCount--;
-            argsRec.recursionsLeft--;
-        }
-    }
-
-    // catch output state: Tag + result + output, and again original input
-    return Crc32::Hash(TAG_END_HOST, result, argsRec, args);
-}
-
-// calc recursion hash locally, enc part
-static uint32_t CalcRecursionHashEnc(const AbortStatusEncRecursionArg* args_)
-{
-    AbortStatusEncRecursionArg args = *args_;
-    AbortStatusEncRecursionArg argsHost;
-    oe_result_t result = OE_OK;
-
-    printf(
-        "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
-        __FUNCTION__,
-        args.flowId,
-        args.recursionsLeft,
-        args.crc);
-
-    // catch initial state: Tag + Input-structure.
-    args.crc = Crc32::Hash(TAG_START_ENC, args);
-    argsHost = args;
-
-    if (args.recursionsLeft > 0)
-    {
-        if (argsHost.initialCount)
-            argsHost.initialCount--;
-        argsHost.recursionsLeft--;
-        argsHost.crc = CalcRecursionHashHost(&argsHost);
-    }
-
-    // catch output state: Tag + result + modified host-struct, original
-    // input.
-    return Crc32::Hash(TAG_END_ENC, result, argsHost, args);
-}
-
-// Actual enclave/host/... recursion test. Trail of execution is gathered via
-// Crc, success determined via comparison with separate, non-enclave version.
-static uint32_t TestRecursion(
-    oe_enclave_t* enclave,
-    unsigned flowId,
-    unsigned recursionDepth,
-    uint32_t* thread_ready_count,
-    uint32_t* is_enclave_crashed)
-{
-    oe_result_t result;
-    AbortStatusEncRecursionArg args = {};
-
-    printf(
-        "%s(FlowId=%u, Recursions=%u)\n", __FUNCTION__, flowId, recursionDepth);
-
-    args.thread_ready_count = thread_ready_count;
-    args.is_enclave_crashed = is_enclave_crashed;
-    args.enclave = enclave;
-    args.flowId = flowId;
-    args.recursionsLeft = recursionDepth;
-    args.initialCount = 1;
-
-    uint32_t crc = CalcRecursionHashEnc(&args);
-
-    result = oe_call_enclave(enclave, "EncRecursion", &args);
-    OE_TEST(result == OE_OK);
-
-    printf(
-        "%s(FlowId=%u, RecursionDepth=%u): Expect CRC %#x, have "
-        "CRC %#x, %s\n",
-        __FUNCTION__,
-        flowId,
-        recursionDepth,
-        crc,
-        args.crc,
-        (crc == args.crc) ? "MATCH" : "MISMATCH");
-
-    OE_TEST(crc == args.crc);
-    return crc;
-}
-
-// Ocall for recursion test
-OE_OCALL void RecursionOcall(void* args_)
-{
-    oe_result_t result = OE_OK;
-
-    AbortStatusEncRecursionArg* argsPtr = (AbortStatusEncRecursionArg*)args_;
-    AbortStatusEncRecursionArg args = *argsPtr;
-    AbortStatusEncRecursionArg argsRec;
-
-    printf(
-        "%s(): Flow=%u, recLeft=%u, inCrc=%#x\n",
-        __FUNCTION__,
-        args.flowId,
-        args.recursionsLeft,
-        args.crc);
-
-    // catch initial state: Tag + Input-struct
-    args.crc = Crc32::Hash(TAG_START_HOST, args);
-    argsRec = args;
-
-    // recurse as needed, passing initial-state-crc as input
-    if (args.recursionsLeft)
-    {
-        argsRec.recursionsLeft--;
-        result = oe_call_enclave(
-            (oe_enclave_t*)argsRec.enclave, "EncRecursion", &argsRec);
-    }
-    else
-    {
-        __sync_fetch_and_add(args.thread_ready_count, 1);
-
-        // Wait the enclave is aborted.
-        while (*args.is_enclave_crashed == 0)
-        {
-            sleep(1);
-        }
-
-        // Verify the ECALL into the enclave will fail after enclave is aborted.
-        OE_TEST(
-            oe_call_enclave(
-                (oe_enclave_t*)argsRec.enclave, "EncRecursion", NULL) ==
-            OE_ENCLAVE_ABORTING);
-    }
-
-    // catch output state: Tag + result + output, and again original input
-    argsPtr->crc = Crc32::Hash(TAG_END_HOST, result, argsRec, args);
-}
-
 // Test the regular abort case and un-handled hardware exception case in
 // single thread.
 static bool TestBasicAbort(const char* enclaveName)
@@ -309,12 +149,6 @@ static bool TestBasicAbort(const char* enclaveName)
 //  fail with abort status.
 // Thread 3 -> do an OCALL after thread 1 abort the enclave. The OCALL should
 //  fail with abort status.
-// Thread 4 -> do a nested call, wait inside enclave, do an OCALL after thread
-//  1 abort the enclave. The OCALL should fail with abort status, but exiting
-//  ERET and ORET should return to enclave and host correctly.
-// Thread 5 -> do a nested call, wait outside enclave, do an ECALL after thread
-//  1 abort the enclave.The ECALL should fail with abort status, but exiting
-//  ERET and ORET should return to enclave and host correctly.
 static bool TestMultipleThreadAbort(const char* enclaveName)
 {
     oe_result_t result;
@@ -342,8 +176,8 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
 
         // Create threads.
         std::vector<std::thread> threads;
-        uint32_t thread_ready_count = 0;
-        uint32_t is_enclave_crashed = 0;
+        std::atomic<uint32_t> thread_ready_count(0);
+        std::atomic<bool> is_enclave_crashed(0);
 
         threads.push_back(
             std::thread(
@@ -364,28 +198,6 @@ static bool TestMultipleThreadAbort(const char* enclaveName)
             std::thread(
                 OcallAfterCrashThread,
                 enclave,
-                &thread_ready_count,
-                &is_enclave_crashed));
-
-        // Even recursion count will make the call end inside enclave, used to
-        // test OCALL behavior.
-        threads.push_back(
-            std::thread(
-                TestRecursion,
-                enclave,
-                1,
-                32,
-                &thread_ready_count,
-                &is_enclave_crashed));
-
-        // Even recursion count will make the call end in host side, used to
-        // test ECALL behavior.
-        threads.push_back(
-            std::thread(
-                TestRecursion,
-                enclave,
-                2,
-                33,
                 &thread_ready_count,
                 &is_enclave_crashed));
 
