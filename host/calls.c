@@ -299,6 +299,38 @@ static void _HandleCallHost(uint64_t arg)
 /*
 **==============================================================================
 **
+** _handle_call_host_by_address()
+**
+**     Handle calls from the enclave
+**
+**==============================================================================
+*/
+
+static void _handle_call_host_by_address(uint64_t arg)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_host_by_address_args_t* args = (oe_call_host_by_address_args_t*)arg;
+
+    if (!args || !args->func)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Invoke the function */
+    args->func(args->args);
+
+    result = OE_OK;
+
+done:
+
+    if (args)
+        args->result = result;
+}
+
+/*
+**==============================================================================
+**
 ** _HandleOCALL()
 **
 **     Handle calls from the enclave (OCALL)
@@ -325,6 +357,10 @@ static oe_result_t _HandleOCALL(
     {
         case OE_OCALL_CALL_HOST:
             _HandleCallHost(argIn);
+            break;
+
+        case OE_OCALL_CALL_HOST_BY_ADDRESS:
+            _handle_call_host_by_address(argIn);
             break;
 
         case OE_OCALL_MALLOC:
