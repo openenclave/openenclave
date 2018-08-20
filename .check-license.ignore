@@ -13,14 +13,16 @@
 ./.clang-format
 ./debugger/pythonExtension/load_symbol_cmd.py
 ./debugger/pythonExtension/readelf.py
-./doc/DesignOverview.docx
-./doc/DesignOverview.pdf
+./docs/DesignOverview.docx
+./docs/DesignOverview.pdf
+./docs/refman/html
 .exrc
 ./.git
 .gitignore
 ./include/openenclave/internal/queue.h
 LICENSE
 *.md
+*.html
 *.json
 ./.openenclaveroot
 *.pem
@@ -61,7 +63,6 @@ LICENSE
 ./tools/oesign/files/log.txt
 VERSION
 ./prereqs/packages/.packages
-./doc/refman/md/*.dump
 ./3rdparty/LICENSES
 ./tests/report/data/tcbInfo.json
 ./tests/report/data/quote.dat
