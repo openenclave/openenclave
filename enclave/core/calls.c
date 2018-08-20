@@ -532,7 +532,7 @@ oe_result_t oe_call_host_by_address(void (*func)(void*), void* argsIn)
     }
 
     /* Call the host function with this address */
-    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST_BY_ADDRESS, (int64_t)args, NULL, 0));
+    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST_BY_ADDRESS, (int64_t)args, NULL));
 
     /* Check the result */
     OE_TRY(args->result);
