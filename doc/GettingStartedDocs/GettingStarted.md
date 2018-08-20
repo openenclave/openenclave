@@ -48,7 +48,7 @@ Please refer to the following [documentation](SGXSupportLevel.md) to determine t
 Samples
 -------------------------------
 
-  [Open Enclave samples](samples.md) 
+  Open Enclave samples (under construction)
     
 SDK API Reference
 -------------------------------
