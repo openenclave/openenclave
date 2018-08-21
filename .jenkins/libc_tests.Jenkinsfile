@@ -1,9 +1,9 @@
 pipeline {
   agent any
   stages {
-    stage('Build and Run libcxx Tests') {
+    stage('Build and Run libc Tests') {
       parallel {
-        stage('libcxx Debug') {
+        stage('libc Debug') {
           agent {
             node {
               label 'hardware'
@@ -11,10 +11,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --enable_full_libcxx_tests'
+            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d --enable_full_libc_tests'
           }
         }
-        stage('libcxx Release') {
+        stage('libc Release') {
           agent {
             node {
               label 'hardware'
@@ -22,10 +22,10 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --enable_full_libcxx_tests'
+            sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d --enable_full_libc_tests'
           }
         }
-        stage('libcxx RelWithDebInfo') {
+        stage('libc RelWithDebInfo') {
           agent {
             node {
               label 'hardware'
@@ -33,7 +33,7 @@ pipeline {
 
           }
           steps {
-            sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --enable_full_libcxx_tests'
+            sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d --enable_full_libc_tests'
           }
         }
       }
