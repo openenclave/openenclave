@@ -34,8 +34,9 @@ else()
     # Custom target to update .md-files in source tree. Invoke manually if desired.
     message("Use target 'refman-source' to populate refman *.html files into source tree")
     add_custom_target(refman-source
-        COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/html
-        -r  ${CMAKE_CURRENT_SOURCE_DIR}/html
+        DEPENDS refman
+        COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/html
+        COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/html -r  ${CMAKE_CURRENT_SOURCE_DIR}/html
         COMMENT "Generating refman documentation into source-tree" VERBATIM
     )
 endif()
