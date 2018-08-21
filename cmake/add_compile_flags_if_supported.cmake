@@ -55,7 +55,38 @@ function(_check_cxx_compile_flag_supported flag supported)
   set(${supported} ${SUPPORTS_CXX_${flagname}_FLAG} PARENT_SCOPE)
 endfunction()
 
-function(_check_compile_flag_supported lang flag supported)
+function(_add_compile_flag lang flag)
+  separate_arguments(flag) # for flag pairs like -mllvm -...
+  foreach (_flag IN LISTS flag)
+    foreach (_lang IN LISTS lang)
+      add_compile_options($<$<COMPILE_LANGUAGE:${_lang}>:${_flag}>)
+    endforeach()
+  endforeach()
+endfunction()
+
+function(_add_target_compile_flag lang target scope flag)
+  separate_arguments(flag)
+  foreach (_flag IN LISTS flag)
+    foreach (_lang IN LISTS lang)
+      target_compile_options(${target} ${scope} $<$<COMPILE_LANGUAGE:${_lang}>:${_flag}>)
+    endforeach()
+  endforeach()
+endfunction()
+
+# Check whether the compiler(s) for the given language(s) support a given flag.
+#
+# Usage:
+#
+#	  check_compile_flag_supported(
+#       <lang> <flag> <supportedvar>)
+#
+# Arguments:
+# 
+#  <lang> - Languages for which to check the flag. If multiple, use semicolon and wrap in quotes.
+#  <flag> - Flag to check.
+#  <supportedvar> - Name of the boolean result variable indicating compiler support.
+
+function(check_compile_flag_supported lang flag supported)
   set(result "null")
   foreach (_lang IN LISTS lang)
     if (_lang STREQUAL "C")
@@ -77,24 +108,6 @@ function(_check_compile_flag_supported lang flag supported)
   set(${supported} ${result} PARENT_SCOPE)
 endfunction()
 
-function(_add_compile_flag lang flag)
-  separate_arguments(flag) # for flag pairs like -mllvm -...
-  foreach (_flag IN LISTS flag)
-    foreach (_lang IN LISTS lang)
-      add_compile_options($<$<COMPILE_LANGUAGE:${_lang}>:${_flag}>)
-    endforeach()
-  endforeach()
-endfunction()
-
-function(_add_target_compile_flag lang target scope flag)
-  separate_arguments(flag)
-  foreach (_flag IN LISTS flag)
-    foreach (_lang IN LISTS lang)
-      target_compile_options(${target} ${scope} $<$<COMPILE_LANGUAGE:${_lang}>:${_flag}>)
-    endforeach()
-  endforeach()
-endfunction()
-
 # Check whether the compiler(s) for the given language(s) support a given flag
 # and, if supported, add the flag to the compilation of source files.
 #
@@ -110,7 +123,7 @@ endfunction()
 #  <supportedvar> - Name of the boolean result variable indicating compiler support.
 
 function(add_compile_flag_if_supported lang flag supported)
-  _check_compile_flag_supported("${lang}" ${flag} _supported)
+  check_compile_flag_supported("${lang}" ${flag} _supported)
   if (_supported)
     _add_compile_flag("${lang}" ${flag})
   endif()
@@ -134,7 +147,7 @@ endfunction()
 #  <supportedvar> - Name of the boolean result variable indicating compiler support.
 
 function(add_target_compile_flag_if_supported target scope lang flag supported)
-  _check_compile_flag_supported("${lang}" ${flag} _supported)
+  check_compile_flag_supported("${lang}" ${flag} _supported)
   if (_supported)
     _add_target_compile_flag("${lang}" ${target} ${scope} ${flag})
   endif()
