@@ -42,7 +42,9 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
     # Enables all the warnings about constructions that some users consider questionable,
     # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
     # to fix warnings as they arise, so they don't accumulate "to be fixed later".
-    add_compile_options(-Wall -Werror -fno-strict-aliasing)
+    add_compile_options(-Wall -Werror)
+
+    add_compile_flags("C;CXX" -fno-strict-aliasing)
 
     add_compile_flags_if_supported(C -Wjump-misses-init)
 
@@ -50,13 +52,6 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
         # Apply Spectre mitigations if available.
         add_compile_flag_if_supported("C;CXX" "-mllvm -x86-speculative-load-hardening" flag_supported)
         set(spectre1_mitigation_applied ${flag_supported})
-
-        # When using Clang for ASM compilation it warns about unused C/C++ compile flags
-        # and/or preprocessor definitions not relevant to ASM compilation for some libraries.
-        # Preprocessor definitions are not needed for .s files, only for .S files. 
-        # Ideally, libraries with mixed C/C++/ASM should apply flags selectively,
-        # but for now, let's ignore the warning.
-        add_compile_options($<$<COMPILE_LANGUAGE:ASM>:-Wno-unused-command-line-argument>)
     endif()
 
     # Enables XSAVE intrinsics.

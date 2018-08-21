@@ -64,7 +64,7 @@ function(_add_compile_flag lang flag)
   endforeach()
 endfunction()
 
-function(_add_target_compile_flag lang target scope flag)
+function(_add_target_compile_flag target scope lang flag)
   separate_arguments(flag)
   foreach (_flag IN LISTS flag)
     foreach (_lang IN LISTS lang)
@@ -108,6 +108,44 @@ function(check_compile_flag_supported lang flag supported)
   set(${supported} ${result} PARENT_SCOPE)
 endfunction()
 
+# Add the flags to the compilation of source files.
+#
+# Usage:
+#
+#	  add_compile_flags(
+#       <lang> <flag1> [<flag2>] ...)
+#
+# Arguments:
+#
+#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
+#  <flagn> - Flags to be added.
+
+function(add_compile_flags lang)
+  foreach(flag ${ARGN})
+    _add_compile_flag("${lang}" ${flag} _)
+  endforeach()
+endfunction()
+
+# Add the flags to the compilation of source files for the given target.
+#
+# Usage:
+#
+#	  add_target_compile_flags(
+#       <target> <scope> <lang> <flag1> [<flag2>] ...)
+#
+# Arguments:
+# 
+#  <target> - Name of the target.
+#  <scope> - Scope of the flags: INTERFACE|PUBLIC|PRIVATE.
+#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
+#  <flagn> - Flags to be added.
+
+function(add_target_compile_flags target scope lang)
+  foreach(flag ${ARGN})
+    _add_target_compile_flag(${target} ${scope} "${lang}" ${flag} _)
+  endforeach()
+endfunction()
+
 # Check whether the compiler(s) for the given language(s) support a given flag
 # and, if supported, add the flag to the compilation of source files.
 #
@@ -149,7 +187,7 @@ endfunction()
 function(add_target_compile_flag_if_supported target scope lang flag supported)
   check_compile_flag_supported("${lang}" ${flag} _supported)
   if (_supported)
-    _add_target_compile_flag("${lang}" ${target} ${scope} ${flag})
+    _add_target_compile_flag(${target} ${scope} "${lang}" ${flag})
   endif()
   set(${supported} ${_supported} PARENT_SCOPE)
 endfunction()
