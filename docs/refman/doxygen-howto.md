@@ -14,7 +14,7 @@ including:
 
 The generated HTML files are the only ones that are checked
 into the Github repository. This allows one to browse the documentation from
-the Github site.
+Github Pages.
 
 To update the generated documentation, create the cmake build tree by using
 the instructions in [Getting Started with Open Enclave](../GettingStarted.md).
