@@ -27,7 +27,8 @@ function(_get_proxy_flag_if_needed flag proxy_flag)
   # CMake's check_*_compiler_flag macros lead to a false positive for GCC.
   # To work around this, for GCC, we simply check the non-negated form to detect
   # supported flags reliably.
-  if (CMAKE_C_COMPILER_ID MATCHES "GNU" AND flag MATCHES "-Wno-" AND NOT flag MATCHES "-Wno-error=")
+  if (CMAKE_C_COMPILER_ID MATCHES "GNU" AND 
+      flag MATCHES "-Wno-" AND NOT flag MATCHES "-Wno-error=")
     string(REPLACE "-Wno-" "-W" positive_flag ${flag})
     set(${proxy_flag} ${positive_flag} PARENT_SCOPE)
   else()
@@ -68,7 +69,8 @@ function(_add_target_compile_flag target scope lang flag)
   separate_arguments(flag)
   foreach (_flag IN LISTS flag)
     foreach (_lang IN LISTS lang)
-      target_compile_options(${target} ${scope} $<$<COMPILE_LANGUAGE:${_lang}>:${_flag}>)
+      target_compile_options(${target} ${scope}
+        $<$<COMPILE_LANGUAGE:${_lang}>:${_flag}>)
     endforeach()
   endforeach()
 endfunction()
@@ -82,7 +84,8 @@ endfunction()
 #
 # Arguments:
 # 
-#  <lang> - Languages for which to check the flag. If multiple, use semicolon and wrap in quotes.
+#  <lang> - Languages for which to check the flag.
+#           If multiple, use semicolon and wrap in quotes.
 #  <flag> - Flag to check.
 #  <supportedvar> - Name of the boolean result variable indicating compiler support.
 
@@ -100,8 +103,9 @@ function(check_compile_flag_supported lang flag supported)
       set(result ${_supported})
     else()
       if ((result AND NOT _supported) OR (NOT result AND _supported))
-        message(FATAL_ERROR "Programming error: ${flag} not supported by all compilers \
-          for languages ${lang}. Split flags into separate function calls.")
+        message(FATAL_ERROR "Programming error: ${flag} not supported by all \
+          compilers for languages ${lang}. Split flags into separate \
+          function calls.")
       endif()
     endif()
   endforeach()
@@ -117,7 +121,8 @@ endfunction()
 #
 # Arguments:
 #
-#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
+#  <lang> - Languages for which to add the flag.
+#           If multiple, use semicolon and wrap in quotes.
 #  <flagn> - Flags to be added.
 
 function(add_compile_flags lang)
@@ -137,7 +142,8 @@ endfunction()
 # 
 #  <target> - Name of the target.
 #  <scope> - Scope of the flags: INTERFACE|PUBLIC|PRIVATE.
-#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
+#  <lang> - Languages for which to add the flag.
+#           If multiple, use semicolon and wrap in quotes.
 #  <flagn> - Flags to be added.
 
 function(add_target_compile_flags target scope lang)
@@ -156,7 +162,8 @@ endfunction()
 #
 # Arguments:
 # 
-#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
+#  <lang> - Languages for which to add the flag.
+#           If multiple, use semicolon and wrap in quotes.
 #  <flag> - Flag to be added.
 #  <supportedvar> - Name of the boolean result variable indicating compiler support.
 
@@ -168,8 +175,9 @@ function(add_compile_flag_if_supported lang flag supported)
   set(${supported} ${_supported} PARENT_SCOPE)
 endfunction()
 
-# Check whether the compiler(s) for the given language(s) support a given flag and, if supported,
-# add the flag to the compilation of source files for the given target.
+# Check whether the compiler(s) for the given language(s) support a given flag
+# and, if supported, add the flag to the compilation of source files for
+# the given target.
 #
 # Usage:
 #
@@ -180,7 +188,8 @@ endfunction()
 # 
 #  <target> - Name of the target.
 #  <scope> - Scope of the flag: INTERFACE|PUBLIC|PRIVATE.
-#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
+#  <lang> - Languages for which to add the flag.
+#           If multiple, use semicolon and wrap in quotes.
 #  <flag> - Flag to be added.
 #  <supportedvar> - Name of the boolean result variable indicating compiler support.
 
@@ -192,8 +201,8 @@ function(add_target_compile_flag_if_supported target scope lang flag supported)
   set(${supported} ${_supported} PARENT_SCOPE)
 endfunction()
 
-# Check for each given flag whether the compiler(s) for the given language(s) support it
-# and, if supported, add the flag to the compilation of source files.
+# Check for each given flag whether the compiler(s) for the given language(s)
+# support it and, if supported, add the flag to the compilation of source files.
 #
 # Usage:
 #
@@ -202,7 +211,8 @@ endfunction()
 #
 # Arguments:
 #
-#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
+#  <lang> - Languages for which to add the flag.
+#           If multiple, use semicolon and wrap in quotes.
 #  <flagn> - Flags to be added.
 
 function(add_compile_flags_if_supported lang)
@@ -211,8 +221,9 @@ function(add_compile_flags_if_supported lang)
   endforeach()
 endfunction()
 
-# Check for each given flag whether the compiler(s) for the given language(s) support it
-# and, if supported, add the flag to the compilation of source files for the given target.
+# Check for each given flag whether the compiler(s) for the given language(s)
+# support it and, if supported, add the flag to the compilation of source files
+# for the given target.
 #
 # Usage:
 #
@@ -223,7 +234,8 @@ endfunction()
 # 
 #  <target> - Name of the target.
 #  <scope> - Scope of the flags: INTERFACE|PUBLIC|PRIVATE.
-#  <lang> - Languages for which to add the flag. If multiple, use semicolon and wrap in quotes.
+#  <lang> - Languages for which to add the flag.
+#           If multiple, use semicolon and wrap in quotes.
 #  <flagn> - Flags to be added.
 
 function(add_target_compile_flags_if_supported target scope lang)
