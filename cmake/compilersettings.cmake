@@ -77,9 +77,9 @@ elseif(MSVC)
 endif()
 
 if (spectre1_mitigation_applied)
-    message("Spectre 1 mitigations will be applied")
+    message("C/C++ compiler is Clang 7.0+, applying Spectre 1 mitigations")
 else()
-    message("Spectre 1 mitigations will NOT be applied")
+    message("C/C++ compiler is not Clang 7.0+, NOT applying Spectre 1 mitigations")
 endif()
 
 # Use ML64 as assembler on Windows
