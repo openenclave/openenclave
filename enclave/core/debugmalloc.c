@@ -164,6 +164,10 @@ OE_INLINE size_t _calculate_block_size(size_t alignment, size_t size)
     r += oe_round_up_to_multiple(size, sizeof(uint64_t));
     r += sizeof(footer_t);
 
+    /* Check for overflow */
+    if (r < size)
+        return OE_SIZE_MAX;
+
     return r;
 }
 
