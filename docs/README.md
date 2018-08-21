@@ -20,22 +20,22 @@ The current implementation of Open Enclave is built on [Intel Software Guard Ext
 Design Overview
 -------------
 
-The [Design Overview](doc/DesignOverview.pdf) document provides a brief design overview of the Open Enclave SDK. It describes the parts of the SDK and how they work together to create, invoke, and terminate enclaves. 
+The [Design Overview](DesignOverview.pdf) document provides a brief design overview of the Open Enclave SDK. It describes the parts of the SDK and how they work together to create, invoke, and terminate enclaves. 
 
 Getting Started
 ---------------
-To build and experience enclaves with the Open Enclave SDK, start [here](doc/GettingStartedDocs/GettingStarted.md)
+To build and experience enclaves with the Open Enclave SDK, start [here](GettingStartedDocs/GettingStarted.md)
 
 Contributing
 ------------
 
-This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, see [Contributing to Open Enclave](doc/Contributing.md).
+This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, see [Contributing to Open Enclave](Contributing.md).
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-See the [Development Guide](doc/DevelopmentGuide.md) for details about developing code in this repo, such as coding style and development processes.
+See the [Development Guide](DevelopmentGuide.md) for details about developing code in this repo, such as coding style and development processes.
 
 
 Licensing

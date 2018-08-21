@@ -29,7 +29,7 @@ build$ make refman
 The resulting documentation can be found in the cmake tree under:
 
 ```
-build/doc/refman
+build/docs/refman
 ```
 
 To update the generated Markdown files in the source tree for commit into

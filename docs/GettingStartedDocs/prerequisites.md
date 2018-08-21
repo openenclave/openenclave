@@ -14,7 +14,7 @@ The files and directories in the top-level directory are described as follows.
 - [3rdparty](3rdparty) - Contains third-party software packages
 - [cmake](cmake) - Contains CMake scripts for building Open Enclave.
 - [common](common) - Contains sources that work in the enclave and the host
-- [doc](doc) - Contains documentation
+- [docs](docs) - Contains documentation
 - [core](core) - Contains the source for the oecore library
 - [enclave](enclave) - Contains the source for the oeenclave library
 - [host](host) - Contains source for the oehost library
