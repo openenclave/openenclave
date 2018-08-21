@@ -155,6 +155,8 @@ void HandleThreadWakeWait(oe_enclave_t* enclave, uint64_t argIn)
 #endif
 }
 
+#ifdef OE_USE_LIBSGX
+
 void HandleGetQuote(uint64_t argIn)
 {
     oe_get_quote_args_t* args = (oe_get_quote_args_t*)argIn;
@@ -182,6 +184,8 @@ void HandleGetQETargetInfo(uint64_t argIn)
 
     args->result = sgx_get_qetarget_info(&args->targetInfo);
 }
+
+#endif
 
 #if defined(OE_USE_DEBUG_MALLOC)
 void handle_malloc_dump(oe_enclave_t* enclave, uint64_t arg)
