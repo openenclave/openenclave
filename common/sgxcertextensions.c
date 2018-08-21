@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-#include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -10,6 +9,7 @@
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/trace.h>
 #include <string.h>
+#include "common.h"
 
 #define SGX_EXTENSION_OID_STR "1.2.840.113741.1.13.1"
 #define SGX_EXTENSION_OID "\x2a\x86\x48\x86\xf8\x4d\x01\x0d\x01"
@@ -229,7 +229,7 @@ static oe_result_t _ReadOctetExtension(
     if (dataLength != length)
         OE_RAISE(OE_FAILURE);
 
-    oe_memcpy(buffer, data, dataLength);
+    memcpy(buffer, data, dataLength);
     _TraceHexDump(tag, buffer, dataLength);
     result = OE_OK;
 done:
