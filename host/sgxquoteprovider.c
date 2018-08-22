@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 // Uncomment this line to enable tracing.
-// #define OE_TRACE_LEVEL 2
 
 #include <dlfcn.h>
 #include <openenclave/internal/hexdump.h>
@@ -16,6 +15,8 @@
 #include "hostthread.h"
 #include "platformquoteprovider.h"
 #include "sgxquoteprovider.h"
+
+#ifdef OE_USE_LIBSGX
 
 /**
  * This file manages the libngsa_quoteprov.so shared library.
@@ -280,3 +281,14 @@ done:
 
     return result;
 }
+
+void oe_cleanup_get_revocation_info_args(oe_get_revocation_info_args_t* args)
+{
+    if (args)
+    {
+        if (args->host_out_buffer)
+            free(args->host_out_buffer);
+    }
+}
+
+#endif

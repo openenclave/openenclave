@@ -141,8 +141,40 @@ static void _test_verify_without_crl(void)
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+static void _test_get_dates(void)
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    oe_crl_t crl;
+
+    OE_TEST(oe_crl_read_der(&crl, _CRL, sizeof(_CRL)) == OE_OK);
+
+    oe_datetime_t last;
+    oe_datetime_t next;
+    OE_TEST(oe_crl_get_update_dates(&crl, &last, &next) == OE_OK);
+
+    OE_TEST(last.year == 2018);
+    OE_TEST(last.month == 5);
+    OE_TEST(last.day == 30);
+    OE_TEST(last.hours == 10);
+    OE_TEST(last.minutes == 23);
+    OE_TEST(last.seconds == 42);
+
+    OE_TEST(next.year == 2019);
+    OE_TEST(next.month == 5);
+    OE_TEST(next.day == 30);
+    OE_TEST(next.hours == 10);
+    OE_TEST(next.minutes == 23);
+    OE_TEST(next.seconds == 42);
+
+    OE_TEST(oe_crl_free(&crl) == OE_OK);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 void TestCRL(void)
 {
     _test_verify_with_crl();
     _test_verify_without_crl();
+    _test_get_dates();
 }

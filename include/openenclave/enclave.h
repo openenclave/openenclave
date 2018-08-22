@@ -80,12 +80,12 @@ oe_result_t oe_remove_vectored_exception_handler(
  * The meaning of the **args** parameter is defined by the implementer of the
  * function and may be null.
  *
- * This function is implemented using the low-level oe_ecall() interface
- * where the function number is given by the **OE_OCALL_CALL_HOST** constant.
- *
  * Note that the return value of this function only indicates the success of
  * the call and not of the underlying function. The OCALL implementation must
  * define its own error reporting scheme based on **args**.
+ *
+ * While handling the OCALL, the host is not allowed to make an ECALL back into
+ * the enclave. A re-entrant ECALL will fail and return OE_REENTRANT_ECALL.
  *
  * @param func The name of the enclave function that will be called.
  * @param args The arguments to be passed to the enclave function.
@@ -94,6 +94,31 @@ oe_result_t oe_remove_vectored_exception_handler(
  *
  */
 oe_result_t oe_call_host(const char* func, void* args);
+
+/**
+ * Perform a high-level host function call (OCALL).
+ *
+ * Call the host function whose address is given by the **func** parameter,
+ * which is the address of a function defined in the host with the following
+ * prototoype.
+ *
+ *     OE_OCALL void (*)(void* args);
+ *
+ * The meaning of the **args** parameter is defined by the implementer of the
+ * function and may be null.
+ *
+ * Note that the return value of this function only indicates the success of
+ * the call and not of the underlying function. The OCALL implementation must
+ * define its own error reporting scheme based on **args**.
+ *
+ * @param func The address of the host function that will be called.
+ * @param args The arguments to be passed to the host function.
+ *
+ * @return OE_OK the call was successful.
+ * @return OE_INVALID_PARAMETER a parameter is invalid.
+ * @return OE_FAILURE the call failed.
+ */
+oe_result_t oe_call_host_by_address(void (*func)(void*), void* args);
 
 /**
  * Check whether the given buffer is strictly within the enclave.

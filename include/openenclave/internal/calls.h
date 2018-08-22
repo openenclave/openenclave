@@ -30,9 +30,6 @@ typedef void (*oe_ocall_function)(uint64_t argIn, uint64_t* argOut);
 **==============================================================================
 */
 
-/* Disallow OCALLs to call back into enclave with an ECALL */
-#define OE_OCALL_FLAG_NOT_REENTRANT (1u << 0)
-
 /*
 **==============================================================================
 **
@@ -81,6 +78,7 @@ typedef enum _oe_func {
     /* Caution: always add new ECALL function numbers here */
 
     OE_OCALL_CALL_HOST = OE_OCALL_BASE,
+    OE_OCALL_CALL_HOST_BY_ADDRESS,
     OE_OCALL_GET_QE_TARGET_INFO,
     OE_OCALL_GET_QUOTE,
     OE_OCALL_GET_REVOCATION_INFO,
@@ -195,7 +193,7 @@ OE_INLINE uint16_t oe_get_result_from_call_arg1(uint64_t arg)
 
 typedef void (*oe_enclave_func_t)(void* args);
 
-typedef struct oe_call_enclave_args_t
+typedef struct _oe_call_enclave_args
 {
     uint64_t func;
     uint64_t vaddr;
@@ -211,14 +209,29 @@ typedef struct oe_call_enclave_args_t
 **==============================================================================
 */
 
-typedef void (*oe_host_func_t)(void* args);
-
-typedef struct oe_call_host_args_t
+typedef struct _oe_call_host_args
 {
     void* args;
     oe_result_t result;
     OE_ZERO_SIZED_ARRAY char func[];
 } oe_call_host_args_t;
+
+/*
+**==============================================================================
+**
+** oe_call_host_by_address_args_t
+**
+**==============================================================================
+*/
+
+typedef void (*oe_host_func_t)(void* args);
+
+typedef struct _oe_call_host_by_address_args
+{
+    void* args;
+    oe_host_func_t func;
+    oe_result_t result;
+} oe_call_host_by_address_args_t;
 
 /*
 **==============================================================================
@@ -360,8 +373,6 @@ oe_result_t oe_ecall(
  * @param func The number of the function to be called.
  * @param argIn The input argument passed to the function.
  * @param argOut The output argument passed back from the function.
- * @param ocall_flags Additional flags for the duration of this ocall, such as
- *              OE_OCALL_FLAG_NOT_REENTRANT.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -370,11 +381,7 @@ oe_result_t oe_ecall(
  * @retval OE_UNEXPECTED An unexpected error occurred.
  *
  */
-oe_result_t oe_ocall(
-    uint16_t func,
-    uint64_t argIn,
-    uint64_t* argOut,
-    uint16_t ocall_flags);
+oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut);
 
 OE_EXTERNC_END
 

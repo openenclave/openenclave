@@ -289,11 +289,14 @@ static void _HandleECall(
         }
     }
 
-    /* Are ecalls permitted? */
-    if (td->ocall_flags & OE_OCALL_FLAG_NOT_REENTRANT)
+    // TD_PushCallsite increments the depth. depth > 1 indicates a reentrant
+    // call. Reentrancy is allowed to handle exceptions and to terminate the
+    // enclave.
+    if (td->depth > 1 && (func != OE_ECALL_VIRTUAL_EXCEPTION_HANDLER &&
+                          func != OE_ECALL_DESTRUCTOR))
     {
-        /* ecalls not permitted. */
-        result = OE_UNEXPECTED;
+        /* reentrancy not permitted. */
+        result = OE_REENTRANT_ECALL;
         goto done;
     }
 
@@ -316,7 +319,7 @@ static void _HandleECall(
 #if defined(OE_USE_DEBUG_MALLOC)
 
             /* If memory still allocated, print a trace and return an error */
-            if (oe_debug_malloc_check() != 0)
+            if (!oe_disable_debug_malloc_check && oe_debug_malloc_check() != 0)
                 result = OE_MEMORY_LEAK;
 
 #endif /* defined(OE_USE_DEBUG_MALLOC) */
@@ -400,16 +403,11 @@ OE_INLINE void _HandleORET(TD* td, uint16_t func, uint16_t result, int64_t arg)
 **==============================================================================
 */
 
-oe_result_t oe_ocall(
-    uint16_t func,
-    uint64_t argIn,
-    uint64_t* argOut,
-    uint16_t ocall_flags)
+oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
     TD* td = TD_Get();
     Callsite* callsite = td->callsites;
-    uint16_t old_ocall_flags = td->ocall_flags;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
     immediately. */
@@ -423,8 +421,6 @@ oe_result_t oe_ocall(
     /* Check for unexpected failures */
     if (!TD_Initialized(td))
         OE_THROW(OE_FAILURE);
-
-    td->ocall_flags |= ocall_flags;
 
     /* Save call site where execution will resume after OCALL */
     if (oe_setjmp(&callsite->jmpbuf) == 0)
@@ -444,8 +440,6 @@ oe_result_t oe_ocall(
 
         /* ORET here */
     }
-
-    td->ocall_flags = old_ocall_flags;
 
     result = OE_OK;
 
@@ -490,7 +484,7 @@ oe_result_t oe_call_host(const char* func, void* argsIn)
     }
 
     /* Call into the host */
-    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST, (int64_t)args, NULL, 0));
+    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST, (int64_t)args, NULL));
 
     /* Check the result */
     OE_TRY(args->result);
@@ -499,6 +493,56 @@ oe_result_t oe_call_host(const char* func, void* argsIn)
 
 OE_CATCH:
     oe_host_free_for_call_host(args);
+    return result;
+}
+
+/*
+**==============================================================================
+**
+** oe_call_host_by_address()
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_host_by_address(void (*func)(void*), void* argsIn)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_host_by_address_args_t* args = NULL;
+
+    /* Reject invalid parameters */
+    if (!func)
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    /* Verify that the function address is outside the enclave */
+    if (!oe_is_outside_enclave(func, sizeof(func)))
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    /* Initialize the arguments */
+    {
+        if (!(args = oe_host_alloc_for_call_host(sizeof(*args))))
+        {
+            /* Fail if the enclave is crashing. */
+            OE_TRY(__oe_enclave_status);
+            OE_THROW(OE_OUT_OF_MEMORY);
+        }
+
+        args->args = argsIn;
+        args->func = func;
+        args->result = OE_UNEXPECTED;
+    }
+
+    /* Call the host function with this address */
+    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST_BY_ADDRESS, (int64_t)args, NULL));
+
+    /* Check the result */
+    OE_TRY(args->result);
+
+    result = OE_OK;
+
+OE_CATCH:
+
+    oe_host_free_for_call_host(args);
+
     return result;
 }
 

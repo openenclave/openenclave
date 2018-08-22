@@ -23,6 +23,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_BUFFER_TOO_SMALL";
         case OE_INVALID_PARAMETER:
             return "OE_INVALID_PARAMETER";
+        case OE_REENTRANT_ECALL:
+            return "OE_REENTRANT_ECALL";
         case OE_OUT_OF_MEMORY:
             return "OE_OUT_OF_MEMORY";
         case OE_OUT_OF_THREADS:
@@ -89,6 +91,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_QUOTE_PROVIDER_ERROR";
         case OE_INVALID_REVOCATION_INFO:
             return "OE_INVALID_REVOCATION_INFO";
+        case OE_INVALID_UTC_DATE_TIME:
+            return "OE_INVALID_UTC_DATE_TIME";
         case __OE_RESULT_MAX:
             break;
     }

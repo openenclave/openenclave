@@ -77,15 +77,3 @@ OE_OCALL void mbed_test_fgets(void* fileArgs)
     args->ptr = (void*)ret;
     return;
 }
-
-OE_OCALL void mbed_test_fputc(void* fileArgs)
-{
-    int ret;
-    FileArgs* args = (FileArgs*)fileArgs;
-
-    ret = fputc(args->i_var, args->filePtr);
-
-    OE_TRACE_INFO("\n fputc Ret = %d \n", ret);
-    args->ret = ret;
-    return;
-}

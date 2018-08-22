@@ -20,6 +20,15 @@ OE_ECALL void TestPrint(void* args_)
 
         n = fwrite("fwrite(stdout)\n", 1, 15, stdout);
         OE_TEST(n == 15);
+        int r = fputc('o', stdout);
+        OE_TEST(r == 'o');
+        /* Note that gcc seems to optimize fputs to fwrite, and fprintf to
+           fputc, iff we ignore the result. */
+        fprintf(stdout, "\n");
+        r = fputs("", stdout);
+        OE_TEST(r == 0);
+        r = fputs("fputs(stdout)\n", stdout);
+        OE_TEST(r >= 0);
 
         const char str[] = "__oe_host_print(stdout)\n";
         __oe_host_print(0, str, (size_t)-1);
@@ -30,7 +39,13 @@ OE_ECALL void TestPrint(void* args_)
     {
         n = fwrite("fwrite(stderr)\n", 1, 15, stderr);
         OE_TEST(n == 15);
-
+        int r = fputc('e', stderr);
+        OE_TEST(r == 'e');
+        /* Note that gcc seems to optimize fputs to fwrite, and fprintf to
+           fputc, iff we ignore the result. */
+        fprintf(stderr, "\n");
+        r = fputs("fputs(stderr)\n", stderr);
+        OE_TEST(r >= 0);
         const char str[] = "__oe_host_print(stderr)\n";
         __oe_host_print(1, str, (size_t)-1);
         __oe_host_print(1, str, sizeof(str) - 1);
