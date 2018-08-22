@@ -72,12 +72,18 @@ struct header
     void* addrs[OE_BACKTRACE_MAX];
     uint64_t num_addrs;
 
+    /* Padding to make header a multiple of 16 */
+    uint64_t padding;
+
     /* Contains HEADER_MAGIC2 */
     uint64_t magic2;
 
     /* User data */
     uint8_t data[];
 };
+
+/* Verify that the sizeof(header_t) is a multiple of 16 */
+OE_STATIC_ASSERT(sizeof(header_t) % 16 == 0);
 
 typedef struct footer footer_t;
 
