@@ -28,8 +28,8 @@ LIBRARIES += $(call optlib,sgxoeql)
 LIBRARIES += $(call optlib,sgx_urts_ng)
 
 build:
-	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp
-	g++ -o sorthost host.o $(LDFLAGS) $(LIBRARIES)
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp
+	$(CXX) -o sorthost host.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
 	rm -f sorthost host.o

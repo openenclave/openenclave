@@ -32,8 +32,8 @@ all:
 	$(MAKE) sign
 
 build:
-	g++ -c $(CXXFLAGS) $(INCLUDES) enc.cpp -o enc.o
-	g++ -o sortenc.so enc.o $(LDFLAGS) $(LIBRARIES)
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) enc.cpp -o enc.o
+	$(CXX) -o sortenc.so enc.o $(LDFLAGS) $(LIBRARIES)
 
 sign:
 	$(OE_BINDIR)/oesign sortenc.so sort.conf private.pem

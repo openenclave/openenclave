@@ -33,8 +33,8 @@ all:
 	$(MAKE) sign
 
 build:
-	g++ -g -c $(CXXFLAGS) $(INCLUDES) attestation.cpp crypto.cpp ecalls.cpp init.cpp
-	g++ -o attestation_enc.so attestation.o crypto.o ecalls.o init.o $(LDFLAGS) $(LIBRARIES)
+	$(CXX) -g -c $(CXXFLAGS) $(INCLUDES) attestation.cpp crypto.cpp ecalls.cpp init.cpp
+	$(CXX) -o attestation_enc.so attestation.o crypto.o ecalls.o init.o $(LDFLAGS) $(LIBRARIES)
 
 sign:
 	$(OE_BINDIR)/oesign attestation_enc.so enc.conf private.pem

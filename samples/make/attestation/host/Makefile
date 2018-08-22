@@ -22,8 +22,8 @@ LIBRARIES += -lsgx_ngsa_ql
 LIBRARIES += -lsgx_urts_ng
 
 build:
-	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp ecalls.cpp
-	g++ -o attestation_host host.o ecalls.o $(LDFLAGS) $(LIBRARIES)
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp ecalls.cpp
+	$(CXX) -o attestation_host host.o ecalls.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
 	rm -f attestation_host host.o
