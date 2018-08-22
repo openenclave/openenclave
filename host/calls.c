@@ -427,12 +427,6 @@ static oe_result_t _HandleOCALL(
             handle_malloc_dump(enclave, argIn);
             break;
 #endif
-
-        case OE_ECALL_DESTRUCTOR:
-        case OE_ECALL_CALL_ENCLAVE:
-            assert("Invalid OCALL" == NULL);
-            break;
-
         default:
         {
             /* No function found with the number */
