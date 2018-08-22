@@ -5,18 +5,18 @@
 # IMPORTANT- Please update the version number in the next sentence
 # when you create a new docker image.
 #
-# This Dockerfile script builds an image for tag oetools:1.6
+# This Dockerfile script builds an image for tag oetools-azure:1.2'
 
 # To use this Dockerfile, you will need to install docker-ce.
 # Instructions for installing it on Ubuntu 16.04 LTS are at:
 # https://docs.docker.com/install/linux/docker-ce/ubuntu/
 #
-# Once installed, build a docker image from .circleci folder and
+# Once installed, build a docker image from .jenkins folder and
 # it will use this Dockerfile by default:
-#     .circleci$ sudo docker build --no-cache=true -t oetools:<version> .
+#     .jenkins$ sudo docker build --no-cache=true -t oetools-azure:<version> .
 #
 # For example, for version 1.x:
-#     .circleci$ sudo docker build --no-cache=true -t oetools:1.x .
+#     .jenkins$ sudo docker build --no-cache=true -t oetools-azure:1.x .
 #
 # Note that DNS forwarding in a VM can interfere with Docker
 # getting updates from Ubuntu apt-get repositories as part of the
@@ -28,15 +28,15 @@
 # To view the image after it is created or tagged:
 #     $ sudo docker image ls
 #
-# CircleCI pulls the images it uses from the oeciteam private
-# repository on Docker Hub. To upload the image to that repository:
-#     $ sudo docker login
-#     $ sudo docker tag oetools:<version> oeciteam/oetools:<version>
-#     $ sudo docker push oeciteam/oetools:<version>
+# Jenkins pulls the images it uses from the private oejenkinscidockerregistry
+# repository on Azure. To upload the image to that repository:
+#     $ sudo docker login oejenkinscidockerregistry.azurecr.io
+#     $ sudo docker tag oetools-azure:<version> oejenkinscidockerregistry.azurecr.io/oetools-azure:<version>
+#     $ sudo docker push oejenkinscidockerregistry.azurecr.io/oetools-azure:<version>
 #     $ sudo docker logout
 #
-# You can check that the image has been successfully uploaded at:
-# https://hub.docker.com/r/oeciteam/oetools/tags/
+# You can check that the image has been successfully uploaded by checking
+# the oejenkinscidockerregistry Container registry in Azure
 
 FROM ubuntu:16.04
 
