@@ -15,7 +15,7 @@ add_custom_command(
     
     # Rerun if any edl file changes or the oeedger8r binary changes.
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../edl/*.edl
-    DEPENDS ${OE_BINDIR}/oeedger8r
+    DEPENDS oeedger8r
 )
  
 # Custom target that depends on edge function implementations
