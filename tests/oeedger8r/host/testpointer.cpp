@@ -72,6 +72,9 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
             pcount,
             psize) == OE_OK);
     {
+        // p1 is not modified
+        OE_TEST(p1[0] == 1);
+
         // p2, p3 are modified.
         OE_TEST(p2[0] == 2);
         OE_TEST(p3[0] == 2);
@@ -190,6 +193,7 @@ static void reverse(T* arr, size_t len)
 }
 
 static int num_ocalls = 0;
+static int num_null_ocalls = 0;
 
 template <typename T>
 static T* ocall_pointer_fun_impl(
@@ -202,7 +206,15 @@ static T* ocall_pointer_fun_impl(
     T* p7,
     T* p8,
     T* p9,
-    T* p10)
+    T* p10,
+    T* p11,
+    T* p12,
+    T* p13,
+    T* p14,
+    T* p15,
+    T* p16,
+    int pcount,
+    int psize)
 {
     ++num_ocalls;
 
@@ -213,6 +225,9 @@ static T* ocall_pointer_fun_impl(
         if (p1)
         {
             OE_TEST(*p1 == 1);
+
+            // change p1. Should not have any effect on enclave.
+            *p1 = 2;
         }
 
         // in-out
@@ -236,6 +251,9 @@ static T* ocall_pointer_fun_impl(
         if (p4)
         {
             OE_TEST(memcmp(p4, exp, sizeof(T) * 16) == 0);
+
+            // change p4. Should not have any effect on enclave.
+            memset(p4, 0, sizeof(T) * 16);
         }
 
         // in-out
@@ -262,6 +280,9 @@ static T* ocall_pointer_fun_impl(
         if (p7)
         {
             OE_TEST(memcmp(p7, exp, 80) == 0);
+
+            // change p7. Should not have any effect on enclave.
+            memset(p7, 0, 80);
         }
 
         // in-out
@@ -284,6 +305,73 @@ static T* ocall_pointer_fun_impl(
         // host cannot modify value.
     }
 
+    OE_TEST(pcount == 16);
+    OE_TEST(psize == 80);
+
+    {
+        // in
+        if (p11)
+        {
+            for (int i = 0; i < pcount; ++i)
+            {
+                OE_TEST(p11[i] == (T)(i + 1));
+            }
+
+            // change p11. Should not have any effect on enclave.
+            memset(p11, 0, sizeof(T) * pcount);
+        }
+
+        // in-out
+        if (p12)
+        {
+            for (int i = 0; i < pcount; ++i)
+                OE_TEST(p12[i] == (T)(i + 1));
+            reverse(p12, pcount);
+        }
+
+        // out
+        if (p13)
+        {
+            for (int i = 0; i < pcount; ++i)
+                p13[i] = pcount;
+        }
+    }
+
+    {
+        size_t count = psize / sizeof(T);
+        // in
+        if (p14)
+        {
+            for (size_t i = 0; i < count; ++i)
+                OE_TEST(p14[i] == (T)(i + 1));
+
+            // change p11. Should not have any effect on host.
+            memset(p14, 0, sizeof(T) * count);
+        }
+
+        // in-out
+        if (p15)
+        {
+            for (size_t i = 0; i < count; ++i)
+                OE_TEST(p15[i] == (T)(i + 1));
+            reverse(p15, count);
+        }
+
+        // out
+        if (p16)
+        {
+            for (size_t i = 0; i < count; ++i)
+                p16[i] = psize;
+        }
+    }
+
+    // For the 2nd test call, all pointers as passed in as null.
+    if (!p1 && !p2 && !p3 && !p4 && !p5 && !p6 && !p7 && !p8 && !p9 && !p10 &&
+        !p11 && !p12 && !p13 && !p14 && !p15 && !p16)
+    {
+        ++num_null_ocalls;
+    }
+
     return p10;
 }
 
@@ -297,9 +385,35 @@ char* ocall_pointer_char(
     char* p7,
     char* p8,
     char* p9,
-    char* p10)
+    char* p10,
+    char* p11,
+    char* p12,
+    char* p13,
+    char* p14,
+    char* p15,
+    char* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 short* ocall_pointer_short(
@@ -312,9 +426,35 @@ short* ocall_pointer_short(
     short* p7,
     short* p8,
     short* p9,
-    short* p10)
+    short* p10,
+    short* p11,
+    short* p12,
+    short* p13,
+    short* p14,
+    short* p15,
+    short* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 int* ocall_pointer_int(
@@ -327,9 +467,35 @@ int* ocall_pointer_int(
     int* p7,
     int* p8,
     int* p9,
-    int* p10)
+    int* p10,
+    int* p11,
+    int* p12,
+    int* p13,
+    int* p14,
+    int* p15,
+    int* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 float* ocall_pointer_float(
@@ -342,9 +508,35 @@ float* ocall_pointer_float(
     float* p7,
     float* p8,
     float* p9,
-    float* p10)
+    float* p10,
+    float* p11,
+    float* p12,
+    float* p13,
+    float* p14,
+    float* p15,
+    float* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 double* ocall_pointer_double(
@@ -357,9 +549,35 @@ double* ocall_pointer_double(
     double* p7,
     double* p8,
     double* p9,
-    double* p10)
+    double* p10,
+    double* p11,
+    double* p12,
+    double* p13,
+    double* p14,
+    double* p15,
+    double* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 long* ocall_pointer_long(
@@ -372,9 +590,35 @@ long* ocall_pointer_long(
     long* p7,
     long* p8,
     long* p9,
-    long* p10)
+    long* p10,
+    long* p11,
+    long* p12,
+    long* p13,
+    long* p14,
+    long* p15,
+    long* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 size_t* ocall_pointer_size_t(
@@ -387,9 +631,35 @@ size_t* ocall_pointer_size_t(
     size_t* p7,
     size_t* p8,
     size_t* p9,
-    size_t* p10)
+    size_t* p10,
+    size_t* p11,
+    size_t* p12,
+    size_t* p13,
+    size_t* p14,
+    size_t* p15,
+    size_t* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 unsigned* ocall_pointer_unsigned(
@@ -402,9 +672,35 @@ unsigned* ocall_pointer_unsigned(
     unsigned* p7,
     unsigned* p8,
     unsigned* p9,
-    unsigned* p10)
+    unsigned* p10,
+    unsigned* p11,
+    unsigned* p12,
+    unsigned* p13,
+    unsigned* p14,
+    unsigned* p15,
+    unsigned* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 int8_t* ocall_pointer_int8_t(
@@ -417,9 +713,35 @@ int8_t* ocall_pointer_int8_t(
     int8_t* p7,
     int8_t* p8,
     int8_t* p9,
-    int8_t* p10)
+    int8_t* p10,
+    int8_t* p11,
+    int8_t* p12,
+    int8_t* p13,
+    int8_t* p14,
+    int8_t* p15,
+    int8_t* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 int16_t* ocall_pointer_int16_t(
@@ -432,9 +754,35 @@ int16_t* ocall_pointer_int16_t(
     int16_t* p7,
     int16_t* p8,
     int16_t* p9,
-    int16_t* p10)
+    int16_t* p10,
+    int16_t* p11,
+    int16_t* p12,
+    int16_t* p13,
+    int16_t* p14,
+    int16_t* p15,
+    int16_t* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 int32_t* ocall_pointer_int32_t(
@@ -447,9 +795,35 @@ int32_t* ocall_pointer_int32_t(
     int32_t* p7,
     int32_t* p8,
     int32_t* p9,
-    int32_t* p10)
+    int32_t* p10,
+    int32_t* p11,
+    int32_t* p12,
+    int32_t* p13,
+    int32_t* p14,
+    int32_t* p15,
+    int32_t* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 int64_t* ocall_pointer_int64_t(
@@ -462,9 +836,35 @@ int64_t* ocall_pointer_int64_t(
     int64_t* p7,
     int64_t* p8,
     int64_t* p9,
-    int64_t* p10)
+    int64_t* p10,
+    int64_t* p11,
+    int64_t* p12,
+    int64_t* p13,
+    int64_t* p14,
+    int64_t* p15,
+    int64_t* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 uint8_t* ocall_pointer_uint8_t(
@@ -477,9 +877,35 @@ uint8_t* ocall_pointer_uint8_t(
     uint8_t* p7,
     uint8_t* p8,
     uint8_t* p9,
-    uint8_t* p10)
+    uint8_t* p10,
+    uint8_t* p11,
+    uint8_t* p12,
+    uint8_t* p13,
+    uint8_t* p14,
+    uint8_t* p15,
+    uint8_t* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 uint16_t* ocall_pointer_uint16_t(
@@ -492,9 +918,35 @@ uint16_t* ocall_pointer_uint16_t(
     uint16_t* p7,
     uint16_t* p8,
     uint16_t* p9,
-    uint16_t* p10)
+    uint16_t* p10,
+    uint16_t* p11,
+    uint16_t* p12,
+    uint16_t* p13,
+    uint16_t* p14,
+    uint16_t* p15,
+    uint16_t* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 uint32_t* ocall_pointer_uint32_t(
@@ -507,9 +959,35 @@ uint32_t* ocall_pointer_uint32_t(
     uint32_t* p7,
     uint32_t* p8,
     uint32_t* p9,
-    uint32_t* p10)
+    uint32_t* p10,
+    uint32_t* p11,
+    uint32_t* p12,
+    uint32_t* p13,
+    uint32_t* p14,
+    uint32_t* p15,
+    uint32_t* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 uint64_t* ocall_pointer_uint64_t(
@@ -522,9 +1000,35 @@ uint64_t* ocall_pointer_uint64_t(
     uint64_t* p7,
     uint64_t* p8,
     uint64_t* p9,
-    uint64_t* p10)
+    uint64_t* p10,
+    uint64_t* p11,
+    uint64_t* p12,
+    uint64_t* p13,
+    uint64_t* p14,
+    uint64_t* p15,
+    uint64_t* p16,
+    int pcount,
+    int psize)
 {
-    return ocall_pointer_fun_impl(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+    return ocall_pointer_fun_impl(
+        p1,
+        p2,
+        p3,
+        p4,
+        p5,
+        p6,
+        p7,
+        p8,
+        p9,
+        p10,
+        p11,
+        p12,
+        p13,
+        p14,
+        p15,
+        p16,
+        pcount,
+        psize);
 }
 
 OE_OCALL void ocall_pointer_assert_all_called(void*)
@@ -532,4 +1036,5 @@ OE_OCALL void ocall_pointer_assert_all_called(void*)
     // Each of the 16 functions above is called twice.
     // Once with arrays and then with nulls.
     OE_TEST(num_ocalls == 32);
+    OE_TEST(num_null_ocalls == 16);
 }

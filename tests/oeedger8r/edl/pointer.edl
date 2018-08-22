@@ -552,7 +552,20 @@ enclave {
             [in, size=80] char* p9,
 
             // user handled.
-            [user_check] char* p10
+            [user_check] char* p10,
+
+            // count as parameter
+            [in, count=pcount] char* p11,
+            [in,out, count=pcount] char* p12,
+            [out, count=pcount] char* p13,
+
+            // size as parameter
+            [in, size=psize] char* p14,
+            [in,out, size=psize] char* p15,
+            [out, size=psize] char* p16,
+
+            int pcount,
+            int psize            
         );
 
         short* ocall_pointer_short(
@@ -572,7 +585,20 @@ enclave {
             [in, size=80] short* p9,
 
             // user handled.
-            [user_check] short* p10
+            [user_check] short* p10,
+
+            // count as parameter
+            [in, count=pcount] short* p11,
+            [in,out, count=pcount] short* p12,
+            [out, count=pcount] short* p13,
+
+            // size as parameter
+            [in, size=psize] short* p14,
+            [in,out, size=psize] short* p15,
+            [out, size=psize] short* p16,
+
+            int pcount,
+            int psize              
         );
 
         int* ocall_pointer_int(
@@ -592,7 +618,20 @@ enclave {
             [in, size=80] int* p9,
 
             // user handled.
-            [user_check] int* p10
+            [user_check] int* p10,
+
+            // count as parameter
+            [in, count=pcount] int* p11,
+            [in,out, count=pcount] int* p12,
+            [out, count=pcount] int* p13,
+
+            // size as parameter
+            [in, size=psize] int* p14,
+            [in,out, size=psize] int* p15,
+            [out, size=psize] int* p16,
+
+            int pcount,
+            int psize   
         );
 
         float* ocall_pointer_float(
@@ -612,7 +651,20 @@ enclave {
             [in, size=80] float* p9,
 
             // user handled.
-            [user_check] float* p10
+            [user_check] float* p10,
+
+            // count as parameter
+            [in, count=pcount] float* p11,
+            [in,out, count=pcount] float* p12,
+            [out, count=pcount] float* p13,
+
+            // size as parameter
+            [in, size=psize] float* p14,
+            [in,out, size=psize] float* p15,
+            [out, size=psize] float* p16,
+
+            int pcount,
+            int psize
         );
 
         double* ocall_pointer_double(
@@ -632,7 +684,20 @@ enclave {
             [in, size=80] double* p9,
 
             // user handled.
-            [user_check] double* p10
+            [user_check] double* p10,
+
+            // count as parameter
+            [in, count=pcount] double* p11,
+            [in,out, count=pcount] double* p12,
+            [out, count=pcount] double* p13,
+
+            // size as parameter
+            [in, size=psize] double* p14,
+            [in,out, size=psize] double* p15,
+            [out, size=psize] double* p16,
+
+            int pcount,
+            int psize
         );
 
         long* ocall_pointer_long(
@@ -652,7 +717,20 @@ enclave {
             [in, size=80] long* p9,
 
             // user handled.
-            [user_check] long* p10
+            [user_check] long* p10,
+
+            // count as parameter
+            [in, count=pcount] long* p11,
+            [in,out, count=pcount] long* p12,
+            [out, count=pcount] long* p13,
+
+            // size as parameter
+            [in, size=psize] long* p14,
+            [in,out, size=psize] long* p15,
+            [out, size=psize] long* p16,
+
+            int pcount,
+            int psize
         );
 
         size_t* ocall_pointer_size_t(
@@ -672,7 +750,20 @@ enclave {
             [in, size=80] size_t* p9,
 
             // user handled.
-            [user_check] size_t* p10
+            [user_check] size_t* p10,
+
+            // count as parameter
+            [in, count=pcount] size_t* p11,
+            [in,out, count=pcount] size_t* p12,
+            [out, count=pcount] size_t* p13,
+
+            // size as parameter
+            [in, size=psize] size_t* p14,
+            [in,out, size=psize] size_t* p15,
+            [out, size=psize] size_t* p16,
+
+            int pcount,
+            int psize
         );
 
         unsigned* ocall_pointer_unsigned(
@@ -692,7 +783,20 @@ enclave {
             [in, size=80] unsigned* p9,
 
             // user handled.
-            [user_check] unsigned* p10
+            [user_check] unsigned* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned* p11,
+            [in,out, count=pcount] unsigned* p12,
+            [out, count=pcount] unsigned* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned* p14,
+            [in,out, size=psize] unsigned* p15,
+            [out, size=psize] unsigned* p16,
+
+            int pcount,
+            int psize
         );
 
         int8_t* ocall_pointer_int8_t(
@@ -712,7 +816,20 @@ enclave {
             [in, size=80] int8_t* p9,
 
             // user handled.
-            [user_check] int8_t* p10
+            [user_check] int8_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int8_t* p11,
+            [in,out, count=pcount] int8_t* p12,
+            [out, count=pcount] int8_t* p13,
+
+            // size as parameter
+            [in, size=psize] int8_t* p14,
+            [in,out, size=psize] int8_t* p15,
+            [out, size=psize] int8_t* p16,
+
+            int pcount,
+            int psize
         );
 
         int16_t* ocall_pointer_int16_t(
@@ -732,7 +849,20 @@ enclave {
             [in, size=80] int16_t* p9,
 
             // user handled.
-            [user_check] int16_t* p10
+            [user_check] int16_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int16_t* p11,
+            [in,out, count=pcount] int16_t* p12,
+            [out, count=pcount] int16_t* p13,
+
+            // size as parameter
+            [in, size=psize] int16_t* p14,
+            [in,out, size=psize] int16_t* p15,
+            [out, size=psize] int16_t* p16,
+
+            int pcount,
+            int psize
         );
 
         int32_t* ocall_pointer_int32_t(
@@ -752,7 +882,20 @@ enclave {
             [in, size=80] int32_t* p9,
 
             // user handled.
-            [user_check] int32_t* p10
+            [user_check] int32_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int32_t* p11,
+            [in,out, count=pcount] int32_t* p12,
+            [out, count=pcount] int32_t* p13,
+
+            // size as parameter
+            [in, size=psize] int32_t* p14,
+            [in,out, size=psize] int32_t* p15,
+            [out, size=psize] int32_t* p16,
+
+            int pcount,
+            int psize
         );
 
         int64_t* ocall_pointer_int64_t(
@@ -772,7 +915,20 @@ enclave {
             [in, size=80] int64_t* p9,
 
             // user handled.
-            [user_check] int64_t* p10
+            [user_check] int64_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int64_t* p11,
+            [in,out, count=pcount] int64_t* p12,
+            [out, count=pcount] int64_t* p13,
+
+            // size as parameter
+            [in, size=psize] int64_t* p14,
+            [in,out, size=psize] int64_t* p15,
+            [out, size=psize] int64_t* p16,
+
+            int pcount,
+            int psize
         );
 
         uint8_t* ocall_pointer_uint8_t(
@@ -792,7 +948,20 @@ enclave {
             [in, size=80] uint8_t* p9,
 
             // user handled.
-            [user_check] uint8_t* p10
+            [user_check] uint8_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint8_t* p11,
+            [in,out, count=pcount] uint8_t* p12,
+            [out, count=pcount] uint8_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint8_t* p14,
+            [in,out, size=psize] uint8_t* p15,
+            [out, size=psize] uint8_t* p16,
+
+            int pcount,
+            int psize
         );
 
         uint16_t* ocall_pointer_uint16_t(
@@ -812,7 +981,20 @@ enclave {
             [in, size=80] uint16_t* p9,
 
             // user handled.
-            [user_check] uint16_t* p10
+            [user_check] uint16_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint16_t* p11,
+            [in,out, count=pcount] uint16_t* p12,
+            [out, count=pcount] uint16_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint16_t* p14,
+            [in,out, size=psize] uint16_t* p15,
+            [out, size=psize] uint16_t* p16,
+
+            int pcount,
+            int psize
         );
 
         uint32_t* ocall_pointer_uint32_t(
@@ -832,7 +1014,20 @@ enclave {
             [in, size=80] uint32_t* p9,
 
             // user handled.
-            [user_check] uint32_t* p10
+            [user_check] uint32_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint32_t* p11,
+            [in,out, count=pcount] uint32_t* p12,
+            [out, count=pcount] uint32_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint32_t* p14,
+            [in,out, size=psize] uint32_t* p15,
+            [out, size=psize] uint32_t* p16,
+
+            int pcount,
+            int psize
         );
 
         uint64_t* ocall_pointer_uint64_t(
@@ -852,7 +1047,20 @@ enclave {
             [in, size=80] uint64_t* p9,
 
             // user handled.
-            [user_check] uint64_t* p10
+            [user_check] uint64_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint64_t* p11,
+            [in,out, count=pcount] uint64_t* p12,
+            [out, count=pcount] uint64_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint64_t* p14,
+            [in,out, size=psize] uint64_t* p15,
+            [out, size=psize] uint64_t* p16,
+
+            int pcount,
+            int psize
         );                                                                                                                       
     };    
 };

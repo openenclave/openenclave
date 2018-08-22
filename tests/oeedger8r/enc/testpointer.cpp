@@ -15,6 +15,8 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
     // 1 element arrays.
     T p1[1] = {1}, p2[1] = {1}, p3[1] = {1};
 
+    // Arrays declared static to avoid blowing up the stack.
+
     // 16 element arrays.
     T p4[16], p5[16], p6[16];
     for (size_t i = 0; i < 16; ++i)
@@ -22,7 +24,7 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
 
     static_assert((80 / sizeof(T)) * sizeof(T) == 80, "invalid size");
     // arrays with size = 80 bytes.
-    size_t count = 80 / sizeof(T);
+    const size_t count = 80 / sizeof(T);
     T p7[count], p8[count], p9[count];
 
     for (size_t i = 0; i < count; ++i)
@@ -32,11 +34,47 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
     for (size_t i = 0; i < 16; ++i)
         p10[i] = i + 1;
 
+    static T p11[16];
+    static T p12[16];
+    static T p13[16];
+    for (size_t i = 0; i < 16; ++i)
+        p11[i] = p12[i] = p13[i] = i + 1;
+
+    static T p14[count];
+    static T p15[count];
+    static T p16[count];
+    for (size_t i = 0; i < count; ++i)
+        p14[i] = p15[i] = p16[i] = i + 1;
+
+    int pcount = 16;
+    int psize = 80;
+
     T* ret = NULL;
     OE_TEST(
-        ocall_pointer_fun(&ret, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) ==
-        OE_OK);
+        ocall_pointer_fun(
+            &ret,
+            p1,
+            p2,
+            p3,
+            p4,
+            p5,
+            p6,
+            p7,
+            p8,
+            p9,
+            p10,
+            p11,
+            p12,
+            p13,
+            p14,
+            p15,
+            p16,
+            pcount,
+            psize) == OE_OK);
     {
+        // p1 is not modified
+        OE_TEST(p1[0] == 1);
+
         // p2, p3 are modified.
         OE_TEST(p2[0] == 2);
         OE_TEST(p3[0] == 2);
@@ -65,11 +103,62 @@ static void test_ocall_pointer_fun(F ocall_pointer_fun)
     // p10 is returned.
     OE_TEST(ret == p10);
 
+    OE_TEST(pcount == 16);
+    OE_TEST(psize == 80);
+    {
+        // p11, p12, p13 specify pcount as the EDL 'count' attribute.
+
+        // p11 is input and should be untouched.
+        for (size_t i = 0; i < (size_t)pcount; ++i)
+            OE_TEST(p11[i] == (T)(i + 1));
+
+        // p12 is in-out and should be reversed.
+        for (size_t i = 0; i < (size_t)pcount; ++i)
+            OE_TEST(p12[i] == (T)(pcount - i));
+
+        // p13 is out and should have value pcount.
+        for (size_t i = 0; i < (size_t)pcount; ++i)
+            OE_TEST(p13[i] == (T)pcount);
+    }
+
+    {
+        // p14, p15, p16 specify psize as the EDL 'size' attribute.
+
+        // p14 is input and should be untouched.
+        for (size_t i = 0; i < (size_t)count; ++i)
+            OE_TEST(p14[i] == (T)(i + 1));
+
+        // p15 is in-out and should be reversed.
+        for (size_t i = 0; i < (size_t)count; ++i)
+            OE_TEST(p15[i] == (T)(count - i));
+
+        // p16 is out and should have value pcount.
+        for (size_t i = 0; i < (size_t)count; ++i)
+            OE_TEST(p16[i] == (T)psize);
+    }
+
     // Call with nulls.
     OE_TEST(
         ocall_pointer_fun(
-            &ret, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL) ==
-        OE_OK);
+            &ret,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            pcount,
+            psize) == OE_OK);
 }
 
 OE_ECALL void test_pointer_edl_ocalls(void*)
@@ -103,6 +192,7 @@ static void reverse(T* arr, size_t len)
 }
 
 static int num_ecalls = 0;
+static int num_null_ecalls = 0;
 
 template <typename T>
 static T* ecall_pointer_fun_impl(
@@ -278,6 +368,13 @@ static T* ecall_pointer_fun_impl(
             for (size_t i = 0; i < count; ++i)
                 p16[i] = psize;
         }
+    }
+
+    // For the 2nd test call, all pointers as passed in as null.
+    if (!p1 && !p2 && !p3 && !p4 && !p5 && !p6 && !p7 && !p8 && !p9 && !p10 &&
+        !p11 && !p12 && !p13 && !p14 && !p15 && !p16)
+    {
+        ++num_null_ecalls;
     }
 
     return p10;
@@ -944,4 +1041,5 @@ OE_ECALL void ecall_pointer_assert_all_called(void*)
     // Each of the 16 functions above is called twice.
     // Once with arrays and then with nulls.
     OE_TEST(num_ecalls == 32);
+    OE_TEST(num_null_ecalls == 16);
 }
