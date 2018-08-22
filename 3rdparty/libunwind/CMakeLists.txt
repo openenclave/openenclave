@@ -43,6 +43,7 @@ set(OPTS
     --enable-cxx-exceptions
     # Note that the C compiler is used for ASM as well.
     CC=${CMAKE_C_COMPILER}
+    CXX=${CMAKE_CXX_COMPILER}
     )
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
