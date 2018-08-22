@@ -9,4 +9,3 @@
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_bool.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/strings/string.view/string.view.access/back.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array14.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/experimental/memory/memory.resource.adaptor/memory.resource.adaptor.mem/do_allocate_and_deallocate.pass.cpp
