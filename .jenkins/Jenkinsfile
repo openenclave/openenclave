@@ -4,7 +4,7 @@ pipeline {
     stage('Precommit-checking') {
       agent {
         docker {
-          image 'oetools-azure:1.0'
+          image 'oetools-azure:1.2'
         }
 
       }
@@ -18,7 +18,7 @@ pipeline {
         stage('sgx1-debug Simulation') {
           agent {
             docker {
-              image 'oetools-azure:1.0'
+              image 'oetools-azure:1.2'
             }
 
           }
@@ -30,7 +30,7 @@ pipeline {
         stage('sgx1-release Simulation') {
           agent {
             docker {
-              image 'oetools-azure:1.0'
+              image 'oetools-azure:1.2'
             }
 
           }
@@ -42,7 +42,7 @@ pipeline {
         stage('sgx1-relwithdebinfo Simulation') {
           agent {
             docker {
-              image 'oetools-azure:1.0'
+              image 'oetools-azure:1.2'
             }
 
           }
@@ -54,7 +54,7 @@ pipeline {
         stage('sgx1-flc-debug Simulation') {
           agent {
             docker {
-              image 'oetools-azure:1.0'
+              image 'oetools-azure:1.2'
             }
 
           }
@@ -66,7 +66,7 @@ pipeline {
         stage('sgx1-flc-release Simulation') {
           agent {
             docker {
-              image 'oetools-azure:1.0'
+              image 'oetools-azure:1.2'
             }
 
           }
@@ -78,7 +78,7 @@ pipeline {
         stage('sgx1-flc-relwithdebinfo Simulation') {
           agent {
             docker {
-              image 'oetools-azure:1.0'
+              image 'oetools-azure:1.2'
             }
 
           }
