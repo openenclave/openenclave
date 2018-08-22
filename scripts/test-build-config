@@ -99,7 +99,7 @@ fi
 
 #Delete the build directory if it exists. This allows calling this script iteratively
 #for multiple configurations for a platform.
-if [ ! -d "./build" ]; then
+if [ -d "./build" ]; then
   rm -rf ./build
 fi
 
