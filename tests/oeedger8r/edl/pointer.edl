@@ -10,7 +10,7 @@ enclave {
             [in,out] char* p2,
             [out] char* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] char* p4,
             [in,out, count=16] char* p5,
             [out, count=16] char* p6,
@@ -21,7 +21,20 @@ enclave {
             [in, size=80] char* p9,
 
             // user handled.
-            [user_check] char* p10
+            [user_check] char* p10,
+
+            // count as parameter
+            [in, count=pcount] char* p11,
+            [in,out, count=pcount] char* p12,
+            [out, count=pcount] char* p13,
+
+            // size as parameter
+            [in, size=psize] char* p14,
+            [in,out, size=psize] char* p15,
+            [out, size=psize] char* p16,
+
+            int pcount,
+            int psize
         );
 
         public short* ecall_pointer_short(
@@ -30,7 +43,7 @@ enclave {
             [in,out] short* p2,
             [out] short* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] short* p4,
             [in,out, count=16] short* p5,
             [out, count=16] short* p6,
@@ -41,7 +54,20 @@ enclave {
             [in, size=80] short* p9,
 
             // user handled.
-            [user_check] short* p10
+            [user_check] short* p10,
+
+            // count as parameter
+            [in, count=pcount] short* p11,
+            [in,out, count=pcount] short* p12,
+            [out, count=pcount] short* p13,
+
+            // size as parameter
+            [in, size=psize] short* p14,
+            [in,out, size=psize] short* p15,
+            [out, size=psize] short* p16,
+
+            int pcount,
+            int psize           
         );
 
         public int* ecall_pointer_int(
@@ -50,7 +76,7 @@ enclave {
             [in,out] int* p2,
             [out] int* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int* p4,
             [in,out, count=16] int* p5,
             [out, count=16] int* p6,
@@ -61,7 +87,20 @@ enclave {
             [in, size=80] int* p9,
 
             // user handled.
-            [user_check] int* p10
+            [user_check] int* p10,
+
+            // count as parameter
+            [in, count=pcount] int* p11,
+            [in,out, count=pcount] int* p12,
+            [out, count=pcount] int* p13,
+
+            // size as parameter
+            [in, size=psize] int* p14,
+            [in,out, size=psize] int* p15,
+            [out, size=psize] int* p16,
+
+            int pcount,
+            int psize           
         );
 
         public float* ecall_pointer_float(
@@ -70,7 +109,7 @@ enclave {
             [in,out] float* p2,
             [out] float* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] float* p4,
             [in,out, count=16] float* p5,
             [out, count=16] float* p6,
@@ -81,7 +120,20 @@ enclave {
             [in, size=80] float* p9,
 
             // user handled.
-            [user_check] float* p10
+            [user_check] float* p10,
+
+            // count as parameter
+            [in, count=pcount] float* p11,
+            [in,out, count=pcount] float* p12,
+            [out, count=pcount] float* p13,
+
+            // size as parameter
+            [in, size=psize] float* p14,
+            [in,out, size=psize] float* p15,
+            [out, size=psize] float* p16,
+
+            int pcount,
+            int psize             
         );
 
         public double* ecall_pointer_double(
@@ -90,7 +142,7 @@ enclave {
             [in,out] double* p2,
             [out] double* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] double* p4,
             [in,out, count=16] double* p5,
             [out, count=16] double* p6,
@@ -101,7 +153,20 @@ enclave {
             [in, size=80] double* p9,
 
             // user handled.
-            [user_check] double* p10
+            [user_check] double* p10,
+
+            // count as parameter
+            [in, count=pcount] double* p11,
+            [in,out, count=pcount] double* p12,
+            [out, count=pcount] double* p13,
+
+            // size as parameter
+            [in, size=psize] double* p14,
+            [in,out, size=psize] double* p15,
+            [out, size=psize] double* p16,
+
+            int pcount,
+            int psize             
         );
 
         public long* ecall_pointer_long(
@@ -110,7 +175,7 @@ enclave {
             [in,out] long* p2,
             [out] long* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] long* p4,
             [in,out, count=16] long* p5,
             [out, count=16] long* p6,
@@ -121,7 +186,20 @@ enclave {
             [in, size=80] long* p9,
 
             // user handled.
-            [user_check] long* p10
+            [user_check] long* p10,
+
+            // count as parameter
+            [in, count=pcount] long* p11,
+            [in,out, count=pcount] long* p12,
+            [out, count=pcount] long* p13,
+
+            // size as parameter
+            [in, size=psize] long* p14,
+            [in,out, size=psize] long* p15,
+            [out, size=psize] long* p16,
+
+            int pcount,
+            int psize             
         );
 
         public size_t* ecall_pointer_size_t(
@@ -130,7 +208,7 @@ enclave {
             [in,out] size_t* p2,
             [out] size_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] size_t* p4,
             [in,out, count=16] size_t* p5,
             [out, count=16] size_t* p6,
@@ -141,7 +219,20 @@ enclave {
             [in, size=80] size_t* p9,
 
             // user handled.
-            [user_check] size_t* p10
+            [user_check] size_t* p10,
+
+            // count as parameter
+            [in, count=pcount] size_t* p11,
+            [in,out, count=pcount] size_t* p12,
+            [out, count=pcount] size_t* p13,
+
+            // size as parameter
+            [in, size=psize] size_t* p14,
+            [in,out, size=psize] size_t* p15,
+            [out, size=psize] size_t* p16,
+
+            int pcount,
+            int psize             
         );
 
         public unsigned* ecall_pointer_unsigned(
@@ -150,7 +241,7 @@ enclave {
             [in,out] unsigned* p2,
             [out] unsigned* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] unsigned* p4,
             [in,out, count=16] unsigned* p5,
             [out, count=16] unsigned* p6,
@@ -161,7 +252,20 @@ enclave {
             [in, size=80] unsigned* p9,
 
             // user handled.
-            [user_check] unsigned* p10
+            [user_check] unsigned* p10,
+
+            // count as parameter
+            [in, count=pcount] unsigned* p11,
+            [in,out, count=pcount] unsigned* p12,
+            [out, count=pcount] unsigned* p13,
+
+            // size as parameter
+            [in, size=psize] unsigned* p14,
+            [in,out, size=psize] unsigned* p15,
+            [out, size=psize] unsigned* p16,
+
+            int pcount,
+            int psize             
         );
 
         public int8_t* ecall_pointer_int8_t(
@@ -170,7 +274,7 @@ enclave {
             [in,out] int8_t* p2,
             [out] int8_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int8_t* p4,
             [in,out, count=16] int8_t* p5,
             [out, count=16] int8_t* p6,
@@ -181,7 +285,20 @@ enclave {
             [in, size=80] int8_t* p9,
 
             // user handled.
-            [user_check] int8_t* p10
+            [user_check] int8_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int8_t* p11,
+            [in,out, count=pcount] int8_t* p12,
+            [out, count=pcount] int8_t* p13,
+
+            // size as parameter
+            [in, size=psize] int8_t* p14,
+            [in,out, size=psize] int8_t* p15,
+            [out, size=psize] int8_t* p16,
+
+            int pcount,
+            int psize             
         );
 
         public int16_t* ecall_pointer_int16_t(
@@ -190,7 +307,7 @@ enclave {
             [in,out] int16_t* p2,
             [out] int16_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int16_t* p4,
             [in,out, count=16] int16_t* p5,
             [out, count=16] int16_t* p6,
@@ -201,7 +318,20 @@ enclave {
             [in, size=80] int16_t* p9,
 
             // user handled.
-            [user_check] int16_t* p10
+            [user_check] int16_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int16_t* p11,
+            [in,out, count=pcount] int16_t* p12,
+            [out, count=pcount] int16_t* p13,
+
+            // size as parameter
+            [in, size=psize] int16_t* p14,
+            [in,out, size=psize] int16_t* p15,
+            [out, size=psize] int16_t* p16,
+
+            int pcount,
+            int psize             
         );
 
         public int32_t* ecall_pointer_int32_t(
@@ -210,7 +340,7 @@ enclave {
             [in,out] int32_t* p2,
             [out] int32_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int32_t* p4,
             [in,out, count=16] int32_t* p5,
             [out, count=16] int32_t* p6,
@@ -221,7 +351,20 @@ enclave {
             [in, size=80] int32_t* p9,
 
             // user handled.
-            [user_check] int32_t* p10
+            [user_check] int32_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int32_t* p11,
+            [in,out, count=pcount] int32_t* p12,
+            [out, count=pcount] int32_t* p13,
+
+            // size as parameter
+            [in, size=psize] int32_t* p14,
+            [in,out, size=psize] int32_t* p15,
+            [out, size=psize] int32_t* p16,
+
+            int pcount,
+            int psize             
         );
 
         public int64_t* ecall_pointer_int64_t(
@@ -230,7 +373,7 @@ enclave {
             [in,out] int64_t* p2,
             [out] int64_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int64_t* p4,
             [in,out, count=16] int64_t* p5,
             [out, count=16] int64_t* p6,
@@ -241,7 +384,20 @@ enclave {
             [in, size=80] int64_t* p9,
 
             // user handled.
-            [user_check] int64_t* p10
+            [user_check] int64_t* p10,
+
+            // count as parameter
+            [in, count=pcount] int64_t* p11,
+            [in,out, count=pcount] int64_t* p12,
+            [out, count=pcount] int64_t* p13,
+
+            // size as parameter
+            [in, size=psize] int64_t* p14,
+            [in,out, size=psize] int64_t* p15,
+            [out, size=psize] int64_t* p16,
+
+            int pcount,
+            int psize             
         );
 
         public uint8_t* ecall_pointer_uint8_t(
@@ -250,7 +406,7 @@ enclave {
             [in,out] uint8_t* p2,
             [out] uint8_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] uint8_t* p4,
             [in,out, count=16] uint8_t* p5,
             [out, count=16] uint8_t* p6,
@@ -261,7 +417,20 @@ enclave {
             [in, size=80] uint8_t* p9,
 
             // user handled.
-            [user_check] uint8_t* p10
+            [user_check] uint8_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint8_t* p11,
+            [in,out, count=pcount] uint8_t* p12,
+            [out, count=pcount] uint8_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint8_t* p14,
+            [in,out, size=psize] uint8_t* p15,
+            [out, size=psize] uint8_t* p16,
+
+            int pcount,
+            int psize             
         );
 
         public uint16_t* ecall_pointer_uint16_t(
@@ -270,7 +439,7 @@ enclave {
             [in,out] uint16_t* p2,
             [out] uint16_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] uint16_t* p4,
             [in,out, count=16] uint16_t* p5,
             [out, count=16] uint16_t* p6,
@@ -281,7 +450,20 @@ enclave {
             [in, size=80] uint16_t* p9,
 
             // user handled.
-            [user_check] uint16_t* p10
+            [user_check] uint16_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint16_t* p11,
+            [in,out, count=pcount] uint16_t* p12,
+            [out, count=pcount] uint16_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint16_t* p14,
+            [in,out, size=psize] uint16_t* p15,
+            [out, size=psize] uint16_t* p16,
+
+            int pcount,
+            int psize             
         );
 
         public uint32_t* ecall_pointer_uint32_t(
@@ -290,7 +472,7 @@ enclave {
             [in,out] uint32_t* p2,
             [out] uint32_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] uint32_t* p4,
             [in,out, count=16] uint32_t* p5,
             [out, count=16] uint32_t* p6,
@@ -301,7 +483,20 @@ enclave {
             [in, size=80] uint32_t* p9,
 
             // user handled.
-            [user_check] uint32_t* p10
+            [user_check] uint32_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint32_t* p11,
+            [in,out, count=pcount] uint32_t* p12,
+            [out, count=pcount] uint32_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint32_t* p14,
+            [in,out, size=psize] uint32_t* p15,
+            [out, size=psize] uint32_t* p16,
+
+            int pcount,
+            int psize             
         );
 
         public uint64_t* ecall_pointer_uint64_t(
@@ -310,7 +505,7 @@ enclave {
             [in,out] uint64_t* p2,
             [out] uint64_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] uint64_t* p4,
             [in,out, count=16] uint64_t* p5,
             [out, count=16] uint64_t* p6,
@@ -321,7 +516,20 @@ enclave {
             [in, size=80] uint64_t* p9,
 
             // user handled.
-            [user_check] uint64_t* p10
+            [user_check] uint64_t* p10,
+
+            // count as parameter
+            [in, count=pcount] uint64_t* p11,
+            [in,out, count=pcount] uint64_t* p12,
+            [out, count=pcount] uint64_t* p13,
+
+            // size as parameter
+            [in, size=psize] uint64_t* p14,
+            [in,out, size=psize] uint64_t* p15,
+            [out, size=psize] uint64_t* p16,
+
+            int pcount,
+            int psize             
         );                                                                                                                       
     };
 
@@ -333,7 +541,7 @@ enclave {
             [in,out] char* p2,
             [out] char* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] char* p4,
             [in,out, count=16] char* p5,
             [out, count=16] char* p6,
@@ -353,7 +561,7 @@ enclave {
             [in,out] short* p2,
             [out] short* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] short* p4,
             [in,out, count=16] short* p5,
             [out, count=16] short* p6,
@@ -373,7 +581,7 @@ enclave {
             [in,out] int* p2,
             [out] int* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int* p4,
             [in,out, count=16] int* p5,
             [out, count=16] int* p6,
@@ -393,7 +601,7 @@ enclave {
             [in,out] float* p2,
             [out] float* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] float* p4,
             [in,out, count=16] float* p5,
             [out, count=16] float* p6,
@@ -413,7 +621,7 @@ enclave {
             [in,out] double* p2,
             [out] double* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] double* p4,
             [in,out, count=16] double* p5,
             [out, count=16] double* p6,
@@ -433,7 +641,7 @@ enclave {
             [in,out] long* p2,
             [out] long* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] long* p4,
             [in,out, count=16] long* p5,
             [out, count=16] long* p6,
@@ -453,7 +661,7 @@ enclave {
             [in,out] size_t* p2,
             [out] size_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] size_t* p4,
             [in,out, count=16] size_t* p5,
             [out, count=16] size_t* p6,
@@ -473,7 +681,7 @@ enclave {
             [in,out] unsigned* p2,
             [out] unsigned* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] unsigned* p4,
             [in,out, count=16] unsigned* p5,
             [out, count=16] unsigned* p6,
@@ -493,7 +701,7 @@ enclave {
             [in,out] int8_t* p2,
             [out] int8_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int8_t* p4,
             [in,out, count=16] int8_t* p5,
             [out, count=16] int8_t* p6,
@@ -513,7 +721,7 @@ enclave {
             [in,out] int16_t* p2,
             [out] int16_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int16_t* p4,
             [in,out, count=16] int16_t* p5,
             [out, count=16] int16_t* p6,
@@ -533,7 +741,7 @@ enclave {
             [in,out] int32_t* p2,
             [out] int32_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int32_t* p4,
             [in,out, count=16] int32_t* p5,
             [out, count=16] int32_t* p6,
@@ -553,7 +761,7 @@ enclave {
             [in,out] int64_t* p2,
             [out] int64_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] int64_t* p4,
             [in,out, count=16] int64_t* p5,
             [out, count=16] int64_t* p6,
@@ -573,7 +781,7 @@ enclave {
             [in,out] uint8_t* p2,
             [out] uint8_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] uint8_t* p4,
             [in,out, count=16] uint8_t* p5,
             [out, count=16] uint8_t* p6,
@@ -593,7 +801,7 @@ enclave {
             [in,out] uint16_t* p2,
             [out] uint16_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] uint16_t* p4,
             [in,out, count=16] uint16_t* p5,
             [out, count=16] uint16_t* p6,
@@ -613,7 +821,7 @@ enclave {
             [in,out] uint32_t* p2,
             [out] uint32_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] uint32_t* p4,
             [in,out, count=16] uint32_t* p5,
             [out, count=16] uint32_t* p6,
@@ -633,7 +841,7 @@ enclave {
             [in,out] uint64_t* p2,
             [out] uint64_t* p3,            
 
-            // count specified number of elements.
+            // count specifies number of elements.
             [in, count=16] uint64_t* p4,
             [in,out, count=16] uint64_t* p5,
             [out, count=16] uint64_t* p6,

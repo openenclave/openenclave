@@ -14,27 +14,63 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
     // 1 element arrays.
     T p1[1] = {1}, p2[1] = {1}, p3[1] = {1};
 
+    // Arrays declared static to avoid blowing up the stack.
+
     // 16 element arrays.
-    T p4[16], p5[16], p6[16];
+    static T p4[16], p5[16], p6[16];
     for (size_t i = 0; i < 16; ++i)
         p4[i] = p5[i] = p6[i] = i + 1;
 
     static_assert((80 / sizeof(T)) * sizeof(T) == 80, "invalid size");
     // arrays with size = 80 bytes.
-    size_t count = 80 / sizeof(T);
+    const size_t count = 80 / sizeof(T);
     T p7[count], p8[count], p9[count];
 
     for (size_t i = 0; i < count; ++i)
         p7[i] = p8[i] = p9[i] = i + 1;
 
-    T p10[16];
+    static T p10[16];
     for (size_t i = 0; i < 16; ++i)
         p10[i] = i + 1;
+
+    static T p11[16];
+    static T p12[16];
+    static T p13[16];
+    for (size_t i = 0; i < 16; ++i)
+        p11[i] = p12[i] = p13[i] = i + 1;
+
+    static T p14[count];
+    static T p15[count];
+    static T p16[count];
+    for (size_t i = 0; i < count; ++i)
+        p14[i] = p15[i] = p16[i] = i + 1;
+
+    int pcount = 16;
+    int psize = 80;
 
     T* ret = NULL;
     OE_TEST(
         ecall_pointer_fun(
-            enclave, &ret, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) == OE_OK);
+            enclave,
+            &ret,
+            p1,
+            p2,
+            p3,
+            p4,
+            p5,
+            p6,
+            p7,
+            p8,
+            p9,
+            p10,
+            p11,
+            p12,
+            p13,
+            p14,
+            p15,
+            p16,
+            pcount,
+            psize) == OE_OK);
     {
         // p2, p3 are modified.
         OE_TEST(p2[0] == 2);
@@ -64,6 +100,38 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
     // p10 is returned.
     OE_TEST(ret == p10);
 
+    {
+        // p11, p12, p13 specify pcount as the EDL 'count' attribute.
+
+        // p11 is input and should be untouched.
+        for (size_t i = 0; i < (size_t)pcount; ++i)
+            OE_TEST(p11[i] == (T)(i + 1));
+
+        // p12 is in-out and should be reversed.
+        for (size_t i = 0; i < (size_t)pcount; ++i)
+            OE_TEST(p12[i] == (T)(pcount - i));
+
+        // p13 is out and should have value pcount.
+        for (size_t i = 0; i < (size_t)pcount; ++i)
+            OE_TEST(p13[i] == (T)pcount);
+    }
+
+    {
+        // p14, p15, p16 specify psize as the EDL 'size' attribute.
+
+        // p14 is input and should be untouched.
+        for (size_t i = 0; i < (size_t)count; ++i)
+            OE_TEST(p14[i] == (T)(i + 1));
+
+        // p15 is in-out and should be reversed.
+        for (size_t i = 0; i < (size_t)count; ++i)
+            OE_TEST(p15[i] == (T)(count - i));
+
+        // p16 is out and should have value pcount.
+        for (size_t i = 0; i < (size_t)count; ++i)
+            OE_TEST(p16[i] == (T)psize);
+    }
+
     // Call with nulls.
     OE_TEST(
         ecall_pointer_fun(
@@ -78,7 +146,15 @@ static void test_ecall_pointer_fun(oe_enclave_t* enclave, F ecall_pointer_fun)
             NULL,
             NULL,
             NULL,
-            NULL) == OE_OK);
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            pcount,
+            psize) == OE_OK);
 }
 
 void test_pointer_edl_ecalls(oe_enclave_t* enclave)
