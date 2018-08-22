@@ -22,10 +22,10 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
    echo "        -d or --disable_sim to Disable Simulator Test Mode"
    echo "        -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
    echo "        -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
-   echo "        -h Display usage and exit"
-   echo "        --build_package Build a .deb package after testing"
-   echo "        --enable_full_libcxx_tests Enable libcxx tests"
-   echo "        --enable_full_libc_tests Enable libc tests"
+   echo "        -h or --help to Display usage and exit"
+   echo "        --build_package to Build a .deb package after testing"
+   echo "        --enable_full_libcxx_tests to Enable libcxx tests"
+   echo "        --enable_full_libc_tests to Enable libc tests"
    echo " Default is to build for SGX1 platform, Debug Build type & test in"
    echo " simulator mode"
    echo ""
@@ -114,7 +114,7 @@ fi
 
 #Delete the build directory if it exists. This allows calling this script iteratively
 #for multiple configurations for a platform.
-if [ ! -d "./build" ]; then
+if [ -d "./build" ]; then
   rm -rf ./build
 fi
 
