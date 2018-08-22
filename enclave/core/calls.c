@@ -499,6 +499,56 @@ OE_CATCH:
 /*
 **==============================================================================
 **
+** oe_call_host_by_address()
+**
+**==============================================================================
+*/
+
+oe_result_t oe_call_host_by_address(void (*func)(void*), void* argsIn)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_host_by_address_args_t* args = NULL;
+
+    /* Reject invalid parameters */
+    if (!func)
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    /* Verify that the function address is outside the enclave */
+    if (!oe_is_outside_enclave(func, sizeof(func)))
+        OE_THROW(OE_INVALID_PARAMETER);
+
+    /* Initialize the arguments */
+    {
+        if (!(args = oe_host_alloc_for_call_host(sizeof(*args))))
+        {
+            /* Fail if the enclave is crashing. */
+            OE_TRY(__oe_enclave_status);
+            OE_THROW(OE_OUT_OF_MEMORY);
+        }
+
+        args->args = argsIn;
+        args->func = func;
+        args->result = OE_UNEXPECTED;
+    }
+
+    /* Call the host function with this address */
+    OE_TRY(oe_ocall(OE_OCALL_CALL_HOST_BY_ADDRESS, (int64_t)args, NULL));
+
+    /* Check the result */
+    OE_TRY(args->result);
+
+    result = OE_OK;
+
+OE_CATCH:
+
+    oe_host_free_for_call_host(args);
+
+    return result;
+}
+
+/*
+**==============================================================================
+**
 ** __oe_handle_main()
 **
 **     This function is called by oe_enter(), which is called by the EENTER

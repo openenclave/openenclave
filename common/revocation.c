@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include "revocation.h"
-#include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/crl.h>
@@ -18,6 +17,7 @@
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
+#include "common.h"
 #include "tcbinfo.h"
 
 #ifdef OE_USE_LIBSGX
@@ -57,7 +57,7 @@ static oe_result_t _parse_sgx_extensions(
     uint32_t buffer_size = 1024;
     uint8_t* buffer = NULL;
 
-    buffer = (uint8_t*)oe_malloc(buffer_size);
+    buffer = (uint8_t*)malloc(buffer_size);
     if (buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -69,15 +69,15 @@ static oe_result_t _parse_sgx_extensions(
     {
         // Allocate larger buffer. extensions_buffer_size contains required size
         // of buffer.
-        oe_free(buffer);
-        buffer = (uint8_t*)oe_malloc(buffer_size);
+        free(buffer);
+        buffer = (uint8_t*)malloc(buffer_size);
 
         result = ParseSGXExtensions(
             leaf_cert, buffer, &buffer_size, parsed_extension_info);
     }
 
 done:
-    oe_free(buffer);
+    free(buffer);
     return result;
 }
 
@@ -94,7 +94,7 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
 {
     oe_result_t result = OE_FAILURE;
     uint64_t buffer_size = 512;
-    uint8_t* buffer = oe_malloc(buffer_size);
+    uint8_t* buffer = malloc(buffer_size);
     const char** urls = NULL;
     uint64_t num_urls = 0;
     uint32_t url_length = 0;
@@ -107,8 +107,8 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
 
     if (result == OE_BUFFER_TOO_SMALL)
     {
-        oe_free(buffer);
-        buffer = oe_malloc(buffer_size);
+        free(buffer);
+        buffer = malloc(buffer_size);
         if (buffer == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -122,149 +122,17 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
         if (num_urls != 1)
             OE_RAISE(OE_FAILURE);
         // Include null character in length.
-        url_length = oe_strlen(urls[0]) + 1;
-        *url = (char*)oe_malloc(url_length);
+        url_length = strlen(urls[0]) + 1;
+        *url = (char*)malloc(url_length);
         if (*url == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        oe_memcpy(*url, urls[0], url_length);
+        memcpy(*url, urls[0], url_length);
         result = OE_OK;
     }
 
 done:
-    oe_free(buffer);
-    return result;
-}
-
-/**
- * Validate and copy buffer to enclave memory.
- */
-static oe_result_t _copy_buffer_to_enclave(
-    uint8_t** dst,
-    uint32_t* dst_size,
-    const uint8_t* src,
-    uint32_t src_size)
-{
-    oe_result_t result = OE_FAILURE;
-    if (!src || src_size == 0 || !oe_is_outside_enclave(src, src_size) ||
-        dst == NULL || dst_size == NULL)
-        OE_RAISE(OE_INVALID_PARAMETER);
-
-    *dst = oe_malloc(src_size);
-    if (*dst == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    oe_memcpy(*dst, src, src_size);
-    *dst_size = src_size;
-    result = OE_OK;
-
-done:
-    return result;
-}
-
-/**
- * Call into host to fetch revocation information.
- */
-static oe_result_t _get_revocation_info(oe_get_revocation_info_args_t* args)
-{
-    oe_result_t result = OE_FAILURE;
-    uint32_t host_args_buffer_size = sizeof(*args);
-    uint8_t* host_args_buffer = NULL;
-    oe_get_revocation_info_args_t* host_args = NULL;
-    oe_get_revocation_info_args_t tmp_args = {0};
-    uint8_t* p = NULL;
-    uint32_t crlUrlSizes[2] = {0};
-
-    if (args == NULL || args->num_crl_urls != 2 || args->crl_urls[0] == NULL ||
-        args->crl_urls[1] == NULL)
-        OE_RAISE(OE_FAILURE);
-
-    // Compute size of buffer to allocate in host memory to marshal the
-    // arguments.
-    for (uint32_t i = 0; i < args->num_crl_urls; ++i)
-    {
-        crlUrlSizes[i] = oe_strlen(args->crl_urls[i]) + 1;
-        host_args_buffer_size += crlUrlSizes[i];
-    }
-
-    host_args_buffer = oe_host_malloc(host_args_buffer_size);
-    if (host_args_buffer == NULL)
-        OE_RAISE(OE_OUT_OF_MEMORY);
-
-    // Copy args struct.
-    p = host_args_buffer;
-    host_args = (oe_get_revocation_info_args_t*)p;
-    *host_args = *args;
-    p += sizeof(*host_args);
-
-    // Copy input buffers.
-    for (uint32_t i = 0; i < args->num_crl_urls; ++i)
-    {
-        host_args->crl_urls[i] = (const char*)p;
-        oe_memcpy(p, args->crl_urls[i], crlUrlSizes[i]);
-        p += crlUrlSizes[i];
-    }
-
-    OE_CHECK(oe_ocall(OE_OCALL_GET_REVOCATION_INFO, (uint64_t)host_args, NULL));
-
-    // Copy args to prevent TOCTOU issues.
-    tmp_args = *host_args;
-
-    OE_CHECK(tmp_args.result);
-
-    if (tmp_args.host_out_buffer == NULL ||
-        !oe_is_outside_enclave(tmp_args.host_out_buffer, sizeof(uint8_t)))
-        OE_RAISE(OE_UNEXPECTED);
-
-    // Ensure that all required outputs exist.
-    OE_CHECK(
-        _copy_buffer_to_enclave(
-            &args->tcb_info,
-            &args->tcb_info_size,
-            tmp_args.tcb_info,
-            tmp_args.tcb_info_size));
-    OE_CHECK(
-        _copy_buffer_to_enclave(
-            &args->tcb_issuer_chain,
-            &args->tcb_issuer_chain_size,
-            tmp_args.tcb_issuer_chain,
-            tmp_args.tcb_issuer_chain_size));
-
-    for (uint32_t i = 0; i < args->num_crl_urls; ++i)
-    {
-        OE_CHECK(
-            _copy_buffer_to_enclave(
-                &args->crl[i],
-                &args->crl_size[i],
-                tmp_args.crl[i],
-                tmp_args.crl_size[i]));
-        OE_CHECK(
-            _copy_buffer_to_enclave(
-                &args->crl_issuer_chain[i],
-                &args->crl_issuer_chain_size[i],
-                tmp_args.crl_issuer_chain[i],
-                tmp_args.crl_issuer_chain_size[i]));
-    }
-
-    // Check for null terminators.
-    if (args->tcb_info[args->tcb_info_size - 1] != 0 ||
-        args->tcb_issuer_chain[args->tcb_issuer_chain_size - 1] != 0)
-        OE_RAISE(OE_INVALID_REVOCATION_INFO);
-    for (uint32_t i = 0; i < args->num_crl_urls; ++i)
-    {
-        if (args->crl_issuer_chain[i][args->crl_issuer_chain_size[i] - 1] != 0)
-            OE_RAISE(OE_INVALID_REVOCATION_INFO);
-    }
-
-    result = OE_OK;
-done:
-    // Free args buffer and buffer allocated by host.
-    if (host_args_buffer)
-        oe_host_free(host_args_buffer);
-
-    if (tmp_args.host_out_buffer)
-        oe_host_free(tmp_args.host_out_buffer);
-
+    free(buffer);
     return result;
 }
 
@@ -307,7 +175,7 @@ oe_result_t oe_enforce_revocation(
 
     // Gather fmspc.
     OE_CHECK(_parse_sgx_extensions(leaf_cert, &parsed_extension_info));
-    oe_memcpy(
+    memcpy(
         revocation_args.fmspc,
         parsed_extension_info.fmspc,
         sizeof(parsed_extension_info.fmspc));
@@ -321,7 +189,7 @@ oe_result_t oe_enforce_revocation(
     revocation_args.crl_urls[1] = intermediate_crl_url;
     revocation_args.num_crl_urls = 2;
 
-    OE_CHECK(_get_revocation_info(&revocation_args));
+    OE_CHECK(oe_get_revocation_info(&revocation_args));
 
     // Apply revocation info.
     OE_CHECK(
@@ -418,20 +286,16 @@ done:
     for (int32_t i = revocation_args.num_crl_urls - 1; i >= 0; --i)
     {
         oe_crl_free(&crls[i]);
-        oe_free(revocation_args.crl_issuer_chain[i]);
-        oe_free(revocation_args.crl[i]);
     }
-    oe_free(revocation_args.tcb_issuer_chain);
-    oe_free(revocation_args.tcb_info);
-
     for (uint32_t i = 0; i < revocation_args.num_crl_urls; ++i)
     {
         oe_cert_chain_free(&crl_issuer_chain[i]);
     }
     oe_cert_chain_free(&tcb_issuer_chain);
 
-    oe_free(leaf_crl_url);
-    oe_free(intermediate_crl_url);
+    free(leaf_crl_url);
+    free(intermediate_crl_url);
+    oe_cleanup_get_revocation_info_args(&revocation_args);
 
     return result;
 }
