@@ -3,8 +3,9 @@
 
 OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
+include ../../common.inc
 
-CXXFLAGS = -Wall -Werror -g -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
+CXXFLAGS += -Wall -Werror -g -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
 
 # To include Open Enclave SDK headers and
 # Open Enclave compatible mbedtls headers.

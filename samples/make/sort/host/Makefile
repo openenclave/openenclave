@@ -3,6 +3,7 @@
 
 OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
+include ../../common.inc
 
 define optlib
 $(patsubst /usr/lib/lib%.so,-l%,$(wildcard /usr/lib/lib$(1).so))
@@ -10,7 +11,7 @@ endef
 
 all: build
 
-CXXFLAGS=-Wall -O2
+CXXFLAGS += -Wall -O2
 
 INCLUDES = -I$(OE_INCLUDEDIR)
 

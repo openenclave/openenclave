@@ -36,7 +36,19 @@ else()
     message("ccache not found")
 endif(CCACHE_FOUND)
 
-set(spectre1_mitigation_applied FALSE)
+# Apply Spectre mitigations if available.
+set(SPECTRE_1_LLVM_MITIGATION_FLAG "-mllvm -x86-speculative-load-hardening")
+add_compile_flag_if_supported("C;CXX" "${SPECTRE_1_LLVM_MITIGATION_FLAG}" SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
+
+if (SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
+    message("C/C++ compiler is Clang 7.0+, applying Spectre 1 mitigations")
+else()
+    set(SPECTRE_1_LLVM_MITIGATION_FLAG "")
+    message("C/C++ compiler is not Clang 7.0+, NOT applying Spectre 1 mitigations")
+endif()
+
+# Allows reuse in cases where ExternalProject is used and global compile flags wouldn't propagate.
+set(SPECTRE_MITIGATION_FLAGS "${SPECTRE_1_LLVM_MITIGATION_FLAG}")
 
 if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
     # Enables all the warnings about constructions that some users consider questionable,
@@ -47,12 +59,6 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
     add_compile_flags("C;CXX" -fno-strict-aliasing)
 
     add_compile_flags_if_supported(C -Wjump-misses-init)
-
-    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # Apply Spectre mitigations if available.
-        add_compile_flag_if_supported("C;CXX" "-mllvm -x86-speculative-load-hardening" flag_supported)
-        set(spectre1_mitigation_applied ${flag_supported})
-    endif()
 
     # Enables XSAVE intrinsics.
     add_compile_options(-mxsave)
@@ -69,12 +75,6 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
 
 elseif(MSVC)
     # MSVC options go here
-endif()
-
-if (spectre1_mitigation_applied)
-    message("C/C++ compiler is Clang 7.0+, applying Spectre 1 mitigations")
-else()
-    message("C/C++ compiler is not Clang 7.0+, NOT applying Spectre 1 mitigations")
 endif()
 
 # Use ML64 as assembler on Windows

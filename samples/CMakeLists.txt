@@ -19,6 +19,7 @@ endif()
 
 # Install make file for samples folder.
 install(FILES  ${CMAKE_CURRENT_LIST_DIR}/make/Makefile
+               ${CMAKE_CURRENT_LIST_DIR}/make/common.inc
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
@@ -28,5 +29,11 @@ add_test(samples
         -i ${PROJECT_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}
         ${PROJECT_BINARY_DIR}/samples/samples-test)
 
-set_property(TEST samples PROPERTY ENVIRONMENT
-    "USE_LIBSGX=${USE_LIBSGX};CC=${CMAKE_C_COMPILER};CXX=${CMAKE_CXX_COMPILER}")
+set(env_vars
+    CC=${CMAKE_C_COMPILER}
+    CXX=${CMAKE_CXX_COMPILER}
+    USE_LIBSGX=${USE_LIBSGX}
+    APPLY_SPECTRE_1_LLVM_MITIGATION=${SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED}
+    )
+
+set_property(TEST samples PROPERTY ENVIRONMENT "${env_vars}")

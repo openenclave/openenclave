@@ -16,7 +16,8 @@ string(CONCAT CFLAGS
     "-fno-builtin "
     "-fPIC "
     "-include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h "
-    "-I${PROJECT_SOURCE_DIR}/include ")
+    "-I${PROJECT_SOURCE_DIR}/include "
+    "${SPECTRE_MITIGATION_FLAGS} ")
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
     string(CONCAT CFLAGS
@@ -29,12 +30,6 @@ elseif (CMAKE_C_COMPILER_ID MATCHES "Clang")
         "-Wno-header-guard "
         "-Wno-uninitialized "
         "-Wno-unused-variable ")
-
-    set(LLVM_SPECTRE "-mllvm -x86-speculative-load-hardening")
-    check_compile_flag_supported(C "${LLVM_SPECTRE}" flag_supported)
-    if (flag_supported)
-        set(CFLAGS "${CFLAGS} ${LLVM_SPECTRE} ")
-    endif()
 endif()
 
 set(OPTS

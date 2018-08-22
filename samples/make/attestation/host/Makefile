@@ -3,10 +3,11 @@
 
 OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
+include ../../common.inc
 
 all: build
 
-CXXFLAGS=-Wall -g -std=c++11
+CXXFLAGS += -Wall -g -std=c++11
 
 INCLUDES = -I$(OE_INCLUDEDIR)
 
