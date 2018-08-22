@@ -15,11 +15,10 @@
 ## For CI runs, the Docker image will contain the necessary packages.
 ##
 ##====================================================================================
-if [ "$1" == "-h" ]; then
+if [ "$1" == "-h" -o "$1" == "--help" ]; then
    echo "Script to fire OE build and test with specified platform/build-type/test mode" 
-   echo "$0: "
    echo " Usage: "
-   echo " ./scripts/test-build-config [-d]|[-p <platform-type>]|-b [build-type]"
+   echo " ./scripts/test-build-config"
    echo "        -d or --disable_sim to Disable Simulator Test Mode"
    echo "        -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
    echo "        -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
@@ -89,6 +88,7 @@ while [[ $# -gt 0 ]]; do
         ;;
         *)
         echo "Unknown option '$key'"
+        exit 1
         ;;
     esac
     # Shift after checking all the cases to get the next option
