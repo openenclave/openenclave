@@ -436,7 +436,7 @@ oe_result_t oe_sgx_create_enclave(
     if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
     {
         /* Use a phony address of zero when signing enclaves */
-        base = (void*)0xffffffff00000000;
+        base = (void*)0x0000ffff00000000;
     }
     else if (oe_sgx_is_simulation_load_context(context))
     {
