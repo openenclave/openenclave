@@ -46,7 +46,7 @@ RUN apt-get -y update
 RUN apt-get -y install sudo git
 
 # install all the packages specified in install-prereqs except cmake
-RUN apt-get -y install clang-format gcc g++ make gdb autoconf libtool doxygen graphviz gawk libexpat1-dev openssl libssl-dev subversion
+RUN apt-get -y install clang-format gcc g++ make gdb autoconf libtool doxygen graphviz gawk libexpat1-dev openssl libssl-dev subversion ocaml-native-compilers
 
 # install wget as this is needed for getting latest cmake & Libsgx FLC packages
 # dpkg-dev is also needed by those packages for installing symlinks to lib files
