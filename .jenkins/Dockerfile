@@ -36,7 +36,9 @@
 #     $ sudo docker logout
 #
 # You can check that the image has been successfully uploaded by checking
-# the oejenkinscidockerregistry Container registry in Azure
+# the oejenkinscidockerregistry Container registry in Azure at this link,
+# assuming you have proper permissions:
+# https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/e5839dfd-61f0-4b2f-b06f-de7fc47b5998/resourceGroups/OE-Jenkins-CI/providers/Microsoft.ContainerRegistry/registries/oejenkinscidockerregistry/overview
 
 FROM ubuntu:16.04
 
