@@ -37,4 +37,7 @@ PACKAGES="$PACKAGES libssl-dev"
 # Needed for 3rdparty/libcxx/update.make
 PACKAGES="$PACKAGES subversion"
 
+# Needed for oeedger8r
+PACKAGES="$PACKAGES ocaml-native-compilers"
+
 apt-get -y install $PACKAGES
