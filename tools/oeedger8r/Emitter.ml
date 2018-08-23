@@ -487,7 +487,7 @@ let oe_gen_ocall_macros (os:out_channel) =
   fprintf os "     if (!enc_ptr)                               \\\n";
   fprintf os "         break;                                  \\\n";
   fprintf os "     *(void**)&host_ptr = (void*) __host_ptr;    \\\n";
-  fprintf os "     __host_ptr += size;                         \\\n";
+  fprintf os "     __host_ptr += (size_t) size;                \\\n";
   fprintf os "     memcpy(host_ptr, enc_ptr, size);            \\\n";
   fprintf os " } while(0)\n\n";
   fprintf os "#define OE_COPY_FROM_HOST(enc_ptr, host_ptr, size)     \\\n";

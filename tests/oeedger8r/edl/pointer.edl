@@ -530,7 +530,79 @@ enclave {
 
             int pcount,
             int psize             
-        );                                                                                                                       
+        ); 
+
+        // Test that various types can be used as size, count attributes.
+        // Checked to make sure no compile errors are encountered.
+        public void ecall_count_attribute_all_types(
+            [in, count=char_count] int* b1,
+            [in, count=short_count] int* b2,
+            [in, count=int_count] int* b3,
+            [in, count=float_count] int* b4,
+            [in, count=double_count] int* b5,
+            [in, count=long_count] int* b6,            
+            [in, count=size_t_count] int* b7,
+            [in, count=unsigned_count] int* b8,
+            [in, count=int8_t_count] int* b9,
+            [in, count=int16_t_count] int* b10,
+            [in, count=int32_t_count] int* b11,
+            [in, count=int64_t_count] int* b12,
+            [in, count=uint8_t_count] int* b13,
+            [in, count=uint16_t_count] int* b14,
+            [in, count=uint32_t_count] int* b15,
+            [in, count=uint64_t_count] int* b16,            
+            char char_count,
+            short short_count,
+            int int_count,
+            float float_count,
+            double double_count,            
+            long long_count,
+            size_t size_t_count,
+            unsigned unsigned_count,
+            int8_t int8_t_count,
+            int16_t int16_t_count,
+            int32_t int32_t_count,
+            int64_t int64_t_count,
+            uint8_t uint8_t_count,
+            uint16_t uint16_t_count,
+            uint32_t uint32_t_count,
+            uint64_t uint64_t_count
+        );
+
+        public void ecall_size_attribute_all_types(
+            [in, size=char_size] int* b1,
+            [in, size=short_size] int* b2,
+            [in, size=int_size] int* b3,
+            [in, size=float_size] int* b4,
+            [in, size=double_size] int* b5,
+            [in, size=long_size] int* b6,            
+            [in, size=size_t_size] int* b7,
+            [in, size=unsigned_size] int* b8,
+            [in, size=int8_t_size] int* b9,
+            [in, size=int16_t_size] int* b10,
+            [in, size=int32_t_size] int* b11,
+            [in, size=int64_t_size] int* b12,
+            [in, size=uint8_t_size] int* b13,
+            [in, size=uint16_t_size] int* b14,
+            [in, size=uint32_t_size] int* b15,
+            [in, size=uint64_t_size] int* b16,            
+            char char_size,
+            short short_size,
+            int int_size,
+            float float_size,
+            double double_size,            
+            long long_size,
+            size_t size_t_size,
+            unsigned unsigned_size,
+            int8_t int8_t_size,
+            int16_t int16_t_size,
+            int32_t int32_t_size,
+            int64_t int64_t_size,
+            uint8_t uint8_t_size,
+            uint16_t uint16_t_size,
+            uint32_t uint32_t_size,
+            uint64_t uint64_t_size
+        );                                                                                                                              
     };
 
     untrusted {
@@ -1061,6 +1133,78 @@ enclave {
 
             int pcount,
             int psize
-        );                                                                                                                       
+        ); 
+
+        // Test that various types can be used as size, count attributes.
+        // Checked to make sure no compile errors are encountered.
+        void ocall_count_attribute_all_types(
+            [in, count=char_count] int* b1,
+            [in, count=short_count] int* b2,
+            [in, count=int_count] int* b3,
+            [in, count=float_count] int* b4,
+            [in, count=double_count] int* b5,
+            [in, count=long_count] int* b6,            
+            [in, count=size_t_count] int* b7,
+            [in, count=unsigned_count] int* b8,
+            [in, count=int8_t_count] int* b9,
+            [in, count=int16_t_count] int* b10,
+            [in, count=int32_t_count] int* b11,
+            [in, count=int64_t_count] int* b12,
+            [in, count=uint8_t_count] int* b13,
+            [in, count=uint16_t_count] int* b14,
+            [in, count=uint32_t_count] int* b15,
+            [in, count=uint64_t_count] int* b16,            
+            char char_count,
+            short short_count,
+            int int_count,
+            float float_count,
+            double double_count,            
+            long long_count,
+            size_t size_t_count,
+            unsigned unsigned_count,
+            int8_t int8_t_count,
+            int16_t int16_t_count,
+            int32_t int32_t_count,
+            int64_t int64_t_count,
+            uint8_t uint8_t_count,
+            uint16_t uint16_t_count,
+            uint32_t uint32_t_count,
+            uint64_t uint64_t_count
+        );
+
+        void ocall_size_attribute_all_types(
+            [in, size=char_size] int* b1,
+            [in, size=short_size] int* b2,
+            [in, size=int_size] int* b3,
+            [in, size=float_size] int* b4,
+            [in, size=double_size] int* b5,
+            [in, size=long_size] int* b6,            
+            [in, size=size_t_size] int* b7,
+            [in, size=unsigned_size] int* b8,
+            [in, size=int8_t_size] int* b9,
+            [in, size=int16_t_size] int* b10,
+            [in, size=int32_t_size] int* b11,
+            [in, size=int64_t_size] int* b12,
+            [in, size=uint8_t_size] int* b13,
+            [in, size=uint16_t_size] int* b14,
+            [in, size=uint32_t_size] int* b15,
+            [in, size=uint64_t_size] int* b16,            
+            char char_size,
+            short short_size,
+            int int_size,
+            float float_size,
+            double double_size,            
+            long long_size,
+            size_t size_t_size,
+            unsigned unsigned_size,
+            int8_t int8_t_size,
+            int16_t int16_t_size,
+            int32_t int32_t_size,
+            int64_t int64_t_size,
+            uint8_t uint8_t_size,
+            uint16_t uint16_t_size,
+            uint32_t uint32_t_size,
+            uint64_t uint64_t_size
+        );                                                                                                                                 
     };    
 };

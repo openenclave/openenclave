@@ -1038,3 +1038,78 @@ OE_OCALL void ocall_pointer_assert_all_called(void*)
     OE_TEST(num_ocalls == 32);
     OE_TEST(num_null_ocalls == 16);
 }
+
+// The following functions exists to make sure there are no
+// compile errors when various basic types are used as size,
+// count attributes.
+void ocall_count_attribute_all_types(
+    int* b1,
+    int* b2,
+    int* b3,
+    int* b4,
+    int* b5,
+    int* b6,
+    int* b7,
+    int* b8,
+    int* b9,
+    int* b10,
+    int* b11,
+    int* b12,
+    int* b13,
+    int* b14,
+    int* b15,
+    int* b16,
+    char char_count,
+    short short_count,
+    int int_count,
+    float float_count,
+    double double_count,
+    long long_count,
+    size_t size_t_count,
+    unsigned unsigned_count,
+    int8_t int8_t_count,
+    int16_t int16_t_count,
+    int32_t int32_t_count,
+    int64_t int64_t_count,
+    uint8_t uint8_t_count,
+    uint16_t uint16_t_count,
+    uint32_t uint32_t_count,
+    uint64_t uint64_t_count)
+{
+}
+
+void ocall_size_attribute_all_types(
+    int* b1,
+    int* b2,
+    int* b3,
+    int* b4,
+    int* b5,
+    int* b6,
+    int* b7,
+    int* b8,
+    int* b9,
+    int* b10,
+    int* b11,
+    int* b12,
+    int* b13,
+    int* b14,
+    int* b15,
+    int* b16,
+    char char_size,
+    short short_size,
+    int int_size,
+    float float_size,
+    double double_size,
+    long long_size,
+    size_t size_t_size,
+    unsigned unsigned_size,
+    int8_t int8_t_size,
+    int16_t int16_t_size,
+    int32_t int32_t_size,
+    int64_t int64_t_size,
+    uint8_t uint8_t_size,
+    uint16_t uint16_t_size,
+    uint32_t uint32_t_size,
+    uint64_t uint64_t_size)
+{
+}
