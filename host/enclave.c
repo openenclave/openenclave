@@ -4,7 +4,6 @@
 #include "enclave.h"
 #include <assert.h>
 #include <openenclave/host.h>
-#include <openenclave/internal/raise.h>
 
 /* Get the event object from the enclave for the given TCS */
 EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs)
