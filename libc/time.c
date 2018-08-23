@@ -55,7 +55,7 @@ int gettimeofday(struct timeval* tv, void* tz)
     ret = 0;
 
 done:
-    return 0;
+    return ret;
 }
 
 int clock_gettime(clockid_t clk_id, struct timespec* tp)

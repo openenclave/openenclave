@@ -84,4 +84,10 @@ typedef enum _oe_enclave_type {
     __OE_ENCLAVE_TYPE_MAX = OE_ENUM_MAX,
 } oe_enclave_type_t;
 
+/**
+ * This is an opaque handle to an enclave returned by oe_create_enclave().
+ * This definition is shared by the enclave and the host.
+ */
+typedef struct _oe_enclave oe_enclave_t;
+
 #endif /* _OE_BITS_TYPES_H */

@@ -41,7 +41,7 @@ OE_OCALL void A(void* args)
 }
 
 /* This function called by test_callback() ECALL */
-OE_OCALL void callback(void* arg)
+OE_OCALL void callback(void* arg, oe_enclave_t* enclave)
 {
     test_callback_args_t* args = (test_callback_args_t*)arg;
 
