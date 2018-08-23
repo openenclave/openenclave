@@ -1,0 +1,26 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+enclave {
+    include "../types.h"
+
+    trusted {
+        public int TestReadFile(
+            [in, string] const char *path,
+            [in, out, count=1] uint32_t *checksum);
+    };
+
+    untrusted {
+        MY_FILE *Fopen(
+            [in, string] const char *filename,
+            [in, string] const char *modes);
+
+        size_t Fread(
+            [in, out, count=size, isptr] void_ptr ptr,
+            size_t size,
+            [user_check] MY_FILE *stream);
+
+        int Fclose(
+            [user_check] MY_FILE *stream);
+    };
+};

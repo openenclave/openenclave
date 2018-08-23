@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeidl_file)
-oeidl_file(../file.idl host gen)
+include(oeedl_file)
+oeedl_file(../file.edl host gen)
 
 add_executable(file_host host.cpp ${gen})
 
