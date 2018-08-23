@@ -19,6 +19,7 @@ endif()
 add_subdirectory(aesm)
 add_subdirectory(load)
 add_subdirectory(mem)
+add_subdirectory(safemath)
 add_subdirectory(str)
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
