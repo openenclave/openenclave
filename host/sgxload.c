@@ -435,8 +435,8 @@ oe_result_t oe_sgx_create_enclave(
 
     if (context->type == OE_SGX_LOAD_TYPE_MEASURE)
     {
-        /* Create a phony address */
-        base = (void*)0xffffffff00000000;
+        /* Use this phony base address when signing enclaves */
+        base = (void*)0x0000ffff00000000;
     }
     else if (oe_sgx_is_simulation_load_context(context))
     {
