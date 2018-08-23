@@ -4,6 +4,5 @@
 ../../3rdparty/libcxx/libcxx/test/std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/wchar_t_max_length.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/numerics/rand/rand.device/ctor.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.traits/lookup_classname.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/experimental/memory/memory.resource.adaptor/memory.resource.adaptor.mem/do_allocate_and_deallocate.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.match/exponential.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/re/re.alg/re.alg.search/exponential.pass.cpp
