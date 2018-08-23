@@ -314,17 +314,12 @@ static oe_result_t _HandleOCALL(
     uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
-    bool pushed_enclave = false;
 
     if (!enclave || !tcs)
         OE_THROW(OE_INVALID_PARAMETER);
 
     if (argOut)
         *argOut = 0;
-
-    /* Push onto enclave instance stack for this thread */
-    OE_TRY(oe_push_enclave(enclave));
-    pushed_enclave = true;
 
     switch ((oe_func_t)func)
     {
@@ -409,9 +404,6 @@ static oe_result_t _HandleOCALL(
     result = OE_OK;
 
 OE_CATCH:
-
-    if (pushed_enclave)
-        oe_pop_enclave(NULL);
 
     return result;
 }
