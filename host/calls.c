@@ -273,7 +273,7 @@ static oe_host_func_t _FindHostFunc(const char* name)
 **==============================================================================
 */
 
-static void _HandleCallHost(oe_enclave_t* enclave, uint64_t arg)
+static void _HandleCallHost(uint64_t arg, oe_enclave_t* enclave)
 {
     oe_call_host_args_t* args = (oe_call_host_args_t*)arg;
     oe_host_func_t func;
@@ -324,7 +324,7 @@ static oe_result_t _HandleOCALL(
     switch ((oe_func_t)func)
     {
         case OE_OCALL_CALL_HOST:
-            _HandleCallHost(enclave, argIn);
+            _HandleCallHost(argIn, enclave);
             break;
 
         case OE_OCALL_MALLOC:

@@ -17,9 +17,9 @@ OE_ECALL void test_ocall_enclave_param(void* args)
 }
 
 OE_SET_ENCLAVE_SGX(
-    1, /* ProductID */
-    1, /* SecurityVersion */
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
     true, /* AllowDebug */
     1024, /* HeapPageCount */
-    1024,  /* StackPageCount */
+    1024, /* StackPageCount */
     4);   /* TCSCount */
