@@ -130,10 +130,4 @@ EnclaveEvent* GetEnclaveEvent(oe_enclave_t* enclave, uint64_t tcs);
 /* Initialize the exception processing. */
 void _oe_initialize_host_exception(void);
 
-/* Push the enclave instance onto the stack for this thread */
-oe_result_t oe_push_enclave(oe_enclave_t* enclave);
-
-/* Pop the enclave instance from the stack for this thread */
-oe_result_t oe_pop_enclave(oe_enclave_t** enclave);
-
 #endif /* _OE_HOST_ENCLAVE_H */

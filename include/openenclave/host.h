@@ -200,16 +200,6 @@ oe_result_t oe_verify_report(
     uint32_t reportSize,
     oe_report_t* parsedReport);
 
-/**
- * Gets the instance of the enclave that invoked the current OCALL.
- *
- * This function obtains the instance of the enclave that invoked the currently
- * executing OCALL. If no OCALL is executing, then this function returns null.
- *
- * @returns the enclave instance or null if no OCALL is executing.
- */
-oe_enclave_t* oe_get_ocall_enclave(void);
-
 OE_EXTERNC_END
 
 #endif /* _OE_HOST_H */
