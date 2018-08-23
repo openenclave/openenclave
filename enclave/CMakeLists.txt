@@ -18,6 +18,7 @@ add_library(oeenclave STATIC
     link.c
     random.c
     report.c
+    revocationinfo.c
     rsa.c
     sha.c
     start.S)

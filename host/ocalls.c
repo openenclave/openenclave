@@ -165,6 +165,8 @@ void HandleGetQuote(uint64_t argIn)
         sgx_get_quote(&args->sgxReport, args->quote, &args->quoteSize);
 }
 
+#ifdef OE_USE_LIBSGX
+
 void HandleGetQuoteRevocationInfo(uint64_t argIn)
 {
     oe_get_revocation_info_args_t* args = (oe_get_revocation_info_args_t*)argIn;
@@ -173,6 +175,8 @@ void HandleGetQuoteRevocationInfo(uint64_t argIn)
 
     args->result = oe_get_revocation_info(args);
 }
+
+#endif
 
 void HandleGetQETargetInfo(uint64_t argIn)
 {

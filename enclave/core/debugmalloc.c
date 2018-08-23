@@ -72,12 +72,18 @@ struct header
     void* addrs[OE_BACKTRACE_MAX];
     uint64_t num_addrs;
 
+    /* Padding to make header a multiple of 16 */
+    uint64_t padding;
+
     /* Contains HEADER_MAGIC2 */
     uint64_t magic2;
 
     /* User data */
     uint8_t data[];
 };
+
+/* Verify that the sizeof(header_t) is a multiple of 16 */
+OE_STATIC_ASSERT(sizeof(header_t) % 16 == 0);
 
 typedef struct footer footer_t;
 
@@ -163,6 +169,10 @@ OE_INLINE size_t _calculate_block_size(size_t alignment, size_t size)
     r += sizeof(header_t);
     r += oe_round_up_to_multiple(size, sizeof(uint64_t));
     r += sizeof(footer_t);
+
+    /* Check for overflow */
+    if (r < size)
+        return OE_SIZE_MAX;
 
     return r;
 }

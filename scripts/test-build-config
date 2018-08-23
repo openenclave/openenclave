@@ -15,15 +15,17 @@
 ## For CI runs, the Docker image will contain the necessary packages.
 ##
 ##====================================================================================
-if [ "$1" == "-h" ]; then
+if [ "$1" == "-h" -o "$1" == "--help" ]; then
    echo "Script to fire OE build and test with specified platform/build-type/test mode" 
-   echo "$0: "
    echo " Usage: "
-   echo " ./scripts/test-build-config [-d]|[-p <platform-type>]|-b [build-type]"
+   echo " ./scripts/test-build-config"
    echo "        -d or --disable_sim to Disable Simulator Test Mode"
    echo "        -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
    echo "        -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
-   echo "        -h Display usage and exit"
+   echo "        -h or --help to Display usage and exit"
+   echo "        --build_package to Build a .deb package after testing"
+   echo "        --enable_full_libcxx_tests to Enable libcxx tests"
+   echo "        --enable_full_libc_tests to Enable libc tests"
    echo " Default is to build for SGX1 platform, Debug Build type & test in"
    echo " simulator mode"
    echo ""
@@ -38,11 +40,13 @@ DISABLE_SIM=0
 PLATFORM_MODE="SGX1"
 #Valid BUILDTYPE values are Debug|Release|RelWithDebInfo
 BUILD_TYPE="DEBUG"
-##TBD - These are not supported parameters at this time.
-#Enable full Libc tests. Default is disabled, enable with setting to "On" or "1"
-ENABLE_LIBC_TESTS="OFF"
-#Enable full Libcxx tests. Default is disabled, enable with setting to "On" or "0"
-ENABLE_LIBCXX_TESTS="OFF"
+#Build a package. Default is disabled
+BUILD_PACKAGE=0
+OE_INSTALL_DIR="/opt/openenclave"
+#Flag for enabling full libc tests.
+ENABLE_FULL_LIBC_TESTS=0
+#Flag for enabling full libcxx tests.
+ENABLE_FULL_LIBCXX_TESTS=0
 
 #Parse the command line - keep looping as long as there is at least one more argument
 while [[ $# -gt 0 ]]; do
@@ -51,6 +55,10 @@ while [[ $# -gt 0 ]]; do
         # This is a flag type option. Will catch either -d or --disable_sim
         -d|--disable_sim)
         DISABLE_SIM=1
+        ;;
+        # This is a flag type option. Will catch --build_package
+        --build_package)
+        BUILD_PACKAGE=1
         ;;
         # This is an arg value type option. Will catch -p value or --platform_mode value
         -p|--platform_mode)
@@ -72,8 +80,15 @@ while [[ $# -gt 0 ]]; do
         # No need to shift here since the value is part of the same string
         BUILD_TYPE="${key#*=}"
         ;;
+        --enable_full_libcxx_tests)
+        ENABLE_FULL_LIBCXX_TESTS=1
+        ;;
+        --enable_full_libc_tests)
+        ENABLE_FULL_LIBC_TESTS=1
+        ;;
         *)
         echo "Unknown option '$key'"
+        exit 1
         ;;
     esac
     # Shift after checking all the cases to get the next option
@@ -99,7 +114,7 @@ fi
 
 #Delete the build directory if it exists. This allows calling this script iteratively
 #for multiple configurations for a platform.
-if [ ! -d "./build" ]; then
+if [ -d "./build" ]; then
   rm -rf ./build
 fi
 
@@ -108,7 +123,16 @@ cd build
 
 CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 if [ ${PLATFORM_MODE} == "SGX1FLC" ]; then
-   CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_LIBSGX=1"
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DUSE_LIBSGX=1"
+fi
+if [ ${BUILD_PACKAGE} = 1 ]; then
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX:PATH=${OE_INSTALL_DIR} -DCPACK_GENERATOR=DEB"
+fi
+if [ ${ENABLE_FULL_LIBCXX_TESTS} = 1 ]; then
+   CMAKE_FLAGS="${CMAKE_FLAGS} -DENABLE_FULL_LIBCXX_TESTS=1"
+fi
+if [ ${ENABLE_FULL_LIBC_TESTS} = 1 ]; then
+   CMAKE_FLAGS="${CMAKE_FLAGS} -DENABLE_FULL_LIBC_TESTS=1"
 fi
 echo "CMAKE_FLAGS are ${CMAKE_FLAGS}"
 
@@ -144,7 +168,8 @@ if [ "$?" != "0" ]; then
     exit 1
 fi
 
-
-
-
-
+if [ ${BUILD_PACKAGE} = 1 ]; then
+    echo "Building package"
+    echo ""
+    make package
+fi

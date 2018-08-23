@@ -12,12 +12,4 @@
 
 #define sched_yield __libcxxrt_sched_yield
 
-#define malloc __libcxxrt_malloc
-
-#define calloc __libcxxrt_calloc
-
-#define realloc __libcxxrt_realloc
-
-#define free __libcxxrt_free
-
 #endif /* __OE_LIBCXXRT_STUBS_H */

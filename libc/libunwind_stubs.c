@@ -32,7 +32,7 @@ void* __libunwind_mmap(
     if (flags != (MAP_PRIVATE | MAP_ANONYMOUS))
         goto done;
 
-    result = dlmemalign(4096, length);
+    result = memalign(4096, length);
 
 done:
 
@@ -45,7 +45,7 @@ int __libunwind_munmap(void* addr, size_t length)
         return -1;
 
     if (length)
-        dlfree(addr);
+        free(addr);
 
     return 0;
 }
