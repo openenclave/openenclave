@@ -83,7 +83,7 @@ typedef struct _was_destructor_called_args
 
 typedef struct _test_callback_args
 {
-    void (*callback)(void* arg);
+    void (*callback)(void* arg, oe_enclave_t* enclave);
     uint64_t in;
     uint64_t out;
 } test_callback_args_t;

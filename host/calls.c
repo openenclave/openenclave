@@ -306,7 +306,7 @@ static void _HandleCallHost(uint64_t arg, oe_enclave_t* enclave)
 **==============================================================================
 */
 
-static void _handle_call_host_by_address(uint64_t arg)
+static void _handle_call_host_by_address(uint64_t arg, oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_by_address_args_t* args = (oe_call_host_by_address_args_t*)arg;
@@ -318,7 +318,7 @@ static void _handle_call_host_by_address(uint64_t arg)
     }
 
     /* Invoke the function */
-    args->func(args->args);
+    args->func(args->args, enclave);
 
     result = OE_OK;
 
@@ -360,7 +360,7 @@ static oe_result_t _HandleOCALL(
             break;
 
         case OE_OCALL_CALL_HOST_BY_ADDRESS:
-            _handle_call_host_by_address(argIn);
+            _handle_call_host_by_address(argIn, enclave);
             break;
 
         case OE_OCALL_MALLOC:

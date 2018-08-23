@@ -31,11 +31,6 @@ OE_EXTERNC_BEGIN
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
 
 /**
- * This is an opaque handle to an enclave returned by oe_create_enclave()
- */
-typedef struct _oe_enclave oe_enclave_t;
-
-/**
  * @cond DEV
  */
 #define OE_ENCLAVE_FLAG_RESERVED \

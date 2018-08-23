@@ -118,7 +118,9 @@ oe_result_t oe_call_host(const char* func, void* args);
  * @return OE_INVALID_PARAMETER a parameter is invalid.
  * @return OE_FAILURE the call failed.
  */
-oe_result_t oe_call_host_by_address(void (*func)(void*), void* args);
+oe_result_t oe_call_host_by_address(
+    void (*func)(void*, oe_enclave_t*),
+    void* args);
 
 /**
  * Check whether the given buffer is strictly within the enclave.
