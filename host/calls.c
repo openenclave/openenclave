@@ -399,20 +399,20 @@ static oe_result_t _HandleOCALL(
             HandleThreadWakeWait(enclave, argIn);
             break;
 
-#ifdef OE_USE_LIBSGX
-        // Quote attestion is supported only on libsgx platforms.
         case OE_OCALL_GET_QUOTE:
             HandleGetQuote(argIn);
             break;
 
+#ifdef OE_USE_LIBSGX
+        // Quote revocation is supported only on libsgx platforms.
         case OE_OCALL_GET_REVOCATION_INFO:
             HandleGetQuoteRevocationInfo(argIn);
             break;
+#endif
 
         case OE_OCALL_GET_QE_TARGET_INFO:
             HandleGetQETargetInfo(argIn);
             break;
-#endif
 
         case OE_OCALL_SLEEP:
             oe_handle_sleep(argIn);
