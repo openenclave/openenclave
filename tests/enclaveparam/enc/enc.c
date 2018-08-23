@@ -7,7 +7,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/tests.h>
 
-OE_ECALL void test_get_host_enclave(void* args)
+OE_ECALL void test_ocall_enclave_param(void* args)
 {
     const char* func = (const char*)args;
     OE_TEST(func != NULL);
@@ -15,3 +15,11 @@ OE_ECALL void test_get_host_enclave(void* args)
     oe_result_t result = oe_call_host(func, args);
     OE_TEST(result == OE_OK);
 }
+
+OE_SET_ENCLAVE_SGX(
+    1, /* ProductID */
+    1, /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    1024,  /* StackPageCount */
+    4);   /* TCSCount */

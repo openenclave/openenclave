@@ -25,7 +25,7 @@ OE_OCALL void callback_1(void* args, oe_enclave_t* enclave)
     OE_TEST(enclave == enclave_1);
 
     /* Call into enclave b, which calls callback_2 */
-    result = oe_call_enclave(enclave_2, "test_get_host_enclave", "callback_2");
+    result = oe_call_enclave(enclave_2, "test_ocall_enclave_param", "callback_2");
     OE_TEST(result == OE_OK);
 
     called_callback_1++;
@@ -38,7 +38,7 @@ OE_OCALL void callback_2(void* args, oe_enclave_t* enclave)
     OE_TEST(enclave == enclave_2);
 
     /* Call into enclave c, which calls callback_3 */
-    result = oe_call_enclave(enclave_3, "test_get_host_enclave", "callback_3");
+    result = oe_call_enclave(enclave_3, "test_ocall_enclave_param", "callback_3");
     OE_TEST(result == OE_OK);
 
     called_callback_2++;
@@ -63,6 +63,8 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
+    printf("argv[1]=%s\n", argv[1]);
+
     result = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave_1);
     OE_TEST(result == OE_OK);
 
@@ -73,7 +75,7 @@ int main(int argc, const char* argv[])
     OE_TEST(result == OE_OK);
 
     /* Call into enclave a, which calls callback_1 */
-    result = oe_call_enclave(enclave_1, "test_get_host_enclave", "callback_1");
+    result = oe_call_enclave(enclave_1, "test_ocall_enclave_param", "callback_1");
     OE_TEST(result == OE_OK);
 
     oe_terminate_enclave(enclave_1);
