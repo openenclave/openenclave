@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeidl_file)
+include(oeedl_file)
 include(add_enclave_executable)
 
-oeidl_file(../pingpong.idl enclave gen)
+oeedl_file(../pingpong.edl enclave gen)
 add_enclave_executable(pingpong_enc sign.conf private.pem
     enc.cpp
     ${gen}

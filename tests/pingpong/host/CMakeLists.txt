@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(oeidl_file)
-oeidl_file(../pingpong.idl host gen)
+include(oeedl_file)
+oeedl_file(../pingpong.edl host gen)
 
 add_executable(pingpong_host host.cpp ${gen})
 
