@@ -62,7 +62,6 @@ add_subdirectory(file)
 add_subdirectory(pingpong)
 add_subdirectory(pingpong-shared)
 add_subdirectory(tester)
-add_subdirectory(typeinfo)
 
 # oeedger8r runs only on Linux
 add_subdirectory(oeedger8r)
