@@ -32,8 +32,24 @@ oe_enclave_t* g_Enclave = NULL;
     oe_get_report(g_Enclave, flags, op, ops, rb, rbs)
 #endif
 
-#define VerifyReport(rpt, rptSize, pr) \
-    oe_verify_report(g_Enclave, rpt, rptSize, pr)
+oe_result_t VerifyReport(
+    const uint8_t* report,
+    size_t reportSize,
+    oe_report_t* parsedReport)
+{
+    oe_report_t tmpReport = {0};
+    OE_TEST(oe_parse_report(report, reportSize, &tmpReport) == OE_OK);
+
+    if (tmpReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
+    {
+        // Check that remote attestation can be done entirely on the host side.
+        // No enclave is passed to oe_verify_report.
+        return oe_verify_report(NULL, report, reportSize, parsedReport);
+    }
+
+    // Local attestation requires enclave.
+    return oe_verify_report(g_Enclave, report, reportSize, parsedReport);
+}
 
 #define TEST_FCN
 

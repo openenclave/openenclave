@@ -15,6 +15,7 @@
 #define _OE_BITS_PROPERTIES_H
 
 #include "defs.h"
+#include "result.h"
 #include "types.h"
 
 OE_EXTERNC_BEGIN
@@ -145,6 +146,22 @@ typedef struct oe_sgx_enclave_properties_t
     OE_INFO_SECTION_END
 
 // clang-format on
+
+/**
+ * This function sets the minimum value of issue dates of CRL and TCB info
+ * accepted by the enclave. CRL and TCB info issued before this date
+ * are rejected for attestation.
+ * This function is not thread safe.
+ * Results of calling this function multiple times from within an enclave
+ * are undefined.
+ */
+oe_result_t __oe_sgx_set_minimum_crl_tcb_issue_date(
+    uint32_t year,
+    uint32_t month,
+    uint32_t day,
+    uint32_t hours,
+    uint32_t minutes,
+    uint32_t seconds);
 
 OE_EXTERNC_END
 

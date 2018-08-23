@@ -99,7 +99,7 @@ int main(int argc, const char* argv[])
         // on leaf 0x7, subleaf 0x0)
         if (HAVE_FLC(regs))
         {
-            printf("CPU supports SGX_LC:Flexible Launch Control\n");
+            printf("CPU supports SGX_FLC:Flexible Launch Control\n");
         }
     }
 

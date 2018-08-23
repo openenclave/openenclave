@@ -4,6 +4,7 @@
 add_library(oeenclave STATIC
     ../common/asn1.c
     ../common/cert.c
+    ../common/datetime.c
     ../common/quote.c
     ../common/revocation.c
     ../common/sgxcertextensions.c
@@ -17,6 +18,7 @@ add_library(oeenclave STATIC
     link.c
     random.c
     report.c
+    revocationinfo.c
     rsa.c
     sha.c
     start.S)

@@ -6,17 +6,7 @@
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
-
-#ifdef OE_BUILD_ENCLAVE
-#include <openenclave/internal/enclavelibc.h>
-#define memset oe_memset
-#define printf oe_host_printf
-#define memcmp oe_memcmp
-#define memcpy oe_memcpy
-#else
-#include <stdio.h>
-#include <string.h>
-#endif
+#include "common.h"
 
 static oe_result_t _find_url(
     const uint8_t* data,

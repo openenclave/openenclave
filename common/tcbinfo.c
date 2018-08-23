@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include "tcbinfo.h"
-#include <openenclave/enclave.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
+#include "common.h"
 
 #ifdef OE_USE_LIBSGX
 
@@ -174,8 +174,8 @@ static oe_result_t _read_property_name_and_colon(
     uint32_t name_length = 0;
 
     OE_CHECK(_read_string(itr, end, &name, &name_length));
-    if (name_length == oe_strlen(property_name) &&
-        oe_memcmp(property_name, name, name_length) == 0)
+    if (name_length == strlen(property_name) &&
+        memcmp(property_name, name, name_length) == 0)
     {
         OE_CHECK(_read(':', itr, end));
         result = OE_OK;
@@ -189,19 +189,19 @@ static bool _json_str_equal(
     uint32_t str1_length,
     const char* str2)
 {
-    uint32_t str2_length = (uint32_t)oe_strlen(str2);
+    uint32_t str2_length = (uint32_t)strlen(str2);
 
     // Strings in json stream are not zero terminated.
     // Hence the special comparison function.
     return (str1_length == str2_length) &&
-           (oe_memcmp(str1, str2, str2_length) == 0);
+           (memcmp(str1, str2, str2_length) == 0);
 }
 
 static void _trace_json_string(const uint8_t* str, uint32_t str_length)
 {
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     char buffer[str_length + 1];
-    oe_memcpy(buffer, str, str_length);
+    memcpy(buffer, str, str_length);
     buffer[str_length] = 0;
     OE_TRACE_INFO("value = %s\n", buffer);
 #endif
@@ -218,7 +218,7 @@ static void _trace_json_string(const uint8_t* str, uint32_t str_length)
  *    "pcesvn": uint16_t
  * }
  */
-oe_result_t _read_tcb(
+static oe_result_t _read_tcb(
     const uint8_t** itr,
     const uint8_t* end,
     oe_tcb_level_t* tcb_level)
@@ -553,7 +553,7 @@ oe_result_t oe_verify_tcb_signature(
         oe_ec_public_key_read_pem(
             &trusted_root_key,
             (const uint8_t*)_trusted_root_key_pem,
-            oe_strlen(_trusted_root_key_pem) + 1));
+            strlen(_trusted_root_key_pem) + 1));
 
     OE_CHECK(
         oe_ec_public_key_equal(

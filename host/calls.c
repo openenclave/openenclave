@@ -299,6 +299,38 @@ static void _HandleCallHost(uint64_t arg)
 /*
 **==============================================================================
 **
+** _handle_call_host_by_address()
+**
+**     Handle calls from the enclave
+**
+**==============================================================================
+*/
+
+static void _handle_call_host_by_address(uint64_t arg)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_call_host_by_address_args_t* args = (oe_call_host_by_address_args_t*)arg;
+
+    if (!args || !args->func)
+    {
+        result = OE_INVALID_PARAMETER;
+        goto done;
+    }
+
+    /* Invoke the function */
+    args->func(args->args);
+
+    result = OE_OK;
+
+done:
+
+    if (args)
+        args->result = result;
+}
+
+/*
+**==============================================================================
+**
 ** _HandleOCALL()
 **
 **     Handle calls from the enclave (OCALL)
@@ -325,6 +357,10 @@ static oe_result_t _HandleOCALL(
     {
         case OE_OCALL_CALL_HOST:
             _HandleCallHost(argIn);
+            break;
+
+        case OE_OCALL_CALL_HOST_BY_ADDRESS:
+            _handle_call_host_by_address(argIn);
             break;
 
         case OE_OCALL_MALLOC:
@@ -363,6 +399,8 @@ static oe_result_t _HandleOCALL(
             HandleThreadWakeWait(enclave, argIn);
             break;
 
+#ifdef OE_USE_LIBSGX
+        // Quote attestion is supported only on libsgx platforms.
         case OE_OCALL_GET_QUOTE:
             HandleGetQuote(argIn);
             break;
@@ -374,6 +412,7 @@ static oe_result_t _HandleOCALL(
         case OE_OCALL_GET_QE_TARGET_INFO:
             HandleGetQETargetInfo(argIn);
             break;
+#endif
 
         case OE_OCALL_SLEEP:
             oe_handle_sleep(argIn);
@@ -388,12 +427,6 @@ static oe_result_t _HandleOCALL(
             handle_malloc_dump(enclave, argIn);
             break;
 #endif
-
-        case OE_ECALL_DESTRUCTOR:
-        case OE_ECALL_CALL_ENCLAVE:
-            assert("Invalid OCALL" == NULL);
-            break;
-
         default:
         {
             /* No function found with the number */

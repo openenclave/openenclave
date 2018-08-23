@@ -109,36 +109,6 @@ char* fgets_unlocked(char* buf, int len, FILE* fp)
     return fgets(buf, len, fp);
 }
 
-int fputc(int c, FILE* stream)
-{
-    int ret;
-    Args* args;
-
-    if (stream == stdout)
-    {
-        /* Write to standard output device */
-        __oe_host_print(0, &c, 1);
-        return c;
-    }
-    else if (stream == stderr)
-    {
-        /* Write to standard error device */
-        __oe_host_print(1, (const char*)&c, 1);
-        return c;
-    }
-    else
-    {
-        args = (Args*)oe_host_malloc(sizeof(Args));
-        args->F_ptr = stream;
-        args->i_var = c;
-        oe_call_host("mbed_test_fputc", args);
-
-        ret = args->ret;
-        oe_host_free(args);
-        return ret;
-    }
-}
-
 int fileno(FILE* stream)
 {
     if (stream == stdout)

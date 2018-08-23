@@ -46,3 +46,10 @@ enum
     TAG_START_ENC,
     TAG_END_ENC,
 };
+
+struct CrossEnclaveCallArg
+{
+    uint32_t enclaveId;
+    uint32_t input;
+    uint32_t output;
+};
