@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include "quote.h"
-#include <openenclave/enclave.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/ec.h>
@@ -11,6 +10,7 @@
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/utils.h>
+#include "common.h"
 #include "revocation.h"
 
 #ifdef OE_USE_LIBSGX
@@ -228,7 +228,7 @@ oe_result_t VerifyQuoteImpl(
             oe_ec_public_key_read_pem(
                 &expectedRootPublicKey,
                 (const uint8_t*)g_ExpectedRootCertificateKey,
-                oe_strlen(g_ExpectedRootCertificateKey) + 1));
+                strlen(g_ExpectedRootCertificateKey) + 1));
 
         OE_CHECK(
             oe_ec_public_key_equal(

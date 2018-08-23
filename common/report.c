@@ -4,31 +4,14 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
-
-#ifdef OE_BUILD_ENCLAVE
-
-#include <openenclave/enclave.h>
-#include <openenclave/internal/enclavelibc.h>
-
-#define Memset oe_memset
-#define Memcpy oe_memcpy
-
-#else
-
-#include <openenclave/host.h>
-#include <stdio.h>
-
-#define Memset memset
-#define Memcpy memcpy
-
-#endif
+#include "common.h"
 
 static void _oe_parse_sgx_report_body(
     const sgx_report_body_t* reportBody,
     bool remote,
     oe_report_t* parsedReport)
 {
-    Memset(parsedReport, 0, sizeof(oe_report_t));
+    memset(parsedReport, 0, sizeof(oe_report_t));
 
     parsedReport->size = sizeof(oe_report_t);
     parsedReport->type = OE_ENCLAVE_TYPE_SGX;
@@ -48,7 +31,7 @@ static void _oe_parse_sgx_report_body(
     OE_STATIC_ASSERT(
         sizeof(parsedReport->identity.unique_id) >=
         sizeof(reportBody->mrenclave));
-    Memcpy(
+    memcpy(
         parsedReport->identity.unique_id,
         reportBody->mrenclave,
         sizeof(reportBody->mrenclave));
@@ -56,7 +39,7 @@ static void _oe_parse_sgx_report_body(
     OE_STATIC_ASSERT(
         sizeof(parsedReport->identity.author_id) >=
         sizeof(reportBody->mrsigner));
-    Memcpy(
+    memcpy(
         parsedReport->identity.author_id,
         reportBody->mrsigner,
         sizeof(reportBody->mrsigner));

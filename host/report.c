@@ -7,6 +7,7 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/utils.h>
+#include "../common/quote.h"
 #include "quote.h"
 
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
@@ -180,6 +181,7 @@ oe_result_t oe_verify_report(
     oe_report_t* parsedReport)
 {
     oe_result_t result = OE_UNEXPECTED;
+    oe_report_t oeReport = {0};
     oe_verify_report_args_t arg = {0};
 
     if (report == NULL)
@@ -188,16 +190,32 @@ oe_result_t oe_verify_report(
     if (reportSize == 0 || reportSize > OE_MAX_REPORT_SIZE)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    arg.report = (uint8_t*)report;
-    arg.reportSize = reportSize;
-    arg.result = OE_FAILURE;
+    OE_CHECK(oe_parse_report(report, reportSize, &oeReport));
 
-    // Call enclave to verify the report. Do not ask the enclave to return a
-    // parsed report since the parsed report will then contain pointers to
-    // enclave memory. Instead, pass NULL as the optional parsedReport out
-    // parameter and parse the report below if requested.
-    OE_CHECK(oe_ecall(enclave, OE_ECALL_VERIFY_REPORT, (uint64_t)&arg, NULL));
-    OE_CHECK(arg.result);
+    if (oeReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
+    {
+        // Quote attestation can be done entirely on the host side.
+        OE_CHECK(
+            VerifyQuoteImpl(report, reportSize, NULL, 0, NULL, 0, NULL, 0));
+    }
+    else
+    {
+        if (enclave == NULL)
+            OE_RAISE(OE_INVALID_PARAMETER);
+
+        // Local report attestation can only be done on the enclave side.
+        arg.report = (uint8_t*)report;
+        arg.reportSize = reportSize;
+        arg.result = OE_FAILURE;
+
+        // Call enclave to verify the report. Do not ask the enclave to return a
+        // parsed report since the parsed report will then contain pointers to
+        // enclave memory. Instead, pass NULL as the optional parsedReport out
+        // parameter and parse the report below if requested.
+        OE_CHECK(
+            oe_ecall(enclave, OE_ECALL_VERIFY_REPORT, (uint64_t)&arg, NULL));
+        OE_CHECK(arg.result);
+    }
 
     // Optionally return parsed report.
     if (parsedReport != NULL)
@@ -205,6 +223,5 @@ oe_result_t oe_verify_report(
 
     result = OE_OK;
 done:
-
     return result;
 }
