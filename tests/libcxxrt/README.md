@@ -69,33 +69,20 @@ dependencies**.
 
 
 To test, test.cc on Windows, perform following steps in given order...
-===============================================================================
-1. Compile libcxxrt on WSL first, if openenclave folder is cloned in path
-	"${env.WSL_ROOTFS}/home/username/openenclave" then this will generate
-	libcxxrt log files in path
-	"${env.WSL_ROOTFS}/home/username/openenclave/build/tests/libcxxrt".
+select Linux-Debug configuration and build libcxxrt logs.
 
-2. Open openenclave project in Visual Studio and select Linux-Debug
-	configuration and build libcxxrt and it will generate second set
-	of libcxx log file on path
-	"${env.WSL_ROOTFS}/var/tmp/build/${workspaceHash}/build/Linux-Debug/tests/libcxxrt".
+Select x64-Debug-tests configuration and build and run libcxxrt tests...
 
-3. Select x64-Debug-tests configuration and build and run libcxxrt tests...
+2.1. Libcxxrt Signed .so files will be copied to windows project binary folder .
 
-	3.1. This project will check if log files using WSL build is generated or
-	not and for that libcxxrt log files path on WSL machine should be passed
-	as cmake arguments in CMakeSettngs.js file, for ex.
-	"-DLINUX_LIBCXXRT_LOG_DIR=${env.WSL_ROOTFS}/home/username/openenclave/build/tests/libcxxrt".
+2.2 After 2.1 is successful, Linux Libcxxrt log files will be copied to windows
+project binary folder.
 
-	3.2 After 3.1 is successful, Direct WSL build libcxxrt log files will be
-	copied to windows project binary folder and then will be compared with
-	log files generated from Visual studio Linux-Debug build, if both log files
-	are equal then test will be marked as passed, otherwise test will be
-	marked as failed.
+2.3 Libcxxrt log files will be generated using run.bat file in windows project binary folder.
 
-Note : Above mechanism will compare following three log files.
-	1. exp_test_exception_output.log
-	2. exp_test_guard_output.log
-	3. exp_test_typeinfo_output.log
+2.4 Linux and Windows Logs will be compared to pass the test.
 
-	test_foreign_exceptions.cc is tested same as Linux.
+Note that test_exception.cc requires std::uncaught_exceptions(), which requires cpp
+standard stdc++17 (or above) with compiler version GCC version 6 or Clang 3.8 (or above).
+But Open Enclave currently support only GCC version 5 with cpp standard stdc++14 
+(at the most). Hence, test_exception.cc is not currently supported in Open Enclave.
