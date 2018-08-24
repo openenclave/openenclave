@@ -409,7 +409,8 @@ let oe_gen_call_enclave_function (os:out_channel) (fd: Ast.func_decl) =
     | Ast.Void -> ""
     | _ -> "p_host_args->_retval = " in
   let call_str = ret_str ^ fd.Ast.fname ^ params_str in
-  fprintf os "    /* TODO: lfence after checks */\n\n";
+  fprintf os "    /* lfence after checks */\n";
+  fprintf os "    __builtin_ia32_lfence();\n\n";
   fprintf os "    /* Call enclave function */\n";
   fprintf os "    %s;\n" call_str  
   
