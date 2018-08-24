@@ -591,15 +591,40 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (fd:Ast.func_decl) =
     fprintf os "    args->_retval = %s;\n" call_expr;
   fprintf os "}\n\n"
 
+(* check if function has wstring parameters *)
+let uses_wstring_params (fd:Ast.func_decl) =
+    List.exists (fun (pt, decl) ->
+      match pt with
+        | Ast.PTPtr (at, attr) -> attr.Ast.pa_iswstr
+        | _ -> false
+    ) fd.Ast.plist
+
 (* Valid oe support *)
 let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
   (* check supported options *)
   if ep.use_prefix then failwithf "--use_prefix option is not supported by oeedger8r.";
   if ep.header_only then failwithf "--header_only option is not supported by oeedger8r.";
-  List.iter (fun f -> if f.Ast.tf_is_priv then 
-    (* failwithf "private functions are not supported with --open-enclave" *)
-    failwithf "'private' specifier is not supported  by oeedger8r"
-  ) ec.tfunc_decls  
+  List.iter (fun f -> 
+    (if f.Ast.tf_is_priv then 
+        failwithf "Function '%s'L 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
+    (if f.Ast.tf_is_switchless then
+        failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);  
+    (if uses_wstring_params f.Ast.tf_fdecl then
+        printf "Warning: Function '%s': wchar_t has differend sizes on windows and linux." f.Ast.tf_fdecl.fname);     
+  ) ec.tfunc_decls;
+  List.iter (fun f -> 
+    (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
+        failwithf "Function '%s': Calling conventions for ocalls are not supported by oeedger8r." f.Ast.uf_fdecl.fname);
+    (if f.Ast.uf_fattr.fa_dllimport then
+        failwithf "Function '%s': dllimport is supported by oeedger8r." f.Ast.uf_fdecl.fname);
+    (if f.Ast.uf_allow_list != [] then
+        printf "Warning: Function '%s': Reentrant ocalls are not supported by Open Enclave.Allow list ignored." f.Ast.uf_fdecl.fname);
+    (if f.Ast.uf_is_switchless then
+        failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.uf_fdecl.fname);
+    (if uses_wstring_params f.Ast.uf_fdecl then
+        printf "Warning: Function '%s': wchar_t has differend sizes on windows and linux." f.Ast.uf_fdecl.fname);          
+  ) ec.ufunc_decls
+
   (*
     Includes are emitted in args.h.
     Imported functions have already been brought into function lists.
