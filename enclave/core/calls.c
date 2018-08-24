@@ -504,7 +504,9 @@ OE_CATCH:
 **==============================================================================
 */
 
-oe_result_t oe_call_host_by_address(void (*func)(void*), void* argsIn)
+oe_result_t oe_call_host_by_address(
+    void (*func)(void*, oe_enclave_t*),
+    void* argsIn)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_by_address_args_t* args = NULL;
