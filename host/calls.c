@@ -656,10 +656,10 @@ OE_CATCH:
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
 
-/* ATTN: this causes an assertion with call nesting. */
-/* ATTN: make enclave argument a cookie. */
-/* ATTN: the SetEnclave() function no longer exists */
-/* SetEnclave(NULL); */
+    /* ATTN: this causes an assertion with call nesting. */
+    /* ATTN: make enclave argument a cookie. */
+    /* ATTN: the SetEnclave() function no longer exists */
+    /* SetEnclave(NULL); */
 
     return result;
 }
