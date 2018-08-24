@@ -1,17 +1,22 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+include(add_compile_flags_if_supported)
+
 include(add_enclave_executable)
 add_enclave_executable(print_enc sign.conf private.pem
     enc.cpp
     )
 
 target_compile_options(print_enc PRIVATE
-    -Wno-error=unused-but-set-variable
     -fno-builtin-strcpy
     -fno-builtin-strcat
     -fno-builtin-memcpy
     -fno-builtin-memset
     )
 
-target_link_libraries(print_enc oelibc)
+add_target_cxx_compile_flags_if_supported(print_enc PRIVATE
+    -Wno-error=unused-but-set-variable
+    )
+
+target_link_libraries(print_enc oeenclave)

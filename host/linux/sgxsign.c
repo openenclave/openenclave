@@ -239,8 +239,8 @@ OE_CATCH:
 static oe_result_t _InitSigstruct(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
-    uint16_t productID,
-    uint16_t securityVersion,
+    uint16_t product_id,
+    uint16_t security_version,
     RSA* rsa,
     sgx_sigstruct_t* sigstruct)
 {
@@ -301,10 +301,10 @@ static oe_result_t _InitSigstruct(
     memcpy(sigstruct->enclavehash, mrenclave, sizeof(sigstruct->enclavehash));
 
     /* sgx_sigstruct_t.isvprodid */
-    sigstruct->isvprodid = productID;
+    sigstruct->isvprodid = product_id;
 
     /* sgx_sigstruct_t.isvsvn */
-    sigstruct->isvsvn = securityVersion;
+    sigstruct->isvsvn = security_version;
 
     /* Sign header and body sections of SigStruct */
     {
@@ -413,8 +413,8 @@ OE_CATCH:
 oe_result_t oe_sgx_sign_enclave(
     const OE_SHA256* mrenclave,
     uint64_t attributes,
-    uint16_t productID,
-    uint16_t securityVersion,
+    uint16_t product_id,
+    uint16_t security_version,
     const uint8_t* pemData,
     size_t pemSize,
     sgx_sigstruct_t* sigstruct)
@@ -435,7 +435,12 @@ oe_result_t oe_sgx_sign_enclave(
     /* Initialize the sigstruct */
     OE_TRY(
         _InitSigstruct(
-            mrenclave, attributes, productID, securityVersion, rsa, sigstruct));
+            mrenclave,
+            attributes,
+            product_id,
+            security_version,
+            rsa,
+            sigstruct));
 
     result = OE_OK;
 

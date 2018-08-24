@@ -17,6 +17,7 @@
 
 #include <openenclave/host.h>
 
+#include <openenclave/internal/backtrace_symbols.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/thread.h>
@@ -24,6 +25,7 @@
 #include "enclave.h"
 #include "ocalls.h"
 #include "quote.h"
+#include "sgxquoteprovider.h"
 
 void HandleMalloc(uint64_t argIn, uint64_t* argOut)
 {
@@ -163,6 +165,19 @@ void HandleGetQuote(uint64_t argIn)
         sgx_get_quote(&args->sgxReport, args->quote, &args->quoteSize);
 }
 
+#ifdef OE_USE_LIBSGX
+
+void HandleGetQuoteRevocationInfo(uint64_t argIn)
+{
+    oe_get_revocation_info_args_t* args = (oe_get_revocation_info_args_t*)argIn;
+    if (!args)
+        return;
+
+    args->result = oe_get_revocation_info(args);
+}
+
+#endif
+
 void HandleGetQETargetInfo(uint64_t argIn)
 {
     oe_get_qetarget_info_args_t* args = (oe_get_qetarget_info_args_t*)argIn;
@@ -171,3 +186,29 @@ void HandleGetQETargetInfo(uint64_t argIn)
 
     args->result = sgx_get_qetarget_info(&args->targetInfo);
 }
+
+#if defined(OE_USE_DEBUG_MALLOC)
+void handle_malloc_dump(oe_enclave_t* enclave, uint64_t arg)
+{
+    oe_malloc_dump_args_t* args = (oe_malloc_dump_args_t*)arg;
+    char** syms = NULL;
+
+    if (!args)
+        goto done;
+
+    if (!(syms = oe_backtrace_symbols(enclave, args->addrs, args->num_addrs)))
+        goto done;
+
+    printf("%llu bytes\n", OE_LLX(args->size));
+
+    for (size_t i = 0; i < args->num_addrs; i++)
+        printf("%s(): %p\n", syms[i], args->addrs[i]);
+
+    printf("\n");
+
+done:
+
+    if (syms)
+        free(syms);
+}
+#endif

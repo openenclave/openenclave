@@ -8,14 +8,13 @@
 #include <openenclave/internal/tests.h>
 #include <openenclave/internal/utils.h>
 
-#include <fstream>
-#include <streambuf>
-#include <vector>
 #include "../../../host/quote.h"
 #include "../common/args.h"
 #include "../common/tests.cpp"
 
 #define SKIP_RETURN_CODE 2
+
+extern void TestVerifyTCBInfo(oe_enclave_t* enclave);
 
 int main(int argc, const char* argv[])
 {
@@ -65,6 +64,11 @@ int main(int argc, const char* argv[])
 
 #ifdef OE_USE_LIBSGX
     TestRemoteVerifyReport(NULL);
+
+    OE_TEST(oe_call_enclave(enclave, "TestIso8601Time", NULL) == OE_OK);
+
+    OE_TEST(oe_call_enclave(enclave, "TestIso8601TimeNegative", NULL) == OE_OK);
+
 #endif
 
     /*
@@ -87,6 +91,8 @@ int main(int argc, const char* argv[])
     OE_TEST(
         oe_call_enclave(enclave, "TestRemoteVerifyReport", &targetInfo) ==
         OE_OK);
+
+    TestVerifyTCBInfo(enclave);
 #endif
 
     /* Terminate the enclave */

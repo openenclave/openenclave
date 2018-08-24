@@ -50,7 +50,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 _Ux86_64_setcontext:
 
 #if defined(__linux__) || defined(__sun__)
-#ifndef OPEN_ENCLAVE
 	/* restore signal mask
            sigprocmask(SIG_SETMASK, ucp->uc_sigmask, NULL, sizeof(sigset_t)) */
 	push %rdi
@@ -65,7 +64,6 @@ _Ux86_64_setcontext:
 	mov $SIGSET_BYTE_SIZE, %r10
 	syscall
 	pop %rdi
-#endif /* !OPEN_ENCLAVE */
 
         /* restore fp state */
 #ifdef UC_MCONTEXT_FPREGS_PTR
@@ -76,7 +74,6 @@ _Ux86_64_setcontext:
 	fldenv (%r8)
 	ldmxcsr FPREGS_OFFSET_MXCSR(%r8)
 #elif defined __FreeBSD__
-#ifndef OPEN_ENCLAVE
 	/* restore signal mask */
 	pushq	%rdi
 	xorl	%edx,%edx
@@ -86,7 +83,6 @@ _Ux86_64_setcontext:
 	movq	%rcx,%r10
 	syscall
 	popq	%rdi
-#endif /* !OPEN_ENCLAVE */
 
 	/* restore fp state */
 	cmpq $UC_MCONTEXT_FPOWNED_FPU,UC_MCONTEXT_OWNEDFP(%rdi)

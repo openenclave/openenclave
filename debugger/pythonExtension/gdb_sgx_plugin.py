@@ -138,7 +138,7 @@ def set_tcs_debug_flag(tcs_addr):
     gdb.execute(gdb_cmd, False, True)
     return True
 
-def enable_oeencalve_debug(oe_enclave_addr, enclave_path):
+def enable_oeenclave_debug(oe_enclave_addr, enclave_path):
     """For a given OE enclave, load its symbol and enable debug flag for all its TCS"""
     # Check if the magic matches.
     enclave_blob = read_from_memory(oe_enclave_addr, OE_ENCLAVE_HEADER_LENGTH)
@@ -180,7 +180,7 @@ def update_untrusted_ocall_frame(frame_pointer, ocallcontext_tuple):
     gdb.execute(gdb_cmd, False, True)
     return True
 
-class EnlaveCreationBreakpoint(gdb.Breakpoint):
+class EnclaveCreationBreakpoint(gdb.Breakpoint):
     def __init__(self):
         gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_creation", internal=1)
 
@@ -195,10 +195,10 @@ class EnlaveCreationBreakpoint(gdb.Breakpoint):
         enclave_path = struct.unpack_from(dataFormat, enclave_path_blob)[0].decode(encoding='UTF-8')
         # print ("Enclave path: {}" .format(enclave_path))
         # Enable enclave debug.
-        enable_oeencalve_debug(oe_enclave_addr, enclave_path)
+        enable_oeenclave_debug(oe_enclave_addr, enclave_path)
         return False
 
-class EnlaveTerminationBreakpoint(gdb.Breakpoint):
+class EnclaveTerminationBreakpoint(gdb.Breakpoint):
     def __init__(self):
         gdb.Breakpoint.__init__ (self, spec="_oe_notify_gdb_enclave_termination", internal=1)
 
@@ -255,8 +255,8 @@ def oe_debugger_init():
 
     # Cleanup and set breakpoints.
     oe_debugger_cleanup()
-    EnlaveCreationBreakpoint()
-    EnlaveTerminationBreakpoint()
+    EnclaveCreationBreakpoint()
+    EnclaveTerminationBreakpoint()
     OCallStartBreakpoint()
     return
 

@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
+#include <openenclave/internal/malloc.h>
 #include <openenclave/internal/tests.h>
 #include <iostream>
 #include <map>
@@ -23,7 +24,7 @@ static string _str;
 class X
 {
   public:
-    X() : _x(0)
+    X()
     {
     }
 
@@ -34,9 +35,6 @@ class X
     virtual void foo()
     {
     }
-
-  private:
-    int _x;
 };
 
 class Y : public X
@@ -171,6 +169,7 @@ OE_ECALL void Test(void* args_)
     {
         struct E
         {
+            int x;
         };
 
         try
@@ -194,6 +193,8 @@ OE_ECALL void Test(void* args_)
 
         if (y)
             args->dynamicCastWorks = true;
+
+        delete x;
     }
 
     args->numConstructions = numConstructions;

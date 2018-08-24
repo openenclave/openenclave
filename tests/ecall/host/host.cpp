@@ -43,7 +43,7 @@ void TestECall(oe_enclave_t* enclave)
     printf("%02u/%02u/%04u\n", args.mm, args.dd, args.yyyy);
 
     printf("baseHeapPage=%llu\n", OE_LLU(args.baseHeapPage));
-    printf("numHeapPages=%llu\n", OE_LLU(args.numHeapPages));
+    printf("num_heap_pages=%llu\n", OE_LLU(args.num_heap_pages));
     printf("numPages=%llu\n", OE_LLU(args.numPages));
     printf("base=%p\n", args.base);
 
@@ -57,14 +57,6 @@ void TestECall(oe_enclave_t* enclave)
 #endif
 
     prev = args.threadData.last_sp;
-}
-
-void TestUserDefinedECall(oe_enclave_t* enclave)
-{
-    uint64_t argOut = 0;
-
-    oe_ecall(enclave, 0, 1000, &argOut);
-    OE_TEST(argOut == 3000);
 }
 
 int main(int argc, const char* argv[])
@@ -93,9 +85,6 @@ int main(int argc, const char* argv[])
     {
         TestECall(enclave);
     }
-
-    printf("=== TestUserDefinedECall()\n");
-    TestUserDefinedECall(enclave);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {

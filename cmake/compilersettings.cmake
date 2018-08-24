@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+include(add_compile_flags_if_supported)
+
 # set default build type and sanitize
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
@@ -33,18 +35,21 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
     # Enables all the warnings about constructions that some users consider questionable,
     # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
     # to fix warnings as they arise, so they don't accumulate "to be fixed later".
-    add_compile_options(-Wall -Werror $<$<COMPILE_LANGUAGE:C>:-Wjump-misses-init> --no-strict-aliasing)
+    add_compile_options(-Wall -Werror -fno-strict-aliasing)
 
-    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-        # Obtain default gcc include dir to gain access to intrinsics
-        execute_process(
-            COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/cmake/get_c_compiler_dir.sh ${CMAKE_C_COMPILER}
-            OUTPUT_VARIABLE OE_C_COMPILER_INCDIR
-            ERROR_VARIABLE OE_ERR
-        )
-        if(NOT "${OE_ERR}" STREQUAL "")
-            message(FATAL_ERROR ${OE_ERR})
-        endif()
+    add_c_compile_flags_if_supported(-Wjump-misses-init)
+
+    # Enables XSAVE intrinsics.
+    add_compile_options(-mxsave)
+
+    # Obtain default compiler include dir to gain access to intrinsics
+    execute_process(
+        COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/cmake/get_c_compiler_dir.sh ${CMAKE_C_COMPILER}
+        OUTPUT_VARIABLE OE_C_COMPILER_INCDIR
+        ERROR_VARIABLE OE_ERR
+    )
+    if(NOT "${OE_ERR}" STREQUAL "")
+        message(FATAL_ERROR ${OE_ERR})
     endif()
 
 elseif(MSVC)

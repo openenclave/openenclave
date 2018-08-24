@@ -4,8 +4,6 @@
 #ifndef _OE_CPUID_H
 #define _OE_CPUID_H
 
-#include <openenclave/bits/types.h>
-
 #define OE_CPUID_OPCODE 0xA20F
 #define OE_CPUID_LEAF_COUNT 8
 #define OE_CPUID_EXTENDED_CPUID_LEAF 0x80000000

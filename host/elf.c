@@ -1599,3 +1599,62 @@ int Elf64_LoadRelocations(const Elf64* elf, void** dataOut, size_t* sizeOut)
 done:
     return rc;
 }
+
+const char* Elf64_GetFunctionName(const Elf64* elf, Elf64_Addr addr)
+{
+    const char* ret = NULL;
+    size_t index;
+    const Elf64_Shdr* sh;
+    const Elf64_Sym* symtab;
+    size_t n;
+    size_t i;
+    const char* SECTIONNAME = ".symtab";
+    const Elf64_Word SH_TYPE = SHT_SYMTAB;
+
+    if (!_Ok(elf))
+        goto done;
+
+    /* Find the symbol table section header */
+    if ((index = _FindShdr(elf, SECTIONNAME)) == (size_t)-1)
+        goto done;
+
+    /* Set pointer to section header */
+    if (!(sh = _GetShdr(elf, index)))
+        goto done;
+
+    /* If this is not a symbol table */
+    if (sh->sh_type != SH_TYPE)
+        goto done;
+
+    /* Sanity check */
+    if (sh->sh_entsize != sizeof(Elf64_Sym))
+        goto done;
+
+    /* Set pointer to symbol table section */
+    if (!(symtab = (const Elf64_Sym*)_GetSection(elf, index)))
+        goto done;
+
+    /* Calculate number of symbol table entries */
+    n = sh->sh_size / sh->sh_entsize;
+
+    /* Look for a function symbol that contains the given address */
+    for (i = 1; i < n; i++)
+    {
+        const Elf64_Sym* p = &symtab[i];
+        unsigned int stt = (p->st_info & 0x0F);
+
+        /* If this symbol is a function */
+        if (stt == STT_FUNC)
+        {
+            /* If this symbol contains the address */
+            if ((addr >= p->st_value) && (addr <= p->st_value + p->st_size))
+            {
+                ret = Elf64_GetStringFromStrtab(elf, p->st_name);
+                goto done;
+            }
+        }
+    }
+
+done:
+    return ret;
+}

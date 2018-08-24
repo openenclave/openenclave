@@ -7,13 +7,9 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/types.h>
 #include <openenclave/internal/cpuid.h>
+#include <openenclave/internal/defs.h>
+#include "backtrace.h"
 #include "sgxtypes.h"
-
-#define __OE_ECALL_BASE ((int)0x00FFFFFF)
-#define __OE_OCALL_BASE ((int)0x00FFFFFF)
-
-#define OE_MAX_ECALLS 1024
-#define OE_MAX_OCALLS 1024
 
 OE_EXTERNC_BEGIN
 
@@ -34,9 +30,6 @@ typedef void (*oe_ocall_function)(uint64_t argIn, uint64_t* argOut);
 **==============================================================================
 */
 
-/* Disallow OCALLs to call back into enclave with an ECALL */
-#define OE_OCALL_FLAG_NOT_REENTRANT (1u << 0)
-
 /*
 **==============================================================================
 **
@@ -52,8 +45,11 @@ typedef enum _oe_code {
     OE_CODE_ECALL = 1,
     OE_CODE_ERET = 2,
     OE_CODE_OCALL = 3,
-    OE_CODE_ORET = 4
+    OE_CODE_ORET = 4,
+    __OE_CODE_MAX = OE_ENUM_MAX,
 } oe_code_t;
+
+OE_STATIC_ASSERT(sizeof(oe_code_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================
@@ -65,34 +61,45 @@ typedef enum _oe_code {
 **==============================================================================
 */
 
-typedef enum _oe_func {
-    // Special func used by oeenclave to allow host to call enclave's
-    // oe_verify_report. See enclave/report.cpp.
-    OE_FUNC_VERIFY_REPORT = OE_MAX_ECALLS - 1,
+/* ECALL function numbers are in the range: [0:32765] */
+#define OE_ECALL_BASE 0
 
-    OE_FUNC_DESTRUCTOR = 0x01000000,
-    OE_FUNC_INIT_ENCLAVE = 0x01800000,
-    OE_FUNC_CALL_ENCLAVE = 0x02000000,
-    OE_FUNC_CALL_HOST = 0x03000000,
-    OE_FUNC_INIT_QUOTE = 0x04000000,
-    OE_FUNC_GET_REPORT = 0x04100000,
-    OE_FUNC_GET_QE_TARGET_INFO = 0x04200000,
-    OE_FUNC_GET_QUOTE = 0x04300000,
-    OE_FUNC_THREAD_WAKE = 0x05000000,
-    OE_FUNC_THREAD_WAIT = 0x06000000,
-    OE_FUNC_THREAD_WAKE_WAIT = 0x07000000,
-    OE_FUNC_MALLOC = 0x08000000,
-    OE_FUNC_REALLOC = 0x08800000,
-    OE_FUNC_FREE = 0x09000000,
-    OE_FUNC_PUTS = 0x0A000000,
-    OE_FUNC_PUTCHAR = 0x0B000000,
-    OE_FUNC_PRINT = 0x0C000000,
-    OE_FUNC_STRFTIME = 0x0D000000,
-    OE_FUNC_GETTIMEOFDAY = 0x0E000000,
-    OE_FUNC_CLOCK_GETTIME = 0x0F000000,
-    OE_FUNC_NANOSLEEP = 0x10000000,
-    OE_FUNC_VIRTUAL_EXCEPTION_HANDLER = 0x20000000,
+/* OCALL function numbers are in the range: [32768:65535] */
+#define OE_OCALL_BASE 0x8000
+
+/* Function numbers are 16 bit integers */
+typedef enum _oe_func {
+    OE_ECALL_DESTRUCTOR = OE_ECALL_BASE,
+    OE_ECALL_INIT_ENCLAVE,
+    OE_ECALL_CALL_ENCLAVE,
+    OE_ECALL_VERIFY_REPORT,
+    OE_ECALL_GET_REPORT,
+    OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
+    /* Caution: always add new ECALL function numbers here */
+
+    OE_OCALL_CALL_HOST = OE_OCALL_BASE,
+    OE_OCALL_CALL_HOST_BY_ADDRESS,
+    OE_OCALL_GET_QE_TARGET_INFO,
+    OE_OCALL_GET_QUOTE,
+    OE_OCALL_GET_REVOCATION_INFO,
+    OE_OCALL_THREAD_WAKE,
+    OE_OCALL_THREAD_WAIT,
+    OE_OCALL_THREAD_WAKE_WAIT,
+    OE_OCALL_MALLOC,
+    OE_OCALL_REALLOC,
+    OE_OCALL_FREE,
+    OE_OCALL_PUTS,
+    OE_OCALL_PUTCHAR,
+    OE_OCALL_PRINT,
+    OE_OCALL_SLEEP,
+    OE_OCALL_GET_TIME,
+    OE_OCALL_MALLOC_DUMP,
+    /* Caution: always add new OCALL function numbers here */
+
+    __OE_FUNC_MAX = OE_ENUM_MAX,
 } oe_func_t;
+
+OE_STATIC_ASSERT(sizeof(oe_func_t) == sizeof(unsigned int));
 
 #define OE_EXCEPTION_CONTINUE_SEARCH 0x0
 #define OE_EXCEPTION_CONTINUE_EXECUTION 0xFFFFFFFF
@@ -108,15 +115,20 @@ typedef enum _oe_func {
 **         code -- indicating whether ECALL, OCALL, ERET, or ORET
 **         func -- the number of the function being called
 **         flags -- any bit flags
+**         result -- the result of the transport (not the function)
 **
 **==============================================================================
 */
 
-OE_INLINE uint64_t
-oe_make_call_arg1(oe_code_t code, oe_func_t func, uint16_t flags)
+OE_INLINE uint64_t oe_make_call_arg1(
+    oe_code_t code,
+    oe_func_t func,
+    uint16_t flags,
+    oe_result_t result)
 {
-    /* [ FLAGS:16, CODE:16, FUNC:32 ] */
-    return ((uint64_t)code << 48) | ((uint64_t)func << 16) | ((uint64_t)flags);
+    /* [ CODE:16 | FUNC:16 | FLAGS:16 | RESULT:16 ] */
+    return ((uint64_t)code << 48) | ((uint64_t)func << 32) |
+           ((uint64_t)flags << 16) | ((uint64_t)result);
 }
 
 /*
@@ -129,7 +141,7 @@ oe_make_call_arg1(oe_code_t code, oe_func_t func, uint16_t flags)
 
 OE_INLINE oe_code_t oe_get_code_from_call_arg1(uint64_t arg)
 {
-    return (oe_code_t)((0xFFFF000000000000 & arg) >> 48);
+    return (oe_code_t)((0xffff000000000000 & arg) >> 48);
 }
 
 /*
@@ -140,9 +152,9 @@ OE_INLINE oe_code_t oe_get_code_from_call_arg1(uint64_t arg)
 **==============================================================================
 */
 
-OE_INLINE oe_func_t oe_get_func_from_call_arg1(uint64_t arg)
+OE_INLINE uint16_t oe_get_func_from_call_arg1(uint64_t arg)
 {
-    return (oe_func_t)((0x0000FFFFFFFF0000 & arg) >> 16);
+    return (oe_func_t)((0x0000ffff00000000 & arg) >> 32);
 }
 
 /*
@@ -155,7 +167,20 @@ OE_INLINE oe_func_t oe_get_func_from_call_arg1(uint64_t arg)
 
 OE_INLINE uint16_t oe_get_flags_from_call_arg1(uint64_t arg)
 {
-    return (uint16_t)(0x000000000000FFFF & arg);
+    return (uint16_t)((0x00000000ffff0000 & arg) >> 16);
+}
+
+/*
+**==============================================================================
+**
+** oe_get_result_from_call_arg1()
+**
+**==============================================================================
+*/
+
+OE_INLINE uint16_t oe_get_result_from_call_arg1(uint64_t arg)
+{
+    return (uint16_t)(0x000000000000ffff & arg);
 }
 
 /*
@@ -168,7 +193,7 @@ OE_INLINE uint16_t oe_get_flags_from_call_arg1(uint64_t arg)
 
 typedef void (*oe_enclave_func_t)(void* args);
 
-typedef struct oe_call_enclave_args_t
+typedef struct _oe_call_enclave_args
 {
     uint64_t func;
     uint64_t vaddr;
@@ -184,14 +209,29 @@ typedef struct oe_call_enclave_args_t
 **==============================================================================
 */
 
-typedef void (*oe_host_func_t)(void* args);
-
-typedef struct oe_call_host_args_t
+typedef struct _oe_call_host_args
 {
     void* args;
     oe_result_t result;
     OE_ZERO_SIZED_ARRAY char func[];
 } oe_call_host_args_t;
+
+/*
+**==============================================================================
+**
+** oe_call_host_by_address_args_t
+**
+**==============================================================================
+*/
+
+typedef void (*oe_host_func_t)(void* args);
+
+typedef struct _oe_call_host_by_address_args
+{
+    void* args;
+    oe_host_func_t func;
+    oe_result_t result;
+} oe_call_host_by_address_args_t;
 
 /*
 **==============================================================================
@@ -241,12 +281,27 @@ typedef struct _oe_init_enclave_args
     uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
 } oe_init_enclave_args_t;
 
+/*
+**==============================================================================
+**
+** oe_malloc_dump_args_t
+**
+**==============================================================================
+*/
+
+typedef struct _oe_malloc_dump_args
+{
+    uint64_t size;
+    void* addrs[OE_BACKTRACE_MAX];
+    int num_addrs;
+} oe_malloc_dump_args_t;
+
 /**
  * Perform a low-level enclave function call (ECALL).
  *
  * This function performs a low-level enclave function call by invoking the
- * function indicated by the **func** parameter. The enclave defines and
- * registers a corresponding function with the following signature.
+ * function indicated by the **func** parameter. The enclave defines a
+ * corresponding function with the following signature.
  *
  *     void (*)(uint64_t argIn, uint64_t* argOut);
  *
@@ -283,7 +338,7 @@ typedef struct _oe_init_enclave_args
  */
 oe_result_t oe_ecall(
     oe_enclave_t* enclave,
-    uint32_t func,
+    uint16_t func,
     uint64_t argIn,
     uint64_t* argOut);
 
@@ -291,8 +346,8 @@ oe_result_t oe_ecall(
  * Perform a low-level host function call (OCALL).
  *
  * This function performs a low-level host function call by invoking the
- * function indicated by the **func** parameter. The host defines and
- * registers a corresponding function with the following signature.
+ * function indicated by the **func** parameter. The host defines a
+ * corresponding function with the following signature.
  *
  *     void (*)(uint64_t argIn, uint64_t* argOut);
  *
@@ -318,8 +373,6 @@ oe_result_t oe_ecall(
  * @param func The number of the function to be called.
  * @param argIn The input argument passed to the function.
  * @param argOut The output argument passed back from the function.
- * @param ocall_flags Additional flags for the duration of this ocall, such as
- *              OE_OCALL_FLAG_NOT_REENTRANT.
  *
  * @retval OE_OK The function was successful.
  * @retval OE_FAILED The function failed.
@@ -328,56 +381,7 @@ oe_result_t oe_ecall(
  * @retval OE_UNEXPECTED An unexpected error occurred.
  *
  */
-oe_result_t oe_ocall(
-    uint32_t func,
-    uint64_t argIn,
-    uint64_t* argOut,
-    uint32_t ocall_flags);
-/**
- * Registers a low-level ECALL function.
- *
- * This function registers a low-level ECALL function that may be called
- * from the host by the **oe_ecall()** function. The registered function
- * has the following prototype.
- *
- *     void (*)(uint64_t argIn, uint64_t* argOut);
- *
- * This interface is intended mainly for internal use and developers are
- * encouraged to use the high-level interface instead.
- *
- * @param func The number of the function to be called.
- * @param ecall The address of the function to be called.
- *
- * @retval OE_OK The function was successful.
- * @retval OE_OUT_OF_RANGE The function number was greater than OE_MAX_ECALLS.
- * @retval OE_ALREADY_IN_USE The function number is already in use.
- *
- */
-oe_result_t oe_register_ecall(uint32_t func, oe_ecall_function ecall);
-
-/**
- * Registers a low-level OCALL function.
- *
- * TODO: Redesign this, this needs to be enclave-specific.
- *
- * This function registers a low-level OCALL function that may be called
- * from the enclave by the **oe_ocall()** function. The registered function
- * has the following prototype.
- *
- *     void (*)(uint64_t argIn, uint64_t* argOut);
- *
- * This interface is intended mainly for internal use and developers are
- * encouraged to use the high-level interface instead.
- *
- * @param func The number of the function to be called.
- * @param ocall The address of the function to be called.
- *
- * @retval OE_OK The function was successful.
- * @retval OE_OUT_OF_RANGE The function number was greater than OE_MAX_OCALLS.
- * @retval OE_ALREADY_IN_USE The function number is already in use.
- *
- */
-oe_result_t oe_register_ocall(uint32_t func, oe_ocall_function ocall);
+oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut);
 
 OE_EXTERNC_END
 

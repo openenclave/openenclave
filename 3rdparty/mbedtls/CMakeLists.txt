@@ -56,4 +56,6 @@ target_link_libraries(mbedcrypto INTERFACE
 # with CMake. If using the target "oelibc", CMake reorders the libs, resulting
 # in undefined LIBC symbols from crypto. Using the explicit lib-name preserves
 # order.
-target_link_libraries(mbedcrypto INTERFACE ${OE_LIBDIR}/openenclave/enclave/liboelibc.a)
+target_link_libraries(mbedcrypto INTERFACE
+	${OE_LIBDIR}/openenclave/enclave/liboelibc.a
+	${OE_LIBDIR}/openenclave/enclave/liboecore.a)

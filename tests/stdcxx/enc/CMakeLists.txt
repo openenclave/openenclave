@@ -16,4 +16,4 @@ target_compile_options(stdcxx_enc PRIVATE
     -fno-builtin-printf
     )
 
-target_link_libraries(stdcxx_enc oelibcxx)
+target_link_libraries(stdcxx_enc oelibcxx oeenclave)
