@@ -18,7 +18,7 @@ static bool verbose;
 
 #if defined(__linux__)
 #define OE_NEWLINE "\r\n"
-#elif defined(_WIN32) 
+#elif defined(_WIN32)
 #define OE_NEWLINE "\n"
 #endif
 
