@@ -2,11 +2,13 @@
 // Licensed under the MIT License.
 
 #define _GNU_SOURCE
+#define USE_DL_PREFIX
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include "../3rdparty/dlmalloc/dlmalloc/malloc.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"

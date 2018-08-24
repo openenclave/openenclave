@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/time.h>
 #include <stdint.h>
 #include <string.h>
@@ -17,138 +18,103 @@
 // of extern variable in gmtime_r.c.
 const char __gmt[] = "GMT";
 
+static const uint64_t _SEC_TO_MSEC = 1000UL;
+static const uint64_t _MSEC_TO_USEC = 1000UL;
+static const uint64_t _MSEC_TO_NSEC = 1000000UL;
+
 time_t time(time_t* tloc)
 {
-    struct timeval tv;
+    uint64_t msec;
 
-    if (gettimeofday(&tv, NULL) != 0)
-        return (time_t)-1;
+    if ((msec = oe_get_time()) == (uint64_t)-1)
+        return 0;
 
-    if (tloc)
-        *tloc = tv.tv_sec;
-
-    return tv.tv_sec;
+    return (time_t)(msec / _SEC_TO_MSEC);
 }
 
-#if 0
-int gettimeofday(struct timeval* tv, struct timezone* tz)
-#else
 int gettimeofday(struct timeval* tv, void* tz)
-#endif
 {
-    size_t ret = -1;
-    oe_gettimeofday_args_t* args = NULL;
-
-    if (!(args = oe_host_calloc(1, sizeof(oe_gettimeofday_args_t))))
-        goto done;
-
-    args->ret = -1;
+    int ret = -1;
+    uint64_t msec;
 
     if (tv)
-        args->tv = &args->tvbuf;
+        oe_memset(tv, 0, sizeof(struct timeval));
 
     if (tz)
-        args->tz = NULL;
+        oe_memset(tz, 0, sizeof(struct timezone));
 
-    if (oe_ocall(
-            OE_FUNC_GETTIMEOFDAY,
-            (uint64_t)args,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (!tv)
         goto done;
 
-    if (args->ret == 0)
-    {
-        if (tv)
-            memcpy(tv, &args->tvbuf, sizeof(args->tvbuf));
+    if ((msec = oe_get_time()) == (uint64_t)-1)
+        goto done;
 
-        if (tz)
-            memcpy(tz, &args->tzbuf, sizeof(args->tzbuf));
-    }
+    tv->tv_sec = msec / _SEC_TO_MSEC;
+    tv->tv_usec = msec % _MSEC_TO_USEC;
 
-    ret = args->ret;
+    ret = 0;
 
 done:
-
-    if (args)
-        oe_host_free(args);
-
-    return ret;
+    return 0;
 }
 
 int clock_gettime(clockid_t clk_id, struct timespec* tp)
 {
-    size_t ret = -1;
-    oe_clock_gettime_args_t* args = NULL;
+    int ret = -1;
+    uint64_t msec;
 
-    if (!(args = oe_host_malloc(sizeof(oe_clock_gettime_args_t))))
+    if (!tp)
         goto done;
 
-    args->ret = -1;
-    args->clk_id = clk_id;
-    args->tp = tp ? &args->tpbuf : NULL;
-    // clockid_t is not available for Windows,
-    // So on Windows int32_t is typedef to clockid_t.
-    OE_STATIC_ASSERT(sizeof(clockid_t) == sizeof(int32_t));
-
-    if (oe_ocall(
-            OE_FUNC_CLOCK_GETTIME,
-            (uint64_t)args,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
-        goto done;
-
-    if (args->ret == 0)
+    if (clk_id != CLOCK_REALTIME)
     {
-        if (tp)
-            memcpy(tp, &args->tpbuf, sizeof(args->tpbuf));
+        /* Only supporting CLOCK_REALTIME */
+        oe_assert("clock_gettime(): panic" == NULL);
+        goto done;
     }
 
-    ret = args->ret;
+    if ((msec = oe_get_time()) == (uint64_t)-1)
+        goto done;
+
+    tp->tv_sec = msec / _SEC_TO_MSEC;
+    tp->tv_nsec = (msec % _SEC_TO_MSEC) * _MSEC_TO_NSEC;
+
+    ret = 0;
 
 done:
-
-    if (args)
-        oe_host_free(args);
 
     return ret;
 }
 
-size_t strftime(char* str, size_t max, const char* format, const struct tm* tm)
+int nanosleep(const struct timespec* req, struct timespec* rem)
 {
-    size_t ret = 0;
-    oe_strftime_args_t* a = NULL;
+    size_t ret = -1;
+    uint64_t milliseconds = 0;
 
-    if (!str || !format || !tm)
+    if (rem)
+        oe_memset(rem, 0, sizeof(*rem));
+
+    if (!req)
         goto done;
 
-    if (!(a = oe_host_calloc(1, sizeof(oe_strftime_args_t))))
-        goto done;
+    /* Convert timespec to milliseconds */
+    milliseconds += req->tv_sec * 1000UL;
+    milliseconds += req->tv_nsec / 1000000UL;
 
-    if (strlcpy(a->format, format, sizeof(a->format)) >= sizeof(a->format))
-        goto done;
+    /* Perform OCALL */
+    ret = oe_sleep(milliseconds);
 
-    memcpy(&a->tm, tm, sizeof(struct tm));
-
-    if (oe_ocall(
-            OE_FUNC_STRFTIME, (uint64_t)a, NULL, OE_OCALL_FLAG_NOT_REENTRANT) !=
-        OE_OK)
-        goto done;
-
-    if (strlcpy(str, a->str, max) >= max)
-    {
-        *str = '\0';
-        goto done;
-    }
-
-    ret = a->ret;
+/* ATTN: handle remainders */
 
 done:
 
-    if (a)
-        oe_host_free(a);
-
     return ret;
+}
+
+size_t strftime(char* s, size_t max, const char* format, const struct tm* tm)
+{
+    oe_assert("strftime(): panic" == NULL);
+    return 0;
 }
 
 size_t strftime_l(
@@ -158,47 +124,6 @@ size_t strftime_l(
     const struct tm* tm,
     locale_t loc)
 {
-    return strftime(s, max, format, tm);
-}
-
-int nanosleep(const struct timespec* req, struct timespec* rem)
-{
-    size_t ret = -1;
-    oe_nanosleep_args_t* args = NULL;
-
-    if (!(args = oe_host_calloc(1, sizeof(oe_nanosleep_args_t))))
-        goto done;
-
-    args->ret = -1;
-
-    if (req)
-    {
-        memcpy(&args->reqbuf, req, sizeof(args->reqbuf));
-        args->req = &args->reqbuf;
-    }
-
-    if (rem)
-        args->rem = &args->rembuf;
-
-    if (oe_ocall(
-            OE_FUNC_NANOSLEEP,
-            (uint64_t)args,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
-        goto done;
-
-    if (args->ret == 0)
-    {
-        if (rem)
-            memcpy(rem, &args->rembuf, sizeof(args->rembuf));
-    }
-
-    ret = args->ret;
-
-done:
-
-    if (args)
-        oe_host_free(args);
-
-    return ret;
+    oe_assert("strftime_l(): panic" == NULL);
+    return 0;
 }

@@ -8,6 +8,8 @@
 #include <string.h>
 #include <wchar.h>
 
+#define OE_OCALL_FAILED -1
+
 static uint32_t func()
 {
     static int state = 0;
@@ -25,7 +27,7 @@ uint32_t threadLocalDynamic = func();
 char asciistring[] = "HelloWorld";
 wchar_t wcstring[] = L"HelloWorld";
 
-OE_ECALL oe_result_t Test(void* args)
+OE_ECALL int Test(void* args)
 {
     int* returnValuePtr = (int*)args;
 
@@ -58,6 +60,7 @@ OE_ECALL oe_result_t Test(void* args)
     }
 
     wcstombs((char*)tempRegion, wcstring, wcslen(wcstring));
+    ((char*)tempRegion)[wcslen(wcstring)] = '\0';
     if (strcmp(asciistring, (char*)tempRegion) != 0)
     {
         *returnValuePtr = -4;
@@ -80,6 +83,7 @@ OE_ECALL oe_result_t Test(void* args)
     }
 
     mbstowcs((wchar_t*)tempRegion, asciistring, strlen(asciistring));
+    ((wchar_t*)tempRegion)[strlen(asciistring)] = '\0';
 
 #ifndef OE_SIM
     /* Broken in MUSL library */

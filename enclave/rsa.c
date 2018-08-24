@@ -150,7 +150,7 @@ static oe_result_t _GenerateKeyPair(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Check range of bits and exponent parameters */
-    if (bits > OE_MAX_UINT || exponent > OE_MAX_INT)
+    if (bits > OE_UINT_MAX || exponent > OE_INT_MAX)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Get the random number generator */
@@ -258,9 +258,9 @@ oe_result_t oe_rsa_public_key_init(
 }
 
 oe_result_t oe_rsa_private_key_read_pem(
+    oe_rsa_private_key_t* privateKey,
     const uint8_t* pemData,
-    size_t pemSize,
-    oe_rsa_private_key_t* privateKey)
+    size_t pemSize)
 {
     return oe_private_key_read_pem(
         pemData,
@@ -283,9 +283,9 @@ oe_result_t oe_rsa_private_key_write_pem(
 }
 
 oe_result_t oe_rsa_public_key_read_pem(
+    oe_rsa_public_key_t* privateKey,
     const uint8_t* pemData,
-    size_t pemSize,
-    oe_rsa_public_key_t* privateKey)
+    size_t pemSize)
 {
     return oe_public_key_read_pem(
         pemData,

@@ -8,6 +8,8 @@
 #include <openenclave/bits/properties.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include <openenclave/internal/defs.h>
+#include <openenclave/internal/types.h>
 #include "epid.h"
 #include "jump.h"
 #include "load.h"
@@ -65,7 +67,10 @@ typedef enum _sgx_enclu_leaf {
     ENCLU_EACCEPT = 0x05,
     ENCLU_EMODPE = 0x06,
     ENCLU_EACCEPTCOPY = 0x07,
+    ENCLU_UNDEFINED = OE_ENUM_MAX,
 } sgx_enclu_leaf_t;
+
+OE_STATIC_ASSERT(sizeof(sgx_enclu_leaf_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================
@@ -457,8 +462,8 @@ typedef struct _sgx_tcs
     union {
         uint8_t reserved[4024];
 
-        /* (72) Enclave's oe_main() function */
-        void (*main)(void);
+        /* (72) Enclave's entry point (defaults to _start) */
+        void (*entry)(void);
     } u;
 } sgx_tcs_t;
 
@@ -475,7 +480,7 @@ OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, gsbase), 56);
 OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, fslimit), 64);
 OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, gslimit), 68);
 OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, u.reserved), 72);
-OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, u.main), 72);
+OE_CHECK_SIZE(OE_OFFSETOF(sgx_tcs_t, u.entry), 72);
 
 /*
 **==============================================================================
@@ -546,6 +551,7 @@ oe_thread_data_t* oe_get_thread_data(void);
 
 typedef struct _Callsite Callsite;
 
+OE_PACK_BEGIN
 typedef struct _TD
 {
     oe_thread_data_t base;
@@ -564,8 +570,10 @@ typedef struct _TD
     uint64_t host_previous_rbp;
 
     /* Return arguments from OCALL */
-    int64_t oret_func;
-    int64_t oret_arg;
+    uint16_t oret_func;
+    uint16_t oret_result;
+    uint16_t padding[2];
+    uint64_t oret_arg;
 
     /* List of Callsite structures (most recent call is first) */
     Callsite* callsites;
@@ -576,12 +584,10 @@ typedef struct _TD
     /* Linux error number: from <errno.h> */
     int linux_errno;
 
-    /* Currently active ocall flags */
-    uint32_t ocall_flags;
-
     /* Reserved */
-    uint8_t reserved[3832];
+    uint8_t reserved[3836];
 } TD;
+OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(TD), 4096);
 
@@ -687,7 +693,7 @@ typedef struct _sgx_report_body
     uint8_t reserved4[60];
 
     /* (320) User report data */
-    sgx_report_data_t reportData;
+    sgx_report_data_t report_data;
 } sgx_report_body_t;
 
 typedef struct _sgx_report
@@ -848,17 +854,20 @@ typedef struct _sgx_qe_cert_data
 /*
 **==============================================================================
 **
-** OE_SGX_PCKID
+** oe_sgx_pckid_t
 **
 **==============================================================================
 */
-typedef enum _OE_SGX_PCKID {
+typedef enum _oe_sgx_pckid {
     OE_SGX_PCK_ID_PLAIN_PPID = 1,
     OE_SGX_PCK_ID_ENCRYPTED_PPID_2048 = 2,
     OE_SGX_PCK_ID_ENCRYPTED_PPID_3072 = 3,
     OE_SGX_PCK_ID_PCK_CERTIFICATE = 4,
-    OE_SGX_PCK_ID_PCK_CERT_CHAIN = 5
-} OE_SGX_PCKID;
+    OE_SGX_PCK_ID_PCK_CERT_CHAIN = 5,
+    __OE_SGX_PCKID_MAX = OE_ENUM_MAX
+} oe_sgx_pckid_t;
+
+OE_STATIC_ASSERT(sizeof(oe_sgx_pckid_t) == sizeof(unsigned int));
 
 #else
 
@@ -953,7 +962,10 @@ OE_PACK_END
 typedef enum _sgx_quote_type {
     SGX_QUOTE_TYPE_UNLINKABLE_SIGNATURE,
     SGX_QUOTE_TYPE_LINKABLE_SIGNATURE,
+    __SGX_QUOTE_TYPE_MAX = OE_ENUM_MAX,
 } sgx_quote_type_t;
+
+OE_STATIC_ASSERT(sizeof(sgx_quote_type_t) == sizeof(unsigned int));
 
 /*
 **==============================================================================

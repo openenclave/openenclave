@@ -87,12 +87,12 @@ NESTED_ENTRY oe_enter_sim, _TEXT$00
     push r14
     push r15
 
-call_oe_main:
+call_start:
 
     ;; Save the stack pointer so enclave can use the stack.
     mov STACKPTR, rsp
 
-    ;; Call oe_main(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2) in enclave
+    ;; Call start(RAX=CSSA, RBX=TCS, RCX=RETADDR, RDI=ARG1, RSI=ARG2) in enclave
     mov rax, CSSA
     mov rbx, TCS
     lea rcx, retaddr
@@ -131,12 +131,12 @@ dispatch_ocall_sim:
     cmp rax, 0
     jne return_from_ecall_sim
 
-    ;; Prepare to reenter the enclave, calling oe_main()
+    ;; Prepare to reenter the enclave, calling start()
     mov rax, ARG1OUT
     mov ARG1, rax
     mov rax, ARG2OUT
     mov ARG2, rax
-    jmp call_oe_main
+    jmp call_start
 
 return_from_ecall_sim:
 

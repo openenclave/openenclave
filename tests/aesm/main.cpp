@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #if defined(OE_USE_LIBSGX)
-#include <sgx_ql_oe_wrapper.h>
+#include <sgx_ngsa_ql_wrapper.h>
 #else
 #include <openenclave/internal/aesm.h>
 #endif
@@ -40,9 +40,9 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "%s: failed to connect\n", argv[0]);
         exit(1);
     }
+    AESMDisconnect(aesm);
 #endif
 
     printf("=== passed all tests (%s)\n", argv[0]);
-
     return 0;
 }

@@ -202,6 +202,7 @@ static size_t _GetTypeSizeFromType(oe_type_t type)
         case OE_LONG_T:
         case OE_ULONG_T:
         case OE_WCHAR_T:
+        case __OE_TYPE_MAX:
         {
             /* Unsupported types */
             return 0;
@@ -278,6 +279,7 @@ static bool _ScalarEq(oe_type_t type, const void* p1, const void* p2)
         case OE_LONG_T:
         case OE_ULONG_T:
         case OE_WCHAR_T:
+        case __OE_TYPE_MAX:
         {
             /* Unsupported types */
             return false;
@@ -361,6 +363,7 @@ static bool _ArrayEq(oe_type_t type, const void* p1, const void* p2, size_t n)
         case OE_LONG_T:
         case OE_ULONG_T:
         case OE_WCHAR_T:
+        case __OE_TYPE_MAX:
         {
             /* Unsupported types */
             return false;
@@ -427,9 +430,7 @@ static oe_result_t _FieldEq(
 
     fti = &sti->fields[index];
 
-#if (OE_TRACE_LEVEL >= 2)
-    OE_PRINTF("_FieldEq(): %s.%s\n", sti->name, fti->name);
-#endif
+    OE_TRACE_INFO("_FieldEq(): %s.%s\n", sti->name, fti->name);
 
     if (fti->flags & OE_FLAG_COUNT)
     {
@@ -682,6 +683,7 @@ static void _PrintScalar(const oe_field_ti_t* fti, const void* p, size_t depth)
         case OE_LONG_T:
         case OE_ULONG_T:
         case OE_WCHAR_T:
+        case __OE_TYPE_MAX:
         {
             /* Unsupported types */
             break;
@@ -1175,7 +1177,7 @@ static oe_result_t _ApplyStructPtrProc(
         }
         else if (fti->flags & OE_FLAG_PTR && fti->flags & OE_FLAG_ARRAY)
         {
-            OE_THROW(OE_UNIMPLEMENTED);
+            OE_THROW(OE_UNSUPPORTED);
         }
         else if (fti->flags & OE_FLAG_PTR)
         {
@@ -1885,7 +1887,7 @@ static oe_result_t _TestOrFillPadding(
             if (test)
             {
                 if (*start++ != byte)
-                    OE_THROW(OE_BUFFER_OVERRUN);
+                    OE_THROW(OE_OUT_OF_BOUNDS);
             }
             else
                 *start++ = byte;

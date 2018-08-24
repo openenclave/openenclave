@@ -17,18 +17,55 @@ OE_OCALL void Func1(void* args)
     _func1Called = true;
 }
 
-void MyOCall(uint64_t argIn, uint64_t* argOut)
+OE_OCALL void my_ocall(void* arg)
 {
-    if (argOut)
-        *argOut = argIn * 7;
+    my_ocall_args_t* args = (my_ocall_args_t*)arg;
+
+    if (args)
+        args->out = args->in * 7;
 }
 
-static bool _func2Ok;
+static bool _func2Ok = false;
 
 OE_OCALL void Func2(void* args)
 {
     // unsigned char* buf = (unsigned char*)args;
     _func2Ok = true;
+}
+
+static bool _funcACalled = false;
+
+OE_OCALL void A(void* args)
+{
+    _funcACalled = true;
+}
+
+/* This function called by test_callback() ECALL */
+OE_OCALL void callback(void* arg)
+{
+    test_callback_args_t* args = (test_callback_args_t*)arg;
+
+    if (args)
+        args->out = args->in;
+}
+
+static oe_enclave_t* _enclave = NULL;
+static bool _reentrancyTested = false;
+
+OE_OCALL void TestReentrancy(void*)
+{
+    oe_result_t result;
+
+    // misspelt functions are caught by the host.
+    result = oe_call_enclave(_enclave, "foobar", NULL);
+    OE_TEST(result == OE_NOT_FOUND);
+
+    // Valid function; but reentrant call.
+    result = oe_call_enclave(_enclave, "TestReentrancy", NULL);
+    printf("result ==== %s\n", oe_result_str(result));
+    OE_TEST(result == OE_REENTRANT_ECALL);
+
+    _reentrancyTested = true;
 }
 
 int main(int argc, const char* argv[])
@@ -65,12 +102,34 @@ int main(int argc, const char* argv[])
         OE_TEST(_func2Ok);
     }
 
+    /* Call was_destructor_called() */
+    {
+        oe_result_t result;
+
+        was_destructor_called_args_t args;
+        args.called = true;
+        result = oe_call_enclave(enclave, "was_destructor_called", &args);
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.called == false);
+    }
+
     /* Call SetTSD() */
     {
         SetTSDArgs args;
-        args.value = (void*)0xAAAAAAAABBBBBBBB;
+        args.value = strdup("TSD-DATA");
         oe_result_t result = oe_call_enclave(enclave, "SetTSD", &args);
         OE_TEST(result == OE_OK);
+    }
+
+    /* Call was_destructor_called() */
+    {
+        oe_result_t result;
+
+        was_destructor_called_args_t args;
+        args.called = false;
+        result = oe_call_enclave(enclave, "was_destructor_called", &args);
+        OE_TEST(result == OE_OK);
+        OE_TEST(args.called == true);
     }
 
     /* Call GetTSD() */
@@ -79,19 +138,48 @@ int main(int argc, const char* argv[])
         args.value = 0;
         oe_result_t result = oe_call_enclave(enclave, "GetTSD", &args);
         OE_TEST(result == OE_OK);
-        OE_TEST(args.value == (void*)0xAAAAAAAABBBBBBBB);
+        /* Returning from SetTSD() cleared this TSD slot */
+        OE_TEST(args.value == NULL);
     }
 
     /* Call TestMyOCall() */
     {
-        oe_result_t result = oe_register_ocall(0, MyOCall);
-        OE_TEST(result == OE_OK);
-
         TestMyOCallArgs args;
         args.result = 0;
         result = oe_call_enclave(enclave, "TestMyOCall", &args);
         OE_TEST(result == OE_OK);
         OE_TEST(args.result == 7000);
+    }
+
+    /* Call TestOCallEdgeCases() */
+    {
+        oe_result_t result =
+            oe_call_enclave(enclave, "TestOCallEdgeCases", NULL);
+
+        OE_TEST(result == OE_OK);
+        OE_TEST(_funcACalled);
+    }
+
+    /* Test oe_call_host_by_address() by having enclave invoke host callback */
+    {
+        const uint64_t VALUE = 0xec39cae11f9b4e26;
+        test_callback_args_t args;
+
+        args.callback = callback;
+        args.in = VALUE;
+        args.out = 0;
+        OE_TEST(oe_call_enclave(enclave, "test_callback", &args) == OE_OK);
+        OE_TEST(args.in == VALUE);
+        OE_TEST(args.out == VALUE);
+    }
+
+    /* Call TestReentrancy() */
+    {
+        _enclave = enclave;
+        oe_result_t result = oe_call_enclave(enclave, "TestReentrancy", NULL);
+
+        OE_TEST(result == OE_OK);
+        OE_TEST(_reentrancyTested);
     }
 
     oe_terminate_enclave(enclave);

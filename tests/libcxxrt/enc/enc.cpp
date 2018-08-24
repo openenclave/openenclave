@@ -13,6 +13,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/tests.h>
 #include <csignal>
 #include <cstdio>
@@ -24,7 +25,7 @@ extern "C" int main(int argc, const char* argv[]);
 
 extern "C" void _exit(int status)
 {
-    oe_ocall(OCALL_EXIT, status, NULL, 0);
+    oe_call_host("ocall_exit", (void*)(long)status);
     abort();
 }
 
@@ -64,6 +65,6 @@ OE_ECALL void Test(Args* args)
         };
         static int argc = sizeof(argv) / sizeof(argv[0]);
         args->ret = main(argc, argv);
-        args->test = oe_host_strdup(__TEST__NAME);
+        args->test = oe_host_strndup(__TEST__NAME, OE_SIZE_MAX);
     }
 }

@@ -3,6 +3,7 @@
 
 #include <openenclave/enclave.h>
 #include <openenclave/internal/globals.h>
+#include <openenclave/internal/thread.h>
 
 void* oe_sbrk(ptrdiff_t increment)
 {

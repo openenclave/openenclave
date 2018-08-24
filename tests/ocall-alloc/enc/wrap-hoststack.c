@@ -12,10 +12,13 @@
 
  */
 
-#define oe_host_alloc_for_call_host MyHostAllocForCallHost
-#define oe_host_free_for_call_host MyOE_HostFreeForCallHost
-#define __cxa_atexit My__cxa_atexit
-#define oe_host_malloc MyHostMalloc
-#define oe_host_free MyHostFree
+#define oe_host_alloc_for_call_host test_host_alloc_for_call_host
+#define oe_host_free_for_call_host test_host_free_for_call_host
+#define oe_host_malloc test_host_malloc
+#define oe_host_free test_host_free
+#define oe_thread_key_create test_thread_key_create
+#define oe_thread_setspecific test_thread_setspecific
+#define oe_free_thread_buckets test_free_thread_buckets
+#define __cxa_atexit test_cxa_atexit
 
 #include "../../../enclave/core/hoststack.c"

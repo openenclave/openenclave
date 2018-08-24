@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #define _GNU_SOURCE
+#define USE_DL_PREFIX
 #include <assert.h>
 #include <dlfcn.h>
 #include <stdio.h>

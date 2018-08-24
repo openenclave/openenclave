@@ -70,4 +70,22 @@ typedef struct _TestMyOCallArgs
     uint64_t result;
 } TestMyOCallArgs;
 
+typedef struct _my_ocall_args
+{
+    uint64_t in;
+    uint64_t out;
+} my_ocall_args_t;
+
+typedef struct _was_destructor_called_args
+{
+    bool called;
+} was_destructor_called_args_t;
+
+typedef struct _test_callback_args
+{
+    void (*callback)(void* arg);
+    uint64_t in;
+    uint64_t out;
+} test_callback_args_t;
+
 #endif /* _ocall_args_h */

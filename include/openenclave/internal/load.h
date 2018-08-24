@@ -7,6 +7,7 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/bits/result.h>
 #include <openenclave/bits/types.h>
+#include "types.h"
 
 OE_EXTERNC_BEGIN
 
@@ -63,7 +64,7 @@ oe_result_t __oe_calculate_segments_size(
 oe_result_t __oe_combine_segments(
     const oe_segment_t* segments,
     size_t nsegments,
-    oe_page** pages,
+    oe_page_t** pages,
     size_t* npages);
 
 OE_EXTERNC_END

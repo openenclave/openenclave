@@ -33,7 +33,7 @@
 //          thread data structure (TD.last_sp)
 //
 //      (3) If this a clean exit, then store zero in TD.last_sp, forcing
-//          oe_main() to recompute it on next entry.
+//          oe_enter() to recompute it on next entry.
 //
 //      (4) Clear enclave registers to avoid leaking data to the host.
 //
@@ -91,7 +91,7 @@ _oe_exit:
 
 .clean_exit:
 
-    // Clear the TD.last_sp field (force oe_main to calculate stack pointer)
+    // Clear the TD.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, %gs:TD_last_sp
 
 .clear_enclave_registers:
@@ -139,9 +139,9 @@ _oe_exit:
 // This function is wrapper of _oe_exit. It is needed to stitch the host
 // stack and enclave stack together.
 //
-// N.B: Don't change the function name, otherwise debugger can't work.
-//	GDB depends on this hardcode function name when does stack walking for split
-//	stack.
+// N.B: Don't change the function name, otherwise debugger can't work. GDB 
+// depends on this hardcode function name when does stack walking for split
+// stack.
 //==============================================================================
 
 .globl __morestack

@@ -64,7 +64,7 @@ static void InitializeMbedtls(void)
         return;
     }
 
-    // Generate an ephemeral 2048-bit RSA keypair with
+    // Generate an ephemeral 2048-bit RSA key pair with
     // exponent 65537 for the enclave.
     res = mbedtls_rsa_gen_key(
         mbedtls_pk_rsa(g_RsaContext),
@@ -100,8 +100,7 @@ static void InitializeMbedtls(void)
  */
 bool InitializeCrypto(void)
 {
-    static oe_once_t s_once = OE_ONCE_INITIALIZER;
-    oe_once(&s_once, InitializeMbedtls);
+    InitializeMbedtls();
     return g_Initialized;
 }
 

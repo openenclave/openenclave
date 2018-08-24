@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "rsa.h"
+#include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/rsa.h>
 #include <openenclave/internal/utils.h>
@@ -269,9 +270,9 @@ void oe_rsa_public_key_init(oe_rsa_public_key_t* publicKey, EVP_PKEY* pkey)
 }
 
 oe_result_t oe_rsa_private_key_read_pem(
+    oe_rsa_private_key_t* privateKey,
     const uint8_t* pemData,
-    size_t pemSize,
-    oe_rsa_private_key_t* privateKey)
+    size_t pemSize)
 {
     return oe_private_key_read_pem(
         pemData,
@@ -295,9 +296,9 @@ oe_result_t oe_rsa_private_key_write_pem(
 }
 
 oe_result_t oe_rsa_public_key_read_pem(
+    oe_rsa_public_key_t* publicKey,
     const uint8_t* pemData,
-    size_t pemSize,
-    oe_rsa_public_key_t* publicKey)
+    size_t pemSize)
 {
     return oe_public_key_read_pem(
         pemData,

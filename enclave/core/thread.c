@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "thread.h"
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -21,11 +22,7 @@ static int _ThreadWait(oe_thread_data_t* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (oe_ocall(
-            OE_FUNC_THREAD_WAIT,
-            (uint64_t)tcs,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (oe_ocall(OE_OCALL_THREAD_WAIT, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
 
     return 0;
@@ -35,11 +32,7 @@ static int _ThreadWake(oe_thread_data_t* self)
 {
     const void* tcs = TD_ToTCS((TD*)self);
 
-    if (oe_ocall(
-            OE_FUNC_THREAD_WAKE,
-            (uint64_t)tcs,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (oe_ocall(OE_OCALL_THREAD_WAKE, (uint64_t)tcs, NULL) != OE_OK)
         return -1;
 
     return 0;
@@ -57,11 +50,7 @@ static int _ThreadWakeWait(oe_thread_data_t* waiter, oe_thread_data_t* self)
     args->waiter_tcs = TD_ToTCS((TD*)waiter);
     args->self_tcs = TD_ToTCS((TD*)self);
 
-    if (oe_ocall(
-            OE_FUNC_THREAD_WAKE_WAIT,
-            (uint64_t)args,
-            NULL,
-            OE_OCALL_FLAG_NOT_REENTRANT) != OE_OK)
+    if (oe_ocall(OE_OCALL_THREAD_WAKE_WAIT, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     ret = 0;
@@ -262,7 +251,7 @@ oe_result_t oe_mutex_lock(oe_mutex_t* mutex)
     /* Unreachable! */
 }
 
-oe_result_t oe_mutex_try_lock(oe_mutex_t* mutex)
+oe_result_t oe_mutex_trylock(oe_mutex_t* mutex)
 {
     oe_mutex_impl_t* m = (oe_mutex_impl_t*)mutex;
     oe_thread_data_t* self = oe_get_thread_data();
@@ -584,7 +573,7 @@ oe_result_t oe_rwlock_rdlock(oe_rwlock_t* readWriteLock)
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_try_rdlock(oe_rwlock_t* readWriteLock)
+oe_result_t oe_rwlock_tryrdlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
@@ -631,7 +620,7 @@ static oe_result_t _WakeWaiters(oe_rwlock_impl_t* rwLock)
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_rdunlock(oe_rwlock_t* readWriteLock)
+static oe_result_t _rwlock_rdunlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
 
@@ -697,7 +686,7 @@ oe_result_t oe_rwlock_wrlock(oe_rwlock_t* readWriteLock)
     return OE_OK;
 }
 
-oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* readWriteLock)
+oe_result_t oe_rwlock_trywrlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
@@ -720,7 +709,7 @@ oe_result_t oe_rwlock_try_wrlock(oe_rwlock_t* readWriteLock)
     return result;
 }
 
-oe_result_t oe_rwlock_wrunlock(oe_rwlock_t* readWriteLock)
+static oe_result_t _rwlock_wrunlock(oe_rwlock_t* readWriteLock)
 {
     oe_rwlock_impl_t* rwLock = (oe_rwlock_impl_t*)readWriteLock;
     oe_thread_data_t* self = oe_get_thread_data();
@@ -786,9 +775,9 @@ oe_result_t oe_rwlock_unlock(oe_rwlock_t* readWriteLock)
     // necessary here since the condition is expected to be true only when the
     // current thread is the writer thread.
     if (rwLock->writer == self)
-        return oe_rwlock_wrunlock(readWriteLock);
+        return _rwlock_wrunlock(readWriteLock);
     else
-        return oe_rwlock_rdunlock(readWriteLock);
+        return _rwlock_rdunlock(readWriteLock);
 }
 
 /*
@@ -866,10 +855,6 @@ oe_result_t oe_thread_key_delete(oe_thread_key_t key)
     {
         oe_spin_lock(&_lock);
 
-        /* Call destructor */
-        if (_slots[key].destructor)
-            _slots[key].destructor(oe_thread_get_specific(key));
-
         /* Clear this slot */
         _slots[key].used = false;
         _slots[key].destructor = NULL;
@@ -880,7 +865,7 @@ oe_result_t oe_thread_key_delete(oe_thread_key_t key)
     return OE_OK;
 }
 
-oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value)
+oe_result_t oe_thread_setspecific(oe_thread_key_t key, const void* value)
 {
     void** tsd_page;
 
@@ -896,7 +881,7 @@ oe_result_t oe_thread_set_specific(oe_thread_key_t key, const void* value)
     return OE_OK;
 }
 
-void* oe_thread_get_specific(oe_thread_key_t key)
+void* oe_thread_getspecific(oe_thread_key_t key)
 {
     void** tsd_page;
 
@@ -907,4 +892,32 @@ void* oe_thread_get_specific(oe_thread_key_t key)
         return NULL;
 
     return tsd_page[key];
+}
+
+void oe_thread_destruct_specific(void)
+{
+    void** tsd_page;
+
+    /* Get the thread-specific-data page for the current thread. */
+    if ((tsd_page = _GetTSDPage()))
+    {
+        oe_spin_lock(&_lock);
+        {
+            /* For each thread-specific-data key */
+            for (oe_thread_key_t key = 1; key < MAX_KEYS; key++)
+            {
+                /* If this key is in use: */
+                if (_slots[key].used)
+                {
+                    /* Call the destructor if any. */
+                    if (_slots[key].destructor && tsd_page[key])
+                        (_slots[key].destructor)(tsd_page[key]);
+
+                    /* Clear the value. */
+                    tsd_page[key] = NULL;
+                }
+            }
+        }
+        oe_spin_unlock(&_lock);
+    }
 }

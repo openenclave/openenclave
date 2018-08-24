@@ -4,12 +4,12 @@
 #include <openenclave/host.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
-#include <pthread.h>
-#include <unistd.h>
 #include <cassert>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <thread>
 #include "../args.h"
 
 static TestMutexArgs _args;
@@ -28,13 +28,15 @@ void* Thread(void* args)
 
 void TestMutex(oe_enclave_t* enclave)
 {
-    pthread_t threads[NUM_THREADS];
+    std::thread threads[NUM_THREADS];
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-        pthread_create(&threads[i], NULL, Thread, enclave);
+    {
+        threads[i] = std::thread(Thread, enclave);
+    }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-        pthread_join(threads[i], NULL);
+        threads[i].join();
 
     OE_TEST(_args.count1 == NUM_THREADS);
     OE_TEST(_args.count2 == NUM_THREADS);
@@ -53,18 +55,18 @@ void* WaiterThread(void* args)
 
 void TestCond(oe_enclave_t* enclave)
 {
-    pthread_t threads[NUM_THREADS];
+    std::thread threads[NUM_THREADS];
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-        pthread_create(&threads[i], NULL, WaiterThread, enclave);
+        threads[i] = std::thread(WaiterThread, enclave);
 
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     for (size_t i = 0; i < NUM_THREADS; i++)
         OE_TEST(oe_call_enclave(enclave, "Signal", NULL) == OE_OK);
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-        pthread_join(threads[i], NULL);
+        threads[i].join();
 }
 
 void* CBTestWaiterThread(void* args)
@@ -87,22 +89,22 @@ void* CBTestSignalThread(void* args)
 
 void TestCondBroadcast(oe_enclave_t* enclave)
 {
-    pthread_t threads[NUM_THREADS];
-    pthread_t signal_thread;
+    std::thread threads[NUM_THREADS];
+    std::thread signal_thread;
 
     printf("TestCondBroadcast Starting\n");
 
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
-        pthread_create(&threads[i], NULL, CBTestWaiterThread, enclave);
+        threads[i] = std::thread(CBTestWaiterThread, enclave);
     }
 
-    pthread_create(&signal_thread, NULL, CBTestSignalThread, enclave);
+    signal_thread = std::thread(CBTestSignalThread, enclave);
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-        pthread_join(threads[i], NULL);
+        threads[i].join();
 
-    pthread_join(signal_thread, NULL);
+    signal_thread.join();
 
     printf("TestCondBroadcast Complete\n");
 }
@@ -117,12 +119,12 @@ void* ExclusiveAccessThread(void* args)
     {
         OE_TEST(
             oe_call_enclave(enclave, "WaitForExclusiveAccess", NULL) == OE_OK);
-        usleep(20 * 1000);
+        std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
 
         OE_TEST(
             oe_call_enclave(enclave, "RelinquishExclusiveAccess", NULL) ==
             OE_OK);
-        usleep(20 * 1000);
+        std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
     }
     printf("Thread Ending\n");
     return NULL;
@@ -130,14 +132,14 @@ void* ExclusiveAccessThread(void* args)
 
 void TestThreadWakeWait(oe_enclave_t* enclave)
 {
-    pthread_t threads[NUM_THREADS];
+    std::thread threads[NUM_THREADS];
 
     printf("TestThreadWakeWait Starting\n");
     for (size_t i = 0; i < NUM_THREADS; i++)
-        pthread_create(&threads[i], NULL, ExclusiveAccessThread, enclave);
+        threads[i] = std::thread(ExclusiveAccessThread, enclave);
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-        pthread_join(threads[i], NULL);
+        threads[i].join();
 
     // The oe_calls in this test should succeed without any segv/double free.
     printf("TestThreadWakeWait Complete\n");
@@ -212,20 +214,17 @@ void* LockAndUnlockThread2(void* args)
 // The locking patterns are chosen to not deadlock.
 void TestThreadLockingPatterns(oe_enclave_t* enclave)
 {
-    pthread_t threads[NUM_THREADS];
+    std::thread threads[NUM_THREADS];
 
     printf("TestThreadLockingPatterns Starting\n");
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
-        pthread_create(
-            &threads[i],
-            NULL,
-            (i & 1) ? LockAndUnlockThread2 : LockAndUnlockThread1,
-            enclave);
+        threads[i] = std::thread(
+            (i & 1) ? LockAndUnlockThread2 : LockAndUnlockThread1, enclave);
     }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-        pthread_join(threads[i], NULL);
+        threads[i].join();
 
     // The oe_calls in this test should succeed without any OE_TEST() failures.
     printf("TestThreadLockingPatterns Complete\n");

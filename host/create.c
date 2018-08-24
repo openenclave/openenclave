@@ -7,7 +7,6 @@
 #if defined(__linux__)
 #include <errno.h>
 #include <sys/mman.h>
-#include "linux/cpuid_count.h"
 #elif defined(_WIN32)
 #include <windows.h>
 #endif
@@ -16,7 +15,6 @@
 #include <openenclave/bits/defs.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
-#include <openenclave/internal/cpuid.h>
 #include <openenclave/internal/debug.h>
 #include <openenclave/internal/elf.h>
 #include <openenclave/internal/load.h>
@@ -28,6 +26,7 @@
 #include <openenclave/internal/trace.h>
 #include <openenclave/internal/utils.h>
 #include <string.h>
+#include "cpuid.h"
 #include "enclave.h"
 #include "memalign.h"
 #include "sgxload.h"
@@ -134,7 +133,7 @@ static oe_result_t _AddSegmentPages(
     uint64_t enclaveSize,
     const oe_segment_t segments[],
     size_t nsegments,
-    const oe_page* pages,
+    const oe_page_t* pages,
     size_t npages,
     uint64_t* vaddr)
 {
@@ -150,7 +149,7 @@ static oe_result_t _AddSegmentPages(
     /* Add each page to the enclave */
     for (i = 0; i < npages; i++)
     {
-        const oe_page* page = &pages[i];
+        const oe_page_t* page = &pages[i];
         uint64_t addr = enclaveAddr + (i * OE_PAGE_SIZE);
         uint64_t src = (uint64_t)page;
         uint64_t flags;
@@ -193,7 +192,7 @@ static oe_result_t _AddFilledPages(
     uint32_t filler,
     bool extend)
 {
-    oe_page page;
+    oe_page_t page;
     oe_result_t result = OE_UNEXPECTED;
     size_t i;
 
@@ -287,7 +286,7 @@ static oe_result_t _AddControlPages(
 
     /* Add the TCS page */
     {
-        oe_page page;
+        oe_page_t page;
         sgx_tcs_t* tcs;
 
         /* Zero-fill the TCS page */
@@ -422,8 +421,8 @@ static oe_result_t _AddRelocationPages(
 
     if (relocData && relocSize)
     {
-        const oe_page* pages = (const oe_page*)relocData;
-        size_t npages = relocSize / sizeof(oe_page);
+        const oe_page_t* pages = (const oe_page_t*)relocData;
+        size_t npages = relocSize / sizeof(oe_page_t);
 
         for (size_t i = 0; i < npages; i++)
         {
@@ -435,7 +434,7 @@ static oe_result_t _AddRelocationPages(
             OE_CHECK(
                 oe_sgx_load_enclave_data(
                     context, enclaveAddr, addr, src, flags, extend));
-            (*vaddr) += sizeof(oe_page);
+            (*vaddr) += sizeof(oe_page_t);
         }
     }
 
@@ -458,8 +457,8 @@ static oe_result_t _AddECallPages(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     {
-        const oe_page* pages = (const oe_page*)ecallData;
-        size_t npages = ecallSize / sizeof(oe_page);
+        const oe_page_t* pages = (const oe_page_t*)ecallData;
+        size_t npages = ecallSize / sizeof(oe_page_t);
 
         for (size_t i = 0; i < npages; i++)
         {
@@ -471,7 +470,7 @@ static oe_result_t _AddECallPages(
             OE_CHECK(
                 oe_sgx_load_enclave_data(
                     context, enclaveAddr, addr, src, flags, extend));
-            (*vaddr) += sizeof(oe_page);
+            (*vaddr) += sizeof(oe_page_t);
         }
     }
 
@@ -502,7 +501,7 @@ static oe_result_t _AddPages(
     oe_result_t result = OE_UNEXPECTED;
     uint64_t vaddr = 0;
     size_t i;
-    oe_page* segpages = NULL;
+    oe_page_t* segpages = NULL;
     size_t nsegpages;
     size_t baseRelocPage;
     size_t baseECallPage;
@@ -783,6 +782,7 @@ done:
     return result;
 }
 
+#if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
 OE_INLINE void _DumpRelocations(const void* data, size_t size)
 {
     const Elf64_Rela* p = (const Elf64_Rela*)data;
@@ -801,6 +801,7 @@ OE_INLINE void _DumpRelocations(const void* data, size_t size)
             OE_LLD(p->r_addend));
     }
 }
+#endif
 
 /*
 **==============================================================================
@@ -877,26 +878,21 @@ static oe_result_t _InitializeEnclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_init_enclave_args_t args;
+    unsigned int subleaf = 0; // pass sub-leaf of 0 - needed for leaf 4
 
     // Initialize enclave cache of CPUID info for emulation
     for (int i = 0; i < OE_CPUID_LEAF_COUNT; i++)
     {
-#if defined(__linux__)
-        int supported = __get_cpuid_count(
+        oe_get_cpuid(
             i,
-            0, // pass sub-leaf of 0 - needed for leaf 4
+            subleaf,
             &args.cpuidTable[i][OE_CPUID_RAX],
             &args.cpuidTable[i][OE_CPUID_RBX],
             &args.cpuidTable[i][OE_CPUID_RCX],
             &args.cpuidTable[i][OE_CPUID_RDX]);
-        if (!supported)
-            OE_RAISE(OE_UNSUPPORTED);
-#elif defined(_WIN32)
-        __cpuid(args.cpuidTable[i], i);
-#endif
     }
 
-    OE_CHECK(oe_ecall(enclave, OE_FUNC_INIT_ENCLAVE, (uint64_t)&args, NULL));
+    OE_CHECK(oe_ecall(enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, NULL));
 
     result = OE_OK;
 
@@ -908,7 +904,7 @@ done:
 static oe_result_t _FindEnclavePropertiesHeader(
     uint8_t* sectionData,
     size_t sectionSize,
-    oe_enclave_type_t enclaveType,
+    oe_enclave_type_t enclave_type,
     size_t structSize,
     oe_enclave_properties_header_t** header)
 {
@@ -924,7 +920,7 @@ static oe_result_t _FindEnclavePropertiesHeader(
         oe_enclave_properties_header_t* h =
             (oe_enclave_properties_header_t*)ptr;
 
-        if (h->enclaveType == enclaveType)
+        if (h->enclave_type == enclave_type)
         {
             if (h->size != structSize)
             {
@@ -1078,43 +1074,43 @@ oe_result_t oe_sgx_validate_enclave_properties(
     }
 
     if (!oe_sgx_is_valid_num_heap_pages(
-            properties->header.sizeSettings.numHeapPages))
+            properties->header.size_settings.num_heap_pages))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.numHeapPages";
+            *fieldName = "header.size_settings.num_heap_pages";
         result = OE_FAILURE;
         goto done;
     }
 
     if (!oe_sgx_is_valid_num_stack_pages(
-            properties->header.sizeSettings.numStackPages))
+            properties->header.size_settings.num_stack_pages))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.numStackPages";
+            *fieldName = "header.size_settings.num_stack_pages";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_num_tcs(properties->header.sizeSettings.numTCS))
+    if (!oe_sgx_is_valid_num_tcs(properties->header.size_settings.num_tcs))
     {
         if (fieldName)
-            *fieldName = "header.sizeSettings.numTCS";
+            *fieldName = "header.size_settings.num_tcs";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_product_id(properties->config.productID))
+    if (!oe_sgx_is_valid_product_id(properties->config.product_id))
     {
         if (fieldName)
-            *fieldName = "config.productID";
+            *fieldName = "config.product_id";
         result = OE_FAILURE;
         goto done;
     }
 
-    if (!oe_sgx_is_valid_security_version(properties->config.productID))
+    if (!oe_sgx_is_valid_security_version(properties->config.product_id))
     {
         if (fieldName)
-            *fieldName = "config.securityVersion";
+            *fieldName = "config.security_version";
         result = OE_FAILURE;
         goto done;
     }
@@ -1228,9 +1224,9 @@ oe_result_t oe_sgx_build_enclave(
             numSegments,
             relocSize,
             ecallSize,
-            props.header.sizeSettings.numHeapPages,
-            props.header.sizeSettings.numStackPages,
-            props.header.sizeSettings.numTCS,
+            props.header.size_settings.num_heap_pages,
+            props.header.size_settings.num_stack_pages,
+            props.header.size_settings.num_tcs,
             &enclaveEnd,
             &enclaveSize));
 
@@ -1271,9 +1267,9 @@ oe_result_t oe_sgx_build_enclave(
             ecallData,
             ecallSize,
             entryAddr,
-            props.header.sizeSettings.numHeapPages,
-            props.header.sizeSettings.numStackPages,
-            props.header.sizeSettings.numTCS,
+            props.header.size_settings.num_heap_pages,
+            props.header.size_settings.num_stack_pages,
+            props.header.size_settings.num_tcs,
             enclave));
 
     /* Ask the platform to initialize the enclave and finalize the hash */
@@ -1310,17 +1306,14 @@ done:
     return result;
 }
 
-#if defined(__linux__)
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-#endif
-
 /*
 ** These functions are needed to notify the debugger. They should not be
-** optimized out even they don't do anything in here.
+** optimized out even though they don't do anything in here.
 */
 
-void _oe_notify_gdb_enclave_termination(
+OE_NO_OPTIMIZE_BEGIN
+
+OE_NEVER_INLINE void _oe_notify_gdb_enclave_termination(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -1332,7 +1325,7 @@ void _oe_notify_gdb_enclave_termination(
     return;
 }
 
-void _oe_notify_gdb_enclave_creation(
+OE_NEVER_INLINE void _oe_notify_gdb_enclave_creation(
     const oe_enclave_t* enclave,
     const char* enclavePath,
     uint32_t enclavePathLength)
@@ -1344,9 +1337,7 @@ void _oe_notify_gdb_enclave_creation(
     return;
 }
 
-#if defined(__linux__)
-#pragma GCC pop_options
-#endif
+OE_NO_OPTIMIZE_END
 
 /*
 ** This method encapsulates all steps of the enclave creation process:
@@ -1441,6 +1432,10 @@ done:
 
     if (result != OE_OK && enclave)
     {
+        for (size_t i = 0; i < enclave->num_ecalls; i++)
+            free(enclave->ecalls[i].name);
+
+        free(enclave->ecalls);
         free(enclave);
     }
 
@@ -1452,18 +1447,20 @@ done:
 oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
-    size_t i;
 
     /* Check parameters */
     if (!enclave || enclave->magic != ENCLAVE_MAGIC)
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Call the enclave destructor */
-    OE_CHECK(oe_ecall(enclave, OE_FUNC_DESTRUCTOR, 0, NULL));
+    OE_CHECK(oe_ecall(enclave, OE_ECALL_DESTRUCTOR, 0, NULL));
 
     /* Notify GDB that this enclave is terminated */
     _oe_notify_gdb_enclave_termination(
         enclave, enclave->path, (uint32_t)strlen(enclave->path));
+
+    /* Once the enclave destructor has been invoked, the enclave memory
+     * and data structures are freed on a best effort basis from here on */
 
     /* Remove this enclave from the global list. */
     _oe_remove_enclave_instance(enclave);
@@ -1471,42 +1468,43 @@ oe_result_t oe_terminate_enclave(oe_enclave_t* enclave)
     /* Clear the magic number */
     enclave->magic = 0;
 
-/* Unmap the enclave memory */
-#if defined(__linux__)
-    munmap((void*)enclave->addr, enclave->size);
-#elif defined(_WIN32)
-    VirtualFree((void*)enclave->addr, enclave->size, MEM_RELEASE);
-#endif
-
-    /* Release the enclave->ecalls[] array */
+    oe_mutex_lock(&enclave->lock);
     {
-        for (i = 0; i < enclave->num_ecalls; i++)
-            free(enclave->ecalls[i].name);
+        /* Unmap the enclave memory region.
+         * Track failures reported by the platform, but do not exit early */
+        result = oe_sgx_delete_enclave(enclave);
 
-        free(enclave->ecalls);
-    }
+        /* Release the enclave->ecalls[] array */
+        {
+            for (size_t i = 0; i < enclave->num_ecalls; i++)
+                free(enclave->ecalls[i].name);
+
+            free(enclave->ecalls);
+        }
 
 #if defined(_WIN32)
 
-    /* Release Windows events created during enclave creation */
-    for (size_t i = 0; i < enclave->num_bindings; i++)
-    {
-        ThreadBinding* binding = &enclave->bindings[i];
-        CloseHandle(binding->event.handle);
-    }
+        /* Release Windows events created during enclave creation */
+        for (size_t i = 0; i < enclave->num_bindings; i++)
+        {
+            ThreadBinding* binding = &enclave->bindings[i];
+            CloseHandle(binding->event.handle);
+        }
 
 #endif
 
-    /* Free the path name of the enclave image file */
-    free(enclave->path);
+        /* Free the path name of the enclave image file */
+        free(enclave->path);
+    }
+    /* Release and destroy the mutex object */
+    oe_mutex_unlock(&enclave->lock);
+    oe_mutex_destroy(&enclave->lock);
 
     /* Clear the contents of the enclave structure */
     memset(enclave, 0x00, sizeof(oe_enclave_t));
 
     /* Free the enclave structure */
     free(enclave);
-
-    result = OE_OK;
 
 done:
 
