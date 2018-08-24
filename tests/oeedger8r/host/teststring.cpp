@@ -39,6 +39,8 @@ void test_string_edl_ecalls(oe_enclave_t* enclave)
 
     // Multiple string params. One null.
     OE_TEST(ecall_string_fun7(enclave, str, NULL) == OE_OK);
+
+    printf("=== test_string_edl_ecalls passed\n");
 }
 
 void ocall_string_fun1(char* s)

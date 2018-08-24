@@ -45,8 +45,7 @@ int main(int argc, const char* argv[])
     OE_TEST(oe_call_enclave(enclave, "test_pointer_edl_ocalls", NULL) == OE_OK);
 
     test_struct_edl_ecalls(enclave);
-    // OE_TEST(oe_call_enclave(enclave, "test_struct_edl_ocalls", NULL) ==
-    // OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "test_struct_edl_ocalls", NULL) == OE_OK);
 
     oe_terminate_enclave(enclave);
 
