@@ -77,7 +77,11 @@ typedef long long ptrdiff_t;
 #define OE_UINT64_MAX (0xffffffffffffffffu)
 #define OE_SIZE_MAX OE_UINT64_MAX
 
-/* oe_enclave_type_t */
+/**
+ * This enumeration defines values for the **enclave_type** parameter
+ * passed to **oe_create_enclave()**. Currently only **OE_ENCLAVE_TYPE_SGX**
+ * is supported.
+ */
 typedef enum _oe_enclave_type {
     OE_ENCLAVE_TYPE_UNDEFINED,
     OE_ENCLAVE_TYPE_SGX,

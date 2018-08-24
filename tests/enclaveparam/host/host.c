@@ -65,8 +65,6 @@ int main(int argc, const char* argv[])
 
     const uint32_t flags = oe_get_create_flags();
 
-    printf("argv[1]=%s\n", argv[1]);
-
     result = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave_1);
     OE_TEST(result == OE_OK);
 
