@@ -69,7 +69,9 @@ dependencies**.
 
 
 To test, test.cc on Windows, perform following steps in given order...
-select Linux-Debug configuration and build libcxxrt logs.
+==========================================================================
+
+Select Linux-Debug configuration and build libcxxrt logs.
 
 Select x64-Debug-tests configuration and build and run libcxxrt tests...
 
