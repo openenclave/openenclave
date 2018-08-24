@@ -7,88 +7,111 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
 add_subdirectory(host)
 
 if(UNIX)
-add_subdirectory(enc)
+	add_subdirectory(enc)
 
-if(NOT EXISTS ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build)
-    file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build)
-endif()
+	if(NOT EXISTS ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build)
+		file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build)
+	endif()
 
-include (ExternalProject)
-ExternalProject_Add(libcxxrt-test
-    DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test
-    CONFIGURE_COMMAND cd ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build && cmake ..
-    BUILD_COMMAND $(MAKE) -C ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build
-    # copy libs & test scripts
-    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
-        ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build/lib/libcxxrt.a ${PROJECT_BINARY_DIR}/tests/libcxxrt/libcxxrt-test.a
-        COMMAND ${CMAKE_COMMAND} -E copy
-        ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test/run_test.sh ${PROJECT_BINARY_DIR}/tests/libcxxrt/
-)
+	include (ExternalProject)
+	ExternalProject_Add(libcxxrt-test
+		DOWNLOAD_COMMAND ${CMAKE_COMMAND} -E copy_directory
+			${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test
+		CONFIGURE_COMMAND cd ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build && cmake ..
+		BUILD_COMMAND $(MAKE) -C ${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build
+		# copy libs & test scripts
+		INSTALL_COMMAND ${CMAKE_COMMAND} -E copy
+			${PROJECT_BINARY_DIR}/3rdparty/libcxxrt-test/build/lib/libcxxrt.a ${PROJECT_BINARY_DIR}/tests/libcxxrt/libcxxrt-test.a
+			COMMAND ${CMAKE_COMMAND} -E copy
+			${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/test/run_test.sh ${PROJECT_BINARY_DIR}/tests/libcxxrt/
+	)
 
-# read tests.supported, sanitize the cpp-file, and create the test-case
-file(STRINGS "tests.supported" alltests)
-foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name "")
+	# read tests.supported, sanitize the cpp-file, and create the test-case
+	file(STRINGS "tests.supported" alltests)
+	foreach(testcase ${alltests})
+		get_testcase_name(${testcase} name "")
 
-    if("${name}" STREQUAL "test_foreign_exceptions")
-        add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc.signed.so)
-    else()
-        add_executable(${name}
-            enc/${name}.cpp
-        )
-        add_dependencies(${name} libcxxrt-test)
-        target_compile_options(${name} PRIVATE
-            -Wno-error
-        )
-        target_include_directories(${name} PRIVATE
-            ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src
-            ${PROJECT_BINARY_DIR}/output/include/openenclave/libcxx
-            ${PROJECT_BINARY_DIR}/output/include/openenclave/libc
-        )
-        target_link_libraries(${name} ${PROJECT_BINARY_DIR}/tests/libcxxrt/libcxxrt-test.a gcc_s dl c)
-# Generating expected output with system-test
-        add_custom_target(test-expected-${name}-output ALL
-                COMMAND ${name} > ${PROJECT_BINARY_DIR}/tests/libcxxrt/exp_${name}_output.log 2>&1
-                DEPENDS ${name})
-# Running Enclave test & comparing with normal test
-        add_test(tests/libcxxrt/${name} run_test.sh "./host/libcxxrt_host ./enc/libcxxrttest-${name}_enc.signed.so" exp_${name}_output.log ${name}_output.log)
-    endif()
-endforeach(testcase)
+		if("${name}" STREQUAL "test_foreign_exceptions")
+			add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc.signed.so)
+		else()
+			add_executable(${name}
+				enc/${name}.cpp
+			)
+			add_dependencies(${name} libcxxrt-test)
+			target_compile_options(${name} PRIVATE
+				-Wno-error
+			)
+			target_include_directories(${name} PRIVATE
+				${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src
+				${PROJECT_BINARY_DIR}/output/include/openenclave/libcxx
+				${PROJECT_BINARY_DIR}/output/include/openenclave/libc
+			)
+			target_link_libraries(${name} ${PROJECT_BINARY_DIR}/tests/libcxxrt/libcxxrt-test.a gcc_s dl c)
+	# Generating expected output with system-test
+			add_custom_target(test-expected-${name}-output ALL
+					COMMAND ${name} > ${PROJECT_BINARY_DIR}/tests/libcxxrt/exp_${name}_output.log 2>&1
+					DEPENDS ${name})
+	# Running Enclave test & comparing with normal test
+			add_test(tests/libcxxrt/${name} run_test.sh "./host/libcxxrt_host ./enc/libcxxrttest-${name}_enc.signed.so" exp_${name}_output.log ${name}_output.log)
+		endif()
+	endforeach(testcase)
 
 elseif (ADD_WINDOWS_ENCLAVE_TESTS)
+	get_filename_component(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
-# read tests.supported, sanitize the cpp-file, and create the test-case
-file(STRINGS "tests.supported" alltests)
-foreach(testcase ${alltests})
-    get_testcase_name(${testcase} name "")
+	add_custom_command(OUTPUT batch_file_copy
+		DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/run.bat
+		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/run.bat ${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+	)
 
-    if("${name}" STREQUAL "test_foreign_exceptions")
-        add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc.signed.so)
-	else()
+	add_custom_target(RunLibcxxrt.windows ALL
+		DEPENDS  batch_file_copy
+	)
 
-		file(TO_NATIVE_PATH ${LINUX_LIBCXXRT_LOG_DIR}/exp_${name}_output.log linux_log_file)
-		file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/exp_${name}_output.log linux_log_file_on_windows)
-		file(TO_NATIVE_PATH ${LINUX_BIN_DIR}/libcxxrt/exp_${name}_output.log wnd_log_file)
+	# read tests.supported, sanitize the cpp-file, and create the test-case
+	file(STRINGS "tests.supported" alltests)
+	foreach(testcase ${alltests})
+		get_testcase_name(${testcase} name "")
 
-		# Check if libcxxrt log files are generated on Linux machine at
-		# given path and then copy log file from Linux machine directory to
-		# Windows project binary directory.
-		add_custom_command(OUTPUT ${name}_linux_logs
-			COMMAND ${CMAKE_COMMAND} -E copy ${linux_log_file} ${linux_log_file_on_windows}
-			DEPENDS ${linux_log_file}
-			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		)
+		if("${name}" STREQUAL "test_foreign_exceptions")
+			add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc.signed.so)
+		else()
+			# Logs Generation Path
+			 file(TO_NATIVE_PATH ${LINUX_BIN_DIR}/libcxxrt/exp_${name}_output.log linux_log_file_path) # source path
+			 file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/tests/libcxxrt windows_log_path) # destination path
 
-		# add a custom target to ALL so that this step always needs to be run if
-		# this function is invoked
-		add_custom_target(${name}.linux ALL
-			DEPENDS ${name}_linux_logs
+			# Check if libcxxrt log files are generated on Linux machine at
+			# given path and then copy log file from Linux machine directory to
+			# Windows project binary directory.
+			add_custom_command(OUTPUT ${name}_expected_log
+				COMMAND ${CMAKE_COMMAND} -E 
+				copy ${linux_log_file_path} ${windows_log_path}/exp_${name}_output.log   # copy Linux generated  Log  
+				COMMAND ${CMAKE_COMMAND} -E 
+				copy ${LINUX_BIN_DIR}/libcxxrt/enc/libcxxrttest-${name}_enc.signed.so 
+				${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrttest-${name}_enc.signed.so #copy Singned File to windows host folder 
+				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 			)
-		add_test(tests/libcxxrt/${name}
-			${CMAKE_COMMAND} -E compare_files ${wnd_log_file} ${linux_log_file_on_windows})
 
-    endif()
-endforeach(testcase)
+			add_custom_command(
+				OUTPUT ${name}_output.log
+				DEPENDS  ${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrt_host.exe
+				COMMAND cmd /c run.bat "${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrt_host.exe" 
+				"${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrttest-${name}_enc.signed.so"  ${name}_output.log 
+				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests/${TEST_DIR}
+				)
+
+			# add a custom target to ALL so that this step always needs to be run if
+			# this function is invoked
+			add_custom_target(${name}.windows ALL
+				DEPENDS  ${name}_output.log ${name}_expected_log 
+				)
+
+			add_test(tests/libcxxrt/${name}
+				${CMAKE_COMMAND} -E compare_files exp_${name}_output.log ${name}_output.log
+				)
+
+		endif()
+	endforeach(testcase)
 
 endif()#ADD_WINDOWS_ENCLAVE_TESTS
