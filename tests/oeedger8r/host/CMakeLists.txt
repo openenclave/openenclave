@@ -11,6 +11,7 @@ add_custom_command(
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/basic.edl
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/pointer.edl
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/string.edl
+    COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/struct.edl
     COMMAND touch edge_function_implementations
     
     # Rerun if any edl file changes or the oeedger8r binary changes.
@@ -29,8 +30,9 @@ add_executable(edl_host
     main.cpp
     testarray.cpp
     testbasic.cpp
-    teststring.cpp
     testpointer.cpp
+    teststring.cpp
+    teststruct.cpp
 )
 
 # Make edl_enc depend on edl files and outputs using 
