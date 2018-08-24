@@ -17,6 +17,17 @@ elseif(WIN32)
   set(OE_ASM ASM_MASM)
 endif()
 
+# set default Jenkins variables
+if (NOT GIT_BRANCH)
+    set(GIT_BRANCH "null")
+endif(NOT GIT_BRANCH)
+if (NOT GIT_COMMIT)
+    set(GIT_COMMIT "null")
+endif(NOT GIT_COMMIT)
+if (NOT BUILD_NUMBER)
+    set(BUILD_NUMBER "0")
+endif(NOT BUILD_NUMBER)
+
 project("openenclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
 
 # allow simpler include() of our scripts
@@ -42,6 +53,7 @@ set(OE_LIBDIR ${OE_OUTPUT_DIR}/lib CACHE INTERNAL "Library collector")
 include(gen_config_file)
 gen_config_file(${OE_DATADIR}/openenclave/config.mak "${CMAKE_INSTALL_PREFIX}")
 install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
 
 # generate & install CMake Export file for other projects using CMAKE
 install(
