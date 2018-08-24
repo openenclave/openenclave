@@ -591,13 +591,14 @@ let oe_gen_ocall_host_wrapper (os:out_channel) (fd:Ast.func_decl) =
     fprintf os "    args->_retval = %s;\n" call_expr;
   fprintf os "}\n\n"
 
+let rec is_wchar_t_type = function
+| Ast.WChar -> true
+| Ptr ty -> is_wchar_t_type ty
+| _ -> false
+
 (* check if function has wstring parameters *)
-let uses_wstring_params (fd:Ast.func_decl) =
-    List.exists (fun (pt, decl) ->
-      match pt with
-        | Ast.PTPtr (at, attr) -> attr.Ast.pa_iswstr
-        | _ -> false
-    ) fd.Ast.plist
+let uses_wchar_t_params (fd:Ast.func_decl) =
+    List.exists (fun (pt, decl) -> is_wchar_t_type (Ast.get_param_atype pt)) fd.Ast.plist
 
 (* Valid oe support *)
 let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
@@ -609,8 +610,8 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
         failwithf "Function '%s'L 'private' specifier is not supported by oeedger8r" f.Ast.tf_fdecl.fname);
     (if f.Ast.tf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.tf_fdecl.fname);  
-    (if uses_wstring_params f.Ast.tf_fdecl then
-        printf "Warning: Function '%s': wchar_t has differend sizes on windows and linux." f.Ast.tf_fdecl.fname);     
+    (if uses_wchar_t_params f.Ast.tf_fdecl then
+        printf "Warning: Function '%s': wchar_t has different sizes on windows and linux." f.Ast.tf_fdecl.fname);     
   ) ec.tfunc_decls;
   List.iter (fun f -> 
     (if f.Ast.uf_fattr.fa_convention <> Ast.CC_NONE then
@@ -621,8 +622,8 @@ let validate_oe_support (ec: enclave_content) (ep: edger8r_params) =
         printf "Warning: Function '%s': Reentrant ocalls are not supported by Open Enclave.Allow list ignored." f.Ast.uf_fdecl.fname);
     (if f.Ast.uf_is_switchless then
         failwithf "Function '%s': switchless ecalls and ocalls are not yet supported by Open Enclave SDK." f.Ast.uf_fdecl.fname);
-    (if uses_wstring_params f.Ast.uf_fdecl then
-        printf "Warning: Function '%s': wchar_t has differend sizes on windows and linux." f.Ast.uf_fdecl.fname);          
+    (if uses_wchar_t_params f.Ast.uf_fdecl then
+        printf "Warning: Function '%s': wchar_t has different sizes on windows and linux." f.Ast.uf_fdecl.fname);          
   ) ec.ufunc_decls
 
   (*
