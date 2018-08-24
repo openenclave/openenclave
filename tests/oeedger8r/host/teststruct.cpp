@@ -223,7 +223,7 @@ void test_struct_edl_ecalls(oe_enclave_t* enclave)
     printf("=== test_struct_edl_ecalls passed\n");
 }
 
-int num = 0;
+static int num = 0;
 
 MyStruct1 ocall_struct1(
     MyStruct1 a1,

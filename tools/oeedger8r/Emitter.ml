@@ -231,8 +231,8 @@ let emit_enum (os:out_channel) (e:Ast.enum_def) =
   List.iteri (fun idx (name, value) ->
     fprintf os "    %s%s" name
     (match value with
-      | Ast.EnumVal (Ast.AString s) -> s
-      | Ast.EnumVal (Ast.ANumber n) -> string_of_int n
+      | Ast.EnumVal (Ast.AString s) -> " = " ^ s
+      | Ast.EnumVal (Ast.ANumber n) -> " = " ^ (string_of_int n)
       | Ast.EnumValNone -> "");
     if idx != (n-1) then fprintf os ",\n"
   ) e.Ast.enbody;
@@ -265,7 +265,7 @@ let oe_gen_args_header (ec: enclave_content) (dir:string)=
     fprintf os "#include <openenclave/bits/result.h>\n\n";
     List.iter (fun inc -> fprintf os "#include \"%s\"\n" inc) ec.include_list;    
     if ec.include_list <> [] then fprintf os "\n";
-    if ec.comp_defs <> [] then fprintf os "/* User types specified in edl */";
+    if ec.comp_defs <> [] then fprintf os "/* User types specified in edl */\n";
     List.iter (emit_composite_type os) ec.comp_defs;
     if ec.comp_defs <> [] then fprintf os "\n";
     fprintf os "%s" (String.concat "\n" structs);
@@ -419,7 +419,9 @@ let oe_gen_ecall_function (os:out_channel) (fd: Ast.func_decl) =
   fprintf os "OE_ECALL void ecall_%s(%s_args_t* p_host_args)\n" fd.Ast.fname fd.Ast.fname;
   fprintf os "{\n";
   fprintf os "    oe_result_t __result = OE_FAILURE;\n";
-  fprintf os "    %s_args_t args={0}, enc_args={0};\n\n" fd.Ast.fname;
+  fprintf os "    %s_args_t args, enc_args;\n\n" fd.Ast.fname;
+  fprintf os "    memset(&args, 0, sizeof(args));\n";
+  fprintf os "    memset(&enc_args, 0, sizeof(enc_args));\n\n";
   fprintf os "    if (!p_host_args || !oe_is_outside_enclave(p_host_args, sizeof(*p_host_args)))\n";
   fprintf os "        goto done;\n\n";
   fprintf os "    /* Copy p_host_arg to prevent TOCTOU issues. */\n";
@@ -466,7 +468,8 @@ let oe_get_host_ecall_function (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "{\n";
   fprintf os "    oe_result_t __result = OE_FAILURE;\n\n";
   fprintf os "    /* Marshal arguments */ \n";
-  fprintf os "    %s_args_t __args = {0}; \n" fd.Ast.fname;
+  fprintf os "    %s_args_t __args; \n" fd.Ast.fname;
+  fprintf os "    memset(&__args, 0, sizeof(__args));\n";
   gen_fill_marshal_struct os fd "__args";
   fprintf os "    /* Call enclave function */\n";
   fprintf os "    if(oe_call_enclave(enclave, \"ecall_%s\", &__args) != OE_OK || (__result=__args._result) != OE_OK)\n" fd.Ast.fname;
@@ -513,7 +516,9 @@ let oe_gen_ocall_enclave_wrapper (os:out_channel) (fd:Ast.func_decl) =
   fprintf os "%s\n{\n" (oe_gen_wrapper_prototype fd false);
   fprintf os "    oe_result_t __result = OE_FAILURE;\n\n";
   fprintf os "    /* Marshal arguments */ \n";
-  fprintf os "    %s_args_t __args = {0}, __host_args = {0}, *__p_host_args = NULL; \n" fd.Ast.fname;
+  fprintf os "    %s_args_t __args, __host_args, *__p_host_args = NULL; \n" fd.Ast.fname;
+  fprintf os "    memset(&__args, 0, sizeof(__args)); \n";
+  fprintf os "    memset(&__host_args, 0, sizeof(__host_args)); \n";
   fprintf os "    uint8_t* __host_buffer = NULL;\n";
   fprintf os "    uint8_t* __host_ptr = NULL;\n";
   fprintf os "    uint64_t __host_buffer_size = sizeof(__args);\n\n";
