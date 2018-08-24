@@ -69,6 +69,7 @@ set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VERSION ${OE_VERSION})
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsgx-enclave-common (>=1.0.101.45575-1.0), libsgx-enclave-common-dev (>=1.0.101.45575-1.0), libsgx-ngsa-ql (>=1.0.101.45575-1.0), libsgx-ngsa-ql-dev (>=1.0.101.45575-1.0)")
 include(CPack)
 
 # define build options that affect cmake across multiple subdirectories
