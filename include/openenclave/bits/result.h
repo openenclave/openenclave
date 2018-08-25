@@ -16,7 +16,7 @@
 OE_EXTERNC_BEGIN
 
 /**
- * This enumeration type is the return codes for Open Enclave functions.
+ * This enumeration type defines return codes for Open Enclave functions.
  * These functions return **OE_OK** upon success and one of the other
  * enumeration values on failure.
  */
