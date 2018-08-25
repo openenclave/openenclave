@@ -46,7 +46,7 @@ typedef enum _oe_result {
 
     /**
      * The host attempted to perform a reentrant **ECALL**. This occurs when an
-     * **OCALL** attempts to perform another **ECALL**.
+     * **OCALL** function attempts to perform another **ECALL**.
      */
     OE_REENTRANT_ECALL,
 
