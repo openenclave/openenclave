@@ -46,7 +46,7 @@ void TestMutexCxx(oe_enclave_t* enclave)
 void* WaiterThread(void* args)
 {
     oe_enclave_t* enclave = (oe_enclave_t*)args;
-    static WaitArgs _args = {NUM_THREADS};
+    static WaitCxxArgs _args = {NUM_THREADS};
 
     oe_result_t result = oe_call_enclave(enclave, "WaitCxx", &_args);
     OE_TEST(result == OE_OK);
@@ -68,6 +68,46 @@ void TestCondCxx(oe_enclave_t* enclave)
 
     for (size_t i = 0; i < NUM_THREADS; i++)
         threads[i].join();
+}
+
+void* CBTestWaiterThreadCxx(void* args)
+{
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
+
+    OE_TEST(oe_call_enclave(enclave, "CBTestWaiterThreadImplCxx", NULL) == OE_OK);
+
+    return NULL;
+}
+
+void* CBTestSignalThreadCxx(void* args)
+{
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
+
+    OE_TEST(oe_call_enclave(enclave, "CBTestSignalThreadImplCxx", NULL) == OE_OK);
+
+    return NULL;
+}
+
+void TestCondBroadcastCxx(oe_enclave_t* enclave)
+{
+    std::thread threads[NUM_THREADS];
+    std::thread signal_thread;
+
+    printf("TestCondBroadcastCxx Starting\n");
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+    {
+        threads[i] = std::thread(CBTestWaiterThreadCxx, enclave);
+    }
+
+    signal_thread = std::thread(CBTestSignalThreadCxx, enclave);
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        threads[i].join();
+
+    signal_thread.join();
+
+    printf("TestCondBroadcastCxx Complete\n");
 }
 
 int main(int argc, const char* argv[])
@@ -92,6 +132,8 @@ int main(int argc, const char* argv[])
     TestMutexCxx(enclave);
 
     TestCondCxx(enclave);
+
+    TestCondBroadcastCxx(enclave);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {

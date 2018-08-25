@@ -4,7 +4,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include <iostream>
+#include <iostream> //TODO - Remove this later
 #include <stdlib.h>
 #include <thread>
 #include <mutex>
@@ -109,7 +109,7 @@ OE_ECALL void WaitCxx(void* args_)
 {
     static size_t _count1 = 0;
     static size_t _count2 = 0;
-    WaitArgs* args = (WaitArgs*)args_;
+    WaitCxxArgs* args = (WaitCxxArgs*)args_;
 
     _TestParallelMallocs();
 

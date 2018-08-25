@@ -14,10 +14,10 @@ typedef struct _TestMutexCxxArgs
   //size_t count2;
 } TestMutexCxxArgs;
 
-typedef struct _WaitArgs
+typedef struct _WaitCxxArgs
 {
     /* The number of threads that will call wait */
     size_t numThreads;
-} WaitArgs;
+} WaitCxxArgs;
 
 #endif /* _stdc_args_h */
