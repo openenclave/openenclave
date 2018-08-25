@@ -38,7 +38,9 @@ typedef enum _oe_result {
     OE_BUFFER_TOO_SMALL,
 
     /**
-     * One or more function parameters is invalid.
+     * One or more input function parameters is invalid. Either the value of
+     * an input parameter is invalid or a required input parameter pointer
+     * is null.
      */
     OE_INVALID_PARAMETER,
 
