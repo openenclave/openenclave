@@ -57,8 +57,9 @@ typedef enum _oe_result {
     OE_OUT_OF_MEMORY,
 
     /**
-     * The function is unable to bind the current thread to an enclave thread.
-     * This occurs when all enclave threads are in use.
+     * The function is unable to bind the current host thread to an enclave 
+     * thread. This occurs when the host performs an **ECALL** while all enclave
+     * threads are in use.
      */
     OE_OUT_OF_THREADS,
 
