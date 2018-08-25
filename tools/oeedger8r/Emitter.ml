@@ -154,6 +154,15 @@ let oe_get_param_size (ptype, decl, argstruct) =
   in 
   let base_t = Ast.get_tystr atype in
 
+  let type_expr = 
+    match ptype with
+      | Ast.PTPtr (atype, ptr_attr) ->
+        if ptr_attr.Ast.pa_isptr then
+          sprintf "*(%s)0" base_t
+        else base_t
+      | _ -> base_t
+  in
+
   (* convert an attribute to string *)
   let attr_value_to_string av = 
     match av with
@@ -163,13 +172,13 @@ let oe_get_param_size (ptype, decl, argstruct) =
   in 
   let pa_size_to_string pa = 
     let c = attr_value_to_string pa.Ast.ps_count in
-    if c <> "" then sprintf "(%s * sizeof(%s))" c base_t 
+    if c <> "" then sprintf "(%s * sizeof(%s))" c type_expr
     else attr_value_to_string pa.Ast.ps_size
   in
   let decl_size_to_string (ptype:Ast.parameter_type) (d:Ast.declarator) =
     let dims = List.map  (fun i-> "[" ^ (string_of_int i) ^ "]") d.Ast.array_dims in
     let dims_expr = String.concat "" dims in
-    sprintf "sizeof(%s%s)" base_t dims_expr
+    sprintf "sizeof(%s%s)" type_expr dims_expr
   in
     match ptype with
         Ast.PTPtr (atype, ptr_attr) ->

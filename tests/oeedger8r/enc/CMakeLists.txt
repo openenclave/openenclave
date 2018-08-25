@@ -10,6 +10,7 @@ add_custom_command(
     COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/array.edl
     COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/basic.edl
     COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/enum.edl
+    COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/foreign.edl
     COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/pointer.edl
     COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/string.edl
     COMMAND ${OE_BINDIR}/oeedger8r --trusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/struct.edl
@@ -34,6 +35,7 @@ add_enclave_executable(edl_enc sign.conf private.pem
     testarray.cpp
     testbasic.cpp 
     testenum.cpp 
+    testforeign.cpp
     testpointer.cpp
     teststring.cpp
     teststruct.cpp
@@ -43,10 +45,7 @@ add_enclave_executable(edl_enc sign.conf private.pem
 # the custom target.
 add_dependencies(edl_enc run_oeedger8r_trusted) 
 
-target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_options(edl_enc PRIVATE 
-    -std=c++11 
-    -fpermissive
-)
+target_include_directories(edl_enc PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_compile_options(edl_enc PRIVATE -std=c++11)
 
 target_link_libraries(edl_enc oelibcxx oeenclave)

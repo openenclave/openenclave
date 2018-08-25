@@ -10,9 +10,11 @@ add_custom_command(
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/array.edl
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/basic.edl
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/enum.edl
+    COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/foreign.edl
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/pointer.edl
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/string.edl
     COMMAND ${OE_BINDIR}/oeedger8r --untrusted ${CMAKE_CURRENT_SOURCE_DIR}/../edl/struct.edl
+
     COMMAND touch edge_function_implementations
     
     # Rerun if any edl file changes or the oeedger8r binary changes.
@@ -32,6 +34,7 @@ add_executable(edl_host
     testarray.cpp
     testbasic.cpp
     testenum.cpp
+    testforeign.cpp
     testpointer.cpp
     teststring.cpp
     teststruct.cpp
@@ -41,7 +44,7 @@ add_executable(edl_host
 # the custom target.
 add_dependencies(edl_host run_oeedger8r_untrusted) 
 
-target_include_directories(edl_host PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(edl_host PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_compile_options(edl_host PRIVATE -std=c++11)
 
 target_link_libraries(edl_host oehostapp)
