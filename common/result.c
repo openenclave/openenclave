@@ -43,8 +43,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_OUT_OF_BOUNDS";
         case OE_OVERLAPPED_COPY:
             return "OE_OVERLAPPED_COPY";
-        case OE_FAILED_OPT_CONSTRAINT:
-            return "OE_FAILED_OPT_CONSTRAINT";
+        case OE_CONSTRAINT_FAILED:
+            return "OE_CONSTRAINT_FAILED";
         case OE_IOCTL_FAILED:
             return "OE_IOCTL_FAILED";
         case OE_UNSUPPORTED:

@@ -1770,7 +1770,7 @@ static oe_result_t _CheckOptConstraint(
 
     /* If pointer at this address is null, then fail */
     if (!*(void**)fin)
-        OE_THROW(OE_FAILED_OPT_CONSTRAINT);
+        OE_THROW(OE_CONSTRAINT_FAILED);
 
     OE_THROW(OE_OK);
 
