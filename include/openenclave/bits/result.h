@@ -33,7 +33,7 @@ typedef enum _oe_result {
     OE_FAILURE,
 
     /**
-     * One or more buffer output function parameters is too small.
+     * One or more output buffer function parameters is too small.
      */
     OE_BUFFER_TOO_SMALL,
 
