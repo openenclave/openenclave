@@ -27,17 +27,16 @@ done:
 }
 
 #if defined(__GNUC__)
-__attribute__((constructor))
-void global_constructor()
+__attribute__((constructor)) void global_constructor()
 {
     OE_TEST(oe_get_enclave() != NULL);
 }
 #endif
 
 OE_SET_ENCLAVE_SGX(
-    0, /* ProductID */
-    0, /* SecurityVersion */
+    0,    /* ProductID */
+    0,    /* SecurityVersion */
     true, /* AllowDebug */
     1024, /* HeapPageCount */
-    1024,  /* StackPageCount */
+    1024, /* StackPageCount */
     4);   /* TCSCount */
