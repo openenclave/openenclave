@@ -199,8 +199,4 @@ void* oe_memalign(size_t alignment, size_t size);
 
 OE_EXTERNC_END
 
-#ifndef OE_BUILD_ENCLAVE
-#error "this is an enclave header only"
-#endif
-
 #endif /* _OE_ENCLAVELIBC_H */
