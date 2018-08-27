@@ -28,7 +28,7 @@ if (NOT BUILD_NUMBER)
     set(BUILD_NUMBER "0")
 endif(NOT BUILD_NUMBER)
 
-project("openenclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
+project("open-enclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
 
 # allow simpler include() of our scripts
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
