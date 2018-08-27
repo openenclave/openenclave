@@ -13,9 +13,7 @@ build$ make
 ```
 
 To run valgrind-tests, add "**-D ExperimentalMemCheck**" to the ctest call. 
-Enclave tests all seem to fail today, though this succeeds:
+Enclave tests all seem to fail today.
 
-```
-build$ ctest -D ExperimentalMemCheck -R oeelf
 ```
 Execute the tests via ctest (see "man ctest" for details).
