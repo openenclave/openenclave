@@ -1,0 +1,4 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#pragma pop_macro("OE_LIBC_SUPPRESS_DEPRECATIONS")

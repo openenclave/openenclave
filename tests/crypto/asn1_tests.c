@@ -67,14 +67,14 @@ static int _printf(char** str, const char* format, ...)
         if (!(*str = realloc(*str, size)))
             return -1;
 
-        strcat(*str, buf);
+        strncat(*str, buf, size-1);
     }
     else
     {
         if (!(*str = malloc(size)))
             return -1;
 
-        strcpy(*str, buf);
+        strncpy(*str, buf, size-1);
     }
 
     return 0;

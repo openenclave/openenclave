@@ -233,9 +233,9 @@ OE_ECALL void Test(void* args_)
 
     oe_set_allocation_failure_callback(_AllocationFailureCallback);
 
-    strcpy(args->buf1, "AAA");
-    strcat(args->buf1, "BBB");
-    strcat(args->buf1, "CCC");
+    strlcpy(args->buf1, "AAA", sizeof(args->buf1));
+    strlcat(args->buf1, "BBB", sizeof(args->buf1));
+    strlcat(args->buf1, "CCC", sizeof(args->buf1));
 
     {
         char* s = strdup("strdup");

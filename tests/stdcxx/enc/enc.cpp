@@ -128,7 +128,8 @@ OE_ECALL void Test(void* args_)
 
     /* Try new/delete */
     {
-        char* p = new char[12];
+        const size_t N = 12;
+        char* p = new char[N];
 
         if (!p)
         {
@@ -136,7 +137,7 @@ OE_ECALL void Test(void* args_)
             return;
         }
 
-        strcpy(p, "hello");
+        strlcpy(p, "hello", N);
 
         if (strcmp(p, "hello") != 0)
         {

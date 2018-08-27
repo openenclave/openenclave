@@ -572,6 +572,8 @@ endif()
 
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
 
+target_compile_definitions(oelibc PRIVATE -DOE_LIBC_SUPPRESS_DEPRECATIONS)
+
 if(USE_DEBUG_MALLOC)
 target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
 endif()

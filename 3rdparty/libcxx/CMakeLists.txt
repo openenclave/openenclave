@@ -13,6 +13,23 @@ ExternalProject_Add(oelibcxx_cxx_includes
         ${CMAKE_CURRENT_LIST_DIR}/libcxx/include ${OE_INCDIR}/openenclave/libcxx
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/libcxx/include/__config ${OE_INCDIR}/openenclave/libcxx/__config_original
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/__config ${OE_INCDIR}/openenclave/libcxx/__config
+
+        # Wrap all the C++ headers in prologue/epilogue files.
+        COMMAND ${CMAKE_SOURCE_DIR}/scripts/wrap-headers
+            ${OE_INCDIR}/openenclave/libcxx
+            ${CMAKE_CURRENT_LIST_DIR}/prologue
+            ${CMAKE_CURRENT_LIST_DIR}/epilogue
+
+        # Copy prologue.h to include/__prologue
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_LIST_DIR}/__prologue
+            ${OE_INCDIR}/openenclave/libcxx/__prologue
+
+        # Copy epilogue.h to include/__epilogue
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_LIST_DIR}/__epilogue
+            ${OE_INCDIR}/openenclave/libcxx/__epilogue
+
     INSTALL_COMMAND ""
     )
 install (DIRECTORY ${OE_INCDIR}/openenclave/libcxx DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

@@ -18,6 +18,23 @@ ExternalProject_Add(oelibc_includes
             -DWRAP_PRE=${CMAKE_CURRENT_LIST_DIR}/endian.h.prefix
             -DWRAP_SUF=${CMAKE_CURRENT_LIST_DIR}/endian.h.suffix
             -P ${CMAKE_SOURCE_DIR}/cmake/wrap.cmake
+
+        # Wrap all the C headers in prologue/epilogue files.
+        COMMAND ${CMAKE_SOURCE_DIR}/scripts/wrap-headers
+            ${OE_INCDIR}/openenclave/libc
+            ${CMAKE_CURRENT_LIST_DIR}/prologue
+            ${CMAKE_CURRENT_LIST_DIR}/epilogue
+
+        # Copy prologue.h to include/bits/prologue.h.
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_LIST_DIR}/prologue.h
+            ${OE_INCDIR}/openenclave/libc/bits/prologue.h
+
+        # Copy epilogue.h to include/bits/epilogue.h.
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_LIST_DIR}/epilogue.h
+            ${OE_INCDIR}/openenclave/libc/bits/epilogue.h
+
     BUILD_BYPRODUCTS ${OE_INCDIR}/openenclave/libc ${CMAKE_CURRENT_BINARY_DIR}/musl
     INSTALL_COMMAND ""
     )

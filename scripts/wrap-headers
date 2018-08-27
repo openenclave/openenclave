@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+##==============================================================================
+##
+## wrap-headers:
+##
+##     For each regular file in the given directory, this script (1) prepends
+##     a prologue file and (2) appends an epilogue file.
+##
+##==============================================================================
+
+## Check arguments.
+if [ "$#" -lt "3" ]; then
+    echo "Usage: $0 directory prologue epilogue"
+    exit 1
+fi
+
+## Name arguments.
+directory=$1
+prologue=$2
+epilogue=$3
+
+## If the directory does not exist:
+if [ ! -d "${directory}" ]; then
+    echo "$0: no such directory: ${directory}"
+    exit 1
+fi
+
+## If the prologue does not exist:
+if [ ! -f "${prologue}" ]; then
+    echo "$0: no such file: ${prologue}"
+    exit 1
+fi
+
+## If the epilogue does not exist:
+if [ ! -f "${epilogue}" ]; then
+    echo "$0: no such file: ${epilogue}"
+    exit 1
+fi
+
+## For each regular file in the directory:
+headers=`find ${directory} -type f`
+for i in ${headers}
+do
+
+    ## If file does exist.
+    if [ ! -f "${i}" ]; then
+        echo "$0: file not found: ${i}"
+        exit 1
+    fi
+
+    ## Create a temporary file.
+    tempfile=`/bin/mktemp`
+    if [ ! -f "${tempfile}" ]; then
+        echo "$0: failed to create temporary file"
+        exit 1
+    fi
+
+    ## Append the prologue to the tempfile:
+    cat ${prologue} >> ${tempfile}
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to append ${prologue}"
+        exit 1
+    fi
+
+    ## Append header to tempfile:
+    cat ${i} >> ${tempfile}
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to append ${i}"
+        exit 1
+    fi
+
+    ## Append the epilogue to the tempfile:
+    cat ${epilogue} >> ${tempfile}
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to append ${epilogue}"
+        exit 1
+    fi
+
+    ## Copy temporary file over original header file:
+    cp ${tempfile} ${i}
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to modify ${i}"
+        exit 1
+    fi
+
+    rm -f ${tempfile}
+
+done
