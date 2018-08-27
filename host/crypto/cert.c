@@ -39,7 +39,7 @@ static void _SetErr(oe_verify_cert_error_t* error, const char* str)
     if (error)
     {
         error->buf[0] = '\0';
-        strncat(error->buf, str, sizeof(error->buf)-1);
+        strncat(error->buf, str, sizeof(error->buf) - 1);
     }
 }
 
