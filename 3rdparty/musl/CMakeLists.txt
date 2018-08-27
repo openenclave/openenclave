@@ -25,12 +25,12 @@ ExternalProject_Add(oelibc_includes
             ${CMAKE_CURRENT_LIST_DIR}/prologue
             ${CMAKE_CURRENT_LIST_DIR}/epilogue
 
-        # Copy prologue.h to include/bits/prologue.h.
+        # Copy local prologue.h to include/bits/prologue.h.
         COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_LIST_DIR}/prologue.h
             ${OE_INCDIR}/openenclave/libc/bits/prologue.h
 
-        # Copy epilogue.h to include/bits/epilogue.h.
+        # Copy local epilogue.h to include/bits/epilogue.h.
         COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_LIST_DIR}/epilogue.h
             ${OE_INCDIR}/openenclave/libc/bits/epilogue.h
