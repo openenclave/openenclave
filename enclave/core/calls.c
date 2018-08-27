@@ -159,7 +159,7 @@ static oe_result_t _HandleInitEnclave(uint64_t argIn)
                 /* Copy structure into enclave memory */
                 safe_args = *args;
 
-                if (!oe_is_outside_enclave(safe_args.enclave, sizeof(void*)))
+                if (!oe_is_outside_enclave(safe_args.enclave, 1))
                     OE_THROW(OE_INVALID_PARAMETER);
 
                 oe_enclave = safe_args.enclave;
