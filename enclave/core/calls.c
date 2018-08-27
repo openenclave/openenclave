@@ -147,6 +147,13 @@ static oe_result_t _HandleInitEnclave(uint64_t argIn)
 
         if (_once == false)
         {
+            /* Set the global enclave handle */
+            if (argIn)
+            {
+                oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)argIn;
+                oe_enclave = args->enclave;
+            }
+
             /* Call all enclave state initialization functions */
             oe_initialize_cpuid(argIn);
 
@@ -690,7 +697,9 @@ void __oe_handle_main(
         }
     }
 
-    /* Initialize the enclave the first time it is ever entered */
+    // Initialize the enclave the first time it is ever entered. Note that
+    // this function DOES NOT call global constructors. Global construction
+    // is performed while handling OE_ECALL_INIT_ENCLAVE.
     oe_initialize_enclave();
 
     /* Get pointer to the thread data structure */
