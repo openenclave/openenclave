@@ -1,8 +1,5 @@
-##==============================================================================
-##
-## openenclave.pc:
-##
-##==============================================================================
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/openenclave.pc
