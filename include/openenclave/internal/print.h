@@ -47,4 +47,8 @@ int oe_host_fprintf(int device, const char* fmt, ...);
 
 OE_EXTERNC_END
 
+#ifndef OE_BUILD_ENCLAVE
+#error "this is an enclave header only"
+#endif
+
 #endif /* _OE_PRINT_H */

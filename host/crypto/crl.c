@@ -4,9 +4,8 @@
 #include "crl.h"
 #include <limits.h>
 #include <openenclave/internal/crl.h>
-#include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/defs.h>
 #include <openssl/asn1.h>
 #include <openssl/x509.h>
 #include <string.h>
