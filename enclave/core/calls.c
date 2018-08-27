@@ -151,7 +151,18 @@ static oe_result_t _HandleInitEnclave(uint64_t argIn)
             if (argIn)
             {
                 oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)argIn;
-                oe_enclave = args->enclave;
+                oe_init_enclave_args_t safe_args;
+
+                if (!oe_is_outside_enclave(args, sizeof(*args)))
+                    OE_THROW(OE_INVALID_PARAMETER);
+
+                /* Copy structure into enclave memory */
+                safe_args = *args;
+
+                if (!oe_is_outside_enclave(safe_args.enclave, sizeof(void*)))
+                    OE_THROW(OE_INVALID_PARAMETER);
+
+                oe_enclave = safe_args.enclave;
             }
 
             /* Call all enclave state initialization functions */
