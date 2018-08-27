@@ -3,7 +3,9 @@
 
 # Compile CXXRT
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-compare")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-compare -DOE_LIBC_SUPPRESS_DEPRECATIONS")
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DOE_LIBC_SUPPRESS_DEPRECATIONS")
 
 # build cxxrt sources passing additional options
 add_subdirectory(libcxxrt/src)
