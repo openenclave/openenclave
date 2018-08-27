@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/time.h>
 #include "../ocalls.h"
 
