@@ -135,13 +135,13 @@ int getnameinfo(const struct sockaddr *restrict sa, socklen_t sl,
 	switch (af) {
 	case AF_INET:
 		a = (void *)&((struct sockaddr_in *)sa)->sin_addr;
-		if (sl != sizeof(struct sockaddr_in)) return EAI_FAMILY;
+		if (sl < sizeof(struct sockaddr_in)) return EAI_FAMILY;
 		mkptr4(ptr, a);
 		scopeid = 0;
 		break;
 	case AF_INET6:
 		a = (void *)&((struct sockaddr_in6 *)sa)->sin6_addr;
-		if (sl != sizeof(struct sockaddr_in6)) return EAI_FAMILY;
+		if (sl < sizeof(struct sockaddr_in6)) return EAI_FAMILY;
 		if (memcmp(a, "\0\0\0\0\0\0\0\0\0\0\xff\xff", 12))
 			mkptr6(ptr, a);
 		else

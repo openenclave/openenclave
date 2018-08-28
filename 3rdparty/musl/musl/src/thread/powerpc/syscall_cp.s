@@ -38,7 +38,7 @@ __cp_begin:
 	cmpwi cr7, 0, 0 #compare r0 with 0, store result in cr7. 
 	beq+ cr7, 1f #jump to label 1 if r0 was 0
 	
-	b __cancel #else call cancel 
+	b __cp_cancel #else call cancel
 1:
 	#ok, the cancel flag was not set
 	# syscall: number goes to r0, the rest 3-8
@@ -55,3 +55,5 @@ __cp_end:
 	#else negate result.
 	neg 3, 3
 	blr
+__cp_cancel:
+	b __cancel

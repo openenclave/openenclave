@@ -1,3 +1,7 @@
+#ifdef _SOFT_FLOAT
+#define FE_ALL_EXCEPT 0
+#define FE_TONEAREST  0
+#else
 #define FE_TONEAREST	0
 #define FE_TOWARDZERO	1
 #define FE_UPWARD	2
@@ -23,6 +27,7 @@
 #define FE_INVALID_INTEGER_CONVERSION	0x00000100
 
 #define FE_ALL_INVALID		0x01f80700
+#endif
 #endif
 
 typedef unsigned fexcept_t;

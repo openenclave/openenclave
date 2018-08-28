@@ -32,6 +32,7 @@ FILE *__nscd_query(int32_t req, const char *key, int32_t *buf, size_t len, int *
 		},
 		.msg_iovlen = 2
 	};
+	int errno_save = errno;
 
 	*swap = 0;
 retry:
@@ -50,11 +51,14 @@ retry:
 		return f;
 
 	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-		/* If there isn't a running nscd we return -1 to indicate that
-		 * that is precisely what happened
-		 */
-		if (errno == EACCES || errno == ECONNREFUSED || errno == ENOENT)
+		/* If there isn't a running nscd we simulate a "not found"
+		 * result and the caller is responsible for calling
+		 * fclose on the (unconnected) socket. The value of
+		 * errno must be left unchanged in this case.  */
+		if (errno == EACCES || errno == ECONNREFUSED || errno == ENOENT) {
+			errno = errno_save;
 			return f;
+		}
 		goto error;
 	}
 

@@ -87,8 +87,6 @@ size_t strlcpy (char *, const char *, size_t);
 #ifdef _GNU_SOURCE
 #define	strdupa(x)	strcpy(alloca(strlen(x)+1),x)
 int strverscmp (const char *, const char *);
-int strcasecmp_l (const char *, const char *, locale_t);
-int strncasecmp_l (const char *, const char *, size_t, locale_t);
 char *strchrnul(const char *, int);
 char *strcasestr(const char *, const char *);
 void *memmem(const void *, size_t, const void *, size_t);

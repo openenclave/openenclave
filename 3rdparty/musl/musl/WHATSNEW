@@ -1540,3 +1540,370 @@ other bugs fixed:
 - failure of ungetc/ungetwc to work on FILE streams in EOF state
 - possible null pointer dereference in gettext
 - possible initial stack misalignment on mips with PIE
+
+
+
+1.1.11 release notes
+
+new features:
+- byte-based C locale
+- vdso clock_gettime on arm
+- musl-clang wrapper
+- sh2 nommu target support
+
+performance:
+- major speed-up for dynamic linker symbol lookups with GNU hash
+
+compatibility:
+- strverscmp now matches GNU behavior in corner cases
+- empty TZ environment variable gives GMT rather than system default
+- reconnection on syslog server socket loss (syslogd restart)
+- mmap fallback in simple_malloc when brk fails
+- support for %m and %s with null pointers in wide printf variants
+- call frame information in i386 asm for improved debugger support
+
+bugs fixed:
+- spurious errors from pwd/grp functions when nscd backend is absent
+- possible invalid access on calloc with simple_malloc
+- null pointer dereferences after calling uselocale((locale_t)0)
+- erroneous support for cancellation in stdio caused data loss
+- inconsistent handling of atexit called from atexit handler
+- missing locking in error paths for ungetwc
+- btowc mishandling of out-of-range non-EOF inputs
+- negated return value of ns_skiprr, failure in related functions
+- incorrect void return type for syncfs, missing error status
+- possible failure of tempnam due to missing null termination
+- negated tm_gmtoff field in struct tm
+- off-by-one error in getsubopt leaving equals sign in value result
+
+arch-specific bugs fixed:
+- soft deadlocks on i386/x86_64 due to missing barrier in internal locks
+- regression in arm pre-v7 support for kernels with kuser helper removed
+- runaway PC on mips detached thread exit (due to kernel regression)
+- mismatched ABI for local-dynamic model TLS on mips and powerpc
+- incorrect value of some SO_* constants on mips
+- broken 64-bit syscall argument passing on aarch64
+
+
+
+1.1.12 release notes
+
+new features:
+- fdpic abi on sh2 for shareable text segment without mmu
+- general fdpic elf support in dynamic linker
+- CFI generation for x86_64 asm source files
+- protection against silently building a libc.so with missing symbols
+
+compatibility:
+- nl_langinfo(CODESET) now returns "ASCII" in byte-based C locale
+- fixed build regression due to buggy .SECONDARY in some GNU make versions
+- additional arm eabi functions needed by llvm arm backend
+- added format argument attributes to gettext function prototypes
+- static PIE no longer requires linking with -E/-rdynamic
+- eliminated spurious protected-data warnings linking against libc.so
+- avoided spurious fpu asm errors with some armhf toolchains
+
+bugs fixed:
+- fclose of stdin/stdout caused deadlock at exit
+- missing memory barrier in pthread_join
+- open_[w]memstream produced no buffer when no writes took place
+- uninitialized scopeid in address lookups from hosts file and ip literals
+- ip literals for mismatching family (v4 vs v6) were queried as hostnames
+- possible crash on OOM in regcomp
+- incorrect contents in localeconv structure (-1 instead of CHAR_MAX)
+- strftime mishandling of out-of-range struct tm members
+- wrongful attribute((const)) on pthread_self and errno location function
+
+arch-specific bugs fixed:
+- arm crt1 entry point failed to align stack pointer in some cases
+- mips fesetround failed to actually set rounding mode
+- i386 asm source CFI generation had multiple bugs
+
+
+
+1.1.13 release notes
+
+new features:
+- out-of-tree builds
+- search domains in resolv.conf
+- sh arch supports j-core (j2) cas.l atomics
+- dynamic linker includes arch/abi in output when run as a command
+- header support for new kernel features through linux 4.4
+- mips vdso clock_gettime support
+- regex BRE extensions: \|, \+, \?
+
+performance:
+- improved atomics performance on all archs with ll/sc model
+- atomic instructions are now inlined on armv6
+- use fpu sqrt for arm softfp abi on targets with vfp
+
+compatibility:
+- getnameinfo now accepts sockaddr sizes larger than needed
+- new default CFLAGS/LDFLAGS avoid entire classes of toolchain bugs
+- explicit use of float_t/double_t avoids compiler float spill bugs
+- i386 max_align_t definition now works with g++ 4.7's pseudo-c++11
+- all known protocols are added to protoent functions
+- stub utmpname, utmpxname functions
+- linker support for -Bsymbolic-functions is no longer mandatory
+- regex parsing size limits increased
+- malloc_usable_size now accepts null pointer input
+
+bugs fixed:
+- potential single-byte heap overflow in getdelim
+- mishandling of transient failure opening hosts, services, resolv.conf
+- mremap was sometimes able to allocate objects larger than PTRDIFF_MAX
+- nl_langinfo wrongly returned NULL instead of "" for invalid items
+- out-of-bounds dynamic tls allocation due to pointer/index scaling error
+- getifaddrs misreported point-to-point interface addresses
+- tdelete left tsearch trees misbalanced
+- tsearch crashed on allocation failure
+- tsearch, tfind, and tdelete failed to handle null pointer input
+- passing signal number 0 to sigaction resulted in a crash
+- getdelim updated caller's size wrongly when realloc failed
+- getdelim realloc strategy was wasteful
+- if_nametoindex returned wrong value on failure
+- missing ssp-suppression for some source files called from early-init
+- various minor resolv.conf parsing bugs
+- fwrite wrongly reported success on write errors in line-buffered flush
+- fwrite and fread wrongly returned nmemb (not 0) when size was 0
+
+nommu-specific bugs fix:
+- failure to zero bss in FDPIC shared library loader
+- unsafe writes to read-only file mapping in non-FDPIC library loader
+
+arch-specific bugs fixed:
+- sh[eb]-nofpu-fdpic was using fpu-dependent setjmp/longjmp variants
+- dynamic linker path file name was wrong for arm "softfp" targets
+- mips siginfo_t and related macros were defined incorrectly
+- possibly misaligned pointer globals on arm (from an asm source file)
+- mips dynamic linker failed to provide info needed by debugger
+- mips cancellation asm wrongly assumed validity of $gp register value
+
+
+
+1.1.14 release notes
+
+regressions fixed:
+- treatment of empty string argument as error by puts and fputs
+- make clean and distclean failure in unconfigured trees
+- sh/fdpic dynamic linker entry point hang due to wrong code
+- armhf (and arm softfp model) build failure with clang
+
+other bugs fixed:
+- wrongly clamping (rather than failing) excessive rounds in crypt-sha*
+
+
+
+1.1.15 release notes
+
+new features:
+- mips64 (full 64-bit and n32) port
+- mips r6 isa support (subarch for mips, mips64, and mipsn32 archs)
+- powerpc64 port
+- powerpc (32-bit) soft-float ABI support (subarch)
+- pthread_tryjoin_np and pthread_timedjoin_np (nonstandard extensions)
+- header-level support for linux 4.5 and 4.6 features
+- sched_getcpu (nonstandard extension) support, including vdso version
+- __STDC_ISO_10646__, __STDC_IEC_559__ macros predefined via stdc-predef.h
+- support for new elf/arch features in elf.h
+
+compatibility:
+- configure now correctly chooses cross-prefix based on build/host/target
+- abort now successfully terminates pid 1 in a container (or top-level)
+
+bugs fixed:
+- memmem read past end of haystack, possible false positives or crashes
+- buffer underflow (reverse-overflow) in ungetwc
+- double-free under certain usage of putenv
+- incorrect treatment by regcomp of * at start of BRE subexpression
+- gethostbyname[2][_r] produced ip addresses in misaligned buffers
+- looking up some invalid hostnames caused malformed dns queries
+- lookups from hosts file were inconsistent with non-matching family
+- missing h_length value in gethostbyaddr results
+- a64l function produced wrong-signed results on 64-bit archs
+- broken padding of string formats to width in wide printf variants
+- wrong results for expf(-NAN) and exp2f(-NAN)
+- wrong value for RUSAGE_CHILDREN prevented it from working
+- abort failed to provide abnormal termination with SIGABRT blocked
+
+arch-specific bugs fixed:
+- broken posix_fadvise on arm and powerpc (32-bit)
+- thread structure/dtv corruption on powerpc at thread startup
+- various wrong mips and powerpc ioctl and termios constant values
+
+
+
+1.1.16 release notes
+
+new features:
+- s390x (64-bit S/390) port
+- pthread_setname_np extension function
+- limited pthread_setattr_default_np function to set stack size defaults
+- header-level support for linux 4.7, 4.8, and 4.9 features
+- confstr _CS_V6_ENV and _CS_V7_ENV items
+
+compatibility:
+- public prototypes for abi-compat *_unlocked symbols, etc.
+- fflush_unlocked(NULL) now works
+- resolv.h __RES version macro now matches supported APIs
+- workaround for gdb bugs backtracing across signals on x86_64
+- anchors ^ and $ are now accepted in BRE subexpressions
+- building for thumb2-only arm isa levels is now possible
+
+bugs fixed:
+- integer overflows in regexec buffer allocation (CVE-2016-8859)
+- failure of regexec to report matches at offsets past INT_MAX
+- static-pie executables with initialized thread-local storage crashed
+- printf failed to catch EOVERFLOW in some cases, wrongly produced it in others
+- printf produced wrong output, result for float with precision near INT_MAX
+- printf produced wrong results with alt-form octal, zero flag, & field width
+- printf float rounding was wrong for some midpoint cases
+- swprintf printed junk after internal (256-byte) buffer filled up
+- strtod family rounded incorrectly in several corner cases
+- getmntent failed to handle long records
+- getopt_long_only wrongly treated "--" as an option
+- asctime output wrongly varied by locale
+- strftime %y specifier produced wrong output for negative tm_year
+- time zone names quoted with <> were misparsed
+- corner case integer overflow in tm_year for some date conversions
+- failure to load shared libs whose names were prefixes of standard lib names
+- wrong error codes for several failure cases in various functions
+- various asymptomatic undefined behavior
+- various minor namespace issues in headers
+
+arch-specific bugs fixed:
+- tcsetattr regression on mips (completely non-working)
+- wrong pread/pwrite syscall calling convention on sh
+- wrong preadv2/pwritev2 syscall numbers on x32
+- mrand48/jrand48 produced wrong-signedness results on 64-bit archs
+
+
+1.1.17 release notes
+
+new features:
+- RTLD_LAZY deferred symbol binding, functionally equivalent to lazy binding
+- safeguard against dlopen of multiple libc versions/instances
+- new posix_spawn flag POSIX_SPAWN_SETSID
+- posix_spawnattr_setflags now reports unknown flags as error
+- ldso option --argv0 to set argv[0]
+- added _NL_LOCALE_NAME extension to nl_langinfo
+
+compatibility:
+- dlopen local-to-global promotion no longer changes existing symbols
+- gettext now searches locale name variants for translation files
+- increased locale name length limit from 15 to 23 bytes
+- setlocale(LC_ALL, 0) returns single name if all categories are same
+- realloc no longer fails when mremap doesn't work
+- getservby* no longer treat numeric port strings as service records
+- mmap now works around incorrect EPERM error codes from kernel
+- impact of REG_* namespace pollution in x86[_64] signal.h is reduced
+- arm atomic asm now assembles correctly with new binutils
+- PAGE_SIZE on arm is no longer constant (quiet upstream ABI relaxation)
+- lsearch/lfind now pass args to compare callback in canonical order
+- STB_WEAK and STB_GNU_UNIQUE symbols now behave same as STB_GLOBAL
+- better clang CFLAGS checks in configure
+- global vis.h hack, which made lld refuse to link to libc.so, is disabled
+
+performance:
+- single-instruction optimized math functions for aarch64, s390x, powerpc64
+- fast path for ASCII in towupper/towlower
+- new mostly-integer-math fma function
+
+semantic bugs fixed:
+- POSIX-format TZ dst time transitions were wrong for southern hemisphere
+- regex REG_NEWLINE semantics were wrong with negated brackets
+- various bugs in strptime %j, %p, %C formats
+- iconv mapped some characters to legacy 8bit encodings incorrectly
+- glob failed to match "/"
+- UTF-8 decoder accepted invalid f4 9x xx xx code sequences
+- scanf %% conversion failed to consume whitespace
+- glob with GLOB_PERIOD wrongly descended into . and ..
+- nftw gave incorrect base name offset when pathname ends in "/"
+- functional regression in resolv.conf attempts option
+- scalbn could produce wrong result due to double rounding in subnormal range
+- strftime %y format wrong with negative years
+- mbsnrtowcs and wcsnrtombs mishandled input limits
+- minor issues with error codes for various functions
+
+safety/consistency bugs fixed:
+- stack-based buffer overflow in dns response processing
+- invalid free in regexec on certain error paths
+- invalid free in globfree after failed glob
+- one-byte buffer overflow in legacy getpass function
+- failed dlopen corrupted thread-local storage module list
+- race in pthread_create with priority attributes could leave signals masked
+- multithreaded set*id() functions could induce spurious EINTRs
+- dl_iterate_phdr reported wrong base address in static PIE
+- fd leak and wrong cancellation state after dns socket failure
+- memory leaks and other issues in environment-modification functions
+- read-after-free race in pthread_detach
+- memmem performed single-byte over-read in short-needle code paths
+- read via uninitialized pointer in gettext core
+- bindtextdomain broke bindings for all other domains
+- various silent undefined behavior
+- getopt clobbered optopt on success
+
+arch-specific bugs fixed:
+- x32 dynamic TLS accesses crashed
+- s390x was missing dlsym entry point (needed for RTLD_NEXT)
+- powerpc64 ldso startup could crash depending on link order
+- powerpc64 setjmp/longjmp didn't properly save/restore TOC pointer
+- thumb2 setjmp/longjmp silently broke at ld-time with text not aligned
+- fchown was broken on archs without SYS_fchown syscall
+- fstatat was broken on mips64
+- various incorrect constants in powerpc64 and mips headers
+
+
+1.1.18 release notes
+
+regression fixes:
+- glob failed to match literal . and .. path components
+- build for armv4t ISA level was broken
+
+other bug fixes:
+- stack overflow in posix_spawnp with large PATH variable in environment
+
+
+1.1.19 release notes
+
+new features:
+- iconv framework for processing stateful encodings
+- iconv support for iso-2022-jp
+- iconv support for converting to legacy JIS-based Japanese encodings
+- iconv support for UTF-16/32 with BOM-determined endianness
+- iconv ibm1047 (ebcdic latin1-equivalent) support
+- iconv cp866 (dos cyrillic) support
+- character data tables & case mappings updated to Unicode 10.0
+- fopencookie stdio extension
+- strftime padding character extensions
+- header-level support for new linux features through 4.13
+
+compatibility:
+- UTC timezone is now called UTC instead of GMT
+- _DIRENT_HAVE_D_* macros in dirent.h
+- dladdr dli_fbase definition now matches other implementations
+- pthread_getattr_np now reports guard size
+- strftime '+' modifier better matches apparent intent of POSIX
+- getopt_long handles long option names containing '='
+- better compatibility with linux uapi headers
+- workaround linux bug where getcwd can return non-absolute pathname
+- configure logic for finding compiler_rt with clang
+- execvp path search now continues after ENOTDIR components
+
+bugs fixed:
+- fgetwc failed when character crossed buffer boundary
+- memory corruption after failing to dlopen a second libc
+- sysconf reported infinite rlimits incorrectly
+- getopt_long --opt=arg did not work with partial matches
+- printf was wrong for alt-form octal with value 0, no explicit precision
+- endian errors in arpa/nameser.h and netinet/icmp6.h (missing endian.h)
+- atfork handler could clobber fork's errno
+- iconv could wrongly output surrogate pairs in ucs2
+- fmemopen buffer underallocation with extreme size argument
+- getaddrinfo AI_NUMERICSERV wrong error code
+- data race in at_quick_exit
+- ldd failed to honor rpath $ORIGIN for program in . without "./" prefix
+
+arch-specfic bugs fixed:
+- x32 unistd.h wrongly reported LP64 instead of ILP32
+- aarch64 signal.h had wrong type for ucontext_t uc_link member

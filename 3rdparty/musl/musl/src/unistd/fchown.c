@@ -16,7 +16,7 @@ int fchown(int fd, uid_t uid, gid_t gid)
 #ifdef SYS_chown
 	return syscall(SYS_chown, buf, uid, gid);
 #else
-	return syscall(SYS_fchownat, AT_FDCWD, buf, uid, gid);
+	return syscall(SYS_fchownat, AT_FDCWD, buf, uid, gid, 0);
 #endif
 
 }

@@ -6,6 +6,7 @@ static inline struct pthread *__pthread_self()
 	__asm__ __volatile__ ("l.ori %0, r10, 0" : "=r" (tp) );
 #else
 	register char *tp __asm__("r10");
+	__asm__ __volatile__ ("" : "=r" (tp) );
 #endif
 	return (struct pthread *) (tp - sizeof(struct pthread));
 }
@@ -13,5 +14,4 @@ static inline struct pthread *__pthread_self()
 #define TLS_ABOVE_TP
 #define TP_ADJ(p) ((char *)(p) + sizeof(struct pthread))
 
-/* word-offset to 'pc' in mcontext_t */
-#define CANCEL_REG_IP 32
+#define MC_PC regs.pc

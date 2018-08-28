@@ -10,9 +10,16 @@ This directory contains the oelibc library, formed from the following parts:
 
 Enclave-specific features are defined in these files:
 
-- [assert.c](assert.c) - standard assert() for enclaves
-- [errno.c](errno.c) - standard posix errno (located in the thread object)
-- [pthread.c](pthread.c)  - pthreads implementation based on enclave threads
-- [time.c](time.c) - time functions based on OCALLs
-- [link.c](link.c)  - dl_iterate_phdr() (needed by libunwind)
+- [arc4random.c](arc4random.c)  - arc4random() function.
+- [libcxxrt_stubs.c](libcxxrt_stubs.c)  - stubs needed by libcxxrt.
+- [libunwind_stubs.c](libunwind_stubs.c)  - stubs needed by libunwind.
+- [malloc.c](malloc.c)  - malloc implementation based on dlmalloc.
+- [pthread.c](pthread.c)  - pthreads implementation based on enclave threads.
+- [sched_yield.c](sched_yield.c)  - sched_yield_yield() panic stub.
+- [strerror.c](strerror.c)  - strerror() function.
+- [syscalls.c](syscalls.c)  - syscalls for musl libc.
+- [time.c](time.c)  - POSIX time functions.
+- [musl_stubs.c](musl_stubs.c)  - stubs needed by musl libc.
+- [sysconf.c](sysconf.c)  - sysconf() function.
 
+wait.c

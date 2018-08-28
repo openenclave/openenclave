@@ -27,7 +27,7 @@
 #define TIOCMGET	0x741D
 #define TIOCMBIS	0x741B
 #define TIOCMBIC	0x741C
-#define TIOCMSET	0x741D
+#define TIOCMSET	0x741A
 
 #define TIOCPKT		0x5470
 #define TIOCSWINSZ	_IOW('t', 103, struct winsize)
@@ -58,8 +58,17 @@
 #define TIOCSBRK	0x5427
 #define TIOCCBRK	0x5428
 #define TIOCGSID	0x7416
+#define TIOCGRS485	_IOR('T', 0x2E, char[32])
+#define TIOCSRS485	_IOWR('T', 0x2F, char[32])
 #define TIOCGPTN	_IOR('T', 0x30, unsigned int)
 #define TIOCSPTLCK	_IOW('T', 0x31, int)
+#define TIOCGDEV	_IOR('T', 0x32, unsigned int)
+#define TIOCSIG		_IOW('T', 0x36, int)
+#define TIOCVHANGUP	0x5437
+#define TIOCGPKT	_IOR('T', 0x38, int)
+#define TIOCGPTLCK	_IOR('T', 0x39, int)
+#define TIOCGEXCL	_IOR('T', 0x40, int)
+#define TIOCGPTPEER	_IO('T', 0x41)
 
 #define TIOCSCTTY	0x5480
 #define TIOCGSOFTCAR	0x5481
@@ -80,14 +89,6 @@
 #define TIOCSERSETMULTI 0x5490
 #define TIOCMIWAIT	0x5491
 #define TIOCGICOUNT	0x5492
-#define TIOCGHAYESESP   0x5493
-#define TIOCSHAYESESP   0x5494
-
-#define TIOCTTYGSTRUCT	0x5426          // RICH: Not sure about these.
-#define TCGETX		0x5432          // RICH: Not sure about these.
-#define TCSETX		0x5433          // RICH: Not sure about these.
-#define TCSETXF		0x5434          // RICH: Not sure about these.
-#define TCSETXW		0x5435          // RICH: Not sure about these.
 
 #define TIOCPKT_DATA		 0
 #define TIOCPKT_FLUSHREAD	 1
@@ -107,21 +108,20 @@ struct winsize {
 	unsigned short ws_ypixel;
 };
 
-#define TIOCM_LE        0x001
-#define TIOCM_DTR       0x002
-#define TIOCM_RTS       0x004
-#define TIOCM_ST        0x008
-#define TIOCM_SR        0x010
-#define TIOCM_CTS       0x020
-#define TIOCM_CAR       0x040
-#define TIOCM_RNG       0x080
-#define TIOCM_DSR       0x100
-#define TIOCM_CD        TIOCM_CAR
-#define TIOCM_RI        TIOCM_RNG
-#define TIOCM_OUT1      0x2000
-#define TIOCM_OUT2      0x4000
-#define TIOCM_LOOP      0x8000
-#define TIOCM_MODEM_BITS TIOCM_OUT2
+#define TIOCM_LE	0x001
+#define TIOCM_DTR	0x002
+#define TIOCM_RTS	0x004
+#define TIOCM_ST	0x010
+#define TIOCM_SR	0x020
+#define TIOCM_CTS	0x040
+#define TIOCM_CAR	0x100
+#define TIOCM_CD	TIOCM_CAR
+#define TIOCM_RNG	0x200
+#define TIOCM_RI	TIOCM_RNG
+#define TIOCM_DSR	0x400
+#define TIOCM_OUT1	0x2000
+#define TIOCM_OUT2	0x4000
+#define TIOCM_LOOP	0x8000
 
 #define N_TTY           0
 #define N_SLIP          1
@@ -140,12 +140,13 @@ struct winsize {
 #define N_SYNC_PPP      14
 #define N_HCI           15
 
-#define FIOSETOWN       0x8901
-#define SIOCSPGRP       0x8902
-#define FIOGETOWN       0x8903
-#define SIOCGPGRP       0x8904
-#define SIOCATMARK      0x8905
+#define FIOGETOWN       _IOR('f', 123, int)
+#define FIOSETOWN       _IOW('f', 124, int)
+#define SIOCATMARK      _IOR('s', 7, int)
+#define SIOCSPGRP       _IOW('s', 8, pid_t)
+#define SIOCGPGRP       _IOR('s', 9, pid_t)
 #define SIOCGSTAMP      0x8906
+#define SIOCGSTAMPNS    0x8907
 
 #define SIOCADDRT       0x890B
 #define SIOCDELRT       0x890C
@@ -170,6 +171,7 @@ struct winsize {
 #define SIOCSIFMEM      0x8920
 #define SIOCGIFMTU      0x8921
 #define SIOCSIFMTU      0x8922
+#define SIOCSIFNAME     0x8923
 #define SIOCSIFHWADDR   0x8924
 #define SIOCGIFENCAP    0x8925
 #define SIOCSIFENCAP    0x8926

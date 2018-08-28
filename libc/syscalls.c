@@ -1,0 +1,183 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#include "libctime.h"
+
+#define __OE_NEED_TIME_CALLS
+#include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <openenclave/internal/calls.h>
+#include <openenclave/internal/print.h>
+#include <openenclave/internal/time.h>
+#include <openenclave/enclave.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/syscall.h>
+#include <sys/time.h>
+#include <sys/uio.h>
+#include <time.h>
+#include <unistd.h>
+
+static long
+_syscall_open(long n, long x1, long x2, long x3, long x4, long x5, long x6)
+{
+    const char* filename = (const char*)x1;
+    int flags = (int)x2;
+    int mode = (int)x3;
+
+    (void)filename;
+    (void)mode;
+
+    if (flags == O_RDONLY)
+        return STDIN_FILENO;
+
+    if (flags == O_WRONLY)
+        return STDOUT_FILENO;
+
+    return -1;
+}
+
+static long _syscall_close(long n, ...)
+{
+    /* required by mbedtls */
+    return 0;
+}
+
+static long _syscall_mmap(long n, ...)
+{
+    /* Always fail */
+    return EPERM;
+}
+
+static long _syscall_readv(long n, ...)
+{
+    /* required by mbedtls */
+
+    /* return zero-bytes read */
+    return 0;
+}
+
+static long
+_syscall_ioctl(long n, long x1, long x2, long x3, long x4, long x5, long x6)
+{
+    int fd = (int)x1;
+
+    /* only allow ioctl() on these descriptors */
+    if (fd != STDIN_FILENO && fd != STDOUT_FILENO && fd != STDERR_FILENO)
+        abort();
+
+    return 0;
+}
+
+static long
+_syscall_writev(long n, long x1, long x2, long x3, long x4, long x5, long x6)
+{
+    int fd = (int)x1;
+    const struct iovec* iov = (const struct iovec*)x2;
+    unsigned long iovcnt = (unsigned long)x3;
+    long ret = 0;
+    int device;
+
+    /* Allow writing only to stdout and stderr */
+    switch (fd)
+    {
+        case STDOUT_FILENO:
+        {
+            device = 0;
+            break;
+        }
+        case STDERR_FILENO:
+        {
+            device = 1;
+            break;
+        }
+        default:
+        {
+            abort();
+        }
+    }
+
+    for (unsigned long i = 0; i < iovcnt; i++)
+    {
+        __oe_host_print(device, iov[i].iov_base, iov[i].iov_len);
+        ret += iov[i].iov_len;
+    }
+
+    return ret;
+}
+
+static long _syscall_clock_gettime(
+    long n,
+    long x1,
+    long x2,
+    long x3,
+    long x4,
+    long x5,
+    long x6)
+{
+    clockid_t clk_id = (clockid_t)x1;
+    struct timespec* tp = (struct timespec*)x2;
+    return oe_clock_gettime(clk_id, tp);
+}
+
+static long _syscall_gettimeofday(
+    long n,
+    long x1,
+    long x2,
+    long x3,
+    long x4,
+    long x5,
+    long x6)
+{
+    struct timeval* tv = (struct timeval*)x1;
+    void* tz = (void*)x2;
+    return oe_gettimeofday(tv, tz);
+}
+
+static long _syscall_nanosleep(
+    long n, long x1, long x2, long x3, long x4, long x5, long x6)
+{
+    const struct timespec* req = (struct timespec*)x1;
+    struct timespec* rem = (struct timespec*)x2;
+    return oe_nanosleep(req, rem);
+}
+
+long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
+{
+    switch (n)
+    {
+        case SYS_nanosleep:
+            return _syscall_nanosleep(n, x1, x2, x3, x4, x5, x6);
+        case SYS_gettimeofday:
+            return _syscall_gettimeofday(n, x1, x2, x3, x4, x5, x6);
+        case SYS_clock_gettime:
+            return _syscall_clock_gettime(n, x1, x2, x3, x4, x5, x6);
+        case SYS_writev:
+            return _syscall_writev(n, x1, x2, x3, x4, x5, x6);
+        case SYS_ioctl:
+            return _syscall_ioctl(n, x1, x2, x3, x4, x5, x6);
+        case SYS_open:
+            return _syscall_open(n, x1, x2, x3, x4, x5, x6);
+        case SYS_close:
+            return _syscall_close(n, x1, x2, x3, x4, x5, x6);
+        case SYS_mmap:
+            return _syscall_mmap(n, x1, x2, x3, x4, x5, x6);
+        case SYS_readv:
+            return _syscall_readv(n, x1, x2, x3, x4, x5, x6);
+        default:
+        {
+            fprintf(stderr, "error: __musl_syscall(): n=%lu\n", n);
+            abort();
+            return 0;
+        }
+    }
+
+    return 0;
+}
+
+long __syscall_cp(long n, long x1, long x2, long x3, long x4, long x5, long x6)
+{
+    return __syscall(n, x1, x2, x3, x4, x5, x6);
+}

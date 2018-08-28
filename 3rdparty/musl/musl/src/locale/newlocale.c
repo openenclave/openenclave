@@ -3,16 +3,9 @@
 #include "locale_impl.h"
 #include "libc.h"
 
-extern const struct __locale_map __c_dot_utf8;
-
-static const struct __locale_struct c_locale = { 0 };
-static const struct __locale_struct c_dot_utf8_locale = {
-	.cat[LC_CTYPE] = &__c_dot_utf8
-};
-
 int __loc_is_allocated(locale_t loc)
 {
-	return loc && loc != &c_locale && loc != &c_dot_utf8_locale;
+	return loc && loc != C_LOCALE && loc != UTF8_LOCALE;
 }
 
 locale_t __newlocale(int mask, const char *name, locale_t loc)
@@ -44,9 +37,9 @@ locale_t __newlocale(int mask, const char *name, locale_t loc)
 	}
 
 	if (!j)
-		return (locale_t)&c_locale;
-	if (j==1 && tmp.cat[LC_CTYPE]==c_dot_utf8_locale.cat[LC_CTYPE])
-		return (locale_t)&c_dot_utf8_locale;
+		return C_LOCALE;
+	if (j==1 && tmp.cat[LC_CTYPE]==&__c_dot_utf8)
+		return UTF8_LOCALE;
 
 	if ((loc = malloc(sizeof *loc))) *loc = tmp;
 

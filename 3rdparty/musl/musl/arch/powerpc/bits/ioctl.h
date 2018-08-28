@@ -101,6 +101,10 @@
 #define TIOCGDEV	_IOR('T',0x32, unsigned int)
 #define TIOCSIG		_IOW('T',0x36, int)
 #define TIOCVHANGUP	0x5437
+#define TIOCGPKT	_IOR('T', 0x38, int)
+#define TIOCGPTLCK	_IOR('T', 0x39, int)
+#define TIOCGEXCL	_IOR('T', 0x40, int)
+#define TIOCGPTPEER	_IO('T', 0x41)
 
 #define TIOCSERCONFIG	0x5453
 #define TIOCSERGWILD	0x5454
@@ -117,27 +121,12 @@
 #define TIOCGICOUNT	0x545D
 
 
-/* end kernel header ioctls.h */
-
-
-#define TIOCTTYGSTRUCT	0x5426
-
-#define TCGETX		0x5432
-#define TCSETX		0x5433
-#define TCSETXF		0x5434
-#define TCSETXW		0x5435
-
-#define TIOCGHAYESESP   0x545E
-#define TIOCSHAYESESP   0x545F
-
 struct winsize {
 	unsigned short ws_row;
 	unsigned short ws_col;
 	unsigned short ws_xpixel;
 	unsigned short ws_ypixel;
 };
-
-#define TIOCM_MODEM_BITS TIOCM_OUT2
 
 #define N_TTY           0
 #define N_SLIP          1
@@ -162,6 +151,7 @@ struct winsize {
 #define SIOCGPGRP       0x8904
 #define SIOCATMARK      0x8905
 #define SIOCGSTAMP      0x8906
+#define SIOCGSTAMPNS    0x8907
 
 #define SIOCADDRT       0x890B
 #define SIOCDELRT       0x890C
@@ -186,6 +176,7 @@ struct winsize {
 #define SIOCSIFMEM      0x8920
 #define SIOCGIFMTU      0x8921
 #define SIOCSIFMTU      0x8922
+#define SIOCSIFNAME     0x8923
 #define SIOCSIFHWADDR   0x8924
 #define SIOCGIFENCAP    0x8925
 #define SIOCSIFENCAP    0x8926

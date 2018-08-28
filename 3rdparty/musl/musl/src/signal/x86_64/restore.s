@@ -1,8 +1,7 @@
+	nop
 .global __restore_rt
-.global __restore
 .type __restore_rt,@function
-.type __restore,@function
 __restore_rt:
-__restore:
-	movl $15, %eax
+	mov $15, %rax
 	syscall
+.size __restore_rt,.-__restore_rt

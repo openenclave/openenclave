@@ -1,9 +1,3 @@
-/* 
- * This code was written by Rich Felker in 2010; no copyright is claimed.
- * This code is in the public domain. Attribution is appreciated but
- * unnecessary.
- */
-
 #include "internal.h"
 
 #define C(x) ( x<2 ? -1 : ( R(0x80,0xc0) | x ) )
@@ -15,7 +9,7 @@
              | x )
 #define F(x) ( ( x>=5 ? 0 : \
                  x==0 ? R(0x90,0xc0) : \
-                 x==4 ? R(0x80,0xa0) : \
+                 x==4 ? R(0x80,0x90) : \
                  R(0x80,0xc0) ) \
              | ( R(0x80,0xc0) >> 6 ) \
              | ( R(0x80,0xc0) >> 12 ) \

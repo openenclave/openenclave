@@ -21,24 +21,24 @@ static int is_leap(int y)
 
 static int week_num(const struct tm *tm)
 {
-	int val = (tm->tm_yday + 7 - (tm->tm_wday+6)%7) / 7;
+	int val = (tm->tm_yday + 7U - (tm->tm_wday+6U)%7) / 7;
 	/* If 1 Jan is just 1-3 days past Monday,
 	 * the previous week is also in this year. */
-	if ((tm->tm_wday - tm->tm_yday - 2 + 371) % 7 <= 2)
+	if ((tm->tm_wday + 371U - tm->tm_yday - 2) % 7 <= 2)
 		val++;
 	if (!val) {
 		val = 52;
 		/* If 31 December of prev year a Thursday,
 		 * or Friday of a leap year, then the
 		 * prev year has 53 weeks. */
-		int dec31 = (tm->tm_wday - tm->tm_yday - 1 + 7) % 7;
+		int dec31 = (tm->tm_wday + 7U - tm->tm_yday - 1) % 7;
 		if (dec31 == 4 || (dec31 == 5 && is_leap(tm->tm_year%400-1)))
 			val++;
 	} else if (val == 53) {
 		/* If 1 January is not a Thursday, and not
 		 * a Wednesday of a leap year, then this
 		 * year has only 52 weeks. */
-		int jan1 = (tm->tm_wday - tm->tm_yday + 371) % 7;
+		int jan1 = (tm->tm_wday + 371U - tm->tm_yday) % 7;
 		if (jan1 != 4 && (jan1 != 3 || !is_leap(tm->tm_year)))
 			val = 1;
 	}
@@ -48,25 +48,29 @@ static int week_num(const struct tm *tm)
 const char *__tm_to_tzname(const struct tm *);
 size_t __strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
 
-const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc)
+const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *tm, locale_t loc, int pad)
 {
 	nl_item item;
 	long long val;
-	const char *fmt;
-	int width = 2;
+	const char *fmt = "-";
+	int width = 2, def_pad = '0';
 
 	switch (f) {
 	case 'a':
+		if (tm->tm_wday > 6U) goto string;
 		item = ABDAY_1 + tm->tm_wday;
 		goto nl_strcat;
 	case 'A':
+		if (tm->tm_wday > 6U) goto string;
 		item = DAY_1 + tm->tm_wday;
 		goto nl_strcat;
 	case 'h':
 	case 'b':
+		if (tm->tm_mon > 11U) goto string;
 		item = ABMON_1 + tm->tm_mon;
 		goto nl_strcat;
 	case 'B':
+		if (tm->tm_mon > 11U) goto string;
 		item = MON_1 + tm->tm_mon;
 		goto nl_strcat;
 	case 'c':
@@ -75,15 +79,14 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 	case 'C':
 		val = (1900LL+tm->tm_year) / 100;
 		goto number;
+	case 'e':
+		def_pad = '_';
 	case 'd':
 		val = tm->tm_mday;
 		goto number;
 	case 'D':
 		fmt = "%m/%d/%y";
 		goto recu_strftime;
-	case 'e':
-		*l = snprintf(*s, sizeof *s, "%2d", tm->tm_mday);
-		return *s;
 	case 'F':
 		fmt = "%Y-%m-%d";
 		goto recu_strftime;
@@ -126,7 +129,7 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		fmt = "%H:%M";
 		goto recu_strftime;
 	case 's':
-		val = __tm_to_secs(tm) + tm->__tm_gmtoff;
+		val = __tm_to_secs(tm) - tm->__tm_gmtoff;
 		width = 1;
 		goto number;
 	case 'S':
@@ -143,10 +146,10 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		width = 1;
 		goto number;
 	case 'U':
-		val = (tm->tm_yday + 7 - tm->tm_wday) / 7;
+		val = (tm->tm_yday + 7U - tm->tm_wday) / 7;
 		goto number;
 	case 'W':
-		val = (tm->tm_yday + 7 - (tm->tm_wday+6)%7) / 7;
+		val = (tm->tm_yday + 7U - (tm->tm_wday+6U)%7) / 7;
 		goto number;
 	case 'V':
 		val = week_num(tm);
@@ -162,10 +165,11 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		item = T_FMT;
 		goto nl_strftime;
 	case 'y':
-		val = tm->tm_year % 100;
+		val = (tm->tm_year + 1900LL) % 100;
+		if (val < 0) val = -val;
 		goto number;
 	case 'Y':
-		val = tm->tm_year + 1900;
+		val = tm->tm_year + 1900LL;
 		if (val >= 10000) {
 			*l = snprintf(*s, sizeof *s, "+%lld", val);
 			return *s;
@@ -178,7 +182,7 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 			return "";
 		}
 		*l = snprintf(*s, sizeof *s, "%+.2d%.2d",
-			(-tm->__tm_gmtoff)/3600,
+			(tm->__tm_gmtoff)/3600,
 			abs(tm->__tm_gmtoff%3600)/60);
 		return *s;
 	case 'Z':
@@ -195,7 +199,12 @@ const char *__strftime_fmt_1(char (*s)[100], size_t *l, int f, const struct tm *
 		return 0;
 	}
 number:
-	*l = snprintf(*s, sizeof *s, "%0*lld", width, val);
+	switch (pad ? pad : def_pad) {
+	case '-': *l = snprintf(*s, sizeof *s, "%lld", val); break;
+	case '_': *l = snprintf(*s, sizeof *s, "%*lld", width, val); break;
+	case '0':
+	default:  *l = snprintf(*s, sizeof *s, "%0*lld", width, val); break;
+	}
 	return *s;
 nl_strcat:
 	fmt = __nl_langinfo_l(item, loc);
@@ -216,7 +225,7 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 	char buf[100];
 	char *p;
 	const char *t;
-	int plus;
+	int pad, plus;
 	unsigned long width;
 	for (l=0; l<n; f++) {
 		if (!*f) {
@@ -228,6 +237,8 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 			continue;
 		}
 		f++;
+		pad = 0;
+		if (*f == '-' || *f == '_' || *f == '0') pad = *f++;
 		if ((plus = (*f == '+'))) f++;
 		width = strtoul(f, &p, 10);
 		if (*p == 'C' || *p == 'F' || *p == 'G' || *p == 'Y') {
@@ -237,17 +248,24 @@ size_t __strftime_l(char *restrict s, size_t n, const char *restrict f, const st
 		}
 		f = p;
 		if (*f == 'E' || *f == 'O') f++;
-		t = __strftime_fmt_1(&buf, &k, *f, tm, loc);
+		t = __strftime_fmt_1(&buf, &k, *f, tm, loc, pad);
 		if (!t) break;
 		if (width) {
-			for (; *t=='+' || *t=='-' || (*t=='0'&&t[1]); t++, k--);
-			width--;
-			if (plus && tm->tm_year >= 10000-1900)
-				s[l++] = '+';
-			else if (tm->tm_year < -1900)
+			/* Trim off any sign and leading zeros, then
+			 * count remaining digits to determine behavior
+			 * for the + flag. */
+			if (*t=='+' || *t=='-') t++, k--;
+			for (; *t=='0' && t[1]-'0'<10U; t++, k--);
+			if (width < k) width = k;
+			size_t d;
+			for (d=0; t[d]-'0'<10U; d++);
+			if (tm->tm_year < -1900) {
 				s[l++] = '-';
-			else
-				width++;
+				width--;
+			} else if (plus && d+(width-k) >= (*p=='C'?3:5)) {
+				s[l++] = '+';
+				width--;
+			}
 			for (; width > k && l < n; width--)
 				s[l++] = '0';
 		}

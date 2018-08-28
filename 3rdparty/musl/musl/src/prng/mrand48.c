@@ -6,7 +6,7 @@ extern unsigned short __seed48[7];
 
 long jrand48(unsigned short s[3])
 {
-	return __rand48_step(s, __seed48+3) >> 16;
+	return (int32_t)(__rand48_step(s, __seed48+3) >> 16);
 }
 
 long mrand48(void)

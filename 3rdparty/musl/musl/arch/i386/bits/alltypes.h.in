@@ -26,10 +26,12 @@ TYPEDEF long double float_t;
 TYPEDEF long double double_t;
 #endif
 
-#ifdef __cplusplus
-TYPEDEF struct { alignas(8) long long __ll; long double __ld; } max_align_t;
-#else
+#if !defined(__cplusplus)
 TYPEDEF struct { _Alignas(8) long long __ll; long double __ld; } max_align_t;
+#elif defined(__GNUC__)
+TYPEDEF struct { __attribute__((__aligned__(8))) long long __ll; long double __ld; } max_align_t;
+#else
+TYPEDEF struct { alignas(8) long long __ll; long double __ld; } max_align_t;
 #endif
 
 TYPEDEF long time_t;
