@@ -13,6 +13,7 @@ add_library(oelibc STATIC
     libcxxrt_stubs.c
     libunwind_stubs.c
     link.c
+    locale.c
     malloc.c
     pthread.c
     sched_yield.c
@@ -20,8 +21,8 @@ add_library(oelibc STATIC
     strerror.c
     syscalls.c
     sysconf.c
-    __printf_chk.c
     __stack_chk_fail.c
+    __printf_chk.c
     __tz.c
     __vfprintf_chk.c
     ${MUSLSRC}/complex/cabs.c
@@ -166,22 +167,22 @@ add_library(oelibc STATIC
     ${MUSLSRC}/locale/c_locale.c
     ${MUSLSRC}/locale/dcngettext.c
     ${MUSLSRC}/locale/duplocale.c
-    ${MUSLSRC}/locale/freelocale.c
+    #${MUSLSRC}/locale/freelocale.c
     ${MUSLSRC}/locale/iconv.c
     ${MUSLSRC}/locale/iconv_close.c
     ${MUSLSRC}/locale/langinfo.c
     ${MUSLSRC}/locale/__lctrans.c
-    ${MUSLSRC}/locale/localeconv.c
+    #${MUSLSRC}/locale/localeconv.c
     ${MUSLSRC}/locale/locale_map.c
     ${MUSLSRC}/locale/__mo_lookup.c
-    ${MUSLSRC}/locale/newlocale.c
+    #${MUSLSRC}/locale/newlocale.c
     ${MUSLSRC}/locale/pleval.c
-    ${MUSLSRC}/locale/setlocale.c
+    #${MUSLSRC}/locale/setlocale.c
     ${MUSLSRC}/locale/strcoll.c
     ${MUSLSRC}/locale/strfmon.c
     ${MUSLSRC}/locale/strxfrm.c
     ${MUSLSRC}/locale/textdomain.c
-    ${MUSLSRC}/locale/uselocale.c
+    #${MUSLSRC}/locale/uselocale.c
     ${MUSLSRC}/locale/wcscoll.c
     ${MUSLSRC}/locale/wcsxfrm.c
     ${MUSLSRC}/math/acos.c
@@ -667,7 +668,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/__month_to_secs.c
     ${MUSLSRC}/time/nanosleep.c
     ${MUSLSRC}/time/__secs_to_tm.c
-    ${MUSLSRC}/time/strftime.c
     ${MUSLSRC}/time/time.c
     ${MUSLSRC}/time/__tm_to_secs.c
     ${MUSLSRC}/time/__year_to_secs.c
