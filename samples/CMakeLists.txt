@@ -15,7 +15,12 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/sort
     DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
     )
 
-endif()    
+endif()
+
+# Install the helloworld.
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/make/helloworld
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples
+    )
 
 # Install make file for samples folder.
 install(FILES  ${CMAKE_CURRENT_LIST_DIR}/make/Makefile
