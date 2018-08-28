@@ -20,7 +20,6 @@ add_library(oelibc STATIC
     strerror.c
     syscalls.c
     sysconf.c
-
     ${MUSLSRC}/complex/cabs.c
     ${MUSLSRC}/complex/cabsf.c
     ${MUSLSRC}/complex/cabsl.c
@@ -89,7 +88,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/complex/ctanhf.c
     ${MUSLSRC}/complex/ctanhl.c
     ${MUSLSRC}/complex/ctanl.c
-
     ${MUSLSRC}/crypt/crypt_blowfish.c
     ${MUSLSRC}/crypt/crypt.c
     ${MUSLSRC}/crypt/crypt_des.c
@@ -98,7 +96,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/crypt/crypt_sha256.c
     ${MUSLSRC}/crypt/crypt_sha512.c
     ${MUSLSRC}/crypt/encrypt.c
-
     ${MUSLSRC}/ctype/__ctype_b_loc.c
     ${MUSLSRC}/ctype/__ctype_get_mb_cur_max.c
     ${MUSLSRC}/ctype/__ctype_tolower_loc.c
@@ -136,26 +133,15 @@ add_library(oelibc STATIC
     ${MUSLSRC}/ctype/wcswidth.c
     ${MUSLSRC}/ctype/wctrans.c
     ${MUSLSRC}/ctype/wcwidth.c
-
-    ${MUSLSRC}/env/getenv.c
-    ${MUSLSRC}/env/setenv.c
-    ${MUSLSRC}/env/putenv.c
     ${MUSLSRC}/env/clearenv.c
-    ${MUSLSRC}/env/unsetenv.c
     ${MUSLSRC}/env/__environ.c
+    ${MUSLSRC}/env/getenv.c
+    ${MUSLSRC}/env/putenv.c
+    ${MUSLSRC}/env/setenv.c
     ${MUSLSRC}/env/__stack_chk_fail.c
-
+    ${MUSLSRC}/env/unsetenv.c
     ${MUSLSRC}/errno/__errno_location.c
-    #${MUSLSRC}/errno/strerror.c
-
-    #${MUSLSRC}/exit/arm/__aeabi_atexit.c
     ${MUSLSRC}/exit/assert.c
-    #${MUSLSRC}/exit/atexit.c
-    #${MUSLSRC}/exit/at_quick_exit.c
-    #${MUSLSRC}/exit/exit.c
-    #${MUSLSRC}/exit/_Exit.c
-    #${MUSLSRC}/exit/quick_exit.c
-
     ${MUSLSRC}/fenv/fegetexceptflag.c
     ${MUSLSRC}/fenv/feholdexcept.c
     ${MUSLSRC}/fenv/fesetexceptflag.c
@@ -163,19 +149,13 @@ add_library(oelibc STATIC
     ${MUSLSRC}/fenv/feupdateenv.c
     ${MUSLSRC}/fenv/__flt_rounds.c
     ${MUSLSRC}/fenv/x86_64/fenv.s
-
     ${MUSLSRC}/internal/floatscan.c
     ${MUSLSRC}/internal/intscan.c
     ${MUSLSRC}/internal/libc.c
     ${MUSLSRC}/internal/shgetc.c
     ${MUSLSRC}/internal/syscall_ret.c
     ${MUSLSRC}/internal/vdso.c
-
     ${MUSLSRC}/legacy/getpagesize.c
-
-    #${MUSLSRC}/linux/brk.c
-    #${MUSLSRC}/linux/sbrk.c
-
     ${MUSLSRC}/locale/bind_textdomain_codeset.c
     ${MUSLSRC}/locale/catclose.c
     ${MUSLSRC}/locale/catgets.c
@@ -201,7 +181,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/locale/uselocale.c
     ${MUSLSRC}/locale/wcscoll.c
     ${MUSLSRC}/locale/wcsxfrm.c
-
     ${MUSLSRC}/math/acos.c
     ${MUSLSRC}/math/acosf.c
     ${MUSLSRC}/math/acosh.c
@@ -412,15 +391,12 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/truncl.c
     ${MUSLSRC}/math/x86_64/acosl.s
     ${MUSLSRC}/math/x86_64/asinl.s
-    ${MUSLSRC}/math/x86_64/sqrtl.s
     ${MUSLSRC}/math/x86_64/exp2l.s
-
+    ${MUSLSRC}/math/x86_64/sqrtl.s
     ${MUSLSRC}/misc/basename.c
     ${MUSLSRC}/misc/dirname.c
-
     ${MUSLSRC}/mman/mmap.c
     ${MUSLSRC}/mman/munmap.c
-
     ${MUSLSRC}/multibyte/btowc.c
     ${MUSLSRC}/multibyte/c16rtomb.c
     ${MUSLSRC}/multibyte/c32rtomb.c
@@ -441,7 +417,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/multibyte/wcstombs.c
     ${MUSLSRC}/multibyte/wctob.c
     ${MUSLSRC}/multibyte/wctomb.c
-
     ${MUSLSRC}/prng/drand48.c
     ${MUSLSRC}/prng/lcong48.c
     ${MUSLSRC}/prng/lrand48.c
@@ -453,25 +428,21 @@ add_library(oelibc STATIC
     ${MUSLSRC}/prng/__seed48.c
     ${MUSLSRC}/prng/seed48.c
     ${MUSLSRC}/prng/srand48.c
-
     ${MUSLSRC}/regex/fnmatch.c
     ${MUSLSRC}/regex/glob.c
     ${MUSLSRC}/regex/regcomp.c
     ${MUSLSRC}/regex/regerror.c
     ${MUSLSRC}/regex/regexec.c
     ${MUSLSRC}/regex/tre-mem.c
-
     ${MUSLSRC}/search/hsearch.c
     ${MUSLSRC}/search/insque.c
     ${MUSLSRC}/search/lsearch.c
     ${MUSLSRC}/search/tdestroy.c
     ${MUSLSRC}/search/tsearch_avl.c
-
     ${MUSLSRC}/setjmp/longjmp.c
     ${MUSLSRC}/setjmp/setjmp.c
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     ${MUSLSRC}/setjmp/x86_64/setjmp.s
-
     ${MUSLSRC}/stdio/asprintf.c
     ${MUSLSRC}/stdio/clearerr.c
     ${MUSLSRC}/stdio/dprintf.c
@@ -610,7 +581,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/stdlib/strtol.c
     ${MUSLSRC}/stdlib/wcstod.c
     ${MUSLSRC}/stdlib/wcstol.c
-
     ${MUSLSRC}/string/bcmp.c
     ${MUSLSRC}/string/bcopy.c
     ${MUSLSRC}/string/bzero.c
@@ -649,7 +619,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/string/strpbrk.c
     ${MUSLSRC}/string/strrchr.c
     ${MUSLSRC}/string/strsep.c
-    #${MUSLSRC}/string/strsignal.c
     ${MUSLSRC}/string/strspn.c
     ${MUSLSRC}/string/strstr.c
     ${MUSLSRC}/string/strtok.c
@@ -684,46 +653,22 @@ add_library(oelibc STATIC
     ${MUSLSRC}/string/wmemcpy.c
     ${MUSLSRC}/string/wmemmove.c
     ${MUSLSRC}/string/wmemset.c
-
     ${MUSLSRC}/thread/__lock.c
     ${MUSLSRC}/thread/__wait.c
-
-    #${MUSLSRC}/time/__asctime.c
-    #${MUSLSRC}/time/asctime.c
-    #${MUSLSRC}/time/asctime_r.c
-    #${MUSLSRC}/time/clock.c
-    #${MUSLSRC}/time/clock_getcpuclockid.c
-    #${MUSLSRC}/time/clock_getres.c
     ${MUSLSRC}/time/clock_gettime.c
-    #${MUSLSRC}/time/clock_nanosleep.c
-    #${MUSLSRC}/time/clock_settime.c
-    #${MUSLSRC}/time/ctime.c
-    #${MUSLSRC}/time/ctime_r.c
-    #${MUSLSRC}/time/difftime.c
-    #${MUSLSRC}/time/ftime.c
-    #${MUSLSRC}/time/getdate.c
     ${MUSLSRC}/time/gettimeofday.c
     ${MUSLSRC}/time/gmtime.c
     ${MUSLSRC}/time/gmtime_r.c
-    #${MUSLSRC}/time/localtime.c
-    #${MUSLSRC}/time/localtime_r.c
     ${MUSLSRC}/time/__map_file.c
     ${MUSLSRC}/time/mktime.c
     ${MUSLSRC}/time/__month_to_secs.c
     ${MUSLSRC}/time/nanosleep.c
     ${MUSLSRC}/time/__secs_to_tm.c
     ${MUSLSRC}/time/strftime.c
-    #${MUSLSRC}/time/strptime.c
     ${MUSLSRC}/time/time.c
-    #${MUSLSRC}/time/timegm.c
-    #${MUSLSRC}/time/times.c
-    #${MUSLSRC}/time/timespec_get.c
     ${MUSLSRC}/time/__tm_to_secs.c
     ${MUSLSRC}/time/__tz.c
-    #${MUSLSRC}/time/utime.c
-    #${MUSLSRC}/time/wcsftime.c
     ${MUSLSRC}/time/__year_to_secs.c
-
     ${MUSLSRC}/unistd/access.c
     ${MUSLSRC}/unistd/acct.c
     ${MUSLSRC}/unistd/alarm.c
@@ -800,32 +745,47 @@ add_library(oelibc STATIC
     ${MUSLSRC}/unistd/unlink.c
     ${MUSLSRC}/unistd/usleep.c
     ${MUSLSRC}/unistd/write.c
-    ${MUSLSRC}/unistd/writev.c
-    )
+    ${MUSLSRC}/unistd/writev.c)
 
 target_compile_options(oelibc PRIVATE
-    -Wno-attributes
-    -Wno-parentheses
-    -Wno-pointer-sign
-    -Wno-unused-but-set-variable
-    -Wno-unknown-pragmas
-    -Wno-maybe-uninitialized
-    -Wno-jump-misses-init
-    -Wno-format
-    -Wno-missing-braces
-    -Wno-unused-value
-
     -std=c99
     -fno-builtin-memcpy
     -fno-builtin-memset
     -ffreestanding
-    -fexcess-precision=standard
-    -frounding-math
     -mrdrnd
     )
 
+if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+    target_compile_options(oelibc PRIVATE
+        -fexcess-precision=standard
+        -frounding-math
+        )
+endif()
+
+if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+    add_target_c_compile_flags_if_supported(oelibc PRIVATE
+        -Wno-attributes
+        -Wno-format
+        -Wno-missing-braces
+        -Wno-maybe-uninitialized
+        -Wno-parentheses
+        -Wno-pointer-sign
+        -Wno-shift-negative-value
+        -Wno-string-plus-int
+        -Wno-typedef-redefinition
+        -Wno-unknown-pragmas
+        -Wno-error=unused-but-set-variable
+        -Wno-unused-value
+        -Wno-jump-misses-init
+        )
+endif()
+
 target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
 target_compile_definitions(oelibc PRIVATE -DSYSCALL_NO_INLINE)
+
+if(USE_DEBUG_MALLOC)
+target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+endif()
 
 # this project (and is dependents) require the enclave headers+lib
 target_link_libraries(oelibc oecore)
@@ -833,18 +793,22 @@ target_link_libraries(oelibc oecore)
 # as a pre-build step, place the musl LIBC headers
 add_dependencies(oelibc oelibc_includes)
 
-target_include_directories(oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
-target_include_directories(oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
+target_include_directories(oelibc PRIVATE 
+    ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
+    ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
 
 # this project and its dependents require include/libc in the include path.
 # Note the difference between build time (absolute in build tree) and install
 # time (relative to install prefix)
 target_include_directories(oelibc PUBLIC
     $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/libc>
-    )
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libc>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/libc>)
 
 # when building this project, we also need a number of internal includes
+target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
+target_include_directories(oelibc PRIVATE ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal)
+
 target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 
 # assemble lib-archive into proper dir
