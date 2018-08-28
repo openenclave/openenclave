@@ -776,12 +776,12 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         -Wno-unknown-pragmas
         -Wno-error=unused-but-set-variable
         -Wno-unused-value
-        -Wno-jump-misses-init
-        )
+        -Wno-jump-misses-init)
 endif()
 
-target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
-target_compile_definitions(oelibc PRIVATE -DSYSCALL_NO_INLINE)
+target_compile_definitions(oelibc PRIVATE 
+    -D_XOPEN_SOURCE=700
+    -DSYSCALL_NO_INLINE)
 
 if(USE_DEBUG_MALLOC)
 target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
@@ -802,8 +802,7 @@ target_include_directories(oelibc PRIVATE
 # time (relative to install prefix)
 target_include_directories(oelibc PUBLIC
     $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libc>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/openenclave/libc>)
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libc>)
 
 # when building this project, we also need a number of internal includes
 target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
