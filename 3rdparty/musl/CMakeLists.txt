@@ -48,4 +48,4 @@ ExternalProject_Add(oelibc_includes
 install(DIRECTORY 
     ${OE_INCDIR}/openenclave/libc 
     DESTINATION 
-    ${CMAKE_INSTALL_INCLUDEDIR}/openenclave)
+    ${CMAKE_INSTALL_INCLUDEDIR})
