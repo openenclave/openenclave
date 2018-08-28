@@ -54,11 +54,15 @@ _oe_exit:
 .determine_exit_type:
 
     // Check the depth of the ECALL stack (zero for clean exit)
+    // exit-type-check.
     mov %gs:TD_depth, %r8
     cmp $0, %r8
     je .clean_exit
 
 .nested_exit:
+    // Stop speculative execution at fallthrough of conditional
+    // exit-type-check.
+    lfence 
 
     // Save host registers and stack pointer (will be restored on reentry)
     push %r12
@@ -90,6 +94,9 @@ _oe_exit:
     jmp .clear_enclave_registers
 
 .clean_exit:
+    // Stop speculative execution at target of conditional jump
+    // after exit-type-check.
+    lfence
 
     // Clear the TD.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, %gs:TD_last_sp
@@ -108,11 +115,15 @@ _oe_exit:
 .execute_eexit:
 
     // Check TD.simulate flag
+    // simulate-flag-check.
     mov %gs:TD_simulate, %rax
     cmp $0, %rax
     jz .execute_eexit_instruction
 
 .execute_eexit_sim:
+    // Stop speculative execution at fallthrough of conditional
+    // simulate-flag-check.
+    lfence
 
     // Jump to return address:
     mov $1, %rax
@@ -120,7 +131,10 @@ _oe_exit:
     ud2
 
 .execute_eexit_instruction:
-
+    // Stop speculative execution at target of conditional jump
+    // after simulate-flag-check.
+    lfence
+    
     // EEXIT(RAX=EEXIT, RBX=RETADDR, RCX=AEP, RDI=ARG1, RSI=ARG2)
     mov %rcx, %rbx
     mov $ENCLU_EEXIT, %rax

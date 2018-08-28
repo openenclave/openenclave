@@ -26,7 +26,7 @@ The files and directories in the top-level directory are described as follows.
 - [samples](samples) - Contains enclave-development sample sources
 - [scripts](scripts) - Contains Shell scripts
 - [tests](tests) - Contains all test programs, which may also serve as samples
-- [tools](tools) - Contains command-line tools (oesgx, oesign, oegen, oeelf)
+- [tools](tools) - Contains command-line tools (oesgx, oesign, oegen)
 
 Install Prerequisites
 ======================
