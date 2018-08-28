@@ -426,6 +426,18 @@ oe_result_t oe_get_seal_key(
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize);
 
+/**
+ * Obtains the enclave handle.
+ *
+ * This function returns the enclave handle for the current enclave. The
+ * host obtains this handle by calling **oe_create_enclave()**, which
+ * passes the enclave handle to the enclave during initialization. The
+ * handle is an address inside the host address space.
+ *
+ * @returns the enclave handle.
+ */
+oe_enclave_t* oe_get_enclave(void);
+
 OE_EXTERNC_END
 
 #endif /* _OE_ENCLAVE_H */

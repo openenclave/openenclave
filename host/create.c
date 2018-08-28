@@ -892,6 +892,9 @@ static oe_result_t _InitializeEnclave(oe_enclave_t* enclave)
             &args.cpuidTable[i][OE_CPUID_RDX]);
     }
 
+    // Pass the enclave handle to the enclave.
+    args.enclave = enclave;
+
     OE_CHECK(oe_ecall(enclave, OE_ECALL_INIT_ENCLAVE, (uint64_t)&args, NULL));
 
     result = OE_OK;

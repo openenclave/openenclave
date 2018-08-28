@@ -115,3 +115,21 @@ const void* __oe_get_heap_end()
 {
     return (const uint8_t*)__oe_get_heap_base() + __oe_get_heap_size();
 }
+
+/*
+**==============================================================================
+**
+** oe_enclave:
+**
+**     The enclave handle obtained with oe_create_enclave() and passed
+**     to the enclave during initialization (via OE_ECALL_INIT_ENCLAVE).
+**
+**==============================================================================
+*/
+
+oe_enclave_t* oe_enclave;
+
+oe_enclave_t* oe_get_enclave(void)
+{
+    return oe_enclave;
+}
