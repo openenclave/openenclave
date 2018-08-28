@@ -3,7 +3,10 @@
 
 function(_add_compile_def lang def)
   foreach (_lang IN LISTS lang)
-    add_compile_definitions($<$<COMPILE_LANGUAGE:${_lang}>:${def}>)
+    # add_definitions cannot be used here as it lacks support for
+    # generator expressions.
+    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
+      $<$<COMPILE_LANGUAGE:${_lang}>:${def}>)
   endforeach()
 endfunction()
 
