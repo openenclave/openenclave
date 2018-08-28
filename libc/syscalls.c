@@ -7,10 +7,10 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/time.h>
-#include <openenclave/enclave.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -136,8 +136,8 @@ static long _syscall_gettimeofday(
     return oe_gettimeofday(tv, tz);
 }
 
-static long _syscall_nanosleep(
-    long n, long x1, long x2, long x3, long x4, long x5, long x6)
+static long
+_syscall_nanosleep(long n, long x1, long x2, long x3, long x4, long x5, long x6)
 {
     const struct timespec* req = (struct timespec*)x1;
     struct timespec* rem = (struct timespec*)x2;

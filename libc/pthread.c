@@ -5,8 +5,8 @@
 #include <errno.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
-#include <openenclave/internal/thread.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/thread.h>
 #include <pthread.h>
 #include "../enclave/core/td.h"
 #include "locale_impl.h"

@@ -5,8 +5,8 @@
 #define USE_DL_PREFIX
 #include <assert.h>
 #include <dlfcn.h>
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 /* Stubs needed to compile the libcxxrt library */
 
