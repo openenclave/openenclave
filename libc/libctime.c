@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #define _GNU_SOURCE
+#include "libctime.h"
 #include <assert.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
@@ -11,7 +12,6 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
-#include "libctime.h"
 
 // This definition is replicated from "musl/src/time/__tz.c" as this file has
 // some dependencies on other functions which are not developed for the enclave
