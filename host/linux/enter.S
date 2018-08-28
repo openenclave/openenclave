@@ -105,12 +105,16 @@ __morestack:
     call oe_restore_partial_context@PLT
 
     // Check if it is an OCALL needed to be dispatched.
+    // ecall-return-check.
     mov ARG1OUT, %r10
     shr $48, %r10
     cmpq $OE_OCALL_CODE, %r10
     jne .return_from_ecall
 
 .dispatch_ocall:
+    // Stop speculative execution at fallthrough of conditional
+    // ecall-return-check.
+    lfence
 
     // Save registers that could get clobbered below or by function call.
     push %rdi
@@ -155,9 +159,14 @@ __morestack:
     mov RSP, %rsp
 
     // If this was not an OCALL, then return from ECALL.
+    // ecall-return-check-1.
     cmp $0, %rax
     jne .return_from_ecall
 
+    // Stop speculative execution at fallthrough of conditional
+    // ecall-return-check-1.
+    lfence
+    
     // Execute EENTER(RBX=TCS, RCX=AEP, RDI=ARG1, RSI=ARG2)
     mov ARG1OUT, %rax
     mov %rax, ARG1
@@ -166,6 +175,9 @@ __morestack:
     jmp .execute_eenter
 
 .return_from_ecall:
+    // Stop speculative execution at target of conditional jump
+    // ecall-return-check and ecall-return-check-1.
+    lfence
 
     // Set output parameters:
     mov ARG1OUT, %rax

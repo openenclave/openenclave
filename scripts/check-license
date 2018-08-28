@@ -153,6 +153,7 @@ function check_for_missing_license_headers()
         grep -m1 -A1 "Copyright (c) Microsoft Corporation" "${i}" | \
         sed 's~// ~~g' | \
         sed 's~;; ~~g' | \
+        sed 's~:: ~~g' | \
         sed 's~^# ~~g' \
         > ${tmpfile}
 
