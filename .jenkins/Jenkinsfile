@@ -9,13 +9,12 @@ pipeline {
 
       }
       steps {
-        echo 'Precommit-checking'
         sh 'bash ./scripts/check-precommit-reqs'
       }
     }
     stage('Build and Test') {
       parallel {
-        stage('sgx1-debug Simulation') {
+        stage('Simulation SGX1 Debug') {
           agent {
             docker {
               image 'oetools-azure:1.2'
@@ -23,11 +22,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-debug Simulation'
             sh 'bash ./scripts/test-build-config -b Debug'
           }
         }
-        stage('sgx1-release Simulation') {
+        stage('Simulation SGX1 Release') {
           agent {
             docker {
               image 'oetools-azure:1.2'
@@ -35,11 +33,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-release Simulation'
             sh 'bash ./scripts/test-build-config -p SGX1 -b Release'
           }
         }
-        stage('sgx1-relwithdebinfo Simulation') {
+        stage('Simulation SGX1 RelWithDebInfo') {
           agent {
             docker {
               image 'oetools-azure:1.2'
@@ -47,11 +44,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-relwithdebinfo Simulation'
             sh 'bash ./scripts/test-build-config -p SGX1 -b RelWithDebInfo'
           }
         }
-        stage('sgx1-flc-debug Simulation') {
+        stage('Simulation SGX1-FLC Debug') {
           agent {
             docker {
               image 'oetools-azure:1.2'
@@ -59,11 +55,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-flc-debug Simulation'
             sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug'
           }
         }
-        stage('sgx1-flc-release Simulation') {
+        stage('Simulation SGX1-FLC Release') {
           agent {
             docker {
               image 'oetools-azure:1.2'
@@ -71,11 +66,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-flc-release Simulation'
             sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release'
           }
         }
-        stage('sgx1-flc-relwithdebinfo Simulation') {
+        stage('Simulation SGX1-FLC RelWithDebInfo') {
           agent {
             docker {
               image 'oetools-azure:1.2'
@@ -83,11 +77,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-flc-relwithdebinfo Simulation'
             sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo'
           }
         }
-        stage('sgx1-flc Kabylake Hardware Debug') {
+        stage('Kabylake SGX1 Debug') {
           agent {
             node {
               label 'SGX'
@@ -95,11 +88,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-flc Kabylake Hardware Debug'
             sh 'bash ./scripts/test-build-config -p SGX1 -b Debug -d'
           }
         }
-        stage('sgx1-flc Kabylake Hardware Release') {
+        stage('Kabylake SGX1 Release') {
           agent {
             node {
               label 'SGX'
@@ -107,11 +99,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-flc Kabylake Hardware Release'
             sh 'bash ./scripts/test-build-config -p SGX1 -b Release -d'
           }
         }
-        stage('sgx1-flc Kabylake Hardware RelWithDebInfo') {
+        stage('Kabylake SGX1 RelWithDebInfo') {
           agent {
             node {
               label 'SGX'
@@ -119,11 +110,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-flc Kabylake Hardware RelWithDebInfo'
             sh 'bash ./scripts/test-build-config -p SGX1 -b RelWithDebInfo -d'
           }
         }
-        stage('sgx1-flc Coffeelake Hardware Debug') {
+        stage('Coffeelake SGX1-FLC Debug') {
           agent {
             node {
               label 'hardware'
@@ -131,11 +121,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-flc Coffeelake Hardware Debug'
             sh 'bash ./scripts/test-build-config -p SGX1FLC -b Debug -d'
           }
         }
-        stage('sgx1-flc Coffeelake Hardware Release') {
+        stage('Coffeelake SGX1-FLC Release') {
           agent {
             node {
               label 'hardware'
@@ -143,11 +132,10 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-flc Coffeelake Hardware Release'
             sh 'bash ./scripts/test-build-config -p SGX1FLC -b Release -d'
           }
         }
-        stage('sgx1-flc Coffeelake Hardware RelWithDebInfo') {
+        stage('Coffeelake SGX1-FLC RelWithDebInfo') {
           agent {
             node {
               label 'hardware'
@@ -155,7 +143,6 @@ pipeline {
 
           }
           steps {
-            echo 'sgx1-flc Coffeelake Hardware RelWithDebInfo'
             sh 'bash ./scripts/test-build-config -p SGX1FLC -b RelWithDebInfo -d'
           }
         }
