@@ -20,6 +20,8 @@ add_library(oelibc STATIC
     strerror.c
     syscalls.c
     sysconf.c
+    __printf_chk.c
+    __stack_chk_fail.c
     ${MUSLSRC}/complex/cabs.c
     ${MUSLSRC}/complex/cabsf.c
     ${MUSLSRC}/complex/cabsl.c
@@ -138,7 +140,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/env/getenv.c
     ${MUSLSRC}/env/putenv.c
     ${MUSLSRC}/env/setenv.c
-    ${MUSLSRC}/env/__stack_chk_fail.c
     ${MUSLSRC}/env/unsetenv.c
     ${MUSLSRC}/errno/__errno_location.c
     ${MUSLSRC}/exit/assert.c
