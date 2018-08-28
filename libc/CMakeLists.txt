@@ -22,6 +22,8 @@ add_library(oelibc STATIC
     sysconf.c
     __printf_chk.c
     __stack_chk_fail.c
+    __tz.c
+    __vfprintf_chk.c
     ${MUSLSRC}/complex/cabs.c
     ${MUSLSRC}/complex/cabsf.c
     ${MUSLSRC}/complex/cabsl.c
@@ -668,7 +670,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/strftime.c
     ${MUSLSRC}/time/time.c
     ${MUSLSRC}/time/__tm_to_secs.c
-    ${MUSLSRC}/time/__tz.c
     ${MUSLSRC}/time/__year_to_secs.c
     ${MUSLSRC}/unistd/access.c
     ${MUSLSRC}/unistd/acct.c
