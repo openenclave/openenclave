@@ -144,6 +144,7 @@ _syscall_nanosleep(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     return oe_nanosleep(req, rem);
 }
 
+/* Intercept __syscalls() from MUSL */
 long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
 {
     switch (n)
@@ -168,7 +169,8 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
             return _syscall_readv(n, x1, x2, x3, x4, x5, x6);
         default:
         {
-            fprintf(stderr, "error: __musl_syscall(): n=%lu\n", n);
+            /* All other MUSL-initiated syscalls are aborted. */
+            fprintf(stderr, "error: __syscall(): n=%lu\n", n);
             abort();
             return 0;
         }
@@ -177,6 +179,7 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     return 0;
 }
 
+/* Intercept __syscalls_cp() from MUSL */
 long __syscall_cp(long n, long x1, long x2, long x3, long x4, long x5, long x6)
 {
     return __syscall(n, x1, x2, x3, x4, x5, x6);
