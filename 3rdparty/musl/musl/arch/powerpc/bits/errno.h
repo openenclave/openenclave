@@ -55,7 +55,7 @@
 #define ENOANO          55
 #define EBADRQC         56
 #define EBADSLT         57
-#define EDEADLOCK       58 
+#define EDEADLOCK       58
 #define EBFONT          59
 #define ENOSTR          60
 #define ENODATA         61

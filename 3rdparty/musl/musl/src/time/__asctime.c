@@ -1,17 +1,16 @@
 #include <time.h>
 #include <stdio.h>
 #include <langinfo.h>
+#include "locale_impl.h"
 #include "atomic.h"
 
-const char *__nl_langinfo(nl_item);
+const char *__nl_langinfo_l(nl_item, locale_t);
 
 char *__asctime(const struct tm *restrict tm, char *restrict buf)
 {
-	/* FIXME: change __nl_langinfo to __nl_langinfo_l with explicit C
-	 * locale once we have locales */
 	if (snprintf(buf, 26, "%.3s %.3s%3d %.2d:%.2d:%.2d %d\n",
-		__nl_langinfo(ABDAY_1+tm->tm_wday),
-		__nl_langinfo(ABMON_1+tm->tm_mon),
+		__nl_langinfo_l(ABDAY_1+tm->tm_wday, C_LOCALE),
+		__nl_langinfo_l(ABMON_1+tm->tm_mon, C_LOCALE),
 		tm->tm_mday, tm->tm_hour,
 		tm->tm_min, tm->tm_sec,
 		1900 + tm->tm_year) >= 26)

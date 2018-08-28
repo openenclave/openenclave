@@ -75,7 +75,7 @@ int cnd_timedwait(cnd_t *__restrict, mtx_t *__restrict, const struct timespec *_
 int cnd_wait(cnd_t *, mtx_t *);
 
 int tss_create(tss_t *, tss_dtor_t);
-void tss_delete(tss_t key);
+void tss_delete(tss_t);
 
 int tss_set(tss_t, void *);
 void *tss_get(tss_t);

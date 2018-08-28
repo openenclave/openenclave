@@ -6,8 +6,6 @@
 #include "libc.h"
 #include "ksigaction.h"
 
-void __restore(), __restore_rt();
-
 static int unmask_done;
 static unsigned long handler_set[_NSIG/(8*sizeof(long))];
 
@@ -19,10 +17,6 @@ void __get_handler_set(sigset_t *set)
 int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigaction *restrict old)
 {
 	struct k_sigaction ksa, ksa_old;
-	if (sig >= (unsigned)_NSIG) {
-		errno = EINVAL;
-		return -1;
-	}
 	if (sa) {
 		if ((uintptr_t)sa->sa_handler > 1UL) {
 			a_or_l(handler_set+(sig-1)/(8*sizeof(long)),
@@ -59,7 +53,7 @@ int __libc_sigaction(int sig, const struct sigaction *restrict sa, struct sigact
 
 int __sigaction(int sig, const struct sigaction *restrict sa, struct sigaction *restrict old)
 {
-	if (sig-32U < 3) {
+	if (sig-32U < 3 || sig-1U >= _NSIG-1) {
 		errno = EINVAL;
 		return -1;
 	}

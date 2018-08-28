@@ -1,3 +1,4 @@
+.syntax unified
 .global __setjmp
 .global _setjmp
 .global setjmp
@@ -8,7 +9,9 @@ __setjmp:
 _setjmp:
 setjmp:
 	mov ip,r0
-	stmia ip!,{v1,v2,v3,v4,v5,v6,sl,fp,sp,lr}
+	stmia ip!,{v1,v2,v3,v4,v5,v6,sl,fp}
+	mov r2,sp
+	stmia ip!,{r2,lr}
 	mov r0,#0
 
 	adr r1,1f
@@ -22,7 +25,11 @@ setjmp:
 	stc p2, cr4, [ip], #48
 2:	tst r1,#0x40
 	beq 2f
-	.word 0xecac8b10 /* vstmia ip!, {d8-d15} */
+	.fpu vfp
+	vstmia ip!, {d8-d15}
+	.fpu softvfp
+	.eabi_attribute 10, 0
+	.eabi_attribute 27, 0
 2:	tst r1,#0x200
 	beq 3f
 	stcl p1, cr10, [ip], #8
@@ -31,9 +38,8 @@ setjmp:
 	stcl p1, cr13, [ip], #8
 	stcl p1, cr14, [ip], #8
 	stcl p1, cr15, [ip], #8
-3:	tst lr,#1
-	moveq pc,lr
-	bx lr
+3:	bx lr
 
 .hidden __hwcap
+.align 2
 1:	.word __hwcap-1b

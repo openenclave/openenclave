@@ -91,6 +91,8 @@ struct arphdr {
 #define ARPHRD_CAIF 822
 #define ARPHRD_IP6GRE 823
 #define ARPHRD_NETLINK 824
+#define ARPHRD_6LOWPAN 825
+#define ARPHRD_VSOCKMON 826
 
 #define ARPHRD_VOID	  0xFFFF
 #define ARPHRD_NONE	  0xFFFE

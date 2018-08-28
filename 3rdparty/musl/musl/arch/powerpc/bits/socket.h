@@ -1,5 +1,4 @@
-struct msghdr
-{
+struct msghdr {
 	void *msg_name;
 	socklen_t msg_namelen;
 	struct iovec *msg_iov;
@@ -9,8 +8,7 @@ struct msghdr
 	int msg_flags;
 };
 
-struct cmsghdr
-{
+struct cmsghdr {
 	socklen_t cmsg_len;
 	int cmsg_level;
 	int cmsg_type;
@@ -24,8 +22,6 @@ struct cmsghdr
 #define SO_BROADCAST    6
 #define SO_SNDBUF       7
 #define SO_RCVBUF       8
-#define SO_SNDBUFFORCE  32
-#define SO_RCVBUFFORCE  33
 #define SO_KEEPALIVE    9
 #define SO_OOBINLINE    10
 #define SO_NO_CHECK     11
@@ -39,4 +35,8 @@ struct cmsghdr
 #define SO_SNDTIMEO     19
 #define SO_PASSCRED     20
 #define SO_PEERCRED     21
- 
+#define SO_ACCEPTCONN   30
+#define SO_SNDBUFFORCE  32
+#define SO_RCVBUFFORCE  33
+#define SO_PROTOCOL     38
+#define SO_DOMAIN       39

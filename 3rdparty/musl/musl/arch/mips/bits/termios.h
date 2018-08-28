@@ -1,5 +1,4 @@
-struct termios
-{
+struct termios {
 	tcflag_t c_iflag;
 	tcflag_t c_oflag;
 	tcflag_t c_cflag;
@@ -93,10 +92,7 @@ struct termios
 #define B9600    0000015
 #define B19200   0000016
 #define B38400   0000017
-#define EXTA     0000016
-#define EXTB     0000017
 
-#define BOTHER   0010000
 #define B57600   0010001
 #define B115200  0010002
 #define B230400  0010003
@@ -113,8 +109,6 @@ struct termios
 #define B3500000 0010016
 #define B4000000 0010017
 
-#define CBAUD    0010017
-
 #define CSIZE  0000060
 #define CS5    0000000
 #define CS6    0000020
@@ -129,18 +123,12 @@ struct termios
 
 #define ISIG   0000001
 #define ICANON 0000002
-#define XCASE  0000004
 #define ECHO   0000010
 #define ECHOE  0000020
 #define ECHOK  0000040
 #define ECHONL 0000100
 #define NOFLSH 0000200
 #define IEXTEN 0000400
-#define ECHOCTL 0001000
-#define ECHOPRT 0002000
-#define ECHOKE 0004000
-#define FLUSHO 0020000
-#define PENDIN 0040000
 #define TOSTOP 0100000
 #define ITOSTOP 0100000
 
@@ -158,12 +146,22 @@ struct termios
 #define TCSAFLUSH 2
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define EXTA    0000016
+#define EXTB    0000017
+#define CBAUD   0010017
 #define CBAUDEX 0010000
-#define CIBAUD   002003600000
-#define IBSHIFT 16
-#define CMSPAR   010000000000
-#define CRTSCTS  020000000000
+#define CIBAUD  002003600000
+#define CMSPAR  010000000000
+#define CRTSCTS 020000000000
+
+#define XCASE   0000004
+#define ECHOCTL 0001000
+#define ECHOPRT 0002000
+#define ECHOKE  0004000
+#define FLUSHO  0020000
+#define PENDIN  0040000
 #define EXTPROC 0200000
+
 #define XTABS  0014000
 #define TIOCSER_TEMT 1
 #endif

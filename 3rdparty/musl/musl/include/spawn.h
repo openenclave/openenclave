@@ -21,6 +21,8 @@ struct sched_param;
 #define POSIX_SPAWN_SETSIGMASK 8
 #define POSIX_SPAWN_SETSCHEDPARAM 16
 #define POSIX_SPAWN_SETSCHEDULER 32
+#define POSIX_SPAWN_USEVFORK 64
+#define POSIX_SPAWN_SETSID 128
 
 typedef struct {
 	int __flags;

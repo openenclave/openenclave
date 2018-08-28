@@ -27,18 +27,16 @@ static unsigned long mtime()
 		+ ts.tv_nsec / 1000000;
 }
 
-int __res_msend(int nqueries, const unsigned char *const *queries,
-	const int *qlens, unsigned char *const *answers, int *alens, int asize)
+int __res_msend_rc(int nqueries, const unsigned char *const *queries,
+	const int *qlens, unsigned char *const *answers, int *alens, int asize,
+	const struct resolvconf *conf)
 {
 	int fd;
-	FILE *f, _f;
-	unsigned char _buf[256];
-	char line[64], *s, *z;
-	int timeout = 5000, attempts = 2, retry_interval, servfail_retry;
+	int timeout, attempts, retry_interval, servfail_retry;
 	union {
 		struct sockaddr_in sin;
 		struct sockaddr_in6 sin6;
-	} sa = {0}, ns[3] = {{0}};
+	} sa = {0}, ns[MAXNS] = {{0}};
 	socklen_t sl = sizeof sa.sin;
 	int nns = 0;
 	int family = AF_INET;
@@ -48,56 +46,25 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 	int cs;
 	struct pollfd pfd;
 	unsigned long t0, t1, t2;
-	struct address iplit;
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
 
-	/* Get nameservers from resolv.conf, fallback to localhost */
-	f = __fopen_rb_ca("/etc/resolv.conf", &_f, _buf, sizeof _buf);
-	if (f) for (nns=0; nns<3 && fgets(line, sizeof line, f); ) {
-		if (!strncmp(line, "options", 7) && isspace(line[7])) {
-			unsigned long x;
-			char *p, *z;
-			p = strstr(line, "timeout:");
-			if (p && isdigit(p[8])) {
-				p += 8;
-				x = strtoul(p, &z, 10);
-				if (z != p) timeout = x < 30 ? x*1000 : 30000;
-			}
-			p = strstr(line, "attempts:");
-			if (p && isdigit(p[9])) {
-				p += 9;
-				x = strtoul(p, &z, 10);
-				if (z != p) attempts = x < 10 ? x : 10;
-				if (!attempts) attempts = 1;
-			}
-		}
-		if (strncmp(line, "nameserver", 10) || !isspace(line[10]))
-			continue;
-		for (s=line+11; isspace(*s); s++);
-		for (z=s; *z && !isspace(*z); z++);
-		*z=0;
+	timeout = 1000*conf->timeout;
+	attempts = conf->attempts;
 
-		if (__lookup_ipliteral(&iplit, s, AF_UNSPEC)>0) {
-			if (iplit.family == AF_INET) {
-				memcpy(&ns[nns].sin.sin_addr, iplit.addr, 4);
-				ns[nns].sin.sin_port = htons(53);
-				ns[nns++].sin.sin_family = AF_INET;
-			} else {
-				sl = sizeof sa.sin6;
-				memcpy(&ns[nns].sin6.sin6_addr, iplit.addr, 16);
-				ns[nns].sin6.sin6_port = htons(53);
-				ns[nns].sin6.sin6_scope_id = iplit.scopeid;
-				ns[nns++].sin6.sin6_family = family = AF_INET6;
-			}
+	for (nns=0; nns<conf->nns; nns++) {
+		const struct address *iplit = &conf->ns[nns];
+		if (iplit->family == AF_INET) {
+			memcpy(&ns[nns].sin.sin_addr, iplit->addr, 4);
+			ns[nns].sin.sin_port = htons(53);
+			ns[nns].sin.sin_family = AF_INET;
+		} else {
+			sl = sizeof sa.sin6;
+			memcpy(&ns[nns].sin6.sin6_addr, iplit->addr, 16);
+			ns[nns].sin6.sin6_port = htons(53);
+			ns[nns].sin6.sin6_scope_id = iplit->scopeid;
+			ns[nns].sin6.sin6_family = family = AF_INET6;
 		}
-	}
-	if (f) __fclose_ca(f);
-	if (!nns) {
-		ns[0].sin.sin_family = AF_INET;
-		ns[0].sin.sin_port = htons(53);
-		ns[0].sin.sin_addr.s_addr = htonl(0x7f000001);
-		nns=1;
 	}
 
 	/* Get local address and open/bind a socket */
@@ -109,7 +76,11 @@ int __res_msend(int nqueries, const unsigned char *const *queries,
 		fd = socket(AF_INET, SOCK_DGRAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0);
 		family = AF_INET;
 	}
-	if (fd < 0 || bind(fd, (void *)&sa, sl) < 0) return -1;
+	if (fd < 0 || bind(fd, (void *)&sa, sl) < 0) {
+		if (fd >= 0) close(fd);
+		pthread_setcancelstate(cs, 0);
+		return -1;
+	}
 
 	/* Past this point, there are no errors. Each individual query will
 	 * yield either no reply (indicated by zero length) or an answer
@@ -206,4 +177,12 @@ out:
 	pthread_cleanup_pop(1);
 
 	return 0;
+}
+
+int __res_msend(int nqueries, const unsigned char *const *queries,
+	const int *qlens, unsigned char *const *answers, int *alens, int asize)
+{
+	struct resolvconf conf;
+	if (__get_resolv_conf(&conf, 0, 0) < 0) return -1;
+	return __res_msend_rc(nqueries, queries, qlens, answers, alens, asize, &conf);
 }

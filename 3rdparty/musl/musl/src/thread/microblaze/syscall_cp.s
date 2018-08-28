@@ -11,7 +11,7 @@
 __syscall_cp_asm:
 __cp_begin:
 	lwi     r5, r5, 0
-	bnei    r5, __cancel
+	bnei    r5, __cp_cancel
 	addi    r12, r6, 0
 	add     r5, r7, r0
 	add     r6, r8, r0
@@ -23,3 +23,5 @@ __cp_begin:
 __cp_end:
 	rtsd    r15, 8
 	nop
+__cp_cancel:
+	bri     __cancel

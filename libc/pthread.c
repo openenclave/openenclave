@@ -6,10 +6,18 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/thread.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <pthread.h>
+#include "../enclave/core/td.h"
+#include "locale_impl.h"
+#include "pthread_impl.h"
 
 #ifdef pthread_equal
 #undef pthread_equal
+#endif
+
+#ifdef pthread
+#undef pthread
 #endif
 
 OE_STATIC_ASSERT(sizeof(pthread_once_t) == sizeof(oe_once_t));
@@ -49,14 +57,43 @@ OE_INLINE int _ToErrno(oe_result_t result)
 **==============================================================================
 */
 
-pthread_t pthread_self()
+OE_STATIC_ASSERT(sizeof(struct __pthread) <= sizeof(((TD*)NULL)->pthread));
+OE_STATIC_ASSERT(sizeof(pthread_mutex_t) >= sizeof(oe_mutex_t));
+OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(oe_cond_t));
+
+static void _pthread_self_init()
 {
-    return (pthread_t)oe_thread_self();
+    TD* td = TD_Get();
+
+    if (td)
+    {
+        struct __pthread* self = (struct __pthread*)td->pthread;
+        oe_memset(self, 0, sizeof(struct __pthread));
+        self->locale = C_LOCALE;
+    }
 }
+
+pthread_t __pthread_self()
+{
+    static oe_once_t _once = OE_ONCE_INITIALIZER;
+    TD* td;
+
+    if (oe_once(&_once, _pthread_self_init) != 0)
+        return NULL;
+
+    if (!(td = TD_Get()))
+        return NULL;
+
+    struct __pthread* self = (struct __pthread*)td->pthread;
+
+    return self;
+}
+
+OE_WEAK_ALIAS(__pthread_self, pthread_self);
 
 int pthread_equal(pthread_t thread1, pthread_t thread2)
 {
-    return (int)oe_thread_equal((oe_thread_t)thread1, (oe_thread_t)thread2);
+    return thread1 == thread2;
 }
 
 int pthread_create(

@@ -1,3 +1,4 @@
+.syntax unified
 .text
 .global __clone
 .type   __clone,%function
@@ -15,8 +16,6 @@ __clone:
 	tst r0,r0
 	beq 1f
 	ldmfd sp!,{r4,r5,r6,r7}
-	tst lr,#1
-	moveq pc,lr
 	bx lr
 
 1:	mov r0,r6

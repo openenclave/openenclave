@@ -1,41 +1,51 @@
 #include "stdio_impl.h"
+#include "locale_impl.h"
 #include <wchar.h>
 #include <errno.h>
 
-wint_t __fgetwc_unlocked(FILE *f)
+static wint_t __fgetwc_unlocked_internal(FILE *f)
 {
-	mbstate_t st = { 0 };
 	wchar_t wc;
 	int c;
-	unsigned char b;
 	size_t l;
-
-	f->mode |= f->mode+1;
 
 	/* Convert character from buffer if possible */
 	if (f->rpos < f->rend) {
-		l = mbrtowc(&wc, (void *)f->rpos, f->rend - f->rpos, &st);
-		if (l+2 >= 2) {
+		l = mbtowc(&wc, (void *)f->rpos, f->rend - f->rpos);
+		if (l+1 >= 1) {
 			f->rpos += l + !l; /* l==0 means 1 byte, null */
 			return wc;
 		}
-		if (l == -1) {
-			f->rpos++;
-			return WEOF;
-		}
-	} else l = -2;
+	}
 
 	/* Convert character byte-by-byte */
-	while (l == -2) {
+	mbstate_t st = { 0 };
+	unsigned char b;
+	int first = 1;
+	do {
 		b = c = getc_unlocked(f);
 		if (c < 0) {
-			if (!mbsinit(&st)) errno = EILSEQ;
+			if (!first) errno = EILSEQ;
 			return WEOF;
 		}
 		l = mbrtowc(&wc, (void *)&b, 1, &st);
-		if (l == -1) return WEOF;
-	}
+		if (l == -1) {
+			if (!first) ungetc(b, f);
+			return WEOF;
+		}
+		first = 0;
+	} while (l == -2);
 
+	return wc;
+}
+
+wint_t __fgetwc_unlocked(FILE *f)
+{
+	locale_t *ploc = &CURRENT_LOCALE, loc = *ploc;
+	if (f->mode <= 0) fwide(f, 1);
+	*ploc = f->locale;
+	wchar_t wc = __fgetwc_unlocked_internal(f);
+	*ploc = loc;
 	return wc;
 }
 

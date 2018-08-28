@@ -23,8 +23,7 @@ typedef struct {
 	unsigned vscr;
 } vrregset_t;
 
-struct sigcontext
-{
+struct sigcontext {
 	unsigned long _unused[4];
 	int signal;
 	unsigned long handler;

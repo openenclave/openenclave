@@ -11,6 +11,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
+#include "libctime.h"
 
 // This definition is replicated from "musl/src/time/__tz.c" as this file has
 // some dependencies on other functions which are not developed for the enclave
@@ -22,7 +23,7 @@ static const uint64_t _SEC_TO_MSEC = 1000UL;
 static const uint64_t _MSEC_TO_USEC = 1000UL;
 static const uint64_t _MSEC_TO_NSEC = 1000000UL;
 
-time_t time(time_t* tloc)
+time_t oe_time(time_t* tloc)
 {
     uint64_t msec;
 
@@ -32,7 +33,7 @@ time_t time(time_t* tloc)
     return (time_t)(msec / _SEC_TO_MSEC);
 }
 
-int gettimeofday(struct timeval* tv, void* tz)
+int oe_gettimeofday(struct timeval* tv, void* tz)
 {
     int ret = -1;
     uint64_t msec;
@@ -58,7 +59,7 @@ done:
     return ret;
 }
 
-int clock_gettime(clockid_t clk_id, struct timespec* tp)
+int oe_clock_gettime(clockid_t clk_id, struct timespec* tp)
 {
     int ret = -1;
     uint64_t msec;
@@ -86,7 +87,7 @@ done:
     return ret;
 }
 
-int nanosleep(const struct timespec* req, struct timespec* rem)
+int oe_nanosleep(const struct timespec* req, struct timespec* rem)
 {
     size_t ret = -1;
     uint64_t milliseconds = 0;
@@ -104,26 +105,7 @@ int nanosleep(const struct timespec* req, struct timespec* rem)
     /* Perform OCALL */
     ret = oe_sleep(milliseconds);
 
-/* ATTN: handle remainders */
-
 done:
 
     return ret;
-}
-
-size_t strftime(char* s, size_t max, const char* format, const struct tm* tm)
-{
-    oe_assert("strftime(): panic" == NULL);
-    return 0;
-}
-
-size_t strftime_l(
-    char* s,
-    size_t max,
-    const char* format,
-    const struct tm* tm,
-    locale_t loc)
-{
-    oe_assert("strftime_l(): panic" == NULL);
-    return 0;
 }

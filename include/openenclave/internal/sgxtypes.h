@@ -584,8 +584,13 @@ typedef struct _TD
     /* Linux error number: from <errno.h> */
     int linux_errno;
 
+    // The pthread implementation structure is overlaid here. This is only
+    // used by oelibc to implement the pthread functions (see libc/pthread.c
+    // for details).
+    uint64_t pthread[64];
+
     /* Reserved */
-    uint8_t reserved[3836];
+    uint8_t reserved[3324];
 } TD;
 OE_PACK_END
 

@@ -124,6 +124,12 @@ struct prctl_mm_map {
 #define PR_FP_MODE_FR (1 << 0)
 #define PR_FP_MODE_FRE (1 << 1)
 
+#define PR_CAP_AMBIENT          47
+#define PR_CAP_AMBIENT_IS_SET   1
+#define PR_CAP_AMBIENT_RAISE    2
+#define PR_CAP_AMBIENT_LOWER    3
+#define PR_CAP_AMBIENT_CLEAR_ALL 4
+
 int prctl (int, ...);
 
 #ifdef __cplusplus

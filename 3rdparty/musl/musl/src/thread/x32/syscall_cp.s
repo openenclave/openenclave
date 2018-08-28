@@ -14,7 +14,7 @@ __syscall_cp_internal:
 __cp_begin:
 	mov (%rdi),%eax
 	test %eax,%eax
-	jnz __cancel
+	jnz __cp_cancel
 	mov %rdi,%r11
 	mov %rsi,%rax
 	mov %rdx,%rdi
@@ -27,3 +27,5 @@ __cp_begin:
 	syscall
 __cp_end:
 	ret
+__cp_cancel:
+	jmp __cancel
