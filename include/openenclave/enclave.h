@@ -118,7 +118,9 @@ oe_result_t oe_call_host(const char* func, void* args);
  * @return OE_INVALID_PARAMETER a parameter is invalid.
  * @return OE_FAILURE the call failed.
  */
-oe_result_t oe_call_host_by_address(void (*func)(void*), void* args);
+oe_result_t oe_call_host_by_address(
+    void (*func)(void*, oe_enclave_t*),
+    void* args);
 
 /**
  * Check whether the given buffer is strictly within the enclave.
@@ -423,6 +425,18 @@ oe_result_t oe_get_seal_key(
     uint32_t keyInfoSize,
     uint8_t* keyBuffer,
     uint32_t* keyBufferSize);
+
+/**
+ * Obtains the enclave handle.
+ *
+ * This function returns the enclave handle for the current enclave. The
+ * host obtains this handle by calling **oe_create_enclave()**, which
+ * passes the enclave handle to the enclave during initialization. The
+ * handle is an address inside the host address space.
+ *
+ * @returns the enclave handle.
+ */
+oe_enclave_t* oe_get_enclave(void);
 
 OE_EXTERNC_END
 

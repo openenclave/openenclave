@@ -2,9 +2,7 @@
 // Licensed under the MIT License.
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcertextensions.h>
 #include <openenclave/internal/trace.h>

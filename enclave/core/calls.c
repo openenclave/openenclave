@@ -147,6 +147,24 @@ static oe_result_t _HandleInitEnclave(uint64_t argIn)
 
         if (_once == false)
         {
+            /* Set the global enclave handle */
+            if (argIn)
+            {
+                oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)argIn;
+                oe_init_enclave_args_t safe_args;
+
+                if (!oe_is_outside_enclave(args, sizeof(*args)))
+                    OE_THROW(OE_INVALID_PARAMETER);
+
+                /* Copy structure into enclave memory */
+                safe_args = *args;
+
+                if (!oe_is_outside_enclave(safe_args.enclave, 1))
+                    OE_THROW(OE_INVALID_PARAMETER);
+
+                oe_enclave = safe_args.enclave;
+            }
+
             /* Call all enclave state initialization functions */
             oe_initialize_cpuid(argIn);
 
@@ -504,7 +522,9 @@ OE_CATCH:
 **==============================================================================
 */
 
-oe_result_t oe_call_host_by_address(void (*func)(void*), void* argsIn)
+oe_result_t oe_call_host_by_address(
+    void (*func)(void*, oe_enclave_t*),
+    void* argsIn)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_by_address_args_t* args = NULL;
@@ -688,7 +708,9 @@ void __oe_handle_main(
         }
     }
 
-    /* Initialize the enclave the first time it is ever entered */
+    // Initialize the enclave the first time it is ever entered. Note that
+    // this function DOES NOT call global constructors. Global construction
+    // is performed while handling OE_ECALL_INIT_ENCLAVE.
     oe_initialize_enclave();
 
     /* Get pointer to the thread data structure */

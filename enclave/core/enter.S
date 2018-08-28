@@ -52,16 +52,26 @@ oe_enter:
 
 .determine_entry_type:
     // Check if this is exception dispatching request.
+    // exception-dispatching-request-check
     cmp $0, %rax
     jne .exception_entry
+    
+    // Stop speculative execution at fallthrough of conditional
+    // exception-dispatching-request-check.
+    lfence
 
     // Check whether this is a clean entry or a nested entry
+    // clean-entry-check.
     mov %gs:TD_depth, %r8
     cmp $0, %r8
     je .clean_entry
     jmp .nested_entry
 
 .exception_entry:
+    // Stop speculative execution at target of conditional jump
+    // after exception-dispatching-request-check.
+    lfence
+
     // Get the first ssa address from tcs.
     lea OE_SSA_FROM_TCS_BYTE_OFFSET(%rbx), %r10
 
@@ -84,6 +94,9 @@ oe_enter:
     jmp .call_function
 
 .nested_entry:
+    // Stop speculative execution at fallthrough of conditional
+    // clean-entry-check.
+    lfence
 
     // Restore stack pointer and enclave registers:
     mov %gs:TD_last_sp, %rsp
@@ -96,6 +109,9 @@ oe_enter:
     jmp .call_function
 
 .clean_entry:
+    // Stop speculative execution at target of conditional jump
+    // after clean-entry-check.
+    lfence
 
     // Calculate stack base relative to TCS (subtract guard page size)
     mov %rbx, %rsp
@@ -152,11 +168,15 @@ oe_enter:
 .determine_exit_type:
 
     // Check the depth of the ECALL stack (zero for clean exit)
+    // exit-type-check.
     mov %gs:TD_depth, %r8
     cmp $0, %r8
     je .clean_exit
 
 .nested_exit:
+    // Stop speculative execution at fallthrough of conditional
+    // exit-type-check.
+    lfence
 
     // Construct the oe_ocall_context_t(rbp, return address).
     mov (4*OE_WORD_SIZE)(%rsp), %r12
@@ -186,6 +206,9 @@ oe_enter:
     jmp .clear_enclave_registers
 
 .clean_exit:
+    // Stop speculative execution at target of conditional jump 
+    // after exit-type-check.
+    lfence
 
     // Clear the TD.last_sp field (force oe_enter to calculate stack pointer)
     movq $0, %gs:TD_last_sp
@@ -205,11 +228,15 @@ oe_enter:
 .execute_eexit:
 
     // Check TD.simulate flag
+    // simulation-flag-check.
     mov %gs:TD_simulate, %rax
     cmp $0, %rax
     jz .execute_eexit_instruction
 
 .execute_eexit_sim:
+    // Stop speculative execution at fallthrough of conditional
+    // simulate-flag-check.
+    lfence
 
     // Jump to return address:
     mov $1, %rax
@@ -217,6 +244,9 @@ oe_enter:
     ud2
 
 .execute_eexit_instruction:
+    // Stop speculative execution at target of conditional jump
+    // simulate-flag-check.
+    lfence
 
     // EEXIT(RAX=EEXIT, RBX=RETADDR, RCX=AEP, RDI=ARG1, RSI=ARG2)
     //mov %rcx, %rbx

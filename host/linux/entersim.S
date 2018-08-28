@@ -139,8 +139,13 @@ oe_enter_sim:
     mov RSP, %rsp
 
     // If this was not an OCALL, then return from ECALL.
+    // ecall-return-check.
     cmp $0, %rax
     jne .return_from_ecall_sim
+
+    // Stop speculative execution at fallthrough of conditional
+    // ecall-return-check.
+    lfence
 
     // (RDI=TCS, RDX=ARG1, RCX=ARG2)
     mov ARG1OUT, %rax
@@ -150,7 +155,10 @@ oe_enter_sim:
     jmp .call_start
 
 .return_from_ecall_sim:
-
+    // Stop speculative execution at target of conditional jump
+    // ecall-return-check.
+    lfence
+    
     // Set output parameters:
     mov ARG1OUT, %rax
     mov %rax, (%r8) /* arg3 */

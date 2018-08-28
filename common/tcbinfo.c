@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include "tcbinfo.h"
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/trace.h>
 #include "common.h"

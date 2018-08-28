@@ -5,7 +5,6 @@
 #define _OE_INTERNAL_PROPERTIES_H
 
 #include <openenclave/bits/properties.h>
-#include <openenclave/internal/enclavelibc.h>
 
 OE_INLINE bool oe_sgx_is_valid_product_id(uint16_t x)
 {
