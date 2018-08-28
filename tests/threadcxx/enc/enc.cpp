@@ -12,7 +12,7 @@
 #include <condition_variable>
 #include "../args.h"
 
-static std::mutex mtx; //mutex1 = OE_MUTEX_INITIALIZER;
+static std::mutex mtx; //mutex1 = OE_MUTEX_INITIALIZER; //TODO - Do we need this?
 static std::mutex mutex1; //mutex1 = OE_MUTEX_INITIALIZER;
 static std::mutex mutex2; //mutex1 = OE_MUTEX_INITIALIZER;
 
@@ -143,4 +143,131 @@ OE_ECALL void WaitCxx(void* args_)
 OE_ECALL void SignalCxx()
 {
     cond.notify_all();
+}
+
+static unsigned int nthreads = 0;
+static std::mutex ex_mutex;
+static std::condition_variable_any exclusive;
+
+OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
+{
+    ex_mutex.lock();
+
+    // Wait for other threads to finish
+    while (nthreads > 0)
+    {
+        // Release mutex and wait for owning thread to finish
+	std::cout << " " << std::this_thread::get_id();
+        oe_host_printf(" Waiting for exclusive access\n");
+	//TODO - AGAG            "%llu: Waiting for exclusive access\n", OE_LLU(oe_thread_self()));
+	exclusive.wait(ex_mutex);
+    }
+
+    std::cout << " " << std::this_thread::get_id();
+    oe_host_printf(" Obtained exclusive access\n");
+    //TODO - AGAG    "%llu: Obtained exclusive access\n", OE_LLU(oe_thread_self()));
+    nthreads = 1;
+    ex_mutex.unlock();
+}
+
+OE_ECALL void RelinquishExclusiveAccess(void* args_)
+{
+    ex_mutex.lock();
+
+    // Mark thread as done
+    nthreads = 0;
+
+    // Signal waiting threads
+    std::cout << " " << std::this_thread::get_id();
+    oe_host_printf(" Signalling waiting threads\n");
+    //TODO - AGAG    "%llu: Signalling waiting threads\n", OE_LLU(oe_thread_self()));
+    exclusive.notify_all();
+
+    std::cout << " " << std::this_thread::get_id();
+    oe_host_printf(" Relinquished exclusive access\n");
+    //TDO - AGAG    "%llu: Relinquished exlusive access\n", OE_LLU(oe_thread_self()));
+    ex_mutex.unlock();
+}
+
+static std::mutex  mutex_a;
+static std::mutex  mutex_b;
+static std::mutex  mutex_c;
+
+static std::thread::id a_owner;
+static std::thread::id b_owner;
+static std::thread::id c_owner;
+
+static int a_locks = 0;
+static int b_locks = 0;
+static int c_locks = 0;
+
+// Lock the specified mutexes in given order
+// and unlock them in reverse order.
+OE_ECALL void LockAndUnlockMutexesCxx(void* arg)
+{
+    // Spinlock is used to modify the  _locked variables.
+  static std::atomic_flag _lock = ATOMIC_FLAG_INIT;
+
+    char* mutexes = (char*)arg;
+    const char m = mutexes[0];
+
+    std::mutex* mutex; 
+    int* locks = nullptr;
+    std::thread::id* owner = nullptr;
+
+    if (m == 'A')
+    {
+        mutex = &mutex_a;
+        owner = &a_owner;
+        locks = &a_locks;
+    }
+    else if (m == 'B')
+    {
+        mutex = &mutex_b;
+        owner = &b_owner;
+        locks = &b_locks;
+    }
+    else if (m == 'C')
+    {
+        mutex = &mutex_c;
+        owner = &c_owner;
+        locks = &c_locks;
+    }
+
+    if (mutex != nullptr)
+    {
+        // Lock mutex
+        (*mutex).lock();
+        {
+            // Test constraints
+	    SpinLockAtomic(&_lock);
+
+            // Recursive lock
+            if (*locks > 0)
+	      OE_TEST(*owner == std::this_thread::get_id());
+            /* else
+	       OE_TEST(*owner == nullptr); TODO - AGAG - Do we support this? */
+
+            *owner = std::this_thread::get_id();
+            ++*locks;
+
+            SpinUnlockAtomic(&_lock);
+        }
+
+        // Lock next specified mutex.
+        LockAndUnlockMutexesCxx(mutexes + 1);
+
+        {
+            // Test constraints
+            SpinLockAtomic(&_lock);
+
+            OE_TEST(*owner == std::this_thread::get_id());
+            if (--*locks == 0)
+                owner = nullptr;
+
+            SpinUnlockAtomic(&_lock);
+        }
+
+        (*mutex).unlock();
+    }
 }

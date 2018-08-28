@@ -110,6 +110,127 @@ void TestCondBroadcastCxx(oe_enclave_t* enclave)
     printf("TestCondBroadcastCxx Complete\n");
 }
 
+void* ExclusiveAccessThreadCxx(void* args)
+{
+    const size_t ITERS = 2;
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
+
+    printf("Thread Starting\n");
+    for (size_t i = 0; i < ITERS; i++)
+    {
+        OE_TEST(
+            oe_call_enclave(enclave, "WaitForExclusiveAccessCxx", NULL) == OE_OK);
+        std::this_thread::sleep_for(std::chrono::microseconds(60 * 1000));
+
+        OE_TEST(
+            oe_call_enclave(enclave, "RelinquishExclusiveAccessCxx", NULL) ==
+            OE_OK);
+        std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
+    }
+    printf("Thread Ending\n");
+    return NULL;
+}
+
+void TestThreadWakeWaitCxx(oe_enclave_t* enclave)
+{
+    std::thread threads[NUM_THREADS];
+
+    printf("TestThreadWakeWaitCxx Starting\n");
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        threads[i] = std::thread(ExclusiveAccessThreadCxx, enclave);
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        threads[i].join();
+
+    // The oe_calls in this test should succeed without any segv/double free.
+    printf("TestThreadWakeWaitCxx Complete\n");
+}
+
+void* LockAndUnlockThread1Cxx(void* args)
+{
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
+
+    const size_t ITERS = 20000;
+
+    for (size_t i = 0; i < ITERS; ++i)
+    {
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABC") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"AB") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"AC") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"BC") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABBC") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABAB") ==
+            OE_OK);
+    }
+
+    return NULL;
+}
+
+void* LockAndUnlockThread2Cxx(void* args)
+{
+    oe_enclave_t* enclave = (oe_enclave_t*)args;
+
+    const size_t ITERS = 20000;
+
+    for (size_t i = 0; i < ITERS; ++i)
+    {
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"BC") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABC") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"BBCC") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"BBC") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABAB") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABAC") ==
+            OE_OK);
+        OE_TEST(
+            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABAB") ==
+            OE_OK);
+    }
+
+    return NULL;
+}
+
+// Launch multiple threads and try out various locking patterns on 3 mutexes.
+// The locking patterns are chosen to not deadlock.
+void TestThreadLockingPatternsCxx(oe_enclave_t* enclave)
+{
+    std::thread threads[NUM_THREADS];
+
+    printf("TestThreadLockingPatternsCxx Starting\n");
+    for (size_t i = 0; i < NUM_THREADS; i++)
+    {
+        threads[i] = std::thread(
+            (i & 1) ? LockAndUnlockThread2Cxx : LockAndUnlockThread1Cxx, enclave);
+    }
+
+    for (size_t i = 0; i < NUM_THREADS; i++)
+        threads[i].join();
+
+    // The oe_calls in this test should succeed without any OE_TEST() failures.
+    printf("TestThreadLockingPatternsCxx Complete\n");
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -134,6 +255,12 @@ int main(int argc, const char* argv[])
     TestCondCxx(enclave);
 
     TestCondBroadcastCxx(enclave);
+
+    TestThreadWakeWaitCxx(enclave);
+
+    TestThreadLockingPatternsCxx(enclave); 
+
+    //    TestReadersWriterLockCxx(enclave);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {
