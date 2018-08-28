@@ -7,9 +7,7 @@
 #include <openenclave/internal/crl.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
