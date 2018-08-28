@@ -1,0 +1,5 @@
+T(RN,      -0x1.02239f3c6a8f13dep+3L,        0x1.22484b9ef31efd4p+2L,       0x1.52fb12ef638a1222p-1L,      -0x1.1f69545c32efeea8p+5L,   0x1.f2223cp-2, INEXACT)
+T(RN,       0x1.161868e18bc67782p+2L,      -0x1.1c6a6cdce75e83acp+3L,       0x1.ab3ff8575b21cf92p-5L,      -0x1.348be0b9d32d3fbep+5L,  -0x1.f35e54p-2, INEXACT)
+T(RN,      -0x1.0c34b3e01e6e682cp+3L,      -0x1.61bde29e83f6cb16p+1L,       0x1.eb4a2e7ce06930dap+2L,       0x1.ed6e27fca81b6804p+4L,   0x1.2d3bc8p-3, INEXACT)
+T(RN,      -0x1.a206f0a19dcc3948p+2L,        0x1.24527f7b576abb6p+2L,      -0x1.95882b433fad2dd4p-1L,      -0x1.ea02e2365f3355bcp+4L,   0x1.3d0c8cp-2, INEXACT)
+T(RN,       0x1.288bbb0d6a1e5bdap+3L,        0x1.33edd910a3c00b7p+2L,      -0x1.1e159e36313ee67cp-1L,       0x1.603abfa620e22898p+5L,   0x1.114048p-2, INEXACT)

@@ -1,0 +1,12 @@
+T(RN,                        0x0p+0L,                        0x0p+0L,          0x0p+0,           0, 0)
+T(RN,                       -0x0p+0L,                       -0x0p+0L,          0x0p+0,           0, 0)
+T(RN,                        0x1p-1L,                        0x1p-1L,          0x0p+0,           0, 0)
+T(RN,                       -0x1p-1L,                       -0x1p-1L,          0x0p+0,           0, 0)
+T(RN,                        0x1p+0L,                        0x1p-1L,          0x0p+0,           1, 0)
+T(RN,                       -0x1p+0L,                       -0x1p-1L,          0x0p+0,           1, 0)
+T(RN,                        0x1p+1L,                        0x1p-1L,          0x0p+0,           2, 0)
+T(RN,                       -0x1p+1L,                       -0x1p-1L,          0x0p+0,           2, 0)
+// TODO: exp is unspecified
+T(RN,                            inf,                            inf,          0x0p+0,           0, 0)
+T(RN,                           -inf,                           -inf,          0x0p+0,           0, 0)
+T(RN,                            nan,                            nan,          0x0p+0,           0, 0)

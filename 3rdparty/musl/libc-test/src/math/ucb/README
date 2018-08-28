@@ -1,0 +1,7 @@
+test vectors from ucbtest/ucblib
+http://www.netlib.org/fp/ucbtest.tgz
+
+format is changed, but original comments are kept
+
+some of the test outputs are changed to be
+correctly rounded and follow c99 annex F.
