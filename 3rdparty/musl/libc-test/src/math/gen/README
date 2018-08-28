@@ -1,0 +1,10 @@
+tools for generating testcases and checking ulp error of math functions
+(needs cleanup)
+
+gen: math functions implemented with mpfr
+mgen: math functions from libm
+check: compare input to libm and report errors
+
+check asinh in the [0.125,0.5] domain over 100k points and report >1.5ulp errors:
+
+./rnd -a 0x1p-3 -b 0x1p-1 -n 100000 |./gen asinh |./check asinh 1.5
