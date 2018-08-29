@@ -12,9 +12,9 @@
  */
 bool GenerateQuote(
     const uint8_t* data,
-    uint32_t dataSize,
+    size_t dataSize,
     uint8_t* quoteBuffer,
-    uint32_t* quoteBufferSize);
+    size_t* quoteBufferSize);
 
 /**
  * Attest the given quote and accompanying data. The quote is first attested
@@ -26,8 +26,8 @@ bool GenerateQuote(
  */
 bool AttestQuote(
     const uint8_t* quote,
-    uint32_t quoteSize,
+    size_t quoteSize,
     const uint8_t* data,
-    uint32_t dataSize);
+    size_t dataSize);
 
 #endif // OE_SAMPLES_ATTESTATION_ENC_ATTESTATION_H

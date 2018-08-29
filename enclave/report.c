@@ -45,7 +45,7 @@ done:
 // of in oecore. Also see ECall_HandleVerifyReport below.
 oe_result_t oe_verify_report(
     const uint8_t* report,
-    uint32_t reportSize,
+    size_t reportSize,
     oe_report_t* parsedReport)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -54,7 +54,7 @@ oe_result_t oe_verify_report(
 
     sgx_report_t* sgxReport = NULL;
 
-    const uint32_t aesCMACLength = sizeof(sgxKey);
+    const size_t aesCMACLength = sizeof(sgxKey);
     OE_AESCMAC reportAESCMAC = {{0}};
     OE_AESCMAC computedAESCMAC = {{0}};
 

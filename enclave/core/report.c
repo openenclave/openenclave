@@ -16,13 +16,13 @@ OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 OE_STATIC_ASSERT(sizeof(oe_identity_t) == 96);
 
-OE_STATIC_ASSERT(sizeof(oe_report_t) == 128);
+OE_STATIC_ASSERT(sizeof(oe_report_t) == 144);
 
 static oe_result_t _sgx_create_report(
     const void* report_data,
-    uint32_t report_data_size,
+    size_t report_data_size,
     const void* targetInfo,
-    uint32_t targetInfoSize,
+    size_t targetInfoSize,
     sgx_report_t* report)
 {
     oe_result_t result = OE_UNEXPECTED;
@@ -70,11 +70,11 @@ done:
 
 static oe_result_t _oe_get_sgx_report(
     const void* report_data,
-    uint32_t report_data_size,
+    size_t report_data_size,
     const void* optParams,
-    uint32_t optParamsSize,
+    size_t optParamsSize,
     void* reportBuffer,
-    uint32_t* reportBufferSize)
+    size_t* reportBufferSize)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -146,10 +146,10 @@ done:
 static oe_result_t _oe_get_quote(
     const sgx_report_t* sgxReport,
     uint8_t* quote,
-    uint32_t* quoteSize)
+    size_t* quoteSize)
 {
     oe_result_t result = OE_UNEXPECTED;
-    uint32_t argSize = sizeof(oe_get_qetarget_info_args_t);
+    size_t argSize = sizeof(oe_get_qetarget_info_args_t);
 
     // If quote buffer is NULL, then ignore passed in quoteSize value.
     // This treats scenarios where quote == NULL and *quoteSize == large-value
@@ -189,16 +189,16 @@ done:
 
 oe_result_t _oe_get_remote_report(
     const uint8_t* report_data,
-    uint32_t report_data_size,
+    size_t report_data_size,
     const void* optParams,
-    uint32_t optParamsSize,
+    size_t optParamsSize,
     uint8_t* reportBuffer,
-    uint32_t* reportBufferSize)
+    size_t* reportBufferSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_target_info_t sgxTargetInfo = {{0}};
     sgx_report_t sgxReport = {{{0}}};
-    uint32_t sgxReportSize = sizeof(sgxReport);
+    size_t sgxReportSize = sizeof(sgxReport);
     oe_report_t parsedReport;
 
     // For remote attestation, the Quoting Enclave's target info is used.
@@ -255,11 +255,11 @@ done:
 oe_result_t oe_get_report(
     uint32_t flags,
     const uint8_t* report_data,
-    uint32_t report_data_size,
+    size_t report_data_size,
     const void* optParams,
-    uint32_t optParamsSize,
+    size_t optParamsSize,
     uint8_t* reportBuffer,
-    uint32_t* reportBufferSize)
+    size_t* reportBufferSize)
 {
     if (flags & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
     {

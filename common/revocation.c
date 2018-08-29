@@ -52,7 +52,7 @@ static oe_result_t _parse_sgx_extensions(
     oe_result_t result = OE_FAILURE;
 
     // The size of buffer required to parse extensions is not known beforehand.
-    uint32_t buffer_size = 1024;
+    size_t buffer_size = 1024;
     uint8_t* buffer = NULL;
 
     buffer = (uint8_t*)malloc(buffer_size);
@@ -91,11 +91,11 @@ typedef struct _url
 static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
 {
     oe_result_t result = OE_FAILURE;
-    uint64_t buffer_size = 512;
+    size_t buffer_size = 512;
     uint8_t* buffer = malloc(buffer_size);
     const char** urls = NULL;
     uint64_t num_urls = 0;
-    uint32_t url_length = 0;
+    size_t url_length = 0;
 
     if (buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
