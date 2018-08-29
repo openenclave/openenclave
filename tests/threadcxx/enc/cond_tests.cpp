@@ -5,12 +5,12 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
+#include <thread>
 #include "../args.h"
 
-static std::mutex mutex; 
+static std::mutex mutex;
 static std::condition_variable_any cond;
 
 // Number of waiting threads.
@@ -54,7 +54,7 @@ OE_ECALL void CBTestSignalThreadImplCxx(void* args)
 
     for (size_t i = 0; i < ITERS; ++i)
     {
-      mutex.lock();
+        mutex.lock();
 
         // No thread should wake up until broadcast.
         OE_TEST(num_woken == 0);
@@ -65,18 +65,17 @@ OE_ECALL void CBTestSignalThreadImplCxx(void* args)
         // threads. This is by design to allow for testing these various
         // scenarios in a rapid manner.
         int num_expected = num_waiting;
-	cond.notify_all();
-				     
+        cond.notify_all();
 
-	mutex.unlock();
-	
+        mutex.unlock();
+
         // There is no guarantee whether the woken up threads
         // are scheduled for execution immediately.
         // Therefore, wait until expected number of threads are woken up.
         bool done = false;
         while (!done)
         {
-	    mutex.lock();
+            mutex.lock();
 
             // No more than desired number of threads should be woken up.
             OE_TEST(num_woken <= num_expected);
@@ -88,7 +87,7 @@ OE_ECALL void CBTestSignalThreadImplCxx(void* args)
                 done = true;
             }
 
-	    mutex.unlock();
+            mutex.unlock();
         }
     }
 

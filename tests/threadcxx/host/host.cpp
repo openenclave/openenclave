@@ -5,12 +5,12 @@
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
 #include <cassert>
+#include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <thread>
 #include <mutex>
-#include <condition_variable>
+#include <thread>
 #include "../args.h"
 
 static TestMutexCxxArgs _args;
@@ -34,12 +34,12 @@ void TestMutexCxx(oe_enclave_t* enclave)
     _args.ID = 0;
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
-      threads[i] = std::thread(Thread, enclave);
+        threads[i] = std::thread(Thread, enclave);
     }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
-       threads[i].join();
-  
+        threads[i].join();
+
     OE_TEST(_args.count == NUM_THREADS);
 }
 
@@ -74,7 +74,8 @@ void* CBTestWaiterThreadCxx(void* args)
 {
     oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    OE_TEST(oe_call_enclave(enclave, "CBTestWaiterThreadImplCxx", NULL) == OE_OK);
+    OE_TEST(
+        oe_call_enclave(enclave, "CBTestWaiterThreadImplCxx", NULL) == OE_OK);
 
     return NULL;
 }
@@ -83,7 +84,8 @@ void* CBTestSignalThreadCxx(void* args)
 {
     oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    OE_TEST(oe_call_enclave(enclave, "CBTestSignalThreadImplCxx", NULL) == OE_OK);
+    OE_TEST(
+        oe_call_enclave(enclave, "CBTestSignalThreadImplCxx", NULL) == OE_OK);
 
     return NULL;
 }
@@ -119,7 +121,8 @@ void* ExclusiveAccessThreadCxx(void* args)
     for (size_t i = 0; i < ITERS; i++)
     {
         OE_TEST(
-            oe_call_enclave(enclave, "WaitForExclusiveAccessCxx", NULL) == OE_OK);
+            oe_call_enclave(enclave, "WaitForExclusiveAccessCxx", NULL) ==
+            OE_OK);
         std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
 
         OE_TEST(
@@ -167,11 +170,11 @@ void* LockAndUnlockThread1Cxx(void* args)
             oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"BC") ==
             OE_OK);
         OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABBC") ==
-            OE_OK);
+            oe_call_enclave(
+                enclave, "LockAndUnlockMutexesCxx", (void*)"ABBC") == OE_OK);
         OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABAB") ==
-            OE_OK);
+            oe_call_enclave(
+                enclave, "LockAndUnlockMutexesCxx", (void*)"ABAB") == OE_OK);
     }
 
     return NULL;
@@ -192,20 +195,20 @@ void* LockAndUnlockThread2Cxx(void* args)
             oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABC") ==
             OE_OK);
         OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"BBCC") ==
-            OE_OK);
+            oe_call_enclave(
+                enclave, "LockAndUnlockMutexesCxx", (void*)"BBCC") == OE_OK);
         OE_TEST(
             oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"BBC") ==
             OE_OK);
         OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABAB") ==
-            OE_OK);
+            oe_call_enclave(
+                enclave, "LockAndUnlockMutexesCxx", (void*)"ABAB") == OE_OK);
         OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABAC") ==
-            OE_OK);
+            oe_call_enclave(
+                enclave, "LockAndUnlockMutexesCxx", (void*)"ABAC") == OE_OK);
         OE_TEST(
-            oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABAB") ==
-            OE_OK);
+            oe_call_enclave(
+                enclave, "LockAndUnlockMutexesCxx", (void*)"ABAB") == OE_OK);
     }
 
     return NULL;
@@ -221,7 +224,8 @@ void TestThreadLockingPatternsCxx(oe_enclave_t* enclave)
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
         threads[i] = std::thread(
-            (i & 1) ? LockAndUnlockThread2Cxx : LockAndUnlockThread1Cxx, enclave);
+            (i & 1) ? LockAndUnlockThread2Cxx : LockAndUnlockThread1Cxx,
+            enclave);
     }
 
     for (size_t i = 0; i < NUM_THREADS; i++)
@@ -258,7 +262,7 @@ int main(int argc, const char* argv[])
 
     TestThreadWakeWaitCxx(enclave);
 
-    TestThreadLockingPatternsCxx(enclave); 
+    TestThreadLockingPatternsCxx(enclave);
 
     //    TestReadersWriterLockCxx(enclave);
 
