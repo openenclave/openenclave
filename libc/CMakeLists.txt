@@ -10,7 +10,6 @@ add_library(oelibc STATIC
     arc4random.c
     atexit.c
     dladdr.c
-    libctime.c
     libunwind_stubs.c
     link.c
     locale.c
@@ -21,6 +20,7 @@ add_library(oelibc STATIC
     strerror.c
     syscalls.c
     sysconf.c
+    time.c
     __stack_chk_fail.c
     __printf_chk.c
     __tz.c
