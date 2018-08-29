@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
 
