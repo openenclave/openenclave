@@ -123,12 +123,12 @@ void* ExclusiveAccessThreadCxx(void* args)
         OE_TEST(
             oe_call_enclave(enclave, "WaitForExclusiveAccessCxx", NULL) ==
             OE_OK);
-        std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
+        //std::this_thread::sleep_for(std::chrono::microseconds(30 * 1000));
 
         OE_TEST(
             oe_call_enclave(enclave, "RelinquishExclusiveAccessCxx", NULL) ==
             OE_OK);
-        std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
+        //std::this_thread::sleep_for(std::chrono::microseconds(30 * 1000));
     }
     printf("Thread Ending\n");
     return NULL;
@@ -263,8 +263,6 @@ int main(int argc, const char* argv[])
     TestThreadWakeWaitCxx(enclave);
 
     TestThreadLockingPatternsCxx(enclave);
-
-    //    TestReadersWriterLockCxx(enclave);
 
     if ((result = oe_terminate_enclave(enclave)) != OE_OK)
     {

@@ -5,11 +5,12 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream> //std::cout
+#include <sstream> //std::stringstream
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <mutex>
-#include <sstream> //std::stringstream
 #include <string>
 #include <thread>
 #include "../args.h"
@@ -17,16 +18,6 @@
 static std::mutex mtx;
 static std::mutex mutex1;
 static std::mutex mutex2;
-
-void PrintThreadID()
-{
-    std::stringstream ss;
-    uint64_t threadID;
-
-    ss << std::this_thread::get_id();
-    ss >> threadID;
-    printf("%ld: ", threadID);
-}
 
 // Force parallel invocation of malloc():
 static void _TestParallelMallocs()
@@ -60,43 +51,46 @@ void SpinUnlockAtomic(std::atomic_flag* lock)
 OE_ECALL void TestMutexCxx(void* args_)
 {
     TestMutexCxxArgs* args = (TestMutexCxxArgs*)args_;
+    std::stringstream ss;
 
     mtx.lock();
     args->ID++;
     mtx.lock();
 
+    ss << "TestMutexCxx:" << std::this_thread::get_id() << ": ";
+
     // The output should not come out garbled as each thread is holding the lock
     for (size_t i = 0; i < 10; ++i)
     {
-        printf("%d", (int)args->ID);
+      std::cout << (int)args->ID;
     }
-
+    std::cout << std::endl;
+    
     args->count++;
     mtx.unlock();
     mtx.unlock();
-
-    printf("TestMutexCxx:");
-    PrintThreadID();
 }
 
 static void _TestMutex1Cxx(size_t* count)
 {
+   std::stringstream ss;
+  
     mutex1.lock();
     (*count)++;
     mutex1.unlock();
-
-    printf("TestMutex1Cxx:");
-    PrintThreadID();
+    ss << "TestMutex1Cxx:" << std::this_thread::get_id() << std::endl;
+    std::cout << ss.str();
 }
 
 static void _TestMutex2Cxx(size_t* count)
 {
+    std::stringstream ss;
+  
     mutex2.lock();
     (*count)++;
     mutex2.unlock();
-
-    printf("TestMutex2Cxx:");
-    PrintThreadID();
+    ss << "TestMutex2Cxx:" << std::this_thread::get_id() << std::endl;
+    std::cout << ss.str();
 }
 
 static std::condition_variable_any cond;
@@ -122,6 +116,7 @@ OE_ECALL void WaitCxx(void* args_)
     static size_t _count1 = 0;
     static size_t _count2 = 0;
     WaitCxxArgs* args = (WaitCxxArgs*)args_;
+    std::stringstream ss;
 
     _TestParallelMallocs();
 
@@ -135,16 +130,17 @@ OE_ECALL void WaitCxx(void* args_)
     else
         OE_TEST(0);
 
-    printf("TestMutex2Cxx%zu()\n", n);
+    ss << "TestMutex2Cxx" << n << "()\n";
+    std::cout << ss.str();
 
     /* Wait on the condition variable */
-    printf("Waiting: ");
-    PrintThreadID();
+    ss << "Waiting: " << std::this_thread::get_id() << std::endl;
+    std::cout << ss.str();
 
     cond_mutex.lock();
     cond.wait(cond_mutex);
 
-    oe_host_printf("Done waiting!\n");
+    std::cout << "Done waiting!\n";
 
     cond_mutex.unlock();
 
@@ -164,37 +160,41 @@ static std::condition_variable_any exclusive;
 
 OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 {
+    std::stringstream ss;
+    
     ex_mutex.lock();
 
     // Wait for other threads to finish
     while (nthreads > 0)
     {
         // Release mutex and wait for owning thread to finish
-        PrintThreadID();
-        printf("Waiting for exclusive access\n");
+	ss << std::this_thread::get_id() << ": Waiting for exclusive access\n";
+	std::cout << ss.str();
         exclusive.wait(ex_mutex);
     }
 
-    PrintThreadID();
-    printf("Obtained exclusive access\n");
+    ss << std::this_thread::get_id() << ": Obtained exclusive access\n";
+    std::cout << ss.str();
     nthreads = 1;
     ex_mutex.unlock();
 }
 
 OE_ECALL void RelinquishExclusiveAccessCxx(void* args_)
 {
+    std::stringstream ss;
+  
     ex_mutex.lock();
 
     // Mark thread as done
     nthreads = 0;
 
     // Signal waiting threads
-    PrintThreadID();
-    printf("Signalling waiting threads\n");
+    ss << std::this_thread::get_id() << ": Signalling waiting threads" << std::endl;
+    std::cout << ss.str();
     exclusive.notify_all();
 
-    PrintThreadID();
-    oe_host_printf("Relinquished exclusive access\n");
+    ss << std::this_thread::get_id() << ": Relinquished exclusive access" << std::endl;
+    std::cout << ss.str();
     ex_mutex.unlock();
 }
 
