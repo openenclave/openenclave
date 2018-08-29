@@ -25,6 +25,7 @@ add_library(oelibc STATIC
     __printf_chk.c
     __tz.c
     __vfprintf_chk.c
+
     ${MUSLSRC}/complex/cabs.c
     ${MUSLSRC}/complex/cabsf.c
     ${MUSLSRC}/complex/cabsl.c
@@ -61,9 +62,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/complex/conj.c
     ${MUSLSRC}/complex/conjf.c
     ${MUSLSRC}/complex/conjl.c
-    ${MUSLSRC}/complex/cpow.c
-    ${MUSLSRC}/complex/cpowf.c
-    ${MUSLSRC}/complex/cpowl.c
     ${MUSLSRC}/complex/cproj.c
     ${MUSLSRC}/complex/cprojf.c
     ${MUSLSRC}/complex/cprojl.c
@@ -148,7 +146,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/internal/libc.c
     ${MUSLSRC}/internal/shgetc.c
     ${MUSLSRC}/internal/syscall_ret.c
-    ${MUSLSRC}/internal/vdso.c
     ${MUSLSRC}/legacy/getpagesize.c
     ${MUSLSRC}/locale/bind_textdomain_codeset.c
     ${MUSLSRC}/locale/catclose.c
@@ -220,7 +217,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/expl.c
     ${MUSLSRC}/math/expm1.c
     ${MUSLSRC}/math/expm1f.c
-    ${MUSLSRC}/math/expm1l.c
     ${MUSLSRC}/math/__expo2.c
     ${MUSLSRC}/math/__expo2f.c
     ${MUSLSRC}/math/fabs.c
@@ -406,30 +402,15 @@ add_library(oelibc STATIC
     ${MUSLSRC}/multibyte/wcstombs.c
     ${MUSLSRC}/multibyte/wctob.c
     ${MUSLSRC}/multibyte/wctomb.c
-    ${MUSLSRC}/prng/drand48.c
-    ${MUSLSRC}/prng/lcong48.c
     ${MUSLSRC}/prng/lrand48.c
-    ${MUSLSRC}/prng/mrand48.c
     ${MUSLSRC}/prng/__rand48_step.c
     ${MUSLSRC}/prng/rand.c
-    ${MUSLSRC}/prng/random.c
-    ${MUSLSRC}/prng/rand_r.c
     ${MUSLSRC}/prng/__seed48.c
-    ${MUSLSRC}/prng/seed48.c
-    ${MUSLSRC}/prng/srand48.c
     ${MUSLSRC}/regex/fnmatch.c
-    ${MUSLSRC}/regex/glob.c
-    ${MUSLSRC}/regex/regcomp.c
-    ${MUSLSRC}/regex/regerror.c
-    ${MUSLSRC}/regex/regexec.c
-    ${MUSLSRC}/regex/tre-mem.c
     ${MUSLSRC}/search/hsearch.c
     ${MUSLSRC}/search/insque.c
     ${MUSLSRC}/search/lsearch.c
-    ${MUSLSRC}/search/tdestroy.c
     ${MUSLSRC}/search/tsearch_avl.c
-    ${MUSLSRC}/setjmp/longjmp.c
-    ${MUSLSRC}/setjmp/setjmp.c
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     ${MUSLSRC}/setjmp/x86_64/setjmp.s
     ${MUSLSRC}/stdio/asprintf.c
@@ -491,7 +472,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/stdio/__overflow.c
     ${MUSLSRC}/stdio/pclose.c
     ${MUSLSRC}/stdio/perror.c
-    ${MUSLSRC}/stdio/popen.c
     ${MUSLSRC}/stdio/printf.c
     ${MUSLSRC}/stdio/putc.c
     ${MUSLSRC}/stdio/putchar.c
@@ -524,9 +504,6 @@ add_library(oelibc STATIC
     ${MUSLSRC}/stdio/__string_read.c
     ${MUSLSRC}/stdio/swprintf.c
     ${MUSLSRC}/stdio/swscanf.c
-    ${MUSLSRC}/stdio/tempnam.c
-    ${MUSLSRC}/stdio/tmpfile.c
-    ${MUSLSRC}/stdio/tmpnam.c
     ${MUSLSRC}/stdio/__toread.c
     ${MUSLSRC}/stdio/__towrite.c
     ${MUSLSRC}/stdio/__uflow.c
@@ -555,16 +532,8 @@ add_library(oelibc STATIC
     ${MUSLSRC}/stdlib/atol.c
     ${MUSLSRC}/stdlib/atoll.c
     ${MUSLSRC}/stdlib/bsearch.c
-    ${MUSLSRC}/stdlib/div.c
-    ${MUSLSRC}/stdlib/ecvt.c
-    ${MUSLSRC}/stdlib/fcvt.c
-    ${MUSLSRC}/stdlib/gcvt.c
-    ${MUSLSRC}/stdlib/imaxabs.c
-    ${MUSLSRC}/stdlib/imaxdiv.c
     ${MUSLSRC}/stdlib/labs.c
-    ${MUSLSRC}/stdlib/ldiv.c
     ${MUSLSRC}/stdlib/llabs.c
-    ${MUSLSRC}/stdlib/lldiv.c
     ${MUSLSRC}/stdlib/qsort.c
     ${MUSLSRC}/stdlib/strtod.c
     ${MUSLSRC}/stdlib/strtol.c
@@ -649,90 +618,13 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/gmtime.c
     ${MUSLSRC}/time/gmtime_r.c
     ${MUSLSRC}/time/__map_file.c
-    ${MUSLSRC}/time/mktime.c
     ${MUSLSRC}/time/__month_to_secs.c
     ${MUSLSRC}/time/nanosleep.c
     ${MUSLSRC}/time/__secs_to_tm.c
     ${MUSLSRC}/time/time.c
     ${MUSLSRC}/time/__tm_to_secs.c
     ${MUSLSRC}/time/__year_to_secs.c
-    ${MUSLSRC}/unistd/access.c
-    ${MUSLSRC}/unistd/acct.c
-    ${MUSLSRC}/unistd/alarm.c
-    ${MUSLSRC}/unistd/chdir.c
-    ${MUSLSRC}/unistd/chown.c
-    ${MUSLSRC}/unistd/close.c
-    ${MUSLSRC}/unistd/ctermid.c
-    ${MUSLSRC}/unistd/dup2.c
-    ${MUSLSRC}/unistd/dup3.c
-    ${MUSLSRC}/unistd/dup.c
-    ${MUSLSRC}/unistd/_exit.c
-    ${MUSLSRC}/unistd/fchdir.c
-    ${MUSLSRC}/unistd/fchownat.c
-    ${MUSLSRC}/unistd/fchown.c
-    ${MUSLSRC}/unistd/fdatasync.c
-    ${MUSLSRC}/unistd/fsync.c
-    ${MUSLSRC}/unistd/ftruncate.c
-    ${MUSLSRC}/unistd/getcwd.c
-    ${MUSLSRC}/unistd/getegid.c
-    ${MUSLSRC}/unistd/geteuid.c
-    ${MUSLSRC}/unistd/getgid.c
-    ${MUSLSRC}/unistd/getgroups.c
-    ${MUSLSRC}/unistd/gethostname.c
-    ${MUSLSRC}/unistd/getlogin.c
-    ${MUSLSRC}/unistd/getlogin_r.c
-    ${MUSLSRC}/unistd/getpgid.c
-    ${MUSLSRC}/unistd/getpgrp.c
-    ${MUSLSRC}/unistd/getpid.c
-    ${MUSLSRC}/unistd/getppid.c
-    ${MUSLSRC}/unistd/getsid.c
-    ${MUSLSRC}/unistd/getuid.c
-    ${MUSLSRC}/unistd/isatty.c
-    ${MUSLSRC}/unistd/lchown.c
-    ${MUSLSRC}/unistd/linkat.c
-    ${MUSLSRC}/unistd/link.c
-    ${MUSLSRC}/unistd/lseek.c
-    ${MUSLSRC}/unistd/nice.c
-    ${MUSLSRC}/unistd/pause.c
-    ${MUSLSRC}/unistd/pipe2.c
-    ${MUSLSRC}/unistd/pipe.c
-    ${MUSLSRC}/unistd/posix_close.c
-    ${MUSLSRC}/unistd/pread.c
-    ${MUSLSRC}/unistd/preadv.c
-    ${MUSLSRC}/unistd/pwrite.c
-    ${MUSLSRC}/unistd/pwritev.c
-    ${MUSLSRC}/unistd/read.c
-    ${MUSLSRC}/unistd/readlinkat.c
-    ${MUSLSRC}/unistd/readlink.c
-    ${MUSLSRC}/unistd/readv.c
-    ${MUSLSRC}/unistd/renameat.c
-    ${MUSLSRC}/unistd/rmdir.c
-    ${MUSLSRC}/unistd/setegid.c
-    ${MUSLSRC}/unistd/seteuid.c
-    ${MUSLSRC}/unistd/setgid.c
-    ${MUSLSRC}/unistd/setpgid.c
-    ${MUSLSRC}/unistd/setpgrp.c
-    ${MUSLSRC}/unistd/setregid.c
-    ${MUSLSRC}/unistd/setresgid.c
-    ${MUSLSRC}/unistd/setresuid.c
-    ${MUSLSRC}/unistd/setreuid.c
-    ${MUSLSRC}/unistd/setsid.c
-    ${MUSLSRC}/unistd/setuid.c
-    ${MUSLSRC}/unistd/sleep.c
-    ${MUSLSRC}/unistd/symlinkat.c
-    ${MUSLSRC}/unistd/symlink.c
-    ${MUSLSRC}/unistd/sync.c
-    ${MUSLSRC}/unistd/tcgetpgrp.c
-    ${MUSLSRC}/unistd/tcsetpgrp.c
-    ${MUSLSRC}/unistd/truncate.c
-    ${MUSLSRC}/unistd/ttyname.c
-    ${MUSLSRC}/unistd/ttyname_r.c
-    ${MUSLSRC}/unistd/ualarm.c
-    ${MUSLSRC}/unistd/unlinkat.c
-    ${MUSLSRC}/unistd/unlink.c
-    ${MUSLSRC}/unistd/usleep.c
-    ${MUSLSRC}/unistd/write.c
-    ${MUSLSRC}/unistd/writev.c)
+    ${MUSLSRC}/unistd/dup3.c)
 
 target_compile_options(oelibc PRIVATE
     -std=c99
