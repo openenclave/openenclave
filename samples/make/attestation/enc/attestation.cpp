@@ -13,9 +13,9 @@
  */
 bool GenerateQuote(
     const uint8_t* data,
-    const uint32_t dataSize,
+    const size_t dataSize,
     uint8_t* quoteBuffer,
-    uint32_t* quoteBufferSize)
+    size_t* quoteBufferSize)
 {
     uint8_t sha256[32];
     Sha256(data, dataSize, sha256);
@@ -66,9 +66,9 @@ const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
  */
 bool AttestQuote(
     const uint8_t* quote,
-    uint32_t quoteSize,
+    size_t quoteSize,
     const uint8_t* data,
-    uint32_t dataSize)
+    size_t dataSize)
 {
     // While attesting, the quote being attested must not be tampered with.
     // Ensure that it has been copied over to the enclave.

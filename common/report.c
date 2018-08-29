@@ -58,7 +58,7 @@ static void _oe_parse_sgx_report_body(
 
 oe_result_t oe_parse_report(
     const uint8_t* report,
-    uint32_t reportSize,
+    size_t reportSize,
     oe_report_t* parsedReport)
 {
     const sgx_report_t* sgxReport = NULL;
