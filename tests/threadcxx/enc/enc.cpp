@@ -5,12 +5,12 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream> //std::cout
-#include <sstream> //std::stringstream
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <iostream> //std::cout
 #include <mutex>
+#include <sstream> //std::stringstream
 #include <string>
 #include <thread>
 #include "../args.h"
@@ -62,10 +62,10 @@ OE_ECALL void TestMutexCxx(void* args_)
     // The output should not come out garbled as each thread is holding the lock
     for (size_t i = 0; i < 10; ++i)
     {
-      std::cout << (int)args->ID;
+        std::cout << (int)args->ID;
     }
     std::cout << std::endl;
-    
+
     args->count++;
     mtx.unlock();
     mtx.unlock();
@@ -73,8 +73,8 @@ OE_ECALL void TestMutexCxx(void* args_)
 
 static void _TestMutex1Cxx(size_t* count)
 {
-   std::stringstream ss;
-  
+    std::stringstream ss;
+
     mutex1.lock();
     (*count)++;
     mutex1.unlock();
@@ -85,7 +85,7 @@ static void _TestMutex1Cxx(size_t* count)
 static void _TestMutex2Cxx(size_t* count)
 {
     std::stringstream ss;
-  
+
     mutex2.lock();
     (*count)++;
     mutex2.unlock();
@@ -161,15 +161,15 @@ static std::condition_variable_any exclusive;
 OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 {
     std::stringstream ss;
-    
+
     ex_mutex.lock();
 
     // Wait for other threads to finish
     while (nthreads > 0)
     {
         // Release mutex and wait for owning thread to finish
-	ss << std::this_thread::get_id() << ": Waiting for exclusive access\n";
-	std::cout << ss.str();
+        ss << std::this_thread::get_id() << ": Waiting for exclusive access\n";
+        std::cout << ss.str();
         exclusive.wait(ex_mutex);
     }
 
@@ -182,18 +182,20 @@ OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 OE_ECALL void RelinquishExclusiveAccessCxx(void* args_)
 {
     std::stringstream ss;
-  
+
     ex_mutex.lock();
 
     // Mark thread as done
     nthreads = 0;
 
     // Signal waiting threads
-    ss << std::this_thread::get_id() << ": Signalling waiting threads" << std::endl;
+    ss << std::this_thread::get_id() << ": Signalling waiting threads"
+       << std::endl;
     std::cout << ss.str();
     exclusive.notify_all();
 
-    ss << std::this_thread::get_id() << ": Relinquished exclusive access" << std::endl;
+    ss << std::this_thread::get_id() << ": Relinquished exclusive access"
+       << std::endl;
     std::cout << ss.str();
     ex_mutex.unlock();
 }
