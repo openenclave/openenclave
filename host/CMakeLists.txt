@@ -43,6 +43,7 @@ endif()
 add_library(oehost STATIC
     ../common/datetime.c
     ../common/quote.c
+    ../common/report.c
     ../common/revocation.c
     ../common/sgxcertextensions.c
     ../common/tcbinfo.c    
