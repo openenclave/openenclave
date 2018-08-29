@@ -257,14 +257,9 @@ OE_ECALL void LockAndUnlockMutexesCxx(void* arg)
 
             // Recursive lock
             if (*locks > 0)
-	      {
 	        OE_TEST(*owner == std::this_thread::get_id());
-	      }
-	    
-	    else {
-	      //printf("Test that owner has not been set as yet\n");
-	      OE_TEST(*owner == dummy_owner);
-	      } 
+	    else
+	         OE_TEST(*owner == dummy_owner);
 
             *owner = std::this_thread::get_id();
             ++*locks;
