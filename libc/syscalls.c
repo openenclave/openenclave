@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #define __OE_NEED_TIME_CALLS
+#define _GNU_SOURCE
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -15,7 +16,9 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
+#include <sys/time.h>
 #include <sys/uio.h>
+#include <time.h>
 #include <time.h>
 #include <unistd.h>
 
