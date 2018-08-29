@@ -18,7 +18,10 @@ trap exit ERR
 
 CC=$1
 
-file=$(echo "#include <x86intrin.h>" | $CC -E - -M | gawk '/x86intrin\.h/{$0=gensub("-.o: ","","g"); print $1; exit}')
+# The PREPROCESS_OUTPUT_FILE is a clang compiler workaround due to a bug that exists where piping the output of clang to gawk causes a 'broken pipe' error to occur.
+PREPROCESS_OUTPUT_FILE=$(mktemp preprocess-output.XXXX)
+file=$(echo "#include <x86intrin.h>" | $CC -E - -M > $PREPROCESS_OUTPUT_FILE; cat $PREPROCESS_OUTPUT_FILE | gawk '/x86intrin\.h/{$0=gensub("-.o: ","","g"); print $1; exit}')
+rm $PREPROCESS_OUTPUT_FILE
 echo $file | grep -q 'x86intrin\.h' && test -f $file
 dir=$(dirname $file)
 test -d $dir
