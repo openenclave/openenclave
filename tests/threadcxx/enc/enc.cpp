@@ -14,9 +14,9 @@
 #include <condition_variable>
 #include "../args.h"
 
-static std::mutex mtx; //mutex1 = OE_MUTEX_INITIALIZER; //TODO - Do we need this?
-static std::mutex mutex1; //mutex1 = OE_MUTEX_INITIALIZER;
-static std::mutex mutex2; //mutex1 = OE_MUTEX_INITIALIZER;
+static std::mutex mtx; 
+static std::mutex mutex1; 
+static std::mutex mutex2; 
 
 void PrintThreadID()
 {
@@ -72,14 +72,12 @@ OE_ECALL void TestMutexCxx(void* args_)
       printf("%d", (int)args->ID);
     }
 
-    printf("\nThread id = ");
-    PrintThreadID();
-    
     args->count++;
     mtx.unlock();
     mtx.unlock();
 
-    //TODO - oe_host_printf("TestMutex: %lld\n", OE_LLU(oe_thread_self()));
+    printf("TestMutexCxx:");
+    PrintThreadID();
 }
 
 static void _TestMutex1Cxx(size_t* count)
@@ -88,7 +86,8 @@ static void _TestMutex1Cxx(size_t* count)
     (*count)++;
     mutex1.unlock();
 
-    //TODO - oe_host_printf("TestMutex1Cxx: %llu\n", OE_LLU(oe_thread_self()));
+    printf("TestMutex1Cxx:");
+    PrintThreadID();
 }
 
 static void _TestMutex2Cxx(size_t* count)
@@ -96,11 +95,13 @@ static void _TestMutex2Cxx(size_t* count)
     mutex2.lock();
     (*count)++;
     mutex2.unlock();
-    //TODO - oe_host_printf("TestMutex2Cxx: %llu\n", OE_LLU(oe_thread_self()));
+
+    printf("TestMutex2Cxx:");
+    PrintThreadID();
 }
 
-static std::condition_variable_any cond; // = OE_COND_INITIALIZER;
-static std::mutex cond_mutex; // = OE_MUTEX_INITIALIZER;
+static std::condition_variable_any cond; 
+static std::mutex cond_mutex; 
 
 /* Assign a mutex to be used in test below: returns 1 or 2 */
 static size_t AssignMutexCxx()
@@ -137,10 +138,11 @@ OE_ECALL void WaitCxx(void* args_)
     else
         OE_TEST(0);
 
-    oe_host_printf("TestMutex2Cxx%zu()\n", n);
+    printf("TestMutex2Cxx%zu()\n", n);
 
     /* Wait on the condition variable */
-    //TODO - oe_host_printf("Waiting: %llu\n", OE_LLU(oe_thread_self()));
+    printf("Waiting: ");
+    PrintThreadID();
 
     cond_mutex.lock();
     cond.wait(cond_mutex); 
@@ -166,19 +168,18 @@ static std::condition_variable_any exclusive;
 OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 {
     ex_mutex.lock();
-    //std::unique_lock<std::mutex> lck(ex_mutex);
 
     // Wait for other threads to finish
     while (nthreads > 0)
     {
         // Release mutex and wait for owning thread to finish
         PrintThreadID();
-        printf(" Waiting for exclusive access\n");
+        printf("Waiting for exclusive access\n");
 	exclusive.wait(ex_mutex);
     }
 
     PrintThreadID();
-    printf(" Obtained exclusive access\n");
+    printf("Obtained exclusive access\n");
     nthreads = 1;
     ex_mutex.unlock();
 }
@@ -186,14 +187,13 @@ OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 OE_ECALL void RelinquishExclusiveAccessCxx(void* args_)
 {
     ex_mutex.lock();
-    //std::unique_lock<std::mutex> lck(ex_mutex);
 
     // Mark thread as done
     nthreads = 0;
 
     // Signal waiting threads
     PrintThreadID();
-    printf(" Signalling waiting threads\n");
+    printf("Signalling waiting threads\n");
     exclusive.notify_all();
 
     PrintThreadID();
@@ -257,13 +257,13 @@ OE_ECALL void LockAndUnlockMutexesCxx(void* arg)
             // Recursive lock
             if (*locks > 0)
 	      {
-		printf("Checking if owner is current thread\n");
 	        OE_TEST(*owner == std::this_thread::get_id());
 	      }
+	    /*
 	    else {
-	      printf("Test that owner has not been set as yet\n");
+	      //printf("Test that owner has not been set as yet\n");
 	      //OE_TEST(owner == nullptr);
-	    }
+	      } */
 
             *owner = std::this_thread::get_id();
             ++*locks;

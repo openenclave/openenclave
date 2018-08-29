@@ -150,12 +150,10 @@ void* LockAndUnlockThread1Cxx(void* args)
 {
     oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    const size_t ITERS = 5; //AGAG - 20000;
+    const size_t ITERS = 20000;
 
     for (size_t i = 0; i < ITERS; ++i)
     {
-      //TODO - debug info
-      printf("Iteration %ud\n", (uint)i);
         OE_TEST(
             oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"ABC") ==
             OE_OK);
@@ -183,12 +181,10 @@ void* LockAndUnlockThread2Cxx(void* args)
 {
     oe_enclave_t* enclave = (oe_enclave_t*)args;
 
-    const size_t ITERS = 5; //20000;
+    const size_t ITERS = 20000;
 
     for (size_t i = 0; i < ITERS; ++i)
     {
-      //TODO - debug info
-      printf("Iteration %ud\n", (uint)i);
         OE_TEST(
             oe_call_enclave(enclave, "LockAndUnlockMutexesCxx", (void*)"BC") ==
             OE_OK);
@@ -260,7 +256,7 @@ int main(int argc, const char* argv[])
 
     TestCondBroadcastCxx(enclave);
 
-    //TestThreadWakeWaitCxx(enclave);
+    TestThreadWakeWaitCxx(enclave);
 
     TestThreadLockingPatternsCxx(enclave); 
 
