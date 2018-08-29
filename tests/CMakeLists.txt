@@ -55,7 +55,7 @@ add_subdirectory(crypto)
 add_subdirectory(libcxx)
 add_subdirectory(libcxxrt)
 add_subdirectory(libunwind)
-add_subdirectory(mbed)
+#add_subdirectory(mbed)
 add_subdirectory(stdc)
 add_subdirectory(VectorException)
 
