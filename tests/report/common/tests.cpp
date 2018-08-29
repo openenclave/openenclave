@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/internal/report.h>
+
 #ifdef OE_BUILD_ENCLAVE
 
 #define Memset oe_memset
@@ -55,6 +57,8 @@ oe_result_t VerifyReport(
 
 #endif
 
+#define OE_LOCAL_REPORT_SIZE (sizeof(oe_report_header_t) + sizeof(sgx_report_t))
+
 /*
  * g_UniqueID is populated from the first call to oe_parse_report.
  * The enclave's unique_id is asserted to not change subsequently.
@@ -92,6 +96,7 @@ static void ValidateReport(
 {
     sgx_quote_t* sgxQuote = NULL;
     sgx_report_t* sgxReport = NULL;
+    oe_report_header_t* header = (oe_report_header_t*)reportBuffer;
 
     oe_report_t parsedReport = {0};
 
@@ -107,7 +112,7 @@ static void ValidateReport(
     /* Validate pointer fields. */
     if (remote)
     {
-        sgxQuote = (sgx_quote_t*)reportBuffer;
+        sgxQuote = (sgx_quote_t*)header->report;
         OE_TEST(reportSize >= sizeof(sgx_quote_t));
 
         OE_TEST(
@@ -120,8 +125,8 @@ static void ValidateReport(
     }
     else
     {
-        OE_TEST(reportSize == sizeof(sgx_report_t));
-        sgxReport = (sgx_report_t*)reportBuffer;
+        OE_TEST(reportSize == OE_LOCAL_REPORT_SIZE);
+        sgxReport = (sgx_report_t*)header->report;
 
         OE_TEST(parsedReport.report_data == sgxReport->body.report_data.field);
         OE_TEST(parsedReport.report_data_size == sizeof(sgx_report_data_t));
@@ -315,7 +320,7 @@ TEST_FCN void TestLocalReport(void* args_)
                 sizeof(sgx_target_info_t),
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_TEST(reportSize == sizeof(sgx_report_t));
+        OE_TEST(reportSize == OE_LOCAL_REPORT_SIZE);
         ValidateReport(
             reportBuffer, reportSize, false, zeros, OE_REPORT_DATA_SIZE);
 
@@ -329,7 +334,7 @@ TEST_FCN void TestLocalReport(void* args_)
                 sizeof(optParams),
                 reportBuffer,
                 &reportSize) == OE_OK);
-        OE_TEST(reportSize == sizeof(sgx_report_t));
+        OE_TEST(reportSize == OE_LOCAL_REPORT_SIZE);
         ValidateReport(
             reportBuffer, reportSize, false, zeros, OE_REPORT_DATA_SIZE);
     }
@@ -344,13 +349,13 @@ TEST_FCN void TestLocalReport(void* args_)
         OE_TEST(
             GetReport(0, NULL, 0, NULL, 0, NULL, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
-        OE_TEST(reportSize == sizeof(sgx_report_t));
+        OE_TEST(reportSize == OE_LOCAL_REPORT_SIZE);
 
         reportSize = 1;
         OE_TEST(
             GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) ==
             OE_BUFFER_TOO_SMALL);
-        OE_TEST(reportSize == sizeof(sgx_report_t));
+        OE_TEST(reportSize == OE_LOCAL_REPORT_SIZE);
     }
 }
 
@@ -524,30 +529,60 @@ TEST_FCN void TestParseReportNegative(void* args_)
     OE_TEST(
         oe_parse_report(reportBuffer, sizeof(sgx_quote_t), NULL) ==
         OE_INVALID_PARAMETER);
+
+    // Get a valid report and tweak fields.
+    size_t reportSize = OE_MAX_REPORT_SIZE;
+    OE_TEST(GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) == OE_OK);
+    OE_TEST(oe_parse_report(reportBuffer, reportSize, &parsedReport) == OE_OK);
+
+    oe_report_header_t* header = (oe_report_header_t*)reportBuffer;
+
+    // 5. Header's version is invalid.
+    header->version++;
+    OE_TEST(
+        oe_parse_report(reportBuffer, reportSize, &parsedReport) ==
+        OE_INVALID_PARAMETER);
+    header->version--;
+    OE_TEST(oe_parse_report(reportBuffer, reportSize, &parsedReport) == OE_OK);
+
+    // 6. Header's report_size is invalid.
+    // ie: report_size + sizeof(oe_report_header_t) != reportSize
+    header->report_size++;
+    OE_TEST(
+        oe_parse_report(reportBuffer, reportSize, &parsedReport) == OE_FAILURE);
+    header->report_size--;
+    OE_TEST(oe_parse_report(reportBuffer, reportSize, &parsedReport) == OE_OK);
+
+    // 7. Header's report_type is invalid.
+    header->report_type = (oe_report_type_t)20;
+    OE_TEST(
+        oe_parse_report(reportBuffer, reportSize, &parsedReport) ==
+        OE_QUOTE_PARSE_ERROR);
 }
 
 // Use the current enclave itself as the target enclave.
 static void GetSGXTargetInfo(sgx_target_info_t* sgxTargetInfo)
 {
-    sgx_report_t report = {{{0}}};
-    size_t reportSize = sizeof(sgx_report_t);
+    uint8_t reportBuffer[OE_LOCAL_REPORT_SIZE];
+    size_t reportSize = sizeof(reportBuffer);
 
-    OE_TEST(
-        GetReport(0, NULL, 0, NULL, 0, (uint8_t*)&report, &reportSize) ==
-        OE_OK);
+    oe_report_header_t* header = (oe_report_header_t*)reportBuffer;
+    sgx_report_t* sgxReport = (sgx_report_t*)header->report;
+
+    OE_TEST(GetReport(0, NULL, 0, NULL, 0, reportBuffer, &reportSize) == OE_OK);
 
     Memset(sgxTargetInfo, 0, sizeof(*sgxTargetInfo));
     Memcpy(
         sgxTargetInfo->mrenclave,
-        report.body.mrenclave,
+        &sgxReport->body.mrenclave,
         sizeof(sgxTargetInfo->mrenclave));
     Memcpy(
         &sgxTargetInfo->attributes,
-        &report.body.attributes,
+        &sgxReport->body.attributes,
         sizeof(sgxTargetInfo->attributes));
     Memcpy(
         &sgxTargetInfo->misc_select,
-        &report.body.miscselect,
+        &sgxReport->body.miscselect,
         sizeof(sgxTargetInfo->attributes));
 }
 
@@ -556,7 +591,7 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
     uint8_t targetInfo[sizeof(sgx_target_info_t)];
     size_t targetInfoSize = sizeof(targetInfo);
 
-    uint8_t report[sizeof(sgx_report_t)] = {0};
+    uint8_t report[OE_LOCAL_REPORT_SIZE] = {0};
     size_t reportSize = sizeof(report);
     sgx_target_info_t* tamperedTargetInfo = NULL;
 

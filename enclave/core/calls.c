@@ -354,9 +354,9 @@ static void _HandleECall(
             argOut = _HandleInitEnclave(argIn);
             break;
         }
-        case OE_ECALL_GET_REPORT:
+        case OE_ECALL_GET_SGX_REPORT:
         {
-            argOut = _HandleGetReport(argIn);
+            argOut = _HandleGetSgxReport(argIn);
             break;
         }
         case OE_ECALL_VERIFY_REPORT:

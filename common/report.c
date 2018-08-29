@@ -3,6 +3,7 @@
 
 #include <openenclave/bits/defs.h>
 #include <openenclave/internal/raise.h>
+#include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxtypes.h>
 #include "common.h"
 
@@ -64,24 +65,36 @@ oe_result_t oe_parse_report(
 {
     const sgx_report_t* sgxReport = NULL;
     const sgx_quote_t* sgxQuote = NULL;
-    oe_result_t result = OE_OK;
+    oe_report_header_t* header = (oe_report_header_t*)report;
+    oe_result_t result = OE_FAILURE;
 
     if (report == NULL || parsedReport == NULL)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    if (reportSize == sizeof(sgx_report_t))
+    if (reportSize < sizeof(oe_report_header_t))
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (header->version != OE_REPORT_HEADER_VERSION)
+        OE_RAISE(OE_INVALID_PARAMETER);
+
+    if (header->report_size + sizeof(oe_report_header_t) != reportSize)
+        OE_RAISE(OE_FAILURE);
+
+    if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
-        sgxReport = (const sgx_report_t*)report;
+        sgxReport = (const sgx_report_t*)header->report;
         _oe_parse_sgx_report_body(&sgxReport->body, false, parsedReport);
+        result = OE_OK;
     }
-    else if (reportSize >= sizeof(sgx_quote_t))
+    else if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
-        sgxQuote = (const sgx_quote_t*)report;
+        sgxQuote = (const sgx_quote_t*)header->report;
         _oe_parse_sgx_report_body(&sgxQuote->report_body, true, parsedReport);
+        result = OE_OK;
     }
     else
     {
-        OE_RAISE(OE_INVALID_PARAMETER);
+        OE_RAISE(OE_QUOTE_PARSE_ERROR);
     }
 
 done:

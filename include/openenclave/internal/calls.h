@@ -73,7 +73,7 @@ typedef enum _oe_func {
     OE_ECALL_INIT_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE,
     OE_ECALL_VERIFY_REPORT,
-    OE_ECALL_GET_REPORT,
+    OE_ECALL_GET_SGX_REPORT,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
     /* Caution: always add new ECALL function numbers here */
 
