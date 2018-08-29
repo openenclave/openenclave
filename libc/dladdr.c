@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 #define _GNU_SOURCE
-#include <dlfcn.h>
 #include <assert.h>
+#include <dlfcn.h>
 #include <stdlib.h>
 
-int dladdr(const void *addr, Dl_info *info)
+int dladdr(const void* addr, Dl_info* info)
 {
     assert("dladdr(): panic" == NULL);
     return -1;

@@ -1,17 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "libctime.h"
-
 #define __OE_NEED_TIME_CALLS
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/time.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
