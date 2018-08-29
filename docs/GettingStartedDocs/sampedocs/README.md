@@ -61,7 +61,7 @@ binaries.
          host/helloworldhost ./enc/helloworldenc.signed.so
          Enclave called into host to print: Hello World!
 
-  Note: For more advanced users that we want know all the detailed building and signing configuration see [here](buildandsign.md)
+  Note: For more advanced users that want to know all the detailed building and signing configuration see [here](buildandsign.md)
   
    
 ## Samples

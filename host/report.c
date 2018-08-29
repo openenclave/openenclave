@@ -15,9 +15,9 @@ OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 static oe_result_t _oe_get_local_report(
     oe_enclave_t* enclave,
     const void* optParams,
-    uint32_t optParamsSize,
+    size_t optParamsSize,
     void* reportBuffer,
-    uint32_t* reportBufferSize)
+    size_t* reportBufferSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_get_report_args_t* arg = NULL;
@@ -72,14 +72,14 @@ done:
 static oe_result_t _oe_get_remote_report(
     oe_enclave_t* enclave,
     const void* optParams,
-    uint32_t optParamsSize,
+    size_t optParamsSize,
     uint8_t* reportBuffer,
-    uint32_t* reportBufferSize)
+    size_t* reportBufferSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_target_info_t* sgxTargetInfo = NULL;
     sgx_report_t* sgxReport = NULL;
-    uint32_t sgxReportSize = sizeof(sgx_report_t);
+    size_t sgxReportSize = sizeof(sgx_report_t);
     oe_report_t parsedReport;
 
     // For remote attestation, the Quoting Enclave's target info is used.
@@ -161,9 +161,9 @@ oe_result_t oe_get_report(
     oe_enclave_t* enclave,
     uint32_t flags,
     const void* optParams,
-    uint32_t optParamsSize,
+    size_t optParamsSize,
     uint8_t* reportBuffer,
-    uint32_t* reportBufferSize)
+    size_t* reportBufferSize)
 {
     if (flags & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
         return _oe_get_remote_report(
@@ -177,7 +177,7 @@ oe_result_t oe_get_report(
 oe_result_t oe_verify_report(
     oe_enclave_t* enclave,
     const uint8_t* report,
-    uint32_t reportSize,
+    size_t reportSize,
     oe_report_t* parsedReport)
 {
     oe_result_t result = OE_UNEXPECTED;

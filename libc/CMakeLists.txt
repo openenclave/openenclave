@@ -28,21 +28,13 @@ add_library(oelibc STATIC
     ${MUSLSRC}/complex/cabs.c
     ${MUSLSRC}/complex/cabsf.c
     ${MUSLSRC}/complex/cabsl.c
-    ${MUSLSRC}/complex/cacos.c
     ${MUSLSRC}/complex/cacosf.c
-    ${MUSLSRC}/complex/cacosh.c
     ${MUSLSRC}/complex/cacoshf.c
-    ${MUSLSRC}/complex/cacoshl.c
-    ${MUSLSRC}/complex/cacosl.c
     ${MUSLSRC}/complex/carg.c
     ${MUSLSRC}/complex/cargf.c
     ${MUSLSRC}/complex/cargl.c
-    ${MUSLSRC}/complex/casin.c
     ${MUSLSRC}/complex/casinf.c
-    ${MUSLSRC}/complex/casinh.c
     ${MUSLSRC}/complex/casinhf.c
-    ${MUSLSRC}/complex/casinhl.c
-    ${MUSLSRC}/complex/casinl.c
     ${MUSLSRC}/complex/catan.c
     ${MUSLSRC}/complex/catanf.c
     ${MUSLSRC}/complex/catanh.c
@@ -84,9 +76,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/complex/csinhf.c
     ${MUSLSRC}/complex/csinhl.c
     ${MUSLSRC}/complex/csinl.c
-    ${MUSLSRC}/complex/csqrt.c
     ${MUSLSRC}/complex/csqrtf.c
-    ${MUSLSRC}/complex/csqrtl.c
     ${MUSLSRC}/complex/ctan.c
     ${MUSLSRC}/complex/ctanf.c
     ${MUSLSRC}/complex/ctanh.c
@@ -167,22 +157,17 @@ add_library(oelibc STATIC
     ${MUSLSRC}/locale/c_locale.c
     ${MUSLSRC}/locale/dcngettext.c
     ${MUSLSRC}/locale/duplocale.c
-    #${MUSLSRC}/locale/freelocale.c
     ${MUSLSRC}/locale/iconv.c
     ${MUSLSRC}/locale/iconv_close.c
     ${MUSLSRC}/locale/langinfo.c
     ${MUSLSRC}/locale/__lctrans.c
-    #${MUSLSRC}/locale/localeconv.c
     ${MUSLSRC}/locale/locale_map.c
     ${MUSLSRC}/locale/__mo_lookup.c
-    #${MUSLSRC}/locale/newlocale.c
     ${MUSLSRC}/locale/pleval.c
-    #${MUSLSRC}/locale/setlocale.c
     ${MUSLSRC}/locale/strcoll.c
     ${MUSLSRC}/locale/strfmon.c
     ${MUSLSRC}/locale/strxfrm.c
     ${MUSLSRC}/locale/textdomain.c
-    #${MUSLSRC}/locale/uselocale.c
     ${MUSLSRC}/locale/wcscoll.c
     ${MUSLSRC}/locale/wcsxfrm.c
     ${MUSLSRC}/math/acos.c

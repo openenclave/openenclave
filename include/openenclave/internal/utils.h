@@ -122,7 +122,7 @@ OE_INLINE uint64_t StrCode(const char* s, uint64_t n)
  * Plain memset/for-loops can get optimized away be the compiler.
  * Use oe_secure_zero_fill instead.
  */
-OE_INLINE void oe_secure_zero_fill(volatile void* ptr, uint32_t size)
+OE_INLINE void oe_secure_zero_fill(volatile void* ptr, size_t size)
 {
     volatile uint8_t* p = (volatile uint8_t*)ptr;
     while (size--)
@@ -138,7 +138,7 @@ OE_INLINE void oe_secure_zero_fill(volatile void* ptr, uint32_t size)
 OE_INLINE void oe_secure_memcpy(
     volatile void* dst,
     const void* src,
-    uint32_t size)
+    size_t size)
 {
     volatile uint8_t* d = (volatile uint8_t*)dst;
     const uint8_t* s = (const uint8_t*)src;
@@ -154,7 +154,7 @@ OE_INLINE void oe_secure_memcpy(
 OE_INLINE int oe_constant_time_mem_equal(
     const volatile void* pv1,
     const volatile void* pv2,
-    uint32_t len)
+    size_t len)
 {
     volatile uint8_t* p1 = (uint8_t*)pv1;
     volatile uint8_t* p2 = (uint8_t*)pv2;

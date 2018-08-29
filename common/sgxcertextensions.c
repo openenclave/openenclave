@@ -73,10 +73,7 @@ OE_STATIC_ASSERT(
  * 3) If *p == 0x80, then the data is variable length and is terminated by two
  * zeros. We don't support this since Intel extensions are not variable length.
  */
-static oe_result_t _ReadASN1Length(
-    uint8_t** itr,
-    uint8_t* end,
-    uint64_t* length)
+static oe_result_t _ReadASN1Length(uint8_t** itr, uint8_t* end, size_t* length)
 {
     oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* p = NULL;
@@ -128,10 +125,10 @@ done:
 static int8_t _OIDEqual(
     uint8_t* oid,
     uint8_t* end,
-    uint32_t oidLength,
+    size_t oidLength,
     const char* expectedOid)
 {
-    uint32_t expectedLength = strlen(expectedOid);
+    size_t expectedLength = strlen(expectedOid);
     return (oidLength == expectedLength) && (oid + oidLength < end) &&
            (memcmp(oid, expectedOid, oidLength) == 0);
 }
@@ -150,12 +147,12 @@ static oe_result_t _ReadExtension(
     const char* expectedOid,
     uint8_t dataTag,
     uint8_t** data,
-    uint64_t* dataLength)
+    size_t* dataLength)
 {
     oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* p = NULL;
-    uint64_t length = 0;
-    uint64_t oidLength = 0;
+    size_t length = 0;
+    size_t oidLength = 0;
     uint8_t* objectEnd = NULL;
 
     if (itr == NULL || *itr == NULL || end == NULL || expectedOid == NULL ||
@@ -198,7 +195,7 @@ done:
     return result;
 }
 
-static void _TraceHexDump(const char* tag, const uint8_t* data, uint32_t size)
+static void _TraceHexDump(const char* tag, const uint8_t* data, size_t size)
 {
 #if (OE_TRACE_LEVEL >= OE_TRACE_LEVEL_INFO)
     OE_TRACE_INFO("%s = ", tag);
@@ -215,11 +212,11 @@ static oe_result_t _ReadOctetExtension(
     uint8_t** itr,
     uint8_t* end,
     uint8_t* buffer,
-    uint32_t length)
+    size_t length)
 {
     oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* data = NULL;
-    uint64_t dataLength = 0;
+    size_t dataLength = 0;
 
     OE_CHECK(
         _ReadExtension(
@@ -243,18 +240,18 @@ static oe_result_t _ReadIntegerExtension(
     const char* oid,
     uint8_t** itr,
     uint8_t* end,
-    uint32_t numBytes,
+    size_t numBytes,
     uint64_t* value)
 {
     oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* data = NULL;
-    uint64_t dataLength = 0;
+    size_t dataLength = 0;
 
     OE_CHECK(
         _ReadExtension(itr, end, oid, SGX_INTEGER_TAG, &data, &dataLength));
 
     *value = 0;
-    for (uint32_t i = 0; i < dataLength; ++i)
+    for (size_t i = 0; i < dataLength; ++i)
     {
         *value = (*value << 8) | (data[i]);
     }
@@ -341,7 +338,7 @@ static oe_result_t _ReadEnumerationExtension(
 {
     oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* data = NULL;
-    uint64_t dataLength = 0;
+    size_t dataLength = 0;
 
     OE_CHECK(
         _ReadExtension(itr, end, oid, SGX_ENUMERATION_TAG, &data, &dataLength));
@@ -369,7 +366,7 @@ static oe_result_t _ReadBooleanExtension(
 {
     oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* data = NULL;
-    uint64_t dataLength = 0;
+    size_t dataLength = 0;
 
     OE_CHECK(
         _ReadExtension(itr, end, oid, SGX_BOOLEAN_TAG, &data, &dataLength));
@@ -392,10 +389,10 @@ done:
 static oe_result_t _GetSGXExtension(
     oe_cert_t* cert,
     uint8_t* data,
-    uint32_t* dataSize)
+    size_t* dataSize)
 {
     oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
-    uint64_t size = *dataSize;
+    size_t size = *dataSize;
     OE_CHECK(oe_cert_find_extension(cert, SGX_EXTENSION_OID_STR, data, &size));
 
     result = OE_OK;
@@ -407,15 +404,15 @@ done:
 oe_result_t ParseSGXExtensions(
     oe_cert_t* cert,
     uint8_t* buffer,
-    uint32_t* bufferSize,
+    size_t* bufferSize,
     ParsedExtensionInfo* parsedInfo)
 {
     oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
     uint8_t* itr = NULL;
     uint8_t* end = NULL;
-    uint64_t dataLength = 0;
+    size_t dataLength = 0;
     uint8_t* tcbItr = NULL;
-    uint64_t tcbLength = 0;
+    size_t tcbLength = 0;
     uint8_t* tcbEnd = NULL;
 
     if (cert == NULL || buffer == NULL || bufferSize == NULL ||

@@ -61,7 +61,7 @@ oe_result_t VerifyReport(
  */
 uint8_t g_UniqueID[32];
 
-uint8_t g_AuthorID[32] = {0xca, 0x9a, 0xd7, 0x33, 0x14, 0x48, 0x98, 0x0a,
+uint8_t g_SignerID[32] = {0xca, 0x9a, 0xd7, 0x33, 0x14, 0x48, 0x98, 0x0a,
                           0xa2, 0x88, 0x90, 0xce, 0x73, 0xe4, 0x33, 0x63,
                           0x83, 0x77, 0xf1, 0x79, 0xab, 0x44, 0x56, 0xb2,
                           0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
@@ -71,9 +71,9 @@ uint8_t g_ProductID[16] = {0};
 #ifdef OE_BUILD_ENCLAVE
 static bool CheckReportData(
     uint8_t* reportBuffer,
-    uint32_t reportSize,
+    size_t reportSize,
     const uint8_t* report_data,
-    uint32_t report_data_size)
+    size_t report_data_size)
 {
     oe_report_t parsedReport = {0};
     OE_TEST(oe_parse_report(reportBuffer, reportSize, &parsedReport) == OE_OK);
@@ -85,10 +85,10 @@ static bool CheckReportData(
 
 static void ValidateReport(
     uint8_t* reportBuffer,
-    uint32_t reportSize,
+    size_t reportSize,
     bool remote,
     const uint8_t* report_data,
-    uint32_t report_data_size)
+    size_t report_data_size)
 {
     sgx_quote_t* sgxQuote = NULL;
     sgx_report_t* sgxReport = NULL;
@@ -160,9 +160,9 @@ static void ValidateReport(
 
     OE_TEST(
         Memcmp(
-            parsedReport.identity.author_id,
-            g_AuthorID,
-            sizeof(parsedReport.identity.author_id)) == 0);
+            parsedReport.identity.signer_id,
+            g_SignerID,
+            sizeof(parsedReport.identity.signer_id)) == 0);
 
     OE_TEST(
         Memcmp(
@@ -176,7 +176,7 @@ TEST_FCN void TestLocalReport(void* args_)
     sgx_target_info_t* targetInfo = (sgx_target_info_t*)args_;
 
 #ifdef OE_BUILD_ENCLAVE
-    uint32_t report_data_size = 0;
+    size_t report_data_size = 0;
     uint8_t report_data[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
         report_data[i] = i;
@@ -184,7 +184,7 @@ TEST_FCN void TestLocalReport(void* args_)
 
     const uint8_t zeros[OE_REPORT_DATA_SIZE] = {0};
 
-    uint32_t reportSize = 1024;
+    size_t reportSize = 1024;
     uint8_t reportBuffer[1024];
 
     uint8_t optParams[sizeof(sgx_target_info_t)];
@@ -357,7 +357,7 @@ TEST_FCN void TestLocalReport(void* args_)
 TEST_FCN void TestRemoteReport(void* args_)
 {
 #ifdef OE_BUILD_ENCLAVE
-    uint32_t report_data_size = 0;
+    size_t report_data_size = 0;
     uint8_t report_data[OE_REPORT_DATA_SIZE];
     for (uint32_t i = 0; i < OE_REPORT_DATA_SIZE; ++i)
         report_data[i] = i;
@@ -365,7 +365,7 @@ TEST_FCN void TestRemoteReport(void* args_)
 #endif
 
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE];
-    uint32_t reportSize = sizeof(reportBuffer);
+    size_t reportSize = sizeof(reportBuffer);
 
     uint8_t optParams[sizeof(sgx_target_info_t)];
     for (uint32_t i = 0; i < sizeof(optParams); ++i)
@@ -530,7 +530,7 @@ TEST_FCN void TestParseReportNegative(void* args_)
 static void GetSGXTargetInfo(sgx_target_info_t* sgxTargetInfo)
 {
     sgx_report_t report = {{{0}}};
-    uint32_t reportSize = sizeof(sgx_report_t);
+    size_t reportSize = sizeof(sgx_report_t);
 
     OE_TEST(
         GetReport(0, NULL, 0, NULL, 0, (uint8_t*)&report, &reportSize) ==
@@ -554,10 +554,10 @@ static void GetSGXTargetInfo(sgx_target_info_t* sgxTargetInfo)
 TEST_FCN void TestLocalVerifyReport(void* args_)
 {
     uint8_t targetInfo[sizeof(sgx_target_info_t)];
-    uint32_t targetInfoSize = sizeof(targetInfo);
+    size_t targetInfoSize = sizeof(targetInfo);
 
     uint8_t report[sizeof(sgx_report_t)] = {0};
-    uint32_t reportSize = sizeof(report);
+    size_t reportSize = sizeof(report);
     sgx_target_info_t* tamperedTargetInfo = NULL;
 
     uint8_t report_data[sizeof(sgx_report_data_t)];
@@ -617,11 +617,11 @@ TEST_FCN void TestLocalVerifyReport(void* args_)
 TEST_FCN void TestRemoteVerifyReport(void* args_)
 {
     uint8_t reportBuffer[OE_MAX_REPORT_SIZE] = {0};
-    uint32_t reportSize = sizeof(reportBuffer);
+    size_t reportSize = sizeof(reportBuffer);
 
 #if OE_BUILD_ENCLAVE
     uint8_t report_data[sizeof(sgx_report_data_t)];
-    uint32_t report_data_size = sizeof(report_data);
+    size_t report_data_size = sizeof(report_data);
 
     for (uint32_t i = 0; i < sizeof(report_data); ++i)
     {

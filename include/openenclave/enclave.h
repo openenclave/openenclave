@@ -315,11 +315,11 @@ void __oe_assert_fail(
 oe_result_t oe_get_report(
     uint32_t flags,
     const uint8_t* reportData,
-    uint32_t reportDataSize,
+    size_t reportDataSize,
     const void* optParams,
-    uint32_t optParamsSize,
+    size_t optParamsSize,
     uint8_t* reportBuffer,
-    uint32_t* reportBufferSize);
+    size_t* reportBufferSize);
 
 /**
  * Parse an enclave report into a standard format for reading.
@@ -337,7 +337,7 @@ oe_result_t oe_get_report(
  */
 oe_result_t oe_parse_report(
     const uint8_t* report,
-    uint32_t reportSize,
+    size_t reportSize,
     oe_report_t* parsedReport);
 
 /**
@@ -359,7 +359,7 @@ oe_result_t oe_parse_report(
  */
 oe_result_t oe_verify_report(
     const uint8_t* report,
-    uint32_t reportSize,
+    size_t reportSize,
     oe_report_t* parsedReport);
 
 typedef enum _oe_seal_policy {
@@ -395,9 +395,9 @@ typedef enum _oe_seal_policy {
 oe_result_t oe_get_seal_key_by_policy(
     oe_seal_policy_t sealPolicy,
     uint8_t* keyBuffer,
-    uint32_t* keyBufferSize,
+    size_t* keyBufferSize,
     uint8_t* keyInfo,
-    uint32_t* keyInfoSize);
+    size_t* keyInfoSize);
 
 /**
 * Get a symmetric encryption key from the enclave platform using existing key
@@ -422,9 +422,9 @@ oe_result_t oe_get_seal_key_by_policy(
 */
 oe_result_t oe_get_seal_key(
     const uint8_t* keyInfo,
-    uint32_t keyInfoSize,
+    size_t keyInfoSize,
     uint8_t* keyBuffer,
-    uint32_t* keyBufferSize);
+    size_t* keyBufferSize);
 
 /**
  * Obtains the enclave handle.

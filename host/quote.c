@@ -42,12 +42,11 @@ done:
 
 static oe_result_t _sgx_get_quote_size_from_aesm(
     const uint8_t* signatureRevocationList,
-    uint32_t* quoteSize)
+    size_t* quoteSize)
 {
     oe_result_t result = OE_FAILURE;
-    uint64_t signatureSize = 0;
+    size_t signatureSize = 0;
     uint32_t n = 0;
-    uint64_t quoteSize64 = 0;
     const sgx_sig_rl_t* sigrl = (const sgx_sig_rl_t*)signatureRevocationList;
 
     if (quoteSize)
@@ -73,14 +72,10 @@ static oe_result_t _sgx_get_quote_size_from_aesm(
     signatureSize =
         sizeof(sgx_epid_signature_t) + (n * sizeof(sgx_epid_nr_proof_t));
 
-    quoteSize64 = sizeof(sgx_quote_t) + sizeof(sgx_wrap_key_t) +
-                  SGX_QUOTE_IV_SIZE + sizeof(uint32_t) + signatureSize +
-                  SGX_MAC_SIZE;
+    *quoteSize = sizeof(sgx_quote_t) + sizeof(sgx_wrap_key_t) +
+                 SGX_QUOTE_IV_SIZE + sizeof(uint32_t) + signatureSize +
+                 SGX_MAC_SIZE;
 
-    if (quoteSize64 > (uint64_t)UINT_MAX)
-        goto done;
-
-    *quoteSize = (uint32_t)quoteSize64;
     result = OE_OK;
 
 done:
@@ -170,7 +165,7 @@ oe_result_t sgx_get_qetarget_info(sgx_target_info_t* targetInfo)
     return result;
 }
 
-oe_result_t sgx_get_quote_size(uint32_t* quoteSize)
+oe_result_t sgx_get_quote_size(size_t* quoteSize)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -197,7 +192,7 @@ done:
 oe_result_t sgx_get_quote(
     const sgx_report_t* report,
     uint8_t* quote,
-    uint32_t* quoteSize)
+    size_t* quoteSize)
 {
     oe_result_t result = OE_UNEXPECTED;
 
@@ -207,7 +202,7 @@ oe_result_t sgx_get_quote(
 
     /* Reject if quote size not big enough even for quote without SigRLs */
     {
-        uint32_t size;
+        size_t size;
         OE_CHECK(sgx_get_quote_size(&size));
 
         if (*quoteSize < size)

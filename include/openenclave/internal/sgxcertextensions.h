@@ -27,7 +27,7 @@ typedef struct _ParsedExtensionInfo
 oe_result_t ParseSGXExtensions(
     oe_cert_t* cert,
     uint8_t* buffer,
-    uint32_t* bufferSize,
+    size_t* bufferSize,
     ParsedExtensionInfo* parsedInfo);
 
 OE_EXTERNC_END

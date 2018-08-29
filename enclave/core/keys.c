@@ -119,9 +119,9 @@ oe_result_t oe_get_key(
 
 oe_result_t oe_get_seal_key(
     const uint8_t* keyInfo,
-    uint32_t keyInfoSize,
+    size_t keyInfoSize,
     uint8_t* keyBuffer,
-    uint32_t* keyBufferSize)
+    size_t* keyBufferSize)
 {
     oe_result_t ret;
 
@@ -164,7 +164,7 @@ static oe_result_t _GetDefaultKeyRequestAttributes(
     sgx_key_request_t* sgxKeyRequest)
 {
     sgx_report_t sgxReport = {{{0}}};
-    uint32_t sgxReportSize = sizeof(sgx_report_t);
+    size_t sgxReportSize = sizeof(sgx_report_t);
     oe_result_t ret;
 
     // Get a local report of current enclave.
@@ -191,9 +191,9 @@ static oe_result_t _GetDefaultKeyRequestAttributes(
 oe_result_t oe_get_seal_key_by_policy(
     oe_seal_policy_t sealPolicy,
     uint8_t* keyBuffer,
-    uint32_t* keyBufferSize,
+    size_t* keyBufferSize,
     uint8_t* keyInfo,
-    uint32_t* keyInfoSize)
+    size_t* keyInfoSize)
 {
     oe_result_t ret;
     sgx_key_request_t sgxKeyRequest = {0};
