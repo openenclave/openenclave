@@ -66,11 +66,14 @@ struct header
     uint64_t alignment;
 
     /* Size of user memory */
-    uint64_t size;
+    size_t size;
 
     /* Return addresses obtained by oe_backtrace() */
     void* addrs[OE_BACKTRACE_MAX];
     uint64_t num_addrs;
+
+    /* Padding to make header a multiple of 16 */
+    uint64_t padding;
 
     /* Contains HEADER_MAGIC2 */
     uint64_t magic2;
@@ -78,6 +81,9 @@ struct header
     /* User data */
     uint8_t data[];
 };
+
+/* Verify that the sizeof(header_t) is a multiple of 16 */
+OE_STATIC_ASSERT(sizeof(header_t) % 16 == 0);
 
 typedef struct footer footer_t;
 
@@ -240,7 +246,7 @@ OE_INLINE bool _check_multiply_overflow(size_t x, size_t y)
     return true;
 }
 
-static void _malloc_dump_ocall(uint64_t size, void* addrs[], int num_addrs)
+static void _malloc_dump_ocall(size_t size, void* addrs[], int num_addrs)
 {
     oe_malloc_dump_args_t* args = NULL;
 

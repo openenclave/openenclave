@@ -425,21 +425,21 @@ add_library(oelibc STATIC
     ${MUSLSRC}/complex/cabs.c
     ${MUSLSRC}/complex/cabsf.c
     ${MUSLSRC}/complex/cabsl.c
-    ${MUSLSRC}/complex/cacos.c
+#   ${MUSLSRC}/complex/cacos.c
     ${MUSLSRC}/complex/cacosf.c
-    ${MUSLSRC}/complex/cacosh.c
+#   ${MUSLSRC}/complex/cacosh.c
     ${MUSLSRC}/complex/cacoshf.c
-    ${MUSLSRC}/complex/cacoshl.c
-    ${MUSLSRC}/complex/cacosl.c
+#   ${MUSLSRC}/complex/cacoshl.c
+#   ${MUSLSRC}/complex/cacosl.c
     ${MUSLSRC}/complex/carg.c
     ${MUSLSRC}/complex/cargf.c
     ${MUSLSRC}/complex/cargl.c
-    ${MUSLSRC}/complex/casin.c
+#   ${MUSLSRC}/complex/casin.c
     ${MUSLSRC}/complex/casinf.c
-    ${MUSLSRC}/complex/casinh.c
+#   ${MUSLSRC}/complex/casinh.c
     ${MUSLSRC}/complex/casinhf.c
-    ${MUSLSRC}/complex/casinhl.c
-    ${MUSLSRC}/complex/casinl.c
+#   ${MUSLSRC}/complex/casinhl.c
+#   ${MUSLSRC}/complex/casinl.c
     ${MUSLSRC}/complex/catan.c
     ${MUSLSRC}/complex/catanf.c
     ${MUSLSRC}/complex/catanh.c
@@ -481,9 +481,9 @@ add_library(oelibc STATIC
     ${MUSLSRC}/complex/csinhf.c
     ${MUSLSRC}/complex/csinhl.c
     ${MUSLSRC}/complex/csinl.c
-    ${MUSLSRC}/complex/csqrt.c
+#   ${MUSLSRC}/complex/csqrt.c
     ${MUSLSRC}/complex/csqrtf.c
-    ${MUSLSRC}/complex/csqrtl.c
+#   ${MUSLSRC}/complex/csqrtl.c
     ${MUSLSRC}/complex/ctan.c
     ${MUSLSRC}/complex/ctanf.c
     ${MUSLSRC}/complex/ctanh.c

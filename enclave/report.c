@@ -14,10 +14,6 @@
 #include <openenclave/internal/utils.h>
 #include "../common/quote.h"
 
-#include <stdlib.h>
-
-// This file is .cpp in order to use C++ static initialization.
-
 OE_STATIC_ASSERT(OE_REPORT_DATA_SIZE == sizeof(sgx_report_data_t));
 
 static oe_result_t _oe_get_report_key(
@@ -45,29 +41,39 @@ done:
 // of in oecore. Also see ECall_HandleVerifyReport below.
 oe_result_t oe_verify_report(
     const uint8_t* report,
-    uint32_t reportSize,
+    size_t reportSize,
     oe_report_t* parsedReport)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oeReport = {0};
     sgx_key_t sgxKey = {0};
+    oe_report_header_t* header = (oe_report_header_t*)report;
 
     sgx_report_t* sgxReport = NULL;
 
-    const uint32_t aesCMACLength = sizeof(sgxKey);
+    const size_t aesCMACLength = sizeof(sgxKey);
     OE_AESCMAC reportAESCMAC = {{0}};
     OE_AESCMAC computedAESCMAC = {{0}};
 
+    // Ensure that the report is parseable before using the header.
     OE_CHECK(oe_parse_report(report, reportSize, &oeReport));
 
-    if (oeReport.identity.attributes & OE_REPORT_ATTRIBUTES_REMOTE)
+    if (header->report_type == OE_REPORT_TYPE_SGX_REMOTE)
     {
         OE_CHECK(
-            VerifyQuoteImpl(report, reportSize, NULL, 0, NULL, 0, NULL, 0));
+            VerifyQuoteImpl(
+                header->report,
+                header->report_size,
+                NULL,
+                0,
+                NULL,
+                0,
+                NULL,
+                0));
     }
-    else
+    else if (header->report_type == OE_REPORT_TYPE_SGX_LOCAL)
     {
-        sgxReport = (sgx_report_t*)report;
+        sgxReport = (sgx_report_t*)header->report;
 
         OE_CHECK(_oe_get_report_key(sgxReport, &sgxKey));
 
@@ -85,6 +91,10 @@ oe_result_t oe_verify_report(
 
         if (!oe_secure_aes_cmac_equal(&computedAESCMAC, &reportAESCMAC))
             OE_RAISE(OE_VERIFY_FAILED);
+    }
+    else
+    {
+        OE_RAISE(OE_INVALID_PARAMETER);
     }
 
     // Optionally return parsed report.

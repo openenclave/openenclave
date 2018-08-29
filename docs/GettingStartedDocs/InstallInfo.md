@@ -73,7 +73,7 @@ build$ make install DESTDIR=foo
 
 To create a redistributable package (deb, rpm, ...), use **cpack**. Specify
 the final installation prefix to cmake using the CMAKE_INSTALL_PREFIX variable
-as above. E.g., to create a debian package that will install the SDK to
+as above. E.g., to create a Debian package that will install the SDK to
 /opt/openenclave, use:
 
 ```

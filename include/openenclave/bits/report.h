@@ -31,7 +31,7 @@ OE_EXTERNC_BEGIN
  */
 // Fixed identity property sizes for OEv1
 #define OE_UNIQUE_ID_SIZE 32
-#define OE_AUTHOR_ID_SIZE 32
+#define OE_SIGNER_ID_SIZE 32
 #define OE_PRODUCT_ID_SIZE 16
 
 // Enclave report attribute bit masks
@@ -66,9 +66,9 @@ typedef struct _oe_identity
       * For SGX enclaves, this is the MRENCLAVE value */
     uint8_t unique_id[OE_UNIQUE_ID_SIZE];
 
-    /** The author ID for the enclave.
+    /** The signer ID for the enclave.
       * For SGX enclaves, this is the MRSIGNER value */
-    uint8_t author_id[OE_AUTHOR_ID_SIZE];
+    uint8_t signer_id[OE_SIGNER_ID_SIZE];
 
     /** The Product ID for the enclave.
      * For SGX enclaves, this is the ISVPRODID value. */
@@ -81,16 +81,16 @@ typedef struct _oe_identity
 typedef struct _oe_report
 {
     /** Size of the oe_report_t structure. */
-    uint32_t size;
+    size_t size;
 
     /** The enclave type. Currently always OE_ENCLAVE_TYPE_SGX. */
     oe_enclave_type_t type;
 
     /** Size of report_data */
-    uint32_t report_data_size;
+    size_t report_data_size;
 
     /** Size of enclave_report */
-    uint32_t enclave_report_size;
+    size_t enclave_report_size;
 
     /** Pointer to report data field within the report byte-stream supplied to
      * oe_parse_report */

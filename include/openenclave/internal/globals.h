@@ -37,6 +37,9 @@ const void* __oe_get_heap_base(void);
 const void* __oe_get_heap_end(void);
 const size_t __oe_get_heap_size(void);
 
+/* The enclave handle passed by host during initialization */
+extern oe_enclave_t* oe_enclave;
+
 OE_EXTERNC_END
 
 #endif /* _OE_GLOBALS_H */

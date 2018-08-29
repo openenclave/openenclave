@@ -73,7 +73,7 @@ int main(int argc, const char* argv[])
     free(quotedPublicKey);
 
     uint8_t* encryptedData = NULL;
-    uint32_t encryptedDataSize = 0;
+    size_t encryptedDataSize = 0;
     printf("\n\n=====Requesting encrypted data from first enclave=====\n");
     GenerateEncryptedData(enclave1, &encryptedData, &encryptedDataSize);
 

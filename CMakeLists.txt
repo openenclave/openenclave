@@ -17,7 +17,18 @@ elseif(WIN32)
   set(OE_ASM ASM_MASM)
 endif()
 
-project("openenclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
+# set default Jenkins variables
+if (NOT GIT_BRANCH)
+    set(GIT_BRANCH "null")
+endif(NOT GIT_BRANCH)
+if (NOT GIT_COMMIT)
+    set(GIT_COMMIT "null")
+endif(NOT GIT_COMMIT)
+if (NOT BUILD_NUMBER)
+    set(BUILD_NUMBER "0")
+endif(NOT BUILD_NUMBER)
+
+project("open-enclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
 
 # allow simpler include() of our scripts
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
@@ -42,6 +53,7 @@ set(OE_LIBDIR ${OE_OUTPUT_DIR}/lib CACHE INTERNAL "Library collector")
 include(gen_config_file)
 gen_config_file(${OE_DATADIR}/openenclave/config.mak "${CMAKE_INSTALL_PREFIX}")
 install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave/samples)
+install(FILES ${OE_DATADIR}/openenclave/config.mak DESTINATION ${CMAKE_INSTALL_DATADIR}/openenclave)
 
 # generate & install CMake Export file for other projects using CMAKE
 install(
@@ -57,6 +69,7 @@ set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VERSION ${OE_VERSION})
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsgx-enclave-common (>=1.0.101.45575-1.0), libsgx-enclave-common-dev (>=1.0.101.45575-1.0), libsgx-ngsa-ql (>=1.0.101.45575-1.0), libsgx-ngsa-ql-dev (>=1.0.101.45575-1.0)")
 include(CPack)
 
 # define build options that affect cmake across multiple subdirectories
@@ -88,4 +101,3 @@ add_subdirectory(libcxx)
 add_subdirectory(samples)
 add_subdirectory(tools)
 endif()
-
