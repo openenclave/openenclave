@@ -60,7 +60,7 @@ build$ make VERBOSE=1
 Building from within a subtree of the build-tree builds all dependencies for that directory as well.
 "**make clean**" is handy before a spot-rebuild in verbose mode.
 
-A successful build only outputs the HTML API reference into the build-tree. To update the refman *.html-files
+A successful build only outputs the HTML API reference into the build-tree. To update the refman *.md-files
 in the source-tree, use
 
 ```
