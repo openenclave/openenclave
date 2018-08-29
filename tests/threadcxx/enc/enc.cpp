@@ -205,6 +205,7 @@ static std::mutex  mutex_a;
 static std::mutex  mutex_b;
 static std::mutex  mutex_c;
 
+static std::thread::id dummy_owner;
 static std::thread::id a_owner;
 static std::thread::id b_owner;
 static std::thread::id c_owner;
@@ -225,7 +226,7 @@ OE_ECALL void LockAndUnlockMutexesCxx(void* arg)
 
     std::mutex* mutex = nullptr; 
     int* locks = nullptr;
-    std::thread::id* owner = nullptr;
+    std::thread::id* owner = &dummy_owner;
 
     if (m == 'A')
     {
@@ -259,11 +260,11 @@ OE_ECALL void LockAndUnlockMutexesCxx(void* arg)
 	      {
 	        OE_TEST(*owner == std::this_thread::get_id());
 	      }
-	    /*
+	    
 	    else {
 	      //printf("Test that owner has not been set as yet\n");
-	      //OE_TEST(owner == nullptr);
-	      } */
+	      OE_TEST(*owner == dummy_owner);
+	      } 
 
             *owner = std::this_thread::get_id();
             ++*locks;
@@ -280,7 +281,7 @@ OE_ECALL void LockAndUnlockMutexesCxx(void* arg)
 
             OE_TEST(*owner == std::this_thread::get_id());
             if (--*locks == 0)
-                owner = nullptr;
+                *owner = dummy_owner;
 
             SpinUnlockAtomic(&_lock);
         }
