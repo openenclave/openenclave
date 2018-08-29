@@ -61,7 +61,7 @@ oe_result_t VerifyReport(
  */
 uint8_t g_UniqueID[32];
 
-uint8_t g_AuthorID[32] = {0xca, 0x9a, 0xd7, 0x33, 0x14, 0x48, 0x98, 0x0a,
+uint8_t g_SignerID[32] = {0xca, 0x9a, 0xd7, 0x33, 0x14, 0x48, 0x98, 0x0a,
                           0xa2, 0x88, 0x90, 0xce, 0x73, 0xe4, 0x33, 0x63,
                           0x83, 0x77, 0xf1, 0x79, 0xab, 0x44, 0x56, 0xb2,
                           0xfe, 0x23, 0x71, 0x93, 0x19, 0x3a, 0x8d, 0xa};
@@ -160,9 +160,9 @@ static void ValidateReport(
 
     OE_TEST(
         Memcmp(
-            parsedReport.identity.author_id,
-            g_AuthorID,
-            sizeof(parsedReport.identity.author_id)) == 0);
+            parsedReport.identity.signer_id,
+            g_SignerID,
+            sizeof(parsedReport.identity.signer_id)) == 0);
 
     OE_TEST(
         Memcmp(

@@ -37,10 +37,11 @@ static void _oe_parse_sgx_report_body(
         sizeof(reportBody->mrenclave));
 
     OE_STATIC_ASSERT(
-        sizeof(parsedReport->identity.author_id) >=
+        sizeof(parsedReport->identity.signer_id) >=
         sizeof(reportBody->mrsigner));
+
     memcpy(
-        parsedReport->identity.author_id,
+        parsedReport->identity.signer_id,
         reportBody->mrsigner,
         sizeof(reportBody->mrsigner));
 

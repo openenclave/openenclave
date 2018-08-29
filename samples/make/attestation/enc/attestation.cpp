@@ -49,7 +49,7 @@ bool GenerateQuote(
 }
 
 // The SHA-256 hash of the public key in the private.pem file used to sign the
-// enclave. This value is populated in the author_id sub-field of a parsed
+// enclave. This value is populated in the signer_id sub-field of a parsed
 // oe_report_t's identity field.
 const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
                               0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
@@ -91,7 +91,7 @@ bool AttestQuote(
     // enclave.
     // Check that the enclave was signed by an trusted entity.
     if (memcmp(
-            parsedReport.identity.author_id, g_MRSigner, sizeof(g_MRSigner)) !=
+            parsedReport.identity.signer_id, g_MRSigner, sizeof(g_MRSigner)) !=
         0)
         return false;
 

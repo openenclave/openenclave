@@ -31,7 +31,7 @@ OE_EXTERNC_BEGIN
  */
 // Fixed identity property sizes for OEv1
 #define OE_UNIQUE_ID_SIZE 32
-#define OE_AUTHOR_ID_SIZE 32
+#define OE_SIGNER_ID_SIZE 32
 #define OE_PRODUCT_ID_SIZE 16
 
 // Enclave report attribute bit masks
@@ -66,9 +66,9 @@ typedef struct _oe_identity
       * For SGX enclaves, this is the MRENCLAVE value */
     uint8_t unique_id[OE_UNIQUE_ID_SIZE];
 
-    /** The author ID for the enclave.
+    /** The signer ID for the enclave.
       * For SGX enclaves, this is the MRSIGNER value */
-    uint8_t author_id[OE_AUTHOR_ID_SIZE];
+    uint8_t signer_id[OE_SIGNER_ID_SIZE];
 
     /** The Product ID for the enclave.
      * For SGX enclaves, this is the ISVPRODID value. */
