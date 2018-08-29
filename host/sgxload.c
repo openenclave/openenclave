@@ -17,6 +17,8 @@
 #include <Windows.h>
 #endif
 
+#include <assert.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/aesm.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
@@ -155,22 +157,37 @@ static void* _AllocateEnclaveMemory(size_t enclaveSize, int fd)
     /* Allocate enclave memory for simulated and real mode */
     void* result = NULL;
     void* base = NULL;
-    void* mptr = NULL;
+    void* mptr = MAP_FAILED;
 
     /* Map memory region */
     {
         int mprot = PROT_READ | PROT_WRITE | PROT_EXEC;
         int mflags = MAP_SHARED;
+        uint64_t mmap_size = enclaveSize;
 
-        /* If no file descriptor, then perform anonymous mapping */
+        /* If no file descriptor, then perform anonymous mapping and double
+         * the allocation size, so that BASE can be aligned on the SIZE
+         * boundary. This isn't neccessary on hardware backed enclaves, since
+         * the driver will do the alignment. */
         if (fd == -1)
+        {
             mflags |= MAP_ANONYMOUS;
+            if (oe_safe_mul_u64(mmap_size, 2, &mmap_size) != OE_OK)
+                goto done;
+        }
 
-        /* Allocate double so BASE can be aligned on SIZE boundary */
-        mptr = mmap(NULL, enclaveSize * 2, mprot, mflags, fd, 0);
+        mptr = mmap(NULL, mmap_size, mprot, mflags, fd, 0);
 
         if (mptr == MAP_FAILED)
             goto done;
+
+        /* Exit early in hardware backed enclaves, since it's aligned. */
+        if (fd > -1)
+        {
+            assert((uintptr_t)mptr % mmap_size == 0);
+            result = mptr;
+            goto done;
+        }
     }
 
     /* Align BASE on a boundary of SIZE */
