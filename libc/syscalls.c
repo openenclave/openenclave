@@ -11,6 +11,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/time.h>
+#include <openenclave/internal/enclavelibc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +20,10 @@
 #include <sys/uio.h>
 #include <time.h>
 #include <unistd.h>
+
+static const uint64_t _SEC_TO_MSEC = 1000UL;
+static const uint64_t _MSEC_TO_USEC = 1000UL;
+static const uint64_t _MSEC_TO_NSEC = 1000000UL;
 
 static long
 _syscall_open(long n, long x1, long x2, long x3, long x4, long x5, long x6)
@@ -108,40 +113,87 @@ _syscall_writev(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     return ret;
 }
 
-static long _syscall_clock_gettime(
-    long n,
-    long x1,
-    long x2,
-    long x3,
-    long x4,
-    long x5,
-    long x6)
+static long _syscall_clock_gettime(long n, long x1, long x2)
 {
     clockid_t clk_id = (clockid_t)x1;
     struct timespec* tp = (struct timespec*)x2;
-    return oe_clock_gettime(clk_id, tp);
+    int ret = -1;
+    uint64_t msec;
+
+    if (!tp)
+        goto done;
+
+    if (clk_id != CLOCK_REALTIME)
+    {
+        /* Only supporting CLOCK_REALTIME */
+        oe_assert("clock_gettime(): panic" == NULL);
+        goto done;
+    }
+
+    if ((msec = oe_get_time()) == (uint64_t)-1)
+        goto done;
+
+    tp->tv_sec = msec / _SEC_TO_MSEC;
+    tp->tv_nsec = (msec % _SEC_TO_MSEC) * _MSEC_TO_NSEC;
+
+    ret = 0;
+
+done:
+
+    return ret;
 }
 
-static long _syscall_gettimeofday(
-    long n,
-    long x1,
-    long x2,
-    long x3,
-    long x4,
-    long x5,
-    long x6)
+static long _syscall_gettimeofday(long n, long x1, long x2)
 {
     struct timeval* tv = (struct timeval*)x1;
     void* tz = (void*)x2;
-    return oe_gettimeofday(tv, tz);
+    int ret = -1;
+    uint64_t msec;
+
+    if (tv)
+        oe_memset(tv, 0, sizeof(struct timeval));
+
+    if (tz)
+        oe_memset(tz, 0, sizeof(struct timezone));
+
+    if (!tv)
+        goto done;
+
+    if ((msec = oe_get_time()) == (uint64_t)-1)
+        goto done;
+
+    tv->tv_sec = msec / _SEC_TO_MSEC;
+    tv->tv_usec = msec % _MSEC_TO_USEC;
+
+    ret = 0;
+
+done:
+    return ret;
 }
 
-static long
-_syscall_nanosleep(long n, long x1, long x2, long x3, long x4, long x5, long x6)
+static long _syscall_nanosleep(long n, long x1, long x2)
 {
     const struct timespec* req = (struct timespec*)x1;
     struct timespec* rem = (struct timespec*)x2;
-    return oe_nanosleep(req, rem);
+    size_t ret = -1;
+    uint64_t milliseconds = 0;
+
+    if (rem)
+        oe_memset(rem, 0, sizeof(*rem));
+
+    if (!req)
+        goto done;
+
+    /* Convert timespec to milliseconds */
+    milliseconds += req->tv_sec * 1000UL;
+    milliseconds += req->tv_nsec / 1000000UL;
+
+    /* Perform OCALL */
+    ret = oe_sleep(milliseconds);
+
+done:
+
+    return ret;
 }
 
 /* Intercept __syscalls() from MUSL */
@@ -150,11 +202,11 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     switch (n)
     {
         case SYS_nanosleep:
-            return _syscall_nanosleep(n, x1, x2, x3, x4, x5, x6);
+            return _syscall_nanosleep(n, x1, x2);
         case SYS_gettimeofday:
-            return _syscall_gettimeofday(n, x1, x2, x3, x4, x5, x6);
+            return _syscall_gettimeofday(n, x1, x2);
         case SYS_clock_gettime:
-            return _syscall_clock_gettime(n, x1, x2, x3, x4, x5, x6);
+            return _syscall_clock_gettime(n, x1, x2);
         case SYS_writev:
             return _syscall_writev(n, x1, x2, x3, x4, x5, x6);
         case SYS_ioctl:
