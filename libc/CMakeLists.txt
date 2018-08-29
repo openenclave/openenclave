@@ -9,8 +9,8 @@ add_library(oelibc STATIC
     abort.S
     arc4random.c
     atexit.c
+    dladdr.c
     libctime.c
-    libcxxrt_stubs.c
     libunwind_stubs.c
     link.c
     locale.c
