@@ -4,9 +4,11 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
-#include <iostream> //TODO - Remove this later
 #include <stdlib.h>
+#include <sstream> //std::stringstream
+#include <string>
 #include <thread>
+#include <chrono>
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
@@ -15,6 +17,16 @@
 static std::mutex mtx; //mutex1 = OE_MUTEX_INITIALIZER; //TODO - Do we need this?
 static std::mutex mutex1; //mutex1 = OE_MUTEX_INITIALIZER;
 static std::mutex mutex2; //mutex1 = OE_MUTEX_INITIALIZER;
+
+void PrintThreadID()
+{
+    std::stringstream ss;
+    uint64_t threadID;
+    
+    ss << std::this_thread::get_id();
+    ss >> threadID;
+    printf("%ld: ", threadID);
+}
 
 // Force parallel invocation of malloc():
 static void _TestParallelMallocs()
@@ -57,10 +69,12 @@ OE_ECALL void TestMutexCxx(void* args_)
     //The output should not come out garbled as each thread is holding the lock
     for (size_t i=0; i<10; ++i)
     {
-      oe_host_printf("%d", (int)args->ID);
-    } 
-    std::cout << " " << std::this_thread::get_id();
-    oe_host_printf("\n");
+      printf("%d", (int)args->ID);
+    }
+
+    printf("\nThread id = ");
+    PrintThreadID();
+    
     args->count++;
     mtx.unlock();
     mtx.unlock();
@@ -152,40 +166,38 @@ static std::condition_variable_any exclusive;
 OE_ECALL void WaitForExclusiveAccessCxx(void* args_)
 {
     ex_mutex.lock();
+    //std::unique_lock<std::mutex> lck(ex_mutex);
 
     // Wait for other threads to finish
     while (nthreads > 0)
     {
         // Release mutex and wait for owning thread to finish
-	std::cout << " " << std::this_thread::get_id();
-        oe_host_printf(" Waiting for exclusive access\n");
-	//TODO - AGAG            "%llu: Waiting for exclusive access\n", OE_LLU(oe_thread_self()));
+        PrintThreadID();
+        printf(" Waiting for exclusive access\n");
 	exclusive.wait(ex_mutex);
     }
 
-    std::cout << " " << std::this_thread::get_id();
-    oe_host_printf(" Obtained exclusive access\n");
-    //TODO - AGAG    "%llu: Obtained exclusive access\n", OE_LLU(oe_thread_self()));
+    PrintThreadID();
+    printf(" Obtained exclusive access\n");
     nthreads = 1;
     ex_mutex.unlock();
 }
 
-OE_ECALL void RelinquishExclusiveAccess(void* args_)
+OE_ECALL void RelinquishExclusiveAccessCxx(void* args_)
 {
     ex_mutex.lock();
+    //std::unique_lock<std::mutex> lck(ex_mutex);
 
     // Mark thread as done
     nthreads = 0;
 
     // Signal waiting threads
-    std::cout << " " << std::this_thread::get_id();
-    oe_host_printf(" Signalling waiting threads\n");
-    //TODO - AGAG    "%llu: Signalling waiting threads\n", OE_LLU(oe_thread_self()));
+    PrintThreadID();
+    printf(" Signalling waiting threads\n");
     exclusive.notify_all();
 
-    std::cout << " " << std::this_thread::get_id();
-    oe_host_printf(" Relinquished exclusive access\n");
-    //TDO - AGAG    "%llu: Relinquished exlusive access\n", OE_LLU(oe_thread_self()));
+    PrintThreadID();
+    oe_host_printf("Relinquished exclusive access\n");
     ex_mutex.unlock();
 }
 
@@ -206,12 +218,12 @@ static int c_locks = 0;
 OE_ECALL void LockAndUnlockMutexesCxx(void* arg)
 {
     // Spinlock is used to modify the  _locked variables.
-  static std::atomic_flag _lock = ATOMIC_FLAG_INIT;
+    static std::atomic_flag _lock = ATOMIC_FLAG_INIT;
 
     char* mutexes = (char*)arg;
     const char m = mutexes[0];
 
-    std::mutex* mutex; 
+    std::mutex* mutex = nullptr; 
     int* locks = nullptr;
     std::thread::id* owner = nullptr;
 
@@ -244,9 +256,14 @@ OE_ECALL void LockAndUnlockMutexesCxx(void* arg)
 
             // Recursive lock
             if (*locks > 0)
-	      OE_TEST(*owner == std::this_thread::get_id());
-            /* else
-	       OE_TEST(*owner == nullptr); TODO - AGAG - Do we support this? */
+	      {
+		printf("Checking if owner is current thread\n");
+	        OE_TEST(*owner == std::this_thread::get_id());
+	      }
+	    else {
+	      printf("Test that owner has not been set as yet\n");
+	      //OE_TEST(owner == nullptr);
+	    }
 
             *owner = std::this_thread::get_id();
             ++*locks;
@@ -271,3 +288,5 @@ OE_ECALL void LockAndUnlockMutexesCxx(void* arg)
         (*mutex).unlock();
     }
 }
+
+
