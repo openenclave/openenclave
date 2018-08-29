@@ -14,7 +14,7 @@ struct QuotedPublicKey
 {
     uint8_t pemKey[512];
     uint8_t* quote;
-    uint32_t quoteSize;
+    size_t quoteSize;
 };
 
 struct GetPublicKeyArgs
@@ -32,14 +32,14 @@ struct StorePublicKeyArgs
 struct GenerateEncryptedDataArgs
 {
     uint8_t* data; /* out */
-    uint32_t size; /* out */
+    size_t size;   /* out */
     bool success;  /* out */
 };
 
 struct ProcessEncryptedDataArgs
 {
     const uint8_t* data; /* in */
-    uint32_t size;       /* in */
+    size_t size;         /* in */
     bool success;        /* out */
 };
 

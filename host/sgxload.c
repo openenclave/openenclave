@@ -110,7 +110,7 @@ static uint32_t _MakeMemoryProtectParam(uint64_t inflags, bool simulate)
     return outflags;
 }
 
-static sgx_secs_t* _NewSecs(uint64_t base, uint64_t size, bool debug)
+static sgx_secs_t* _NewSecs(uint64_t base, size_t size, bool debug)
 {
     sgx_secs_t* secs = NULL;
 
@@ -148,7 +148,7 @@ static sgx_secs_t* _NewSecs(uint64_t base, uint64_t size, bool debug)
 **    [BASE...BASE+SIZE]            - used
 **    [BASE+SIZE...MPTR+SIZE*2]     - unused
 */
-static void* _AllocateEnclaveMemory(uint64_t enclaveSize, int fd)
+static void* _AllocateEnclaveMemory(size_t enclaveSize, int fd)
 {
 #if defined(__linux__)
 
@@ -394,7 +394,7 @@ void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context)
 
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
-    uint64_t enclaveSize,
+    size_t enclaveSize,
     uint64_t* enclaveAddr)
 {
     oe_result_t result = OE_UNEXPECTED;
