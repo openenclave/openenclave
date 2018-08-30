@@ -78,4 +78,4 @@ target_link_libraries(oecore INTERFACE
 set_source_files_properties(jump.c PROPERTIES COMPILE_FLAGS -O2)
 
 set_property(TARGET oecore PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
-install (TARGETS oecore EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install (TARGETS oecore EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
