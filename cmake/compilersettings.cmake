@@ -52,6 +52,9 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
         message(FATAL_ERROR ${OE_ERR})
     endif()
 
+    # We should only need this for in-enclave code but it's easier
+    # and conservative to specify everywhere
+    add_compile_options(-fno-builtin-malloc -fno-builtin-calloc)
 elseif(MSVC)
     # MSVC options go here
 endif()
