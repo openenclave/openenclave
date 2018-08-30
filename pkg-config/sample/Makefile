@@ -12,7 +12,6 @@ all: build_enclave build_host
 build_enclave:
 	gcc $(ENCLAVE_CFLAGS) -o enc enc.c $(ENCLAVE_LIBS)
 
-
 build_host:
 	gcc $(HOST_CFLAGS) -o host host.c $(HOST_LIBS)
 
