@@ -693,7 +693,7 @@ oe_result_t oe_cert_get_rsa_public_key(
 
     /* Get RSA public key (increments reference count) */
     if (!(rsa = EVP_PKEY_get1_RSA(pkey)))
-        OE_RAISE(OE_WRONG_TYPE);
+        OE_RAISE(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* Initialize the RSA public key */
     oe_rsa_public_key_init(publicKey, pkey);

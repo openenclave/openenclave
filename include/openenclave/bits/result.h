@@ -64,22 +64,21 @@ typedef enum _oe_result {
     OE_OUT_OF_THREADS,
 
     /**
-     * The function encountered an unexpected error. This usually indicates
-     * an oversight in which the function failed to specify an appropriate
-     * error.
+     * The function encountered an unexpected failure.
      */
     OE_UNEXPECTED,
 
     /**
-     * A cryptographic verification operation failed. Examples include:
-     * (1) enclave quote verification, (2) public key signature verification,
-     * and (3) certificate chain verification.
+     * A cryptographic verification failed. Examples include:
+     *     - enclave quote verification
+     *     - public key signature verification
+     *     - certificate chain verification
      */
     OE_VERIFY_FAILED,
 
     /**
-     * The function failure to find a resource. Examples of resources include
-     * files, directories, and container elements.
+     * The function failed to find a resource. Examples of resources include
+     * files, directories, and functions (ECALL/OCALL), container elements.
      */
     OE_NOT_FOUND,
 
@@ -90,9 +89,9 @@ typedef enum _oe_result {
     OE_INTEGER_OVERFLOW,
 
     /**
-     * The function attempted an operation that is invalid for the given type.
+     * The certificate does not contain a public key.
      */
-    OE_WRONG_TYPE,
+    OE_PUBLIC_KEY_NOT_FOUND,
 
     /**
      * An integer index is outside the expected range. For example, an array
@@ -172,23 +171,20 @@ typedef enum _oe_result {
     OE_INVALID_KEYNAME,
 
     /**
-     * Attempted to erroneously downgrade to enclave debug mode (from secure
-     * enclave mode). This occurs when passing the debug flag to
-     * **oe_create_enclave()** while the properties in the enclave image
-     * itself specify non-debug mode.
+     * Attempted to create a debug enclave with an enclave image that does
+     * not allow it.
      */
     OE_DEBUG_DOWNGRADE,
 
     /**
-     * Failed to parse an enclave quote buffer.
+     * Failed to parse an enclave report.
      */
-    OE_QUOTE_PARSE_ERROR,
+    OE_REPORT_PARSE_ERROR,
 
     /**
-     * An unsupported quote enclave certification occured while verifying
-     * a quote.
+     * The certificate chain is not available or missing.
      */
-    OE_UNSUPPORTED_QE_CERTIFICATION,
+    OE_MISSING_CERTIFICATE_CHAIN,
 
     /**
      * An operation cannot be performed beause the resource is busy. For
@@ -205,12 +201,12 @@ typedef enum _oe_result {
     OE_NOT_OWNER,
 
     /**
-     * The given X.509 certificate extension is not a valid SGX extension.
+     * The certificate does not contain the expected SGX extensions.
      */
-    OE_INVALID_SGX_CERT_EXTENSIONS,
+    OE_INVALID_SGX_CERTIFICATE_EXTENSIONS,
 
     /**
-     * The function detected a memory leak.
+     * A memory leak was detected during enclave termination.
      */
     OE_MEMORY_LEAK,
 
@@ -222,18 +218,20 @@ typedef enum _oe_result {
     OE_BAD_ALIGNMENT,
 
     /**
-     * Failed to parse a trusted computing base (TCB) buffer either because
-     * the data is malformed or the parser encountered unexpected elements.
+     * Failed to parse the trusted computing base (TCB) revocation data
+     * for the enclave.
      */
     OE_TCB_INFO_PARSE_ERROR,
 
     /**
-     * The level of the trusted computing base (TCB) is not up to date.
+     * The level of the trusted computing base (TCB) is not up to date for
+     * report verification.
      */
     OE_TCB_LEVEL_INVALID,
 
     /**
-     * Failed to load the quote provider.
+     * Failed to load the quote provider library used for quote generation
+     * and attestation.
      */
     OE_QUOTE_PROVIDER_LOAD_ERROR,
 
@@ -243,8 +241,8 @@ typedef enum _oe_result {
     OE_QUOTE_PROVIDER_CALL_ERROR,
 
     /**
-     * The revocation information found in the the trusted computing base (TCB)
-     * is invalid.
+     * The certificate revocation data for attesting the trusted computing 
+     * base (TCB) is invalid for this enclave.
      */
     OE_INVALID_REVOCATION_INFO,
 

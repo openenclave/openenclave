@@ -140,7 +140,7 @@ static oe_result_t _GetCount(
 
     /* Check type of count field (size_t) */
     if (cfti->type != OE_SIZE_T)
-        OE_THROW(OE_WRONG_TYPE);
+        OE_THROW(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* Read the count field from the structure */
     *count = *(const size_t*)((const uint8_t*)structIn + cfti->offset);
