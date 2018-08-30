@@ -13,7 +13,6 @@ int main(int argc, const char* argv[])
         return 1;
     }
 
-
     /* Create the enclave */
     result = oe_create_enclave(argv[1], type, flags, NULL, 0, &enclave);
     if (result != OE_OK)
@@ -31,8 +30,11 @@ int main(int argc, const char* argv[])
     }
 
     result = oe_terminate_enclave(enclave);
-
-    printf("=== passed all tests (%s)\n", argv[0]);
+    if (result != OE_OK)
+    {
+        fprintf(stderr, "%s: failed to terminate enclave\n", argv[0]);
+        exit(1);
+    }
 
     return 0;
 }
