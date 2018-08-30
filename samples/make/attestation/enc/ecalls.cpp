@@ -53,7 +53,7 @@ OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg)
         arg->success = false;
     }
 
-    delete quote;
+    delete[] quote;
 }
 
 // Public key of another enclave.
@@ -105,7 +105,7 @@ OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
         arg->success = false;
     }
 
-    delete quote;
+    delete[] quote;
 }
 
 // Arbitrary test data exchanged by the enclaves. The first enclave sends its
@@ -187,5 +187,5 @@ OE_ECALL void ProcessEncryptedData(ProcessEncryptedDataArgs* arg)
     {
         arg->success = false;
     }
-    delete encryptedData;
+    delete[] encryptedData;
 }

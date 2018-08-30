@@ -4,6 +4,7 @@
 # Build the C library, using local sources and sources from MUSL
 
 include(add_compile_flags_if_supported)
+include(add_compile_defs)
 
 set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
@@ -539,7 +540,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     )
 
-target_compile_options(oelibc PRIVATE
+add_target_compile_flags(oelibc PRIVATE C
     -std=c99
     -fno-builtin-memcpy
     -fno-builtin-memset
@@ -548,14 +549,14 @@ target_compile_options(oelibc PRIVATE
     )
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
-    target_compile_options(oelibc PRIVATE
+    add_target_compile_flags(oelibc PRIVATE C
         -fexcess-precision=standard
         -frounding-math
         )
 endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    add_target_c_compile_flags_if_supported(oelibc PRIVATE
+    add_target_compile_flags_if_supported(oelibc PRIVATE C
         -Wno-attributes
         -Wno-format
         -Wno-missing-braces
@@ -570,10 +571,10 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         )
 endif()
 
-target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
+add_target_compile_defs(oelibc PRIVATE C _XOPEN_SOURCE=700)
 
 if(USE_DEBUG_MALLOC)
-target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+    add_target_compile_defs(oelibc PRIVATE C OE_USE_DEBUG_MALLOC)
 endif()
 
 # this project (and is dependents) require the enclave headers+lib
