@@ -94,7 +94,7 @@ oe_result_t oe_parse_report(
     }
     else
     {
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
     }
 
 done:
