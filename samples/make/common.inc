@@ -4,5 +4,5 @@
 CXXFLAGS = 
 
 ifeq ($(APPLY_SPECTRE_1_LLVM_MITIGATION),1)
-	CXXFLAGS += -mllvm -x86-speculative-load-hardening
+	CXXFLAGS += -mllvm -spectre-loop-hardening -mllvm -x86-spectre-mitigation -mllvm msr
 endif

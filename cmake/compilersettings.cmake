@@ -37,7 +37,7 @@ else()
 endif(CCACHE_FOUND)
 
 # Apply Spectre mitigations if available.
-set(SPECTRE_1_LLVM_MITIGATION_FLAG "-mllvm -x86-speculative-load-hardening")
+set(SPECTRE_1_LLVM_MITIGATION_FLAG "-mllvm -spectre-loop-hardening -mllvm x86-spectre-mitigation -mllvm msr")
 add_compile_flag_if_supported("C;CXX" "${SPECTRE_1_LLVM_MITIGATION_FLAG}" SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
 
 if (SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
