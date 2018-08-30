@@ -146,7 +146,8 @@ oe_result_t oe_cert_verify(
  *
  * @return OE_OK success
  * @return OE_INVALID_PARAMETER a parameter is invalid
- * @return OE_PUBLIC_KEY_NOT_FOUND the certificate does not contain an RSA public key
+ * @return OE_PUBLIC_KEY_NOT_FOUND the certificate does not contain an RSA
+ * public key
  * @return OE_FAILURE general failure
  */
 oe_result_t oe_cert_get_rsa_public_key(
@@ -167,7 +168,8 @@ oe_result_t oe_cert_get_rsa_public_key(
  *
  * @return OE_OK success
  * @return OE_INVALID_PARAMETER a parameter is invalid
- * @return OE_PUBLIC_KEY_NOT_FOUND the certificate does not contain an EC public key
+ * @return OE_PUBLIC_KEY_NOT_FOUND the certificate does not contain an EC public
+ * key
  * @return OE_FAILURE general failure
  */
 oe_result_t oe_cert_get_ec_public_key(
