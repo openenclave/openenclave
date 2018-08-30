@@ -66,7 +66,7 @@ struct header
     uint64_t alignment;
 
     /* Size of user memory */
-    uint64_t size;
+    size_t size;
 
     /* Return addresses obtained by oe_backtrace() */
     void* addrs[OE_BACKTRACE_MAX];
@@ -246,7 +246,7 @@ OE_INLINE bool _check_multiply_overflow(size_t x, size_t y)
     return true;
 }
 
-static void _malloc_dump_ocall(uint64_t size, void* addrs[], int num_addrs)
+static void _malloc_dump_ocall(size_t size, void* addrs[], int num_addrs)
 {
     oe_malloc_dump_args_t* args = NULL;
 

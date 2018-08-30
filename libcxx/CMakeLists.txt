@@ -32,7 +32,7 @@ target_link_libraries(oelibcxx INTERFACE
     )
 target_link_libraries(oelibcxx INTERFACE oelibcxx_cxx)
 install(FILES ${OE_LIBDIR}/openenclave/enclave/liboelibcxx.a DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
-install(TARGETS oelibcxx EXPORT openenclave-config)
+install(TARGETS oelibcxx EXPORT openenclave-targets)
 
 # At some point, we should convert the 3rdparty-libs into true CMake OBJECT libs,
 # so we could source the objects directly like this:

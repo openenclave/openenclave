@@ -8,7 +8,7 @@ Getting Started with Open Enclave in Simulator mode
 
 ### Clone Open Enclave SDK repo and install package dependencies
 
-- Follow setup instructions in [Obtaining the source distribution and package dependencies](prerequisites.md)
+- Follow setup instructions in ["Obtain the source distribution and Install Prerequisites"](prerequisites.md) section
 
 ### Build
 

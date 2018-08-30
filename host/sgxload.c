@@ -17,6 +17,8 @@
 #include <Windows.h>
 #endif
 
+#include <assert.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/aesm.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxcreate.h>
@@ -110,7 +112,7 @@ static uint32_t _MakeMemoryProtectParam(uint64_t inflags, bool simulate)
     return outflags;
 }
 
-static sgx_secs_t* _NewSecs(uint64_t base, uint64_t size, bool debug)
+static sgx_secs_t* _NewSecs(uint64_t base, size_t size, bool debug)
 {
     sgx_secs_t* secs = NULL;
 
@@ -148,29 +150,44 @@ static sgx_secs_t* _NewSecs(uint64_t base, uint64_t size, bool debug)
 **    [BASE...BASE+SIZE]            - used
 **    [BASE+SIZE...MPTR+SIZE*2]     - unused
 */
-static void* _AllocateEnclaveMemory(uint64_t enclaveSize, int fd)
+static void* _AllocateEnclaveMemory(size_t enclaveSize, int fd)
 {
 #if defined(__linux__)
 
     /* Allocate enclave memory for simulated and real mode */
     void* result = NULL;
     void* base = NULL;
-    void* mptr = NULL;
+    void* mptr = MAP_FAILED;
 
     /* Map memory region */
     {
         int mprot = PROT_READ | PROT_WRITE | PROT_EXEC;
         int mflags = MAP_SHARED;
+        uint64_t mmap_size = enclaveSize;
 
-        /* If no file descriptor, then perform anonymous mapping */
+        /* If no file descriptor, then perform anonymous mapping and double
+         * the allocation size, so that BASE can be aligned on the SIZE
+         * boundary. This isn't neccessary on hardware backed enclaves, since
+         * the driver will do the alignment. */
         if (fd == -1)
+        {
             mflags |= MAP_ANONYMOUS;
+            if (oe_safe_mul_u64(mmap_size, 2, &mmap_size) != OE_OK)
+                goto done;
+        }
 
-        /* Allocate double so BASE can be aligned on SIZE boundary */
-        mptr = mmap(NULL, enclaveSize * 2, mprot, mflags, fd, 0);
+        mptr = mmap(NULL, mmap_size, mprot, mflags, fd, 0);
 
         if (mptr == MAP_FAILED)
             goto done;
+
+        /* Exit early in hardware backed enclaves, since it's aligned. */
+        if (fd > -1)
+        {
+            assert((uintptr_t)mptr % mmap_size == 0);
+            result = mptr;
+            goto done;
+        }
     }
 
     /* Align BASE on a boundary of SIZE */
@@ -394,7 +411,7 @@ void oe_sgx_cleanup_load_context(oe_sgx_load_context_t* context)
 
 oe_result_t oe_sgx_create_enclave(
     oe_sgx_load_context_t* context,
-    uint64_t enclaveSize,
+    size_t enclaveSize,
     uint64_t* enclaveAddr)
 {
     oe_result_t result = OE_UNEXPECTED;

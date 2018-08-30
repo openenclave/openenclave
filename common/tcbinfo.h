@@ -33,11 +33,11 @@ typedef struct _oe_parsed_tcb_info
 {
     uint32_t version;
     const uint8_t* issue_date;
-    uint32_t issue_date_size;
+    size_t issue_date_size;
     uint8_t fmspc[6];
     uint8_t signature[64];
     const uint8_t* tcb_info_start;
-    uint32_t tcb_info_size;
+    size_t tcb_info_size;
 } oe_parsed_tcb_info_t;
 
 /**
@@ -64,13 +64,13 @@ typedef struct _oe_parsed_tcb_info
  */
 oe_result_t oe_parse_tcb_info_json(
     const uint8_t* tcb_info_json,
-    uint32_t tcb_info_json_size,
+    size_t tcb_info_json_size,
     oe_tcb_level_t* platform_tcb_level,
     oe_parsed_tcb_info_t* parsed_info);
 
 oe_result_t oe_verify_tcb_signature(
     const uint8_t* tcb_info_start,
-    uint32_t tcb_info_size,
+    size_t tcb_info_size,
     sgx_ecdsa256_signature_t* signature,
     oe_cert_chain_t* tcb_cert_chain);
 

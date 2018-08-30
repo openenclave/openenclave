@@ -10,7 +10,7 @@ Getting Started with Open Enclave in SGX1-FLC mode
 
 ### Clone Open Enclave SDK repo and install dependencies
 
-Follow setup instructions in [Obtaining the source distribution and package dependencies](prerequisites.md)
+Follow setup instructions in ["Obtain the source distribution and Install Prerequisites"](prerequisites.md) section
 
 ### Install Intel SGX FLC support software packages
 

@@ -73,7 +73,7 @@ typedef enum _oe_func {
     OE_ECALL_INIT_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE,
     OE_ECALL_VERIFY_REPORT,
-    OE_ECALL_GET_REPORT,
+    OE_ECALL_GET_SGX_REPORT,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
     /* Caution: always add new ECALL function numbers here */
 
@@ -303,6 +303,7 @@ typedef struct _oe_realloc_args
 **
 **     Runtime state to initialize enclave state with, includes
 **     - First 8 leaves of CPUID for enclave emulation
+**     - Enclave handle obtained by oe_create_enclave()
 **
 **==============================================================================
 */
@@ -310,6 +311,7 @@ typedef struct _oe_realloc_args
 typedef struct _oe_init_enclave_args
 {
     uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+    oe_enclave_t* enclave;
 } oe_init_enclave_args_t;
 
 /*

@@ -41,9 +41,9 @@ oe_secure_aes_cmac_equal(const OE_AESCMAC* a, const OE_AESCMAC* b)
  */
 oe_result_t oe_aes_cmac_sign(
     const uint8_t* key,
-    uint32_t keySize,
+    size_t keySize,
     const uint8_t* message,
-    uint32_t messageLength,
+    size_t messageLength,
     OE_AESCMAC* aesCMAC);
 
 OE_EXTERNC_END

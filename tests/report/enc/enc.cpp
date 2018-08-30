@@ -30,8 +30,8 @@
 oe_result_t oe_copy_input(
     void* dst,
     volatile void* src,
-    uint32_t size,
-    uint32_t maxSize)
+    size_t size,
+    size_t maxSize)
 {
     oe_result_t result = OE_UNEXPECTED;
 

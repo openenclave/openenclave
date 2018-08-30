@@ -150,9 +150,9 @@ oe_result_t oe_get_report(
     oe_enclave_t* enclave,
     uint32_t flags,
     const void* optParams,
-    uint32_t optParamsSize,
+    size_t optParamsSize,
     uint8_t* reportBuffer,
-    uint32_t* reportBufferSize);
+    size_t* reportBufferSize);
 
 /**
  * Parse an enclave report into a standard format for reading.
@@ -169,7 +169,7 @@ oe_result_t oe_get_report(
  */
 oe_result_t oe_parse_report(
     const uint8_t* report,
-    uint32_t reportSize,
+    size_t reportSize,
     oe_report_t* parsedReport);
 
 /**
@@ -192,7 +192,7 @@ oe_result_t oe_parse_report(
 oe_result_t oe_verify_report(
     oe_enclave_t* enclave,
     const uint8_t* report,
-    uint32_t reportSize,
+    size_t reportSize,
     oe_report_t* parsedReport);
 
 OE_EXTERNC_END
