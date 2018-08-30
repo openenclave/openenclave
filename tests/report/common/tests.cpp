@@ -557,7 +557,7 @@ TEST_FCN void TestParseReportNegative(void* args_)
     header->report_type = (oe_report_type_t)20;
     OE_TEST(
         oe_parse_report(reportBuffer, reportSize, &parsedReport) ==
-        OE_QUOTE_PARSE_ERROR);
+        OE_REPORT_PARSE_ERROR);
 }
 
 // Use the current enclave itself as the target enclave.
