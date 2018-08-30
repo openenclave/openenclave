@@ -8,7 +8,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/get_testcase_name.cmake)
 file(STRINGS "tests.supported" alltests)
 
 add_subdirectory(host)
-add_subdirectory(libcio)
 
 if (UNIX)
 	add_subdirectory(enc)

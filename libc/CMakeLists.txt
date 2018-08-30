@@ -624,6 +624,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/time.c
     ${MUSLSRC}/time/__tm_to_secs.c
     ${MUSLSRC}/time/__year_to_secs.c
+    ${MUSLSRC}/unistd/dup.c
     ${MUSLSRC}/unistd/dup3.c)
 
 target_compile_options(oelibc PRIVATE

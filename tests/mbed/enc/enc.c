@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../host/args.h"
-#include "../host/ocalls.h"
 
 int main(int argc, const char* argv[]);
 
