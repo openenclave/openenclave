@@ -8,12 +8,12 @@ libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 
 Name: Open Enclave
 
-Description: Open Enclave C/C++ flags and libraries
+Description: Open Enclave C/C++ flags and libraries for building enclaves.
 
 Version: 1.0.0
 
 Requires:
 
-Cflags: -DOE_BUILD_ENCLAVE -nostdinc -m64 -fPIC -I${includedir} -I${includedir}/openenclave/libcxx -I${includedir}/openenclave/libc
+Cflags: -nostdinc -m64 -fPIC -I${includedir} -I${includedir}/libcxx -I${includedir}/openenclave/libc
 
 Libs: -L${libdir}/openenclave/enclave -nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -loelibcxx -loeenclave -lmbedx509 -lmbedcrypto -loelibc -loecore

@@ -1,0 +1,19 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+
+Name: Open Enclave
+
+Description: Open Enclave C flags and libraries for building enclaves.
+
+Version: 1.0.0
+
+Requires:
+
+Cflags: -nostdinc -m64 -fPIC -I${includedir} -I${includedir}/libc
+
+Libs: -L${libdir}/openenclave/enclave -nostdlib -nodefaultlibs -nostartfiles -Wl,--no-undefined -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--export-dynamic -Wl,-pie -loeenclave -lmbedx509 -lmbedcrypto -loelibc -loecore
