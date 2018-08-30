@@ -34,6 +34,8 @@ typedef struct _TestRWLockArgs
 
     // Readers and writers active at same time
     bool readersAndWriters;
+
+    bool ignore;
 } TestRWLockArgs;
 
 #endif /* _stdc_args_h */

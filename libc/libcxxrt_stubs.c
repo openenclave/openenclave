@@ -17,6 +17,6 @@ int __libcxxrt_dladdr(void* addr, Dl_info* info)
 
 int __libcxxrt_sched_yield(void)
 {
-    assert("__libcxxrt_sched_yield(): panic" == NULL);
-    return -1;
+    __asm__ __volatile__("pause");
+    return 0;
 }

@@ -6,6 +6,7 @@ add_subdirectory(host)
 if (UNIX)
 	add_subdirectory(oethread_enc)
 	add_subdirectory(pthread_enc)
+	add_subdirectory(cxxthread_enc)
 endif()
 
 add_enclave_test(tests/oethread 
@@ -13,3 +14,7 @@ add_enclave_test(tests/oethread
 
 add_enclave_test(tests/pthread 
     ./host thread_host ./pthread_enc pthread_enc.signed.so)
+
+add_enclave_test(tests/cxxthread 
+    ./host thread_host ./cxxthread_enc cxxthread_enc.signed.so)
+

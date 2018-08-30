@@ -10,6 +10,15 @@
 static oe_mutex_t mutex1 = OE_MUTEX_INITIALIZER;
 static oe_mutex_t mutex2 = OE_MUTEX_INITIALIZER;
 
+static void _print(const oe_thread_t& id, const char* msg)
+{
+#ifdef CXX_THREADS
+    std::cout << msg << ": " << oe_thread_self() << std::endl;
+#else
+    oe_host_printf("%lld: %s\n", OE_LLU(oe_thread_self()), msg);
+#endif
+}
+
 // Force parallel invocation of malloc():
 static void _TestParallelMallocs()
 {
@@ -43,7 +52,7 @@ OE_ECALL void TestMutex(void* args_)
     OE_TEST(oe_mutex_unlock(&mutex2) == 0);
     OE_TEST(oe_mutex_unlock(&mutex2) == 0);
 
-    oe_host_printf("TestMutex: %lld\n", OE_LLU(oe_thread_self()));
+    _print(oe_thread_self(), "TestMutex");
 }
 
 static void _TestMutex1(size_t* count)
@@ -51,7 +60,7 @@ static void _TestMutex1(size_t* count)
     OE_TEST(oe_mutex_lock(&mutex1) == 0);
     (*count)++;
     OE_TEST(oe_mutex_unlock(&mutex1) == 0);
-    oe_host_printf("TestMutex1: %llu\n", OE_LLU(oe_thread_self()));
+    _print(oe_thread_self(), "TestMutex1");
 }
 
 static void _TestMutex2(size_t* count)
@@ -59,7 +68,7 @@ static void _TestMutex2(size_t* count)
     OE_TEST(oe_mutex_lock(&mutex2) == 0);
     (*count)++;
     OE_TEST(oe_mutex_unlock(&mutex2) == 0);
-    oe_host_printf("TestMutex2: %llu\n", OE_LLU(oe_thread_self()));
+    _print(oe_thread_self(), "TestMutex2");
 }
 
 static oe_cond_t cond = OE_COND_INITIALIZER;
@@ -100,7 +109,7 @@ OE_ECALL void Wait(void* args_)
     oe_host_printf("TestMutex2%zu()\n", n);
 
     /* Wait on the condition variable */
-    oe_host_printf("Waiting: %llu\n", OE_LLU(oe_thread_self()));
+    _print(oe_thread_self(), "Waiting");
 
     oe_mutex_lock(&cond_mutex);
     oe_cond_wait(&cond, &cond_mutex);
@@ -133,13 +142,11 @@ OE_ECALL void WaitForExclusiveAccess(void* args_)
     while (nthreads > 0)
     {
         // Release mutex and wait for owning thread to finish
-        oe_host_printf(
-            "%llu: Waiting for exclusive access\n", OE_LLU(oe_thread_self()));
+        _print(oe_thread_self(), "Waiting for exclusive access\n");
         oe_cond_wait(&exclusive, &ex_mutex);
     }
 
-    oe_host_printf(
-        "%llu: Obtained exclusive access\n", OE_LLU(oe_thread_self()));
+    _print(oe_thread_self(), "Obtained exclusive access");
     nthreads = 1;
     oe_mutex_unlock(&ex_mutex);
 }
@@ -152,12 +159,10 @@ OE_ECALL void RelinquishExclusiveAccess(void* args_)
     nthreads = 0;
 
     // Signal waiting threads
-    oe_host_printf(
-        "%llu: Signalling waiting threads\n", OE_LLU(oe_thread_self()));
+    _print(oe_thread_self(), "Signalling waiting threads");
     oe_cond_signal(&exclusive);
 
-    oe_host_printf(
-        "%llu: Relinquished exlusive access\n", OE_LLU(oe_thread_self()));
+    _print(oe_thread_self(), "Relinquished exlusive access");
     oe_mutex_unlock(&ex_mutex);
 }
 

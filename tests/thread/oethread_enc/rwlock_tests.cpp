@@ -9,6 +9,22 @@
 #include <stdlib.h>
 #include "../args.h"
 
+#if defined(SUPPRESS_READ_WRITE_LOCKS)
+
+OE_ECALL void ReaderThreadImpl(void* args_)
+{
+    TestRWLockArgs* args = (TestRWLockArgs*)args_;
+    args->ignore = true;
+}
+
+OE_ECALL void WriterThreadImpl(void* args_)
+{
+    TestRWLockArgs* args = (TestRWLockArgs*)args_;
+    args->ignore = true;
+}
+
+#else /* defined(SUPPRESS_READ_WRITE_LOCKS) */
+
 static oe_rwlock_t rwLock = OE_RWLOCK_INITIALIZER;
 static oe_spinlock_t rwArgsLock = OE_SPINLOCK_INITIALIZER;
 
@@ -146,3 +162,5 @@ OE_ECALL void WriterThreadImpl(void* args_)
 
     oe_host_printf("%llu: Writer Exiting\n", OE_LLU(oe_thread_self()));
 }
+
+#endif /* !defined(SUPPRESS_READ_WRITE_LOCKS) */

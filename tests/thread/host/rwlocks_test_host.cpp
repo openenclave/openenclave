@@ -52,6 +52,9 @@ void TestReadersWriterLock(oe_enclave_t* enclave)
     for (size_t i = 0; i < NUM_RW_TEST_THREADS; i++)
         threads[i].join();
 
+    if (_rwArgs.ignore)
+        return;
+
     // There can be at most 1 writer thread active.
     OE_TEST(_rwArgs.maxWriters == 1);
 
