@@ -241,7 +241,7 @@ typedef enum _oe_result {
     OE_QUOTE_PROVIDER_CALL_ERROR,
 
     /**
-     * The certificate revocation data for attesting the trusted computing 
+     * The certificate revocation data for attesting the trusted computing
      * base (TCB) is invalid for this enclave.
      */
     OE_INVALID_REVOCATION_INFO,
