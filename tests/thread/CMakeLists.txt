@@ -16,5 +16,4 @@ add_enclave_test(tests/pthread
     ./host thread_host ./pthread_enc pthread_enc.signed.so)
 
 add_enclave_test(tests/cxxthread 
-    ./host thread_host ./cxxthread_enc cxxthread_enc.signed.so)
-
+    ./host thread_host ./cxxthread_enc cxxthread_enc)
