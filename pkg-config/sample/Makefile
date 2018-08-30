@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 ENCLAVE_CFLAGS=$(shell pkg-config oeenclave --cflags)
 ENCLAVE_LIBS=$(shell pkg-config oeenclave --libs)
 
