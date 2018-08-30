@@ -3,7 +3,7 @@
 Header | Supported | Comments |
 :---:|:---:|:---:|
 assert.h | Yes | - |
-complex.h | Partial | Unsupported functions: cpow(), cpowf(), cpowl() |
+complex.h | Partial | Unsupported functions: cacos(), cacosh(), cacoshl(), cacosl(), casin(), casinh(), casinhl(), casinl(), csqrt(), csqrtl(), cpow(), cpowf(), cpowl() |
 ctype.h | Yes | - |
 fenv.h | Yes | - |
 float.h | Yes | - |

@@ -5,7 +5,6 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
@@ -38,7 +37,10 @@
 static void _SetErr(oe_verify_cert_error_t* error, const char* str)
 {
     if (error)
-        oe_strlcpy(error->buf, str, sizeof(error->buf));
+    {
+        error->buf[0] = '\0';
+        strncat(error->buf, str, sizeof(error->buf) - 1);
+    }
 }
 
 typedef struct _Cert

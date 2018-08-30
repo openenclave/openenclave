@@ -565,7 +565,10 @@ int main(int argc, const char* argv[])
 
         if (result != OE_OK && result != OE_NOT_FOUND)
         {
-            Err("failed to load enclave: %s: result=%u", enclave, result);
+            Err("failed to load enclave: %s: result=%s (%u)",
+                enclave,
+                oe_result_str(result),
+                result);
             goto done;
         }
 
@@ -604,7 +607,9 @@ int main(int argc, const char* argv[])
     if ((result = oe_sgx_build_enclave(&context, enclave, &props, &enc)) !=
         OE_OK)
     {
-        Err("oe_sgx_build_enclave(): result=%u", result);
+        Err("oe_sgx_build_enclave(): result=%s (%u)",
+            oe_result_str(result),
+            result);
         goto done;
     }
 
@@ -625,14 +630,18 @@ int main(int argc, const char* argv[])
              pemSize,
              (sgx_sigstruct_t*)props.sigstruct)) != OE_OK)
     {
-        Err("oe_sgx_sign_enclave() failed: result=%u", result);
+        Err("oe_sgx_sign_enclave() failed: result=%s (%u)",
+            oe_result_str(result),
+            result);
         goto done;
     }
 
     /* Create signature section and write out new file */
     if ((result = _UpdateAndWriteSharedLib(enclave, &props)) != OE_OK)
     {
-        Err("_UpdateAndWriteSharedLib(): result=%u", result);
+        Err("_UpdateAndWriteSharedLib(): result=%s (%u)",
+            oe_result_str(result),
+            result);
         goto done;
     }
 
