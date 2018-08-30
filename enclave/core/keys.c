@@ -164,7 +164,7 @@ oe_result_t oe_get_seal_key(
 static oe_result_t _GetDefaultKeyRequestAttributes(
     sgx_key_request_t* sgxKeyRequest)
 {
-    sgx_report_t sgxReport = {0};
+    sgx_report_t sgxReport = {{{0}}};
 
     oe_result_t ret;
 

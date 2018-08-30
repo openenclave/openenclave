@@ -1,25 +1,43 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+include(add_compile_flags_if_supported)
+
 # Copy libunwind sources and build out-of-tree
 
-string(CONCAT CFLAGS 
+string(CONCAT CFLAGS
+    "-Wall "
     "-Werror "
     "-Wno-pointer-to-int-cast "
     "-Wno-unused-function "
     "-Wno-unused-variable "
-    "-Wno-unused-but-set-variable "
-    "-Wno-maybe-uninitialized "
     "-Wno-cpp "
     "-fno-builtin "
     "-fPIC "
     "-include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h "
     "-I${PROJECT_SOURCE_DIR}/include ")
 
+if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+    string(CONCAT CFLAGS
+        ${CFLAGS}
+        "-Wno-unused-but-set-variable "
+        "-Wno-maybe-uninitialized ")
+elseif (CMAKE_C_COMPILER_ID MATCHES "Clang")
+    string(CONCAT CFLAGS 
+        ${CFLAGS}
+        "-Wno-header-guard "
+        "-Wno-uninitialized "
+        "-Wno-unused-variable ")
+endif()
+
 set(OPTS
     --enable-shared=no
     --disable-block-signals
-    --enable-cxx-exceptions)
+    --enable-cxx-exceptions
+    # Note that the C compiler is used for ASM as well.
+    CC=${CMAKE_C_COMPILER}
+    CXX=${CMAKE_CXX_COMPILER}
+    )
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
 
@@ -39,13 +57,15 @@ ExternalProject_Add(oelibcxx_unwind
         ${CMAKE_CURRENT_LIST_DIR}/libunwind 
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind
 
-    # Generate autoconf scripts.
-    CONFIGURE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/libunwind && 
-        ./autogen.sh
+    # Remove -Wall as this is applied too late and will override -Wno-* flags in Clang.
+    # Instead we apply it ourselves using CFLAGS (see above).
+    COMMAND sed -e "s/-Wall//g"
+        ${CMAKE_CURRENT_LIST_DIR}/libunwind/configure.ac >
+        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/configure.ac
 
-    # Run the ./configure script.
-    COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/libunwind &&
-        ./configure "${OPTS}" "CFLAGS=${CFLAGS}"
+    # Generate autoconf scripts and run configure.
+    CONFIGURE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/libunwind && 
+        ./autogen.sh "${OPTS}" "CFLAGS=${CFLAGS}"
 
     # Copy libunwind-common.h to libunwind-common.inc.
     COMMAND ${CMAKE_COMMAND} -E copy
@@ -60,7 +80,7 @@ ExternalProject_Add(oelibcxx_unwind
 
     # Copy Gstep.c to Gstep.inc.
     COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.c
+        ${CMAKE_CURRENT_LIST_DIR}/libunwind/src/x86_64/Gstep.c
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gstep.inc
 
     # Copy Gstep.c to the the build directory.
@@ -71,7 +91,7 @@ ExternalProject_Add(oelibcxx_unwind
     # Copy Gtrace.c to Gtrace.inc while removing the line containing
     # "static __thread".
     COMMAND grep -v "^static __thread"
-        ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.c >
+        ${CMAKE_CURRENT_LIST_DIR}/libunwind/src/x86_64/Gtrace.c >
         ${CMAKE_CURRENT_BINARY_DIR}/libunwind/src/x86_64/Gtrace.inc
 
     # Copy Gtrace.c to the the build directory.
