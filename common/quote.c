@@ -60,7 +60,7 @@ static oe_result_t _ParseQuote(
     if (quoteEnd < p)
     {
         // Pointer wrapped around.
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
     }
 
     *sgxQuote = NULL;
@@ -68,10 +68,10 @@ static oe_result_t _ParseQuote(
     *sgxQuote = (sgx_quote_t*)p;
     p += sizeof(sgx_quote_t);
     if (p > quoteEnd)
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
 
     if (p + (*sgxQuote)->signature_len != quoteEnd)
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
 
     *quoteAuthData = (sgx_quote_auth_data_t*)(*sgxQuote)->signature;
     p += sizeof(sgx_quote_auth_data_t);
@@ -82,7 +82,7 @@ static oe_result_t _ParseQuote(
     p += qeAuthData->size;
 
     if (p > quoteEnd)
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
 
     qeCertData->type = ReadUint16(p);
     p += 2;
@@ -92,7 +92,7 @@ static oe_result_t _ParseQuote(
     p += qeCertData->size;
 
     if (p != quoteEnd)
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
 
     result = OE_OK;
 done:
@@ -202,11 +202,11 @@ oe_result_t VerifyQuoteImpl(
     }
     else
     {
-        OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
+        OE_RAISE(OE_MISSING_CERTIFICATE_CHAIN);
     }
 
     if (pemPckCertificate == NULL)
-        OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
+        OE_RAISE(OE_MISSING_CERTIFICATE_CHAIN);
 
     // PckCertificate Chain validations.
     {

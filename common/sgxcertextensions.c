@@ -80,7 +80,7 @@ static oe_result_t _ReadASN1Length(
     uint8_t* end,
     uint64_t* length)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* p = NULL;
     uint8_t bytes = 0;
 
@@ -154,7 +154,7 @@ static oe_result_t _ReadExtension(
     uint8_t** data,
     uint64_t* dataLength)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* p = NULL;
     uint64_t length = 0;
     uint64_t oidLength = 0;
@@ -168,7 +168,7 @@ static oe_result_t _ReadExtension(
 
     p = *itr;
     if (p >= end)
-        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+        OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     if (*p++ == SGX_SEQUENCE_TAG && p < end)
     {
@@ -219,7 +219,7 @@ static oe_result_t _ReadOctetExtension(
     uint8_t* buffer,
     uint32_t length)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
     uint64_t dataLength = 0;
 
@@ -248,7 +248,7 @@ static oe_result_t _ReadIntegerExtension(
     uint32_t numBytes,
     uint64_t* value)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
     uint64_t dataLength = 0;
 
@@ -269,12 +269,12 @@ static oe_result_t _ReadIntegerExtension(
     if (dataLength == numBytes + 1)
     {
         if (data[0] != 0)
-            OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+            OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
     }
     else
     {
         if (dataLength > numBytes)
-            OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+            OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
     }
 
     OE_TRACE_INFO("%s = %lu\n", tag, *value);
@@ -295,7 +295,7 @@ static oe_result_t _ReadIntegerExtensionAsUint8(
     uint8_t* end,
     uint8_t* value)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint64_t value64 = 0;
 
     OE_CHECK(
@@ -319,7 +319,7 @@ static oe_result_t _ReadIntegerExtensionAsUint16(
     uint8_t* end,
     uint16_t* value)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint64_t value64 = 0;
 
     OE_CHECK(_ReadIntegerExtension(tag, oid, itr, end, 2, &value64));
@@ -341,7 +341,7 @@ static oe_result_t _ReadEnumerationExtension(
     uint8_t* end,
     uint8_t* value)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
     uint64_t dataLength = 0;
 
@@ -349,7 +349,7 @@ static oe_result_t _ReadEnumerationExtension(
         _ReadExtension(itr, end, oid, SGX_ENUMERATION_TAG, &data, &dataLength));
 
     if (dataLength != 1)
-        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+        OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     OE_TRACE_INFO("%s = %d\n", tag, *value);
 
@@ -369,7 +369,7 @@ static oe_result_t _ReadBooleanExtension(
     uint8_t* end,
     bool* value)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* data = NULL;
     uint64_t dataLength = 0;
 
@@ -396,7 +396,7 @@ static oe_result_t _GetSGXExtension(
     uint8_t* data,
     uint32_t* dataSize)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint64_t size = *dataSize;
     OE_CHECK(oe_cert_find_extension(cert, SGX_EXTENSION_OID_STR, data, &size));
 
@@ -412,7 +412,7 @@ oe_result_t ParseSGXExtensions(
     uint32_t* bufferSize,
     ParsedExtensionInfo* parsedInfo)
 {
-    oe_result_t result = OE_INVALID_SGX_CERT_EXTENSIONS;
+    oe_result_t result = OE_INVALID_SGX_CERTIFICATE_EXTENSIONS;
     uint8_t* itr = NULL;
     uint8_t* end = NULL;
     uint64_t dataLength = 0;
@@ -429,16 +429,16 @@ oe_result_t ParseSGXExtensions(
     itr = buffer;
     end = itr + *bufferSize;
     if (end <= itr)
-        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+        OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     // All the extensions are housed within a top-level sequence.
     if (*itr++ != SGX_SEQUENCE_TAG)
-        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+        OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     // Assert that the sequence end lines up with length.
     OE_CHECK(_ReadASN1Length(&itr, end, &dataLength));
     if (itr + dataLength != end)
-        OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+        OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
 
     // Read first extension.
     OE_CHECK(
@@ -530,7 +530,7 @@ oe_result_t ParseSGXExtensions(
 
         // Assert that the optional extensions have been read.
         if (itr != end)
-            OE_RAISE(OE_INVALID_SGX_CERT_EXTENSIONS);
+            OE_RAISE(OE_INVALID_SGX_CERTIFICATE_EXTENSIONS);
     }
 
     result = OE_OK;

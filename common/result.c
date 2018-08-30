@@ -37,8 +37,8 @@ const char* oe_result_str(oe_result_t result)
             return "OE_NOT_FOUND";
         case OE_INTEGER_OVERFLOW:
             return "OE_INTEGER_OVERFLOW";
-        case OE_WRONG_TYPE:
-            return "OE_WRONG_TYPE";
+        case OE_PUBLIC_KEY_NOT_FOUND:
+            return "OE_PUBLIC_KEY_NOT_FOUND";
         case OE_OUT_OF_BOUNDS:
             return "OE_OUT_OF_BOUNDS";
         case OE_OVERLAPPED_COPY:
@@ -67,16 +67,16 @@ const char* oe_result_str(oe_result_t result)
             return "OE_INVALID_KEYNAME";
         case OE_DEBUG_DOWNGRADE:
             return "OE_DEBUG_DOWNGRADE";
-        case OE_QUOTE_PARSE_ERROR:
-            return "OE_QUOTE_PARSE_ERROR";
-        case OE_UNSUPPORTED_QE_CERTIFICATION:
-            return "OE_UNSUPPORTED_QE_CERTIFICATION";
+        case OE_REPORT_PARSE_ERROR:
+            return "OE_REPORT_PARSE_ERROR";
+        case OE_MISSING_CERTIFICATE_CHAIN:
+            return "OE_MISSING_CERTIFICATE_CHAIN";
         case OE_BUSY:
             return "OE_BUSY";
         case OE_NOT_OWNER:
             return "OE_NOT_OWNER";
-        case OE_INVALID_SGX_CERT_EXTENSIONS:
-            return "OE_INVALID_SGX_CERT_EXTENSIONS";
+        case OE_INVALID_SGX_CERTIFICATE_EXTENSIONS:
+            return "OE_INVALID_SGX_CERTIFICATE_EXTENSIONS";
         case OE_MEMORY_LEAK:
             return "OE_MEMORY_LEAK";
         case OE_BAD_ALIGNMENT:
