@@ -60,20 +60,27 @@ extern const char* __test__;
 
 extern bool oe_disable_debug_malloc_check;
 
+static const char* _leakey_tests[] =
+{
+    "../../3rdparty/musl/libc-test/src/functional/env.c",
+    "../../3rdparty/musl/libc-test/src/functional/search_insque.c",
+    "../../3rdparty/musl/libc-test/src/regression/fgets-eof.c",
+    "../../3rdparty/musl/libc-test/src/regression/putenv-doublefree.c",
+    "../../3rdparty/musl/libc-test/src/regression/regex-backref-0.c",
+    "../../3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c",
+    "../../3rdparty/musl/libc-test/src/regression/regexec-nosub.c",
+    "../../3rdparty/musl/libc-test/src/regression/regex-ere-backref.c",
+    "../../3rdparty/musl/libc-test/src/regression/regex-escaped-high-byte.c",
+    "../../3rdparty/musl/libc-test/src/regression/regex-negated-range.c",
+
+};
+
 /* Return true if this test is known to leak memory. */
 static bool _is_leaky_test(const char* test)
 {
-    static const char* _tests[] =
+    for (size_t i = 0; i < OE_COUNTOF(_leakey_tests); i++)
     {
-        "../../3rdparty/musl/libc-test/src/functional/env.c",
-        "../../3rdparty/musl/libc-test/src/functional/search_insque.c",
-        "../../3rdparty/musl/libc-test/src/regression/fgets-eof.c",
-        "../../3rdparty/musl/libc-test/src/regression/putenv-doublefree.c",
-    };
-
-    for (size_t i = 0; i < OE_COUNTOF(_tests); i++)
-    {
-        if (strcmp(test, _tests[i]) == 0)
+        if (strcmp(test, _leakey_tests[i]) == 0)
             return true;
     }
 

@@ -408,6 +408,11 @@ add_library(oelibc STATIC
     ${MUSLSRC}/prng/rand.c
     ${MUSLSRC}/prng/__seed48.c
     ${MUSLSRC}/regex/fnmatch.c
+    ${MUSLSRC}/regex/glob.c
+    ${MUSLSRC}/regex/regcomp.c
+    ${MUSLSRC}/regex/regerror.c
+    ${MUSLSRC}/regex/regexec.c
+    ${MUSLSRC}/regex/tre-mem.c
     ${MUSLSRC}/search/hsearch.c
     ${MUSLSRC}/search/insque.c
     ${MUSLSRC}/search/lsearch.c

@@ -238,3 +238,8 @@
 ../../3rdparty/musl/libc-test/src/regression/iconv-roundtrips.c
 ../../3rdparty/musl/libc-test/src/regression/putenv-doublefree.c
 ../../3rdparty/musl/libc-test/src/regression/strverscmp.c
+../../3rdparty/musl/libc-test/src/regression/regex-backref-0.c
+../../3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c
+../../3rdparty/musl/libc-test/src/regression/regexec-nosub.c
+../../3rdparty/musl/libc-test/src/regression/regex-ere-backref.c
+../../3rdparty/musl/libc-test/src/regression/regex-negated-range.c

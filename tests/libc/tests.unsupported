@@ -73,12 +73,7 @@
 ../../3rdparty/musl/libc-test/src/regression/pthread-robust-detach.c
 ../../3rdparty/musl/libc-test/src/regression/pthread_rwlock-ebusy.c
 ../../3rdparty/musl/libc-test/src/regression/raise-race.c
-../../3rdparty/musl/libc-test/src/regression/regex-backref-0.c
-../../3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c
-../../3rdparty/musl/libc-test/src/regression/regexec-nosub.c
-../../3rdparty/musl/libc-test/src/regression/regex-ere-backref.c
 ../../3rdparty/musl/libc-test/src/regression/regex-escaped-high-byte.c
-../../3rdparty/musl/libc-test/src/regression/regex-negated-range.c
 ../../3rdparty/musl/libc-test/src/regression/rewind-clear-error.c
 ../../3rdparty/musl/libc-test/src/regression/rlimit-open-files.c
 ../../3rdparty/musl/libc-test/src/regression/setenv-oom.c
