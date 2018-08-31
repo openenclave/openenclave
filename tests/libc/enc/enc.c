@@ -60,11 +60,15 @@ extern const char* __test__;
 
 extern bool oe_disable_debug_malloc_check;
 
-/* Return true if this test is on the leaky-test list. */
+/* Return true if this test is known to leak memory. */
 static bool _is_leaky_test(const char* test)
 {
     static const char* _tests[] =
     {
+        "../../3rdparty/musl/libc-test/src/functional/env.c",
+        "../../3rdparty/musl/libc-test/src/functional/search_insque.c",
+        "../../3rdparty/musl/libc-test/src/regression/fgets-eof.c",
+        "../../3rdparty/musl/libc-test/src/regression/putenv-doublefree.c",
     };
 
     for (size_t i = 0; i < OE_COUNTOF(_tests); i++)
