@@ -403,10 +403,17 @@ add_library(oelibc STATIC
     ${MUSLSRC}/multibyte/wcstombs.c
     ${MUSLSRC}/multibyte/wctob.c
     ${MUSLSRC}/multibyte/wctomb.c
+    ${MUSLSRC}/prng/drand48.c
+    ${MUSLSRC}/prng/lcong48.c
     ${MUSLSRC}/prng/lrand48.c
+    ${MUSLSRC}/prng/mrand48.c
     ${MUSLSRC}/prng/__rand48_step.c
     ${MUSLSRC}/prng/rand.c
+    ${MUSLSRC}/prng/random.c
+    ${MUSLSRC}/prng/rand_r.c
     ${MUSLSRC}/prng/__seed48.c
+    ${MUSLSRC}/prng/seed48.c
+    ${MUSLSRC}/prng/srand48.c
     ${MUSLSRC}/regex/fnmatch.c
     ${MUSLSRC}/regex/glob.c
     ${MUSLSRC}/regex/regcomp.c
@@ -625,8 +632,10 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/gmtime_r.c
     ${MUSLSRC}/time/__map_file.c
     ${MUSLSRC}/time/__month_to_secs.c
+    ${MUSLSRC}/time/mktime.c
     ${MUSLSRC}/time/nanosleep.c
     ${MUSLSRC}/time/__secs_to_tm.c
+    ${MUSLSRC}/time/__tz.c
     ${MUSLSRC}/time/time.c
     ${MUSLSRC}/time/__tm_to_secs.c
     ${MUSLSRC}/time/__year_to_secs.c
