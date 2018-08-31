@@ -72,7 +72,7 @@ static const char* _leakey_tests[] =
     "../../3rdparty/musl/libc-test/src/regression/regex-ere-backref.c",
     "../../3rdparty/musl/libc-test/src/regression/regex-escaped-high-byte.c",
     "../../3rdparty/musl/libc-test/src/regression/regex-negated-range.c",
-
+    "../../3rdparty/musl/libc-test/src/functional/time.c",
 };
 
 /* Return true if this test is known to leak memory. */
