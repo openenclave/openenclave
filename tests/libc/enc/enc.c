@@ -58,10 +58,31 @@ extern char** __environ;
 
 extern const char* __test__;
 
+extern bool oe_disable_debug_malloc_check;
+
+/* Return true if this test is on the leaky-test list. */
+static bool _is_leaky_test(const char* test)
+{
+    static const char* _tests[] =
+    {
+    };
+
+    for (size_t i = 0; i < OE_COUNTOF(_tests); i++)
+    {
+        if (strcmp(test, _tests[i]) == 0)
+            return true;
+    }
+
+    return false;
+}
+
 OE_ECALL void Test(Args* args)
 {
     if (args)
     {
+        if (_is_leaky_test(__TEST__))
+            oe_disable_debug_malloc_check = true;
+
         printf("RUNNING: %s\n", __TEST__);
 
         if (!(__environ = (char**)calloc(1, sizeof(char**))))
