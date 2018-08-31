@@ -4,11 +4,7 @@ All the samples that come with the Open Enclave SDK installation share similar d
 
 ## Common Sample information
 
-### Where to find Open Enclave SDK samples
-
-The default install directory for an [Open Enclave SDK installation](/docs/GettingStartedDocs/GettingStarted_User.md#download-and-install-oe-sdk-package) is /opt/openenclave. On a successful installation, you can find all the samples under the following directory:
-
-       /opt/openenclave/share/openenclave/samples
+### Prepare samples
 
 Building samples involves writing files into the working directory, which is not allowed in /opt unless it's running in the context of superuser(sudo).
 
@@ -97,6 +93,3 @@ binaries.
     - exchanging data encrypted to those keys with each other.
   - Readme (in progress)
     
-## Debugging
-
-For debugging Open Enclave application, see [here](../Debugging.md)

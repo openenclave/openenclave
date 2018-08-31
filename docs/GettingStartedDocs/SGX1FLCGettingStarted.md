@@ -79,5 +79,5 @@ Note: Optional test detailed information could be found [here](AdvancedTestInfo.
 
 ### Install
 
- Follow the instructions [here](InstallInfo.md) to install SDK the compiled Open Enclave.
+ Follow the instructions [here](InstallInfo.md) to install the Open Enclave SDK built above.
  

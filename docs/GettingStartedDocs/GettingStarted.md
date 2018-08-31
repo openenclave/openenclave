@@ -48,7 +48,16 @@ Please refer to the following [documentation](SGXSupportLevel.md) to determine t
 Samples
 -------------------------------
 
-  [Open Enclave samples](sampedocs/README.md)
+Assuming you install the SDK you built the following way in the [Basic install section](InstallInfo.md#basic-install)
+
+    build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
+    build$ make install
+
+Open Enclave samples could be found in ~/openenclave/share/openenclave/samples
+
+See [Open Enclave samples](sampedocs/README.md) for details
+
+  
     
 SDK API Reference
 -------------------------------
