@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _PTHREAD_ARCH_PATCH_H
-#define _PTHREAD_ARCH_PATCH_H
+#ifndef _OE_MUSL_PATCHES_PTHREAD_H
+#define _OE_MUSL_PATCHES_PTHREAD_H
 
 struct __pthread* __pthread_self();
 
@@ -10,4 +10,4 @@ struct __pthread* __pthread_self();
 
 #define MC_PC gregs[REG_RIP]
 
-#endif /* _PTHREAD_ARCH_PATCH_H */
+#endif /* _OE_MUSL_PATCHES_PTHREAD_H */

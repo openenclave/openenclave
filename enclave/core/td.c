@@ -141,14 +141,14 @@ void* TD_ToTCS(const TD* td)
 /*
 **==============================================================================
 **
-** TD_Get()
+** oe_get_td()
 **
 **     Gets a pointer to the thread data structure from the GS segment.
 **
 **==============================================================================
 */
 
-TD* TD_Get()
+TD* oe_get_td()
 {
     oe_thread_data_t* td = oe_get_thread_data();
     return (TD*)td;

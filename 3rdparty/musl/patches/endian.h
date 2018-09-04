@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef _ENDIAN_PATCH_H
-#define _ENDIAN_PATCH_H
+#ifndef _OE_MUSL_PATCHES_ENDIAN_H
+#define _OE_MUSL_PATCHES_ENDIAN_H
 
 /* Suppress this warning in the MUSL endian.h header. */
 #pragma GCC diagnostic push
@@ -10,4 +10,4 @@
 #include "__endian.h"
 #pragma GCC diagnostic pop
 
-#endif /* _ENDIAN_PATCH_H */
+#endif /* _OE_MUSL_PATCHES_ENDIAN_H */

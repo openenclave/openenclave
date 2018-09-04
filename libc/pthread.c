@@ -6,9 +6,9 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/thread.h>
 #include <pthread.h>
-#include "../enclave/core/td.h"
 #include "locale_impl.h"
 #include "pthread_impl.h"
 
@@ -63,7 +63,7 @@ OE_STATIC_ASSERT(sizeof(pthread_cond_t) >= sizeof(oe_cond_t));
 
 static void _pthread_self_init()
 {
-    TD* td = TD_Get();
+    TD* td = oe_get_td();
 
     if (td)
     {
@@ -81,7 +81,7 @@ pthread_t __pthread_self()
     if (oe_once(&_once, _pthread_self_init) != 0)
         return NULL;
 
-    if (!(td = TD_Get()))
+    if (!(td = oe_get_td()))
         return NULL;
 
     struct __pthread* self = (struct __pthread*)td->pthread;
