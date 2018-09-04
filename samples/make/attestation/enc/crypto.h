@@ -26,7 +26,7 @@ void GetPublicKey(uint8_t pemPublicKey[512]);
 /**
  * Compute the sha256 hash of given data.
  */
-void Sha256(const uint8_t* data, uint32_t dataSize, uint8_t sha256[32]);
+void Sha256(const uint8_t* data, size_t dataSize, uint8_t sha256[32]);
 
 /**
  * Encrypt encrypts the given data using the given public key.
@@ -35,9 +35,9 @@ void Sha256(const uint8_t* data, uint32_t dataSize, uint8_t sha256[32]);
 bool Encrypt(
     const uint8_t* pemPublicKey,
     const uint8_t* data,
-    uint32_t size,
+    size_t size,
     uint8_t* encryptedData,
-    uint32_t* encryptedDataSize);
+    size_t* encryptedDataSize);
 
 /**
  * Decrypt decrypts the given data using current enclave's private key.
@@ -45,8 +45,8 @@ bool Encrypt(
  */
 bool Decrypt(
     const uint8_t* encryptedData,
-    uint32_t encryptedDataSize,
+    size_t encryptedDataSize,
     uint8_t* data,
-    uint32_t* dataSize);
+    size_t* dataSize);
 
 #endif // OE_SAMPLES_ATTESTATION_ENC_CRYPTO_H

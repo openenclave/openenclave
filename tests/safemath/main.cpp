@@ -8,9 +8,9 @@
 
 bool _Check8BitUnsigned(oe_result_t result, int num, uint8_t num_u8)
 {
-    if ((num < 0 || num > UINT8_MAX) && result != OE_INTEGER_OVERFLOW)
+    if ((num < 0 || num > OE_UINT8_MAX) && result != OE_INTEGER_OVERFLOW)
         return false;
-    if ((num >= 0 && num <= UINT8_MAX) && result != OE_OK)
+    if ((num >= 0 && num <= OE_UINT8_MAX) && result != OE_OK)
         return false;
     if (result == OE_OK && num != num_u8)
         return false;
@@ -19,9 +19,10 @@ bool _Check8BitUnsigned(oe_result_t result, int num, uint8_t num_u8)
 
 bool _Check8BitSigned(oe_result_t result, int num, int8_t num_s8)
 {
-    if ((num < INT8_MIN || num > INT8_MAX) && result != OE_INTEGER_OVERFLOW)
+    if ((num < OE_INT8_MIN || num > OE_INT8_MAX) &&
+        result != OE_INTEGER_OVERFLOW)
         return false;
-    if ((num >= INT8_MIN && num <= INT8_MAX) && result != OE_OK)
+    if ((num >= OE_INT8_MIN && num <= OE_INT8_MAX) && result != OE_OK)
         return false;
     if (result == OE_OK && num != num_s8)
         return false;
@@ -31,9 +32,9 @@ bool _Check8BitSigned(oe_result_t result, int num, int8_t num_s8)
 void _Test8Bit()
 {
     /* Unsigned tests. */
-    for (int a = 0; a <= UINT8_MAX; a++)
+    for (int a = 0; a <= OE_UINT8_MAX; a++)
     {
-        for (int b = 0; b <= UINT8_MAX; b++)
+        for (int b = 0; b <= OE_UINT8_MAX; b++)
         {
             /* Test addition. */
             uint8_t c_u8;
@@ -57,9 +58,9 @@ void _Test8Bit()
     }
 
     /* Signed tests. */
-    for (int a = INT8_MIN; a <= INT8_MAX; a++)
+    for (int a = OE_INT8_MIN; a <= OE_INT8_MAX; a++)
     {
-        for (int b = INT8_MIN; b <= INT8_MAX; b++)
+        for (int b = OE_INT8_MIN; b <= OE_INT8_MAX; b++)
         {
             /* Test addition. */
             int8_t c_s8;
@@ -774,16 +775,16 @@ struct SignedTest
 void _TestUnsigned()
 {
     UnsignedTest<uint16_t> u16 = {
-        oe_safe_add_u16, oe_safe_sub_u16, oe_safe_mul_u16, UINT16_MAX};
+        oe_safe_add_u16, oe_safe_sub_u16, oe_safe_mul_u16, OE_UINT16_MAX};
 
     UnsignedTest<uint32_t> u32 = {
-        oe_safe_add_u32, oe_safe_sub_u32, oe_safe_mul_u32, UINT32_MAX};
+        oe_safe_add_u32, oe_safe_sub_u32, oe_safe_mul_u32, OE_UINT32_MAX};
 
     UnsignedTest<uint64_t> u64 = {
-        oe_safe_add_u64, oe_safe_sub_u64, oe_safe_mul_u64, UINT64_MAX};
+        oe_safe_add_u64, oe_safe_sub_u64, oe_safe_mul_u64, OE_UINT64_MAX};
 
     UnsignedTest<size_t> sizet = {
-        oe_safe_add_sizet, oe_safe_sub_sizet, oe_safe_mul_sizet, SIZE_MAX};
+        oe_safe_add_sizet, oe_safe_sub_sizet, oe_safe_mul_sizet, OE_SIZE_MAX};
 
     u16.Run();
     u32.Run();
@@ -796,20 +797,20 @@ void _TestSigned()
     SignedTest<int16_t> s16 = {oe_safe_add_s16,
                                oe_safe_sub_s16,
                                oe_safe_mul_s16,
-                               INT16_MIN,
-                               INT16_MAX};
+                               OE_INT16_MIN,
+                               OE_INT16_MAX};
 
     SignedTest<int32_t> s32 = {oe_safe_add_s32,
                                oe_safe_sub_s32,
                                oe_safe_mul_s32,
-                               INT32_MIN,
-                               INT32_MAX};
+                               OE_INT32_MIN,
+                               OE_INT32_MAX};
 
     SignedTest<int64_t> s64 = {oe_safe_add_s64,
                                oe_safe_sub_s64,
                                oe_safe_mul_s64,
-                               INT64_MIN,
-                               INT64_MAX};
+                               OE_INT64_MIN,
+                               OE_INT64_MAX};
 
     s16.Run();
     s32.Run();

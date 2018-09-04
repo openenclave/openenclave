@@ -3,7 +3,6 @@
 
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/utils.h>
 #include "common.h"

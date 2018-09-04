@@ -12,9 +12,9 @@
  */
 static oe_result_t _copy_buffer_to_enclave(
     uint8_t** dst,
-    uint32_t* dst_size,
+    size_t* dst_size,
     const uint8_t* src,
-    uint32_t src_size)
+    size_t src_size)
 {
     oe_result_t result = OE_FAILURE;
     if (!src || src_size == 0 || !oe_is_outside_enclave(src, src_size) ||

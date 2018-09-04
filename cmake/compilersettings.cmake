@@ -3,6 +3,11 @@
 
 include(add_compile_flags_if_supported)
 
+if (NOT CMAKE_C_COMPILER_ID STREQUAL CMAKE_CXX_COMPILER_ID)
+    message(FATAL_ERROR "Your C and C++ compilers have different vendors: \
+        ${CMAKE_C_COMPILER_ID} != ${CMAKE_CXX_COMPILER_ID}")
+endif()
+
 # set default build type and sanitize
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
@@ -35,9 +40,11 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
     # Enables all the warnings about constructions that some users consider questionable,
     # and that are easy to avoid. Treat at warnings-as-errors, which forces developers
     # to fix warnings as they arise, so they don't accumulate "to be fixed later".
-    add_compile_options(-Wall -Werror -fno-strict-aliasing)
+    add_compile_options(-Wall -Werror)
 
-    add_c_compile_flags_if_supported(-Wjump-misses-init)
+    add_compile_flags("C;CXX" -fno-strict-aliasing)
+
+    add_compile_flags_if_supported(C -Wjump-misses-init)
 
     # Enables XSAVE intrinsics.
     add_compile_options(-mxsave)
@@ -52,6 +59,9 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
         message(FATAL_ERROR ${OE_ERR})
     endif()
 
+    # We should only need this for in-enclave code but it's easier
+    # and conservative to specify everywhere
+    add_compile_flags("C;CXX" -fno-builtin-malloc -fno-builtin-calloc)
 elseif(MSVC)
     # MSVC options go here
 endif()

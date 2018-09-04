@@ -10,4 +10,4 @@ target_include_directories(oe_includes INTERFACE
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
 install(DIRECTORY openenclave DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(TARGETS oe_includes EXPORT openenclave-config)
+install(TARGETS oe_includes EXPORT openenclave-targets)

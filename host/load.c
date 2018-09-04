@@ -68,6 +68,11 @@ oe_result_t __oe_load_segments(
         for (i = 0; i < eh->e_shnum; i++)
         {
             const Elf64_Shdr* sh = Elf64_GetSectionHeader(&elf, i);
+
+            /* Invalid section header. The elf file is corrupted. */
+            if (sh == NULL)
+                OE_THROW(OE_FAILURE);
+
             const char* name = Elf64_GetStringFromShstrtab(&elf, sh->sh_name);
 
             if (name && strcmp(name, ".text") == 0)
@@ -96,9 +101,17 @@ oe_result_t __oe_load_segments(
         const Elf64_Phdr* ph = Elf64_GetProgramHeader(&elf, i);
         oe_segment_t seg;
 
+        /* Check for corrupted program header. */
+        if (ph == NULL)
+            OE_THROW(OE_FAILURE);
+
         /* Skip non-loadable program segments */
         if (ph->p_type != PT_LOAD)
             continue;
+
+        /* Check for proper sizes for the program segment. */
+        if (ph->p_filesz > ph->p_memsz)
+            OE_THROW(OE_FAILURE);
 
         /* ATTN: handle PT_TLS (thread local storage) segments */
         if (ph->p_type == PT_TLS)

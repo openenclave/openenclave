@@ -36,7 +36,7 @@ Please refer to the following [documentation](SGXSupportLevel.md) to determine t
    
    If your target system does not have any SGX hardware support, you may want to choose "Simulator" mode 
        
-#### 3. `Build and run`
+#### 3. `Build, install and run`
 
    Choose an operating mode that is compatible with the SGX support level of your target system.
    The links below contain instructions on how to setup Open Enclave SDK environment for a given mode.
@@ -48,12 +48,20 @@ Please refer to the following [documentation](SGXSupportLevel.md) to determine t
 Samples
 -------------------------------
 
-  Open Enclave samples (under construction)
+Assuming you install the SDK you built the following way in the [Basic install section](InstallInfo.md#basic-install)
+
+    build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
+    build$ make install
+
+Open Enclave samples could be found in ~/openenclave/share/openenclave/samples
+
+See [Open Enclave samples](sampedocs/README.md) for details
+
+  
     
 SDK API Reference
-------------------------------
-# Replace below with github pages link once we can go public
-- [Open Enclave API Reference](../refman/html/index.html)
+-------------------------------
+- [Open Enclave API Reference](../refman/md/index.md)
 - Additional libraries available inside an enclave
   - [oelibc library](../LibcSupport.md): This is the subset of the libc library supported inside an enclave.
   - [oelibcxx library](../LibcxxSupport.md): the C++ library functionality supported inside an enclave as 
