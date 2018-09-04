@@ -60,8 +60,7 @@ extern const char* __test__;
 
 extern bool oe_disable_debug_malloc_check;
 
-static const char* _leakey_tests[] =
-{
+static const char* _leakey_tests[] = {
     "../../3rdparty/musl/libc-test/src/functional/env.c",
     "../../3rdparty/musl/libc-test/src/functional/search_insque.c",
     "../../3rdparty/musl/libc-test/src/regression/fgets-eof.c",
