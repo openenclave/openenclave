@@ -8,17 +8,17 @@
 
 struct VerifyQuoteArgs
 {
-    uint8_t* quote;     /* in */
-    uint32_t quoteSize; /* in */
+    uint8_t* quote;   /* in */
+    size_t quoteSize; /* in */
 
-    uint8_t* pemPckCertificate;     /* in */
-    uint32_t pemPckCertificateSize; /* in */
+    uint8_t* pemPckCertificate;   /* in */
+    size_t pemPckCertificateSize; /* in */
 
-    uint8_t* pckCrl;     /* in */
-    uint32_t pckCrlSize; /* in */
+    uint8_t* pckCrl;   /* in */
+    size_t pckCrlSize; /* in */
 
-    uint8_t* tcbInfoJson;     /* in */
-    uint32_t tcbInfoJsonSize; /* in */
+    uint8_t* tcbInfoJson;   /* in */
+    size_t tcbInfoJsonSize; /* in */
 
     oe_result_t result; /* out */
 };
@@ -26,7 +26,7 @@ struct VerifyQuoteArgs
 struct VerifyTCBInfoArgs
 {
     uint8_t* tcbInfo;       /* in */
-    uint32_t tcbInfoSize;   /* in */
+    size_t tcbInfoSize;     /* in */
     void* platformTcbLevel; /* in */
     void* parsedTcbInfo;    /* out */
     oe_result_t result;     /* out */
@@ -35,7 +35,7 @@ struct VerifyTCBInfoArgs
 struct ParseJsonArgs
 {
     uint8_t* json;      /* in */
-    uint32_t jsonSize;  /* in */
+    size_t jsonSize;    /* in */
     oe_result_t result; /* out */
 };
 

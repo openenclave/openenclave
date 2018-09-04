@@ -4,6 +4,7 @@
 # Build the C library, using local sources and sources from MUSL
 
 include(add_compile_flags_if_supported)
+include(add_compile_defs)
 
 set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
@@ -425,21 +426,21 @@ add_library(oelibc STATIC
     ${MUSLSRC}/complex/cabs.c
     ${MUSLSRC}/complex/cabsf.c
     ${MUSLSRC}/complex/cabsl.c
-    ${MUSLSRC}/complex/cacos.c
+#   ${MUSLSRC}/complex/cacos.c
     ${MUSLSRC}/complex/cacosf.c
-    ${MUSLSRC}/complex/cacosh.c
+#   ${MUSLSRC}/complex/cacosh.c
     ${MUSLSRC}/complex/cacoshf.c
-    ${MUSLSRC}/complex/cacoshl.c
-    ${MUSLSRC}/complex/cacosl.c
+#   ${MUSLSRC}/complex/cacoshl.c
+#   ${MUSLSRC}/complex/cacosl.c
     ${MUSLSRC}/complex/carg.c
     ${MUSLSRC}/complex/cargf.c
     ${MUSLSRC}/complex/cargl.c
-    ${MUSLSRC}/complex/casin.c
+#   ${MUSLSRC}/complex/casin.c
     ${MUSLSRC}/complex/casinf.c
-    ${MUSLSRC}/complex/casinh.c
+#   ${MUSLSRC}/complex/casinh.c
     ${MUSLSRC}/complex/casinhf.c
-    ${MUSLSRC}/complex/casinhl.c
-    ${MUSLSRC}/complex/casinl.c
+#   ${MUSLSRC}/complex/casinhl.c
+#   ${MUSLSRC}/complex/casinl.c
     ${MUSLSRC}/complex/catan.c
     ${MUSLSRC}/complex/catanf.c
     ${MUSLSRC}/complex/catanh.c
@@ -481,9 +482,9 @@ add_library(oelibc STATIC
     ${MUSLSRC}/complex/csinhf.c
     ${MUSLSRC}/complex/csinhl.c
     ${MUSLSRC}/complex/csinl.c
-    ${MUSLSRC}/complex/csqrt.c
+#   ${MUSLSRC}/complex/csqrt.c
     ${MUSLSRC}/complex/csqrtf.c
-    ${MUSLSRC}/complex/csqrtl.c
+#   ${MUSLSRC}/complex/csqrtl.c
     ${MUSLSRC}/complex/ctan.c
     ${MUSLSRC}/complex/ctanf.c
     ${MUSLSRC}/complex/ctanh.c
@@ -539,7 +540,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     )
 
-target_compile_options(oelibc PRIVATE
+add_target_compile_flags(oelibc PRIVATE C
     -std=c99
     -fno-builtin-memcpy
     -fno-builtin-memset
@@ -548,14 +549,14 @@ target_compile_options(oelibc PRIVATE
     )
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
-    target_compile_options(oelibc PRIVATE
+    add_target_compile_flags(oelibc PRIVATE C
         -fexcess-precision=standard
         -frounding-math
         )
 endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    add_target_c_compile_flags_if_supported(oelibc PRIVATE
+    add_target_compile_flags_if_supported(oelibc PRIVATE C
         -Wno-attributes
         -Wno-format
         -Wno-missing-braces
@@ -570,10 +571,10 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         )
 endif()
 
-target_compile_definitions(oelibc PRIVATE -D_XOPEN_SOURCE=700)
+add_target_compile_defs(oelibc PRIVATE C _XOPEN_SOURCE=700)
 
 if(USE_DEBUG_MALLOC)
-target_compile_definitions(oelibc PRIVATE OE_USE_DEBUG_MALLOC)
+    add_target_compile_defs(oelibc PRIVATE C OE_USE_DEBUG_MALLOC)
 endif()
 
 # this project (and is dependents) require the enclave headers+lib
@@ -600,4 +601,4 @@ target_include_directories(oelibc SYSTEM PRIVATE ${OE_C_COMPILER_INCDIR})
 set_property(TARGET oelibc PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${OE_LIBDIR}/openenclave/enclave)
 
 # install lib-archive upon install-time
-install (TARGETS oelibc EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install (TARGETS oelibc EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

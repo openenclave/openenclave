@@ -25,10 +25,7 @@ void StorePublicKey(oe_enclave_t* enclave, QuotedPublicKey* quotedPublicKey);
 /**
  * Fetch encrypted data from the enclave.
  */
-void GenerateEncryptedData(
-    oe_enclave_t* enclave,
-    uint8_t** data,
-    uint32_t* size);
+void GenerateEncryptedData(oe_enclave_t* enclave, uint8_t** data, size_t* size);
 
 /**
  * Send encrypted data to the enclave.
@@ -36,6 +33,6 @@ void GenerateEncryptedData(
 void ProcessEncryptedData(
     oe_enclave_t* enclave,
     const uint8_t* data,
-    uint32_t size);
+    size_t size);
 
 #endif // OE_SAMPLES_ATTESTATION_HOST_ECALLS_H

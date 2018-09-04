@@ -10,6 +10,7 @@ ExternalProject_Add(oelibc_includes
         ${CMAKE_CURRENT_LIST_DIR}/musl ${CMAKE_CURRENT_BINARY_DIR}/musl
     CONFIGURE_COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
         ./configure --includedir=${OE_INCDIR}/openenclave/libc CFLAGS=-fPIC
+            CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
     BUILD_COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
             make install-headers
         COMMAND $(CMAKE_COMMAND)

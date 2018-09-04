@@ -11,7 +11,6 @@ typedef struct _AbortStatusArgs
 {
     std::atomic<uint32_t>* thread_ready_count;
     std::atomic<bool>* is_enclave_crashed;
-    int divisor;
     int ret;
 } AbortStatusArgs;
 

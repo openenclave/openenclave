@@ -81,4 +81,4 @@ target_include_directories(oelibcxx_cxx PRIVATE libcxx/src)
 target_include_directories(oelibcxx_cxx PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src)
 
 # install target just to propagate include-location, but not the archive iself
-install(TARGETS oelibcxx_cxx EXPORT openenclave-config ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install(TARGETS oelibcxx_cxx EXPORT openenclave-targets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)

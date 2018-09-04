@@ -103,6 +103,12 @@ char* fgets(char* buf, int len, FILE* fp)
     return ret;
 }
 
+// Necessary with Clang in Release mode.
+char* fgets_unlocked(char* buf, int len, FILE* fp)
+{
+    return fgets(buf, len, fp);
+}
+
 int fileno(FILE* stream)
 {
     if (stream == stdout)
