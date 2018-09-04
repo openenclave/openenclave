@@ -596,6 +596,9 @@ OE_PACK_END
 
 OE_CHECK_SIZE(sizeof(TD), 4096);
 
+/* Get the thread data object for the current thread */
+TD* oe_get_td(void);
+
 /*
 **==============================================================================
 **
