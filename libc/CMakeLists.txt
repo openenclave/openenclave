@@ -659,20 +659,29 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU")
 endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+
     add_target_c_compile_flags_if_supported(oelibc PRIVATE
+        -Werror
         -Wno-attributes
         -Wno-format
         -Wno-missing-braces
-        -Wno-maybe-uninitialized
         -Wno-parentheses
         -Wno-pointer-sign
         -Wno-shift-negative-value
         -Wno-string-plus-int
         -Wno-typedef-redefinition
         -Wno-unknown-pragmas
-        -Wno-error=unused-but-set-variable
-        -Wno-unused-value
+        -Wno-unused-but-set-variable
+        -Wno-unused-value)
+
+    set_source_files_properties(
+        ${MUSLSRC}/regex/regcomp.c
+        ${MUSLSRC}/stdio/vfwscanf.c
+        ${MUSLSRC}/time/__tz.c
+        PROPERTIES
+        COMPILE_FLAGS
         -Wno-jump-misses-init)
+
 endif()
 
 target_compile_definitions(oelibc PRIVATE 
