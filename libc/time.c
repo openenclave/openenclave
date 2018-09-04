@@ -6,10 +6,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-// These definitions are replicated from "musl/src/time/__tz.c" as this file has
-// some dependencies on other functions which are not developed for the enclave
-// environment so we are defining the variable here to resolve the dependency
-// of extern variable in gmtime_r.c.
+// MUSL gmtime_r.c depends on these variable definitions.
 const char __gmt[] = "GMT";
 const char __utc[] = "UTC";
 
