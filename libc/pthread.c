@@ -93,7 +93,7 @@ OE_WEAK_ALIAS(__pthread_self, pthread_self);
 
 int pthread_equal(pthread_t thread1, pthread_t thread2)
 {
-    return thread1 == thread2;
+    return (int)oe_thread_equal((oe_thread_t)thread1, (oe_thread_t)thread2);
 }
 
 int pthread_create(
