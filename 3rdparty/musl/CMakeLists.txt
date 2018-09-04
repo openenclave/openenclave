@@ -24,6 +24,12 @@ ExternalProject_Add(oelibc_includes
         COMMAND ${CMAKE_COMMAND} -E copy 
             ${PATCHES_DIR}/pthread_arch.h 
             ${MUSL_DIR}/arch/x86_64/pthread_arch.h
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${MUSL_DIR}/src/math/x86_64/exp2l.s
+            ${MUSL_DIR}/src/math/x86_64/__exp2l.s
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${PATCHES_DIR}/exp2l.s
+            ${MUSL_DIR}/src/math/x86_64/exp2l.s
     CONFIGURE_COMMAND 
         ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
         ./configure 
