@@ -27,7 +27,6 @@ ExternalProject_Add(oelibc_includes
     CONFIGURE_COMMAND 
         ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/musl
         ./configure 
-            --disable-shared
             --includedir=${OE_INCDIR}/openenclave/libc 
             CFLAGS=${CFLAGS}
     BUILD_COMMAND 
