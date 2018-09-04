@@ -10,7 +10,10 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
+#include <openenclave/internal/syscall.h>
+#include <openenclave/internal/thread.h>
 #include <openenclave/internal/time.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,7 +24,9 @@
 #include <time.h>
 #include <time.h>
 #include <unistd.h>
-#include <stdarg.h>
+
+static oe_syscall_hook_t _hook;
+static oe_spinlock_t _lock;
 
 static const uint64_t _SEC_TO_MSEC = 1000UL;
 static const uint64_t _MSEC_TO_USEC = 1000UL;
@@ -35,10 +40,8 @@ _syscall_open(long n, long x1, long x2, long x3, long x4, long x5, long x6)
     int mode = (int)x3;
 
     (void)filename;
+    (void)flags;
     (void)mode;
-
-    if (flags == O_RDONLY)
-        return STDIN_FILENO;
 
     if (flags == O_WRONLY)
         return STDOUT_FILENO;
@@ -201,6 +204,24 @@ done:
 /* Intercept __syscalls() from MUSL */
 long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
 {
+    oe_spin_lock(&_lock);
+    oe_syscall_hook_t hook = _hook;
+    oe_spin_unlock(&_lock);
+
+    /* Invoke the syscall hook if any */
+    if (hook)
+    {
+        long ret = -1;
+
+        if (hook(n, x1, x2, x3, x4, x5, x6, &ret) == OE_OK)
+        {
+            /* The hook handled the syscall */
+            return ret;
+        }
+
+        /* The hook ignored the syscall so fall through */
+    }
+
     switch (n)
     {
         case SYS_nanosleep:
@@ -254,4 +275,11 @@ long syscall(long number, ...)
     va_end(ap);
 
     return ret;
+}
+
+void oe_register_syscall_hook(oe_syscall_hook_t hook)
+{
+    oe_spin_lock(&_lock);
+    _hook = hook;
+    oe_spin_unlock(&_lock);
 }
