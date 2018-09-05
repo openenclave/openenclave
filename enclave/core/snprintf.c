@@ -185,7 +185,7 @@ int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
             }
             else if (p[0] == 'p')
             {
-                s = _U64ToHexStr(scratch+2, (uint64_t)oe_va_arg(ap, void*));
+                s = _U64ToHexStr(scratch + 2, (uint64_t)oe_va_arg(ap, void*));
                 ((char*)s)[-1] = 'x';
                 ((char*)s)[-2] = '0';
                 s -= 2;
