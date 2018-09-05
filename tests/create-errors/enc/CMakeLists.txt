@@ -2,7 +2,5 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(create_errors_enc sign.conf private.pem
-    enc.c
-    )
+add_executable(create_errors_enc enc.c)
 target_link_libraries(create_errors_enc oeenclave)

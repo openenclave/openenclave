@@ -74,3 +74,11 @@ void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
     assert("oe_handle_verify_report()" == NULL);
     abort();
 }
+
+OE_SET_ENCLAVE_SGX(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    1024, /* StackPageCount */
+    2);   /* TCSCount */

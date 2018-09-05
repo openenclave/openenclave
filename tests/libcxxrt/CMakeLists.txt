@@ -32,7 +32,7 @@ if(UNIX)
 		get_testcase_name(${testcase} name "")
 
 		if("${name}" STREQUAL "test_foreign_exceptions")
-			add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc.signed.so)
+			add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc)
 		else()
 			add_executable(${name}
 				enc/${name}.cpp
@@ -52,7 +52,7 @@ if(UNIX)
 					COMMAND ${name} > ${PROJECT_BINARY_DIR}/tests/libcxxrt/exp_${name}_output.log 2>&1
 					DEPENDS ${name})
 	# Running Enclave test & comparing with normal test
-			add_test(tests/libcxxrt/${name} run_test.sh "./host/libcxxrt_host ./enc/libcxxrttest-${name}_enc.signed.so" exp_${name}_output.log ${name}_output.log)
+			add_test(tests/libcxxrt/${name} run_test.sh "./host/libcxxrt_host ./enc/libcxxrttest-${name}_enc" exp_${name}_output.log ${name}_output.log)
 		endif()
 	endforeach(testcase)
 
@@ -75,7 +75,7 @@ elseif (ADD_WINDOWS_ENCLAVE_TESTS)
 		get_testcase_name(${testcase} name "")
 
 		if("${name}" STREQUAL "test_foreign_exceptions")
-			add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc.signed.so)
+			add_enclave_test(tests/libcxxrt/${name} ./host libcxxrt_host ./enc libcxxrttest-${name}_enc)
 		else()
 			# Logs Generation Path
 			 file(TO_NATIVE_PATH ${LINUX_BIN_DIR}/libcxxrt/exp_${name}_output.log linux_log_file_path) # source path
@@ -88,8 +88,8 @@ elseif (ADD_WINDOWS_ENCLAVE_TESTS)
 				COMMAND ${CMAKE_COMMAND} -E 
 				copy ${linux_log_file_path} ${windows_log_path}/exp_${name}_output.log   # copy Linux generated  Log  
 				COMMAND ${CMAKE_COMMAND} -E 
-				copy ${LINUX_BIN_DIR}/libcxxrt/enc/libcxxrttest-${name}_enc.signed.so 
-				${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrttest-${name}_enc.signed.so #copy Singned File to windows host folder 
+				copy ${LINUX_BIN_DIR}/libcxxrt/enc/libcxxrttest-${name}_enc 
+				${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrttest-${name}_enc #copy Singned File to windows host folder 
 				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 			)
 
@@ -97,7 +97,7 @@ elseif (ADD_WINDOWS_ENCLAVE_TESTS)
 				OUTPUT ${name}_output.log
 				DEPENDS  ${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrt_host.exe
 				COMMAND cmd /c run.bat "${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrt_host.exe" 
-				"${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrttest-${name}_enc.signed.so"  ${name}_output.log 
+				"${PROJECT_BINARY_DIR}/tests/${TEST_DIR}/host/libcxxrttest-${name}_enc"  ${name}_output.log 
 				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests/${TEST_DIR}
 				)
 

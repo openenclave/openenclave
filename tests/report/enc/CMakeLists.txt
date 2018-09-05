@@ -2,10 +2,7 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(report_enc sign.conf private.pem
-    enc.cpp
-    datetime.cpp
-    )
+add_executable(report_enc enc.cpp datetime.cpp)
 
 target_compile_options(report_enc PRIVATE
     -std=c++11

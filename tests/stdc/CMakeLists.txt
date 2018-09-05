@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/stdc ./host stdc_host ./enc stdc_enc.signed.so)
+add_enclave_test(tests/stdc ./host stdc_host ./enc stdc_enc)

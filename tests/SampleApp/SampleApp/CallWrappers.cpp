@@ -45,3 +45,11 @@ int HostUnsecureStrPatching(const char* src, char* dst, int dstLength)
     oe_host_free(args);
     return 0;
 }
+
+OE_SET_ENCLAVE_SGX(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    256,  /* StackPageCount */
+    4);   /* TCSCount */

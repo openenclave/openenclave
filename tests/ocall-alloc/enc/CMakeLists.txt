@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(ocall-alloc_enc sign.conf private.pem
+add_executable(ocall-alloc_enc
     enc.cpp
     wrap.cpp
     wrap-hoststack.c
