@@ -51,5 +51,7 @@ OE_ECALL void Echo(void* args_)
     oe_host_free_for_call_host(args->str2);
     oe_host_free_for_call_host(args->str1);
 
+    oe_malloc(16);
+
     args->ret = 0;
 }
