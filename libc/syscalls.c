@@ -111,7 +111,7 @@ _syscall_writev(long n, long x1, long x2, long x3, long x4, long x5, long x6)
 
     for (unsigned long i = 0; i < iovcnt; i++)
     {
-        __oe_host_print(device, iov[i].iov_base, iov[i].iov_len);
+        oe_host_write(device, iov[i].iov_base, iov[i].iov_len);
         ret += iov[i].iov_len;
     }
 
