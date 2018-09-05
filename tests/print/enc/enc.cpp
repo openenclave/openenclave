@@ -30,9 +30,9 @@ OE_ECALL void TestPrint(void* args_)
         r = fputs("fputs(stdout)\n", stdout);
         OE_TEST(r >= 0);
 
-        const char str[] = "__oe_host_print(stdout)\n";
-        __oe_host_print(0, str, (size_t)-1);
-        __oe_host_print(0, str, sizeof(str) - 1);
+        const char str[] = "oe_host_write(stdout)\n";
+        oe_host_write(0, str, (size_t)-1);
+        oe_host_write(0, str, sizeof(str) - 1);
     }
 
     /* Write to standard error */
@@ -46,9 +46,9 @@ OE_ECALL void TestPrint(void* args_)
         fprintf(stderr, "\n");
         r = fputs("fputs(stderr)\n", stderr);
         OE_TEST(r >= 0);
-        const char str[] = "__oe_host_print(stderr)\n";
-        __oe_host_print(1, str, (size_t)-1);
-        __oe_host_print(1, str, sizeof(str) - 1);
+        const char str[] = "oe_host_write(stderr)\n";
+        oe_host_write(1, str, (size_t)-1);
+        oe_host_write(1, str, sizeof(str) - 1);
     }
 
     args->rc = 0;
