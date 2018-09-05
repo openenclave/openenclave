@@ -93,7 +93,6 @@ typedef enum _oe_func {
     OE_OCALL_PRINT,
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
-    OE_OCALL_MALLOC_DUMP,
     OE_OCALL_BACKTRACE_SYMBOLS,
     /* Caution: always add new OCALL function numbers here */
 
@@ -314,21 +313,6 @@ typedef struct _oe_init_enclave_args
     uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
     oe_enclave_t* enclave;
 } oe_init_enclave_args_t;
-
-/*
-**==============================================================================
-**
-** oe_malloc_dump_args_t
-**
-**==============================================================================
-*/
-
-typedef struct _oe_malloc_dump_args
-{
-    uint64_t size;
-    void* addrs[OE_BACKTRACE_MAX];
-    int num_addrs;
-} oe_malloc_dump_args_t;
 
 /*
 **==============================================================================
