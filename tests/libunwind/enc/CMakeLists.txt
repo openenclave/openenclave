@@ -27,7 +27,7 @@ target_include_directories(libunwindtest-support PRIVATE
 target_link_libraries(libunwindtest-support PUBLIC oelibc oelibcxx oeenclave)
 
 function(add_libunwind_test_enc NAME TESTFILE)
-    add_enclave_executable(libunwindtest-${NAME}_enc sign.conf private.pem
+    add_executable(libunwindtest-${NAME}_enc
         enc.c
         ${PROJECT_SOURCE_DIR}/${TESTFILE}
         )

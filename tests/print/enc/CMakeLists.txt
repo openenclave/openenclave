@@ -4,9 +4,7 @@
 include(add_compile_flags_if_supported)
 
 include(add_enclave_executable)
-add_enclave_executable(print_enc sign.conf private.pem
-    enc.cpp
-    )
+add_executable(print_enc enc.cpp)
 
 target_compile_options(print_enc PRIVATE
     -fno-builtin-strcpy

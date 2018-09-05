@@ -29,7 +29,7 @@ function(add_libmbed_test_enc NAME )
         DEPENDS ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/scripts/generate_code.pl mbedcrypto ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/helpers.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/main_test.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_${suite_name}.function ${PROJECT_SOURCE_DIR}/3rdparty/mbedtls/mbedtls/tests/suites/test_suite_${data_name}.data
    )
 
-    add_enclave_executable(libmbedtest_suite_${NAME} sign.conf private.pem test_suite_${NAME} 
+    add_executable(libmbedtest_suite_${NAME} test_suite_${NAME} 
      enc.c
      main.c
      start.S
@@ -48,11 +48,7 @@ function(add_libmbed_test_enc NAME )
 endfunction(add_libmbed_test_enc)
 
 function(add_libmbed_selftest_enc NAME SOURCE )
-    add_enclave_executable(libmbedtest-${NAME}_enc sign.conf private.pem
-	enc.c
-        main.c
-        start.S
-        )
+    add_executable(libmbedtest-${NAME}_enc enc.c main.c start.S)
 
     target_include_directories(libmbedtest-${NAME}_enc PUBLIC
         ..

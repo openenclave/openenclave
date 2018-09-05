@@ -32,9 +32,7 @@ target_link_libraries(libcxxtest-support INTERFACE -Wl,--undefined=Test)
 # helper function to create enclave binary
 function(add_libcxx_test_enc NAME CXXFILE)
     #message("libcxx-test NAME=${NAME} CXXFILE=${CXXFILE}")
-    add_enclave_executable(libcxxtest-${NAME}_enc sign.conf private.pem
-        main.cpp
-        )
+    add_executable(libcxxtest-${NAME}_enc main.cpp)
 
     target_include_directories(libcxxtest-${NAME}_enc PRIVATE
         ..

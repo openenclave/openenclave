@@ -2,5 +2,5 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(hexdump_enc sign.conf private.pem enc.c)
+add_executable(hexdump_enc enc.c)
 target_link_libraries(hexdump_enc oeenclave)

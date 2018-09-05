@@ -7,4 +7,4 @@ if (UNIX)
 	add_subdirectory(enc)
 endif()
 
-add_enclave_test(tests/abortStatus ./host abortStatus_host ./enc abortStatus_enc.signed.so)
+add_enclave_test(tests/abortStatus ./host abortStatus_host ./enc abortStatus_enc)
