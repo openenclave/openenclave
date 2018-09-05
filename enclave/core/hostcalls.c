@@ -87,44 +87,6 @@ char* oe_host_strndup(const char* str, size_t n)
     return p;
 }
 
-int __oe_host_putchar(int c)
-{
-    int ret = -1;
-
-    if (oe_ocall(OE_OCALL_PUTCHAR, (uint64_t)c, NULL) != OE_OK)
-        goto done;
-
-    ret = 0;
-
-done:
-
-    return ret;
-}
-
-int __oe_host_puts(const char* str)
-{
-    int ret = -1;
-    char* hstr = NULL;
-
-    if (!str)
-        goto done;
-
-    if (!(hstr = oe_host_strndup(str, OE_SIZE_MAX)))
-        goto done;
-
-    if (oe_ocall(OE_OCALL_PUTS, (uint64_t)hstr, NULL) != OE_OK)
-        goto done;
-
-    ret = 0;
-
-done:
-
-    if (hstr)
-        oe_host_free(hstr);
-
-    return ret;
-}
-
 int __oe_host_print(int device, const char* str, size_t len)
 {
     int ret = -1;

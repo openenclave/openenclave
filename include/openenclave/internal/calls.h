@@ -88,8 +88,6 @@ typedef enum _oe_func {
     OE_OCALL_MALLOC,
     OE_OCALL_REALLOC,
     OE_OCALL_FREE,
-    OE_OCALL_PUTS,
-    OE_OCALL_PUTCHAR,
     OE_OCALL_PRINT,
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
