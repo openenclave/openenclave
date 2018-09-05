@@ -375,16 +375,8 @@ static oe_result_t _HandleOCALL(
             HandleFree(argIn);
             break;
 
-        case OE_OCALL_PUTS:
-            HandlePuts(argIn);
-            break;
-
         case OE_OCALL_PRINT:
             HandlePrint(argIn);
-            break;
-
-        case OE_OCALL_PUTCHAR:
-            HandlePutchar(argIn);
             break;
 
         case OE_OCALL_THREAD_WAIT:

@@ -6,10 +6,7 @@
 
 #include "enclave.h"
 
-void HandlePuts(uint64_t argIn);
 void HandlePrint(uint64_t argIn);
-void HandlePutchar(uint64_t argIn);
-void HandlePutws(uint64_t argIn);
 
 void HandleMalloc(uint64_t argIn, uint64_t* argOut);
 void HandleRealloc(uint64_t argIn, uint64_t* argOut);
