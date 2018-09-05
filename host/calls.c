@@ -422,11 +422,10 @@ static oe_result_t _HandleOCALL(
             oe_handle_get_time(argIn, argOut);
             break;
 
-#if defined(OE_USE_DEBUG_MALLOC)
-        case OE_OCALL_MALLOC_DUMP:
-            handle_malloc_dump(enclave, argIn);
+        case OE_OCALL_BACKTRACE_SYMBOLS:
+            oe_handle_backtrace_symbols(enclave, argIn);
             break;
-#endif
+
         default:
         {
             /* No function found with the number */

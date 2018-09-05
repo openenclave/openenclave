@@ -17,8 +17,8 @@
 
 #include <openenclave/host.h>
 
-#include <openenclave/internal/backtrace_symbols.h>
 #include <openenclave/internal/calls.h>
+#include <openenclave/internal/elf.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/thread.h>
 #include <openenclave/internal/utils.h>
@@ -187,28 +187,86 @@ void HandleGetQETargetInfo(uint64_t argIn)
     args->result = sgx_get_qetarget_info(&args->targetInfo);
 }
 
-#if defined(OE_USE_DEBUG_MALLOC)
-void handle_malloc_dump(oe_enclave_t* enclave, uint64_t arg)
+static char** _backtrace_symbols(
+    oe_enclave_t* enclave,
+    void* const* buffer,
+    int size)
 {
-    oe_malloc_dump_args_t* args = (oe_malloc_dump_args_t*)arg;
-    char** syms = NULL;
+    char** ret = NULL;
+    Elf64 elf = ELF64_INIT;
+    bool elf_loaded = false;
+    size_t malloc_size = 0;
+    const char unknown[] = "<unknown>";
+    char* ptr = NULL;
 
-    if (!args)
+    if (!enclave || enclave->magic != ENCLAVE_MAGIC || !buffer || !size)
         goto done;
 
-    if (!(syms = oe_backtrace_symbols(enclave, args->addrs, args->num_addrs)))
+    /* Open the enclave ELF64 image */
+    {
+        if (Elf64_Load(enclave->path, &elf) != 0)
+            goto done;
+
+        elf_loaded = true;
+    }
+
+    /* Determine total memory requirements */
+    {
+        /* Calculate space for the array of string pointers */
+        malloc_size = size * sizeof(char*);
+
+        /* Calculate space for each string */
+        for (int i = 0; i < size; i++)
+        {
+            const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
+            const char* name = Elf64_GetFunctionName(&elf, vaddr);
+
+            if (!name)
+                name = unknown;
+
+            malloc_size += strlen(name) + sizeof(char);
+        }
+    }
+
+    /* Allocate the array of string pointers, followed by the strings */
+    if (!(ptr = (char*)malloc(malloc_size)))
         goto done;
 
-    printf("%llu bytes\n", OE_LLX(args->size));
+    /* Set pointer to array of strings */
+    ret = (char**)ptr;
 
-    for (size_t i = 0; i < args->num_addrs; i++)
-        printf("%s(): %p\n", syms[i], args->addrs[i]);
+    /* Skip over array of strings */
+    ptr += size * sizeof(char*);
 
-    printf("\n");
+    /* Copy strings into return buffer */
+    for (int i = 0; i < size; i++)
+    {
+        const uint64_t vaddr = (uint64_t)buffer[i] - enclave->addr;
+        const char* name = Elf64_GetFunctionName(&elf, vaddr);
+
+        if (!name)
+            name = unknown;
+
+        size_t name_size = strlen(name) + sizeof(char);
+        memcpy(ptr, name, name_size);
+        ret[i] = ptr;
+        ptr += name_size;
+    }
 
 done:
 
-    if (syms)
-        free(syms);
+    if (elf_loaded)
+        Elf64_Unload(&elf);
+
+    return ret;
 }
-#endif
+
+void oe_handle_backtrace_symbols(oe_enclave_t* enclave, uint64_t arg)
+{
+    oe_backtrace_symbols_args_t* args = (oe_backtrace_symbols_args_t*)arg;
+
+    if (args)
+    {
+        args->ret = _backtrace_symbols(enclave, args->buffer, args->size);
+    }
+}
