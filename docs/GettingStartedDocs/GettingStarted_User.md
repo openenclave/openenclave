@@ -1,6 +1,15 @@
 Getting Started for Open Enclave (OE) application developers
 ========================================================
 
+Install Prerequisites
+----------------------------------------------
+
+   Run the following command to install all required prerequisites
+
+    sudo apt-get install make gcc g++ gdb libmbedtls10 libssl-dev dh-exec libcurl3
+
+   See [here](prerequisites.md#install-prerequisites-1) for more explanation
+
 Download and Install OE SDK package
 ----------------------------------------------
  
