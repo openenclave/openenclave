@@ -608,10 +608,6 @@ static void _ReleaseTCS(oe_enclave_t* enclave, void* tcs)
 **==============================================================================
 */
 
-#if defined(_WIN32)
-#define TRACE_ECALLS
-#endif
-
 oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint16_t func,
@@ -625,10 +621,6 @@ oe_result_t oe_ecall(
     uint16_t funcOut = 0;
     uint16_t resultOut = 0;
     uint64_t argOut = 0;
-
-#if defined(TRACE_ECALLS)
-    printf("=== oe_ecall()\n");
-#endif
 
     if (!enclave)
         OE_THROW(OE_INVALID_PARAMETER);
@@ -665,14 +657,10 @@ OE_CATCH:
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
 
-/* ATTN: this causes an assertion with call nesting. */
-/* ATTN: make enclave argument a cookie. */
-/* ATTN: the SetEnclave() function no longer exists */
-/* SetEnclave(NULL); */
-
-#if defined(TRACE_ECALLS)
-    printf("=== oe_ecall(): result=%u\n", result);
-#endif
+    /* ATTN: this causes an assertion with call nesting. */
+    /* ATTN: make enclave argument a cookie. */
+    /* ATTN: the SetEnclave() function no longer exists */
+    /* SetEnclave(NULL); */
 
     return result;
 }

@@ -72,7 +72,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=${env.WSL_ROOTFS}/var/tmp/build/${workspaceHash}/build/Linux-Debug/tests",
+      "cmakeCommandArgs": "-DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=${env.WSL_ROOTFS}/var/tmp/build/${workspaceHash}/build/Linux-Debug/tests ",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
@@ -94,7 +94,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=${env.WSL_ROOTFS}/var/tmp/build/${workspaceHash}/build/Linux-Debug/tests",
+      "cmakeCommandArgs": "-DADD_WINDOWS_ENCLAVE_TESTS=1 -DLINUX_BIN_DIR=${env.WSL_ROOTFS}/var/tmp/build/${workspaceHash}/build/Linux-Debug/tests ",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": ""
     },
