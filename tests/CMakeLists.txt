@@ -48,6 +48,7 @@ add_subdirectory(SampleAppCRT)
 add_subdirectory(sealKey)
 add_subdirectory(stdcxx)
 add_subdirectory(thread)
+add_subdirectory(threadcxx)
 endif()
 
 if (UNIX)
