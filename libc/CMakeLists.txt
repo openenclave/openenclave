@@ -682,14 +682,7 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         -Wno-unknown-pragmas
         -Wno-unused-but-set-variable
         -Wno-unused-value
-        -Wno-unneeded-internal-declaration)
-
-    set_source_files_properties(
-        ${MUSLSRC}/regex/regcomp.c
-        ${MUSLSRC}/stdio/vfwscanf.c
-        ${MUSLSRC}/time/__tz.c
-        PROPERTIES
-        COMPILE_FLAGS
+        -Wno-unneeded-internal-declaration
         -Wno-jump-misses-init)
 
 endif()
