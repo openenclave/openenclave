@@ -215,7 +215,7 @@ static mbedtls_x509_crt* _FindRootCert(mbedtls_x509_crt* chain)
 {
     mbedtls_x509_crt* p;
 
-    /* Find the last element in the list */
+    /* Find the last certificate in the list */
     for (p = chain; p->next; p = p->next)
         ;
 
