@@ -681,7 +681,8 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         -Wno-typedef-redefinition
         -Wno-unknown-pragmas
         -Wno-unused-but-set-variable
-        -Wno-unused-value)
+        -Wno-unused-value
+        -Wno-unneeded-internal-declaration)
 
     set_source_files_properties(
         ${MUSLSRC}/regex/regcomp.c
