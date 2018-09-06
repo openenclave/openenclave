@@ -306,8 +306,6 @@ static void _dump(bool need_lock)
 **==============================================================================
 */
 
-bool oe_disable_debug_malloc_check;
-
 void* oe_debug_malloc(size_t size)
 {
     void* block;
