@@ -685,7 +685,9 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         -Wno-unneeded-internal-declaration
         -Wno-jump-misses-init
         -Wno-maybe-uninitialized
-        -Wno-macro-redefined)
+        -Wno-macro-redefined
+        -Wno-self-assign
+        -Wno-parentheses-equality)
 
 endif()
 

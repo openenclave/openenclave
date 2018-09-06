@@ -31,6 +31,8 @@ typedef struct _FILE FILE;
 
 static int _dlmalloc_stats_fprintf(FILE* stream, const char* format, ...);
 
+#pragma GCC diagnostic ignored "-Wparentheses-equality"
+
 #include "../../3rdparty/dlmalloc/dlmalloc/malloc.c"
 
 /* Choose release mode or debug mode allocation functions */
