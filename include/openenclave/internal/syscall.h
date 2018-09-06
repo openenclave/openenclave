@@ -25,9 +25,11 @@ typedef oe_result_t (*oe_syscall_hook_t)(
  * This function installs a hook to intercept syscalls originating from the
  * MUSL C library. The hook may handle the syscall and return **OE_OK** or
  * it may ignore the syscall and return any other value, causing **libc**
- * perform the default action for that syscall. By convention, hooks should
+ * to perform the default action for that syscall. By convention, hooks should
  * return **OE_UNSUPPORTED** when ignoring the syscall, although **libc* does
- * not check that value.
+ * not check the hook's return value. Note that only one hook may be installed
+ * at a time, so this function replaces any previously installed hook. To
+ * uninstall the hook, pass NULL to this function.
  *
  * @param hook the syscall hook.
  */
