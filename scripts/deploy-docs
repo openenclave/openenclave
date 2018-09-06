@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+##==============================================================================
+
+function trap_handler()
+{
+    echo "ERROR LINE# ${1} : ${2}"
+    exit ${1}
+}
+
+trap 'trap_handler ${LINENO} $?' ERR
+
+builddir="$1"
+mode="$2"
+
+case $mode in 
+    ssh)
+        echo "Pushing gh-pages via ssh"
+    ;;
+    
+    https)
+        echo "Pushing gh-pages via https, will prompt for username and personal access token"
+    ;;
+    
+    *)
+        echo "Usage: $0 builddir [ ssh | https ]";
+        echo "  builddir:  Build directory for OpenEnclave repo"
+        echo "  ssh:   Pushes doxygen generated docs to OpenEnclave's gh-pages"
+        echo "         via ssh, requires ssh keys to be set up"
+        echo "  https: Pushes doxygen generated docs to OpenEnclave's gh-pages"
+        echo "         via https, prompts user for username and personal access token"
+        exit 1;
+    ;;
+esac 
+
+root="$(git rev-parse --show-toplevel)"
+cd "$root"/"$builddir"
+
+make refman
+
+tmp=$(mktemp -d)
+
+branch=gh-pages
+
+cp -r "$root"/docs/refman/index.html $tmp/
+
+cp -r docs/refman/html $tmp/api
+
+cd $tmp
+
+git init
+
+git checkout --orphan $branch
+
+git add -A 
+
+git commit -m "doc deploy"
+
+case $mode in 
+    ssh)
+        git push -f git@github.com:Microsoft/openenclave.git $branch:$branch
+    ;; 
+    https)
+        git push -f https://github.com/Microsoft/openenclave.git $branch:$branch
+    ;;
+    *)
+        echo " Unexpected"
+        exit 1;
+    ;;
+esac
+
+rm -rf $tmp
+

@@ -19,6 +19,17 @@ OE_EXTERNC_BEGIN
  */
 int oe_backtrace(void** buffer, int size);
 
+/**
+ * This function behaves like the GNU **backtrace_symbols** function. See the
+ * **backtrace_symbols** manpage for more information.
+ */
+char** oe_backtrace_symbols(void* const* buffer, int size);
+
+/**
+ * Print a backtrace for the current function.
+ */
+oe_result_t oe_print_backtrace(void);
+
 OE_EXTERNC_END
 
 #endif /* _OE_BACKTRACE_H */

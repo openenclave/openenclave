@@ -46,14 +46,13 @@ The enclave.h header file was included in this sample because it uses the oe_cal
         
 - oe_call_host("host_hello, NULL);
 
-     oe_call_host calls the host function whose name is given by the func parameter. The host must define a corresponding function with the following prototype (see host section for how to define the called function in host, eg "host_hello")
+     oe_call_host calls the host function whose name is given by the func parameter. See [Host Application section](README.md#host-application) for how to define the called function in host, eg "host_hello".
      
        oe_result_t oe_call_host(const char *func, void *args)
        
      The args parameter can be whatever the host and the enclave agree on.
 
      helloworld enclave makes a call into the host's Host_Hello function
-      oe_call_host("host_hello", NULL);
 
  ### Build and sign an enclave 
  
@@ -62,13 +61,13 @@ The enclave.h header file was included in this sample because it uses the oe_cal
   For example:
   
     youradminusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld/enc$ make build
-    g++ -c -Wall -Werror -O2 -m64 -nostdinc -fPIC -I/home/soccerl/openenclave/include 
-        -I/home/soccerl/openenclave/include/libc enc.c -o enc.o
+    g++ -c -Wall -Werror -O2 -m64 -nostdinc -fPIC -I/home/username/openenclave/include 
+        -I/home/username/openenclave/include/libc enc.c -o enc.o
     g++ -o helloworldenc.so enc.o -Wl,--no-undefined  -nostdlib  -nodefaultlibs  -nostartfiles  -Wl,-Bstatic  
         -Wl,-Bsymbolic  -Wl,--export-dynamic  -Wl,-pie -L/home/youradminusername/openenclave/lib/openenclave/enclave  
         -loeenclave -lmbedx509  -lmbedcrypto  -loelibc -loecore
         
- Here is a comlete list of files after building this sample
+ Here is a complete list of files after building this sample
  
     youradminusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld/enc$ ls -l
     total 2220
@@ -80,11 +79,11 @@ The enclave.h header file was included in this sample because it uses the oe_cal
     -rw-r--r-- 1 1080    Aug 20 12:35 Makefile
     -rw-r--r-- 1 2455    Aug 16 13:57 private.pem
 
-Notice, not only helloworldenc.so was built, there was a signed library, `helloworldenc.signed.so`, in the above list. It is needed because, on Linux,an enclaves is required to be packaged as a shared object that has been digitally signed. 
+Notice, not only helloworldenc.so was built, there was a signed library, `helloworldenc.signed.so`, in the above list. It is needed because, on Linux, an enclave is required to be packaged as a shared object that has been digitally signed. 
 
 ####  Under the hood for the "make build" operation: 
 
-Here is a listing of key components in the helloworld/enc/Makefile. (complete listing](/samples/make/helloworld/enc/Makefile)
+Here is a listing of key components in the helloworld/enc/Makefile. [complete listing](/samples/make/helloworld/enc/Makefile)
 
 ```
        LIBRARIES += -L${OE_LIBDIR}/openenclave/enclave 
@@ -152,7 +151,9 @@ Here is a listing of key components in the helloworld/enc/Makefile. (complete li
 
    Note: Listing of [helloworld/enc/helloworld.conf](/samples/make/helloworld/enc/helloworld.conf)
          
-# Host application
+# Host Application
+
+  The host process is what drives the enclave app. It is responsible for managing the lifetime of the enclave and invoking enclave ECALLs but should be considered an untrusted component that is never allowed to handle plaintext secrets intended for the enclave.
 
   The section we will cover how to develop a host to load and run the helloworld enclave we built above. 
 
@@ -175,10 +176,20 @@ Here is a listing of key components in the helloworld/enc/Makefile. (complete li
        
       On a successful creation, it turns an opaque enclave handle for any future operation on the enclave
  
+      Note: - You can create multiple instances of enclaves this way if there is remaining enclave resource available.
+      (such as Enclave Page Cache (EPC))
+
  - Calls into the enclave: oe_call_enclave()
 
-   The host call the enclave's "Enclave_HelloWorld" defined in the Enclave secction with the enclave returned 
-   from the oe_create_enclave call above.
+      A host call an enclave method, use oe_call_enclave with the target oe_enclave_t, the name of the target enclave method, and a    
+     pointer to the arguments for the invocation. The target function must have been defined with OE_ECALL.
+     For complex enclave methods, both the input and output parameters to the function are usually defined as in a single structure    
+     understood by both host and enclave in their shared header.
+
+       oe_call_enclave(enclave, "name_of_the_target_enclave_method", args);
+
+      In this example, the host call the enclave's "Enclave_HelloWorld" defined in the Enclave secction with the enclave returned 
+     from the oe_create_enclave call above.
         
        oe_call_enclave(enclave, "enclave_helloworld", NULL);
        
@@ -199,6 +210,7 @@ Here is a listing of key components in the helloworld/enc/Makefile. (complete li
      OE_OCALL void host_hello(void* args_)
       
  - Terminates the enclave: oe_terminate_enclave()
+ 
       To terminate an enclave and free its associated resources such as EPC, call 
       oe_terminate_enclave with the enclave handle that was returned during creation of the enclave.
               

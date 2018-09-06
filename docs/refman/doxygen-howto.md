@@ -32,13 +32,12 @@ The resulting documentation can be found in the cmake tree under:
 build/docs/refman
 ```
 
-To update the generated Markdown files in the source tree for commit into
-Github, you will need to also run the following from the cmake build root:
-
+Open Enclave SDK API documentation resides on the gh-pages branch
+To update the generated html files in the source tree for commit into
+Github, you will need to do the following:
 ```
-build$ make refman-source
+openenclave$ scripts/deploy-docs
 ```
-
 ## Adding headers files to Doxygen
 
 To add new header files to be processed by Doxygen, edit this file (in the

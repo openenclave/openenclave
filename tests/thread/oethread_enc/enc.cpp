@@ -243,3 +243,11 @@ OE_ECALL void LockAndUnlockMutexes(void* arg)
         oe_mutex_unlock(mutex);
     }
 }
+
+OE_SET_ENCLAVE_SGX(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    512,  /* HeapPageCount */
+    512,  /* StackPageCount */
+    16);  /* TCSCount */

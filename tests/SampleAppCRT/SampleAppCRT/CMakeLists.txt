@@ -2,7 +2,5 @@
 # Licensed under the MIT License.
 
 include(add_enclave_executable)
-add_enclave_executable(SampleAppCRT sign.conf private.pem
-    SampleAppCRT.cpp
-    )
+add_executable(SampleAppCRT SampleAppCRT.cpp)
 target_link_libraries(SampleAppCRT oeenclave)

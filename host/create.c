@@ -13,6 +13,7 @@
 
 #include <assert.h>
 #include <openenclave/bits/defs.h>
+#include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/debug.h>
@@ -480,6 +481,39 @@ done:
     return result;
 }
 
+static oe_result_t _PatchPage(
+    oe_page_t* segpages,
+    size_t nsegpages,
+    uint64_t offset,
+    uint64_t value)
+{
+    uint8_t* pagebuf = (uint8_t*)segpages;
+
+    /* Get the total size. */
+    size_t size;
+    oe_result_t ret = oe_safe_mul_sizet(nsegpages, sizeof(oe_page_t), &size);
+    if (ret != OE_OK)
+        return ret;
+
+    /* Check for buffer overflow. */
+    if (offset >= size)
+        return OE_OUT_OF_BOUNDS;
+
+    /* Ensure 8 byte alignment. */
+    uint64_t page;
+    ret = oe_safe_add_u64((uint64_t)pagebuf, offset, &page);
+    if (ret != OE_OK)
+        return ret;
+
+    if (page % sizeof(uint64_t) != 0)
+        return OE_BAD_ALIGNMENT;
+
+    /* Patch the page. */
+    *((uint64_t*)page) = value;
+
+    return OE_OK;
+}
+
 static oe_result_t _AddPages(
     oe_sgx_load_context_t* context,
     Elf64* elf,
@@ -533,7 +567,7 @@ static oe_result_t _AddPages(
         if (Elf64_FindDynamicSymbolByName(elf, "__oe_baseRelocPage", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        *(uint64_t*)((uint8_t*)segpages + sym.st_value) = baseRelocPage;
+        OE_CHECK(_PatchPage(segpages, nsegpages, sym.st_value, baseRelocPage));
     }
 
     /* Patch the "__oe_numRelocPages" */
@@ -543,8 +577,9 @@ static oe_result_t _AddPages(
         if (Elf64_FindDynamicSymbolByName(elf, "__oe_numRelocPages", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        *(uint64_t*)((uint8_t*)segpages + sym.st_value) =
-            relocSize / OE_PAGE_SIZE;
+        OE_CHECK(
+            _PatchPage(
+                segpages, nsegpages, sym.st_value, relocSize / OE_PAGE_SIZE));
     }
 
     /* Patch the "__oe_baseECallPage" */
@@ -554,7 +589,7 @@ static oe_result_t _AddPages(
         if (Elf64_FindDynamicSymbolByName(elf, "__oe_baseECallPage", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        *(uint64_t*)((uint8_t*)segpages + sym.st_value) = baseECallPage;
+        OE_CHECK(_PatchPage(segpages, nsegpages, sym.st_value, baseECallPage));
     }
 
     /* Patch the "__oe_numECallPages" */
@@ -564,8 +599,9 @@ static oe_result_t _AddPages(
         if (Elf64_FindDynamicSymbolByName(elf, "__oe_numECallPages", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        *(uint64_t*)((uint8_t*)segpages + sym.st_value) =
-            ecallSize / OE_PAGE_SIZE;
+        OE_CHECK(
+            _PatchPage(
+                segpages, nsegpages, sym.st_value, ecallSize / OE_PAGE_SIZE));
     }
 
     /* Patch the "__oe_baseHeapPage" */
@@ -575,7 +611,7 @@ static oe_result_t _AddPages(
         if (Elf64_FindDynamicSymbolByName(elf, "__oe_baseHeapPage", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        *(uint64_t*)((uint8_t*)segpages + sym.st_value) = baseHeapPage;
+        OE_CHECK(_PatchPage(segpages, nsegpages, sym.st_value, baseHeapPage));
     }
 
     /* Patch the "__oe_numHeapPages" */
@@ -585,7 +621,7 @@ static oe_result_t _AddPages(
         if (Elf64_FindDynamicSymbolByName(elf, "__oe_numHeapPages", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        *(uint64_t*)((uint8_t*)segpages + sym.st_value) = nheappages;
+        OE_CHECK(_PatchPage(segpages, nsegpages, sym.st_value, nheappages));
     }
 
     /* Patch the "__oe_numPages" */
@@ -596,7 +632,7 @@ static oe_result_t _AddPages(
         if (Elf64_FindDynamicSymbolByName(elf, "__oe_numPages", &sym) != 0)
             OE_RAISE(OE_FAILURE);
 
-        *(uint64_t*)((uint8_t*)segpages + sym.st_value) = npages;
+        OE_CHECK(_PatchPage(segpages, nsegpages, sym.st_value, npages));
     }
 
     /* Patch the "__oe_virtualBaseAddr" */
@@ -609,7 +645,7 @@ static oe_result_t _AddPages(
             OE_RAISE(OE_FAILURE);
         }
 
-        *(uint64_t*)((uint8_t*)segpages + sym.st_value) = sym.st_value;
+        OE_CHECK(_PatchPage(segpages, nsegpages, sym.st_value, sym.st_value));
     }
 
     /* Add the program segments first */

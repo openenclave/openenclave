@@ -23,6 +23,7 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
    echo "        -p SGX1FLC or -p=SGX1FLC to build for SGX1FLC platform"
    echo "        -b Debug|RelWithDebInfo|Release or -b=Debug|RelWithDebInfo|Release"
    echo "        -h or --help to Display usage and exit"
+   echo "        --compiler=[clang-7,gcc] to build with a specified compiler"
    echo "        --build_package to Build a .deb package after testing"
    echo "        --enable_full_libcxx_tests to Enable libcxx tests"
    echo "        --enable_full_libc_tests to Enable libc tests"
@@ -47,6 +48,8 @@ OE_INSTALL_DIR="/opt/openenclave"
 ENABLE_FULL_LIBC_TESTS=0
 #Flag for enabling full libcxx tests.
 ENABLE_FULL_LIBCXX_TESTS=0
+#Flag to build with clang instead of gcc
+COMPILER_VALUE="gcc"
 
 #Parse the command line - keep looping as long as there is at least one more argument
 while [[ $# -gt 0 ]]; do
@@ -74,6 +77,9 @@ while [[ $# -gt 0 ]]; do
         -b|--build_type)
         shift # past the key and to the value
         BUILD_TYPE="$1"
+        ;;
+        --compiler=*)
+        COMPILER_VALUE="${key#*=}"
         ;;
         # This is an arg=value type option. Will catch -b=value or --build_type=value
         -b=*|--build_type=*)
@@ -148,6 +154,14 @@ if [ -n "${BUILD_NUMBER}" ]; then
 fi
 
 echo "CMAKE_FLAGS are ${CMAKE_FLAGS}"
+
+if [ "$COMPILER_VALUE" = "gcc" ]; then
+    export CC="gcc"
+    export CXX="g++"
+elif [ "$COMPILER_VALUE" = "clang-7" ]; then
+    export CC="clang-7"
+    export CXX="clang++-7"
+fi
 
 cmake .. ${CMAKE_FLAGS}
 if [ "$?" != "0" ]; then

@@ -160,7 +160,6 @@ oe_result_t oe_enforce_revocation(
     char* intermediate_crl_url = NULL;
     char* leaf_crl_url = NULL;
     oe_crl_t crls[2] = {{{0}}};
-    oe_datetime_t tcb_info_issue_date = {0};
     oe_datetime_t crl_this_update_date = {0};
     oe_datetime_t crl_next_update_date = {0};
 
@@ -246,13 +245,8 @@ oe_result_t oe_enforce_revocation(
 
     // Check that the tcb has been issued after the earliest date that the
     // enclave accepts.
-    OE_CHECK(
-        oe_datetime_from_string(
-            (char*)parsed_tcb_info.issue_date,
-            parsed_tcb_info.issue_date_size,
-            &tcb_info_issue_date));
     if (oe_datetime_compare(
-            &tcb_info_issue_date, &_sgx_minimim_crl_tcb_issue_date) != 1)
+            &parsed_tcb_info.issue_date, &_sgx_minimim_crl_tcb_issue_date) != 1)
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
 
     // Check that the CRLs have not expired.

@@ -118,7 +118,7 @@ typedef struct oe_sgx_enclave_properties_t
     _StackPageCount_,                                                     \
     _TcsCount_)                                                           \
     OE_INFO_SECTION_BEGIN                                                 \
-    OE_EXPORT const oe_sgx_enclave_properties_t oe_enclavePropertiesSGX = \
+    OE_EXPORT_CONST oe_sgx_enclave_properties_t oe_enclavePropertiesSGX = \
     {                                                                     \
         .header =                                                         \
         {                                                                 \
