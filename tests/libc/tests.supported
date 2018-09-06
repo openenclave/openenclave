@@ -5,7 +5,6 @@
 ../../3rdparty/musl/libc-test/src/functional/crypt.c
 ../../3rdparty/musl/libc-test/src/functional/dirname.c
 ../../3rdparty/musl/libc-test/src/functional/env.c
-../../3rdparty/musl/libc-test/src/functional/fnmatch.c
 ../../3rdparty/musl/libc-test/src/functional/qsort.c
 ../../3rdparty/musl/libc-test/src/functional/search_insque.c
 ../../3rdparty/musl/libc-test/src/functional/search_lsearch.c
@@ -238,10 +237,5 @@
 ../../3rdparty/musl/libc-test/src/regression/iconv-roundtrips.c
 ../../3rdparty/musl/libc-test/src/regression/putenv-doublefree.c
 ../../3rdparty/musl/libc-test/src/regression/strverscmp.c
-../../3rdparty/musl/libc-test/src/regression/regex-backref-0.c
-../../3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c
-../../3rdparty/musl/libc-test/src/regression/regexec-nosub.c
-../../3rdparty/musl/libc-test/src/regression/regex-ere-backref.c
-../../3rdparty/musl/libc-test/src/regression/regex-negated-range.c
 ../../3rdparty/musl/libc-test/src/functional/random.c
 ../../3rdparty/musl/libc-test/src/functional/time.c

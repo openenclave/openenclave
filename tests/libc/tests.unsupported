@@ -83,3 +83,9 @@
 ../../3rdparty/musl/libc-test/src/regression/tls_get_new-dtv.c
 ../../3rdparty/musl/libc-test/src/regression/uselocale-0.c
 ../../3rdparty/musl/libc-test/src/functional/search_hsearch.c
+../../3rdparty/musl/libc-test/src/regression/regex-backref-0.c
+../../3rdparty/musl/libc-test/src/functional/fnmatch.c
+../../3rdparty/musl/libc-test/src/regression/regex-bracket-icase.c
+../../3rdparty/musl/libc-test/src/regression/regexec-nosub.c
+../../3rdparty/musl/libc-test/src/regression/regex-ere-backref.c
+../../3rdparty/musl/libc-test/src/regression/regex-negated-range.c
