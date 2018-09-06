@@ -8,7 +8,6 @@
 
 // MUSL gmtime_r.c depends on these variable definitions.
 const char __gmt[] = "GMT";
-const char __utc[] = "UTC";
 
 size_t strftime(char* s, size_t max, const char* format, const struct tm* tm)
 {
