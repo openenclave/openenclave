@@ -1,5 +1,4 @@
-struct msqid_ds
-{
+struct msqid_ds {
 	struct ipc_perm msg_perm;
 	int __unused1;
 	time_t msg_stime;

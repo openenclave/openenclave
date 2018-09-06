@@ -15,8 +15,7 @@ typedef struct {
 	unsigned int fpsr;
 	unsigned int fpcr;
 } fpregset_t;
-typedef struct sigcontext
-{
+typedef struct sigcontext {
 	unsigned long fault_address;
 	unsigned long regs[31];
 	unsigned long sp, pc, pstate;
@@ -25,6 +24,7 @@ typedef struct sigcontext
 
 #define FPSIMD_MAGIC 0x46508001
 #define ESR_MAGIC 0x45535201
+#define EXTRA_MAGIC 0x45585401
 struct _aarch64_ctx {
 	unsigned int magic;
 	unsigned int size;
@@ -38,6 +38,12 @@ struct fpsimd_context {
 struct esr_context {
 	struct _aarch64_ctx head;
 	unsigned long esr;
+};
+struct extra_context {
+	struct _aarch64_ctx head;
+	unsigned long datap;
+	unsigned int size;
+	unsigned int __reserved[3];
 };
 #else
 typedef struct {
@@ -53,7 +59,7 @@ struct sigaltstack {
 
 typedef struct __ucontext {
 	unsigned long uc_flags;
-	struct ucontext *uc_link;
+	struct __ucontext *uc_link;
 	stack_t uc_stack;
 	sigset_t uc_sigmask;
 	mcontext_t uc_mcontext;

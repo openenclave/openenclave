@@ -79,11 +79,14 @@ int fchmod(int, mode_t);
 int fchmodat(int, const char *, mode_t, int);
 mode_t umask(mode_t);
 int mkdir(const char *, mode_t);
-int mknod(const char *, mode_t, dev_t);
 int mkfifo(const char *, mode_t);
 int mkdirat(int, const char *, mode_t);
-int mknodat(int, const char *, mode_t, dev_t);
 int mkfifoat(int, const char *, mode_t);
+
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+int mknod(const char *, mode_t, dev_t);
+int mknodat(int, const char *, mode_t, dev_t);
+#endif
 
 int futimens(int, const struct timespec [2]);
 int utimensat(int, const char *, const struct timespec [2], int);

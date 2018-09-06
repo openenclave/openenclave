@@ -2,7 +2,7 @@
 #include <errno.h>
 #include "libc.h"
 
-extern const char __gmt[];
+extern const char __utc[];
 
 struct tm *__gmtime_r(const time_t *restrict t, struct tm *restrict tm)
 {
@@ -12,7 +12,7 @@ struct tm *__gmtime_r(const time_t *restrict t, struct tm *restrict tm)
 	}
 	tm->tm_isdst = 0;
 	tm->__tm_gmtoff = 0;
-	tm->__tm_zone = __gmt;
+	tm->__tm_zone = __utc;
 	return tm;
 }
 

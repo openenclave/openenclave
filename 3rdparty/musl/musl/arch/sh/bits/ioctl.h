@@ -85,10 +85,8 @@
 #define TCSETS              _IO('T', 2)
 #define TCSETSW             _IO('T', 3)
 #define TCSETSF             _IO('T', 4)
-#define TCGETS2             _IOR('T', 42, char[44])
-#define TCSETS2             _IOW('T', 43, char[44])
-#define TCSETSW2            _IOW('T', 44, char[44])
-#define TCSETSF2            _IOW('T', 45, char[44])
+#define TIOCGRS485          _IOR('T', 46, char[32])
+#define TIOCSRS485          _IOWR('T', 47, char[32])
 #define TIOCGPTN            _IOR('T', 48, unsigned int)
 #define TIOCSPTLCK          _IOW('T', 49, int)
 #define TIOCGDEV            _IOR('T', 50, unsigned int)
@@ -97,6 +95,7 @@
 #define TIOCGPKT            _IOR('T', 56, int)
 #define TIOCGPTLCK          _IOR('T', 57, int)
 #define TIOCGEXCL           _IOR('T', 64, int)
+#define TIOCGPTPEER         _IO('T', 0x41)
 
 #define TIOCSERCONFIG       _IO('T',  83)
 #define TIOCSERGWILD        _IOR('T', 84, int)
@@ -118,8 +117,6 @@ struct winsize {
     unsigned short ws_xpixel;
     unsigned short ws_ypixel;
 };
-
-#define TIOCM_MODEM_BITS TIOCM_OUT2
 
 #define N_TTY           0
 #define N_SLIP          1
@@ -145,6 +142,7 @@ struct winsize {
 #define SIOCSPGRP       _IOW('s', 8, int)
 #define SIOCGPGRP       _IOW('s', 9, int)
 #define SIOCGSTAMP      _IOR('s', 100, char[8])
+#define SIOCGSTAMPNS    _IOR('s', 101, char[8])
 
 #define SIOCADDRT       0x890B
 #define SIOCDELRT       0x890C
@@ -169,6 +167,7 @@ struct winsize {
 #define SIOCSIFMEM      0x8920
 #define SIOCGIFMTU      0x8921
 #define SIOCSIFMTU      0x8922
+#define SIOCSIFNAME     0x8923
 #define SIOCSIFHWADDR   0x8924
 #define SIOCGIFENCAP    0x8925
 #define SIOCSIFENCAP    0x8926

@@ -1,3 +1,4 @@
+.syntax unified
 .global sigsetjmp
 .global __sigsetjmp
 .type sigsetjmp,%function

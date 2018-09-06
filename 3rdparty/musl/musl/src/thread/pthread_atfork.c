@@ -8,7 +8,7 @@ static struct atfork_funcs {
 	struct atfork_funcs *prev, *next;
 } *funcs;
 
-static volatile int lock[2];
+static volatile int lock[1];
 
 void __fork_handler(int who)
 {

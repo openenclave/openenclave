@@ -104,7 +104,7 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 
 	FLOCK(f);
 
-	f->mode |= f->mode+1;
+	fwide(f, 1);
 
 	for (p=fmt; *p; p++) {
 
@@ -117,8 +117,12 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 			continue;
 		}
 		if (*p != '%' || p[1] == '%') {
-			p += *p=='%';
-			c = getwc(f);
+			if (*p == '%') {
+				p++;
+				while (iswspace((c=getwc(f)))) pos++;
+			} else {
+				c = getwc(f);
+			}
 			if (c!=*p) {
 				ungetwc(c, f);
 				if (c<0) goto input_fail;
@@ -214,11 +218,12 @@ int vfwscanf(FILE *restrict f, const wchar_t *restrict fmt, va_list ap)
 				set = L"";
 			} else if (t == 's') {
 				invert = 1;
-				set = (const wchar_t[]){
+				static const wchar_t spaces[] = {
 					' ', '\t', '\n', '\r', 11, 12,  0x0085,
 					0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005,
 					0x2006, 0x2008, 0x2009, 0x200a,
 					0x2028, 0x2029, 0x205f, 0x3000, 0 };
+				set = spaces;
 			} else {
 				if (*++p == '^') p++, invert = 1;
 				else invert = 0;

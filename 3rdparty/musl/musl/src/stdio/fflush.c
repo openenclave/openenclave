@@ -1,11 +1,33 @@
 #include "stdio_impl.h"
 
-static int __fflush_unlocked(FILE *f)
+/* stdout.c will override this if linked */
+static FILE *volatile dummy = 0;
+weak_alias(dummy, __stdout_used);
+
+int fflush(FILE *f)
 {
+	if (!f) {
+		int r = __stdout_used ? fflush(__stdout_used) : 0;
+
+		for (f=*__ofl_lock(); f; f=f->next) {
+			FLOCK(f);
+			if (f->wpos > f->wbase) r |= fflush(f);
+			FUNLOCK(f);
+		}
+		__ofl_unlock();
+
+		return r;
+	}
+
+	FLOCK(f);
+
 	/* If writing, flush output */
 	if (f->wpos > f->wbase) {
 		f->write(f, 0, 0);
-		if (!f->wpos) return EOF;
+		if (!f->wpos) {
+			FUNLOCK(f);
+			return EOF;
+		}
 	}
 
 	/* If reading, sync position, per POSIX */
@@ -15,35 +37,8 @@ static int __fflush_unlocked(FILE *f)
 	f->wpos = f->wbase = f->wend = 0;
 	f->rpos = f->rend = 0;
 
+	FUNLOCK(f);
 	return 0;
 }
 
-/* stdout.c will override this if linked */
-static FILE *volatile dummy = 0;
-weak_alias(dummy, __stdout_used);
-
-int fflush(FILE *f)
-{
-	int r;
-
-	if (f) {
-		FLOCK(f);
-		r = __fflush_unlocked(f);
-		FUNLOCK(f);
-		return r;
-	}
-
-	r = __stdout_used ? fflush(__stdout_used) : 0;
-
-	OFLLOCK();
-	for (f=libc.ofl_head; f; f=f->next) {
-		FLOCK(f);
-		if (f->wpos > f->wbase) r |= __fflush_unlocked(f);
-		FUNLOCK(f);
-	}
-	OFLUNLOCK();
-	
-	return r;
-}
-
-weak_alias(__fflush_unlocked, fflush_unlocked);
+weak_alias(fflush, fflush_unlocked);

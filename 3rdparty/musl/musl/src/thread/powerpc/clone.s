@@ -22,6 +22,11 @@ stw 31, 4(1)
 mr 30, 3
 mr 31, 6
 
+# create initial stack frame for new thread
+clrrwi 4, 4, 4
+li 0, 0
+stwu 0, -16(4)
+
 #move c into first arg
 mr 3, 5
 #mr 4, 4

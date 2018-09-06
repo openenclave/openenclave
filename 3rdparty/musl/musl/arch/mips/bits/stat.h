@@ -1,8 +1,7 @@
 /* copied from kernel definition, but with padding replaced
  * by the corresponding correctly-sized userspace types. */
 
-struct stat
-{
+struct stat {
 	dev_t st_dev;
 	long __st_padding1[2];
 	ino_t st_ino;
