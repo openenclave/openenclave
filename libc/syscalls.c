@@ -222,7 +222,6 @@ long __syscall(long n, long x1, long x2, long x3, long x4, long x5, long x6)
         /* The hook ignored the syscall so fall through */
     }
 
-
     switch (n)
     {
         case SYS_nanosleep:
