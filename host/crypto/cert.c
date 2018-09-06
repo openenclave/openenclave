@@ -334,7 +334,7 @@ static X509* _FindRootCert(STACK_OF(X509) * chain)
     X509* x509;
 
     /* Get the last certificate in the list */
-    if (!(x509 = sk_X509_value(chain, n-1)))
+    if (!(x509 = sk_X509_value(chain, n - 1)))
         return NULL;
 
     /* If the last certificate is not self-signed, then fail */
