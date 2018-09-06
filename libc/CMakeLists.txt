@@ -26,7 +26,6 @@ add_library(oelibc STATIC
     time.c
     __stack_chk_fail.c
     __printf_chk.c
-    __tz.c
     __vfprintf_chk.c
 
     ${MUSLSRC}/complex/cabs.c
@@ -129,6 +128,11 @@ add_library(oelibc STATIC
     ${MUSLSRC}/ctype/wcswidth.c
     ${MUSLSRC}/ctype/wctrans.c
     ${MUSLSRC}/ctype/wcwidth.c
+    ${MUSLSRC}/dirent/opendir.c
+    ${MUSLSRC}/dirent/closedir.c
+    ${MUSLSRC}/dirent/readdir.c
+    ${MUSLSRC}/dirent/readdir_r.c
+    ${MUSLSRC}/fcntl/open.c
     ${MUSLSRC}/env/clearenv.c
     ${MUSLSRC}/env/__environ.c
     ${MUSLSRC}/env/getenv.c
@@ -429,6 +433,8 @@ add_library(oelibc STATIC
     ${MUSLSRC}/search/tsearch_avl.c
     ${MUSLSRC}/setjmp/x86_64/longjmp.s
     ${MUSLSRC}/setjmp/x86_64/setjmp.s
+    ${MUSLSRC}/stat/stat.c
+    ${MUSLSRC}/stdio/asprintf.c
     ${MUSLSRC}/stdio/asprintf.c
     ${MUSLSRC}/stdio/clearerr.c
     ${MUSLSRC}/stdio/dprintf.c
@@ -642,6 +648,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/time/time.c
     ${MUSLSRC}/time/__tm_to_secs.c
     ${MUSLSRC}/time/__year_to_secs.c
+    ${MUSLSRC}/unistd/close.c
     ${MUSLSRC}/unistd/dup.c
     ${MUSLSRC}/unistd/dup3.c)
 
