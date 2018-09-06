@@ -414,6 +414,15 @@ int oe_debug_posix_memalign(void** memptr, size_t alignment, size_t size)
     if (!memptr)
         return EINVAL;
 
+    size_t d = alignment / sizeof(void*);
+    size_t r = alignment % sizeof(void*);
+
+    bool is_multiple = d >= 1 && r == 0;
+    bool is_pow2 = alignment != 0 && ((alignment & (alignment - 1)) == 0);
+
+    if (!is_multiple || !is_pow2)
+        return EINVAL;
+
     if (!(*memptr = oe_debug_memalign(alignment, size)))
         return ENOMEM;
 
