@@ -24,6 +24,7 @@ ExternalProject_Add(mbedtls-wrap
         ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h <SOURCE_DIR>/include/mbedtls/config.h
     # Addl args for compiler
     CMAKE_ARGS
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_C_FLAGS=${MBEDTLS_WRAP_CFLAGS}
         -DENABLE_PROGRAMS=OFF
         -DENABLE_TESTING=OFF

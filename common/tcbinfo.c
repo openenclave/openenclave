@@ -170,12 +170,14 @@ static oe_result_t _read_property_name_and_colon(
     oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     const uint8_t* name = NULL;
     size_t name_length = 0;
+    const uint8_t* tmp_itr = *itr;
 
-    OE_CHECK(_read_string(itr, end, &name, &name_length));
+    OE_CHECK(_read_string(&tmp_itr, end, &name, &name_length));
     if (name_length == strlen(property_name) &&
         memcmp(property_name, name, name_length) == 0)
     {
-        OE_CHECK(_read(':', itr, end));
+        OE_CHECK(_read(':', &tmp_itr, end));
+        *itr = tmp_itr;
         result = OE_OK;
     }
 done:
@@ -345,6 +347,8 @@ static oe_result_t _read_tcb_level(
         tcb_level.status = OE_TCB_LEVEL_STATUS_OUT_OF_DATE;
     else if (_json_str_equal(status, status_length, "Revoked"))
         tcb_level.status = OE_TCB_LEVEL_STATUS_REVOKED;
+    else if (_json_str_equal(status, status_length, "ConfigurationNeeded"))
+        tcb_level.status = OE_TCB_LEVEL_STATUS_CONFIGURATION_NEEDED;
 
     if (tcb_level.status != OE_TCB_LEVEL_STATUS_UNKNOWN)
     {
@@ -374,6 +378,8 @@ static oe_result_t _read_tcb_info(
 {
     oe_result_t result = OE_TCB_INFO_PARSE_ERROR;
     uint64_t value = 0;
+    const uint8_t* date_str = NULL;
+    size_t date_size = 0;
 
     parsed_info->tcb_info_start = *itr;
     OE_CHECK(_read('{', itr, end));
@@ -386,10 +392,28 @@ static oe_result_t _read_tcb_info(
 
     OE_TRACE_INFO("Reading issueDate\n");
     OE_CHECK(_read_property_name_and_colon("issueDate", itr, end));
-    OE_CHECK(
-        _read_string(
-            itr, end, &parsed_info->issue_date, &parsed_info->issue_date_size));
+    OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+    if (oe_datetime_from_string(
+            (const char*)date_str, date_size, &parsed_info->issue_date) !=
+        OE_OK)
+        OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
     OE_CHECK(_read(',', itr, end));
+
+    // nextUpdate is treated as an optional property.
+    OE_TRACE_INFO("Reading nextUpdate\n");
+    if (_read_property_name_and_colon("nextUpdate", itr, end) == OE_OK)
+    {
+        OE_CHECK(_read_string(itr, end, &date_str, &date_size));
+        if (oe_datetime_from_string(
+                (const char*)date_str, date_size, &parsed_info->next_update) !=
+            OE_OK)
+            OE_RAISE(OE_TCB_INFO_PARSE_ERROR);
+        OE_CHECK(_read(',', itr, end));
+    }
+    else
+    {
+        memset(&parsed_info->next_update, 0, sizeof(parsed_info->next_update));
+    }
 
     OE_TRACE_INFO("Reading fmspc\n");
     OE_CHECK(_read_property_name_and_colon("fmspc", itr, end));

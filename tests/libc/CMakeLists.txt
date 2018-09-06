@@ -19,5 +19,5 @@ endif()
 
 foreach(testcase ${alltests})
     get_testcase_name(${testcase} name "../../3rdparty/musl/libc-test/src/")
-	add_enclave_test(tests/libc/${name} ./host libc_host ./enc libctest-${name}_enc.signed.so)
+	add_enclave_test(tests/libc/${name} ./host libc_host ./enc libctest-${name}_enc)
 endforeach(testcase)

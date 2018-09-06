@@ -52,22 +52,19 @@ typedef struct _oe_get_quote_args
 /*
 **==============================================================================
 **
-** oe_get_report_args_t
+** oe_get_sgx_report_args_t
 **
 **==============================================================================
 */
-typedef struct _oe_get_report_args
+typedef struct _oe_get_sgx_report_args
 {
     oe_result_t result; /* out */
-
-    uint32_t flags; /* in */
 
     uint8_t optParams[sizeof(sgx_target_info_t)]; /* in */
     size_t optParamsSize;                         /* in */
 
-    uint8_t* reportBuffer;   /* ptr to output buffer */
-    size_t reportBufferSize; /* in-out */
-} oe_get_report_args_t;
+    sgx_report_t sgxReport; /* out */
+} oe_get_sgx_report_args_t;
 
 /*
 **==============================================================================
@@ -110,5 +107,39 @@ typedef struct _oe_get_revocation_info_args
     // must free this memory via oe_host_free.
     uint8_t* host_out_buffer; /* out */
 } oe_get_revocation_info_args_t;
+
+/*
+**==============================================================================
+**
+** oe_report_type_t
+**
+**==============================================================================
+*/
+typedef enum _oe_report_type {
+    OE_REPORT_TYPE_SGX_LOCAL = 1,
+    OE_REPORT_TYPE_SGX_REMOTE = 2,
+    __OE_REPORT_TYPE_MAX = OE_ENUM_MAX
+} oe_report_type_t;
+
+/*
+**==============================================================================
+**
+** oe_report_header_t
+**
+**==============================================================================
+*/
+typedef struct _oe_report_header
+{
+    uint32_t version;
+    oe_report_type_t report_type;
+    size_t report_size;
+    uint8_t report[];
+} oe_report_header_t;
+
+OE_STATIC_ASSERT(sizeof(oe_report_header_t) == 16);
+OE_STATIC_ASSERT(
+    OE_OFFSETOF(oe_report_header_t, report) == sizeof(oe_report_header_t));
+
+#define OE_REPORT_HEADER_VERSION (1)
 
 #endif //_OE_INCLUDE_REPORT_H_

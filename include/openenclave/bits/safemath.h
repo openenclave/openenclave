@@ -5,7 +5,7 @@
 #define _OE_SAFEMATH_H
 
 #include <openenclave/bits/result.h>
-#include <stdint.h>
+#include <openenclave/bits/types.h>
 
 /*
  * This header provides safe arithmetic functions for adding, subtracting
@@ -118,139 +118,139 @@ OE_EXTERNC_BEGIN
 /* Safe addition methods. */
 OE_INLINE oe_result_t oe_safe_add_s8(int8_t a, int8_t b, int8_t* c)
 {
-    SAFE_ADD(a, b, c, INT8_MIN, INT8_MAX);
+    SAFE_ADD(a, b, c, OE_INT8_MIN, OE_INT8_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_add_u8(uint8_t a, uint8_t b, uint8_t* c)
 {
-    SAFE_ADD(a, b, c, 0, UINT8_MAX);
+    SAFE_ADD(a, b, c, 0, OE_UINT8_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_add_s16(int16_t a, int16_t b, int16_t* c)
 {
-    SAFE_ADD(a, b, c, INT16_MIN, INT16_MAX);
+    SAFE_ADD(a, b, c, OE_INT16_MIN, OE_INT16_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_add_u16(uint16_t a, uint16_t b, uint16_t* c)
 {
-    SAFE_ADD(a, b, c, 0, UINT16_MAX);
+    SAFE_ADD(a, b, c, 0, OE_UINT16_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_add_s32(int32_t a, int32_t b, int32_t* c)
 {
-    SAFE_ADD(a, b, c, INT32_MIN, INT32_MAX);
+    SAFE_ADD(a, b, c, OE_INT32_MIN, OE_INT32_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_add_u32(uint32_t a, uint32_t b, uint32_t* c)
 {
-    SAFE_ADD(a, b, c, 0, UINT32_MAX);
+    SAFE_ADD(a, b, c, 0, OE_UINT32_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_add_s64(int64_t a, int64_t b, int64_t* c)
 {
-    SAFE_ADD(a, b, c, INT64_MIN, INT64_MAX);
+    SAFE_ADD(a, b, c, OE_INT64_MIN, OE_INT64_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_add_u64(uint64_t a, uint64_t b, uint64_t* c)
 {
-    SAFE_ADD(a, b, c, 0, UINT64_MAX);
+    SAFE_ADD(a, b, c, 0, OE_UINT64_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_add_sizet(size_t a, size_t b, size_t* c)
 {
-    SAFE_ADD(a, b, c, 0, SIZE_MAX);
+    SAFE_ADD(a, b, c, 0, OE_SIZE_MAX);
 }
 
 /* Safe subtraction methods. */
 OE_INLINE oe_result_t oe_safe_sub_s8(int8_t a, int8_t b, int8_t* c)
 {
-    SAFE_SUBTRACT(a, b, c, INT8_MIN, INT8_MAX);
+    SAFE_SUBTRACT(a, b, c, OE_INT8_MIN, OE_INT8_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_sub_u8(uint8_t a, uint8_t b, uint8_t* c)
 {
-    SAFE_SUBTRACT(a, b, c, 0, UINT8_MAX);
+    SAFE_SUBTRACT(a, b, c, 0, OE_UINT8_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_sub_s16(int16_t a, int16_t b, int16_t* c)
 {
-    SAFE_SUBTRACT(a, b, c, INT16_MIN, INT16_MAX);
+    SAFE_SUBTRACT(a, b, c, OE_INT16_MIN, OE_INT16_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_sub_u16(uint16_t a, uint16_t b, uint16_t* c)
 {
-    SAFE_SUBTRACT(a, b, c, 0, UINT16_MAX);
+    SAFE_SUBTRACT(a, b, c, 0, OE_UINT16_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_sub_s32(int32_t a, int32_t b, int32_t* c)
 {
-    SAFE_SUBTRACT(a, b, c, INT32_MIN, INT32_MAX);
+    SAFE_SUBTRACT(a, b, c, OE_INT32_MIN, OE_INT32_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_sub_u32(uint32_t a, uint32_t b, uint32_t* c)
 {
-    SAFE_SUBTRACT(a, b, c, 0, UINT32_MAX);
+    SAFE_SUBTRACT(a, b, c, 0, OE_UINT32_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_sub_s64(int64_t a, int64_t b, int64_t* c)
 {
-    SAFE_SUBTRACT(a, b, c, INT64_MIN, INT64_MAX);
+    SAFE_SUBTRACT(a, b, c, OE_INT64_MIN, OE_INT64_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_sub_u64(uint64_t a, uint64_t b, uint64_t* c)
 {
-    SAFE_SUBTRACT(a, b, c, 0, UINT64_MAX);
+    SAFE_SUBTRACT(a, b, c, 0, OE_UINT64_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_sub_sizet(size_t a, size_t b, size_t* c)
 {
-    SAFE_SUBTRACT(a, b, c, 0, SIZE_MAX);
+    SAFE_SUBTRACT(a, b, c, 0, OE_SIZE_MAX);
 }
 
 /* Safe multiplication methods. */
 OE_INLINE oe_result_t oe_safe_mul_s8(int8_t a, int8_t b, int8_t* c)
 {
-    SAFE_MULTIPLY(a, b, c, INT8_MIN, INT8_MAX);
+    SAFE_MULTIPLY(a, b, c, OE_INT8_MIN, OE_INT8_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_mul_u8(uint8_t a, uint8_t b, uint8_t* c)
 {
-    SAFE_MULTIPLY(a, b, c, 0, UINT8_MAX);
+    SAFE_MULTIPLY(a, b, c, 0, OE_UINT8_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_mul_s16(int16_t a, int16_t b, int16_t* c)
 {
-    SAFE_MULTIPLY(a, b, c, INT16_MIN, INT16_MAX);
+    SAFE_MULTIPLY(a, b, c, OE_INT16_MIN, OE_INT16_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_mul_u16(uint16_t a, uint16_t b, uint16_t* c)
 {
-    SAFE_MULTIPLY(a, b, c, 0, UINT16_MAX);
+    SAFE_MULTIPLY(a, b, c, 0, OE_UINT16_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_mul_s32(int32_t a, int32_t b, int32_t* c)
 {
-    SAFE_MULTIPLY(a, b, c, INT32_MIN, INT32_MAX);
+    SAFE_MULTIPLY(a, b, c, OE_INT32_MIN, OE_INT32_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_mul_u32(uint32_t a, uint32_t b, uint32_t* c)
 {
-    SAFE_MULTIPLY(a, b, c, 0, UINT32_MAX);
+    SAFE_MULTIPLY(a, b, c, 0, OE_UINT32_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_mul_s64(int64_t a, int64_t b, int64_t* c)
 {
-    SAFE_MULTIPLY(a, b, c, INT64_MIN, INT64_MAX);
+    SAFE_MULTIPLY(a, b, c, OE_INT64_MIN, OE_INT64_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_mul_u64(uint64_t a, uint64_t b, uint64_t* c)
 {
-    SAFE_MULTIPLY(a, b, c, 0, UINT64_MAX);
+    SAFE_MULTIPLY(a, b, c, 0, OE_UINT64_MAX);
 }
 
 OE_INLINE oe_result_t oe_safe_mul_sizet(size_t a, size_t b, size_t* c)
 {
-    SAFE_MULTIPLY(a, b, c, 0, SIZE_MAX);
+    SAFE_MULTIPLY(a, b, c, 0, OE_SIZE_MAX);
 }
 
 /* Re-enable GCC warnings for -Wtype-limits. */

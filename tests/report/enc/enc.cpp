@@ -164,3 +164,11 @@ OE_ECALL void TestVerifyTCBInfo(VerifyTCBInfoArgs* args)
 }
 
 #endif
+
+OE_SET_ENCLAVE_SGX(
+    0,    /* ProductID */
+    0,    /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    1024, /* StackPageCount */
+    2);   /* TCSCount */

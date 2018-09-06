@@ -60,9 +60,6 @@ build$ make VERBOSE=1
 Building from within a subtree of the build-tree builds all dependencies for that directory as well.
 "**make clean**" is handy before a spot-rebuild in verbose mode.
 
-A successful build only outputs the HTML API reference into the build-tree. To update the refman *.md-files
-in the source-tree, use
-
-```
-build$ make refman-source
-```
+A successful build only outputs the HTML API reference into the build-tree.
+To update the doxygen generated documentation available at https://microsoft.github.io/openenclave,
+please follow instructions [here](../refman/doxygen-howto.md)

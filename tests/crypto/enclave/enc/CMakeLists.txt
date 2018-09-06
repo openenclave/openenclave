@@ -3,9 +3,7 @@
 
 include(add_enclave_executable)
 
-add_enclave_executable(cryptoenc 
-    sign.conf 
-    private.pem 
+add_executable(cryptoenc
     enc.c
     ../../asn1_tests.c
     ../../crl_tests.c

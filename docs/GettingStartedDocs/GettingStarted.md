@@ -48,11 +48,20 @@ Please refer to the following [documentation](SGXSupportLevel.md) to determine t
 Samples
 -------------------------------
 
-  [Open Enclave samples](sampedocs/README.md)
+Assuming you install the SDK you built the following way in the [Basic install section](InstallInfo.md#basic-install)
+
+    build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
+    build$ make install
+
+Open Enclave samples could be found in ~/openenclave/share/openenclave/samples
+
+See [Open Enclave samples](sampedocs/README.md) for details
+
+  
     
 SDK API Reference
 -------------------------------
-- [Open Enclave API Reference](../refman/md/index.md)
+- [Open Enclave API Reference](https://microsoft.github.io/openenclave)Note: link will be fixed soon
 - Additional libraries available inside an enclave
   - [oelibc library](../LibcSupport.md): This is the subset of the libc library supported inside an enclave.
   - [oelibcxx library](../LibcxxSupport.md): the C++ library functionality supported inside an enclave as 

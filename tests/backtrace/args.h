@@ -10,9 +10,9 @@
 
 typedef struct _Args
 {
-    /* backtrace() addresses */
-    void* buffer[MAX_ADDRESSES];
-    int size;
+    const char** syms;
+    size_t num_syms;
+    bool okay;
 } Args;
 
 #endif /* _ARGS_H */

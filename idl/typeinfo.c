@@ -139,7 +139,7 @@ static oe_result_t _GetCount(
 
     /* Check type of count field (size_t) */
     if (cfti->type != OE_SIZE_T)
-        OE_THROW(OE_WRONG_TYPE);
+        OE_THROW(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* Read the count field from the structure */
     *count = *(const size_t*)((const uint8_t*)structIn + cfti->offset);
@@ -1769,7 +1769,7 @@ static oe_result_t _CheckOptConstraint(
 
     /* If pointer at this address is null, then fail */
     if (!*(void**)fin)
-        OE_THROW(OE_FAILED_OPT_CONSTRAINT);
+        OE_THROW(OE_CONSTRAINT_FAILED);
 
     OE_THROW(OE_OK);
 

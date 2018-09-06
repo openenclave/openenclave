@@ -4,6 +4,7 @@
 
 #include <openenclave/host.h>
 #include <openenclave/internal/aesm.h>
+#include <openenclave/internal/datetime.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
@@ -36,39 +37,13 @@ std::vector<uint8_t> FileToBytes(const char* path)
     return bytes;
 }
 
-bool CheckParsedString(
-    const uint8_t* str,
-    uint32_t length,
-    const char* expectedStr)
+void AssertParsedValues(oe_parsed_tcb_info_t& parsedInfo)
 {
-    uint32_t expectedLength = (uint32_t)strlen(expectedStr);
-    if ((length == expectedLength) && str &&
-        (memcmp(str, expectedStr, length) == 0))
-        return true;
-
-    printf("%d : %d\n", length, expectedLength);
-    printf("Unexpected parsed string value = %*.*s", length, length, str);
-    return false;
-}
-
-void TestVerifyTCBInfo(
-    oe_enclave_t* enclave,
-    oe_tcb_level_t* platformTcbLevel,
-    oe_result_t expected)
-{
-    std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
-    oe_parsed_tcb_info_t parsedInfo = {0};
-    VerifyTCBInfoArgs args = {
-        &tcbInfo[0], (uint32_t)tcbInfo.size(), platformTcbLevel, &parsedInfo};
-
-    OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK);
-
     OE_TEST(parsedInfo.version == 1);
+
+    oe_datetime_t expectedIssueDate = {2018, 6, 6, 10, 12, 17};
     OE_TEST(
-        CheckParsedString(
-            parsedInfo.issue_date,
-            parsedInfo.issue_date_size,
-            "2018-06-06T10:12:17.085Z"));
+        oe_datetime_compare(&parsedInfo.issue_date, &expectedIssueDate) == 0);
 
     uint8_t expectedFmSpc[6] = {0x00, 0x90, 0x6E, 0xA1, 0x00, 0x00};
     OE_TEST(
@@ -88,6 +63,35 @@ void TestVerifyTCBInfo(
             sizeof(expectedSignature)) == 0);
 }
 
+void TestVerifyTCBInfo(
+    oe_enclave_t* enclave,
+    oe_tcb_level_t* platformTcbLevel,
+    oe_result_t expected)
+{
+    std::vector<uint8_t> tcbInfo = FileToBytes("./data/tcbInfo.json");
+    oe_parsed_tcb_info_t parsedInfo = {0};
+    VerifyTCBInfoArgs args = {
+        &tcbInfo[0], (uint32_t)tcbInfo.size(), platformTcbLevel, &parsedInfo};
+
+    OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK);
+    AssertParsedValues(parsedInfo);
+    OE_TEST(
+        oe_datetime_is_valid(&parsedInfo.next_update) ==
+        OE_INVALID_UTC_DATE_TIME);
+
+    // Contains nextUpdate field.
+    tcbInfo = FileToBytes("./data/tcbInfo1.json");
+    memset(&parsedInfo, 0, sizeof(parsedInfo));
+    platformTcbLevel->status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    VerifyTCBInfoArgs args1 = {
+        &tcbInfo[0], (uint32_t)tcbInfo.size(), platformTcbLevel, &parsedInfo};
+    OE_TEST(oe_call_enclave(enclave, "TestVerifyTCBInfo", &args1) == OE_OK);
+    AssertParsedValues(parsedInfo);
+
+    oe_datetime_t nextUpdate = {2019, 6, 6, 10, 12, 17};
+    OE_TEST(oe_datetime_compare(&parsedInfo.next_update, &nextUpdate) == 0);
+}
+
 void TestVerifyTCBInfo(oe_enclave_t* enclave)
 {
     oe_tcb_level_t platformTcbLevel = {
@@ -95,10 +99,11 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         8,
         OE_TCB_LEVEL_STATUS_UNKNOWN};
 
-    // ./data/tcbInfo.json contains three tcb levels.
+    // ./data/tcbInfo.json contains 4 tcb levels.
     // The first level with pce svn = 5 is up to date.
-    // The second level with pce svn = 4 is out of date.
-    // The second level with pce svn = 3 is revoked.
+    // The second level with pce svn = 4 needs configuration.
+    // The third level with pce svn = 3 is out of date.
+    // The fourth level with pce svn = 2 is revoked.
 
     // Set platform pce svn to 8 and assert that
     // the determined status is up to date.
@@ -109,17 +114,26 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
     printf("UptoDate TCB Level determination test passed.\n");
 
     // Set platform pce svn to 4 and assert that
-    // the determined status is out of date.
+    // the determined status is configuration needed.
     platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
     platformTcbLevel.pce_svn = 4;
+    TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
+    OE_TEST(
+        platformTcbLevel.status == OE_TCB_LEVEL_STATUS_CONFIGURATION_NEEDED);
+    printf("ConfigurationNeeded TCB Level determination test passed.\n");
+
+    // Set platform pce svn to 3 and assert that
+    // the determined status is out of date.
+    platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
+    platformTcbLevel.pce_svn = 3;
     TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
     OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_OUT_OF_DATE);
     printf("OutOfDate TCB Level determination test passed.\n");
 
-    // Set platform pce svn to 3 and assert that
+    // Set platform pce svn to 2 and assert that
     // the determined status is revoked.
     platformTcbLevel.status = OE_TCB_LEVEL_STATUS_UNKNOWN;
-    platformTcbLevel.pce_svn = 3;
+    platformTcbLevel.pce_svn = 2;
     TestVerifyTCBInfo(enclave, &platformTcbLevel, OE_TCB_LEVEL_INVALID);
     OE_TEST(platformTcbLevel.status == OE_TCB_LEVEL_STATUS_REVOKED);
     printf("OutOfDate TCB Level determination test passed.\n");
@@ -159,6 +173,12 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         // pce Svn greater than uint16_t
         "./data/tcbInfoNegativePceSvn.json",
 
+        // Invalid issueDate field.
+        "./data/tcbInfoNegativeInvalidIssueDate.json",
+
+        // Invalid nextUpdate field.
+        "./data/tcbInfoNegativeInvalidNextUpdate.json",
+
         // Signature != 64 bytes
         "./data/tcbInfoNegativeSignature.json",
 
@@ -182,7 +202,8 @@ void TestVerifyTCBInfo(oe_enclave_t* enclave)
         OE_TEST(
             oe_call_enclave(enclave, "TestVerifyTCBInfo", &args) == OE_OK &&
             args.result == OE_TCB_INFO_PARSE_ERROR);
-        printf("TestVerifyTCBInfo: Negative Test %lu passed\n", i);
+        printf(
+            "TestVerifyTCBInfo: Negative Test %s passed\n", negativeFiles[i]);
     }
 }
 
