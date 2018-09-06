@@ -201,23 +201,29 @@ static void _SetErr(oe_verify_cert_error_t* error, const char* str)
         oe_strlcpy(error->buf, str, sizeof(error->buf));
 }
 
-/* Find the first self-signed certificate in the chain. */
+static bool _x509_buf_equal(
+    const mbedtls_x509_buf* x,
+    const mbedtls_x509_buf* y)
+{
+    return (x->tag == y->tag) && (x->len == y->len) &&
+           oe_memcmp(x->p, y->p, x->len) == 0;
+}
+
+// Find the last certificate in the chain and then verify that it's a
+// self-signed certificate (a root certificate).
 static mbedtls_x509_crt* _FindRootCert(mbedtls_x509_crt* chain)
 {
-    for (mbedtls_x509_crt* p = chain; p; p = p->next)
-    {
-        const mbedtls_x509_buf* subject = &p->subject_raw;
-        const mbedtls_x509_buf* issuer = &p->issuer_raw;
+    mbedtls_x509_crt* p;
 
-        if (subject->tag == issuer->tag && subject->len == issuer->len &&
-            oe_memcmp(subject->p, issuer->p, subject->len) == 0)
-        {
-            return p;
-        }
-    }
+    /* Find the last element in the list */
+    for (p = chain; p->next; p = p->next)
+        ;
 
-    /* Not found */
-    return NULL;
+    /* If the last certificate is not self-signed, then fail */
+    if (!_x509_buf_equal(&p->subject_raw, &p->issuer_raw))
+        return NULL;
+
+    return p;
 }
 
 /* Verify each certificate in the chain against its predecessors. */
