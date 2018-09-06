@@ -13,6 +13,7 @@ add_library(oelibc STATIC
     arc4random.c
     atexit.c
     dladdr.c
+    exp2l.S
     libunwind_stubs.c
     link.c
     locale.c
@@ -384,7 +385,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/truncl.c
     ${MUSLSRC}/math/x86_64/acosl.s
     ${MUSLSRC}/math/x86_64/asinl.s
-    ${MUSLSRC}/math/x86_64/exp2l.s
+    #${MUSLSRC}/math/x86_64/exp2l.s
     ${MUSLSRC}/math/x86_64/sqrtl.s
     ${MUSLSRC}/misc/basename.c
     ${MUSLSRC}/misc/dirname.c
