@@ -670,7 +670,6 @@ endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_target_compile_flags_if_supported(oelibc PRIVATE C
-        -Werror
         -Wno-attributes
         -Wno-format
         -Wno-missing-braces
