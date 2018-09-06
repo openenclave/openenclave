@@ -46,7 +46,7 @@ oe_result_t oe_verify_report(
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_report_t oeReport = {0};
-    sgx_key_t sgxKey = {0};
+    sgx_key_t sgxKey = {{0}};
     oe_report_header_t* header = (oe_report_header_t*)report;
 
     sgx_report_t* sgxReport = NULL;
