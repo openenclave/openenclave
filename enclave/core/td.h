@@ -70,8 +70,6 @@ TD* TD_FromTCS(void* tcs);
 
 void* TD_ToTCS(const TD* td);
 
-TD* TD_Get(void);
-
 void TD_Init(TD* td);
 
 void TD_Clear(TD* td);

@@ -9,102 +9,93 @@ include(add_compile_defs)
 set (MUSLSRC ${PROJECT_SOURCE_DIR}/3rdparty/musl/musl/src)
 
 add_library(oelibc STATIC
+    abort.S
     arc4random.c
-    assert.c
     atexit.c
-    errno.c
-    libcxxrt_stubs.c
+    dladdr.c
+    exp2l.S
+    libunwind_stubs.c
     link.c
     locale.c
     malloc.c
     pthread.c
-    sched.c
-    __printf_chk.c
-    __vfprintf_chk.c
-    __stack_chk_fail.c
-    __tz.c
-    stdio.c
+    sched_yield.c
     stdlib.c
     strerror.c
-    string.c
+    syscalls.c
+    sysconf.c
     time.c
-    unistd.c
-    wchar.c
+    __stack_chk_fail.c
+    __printf_chk.c
+    __vfprintf_chk.c
 
-    ${MUSLSRC}/string/bcmp.c
-    ${MUSLSRC}/string/bcopy.c
-    ${MUSLSRC}/string/bzero.c
-    ${MUSLSRC}/string/index.c
-    ${MUSLSRC}/string/memccpy.c
-    ${MUSLSRC}/string/memchr.c
-    ${MUSLSRC}/string/memcmp.c
-    ${MUSLSRC}/string/memcpy.c
-    ${MUSLSRC}/string/memmem.c
-    ${MUSLSRC}/string/memmove.c
-    ${MUSLSRC}/string/mempcpy.c
-    ${MUSLSRC}/string/memrchr.c
-    ${MUSLSRC}/string/memset.c
-    ${MUSLSRC}/string/rindex.c
-    ${MUSLSRC}/string/stpcpy.c
-    ${MUSLSRC}/string/stpncpy.c
-    ${MUSLSRC}/string/strcasecmp.c
-    ${MUSLSRC}/string/strcasestr.c
-    ${MUSLSRC}/string/strcat.c
-    ${MUSLSRC}/string/strchr.c
-    ${MUSLSRC}/string/strchrnul.c
-    ${MUSLSRC}/string/strcmp.c
-    ${MUSLSRC}/string/strcpy.c
-    ${MUSLSRC}/string/strcspn.c
-    ${MUSLSRC}/string/strdup.c
-    ${MUSLSRC}/string/strerror_r.c
-    ${MUSLSRC}/string/strlcat.c
-    ${MUSLSRC}/string/strlcpy.c
-    ${MUSLSRC}/string/strlen.c
-    ${MUSLSRC}/string/strncasecmp.c
-    ${MUSLSRC}/string/strncat.c
-    ${MUSLSRC}/string/strncmp.c
-    ${MUSLSRC}/string/strncpy.c
-    ${MUSLSRC}/string/strndup.c
-    ${MUSLSRC}/string/strnlen.c
-    ${MUSLSRC}/string/strpbrk.c
-    ${MUSLSRC}/string/strrchr.c
-    ${MUSLSRC}/string/strsep.c
-#   ${MUSLSRC}/string/strsignal.c
-    ${MUSLSRC}/string/strspn.c
-    ${MUSLSRC}/string/strstr.c
-    ${MUSLSRC}/string/strtok.c
-    ${MUSLSRC}/string/strtok_r.c
-    ${MUSLSRC}/string/strverscmp.c
-    ${MUSLSRC}/string/swab.c
-    ${MUSLSRC}/string/wcpcpy.c
-    ${MUSLSRC}/string/wcpncpy.c
-    ${MUSLSRC}/string/wcscasecmp.c
-    ${MUSLSRC}/string/wcscasecmp_l.c
-    ${MUSLSRC}/string/wcscat.c
-    ${MUSLSRC}/string/wcschr.c
-    ${MUSLSRC}/string/wcscmp.c
-    ${MUSLSRC}/string/wcscpy.c
-    ${MUSLSRC}/string/wcscspn.c
-    ${MUSLSRC}/string/wcsdup.c
-    ${MUSLSRC}/string/wcslen.c
-    ${MUSLSRC}/string/wcsncasecmp.c
-    ${MUSLSRC}/string/wcsncasecmp_l.c
-    ${MUSLSRC}/string/wcsncat.c
-    ${MUSLSRC}/string/wcsncmp.c
-    ${MUSLSRC}/string/wcsncpy.c
-    ${MUSLSRC}/string/wcsnlen.c
-    ${MUSLSRC}/string/wcspbrk.c
-    ${MUSLSRC}/string/wcsrchr.c
-    ${MUSLSRC}/string/wcsspn.c
-    ${MUSLSRC}/string/wcsstr.c
-    ${MUSLSRC}/string/wcstok.c
-    ${MUSLSRC}/string/wcswcs.c
-    ${MUSLSRC}/string/wmemchr.c
-    ${MUSLSRC}/string/wmemcmp.c
-    ${MUSLSRC}/string/wmemcpy.c
-    ${MUSLSRC}/string/wmemmove.c
-    ${MUSLSRC}/string/wmemset.c
-
+    ${MUSLSRC}/complex/cabs.c
+    ${MUSLSRC}/complex/cabsf.c
+    ${MUSLSRC}/complex/cabsl.c
+    ${MUSLSRC}/complex/cacosf.c
+    ${MUSLSRC}/complex/cacoshf.c
+    ${MUSLSRC}/complex/carg.c
+    ${MUSLSRC}/complex/cargf.c
+    ${MUSLSRC}/complex/cargl.c
+    ${MUSLSRC}/complex/casinf.c
+    ${MUSLSRC}/complex/casinhf.c
+    ${MUSLSRC}/complex/catan.c
+    ${MUSLSRC}/complex/catanf.c
+    ${MUSLSRC}/complex/catanh.c
+    ${MUSLSRC}/complex/catanhf.c
+    ${MUSLSRC}/complex/catanhl.c
+    ${MUSLSRC}/complex/catanl.c
+    ${MUSLSRC}/complex/ccos.c
+    ${MUSLSRC}/complex/ccosf.c
+    ${MUSLSRC}/complex/ccosh.c
+    ${MUSLSRC}/complex/ccoshf.c
+    ${MUSLSRC}/complex/ccoshl.c
+    ${MUSLSRC}/complex/ccosl.c
+    ${MUSLSRC}/complex/__cexp.c
+    ${MUSLSRC}/complex/cexp.c
+    ${MUSLSRC}/complex/__cexpf.c
+    ${MUSLSRC}/complex/cexpf.c
+    ${MUSLSRC}/complex/cexpl.c
+    ${MUSLSRC}/complex/cimag.c
+    ${MUSLSRC}/complex/cimagf.c
+    ${MUSLSRC}/complex/cimagl.c
+    ${MUSLSRC}/complex/clog.c
+    ${MUSLSRC}/complex/clogf.c
+    ${MUSLSRC}/complex/clogl.c
+    ${MUSLSRC}/complex/conj.c
+    ${MUSLSRC}/complex/conjf.c
+    ${MUSLSRC}/complex/conjl.c
+    ${MUSLSRC}/complex/cproj.c
+    ${MUSLSRC}/complex/cprojf.c
+    ${MUSLSRC}/complex/cprojl.c
+    ${MUSLSRC}/complex/creal.c
+    ${MUSLSRC}/complex/crealf.c
+    ${MUSLSRC}/complex/creall.c
+    ${MUSLSRC}/complex/csin.c
+    ${MUSLSRC}/complex/csinf.c
+    ${MUSLSRC}/complex/csinh.c
+    ${MUSLSRC}/complex/csinhf.c
+    ${MUSLSRC}/complex/csinhl.c
+    ${MUSLSRC}/complex/csinl.c
+    ${MUSLSRC}/complex/csqrtf.c
+    ${MUSLSRC}/complex/ctan.c
+    ${MUSLSRC}/complex/ctanf.c
+    ${MUSLSRC}/complex/ctanh.c
+    ${MUSLSRC}/complex/ctanhf.c
+    ${MUSLSRC}/complex/ctanhl.c
+    ${MUSLSRC}/complex/ctanl.c
+    ${MUSLSRC}/crypt/crypt_blowfish.c
+    ${MUSLSRC}/crypt/crypt.c
+    ${MUSLSRC}/crypt/crypt_des.c
+    ${MUSLSRC}/crypt/crypt_md5.c
+    ${MUSLSRC}/crypt/crypt_r.c
+    ${MUSLSRC}/crypt/crypt_sha256.c
+    ${MUSLSRC}/crypt/crypt_sha512.c
+    ${MUSLSRC}/crypt/encrypt.c
+    ${MUSLSRC}/ctype/__ctype_b_loc.c
+    ${MUSLSRC}/ctype/__ctype_get_mb_cur_max.c
+    ${MUSLSRC}/ctype/__ctype_tolower_loc.c
+    ${MUSLSRC}/ctype/__ctype_toupper_loc.c
     ${MUSLSRC}/ctype/isalnum.c
     ${MUSLSRC}/ctype/isalpha.c
     ${MUSLSRC}/ctype/isascii.c
@@ -138,64 +129,52 @@ add_library(oelibc STATIC
     ${MUSLSRC}/ctype/wcswidth.c
     ${MUSLSRC}/ctype/wctrans.c
     ${MUSLSRC}/ctype/wcwidth.c
-    ${MUSLSRC}/ctype/__ctype_b_loc.c
-    ${MUSLSRC}/ctype/__ctype_get_mb_cur_max.c
-    ${MUSLSRC}/ctype/__ctype_tolower_loc.c
-    ${MUSLSRC}/ctype/__ctype_toupper_loc.c
-
-    ${MUSLSRC}/multibyte/btowc.c
-    ${MUSLSRC}/multibyte/c16rtomb.c
-    ${MUSLSRC}/multibyte/c32rtomb.c
-    ${MUSLSRC}/multibyte/internal.c
-    ${MUSLSRC}/multibyte/mblen.c
-    ${MUSLSRC}/multibyte/mbrlen.c
-    ${MUSLSRC}/multibyte/mbrtoc16.c
-    ${MUSLSRC}/multibyte/mbrtoc32.c
-    ${MUSLSRC}/multibyte/mbrtowc.c
-    ${MUSLSRC}/multibyte/mbsinit.c
-    ${MUSLSRC}/multibyte/mbsnrtowcs.c
-    ${MUSLSRC}/multibyte/mbsrtowcs.c
-    ${MUSLSRC}/multibyte/mbstowcs.c
-    ${MUSLSRC}/multibyte/mbtowc.c
-    ${MUSLSRC}/multibyte/wcrtomb.c
-    ${MUSLSRC}/multibyte/wcsnrtombs.c
-    ${MUSLSRC}/multibyte/wcsrtombs.c
-    ${MUSLSRC}/multibyte/wcstombs.c
-    ${MUSLSRC}/multibyte/wctob.c
-    ${MUSLSRC}/multibyte/wctomb.c
-
-    ${MUSLSRC}/stdio/__string_read.c
-    ${MUSLSRC}/stdio/__uflow.c
-    ${MUSLSRC}/stdio/snprintf.c
-    ${MUSLSRC}/stdio/vasprintf.c
-    ${MUSLSRC}/stdio/sscanf.c
-    ${MUSLSRC}/stdio/swprintf.c
-    ${MUSLSRC}/stdio/asprintf.c
-    ${MUSLSRC}/stdio/vfprintf.c
-    ${MUSLSRC}/stdio/vfscanf.c
-    ${MUSLSRC}/stdio/vfwprintf.c
-    ${MUSLSRC}/stdio/vsnprintf.c
-    ${MUSLSRC}/stdio/vsscanf.c
-    ${MUSLSRC}/stdio/vswprintf.c
-    ${MUSLSRC}/stdio/__toread.c
-    ${MUSLSRC}/stdio/fputwc.c
-    ${MUSLSRC}/stdio/sprintf.c
-    ${MUSLSRC}/stdio/vsprintf.c
-
-    ${MUSLSRC}/stdlib/qsort.c
-    ${MUSLSRC}/stdlib/bsearch.c
-    ${MUSLSRC}/stdlib/strtol.c
-    ${MUSLSRC}/stdlib/wcstol.c
-    ${MUSLSRC}/stdlib/wcstod.c
-    ${MUSLSRC}/stdlib/atoi.c
-    ${MUSLSRC}/stdlib/atol.c
-    ${MUSLSRC}/stdlib/atoll.c
-    ${MUSLSRC}/stdlib/atof.c
-    ${MUSLSRC}/stdlib/strtod.c
-    ${MUSLSRC}/stdlib/abs.c
-    ${MUSLSRC}/stdlib/labs.c
-    ${MUSLSRC}/stdlib/llabs.c
-
+    ${MUSLSRC}/dirent/opendir.c
+    ${MUSLSRC}/dirent/closedir.c
+    ${MUSLSRC}/dirent/readdir.c
+    ${MUSLSRC}/dirent/readdir_r.c
+    ${MUSLSRC}/fcntl/open.c
+    ${MUSLSRC}/env/clearenv.c
+    ${MUSLSRC}/env/__environ.c
+    ${MUSLSRC}/env/getenv.c
+    ${MUSLSRC}/env/putenv.c
+    ${MUSLSRC}/env/setenv.c
+    ${MUSLSRC}/env/unsetenv.c
+    ${MUSLSRC}/errno/__errno_location.c
+    ${MUSLSRC}/exit/assert.c
+    ${MUSLSRC}/fenv/fegetexceptflag.c
+    ${MUSLSRC}/fenv/feholdexcept.c
+    ${MUSLSRC}/fenv/fesetexceptflag.c
+    ${MUSLSRC}/fenv/fesetround.c
+    ${MUSLSRC}/fenv/feupdateenv.c
+    ${MUSLSRC}/fenv/__flt_rounds.c
+    ${MUSLSRC}/fenv/x86_64/fenv.s
+    ${MUSLSRC}/internal/floatscan.c
+    ${MUSLSRC}/internal/intscan.c
+    ${MUSLSRC}/internal/libc.c
+    ${MUSLSRC}/internal/shgetc.c
+    ${MUSLSRC}/internal/syscall_ret.c
+    ${MUSLSRC}/legacy/getpagesize.c
+    ${MUSLSRC}/locale/bind_textdomain_codeset.c
+    ${MUSLSRC}/locale/catclose.c
+    ${MUSLSRC}/locale/catgets.c
+    ${MUSLSRC}/locale/catopen.c
+    ${MUSLSRC}/locale/c_locale.c
+    ${MUSLSRC}/locale/dcngettext.c
+    ${MUSLSRC}/locale/duplocale.c
+    ${MUSLSRC}/locale/iconv.c
+    ${MUSLSRC}/locale/iconv_close.c
+    ${MUSLSRC}/locale/langinfo.c
+    ${MUSLSRC}/locale/__lctrans.c
+    ${MUSLSRC}/locale/locale_map.c
+    ${MUSLSRC}/locale/__mo_lookup.c
+    ${MUSLSRC}/locale/pleval.c
+    ${MUSLSRC}/locale/strcoll.c
+    ${MUSLSRC}/locale/strfmon.c
+    ${MUSLSRC}/locale/strxfrm.c
+    ${MUSLSRC}/locale/textdomain.c
+    ${MUSLSRC}/locale/wcscoll.c
+    ${MUSLSRC}/locale/wcsxfrm.c
     ${MUSLSRC}/math/acos.c
     ${MUSLSRC}/math/acosf.c
     ${MUSLSRC}/math/acosh.c
@@ -246,8 +225,7 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/expl.c
     ${MUSLSRC}/math/expm1.c
     ${MUSLSRC}/math/expm1f.c
-# exp2l defines expm1l function    
-#    ${MUSLSRC}/math/expm1l.c
+    ${MUSLSRC}/math/expm1l.c
     ${MUSLSRC}/math/__expo2.c
     ${MUSLSRC}/math/__expo2f.c
     ${MUSLSRC}/math/fabs.c
@@ -407,138 +385,273 @@ add_library(oelibc STATIC
     ${MUSLSRC}/math/truncl.c
     ${MUSLSRC}/math/x86_64/acosl.s
     ${MUSLSRC}/math/x86_64/asinl.s
+    #${MUSLSRC}/math/x86_64/exp2l.s
     ${MUSLSRC}/math/x86_64/sqrtl.s
-    ${MUSLSRC}/math/x86_64/exp2l.s
-
-    ${MUSLSRC}/fenv/fegetexceptflag.c
-    ${MUSLSRC}/fenv/feholdexcept.c
-    ${MUSLSRC}/fenv/fesetexceptflag.c
-    ${MUSLSRC}/fenv/fesetround.c
-    ${MUSLSRC}/fenv/feupdateenv.c
-    ${MUSLSRC}/fenv/__flt_rounds.c
-    ${MUSLSRC}/fenv/x86_64/fenv.s
-
-    ${MUSLSRC}/internal/floatscan.c
-    ${MUSLSRC}/internal/intscan.c
-    ${MUSLSRC}/internal/libc.c
-    ${MUSLSRC}/internal/shgetc.c
-
-    ${MUSLSRC}/complex/cabs.c
-    ${MUSLSRC}/complex/cabsf.c
-    ${MUSLSRC}/complex/cabsl.c
-#   ${MUSLSRC}/complex/cacos.c
-    ${MUSLSRC}/complex/cacosf.c
-#   ${MUSLSRC}/complex/cacosh.c
-    ${MUSLSRC}/complex/cacoshf.c
-#   ${MUSLSRC}/complex/cacoshl.c
-#   ${MUSLSRC}/complex/cacosl.c
-    ${MUSLSRC}/complex/carg.c
-    ${MUSLSRC}/complex/cargf.c
-    ${MUSLSRC}/complex/cargl.c
-#   ${MUSLSRC}/complex/casin.c
-    ${MUSLSRC}/complex/casinf.c
-#   ${MUSLSRC}/complex/casinh.c
-    ${MUSLSRC}/complex/casinhf.c
-#   ${MUSLSRC}/complex/casinhl.c
-#   ${MUSLSRC}/complex/casinl.c
-    ${MUSLSRC}/complex/catan.c
-    ${MUSLSRC}/complex/catanf.c
-    ${MUSLSRC}/complex/catanh.c
-    ${MUSLSRC}/complex/catanhf.c
-    ${MUSLSRC}/complex/catanhl.c
-    ${MUSLSRC}/complex/catanl.c
-    ${MUSLSRC}/complex/ccos.c
-    ${MUSLSRC}/complex/ccosf.c
-    ${MUSLSRC}/complex/ccosh.c
-    ${MUSLSRC}/complex/ccoshf.c
-    ${MUSLSRC}/complex/ccoshl.c
-    ${MUSLSRC}/complex/ccosl.c
-    ${MUSLSRC}/complex/__cexp.c
-    ${MUSLSRC}/complex/cexp.c
-    ${MUSLSRC}/complex/__cexpf.c
-    ${MUSLSRC}/complex/cexpf.c
-    ${MUSLSRC}/complex/cexpl.c
-    ${MUSLSRC}/complex/cimag.c
-    ${MUSLSRC}/complex/cimagf.c
-    ${MUSLSRC}/complex/cimagl.c
-    ${MUSLSRC}/complex/clog.c
-    ${MUSLSRC}/complex/clogf.c
-    ${MUSLSRC}/complex/clogl.c
-    ${MUSLSRC}/complex/conj.c
-    ${MUSLSRC}/complex/conjf.c
-    ${MUSLSRC}/complex/conjl.c
-#   ${MUSLSRC}/complex/cpow.c
-#   ${MUSLSRC} /complex/cpowf.c
-#   ${MUSLSRC} /complex/cpowl.c
-    ${MUSLSRC}/complex/cproj.c
-    ${MUSLSRC}/complex/cprojf.c
-    ${MUSLSRC}/complex/cprojl.c
-    ${MUSLSRC}/complex/creal.c
-    ${MUSLSRC}/complex/crealf.c
-    ${MUSLSRC}/complex/creall.c
-    ${MUSLSRC}/complex/csin.c
-    ${MUSLSRC}/complex/csinf.c
-    ${MUSLSRC}/complex/csinh.c
-    ${MUSLSRC}/complex/csinhf.c
-    ${MUSLSRC}/complex/csinhl.c
-    ${MUSLSRC}/complex/csinl.c
-#   ${MUSLSRC}/complex/csqrt.c
-    ${MUSLSRC}/complex/csqrtf.c
-#   ${MUSLSRC}/complex/csqrtl.c
-    ${MUSLSRC}/complex/ctan.c
-    ${MUSLSRC}/complex/ctanf.c
-    ${MUSLSRC}/complex/ctanh.c
-    ${MUSLSRC}/complex/ctanhf.c
-    ${MUSLSRC}/complex/ctanhl.c
-    ${MUSLSRC}/complex/ctanl.c
-
     ${MUSLSRC}/misc/basename.c
     ${MUSLSRC}/misc/dirname.c
-
-    ${MUSLSRC}/search/lsearch.c
-    ${MUSLSRC}/search/hsearch.c
-
-    ${MUSLSRC}/legacy/getpagesize.c
-
-    ${MUSLSRC}/prng/rand.c
+    ${MUSLSRC}/mman/mmap.c
+    ${MUSLSRC}/mman/munmap.c
+    ${MUSLSRC}/multibyte/btowc.c
+    ${MUSLSRC}/multibyte/c16rtomb.c
+    ${MUSLSRC}/multibyte/c32rtomb.c
+    ${MUSLSRC}/multibyte/internal.c
+    ${MUSLSRC}/multibyte/mblen.c
+    ${MUSLSRC}/multibyte/mbrlen.c
+    ${MUSLSRC}/multibyte/mbrtoc16.c
+    ${MUSLSRC}/multibyte/mbrtoc32.c
+    ${MUSLSRC}/multibyte/mbrtowc.c
+    ${MUSLSRC}/multibyte/mbsinit.c
+    ${MUSLSRC}/multibyte/mbsnrtowcs.c
+    ${MUSLSRC}/multibyte/mbsrtowcs.c
+    ${MUSLSRC}/multibyte/mbstowcs.c
+    ${MUSLSRC}/multibyte/mbtowc.c
+    ${MUSLSRC}/multibyte/wcrtomb.c
+    ${MUSLSRC}/multibyte/wcsnrtombs.c
+    ${MUSLSRC}/multibyte/wcsrtombs.c
+    ${MUSLSRC}/multibyte/wcstombs.c
+    ${MUSLSRC}/multibyte/wctob.c
+    ${MUSLSRC}/multibyte/wctomb.c
+    ${MUSLSRC}/prng/drand48.c
+    ${MUSLSRC}/prng/lcong48.c
     ${MUSLSRC}/prng/lrand48.c
-    ${MUSLSRC}/prng/__seed48.c
+    ${MUSLSRC}/prng/mrand48.c
     ${MUSLSRC}/prng/__rand48_step.c
-
-    ${MUSLSRC}/regex/fnmatch.c
-
-    ${MUSLSRC}/search/tsearch_avl.c
+    ${MUSLSRC}/prng/rand.c
+    ${MUSLSRC}/prng/random.c
+    ${MUSLSRC}/prng/rand_r.c
+    ${MUSLSRC}/prng/__seed48.c
+    ${MUSLSRC}/prng/seed48.c
+    ${MUSLSRC}/prng/srand48.c
+    #${MUSLSRC}/regex/fnmatch.c
+    #${MUSLSRC}/regex/glob.c
+    #${MUSLSRC}/regex/regcomp.c
+    #${MUSLSRC}/regex/regerror.c
+    #${MUSLSRC}/regex/regexec.c
+    #${MUSLSRC}/regex/tre-mem.c
+    ${MUSLSRC}/search/hsearch.c
     ${MUSLSRC}/search/insque.c
-
-    ${MUSLSRC}/env/getenv.c
-    ${MUSLSRC}/env/setenv.c
-    ${MUSLSRC}/env/putenv.c
-    ${MUSLSRC}/env/clearenv.c
-    ${MUSLSRC}/env/unsetenv.c
-    ${MUSLSRC}/env/__environ.c
-
-#   ${MUSLSRC}/time/mktime.c
+    ${MUSLSRC}/search/lsearch.c
+    ${MUSLSRC}/search/tsearch_avl.c
+    ${MUSLSRC}/setjmp/x86_64/longjmp.s
+    ${MUSLSRC}/setjmp/x86_64/setjmp.s
+    ${MUSLSRC}/stat/stat.c
+    ${MUSLSRC}/stdio/asprintf.c
+    ${MUSLSRC}/stdio/asprintf.c
+    ${MUSLSRC}/stdio/clearerr.c
+    ${MUSLSRC}/stdio/dprintf.c
+    ${MUSLSRC}/stdio/ext2.c
+    ${MUSLSRC}/stdio/ext.c
+    ${MUSLSRC}/stdio/fclose.c
+    ${MUSLSRC}/stdio/__fclose_ca.c
+    ${MUSLSRC}/stdio/__fdopen.c
+    ${MUSLSRC}/stdio/feof.c
+    ${MUSLSRC}/stdio/ferror.c
+    ${MUSLSRC}/stdio/fflush.c
+    ${MUSLSRC}/stdio/fgetc.c
+    ${MUSLSRC}/stdio/fgetln.c
+    ${MUSLSRC}/stdio/fgetpos.c
+    ${MUSLSRC}/stdio/fgets.c
+    ${MUSLSRC}/stdio/fgetwc.c
+    ${MUSLSRC}/stdio/fgetws.c
+    ${MUSLSRC}/stdio/fileno.c
+    ${MUSLSRC}/stdio/flockfile.c
+    ${MUSLSRC}/stdio/fmemopen.c
+    ${MUSLSRC}/stdio/__fmodeflags.c
+    ${MUSLSRC}/stdio/fopen.c
+    ${MUSLSRC}/stdio/fopencookie.c
+    ${MUSLSRC}/stdio/__fopen_rb_ca.c
+    ${MUSLSRC}/stdio/fprintf.c
+    ${MUSLSRC}/stdio/fputc.c
+    ${MUSLSRC}/stdio/fputs.c
+    ${MUSLSRC}/stdio/fputwc.c
+    ${MUSLSRC}/stdio/fputws.c
+    ${MUSLSRC}/stdio/fread.c
+    ${MUSLSRC}/stdio/freopen.c
+    ${MUSLSRC}/stdio/fscanf.c
+    ${MUSLSRC}/stdio/fseek.c
+    ${MUSLSRC}/stdio/fsetpos.c
+    ${MUSLSRC}/stdio/ftell.c
+    ${MUSLSRC}/stdio/ftrylockfile.c
+    ${MUSLSRC}/stdio/funlockfile.c
+    ${MUSLSRC}/stdio/fwide.c
+    ${MUSLSRC}/stdio/fwprintf.c
+    ${MUSLSRC}/stdio/fwrite.c
+    ${MUSLSRC}/stdio/fwscanf.c
+    ${MUSLSRC}/stdio/getc.c
+    ${MUSLSRC}/stdio/getchar.c
+    ${MUSLSRC}/stdio/getchar_unlocked.c
+    ${MUSLSRC}/stdio/getc_unlocked.c
+    ${MUSLSRC}/stdio/getdelim.c
+    ${MUSLSRC}/stdio/getline.c
+    ${MUSLSRC}/stdio/gets.c
+    ${MUSLSRC}/stdio/getw.c
+    ${MUSLSRC}/stdio/getwc.c
+    ${MUSLSRC}/stdio/getwchar.c
+    ${MUSLSRC}/stdio/__lockfile.c
+    ${MUSLSRC}/stdio/ofl_add.c
+    ${MUSLSRC}/stdio/ofl.c
+    ${MUSLSRC}/stdio/open_memstream.c
+    ${MUSLSRC}/stdio/open_wmemstream.c
+    ${MUSLSRC}/stdio/__overflow.c
+    ${MUSLSRC}/stdio/pclose.c
+    ${MUSLSRC}/stdio/perror.c
+    ${MUSLSRC}/stdio/printf.c
+    ${MUSLSRC}/stdio/putc.c
+    ${MUSLSRC}/stdio/putchar.c
+    ${MUSLSRC}/stdio/putchar_unlocked.c
+    ${MUSLSRC}/stdio/putc_unlocked.c
+    ${MUSLSRC}/stdio/puts.c
+    ${MUSLSRC}/stdio/putw.c
+    ${MUSLSRC}/stdio/putwc.c
+    ${MUSLSRC}/stdio/putwchar.c
+    ${MUSLSRC}/stdio/remove.c
+    ${MUSLSRC}/stdio/rename.c
+    ${MUSLSRC}/stdio/rewind.c
+    ${MUSLSRC}/stdio/scanf.c
+    ${MUSLSRC}/stdio/setbuf.c
+    ${MUSLSRC}/stdio/setbuffer.c
+    ${MUSLSRC}/stdio/setlinebuf.c
+    ${MUSLSRC}/stdio/setvbuf.c
+    ${MUSLSRC}/stdio/snprintf.c
+    ${MUSLSRC}/stdio/sprintf.c
+    ${MUSLSRC}/stdio/sscanf.c
+    ${MUSLSRC}/stdio/stderr.c
+    ${MUSLSRC}/stdio/stdin.c
+    ${MUSLSRC}/stdio/__stdio_close.c
+    ${MUSLSRC}/stdio/__stdio_exit.c
+    ${MUSLSRC}/stdio/__stdio_read.c
+    ${MUSLSRC}/stdio/__stdio_seek.c
+    ${MUSLSRC}/stdio/__stdio_write.c
+    ${MUSLSRC}/stdio/stdout.c
+    ${MUSLSRC}/stdio/__stdout_write.c
+    ${MUSLSRC}/stdio/__string_read.c
+    ${MUSLSRC}/stdio/swprintf.c
+    ${MUSLSRC}/stdio/swscanf.c
+    ${MUSLSRC}/stdio/__toread.c
+    ${MUSLSRC}/stdio/__towrite.c
+    ${MUSLSRC}/stdio/__uflow.c
+    ${MUSLSRC}/stdio/ungetc.c
+    ${MUSLSRC}/stdio/ungetwc.c
+    ${MUSLSRC}/stdio/vasprintf.c
+    ${MUSLSRC}/stdio/vdprintf.c
+    ${MUSLSRC}/stdio/vfprintf.c
+    ${MUSLSRC}/stdio/vfscanf.c
+    ${MUSLSRC}/stdio/vfwprintf.c
+    ${MUSLSRC}/stdio/vfwscanf.c
+    ${MUSLSRC}/stdio/vprintf.c
+    ${MUSLSRC}/stdio/vscanf.c
+    ${MUSLSRC}/stdio/vsnprintf.c
+    ${MUSLSRC}/stdio/vsprintf.c
+    ${MUSLSRC}/stdio/vsscanf.c
+    ${MUSLSRC}/stdio/vswprintf.c
+    ${MUSLSRC}/stdio/vswscanf.c
+    ${MUSLSRC}/stdio/vwprintf.c
+    ${MUSLSRC}/stdio/vwscanf.c
+    ${MUSLSRC}/stdio/wprintf.c
+    ${MUSLSRC}/stdio/wscanf.c
+    ${MUSLSRC}/stdlib/abs.c
+    ${MUSLSRC}/stdlib/atof.c
+    ${MUSLSRC}/stdlib/atoi.c
+    ${MUSLSRC}/stdlib/atol.c
+    ${MUSLSRC}/stdlib/atoll.c
+    ${MUSLSRC}/stdlib/bsearch.c
+    ${MUSLSRC}/stdlib/labs.c
+    ${MUSLSRC}/stdlib/llabs.c
+    ${MUSLSRC}/stdlib/qsort.c
+    ${MUSLSRC}/stdlib/strtod.c
+    ${MUSLSRC}/stdlib/strtol.c
+    ${MUSLSRC}/stdlib/wcstod.c
+    ${MUSLSRC}/stdlib/wcstol.c
+    ${MUSLSRC}/string/bcmp.c
+    ${MUSLSRC}/string/bcopy.c
+    ${MUSLSRC}/string/bzero.c
+    ${MUSLSRC}/string/index.c
+    ${MUSLSRC}/string/memccpy.c
+    ${MUSLSRC}/string/memchr.c
+    ${MUSLSRC}/string/memcmp.c
+    ${MUSLSRC}/string/memcpy.c
+    ${MUSLSRC}/string/memmem.c
+    ${MUSLSRC}/string/memmove.c
+    ${MUSLSRC}/string/mempcpy.c
+    ${MUSLSRC}/string/memrchr.c
+    ${MUSLSRC}/string/memset.c
+    ${MUSLSRC}/string/rindex.c
+    ${MUSLSRC}/string/stpcpy.c
+    ${MUSLSRC}/string/stpncpy.c
+    ${MUSLSRC}/string/strcasecmp.c
+    ${MUSLSRC}/string/strcasestr.c
+    ${MUSLSRC}/string/strcat.c
+    ${MUSLSRC}/string/strchr.c
+    ${MUSLSRC}/string/strchrnul.c
+    ${MUSLSRC}/string/strcmp.c
+    ${MUSLSRC}/string/strcpy.c
+    ${MUSLSRC}/string/strcspn.c
+    ${MUSLSRC}/string/strdup.c
+    ${MUSLSRC}/string/strerror_r.c
+    ${MUSLSRC}/string/strlcat.c
+    ${MUSLSRC}/string/strlcpy.c
+    ${MUSLSRC}/string/strlen.c
+    ${MUSLSRC}/string/strncasecmp.c
+    ${MUSLSRC}/string/strncat.c
+    ${MUSLSRC}/string/strncmp.c
+    ${MUSLSRC}/string/strncpy.c
+    ${MUSLSRC}/string/strndup.c
+    ${MUSLSRC}/string/strnlen.c
+    ${MUSLSRC}/string/strpbrk.c
+    ${MUSLSRC}/string/strrchr.c
+    ${MUSLSRC}/string/strsep.c
+    ${MUSLSRC}/string/strspn.c
+    ${MUSLSRC}/string/strstr.c
+    ${MUSLSRC}/string/strtok.c
+    ${MUSLSRC}/string/strtok_r.c
+    ${MUSLSRC}/string/strverscmp.c
+    ${MUSLSRC}/string/swab.c
+    ${MUSLSRC}/string/wcpcpy.c
+    ${MUSLSRC}/string/wcpncpy.c
+    ${MUSLSRC}/string/wcscasecmp.c
+    ${MUSLSRC}/string/wcscasecmp_l.c
+    ${MUSLSRC}/string/wcscat.c
+    ${MUSLSRC}/string/wcschr.c
+    ${MUSLSRC}/string/wcscmp.c
+    ${MUSLSRC}/string/wcscpy.c
+    ${MUSLSRC}/string/wcscspn.c
+    ${MUSLSRC}/string/wcsdup.c
+    ${MUSLSRC}/string/wcslen.c
+    ${MUSLSRC}/string/wcsncasecmp.c
+    ${MUSLSRC}/string/wcsncasecmp_l.c
+    ${MUSLSRC}/string/wcsncat.c
+    ${MUSLSRC}/string/wcsncmp.c
+    ${MUSLSRC}/string/wcsncpy.c
+    ${MUSLSRC}/string/wcsnlen.c
+    ${MUSLSRC}/string/wcspbrk.c
+    ${MUSLSRC}/string/wcsrchr.c
+    ${MUSLSRC}/string/wcsspn.c
+    ${MUSLSRC}/string/wcsstr.c
+    ${MUSLSRC}/string/wcstok.c
+    ${MUSLSRC}/string/wcswcs.c
+    ${MUSLSRC}/string/wmemchr.c
+    ${MUSLSRC}/string/wmemcmp.c
+    ${MUSLSRC}/string/wmemcpy.c
+    ${MUSLSRC}/string/wmemmove.c
+    ${MUSLSRC}/string/wmemset.c
+    ${MUSLSRC}/thread/__lock.c
+    ${MUSLSRC}/thread/__wait.c
+    ${MUSLSRC}/time/clock_gettime.c
+    ${MUSLSRC}/time/gettimeofday.c
     ${MUSLSRC}/time/gmtime.c
     ${MUSLSRC}/time/gmtime_r.c
+    ${MUSLSRC}/time/__map_file.c
+    ${MUSLSRC}/time/__month_to_secs.c
+    ${MUSLSRC}/time/mktime.c
+    ${MUSLSRC}/time/nanosleep.c
     ${MUSLSRC}/time/__secs_to_tm.c
+    ${MUSLSRC}/time/__tz.c
+    ${MUSLSRC}/time/time.c
     ${MUSLSRC}/time/__tm_to_secs.c
     ${MUSLSRC}/time/__year_to_secs.c
-    ${MUSLSRC}/time/__month_to_secs.c
-#   ${MUSLSRC}/time/__tz.c
-
-    ${MUSLSRC}/crypt/crypt.c
-    ${MUSLSRC}/crypt/crypt_r.c
-    ${MUSLSRC}/crypt/crypt_sha256.c
-    ${MUSLSRC}/crypt/crypt_sha512.c
-    ${MUSLSRC}/crypt/crypt_des.c
-    ${MUSLSRC}/crypt/crypt_md5.c
-    ${MUSLSRC}/crypt/crypt_blowfish.c
-    ${MUSLSRC}/crypt/encrypt.c
-
-    abort.S
-    ${MUSLSRC}/setjmp/x86_64/setjmp.s
-    ${MUSLSRC}/setjmp/x86_64/longjmp.s
-    )
+    ${MUSLSRC}/unistd/close.c
+    ${MUSLSRC}/unistd/dup.c
+    ${MUSLSRC}/unistd/dup3.c)
 
 add_target_compile_flags(oelibc PRIVATE C
     -std=c99
@@ -560,15 +673,22 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         -Wno-attributes
         -Wno-format
         -Wno-missing-braces
-        -Wno-maybe-uninitialized
         -Wno-parentheses
         -Wno-pointer-sign
         -Wno-shift-negative-value
         -Wno-string-plus-int
         -Wno-typedef-redefinition
         -Wno-unknown-pragmas
-        -Wno-error=unused-but-set-variable
-        )
+        -Wno-unused-but-set-variable
+        -Wno-unused-value
+        -Wno-unused-function
+        -Wno-unneeded-internal-declaration
+        -Wno-jump-misses-init
+        -Wno-maybe-uninitialized
+        -Wno-macro-redefined
+        -Wno-self-assign
+        -Wno-parentheses-equality)
+
 endif()
 
 add_target_compile_defs(oelibc PRIVATE C _XOPEN_SOURCE=700)
@@ -583,13 +703,16 @@ target_link_libraries(oelibc oecore)
 # as a pre-build step, place the musl LIBC headers
 add_dependencies(oelibc oelibc_includes)
 
+target_include_directories(oelibc PRIVATE 
+    ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/src/internal
+    ${PROJECT_BINARY_DIR}/3rdparty/musl/musl/arch/x86_64)
+
 # this project and its dependents require include/libc in the include path.
 # Note the difference between build time (absolute in build tree) and install
 # time (relative to install prefix)
 target_include_directories(oelibc PUBLIC
     $<BUILD_INTERFACE:${OE_INCDIR}/openenclave/libc>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libc>
-    )
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libc>)
 
 # when building this project, we also need a number of internal includes
 target_include_directories(oelibc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)

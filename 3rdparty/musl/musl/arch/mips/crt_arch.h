@@ -10,7 +10,7 @@ __asm__(
 "" START ":\n"
 "	bal 1f \n"
 "	 move $fp, $0 \n"
-"2:	.gpword 2b \n"
+"	.gpword . \n"
 "	.gpword " START "_c \n"
 ".weak _DYNAMIC \n"
 ".hidden _DYNAMIC \n"

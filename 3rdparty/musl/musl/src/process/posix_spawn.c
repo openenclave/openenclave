@@ -27,12 +27,7 @@ static int __sys_dup2(int old, int new)
 #ifdef SYS_dup2
 	return __syscall(SYS_dup2, old, new);
 #else
-	if (old==new) {
-		int r = __syscall(SYS_fcntl, old, F_GETFD);
-		return r<0 ? r : old;
-	} else {
-		return __syscall(SYS_dup3, old, new, 0);
-	}
+	return __syscall(SYS_dup3, old, new, 0);
 #endif
 }
 
@@ -73,6 +68,10 @@ static int child(void *args_vp)
 		__libc_sigaction(i, &sa, 0);
 	}
 
+	if (attr->__flags & POSIX_SPAWN_SETSID)
+		if ((ret=__syscall(SYS_setsid)) < 0)
+			goto fail;
+
 	if (attr->__flags & POSIX_SPAWN_SETPGROUP)
 		if ((ret=__syscall(SYS_setpgid, 0, attr->__pgrp)))
 			goto fail;
@@ -105,8 +104,17 @@ static int child(void *args_vp)
 				__syscall(SYS_close, op->fd);
 				break;
 			case FDOP_DUP2:
-				if ((ret=__sys_dup2(op->srcfd, op->fd))<0)
-					goto fail;
+				fd = op->srcfd;
+				if (fd != op->fd) {
+					if ((ret=__sys_dup2(fd, op->fd))<0)
+						goto fail;
+				} else {
+					ret = __syscall(SYS_fcntl, fd, F_GETFD);
+					ret = __syscall(SYS_fcntl, fd, F_SETFD,
+					                ret & ~FD_CLOEXEC);
+					if (ret<0)
+						goto fail;
+				}
 				break;
 			case FDOP_OPEN:
 				fd = __sys_open(op->path, op->oflag, op->mode);
@@ -148,7 +156,7 @@ int __posix_spawnx(pid_t *restrict res, const char *restrict path,
 	char *const argv[restrict], char *const envp[restrict])
 {
 	pid_t pid;
-	char stack[1024];
+	char stack[1024+PATH_MAX];
 	int ec=0, cs;
 	struct args args;
 

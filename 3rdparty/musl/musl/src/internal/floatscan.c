@@ -110,7 +110,10 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 			gotdig=1;
 		} else {
 			dc++;
-			if (c!='0') x[KMAX-4] |= 1;
+			if (c!='0') {
+				lnz = (KMAX-4)*9;
+				x[KMAX-4] |= 1;
+			}
 		}
 	}
 	if (!gotrad) lrp=dc;
@@ -171,6 +174,9 @@ static long double decfloat(FILE *f, int c, int bits, int emin, int sign, int po
 		if (bitlim>30 || x[0]>>bitlim==0)
 			return sign * (long double)x[0] * p10s[rp-10];
 	}
+
+	/* Drop trailing zeros */
+	for (; !x[z-1]; z--);
 
 	/* Align radix point to B1B digit boundary */
 	if (rp % 9) {

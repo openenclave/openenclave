@@ -2,7 +2,7 @@
 .type   pipe, @function
 pipe:
 	mov    #42, r3
-	trapa  #17
+	trapa  #31
 
 	! work around hardware bug
 	or     r0, r0

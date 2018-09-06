@@ -72,14 +72,15 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 
 	/* Disallow potentially-malicious user names */
 	if (*name=='.' || strchr(name, '/') || !l)
-		return EINVAL;
+		return errno = EINVAL;
 
 	/* Buffer size must at least be able to hold name, plus some.. */
-	if (size < l+100) return ERANGE;
+	if (size < l+100)
+		return errno = ERANGE;
 
 	/* Protect against truncation */
 	if (snprintf(path, sizeof path, "/etc/tcb/%s/shadow", name) >= sizeof path)
-		return EINVAL;
+		return errno = EINVAL;
 
 	fd = open(path, O_RDONLY|O_NOFOLLOW|O_NONBLOCK|O_CLOEXEC);
 	if (fd >= 0) {
@@ -112,5 +113,6 @@ int getspnam_r(const char *name, struct spwd *sp, char *buf, size_t size, struct
 		break;
 	}
 	pthread_cleanup_pop(1);
+	if (rv) errno = rv;
 	return rv;
 }

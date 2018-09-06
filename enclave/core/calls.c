@@ -27,6 +27,9 @@
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
 
+/* If true, disable the debug malloc checking */
+bool oe_disable_debug_malloc_check;
+
 /*
 **==============================================================================
 **
@@ -424,7 +427,7 @@ OE_INLINE void _HandleORET(TD* td, uint16_t func, uint16_t result, int64_t arg)
 oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
-    TD* td = TD_Get();
+    TD* td = oe_get_td();
     Callsite* callsite = td->callsites;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
@@ -786,7 +789,7 @@ void _oe_notify_nested_exit_start(
         return;
 
     // Save the ocallcontext to the callsite of current enclave thread.
-    TD* td = TD_Get();
+    TD* td = oe_get_td();
     Callsite* callsite = td->callsites;
     callsite->ocallContext = ocallContext;
 

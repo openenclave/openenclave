@@ -5,9 +5,7 @@
 ../../3rdparty/musl/libc-test/src/functional/crypt.c
 ../../3rdparty/musl/libc-test/src/functional/dirname.c
 ../../3rdparty/musl/libc-test/src/functional/env.c
-../../3rdparty/musl/libc-test/src/functional/fnmatch.c
 ../../3rdparty/musl/libc-test/src/functional/qsort.c
-../../3rdparty/musl/libc-test/src/functional/search_hsearch.c
 ../../3rdparty/musl/libc-test/src/functional/search_insque.c
 ../../3rdparty/musl/libc-test/src/functional/search_lsearch.c
 ../../3rdparty/musl/libc-test/src/functional/search_tsearch.c
@@ -228,3 +226,16 @@
 ../../3rdparty/musl/libc-test/src/regression/scanf-nullbyte-char.c
 ../../3rdparty/musl/libc-test/src/regression/wcsncpy-read-overflow.c
 ../../3rdparty/musl/libc-test/src/regression/wcsstr-false-negative.c
+../../3rdparty/musl/libc-test/src/functional/clocale_mbfuncs.c
+../../3rdparty/musl/libc-test/src/functional/iconv_open.c
+../../3rdparty/musl/libc-test/src/functional/memstream.c
+../../3rdparty/musl/libc-test/src/math/scalbn.c
+../../3rdparty/musl/libc-test/src/math/scalbnf.c
+../../3rdparty/musl/libc-test/src/math/scalbnl.c
+../../3rdparty/musl/libc-test/src/musl/pleval.c
+../../3rdparty/musl/libc-test/src/regression/fgets-eof.c
+../../3rdparty/musl/libc-test/src/regression/iconv-roundtrips.c
+../../3rdparty/musl/libc-test/src/regression/putenv-doublefree.c
+../../3rdparty/musl/libc-test/src/regression/strverscmp.c
+../../3rdparty/musl/libc-test/src/functional/random.c
+../../3rdparty/musl/libc-test/src/functional/time.c

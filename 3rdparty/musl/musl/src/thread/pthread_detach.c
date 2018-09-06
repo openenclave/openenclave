@@ -6,10 +6,10 @@ int __pthread_join(pthread_t, void **);
 static int __pthread_detach(pthread_t t)
 {
 	/* Cannot detach a thread that's already exiting */
-	if (a_swap(t->exitlock, 1))
+	if (a_cas(t->exitlock, 0, INT_MIN + 1))
 		return __pthread_join(t, 0);
 	t->detached = 2;
-	__unlock(t->exitlock);
+	UNLOCK(t->exitlock);
 	return 0;
 }
 

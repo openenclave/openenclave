@@ -14,13 +14,7 @@
 static void reap(pid_t pid)
 {
 	int status;
-	for (;;) {
-		if (waitpid(pid, &status, 0) < 0) {
-			if (errno != EINTR) return;
-		} else {
-			if (WIFEXITED(status)) return;
-		}
-	}
+	while (waitpid(pid, &status, 0) < 0 && errno == EINTR);
 }
 
 static char *getword(FILE *f)

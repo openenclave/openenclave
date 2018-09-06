@@ -49,14 +49,6 @@ void HandleFree(uint64_t arg)
     free((void*)arg);
 }
 
-void HandlePuts(uint64_t argIn)
-{
-    const char* str = (const char*)argIn;
-
-    if (str)
-        puts(str);
-}
-
 void HandlePrint(uint64_t argIn)
 {
     oe_print_args_t* args = (oe_print_args_t*)argIn;
@@ -74,12 +66,6 @@ void HandlePrint(uint64_t argIn)
             fflush(stderr);
         }
     }
-}
-
-void HandlePutchar(uint64_t argIn)
-{
-    int c = (int)argIn;
-    putchar(c);
 }
 
 void HandleThreadWait(oe_enclave_t* enclave, uint64_t argIn)
