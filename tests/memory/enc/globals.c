@@ -1,6 +1,7 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include <openenclave/enclave.h>
-#include <openenclave/internal/globals.h>
-#include <stdlib.h>
 #include <string.h>
 #include "../args.h"
 
