@@ -206,7 +206,8 @@ void* oe_host_realloc(void* ptr, size_t size);
  * implementation performs an OCALL to the host, which calls calloc().
  * To free the memory, it must be passed to oe_host_free().
  *
- * @param size The number of bytes to be allocated and zero-filled.
+ * @param nmemb The number of elements to be allocated and zero-filled.
+ * @param size The size of each element.
  *
  * @returns The allocated memory or NULL if unable to allocate the memory.
  *
@@ -295,7 +296,7 @@ void __oe_assert_fail(
  * this function returns OE_BUFFER_TOO_SMALL.
  *
  * @param flags Specifying default value (0) generates a report for local
- * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
+ * attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a
  * report for remote attestation.
  * @param reportData The report data that will be included in the report.
  * @param reportDataSize The size of the **reportData** in bytes.
