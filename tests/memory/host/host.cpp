@@ -47,7 +47,7 @@ static void _MallocStressTest(oe_enclave_t* enclave)
     _MallocStressTestMultiThread(enclave);
 }
 
-static void _MallocBoundaryTest(oe_enclave_t* enclave)
+static void _MallocBoundaryTest(oe_enclave_t* enclave, uint32_t flags)
 {
     /* Test host malloc boundary. */
     Buffer array[ITERS];
@@ -86,9 +86,15 @@ static void _MallocBoundaryTest(oe_enclave_t* enclave)
         oe_call_enclave(enclave, "TestBetweenEnclaveBoundaries", &args) ==
         OE_OK);
 
-    /* Abort page returns all 0xFFs when accessing. */
+    /* Abort page returns all 0xFFs when accessing. In simulation mode, it's
+     * just regular memory. */
     for (size_t i = 0; i < args.enclaveMemory.size; i++)
-        OE_TEST(args.enclaveMemory.buf[i] == 255);
+    {
+        if ((flags & OE_ENCLAVE_FLAG_SIMULATE))
+            OE_TEST(args.enclaveMemory.buf[i] == 3);
+        else
+            OE_TEST(args.enclaveMemory.buf[i] == 255);
+    }
 
     for (size_t i = 0; i < args.enclaveHostMemory.size; i++)
         OE_TEST(args.enclaveHostMemory.buf[i] == 4);
@@ -180,7 +186,7 @@ int main(int argc, const char* argv[])
     _MallocStressTest(enclave);
 
     printf("===Starting malloc boundary test.\n");
-    _MallocBoundaryTest(enclave);
+    _MallocBoundaryTest(enclave, flags);
 
     printf("===Starting globals test.\n");
     _GlobalsTest(enclave);
