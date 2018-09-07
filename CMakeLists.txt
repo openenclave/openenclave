@@ -17,6 +17,18 @@ elseif(WIN32)
   set(OE_ASM ASM_MASM)
 endif()
 
+# Prefer clang over other compilers
+if (NOT CMAKE_C_COMPILER AND "$ENV{CC}" STREQUAL "")
+    message(STATUS "Trying to find a supported version of Clang")
+    find_program(CMAKE_C_COMPILER NAMES clang-7.0 clang-7)
+    if (CMAKE_C_COMPILER)
+        set(CMAKE_CXX_COMPILER ${CMAKE_C_COMPILER})
+    else()
+        message(WARNING "Clang not found, will use default compiler. "
+            "Override the compiler by setting CC and CXX environment variables.")
+    endif()
+endif()
+
 # set default Jenkins variables
 if (NOT GIT_BRANCH)
     set(GIT_BRANCH "null")
@@ -29,6 +41,16 @@ if (NOT BUILD_NUMBER)
 endif(NOT BUILD_NUMBER)
 
 project("open-enclave" VERSION ${OE_VERSION} LANGUAGES ${OE_ASM} C CXX)
+
+# warn about unsupported Clang versions
+if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+    if (CMAKE_C_COMPILER_VERSION VERSION_LESS 7 OR
+        CMAKE_C_COMPILER_VERSION VERSION_GREATER 7.99)
+        message(WARNING "Open Enclave officially supports Clang 7 only, "
+            "but your Clang version (${CMAKE_C_COMPILER_VERSION}) "
+            "is older or newer than that. Build problems may occur.")
+    endif()
+endif()
 
 # allow simpler include() of our scripts
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
