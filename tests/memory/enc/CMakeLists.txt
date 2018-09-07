@@ -3,6 +3,7 @@
 
 add_executable(memory_enc
     basic.c
+    boundaries.c
     enc.c
     stress.c)
 

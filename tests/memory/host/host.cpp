@@ -12,6 +12,9 @@
 
 #include "../args.h"
 
+#define ITERS 1024
+#define BUFSIZE 1024
+
 static void _MallocBasicTest(oe_enclave_t* enclave)
 {
     OE_TEST(oe_call_enclave(enclave, "TestMalloc", NULL) == OE_OK);
@@ -44,6 +47,60 @@ static void _MallocStressTest(oe_enclave_t* enclave)
     _MallocStressTestMultiThread(enclave);
 }
 
+static void _MallocBoundaryTest(oe_enclave_t* enclave)
+{
+    /* Test host malloc boundary. */
+    Buffer array[ITERS];
+    for (int i = 0; i < ITERS; i++)
+    {
+        array[i].buf = (unsigned char*)malloc(BUFSIZE);
+        OE_TEST(array[i].buf != NULL);
+        array[i].size = BUFSIZE;
+
+        OE_TEST(
+            oe_call_enclave(enclave, "TestHostBoundaries", &array[i]) == OE_OK);
+    }
+
+    for (int i = 0; i < ITERS; i++)
+        free(array[i].buf);
+
+    /* Test enclave boundaries. */
+    OE_TEST(oe_call_enclave(enclave, "TestEnclaveBoundaries", NULL) == OE_OK);
+
+    /* Test enclave memory across boundaries. */
+    unsigned char stackbuf[BUFSIZE];
+    for (int i = 0; i < BUFSIZE; i++)
+        stackbuf[i] = 1;
+
+    unsigned char* heapbuf = (unsigned char*)malloc(BUFSIZE);
+    OE_TEST(heapbuf != NULL);
+    for (int i = 0; i < BUFSIZE; i++)
+        heapbuf[i] = 2;
+
+    BoundaryArgs args = {
+        .hostStack = {.buf = stackbuf, .size = sizeof(stackbuf)},
+        .hostHeap = {.buf = heapbuf, .size = BUFSIZE},
+    };
+
+    OE_TEST(
+        oe_call_enclave(enclave, "TestBetweenEnclaveBoundaries", &args) ==
+        OE_OK);
+
+    /* Abort page returns all 0xFFs when accessing. */
+    for (size_t i = 0; i < args.enclaveMemory.size; i++)
+        OE_TEST(args.enclaveMemory.buf[i] == 255);
+
+    for (size_t i = 0; i < args.enclaveHostMemory.size; i++)
+        OE_TEST(args.enclaveHostMemory.buf[i] == 4);
+
+    /* Ensure that enclaveMemory still works when passed from the host. */
+    OE_TEST(oe_call_enclave(enclave, "TryInputEnclavePointer", &args) == OE_OK);
+
+    /* Cleanup all memory. */
+    OE_TEST(oe_call_enclave(enclave, "FreeBoundaryMemory", &args) == OE_OK);
+    free(heapbuf);
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -63,8 +120,16 @@ int main(int argc, const char* argv[])
     if (result != OE_OK)
         oe_put_err("oe_create_enclave(): result=%u", result);
 
+    printf("===Starting basic malloc test.\n");
     _MallocBasicTest(enclave);
+
+    printf("===Starting malloc stress test.\n");
     _MallocStressTest(enclave);
+
+    printf("===Starting malloc boundary test.\n");
+    _MallocBoundaryTest(enclave);
+
+    printf("===All tests pass.\n");
 
     oe_terminate_enclave(enclave);
 

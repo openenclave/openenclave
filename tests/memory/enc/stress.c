@@ -22,12 +22,6 @@
 #define TEST_GET_VAL 6
 #define NUM_TESTS 7
 
-typedef struct _Buffer
-{
-    void* buf;
-    size_t size;
-} Buffer;
-
 static inline size_t _RandX(size_t x)
 {
     /* Note that rand() % N is biased if RAND_MAX + 1 isn't divisible
@@ -75,14 +69,14 @@ static void _HandleAlloc(
     {
         /* For malloc/calloc, we add the new memory block to buffer array. */
         case TEST_MALLOC:
-            buffer[index].buf = malloc(toAlloc);
+            buffer[index].buf = (unsigned char*)malloc(toAlloc);
             buffer[index].size = toAlloc;
             OE_TEST(buffer[index].buf != NULL);
             maxSize -= toAlloc;
             index++;
             break;
         case TEST_CALLOC:
-            buffer[index].buf = calloc(1, toAlloc);
+            buffer[index].buf = (unsigned char*)calloc(1, toAlloc);
             buffer[index].size = toAlloc;
             OE_TEST(buffer[index].buf != NULL);
             maxSize -= toAlloc;
@@ -92,7 +86,8 @@ static void _HandleAlloc(
         /* For realloc, we change the last allocated block. */
         case TEST_REALLOC:
             maxSize += buffer[index - 1].size;
-            buffer[index - 1].buf = realloc(buffer[index - 1].buf, toAlloc);
+            buffer[index - 1].buf =
+                (unsigned char*)realloc(buffer[index - 1].buf, toAlloc);
             buffer[index - 1].size = toAlloc;
             OE_TEST(buffer[index - 1].buf != NULL);
             maxSize -= toAlloc;

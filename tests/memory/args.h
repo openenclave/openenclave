@@ -9,4 +9,18 @@ typedef struct _MallocStressTestArgs
     int threads;
 } MallocStressTestArgs;
 
+typedef struct _Buffer
+{
+    unsigned char* buf;
+    size_t size;
+} Buffer;
+
+typedef struct _BoundaryArgs
+{
+    Buffer hostStack;
+    Buffer hostHeap;
+    Buffer enclaveMemory;
+    Buffer enclaveHostMemory;
+} BoundaryArgs;
+
 #endif /* _MEMORY_TESTS_H */
