@@ -4,7 +4,10 @@
 OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
 
-CFLAGS = -Wall -Werror -O2 -m64 -nostdinc -fPIC
+CC = clang-7
+
+CFLAGS += -Wall -Werror -O2 -m64 -nostdinc -fPIC
+CFLAGS += -mllvm -x86-speculative-load-hardening
 
 INCLUDES += -I$(OE_INCLUDEDIR)
 INCLUDES += -I$(OE_INCLUDEDIR)/libc
@@ -31,8 +34,8 @@ all:
 	$(MAKE) sign
 
 build:
-	gcc -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o
-	gcc -o helloworldenc.so enc.o $(LDFLAGS) $(LIBRARIES)
+	$(CC) -c $(CFLAGS) $(INCLUDES) enc.c -o enc.o
+	$(CC) -o helloworldenc.so enc.o $(LDFLAGS) $(LIBRARIES)
 
 sign:
 	$(OE_BINDIR)/oesign helloworldenc.so helloworld.conf private.pem
