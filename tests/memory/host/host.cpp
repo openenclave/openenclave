@@ -101,6 +101,59 @@ static void _MallocBoundaryTest(oe_enclave_t* enclave)
     free(heapbuf);
 }
 
+static void _GlobalsTest(oe_enclave_t* enclave)
+{
+    GlobalArgs args = {.globalInt = 2,
+                       .globalFloat = 2.0,
+                       .globalPtr = (int*)0x2,
+                       .globalStruct = {2, 2},
+                       .globalUnion = {.y = 2},
+                       .globalArray = {2, 2, 2, 2},
+                       .getDefault = 1};
+
+    OE_TEST(oe_call_enclave(enclave, "GetGlobals", &args) == OE_OK);
+
+    /* Verify default global initialization works in the enclave. */
+    OE_TEST(args.globalInt == 0);
+    OE_TEST(args.globalFloat == 0.0);
+    OE_TEST(args.globalPtr == NULL);
+    OE_TEST(args.globalStruct.a == 0 && args.globalStruct.b == 0);
+    OE_TEST(args.globalUnion.y == 0);
+    for (int i = 0; i < GLOBAL_ARRAY_SIZE; i++)
+        OE_TEST(args.globalArray[i] == 0);
+
+    /* Verify explicit global initialization works in the enclave. */
+    args.getDefault = 0;
+    OE_TEST(oe_call_enclave(enclave, "GetGlobals", &args) == OE_OK);
+    OE_TEST(args.globalInt == 1);
+    OE_TEST(args.globalFloat == 1.0);
+    OE_TEST((uintptr_t)args.globalPtr == 0x1);
+    OE_TEST(args.globalStruct.a == 1 && args.globalStruct.b == 1);
+    OE_TEST(args.globalUnion.y == 1);
+    for (int i = 0; i < GLOBAL_ARRAY_SIZE; i++)
+        OE_TEST(args.globalArray[i] == 1);
+
+    /* Verify if we can set the globals. */
+    GlobalArgs args2 = {.globalInt = 2,
+                        .globalFloat = 2.0,
+                        .globalPtr = (int*)0x2,
+                        .globalStruct = {2, 2},
+                        .globalUnion = {.y = 2},
+                        .globalArray = {2, 2, 2, 2},
+                        .getDefault = 0};
+
+    OE_TEST(oe_call_enclave(enclave, "SetGlobals", &args2) == OE_OK);
+    OE_TEST(oe_call_enclave(enclave, "GetGlobals", &args) == OE_OK);
+
+    OE_TEST(args.globalInt == 2);
+    OE_TEST(args.globalFloat == 2.0);
+    OE_TEST((uintptr_t)args.globalPtr == 0x2);
+    OE_TEST(args.globalStruct.a == 2 && args.globalStruct.b == 2);
+    OE_TEST(args.globalUnion.y == 2);
+    for (int i = 0; i < GLOBAL_ARRAY_SIZE; i++)
+        OE_TEST(args.globalArray[i] == 2);
+}
+
 int main(int argc, const char* argv[])
 {
     oe_result_t result;
@@ -128,6 +181,9 @@ int main(int argc, const char* argv[])
 
     printf("===Starting malloc boundary test.\n");
     _MallocBoundaryTest(enclave);
+
+    printf("===Starting globals test.\n");
+    _GlobalsTest(enclave);
 
     printf("===All tests pass.\n");
 

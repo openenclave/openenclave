@@ -23,4 +23,29 @@ typedef struct _BoundaryArgs
     Buffer enclaveHostMemory;
 } BoundaryArgs;
 
+/* Defintions for checking global variables. */
+#define GLOBAL_ARRAY_SIZE 4
+
+typedef struct _DummyStruct
+{
+    int32_t a;
+    int32_t b;
+} DummyStruct;
+
+typedef union _DummyUnion {
+    DummyStruct x;
+    int64_t y;
+} DummyUnion;
+
+typedef struct _GlobalArgs
+{
+    int globalInt;
+    float globalFloat;
+    int* globalPtr;
+    DummyStruct globalStruct;
+    DummyUnion globalUnion;
+    int globalArray[GLOBAL_ARRAY_SIZE];
+    bool getDefault;
+} GlobalArgs;
+
 #endif /* _MEMORY_TESTS_H */
