@@ -178,7 +178,7 @@ OE_ECALL void InitMallocStressTest(void* args)
 OE_ECALL void MallocStressTest(void* args_)
 {
     /* Check host input. */
-    MallocStressTestArgs* args = (MallocStressTestArgs*)args;
+    MallocStressTestArgs* args = (MallocStressTestArgs*)args_;
     OE_TEST(args != NULL);
     OE_TEST(oe_is_outside_enclave(args, sizeof(MallocStressTestArgs)));
 

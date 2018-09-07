@@ -127,7 +127,7 @@ OE_ECALL void TestMemalign(void* args_)
 
 OE_ECALL void TestPosixMemalign(void* args_)
 {
-    void* ptr;
+    void* ptr = NULL;
 
     /* Get an align pointer below malloc's alignment. */
     OE_TEST(posix_memalign(&ptr, 8, 256 * sizeof(int)) == 0);
