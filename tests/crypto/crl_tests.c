@@ -247,8 +247,7 @@ static void _test_verify(
 
         /* Look for a revocation error message */
         {
-            const char* errors[] =
-            {
+            const char* errors[] = {
                 "certificate revoked",
                 "The certificate has been revoked (is on a CRL)",
             };
