@@ -632,6 +632,9 @@ oe_result_t oe_cert_verify(
     /* Set the CA chain into the verification context */
     X509_STORE_CTX_trusted_stack(ctx, chainImpl->sk);
 
+    /* Ignore the non-standard SGX extension */
+    ctx->param->flags |= X509_V_FLAG_IGNORE_CRITICAL;
+
     /* Set the CRLs if any */
     if (crl_impl)
     {
