@@ -164,7 +164,7 @@ oe_result_t oe_get_report(
         }
     }
 
-    if (flags & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
+    if (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
     {
         OE_CHECK(
             _oe_get_remote_report(
@@ -187,7 +187,7 @@ oe_result_t oe_get_report(
     }
 
     header->version = OE_REPORT_HEADER_VERSION;
-    header->report_type = (flags & OE_REPORT_OPTIONS_REMOTE_ATTESTATION)
+    header->report_type = (flags & OE_REPORT_FLAGS_REMOTE_ATTESTATION)
                               ? OE_REPORT_TYPE_SGX_REMOTE
                               : OE_REPORT_TYPE_SGX_LOCAL;
     header->report_size = *reportBufferSize;

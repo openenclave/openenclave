@@ -16,10 +16,10 @@
 OE_EXTERNC_BEGIN
 
 /**
- * Options passed to GetReport functions on host and enclave.
+ * Flags passed to GetReport functions on host and enclave.
  * Default value (0) is local attestation.
  */
-#define OE_REPORT_OPTIONS_REMOTE_ATTESTATION 0x00000001
+#define OE_REPORT_FLAGS_REMOTE_ATTESTATION 0x00000001
 
 #define OE_REPORT_DATA_SIZE 64
 
@@ -45,7 +45,15 @@ OE_EXTERNC_BEGIN
  */
 
 /**
- * oe_identity_t structure
+ * oe_identity_t represents the identity of an enclave.
+ * The oe_identity_t structure is expected to change in future.
+ * Newer fields are always added at the end and fields are never removed.
+ * Before accessing a field, the enclave must first check that the field is
+ * valid using the id_version and the table below:
+ *
+ * id_version | Supported fields
+ * -----------| --------------------------------------------------------------
+ *     0      | security_version, attributes, unique_id, signed_id, product_id
  */
 typedef struct _oe_identity
 {
