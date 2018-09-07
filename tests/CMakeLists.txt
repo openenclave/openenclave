@@ -23,6 +23,7 @@ add_subdirectory(str)
 
 if (UNIX OR ADD_WINDOWS_ENCLAVE_TESTS)
 add_subdirectory(abortStatus)
+add_subdirectory(bigmalloc)
 add_subdirectory(create-errors)
 add_subdirectory(create-rapid)
 add_subdirectory(debug-mode)
