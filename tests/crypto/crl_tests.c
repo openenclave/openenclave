@@ -247,23 +247,28 @@ static void _test_verify(
 
         /* Look for a revocation error message */
         {
-            const char* errors[] = {
+            bool found = false;
+            const char* messages[] = {
                 "certificate revoked",
                 "The certificate has been revoked (is on a CRL)",
             };
 
-            for (size_t i = 0; i < OE_COUNTOF(errors); i++)
+            for (size_t i = 0; i < OE_COUNTOF(messages); i++)
             {
-                if (strstr(error.buf, errors[i]) == 0)
+                if (strstr(error.buf, messages[i]) == 0)
                 {
-                    r = OE_OK;
+                    found = true;
                     break;
                 }
             }
+
+            OE_TEST(found);
         }
     }
-
-    OE_TEST(r == OE_OK);
+    else
+    {
+        OE_TEST(r == OE_OK);
+    }
 
     oe_cert_free(&cert);
     oe_cert_chain_free(&chain);
