@@ -15,7 +15,8 @@ string(CONCAT CFLAGS
     "-fno-builtin "
     "-fPIC "
     "-include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h "
-    "-I${PROJECT_SOURCE_DIR}/include ")
+    "-I${PROJECT_SOURCE_DIR}/include "
+    "${SPECTRE_MITIGATION_FLAGS} ")
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
     string(CONCAT CFLAGS

@@ -36,6 +36,20 @@ else()
     message("ccache not found")
 endif(CCACHE_FOUND)
 
+# Apply Spectre mitigations if available.
+set(SPECTRE_1_LLVM_MITIGATION_FLAG "-mllvm -x86-speculative-load-hardening")
+add_compile_flag_if_supported("C;CXX" "${SPECTRE_1_LLVM_MITIGATION_FLAG}" SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
+
+if (SPECTRE_1_LLVM_MITIGATION_FLAG_SUPPORTED)
+    message("C/C++ compiler is Clang 7.0+, applying Spectre 1 mitigations")
+else()
+    set(SPECTRE_1_LLVM_MITIGATION_FLAG "")
+    message("C/C++ compiler is not Clang 7.0+, NOT applying Spectre 1 mitigations")
+endif()
+
+# Allows reuse in cases where ExternalProject is used and global compile flags wouldn't propagate.
+set(SPECTRE_MITIGATION_FLAGS "${SPECTRE_1_LLVM_MITIGATION_FLAG}")
+
 if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
     # Enables all the warnings about constructions that some users consider questionable,
     # and that are easy to avoid. Treat at warnings-as-errors, which forces developers

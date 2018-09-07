@@ -4,7 +4,10 @@
 OPENENCLAVE_CONFIG=../../config.mak
 include $(OPENENCLAVE_CONFIG)
 
-CXXFLAGS = -Wall -Werror -O2 -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
+CXX = clang++-7
+
+CXXFLAGS += -Wall -Werror -O2 -m64 -nostdinc -fPIC -std=c++11 -nostdinc++
+CXXFLAGS += -mllvm -x86-speculative-load-hardening
 
 INCLUDES += -I$(OE_INCLUDEDIR)
 INCLUDES += -I$(OE_INCLUDEDIR)/libcxx
@@ -32,8 +35,8 @@ all:
 	$(MAKE) sign
 
 build:
-	g++ -c $(CXXFLAGS) $(INCLUDES) enc.cpp -o enc.o
-	g++ -o sortenc.so enc.o $(LDFLAGS) $(LIBRARIES)
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) enc.cpp -o enc.o
+	$(CXX) -o sortenc.so enc.o $(LDFLAGS) $(LIBRARIES)
 
 sign:
 	$(OE_BINDIR)/oesign sortenc.so sort.conf private.pem
