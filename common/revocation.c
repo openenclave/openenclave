@@ -160,6 +160,7 @@ oe_result_t oe_enforce_revocation(
     char* intermediate_crl_url = NULL;
     char* leaf_crl_url = NULL;
     oe_crl_t crls[2] = {{{0}}};
+    oe_crl_t crl_chain = {{0}};
     oe_datetime_t crl_this_update_date = {0};
     oe_datetime_t crl_next_update_date = {0};
 
@@ -206,19 +207,20 @@ oe_result_t oe_enforce_revocation(
                 &crl_issuer_chain[i],
                 revocation_args.crl_issuer_chain[i],
                 revocation_args.crl_issuer_chain_size[i]));
+
+        // Append the crl into the  crl chain as well.
+        OE_CHECK(
+            oe_crl_read_der(
+                &crl_chain,
+                revocation_args.crl[i],
+                revocation_args.crl_size[i]));
     }
 
-    // Verify leaf and intermediate certs againt the CRL.
+    // Verify the leaf cert using its cert chain and
+    // the aggregated crl chain.
     OE_CHECK(
         oe_cert_verify(
-            leaf_cert, &crl_issuer_chain[0], &crls[0], &cert_verify_error));
-
-    OE_CHECK(
-        oe_cert_verify(
-            intermediate_cert,
-            &crl_issuer_chain[1],
-            &crls[1],
-            &cert_verify_error));
+            leaf_cert, pck_cert_chain, &crl_chain, &cert_verify_error));
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
          ++i)
@@ -275,6 +277,7 @@ oe_result_t oe_enforce_revocation(
     result = OE_OK;
 
 done:
+    oe_crl_free(&crl_chain);
     for (int32_t i = revocation_args.num_crl_urls - 1; i >= 0; --i)
     {
         oe_crl_free(&crls[i]);
