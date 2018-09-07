@@ -4,14 +4,15 @@
 # Licensed under the MIT License.
 
 # libcxx SVN revision
-SVN_REVISON = {2017-11-07}
+SVN_REVISON = RELEASE_601
 
 all: update-libcxx
 	echo All done - please review changes
 
 update-libcxx:
 	rm -rf libcxx
-	svn co -r $(SVN_REVISON) http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
+	svn co  http://llvm.org/svn/llvm-project/libcxx/tags/$(SVN_REVISON)/final/
+	mv final libcxx
 	rm -rf libcxx/.svn/
 	rm libcxx/.gitignore libcxx/utils/google-benchmark/.gitignore
 

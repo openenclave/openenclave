@@ -23,7 +23,7 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   project(libcxx CXX C)
 
   set(PACKAGE_NAME libcxx)
-  set(PACKAGE_VERSION 6.0.0svn)
+  set(PACKAGE_VERSION 6.0.0)
   set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
   set(PACKAGE_BUGREPORT "llvm-bugs@lists.llvm.org")
 
@@ -135,6 +135,9 @@ if (LIBCXX_CXX_ABI STREQUAL "default")
   elseif (APPLE)
     set(LIBCXX_CXX_ABI_LIBNAME "libcxxabi")
     set(LIBCXX_CXX_ABI_SYSTEM 1)
+  elseif (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+    set(LIBCXX_CXX_ABI_LIBNAME "libcxxrt")
+    set(LIBCXX_CXX_ABI_INCLUDE_PATHS "/usr/include/c++/v1")
   else()
     set(LIBCXX_CXX_ABI_LIBNAME "default")
   endif()
@@ -460,7 +463,7 @@ endif()
 # MSVC only has -X, which disables all default includes; including the crt.
 # Thus, we do nothing and hope we don't accidentally include any of the C++
 # headers
-add_cxx_compile_flags_if_supported(-nostdinc++)
+add_compile_flags_if_supported(-nostdinc++)
 
 # Hide all inline function definitions which have not explicitly been marked
 # visible. This prevents new definitions for inline functions from appearing in
@@ -684,6 +687,7 @@ if (LIBCXX_INCLUDE_TESTS)
 endif()
 
 if (LIBCXX_STANDALONE_BUILD AND EXISTS "${LLVM_MAIN_SRC_DIR}/utils/llvm-lit")
+  include(AddLLVM) # for get_llvm_lit_path
   # Make sure the llvm-lit script is generated into the bin directory, and do
   # it after adding all tests, since the generated script will only work
   # correctly discovered tests against test locations from the source tree that
