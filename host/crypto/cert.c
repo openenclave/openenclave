@@ -648,6 +648,10 @@ oe_result_t oe_cert_verify(
             OE_RAISE(OE_FAILURE);
 
         X509_STORE_CTX_set0_crls(ctx, crls);
+
+        // Enable CRL checking: without this flag, OpenSSL ingores the CRL list
+        // installed above.
+        ctx->param->flags |= X509_V_FLAG_CRL_CHECK;
     }
 
     /* Finally verify the certificate */
