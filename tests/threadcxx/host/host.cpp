@@ -122,10 +122,12 @@ void* ExclusiveAccessThreadCxx(void* args)
         OE_TEST(
             oe_call_enclave(enclave, "WaitForExclusiveAccessCxx", NULL) ==
             OE_OK);
+        std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
 
         OE_TEST(
             oe_call_enclave(enclave, "RelinquishExclusiveAccessCxx", NULL) ==
             OE_OK);
+        std::this_thread::sleep_for(std::chrono::microseconds(20 * 1000));
     }
     printf("Thread Ending\n");
     return NULL;

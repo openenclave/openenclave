@@ -4116,6 +4116,7 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.id/thread_id.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.this/get_id.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.this/sleep_for_tested_elsewhere.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.this/yield.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/allocator.adaptor/allocator.adaptor.cnstr/allocs.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/allocator.adaptor/allocator.adaptor.cnstr/converting_copy.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/allocator.adaptor/allocator.adaptor.cnstr/converting_move.pass.cpp
