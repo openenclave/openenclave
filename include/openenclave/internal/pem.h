@@ -36,6 +36,23 @@ typedef enum _oe_pem_type {
     OE_PEM_TYPE_X509_CRL,
 } oe_pem_type_t;
 
+/**
+ * Convert from DER encoding to PEM format.
+ *
+ * This function converts a DER-encoded buffer to a PEM-encoded buffer.
+ *
+ * @param der DER the input buffer.
+ * @param der_size the size of the DER input buffer.
+ * @param type the type of PEM object (see **oe_pem_type_t**).
+ * @param pem the PEM output buffer (may be null when **pem_size** is zero).
+ * @param pem_size[in,out] the size of buffer (in); the required size (out).
+ *
+ * @return OE_OK success
+ * @return OE_INVALID_PARAMETER a parameter is invalid.
+ * @return OE_BUFFER_TOO_SMALL the PEM buffer is too small and **pem_size** 
+ *         contains the required size.
+ * @return OE_FAILURE general failure.
+ */
 oe_result_t oe_der_to_pem(
     const uint8_t* der,
     size_t der_size,
