@@ -15,8 +15,8 @@
 ./debugger/pythonExtension/readelf.py
 ./docs/DesignOverview.docx
 ./docs/DesignOverview.pdf
-./docs/GettingStartedDocs/sampedocs/helloworld/helloworld.png
-./docs/GettingStartedDocs/sampedocs/sampledirstructure.png
+./docs/GettingStartedDocs/sampledocs/helloworld/helloworld.png
+./docs/GettingStartedDocs/sampledocs/sampledirstructure.png
 ./docs/refman/html
 .exrc
 ./.git

@@ -22,7 +22,7 @@ Before going further, you want to make sure you have a success Open Enclave setu
          -rw-r--r-- 1 youradminusername youradminusername  440 Aug  6 17:56 Makefile
          ....
 
- Note: As part of the sample configuratino process, samples/config.mak was created to help setup environment for use
+ Note: As part of the sample configuration process, samples/config.mak was created to help setup environment for use
  in building samples.
  
  
