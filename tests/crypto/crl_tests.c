@@ -9,6 +9,7 @@
 #include <openenclave/internal/crl.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
+#include <openenclave/internal/base64.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -222,6 +223,21 @@ static const uint8_t _CRL2[] = {
     0x0d, 0x35, 0xd0, 0x4a, 0x5d, 0x27, 0xb4, 0xb5, 0x18,
 };
 
+static const char _CRL2_PEM[] =
+    "-----BEGIN X509 CRL-----\n"
+    "MIIB8TCB2gIBATANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJVUzETMBEGA1UE\n"
+    "CAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHUmVkbW9uZDEhMB8GA1UECgwYSW50ZXJu\n"
+    "ZXQgV2lkZ2l0cyBQdHkgTHRkMSEwHwYDVQQDDBhvZWNyeXB0b3Rlc3RpbnRlcm1l\n"
+    "ZGlhdGUXDTE4MDkwNjE5MDEzNVoXDTE4MTAwNjE5MDEzNVowHDAaAgkAqz6EEbtg\n"
+    "0H0XDTE4MDkwNjE5MDEwM1qgDjAMMAoGA1UdFAQDAgEBMA0GCSqGSIb3DQEBCwUA\n"
+    "A4IBAQBW7P+tnFh0CjODK1rLDUVd7B8q1UqlEK+foSzmGqfLYz/P02NnYskGn5zu\n"
+    "CfHMQ3vI1qYjT98iUHsCXufs0TWLgPJ7IPBB7xb5zk4lVHHt9UxwNlk/h9JH4lH5\n"
+    "XIrC1v4MOVOv1eWFG8YmEB25j/pRFjJyJqaqqdFn3nq6rLANw7IdZHGQz4uE/xl+\n"
+    "zTFJalPbXxNwVbOrHjdzoHGZRAsrrMdF2Lsp/fxFLvIC5+LSdpxmZx34uDdZ3/x6\n"
+    "Cx3GV+/rIJbEDHGfVuThme3kbqDO7APTumKNiinFp/51z/sKWIb6/bNtpKXdQFI7\n"
+    "sgHcBvaQcR/F6JmxDTXQSl0ntLUY\n"
+    "-----END X509 CRL-----\n";
+
 static void _test_verify(
     const char* cert_pem,
     const char* chain_pem,
@@ -332,6 +348,101 @@ static void _test_get_dates(void)
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+static const char _PEM_CRL[] =
+    "-----BEGIN X509 CRL-----\n"
+    "MIIB8TCB2gIBATANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJVUzETMBEGA1UE\n"
+    "CAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHUmVkbW9uZDEhMB8GA1UECgwYSW50ZXJu\n"
+    "ZXQgV2lkZ2l0cyBQdHkgTHRkMSEwHwYDVQQDDBhvZWNyeXB0b3Rlc3RpbnRlcm1l\n"
+    "ZGlhdGUXDTE4MDkwNjE5MDEzNVoXDTE4MTAwNjE5MDEzNVowHDAaAgkAqz6EEbtg\n"
+    "0H0XDTE4MDkwNjE5MDEwM1qgDjAMMAoGA1UdFAQDAgEBMA0GCSqGSIb3DQEBCwUA\n"
+    "A4IBAQBW7P+tnFh0CjODK1rLDUVd7B8q1UqlEK+foSzmGqfLYz/P02NnYskGn5zu\n"
+    "CfHMQ3vI1qYjT98iUHsCXufs0TWLgPJ7IPBB7xb5zk4lVHHt9UxwNlk/h9JH4lH5\n"
+    "XIrC1v4MOVOv1eWFG8YmEB25j/pRFjJyJqaqqdFn3nq6rLANw7IdZHGQz4uE/xl+\n"
+    "zTFJalPbXxNwVbOrHjdzoHGZRAsrrMdF2Lsp/fxFLvIC5+LSdpxmZx34uDdZ3/x6\n"
+    "Cx3GV+/rIJbEDHGfVuThme3kbqDO7APTumKNiinFp/51z/sKWIb6/bNtpKXdQFI7\n"
+    "sgHcBvaQcR/F6JmxDTXQSl0ntLUY\n"
+    "-----END X509 CRL-----\n"
+    "-----BEGIN X509 CRL-----\n"
+    "MIIB8TCB2gIBATANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJVUzETMBEGA1UE\n"
+    "CAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHUmVkbW9uZDEhMB8GA1UECgwYSW50ZXJu\n"
+    "ZXQgV2lkZ2l0cyBQdHkgTHRkMSEwHwYDVQQDDBhvZWNyeXB0b3Rlc3RpbnRlcm1l\n"
+    "ZGlhdGUXDTE4MDkwNjE5MDEzNVoXDTE4MTAwNjE5MDEzNVowHDAaAgkAqz6EEbtg\n"
+    "0H0XDTE4MDkwNjE5MDEwM1qgDjAMMAoGA1UdFAQDAgEBMA0GCSqGSIb3DQEBCwUA\n"
+    "A4IBAQBW7P+tnFh0CjODK1rLDUVd7B8q1UqlEK+foSzmGqfLYz/P02NnYskGn5zu\n"
+    "CfHMQ3vI1qYjT98iUHsCXufs0TWLgPJ7IPBB7xb5zk4lVHHt9UxwNlk/h9JH4lH5\n"
+    "XIrC1v4MOVOv1eWFG8YmEB25j/pRFjJyJqaqqdFn3nq6rLANw7IdZHGQz4uE/xl+\n"
+    "zTFJalPbXxNwVbOrHjdzoHGZRAsrrMdF2Lsp/fxFLvIC5+LSdpxmZx34uDdZ3/x6\n"
+    "Cx3GV+/rIJbEDHGfVuThme3kbqDO7APTumKNiinFp/51z/sKWIb6/bNtpKXdQFI7\n"
+    "sgHcBvaQcR/F6JmxDTXQSl0ntLUY\n"
+    "-----END X509 CRL-----\n"
+    "-----BEGIN X509 CRL-----\n"
+    "MIIB8TCB2gIBATANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJVUzETMBEGA1UE\n"
+    "CAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHUmVkbW9uZDEhMB8GA1UECgwYSW50ZXJu\n"
+    "ZXQgV2lkZ2l0cyBQdHkgTHRkMSEwHwYDVQQDDBhvZWNyeXB0b3Rlc3RpbnRlcm1l\n"
+    "ZGlhdGUXDTE4MDkwNjE5MDEzNVoXDTE4MTAwNjE5MDEzNVowHDAaAgkAqz6EEbtg\n"
+    "0H0XDTE4MDkwNjE5MDEwM1qgDjAMMAoGA1UdFAQDAgEBMA0GCSqGSIb3DQEBCwUA\n"
+    "A4IBAQBW7P+tnFh0CjODK1rLDUVd7B8q1UqlEK+foSzmGqfLYz/P02NnYskGn5zu\n"
+    "CfHMQ3vI1qYjT98iUHsCXufs0TWLgPJ7IPBB7xb5zk4lVHHt9UxwNlk/h9JH4lH5\n"
+    "XIrC1v4MOVOv1eWFG8YmEB25j/pRFjJyJqaqqdFn3nq6rLANw7IdZHGQz4uE/xl+\n"
+    "zTFJalPbXxNwVbOrHjdzoHGZRAsrrMdF2Lsp/fxFLvIC5+LSdpxmZx34uDdZ3/x6\n"
+    "Cx3GV+/rIJbEDHGfVuThme3kbqDO7APTumKNiinFp/51z/sKWIb6/bNtpKXdQFI7\n"
+    "sgHcBvaQcR/F6JmxDTXQSl0ntLUY\n"
+    "-----END X509 CRL-----\n";
+
+static void _test_read_pem_crl()
+{
+    oe_crl_t crl;
+    OE_TEST(oe_crl_read_pem(&crl, _PEM_CRL, sizeof(_PEM_CRL)) == OE_OK);
+    oe_crl_free(&crl);
+}
+
+#define BEGIN_X609_CRL "-----BEGIN X509 CRL-----\n"
+#define BEGIN_X609_CRL_LENGTH (sizeof(BEGIN_X609_CRL)-1)
+
+#define END_X609_CRL "-----END X509 CRL-----\n"
+#define END_X609_CRL_LENGTH (sizeof(END_X609_CRL)-1)
+
+static void _test_base64()
+{
+    oe_result_t r;
+    size_t size = 0;
+
+    /* Get the required size of the base-64 encoding */
+    r = oe_base64_encode(_CRL2, sizeof(_CRL2), true, NULL, &size);
+    OE_TEST(r == OE_BUFFER_TOO_SMALL);
+
+    /* Encode _CRL2[] as base-64 */
+    uint8_t data[size];
+    r = oe_base64_encode(_CRL2, sizeof(_CRL2), true, data, &size);
+    OE_TEST(r == OE_OK);
+
+    /* Build a PEM message and compare with _CRL2_PEM[] */
+    {
+        size_t buffer_size = 
+            BEGIN_X609_CRL_LENGTH + size + END_X609_CRL_LENGTH + 1;
+        uint8_t buffer[buffer_size];
+
+        OE_TEST(buffer_size == sizeof(_CRL2_PEM));
+
+        size_t offset = 0;
+
+        memcpy(buffer + offset, BEGIN_X609_CRL, BEGIN_X609_CRL_LENGTH);
+        offset += BEGIN_X609_CRL_LENGTH;
+
+        memcpy(buffer + offset, data, size);
+        offset += size;
+
+        memcpy(buffer + offset, END_X609_CRL, END_X609_CRL_LENGTH);
+        offset += END_X609_CRL_LENGTH;
+
+        buffer[offset++] = '\0';
+
+        OE_TEST(offset == sizeof(_CRL2_PEM));
+        OE_TEST(memcmp(buffer, _CRL2_PEM, sizeof(_CRL2_PEM)) == 0);
+        OE_TEST(strcmp((char*)buffer, _CRL2_PEM) == 0);
+    }
+}
+
 void TestCRL(void)
 {
     _test_verify_without_crl(_CERT, _CHAIN);
@@ -341,4 +452,8 @@ void TestCRL(void)
     _test_verify_with_crl(_CERT2, _CHAIN2, _CRL2, sizeof(_CRL2), true);
 
     _test_get_dates();
+
+    _test_read_pem_crl();
+
+    _test_base64();
 }

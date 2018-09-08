@@ -6,6 +6,7 @@ set(PLATFORM_SRC
     ../common/asn1.c
     ../common/cert.c
     crypto/asn1.c
+    crypto/base64.c
     crypto/cert.c
     crypto/crl.c
     crypto/ec.c

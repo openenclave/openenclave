@@ -35,6 +35,11 @@ oe_result_t oe_crl_read_der(
     const uint8_t* der_data,
     size_t der_size);
 
+oe_result_t oe_crl_read_pem(
+    oe_crl_t* crl,
+    const void* pem_data,
+    size_t pem_size);
+
 /**
  * Releases a certificate revocation list (CRL)
  *

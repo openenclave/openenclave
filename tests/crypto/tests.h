@@ -10,6 +10,7 @@ void TestEC(void);
 void TestRandom(void);
 void TestRSA(void);
 void TestSHA(void);
+void test_base64();
 
 void TestAll();
 

@@ -8,6 +8,7 @@
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
+#include "pem.h"
 
 /* Randomly generated magic number */
 #define OE_CRL_MAGIC 0xf8cf8e04f4ed40f3
@@ -59,6 +60,52 @@ oe_result_t oe_crl_read_der(
 
     /* Parse the DER data to populate the mbedtls_x509_crl struct */
     if (mbedtls_x509_crl_parse_der(x509_crl, der_data, der_size) != 0)
+        OE_RAISE(OE_FAILURE);
+
+    /* Initialize the implementation */
+    _crl_init(impl, x509_crl);
+    x509_crl = NULL;
+
+    result = OE_OK;
+
+done:
+
+    if (x509_crl)
+    {
+        mbedtls_x509_crl_free(x509_crl);
+        oe_memset(x509_crl, 0, sizeof(mbedtls_x509_crl));
+        mbedtls_free(x509_crl);
+    }
+
+    return result;
+}
+
+oe_result_t oe_crl_read_pem(
+    oe_crl_t* crl,
+    const void* pem_data,
+    size_t pem_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    crl_t* impl = (crl_t*)crl;
+    mbedtls_x509_crl* x509_crl = NULL;
+
+    /* Clear the implementation */
+    if (impl)
+        oe_memset(impl, 0, sizeof(crl_t));
+
+    /* Check for invalid parameters */
+    if (!pem_data || !pem_size || !crl)
+        OE_RAISE(OE_UNEXPECTED);
+
+    /* Allocate memory for the CRL */
+    if (!(x509_crl = mbedtls_calloc(1, sizeof(mbedtls_x509_crl))))
+        OE_RAISE(OE_OUT_OF_MEMORY);
+
+    /* Initialize the CRL structure */
+    mbedtls_x509_crl_init(x509_crl);
+
+    /* Parse the DER data to populate the mbedtls_x509_crl struct */
+    if (mbedtls_x509_crl_parse(x509_crl, pem_data, pem_size) != 0)
         OE_RAISE(OE_FAILURE);
 
     /* Initialize the implementation */

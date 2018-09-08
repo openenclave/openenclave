@@ -6,6 +6,7 @@ include(add_enclave_executable)
 add_executable(cryptoenc
     enc.c
     ../../asn1_tests.c
+    ../../base64_tests.c
     ../../crl_tests.c
     ../../ec_tests.c
     ../../hash.c

@@ -8,6 +8,7 @@
 #include <openenclave/internal/raise.h>
 #include <openssl/asn1.h>
 #include <openssl/x509.h>
+#include <openssl/pem.h>
 #include <string.h>
 #include <time.h>
 
@@ -57,6 +58,49 @@ oe_result_t oe_crl_read_der(
 
     /* Read BIO into X509_CRL object */
     if (!(x509_crl = d2i_X509_CRL_bio(bio, NULL)))
+        goto done;
+
+    /* Initialize the implementation */
+    _crl_init(impl, x509_crl);
+    x509_crl = NULL;
+
+    result = OE_OK;
+
+done:
+
+    if (x509_crl)
+        X509_CRL_free(x509_crl);
+
+    if (bio)
+        BIO_free(bio);
+
+    return result;
+}
+
+oe_result_t oe_crl_read_pem(
+    oe_crl_t* crl,
+    const void* pem_data,
+    size_t pem_size)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    crl_t* impl = (crl_t*)crl;
+    BIO* bio = NULL;
+    X509_CRL* x509_crl = NULL;
+
+    /* Clear the implementation */
+    if (impl)
+        memset(impl, 0, sizeof(crl_t));
+
+    /* Check for invalid parameters */
+    if (!pem_data || !pem_size || !crl)
+        OE_RAISE(OE_UNEXPECTED);
+
+    /* Create a BIO for reading the DER-formatted data */
+    if (!(bio = BIO_new_mem_buf(pem_data, pem_size)))
+        goto done;
+
+    /* Read BIO into X509_CRL object */
+    if (!(x509_crl = PEM_read_bio_X509_CRL(bio, NULL, 0, NULL)))
         goto done;
 
     /* Initialize the implementation */
