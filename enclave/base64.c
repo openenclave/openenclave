@@ -7,7 +7,7 @@
 /* The standard line width for base-64 encoding is 64 bytes */
 static const size_t LINE_WIDTH = 64;
 
-/* Adjust the required size to include add_line_breaks if requested */
+/* Adjust the required size to include line breaks if requested */
 static size_t _adjust_required_size(size_t size, bool add_line_breaks)
 {
     if (add_line_breaks)
@@ -42,7 +42,7 @@ oe_result_t oe_base64_encode(
             OE_RAISE(OE_FAILURE);
     }
 
-    /* Adjust the required size to include add_line_breaks */
+    /* Adjust the required size to account for line breaks. */
     required_size = _adjust_required_size(size, add_line_breaks);
 
     /* If caller's buffer is too small, raise an error. */

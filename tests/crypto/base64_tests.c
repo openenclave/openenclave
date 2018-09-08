@@ -949,7 +949,6 @@ static void _test_base64(size_t bytes)
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
     /* Format the expected encoding */
-
     char expect[expect_size];
 
     for (size_t i = 0, offset = 0; i < size; i++)

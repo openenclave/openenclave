@@ -41,10 +41,10 @@ oe_result_t oe_der_to_pem(
     size_t* pem_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    const char* begin;
-    size_t begin_len;
-    const char* end;
-    size_t end_len;
+    const char* header;
+    size_t header_len;
+    const char* footer;
+    size_t footer_len;
     size_t total_size;
 
     if (!der || !der_size || !pem_size)
@@ -55,10 +55,10 @@ oe_result_t oe_der_to_pem(
         OE_RAISE(OE_INVALID_PARAMETER);
 
     /* Select the PEM headers and footers. */
-    begin = _headers[type].str;
-    begin_len = _headers[type].len;
-    end = _footers[type].str;
-    end_len = _footers[type].len;
+    header = _headers[type].str;
+    header_len = _headers[type].len;
+    footer = _footers[type].str;
+    footer_len = _footers[type].len;
 
     /* Calculate the total size of the PEM buffer. */
     {
@@ -71,7 +71,7 @@ oe_result_t oe_der_to_pem(
         }
 
         /* Include the zero-terminator in the size calculation. */
-        total_size = begin_len + size + end_len + sizeof(uint8_t);
+        total_size = header_len + size + footer_len + sizeof(uint8_t);
     }
 
     /* Fail if the caller's PEM buffer is too small. */
@@ -87,16 +87,16 @@ oe_result_t oe_der_to_pem(
         size_t size;
 
         /* Format the PEM header. */
-        memcpy(&pem[off], begin, begin_len);
-        off += begin_len;
+        memcpy(&pem[off], header, header_len);
+        off += header_len;
 
         /* Convert the DER buffer to base-64 encoding */
         OE_CHECK(oe_base64_encode(der, der_size, true, &pem[off], &size));
         off += size;
 
         /* Format the PEM footer. */
-        memcpy(&pem[off], end, end_len);
-        off += end_len;
+        memcpy(&pem[off], footer, footer_len);
+        off += footer_len;
 
         pem[off++] = '\0';
 
