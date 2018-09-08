@@ -18,8 +18,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
-#include "crl.h"
 #include "assert.h"
+#include "crl.h"
 #include "ec.h"
 #include "init.h"
 #include "rsa.h"

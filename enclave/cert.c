@@ -630,7 +630,7 @@ oe_result_t oe_cert_verify(
 
             if (!crl_is_valid(crl_impl))
                 OE_RAISE(OE_INVALID_PARAMETER);
-            
+
             if (!(p = oe_malloc(sizeof(mbedtls_x509_crl))))
                 OE_RAISE(OE_OUT_OF_MEMORY);
 
@@ -676,7 +676,7 @@ done:
     if (crl_list)
     {
         /* Free the linked list of CRL objects */
-        for (mbedtls_x509_crl* p = crl_list; p; )
+        for (mbedtls_x509_crl* p = crl_list; p;)
         {
             mbedtls_x509_crl* next = p->next;
             free(p);
