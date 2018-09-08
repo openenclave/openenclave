@@ -572,6 +572,7 @@ oe_result_t oe_cert_verify(
     X509_STORE_CTX* ctx = NULL;
     X509* x509 = NULL;
     STACK_OF(X509_CRL)* crls = NULL;
+    X509_VERIFY_PARAM* verify_param = NULL;
 
     /* Initialize error to NULL for now */
     if (error)
@@ -632,8 +633,12 @@ oe_result_t oe_cert_verify(
     /* Set the CA chain into the verification context */
     X509_STORE_CTX_trusted_stack(ctx, chainImpl->sk);
 
+    /* Get the verify parameter (must not be null) */
+    if (!(verify_param = X509_STORE_CTX_get0_param(ctx)))
+        OE_RAISE(OE_FAILURE);
+
     /* Ignore the non-standard SGX extension */
-    ctx->param->flags |= X509_V_FLAG_IGNORE_CRITICAL;
+    X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_IGNORE_CRITICAL);
 
     /* Set the CRLs if any */
     if (crl_impl)
@@ -651,7 +656,7 @@ oe_result_t oe_cert_verify(
 
         // Enable CRL checking: without this flag, OpenSSL ingores the CRL list
         // installed above.
-        ctx->param->flags |= X509_V_FLAG_CRL_CHECK;
+        X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK);
     }
 
     /* Finally verify the certificate */
