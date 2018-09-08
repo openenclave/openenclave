@@ -5,11 +5,13 @@
 #include <openenclave/enclave.h>
 #endif
 
+#include <openenclave/internal/base64.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/crl.h>
 #include <openenclave/internal/hexdump.h>
+#include <openenclave/internal/pem.h>
+#include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>
-#include <openenclave/internal/base64.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,35 +80,16 @@ static const char _CHAIN[] =
     "AiEAss0qf7FlMmAMet+gbpLD97ldYy/wqjjmwN7yHRVr2AM=\n"
     "-----END CERTIFICATE-----\n";
 
-/* Certificate revocation list in DER format */
-static const uint8_t _CRL[] = {
-    0x30, 0x82, 0x01, 0x2a, 0x30, 0x81, 0xd1, 0x02, 0x01, 0x01, 0x30, 0x0a,
-    0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02, 0x30, 0x71,
-    0x31, 0x23, 0x30, 0x21, 0x06, 0x03, 0x55, 0x04, 0x03, 0x0c, 0x1a, 0x49,
-    0x6e, 0x74, 0x65, 0x6c, 0x20, 0x53, 0x47, 0x58, 0x20, 0x50, 0x43, 0x4b,
-    0x20, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x6f, 0x72, 0x20, 0x43,
-    0x41, 0x31, 0x1a, 0x30, 0x18, 0x06, 0x03, 0x55, 0x04, 0x0a, 0x0c, 0x11,
-    0x49, 0x6e, 0x74, 0x65, 0x6c, 0x20, 0x43, 0x6f, 0x72, 0x70, 0x6f, 0x72,
-    0x61, 0x74, 0x69, 0x6f, 0x6e, 0x31, 0x14, 0x30, 0x12, 0x06, 0x03, 0x55,
-    0x04, 0x07, 0x0c, 0x0b, 0x53, 0x61, 0x6e, 0x74, 0x61, 0x20, 0x43, 0x6c,
-    0x61, 0x72, 0x61, 0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x08,
-    0x0c, 0x02, 0x43, 0x41, 0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04,
-    0x06, 0x13, 0x02, 0x55, 0x53, 0x17, 0x0d, 0x31, 0x38, 0x30, 0x35, 0x33,
-    0x30, 0x31, 0x30, 0x32, 0x33, 0x34, 0x32, 0x5a, 0x17, 0x0d, 0x31, 0x39,
-    0x30, 0x35, 0x33, 0x30, 0x31, 0x30, 0x32, 0x33, 0x34, 0x32, 0x5a, 0xa0,
-    0x2f, 0x30, 0x2d, 0x30, 0x0a, 0x06, 0x03, 0x55, 0x1d, 0x14, 0x04, 0x03,
-    0x02, 0x01, 0x01, 0x30, 0x1f, 0x06, 0x03, 0x55, 0x1d, 0x23, 0x04, 0x18,
-    0x30, 0x16, 0x80, 0x14, 0xe5, 0xbb, 0x52, 0x8f, 0x80, 0xf9, 0xe3, 0x33,
-    0xae, 0x19, 0xac, 0xfa, 0x63, 0x46, 0x78, 0x11, 0xf3, 0x61, 0xbb, 0xa4,
-    0x30, 0x0a, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02,
-    0x03, 0x48, 0x00, 0x30, 0x45, 0x02, 0x21, 0x00, 0xdb, 0x89, 0x2a, 0x67,
-    0x1e, 0x52, 0x28, 0xff, 0xd5, 0x93, 0xb8, 0x75, 0xc1, 0x1a, 0x8f, 0xe2,
-    0xeb, 0xf3, 0x9f, 0x66, 0x71, 0x43, 0x31, 0x8c, 0xf8, 0xd7, 0x0d, 0x7b,
-    0xa2, 0x20, 0x3d, 0xee, 0x02, 0x20, 0x31, 0x78, 0x22, 0x32, 0x1a, 0xe4,
-    0x78, 0x4f, 0x1b, 0x72, 0x80, 0xf6, 0x51, 0x95, 0xa7, 0xe9, 0x5d, 0x09,
-    0xad, 0xb6, 0x65, 0xdf, 0x1c, 0x11, 0x0d, 0xa8, 0x0b, 0xd0, 0x1f, 0x92,
-    0x44, 0x5a,
-};
+static const char _CRL[] =
+    "-----BEGIN X509 CRL-----\n"
+    "MIIBKjCB0QIBATAKBggqhkjOPQQDAjBxMSMwIQYDVQQDDBpJbnRlbCBTR1ggUENL\n"
+    "IFByb2Nlc3NvciBDQTEaMBgGA1UECgwRSW50ZWwgQ29ycG9yYXRpb24xFDASBgNV\n"
+    "BAcMC1NhbnRhIENsYXJhMQswCQYDVQQIDAJDQTELMAkGA1UEBhMCVVMXDTE4MDUz\n"
+    "MDEwMjM0MloXDTE5MDUzMDEwMjM0MlqgLzAtMAoGA1UdFAQDAgEBMB8GA1UdIwQY\n"
+    "MBaAFOW7Uo+A+eMzrhms+mNGeBHzYbukMAoGCCqGSM49BAMCA0gAMEUCIQDbiSpn\n"
+    "HlIo/9WTuHXBGo/i6/OfZnFDMYz41w17oiA97gIgMXgiMhrkeE8bcoD2UZWn6V0J\n"
+    "rbZl3xwRDagL0B+SRFo=\n"
+    "-----END X509 CRL-----\n";
 
 static const char _CERT2[] =
     "-----BEGIN CERTIFICATE-----\n"
@@ -177,8 +160,22 @@ static const char _CHAIN2[] =
     "fIfqpbMxXtOBJh7PAVrYpoQXczLV3BFBzH7kNaOPQ5Y+7DaPpa/we1jnvQ==\n"
     "-----END CERTIFICATE-----\n";
 
-/* This CRL contins _CERT2 */
-static const uint8_t _CRL2[] = {
+static const char _CRL2[] =
+    "-----BEGIN X509 CRL-----\n"
+    "MIIB8TCB2gIBATANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJVUzETMBEGA1UE\n"
+    "CAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHUmVkbW9uZDEhMB8GA1UECgwYSW50ZXJu\n"
+    "ZXQgV2lkZ2l0cyBQdHkgTHRkMSEwHwYDVQQDDBhvZWNyeXB0b3Rlc3RpbnRlcm1l\n"
+    "ZGlhdGUXDTE4MDkwNjE5MDEzNVoXDTE4MTAwNjE5MDEzNVowHDAaAgkAqz6EEbtg\n"
+    "0H0XDTE4MDkwNjE5MDEwM1qgDjAMMAoGA1UdFAQDAgEBMA0GCSqGSIb3DQEBCwUA\n"
+    "A4IBAQBW7P+tnFh0CjODK1rLDUVd7B8q1UqlEK+foSzmGqfLYz/P02NnYskGn5zu\n"
+    "CfHMQ3vI1qYjT98iUHsCXufs0TWLgPJ7IPBB7xb5zk4lVHHt9UxwNlk/h9JH4lH5\n"
+    "XIrC1v4MOVOv1eWFG8YmEB25j/pRFjJyJqaqqdFn3nq6rLANw7IdZHGQz4uE/xl+\n"
+    "zTFJalPbXxNwVbOrHjdzoHGZRAsrrMdF2Lsp/fxFLvIC5+LSdpxmZx34uDdZ3/x6\n"
+    "Cx3GV+/rIJbEDHGfVuThme3kbqDO7APTumKNiinFp/51z/sKWIb6/bNtpKXdQFI7\n"
+    "sgHcBvaQcR/F6JmxDTXQSl0ntLUY\n"
+    "-----END X509 CRL-----\n";
+
+static const uint8_t _CRL2_DER[] = {
     0x30, 0x82, 0x01, 0xf1, 0x30, 0x81, 0xda, 0x02, 0x01, 0x01, 0x30, 0x0d,
     0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x0b, 0x05,
     0x00, 0x30, 0x7a, 0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06,
@@ -222,21 +219,6 @@ static const uint8_t _CRL2[] = {
     0xb2, 0x01, 0xdc, 0x06, 0xf6, 0x90, 0x71, 0x1f, 0xc5, 0xe8, 0x99, 0xb1,
     0x0d, 0x35, 0xd0, 0x4a, 0x5d, 0x27, 0xb4, 0xb5, 0x18,
 };
-
-static const char _CRL2_PEM[] =
-    "-----BEGIN X509 CRL-----\n"
-    "MIIB8TCB2gIBATANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJVUzETMBEGA1UE\n"
-    "CAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHUmVkbW9uZDEhMB8GA1UECgwYSW50ZXJu\n"
-    "ZXQgV2lkZ2l0cyBQdHkgTHRkMSEwHwYDVQQDDBhvZWNyeXB0b3Rlc3RpbnRlcm1l\n"
-    "ZGlhdGUXDTE4MDkwNjE5MDEzNVoXDTE4MTAwNjE5MDEzNVowHDAaAgkAqz6EEbtg\n"
-    "0H0XDTE4MDkwNjE5MDEwM1qgDjAMMAoGA1UdFAQDAgEBMA0GCSqGSIb3DQEBCwUA\n"
-    "A4IBAQBW7P+tnFh0CjODK1rLDUVd7B8q1UqlEK+foSzmGqfLYz/P02NnYskGn5zu\n"
-    "CfHMQ3vI1qYjT98iUHsCXufs0TWLgPJ7IPBB7xb5zk4lVHHt9UxwNlk/h9JH4lH5\n"
-    "XIrC1v4MOVOv1eWFG8YmEB25j/pRFjJyJqaqqdFn3nq6rLANw7IdZHGQz4uE/xl+\n"
-    "zTFJalPbXxNwVbOrHjdzoHGZRAsrrMdF2Lsp/fxFLvIC5+LSdpxmZx34uDdZ3/x6\n"
-    "Cx3GV+/rIJbEDHGfVuThme3kbqDO7APTumKNiinFp/51z/sKWIb6/bNtpKXdQFI7\n"
-    "sgHcBvaQcR/F6JmxDTXQSl0ntLUY\n"
-    "-----END X509 CRL-----\n";
 
 static void _test_verify(
     const char* cert_pem,
@@ -293,15 +275,15 @@ static void _test_verify(
 static void _test_verify_with_crl(
     const char* cert_pem,
     const char* chain_pem,
-    const uint8_t* crl_der,
-    const size_t crl_der_size,
+    const char* crl_pem,
+    const size_t crl_pem_size,
     bool revoked)
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
     oe_crl_t crl;
 
-    OE_TEST(oe_crl_read_der(&crl, crl_der, crl_der_size) == OE_OK);
+    OE_TEST(oe_crl_read_pem(&crl, crl_pem, crl_pem_size) == OE_OK);
     _test_verify(cert_pem, chain_pem, &crl, revoked);
     OE_TEST(oe_crl_free(&crl) == OE_OK);
 
@@ -323,7 +305,7 @@ static void _test_get_dates(void)
 
     oe_crl_t crl;
 
-    OE_TEST(oe_crl_read_der(&crl, _CRL, sizeof(_CRL)) == OE_OK);
+    OE_TEST(oe_crl_read_pem(&crl, _CRL, sizeof(_CRL)) == OE_OK);
 
     oe_datetime_t last;
     oe_datetime_t next;
@@ -396,51 +378,21 @@ static void _test_read_pem_crl()
     oe_crl_free(&crl);
 }
 
-#define BEGIN_X609_CRL "-----BEGIN X509 CRL-----\n"
-#define BEGIN_X609_CRL_LENGTH (sizeof(BEGIN_X609_CRL)-1)
-
-#define END_X609_CRL "-----END X509 CRL-----\n"
-#define END_X609_CRL_LENGTH (sizeof(END_X609_CRL)-1)
-
-static void _test_base64()
+static void _test_der_to_pem()
 {
     oe_result_t r;
     size_t size = 0;
+    const oe_pem_type_t type = OE_PEM_TYPE_X509_CRL;
 
-    /* Get the required size of the base-64 encoding */
-    r = oe_base64_encode(_CRL2, sizeof(_CRL2), true, NULL, &size);
+    r = oe_der_to_pem(_CRL2_DER, sizeof(_CRL2_DER), true, NULL, &size);
     OE_TEST(r == OE_BUFFER_TOO_SMALL);
 
-    /* Encode _CRL2[] as base-64 */
     uint8_t data[size];
-    r = oe_base64_encode(_CRL2, sizeof(_CRL2), true, data, &size);
+    r = oe_der_to_pem(_CRL2_DER, sizeof(_CRL2_DER), type, data, &size);
     OE_TEST(r == OE_OK);
 
-    /* Build a PEM message and compare with _CRL2_PEM[] */
-    {
-        size_t buffer_size = 
-            BEGIN_X609_CRL_LENGTH + size + END_X609_CRL_LENGTH + 1;
-        uint8_t buffer[buffer_size];
-
-        OE_TEST(buffer_size == sizeof(_CRL2_PEM));
-
-        size_t offset = 0;
-
-        memcpy(buffer + offset, BEGIN_X609_CRL, BEGIN_X609_CRL_LENGTH);
-        offset += BEGIN_X609_CRL_LENGTH;
-
-        memcpy(buffer + offset, data, size);
-        offset += size;
-
-        memcpy(buffer + offset, END_X609_CRL, END_X609_CRL_LENGTH);
-        offset += END_X609_CRL_LENGTH;
-
-        buffer[offset++] = '\0';
-
-        OE_TEST(offset == sizeof(_CRL2_PEM));
-        OE_TEST(memcmp(buffer, _CRL2_PEM, sizeof(_CRL2_PEM)) == 0);
-        OE_TEST(strcmp((char*)buffer, _CRL2_PEM) == 0);
-    }
+    OE_TEST(size == sizeof(_CRL2));
+    OE_TEST(memcmp(data, _CRL2, sizeof(_CRL2)) == 0);
 }
 
 void TestCRL(void)
@@ -455,5 +407,5 @@ void TestCRL(void)
 
     _test_read_pem_crl();
 
-    _test_base64();
+    _test_der_to_pem();
 }

@@ -1,8 +1,8 @@
-#include <openenclave/host.h>
-#include <openenclave/internal/raise.h>
-#include <openenclave/internal/base64.h>
-#include <openenclave/internal/utils.h>
 #include <mbedtls/base64.h>
+#include <openenclave/host.h>
+#include <openenclave/internal/base64.h>
+#include <openenclave/internal/raise.h>
+#include <openenclave/internal/utils.h>
 
 /* The standard line width for base-64 encoding is 64 bytes */
 static const size_t LINE_WIDTH = 64;

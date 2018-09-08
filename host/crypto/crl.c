@@ -7,8 +7,8 @@
 #include <openenclave/internal/defs.h>
 #include <openenclave/internal/raise.h>
 #include <openssl/asn1.h>
-#include <openssl/x509.h>
 #include <openssl/pem.h>
+#include <openssl/x509.h>
 #include <string.h>
 #include <time.h>
 

@@ -5,6 +5,7 @@ if (UNIX)
 set(PLATFORM_SRC
     ../common/asn1.c
     ../common/cert.c
+    ../common/pem.c
     crypto/asn1.c
     crypto/base64.c
     crypto/cert.c

@@ -125,8 +125,9 @@ static STACK_OF(X509) * _ReadCertChain(const char* pem)
 
         /* The PEM certificate must start with this */
         if (strncmp(
-                pem, OE_PEM_BEGIN_CERTIFICATE, OE_PEM_BEGIN_CERTIFICATE_LEN) !=
-            0)
+                pem,
+                OE_PEM_BEGIN_CERTIFICATE,
+                sizeof(OE_PEM_BEGIN_CERTIFICATE) - 1) != 0)
             goto done;
 
         /* Find the end of this PEM certificate */
@@ -134,7 +135,7 @@ static STACK_OF(X509) * _ReadCertChain(const char* pem)
             if (!(end = strstr(pem, OE_PEM_END_CERTIFICATE)))
                 goto done;
 
-            end += OE_PEM_END_CERTIFICATE_LEN;
+            end += sizeof(OE_PEM_END_CERTIFICATE) - 1;
         }
 
         /* Skip trailing spaces */

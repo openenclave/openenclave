@@ -1,9 +1,9 @@
 #include <openenclave/host.h>
-#include <openenclave/internal/raise.h>
 #include <openenclave/internal/base64.h>
+#include <openenclave/internal/raise.h>
 #include <openssl/bio.h>
-#include <openssl/evp.h>
 #include <openssl/buffer.h>
+#include <openssl/evp.h>
 #include <stdint.h>
 
 oe_result_t oe_base64_encode(
@@ -14,8 +14,8 @@ oe_result_t oe_base64_encode(
     size_t* base64_size)
 {
     oe_result_t result = OE_UNEXPECTED;
-    BIO *bio = NULL;
-    BIO *b64 = NULL;
+    BIO* bio = NULL;
+    BIO* b64 = NULL;
 
     if (!raw_data || !base64_size)
         OE_RAISE(OE_INVALID_PARAMETER);
