@@ -85,11 +85,5 @@ binaries.
   - In progress
   
 #### [Attestation] 
-  - Written in C++
-  - Demonstrates an implementation of local or remote attestation between two enclaves
-  - It involves 
-    - use of mbedtls within the enclave 
-    - exchanging of their public keys using attestation, 
-    - exchanging data encrypted to those keys with each other.
-  - Readme (in progress)
+
     

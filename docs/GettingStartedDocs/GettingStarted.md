@@ -55,7 +55,7 @@ Assuming you install the SDK you built the following way in the [Basic install s
 
 Open Enclave samples could be found in ~/openenclave/share/openenclave/samples
 
-See [Open Enclave samples](sampedocs/README.md) for details
+See [Open Enclave samples](sampledocs/README.md) for details
 
   
     
