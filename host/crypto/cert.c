@@ -326,33 +326,28 @@ done:
     return result;
 }
 
-/* Find the first self-signed certificate in the chain. */
+// Find the last certificate in the chain and then verify that it's a
+// self-signed certificate (a root certificate).
 static X509* _FindRootCert(STACK_OF(X509) * chain)
 {
     int n = sk_X509_num(chain);
+    X509* x509;
 
-    /* Iterate from leaf upwards looking for a self-signed certificate */
-    while (n--)
+    /* Get the last certificate in the list */
+    if (!(x509 = sk_X509_value(chain, n - 1)))
+        return NULL;
+
+    /* If the last certificate is not self-signed, then fail */
     {
-        X509* x509;
-
-        if (!(x509 = sk_X509_value(chain, (int)n)))
-            return NULL;
-
         const X509_NAME* subject = X509_get_subject_name(x509);
         const X509_NAME* issuer = X509_get_issuer_name(x509);
 
-        if (!subject || !issuer)
+        if (!subject || !issuer || X509_NAME_cmp(subject, issuer) != 0)
             return NULL;
-
-        if (X509_NAME_cmp(subject, issuer) == 0)
-        {
-            return x509;
-        }
     }
 
-    /* Not found */
-    return NULL;
+    /* Return the root certificate */
+    return x509;
 }
 
 /* Verify each certificate in the chain against its predecessor. */
@@ -388,10 +383,6 @@ static oe_result_t _VerifyWholeChain(STACK_OF(X509) * chain)
         if (!sk_X509_push(subchain, root))
             OE_RAISE(OE_FAILURE);
     }
-
-    /* The root must be the last certificate */
-    if (root != sk_X509_value(chain, n - 1))
-        OE_RAISE(OE_FAILURE);
 
     /* Verify each certificate in the chain against the subchain */
     for (int i = sk_X509_num(chain) - 1; i >= 0; i--)
