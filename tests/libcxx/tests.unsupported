@@ -1,4 +1,3 @@
-
 ../../3rdparty/libcxx/libcxx/test/libcxx/atomics/atomics.align/align.pass.sh.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/containers/unord/next_pow2.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/libcxx/experimental/filesystem/class.path/path.itr/iterator_db.pass.cpp
@@ -342,7 +341,6 @@
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.member/swap.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.class/thread.thread.static/hardware_concurrency.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp
-../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.this/yield.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/memory/pointer.conversion/to_address.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.trans/meta.trans.other/remove_cvref.pass.cpp
 ../../3rdparty/libcxx/libcxx/test/std/utilities/meta/meta.unary/meta.unary.prop/is_trivially_copyable.pass.cpp
