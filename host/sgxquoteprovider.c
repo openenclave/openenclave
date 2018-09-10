@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 // Uncomment this line to enable tracing.
-
 #include <dlfcn.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/raise.h>
@@ -19,13 +18,13 @@
 #ifdef OE_USE_LIBSGX
 
 /**
- * This file manages the libngsa_quoteprov.so shared library.
+ * This file manages the libdcap_quoteprov.so shared library.
  * It loads the .so during program startup and keeps it loaded till application
  * exit. Intel's quoting library repeatedly loads and unloads
- * libngsa_quoteprov.so.
+ * libdcap_quoteprov.so.
  * This causes a crash in libssl.so. (See
  * https://rt.openssl.org/Ticket/Display.html?user=guest&pass=guest&id=2325).
- * Keeping libngsa_quoteprov.so pinned in memory solves the libssl.so crash.
+ * Keeping libdcap_quoteprov.so pinned in memory solves the libssl.so crash.
  */
 
 static void* _lib_handle = 0;
@@ -57,7 +56,7 @@ static void _load_quote_provider()
 {
     if (_lib_handle == 0)
     {
-        _lib_handle = dlopen("libngsa_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
+        _lib_handle = dlopen("libdcap_quoteprov.so", RTLD_LAZY | RTLD_LOCAL);
         if (_lib_handle != 0)
         {
             _get_revocation_info =
@@ -96,7 +95,7 @@ static void _load_quote_provider()
         else
         {
             OE_TRACE_INFO(
-                "sgxquoteprovider: libngsa_quoteprov.so not found \n");
+                "sgxquoteprovider: libdcap_quoteprov.so not found \n");
         }
     }
 }

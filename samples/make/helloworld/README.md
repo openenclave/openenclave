@@ -280,8 +280,8 @@ The listing from [helloworld/host/host.c](/samples/make/helloworld/enc/Makefile)
       LIBRARIES += -ldl
 
       LIBRARIES += -lsgx_enclave_common
-      LIBRARIES += -lsgx_ngsa_ql
-      LIBRARIES += -lsgx_urts_ng
+      LIBRARIES += -lsgx_dcap_ql
+      LIBRARIES += -lsgx_urts
 
       build:
               gcc -c $(CFLAGS) $(INCLUDES) host.c

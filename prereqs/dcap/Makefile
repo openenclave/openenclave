@@ -8,18 +8,14 @@ PACKAGE_VER=1.0.101.45575-1.0_amd64
 AZQUOTE_VER=0.2-1_amd64
 
 PACKAGE_NAMES=\
-	libsgx-enclave-common\
-	libsgx-enclave-common-dev\
-	libsgx-ngsa-ql\
-	libsgx-ngsa-ql-dev\
-	azquotprov
+       libsgx-enclave-common\
+       libsgx-dcap-ql\
+       libsgx-dcap-ql-dev\
 
 PACKAGES=\
-	libsgx-enclave-common_$(PACKAGE_VER).deb\
-	libsgx-enclave-common-dev_$(PACKAGE_VER).deb\
-	libsgx-ngsa-ql_$(PACKAGE_VER).deb\
-	libsgx-ngsa-ql-dev_$(PACKAGE_VER).deb\
-	azquotprov_$(AZQUOTE_VER).deb
+	libsgx-enclave-common_2.3.100.46224-1_amd64.deb\
+	libsgx-dcap-ql_1.0.100.46226-1.0_amd64.deb\
+	libsgx-dcap-ql-dev_1.0.100.46226-1.0_amd64.deb
 
 UNINSTALL_NAMES=$(call reverse-list,$(PACKAGE_NAMES))
 
