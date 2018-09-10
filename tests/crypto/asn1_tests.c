@@ -76,8 +76,7 @@ static int _printf(char** str, const char* format, ...)
         if (!(*str = malloc(size)))
             return -1;
 
-        *(*str) = '\0';
-        strcat(*str, buf);
+        strcpy(*str, buf);
     }
 
     return 0;
