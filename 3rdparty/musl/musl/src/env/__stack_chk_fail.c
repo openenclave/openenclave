@@ -17,12 +17,7 @@ void __stack_chk_fail(void)
 	a_crash();
 }
 
-#ifdef SHARED
-
 __attribute__((__visibility__("hidden")))
-void __stack_chk_fail_local(void)
-{
-	a_crash();
-}
+void __stack_chk_fail_local(void);
 
-#endif
+weak_alias(__stack_chk_fail, __stack_chk_fail_local);

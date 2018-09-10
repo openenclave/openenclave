@@ -14,7 +14,7 @@ int __pthread_mutex_trylock_owner(pthread_mutex_t *m)
 		m->_m_count++;
 		return 0;
 	}
-	if (own == 0x40000000) return ENOTRECOVERABLE;
+	if (own == 0x7fffffff) return ENOTRECOVERABLE;
 
 	if (m->_m_type & 128) {
 		if (!self->robust_list.off) {

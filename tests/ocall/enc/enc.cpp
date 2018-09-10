@@ -164,3 +164,11 @@ OE_ECALL void TestReentrancy(void* args)
     result = oe_call_host("TestReentrancy", NULL);
     OE_TEST(result == OE_OK);
 }
+
+OE_SET_ENCLAVE_SGX(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    128,  /* StackPageCount */
+    16);  /* TCSCount */

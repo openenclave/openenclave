@@ -4,7 +4,7 @@
 # Licensed under the MIT License.
 
 # MUSL C library definitions
-VERSION=1.1.10
+VERSION=1.1.19
 BASE=musl-$(VERSION)
 PKG=$(BASE).tar.gz
 

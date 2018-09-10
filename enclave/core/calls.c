@@ -27,6 +27,9 @@
 uint64_t __oe_enclave_status = OE_OK;
 uint8_t __oe_initialized = 0;
 
+/* If true, disable the debug malloc checking */
+bool oe_disable_debug_malloc_check;
+
 /*
 **==============================================================================
 **
@@ -147,6 +150,24 @@ static oe_result_t _HandleInitEnclave(uint64_t argIn)
 
         if (_once == false)
         {
+            /* Set the global enclave handle */
+            if (argIn)
+            {
+                oe_init_enclave_args_t* args = (oe_init_enclave_args_t*)argIn;
+                oe_init_enclave_args_t safe_args;
+
+                if (!oe_is_outside_enclave(args, sizeof(*args)))
+                    OE_THROW(OE_INVALID_PARAMETER);
+
+                /* Copy structure into enclave memory */
+                safe_args = *args;
+
+                if (!oe_is_outside_enclave(safe_args.enclave, 1))
+                    OE_THROW(OE_INVALID_PARAMETER);
+
+                oe_enclave = safe_args.enclave;
+            }
+
             /* Call all enclave state initialization functions */
             oe_initialize_cpuid(argIn);
 
@@ -336,9 +357,9 @@ static void _HandleECall(
             argOut = _HandleInitEnclave(argIn);
             break;
         }
-        case OE_ECALL_GET_REPORT:
+        case OE_ECALL_GET_SGX_REPORT:
         {
-            argOut = _HandleGetReport(argIn);
+            argOut = _HandleGetSgxReport(argIn);
             break;
         }
         case OE_ECALL_VERIFY_REPORT:
@@ -406,7 +427,7 @@ OE_INLINE void _HandleORET(TD* td, uint16_t func, uint16_t result, int64_t arg)
 oe_result_t oe_ocall(uint16_t func, uint64_t argIn, uint64_t* argOut)
 {
     oe_result_t result = OE_UNEXPECTED;
-    TD* td = TD_Get();
+    TD* td = oe_get_td();
     Callsite* callsite = td->callsites;
 
     /* If the enclave is in crashing/crashed status, new OCALL should fail
@@ -690,7 +711,9 @@ void __oe_handle_main(
         }
     }
 
-    /* Initialize the enclave the first time it is ever entered */
+    // Initialize the enclave the first time it is ever entered. Note that
+    // this function DOES NOT call global constructors. Global construction
+    // is performed while handling OE_ECALL_INIT_ENCLAVE.
     oe_initialize_enclave();
 
     /* Get pointer to the thread data structure */
@@ -766,7 +789,7 @@ void _oe_notify_nested_exit_start(
         return;
 
     // Save the ocallcontext to the callsite of current enclave thread.
-    TD* td = TD_Get();
+    TD* td = oe_get_td();
     Callsite* callsite = td->callsites;
     callsite->ocallContext = ocallContext;
 

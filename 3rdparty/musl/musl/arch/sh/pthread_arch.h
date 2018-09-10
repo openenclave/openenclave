@@ -8,4 +8,4 @@ static inline struct pthread *__pthread_self()
 #define TLS_ABOVE_TP
 #define TP_ADJ(p) ((char *)(p) + sizeof(struct pthread) - 8)
 
-#define CANCEL_REG_IP 17
+#define MC_PC sc_pc

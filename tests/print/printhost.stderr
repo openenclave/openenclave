@@ -1,5 +1,5 @@
 fwrite(stderr)
 e
 fputs(stderr)
-__oe_host_print(stderr)
-__oe_host_print(stderr)
+oe_host_write(stderr)
+oe_host_write(stderr)

@@ -2,13 +2,14 @@
 ((union { long long ll; long l[2]; }){ .ll = x }).l[0], \
 ((union { long long ll; long l[2]; }){ .ll = x }).l[1]
 #define __SYSCALL_LL_O(x) __SYSCALL_LL_E((x))
+#define __SYSCALL_LL_PRW(x) 0, __SYSCALL_LL_E((x))
 
 /* The extra OR instructions are to work around a hardware bug:
  * http://documentation.renesas.com/doc/products/mpumcu/tu/tnsh7456ae.pdf
  */
 #define __asm_syscall(trapno, ...) do {   \
 	__asm__ __volatile__ (                \
-		"trapa #" #trapno "\n"            \
+		"trapa #31\n"            \
 		"or r0, r0\n"                     \
 		"or r0, r0\n"                     \
 		"or r0, r0\n"                     \

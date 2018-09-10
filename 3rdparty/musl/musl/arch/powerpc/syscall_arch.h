@@ -5,3 +5,5 @@
 
 #undef SYSCALL_NO_INLINE
 #define SYSCALL_NO_INLINE
+
+#define SYSCALL_FADVISE_6_ARG

@@ -24,7 +24,14 @@ static size_t sw_write(FILE *f, const unsigned char *s, size_t l)
 		c->ws++;
 	}
 	*c->ws = 0;
-	return i<0 ? i : l0;
+	if (i < 0) {
+		f->wpos = f->wbase = f->wend = 0;
+		f->flags |= F_ERR;
+		return i;
+	}
+	f->wend = f->buf + f->buf_size;
+	f->wpos = f->wbase = f->buf;
+	return l0;
 }
 
 int vswprintf(wchar_t *restrict s, size_t n, const wchar_t *restrict fmt, va_list ap)

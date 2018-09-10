@@ -11,15 +11,20 @@ struct __locale_struct {
 	const struct __locale_map *volatile cat[6];
 };
 
+struct tls_module {
+	struct tls_module *next;
+	void *image;
+	size_t len, size, align, offset;
+};
+
 struct __libc {
 	int can_do_threads;
 	int threaded;
 	int secure;
 	volatile int threads_minus_1;
 	size_t *auxv;
-	FILE *ofl_head;
-	volatile int ofl_lock[2];
-	size_t tls_size;
+	struct tls_module *tls_head;
+	size_t tls_size, tls_align, tls_cnt;
 	size_t page_size;
 	struct __locale_struct global_locale;
 };

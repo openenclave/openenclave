@@ -2,7 +2,7 @@
 #include "time_impl.h"
 #include <errno.h>
 
-extern const char __gmt[];
+extern const char __utc[];
 
 time_t timegm(struct tm *tm)
 {
@@ -15,6 +15,6 @@ time_t timegm(struct tm *tm)
 	*tm = new;
 	tm->tm_isdst = 0;
 	tm->__tm_gmtoff = 0;
-	tm->__tm_zone = __gmt;
+	tm->__tm_zone = __utc;
 	return t;
 }

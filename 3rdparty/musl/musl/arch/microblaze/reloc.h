@@ -20,3 +20,10 @@
 
 #define CRTJMP(pc,sp) __asm__ __volatile__( \
 	"addik r1,%1,0 ; bra %0" : : "r"(pc), "r"(sp) : "memory" )
+
+#define GETFUNCSYM(fp, sym, got) __asm__ ( \
+	".hidden " #sym " \n" \
+	"	mfs %0, rpc \n" \
+	"	addik %0, %0, _GLOBAL_OFFSET_TABLE_+8 \n" \
+	"	addik %0, %0, " #sym "@GOTOFF \n" \
+	: "=r"(*(fp)) : : "memory" )

@@ -182,6 +182,20 @@ int vasprintf(char **, const char *, __isoc_va_list);
 #ifdef _GNU_SOURCE
 char *fgets_unlocked(char *, int, FILE *);
 int fputs_unlocked(const char *, FILE *);
+
+typedef ssize_t (cookie_read_function_t)(void *, char *, size_t);
+typedef ssize_t (cookie_write_function_t)(void *, const char *, size_t);
+typedef int (cookie_seek_function_t)(void *, off_t *, int);
+typedef int (cookie_close_function_t)(void *);
+
+typedef struct _IO_cookie_io_functions_t {
+	cookie_read_function_t *read;
+	cookie_write_function_t *write;
+	cookie_seek_function_t *seek;
+	cookie_close_function_t *close;
+} cookie_io_functions_t;
+
+FILE *fopencookie(void *, const char *, cookie_io_functions_t);
 #endif
 
 #if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)

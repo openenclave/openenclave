@@ -27,7 +27,7 @@ OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg)
     // operations within the enclave. A malicious host could tamper with host
     // memory while enclave is processing it.
     uint8_t* quote = new uint8_t[OE_MAX_REPORT_SIZE];
-    uint32_t quoteSize = OE_MAX_REPORT_SIZE;
+    size_t quoteSize = OE_MAX_REPORT_SIZE;
 
     if (GenerateQuote(pemPublicKey, sizeof(pemPublicKey), quote, &quoteSize))
     {
@@ -53,7 +53,7 @@ OE_ECALL void GetPublicKey(GetPublicKeyArgs* arg)
         arg->success = false;
     }
 
-    delete quote;
+    delete[] quote;
 }
 
 // Public key of another enclave.
@@ -105,7 +105,7 @@ OE_ECALL void StorePublicKey(StorePublicKeyArgs* arg)
         arg->success = false;
     }
 
-    delete quote;
+    delete[] quote;
 }
 
 // Arbitrary test data exchanged by the enclaves. The first enclave sends its
@@ -125,7 +125,7 @@ OE_ECALL void GenerateEncryptedData(GenerateEncryptedDataArgs* arg)
         return;
 
     uint8_t encryptedDataBuffer[1024];
-    uint32_t encryptedDataSize = sizeof(encryptedDataBuffer);
+    size_t encryptedDataSize = sizeof(encryptedDataBuffer);
     if (Encrypt(
             g_OtherEnclavePemPublicKey,
             g_TestData,
@@ -168,7 +168,7 @@ OE_ECALL void ProcessEncryptedData(ProcessEncryptedDataArgs* arg)
     memcpy(encryptedData, encArg.data, encArg.size);
 
     uint8_t data[16];
-    uint32_t dataSize = sizeof(data);
+    size_t dataSize = sizeof(data);
 
     if (Decrypt(encryptedData, encArg.size, data, &dataSize))
     {
@@ -187,5 +187,5 @@ OE_ECALL void ProcessEncryptedData(ProcessEncryptedDataArgs* arg)
     {
         arg->success = false;
     }
-    delete encryptedData;
+    delete[] encryptedData;
 }

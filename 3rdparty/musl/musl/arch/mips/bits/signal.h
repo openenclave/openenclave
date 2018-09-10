@@ -17,18 +17,16 @@ typedef struct {
 		} fp_fregs[32];
 	} fp_r;
 } fpregset_t;
-struct sigcontext
-{
+struct sigcontext {
 	unsigned sc_regmask, sc_status;
 	unsigned long long sc_pc, sc_regs[32], sc_fpregs[32];
 	unsigned sc_ownedfp, sc_fpc_csr, sc_fpc_eir, sc_used_math, sc_dsp;
 	unsigned long long sc_mdhi, sc_mdlo;
 	unsigned long sc_hi1, sc_lo1, sc_hi2, sc_lo2, sc_hi3, sc_lo3;
 };
-typedef struct
-{
+typedef struct {
 	unsigned regmask, status;
-	unsigned long long pc, regs[32], fpregs[32];
+	unsigned long long pc, gregs[32], fpregs[32];
 	unsigned ownedfp, fpc_csr, fpc_eir, used_math, dsp;
 	unsigned long long mdhi, mdlo;
 	unsigned long hi1, lo1, hi2, lo2, hi3, lo3;
@@ -72,6 +70,15 @@ typedef struct __ucontext {
 #define SIG_BLOCK     1
 #define SIG_UNBLOCK   2
 #define SIG_SETMASK   3
+
+#undef SI_ASYNCIO
+#undef SI_MESGQ
+#undef SI_TIMER
+#define SI_ASYNCIO (-2)
+#define SI_MESGQ (-4)
+#define SI_TIMER (-3)
+
+#define __SI_SWAP_ERRNO_CODE
 
 #endif
 

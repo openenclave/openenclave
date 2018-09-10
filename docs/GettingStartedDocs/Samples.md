@@ -8,21 +8,21 @@ Before going further, you want to make sure you have a success Open Enclave setu
 
    Assuming you installed SDK with the following steps, 
 
-      /home/youradminusername/openenclave/build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
-      /home/youradminusername/openenclave/build$ make install
+      /home/yourusername/openenclave/build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave-install ..
+      /home/yourusername/openenclave/build$ make install
 
    You will find samples under share/openenclave/samples directory.
 
         eg.
-         /home/youradminusername/openenclave/share/openenclave/samples$
-         youradminusername@yourVMname:~/openenclave/share/openenclave/samples$ ls -l
-         -rw-r--r-- 1 youradminusername youradminusername  234 Aug 14 12:58 config.mak
-         drwxr-xr-x 4 youradminusername youradminusername 4096 Aug 15 16:06 helloworld
-         drwxr-xr-x 4 youradminusername youradminusername 4096 Aug 15 16:06 attestation
-         -rw-r--r-- 1 youradminusername youradminusername  440 Aug  6 17:56 Makefile
+         /home/yourusername/openenclave/share/openenclave/samples$
+         yourusername@yourVMname:~/openenclave/share/openenclave/samples$ ls -l
+         -rw-r--r-- 1 yourusername yourusername  234 Aug 14 12:58 config.mak
+         drwxr-xr-x 4 yourusername yourusername 4096 Aug 15 16:06 helloworld
+         drwxr-xr-x 4 yourusername yourusername 4096 Aug 15 16:06 attestation
+         -rw-r--r-- 1 yourusername yourusername  440 Aug  6 17:56 Makefile
          ....
 
- Note: As part of the sample configuratino process, samples/config.mak was created to help setup environment for use
+ Note: As part of the sample configuration process, samples/config.mak was created to help setup environment for use
  in building samples.
  
  
@@ -37,23 +37,23 @@ Before going further, you want to make sure you have a success Open Enclave setu
    | ./host       | files needed for building the hsot       |
 
       eg.   
-           /home/youradminusername:~/openenclave/share/openenclave/samples/helloworld$ ls -l
+           /home/yourusername:~/openenclave/share/openenclave/samples/helloworld$ ls -l
             total 12
-            drwxr-xr-x 2 youradminusername youradminusername 4096 Aug 16 13:59 enc
-            drwxr-xr-x 2 youradminusername youradminusername 4096 Aug 16 13:59 host
-            -rw-r--r-- 1 youradminusername youradminusername  245 Aug 16 13:57 Makefile
+            drwxr-xr-x 2 yourusername yourusername 4096 Aug 16 13:59 enc
+            drwxr-xr-x 2 yourusername yournusername 4096 Aug 16 13:59 host
+            -rw-r--r-- 1 yourusername yourusername  245 Aug 16 13:57 Makefile
 
   To build a sample, you want to jump to the target sample directory and run "make build" to build the sample
   and run "make run" to run it.
      
     eg.
-         youradminusername@yourVMname:~/openenclave/share/openenclave/samples$ cd helloworld/
-         youradminusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ ls
+         yourusername@yourVMname:~/openenclave/share/openenclave/samples$ cd helloworld/
+         yourusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ ls
          enc  host  Makefile
 
-         youradminusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make build
+         yourusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make build
          ...
-         youradminusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run
+         yourusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run
          host/helloworldhost ./enc/helloworldenc.signed.so
          Enclave: Hello World!
 

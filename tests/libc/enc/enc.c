@@ -58,10 +58,14 @@ extern char** __environ;
 
 extern const char* __test__;
 
+extern bool oe_disable_debug_malloc_check;
+
 OE_ECALL void Test(Args* args)
 {
     if (args)
     {
+        oe_disable_debug_malloc_check = true;
+
         printf("RUNNING: %s\n", __TEST__);
 
         if (!(__environ = (char**)calloc(1, sizeof(char**))))
@@ -76,3 +80,11 @@ OE_ECALL void Test(Args* args)
         free(__environ);
     }
 }
+
+OE_SET_ENCLAVE_SGX(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    4096, /* HeapPageCount */
+    1024, /* StackPageCount */
+    8);   /* TCSCount */

@@ -10,7 +10,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DOE_LIBC_SUPPRESS_DEPRECATIONS")
 # build cxxrt sources passing additional options
 add_subdirectory(libcxxrt/src)
 target_compile_options(cxxrt-static PRIVATE
-    -include ${CMAKE_CURRENT_SOURCE_DIR}/stubs.h
     -fPIC
     # cannot use add_link_libraries on out-of-dir target
     -nostdinc $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>

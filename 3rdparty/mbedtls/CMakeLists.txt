@@ -3,7 +3,7 @@
 
 # Copy mbedtls sources to replace config.h and build w/ own flags
 
-set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-builtin-udivti3 -DOE_LIBC_SUPPRESS_DEPRECATIONS")
+set(MBEDTLS_WRAP_CFLAGS "-nostdinc -I${OE_INCDIR}/openenclave/libc -fPIC -fno-builtin-udivti3 ${SPECTRE_MITIGATION_FLAGS} -DOE_LIBC_SUPPRESS_DEPRECATIONS")
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 
@@ -24,6 +24,7 @@ ExternalProject_Add(mbedtls-wrap
         ${CMAKE_BINARY_DIR}/3rdparty/mbedtls/config_final.h <SOURCE_DIR>/include/mbedtls/config.h
     # Addl args for compiler
     CMAKE_ARGS
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_C_FLAGS=${MBEDTLS_WRAP_CFLAGS}
         -DENABLE_PROGRAMS=OFF
         -DENABLE_TESTING=OFF

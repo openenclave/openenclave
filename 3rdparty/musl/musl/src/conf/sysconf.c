@@ -174,6 +174,8 @@ long sysconf(int name)
 	} else if (values[name] < -256) {
 		struct rlimit lim;
 		getrlimit(values[name]&16383, &lim);
+		if (lim.rlim_cur == RLIM_INFINITY)
+			return -1;
 		return lim.rlim_cur > LONG_MAX ? LONG_MAX : lim.rlim_cur;
 	}
 

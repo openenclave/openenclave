@@ -8,8 +8,7 @@
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 typedef unsigned long greg_t, gregset_t[38];
-typedef struct sigcontext
-{
+typedef struct sigcontext {
 	struct {
 		unsigned long r0, r1, r2, r3, r4, r5, r6, r7;
 		unsigned long r8, r9, r10, r11, r12, r13, r14, r15;

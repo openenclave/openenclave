@@ -13,16 +13,16 @@
  */
 bool GenerateQuote(
     const uint8_t* data,
-    const uint32_t dataSize,
+    const size_t dataSize,
     uint8_t* quoteBuffer,
-    uint32_t* quoteBufferSize)
+    size_t* quoteBufferSize)
 {
     uint8_t sha256[32];
     Sha256(data, dataSize, sha256);
 
     // To generate a quote that can be attested remotely by an enclave running
-    // on a different platform, pass the OE_REPORT_OPTIONS_REMOTE_ATTESTATION
-    // option. This uses the trusted quoting enclave to generate the report
+    // on a different platform, pass the OE_REPORT_FLAGS_REMOTE_ATTESTATION
+    // flag. This uses the trusted quoting enclave to generate the report
     // based on this enclave's local report.
     // To generate a quote that just needs to be attested by another enclave
     // running on the same platform, pass 0 instead. This uses the EREPORT
@@ -30,7 +30,7 @@ bool GenerateQuote(
     // Both kinds of reports can be verified using the oe_verify_report
     // function.
     oe_result_t result = oe_get_report(
-        OE_REPORT_OPTIONS_REMOTE_ATTESTATION,
+        OE_REPORT_FLAGS_REMOTE_ATTESTATION,
         sha256, // Store sha256 in report_data field
         sizeof(sha256),
         NULL, // optParams must be null
@@ -49,7 +49,7 @@ bool GenerateQuote(
 }
 
 // The SHA-256 hash of the public key in the private.pem file used to sign the
-// enclave. This value is populated in the author_id sub-field of a parsed
+// enclave. This value is populated in the signer_id sub-field of a parsed
 // oe_report_t's identity field.
 const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
                               0xA2, 0x88, 0x90, 0xCE, 0x73, 0xE4, 0x33, 0x63,
@@ -66,9 +66,9 @@ const uint8_t g_MRSigner[] = {0xCA, 0x9A, 0xD7, 0x33, 0x14, 0x48, 0x98, 0x0A,
  */
 bool AttestQuote(
     const uint8_t* quote,
-    uint32_t quoteSize,
+    size_t quoteSize,
     const uint8_t* data,
-    uint32_t dataSize)
+    size_t dataSize)
 {
     // While attesting, the quote being attested must not be tampered with.
     // Ensure that it has been copied over to the enclave.
@@ -91,7 +91,7 @@ bool AttestQuote(
     // enclave.
     // Check that the enclave was signed by an trusted entity.
     if (memcmp(
-            parsedReport.identity.author_id, g_MRSigner, sizeof(g_MRSigner)) !=
+            parsedReport.identity.signer_id, g_MRSigner, sizeof(g_MRSigner)) !=
         0)
         return false;
 
