@@ -4,8 +4,7 @@
 ## Install Prerequisites
 ======================
 
- To build the Open Enclave SDK from its source code successfully, you need to install the following 
- packages
+ To build the Open Enclave SDK from its source code successfully, you need to install the following packages
 
    | Packages                          |  depending component|
    |:----------------------------------|:-----------------------------------:|
@@ -20,6 +19,7 @@
    | subversion                        | Needed for 3rdparty/libcxx/update.make |
    | dh-exec                           | Debian execution helper|
    | libcurl3                          | client-side URL transfers library|
+   | clang-7                           | clang-7 |
 
   See [/scripts/install-prereqs](/scripts/install-prereqs) script for a up-to-date list
 
@@ -31,13 +31,29 @@ For advanced developers: other than above basic runtime prerequisites, install t
 
     $sudo apt-get install make gcc g++ gdb libmbedtls10 libssl-dev dh-exec libcurl3
 
+Both types of developers need to install clang-7 (see next section)
 
 The "install-prereqs" script was created to make installing the prerequisites less tedious.
 Execute the following commands from the root of the source tree to install above prerequisites for you
-```
-$ cd openenclave
-$ sudo ./scripts/install-prereqs
-```
+
+        $ cd openenclave
+        $ sudo ./scripts/install-prereqs
+
+# Install Clang-7
+
+  - Run the following command lines to install Clang-7:
+
+        $sudo -i
+        $echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main" >> /etc/apt/sources.list
+        $echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial main" >> /etc/apt/sources.list
+        $echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main" >> /etc/apt/sources.list
+        $echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main" >> /etc/apt/sources.list
+        $echo "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list
+        $echo "deb-src http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main" >> /etc/apt/sources.list
+        $wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+        $apt-get -y update
+        $apt-get -y install clang-7 lldb-7 lld-7
+        $exit
 
 ## Obtain the source distribution
 

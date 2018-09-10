@@ -25,9 +25,9 @@ The [Design Overview](docs/DesignOverview.pdf) document provides a brief design 
 Getting Started
 ---------------
 
-For Open Enclave application developers, start [here](docs/GettingStartedDocs/GettingStarted_User.md)
+For OE application developers, user intends to build/develop an OE application. Start [here](docs/GettingStartedDocs/GettingStarted_User.md)
 
-For advanced developers, who not only want to experience Open Enclave applications but also want to dig into how Open Enclave was implemented, and potentially contribute to this open source effort, start [here](docs/GettingStartedDocs/GettingStarted.md)
+For OE Developer/Builder of OE Source, users who not only want to experience OE applications but also want to dig into how OE was implemented, and potentially contribute to this open source effort, start [here](docs/GettingStartedDocs/GettingStarted.md)
 
 Contributing
 ------------
