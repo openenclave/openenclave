@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_LIBC_SUPPRESS_DEPRECATIONS
+
 #if defined(OE_BUILD_ENCLAVE)
 #include <openenclave/enclave.h>
 #endif
@@ -336,7 +338,7 @@ static void _TestWritePrivate()
 
     OE_TEST(pemSize1 != 0);
     OE_TEST(pemData1[pemSize1 - 1] == '\0');
-    OE_TEST(strnlen((char*)pemData1, SIZE_MAX) == pemSize1 - 1);
+    OE_TEST(strlen((char*)pemData1) == pemSize1 - 1);
 
     r = oe_ec_private_key_read_pem(&key2, pemData1, pemSize1);
     OE_TEST(r == OE_OK);

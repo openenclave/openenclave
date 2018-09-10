@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_LIBC_SUPPRESS_DEPRECATIONS
+
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
 #include <openenclave/internal/malloc.h>
@@ -128,8 +130,7 @@ OE_ECALL void Test(void* args_)
 
     /* Try new/delete */
     {
-        const size_t N = 12;
-        char* p = new char[N];
+        char* p = new char[12];
 
         if (!p)
         {
@@ -137,7 +138,7 @@ OE_ECALL void Test(void* args_)
             return;
         }
 
-        strlcpy(p, "hello", N);
+        strcpy(p, "hello");
 
         if (strcmp(p, "hello") != 0)
         {

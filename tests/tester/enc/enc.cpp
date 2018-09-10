@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_LIBC_SUPPRESS_DEPRECATIONS
+
 #include <openenclave/enclave.h>
 #include <openenclave/internal/typeinfo.h>
-#include <stdint.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -164,7 +165,7 @@ OE_EXTERNC int32_t ECALL_MultipleParams(
         return -1;
 
     /* str */
-    strncpy(strOut, strIn, strnlen(strIn, SIZE_MAX));
+    strncpy(strOut, strIn, strlen(strIn));
 
     /* num */
     *numOut = numIn;

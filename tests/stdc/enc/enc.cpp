@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_LIBC_SUPPRESS_DEPRECATIONS
+
 #include <ctype.h>
 #include <endian.h>
 #include <errno.h>
@@ -16,7 +18,6 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <stdint.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -234,14 +235,14 @@ OE_ECALL void Test(void* args_)
 
     oe_set_allocation_failure_callback(_AllocationFailureCallback);
 
-    strlcpy(args->buf1, "AAA", sizeof(args->buf1));
-    strlcat(args->buf1, "BBB", sizeof(args->buf1));
-    strlcat(args->buf1, "CCC", sizeof(args->buf1));
+    strcpy(args->buf1, "AAA");
+    strcat(args->buf1, "BBB");
+    strcat(args->buf1, "CCC");
 
     {
         char* s = strdup("strdup");
 
-        if (s && strcmp(s, "strdup") == 0 && strnlen(s, SIZE_MAX) == 6)
+        if (s && strcmp(s, "strdup") == 0 && strlen(s) == 6)
         {
             if (memcmp(s, "strdup", 6) == 0)
                 args->strdupOk = 1;

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_LIBC_SUPPRESS_DEPRECATIONS
+
 #if defined(OE_BUILD_ENCLAVE)
 #include <openenclave/enclave.h>
 #endif
@@ -10,7 +12,6 @@
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
 #include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,12 +64,12 @@ static int _printf(char** str, const char* format, ...)
 
     if (*str)
     {
-        size += strnlen(*str, SIZE_MAX);
+        size += strlen(*str);
 
         if (!(*str = realloc(*str, size)))
             return -1;
 
-        strncat(*str, buf, size - 1);
+        strcat(*str, buf);
     }
     else
     {
@@ -76,7 +77,7 @@ static int _printf(char** str, const char* format, ...)
             return -1;
 
         *(*str) = '\0';
-        strncat(*str, buf, size - 1);
+        strcat(*str, buf);
     }
 
     return 0;
