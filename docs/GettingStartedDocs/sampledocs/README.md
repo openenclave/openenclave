@@ -12,9 +12,9 @@ To avoid this sudo requirement, you may want to first copy them to a user direct
 copy. 
 
  For example:
- 
-      $ cp -r /opt/openenclave/share/openenclave/samples ~/mysamples
-      
+
+     $ cp -r /opt/openenclave/share/openenclave/samples ~/mysamples
+
 ### How Sample source code directories were structured
 
    Open Enclave SDK helps developers build enclave applications. An enclave application is partitioned into an untrusted component (called a host) and a trusted component (called an enclave). An enclave is a secure container whose memory (text and data) is protected from access by outside entities, including the host, privileged users, and even the hardware. All functionality that needs to be run in a Trusted Execution Environment (TEE) should be compiled into the enclave binary. The enclave may run in an untrusted environment with the expectation that secrets will not be compromised. A host is a normal user mode application that loads an enclave into its address space before starting interacting with an enclave. 
@@ -31,14 +31,14 @@ copy.
 
    For example:
      
-           /home/youradminusername:~/openenclave/share/openenclave/samples/helloworld$ ls -l
+           /home/yourusername:~/openenclave/share/openenclave/samples/helloworld$ ls -l
             total 12
-            drwxr-xr-x 2 youradminusername youradminusername 4096 Aug 16 13:59 enc
-            drwxr-xr-x 2 youradminusername youradminusername 4096 Aug 16 13:59 host
-            -rw-r--r-- 1 youradminusername youradminusername  245 Aug 16 13:57 Makefile
+            drwxr-xr-x 2 yourusername yourusername 4096 Aug 16 13:59 enc
+            drwxr-xr-x 2 yourusername yourusername 4096 Aug 16 13:59 host
+            -rw-r--r-- 1 yourusername yourusername  245 Aug 16 13:57 Makefile
  
 ### How to build and run samples
- 
+
   Each sample comes with a set of simple Makefiles to simplify the sample building process, which involves building and signing 
 binaries.
     
@@ -47,13 +47,13 @@ binaries.
      
    For example:
 
-         youradminusername@yourVMname:~/openenclave/share/openenclave/samples$ cd helloworld/
-         youradminusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ ls
+         yourusername@yourVMname:~/openenclave/share/openenclave/samples$ cd helloworld/
+         yourusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ ls
          enc  host  Makefile
 
-         youradminusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make build
+         yourusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make build
          ...
-         youradminusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run
+         yourusername@yourVMname:~/openenclave/share/openenclave/samples/helloworld$ make run
          host/helloworldhost ./enc/helloworldenc.signed.so
          Enclave called into host to print: Hello World!
 
@@ -65,7 +65,9 @@ binaries.
   It's recommended to go through the following samples in the order listed below.
 
 #### [HelloWorld](/samples/make/helloworld/README.md)
-  
+
+#### [Remote Attestation](/samples/make/remote_attestation/README.md)
+
 #### Echo (Under construction)
  
   - Written in C++
@@ -73,7 +75,7 @@ binaries.
   - Showcase the enclave public APIs
   - In progress
   
-#### File-encryptor (Almost ready)
+#### File-encryptor (Under construction)
  
   - Written in C++
   - Demonstrates data passing and the built-in mbedtls API
@@ -83,7 +85,3 @@ binaries.
   - Written in C++
   - Demonstrates Open Enclave's sealing feature
   - In progress
-  
-#### [Attestation] 
-
-    

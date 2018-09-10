@@ -19,7 +19,9 @@ Getting Started with Open Enclave in SGX1 mode
 
         This creates a source tree under the directory called openenclave.
 
-   - Install Prerequisites
+   - [Install Clang-7](prerequisites.md#install-clang-7)
+
+   - Install all the other prerequisites
 
       The  [scripts/install-prereqs script](/scripts/install-prereqs) script was created to make installing the prerequisites less tedious. Execute the following commands from the root of the source tree to install above prerequisites for you
 

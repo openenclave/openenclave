@@ -32,7 +32,7 @@ The following table shows where key components are installed.
 | oesign           | Build: shorthand for the signing tool executable.                                   |
 | oegen            | Build: shorthand for the IDL compiler executable.                                   |
 | oe-gdb           | Build: Open Enclave debug tool                                                      |
-| oesgx            | Build: utiltity for detect SGX capability on a system                               |
+| oesgx            | Build: utility for detect SGX capability on a system                                |
 
 
 Optional Advanced Install
