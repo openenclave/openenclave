@@ -4,10 +4,10 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/typeinfo.h>
 #include <stdint.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include "tester_t.h"
 
 static struct Object* _MakeObject(const char* name, size_t id)

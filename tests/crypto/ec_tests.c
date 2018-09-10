@@ -12,10 +12,10 @@
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/tests.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include "hash.h"
 #include "tests.h"
 

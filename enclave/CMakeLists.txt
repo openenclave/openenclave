@@ -28,8 +28,6 @@ if(USE_LIBSGX)
 target_compile_definitions(oeenclave PUBLIC OE_USE_LIBSGX)
 endif()    
 
-target_compile_definitions(oeenclave PRIVATE)
-
 target_link_libraries(oeenclave PUBLIC
     mbedcrypto
     oelibc)

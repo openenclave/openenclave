@@ -7,9 +7,9 @@
 
 #include <openenclave/internal/sha.h>
 #include <openenclave/internal/tests.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdint.h>
 #include "hash.h"
 #include "tests.h"
 

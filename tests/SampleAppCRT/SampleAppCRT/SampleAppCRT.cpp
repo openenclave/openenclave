@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#define OE_LIBC_SUPPRESS_DEPRECATIONS
 #include <openenclave/enclave.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -82,8 +83,8 @@ OE_ECALL int Test(void* args)
         return OE_OK;
     }
 
-    mbstowcs((wchar_t*)tempRegion, asciistring, strnlen(asciistring, SIZE_MAX));
-    ((wchar_t*)tempRegion)[strnlen(asciistring, SIZE_MAX)] = '\0';
+    mbstowcs((wchar_t*)tempRegion, asciistring, strlen(asciistring));
+    ((wchar_t*)tempRegion)[strlen(asciistring)] = '\0';
 
 #ifndef OE_SIM
     /* Broken in MUSL library */

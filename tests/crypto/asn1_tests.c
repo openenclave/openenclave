@@ -10,10 +10,10 @@
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/tests.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include "tests.h"
 
 static const char _CERT[] =
