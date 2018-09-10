@@ -1,8 +1,0 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
-#pragma push_macro("OE_LIBC_SUPPRESS_DEPRECATIONS")
-
-#if !defined(OE_LIBC_SUPPRESS_DEPRECATIONS)
-#define OE_LIBC_SUPPRESS_DEPRECATIONS
-#endif

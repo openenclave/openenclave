@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -240,7 +241,7 @@ OE_ECALL void Test(void* args_)
     {
         char* s = strdup("strdup");
 
-        if (s && strcmp(s, "strdup") == 0 && strlen(s) == 6)
+        if (s && strcmp(s, "strdup") == 0 && strnlen(s, SIZE_MAX) == 6)
         {
             if (memcmp(s, "strdup", 6) == 0)
                 args->strdupOk = 1;

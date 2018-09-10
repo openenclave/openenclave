@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "tests.h"
 
 static const char _CERT[] =
@@ -62,7 +63,7 @@ static int _printf(char** str, const char* format, ...)
 
     if (*str)
     {
-        size += strlen(*str);
+        size += strnlen(*str, SIZE_MAX);
 
         if (!(*str = realloc(*str, size)))
             return -1;

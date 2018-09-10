@@ -19,21 +19,14 @@ ExternalProject_Add(oelibc_includes
             -DWRAP_SUF=${CMAKE_CURRENT_LIST_DIR}/endian.h.suffix
             -P ${CMAKE_SOURCE_DIR}/cmake/wrap.cmake
 
-        # Wrap all the C headers in prologue/epilogue files.
-        COMMAND ${CMAKE_SOURCE_DIR}/scripts/wrap-headers
+        # Append deprecations.h to all C header files.
+        COMMAND ${CMAKE_CURRENT_LIST_DIR}/append-deprecations
             ${OE_INCDIR}/openenclave/libc
-            ${CMAKE_CURRENT_LIST_DIR}/prologue
-            ${CMAKE_CURRENT_LIST_DIR}/epilogue
 
-        # Copy local prologue.h to include/bits/prologue.h.
+        # Copy local deprecations.h to include/bits/deprecated.h.
         COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_LIST_DIR}/prologue.h
-            ${OE_INCDIR}/openenclave/libc/bits/prologue.h
-
-        # Copy local epilogue.h to include/bits/epilogue.h.
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_LIST_DIR}/epilogue.h
-            ${OE_INCDIR}/openenclave/libc/bits/epilogue.h
+            ${CMAKE_CURRENT_LIST_DIR}/deprecations.h
+            ${OE_INCDIR}/openenclave/libc/bits/deprecations.h
 
     BUILD_BYPRODUCTS ${OE_INCDIR}/openenclave/libc ${CMAKE_CURRENT_BINARY_DIR}/musl
     INSTALL_COMMAND ""

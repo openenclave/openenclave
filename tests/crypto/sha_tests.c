@@ -9,6 +9,7 @@
 #include <openenclave/internal/tests.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include "hash.h"
 #include "tests.h"
 
@@ -20,7 +21,7 @@ void TestSHA(void)
     OE_SHA256 hash = {0};
     oe_sha256_context_t ctx = {0};
     oe_sha256_init(&ctx);
-    oe_sha256_update(&ctx, ALPHABET, strlen(ALPHABET));
+    oe_sha256_update(&ctx, ALPHABET, strnlen(ALPHABET, SIZE_MAX));
     oe_sha256_final(&ctx, &hash);
     OE_TEST(memcmp(&hash, &ALPHABET_HASH, sizeof(OE_SHA256)) == 0);
 

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "tester_t.h"
 
 static struct Object* _MakeObject(const char* name, size_t id)
@@ -163,7 +164,7 @@ OE_EXTERNC int32_t ECALL_MultipleParams(
         return -1;
 
     /* str */
-    strncpy(strOut, strIn, strlen(strIn));
+    strncpy(strOut, strIn, strnlen(strIn, SIZE_MAX));
 
     /* num */
     *numOut = numIn;
