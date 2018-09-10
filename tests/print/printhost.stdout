@@ -4,6 +4,6 @@ printf(stdout)
 fwrite(stdout)
 o
 fputs(stdout)
-__oe_host_print(stdout)
-__oe_host_print(stdout)
+oe_host_write(stdout)
+oe_host_write(stdout)
 === passed all tests (host/print_host)

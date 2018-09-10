@@ -5,7 +5,7 @@ include(oeedl_file)
 include(add_enclave_executable)
 
 oeedl_file(../pingpong.edl enclave gen)
-add_enclave_executable(pingpong-shared_enc sign.conf private.pem
+add_executable(pingpong-shared_enc
     enc.cpp
     ${gen}
     )

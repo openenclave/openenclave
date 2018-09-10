@@ -3,7 +3,7 @@ Basic Install
 
 You can locally install the SDK from the compiled Open Enclave tree by specifying the install-prefix to the cmake call before calling "make install". As of now, there is no real need to install the SDK system-wide, so you might use a tree in your home directory:
 ```
-build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave ..
+build$ cmake -DCMAKE_INSTALL_PREFIX:PATH=~/openenclave-install ..
 build$ make install
 ```
 
@@ -19,15 +19,6 @@ The following table shows where key components are installed.
 | <install_prefix>/share/doc/openenclave   | Documentation                   |
 | <install_prefix>/share/openenclave       | `Samples` and make/cmake-includes |
 
-For *Makefile* based projects, you may use the make-include in
-**<install_prefix>/share/openenclave/config.mak** in your own project for
-sourcing variables containing version info and SDK install paths.
-
-For *CMake* based projects, you may use the cmake-include in
-**<install_prefix>/share/openenclave/openenclave.cmake** in your own project.
-It provides the following targets (e.g., for inclusion in
-**target_link_libraries**) to set the required compiler flags, include dirs,
-and libraries.
 
 | Target           | Description                                                                         |
 |------------------|-------------------------------------------------------------------------------------|
@@ -40,6 +31,8 @@ and libraries.
 | oehostapp        | Host code: Must be present with host binary for proper linker flags.                |
 | oesign           | Build: shorthand for the signing tool executable.                                   |
 | oegen            | Build: shorthand for the IDL compiler executable.                                   |
+| oe-gdb           | Build: Open Enclave debug tool                                                      |
+| oesgx            | Build: utility for detect SGX capability on a system                                |
 
 
 Optional Advanced Install
@@ -66,14 +59,12 @@ with the given path:
 build$ make install DESTDIR=foo
 ```
 
-
-
 ## Create Redistributable SDK pacakge
 ----------------------------------
 
 To create a redistributable package (deb, rpm, ...), use **cpack**. Specify
 the final installation prefix to cmake using the CMAKE_INSTALL_PREFIX variable
-as above. E.g., to create a debian package that will install the SDK to
+as above. E.g., to create a Debian package that will install the SDK to
 /opt/openenclave, use:
 
 ```

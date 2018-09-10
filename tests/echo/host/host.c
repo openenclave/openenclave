@@ -66,7 +66,8 @@ int main(int argc, const char* argv[])
     free((char*)args.in);
     free((char*)args.out);
 
-    oe_terminate_enclave(enclave);
+    result = oe_terminate_enclave(enclave);
+    OE_TEST(result == OE_OK);
 
     printf("=== passed all tests (echo)\n");
 

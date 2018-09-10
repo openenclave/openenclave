@@ -26,7 +26,8 @@ PACKAGES=build-essential \
 	cloc \
 	libexpat1 \
 	libexpat1-dev \
-	ccache
+	ccache \
+	libsystemd-dev
 
 all: .packages
 

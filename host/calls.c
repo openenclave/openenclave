@@ -273,7 +273,7 @@ static oe_host_func_t _FindHostFunc(const char* name)
 **==============================================================================
 */
 
-static void _HandleCallHost(uint64_t arg)
+static void _HandleCallHost(uint64_t arg, oe_enclave_t* enclave)
 {
     oe_call_host_args_t* args = (oe_call_host_args_t*)arg;
     oe_host_func_t func;
@@ -291,7 +291,7 @@ static void _HandleCallHost(uint64_t arg)
     }
 
     /* Invoke the function */
-    func(args->args);
+    func(args->args, enclave);
 
     args->result = OE_OK;
 }
@@ -306,7 +306,7 @@ static void _HandleCallHost(uint64_t arg)
 **==============================================================================
 */
 
-static void _handle_call_host_by_address(uint64_t arg)
+static void _handle_call_host_by_address(uint64_t arg, oe_enclave_t* enclave)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_call_host_by_address_args_t* args = (oe_call_host_by_address_args_t*)arg;
@@ -318,7 +318,7 @@ static void _handle_call_host_by_address(uint64_t arg)
     }
 
     /* Invoke the function */
-    args->func(args->args);
+    args->func(args->args, enclave);
 
     result = OE_OK;
 
@@ -356,11 +356,11 @@ static oe_result_t _HandleOCALL(
     switch ((oe_func_t)func)
     {
         case OE_OCALL_CALL_HOST:
-            _HandleCallHost(argIn);
+            _HandleCallHost(argIn, enclave);
             break;
 
         case OE_OCALL_CALL_HOST_BY_ADDRESS:
-            _handle_call_host_by_address(argIn);
+            _handle_call_host_by_address(argIn, enclave);
             break;
 
         case OE_OCALL_MALLOC:
@@ -375,16 +375,8 @@ static oe_result_t _HandleOCALL(
             HandleFree(argIn);
             break;
 
-        case OE_OCALL_PUTS:
-            HandlePuts(argIn);
-            break;
-
-        case OE_OCALL_PRINT:
+        case OE_OCALL_WRITE:
             HandlePrint(argIn);
-            break;
-
-        case OE_OCALL_PUTCHAR:
-            HandlePutchar(argIn);
             break;
 
         case OE_OCALL_THREAD_WAIT:
@@ -399,20 +391,20 @@ static oe_result_t _HandleOCALL(
             HandleThreadWakeWait(enclave, argIn);
             break;
 
-#ifdef OE_USE_LIBSGX
-        // Quote attestion is supported only on libsgx platforms.
         case OE_OCALL_GET_QUOTE:
             HandleGetQuote(argIn);
             break;
 
+#ifdef OE_USE_LIBSGX
+        // Quote revocation is supported only on libsgx platforms.
         case OE_OCALL_GET_REVOCATION_INFO:
             HandleGetQuoteRevocationInfo(argIn);
             break;
+#endif
 
         case OE_OCALL_GET_QE_TARGET_INFO:
             HandleGetQETargetInfo(argIn);
             break;
-#endif
 
         case OE_OCALL_SLEEP:
             oe_handle_sleep(argIn);
@@ -422,15 +414,8 @@ static oe_result_t _HandleOCALL(
             oe_handle_get_time(argIn, argOut);
             break;
 
-#if defined(OE_USE_DEBUG_MALLOC)
-        case OE_OCALL_MALLOC_DUMP:
-            handle_malloc_dump(enclave, argIn);
-            break;
-#endif
-
-        case OE_ECALL_DESTRUCTOR:
-        case OE_ECALL_CALL_ENCLAVE:
-            assert("Invalid OCALL" == NULL);
+        case OE_OCALL_BACKTRACE_SYMBOLS:
+            oe_handle_backtrace_symbols(enclave, argIn);
             break;
 
         default:
@@ -443,6 +428,7 @@ static oe_result_t _HandleOCALL(
     result = OE_OK;
 
 OE_CATCH:
+
     return result;
 }
 
@@ -613,10 +599,6 @@ static void _ReleaseTCS(oe_enclave_t* enclave, void* tcs)
 **==============================================================================
 */
 
-#if defined(_WIN32)
-#define TRACE_ECALLS
-#endif
-
 oe_result_t oe_ecall(
     oe_enclave_t* enclave,
     uint16_t func,
@@ -630,10 +612,6 @@ oe_result_t oe_ecall(
     uint16_t funcOut = 0;
     uint16_t resultOut = 0;
     uint64_t argOut = 0;
-
-#if defined(TRACE_ECALLS)
-    printf("=== oe_ecall()\n");
-#endif
 
     if (!enclave)
         OE_THROW(OE_INVALID_PARAMETER);
@@ -670,14 +648,10 @@ OE_CATCH:
     if (enclave && tcs)
         _ReleaseTCS(enclave, tcs);
 
-/* ATTN: this causes an assertion with call nesting. */
-/* ATTN: make enclave argument a cookie. */
-/* ATTN: the SetEnclave() function no longer exists */
-/* SetEnclave(NULL); */
-
-#if defined(TRACE_ECALLS)
-    printf("=== oe_ecall(): result=%u\n", result);
-#endif
+    /* ATTN: this causes an assertion with call nesting. */
+    /* ATTN: make enclave argument a cookie. */
+    /* ATTN: the SetEnclave() function no longer exists */
+    /* SetEnclave(NULL); */
 
     return result;
 }

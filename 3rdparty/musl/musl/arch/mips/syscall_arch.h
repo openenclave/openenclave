@@ -3,9 +3,7 @@
 ((union { long long ll; long l[2]; }){ .ll = x }).l[1]
 #define __SYSCALL_LL_O(x) 0, __SYSCALL_LL_E((x))
 
-#ifdef SHARED
 __attribute__((visibility("hidden")))
-#endif
 long (__syscall)(long, ...);
 
 #define SYSCALL_RLIM_INFINITY (-1UL/2)
@@ -21,8 +19,6 @@ static inline void __stat_fix(long p)
 	st->st_rdev >>= 32;
 }
 #endif
-
-#ifndef __clang__
 
 static inline long __syscall0(long n)
 {
@@ -103,55 +99,16 @@ static inline long __syscall4(long n, long a, long b, long c, long d)
 	if (r7) return -r2;
 	long ret = r2;
 	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
-	if (n == SYS_fstatat) __stat_fix(c);
+	if (n == SYS_fstatat64) __stat_fix(c);
 	return ret;
 }
-
-#else
-
-static inline long __syscall0(long n)
-{
-	return (__syscall)(n);
-}
-
-static inline long __syscall1(long n, long a)
-{
-	return (__syscall)(n, a);
-}
-
-static inline long __syscall2(long n, long a, long b)
-{
-	long r2 = (__syscall)(n, a, b);
-	if (r2 > -4096UL) return r2;
-	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
-	return r2;
-}
-
-static inline long __syscall3(long n, long a, long b, long c)
-{
-	long r2 = (__syscall)(n, a, b, c);
-	if (r2 > -4096UL) return r2;
-	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
-	return r2;
-}
-
-static inline long __syscall4(long n, long a, long b, long c, long d)
-{
-	long r2 = (__syscall)(n, a, b, c, d);
-	if (r2 > -4096UL) return r2;
-	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
-	if (n == SYS_fstatat) __stat_fix(c);
-	return r2;
-}
-
-#endif
 
 static inline long __syscall5(long n, long a, long b, long c, long d, long e)
 {
 	long r2 = (__syscall)(n, a, b, c, d, e);
 	if (r2 > -4096UL) return r2;
 	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
-	if (n == SYS_fstatat) __stat_fix(c);
+	if (n == SYS_fstatat64) __stat_fix(c);
 	return r2;
 }
 
@@ -160,6 +117,10 @@ static inline long __syscall6(long n, long a, long b, long c, long d, long e, lo
 	long r2 = (__syscall)(n, a, b, c, d, e, f);
 	if (r2 > -4096UL) return r2;
 	if (n == SYS_stat64 || n == SYS_fstat64 || n == SYS_lstat64) __stat_fix(b);
-	if (n == SYS_fstatat) __stat_fix(c);
+	if (n == SYS_fstatat64) __stat_fix(c);
 	return r2;
 }
+
+#define VDSO_USEFUL
+#define VDSO_CGT_SYM "__vdso_clock_gettime"
+#define VDSO_CGT_VER "LINUX_2.6"

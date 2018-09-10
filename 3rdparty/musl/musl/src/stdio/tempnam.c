@@ -33,6 +33,7 @@ char *tempnam(const char *dir, const char *pfx)
 	s[dl] = '/';
 	memcpy(s+dl+1, pfx, pl);
 	s[dl+1+pl] = '_';
+	s[l] = 0;
 
 	for (try=0; try<MAXTRIES; try++) {
 		__randname(s+l-6);

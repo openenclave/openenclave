@@ -46,7 +46,7 @@ static oe_result_t _CopyKey(
 
     /* Lookup the info for this key type */
     if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)))
-        OE_RAISE(OE_WRONG_TYPE);
+        OE_RAISE(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* Setup the context for this key type */
     if (mbedtls_pk_setup(dest, info) != 0)
@@ -340,7 +340,7 @@ oe_result_t oe_ec_public_key_from_coordinates(
 
     /* Lookup the info for this key type */
     if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)))
-        OE_RAISE(OE_WRONG_TYPE);
+        OE_RAISE(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* Setup the context for this key type */
     if (mbedtls_pk_setup(&impl->pk, info) != 0)

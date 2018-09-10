@@ -32,7 +32,7 @@ static oe_result_t _CopyKey(
 
     /* Lookup the RSA info */
     if (!(info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA)))
-        OE_RAISE(OE_WRONG_TYPE);
+        OE_RAISE(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* If not an RSA key */
     if (src->pk_info != info)

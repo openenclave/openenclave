@@ -152,16 +152,6 @@ macro(add_compile_flags_if_supported)
   endforeach()
 endmacro()
 
-# For each specified flag, add that flag for C++ compilation
-# to 'LIBCXX_COMPILE_FLAGS' if the flag is supported by the C++ compiler.
-macro(add_cxx_compile_flags_if_supported)
-  foreach(flag ${ARGN})
-      mangle_name("${flag}" flagname)
-      check_cxx_compiler_flag("${flag}" "LIBCXX_SUPPORTS_${flagname}_FLAG")
-      add_compile_flags_if(LIBCXX_SUPPORTS_${flagname}_FLAG $<$<COMPILE_LANGUAGE:CXX>:${flag}>)
-  endforeach()
-endmacro()
-
 # Add a list of flags to 'LIBCXX_LINK_FLAGS'.
 macro(add_link_flags)
   foreach(f ${ARGN})

@@ -1,3 +1,5 @@
+../../3rdparty/musl/libc-test/src/math/expm1l.c
+../../3rdparty/musl/libc-test/src/math/exp2l.c
 ../../3rdparty/musl/libc-test/src/api/main.c
 ../../3rdparty/musl/libc-test/src/functional/clock_gettime.c
 ../../3rdparty/musl/libc-test/src/functional/qsort.c

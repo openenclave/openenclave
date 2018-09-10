@@ -187,9 +187,9 @@ oe_result_t oe_datetime_from_string(
 
     p += oe_str_to_num(p, 2, &datetime->seconds);
 
-    // Commented out since tcb info issue date still has milli seconds.
-    // if (*p++ != 'Z')
-    //     OE_RAISE(OE_INVALID_UTC_DATE_TIME);
+    if (*p++ != 'Z')
+        OE_RAISE(OE_INVALID_UTC_DATE_TIME);
+
     OE_CHECK(oe_datetime_is_valid(datetime));
 
     result = OE_OK;

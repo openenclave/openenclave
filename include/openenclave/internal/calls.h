@@ -73,7 +73,7 @@ typedef enum _oe_func {
     OE_ECALL_INIT_ENCLAVE,
     OE_ECALL_CALL_ENCLAVE,
     OE_ECALL_VERIFY_REPORT,
-    OE_ECALL_GET_REPORT,
+    OE_ECALL_GET_SGX_REPORT,
     OE_ECALL_VIRTUAL_EXCEPTION_HANDLER,
     /* Caution: always add new ECALL function numbers here */
 
@@ -88,12 +88,10 @@ typedef enum _oe_func {
     OE_OCALL_MALLOC,
     OE_OCALL_REALLOC,
     OE_OCALL_FREE,
-    OE_OCALL_PUTS,
-    OE_OCALL_PUTCHAR,
-    OE_OCALL_PRINT,
+    OE_OCALL_WRITE,
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
-    OE_OCALL_MALLOC_DUMP,
+    OE_OCALL_BACKTRACE_SYMBOLS,
     /* Caution: always add new OCALL function numbers here */
 
     __OE_FUNC_MAX = OE_ENUM_MAX,
@@ -204,6 +202,39 @@ typedef struct _oe_call_enclave_args
 /*
 **==============================================================================
 **
+** oe_host_func_t:
+**
+**     The oe_call_host() enclave function is dispatched to a host function
+**     with the following prototype.
+**
+**         OE_OCALL void (*)(void* args, oe_enclave_t* enclave);
+**
+**     Host-application developers may legally omit one or more parameters, and
+**     therefore define functions with the following prototypes (where the last
+**     is the maximal form).
+**
+**         OE_OCALL void (*)(void);
+**         OE_OCALL void (*)(void* args);
+**         OE_OCALL void (*)(void* args, oe_enclave_t* enclave);
+**
+**     This pattern is common in the C language where the following forms of
+**     main() are prevalent.
+**
+**         int main(void);
+**         int main(int argc, char* argv[]);
+**         int main(int argc, char* argv[], char* envp[]);
+**
+**     In this case the _start() function passes all parameters but the main()
+**     prototype may omit parameters from right to left.
+**
+**==============================================================================
+*/
+
+typedef void (*oe_host_func_t)(void* args, oe_enclave_t* enclave);
+
+/*
+**==============================================================================
+**
 ** oe_call_host_args_t
 **
 **==============================================================================
@@ -223,8 +254,6 @@ typedef struct _oe_call_host_args
 **
 **==============================================================================
 */
-
-typedef void (*oe_host_func_t)(void* args);
 
 typedef struct _oe_call_host_by_address_args
 {
@@ -272,6 +301,7 @@ typedef struct _oe_realloc_args
 **
 **     Runtime state to initialize enclave state with, includes
 **     - First 8 leaves of CPUID for enclave emulation
+**     - Enclave handle obtained by oe_create_enclave()
 **
 **==============================================================================
 */
@@ -279,22 +309,26 @@ typedef struct _oe_realloc_args
 typedef struct _oe_init_enclave_args
 {
     uint32_t cpuidTable[OE_CPUID_LEAF_COUNT][OE_CPUID_REG_COUNT];
+    oe_enclave_t* enclave;
 } oe_init_enclave_args_t;
 
 /*
 **==============================================================================
 **
-** oe_malloc_dump_args_t
+** oe_backtrace_symbols_args_t
+**
+**     Ask host to print a backtrace collected by the enclave using the
+**     oe_backtrace() function.
 **
 **==============================================================================
 */
 
-typedef struct _oe_malloc_dump_args
+typedef struct _oe_backtrace_symbols_args
 {
-    uint64_t size;
-    void* addrs[OE_BACKTRACE_MAX];
-    int num_addrs;
-} oe_malloc_dump_args_t;
+    void* buffer[OE_BACKTRACE_MAX];
+    int size;
+    char** ret;
+} oe_backtrace_symbols_args_t;
 
 /**
  * Perform a low-level enclave function call (ECALL).

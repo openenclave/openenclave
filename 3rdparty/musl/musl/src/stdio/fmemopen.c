@@ -81,7 +81,7 @@ FILE *fmemopen(void *restrict buf, size_t size, const char *restrict mode)
 		return 0;
 	}
 
-	if (!buf && size > SIZE_MAX-sizeof(FILE)-BUFSIZ-UNGET) {
+	if (!buf && size > PTRDIFF_MAX) {
 		errno = ENOMEM;
 		return 0;
 	}
@@ -110,11 +110,5 @@ FILE *fmemopen(void *restrict buf, size_t size, const char *restrict mode)
 
 	if (!libc.threaded) f->lock = -1;
 
-	OFLLOCK();
-	f->next = libc.ofl_head;
-	if (libc.ofl_head) libc.ofl_head->prev = f;
-	libc.ofl_head = f;
-	OFLUNLOCK();
-
-	return f;
+	return __ofl_add(f);
 }

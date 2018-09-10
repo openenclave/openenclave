@@ -162,12 +162,25 @@ static int netlink_msg_to_ifaddr(void *pctx, struct nlmsghdr *h)
 		for (rta = NLMSG_RTA(h, sizeof(*ifa)); NLMSG_RTAOK(rta, h); rta = RTA_NEXT(rta)) {
 			switch (rta->rta_type) {
 			case IFA_ADDRESS:
-				copy_addr(&ifs->ifa.ifa_addr, ifa->ifa_family, &ifs->addr, RTA_DATA(rta), RTA_DATALEN(rta), ifa->ifa_index);
+				/* If ifa_addr is already set we, received an IFA_LOCAL before
+				 * so treat this as destination address */
+				if (ifs->ifa.ifa_addr)
+					copy_addr(&ifs->ifa.ifa_dstaddr, ifa->ifa_family, &ifs->ifu, RTA_DATA(rta), RTA_DATALEN(rta), ifa->ifa_index);
+				else
+					copy_addr(&ifs->ifa.ifa_addr, ifa->ifa_family, &ifs->addr, RTA_DATA(rta), RTA_DATALEN(rta), ifa->ifa_index);
 				break;
 			case IFA_BROADCAST:
-				/* For point-to-point links this is peer, but ifa_broadaddr
-				 * and ifa_dstaddr are union, so this works for both.  */
 				copy_addr(&ifs->ifa.ifa_broadaddr, ifa->ifa_family, &ifs->ifu, RTA_DATA(rta), RTA_DATALEN(rta), ifa->ifa_index);
+				break;
+			case IFA_LOCAL:
+				/* If ifa_addr is set and we get IFA_LOCAL, assume we have
+				 * a point-to-point network. Move address to correct field. */
+				if (ifs->ifa.ifa_addr) {
+					ifs->ifu = ifs->addr;
+					ifs->ifa.ifa_dstaddr = &ifs->ifu.sa;
+					memset(&ifs->addr, 0, sizeof(ifs->addr));
+				}
+				copy_addr(&ifs->ifa.ifa_addr, ifa->ifa_family, &ifs->addr, RTA_DATA(rta), RTA_DATALEN(rta), ifa->ifa_index);
 				break;
 			case IFA_LABEL:
 				if (RTA_DATALEN(rta) < sizeof(ifs->name)) {

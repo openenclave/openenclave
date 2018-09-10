@@ -5,7 +5,7 @@ include(oeedl_file)
 include(add_enclave_executable)
 
 oeedl_file(../file.edl enclave gen)
-add_enclave_executable(file_enc sign.conf private.pem
+add_executable(file_enc
     enc.cpp
     ${gen}
     )

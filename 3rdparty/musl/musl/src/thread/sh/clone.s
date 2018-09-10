@@ -17,7 +17,7 @@ __clone:
 	mov.l @r15,     r6   ! r6 = ptid
 	mov.l @(8,r15), r7   ! r7 = ctid
 	mov.l @(4,r15), r0   ! r0 = tls
-	trapa #21
+	trapa #31
 
 	or r0, r0
 	or r0, r0
@@ -33,15 +33,21 @@ __clone:
 	 nop
 
 1:	! we are the child, call fn(arg)
-	jsr    @r1
-	 mov   r2, r4
+	mov.l  1f, r0
+	mov    r1, r5
+	bsrf   r0
+	 mov    r2, r4
 
-	mov   #1, r3   ! __NR_exit
+2:	mov   #1, r3   ! __NR_exit
 	mov   r0, r4
-	trapa #17
+	trapa #31
 
 	or   r0, r0
 	or   r0, r0
 	or   r0, r0
 	or   r0, r0
 	or   r0, r0
+
+.align 2
+.hidden __shcall
+1:	.long __shcall@PCREL+(.-2b)

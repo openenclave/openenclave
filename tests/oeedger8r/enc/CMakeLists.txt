@@ -31,7 +31,7 @@ add_custom_target(
 
 include(add_enclave_executable)
 
-add_enclave_executable(edl_enc sign.conf private.pem
+add_executable(edl_enc
     testarray.cpp
     testbasic.cpp 
     testenum.cpp 

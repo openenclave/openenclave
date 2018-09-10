@@ -17,8 +17,11 @@ extern "C" {
 
 typedef struct __dirstream DIR;
 
-struct dirent
-{
+#define _DIRENT_HAVE_D_RECLEN
+#define _DIRENT_HAVE_D_OFF
+#define _DIRENT_HAVE_D_TYPE
+
+struct dirent {
 	ino_t d_ino;
 	off_t d_off;
 	unsigned short d_reclen;
@@ -34,12 +37,15 @@ DIR           *opendir(const char *);
 struct dirent *readdir(DIR *);
 int            readdir_r(DIR *__restrict, struct dirent *__restrict, struct dirent **__restrict);
 void           rewinddir(DIR *);
-void           seekdir(DIR *, long);
-long           telldir(DIR *);
 int            dirfd(DIR *);
 
 int alphasort(const struct dirent **, const struct dirent **);
 int scandir(const char *, struct dirent ***, int (*)(const struct dirent *), int (*)(const struct dirent **, const struct dirent **));
+
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+void           seekdir(DIR *, long);
+long           telldir(DIR *);
+#endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define DT_UNKNOWN 0

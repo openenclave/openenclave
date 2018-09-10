@@ -8,9 +8,7 @@ locale_t __uselocale(locale_t new)
 	locale_t old = self->locale;
 	locale_t global = &libc.global_locale;
 
-	if (new == LC_GLOBAL_LOCALE) new = global;
-
-	self->locale = new;
+	if (new) self->locale = new == LC_GLOBAL_LOCALE ? global : new;
 
 	return old == global ? LC_GLOBAL_LOCALE : old;
 }

@@ -14,7 +14,7 @@ static struct chain {
 	sem_t target_sem, caller_sem;
 } *volatile head;
 
-static volatile int synccall_lock[2];
+static volatile int synccall_lock[1];
 static volatile int target_tid;
 static void (*callback)(void *), *context;
 static volatile int dummy = 0;
@@ -50,7 +50,7 @@ void __synccall(void (*func)(void *), void *ctx)
 	int cs, i, r, pid, self;;
 	DIR dir = {0};
 	struct dirent *de;
-	struct sigaction sa = { .sa_flags = 0, .sa_handler = handler };
+	struct sigaction sa = { .sa_flags = SA_RESTART, .sa_handler = handler };
 	struct chain *cp, *next;
 	struct timespec ts;
 

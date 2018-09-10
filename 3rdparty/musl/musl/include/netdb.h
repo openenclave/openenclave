@@ -13,8 +13,7 @@ extern "C" {
 #include <bits/alltypes.h>
 #endif
 
-struct addrinfo
-{
+struct addrinfo {
 	int ai_flags;
 	int ai_family;
 	int ai_socktype;
@@ -24,8 +23,6 @@ struct addrinfo
 	char *ai_canonname;
 	struct addrinfo *ai_next;
 };
-
-#define IPPORT_RESERVED 1024
 
 #define AI_PASSIVE      0x01
 #define AI_CANONNAME    0x02
@@ -62,16 +59,14 @@ const char *gai_strerror(int);
 
 /* Legacy functions follow (marked OBsolete in SUS) */
 
-struct netent
-{
+struct netent {
 	char *n_name;
 	char **n_aliases;
 	int n_addrtype;
 	uint32_t n_net;
 };
 
-struct hostent
-{
+struct hostent {
 	char *h_name;
 	char **h_aliases;
 	int h_addrtype;
@@ -80,16 +75,14 @@ struct hostent
 };
 #define h_addr h_addr_list[0]
 
-struct servent
-{
+struct servent {
 	char *s_name;
 	char **s_aliases;
 	int s_port;
 	char *s_proto;
 };
 
-struct protoent
-{
+struct protoent {
 	char *p_name;
 	char **p_aliases;
 	int p_proto;
@@ -122,9 +115,6 @@ struct protoent *getprotobynumber (int);
  || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE+0 < 700)
 struct hostent *gethostbyname (const char *);
 struct hostent *gethostbyaddr (const void *, socklen_t, int);
-#ifdef __GNUC__
-__attribute__((const))
-#endif
 int *__h_errno_location(void);
 #define h_errno (*__h_errno_location())
 #define HOST_NOT_FOUND 1

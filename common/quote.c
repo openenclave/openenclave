@@ -4,8 +4,6 @@
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/enclavelibc.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/sgxtypes.h>
 #include <openenclave/internal/sha.h>
@@ -46,7 +44,7 @@ OE_INLINE uint32_t ReadUint32(const uint8_t* p)
 
 static oe_result_t _ParseQuote(
     const uint8_t* quote,
-    uint32_t quoteSize,
+    size_t quoteSize,
     sgx_quote_t** sgxQuote,
     sgx_quote_auth_data_t** quoteAuthData,
     sgx_qe_auth_data_t* qeAuthData,
@@ -60,7 +58,7 @@ static oe_result_t _ParseQuote(
     if (quoteEnd < p)
     {
         // Pointer wrapped around.
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
     }
 
     *sgxQuote = NULL;
@@ -68,10 +66,10 @@ static oe_result_t _ParseQuote(
     *sgxQuote = (sgx_quote_t*)p;
     p += sizeof(sgx_quote_t);
     if (p > quoteEnd)
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
 
     if (p + (*sgxQuote)->signature_len != quoteEnd)
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
 
     *quoteAuthData = (sgx_quote_auth_data_t*)(*sgxQuote)->signature;
     p += sizeof(sgx_quote_auth_data_t);
@@ -82,7 +80,7 @@ static oe_result_t _ParseQuote(
     p += qeAuthData->size;
 
     if (p > quoteEnd)
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
 
     qeCertData->type = ReadUint16(p);
     p += 2;
@@ -92,7 +90,7 @@ static oe_result_t _ParseQuote(
     p += qeCertData->size;
 
     if (p != quoteEnd)
-        OE_RAISE(OE_QUOTE_PARSE_ERROR);
+        OE_RAISE(OE_REPORT_PARSE_ERROR);
 
     result = OE_OK;
 done:
@@ -115,14 +113,14 @@ static oe_result_t _ReadPublicKey(
 static oe_result_t _ECDSAVerify(
     oe_ec_public_key_t* publicKey,
     void* data,
-    uint32_t dataSize,
+    size_t dataSize,
     sgx_ecdsa256_signature_t* signature)
 {
     oe_result_t result = OE_UNEXPECTED;
     oe_sha256_context_t sha256Ctx = {0};
     OE_SHA256 sha256 = {0};
     uint8_t asn1Signature[256];
-    uint64_t asn1SignatureSize = sizeof(asn1Signature);
+    size_t asn1SignatureSize = sizeof(asn1Signature);
 
     OE_CHECK(oe_sha256_init(&sha256Ctx));
     OE_CHECK(oe_sha256_update(&sha256Ctx, data, dataSize));
@@ -153,13 +151,13 @@ done:
 
 oe_result_t VerifyQuoteImpl(
     const uint8_t* quote,
-    uint32_t quoteSize,
+    size_t quoteSize,
     const uint8_t* pemPckCertificate,
-    uint32_t pemPckCertificateSize,
+    size_t pemPckCertificateSize,
     const uint8_t* pckCrl,
-    uint32_t pckCrlSize,
+    size_t pckCrlSize,
     const uint8_t* tcbInfoJson,
-    uint32_t tcbInfoJsonSize)
+    size_t tcbInfoJsonSize)
 {
     oe_result_t result = OE_UNEXPECTED;
     sgx_quote_t* sgxQuote = NULL;
@@ -202,11 +200,11 @@ oe_result_t VerifyQuoteImpl(
     }
     else
     {
-        OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
+        OE_RAISE(OE_MISSING_CERTIFICATE_CHAIN);
     }
 
     if (pemPckCertificate == NULL)
-        OE_RAISE(OE_UNSUPPORTED_QE_CERTIFICATION);
+        OE_RAISE(OE_MISSING_CERTIFICATE_CHAIN);
 
     // PckCertificate Chain validations.
     {
@@ -323,13 +321,13 @@ done:
 
 oe_result_t VerifyQuoteImpl(
     const uint8_t* encQuote,
-    uint32_t quoteSize,
+    size_t quoteSize,
     const uint8_t* encPemPckCertificate,
-    uint32_t pemPckCertificateSize,
+    size_t pemPckCertificateSize,
     const uint8_t* encPckCrl,
-    uint32_t encPckCrlSize,
+    size_t encPckCrlSize,
     const uint8_t* encTcbInfoJson,
-    uint32_t encTcbInfoJsonSize)
+    size_t encTcbInfoJsonSize)
 {
     OE_UNUSED(encQuote);
     OE_UNUSED(quoteSize);

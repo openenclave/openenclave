@@ -8,9 +8,24 @@ Getting Started with Open Enclave in SGX1-FLC mode
 
       Mostly likely, it's a Coffeelake system.
 
-### Clone Open Enclave SDK repo and install dependencies
+### Obtain Open Enclave source code and install package dependencies
 
-Follow setup instructions in [Obtaining the source distribution and package dependencies](prerequisites.md)
+   - Clone Open Enclave SDK repo from GitHub
+
+       Use the following command to download the source distribution.
+
+         $ git clone https://github.com/Microsoft/openenclave
+
+        This creates a source tree under the directory called openenclave.
+
+   - [Install Clang-7](prerequisites.md#install-clang-7)
+
+   - Install all the other prerequisites
+
+      The  [scripts/install-prereqs script](/scripts/install-prereqs) script was created to make installing the prerequisites less tedious. Execute the following commands from the root of the source tree to install above prerequisites.
+
+            $ cd openenclave
+            $ sudo ./scripts/install-prereqs
 
 ### Install Intel SGX FLC support software packages
 
@@ -79,5 +94,5 @@ Note: Optional test detailed information could be found [here](AdvancedTestInfo.
 
 ### Install
 
- Follow the instructions [here](InstallInfo.md) to install SDK the compiled Open Enclave.
+ Follow the instructions [here](InstallInfo.md) to install the Open Enclave SDK built above.
  

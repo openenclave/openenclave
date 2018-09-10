@@ -89,15 +89,19 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 			continue;
 		}
 		if (*p != '%' || p[1] == '%') {
-			p += *p=='%';
 			shlim(f, 0);
-			c = shgetc(f);
+			if (*p == '%') {
+				p++;
+				while (isspace((c=shgetc(f))));
+			} else {
+				c = shgetc(f);
+			}
 			if (c!=*p) {
 				shunget(f);
 				if (c<0) goto input_fail;
 				goto match_fail;
 			}
-			pos++;
+			pos += shcnt(f);
 			continue;
 		}
 

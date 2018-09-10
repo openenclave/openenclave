@@ -7,3 +7,5 @@ struct k_sigaction {
 	 * mips-specific preprocessor conditionals in sigaction.c. */
 	void (*restorer)();
 };
+
+void __restore(), __restore_rt();

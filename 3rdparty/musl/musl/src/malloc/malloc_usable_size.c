@@ -13,5 +13,5 @@ struct chunk {
 
 size_t malloc_usable_size(void *p)
 {
-	return CHUNK_SIZE(MEM_TO_CHUNK(p)) - OVERHEAD;
+	return p ? CHUNK_SIZE(MEM_TO_CHUNK(p)) - OVERHEAD : 0;
 }

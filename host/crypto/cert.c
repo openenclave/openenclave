@@ -5,7 +5,6 @@
 #include <openenclave/bits/result.h>
 #include <openenclave/internal/asn1.h>
 #include <openenclave/internal/cert.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
 #include <openenclave/internal/pem.h>
 #include <openenclave/internal/raise.h>
@@ -38,7 +37,10 @@
 static void _SetErr(oe_verify_cert_error_t* error, const char* str)
 {
     if (error)
-        oe_strlcpy(error->buf, str, sizeof(error->buf));
+    {
+        error->buf[0] = '\0';
+        strncat(error->buf, str, sizeof(error->buf) - 1);
+    }
 }
 
 typedef struct _Cert
@@ -324,33 +326,28 @@ done:
     return result;
 }
 
-/* Find the first self-signed certificate in the chain. */
+// Find the last certificate in the chain and then verify that it's a
+// self-signed certificate (a root certificate).
 static X509* _FindRootCert(STACK_OF(X509) * chain)
 {
     int n = sk_X509_num(chain);
+    X509* x509;
 
-    /* Iterate from leaf upwards looking for a self-signed certificate */
-    while (n--)
+    /* Get the last certificate in the list */
+    if (!(x509 = sk_X509_value(chain, n - 1)))
+        return NULL;
+
+    /* If the last certificate is not self-signed, then fail */
     {
-        X509* x509;
-
-        if (!(x509 = sk_X509_value(chain, (int)n)))
-            return NULL;
-
         const X509_NAME* subject = X509_get_subject_name(x509);
         const X509_NAME* issuer = X509_get_issuer_name(x509);
 
-        if (!subject || !issuer)
+        if (!subject || !issuer || X509_NAME_cmp(subject, issuer) != 0)
             return NULL;
-
-        if (X509_NAME_cmp(subject, issuer) == 0)
-        {
-            return x509;
-        }
     }
 
-    /* Not found */
-    return NULL;
+    /* Return the root certificate */
+    return x509;
 }
 
 /* Verify each certificate in the chain against its predecessor. */
@@ -386,10 +383,6 @@ static oe_result_t _VerifyWholeChain(STACK_OF(X509) * chain)
         if (!sk_X509_push(subchain, root))
             OE_RAISE(OE_FAILURE);
     }
-
-    /* The root must be the last certificate */
-    if (root != sk_X509_value(chain, n - 1))
-        OE_RAISE(OE_FAILURE);
 
     /* Verify each certificate in the chain against the subchain */
     for (int i = sk_X509_num(chain) - 1; i >= 0; i--)
@@ -570,6 +563,7 @@ oe_result_t oe_cert_verify(
     X509_STORE_CTX* ctx = NULL;
     X509* x509 = NULL;
     STACK_OF(X509_CRL)* crls = NULL;
+    X509_VERIFY_PARAM* verify_param = NULL;
 
     /* Initialize error to NULL for now */
     if (error)
@@ -630,6 +624,13 @@ oe_result_t oe_cert_verify(
     /* Set the CA chain into the verification context */
     X509_STORE_CTX_trusted_stack(ctx, chainImpl->sk);
 
+    /* Get the verify parameter (must not be null) */
+    if (!(verify_param = X509_STORE_CTX_get0_param(ctx)))
+        OE_RAISE(OE_FAILURE);
+
+    /* Ignore the non-standard SGX extension */
+    X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_IGNORE_CRITICAL);
+
     /* Set the CRLs if any */
     if (crl_impl)
     {
@@ -643,6 +644,10 @@ oe_result_t oe_cert_verify(
             OE_RAISE(OE_FAILURE);
 
         X509_STORE_CTX_set0_crls(ctx, crls);
+
+        // Enable CRL checking: without this flag, OpenSSL ingores the CRL list
+        // installed above.
+        X509_VERIFY_PARAM_set_flags(verify_param, X509_V_FLAG_CRL_CHECK);
     }
 
     /* Finally verify the certificate */
@@ -693,7 +698,7 @@ oe_result_t oe_cert_get_rsa_public_key(
 
     /* Get RSA public key (increments reference count) */
     if (!(rsa = EVP_PKEY_get1_RSA(pkey)))
-        OE_RAISE(OE_WRONG_TYPE);
+        OE_RAISE(OE_PUBLIC_KEY_NOT_FOUND);
 
     /* Initialize the RSA public key */
     oe_rsa_public_key_init(publicKey, pkey);

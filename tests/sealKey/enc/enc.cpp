@@ -80,7 +80,7 @@ bool TestOEGetSealKey()
          sealPolicy++)
     {
         uint8_t keyBuffer[sizeof(sgx_key_t)] = {0};
-        uint32_t keyBufferSize = 0;
+        size_t keyBufferSize = 0;
         oe_result_t ret;
 
         // Get the seal key should fail if the keyBuffer is NULL.
@@ -121,9 +121,9 @@ bool TestOEGetSealKey()
         OE_TEST(keyBufferSize == sizeof(sgx_key_t));
 
         uint8_t secondKeyBuffer[sizeof(sgx_key_t)] = {0};
-        uint32_t secondKeyBufferSize = sizeof(secondKeyBuffer);
+        size_t secondKeyBufferSize = sizeof(secondKeyBuffer);
         uint8_t keyInfo[sizeof(sgx_key_request_t)] = {0};
-        uint32_t keyInfoSize = sizeof(keyInfo);
+        size_t keyInfoSize = sizeof(keyInfo);
 
         // Get the seal key by policy and output the key info.
         ret = oe_get_seal_key_by_policy(
@@ -141,7 +141,7 @@ bool TestOEGetSealKey()
         OE_TEST(keyInfoSize == sizeof(sgx_key_request_t));
 
         uint8_t thirdKeyBuffer[sizeof(sgx_key_t)] = {0};
-        uint32_t thirdKeyBufferSize = sizeof(thirdKeyBuffer);
+        size_t thirdKeyBufferSize = sizeof(thirdKeyBuffer);
 
         // Get the seal key using saved key info.
         ret = oe_get_seal_key(
@@ -207,3 +207,11 @@ OE_ECALL void TestSealKey(void* args_)
 
     return;
 }
+
+OE_SET_ENCLAVE_SGX(
+    1,    /* ProductID */
+    1,    /* SecurityVersion */
+    true, /* AllowDebug */
+    1024, /* HeapPageCount */
+    1024, /* StackPageCount */
+    5);   /* TCSCount */

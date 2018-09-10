@@ -24,17 +24,9 @@ static const char envvars[][12] = {
 	"LC_MESSAGES",
 };
 
-static const uint32_t empty_mo[] = { 0x950412de, 0, -1, -1, -1 };
-
-const struct __locale_map __c_dot_utf8 = {
-	.map = empty_mo,
-	.map_size = sizeof empty_mo,
-	.name = "C.UTF-8"
-};
-
 const struct __locale_map *__get_locale(int cat, const char *val)
 {
-	static int lock[2];
+	static volatile int lock[1];
 	static void *volatile loc_head;
 	const struct __locale_map *p;
 	struct __locale_map *new = 0;
@@ -107,8 +99,8 @@ const struct __locale_map *__get_locale(int cat, const char *val)
 	 * sake of being able to do message translations at the
 	 * application level. */
 	if (!new && (new = malloc(sizeof *new))) {
-		new->map = empty_mo;
-		new->map_size = sizeof empty_mo;
+		new->map = __c_dot_utf8.map;
+		new->map_size = __c_dot_utf8.map_size;
 		memcpy(new->name, val, n);
 		new->name[n] = 0;
 		new->next = loc_head;

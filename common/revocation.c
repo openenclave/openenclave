@@ -7,9 +7,7 @@
 #include <openenclave/internal/crl.h>
 #include <openenclave/internal/datetime.h>
 #include <openenclave/internal/ec.h>
-#include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/hexdump.h>
-#include <openenclave/internal/print.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/report.h>
 #include <openenclave/internal/sgxcertextensions.h>
@@ -54,7 +52,7 @@ static oe_result_t _parse_sgx_extensions(
     oe_result_t result = OE_FAILURE;
 
     // The size of buffer required to parse extensions is not known beforehand.
-    uint32_t buffer_size = 1024;
+    size_t buffer_size = 1024;
     uint8_t* buffer = NULL;
 
     buffer = (uint8_t*)malloc(buffer_size);
@@ -93,11 +91,11 @@ typedef struct _url
 static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
 {
     oe_result_t result = OE_FAILURE;
-    uint64_t buffer_size = 512;
+    size_t buffer_size = 512;
     uint8_t* buffer = malloc(buffer_size);
     const char** urls = NULL;
     uint64_t num_urls = 0;
-    uint32_t url_length = 0;
+    size_t url_length = 0;
 
     if (buffer == NULL)
         OE_RAISE(OE_OUT_OF_MEMORY);
@@ -162,7 +160,6 @@ oe_result_t oe_enforce_revocation(
     char* intermediate_crl_url = NULL;
     char* leaf_crl_url = NULL;
     oe_crl_t crls[2] = {{{0}}};
-    oe_datetime_t tcb_info_issue_date = {0};
     oe_datetime_t crl_this_update_date = {0};
     oe_datetime_t crl_next_update_date = {0};
 
@@ -248,13 +245,8 @@ oe_result_t oe_enforce_revocation(
 
     // Check that the tcb has been issued after the earliest date that the
     // enclave accepts.
-    OE_CHECK(
-        oe_datetime_from_string(
-            (char*)parsed_tcb_info.issue_date,
-            parsed_tcb_info.issue_date_size,
-            &tcb_info_issue_date));
     if (oe_datetime_compare(
-            &tcb_info_issue_date, &_sgx_minimim_crl_tcb_issue_date) != 1)
+            &parsed_tcb_info.issue_date, &_sgx_minimim_crl_tcb_issue_date) != 1)
         OE_RAISE(OE_INVALID_REVOCATION_INFO);
 
     // Check that the CRLs have not expired.
