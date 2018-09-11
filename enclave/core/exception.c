@@ -186,7 +186,7 @@ static int _GetEnclaveThreadFirstSsaInfo(TD* td, SSA_Info* ssa_info)
 }
 
 // SGX hardware exit type, must align with Intel SDM.
-#define SGX_EXIT_TYPE_HADEWARE 0x3
+#define SGX_EXIT_TYPE_HARDWARE 0x3
 #define SGX_EXIT_TYPE_SOFTWARE 0x6
 
 // Mapping between the SGX exception vector value and the OE exception code.
@@ -348,13 +348,13 @@ void _oe_virtual_exception_dispatcher(TD* td, uint64_t argIn, uint64_t* argOut)
     }
 
     td->base.exception_flags = 0;
-    if (ssa_gpr->exitInfo.asFields.exitType == SGX_EXIT_TYPE_HADEWARE)
+    if (ssa_gpr->exitInfo.asFields.exitType == SGX_EXIT_TYPE_HARDWARE)
     {
-        td->base.exception_flags |= OE_EXCEPTION_HARDWARE;
+        td->base.exception_flags |= OE_EXCEPTION_FLAGS_HARDWARE;
     }
     else if (ssa_gpr->exitInfo.asFields.exitType == SGX_EXIT_TYPE_SOFTWARE)
     {
-        td->base.exception_flags |= OE_EXCEPTION_SOFTWARE;
+        td->base.exception_flags |= OE_EXCEPTION_FLAGS_SOFTWARE;
     }
 
     if (td->base.exception_code == OE_EXCEPTION_ILLEGAL_INSTRUCTION &&

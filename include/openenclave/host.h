@@ -64,6 +64,7 @@ OE_EXTERNC_BEGIN
  *     - OE_ENCLAVE_TYPE_SGX - An SGX enclave
  *
  * @param flags These flags control how the enclave is run.
+       It is the bitwise OR of zero or more of the following flags
  *     - OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode
  *     - OE_ENCLAVE_FLAG_SIMULATE - runs the enclave in simulation mode
  *

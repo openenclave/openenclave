@@ -17,74 +17,171 @@
 OE_EXTERNC_BEGIN
 
 /**
- * Exception codes used by the vectored exception handlers
+ * Divider exception code, used by vectored exception handler.
  */
-
 #define OE_EXCEPTION_DIVIDE_BY_ZERO 0x0
+/**
+ * Debug exception code, used by vectored exception handler.
+ */
 #define OE_EXCEPTION_BREAKPOINT 0x1
+/**
+ * Bound range exceeded exception code, used by vectored exception handler.
+ */
 #define OE_EXCEPTION_BOUND_OUT_OF_RANGE 0x2
+/**
+ * Illegal instruction exception code, used by vectored exception handler.
+ */
 #define OE_EXCEPTION_ILLEGAL_INSTRUCTION 0x3
+/**
+ * Access violation exception code, used by vectored exception handler.
+ */
 #define OE_EXCEPTION_ACCESS_VIOLATION 0x4
+/**
+ * Page fault exception code, used by vectored exception handler.
+ */
 #define OE_EXCEPTION_PAGE_FAULT 0x5
+/**
+ * x87 floating point exception code, used by vectored exception handler.
+ */
 #define OE_EXCEPTION_X87_FLOAT_POINT 0x6
+/**
+ * x87 FPU floating-point exception code, used by vectored exception handler.
+ */
 #define OE_EXCEPTION_MISALIGNMENT 0x7
+/**
+ * Alignment check exception code, used by vectored exception handler.
+ */
 #define OE_EXCEPTION_SIMD_FLOAT_POINT 0x8
+/**
+ * Unknown exception code, used by vectored exception handler.
+ */
 #define OE_EXCEPTION_UNKNOWN 0xFFFFFFFF
 
+
 /**
- * Exception flags used by the vectored exception handlers
+ * Hardware exception flag, set when enclave software exited due to hardware exception
  */
-
-#define OE_EXCEPTION_HARDWARE 0x1
-#define OE_EXCEPTION_SOFTWARE 0x2
+#define OE_EXCEPTION_FLAGS_HARDWARE 0x1
+/**
+ * Software exception flag, set when enclave software exited due to software exception
+ */
+#define OE_EXCEPTION_FLAGS_SOFTWARE 0x2
 
 /**
- * @typedef oe_basic_xstate_t: typedef to structure _oe_basic_xstate
- * @struct _oe_basic_xstate: Blob that contains X87 and SSE data
+ * Blob that contains X87 and SSE data
  */
 typedef struct _oe_basic_xstate
 {
-    uint8_t blob[512]; /**< Holds XState i.e. X87 and SSE data */
+    /**
+      * Holds XState i.e. X87 and SSE data 
+      */
+    uint8_t blob[512]; 
 } OE_ALIGNED(16) oe_basic_xstate_t;
 
 /**
- * @typedef oe_context_t: typedef to structure _oe_context
- * @struct _oe_context: Register state to  be saved before an exception and
+ * Register state to  be saved before an exception and
  * restored after the exception has been handled in the enclave.
  */
 typedef struct _oe_context
 {
-    uint64_t flags; /**< Flags */
-
-    /**< Integer registers */
+    /**
+      * Exception flags.
+      * Can include OE_EXCEPTION_FLAGS_HARDWARE or OE_EXCEPTION_FLAGS_SOFTWARE, check for a bitwise OR
+      */
+    uint64_t flags; 
+  
+    /**
+      * Integer register rax
+      */
     uint64_t rax;
+    
+    /**
+      * Integer register rbx
+      */
     uint64_t rbx;
+    
+    /**
+      * Integer register rcx
+      */
     uint64_t rcx;
+    
+    /**
+      * Integer register rdx
+      */
     uint64_t rdx;
-
-    uint64_t rbp;
+    
+    /**
+      * Integer register rbp
+      */
     uint64_t rsp;
-
+    
+    /**
+      * Integer register rdi
+      */
     uint64_t rdi;
+    
+    /**
+      * Integer register rsi
+      */
     uint64_t rsi;
-
+    
+    /**
+      * Integer register r8
+      */
     uint64_t r8;
+    
+    /**
+      * Integer register r9
+      */
     uint64_t r9;
+    
+    /**
+      * Integer register r10
+      */
     uint64_t r10;
+    
+    /**
+      * Integer register r11
+      */
     uint64_t r11;
+    /**
+      * Integer register r12
+      */
     uint64_t r12;
+    
+    /**
+      * Integer register r13
+      */
     uint64_t r13;
+    
+    /**
+      * Integer register r14
+      */
     uint64_t r14;
+    
+    /**
+      * Integer register r15
+      */
     uint64_t r15;
-
+    
+    /**
+      * Integer register rip
+      */
     uint64_t rip;
+    
 
     // Don't need to manipulate the segment registers directly.
     // Ignore them: CS, DS, ES, SS, GS, and FS.
 
-    uint32_t mxcsr; /**< SSE control flags */
+    /**
+      * SSE control flags
+      */
+    uint32_t mxcsr;
 
-    oe_basic_xstate_t basic_xstate; /**< Basic XState */
+    /**
+      * Basic XSTATE
+      */
+    oe_basic_xstate_t basic_xstate; 
 
     // Don't need to manipulate other XSTATE (AVX etc.).
 } oe_context_t;
@@ -95,23 +192,19 @@ typedef struct _oe_context
  */
 typedef struct _oe_exception_record
 {
-    // Exception code.
-    uint32_t code;
+    uint32_t code;/**< Exception code */
 
-    // Exception flags.
-    uint32_t flags;
+    uint32_t flags;/**< Exception flags */
 
-    // Exception address.
-    uint64_t address;
+    uint64_t address;/**< Exception address */
 
-    // Context.
-    oe_context_t* context;
+    oe_context_t* context;/**< Exception context */
 } oe_exception_record_t;
 
 /**
- * oe_vectored_exception_handler_t: Pointer to Vectored exception handler
+ * oe_vectored_exception_handler_t   Pointer to Vectored exception handler 
  * registered in the enclave.
- * @param exceptionContext - Holds the exception code, flags, address and
+ * @param exceptionContext Holds the exception code, flags, address and
  * calling context.
  */
 typedef uint64_t (*oe_vectored_exception_handler_t)(
