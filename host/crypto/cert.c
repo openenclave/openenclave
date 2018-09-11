@@ -18,7 +18,6 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
-#include "assert.h"
 #include "crl.h"
 #include "ec.h"
 #include "init.h"
@@ -554,7 +553,7 @@ done:
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    const oe_crl_t* crls,
+    const oe_crl_t* crls[],
     size_t num_crls,
     oe_verify_cert_error_t* error)
 {
@@ -633,15 +632,15 @@ oe_result_t oe_cert_verify(
 
         for (size_t i = 0; i < num_crls; i++)
         {
-            crl_t* crl_impl = (crl_t*)&crls[i];
+            crl_t* crl_impl = (crl_t*)crls[i];
 
             if (!crl_is_valid(crl_impl))
                 OE_RAISE(OE_INVALID_PARAMETER);
 
-            if (!_X509_CRL_up_ref(crl_impl->crl))
+            if (!sk_X509_CRL_push(crl_stack, crl_impl->crl))
                 OE_RAISE(OE_FAILURE);
 
-            if (!sk_X509_CRL_push(crl_stack, crl_impl->crl))
+            if (!_X509_CRL_up_ref(crl_impl->crl))
                 OE_RAISE(OE_FAILURE);
         }
 

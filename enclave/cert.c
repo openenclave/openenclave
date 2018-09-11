@@ -589,7 +589,7 @@ done:
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    const oe_crl_t* crls,
+    const oe_crl_t* crls[],
     size_t num_crls,
     oe_verify_cert_error_t* error)
 {
@@ -625,7 +625,7 @@ oe_result_t oe_cert_verify(
 
         for (size_t i = 0; i < num_crls; i++)
         {
-            const crl_t* crl_impl = (crl_t*)&crls[i];
+            const crl_t* crl_impl = (crl_t*)crls[i];
             mbedtls_x509_crl* p;
 
             if (!crl_is_valid(crl_impl))

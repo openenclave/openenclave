@@ -118,7 +118,7 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain);
  *
  * @param cert verify this certificate
  * @param chain verify the certificate against this certificate chain
- * @param crls verify the certificate against these CRLs
+ * @param crls verify the certificate against these CRLs (may be null).
  * @param num_crls number of CRLs.
  * @param error Optional. Holds the error message if this function failed.
  *
@@ -130,7 +130,7 @@ oe_result_t oe_cert_chain_free(oe_cert_chain_t* chain);
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    const oe_crl_t* crls,
+    const oe_crl_t* crls[],
     size_t num_crls,
     oe_verify_cert_error_t* error);
 

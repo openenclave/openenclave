@@ -225,7 +225,7 @@ static const uint8_t _CRL2[] = {
 static void _test_verify(
     const char* cert_pem,
     const char* chain_pem,
-    const oe_crl_t* crl,
+    const oe_crl_t* crl[],
     size_t num_crl,
     bool revoked)
 {
@@ -293,7 +293,10 @@ static void _test_verify_with_crl(
     oe_crl_t crl;
 
     OE_TEST(oe_crl_read_der(&crl, crl_der, crl_der_size) == OE_OK);
-    _test_verify(cert_pem, chain_pem, &crl, 1, revoked);
+
+    const oe_crl_t* crls[] = {&crl};
+    _test_verify(cert_pem, chain_pem, crls, 1, revoked);
+
     OE_TEST(oe_crl_free(&crl) == OE_OK);
 
     printf("=== passed %s()\n", __FUNCTION__);
@@ -350,14 +353,17 @@ static void _test_verify_with_two_crls(
 {
     printf("=== begin %s()\n", __FUNCTION__);
 
-    oe_crl_t crls[2];
+    oe_crl_t crl1;
+    oe_crl_t crl2;
 
-    OE_TEST(oe_crl_read_der(&crls[0], crl1_der, crl1_der_size) == OE_OK);
-    OE_TEST(oe_crl_read_der(&crls[1], crl2_der, crl2_der_size) == OE_OK);
+    OE_TEST(oe_crl_read_der(&crl1, crl1_der, crl1_der_size) == OE_OK);
+    OE_TEST(oe_crl_read_der(&crl2, crl2_der, crl2_der_size) == OE_OK);
 
+    const oe_crl_t* crls[] = {&crl1, &crl2};
     _test_verify(cert_pem, chain_pem, crls, 2, revoked);
-    OE_TEST(oe_crl_free(&crls[0]) == OE_OK);
-    OE_TEST(oe_crl_free(&crls[1]) == OE_OK);
+
+    OE_TEST(oe_crl_free(&crl1) == OE_OK);
+    OE_TEST(oe_crl_free(&crl2) == OE_OK);
 
     printf("=== passed %s()\n", __FUNCTION__);
 }
