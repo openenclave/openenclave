@@ -95,28 +95,39 @@ OE_ECALL void Test(Args* args)
         // to assign values to stdout which in turn causes segmentation fault.
         // To avoid this we enabled verbose options such that those function
         // calls will be suppressed.
-
-        static const char* argv[] = {"test", "-v", "NULL"};
-        static int argc = sizeof(argv) / sizeof(argv[0]);
-        printf("\n before main %d\n", argc);
-        argv[2] = args->test;
-        args->ret = main(argc, argv);
-        printf("\n in main\n");
+        if (0 == strcmp(
+                     __TEST__,
+                     "../../3rdparty/mbedtls/mbedtls/programs/test/selftest.c"))
+        {
+            // selftest treats the verbose flag "-v" as an invalid test suite
+            // name,
+            // so drop all args when invoking the test, which will execute all
+            // selftests
+            static const char* noargs[2] = {NULL};
+            args->ret = main(1, noargs);
+        }
+        else
+        {
+            static const char* argv[] = {"test", "-v", "NULL"};
+            static int argc = sizeof(argv) / sizeof(argv[0]);
+            argv[2] = args->test;
+            args->ret = main(argc, argv);
+        }
         args->test = oe_host_strndup(__TEST__, OE_SIZE_MAX);
     }
 }
 
 /*
-**==============================================================================
-**
-** oe_handle_verify_report():
-**
-**     Since liboeenclave is not linked, we must define a version of this
-**     function here (since liboecore depends on it). This version asserts
-**     and aborts().
-**
-**==============================================================================
-*/
+ **==============================================================================
+ **
+ ** oe_handle_verify_report():
+ **
+ **     Since liboeenclave is not linked, we must define a version of this
+ **     function here (since liboecore depends on it). This version asserts
+ **     and aborts().
+ **
+ **==============================================================================
+ */
 
 void oe_handle_verify_report(uint64_t argIn, uint64_t* argOut)
 {
