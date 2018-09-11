@@ -291,17 +291,21 @@ The listing from [helloworld/host/host.c](/samples/make/helloworld/enc/Makefile)
               rm -f helloworldhost host.o
 
 # How to Run
-
-   You can run the helloworld sample directly on the command line as follows:
-   
-     ~/samples/helloworld$ host/helloworldhost ./enc/helloworldenc.signed.so
-     Enclave called into host to print: Hello World!
      
-  Or execute "make run" as follows:
+  Execute "make run" as follows:
    
      ~/samples/helloworld$ make run
      host/helloworldhost ./enc/helloworldenc.signed.so
      Enclave called into host to print: Hello World!
+     
+  Or you can run the helloworld sample directly on the command line as follows:
+   
+     ~/samples/helloworld$ host/helloworldhost ./enc/helloworldenc.signed.so
+     Enclave called into host to print: Hello World!
          
+  To run the helloworld sample simulation mode from the command like, use the following:
 
+     ~/samples/helloworld$ host/helloworldhost ./enc/helloworldenc.signed.so --simulate
+     Enclave called into host to print: Hello World!
+  
   
