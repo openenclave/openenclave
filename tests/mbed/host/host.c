@@ -17,25 +17,25 @@ typedef struct _args
     int ret;
 } Args;
 
-char* find_data_file(char* str)
+char* find_data_file(char* str, size_t size)
 {
-    char* dil = ".signed.so";
     char* tail = ".data";
     char* checker = "test_suite_";
     char *token, *temp;
 
+    if (size < strlen(str) + strlen(tail) + 1)
+    {
+        printf("buffer overflow error");
+        return NULL;
+    }
     token = strstr(str, checker);
     if (token == NULL)
     {
         printf("!!File is not in format !!!!\n");
         return token;
     }
-    temp = strstr((token), dil);
-    if (temp == NULL)
-    {
-        return temp;
-    }
-    strcpy(temp, tail);
+
+    strncat(str, tail, strlen(tail));
     printf("######## data_file: %s ###### \n", token);
     return token;
 }
@@ -124,10 +124,10 @@ int main(int argc, const char* argv[])
     {
         selftest = 0;
 
-        data_file_name = find_data_file(temp);
+        data_file_name = find_data_file(temp, sizeof(temp));
         if (data_file_name == NULL)
         {
-            printf("!!!!! it is not sighned.so file !!!! \n");
+            printf("Could not get test data file name from %s\n", temp);
             return 0;
         }
 

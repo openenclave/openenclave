@@ -8,6 +8,7 @@
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
+#include <openenclave/internal/hostalloc.h>
 #include <openenclave/internal/raise.h>
 #include <openenclave/internal/syscall.h>
 #include <signal.h>
@@ -17,7 +18,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/syscall.h>
+#include <sys/uio.h>
 #include <unistd.h>
+#include "../syscall_args.h"
 #include "mbed_t.h"
 
 int main(int argc, const char* argv[]);
@@ -38,6 +41,17 @@ void exit(int status)
 {
     _exit(status);
     abort();
+}
+
+char* oe_host_strdup(const char* str)
+{
+    size_t n = oe_strlen(str);
+    char* dup = (char*)oe_host_malloc(n + 1);
+
+    if (dup)
+        oe_memcpy(dup, str, n + 1);
+
+    return dup;
 }
 
 static oe_result_t _syscall_hook(
@@ -63,19 +77,68 @@ static oe_result_t _syscall_hook(
         case SYS_open:
         {
             const int flags = (const int)arg2;
-
-            /* If attempting to open any file for read-only */
             if (flags == O_RDONLY)
             {
-                *ret = STDIN_FILENO;
-                OE_RAISE(OE_OK);
+                syscall_args_t* args;
+                args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
+                args->path = oe_host_strdup((const char*)arg1);
+                args->flags = (int)arg2;
+                args->mode = (int)arg3;
+                oe_call_host("mbed_test_open", args);
+                *ret = args->fd;
+                oe_host_free(args->path);
+                oe_host_free(args);
+                result = OE_OK;
             }
-
             break;
         }
-    }
+        case SYS_readv:
+        {
+            syscall_args_t* args;
+            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
+            struct iovec* iov = (struct iovec*)arg2;
+            int i;
+            struct iovec* iov_host =
+                (struct iovec*)oe_host_malloc(sizeof(struct iovec) * (int)arg3);
+            for (i = 0; i < (int)arg3; i++)
+            {
+                iov_host[i].iov_base = (void*)oe_host_malloc(iov[i].iov_len);
+                iov_host[i].iov_len = (size_t)iov[i].iov_len;
+            }
+            args->ptr = (void*)iov_host;
+            args->fd = (int)arg1;
+            args->len = (int)arg3;
+            oe_call_host("mbed_test_readv", args);
 
-    OE_RAISE(OE_UNSUPPORTED);
+            if ((args->ret) > 0)
+                for (i = 0; i < (int)arg3; i++)
+                    oe_memcpy(
+                        iov[i].iov_base, iov_host[i].iov_base, iov[i].iov_len);
+            *ret = args->ret;
+            for (i = 0; i < (int)arg3; i++)
+                oe_host_free(iov_host[i].iov_base);
+
+            oe_host_free(iov_host);
+            oe_host_free(args);
+            result = OE_OK;
+            break;
+        }
+        case SYS_close:
+        {
+            syscall_args_t* args;
+            args = (syscall_args_t*)oe_host_malloc(sizeof(syscall_args_t));
+            args->fd = (int)arg1;
+            oe_call_host("mbed_test_close", args);
+            *ret = args->ret;
+            oe_host_free(args);
+            result = OE_OK;
+            break;
+        }
+	default:
+	{
+	    OE_RAISE(OE_UNSUPPORTED);
+	}
+    }
 
 done:
     return result;
