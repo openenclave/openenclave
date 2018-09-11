@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include "crypto.h"
-#include <openenclave/enclave.h>
 #include <mbedtls/sha256.h>
+#include <openenclave/enclave.h>
 #include <stdlib.h>
 #include <string.h>
 
