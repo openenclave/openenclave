@@ -211,13 +211,14 @@ oe_result_t oe_enforce_revocation(
     // Verify leaf and intermediate certs againt the CRL.
     OE_CHECK(
         oe_cert_verify(
-            leaf_cert, &crl_issuer_chain[0], &crls[0], &cert_verify_error));
+            leaf_cert, &crl_issuer_chain[0], crls, 2, &cert_verify_error));
 
     OE_CHECK(
         oe_cert_verify(
             intermediate_cert,
             &crl_issuer_chain[1],
-            &crls[1],
+            crls,
+            2,
             &cert_verify_error));
 
     for (uint32_t i = 0; i < OE_COUNTOF(platform_tcb_level.sgx_tcb_comp_svn);
