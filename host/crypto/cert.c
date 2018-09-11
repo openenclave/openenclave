@@ -553,7 +553,7 @@ done:
 oe_result_t oe_cert_verify(
     oe_cert_t* cert,
     oe_cert_chain_t* chain,
-    const oe_crl_t* crls[],
+    const oe_crl_t* const* crls,
     size_t num_crls,
     oe_verify_cert_error_t* error)
 {
