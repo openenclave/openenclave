@@ -19,17 +19,23 @@ OE_STATIC_ASSERT(sizeof(crl_t) <= sizeof(oe_crl_t));
 OE_INLINE void _crl_init(crl_t* impl, X509_CRL* crl)
 {
     impl->magic = OE_CRL_MAGIC;
-    impl->crl = crl;
+    ++impl->num_crls;
+    impl->crls = realloc(impl->crls, impl->num_crls * sizeof(X509_CRL*));
+    impl->crls[impl->num_crls - 1] = crl;
 }
 
 bool crl_is_valid(const crl_t* impl)
 {
-    return impl && (impl->magic == OE_CRL_MAGIC) && impl->crl;
+    return impl && (impl->magic == OE_CRL_MAGIC) && impl->crls;
 }
 
 OE_INLINE void _crl_free(crl_t* impl)
 {
-    X509_CRL_free(impl->crl);
+    for (uint64_t i = 0; i < impl->num_crls; ++i)
+    {
+        X509_CRL_free(impl->crls[i]);
+    }
+
     memset(impl, 0, sizeof(crl_t));
 }
 
@@ -42,10 +48,6 @@ oe_result_t oe_crl_read_der(
     crl_t* impl = (crl_t*)crl;
     BIO* bio = NULL;
     X509_CRL* x509_crl = NULL;
-
-    /* Clear the implementation */
-    if (impl)
-        memset(impl, 0, sizeof(crl_t));
 
     /* Check for invalid parameters */
     if (!der_data || !der_size || !crl)
@@ -208,7 +210,7 @@ oe_result_t oe_crl_get_update_dates(
     {
         ASN1_TIME* time;
 
-        if (!(time = X509_CRL_get_lastUpdate(impl->crl)))
+        if (!(time = X509_CRL_get_lastUpdate(impl->crls[0])))
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(_asn1_time_to_date(time, last));
@@ -218,7 +220,7 @@ oe_result_t oe_crl_get_update_dates(
     {
         ASN1_TIME* time;
 
-        if (!(time = X509_CRL_get_nextUpdate(impl->crl)))
+        if (!(time = X509_CRL_get_nextUpdate(impl->crls[0])))
             OE_RAISE(OE_FAILURE);
 
         OE_CHECK(_asn1_time_to_date(time, next));

@@ -10,7 +10,8 @@
 typedef struct _crl
 {
     uint64_t magic;
-    X509_CRL* crl;
+    X509_CRL** crls;
+    uint64_t num_crls;
 } crl_t;
 
 bool crl_is_valid(const crl_t* impl);

@@ -637,11 +637,14 @@ oe_result_t oe_cert_verify(
         if (!(crls = sk_X509_CRL_new_null()))
             OE_RAISE(OE_OUT_OF_MEMORY);
 
-        if (!_X509_CRL_up_ref(crl_impl->crl))
-            OE_RAISE(OE_FAILURE);
+        for (uint64_t i = 0; i < crl_impl->num_crls; ++i)
+        {
+            if (!_X509_CRL_up_ref(crl_impl->crls[i]))
+                OE_RAISE(OE_FAILURE);
 
-        if (!sk_X509_CRL_push(crls, crl_impl->crl))
-            OE_RAISE(OE_FAILURE);
+            if (!sk_X509_CRL_push(crls, crl_impl->crls[i]))
+                OE_RAISE(OE_FAILURE);
+        }
 
         X509_STORE_CTX_set0_crls(ctx, crls);
 

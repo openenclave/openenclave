@@ -42,28 +42,33 @@ oe_result_t oe_crl_read_der(
     crl_t* impl = (crl_t*)crl;
     mbedtls_x509_crl* x509_crl = NULL;
 
-    /* Clear the implementation */
-    if (impl)
-        oe_memset(impl, 0, sizeof(crl_t));
-
     /* Check for invalid parameters */
     if (!der_data || !der_size || !crl)
         OE_RAISE(OE_UNEXPECTED);
 
-    /* Allocate memory for the CRL */
-    if (!(x509_crl = mbedtls_calloc(1, sizeof(mbedtls_x509_crl))))
-        OE_RAISE(OE_OUT_OF_MEMORY);
+    if (crl_is_valid(impl))
+    {
+        /* Append to crl chain */
+        if (mbedtls_x509_crl_parse_der(impl->crl, der_data, der_size) != 0)
+            OE_RAISE(OE_FAILURE);
+    }
+    else
+    {
+        /* Allocate memory for the CRL */
+        if (!(x509_crl = mbedtls_calloc(1, sizeof(mbedtls_x509_crl))))
+            OE_RAISE(OE_OUT_OF_MEMORY);
 
-    /* Initialize the CRL structure */
-    mbedtls_x509_crl_init(x509_crl);
+        /* Initialize the CRL structure */
+        mbedtls_x509_crl_init(x509_crl);
 
-    /* Parse the DER data to populate the mbedtls_x509_crl struct */
-    if (mbedtls_x509_crl_parse_der(x509_crl, der_data, der_size) != 0)
-        OE_RAISE(OE_FAILURE);
+        /* Parse the DER data to populate the mbedtls_x509_crl struct */
+        if (mbedtls_x509_crl_parse_der(x509_crl, der_data, der_size) != 0)
+            OE_RAISE(OE_FAILURE);
 
-    /* Initialize the implementation */
-    _crl_init(impl, x509_crl);
-    x509_crl = NULL;
+        /* Initialize the implementation */
+        _crl_init(impl, x509_crl);
+        x509_crl = NULL;
+    }
 
     result = OE_OK;
 

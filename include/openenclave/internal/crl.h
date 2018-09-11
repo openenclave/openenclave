@@ -19,7 +19,8 @@ typedef struct _oe_crl
 typedef struct _oe_crl oe_crl_t;
 
 /**
- * Read a certificate revocation list (CRL) from DER format.
+ * Read a certificate revocation list (CRL) from DER format
+ * and append it to the given oe_crl_t object.
  *
  * The caller is responsible for releasing the certificate by passing it to
  * oe_crl_free().
@@ -51,6 +52,8 @@ oe_result_t oe_crl_free(oe_crl_t* crl);
  * given CRL. The **last** date specifies when this CRL was last updated. The
  * **next** date specifies when a newer version of the CRL will be available
  * (after which this CRL should be considered invalid).
+ * If the CRL object contains a chain of CRLs then the **last** and **next**
+ * updates of the first CRL is returned.
  *
  * @param crl the handle of a CRL.
  * @param last the date when the CRL was last updated (may be null).
