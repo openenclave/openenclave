@@ -18,7 +18,6 @@ typedef struct _Args
 
 char* find_data_file(char* str)
 {
-    char* dil = ".signed.so";
     char* tail = ".data";
     char* checker = "test_suite_";
     char *token, *temp;
@@ -29,12 +28,7 @@ char* find_data_file(char* str)
         printf("!!File is not in format !!!!\n");
         return token;
     }
-    temp = strstr((token), dil);
-    if (temp == NULL)
-    {
-        return temp;
-    }
-    strcpy(temp, tail);
+    strcat(str, tail);
     printf("######## data_file: %s ###### \n", token);
     return token;
 }
