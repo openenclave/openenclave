@@ -1,0 +1,3 @@
+../../3rdparty/libcxx/libcxx/test/std/language.support/support.dynamic/new.delete/new.delete.array/sized_delete_array14.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.threads/thread.thread.this/yield.pass.cpp
+../../3rdparty/libcxx/libcxx/test/std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.locking/lock.pass.cpp
