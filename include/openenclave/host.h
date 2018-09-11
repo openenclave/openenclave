@@ -27,7 +27,18 @@
 
 OE_EXTERNC_BEGIN
 
+/**
+ *  Flag passed into 
+ *  oe_create_enclave(const char *path, oe_enclave_type_t type, uint32_t flags, const void *config, uint32_t configSize, oe_enclave_t **enclave)
+ *  to run the enclave in debug mode.
+ */
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001
+
+/**
+ *  Flag passed into 
+ *  oe_create_enclave(const char *path, oe_enclave_type_t type, uint32_t flags, const void *config, uint32_t configSize, oe_enclave_t **enclave)
+ *  to run the enclave in simulation mode.
+ */
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
 
 /**
