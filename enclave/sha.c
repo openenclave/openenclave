@@ -25,7 +25,7 @@ oe_result_t oe_sha256_init(oe_sha256_context_t* context)
 
     mbedtls_sha256_init(&impl->ctx);
 
-    mbedtls_sha256_starts(&impl->ctx, 0);
+    mbedtls_sha256_starts_ret(&impl->ctx, 0);
 
     result = OE_OK;
 
@@ -44,7 +44,7 @@ oe_result_t oe_sha256_update(
     if (!context || !data)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    mbedtls_sha256_update(&impl->ctx, data, size);
+    mbedtls_sha256_update_ret(&impl->ctx, data, size);
 
     result = OE_OK;
 
@@ -60,7 +60,7 @@ oe_result_t oe_sha256_final(oe_sha256_context_t* context, OE_SHA256* sha256)
     if (!context || !sha256)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-    mbedtls_sha256_finish(&impl->ctx, sha256->buf);
+    mbedtls_sha256_finish_ret(&impl->ctx, sha256->buf);
 
     result = OE_OK;
 

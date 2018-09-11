@@ -29,9 +29,12 @@
 #include "mbedtls/platform.h"
 #else
 #include <stdio.h>
-#define mbedtls_snprintf   snprintf
-#define mbedtls_printf     printf
-#endif
+#include <stdlib.h>
+#define mbedtls_snprintf        snprintf
+#define mbedtls_printf          printf
+#define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
+#define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
+#endif /* MBEDTLS_PLATFORM_C */
 
 #if !defined(MBEDTLS_BIGNUM_C) || !defined(MBEDTLS_ENTROPY_C) ||  \
     !defined(MBEDTLS_SHA256_C) || !defined(MBEDTLS_MD_C) || \
@@ -60,6 +63,7 @@ int main( int argc, char *argv[] )
 {
     FILE *f;
     int ret = 1;
+    int exit_code = MBEDTLS_EXIT_FAILURE;
     mbedtls_pk_context pk;
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
@@ -100,8 +104,7 @@ int main( int argc, char *argv[] )
 
     if( ( ret = mbedtls_pk_parse_keyfile( &pk, argv[1], "" ) ) != 0 )
     {
-        ret = 1;
-        mbedtls_printf( " failed\n  ! Could not open '%s'\n", argv[1] );
+        mbedtls_printf( " failed\n  ! Could not parse '%s'\n", argv[1] );
         goto exit;
     }
 
@@ -134,7 +137,6 @@ int main( int argc, char *argv[] )
 
     if( ( f = fopen( filename, "wb+" ) ) == NULL )
     {
-        ret = 1;
         mbedtls_printf( " failed\n  ! Could not create %s\n\n", filename );
         goto exit;
     }
@@ -150,13 +152,15 @@ int main( int argc, char *argv[] )
 
     mbedtls_printf( "\n  . Done (created \"%s\")\n\n", filename );
 
+    exit_code = MBEDTLS_EXIT_SUCCESS;
+
 exit:
     mbedtls_pk_free( &pk );
     mbedtls_ctr_drbg_free( &ctr_drbg );
     mbedtls_entropy_free( &entropy );
 
 #if defined(MBEDTLS_ERROR_C)
-    if( ret != 0 )
+    if( exit_code != MBEDTLS_EXIT_SUCCESS )
     {
         mbedtls_strerror( ret, (char *) buf, sizeof(buf) );
         mbedtls_printf( "  !  Last error was: %s\n", buf );
@@ -168,7 +172,7 @@ exit:
     fflush( stdout ); getchar();
 #endif
 
-    return( ret );
+    return( exit_code );
 }
 #endif /* MBEDTLS_BIGNUM_C && MBEDTLS_ENTROPY_C &&
           MBEDTLS_SHA256_C && MBEDTLS_PK_PARSE_C && MBEDTLS_FS_IO &&
