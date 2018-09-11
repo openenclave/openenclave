@@ -29,7 +29,4 @@
 
   This library was created to help a host to manage an enclave life cycle and interact with it
   The current list of enclave APIs could be found [in this header file](/include/openenclave/host.h)
-  
-## [Open Enclave API Reference](../refman/md/index.md)
-  
-  
+
