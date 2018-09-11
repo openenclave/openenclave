@@ -3,6 +3,7 @@
 
 #include "crypto.h"
 #include <openenclave/enclave.h>
+#include <mbedtls/sha256.h>
 #include <stdlib.h>
 #include <string.h>
 
