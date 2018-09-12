@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safemath.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
@@ -26,7 +27,11 @@ void* oe_host_malloc(size_t size)
 
 void* oe_host_calloc(size_t nmemb, size_t size)
 {
-    void* ptr = oe_host_malloc(nmemb * size);
+    size_t total_size;
+    if (oe_safe_mul_sizet(nmemb, size, &total_size) != OE_OK)
+        return NULL;
+
+    void* ptr = oe_host_malloc(total_size);
 
     if (ptr)
         oe_memset(ptr, 0, nmemb * size);
@@ -78,6 +83,10 @@ char* oe_host_strndup(const char* str, size_t n)
     if (n < len)
         len = n;
 
+    /* Would be an integer overflow in the next statement. */
+    if (len == OE_SIZE_MAX)
+        return NULL;
+
     if (!(p = oe_host_malloc(len + 1)))
         return NULL;
 
@@ -100,12 +109,15 @@ int oe_host_write(int device, const char* str, size_t len)
     if (len == (size_t)-1)
         len = oe_strlen(str);
 
-    /* Allocate space for the arguments followed by null-terminated string */
-    if (!(args = (oe_print_args_t*)oe_host_alloc_for_call_host(
-              sizeof(oe_print_args_t) + len + 1)))
-    {
+    /* Check for integer overflow and allocate space for the arguments followed
+     * by null-terminated string */
+    size_t total_size;
+    if (oe_safe_add_sizet(len, 1 + sizeof(oe_print_args_t), &total_size) !=
+        OE_OK)
         goto done;
-    }
+
+    if (!(args = (oe_print_args_t*)oe_host_alloc_for_call_host(total_size)))
+        goto done;
 
     /* Initialize the arguments */
     args->device = device;

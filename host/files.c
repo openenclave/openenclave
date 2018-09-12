@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safemath.h>
 #include <openenclave/host.h>
 #include <openenclave/internal/files.h>
 #include <openenclave/internal/trace.h>
@@ -47,8 +48,12 @@ oe_result_t __oe_load_file(
         *size = st.st_size;
     }
 
+    /* Check for integer overflow */
+    size_t total_size;
+    OE_TRY(oe_safe_add_sizet(*size, extra_bytes, &total_size));
+
     /* Allocate memory */
-    if (!(*data = malloc(*size + extra_bytes)))
+    if (!(*data = malloc(total_size)))
         OE_THROW(OE_OUT_OF_MEMORY);
 
     /* Open the file */

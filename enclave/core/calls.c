@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <openenclave/bits/safemath.h>
 #include <openenclave/enclave.h>
 #include <openenclave/internal/atexit.h>
 #include <openenclave/internal/calls.h>
@@ -491,9 +492,16 @@ oe_result_t oe_call_host(const char* func, void* args_in)
     /* Initialize the arguments */
     {
         size_t len = oe_strlen(func);
+        size_t total_len;
 
-        if (!(args = oe_host_alloc_for_call_host(
-                  sizeof(oe_call_host_args_t) + len + 1)))
+        if (len == OE_SIZE_MAX)
+            OE_THROW(OE_INTEGER_OVERFLOW);
+
+        OE_TRY(
+            oe_safe_add_sizet(
+                len + 1, sizeof(oe_call_host_args_t), &total_len));
+
+        if (!(args = oe_host_alloc_for_call_host(total_len)))
         {
             /* If the enclave is in crashing/crashed status, new OCALL should
              * fail immediately. */

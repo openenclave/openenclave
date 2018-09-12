@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "revocation.h"
+#include <openenclave/bits/safemath.h>
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/cert.h>
 #include <openenclave/internal/crl.h>
@@ -119,8 +120,12 @@ static oe_result_t _get_crl_distribution_point(oe_cert_t* cert, char** url)
         // At most 1 distribution point is expected.
         if (num_urls != 1)
             OE_RAISE(OE_FAILURE);
+
         // Include null character in length.
-        url_length = strlen(urls[0]) + 1;
+        result = oe_safe_add_sizet(strlen(urls[0]), 1, &url_length);
+        if (result != OE_OK)
+            goto done;
+
         *url = (char*)malloc(url_length);
         if (*url == NULL)
             OE_RAISE(OE_OUT_OF_MEMORY);
