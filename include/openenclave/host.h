@@ -28,7 +28,7 @@
 OE_EXTERNC_BEGIN
 
 /**
- *  Flag passed into oe_create_enclave function to run the enclave in debug mode.
+ *  Flag passed into oe_create_enclave to run the enclave in debug mode.
  */
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001
 
