@@ -202,7 +202,7 @@ typedef struct _oe_exception_record
 } oe_exception_record_t;
 
 /**
- * oe_vectored_exception_handler_t   Pointer to Vectored exception handler 
+ * *oe_vectored_exception_handler_t* Pointer to Vectored exception handler 
  * registered in the enclave.
  * @param exceptionContext Holds the exception code, flags, address and
  * calling context.
