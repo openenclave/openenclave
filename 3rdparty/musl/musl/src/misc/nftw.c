@@ -28,7 +28,6 @@ static int do_nftw(char *path, int (*fn)(const char *, const struct stat *, int,
 	int type;
 	int r;
 	struct FTW lev;
-	char *name;
 
 	if ((flags & FTW_PHYS) ? lstat(path, &st) : stat(path, &st) < 0) {
 		if (!(flags & FTW_PHYS) && errno==ENOENT && !lstat(path, &st))
@@ -53,10 +52,17 @@ static int do_nftw(char *path, int (*fn)(const char *, const struct stat *, int,
 	new.dev = st.st_dev;
 	new.ino = st.st_ino;
 	new.level = h ? h->level+1 : 0;
-	new.base = l+1;
+	new.base = j+1;
 	
 	lev.level = new.level;
-	lev.base = h ? h->base : (name=strrchr(path, '/')) ? name-path : 0;
+	if (h) {
+		lev.base = h->base;
+	} else {
+		size_t k;
+		for (k=j; k && path[k]=='/'; k--);
+		for (; k && path[k-1]!='/'; k--);
+		lev.base = k;
+	}
 
 	if (!(flags & FTW_DEPTH) && (r=fn(path, &st, type, &lev)))
 		return r;

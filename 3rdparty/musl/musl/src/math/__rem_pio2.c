@@ -118,7 +118,7 @@ int __rem_pio2(double x, double *y)
 	if (ix < 0x413921fb) {  /* |x| ~< 2^20*(pi/2), medium size */
 medium:
 		/* rint(x/(pi/2)), Assume round-to-nearest. */
-		fn = x*invpio2 + toint - toint;
+		fn = (double_t)x*invpio2 + toint - toint;
 		n = (int32_t)fn;
 		r = x - fn*pio2_1;
 		w = fn*pio2_1t;  /* 1st round, good to 85 bits */

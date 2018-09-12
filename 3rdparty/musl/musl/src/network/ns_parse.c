@@ -95,7 +95,7 @@ int ns_skiprr(const unsigned char *ptr, const unsigned char *eom, ns_sect sectio
 			p += r;
 		}
 	}
-	return ptr - p;
+	return p - ptr;
 bad:
 	errno = EMSGSIZE;
 	return -1;

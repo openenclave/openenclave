@@ -1,12 +1,11 @@
+#define _GNU_SOURCE
 #include <string.h>
 #include "pthread_impl.h"
 #include "syscall.h"
 #include "libc.h"
 
-#ifdef SHARED
 __attribute__((__visibility__("hidden")))
-#endif
-long __cancel(), __cp_cancel(), __syscall_cp_asm(), __syscall_cp_c();
+long __cancel(), __syscall_cp_asm(), __syscall_cp_c();
 
 long __cancel()
 {
@@ -16,12 +15,6 @@ long __cancel()
 	self->canceldisable = PTHREAD_CANCEL_DISABLE;
 	return -ECANCELED;
 }
-
-/* If __syscall_cp_asm has adjusted the stack pointer, it must provide a
- * definition of __cp_cancel to undo those adjustments and call __cancel.
- * Otherwise, __cancel provides a definition for __cp_cancel. */
-
-weak_alias(__cancel, __cp_cancel);
 
 long __syscall_cp_asm(volatile void *, syscall_arg_t,
                       syscall_arg_t, syscall_arg_t, syscall_arg_t,
@@ -52,24 +45,22 @@ static void _sigaddset(sigset_t *set, int sig)
 	set->__bits[s/8/sizeof *set->__bits] |= 1UL<<(s&8*sizeof *set->__bits-1);
 }
 
-#ifdef SHARED
 __attribute__((__visibility__("hidden")))
-#endif
-extern const char __cp_begin[1], __cp_end[1];
+extern const char __cp_begin[1], __cp_end[1], __cp_cancel[1];
 
 static void cancel_handler(int sig, siginfo_t *si, void *ctx)
 {
 	pthread_t self = __pthread_self();
 	ucontext_t *uc = ctx;
-	const char *ip = ((char **)&uc->uc_mcontext)[CANCEL_REG_IP];
+	uintptr_t pc = uc->uc_mcontext.MC_PC;
 
 	a_barrier();
 	if (!self->cancel || self->canceldisable == PTHREAD_CANCEL_DISABLE) return;
 
 	_sigaddset(&uc->uc_sigmask, SIGCANCEL);
 
-	if (self->cancelasync || ip >= __cp_begin && ip < __cp_end) {
-		((char **)&uc->uc_mcontext)[CANCEL_REG_IP] = (char *)__cp_cancel;
+	if (self->cancelasync || pc >= (uintptr_t)__cp_begin && pc < (uintptr_t)__cp_end) {
+		uc->uc_mcontext.MC_PC = (uintptr_t)__cp_cancel;
 		return;
 	}
 
@@ -101,5 +92,6 @@ int pthread_cancel(pthread_t t)
 		init = 1;
 	}
 	a_store(&t->cancel, 1);
+	if (t == pthread_self() && !t->cancelasync) return 0;
 	return pthread_kill(t, SIGCANCEL);
 }

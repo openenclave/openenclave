@@ -431,13 +431,18 @@ oe_result_t oe_sgx_create_enclave(
     if (enclaveSize != oe_round_u64_to_pow2(enclaveSize))
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if defined(OE_USE_LIBSGX) || defined(_WIN32)
-    if (oe_sgx_is_simulation_load_context(context))
-#endif
+    /* Only allocate memory if we are creating an enclave in either simulation
+     * mode or on Linux Kabylake machines. */
+    if (context->type == OE_SGX_LOAD_TYPE_CREATE)
     {
-        /* Allocation memory-mapped region */
-        if (!(base = _AllocateEnclaveMemory(enclaveSize, context->dev)))
-            OE_RAISE(OE_OUT_OF_MEMORY);
+#if defined(OE_USE_LIBSGX) || defined(_WIN32)
+        if (oe_sgx_is_simulation_load_context(context))
+#endif
+        {
+            /* Allocation memory-mapped region */
+            if (!(base = _AllocateEnclaveMemory(enclaveSize, context->dev)))
+                OE_RAISE(OE_OUT_OF_MEMORY);
+        }
     }
 
     /* Create SECS structure */
@@ -513,6 +518,10 @@ oe_result_t oe_sgx_create_enclave(
     result = OE_OK;
 
 done:
+
+    if (result != OE_OK && context->type == OE_SGX_LOAD_TYPE_CREATE &&
+        base != NULL)
+        munmap(base, enclaveSize);
 
     if (secs)
         oe_memalign_free(secs);
@@ -740,8 +749,10 @@ oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
     if (!enclave)
         OE_RAISE(OE_INVALID_PARAMETER);
 
-#if defined(OE_USE_LIBSGX)
+#if defined(__linux__)
 
+/* FLC Linux needs to call `enclave_delete` in SGX mode. */
+#if defined(OE_USE_LIBSGX)
     if (!enclave->simulate)
     {
         uint32_t enclaveError = 0;
@@ -750,16 +761,23 @@ oe_result_t oe_sgx_delete_enclave(oe_enclave_t* enclave)
         if (enclaveError != 0)
             OE_RAISE(OE_PLATFORM_ERROR);
     }
-
-#elif defined(__linux__)
-
-    /* Non-FLC Linux allocates memory in both simulation & SGX */
-    munmap((void*)enclave->addr, enclave->size);
+    else /* FLC simulation mode needs to munmap. */
+#endif
+    {
+        /* Non-FLC Linux and simulation mode both allocate memory. */
+        munmap((void*)enclave->addr, enclave->size);
+    }
 
 #elif defined(_WIN32)
-
+    /* SGX enclaves can be freed with `VirtualFree` with the `MEM_RELEASE`
+     * flag. We can't do this for simulation mode because `MEM_RELEASE`
+     * requires `enclave->addr` to be the same one returned by `VirtualAlloc`,
+     * which is often not the case due to the enclave address alignment
+     * requirements. We use `MEM_DECOMMIT` instead. */
     if (!enclave->simulate)
         VirtualFree((void*)enclave->addr, 0, MEM_RELEASE);
+    else
+        VirtualFree((void*)enclave->addr, enclave->size, MEM_DECOMMIT);
 
 #endif
 

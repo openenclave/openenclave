@@ -15,8 +15,8 @@
 ./debugger/pythonExtension/readelf.py
 ./docs/DesignOverview.docx
 ./docs/DesignOverview.pdf
-./docs/GettingStartedDocs/sampedocs/helloworld/helloworld.png
-./docs/GettingStartedDocs/sampedocs/sampledirstructure.png
+./docs/GettingStartedDocs/sampledocs/helloworld/helloworld.png
+./docs/GettingStartedDocs/sampledocs/sampledirstructure.png
 ./docs/refman/html
 .exrc
 ./.git
@@ -38,6 +38,11 @@ LICENSE
 ./prereqs/isgx/linux-sgx-driver
 ./prereqs/ngsa/libsgx
 ./prereqs/sgx-driver/sgx-driver
+./samples/make/remote_attestation/images/attestationsample.png
+./samples/make/remote_attestation/images/localattestation.png
+./samples/make/remote_attestation/images/remoteattestation_sample_details.png
+./samples/make/remote_attestation/images/remoteattestation_sample.png
+./samples/make/remote_attestation/images/remoteattestation_service.png
 ./.check-license.ignore
 ./tests/eenter/dead.txt
 ./tests/hashstr/dead.txt

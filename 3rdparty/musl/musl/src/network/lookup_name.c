@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <errno.h>
 #include "lookup.h"
 #include "stdio_impl.h"
 #include "syscall.h"
@@ -48,10 +49,17 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 {
 	char line[512];
 	size_t l = strlen(name);
-	int cnt = 0;
+	int cnt = 0, badfam = 0;
 	unsigned char _buf[1032];
 	FILE _f, *f = __fopen_rb_ca("/etc/hosts", &_f, _buf, sizeof _buf);
-	if (!f) return 0;
+	if (!f) switch (errno) {
+	case ENOENT:
+	case ENOTDIR:
+	case EACCES:
+		return 0;
+	default:
+		return EAI_SYSTEM;
+	}
 	while (fgets(line, sizeof line, f) && cnt < MAXADDRS) {
 		char *p, *z;
 
@@ -63,8 +71,16 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 		/* Isolate IP address to parse */
 		for (p=line; *p && !isspace(*p); p++);
 		*p++ = 0;
-		if (name_from_numeric(buf+cnt, line, family))
+		switch (name_from_numeric(buf+cnt, line, family)) {
+		case 1:
 			cnt++;
+			break;
+		case 0:
+			continue;
+		default:
+			badfam = EAI_NONAME;
+			continue;
+		}
 
 		/* Extract first name as canonical name */
 		for (; *p && isspace(*p); p++);
@@ -73,7 +89,7 @@ static int name_from_hosts(struct address buf[static MAXADDRS], char canon[stati
 		if (is_valid_hostname(p)) memcpy(canon, p, z-p+1);
 	}
 	__fclose_ca(f);
-	return cnt;
+	return cnt ? cnt : badfam;
 }
 
 struct dpc_ctx {
@@ -85,7 +101,7 @@ struct dpc_ctx {
 int __dns_parse(const unsigned char *, int, int (*)(void *, int, const void *, int, const void *), void *);
 int __dn_expand(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
 int __res_mkquery(int, const char *, int, int, const unsigned char *, int, const unsigned char*, unsigned char *, int);
-int __res_msend(int, const unsigned char *const *, const int *, unsigned char *const *, int *, int);
+int __res_msend_rc(int, const unsigned char *const *, const int *, unsigned char *const *, int *, int, const struct resolvconf *);
 
 #define RR_A 1
 #define RR_CNAME 5
@@ -95,6 +111,7 @@ static int dns_parse_callback(void *c, int rr, const void *data, int len, const 
 {
 	char tmp[256];
 	struct dpc_ctx *ctx = c;
+	if (ctx->cnt >= MAXADDRS) return -1;
 	switch (rr) {
 	case RR_A:
 		if (len != 4) return -1;
@@ -117,7 +134,7 @@ static int dns_parse_callback(void *c, int rr, const void *data, int len, const 
 	return 0;
 }
 
-static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family)
+static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family, const struct resolvconf *conf)
 {
 	unsigned char qbuf[2][280], abuf[2][512];
 	const unsigned char *qp[2] = { qbuf[0], qbuf[1] };
@@ -125,27 +142,72 @@ static int name_from_dns(struct address buf[static MAXADDRS], char canon[static 
 	int qlens[2], alens[2];
 	int i, nq = 0;
 	struct dpc_ctx ctx = { .addrs = buf, .canon = canon };
+	static const struct { int af; int rr; } afrr[2] = {
+		{ .af = AF_INET6, .rr = RR_A },
+		{ .af = AF_INET, .rr = RR_AAAA },
+	};
 
-	if (family != AF_INET6) {
-		qlens[nq] = __res_mkquery(0, name, 1, RR_A, 0, 0, 0,
-			qbuf[nq], sizeof *qbuf);
-		nq++;
-	}
-	if (family != AF_INET) {
-		qlens[nq] = __res_mkquery(0, name, 1, RR_AAAA, 0, 0, 0,
-			qbuf[nq], sizeof *qbuf);
-		nq++;
+	for (i=0; i<2; i++) {
+		if (family != afrr[i].af) {
+			qlens[nq] = __res_mkquery(0, name, 1, afrr[i].rr,
+				0, 0, 0, qbuf[nq], sizeof *qbuf);
+			if (qlens[nq] == -1)
+				return EAI_NONAME;
+			nq++;
+		}
 	}
 
-	if (__res_msend(nq, qp, qlens, ap, alens, sizeof *abuf) < 0) return EAI_SYSTEM;
+	if (__res_msend_rc(nq, qp, qlens, ap, alens, sizeof *abuf, conf) < 0)
+		return EAI_SYSTEM;
 
 	for (i=0; i<nq; i++)
 		__dns_parse(abuf[i], alens[i], dns_parse_callback, &ctx);
 
 	if (ctx.cnt) return ctx.cnt;
 	if (alens[0] < 4 || (abuf[0][3] & 15) == 2) return EAI_AGAIN;
-	if ((abuf[0][3] & 15) == 3) return EAI_NONAME;
+	if ((abuf[0][3] & 15) == 0) return EAI_NONAME;
+	if ((abuf[0][3] & 15) == 3) return 0;
 	return EAI_FAIL;
+}
+
+static int name_from_dns_search(struct address buf[static MAXADDRS], char canon[static 256], const char *name, int family)
+{
+	char search[256];
+	struct resolvconf conf;
+	size_t l, dots;
+	char *p, *z;
+
+	if (__get_resolv_conf(&conf, search, sizeof search) < 0) return -1;
+
+	/* Count dots, suppress search when >=ndots or name ends in
+	 * a dot, which is an explicit request for global scope. */
+	for (dots=l=0; name[l]; l++) if (name[l]=='.') dots++;
+	if (dots >= conf.ndots || name[l-1]=='.') *search = 0;
+
+	/* This can never happen; the caller already checked length. */
+	if (l >= 256) return EAI_NONAME;
+
+	/* Name with search domain appended is setup in canon[]. This both
+	 * provides the desired default canonical name (if the requested
+	 * name is not a CNAME record) and serves as a buffer for passing
+	 * the full requested name to name_from_dns. */
+	memcpy(canon, name, l);
+	canon[l] = '.';
+
+	for (p=search; *p; p=z) {
+		for (; isspace(*p); p++);
+		for (z=p; *z && !isspace(*z); z++);
+		if (z==p) break;
+		if (z-p < 256 - l - 1) {
+			memcpy(canon+l+1, p, z-p);
+			canon[z-p+1+l] = 0;
+			int cnt = name_from_dns(buf, canon, canon, family, &conf);
+			if (cnt) return cnt;
+		}
+	}
+
+	canon[l] = 0;
+	return name_from_dns(buf, canon, name, family, &conf);
 }
 
 static const struct policy {
@@ -248,7 +310,7 @@ int __lookup_name(struct address buf[static MAXADDRS], char canon[static 256], c
 	if (!cnt) cnt = name_from_numeric(buf, name, family);
 	if (!cnt && !(flags & AI_NUMERICHOST)) {
 		cnt = name_from_hosts(buf, canon, name, family);
-		if (!cnt) cnt = name_from_dns(buf, canon, name, family);
+		if (!cnt) cnt = name_from_dns_search(buf, canon, name, family);
 	}
 	if (cnt<=0) return cnt ? cnt : EAI_NONAME;
 
@@ -277,8 +339,8 @@ int __lookup_name(struct address buf[static MAXADDRS], char canon[static 256], c
 	/* No further processing is needed if there are fewer than 2
 	 * results or if there are only IPv4 results. */
 	if (cnt<2 || family==AF_INET) return cnt;
-	for (i=0; buf[i].family == AF_INET; i++)
-		if (i==cnt) return cnt;
+	for (i=0; i<cnt; i++) if (buf[i].family != AF_INET) break;
+	if (i==cnt) return cnt;
 
 	int cs;
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);

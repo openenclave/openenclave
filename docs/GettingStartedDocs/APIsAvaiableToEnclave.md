@@ -2,7 +2,7 @@
 
 ## APIs available to an Enclave library
 
- To keep the Trusted computing base small for better security, the decision was made to make available only a specific set of APIs were available to an enclave library.
+ To keep the Trusted computing base small for better security, the decision was made to make available only a specific set of APIs available to an enclave library.
 
 #### Enclave Runtime library
 
@@ -15,7 +15,7 @@
    
 #### [oelibcxx library](../LibcxxSupport.md):
 
-   This is the subset of the  C++ library supported inside an enclave..
+   This is the subset of the  C++ library supported inside an enclave.
    
 #### [mbedtls library](../MbedtlsSupport.md):
 
@@ -29,7 +29,4 @@
 
   This library was created to help a host to manage an enclave life cycle and interact with it
   The current list of enclave APIs could be found [in this header file](/include/openenclave/host.h)
-  
-## [Open Enclave API Reference](../refman/md/index.md)
-  
-  
+

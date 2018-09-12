@@ -21,8 +21,8 @@ bool GenerateQuote(
     Sha256(data, dataSize, sha256);
 
     // To generate a quote that can be attested remotely by an enclave running
-    // on a different platform, pass the OE_REPORT_OPTIONS_REMOTE_ATTESTATION
-    // option. This uses the trusted quoting enclave to generate the report
+    // on a different platform, pass the OE_REPORT_FLAGS_REMOTE_ATTESTATION
+    // flag. This uses the trusted quoting enclave to generate the report
     // based on this enclave's local report.
     // To generate a quote that just needs to be attested by another enclave
     // running on the same platform, pass 0 instead. This uses the EREPORT
@@ -30,7 +30,7 @@ bool GenerateQuote(
     // Both kinds of reports can be verified using the oe_verify_report
     // function.
     oe_result_t result = oe_get_report(
-        OE_REPORT_OPTIONS_REMOTE_ATTESTATION,
+        OE_REPORT_FLAGS_REMOTE_ATTESTATION,
         sha256, // Store sha256 in report_data field
         sizeof(sha256),
         NULL, // optParams must be null

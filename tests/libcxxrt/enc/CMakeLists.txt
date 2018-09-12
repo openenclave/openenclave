@@ -18,9 +18,7 @@ target_link_libraries(libcxxrttest-support INTERFACE -Wl,--undefined=Test)
 
 # helper function to create enclave binary
 function(add_libcxxrt_test_enc NAME CXXFILE)
-    add_enclave_executable(libcxxrttest-${NAME}_enc sign.conf private.pem
-        main.cpp
-        )
+    add_executable(libcxxrttest-${NAME}_enc main.cpp)
     target_include_directories(libcxxrttest-${NAME}_enc PRIVATE
         ..
         ${PROJECT_SOURCE_DIR}/3rdparty/libcxxrt/libcxxrt/src

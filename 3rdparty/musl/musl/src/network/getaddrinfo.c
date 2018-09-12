@@ -20,6 +20,8 @@ int getaddrinfo(const char *restrict host, const char *restrict serv, const stru
 		} sa;
 	} *out;
 
+	if (!host && !serv) return EAI_NONAME;
+
 	if (hint) {
 		family = hint->ai_family;
 		flags = hint->ai_flags;

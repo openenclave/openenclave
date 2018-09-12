@@ -1,6 +1,18 @@
 Getting Started for Open Enclave (OE) application developers
 ========================================================
 
+Install Prerequisites
+----------------------------------------------
+
+  - Run the following command to install required tools/library
+
+        sudo apt-get install make gcc g++ gdb libmbedtls10 libssl-dev dh-exec libcurl3
+
+  - [Install Clang-7](prerequisites.md#install-clang-7) 
+
+  See [here](prerequisites.md#install-prerequisites-1) for more prerequisites explanation
+
+
 Download and Install OE SDK package
 ----------------------------------------------
  
@@ -36,7 +48,7 @@ OE Samples
    
        /opt/openenclave/share/openenclave/samples
   
-  See [OE samples](sampedocs/README.md) for details
+  See [OE samples](sampledocs/README.md) for details
     
 SDK API Reference
 -------------------------------

@@ -8,9 +8,6 @@
 #include "atomic.h"
 #include "syscall.h"
 
-#ifndef SHARED
-static
-#endif
 int __init_tp(void *p)
 {
 	pthread_t td = p;
@@ -24,8 +21,6 @@ int __init_tp(void *p)
 	return 0;
 }
 
-#ifndef SHARED
-
 static struct builtin_tls {
 	char c;
 	struct pthread pt;
@@ -33,33 +28,40 @@ static struct builtin_tls {
 } builtin_tls[1];
 #define MIN_TLS_ALIGN offsetof(struct builtin_tls, pt)
 
-struct tls_image {
-	void *image;
-	size_t len, size, align;
-} __static_tls;
-
-#define T __static_tls
+static struct tls_module main_tls;
 
 void *__copy_tls(unsigned char *mem)
 {
 	pthread_t td;
-	if (!T.image) return mem;
-	void **dtv = (void *)mem;
-	dtv[0] = (void *)1;
+	struct tls_module *p;
+	size_t i;
+	void **dtv;
+
 #ifdef TLS_ABOVE_TP
-	mem += sizeof(void *) * 2;
-	mem += -((uintptr_t)mem + sizeof(struct pthread)) & (T.align-1);
+	dtv = (void **)(mem + libc.tls_size) - (libc.tls_cnt + 1);
+
+	mem += -((uintptr_t)mem + sizeof(struct pthread)) & (libc.tls_align-1);
 	td = (pthread_t)mem;
 	mem += sizeof(struct pthread);
+
+	for (i=1, p=libc.tls_head; p; i++, p=p->next) {
+		dtv[i] = mem + p->offset;
+		memcpy(dtv[i], p->image, p->len);
+	}
 #else
+	dtv = (void **)mem;
+
 	mem += libc.tls_size - sizeof(struct pthread);
-	mem -= (uintptr_t)mem & (T.align-1);
+	mem -= (uintptr_t)mem & (libc.tls_align-1);
 	td = (pthread_t)mem;
-	mem -= T.size;
+
+	for (i=1, p=libc.tls_head; p; i++, p=p->next) {
+		dtv[i] = mem - p->offset;
+		memcpy(dtv[i], p->image, p->len);
+	}
 #endif
+	dtv[0] = (void *)libc.tls_cnt;
 	td->dtv = td->dtv_copy = dtv;
-	dtv[1] = mem;
-	memcpy(mem, T.image, T.len);
 	return td;
 }
 
@@ -69,7 +71,10 @@ typedef Elf32_Phdr Phdr;
 typedef Elf64_Phdr Phdr;
 #endif
 
-void __init_tls(size_t *aux)
+__attribute__((__weak__, __visibility__("hidden")))
+extern const size_t _DYNAMIC[];
+
+static void static_init_tls(size_t *aux)
 {
 	unsigned char *p;
 	size_t n;
@@ -81,21 +86,31 @@ void __init_tls(size_t *aux)
 		phdr = (void *)p;
 		if (phdr->p_type == PT_PHDR)
 			base = aux[AT_PHDR] - phdr->p_vaddr;
+		if (phdr->p_type == PT_DYNAMIC && _DYNAMIC)
+			base = (size_t)_DYNAMIC - phdr->p_vaddr;
 		if (phdr->p_type == PT_TLS)
 			tls_phdr = phdr;
 	}
 
 	if (tls_phdr) {
-		T.image = (void *)(base + tls_phdr->p_vaddr);
-		T.len = tls_phdr->p_filesz;
-		T.size = tls_phdr->p_memsz;
-		T.align = tls_phdr->p_align;
+		main_tls.image = (void *)(base + tls_phdr->p_vaddr);
+		main_tls.len = tls_phdr->p_filesz;
+		main_tls.size = tls_phdr->p_memsz;
+		main_tls.align = tls_phdr->p_align;
+		libc.tls_cnt = 1;
+		libc.tls_head = &main_tls;
 	}
 
-	T.size += (-T.size - (uintptr_t)T.image) & (T.align-1);
-	if (T.align < MIN_TLS_ALIGN) T.align = MIN_TLS_ALIGN;
+	main_tls.size += (-main_tls.size - (uintptr_t)main_tls.image)
+		& (main_tls.align-1);
+	if (main_tls.align < MIN_TLS_ALIGN) main_tls.align = MIN_TLS_ALIGN;
+#ifndef TLS_ABOVE_TP
+	main_tls.offset = main_tls.size;
+#endif
 
-	libc.tls_size = 2*sizeof(void *)+T.size+T.align+sizeof(struct pthread)
+	libc.tls_align = main_tls.align;
+	libc.tls_size = 2*sizeof(void *) + sizeof(struct pthread)
+		+ main_tls.size + main_tls.align
 		+ MIN_TLS_ALIGN-1 & -MIN_TLS_ALIGN;
 
 	if (libc.tls_size > sizeof builtin_tls) {
@@ -117,6 +132,5 @@ void __init_tls(size_t *aux)
 	if (__init_tp(__copy_tls(mem)) < 0)
 		a_crash();
 }
-#else
-void __init_tls(size_t *auxv) { }
-#endif
+
+weak_alias(static_init_tls, __init_tls);

@@ -6,7 +6,10 @@ include $(OPENENCLAVE_CONFIG)
 
 all: build
 
-CFLAGS=-Wall -g
+CC = clang-7
+
+CFLAGS += -Wall -g
+CFLAGS += -mllvm -x86-speculative-load-hardening
 
 INCLUDES = -I$(OE_INCLUDEDIR)
 LDFLAGS += -rdynamic
@@ -32,8 +35,8 @@ LIBRARIES += $(call optlib,sgx_ngsa_ql)
 LIBRARIES += $(call optlib,sgx_urts_ng)
 
 build:
-	gcc -c $(CFLAGS) $(INCLUDES) host.c
-	gcc -o helloworldhost host.o $(LDFLAGS) $(LIBRARIES)
+	$(CC) -c $(CFLAGS) $(INCLUDES) host.c
+	$(CC) -o helloworldhost host.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
 	rm -f helloworldhost host.o

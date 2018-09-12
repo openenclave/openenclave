@@ -87,45 +87,7 @@ char* oe_host_strndup(const char* str, size_t n)
     return p;
 }
 
-int __oe_host_putchar(int c)
-{
-    int ret = -1;
-
-    if (oe_ocall(OE_OCALL_PUTCHAR, (uint64_t)c, NULL) != OE_OK)
-        goto done;
-
-    ret = 0;
-
-done:
-
-    return ret;
-}
-
-int __oe_host_puts(const char* str)
-{
-    int ret = -1;
-    char* hstr = NULL;
-
-    if (!str)
-        goto done;
-
-    if (!(hstr = oe_host_strndup(str, OE_SIZE_MAX)))
-        goto done;
-
-    if (oe_ocall(OE_OCALL_PUTS, (uint64_t)hstr, NULL) != OE_OK)
-        goto done;
-
-    ret = 0;
-
-done:
-
-    if (hstr)
-        oe_host_free(hstr);
-
-    return ret;
-}
-
-int __oe_host_print(int device, const char* str, size_t len)
+int oe_host_write(int device, const char* str, size_t len)
 {
     int ret = -1;
     oe_print_args_t* args = NULL;
@@ -152,7 +114,7 @@ int __oe_host_print(int device, const char* str, size_t len)
     args->str[len] = '\0';
 
     /* Perform OCALL */
-    if (oe_ocall(OE_OCALL_PRINT, (uint64_t)args, NULL) != OE_OK)
+    if (oe_ocall(OE_OCALL_WRITE, (uint64_t)args, NULL) != OE_OK)
         goto done;
 
     ret = 0;
@@ -162,7 +124,7 @@ done:
     return ret;
 }
 
-int __oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
+int oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
 {
     char buf[256];
     char* p = buf;
@@ -188,7 +150,7 @@ int __oe_host_vfprintf(int device, const char* fmt, oe_va_list ap_)
         oe_va_end(ap);
     }
 
-    __oe_host_print(device, p, (size_t)-1);
+    oe_host_write(device, p, (size_t)-1);
 
     return n;
 }
@@ -199,7 +161,7 @@ int oe_host_printf(const char* fmt, ...)
 
     oe_va_list ap;
     oe_va_start(ap, fmt);
-    n = __oe_host_vfprintf(0, fmt, ap);
+    n = oe_host_vfprintf(0, fmt, ap);
     oe_va_end(ap);
 
     return n;
@@ -211,7 +173,7 @@ int oe_host_fprintf(int device, const char* fmt, ...)
 
     oe_va_list ap;
     oe_va_start(ap, fmt);
-    n = __oe_host_vfprintf(device, fmt, ap);
+    n = oe_host_vfprintf(device, fmt, ap);
     oe_va_end(ap);
 
     return n;

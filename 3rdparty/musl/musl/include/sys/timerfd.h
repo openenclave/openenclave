@@ -12,6 +12,7 @@ extern "C" {
 #define TFD_CLOEXEC O_CLOEXEC
 
 #define TFD_TIMER_ABSTIME 1
+#define TFD_TIMER_CANCEL_ON_SET (1 << 1)
 
 struct itimerspec;
 

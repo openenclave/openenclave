@@ -16,12 +16,12 @@ static char _NibbleToChar(uint64_t x)
                             '7',
                             '8',
                             '9',
-                            'A',
-                            'B',
-                            'C',
-                            'D',
-                            'E',
-                            'F'};
+                            'a',
+                            'b',
+                            'c',
+                            'd',
+                            'e',
+                            'f'};
 
     return _table[x & 0x000000000000000f];
 }
@@ -185,7 +185,10 @@ int oe_vsnprintf(char* str, size_t size, const char* fmt, oe_va_list ap)
             }
             else if (p[0] == 'p')
             {
-                s = _U64ToStr(scratch, (uint64_t)oe_va_arg(ap, void*));
+                s = _U64ToHexStr(scratch + 2, (uint64_t)oe_va_arg(ap, void*));
+                ((char*)s)[-1] = 'x';
+                ((char*)s)[-2] = '0';
+                s -= 2;
                 p += 1;
             }
             else

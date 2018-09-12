@@ -11,12 +11,14 @@ typedef Elf32_Phdr Phdr;
 typedef Elf32_Sym Sym;
 #define R_TYPE(x) ((x)&255)
 #define R_SYM(x) ((x)>>8)
+#define R_INFO ELF32_R_INFO
 #else
 typedef Elf64_Ehdr Ehdr;
 typedef Elf64_Phdr Phdr;
 typedef Elf64_Sym Sym;
 #define R_TYPE(x) ((x)&0x7fffffff)
 #define R_SYM(x) ((x)>>32)
+#define R_INFO ELF64_R_INFO
 #endif
 
 /* These enum constants provide unmatchable default values for
@@ -36,16 +38,55 @@ enum {
 	REL_TPOFF,
 	REL_TPOFF_NEG,
 	REL_TLSDESC,
+	REL_FUNCDESC,
+	REL_FUNCDESC_VAL,
+};
+
+struct fdpic_loadseg {
+	uintptr_t addr, p_vaddr, p_memsz;
+};
+
+struct fdpic_loadmap {
+	unsigned short version, nsegs;
+	struct fdpic_loadseg segs[];
+};
+
+struct fdpic_dummy_loadmap {
+	unsigned short version, nsegs;
+	struct fdpic_loadseg segs[1];
 };
 
 #include "reloc.h"
 
-#define IS_RELATIVE(x) ( \
+#ifndef FDPIC_CONSTDISP_FLAG
+#define FDPIC_CONSTDISP_FLAG 0
+#endif
+
+#ifndef DL_FDPIC
+#define DL_FDPIC 0
+#endif
+
+#ifndef DL_NOMMU_SUPPORT
+#define DL_NOMMU_SUPPORT 0
+#endif
+
+#if !DL_FDPIC
+#define IS_RELATIVE(x,s) ( \
 	(R_TYPE(x) == REL_RELATIVE) || \
 	(R_TYPE(x) == REL_SYM_OR_REL && !R_SYM(x)) )
+#else
+#define IS_RELATIVE(x,s) ( ( \
+	(R_TYPE(x) == REL_FUNCDESC_VAL) || \
+	(R_TYPE(x) == REL_SYMBOLIC) ) \
+	&& (((s)[R_SYM(x)].st_info & 0xf) == STT_SECTION) )
+#endif
 
 #ifndef NEED_MIPS_GOT_RELOCS
 #define NEED_MIPS_GOT_RELOCS 0
+#endif
+
+#ifndef DT_DEBUG_INDIRECT
+#define DT_DEBUG_INDIRECT 0
 #endif
 
 #define AUX_CNT 32

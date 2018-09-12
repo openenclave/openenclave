@@ -88,12 +88,10 @@ typedef enum _oe_func {
     OE_OCALL_MALLOC,
     OE_OCALL_REALLOC,
     OE_OCALL_FREE,
-    OE_OCALL_PUTS,
-    OE_OCALL_PUTCHAR,
-    OE_OCALL_PRINT,
+    OE_OCALL_WRITE,
     OE_OCALL_SLEEP,
     OE_OCALL_GET_TIME,
-    OE_OCALL_MALLOC_DUMP,
+    OE_OCALL_BACKTRACE_SYMBOLS,
     /* Caution: always add new OCALL function numbers here */
 
     __OE_FUNC_MAX = OE_ENUM_MAX,
@@ -317,17 +315,20 @@ typedef struct _oe_init_enclave_args
 /*
 **==============================================================================
 **
-** oe_malloc_dump_args_t
+** oe_backtrace_symbols_args_t
+**
+**     Ask host to print a backtrace collected by the enclave using the
+**     oe_backtrace() function.
 **
 **==============================================================================
 */
 
-typedef struct _oe_malloc_dump_args
+typedef struct _oe_backtrace_symbols_args
 {
-    uint64_t size;
-    void* addrs[OE_BACKTRACE_MAX];
-    int num_addrs;
-} oe_malloc_dump_args_t;
+    void* buffer[OE_BACKTRACE_MAX];
+    int size;
+    char** ret;
+} oe_backtrace_symbols_args_t;
 
 /**
  * Perform a low-level enclave function call (ECALL).

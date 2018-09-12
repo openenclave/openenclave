@@ -9,9 +9,24 @@ Getting Started with Open Enclave in SGX1 mode
 
   Mostly likely, it's either a SkyLake or a KabyLake system
 
-### Clone Open Enclave SDK repo and install package dependencies
+### Obtain Open Enclave source code and install package dependencies
 
-- Follow setup instructions in ["Obtain the source distribution and Install Prerequisites"](prerequisites.md) section
+   - Clone Open Enclave SDK repo from GitHub
+
+       Use the following command to download the source distribution.
+
+         $ git clone https://github.com/Microsoft/openenclave
+
+        This creates a source tree under the directory called openenclave.
+
+   - [Install Clang-7](prerequisites.md#install-clang-7)
+
+   - Install all the other prerequisites
+
+      The  [scripts/install-prereqs script](/scripts/install-prereqs) script was created to make installing the prerequisites less tedious. Execute the following commands from the root of the source tree to install above prerequisites for you
+
+            $ cd openenclave
+            $ sudo ./scripts/install-prereqs
 
 ### Install SGX Intel SGX package dependencies
 

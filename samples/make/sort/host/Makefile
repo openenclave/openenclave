@@ -10,7 +10,10 @@ endef
 
 all: build
 
-CXXFLAGS=-Wall -O2
+CXX = clang++-7
+
+CXXFLAGS += -Wall -O2
+CXXFLAGS += -mllvm -x86-speculative-load-hardening
 
 INCLUDES = -I$(OE_INCLUDEDIR)
 
@@ -28,8 +31,8 @@ LIBRARIES += $(call optlib,sgxoeql)
 LIBRARIES += $(call optlib,sgx_urts_ng)
 
 build:
-	g++ -c $(CXXFLAGS) $(INCLUDES) host.cpp
-	g++ -o sorthost host.o $(LDFLAGS) $(LIBRARIES)
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) host.cpp
+	$(CXX) -o sorthost host.o $(LDFLAGS) $(LIBRARIES)
 
 clean:
 	rm -f sorthost host.o

@@ -376,7 +376,7 @@ TEST_FCN void TestRemoteReport(void* args_)
     for (uint32_t i = 0; i < sizeof(optParams); ++i)
         optParams[i] = 0;
 
-    uint32_t flags = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
+    uint32_t flags = OE_REPORT_FLAGS_REMOTE_ATTESTATION;
 /*
  * Post conditions:
  *     1. Report must contain specified report data or zeros as report data.
@@ -664,7 +664,7 @@ TEST_FCN void TestRemoteVerifyReport(void* args_)
     }
 #endif
 
-    uint32_t flags = OE_REPORT_OPTIONS_REMOTE_ATTESTATION;
+    uint32_t flags = OE_REPORT_FLAGS_REMOTE_ATTESTATION;
 
     /*
      * Report data parameters scenarios on enclave side:

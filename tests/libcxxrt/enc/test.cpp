@@ -16,22 +16,28 @@ static int succeeded;
 static int failed;
 static bool verbose;
 
+#if defined(__linux__)
+#define OE_NEWLINE "\r\n"
+#elif defined(_WIN32)
+#define OE_NEWLINE "\n"
+#endif
+
 void log_test(bool predicate, const char* file, int line, const char* message)
 {
     if (predicate)
     {
-        printf("Test passed: %s:%d: %s\n", file, line, message);
+        printf("Test passed: %d: %s" OE_NEWLINE, line, message);
         succeeded++;
         return;
     }
     failed++;
-    printf("Test failed: %s:%d: %s\n", file, line, message);
+    printf("Test failed: %d: %s" OE_NEWLINE, line, message);
 }
 
 static void log_totals(void)
 {
     printf(
-        "\n%d tests, %d passed, %d failed\n",
+        OE_NEWLINE "%d tests, %d passed, %d failed" OE_NEWLINE,
         succeeded + failed,
         succeeded,
         failed);

@@ -131,7 +131,7 @@ oe_result_t oe_call_enclave(
  *
  * @param enclave The instance of the enclave that will generate the report.
  * @param flags Specifying default value (0) generates a report for local
- * attestation. Specifying OE_REPORT_OPTIONS_REMOTE_ATTESTATION generates a
+ * attestation. Specifying OE_REPORT_FLAGS_REMOTE_ATTESTATION generates a
  * report for remote attestation.
  * @param optParams Optional additional parameters needed for the current
  * enclave type. For SGX, this can be sgx_target_info_t for local attestation.
@@ -180,6 +180,8 @@ oe_result_t oe_parse_report(
  * platform. If the report is remote, it verifies that the signing authority is
  * rooted to a trusted authority such as the enclave platform manufacturer.
  *
+ * @param enclave The instance of the enclave that will be used to
+ * verify a local report. For remote reports, this parametter can be NULL.
  * @param report The buffer containing the report to verify.
  * @param reportSize The size of the **report** buffer.
  * @param parsedReport Optional **oe_report_t** structure to populate with the

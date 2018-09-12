@@ -246,24 +246,25 @@ OE_INLINE bool _check_multiply_overflow(size_t x, size_t y)
     return true;
 }
 
-static void _malloc_dump_ocall(size_t size, void* addrs[], int num_addrs)
+static void _malloc_dump(size_t size, void* addrs[], int num_addrs)
 {
-    oe_malloc_dump_args_t* args = NULL;
+    char** syms = NULL;
 
-    if (!(args = oe_host_malloc(sizeof(oe_malloc_dump_args_t))))
+    /* Get symbol names for these addresses */
+    if (!(syms = oe_backtrace_symbols(addrs, num_addrs)))
         goto done;
 
-    args->size = size;
-    oe_memcpy(args->addrs, addrs, sizeof(void*) * OE_COUNTOF(args->addrs));
-    args->num_addrs = num_addrs;
+    oe_host_printf("%llu bytes\n", OE_LLX(size));
 
-    if (oe_ocall(OE_OCALL_MALLOC_DUMP, (uint64_t)args, NULL) != OE_OK)
-        goto done;
+    for (size_t i = 0; i < num_addrs; i++)
+        oe_host_printf("%s(): %p\n", syms[i], addrs[i]);
+
+    oe_host_printf("\n");
 
 done:
 
-    if (args)
-        oe_host_free(args);
+    if (syms)
+        oe_host_free(syms);
 }
 
 static void _dump(bool need_lock)
@@ -288,7 +289,7 @@ static void _dump(bool need_lock)
             "=== %s(): %zu bytes in %zu blocks\n", __FUNCTION__, bytes, blocks);
 
         for (header_t* p = list->head; p; p = p->next)
-            _malloc_dump_ocall(p->size, p->addrs, p->num_addrs);
+            _malloc_dump(p->size, p->addrs, p->num_addrs);
 
         oe_host_printf("\n");
     }
@@ -304,8 +305,6 @@ static void _dump(bool need_lock)
 **
 **==============================================================================
 */
-
-bool oe_disable_debug_malloc_check;
 
 void* oe_debug_malloc(size_t size)
 {

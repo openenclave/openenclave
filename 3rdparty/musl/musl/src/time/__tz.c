@@ -15,7 +15,7 @@ weak_alias(__tzname, tzname);
 
 static char std_name[TZNAME_MAX+1];
 static char dst_name[TZNAME_MAX+1];
-const char __gmt[] = "GMT";
+const char __utc[] = "UTC";
 
 static int dst_off;
 static int r0[5], r1[5];
@@ -27,7 +27,7 @@ static char old_tz_buf[32];
 static char *old_tz = old_tz_buf;
 static size_t old_tz_size = sizeof old_tz_buf;
 
-static volatile int lock[2];
+static volatile int lock[1];
 
 static int getint(const char **p)
 {
@@ -84,7 +84,7 @@ static void getname(char *d, const char **p)
 	int i;
 	if (**p == '<') {
 		++*p;
-		for (i=0; **p!='>' && i<TZNAME_MAX; i++)
+		for (i=0; (*p)[i]!='>' && i<TZNAME_MAX; i++)
 			d[i] = (*p)[i];
 		++*p;
 	} else {
@@ -125,7 +125,8 @@ static void do_tzset()
 		"/usr/share/zoneinfo/\0/share/zoneinfo/\0/etc/zoneinfo/\0";
 
 	s = getenv("TZ");
-	if (!s || !*s) s = "/etc/localtime";
+	if (!s) s = "/etc/localtime";
+	if (!*s) s = __utc;
 
 	if (old_tz && !strcmp(s, old_tz)) return;
 
@@ -135,7 +136,7 @@ static void do_tzset()
 	 * free so as not to pull it into static programs. Growth
 	 * strategy makes it so free would have minimal benefit anyway. */
 	i = strlen(s);
-	if (i > PATH_MAX+1) s = __gmt, i = 3;
+	if (i > PATH_MAX+1) s = __utc, i = 3;
 	if (i >= old_tz_size) {
 		old_tz_size *= 2;
 		if (i >= old_tz_size) old_tz_size = i+1;
@@ -164,12 +165,12 @@ static void do_tzset()
 				}
 			}
 		}
-		if (!map) s = __gmt;
+		if (!map) s = __utc;
 	}
 	if (map && (map_size < 44 || memcmp(map, "TZif", 4))) {
 		__munmap((void *)map, map_size);
 		map = 0;
-		s = __gmt;
+		s = __utc;
 	}
 
 	zi = map;
@@ -206,7 +207,7 @@ static void do_tzset()
 				}
 			}
 			if (!__tzname[0]) __tzname[0] = __tzname[1];
-			if (!__tzname[0]) __tzname[0] = (char *)__gmt;
+			if (!__tzname[0]) __tzname[0] = (char *)__utc;
 			if (!__daylight) {
 				__tzname[1] = __tzname[0];
 				dst_off = __timezone;
@@ -215,7 +216,7 @@ static void do_tzset()
 		}
 	}
 
-	if (!s) s = __gmt;
+	if (!s) s = __utc;
 	getname(std_name, &s);
 	__tzname[0] = std_name;
 	__timezone = getoff(&s);
@@ -353,9 +354,9 @@ void __secs_to_zone(long long t, int local, int *isdst, long *offset, long *oppo
 		size_t alt, i = scan_trans(t, local, &alt);
 		if (i != -1) {
 			*isdst = types[6*i+4];
-			*offset = -(int32_t)zi_read32(types+6*i);
+			*offset = (int32_t)zi_read32(types+6*i);
 			*zonename = (const char *)abbrevs + types[6*i+5];
-			if (oppoff) *oppoff = -(int32_t)zi_read32(types+6*alt);
+			if (oppoff) *oppoff = (int32_t)zi_read32(types+6*alt);
 			UNLOCK(lock);
 			return;
 		}
@@ -372,32 +373,28 @@ void __secs_to_zone(long long t, int local, int *isdst, long *offset, long *oppo
 	long long t0 = rule_to_secs(r0, y);
 	long long t1 = rule_to_secs(r1, y);
 
+	if (!local) {
+		t0 += __timezone;
+		t1 += dst_off;
+	}
 	if (t0 < t1) {
-		if (!local) {
-			t0 += __timezone;
-			t1 += dst_off;
-		}
 		if (t >= t0 && t < t1) goto dst;
 		goto std;
 	} else {
-		if (!local) {
-			t1 += __timezone;
-			t0 += dst_off;
-		}
 		if (t >= t1 && t < t0) goto std;
 		goto dst;
 	}
 std:
 	*isdst = 0;
-	*offset = __timezone;
-	if (oppoff) *oppoff = dst_off;
+	*offset = -__timezone;
+	if (oppoff) *oppoff = -dst_off;
 	*zonename = __tzname[0];
 	UNLOCK(lock);
 	return;
 dst:
 	*isdst = 1;
-	*offset = dst_off;
-	if (oppoff) *oppoff = __timezone;
+	*offset = -dst_off;
+	if (oppoff) *oppoff = -__timezone;
 	*zonename = __tzname[1];
 	UNLOCK(lock);
 }
@@ -416,7 +413,7 @@ const char *__tm_to_tzname(const struct tm *tm)
 	const void *p = tm->__tm_zone;
 	LOCK(lock);
 	do_tzset();
-	if (p != __gmt && p != __tzname[0] && p != __tzname[1] &&
+	if (p != __utc && p != __tzname[0] && p != __tzname[1] &&
 	    (!zi || (uintptr_t)p-(uintptr_t)abbrevs >= abbrevs_end - abbrevs))
 		p = "";
 	UNLOCK(lock);
