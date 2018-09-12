@@ -5,11 +5,17 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/enclavelibc.h>
 #include <openenclave/internal/tests.h>
+#include <pthread.h>
+#include <atomic>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
+#include <vector>
 #include "../host/args.h"
 #include "../host/ocalls.h"
+
+#define pthread_create _pthread_create_impl
 
 extern const char* __test__;
 
@@ -47,28 +53,57 @@ extern "C" int close(int fd)
     return 0;
 }
 
-static stack<func_ptr> enc_stack;
+static std::vector<std::function<void()>> _thread_functions;
+static std::atomic_flag _lock = ATOMIC_FLAG_INIT;
+static pthread_t _next_thread_id = 0;
+
+static void _acquire_lock()
+{
+    while (_lock.test_and_set(std::memory_order_acquire))
+        ;
+}
+
+static void _release_lock()
+{
+    _lock.clear(std::memory_order_release);
+}
 
 /* pthread function prototypes
-int pthread_create(pthread_t *__restrict, const pthread_attr_t *__restrict, void *(*)(void *), void *__restrict);
+int pthread_create(pthread_t *__restrict, const pthread_attr_t *__restrict, void
+*(*)(void *), void *__restrict);
 int pthread_detach(pthread_t);
 _Noreturn void pthread_exit(void *);
 int pthread_join(pthread_t, void **);
 */
-
-pthread_create(pthread_t* thread, const pthread_attr_t* attr,
-	       void* (*enc_func_ptr)(void*), void* arg)
+extern "C" void _pthread_create_impl(
+    pthread_t* thread,
+    const pthread_attr_t* attr,
+    void* (*start_routine)(void*),
+    void* arg)
 {
-  enc_stack(enc_func_ptr);
-  //Call host to create thread
-  my_pthread_create_ocall(thread, attr, enc_func_ptr, arg);
+    // enc_stack(enc_func_ptr);
+    // Call host to create thread
+    // my_pthread_create_ocall(thread, attr, enc_func_ptr, arg);
+
+    _acquire_lock();
+
+    _thread_functions.push_back([start_routine, arg]() { start_routine(arg); });
+
+    *thread = ++_next_thread_id;
+    _release_lock();
+
+    if (oe_call_host("host_create_pthread", NULL) != OE_OK)
+        oe_abort();
 }
 
-OE_ECALL void EncStartThread()
+OE_ECALL void _EnclaveLaunchThread()
 {
-  ptr p = enc_stack.pop_and_remove();
-  p(); //Invoke the function 
-  
+    std::function<void()> f;
+    _acquire_lock();
+    f = _thread_functions.back();
+    _thread_functions.pop_back();
+    _release_lock();
+    f();
 }
 
 OE_ECALL void Test(Args* args)

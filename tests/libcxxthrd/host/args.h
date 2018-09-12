@@ -17,5 +17,5 @@ typedef struct _my_pthread_args
     void* (*enc_func_ptr)(void*);
     void* arg;
 } my_pthread_args_t;
-  
+
 #endif /* _RUNTEST_ARGS_H */

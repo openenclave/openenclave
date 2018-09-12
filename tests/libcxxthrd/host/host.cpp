@@ -5,6 +5,7 @@
 #include <openenclave/internal/calls.h>
 #include <openenclave/internal/error.h>
 #include <openenclave/internal/tests.h>
+#include <pthread.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
@@ -36,12 +37,23 @@ OE_OCALL void ocall_exit(uint64_t arg)
     exit(arg);
 }
 
-OE_OCALL void my_pthread_create_ocall(void* arg)
+OE_OCALL void host_create_pthread(void* arg, oe_enclave_t* enclave)
 {
-  my_pthread_args_t* args = (my_pthread_args_t*)arg;
-  if (args)
-    pthread_create(args->thread, args->attr, args->enc_func_ptr, args->arg);
+    // my_pthread_args_t* args = (my_pthread_args_t*)arg;
+    // if (args)
+    // oe_call_enclave(enclave, "_EnclaveLaunchThread", args->thread,
+    // args->attr, args->enc_func_ptr, args->arg);
+    oe_call_enclave(enclave, "_EnclaveLaunchThread", NULL);
 }
+
+/*
+OE_OCALL void host_create_thread(void*, oe_enclave_t* enclave)
+{
+    // host side it doesn't matter whether we use pthread or std::thread.
+    std::thread([enclave]() {
+        oe_call_enclave(enclave, "_EnclaveLaunchThread", NULL);
+    }).detach();
+} */
 
 static int _GetOpt(
     int& argc,
