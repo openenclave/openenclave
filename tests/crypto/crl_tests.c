@@ -15,7 +15,7 @@
 #include <string.h>
 #include "tests.h"
 
-static const char _CERT[] =
+static const char _CERT1[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIIEejCCBB+gAwIBAgIUTGfXttY4C5zE0xHxH007UM4Y3kgwCgYIKoZIzj0EAwIw\n"
     "cTEjMCEGA1UEAwwaSW50ZWwgU0dYIFBDSyBQcm9jZXNzb3IgQ0ExGjAYBgNVBAoM\n"
@@ -43,7 +43,7 @@ static const char _CERT[] =
     "o3vzHFohuwnCQLsCIQCwpr+07Uc1I7XQx8R3gKfxy+KPxQvacmp/s/0NQjEDMA==\n"
     "-----END CERTIFICATE-----\n";
 
-static const char _CHAIN[] =
+static const char _CHAIN1[] =
     "-----BEGIN CERTIFICATE-----\n"
     "MIICmDCCAj6gAwIBAgIVAOW7Uo+A+eMzrhms+mNGeBHzYbukMAoGCCqGSM49BAMC\n"
     "MGgxGjAYBgNVBAMMEUludGVsIFNHWCBSb290IENBMRowGAYDVQQKDBFJbnRlbCBD\n"
@@ -78,7 +78,7 @@ static const char _CHAIN[] =
     "-----END CERTIFICATE-----\n";
 
 /* Certificate revocation list in DER format */
-static const uint8_t _CRL[] = {
+static const uint8_t _CRL1[] = {
     0x30, 0x82, 0x01, 0x2a, 0x30, 0x81, 0xd1, 0x02, 0x01, 0x01, 0x30, 0x0a,
     0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x02, 0x30, 0x71,
     0x31, 0x23, 0x30, 0x21, 0x06, 0x03, 0x55, 0x04, 0x03, 0x0c, 0x1a, 0x49,
@@ -176,7 +176,7 @@ static const char _CHAIN2[] =
     "fIfqpbMxXtOBJh7PAVrYpoQXczLV3BFBzH7kNaOPQ5Y+7DaPpa/we1jnvQ==\n"
     "-----END CERTIFICATE-----\n";
 
-/* This CRL contins _CERT2 */
+/* This CRL contains _CERT2 */
 static const uint8_t _CRL2[] = {
     0x30, 0x82, 0x01, 0xf1, 0x30, 0x81, 0xda, 0x02, 0x01, 0x01, 0x30, 0x0d,
     0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x0b, 0x05,
@@ -225,7 +225,8 @@ static const uint8_t _CRL2[] = {
 static void _test_verify(
     const char* cert_pem,
     const char* chain_pem,
-    const oe_crl_t* crl,
+    const oe_crl_t* crl[],
+    size_t num_crl,
     bool revoked)
 {
     oe_cert_t cert;
@@ -239,7 +240,13 @@ static void _test_verify(
     r = oe_cert_chain_read_pem(&chain, chain_pem, strlen(chain_pem) + 1);
     OE_TEST(r == OE_OK);
 
-    r = oe_cert_verify(&cert, &chain, crl, &error);
+    if (!crl)
+        OE_TEST(num_crl == 0);
+
+    if (crl)
+        OE_TEST(num_crl > 0);
+
+    r = oe_cert_verify(&cert, &chain, crl, num_crl, &error);
 
     if (revoked)
     {
@@ -286,7 +293,10 @@ static void _test_verify_with_crl(
     oe_crl_t crl;
 
     OE_TEST(oe_crl_read_der(&crl, crl_der, crl_der_size) == OE_OK);
-    _test_verify(cert_pem, chain_pem, &crl, revoked);
+
+    const oe_crl_t* crls[] = {&crl};
+    _test_verify(cert_pem, chain_pem, crls, 1, revoked);
+
     OE_TEST(oe_crl_free(&crl) == OE_OK);
 
     printf("=== passed %s()\n", __FUNCTION__);
@@ -297,7 +307,7 @@ static void _test_verify_without_crl(
     const char* chain_pem)
 {
     printf("=== begin %s()\n", __FUNCTION__);
-    _test_verify(cert_pem, chain_pem, NULL, false);
+    _test_verify(cert_pem, chain_pem, NULL, 0, false);
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
@@ -307,7 +317,7 @@ static void _test_get_dates(void)
 
     oe_crl_t crl;
 
-    OE_TEST(oe_crl_read_der(&crl, _CRL, sizeof(_CRL)) == OE_OK);
+    OE_TEST(oe_crl_read_der(&crl, _CRL1, sizeof(_CRL1)) == OE_OK);
 
     oe_datetime_t last;
     oe_datetime_t next;
@@ -332,13 +342,45 @@ static void _test_get_dates(void)
     printf("=== passed %s()\n", __FUNCTION__);
 }
 
+static void _test_verify_with_two_crls(
+    const char* cert_pem,
+    const char* chain_pem,
+    const uint8_t* crl1_der,
+    const size_t crl1_der_size,
+    const uint8_t* crl2_der,
+    const size_t crl2_der_size,
+    bool revoked)
+{
+    printf("=== begin %s()\n", __FUNCTION__);
+
+    oe_crl_t crl1;
+    oe_crl_t crl2;
+
+    OE_TEST(oe_crl_read_der(&crl1, crl1_der, crl1_der_size) == OE_OK);
+    OE_TEST(oe_crl_read_der(&crl2, crl2_der, crl2_der_size) == OE_OK);
+
+    const oe_crl_t* crls[] = {&crl1, &crl2};
+    _test_verify(cert_pem, chain_pem, crls, 2, revoked);
+
+    OE_TEST(oe_crl_free(&crl1) == OE_OK);
+    OE_TEST(oe_crl_free(&crl2) == OE_OK);
+
+    printf("=== passed %s()\n", __FUNCTION__);
+}
+
 void TestCRL(void)
 {
-    _test_verify_without_crl(_CERT, _CHAIN);
-    _test_verify_with_crl(_CERT, _CHAIN, _CRL, sizeof(_CRL), false);
+    _test_verify_without_crl(_CERT1, _CHAIN1);
+    _test_verify_with_crl(_CERT1, _CHAIN1, _CRL1, sizeof(_CRL1), false);
 
     _test_verify_without_crl(_CERT2, _CHAIN2);
     _test_verify_with_crl(_CERT2, _CHAIN2, _CRL2, sizeof(_CRL2), true);
+
+    _test_verify_with_two_crls(
+        _CERT2, _CHAIN2, _CRL2, sizeof(_CRL2), _CRL1, sizeof(_CRL1), true);
+
+    _test_verify_with_two_crls(
+        _CERT2, _CHAIN2, _CRL1, sizeof(_CRL1), _CRL2, sizeof(_CRL2), true);
 
     _test_get_dates();
 }
