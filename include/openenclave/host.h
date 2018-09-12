@@ -28,16 +28,12 @@
 OE_EXTERNC_BEGIN
 
 /**
- *  Flag passed into 
- *  oe_create_enclave(const char *path, oe_enclave_type_t type, uint32_t flags, const void *config, uint32_t configSize, oe_enclave_t **enclave)
- *  to run the enclave in debug mode.
+ *  Flag passed into oe_create_enclave function to run the enclave in debug mode.
  */
 #define OE_ENCLAVE_FLAG_DEBUG 0x00000001
 
 /**
- *  Flag passed into 
- *  oe_create_enclave(const char *path, oe_enclave_type_t type, uint32_t flags, const void *config, uint32_t configSize, oe_enclave_t **enclave)
- *  to run the enclave in simulation mode.
+ *  Flag passed into oe_create_enclave to run the enclave in simulation mode.
  */
 #define OE_ENCLAVE_FLAG_SIMULATE 0x00000002
 
@@ -64,7 +60,7 @@ OE_EXTERNC_BEGIN
  *     - OE_ENCLAVE_TYPE_SGX - An SGX enclave
  *
  * @param flags These flags control how the enclave is run.
-       It is the bitwise OR of zero or more of the following flags
+ *     It is the bitwise OR of zero or more of the following flags
  *     - OE_ENCLAVE_FLAG_DEBUG - runs the enclave in debug mode
  *     - OE_ENCLAVE_FLAG_SIMULATE - runs the enclave in simulation mode
  *
