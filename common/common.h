@@ -10,6 +10,8 @@
 // When compiling for enclave, it routes the C library calls to enclavelibc
 // functions.
 
+#include <openenclave/bits/safecrt.h>
+
 #ifdef OE_BUILD_ENCLAVE
 
 #include <openenclave/enclave.h>
