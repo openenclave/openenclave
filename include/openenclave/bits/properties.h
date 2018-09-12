@@ -29,19 +29,14 @@ OE_EXTERNC_BEGIN
 /* Max number of threads in an enclave supported */
 #define OE_SGX_MAX_TCS 32
 
-/**
- *Enclave size settings 
- */
 typedef struct _oe_enclave_size_settings
 {
-    uint64_t num_heap_pages; /**< Number of heap pages */
-    uint64_t num_stack_pages ;/**< Number of stack pages */
-    uint64_t num_tcs; /**< Number of TCS */
+    uint64_t num_heap_pages;
+    uint64_t num_stack_pages;
+    uint64_t num_tcs;
 } oe_enclave_size_settings_t;
 
-/**
- * Enclave properties header 
- */
+/* Base type for enclave properties */
 typedef struct _oe_enclave_properties_header
 {
     uint32_t size; /**< (0) Size of the extended structure */
@@ -52,41 +47,33 @@ typedef struct _oe_enclave_properties_header
 } oe_enclave_properties_header_t;
 
 // oe_sgx_enclave_properties_t SGX enclave properties derived type
-/**
- *  Flag used to run SGX enclaves in debug mode
- */
 #define OE_SGX_FLAGS_DEBUG 0x0000000000000002ULL
-/**
- *  Flag used to run a 64 bit enclave
- */
 #define OE_SGX_FLAGS_MODE64BIT 0x0000000000000004ULL
-/**
- * Size of the SGX signature structure
- */
 #define OE_SGX_SIGSTRUCT_SIZE 1808
 
-/**
- * SGX Enclave configuration 
- */
 typedef struct oe_sgx_enclave_config_t
 {
+    uint16_t product_id;
+    uint16_t security_version;
 
-    uint16_t product_id; /**< Product ID */
-    uint16_t security_version; /**< Security version */
-    uint32_t padding; /**< Padding to make packed and unpacked size the same */
-    uint64_t attributes; /**< (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
+    /* Padding to make packed and unpacked size the same */
+    uint32_t padding;
+
+    /* (OE_SGX_FLAGS_DEBUG | OE_SGX_FLAGS_MODE64BIT) */
+    uint64_t attributes;
 } oe_sgx_enclave_config_t;
 
-/** 
- * Extends oe_enclave_properties_header_t base type 
- */
+/* Extends oe_enclave_properties_header_t base type */
 typedef struct oe_sgx_enclave_properties_t
 {
-    oe_enclave_properties_header_t header;/**< (0) Header */
+    /* (0) */
+    oe_enclave_properties_header_t header;
 
-    oe_sgx_enclave_config_t config; /**< (32) Config */
-    
-    uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];/**< (48) Contains the SGX signature structure */
+    /* (32) */
+    oe_sgx_enclave_config_t config;
+
+    /* (48) */
+    uint8_t sigstruct[OE_SGX_SIGSTRUCT_SIZE];
 } oe_sgx_enclave_properties_t;
 
 #define OE_INFO_SECTION_BEGIN __attribute__((section(".oeinfo")))

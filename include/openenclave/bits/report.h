@@ -22,12 +22,12 @@ OE_EXTERNC_BEGIN
 #define OE_REPORT_FLAGS_REMOTE_ATTESTATION 0x00000001
 
 /**
- * The size of embedded data in a report
+ * Size of embedded data in a local report.
  */
 #define OE_REPORT_DATA_SIZE 64
 
 /**
- * Maximum report size supported by OE. This is 10 KB
+ * Maximum report size supported by OE. This is 10 KB.
  */
 #define OE_MAX_REPORT_SIZE (10 * 1024)
 
@@ -36,28 +36,28 @@ OE_EXTERNC_BEGIN
  */
 // Fixed identity property sizes for OEv1
 /**
- * Size of the enclave's unique ID in bytes
+ * Size of the enclave's unique ID in bytes.
  */
 #define OE_UNIQUE_ID_SIZE 32
 /**
- * Size of the enclave's signer ID in bytes
+ * Size of the enclave's signer ID in bytes.
  */
 #define OE_SIGNER_ID_SIZE 32
 /**
- * Size of the enclave's product ID in bytes
+ * Size of the enclave's product ID in bytes.
  */
 #define OE_PRODUCT_ID_SIZE 16
 
 /**
- * Bit mask for a debug report
+ * Bit mask for a debug report.
  */
 #define OE_REPORT_ATTRIBUTES_DEBUG 0x0000000000000001ULL
 /**
- * Bit mask for a remote report
+ * Bit mask for a remote report.
  */
 #define OE_REPORT_ATTRIBUTES_REMOTE 0x0000000000000002ULL
 /**
- * Reserved bits
+ * Reserved bits.
  */
 #define OE_REPORT_ATTRIBUTES_RESERVED \
     (~(OE_REPORT_ATTRIBUTES_DEBUG | OE_REPORT_ATTRIBUTES_REMOTE))

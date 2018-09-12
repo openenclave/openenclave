@@ -276,7 +276,7 @@ void __oe_assert_fail(
     const char* func);
 
 /**
- * Evaluates assertion. 
+ * Evaluates assertion.
  */
 #ifndef NDEBUG
 #define oe_assert(EXPR)                                                \
@@ -367,23 +367,23 @@ oe_result_t oe_verify_report(
     oe_report_t* parsedReport);
 
 /**
- * This enumeration type defines the policy to derive the seal key.
+ * This enumeration type defines the policy used to derive the seal key.
  */
 typedef enum _oe_seal_policy {
     /**
-    * Key is derived from a measurement of the enclave. Under this policy, 
-    * the sealed secret can only be unsealed by the sealing enclave.
-    */
+     * Key is derived from a measurement of the enclave. Under this policy,
+     * the sealed secret can only be unsealed by the sealing enclave.
+     */
     OE_SEAL_POLICY_UNIQUE = 1,
     /**
-    * Key is derived from the signer of the enclave. Under this policy,
-    * the sealed secret can be unsealed by any enclave signed by the same 
-    * signer as that of the sealing enclave.
-    */
+     * Key is derived from the signer of the enclave. Under this policy,
+     * the sealed secret can be unsealed by any enclave signed by the same
+     * signer as that of the sealing enclave.
+     */
     OE_SEAL_POLICY_PRODUCT = 2,
     /**
-    * Unused
-    */
+     * Unused.
+     */
     _OE_SEAL_POLICY_MAX = OE_ENUM_MAX,
 } oe_seal_policy_t;
 
