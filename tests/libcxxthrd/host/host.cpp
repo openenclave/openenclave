@@ -36,6 +36,13 @@ OE_OCALL void ocall_exit(uint64_t arg)
     exit(arg);
 }
 
+OE_OCALL void my_pthread_create_ocall(void* arg)
+{
+  my_pthread_args_t* args = (my_pthread_args_t*)arg;
+  if (args)
+    pthread_create(args->thread, args->attr, args->enc_func_ptr, args->arg);
+}
+
 static int _GetOpt(
     int& argc,
     const char* argv[],

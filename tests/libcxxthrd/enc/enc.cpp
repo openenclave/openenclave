@@ -47,6 +47,30 @@ extern "C" int close(int fd)
     return 0;
 }
 
+static stack<func_ptr> enc_stack;
+
+/* pthread function prototypes
+int pthread_create(pthread_t *__restrict, const pthread_attr_t *__restrict, void *(*)(void *), void *__restrict);
+int pthread_detach(pthread_t);
+_Noreturn void pthread_exit(void *);
+int pthread_join(pthread_t, void **);
+*/
+
+pthread_create(pthread_t* thread, const pthread_attr_t* attr,
+	       void* (*enc_func_ptr)(void*), void* arg)
+{
+  enc_stack(enc_func_ptr);
+  //Call host to create thread
+  my_pthread_create_ocall(thread, attr, enc_func_ptr, arg);
+}
+
+OE_ECALL void EncStartThread()
+{
+  ptr p = enc_stack.pop_and_remove();
+  p(); //Invoke the function 
+  
+}
+
 OE_ECALL void Test(Args* args)
 {
     extern const char* __TEST__NAME;
