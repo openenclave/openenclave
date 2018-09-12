@@ -1,92 +1,111 @@
-Getting Started with Open Enclave in SGX1 mode 
-=====================================================
+# Getting Started with Open Enclave in SGX1 mode
 
-
-### Platform requirements
+## Platform requirements
 
 - Ubuntu 16.04-LTS 64-bits
-- SGX1 capable system
+- SGX1 capable system. Most likely this will be an Intel SkyLake or Intel KabyLake system
 
-  Mostly likely, it's either a SkyLake or a KabyLake system
+## Clone Open Enclave SDK repo from GitHub
 
-### Obtain Open Enclave source code and install package dependencies
+Use the following command to download the source code.
 
-   - Clone Open Enclave SDK repo from GitHub
+```bash
+git clone https://github.com/Microsoft/openenclave
+```
 
-       Use the following command to download the source distribution.
+This creates a source tree under the directory called openenclave.
 
-         $ git clone https://github.com/Microsoft/openenclave
+## Install project prerequisites
 
-        This creates a source tree under the directory called openenclave.
+The script [scripts/install-prereqs](/scripts/install-prereqs) was created to make installing the prerequisites less tedious. Execute the following commands from the root of the source tree:
 
-   - [Install Clang-7](prerequisites.md#install-clang-7)
+```bash
+cd openenclave
+sudo ./scripts/install-prereqs
+```
 
-   - Install all the other prerequisites
+## Install Intel SGX1 support software packages
 
-      The  [scripts/install-prereqs script](/scripts/install-prereqs) script was created to make installing the prerequisites less tedious. Execute the following commands from the root of the source tree to install above prerequisites for you
-
-            $ cd openenclave
-            $ sudo ./scripts/install-prereqs
-
-### Install SGX Intel SGX package dependencies
-
- In SGX1 mode, it requires additional Intel SGX packages
+There are two Intel packages needed for SGX1:
 
 - Intel® SGX Driver (/dev/isgx)
 - Intel® SGX AESM Service (from the Intel® SGX SDK)
 
-The SGX Driver and the AESM Service could be obtained from the following GitHub repositories. 
-Both contain detailed instructions about building and installing these pieces.
-     
-  - <https://github.com/01org/linux-sgx-driver>
-  - <https://github.com/01org/linux-sgx>
+Refer to the [Intel® SGX Driver](https://github.com/01org/linux-sgx-driver) and [Intel® SGX AESM Service](https://github.com/01org/linux-sgx) github repositories for detailed instructions on how to build and install these packages.
 
 As a convenience, Open Enclave provides a script for downloading, building and
-installing both the driver and the AESM service. To install these dependencies 
-type the following commands from the root of
-the source distribution, openenclave.
+installing both the driver and the AESM service. To install these dependencies
+type the following commands from the root of the source distribution:
 
-```
-$ sudo make -C prereqs
-$ sudo make -C prereqs install
+```bash
+sudo make -C prereqs
+sudo make -C prereqs install
 ```
 
-After this completes, verify that the AESM service is running as follows.
+After this completes verify that the AESM service is running as follows:
+
+```bash
+service aesmd status
 ```
-$ service aesmd status
-```
+
 Look for the string “active (running)”, usually highlighted in green.
 
-### Build
+## Build
 
-To build, pick a directory to build under ("build/" below).
-Then use cmake to configure the build and generate the make files and build.
+To build first create a build directory ("build/" in the example below) and change into it.
 
+```bash
+mkdir build/
+cd build/
 ```
-$ mkdir build/
-$ cd build/
-build$ cmake ..
-build$ make
+
+Then run `cmake` to configure the build and generate the make files and build:
+
+```bash
+cmake ..
+make
 ```
-Note: Optional detailed build information could be found [here](advancedBuildInfo.md)
 
-### Run unittests
+Refer to the [Advanced Build Information](advancedBuildInfo.md) documentation for further information.
 
-  After building, run all unittest cases via the following ctest command to confirm 
-  SDK is built and working as expected.
+## Run unittests
 
+After building, run all unit test cases using `ctest` to confirm the SDK is built and working as expected.
+
+Run the following command from the build directory:
+
+```bash
+ctest
 ```
-build$ ctest
+
+You will see test logs similar to the following:
+
+```bash
+~/openenclave/build$  ctest
+
+Test project /home/youradminusername/openenclave/build
+      Start   1: tests/aesm
+1/123 Test   #1: tests/aesm ...............................................................................................................   Passed    0.98 sec
+      Start   2: tests/mem
+2/123 Test   #2: tests/mem ................................................................................................................   Passed    0.00 sec
+      Start   3: tests/str
+3/123 Test   #3: tests/str ................................................................................................................   Passed    0.00 sec
+....
+....
+....
+122/123 Test #122: tools/oedump .............................................................................................................   Passed    0.00 sec
+            Start 123: oeelf
+123/123 Test #123: oeelf ....................................................................................................................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 123
+
+Total Test time (real) =  83.61 sec
 ```
-A clean pass of above unitests run is an indication that your Open Enclave setup was successful. You can start playing with those Open Enclave samples after following the instructions in the "Install" section below to configure samples for building,
 
-Note: Optional test detailed test information could be found [here](AdvancedTestInfo.md)
+A clean pass of the above unitests run is an indication that your Open Enclave setup was successful. You can start playing with the Open Enclave samples after following the instructions in the "Install" section below to configure samples for building,
 
-### Install
+For more information refer to the [Advanced Test Info](AdvancedTestInfo.md) document.
 
- Follow the instructions [here](InstallInfo.md) to install SDK the compiled Open Enclave.
+## Install
 
-
-
-
-
+ Follow the instructions in the [Install Info](InstallInfo.md) document to install the Open Enclave SDK built above.
