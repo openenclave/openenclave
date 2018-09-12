@@ -2,14 +2,21 @@
 # Licensed under the MIT License.
 
 PACKAGE_VER=1.0.101.45575-1.0_amd64
+AZQUOTE_VER=0.2-1_amd64
 
 PACKAGE_NAMES=\
 	libsgx-enclave-common\
 	libsgx-enclave-common-dev\
 	libsgx-ngsa-ql\
 	libsgx-ngsa-ql-dev\
+	azquotprov
 
-PACKAGES=$(foreach NAME,$(PACKAGE_NAMES),$(call pkg-name,$(NAME),$(PACKAGE_VER)))
+PACKAGES=\
+	libsgx-enclave-common_$(PACKAGE_VER).deb\
+	libsgx-enclave-common-dev_$(PACKAGE_VER).deb\
+	libsgx-ngsa-ql_$(PACKAGE_VER).deb\
+	libsgx-ngsa-ql-dev_$(PACKAGE_VER).deb\
+	azquotprov_$(AZQUOTE_VER).deb
 
 UNINSTALL_NAMES=$(call reverse-list,$(PACKAGE_NAMES))
 
@@ -46,7 +53,6 @@ uninstall:
 ##==============================================================================
 
 is-pkg-installed = $(shell dpkg-query -s $(1) 2>/dev/null | grep "Status: .* installed")
-pkg-name = $(1)_$(2).deb
 reverse-list = $(if $(wordlist 2,2,$(1)),\
 	$(call reverse-list,$(wordlist 2,$(words $(1)),$(1))) $(firstword $(1)),$(1))
 
