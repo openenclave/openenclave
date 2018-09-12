@@ -324,7 +324,6 @@ static void _TestCertVerifyGood()
     oe_verify_cert_error_t error = {0};
     oe_cert_t cert = {0};
     oe_cert_chain_t chain = {0};
-    oe_crl_t* crl = NULL;
 
     r = oe_cert_read_pem(&cert, _CERT1, sizeof(_CERT1));
     OE_TEST(r == OE_OK);
@@ -332,7 +331,7 @@ static void _TestCertVerifyGood()
     r = oe_cert_chain_read_pem(&chain, CHAIN1, sizeof(CHAIN1));
     OE_TEST(r == OE_OK);
 
-    r = oe_cert_verify(&cert, &chain, crl, &error);
+    r = oe_cert_verify(&cert, &chain, NULL, 0, &error);
     OE_TEST(r == OE_OK);
 
     oe_cert_free(&cert);
@@ -349,7 +348,6 @@ static void _TestCertVerifyBad()
     oe_verify_cert_error_t error = {0};
     oe_cert_t cert = {0};
     oe_cert_chain_t chain = {0};
-    oe_crl_t* crl = NULL;
 
     r = oe_cert_read_pem(&cert, _CERT1, sizeof(_CERT1));
     OE_TEST(r == OE_OK);
@@ -358,7 +356,7 @@ static void _TestCertVerifyBad()
     r = oe_cert_chain_read_pem(&chain, CHAIN2, sizeof(CHAIN2));
     OE_TEST(r == OE_OK);
 
-    r = oe_cert_verify(&cert, &chain, crl, &error);
+    r = oe_cert_verify(&cert, &chain, NULL, 0, &error);
     OE_TEST(r == OE_VERIFY_FAILED);
 
     oe_cert_free(&cert);
