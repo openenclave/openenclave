@@ -679,7 +679,7 @@ done:
         for (mbedtls_x509_crl* p = crl_list; p;)
         {
             mbedtls_x509_crl* next = p->next;
-            free(p);
+            oe_free(p);
             p = next;
         }
     }
