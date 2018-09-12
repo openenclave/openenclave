@@ -67,6 +67,8 @@ Before going further, you want to make sure you have a success Open Enclave setu
   - How to build and run it
   - Introduction to the build environment and basic program structure and image signing
   - More contents to come
+  - To run in simulation mode,use
+        $ host/helloworldhost ./enc/helloworldenc.signed.so --simulate
   
 #### Echo (Under construction)
  
